@@ -1,0 +1,169 @@
+{
+  "algorithm_id": "glm-negbin-near-poisson",
+  "generated_with": {
+    "python": "3.10.12",
+    "scipy": "1.15.3",
+    "numpy": "2.2.6"
+  },
+  "generated_at": "2026-04-30T20:04:31.028409+00:00",
+  "generator_script": "tools/fixture-generator/generate_fixtures.py",
+  "generator_version": "1.0.0",
+  "tolerances": {
+    "default": {
+      "relative": 0.001,
+      "absolute": 0.0001
+    },
+    "overrides": {
+      "theta_dependent": {
+        "relative": 0.2,
+        "absolute": 5.0,
+        "reason": "When data are near-Poisson, θ → ∞ and the score equation is nearly flat; statsmodels and JS estimates can differ widely while both are statistically equivalent."
+      }
+    }
+  },
+  "test_cases": [
+    {
+      "id": "negbin_near_poisson",
+      "tier": "stress",
+      "description": "50 obs drawn from NegBin(θ=100) — essentially Poisson. θ-Schätzung sollte sehr groß werden; Konvergenz-Flag muss greifen.",
+      "reference": "statsmodels.api.NegativeBinomial(loglike_method='nb2')",
+      "inputs": {
+        "family": "negbin",
+        "link": "log",
+        "confLevel": 0.95,
+        "theta": null,
+        "y": [
+          1,
+          5,
+          6,
+          2,
+          7,
+          2,
+          2,
+          2,
+          5,
+          4,
+          5,
+          4,
+          6,
+          3,
+          1,
+          5,
+          4,
+          7,
+          4,
+          4,
+          3,
+          3,
+          7,
+          3,
+          6,
+          6,
+          9,
+          5,
+          9,
+          7,
+          13,
+          4,
+          10,
+          6,
+          8,
+          8,
+          8,
+          8,
+          12,
+          4,
+          14,
+          10,
+          8,
+          8,
+          4,
+          14,
+          15,
+          7,
+          16,
+          18
+        ],
+        "xColumns": [
+          [
+            0.0,
+            0.102,
+            0.204,
+            0.306,
+            0.408,
+            0.51,
+            0.612,
+            0.714,
+            0.816,
+            0.918,
+            1.02,
+            1.122,
+            1.224,
+            1.327,
+            1.429,
+            1.531,
+            1.633,
+            1.735,
+            1.837,
+            1.939,
+            2.041,
+            2.143,
+            2.245,
+            2.347,
+            2.449,
+            2.551,
+            2.653,
+            2.755,
+            2.857,
+            2.959,
+            3.061,
+            3.163,
+            3.265,
+            3.367,
+            3.469,
+            3.571,
+            3.673,
+            3.776,
+            3.878,
+            3.98,
+            4.082,
+            4.184,
+            4.286,
+            4.388,
+            4.49,
+            4.592,
+            4.694,
+            4.796,
+            4.898,
+            5.0
+          ]
+        ],
+        "estimateDispersion": false
+      },
+      "tolerance_override": "theta_dependent",
+      "expected": {
+        "converged": true,
+        "n": 50,
+        "p": 2,
+        "coefficients": [
+          1.0572595996329652,
+          0.29675618048518326
+        ],
+        "stdErrors": [
+          0.13770864461298224,
+          0.040651974754803415
+        ],
+        "deviance": 48.8858609713988,
+        "logLikelihood": -115.43835376776238,
+        "aic": 236.87670753552476,
+        "family": {
+          "name": "negbin",
+          "link": "log",
+          "theta": 105.75171157129488
+        },
+        "theta": 105.75171157129488,
+        "thetaEstimated": true
+      }
+    }
+  ]
+}

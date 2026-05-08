@@ -1,0 +1,218 @@
+{
+  "id": "poisson-regression",
+  "name": {
+    "de": "Poisson-Regression",
+    "en": "Poisson Regression"
+  },
+  "category": "regression",
+  "subcategory": null,
+  "status": "validated",
+  "version": "1.0.0",
+
+  "description": {
+    "short": {
+      "de": "Generalisiertes lineares Modell für Zähldaten mit logarithmischer Link-Funktion und Poisson-Verteilung.",
+      "en": "Generalized linear model for count data with log link function and Poisson distribution."
+    },
+    "long": {
+      "de": "Poisson-Regression modelliert Zähldaten (nicht-negative ganzzahlige Antwort) über ein generalisiertes lineares Modell mit kanonischer Log-Link-Funktion. Die Koeffizienten werden per Iteratively Reweighted Least Squares (IRLS) geschätzt. Die Ausgabe umfasst Koeffizienten, Standardfehler, z-Werte, p-Werte, Rate Ratios mit Konfidenzintervallen, Deviance, Null-Deviance, AIC, BIC, Log-Likelihood und Pseudo-R²-Maße (McFadden, Cox-Snell, Nagelkerke). Eine Überdispersionsprüfung über Pearson-χ²/df wird mitgeliefert.",
+      "en": "Poisson regression models count data (non-negative integer response) via a generalized linear model with canonical log link function. Coefficients are estimated using Iteratively Reweighted Least Squares (IRLS). Output includes coefficients, standard errors, z-values, p-values, rate ratios with confidence intervals, deviance, null deviance, AIC, BIC, log-likelihood and pseudo-R² measures (McFadden, Cox-Snell, Nagelkerke). An overdispersion check via Pearson χ²/df is provided."
+    }
+  },
+
+  "documentation": {
+    "formulas": [
+      {
+        "label": "Log-Link (kanonisch)",
+        "latex": "\\log(\\mu_i) = \\mathbf{x}_i' \\boldsymbol{\\beta}",
+        "description": {
+          "de": "Kanonische Link-Funktion: der Logarithmus des Erwartungswerts wird als Linearkombination der Prädiktoren modelliert",
+          "en": "Canonical link function: the log of the expected value is modelled as a linear combination of predictors"
+        }
+      },
+      {
+        "label": "Varianzfunktion",
+        "latex": "\\operatorname{Var}(Y_i) = \\mu_i",
+        "description": {
+          "de": "Poisson-Varianz: die Varianz entspricht dem Erwartungswert (Äquidispersion)",
+          "en": "Poisson variance: the variance equals the mean (equidispersion)"
+        }
+      },
+      {
+        "label": "IRLS-Gewichte",
+        "latex": "w_i = \\mu_i",
+        "description": {
+          "de": "Iterative Gewichte für den IRLS-Algorithmus",
+          "en": "Iterative weights for the IRLS algorithm"
+        }
+      },
+      {
+        "label": "Working Response",
+        "latex": "z_i = \\eta_i + \\frac{y_i - \\mu_i}{\\mu_i}",
+        "description": {
+          "de": "Linearisierte Arbeitsvariable im IRLS-Schritt",
+          "en": "Linearised working variable in the IRLS step"
+        }
+      },
+      {
+        "label": "Log-Likelihood",
+        "latex": "\\ell = \\sum_{i=1}^{n} \\bigl[ y_i \\log(\\mu_i) - \\mu_i - \\log(y_i!) \\bigr]",
+        "description": {
+          "de": "Poisson-Log-Likelihood-Funktion",
+          "en": "Poisson log-likelihood function"
+        }
+      },
+      {
+        "label": "Rate Ratio",
+        "latex": "\\text{RR}_j = \\exp(\\hat{\\beta}_j)",
+        "description": {
+          "de": "Rate Ratio: exponentierter Koeffizient, interpretierbar als multiplikativer Effekt auf die Rate",
+          "en": "Rate ratio: exponentiated coefficient, interpretable as multiplicative effect on the rate"
+        }
+      },
+      {
+        "label": "Deviance",
+        "latex": "D = 2 \\sum_{i=1}^{n} \\bigl[ y_i \\log\\!\\left(\\frac{y_i}{\\hat{\\mu}_i}\\right) - (y_i - \\hat{\\mu}_i) \\bigr]",
+        "description": {
+          "de": "Deviance: Maß für die Modellgüte (Vergleich mit saturiertem Modell)",
+          "en": "Deviance: goodness-of-fit measure (comparison with saturated model)"
+        }
+      },
+      {
+        "label": "Überdispersion (Pearson χ²/df)",
+        "latex": "\\frac{\\chi^2_{\\text{Pearson}}}{\\text{df}} = \\frac{\\sum_{i=1}^{n} (y_i - \\hat{\\mu}_i)^2 / \\hat{\\mu}_i}{n - p}",
+        "description": {
+          "de": "Pearson-χ²-Statistik dividiert durch Freiheitsgrade: Werte deutlich > 1 deuten auf Überdispersion hin",
+          "en": "Pearson χ² statistic divided by degrees of freedom: values substantially > 1 indicate overdispersion"
+        }
+      }
+    ],
+    "assumptions": [
+      { "de": "Antwort sind Zähldaten (nicht-negative Ganzzahlen)", "en": "Response is count data (non-negative integers)" },
+      { "de": "Äquidispersion: Var(Y) = E(Y) = μ (Varianz gleich Erwartungswert)", "en": "Equidispersion: Var(Y) = E(Y) = μ (mean equals variance)" },
+      { "de": "Beobachtungen sind unabhängig", "en": "Independence of observations" },
+      { "de": "Log-lineare Beziehung zwischen log(μ) und den Prädiktoren", "en": "Log-linear relationship between log(μ) and predictors" },
+      { "de": "Keine perfekte Multikollinearität der Prädiktoren", "en": "No perfect multicollinearity among predictors" }
+    ],
+    "limitations": [
+      { "de": "Kann Überdispersion nicht modellieren (stattdessen Negativ-Binomial oder Quasi-Poisson verwenden)", "en": "Cannot handle overdispersion (use negative binomial or quasi-Poisson instead)" },
+      { "de": "Nicht geeignet für zero-inflated Daten", "en": "Not suitable for zero-inflated data" },
+      { "de": "Standardfehler werden bei vorhandener Überdispersion unterschätzt", "en": "Standard errors are underestimated when overdispersion is present" },
+      { "de": "Große Zählwerte können zu numerischer Instabilität führen", "en": "Large counts may cause numerical instability" }
+    ],
+    "references": [
+      { "source": "Cameron, A. C., Trivedi, P. K. (2013), Regression Analysis of Count Data, 2nd Ed., Cambridge University Press" },
+      { "source": "McCullagh, P., Nelder, J. A. (1989), Generalized Linear Models, 2nd Ed., Chapman & Hall" },
+      { "source": "Hilbe, J. M. (2014), Modeling Count Data, Cambridge University Press" }
+    ],
+    "minitab_equivalent": "Stat > Regression > Poisson Regression > Fit Poisson Model"
+  },
+
+  "source": {
+    "function_name": "runPoissonRegression",
+    "file_path": "js/engines/glm-engine.js",
+    "signature": {
+      "parameters": [
+        {
+          "name": "xColumns",
+          "type": "number[][]",
+          "required": true,
+          "description": { "de": "Prädiktor-Spalten (jede Spalte ist ein Array von n Werten)", "en": "Predictor columns (each column is an array of n values)" }
+        },
+        {
+          "name": "y",
+          "type": "number[]",
+          "required": true,
+          "description": { "de": "Antwortvariable (Zähldaten, n nicht-negative Ganzzahlen)", "en": "Response variable (count data, n non-negative integers)" }
+        },
+        {
+          "name": "confLevel",
+          "type": "number",
+          "required": false,
+          "description": { "de": "Konfidenzniveau (Standard 0.95)", "en": "Confidence level (default 0.95)" }
+        }
+      ],
+      "returns": {
+        "type": "object",
+        "properties": {
+          "converged": { "type": "boolean", "description": { "de": "Ob der IRLS-Algorithmus konvergiert ist", "en": "Whether the IRLS algorithm converged" } },
+          "iterations": { "type": "number", "description": { "de": "Anzahl der IRLS-Iterationen", "en": "Number of IRLS iterations" } },
+          "coefficients": { "type": "number[]", "description": { "de": "Geschätzte Koeffizienten β̂ (Intercept + Prädiktoren)", "en": "Estimated coefficients β̂ (intercept + predictors)" } },
+          "stdErrors": { "type": "number[]", "description": { "de": "Standardfehler der Koeffizienten", "en": "Standard errors of coefficients" } },
+          "zValues": { "type": "number[]", "description": { "de": "z-Werte (Wald-Statistik: β̂/SE)", "en": "z-values (Wald statistic: β̂/SE)" } },
+          "pValues": { "type": "number[]", "description": { "de": "Zweiseitige p-Werte der z-Tests", "en": "Two-sided p-values of z-tests" } },
+          "rateRatios": { "type": "object[]", "description": { "de": "Rate Ratios mit Konfidenzintervallen ({rr, lower, upper})", "en": "Rate ratios with confidence intervals ({rr, lower, upper})" } },
+          "deviance": { "type": "number", "description": { "de": "Residual-Deviance des angepassten Modells", "en": "Residual deviance of the fitted model" } },
+          "nullDeviance": { "type": "number", "description": { "de": "Deviance des Null-Modells (nur Intercept)", "en": "Deviance of the null model (intercept only)" } },
+          "aic": { "type": "number", "description": { "de": "Akaike-Informationskriterium", "en": "Akaike information criterion" } },
+          "bic": { "type": "number", "description": { "de": "Bayessches Informationskriterium", "en": "Bayesian information criterion" } },
+          "logLikelihood": { "type": "number", "description": { "de": "Log-Likelihood des angepassten Modells", "en": "Log-likelihood of the fitted model" } },
+          "pseudoR2": { "type": "object", "description": { "de": "Pseudo-R²-Maße: {mcfadden, coxSnell, nagelkerke}", "en": "Pseudo-R² measures: {mcfadden, coxSnell, nagelkerke}" } },
+          "n": { "type": "number", "description": { "de": "Stichprobengröße", "en": "Sample size" } },
+          "p": { "type": "number", "description": { "de": "Anzahl der Parameter (inkl. Intercept)", "en": "Number of parameters (including intercept)" } }
+        }
+      }
+    },
+    "code_snippet": null
+  },
+
+  "try_it": {
+    "input_schema": {
+      "fields": [
+        {
+          "name": "xColumns",
+          "label": { "de": "X-Werte (Prädiktoren)", "en": "X Values (Predictors)" },
+          "type": "textarea",
+          "placeholder": { "de": "Werte, getrennt durch Komma, Leerzeichen oder Zeilenumbruch", "en": "Values separated by commas, spaces or newlines" },
+          "parse_as": "number_array",
+          "required": true
+        },
+        {
+          "name": "y",
+          "label": { "de": "Y-Werte (Zähldaten)", "en": "Y Values (Count Data)" },
+          "type": "textarea",
+          "placeholder": { "de": "Zähldaten, getrennt durch Komma, Leerzeichen oder Zeilenumbruch", "en": "Count data separated by commas, spaces or newlines" },
+          "parse_as": "number_array",
+          "required": true
+        },
+        {
+          "name": "confLevel",
+          "label": { "de": "Konfidenzniveau", "en": "Confidence Level" },
+          "type": "number",
+          "placeholder": { "de": "0.95", "en": "0.95" },
+          "parse_as": "number",
+          "required": false
+        }
+      ]
+    },
+    "output_schema": {
+      "display_fields": ["converged", "coefficients", "stdErrors", "zValues", "pValues", "deviance", "nullDeviance", "aic", "logLikelihood", "pseudoR2.mcfadden"],
+      "primary_field": "coefficients",
+      "format": {
+        "converged": { "decimals": null, "label": "Converged" },
+        "coefficients": { "decimals": 6, "label": "β̂" },
+        "stdErrors": { "decimals": 6, "label": "SE(β̂)" },
+        "zValues": { "decimals": 4, "label": "z" },
+        "pValues": { "decimals": 6, "label": "p" },
+        "deviance": { "decimals": 4, "label": "Deviance" },
+        "nullDeviance": { "decimals": 4, "label": "Null Deviance" },
+        "aic": { "decimals": 4, "label": "AIC" },
+        "logLikelihood": { "decimals": 4, "label": "Log-Likelihood" },
+        "pseudoR2.mcfadden": { "decimals": 6, "label": "McFadden R²" }
+      }
+    }
+  },
+
+  "changelog": [
+    {
+      "version": "1.0.0",
+      "date": "2026-04-27",
+      "type": "initial",
+      "description": {
+        "de": "Erstimplementierung: Poisson-Regression mit IRLS, Rate Ratios, Deviance, Pseudo-R² und Überdispersionsprüfung.",
+        "en": "Initial implementation: Poisson regression with IRLS, rate ratios, deviance, pseudo-R² and overdispersion check."
+      },
+      "breaking": false
+    }
+  ]
+}

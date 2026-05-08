@@ -1,0 +1,109 @@
+{
+  "id": "grubbs-test",
+  "name": { "de": "Grubbs-Test", "en": "Grubbs' Test" },
+  "category": "outliers",
+  "subcategory": "parametric",
+  "status": "validated",
+  "version": "1.0.0",
+  "description": {
+    "short": {
+      "de": "Identifiziert einen einzelnen Ausreißer in normalverteilten Daten.",
+      "en": "Identifies a single outlier in normally-distributed data."
+    },
+    "long": {
+      "de": "Der Grubbs-Test (auch Maximum-Normed-Residual-Test) prüft, ob der vom Mittelwert am weitesten entfernte Wert mit einer Normalverteilung verträglich ist. Die Teststatistik G ist die maximale standardisierte Abweichung; der kritische Wert ergibt sich aus der t-Verteilung mit n-2 Freiheitsgraden und einer Bonferroni-Korrektur. Der Test eignet sich für n ≥ 3 und sollte iterativ nur mit Vorsicht angewandt werden — bei mehreren vermuteten Ausreißern ist Generalized ESD vorzuziehen.",
+      "en": "Grubbs' test (a.k.a. maximum normed residual test) checks whether the value furthest from the mean is compatible with a normal distribution. The G statistic is the maximum standardised deviation; the critical value is derived from the t-distribution with n-2 degrees of freedom under a Bonferroni correction. Suitable for n ≥ 3, but should be applied only cautiously when iterated — for multiple suspected outliers prefer Generalized ESD."
+    }
+  },
+  "documentation": {
+    "formulas": [
+      { "label": "G",
+        "latex": "G = \\frac{\\max_i |x_i - \\bar{x}|}{s}",
+        "description": { "de": "Teststatistik (zweiseitig)", "en": "Test statistic (two-sided)" } },
+      { "label": "G_{crit}",
+        "latex": "G_{crit} = \\frac{n-1}{\\sqrt{n}} \\sqrt{\\frac{t_{\\alpha/(2n),\\, n-2}^{2}}{n - 2 + t_{\\alpha/(2n),\\, n-2}^{2}}}",
+        "description": { "de": "Kritischer Wert aus der t-Verteilung (Bonferroni)", "en": "Critical value from the t-distribution (Bonferroni)" } },
+      { "label": "H₀",
+        "latex": "H_0:\\ \\text{kein Ausrei{\\ss}er} \\quad\\text{vs.}\\quad H_1:\\ \\text{ein Ausrei{\\ss}er}",
+        "description": { "de": "Null- und Alternativhypothese", "en": "Null and alternative hypotheses" } }
+    ],
+    "assumptions": [
+      { "de": "Daten sind unabhängig und (bis auf den möglichen Ausreißer) normalverteilt", "en": "Data are independent and (apart from the suspected outlier) normally distributed" },
+      { "de": "Stichprobengröße: n ≥ 3", "en": "Sample size: n ≥ 3" },
+      { "de": "Stetige Daten", "en": "Continuous data" }
+    ],
+    "limitations": [
+      { "de": "Pro Aufruf wird höchstens ein Ausreißer identifiziert", "en": "At most one outlier per call" },
+      { "de": "Empfindlich gegen Abweichungen von der Normalverteilung — vorher z. B. Shapiro-Wilk durchführen", "en": "Sensitive to deviations from normality — pre-test with e.g. Shapiro-Wilk" },
+      { "de": "Bei mehreren echten Ausreißern Maskierung möglich → Generalized ESD verwenden", "en": "Masking is possible with multiple true outliers → use Generalized ESD" }
+    ],
+    "references": [
+      { "source": "Grubbs, F. E. (1969), Procedures for detecting outlying observations in samples, Technometrics 11(1), 1–21" },
+      { "source": "Stefansky, W. (1972), Rejecting outliers in factorial designs, Technometrics 14(2), 469–479" },
+      { "source": "NIST/SEMATECH e-Handbook of Statistical Methods, Section 1.3.5.17" }
+    ],
+    "minitab_equivalent": "Stat > Basic Statistics > Outlier Test (Grubbs)"
+  },
+  "source": {
+    "function_name": "grubbsTest",
+    "file_path": "js/engines/outlier-test-engine.js",
+    "signature": {
+      "parameters": [
+        { "name": "data", "type": "number[]", "required": true,
+          "description": { "de": "Messdaten (n ≥ 3)", "en": "Measurement data (n ≥ 3)" } },
+        { "name": "alpha", "type": "number", "required": false,
+          "description": { "de": "Signifikanzniveau (Default 0.05)", "en": "Significance level (default 0.05)" } },
+        { "name": "side", "type": "'two-sided' | 'upper' | 'lower'", "required": false,
+          "description": { "de": "Testrichtung (Default zweiseitig)", "en": "Test side (default two-sided)" } }
+      ],
+      "returns": {
+        "type": "object",
+        "properties": {
+          "statistic": { "type": "number", "description": { "de": "G-Statistik", "en": "G statistic" } },
+          "critical": { "type": "number", "description": { "de": "Kritischer Wert", "en": "Critical value" } },
+          "pValue": { "type": "number", "description": { "de": "p-Wert", "en": "p-value" } },
+          "reject": { "type": "boolean", "description": { "de": "Ablehnung von H₀", "en": "Reject H₀" } },
+          "outliers": { "type": "Array", "description": { "de": "Liste der erkannten Ausreißer", "en": "List of detected outliers" } }
+        }
+      }
+    }
+  },
+  "try_it": {
+    "input_schema": {
+      "fields": [
+        { "name": "data", "label": { "de": "Messdaten", "en": "Measurement Data" },
+          "type": "textarea",
+          "placeholder": { "de": "Werte durch Komma/Leerzeichen/Zeilenumbruch trennen", "en": "Separate values by comma, space or newline" },
+          "parse_as": "number_array", "required": true },
+        { "name": "alpha", "label": { "de": "α", "en": "α" }, "type": "number", "default": 0.05, "min": 0.001, "max": 0.5 },
+        { "name": "side", "label": { "de": "Testrichtung", "en": "Side" }, "type": "select",
+          "default": "two-sided",
+          "options": [
+            { "value": "two-sided", "label": { "de": "Zweiseitig", "en": "Two-sided" } },
+            { "value": "upper",     "label": { "de": "Oberer Ausreißer", "en": "Upper" } },
+            { "value": "lower",     "label": { "de": "Unterer Ausreißer", "en": "Lower" } }
+          ] }
+      ],
+      "csv_mapping": { "data_column": "Automatically uses first numeric column" }
+    },
+    "output_schema": {
+      "display_fields": ["statistic", "critical", "pValue", "reject", "n"],
+      "primary_field": "statistic",
+      "format": {
+        "statistic": { "decimals": 6, "label": "G" },
+        "critical":  { "decimals": 6, "label": "G_crit" },
+        "pValue":    { "decimals": 6, "label": "p-value" },
+        "reject":    { "decimals": 0, "label": "Reject H₀" },
+        "n":         { "decimals": 0, "label": "n" }
+      }
+    }
+  },
+  "changelog": [
+    { "version": "1.0.0", "date": "2026-05-06", "type": "initial",
+      "description": {
+        "de": "Erstimplementierung mit zweiseitiger und einseitiger Variante (Bonferroni-korrigierte t-Quantile)",
+        "en": "Initial implementation with two-sided and one-sided variants (Bonferroni-corrected t-quantiles)"
+      },
+      "breaking": false }
+  ]
+}

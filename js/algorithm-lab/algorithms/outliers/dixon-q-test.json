@@ -1,0 +1,96 @@
+{
+  "id": "dixon-q-test",
+  "name": { "de": "Dixon Q-Test", "en": "Dixon Q Test" },
+  "category": "outliers",
+  "subcategory": "parametric",
+  "status": "validated",
+  "version": "1.0.0",
+  "description": {
+    "short": {
+      "de": "Ausreißer-Test für sehr kleine Stichproben (n = 3..30) anhand von Spannweiten-Verhältnissen.",
+      "en": "Outlier test for very small samples (n = 3..30) based on range ratios."
+    },
+    "long": {
+      "de": "Dixon Q ist ein klassischer Ausreißer-Test, der die Lücke zwischen dem verdächtigen Wert und seinem Nachbarn mit der Spannweite der Daten vergleicht. Je nach n wird zwischen den Varianten r10 (n=3..7), r11 (8..10), r21 (11..13) und r22 (14..30) gewechselt; die kritischen Werte stammen aus den Tafeln nach Rorabacher (1991). Sehr verbreitet in der analytischen Chemie (DIN 53804).",
+      "en": "Dixon Q is a classical outlier test that compares the gap between the suspected value and its neighbour with the data range. Depending on n it switches between variants r10 (n=3..7), r11 (8..10), r21 (11..13), and r22 (14..30); critical values come from the Rorabacher (1991) tables. Widely used in analytical chemistry (DIN 53804)."
+    }
+  },
+  "documentation": {
+    "formulas": [
+      { "label": "Q (r10)", "latex": "Q = \\frac{x_{(n)} - x_{(n-1)}}{x_{(n)} - x_{(1)}}",
+        "description": { "de": "Standardvariante für n = 3..7 (oberer Ausreißer)", "en": "Standard variant for n = 3..7 (upper outlier)" } },
+      { "label": "r11", "latex": "r_{11} = \\frac{x_{(n)} - x_{(n-1)}}{x_{(n)} - x_{(2)}}",
+        "description": { "de": "Variante für n = 8..10", "en": "Variant for n = 8..10" } },
+      { "label": "r22", "latex": "r_{22} = \\frac{x_{(n)} - x_{(n-2)}}{x_{(n)} - x_{(3)}}",
+        "description": { "de": "Variante für n = 14..30", "en": "Variant for n = 14..30" } }
+    ],
+    "assumptions": [
+      { "de": "Unabhängige, näherungsweise normalverteilte Daten", "en": "Independent, approximately normal data" },
+      { "de": "Stichprobengröße 3 ≤ n ≤ 30", "en": "Sample size 3 ≤ n ≤ 30" }
+    ],
+    "limitations": [
+      { "de": "Außerhalb von n = 3..30 keine Tabellenwerte → Grubbs oder Generalized ESD verwenden", "en": "Outside n = 3..30 no tabulated values → use Grubbs or Generalized ESD" },
+      { "de": "Nur ein Ausreißer pro Aufruf", "en": "Only one outlier per call" }
+    ],
+    "references": [
+      { "source": "Dixon, W. J. (1953), Processing data for outliers, Biometrics 9(1), 74–89" },
+      { "source": "Rorabacher, D. B. (1991), Statistical treatment for rejection of deviant values, Anal. Chem. 63(2), 139–146" },
+      { "source": "DIN 53804-1:2002, Statistische Auswertung von Daten — Teil 1: Stetige Merkmale" }
+    ],
+    "minitab_equivalent": "Stat > Basic Statistics > Outlier Test (Dixon)"
+  },
+  "source": {
+    "function_name": "dixonQTest",
+    "file_path": "js/engines/outlier-test-engine.js",
+    "signature": {
+      "parameters": [
+        { "name": "data", "type": "number[]", "required": true,
+          "description": { "de": "Messdaten (3 ≤ n ≤ 30)", "en": "Data (3 ≤ n ≤ 30)" } },
+        { "name": "alpha", "type": "number", "required": false,
+          "description": { "de": "α: 0.10, 0.05 (Default), 0.01", "en": "α: 0.10, 0.05 (default), 0.01" } },
+        { "name": "side", "type": "'two-sided' | 'upper' | 'lower'", "required": false,
+          "description": { "de": "Testrichtung", "en": "Test side" } }
+      ],
+      "returns": {
+        "type": "object",
+        "properties": {
+          "statistic": { "type": "number", "description": { "de": "Q-Statistik", "en": "Q statistic" } },
+          "critical":  { "type": "number", "description": { "de": "Tabellenwert", "en": "Tabulated critical value" } },
+          "reject":    { "type": "boolean", "description": { "de": "Ablehnung von H₀", "en": "Reject H₀" } },
+          "outliers":  { "type": "Array", "description": { "de": "Erkannter Ausreißer", "en": "Detected outlier" } }
+        }
+      }
+    }
+  },
+  "try_it": {
+    "input_schema": {
+      "fields": [
+        { "name": "data", "label": { "de": "Messdaten", "en": "Data" }, "type": "textarea", "parse_as": "number_array", "required": true,
+          "placeholder": { "de": "Komma-/Leerzeichen-getrennt", "en": "Comma- / space-separated" } },
+        { "name": "alpha", "label": { "de": "α", "en": "α" }, "type": "number", "default": 0.05 },
+        { "name": "side", "label": { "de": "Testrichtung", "en": "Side" }, "type": "select",
+          "default": "two-sided",
+          "options": [
+            { "value": "two-sided", "label": { "de": "Zweiseitig", "en": "Two-sided" } },
+            { "value": "upper",     "label": { "de": "Oben", "en": "Upper" } },
+            { "value": "lower",     "label": { "de": "Unten", "en": "Lower" } }
+          ] }
+      ],
+      "csv_mapping": { "data_column": "Automatically uses first numeric column" }
+    },
+    "output_schema": {
+      "display_fields": ["statistic", "critical", "reject", "n"],
+      "primary_field": "statistic",
+      "format": {
+        "statistic": { "decimals": 4, "label": "Q" },
+        "critical":  { "decimals": 4, "label": "Q_crit" },
+        "reject":    { "decimals": 0, "label": "Reject H₀" },
+        "n":         { "decimals": 0, "label": "n" }
+      }
+    }
+  },
+  "changelog": [
+    { "version": "1.0.0", "date": "2026-05-06", "type": "initial",
+      "description": { "de": "Erstimplementierung mit Varianten r10/r11/r21/r22 und Rorabacher-Tabelle", "en": "Initial implementation with r10/r11/r21/r22 variants and Rorabacher table" }, "breaking": false }
+  ]
+}

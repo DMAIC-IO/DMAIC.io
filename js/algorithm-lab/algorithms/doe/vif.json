@@ -1,0 +1,146 @@
+{
+  "id": "vif",
+  "name": {
+    "de": "Varianz-Inflationsfaktoren (VIF)",
+    "en": "Variance Inflation Factors (VIF)"
+  },
+  "category": "doe",
+  "subcategory": null,
+  "status": "validated",
+  "version": "1.0.0",
+
+  "description": {
+    "short": {
+      "de": "Misst die Multikollinearität zwischen Modelltermen in einem Versuchsplan.",
+      "en": "Measures multicollinearity between model terms in an experimental design."
+    },
+    "long": {
+      "de": "Der Varianz-Inflationsfaktor (VIF) quantifiziert, wie stark die Varianz eines geschätzten Regressionskoeffizienten durch Korrelation mit anderen Modelltermen aufgebläht wird. Für orthogonale Pläne (z.B. vollfaktorielle 2^k-Designs) sind alle VIFs exakt 1 — keine Aufblähung. VIF > 1 zeigt Multikollinearität an: VIF ≤ 5 gilt als akzeptabel, VIF > 10 als problematisch. Hohe VIFs bedeuten, dass Effekte nicht sauber voneinander trennbar sind und die Parameterschätzungen instabil werden.",
+      "en": "The Variance Inflation Factor (VIF) quantifies how much the variance of an estimated regression coefficient is inflated due to correlation with other model terms. For orthogonal designs (e.g. full factorial 2^k designs), all VIFs are exactly 1 — no inflation. VIF > 1 indicates multicollinearity: VIF ≤ 5 is generally acceptable, VIF > 10 is problematic. High VIFs mean that effects cannot be cleanly separated and parameter estimates become unstable."
+    }
+  },
+
+  "documentation": {
+    "formulas": [
+      {
+        "label": "VIF_j",
+        "latex": "\\text{VIF}_j = \\left[(\\mathbf{X}^\\top\\mathbf{X})^{-1}\\right]_{jj} \\cdot n",
+        "description": {
+          "de": "j-tes Diagonalelement der Inversen der Informationsmatrix, skaliert mit der Runanzahl n. Intercept (j=0) wird übersprungen.",
+          "en": "j-th diagonal element of the inverse information matrix, scaled by the number of runs n. Intercept (j=0) is skipped."
+        }
+      },
+      {
+        "label": "X'X",
+        "latex": "\\mathbf{X}^\\top\\mathbf{X} = n\\mathbf{I} \\quad \\text{(orthogonal)}",
+        "description": {
+          "de": "Für orthogonale Pläne ist X'X = nI, daher (X'X)⁻¹ = (1/n)I und VIF_j = 1 für alle Terme.",
+          "en": "For orthogonal designs, X'X = nI, so (X'X)⁻¹ = (1/n)I and VIF_j = 1 for all terms."
+        }
+      }
+    ],
+    "assumptions": [
+      {
+        "de": "Codierte Designmatrix mit Werten in {−1, 0, +1}",
+        "en": "Coded design matrix with values in {−1, 0, +1}"
+      },
+      {
+        "de": "Lineares Modell mit Haupteffekten und 2-Faktor-Wechselwirkungen",
+        "en": "Linear model with main effects and 2-factor interactions"
+      },
+      {
+        "de": "X'X muss invertierbar sein (kein singulärer Plan)",
+        "en": "X'X must be invertible (non-singular design)"
+      }
+    ],
+    "limitations": [
+      {
+        "de": "VIF gibt nur die Stärke der Multikollinearität an, nicht deren Ursache",
+        "en": "VIF only indicates the strength of multicollinearity, not its cause"
+      },
+      {
+        "de": "Bei singulärer X'X (z.B. mehr Terme als Runs) werden alle VIFs auf ∞ gesetzt",
+        "en": "For singular X'X (e.g. more terms than runs), all VIFs are set to ∞"
+      }
+    ],
+    "references": [
+      {
+        "source": "Montgomery, D.C., Design and Analysis of Experiments, 10th Ed., Wiley",
+        "chapter": "Chapter 10"
+      },
+      {
+        "source": "Kutner, M.H. et al., Applied Linear Statistical Models, 5th Ed., McGraw-Hill",
+        "chapter": "Chapter 10"
+      }
+    ],
+    "minitab_equivalent": "Stat > DOE > Factorial > Analyze Factorial Design > VIF"
+  },
+
+  "source": {
+    "function_name": "computeVIF",
+    "file_path": "js/engines/vif-engine.js",
+    "signature": {
+      "parameters": [
+        {
+          "name": "codedMatrix",
+          "type": "number[][]",
+          "required": true,
+          "description": {
+            "de": "n×k codierte Designmatrix (Werte: −1, 0, +1)",
+            "en": "n×k coded design matrix (values: −1, 0, +1)"
+          }
+        }
+      ],
+      "returns": {
+        "type": "object[]",
+        "properties": {
+          "term": { "type": "string", "description": { "de": "Modellterm (z.B. 'A', 'AB')", "en": "Model term (e.g. 'A', 'AB')" } },
+          "vif": { "type": "number", "description": { "de": "Varianz-Inflationsfaktor (1 = perfekt orthogonal)", "en": "Variance Inflation Factor (1 = perfectly orthogonal)" } }
+        }
+      }
+    },
+    "code_snippet": null
+  },
+
+  "try_it": {
+    "input_schema": {
+      "fields": [
+        {
+          "name": "codedMatrix",
+          "label": {
+            "de": "Codierte Designmatrix",
+            "en": "Coded Design Matrix"
+          },
+          "type": "textarea",
+          "placeholder": {
+            "de": "Eine Zeile pro Run, Spalten durch Komma getrennt.\nz.B. für 2² vollfaktoriell:\n-1, -1\n-1, 1\n1, -1\n1, 1",
+            "en": "One row per run, columns separated by commas.\ne.g. for 2² full factorial:\n-1, -1\n-1, 1\n1, -1\n1, 1"
+          },
+          "parse_as": "number_array",
+          "required": true
+        }
+      ]
+    },
+    "output_schema": {
+      "display_fields": ["term", "vif"],
+      "primary_field": "vif",
+      "format": {
+        "term": { "label": "Term" },
+        "vif": { "decimals": 4, "label": "VIF" }
+      }
+    }
+  },
+
+  "changelog": [
+    {
+      "version": "1.0.0",
+      "date": "2026-03-28",
+      "type": "initial",
+      "description": {
+        "de": "Erstimplementierung mit VIF-Berechnung für Haupt- und Wechselwirkungsterme",
+        "en": "Initial implementation with VIF computation for main effects and interaction terms"
+      },
+      "breaking": false
+    }
+  ]
+}

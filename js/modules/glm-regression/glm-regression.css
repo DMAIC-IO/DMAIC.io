@@ -1,0 +1,276 @@
+/* ============================================================
+   GLM Regression Module Styles (glm-regression.css)
+   BEM: .glm__ prefix
+   ============================================================ */
+
+/* Fields use global .field / .field-group (components.css) */
+
+/* ─── Method selector radio group ─────────────────────────────── */
+
+.glm__method-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 4px 0;
+}
+
+.glm__method-option {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  padding: 3px 4px;
+  border-radius: var(--border-radius);
+  transition: background 0.15s;
+}
+
+.glm__method-option:hover {
+  background: var(--color-bg-hover);
+}
+
+.glm__method-option input[type="radio"] {
+  margin: 0;
+  accent-color: var(--color-accent);
+}
+
+.glm__method-option--disabled {
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+/* ─── Auto-detect info box ────────────────────────────────────── */
+
+.glm__detect-info {
+  display: none;
+  margin-top: 6px;
+  padding: 6px 8px;
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  background: var(--color-accent-dim, rgba(74, 144, 217, 0.08));
+  border: var(--border-width) solid var(--color-accent);
+  border-radius: var(--border-radius);
+  line-height: 1.4;
+}
+
+.glm__detect-info--visible { display: block; }
+
+/* ─── Error / warning boxes ───────────────────────────────────── */
+
+.glm__error {
+  display: none;
+  padding: 8px 10px;
+  font-size: var(--font-size-xs);
+  color: var(--color-error);
+  background: var(--color-error-bg, rgba(239, 68, 68, 0.08));
+  border: var(--border-width) solid var(--color-error);
+  border-radius: var(--border-radius);
+}
+
+.glm__warning {
+  padding: 6px 8px;
+  font-size: var(--font-size-xs);
+  color: var(--color-warning, #e8a317);
+  background: var(--color-warning-bg, rgba(232, 163, 23, 0.08));
+  border: var(--border-width) solid var(--color-warning, #e8a317);
+  border-radius: var(--border-radius);
+  margin-bottom: 8px;
+}
+
+/* ─── KPI strip ───────────────────────────────────────────────── */
+/* Uses global .dmike-kpi-strip / .dmike-kpi from components.css */
+
+/* ─── Coefficient table ───────────────────────────────────────── */
+
+.glm__coef-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--font-size-xs);
+}
+
+.glm__coef-table th {
+  text-align: left;
+  padding: 5px 8px;
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-secondary);
+  border-bottom: 2px solid var(--color-border-secondary);
+  white-space: nowrap;
+}
+
+.glm__coef-table td {
+  padding: 4px 8px;
+  border-bottom: var(--border-width) solid var(--color-border-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+.glm__coef-table td:first-child {
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-primary);
+}
+
+.glm__coef-table tr:hover td {
+  background: var(--color-bg-hover);
+}
+
+/* Significance coloring */
+.glm__sig--high   { color: var(--color-success); font-weight: var(--font-weight-bold); }
+.glm__sig--med    { color: var(--color-accent); }
+.glm__sig--low    { color: var(--color-warning, #e8a317); }
+.glm__sig--none   { color: var(--color-text-tertiary); }
+
+/* ─── Model quality block ─────────────────────────────────────── */
+
+.glm__quality-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px 16px;
+  font-size: var(--font-size-xs);
+  padding: 8px 0;
+}
+
+.glm__quality-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.glm__quality-label {
+  color: var(--color-text-secondary);
+}
+
+.glm__quality-value {
+  font-variant-numeric: tabular-nums;
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-primary);
+}
+
+/* ─── Classification table ────────────────────────────────────── */
+
+.glm__class-table {
+  width: auto;
+  border-collapse: collapse;
+  font-size: var(--font-size-xs);
+  margin: 8px 0;
+}
+
+.glm__class-table th,
+.glm__class-table td {
+  padding: 4px 10px;
+  border: var(--border-width) solid var(--color-border-secondary);
+  text-align: center;
+}
+
+.glm__class-table th {
+  background: var(--color-bg-secondary);
+  font-weight: var(--font-weight-medium);
+}
+
+.glm__class-table .glm__tp,
+.glm__class-table .glm__tn {
+  background: var(--color-success-bg, rgba(34, 197, 94, 0.08));
+  font-weight: var(--font-weight-bold);
+}
+
+.glm__class-table .glm__fp,
+.glm__class-table .glm__fn {
+  background: var(--color-error-bg, rgba(239, 68, 68, 0.08));
+}
+
+/* ─── Cutoff slider ───────────────────────────────────────────── */
+
+.glm__cutoff-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  padding: 4px 0;
+}
+
+.glm__cutoff-row input[type="range"] {
+  flex: 1;
+  accent-color: var(--color-accent);
+}
+
+.glm__cutoff-value {
+  min-width: 32px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  font-weight: var(--font-weight-medium);
+}
+
+/* ─── Prediction form ─────────────────────────────────────────── */
+
+.glm__predict-inputs {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.glm__predict-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.glm__predict-row label {
+  min-width: 90px;
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+}
+
+.glm__predict-row input {
+  flex: 1;
+}
+
+.glm__predict-result {
+  padding: 8px 10px;
+  font-size: var(--font-size-xs);
+  background: var(--color-bg-secondary);
+  border-radius: var(--border-radius);
+  margin-top: 6px;
+}
+
+.glm__predict-result strong {
+  color: var(--color-accent);
+}
+
+/* ─── Equation display ────────────────────────────────────────── */
+
+.glm__equation {
+  font-family: var(--font-mono);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-primary);
+  background: var(--color-bg-secondary);
+  padding: 8px 10px;
+  border-radius: var(--border-radius);
+  overflow-x: auto;
+  white-space: nowrap;
+  margin: 8px 0;
+}
+
+/* ─── Tab override: narrower tab labels ───────────────────────── */
+
+.glm__tabs .dmike-tab {
+  padding: 6px 10px;
+  font-size: var(--font-size-xs);
+}
+
+/* ─── Toggle switch (shared with reg module) ──────────────────── */
+
+.glm__toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 0;
+}
+
+.glm__toggle-row label {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+}

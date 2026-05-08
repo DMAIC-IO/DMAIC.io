@@ -1,0 +1,57 @@
+/* ============================================================
+   Boxplot Module Styles (boxplot.css)
+   BEM: .boxplot__ prefix
+   ============================================================ */
+
+/* Layout provided by .dmike-split (css/modules.css) */
+.boxplot .dmike-split__input { width: 280px; }
+
+/* Section labels: use global .dmike-split__output-section (css/modules.css) */
+
+/* Fields use global .field / .field-group (components.css) */
+/* Buttons: use global .btn (components.css) */
+
+.boxplot__error {
+  display: none;
+  font-size: var(--font-size-sm);
+  color: var(--color-error, #ef4444);
+  background: rgba(239, 68, 68, 0.08);
+  border: var(--border-width) solid rgba(239, 68, 68, 0.2);
+  border-radius: var(--border-radius);
+  padding: var(--spacing-sm);
+  margin-top: var(--spacing-sm);
+}
+
+/* Placeholder */
+.boxplot__placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  min-height: 300px;
+  color: var(--color-text-tertiary);
+  gap: var(--spacing-md);
+}
+
+.boxplot__placeholder p {
+  max-width: 300px;
+  text-align: center;
+  font-size: var(--font-size-sm);
+}
+
+/* Chart area */
+.boxplot__chart-card {
+  display: flex;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.boxplot__chart-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.boxplot__plot-wrap {
+  height: 420px;
+}

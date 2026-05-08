@@ -1,0 +1,218 @@
+{
+  "id": "regression-anova",
+  "name": {
+    "de": "Regressions-ANOVA (Varianzzerlegung)",
+    "en": "Regression ANOVA (Variance Decomposition)"
+  },
+  "category": "regression",
+  "subcategory": null,
+  "status": "validated",
+  "version": "1.0.0",
+
+  "description": {
+    "short": {
+      "de": "Zerlegt die Gesamtstreuung der Zielgröße in erklärte (Regression) und unerklärte (Residuen) Anteile.",
+      "en": "Decomposes total variation of the response into explained (regression) and unexplained (residual) components."
+    },
+    "long": {
+      "de": "Die Regressions-ANOVA prüft, ob das Regressionsmodell als Ganzes signifikant zur Erklärung der Varianz der Zielgröße beiträgt. Die Gesamtstreuung SST wird in die durch das Modell erklärte Streuung SSR und die Residualstreuung SSE zerlegt. Über die Freiheitsgrade (df) werden die mittleren Quadratsummen (MS) berechnet, deren Verhältnis die F-Statistik ergibt. Ein signifikanter F-Test (p < α) zeigt, dass mindestens ein Prädiktor einen statistisch bedeutsamen Einfluss auf die Zielgröße hat.",
+      "en": "Regression ANOVA tests whether the regression model as a whole contributes significantly to explaining the variance of the response variable. The total variation SST is decomposed into the model-explained variation SSR and the residual variation SSE. Through degrees of freedom (df), mean squares (MS) are calculated, whose ratio yields the F-statistic. A significant F-test (p < α) indicates that at least one predictor has a statistically meaningful effect on the response."
+    }
+  },
+
+  "documentation": {
+    "formulas": [
+      {
+        "label": "SST",
+        "latex": "SS_T = \\sum_{i=1}^{n} (y_i - \\bar{y})^2",
+        "description": {
+          "de": "Gesamtstreuung (Total Sum of Squares): Summe der quadrierten Abweichungen aller Beobachtungen vom Gesamtmittelwert",
+          "en": "Total Sum of Squares: sum of squared deviations of all observations from the overall mean"
+        }
+      },
+      {
+        "label": "SSR",
+        "latex": "SS_R = \\sum_{i=1}^{n} (\\hat{y}_i - \\bar{y})^2",
+        "description": {
+          "de": "Regressions-Streuung (Regression Sum of Squares): durch das Modell erklärter Anteil der Streuung",
+          "en": "Regression Sum of Squares: variation explained by the model"
+        }
+      },
+      {
+        "label": "SSE",
+        "latex": "SS_E = \\sum_{i=1}^{n} (y_i - \\hat{y}_i)^2 = \\sum_{i=1}^{n} e_i^2",
+        "description": {
+          "de": "Residual-Streuung (Error Sum of Squares): nicht erklärter Anteil der Streuung",
+          "en": "Error Sum of Squares: unexplained variation (residuals)"
+        }
+      },
+      {
+        "label": "Zerlegung",
+        "latex": "SS_T = SS_R + SS_E",
+        "description": {
+          "de": "Fundamentale Identität: Gesamtstreuung = Modellstreuung + Residualstreuung",
+          "en": "Fundamental identity: total variation = model variation + residual variation"
+        }
+      },
+      {
+        "label": "df",
+        "latex": "df_R = p - 1, \\quad df_E = n - p, \\quad df_T = n - 1",
+        "description": {
+          "de": "Freiheitsgrade: p = Anzahl Modellparameter (inkl. Intercept), n = Stichprobengröße",
+          "en": "Degrees of freedom: p = number of model parameters (incl. intercept), n = sample size"
+        }
+      },
+      {
+        "label": "MS",
+        "latex": "MS_R = \\frac{SS_R}{df_R}, \\quad MS_E = \\frac{SS_E}{df_E}",
+        "description": {
+          "de": "Mittlere Quadratsummen: SS normiert auf die Freiheitsgrade",
+          "en": "Mean Squares: SS normalized by degrees of freedom"
+        }
+      },
+      {
+        "label": "F",
+        "latex": "F = \\frac{MS_R}{MS_E} \\sim F(df_R, df_E)",
+        "description": {
+          "de": "F-Statistik: Verhältnis der mittleren Modellstreuung zur mittleren Residualstreuung. Folgt unter H₀ einer F-Verteilung.",
+          "en": "F-statistic: ratio of mean model variation to mean residual variation. Follows an F-distribution under H₀."
+        }
+      },
+      {
+        "label": "R²",
+        "latex": "R^2 = 1 - \\frac{SS_E}{SS_T} = \\frac{SS_R}{SS_T}",
+        "description": {
+          "de": "Bestimmtheitsmaß: Anteil der durch das Modell erklärten Streuung (0 ≤ R² ≤ 1)",
+          "en": "Coefficient of determination: proportion of variance explained by the model (0 ≤ R² ≤ 1)"
+        }
+      }
+    ],
+    "assumptions": [
+      { "de": "Linearer Zusammenhang zwischen Prädiktoren und Zielgröße (im Parameterraum)", "en": "Linear relationship between predictors and response (in parameter space)" },
+      { "de": "Residuen sind normalverteilt mit Erwartungswert 0", "en": "Residuals are normally distributed with mean 0" },
+      { "de": "Homoskedastizität: konstante Residualvarianz", "en": "Homoscedasticity: constant residual variance" },
+      { "de": "Unabhängigkeit der Beobachtungen", "en": "Independence of observations" }
+    ],
+    "limitations": [
+      { "de": "Ein signifikanter F-Test sagt nicht, welche Prädiktoren signifikant sind — dafür die Koeffizienten-t-Tests prüfen", "en": "A significant F-test does not indicate which predictors are significant — check the coefficient t-tests for that" },
+      { "de": "R² steigt mit jeder zusätzlichen Variable, auch wenn sie keinen echten Beitrag leistet — Adj. R² bevorzugen", "en": "R² increases with every additional variable even without real contribution — prefer Adj. R²" }
+    ],
+    "references": [
+      { "source": "Montgomery, D.C., Peck, E.A., Vining, G.G., Introduction to Linear Regression Analysis, 6th Ed., Wiley", "chapter": "Chapter 2 & 3" },
+      { "source": "Kutner, M.H. et al., Applied Linear Statistical Models, 5th Ed., McGraw-Hill", "chapter": "Chapter 6" },
+      { "source": "NIST/SEMATECH e-Handbook of Statistical Methods, Section 4.2.1" }
+    ],
+    "minitab_equivalent": "Stat > Regression > Regression > Fit Regression Model (ANOVA table)"
+  },
+
+  "source": {
+    "function_name": "runMultiRegression",
+    "file_path": "js/engines/regression-engine.js",
+    "signature": {
+      "parameters": [
+        {
+          "name": "xColumns",
+          "type": "number[][]",
+          "required": true,
+          "description": { "de": "Array von X-Spaltenvektoren (k Prädiktoren, je n Werte)", "en": "Array of X column vectors (k predictors, each n values)" }
+        },
+        {
+          "name": "yValues",
+          "type": "number[]",
+          "required": true,
+          "description": { "de": "Y-Vektor (Zielgröße, n Werte)", "en": "Y vector (response, n values)" }
+        },
+        {
+          "name": "degree",
+          "type": "number",
+          "required": true,
+          "description": { "de": "Polynomgrad (1, 2 oder 3)", "en": "Polynomial degree (1, 2, or 3)" }
+        },
+        {
+          "name": "confLevel",
+          "type": "number",
+          "required": false,
+          "description": { "de": "Konfidenzniveau (Standard: 0.95)", "en": "Confidence level (default: 0.95)" }
+        },
+        {
+          "name": "xNames",
+          "type": "string[]",
+          "required": false,
+          "description": { "de": "Anzeigenamen der X-Variablen", "en": "Display names of X variables" }
+        }
+      ],
+      "returns": {
+        "type": "object",
+        "properties": {
+          "SST": { "type": "number", "description": { "de": "Gesamtstreuung", "en": "Total sum of squares" } },
+          "SSR": { "type": "number", "description": { "de": "Regressions-Streuung", "en": "Regression sum of squares" } },
+          "SSE": { "type": "number", "description": { "de": "Residual-Streuung", "en": "Error sum of squares" } },
+          "dfReg": { "type": "number", "description": { "de": "Freiheitsgrade Regression", "en": "Regression degrees of freedom" } },
+          "dfRes": { "type": "number", "description": { "de": "Freiheitsgrade Residuen", "en": "Residual degrees of freedom" } },
+          "dfTot": { "type": "number", "description": { "de": "Freiheitsgrade Gesamt", "en": "Total degrees of freedom" } },
+          "MSR": { "type": "number", "description": { "de": "Mittlere Quadratsumme Regression", "en": "Mean square regression" } },
+          "MSE": { "type": "number", "description": { "de": "Mittlere Quadratsumme Residuen", "en": "Mean square error" } },
+          "Fstat": { "type": "number", "description": { "de": "F-Statistik", "en": "F-statistic" } },
+          "fPVal": { "type": "number", "description": { "de": "p-Wert des F-Tests", "en": "p-value of F-test" } },
+          "R2": { "type": "number", "description": { "de": "Bestimmtheitsmaß", "en": "Coefficient of determination" } },
+          "adjR2": { "type": "number", "description": { "de": "Adjustiertes Bestimmtheitsmaß", "en": "Adjusted coefficient of determination" } }
+        }
+      }
+    },
+    "code_snippet": null
+  },
+
+  "try_it": {
+    "input_schema": {
+      "fields": [
+        {
+          "name": "xColumns",
+          "label": { "de": "X-Werte (Prädiktoren)", "en": "X Values (Predictors)" },
+          "type": "textarea",
+          "placeholder": { "de": "Kommagetrennte Werte, z.B.:\n1, 2, 3, 4, 5, 6, 7, 8, 9, 10", "en": "Comma-separated values, e.g.:\n1, 2, 3, 4, 5, 6, 7, 8, 9, 10" },
+          "parse_as": "number_array",
+          "required": true
+        },
+        {
+          "name": "yValues",
+          "label": { "de": "Y-Werte (Zielgröße)", "en": "Y Values (Response)" },
+          "type": "textarea",
+          "placeholder": { "de": "Kommagetrennte Werte, z.B.:\n2.1, 3.9, 6.2, 7.8, 10.1, 12.3, 13.9, 16.1, 18.0, 20.2", "en": "Comma-separated values, e.g.:\n2.1, 3.9, 6.2, 7.8, 10.1, 12.3, 13.9, 16.1, 18.0, 20.2" },
+          "parse_as": "number_array",
+          "required": true
+        }
+      ]
+    },
+    "output_schema": {
+      "display_fields": ["SSR", "SSE", "SST", "dfReg", "dfRes", "dfTot", "MSR", "MSE", "Fstat", "fPVal", "R2", "adjR2"],
+      "primary_field": "Fstat",
+      "format": {
+        "SSR": { "decimals": 4, "label": "SS Regression" },
+        "SSE": { "decimals": 4, "label": "SS Error" },
+        "SST": { "decimals": 4, "label": "SS Total" },
+        "dfReg": { "decimals": 0, "label": "df Regression" },
+        "dfRes": { "decimals": 0, "label": "df Residual" },
+        "dfTot": { "decimals": 0, "label": "df Total" },
+        "MSR": { "decimals": 4, "label": "MS Regression" },
+        "MSE": { "decimals": 4, "label": "MS Error" },
+        "Fstat": { "decimals": 4, "label": "F" },
+        "fPVal": { "decimals": 6, "label": "p-Value (F)" },
+        "R2": { "decimals": 6, "label": "R²" },
+        "adjR2": { "decimals": 6, "label": "Adj. R²" }
+      }
+    }
+  },
+
+  "changelog": [
+    {
+      "version": "1.0.0",
+      "date": "2026-04-02",
+      "type": "initial",
+      "description": {
+        "de": "Erstimplementierung: Varianzzerlegung (SSR/SSE/SST), Freiheitsgrade, F-Statistik, R²",
+        "en": "Initial implementation: variance decomposition (SSR/SSE/SST), degrees of freedom, F-statistic, R²"
+      },
+      "breaking": false
+    }
+  ]
+}

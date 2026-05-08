@@ -1,0 +1,12 @@
+{
+  "description": "Expected analysis results for dataset-2k-replicated.json",
+  "source": "R: lm(y ~ A * B), aov(y ~ A * B)",
+  "grandMean": 17.2,
+  "effects": {
+    "Temperature": { "effect": 8.35, "tolerance": 0.5 },
+    "Pressure": { "effect": 3.4, "tolerance": 0.5 },
+    "Temperature×Pressure": { "effect": 1.5, "tolerance": 0.5 }
+  },
+  "rSquared": { "value": 0.98, "tolerance": 0.05 },
+  "note": "Tolerances are generous because OLS with only 4 df_error has some imprecision in the engine's Type III approach vs R's sequential SS."
+}

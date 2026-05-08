@@ -1,0 +1,127 @@
+{
+  "algorithm_id": "grubbs-test",
+  "generated_with": {
+    "engine": "js/engines/outlier-test-engine.js",
+    "validated_against": "NIST/Grubbs (1969), mass-spectrometer example"
+  },
+  "generated_at": "2026-05-06T00:00:00Z",
+  "generator_version": "1.0.0",
+  "tolerances": {
+    "default": { "relative": 1e-10, "absolute": 1e-12 },
+    "overrides": {
+      "p_value_relaxed": {
+        "relative": 1e-4,
+        "absolute": 1e-6,
+        "reason": "p-value derived via numerical bisection of the critical-value relation; converges to ~4 significant digits."
+      }
+    }
+  },
+  "test_cases": [
+    {
+      "id": "grubbs_nist_mass_spectrometer",
+      "tier": "standard",
+      "description": "NIST mass-spectrometer example, n=8 — clear single outlier at 245.57",
+      "reference": "Grubbs, F. E. (1969), Procedures for detecting outlying observations, Technometrics 11(1), 1–21",
+      "inputs": {
+        "data": [199.31, 199.53, 200.19, 200.82, 201.92, 201.95, 202.18, 245.57],
+        "alpha": 0.05,
+        "side": "two-sided"
+      },
+      "tolerance_override": "p_value_relaxed",
+      "expected": {
+        "statistic": 2.46876461121245,
+        "critical": 2.12664508719546,
+        "pValue": 3.00265026571179e-7,
+        "reject": true,
+        "n": 8,
+        "mean": 206.43375,
+        "sd": 15.8525644049878
+      }
+    },
+    {
+      "id": "grubbs_clean_normal_n10",
+      "tier": "standard",
+      "description": "Clean near-normal sample, no outlier expected (G well below critical)",
+      "reference": "Synthetic, validated against engine reference",
+      "inputs": {
+        "data": [50.1, 49.8, 50.3, 50.0, 49.9, 50.2, 49.7, 50.5, 49.6, 50.4],
+        "alpha": 0.05,
+        "side": "two-sided"
+      },
+      "tolerance_override": "p_value_relaxed",
+      "expected": {
+        "statistic": 1.4863010829206,
+        "critical": 2.2899540844796,
+        "pValue": 0.99897367665583,
+        "reject": false,
+        "n": 10,
+        "mean": 50.05,
+        "sd": 0.302765035409749
+      }
+    },
+    {
+      "id": "grubbs_upper_only",
+      "tier": "standard",
+      "description": "One-sided upper test, clear upper outlier at 100",
+      "reference": "Synthetic",
+      "inputs": {
+        "data": [1, 2, 3, 4, 5, 6, 7, 8, 9, 100],
+        "alpha": 0.05,
+        "side": "upper"
+      },
+      "tolerance_override": "p_value_relaxed",
+      "expected": {
+        "statistic": 2.83559604837987,
+        "critical": 2.17606839419422,
+        "reject": true,
+        "n": 10
+      }
+    },
+    {
+      "id": "grubbs_minimum_n3",
+      "tier": "edge",
+      "description": "Minimum sample size n=3, just above critical",
+      "reference": "Synthetic edge case",
+      "inputs": {
+        "data": [1, 2, 100],
+        "alpha": 0.05,
+        "side": "two-sided"
+      },
+      "tolerance_override": "p_value_relaxed",
+      "expected": {
+        "statistic": 1.15465591083419,
+        "critical": 1.15430485134404,
+        "reject": true,
+        "n": 3
+      }
+    },
+    {
+      "id": "grubbs_zero_variance",
+      "tier": "edge",
+      "description": "Constant data — variance is zero, test is undefined",
+      "inputs": {
+        "data": [5, 5, 5, 5, 5],
+        "alpha": 0.05,
+        "side": "two-sided"
+      },
+      "expected_error": {
+        "type": "Error",
+        "message_contains": "zeroVariance"
+      }
+    },
+    {
+      "id": "grubbs_too_few",
+      "tier": "edge",
+      "description": "Sample size below 3 — Grubbs not applicable",
+      "inputs": {
+        "data": [1, 2],
+        "alpha": 0.05,
+        "side": "two-sided"
+      },
+      "expected_error": {
+        "type": "Error",
+        "message_contains": "min3"
+      }
+    }
+  ]
+}

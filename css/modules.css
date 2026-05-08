@@ -1,0 +1,245 @@
+/* ============================================================
+   D.Mike — Module Container Styles (modules.css)
+   Base styles for module containers. Module-specific styles
+   live in their own CSS files (e.g. js/modules/sipoc/sipoc.css).
+   ============================================================ */
+
+/* ===== Module container ===== */
+.module-container {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  padding: var(--spacing-md);
+}
+
+.module-container__header {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding-bottom: var(--spacing-md);
+  margin-bottom: var(--spacing-md);
+  border-bottom: var(--border-width) solid var(--color-border-secondary);
+}
+
+.module-container__title {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-semibold);
+}
+
+.module-container__actions {
+  margin-left: auto;
+  display: flex;
+  gap: var(--spacing-xs);
+}
+
+.module-container__body {
+  flex: 1;
+  overflow: auto;
+}
+
+/* ===== Split-Panel Layout ===== */
+/* Shared Input | Output split for modules with a data entry panel (left)
+   and a visualization/results area (right).
+   See docs/SPLIT-PANEL.md for full specification.
+
+   Usage:
+     <div class="dmike-split">
+       <div class="dmike-split__input"> ... </div>
+       <div class="dmike-split__output"> ... </div>
+     </div>
+
+   Customise input width per module:
+     .my-module .dmike-split__input { width: 380px; }
+*/
+
+.dmike-split {
+  display: flex;
+  min-height: 100%;
+  padding: var(--spacing-md);
+}
+
+.dmike-split__input {
+  width: var(--dmike-split-input-width, 320px);
+  flex-shrink: 0;
+  align-self: flex-start;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  padding: var(--spacing-md);
+  background: var(--color-bg-secondary);
+  border: var(--border-width) solid var(--color-border-secondary);
+  border-radius: var(--border-radius);
+  margin: var(--spacing-sm);
+}
+
+.dmike-split__output {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  padding: var(--spacing-sm);
+}
+
+/* Section headers inside input panel */
+.dmike-split__section-title {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-text-tertiary);
+  padding-bottom: var(--spacing-xs);
+  border-bottom: var(--border-width) solid var(--color-border-secondary);
+}
+
+/* ===== Output-panel section label ===== */
+/* Separates logical sections inside dmike-split__output.
+   Use <div class="dmike-split__output-section"> for a standalone label.
+   Use <div class="dmike-split__output-section-header"> as a flex row
+   when the label needs companion controls (e.g. a collapse-all button). */
+
+.dmike-split__output-section {
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-text-tertiary);
+  padding-bottom: var(--spacing-xs);
+  padding-left: 16px;
+  border-bottom: var(--border-width) solid var(--color-border-secondary);
+  margin-bottom: var(--spacing-sm);
+  cursor: pointer;
+  user-select: none;
+  position: relative;
+}
+
+.dmike-split__output-section::before {
+  content: '';
+  position: absolute;
+  left: 2px;
+  top: 50%;
+  width: 0;
+  height: 0;
+  border-left: 4px solid transparent;
+  border-right: 4px solid transparent;
+  border-top: 5px solid var(--color-text-tertiary);
+  transform: translateY(-65%);
+  transition: transform var(--transition-speed);
+}
+
+.dmike-split__output-section--collapsed::before {
+  transform: translateY(-50%) rotate(-90deg);
+}
+
+.dmike-split__output-section:not(:first-child) {
+  margin-top: var(--spacing-lg);
+}
+
+/* Header row variant: label + actions on same line */
+.dmike-split__output-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-sm);
+  padding-bottom: var(--spacing-xs);
+  padding-left: 16px;
+  border-bottom: var(--border-width) solid var(--color-border-secondary);
+  margin-bottom: var(--spacing-sm);
+  position: relative;
+}
+
+.dmike-split__output-section-header::before {
+  content: '';
+  position: absolute;
+  left: 2px;
+  top: 50%;
+  width: 0;
+  height: 0;
+  border-left: 4px solid transparent;
+  border-right: 4px solid transparent;
+  border-top: 5px solid var(--color-text-tertiary);
+  transform: translateY(-65%);
+  transition: transform var(--transition-speed);
+  cursor: pointer;
+}
+
+.dmike-split__output-section-header--collapsed::before {
+  transform: translateY(-50%) rotate(-90deg);
+}
+
+.dmike-split__output-section-header:not(:first-child) {
+  margin-top: var(--spacing-lg);
+}
+
+.dmike-split__output-section-header .dmike-split__output-section {
+  margin: 0;
+  padding: 0;
+  border: none;
+  cursor: pointer;
+  user-select: none;
+}
+
+.dmike-split__output-section-header .dmike-split__output-section::before {
+  display: none;
+}
+
+/* Siblings hidden when preceding section is collapsed */
+.dmike-split__output-section-hidden {
+  display: none !important;
+}
+
+/* ===== Primary action button (e.g. "Run Analysis") ===== */
+.dmike-btn-run {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  margin-top: var(--spacing-sm);
+  padding: 10px var(--spacing-md);
+  background: var(--color-accent);
+  color: var(--color-text-inverse);
+  font-family: var(--font-family);
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-semibold);
+  border: none;
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  transition: background var(--transition-speed), transform 100ms;
+}
+
+.dmike-btn-run:hover {
+  background: var(--color-accent-hover);
+  transform: translateY(-1px);
+}
+
+.dmike-btn-run:active {
+  transform: translateY(0);
+}
+
+/* ===== Error card (shown when module fails to initialize) ===== */
+.module-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-md);
+  height: 200px;
+  color: var(--color-error);
+  text-align: center;
+  padding: var(--spacing-xl);
+}
+
+.module-error__icon {
+  font-size: 32px;
+  opacity: 0.6;
+}
+
+.module-error__title {
+  font-weight: var(--font-weight-semibold);
+}
+
+.module-error__message {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  max-width: 400px;
+}

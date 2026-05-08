@@ -1,0 +1,84 @@
+{
+  "id": "hampel-identifier",
+  "name": { "de": "Hampel-Identifier", "en": "Hampel Identifier" },
+  "category": "outliers",
+  "subcategory": "robust",
+  "status": "validated",
+  "version": "1.0.0",
+  "description": {
+    "short": {
+      "de": "Robuster Z-Score-Ersatz mit Median und MAD — widerstandsfähig gegen Maskierung.",
+      "en": "Robust Z-score replacement using median and MAD — resistant to masking."
+    },
+    "long": {
+      "de": "Der Hampel-Identifier ersetzt im klassischen Z-Score Mittelwert und Standardabweichung durch Median und skalierte MAD. Da der Median und die MAD je einen Bruchpunkt von 50 % haben, werden sie nicht durch echte Ausreißer verzerrt. Die Schwelle k = 3 entspricht etwa ±3σ unter Normalverteilung (über den Faktor 1.4826).",
+      "en": "The Hampel identifier replaces mean and standard deviation in the classical Z-score by median and scaled MAD. Both estimators have a 50 % breakdown point, so they are not distorted by genuine outliers. Threshold k = 3 corresponds to ≈ ±3σ under normality (via the 1.4826 scale)."
+    }
+  },
+  "documentation": {
+    "formulas": [
+      { "label": "MAD", "latex": "\\text{MAD} = \\operatorname{median}\\left(|x_i - \\operatorname{median}(x)|\\right)",
+        "description": { "de": "Median Absolute Deviation", "en": "Median Absolute Deviation" } },
+      { "label": "Schwelle", "latex": "|x_i - \\operatorname{median}(x)| > k \\cdot 1.4826 \\cdot \\text{MAD}",
+        "description": { "de": "Markiert Ausreißer (Standard k = 3)", "en": "Flags outliers (default k = 3)" } }
+    ],
+    "assumptions": [
+      { "de": "Keine Verteilungsannahme — robust gegen Schiefe und schwere Enden", "en": "No distributional assumption — robust to skew and heavy tails" }
+    ],
+    "limitations": [
+      { "de": "Bei MAD = 0 (mehr als die Hälfte der Werte identisch) liefert das Verfahren kein Ergebnis", "en": "When MAD = 0 (more than half of values identical) the method yields no result" },
+      { "de": "Liefert keinen p-Wert", "en": "Produces no p-value" }
+    ],
+    "references": [
+      { "source": "Hampel, F. R. (1974), The influence curve and its role in robust estimation, JASA 69(346), 383–393" },
+      { "source": "Pearson, R. K. (2002), Outliers in process modeling and identification, IEEE Trans. Control Syst. Technol. 10(1), 55–63" }
+    ],
+    "minitab_equivalent": "—"
+  },
+  "source": {
+    "function_name": "hampelIdentifier",
+    "file_path": "js/engines/outlier-test-engine.js",
+    "signature": {
+      "parameters": [
+        { "name": "data", "type": "number[]", "required": true,
+          "description": { "de": "Messdaten (n ≥ 3)", "en": "Data (n ≥ 3)" } },
+        { "name": "k", "type": "number", "required": false,
+          "description": { "de": "Schwelle in MAD-Einheiten (Default 3)", "en": "Threshold in MAD units (default 3)" } }
+      ],
+      "returns": {
+        "type": "object",
+        "properties": {
+          "median":    { "type": "number", "description": { "de": "Median", "en": "Median" } },
+          "mad":       { "type": "number", "description": { "de": "Rohe MAD", "en": "Raw MAD" } },
+          "madScaled": { "type": "number", "description": { "de": "1.4826·MAD ≈ σ", "en": "1.4826·MAD ≈ σ" } },
+          "threshold": { "type": "number", "description": { "de": "Schwelle k·1.4826·MAD", "en": "Threshold k·1.4826·MAD" } },
+          "outliers":  { "type": "Array",  "description": { "de": "Erkannte Punkte", "en": "Flagged points" } }
+        }
+      }
+    }
+  },
+  "try_it": {
+    "input_schema": {
+      "fields": [
+        { "name": "data", "label": { "de": "Messdaten", "en": "Data" }, "type": "textarea", "parse_as": "number_array", "required": true },
+        { "name": "k", "label": { "de": "k", "en": "k" }, "type": "number", "default": 3 }
+      ],
+      "csv_mapping": { "data_column": "Automatically uses first numeric column" }
+    },
+    "output_schema": {
+      "display_fields": ["median", "mad", "madScaled", "threshold", "n"],
+      "primary_field": "threshold",
+      "format": {
+        "median":    { "decimals": 4, "label": "median" },
+        "mad":       { "decimals": 4, "label": "MAD" },
+        "madScaled": { "decimals": 4, "label": "1.4826·MAD" },
+        "threshold": { "decimals": 4, "label": "threshold" },
+        "n":         { "decimals": 0, "label": "n" }
+      }
+    }
+  },
+  "changelog": [
+    { "version": "1.0.0", "date": "2026-05-06", "type": "initial",
+      "description": { "de": "Erstimplementierung mit skalierter MAD (Faktor 1.4826)", "en": "Initial implementation with scaled MAD (factor 1.4826)" }, "breaking": false }
+  ]
+}

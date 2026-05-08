@@ -1,0 +1,879 @@
+/* ============================================================
+   Process Map Module Styles (process-map.css)
+   BEM: .pmap__ prefix
+   ============================================================ */
+
+/* ===== Canvas ===== */
+.pmap__canvas {
+  margin: 0 auto;
+  padding: var(--spacing-md) var(--spacing-lg);
+  overflow: visible;
+}
+
+/* ===== Process Flow ===== */
+.pmap__flow {
+  position: relative;
+}
+
+/* ===== Table Layout ===== */
+.pmap__table {
+  width: 100%;
+  table-layout: fixed;
+  border-collapse: collapse;
+}
+
+.pmap__col-io {
+  width: 30%;
+}
+
+.pmap__col-step {
+  width: 40%;
+}
+
+.pmap__cell-io {
+  vertical-align: top;
+  padding: 0 var(--spacing-sm);
+}
+
+.pmap__cell-step {
+  vertical-align: top;
+}
+
+.pmap__connector-row td {
+  padding: 0;
+}
+
+/* ===== Step Row ===== */
+.pmap__step-row {
+}
+
+.pmap__step-row--dragging .pmap__step-card {
+  opacity: 0.45;
+  transform: scale(0.97);
+}
+
+.pmap__step-row--drag-over .pmap__step-card {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px var(--color-pmap-step-accent-bg);
+}
+
+/* ===== IO Panels ===== */
+.pmap__io-panel {
+  padding-top: var(--spacing-xs);
+}
+
+.pmap__io-label {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  margin-bottom: var(--spacing-xs);
+  cursor: pointer;
+  transition: opacity var(--transition-speed);
+}
+
+.pmap__io-label:hover {
+  opacity: 0.7;
+}
+
+.pmap__io-label-text {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.pmap__io-label-text--input {
+  color: var(--color-pmap-input);
+}
+
+.pmap__io-label-text--output {
+  color: var(--color-pmap-output);
+}
+
+.pmap__io-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+.pmap__io-dot--input {
+  background: var(--color-pmap-input);
+}
+
+.pmap__io-dot--output {
+  background: var(--color-pmap-output);
+}
+
+/* ===== IO List & Items ===== */
+.pmap__io-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.pmap__io-item {
+  display: flex;
+  align-items: start;
+  gap: var(--spacing-xs);
+  padding: 5px var(--spacing-sm);
+  border-radius: var(--border-radius-sm);
+  font-size: var(--font-size-sm);
+  animation: pmap-fade-in 0.2s ease;
+}
+
+.pmap__io-item--input {
+  background: var(--color-pmap-input-bg);
+}
+
+.pmap__io-item--output {
+  background: var(--color-pmap-output-bg);
+}
+
+.pmap__io-item--dragging {
+  opacity: 0.4;
+}
+
+.pmap__io-item--drag-over {
+  box-shadow: 0 -2px 0 0 var(--color-accent);
+}
+
+.pmap__io-dot {
+  cursor: grab;
+}
+
+.pmap__io-dot:active {
+  cursor: grabbing;
+}
+
+/* ===== Input Type Badge (x = param, n = noise) ===== */
+.pmap__input-type {
+  font-family: var(--font-family-mono);
+  font-size: 10px;
+  font-weight: var(--font-weight-semibold);
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  border-radius: var(--border-radius-sm);
+  border: none;
+  cursor: pointer;
+  flex-shrink: 0;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-speed);
+}
+
+.pmap__input-type--none {
+  background: transparent;
+  color: var(--color-text-tertiary);
+  opacity: 0;
+}
+
+.pmap__io-item:hover .pmap__input-type--none {
+  opacity: 1;
+}
+
+.pmap__input-type--none:hover {
+  background: var(--color-bg-primary);
+  color: var(--color-text-secondary);
+}
+
+.pmap__input-type--param {
+  background: var(--color-pmap-param-bg);
+  color: var(--color-pmap-param);
+}
+
+.pmap__input-type--param:hover {
+  opacity: 0.8;
+}
+
+.pmap__input-type--noise {
+  background: var(--color-pmap-noise-bg);
+  color: var(--color-pmap-noise);
+}
+
+.pmap__input-type--noise:hover {
+  opacity: 0.8;
+}
+
+.pmap__io-name {
+  flex: 1;
+  background: none;
+  border: none;
+  color: var(--color-text-primary);
+  font-family: var(--font-family);
+  font-size: var(--font-size-sm);
+  outline: none;
+  min-width: 0;
+  resize: none;
+  overflow: hidden;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  line-height: 1.4;
+  padding: 0;
+}
+
+.pmap__io-name::placeholder {
+  color: var(--color-text-tertiary);
+}
+
+.pmap__io-remove {
+  background: none;
+  border: none;
+  color: var(--color-text-tertiary);
+  cursor: pointer;
+  padding: 2px;
+  display: flex;
+  border-radius: var(--border-radius-sm);
+  opacity: 0;
+  transition: all var(--transition-speed);
+}
+
+.pmap__io-item:hover .pmap__io-remove {
+  opacity: 1;
+}
+
+.pmap__io-remove:hover {
+  color: var(--color-error);
+  background: rgba(255, 59, 48, 0.1);
+}
+
+/* ===== Step Card ===== */
+.pmap__step-card {
+  background: var(--color-bg-secondary);
+  border: var(--border-width) solid var(--color-border-secondary);
+  border-radius: var(--border-radius-lg);
+  transition: border-color var(--transition-speed), box-shadow var(--transition-speed), transform 0.15s;
+}
+
+.pmap__step-card:hover {
+  border-color: var(--color-border-primary);
+  box-shadow: var(--shadow-md);
+}
+
+.pmap__step-header {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-bottom: var(--border-width) solid var(--color-border-secondary);
+}
+
+.pmap__step-number {
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-pmap-step-accent);
+  background: var(--color-pmap-step-accent-bg);
+  padding: 2px var(--spacing-sm);
+  border-radius: var(--border-radius-sm);
+  flex-shrink: 0;
+  cursor: grab;
+}
+
+.pmap__step-number:active {
+  cursor: grabbing;
+}
+
+/* ===== Value Type Badge ===== */
+.pmap__value-badge {
+  font-family: var(--font-family);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  padding: 2px var(--spacing-sm);
+  border-radius: var(--border-radius-sm);
+  border: none;
+  cursor: pointer;
+  flex-shrink: 0;
+  line-height: 1;
+  transition: all var(--transition-speed);
+  min-width: 28px;
+  text-align: center;
+}
+
+.pmap__value-badge--none {
+  background: var(--color-bg-tertiary);
+  color: var(--color-text-tertiary);
+}
+
+.pmap__value-badge--none:hover {
+  background: var(--color-bg-primary);
+  color: var(--color-text-secondary);
+}
+
+.pmap__value-badge--va {
+  background: var(--color-pmap-va-bg);
+  color: var(--color-pmap-va);
+}
+
+.pmap__value-badge--va:hover {
+  opacity: 0.8;
+}
+
+.pmap__value-badge--bnva {
+  background: var(--color-pmap-bnva-bg);
+  color: var(--color-pmap-bnva);
+}
+
+.pmap__value-badge--bnva:hover {
+  opacity: 0.8;
+}
+
+.pmap__value-badge--nva {
+  background: var(--color-pmap-nva-bg);
+  color: var(--color-pmap-nva);
+}
+
+.pmap__value-badge--nva:hover {
+  opacity: 0.8;
+}
+
+.pmap__step-title {
+  flex: 1;
+  background: none;
+  border: none;
+  color: var(--color-text-primary);
+  font-family: var(--font-family);
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-semibold);
+  outline: none;
+  min-width: 0;
+}
+
+.pmap__step-title::placeholder {
+  color: var(--color-text-tertiary);
+}
+
+.pmap__step-actions {
+  display: flex;
+  gap: var(--spacing-xs);
+  opacity: 0;
+  transition: opacity var(--transition-speed);
+}
+
+.pmap__step-card:hover .pmap__step-actions {
+  opacity: 1;
+}
+
+.pmap__step-delete {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--border-radius-sm);
+  border: none;
+  background: transparent;
+  color: var(--color-text-tertiary);
+  cursor: pointer;
+  transition: all var(--transition-speed);
+}
+
+.pmap__step-delete:hover {
+  color: var(--color-error);
+  background: rgba(255, 59, 48, 0.1);
+}
+
+.pmap__step-body {
+  padding: var(--spacing-sm) var(--spacing-md);
+}
+
+.pmap__step-description {
+  width: 100%;
+  background: transparent;
+  border: var(--border-width) solid transparent;
+  border-radius: var(--border-radius);
+  color: var(--color-text-primary);
+  font-family: var(--font-family);
+  font-size: var(--font-size-sm);
+  padding: var(--spacing-sm) var(--spacing-sm);
+  resize: vertical;
+  min-height: 44px;
+  outline: none;
+  transition: border-color var(--transition-speed), background var(--transition-speed);
+  line-height: 1.5;
+}
+
+.pmap__step-description:hover {
+  border-color: var(--color-border-secondary);
+}
+
+.pmap__step-description:focus {
+  background: var(--color-bg-primary);
+  border-color: var(--color-accent);
+}
+
+.pmap__step-description::placeholder {
+  color: var(--color-text-tertiary);
+}
+
+/* ===== Vertical Connector ===== */
+.pmap__connector {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 28px;
+  margin: var(--spacing-xs) 0;
+}
+
+.pmap__connector-arrow {
+  display: inline-block;
+  transform: rotate(90deg);
+  color: var(--color-pmap-connector);
+  font-size: 35px;
+  line-height: 1;
+}
+
+.pmap__connector--clickable {
+  cursor: pointer;
+  border-radius: var(--border-radius);
+  transition: background var(--transition-speed);
+}
+
+.pmap__connector--clickable:hover {
+  background: var(--color-pmap-step-accent-bg);
+}
+
+/* Replace arrow with + on hover */
+.pmap__connector--clickable:hover .pmap__connector-arrow {
+  font-size: 0;
+  transform: none;
+}
+
+.pmap__connector--clickable:hover .pmap__connector-arrow::before {
+  content: '+';
+  font-size: 28px;
+  font-weight: 300;
+  color: var(--color-accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 28px;
+  line-height: 1;
+}
+
+.pmap__connector--empty {
+  height: 60px;
+  border: 2px dashed var(--color-border-primary);
+  border-radius: var(--border-radius);
+  background: var(--color-bg-secondary);
+}
+
+.pmap__connector--empty:hover {
+  border-color: var(--color-accent);
+}
+
+/* ===== Toolbar ===== */
+.pmap__toolbar {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-xs) 0;
+}
+
+.pmap__toolbar-spacer {
+  flex: 1;
+}
+
+/* ===== Substeps Toggle Bar (always visible at bottom of card) ===== */
+.pmap__substeps-bar {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-xs) var(--spacing-md);
+  border-top: var(--border-width) solid var(--color-border-secondary);
+  cursor: pointer;
+  user-select: none;
+  transition: background var(--transition-speed);
+}
+
+.pmap__substeps-bar:hover {
+  background: var(--color-bg-tertiary);
+}
+
+.pmap__substeps-bar-icon {
+  display: flex;
+  align-items: center;
+  color: var(--color-text-tertiary);
+  transition: color var(--transition-speed);
+}
+
+.pmap__substeps-bar--has .pmap__substeps-bar-icon {
+  color: var(--color-accent);
+}
+
+.pmap__substeps-bar-label {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: var(--color-text-tertiary);
+}
+
+.pmap__substeps-bar--has .pmap__substeps-bar-label {
+  color: var(--color-accent);
+}
+
+/* ===== Substeps: collapsible section inside step card ===== */
+.pmap__substeps {
+  padding: var(--spacing-sm) var(--spacing-md);
+  background: var(--color-bg-tertiary);
+  border-radius: 0 0 var(--border-radius-lg) var(--border-radius-lg);
+  animation: pmap-fade-in 0.2s ease;
+}
+
+/* ===== Substep List (vertical) ===== */
+.pmap__substeps-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+/* ===== Substep Item ===== */
+.pmap__substep-item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--border-radius-sm);
+  background: var(--color-bg-secondary);
+  transition: background var(--transition-speed);
+}
+
+.pmap__substep-item:hover {
+  background: var(--color-bg-primary);
+}
+
+.pmap__substep-item--dragging {
+  opacity: 0.4;
+}
+
+.pmap__substep-item--drag-over {
+  box-shadow: 0 -2px 0 0 var(--color-accent);
+}
+
+.pmap__substep-number {
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-xs);
+  color: var(--color-accent);
+  background: var(--color-pmap-step-accent-bg);
+  padding: 1px var(--spacing-xs);
+  border-radius: var(--border-radius-sm);
+  flex-shrink: 0;
+  white-space: nowrap;
+  cursor: grab;
+}
+
+.pmap__substep-number:active {
+  cursor: grabbing;
+}
+
+.pmap__substep-title {
+  flex: 1;
+  background: none;
+  border: none;
+  color: var(--color-text-primary);
+  font-family: var(--font-family);
+  font-size: var(--font-size-sm);
+  outline: none;
+  min-width: 0;
+}
+
+.pmap__substep-title::placeholder {
+  color: var(--color-text-tertiary);
+}
+
+.pmap__substep-remove {
+  background: none;
+  border: none;
+  color: var(--color-text-tertiary);
+  cursor: pointer;
+  padding: 2px;
+  display: flex;
+  border-radius: var(--border-radius-sm);
+  opacity: 0;
+  transition: all var(--transition-speed);
+  flex-shrink: 0;
+}
+
+.pmap__substep-item:hover .pmap__substep-remove {
+  opacity: 1;
+}
+
+.pmap__substep-remove:hover {
+  color: var(--color-error);
+  background: rgba(255, 59, 48, 0.1);
+}
+
+/* ===== Substep Add Button ===== */
+.pmap__substep-add {
+  width: 100%;
+  margin-top: var(--spacing-xs);
+  padding: var(--spacing-xs) 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-xs);
+  border: none;
+  border-radius: var(--border-radius-sm);
+  background: transparent;
+  color: var(--color-text-tertiary);
+  font-family: var(--font-family);
+  font-size: var(--font-size-xs);
+  cursor: pointer;
+  transition: all var(--transition-speed);
+}
+
+.pmap__substep-add:hover {
+  color: var(--color-accent);
+  background: var(--color-pmap-step-accent-bg);
+}
+
+/* ===== Loop Toggle Button (in step header) ===== */
+.pmap__step-loop-toggle {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--border-radius-sm);
+  border: none;
+  background: transparent;
+  color: var(--color-text-tertiary);
+  cursor: pointer;
+  transition: all var(--transition-speed);
+}
+
+.pmap__step-loop-toggle:hover {
+  color: var(--color-pmap-loop);
+  background: var(--color-pmap-loop-bg);
+}
+
+.pmap__step-loop-toggle--active {
+  color: var(--color-pmap-loop);
+  background: var(--color-pmap-loop-bg);
+}
+
+/* ===== Loop Panel ===== */
+.pmap__canvas--has-loops {
+  padding-right: 320px;
+}
+
+.pmap__loop-panel {
+  width: 240px;
+  border: var(--border-width) solid var(--color-pmap-loop-border);
+  border-left: 3px solid var(--color-pmap-loop);
+  border-radius: var(--border-radius);
+  background: var(--color-pmap-loop-bg);
+  animation: pmap-fade-in 0.2s ease;
+  z-index: 1;
+}
+
+.pmap__loop-header {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-bottom: var(--border-width) solid var(--color-pmap-loop-border);
+}
+
+.pmap__loop-icon {
+  display: flex;
+  color: var(--color-pmap-loop);
+}
+
+.pmap__loop-title {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: var(--color-pmap-loop);
+  flex: 1;
+}
+
+.pmap__loop-remove {
+  background: none;
+  border: none;
+  color: var(--color-text-tertiary);
+  cursor: pointer;
+  padding: 2px;
+  display: flex;
+  border-radius: var(--border-radius-sm);
+  transition: all var(--transition-speed);
+}
+
+.pmap__loop-remove:hover {
+  color: var(--color-error);
+  background: rgba(255, 59, 48, 0.1);
+}
+
+.pmap__loop-body {
+  padding: var(--spacing-sm);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.pmap__loop-field {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.pmap__loop-field-label {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-secondary);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.pmap__loop-field-label svg {
+  color: var(--color-pmap-loop);
+}
+
+.pmap__loop-condition,
+.pmap__loop-target-select {
+  width: 100%;
+  background: var(--color-bg-primary);
+  border: var(--border-width) solid var(--color-border-secondary);
+  border-radius: var(--border-radius-sm);
+  color: var(--color-text-primary);
+  font-family: var(--font-family);
+  font-size: var(--font-size-sm);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  outline: none;
+  transition: border-color var(--transition-speed);
+}
+
+.pmap__loop-condition:focus,
+.pmap__loop-target-select:focus {
+  border-color: var(--color-pmap-loop);
+}
+
+.pmap__loop-condition::placeholder {
+  color: var(--color-text-tertiary);
+}
+
+/* ===== Loop Steps List ===== */
+.pmap__loop-steps-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.pmap__loop-step-item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--border-radius-sm);
+  background: var(--color-bg-secondary);
+  transition: background var(--transition-speed);
+}
+
+.pmap__loop-step-item:hover {
+  background: var(--color-bg-primary);
+}
+
+.pmap__loop-step-number {
+  display: flex;
+  align-items: center;
+  color: var(--color-pmap-loop);
+  flex-shrink: 0;
+}
+
+.pmap__loop-step-title {
+  flex: 1;
+  background: none;
+  border: none;
+  color: var(--color-text-primary);
+  font-family: var(--font-family);
+  font-size: var(--font-size-sm);
+  outline: none;
+  min-width: 0;
+}
+
+.pmap__loop-step-title::placeholder {
+  color: var(--color-text-tertiary);
+}
+
+.pmap__loop-step-remove {
+  background: none;
+  border: none;
+  color: var(--color-text-tertiary);
+  cursor: pointer;
+  padding: 2px;
+  display: flex;
+  border-radius: var(--border-radius-sm);
+  opacity: 0;
+  transition: all var(--transition-speed);
+  flex-shrink: 0;
+}
+
+.pmap__loop-step-item:hover .pmap__loop-step-remove {
+  opacity: 1;
+}
+
+.pmap__loop-step-remove:hover {
+  color: var(--color-error);
+  background: rgba(255, 59, 48, 0.1);
+}
+
+.pmap__loop-step-add {
+  width: 100%;
+  padding: var(--spacing-xs) 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-xs);
+  border: none;
+  border-radius: var(--border-radius-sm);
+  background: transparent;
+  color: var(--color-text-tertiary);
+  font-family: var(--font-family);
+  font-size: var(--font-size-xs);
+  cursor: pointer;
+  transition: all var(--transition-speed);
+}
+
+.pmap__loop-step-add:hover {
+  color: var(--color-pmap-loop);
+  background: var(--color-pmap-loop-bg);
+}
+
+/* ===== Loop Bracket (visual connector line) ===== */
+.pmap__loop-bracket {
+  position: absolute;
+  width: 20px;
+  border: 2px solid var(--color-pmap-loop);
+  border-left: none;
+  border-radius: 0 8px 8px 0;
+  pointer-events: none;
+}
+
+.pmap__loop-bracket-arrow {
+  position: absolute;
+  top: -5px;
+  left: -8px;
+  width: 0;
+  height: 0;
+  border-top: 5px solid transparent;
+  border-bottom: 5px solid transparent;
+  border-right: 8px solid var(--color-pmap-loop);
+}
+
+/* ===== Animation ===== */
+@keyframes pmap-fade-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}

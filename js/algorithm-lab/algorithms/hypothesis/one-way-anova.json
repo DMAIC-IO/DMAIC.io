@@ -1,0 +1,163 @@
+{
+  "id": "one-way-anova",
+  "name": {
+    "de": "One-Way ANOVA",
+    "en": "One-Way ANOVA"
+  },
+  "category": "hypothesis",
+  "subcategory": "mean",
+  "status": "experimental",
+  "version": "1.0.0",
+
+  "description": {
+    "short": {
+      "de": "Vergleicht die Mittelwerte von k unabhängigen, normalverteilten Stichproben.",
+      "en": "Compares the means of k independent, normally distributed samples."
+    },
+    "long": {
+      "de": "Die einfaktorielle Varianzanalyse (One-Way ANOVA) prüft, ob die Mittelwerte von k ≥ 2 unabhängigen Gruppen alle gleich sind. Die Gesamtstreuung SST wird in die durch die Gruppen erklärte Streuung SSB (Between) und die Reststreuung SSW (Within) zerlegt. Die F-Statistik vergleicht das mittlere Quadrat zwischen den Gruppen mit dem mittleren Quadrat innerhalb der Gruppen. Ein signifikanter F-Test (p < α) zeigt, dass mindestens ein Gruppenmittelwert vom Rest abweicht — er sagt aber nicht, welcher.",
+      "en": "One-way analysis of variance (One-Way ANOVA) tests whether the means of k ≥ 2 independent groups are all equal. The total variation SST is decomposed into the between-group variation SSB and the within-group variation SSW. The F-statistic compares the mean square between groups to the mean square within groups. A significant F-test (p < α) indicates that at least one group mean differs from the others — but does not say which."
+    }
+  },
+
+  "documentation": {
+    "formulas": [
+      {
+        "label": "F",
+        "latex": "F = \\frac{MS_B}{MS_W} = \\frac{SS_B / (k-1)}{SS_W / (N-k)}",
+        "description": {
+          "de": "F-Statistik als Verhältnis der mittleren Quadrate",
+          "en": "F-statistic as ratio of mean squares"
+        }
+      },
+      {
+        "label": "SSB",
+        "latex": "SS_B = \\sum_{i=1}^{k} n_i (\\bar{x}_i - \\bar{x})^2",
+        "description": {
+          "de": "Streuung zwischen den Gruppen (Between)",
+          "en": "Between-group sum of squares"
+        }
+      },
+      {
+        "label": "SSW",
+        "latex": "SS_W = \\sum_{i=1}^{k} \\sum_{j=1}^{n_i} (x_{ij} - \\bar{x}_i)^2",
+        "description": {
+          "de": "Streuung innerhalb der Gruppen (Within)",
+          "en": "Within-group sum of squares"
+        }
+      },
+      {
+        "label": "H₀",
+        "latex": "H_0: \\mu_1 = \\mu_2 = \\dots = \\mu_k",
+        "description": {
+          "de": "Nullhypothese: Alle Gruppenmittelwerte sind gleich",
+          "en": "Null hypothesis: All group means are equal"
+        }
+      }
+    ],
+    "assumptions": [
+      { "de": "Beobachtungen sind unabhängig", "en": "Observations are independent" },
+      { "de": "Daten in jeder Gruppe sind normalverteilt", "en": "Data within each group are normally distributed" },
+      { "de": "Varianzen aller Gruppen sind gleich (Varianzhomogenität)", "en": "Variances are equal across groups (homogeneity of variance)" }
+    ],
+    "limitations": [
+      { "de": "Bei stark unterschiedlichen Varianzen Welch-ANOVA verwenden", "en": "Use Welch ANOVA for substantially unequal variances" },
+      { "de": "Bei nicht normalverteilten Daten Kruskal-Wallis verwenden", "en": "Use Kruskal-Wallis for non-normal data" },
+      { "de": "Nur omnibus-Test — sagt nicht welche Gruppe abweicht (Post-Hoc-Tests nötig)", "en": "Omnibus test only — does not identify which group differs (post-hoc tests required)" }
+    ],
+    "references": [
+      { "source": "Fisher, R. A. (1925), Statistical Methods for Research Workers" },
+      { "source": "NIST/SEMATECH e-Handbook of Statistical Methods, Section 7.4.3" }
+    ],
+    "minitab_equivalent": "Stat > ANOVA > One-Way"
+  },
+
+  "source": {
+    "function_name": "oneWayANOVA",
+    "file_path": "js/engines/hypothesis-test-engine.js",
+    "signature": {
+      "parameters": [
+        {
+          "name": "groups",
+          "type": "number[][]",
+          "required": true,
+          "description": { "de": "Array von k Stichproben", "en": "Array of k samples" }
+        },
+        {
+          "name": "alpha",
+          "type": "number",
+          "required": false,
+          "description": { "de": "Signifikanzniveau (Standard: 0.05)", "en": "Significance level (default: 0.05)" }
+        }
+      ],
+      "returns": {
+        "type": "object",
+        "properties": {
+          "statistic": { "type": "number", "description": { "de": "F-Teststatistik", "en": "F test statistic" } },
+          "pValue": { "type": "number", "description": { "de": "p-Wert", "en": "p-value" } },
+          "df1": { "type": "number", "description": { "de": "Freiheitsgrade Zähler (k−1)", "en": "Numerator degrees of freedom (k−1)" } },
+          "df2": { "type": "number", "description": { "de": "Freiheitsgrade Nenner (N−k)", "en": "Denominator degrees of freedom (N−k)" } },
+          "SSB": { "type": "number", "description": { "de": "Streuung zwischen Gruppen", "en": "Between-group sum of squares" } },
+          "SSW": { "type": "number", "description": { "de": "Streuung innerhalb Gruppen", "en": "Within-group sum of squares" } },
+          "MSB": { "type": "number", "description": { "de": "Mittleres Quadrat zwischen Gruppen", "en": "Between-group mean square" } },
+          "MSW": { "type": "number", "description": { "de": "Mittleres Quadrat innerhalb Gruppen", "en": "Within-group mean square" } },
+          "reject": { "type": "boolean", "description": { "de": "H₀ abgelehnt?", "en": "Reject H₀?" } }
+        }
+      }
+    },
+    "code_snippet": null
+  },
+
+  "try_it": {
+    "input_schema": {
+      "fields": [
+        {
+          "name": "groups",
+          "label": { "de": "Gruppen (eine Zeile pro Gruppe)", "en": "Groups (one line per group)" },
+          "type": "textarea",
+          "placeholder": { "de": "z.B.\n1.2, 1.5, 1.4\n2.1, 2.3, 2.0\n1.8, 1.9, 2.0", "en": "e.g.\n1.2, 1.5, 1.4\n2.1, 2.3, 2.0\n1.8, 1.9, 2.0" },
+          "parse_as": "number_array_2d",
+          "required": true
+        },
+        {
+          "name": "alpha",
+          "label": { "de": "Signifikanzniveau α", "en": "Significance Level α" },
+          "type": "number",
+          "placeholder": { "de": "0.05", "en": "0.05" },
+          "parse_as": "number",
+          "required": false
+        }
+      ]
+    },
+    "output_schema": {
+      "display_fields": ["statistic", "pValue", "df1", "df2", "SSB", "SSW", "MSB", "MSW", "k", "N", "reject"],
+      "primary_field": "statistic",
+      "format": {
+        "statistic": { "decimals": 6, "label": "F" },
+        "pValue": { "decimals": 6, "label": "p-Value" },
+        "df1": { "decimals": 0, "label": "df₁" },
+        "df2": { "decimals": 0, "label": "df₂" },
+        "SSB": { "decimals": 6, "label": "SSB" },
+        "SSW": { "decimals": 6, "label": "SSW" },
+        "MSB": { "decimals": 6, "label": "MSB" },
+        "MSW": { "decimals": 6, "label": "MSW" },
+        "k": { "decimals": 0, "label": "k" },
+        "N": { "decimals": 0, "label": "N" },
+        "reject": { "decimals": 0, "label": { "de": "H₀ abgelehnt", "en": "Reject H₀" } }
+      }
+    }
+  },
+
+  "changelog": [
+    {
+      "version": "1.0.0",
+      "date": "2026-05-06",
+      "type": "initial",
+      "description": {
+        "de": "Erstimplementierung der einfaktoriellen Varianzanalyse mit ANOVA-Tabelle und F-Test",
+        "en": "Initial implementation of one-way analysis of variance with ANOVA table and F-test"
+      },
+      "breaking": false
+    }
+  ]
+}

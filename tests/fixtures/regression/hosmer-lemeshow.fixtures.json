@@ -1,0 +1,298 @@
+{
+  "algorithm_id": "hosmer-lemeshow",
+  "generated_with": {
+    "engine": "glm-engine.js",
+    "verified_against": "Known chi-squared distribution properties"
+  },
+  "generated_at": "2026-04-27T00:00:00.000Z",
+  "generator_script": "tests/generate-glm-fixtures.mjs",
+  "generator_version": "1.0.0",
+  "tolerances": {
+    "default": {
+      "relative": 0.001,
+      "absolute": 0.000001
+    },
+    "overrides": {
+      "grouping_sensitive": {
+        "relative": 0.01,
+        "absolute": 0.01,
+        "reason": "Equal-size group boundaries can shift with floating-point sorting, changing the statistic slightly"
+      }
+    }
+  },
+  "test_cases": [
+    {
+      "id": "hl_standard_good_fit",
+      "tier": "standard",
+      "description": "Logistic model fitted values from dose-response data. Good fit → high p-value.",
+      "reference": "D.Mike glm-engine.js (fitted values from logistic regression)",
+      "tolerance_override": "grouping_sensitive",
+      "inputs": {
+        "yTrue": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          1,
+          1,
+          1,
+          1,
+          1,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          1,
+          1,
+          1,
+          1
+        ],
+        "probs": [
+          0.0013,
+          0.0087,
+          0.0534,
+          0.2632,
+          0.6938,
+          0.9411,
+          0.9927,
+          0.9989,
+          0.0013,
+          0.0087,
+          0.0534,
+          0.2632,
+          0.6938,
+          0.9411,
+          0.9927,
+          0.9989,
+          0.0013,
+          0.0087,
+          0.0534,
+          0.2632
+        ],
+        "g": 10
+      },
+      "expected": {
+        "df": 2,
+        "groups": 4
+      }
+    },
+    {
+      "id": "hl_standard_poor_fit",
+      "tier": "standard",
+      "description": "Constant probability 0.5 for 50/50 split. Model predicts same for everyone → statistic significant.",
+      "reference": "D.Mike glm-engine.js",
+      "inputs": {
+        "yTrue": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          1,
+          1,
+          1,
+          1,
+          1,
+          0,
+          0,
+          0,
+          0,
+          0,
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        "probs": [
+          0.5,
+          0.5,
+          0.5,
+          0.5,
+          0.5,
+          0.5,
+          0.5,
+          0.5,
+          0.5,
+          0.5,
+          0.5,
+          0.5,
+          0.5,
+          0.5,
+          0.5,
+          0.5,
+          0.5,
+          0.5,
+          0.5,
+          0.5
+        ],
+        "g": 5
+      },
+      "expected": {
+        "statistic": 0,
+        "df": 1,
+        "pValue": 1,
+        "groups": 1
+      }
+    },
+    {
+      "id": "hl_standard_g5",
+      "tier": "standard",
+      "description": "Five groups with well-calibrated probabilities from multivariate logistic fit.",
+      "reference": "D.Mike glm-engine.js",
+      "tolerance_override": "grouping_sensitive",
+      "inputs": {
+        "yTrue": [
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          1,
+          0,
+          1,
+          0,
+          1,
+          1,
+          0,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        "probs": [
+          0.05,
+          0.1,
+          0.15,
+          0.2,
+          0.25,
+          0.3,
+          0.35,
+          0.4,
+          0.45,
+          0.5,
+          0.55,
+          0.6,
+          0.65,
+          0.7,
+          0.75,
+          0.8,
+          0.85,
+          0.9,
+          0.92,
+          0.95
+        ],
+        "g": 5
+      },
+      "expected": {
+        "df": 2,
+        "groups": 4
+      }
+    },
+    {
+      "id": "hl_edge_small_n",
+      "tier": "edge",
+      "description": "n=10 with 5 groups. Sparse groups test χ² approximation limit.",
+      "reference": "D.Mike glm-engine.js",
+      "inputs": {
+        "yTrue": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        "probs": [
+          0.1,
+          0.2,
+          0.3,
+          0.4,
+          0.45,
+          0.55,
+          0.6,
+          0.7,
+          0.8,
+          0.9
+        ],
+        "g": 5
+      },
+      "expected": {
+        "statistic": 0,
+        "df": 0,
+        "pValue": 1,
+        "groups": 0
+      }
+    },
+    {
+      "id": "hl_edge_well_calibrated",
+      "tier": "edge",
+      "description": "Well-separated probabilities matching actual outcomes. Should show good fit.",
+      "reference": "D.Mike glm-engine.js",
+      "inputs": {
+        "yTrue": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        "probs": [
+          0.05,
+          0.1,
+          0.15,
+          0.2,
+          0.25,
+          0.3,
+          0.35,
+          0.4,
+          0.45,
+          0.49,
+          0.51,
+          0.55,
+          0.6,
+          0.65,
+          0.7,
+          0.75,
+          0.8,
+          0.85,
+          0.9,
+          0.95
+        ],
+        "g": 5
+      },
+      "expected": {
+        "statistic": 8.376001563416064,
+        "df": 2,
+        "pValue": 0.01517659589189646,
+        "groups": 4
+      }
+    }
+  ]
+}

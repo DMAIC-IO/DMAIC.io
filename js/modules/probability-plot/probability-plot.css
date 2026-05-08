@@ -1,0 +1,55 @@
+/* ============================================================
+   Probability Plot Module Styles (probability-plot.css)
+   BEM: .probplot__ prefix
+   ============================================================ */
+
+/* Layout provided by .dmike-split (css/modules.css) */
+.probplot .dmike-split__input { width: 280px; }
+
+/* Fields use global .field / .field-group (components.css) */
+
+.probplot__error {
+  display: none;
+  font-size: var(--font-size-sm);
+  color: var(--color-error, #ef4444);
+  background: rgba(239, 68, 68, 0.08);
+  border: var(--border-width) solid rgba(239, 68, 68, 0.2);
+  border-radius: var(--border-radius);
+  padding: var(--spacing-sm);
+  margin-top: var(--spacing-sm);
+}
+
+/* Placeholder */
+.probplot__placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  min-height: 300px;
+  color: var(--color-text-tertiary);
+  gap: var(--spacing-md);
+}
+
+.probplot__placeholder p {
+  max-width: 320px;
+  text-align: center;
+  font-size: var(--font-size-sm);
+}
+
+/* Chart area */
+.probplot__chart-card {
+  display: flex;
+  overflow: hidden;
+}
+
+.probplot__chart-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.probplot__plot-wrap {
+  height: 480px;
+}

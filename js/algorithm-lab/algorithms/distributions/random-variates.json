@@ -1,0 +1,346 @@
+{
+  "id": "random-variates",
+  "name": {
+    "de": "Zufallszahlen aus statistischen Verteilungen",
+    "en": "Random Variates from Statistical Distributions"
+  },
+  "category": "distributions",
+  "subcategory": "random-generation",
+  "status": "validated",
+  "version": "1.0.0",
+
+  "description": {
+    "short": {
+      "de": "Erzeugung von Pseudo-Zufallszahlen aus über 20 stetigen und diskreten Verteilungen mittels Mulberry32-PRNG.",
+      "en": "Generation of pseudo-random numbers from over 20 continuous and discrete distributions using the Mulberry32 PRNG."
+    },
+    "long": {
+      "de": "Dieses Modul implementiert reproduzierbare Zufallszahlengenerierung mittels des Mulberry32-PRNG (32-bit, deterministic). Stetige Verteilungen werden über Inversions-, Box-Muller- und Marsaglia-&-Tsang-Methoden erzeugt. Die Normalverteilung nutzt die SinhArcSinh-Transformation (Jones & Pewsey 2009), die über die Parameter ε (Schiefe) und δ (Tailweight) eine flexible Familie asymmetrischer Verteilungen ermöglicht.",
+      "en": "This module implements reproducible random number generation using the Mulberry32 PRNG (32-bit, deterministic). Continuous distributions are generated via inversion, Box-Muller, and Marsaglia & Tsang methods. The normal distribution uses the SinhArcSinh transform (Jones & Pewsey 2009), which enables a flexible family of asymmetric distributions via skewness (ε) and tailweight (δ) parameters."
+    }
+  },
+
+  "documentation": {
+    "formulas": [
+      {
+        "label": "Mulberry32",
+        "latex": "s_{n+1} = s_n + \\text{0x6D2B79F5}, \\quad U = \\frac{t \\oplus (t \\gg 14)}{2^{32}}",
+        "description": {
+          "de": "Deterministischer PRNG: Gleicher Seed erzeugt immer die gleiche Sequenz gleichverteilter U(0,1)-Werte.",
+          "en": "Deterministic PRNG: same seed always produces the same sequence of uniformly distributed U(0,1) values."
+        }
+      },
+      {
+        "label": "Box-Muller",
+        "latex": "Z_1 = \\sqrt{-2 \\ln S} \\cdot \\frac{U_1}{\\sqrt{S}}, \\quad Z_2 = \\sqrt{-2 \\ln S} \\cdot \\frac{U_2}{\\sqrt{S}}",
+        "description": {
+          "de": "Erzeugung von Standardnormalverteilten Paaren (Z₁, Z₂) aus gleichverteilten U₁, U₂ mit S = U₁² + U₂² < 1.",
+          "en": "Generation of standard normal pairs (Z₁, Z₂) from uniform U₁, U₂ with S = U₁² + U₂² < 1."
+        }
+      },
+      {
+        "label": "SinhArcSinh",
+        "latex": "X = \\mu + \\sigma \\cdot \\sinh\\!\\left(\\frac{\\operatorname{arcsinh}(Z) + \\varepsilon}{\\delta}\\right), \\quad Z \\sim N(0,1)",
+        "description": {
+          "de": "Jones-&-Pewsey-Transformation (2009): ε steuert die Schiefe, δ das Tailweight. Bei ε=0, δ=1 ergibt sich die Standard-Normalverteilung.",
+          "en": "Jones & Pewsey transform (2009): ε controls skewness, δ controls tailweight. With ε=0, δ=1 this reduces to the standard normal."
+        }
+      },
+      {
+        "label": "Gamma (Marsaglia–Tsang)",
+        "latex": "X = d \\cdot v^3 \\cdot \\beta, \\quad d = \\alpha - \\tfrac{1}{3}, \\quad c = \\frac{1}{\\sqrt{9d}}",
+        "description": {
+          "de": "Marsaglia-&-Tsang-Methode für Gamma-Variaten mit Form α ≥ 1. Für α < 1 wird die Identität Gamma(α) = Gamma(α+1) · U^(1/α) genutzt.",
+          "en": "Marsaglia & Tsang method for gamma variates with shape α ≥ 1. For α < 1, uses the identity Gamma(α) = Gamma(α+1) · U^(1/α)."
+        }
+      },
+      {
+        "label": "Chi-Quadrat",
+        "latex": "X \\sim \\chi^2(k) = \\text{Gamma}\\!\\left(\\frac{k}{2}, 2\\right)",
+        "description": {
+          "de": "Chi-Quadrat als Spezialfall der Gamma-Verteilung.",
+          "en": "Chi-square as special case of the Gamma distribution."
+        }
+      },
+      {
+        "label": "F-Verteilung",
+        "latex": "X = \\frac{\\chi^2(d_1) / d_1}{\\chi^2(d_2) / d_2}",
+        "description": {
+          "de": "Verhältnis zweier skalierter Chi-Quadrat-Variaten.",
+          "en": "Ratio of two scaled chi-square variates."
+        }
+      },
+      {
+        "label": "t-Verteilung",
+        "latex": "X = \\frac{Z}{\\sqrt{\\chi^2(\\nu) / \\nu}}, \\quad Z \\sim N(0,1)",
+        "description": {
+          "de": "Quotient aus Standard-Normalvariable und skalierter Chi-Quadrat-Wurzel.",
+          "en": "Ratio of standard normal to scaled chi-square root."
+        }
+      },
+      {
+        "label": "Beta",
+        "latex": "X = \\frac{G_1}{G_1 + G_2}, \\quad G_1 \\sim \\text{Gamma}(\\alpha,1), \\; G_2 \\sim \\text{Gamma}(\\beta,1)",
+        "description": {
+          "de": "Beta-Variate als Verhältnis zweier unabhängiger Gamma-Variaten.",
+          "en": "Beta variate as ratio of two independent gamma variates."
+        }
+      },
+      {
+        "label": "Exponential (Inversion)",
+        "latex": "X = -\\frac{\\ln(1 - U)}{\\lambda}, \\quad U \\sim U(0,1)",
+        "description": {
+          "de": "Inversions-Methode für die Exponentialverteilung.",
+          "en": "Inversion method for the exponential distribution."
+        }
+      },
+      {
+        "label": "Weibull (Inversion)",
+        "latex": "X = \\beta \\cdot \\left(-\\ln(1 - U)\\right)^{1/\\alpha}",
+        "description": {
+          "de": "Inversions-Methode für die Weibull-Verteilung mit Form α und Skala β.",
+          "en": "Inversion method for the Weibull distribution with shape α and scale β."
+        }
+      },
+      {
+        "label": "Lognormal",
+        "latex": "X = e^{\\mu + \\sigma Z}, \\quad Z \\sim N(0,1)",
+        "description": {
+          "de": "Exponentialtransformation einer Normalverteilten Variablen.",
+          "en": "Exponential transform of a normally distributed variable."
+        }
+      },
+      {
+        "label": "Cauchy (Inversion)",
+        "latex": "X = x_0 + \\gamma \\tan\\!\\left(\\pi(U - 0{,}5)\\right)",
+        "description": {
+          "de": "Inversions-Methode. Mittelwert und Varianz existieren nicht.",
+          "en": "Inversion method. Mean and variance do not exist."
+        }
+      },
+      {
+        "label": "Laplace",
+        "latex": "X = \\mu - b \\cdot \\text{sign}(U - 0{,}5) \\cdot \\ln(1 - 2|U - 0{,}5|)",
+        "description": {
+          "de": "Inversions-Methode für die Laplace-Verteilung.",
+          "en": "Inversion method for the Laplace distribution."
+        }
+      },
+      {
+        "label": "Gumbel Max",
+        "latex": "X = \\mu - \\beta \\ln(-\\ln U)",
+        "description": {
+          "de": "Inversions-Methode für die Gumbel-Verteilung des Maximums (Typ-I-Extremwertverteilung).",
+          "en": "Inversion method for the Gumbel maximum distribution (Type I extreme value)."
+        }
+      },
+      {
+        "label": "Logistic (Inversion)",
+        "latex": "X = \\mu + s \\ln\\!\\left(\\frac{U}{1 - U}\\right)",
+        "description": {
+          "de": "Inversions-Methode über die Logit-Funktion.",
+          "en": "Inversion method via the logit function."
+        }
+      },
+      {
+        "label": "Dreieck",
+        "latex": "X = \\begin{cases} a + \\sqrt{U(b-a)(c-a)} & U < \\frac{c-a}{b-a} \\\\ b - \\sqrt{(1-U)(b-a)(b-c)} & \\text{sonst} \\end{cases}",
+        "description": {
+          "de": "Inversions-Methode für die Dreiecksverteilung mit Minimum a, Maximum b und Modus c.",
+          "en": "Inversion method for the triangular distribution with minimum a, maximum b, and mode c."
+        }
+      },
+      {
+        "label": "Binomial",
+        "latex": "X = \\sum_{i=1}^{n} \\mathbb{1}(U_i < p), \\quad U_i \\sim U(0,1)",
+        "description": {
+          "de": "Direkte Simulation als Summe von n Bernoulli-Versuchen.",
+          "en": "Direct simulation as sum of n Bernoulli trials."
+        }
+      },
+      {
+        "label": "Poisson",
+        "latex": "X = \\min\\{k : \\prod_{i=1}^{k} U_i \\leq e^{-\\lambda}\\} - 1",
+        "description": {
+          "de": "Knuth-Algorithmus für λ < 30; Normalapproximation für λ ≥ 30.",
+          "en": "Knuth algorithm for λ < 30; normal approximation for λ ≥ 30."
+        }
+      },
+      {
+        "label": "Neg. Binomial",
+        "latex": "X \\sim \\text{Poi}(G), \\quad G \\sim \\text{Gamma}\\!\\left(r, \\frac{1-p}{p}\\right)",
+        "description": {
+          "de": "Gamma-Poisson-Mischverteilung: Zuerst Gamma-Variate erzeugen, dann Poisson-Variate mit diesem Mittelwert.",
+          "en": "Gamma-Poisson mixture: first generate gamma variate, then Poisson variate with that mean."
+        }
+      },
+      {
+        "label": "Hypergeometrisch",
+        "latex": "P(X_i = 1) = \\frac{K_i}{N_i}, \\quad \\text{sequentielles Ziehen ohne Zurücklegen}",
+        "description": {
+          "de": "Sequentielle Simulation: Ziehen ohne Zurücklegen aus endlicher Population.",
+          "en": "Sequential simulation: drawing without replacement from finite population."
+        }
+      }
+    ],
+    "assumptions": [
+      { "de": "PRNG ist deterministisch — gleicher Seed erzeugt identische Sequenzen", "en": "PRNG is deterministic — same seed produces identical sequences" },
+      { "de": "Mulberry32 hat eine Periode von 2³² — ausreichend für Stichproben bis ~10⁵", "en": "Mulberry32 has a period of 2³² — sufficient for samples up to ~10⁵" },
+      { "de": "Alle Verteilungsparameter müssen in ihrem gültigen Bereich liegen", "en": "All distribution parameters must be within their valid range" }
+    ],
+    "limitations": [
+      { "de": "Mulberry32 ist kein kryptographisch sicherer Generator", "en": "Mulberry32 is not a cryptographically secure generator" },
+      { "de": "Binomialverteilung mit großem n ist rechenintensiv (O(n) pro Wert)", "en": "Binomial distribution with large n is computationally expensive (O(n) per value)" },
+      { "de": "Cauchy-Verteilung: Empirischer Mittelwert und Varianz sind instabil", "en": "Cauchy distribution: empirical mean and variance are unstable" }
+    ],
+    "references": [
+      {
+        "source": "Jones, M. C. & Pewsey, A. (2009). Sinh-arcsinh distributions. Biometrika, 96(4), 761–780.",
+        "chapter": null
+      },
+      {
+        "source": "Marsaglia, G. & Tsang, W. W. (2000). A simple method for generating gamma variables. ACM TOMS, 26(3), 363–372.",
+        "chapter": null
+      },
+      {
+        "source": "Knuth, D. E. (1997). The Art of Computer Programming, Vol. 2: Seminumerical Algorithms. 3rd Ed.",
+        "chapter": "Chapter 3.4"
+      }
+    ],
+    "minitab_equivalent": "Calc > Random Data"
+  },
+
+  "source": {
+    "function_name": "generateRandomVariates",
+    "file_path": "js/modules/random-generator/random-generator.js",
+    "code_snippet": null,
+    "signature": {
+      "parameters": [
+        {
+          "name": "distribution",
+          "type": "string",
+          "description": {
+            "de": "Verteilungsschlüssel (z.B. 'normal', 'exponential', 'poisson')",
+            "en": "Distribution key (e.g. 'normal', 'exponential', 'poisson')"
+          }
+        },
+        {
+          "name": "params",
+          "type": "object",
+          "description": {
+            "de": "Verteilungsparameter (je nach gewählter Verteilung)",
+            "en": "Distribution parameters (depending on selected distribution)"
+          }
+        },
+        {
+          "name": "n",
+          "type": "number",
+          "description": {
+            "de": "Anzahl der zu erzeugenden Zufallswerte",
+            "en": "Number of random values to generate"
+          }
+        },
+        {
+          "name": "seed",
+          "type": "number",
+          "description": {
+            "de": "PRNG-Seed für reproduzierbare Ergebnisse",
+            "en": "PRNG seed for reproducible results"
+          }
+        }
+      ],
+      "returns": {
+        "type": "object",
+        "properties": [
+          {
+            "name": "values",
+            "description": {
+              "de": "Array der erzeugten Zufallswerte",
+              "en": "Array of generated random values"
+            }
+          },
+          {
+            "name": "n",
+            "description": {
+              "de": "Anzahl erzeugter Werte",
+              "en": "Number of generated values"
+            }
+          },
+          {
+            "name": "seed",
+            "description": {
+              "de": "Verwendeter Seed",
+              "en": "Seed used"
+            }
+          },
+          {
+            "name": "distribution",
+            "description": {
+              "de": "Verteilungsschlüssel",
+              "en": "Distribution key"
+            }
+          }
+        ]
+      }
+    }
+  },
+
+  "try_it": {
+    "input_schema": {
+      "fields": [
+        {
+          "name": "distribution",
+          "label": { "de": "Verteilung", "en": "Distribution" },
+          "type": "text",
+          "placeholder": { "de": "z.B. normal, exponential, poisson", "en": "e.g. normal, exponential, poisson" },
+          "parse_as": "string",
+          "required": true
+        },
+        {
+          "name": "params",
+          "label": { "de": "Parameter (JSON)", "en": "Parameters (JSON)" },
+          "type": "textarea",
+          "placeholder": { "de": "{\"mu\": 0, \"sigma\": 1, \"epsilon\": 0, \"delta\": 1}", "en": "{\"mu\": 0, \"sigma\": 1, \"epsilon\": 0, \"delta\": 1}" },
+          "parse_as": "json",
+          "required": true
+        },
+        {
+          "name": "n",
+          "label": { "de": "Anzahl (n)", "en": "Count (n)" },
+          "type": "number",
+          "placeholder": { "de": "10", "en": "10" },
+          "parse_as": "number",
+          "required": true
+        },
+        {
+          "name": "seed",
+          "label": { "de": "Seed", "en": "Seed" },
+          "type": "number",
+          "placeholder": { "de": "42", "en": "42" },
+          "parse_as": "number",
+          "required": true
+        }
+      ]
+    },
+    "output_schema": {
+      "display_fields": ["distribution", "n", "seed"],
+      "primary_field": "n",
+      "format": {
+        "distribution": { "decimals": null, "label": "Distribution" },
+        "n": { "decimals": 0, "label": "n" },
+        "seed": { "decimals": 0, "label": "Seed" }
+      }
+    }
+  },
+
+  "changelog": [
+    {
+      "version": "1.0.0",
+      "date": "2026-03-23",
+      "description": {
+        "de": "Initiale Version: 25 Verteilungen (18 stetig, 7 diskret), Mulberry32-PRNG",
+        "en": "Initial version: 25 distributions (18 continuous, 7 discrete), Mulberry32 PRNG"
+      }
+    }
+  ]
+}

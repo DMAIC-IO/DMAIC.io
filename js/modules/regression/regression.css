@@ -1,0 +1,404 @@
+/* ============================================================
+   Regression Analysis Module Styles (regression.css)
+   BEM: .reg__ prefix
+   ============================================================ */
+
+/* Layout provided by .dmike-split (css/modules.css) */
+/* Section labels: use global .dmike-split__output-section */
+
+/* Fields use global .field / .field-group (components.css) */
+
+/* Toggle switch */
+.reg__toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 0;
+}
+
+.reg__toggle-row label {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+}
+
+.reg__toggle {
+  position: relative;
+  width: 36px;
+  height: 20px;
+  background: var(--color-bg-primary);
+  border: var(--border-width) solid var(--color-border-secondary);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.reg__toggle::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 14px;
+  height: 14px;
+  background: var(--color-text-tertiary);
+  border-radius: 50%;
+  transition: all 0.2s;
+}
+
+.reg__toggle--active {
+  background: var(--color-accent-dim, rgba(74, 144, 217, 0.12));
+  border-color: var(--color-accent);
+}
+
+.reg__toggle--active::after {
+  left: 18px;
+  background: var(--color-accent);
+}
+
+/* Degree disabled hint */
+.reg__degree-hint {
+  display: none;
+  margin-top: 4px;
+  font-size: var(--font-size-xs);
+  color: var(--color-warning, #e8a317);
+  line-height: 1.3;
+}
+
+/* Error box */
+.reg__error {
+  display: none;
+  padding: 8px 10px;
+  font-size: var(--font-size-xs);
+  color: var(--color-error);
+  background: var(--color-error-bg, rgba(239, 68, 68, 0.08));
+  border: var(--border-width) solid var(--color-error);
+  border-radius: var(--border-radius);
+}
+
+/* KPI strip — uses global .dmike-kpi-strip / .dmike-kpi from components.css */
+
+/* Equation box */
+.reg__equation {
+  background: var(--color-bg-secondary);
+  border: var(--border-width) solid var(--color-border-secondary);
+  border-radius: var(--border-radius);
+  padding: var(--spacing-sm) var(--spacing-md);
+  margin-bottom: var(--spacing-md);
+  font-family: var(--font-family-mono);
+  font-size: 15px;
+  text-align: center;
+  letter-spacing: 0.5px;
+  color: var(--color-accent);
+}
+
+.reg__model-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-md);
+}
+
+.reg__model-status {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  font-style: italic;
+}
+
+/* Tabs — uses global .dmike-tabs / .dmike-tab from components.css */
+
+.reg__chart-wrap {
+  height: 380px;
+  margin-bottom: var(--spacing-md);
+}
+
+/* Tables — base inherited from global .dmike-split table rule */
+.reg__table-wrap {
+  margin-bottom: var(--spacing-md);
+}
+
+/* Numeric columns: right-aligned, mono font */
+.reg__table th {
+  text-align: right;
+}
+
+.reg__table th:first-child {
+  text-align: left;
+}
+
+.reg__table td {
+  text-align: right;
+  font-family: var(--font-family-mono);
+  color: var(--color-text-secondary);
+}
+
+.reg__table td:first-child {
+  text-align: left;
+  font-weight: var(--font-weight-medium);
+}
+
+.reg__td--sig {
+  color: #2e7d32;
+  font-weight: var(--font-weight-semibold);
+}
+
+[data-theme="dark"] .reg__td--sig {
+  color: #a5d6a7;
+}
+
+.reg__td--not-sig {
+  color: var(--color-error);
+}
+
+.reg__td--vif-warn {
+  color: var(--color-warning);
+  font-weight: var(--font-weight-medium);
+}
+
+.reg__vif-full {
+  color: var(--color-text-tertiary);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-normal);
+  opacity: 0.7;
+}
+
+.reg__ci-inline {
+  color: var(--color-text-tertiary);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-normal);
+  white-space: nowrap;
+}
+
+/* Row highlighting for significant terms (p < α) */
+.reg__tr--sig td {
+  background: rgba(46, 125, 50, 0.06);
+}
+
+[data-theme="dark"] .reg__tr--sig td {
+  background: rgba(165, 214, 167, 0.08);
+}
+
+/* Row highlighting for non-significant terms (p > α) */
+.reg__tr--not-sig td {
+  background: var(--color-error-bg, rgba(239, 68, 68, 0.06));
+}
+
+/* Error row (residuals) in ANOVA */
+.reg__tr--error td {
+  color: var(--color-text-tertiary);
+  border-bottom: 2px solid var(--color-border-primary);
+}
+
+/* Total row in ANOVA */
+.reg__tr--total td {
+  border-bottom: none;
+}
+
+/* Excluded term rows (unchecked from model) */
+.reg__tr--excluded td {
+  opacity: 0.4;
+  background: var(--color-bg-tertiary, var(--color-bg-secondary));
+  font-style: italic;
+}
+
+/* Checkbox column — overrides right-align default */
+.reg__th--cb,
+.reg__td--cb {
+  width: 32px;
+  text-align: center !important;
+  padding-left: 8px;
+  padding-right: 4px;
+}
+
+/* Term name column (left-aligned when checkbox shifts first-child) */
+.reg__th--term,
+.reg__td--term {
+  text-align: left !important;
+  font-weight: var(--font-weight-medium);
+}
+
+.reg__term-cb {
+  cursor: pointer;
+  accent-color: var(--color-accent);
+}
+
+.reg__td--term-indent {
+  text-align: left !important;
+  padding-left: 24px !important;
+  font-weight: var(--font-weight-normal);
+  font-style: italic;
+}
+
+.reg__tr--term td {
+  font-size: var(--font-size-sm);
+}
+
+/* Sort-by-p button */
+.reg__sort-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  padding: 1px 3px;
+  margin-left: 2px;
+  cursor: pointer;
+  color: var(--color-text-tertiary);
+  opacity: 0.5;
+  transition: opacity 0.15s, color 0.15s;
+  vertical-align: middle;
+}
+
+.reg__sort-btn:hover {
+  opacity: 1;
+  color: var(--color-accent);
+  border-color: var(--color-accent);
+}
+
+.reg__sort-btn--active {
+  opacity: 1;
+  color: var(--color-accent);
+  border-color: var(--color-accent);
+  background: var(--color-accent-dim, rgba(74, 144, 217, 0.1));
+}
+
+/* Algorithm Lab link icon */
+.reg__algo-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  padding: 2px 4px;
+  margin-left: 2px;
+  cursor: pointer;
+  color: var(--color-text-secondary);
+  opacity: 0.6;
+  transition: opacity 0.15s, color 0.15s;
+  vertical-align: middle;
+}
+
+.reg__algo-link:hover {
+  opacity: 1;
+  color: var(--color-accent);
+  border-color: var(--color-accent);
+}
+
+.reg__level-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--spacing-xs) var(--spacing-sm);
+}
+
+/* Prediction section */
+.reg__predict {
+  margin-top: var(--spacing-sm);
+}
+
+.reg__predict [data-ref="predict-inputs"] {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--spacing-xs) var(--spacing-sm);
+}
+
+
+.reg__predict-result {
+  margin-top: var(--spacing-sm);
+  padding: var(--spacing-sm) var(--spacing-md);
+  background: var(--color-accent-dim, rgba(74, 144, 217, 0.08));
+  border: var(--border-width) solid var(--color-accent);
+  border-radius: var(--border-radius);
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-sm);
+  color: var(--color-accent);
+  text-align: center;
+}
+
+.reg__predict-ci {
+  font-size: 11px;
+  opacity: 0.8;
+}
+
+/* Effect plots grid (Main Effects + Interaction) */
+.reg__chart-wrap:has(.reg__effects-grid) {
+  height: auto;
+}
+
+.reg__effects-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-sm);
+}
+
+.reg__effects-cell {
+  flex: 1 1 320px;
+  min-width: 280px;
+  max-width: 50%;
+  height: 300px;
+}
+
+/* SS Pie Chart */
+.reg__ss-pie-wrap {
+  display: flex;
+  gap: var(--spacing-xl);
+  align-items: flex-start;
+  padding: var(--spacing-md);
+}
+
+.reg__ss-pie-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  min-width: 200px;
+}
+
+.reg__ss-pie-item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: var(--border-radius-sm);
+  font-size: var(--font-size-sm);
+}
+
+.reg__ss-pie-item:hover {
+  background: var(--color-bg-tertiary);
+}
+
+.reg__ss-pie-swatch {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+
+.reg__ss-pie-label {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.reg__ss-pie-val {
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-xs);
+  white-space: nowrap;
+}
+
+.reg__ss-pie-chart {
+  flex: 1;
+  min-width: 280px;
+  height: 380px;
+}
+
+.reg__ss-pie-bars {
+  flex: 1.2;
+  min-width: 320px;
+  height: 380px;
+}

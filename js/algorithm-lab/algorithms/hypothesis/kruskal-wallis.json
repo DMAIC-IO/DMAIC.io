@@ -1,0 +1,145 @@
+{
+  "id": "kruskal-wallis",
+  "name": {
+    "de": "Kruskal-Wallis-Test",
+    "en": "Kruskal-Wallis Test"
+  },
+  "category": "hypothesis",
+  "subcategory": "mean",
+  "status": "experimental",
+  "version": "1.0.0",
+
+  "description": {
+    "short": {
+      "de": "Nichtparametrische Alternative zur One-Way ANOVA für k Stichproben.",
+      "en": "Nonparametric alternative to one-way ANOVA for k samples."
+    },
+    "long": {
+      "de": "Der Kruskal-Wallis-Test prüft, ob k ≥ 2 unabhängige Stichproben aus derselben Verteilung stammen. Er arbeitet auf den Rängen der gepoolten Daten und ist deshalb robust gegenüber Abweichungen von der Normalverteilung. Die Teststatistik H folgt unter H₀ approximativ einer χ²-Verteilung mit k−1 Freiheitsgraden. Bei Bindungen wird eine Tie-Korrektur angewandt. Wie die ANOVA ist auch der Kruskal-Wallis-Test ein Omnibus-Test — er sagt nicht, welche Gruppe abweicht.",
+      "en": "The Kruskal-Wallis test examines whether k ≥ 2 independent samples come from the same distribution. It operates on the ranks of the pooled data and is therefore robust to departures from normality. Under H₀ the test statistic H is approximately χ²-distributed with k−1 degrees of freedom. A tie correction is applied when ties are present. Like ANOVA, Kruskal-Wallis is an omnibus test — it does not identify which group differs."
+    }
+  },
+
+  "documentation": {
+    "formulas": [
+      {
+        "label": "H",
+        "latex": "H = \\frac{12}{N(N+1)} \\sum_{i=1}^{k} \\frac{R_i^2}{n_i} - 3(N+1)",
+        "description": {
+          "de": "Teststatistik aus den Rangsummen R_i pro Gruppe",
+          "en": "Test statistic from per-group rank sums R_i"
+        }
+      },
+      {
+        "label": "C",
+        "latex": "C = 1 - \\frac{\\sum (t^3 - t)}{N^3 - N}",
+        "description": {
+          "de": "Tie-Korrekturfaktor (H wird durch C geteilt)",
+          "en": "Tie correction factor (H is divided by C)"
+        }
+      },
+      {
+        "label": "H₀",
+        "latex": "H_0: F_1 = F_2 = \\dots = F_k",
+        "description": {
+          "de": "Nullhypothese: Alle Verteilungen sind identisch",
+          "en": "Null hypothesis: All distributions are identical"
+        }
+      }
+    ],
+    "assumptions": [
+      { "de": "Beobachtungen sind unabhängig", "en": "Observations are independent" },
+      { "de": "Stetige (oder zumindest ordinale) Daten", "en": "Continuous (or at least ordinal) data" },
+      { "de": "Verteilungen haben unter H₁ ähnliche Form (für Lokationstest)", "en": "Distributions have similar shape under H₁ (for location test)" }
+    ],
+    "limitations": [
+      { "de": "χ²-Approximation ungenau bei sehr kleinen Stichproben", "en": "χ² approximation inaccurate for very small samples" },
+      { "de": "Omnibus-Test — sagt nicht welche Gruppe abweicht", "en": "Omnibus test — does not identify which group differs" }
+    ],
+    "references": [
+      { "source": "Kruskal, W. H. & Wallis, W. A. (1952), Use of ranks in one-criterion variance analysis, JASA, 47(260), 583–621" },
+      { "source": "NIST/SEMATECH e-Handbook of Statistical Methods" }
+    ],
+    "minitab_equivalent": "Stat > Nonparametrics > Kruskal-Wallis"
+  },
+
+  "source": {
+    "function_name": "kruskalWallis",
+    "file_path": "js/engines/hypothesis-test-engine.js",
+    "signature": {
+      "parameters": [
+        {
+          "name": "groups",
+          "type": "number[][]",
+          "required": true,
+          "description": { "de": "Array von k Stichproben", "en": "Array of k samples" }
+        },
+        {
+          "name": "alpha",
+          "type": "number",
+          "required": false,
+          "description": { "de": "Signifikanzniveau (Standard: 0.05)", "en": "Significance level (default: 0.05)" }
+        }
+      ],
+      "returns": {
+        "type": "object",
+        "properties": {
+          "statistic": { "type": "number", "description": { "de": "H-Teststatistik", "en": "H test statistic" } },
+          "pValue": { "type": "number", "description": { "de": "p-Wert", "en": "p-value" } },
+          "df": { "type": "number", "description": { "de": "Freiheitsgrade (k−1)", "en": "Degrees of freedom (k−1)" } },
+          "rankSums": { "type": "number[]", "description": { "de": "Rangsumme pro Gruppe", "en": "Rank sum per group" } },
+          "reject": { "type": "boolean", "description": { "de": "H₀ abgelehnt?", "en": "Reject H₀?" } }
+        }
+      }
+    },
+    "code_snippet": null
+  },
+
+  "try_it": {
+    "input_schema": {
+      "fields": [
+        {
+          "name": "groups",
+          "label": { "de": "Gruppen (eine Zeile pro Gruppe)", "en": "Groups (one line per group)" },
+          "type": "textarea",
+          "placeholder": { "de": "z.B.\n1.2, 1.5, 1.4\n2.1, 2.3, 2.0\n1.8, 1.9, 2.0", "en": "e.g.\n1.2, 1.5, 1.4\n2.1, 2.3, 2.0\n1.8, 1.9, 2.0" },
+          "parse_as": "number_array_2d",
+          "required": true
+        },
+        {
+          "name": "alpha",
+          "label": { "de": "Signifikanzniveau α", "en": "Significance Level α" },
+          "type": "number",
+          "placeholder": { "de": "0.05", "en": "0.05" },
+          "parse_as": "number",
+          "required": false
+        }
+      ]
+    },
+    "output_schema": {
+      "display_fields": ["statistic", "pValue", "df", "k", "N", "reject"],
+      "primary_field": "statistic",
+      "format": {
+        "statistic": { "decimals": 6, "label": "H" },
+        "pValue": { "decimals": 6, "label": "p-Value" },
+        "df": { "decimals": 0, "label": "df" },
+        "k": { "decimals": 0, "label": "k" },
+        "N": { "decimals": 0, "label": "N" },
+        "reject": { "decimals": 0, "label": { "de": "H₀ abgelehnt", "en": "Reject H₀" } }
+      }
+    }
+  },
+
+  "changelog": [
+    {
+      "version": "1.0.0",
+      "date": "2026-05-06",
+      "type": "initial",
+      "description": {
+        "de": "Erstimplementierung mit Tie-Korrektur",
+        "en": "Initial implementation with tie correction"
+      },
+      "breaking": false
+    }
+  ]
+}

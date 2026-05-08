@@ -1,0 +1,1581 @@
+{
+  "algorithm_id": "vif",
+  "generated_with": {
+    "python": "3.10.12",
+    "scipy": "1.15.3",
+    "numpy": "2.2.6"
+  },
+  "generated_at": "2026-04-11T12:55:26.579246+00:00",
+  "generator_script": "tools/fixture-generator/generate_fixtures.py",
+  "generator_version": "1.0.0",
+  "tolerances": {
+    "default": {
+      "relative": 1e-10,
+      "absolute": 1e-12
+    },
+    "overrides": {
+      "non_orthogonal": {
+        "relative": 1e-08,
+        "absolute": 1e-10,
+        "reason": "Non-orthogonal designs may accumulate floating-point error in matrix inversion"
+      }
+    }
+  },
+  "test_cases": [
+    {
+      "id": "vif_2k_full_2factors",
+      "tier": "standard",
+      "description": "2² full factorial — orthogonal, all VIFs = 1",
+      "reference": "NumPy (X'X)⁻¹ · n",
+      "inputs": {
+        "codedMatrix": [
+          [
+            -1,
+            -1
+          ],
+          [
+            -1,
+            1
+          ],
+          [
+            1,
+            -1
+          ],
+          [
+            1,
+            1
+          ]
+        ]
+      },
+      "expected": [
+        {
+          "term": "A",
+          "vif": 1.0
+        },
+        {
+          "term": "B",
+          "vif": 1.0
+        },
+        {
+          "term": "A×B",
+          "vif": 1.0
+        }
+      ]
+    },
+    {
+      "id": "vif_2k_full_3factors",
+      "tier": "standard",
+      "description": "2³ full factorial — 8 runs, orthogonal, all VIFs = 1",
+      "reference": "NumPy (X'X)⁻¹ · n",
+      "inputs": {
+        "codedMatrix": [
+          [
+            -1,
+            -1,
+            -1
+          ],
+          [
+            -1,
+            -1,
+            1
+          ],
+          [
+            -1,
+            1,
+            -1
+          ],
+          [
+            -1,
+            1,
+            1
+          ],
+          [
+            1,
+            -1,
+            -1
+          ],
+          [
+            1,
+            -1,
+            1
+          ],
+          [
+            1,
+            1,
+            -1
+          ],
+          [
+            1,
+            1,
+            1
+          ]
+        ]
+      },
+      "expected": [
+        {
+          "term": "A",
+          "vif": 1.0
+        },
+        {
+          "term": "B",
+          "vif": 1.0
+        },
+        {
+          "term": "C",
+          "vif": 1.0
+        },
+        {
+          "term": "A×B",
+          "vif": 1.0
+        },
+        {
+          "term": "A×C",
+          "vif": 1.0
+        },
+        {
+          "term": "B×C",
+          "vif": 1.0
+        }
+      ]
+    },
+    {
+      "id": "vif_2k_full_4factors",
+      "tier": "standard",
+      "description": "2⁴ full factorial — 16 runs, orthogonal, all VIFs = 1",
+      "reference": "NumPy (X'X)⁻¹ · n",
+      "inputs": {
+        "codedMatrix": [
+          [
+            -1,
+            -1,
+            -1,
+            -1
+          ],
+          [
+            -1,
+            -1,
+            -1,
+            1
+          ],
+          [
+            -1,
+            -1,
+            1,
+            -1
+          ],
+          [
+            -1,
+            -1,
+            1,
+            1
+          ],
+          [
+            -1,
+            1,
+            -1,
+            -1
+          ],
+          [
+            -1,
+            1,
+            -1,
+            1
+          ],
+          [
+            -1,
+            1,
+            1,
+            -1
+          ],
+          [
+            -1,
+            1,
+            1,
+            1
+          ],
+          [
+            1,
+            -1,
+            -1,
+            -1
+          ],
+          [
+            1,
+            -1,
+            -1,
+            1
+          ],
+          [
+            1,
+            -1,
+            1,
+            -1
+          ],
+          [
+            1,
+            -1,
+            1,
+            1
+          ],
+          [
+            1,
+            1,
+            -1,
+            -1
+          ],
+          [
+            1,
+            1,
+            -1,
+            1
+          ],
+          [
+            1,
+            1,
+            1,
+            -1
+          ],
+          [
+            1,
+            1,
+            1,
+            1
+          ]
+        ]
+      },
+      "expected": [
+        {
+          "term": "A",
+          "vif": 1.0
+        },
+        {
+          "term": "B",
+          "vif": 1.0
+        },
+        {
+          "term": "C",
+          "vif": 1.0
+        },
+        {
+          "term": "D",
+          "vif": 1.0
+        },
+        {
+          "term": "A×B",
+          "vif": 1.0
+        },
+        {
+          "term": "A×C",
+          "vif": 1.0
+        },
+        {
+          "term": "A×D",
+          "vif": 1.0
+        },
+        {
+          "term": "B×C",
+          "vif": 1.0
+        },
+        {
+          "term": "B×D",
+          "vif": 1.0
+        },
+        {
+          "term": "C×D",
+          "vif": 1.0
+        }
+      ]
+    },
+    {
+      "id": "vif_2k5m1_res_v",
+      "tier": "standard",
+      "description": "2⁵⁻¹ Resolution V (E=ABCD) — 16 runs, orthogonal for main + 2FI",
+      "reference": "NumPy (X'X)⁻¹ · n",
+      "inputs": {
+        "codedMatrix": [
+          [
+            -1,
+            -1,
+            -1,
+            -1,
+            1
+          ],
+          [
+            -1,
+            -1,
+            -1,
+            1,
+            -1
+          ],
+          [
+            -1,
+            -1,
+            1,
+            -1,
+            -1
+          ],
+          [
+            -1,
+            -1,
+            1,
+            1,
+            1
+          ],
+          [
+            -1,
+            1,
+            -1,
+            -1,
+            -1
+          ],
+          [
+            -1,
+            1,
+            -1,
+            1,
+            1
+          ],
+          [
+            -1,
+            1,
+            1,
+            -1,
+            1
+          ],
+          [
+            -1,
+            1,
+            1,
+            1,
+            -1
+          ],
+          [
+            1,
+            -1,
+            -1,
+            -1,
+            -1
+          ],
+          [
+            1,
+            -1,
+            -1,
+            1,
+            1
+          ],
+          [
+            1,
+            -1,
+            1,
+            -1,
+            1
+          ],
+          [
+            1,
+            -1,
+            1,
+            1,
+            -1
+          ],
+          [
+            1,
+            1,
+            -1,
+            -1,
+            1
+          ],
+          [
+            1,
+            1,
+            -1,
+            1,
+            -1
+          ],
+          [
+            1,
+            1,
+            1,
+            -1,
+            -1
+          ],
+          [
+            1,
+            1,
+            1,
+            1,
+            1
+          ]
+        ]
+      },
+      "expected": [
+        {
+          "term": "A",
+          "vif": 1.0
+        },
+        {
+          "term": "B",
+          "vif": 1.0
+        },
+        {
+          "term": "C",
+          "vif": 1.0
+        },
+        {
+          "term": "D",
+          "vif": 1.0
+        },
+        {
+          "term": "E",
+          "vif": 1.0
+        },
+        {
+          "term": "A×B",
+          "vif": 1.0
+        },
+        {
+          "term": "A×C",
+          "vif": 1.0
+        },
+        {
+          "term": "A×D",
+          "vif": 1.0
+        },
+        {
+          "term": "A×E",
+          "vif": 1.0
+        },
+        {
+          "term": "B×C",
+          "vif": 1.0
+        },
+        {
+          "term": "B×D",
+          "vif": 1.0
+        },
+        {
+          "term": "B×E",
+          "vif": 1.0
+        },
+        {
+          "term": "C×D",
+          "vif": 1.0
+        },
+        {
+          "term": "C×E",
+          "vif": 1.0
+        },
+        {
+          "term": "D×E",
+          "vif": 1.0
+        }
+      ]
+    },
+    {
+      "id": "vif_2k_centers_2factors",
+      "tier": "standard",
+      "description": "2² + 3 center points — non-orthogonal, VIFs > 1",
+      "reference": "NumPy (X'X)⁻¹ · n",
+      "inputs": {
+        "codedMatrix": [
+          [
+            -1,
+            -1
+          ],
+          [
+            -1,
+            1
+          ],
+          [
+            1,
+            -1
+          ],
+          [
+            1,
+            1
+          ],
+          [
+            0,
+            0
+          ],
+          [
+            0,
+            0
+          ],
+          [
+            0,
+            0
+          ]
+        ]
+      },
+      "tolerance_override": "non_orthogonal",
+      "expected": [
+        {
+          "term": "A",
+          "vif": 1.75
+        },
+        {
+          "term": "B",
+          "vif": 1.75
+        },
+        {
+          "term": "A×B",
+          "vif": 1.75
+        }
+      ]
+    },
+    {
+      "id": "vif_2k_centers_3factors",
+      "tier": "standard",
+      "description": "2³ + 4 center points — non-orthogonal, VIFs > 1",
+      "reference": "NumPy (X'X)⁻¹ · n",
+      "inputs": {
+        "codedMatrix": [
+          [
+            -1,
+            -1,
+            -1
+          ],
+          [
+            -1,
+            -1,
+            1
+          ],
+          [
+            -1,
+            1,
+            -1
+          ],
+          [
+            -1,
+            1,
+            1
+          ],
+          [
+            1,
+            -1,
+            -1
+          ],
+          [
+            1,
+            -1,
+            1
+          ],
+          [
+            1,
+            1,
+            -1
+          ],
+          [
+            1,
+            1,
+            1
+          ],
+          [
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0
+          ]
+        ]
+      },
+      "tolerance_override": "non_orthogonal",
+      "expected": [
+        {
+          "term": "A",
+          "vif": 1.5
+        },
+        {
+          "term": "B",
+          "vif": 1.5
+        },
+        {
+          "term": "C",
+          "vif": 1.5
+        },
+        {
+          "term": "A×B",
+          "vif": 1.5
+        },
+        {
+          "term": "A×C",
+          "vif": 1.5
+        },
+        {
+          "term": "B×C",
+          "vif": 1.5
+        }
+      ]
+    },
+    {
+      "id": "vif_3level_full_2factors",
+      "tier": "standard",
+      "description": "3² full factorial with levels (−1, 0, 1) — non-orthogonal for the ×-interaction term",
+      "reference": "NumPy (X'X)⁻¹ · n",
+      "inputs": {
+        "codedMatrix": [
+          [
+            -1,
+            -1
+          ],
+          [
+            -1,
+            0
+          ],
+          [
+            -1,
+            1
+          ],
+          [
+            0,
+            -1
+          ],
+          [
+            0,
+            0
+          ],
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            -1
+          ],
+          [
+            1,
+            0
+          ],
+          [
+            1,
+            1
+          ]
+        ]
+      },
+      "tolerance_override": "non_orthogonal",
+      "expected": [
+        {
+          "term": "A",
+          "vif": 1.5
+        },
+        {
+          "term": "B",
+          "vif": 1.5
+        },
+        {
+          "term": "A×B",
+          "vif": 2.25
+        }
+      ]
+    },
+    {
+      "id": "vif_unbalanced_replication",
+      "tier": "standard",
+      "description": "2² with one replicated corner — non-orthogonal, finite VIFs",
+      "reference": "NumPy (X'X)⁻¹ · n",
+      "inputs": {
+        "codedMatrix": [
+          [
+            -1,
+            -1
+          ],
+          [
+            -1,
+            1
+          ],
+          [
+            1,
+            -1
+          ],
+          [
+            1,
+            1
+          ],
+          [
+            1,
+            1
+          ]
+        ]
+      },
+      "tolerance_override": "non_orthogonal",
+      "expected": [
+        {
+          "term": "A",
+          "vif": 1.0937499999999998
+        },
+        {
+          "term": "B",
+          "vif": 1.0937499999999998
+        },
+        {
+          "term": "A×B",
+          "vif": 1.09375
+        }
+      ]
+    },
+    {
+      "id": "vif_pb8_main_2fi_singular",
+      "tier": "robustness",
+      "description": "Plackett-Burman 8-run, 7 factors — model saturates (7 main + 21 2FI in 8 runs), singular",
+      "reference": "NumPy (X'X)⁻¹ · n",
+      "inputs": {
+        "codedMatrix": [
+          [
+            1,
+            1,
+            1,
+            -1,
+            1,
+            -1,
+            -1
+          ],
+          [
+            -1,
+            1,
+            1,
+            1,
+            -1,
+            1,
+            -1
+          ],
+          [
+            -1,
+            -1,
+            1,
+            1,
+            1,
+            -1,
+            1
+          ],
+          [
+            1,
+            -1,
+            -1,
+            1,
+            1,
+            1,
+            -1
+          ],
+          [
+            -1,
+            1,
+            -1,
+            -1,
+            1,
+            1,
+            1
+          ],
+          [
+            1,
+            -1,
+            1,
+            -1,
+            -1,
+            1,
+            1
+          ],
+          [
+            1,
+            1,
+            -1,
+            1,
+            -1,
+            -1,
+            1
+          ],
+          [
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1
+          ]
+        ]
+      },
+      "expected": [
+        {
+          "term": "A",
+          "vif": "Infinity"
+        },
+        {
+          "term": "B",
+          "vif": "Infinity"
+        },
+        {
+          "term": "C",
+          "vif": "Infinity"
+        },
+        {
+          "term": "D",
+          "vif": "Infinity"
+        },
+        {
+          "term": "E",
+          "vif": "Infinity"
+        },
+        {
+          "term": "F",
+          "vif": "Infinity"
+        },
+        {
+          "term": "G",
+          "vif": "Infinity"
+        },
+        {
+          "term": "A×B",
+          "vif": "Infinity"
+        },
+        {
+          "term": "A×C",
+          "vif": "Infinity"
+        },
+        {
+          "term": "A×D",
+          "vif": "Infinity"
+        },
+        {
+          "term": "A×E",
+          "vif": "Infinity"
+        },
+        {
+          "term": "A×F",
+          "vif": "Infinity"
+        },
+        {
+          "term": "A×G",
+          "vif": "Infinity"
+        },
+        {
+          "term": "B×C",
+          "vif": "Infinity"
+        },
+        {
+          "term": "B×D",
+          "vif": "Infinity"
+        },
+        {
+          "term": "B×E",
+          "vif": "Infinity"
+        },
+        {
+          "term": "B×F",
+          "vif": "Infinity"
+        },
+        {
+          "term": "B×G",
+          "vif": "Infinity"
+        },
+        {
+          "term": "C×D",
+          "vif": "Infinity"
+        },
+        {
+          "term": "C×E",
+          "vif": "Infinity"
+        },
+        {
+          "term": "C×F",
+          "vif": "Infinity"
+        },
+        {
+          "term": "C×G",
+          "vif": "Infinity"
+        },
+        {
+          "term": "D×E",
+          "vif": "Infinity"
+        },
+        {
+          "term": "D×F",
+          "vif": "Infinity"
+        },
+        {
+          "term": "D×G",
+          "vif": "Infinity"
+        },
+        {
+          "term": "E×F",
+          "vif": "Infinity"
+        },
+        {
+          "term": "E×G",
+          "vif": "Infinity"
+        },
+        {
+          "term": "F×G",
+          "vif": "Infinity"
+        }
+      ]
+    },
+    {
+      "id": "vif_edge_min_1factor",
+      "tier": "edge",
+      "description": "Minimal: 1 factor, 2 runs — saturated, VIF = 1",
+      "reference": "NumPy (X'X)⁻¹ · n",
+      "inputs": {
+        "codedMatrix": [
+          [
+            -1
+          ],
+          [
+            1
+          ]
+        ]
+      },
+      "expected": [
+        {
+          "term": "A",
+          "vif": 1.0
+        }
+      ]
+    },
+    {
+      "id": "vif_edge_2factor_3runs",
+      "tier": "edge",
+      "description": "2 factors, 3 runs — below minimum for full 2FI model, singular X'X",
+      "reference": "NumPy (X'X)⁻¹ · n",
+      "inputs": {
+        "codedMatrix": [
+          [
+            -1,
+            -1
+          ],
+          [
+            -1,
+            1
+          ],
+          [
+            1,
+            -1
+          ]
+        ]
+      },
+      "expected": [
+        {
+          "term": "A",
+          "vif": "Infinity"
+        },
+        {
+          "term": "B",
+          "vif": "Infinity"
+        },
+        {
+          "term": "A×B",
+          "vif": "Infinity"
+        }
+      ]
+    },
+    {
+      "id": "vif_edge_2factor_near_collinear",
+      "tier": "edge",
+      "description": "2 factors with correlated columns (VIFs moderately inflated)",
+      "reference": "NumPy (X'X)⁻¹ · n",
+      "inputs": {
+        "codedMatrix": [
+          [
+            -1,
+            -1
+          ],
+          [
+            -1,
+            -1
+          ],
+          [
+            1,
+            1
+          ],
+          [
+            1,
+            1
+          ],
+          [
+            -1,
+            1
+          ],
+          [
+            1,
+            -1
+          ]
+        ]
+      },
+      "tolerance_override": "non_orthogonal",
+      "expected": [
+        {
+          "term": "A",
+          "vif": 1.125
+        },
+        {
+          "term": "B",
+          "vif": 1.125
+        },
+        {
+          "term": "A×B",
+          "vif": 1.125
+        }
+      ]
+    },
+    {
+      "id": "vif_robustness_singular_2k3m1",
+      "tier": "robustness",
+      "description": "2³⁻¹ Resolution III — aliased main effects, singular X'X",
+      "reference": "NumPy (X'X)⁻¹ · n",
+      "inputs": {
+        "codedMatrix": [
+          [
+            -1,
+            -1,
+            1
+          ],
+          [
+            -1,
+            1,
+            -1
+          ],
+          [
+            1,
+            -1,
+            -1
+          ],
+          [
+            1,
+            1,
+            1
+          ]
+        ]
+      },
+      "expected": [
+        {
+          "term": "A",
+          "vif": "Infinity"
+        },
+        {
+          "term": "B",
+          "vif": "Infinity"
+        },
+        {
+          "term": "C",
+          "vif": "Infinity"
+        },
+        {
+          "term": "A×B",
+          "vif": "Infinity"
+        },
+        {
+          "term": "A×C",
+          "vif": "Infinity"
+        },
+        {
+          "term": "B×C",
+          "vif": "Infinity"
+        }
+      ]
+    },
+    {
+      "id": "vif_robustness_singular_2k4m1",
+      "tier": "robustness",
+      "description": "2⁴⁻¹ Resolution IV — 2FIs aliased (AB=CD etc.), rank-deficient",
+      "reference": "NumPy (X'X)⁻¹ · n",
+      "inputs": {
+        "codedMatrix": [
+          [
+            -1,
+            -1,
+            -1,
+            -1
+          ],
+          [
+            -1,
+            -1,
+            1,
+            1
+          ],
+          [
+            -1,
+            1,
+            -1,
+            1
+          ],
+          [
+            -1,
+            1,
+            1,
+            -1
+          ],
+          [
+            1,
+            -1,
+            -1,
+            1
+          ],
+          [
+            1,
+            -1,
+            1,
+            -1
+          ],
+          [
+            1,
+            1,
+            -1,
+            -1
+          ],
+          [
+            1,
+            1,
+            1,
+            1
+          ]
+        ]
+      },
+      "expected": [
+        {
+          "term": "A",
+          "vif": "Infinity"
+        },
+        {
+          "term": "B",
+          "vif": "Infinity"
+        },
+        {
+          "term": "C",
+          "vif": "Infinity"
+        },
+        {
+          "term": "D",
+          "vif": "Infinity"
+        },
+        {
+          "term": "A×B",
+          "vif": "Infinity"
+        },
+        {
+          "term": "A×C",
+          "vif": "Infinity"
+        },
+        {
+          "term": "A×D",
+          "vif": "Infinity"
+        },
+        {
+          "term": "B×C",
+          "vif": "Infinity"
+        },
+        {
+          "term": "B×D",
+          "vif": "Infinity"
+        },
+        {
+          "term": "C×D",
+          "vif": "Infinity"
+        }
+      ]
+    },
+    {
+      "id": "vif_robustness_duplicated_rows",
+      "tier": "robustness",
+      "description": "All runs identical — zero variation, singular",
+      "reference": "NumPy (X'X)⁻¹ · n",
+      "inputs": {
+        "codedMatrix": [
+          [
+            1,
+            1
+          ],
+          [
+            1,
+            1
+          ],
+          [
+            1,
+            1
+          ],
+          [
+            1,
+            1
+          ]
+        ]
+      },
+      "expected": [
+        {
+          "term": "A",
+          "vif": "Infinity"
+        },
+        {
+          "term": "B",
+          "vif": "Infinity"
+        },
+        {
+          "term": "A×B",
+          "vif": "Infinity"
+        }
+      ]
+    },
+    {
+      "id": "vif_stress_2k6m1",
+      "tier": "stress",
+      "description": "2⁶⁻¹ Resolution VI (F=ABCDE) — 32 runs, orthogonal main + 2FI",
+      "reference": "NumPy (X'X)⁻¹ · n",
+      "inputs": {
+        "codedMatrix": [
+          [
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1
+          ],
+          [
+            -1,
+            -1,
+            -1,
+            -1,
+            1,
+            1
+          ],
+          [
+            -1,
+            -1,
+            -1,
+            1,
+            -1,
+            1
+          ],
+          [
+            -1,
+            -1,
+            -1,
+            1,
+            1,
+            -1
+          ],
+          [
+            -1,
+            -1,
+            1,
+            -1,
+            -1,
+            1
+          ],
+          [
+            -1,
+            -1,
+            1,
+            -1,
+            1,
+            -1
+          ],
+          [
+            -1,
+            -1,
+            1,
+            1,
+            -1,
+            -1
+          ],
+          [
+            -1,
+            -1,
+            1,
+            1,
+            1,
+            1
+          ],
+          [
+            -1,
+            1,
+            -1,
+            -1,
+            -1,
+            1
+          ],
+          [
+            -1,
+            1,
+            -1,
+            -1,
+            1,
+            -1
+          ],
+          [
+            -1,
+            1,
+            -1,
+            1,
+            -1,
+            -1
+          ],
+          [
+            -1,
+            1,
+            -1,
+            1,
+            1,
+            1
+          ],
+          [
+            -1,
+            1,
+            1,
+            -1,
+            -1,
+            -1
+          ],
+          [
+            -1,
+            1,
+            1,
+            -1,
+            1,
+            1
+          ],
+          [
+            -1,
+            1,
+            1,
+            1,
+            -1,
+            1
+          ],
+          [
+            -1,
+            1,
+            1,
+            1,
+            1,
+            -1
+          ],
+          [
+            1,
+            -1,
+            -1,
+            -1,
+            -1,
+            1
+          ],
+          [
+            1,
+            -1,
+            -1,
+            -1,
+            1,
+            -1
+          ],
+          [
+            1,
+            -1,
+            -1,
+            1,
+            -1,
+            -1
+          ],
+          [
+            1,
+            -1,
+            -1,
+            1,
+            1,
+            1
+          ],
+          [
+            1,
+            -1,
+            1,
+            -1,
+            -1,
+            -1
+          ],
+          [
+            1,
+            -1,
+            1,
+            -1,
+            1,
+            1
+          ],
+          [
+            1,
+            -1,
+            1,
+            1,
+            -1,
+            1
+          ],
+          [
+            1,
+            -1,
+            1,
+            1,
+            1,
+            -1
+          ],
+          [
+            1,
+            1,
+            -1,
+            -1,
+            -1,
+            -1
+          ],
+          [
+            1,
+            1,
+            -1,
+            -1,
+            1,
+            1
+          ],
+          [
+            1,
+            1,
+            -1,
+            1,
+            -1,
+            1
+          ],
+          [
+            1,
+            1,
+            -1,
+            1,
+            1,
+            -1
+          ],
+          [
+            1,
+            1,
+            1,
+            -1,
+            -1,
+            1
+          ],
+          [
+            1,
+            1,
+            1,
+            -1,
+            1,
+            -1
+          ],
+          [
+            1,
+            1,
+            1,
+            1,
+            -1,
+            -1
+          ],
+          [
+            1,
+            1,
+            1,
+            1,
+            1,
+            1
+          ]
+        ]
+      },
+      "expected": [
+        {
+          "term": "A",
+          "vif": 1.0
+        },
+        {
+          "term": "B",
+          "vif": 1.0
+        },
+        {
+          "term": "C",
+          "vif": 1.0
+        },
+        {
+          "term": "D",
+          "vif": 1.0
+        },
+        {
+          "term": "E",
+          "vif": 1.0
+        },
+        {
+          "term": "F",
+          "vif": 1.0
+        },
+        {
+          "term": "A×B",
+          "vif": 1.0
+        },
+        {
+          "term": "A×C",
+          "vif": 1.0
+        },
+        {
+          "term": "A×D",
+          "vif": 1.0
+        },
+        {
+          "term": "A×E",
+          "vif": 1.0
+        },
+        {
+          "term": "A×F",
+          "vif": 1.0
+        },
+        {
+          "term": "B×C",
+          "vif": 1.0
+        },
+        {
+          "term": "B×D",
+          "vif": 1.0
+        },
+        {
+          "term": "B×E",
+          "vif": 1.0
+        },
+        {
+          "term": "B×F",
+          "vif": 1.0
+        },
+        {
+          "term": "C×D",
+          "vif": 1.0
+        },
+        {
+          "term": "C×E",
+          "vif": 1.0
+        },
+        {
+          "term": "C×F",
+          "vif": 1.0
+        },
+        {
+          "term": "D×E",
+          "vif": 1.0
+        },
+        {
+          "term": "D×F",
+          "vif": 1.0
+        },
+        {
+          "term": "E×F",
+          "vif": 1.0
+        }
+      ]
+    }
+  ]
+}

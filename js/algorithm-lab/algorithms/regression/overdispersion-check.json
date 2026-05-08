@@ -1,0 +1,176 @@
+{
+  "id": "overdispersion-check",
+  "name": {
+    "de": "Überdispersions-Check",
+    "en": "Overdispersion Check"
+  },
+  "category": "regression",
+  "subcategory": "diagnostics",
+  "status": "validated",
+  "version": "1.0.0",
+
+  "description": {
+    "short": {
+      "de": "Prüft auf Überdispersion in Zähldatenmodellen anhand des Pearson-χ²/df-Verhältnisses.",
+      "en": "Checks for overdispersion in count data models using the Pearson χ²/df ratio."
+    },
+    "long": {
+      "de": "Der Überdispersions-Check bewertet, ob die beobachtete Varianz in einem Poisson- oder Negativ-Binomial-GLM die modellierte Varianz übersteigt. Dazu wird die Pearson-χ²-Statistik aus den Pearson-Residuen berechnet und durch die Freiheitsgrade (n − p) geteilt. Ein Verhältnis nahe 1 deutet auf korrekte Dispersion hin, Werte > 1,5 auf Überdispersion und Werte > 3 auf schwere Überdispersion. In diesen Fällen sind die Standardfehler des Poisson-Modells zu klein, und es sollte ein alternatives Modell (Quasi-Poisson, Negativ-Binomial) verwendet werden.",
+      "en": "The overdispersion check evaluates whether the observed variance in a Poisson or negative binomial GLM exceeds the modelled variance. The Pearson χ² statistic is computed from the Pearson residuals and divided by the degrees of freedom (n − p). A ratio close to 1 indicates correct dispersion, values > 1.5 indicate overdispersion, and values > 3 indicate severe overdispersion. In these cases the Poisson model's standard errors are too small, and an alternative model (quasi-Poisson, negative binomial) should be used."
+    }
+  },
+
+  "documentation": {
+    "formulas": [
+      {
+        "label": "Pearson-Residuum",
+        "latex": "r_{P,i} = \\frac{y_i - \\hat{\\mu}_i}{\\sqrt{V(\\hat{\\mu}_i)}}",
+        "description": {
+          "de": "Pearson-Residuum: Differenz zwischen beobachtetem und geschätztem Wert, standardisiert durch die Wurzel der Varianzfunktion",
+          "en": "Pearson residual: difference between observed and fitted value, standardised by the square root of the variance function"
+        }
+      },
+      {
+        "label": "Pearson χ²",
+        "latex": "\\chi^2_P = \\sum_{i=1}^{n} r_{P,i}^2",
+        "description": {
+          "de": "Pearson-χ²-Statistik: Summe der quadrierten Pearson-Residuen",
+          "en": "Pearson χ² statistic: sum of squared Pearson residuals"
+        }
+      },
+      {
+        "label": "Dispersionsschätzer",
+        "latex": "\\hat{\\varphi} = \\frac{\\chi^2_P}{n - p}",
+        "description": {
+          "de": "Dispersionsschätzer: Pearson-χ² dividiert durch Freiheitsgrade",
+          "en": "Dispersion estimate: Pearson χ² divided by degrees of freedom"
+        }
+      },
+      {
+        "label": "Erwartungswert unter Poisson",
+        "latex": "E(\\hat{\\varphi}) \\approx 1 \\quad \\text{falls Modell korrekt}",
+        "description": {
+          "de": "Unter einem korrekt spezifizierten Poisson-Modell ist der erwartete Dispersionsschätzer ungefähr 1",
+          "en": "Under a correctly specified Poisson model the expected dispersion estimate is approximately 1"
+        }
+      },
+      {
+        "label": "Entscheidungsregeln",
+        "latex": "\\hat{\\varphi} > 1{,}5 \\Rightarrow \\text{Überdispersion}, \\quad \\hat{\\varphi} > 3 \\Rightarrow \\text{schwere Überdispersion}",
+        "description": {
+          "de": "Faustregel-Schwellenwerte zur Beurteilung der Überdispersion",
+          "en": "Rule-of-thumb thresholds for assessing overdispersion"
+        }
+      }
+    ],
+    "assumptions": [
+      { "de": "Pearson-Residuen stammen aus einem Zähldatenmodell (Poisson- oder NegBin-GLM)", "en": "Pearson residuals come from a count data model (Poisson or NegBin GLM)" },
+      { "de": "Korrekte Mittelwertstruktur (ein falsch spezifizierter Mittelwert bläht χ² auf)", "en": "Correct mean structure (misspecified mean inflates χ²)" },
+      { "de": "Unabhängige Beobachtungen", "en": "Independent observations" }
+    ],
+    "limitations": [
+      { "de": "Faustregel-Schwellenwerte (1,5 / 3) — kein formaler Hypothesentest enthalten", "en": "Rule-of-thumb thresholds (1.5 / 3) — no formal hypothesis test provided" },
+      { "de": "Unterdispersion (Verhältnis ≪ 1) kann ebenfalls auf Modellfehlspezifikation hindeuten", "en": "Underdispersion (ratio << 1) may also indicate model misspecification" },
+      { "de": "Unterscheidet nicht zwischen Überdispersion und Zero-Inflation", "en": "Does not distinguish overdispersion from zero-inflation" },
+      { "de": "Kleine Stichproben: der χ²/df-Schätzer hat eine hohe Varianz", "en": "Small samples: χ²/df estimate has high variance" }
+    ],
+    "references": [
+      { "source": "Cameron, A. C., Trivedi, P. K. (2013), Regression Analysis of Count Data, 2nd Ed., Cambridge University Press, Ch. 3.4" },
+      { "source": "Hilbe, J. M. (2014), Modeling Count Data, Cambridge University Press, Ch. 5" }
+    ],
+    "minitab_equivalent": "Stat > Regression > Poisson Regression > Results (Goodness-of-Fit)"
+  },
+
+  "source": {
+    "function_name": "overdispersionCheck",
+    "file_path": "js/engines/glm-engine.js",
+    "signature": {
+      "parameters": [
+        {
+          "name": "pearsonResid",
+          "type": "number[]",
+          "required": true,
+          "description": { "de": "Pearson-Residuen aus einem Poisson- oder NegBin-Modell", "en": "Pearson residuals from a Poisson or NegBin model" }
+        },
+        {
+          "name": "n",
+          "type": "number",
+          "required": true,
+          "description": { "de": "Anzahl Beobachtungen", "en": "Number of observations" }
+        },
+        {
+          "name": "p",
+          "type": "number",
+          "required": true,
+          "description": { "de": "Anzahl Modellparameter (inkl. Intercept)", "en": "Number of model parameters (incl. intercept)" }
+        }
+      ],
+      "returns": {
+        "type": "object",
+        "properties": {
+          "pearsonChi2": { "type": "number", "description": { "de": "Pearson-χ²-Statistik = Σ r²_P", "en": "Pearson χ² statistic = Σ r²_P" } },
+          "df": { "type": "number", "description": { "de": "Freiheitsgrade = n − p", "en": "Degrees of freedom = n − p" } },
+          "ratio": { "type": "number", "description": { "de": "χ²/df (Dispersionsschätzer)", "en": "χ²/df (dispersion estimate)" } },
+          "overdispersed": { "type": "boolean", "description": { "de": "true wenn Verhältnis > 1,5", "en": "true if ratio > 1.5" } },
+          "severe": { "type": "boolean", "description": { "de": "true wenn Verhältnis > 3", "en": "true if ratio > 3" } }
+        }
+      }
+    },
+    "code_snippet": null
+  },
+
+  "try_it": {
+    "input_schema": {
+      "fields": [
+        {
+          "name": "pearsonResid",
+          "label": { "de": "Pearson-Residuen", "en": "Pearson Residuals" },
+          "type": "textarea",
+          "placeholder": { "de": "0.5, -1.2, 0.8, -0.3, 2.1, -1.5, 0.4, 1.8, -0.9, 0.2", "en": "0.5, -1.2, 0.8, -0.3, 2.1, -1.5, 0.4, 1.8, -0.9, 0.2" },
+          "parse_as": "number_array",
+          "required": true
+        },
+        {
+          "name": "n",
+          "label": { "de": "Beobachtungen (n)", "en": "Observations (n)" },
+          "type": "number",
+          "placeholder": { "de": "10", "en": "10" },
+          "parse_as": "number",
+          "required": true
+        },
+        {
+          "name": "p",
+          "label": { "de": "Parameter (p)", "en": "Parameters (p)" },
+          "type": "number",
+          "placeholder": { "de": "2", "en": "2" },
+          "parse_as": "number",
+          "required": true
+        }
+      ]
+    },
+    "output_schema": {
+      "display_fields": ["pearsonChi2", "df", "ratio", "overdispersed", "severe"],
+      "primary_field": "ratio",
+      "format": {
+        "pearsonChi2": { "decimals": 4, "label": "Pearson χ²" },
+        "df": { "decimals": 0, "label": "df" },
+        "ratio": { "decimals": 4, "label": "χ²/df" },
+        "overdispersed": { "decimals": null, "label": "Overdispersed" },
+        "severe": { "decimals": null, "label": "Severe" }
+      }
+    }
+  },
+
+  "changelog": [
+    {
+      "version": "1.0.0",
+      "date": "2026-04-27",
+      "type": "initial",
+      "description": {
+        "de": "Erstimplementierung: Überdispersions-Check via Pearson-χ²/df mit Schwellenwerten für moderate und schwere Überdispersion.",
+        "en": "Initial implementation: overdispersion check via Pearson χ²/df with thresholds for moderate and severe overdispersion."
+      },
+      "breaking": false
+    }
+  ]
+}

@@ -1,0 +1,177 @@
+{
+  "id": "correlation-analysis",
+  "name": {
+    "de": "Korrelationsanalyse (Pearson, Spearman, Kendall)",
+    "en": "Correlation Analysis (Pearson, Spearman, Kendall)"
+  },
+  "category": "regression",
+  "subcategory": "correlation",
+  "status": "validated",
+  "version": "1.0.0",
+
+  "description": {
+    "short": {
+      "de": "Berechnet Pearson r, Spearman ρ und Kendall τ inklusive p-Werte und Konfidenzintervallen.",
+      "en": "Computes Pearson r, Spearman ρ and Kendall τ including p-values and confidence intervals."
+    },
+    "long": {
+      "de": "Vollständige Korrelationsanalyse für zwei Variablen: parametrischer Pearson r (lineare Beziehung), rangbasierter Spearman ρ (monotone Beziehung) und Kendall τ (paarbasiertes Konkordanzmaß). Für jede Methode werden Korrelationskoeffizient, t- bzw. z-Statistik, zweiseitiger p-Wert, r² und Fisher- bzw. Normal-approximiertes Konfidenzintervall geliefert.",
+      "en": "Complete correlation analysis for two variables: parametric Pearson r (linear relationship), rank-based Spearman ρ (monotone relationship) and Kendall τ (pair-based concordance measure). For each method the correlation coefficient, t- or z-statistic, two-sided p-value, r² and Fisher- or normal-approximated confidence interval are returned."
+    }
+  },
+
+  "documentation": {
+    "formulas": [
+      {
+        "label": "Pearson",
+        "latex": "r = \\frac{\\sum_{i=1}^{n}(x_i - \\bar{x})(y_i - \\bar{y})}{\\sqrt{\\sum (x_i - \\bar{x})^2 \\cdot \\sum (y_i - \\bar{y})^2}}",
+        "description": {
+          "de": "Pearson-Korrelationskoeffizient: misst lineare Abhängigkeit",
+          "en": "Pearson correlation coefficient: measures linear dependence"
+        }
+      },
+      {
+        "label": "Spearman",
+        "latex": "\\rho = r_{\\text{Pearson}}\\bigl(\\text{rank}(x),\\, \\text{rank}(y)\\bigr)",
+        "description": {
+          "de": "Spearman ρ: Pearson-Korrelation der Ränge (mit Mittelrängen für Bindungen)",
+          "en": "Spearman ρ: Pearson correlation of ranks (using average ranks for ties)"
+        }
+      },
+      {
+        "label": "Kendall",
+        "latex": "\\tau = \\frac{C - D}{\\sqrt{(n_0 - n_x)(n_0 - n_y)}}",
+        "description": {
+          "de": "Kendall τ_b: konkordante minus diskordante Paare, normiert auf bindungs­korrigierte maximale Anzahl",
+          "en": "Kendall τ_b: concordant minus discordant pairs, normalised by tie-corrected maximum"
+        }
+      },
+      {
+        "label": "t-Statistik",
+        "latex": "t = r \\sqrt{\\frac{n - 2}{1 - r^2}} \\sim t(n - 2)",
+        "description": {
+          "de": "t-Statistik für r und ρ; bei |r| = 1 wird t = ±∞ und p = 0 gesetzt (Spezialfall perfekte Korrelation)",
+          "en": "t-statistic for r and ρ; when |r| = 1 we set t = ±∞ and p = 0 (perfect-correlation special case)"
+        }
+      }
+    ],
+    "assumptions": [
+      { "de": "Für exakte Pearson-p-Werte: bivariate Normalverteilung", "en": "For exact Pearson p-values: bivariate normality" },
+      { "de": "Spearman/Kendall: nur monotone Beziehung notwendig", "en": "Spearman/Kendall: only a monotone relationship is required" },
+      { "de": "Beobachtungen sind unabhängig", "en": "Observations are independent" }
+    ],
+    "limitations": [
+      { "de": "Korrelation impliziert keine Kausalität", "en": "Correlation does not imply causation" },
+      { "de": "Pearson reagiert empfindlich auf Ausreißer und nicht-lineare Zusammenhänge", "en": "Pearson is sensitive to outliers and non-linear relationships" },
+      { "de": "Bei perfekter Korrelation (|r| = 1) ist die klassische t-Formel singulär — die Implementierung muss diesen Spezialfall robust behandeln", "en": "For perfect correlation (|r| = 1) the classical t-formula is singular — the implementation must handle this special case robustly" }
+    ],
+    "references": [
+      { "source": "Hollander, M., Wolfe, D. A., Chicken, E. (2013), Nonparametric Statistical Methods, 3rd Ed., Wiley" },
+      { "source": "NIST/SEMATECH e-Handbook of Statistical Methods, Section 1.3.5.13" }
+    ],
+    "minitab_equivalent": "Stat > Basic Statistics > Correlation"
+  },
+
+  "source": {
+    "function_name": "runCorrelationAnalysis",
+    "file_path": "js/engines/correlation-engine.js",
+    "signature": {
+      "parameters": [
+        {
+          "name": "x",
+          "type": "number[]",
+          "required": true,
+          "description": { "de": "Erste Variable (n Werte)", "en": "First variable (n values)" }
+        },
+        {
+          "name": "y",
+          "type": "number[]",
+          "required": true,
+          "description": { "de": "Zweite Variable (n Werte, gleiche Länge wie x)", "en": "Second variable (n values, same length as x)" }
+        },
+        {
+          "name": "confidenceLevel",
+          "type": "number",
+          "required": false,
+          "description": { "de": "Konfidenzniveau (Standard 0.95)", "en": "Confidence level (default 0.95)" }
+        }
+      ],
+      "returns": {
+        "type": "object",
+        "properties": {
+          "n": { "type": "number", "description": { "de": "Stichprobengröße", "en": "Sample size" } },
+          "df": { "type": "number", "description": { "de": "Freiheitsgrade (n − 2)", "en": "Degrees of freedom (n − 2)" } },
+          "pearson.r": { "type": "number", "description": { "de": "Pearson r (auf [−1, 1] geklemmt)", "en": "Pearson r (clamped to [−1, 1])" } },
+          "pearson.t": { "type": "number", "description": { "de": "t-Statistik (±∞ bei perfekter Korrelation)", "en": "t-statistic (±∞ for perfect correlation)" } },
+          "pearson.p": { "type": "number", "description": { "de": "Zweiseitiger p-Wert (= 0 bei perfekter Korrelation)", "en": "Two-sided p-value (= 0 for perfect correlation)" } },
+          "pearson.r2": { "type": "number", "description": { "de": "Bestimmtheitsmaß r²", "en": "Coefficient of determination r²" } },
+          "pearson.ci": { "type": "number[]", "description": { "de": "Fisher-z-Konfidenzintervall [low, high]", "en": "Fisher-z confidence interval [low, high]" } },
+          "spearman.r": { "type": "number", "description": { "de": "Spearman ρ", "en": "Spearman ρ" } },
+          "spearman.p": { "type": "number", "description": { "de": "Zweiseitiger p-Wert für ρ", "en": "Two-sided p-value for ρ" } },
+          "kendall.tau": { "type": "number", "description": { "de": "Kendall τ_b", "en": "Kendall τ_b" } },
+          "kendall.p": { "type": "number", "description": { "de": "Zweiseitiger p-Wert für τ", "en": "Two-sided p-value for τ" } }
+        }
+      }
+    },
+    "code_snippet": null
+  },
+
+  "try_it": {
+    "input_schema": {
+      "fields": [
+        {
+          "name": "x",
+          "label": { "de": "Variable X", "en": "Variable X" },
+          "type": "textarea",
+          "placeholder": { "de": "Werte, getrennt durch Komma, Leerzeichen oder Zeilenumbruch", "en": "Values separated by commas, spaces or newlines" },
+          "parse_as": "number_array",
+          "required": true
+        },
+        {
+          "name": "y",
+          "label": { "de": "Variable Y", "en": "Variable Y" },
+          "type": "textarea",
+          "placeholder": { "de": "Werte, gleiche Länge wie X", "en": "Values, same length as X" },
+          "parse_as": "number_array",
+          "required": true
+        },
+        {
+          "name": "confidenceLevel",
+          "label": { "de": "Konfidenzniveau", "en": "Confidence Level" },
+          "type": "number",
+          "placeholder": { "de": "0.95", "en": "0.95" },
+          "parse_as": "number",
+          "required": false
+        }
+      ]
+    },
+    "output_schema": {
+      "display_fields": ["n", "pearson.r", "pearson.t", "pearson.p", "pearson.r2", "spearman.r", "spearman.p", "kendall.tau", "kendall.p"],
+      "primary_field": "pearson.r",
+      "format": {
+        "n": { "decimals": 0, "label": "n" },
+        "pearson.r": { "decimals": 6, "label": "Pearson r" },
+        "pearson.t": { "decimals": 4, "label": "t" },
+        "pearson.p": { "decimals": 6, "label": "p (Pearson)" },
+        "pearson.r2": { "decimals": 6, "label": "r²" },
+        "spearman.r": { "decimals": 6, "label": "Spearman ρ" },
+        "spearman.p": { "decimals": 6, "label": "p (Spearman)" },
+        "kendall.tau": { "decimals": 6, "label": "Kendall τ" },
+        "kendall.p": { "decimals": 6, "label": "p (Kendall)" }
+      }
+    }
+  },
+
+  "changelog": [
+    {
+      "version": "1.0.0",
+      "date": "2026-04-11",
+      "type": "initial",
+      "description": {
+        "de": "Erstimplementierung. Beinhaltet Regressionstests für den NaN-p-Wert-Bug bei identischen Spalten (Floating-Point-Overshoot in pearsonR).",
+        "en": "Initial implementation. Includes regression tests for the NaN-p-value bug on identical columns (floating-point overshoot in pearsonR)."
+      },
+      "breaking": false
+    }
+  ]
+}

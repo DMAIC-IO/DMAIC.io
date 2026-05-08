@@ -1,0 +1,246 @@
+/* ═══════════════════════════════════════════════════════════════
+   D.Mike — Model Data Generator Module Styles
+   ═══════════════════════════════════════════════════════════════ */
+
+.module-mdg {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+/* ── Content Area ── */
+
+.mdg-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--spacing-lg) var(--spacing-xl);
+  max-width: 1120px;
+}
+
+/* When the tab content is a split layout, no outer padding */
+.mdg-content:has(.module-mdg-split) {
+  padding: 0;
+  max-width: none;
+}
+
+/* ── Split Layout (Model tab) ── */
+
+.module-mdg-split {
+  --dmike-split-input-width: 320px;
+}
+
+.mdg-input {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.mdg-input .dmike-split__section-title {
+  margin-top: var(--spacing-sm);
+}
+
+.mdg-input .dmike-split__section-title:first-child {
+  margin-top: 0;
+}
+
+.mdg-output {
+  padding: var(--spacing-lg) var(--spacing-xl);
+}
+
+
+/* ── Sections ── */
+
+.mdg-section {
+  background: var(--color-bg-secondary);
+  border: 1px solid var(--color-border-secondary);
+  border-radius: var(--border-radius);
+  padding: var(--spacing-lg);
+  margin-bottom: var(--spacing-md);
+}
+
+.mdg-section__desc {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+  margin-bottom: var(--spacing-md);
+}
+
+/* ── Labels & Inputs ── */
+
+.mdg-label {
+  color: var(--color-text-tertiary);
+  font-size: 10.5px;
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  display: block;
+  padding-left: 6px;
+}
+
+.mdg-inp {
+  width: 100%;
+}
+
+.mdg-inp--center {
+  text-align: center;
+}
+
+/* ── Factor Grid ── */
+
+.mdg-factor-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr) minmax(0, 1fr) 28px;
+  gap: 6px;
+  align-items: center;
+}
+
+.mdg-factor-grid .mdg-inp {
+  padding: 5px 7px;
+  font-size: 12px;
+}
+
+.mdg-factor-grid--header {
+  margin-bottom: -6px;
+}
+
+.mdg-factor-grid--row {
+  padding: 3px 0;
+}
+
+/* Remove button: global .btn--icon-sm .btn--danger with slightly larger size */
+.mdg-btn-remove {
+  width: 24px;
+  height: 24px;
+  font-size: 14px;
+}
+
+.mdg-btn-add {
+  margin-top: var(--spacing-sm);
+}
+
+/* ── Equation Box ── */
+
+.mdg-equation {
+  background: var(--color-bg-primary);
+  border: 1px solid var(--color-accent-light);
+  border-radius: var(--border-radius);
+  padding: 14px 18px;
+  font-family: var(--font-family-mono);
+  font-size: 13px;
+  overflow-x: auto;
+  white-space: nowrap;
+  margin-bottom: var(--spacing-md);
+}
+
+.mdg-eq-y {
+  color: var(--color-success);
+  font-weight: 700;
+}
+
+.mdg-eq-op {
+  color: var(--color-text-tertiary);
+}
+
+.mdg-eq-intercept {
+  color: var(--color-warning);
+}
+
+.mdg-eq-eps {
+  color: var(--color-text-tertiary);
+}
+
+/* ── Beta Editor ── */
+
+.mdg-group-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--color-warning);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+  margin-top: var(--spacing-md);
+}
+
+.mdg-group-label:first-child {
+  margin-top: 0;
+}
+
+.mdg-beta-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  gap: 6px;
+  margin-bottom: var(--spacing-md);
+}
+
+.mdg-beta-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--color-bg-tertiary);
+  border-radius: var(--border-radius-sm);
+  padding: 6px 10px;
+  border: 1px solid var(--color-border-secondary);
+}
+
+.mdg-beta-name {
+  flex: 1;
+  font-size: var(--font-size-xs);
+  font-family: var(--font-family-mono);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--color-text-primary);
+}
+
+.mdg-beta-eq {
+  color: var(--color-text-tertiary);
+  font-size: 11px;
+}
+
+.mdg-beta-inp {
+  width: 72px !important;
+  text-align: right;
+  padding: 4px 6px !important;
+  font-size: 12px !important;
+  font-family: var(--font-family-mono) !important;
+}
+
+.mdg-control-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.mdg-triple-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.mdg-triple-grid .mdg-inp {
+  padding: 5px 6px;
+  font-size: 12px;
+}
+
+.mdg-btn-generate {
+  font-size: var(--font-size-md) !important;
+  padding: 12px 32px !important;
+}
+
+/* Data Table — uses shared .dmike-embedded-grid (components.css) */
+
+.mdg-row-count {
+  font-weight: 400;
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+  margin-left: 10px;
+}
+
+/* ── Utility ── */
+
+.mdg-row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+

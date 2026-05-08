@@ -1,0 +1,216 @@
+/* ═══════════════════════════════════════════════════════════════
+   D.Mike — Data Transformation Module Styles
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Base layout provided by .dmike-split (css/modules.css) */
+.module-data-transformation .dmike-split__input { width: 320px; }
+
+/* ── Transform selector ── */
+
+.dt-tf-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.dt-tf-opt {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border: var(--border-width) solid var(--color-border-secondary);
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  transition: all var(--transition-speed);
+  background: var(--color-bg-primary);
+}
+
+.dt-tf-opt:hover {
+  border-color: var(--color-text-tertiary);
+}
+
+.dt-tf-opt--active {
+  border-color: var(--color-accent);
+  background: var(--color-accent-bg, rgba(var(--color-accent-rgb, 0, 180, 140), 0.06));
+}
+
+.dt-tf-opt__dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 2px solid var(--color-text-tertiary);
+  transition: all var(--transition-speed);
+  flex-shrink: 0;
+}
+
+.dt-tf-opt--active .dt-tf-opt__dot {
+  border-color: var(--color-accent);
+  background: var(--color-accent);
+  box-shadow: inset 0 0 0 3px var(--color-bg-primary);
+}
+
+.dt-tf-opt__name {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+}
+
+.dt-tf-opt__desc {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+  font-family: var(--font-family-mono);
+}
+
+/* ── Parameter inputs ── */
+
+.dt-param-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.dt-param {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.dt-param__label {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  font-family: var(--font-family-mono);
+  min-width: 70px;
+}
+
+.dt-param__number {
+  width: 80px;
+}
+
+.dt-param__range {
+  flex: 1;
+  accent-color: var(--color-accent);
+}
+
+/* ── Results grid ── */
+
+.dt-results-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--spacing-md);
+}
+
+.dt-chart-card {
+  background: var(--color-bg-secondary);
+  border: var(--border-width) solid var(--color-border-secondary);
+  border-radius: var(--border-radius);
+  padding: var(--spacing-sm);
+  min-height: 200px;
+}
+
+.dt-chart-card__title {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-secondary);
+  margin-bottom: var(--spacing-xs);
+}
+
+/* ── Stats table (extends .dmike-table) ── */
+
+.dt-stats-table {
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-sm);
+}
+
+.dt-stats-table th:first-child,
+.dt-stats-table td:first-child {
+  text-align: left;
+}
+
+.dt-stats-table th:nth-child(2),
+.dt-stats-table td:nth-child(2),
+.dt-stats-table th:nth-child(3),
+.dt-stats-table td:nth-child(3) {
+  text-align: right;
+}
+
+.dt-stats-table td:nth-child(3) {
+  color: var(--color-accent);
+}
+
+/* ── Normality badge ── */
+
+.dt-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: var(--border-radius);
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+}
+
+.dt-badge--pass {
+  background: var(--color-success-bg, rgba(0, 180, 140, 0.12));
+  color: var(--color-success, var(--color-accent));
+}
+
+.dt-badge--fail {
+  background: var(--color-error-bg, rgba(220, 53, 69, 0.12));
+  color: var(--color-error, #dc3545);
+}
+
+/* ── Normality result ── */
+
+.dt-normality {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-sm);
+}
+
+.dt-normality__row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.dt-normality__alpha {
+  color: var(--color-text-tertiary);
+  font-size: var(--font-size-xs);
+}
+
+/* ── Export area ── */
+
+.dt-export-box {
+  background: var(--color-bg-primary);
+  border: var(--border-width) solid var(--color-border-secondary);
+  border-radius: var(--border-radius);
+  padding: 10px;
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-sm);
+  max-height: 160px;
+  overflow-y: auto;
+  color: var(--color-text-secondary);
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+.dt-export-actions {
+  display: flex;
+  gap: var(--spacing-xs);
+  margin-top: var(--spacing-xs);
+}
+
+/* ── Error message ── */
+
+.dt-error-msg {
+  padding: var(--spacing-md);
+  color: var(--color-error, #dc3545);
+  background: var(--color-error-bg, rgba(220, 53, 69, 0.08));
+  border: var(--border-width) solid var(--color-error, #dc3545);
+  border-radius: var(--border-radius);
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-sm);
+}

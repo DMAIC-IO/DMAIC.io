@@ -1,0 +1,480 @@
+{
+  "algorithm_id": "math-utils",
+  "generated_with": {
+    "python": "3.10.12",
+    "scipy": "1.15.3",
+    "numpy": "2.2.6"
+  },
+  "generated_at": "2026-04-11T18:31:20.074248+00:00",
+  "generator_script": "tools/fixture-generator/generate_fixtures.py",
+  "generator_version": "1.0.0",
+  "tolerances": {
+    "default": {
+      "relative": 1e-06,
+      "absolute": 1e-07
+    },
+    "overrides": {
+      "tail_precision": {
+        "relative": 0.001,
+        "absolute": 1e-07,
+        "reason": "Extreme tail probabilities lose precision in polynomial approximations"
+      },
+      "inverse_precision": {
+        "relative": 1e-06,
+        "absolute": 1e-08,
+        "reason": "Inverse CDF functions use iterative approximations with bounded precision"
+      }
+    }
+  },
+  "test_cases": [
+    {
+      "id": "normalcdf_zero",
+      "tier": "standard",
+      "description": "Φ(0) = 0.5 exactly",
+      "reference": "Mathematical definition",
+      "inputs": {
+        "function": "normalCDF",
+        "x": 0
+      },
+      "expected": {
+        "result": 0.5
+      }
+    },
+    {
+      "id": "normalcdf_one",
+      "tier": "standard",
+      "description": "Φ(1) ≈ 0.8413 — the classic value that caught the bug",
+      "reference": "SciPy scipy.stats.norm.cdf",
+      "inputs": {
+        "function": "normalCDF",
+        "x": 1.0
+      },
+      "expected": {
+        "result": 0.8413447460685429
+      }
+    },
+    {
+      "id": "normalcdf_neg_one",
+      "tier": "standard",
+      "description": "Φ(−1) ≈ 0.1587 — symmetry check",
+      "reference": "SciPy scipy.stats.norm.cdf",
+      "inputs": {
+        "function": "normalCDF",
+        "x": -1.0
+      },
+      "expected": {
+        "result": 0.15865525393145707
+      }
+    },
+    {
+      "id": "normalcdf_two",
+      "tier": "standard",
+      "description": "Φ(2) ≈ 0.9772",
+      "reference": "SciPy scipy.stats.norm.cdf",
+      "inputs": {
+        "function": "normalCDF",
+        "x": 2.0
+      },
+      "expected": {
+        "result": 0.9772498680518208
+      }
+    },
+    {
+      "id": "normalcdf_neg_two",
+      "tier": "standard",
+      "description": "Φ(−2) ≈ 0.0228 — symmetry with Φ(2)",
+      "reference": "SciPy scipy.stats.norm.cdf",
+      "inputs": {
+        "function": "normalCDF",
+        "x": -2.0
+      },
+      "expected": {
+        "result": 0.022750131948179195
+      }
+    },
+    {
+      "id": "normalcdf_three",
+      "tier": "standard",
+      "description": "Φ(3) ≈ 0.99865",
+      "reference": "SciPy scipy.stats.norm.cdf",
+      "inputs": {
+        "function": "normalCDF",
+        "x": 3.0
+      },
+      "expected": {
+        "result": 0.9986501019683699
+      }
+    },
+    {
+      "id": "normalcdf_1_96",
+      "tier": "standard",
+      "description": "Φ(1.96) ≈ 0.975 — critical value for 95% CI",
+      "reference": "SciPy scipy.stats.norm.cdf",
+      "inputs": {
+        "function": "normalCDF",
+        "x": 1.96
+      },
+      "expected": {
+        "result": 0.9750021048517795
+      }
+    },
+    {
+      "id": "normalcdf_2_576",
+      "tier": "standard",
+      "description": "Φ(2.576) ≈ 0.995 — critical value for 99% CI",
+      "reference": "SciPy scipy.stats.norm.cdf",
+      "inputs": {
+        "function": "normalCDF",
+        "x": 2.576
+      },
+      "expected": {
+        "result": 0.995002467684265
+      }
+    },
+    {
+      "id": "normalcdf_mu_sigma",
+      "tier": "standard",
+      "description": "normalCDF with custom μ=100, σ=15 at x=115 (one σ above)",
+      "reference": "SciPy scipy.stats.norm.cdf",
+      "inputs": {
+        "function": "normalCDF",
+        "x": 115.0,
+        "mu": 100.0,
+        "sigma": 15.0
+      },
+      "expected": {
+        "result": 0.8413447460685429
+      }
+    },
+    {
+      "id": "normalcdf_tail_neg4",
+      "tier": "edge",
+      "description": "Φ(−4) — far left tail",
+      "reference": "SciPy scipy.stats.norm.cdf",
+      "inputs": {
+        "function": "normalCDF",
+        "x": -4.0
+      },
+      "tolerance_override": "tail_precision",
+      "expected": {
+        "result": 3.167124183311986e-05
+      }
+    },
+    {
+      "id": "normalcdf_tail_pos5",
+      "tier": "edge",
+      "description": "Φ(5) — far right tail",
+      "reference": "SciPy scipy.stats.norm.cdf",
+      "inputs": {
+        "function": "normalCDF",
+        "x": 5.0
+      },
+      "tolerance_override": "tail_precision",
+      "expected": {
+        "result": 0.9999997133484281
+      }
+    },
+    {
+      "id": "normalcdf_tail_neg6",
+      "tier": "stress",
+      "description": "Φ(−6) — extreme left tail",
+      "reference": "SciPy scipy.stats.norm.cdf",
+      "inputs": {
+        "function": "normalCDF",
+        "x": -6.0
+      },
+      "tolerance_override": "tail_precision",
+      "expected": {
+        "result": 9.865876450376946e-10
+      }
+    },
+    {
+      "id": "normalcdf_0_5",
+      "tier": "standard",
+      "description": "Φ(0.5) — fractional z-score",
+      "reference": "SciPy scipy.stats.norm.cdf",
+      "inputs": {
+        "function": "normalCDF",
+        "x": 0.5
+      },
+      "expected": {
+        "result": 0.6914624612740131
+      }
+    },
+    {
+      "id": "normalquantile_0_5",
+      "tier": "standard",
+      "description": "Φ⁻¹(0.5) = 0 exactly",
+      "reference": "Mathematical definition",
+      "inputs": {
+        "function": "normalQuantile",
+        "p": 0.5
+      },
+      "tolerance_override": "inverse_precision",
+      "expected": {
+        "result": 0.0
+      }
+    },
+    {
+      "id": "normalquantile_0_975",
+      "tier": "standard",
+      "description": "Φ⁻¹(0.975) ≈ 1.96 — 95% CI critical value",
+      "reference": "SciPy scipy.stats.norm.ppf",
+      "inputs": {
+        "function": "normalQuantile",
+        "p": 0.975
+      },
+      "tolerance_override": "inverse_precision",
+      "expected": {
+        "result": 1.959963984540054
+      }
+    },
+    {
+      "id": "normalquantile_0_995",
+      "tier": "standard",
+      "description": "Φ⁻¹(0.995) ≈ 2.576 — 99% CI critical value",
+      "reference": "SciPy scipy.stats.norm.ppf",
+      "inputs": {
+        "function": "normalQuantile",
+        "p": 0.995
+      },
+      "tolerance_override": "inverse_precision",
+      "expected": {
+        "result": 2.5758293035489004
+      }
+    },
+    {
+      "id": "normalquantile_0_025",
+      "tier": "standard",
+      "description": "Φ⁻¹(0.025) ≈ −1.96 — lower 95% CI",
+      "reference": "SciPy scipy.stats.norm.ppf",
+      "inputs": {
+        "function": "normalQuantile",
+        "p": 0.025
+      },
+      "tolerance_override": "inverse_precision",
+      "expected": {
+        "result": -1.9599639845400545
+      }
+    },
+    {
+      "id": "normalquantile_0_8413",
+      "tier": "standard",
+      "description": "Φ⁻¹(0.8413) ≈ 1.0 — round-trip with normalCDF(1)",
+      "reference": "SciPy scipy.stats.norm.ppf",
+      "inputs": {
+        "function": "normalQuantile",
+        "p": 0.8413447460685429
+      },
+      "tolerance_override": "inverse_precision",
+      "expected": {
+        "result": 1.0
+      }
+    },
+    {
+      "id": "erf_zero",
+      "tier": "standard",
+      "description": "erf(0) = 0 exactly",
+      "reference": "Mathematical definition",
+      "inputs": {
+        "function": "erf",
+        "x": 0
+      },
+      "expected": {
+        "result": 0.0
+      }
+    },
+    {
+      "id": "erf_one",
+      "tier": "standard",
+      "description": "erf(1) ≈ 0.8427",
+      "reference": "SciPy scipy.special.erf",
+      "inputs": {
+        "function": "erf",
+        "x": 1.0
+      },
+      "expected": {
+        "result": 0.8427007929497148
+      }
+    },
+    {
+      "id": "erf_neg_one",
+      "tier": "standard",
+      "description": "erf(−1) ≈ −0.8427 — odd symmetry",
+      "reference": "SciPy scipy.special.erf",
+      "inputs": {
+        "function": "erf",
+        "x": -1.0
+      },
+      "expected": {
+        "result": -0.8427007929497148
+      }
+    },
+    {
+      "id": "erf_two",
+      "tier": "standard",
+      "description": "erf(2) ≈ 0.9953",
+      "reference": "SciPy scipy.special.erf",
+      "inputs": {
+        "function": "erf",
+        "x": 2.0
+      },
+      "expected": {
+        "result": 0.9953222650189527
+      }
+    },
+    {
+      "id": "chi2cdf_standard",
+      "tier": "standard",
+      "description": "χ²(3.84, df=1) ≈ 0.95 — classic significance threshold",
+      "reference": "SciPy scipy.stats.chi2.cdf",
+      "inputs": {
+        "function": "chi2CDF",
+        "x": 3.841458820694124,
+        "df": 1
+      },
+      "expected": {
+        "result": 0.9500000000000001
+      }
+    },
+    {
+      "id": "chi2cdf_df5",
+      "tier": "standard",
+      "description": "χ²(11.07, df=5) ≈ 0.95",
+      "reference": "SciPy scipy.stats.chi2.cdf",
+      "inputs": {
+        "function": "chi2CDF",
+        "x": 11.070497693516351,
+        "df": 5
+      },
+      "expected": {
+        "result": 0.95
+      }
+    },
+    {
+      "id": "chi2cdf_df10",
+      "tier": "standard",
+      "description": "χ²(18.307, df=10) ≈ 0.95",
+      "reference": "SciPy scipy.stats.chi2.cdf",
+      "inputs": {
+        "function": "chi2CDF",
+        "x": 18.307038053275146,
+        "df": 10
+      },
+      "expected": {
+        "result": 0.95
+      }
+    },
+    {
+      "id": "tcdf_standard",
+      "tier": "standard",
+      "description": "t(1.96, df=∞) ≈ 0.975 — converges to normal",
+      "reference": "SciPy scipy.stats.t.cdf",
+      "inputs": {
+        "function": "tCDF",
+        "t": 1.96,
+        "df": 1000
+      },
+      "expected": {
+        "result": 0.9748634075221256
+      }
+    },
+    {
+      "id": "tcdf_df5",
+      "tier": "standard",
+      "description": "t(2.571, df=5) ≈ 0.975",
+      "reference": "SciPy scipy.stats.t.cdf",
+      "inputs": {
+        "function": "tCDF",
+        "t": 2.5705818366147395,
+        "df": 5
+      },
+      "expected": {
+        "result": 0.9750000000296832
+      }
+    },
+    {
+      "id": "tcdf_df1",
+      "tier": "edge",
+      "description": "t(6.314, df=1) ≈ 0.95 — Cauchy distribution (heaviest tail)",
+      "reference": "SciPy scipy.stats.t.cdf",
+      "inputs": {
+        "function": "tCDF",
+        "t": 6.313751514675041,
+        "df": 1
+      },
+      "expected": {
+        "result": 0.95
+      }
+    },
+    {
+      "id": "fcdf_standard",
+      "tier": "standard",
+      "description": "F(3.885, df1=3, df2=36) ≈ 0.95",
+      "reference": "SciPy scipy.stats.f.cdf",
+      "inputs": {
+        "function": "fCDF",
+        "x": 2.8662656165587492,
+        "dfn": 3,
+        "dfd": 36
+      },
+      "expected": {
+        "result": 0.9500000036079298
+      }
+    },
+    {
+      "id": "fcdf_equal_df",
+      "tier": "standard",
+      "description": "F(x, df1=10, df2=10) ≈ 0.95",
+      "reference": "SciPy scipy.stats.f.cdf",
+      "inputs": {
+        "function": "fCDF",
+        "x": 2.9782468789003893,
+        "dfn": 10,
+        "dfd": 10
+      },
+      "expected": {
+        "result": 0.9500004923450236
+      }
+    },
+    {
+      "id": "lngamma_standard",
+      "tier": "standard",
+      "description": "ln(Γ(5)) = ln(24) = ln(4!)",
+      "reference": "SciPy scipy.special.gammaln",
+      "inputs": {
+        "function": "lnGamma",
+        "x": 5.0
+      },
+      "expected": {
+        "result": 3.1780538303479458
+      }
+    },
+    {
+      "id": "lngamma_half",
+      "tier": "standard",
+      "description": "ln(Γ(0.5)) = ln(√π)",
+      "reference": "SciPy scipy.special.gammaln",
+      "inputs": {
+        "function": "lnGamma",
+        "x": 0.5
+      },
+      "expected": {
+        "result": 0.5723649429247
+      }
+    },
+    {
+      "id": "lngamma_1_5",
+      "tier": "standard",
+      "description": "ln(Γ(1.5)) = ln(√π/2)",
+      "reference": "SciPy scipy.special.gammaln",
+      "inputs": {
+        "function": "lnGamma",
+        "x": 1.5
+      },
+      "expected": {
+        "result": -0.12078223763524526
+      }
+    }
+  ]
+}

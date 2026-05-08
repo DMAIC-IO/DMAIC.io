@@ -1,0 +1,150 @@
+{
+  "id": "levene-test",
+  "name": {
+    "de": "Levene-Test (Brown-Forsythe)",
+    "en": "Levene Test (Brown-Forsythe)"
+  },
+  "category": "hypothesis",
+  "subcategory": "variance",
+  "status": "validated",
+  "version": "1.0.0",
+
+  "description": {
+    "short": {
+      "de": "Robuster Test auf Varianzgleichheit zweier Stichproben, unempfindlich gegen Nicht-Normalverteilung.",
+      "en": "Robust test for equality of variances of two samples, insensitive to non-normality."
+    },
+    "long": {
+      "de": "Der Levene-Test in der Brown-Forsythe-Variante prüft die Gleichheit der Varianzen zweier Stichproben, indem die absoluten Abweichungen vom jeweiligen Median verglichen werden. Er ist deutlich robuster als der F-Test gegenüber Abweichungen von der Normalverteilung und daher die bevorzugte Wahl, wenn Normalverteilung nicht gesichert ist.",
+      "en": "The Levene test in the Brown-Forsythe variant tests equality of variances by comparing absolute deviations from the respective medians. It is much more robust than the F-test against departures from normality and is therefore the preferred choice when normality cannot be assumed."
+    }
+  },
+
+  "documentation": {
+    "formulas": [
+      {
+        "label": "W",
+        "latex": "W = \\frac{(N-k)\\sum_{i=1}^{k} n_i(\\bar{z}_{i\\cdot} - \\bar{z}_{\\cdot\\cdot})^2}{(k-1)\\sum_{i=1}^{k}\\sum_{j=1}^{n_i}(z_{ij} - \\bar{z}_{i\\cdot})^2}",
+        "description": {
+          "de": "Teststatistik W mit z_{ij} = |x_{ij} − Median_i| (Brown-Forsythe-Variante)",
+          "en": "Test statistic W with z_{ij} = |x_{ij} − Median_i| (Brown-Forsythe variant)"
+        }
+      },
+      {
+        "label": "H₀",
+        "latex": "H_0: \\sigma_1^2 = \\sigma_2^2",
+        "description": {
+          "de": "Nullhypothese: Die Populationsvarianzen sind gleich",
+          "en": "Null hypothesis: The population variances are equal"
+        }
+      }
+    ],
+    "assumptions": [
+      { "de": "Stichproben sind unabhängig", "en": "Samples are independent" },
+      { "de": "Stetige (kontinuierliche) Daten", "en": "Continuous data" }
+    ],
+    "limitations": [
+      { "de": "Weniger trennscharf als der F-Test, wenn tatsächlich Normalverteilung vorliegt", "en": "Less powerful than the F-test when data are truly normal" }
+    ],
+    "references": [
+      { "source": "Brown, M. B. & Forsythe, A. B. (1974), Robust tests for the equality of variances, JASA, 69(346), 364–367" },
+      { "source": "Levene, H. (1960), Robust tests for equality of variances, in Olkin et al. (Eds.), Contributions to Probability and Statistics" }
+    ],
+    "minitab_equivalent": "Stat > Basic Statistics > 2 Variances (Levene's Test)"
+  },
+
+  "source": {
+    "function_name": "leveneTest",
+    "file_path": "js/engines/hypothesis-test-engine.js",
+    "signature": {
+      "parameters": [
+        {
+          "name": "data1",
+          "type": "number[]",
+          "required": true,
+          "description": { "de": "Erste Stichprobe", "en": "First sample" }
+        },
+        {
+          "name": "data2",
+          "type": "number[]",
+          "required": true,
+          "description": { "de": "Zweite Stichprobe", "en": "Second sample" }
+        },
+        {
+          "name": "alpha",
+          "type": "number",
+          "required": false,
+          "description": { "de": "Signifikanzniveau (Standard: 0.05)", "en": "Significance level (default: 0.05)" }
+        }
+      ],
+      "returns": {
+        "type": "object",
+        "properties": {
+          "statistic": { "type": "number", "description": { "de": "W-Teststatistik", "en": "W test statistic" } },
+          "pValue": { "type": "number", "description": { "de": "p-Wert", "en": "p-value" } },
+          "df1": { "type": "number", "description": { "de": "Freiheitsgrade Zähler", "en": "Numerator degrees of freedom" } },
+          "df2": { "type": "number", "description": { "de": "Freiheitsgrade Nenner", "en": "Denominator degrees of freedom" } },
+          "reject": { "type": "boolean", "description": { "de": "H₀ abgelehnt?", "en": "Reject H₀?" } }
+        }
+      }
+    },
+    "code_snippet": null
+  },
+
+  "try_it": {
+    "input_schema": {
+      "fields": [
+        {
+          "name": "data1",
+          "label": { "de": "Stichprobe 1", "en": "Sample 1" },
+          "type": "textarea",
+          "placeholder": { "de": "Werte der ersten Stichprobe", "en": "Values of first sample" },
+          "parse_as": "number_array",
+          "required": true
+        },
+        {
+          "name": "data2",
+          "label": { "de": "Stichprobe 2", "en": "Sample 2" },
+          "type": "textarea",
+          "placeholder": { "de": "Werte der zweiten Stichprobe", "en": "Values of second sample" },
+          "parse_as": "number_array",
+          "required": true
+        },
+        {
+          "name": "alpha",
+          "label": { "de": "Signifikanzniveau α", "en": "Significance Level α" },
+          "type": "number",
+          "placeholder": { "de": "0.05", "en": "0.05" },
+          "parse_as": "number",
+          "required": false
+        }
+      ]
+    },
+    "output_schema": {
+      "display_fields": ["statistic", "pValue", "df1", "df2", "variance1", "variance2", "reject"],
+      "primary_field": "statistic",
+      "format": {
+        "statistic": { "decimals": 6, "label": "W" },
+        "pValue": { "decimals": 6, "label": "p-Value" },
+        "df1": { "decimals": 0, "label": "df₁" },
+        "df2": { "decimals": 0, "label": "df₂" },
+        "variance1": { "decimals": 6, "label": "s₁²" },
+        "variance2": { "decimals": 6, "label": "s₂²" },
+        "reject": { "decimals": 0, "label": { "de": "H₀ abgelehnt", "en": "Reject H₀" } }
+      }
+    }
+  },
+
+  "changelog": [
+    {
+      "version": "1.0.0",
+      "date": "2026-03-31",
+      "type": "initial",
+      "description": {
+        "de": "Erstimplementierung der Brown-Forsythe-Variante des Levene-Tests",
+        "en": "Initial implementation of the Brown-Forsythe variant of the Levene test"
+      },
+      "breaking": false
+    }
+  ]
+}

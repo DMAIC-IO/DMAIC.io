@@ -1,0 +1,286 @@
+{
+  "id": "control-chart",
+  "name": {
+    "de": "SPC-Regelkarten (I-MR, X̄-R, X̄-S)",
+    "en": "SPC Control Charts (I-MR, X̄-R, X̄-S)"
+  },
+  "category": "control-charts",
+  "subcategory": null,
+  "status": "validated",
+  "version": "1.0.0",
+
+  "description": {
+    "short": {
+      "de": "Regelkarten-Kerngrößen (CL, UCL, LCL, σ̂) für I-MR, X̄-R und X̄-S sowie Nelson-Rule-Prüfung und Fähigkeit aus σ̂.",
+      "en": "Control chart core values (CL, UCL, LCL, σ̂) for I-MR, X̄-R and X̄-S plus Nelson Rule evaluation and capability from σ̂."
+    },
+    "long": {
+      "de": "Die SPC-Engine deckt die drei klassischen Shewhart-Regelkarten ab: I-MR (Einzelwerte + gleitende Spannweite), X̄-R (Untergruppen-Mittelwert + Spannweite, 2 ≤ n ≤ 10) und X̄-S (Untergruppen-Mittelwert + Standardabweichung, 2 ≤ n ≤ 25). Die Kontrollgrenzen werden aus den klassischen AIAG/Montgomery-SPC-Konstanten (d2, A2, A3, D3, D4, B3, B4, c4) berechnet. σ̂ wird aus der Baseline-Subgruppe abgeleitet; über baselineEnd lässt sich eine Phase-1/Phase-2-Analyse realisieren. Der Dispatcher analyze(inputs) akzeptiert zusätzlich den Modus 'nelson' zum Prüfen der acht Nelson-Regeln (Standardmäßig 1–6 aktiv) und 'capability' zur Berechnung von Cp/Cpk aus einem vorgegebenen CL und σ̂. Das flache Ausgabeformat (z.B. i.cl, xbar.ucl) matched 1:1 die Fixture-Referenzwerte.",
+      "en": "The SPC engine covers the three classic Shewhart control charts: I-MR (individuals + moving range), X̄-R (subgroup mean + range, 2 ≤ n ≤ 10), and X̄-S (subgroup mean + std-dev, 2 ≤ n ≤ 25). Control limits are computed from the classic AIAG/Montgomery SPC constants (d2, A2, A3, D3, D4, B3, B4, c4). σ̂ is derived from the baseline subgroup; `baselineEnd` enables a Phase-1/Phase-2 analysis. The analyze(inputs) dispatcher additionally supports mode 'nelson' for the eight Nelson rules (1–6 enabled by default) and 'capability' for Cp/Cpk from a supplied CL and σ̂. The flat output shape (e.g. i.cl, xbar.ucl) matches the fixture reference values 1:1."
+    }
+  },
+
+  "documentation": {
+    "formulas": [
+      {
+        "label": "I (Individuals)",
+        "latex": "\\mathrm{CL}_I = \\bar{x},\\quad \\mathrm{UCL}_I = \\bar{x} + 3\\,\\hat{\\sigma}_I,\\quad \\mathrm{LCL}_I = \\bar{x} - 3\\,\\hat{\\sigma}_I,\\quad \\hat{\\sigma}_I = \\frac{\\overline{MR}}{d_2}",
+        "description": { "de": "Einzelwert-Chart der I-MR-Regelkarte", "en": "Individuals subchart of I-MR" }
+      },
+      {
+        "label": "MR (Moving Range)",
+        "latex": "\\mathrm{CL}_{MR} = \\overline{MR},\\quad \\mathrm{UCL}_{MR} = D_4\\,\\overline{MR},\\quad \\mathrm{LCL}_{MR} = D_3\\,\\overline{MR}",
+        "description": { "de": "Gleitende-Spannweite-Chart der I-MR-Regelkarte", "en": "Moving range subchart of I-MR" }
+      },
+      {
+        "label": "X̄-R",
+        "latex": "\\mathrm{UCL}_{\\bar{X}} = \\bar{\\bar{x}} + A_2\\,\\bar{R},\\quad \\mathrm{LCL}_{\\bar{X}} = \\bar{\\bar{x}} - A_2\\,\\bar{R},\\quad \\hat{\\sigma}_{\\bar{x}} = \\frac{\\bar{R}}{d_2\\sqrt{n}}",
+        "description": { "de": "X̄-Grenzen und σ̂ aus mittlerer Spannweite (2 ≤ n ≤ 10)", "en": "X̄ limits and σ̂ from mean range (2 ≤ n ≤ 10)" }
+      },
+      {
+        "label": "R",
+        "latex": "\\mathrm{UCL}_R = D_4\\,\\bar{R},\\quad \\mathrm{LCL}_R = D_3\\,\\bar{R}",
+        "description": { "de": "Spannweiten-Chart", "en": "Range subchart" }
+      },
+      {
+        "label": "X̄-S",
+        "latex": "\\mathrm{UCL}_{\\bar{X}} = \\bar{\\bar{x}} + A_3\\,\\bar{s},\\quad \\mathrm{LCL}_{\\bar{X}} = \\bar{\\bar{x}} - A_3\\,\\bar{s},\\quad \\hat{\\sigma}_{\\bar{x}} = \\frac{\\bar{s}}{c_4\\sqrt{n}}",
+        "description": { "de": "X̄-Grenzen und σ̂ aus mittlerer Standardabweichung (2 ≤ n ≤ 25)", "en": "X̄ limits and σ̂ from mean std-dev (2 ≤ n ≤ 25)" }
+      },
+      {
+        "label": "S",
+        "latex": "\\mathrm{UCL}_S = B_4\\,\\bar{s},\\quad \\mathrm{LCL}_S = B_3\\,\\bar{s}",
+        "description": { "de": "Standardabweichungs-Chart", "en": "Std-dev subchart" }
+      }
+    ],
+    "assumptions": [
+      {
+        "de": "Daten sind annähernd normalverteilt (besonders relevant für I-MR)",
+        "en": "Data is approximately normally distributed (especially relevant for I-MR)"
+      },
+      {
+        "de": "Messwerte innerhalb der Baseline sind unabhängig und aus einem stabilen Prozess",
+        "en": "Baseline measurements are independent and from a stable process"
+      },
+      {
+        "de": "Untergruppen sind rational gebildet: Variation innerhalb < zwischen Untergruppen",
+        "en": "Subgroups are rationally formed: within-subgroup variation < between-subgroup"
+      }
+    ],
+    "limitations": [
+      {
+        "de": "Subgruppengröße n muss zum Chart-Typ passen: I-MR n=1, X̄-R 2 ≤ n ≤ 10, X̄-S 2 ≤ n ≤ 25",
+        "en": "Subgroup size n must match chart type: I-MR n=1, X̄-R 2 ≤ n ≤ 10, X̄-S 2 ≤ n ≤ 25"
+      },
+      {
+        "de": "Autokorrelation oder Nicht-Normalität verfälscht die Kontrollgrenzen; I-MR ist besonders empfindlich",
+        "en": "Autocorrelation or non-normality distorts the control limits; I-MR is especially sensitive"
+      },
+      {
+        "de": "Nelson-Regeln 7 & 8 sind standardmäßig deaktiviert — Aktivierung erhöht die False-Alarm-Rate",
+        "en": "Nelson rules 7 and 8 are disabled by default — enabling them raises the false-alarm rate"
+      }
+    ],
+    "references": [
+      {
+        "source": "Montgomery, Introduction to Statistical Quality Control, 8th Ed.",
+        "chapter": "Chapters 6-7"
+      },
+      {
+        "source": "AIAG — Statistical Process Control (SPC) Reference Manual, 2nd Edition"
+      },
+      {
+        "source": "Nelson, L. S. (1984), The Shewhart Control Chart — Tests for Special Causes, Journal of Quality Technology, 16(4), 237–239"
+      }
+    ],
+    "minitab_equivalent": "Stat > Control Charts > Variables Charts for Individuals / Subgroups"
+  },
+
+  "source": {
+    "function_name": "analyze",
+    "file_path": "js/engines/control-chart-engine.js",
+    "signature": {
+      "parameters": [
+        {
+          "name": "inputs",
+          "type": "object",
+          "required": true,
+          "description": {
+            "de": "Objekt mit mode und den modusspezifischen Feldern (values, n, baselineEnd, cl, sigma, enabledRules, usl, lsl)",
+            "en": "Object with mode and the mode-specific fields (values, n, baselineEnd, cl, sigma, enabledRules, usl, lsl)"
+          }
+        }
+      ],
+      "returns": {
+        "type": "object",
+        "properties": {
+          "i.cl": { "type": "number", "description": { "de": "CL (I-Chart)", "en": "CL (I chart)" } },
+          "i.ucl": { "type": "number", "description": { "de": "UCL (I-Chart)", "en": "UCL (I chart)" } },
+          "i.lcl": { "type": "number", "description": { "de": "LCL (I-Chart)", "en": "LCL (I chart)" } },
+          "i.sigma": { "type": "number", "description": { "de": "σ̂ (I-Chart)", "en": "σ̂ (I chart)" } },
+          "mr.cl": { "type": "number", "description": { "de": "CL (MR)", "en": "CL (MR)" } },
+          "mr.ucl": { "type": "number", "description": { "de": "UCL (MR)", "en": "UCL (MR)" } },
+          "mr.lcl": { "type": "number", "description": { "de": "LCL (MR)", "en": "LCL (MR)" } },
+          "mr.sigma": { "type": "number", "description": { "de": "σ̂ (MR)", "en": "σ̂ (MR)" } },
+          "xbar.cl": { "type": "number", "description": { "de": "CL (X̄)", "en": "CL (X̄)" } },
+          "xbar.ucl": { "type": "number", "description": { "de": "UCL (X̄)", "en": "UCL (X̄)" } },
+          "xbar.lcl": { "type": "number", "description": { "de": "LCL (X̄)", "en": "LCL (X̄)" } },
+          "xbar.sigma": { "type": "number", "description": { "de": "σ̂ (X̄)", "en": "σ̂ (X̄)" } },
+          "r.cl": { "type": "number", "description": { "de": "CL (R)", "en": "CL (R)" } },
+          "r.ucl": { "type": "number", "description": { "de": "UCL (R)", "en": "UCL (R)" } },
+          "r.lcl": { "type": "number", "description": { "de": "LCL (R)", "en": "LCL (R)" } },
+          "r.sigma": { "type": "number", "description": { "de": "σ̂ (R)", "en": "σ̂ (R)" } },
+          "s.cl": { "type": "number", "description": { "de": "CL (S)", "en": "CL (S)" } },
+          "s.ucl": { "type": "number", "description": { "de": "UCL (S)", "en": "UCL (S)" } },
+          "s.lcl": { "type": "number", "description": { "de": "LCL (S)", "en": "LCL (S)" } },
+          "s.sigma": { "type": "number", "description": { "de": "σ̂ (S)", "en": "σ̂ (S)" } },
+          "violationCount": { "type": "number", "description": { "de": "Anzahl Nelson-Verstöße", "en": "Nelson violation count" } },
+          "rulesTriggered": { "type": "number[]", "description": { "de": "Ausgelöste Regel-IDs", "en": "Triggered rule IDs" } },
+          "violationIndices": { "type": "number[]", "description": { "de": "Indizes verletzender Punkte", "en": "Indices of violating points" } },
+          "cp": { "type": "number", "description": { "de": "Cp (nur mode=capability)", "en": "Cp (capability mode only)" } },
+          "cpu": { "type": "number", "description": { "de": "CPU (nur mode=capability)", "en": "CPU (capability mode only)" } },
+          "cpl": { "type": "number", "description": { "de": "CPL (nur mode=capability)", "en": "CPL (capability mode only)" } },
+          "cpk": { "type": "number", "description": { "de": "Cpk (nur mode=capability)", "en": "Cpk (capability mode only)" } }
+        }
+      }
+    },
+    "code_snippet": null
+  },
+
+  "try_it": {
+    "input_schema": {
+      "fields": [
+        {
+          "name": "inputs.mode",
+          "label": { "de": "Modus", "en": "Mode" },
+          "type": "text",
+          "placeholder": { "de": "i-mr | xbar-r | xbar-s | nelson | capability", "en": "i-mr | xbar-r | xbar-s | nelson | capability" },
+          "parse_as": "string",
+          "required": true,
+          "default": "i-mr"
+        },
+        {
+          "name": "inputs.values",
+          "label": { "de": "Messwerte", "en": "Values" },
+          "type": "textarea",
+          "placeholder": {
+            "de": "Werte, getrennt durch Komma, Leerzeichen oder Zeilenumbruch",
+            "en": "Values separated by commas, spaces, or newlines"
+          },
+          "parse_as": "number_array",
+          "required": false
+        },
+        {
+          "name": "inputs.n",
+          "label": { "de": "Untergruppengröße n", "en": "Subgroup size n" },
+          "type": "number",
+          "placeholder": { "de": "nur xbar-r / xbar-s", "en": "xbar-r / xbar-s only" },
+          "parse_as": "number",
+          "required": false
+        },
+        {
+          "name": "inputs.baselineEnd",
+          "label": { "de": "Baseline-Ende (Index)", "en": "Baseline end (index)" },
+          "type": "number",
+          "placeholder": { "de": "Index nach letztem Baseline-Wert — leer = alle Werte", "en": "Index after last baseline value — blank = all values" },
+          "parse_as": "number",
+          "required": false
+        },
+        {
+          "name": "inputs.cl",
+          "label": "CL",
+          "type": "number",
+          "placeholder": { "de": "Mittellinie (nelson / capability)", "en": "Center line (nelson / capability)" },
+          "parse_as": "number",
+          "required": false
+        },
+        {
+          "name": "inputs.sigma",
+          "label": "σ̂",
+          "type": "number",
+          "placeholder": { "de": "σ̂-Schätzung (nelson / capability)", "en": "σ̂ estimate (nelson / capability)" },
+          "parse_as": "number",
+          "required": false
+        },
+        {
+          "name": "inputs.enabledRules",
+          "label": { "de": "Aktive Nelson-Regeln", "en": "Enabled Nelson rules" },
+          "type": "text",
+          "placeholder": { "de": "z.B. 1,2,3,4,5,6 (leer = Standard)", "en": "e.g. 1,2,3,4,5,6 (blank = default)" },
+          "parse_as": "json",
+          "required": false
+        },
+        {
+          "name": "inputs.usl",
+          "label": "USL",
+          "type": "number",
+          "placeholder": { "de": "Obere Spezifikationsgrenze (capability)", "en": "Upper spec limit (capability)" },
+          "parse_as": "number",
+          "required": false
+        },
+        {
+          "name": "inputs.lsl",
+          "label": "LSL",
+          "type": "number",
+          "placeholder": { "de": "Untere Spezifikationsgrenze (capability)", "en": "Lower spec limit (capability)" },
+          "parse_as": "number",
+          "required": false
+        }
+      ]
+    },
+    "output_schema": {
+      "display_fields": [
+        "i.cl", "i.ucl", "i.lcl", "i.sigma",
+        "mr.cl", "mr.ucl", "mr.lcl", "mr.sigma",
+        "xbar.cl", "xbar.ucl", "xbar.lcl", "xbar.sigma",
+        "r.cl", "r.ucl", "r.lcl", "r.sigma",
+        "s.cl", "s.ucl", "s.lcl", "s.sigma",
+        "violationCount", "rulesTriggered", "violationIndices",
+        "cp", "cpu", "cpl", "cpk"
+      ],
+      "primary_field": "i.cl",
+      "format": {
+        "i.cl":     { "decimals": 6, "label": "I · CL" },
+        "i.ucl":    { "decimals": 6, "label": "I · UCL" },
+        "i.lcl":    { "decimals": 6, "label": "I · LCL" },
+        "i.sigma":  { "decimals": 6, "label": "I · σ̂" },
+        "mr.cl":    { "decimals": 6, "label": "MR · CL" },
+        "mr.ucl":   { "decimals": 6, "label": "MR · UCL" },
+        "mr.lcl":   { "decimals": 6, "label": "MR · LCL" },
+        "mr.sigma": { "decimals": 6, "label": "MR · σ̂" },
+        "xbar.cl":   { "decimals": 6, "label": "X̄ · CL" },
+        "xbar.ucl":  { "decimals": 6, "label": "X̄ · UCL" },
+        "xbar.lcl":  { "decimals": 6, "label": "X̄ · LCL" },
+        "xbar.sigma":{ "decimals": 6, "label": "X̄ · σ̂" },
+        "r.cl":     { "decimals": 6, "label": "R · CL" },
+        "r.ucl":    { "decimals": 6, "label": "R · UCL" },
+        "r.lcl":    { "decimals": 6, "label": "R · LCL" },
+        "r.sigma":  { "decimals": 6, "label": "R · σ̂" },
+        "s.cl":     { "decimals": 6, "label": "S · CL" },
+        "s.ucl":    { "decimals": 6, "label": "S · UCL" },
+        "s.lcl":    { "decimals": 6, "label": "S · LCL" },
+        "s.sigma":  { "decimals": 6, "label": "S · σ̂" },
+        "violationCount":   { "decimals": 0, "label": { "de": "Verstöße", "en": "Violations" } },
+        "rulesTriggered":   { "decimals": 0, "label": { "de": "Ausgelöste Regeln", "en": "Triggered rules" } },
+        "violationIndices": { "decimals": 0, "label": { "de": "Index-Liste", "en": "Index list" } },
+        "cp":  { "decimals": 6, "label": "Cp" },
+        "cpu": { "decimals": 6, "label": "CPU" },
+        "cpl": { "decimals": 6, "label": "CPL" },
+        "cpk": { "decimals": 6, "label": "Cpk" }
+      }
+    }
+  },
+
+  "changelog": [
+    {
+      "version": "1.0.0",
+      "date": "2026-04-11",
+      "type": "initial",
+      "description": {
+        "de": "Dispatcher analyze() mit Modi i-mr / xbar-r / xbar-s / nelson / capability; flaches Output-Format für Fixture-Replay.",
+        "en": "analyze() dispatcher with modes i-mr / xbar-r / xbar-s / nelson / capability; flat output shape for fixture replay."
+      },
+      "breaking": false
+    }
+  ]
+}

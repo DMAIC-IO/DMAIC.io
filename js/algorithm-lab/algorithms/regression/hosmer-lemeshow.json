@@ -1,0 +1,168 @@
+{
+  "id": "hosmer-lemeshow",
+  "name": {
+    "de": "Hosmer-Lemeshow-Test",
+    "en": "Hosmer-Lemeshow Test"
+  },
+  "category": "regression",
+  "subcategory": "goodness-of-fit",
+  "status": "validated",
+  "version": "1.0.0",
+
+  "description": {
+    "short": {
+      "de": "Prüft die Anpassungsgüte eines logistischen Regressionsmodells anhand von Gruppen vorhergesagter Wahrscheinlichkeiten.",
+      "en": "Tests the goodness of fit of a logistic regression model using groups of predicted probabilities."
+    },
+    "long": {
+      "de": "Der Hosmer-Lemeshow-Test teilt die Beobachtungen nach vorhergesagten Wahrscheinlichkeiten in G Gruppen ein und vergleicht die beobachteten mit den erwarteten Ereignissen und Nicht-Ereignissen pro Gruppe mittels einer χ²-Statistik. Unter der Nullhypothese einer adäquaten Modellanpassung folgt die Teststatistik einer χ²-Verteilung mit G − 2 Freiheitsgraden. Ein kleiner p-Wert deutet auf eine schlechte Modellanpassung hin.",
+      "en": "The Hosmer-Lemeshow test divides observations into G groups based on predicted probabilities and compares observed versus expected events and non-events per group using a χ² statistic. Under the null hypothesis of adequate model fit, the test statistic follows a χ² distribution with G − 2 degrees of freedom. A small p-value indicates poor model fit."
+    }
+  },
+
+  "documentation": {
+    "formulas": [
+      {
+        "label": "C",
+        "latex": "C = \\sum_{g=1}^{G} \\left[ \\frac{(O_g - E_g)^2}{E_g} + \\frac{(O'_g - E'_g)^2}{E'_g} \\right]",
+        "description": {
+          "de": "Hosmer-Lemeshow-Teststatistik: Summe der quadrierten Abweichungen von beobachteten und erwarteten Ereignissen (O_g, E_g) und Nicht-Ereignissen (O'_g, E'_g) über alle G Gruppen",
+          "en": "Hosmer-Lemeshow test statistic: sum of squared deviations of observed and expected events (O_g, E_g) and non-events (O'_g, E'_g) across all G groups"
+        }
+      },
+      {
+        "label": "H₀",
+        "latex": "C \\sim \\chi^2(G - 2) \\quad \\text{under } H_0",
+        "description": {
+          "de": "Unter der Nullhypothese adäquater Anpassung folgt C einer χ²-Verteilung mit G − 2 Freiheitsgraden",
+          "en": "Under the null hypothesis of adequate fit, C follows a χ² distribution with G − 2 degrees of freedom"
+        }
+      },
+      {
+        "label": "Gruppen",
+        "latex": "\\text{Sort by } \\hat{p}_i, \\; \\text{divide into } G \\text{ approximately equal groups}",
+        "description": {
+          "de": "Beobachtungen werden nach vorhergesagter Wahrscheinlichkeit sortiert und in G annähernd gleich große Gruppen eingeteilt",
+          "en": "Observations are sorted by predicted probability and divided into G approximately equal groups"
+        }
+      },
+      {
+        "label": "Entscheidung",
+        "latex": "\\text{Reject } H_0 \\text{ if } p < \\alpha",
+        "description": {
+          "de": "H₀ ablehnen, wenn p < α — das Modell passt schlecht zu den Daten",
+          "en": "Reject H₀ if p < α — the model fits the data poorly"
+        }
+      }
+    ],
+    "assumptions": [
+      { "de": "Binäre Zielvariable (0/1)", "en": "Binary response variable (0/1)" },
+      { "de": "Wahrscheinlichkeiten stammen aus einem angepassten logistischen Modell", "en": "Probabilities are estimated from a fitted logistic model" },
+      { "de": "Ausreichend Beobachtungen pro Gruppe (empfohlen ≥ 5 erwartete pro Zelle)", "en": "Sufficient observations per group (recommended ≥ 5 expected per cell)" },
+      { "de": "Gruppen basieren auf Quantilen der vorhergesagten Wahrscheinlichkeiten", "en": "Groups are based on predicted probability quantiles" }
+    ],
+    "limitations": [
+      { "de": "Empfindlich gegenüber der Anzahl Gruppen G — Ergebnisse können erheblich variieren", "en": "Sensitive to number of groups G — results can vary significantly" },
+      { "de": "Geringe Teststärke bei kleinen Stichproben", "en": "Low power for small sample sizes" },
+      { "de": "Gruppen mit wenigen Beobachtungen können die χ²-Approximation ungültig machen", "en": "Groups with few observations may invalidate χ² approximation" },
+      { "de": "Zeigt nicht die Richtung der Fehlanpassung — nur ob die Anpassung unzureichend ist", "en": "Does not indicate direction of misfit — only whether fit is inadequate" },
+      { "de": "Nicht anwendbar für stetige Zielvariablen", "en": "Not applicable for continuous outcomes" }
+    ],
+    "references": [
+      { "source": "Hosmer, D.W., Lemeshow, S., A Goodness-of-Fit Test for the Multiple Logistic Regression Model, Communications in Statistics, 1980" },
+      { "source": "Hosmer, D.W., Lemeshow, S., Sturdivant, R.X., Applied Logistic Regression, 3rd Ed., Wiley, Ch. 5.2" }
+    ],
+    "minitab_equivalent": "Stat > Regression > Binary Logistic Regression > Goodness-of-Fit Tests"
+  },
+
+  "source": {
+    "function_name": "hosmerLemeshow",
+    "file_path": "js/engines/glm-engine.js",
+    "signature": {
+      "parameters": [
+        {
+          "name": "yTrue",
+          "type": "number[]",
+          "required": true,
+          "description": { "de": "Binäre wahre Klassen (0/1)", "en": "Binary true classes (0/1)" }
+        },
+        {
+          "name": "probs",
+          "type": "number[]",
+          "required": true,
+          "description": { "de": "Vorhergesagte Wahrscheinlichkeiten", "en": "Predicted probabilities" }
+        },
+        {
+          "name": "g",
+          "type": "number",
+          "required": false,
+          "description": { "de": "Anzahl Gruppen (Standard: 10)", "en": "Number of groups (default: 10)" }
+        }
+      ],
+      "returns": {
+        "type": "object",
+        "properties": {
+          "statistic": { "type": "number", "description": { "de": "Hosmer-Lemeshow χ²-Teststatistik", "en": "Hosmer-Lemeshow χ² test statistic" } },
+          "df": { "type": "number", "description": { "de": "Freiheitsgrade (G − 2)", "en": "Degrees of freedom (G − 2)" } },
+          "pValue": { "type": "number", "description": { "de": "p-Wert aus der χ²-Verteilung", "en": "p-value from χ² distribution" } },
+          "groups": { "type": "number", "description": { "de": "Anzahl der verwendeten Gruppen", "en": "Number of groups used" } }
+        }
+      }
+    },
+    "code_snippet": null
+  },
+
+  "try_it": {
+    "input_schema": {
+      "fields": [
+        {
+          "name": "yTrue",
+          "label": { "de": "Wahre Klassen (0/1)", "en": "True Classes (0/1)" },
+          "type": "textarea",
+          "placeholder": { "de": "Werte eingeben, getrennt durch Komma, Leerzeichen oder Zeilenumbruch", "en": "Enter values separated by commas, spaces or newlines" },
+          "parse_as": "number_array",
+          "required": true
+        },
+        {
+          "name": "probs",
+          "label": { "de": "Vorhergesagte Wahrscheinlichkeiten", "en": "Predicted Probabilities" },
+          "type": "textarea",
+          "placeholder": { "de": "Werte eingeben, getrennt durch Komma, Leerzeichen oder Zeilenumbruch", "en": "Enter values separated by commas, spaces or newlines" },
+          "parse_as": "number_array",
+          "required": true
+        },
+        {
+          "name": "g",
+          "label": { "de": "Anzahl Gruppen", "en": "Number of Groups" },
+          "type": "number",
+          "placeholder": { "de": "10", "en": "10" },
+          "parse_as": "number",
+          "required": false
+        }
+      ]
+    },
+    "output_schema": {
+      "display_fields": ["statistic", "df", "pValue", "groups"],
+      "primary_field": "pValue",
+      "format": {
+        "statistic": { "decimals": 4, "label": "χ²" },
+        "df": { "decimals": 0, "label": "df" },
+        "pValue": { "decimals": 6, "label": "p-Value" },
+        "groups": { "decimals": 0, "label": "G" }
+      }
+    }
+  },
+
+  "changelog": [
+    {
+      "version": "1.0.0",
+      "date": "2026-04-27",
+      "type": "initial",
+      "description": {
+        "de": "Erstimplementierung des Hosmer-Lemeshow-Anpassungsgütetests für logistische Regression",
+        "en": "Initial implementation of the Hosmer-Lemeshow goodness-of-fit test for logistic regression"
+      },
+      "breaking": false
+    }
+  ]
+}

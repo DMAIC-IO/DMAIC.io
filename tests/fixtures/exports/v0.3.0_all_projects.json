@@ -1,0 +1,499 @@
+{
+  "appVersion": "0.3.0",
+  "exportedAt": "2026-05-02T10:00:00.000Z",
+  "settings": {
+    "language": "de",
+    "theme": "dark",
+    "chartTitleSize": 15,
+    "chartLabelSize": 12,
+    "chartTickSize": 11,
+    "chartColors": ["#4f9eff", "#ffb454", "#5ec787", "#ff6b6b", "#b290ff"],
+    "chartBgColor": "#1e293b",
+    "chartShowLegend": true,
+    "showAlgoLabLinks": true,
+    "confidenceLevel": 95,
+    "power": 80
+  },
+  "projects": [
+    {
+      "id": "proj-dmaic-active",
+      "status": "active",
+      "version": "0.3.0",
+      "projectMeta": {
+        "name": "DMAIC: Reduktion Reklamationsrate Kreditkarten",
+        "cycle": "dmaic",
+        "created": "2026-04-01T08:00:00.000Z",
+        "modified": "2026-05-02T09:30:00.000Z",
+        "owner": "S. Krüger",
+        "department": "Operations",
+        "businessCase": "300k EUR/a Bearbeitungskosten durch Reklamationen"
+      },
+      "phases": {
+        "data": [
+          { "instanceId": "i-ws-1",   "moduleId": "worksheet" },
+          { "instanceId": "i-hist-1", "moduleId": "histogram" },
+          { "instanceId": "i-rest-1", "moduleId": "rest-api" },
+          { "instanceId": "i-rng-1",  "moduleId": "random-generator" },
+          { "instanceId": "i-mdg-1",  "moduleId": "model-data-generator" },
+          { "instanceId": "i-tf-1",   "moduleId": "data-transformation" },
+          { "instanceId": "i-ctr-1",  "moduleId": "contour-plot" }
+        ],
+        "define": [
+          { "instanceId": "i-ch-1",  "moduleId": "project-charter" },
+          { "instanceId": "i-sp-1",  "moduleId": "sipoc" },
+          { "instanceId": "i-stk-1", "moduleId": "stakeholder-analysis" }
+        ],
+        "measure": [
+          { "instanceId": "i-pm-1",  "moduleId": "process-map" },
+          { "instanceId": "i-cpk-1", "moduleId": "process-capability" }
+        ],
+        "analyze": [
+          { "instanceId": "i-is-1", "moduleId": "ishikawa" },
+          { "instanceId": "i-ht-1", "moduleId": "hypothesis-test" }
+        ],
+        "improve": [
+          { "instanceId": "i-doep-1", "moduleId": "doe-planner" }
+        ],
+        "control": [
+          { "instanceId": "i-cc-1", "moduleId": "control-chart" },
+          { "instanceId": "i-ll-1", "moduleId": "lessons-learned" }
+        ],
+        "extras": []
+      },
+      "phaseAchievement": { "data": 60, "define": 100, "measure": 80, "analyze": 50, "improve": 25, "control": 0 },
+      "phaseAchievementHistory": {
+        "define":  [ { "ts": "2026-04-08T12:00:00.000Z", "value":  60 }, { "ts": "2026-04-15T12:00:00.000Z", "value": 100 } ],
+        "measure": [ { "ts": "2026-04-22T12:00:00.000Z", "value":  80 } ],
+        "analyze": [ { "ts": "2026-04-30T12:00:00.000Z", "value":  50 } ],
+        "improve": [ { "ts": "2026-05-02T12:00:00.000Z", "value":  25 } ]
+      },
+      "dashboard": {
+        "layout": [
+          { "id": "t-charter",  "kind": "charter",  "x": 0, "y": 0, "w": 6, "h": 4 },
+          { "id": "t-progress", "kind": "progress", "x": 6, "y": 0, "w": 6, "h": 2 }
+        ]
+      },
+      "moduleStates": {
+        "i-ws-1": {
+          "sheets": [
+            {
+              "id": "sh-1",
+              "name": "Reklamationen",
+              "state": {
+                "columns": [
+                  { "id": "c-id",     "name": "ID",       "shortName": "C1", "type": "numeric", "unit": null, "values": [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15], "formulas": [null,null,null,null,null,null,null,null,null,null,null,null,null,null,null], "format": {} },
+                  { "id": "c-amount", "name": "Betrag",   "shortName": "C2", "type": "numeric", "unit": "EUR", "values": [120.50, 78.20, 220.00, 45.10, 340.80, 99.99, 156.40, 88.75, 412.30, 210.50, 67.20, 189.90, 305.10, 142.60, 95.80], "formulas": [null,null,null,null,null,null,null,null,null,null,null,null,null,null,null], "format": { "decimals": 2 } },
+                  { "id": "c-cat",    "name": "Kategorie","shortName": "C3", "type": "text",    "unit": null, "values": ["Doppelbuchung","Falscher Betrag","Doppelbuchung","Vertragslücke","Doppelbuchung","Falscher Betrag","Vertragslücke","Doppelbuchung","Falscher Betrag","Doppelbuchung","Vertragslücke","Doppelbuchung","Falscher Betrag","Doppelbuchung","Vertragslücke"], "formulas": [null,null,null,null,null,null,null,null,null,null,null,null,null,null,null], "format": {} }
+                ],
+                "rowCount": 15,
+                "colWidths": { "c-id": 60, "c-amount": 100, "c-cat": 140 },
+                "sortCol": null, "sortDir": null, "selection": null
+              }
+            }
+          ],
+          "activeSheetId": "sh-1",
+          "sheetCounter": 1
+        },
+        "i-hist-1": {
+          "datasets": [ { "valueRef": { "instanceId": "i-ws-1", "sheetId": "sh-1", "columnId": "c-amount" }, "groupRef": null } ],
+          "binMode": "auto", "binWidth": null,
+          "showTitle": true, "chartTitleText": "Verteilung Reklamationsbetrag",
+          "showPareto": true, "showStats": true, "showBoxplot": false, "confLevel": 95,
+          "titleSize": 15, "labelSize": 12, "tickSize": 11,
+          "showXLabel": true, "showYLabel": true, "showXTicks": true, "showYTicks": true,
+          "barGap": 2, "bgColor": null,
+          "refLines": [], "refAreas": [], "seriesOverrides": []
+        },
+        "i-rest-1": {
+          "endpoints": [
+            {
+              "id": "ep1",
+              "url": "https://api.example.com/v1/transactions?limit=100",
+              "method": "GET",
+              "headers": { "Accept": "application/json", "Authorization": "Bearer ${TOKEN}" },
+              "body": "",
+              "auth": { "type": "bearer", "tokenRef": "TOKEN" },
+              "mappings": [
+                { "colId": "c-id",     "path": "$.data[*].id" },
+                { "colId": "c-amount", "path": "$.data[*].amount_cents" },
+                { "colId": "c-cat",    "path": "$.data[*].category" }
+              ],
+              "schedule": { "enabled": false, "intervalValue": 15, "intervalUnit": "min" },
+              "writeMode": "replace"
+            }
+          ],
+          "activeId": "ep1"
+        },
+        "i-rng-1": {
+          "currentDist": "normal",
+          "normal": { "mean": 170, "sd": 100, "n": 200, "seed": 42 },
+          "uniform": { "min": 0, "max": 500, "n": 100 },
+          "binomial": { "n": 50, "p": 0.04 },
+          "targetWorksheet": { "instanceId": "i-ws-1", "sheetId": "sh-1" },
+          "targetColumnName": "Stichprobe"
+        },
+        "i-mdg-1": {
+          "factors": [
+            { "name": "x1", "min": -1, "max": 1, "type": "numeric" },
+            { "name": "x2", "min":  0, "max": 5, "type": "numeric" },
+            { "name": "kat", "min": 0, "max": 0, "type": "cat", "levels": ["A","B","C"] }
+          ],
+          "maxOrder": 2,
+          "intercept": 12.5,
+          "betas": { "x1": 1.2, "x2": -0.4, "x1:x2": 0.15, "x1^2": -0.05 },
+          "yName": "y",
+          "samplingMethod": "lhs",
+          "sampleSize": 60,
+          "noiseStd": 0.3,
+          "seed": 7
+        },
+        "i-tf-1": {
+          "currentTF": "boxcox",
+          "columnRef": { "instanceId": "i-ws-1", "sheetId": "sh-1", "columnId": "c-amount" }
+        },
+        "i-ctr-1": {
+          "model": "quadratic",
+          "b": [12.5, 1.2, -0.4, 0.15, -0.05, 0.0],
+          "customFormula": "",
+          "xLabel": "x1", "yLabel": "x2", "zLabel": "y",
+          "xMin": -1, "xMax": 1, "yMin": 0, "yMax": 5,
+          "numLevels": 12, "gridRes": 80, "colorScheme": "viridis",
+          "showLines": true, "showLabels": true, "showDataPoints": false,
+          "colRefX": null, "colRefY": null, "colRefZ": null,
+          "chartConfig": { "showTitle": true, "title": "Reklamation als Funktion von x1, x2", "titleSize": 15, "showLegend": true, "bgColor": null },
+          "refLines": [], "refAreas": []
+        },
+        "i-ch-1": {
+          "problemStatement": "Reklamationsrate liegt im Q1/2026 bei 4,2 % aller Transaktionen — Zielwert ≤ 2 %. Pro Reklamation entstehen ø 145 EUR Bearbeitungskosten.",
+          "goals": [
+            { "id": "g1", "text": "Reklamationsrate auf ≤ 2 % senken", "status": "open" },
+            { "id": "g2", "text": "Bearbeitungskosten pro Reklamation um 25 % senken", "status": "open" },
+            { "id": "g3", "text": "Erstlösungsquote im Service-Center auf ≥ 80 % heben", "status": "in-progress" }
+          ],
+          "orgChart": [
+            { "id": "n1", "title": "Sponsor",    "desc": "VP Cards",       "pid": null },
+            { "id": "n2", "title": "Black Belt", "desc": "S. Krüger",      "pid": "n1" },
+            { "id": "n3", "title": "Green Belt", "desc": "L. Faber",       "pid": "n2" }
+          ],
+          "orgStyle": { "bgColor": "#ffffff", "borderColor": "#94a3b8", "borderWidth": 1, "fontColor": "#1e293b", "fontSize": 12, "lineColor": "#64748b" }
+        },
+        "i-sp-1": {
+          "columns": {
+            "suppliers": ["Acquirer", "Issuer", "Schemes (Visa/MC)"],
+            "inputs":    ["Transaktionsdaten", "Kundenstammdaten", "Vertragsbedingungen"],
+            "process":   ["Transaktion empfangen", "Validieren", "Buchen", "Beleg an Kunde", "Reklamation prüfen"],
+            "outputs":   ["Buchung", "Beleg", "Antwort an Kunden"],
+            "customers": ["Karteninhaber", "Händler", "Treasury"]
+          }
+        },
+        "i-stk-1": {
+          "stakeholders": [
+            { "id": "s1", "name": "Service-Center-Leitung", "power": 4, "interest": 5, "category": "manage-closely", "notes": "" },
+            { "id": "s2", "name": "Compliance",             "power": 5, "interest": 3, "category": "keep-satisfied", "notes": "BaFin-Reporting" },
+            { "id": "s3", "name": "IT Backoffice",          "power": 3, "interest": 4, "category": "manage-closely", "notes": "" }
+          ]
+        },
+        "i-pm-1": {
+          "steps": [
+            { "id": "p1", "seq": 1, "type": "start",   "text": "Reklamation eingeht",   "owner": "SC",  "valueType": "value-add", "substeps": [], "expanded": false, "loop": null },
+            { "id": "p2", "seq": 2, "type": "process", "text": "Klassifizieren",        "owner": "SC",  "valueType": "value-add", "substeps": [], "expanded": false, "loop": null },
+            { "id": "p3", "seq": 3, "type": "process", "text": "Belege anfordern",      "owner": "SC",  "valueType": "non-value", "substeps": [], "expanded": false, "loop": null },
+            { "id": "p4", "seq": 4, "type": "process", "text": "Storno/Erstattung",     "owner": "BO",  "valueType": "value-add", "substeps": [], "expanded": false, "loop": null },
+            { "id": "p5", "seq": 5, "type": "end",     "text": "Kunde informiert",      "owner": "SC",  "valueType": "value-add", "substeps": [], "expanded": false, "loop": null }
+          ]
+        },
+        "i-cpk-1": {
+          "params": { "lsl": 0, "usl": 200, "target": 100, "subgroupSize": 1 },
+          "columnRef": { "instanceId": "i-ws-1", "sheetId": "sh-1", "columnId": "c-amount" },
+          "lastResult": { "n": 15, "mean": 170.88, "sd": 105.5, "withinSd": 92.7, "cp": 0.36, "cpk": 0.10, "pp": 0.32, "ppk": 0.09, "ppmAboveUSL": 384000 }
+        },
+        "i-is-1": {
+          "problem": "Doppelbuchungen sind häufigste Reklamationskategorie",
+          "experts": [ { "id": "x1", "name": "L. Faber", "time": "2026-04-26T10:00:00.000Z" } ],
+          "catLabels": { "man": "Mensch", "machine": "System", "method": "Methode", "material": "Daten", "measurement": "Messung", "milieu": "Umfeld" },
+          "rows": [
+            { "id": "r1", "cat": "machine", "text": "Retry-Logik triggert Doppelbuchung", "votes": 6 },
+            { "id": "r2", "cat": "method",  "text": "Idempotenz-Key fehlt im Legacy-Pfad", "votes": 5 },
+            { "id": "r3", "cat": "man",     "text": "Manuelle Nachbuchung ohne Storno",    "votes": 3 }
+          ],
+          "snapshots": [], "experiments": [], "facts": [], "images": []
+        },
+        "i-ht-1": {
+          "category": "proportion", "testType": "two-sample-prop", "direction": "two-sided",
+          "alpha": 0.05, "powerGoal": 0.8, "targetValue": 0, "targetType": "null",
+          "colRef1": null, "colRef2": null
+        },
+        "i-doep-1": {
+          "version": 3, "doeName": "Pilot Idempotenz-Key", "designType": "frac",
+          "factors": [
+            { "name": "IdempotenzKey",  "levels": ["off","on"],            "encoding": [ { "value": "off", "num": -1 }, { "value": "on", "num": 1 } ] },
+            { "name": "RetryDelay",     "levels": ["100ms","1000ms"],      "encoding": [ { "value": "100ms", "num": -1 }, { "value": "1000ms", "num": 1 } ] },
+            { "name": "QueueIsolation", "levels": ["shared","dedicated"],  "encoding": [ { "value": "shared", "num": -1 }, { "value": "dedicated", "num": 1 } ] }
+          ],
+          "responses": [ { "name": "DoppelbuchungsRate", "unit": "%", "goalsense": "minimize", "nreps": 1, "levels": [] } ],
+          "options": { "centerPoints": 0, "blockCount": 1, "randomize": true, "seed": 7 },
+          "selectedRes": null, "selectedPBIdx": 0, "design": null, "worksheetRef": null,
+          "evaluation": null, "analysisResponseIdx": 0, "fid": "doe-rkk-001",
+          "projectMode": false, "projectName": "", "projectPhases": [], "activePhaseIdx": 0
+        },
+        "i-cc-1": {
+          "chartTypeId": "p", "subgroupSize": 100,
+          "columnRef": { "instanceId": "i-ws-1", "sheetId": "sh-1", "columnId": "c-id" },
+          "baselineCount": 15, "usl": null, "lsl": null,
+          "enabledRules": [1, 2, 3, 4]
+        },
+        "i-ll-1": {
+          "lessons": [
+            { "id": "l1", "category": "Daten", "text": "Reklamations-Klassifikation war ungenau — Mapping erst zur Mitte überarbeitet.", "date": "2026-05-01", "owner": "L. Faber", "impact": "medium" }
+          ]
+        }
+      }
+    },
+    {
+      "id": "proj-dmadv-active",
+      "status": "active",
+      "version": "0.3.0",
+      "projectMeta": {
+        "name": "DMADV: Neuentwicklung B2B-Selfservice-Portal",
+        "cycle": "dmadv",
+        "created": "2026-03-01T09:00:00.000Z",
+        "modified": "2026-05-02T08:00:00.000Z",
+        "owner": "F. Hoffmann"
+      },
+      "phases": {
+        "data":    [ { "instanceId": "j-ws-1", "moduleId": "worksheet" } ],
+        "define":  [
+          { "instanceId": "j-ch-1",  "moduleId": "project-charter" },
+          { "instanceId": "j-voc-1", "moduleId": "voc-ctx-tree" },
+          { "instanceId": "j-rci-1", "moduleId": "raci-matrix" }
+        ],
+        "measure": [ { "instanceId": "j-cpk-1", "moduleId": "process-capability" } ],
+        "analyze": [
+          { "instanceId": "j-fmea-1", "moduleId": "fmea" },
+          { "instanceId": "j-ce-1",   "moduleId": "ce-matrix" },
+          { "instanceId": "j-pair-1", "moduleId": "pairwise-comparison" }
+        ],
+        "design":  [
+          { "instanceId": "j-doep-1", "moduleId": "doe-planner" },
+          { "instanceId": "j-doea-1", "moduleId": "doe-advisor" },
+          { "instanceId": "j-reg-1",  "moduleId": "regression" }
+        ],
+        "verify":  [
+          { "instanceId": "j-cc-1", "moduleId": "control-chart" },
+          { "instanceId": "j-ll-1", "moduleId": "lessons-learned" }
+        ],
+        "extras":  [ { "instanceId": "j-todo-x", "moduleId": "todo" } ]
+      },
+      "phaseAchievement": { "data": 50, "define": 100, "measure": 80, "analyze": 70, "design": 30, "verify": 0 },
+      "phaseAchievementHistory": {
+        "define":  [ { "ts": "2026-03-15T12:00:00.000Z", "value": 100 } ],
+        "measure": [ { "ts": "2026-04-01T12:00:00.000Z", "value":  80 } ],
+        "analyze": [ { "ts": "2026-04-20T12:00:00.000Z", "value":  70 } ],
+        "design":  [ { "ts": "2026-05-01T12:00:00.000Z", "value":  30 } ]
+      },
+      "dashboard": null,
+      "moduleStates": {
+        "j-ws-1": {
+          "sheets": [
+            { "id": "j-sh-1", "name": "Tab1", "state": {
+              "columns": [
+                { "id": "j-c-x", "name": "Latency", "shortName": "C1", "type": "numeric", "unit": "ms", "values": [120, 145, 132, 178, 165, 140, 152, 130, 148, 159], "formulas": [null,null,null,null,null,null,null,null,null,null], "format": {} },
+                { "id": "j-c-y", "name": "Success", "shortName": "C2", "type": "numeric", "unit": null, "values": [1,1,1,0,1,1,1,1,1,0], "formulas": [null,null,null,null,null,null,null,null,null,null], "format": {} }
+              ],
+              "rowCount": 10, "colWidths": {}, "sortCol": null, "sortDir": null, "selection": null
+            } }
+          ],
+          "activeSheetId": "j-sh-1", "sheetCounter": 1
+        },
+        "j-ch-1": {
+          "problemStatement": "B2B-Kunden müssen Stammdaten heute per Email pflegen — durchschnittliche Bearbeitungszeit 3 Werktage. Zielzustand: Self-Service mit < 5 min.",
+          "goals": [
+            { "id": "g1", "text": "TTC < 5 min für 90 % der Vorgänge", "status": "open" },
+            { "id": "g2", "text": "0 manuelle Eingriffe nach Go-Live", "status": "open" }
+          ],
+          "orgChart": [],
+          "orgStyle": { "bgColor": "#ffffff", "borderColor": "#94a3b8", "borderWidth": 1, "fontColor": "#1e293b", "fontSize": 12, "lineColor": "#64748b" }
+        },
+        "j-voc-1": {
+          "vocs": [
+            { "id": "v1", "name": "B2B-Großkunde",
+              "cxs": [
+                { "id": "c1", "text": "Stammdaten ohne Anruf ändern können" },
+                { "id": "c2", "text": "Audit-Trail aller Änderungen einsehbar" }
+              ]
+            }
+          ],
+          "activeVocId": "v1",
+          "styles": { "colors": { "voc": "#4f9eff", "ctx": "#ffb454", "edge": "#94a3b8" } }
+        },
+        "j-rci-1": {
+          "activities": ["Anforderungen", "UX-Design", "Backend-API", "Integrationstest", "Go-Live"],
+          "stakeholders": ["Sponsor", "PO", "UX", "Dev", "QA"],
+          "assignments": {
+            "0_0": "I", "0_1": "A", "0_2": "C", "0_3": "C", "0_4": "I",
+            "1_0": "I", "1_1": "A", "1_2": "R", "1_3": "C", "1_4": "I",
+            "2_0": "I", "2_1": "A", "2_2": "I", "2_3": "R", "2_4": "C",
+            "3_0": "I", "3_1": "C", "3_2": "I", "3_3": "C", "3_4": "R",
+            "4_0": "A", "4_1": "R", "4_2": "I", "4_3": "C", "4_4": "C"
+          }
+        },
+        "j-cpk-1": {
+          "params": { "lsl": 0, "usl": 300, "target": 150, "subgroupSize": 1 },
+          "columnRef": { "instanceId": "j-ws-1", "sheetId": "j-sh-1", "columnId": "j-c-x" },
+          "lastResult": { "n": 10, "mean": 146.9, "sd": 17.2, "withinSd": 16.8, "cp": 2.91, "cpk": 2.85, "pp": 2.82, "ppk": 2.78, "ppmAboveUSL": 0 }
+        },
+        "j-fmea-1": {
+          "risks": [
+            { "id": "f1", "process": "Login",        "failure": "SSO-Token abgelaufen",        "causes": "Konfig-Drift",  "effects": "Kunde sieht 401",       "detection": "Synthetisches Monitoring", "sev": 6, "occ": 4, "det": 3, "rpn":  72 },
+            { "id": "f2", "process": "Stammdatenupd.","failure": "Datensatz nicht persistiert", "causes": "DB-Timeout",   "effects": "Datenverlust",          "detection": "App-Logs",                 "sev": 9, "occ": 2, "det": 5, "rpn":  90 },
+            { "id": "f3", "process": "Audit-Log",    "failure": "Eintrag fehlt",               "causes": "Fire-and-forget","effects": "Compliance-Verstoß",    "detection": "Daily-Report",             "sev": 8, "occ": 3, "det": 7, "rpn": 168 }
+          ],
+          "scales": null
+        },
+        "j-ce-1": {
+          "inputs":  ["API-Latency", "UI-Komplexität", "Validierungslogik", "Caching"],
+          "outputs": ["TTC", "Fehlerrate", "Kundenzufriedenheit"],
+          "scores":  { "0_0": 9, "0_1": 5, "0_2": 7, "1_0": 7, "1_1": 5, "1_2": 9, "2_0": 5, "2_1": 9, "2_2": 5, "3_0": 7, "3_1": 3, "3_2": 5 },
+          "weights": [10, 8, 9]
+        },
+        "j-pair-1": {
+          "criteria": ["TTC", "Fehlerrate", "Aufwand", "Compliance"],
+          "matrix":  [ [1, 3, 5, 0.33], [0.33, 1, 3, 0.20], [0.20, 0.33, 1, 0.14], [3, 5, 7, 1] ],
+          "pairs":   [[0,1],[0,2],[0,3],[1,2],[1,3],[2,3]],
+          "currentPair": 6,
+          "viewPhase": "results"
+        },
+        "j-doep-1": {
+          "version": 3, "doeName": "Caching-Strategie", "designType": "pb",
+          "factors": [
+            { "name": "EdgeCache", "levels": ["off","on"], "encoding": [ { "value": "off", "num": -1 }, { "value": "on", "num": 1 } ] },
+            { "name": "TTL",       "levels": ["30s","300s"], "encoding": [ { "value": "30s", "num": -1 }, { "value": "300s", "num": 1 } ] }
+          ],
+          "responses": [ { "name": "TTC", "unit": "ms", "goalsense": "minimize", "nreps": 1, "levels": [] } ],
+          "options": { "centerPoints": 0, "blockCount": 1, "randomize": false, "seed": 1 },
+          "selectedRes": null, "selectedPBIdx": 0, "design": null, "worksheetRef": null,
+          "evaluation": null, "analysisResponseIdx": 0, "fid": "doe-cache-001",
+          "projectMode": false, "projectName": "", "projectPhases": [], "activePhaseIdx": 0
+        },
+        "j-doea-1": {
+          "tab": "wizard", "currentStep": "factor-count",
+          "answers": { "factor-count": "5" },
+          "result": null, "history": ["intro", "factor-count"]
+        },
+        "j-reg-1": {
+          "colRefs": [
+            { "instanceId": "j-ws-1", "sheetId": "j-sh-1", "columnId": "j-c-x" },
+            { "instanceId": "j-ws-1", "sheetId": "j-sh-1", "columnId": "j-c-y" }
+          ],
+          "yKey": "j-c-y", "regType": "polynomial", "polyDegree": 1,
+          "confLevel": 95, "alpha": 0.05, "showCI": true,
+          "result": null, "perXResults": null, "activeXKey": "j-c-x",
+          "activeTab": "summary", "excludedTerms": [], "coefSortByP": false
+        },
+        "j-cc-1": {
+          "chartTypeId": "xbar-r", "subgroupSize": 5,
+          "columnRef": { "instanceId": "j-ws-1", "sheetId": "j-sh-1", "columnId": "j-c-x" },
+          "baselineCount": 10, "usl": 200, "lsl": 50,
+          "enabledRules": [1, 2, 3, 4, 5, 6, 7, 8]
+        },
+        "j-ll-1": { "lessons": [] },
+        "j-todo-x": {
+          "items": [ { "id": "tx", "text": "Kickoff Verify-Gate planen", "due": "2026-05-20", "owner": "F. Hoffmann", "status": "open" } ],
+          "filterStatus": "", "filterOwner": "", "sortCol": "due", "sortAsc": true
+        }
+      }
+    },
+    {
+      "id": "proj-dmaic-completed",
+      "status": "completed",
+      "version": "0.3.0",
+      "projectMeta": {
+        "name": "DMAIC: Senkung Ausfallzeit Verpackungsmaschine M-3 (abgeschlossen)",
+        "cycle": "dmaic",
+        "created": "2026-01-12T08:00:00.000Z",
+        "modified": "2026-04-30T17:00:00.000Z",
+        "owner": "P. Reuter",
+        "completedAt": "2026-04-30T17:00:00.000Z"
+      },
+      "phases": {
+        "data":    [ { "instanceId": "k-ws-1", "moduleId": "worksheet" } ],
+        "define":  [ { "instanceId": "k-ch-1", "moduleId": "project-charter" } ],
+        "measure": [ { "instanceId": "k-cpk-1", "moduleId": "process-capability" } ],
+        "analyze": [ { "instanceId": "k-5w-1",  "moduleId": "five-why" } ],
+        "improve": [ { "instanceId": "k-doep-1","moduleId": "doe-planner" } ],
+        "control": [
+          { "instanceId": "k-cc-1", "moduleId": "control-chart" },
+          { "instanceId": "k-ll-1", "moduleId": "lessons-learned" }
+        ],
+        "extras":  []
+      },
+      "phaseAchievement": { "data": 100, "define": 100, "measure": 100, "analyze": 100, "improve": 100, "control": 100 },
+      "phaseAchievementHistory": {
+        "control": [ { "ts": "2026-04-30T17:00:00.000Z", "value": 100 } ]
+      },
+      "dashboard": null,
+      "moduleStates": {
+        "k-ws-1": {
+          "sheets": [
+            { "id": "k-sh-1", "name": "Stillstandsereignisse", "state": {
+              "columns": [
+                { "id": "k-c-dur",  "name": "Dauer", "shortName": "C1", "type": "numeric", "unit": "min", "values": [22, 18, 31, 12, 27, 19, 24, 16, 29, 21, 17, 25], "formulas": [null,null,null,null,null,null,null,null,null,null,null,null], "format": {} },
+                { "id": "k-c-cause","name": "Ursache","shortName": "C2","type": "text",    "unit": null,  "values": ["Folie","Folie","Sensor","Folie","Steuerung","Folie","Sensor","Folie","Steuerung","Folie","Folie","Sensor"], "formulas": [null,null,null,null,null,null,null,null,null,null,null,null], "format": {} }
+              ],
+              "rowCount": 12, "colWidths": {}, "sortCol": null, "sortDir": null, "selection": null
+            } }
+          ],
+          "activeSheetId": "k-sh-1", "sheetCounter": 1
+        },
+        "k-ch-1": {
+          "problemStatement": "M-3 hatte Q4/2025 OEE 67 % statt Ziel 85 %. Stillstände dominiert von Folienwechseln.",
+          "goals": [
+            { "id": "g1", "text": "OEE auf ≥ 85 % heben", "status": "done" },
+            { "id": "g2", "text": "Mittlere Stillstandsdauer < 15 min", "status": "done" }
+          ],
+          "orgChart": [],
+          "orgStyle": { "bgColor": "#ffffff", "borderColor": "#94a3b8", "borderWidth": 1, "fontColor": "#1e293b", "fontSize": 12, "lineColor": "#64748b" }
+        },
+        "k-cpk-1": {
+          "params": { "lsl": 0, "usl": 30, "target": 10, "subgroupSize": 1 },
+          "columnRef": { "instanceId": "k-ws-1", "sheetId": "k-sh-1", "columnId": "k-c-dur" },
+          "lastResult": { "n": 12, "mean": 21.75, "sd": 5.61, "withinSd": 5.10, "cp": 0.89, "cpk": 0.49, "pp": 0.81, "ppk": 0.45, "ppmAboveUSL": 67000 }
+        },
+        "k-5w-1": {
+          "problem": "Folienwechsel dauern ø 22 min statt 5 min",
+          "nodes": [
+            { "id": 1, "level": 0, "parent": 0, "text": "Folienwechsel ø 22 min" },
+            { "id": 2, "level": 1, "parent": 1, "text": "Werkzeug nicht griffbereit" },
+            { "id": 3, "level": 2, "parent": 2, "text": "Schichtbox unsortiert" },
+            { "id": 4, "level": 3, "parent": 3, "text": "Kein Standardplatz definiert" },
+            { "id": 5, "level": 4, "parent": 4, "text": "5S-Workshop nie umgesetzt" }
+          ]
+        },
+        "k-doep-1": {
+          "version": 3, "doeName": "SMED Folienwechsel", "designType": "full",
+          "factors": [
+            { "name": "Schnellverschluss", "levels": ["nein","ja"], "encoding": [ { "value": "nein", "num": -1 }, { "value": "ja", "num": 1 } ] },
+            { "name": "Vorbereitung",      "levels": ["intern","extern"], "encoding": [ { "value": "intern", "num": -1 }, { "value": "extern", "num": 1 } ] }
+          ],
+          "responses": [ { "name": "Wechselzeit", "unit": "min", "goalsense": "minimize", "nreps": 3, "levels": [] } ],
+          "options": { "centerPoints": 0, "blockCount": 1, "randomize": true, "seed": 99 },
+          "selectedRes": null, "selectedPBIdx": 0, "design": null, "worksheetRef": null,
+          "evaluation": null, "analysisResponseIdx": 0, "fid": "doe-smed-001",
+          "projectMode": false, "projectName": "", "projectPhases": [], "activePhaseIdx": 0
+        },
+        "k-cc-1": {
+          "chartTypeId": "i-mr", "subgroupSize": 1,
+          "columnRef": { "instanceId": "k-ws-1", "sheetId": "k-sh-1", "columnId": "k-c-dur" },
+          "baselineCount": 12, "usl": 30, "lsl": null,
+          "enabledRules": [1, 2, 3, 4]
+        },
+        "k-ll-1": {
+          "lessons": [
+            { "id": "l1", "category": "Methodik", "text": "SMED-Workshop hätte vor DOE laufen sollen — DOE bestätigte nur Bekanntes.", "date": "2026-04-25", "owner": "P. Reuter", "impact": "high" },
+            { "id": "l2", "category": "Tooling",  "text": "Bilderbasierte Standards an der Maschine sind effektiver als Word-Doku.",   "date": "2026-04-28", "owner": "P. Reuter", "impact": "medium" }
+          ]
+        }
+      }
+    }
+  ]
+}

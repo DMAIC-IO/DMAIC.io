@@ -1,0 +1,283 @@
+/* ============================================================
+   D.Mike — CSS Custom Properties (variables.css)
+   Single source of truth for all colors, spacing, and layout
+   dimensions. All theme-aware values are defined here.
+   ============================================================ */
+
+/* ===== Light Theme (default) ===== */
+:root {
+  /* Layout dimensions */
+  --header-height: 48px;
+  --sidebar-width: 240px;
+  --help-panel-width: 360px;
+  --footer-height: 28px;
+
+  /* Spacing */
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 32px;
+
+  /* Typography */
+  --font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  --font-family-mono: 'SF Mono', 'Cascadia Code', 'Fira Code', monospace;
+  --font-size-xs: 11px;
+  --font-size-sm: 12px;
+  --font-size-md: 14px;
+  --font-size-lg: 16px;
+  --font-size-xl: 20px;
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+
+  /* Border */
+  --border-radius: 6px;
+  --border-radius-sm: 4px;
+  --border-radius-lg: 10px;
+  --border-width: 1px;
+  --transition-speed: 200ms;
+
+  /* Backgrounds */
+  --color-bg-primary: #ffffff;
+  --color-bg-secondary: #f5f5f7;
+  --color-bg-tertiary: #e8e8ec;
+  --color-bg-elevated: #ffffff;
+
+  /* Text */
+  --color-text-primary: #1d1d1f;
+  --color-text-secondary: #515154;
+  --color-text-tertiary: #86868b;
+  --color-text-inverse: #ffffff;
+
+  /* Borders */
+  --color-border-primary: #d2d2d7;
+  --color-border-secondary: #e8e8ec;
+
+  /* Interactive */
+  --color-accent: #0066cc;
+  --color-accent-hover: #0055aa;
+  --color-accent-light: #e5f0ff;
+
+  /* Phase Colors
+     DMAIC: blue (Data) → red (D) → orange (M) → yellow (A) → lime (I) → green (C)
+     DMADV adds: design (deep purple), verify (teal). extras: neutral grey. */
+  --color-phase-data:    #5c6bc0;
+  --color-phase-define:  #e53935;
+  --color-phase-measure: #fb8c00;
+  --color-phase-analyze: #e6b800;
+  --color-phase-improve: #7cb342;
+  --color-phase-control: #2e7d32;
+  --color-phase-design:  #5e35b1;
+  --color-phase-verify:  #00897b;
+  --color-phase-extras:  #757575;
+
+  /* Status */
+  --color-success: #34c759;
+  --color-warning: #ff9500;
+  --color-error: #ff3b30;
+  --color-info: #007aff;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.15);
+
+  /* Component-specific */
+  --color-sidebar-bg: var(--color-bg-secondary);
+  --color-tile-bg: var(--color-bg-elevated);
+  --color-tile-bg-active: var(--color-accent-light);
+  --color-workspace-bg: var(--color-bg-primary);
+  --color-header-bg: var(--color-bg-primary);
+  --color-footer-bg: var(--color-bg-secondary);
+  --color-input-bg: var(--color-bg-primary);
+  --color-input-border: var(--color-border-primary);
+  --color-modal-overlay: rgba(0, 0, 0, 0.4);
+  --color-tab-active-bg: var(--color-bg-primary);
+  --color-tab-inactive-bg: var(--color-bg-tertiary);
+
+  /* SIPOC column colors */
+  --color-sipoc-s: #f59e0b;
+  --color-sipoc-i: #3b82f6;
+  --color-sipoc-p: #10b981;
+  --color-sipoc-o: #a855f7;
+  --color-sipoc-c: #ef4444;
+  --color-sipoc-s-bg: rgba(245, 158, 11, 0.08);
+  --color-sipoc-i-bg: rgba(59, 130, 246, 0.08);
+  --color-sipoc-p-bg: rgba(16, 185, 129, 0.08);
+  --color-sipoc-o-bg: rgba(168, 85, 247, 0.08);
+  --color-sipoc-c-bg: rgba(239, 68, 68, 0.08);
+
+  /* Process Map colors */
+  --color-pmap-input: #34c759;
+  --color-pmap-input-bg: rgba(52, 199, 89, 0.10);
+  --color-pmap-output: #ff9500;
+  --color-pmap-output-bg: rgba(255, 149, 0, 0.10);
+  --color-pmap-step-accent: var(--color-accent);
+  --color-pmap-step-accent-bg: rgba(0, 102, 204, 0.10);
+  --color-pmap-connector: var(--color-border-secondary);
+  --color-pmap-va: #34c759;
+  --color-pmap-va-bg: rgba(52, 199, 89, 0.12);
+  --color-pmap-bnva: #ff9f0a;
+  --color-pmap-bnva-bg: rgba(255, 159, 10, 0.12);
+  --color-pmap-nva: #ff3b30;
+  --color-pmap-nva-bg: rgba(255, 59, 48, 0.12);
+  --color-pmap-param: #007aff;
+  --color-pmap-param-bg: rgba(0, 122, 255, 0.12);
+  --color-pmap-noise: #af52de;
+  --color-pmap-noise-bg: rgba(175, 82, 222, 0.12);
+  --color-pmap-loop: #e67e22;
+  --color-pmap-loop-bg: rgba(230, 126, 34, 0.08);
+  --color-pmap-loop-border: rgba(230, 126, 34, 0.30);
+
+  /* VoC → CTx Tree colors */
+  --color-vct-voc: #e67e22;
+  --color-vct-voc-bg: rgba(230, 126, 34, 0.06);
+  --color-vct-voc-border: rgba(230, 126, 34, 0.20);
+  --color-vct-voc-badge-bg: rgba(230, 126, 34, 0.12);
+  --color-vct-voc-line: rgba(230, 126, 34, 0.25);
+  --color-vct-need: #9b59b6;
+  --color-vct-need-bg: rgba(155, 89, 182, 0.06);
+  --color-vct-need-border: rgba(155, 89, 182, 0.20);
+  --color-vct-need-badge-bg: rgba(155, 89, 182, 0.12);
+  --color-vct-need-line: rgba(155, 89, 182, 0.25);
+  --color-vct-ctq: #27ae60;
+  --color-vct-ctq-bg: rgba(39, 174, 96, 0.06);
+  --color-vct-ctq-border: rgba(39, 174, 96, 0.20);
+  --color-vct-ctq-badge-bg: rgba(39, 174, 96, 0.12);
+  --color-vct-ctq-line: rgba(39, 174, 96, 0.25);
+  --color-vct-ctd: #2980b9;
+  --color-vct-ctd-bg: rgba(41, 128, 185, 0.06);
+  --color-vct-ctd-border: rgba(41, 128, 185, 0.20);
+  --color-vct-ctd-badge-bg: rgba(41, 128, 185, 0.12);
+  --color-vct-ctd-line: rgba(41, 128, 185, 0.25);
+  --color-vct-ctc: #e74c8b;
+  --color-vct-ctc-bg: rgba(231, 76, 139, 0.06);
+  --color-vct-ctc-border: rgba(231, 76, 139, 0.20);
+  --color-vct-ctc-badge-bg: rgba(231, 76, 139, 0.12);
+  --color-vct-ctc-line: rgba(231, 76, 139, 0.25);
+  --color-vct-req: #3498db;
+  --color-vct-req-bg: rgba(52, 152, 219, 0.06);
+  --color-vct-req-border: rgba(52, 152, 219, 0.20);
+  --color-vct-req-badge-bg: rgba(52, 152, 219, 0.12);
+
+  /* DataGrid tokens */
+  --datagrid-cell-height: 30px;
+  --datagrid-header-height: 30px;
+  --datagrid-row-header-width: 54px;
+  --datagrid-default-col-width: 130px;
+  --datagrid-min-col-width: 50px;
+  --datagrid-border-color: var(--color-border-primary);
+  --datagrid-cell-bg: var(--color-bg-primary);
+  --datagrid-cell-bg-alt: #f8f8fa;
+  --datagrid-cell-bg-edit: var(--color-input-bg);
+  --datagrid-cell-bg-selected: var(--color-accent-light);
+  --datagrid-header-bg: var(--color-bg-tertiary);
+  --datagrid-header-text: var(--color-text-secondary);
+  --datagrid-cell-text: var(--color-text-primary);
+  --datagrid-row-header-bg: var(--color-bg-secondary);
+  --datagrid-row-hover-bg: rgba(59, 130, 246, 0.06);
+  --datagrid-shadow-popup: 0 8px 30px rgba(0,0,0,.2), 0 0 0 1px var(--color-border-primary);
+
+  /* Ranking medal colors (used by pairwise comparison) */
+  --color-rank-gold: #d4a843;
+  --color-rank-silver: #a8b4c4;
+  --color-rank-bronze: #cd8a5c;
+
+  /* Chart color sequence (Tableau 10 — accessible, works in both themes) */
+  --color-chart-1: #4e79a7;
+  --color-chart-2: #f28e2b;
+  --color-chart-3: #e15759;
+  --color-chart-4: #76b7b2;
+  --color-chart-5: #59a14f;
+  --color-chart-6: #edc948;
+  --color-chart-7: #b07aa1;
+  --color-chart-8: #ff9da7;
+  --color-chart-9: #9c755f;
+  --color-chart-10: #bab0ac;
+}
+
+/* ===== Dark Theme ===== */
+[data-theme="dark"] {
+  --color-bg-primary: #1c1c1e;
+  --color-bg-secondary: #2c2c2e;
+  --color-bg-tertiary: #3a3a3c;
+  --color-bg-elevated: #2c2c2e;
+
+  --color-text-primary: #f5f5f7;
+  --color-text-secondary: #b0b0b5;
+  --color-text-tertiary: #8e8e93;
+  --color-text-inverse: #1d1d1f;
+
+  --color-border-primary: #48484a;
+  --color-border-secondary: #3a3a3c;
+
+  --color-accent: #4da3ff;
+  --color-accent-hover: #6db5ff;
+  --color-accent-light: #1a3a5c;
+
+  /* Phase Colors (brighter for dark bg)
+     DMAIC: blue (Data) → red → orange → yellow → lime → green
+     DMADV adds: design (lighter purple), verify (lighter teal). extras: neutral grey. */
+  --color-phase-data:    #7986cb;
+  --color-phase-define:  #ef5350;
+  --color-phase-measure: #ffa726;
+  --color-phase-analyze: #ffd600;
+  --color-phase-improve: #9ccc65;
+  --color-phase-control: #43a047;
+  --color-phase-design:  #9575cd;
+  --color-phase-verify:  #4db6ac;
+  --color-phase-extras:  #9e9e9e;
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.5);
+
+  --color-sidebar-bg: var(--color-bg-secondary);
+  --color-tile-bg: var(--color-bg-elevated);
+  --color-tile-bg-active: var(--color-accent-light);
+  --color-workspace-bg: var(--color-bg-primary);
+  --color-header-bg: var(--color-bg-secondary);
+  --color-footer-bg: var(--color-bg-secondary);
+  --color-input-bg: var(--color-bg-tertiary);
+  --color-input-border: var(--color-border-primary);
+  --color-modal-overlay: rgba(0, 0, 0, 0.7);
+  --color-tab-active-bg: var(--color-bg-primary);
+  --color-tab-inactive-bg: var(--color-bg-tertiary);
+
+  /* DataGrid dark overrides */
+  --datagrid-cell-bg-alt: #242426;
+  --datagrid-row-hover-bg: rgba(59, 130, 246, 0.10);
+  --datagrid-shadow-popup: 0 8px 30px rgba(0,0,0,.45), 0 0 0 1px var(--color-border-primary);
+
+  /* VoC → CTx Tree (brighter for dark bg) */
+  --color-vct-voc: #f0983e;
+  --color-vct-voc-bg: rgba(240, 152, 62, 0.08);
+  --color-vct-voc-border: rgba(240, 152, 62, 0.25);
+  --color-vct-voc-badge-bg: rgba(240, 152, 62, 0.15);
+  --color-vct-voc-line: rgba(240, 152, 62, 0.30);
+  --color-vct-need: #c59eff;
+  --color-vct-need-bg: rgba(197, 158, 255, 0.08);
+  --color-vct-need-border: rgba(197, 158, 255, 0.25);
+  --color-vct-need-badge-bg: rgba(197, 158, 255, 0.15);
+  --color-vct-need-line: rgba(197, 158, 255, 0.30);
+  --color-vct-ctq: #3fb950;
+  --color-vct-ctq-bg: rgba(63, 185, 80, 0.08);
+  --color-vct-ctq-border: rgba(63, 185, 80, 0.25);
+  --color-vct-ctq-badge-bg: rgba(63, 185, 80, 0.15);
+  --color-vct-ctq-line: rgba(63, 185, 80, 0.30);
+  --color-vct-ctd: #58a6ff;
+  --color-vct-ctd-bg: rgba(88, 166, 255, 0.08);
+  --color-vct-ctd-border: rgba(88, 166, 255, 0.25);
+  --color-vct-ctd-badge-bg: rgba(88, 166, 255, 0.15);
+  --color-vct-ctd-line: rgba(88, 166, 255, 0.30);
+  --color-vct-ctc: #f778ba;
+  --color-vct-ctc-bg: rgba(247, 120, 186, 0.08);
+  --color-vct-ctc-border: rgba(247, 120, 186, 0.25);
+  --color-vct-ctc-badge-bg: rgba(247, 120, 186, 0.15);
+  --color-vct-ctc-line: rgba(247, 120, 186, 0.30);
+  --color-vct-req: #79c0ff;
+  --color-vct-req-bg: rgba(121, 192, 255, 0.08);
+  --color-vct-req-border: rgba(121, 192, 255, 0.25);
+  --color-vct-req-badge-bg: rgba(121, 192, 255, 0.15);
+}

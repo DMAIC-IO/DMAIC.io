@@ -1,0 +1,516 @@
+/* ============================================================
+   VoC → CTx Tree Module Styles (voc-ctx-tree.css)
+   BEM: .vct__ prefix
+   Base layout provided by .dmike-split (css/modules.css)
+   All colors via CSS custom properties (see css/variables.css)
+   ============================================================ */
+
+/* ===== Layout ===== */
+/* Base layout provided by .dmike-split (css/modules.css) */
+.vct__sidebar {
+  display: flex;
+  flex-direction: column;
+  padding: 0;          /* override dmike-split__input padding — sidebar has own header/body */
+  gap: 0;
+  overflow: hidden;
+}
+
+.vct__sidebar-header {
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-bottom: var(--border-width) solid var(--color-border-secondary);
+  background: var(--color-bg-tertiary);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.vct__sidebar-header-right {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+.vct__sidebar-title {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.vct__counter {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  background: var(--color-accent-light);
+  color: var(--color-accent);
+  padding: 2px 8px;
+  border-radius: 10px;
+  min-width: 24px;
+  text-align: center;
+}
+
+.vct__add-btn {
+  width: 22px;
+  height: 22px;
+  border-radius: var(--border-radius-sm);
+  border: var(--border-width) solid var(--color-border-secondary);
+  background: var(--color-bg-primary);
+  color: var(--color-accent);
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-semibold);
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  transition: all var(--transition-speed);
+}
+
+.vct__add-btn:hover {
+  background: var(--color-accent);
+  color: var(--color-text-inverse);
+  border-color: var(--color-accent);
+}
+
+/* Export button: SVG icon inside .vct__add-btn */
+.vct__export-btn svg {
+  width: 13px;
+  height: 13px;
+}
+
+/* Export dropdown — use fixed positioning so it escapes overflow:hidden */
+.vct__export-wrap {
+  position: relative;
+}
+
+.vct__sidebar-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--spacing-sm);
+}
+
+/* Thin scrollbar for sidebar body */
+.vct__sidebar-body::-webkit-scrollbar { width: 5px; }
+.vct__sidebar-body::-webkit-scrollbar-thumb {
+  background: var(--color-border-secondary);
+  border-radius: 3px;
+}
+.vct__sidebar-body { scrollbar-width: thin; scrollbar-color: var(--color-border-secondary) transparent; }
+
+/* ── VoC Cards ── */
+.vct__card {
+  background: var(--color-vct-voc-bg);
+  border: var(--border-width) solid var(--color-vct-voc-border);
+  border-radius: var(--border-radius);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  margin-bottom: 6px;
+  cursor: pointer;
+  transition: border-color var(--transition-speed), box-shadow var(--transition-speed);
+}
+
+.vct__card:hover {
+  border-color: var(--color-vct-voc);
+}
+
+.vct__card--active {
+  border-color: var(--color-vct-voc);
+  box-shadow: 0 0 0 1px var(--color-vct-voc);
+}
+
+.vct__card-text {
+  font-size: var(--font-size-sm);
+  line-height: 1.45;
+  color: var(--color-text-primary);
+  font-style: italic;
+}
+
+.vct__card-text::before {
+  content: '\201E';
+  color: var(--color-vct-voc);
+  font-weight: var(--font-weight-semibold);
+}
+
+.vct__card-text::after {
+  content: '\201C';
+  color: var(--color-vct-voc);
+  font-weight: var(--font-weight-semibold);
+}
+
+.vct__card-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 4px;
+}
+
+.vct__card-count {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+}
+
+.vct__card-actions {
+  display: flex;
+  gap: 2px;
+  opacity: 0;
+  transition: opacity var(--transition-speed);
+}
+
+.vct__card:hover .vct__card-actions {
+  opacity: 1;
+}
+
+/* Card actions use global .btn .btn--icon-sm; override for 24px size */
+.vct__card-action-btn {
+  width: 24px;
+  height: 24px;
+  font-size: 0.8rem;
+}
+
+.vct__card-action-btn--del:hover {
+  color: var(--color-error);
+  background: rgba(239, 68, 68, 0.1);
+}
+
+/* ── Main area ── */
+/* flex-direction: column and overflow inherited from dmike-split__output */
+
+.vct__tree-area {
+  flex: 1;
+  overflow: auto;
+  padding: var(--spacing-md);
+}
+
+/* ── Empty state ── */
+.vct__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: var(--color-text-tertiary);
+  gap: var(--spacing-sm);
+  padding: var(--spacing-xl);
+  text-align: center;
+}
+
+.vct__empty-icon {
+  font-size: 2.5rem;
+  opacity: 0.3;
+}
+
+.vct__empty-text {
+  font-size: var(--font-size-sm);
+}
+
+/* ── Tree nodes (generic) ── */
+.vct__node {
+  border-radius: var(--border-radius);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  font-size: var(--font-size-sm);
+  line-height: 1.4;
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--spacing-xs);
+  max-width: 300px;
+  margin-bottom: var(--spacing-xs);
+}
+
+.vct__node-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.vct__node-badge {
+  font-size: 0.62rem;
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: 0.5px;
+  padding: 1px 5px;
+  border-radius: 3px;
+  margin-bottom: 3px;
+  display: inline-block;
+  text-transform: uppercase;
+}
+
+.vct__node[data-drag-type] .vct__node-badge {
+  cursor: grab;
+}
+
+.vct__node[draggable="true"] .vct__node-badge {
+  cursor: grabbing;
+}
+
+/* ── Drag-and-drop states ── */
+.vct__node--dragging {
+  opacity: 0.35;
+}
+
+.vct__node--drag-over {
+  box-shadow: 0 -2px 0 0 var(--color-accent);
+}
+
+.vct__node-actions {
+  display: flex;
+  gap: 2px;
+  opacity: 0;
+  transition: opacity var(--transition-speed);
+  flex-shrink: 0;
+}
+
+.vct__node:hover .vct__node-actions {
+  opacity: 1;
+}
+
+/* Node actions use global .btn .btn--icon-sm */
+.vct__node-btn {
+  font-size: 0.8rem;
+}
+
+.vct__node-btn--del:hover {
+  color: var(--color-error);
+  background: rgba(239, 68, 68, 0.1);
+}
+
+/* ── Tree children containers ── */
+.vct__children {
+  padding-left: 20px;
+  margin-left: 16px;
+  border-left: 2px dashed;
+}
+
+/* ── Node type colors ── */
+
+/* VoC */
+.vct__node--voc {
+  background: var(--color-vct-voc-bg);
+  border: var(--border-width) solid var(--color-vct-voc-border);
+}
+.vct__node--voc .vct__node-badge {
+  color: var(--color-vct-voc);
+  background: var(--color-vct-voc-badge-bg);
+}
+.vct__children--voc {
+  border-color: var(--color-vct-voc-line);
+}
+
+/* Need */
+.vct__node--need {
+  background: var(--color-vct-need-bg);
+  border: var(--border-width) solid var(--color-vct-need-border);
+}
+.vct__node--need .vct__node-badge {
+  color: var(--color-vct-need);
+  background: var(--color-vct-need-badge-bg);
+}
+.vct__children--need {
+  border-color: var(--color-vct-need-line);
+}
+
+/* CTQ */
+.vct__node--ctq {
+  background: var(--color-vct-ctq-bg);
+  border: var(--border-width) solid var(--color-vct-ctq-border);
+}
+.vct__node--ctq .vct__node-badge {
+  color: var(--color-vct-ctq);
+  background: var(--color-vct-ctq-badge-bg);
+}
+.vct__children--ctq {
+  border-color: var(--color-vct-ctq-line);
+}
+
+/* CTD */
+.vct__node--ctd {
+  background: var(--color-vct-ctd-bg);
+  border: var(--border-width) solid var(--color-vct-ctd-border);
+}
+.vct__node--ctd .vct__node-badge {
+  color: var(--color-vct-ctd);
+  background: var(--color-vct-ctd-badge-bg);
+}
+.vct__children--ctd {
+  border-color: var(--color-vct-ctd-line);
+}
+
+/* CTC */
+.vct__node--ctc {
+  background: var(--color-vct-ctc-bg);
+  border: var(--border-width) solid var(--color-vct-ctc-border);
+}
+.vct__node--ctc .vct__node-badge {
+  color: var(--color-vct-ctc);
+  background: var(--color-vct-ctc-badge-bg);
+}
+.vct__children--ctc {
+  border-color: var(--color-vct-ctc-line);
+}
+
+/* Requirement */
+.vct__node--req {
+  background: var(--color-vct-req-bg);
+  border: var(--border-width) solid var(--color-vct-req-border);
+}
+.vct__node--req .vct__node-badge {
+  color: var(--color-vct-req);
+  background: var(--color-vct-req-badge-bg);
+}
+
+.vct__req-target {
+  font-size: var(--font-size-xs);
+  color: var(--color-vct-req);
+  margin-top: 2px;
+}
+
+.vct__req-measure {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+  margin-top: 1px;
+}
+
+.vct__node-source {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+  margin-top: 3px;
+}
+
+/* ── Settings panel (inside sidebar, pinned to bottom) ── */
+.vct__settings-panel {
+  padding: var(--spacing-xs) var(--spacing-sm);
+}
+
+.vct__settings-panel .dmike-chart-ed-section {
+  margin-bottom: 0;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--spacing-xs);
+}
+.vct__settings-panel .dmike-chart-ed-section-title {
+  font-size: var(--font-size-xs);
+  grid-column: 1 / -1;
+}
+.vct__settings-panel .dmike-chart-ed-color-pair {
+  gap: var(--spacing-xs);
+  min-width: 0;
+  margin-bottom: 0;
+  flex-direction: row-reverse;
+  justify-content: flex-end;
+}
+.vct__settings-panel .dmike-chart-ed-color-pair label {
+  font-size: var(--font-size-xs);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.vct__settings-panel .dmike-chart-ed-inline-row,
+.vct__settings-panel .dmike-slider-row { grid-column: 1 / -1; }
+.vct__settings-panel .dmike-slider-row { margin-top: var(--spacing-md); }
+.vct__settings-panel .dmike-chart-ed-inline-row label { font-size: var(--font-size-xs); }
+.vct__settings-panel .dmike-chart-ed-inline-row select { font-size: var(--font-size-xs); }
+
+/* ── CTx type selector in modal ── */
+.vct__type-selector {
+  display: flex;
+  gap: var(--spacing-xs);
+  margin-top: var(--spacing-xs);
+}
+
+.vct__type-option {
+  flex: 1;
+  padding: var(--spacing-xs);
+  border-radius: var(--border-radius);
+  border: 2px solid var(--color-border-secondary);
+  background: transparent;
+  cursor: pointer;
+  text-align: center;
+  transition: all var(--transition-speed);
+  font-family: var(--font-family);
+  color: var(--color-text-primary);
+}
+
+.vct__type-option:hover {
+  border-color: var(--color-border-primary);
+}
+
+.vct__type-label {
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--font-size-sm);
+  display: block;
+}
+
+.vct__type-desc {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+  margin-top: 1px;
+}
+
+.vct__type-option--ctq {
+  border-color: var(--color-vct-ctq);
+  background: var(--color-vct-ctq-bg);
+}
+.vct__type-option--ctq .vct__type-label { color: var(--color-vct-ctq); }
+
+.vct__type-option--ctd {
+  border-color: var(--color-vct-ctd);
+  background: var(--color-vct-ctd-bg);
+}
+.vct__type-option--ctd .vct__type-label { color: var(--color-vct-ctd); }
+
+.vct__type-option--ctc {
+  border-color: var(--color-vct-ctc);
+  background: var(--color-vct-ctc-bg);
+}
+.vct__type-option--ctc .vct__type-label { color: var(--color-vct-ctc); }
+
+/* ── Popout form variant (used for VoC / Need / Driver / Req editors) ── */
+.dmike-chart-popout--form {
+  width: 480px;
+  height: auto;
+  min-height: 240px;
+  max-height: 80vh;
+  left: calc(50% - 240px);
+  top: calc(50% - 180px);
+  resize: horizontal;
+}
+
+.vct__popout-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: var(--spacing-md);
+  background: var(--color-bg-primary);
+}
+
+.vct__popout-footer {
+  flex-shrink: 0;
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-top: 1px solid var(--color-border-primary);
+  background: var(--color-bg-secondary);
+}
+
+/* ── Form groups in popout ── */
+.vct__form-group {
+  margin-top: var(--spacing-sm);
+}
+
+.vct__form-group:first-child {
+  margin-top: 0;
+}
+
+.vct__form-group label {
+  display: block;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-secondary);
+  margin-bottom: var(--spacing-xs);
+}
+
+.vct__form-group textarea {
+  resize: vertical;
+  min-height: 60px;
+}

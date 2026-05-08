@@ -1,0 +1,86 @@
+{
+  "id": "effect-coded-anova",
+  "name": {
+    "de": "Effekt-Codierung (Sum-to-Zero) für kategoriale Faktoren",
+    "en": "Effect Coding (Sum-to-Zero) for Categorical Factors"
+  },
+  "category": "regression",
+  "subcategory": null,
+  "status": "validated",
+  "version": "1.0.0",
+
+  "description": {
+    "short": {
+      "de": "Bildet einen kategorialen Faktor mit k Stufen auf k − 1 Indikator-Spalten ab; der Intercept wird zum Gesamt-Mittel.",
+      "en": "Maps a categorical factor with k levels onto k − 1 indicator columns; the intercept becomes the grand mean."
+    },
+    "long": {
+      "de": "Die Sum-to-zero-Codierung (R: contr.sum) gibt jeder Nicht-Referenzstufe einen Einheitsvektor (+1 in der eigenen Spalte, 0 sonst) und der Referenzstufe einen Vektor aus −1. Der zugehörige Koeffizient liest sich als Abweichung vom Gesamt-Mittel; die Referenz-Abweichung ist die negative Summe der anderen. Vorteil gegenüber der Dummy-Codierung: der Intercept schätzt das Gesamt-Mittel statt nur den Wert der Referenz-Zelle, ANOVA-Hauptwirkungen sind orthogonal zum Intercept, und das hilft beim balancierten Versuchsplan.",
+      "en": "Sum-to-zero coding (R: contr.sum) assigns each non-reference level a unit vector (+1 in its own column, 0 elsewhere) and gives the reference level a vector of −1s. The matching coefficient reads as the deviation from the grand mean; the reference deviation is the negative sum of the others. Advantage over dummy coding: the intercept estimates the grand mean rather than just the reference cell, ANOVA main effects are orthogonal to the intercept, and balanced designs simplify."
+    }
+  },
+
+  "documentation": {
+    "formulas": [
+      {
+        "label": "Reference",
+        "latex": "\\text{ref} \\to (-1, -1, \\dots, -1)",
+        "description": {
+          "de": "Referenz-Stufe wird durch einen Vektor aus −1 dargestellt",
+          "en": "Reference level is represented by a vector of −1"
+        }
+      },
+      {
+        "label": "Non-reference",
+        "latex": "\\text{level}_j \\to e_j \\quad \\text{(unit vector with +1 at position } j\\text{)}",
+        "description": {
+          "de": "Nicht-Referenz-Stufe j bekommt den Einheitsvektor mit +1 an Position j",
+          "en": "Non-reference level j gets the unit vector with +1 at position j"
+        }
+      },
+      {
+        "label": "Sum-to-zero constraint",
+        "latex": "\\sum_j \\beta_j = 0\\ \\Rightarrow\\ \\beta_{\\text{ref}} = -\\sum_{j \\neq \\text{ref}} \\beta_j",
+        "description": {
+          "de": "Die Effekt-Koeffizienten summieren sich zu null; daraus folgt der Referenz-Effekt",
+          "en": "The effect coefficients sum to zero; the reference effect follows from that"
+        }
+      }
+    ],
+    "assumptions": [
+      { "de": "Mindestens 2 Stufen pro Faktor", "en": "At least 2 levels per factor" },
+      { "de": "Referenzstufe ist eine der gegebenen Stufen", "en": "Reference level is one of the supplied levels" }
+    ],
+    "limitations": [
+      { "de": "Bei extrem unausgewogenem Design können die Sum-to-zero-Koeffizienten interpretativ schwierig sein — dann Treatment-Coding (Dummy) erwägen", "en": "In extremely unbalanced designs the sum-to-zero coefficients may be hard to interpret — consider treatment (dummy) coding instead" }
+    ],
+    "references": [
+      { "source": "R Core Team (2024). contr.sum() in stats::contrasts" },
+      { "source": "Montgomery, D.C. (2017). Design and Analysis of Experiments, 9th Ed., Wiley", "chapter": "Chapter 3.5 (Effect Coding)" }
+    ],
+    "minitab_equivalent": "Stat > DOE > Factorial > Analyze (Coded levels with reference contrasts)"
+  },
+
+  "source": {
+    "function_name": "buildEffectCodedColumns",
+    "file_path": "js/engines/regression-engine.js",
+    "signature": {
+      "parameters": [
+        { "name": "labels",    "type": "Array<string|number>", "required": true, "description": { "de": "ein Label pro Beobachtung (Länge n)", "en": "one label per observation (length n)" } },
+        { "name": "levels",    "type": "Array<string|number>", "required": true, "description": { "de": "die k unterschiedlichen Stufen in Anzeigereihenfolge", "en": "the k distinct levels in display order" } },
+        { "name": "reference", "type": "string|number",        "required": true, "description": { "de": "Referenz-Stufe für die Codierung", "en": "Reference level for coding" } }
+      ],
+      "returns": {
+        "type": "number[][]",
+        "description": { "de": "n × (k−1) Indikator-Matrix", "en": "n × (k−1) indicator matrix" }
+      }
+    },
+    "code_snippet": null
+  },
+
+  "changelog": [
+    { "version": "1.0.0", "date": "2026-05-08", "type": "initial",
+      "description": { "de": "Erstimplementierung im Rahmen von Phase 3 (mehrstufig kategorial)", "en": "Initial implementation as part of V0.4 Phase 3 (multi-level categorical)" },
+      "breaking": false }
+  ]
+}

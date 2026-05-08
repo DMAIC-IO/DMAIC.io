@@ -1,0 +1,1143 @@
+{
+  "algorithm_id": "d-efficiency",
+  "generated_with": {
+    "python": "3.10.12",
+    "scipy": "1.15.3",
+    "numpy": "2.2.6"
+  },
+  "generated_at": "2026-04-11T16:18:21.783489+00:00",
+  "generator_script": "tools/fixture-generator/generate_fixtures.py",
+  "generator_version": "1.0.0",
+  "tolerances": {
+    "default": {
+      "relative": 1e-10,
+      "absolute": 1e-12
+    },
+    "overrides": {
+      "non_orthogonal": {
+        "relative": 1e-08,
+        "absolute": 1e-10,
+        "reason": "Non-orthogonal designs accumulate floating-point error in determinant computation"
+      },
+      "near_singular": {
+        "relative": 1e-06,
+        "absolute": 1e-08,
+        "reason": "Near-singular X'X amplifies inverse instability"
+      }
+    }
+  },
+  "test_cases": [
+    {
+      "id": "deff_2k_full_2factors",
+      "tier": "standard",
+      "description": "2² full factorial — perfect orthogonal design, all efficiencies 100%",
+      "reference": "Montgomery, Design and Analysis of Experiments, 10th Ed.",
+      "inputs": {
+        "codedMatrix": [
+          [
+            -1,
+            -1
+          ],
+          [
+            -1,
+            1
+          ],
+          [
+            1,
+            -1
+          ],
+          [
+            1,
+            1
+          ]
+        ]
+      },
+      "expected": {
+        "dEfficiency": 99.99999999999999,
+        "aEfficiency": 100.0,
+        "gEfficiency": 100.0,
+        "maxLeverage": 1.0,
+        "avgLeverage": 1.0,
+        "conditionNumber": 1.0
+      }
+    },
+    {
+      "id": "deff_2k_full_3factors",
+      "tier": "standard",
+      "description": "2³ full factorial — 8 runs, 7 model terms (I + 3 main + 3 two-way), orthogonal",
+      "reference": "Montgomery, Design and Analysis of Experiments, 10th Ed.",
+      "inputs": {
+        "codedMatrix": [
+          [
+            -1,
+            -1,
+            -1
+          ],
+          [
+            -1,
+            -1,
+            1
+          ],
+          [
+            -1,
+            1,
+            -1
+          ],
+          [
+            -1,
+            1,
+            1
+          ],
+          [
+            1,
+            -1,
+            -1
+          ],
+          [
+            1,
+            -1,
+            1
+          ],
+          [
+            1,
+            1,
+            -1
+          ],
+          [
+            1,
+            1,
+            1
+          ]
+        ]
+      },
+      "expected": {
+        "dEfficiency": 99.99999999999999,
+        "aEfficiency": 100.0,
+        "gEfficiency": 100.0,
+        "maxLeverage": 0.875,
+        "avgLeverage": 0.875,
+        "conditionNumber": 1.0
+      }
+    },
+    {
+      "id": "deff_2k_full_4factors",
+      "tier": "standard",
+      "description": "2⁴ full factorial — 16 runs, 11 model terms, orthogonal",
+      "reference": "Montgomery, Design and Analysis of Experiments, 10th Ed.",
+      "inputs": {
+        "codedMatrix": [
+          [
+            -1,
+            -1,
+            -1,
+            -1
+          ],
+          [
+            -1,
+            -1,
+            -1,
+            1
+          ],
+          [
+            -1,
+            -1,
+            1,
+            -1
+          ],
+          [
+            -1,
+            -1,
+            1,
+            1
+          ],
+          [
+            -1,
+            1,
+            -1,
+            -1
+          ],
+          [
+            -1,
+            1,
+            -1,
+            1
+          ],
+          [
+            -1,
+            1,
+            1,
+            -1
+          ],
+          [
+            -1,
+            1,
+            1,
+            1
+          ],
+          [
+            1,
+            -1,
+            -1,
+            -1
+          ],
+          [
+            1,
+            -1,
+            -1,
+            1
+          ],
+          [
+            1,
+            -1,
+            1,
+            -1
+          ],
+          [
+            1,
+            -1,
+            1,
+            1
+          ],
+          [
+            1,
+            1,
+            -1,
+            -1
+          ],
+          [
+            1,
+            1,
+            -1,
+            1
+          ],
+          [
+            1,
+            1,
+            1,
+            -1
+          ],
+          [
+            1,
+            1,
+            1,
+            1
+          ]
+        ]
+      },
+      "expected": {
+        "dEfficiency": 100.0,
+        "aEfficiency": 100.0,
+        "gEfficiency": 100.0,
+        "maxLeverage": 0.6875,
+        "avgLeverage": 0.6875,
+        "conditionNumber": 1.0
+      }
+    },
+    {
+      "id": "deff_2k5m1_res_v",
+      "tier": "standard",
+      "description": "2⁵⁻¹ Resolution V — 16 runs, 5 factors (E=ABCD), orthogonal for main effects and 2FI",
+      "reference": "Montgomery, Design and Analysis of Experiments, 10th Ed., Table 8.14",
+      "inputs": {
+        "codedMatrix": [
+          [
+            -1,
+            -1,
+            -1,
+            -1,
+            1
+          ],
+          [
+            -1,
+            -1,
+            -1,
+            1,
+            -1
+          ],
+          [
+            -1,
+            -1,
+            1,
+            -1,
+            -1
+          ],
+          [
+            -1,
+            -1,
+            1,
+            1,
+            1
+          ],
+          [
+            -1,
+            1,
+            -1,
+            -1,
+            -1
+          ],
+          [
+            -1,
+            1,
+            -1,
+            1,
+            1
+          ],
+          [
+            -1,
+            1,
+            1,
+            -1,
+            1
+          ],
+          [
+            -1,
+            1,
+            1,
+            1,
+            -1
+          ],
+          [
+            1,
+            -1,
+            -1,
+            -1,
+            -1
+          ],
+          [
+            1,
+            -1,
+            -1,
+            1,
+            1
+          ],
+          [
+            1,
+            -1,
+            1,
+            -1,
+            1
+          ],
+          [
+            1,
+            -1,
+            1,
+            1,
+            -1
+          ],
+          [
+            1,
+            1,
+            -1,
+            -1,
+            1
+          ],
+          [
+            1,
+            1,
+            -1,
+            1,
+            -1
+          ],
+          [
+            1,
+            1,
+            1,
+            -1,
+            -1
+          ],
+          [
+            1,
+            1,
+            1,
+            1,
+            1
+          ]
+        ]
+      },
+      "expected": {
+        "dEfficiency": 99.99999999999999,
+        "aEfficiency": 100.0,
+        "gEfficiency": 100.0,
+        "maxLeverage": 1.0,
+        "avgLeverage": 1.0,
+        "conditionNumber": 1.0
+      }
+    },
+    {
+      "id": "deff_center_points",
+      "tier": "standard",
+      "description": "2² full factorial + 3 center points — non-orthogonal, D-eff < 100%",
+      "inputs": {
+        "codedMatrix": [
+          [
+            -1,
+            -1
+          ],
+          [
+            -1,
+            1
+          ],
+          [
+            1,
+            -1
+          ],
+          [
+            1,
+            1
+          ],
+          [
+            0,
+            0
+          ],
+          [
+            0,
+            0
+          ],
+          [
+            0,
+            0
+          ]
+        ]
+      },
+      "tolerance_override": "non_orthogonal",
+      "expected": {
+        "dEfficiency": 65.72361810832017,
+        "aEfficiency": 64.0,
+        "gEfficiency": 64.0,
+        "maxLeverage": 0.8928571428571428,
+        "avgLeverage": 0.5714285714285714,
+        "conditionNumber": 1.75
+      }
+    },
+    {
+      "id": "deff_2k_full_2factors_replicated",
+      "tier": "standard",
+      "description": "2² full factorial with each point replicated twice — 8 runs total, still orthogonal",
+      "inputs": {
+        "codedMatrix": [
+          [
+            -1,
+            -1
+          ],
+          [
+            -1,
+            1
+          ],
+          [
+            1,
+            -1
+          ],
+          [
+            1,
+            1
+          ],
+          [
+            -1,
+            -1
+          ],
+          [
+            -1,
+            1
+          ],
+          [
+            1,
+            -1
+          ],
+          [
+            1,
+            1
+          ]
+        ]
+      },
+      "expected": {
+        "dEfficiency": 99.99999999999997,
+        "aEfficiency": 100.0,
+        "gEfficiency": 100.0,
+        "maxLeverage": 0.5,
+        "avgLeverage": 0.5,
+        "conditionNumber": 1.0
+      }
+    },
+    {
+      "id": "deff_bbd_3factors",
+      "tier": "standard",
+      "description": "Box-Behnken design, 3 factors — 12 edge points + 3 center points, non-orthogonal but efficient",
+      "reference": "Box & Behnken 1960",
+      "inputs": {
+        "codedMatrix": [
+          [
+            -1,
+            -1,
+            0
+          ],
+          [
+            -1,
+            1,
+            0
+          ],
+          [
+            1,
+            -1,
+            0
+          ],
+          [
+            1,
+            1,
+            0
+          ],
+          [
+            -1,
+            0,
+            -1
+          ],
+          [
+            -1,
+            0,
+            1
+          ],
+          [
+            1,
+            0,
+            -1
+          ],
+          [
+            1,
+            0,
+            1
+          ],
+          [
+            0,
+            -1,
+            -1
+          ],
+          [
+            0,
+            -1,
+            1
+          ],
+          [
+            0,
+            1,
+            -1
+          ],
+          [
+            0,
+            1,
+            1
+          ],
+          [
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0
+          ]
+        ]
+      },
+      "tolerance_override": "non_orthogonal",
+      "expected": {
+        "dEfficiency": 43.34969581483995,
+        "aEfficiency": 39.16083916083916,
+        "gEfficiency": 82.35294117647058,
+        "maxLeverage": 0.5666666666666667,
+        "avgLeverage": 0.4666666666666665,
+        "conditionNumber": 3.75
+      }
+    },
+    {
+      "id": "deff_ccd_face_3factors",
+      "tier": "standard",
+      "description": "Face-centered CCD, 3 factors — 2³ factorial + 6 face points + 2 center points (16 runs)",
+      "inputs": {
+        "codedMatrix": [
+          [
+            -1,
+            -1,
+            -1
+          ],
+          [
+            -1,
+            -1,
+            1
+          ],
+          [
+            -1,
+            1,
+            -1
+          ],
+          [
+            -1,
+            1,
+            1
+          ],
+          [
+            1,
+            -1,
+            -1
+          ],
+          [
+            1,
+            -1,
+            1
+          ],
+          [
+            1,
+            1,
+            -1
+          ],
+          [
+            1,
+            1,
+            1
+          ],
+          [
+            -1,
+            0,
+            0
+          ],
+          [
+            1,
+            0,
+            0
+          ],
+          [
+            0,
+            -1,
+            0
+          ],
+          [
+            0,
+            1,
+            0
+          ],
+          [
+            0,
+            0,
+            -1
+          ],
+          [
+            0,
+            0,
+            1
+          ],
+          [
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0
+          ]
+        ]
+      },
+      "tolerance_override": "non_orthogonal",
+      "expected": {
+        "dEfficiency": 60.74452664515321,
+        "aEfficiency": 59.32203389830508,
+        "gEfficiency": 59.32203389830508,
+        "maxLeverage": 0.7375,
+        "avgLeverage": 0.43749999999999983,
+        "conditionNumber": 2.0
+      }
+    },
+    {
+      "id": "deff_singular_3m1",
+      "tier": "edge",
+      "description": "2³⁻¹ Resolution III — 4 runs, 7 model terms → singular X'X, efficiencies = 0",
+      "inputs": {
+        "codedMatrix": [
+          [
+            -1,
+            -1,
+            1
+          ],
+          [
+            -1,
+            1,
+            -1
+          ],
+          [
+            1,
+            -1,
+            -1
+          ],
+          [
+            1,
+            1,
+            1
+          ]
+        ]
+      },
+      "expected": {
+        "dEfficiency": 0.0,
+        "aEfficiency": 0.0,
+        "gEfficiency": 0.0,
+        "avgLeverage": 1.75
+      }
+    },
+    {
+      "id": "deff_singular_4m1",
+      "tier": "edge",
+      "description": "2⁴⁻¹ Resolution IV — 8 runs, 11 model terms → singular X'X",
+      "inputs": {
+        "codedMatrix": [
+          [
+            -1,
+            -1,
+            -1,
+            -1
+          ],
+          [
+            -1,
+            -1,
+            1,
+            1
+          ],
+          [
+            -1,
+            1,
+            -1,
+            1
+          ],
+          [
+            -1,
+            1,
+            1,
+            -1
+          ],
+          [
+            1,
+            -1,
+            -1,
+            1
+          ],
+          [
+            1,
+            -1,
+            1,
+            -1
+          ],
+          [
+            1,
+            1,
+            -1,
+            -1
+          ],
+          [
+            1,
+            1,
+            1,
+            1
+          ]
+        ]
+      },
+      "expected": {
+        "dEfficiency": 0.0,
+        "aEfficiency": 0.0,
+        "gEfficiency": 0.0,
+        "avgLeverage": 1.375
+      }
+    },
+    {
+      "id": "deff_edge_minimal_2runs",
+      "tier": "edge",
+      "description": "Minimal design: 2 runs, 1 factor — saturated (p = n = 2, no interactions)",
+      "inputs": {
+        "codedMatrix": [
+          [
+            -1
+          ],
+          [
+            1
+          ]
+        ]
+      },
+      "expected": {
+        "dEfficiency": 100.0,
+        "aEfficiency": 100.0,
+        "gEfficiency": 100.0,
+        "maxLeverage": 1.0,
+        "avgLeverage": 1.0,
+        "conditionNumber": 1.0
+      }
+    },
+    {
+      "id": "deff_edge_unbalanced",
+      "tier": "edge",
+      "description": "2² factorial with one corner replicated 3x — asymmetric leverage",
+      "inputs": {
+        "codedMatrix": [
+          [
+            -1,
+            -1
+          ],
+          [
+            -1,
+            1
+          ],
+          [
+            1,
+            -1
+          ],
+          [
+            1,
+            1
+          ],
+          [
+            1,
+            1
+          ],
+          [
+            1,
+            1
+          ]
+        ]
+      },
+      "tolerance_override": "non_orthogonal",
+      "expected": {
+        "dEfficiency": 87.73826753016617,
+        "aEfficiency": 80.0,
+        "gEfficiency": 66.66666666666666,
+        "maxLeverage": 1.0,
+        "avgLeverage": 0.6666666666666666,
+        "conditionNumber": 1.0
+      }
+    },
+    {
+      "id": "deff_edge_7runs_3factors",
+      "tier": "edge",
+      "description": "Plackett-Burman-like 7-run design for 3 factors — saturated for main effects only",
+      "inputs": {
+        "codedMatrix": [
+          [
+            1,
+            1,
+            1
+          ],
+          [
+            1,
+            1,
+            -1
+          ],
+          [
+            1,
+            -1,
+            1
+          ],
+          [
+            -1,
+            1,
+            1
+          ],
+          [
+            1,
+            -1,
+            -1
+          ],
+          [
+            -1,
+            1,
+            -1
+          ],
+          [
+            -1,
+            -1,
+            1
+          ]
+        ]
+      },
+      "tolerance_override": "non_orthogonal",
+      "expected": {
+        "dEfficiency": 84.91395937925421,
+        "aEfficiency": 57.14285714285715,
+        "gEfficiency": 100.0,
+        "maxLeverage": 1.0,
+        "avgLeverage": 0.9999999999999999,
+        "conditionNumber": 1.0
+      }
+    },
+    {
+      "id": "deff_stress_2k6m1",
+      "tier": "stress",
+      "description": "2⁶⁻¹ Resolution VI — 32 runs, 6 factors (F=ABCDE), 22 model terms",
+      "inputs": {
+        "codedMatrix": [
+          [
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1
+          ],
+          [
+            -1,
+            -1,
+            -1,
+            -1,
+            1,
+            1
+          ],
+          [
+            -1,
+            -1,
+            -1,
+            1,
+            -1,
+            1
+          ],
+          [
+            -1,
+            -1,
+            -1,
+            1,
+            1,
+            -1
+          ],
+          [
+            -1,
+            -1,
+            1,
+            -1,
+            -1,
+            1
+          ],
+          [
+            -1,
+            -1,
+            1,
+            -1,
+            1,
+            -1
+          ],
+          [
+            -1,
+            -1,
+            1,
+            1,
+            -1,
+            -1
+          ],
+          [
+            -1,
+            -1,
+            1,
+            1,
+            1,
+            1
+          ],
+          [
+            -1,
+            1,
+            -1,
+            -1,
+            -1,
+            1
+          ],
+          [
+            -1,
+            1,
+            -1,
+            -1,
+            1,
+            -1
+          ],
+          [
+            -1,
+            1,
+            -1,
+            1,
+            -1,
+            -1
+          ],
+          [
+            -1,
+            1,
+            -1,
+            1,
+            1,
+            1
+          ],
+          [
+            -1,
+            1,
+            1,
+            -1,
+            -1,
+            -1
+          ],
+          [
+            -1,
+            1,
+            1,
+            -1,
+            1,
+            1
+          ],
+          [
+            -1,
+            1,
+            1,
+            1,
+            -1,
+            1
+          ],
+          [
+            -1,
+            1,
+            1,
+            1,
+            1,
+            -1
+          ],
+          [
+            1,
+            -1,
+            -1,
+            -1,
+            -1,
+            1
+          ],
+          [
+            1,
+            -1,
+            -1,
+            -1,
+            1,
+            -1
+          ],
+          [
+            1,
+            -1,
+            -1,
+            1,
+            -1,
+            -1
+          ],
+          [
+            1,
+            -1,
+            -1,
+            1,
+            1,
+            1
+          ],
+          [
+            1,
+            -1,
+            1,
+            -1,
+            -1,
+            -1
+          ],
+          [
+            1,
+            -1,
+            1,
+            -1,
+            1,
+            1
+          ],
+          [
+            1,
+            -1,
+            1,
+            1,
+            -1,
+            1
+          ],
+          [
+            1,
+            -1,
+            1,
+            1,
+            1,
+            -1
+          ],
+          [
+            1,
+            1,
+            -1,
+            -1,
+            -1,
+            -1
+          ],
+          [
+            1,
+            1,
+            -1,
+            -1,
+            1,
+            1
+          ],
+          [
+            1,
+            1,
+            -1,
+            1,
+            -1,
+            1
+          ],
+          [
+            1,
+            1,
+            -1,
+            1,
+            1,
+            -1
+          ],
+          [
+            1,
+            1,
+            1,
+            -1,
+            -1,
+            1
+          ],
+          [
+            1,
+            1,
+            1,
+            -1,
+            1,
+            -1
+          ],
+          [
+            1,
+            1,
+            1,
+            1,
+            -1,
+            -1
+          ],
+          [
+            1,
+            1,
+            1,
+            1,
+            1,
+            1
+          ]
+        ]
+      },
+      "expected": {
+        "dEfficiency": 99.99999999999997,
+        "aEfficiency": 100.0,
+        "gEfficiency": 100.0,
+        "maxLeverage": 0.6875,
+        "avgLeverage": 0.6875,
+        "conditionNumber": 1.0
+      }
+    }
+  ]
+}

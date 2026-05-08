@@ -1,0 +1,111 @@
+{
+  "algorithm_id": "dixon-q-test",
+  "generated_with": {
+    "engine": "js/engines/outlier-test-engine.js",
+    "validated_against": "Skoog & West, Fundamentals of Analytical Chemistry; Rorabacher (1991) tables"
+  },
+  "generated_at": "2026-05-06T00:00:00Z",
+  "generator_version": "1.0.0",
+  "tolerances": {
+    "default": { "relative": 1e-10, "absolute": 1e-12 }
+  },
+  "test_cases": [
+    {
+      "id": "dixon_skoog_n10",
+      "tier": "standard",
+      "description": "Skoog & West analytical chemistry example, n=10 — flags the low value 0.167",
+      "reference": "Skoog, West, Holler & Crouch, Fundamentals of Analytical Chemistry, 9th ed.",
+      "inputs": {
+        "data": [0.189, 0.167, 0.187, 0.183, 0.186, 0.182, 0.181, 0.184, 0.181, 0.177],
+        "alpha": 0.05,
+        "side": "two-sided"
+      },
+      "expected": {
+        "statistic": 0.5,
+        "critical": 0.477,
+        "reject": true,
+        "side": "lower",
+        "n": 10
+      }
+    },
+    {
+      "id": "dixon_clean_n5",
+      "tier": "standard",
+      "description": "Evenly-spaced n=5 — Q well below the r10 critical value 0.642",
+      "reference": "Rorabacher (1991), Anal. Chem. 63(2), 139–146",
+      "inputs": {
+        "data": [1, 2, 3, 4, 5],
+        "alpha": 0.05,
+        "side": "two-sided"
+      },
+      "expected": {
+        "statistic": 0.25,
+        "critical": 0.642,
+        "reject": false,
+        "n": 5
+      }
+    },
+    {
+      "id": "dixon_upper_n7",
+      "tier": "standard",
+      "description": "n=7, one-sided upper — clear upper outlier",
+      "reference": "Synthetic",
+      "inputs": {
+        "data": [10.1, 10.2, 10.3, 10.4, 10.5, 10.6, 15.0],
+        "alpha": 0.05,
+        "side": "upper"
+      },
+      "expected": {
+        "statistic": 0.897959183673469,
+        "critical": 0.507,
+        "reject": true,
+        "n": 7
+      }
+    },
+    {
+      "id": "dixon_n30_r22",
+      "tier": "standard",
+      "description": "n=30 — uses the r22 variant (table value 0.376 at α=0.05)",
+      "reference": "Rorabacher (1991)",
+      "inputs": {
+        "data": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 100],
+        "alpha": 0.05,
+        "side": "two-sided"
+      },
+      "expected": {
+        "statistic": 0.742268041237113,
+        "critical": 0.376,
+        "reject": true,
+        "n": 30
+      }
+    },
+    {
+      "id": "dixon_too_few",
+      "tier": "edge",
+      "description": "n=2 — Dixon Q is not defined",
+      "inputs": {
+        "data": [1, 2],
+        "alpha": 0.05,
+        "side": "two-sided"
+      },
+      "expected_error": {
+        "type": "Error",
+        "message_contains": "dixonRange"
+      }
+    },
+    {
+      "id": "dixon_too_many",
+      "tier": "edge",
+      "description": "n=31 — beyond Rorabacher table coverage; switch to Grubbs or ESD",
+      "inputs": {
+        "data": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31],
+        "alpha": 0.05,
+        "side": "two-sided"
+      },
+      "expected_error": {
+        "type": "Error",
+        "message_contains": "dixonRange"
+      }
+    }
+  ]
+}

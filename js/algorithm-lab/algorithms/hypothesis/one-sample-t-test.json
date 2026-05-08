@@ -1,0 +1,178 @@
+{
+  "id": "one-sample-t-test",
+  "name": {
+    "de": "Ein-Stichproben-t-Test",
+    "en": "One-Sample t-Test"
+  },
+  "category": "hypothesis",
+  "subcategory": "mean",
+  "status": "validated",
+  "version": "1.0.0",
+
+  "description": {
+    "short": {
+      "de": "Prüft, ob der Populationsmittelwert einem hypothetischen Wert entspricht.",
+      "en": "Tests whether the population mean equals a hypothesized value."
+    },
+    "long": {
+      "de": "Der Ein-Stichproben-t-Test prüft die Nullhypothese, dass der Mittelwert einer normalverteilten Population einem bestimmten Wert μ₀ entspricht. Die Teststatistik t = (x̄ − μ₀)/(s/√n) folgt einer t-Verteilung mit n−1 Freiheitsgraden. Voraussetzung ist annähernde Normalverteilung der Daten; bei Nicht-Normalverteilung sollte der Wilcoxon-Vorzeichen-Rang-Test als nichtparametrische Alternative verwendet werden.",
+      "en": "The one-sample t-test evaluates the null hypothesis that the mean of a normally distributed population equals a specified value μ₀. The test statistic t = (x̄ − μ₀)/(s/√n) follows a t-distribution with n−1 degrees of freedom. The test requires approximately normal data; for non-normal data, the Wilcoxon signed-rank test should be used as a nonparametric alternative."
+    }
+  },
+
+  "documentation": {
+    "formulas": [
+      {
+        "label": "t",
+        "latex": "t = \\frac{\\bar{x} - \\mu_0}{s / \\sqrt{n}}",
+        "description": {
+          "de": "Teststatistik: standardisierte Abweichung des Stichprobenmittels vom Zielwert",
+          "en": "Test statistic: standardized deviation of the sample mean from the target value"
+        }
+      },
+      {
+        "label": "H₀",
+        "latex": "H_0: \\mu = \\mu_0",
+        "description": {
+          "de": "Nullhypothese: Populationsmittelwert entspricht dem Zielwert",
+          "en": "Null hypothesis: population mean equals the target value"
+        }
+      },
+      {
+        "label": "KI",
+        "latex": "\\bar{x} \\pm t_{1-\\alpha/2,\\,n-1} \\cdot \\frac{s}{\\sqrt{n}}",
+        "description": {
+          "de": "Konfidenzintervall für den Populationsmittelwert",
+          "en": "Confidence interval for the population mean"
+        }
+      }
+    ],
+    "assumptions": [
+      { "de": "Daten sind annähernd normalverteilt (oder n ausreichend groß, CLT)", "en": "Data are approximately normally distributed (or n sufficiently large, CLT)" },
+      { "de": "Beobachtungen sind unabhängig", "en": "Observations are independent" },
+      { "de": "Stetige (kontinuierliche) Daten", "en": "Continuous data" }
+    ],
+    "limitations": [
+      { "de": "Bei stark schiefen Verteilungen und kleinem n kann der Test unzuverlässig sein", "en": "For strongly skewed distributions with small n, the test can be unreliable" },
+      { "de": "Empfindlich gegenüber Ausreißern", "en": "Sensitive to outliers" }
+    ],
+    "references": [
+      { "source": "Student (W. S. Gosset) (1908), The probable error of a mean, Biometrika, 6(1), 1–25" },
+      { "source": "Montgomery, D. C. (2019), Introduction to Statistical Quality Control, 8th Ed., Chapter 4" }
+    ],
+    "minitab_equivalent": "Stat > Basic Statistics > 1-Sample t"
+  },
+
+  "source": {
+    "function_name": "oneSampleTTest",
+    "file_path": "js/engines/hypothesis-test-engine.js",
+    "signature": {
+      "parameters": [
+        {
+          "name": "data",
+          "type": "number[]",
+          "required": true,
+          "description": { "de": "Array von Messwerten", "en": "Array of measurement values" }
+        },
+        {
+          "name": "mu0",
+          "type": "number",
+          "required": true,
+          "description": { "de": "Hypothetischer Mittelwert μ₀", "en": "Hypothesized mean μ₀" }
+        },
+        {
+          "name": "direction",
+          "type": "string",
+          "required": false,
+          "description": { "de": "Testrichtung: 'two-sided', 'greater', 'less'", "en": "Test direction: 'two-sided', 'greater', 'less'" }
+        },
+        {
+          "name": "alpha",
+          "type": "number",
+          "required": false,
+          "description": { "de": "Signifikanzniveau (Standard: 0.05)", "en": "Significance level (default: 0.05)" }
+        }
+      ],
+      "returns": {
+        "type": "object",
+        "properties": {
+          "statistic": { "type": "number", "description": { "de": "t-Teststatistik", "en": "t test statistic" } },
+          "pValue": { "type": "number", "description": { "de": "p-Wert", "en": "p-value" } },
+          "df": { "type": "number", "description": { "de": "Freiheitsgrade", "en": "Degrees of freedom" } },
+          "mean": { "type": "number", "description": { "de": "Stichprobenmittelwert", "en": "Sample mean" } },
+          "reject": { "type": "boolean", "description": { "de": "H₀ abgelehnt?", "en": "Reject H₀?" } }
+        }
+      }
+    },
+    "code_snippet": null
+  },
+
+  "try_it": {
+    "input_schema": {
+      "fields": [
+        {
+          "name": "data",
+          "label": { "de": "Messdaten", "en": "Measurement Data" },
+          "type": "textarea",
+          "placeholder": { "de": "Werte getrennt durch Komma, Leerzeichen oder Zeilenumbruch", "en": "Values separated by commas, spaces, or newlines" },
+          "parse_as": "number_array",
+          "required": true
+        },
+        {
+          "name": "mu0",
+          "label": { "de": "Zielwert μ₀", "en": "Target Value μ₀" },
+          "type": "number",
+          "placeholder": { "de": "z.B. 100", "en": "e.g. 100" },
+          "parse_as": "number",
+          "required": true
+        },
+        {
+          "name": "direction",
+          "label": { "de": "Testrichtung", "en": "Test Direction" },
+          "type": "select",
+          "options": [
+            { "value": "two-sided", "label": { "de": "≠ Zweiseitig", "en": "≠ Two-sided" } },
+            { "value": "greater", "label": { "de": "> Größer", "en": "> Greater" } },
+            { "value": "less", "label": { "de": "< Kleiner", "en": "< Less" } }
+          ],
+          "parse_as": "string",
+          "required": false
+        },
+        {
+          "name": "alpha",
+          "label": { "de": "Signifikanzniveau α", "en": "Significance Level α" },
+          "type": "number",
+          "placeholder": { "de": "0.05", "en": "0.05" },
+          "parse_as": "number",
+          "required": false
+        }
+      ]
+    },
+    "output_schema": {
+      "display_fields": ["statistic", "pValue", "df", "mean", "stddev", "se", "ci", "reject"],
+      "primary_field": "statistic",
+      "format": {
+        "statistic": { "decimals": 6, "label": "t" },
+        "pValue": { "decimals": 6, "label": "p-Value" },
+        "df": { "decimals": 0, "label": "df" },
+        "mean": { "decimals": 6, "label": { "de": "Mittelwert (x̄)", "en": "Mean (x̄)" } },
+        "stddev": { "decimals": 6, "label": { "de": "Std.abw. (s)", "en": "Std Dev (s)" } },
+        "se": { "decimals": 6, "label": { "de": "Standardfehler", "en": "Standard Error" } },
+        "reject": { "decimals": 0, "label": { "de": "H₀ abgelehnt", "en": "Reject H₀" } }
+      }
+    }
+  },
+
+  "changelog": [
+    {
+      "version": "1.0.0",
+      "date": "2026-03-31",
+      "type": "initial",
+      "description": {
+        "de": "Erstimplementierung mit t-Statistik, p-Wert, KI und Entscheidung",
+        "en": "Initial implementation with t statistic, p-value, CI and decision"
+      },
+      "breaking": false
+    }
+  ]
+}

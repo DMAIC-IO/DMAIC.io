@@ -1,0 +1,296 @@
+{
+  "id": "grr",
+  "name": {
+    "de": "Gage R&R — ANOVA-basierte Messsystemanalyse Typ 2",
+    "en": "Gage R&R — ANOVA-Based Measurement System Analysis Type 2"
+  },
+  "category": "msa",
+  "subcategory": "typ2",
+  "status": "validated",
+  "version": "1.0.0",
+
+  "description": {
+    "short": {
+      "de": "Zerlegt die Messvariation in Wiederholbarkeit (EV), Reproduzierbarkeit (AV) und Teilevariation mittels zweifaktorieller ANOVA mit Wechselwirkung.",
+      "en": "Decomposes measurement variation into repeatability (EV), reproducibility (AV), and part-to-part variation using two-factor crossed ANOVA with interaction."
+    },
+    "long": {
+      "de": "Die Gage R&R-Studie (Typ 2) bewertet ein Messsystem, indem mehrere Prüfer mehrere Teile mit Wiederholungen messen. Die zweifaktorielle ANOVA (Teile × Prüfer) mit Wechselwirkung zerlegt die Gesamtvariation in ihre Komponenten: σ²_Repeatability (Gerätestreuung EV), σ²_Reproducibility (Prüferstreuung AV = σ²_Operator + σ²_Interaction), σ²_Part (Teilevariation) und σ²_GRR = σ²_EV + σ²_AV. Ist die Wechselwirkung nicht signifikant (p ≥ α), wird sie mit der Repeatability gepoolt. Entscheidungskriterien: %GRR < 10 % = fähig, 10–30 % = bedingt fähig, ≥ 30 % = nicht fähig. Zusätzlich wird die Anzahl unterscheidbarer Kategorien (ndc = ⌊1,41 · σ_Part / σ_GRR⌋) berechnet; ndc ≥ 5 gilt als akzeptabel.",
+      "en": "The Gage R&R study (Type 2) evaluates a measurement system by having multiple operators measure multiple parts with replications. The two-factor crossed ANOVA (Parts × Operators) with interaction decomposes total variation into components: σ²_Repeatability (equipment variation EV), σ²_Reproducibility (appraiser variation AV = σ²_Operator + σ²_Interaction), σ²_Part (part-to-part variation), and σ²_GRR = σ²_EV + σ²_AV. If the interaction is not significant (p ≥ α), it is pooled with repeatability. Decision criteria: %GRR < 10% = acceptable, 10–30% = conditionally acceptable, ≥ 30% = not acceptable. Additionally, the number of distinct categories (ndc = ⌊1.41 · σ_Part / σ_GRR⌋) is computed; ndc ≥ 5 is considered acceptable."
+    }
+  },
+
+  "documentation": {
+    "formulas": [
+      {
+        "label": "SS_Part",
+        "latex": "SS_{\\text{Part}} = o \\cdot r \\cdot \\sum_{i=1}^{p} (\\bar{Y}_{i..} - \\bar{Y}_{...})^2",
+        "description": {
+          "de": "Quadratsumme der Teilevariation",
+          "en": "Sum of squares for part variation"
+        }
+      },
+      {
+        "label": "SS_Operator",
+        "latex": "SS_{\\text{Operator}} = p \\cdot r \\cdot \\sum_{j=1}^{o} (\\bar{Y}_{.j.} - \\bar{Y}_{...})^2",
+        "description": {
+          "de": "Quadratsumme der Prüfervariation",
+          "en": "Sum of squares for operator variation"
+        }
+      },
+      {
+        "label": "SS_Interact",
+        "latex": "SS_{\\text{Interact}} = r \\cdot \\sum_{i=1}^{p} \\sum_{j=1}^{o} (\\bar{Y}_{ij.} - \\bar{Y}_{i..} - \\bar{Y}_{.j.} + \\bar{Y}_{...})^2",
+        "description": {
+          "de": "Quadratsumme der Wechselwirkung Teil × Prüfer",
+          "en": "Sum of squares for Part × Operator interaction"
+        }
+      },
+      {
+        "label": "σ²_GRR",
+        "latex": "\\sigma^2_{\\text{GRR}} = \\sigma^2_{\\text{EV}} + \\sigma^2_{\\text{AV}} = \\sigma^2_{\\text{Equip}} + \\sigma^2_{\\text{Operator}} + \\sigma^2_{\\text{Interact}}",
+        "description": {
+          "de": "Gesamte Messsystemvariation (Repeatability + Reproducibility)",
+          "en": "Total measurement system variation (Repeatability + Reproducibility)"
+        }
+      },
+      {
+        "label": "%GRR",
+        "latex": "\\%\\text{GRR}_{\\text{StudyVar}} = \\frac{\\sigma_{\\text{GRR}}}{\\sigma_{\\text{Total}}} \\times 100",
+        "description": {
+          "de": "Anteil der Messsystemvariation an der Gesamtvariation (Entscheidungskriterium)",
+          "en": "Measurement system variation as percentage of total variation (decision criterion)"
+        }
+      },
+      {
+        "label": "ndc",
+        "latex": "\\text{ndc} = \\left\\lfloor 1.41 \\cdot \\frac{\\sigma_{\\text{Part}}}{\\sigma_{\\text{GRR}}} \\right\\rfloor",
+        "description": {
+          "de": "Anzahl unterscheidbarer Kategorien (≥ 5 akzeptabel)",
+          "en": "Number of distinct categories (≥ 5 acceptable)"
+        }
+      },
+      {
+        "label": "%Tolerance",
+        "latex": "\\%\\text{Tol} = \\frac{k \\cdot \\sigma_{\\text{GRR}}}{T} \\times 100 \\quad (T = USL - LSL)",
+        "description": {
+          "de": "Messsystemvariation als Prozent der Toleranz (nur wenn LSL/USL angegeben)",
+          "en": "Measurement system variation as percentage of tolerance (only if LSL/USL provided)"
+        }
+      }
+    ],
+    "assumptions": [
+      {
+        "de": "Gekreuztes Studiendesign: Jeder Prüfer misst jedes Teil gleich oft (balanciertes Design)",
+        "en": "Crossed study design: each operator measures each part equally often (balanced design)"
+      },
+      {
+        "de": "Mindestens 2 Teile, 2 Prüfer, 2 Wiederholungen pro Zelle",
+        "en": "At least 2 parts, 2 operators, 2 replicates per cell"
+      },
+      {
+        "de": "Empfohlen: 10 Teile × 3 Prüfer × 2–3 Wiederholungen (AIAG MSA-4)",
+        "en": "Recommended: 10 parts × 3 operators × 2–3 replicates (AIAG MSA-4)"
+      },
+      {
+        "de": "Messwerte sind annähernd normalverteilt",
+        "en": "Measurements are approximately normally distributed"
+      },
+      {
+        "de": "Teile decken den typischen Prozessbereich ab",
+        "en": "Parts represent the typical process range"
+      }
+    ],
+    "limitations": [
+      {
+        "de": "Negative Varianzschätzungen werden auf 0 geklemmt — bei sehr kleinen Studien kann dies die Ergebnisse verzerren",
+        "en": "Negative variance estimates are clamped to 0 — this can distort results in very small studies"
+      },
+      {
+        "de": "Wechselwirkung wird automatisch gepoolt wenn p ≥ α — das Pooling ändert die Freiheitsgrade und Varianzkomponenten",
+        "en": "Interaction is automatically pooled when p ≥ α — pooling changes degrees of freedom and variance components"
+      },
+      {
+        "de": "Nur für gekreuzte Studien — verschachtelte (nested) Designs erfordern eine andere ANOVA-Struktur",
+        "en": "Only for crossed studies — nested designs require a different ANOVA structure"
+      }
+    ],
+    "references": [
+      {
+        "source": "AIAG — Measurement Systems Analysis Reference Manual, 4th Edition (MSA-4), Chapter 4"
+      },
+      {
+        "source": "VDA Band 5 — Prüfprozesseignung: Eignung von Messsystemen, Mess- und Prüfprozessen, 3. Auflage"
+      },
+      {
+        "source": "Montgomery, D. C. — Design and Analysis of Experiments, 10th Edition, Chapter 14"
+      },
+      {
+        "source": "Wheeler, D. J. — EMP III: Evaluating the Measurement Process, SPC Press"
+      }
+    ],
+    "minitab_equivalent": "Stat > Quality Tools > Gage Study > Gage R&R Study (Crossed)"
+  },
+
+  "source": {
+    "function_name": "analyze",
+    "file_path": "js/engines/msa-typ2-engine.js",
+    "signature": {
+      "parameters": [
+        {
+          "name": "data",
+          "type": "object",
+          "required": true,
+          "description": {
+            "de": "Objekt mit parts (string[]), operators (string[]), measurements (number[]) — gleich lange Arrays im Long-Format",
+            "en": "Object with parts (string[]), operators (string[]), measurements (number[]) — equal-length arrays in long format"
+          }
+        },
+        {
+          "name": "options",
+          "type": "object",
+          "required": false,
+          "description": {
+            "de": "Optionen: alpha (Standard 0.05), studyVarMultiplier (Standard 5.15), lsl, usl",
+            "en": "Options: alpha (default 0.05), studyVarMultiplier (default 5.15), lsl, usl"
+          }
+        }
+      ],
+      "returns": {
+        "type": "object",
+        "properties": {
+          "varComp.grr.pctStudyVar": {
+            "type": "number",
+            "description": { "de": "%GRR (Study Variation) — Entscheidungskriterium", "en": "%GRR (Study Variation) — decision criterion" }
+          },
+          "varComp.repeatability.pctStudyVar": {
+            "type": "number",
+            "description": { "de": "%EV (Repeatability / Gerätestreuung)", "en": "%EV (Repeatability / Equipment Variation)" }
+          },
+          "varComp.reproducibility.pctStudyVar": {
+            "type": "number",
+            "description": { "de": "%AV (Reproducibility / Prüferstreuung)", "en": "%AV (Reproducibility / Appraiser Variation)" }
+          },
+          "varComp.part.pctStudyVar": {
+            "type": "number",
+            "description": { "de": "%PV (Part-to-Part Variation)", "en": "%PV (Part-to-Part Variation)" }
+          },
+          "ndc": {
+            "type": "number",
+            "description": { "de": "Anzahl unterscheidbarer Kategorien", "en": "Number of distinct categories" }
+          },
+          "grrStatus": {
+            "type": "string",
+            "description": { "de": "Bewertung: 'pass' / 'warn' / 'fail'", "en": "Assessment: 'pass' / 'warn' / 'fail'" }
+          },
+          "interactionPooled": {
+            "type": "boolean",
+            "description": { "de": "Wechselwirkung gepoolt (true wenn p ≥ α)", "en": "Interaction pooled (true if p ≥ α)" }
+          },
+          "anova": {
+            "type": "object",
+            "description": { "de": "ANOVA-Tabelle (part, operator, interact, equip, total)", "en": "ANOVA table (part, operator, interact, equip, total)" }
+          }
+        }
+      }
+    },
+    "code_snippet": null
+  },
+
+  "try_it": {
+    "input_schema": {
+      "fields": [
+        {
+          "name": "data.parts",
+          "label": { "de": "Teile-Spalte", "en": "Parts Column" },
+          "type": "textarea",
+          "placeholder": {
+            "de": "Teil-IDs eingeben (z.B. 1, 1, 1, 2, 2, 2, ...)",
+            "en": "Enter part IDs (e.g. 1, 1, 1, 2, 2, 2, ...)"
+          },
+          "parse_as": "string_array",
+          "required": true
+        },
+        {
+          "name": "data.operators",
+          "label": { "de": "Prüfer-Spalte", "en": "Operators Column" },
+          "type": "textarea",
+          "placeholder": {
+            "de": "Prüfer-IDs eingeben (z.B. A, A, B, B, C, C, ...)",
+            "en": "Enter operator IDs (e.g. A, A, B, B, C, C, ...)"
+          },
+          "parse_as": "string_array",
+          "required": true
+        },
+        {
+          "name": "data.measurements",
+          "label": { "de": "Messwerte", "en": "Measurements" },
+          "type": "textarea",
+          "placeholder": {
+            "de": "Messwerte eingeben (gleiche Anzahl wie Teile und Prüfer)",
+            "en": "Enter measurements (same count as parts and operators)"
+          },
+          "parse_as": "number_array",
+          "required": true
+        },
+        {
+          "name": "options.lsl",
+          "label": { "de": "Untere Spezifikationsgrenze (LSL)", "en": "Lower Specification Limit (LSL)" },
+          "type": "number",
+          "parse_as": "number",
+          "required": false
+        },
+        {
+          "name": "options.usl",
+          "label": { "de": "Obere Spezifikationsgrenze (USL)", "en": "Upper Specification Limit (USL)" },
+          "type": "number",
+          "parse_as": "number",
+          "required": false
+        },
+        {
+          "name": "options.alpha",
+          "label": { "de": "Signifikanzniveau α", "en": "Significance Level α" },
+          "type": "number",
+          "placeholder": { "de": "Standard: 0.05", "en": "Default: 0.05" },
+          "parse_as": "number",
+          "required": false,
+          "default": 0.05
+        },
+        {
+          "name": "options.studyVarMultiplier",
+          "label": { "de": "k-Faktor", "en": "k Factor" },
+          "type": "number",
+          "placeholder": { "de": "Standard: 5.15", "en": "Default: 5.15" },
+          "parse_as": "number",
+          "required": false,
+          "default": 5.15
+        }
+      ]
+    },
+    "output_schema": {
+      "display_fields": ["varComp.grr.pctStudyVar", "varComp.repeatability.pctStudyVar", "varComp.reproducibility.pctStudyVar", "varComp.part.pctStudyVar", "ndc", "grrStatus"],
+      "primary_field": "varComp.grr.pctStudyVar",
+      "format": {
+        "varComp.grr.pctStudyVar": { "decimals": 2, "label": "%GRR" },
+        "varComp.repeatability.pctStudyVar": { "decimals": 2, "label": "%EV" },
+        "varComp.reproducibility.pctStudyVar": { "decimals": 2, "label": "%AV" },
+        "varComp.part.pctStudyVar": { "decimals": 2, "label": "%PV" },
+        "ndc": { "decimals": 0, "label": "ndc" },
+        "grrStatus": { "decimals": 0, "label": "Status" }
+      }
+    }
+  },
+
+  "changelog": [
+    {
+      "version": "1.0.0",
+      "date": "2026-03-28",
+      "type": "initial",
+      "description": {
+        "de": "Erstimplementierung: ANOVA-basierte Gage R&R mit Wechselwirkungs-Pooling, Varianzkomponenten, %GRR, ndc",
+        "en": "Initial implementation: ANOVA-based Gage R&R with interaction pooling, variance components, %GRR, ndc"
+      },
+      "breaking": false
+    }
+  ]
+}

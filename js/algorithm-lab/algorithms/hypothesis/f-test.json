@@ -1,0 +1,170 @@
+{
+  "id": "f-test",
+  "name": {
+    "de": "F-Test (Varianzgleichheit)",
+    "en": "F-Test (Variance Equality)"
+  },
+  "category": "hypothesis",
+  "subcategory": "variance",
+  "status": "validated",
+  "version": "1.0.0",
+
+  "description": {
+    "short": {
+      "de": "Prüft, ob zwei normalverteilte Populationen gleiche Varianzen haben.",
+      "en": "Tests whether two normally distributed populations have equal variances."
+    },
+    "long": {
+      "de": "Der F-Test vergleicht die Varianzen zweier unabhängiger, normalverteilter Stichproben. Die Teststatistik F = s₁²/s₂² folgt einer F-Verteilung mit (n₁−1, n₂−1) Freiheitsgraden. Der Test ist empfindlich gegenüber Abweichungen von der Normalverteilung — bei nicht-normalverteilten Daten sollte der Levene-Test bevorzugt werden.",
+      "en": "The F-test compares the variances of two independent, normally distributed samples. The test statistic F = s₁²/s₂² follows an F-distribution with (n₁−1, n₂−1) degrees of freedom. The test is sensitive to departures from normality — for non-normal data, the Levene test should be preferred."
+    }
+  },
+
+  "documentation": {
+    "formulas": [
+      {
+        "label": "F",
+        "latex": "F = \\frac{s_1^2}{s_2^2}",
+        "description": {
+          "de": "Teststatistik: Verhältnis der Stichprobenvarianzen",
+          "en": "Test statistic: ratio of sample variances"
+        }
+      },
+      {
+        "label": "H₀",
+        "latex": "H_0: \\sigma_1^2 = \\sigma_2^2",
+        "description": {
+          "de": "Nullhypothese: Die Populationsvarianzen sind gleich",
+          "en": "Null hypothesis: The population variances are equal"
+        }
+      }
+    ],
+    "assumptions": [
+      { "de": "Beide Stichproben sind normalverteilt", "en": "Both samples are normally distributed" },
+      { "de": "Stichproben sind unabhängig", "en": "Samples are independent" },
+      { "de": "Stetige (kontinuierliche) Daten", "en": "Continuous data" }
+    ],
+    "limitations": [
+      { "de": "Sehr empfindlich gegenüber Abweichungen von der Normalverteilung", "en": "Very sensitive to departures from normality" },
+      { "de": "Bei nicht-normalverteilten Daten den Levene-Test verwenden", "en": "Use Levene test for non-normal data" }
+    ],
+    "references": [
+      { "source": "Snedecor, G. W. & Cochran, W. G. (1989), Statistical Methods, 8th Ed." },
+      { "source": "NIST/SEMATECH e-Handbook of Statistical Methods, Section 7.3.1.2" }
+    ],
+    "minitab_equivalent": "Stat > Basic Statistics > 2 Variances"
+  },
+
+  "source": {
+    "function_name": "fTest",
+    "file_path": "js/engines/hypothesis-test-engine.js",
+    "signature": {
+      "parameters": [
+        {
+          "name": "data1",
+          "type": "number[]",
+          "required": true,
+          "description": { "de": "Erste Stichprobe", "en": "First sample" }
+        },
+        {
+          "name": "data2",
+          "type": "number[]",
+          "required": true,
+          "description": { "de": "Zweite Stichprobe", "en": "Second sample" }
+        },
+        {
+          "name": "direction",
+          "type": "string",
+          "required": false,
+          "description": { "de": "Testrichtung: 'two-sided', 'greater', 'less'", "en": "Test direction: 'two-sided', 'greater', 'less'" }
+        },
+        {
+          "name": "alpha",
+          "type": "number",
+          "required": false,
+          "description": { "de": "Signifikanzniveau (Standard: 0.05)", "en": "Significance level (default: 0.05)" }
+        }
+      ],
+      "returns": {
+        "type": "object",
+        "properties": {
+          "statistic": { "type": "number", "description": { "de": "F-Teststatistik", "en": "F test statistic" } },
+          "pValue": { "type": "number", "description": { "de": "p-Wert", "en": "p-value" } },
+          "df1": { "type": "number", "description": { "de": "Freiheitsgrade Zähler", "en": "Numerator degrees of freedom" } },
+          "df2": { "type": "number", "description": { "de": "Freiheitsgrade Nenner", "en": "Denominator degrees of freedom" } },
+          "reject": { "type": "boolean", "description": { "de": "H₀ abgelehnt?", "en": "Reject H₀?" } }
+        }
+      }
+    },
+    "code_snippet": null
+  },
+
+  "try_it": {
+    "input_schema": {
+      "fields": [
+        {
+          "name": "data1",
+          "label": { "de": "Stichprobe 1", "en": "Sample 1" },
+          "type": "textarea",
+          "placeholder": { "de": "Werte der ersten Stichprobe", "en": "Values of first sample" },
+          "parse_as": "number_array",
+          "required": true
+        },
+        {
+          "name": "data2",
+          "label": { "de": "Stichprobe 2", "en": "Sample 2" },
+          "type": "textarea",
+          "placeholder": { "de": "Werte der zweiten Stichprobe", "en": "Values of second sample" },
+          "parse_as": "number_array",
+          "required": true
+        },
+        {
+          "name": "direction",
+          "label": { "de": "Testrichtung", "en": "Test Direction" },
+          "type": "select",
+          "options": [
+            { "value": "two-sided", "label": { "de": "≠ Zweiseitig", "en": "≠ Two-sided" } },
+            { "value": "greater", "label": { "de": "> Größer", "en": "> Greater" } },
+            { "value": "less", "label": { "de": "< Kleiner", "en": "< Less" } }
+          ],
+          "parse_as": "string",
+          "required": false
+        },
+        {
+          "name": "alpha",
+          "label": { "de": "Signifikanzniveau α", "en": "Significance Level α" },
+          "type": "number",
+          "placeholder": { "de": "0.05", "en": "0.05" },
+          "parse_as": "number",
+          "required": false
+        }
+      ]
+    },
+    "output_schema": {
+      "display_fields": ["statistic", "pValue", "df1", "df2", "variance1", "variance2", "ci", "reject"],
+      "primary_field": "statistic",
+      "format": {
+        "statistic": { "decimals": 6, "label": "F" },
+        "pValue": { "decimals": 6, "label": "p-Value" },
+        "df1": { "decimals": 0, "label": "df₁" },
+        "df2": { "decimals": 0, "label": "df₂" },
+        "variance1": { "decimals": 6, "label": "s₁²" },
+        "variance2": { "decimals": 6, "label": "s₂²" },
+        "reject": { "decimals": 0, "label": { "de": "H₀ abgelehnt", "en": "Reject H₀" } }
+      }
+    }
+  },
+
+  "changelog": [
+    {
+      "version": "1.0.0",
+      "date": "2026-03-31",
+      "type": "initial",
+      "description": {
+        "de": "Erstimplementierung mit F-Statistik, p-Wert, KI und Entscheidung",
+        "en": "Initial implementation with F statistic, p-value, CI and decision"
+      },
+      "breaking": false
+    }
+  ]
+}

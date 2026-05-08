@@ -1,0 +1,269 @@
+{
+  "id": "math-utils",
+  "name": {
+    "de": "Mathematische Hilfsfunktionen (Verteilungen)",
+    "en": "Math Utility Functions (Distributions)"
+  },
+  "category": "distributions",
+  "subcategory": null,
+  "status": "validated",
+  "version": "1.0.0",
+
+  "description": {
+    "short": {
+      "de": "Sammlung numerischer Verteilungsfunktionen (Normal, χ², t, F) — das Fundament aller Hypothesentests.",
+      "en": "Collection of numerical distribution functions (normal, χ², t, F) — the foundation of all hypothesis tests."
+    },
+    "long": {
+      "de": "math-utils.js bündelt die numerischen Primitiven, auf denen alle weiteren Engines aufbauen: Fehlerfunktion (erf), log-Gamma, Normal-CDF/Quantil (Abramowitz & Stegun 7.1.26 mit korrigierter Skalierung), χ²-CDF/Inverse (regularisierte unvollständige Gammafunktion), t-CDF/Inverse (regularisierte unvollständige Betafunktion), F-CDF/p-Wert/Quantil. Der Dispatcher evaluate(inputs) nimmt ein Objekt der Form {function, ...args} entgegen und gibt {result} zurück — so können alle Funktionen gegen SciPy-Fixtures validiert werden. Der 'validated'-Status bezieht sich auf diese Fixture-Suite; sie wurde nach dem normalCDF-Bug (A&S 7.1.26 Argument-Skalierung) eingeführt und schützt gegen Regressionen.",
+      "en": "math-utils.js bundles the numerical primitives that every downstream engine relies on: error function (erf), log-gamma, normal CDF/quantile (Abramowitz & Stegun 7.1.26 with corrected scaling), χ² CDF/inverse (regularised incomplete gamma), t CDF/inverse (regularised incomplete beta), F CDF/p-value/quantile. The evaluate(inputs) dispatcher takes a {function, ...args} object and returns {result}, so every function can be validated against SciPy fixtures. The 'validated' status refers to that fixture suite — it was introduced after the normalCDF bug (A&S 7.1.26 argument-scaling error) and protects against regressions."
+    }
+  },
+
+  "documentation": {
+    "formulas": [
+      {
+        "label": "erf",
+        "latex": "\\operatorname{erf}(x) = \\frac{2}{\\sqrt{\\pi}} \\int_{0}^{x} e^{-t^{2}}\\,dt",
+        "description": {
+          "de": "Gauß-Fehlerfunktion (Abramowitz & Stegun 7.1.26)",
+          "en": "Gaussian error function (Abramowitz & Stegun 7.1.26)"
+        }
+      },
+      {
+        "label": "normalCDF",
+        "latex": "\\Phi(x;\\mu,\\sigma) = \\frac{1}{2}\\left[1 + \\operatorname{erf}\\!\\left(\\frac{x-\\mu}{\\sigma\\sqrt{2}}\\right)\\right]",
+        "description": {
+          "de": "Kumulative Normalverteilung",
+          "en": "Cumulative normal distribution"
+        }
+      },
+      {
+        "label": "normalQuantile",
+        "latex": "\\Phi^{-1}(p) \\;\\;\\text{via Beasley-Springer-Moro rationalen Approximation}",
+        "description": {
+          "de": "Inverse Standardnormalverteilung",
+          "en": "Inverse standard normal distribution"
+        }
+      },
+      {
+        "label": "lnGamma",
+        "latex": "\\ln\\Gamma(x) \\;\\;\\text{via Lanczos-Approximation}",
+        "description": {
+          "de": "Logarithmus der Gammafunktion",
+          "en": "Logarithm of the gamma function"
+        }
+      },
+      {
+        "label": "chi2CDF",
+        "latex": "F_{\\chi^{2}_{\\nu}}(x) = P\\!\\left(\\tfrac{\\nu}{2},\\,\\tfrac{x}{2}\\right)",
+        "description": {
+          "de": "χ²-Verteilung via regularisierter unvollständiger Gammafunktion",
+          "en": "χ² distribution via the regularised incomplete gamma function"
+        }
+      },
+      {
+        "label": "tCDF",
+        "latex": "F_{t_{\\nu}}(t) = 1 - \\tfrac{1}{2}\\,I_{x(t)}\\!\\left(\\tfrac{\\nu}{2},\\,\\tfrac{1}{2}\\right),\\quad x(t)=\\tfrac{\\nu}{\\nu+t^{2}}",
+        "description": {
+          "de": "Student-t-CDF via regularisierter unvollständiger Betafunktion",
+          "en": "Student-t CDF via the regularised incomplete beta function"
+        }
+      },
+      {
+        "label": "fCDF",
+        "latex": "F_{F_{d_1,d_2}}(x) = 1 - I_{y}\\!\\left(\\tfrac{d_2}{2},\\,\\tfrac{d_1}{2}\\right),\\quad y=\\tfrac{d_2}{d_2 + d_1 x}",
+        "description": {
+          "de": "F-Verteilung via regularisierter unvollständiger Betafunktion",
+          "en": "F distribution via the regularised incomplete beta function"
+        }
+      }
+    ],
+    "assumptions": [
+      {
+        "de": "Argumente liegen im Definitionsbereich der jeweiligen Funktion (z.B. df > 0, 0 ≤ p ≤ 1)",
+        "en": "Arguments lie within each function's valid domain (e.g. df > 0, 0 ≤ p ≤ 1)"
+      }
+    ],
+    "limitations": [
+      {
+        "de": "Relative Genauigkeit der Approximationen liegt bei etwa 1e-10 bis 1e-12 — ausreichend für alle Anwendungen in DMAIC.io, aber nicht auf Bit-Ebene identisch mit SciPy",
+        "en": "Relative accuracy of the approximations is ~1e-10 to 1e-12 — sufficient for every use case in DMAIC.io, but not bit-identical to SciPy"
+      },
+      {
+        "de": "fQuantile und chi2Inv/tInv verwenden Bisektion — nicht für extreme Tail-Wahrscheinlichkeiten (p < 1e-10 oder p > 1 − 1e-10)",
+        "en": "fQuantile and chi2Inv/tInv use bisection — not suitable for extreme tail probabilities (p < 1e-10 or p > 1 − 1e-10)"
+      }
+    ],
+    "references": [
+      {
+        "source": "Abramowitz & Stegun, Handbook of Mathematical Functions",
+        "chapter": "Ch. 7 (erf), Ch. 26 (Normal CDF)"
+      },
+      {
+        "source": "Press, Teukolsky, Vetterling, Flannery — Numerical Recipes, 3rd Ed."
+      },
+      {
+        "source": "Lanczos, C. (1964), A Precision Approximation of the Gamma Function"
+      }
+    ],
+    "minitab_equivalent": null
+  },
+
+  "source": {
+    "function_name": "evaluate",
+    "file_path": "js/engines/math-utils.js",
+    "signature": {
+      "parameters": [
+        {
+          "name": "inputs",
+          "type": "object",
+          "required": true,
+          "description": {
+            "de": "Objekt der Form {function, ...args}. function wählt die aufzurufende Funktion, die übrigen Felder sind deren Argumente.",
+            "en": "Object of the form {function, ...args}. function selects the routine to invoke; the remaining fields are its arguments."
+          }
+        }
+      ],
+      "returns": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "type": "number",
+            "description": { "de": "Funktionswert", "en": "Function value" }
+          }
+        }
+      }
+    },
+    "code_snippet": null
+  },
+
+  "try_it": {
+    "input_schema": {
+      "fields": [
+        {
+          "name": "inputs.function",
+          "label": { "de": "Funktion", "en": "Function" },
+          "type": "text",
+          "placeholder": {
+            "de": "erf | normalCDF | normalQuantile | lnGamma | chi2CDF | chi2Inv | tCDF | tInv | fCDF | fPValue | fQuantile",
+            "en": "erf | normalCDF | normalQuantile | lnGamma | chi2CDF | chi2Inv | tCDF | tInv | fCDF | fPValue | fQuantile"
+          },
+          "parse_as": "string",
+          "required": true,
+          "default": "normalCDF"
+        },
+        {
+          "name": "inputs.x",
+          "label": "x",
+          "type": "number",
+          "placeholder": { "de": "z.B. 1.96 (für erf/normalCDF/chi2CDF/fCDF)", "en": "e.g. 1.96 (for erf/normalCDF/chi2CDF/fCDF)" },
+          "parse_as": "number",
+          "required": false
+        },
+        {
+          "name": "inputs.mu",
+          "label": "mu",
+          "type": "number",
+          "placeholder": { "de": "Mittelwert (nur normalCDF)", "en": "Mean (normalCDF only)" },
+          "parse_as": "number",
+          "required": false,
+          "default": 0
+        },
+        {
+          "name": "inputs.sigma",
+          "label": "sigma",
+          "type": "number",
+          "placeholder": { "de": "Standardabweichung (nur normalCDF)", "en": "Standard deviation (normalCDF only)" },
+          "parse_as": "number",
+          "required": false,
+          "default": 1
+        },
+        {
+          "name": "inputs.p",
+          "label": "p",
+          "type": "number",
+          "placeholder": { "de": "Wahrscheinlichkeit (0–1, für Quantile/Inverse)", "en": "Probability (0–1, for quantiles/inverses)" },
+          "parse_as": "number",
+          "required": false
+        },
+        {
+          "name": "inputs.df",
+          "label": "df",
+          "type": "number",
+          "placeholder": { "de": "Freiheitsgrade (chi2/t)", "en": "Degrees of freedom (chi2/t)" },
+          "parse_as": "number",
+          "required": false
+        },
+        {
+          "name": "inputs.t",
+          "label": "t",
+          "type": "number",
+          "placeholder": { "de": "t-Wert (tCDF)", "en": "t statistic (tCDF)" },
+          "parse_as": "number",
+          "required": false
+        },
+        {
+          "name": "inputs.dfn",
+          "label": "dfn",
+          "type": "number",
+          "placeholder": { "de": "Zählerfreiheitsgrade (fCDF)", "en": "Numerator df (fCDF)" },
+          "parse_as": "number",
+          "required": false
+        },
+        {
+          "name": "inputs.dfd",
+          "label": "dfd",
+          "type": "number",
+          "placeholder": { "de": "Nennerfreiheitsgrade (fCDF)", "en": "Denominator df (fCDF)" },
+          "parse_as": "number",
+          "required": false
+        },
+        {
+          "name": "inputs.f",
+          "label": "f",
+          "type": "number",
+          "placeholder": { "de": "F-Wert (fPValue)", "en": "F statistic (fPValue)" },
+          "parse_as": "number",
+          "required": false
+        },
+        {
+          "name": "inputs.d1",
+          "label": "d1",
+          "type": "number",
+          "placeholder": { "de": "Zählerfreiheitsgrade (fPValue/fQuantile)", "en": "Numerator df (fPValue/fQuantile)" },
+          "parse_as": "number",
+          "required": false
+        },
+        {
+          "name": "inputs.d2",
+          "label": "d2",
+          "type": "number",
+          "placeholder": { "de": "Nennerfreiheitsgrade (fPValue/fQuantile)", "en": "Denominator df (fPValue/fQuantile)" },
+          "parse_as": "number",
+          "required": false
+        }
+      ]
+    },
+    "output_schema": {
+      "display_fields": ["result"],
+      "primary_field": "result",
+      "format": {
+        "result": { "decimals": 10, "label": { "de": "Ergebnis", "en": "Result" } }
+      }
+    }
+  },
+
+  "changelog": [
+    {
+      "version": "1.0.0",
+      "date": "2026-04-11",
+      "type": "initial",
+      "description": {
+        "de": "Dispatcher evaluate() für Algorithm Lab + Fixture-Replay. Wrappt erf, normalCDF, normalQuantile, lnGamma, chi2CDF, chi2Inv, tCDF, tInv, fCDF, fPValue, fQuantile.",
+        "en": "evaluate() dispatcher for Algorithm Lab + fixture replay. Wraps erf, normalCDF, normalQuantile, lnGamma, chi2CDF, chi2Inv, tCDF, tInv, fCDF, fPValue, fQuantile."
+      },
+      "breaking": false
+    }
+  ]
+}

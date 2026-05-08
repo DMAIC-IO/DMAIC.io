@@ -1,0 +1,97 @@
+{
+  "id": "lack-of-fit-test",
+  "name": {
+    "de": "Anpassungs-Mangel-Test (Lack-of-Fit, F-Test über Replikate)",
+    "en": "Lack-of-Fit Test (F-Test from Replicate Observations)"
+  },
+  "category": "regression",
+  "subcategory": null,
+  "status": "validated",
+  "version": "1.0.0",
+
+  "description": {
+    "short": {
+      "de": "Vergleicht die Modell-Misspezifikation gegen reines Rauschen aus replizierten Designpunkten.",
+      "en": "Compares model mis-specification against pure noise from replicated design points."
+    },
+    "long": {
+      "de": "Wenn ein Versuchsplan Replikate enthält (mehrere Beobachtungen am identischen Designpunkt), kann die Residuen-Quadratsumme SSE in zwei Komponenten zerlegt werden: SS_PE (pure error, Streuung innerhalb der Replikat-Gruppen — modell-unabhängig) und SS_LoF (lack-of-fit, alles, was das Modell jenseits der reinen Streuung nicht erklärt). Der F-Test stellt die mittlere Quadratsumme der Modell-Misspezifikation der reinen Streuung gegenüber. Ein signifikantes Ergebnis bedeutet: das Modell passt nicht zu den Daten; ein Termtyp wird vermisst (oft Quadrat- oder Wechselwirkungsterm). Pflicht-Diagnostik in der Six-Sigma-RSM-Praxis: ohne Replikate keine LoF-Bewertung möglich.",
+      "en": "When a design contains replicates (multiple observations at the same design point), the residual sum of squares SSE can be decomposed into pure-error (SS_PE — within-replicate-group scatter, model-independent) and lack-of-fit (SS_LoF — anything the model fails to explain beyond pure noise). The F-test compares the mean lack-of-fit against pure error. A significant result means the model is mis-specified; a term type is missing (often a quadratic or interaction term). Required diagnostic in Six-Sigma RSM practice: without replicates, LoF cannot be assessed."
+    }
+  },
+
+  "documentation": {
+    "formulas": [
+      {
+        "label": "Decomposition",
+        "latex": "SSE = SS_{PE} + SS_{LoF}",
+        "description": {
+          "de": "Residuen-Zerlegung in Pure-Error- und Lack-of-Fit-Komponente",
+          "en": "Residual decomposition into pure-error and lack-of-fit components"
+        }
+      },
+      {
+        "label": "Pure error",
+        "latex": "SS_{PE} = \\sum_g \\sum_{i \\in g} (y_i - \\bar y_g)^2,\\quad df_{PE} = \\sum_g (n_g - 1)",
+        "description": {
+          "de": "Summe der Abweichungen innerhalb jeder Replikat-Gruppe vom Gruppen-Mittel",
+          "en": "Sum of within-group deviations from the group mean"
+        }
+      },
+      {
+        "label": "Lack of fit",
+        "latex": "SS_{LoF} = SSE - SS_{PE},\\quad df_{LoF} = df_{E} - df_{PE}",
+        "description": {
+          "de": "Was nicht durch Pure Error erklärt wird, ist Modell-Misspezifikation",
+          "en": "Whatever pure error does not explain is model mis-specification"
+        }
+      },
+      {
+        "label": "F-Test",
+        "latex": "F = \\frac{MS_{LoF}}{MS_{PE}} = \\frac{SS_{LoF}/df_{LoF}}{SS_{PE}/df_{PE}} \\sim F_{df_{LoF},\\,df_{PE}}",
+        "description": {
+          "de": "Signifikantes F → Modell hat Misspezifikation",
+          "en": "Significant F → the model is mis-specified"
+        }
+      }
+    ],
+    "assumptions": [
+      { "de": "Mindestens eine Replikat-Gruppe der Größe ≥ 2 (sonst df_PE = 0)", "en": "At least one replicate group of size ≥ 2 (else df_PE = 0)" },
+      { "de": "Die Anzahl unterschiedlicher Designpunkte ist größer als die Anzahl Modell-Parameter (sonst df_LoF ≤ 0)", "en": "Number of unique design points exceeds the number of model parameters (else df_LoF ≤ 0)" },
+      { "de": "Residuen sind unabhängig und annähernd normalverteilt (allgemeine ANOVA-Voraussetzungen)", "en": "Residuals are independent and approximately normal (standard ANOVA assumptions)" }
+    ],
+    "limitations": [
+      { "de": "Ohne Replikate nicht durchführbar — die Implementierung gibt null zurück", "en": "Cannot run without replicates — the implementation returns null" },
+      { "de": "Bei perfekt-übereinstimmenden Replikaten (MS_PE = 0): Konvention F = ∞, p = 0 wenn MS_LoF > 0; F = 0, p = 1 sonst", "en": "When replicates agree exactly (MS_PE = 0): convention F = ∞, p = 0 if MS_LoF > 0; F = 0, p = 1 otherwise" }
+    ],
+    "references": [
+      { "source": "Montgomery, D.C. (2017). Design and Analysis of Experiments, 9th Ed., Wiley", "chapter": "Chapter 11 (Response Surface Methods)" },
+      { "source": "Myers, R.H., Montgomery, D.C., Anderson-Cook, C.M. (2016). Response Surface Methodology, 4th Ed., Wiley", "chapter": "Chapter 2.4 (Lack of Fit Testing)" }
+    ],
+    "minitab_equivalent": "Stat > DOE > Factorial > Analyze Factorial Design (Pure Error + Lack of Fit row)"
+  },
+
+  "source": {
+    "function_name": "lackOfFitTest",
+    "file_path": "js/engines/regression-engine.js",
+    "signature": {
+      "parameters": [
+        { "name": "y",         "type": "number[]",   "required": true, "description": { "de": "Antwort-Vektor", "en": "Response vector" } },
+        { "name": "predicted", "type": "number[]",   "required": true, "description": { "de": "Modell-Vorhersagen", "en": "Fitted values" } },
+        { "name": "replicateGroups", "type": "number[][]", "required": true, "description": { "de": "Gruppen identischer Designpunkte (Indizes in y/predicted)", "en": "Groups of identical design-point indices in y/predicted" } },
+        { "name": "dfError",   "type": "number",     "required": true, "description": { "de": "Residuen-Freiheitsgrade (n − p)", "en": "Residual degrees of freedom (n − p)" } }
+      ],
+      "returns": {
+        "type": "object",
+        "description": { "de": "{fStat, dfLoF, dfPE, ssLoF, ssPE, pValue} oder null wenn nicht durchführbar", "en": "{fStat, dfLoF, dfPE, ssLoF, ssPE, pValue} or null when not feasible" }
+      }
+    },
+    "code_snippet": null
+  },
+
+  "changelog": [
+    { "version": "1.0.0", "date": "2026-05-08", "type": "initial",
+      "description": { "de": "Erstimplementierung im Rahmen des Diagnose-Tors für Phase-1-Optimierung", "en": "Initial implementation for the V0.4 Phase-1 diagnostic gate" },
+      "breaking": false }
+  ]
+}

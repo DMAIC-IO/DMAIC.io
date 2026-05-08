@@ -1,0 +1,156 @@
+/* ============================================================
+   D.Mike — Worksheet Module Styles (worksheet.css)
+   Toolbar, status bar, and layout for the worksheet module.
+   ============================================================ */
+
+/* Toolbar */
+.worksheet-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 0 12px;
+  height: 40px;
+  background: var(--color-bg-secondary);
+  border-bottom: 1px solid var(--color-border-primary);
+  flex-shrink: 0;
+}
+
+.worksheet-toolbar .toolbar__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 10px;
+  border: none;
+  border-radius: var(--border-radius-sm);
+  background: transparent;
+  color: var(--color-text-secondary);
+  font-family: var(--font-family);
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 120ms ease;
+  white-space: nowrap;
+}
+.worksheet-toolbar .toolbar__btn:hover {
+  background: var(--color-bg-tertiary);
+  color: var(--color-text-primary);
+}
+.worksheet-toolbar .toolbar__btn:active {
+  background: var(--color-border-primary);
+}
+.worksheet-toolbar .toolbar__btn--accent {
+  color: var(--color-accent);
+}
+.worksheet-toolbar .toolbar__btn--accent:hover {
+  background: var(--color-accent-light);
+  color: var(--color-accent-hover);
+}
+.worksheet-toolbar .toolbar__btn:disabled {
+  opacity: .35;
+  pointer-events: none;
+}
+.worksheet-toolbar .toolbar__btn svg {
+  width: 15px;
+  height: 15px;
+  stroke-width: 1.8;
+}
+
+.worksheet-toolbar .toolbar__sep {
+  width: 1px;
+  height: 18px;
+  background: var(--color-border-primary);
+  margin: 0 4px;
+}
+
+.worksheet-toolbar .toolbar__spacer {
+  flex: 1;
+}
+
+/* ── Export dropdown ────────────────────────────────────── */
+
+.worksheet-toolbar .toolbar__dropdown {
+  position: relative;
+}
+
+.worksheet-toolbar .toolbar__chevron {
+  width: 12px;
+  height: 12px;
+  stroke-width: 2;
+  margin-left: -2px;
+}
+
+.worksheet-toolbar .toolbar__dropdown-menu {
+  display: none;
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  min-width: 140px;
+  padding: 4px 0;
+  background: var(--color-bg-primary);
+  border: 1px solid var(--color-border-primary);
+  border-radius: var(--border-radius-sm);
+  box-shadow: var(--shadow-md);
+  z-index: 60;
+}
+
+.worksheet-toolbar .toolbar__dropdown-menu.open {
+  display: block;
+}
+
+.worksheet-toolbar .toolbar__dropdown-item {
+  display: block;
+  width: 100%;
+  padding: 6px 12px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: var(--font-size-sm);
+  font-family: var(--font-family);
+  color: var(--color-text-primary);
+  text-align: left;
+  white-space: nowrap;
+  transition: background 0.1s;
+}
+
+.worksheet-toolbar .toolbar__dropdown-item:hover {
+  background: var(--color-bg-tertiary);
+}
+
+/* Status info (inside sheet-tabs bar, right-aligned) */
+.sheet-tabs__spacer {
+  flex: 1;
+}
+.sheet-tabs__status {
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+  padding: 0 10px;
+  white-space: nowrap;
+  align-self: center;
+}
+
+/* Button styles inside formula editor footer (scoped) */
+.formula-editor .btn {
+  padding: 7px 16px;
+  border: 1px solid var(--color-border-primary);
+  border-radius: var(--border-radius-sm);
+  background: var(--color-bg-elevated);
+  color: var(--color-text-secondary);
+  font-family: var(--font-family);
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 120ms ease;
+}
+.formula-editor .btn:hover {
+  background: var(--color-border-primary);
+  color: var(--color-text-primary);
+}
+.formula-editor .btn--primary {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+  color: #fff;
+}
+.formula-editor .btn--primary:hover {
+  background: var(--color-accent-hover);
+}

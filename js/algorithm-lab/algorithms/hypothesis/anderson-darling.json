@@ -1,0 +1,209 @@
+{
+  "id": "anderson-darling",
+  "name": {
+    "de": "Anderson-Darling-Test",
+    "en": "Anderson-Darling Test"
+  },
+  "category": "hypothesis",
+  "subcategory": "normality",
+  "status": "validated",
+  "version": "1.0.0",
+
+  "description": {
+    "short": {
+      "de": "Prüft, ob eine Stichprobe aus einer Normalverteilung stammt — besonders empfindlich in den Verteilungsenden.",
+      "en": "Tests whether a sample comes from a normally distributed population — especially sensitive in the distribution tails."
+    },
+    "long": {
+      "de": "Der Anderson-Darling-Test ist ein EDF-basierter (empirische Verteilungsfunktion) Normalitätstest, der die Abweichung der empirischen von der theoretischen Verteilungsfunktion misst. Im Gegensatz zum Kolmogorov-Smirnov-Test gewichtet er Abweichungen in den Verteilungsenden stärker, was ihn besonders empfindlich für Ausreißer und schwere Enden macht. Die Teststatistik A² wird mit einem Stichprobengrößen-Korrekturfaktor zu A²* angepasst. Kleine p-Werte (p < α) sprechen gegen die Normalverteilungsannahme.",
+      "en": "The Anderson-Darling test is an EDF-based (empirical distribution function) normality test that measures the discrepancy between the empirical and theoretical distribution functions. Unlike the Kolmogorov-Smirnov test, it places more weight on deviations in the tails, making it especially sensitive to outliers and heavy tails. The test statistic A² is adjusted with a sample-size correction factor to A²*. Small p-values (p < α) indicate evidence against the normality assumption."
+    }
+  },
+
+  "documentation": {
+    "formulas": [
+      {
+        "label": "A²",
+        "latex": "A^2 = -n - \\frac{1}{n} \\sum_{i=1}^{n} \\left[ (2i-1) \\cdot \\left( \\ln \\Phi(z_i) + \\ln(1 - \\Phi(z_{n+1-i})) \\right) \\right]",
+        "description": {
+          "de": "Teststatistik A²: Maß für die Abweichung der empirischen von der theoretischen Normalverteilung",
+          "en": "Test statistic A²: measure of the discrepancy between the empirical and theoretical normal distribution"
+        }
+      },
+      {
+        "label": "z_i",
+        "latex": "z_i = \\frac{x_{(i)} - \\bar{x}}{s}",
+        "description": {
+          "de": "Standardisierte, geordnete Werte (x sortiert, Mittelwert und Standardabweichung der Stichprobe)",
+          "en": "Standardized ordered values (x sorted, using sample mean and standard deviation)"
+        }
+      },
+      {
+        "label": "A²*",
+        "latex": "A^{2*} = A^2 \\cdot \\left(1 + \\frac{0.75}{n} + \\frac{2.25}{n^2}\\right)",
+        "description": {
+          "de": "Korrigierte Teststatistik mit Stichprobengrößen-Anpassung (D'Agostino & Stephens 1986)",
+          "en": "Adjusted test statistic with sample-size correction (D'Agostino & Stephens 1986)"
+        }
+      },
+      {
+        "label": "H₀",
+        "latex": "H_0: X_1, \\ldots, X_n \\sim \\mathcal{N}(\\mu, \\sigma^2)",
+        "description": {
+          "de": "Nullhypothese: Die Stichprobe stammt aus einer Normalverteilung",
+          "en": "Null hypothesis: The sample comes from a normal distribution"
+        }
+      }
+    ],
+    "assumptions": [
+      {
+        "de": "Daten sind unabhängig und identisch verteilt (i.i.d.)",
+        "en": "Data are independent and identically distributed (i.i.d.)"
+      },
+      {
+        "de": "Stichprobengröße: n ≥ 3 (empfohlen: n ≥ 8 für zuverlässige p-Werte)",
+        "en": "Sample size: n ≥ 3 (recommended: n ≥ 8 for reliable p-values)"
+      },
+      {
+        "de": "Stetige (kontinuierliche) Daten",
+        "en": "Continuous data"
+      },
+      {
+        "de": "Mittelwert und Varianz werden aus der Stichprobe geschätzt (zusammengesetzter Test)",
+        "en": "Mean and variance are estimated from the sample (composite test)"
+      }
+    ],
+    "limitations": [
+      {
+        "de": "Die p-Wert-Approximation basiert auf empirischen Polynomen (Stephens 1986), nicht auf exakten Tabellen",
+        "en": "The p-value approximation is based on empirical polynomials (Stephens 1986), not exact tables"
+      },
+      {
+        "de": "Für sehr kleine Stichproben (n < 8) sind die p-Werte weniger zuverlässig",
+        "en": "For very small samples (n < 8) the p-values are less reliable"
+      },
+      {
+        "de": "Nicht geeignet für diskrete Daten oder Daten mit vielen Bindungen (ties)",
+        "en": "Not suitable for discrete data or data with many ties"
+      },
+      {
+        "de": "Testet nur auf Normalverteilung mit geschätzten Parametern — nicht für andere Verteilungen",
+        "en": "Tests only for normality with estimated parameters — not for other distributions"
+      }
+    ],
+    "references": [
+      {
+        "source": "Anderson, T. W. & Darling, D. A. (1954), A test of goodness of fit, Journal of the American Statistical Association, 49(268), 765–769"
+      },
+      {
+        "source": "Stephens, M. A. (1986), Tests based on EDF statistics, in D'Agostino & Stephens (Eds.), Goodness-of-Fit Techniques, Marcel Dekker, Ch. 4"
+      },
+      {
+        "source": "D'Agostino, R. B. & Stephens, M. A. (1986), Goodness-of-Fit Techniques, Marcel Dekker, New York"
+      },
+      {
+        "source": "NIST/SEMATECH e-Handbook of Statistical Methods, Section 1.3.5.14"
+      }
+    ],
+    "minitab_equivalent": "Stat > Basic Statistics > Normality Test (Anderson-Darling)"
+  },
+
+  "source": {
+    "function_name": "andersonDarling",
+    "file_path": "js/engines/normality-test-engine.js",
+    "signature": {
+      "parameters": [
+        {
+          "name": "data",
+          "type": "number[]",
+          "required": true,
+          "description": {
+            "de": "Array von Messwerten (mindestens 3 Werte)",
+            "en": "Array of measurement values (at least 3 values)"
+          }
+        }
+      ],
+      "returns": {
+        "type": "object",
+        "properties": {
+          "statistic": {
+            "type": "number",
+            "description": {
+              "de": "A²-Teststatistik (größere Werte = stärkere Abweichung von Normalverteilung)",
+              "en": "A² test statistic (larger values = stronger deviation from normality)"
+            }
+          },
+          "statisticAdj": {
+            "type": "number",
+            "description": {
+              "de": "Korrigierte A²*-Statistik mit Stichprobengrößen-Anpassung",
+              "en": "Adjusted A²* statistic with sample-size correction"
+            }
+          },
+          "pValue": {
+            "type": "number",
+            "description": {
+              "de": "p-Wert des Tests (klein = Normalverteilung abgelehnt)",
+              "en": "p-value of the test (small = normality rejected)"
+            }
+          },
+          "n": {
+            "type": "number",
+            "description": {
+              "de": "Stichprobengröße",
+              "en": "Sample size"
+            }
+          }
+        }
+      }
+    },
+    "code_snippet": null
+  },
+
+  "try_it": {
+    "input_schema": {
+      "fields": [
+        {
+          "name": "data",
+          "label": {
+            "de": "Messdaten",
+            "en": "Measurement Data"
+          },
+          "type": "textarea",
+          "placeholder": {
+            "de": "Werte eingeben, getrennt durch Komma, Leerzeichen oder Zeilenumbruch\nz.B.: 2,01; 1,98; 2,03; 1,99; 2,02",
+            "en": "Enter values separated by commas, spaces, or newlines\ne.g.: 2.01, 1.98, 2.03, 1.99, 2.02"
+          },
+          "parse_as": "number_array",
+          "required": true
+        }
+      ],
+      "csv_mapping": {
+        "data_column": "Automatically uses first numeric column"
+      }
+    },
+    "output_schema": {
+      "display_fields": ["statistic", "statisticAdj", "pValue", "n"],
+      "primary_field": "statistic",
+      "format": {
+        "statistic": { "decimals": 6, "label": "A²" },
+        "statisticAdj": { "decimals": 6, "label": "A²*" },
+        "pValue": { "decimals": 6, "label": "p-Value" },
+        "n": { "decimals": 0, "label": "n" }
+      }
+    }
+  },
+
+  "changelog": [
+    {
+      "version": "1.0.0",
+      "date": "2026-03-27",
+      "type": "initial",
+      "description": {
+        "de": "Erstimplementierung mit A²-Statistik, A²*-Korrektur und p-Wert (Stephens 1986)",
+        "en": "Initial implementation with A² statistic, A²* correction and p-value (Stephens 1986)"
+      },
+      "breaking": false
+    }
+  ]
+}

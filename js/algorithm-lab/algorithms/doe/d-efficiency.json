@@ -1,0 +1,182 @@
+{
+  "id": "d-efficiency",
+  "name": {
+    "de": "Design-Effizienz (D, A, G)",
+    "en": "Design Efficiency (D, A, G)"
+  },
+  "category": "doe",
+  "subcategory": null,
+  "status": "validated",
+  "version": "1.0.0",
+
+  "description": {
+    "short": {
+      "de": "Bewertet die Güte eines Versuchsplans anhand von drei Kriterien: D-Effizienz (Determinante), A-Effizienz (Spur) und G-Effizienz (Leverage).",
+      "en": "Evaluates the quality of an experimental design using three criteria: D-efficiency (determinant), A-efficiency (trace), and G-efficiency (leverage)."
+    },
+    "long": {
+      "de": "Die Design-Effizienz bewertet, wie gut ein Versuchsplan die Modellparameter schätzt, relativ zu einem theoretisch optimalen orthogonalen Plan. Ein Wert von 100 % bedeutet perfekte Orthogonalität.\n\n**D-Effizienz** basiert auf der Determinante der Informationsmatrix X'X. Sie minimiert das Volumen des Konfidenzellipsoids der Parameterschätzung — d.h. alle Parameter werden gleichzeitig möglichst präzise geschätzt.\n\n**A-Effizienz** basiert auf der Spur der Inversen der Informationsmatrix. Sie minimiert die mittlere Varianz der Parameterschätzungen — d.h. im Durchschnitt werden die Parameter möglichst genau geschätzt.\n\n**G-Effizienz** basiert auf dem maximalen Leverage-Wert (Diagonale der Hat-Matrix). Sie minimiert die maximale Vorhersagevarianz — d.h. kein einzelner Versuchspunkt dominiert die Schätzung unverhältnismäßig.",
+      "en": "Design efficiency evaluates how well an experimental design estimates model parameters, relative to a theoretically optimal orthogonal design. A value of 100% means perfect orthogonality.\n\n**D-efficiency** is based on the determinant of the information matrix X'X. It minimizes the volume of the confidence ellipsoid of the parameter estimates — i.e., all parameters are estimated as precisely as possible simultaneously.\n\n**A-efficiency** is based on the trace of the inverse information matrix. It minimizes the average variance of parameter estimates — i.e., parameters are estimated as accurately as possible on average.\n\n**G-efficiency** is based on the maximum leverage value (diagonal of the hat matrix). It minimizes the maximum prediction variance — i.e., no single design point dominates the estimation disproportionately."
+    }
+  },
+
+  "documentation": {
+    "formulas": [
+      {
+        "label": "D_eff",
+        "latex": "D_\\text{eff} = \\frac{\\left(\\det(\\mathbf{X}^\\top\\mathbf{X})\\right)^{1/p}}{n} \\times 100\\%",
+        "description": {
+          "de": "p = Anzahl Modellterme (inkl. Intercept), n = Anzahl Runs. Normiert die p-te Wurzel der Determinante auf die Runanzahl.",
+          "en": "p = number of model terms (incl. intercept), n = number of runs. Normalizes the p-th root of the determinant by the number of runs."
+        }
+      },
+      {
+        "label": "A_eff",
+        "latex": "A_\\text{eff} = \\frac{p}{n \\cdot \\operatorname{tr}\\!\\left((\\mathbf{X}^\\top\\mathbf{X})^{-1}\\right)} \\times 100\\%",
+        "description": {
+          "de": "Basiert auf der Spur der Inversen der Informationsmatrix. Minimiert die mittlere Varianz der Parameterschätzungen.",
+          "en": "Based on the trace of the inverse information matrix. Minimizes the average variance of parameter estimates."
+        }
+      },
+      {
+        "label": "G_eff",
+        "latex": "G_\\text{eff} = \\frac{p}{n \\cdot \\max_i(h_{ii})} \\times 100\\%",
+        "description": {
+          "de": "h_ii = diag(H) sind die Leverage-Werte der Hat-Matrix H = X(X'X)⁻¹X'. Minimiert die maximale Vorhersagevarianz.",
+          "en": "h_ii = diag(H) are the leverage values of the hat matrix H = X(X'X)⁻¹X'. Minimizes the maximum prediction variance."
+        }
+      },
+      {
+        "label": "H",
+        "latex": "\\mathbf{H} = \\mathbf{X}(\\mathbf{X}^\\top\\mathbf{X})^{-1}\\mathbf{X}^\\top",
+        "description": {
+          "de": "Die Leverage-Werte h_ii auf der Diagonale messen den Einfluss jedes Versuchspunkts auf die Schätzung.",
+          "en": "The leverage values h_ii on the diagonal measure the influence of each design point on the estimates."
+        }
+      },
+      {
+        "label": "X",
+        "latex": "\\mathbf{X} = \\begin{bmatrix} 1 & x_{11} & x_{12} & \\cdots & x_{11}x_{12} & \\cdots \\\\ 1 & x_{21} & x_{22} & \\cdots & x_{21}x_{22} & \\cdots \\\\ \\vdots & & & & & \\vdots \\\\ 1 & x_{n1} & x_{n2} & \\cdots & x_{n1}x_{n2} & \\cdots \\end{bmatrix}",
+        "description": {
+          "de": "Enthält Intercept, codierte Haupteffekte und 2-Faktor-Wechselwirkungen.",
+          "en": "Contains intercept, coded main effects, and 2-factor interactions."
+        }
+      }
+    ],
+    "assumptions": [
+      {
+        "de": "Codierte Designmatrix mit Werten in {−1, 0, +1}",
+        "en": "Coded design matrix with values in {−1, 0, +1}"
+      },
+      {
+        "de": "Lineares Modell mit Haupteffekten und 2-Faktor-Wechselwirkungen",
+        "en": "Linear model with main effects and 2-factor interactions"
+      },
+      {
+        "de": "X'X muss invertierbar sein (kein singulärer Plan)",
+        "en": "X'X must be invertible (non-singular design)"
+      }
+    ],
+    "limitations": [
+      {
+        "de": "Berücksichtigt nur Haupteffekte und 2-Faktor-WW im Modell, keine höheren Ordnungen",
+        "en": "Only considers main effects and 2-factor interactions in the model, no higher orders"
+      },
+      {
+        "de": "Konditionszahl ist eine vereinfachte Näherung (Diagonalverhältnis statt Eigenwerte)",
+        "en": "Condition number is a simplified approximation (diagonal ratio instead of eigenvalues)"
+      }
+    ],
+    "references": [
+      {
+        "source": "Atkinson, A.C. & Donev, A.N., Optimum Experimental Designs, Oxford, 1992",
+        "chapter": "Chapter 10"
+      },
+      {
+        "source": "Montgomery, D.C., Design and Analysis of Experiments, 10th Ed., Wiley",
+        "chapter": "Chapter 11"
+      },
+      {
+        "source": "Myers, R.H. & Montgomery, D.C., Response Surface Methodology, 4th Ed., Wiley",
+        "chapter": "Chapter 7"
+      }
+    ],
+    "minitab_equivalent": "Stat > DOE > Factorial > Analyze Factorial Design > Design Diagnostics"
+  },
+
+  "source": {
+    "function_name": "computeDesignEfficiency",
+    "file_path": "js/engines/design-efficiency-engine.js",
+    "signature": {
+      "parameters": [
+        {
+          "name": "codedMatrix",
+          "type": "number[][]",
+          "required": true,
+          "description": {
+            "de": "n×k codierte Designmatrix (Werte: −1, 0, +1)",
+            "en": "n×k coded design matrix (values: −1, 0, +1)"
+          }
+        }
+      ],
+      "returns": {
+        "type": "object",
+        "properties": {
+          "dEfficiency": { "type": "number", "description": { "de": "D-Effizienz (0–100 %)", "en": "D-efficiency (0–100%)" } },
+          "aEfficiency": { "type": "number", "description": { "de": "A-Effizienz (0–100 %)", "en": "A-efficiency (0–100%)" } },
+          "gEfficiency": { "type": "number", "description": { "de": "G-Effizienz (0–100 %)", "en": "G-efficiency (0–100%)" } },
+          "maxLeverage": { "type": "number", "description": { "de": "Maximaler Leverage-Wert (hat value)", "en": "Maximum leverage (hat value)" } },
+          "avgLeverage": { "type": "number", "description": { "de": "Mittlerer Leverage-Wert", "en": "Average leverage" } },
+          "conditionNumber": { "type": "number", "description": { "de": "Konditionszahl von X'X", "en": "Condition number of X'X" } }
+        }
+      }
+    },
+    "code_snippet": null
+  },
+
+  "try_it": {
+    "input_schema": {
+      "fields": [
+        {
+          "name": "codedMatrix",
+          "label": {
+            "de": "Codierte Designmatrix",
+            "en": "Coded Design Matrix"
+          },
+          "type": "textarea",
+          "placeholder": {
+            "de": "Eine Zeile pro Run, Spalten durch Komma getrennt.\nz.B. für 2³⁻¹ (k=3, p=1):\n-1, -1, 1\n-1, 1, -1\n1, -1, -1\n1, 1, 1",
+            "en": "One row per run, columns separated by commas.\ne.g. for 2³⁻¹ (k=3, p=1):\n-1, -1, 1\n-1, 1, -1\n1, -1, -1\n1, 1, 1"
+          },
+          "parse_as": "number_array",
+          "required": true
+        }
+      ]
+    },
+    "output_schema": {
+      "display_fields": ["dEfficiency", "aEfficiency", "gEfficiency", "maxLeverage", "avgLeverage", "conditionNumber"],
+      "primary_field": "dEfficiency",
+      "format": {
+        "dEfficiency": { "decimals": 2, "label": { "de": "D-Effizienz", "en": "D-Efficiency" } },
+        "aEfficiency": { "decimals": 2, "label": { "de": "A-Effizienz", "en": "A-Efficiency" } },
+        "gEfficiency": { "decimals": 2, "label": { "de": "G-Effizienz", "en": "G-Efficiency" } },
+        "maxLeverage": { "decimals": 4, "label": { "de": "Max. Leverage", "en": "Max Leverage" } },
+        "avgLeverage": { "decimals": 4, "label": { "de": "Mittl. Leverage", "en": "Avg Leverage" } },
+        "conditionNumber": { "decimals": 2, "label": { "de": "Konditionszahl", "en": "Condition Number" } }
+      }
+    }
+  },
+
+  "changelog": [
+    {
+      "version": "1.0.0",
+      "date": "2026-03-28",
+      "type": "initial",
+      "description": {
+        "de": "Erstimplementierung mit D-, A-, G-Effizienz, Leverage und Konditionszahl",
+        "en": "Initial implementation with D-, A-, G-efficiency, leverage, and condition number"
+      },
+      "breaking": false
+    }
+  ]
+}

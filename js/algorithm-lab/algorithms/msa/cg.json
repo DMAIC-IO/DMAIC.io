@@ -1,0 +1,257 @@
+{
+  "id": "cg",
+  "name": {
+    "de": "Wiederholbarkeitsindex Cg (MSA Typ 1)",
+    "en": "Repeatability Index Cg (MSA Type 1)"
+  },
+  "category": "msa",
+  "subcategory": "typ1",
+  "status": "validated",
+  "version": "1.0.0",
+
+  "description": {
+    "short": {
+      "de": "Bewertet die Wiederholbarkeit eines Messmittels: Wie groß ist die Streuung der Wiederholmessungen im Verhältnis zur Toleranz?",
+      "en": "Evaluates the repeatability of a measurement instrument: How large is the spread of repeated measurements relative to the tolerance?"
+    },
+    "long": {
+      "de": "Der Wiederholbarkeitsindex Cg vergleicht die Streuung eines Messmittels mit einem definierten Anteil der Toleranz. Er wird aus mindestens 25 Wiederholmessungen an einem kalibrierten Referenzteil (Master) berechnet. Der Faktor k₁ legt fest, welcher Anteil der Toleranz dem Messmittel zugestanden wird (Standard: 20 % nach VDA 5), der Faktor k₂ bestimmt die Streuungsabdeckung (Standard: 4 für 99,99 %). Ein Cg ≥ 1,33 gilt als fähig. Im Gegensatz zu Cgk berücksichtigt Cg keine systematische Abweichung (Bias).",
+      "en": "The repeatability index Cg compares the spread of a measurement instrument against a defined fraction of the tolerance. It is calculated from at least 25 repeated measurements on a calibrated reference part (master). Factor k₁ defines the tolerance fraction allocated to the measurement system (default: 20% per VDA 5), factor k₂ defines the spread coverage (default: 4 for 99.99%). A Cg ≥ 1.33 is considered capable. Unlike Cgk, Cg does not account for systematic deviation (bias)."
+    }
+  },
+
+  "documentation": {
+    "formulas": [
+      {
+        "label": "Cg",
+        "latex": "C_g = \\frac{k_1 \\cdot T}{2 \\cdot k_2 \\cdot s_g}",
+        "description": {
+          "de": "Wiederholbarkeitsindex: Verhältnis des zugelassenen Toleranzanteils zur beobachteten Streuung",
+          "en": "Repeatability index: ratio of the allowed tolerance fraction to the observed spread"
+        }
+      },
+      {
+        "label": "T",
+        "latex": "T = USL - LSL",
+        "description": {
+          "de": "Toleranzbreite (Differenz zwischen oberer und unterer Spezifikationsgrenze)",
+          "en": "Tolerance width (difference between upper and lower specification limits)"
+        }
+      },
+      {
+        "label": "sg",
+        "latex": "s_g = \\sqrt{\\frac{1}{n-1} \\sum_{i=1}^{n} (x_i - \\bar{x})^2}",
+        "description": {
+          "de": "Stichproben-Standardabweichung der Wiederholmessungen (Bessel-Korrektur, n−1)",
+          "en": "Sample standard deviation of repeated measurements (Bessel's correction, n−1)"
+        }
+      },
+      {
+        "label": "%T",
+        "latex": "\\%T = \\frac{2 \\cdot k_2 \\cdot s_g}{T} \\cdot 100",
+        "description": {
+          "de": "Toleranzverbrauch: Anteil der Toleranz, der durch die Messmittelstreuung aufgebraucht wird",
+          "en": "Tolerance usage: fraction of tolerance consumed by measurement instrument spread"
+        }
+      }
+    ],
+    "assumptions": [
+      {
+        "de": "Messungen unter Wiederholbedingungen (ein Prüfer, ein Messmittel, ein Referenzteil)",
+        "en": "Measurements under repeatability conditions (one operator, one instrument, one reference part)"
+      },
+      {
+        "de": "Mindestens 25 Messwerte (n ≥ 25)",
+        "en": "At least 25 measurements (n ≥ 25)"
+      },
+      {
+        "de": "Referenzteil ist kalibriert mit bekanntem wahren Wert (x_ref)",
+        "en": "Reference part is calibrated with known true value (x_ref)"
+      },
+      {
+        "de": "Messwerte sind annähernd normalverteilt",
+        "en": "Measurements are approximately normally distributed"
+      }
+    ],
+    "limitations": [
+      {
+        "de": "Cg berücksichtigt nur die Wiederholstreuung, nicht die systematische Abweichung (Bias) — dafür Cgk verwenden",
+        "en": "Cg only considers repeatability spread, not systematic deviation (bias) — use Cgk for that"
+      },
+      {
+        "de": "Setzt ein kalibriertes Referenzteil voraus — ohne bekannten wahren Wert ist keine MSA Typ 1 möglich",
+        "en": "Requires a calibrated reference part — MSA Type 1 is not possible without a known true value"
+      },
+      {
+        "de": "Ergebnis hängt stark von k₁ und k₂ ab — Vergleiche nur bei gleichen Faktoren sinnvoll",
+        "en": "Result depends strongly on k₁ and k₂ — comparisons are only meaningful with the same factors"
+      }
+    ],
+    "references": [
+      {
+        "source": "VDA Band 5 — Prüfprozesseignung: Eignung von Messsystemen, Mess- und Prüfprozessen, Erweiterte Messunsicherheit, 3. Auflage"
+      },
+      {
+        "source": "AIAG — Measurement Systems Analysis Reference Manual, 4th Edition (MSA-4)"
+      },
+      {
+        "source": "Dietrich, E. & Schulze, A. — Statistische Verfahren zur Maschinen- und Prozessqualifikation, 7. Auflage, Hanser"
+      }
+    ],
+    "minitab_equivalent": "Stat > Quality Tools > Gage Study > Type 1 Gage Study"
+  },
+
+  "source": {
+    "function_name": "analyze",
+    "file_path": "js/engines/msa-typ1-engine.js",
+    "signature": {
+      "parameters": [
+        {
+          "name": "params",
+          "type": "object",
+          "required": true,
+          "description": {
+            "de": "Objekt mit ref (Referenzwert), lsl, usl, k1, k2",
+            "en": "Object with ref (reference value), lsl, usl, k1, k2"
+          }
+        },
+        {
+          "name": "values",
+          "type": "number[]",
+          "required": true,
+          "description": {
+            "de": "Array von Wiederholmessungen (mindestens 25 Werte)",
+            "en": "Array of repeated measurements (at least 25 values)"
+          }
+        }
+      ],
+      "returns": {
+        "type": "object",
+        "properties": {
+          "Cg": {
+            "type": "number",
+            "description": {
+              "de": "Wiederholbarkeitsindex (≥ 1,33 = fähig)",
+              "en": "Repeatability index (≥ 1.33 = capable)"
+            }
+          },
+          "Cgk": {
+            "type": "number",
+            "description": {
+              "de": "Wiederholbarkeits- und Bias-Index",
+              "en": "Repeatability and bias index"
+            }
+          },
+          "xbar": {
+            "type": "number",
+            "description": { "de": "Mittelwert der Messungen", "en": "Mean of measurements" }
+          },
+          "sg": {
+            "type": "number",
+            "description": { "de": "Standardabweichung (n−1)", "en": "Standard deviation (n−1)" }
+          },
+          "bias": {
+            "type": "number",
+            "description": { "de": "Systematische Abweichung (x̄ − x_ref)", "en": "Systematic deviation (x̄ − x_ref)" }
+          },
+          "biasPercent": {
+            "type": "number",
+            "description": { "de": "Bias als Prozent der Toleranz", "en": "Bias as percentage of tolerance" }
+          },
+          "tolUsage": {
+            "type": "number",
+            "description": { "de": "Toleranzverbrauch in %", "en": "Tolerance usage in %" }
+          },
+          "n": {
+            "type": "number",
+            "description": { "de": "Stichprobengröße", "en": "Sample size" }
+          }
+        }
+      }
+    },
+    "code_snippet": null
+  },
+
+  "try_it": {
+    "input_schema": {
+      "fields": [
+        {
+          "name": "values",
+          "label": { "de": "Messdaten", "en": "Measurement Data" },
+          "type": "textarea",
+          "placeholder": {
+            "de": "Wiederholmessungen eingeben (≥ 25 Werte)\nz.B.: 50.001; 49.998; 50.003; ...",
+            "en": "Enter repeated measurements (≥ 25 values)\ne.g.: 50.001, 49.998, 50.003, ..."
+          },
+          "parse_as": "number_array",
+          "required": true
+        },
+        {
+          "name": "params.ref",
+          "label": { "de": "Referenzwert (x_ref)", "en": "Reference Value (x_ref)" },
+          "type": "number",
+          "placeholder": { "de": "z.B. 50.000", "en": "e.g. 50.000" },
+          "parse_as": "number",
+          "required": true
+        },
+        {
+          "name": "params.lsl",
+          "label": { "de": "Untere Spezifikationsgrenze (LSL)", "en": "Lower Specification Limit (LSL)" },
+          "type": "number",
+          "placeholder": { "de": "z.B. 49.95", "en": "e.g. 49.95" },
+          "parse_as": "number",
+          "required": true
+        },
+        {
+          "name": "params.usl",
+          "label": { "de": "Obere Spezifikationsgrenze (USL)", "en": "Upper Specification Limit (USL)" },
+          "type": "number",
+          "placeholder": { "de": "z.B. 50.05", "en": "e.g. 50.05" },
+          "parse_as": "number",
+          "required": true
+        },
+        {
+          "name": "params.k1",
+          "label": { "de": "Toleranzfaktor k₁", "en": "Tolerance Factor k₁" },
+          "type": "number",
+          "placeholder": { "de": "Standard: 0.20", "en": "Default: 0.20" },
+          "parse_as": "number",
+          "required": false,
+          "default": 0.20
+        },
+        {
+          "name": "params.k2",
+          "label": { "de": "Streuungsfaktor k₂", "en": "Spread Factor k₂" },
+          "type": "number",
+          "placeholder": { "de": "Standard: 4", "en": "Default: 4" },
+          "parse_as": "number",
+          "required": false,
+          "default": 4
+        }
+      ]
+    },
+    "output_schema": {
+      "display_fields": ["Cg", "sg", "tolUsage", "n"],
+      "primary_field": "Cg",
+      "format": {
+        "Cg": { "decimals": 4, "label": "Cg" },
+        "sg": { "decimals": 6, "label": { "de": "Std.abw. (sg)", "en": "Std Dev (sg)" } },
+        "tolUsage": { "decimals": 2, "label": { "de": "Toleranzverbrauch (%T)", "en": "Tolerance Usage (%T)" } },
+        "n": { "decimals": 0, "label": "n" }
+      }
+    }
+  },
+
+  "changelog": [
+    {
+      "version": "1.0.0",
+      "date": "2026-03-28",
+      "type": "initial",
+      "description": {
+        "de": "Erstimplementierung: Cg nach VDA 5 mit konfigurierbaren k₁/k₂-Faktoren",
+        "en": "Initial implementation: Cg per VDA 5 with configurable k₁/k₂ factors"
+      },
+      "breaking": false
+    }
+  ]
+}

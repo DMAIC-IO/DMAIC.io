@@ -1,0 +1,201 @@
+/* ============================================================
+   D.Mike — Process Capability Module Styles (process-capability.css)
+   Theme-aware using CSS custom properties from variables.css.
+   ============================================================ */
+
+/* ─── Layout ─────────────────────────────────────────────── */
+/* Base layout provided by .dmike-split (css/modules.css) */
+.module-process-capability .dmike-split__input { width: 380px; }
+
+/* Section labels: use global .dmike-split__output-section (css/modules.css) */
+
+/* Fields use global .field / .field-group (components.css) */
+
+.pc__hint {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+  margin-top: var(--spacing-xs);
+}
+
+.pc__row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.pc__row-3 {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 12px;
+}
+
+
+
+/* ─── Error Box ──────────────────────────────────────────── */
+.pc__error {
+  display: none;
+  margin-top: 12px;
+  padding: var(--spacing-sm) 12px;
+  background: rgba(255, 59, 48, 0.08);
+  border: 1px solid rgba(255, 59, 48, 0.25);
+  border-radius: var(--border-radius);
+  font-size: var(--font-size-sm);
+  color: var(--color-error);
+}
+
+.pc__error.visible {
+  display: block;
+}
+
+/* ─── Status Bar ─────────────────────────────────────────── */
+.pc__status-bar {
+  border-radius: var(--border-radius);
+  padding: 12px var(--spacing-md);
+  margin-bottom: var(--spacing-lg);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.pc__status-bar--pass {
+  background: rgba(52, 199, 89, 0.08);
+  border: 1px solid rgba(52, 199, 89, 0.3);
+}
+
+.pc__status-bar--fail {
+  background: rgba(255, 59, 48, 0.08);
+  border: 1px solid rgba(255, 59, 48, 0.3);
+}
+
+.pc__status-bar--warn {
+  background: rgba(255, 149, 0, 0.08);
+  border: 1px solid rgba(255, 149, 0, 0.3);
+}
+
+.pc__status-label {
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  letter-spacing: 0.1em;
+}
+
+.pc__status-bar--pass .pc__status-label { color: var(--color-success); }
+.pc__status-bar--fail .pc__status-label { color: var(--color-error); }
+.pc__status-bar--warn .pc__status-label { color: var(--color-warning); }
+
+.pc__status-detail {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+/* ─── Stats Panel ────────────────────────────────────────── */
+.pc__stats-panel {
+  margin-bottom: var(--spacing-lg);
+}
+
+.pc__stats-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px var(--spacing-md);
+  border-bottom: 1px solid var(--color-border-secondary);
+}
+
+.pc__stats-row:last-child {
+  border-bottom: none;
+}
+
+.pc__stats-row-label {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+.pc__stats-row-value {
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-primary);
+}
+
+/* ─── Charts ─────────────────────────────────────────────── */
+.pc__chart-plot {
+  width: 100%;
+  height: 300px;
+}
+
+/* ─── Interpretation ─────────────────────────────────────── */
+.pc__interpretation {
+  margin-bottom: var(--spacing-lg);
+}
+
+.pc__interpretation p {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  line-height: 1.7;
+  margin-bottom: var(--spacing-sm);
+}
+
+.pc__interpretation strong {
+  color: var(--color-text-primary);
+  font-weight: var(--font-weight-semibold);
+}
+
+.pc__tag {
+  display: inline-block;
+  font-family: var(--font-family-mono);
+  font-size: 10px;
+  font-weight: var(--font-weight-medium);
+  padding: 1px 6px;
+  border-radius: 2px;
+  letter-spacing: 0.04em;
+  margin-right: 4px;
+}
+
+.pc__tag--pass { background: rgba(52, 199, 89, 0.12); color: var(--color-success); }
+.pc__tag--fail { background: rgba(255, 59, 48, 0.12); color: var(--color-error); }
+.pc__tag--warn { background: rgba(255, 149, 0, 0.12); color: var(--color-warning); }
+
+/* ─── Column Selector ───────────────────────────────────── */
+.pc__no-worksheet {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm) 12px;
+  background: rgba(255, 149, 0, 0.08);
+  border: 1px solid rgba(255, 149, 0, 0.25);
+  border-radius: var(--border-radius);
+  font-size: var(--font-size-sm);
+  color: var(--color-warning);
+}
+
+.pc__no-worksheet--empty {
+  background: var(--color-bg-primary);
+  border-color: var(--color-border-primary);
+  color: var(--color-text-tertiary);
+}
+
+.pc__col-select-wrap {
+  display: flex;
+  align-items: stretch;
+  gap: var(--spacing-xs);
+}
+
+.pc__col-select {
+  flex: 1;
+  min-width: 0;
+  background: var(--color-bg-primary);
+  border: 1px solid var(--color-border-primary);
+  color: var(--color-text-primary);
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-sm);
+  padding: var(--spacing-sm) 10px;
+  border-radius: var(--border-radius);
+  outline: none;
+  transition: border-color var(--transition-speed);
+  cursor: pointer;
+}
+
+.pc__col-select:focus {
+  border-color: var(--color-accent);
+}
+

@@ -1,0 +1,180 @@
+{
+  "id": "mann-whitney-u",
+  "name": {
+    "de": "Mann-Whitney-U-Test",
+    "en": "Mann-Whitney U Test"
+  },
+  "category": "hypothesis",
+  "subcategory": "mean",
+  "status": "validated",
+  "version": "1.0.0",
+
+  "description": {
+    "short": {
+      "de": "Nichtparametrische Alternative zum Zwei-Stichproben-t-Test für unabhängige Stichproben.",
+      "en": "Nonparametric alternative to the two-sample t-test for independent samples."
+    },
+    "long": {
+      "de": "Der Mann-Whitney-U-Test (auch Wilcoxon-Rangsummentest) ist ein nichtparametrischer Test, der prüft, ob zwei unabhängige Stichproben aus der gleichen Verteilung stammen. Er basiert auf den kombinierten Rängen beider Stichproben und wird verwendet, wenn die Normalverteilungsannahme des t-Tests nicht erfüllt ist. Bei großen Stichproben wird eine Normalapproximation für den p-Wert verwendet.",
+      "en": "The Mann-Whitney U test (also Wilcoxon rank-sum test) is a nonparametric test that evaluates whether two independent samples come from the same distribution. It is based on the combined ranks of both samples and is used when the normality assumption of the t-test is not met. For large samples, a normal approximation is used for the p-value."
+    }
+  },
+
+  "documentation": {
+    "formulas": [
+      {
+        "label": "U",
+        "latex": "U = \\min(U_1, U_2), \\quad U_i = R_i - \\frac{n_i(n_i+1)}{2}",
+        "description": {
+          "de": "U-Statistik: Minimum der beiden Rangsummen-basierten Werte",
+          "en": "U statistic: minimum of the two rank-sum-based values"
+        }
+      },
+      {
+        "label": "z",
+        "latex": "z = \\frac{U - \\mu_U}{\\sigma_U}, \\quad \\mu_U = \\frac{n_1 n_2}{2}, \\quad \\sigma_U = \\sqrt{\\frac{n_1 n_2(n_1+n_2+1)}{12}}",
+        "description": {
+          "de": "z-Approximation für große Stichproben",
+          "en": "z approximation for large samples"
+        }
+      },
+      {
+        "label": "H₀",
+        "latex": "H_0: F_1(x) = F_2(x)",
+        "description": {
+          "de": "Nullhypothese: Beide Populationen haben die gleiche Verteilung",
+          "en": "Null hypothesis: Both populations have the same distribution"
+        }
+      }
+    ],
+    "assumptions": [
+      { "de": "Stichproben sind unabhängig", "en": "Samples are independent" },
+      { "de": "Beobachtungen sind stetig (mindestens ordinal)", "en": "Observations are continuous (at least ordinal)" },
+      { "de": "Beide Verteilungen haben die gleiche Form (Shift-Modell)", "en": "Both distributions have the same shape (shift model)" }
+    ],
+    "limitations": [
+      { "de": "Weniger trennscharf als der t-Test bei tatsächlich normalverteilten Daten", "en": "Less powerful than the t-test for truly normal data" },
+      { "de": "Viele Bindungen (ties) können den Test beeinflussen", "en": "Many ties can affect the test" }
+    ],
+    "references": [
+      { "source": "Mann, H. B. & Whitney, D. R. (1947), On a test of whether one of two random variables is stochastically larger than the other, Annals of Mathematical Statistics, 18(1), 50–60" },
+      { "source": "Hollander, M. & Wolfe, D. A. (2013), Nonparametric Statistical Methods, 3rd Ed." }
+    ],
+    "minitab_equivalent": "Stat > Nonparametrics > Mann-Whitney"
+  },
+
+  "source": {
+    "function_name": "mannWhitneyU",
+    "file_path": "js/engines/hypothesis-test-engine.js",
+    "signature": {
+      "parameters": [
+        {
+          "name": "data1",
+          "type": "number[]",
+          "required": true,
+          "description": { "de": "Erste Stichprobe", "en": "First sample" }
+        },
+        {
+          "name": "data2",
+          "type": "number[]",
+          "required": true,
+          "description": { "de": "Zweite Stichprobe", "en": "Second sample" }
+        },
+        {
+          "name": "direction",
+          "type": "string",
+          "required": false,
+          "description": { "de": "Testrichtung: 'two-sided', 'greater', 'less'", "en": "Test direction: 'two-sided', 'greater', 'less'" }
+        },
+        {
+          "name": "alpha",
+          "type": "number",
+          "required": false,
+          "description": { "de": "Signifikanzniveau (Standard: 0.05)", "en": "Significance level (default: 0.05)" }
+        }
+      ],
+      "returns": {
+        "type": "object",
+        "properties": {
+          "statistic": { "type": "number", "description": { "de": "U-Statistik (min(U₁, U₂))", "en": "U statistic (min(U₁, U₂))" } },
+          "z": { "type": "number", "description": { "de": "z-Wert (Normalapproximation)", "en": "z-value (normal approximation)" } },
+          "pValue": { "type": "number", "description": { "de": "p-Wert", "en": "p-value" } },
+          "reject": { "type": "boolean", "description": { "de": "H₀ abgelehnt?", "en": "Reject H₀?" } }
+        }
+      }
+    },
+    "code_snippet": null
+  },
+
+  "try_it": {
+    "input_schema": {
+      "fields": [
+        {
+          "name": "data1",
+          "label": { "de": "Stichprobe 1", "en": "Sample 1" },
+          "type": "textarea",
+          "placeholder": { "de": "Werte der ersten Stichprobe", "en": "Values of first sample" },
+          "parse_as": "number_array",
+          "required": true
+        },
+        {
+          "name": "data2",
+          "label": { "de": "Stichprobe 2", "en": "Sample 2" },
+          "type": "textarea",
+          "placeholder": { "de": "Werte der zweiten Stichprobe", "en": "Values of second sample" },
+          "parse_as": "number_array",
+          "required": true
+        },
+        {
+          "name": "direction",
+          "label": { "de": "Testrichtung", "en": "Test Direction" },
+          "type": "select",
+          "options": [
+            { "value": "two-sided", "label": { "de": "≠ Zweiseitig", "en": "≠ Two-sided" } },
+            { "value": "greater", "label": { "de": "> Größer", "en": "> Greater" } },
+            { "value": "less", "label": { "de": "< Kleiner", "en": "< Less" } }
+          ],
+          "parse_as": "string",
+          "required": false
+        },
+        {
+          "name": "alpha",
+          "label": { "de": "Signifikanzniveau α", "en": "Significance Level α" },
+          "type": "number",
+          "placeholder": { "de": "0.05", "en": "0.05" },
+          "parse_as": "number",
+          "required": false
+        }
+      ]
+    },
+    "output_schema": {
+      "display_fields": ["statistic", "U1", "U2", "z", "pValue", "R1", "R2", "n1", "n2", "reject"],
+      "primary_field": "statistic",
+      "format": {
+        "statistic": { "decimals": 1, "label": "U" },
+        "U1": { "decimals": 1, "label": "U₁" },
+        "U2": { "decimals": 1, "label": "U₂" },
+        "z": { "decimals": 4, "label": "z" },
+        "pValue": { "decimals": 6, "label": "p-Value" },
+        "R1": { "decimals": 1, "label": "R₁" },
+        "R2": { "decimals": 1, "label": "R₂" },
+        "n1": { "decimals": 0, "label": "n₁" },
+        "n2": { "decimals": 0, "label": "n₂" },
+        "reject": { "decimals": 0, "label": { "de": "H₀ abgelehnt", "en": "Reject H₀" } }
+      }
+    }
+  },
+
+  "changelog": [
+    {
+      "version": "1.0.0",
+      "date": "2026-03-31",
+      "type": "initial",
+      "description": {
+        "de": "Erstimplementierung mit U-Statistik, Rangsummen, z-Approximation und p-Wert",
+        "en": "Initial implementation with U statistic, rank sums, z approximation and p-value"
+      },
+      "breaking": false
+    }
+  ]
+}

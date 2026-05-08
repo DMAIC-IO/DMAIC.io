@@ -1,0 +1,233 @@
+{
+  "appVersion": "0.2.0",
+  "exportedAt": "2026-03-15T14:00:00.000Z",
+  "settings": {
+    "language": "de",
+    "theme": "light",
+    "chartTitleSize": 15,
+    "chartLabelSize": 12,
+    "chartTickSize": 11,
+    "chartColors": null,
+    "chartBgColor": null,
+    "chartShowLegend": true,
+    "showAlgoLabLinks": true,
+    "confidenceLevel": 95,
+    "power": 80
+  },
+  "projects": [
+    {
+      "id": "proj-v2-active",
+      "status": "active",
+      "version": "0.2.0",
+      "projectMeta": {
+        "name": "v0.2 Aktiv: Reduktion Bearbeitungszeit Antrag",
+        "created": "2026-02-10T08:00:00.000Z",
+        "modified": "2026-03-14T17:00:00.000Z",
+        "owner": "C. Lehmann"
+      },
+      "phases": {
+        "define": [
+          { "instanceId": "p1-charter", "moduleId": "project-charter" },
+          { "instanceId": "p1-sipoc",   "moduleId": "sipoc" },
+          { "instanceId": "p1-todo",    "moduleId": "todo" }
+        ],
+        "measure": [
+          { "instanceId": "p1-ws",      "moduleId": "worksheet" },
+          { "instanceId": "p1-pmap",    "moduleId": "process-map" },
+          { "instanceId": "p1-cpk",     "moduleId": "process-capability" }
+        ],
+        "analyze": [
+          { "instanceId": "p1-ce",      "moduleId": "ce-matrix" },
+          { "instanceId": "p1-ishi",    "moduleId": "ishikawa" },
+          { "instanceId": "p1-htest",   "moduleId": "hypothesis-test" }
+        ],
+        "improve": [
+          { "instanceId": "p1-doep",    "moduleId": "doe-planner" }
+        ],
+        "control": [
+          { "instanceId": "p1-cc",      "moduleId": "control-chart" }
+        ]
+      },
+      "phaseAchievement": { "define": 100, "measure": 100, "analyze": 60, "improve": 30, "control": 0 },
+      "dashboard": null,
+      "moduleStates": {
+        "p1-charter": {
+          "problemStatement": "Bearbeitungszeit pro Antrag liegt im Mittel bei 4,2 Tagen — Zielwert ≤ 1,5 Tage.",
+          "goals": [
+            { "id": "g1", "text": "Bearbeitungszeit ≤ 1,5 Tage (95.-Perzentil)", "status": "open" },
+            { "id": "g2", "text": "Anteil Rückfragen < 10 %", "status": "in-progress" }
+          ],
+          "orgChart": [],
+          "orgStyle": { "bgColor": "#ffffff", "borderColor": "#94a3b8", "borderWidth": 1, "fontColor": "#1e293b", "fontSize": 12, "lineColor": "#64748b" }
+        },
+        "p1-sipoc": {
+          "columns": {
+            "suppliers": ["Antragsteller", "Vertrieb", "Backoffice"],
+            "inputs":    ["Antragsformular", "Belege", "Kundenstammdaten"],
+            "process":   ["Eingang", "Vollständigkeitsprüfung", "Sachprüfung", "Entscheidung", "Bescheid"],
+            "outputs":   ["Bescheid", "Akte", "Statistik"],
+            "customers": ["Antragsteller", "Vertrieb", "Reporting"]
+          }
+        },
+        "p1-todo": {
+          "items": [
+            { "id": "t1", "text": "Daten aus DMS extrahieren", "due": "2026-02-20", "owner": "C. Lehmann", "status": "done" },
+            { "id": "t2", "text": "Hypothesentest Sachbearbeiter A vs. B", "due": "2026-03-15", "owner": "C. Lehmann", "status": "in-progress" }
+          ],
+          "filterStatus": "", "filterOwner": "", "sortCol": "due", "sortAsc": true
+        },
+        "p1-ws": {
+          "sheets": [
+            { "id": "p1-sh-1", "name": "Anträge", "state": {
+              "columns": [
+                { "id": "p1-c-days", "name": "Tage", "shortName": "C1", "type": "numeric", "unit": "d", "values": [3.5, 4.2, 5.1, 2.8, 4.7, 3.9, 4.4, 5.3, 3.1, 4.0, 4.8, 3.6, 5.0, 4.1, 3.7], "formulas": [null,null,null,null,null,null,null,null,null,null,null,null,null,null,null], "format": { "decimals": 1 } },
+                { "id": "p1-c-sb",   "name": "SB",   "shortName": "C2", "type": "text",    "unit": null, "values": ["A","A","B","A","B","B","A","B","A","B","A","B","B","A","B"], "formulas": [null,null,null,null,null,null,null,null,null,null,null,null,null,null,null], "format": {} }
+              ],
+              "rowCount": 15, "colWidths": {}, "sortCol": null, "sortDir": null, "selection": null
+            } }
+          ],
+          "activeSheetId": "p1-sh-1", "sheetCounter": 1
+        },
+        "p1-pmap": {
+          "steps": [
+            { "id": "px1", "seq": 1, "type": "start",   "text": "Antrag eingegangen", "owner": "Eingang",  "valueType": "value-add", "substeps": [], "expanded": false, "loop": null },
+            { "id": "px2", "seq": 2, "type": "process", "text": "Vollständigkeit",    "owner": "Backoffice","valueType": "non-value", "substeps": [], "expanded": false, "loop": null },
+            { "id": "px3", "seq": 3, "type": "process", "text": "Sachprüfung",        "owner": "Backoffice","valueType": "value-add", "substeps": [], "expanded": false, "loop": null },
+            { "id": "px4", "seq": 4, "type": "end",     "text": "Bescheid versandt",  "owner": "Versand",   "valueType": "value-add", "substeps": [], "expanded": false, "loop": null }
+          ]
+        },
+        "p1-cpk": {
+          "params": { "lsl": null, "usl": 3, "target": 1.5, "subgroupSize": 1 },
+          "columnRef": { "instanceId": "p1-ws", "sheetId": "p1-sh-1", "columnId": "p1-c-days" },
+          "lastResult": { "n": 15, "mean": 4.15, "sd": 0.75, "withinSd": 0.69, "cp": null, "cpk": -0.51, "pp": null, "ppk": -0.55, "ppmAboveUSL": 940000 }
+        },
+        "p1-ce": {
+          "inputs":  ["Antragsqualität", "Erfahrung SB", "Werkzeugunterstützung", "Rückfragenquote"],
+          "outputs": ["Bearbeitungszeit", "Fehlerquote", "Kundenzufriedenheit"],
+          "scores":  { "0_0": 9, "0_1": 7, "0_2": 9, "1_0": 7, "1_1": 5, "1_2": 5, "2_0": 5, "2_1": 5, "2_2": 3, "3_0": 9, "3_1": 7, "3_2": 9 },
+          "weights": [10, 8, 9]
+        },
+        "p1-ishi": {
+          "problem": "Hohe Bearbeitungszeit",
+          "experts": [ { "id": "x1", "name": "C. Lehmann", "time": "2026-03-01T10:00:00.000Z" } ],
+          "catLabels": { "man": "Mensch", "machine": "System", "method": "Methode", "material": "Daten", "measurement": "Messung", "milieu": "Umfeld" },
+          "rows": [
+            { "id": "r1", "cat": "method", "text": "Manuelle Übergabe per Email",   "votes": 5 },
+            { "id": "r2", "cat": "machine","text": "DMS-Suche langsam",             "votes": 3 },
+            { "id": "r3", "cat": "man",    "text": "Ungeschulte SB",                "votes": 3 }
+          ],
+          "snapshots": [], "experiments": [], "facts": [], "images": []
+        },
+        "p1-htest": {
+          "category": "mean", "testType": "two-sample-t", "direction": "two-sided",
+          "alpha": 0.05, "powerGoal": 0.8, "targetValue": 0, "targetType": "null",
+          "colRef1": { "instanceId": "p1-ws", "sheetId": "p1-sh-1", "columnId": "p1-c-days" },
+          "colRef2": null
+        },
+        "p1-doep": {
+          "version": 3, "doeName": "DMS-Workflow Pilot", "designType": "frac",
+          "factors": [
+            { "name": "Workflow",      "levels": ["alt","neu"],            "encoding": [ { "value": "alt", "num": -1 }, { "value": "neu", "num": 1 } ] },
+            { "name": "ChecklistDigi", "levels": ["nein","ja"],            "encoding": [ { "value": "nein", "num": -1 }, { "value": "ja", "num": 1 } ] },
+            { "name": "AutoRoute",     "levels": ["aus","an"],             "encoding": [ { "value": "aus", "num": -1 }, { "value": "an", "num": 1 } ] }
+          ],
+          "responses": [ { "name": "Bearbeitungszeit", "unit": "d", "goalsense": "minimize", "nreps": 1, "levels": [] } ],
+          "options": { "centerPoints": 0, "blockCount": 1, "randomize": true, "seed": 21 },
+          "selectedRes": null, "selectedPBIdx": 0, "design": null, "worksheetRef": null,
+          "evaluation": null, "analysisResponseIdx": 0, "fid": "doe-app-001",
+          "projectMode": false, "projectName": "", "projectPhases": [], "activePhaseIdx": 0
+        },
+        "p1-cc": {
+          "chartTypeId": "i-mr", "subgroupSize": 1,
+          "columnRef": { "instanceId": "p1-ws", "sheetId": "p1-sh-1", "columnId": "p1-c-days" },
+          "baselineCount": 15, "usl": 3, "lsl": null,
+          "enabledRules": [1, 2, 3, 4]
+        }
+      }
+    },
+    {
+      "id": "proj-v2-completed",
+      "status": "completed",
+      "version": "0.2.0",
+      "projectMeta": {
+        "name": "v0.2 Abgeschlossen: Reduktion Reklamation Lackdicke",
+        "created": "2025-11-05T08:00:00.000Z",
+        "modified": "2026-02-28T17:00:00.000Z",
+        "owner": "I. Achilles",
+        "completedAt": "2026-02-28T17:00:00.000Z"
+      },
+      "phases": {
+        "define":  [ { "instanceId": "p2-charter", "moduleId": "project-charter" } ],
+        "measure": [
+          { "instanceId": "p2-ws",   "moduleId": "worksheet" },
+          { "instanceId": "p2-cpk",  "moduleId": "process-capability" }
+        ],
+        "analyze": [ { "instanceId": "p2-fmea", "moduleId": "fmea" } ],
+        "improve": [ { "instanceId": "p2-doep", "moduleId": "doe-planner" } ],
+        "control": [
+          { "instanceId": "p2-cc",   "moduleId": "control-chart" },
+          { "instanceId": "p2-ll",   "moduleId": "lessons-learned" }
+        ]
+      },
+      "phaseAchievement": { "define": 100, "measure": 100, "analyze": 100, "improve": 100, "control": 100 },
+      "dashboard": null,
+      "moduleStates": {
+        "p2-charter": {
+          "problemStatement": "Reklamationen Lackdicke außerhalb 80–120 µm seit Q3/2025 verdoppelt.",
+          "goals": [
+            { "id": "g1", "text": "Reklamationsrate < 1 %", "status": "done" },
+            { "id": "g2", "text": "Cpk Lackdicke ≥ 1,33", "status": "done" }
+          ],
+          "orgChart": [],
+          "orgStyle": { "bgColor": "#ffffff", "borderColor": "#94a3b8", "borderWidth": 1, "fontColor": "#1e293b", "fontSize": 12, "lineColor": "#64748b" }
+        },
+        "p2-ws": {
+          "sheets": [
+            { "id": "p2-sh-1", "name": "Lackdicke", "state": {
+              "columns": [
+                { "id": "p2-c-um", "name": "Lackdicke", "shortName": "C1", "type": "numeric", "unit": "µm", "values": [98, 102, 96, 105, 99, 101, 97, 103, 100, 104, 95, 102, 98, 101, 99, 103, 96, 100, 102, 99], "formulas": [null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null], "format": {} }
+              ],
+              "rowCount": 20, "colWidths": {}, "sortCol": null, "sortDir": null, "selection": null
+            } }
+          ],
+          "activeSheetId": "p2-sh-1", "sheetCounter": 1
+        },
+        "p2-cpk": {
+          "params": { "lsl": 80, "usl": 120, "target": 100, "subgroupSize": 1 },
+          "columnRef": { "instanceId": "p2-ws", "sheetId": "p2-sh-1", "columnId": "p2-c-um" },
+          "lastResult": { "n": 20, "mean": 100.05, "sd": 2.85, "withinSd": 2.6, "cp": 2.56, "cpk": 2.55, "pp": 2.34, "ppk": 2.33, "ppmAboveUSL": 0 }
+        },
+        "p2-fmea": {
+          "risks": [
+            { "id": "f1", "process": "Lackieren", "failure": "Schichtdicke zu hoch", "causes": "Düsenverschleiß", "effects": "Trocknungsdefekte", "detection": "Schichtdickenmessung", "sev": 7, "occ": 3, "det": 3, "rpn": 63 },
+            { "id": "f2", "process": "Lackieren", "failure": "Schichtdicke zu niedrig","causes": "Druckabfall",  "effects": "Korrosionsschutz mangelhaft", "detection": "Schichtdickenmessung", "sev": 8, "occ": 3, "det": 3, "rpn": 72 }
+          ],
+          "scales": null
+        },
+        "p2-doep": {
+          "version": 3, "doeName": "Düsenparameter", "designType": "full",
+          "factors": [
+            { "name": "Druck",       "levels": ["3bar","5bar"], "encoding": [ { "value": "3bar", "num": -1 }, { "value": "5bar", "num": 1 } ] },
+            { "name": "Düsenabstand","levels": ["20cm","30cm"], "encoding": [ { "value": "20cm", "num": -1 }, { "value": "30cm", "num": 1 } ] }
+          ],
+          "responses": [ { "name": "Lackdicke", "unit": "µm", "goalsense": "target", "nreps": 3, "levels": [] } ],
+          "options": { "centerPoints": 1, "blockCount": 1, "randomize": true, "seed": 5 },
+          "selectedRes": null, "selectedPBIdx": 0, "design": null, "worksheetRef": null,
+          "evaluation": null, "analysisResponseIdx": 0, "fid": "doe-lack-001",
+          "projectMode": false, "projectName": "", "projectPhases": [], "activePhaseIdx": 0
+        },
+        "p2-cc": {
+          "chartTypeId": "i-mr", "subgroupSize": 1,
+          "columnRef": { "instanceId": "p2-ws", "sheetId": "p2-sh-1", "columnId": "p2-c-um" },
+          "baselineCount": 20, "usl": 120, "lsl": 80,
+          "enabledRules": [1, 2, 3, 4]
+        },
+        "p2-ll": {
+          "lessons": [
+            { "id": "l1", "category": "Wartung", "text": "Düsen sollten alle 4 Wochen getauscht werden, bisher alle 8 — Wartungsplan angepasst.", "date": "2026-02-25", "owner": "I. Achilles", "impact": "high" }
+          ]
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,255 @@
+{
+  "id": "logistic-regression",
+  "name": {
+    "de": "Logistische Regression (Binomial GLM)",
+    "en": "Logistic Regression (Binomial GLM)"
+  },
+  "category": "regression",
+  "subcategory": null,
+  "status": "validated",
+  "version": "1.0.0",
+
+  "description": {
+    "short": {
+      "de": "Modelliert eine binäre Zielgröße (0/1) als Funktion von Prädiktoren mittels logistischer Linkfunktion und IRLS-Schätzung.",
+      "en": "Models a binary response (0/1) as a function of predictors using the logistic link function and IRLS estimation."
+    },
+    "long": {
+      "de": "Die logistische Regression ist ein verallgemeinertes lineares Modell (GLM) mit Binomialverteilung und Logit-Linkfunktion. Die Wahrscheinlichkeit P(Y = 1 | X) wird über die inverse Logit-Funktion modelliert: μ = 1 / (1 + exp(−X'β)). Die Koeffizienten werden iterativ mittels IRLS (Iteratively Reweighted Least Squares) geschätzt, wobei in jedem Schritt gewichtete Normalgleichungen mit den Arbeitsvariablen z und Gewichten w = μ(1−μ) gelöst werden. Die Signifikanz einzelner Koeffizienten wird über Wald-z-Tests geprüft: z_j = β̂_j / SE(β̂_j). Odds Ratios exp(β̂_j) quantifizieren den multiplikativen Effekt eines Prädiktors auf das Chancenverhältnis. Die Modellgüte wird über Devianz, AIC, BIC und Pseudo-R²-Maße (McFadden, Cox-Snell, Nagelkerke) beurteilt.",
+      "en": "Logistic regression is a generalized linear model (GLM) with binomial distribution and logit link function. The probability P(Y = 1 | X) is modeled via the inverse logit function: μ = 1 / (1 + exp(−X'β)). Coefficients are estimated iteratively via IRLS (Iteratively Reweighted Least Squares), solving weighted normal equations in each step with working responses z and weights w = μ(1−μ). The significance of individual coefficients is tested via Wald z-tests: z_j = β̂_j / SE(β̂_j). Odds ratios exp(β̂_j) quantify the multiplicative effect of a predictor on the odds. Model fit is assessed via deviance, AIC, BIC, and pseudo-R² measures (McFadden, Cox-Snell, Nagelkerke)."
+    }
+  },
+
+  "documentation": {
+    "formulas": [
+      {
+        "label": "Link-Funktion",
+        "latex": "\\text{logit}(\\mu) = \\ln\\!\\left(\\frac{\\mu}{1 - \\mu}\\right) = \\mathbf{X}^\\top \\boldsymbol{\\beta}",
+        "description": {
+          "de": "Logit-Linkfunktion: Transformation der Erfolgswahrscheinlichkeit μ auf die reelle Achse als Linearkombination der Prädiktoren",
+          "en": "Logit link function: transforms the success probability μ onto the real line as a linear combination of predictors"
+        }
+      },
+      {
+        "label": "IRLS-Gewichte",
+        "latex": "w_i = \\hat{\\mu}_i (1 - \\hat{\\mu}_i)",
+        "description": {
+          "de": "IRLS-Gewichte: Varianz der Binomialverteilung, verwendet zur iterativen gewichteten Schätzung",
+          "en": "IRLS weights: variance of the binomial distribution, used for iteratively reweighted estimation"
+        }
+      },
+      {
+        "label": "Arbeitsvariable",
+        "latex": "z_i = \\hat{\\eta}_i + \\frac{y_i - \\hat{\\mu}_i}{\\hat{\\mu}_i (1 - \\hat{\\mu}_i)}",
+        "description": {
+          "de": "Working Response: linearisierte Pseudo-Beobachtung für den IRLS-Schritt",
+          "en": "Working response: linearized pseudo-observation for the IRLS step"
+        }
+      },
+      {
+        "label": "Fisher-Information",
+        "latex": "\\mathbf{I}(\\boldsymbol{\\beta}) = \\mathbf{X}^\\top \\mathbf{W} \\mathbf{X}",
+        "description": {
+          "de": "Fisher-Informationsmatrix: Inverse liefert die Varianz-Kovarianz-Matrix der Schätzer",
+          "en": "Fisher information matrix: its inverse yields the variance-covariance matrix of the estimators"
+        }
+      },
+      {
+        "label": "Wald z-Statistik",
+        "latex": "z_j = \\frac{\\hat{\\beta}_j}{SE(\\hat{\\beta}_j)}",
+        "description": {
+          "de": "Wald-z-Statistik: Koeffizient dividiert durch seinen Standardfehler, asymptotisch standardnormalverteilt unter H₀: βⱼ = 0",
+          "en": "Wald z-statistic: coefficient divided by its standard error, asymptotically standard normal under H₀: βⱼ = 0"
+        }
+      },
+      {
+        "label": "Odds Ratio",
+        "latex": "OR_j = \\exp(\\hat{\\beta}_j)",
+        "description": {
+          "de": "Odds Ratio: multiplikativer Effekt einer Einheitsänderung des j-ten Prädiktors auf das Chancenverhältnis",
+          "en": "Odds ratio: multiplicative effect of a one-unit change in the j-th predictor on the odds"
+        }
+      },
+      {
+        "label": "Devianz",
+        "latex": "D = 2 \\sum_{i=1}^{n} \\left[ y_i \\ln\\!\\left(\\frac{y_i}{\\hat{\\mu}_i}\\right) + (1 - y_i) \\ln\\!\\left(\\frac{1 - y_i}{1 - \\hat{\\mu}_i}\\right) \\right]",
+        "description": {
+          "de": "Devianz: Maß für die Abweichung des Modells vom saturierten Modell (je kleiner, desto besser)",
+          "en": "Deviance: measure of departure from the saturated model (smaller is better)"
+        }
+      },
+      {
+        "label": "AIC",
+        "latex": "\\text{AIC} = -2\\ell + 2p",
+        "description": {
+          "de": "Akaike-Informationskriterium: Modellgüte mit Strafe für Komplexität (p = Parameteranzahl)",
+          "en": "Akaike Information Criterion: model fit penalized for complexity (p = number of parameters)"
+        }
+      },
+      {
+        "label": "McFadden R²",
+        "latex": "R^2_{\\text{McF}} = 1 - \\frac{\\ell}{\\ell_0}",
+        "description": {
+          "de": "McFadden-Pseudo-R²: Anteil der Log-Likelihood, der durch das Modell erklärt wird (ℓ₀ = Null-Modell)",
+          "en": "McFadden pseudo-R²: proportion of log-likelihood explained by the model (ℓ₀ = null model)"
+        }
+      }
+    ],
+    "assumptions": [
+      { "de": "Binäre Zielvariable (0/1)", "en": "Binary response variable (0/1)" },
+      { "de": "Unabhängigkeit der Beobachtungen", "en": "Independence of observations" },
+      { "de": "Linearer Zusammenhang zwischen logit(π) und den Prädiktoren", "en": "Linear relationship between logit(π) and the predictors" },
+      { "de": "Keine perfekte Multikollinearität zwischen den Prädiktoren", "en": "No perfect multicollinearity among predictors" },
+      { "de": "Ausreichende Stichprobengröße (Faustregel: ≥ 10 Ereignisse pro Prädiktor)", "en": "Sufficient sample size (rule of thumb: ≥ 10 events per predictor)" }
+    ],
+    "limitations": [
+      { "de": "Vollständige oder quasi-vollständige Separation → unendliche β̂-Schätzer und extrem große Standardfehler", "en": "Complete or quasi-complete separation → infinite β̂ estimates and extremely large standard errors" },
+      { "de": "Nicht geeignet für ordinale oder multinomiale Zielgrößen", "en": "Not suitable for ordinal or multinomial responses" },
+      { "de": "Empfindlich gegenüber Ausreißern im Prädiktorraum", "en": "Sensitive to outliers in predictor space" },
+      { "de": "Keine Berücksichtigung von Überdispersion (dafür quasi-binomial oder Beta-Binomial verwenden)", "en": "No overdispersion handling (use quasi-binomial or beta-binomial for that)" }
+    ],
+    "references": [
+      { "source": "Hosmer, D.W., Lemeshow, S., Sturdivant, R.X., Applied Logistic Regression, 3rd Ed., Wiley" },
+      { "source": "Agresti, A., Categorical Data Analysis, 3rd Ed., Wiley" },
+      { "source": "McCullagh, P., Nelder, J.A., Generalized Linear Models, 2nd Ed., Chapman & Hall" }
+    ],
+    "minitab_equivalent": "Stat > Regression > Binary Logistic Regression > Fit Binary Logistic Model"
+  },
+
+  "source": {
+    "function_name": "runLogisticRegression",
+    "file_path": "js/engines/glm-engine.js",
+    "signature": {
+      "parameters": [
+        {
+          "name": "xColumns",
+          "type": "number[][]",
+          "required": true,
+          "description": { "de": "Array von X-Spaltenvektoren (k Prädiktoren, je n Werte)", "en": "Array of X column vectors (k predictors, each n values)" }
+        },
+        {
+          "name": "y",
+          "type": "number[]",
+          "required": true,
+          "description": { "de": "Binärer Y-Vektor (0/1 Response, n Werte)", "en": "Binary Y vector (0/1 response, n values)" }
+        },
+        {
+          "name": "confLevel",
+          "type": "number",
+          "required": false,
+          "description": { "de": "Konfidenzniveau (Standard: 0.95)", "en": "Confidence level (default: 0.95)" }
+        }
+      ],
+      "returns": {
+        "type": "object",
+        "properties": {
+          "converged": { "type": "boolean", "description": { "de": "Ob der IRLS-Algorithmus konvergiert ist", "en": "Whether the IRLS algorithm converged" } },
+          "iterations": { "type": "number", "description": { "de": "Anzahl der IRLS-Iterationen bis zur Konvergenz", "en": "Number of IRLS iterations until convergence" } },
+          "coefficients": { "type": "number[]", "description": { "de": "β̂-Vektor inklusive Intercept", "en": "β̂ vector including intercept" } },
+          "stdErrors": { "type": "number[]", "description": { "de": "Standardfehler der Koeffizienten", "en": "Standard errors of coefficients" } },
+          "zValues": { "type": "number[]", "description": { "de": "Wald-z-Statistiken", "en": "Wald z-statistics" } },
+          "pValues": { "type": "number[]", "description": { "de": "Zweiseitige p-Werte der Wald-Tests", "en": "Two-sided p-values of Wald tests" } },
+          "oddsRatios": {
+            "type": "object[]",
+            "description": { "de": "Odds Ratios mit Konfidenzintervallen", "en": "Odds ratios with confidence intervals" },
+            "properties": {
+              "or": { "type": "number", "description": { "de": "Odds Ratio exp(β̂ⱼ)", "en": "Odds ratio exp(β̂ⱼ)" } },
+              "lower": { "type": "number", "description": { "de": "Untere KI-Grenze des OR", "en": "Lower CI bound of OR" } },
+              "upper": { "type": "number", "description": { "de": "Obere KI-Grenze des OR", "en": "Upper CI bound of OR" } }
+            }
+          },
+          "deviance": { "type": "number", "description": { "de": "Residualdevianz des Modells", "en": "Residual deviance of the model" } },
+          "nullDeviance": { "type": "number", "description": { "de": "Devianz des Nullmodells (nur Intercept)", "en": "Deviance of the null model (intercept only)" } },
+          "aic": { "type": "number", "description": { "de": "Akaike-Informationskriterium", "en": "Akaike Information Criterion" } },
+          "bic": { "type": "number", "description": { "de": "Bayessches Informationskriterium", "en": "Bayesian Information Criterion" } },
+          "logLikelihood": { "type": "number", "description": { "de": "Log-Likelihood des Modells", "en": "Log-likelihood of the model" } },
+          "pseudoR2": {
+            "type": "object",
+            "description": { "de": "Pseudo-R²-Maße", "en": "Pseudo-R² measures" },
+            "properties": {
+              "mcfadden": { "type": "number", "description": { "de": "McFadden-Pseudo-R²", "en": "McFadden pseudo-R²" } },
+              "coxSnell": { "type": "number", "description": { "de": "Cox-Snell-Pseudo-R²", "en": "Cox-Snell pseudo-R²" } },
+              "nagelkerke": { "type": "number", "description": { "de": "Nagelkerke-Pseudo-R²", "en": "Nagelkerke pseudo-R²" } }
+            }
+          },
+          "n": { "type": "number", "description": { "de": "Anzahl der Beobachtungen", "en": "Number of observations" } },
+          "p": { "type": "number", "description": { "de": "Anzahl der Parameter (inklusive Intercept)", "en": "Number of parameters (including intercept)" } }
+        }
+      }
+    },
+    "code_snippet": null
+  },
+
+  "try_it": {
+    "input_schema": {
+      "fields": [
+        {
+          "name": "xColumns",
+          "label": { "de": "X-Werte (Prädiktoren)", "en": "X Values (Predictors)" },
+          "type": "textarea",
+          "placeholder": { "de": "Kommagetrennte Werte, z.B.:\n1, 2, 3, 4, 5, 6, 7, 8, 9, 10", "en": "Comma-separated values, e.g.:\n1, 2, 3, 4, 5, 6, 7, 8, 9, 10" },
+          "parse_as": "number_array",
+          "required": true
+        },
+        {
+          "name": "y",
+          "label": { "de": "Y-Werte (0/1 Binärresponse)", "en": "Y Values (0/1 Binary Response)" },
+          "type": "textarea",
+          "placeholder": { "de": "Kommagetrennte Werte, z.B.:\n0, 0, 0, 0, 1, 0, 1, 1, 1, 1", "en": "Comma-separated values, e.g.:\n0, 0, 0, 0, 1, 0, 1, 1, 1, 1" },
+          "parse_as": "number_array",
+          "required": true
+        },
+        {
+          "name": "confLevel",
+          "label": { "de": "Konfidenzniveau", "en": "Confidence Level" },
+          "type": "number",
+          "placeholder": { "de": "0.95", "en": "0.95" },
+          "parse_as": "number",
+          "required": false
+        }
+      ]
+    },
+    "output_schema": {
+      "display_fields": [
+        "converged",
+        "coefficients",
+        "stdErrors",
+        "zValues",
+        "pValues",
+        "deviance",
+        "nullDeviance",
+        "aic",
+        "logLikelihood",
+        "pseudoR2.mcfadden",
+        "pseudoR2.nagelkerke"
+      ],
+      "primary_field": "coefficients",
+      "format": {
+        "converged": { "label": { "de": "Konvergiert", "en": "Converged" } },
+        "coefficients": { "decimals": 6, "label": "β̂" },
+        "stdErrors": { "decimals": 6, "label": "SE" },
+        "zValues": { "decimals": 4, "label": "z" },
+        "pValues": { "decimals": 6, "label": "p-Value" },
+        "deviance": { "decimals": 2, "label": { "de": "Residualdevianz", "en": "Residual Deviance" } },
+        "nullDeviance": { "decimals": 2, "label": { "de": "Nulldevianz", "en": "Null Deviance" } },
+        "aic": { "decimals": 2, "label": "AIC" },
+        "logLikelihood": { "decimals": 2, "label": { "de": "Log-Likelihood", "en": "Log-Likelihood" } },
+        "pseudoR2.mcfadden": { "decimals": 4, "label": "McFadden R²" },
+        "pseudoR2.nagelkerke": { "decimals": 4, "label": "Nagelkerke R²" }
+      }
+    }
+  },
+
+  "changelog": [
+    {
+      "version": "1.0.0",
+      "date": "2026-04-27",
+      "type": "initial",
+      "description": {
+        "de": "Erstimplementierung: IRLS-Solver, Wald-Tests, Odds Ratios, Pseudo-R², AIC/BIC",
+        "en": "Initial implementation: IRLS solver, Wald tests, odds ratios, pseudo-R², AIC/BIC"
+      },
+      "breaking": false
+    }
+  ]
+}

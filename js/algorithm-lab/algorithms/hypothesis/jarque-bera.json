@@ -1,0 +1,206 @@
+{
+  "id": "jarque-bera",
+  "name": {
+    "de": "Jarque-Bera-Test",
+    "en": "Jarque-Bera Test"
+  },
+  "category": "hypothesis",
+  "subcategory": "normality",
+  "status": "validated",
+  "version": "1.0.0",
+
+  "description": {
+    "short": {
+      "de": "Asymptotischer Normalitätstest basierend auf Schiefe und Wölbung (chi-quadrat-verteilt mit 2 Freiheitsgraden). Zuverlässig für große Stichproben (n > 30).",
+      "en": "Asymptotic normality test based on skewness and kurtosis (chi-squared with 2 degrees of freedom). Reliable for large samples (n > 30)."
+    },
+    "long": {
+      "de": "Der Jarque-Bera-Test prüft, ob Schiefe und Exzess-Kurtosis einer Stichprobe mit einer Normalverteilung vereinbar sind. Die Teststatistik JB = (n/6)(S² + K²/4) ist unter H₀ asymptotisch chi-quadrat-verteilt mit 2 Freiheitsgraden, wobei S die Stichproben-Schiefe und K die Exzess-Kurtosis ist. Der Test ist besonders geeignet für große Stichproben; bei kleinen Stichproben (n < 30) haben Shapiro-Wilk und Anderson-Darling eine höhere Trennschärfe.",
+      "en": "The Jarque-Bera test checks whether the skewness and excess kurtosis of a sample are consistent with a normal distribution. The test statistic JB = (n/6)(S² + K²/4) is asymptotically chi-squared distributed with 2 degrees of freedom under H₀, where S is the sample skewness and K is the excess kurtosis. The test is especially suited for large samples; for small samples (n < 30), Shapiro-Wilk and Anderson-Darling have higher power."
+    }
+  },
+
+  "documentation": {
+    "formulas": [
+      {
+        "label": "JB",
+        "latex": "JB = \\frac{n}{6} \\left( S^2 + \\frac{K^2}{4} \\right)",
+        "description": {
+          "de": "Teststatistik: Kombiniert Schiefe S und Exzess-Kurtosis K",
+          "en": "Test statistic: Combines skewness S and excess kurtosis K"
+        }
+      },
+      {
+        "label": "S",
+        "latex": "S = \\frac{m_3}{m_2^{3/2}} = \\frac{\\frac{1}{n}\\sum_{i=1}^{n}(x_i - \\bar{x})^3}{\\left(\\frac{1}{n}\\sum_{i=1}^{n}(x_i - \\bar{x})^2\\right)^{3/2}}",
+        "description": {
+          "de": "Stichproben-Schiefe (biased, mit Populationsmoment m₂ und m₃)",
+          "en": "Sample skewness (biased, using population moments m₂ and m₃)"
+        }
+      },
+      {
+        "label": "K",
+        "latex": "K = \\frac{m_4}{m_2^2} - 3",
+        "description": {
+          "de": "Exzess-Kurtosis (0 für Normalverteilung)",
+          "en": "Excess kurtosis (0 for normal distribution)"
+        }
+      },
+      {
+        "label": "H₀",
+        "latex": "H_0: S = 0 \\text{ and } K = 0 \\quad \\Rightarrow \\quad JB \\sim \\chi^2(2)",
+        "description": {
+          "de": "Nullhypothese: Schiefe und Exzess-Kurtosis entsprechen einer Normalverteilung",
+          "en": "Null hypothesis: Skewness and excess kurtosis are consistent with a normal distribution"
+        }
+      }
+    ],
+    "assumptions": [
+      {
+        "de": "Daten sind unabhängig und identisch verteilt (i.i.d.)",
+        "en": "Data are independent and identically distributed (i.i.d.)"
+      },
+      {
+        "de": "Stichprobengröße: n ≥ 3 (empfohlen: n ≥ 30 für zuverlässige asymptotische Approximation)",
+        "en": "Sample size: n ≥ 3 (recommended: n ≥ 30 for reliable asymptotic approximation)"
+      },
+      {
+        "de": "Stetige (kontinuierliche) Daten",
+        "en": "Continuous data"
+      }
+    ],
+    "limitations": [
+      {
+        "de": "Asymptotischer Test — bei kleinen Stichproben (n < 30) geringe Trennschärfe (Power)",
+        "en": "Asymptotic test — low power for small samples (n < 30)"
+      },
+      {
+        "de": "Empfindlich gegenüber Ausreißern, da Schiefe und Kurtosis auf höheren Momenten basieren",
+        "en": "Sensitive to outliers since skewness and kurtosis are based on higher-order moments"
+      },
+      {
+        "de": "Verwendet Populationsmomente (Division durch n), nicht Stichprobenmomente (Division durch n-1)",
+        "en": "Uses population moments (dividing by n), not sample moments (dividing by n-1)"
+      }
+    ],
+    "references": [
+      {
+        "source": "Jarque, C. M. & Bera, A. K. (1987), A test for normality of observations and regression residuals, International Statistical Review, 55(2), 163–172"
+      },
+      {
+        "source": "Jarque, C. M. & Bera, A. K. (1980), Efficient tests for normality, homoscedasticity and serial independence of regression residuals, Economics Letters, 6(3), 255–259"
+      },
+      {
+        "source": "D'Agostino, R. B. & Stephens, M. A. (1986), Goodness-of-Fit Techniques, Marcel Dekker, New York"
+      }
+    ],
+    "minitab_equivalent": "Stat > Basic Statistics > Normality Test (not directly available — Jarque-Bera is common in econometrics, e.g. EViews, Stata)"
+  },
+
+  "source": {
+    "function_name": "jarqueBera",
+    "file_path": "js/engines/normality-test-engine.js",
+    "signature": {
+      "parameters": [
+        {
+          "name": "data",
+          "type": "number[]",
+          "required": true,
+          "description": {
+            "de": "Array von Messwerten (mindestens 3 Werte)",
+            "en": "Array of measurement values (at least 3 values)"
+          }
+        }
+      ],
+      "returns": {
+        "type": "object",
+        "properties": {
+          "statistic": {
+            "type": "number",
+            "description": {
+              "de": "JB-Teststatistik (größere Werte = stärkere Abweichung von Normalverteilung)",
+              "en": "JB test statistic (larger values = stronger deviation from normality)"
+            }
+          },
+          "pValue": {
+            "type": "number",
+            "description": {
+              "de": "p-Wert des Tests (klein = Normalverteilung abgelehnt)",
+              "en": "p-value of the test (small = normality rejected)"
+            }
+          },
+          "skewness": {
+            "type": "number",
+            "description": {
+              "de": "Stichproben-Schiefe (biased, Populationsmoment)",
+              "en": "Sample skewness (biased, population moment)"
+            }
+          },
+          "kurtosis": {
+            "type": "number",
+            "description": {
+              "de": "Exzess-Kurtosis (0 = Normalverteilung)",
+              "en": "Excess kurtosis (0 = normal distribution)"
+            }
+          },
+          "n": {
+            "type": "number",
+            "description": {
+              "de": "Stichprobengröße",
+              "en": "Sample size"
+            }
+          }
+        }
+      }
+    },
+    "code_snippet": null
+  },
+
+  "try_it": {
+    "input_schema": {
+      "fields": [
+        {
+          "name": "data",
+          "label": {
+            "de": "Messdaten",
+            "en": "Measurement Data"
+          },
+          "type": "textarea",
+          "placeholder": {
+            "de": "Werte eingeben, getrennt durch Komma, Leerzeichen oder Zeilenumbruch\nz.B.: 2,01; 1,98; 2,03; 1,99; 2,02",
+            "en": "Enter values separated by commas, spaces, or newlines\ne.g.: 2.01, 1.98, 2.03, 1.99, 2.02"
+          },
+          "parse_as": "number_array",
+          "required": true
+        }
+      ],
+      "csv_mapping": {
+        "data_column": "Automatically uses first numeric column"
+      }
+    },
+    "output_schema": {
+      "display_fields": ["statistic", "pValue", "skewness", "kurtosis", "n"],
+      "primary_field": "statistic",
+      "format": {
+        "statistic": { "decimals": 6, "label": "JB" },
+        "pValue": { "decimals": 6, "label": "p-Value" },
+        "skewness": { "decimals": 6, "label": { "de": "Schiefe", "en": "Skewness" } },
+        "kurtosis": { "decimals": 6, "label": { "de": "Exzess-Kurtosis", "en": "Excess Kurtosis" } },
+        "n": { "decimals": 0, "label": "n" }
+      }
+    }
+  },
+
+  "changelog": [
+    {
+      "version": "1.0.0",
+      "date": "2026-03-28",
+      "type": "initial",
+      "description": {
+        "de": "Erstimplementierung mit JB-Statistik, p-Wert (χ²(2)), Schiefe und Exzess-Kurtosis",
+        "en": "Initial implementation with JB statistic, p-value (χ²(2)), skewness and excess kurtosis"
+      },
+      "breaking": false
+    }
+  ]
+}

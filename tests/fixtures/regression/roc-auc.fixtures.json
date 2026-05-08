@@ -1,0 +1,369 @@
+{
+  "algorithm_id": "roc-auc",
+  "generated_with": {
+    "engine": "glm-engine.js (trapezoidal AUC)",
+    "verified_against": "Analytic: perfect separation → AUC = 1.0"
+  },
+  "generated_at": "2026-04-27T00:00:00.000Z",
+  "generator_script": "tests/generate-glm-fixtures.mjs",
+  "generator_version": "1.0.0",
+  "tolerances": {
+    "default": {
+      "relative": 1e-10,
+      "absolute": 1e-12
+    },
+    "overrides": {
+      "tied_probs": {
+        "relative": 0.001,
+        "absolute": 0.000001,
+        "reason": "Tied probabilities produce different ROC curves depending on sort-order tie-breaking"
+      }
+    }
+  },
+  "test_cases": [
+    {
+      "id": "roc_standard_good",
+      "tier": "standard",
+      "description": "Good classifier: all positives ranked above all negatives. AUC = 1.0.",
+      "reference": "Analytic: no rank inversions → AUC = 1",
+      "inputs": {
+        "yTrue": [
+          1,
+          1,
+          1,
+          1,
+          1,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "probs": [
+          0.9,
+          0.8,
+          0.7,
+          0.6,
+          0.55,
+          0.4,
+          0.3,
+          0.2,
+          0.1,
+          0.05
+        ]
+      },
+      "expected": {
+        "auc": 1,
+        "fpr": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0.2,
+          0.4,
+          0.6,
+          0.8,
+          1
+        ],
+        "tpr": [
+          0,
+          0.2,
+          0.4,
+          0.6,
+          0.8,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1
+        ]
+      }
+    },
+    {
+      "id": "roc_standard_moderate",
+      "tier": "standard",
+      "description": "Moderate classifier with some rank inversions. AUC = 0.8.",
+      "reference": "D.Mike glm-engine.js (trapezoidal)",
+      "inputs": {
+        "yTrue": [
+          1,
+          1,
+          1,
+          1,
+          1,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "probs": [
+          0.8,
+          0.6,
+          0.4,
+          0.65,
+          0.55,
+          0.7,
+          0.35,
+          0.25,
+          0.45,
+          0.15
+        ]
+      },
+      "expected": {
+        "auc": 0.8,
+        "fpr": [
+          0,
+          0,
+          0.2,
+          0.2,
+          0.2,
+          0.2,
+          0.4,
+          0.4,
+          0.6,
+          0.8,
+          1
+        ],
+        "tpr": [
+          0,
+          0.2,
+          0.2,
+          0.4,
+          0.6,
+          0.8,
+          0.8,
+          1,
+          1,
+          1,
+          1
+        ]
+      }
+    },
+    {
+      "id": "roc_edge_perfect_separation",
+      "tier": "edge",
+      "description": "Perfect separation with gap between classes. AUC = 1.0.",
+      "reference": "Analytic: all P(Y=1) > max P(Y=0) → AUC = 1",
+      "inputs": {
+        "yTrue": [
+          1,
+          1,
+          1,
+          0,
+          0,
+          0
+        ],
+        "probs": [
+          0.9,
+          0.8,
+          0.7,
+          0.3,
+          0.2,
+          0.1
+        ]
+      },
+      "expected": {
+        "auc": 1,
+        "fpr": [
+          0,
+          0,
+          0,
+          0,
+          0.3333333333333333,
+          0.6666666666666666,
+          1
+        ],
+        "tpr": [
+          0,
+          0.3333333333333333,
+          0.6666666666666666,
+          1,
+          1,
+          1,
+          1
+        ]
+      }
+    },
+    {
+      "id": "roc_edge_all_same_prob",
+      "tier": "edge",
+      "description": "All probabilities equal (0.5). No discrimination possible.",
+      "reference": "D.Mike glm-engine.js",
+      "tolerance_override": "tied_probs",
+      "inputs": {
+        "yTrue": [
+          1,
+          0,
+          1,
+          0,
+          1,
+          0
+        ],
+        "probs": [
+          0.5,
+          0.5,
+          0.5,
+          0.5,
+          0.5,
+          0.5
+        ]
+      },
+      "expected": {
+        "auc": 0.5
+      }
+    },
+    {
+      "id": "roc_edge_all_positive",
+      "tier": "edge",
+      "description": "All Y=1 (no negatives). Degenerate: AUC = 0.5 by convention.",
+      "reference": "Analytic: N=0 → default AUC=0.5",
+      "inputs": {
+        "yTrue": [
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        "probs": [
+          0.9,
+          0.7,
+          0.5,
+          0.3,
+          0.1
+        ]
+      },
+      "expected": {
+        "auc": 0.5,
+        "fpr": [
+          0,
+          1
+        ],
+        "tpr": [
+          0,
+          1
+        ]
+      }
+    },
+    {
+      "id": "roc_edge_n2",
+      "tier": "edge",
+      "description": "Minimum viable case: one positive, one negative, correctly ranked.",
+      "reference": "Analytic: 1 concordant pair → AUC = 1",
+      "inputs": {
+        "yTrue": [
+          0,
+          1
+        ],
+        "probs": [
+          0.3,
+          0.7
+        ]
+      },
+      "expected": {
+        "auc": 1,
+        "fpr": [
+          0,
+          0,
+          1
+        ],
+        "tpr": [
+          0,
+          1,
+          1
+        ]
+      }
+    },
+    {
+      "id": "roc_edge_ties",
+      "tier": "edge",
+      "description": "Tied probabilities at 0.6 (mixed positives and negatives). Tests tie-breaking.",
+      "reference": "D.Mike glm-engine.js",
+      "tolerance_override": "tied_probs",
+      "inputs": {
+        "yTrue": [
+          1,
+          1,
+          0,
+          0,
+          1,
+          0
+        ],
+        "probs": [
+          0.8,
+          0.6,
+          0.6,
+          0.6,
+          0.4,
+          0.2
+        ]
+      },
+      "expected": {
+        "auc": 0.6666666666666667,
+        "fpr": [
+          0,
+          0,
+          0.6666666666666666,
+          0.6666666666666666,
+          1
+        ],
+        "tpr": [
+          0,
+          0.3333333333333333,
+          0.6666666666666666,
+          1,
+          1
+        ]
+      }
+    },
+    {
+      "id": "roc_edge_inverted",
+      "tier": "edge",
+      "description": "Inverted classifier: high probabilities assigned to negatives. AUC < 0.5.",
+      "reference": "D.Mike glm-engine.js",
+      "inputs": {
+        "yTrue": [
+          1,
+          1,
+          1,
+          0,
+          0,
+          0
+        ],
+        "probs": [
+          0.1,
+          0.2,
+          0.3,
+          0.7,
+          0.8,
+          0.9
+        ]
+      },
+      "expected": {
+        "auc": 0,
+        "fpr": [
+          0,
+          0.3333333333333333,
+          0.6666666666666666,
+          1,
+          1,
+          1,
+          1
+        ],
+        "tpr": [
+          0,
+          0,
+          0,
+          0,
+          0.3333333333333333,
+          0.6666666666666666,
+          1
+        ]
+      }
+    }
+  ]
+}

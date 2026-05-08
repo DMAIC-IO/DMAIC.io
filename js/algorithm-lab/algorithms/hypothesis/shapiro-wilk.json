@@ -1,0 +1,182 @@
+{
+  "id": "shapiro-wilk",
+  "name": {
+    "de": "Shapiro-Wilk-Test",
+    "en": "Shapiro-Wilk Test"
+  },
+  "category": "hypothesis",
+  "subcategory": "normality",
+  "status": "validated",
+  "version": "1.0.0",
+
+  "description": {
+    "short": {
+      "de": "Prüft, ob eine Stichprobe aus einer Normalverteilung stammt.",
+      "en": "Tests whether a sample comes from a normally distributed population."
+    },
+    "long": {
+      "de": "Der Shapiro-Wilk-Test ist einer der leistungsfähigsten Tests auf Normalverteilung, besonders für kleine Stichproben (n = 3–50). Er vergleicht die geordneten Stichprobenwerte mit den erwarteten Werten einer Normalverteilung. Die Teststatistik W liegt zwischen 0 und 1 — Werte nahe 1 sprechen für Normalverteilung. Bei p < α (z.B. 0,05) wird die Nullhypothese der Normalverteilung abgelehnt.",
+      "en": "The Shapiro-Wilk test is one of the most powerful normality tests, especially for small samples (n = 3–50). It compares the ordered sample values with the expected values from a normal distribution. The test statistic W ranges from 0 to 1 — values close to 1 indicate normality. If p < α (e.g. 0.05), the null hypothesis of normality is rejected."
+    }
+  },
+
+  "documentation": {
+    "formulas": [
+      {
+        "label": "W",
+        "latex": "W = \\frac{\\left(\\sum_{i=1}^{n} a_i \\, x_{(i)}\\right)^2}{\\sum_{i=1}^{n} (x_i - \\bar{x})^2}",
+        "description": {
+          "de": "Teststatistik W: Verhältnis der gewichteten Summe der geordneten Werte zum Gesamtstreuungsmaß",
+          "en": "Test statistic W: ratio of the weighted sum of ordered values to the total sum of squares"
+        }
+      },
+      {
+        "label": "a",
+        "latex": "\\mathbf{a} = \\frac{\\mathbf{m}^T V^{-1}}{\\|\\mathbf{m}^T V^{-1}\\|}",
+        "description": {
+          "de": "Gewichtungsvektor a, berechnet aus den erwarteten Normalverteilungs-Order-Statistiken m und der Kovarianzmatrix V",
+          "en": "Weight vector a, computed from the expected normal order statistics m and the covariance matrix V"
+        }
+      },
+      {
+        "label": "H₀",
+        "latex": "H_0: X_1, \\ldots, X_n \\sim \\mathcal{N}(\\mu, \\sigma^2)",
+        "description": {
+          "de": "Nullhypothese: Die Stichprobe stammt aus einer Normalverteilung",
+          "en": "Null hypothesis: The sample comes from a normal distribution"
+        }
+      }
+    ],
+    "assumptions": [
+      {
+        "de": "Daten sind unabhängig und identisch verteilt (i.i.d.)",
+        "en": "Data are independent and identically distributed (i.i.d.)"
+      },
+      {
+        "de": "Stichprobengröße: 3 ≤ n ≤ 5000 (optimal für n ≤ 50)",
+        "en": "Sample size: 3 ≤ n ≤ 5000 (optimal for n ≤ 50)"
+      },
+      {
+        "de": "Stetige (kontinuierliche) Daten",
+        "en": "Continuous data"
+      }
+    ],
+    "limitations": [
+      {
+        "de": "Bei großen Stichproben (n > 5000) können auch kleine Abweichungen von der Normalverteilung signifikant werden",
+        "en": "For large samples (n > 5000), even small deviations from normality can become significant"
+      },
+      {
+        "de": "Nicht geeignet für diskrete Daten oder Daten mit vielen Bindungen (ties)",
+        "en": "Not suitable for discrete data or data with many ties"
+      },
+      {
+        "de": "Die p-Wert-Approximation kann bei sehr kleinen n (n < 7) ungenau sein",
+        "en": "The p-value approximation can be inaccurate for very small n (n < 7)"
+      }
+    ],
+    "references": [
+      {
+        "source": "Shapiro, S. S. & Wilk, M. B. (1965), An analysis of variance test for normality (complete samples), Biometrika, 52(3–4), 591–611"
+      },
+      {
+        "source": "Royston, P. (1992), Approximating the Shapiro-Wilk W-test for non-normality, Statistics and Computing, 2, 117–119"
+      },
+      {
+        "source": "NIST/SEMATECH e-Handbook of Statistical Methods, Section 1.3.5.7"
+      }
+    ],
+    "minitab_equivalent": "Stat > Basic Statistics > Normality Test (Shapiro-Wilk)"
+  },
+
+  "source": {
+    "function_name": "shapiroWilk",
+    "file_path": "js/engines/normality-test-engine.js",
+    "signature": {
+      "parameters": [
+        {
+          "name": "data",
+          "type": "number[]",
+          "required": true,
+          "description": {
+            "de": "Array von Messwerten (mindestens 3 Werte)",
+            "en": "Array of measurement values (at least 3 values)"
+          }
+        }
+      ],
+      "returns": {
+        "type": "object",
+        "properties": {
+          "statistic": {
+            "type": "number",
+            "description": {
+              "de": "W-Teststatistik (0 bis 1, nahe 1 = normalverteilt)",
+              "en": "W test statistic (0 to 1, close to 1 = normally distributed)"
+            }
+          },
+          "pValue": {
+            "type": "number",
+            "description": {
+              "de": "p-Wert des Tests (klein = Normalverteilung abgelehnt)",
+              "en": "p-value of the test (small = normality rejected)"
+            }
+          },
+          "n": {
+            "type": "number",
+            "description": {
+              "de": "Stichprobengröße",
+              "en": "Sample size"
+            }
+          }
+        }
+      }
+    },
+    "code_snippet": null
+  },
+
+  "try_it": {
+    "input_schema": {
+      "fields": [
+        {
+          "name": "data",
+          "label": {
+            "de": "Messdaten",
+            "en": "Measurement Data"
+          },
+          "type": "textarea",
+          "placeholder": {
+            "de": "Werte eingeben, getrennt durch Komma, Leerzeichen oder Zeilenumbruch\nz.B.: 2,01; 1,98; 2,03; 1,99; 2,02",
+            "en": "Enter values separated by commas, spaces, or newlines\ne.g.: 2.01, 1.98, 2.03, 1.99, 2.02"
+          },
+          "parse_as": "number_array",
+          "required": true
+        }
+      ],
+      "csv_mapping": {
+        "data_column": "Automatically uses first numeric column"
+      }
+    },
+    "output_schema": {
+      "display_fields": ["statistic", "pValue", "n"],
+      "primary_field": "statistic",
+      "format": {
+        "statistic": { "decimals": 6, "label": "W" },
+        "pValue": { "decimals": 6, "label": "p-Value" },
+        "n": { "decimals": 0, "label": "n" }
+      }
+    }
+  },
+
+  "changelog": [
+    {
+      "version": "1.0.0",
+      "date": "2026-03-27",
+      "type": "initial",
+      "description": {
+        "de": "Erstimplementierung mit W-Statistik und p-Wert (Royston-Approximation)",
+        "en": "Initial implementation with W statistic and p-value (Royston approximation)"
+      },
+      "breaking": false
+    }
+  ]
+}

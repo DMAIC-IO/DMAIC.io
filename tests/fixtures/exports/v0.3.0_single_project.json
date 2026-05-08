@@ -1,0 +1,631 @@
+{
+  "appVersion": "0.3.0",
+  "exportedAt": "2026-05-02T10:00:00.000Z",
+  "version": "0.3.0",
+  "settings": {
+    "language": "de",
+    "theme": "light",
+    "chartTitleSize": 15,
+    "chartLabelSize": 12,
+    "chartTickSize": 11,
+    "chartColors": null,
+    "chartBgColor": null,
+    "chartShowLegend": true,
+    "showAlgoLabLinks": true,
+    "confidenceLevel": 95,
+    "power": 80
+  },
+  "projectMeta": {
+    "name": "Goldene Fixture v0.3 — Lieferzeit-Optimierung (DMAIC)",
+    "cycle": "dmaic",
+    "created": "2026-04-01T08:00:00.000Z",
+    "modified": "2026-05-02T10:00:00.000Z"
+  },
+  "phases": {
+    "data":    [
+      { "instanceId": "inst-worksheet",  "moduleId": "worksheet" },
+      { "instanceId": "inst-xy-plot",    "moduleId": "xy-plot" },
+      { "instanceId": "inst-histogram",  "moduleId": "histogram" },
+      { "instanceId": "inst-boxplot",    "moduleId": "boxplot" },
+      { "instanceId": "inst-pie",        "moduleId": "pie-chart" },
+      { "instanceId": "inst-probplot",   "moduleId": "probability-plot" },
+      { "instanceId": "inst-calc",       "moduleId": "calculator" },
+      { "instanceId": "inst-units",      "moduleId": "unit-converter" }
+    ],
+    "define":  [
+      { "instanceId": "inst-charter",      "moduleId": "project-charter" },
+      { "instanceId": "inst-sipoc",        "moduleId": "sipoc" },
+      { "instanceId": "inst-voc",          "moduleId": "voc-ctx-tree" },
+      { "instanceId": "inst-stakeholders", "moduleId": "stakeholder-analysis" },
+      { "instanceId": "inst-todo",         "moduleId": "todo" },
+      { "instanceId": "inst-cal",          "moduleId": "dmaic-calendar" },
+      { "instanceId": "inst-raci",         "moduleId": "raci-matrix" },
+      { "instanceId": "inst-5why",         "moduleId": "five-why" }
+    ],
+    "measure": [
+      { "instanceId": "inst-pmap",  "moduleId": "process-map" },
+      { "instanceId": "inst-msa1",  "moduleId": "msa-typ1" },
+      { "instanceId": "inst-msa2",  "moduleId": "msa-typ2" },
+      { "instanceId": "inst-cpk",   "moduleId": "process-capability" }
+    ],
+    "analyze": [
+      { "instanceId": "inst-ce",    "moduleId": "ce-matrix" },
+      { "instanceId": "inst-ishi",  "moduleId": "ishikawa" },
+      { "instanceId": "inst-corr",  "moduleId": "correlation" },
+      { "instanceId": "inst-dist",  "moduleId": "distribution-fit" },
+      { "instanceId": "inst-fmea",  "moduleId": "fmea" },
+      { "instanceId": "inst-htest", "moduleId": "hypothesis-test" },
+      { "instanceId": "inst-ssize", "moduleId": "sample-size" },
+      { "instanceId": "inst-pair",  "moduleId": "pairwise-comparison" }
+    ],
+    "improve": [
+      { "instanceId": "inst-doea",  "moduleId": "doe-advisor" },
+      { "instanceId": "inst-doep",  "moduleId": "doe-planner" },
+      { "instanceId": "inst-reg",   "moduleId": "regression" },
+      { "instanceId": "inst-glm",   "moduleId": "glm-regression" }
+    ],
+    "control": [
+      { "instanceId": "inst-cc",    "moduleId": "control-chart" },
+      { "instanceId": "inst-ll",    "moduleId": "lessons-learned" }
+    ],
+    "extras":  []
+  },
+  "phaseAchievement": {
+    "data": 80,
+    "define": 100,
+    "measure": 75,
+    "analyze": 60,
+    "improve": 40,
+    "control": 20
+  },
+  "phaseAchievementHistory": {
+    "define":  [ { "ts": "2026-04-05T12:00:00.000Z", "value":  50 }, { "ts": "2026-04-15T12:00:00.000Z", "value": 100 } ],
+    "measure": [ { "ts": "2026-04-12T12:00:00.000Z", "value":  25 }, { "ts": "2026-04-22T12:00:00.000Z", "value":  75 } ],
+    "analyze": [ { "ts": "2026-04-25T12:00:00.000Z", "value":  20 }, { "ts": "2026-04-30T12:00:00.000Z", "value":  60 } ],
+    "improve": [ { "ts": "2026-05-01T12:00:00.000Z", "value":  40 } ],
+    "control": [ { "ts": "2026-05-02T12:00:00.000Z", "value":  20 } ]
+  },
+  "dashboard": {
+    "layout": [
+      { "id": "tile-charter",  "kind": "charter",  "x": 0, "y": 0, "w": 6, "h": 4 },
+      { "id": "tile-progress", "kind": "progress", "x": 6, "y": 0, "w": 6, "h": 2 },
+      { "id": "tile-cpk",      "kind": "kpi",      "x": 6, "y": 2, "w": 3, "h": 2, "ref": { "instanceId": "inst-cpk", "field": "cpk" } },
+      { "id": "tile-spc",      "kind": "chart",    "x": 9, "y": 2, "w": 3, "h": 2, "ref": { "instanceId": "inst-cc" } }
+    ]
+  },
+  "moduleStates": {
+    "inst-worksheet": {
+      "sheets": [
+        {
+          "id": "sheet-1",
+          "name": "Messdaten",
+          "state": {
+            "columns": [
+              { "id": "col-id",     "name": "ID",         "shortName": "C1", "type": "numeric", "unit": null,  "values": [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20], "formulas": [null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null], "format": {} },
+              { "id": "col-time",   "name": "Lieferzeit", "shortName": "C2", "type": "numeric", "unit": "h",   "values": [12.4,13.1,11.8,14.2,12.9,13.5,12.1,14.8,11.5,13.0,12.6,14.1,12.3,13.8,12.7,11.9,13.4,12.8,14.0,12.5], "formulas": [null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null], "format": { "decimals": 1 } },
+              { "id": "col-charge", "name": "Charge",     "shortName": "C3", "type": "text",    "unit": null,  "values": ["A","A","A","B","B","B","B","C","C","C","A","A","B","B","C","C","C","A","B","C"], "formulas": [null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null], "format": {} },
+              { "id": "col-op",     "name": "Operator",   "shortName": "C4", "type": "text",    "unit": null,  "values": ["Maier","Maier","Schulz","Schulz","Maier","Schulz","Müller","Müller","Müller","Maier","Schulz","Müller","Maier","Schulz","Müller","Maier","Schulz","Müller","Maier","Schulz"], "formulas": [null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null], "format": {} }
+            ],
+            "rowCount": 20,
+            "colWidths": { "col-id": 60, "col-time": 110, "col-charge": 90, "col-op": 110 },
+            "sortCol": null,
+            "sortDir": null,
+            "selection": null
+          }
+        },
+        {
+          "id": "sheet-2",
+          "name": "Charges",
+          "state": {
+            "columns": [
+              { "id": "col-cid",   "name": "ChargeID", "shortName": "C1", "type": "text",    "unit": null,    "values": ["A","B","C"], "formulas": [null,null,null], "format": {} },
+              { "id": "col-date",  "name": "Datum",    "shortName": "C2", "type": "text",    "unit": null,    "values": ["2026-04-10","2026-04-17","2026-04-24"], "formulas": [null,null,null], "format": {} },
+              { "id": "col-count", "name": "Anzahl",   "shortName": "C3", "type": "numeric", "unit": "Stück", "values": [50,75,60], "formulas": [null,null,null], "format": {} }
+            ],
+            "rowCount": 3,
+            "colWidths": { "col-cid": 90, "col-date": 110, "col-count": 90 },
+            "sortCol": null,
+            "sortDir": null,
+            "selection": null
+          }
+        }
+      ],
+      "activeSheetId": "sheet-1",
+      "sheetCounter": 2
+    },
+    "inst-xy-plot": {
+      "datasets": [
+        { "xRef": { "instanceId": "inst-worksheet", "sheetId": "sheet-1", "columnId": "col-id" },
+          "yRef": { "instanceId": "inst-worksheet", "sheetId": "sheet-1", "columnId": "col-time" },
+          "groupRef": { "instanceId": "inst-worksheet", "sheetId": "sheet-1", "columnId": "col-charge" } }
+      ],
+      "showLines": false,
+      "showMarkers": true,
+      "seriesOverrides": [
+        { "color": "#1f77b4", "symbol": "circle", "name": "A", "visible": true },
+        { "color": "#ff7f0e", "symbol": "square", "name": "B", "visible": true },
+        { "color": "#2ca02c", "symbol": "triangle", "name": "C", "visible": true }
+      ],
+      "refLines": [ { "axis": "y", "value": 13.5, "label": "Ziel-SLA", "color": "#d62728", "style": "dashed" } ],
+      "refAreas": [],
+      "bgColor": null,
+      "showStats": true,
+      "confLevel": 95
+    },
+    "inst-histogram": {
+      "datasets": [
+        { "valueRef": { "instanceId": "inst-worksheet", "sheetId": "sheet-1", "columnId": "col-time" },
+          "groupRef": null }
+      ],
+      "binMode": "auto",
+      "binWidth": null,
+      "showTitle": true,
+      "chartTitleText": "Verteilung Lieferzeit",
+      "showPareto": false,
+      "showStats": true,
+      "showBoxplot": true,
+      "confLevel": 95,
+      "titleSize": 15,
+      "labelSize": 12,
+      "tickSize": 11,
+      "showXLabel": true,
+      "showYLabel": true,
+      "showXTicks": true,
+      "showYTicks": true,
+      "barGap": 0,
+      "bgColor": null,
+      "refLines": [],
+      "refAreas": [ { "axis": "x", "from": 13.5, "to": 999, "label": "Out of Spec", "color": "#d62728", "opacity": 0.15 } ],
+      "seriesOverrides": [
+        { "name": "Lieferzeit", "visible": true, "fillColor": "#1f77b4", "borderColor": "#0d4a85", "borderWidth": 1, "borderStyle": "solid", "pattern": "none", "patternColor": null, "patternSolidity": 0.5, "showNormalCurve": true }
+      ]
+    },
+    "inst-boxplot": {
+      "seriesRefs": [ { "instanceId": "inst-worksheet", "sheetId": "sheet-1", "columnId": "col-time" } ],
+      "groupRefs": [ { "instanceId": "inst-worksheet", "sheetId": "sheet-1", "columnId": "col-charge" } ],
+      "showMean": true,
+      "showOutliers": true,
+      "showStats": true,
+      "confLevel": 95,
+      "refLines": [ { "axis": "y", "value": 13.5, "label": "USL", "color": "#d62728", "style": "dashed" } ],
+      "refAreas": [],
+      "bgColor": null,
+      "boxColors": ["#1f77b4", "#ff7f0e", "#2ca02c"]
+    },
+    "inst-pie": {
+      "labelRef": { "instanceId": "inst-worksheet", "sheetId": "sheet-1", "columnId": "col-charge" },
+      "valueRef": null,
+      "slices": [],
+      "chartConfig": {
+        "showTitle": true,
+        "title": "Anteile pro Charge",
+        "titleSize": 15,
+        "showLegend": true,
+        "showLabels": true,
+        "labelMode": "percent",
+        "labelSize": 11,
+        "innerRadius": 0,
+        "padAngle": 0.005,
+        "startAngle": 0,
+        "explodeDistance": 0,
+        "strokeColor": "#ffffff",
+        "strokeWidth": 1,
+        "sortSlices": "value-desc",
+        "centerLabel": "",
+        "centerSub": "",
+        "bgColor": null
+      }
+    },
+    "inst-probplot": {
+      "columnRef": { "instanceId": "inst-worksheet", "sheetId": "sheet-1", "columnId": "col-time" },
+      "refLines": [],
+      "refAreas": [],
+      "bgColor": null,
+      "markerColor": "#1f77b4",
+      "lineColor": "#d62728",
+      "markerSymbol": "circle",
+      "markerSize": 6,
+      "markerStroke": "#0d4a85",
+      "markerStrokeWidth": 1,
+      "showStats": true,
+      "confLevel": 95
+    },
+    "inst-calc": {
+      "mode": "ss",
+      "expression": "(12.4+13.1+11.8)/3",
+      "lastResult": 12.433333333333334,
+      "memory": 0,
+      "angleMode": "DEG",
+      "dataset": [12.4, 13.1, 11.8, 14.2, 12.9],
+      "ssDataset": [12.4, 13.1, 11.8, 14.2, 12.9, 13.5, 12.1, 14.8, 11.5, 13.0],
+      "lsl": "10",
+      "usl": "13.5"
+    },
+    "inst-units": {
+      "activeCat": "time",
+      "fromUnit": "h",
+      "toUnit": "min",
+      "inputVal": "12.4",
+      "tzFrom": "Europe/Berlin",
+      "tzTo": "America/New_York",
+      "tzTime": "09:00",
+      "tzDate": "2026-05-02"
+    },
+    "inst-charter": {
+      "problemStatement": "Die durchschnittliche Lieferzeit liegt aktuell bei 13,1 h und damit deutlich über dem Kundenversprechen von 12 h. Die Streuung beträgt ±1,2 h, was zu eskalierten Kundenbeschwerden führt.",
+      "goals": [
+        { "id": "g1", "text": "Mittlere Lieferzeit auf ≤ 12,0 h senken", "status": "open" },
+        { "id": "g2", "text": "Standardabweichung auf ≤ 0,5 h reduzieren", "status": "open" },
+        { "id": "g3", "text": "Out-of-Spec-Rate (>13,5 h) auf < 5 % senken", "status": "in-progress" },
+        { "id": "g4", "text": "Cpk ≥ 1,33 erreichen", "status": "open" }
+      ],
+      "orgChart": [
+        { "id": "n1", "title": "Sponsor",        "desc": "Dr. Lange (COO)",       "pid": null,  "bg": "#fef3c7" },
+        { "id": "n2", "title": "Champion",       "desc": "M. Weber (Logistik)",   "pid": "n1" },
+        { "id": "n3", "title": "Black Belt",     "desc": "S. Krüger",             "pid": "n2",  "borderColor": "#1f77b4" },
+        { "id": "n4", "title": "Green Belt",     "desc": "T. Maier",              "pid": "n3" },
+        { "id": "n5", "title": "Prozessexperte", "desc": "K. Schulz",             "pid": "n3" }
+      ],
+      "orgStyle": {
+        "bgColor": "#ffffff",
+        "borderColor": "#94a3b8",
+        "borderWidth": 1,
+        "fontColor": "#1e293b",
+        "fontSize": 12,
+        "lineColor": "#64748b"
+      }
+    },
+    "inst-sipoc": {
+      "columns": {
+        "suppliers": ["Lieferant Verpackung", "Lieferant Etiketten", "Interner Wareneingang"],
+        "inputs":    ["Verpackungsmaterial", "Druckaufträge", "Versandlabels", "Auftragsdaten"],
+        "process":   ["Auftrag erfassen", "Kommissionieren", "Verpacken", "Versandlabel drucken", "Übergabe Spediteur"],
+        "outputs":   ["Versandfertiges Paket", "Trackingnummer", "Lieferschein"],
+        "customers": ["Endkunde", "Filialen", "B2B-Großkunden"]
+      }
+    },
+    "inst-voc": {
+      "vocs": [
+        { "id": "v1", "name": "Endkunde",
+          "cxs": [
+            { "id": "c1", "text": "Pakete sollen innerhalb von 12 h ankommen" },
+            { "id": "c2", "text": "Bei Verspätung will der Kunde proaktiv informiert werden" }
+          ]
+        },
+        { "id": "v2", "name": "B2B-Großkunde",
+          "cxs": [
+            { "id": "c3", "text": "Verlässliche Liefertermine für Produktionsplanung" },
+            { "id": "c4", "text": "EDIFACT-DESADV mit korrektem ETA" }
+          ]
+        }
+      ],
+      "activeVocId": "v1",
+      "styles": {
+        "colors": { "voc": "#1f77b4", "ctx": "#ff7f0e", "edge": "#94a3b8" }
+      }
+    },
+    "inst-stakeholders": {
+      "stakeholders": [
+        { "id": "s1", "name": "Logistikleitung",      "power": 5, "interest": 5, "category": "manage-closely",  "notes": "Hauptsponsor, wöchentlicher Status" },
+        { "id": "s2", "name": "Schichtleiter Versand", "power": 3, "interest": 5, "category": "keep-informed",   "notes": "Operative Umsetzung" },
+        { "id": "s3", "name": "IT-Abteilung",          "power": 4, "interest": 2, "category": "keep-satisfied",  "notes": "Anpassung der WMS-Schnittstelle" },
+        { "id": "s4", "name": "Spediteure",            "power": 3, "interest": 3, "category": "manage-closely",  "notes": "SLA-Verhandlungen ausstehend" },
+        { "id": "s5", "name": "Betriebsrat",           "power": 4, "interest": 3, "category": "keep-satisfied",  "notes": "Veränderungen an Arbeitsschritten" }
+      ]
+    },
+    "inst-todo": {
+      "items": [
+        { "id": "t1", "text": "Messdaten von KW 14–17 aus WMS extrahieren", "due": "2026-04-20", "owner": "T. Maier",  "status": "done", "cal": true },
+        { "id": "t2", "text": "MSA Typ 1 mit Standardpaket durchführen",     "due": "2026-04-25", "owner": "K. Schulz", "status": "done" },
+        { "id": "t3", "text": "Hypothesentest Charge A vs. B",                "due": "2026-05-05", "owner": "S. Krüger", "status": "in-progress" },
+        { "id": "t4", "text": "DOE-Plan reviewen mit Logistikleitung",         "due": "2026-05-12", "owner": "M. Weber",  "status": "open" },
+        { "id": "t5", "text": "Pilot-Rollout neuer Prozess",                   "due": "2026-05-25", "owner": "S. Krüger", "status": "open" }
+      ],
+      "filterStatus": "",
+      "filterOwner": "",
+      "sortCol": "due",
+      "sortAsc": true
+    },
+    "inst-cal": {
+      "events": [
+        { "id": "e1", "phase": "define",  "start": "2026-04-01", "end": "2026-04-15", "title": "Define-Phase",  "desc": "Charter, SIPOC, VOC" },
+        { "id": "e2", "phase": "measure", "start": "2026-04-15", "end": "2026-04-30", "title": "Measure-Phase", "desc": "MSA + Cpk" },
+        { "id": "e3", "phase": "analyze", "start": "2026-04-25", "end": "2026-05-15", "title": "Analyze-Phase", "desc": "Hypothesen + Ishikawa" },
+        { "id": "e4", "phase": "improve", "start": "2026-05-10", "end": "2026-05-30", "title": "Improve-Phase", "desc": "DOE + Pilot" },
+        { "id": "e5", "phase": "control", "start": "2026-05-25", "end": "2026-06-15", "title": "Control-Phase", "desc": "SPC + Hand-over" }
+      ],
+      "axisFrom": 1743465600000,
+      "axisTo":   1750118400000,
+      "dayFrom":  0,
+      "dayTo":    77
+    },
+    "inst-raci": {
+      "activities": ["Datenerfassung", "MSA durchführen", "DOE planen", "Pilot-Rollout", "Schulung", "SPC einrichten"],
+      "stakeholders": ["Sponsor", "Champion", "Black Belt", "Green Belt", "Prozessexperte"],
+      "assignments": {
+        "0_0": "I", "0_1": "I", "0_2": "A", "0_3": "R", "0_4": "C",
+        "1_0": "I", "1_1": "C", "1_2": "A", "1_3": "R", "1_4": "C",
+        "2_0": "I", "2_1": "A", "2_2": "R", "2_3": "C", "2_4": "C",
+        "3_0": "A", "3_1": "R", "3_2": "C", "3_3": "C", "3_4": "I",
+        "4_0": "I", "4_1": "C", "4_2": "C", "4_3": "R", "4_4": "A",
+        "5_0": "I", "5_1": "I", "5_2": "A", "5_3": "C", "5_4": "R"
+      }
+    },
+    "inst-5why": {
+      "problem": "Out-of-Spec-Rate liegt bei 18 % statt geforderten <5 %",
+      "nodes": [
+        { "id": 1, "level": 0, "parent": 0, "text": "Out-of-Spec-Rate 18 %" },
+        { "id": 2, "level": 1, "parent": 1, "text": "Kommissionierung dauert zu lange" },
+        { "id": 3, "level": 2, "parent": 2, "text": "Lagerwege sind ineffizient" },
+        { "id": 4, "level": 3, "parent": 3, "text": "Lagerlayout nicht nach Pickfrequenz optimiert" },
+        { "id": 5, "level": 4, "parent": 4, "text": "Letzter Layout-Review vor 4 Jahren — Sortimentsverschiebung nicht eingearbeitet" },
+        { "id": 6, "level": 1, "parent": 1, "text": "Druckwarteschlange Versandlabels staut sich" },
+        { "id": 7, "level": 2, "parent": 6, "text": "Nur ein Drucker für drei Packplätze" }
+      ]
+    },
+    "inst-pmap": {
+      "steps": [
+        { "id": "p1", "seq": 1, "type": "start",    "text": "Auftrag erfasst",       "owner": "WMS",       "valueType": "value-add", "substeps": [], "expanded": false, "loop": null },
+        { "id": "p2", "seq": 2, "type": "process",  "text": "Kommissionierung",      "owner": "Lager",     "valueType": "value-add", "substeps": [ { "text": "Pickliste drucken" }, { "text": "Ware aus Lagerort holen" } ], "expanded": true, "loop": null },
+        { "id": "p3", "seq": 3, "type": "decision", "text": "Ware vollständig?",     "owner": "Lager",     "valueType": "non-value", "substeps": [], "expanded": false, "loop": "p2" },
+        { "id": "p4", "seq": 4, "type": "process",  "text": "Verpacken",             "owner": "Verpackung","valueType": "value-add", "substeps": [], "expanded": false, "loop": null },
+        { "id": "p5", "seq": 5, "type": "process",  "text": "Versandlabel drucken",  "owner": "Verpackung","valueType": "value-add", "substeps": [], "expanded": false, "loop": null },
+        { "id": "p6", "seq": 6, "type": "end",      "text": "Übergabe an Spediteur", "owner": "Versand",   "valueType": "value-add", "substeps": [], "expanded": false, "loop": null }
+      ]
+    },
+    "inst-msa1": {
+      "params": { "repeats": 25, "tolerance": 3.5, "reference": 12.0, "kCg": 0.2, "kCgk": 0.1 },
+      "columnRef": { "instanceId": "inst-worksheet", "sheetId": "sheet-1", "columnId": "col-time" },
+      "lastResult": {
+        "n": 25,
+        "mean": 12.06,
+        "sd": 0.21,
+        "Cg": 1.39,
+        "Cgk": 1.21,
+        "bias": 0.06,
+        "biasPct": 1.71,
+        "passed": true
+      }
+    },
+    "inst-msa2": {
+      "params": { "repeats": 3, "alpha": 0.25, "tolerance": 3.5, "method": "anova" },
+      "columnRefs": {
+        "part":        { "instanceId": "inst-worksheet", "sheetId": "sheet-1", "columnId": "col-charge" },
+        "operator":    { "instanceId": "inst-worksheet", "sheetId": "sheet-1", "columnId": "col-op" },
+        "measurement": { "instanceId": "inst-worksheet", "sheetId": "sheet-1", "columnId": "col-time" }
+      },
+      "lastResult": {
+        "method": "anova",
+        "ndc": 4,
+        "grrPct": 28.4,
+        "repeatPct": 18.2,
+        "reproPct": 21.7,
+        "rating": "marginal"
+      }
+    },
+    "inst-cpk": {
+      "params": { "lsl": null, "usl": 13.5, "target": 12.0, "subgroupSize": 1 },
+      "columnRef": { "instanceId": "inst-worksheet", "sheetId": "sheet-1", "columnId": "col-time" },
+      "lastResult": {
+        "n": 20,
+        "mean": 13.07,
+        "sd": 0.943,
+        "withinSd": 0.834,
+        "cp": null,
+        "cpk": 0.17,
+        "pp": null,
+        "ppk": 0.15,
+        "ppmAboveUSL": 308000
+      }
+    },
+    "inst-ce": {
+      "inputs":  ["Kommissionierdauer", "Druckdauer Label", "Wartezeit Spediteur", "Verpackungsfehler", "WMS-Latenz"],
+      "outputs": ["Lieferzeit", "Out-of-Spec-Rate", "Kundenzufriedenheit"],
+      "scores": {
+        "0_0": 9, "0_1": 7, "0_2": 5,
+        "1_0": 7, "1_1": 5, "1_2": 3,
+        "2_0": 9, "2_1": 5, "2_2": 7,
+        "3_0": 3, "3_1": 7, "3_2": 9,
+        "4_0": 5, "4_1": 3, "4_2": 5
+      },
+      "weights": [10, 8, 6]
+    },
+    "inst-ishi": {
+      "problem": "Lieferzeit > 12 h",
+      "experts": [
+        { "id": "x1", "name": "K. Schulz",  "time": "2026-04-22T09:00:00.000Z" },
+        { "id": "x2", "name": "T. Maier",   "time": "2026-04-22T09:00:00.000Z" },
+        { "id": "x3", "name": "M. Weber",   "time": "2026-04-22T09:00:00.000Z" }
+      ],
+      "catLabels": {
+        "man":         "Mensch",
+        "machine":     "Maschine",
+        "method":      "Methode",
+        "material":    "Material",
+        "measurement": "Messung",
+        "milieu":      "Mitwelt"
+      },
+      "rows": [
+        { "id": "r1",  "cat": "man",         "text": "Schichtwechsel ohne Übergabe", "votes": 4 },
+        { "id": "r2",  "cat": "man",         "text": "Neue Mitarbeiter ungeschult",  "votes": 3 },
+        { "id": "r3",  "cat": "machine",     "text": "Nur 1 Druckerschlange",         "votes": 5 },
+        { "id": "r4",  "cat": "machine",     "text": "Scanner mit Akkuproblemen",     "votes": 2 },
+        { "id": "r5",  "cat": "method",      "text": "Pickreihenfolge nicht optimiert", "votes": 5 },
+        { "id": "r6",  "cat": "method",      "text": "Doppelte Qualitätsprüfung",      "votes": 1 },
+        { "id": "r7",  "cat": "material",    "text": "Verpackungsmaterial nicht griffbereit", "votes": 3 },
+        { "id": "r8",  "cat": "measurement", "text": "Erfassungszeit per Hand",        "votes": 2 },
+        { "id": "r9",  "cat": "milieu",      "text": "Lärm in Spitzenstunden",         "votes": 1 }
+      ],
+      "snapshots": [
+        { "name": "Workshop 1", "time": "2026-04-22T11:30:00.000Z", "rows": 9 }
+      ],
+      "experiments": [
+        { "id": "ex1", "text": "Drucker 2 zusätzlich aufstellen", "status": "planned" },
+        { "id": "ex2", "text": "Lagerlayout-Audit",                "status": "in-progress" }
+      ],
+      "facts": [
+        { "id": "f1", "text": "Druckwarteschlange im Schnitt 4,2 min" },
+        { "id": "f2", "text": "Pickwege 38 % über Benchmark" }
+      ],
+      "images": []
+    },
+    "inst-corr": {
+      "colRefs": [
+        { "instanceId": "inst-worksheet", "sheetId": "sheet-1", "columnId": "col-time" },
+        { "instanceId": "inst-worksheet", "sheetId": "sheet-1", "columnId": "col-id" }
+      ],
+      "confidenceLevel": 95,
+      "matrixMethod": "pearson",
+      "result": null,
+      "matrixResult": {
+        "method": "pearson",
+        "labels": ["Lieferzeit", "ID"],
+        "r":  [[1, -0.12], [-0.12, 1]],
+        "p":  [[0,  0.61], [ 0.61, 0]],
+        "n":  20
+      },
+      "filterMinR": null,
+      "filterMaxP": 0.05
+    },
+    "inst-dist": {
+      "columnRef": { "instanceId": "inst-worksheet", "sheetId": "sheet-1", "columnId": "col-time" },
+      "dataType": "continuous"
+    },
+    "inst-fmea": {
+      "risks": [
+        { "id": "f1", "process": "Kommissionierung", "failure": "Falscher Artikel gepickt", "causes": "Pickliste unklar; Ware verlegt", "effects": "Reklamation, Nachversand", "detection": "Sichtprüfung", "sev": 7, "occ": 4, "det": 5, "rpn": 140 },
+        { "id": "f2", "process": "Verpacken",       "failure": "Beschädigtes Paket",       "causes": "Falsches Polster",                "effects": "Transportschaden",       "detection": "End-Sichtkontrolle", "sev": 6, "occ": 3, "det": 4, "rpn":  72 },
+        { "id": "f3", "process": "Druck Label",     "failure": "Label unleserlich",        "causes": "Tinte leer; Falsche Druckqualität", "effects": "Sortierfehler Spediteur", "detection": "Stichprobe", "sev": 5, "occ": 5, "det": 7, "rpn": 175 },
+        { "id": "f4", "process": "Übergabe",        "failure": "Paket geht verloren",      "causes": "Übergabeliste fehlt",             "effects": "Komplettverlust",        "detection": "Tracking", "sev": 9, "occ": 2, "det": 6, "rpn": 108 }
+      ],
+      "scales": {
+        "severity":   [ { "value": 1, "label": "Vernachlässigbar" }, { "value": 5, "label": "Mittel" }, { "value": 10, "label": "Katastrophal" } ],
+        "occurrence": [ { "value": 1, "label": "Sehr selten" },      { "value": 5, "label": "Gelegentlich" }, { "value": 10, "label": "Sehr häufig" } ],
+        "detection":  [ { "value": 1, "label": "Fast sicher" },      { "value": 5, "label": "Mäßig" },        { "value": 10, "label": "Praktisch unmöglich" } ]
+      }
+    },
+    "inst-htest": {
+      "category": "mean",
+      "testType": "two-sample-t",
+      "direction": "two-sided",
+      "alpha": 0.05,
+      "powerGoal": 0.8,
+      "targetValue": 0,
+      "targetType": "null",
+      "colRef1": { "instanceId": "inst-worksheet", "sheetId": "sheet-1", "columnId": "col-time" },
+      "colRef2": { "instanceId": "inst-worksheet", "sheetId": "sheet-1", "columnId": "col-id" }
+    },
+    "inst-ssize": {
+      "category": "mean",
+      "testType": "two-sample-t",
+      "direction": "two-sided",
+      "alpha": 0.05,
+      "power": 0.9,
+      "sigma0": 1.0,
+      "sigmaAlt": 1.0,
+      "ratio": 1,
+      "delta": 0.5,
+      "sigma": 1.0
+    },
+    "inst-pair": {
+      "criteria": ["Lieferzeit", "Cpk", "Kundenzufriedenheit", "Kosten", "Umsetzungsdauer"],
+      "matrix": [
+        [1,    3,    5,    7,    5   ],
+        [0.33, 1,    3,    5,    3   ],
+        [0.20, 0.33, 1,    3,    1   ],
+        [0.14, 0.20, 0.33, 1,    0.33],
+        [0.20, 0.33, 1,    3,    1   ]
+      ],
+      "pairs": [[0,1],[0,2],[0,3],[0,4],[1,2],[1,3],[1,4],[2,3],[2,4],[3,4]],
+      "currentPair": 10,
+      "viewPhase": "results"
+    },
+    "inst-doea": {
+      "tab": "wizard",
+      "currentStep": "result",
+      "answers": {
+        "factor-count": "3",
+        "interaction-need": "yes",
+        "curvature-check": "no",
+        "budget": "16-32"
+      },
+      "result": "2^k full factorial mit 16 Runs (k=3, 2 Centerpoints)",
+      "history": ["intro", "factor-count", "interaction-need", "budget", "result"]
+    },
+    "inst-doep": {
+      "version": 3,
+      "doeName": "Lieferzeit-Optimierung Pilot",
+      "designType": "full",
+      "factors": [
+        { "name": "Pickreihenfolge", "levels": ["alphabetisch", "frequenzbasiert"], "encoding": [ { "value": "alphabetisch", "num": -1 }, { "value": "frequenzbasiert", "num": 1 } ] },
+        { "name": "Druckerzahl",     "levels": ["1", "2"],                          "encoding": [ { "value": "1", "num": -1 }, { "value": "2", "num": 1 } ] },
+        { "name": "Schichtmodell",   "levels": ["3-Schicht", "2-Schicht-vers"],     "encoding": [ { "value": "3-Schicht", "num": -1 }, { "value": "2-Schicht-vers", "num": 1 } ] }
+      ],
+      "responses": [
+        { "name": "Lieferzeit", "unit": "h", "goalsense": "minimize", "nreps": 2, "levels": [] },
+        { "name": "OOS-Rate",   "unit": "%", "goalsense": "minimize", "nreps": 2, "levels": [] }
+      ],
+      "options": { "centerPoints": 2, "blockCount": 1, "randomize": true, "seed": 42 },
+      "selectedRes": null,
+      "selectedPBIdx": 0,
+      "design": null,
+      "worksheetRef": null,
+      "evaluation": null,
+      "analysisResponseIdx": 0,
+      "fid": "doe-lzo-001",
+      "projectMode": false,
+      "projectName": "",
+      "projectPhases": [],
+      "activePhaseIdx": 0
+    },
+    "inst-reg": {
+      "colRefs": [
+        { "instanceId": "inst-worksheet", "sheetId": "sheet-1", "columnId": "col-id" },
+        { "instanceId": "inst-worksheet", "sheetId": "sheet-1", "columnId": "col-time" }
+      ],
+      "yKey": "col-time",
+      "regType": "polynomial",
+      "polyDegree": 1,
+      "confLevel": 95,
+      "alpha": 0.05,
+      "showCI": true,
+      "result": null,
+      "perXResults": null,
+      "activeXKey": "col-id",
+      "activeTab": "summary",
+      "excludedTerms": [],
+      "coefSortByP": false
+    },
+    "inst-glm": {
+      "colRefs": [
+        { "instanceId": "inst-worksheet", "sheetId": "sheet-1", "columnId": "col-time" },
+        { "instanceId": "inst-worksheet", "sheetId": "sheet-1", "columnId": "col-id" }
+      ],
+      "yKey": "col-time",
+      "trialsKey": null,
+      "successClass": null,
+      "method": "logistic",
+      "confLevel": 95,
+      "alpha": 0.05,
+      "cutoff": 0.5,
+      "result": null,
+      "activeTab": "summary"
+    },
+    "inst-cc": {
+      "chartTypeId": "i-mr",
+      "subgroupSize": 1,
+      "columnRef": { "instanceId": "inst-worksheet", "sheetId": "sheet-1", "columnId": "col-time" },
+      "baselineCount": 20,
+      "usl": 13.5,
+      "lsl": null,
+      "enabledRules": [1, 2, 3, 4, 5, 6, 7, 8]
+    },
+    "inst-ll": {
+      "lessons": [
+        { "id": "l1", "category": "Methodik", "text": "MSA Typ 1 hätte vor Cpk-Analyse erfolgen müssen — Ergebnis war zunächst irreführend.", "date": "2026-04-28", "owner": "K. Schulz", "impact": "high" },
+        { "id": "l2", "category": "Tooling",  "text": "Direkter WMS-Export spart 4 h/Iteration vs. manueller Excel-Pflege.",                "date": "2026-04-30", "owner": "T. Maier",  "impact": "medium" },
+        { "id": "l3", "category": "Team",     "text": "Frühzeitige Einbindung des Betriebsrats verhinderte Eskalation.",                       "date": "2026-05-01", "owner": "M. Weber",  "impact": "high" }
+      ]
+    }
+  }
+}

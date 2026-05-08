@@ -1,0 +1,483 @@
+/* ============================================================
+   Project Charter Module Styles (project-charter.css)
+   BEM: .pc__ prefix
+   ============================================================ */
+
+/* ===== Sections ===== */
+/* Section labels use global .dmike-split__output-section */
+.pc__section {
+  margin-bottom: var(--spacing-xl);
+}
+
+/* ===== Problem Statement ===== */
+.pc__problem-wrap {
+  position: relative;
+}
+
+/* Formatting toolbar */
+.pc__problem-toolbar {
+  display: flex;
+  gap: 2px;
+  padding: 4px 6px;
+  background: var(--color-bg-secondary);
+  border: var(--border-width) solid var(--color-border-secondary);
+  border-bottom: none;
+  border-radius: var(--border-radius) var(--border-radius) 0 0;
+}
+
+.pc__fmt-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 26px;
+  padding: 0;
+  border: none;
+  border-radius: var(--border-radius-sm);
+  background: transparent;
+  color: var(--color-text-secondary);
+  font-family: var(--font-family);
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+  transition: background var(--transition-speed), color var(--transition-speed);
+}
+
+.pc__fmt-btn:hover {
+  background: var(--color-bg-tertiary);
+  color: var(--color-text-primary);
+}
+
+.pc__fmt-btn:active {
+  background: var(--color-border-secondary);
+}
+
+/* Contenteditable rich-text editor */
+.pc__problem-editor {
+  min-height: 120px;
+  max-height: 320px;
+  overflow-y: auto;
+  padding: var(--spacing-sm) var(--spacing-md);
+  font-size: var(--font-size-md);
+  line-height: 1.6;
+  border-radius: 0 0 var(--border-radius) var(--border-radius);
+  outline: none;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.pc__problem-editor:focus {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 2px var(--color-accent-light);
+}
+
+/* Placeholder for empty editor */
+.pc__problem-editor--empty::before {
+  content: attr(data-placeholder);
+  color: var(--color-text-tertiary);
+  pointer-events: none;
+}
+
+.pc__char-count {
+  text-align: right;
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+  margin-top: var(--spacing-xs);
+  transition: color var(--transition-speed);
+}
+
+.pc__char-count--warn {
+  color: var(--color-warning);
+}
+
+.pc__char-count--over {
+  color: var(--color-error);
+  font-weight: var(--font-weight-semibold);
+}
+
+/* ===== Goals Table ===== */
+.pc__no-goals {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  margin-bottom: var(--spacing-md);
+}
+
+.pc__goals-table-wrap {
+  overflow-x: auto;
+  margin-bottom: var(--spacing-sm);
+}
+
+.pc__goals-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--font-size-sm);
+}
+
+.pc__goals-table th {
+  text-align: left;
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-secondary);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-bottom: 2px solid var(--color-border-primary);
+  white-space: nowrap;
+}
+
+.pc__goals-table td {
+  padding: var(--spacing-xs) var(--spacing-xs);
+  border-bottom: var(--border-width) solid var(--color-border-secondary);
+  vertical-align: middle;
+}
+
+.pc__goal-row:hover td {
+  background: var(--color-bg-secondary);
+}
+
+/* Column widths */
+.pc__col-nr    { width: 28px; text-align: center; color: var(--color-text-tertiary); font-size: var(--font-size-xs); }
+.pc__col-drag  { width: 20px; text-align: center; color: var(--color-text-tertiary); cursor: grab; user-select: none; }
+.pc__col-drag:active { cursor: grabbing; }
+
+.pc__goal-row--dragging td { opacity: 0.4; }
+.pc__goal-row--drop-before td { box-shadow: inset 0 2px 0 0 var(--color-accent, var(--color-info)); }
+.pc__goal-row--drop-after  td { box-shadow: inset 0 -2px 0 0 var(--color-accent, var(--color-info)); }
+.pc__col-date  { width: 140px; }
+.pc__col-metric { width: 160px; }
+.pc__col-target { width: 120px; }
+.pc__col-zeg   { width: 130px; }
+.pc__col-del   { width: 36px; text-align: center; }
+
+/* Cell inputs use global .field .field--sm .field--ghost; class is kept as JS hook */
+.pc__date--past {
+  color: var(--color-warning);
+}
+
+/* ===== ZEG (Goal Achievement Level) ===== */
+.pc__zeg-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  position: relative;
+}
+
+/* ZEG numeric input: global .field .field--sm .field--ghost + local overrides */
+.pc__zeg-input {
+  width: 56px;
+  text-align: center;
+}
+
+.pc__zeg-bar-track {
+  height: 4px;
+  background: var(--color-bg-tertiary);
+  border-radius: 2px;
+  overflow: hidden;
+  width: 100%;
+}
+
+.pc__zeg-bar-fill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width var(--transition-speed), background var(--transition-speed);
+}
+
+.pc__zeg-done {
+  position: absolute;
+  right: 4px;
+  top: 2px;
+  font-size: var(--font-size-xs);
+  color: var(--color-success);
+  font-weight: var(--font-weight-semibold);
+}
+
+/* ===== Add button ===== */
+.pc__add-btn {
+  margin-top: var(--spacing-sm);
+}
+
+/* ===== Org Chart (Canvas-based) ===== */
+
+.pc__org-section {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 0;
+}
+
+/* Toolbar */
+.pc__org-toolbar {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-xs) 0;
+  margin-bottom: var(--spacing-xs);
+}
+
+/* Card: flex row housing org chart + editor side-by-side */
+.pc__org-card {
+  display: flex;
+  width: 100%;
+}
+
+/* Canvas wrapper (viewport) */
+.pc__org-wrap {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  height: 420px;
+  min-height: 300px;
+  overflow: hidden;
+  cursor: grab;
+  border: var(--border-width) solid var(--color-border-secondary);
+  border-radius: var(--border-radius);
+  background: var(--color-bg-primary);
+}
+
+.pc__org-wrap:active { cursor: grabbing; }
+
+/* Dot grid background */
+.pc__org-wrap::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(circle, var(--color-border-secondary) 1px, transparent 1px);
+  background-size: 24px 24px;
+  opacity: 0.35;
+  pointer-events: none;
+}
+
+/* Canvas (transformed) */
+.pc__org-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform-origin: 0 0;
+}
+
+/* SVG connector lines */
+.pc__org-lines {
+  position: absolute;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  overflow: visible;
+}
+
+.pc__org-lines path {
+  fill: none;
+  stroke: var(--pc-org-line-color, var(--color-border-secondary));
+  stroke-width: var(--pc-org-line-width, 2);
+  stroke-dasharray: var(--pc-org-line-dasharray, none);
+  stroke-linecap: round;
+}
+
+.pc__org-lines path.pc__org-line--hl {
+  stroke: var(--color-accent);
+  filter: drop-shadow(0 0 4px var(--color-accent-light));
+}
+
+/* Nodes */
+.pc__org-node {
+  position: absolute;
+  background: var(--pc-org-node-bg, var(--color-bg-secondary));
+  border-width: var(--pc-org-node-border-width, var(--border-width));
+  border-style: var(--pc-org-node-border-style, solid);
+  border-color: var(--pc-org-node-border-color, var(--color-border-secondary));
+  border-radius: var(--border-radius);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  user-select: none;
+  cursor: default;
+  transition: border-color var(--transition-speed), box-shadow var(--transition-speed);
+}
+
+.pc__org-node:hover {
+  border-color: rgba(59, 130, 246, 0.35);
+}
+
+.pc__org-node--sel {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 1px var(--color-accent), 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.pc__org-node--drag {
+  opacity: 0.8;
+  z-index: 999;
+}
+
+/* Smooth transition for sibling nodes during reorder drag */
+.pc__org-wrap--reordering .pc__org-node:not(.pc__org-node--drag) {
+  transition: left 0.2s ease, top 0.2s ease;
+}
+
+/* Drop indicator line between siblings */
+.pc__org-drop-line {
+  position: absolute;
+  width: 3px;
+  background: var(--color-accent);
+  border-radius: 1.5px;
+  pointer-events: none;
+  z-index: 998;
+  display: none;
+  box-shadow: 0 0 6px var(--color-accent-light);
+}
+
+.pc__org-node-title {
+  padding: 10px 12px 4px;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  line-height: 1.3;
+  word-break: break-word;
+}
+
+.pc__org-node-desc {
+  padding: 0 12px 10px;
+  font-size: var(--font-size-xs);
+  line-height: 1.45;
+  color: var(--color-text-secondary);
+  word-break: break-word;
+}
+
+/* Node action bar */
+.pc__org-node-bar {
+  display: flex;
+  border-top: var(--border-width) solid var(--color-border-secondary);
+  border-radius: 0 0 var(--border-radius) var(--border-radius);
+  overflow: hidden;
+}
+
+.pc__org-node-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  padding: 6px 2px;
+  font-size: 0.7rem;
+  font-family: var(--font-family);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-tertiary);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: background var(--transition-speed), color var(--transition-speed);
+}
+
+.pc__org-node-btn:hover {
+  background: var(--color-bg-tertiary);
+  color: var(--color-text-primary);
+}
+
+.pc__org-node-btn--del:hover {
+  color: var(--color-error);
+  background: rgba(239, 68, 68, 0.08);
+}
+
+.pc__org-node-btn + .pc__org-node-btn {
+  border-left: var(--border-width) solid var(--color-border-secondary);
+}
+
+.pc__org-node-btn svg {
+  width: 13px;
+  height: 13px;
+}
+
+/* Connection dots */
+.pc__org-dot-t,
+.pc__org-dot-b {
+  position: absolute;
+  left: 50%;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--color-border-secondary);
+  pointer-events: none;
+  transition: background var(--transition-speed), transform var(--transition-speed);
+}
+
+.pc__org-dot-t {
+  top: 0;
+  transform: translate(-50%, -50%);
+}
+
+.pc__org-dot-b {
+  bottom: 0;
+  transform: translate(-50%, 50%);
+}
+
+.pc__org-node:hover .pc__org-dot-t,
+.pc__org-node:hover .pc__org-dot-b,
+.pc__org-node--sel .pc__org-dot-t,
+.pc__org-node--sel .pc__org-dot-b {
+  background: var(--color-accent);
+  transform: translate(-50%, -50%) scale(1.3);
+}
+
+.pc__org-node:hover .pc__org-dot-b,
+.pc__org-node--sel .pc__org-dot-b {
+  transform: translate(-50%, 50%) scale(1.3);
+}
+
+/* Empty state */
+.pc__org-empty {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.pc__org-empty p {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-tertiary);
+  text-align: center;
+}
+
+.pc__org-empty--hidden {
+  display: none;
+}
+
+/* Editor side-panel (mirrors dmike-chart-editor pattern) */
+.pc__org-editor {
+  width: 0;
+  overflow: hidden;
+  background: var(--color-bg-primary);
+  border-left: var(--border-width) solid var(--color-border-secondary);
+  transition: width 0.32s ease;
+  flex-shrink: 0;
+}
+
+.pc__org-editor--open {
+  width: 336px;
+}
+
+.pc__org-editor-inner {
+  width: 336px;
+  max-height: 100%;
+  height: 100%;
+  overflow-y: auto;
+  padding: var(--spacing-md);
+}
+
+.pc__org-editor-inner::-webkit-scrollbar {
+  width: 5px;
+}
+
+.pc__org-editor-inner::-webkit-scrollbar-thumb {
+  background: var(--color-border-secondary);
+  border-radius: 3px;
+}
+
+/* Form groups use global .field-group / .field-group--inline (components.css) */
+
+.pc__org-form-sep {
+  border: none;
+  border-top: var(--border-width) solid var(--color-border-secondary);
+  margin: var(--spacing-md) 0 var(--spacing-xs);
+}
+
+.pc__org-editor .dmike-chart-ed-color-swatch {
+  width: 28px;
+  height: 28px;
+  border-radius: var(--border-radius-sm);
+  border: var(--border-width) solid var(--color-border-secondary);
+  cursor: pointer;
+  flex-shrink: 0;
+}

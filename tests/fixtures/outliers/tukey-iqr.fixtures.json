@@ -1,0 +1,83 @@
+{
+  "algorithm_id": "tukey-iqr",
+  "generated_with": {
+    "engine": "js/engines/outlier-test-engine.js"
+  },
+  "generated_at": "2026-05-06T00:00:00Z",
+  "generator_version": "1.0.0",
+  "tolerances": {
+    "default": { "relative": 1e-12, "absolute": 1e-14 }
+  },
+  "test_cases": [
+    {
+      "id": "tukey_basic_single_high",
+      "tier": "standard",
+      "description": "Single high outlier at 100, default factor k=1.5",
+      "reference": "Tukey (1977), Exploratory Data Analysis",
+      "inputs": {
+        "data": [1, 2, 3, 4, 5, 6, 7, 8, 9, 100],
+        "factor": 1.5
+      },
+      "expected": {
+        "n": 10,
+        "q1": 3.25,
+        "median": 5.5,
+        "q3": 7.75,
+        "iqr": 4.5,
+        "fenceLower": -3.5,
+        "fenceUpper": 14.5
+      }
+    },
+    {
+      "id": "tukey_two_sided",
+      "tier": "standard",
+      "description": "Both a low (-50) and a high (50) outlier",
+      "reference": "Synthetic",
+      "inputs": {
+        "data": [-50, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 50],
+        "factor": 1.5
+      },
+      "expected": {
+        "n": 12,
+        "q1": 2.75,
+        "median": 5.5,
+        "q3": 8.25,
+        "iqr": 5.5,
+        "fenceLower": -5.5,
+        "fenceUpper": 16.5
+      }
+    },
+    {
+      "id": "tukey_extreme_factor3",
+      "tier": "standard",
+      "description": "Stricter factor k=3 (Tukey 'extreme outlier' fence) on the same sample",
+      "reference": "Tukey (1977)",
+      "inputs": {
+        "data": [1, 2, 3, 4, 5, 6, 7, 8, 9, 100],
+        "factor": 3.0
+      },
+      "expected": {
+        "n": 10,
+        "q1": 3.25,
+        "median": 5.5,
+        "q3": 7.75,
+        "iqr": 4.5,
+        "fenceLower": -10.25,
+        "fenceUpper": 21.25
+      }
+    },
+    {
+      "id": "tukey_too_few",
+      "tier": "edge",
+      "description": "n=3 — fewer than 4 points, IQR/quartiles unstable",
+      "inputs": {
+        "data": [1, 2, 3],
+        "factor": 1.5
+      },
+      "expected_error": {
+        "type": "Error",
+        "message_contains": "min4"
+      }
+    }
+  ]
+}

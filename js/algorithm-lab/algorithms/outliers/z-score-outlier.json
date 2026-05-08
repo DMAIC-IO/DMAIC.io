@@ -1,0 +1,80 @@
+{
+  "id": "z-score-outlier",
+  "name": { "de": "Z-Score (Ausreißer)", "en": "Z-Score (Outliers)" },
+  "category": "outliers",
+  "subcategory": "parametric",
+  "status": "validated",
+  "version": "1.0.0",
+  "description": {
+    "short": {
+      "de": "Markiert Punkte mit |Z| > Schwelle anhand von Mittelwert und Standardabweichung.",
+      "en": "Flags points with |Z| > threshold using mean and standard deviation."
+    },
+    "long": {
+      "de": "Der einfachste Ausreißer-Detektor: standardisiere jeden Wert und markiere alle, deren Betrag eine Schwelle (typisch 3) überschreitet. Achtung — Mittelwert und Standardabweichung werden selbst durch Ausreißer verzerrt (Maskierung), darum ist der Modified Z-Score (MAD-basiert) bei verseuchten Daten zuverlässiger.",
+      "en": "The simplest outlier detector: standardise every value and flag those whose magnitude exceeds a threshold (typically 3). Caveat — mean and standard deviation are themselves distorted by outliers (masking), so the Modified Z-score (MAD-based) is more reliable on contaminated data."
+    }
+  },
+  "documentation": {
+    "formulas": [
+      { "label": "Z-Score", "latex": "Z_i = \\frac{x_i - \\bar{x}}{s}",
+        "description": { "de": "Standardisierter Wert", "en": "Standardised value" } },
+      { "label": "Schwelle", "latex": "|Z_i| > z_{\\text{thr}}",
+        "description": { "de": "Standard z_thr = 3 (≈ 99.7 % unter Normalverteilung)", "en": "Default z_thr = 3 (≈ 99.7 % under normality)" } }
+    ],
+    "assumptions": [
+      { "de": "Daten näherungsweise normalverteilt", "en": "Data approximately normal" },
+      { "de": "Stichprobengröße: n ≥ 30 für stabile Schätzung von s", "en": "Sample size: n ≥ 30 for stable s" }
+    ],
+    "limitations": [
+      { "de": "Maskierungsproblem bei mehreren Ausreißern", "en": "Masking effect with multiple outliers" },
+      { "de": "Liefert keinen p-Wert", "en": "Produces no p-value" }
+    ],
+    "references": [
+      { "source": "NIST/SEMATECH e-Handbook of Statistical Methods, Section 1.3.5.17.1" }
+    ],
+    "minitab_equivalent": "—"
+  },
+  "source": {
+    "function_name": "zScoreOutliers",
+    "file_path": "js/engines/outlier-test-engine.js",
+    "signature": {
+      "parameters": [
+        { "name": "data", "type": "number[]", "required": true,
+          "description": { "de": "Messdaten", "en": "Data" } },
+        { "name": "threshold", "type": "number", "required": false,
+          "description": { "de": "Schwelle (Default 3)", "en": "Threshold (default 3)" } }
+      ],
+      "returns": {
+        "type": "object",
+        "properties": {
+          "mean":     { "type": "number", "description": { "de": "Stichprobenmittel", "en": "Sample mean" } },
+          "sd":       { "type": "number", "description": { "de": "Stichproben-Standardabweichung", "en": "Sample SD" } },
+          "outliers": { "type": "Array",  "description": { "de": "Markierte Punkte", "en": "Flagged points" } }
+        }
+      }
+    }
+  },
+  "try_it": {
+    "input_schema": {
+      "fields": [
+        { "name": "data", "label": { "de": "Messdaten", "en": "Data" }, "type": "textarea", "parse_as": "number_array", "required": true },
+        { "name": "threshold", "label": { "de": "Schwelle", "en": "Threshold" }, "type": "number", "default": 3 }
+      ],
+      "csv_mapping": { "data_column": "Automatically uses first numeric column" }
+    },
+    "output_schema": {
+      "display_fields": ["mean", "sd", "n"],
+      "primary_field": "sd",
+      "format": {
+        "mean": { "decimals": 4, "label": "x̄" },
+        "sd":   { "decimals": 4, "label": "s" },
+        "n":    { "decimals": 0, "label": "n" }
+      }
+    }
+  },
+  "changelog": [
+    { "version": "1.0.0", "date": "2026-05-06", "type": "initial",
+      "description": { "de": "Erstimplementierung", "en": "Initial implementation" }, "breaking": false }
+  ]
+}

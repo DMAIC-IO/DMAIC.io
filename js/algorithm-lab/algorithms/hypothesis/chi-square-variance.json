@@ -1,0 +1,176 @@
+{
+  "id": "chi-square-variance",
+  "name": {
+    "de": "Chi-Quadrat-Varianztest",
+    "en": "Chi-Square Variance Test"
+  },
+  "category": "hypothesis",
+  "subcategory": "variance",
+  "status": "validated",
+  "version": "1.0.0",
+
+  "description": {
+    "short": {
+      "de": "Prüft, ob die Populationsvarianz einem hypothetischen Wert entspricht (Ein-Stichproben-Varianztest).",
+      "en": "Tests whether the population variance equals a hypothesized value (one-sample variance test)."
+    },
+    "long": {
+      "de": "Der Chi-Quadrat-Varianztest prüft die Nullhypothese, dass die Varianz einer normalverteilten Population einem bestimmten Wert σ₀² entspricht. Die Teststatistik χ² = (n−1)·s²/σ₀² folgt einer Chi-Quadrat-Verteilung mit n−1 Freiheitsgraden. Voraussetzung ist die Normalverteilung der Daten — bei Abweichungen sollte ein Bootstrap-Ansatz verwendet werden.",
+      "en": "The chi-square variance test evaluates the null hypothesis that the variance of a normally distributed population equals a specified value σ₀². The test statistic χ² = (n−1)·s²/σ₀² follows a chi-squared distribution with n−1 degrees of freedom. The test requires normally distributed data — for non-normal data, a bootstrap approach should be used."
+    }
+  },
+
+  "documentation": {
+    "formulas": [
+      {
+        "label": "χ²",
+        "latex": "\\chi^2 = \\frac{(n-1) \\cdot s^2}{\\sigma_0^2}",
+        "description": {
+          "de": "Teststatistik: skalierte Stichprobenvarianz unter H₀",
+          "en": "Test statistic: scaled sample variance under H₀"
+        }
+      },
+      {
+        "label": "H₀",
+        "latex": "H_0: \\sigma^2 = \\sigma_0^2",
+        "description": {
+          "de": "Nullhypothese: Populationsvarianz entspricht dem Zielwert",
+          "en": "Null hypothesis: population variance equals the target value"
+        }
+      },
+      {
+        "label": "KI",
+        "latex": "\\left[\\frac{(n-1)s^2}{\\chi^2_{1-\\alpha/2}},\\; \\frac{(n-1)s^2}{\\chi^2_{\\alpha/2}}\\right]",
+        "description": {
+          "de": "Konfidenzintervall für die Populationsvarianz",
+          "en": "Confidence interval for the population variance"
+        }
+      }
+    ],
+    "assumptions": [
+      { "de": "Daten sind normalverteilt", "en": "Data are normally distributed" },
+      { "de": "Beobachtungen sind unabhängig", "en": "Observations are independent" },
+      { "de": "Stetige (kontinuierliche) Daten", "en": "Continuous data" }
+    ],
+    "limitations": [
+      { "de": "Empfindlich gegenüber Abweichungen von der Normalverteilung", "en": "Sensitive to departures from normality" },
+      { "de": "Bei nicht-normalverteilten Daten lieber Levene-Test oder Bootstrap verwenden", "en": "For non-normal data, prefer Levene test or bootstrap methods" }
+    ],
+    "references": [
+      { "source": "Montgomery, D. C. (2019), Introduction to Statistical Quality Control, 8th Ed., Chapter 4" },
+      { "source": "NIST/SEMATECH e-Handbook of Statistical Methods, Section 7.2.3.2" }
+    ],
+    "minitab_equivalent": "Stat > Basic Statistics > 1 Variance"
+  },
+
+  "source": {
+    "function_name": "chiSquareVarianceTest",
+    "file_path": "js/engines/hypothesis-test-engine.js",
+    "signature": {
+      "parameters": [
+        {
+          "name": "data",
+          "type": "number[]",
+          "required": true,
+          "description": { "de": "Array von Messwerten", "en": "Array of measurement values" }
+        },
+        {
+          "name": "sigma0Sq",
+          "type": "number",
+          "required": true,
+          "description": { "de": "Hypothetische Varianz σ₀²", "en": "Hypothesized variance σ₀²" }
+        },
+        {
+          "name": "direction",
+          "type": "string",
+          "required": false,
+          "description": { "de": "Testrichtung: 'two-sided', 'greater', 'less'", "en": "Test direction: 'two-sided', 'greater', 'less'" }
+        },
+        {
+          "name": "alpha",
+          "type": "number",
+          "required": false,
+          "description": { "de": "Signifikanzniveau (Standard: 0.05)", "en": "Significance level (default: 0.05)" }
+        }
+      ],
+      "returns": {
+        "type": "object",
+        "properties": {
+          "statistic": { "type": "number", "description": { "de": "χ²-Teststatistik", "en": "χ² test statistic" } },
+          "pValue": { "type": "number", "description": { "de": "p-Wert", "en": "p-value" } },
+          "df": { "type": "number", "description": { "de": "Freiheitsgrade", "en": "Degrees of freedom" } },
+          "sampleVariance": { "type": "number", "description": { "de": "Stichprobenvarianz", "en": "Sample variance" } },
+          "reject": { "type": "boolean", "description": { "de": "H₀ abgelehnt?", "en": "Reject H₀?" } }
+        }
+      }
+    },
+    "code_snippet": null
+  },
+
+  "try_it": {
+    "input_schema": {
+      "fields": [
+        {
+          "name": "data",
+          "label": { "de": "Messdaten", "en": "Measurement Data" },
+          "type": "textarea",
+          "placeholder": { "de": "Werte getrennt durch Komma, Leerzeichen oder Zeilenumbruch", "en": "Values separated by commas, spaces, or newlines" },
+          "parse_as": "number_array",
+          "required": true
+        },
+        {
+          "name": "sigma0Sq",
+          "label": { "de": "Hypothetische Varianz σ₀²", "en": "Hypothesized Variance σ₀²" },
+          "type": "number",
+          "placeholder": { "de": "z.B. 2.5", "en": "e.g. 2.5" },
+          "parse_as": "number",
+          "required": true
+        },
+        {
+          "name": "direction",
+          "label": { "de": "Testrichtung", "en": "Test Direction" },
+          "type": "select",
+          "options": [
+            { "value": "two-sided", "label": { "de": "≠ Zweiseitig", "en": "≠ Two-sided" } },
+            { "value": "greater", "label": { "de": "> Größer", "en": "> Greater" } },
+            { "value": "less", "label": { "de": "< Kleiner", "en": "< Less" } }
+          ],
+          "parse_as": "string",
+          "required": false
+        },
+        {
+          "name": "alpha",
+          "label": { "de": "Signifikanzniveau α", "en": "Significance Level α" },
+          "type": "number",
+          "placeholder": { "de": "0.05", "en": "0.05" },
+          "parse_as": "number",
+          "required": false
+        }
+      ]
+    },
+    "output_schema": {
+      "display_fields": ["statistic", "pValue", "df", "sampleVariance", "ci", "reject"],
+      "primary_field": "statistic",
+      "format": {
+        "statistic": { "decimals": 6, "label": "χ²" },
+        "pValue": { "decimals": 6, "label": "p-Value" },
+        "df": { "decimals": 0, "label": "df" },
+        "sampleVariance": { "decimals": 6, "label": "s²" },
+        "reject": { "decimals": 0, "label": { "de": "H₀ abgelehnt", "en": "Reject H₀" } }
+      }
+    }
+  },
+
+  "changelog": [
+    {
+      "version": "1.0.0",
+      "date": "2026-03-31",
+      "type": "initial",
+      "description": {
+        "de": "Erstimplementierung mit χ²-Statistik, p-Wert, KI und Entscheidung",
+        "en": "Initial implementation with χ² statistic, p-value, CI and decision"
+      },
+      "breaking": false
+    }
+  ]
+}

@@ -1,0 +1,321 @@
+/* ============================================================
+   C&E Matrix Module Styles (ce-matrix.css)
+   BEM: .ce-matrix__ prefix
+   ============================================================ */
+
+/* ===== Toolbar ===== */
+.ce-matrix__toolbar {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-xs) 0;
+}
+
+.ce-matrix__toolbar-spacer {
+  flex: 1;
+}
+
+
+/* ===== Body override — don't stretch to fill viewport ===== */
+.ce-matrix .module-container__body {
+  flex: none;
+}
+
+/* ===== Matrix Wrapper ===== */
+.ce-matrix__wrap {
+  display: inline-block;
+  max-width: 100%;
+  overflow: auto;
+  border: var(--border-width) solid var(--color-border-secondary);
+  border-radius: var(--border-radius-lg);
+  background: var(--color-bg-secondary);
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-border-secondary) transparent;
+}
+
+.ce-matrix__wrap::-webkit-scrollbar { height: 6px; width: 6px; }
+.ce-matrix__wrap::-webkit-scrollbar-thumb {
+  background: var(--color-border-secondary);
+  border-radius: 3px;
+}
+
+/* ===== Table ===== */
+.ce-matrix__table {
+  border-collapse: collapse;
+  width: max-content;
+}
+
+.ce-matrix__table th,
+.ce-matrix__table td {
+  padding: var(--spacing-sm) 10px;
+  text-align: center;
+  border: var(--border-width) solid var(--color-border-secondary);
+  font-size: var(--font-size-sm);
+  position: relative;
+}
+
+.ce-matrix__table th {
+  background: var(--color-bg-tertiary);
+  font-weight: var(--font-weight-semibold);
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+/* ===== Weight row ===== */
+.ce-matrix__weight-row th {
+  background: var(--color-bg-secondary) !important;
+  padding: var(--spacing-xs) 6px !important;
+  border-bottom: 2px solid var(--color-border-secondary);
+}
+
+.ce-matrix__weight-label {
+  text-align: right !important;
+  font-size: var(--font-size-xs) !important;
+  color: var(--color-text-tertiary) !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+}
+
+.ce-matrix__weight-cell {
+  padding: var(--spacing-xs) 4px !important;
+}
+
+.ce-matrix__weight-select {
+  width: 48px;
+  padding: 2px 4px;
+  border: var(--border-width) solid var(--color-border-secondary);
+  border-radius: var(--border-radius-sm);
+  background: var(--color-bg-primary);
+  color: var(--color-text-primary);
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  text-align: center;
+  cursor: pointer;
+  outline: none;
+}
+
+.ce-matrix__weight-select:focus {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 2px rgba(0, 102, 204, 0.15);
+}
+
+/* ===== Corner cell ===== */
+.ce-matrix__corner {
+  background: var(--color-bg-secondary) !important;
+  border-color: var(--color-border-secondary) !important;
+}
+
+/* ===== Output headers (vertical) ===== */
+.ce-matrix__output-header {
+  white-space: nowrap;
+  height: 140px;
+  vertical-align: bottom;
+  position: relative;
+  padding-bottom: 28px !important;
+}
+
+.ce-matrix__output-header-content {
+  writing-mode: vertical-lr;
+  text-orientation: mixed;
+  transform: rotate(180deg);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 100%;
+}
+
+.ce-matrix__output-name {
+  border: none;
+  background: transparent;
+  color: var(--color-text-secondary);
+  font-family: var(--font-family);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  width: auto;
+  height: 100%;
+  box-sizing: border-box;
+  outline: none;
+  padding: 2px 4px;
+  border-radius: var(--border-radius-sm);
+}
+
+.ce-matrix__output-name:focus {
+  background: var(--color-accent);
+  background: rgba(0, 102, 204, 0.1);
+  color: var(--color-text-primary);
+}
+
+/* ===== Input name cells ===== */
+.ce-matrix__name-cell {
+  min-width: 130px;
+  max-width: 200px;
+  text-align: left !important;
+  padding: 0 !important;
+  background: var(--color-bg-secondary);
+}
+
+.ce-matrix__input-name {
+  width: 100%;
+  border: none;
+  background: transparent;
+  color: var(--color-text-primary);
+  font-family: var(--font-family);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  padding: 9px 30px 9px 12px;
+  outline: none;
+}
+
+.ce-matrix__input-name:focus {
+  background: rgba(0, 102, 204, 0.08);
+}
+
+.ce-matrix__input-name::placeholder {
+  color: var(--color-text-tertiary);
+  opacity: 0.6;
+}
+
+/* ===== Delete buttons ===== */
+.ce-matrix__del-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--color-text-tertiary);
+  cursor: pointer;
+  font-size: var(--font-size-xs);
+  line-height: 1;
+  transition: all var(--transition-speed);
+  opacity: 0;
+}
+
+.ce-matrix__name-cell:hover .ce-matrix__row-del-btn,
+.ce-matrix__output-header:hover .ce-matrix__col-del-btn {
+  opacity: 1;
+}
+
+.ce-matrix__del-btn:hover {
+  background: var(--color-error, #ef4444);
+  color: #fff;
+}
+
+.ce-matrix__row-del-btn {
+  position: absolute;
+  right: 4px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.ce-matrix__col-del-btn {
+  position: absolute;
+  bottom: 4px;
+  left: 50%;
+  transform: translateX(-50%);
+  writing-mode: horizontal-tb;
+}
+
+/* ===== Score cells ===== */
+.ce-matrix__score-cell {
+  width: 52px;
+  min-width: 52px;
+  padding: 0 !important;
+}
+
+.ce-matrix__score-input {
+  width: 100%;
+  border: none;
+  background: transparent;
+  color: var(--color-text-primary);
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-semibold);
+  text-align: center;
+  padding: 8px 0;
+  outline: none;
+  -moz-appearance: textfield;
+}
+
+.ce-matrix__score-input::-webkit-inner-spin-button,
+.ce-matrix__score-input::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.ce-matrix__score-input:focus {
+  background: rgba(0, 102, 204, 0.08);
+}
+
+/* ===== Result cells ===== */
+.ce-matrix__result-cell {
+  font-family: var(--font-family-mono);
+  font-weight: 700;
+  font-size: var(--font-size-md);
+  min-width: 60px;
+  transition: background var(--transition-speed), color var(--transition-speed);
+}
+
+/* ===== Total labels ===== */
+.ce-matrix__total-label {
+  background: var(--color-bg-tertiary) !important;
+  font-family: var(--font-family-mono);
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--font-size-xs);
+  color: var(--color-accent) !important;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+/* ===== Vertical total label (Σ Zeile in header) ===== */
+.ce-matrix__total-label--vertical {
+  height: 140px;
+  vertical-align: bottom;
+  padding-bottom: 28px !important;
+}
+
+/* ===== Grand total ===== */
+.ce-matrix__grand-total {
+  background: var(--color-bg-tertiary) !important;
+  font-family: var(--font-family-mono);
+  font-weight: 700;
+  font-size: var(--font-size-md);
+  color: var(--color-accent);
+}
+
+/* ===== Legend ===== */
+.ce-matrix__legend {
+  margin-top: var(--spacing-lg);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+  flex-wrap: wrap;
+}
+
+.ce-matrix__legend-bar {
+  width: 200px;
+  height: 14px;
+  border-radius: 7px;
+  background: linear-gradient(90deg, #22c55e, #84cc16, #eab308, #f97316, #ef4444);
+  border: var(--border-width) solid var(--color-border-secondary);
+}
+
+.ce-matrix__legend-label {
+  font-family: var(--font-family-mono);
+  font-weight: var(--font-weight-medium);
+}
+
+.ce-matrix__legend-info {
+  margin-left: var(--spacing-md);
+  color: var(--color-text-tertiary);
+}

@@ -1,0 +1,149 @@
+/* ============================================================
+   Histogram Module Styles (histogram.css)
+   BEM: .histogram__ prefix
+   ============================================================ */
+
+/* Layout provided by .dmike-split (css/modules.css) */
+.histogram .dmike-split__input { width: 280px; }
+
+/* Section labels: use global .dmike-split__output-section (css/modules.css) */
+
+/* Fields use global .field / .field-group (components.css) */
+/* Column selects: use global .ds-picker (dataset-picker.css) */
+/* Buttons: use global .btn (components.css) */
+
+.histogram__error {
+  display: none;
+  font-size: var(--font-size-sm);
+  color: var(--color-error, #ef4444);
+  background: rgba(239, 68, 68, 0.08);
+  border: var(--border-width) solid rgba(239, 68, 68, 0.2);
+  border-radius: var(--border-radius);
+  padding: var(--spacing-sm);
+}
+
+/* Options */
+.histogram__options {
+  display: flex;
+  gap: var(--spacing-sm);
+  align-items: flex-start;
+  flex-direction: column;
+}
+
+/* Placeholder */
+.histogram__placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  min-height: 300px;
+  color: var(--color-text-tertiary);
+  gap: var(--spacing-md);
+}
+
+.histogram__placeholder p {
+  max-width: 300px;
+  text-align: center;
+  font-size: var(--font-size-sm);
+}
+
+/* Chart area */
+.histogram__chart-area {
+  display: flex;
+  flex-direction: column;
+}
+
+.histogram__chart-wrap {
+  position: relative;
+  height: 420px;
+  overflow: hidden;
+  border: 1px solid var(--color-border-primary);
+  border-radius: var(--border-radius-sm);
+  background: var(--color-bg-primary);
+  box-sizing: border-box;
+}
+
+.histogram__chart-wrap > svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* Boxplot panel (attached below chart-wrap) */
+.histogram__boxplot-panel {
+  position: relative;
+  background: var(--color-bg-secondary);
+  border: 1px solid var(--color-border-primary);
+  border-top: none;
+  border-radius: 0 0 var(--border-radius-sm) var(--border-radius-sm);
+  overflow: hidden;
+}
+
+.histogram__boxplot-panel svg {
+  display: block;
+}
+
+/* When boxplot panel is visible, connect chart-wrap and boxplot-panel */
+.histogram__chart-wrap--bp-open {
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+/* Statistics table — uses shared dmike-stats-panel (js/core/stats-panel.css) */
+
+/* ============================================================
+   Chart Card + Editor Panel
+   ============================================================ */
+
+.histogram__chart-card {
+  display: flex;
+}
+
+.histogram__chart-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+/* Editor panel (slide-out) — matches shared dmike-chart-editor pattern */
+.histogram__editor {
+  width: 0;
+  overflow: hidden;
+  background: var(--color-bg-primary);
+  border-left: none;
+  transition: width 0.32s ease;
+  flex-shrink: 0;
+  align-self: flex-start;
+}
+
+.histogram__editor--open {
+  width: 336px;
+  height: 420px;
+  margin-left: 8px;
+  background: var(--color-bg-secondary);
+  border: 1px solid var(--color-border-primary);
+  border-radius: var(--border-radius-sm);
+  box-shadow: -2px 0 6px rgba(0, 0, 0, 0.08);
+}
+
+.histogram__editor-inner {
+  width: 336px;
+  max-height: 100%;
+  height: 100%;
+  overflow-y: auto;
+  padding: var(--spacing-md);
+}
+
+.histogram__editor-inner::-webkit-scrollbar {
+  width: 5px;
+}
+
+.histogram__editor-inner::-webkit-scrollbar-thumb {
+  background: var(--color-border-secondary);
+  border-radius: 3px;
+}
+
+/* Editor inner content now uses shared dmike-chart-ed-* classes from chart.css */

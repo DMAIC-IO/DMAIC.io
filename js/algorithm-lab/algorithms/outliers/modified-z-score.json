@@ -1,0 +1,77 @@
+{
+  "id": "modified-z-score",
+  "name": { "de": "Modified Z-Score", "en": "Modified Z-Score" },
+  "category": "outliers",
+  "subcategory": "robust",
+  "status": "validated",
+  "version": "1.0.0",
+  "description": {
+    "short": {
+      "de": "Robuste Variante des Z-Scores nach Iglewicz & Hoaglin (1993) — auf Median und MAD.",
+      "en": "Robust Z-score variant by Iglewicz & Hoaglin (1993) — based on median and MAD."
+    },
+    "long": {
+      "de": "Der Modified Z-Score ersetzt den Mittelwert durch den Median und die Standardabweichung durch die rohe MAD. Die Konstante 0.6745 macht ihn unter Normalverteilung asymptotisch konsistent mit dem klassischen Z-Score. Standard-Schwelle |M| > 3.5.",
+      "en": "Modified Z-score swaps mean for median and SD for raw MAD. The 0.6745 factor makes it asymptotically consistent with the classical Z-score under normality. Default threshold |M| > 3.5."
+    }
+  },
+  "documentation": {
+    "formulas": [
+      { "label": "Modified Z", "latex": "M_i = \\frac{0.6745 \\, (x_i - \\operatorname{median}(x))}{\\text{MAD}}",
+        "description": { "de": "Robuste Standardisierung", "en": "Robust standardisation" } }
+    ],
+    "assumptions": [
+      { "de": "Keine Verteilungsannahme — robust gegen Verzerrung durch Ausreißer", "en": "No distributional assumption — robust to outlier-induced bias" }
+    ],
+    "limitations": [
+      { "de": "MAD = 0 → keine Auswertung möglich", "en": "MAD = 0 → no result possible" },
+      { "de": "Liefert keinen p-Wert", "en": "Produces no p-value" }
+    ],
+    "references": [
+      { "source": "Iglewicz, B. & Hoaglin, D. C. (1993), How to detect and handle outliers, ASQ Quality Press" }
+    ],
+    "minitab_equivalent": "—"
+  },
+  "source": {
+    "function_name": "modifiedZScore",
+    "file_path": "js/engines/outlier-test-engine.js",
+    "signature": {
+      "parameters": [
+        { "name": "data", "type": "number[]", "required": true,
+          "description": { "de": "Messdaten", "en": "Data" } },
+        { "name": "threshold", "type": "number", "required": false,
+          "description": { "de": "Schwelle (Default 3.5)", "en": "Threshold (default 3.5)" } }
+      ],
+      "returns": {
+        "type": "object",
+        "properties": {
+          "median":   { "type": "number", "description": { "de": "Median", "en": "Median" } },
+          "mad":      { "type": "number", "description": { "de": "Rohe MAD", "en": "Raw MAD" } },
+          "outliers": { "type": "Array",  "description": { "de": "Markierte Punkte", "en": "Flagged points" } }
+        }
+      }
+    }
+  },
+  "try_it": {
+    "input_schema": {
+      "fields": [
+        { "name": "data", "label": { "de": "Messdaten", "en": "Data" }, "type": "textarea", "parse_as": "number_array", "required": true },
+        { "name": "threshold", "label": { "de": "Schwelle", "en": "Threshold" }, "type": "number", "default": 3.5 }
+      ],
+      "csv_mapping": { "data_column": "Automatically uses first numeric column" }
+    },
+    "output_schema": {
+      "display_fields": ["median", "mad", "n"],
+      "primary_field": "mad",
+      "format": {
+        "median": { "decimals": 4, "label": "median" },
+        "mad":    { "decimals": 4, "label": "MAD" },
+        "n":      { "decimals": 0, "label": "n" }
+      }
+    }
+  },
+  "changelog": [
+    { "version": "1.0.0", "date": "2026-05-06", "type": "initial",
+      "description": { "de": "Erstimplementierung mit Iglewicz-Hoaglin-Konstante (0.6745)", "en": "Initial implementation with Iglewicz-Hoaglin constant (0.6745)" }, "breaking": false }
+  ]
+}

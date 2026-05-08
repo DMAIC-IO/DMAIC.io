@@ -1,0 +1,465 @@
+/* ============================================================
+   REST API Manager Module Styles (rest-api.css)
+   All colors via CSS custom properties (see css/variables.css)
+   ============================================================ */
+
+/* ===== Sidebar ===== */
+.rest-api__sidebar {
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  gap: 0;
+  overflow: hidden;
+}
+
+.rest-api__sidebar-header {
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-bottom: var(--border-width) solid var(--color-border-secondary);
+  background: var(--color-bg-tertiary);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+.rest-api__sidebar-title {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  flex: 1;
+}
+
+.rest-api__count {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  background: var(--color-accent-light);
+  color: var(--color-accent);
+  padding: 2px 8px;
+  border-radius: 10px;
+}
+
+.rest-api__add-btn {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border: var(--border-width) solid var(--color-border-secondary);
+  border-radius: var(--border-radius);
+  background: var(--color-bg-secondary);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: background .15s, color .15s;
+}
+.rest-api__add-btn:hover {
+  background: var(--color-accent);
+  color: var(--color-text-inverse);
+}
+
+/* ── Endpoint list ── */
+.rest-api__list {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--spacing-xs);
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-border-secondary) transparent;
+}
+
+.rest-api__list-item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  transition: background .15s;
+}
+.rest-api__list-item:hover {
+  background: var(--color-bg-tertiary);
+}
+.rest-api__list-item--active {
+  background: var(--color-accent-light);
+}
+
+.rest-api__ep-name-input {
+  flex: 1;
+  min-width: 0;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-primary);
+  background: transparent;
+  border: none;
+  outline: none;
+  padding: 2px 4px;
+  border-radius: 3px;
+  font-family: inherit;
+}
+.rest-api__ep-name-input:focus {
+  background: var(--color-bg-secondary);
+  box-shadow: 0 0 0 1px var(--color-accent);
+}
+.rest-api__ep-name-input::placeholder {
+  color: var(--color-text-tertiary);
+}
+
+.rest-api__item-del {
+  opacity: 0;
+  background: none;
+  border: none;
+  color: var(--color-text-tertiary);
+  cursor: pointer;
+  padding: 2px;
+  transition: opacity .15s, color .15s;
+}
+.rest-api__list-item:hover .rest-api__item-del {
+  opacity: 1;
+}
+.rest-api__item-del:hover {
+  color: var(--color-danger);
+}
+
+/* ── Method label ── */
+.rest-api__method-label {
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-bold);
+  padding: 0 var(--spacing-sm);
+  border: var(--border-width) solid var(--color-border-secondary);
+  border-radius: var(--border-radius);
+  background: var(--color-bg-secondary);
+  color: #22c55e;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+}
+
+/* ===== Detail panel ===== */
+.rest-api__detail-inner {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+/* URL bar */
+.rest-api__url-bar {
+  display: flex;
+  gap: var(--spacing-xs);
+  align-items: stretch;
+}
+
+.rest-api__url-input {
+  flex: 1;
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-sm);
+}
+
+.rest-api__send-btn {
+  width: auto !important;
+  margin-top: 0 !important;
+  padding: 0 var(--spacing-md) !important;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+/* Inputs use global .field class (components.css) */
+
+/* Sections */
+.rest-api__section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.rest-api__section-header {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.rest-api__section-label {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-text-tertiary);
+}
+
+/* Headers list */
+.rest-api__headers-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.rest-api__header-row {
+  display: flex;
+  gap: var(--spacing-xs);
+  align-items: center;
+}
+
+.rest-api__header-key {
+  flex: 1;
+  font-family: var(--font-family-mono);
+}
+
+.rest-api__header-val {
+  flex: 2;
+}
+
+.rest-api__header-del {
+  background: none;
+  border: none;
+  color: var(--color-text-tertiary);
+  font-size: 16px;
+  cursor: pointer;
+  padding: 2px 4px;
+  line-height: 1;
+}
+.rest-api__header-del:hover {
+  color: var(--color-danger);
+}
+
+.rest-api__add-header-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: none;
+  border: none;
+  color: var(--color-accent);
+  font-size: var(--font-size-xs);
+  cursor: pointer;
+  padding: 2px 0;
+}
+.rest-api__add-header-btn:hover {
+  text-decoration: underline;
+}
+
+
+/* Write mode toggle */
+.rest-api__write-mode {
+  display: flex;
+  gap: var(--spacing-md);
+  padding: var(--spacing-xs) 0;
+}
+
+.rest-api__write-mode-option {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+}
+
+.rest-api__write-mode-option input[type="radio"] {
+  accent-color: var(--color-accent);
+}
+
+/* Column Mappings */
+.rest-api__mappings-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.rest-api__mapping-row {
+  display: flex;
+  gap: var(--spacing-xs);
+  align-items: center;
+}
+
+.rest-api__mapping-path {
+  flex: 1;
+  font-family: var(--font-family-mono);
+}
+
+.rest-api__mapping-arrow {
+  color: var(--color-text-tertiary);
+  font-size: var(--font-size-sm);
+  flex-shrink: 0;
+}
+
+.rest-api__mapping-picker {
+  flex: 1;
+  min-width: 0;
+}
+
+.rest-api__mapping-del {
+  background: none;
+  border: none;
+  color: var(--color-text-tertiary);
+  font-size: 16px;
+  cursor: pointer;
+  padding: 2px 4px;
+  line-height: 1;
+}
+.rest-api__mapping-del:hover {
+  color: var(--color-danger);
+}
+
+.rest-api__add-mapping-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: none;
+  border: none;
+  color: var(--color-accent);
+  font-size: var(--font-size-xs);
+  cursor: pointer;
+  padding: 2px 0;
+}
+.rest-api__add-mapping-btn:hover {
+  text-decoration: underline;
+}
+
+/* Response */
+.rest-api__status {
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+  padding: 2px 8px;
+  border-radius: 3px;
+}
+.rest-api__status--ok  { background: #22c55e20; color: #22c55e; }
+.rest-api__status--err { background: #ef444420; color: #ef4444; }
+
+.rest-api__copy-btn {
+  background: none;
+  border: none;
+  color: var(--color-text-tertiary);
+  cursor: pointer;
+  padding: 2px;
+}
+.rest-api__copy-btn:hover {
+  color: var(--color-accent);
+}
+
+.rest-api__response {
+  border: var(--border-width) solid var(--color-border-secondary);
+  border-radius: var(--border-radius);
+  background: var(--color-bg-secondary);
+  min-height: 60px;
+  max-height: 400px;
+  overflow: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-border-secondary) transparent;
+}
+
+.rest-api__response-body {
+  margin: 0;
+  padding: var(--spacing-sm);
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-primary);
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+.rest-api__loading {
+  padding: var(--spacing-md);
+  text-align: center;
+  color: var(--color-text-tertiary);
+  font-size: var(--font-size-sm);
+}
+
+/* ===== Schedule ===== */
+
+.rest-api__schedule-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #22c55e;
+  flex-shrink: 0;
+  animation: rest-api-pulse 2s ease-in-out infinite;
+}
+
+@keyframes rest-api-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+.rest-api__schedule .rest-api__section-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.rest-api__schedule-badge {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+  padding: 2px 8px;
+  border-radius: 3px;
+}
+.rest-api__schedule-badge--on  { background: #22c55e20; color: #22c55e; }
+.rest-api__schedule-badge--off { background: var(--color-bg-tertiary); color: var(--color-text-tertiary); }
+
+.rest-api__schedule-controls {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-lg);
+  padding: var(--spacing-xs) 0;
+}
+
+.rest-api__schedule-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+}
+
+.rest-api__schedule-toggle input[type="checkbox"] {
+  accent-color: var(--color-accent);
+  width: 16px;
+  height: 16px;
+}
+
+.rest-api__schedule-interval-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.rest-api__schedule-interval-label {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+}
+
+.rest-api__schedule-interval-value {
+  width: 64px !important;
+  min-width: 0;
+  padding: 4px var(--spacing-sm) !important;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  -moz-appearance: textfield;
+}
+.rest-api__schedule-interval-value::-webkit-inner-spin-button,
+.rest-api__schedule-interval-value::-webkit-outer-spin-button {
+  opacity: 1;
+}
+
+.rest-api__schedule-interval-unit {
+  width: auto !important;
+  min-width: 90px;
+  padding: 4px var(--spacing-sm) !important;
+}
+
+.rest-api__schedule-status {
+  display: flex;
+  gap: var(--spacing-lg);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  background: var(--color-bg-tertiary);
+  border-radius: var(--border-radius);
+  border: var(--border-width) solid var(--color-border-secondary);
+}
+
+.rest-api__schedule-status-item {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+}
+
+.rest-api__schedule-status-item strong {
+  color: var(--color-text-primary);
+  font-weight: var(--font-weight-semibold);
+}

@@ -1,0 +1,176 @@
+{
+  "id": "wilcoxon-signed-rank",
+  "name": {
+    "de": "Wilcoxon-Vorzeichen-Rang-Test",
+    "en": "Wilcoxon Signed-Rank Test"
+  },
+  "category": "hypothesis",
+  "subcategory": "mean",
+  "status": "validated",
+  "version": "1.0.0",
+
+  "description": {
+    "short": {
+      "de": "Nichtparametrische Alternative zum Ein-Stichproben-t-Test für den Median.",
+      "en": "Nonparametric alternative to the one-sample t-test for the median."
+    },
+    "long": {
+      "de": "Der Wilcoxon-Vorzeichen-Rang-Test ist ein nichtparametrischer Test, der prüft, ob der Median einer Population einem hypothetischen Wert entspricht. Er basiert auf den Rängen der absoluten Differenzen und wird verwendet, wenn die Normalverteilungsannahme des t-Tests nicht erfüllt ist. Bei großen Stichproben wird eine Normalapproximation für den p-Wert verwendet.",
+      "en": "The Wilcoxon signed-rank test is a nonparametric test that evaluates whether the population median equals a hypothesized value. It is based on the ranks of absolute differences and is used when the normality assumption of the t-test is not met. For large samples, a normal approximation is used for the p-value."
+    }
+  },
+
+  "documentation": {
+    "formulas": [
+      {
+        "label": "W⁺",
+        "latex": "W^+ = \\sum_{i:\\,d_i>0} R_i",
+        "description": {
+          "de": "Summe der Ränge positiver Differenzen",
+          "en": "Sum of ranks of positive differences"
+        }
+      },
+      {
+        "label": "z",
+        "latex": "z = \\frac{W - \\mu_W}{\\sigma_W}, \\quad \\mu_W = \\frac{n(n+1)}{4}, \\quad \\sigma_W = \\sqrt{\\frac{n(n+1)(2n+1)}{24}}",
+        "description": {
+          "de": "z-Approximation für große Stichproben",
+          "en": "z approximation for large samples"
+        }
+      },
+      {
+        "label": "H₀",
+        "latex": "H_0: \\tilde{\\mu} = \\mu_0",
+        "description": {
+          "de": "Nullhypothese: Der Populationsmedian entspricht dem Zielwert",
+          "en": "Null hypothesis: The population median equals the target value"
+        }
+      }
+    ],
+    "assumptions": [
+      { "de": "Daten sind stetig und symmetrisch um den Median", "en": "Data are continuous and symmetric about the median" },
+      { "de": "Beobachtungen sind unabhängig", "en": "Observations are independent" }
+    ],
+    "limitations": [
+      { "de": "Weniger trennscharf als der t-Test bei tatsächlich normalverteilten Daten", "en": "Less powerful than the t-test for truly normal data" },
+      { "de": "Bei sehr kleinen Stichproben (n < 10) kann die z-Approximation ungenau sein", "en": "For very small samples (n < 10), the z approximation may be inaccurate" }
+    ],
+    "references": [
+      { "source": "Wilcoxon, F. (1945), Individual comparisons by ranking methods, Biometrics Bulletin, 1(6), 80–83" },
+      { "source": "Hollander, M. & Wolfe, D. A. (2013), Nonparametric Statistical Methods, 3rd Ed." }
+    ],
+    "minitab_equivalent": "Stat > Nonparametrics > 1-Sample Wilcoxon"
+  },
+
+  "source": {
+    "function_name": "wilcoxonSignedRank",
+    "file_path": "js/engines/hypothesis-test-engine.js",
+    "signature": {
+      "parameters": [
+        {
+          "name": "data",
+          "type": "number[]",
+          "required": true,
+          "description": { "de": "Array von Messwerten", "en": "Array of measurement values" }
+        },
+        {
+          "name": "mu0",
+          "type": "number",
+          "required": true,
+          "description": { "de": "Hypothetischer Median μ₀", "en": "Hypothesized median μ₀" }
+        },
+        {
+          "name": "direction",
+          "type": "string",
+          "required": false,
+          "description": { "de": "Testrichtung: 'two-sided', 'greater', 'less'", "en": "Test direction: 'two-sided', 'greater', 'less'" }
+        },
+        {
+          "name": "alpha",
+          "type": "number",
+          "required": false,
+          "description": { "de": "Signifikanzniveau (Standard: 0.05)", "en": "Significance level (default: 0.05)" }
+        }
+      ],
+      "returns": {
+        "type": "object",
+        "properties": {
+          "statistic": { "type": "number", "description": { "de": "W⁺ (Rangsumme positiver Differenzen)", "en": "W⁺ (rank sum of positive differences)" } },
+          "z": { "type": "number", "description": { "de": "z-Wert (Normalapproximation)", "en": "z-value (normal approximation)" } },
+          "pValue": { "type": "number", "description": { "de": "p-Wert", "en": "p-value" } },
+          "reject": { "type": "boolean", "description": { "de": "H₀ abgelehnt?", "en": "Reject H₀?" } }
+        }
+      }
+    },
+    "code_snippet": null
+  },
+
+  "try_it": {
+    "input_schema": {
+      "fields": [
+        {
+          "name": "data",
+          "label": { "de": "Messdaten", "en": "Measurement Data" },
+          "type": "textarea",
+          "placeholder": { "de": "Werte getrennt durch Komma, Leerzeichen oder Zeilenumbruch", "en": "Values separated by commas, spaces, or newlines" },
+          "parse_as": "number_array",
+          "required": true
+        },
+        {
+          "name": "mu0",
+          "label": { "de": "Zielwert μ₀", "en": "Target Value μ₀" },
+          "type": "number",
+          "placeholder": { "de": "z.B. 100", "en": "e.g. 100" },
+          "parse_as": "number",
+          "required": true
+        },
+        {
+          "name": "direction",
+          "label": { "de": "Testrichtung", "en": "Test Direction" },
+          "type": "select",
+          "options": [
+            { "value": "two-sided", "label": { "de": "≠ Zweiseitig", "en": "≠ Two-sided" } },
+            { "value": "greater", "label": { "de": "> Größer", "en": "> Greater" } },
+            { "value": "less", "label": { "de": "< Kleiner", "en": "< Less" } }
+          ],
+          "parse_as": "string",
+          "required": false
+        },
+        {
+          "name": "alpha",
+          "label": { "de": "Signifikanzniveau α", "en": "Significance Level α" },
+          "type": "number",
+          "placeholder": { "de": "0.05", "en": "0.05" },
+          "parse_as": "number",
+          "required": false
+        }
+      ]
+    },
+    "output_schema": {
+      "display_fields": ["statistic", "z", "pValue", "Wplus", "Wminus", "n", "reject"],
+      "primary_field": "statistic",
+      "format": {
+        "statistic": { "decimals": 1, "label": "W⁺" },
+        "z": { "decimals": 4, "label": "z" },
+        "pValue": { "decimals": 6, "label": "p-Value" },
+        "Wplus": { "decimals": 1, "label": "W⁺" },
+        "Wminus": { "decimals": 1, "label": "W⁻" },
+        "n": { "decimals": 0, "label": "n (ohne Nulldifferenzen)" },
+        "reject": { "decimals": 0, "label": { "de": "H₀ abgelehnt", "en": "Reject H₀" } }
+      }
+    }
+  },
+
+  "changelog": [
+    {
+      "version": "1.0.0",
+      "date": "2026-03-31",
+      "type": "initial",
+      "description": {
+        "de": "Erstimplementierung mit Rangsummen, z-Approximation und p-Wert",
+        "en": "Initial implementation with rank sums, z approximation and p-value"
+      },
+      "breaking": false
+    }
+  ]
+}

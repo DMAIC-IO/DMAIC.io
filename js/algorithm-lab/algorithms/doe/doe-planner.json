@@ -1,0 +1,215 @@
+{
+  "id": "doe-planner",
+  "name": {
+    "de": "DoE-Planner (Design-Erzeugung)",
+    "en": "DoE Planner (Design Generation)"
+  },
+  "category": "doe",
+  "subcategory": null,
+  "status": "validated",
+  "version": "1.0.0",
+
+  "description": {
+    "short": {
+      "de": "Erzeugt strukturelle Versuchspläne: volles 2^k, fraktioniertes 2^(k-p), CCD und Box-Behnken.",
+      "en": "Generates structural experimental designs: full 2^k, fractional 2^(k-p), CCD and Box-Behnken."
+    },
+    "long": {
+      "de": "Der DoE-Planner erzeugt die vier Standard-Versuchspläne, die in Six Sigma am häufigsten gebraucht werden: vollfaktorielles 2^k, fraktioniertes 2^(k-p) (mit verlustfreiem Rückgriff auf die klassischen Generator-Tabellen aus der DoE-Literatur), Central Composite Design (rotatable / spherical / face-centered mit zusätzlichen Stern- und Zentrumspunkten) sowie Box-Behnken (für k = 3–7). Der Dispatcher analyze() gibt nur die strukturellen Kenngrößen zurück — runCount, factorCount, resolution, codedMatrix und (bei CCD) alpha — und ist damit der ideale Einstiegspunkt, um Pläne 1:1 gegen Referenzwerte zu prüfen. Randomisierung und die Umrechnung kodierter Werte in reale Einstellwerte übernimmt die komplette Planner-Funktion generateDesign(factors, opts).",
+      "en": "The DoE planner generates the four standard experimental designs most used in Six Sigma: full 2^k factorial, fractional 2^(k-p) (with lossless lookup tables for the classic generator columns from the DoE literature), central composite design (rotatable / spherical / face-centered with axial and center points), and Box-Behnken (for k = 3–7). The analyze() dispatcher returns only the structural properties — runCount, factorCount, resolution, codedMatrix and (for CCD) alpha — making it the ideal entry point for 1:1 comparison against reference values. Randomisation and the conversion from coded to actual factor levels are handled by the full planner function generateDesign(factors, opts)."
+    }
+  },
+
+  "documentation": {
+    "formulas": [
+      {
+        "label": "Full 2^k",
+        "latex": "N = 2^{k}",
+        "description": {
+          "de": "Anzahl Läufe eines vollfaktoriellen Plans",
+          "en": "Number of runs in a full factorial"
+        }
+      },
+      {
+        "label": "Fraktioniert",
+        "latex": "N = 2^{k-p}",
+        "description": {
+          "de": "Anzahl Läufe einer 2^(k-p)-Fraktion; p = Anzahl Generator-Spalten",
+          "en": "Number of runs in a 2^(k-p) fraction; p = number of generator columns"
+        }
+      },
+      {
+        "label": "CCD Runs",
+        "latex": "N_{\\text{CCD}} = 2^{k} + 2k + n_{c}",
+        "description": {
+          "de": "Faktor- + Stern- + Zentrumspunkte eines CCD",
+          "en": "Factorial + axial + center runs of a CCD"
+        }
+      },
+      {
+        "label": "CCD α",
+        "latex": "\\alpha_{\\text{rotatable}} = \\left(2^{k}\\right)^{1/4},\\quad \\alpha_{\\text{spherical}} = \\sqrt{k},\\quad \\alpha_{\\text{face-centered}} = 1",
+        "description": {
+          "de": "Sternpunkt-Abstand für die drei CCD-Varianten",
+          "en": "Axial point distance for the three CCD variants"
+        }
+      },
+      {
+        "label": "Box-Behnken Runs",
+        "latex": "N_{\\text{BB}} = 4\\,\\binom{k}{2}_{\\text{(pair template)}} + n_{c}",
+        "description": {
+          "de": "Kanten-Läufe aus der BB-Paar-Tabelle plus Zentrumspunkte",
+          "en": "Edge runs from the BB pair template plus center points"
+        }
+      }
+    ],
+    "assumptions": [
+      {
+        "de": "Faktorlevel sind kodiert als -1 (low), 0 (center), +1 (high) — CCD zusätzlich ±α",
+        "en": "Factor levels are coded -1 (low), 0 (center), +1 (high) — CCD additionally ±α"
+      },
+      {
+        "de": "Reihenfolge folgt der MSB-first Yates-Konvention (ohne Randomisierung)",
+        "en": "Row order follows the MSB-first Yates convention (no randomisation)"
+      }
+    ],
+    "limitations": [
+      {
+        "de": "Fraktionierte Generatoren liegen in einer Lookup-Tabelle bis 2^(8-4) vor",
+        "en": "Fractional generator tables cover up to 2^(8-4)"
+      },
+      {
+        "de": "Box-Behnken nur für k = 3–7 unterstützt",
+        "en": "Box-Behnken only supported for k = 3–7"
+      },
+      {
+        "de": "analyze() ignoriert Randomisierung und reale Faktor-Levels — dafür generateDesign() verwenden",
+        "en": "analyze() ignores randomisation and actual factor levels — use generateDesign() for that"
+      }
+    ],
+    "references": [
+      {
+        "source": "Montgomery, Design and Analysis of Experiments, 10th Ed.",
+        "chapter": "Chapters 6, 8, 11"
+      },
+      {
+        "source": "Box, G. E. P. & Behnken, D. W. (1960), Some New Three Level Designs for the Study of Quantitative Variables, Technometrics, 2(4), 455–475"
+      },
+      {
+        "source": "Box, G. E. P. & Wilson, K. B. (1951), On the Experimental Attainment of Optimum Conditions, JRSS B, 13(1), 1–45"
+      }
+    ],
+    "minitab_equivalent": "Stat > DOE > Factorial / Response Surface > Create Design"
+  },
+
+  "source": {
+    "function_name": "analyze",
+    "file_path": "js/engines/doe-planner-engine.js",
+    "signature": {
+      "parameters": [
+        {
+          "name": "inputs",
+          "type": "object",
+          "required": true,
+          "description": {
+            "de": "Objekt mit designType und den typspezifischen Feldern (k, p, alphaType, centerPoints, resolution)",
+            "en": "Object with designType and the type-specific fields (k, p, alphaType, centerPoints, resolution)"
+          }
+        }
+      ],
+      "returns": {
+        "type": "object",
+        "properties": {
+          "runCount":    { "type": "number", "description": { "de": "Anzahl Läufe", "en": "Number of runs" } },
+          "factorCount": { "type": "number", "description": { "de": "Anzahl Faktoren (Spalten)", "en": "Number of factors (columns)" } },
+          "resolution":  { "type": "string", "description": { "de": "Auflösungs-/Design-Label", "en": "Resolution / design label" } },
+          "codedMatrix": { "type": "number[][]", "description": { "de": "Kodierte Designmatrix", "en": "Coded design matrix" } },
+          "alpha":       { "type": "number",    "description": { "de": "CCD-Sternpunktabstand (nur CCD)", "en": "CCD axial distance (CCD only)" } }
+        }
+      }
+    },
+    "code_snippet": null
+  },
+
+  "try_it": {
+    "input_schema": {
+      "fields": [
+        {
+          "name": "inputs.designType",
+          "label": { "de": "Design-Typ", "en": "Design type" },
+          "type": "text",
+          "placeholder": { "de": "full2k | frac | ccd | bb", "en": "full2k | frac | ccd | bb" },
+          "parse_as": "string",
+          "required": true,
+          "default": "full2k"
+        },
+        {
+          "name": "inputs.k",
+          "label": { "de": "Anzahl Faktoren k", "en": "Factor count k" },
+          "type": "number",
+          "placeholder": { "de": "z.B. 3", "en": "e.g. 3" },
+          "parse_as": "number",
+          "required": true
+        },
+        {
+          "name": "inputs.p",
+          "label": "p",
+          "type": "number",
+          "placeholder": { "de": "Anzahl Generatoren (nur frac)", "en": "Number of generators (frac only)" },
+          "parse_as": "number",
+          "required": false
+        },
+        {
+          "name": "inputs.resolution",
+          "label": { "de": "Auflösung", "en": "Resolution" },
+          "type": "text",
+          "placeholder": { "de": "III / IV / V (nur frac)", "en": "III / IV / V (frac only)" },
+          "parse_as": "string",
+          "required": false
+        },
+        {
+          "name": "inputs.alphaType",
+          "label": { "de": "CCD-α-Typ", "en": "CCD α type" },
+          "type": "text",
+          "placeholder": { "de": "rotatable | spherical | face-centered", "en": "rotatable | spherical | face-centered" },
+          "parse_as": "string",
+          "required": false,
+          "default": "rotatable"
+        },
+        {
+          "name": "inputs.centerPoints",
+          "label": { "de": "Zentrumspunkte", "en": "Center points" },
+          "type": "number",
+          "placeholder": { "de": "Standard: 3 (CCD / BB)", "en": "Default: 3 (CCD / BB)" },
+          "parse_as": "number",
+          "required": false,
+          "default": 3
+        }
+      ]
+    },
+    "output_schema": {
+      "display_fields": ["runCount", "factorCount", "resolution", "alpha", "codedMatrix"],
+      "primary_field": "runCount",
+      "format": {
+        "runCount":    { "decimals": 0, "label": { "de": "Läufe", "en": "Runs" } },
+        "factorCount": { "decimals": 0, "label": { "de": "Faktoren", "en": "Factors" } },
+        "resolution":  { "decimals": 0, "label": { "de": "Auflösung", "en": "Resolution" } },
+        "alpha":       { "decimals": 6, "label": "α" },
+        "codedMatrix": { "decimals": 3, "label": { "de": "Kodierte Matrix", "en": "Coded matrix" } }
+      }
+    }
+  },
+
+  "changelog": [
+    {
+      "version": "1.0.0",
+      "date": "2026-04-11",
+      "type": "initial",
+      "description": {
+        "de": "Dispatcher analyze() mit strukturellen Outputs (runCount, factorCount, resolution, codedMatrix, alpha) für full2k / frac / ccd / bb.",
+        "en": "analyze() dispatcher with structural outputs (runCount, factorCount, resolution, codedMatrix, alpha) for full2k / frac / ccd / bb."
+      },
+      "breaking": false
+    }
+  ]
+}

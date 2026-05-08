@@ -1,0 +1,403 @@
+/**
+ * D.Mike — Hypothesis Test Module Styles
+ * BEM-light naming: .hyptest__*
+ *
+ * Section labels: use global .dmike-split__output-section (css/modules.css)
+ * Run button: use global .dmike-btn-run (css/modules.css)
+ */
+
+/* Fields now use global .field / .field-group / .field-row */
+
+/* Toggle buttons: use global .btn-group + .btn--segment */
+
+/* Hypothesis preview */
+.hyptest__hypothesis-preview {
+  margin: var(--spacing-sm) 0;
+}
+
+.hyptest__hypothesis-preview--sm {
+  margin: 0 0 var(--spacing-sm) 0;
+}
+
+.hyptest__h-box {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  background: var(--color-bg-secondary);
+  border: var(--border-width) solid var(--color-border-primary);
+  border-radius: var(--border-radius);
+  padding: var(--spacing-xs) var(--spacing-sm);
+}
+
+.hyptest__h-box--accepted {
+  background: rgba(var(--color-success-rgb, 52, 211, 153), 0.08);
+  border-color: rgba(var(--color-success-rgb, 52, 211, 153), 0.3);
+}
+
+.hyptest__h-box--rejected {
+  background: rgba(var(--color-error-rgb, 239, 68, 68), 0.08);
+  border-color: rgba(var(--color-error-rgb, 239, 68, 68), 0.3);
+  opacity: 0.6;
+}
+
+.hyptest__h-label {
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  color: var(--color-text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  min-width: 24px;
+}
+
+.hyptest__h-formula {
+  font-family: var(--font-mono);
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+}
+
+/* Error */
+.hyptest__error {
+  display: none;
+  margin-top: var(--spacing-sm);
+  padding: var(--spacing-sm);
+  border-radius: var(--border-radius);
+  background: rgba(var(--color-error-rgb, 239, 68, 68), 0.1);
+  color: var(--color-error);
+  font-size: var(--font-size-xs);
+}
+
+/* ── Output: Result cards ────────────────────────────────── */
+
+.hyptest__result-card {
+  background: var(--color-bg-secondary);
+  border: var(--border-width) solid var(--color-border-primary);
+  border-radius: var(--border-radius);
+  padding: var(--spacing-md);
+  margin-bottom: var(--spacing-sm);
+}
+
+/* k-sample normality cards — max 3 per row, wraps to fewer when narrow.
+   The minmax floor of max(260px, 33%) caps density at 3 columns: when the
+   container is wide enough that 33% > 260px, exactly 3 tracks fit; when the
+   container is narrow, 260px wins and cards reflow to 2 or 1. */
+.hyptest__norm-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(max(260px, 33%), 1fr));
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-sm);
+}
+
+.hyptest__norm-grid .hyptest__result-card {
+  margin-bottom: 0;
+}
+
+/* CI line shown under selected metrics (x̄, s, s²) */
+.hyptest__metric-ci {
+  font-family: var(--font-family-mono);
+  font-size: 10px;
+  color: var(--color-text-tertiary);
+  margin-top: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Hover affordance for metric tiles that carry a tooltip */
+.hyptest__metric[title] {
+  cursor: help;
+}
+
+/* ── Pairwise comparison matrix (post-hoc) ──────────────────────── */
+.hyptest__pairwise-meta {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  margin-bottom: var(--spacing-sm);
+}
+
+.hyptest__pairwise {
+  width: auto;
+  margin-bottom: var(--spacing-sm);
+}
+
+.hyptest__pairwise th,
+.hyptest__pairwise td {
+  text-align: center !important;
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-xs);
+  min-width: 60px;
+}
+
+.hyptest__pairwise tbody th {
+  text-align: left !important;
+  font-weight: 600;
+}
+
+.hyptest__pairwise-empty {
+  color: var(--color-text-tertiary);
+  background: transparent !important;
+}
+
+.hyptest__pairwise-equal {
+  background: rgba(var(--color-success-rgb, 52, 211, 153), 0.12);
+  color: var(--color-success);
+  cursor: help;
+}
+
+.hyptest__pairwise-diff {
+  background: rgba(var(--color-error-rgb, 239, 68, 68), 0.12);
+  color: var(--color-error);
+  font-weight: 600;
+  cursor: help;
+}
+
+.hyptest__pairwise-legend {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--spacing-sm);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  margin-bottom: var(--spacing-xs);
+}
+
+.hyptest__pairwise-swatch {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+  vertical-align: middle;
+  margin-right: 4px;
+}
+
+.hyptest__pairwise-swatch.hyptest__pairwise-equal {
+  background: rgba(var(--color-success-rgb, 52, 211, 153), 0.5);
+}
+
+.hyptest__pairwise-swatch.hyptest__pairwise-diff {
+  background: rgba(var(--color-error-rgb, 239, 68, 68), 0.5);
+}
+
+.hyptest__cld-hint {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+  font-style: italic;
+}
+
+.hyptest__cld-letters {
+  font-family: var(--font-family-mono);
+  letter-spacing: 0.05em;
+  color: var(--color-accent);
+}
+
+.hyptest__card-header {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  margin-bottom: var(--spacing-sm);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+/* Badge (aligned with global .badge pattern) */
+.hyptest__badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 6px;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  border-radius: 10px;
+  white-space: nowrap;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.hyptest__badge--pass {
+  background: rgba(var(--color-success-rgb, 52, 211, 153), 0.15);
+  color: var(--color-success);
+}
+
+.hyptest__badge--fail {
+  background: rgba(var(--color-error-rgb, 239, 68, 68), 0.15);
+  color: var(--color-error);
+}
+
+/* Metric grid */
+.hyptest__metrics {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: var(--spacing-xs);
+  margin-bottom: var(--spacing-sm);
+}
+
+.hyptest__metrics--sm {
+  /* Normality card: keep all 4 metrics on one row (n, x̄, s, s²) */
+  grid-template-columns: repeat(4, 1fr);
+  margin-top: var(--spacing-sm);
+  margin-bottom: 0;
+}
+
+.hyptest__metric {
+  background: var(--color-bg-primary);
+  border: var(--border-width) solid var(--color-border-primary);
+  border-radius: var(--border-radius);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.hyptest__metric-label {
+  font-family: var(--font-family-mono);
+  font-size: 10px;
+  color: var(--color-text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-weight: 500;
+}
+
+.hyptest__metric-value {
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  margin-top: 2px;
+  color: var(--color-text-primary);
+}
+
+.hyptest__metric-value--sm {
+  font-size: var(--font-size-xs);
+}
+
+.hyptest__metric-value--success { color: var(--color-success); }
+.hyptest__metric-value--danger { color: var(--color-error); }
+.hyptest__metric-value--warning { color: var(--color-warning, #fbbf24); }
+
+/* Decision box */
+.hyptest__decision {
+  border-radius: var(--border-radius);
+  padding: var(--spacing-sm) var(--spacing-md);
+  margin: var(--spacing-sm) 0;
+}
+
+.hyptest__decision strong {
+  display: block;
+  font-size: var(--font-size-sm);
+  margin-bottom: 2px;
+}
+
+.hyptest__decision p {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  margin: 0;
+}
+
+.hyptest__decision--accept {
+  background: rgba(var(--color-success-rgb, 52, 211, 153), 0.06);
+  border: var(--border-width) solid rgba(var(--color-success-rgb, 52, 211, 153), 0.2);
+}
+
+.hyptest__decision--reject {
+  background: rgba(var(--color-error-rgb, 239, 68, 68), 0.06);
+  border: var(--border-width) solid rgba(var(--color-error-rgb, 239, 68, 68), 0.2);
+}
+
+.hyptest__decision--warn {
+  background: rgba(251, 191, 36, 0.06);
+  border: var(--border-width) solid rgba(251, 191, 36, 0.2);
+}
+
+/* Table (aligned with global .stats-table pattern) */
+/* Table styling handled by global .dmike-split table rules in components.css.
+   Override only header alignment so th matches td (browsers center th by default). */
+.hyptest__result-card table th {
+  text-align: left;
+}
+
+/* Text colors */
+.hyptest__text-success { color: var(--color-success); font-weight: 600; }
+.hyptest__text-danger { color: var(--color-error); font-weight: 600; }
+
+/* Routing */
+.hyptest__route-card {
+  background: var(--color-bg-secondary);
+  border: var(--border-width) solid var(--color-border-primary);
+  border-radius: var(--border-radius);
+  padding: var(--spacing-sm) var(--spacing-md);
+  margin-bottom: var(--spacing-sm);
+}
+
+.hyptest__route-title {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  margin-bottom: var(--spacing-xs);
+}
+
+.hyptest__route-trail {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  font-size: var(--font-size-sm);
+  flex-wrap: wrap;
+}
+
+.hyptest__trail-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.hyptest__trail-dot--pass { background: var(--color-success); }
+.hyptest__trail-dot--fail { background: var(--color-error); }
+.hyptest__trail-dot--info { background: var(--color-accent); }
+
+.hyptest__trail-line {
+  width: 20px;
+  height: 1px;
+  background: var(--color-border-strong, var(--color-border-primary));
+}
+
+/* Algo lab link (matches distfit pattern) */
+.hyptest__algo-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: 1px solid var(--color-border, var(--color-border-primary));
+  border-radius: 4px;
+  padding: 2px 4px;
+  margin-left: 6px;
+  cursor: pointer;
+  color: var(--color-text-secondary);
+  opacity: 0.6;
+  transition: opacity 0.15s, color 0.15s;
+  vertical-align: middle;
+}
+
+.hyptest__algo-link:hover {
+  opacity: 1;
+  color: var(--color-accent);
+  border-color: var(--color-accent);
+}
+
+/* Placeholder */
+.hyptest__placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 400px;
+  color: var(--color-text-tertiary);
+  text-align: center;
+  gap: var(--spacing-md);
+}
+
+.hyptest__placeholder svg {
+  opacity: 0.3;
+}
+
+.hyptest__placeholder p {
+  font-size: var(--font-size-sm);
+  max-width: 280px;
+}

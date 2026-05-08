@@ -1,0 +1,90 @@
+{
+  "id": "tukey-iqr",
+  "name": { "de": "Tukey IQR-Regel", "en": "Tukey IQR Rule" },
+  "category": "outliers",
+  "subcategory": "robust",
+  "status": "validated",
+  "version": "1.0.0",
+  "description": {
+    "short": {
+      "de": "Verteilungsfreie Ausreißer-Markierung anhand der Boxplot-Whisker-Schranken.",
+      "en": "Distribution-free outlier flagging via boxplot whisker fences."
+    },
+    "long": {
+      "de": "Die Tukey-Regel markiert alle Werte unterhalb von Q1 − k·IQR oder oberhalb von Q3 + k·IQR. Standard k = 1.5 zeigt potenzielle Ausreißer, k = 3.0 extreme. Die Regel ist verteilungsfrei und entspricht den Whiskers in einem Tukey-Boxplot.",
+      "en": "Tukey's rule marks every value below Q1 − k·IQR or above Q3 + k·IQR. Default k = 1.5 highlights potential outliers, k = 3.0 extreme ones. The rule is distribution-free and matches the whiskers of a Tukey boxplot."
+    }
+  },
+  "documentation": {
+    "formulas": [
+      { "label": "Untere Schranke", "latex": "L = Q_1 - k \\cdot \\text{IQR}",
+        "description": { "de": "Untere Whisker-Grenze (k = 1.5 Standard)", "en": "Lower whisker fence (k = 1.5 default)" } },
+      { "label": "Obere Schranke", "latex": "U = Q_3 + k \\cdot \\text{IQR}",
+        "description": { "de": "Obere Whisker-Grenze", "en": "Upper whisker fence" } },
+      { "label": "IQR", "latex": "\\text{IQR} = Q_3 - Q_1",
+        "description": { "de": "Interquartilsabstand", "en": "Interquartile range" } }
+    ],
+    "assumptions": [
+      { "de": "Keine Verteilungsannahme", "en": "No distributional assumption" },
+      { "de": "Stichprobengröße: n ≥ 4 (für stabile Quartile)", "en": "Sample size: n ≥ 4 (for stable quartiles)" }
+    ],
+    "limitations": [
+      { "de": "Bei stark schiefen Verteilungen werden viele \"Ausreißer\" markiert, die in Wahrheit nur das schiefe Tail sind", "en": "Heavy/skewed tails flag many \"outliers\" that are merely natural tail observations" },
+      { "de": "Liefert keine p-Werte oder Signifikanzaussagen", "en": "Produces no p-values or significance statements" }
+    ],
+    "references": [
+      { "source": "Tukey, J. W. (1977), Exploratory Data Analysis, Addison-Wesley" }
+    ],
+    "minitab_equivalent": "Graph > Boxplot (whiskers identify the same fences)"
+  },
+  "source": {
+    "function_name": "tukeyIQR",
+    "file_path": "js/engines/outlier-test-engine.js",
+    "signature": {
+      "parameters": [
+        { "name": "data", "type": "number[]", "required": true,
+          "description": { "de": "Messdaten (n ≥ 4)", "en": "Data (n ≥ 4)" } },
+        { "name": "factor", "type": "number", "required": false,
+          "description": { "de": "Whisker-Faktor (Default 1.5)", "en": "Whisker factor (default 1.5)" } }
+      ],
+      "returns": {
+        "type": "object",
+        "properties": {
+          "q1":          { "type": "number", "description": { "de": "1. Quartil", "en": "1st quartile" } },
+          "median":      { "type": "number", "description": { "de": "Median", "en": "Median" } },
+          "q3":          { "type": "number", "description": { "de": "3. Quartil", "en": "3rd quartile" } },
+          "iqr":         { "type": "number", "description": { "de": "Interquartilsabstand", "en": "Interquartile range" } },
+          "fenceLower":  { "type": "number", "description": { "de": "Untere Schranke", "en": "Lower fence" } },
+          "fenceUpper":  { "type": "number", "description": { "de": "Obere Schranke", "en": "Upper fence" } },
+          "outliers":    { "type": "Array",  "description": { "de": "Punkte außerhalb der Schranken", "en": "Points beyond the fences" } }
+        }
+      }
+    }
+  },
+  "try_it": {
+    "input_schema": {
+      "fields": [
+        { "name": "data", "label": { "de": "Messdaten", "en": "Data" }, "type": "textarea", "parse_as": "number_array", "required": true },
+        { "name": "factor", "label": { "de": "Faktor k", "en": "Factor k" }, "type": "number", "default": 1.5 }
+      ],
+      "csv_mapping": { "data_column": "Automatically uses first numeric column" }
+    },
+    "output_schema": {
+      "display_fields": ["q1", "median", "q3", "iqr", "fenceLower", "fenceUpper", "n"],
+      "primary_field": "iqr",
+      "format": {
+        "q1":         { "decimals": 4, "label": "Q1" },
+        "median":     { "decimals": 4, "label": "median" },
+        "q3":         { "decimals": 4, "label": "Q3" },
+        "iqr":        { "decimals": 4, "label": "IQR" },
+        "fenceLower": { "decimals": 4, "label": "L" },
+        "fenceUpper": { "decimals": 4, "label": "U" },
+        "n":          { "decimals": 0, "label": "n" }
+      }
+    }
+  },
+  "changelog": [
+    { "version": "1.0.0", "date": "2026-05-06", "type": "initial",
+      "description": { "de": "Erstimplementierung mit linearer Interpolation (R-7) für die Quartile", "en": "Initial implementation with linear-interpolation quartiles (R-7)" }, "breaking": false }
+  ]
+}

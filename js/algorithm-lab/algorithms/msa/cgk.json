@@ -1,0 +1,276 @@
+{
+  "id": "cgk",
+  "name": {
+    "de": "Wiederholbarkeits- und Bias-Index Cgk (MSA Typ 1)",
+    "en": "Repeatability and Bias Index Cgk (MSA Type 1)"
+  },
+  "category": "msa",
+  "subcategory": "typ1",
+  "status": "validated",
+  "version": "1.0.0",
+
+  "description": {
+    "short": {
+      "de": "Bewertet Wiederholbarkeit und systematische Abweichung (Bias) eines Messmittels in einer gemeinsamen Kennzahl.",
+      "en": "Evaluates repeatability and systematic deviation (bias) of a measurement instrument in a single index."
+    },
+    "long": {
+      "de": "Der Index Cgk erweitert Cg um die systematische Abweichung (Bias) des Messmittels vom Referenzwert. Er wird berechnet, indem der halbe zugelassene Toleranzanteil um den Betrag des Bias reduziert und durch die gewichtete Streuung geteilt wird. Cgk ist immer ≤ Cg: Ein Messmittel mit geringer Streuung (hoher Cg) kann trotzdem einen niedrigen Cgk haben, wenn ein großer Bias vorliegt. Ein Cgk ≥ 1,33 gilt als fähig und zeigt, dass sowohl Wiederholbarkeit als auch Genauigkeit (Bias) ausreichend sind.",
+      "en": "The index Cgk extends Cg by accounting for the systematic deviation (bias) of the measurement instrument from the reference value. It is calculated by reducing the half allowed tolerance fraction by the absolute bias and dividing by the weighted spread. Cgk is always ≤ Cg: an instrument with low spread (high Cg) can still have a low Cgk if a large bias is present. A Cgk ≥ 1.33 is considered capable, indicating that both repeatability and accuracy (bias) are adequate."
+    }
+  },
+
+  "documentation": {
+    "formulas": [
+      {
+        "label": "Cgk",
+        "latex": "C_{gk} = \\frac{\\frac{k_1 \\cdot T}{2} - |\\bar{x} - x_{ref}|}{k_2 \\cdot s_g}",
+        "description": {
+          "de": "Wiederholbarkeits- und Bias-Index: Halber zugelassener Toleranzanteil minus Betrag des Bias, geteilt durch gewichtete Streuung",
+          "en": "Repeatability and bias index: half allowed tolerance fraction minus absolute bias, divided by weighted spread"
+        }
+      },
+      {
+        "label": "Bias",
+        "latex": "\\text{Bias} = \\bar{x} - x_{ref}",
+        "description": {
+          "de": "Systematische Abweichung: Differenz zwischen Mittelwert der Messungen und Referenzwert",
+          "en": "Systematic deviation: difference between measurement mean and reference value"
+        }
+      },
+      {
+        "label": "Bias%",
+        "latex": "\\text{Bias\\%} = \\frac{\\bar{x} - x_{ref}}{T} \\cdot 100",
+        "description": {
+          "de": "Bias als Prozent der Toleranzbreite",
+          "en": "Bias as percentage of tolerance width"
+        }
+      },
+      {
+        "label": "T",
+        "latex": "T = USL - LSL",
+        "description": {
+          "de": "Toleranzbreite",
+          "en": "Tolerance width"
+        }
+      },
+      {
+        "label": "sg",
+        "latex": "s_g = \\sqrt{\\frac{1}{n-1} \\sum_{i=1}^{n} (x_i - \\bar{x})^2}",
+        "description": {
+          "de": "Stichproben-Standardabweichung der Wiederholmessungen",
+          "en": "Sample standard deviation of repeated measurements"
+        }
+      },
+      {
+        "label": "Cg vs. Cgk",
+        "latex": "C_{gk} \\leq C_g \\quad \\text{always}",
+        "description": {
+          "de": "Cgk ist immer ≤ Cg — die Differenz zeigt den Einfluss des Bias",
+          "en": "Cgk is always ≤ Cg — the difference reveals the bias contribution"
+        }
+      }
+    ],
+    "assumptions": [
+      {
+        "de": "Messungen unter Wiederholbedingungen (ein Prüfer, ein Messmittel, ein Referenzteil)",
+        "en": "Measurements under repeatability conditions (one operator, one instrument, one reference part)"
+      },
+      {
+        "de": "Mindestens 25 Messwerte (n ≥ 25)",
+        "en": "At least 25 measurements (n ≥ 25)"
+      },
+      {
+        "de": "Referenzteil ist kalibriert mit bekanntem wahren Wert (x_ref)",
+        "en": "Reference part is calibrated with known true value (x_ref)"
+      },
+      {
+        "de": "Messwerte sind annähernd normalverteilt",
+        "en": "Measurements are approximately normally distributed"
+      }
+    ],
+    "limitations": [
+      {
+        "de": "Cgk kann negativ werden, wenn der Bias größer als der halbe zugelassene Toleranzanteil ist",
+        "en": "Cgk can become negative when the bias exceeds half the allowed tolerance fraction"
+      },
+      {
+        "de": "Setzt ein kalibriertes Referenzteil voraus — ohne bekannten wahren Wert ist keine Bias-Bestimmung möglich",
+        "en": "Requires a calibrated reference part — bias determination is not possible without a known true value"
+      },
+      {
+        "de": "Bei k₁ = 0,20 und k₂ = 4 entspricht Cgk ≥ 1,33 einem maximalen Bias von ca. 1,7 % der Toleranz",
+        "en": "With k₁ = 0.20 and k₂ = 4, Cgk ≥ 1.33 corresponds to a maximum bias of about 1.7% of tolerance"
+      }
+    ],
+    "references": [
+      {
+        "source": "VDA Band 5 — Prüfprozesseignung: Eignung von Messsystemen, Mess- und Prüfprozessen, Erweiterte Messunsicherheit, 3. Auflage"
+      },
+      {
+        "source": "AIAG — Measurement Systems Analysis Reference Manual, 4th Edition (MSA-4)"
+      },
+      {
+        "source": "Dietrich, E. & Schulze, A. — Statistische Verfahren zur Maschinen- und Prozessqualifikation, 7. Auflage, Hanser"
+      }
+    ],
+    "minitab_equivalent": "Stat > Quality Tools > Gage Study > Type 1 Gage Study"
+  },
+
+  "source": {
+    "function_name": "analyze",
+    "file_path": "js/engines/msa-typ1-engine.js",
+    "signature": {
+      "parameters": [
+        {
+          "name": "params",
+          "type": "object",
+          "required": true,
+          "description": {
+            "de": "Objekt mit ref (Referenzwert), lsl, usl, k1, k2",
+            "en": "Object with ref (reference value), lsl, usl, k1, k2"
+          }
+        },
+        {
+          "name": "values",
+          "type": "number[]",
+          "required": true,
+          "description": {
+            "de": "Array von Wiederholmessungen (mindestens 25 Werte)",
+            "en": "Array of repeated measurements (at least 25 values)"
+          }
+        }
+      ],
+      "returns": {
+        "type": "object",
+        "properties": {
+          "Cgk": {
+            "type": "number",
+            "description": {
+              "de": "Wiederholbarkeits- und Bias-Index (≥ 1,33 = fähig)",
+              "en": "Repeatability and bias index (≥ 1.33 = capable)"
+            }
+          },
+          "Cg": {
+            "type": "number",
+            "description": {
+              "de": "Wiederholbarkeitsindex (zum Vergleich)",
+              "en": "Repeatability index (for comparison)"
+            }
+          },
+          "bias": {
+            "type": "number",
+            "description": { "de": "Systematische Abweichung (x̄ − x_ref)", "en": "Systematic deviation (x̄ − x_ref)" }
+          },
+          "biasPercent": {
+            "type": "number",
+            "description": { "de": "Bias als Prozent der Toleranz", "en": "Bias as percentage of tolerance" }
+          },
+          "xbar": {
+            "type": "number",
+            "description": { "de": "Mittelwert der Messungen", "en": "Mean of measurements" }
+          },
+          "sg": {
+            "type": "number",
+            "description": { "de": "Standardabweichung (n−1)", "en": "Standard deviation (n−1)" }
+          },
+          "tolUsage": {
+            "type": "number",
+            "description": { "de": "Toleranzverbrauch in %", "en": "Tolerance usage in %" }
+          },
+          "n": {
+            "type": "number",
+            "description": { "de": "Stichprobengröße", "en": "Sample size" }
+          }
+        }
+      }
+    },
+    "code_snippet": null
+  },
+
+  "try_it": {
+    "input_schema": {
+      "fields": [
+        {
+          "name": "values",
+          "label": { "de": "Messdaten", "en": "Measurement Data" },
+          "type": "textarea",
+          "placeholder": {
+            "de": "Wiederholmessungen eingeben (≥ 25 Werte)\nz.B.: 50.001; 49.998; 50.003; ...",
+            "en": "Enter repeated measurements (≥ 25 values)\ne.g.: 50.001, 49.998, 50.003, ..."
+          },
+          "parse_as": "number_array",
+          "required": true
+        },
+        {
+          "name": "params.ref",
+          "label": { "de": "Referenzwert (x_ref)", "en": "Reference Value (x_ref)" },
+          "type": "number",
+          "placeholder": { "de": "z.B. 50.000", "en": "e.g. 50.000" },
+          "parse_as": "number",
+          "required": true
+        },
+        {
+          "name": "params.lsl",
+          "label": { "de": "Untere Spezifikationsgrenze (LSL)", "en": "Lower Specification Limit (LSL)" },
+          "type": "number",
+          "placeholder": { "de": "z.B. 49.95", "en": "e.g. 49.95" },
+          "parse_as": "number",
+          "required": true
+        },
+        {
+          "name": "params.usl",
+          "label": { "de": "Obere Spezifikationsgrenze (USL)", "en": "Upper Specification Limit (USL)" },
+          "type": "number",
+          "placeholder": { "de": "z.B. 50.05", "en": "e.g. 50.05" },
+          "parse_as": "number",
+          "required": true
+        },
+        {
+          "name": "params.k1",
+          "label": { "de": "Toleranzfaktor k₁", "en": "Tolerance Factor k₁" },
+          "type": "number",
+          "placeholder": { "de": "Standard: 0.20", "en": "Default: 0.20" },
+          "parse_as": "number",
+          "required": false,
+          "default": 0.20
+        },
+        {
+          "name": "params.k2",
+          "label": { "de": "Streuungsfaktor k₂", "en": "Spread Factor k₂" },
+          "type": "number",
+          "placeholder": { "de": "Standard: 4", "en": "Default: 4" },
+          "parse_as": "number",
+          "required": false,
+          "default": 4
+        }
+      ]
+    },
+    "output_schema": {
+      "display_fields": ["Cgk", "Cg", "bias", "biasPercent", "sg", "tolUsage", "n"],
+      "primary_field": "Cgk",
+      "format": {
+        "Cgk": { "decimals": 4, "label": "Cgk" },
+        "Cg": { "decimals": 4, "label": "Cg" },
+        "bias": { "decimals": 6, "label": "Bias" },
+        "biasPercent": { "decimals": 2, "label": "Bias%" },
+        "sg": { "decimals": 6, "label": { "de": "Std.abw. (sg)", "en": "Std Dev (sg)" } },
+        "tolUsage": { "decimals": 2, "label": { "de": "Toleranzverbrauch (%T)", "en": "Tolerance Usage (%T)" } },
+        "n": { "decimals": 0, "label": "n" }
+      }
+    }
+  },
+
+  "changelog": [
+    {
+      "version": "1.0.0",
+      "date": "2026-03-28",
+      "type": "initial",
+      "description": {
+        "de": "Erstimplementierung: Cgk nach VDA 5 mit Bias-Berechnung und konfigurierbaren k₁/k₂-Faktoren",
+        "en": "Initial implementation: Cgk per VDA 5 with bias calculation and configurable k₁/k₂ factors"
+      },
+      "breaking": false
+    }
+  ]
+}

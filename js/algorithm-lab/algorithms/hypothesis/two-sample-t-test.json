@@ -1,0 +1,177 @@
+{
+  "id": "two-sample-t-test",
+  "name": {
+    "de": "Zwei-Stichproben-t-Test (pooled)",
+    "en": "Two-Sample t-Test (pooled)"
+  },
+  "category": "hypothesis",
+  "subcategory": "mean",
+  "status": "validated",
+  "version": "1.0.0",
+
+  "description": {
+    "short": {
+      "de": "Vergleicht die Mittelwerte zweier unabhängiger Stichproben bei gleichen Varianzen.",
+      "en": "Compares the means of two independent samples assuming equal variances."
+    },
+    "long": {
+      "de": "Der Zwei-Stichproben-t-Test (pooled) prüft, ob zwei unabhängige, normalverteilte Populationen denselben Mittelwert haben. Voraussetzung ist Varianzgleichheit (Varianzhomogenität) — bei ungleichen Varianzen sollte der Welch-t-Test verwendet werden. Die gepoolte Varianz sp² kombiniert die Streuung beider Stichproben.",
+      "en": "The two-sample t-test (pooled) tests whether two independent, normally distributed populations have the same mean. It assumes equal variances (homogeneity of variance) — for unequal variances, the Welch t-test should be used. The pooled variance sp² combines the variability of both samples."
+    }
+  },
+
+  "documentation": {
+    "formulas": [
+      {
+        "label": "t",
+        "latex": "t = \\frac{\\bar{x}_1 - \\bar{x}_2}{s_p\\sqrt{\\frac{1}{n_1}+\\frac{1}{n_2}}}",
+        "description": {
+          "de": "Teststatistik mit gepoolter Standardabweichung",
+          "en": "Test statistic with pooled standard deviation"
+        }
+      },
+      {
+        "label": "sp²",
+        "latex": "s_p^2 = \\frac{(n_1-1)s_1^2 + (n_2-1)s_2^2}{n_1+n_2-2}",
+        "description": {
+          "de": "Gepoolte Varianz: gewichteter Durchschnitt der Stichprobenvarianzen",
+          "en": "Pooled variance: weighted average of sample variances"
+        }
+      },
+      {
+        "label": "H₀",
+        "latex": "H_0: \\mu_1 = \\mu_2",
+        "description": {
+          "de": "Nullhypothese: Die Populationsmittelwerte sind gleich",
+          "en": "Null hypothesis: The population means are equal"
+        }
+      }
+    ],
+    "assumptions": [
+      { "de": "Beide Stichproben sind normalverteilt", "en": "Both samples are normally distributed" },
+      { "de": "Stichproben sind unabhängig", "en": "Samples are independent" },
+      { "de": "Varianzen sind gleich (Varianzhomogenität)", "en": "Variances are equal (homogeneity of variance)" }
+    ],
+    "limitations": [
+      { "de": "Bei ungleichen Varianzen den Welch-t-Test verwenden", "en": "Use Welch t-test for unequal variances" },
+      { "de": "Empfindlich gegenüber Ausreißern", "en": "Sensitive to outliers" }
+    ],
+    "references": [
+      { "source": "Student (W. S. Gosset) (1908), The probable error of a mean, Biometrika, 6(1), 1–25" },
+      { "source": "NIST/SEMATECH e-Handbook of Statistical Methods, Section 7.3.1" }
+    ],
+    "minitab_equivalent": "Stat > Basic Statistics > 2-Sample t (Assume equal variances)"
+  },
+
+  "source": {
+    "function_name": "twoSampleTTest",
+    "file_path": "js/engines/hypothesis-test-engine.js",
+    "signature": {
+      "parameters": [
+        {
+          "name": "data1",
+          "type": "number[]",
+          "required": true,
+          "description": { "de": "Erste Stichprobe", "en": "First sample" }
+        },
+        {
+          "name": "data2",
+          "type": "number[]",
+          "required": true,
+          "description": { "de": "Zweite Stichprobe", "en": "Second sample" }
+        },
+        {
+          "name": "direction",
+          "type": "string",
+          "required": false,
+          "description": { "de": "Testrichtung: 'two-sided', 'greater', 'less'", "en": "Test direction: 'two-sided', 'greater', 'less'" }
+        },
+        {
+          "name": "alpha",
+          "type": "number",
+          "required": false,
+          "description": { "de": "Signifikanzniveau (Standard: 0.05)", "en": "Significance level (default: 0.05)" }
+        }
+      ],
+      "returns": {
+        "type": "object",
+        "properties": {
+          "statistic": { "type": "number", "description": { "de": "t-Teststatistik", "en": "t test statistic" } },
+          "pValue": { "type": "number", "description": { "de": "p-Wert", "en": "p-value" } },
+          "df": { "type": "number", "description": { "de": "Freiheitsgrade (n₁+n₂−2)", "en": "Degrees of freedom (n₁+n₂−2)" } },
+          "reject": { "type": "boolean", "description": { "de": "H₀ abgelehnt?", "en": "Reject H₀?" } }
+        }
+      }
+    },
+    "code_snippet": null
+  },
+
+  "try_it": {
+    "input_schema": {
+      "fields": [
+        {
+          "name": "data1",
+          "label": { "de": "Stichprobe 1", "en": "Sample 1" },
+          "type": "textarea",
+          "placeholder": { "de": "Werte der ersten Stichprobe", "en": "Values of first sample" },
+          "parse_as": "number_array",
+          "required": true
+        },
+        {
+          "name": "data2",
+          "label": { "de": "Stichprobe 2", "en": "Sample 2" },
+          "type": "textarea",
+          "placeholder": { "de": "Werte der zweiten Stichprobe", "en": "Values of second sample" },
+          "parse_as": "number_array",
+          "required": true
+        },
+        {
+          "name": "direction",
+          "label": { "de": "Testrichtung", "en": "Test Direction" },
+          "type": "select",
+          "options": [
+            { "value": "two-sided", "label": { "de": "≠ Zweiseitig", "en": "≠ Two-sided" } },
+            { "value": "greater", "label": { "de": "> Größer", "en": "> Greater" } },
+            { "value": "less", "label": { "de": "< Kleiner", "en": "< Less" } }
+          ],
+          "parse_as": "string",
+          "required": false
+        },
+        {
+          "name": "alpha",
+          "label": { "de": "Signifikanzniveau α", "en": "Significance Level α" },
+          "type": "number",
+          "placeholder": { "de": "0.05", "en": "0.05" },
+          "parse_as": "number",
+          "required": false
+        }
+      ]
+    },
+    "output_schema": {
+      "display_fields": ["statistic", "pValue", "df", "mean1", "mean2", "pooledVariance", "se", "ci", "reject"],
+      "primary_field": "statistic",
+      "format": {
+        "statistic": { "decimals": 6, "label": "t" },
+        "pValue": { "decimals": 6, "label": "p-Value" },
+        "df": { "decimals": 0, "label": "df" },
+        "mean1": { "decimals": 6, "label": "x̄₁" },
+        "mean2": { "decimals": 6, "label": "x̄₂" },
+        "pooledVariance": { "decimals": 6, "label": "sp²" },
+        "reject": { "decimals": 0, "label": { "de": "H₀ abgelehnt", "en": "Reject H₀" } }
+      }
+    }
+  },
+
+  "changelog": [
+    {
+      "version": "1.0.0",
+      "date": "2026-03-31",
+      "type": "initial",
+      "description": {
+        "de": "Erstimplementierung mit gepoolter Varianz, t-Statistik, p-Wert, KI",
+        "en": "Initial implementation with pooled variance, t statistic, p-value, CI"
+      },
+      "breaking": false
+    }
+  ]
+}

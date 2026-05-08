@@ -1,0 +1,169 @@
+/* ============================================================
+   D.Mike — MSA Typ 1 Module Styles (msa-typ1.css)
+   Theme-aware using CSS custom properties from variables.css.
+   ============================================================ */
+
+/* ─── Layout (extends global dmike-split from css/modules.css) ── */
+.module-msa-typ1 .dmike-split__input {
+  width: 380px;
+}
+
+/* Section labels: use global .dmike-split__output-section (css/modules.css) */
+
+/* Fields use global .field / .field-group (components.css) */
+
+
+.msa-typ1__row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+
+/* ─── Error Box ──────────────────────────────────────────── */
+.msa-typ1__error {
+  display: none;
+  margin-top: 12px;
+  padding: var(--spacing-sm) 12px;
+  background: rgba(255, 59, 48, 0.08);
+  border: 1px solid rgba(255, 59, 48, 0.25);
+  border-radius: var(--border-radius);
+  font-size: var(--font-size-sm);
+  color: var(--color-error);
+}
+
+.msa-typ1__error.visible {
+  display: block;
+}
+
+/* ─── Status Bar ─────────────────────────────────────────── */
+.msa-typ1__status-bar {
+  border-radius: var(--border-radius);
+  padding: 12px var(--spacing-md);
+  margin-bottom: var(--spacing-lg);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.msa-typ1__status-bar--pass {
+  background: rgba(52, 199, 89, 0.08);
+  border: 1px solid rgba(52, 199, 89, 0.3);
+}
+
+.msa-typ1__status-bar--fail {
+  background: rgba(255, 59, 48, 0.08);
+  border: 1px solid rgba(255, 59, 48, 0.3);
+}
+
+.msa-typ1__status-bar--warn {
+  background: rgba(255, 149, 0, 0.08);
+  border: 1px solid rgba(255, 149, 0, 0.3);
+}
+
+.msa-typ1__status-label {
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  letter-spacing: 0.1em;
+}
+
+.msa-typ1__status-bar--pass .msa-typ1__status-label { color: var(--color-success); }
+.msa-typ1__status-bar--fail .msa-typ1__status-label { color: var(--color-error); }
+.msa-typ1__status-bar--warn .msa-typ1__status-label { color: var(--color-warning); }
+
+.msa-typ1__status-detail {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+/* ─── Algorithm Lab Link (inside KPI cards) ─────────────── */
+.msa-typ1__algo-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  padding: 2px 4px;
+  margin-left: 6px;
+  cursor: pointer;
+  color: var(--color-text-secondary);
+  opacity: 0.6;
+  transition: opacity 0.15s, color 0.15s;
+  vertical-align: middle;
+}
+.msa-typ1__algo-link:hover {
+  opacity: 1;
+  color: var(--color-accent);
+  border-color: var(--color-accent);
+}
+
+/* ─── Stats Panel ────────────────────────────────────────── */
+.msa-typ1__stats-panel {
+  margin-bottom: var(--spacing-lg);
+}
+
+.msa-typ1__stats-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px var(--spacing-md);
+  border-bottom: 1px solid var(--color-border-secondary);
+}
+
+.msa-typ1__stats-row:last-child {
+  border-bottom: none;
+}
+
+.msa-typ1__stats-row-label {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+.msa-typ1__stats-row-value {
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-primary);
+}
+
+/* ─── Charts ─────────────────────────────────────────────── */
+.msa-typ1__chart-plot {
+  width: 100%;
+  height: 300px;
+}
+
+/* ─── Interpretation ─────────────────────────────────────── */
+.msa-typ1__interpretation {
+  margin-bottom: var(--spacing-lg);
+}
+
+.msa-typ1__interpretation p {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  line-height: 1.7;
+  margin-bottom: var(--spacing-sm);
+}
+
+.msa-typ1__interpretation strong {
+  color: var(--color-text-primary);
+  font-weight: var(--font-weight-semibold);
+}
+
+.msa-typ1__tag {
+  display: inline-block;
+  font-family: var(--font-family-mono);
+  font-size: 10px;
+  font-weight: var(--font-weight-medium);
+  padding: 1px 6px;
+  border-radius: 2px;
+  letter-spacing: 0.04em;
+  margin-right: 4px;
+}
+
+.msa-typ1__tag--pass { background: rgba(52, 199, 89, 0.12); color: var(--color-success); }
+.msa-typ1__tag--fail { background: rgba(255, 59, 48, 0.12); color: var(--color-error); }
+.msa-typ1__tag--warn { background: rgba(255, 149, 0, 0.12); color: var(--color-warning); }
+
+

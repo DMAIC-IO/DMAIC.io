@@ -1,0 +1,83 @@
+{
+  "id": "generalized-esd",
+  "name": { "de": "Generalized ESD (Rosner 1983)", "en": "Generalized ESD (Rosner 1983)" },
+  "category": "outliers",
+  "subcategory": "parametric",
+  "status": "validated",
+  "version": "1.0.0",
+  "description": {
+    "short": {
+      "de": "Iterativer Test, der bis zu k Ausreißer ohne Maskierung gleichzeitig identifiziert.",
+      "en": "Iterative test that identifies up to k outliers simultaneously, avoiding masking."
+    },
+    "long": {
+      "de": "Der Generalized Extreme Studentized Deviate-Test nach Rosner (1983) verallgemeinert Grubbs auf mehrere Ausreißer. Es werden bis zu k Kandidaten in absteigender Reihenfolge ihrer maximalen Standardisierung extrahiert; die größte Iteration i, für die Rᵢ > λᵢ gilt, definiert die Anzahl der Ausreißer. Die λᵢ-Werte basieren auf der t-Verteilung mit Bonferroni-Korrektur und kompensieren das Maskierungsproblem.",
+      "en": "Rosner's (1983) Generalized Extreme Studentized Deviate test extends Grubbs to multiple outliers. Up to k candidates are extracted in decreasing order of their maximum studentised deviation; the largest iteration i for which Rᵢ > λᵢ defines the number of outliers. The λᵢ values rest on the t-distribution under Bonferroni correction and remove the masking effect."
+    }
+  },
+  "documentation": {
+    "formulas": [
+      { "label": "Rᵢ", "latex": "R_i = \\frac{\\max_j |x_j - \\bar{x}_i|}{s_i}",
+        "description": { "de": "Maximale Standardisierung in der i-ten Iteration", "en": "Maximum standardised deviation in iteration i" } },
+      { "label": "λᵢ", "latex": "\\lambda_i = \\frac{(n-i)\\, t_{p,\\, n-i-1}}{\\sqrt{(n-i-1+t^{2})(n-i+1)}},\\quad p = 1 - \\frac{\\alpha}{2(n-i+1)}",
+        "description": { "de": "Kritischer Wert für die i-te Iteration (Bonferroni)", "en": "Critical value at iteration i (Bonferroni)" } }
+    ],
+    "assumptions": [
+      { "de": "Daten — abgesehen von den Ausreißern — annähernd normalverteilt", "en": "Data approximately normal apart from the outliers" },
+      { "de": "Empfohlen für n ≥ 15", "en": "Recommended for n ≥ 15" }
+    ],
+    "limitations": [
+      { "de": "Maximale Anzahl k muss vorab gewählt werden (typisch ⌊n/4⌋, Default max 10)", "en": "Maximum k must be set in advance (typically ⌊n/4⌋, default cap 10)" },
+      { "de": "Bei stark schiefen Verteilungen unzuverlässig — vorher transformieren oder robuste Methoden nutzen", "en": "Unreliable on heavily skewed data — transform first or use robust methods" }
+    ],
+    "references": [
+      { "source": "Rosner, B. (1983), Percentage points for a generalized ESD many-outlier procedure, Technometrics 25(2), 165–172" },
+      { "source": "NIST/SEMATECH e-Handbook of Statistical Methods, Section 1.3.5.17" }
+    ],
+    "minitab_equivalent": "—"
+  },
+  "source": {
+    "function_name": "generalizedESD",
+    "file_path": "js/engines/outlier-test-engine.js",
+    "signature": {
+      "parameters": [
+        { "name": "data", "type": "number[]", "required": true,
+          "description": { "de": "Messdaten (n ≥ 4)", "en": "Data (n ≥ 4)" } },
+        { "name": "alpha", "type": "number", "required": false,
+          "description": { "de": "Signifikanzniveau", "en": "Significance level" } },
+        { "name": "maxOutliers", "type": "number", "required": false,
+          "description": { "de": "Maximale Anzahl Ausreißer (Default: ⌊n/4⌋, max 10)", "en": "Maximum outliers (default ⌊n/4⌋, capped 10)" } }
+      ],
+      "returns": {
+        "type": "object",
+        "properties": {
+          "detected": { "type": "number", "description": { "de": "Anzahl erkannter Ausreißer", "en": "Number of outliers detected" } },
+          "steps":    { "type": "Array",  "description": { "de": "Iterationsspur (R, λ, Wert)", "en": "Iteration trace (R, λ, value)" } },
+          "outliers": { "type": "Array",  "description": { "de": "Erkannte Ausreißer", "en": "Detected outliers" } }
+        }
+      }
+    }
+  },
+  "try_it": {
+    "input_schema": {
+      "fields": [
+        { "name": "data", "label": { "de": "Messdaten", "en": "Data" }, "type": "textarea", "parse_as": "number_array", "required": true },
+        { "name": "alpha", "label": { "de": "α", "en": "α" }, "type": "number", "default": 0.05 },
+        { "name": "maxOutliers", "label": { "de": "max k", "en": "max k" }, "type": "number", "default": null }
+      ],
+      "csv_mapping": { "data_column": "Automatically uses first numeric column" }
+    },
+    "output_schema": {
+      "display_fields": ["detected", "n"],
+      "primary_field": "detected",
+      "format": {
+        "detected": { "decimals": 0, "label": "Detected" },
+        "n":        { "decimals": 0, "label": "n" }
+      }
+    }
+  },
+  "changelog": [
+    { "version": "1.0.0", "date": "2026-05-06", "type": "initial",
+      "description": { "de": "Erstimplementierung; gegen NIST-Referenzdatensatz validiert (3 von 54 erkannt)", "en": "Initial implementation; validated against NIST reference dataset (3 of 54 detected)" }, "breaking": false }
+  ]
+}

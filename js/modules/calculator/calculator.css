@@ -1,0 +1,279 @@
+/* ============================================================
+   D.Mike — Scientific Calculator Module (calculator.css)
+   ============================================================ */
+
+.module-calculator {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  min-height: 100%;
+  padding: var(--spacing-lg);
+}
+
+.module-calculator__wrap {
+  width: 100%;
+  max-width: 520px;
+}
+
+/* ── Mode Tabs ── */
+.module-calculator__tabs {
+  display: flex;
+  gap: 2px;
+  margin-bottom: var(--spacing-sm);
+  background: var(--color-bg-secondary);
+  border-radius: var(--border-radius);
+  padding: 3px;
+  border: var(--border-width) solid var(--color-border-secondary);
+}
+
+.module-calculator__tab {
+  flex: 1;
+  padding: 8px 6px;
+  text-align: center;
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-text-tertiary);
+  background: none;
+  border: none;
+  border-radius: var(--border-radius-sm);
+  cursor: pointer;
+  transition: all var(--transition-speed);
+}
+
+.module-calculator__tab:hover {
+  color: var(--color-text-primary);
+}
+
+.module-calculator__tab--active {
+  background: var(--color-bg-tertiary);
+  color: var(--color-accent);
+  box-shadow: var(--shadow-sm);
+}
+
+/* ── Display ── */
+.module-calculator__display {
+  background: var(--color-bg-secondary);
+  border: var(--border-width) solid var(--color-border-secondary);
+  border-radius: var(--border-radius);
+  padding: var(--spacing-md) 20px 14px;
+  margin-bottom: var(--spacing-sm);
+  position: relative;
+  overflow: hidden;
+}
+
+.module-calculator__display::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--color-accent), transparent);
+  opacity: 0.3;
+}
+
+.module-calculator__expr {
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-tertiary);
+  min-height: 1.4em;
+  text-align: right;
+  word-break: break-all;
+  line-height: 1.4;
+}
+
+.module-calculator__result {
+  font-family: var(--font-family-mono);
+  font-size: 2rem;
+  font-weight: 300;
+  text-align: right;
+  color: var(--color-text-primary);
+  min-height: 1.3em;
+  line-height: 1.3;
+  letter-spacing: -0.02em;
+  word-break: break-all;
+  transition: color var(--transition-speed);
+}
+
+.module-calculator__result--error {
+  color: var(--color-error);
+  font-size: 1rem;
+}
+
+.module-calculator__info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 6px;
+  font-family: var(--font-family-mono);
+  font-size: 10px;
+  color: var(--color-text-tertiary);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.module-calculator__mem {
+  color: var(--color-warning);
+}
+
+/* ── Button Grid ── */
+.module-calculator__grid {
+  display: grid;
+  gap: 6px;
+}
+
+.module-calculator__grid--5col {
+  grid-template-columns: repeat(5, 1fr);
+}
+
+.module-calculator__grid--4col {
+  grid-template-columns: repeat(4, 1fr);
+}
+
+.module-calculator__key {
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-medium);
+  padding: 14px 4px;
+  border: var(--border-width) solid var(--color-border-secondary);
+  border-radius: var(--border-radius);
+  background: var(--color-bg-secondary);
+  color: var(--color-text-primary);
+  cursor: pointer;
+  transition: all 0.12s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  line-height: 1.2;
+}
+
+.module-calculator__key:hover {
+  background: var(--color-bg-tertiary);
+  border-color: var(--color-border-primary);
+}
+
+.module-calculator__key:active {
+  transform: scale(0.96);
+}
+
+/* Key variants */
+.module-calculator__key--num {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+}
+
+.module-calculator__key--op {
+  color: var(--color-info);
+  font-weight: var(--font-weight-semibold);
+}
+
+.module-calculator__key--fn {
+  color: var(--color-chart-7);
+  font-size: var(--font-size-sm);
+}
+
+.module-calculator__key--act {
+  background: var(--color-accent-light);
+  color: var(--color-accent);
+  border-color: var(--color-accent-light);
+  font-weight: 700;
+}
+
+.module-calculator__key--act:hover {
+  background: var(--color-accent);
+  color: var(--color-text-inverse);
+}
+
+.module-calculator__key--danger {
+  color: var(--color-error);
+}
+
+.module-calculator__key--wide {
+  grid-column: span 2;
+}
+
+.module-calculator__key--stat {
+  color: var(--color-warning);
+  font-size: var(--font-size-sm);
+  letter-spacing: -0.01em;
+}
+
+/* ── Data Panel (Stats & Six Sigma) ── */
+.module-calculator__data-panel {
+  background: var(--color-bg-secondary);
+  border: var(--border-width) solid var(--color-border-secondary);
+  border-radius: var(--border-radius);
+  padding: 12px var(--spacing-md);
+  margin-bottom: var(--spacing-sm);
+}
+
+.module-calculator__data-label {
+  font-family: var(--font-family-mono);
+  font-size: 10px;
+  color: var(--color-text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  display: block;
+  margin-bottom: 6px;
+}
+
+.module-calculator__data-display {
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-primary);
+  min-height: 2.4em;
+  line-height: 1.6;
+  word-break: break-all;
+  max-height: 80px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-border-primary) transparent;
+}
+
+.module-calculator__data-display::-webkit-scrollbar {
+  width: 4px;
+}
+
+.module-calculator__data-display::-webkit-scrollbar-thumb {
+  background: var(--color-border-primary);
+  border-radius: 2px;
+}
+
+.module-calculator__val {
+  display: inline-block;
+  background: var(--color-bg-tertiary);
+  padding: 1px 7px;
+  border-radius: var(--border-radius-sm);
+  margin: 2px 3px 2px 0;
+}
+
+.module-calculator__val--empty {
+  color: var(--color-text-tertiary);
+  background: none;
+}
+
+.module-calculator__data-count {
+  font-family: var(--font-family-mono);
+  font-size: 10px;
+  color: var(--color-text-tertiary);
+  margin-top: 6px;
+}
+
+/* ── Cpk Inputs ── */
+.module-calculator__cpk-inputs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-sm);
+}
+
+/* Inputs use global .field class (components.css) */
+
+/* ── Panel visibility ── */
+.module-calculator__panel--hidden {
+  display: none;
+}

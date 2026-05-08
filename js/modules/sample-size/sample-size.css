@@ -1,0 +1,89 @@
+/**
+ * D.Mike — Sample Size Module Styles
+ * BEM-light naming: .smpsize__*
+ *
+ * Section labels: use global .dmike-split__output-section (css/modules.css)
+ * Run button: use global .dmike-btn-run (css/modules.css)
+ */
+
+/* Field groups and rows now come from global .field-group / .field-row (components.css) */
+
+/* Toggle buttons: use global .btn-group + .btn--segment */
+
+/* Inputs/selects now use global .field / .field--num (css/components.css) */
+
+/* Error */
+.smpsize__error {
+  display: none;
+  margin-top: var(--spacing-sm);
+  padding: var(--spacing-sm);
+  border-radius: var(--border-radius);
+  background: rgba(var(--color-error-rgb, 239, 68, 68), 0.1);
+  color: var(--color-error);
+  font-size: var(--font-size-xs);
+}
+
+/* Decision / summary box */
+.smpsize__summary {
+  border-radius: var(--border-radius);
+  padding: var(--spacing-sm) var(--spacing-md);
+  margin-bottom: var(--spacing-sm);
+  background: rgba(var(--color-accent-rgb, 59, 130, 246), 0.06);
+  border: var(--border-width) solid rgba(var(--color-accent-rgb, 59, 130, 246), 0.2);
+}
+
+.smpsize__summary strong {
+  display: block;
+  font-size: var(--font-size-sm);
+  margin-bottom: 2px;
+}
+
+.smpsize__summary p {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  margin: 0;
+}
+
+/* Algo lab link */
+.smpsize__algo-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: 1px solid var(--color-border, var(--color-border-primary));
+  border-radius: 4px;
+  padding: 2px 4px;
+  margin-left: 6px;
+  cursor: pointer;
+  color: var(--color-text-secondary);
+  opacity: 0.6;
+  transition: opacity 0.15s, color 0.15s;
+  vertical-align: middle;
+}
+
+.smpsize__algo-link:hover {
+  opacity: 1;
+  color: var(--color-accent);
+  border-color: var(--color-accent);
+}
+
+/* Placeholder */
+.smpsize__placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 400px;
+  color: var(--color-text-tertiary);
+  text-align: center;
+  gap: var(--spacing-md);
+}
+
+.smpsize__placeholder svg {
+  opacity: 0.3;
+}
+
+.smpsize__placeholder p {
+  font-size: var(--font-size-sm);
+  max-width: 280px;
+}

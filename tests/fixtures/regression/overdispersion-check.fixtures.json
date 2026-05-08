@@ -1,0 +1,144 @@
+{
+  "algorithm_id": "overdispersion-check",
+  "generated_with": {
+    "engine": "glm-engine.js",
+    "verified_against": "Direct Σ r² computation"
+  },
+  "generated_at": "2026-04-27T00:00:00.000Z",
+  "generator_script": "tests/generate-glm-fixtures.mjs",
+  "generator_version": "1.0.0",
+  "tolerances": {
+    "default": {
+      "relative": 1e-10,
+      "absolute": 1e-12
+    }
+  },
+  "test_cases": [
+    {
+      "id": "od_standard_no_overdispersion",
+      "tier": "standard",
+      "description": "Pearson residuals from a well-fitting Poisson model. Ratio ≈ 0.26 (no overdispersion).",
+      "reference": "D.Mike glm-engine.js (Poisson fit residuals)",
+      "inputs": {
+        "pearsonResid": [0.377, -0.048, -0.276, -0.149, 0.678, -0.517, 0.451, 0.206, -0.660, -0.036],
+        "n": 10,
+        "p": 2
+      },
+      "expected": {
+        "pearsonChi2": 1.6525159999999999,
+        "df": 8,
+        "ratio": 0.20656449999999998,
+        "overdispersed": false,
+        "severe": false
+      }
+    },
+    {
+      "id": "od_standard_overdispersed",
+      "tier": "standard",
+      "description": "Residuals from fitting Poisson to overdispersed NegBin data. Ratio ≈ 10.1 (severe).",
+      "reference": "D.Mike glm-engine.js (overdispersed data fitted as Poisson)",
+      "inputs": {
+        "pearsonResid": [-1.82, -0.51, -1.37, 1.69, -1.10, 4.04, -1.62, -0.13, 5.88, -1.01, -1.65, 2.16, -0.45, 5.62, -1.84, 0.49, 7.07, -1.31, -1.69, 3.27],
+        "n": 20,
+        "p": 2
+      },
+      "expected": {
+        "pearsonChi2": 172.1236,
+        "df": 18,
+        "ratio": 9.562422222222223,
+        "overdispersed": true,
+        "severe": true
+      }
+    },
+    {
+      "id": "od_standard_borderline",
+      "tier": "standard",
+      "description": "Ratio near 1.5 threshold. Tests decision boundary.",
+      "reference": "Constructed residuals with known sum of squares",
+      "inputs": {
+        "pearsonResid": [1.1, -0.8, 1.3, -1.0, 0.9, -1.2, 1.0, -0.7],
+        "n": 8,
+        "p": 2
+      },
+      "expected": {
+        "pearsonChi2": 8.280000000000001,
+        "df": 6,
+        "ratio": 1.3800000000000001,
+        "overdispersed": false,
+        "severe": false
+      }
+    },
+    {
+      "id": "od_edge_all_zero_residuals",
+      "tier": "edge",
+      "description": "Perfect fit: all Pearson residuals = 0. Ratio = 0.",
+      "reference": "Analytic: Σ 0² = 0",
+      "inputs": {
+        "pearsonResid": [0, 0, 0, 0, 0],
+        "n": 5,
+        "p": 2
+      },
+      "expected": {
+        "pearsonChi2": 0,
+        "df": 3,
+        "ratio": 0,
+        "overdispersed": false,
+        "severe": false
+      }
+    },
+    {
+      "id": "od_edge_single_df",
+      "tier": "edge",
+      "description": "df = 1 (n=3, p=2). Minimal degrees of freedom for ratio computation.",
+      "reference": "Analytic: (0.5² + 0.3² + 1.2²) / 1 = 1.78",
+      "inputs": {
+        "pearsonResid": [0.5, -0.3, 1.2],
+        "n": 3,
+        "p": 2
+      },
+      "expected": {
+        "pearsonChi2": 1.7799999999999998,
+        "df": 1,
+        "ratio": 1.7799999999999998,
+        "overdispersed": true,
+        "severe": false
+      }
+    },
+    {
+      "id": "od_edge_severe",
+      "tier": "edge",
+      "description": "Large residuals: ratio = 35.6 (extremely severe overdispersion).",
+      "reference": "Analytic: Σ r² = 285, df = 8, ratio = 35.625",
+      "inputs": {
+        "pearsonResid": [5, -4, 6, -3, 7, -5, 8, -6, 4, -3],
+        "n": 10,
+        "p": 2
+      },
+      "expected": {
+        "pearsonChi2": 285,
+        "df": 8,
+        "ratio": 35.625,
+        "overdispersed": true,
+        "severe": true
+      }
+    },
+    {
+      "id": "od_edge_underdispersed",
+      "tier": "edge",
+      "description": "Very small residuals: ratio << 1 (underdispersion).",
+      "reference": "Analytic: Σ r² = 0.0059, df = 8, ratio = 0.000738",
+      "inputs": {
+        "pearsonResid": [0.01, -0.02, 0.015, -0.01, 0.02, -0.015, 0.01, -0.02, 0.015, -0.01],
+        "n": 10,
+        "p": 2
+      },
+      "expected": {
+        "pearsonChi2": 0.0022749999999999997,
+        "df": 8,
+        "ratio": 0.00028437499999999996,
+        "overdispersed": false,
+        "severe": false
+      }
+    }
+  ]
+}

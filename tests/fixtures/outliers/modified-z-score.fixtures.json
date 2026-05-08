@@ -1,0 +1,72 @@
+{
+  "algorithm_id": "modified-z-score",
+  "generated_with": {
+    "engine": "js/engines/outlier-test-engine.js"
+  },
+  "generated_at": "2026-05-06T00:00:00Z",
+  "generator_version": "1.0.0",
+  "tolerances": {
+    "default": { "relative": 1e-12, "absolute": 1e-14 }
+  },
+  "test_cases": [
+    {
+      "id": "modz_single_outlier",
+      "tier": "standard",
+      "description": "Single very large value 100 — robust statistics flag it (M ≈ 25.5 ≫ 3.5)",
+      "reference": "Iglewicz & Hoaglin (1993), How to detect and handle outliers, ASQ Quality Press",
+      "inputs": {
+        "data": [1, 2, 3, 4, 5, 6, 7, 8, 9, 100],
+        "threshold": 3.5
+      },
+      "expected": {
+        "n": 10,
+        "median": 5.5,
+        "mad": 2.5
+      }
+    },
+    {
+      "id": "modz_clean_uniform",
+      "tier": "standard",
+      "description": "Symmetric integer sequence — no flagged points",
+      "reference": "Synthetic",
+      "inputs": {
+        "data": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+        "threshold": 3.5
+      },
+      "expected": {
+        "n": 10,
+        "median": 5.5,
+        "mad": 2.5
+      }
+    },
+    {
+      "id": "modz_zero_mad",
+      "tier": "edge",
+      "description": "MAD = 0 (more than half identical) → `degenerate: true`",
+      "reference": "Synthetic",
+      "inputs": {
+        "data": [5, 5, 5, 5, 5, 5, 7, 9, 100],
+        "threshold": 3.5
+      },
+      "expected": {
+        "n": 9,
+        "median": 5,
+        "mad": 0,
+        "degenerate": true
+      }
+    },
+    {
+      "id": "modz_too_few",
+      "tier": "edge",
+      "description": "n=2 — below the minimum of 3",
+      "inputs": {
+        "data": [1, 2],
+        "threshold": 3.5
+      },
+      "expected_error": {
+        "type": "Error",
+        "message_contains": "min3"
+      }
+    }
+  ]
+}

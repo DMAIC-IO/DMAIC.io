@@ -1,0 +1,159 @@
+{
+  "id": "roc-auc",
+  "name": {
+    "de": "ROC-Kurve & AUC",
+    "en": "ROC Curve & AUC"
+  },
+  "category": "regression",
+  "subcategory": "classification",
+  "status": "validated",
+  "version": "1.0.0",
+
+  "description": {
+    "short": {
+      "de": "Berechnet die ROC-Kurve (Receiver Operating Characteristic) und die Fläche unter der Kurve (AUC) für binäre Klassifikation.",
+      "en": "Computes the ROC curve (Receiver Operating Characteristic) and the Area Under the Curve (AUC) for binary classification."
+    },
+    "long": {
+      "de": "Die ROC-Kurve stellt die True Positive Rate (Sensitivität) gegen die False Positive Rate (1 − Spezifität) über alle möglichen Entscheidungsschwellen dar. Die AUC fasst die Trennfähigkeit eines Klassifikators in einer einzigen Kennzahl zusammen: AUC = 1.0 entspricht einem perfekten Klassifikator, AUC = 0.5 einem zufälligen. Die Berechnung erfolgt über die Trapezregel auf den sortierten Schwellenwerten.",
+      "en": "The ROC curve plots True Positive Rate (sensitivity) against False Positive Rate (1 − specificity) across all possible decision thresholds. The AUC summarises classifier discrimination in a single metric: AUC = 1.0 indicates a perfect classifier, AUC = 0.5 a random one. Computation uses the trapezoidal rule over sorted thresholds."
+    }
+  },
+
+  "documentation": {
+    "formulas": [
+      {
+        "label": "TPR (Sensitivity)",
+        "latex": "\\text{TPR} = \\frac{TP}{TP + FN}",
+        "description": {
+          "de": "True Positive Rate (Sensitivität): Anteil korrekt erkannter positiver Fälle",
+          "en": "True Positive Rate (Sensitivity): proportion of correctly identified positive cases"
+        }
+      },
+      {
+        "label": "FPR (1 − Specificity)",
+        "latex": "\\text{FPR} = \\frac{FP}{FP + TN}",
+        "description": {
+          "de": "False Positive Rate (1 − Spezifität): Anteil fälschlich als positiv klassifizierter negativer Fälle",
+          "en": "False Positive Rate (1 − Specificity): proportion of negative cases incorrectly classified as positive"
+        }
+      },
+      {
+        "label": "AUC (trapezoidal)",
+        "latex": "\\text{AUC} = \\sum_{i=1}^{n} (\\text{FPR}_{i} - \\text{FPR}_{i-1}) \\cdot \\frac{\\text{TPR}_{i} + \\text{TPR}_{i-1}}{2}",
+        "description": {
+          "de": "Fläche unter der ROC-Kurve, berechnet mit der Trapezregel",
+          "en": "Area Under the ROC Curve, computed using the trapezoidal rule"
+        }
+      },
+      {
+        "label": "Perfect classifier",
+        "latex": "\\text{AUC} = 1.0",
+        "description": {
+          "de": "Ein perfekter Klassifikator erreicht AUC = 1.0 (vollständige Trennung der Klassen)",
+          "en": "A perfect classifier achieves AUC = 1.0 (complete class separation)"
+        }
+      },
+      {
+        "label": "Random classifier",
+        "latex": "\\text{AUC} = 0.5",
+        "description": {
+          "de": "Ein zufälliger Klassifikator erreicht AUC = 0.5 (ROC-Kurve auf der Diagonalen)",
+          "en": "A random classifier achieves AUC = 0.5 (ROC curve on the diagonal)"
+        }
+      }
+    ],
+    "assumptions": [
+      { "de": "Binäre Klassifikation mit Labels 0 und 1", "en": "Binary classification with labels 0 and 1" },
+      { "de": "Wahrscheinlichkeiten repräsentieren posteriore P(Y=1|X)", "en": "Probabilities represent posterior P(Y=1|X)" },
+      { "de": "Höhere Wahrscheinlichkeit deutet auf die positive Klasse", "en": "Higher probability indicates the positive class" },
+      { "de": "Beobachtungen sind unabhängig", "en": "Observations are independent" }
+    ],
+    "limitations": [
+      { "de": "Gleiche Wahrscheinlichkeitswerte (Ties) können die Kurvenform beeinflussen", "en": "Tied probabilities can affect curve shape" },
+      { "de": "AUC ist unempfindlich gegenüber Kalibrierung (rein rangbasiert)", "en": "AUC is insensitive to calibration (only rank-based)" },
+      { "de": "Ein einzelner AUC-Wert kann bei Klassenungleichgewicht irreführend sein — die vollständige Kurve sollte inspiziert werden", "en": "A single AUC value may mislead with class imbalance — inspect the full curve" },
+      { "de": "Ausschließlich positive oder negative Y-Werte ergeben standardmäßig AUC = 0.5", "en": "All-positive or all-negative Y defaults to AUC = 0.5" }
+    ],
+    "references": [
+      { "source": "Fawcett, T., An Introduction to ROC Analysis, Pattern Recognition Letters, 2006" },
+      { "source": "Hosmer, D.W., Lemeshow, S., Applied Logistic Regression, 3rd Ed., Wiley, Ch. 5" },
+      { "source": "Hanley, J.A., McNeil, B.J., The Meaning and Use of the Area under a ROC Curve, Radiology, 1982" }
+    ],
+    "minitab_equivalent": "Stat > Regression > Binary Logistic Regression > ROC Curve"
+  },
+
+  "source": {
+    "function_name": "computeROC",
+    "file_path": "js/engines/glm-engine.js",
+    "signature": {
+      "parameters": [
+        {
+          "name": "yTrue",
+          "type": "number[]",
+          "required": true,
+          "description": { "de": "Binäre wahre Klassen (0/1)", "en": "Binary true classes (0/1)" }
+        },
+        {
+          "name": "probs",
+          "type": "number[]",
+          "required": true,
+          "description": { "de": "Vorhergesagte Wahrscheinlichkeiten", "en": "Predicted probabilities" }
+        }
+      ],
+      "returns": {
+        "type": "object",
+        "properties": {
+          "fpr": { "type": "number[]", "description": { "de": "False Positive Rates", "en": "False Positive Rates" } },
+          "tpr": { "type": "number[]", "description": { "de": "True Positive Rates", "en": "True Positive Rates" } },
+          "thresholds": { "type": "number[]", "description": { "de": "Entscheidungsschwellen", "en": "Decision thresholds" } },
+          "auc": { "type": "number", "description": { "de": "Fläche unter der Kurve", "en": "Area Under the Curve" } }
+        }
+      }
+    },
+    "code_snippet": null
+  },
+
+  "try_it": {
+    "input_schema": {
+      "fields": [
+        {
+          "name": "yTrue",
+          "label": { "de": "Wahre Klassen (0/1)", "en": "True Classes (0/1)" },
+          "type": "textarea",
+          "placeholder": { "de": "z.B. 0, 0, 1, 1, 1, 0, 1, 0", "en": "e.g. 0, 0, 1, 1, 1, 0, 1, 0" },
+          "parse_as": "number_array",
+          "required": true
+        },
+        {
+          "name": "probs",
+          "label": { "de": "Vorhergesagte Wahrscheinlichkeiten", "en": "Predicted Probabilities" },
+          "type": "textarea",
+          "placeholder": { "de": "z.B. 0.1, 0.35, 0.7, 0.9, 0.65, 0.2, 0.8, 0.4", "en": "e.g. 0.1, 0.35, 0.7, 0.9, 0.65, 0.2, 0.8, 0.4" },
+          "parse_as": "number_array",
+          "required": true
+        }
+      ]
+    },
+    "output_schema": {
+      "display_fields": ["auc"],
+      "primary_field": "auc",
+      "format": {
+        "auc": { "decimals": 6, "label": "AUC" }
+      }
+    }
+  },
+
+  "changelog": [
+    {
+      "version": "1.0.0",
+      "date": "2026-04-27",
+      "type": "initial",
+      "description": {
+        "de": "Erstimplementierung der ROC-Kurve und AUC-Berechnung für binäre Klassifikation.",
+        "en": "Initial implementation of ROC curve and AUC computation for binary classification."
+      },
+      "breaking": false
+    }
+  ]
+}

@@ -1,0 +1,160 @@
+{
+  "algorithm_id": "negbin-regression",
+  "generated_with": {
+    "engine": "glm-engine.js (IRLS + profile likelihood θ estimation)",
+    "verified_against": "Structural invariants (deviance residual sum, pseudo-R² ranges)"
+  },
+  "generated_at": "2026-04-27T00:00:00.000Z",
+  "generator_script": "tests/generate-glm-fixtures.mjs",
+  "generator_version": "1.0.0",
+  "tolerances": {
+    "default": {
+      "relative": 0.001,
+      "absolute": 1e-06
+    },
+    "overrides": {
+      "theta_sensitive": {
+        "relative": 0.05,
+        "absolute": 0.1,
+        "reason": "θ estimation via bisection on profile likelihood may converge to slightly different values depending on initial bracket and tolerance"
+      },
+      "high_overdispersion": {
+        "relative": 0.1,
+        "absolute": 0.5,
+        "reason": "Extreme overdispersion (θ < 0.1) makes parameter estimates very unstable"
+      }
+    }
+  },
+  "test_cases": [
+    {
+      "id": "negbin_standard_overdispersed",
+      "tier": "standard",
+      "description": "Overdispersed counts with single predictor. θ ≈ 0.5 indicates substantial extra-Poisson variance.",
+      "reference": "D.Mike glm-engine.js (IRLS + profile likelihood)",
+      "tolerance_override": "theta_sensitive",
+      "inputs": {
+        "xColumns": [[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]],
+        "y": [0, 3, 0, 8, 1, 15, 0, 5, 20, 2, 0, 12, 3, 25, 0, 7, 30, 1, 0, 18],
+        "confLevel": 0.95
+      },
+      "expected": {
+        "converged": true,
+        "coefficients": [1.0438441379685273, 0.08363591384062796],
+        "stdErrors": [0.696060908700319, 0.057317080956017],
+        "pValues": [0.13370649010420244, 0.1445157706061655],
+        "deviance": 22.177863098355004,
+        "nullDeviance": 23.90464692239604,
+        "aic": 120.30183798403465,
+        "logLikelihood": -58.150918992017324,
+        "n": 20,
+        "p": 2,
+        "family.theta": 0.49779953479766836,
+        "pseudoR2.mcfadden": 0.014630212550044597
+      }
+    },
+    {
+      "id": "negbin_standard_multivariate",
+      "tier": "standard",
+      "description": "Two predictors (batch size, supplier) with n=20 overdispersed complaint counts.",
+      "reference": "D.Mike glm-engine.js (IRLS + profile likelihood)",
+      "tolerance_override": "theta_sensitive",
+      "inputs": {
+        "xColumns": [
+          [50, 100, 40, 120, 80, 30, 150, 60, 110, 45, 140, 70, 35, 160, 90, 55, 130, 42, 95, 75],
+          [1, 2, 1, 2, 1, 1, 2, 1, 2, 1, 2, 1, 1, 2, 2, 1, 2, 1, 2, 1]
+        ],
+        "y": [0, 8, 5, 45, 0, 3, 12, 0, 30, 1, 18, 0, 6, 70, 2, 0, 55, 1, 3, 15],
+        "confLevel": 0.95
+      },
+      "expected": {
+        "converged": true,
+        "coefficients": [-0.7178502036769387, 0.020709981281149425, 0.6603939300575377],
+        "stdErrors": [0.8363332251429421, 0.01271546653199704, 1.0056716630030456],
+        "pValues": [0.39070997831044796, 0.1033715119952312, 0.5113933085923978],
+        "deviance": 24.324432256589525,
+        "nullDeviance": 44.9276485416905,
+        "aic": 129.15239734452888,
+        "logLikelihood": -61.57619867226444,
+        "n": 20,
+        "p": 3,
+        "family.theta": 0.8945240831375122,
+        "pseudoR2.mcfadden": 0.14332112510181927
+      }
+    },
+    {
+      "id": "negbin_standard_moderate",
+      "tier": "standard",
+      "description": "Moderate overdispersion with single predictor. θ ≈ 8 (closer to Poisson than heavy NB).",
+      "reference": "D.Mike glm-engine.js (IRLS + profile likelihood)",
+      "tolerance_override": "theta_sensitive",
+      "inputs": {
+        "xColumns": [[10, 20, 30, 40, 50, 60, 70, 80, 90, 100]],
+        "y": [0, 2, 5, 3, 8, 12, 4, 15, 20, 10],
+        "confLevel": 0.95
+      },
+      "expected": {
+        "converged": true,
+        "coefficients": [0.4377791821606305, 0.025443621775578518],
+        "stdErrors": [0.4409358847846488, 0.0061965882504918385],
+        "zValues": [0.9928409033309684, 4.106069460651835],
+        "pValues": [0.3207875072575155, 0.000040266883705175616],
+        "deviance": 11.145690293541447,
+        "nullDeviance": 28.254335873762884,
+        "aic": 55.428056368815476,
+        "logLikelihood": -25.714028184407738,
+        "n": 10,
+        "p": 2,
+        "family.theta": 8.283518795967101,
+        "pseudoR2.mcfadden": 0.24962750021066438
+      }
+    },
+    {
+      "id": "negbin_edge_many_zeros",
+      "tier": "edge",
+      "description": "Mostly zeros (12 of 15): zero-inflated-like pattern. Very low θ ≈ 0.14.",
+      "reference": "D.Mike glm-engine.js (IRLS + profile likelihood)",
+      "tolerance_override": "theta_sensitive",
+      "inputs": {
+        "xColumns": [[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]],
+        "y": [0, 0, 0, 1, 0, 0, 0, 5, 0, 0, 0, 0, 3, 0, 0],
+        "confLevel": 0.95
+      },
+      "expected": {
+        "converged": true,
+        "coefficients": [-1.4935775295430664, 0.11409649933091362],
+        "stdErrors": [1.7015451638842019, 0.1798238416799665],
+        "pValues": [0.38006457174818964, 0.5257607195337468],
+        "deviance": 7.375783355579287,
+        "nullDeviance": 7.6170885270888595,
+        "n": 15,
+        "p": 2,
+        "family.theta": 0.14398990154266356,
+        "pseudoR2.mcfadden": 0.008927494183548657
+      }
+    },
+    {
+      "id": "negbin_edge_high_overdispersion",
+      "tier": "edge",
+      "description": "Extreme overdispersion: sparse large counts among many zeros. θ ≈ 0.06.",
+      "reference": "D.Mike glm-engine.js (IRLS + profile likelihood)",
+      "tolerance_override": "high_overdispersion",
+      "inputs": {
+        "xColumns": [[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]],
+        "y": [0, 50, 0, 0, 100, 0, 0, 200, 0, 0],
+        "confLevel": 0.95
+      },
+      "expected": {
+        "converged": true,
+        "coefficients": [2.6889398137393545, 0.1467067256340866],
+        "stdErrors": [2.7271267974886895, 0.4393703449118247],
+        "pValues": [0.32413441884736516, 0.7384534937038931],
+        "deviance": 5.979723451195886,
+        "nullDeviance": 6.054486653491276,
+        "n": 10,
+        "p": 2,
+        "family.theta": 0.06292839527130127,
+        "pseudoR2.mcfadden": 0.0014515681467404118
+      }
+    }
+  ]
+}

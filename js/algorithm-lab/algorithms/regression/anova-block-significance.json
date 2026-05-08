@@ -1,0 +1,85 @@
+{
+  "id": "anova-block-significance",
+  "name": {
+    "de": "Block-Signifikanz-F-Test (Type-III SS für Faktor-Block)",
+    "en": "Block-Significance F-Test (Type-III SS for a Factor Block)"
+  },
+  "category": "regression",
+  "subcategory": null,
+  "status": "validated",
+  "version": "1.0.0",
+
+  "description": {
+    "short": {
+      "de": "Wald-Form-F-Test für eine Gruppe zusammengehöriger Modellmatrix-Spalten — typisch für die n − 1 Indikatoren eines kategorialen Faktors.",
+      "en": "Wald-form F-test for a group of related model-matrix columns — typically the n − 1 indicators that encode one categorical factor."
+    },
+    "long": {
+      "de": "Wenn ein kategorialer Faktor mit k Stufen über Effekt-Codierung in k − 1 Indikator-Spalten übersetzt wird, will man im ANOVA-Tableau eine einzige Zeile pro Faktor — nicht n − 1 separate Zeilen pro Indikator. Der Block-Test bündelt diese Spalten zu einem Test mit df = m (Anzahl Spalten im Block). Form: SS_block = β_block' [V_block]^(−1) β_block, mit V_block = (X'X)^(−1)-Submatrix. Reduziert sich für m = 1 auf das klassische t² · MSE-Schema. Liefert das gleiche F wie R's drop1(model, test='F') zeile für einen mehrstufigen Faktor.",
+      "en": "When a categorical factor with k levels expands via effect coding to k − 1 indicator columns, you want one ANOVA row per factor — not n − 1 separate rows per indicator. The block test bundles those columns into a single test with df = m (block size). Form: SS_block = β_block' [V_block]^(−1) β_block, with V_block = the corresponding sub-matrix of (X'X)^(−1). Reduces to the classical t² · MSE form for m = 1. Produces the same F as R's drop1(model, test='F') row for a multi-level factor."
+    }
+  },
+
+  "documentation": {
+    "formulas": [
+      {
+        "label": "Wald quadratic",
+        "latex": "Q = \\boldsymbol{\\beta}_{\\text{block}}^{\\top}\\, V^{-1}_{\\text{block}}\\, \\boldsymbol{\\beta}_{\\text{block}},\\quad V_{\\text{block}} = (X'X)^{-1}_{\\text{block},\\text{block}}",
+        "description": {
+          "de": "Quadratische Form über β des Blocks, gewichtet mit der Submatrix von (X'X)⁻¹",
+          "en": "Quadratic form over β of the block, weighted by the (X'X)⁻¹ sub-matrix"
+        }
+      },
+      {
+        "label": "Sum of squares",
+        "latex": "SS_{\\text{block}} = Q,\\ \\ MS_{\\text{block}} = SS_{\\text{block}} / m,\\ \\ F = MS_{\\text{block}} / MSE",
+        "description": {
+          "de": "Block-SS, mittlere Quadratsumme über Block-Freiheitsgrade m, F gegen Modell-MSE",
+          "en": "Block SS, mean square over block df m, F against model MSE"
+        }
+      },
+      {
+        "label": "Single-column collapse",
+        "latex": "m = 1 \\implies SS_{\\text{block}} = t_j^2 \\cdot MSE",
+        "description": {
+          "de": "Für m = 1 fällt das Schema mit dem üblichen t²·MSE zusammen",
+          "en": "For m = 1 the formula collapses to the usual t²·MSE"
+        }
+      }
+    ],
+    "assumptions": [
+      { "de": "Block-Spalten sind nicht-singulär (sonst nur als verwaister Block ohne Information)", "en": "Block sub-matrix is non-singular (else block carries no information)" },
+      { "de": "Standard-OLS-Voraussetzungen (homogene Varianz, unabhängige Residuen)", "en": "Standard OLS assumptions (homoscedasticity, independence)" }
+    ],
+    "limitations": [
+      { "de": "Nicht direkt für gemischte Modelle (zufällige Effekte) anwendbar", "en": "Not directly applicable to mixed-effects models (random effects)" }
+    ],
+    "references": [
+      { "source": "Searle, S.R. (1987). Linear Models for Unbalanced Data, Wiley" },
+      { "source": "Montgomery, D.C. (2017). Design and Analysis of Experiments, 9th Ed., Wiley", "chapter": "Chapter 3 (ANOVA — Type III SS)" }
+    ],
+    "minitab_equivalent": "Stat > DOE > Analyze (Adj SS column for the Categorical factor block)"
+  },
+
+  "source": {
+    "function_name": "blockTypeIIISS",
+    "file_path": "js/engines/regression-engine.js",
+    "signature": {
+      "parameters": [
+        { "name": "ols",            "type": "OLSResult",  "required": true, "description": { "de": "Ergebnis von olsRegression", "en": "Result of olsRegression" } },
+        { "name": "columnIndices",  "type": "number[]",   "required": true, "description": { "de": "0-basierte Spalten-Indizes des Blocks in β", "en": "0-based column indices of the block in β" } }
+      ],
+      "returns": {
+        "type": "object",
+        "description": { "de": "{ss, df, ms, fStat, pValue}", "en": "{ss, df, ms, fStat, pValue}" }
+      }
+    },
+    "code_snippet": null
+  },
+
+  "changelog": [
+    { "version": "1.0.0", "date": "2026-05-08", "type": "initial",
+      "description": { "de": "Erstimplementierung im Rahmen von Phase 3 (Block-aware ANOVA)", "en": "Initial implementation as part of V0.4 Phase 3 (block-aware ANOVA)" },
+      "breaking": false }
+  ]
+}

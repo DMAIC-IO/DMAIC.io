@@ -1,0 +1,13 @@
+{
+  "description": "2^2 factorial with replicate — 8 runs",
+  "factors": [
+    { "name": "Temperature", "unit": "°C", "levels": ["200", "300"] },
+    { "name": "Pressure", "unit": "bar", "levels": ["10", "20"] }
+  ],
+  "codedMatrix": [
+    [-1, -1], [1, -1], [-1, 1], [1, 1],
+    [-1, -1], [1, -1], [-1, 1], [1, 1]
+  ],
+  "y": [12.3, 18.7, 14.1, 23.5, 11.9, 19.1, 13.8, 24.2],
+  "source": "Hand calculation, verified with R lm(y ~ A*B)"
+}

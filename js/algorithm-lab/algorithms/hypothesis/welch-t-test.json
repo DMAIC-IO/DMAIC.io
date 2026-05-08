@@ -1,0 +1,177 @@
+{
+  "id": "welch-t-test",
+  "name": {
+    "de": "Welch-t-Test",
+    "en": "Welch t-Test"
+  },
+  "category": "hypothesis",
+  "subcategory": "mean",
+  "status": "validated",
+  "version": "1.0.0",
+
+  "description": {
+    "short": {
+      "de": "Vergleicht die Mittelwerte zweier unabhängiger Stichproben ohne Annahme gleicher Varianzen.",
+      "en": "Compares the means of two independent samples without assuming equal variances."
+    },
+    "long": {
+      "de": "Der Welch-t-Test ist eine Modifikation des Zwei-Stichproben-t-Tests, die keine Varianzhomogenität voraussetzt. Er verwendet die Welch-Satterthwaite-Approximation für die Freiheitsgrade, die im Allgemeinen nicht ganzzahlig sind. Der Welch-t-Test ist die bevorzugte Wahl, wenn ein F-Test oder Levene-Test ungleiche Varianzen anzeigt.",
+      "en": "The Welch t-test is a modification of the two-sample t-test that does not assume equal variances. It uses the Welch-Satterthwaite approximation for degrees of freedom, which are generally non-integer. The Welch t-test is the preferred choice when an F-test or Levene test indicates unequal variances."
+    }
+  },
+
+  "documentation": {
+    "formulas": [
+      {
+        "label": "t",
+        "latex": "t = \\frac{\\bar{x}_1 - \\bar{x}_2}{\\sqrt{\\frac{s_1^2}{n_1}+\\frac{s_2^2}{n_2}}}",
+        "description": {
+          "de": "Teststatistik mit separaten Varianzschätzern",
+          "en": "Test statistic with separate variance estimates"
+        }
+      },
+      {
+        "label": "df",
+        "latex": "df = \\frac{\\left(\\frac{s_1^2}{n_1}+\\frac{s_2^2}{n_2}\\right)^2}{\\frac{(s_1^2/n_1)^2}{n_1-1}+\\frac{(s_2^2/n_2)^2}{n_2-1}}",
+        "description": {
+          "de": "Welch-Satterthwaite-Freiheitsgrade (i.d.R. nicht ganzzahlig)",
+          "en": "Welch-Satterthwaite degrees of freedom (generally non-integer)"
+        }
+      },
+      {
+        "label": "H₀",
+        "latex": "H_0: \\mu_1 = \\mu_2",
+        "description": {
+          "de": "Nullhypothese: Die Populationsmittelwerte sind gleich",
+          "en": "Null hypothesis: The population means are equal"
+        }
+      }
+    ],
+    "assumptions": [
+      { "de": "Beide Stichproben sind normalverteilt", "en": "Both samples are normally distributed" },
+      { "de": "Stichproben sind unabhängig", "en": "Samples are independent" }
+    ],
+    "limitations": [
+      { "de": "Etwas weniger trennscharf als der gepoolte t-Test, wenn Varianzen tatsächlich gleich sind", "en": "Slightly less powerful than the pooled t-test when variances are truly equal" },
+      { "de": "Satterthwaite-Freiheitsgrade sind eine Approximation", "en": "Satterthwaite degrees of freedom are an approximation" }
+    ],
+    "references": [
+      { "source": "Welch, B. L. (1947), The generalization of 'Student's' problem when several different population variances are involved, Biometrika, 34(1–2), 28–35" },
+      { "source": "Satterthwaite, F. E. (1946), An approximate distribution of estimates of variance components, Biometrics Bulletin, 2(6), 110–114" }
+    ],
+    "minitab_equivalent": "Stat > Basic Statistics > 2-Sample t (Do not assume equal variances)"
+  },
+
+  "source": {
+    "function_name": "welchTTest",
+    "file_path": "js/engines/hypothesis-test-engine.js",
+    "signature": {
+      "parameters": [
+        {
+          "name": "data1",
+          "type": "number[]",
+          "required": true,
+          "description": { "de": "Erste Stichprobe", "en": "First sample" }
+        },
+        {
+          "name": "data2",
+          "type": "number[]",
+          "required": true,
+          "description": { "de": "Zweite Stichprobe", "en": "Second sample" }
+        },
+        {
+          "name": "direction",
+          "type": "string",
+          "required": false,
+          "description": { "de": "Testrichtung: 'two-sided', 'greater', 'less'", "en": "Test direction: 'two-sided', 'greater', 'less'" }
+        },
+        {
+          "name": "alpha",
+          "type": "number",
+          "required": false,
+          "description": { "de": "Signifikanzniveau (Standard: 0.05)", "en": "Significance level (default: 0.05)" }
+        }
+      ],
+      "returns": {
+        "type": "object",
+        "properties": {
+          "statistic": { "type": "number", "description": { "de": "t-Teststatistik", "en": "t test statistic" } },
+          "pValue": { "type": "number", "description": { "de": "p-Wert", "en": "p-value" } },
+          "df": { "type": "number", "description": { "de": "Welch-Satterthwaite-Freiheitsgrade", "en": "Welch-Satterthwaite degrees of freedom" } },
+          "reject": { "type": "boolean", "description": { "de": "H₀ abgelehnt?", "en": "Reject H₀?" } }
+        }
+      }
+    },
+    "code_snippet": null
+  },
+
+  "try_it": {
+    "input_schema": {
+      "fields": [
+        {
+          "name": "data1",
+          "label": { "de": "Stichprobe 1", "en": "Sample 1" },
+          "type": "textarea",
+          "placeholder": { "de": "Werte der ersten Stichprobe", "en": "Values of first sample" },
+          "parse_as": "number_array",
+          "required": true
+        },
+        {
+          "name": "data2",
+          "label": { "de": "Stichprobe 2", "en": "Sample 2" },
+          "type": "textarea",
+          "placeholder": { "de": "Werte der zweiten Stichprobe", "en": "Values of second sample" },
+          "parse_as": "number_array",
+          "required": true
+        },
+        {
+          "name": "direction",
+          "label": { "de": "Testrichtung", "en": "Test Direction" },
+          "type": "select",
+          "options": [
+            { "value": "two-sided", "label": { "de": "≠ Zweiseitig", "en": "≠ Two-sided" } },
+            { "value": "greater", "label": { "de": "> Größer", "en": "> Greater" } },
+            { "value": "less", "label": { "de": "< Kleiner", "en": "< Less" } }
+          ],
+          "parse_as": "string",
+          "required": false
+        },
+        {
+          "name": "alpha",
+          "label": { "de": "Signifikanzniveau α", "en": "Significance Level α" },
+          "type": "number",
+          "placeholder": { "de": "0.05", "en": "0.05" },
+          "parse_as": "number",
+          "required": false
+        }
+      ]
+    },
+    "output_schema": {
+      "display_fields": ["statistic", "pValue", "df", "mean1", "mean2", "variance1", "variance2", "se", "ci", "reject"],
+      "primary_field": "statistic",
+      "format": {
+        "statistic": { "decimals": 6, "label": "t" },
+        "pValue": { "decimals": 6, "label": "p-Value" },
+        "df": { "decimals": 2, "label": "df" },
+        "mean1": { "decimals": 6, "label": "x̄₁" },
+        "mean2": { "decimals": 6, "label": "x̄₂" },
+        "variance1": { "decimals": 6, "label": "s₁²" },
+        "variance2": { "decimals": 6, "label": "s₂²" },
+        "reject": { "decimals": 0, "label": { "de": "H₀ abgelehnt", "en": "Reject H₀" } }
+      }
+    }
+  },
+
+  "changelog": [
+    {
+      "version": "1.0.0",
+      "date": "2026-03-31",
+      "type": "initial",
+      "description": {
+        "de": "Erstimplementierung mit Welch-Satterthwaite-Freiheitsgraden, t-Statistik, p-Wert, KI",
+        "en": "Initial implementation with Welch-Satterthwaite degrees of freedom, t statistic, p-value, CI"
+      },
+      "breaking": false
+    }
+  ]
+}

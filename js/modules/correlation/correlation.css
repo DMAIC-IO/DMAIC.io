@@ -1,0 +1,550 @@
+/* ============================================================
+   Correlation Analysis Module Styles (correlation.css)
+   BEM: .corr__ prefix
+   ============================================================ */
+
+/* Layout provided by .dmike-split (css/modules.css) */
+
+/* Section labels: use global .dmike-split__output-section (css/modules.css) */
+
+/* Fields use global .field / .field-group (components.css) */
+
+/* Column list (checkbox-based multi-select) */
+.corr__col-list-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  max-height: 240px;
+  overflow-y: auto;
+  border: var(--border-width) solid var(--color-border-secondary);
+  border-radius: var(--border-radius);
+  padding: var(--spacing-xs);
+  background: var(--color-bg-primary);
+  position: relative;
+}
+
+.corr__col-group-label {
+  font-family: var(--font-family-mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-text-tertiary);
+  padding: 2px 4px;
+  margin-top: 2px;
+}
+
+.corr__col-item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  padding: 3px 6px;
+  border-radius: var(--border-radius-sm);
+  cursor: pointer;
+  font-size: var(--font-size-sm);
+  transition: background var(--transition-speed);
+}
+
+.corr__col-item:hover {
+  background: var(--color-bg-secondary);
+}
+
+.corr__col-item input[type="checkbox"] {
+  flex-shrink: 0;
+  accent-color: var(--color-accent);
+}
+
+.corr__col-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.corr__col-count {
+  font-family: var(--font-family-mono);
+  font-size: 10px;
+  color: var(--color-text-tertiary);
+  flex-shrink: 0;
+}
+
+.corr__selected-info {
+  min-height: 20px;
+}
+
+.corr__col-info {
+  width: 100%;
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+  margin-top: 2px;
+}
+
+.corr__hint {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-tertiary);
+  font-style: italic;
+  padding: var(--spacing-xs) 0;
+}
+
+.corr__error {
+  display: none;
+  font-size: var(--font-size-sm);
+  color: var(--color-error, #ef4444);
+  background: rgba(239, 68, 68, 0.08);
+  border: var(--border-width) solid rgba(239, 68, 68, 0.2);
+  border-radius: var(--border-radius);
+  padding: var(--spacing-sm);
+}
+
+/* Method cards row */
+.corr__cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-lg);
+}
+
+.corr__card {
+  background: var(--color-bg-secondary);
+  border: var(--border-width) solid var(--color-border-secondary);
+  border-radius: var(--border-radius);
+  overflow: hidden;
+  position: relative;
+  transition: border-color var(--transition-speed);
+}
+
+/* Card recommended badge: uses shared .result-card--recommended / .result-card__badge from components.css */
+
+.corr__card-header {
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  padding: var(--spacing-sm) var(--spacing-md);
+  background: var(--color-bg-tertiary);
+  border-bottom: var(--border-width) solid var(--color-border-secondary);
+}
+
+.corr__card-body {
+  padding: var(--spacing-sm) var(--spacing-md);
+  text-align: center;
+}
+
+.corr__big-r {
+  font-family: var(--font-family-mono);
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 1.2;
+  margin-bottom: 2px;
+}
+
+.corr__interpret-tag {
+  font-family: var(--font-family-mono);
+  font-size: 10px;
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  padding: 2px 8px;
+  border-radius: var(--border-radius-sm);
+  display: inline-block;
+  margin-bottom: var(--spacing-sm);
+}
+
+.corr__card-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-sm);
+  gap: var(--spacing-sm);
+  padding: 3px 0;
+  border-top: var(--border-width) solid var(--color-border-secondary);
+}
+
+.corr__card-row span:first-child {
+  color: var(--color-text-tertiary);
+}
+
+/* CI bar */
+.corr__ci-wrap {
+  margin-top: var(--spacing-sm);
+  padding-top: var(--spacing-sm);
+  border-top: var(--border-width) solid var(--color-border-secondary);
+}
+
+.corr__ci-label {
+  font-family: var(--font-family-mono);
+  font-size: 9px;
+  color: var(--color-text-tertiary);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+
+.corr__ci-track {
+  position: relative;
+  height: 20px;
+  background: var(--color-bg-tertiary);
+  border-radius: var(--border-radius-sm);
+  overflow: visible;
+}
+
+.corr__ci-zero {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: var(--color-text-tertiary);
+  opacity: 0.3;
+  left: 50%;
+}
+
+.corr__ci-fill {
+  position: absolute;
+  height: 100%;
+  border-radius: var(--border-radius-sm);
+  opacity: 0.25;
+}
+
+.corr__ci-point {
+  position: absolute;
+  top: 50%;
+  width: 9px;
+  height: 9px;
+  background: var(--color-text-primary);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.corr__ci-labels {
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--font-family-mono);
+  font-size: 10px;
+  color: var(--color-text-tertiary);
+  margin-top: 2px;
+}
+
+/* Scatter plot */
+.corr__plot-wrap {
+  height: 420px;
+  overflow: hidden;
+  margin-bottom: var(--spacing-lg);
+}
+
+/* Stats grid */
+.corr__stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-lg);
+}
+
+.corr__stats-card {
+  background: var(--color-bg-secondary);
+  border: var(--border-width) solid var(--color-border-secondary);
+  border-radius: var(--border-radius);
+  padding: var(--spacing-md);
+}
+
+.corr__stats-title {
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-text-tertiary);
+  margin-bottom: var(--spacing-sm);
+}
+
+.corr__stat-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4px 0;
+  border-bottom: var(--border-width) solid var(--color-border-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.corr__stat-row:last-child {
+  border-bottom: none;
+}
+
+.corr__stat-row span:first-child {
+  color: var(--color-text-secondary);
+}
+
+.corr__stat-row span:last-child {
+  font-family: var(--font-family-mono);
+  font-weight: var(--font-weight-medium);
+}
+
+/* ─── Correlation Matrix (3+ columns) ────────────────────── */
+
+.corr__matrix-toolbar {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-lg);
+  margin-bottom: var(--spacing-md);
+  flex-wrap: wrap;
+}
+
+.corr__matrix-toggle {
+  width: fit-content;
+}
+
+.corr__matrix-toggle .btn--segment {
+  font-family: var(--font-family-mono);
+  flex: 0 1 auto;
+}
+
+/* Filter bar */
+.corr__filter-bar {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  flex-wrap: wrap;
+}
+
+.corr__filter-label {
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.corr__filter-field {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+}
+
+.corr__filter-input {
+  width: 64px;
+  padding: 3px 6px;
+  border: var(--border-width) solid var(--color-border-secondary);
+  border-radius: var(--border-radius-sm);
+  background: var(--color-bg-primary);
+  color: var(--color-text-primary);
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-xs);
+  outline: none;
+}
+
+.corr__filter-input:focus {
+  border-color: var(--color-accent);
+}
+
+.corr__matrix-wrap {
+  overflow-x: auto;
+  margin-bottom: var(--spacing-md);
+}
+
+.corr .corr__matrix-table {
+  border-collapse: collapse;
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-sm);
+  width: auto;
+}
+
+.corr__matrix-table th,
+.corr__matrix-table td {
+  padding: var(--spacing-xs) var(--spacing-sm);
+  text-align: center;
+  border: var(--border-width) solid var(--color-border-secondary);
+  white-space: nowrap;
+}
+
+.corr__matrix-header {
+  background: var(--color-bg-tertiary);
+  color: var(--color-text-secondary);
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--font-size-xs);
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.corr__matrix-row-header {
+  background: var(--color-bg-tertiary);
+  color: var(--color-text-secondary);
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--font-size-xs);
+  text-align: right !important;
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.corr__matrix-cell {
+  font-weight: var(--font-weight-semibold);
+  cursor: pointer;
+  transition: opacity var(--transition-speed);
+  vertical-align: middle;
+}
+
+.corr__matrix-cell--diag,
+.corr__matrix-cell--empty {
+  cursor: default;
+}
+
+.corr__matrix-cell:hover {
+  opacity: 0.8;
+}
+
+.corr__matrix-r {
+  display: block;
+  line-height: 1.3;
+}
+
+.corr__matrix-p {
+  display: block;
+  font-size: 9px;
+  font-weight: var(--font-weight-normal);
+  opacity: 0.7;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.corr__matrix-ci {
+  display: block;
+  font-size: 9px;
+  font-weight: var(--font-weight-normal);
+  opacity: 0.7;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.corr__matrix-cell--diag {
+  background: var(--color-bg-tertiary);
+  color: var(--color-text-tertiary);
+  font-weight: var(--font-weight-normal);
+}
+
+.corr__matrix-cell--empty {
+  background: transparent !important;
+  border-color: transparent;
+  cursor: default;
+}
+
+/* Dimmed cells (filtered out) */
+.corr__matrix-cell--dimmed {
+  opacity: 0.25;
+}
+
+/* Cross-highlight on hover */
+.corr__matrix--highlight {
+  background-color: color-mix(in srgb, var(--color-accent) 10%, transparent) !important;
+}
+
+/* Selected cell (click to isolate plot) */
+.corr__matrix-cell--selected {
+  outline: 2px solid var(--color-accent);
+  outline-offset: -2px;
+}
+
+.corr__matrix-legend {
+  display: flex;
+  gap: var(--spacing-md);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  flex-wrap: wrap;
+}
+
+.corr__matrix-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Scatter header row: uses global .dmike-split__output-section-header (css/modules.css) */
+
+.corr__collapse-all-btn {
+  padding: 2px var(--spacing-sm);
+  border: var(--border-width) solid var(--color-border-secondary);
+  border-radius: var(--border-radius-sm);
+  background: var(--color-bg-secondary);
+  color: var(--color-text-tertiary);
+  font-family: var(--font-family-mono);
+  font-size: 10px;
+  cursor: pointer;
+  transition: all var(--transition-speed);
+  white-space: nowrap;
+}
+
+.corr__collapse-all-btn:hover {
+  border-color: var(--color-accent);
+  color: var(--color-text-primary);
+}
+
+/* Matrix scatter plot grid */
+.corr__matrix-plots {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--spacing-sm);
+  margin-top: var(--spacing-sm);
+}
+
+.corr__matrix-plot-card {
+  background: var(--color-bg-secondary);
+  border: var(--border-width) solid var(--color-border-secondary);
+  border-radius: var(--border-radius);
+  overflow: hidden;
+}
+
+.corr__matrix-plot-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  background: var(--color-bg-tertiary);
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  user-select: none;
+  transition: background var(--transition-speed);
+}
+
+.corr__matrix-plot-header:hover {
+  background: var(--color-bg-secondary);
+}
+
+.corr__matrix-plot-header-right {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+.corr__matrix-plot-r {
+  font-weight: var(--font-weight-semibold);
+}
+
+.corr__matrix-plot-chevron {
+  font-size: 8px;
+  color: var(--color-text-tertiary);
+  transition: transform 0.2s ease;
+}
+
+.corr__matrix-plot-meta {
+  font-weight: var(--font-weight-normal);
+  color: var(--color-text-tertiary);
+}
+
+.corr__matrix-plot-area {
+  height: 320px;
+  overflow: hidden;
+  border-top: var(--border-width) solid var(--color-border-secondary);
+}
+
+/* Collapsed state */
+.corr__matrix-plot-card--collapsed .corr__matrix-plot-area {
+  display: none;
+}
+
+.corr__matrix-plot-card--collapsed .corr__matrix-plot-chevron {
+  transform: rotate(-90deg);
+}

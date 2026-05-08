@@ -1,0 +1,283 @@
+{
+  "id": "ppk",
+  "name": {
+    "de": "Langzeit-Prozessfähigkeit Ppk",
+    "en": "Overall Process Capability Ppk"
+  },
+  "category": "capability",
+  "subcategory": null,
+  "status": "validated",
+  "version": "1.0.0",
+
+  "description": {
+    "short": {
+      "de": "Langzeit-Prozessfähigkeit auf Basis der Gesamtstreuung (Populations-σ, ddof = 0).",
+      "en": "Overall process capability based on total variation (population σ, ddof = 0)."
+    },
+    "long": {
+      "de": "Pp und Ppk sind die 'Long-Term'-Gegenstücke zu Cp und Cpk. Sie verwenden die Populations-Standardabweichung (ddof = 0), die auch die Variation zwischen Untergruppen enthält — nicht nur die Variation innerhalb. Bei einem Prozess ohne Drift liegen Pp ≈ Cp und Ppk ≈ Cpk dicht beieinander; divergieren sie stark, ist der Prozess zwischen den Untergruppen nicht stabil. Ppk = min(PPU, PPL) und bestraft wie Cpk außermittige Prozesse. Ppk ≥ 1,33 gilt allgemein als fähig.",
+      "en": "Pp and Ppk are the 'long-term' counterparts to Cp and Cpk. They use the population standard deviation (ddof = 0), which captures between-subgroup variation as well — not just within-subgroup variation. For a process without drift, Pp ≈ Cp and Ppk ≈ Cpk; if they diverge significantly, the process is unstable across subgroups. Ppk = min(PPU, PPL) and, like Cpk, penalises off-center processes. Ppk ≥ 1.33 is generally considered capable."
+    }
+  },
+
+  "documentation": {
+    "formulas": [
+      {
+        "label": "Pp",
+        "latex": "P_p = \\frac{USL - LSL}{6\\sigma}",
+        "description": {
+          "de": "Langzeit-Prozessfähigkeit (σ = Populations-Standardabweichung, ddof = 0)",
+          "en": "Overall process capability (σ = population standard deviation, ddof = 0)"
+        }
+      },
+      {
+        "label": "Ppk",
+        "latex": "P_{pk} = \\min\\!\\left(\\frac{USL - \\bar{x}}{3\\sigma},\\; \\frac{\\bar{x} - LSL}{3\\sigma}\\right)",
+        "description": {
+          "de": "Minimum aus oberem und unterem Langzeit-Fähigkeitsindex",
+          "en": "Minimum of upper and lower overall capability indices"
+        }
+      },
+      {
+        "label": "PPU",
+        "latex": "P_{PU} = \\frac{USL - \\bar{x}}{3\\sigma}",
+        "description": {
+          "de": "Oberer Langzeit-Fähigkeitsindex",
+          "en": "Upper overall capability index"
+        }
+      },
+      {
+        "label": "PPL",
+        "latex": "P_{PL} = \\frac{\\bar{x} - LSL}{3\\sigma}",
+        "description": {
+          "de": "Unterer Langzeit-Fähigkeitsindex",
+          "en": "Lower overall capability index"
+        }
+      },
+      {
+        "label": "CI(Ppk)",
+        "latex": "CI(P_{pk}) = P_{pk} \\pm z_{1-\\alpha/2} \\cdot \\sqrt{\\frac{1}{9n} + \\frac{P_{pk}^2}{2(n-1)}}",
+        "description": {
+          "de": "Approximatives Konfidenzintervall für Ppk (Kushler-Hurley-Normalapproximation)",
+          "en": "Approximate confidence interval for Ppk (Kushler-Hurley normal approximation)"
+        }
+      }
+    ],
+    "assumptions": [
+      {
+        "de": "Daten sind annähernd normalverteilt",
+        "en": "Data is approximately normally distributed"
+      },
+      {
+        "de": "Datensatz repräsentiert den Langzeit-Prozess (enthält Untergruppen-Variation)",
+        "en": "Dataset represents the long-term process (contains between-subgroup variation)"
+      },
+      {
+        "de": "Messwerte sind unabhängig",
+        "en": "Measurements are independent"
+      }
+    ],
+    "limitations": [
+      {
+        "de": "Pp (zweiseitig) nur bei LSL und USL gleichzeitig definiert",
+        "en": "Pp (two-sided) only defined with both LSL and USL"
+      },
+      {
+        "de": "Divergenz zwischen Pp/Ppk und Cp/Cpk ist ein Indikator für Instabilität — nicht ignorieren",
+        "en": "Divergence between Pp/Ppk and Cp/Cpk is an indicator of instability — do not ignore it"
+      },
+      {
+        "de": "Ausreichender Stichprobenumfang erforderlich (n ≥ 100 für belastbare Langzeit-Aussage)",
+        "en": "Requires sufficient sample size (n ≥ 100 for a robust long-term statement)"
+      }
+    ],
+    "references": [
+      {
+        "source": "Montgomery, Introduction to Statistical Quality Control, 8th Ed.",
+        "chapter": "Chapter 7"
+      },
+      {
+        "source": "AIAG — Statistical Process Control (SPC) Reference Manual, 2nd Edition"
+      },
+      {
+        "source": "Kushler, R. & Hurley, P. (1992), Confidence Bounds for Capability Indices, Journal of Quality Technology, 24(4), 188–195"
+      }
+    ],
+    "minitab_equivalent": "Stat > Quality Tools > Capability Analysis > Normal (Overall)"
+  },
+
+  "source": {
+    "function_name": "capabilityAnalyze",
+    "file_path": "js/engines/process-capability-engine.js",
+    "signature": {
+      "parameters": [
+        {
+          "name": "data",
+          "type": "number[]",
+          "required": true,
+          "description": {
+            "de": "Array von Messwerten",
+            "en": "Array of measurement values"
+          }
+        },
+        {
+          "name": "lsl",
+          "type": "number",
+          "required": true,
+          "description": {
+            "de": "Untere Spezifikationsgrenze",
+            "en": "Lower specification limit"
+          }
+        },
+        {
+          "name": "usl",
+          "type": "number",
+          "required": true,
+          "description": {
+            "de": "Obere Spezifikationsgrenze",
+            "en": "Upper specification limit"
+          }
+        },
+        {
+          "name": "confidence",
+          "type": "number",
+          "required": false,
+          "description": {
+            "de": "Konfidenzniveau (Default 0.95)",
+            "en": "Confidence level (default 0.95)"
+          }
+        }
+      ],
+      "returns": {
+        "type": "object",
+        "properties": {
+          "pp": {
+            "type": "number|null",
+            "description": { "de": "Langzeit-Prozessfähigkeit", "en": "Overall process capability" }
+          },
+          "ppk": {
+            "type": "number|null",
+            "description": { "de": "Langzeit-Prozessfähigkeitsindex (min(ppu, ppl))", "en": "Overall process capability index (min(ppu, ppl))" }
+          },
+          "ppu": {
+            "type": "number|null",
+            "description": { "de": "Oberer Langzeit-Fähigkeitsindex", "en": "Upper overall capability index" }
+          },
+          "ppl": {
+            "type": "number|null",
+            "description": { "de": "Unterer Langzeit-Fähigkeitsindex", "en": "Lower overall capability index" }
+          },
+          "PpCI": {
+            "type": "[number,number]|null",
+            "description": { "de": "Exaktes χ²-Konfidenzintervall für Pp", "en": "Exact χ² confidence interval for Pp" }
+          },
+          "PpkCI": {
+            "type": "[number,number]|null",
+            "description": { "de": "Kushler-Hurley-Konfidenzintervall für Ppk", "en": "Kushler-Hurley confidence interval for Ppk" }
+          },
+          "mean": {
+            "type": "number",
+            "description": { "de": "Stichprobenmittelwert", "en": "Sample mean" }
+          },
+          "sigma": {
+            "type": "number",
+            "description": { "de": "Populations-Standardabweichung (ddof = 0)", "en": "Population standard deviation (ddof = 0)" }
+          },
+          "stddev": {
+            "type": "number",
+            "description": { "de": "Stichproben-Standardabweichung (ddof = 1) — zum Vergleich", "en": "Sample standard deviation (ddof = 1) — for comparison" }
+          },
+          "n": {
+            "type": "number",
+            "description": { "de": "Stichprobengröße", "en": "Sample size" }
+          }
+        }
+      }
+    },
+    "code_snippet": null
+  },
+
+  "try_it": {
+    "input_schema": {
+      "fields": [
+        {
+          "name": "values",
+          "label": {
+            "de": "Messdaten",
+            "en": "Measurement Data"
+          },
+          "type": "textarea",
+          "placeholder": {
+            "de": "Werte eingeben, getrennt durch Komma, Leerzeichen oder Zeilenumbruch\nz.B.: 10.02; 9.99; 10.01; 10.00; 9.98",
+            "en": "Enter values separated by commas, spaces, or newlines\ne.g.: 10.02, 9.99, 10.01, 10.00, 9.98"
+          },
+          "parse_as": "number_array",
+          "required": true
+        },
+        {
+          "name": "params.lsl",
+          "label": {
+            "de": "Untere Spezifikationsgrenze (LSL)",
+            "en": "Lower Spec Limit (LSL)"
+          },
+          "type": "number",
+          "placeholder": { "de": "z.B.: 9.80 (oder leer für einseitig)", "en": "e.g.: 9.80 (leave empty for one-sided)" },
+          "parse_as": "number",
+          "required": false
+        },
+        {
+          "name": "params.usl",
+          "label": {
+            "de": "Obere Spezifikationsgrenze (USL)",
+            "en": "Upper Spec Limit (USL)"
+          },
+          "type": "number",
+          "placeholder": { "de": "z.B.: 10.20 (oder leer für einseitig)", "en": "e.g.: 10.20 (leave empty for one-sided)" },
+          "parse_as": "number",
+          "required": false
+        },
+        {
+          "name": "params.confidence",
+          "label": {
+            "de": "Konfidenzniveau",
+            "en": "Confidence Level"
+          },
+          "type": "number",
+          "placeholder": { "de": "Standard: 0.95", "en": "Default: 0.95" },
+          "parse_as": "number",
+          "required": false,
+          "default": 0.95
+        }
+      ]
+    },
+    "output_schema": {
+      "display_fields": ["Pp", "Ppk", "PPU", "PPL", "PpCI", "PpkCI", "xbar", "sigma", "s", "n"],
+      "primary_field": "Ppk",
+      "format": {
+        "Pp":  { "decimals": 6, "label": "Pp" },
+        "Ppk": { "decimals": 6, "label": "Ppk" },
+        "PPU": { "decimals": 6, "label": "PPU" },
+        "PPL": { "decimals": 6, "label": "PPL" },
+        "PpCI":  { "decimals": 4, "label": { "de": "KI Pp", "en": "CI Pp" }, "type": "interval" },
+        "PpkCI": { "decimals": 4, "label": { "de": "KI Ppk", "en": "CI Ppk" }, "type": "interval" },
+        "xbar":  { "decimals": 6, "label": { "de": "Mittelwert (x̄)", "en": "Mean (x̄)" } },
+        "sigma": { "decimals": 6, "label": { "de": "σ (Population, ddof=0)", "en": "σ (population, ddof=0)" } },
+        "s":     { "decimals": 6, "label": { "de": "s (Stichprobe, ddof=1)", "en": "s (sample, ddof=1)" } },
+        "n":     { "decimals": 0, "label": "n" }
+      }
+    }
+  },
+
+  "changelog": [
+    {
+      "version": "1.0.0",
+      "date": "2026-04-11",
+      "type": "initial",
+      "description": {
+        "de": "Erstimplementierung mit Pp, Ppk, PPU, PPL und Konfidenzintervallen (χ² für Pp, Kushler-Hurley für Ppk)",
+        "en": "Initial implementation with Pp, Ppk, PPU, PPL and confidence intervals (χ² for Pp, Kushler-Hurley for Ppk)"
+      },
+      "breaking": false
+    }
+  ]
+}

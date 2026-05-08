@@ -1,0 +1,155 @@
+{
+  "id": "bartlett-test",
+  "name": {
+    "de": "Bartlett-Test",
+    "en": "Bartlett's Test"
+  },
+  "category": "hypothesis",
+  "subcategory": "variance",
+  "status": "experimental",
+  "version": "1.0.0",
+
+  "description": {
+    "short": {
+      "de": "Parametrischer Test auf Varianzgleichheit für k ≥ 2 normalverteilte Stichproben.",
+      "en": "Parametric test for equality of variances of k ≥ 2 normally distributed samples."
+    },
+    "long": {
+      "de": "Der Bartlett-Test prüft, ob die Varianzen von k unabhängigen Gruppen alle gleich sind. Er vergleicht die gepoolte Varianz s²ₚ mit den einzelnen Gruppenvarianzen über eine χ²-Statistik mit Korrekturfaktor C. Bartlett ist trennschärfer als der Levene-Test, wenn die Daten tatsächlich normalverteilt sind — aber empfindlich gegen Abweichungen von der Normalverteilung. Bei nicht-normalen Daten sollte stattdessen Levene-k (Brown-Forsythe) verwendet werden.",
+      "en": "Bartlett's test examines whether the variances of k independent groups are all equal. It compares the pooled variance s²ₚ to the individual group variances via a χ²-statistic with correction factor C. Bartlett is more powerful than Levene when the data are truly normally distributed — but sensitive to departures from normality. For non-normal data, use Levene-k (Brown-Forsythe) instead."
+    }
+  },
+
+  "documentation": {
+    "formulas": [
+      {
+        "label": "T",
+        "latex": "T = \\frac{(N-k)\\ln(s_p^2) - \\sum_{i=1}^{k}(n_i-1)\\ln(s_i^2)}{C}",
+        "description": {
+          "de": "Teststatistik (χ²-verteilt mit k−1 Freiheitsgraden)",
+          "en": "Test statistic (χ²-distributed with k−1 degrees of freedom)"
+        }
+      },
+      {
+        "label": "C",
+        "latex": "C = 1 + \\frac{1}{3(k-1)}\\left(\\sum_{i=1}^{k}\\frac{1}{n_i-1} - \\frac{1}{N-k}\\right)",
+        "description": {
+          "de": "Korrekturfaktor",
+          "en": "Correction factor"
+        }
+      },
+      {
+        "label": "s²ₚ",
+        "latex": "s_p^2 = \\frac{\\sum_{i=1}^{k}(n_i-1)s_i^2}{N-k}",
+        "description": {
+          "de": "Gepoolte Varianz",
+          "en": "Pooled variance"
+        }
+      },
+      {
+        "label": "H₀",
+        "latex": "H_0: \\sigma_1^2 = \\sigma_2^2 = \\dots = \\sigma_k^2",
+        "description": {
+          "de": "Nullhypothese: Alle Gruppenvarianzen sind gleich",
+          "en": "Null hypothesis: All group variances are equal"
+        }
+      }
+    ],
+    "assumptions": [
+      { "de": "Beobachtungen sind unabhängig", "en": "Observations are independent" },
+      { "de": "Daten in jeder Gruppe sind normalverteilt", "en": "Data within each group are normally distributed" }
+    ],
+    "limitations": [
+      { "de": "Sehr empfindlich gegenüber Abweichungen von der Normalverteilung — bei nicht-normalen Daten Levene-k bevorzugen", "en": "Very sensitive to departures from normality — prefer Levene-k for non-normal data" },
+      { "de": "χ²-Approximation ungenau bei sehr kleinen Stichproben", "en": "χ² approximation inaccurate for very small samples" }
+    ],
+    "references": [
+      { "source": "Bartlett, M. S. (1937), Properties of sufficiency and statistical tests, Proc. R. Soc. London A, 160(901), 268–282" },
+      { "source": "NIST/SEMATECH e-Handbook of Statistical Methods, Section 1.3.5.7" }
+    ],
+    "minitab_equivalent": "Stat > ANOVA > Test for Equal Variances (Bartlett)"
+  },
+
+  "source": {
+    "function_name": "bartlettTest",
+    "file_path": "js/engines/hypothesis-test-engine.js",
+    "signature": {
+      "parameters": [
+        {
+          "name": "groups",
+          "type": "number[][]",
+          "required": true,
+          "description": { "de": "Array von k Stichproben", "en": "Array of k samples" }
+        },
+        {
+          "name": "alpha",
+          "type": "number",
+          "required": false,
+          "description": { "de": "Signifikanzniveau (Standard: 0.05)", "en": "Significance level (default: 0.05)" }
+        }
+      ],
+      "returns": {
+        "type": "object",
+        "properties": {
+          "statistic": { "type": "number", "description": { "de": "Bartlett-Teststatistik (χ²)", "en": "Bartlett test statistic (χ²)" } },
+          "pValue": { "type": "number", "description": { "de": "p-Wert", "en": "p-value" } },
+          "df": { "type": "number", "description": { "de": "Freiheitsgrade (k−1)", "en": "Degrees of freedom (k−1)" } },
+          "pooledVariance": { "type": "number", "description": { "de": "Gepoolte Varianz s²ₚ", "en": "Pooled variance s²ₚ" } },
+          "correction": { "type": "number", "description": { "de": "Korrekturfaktor C", "en": "Correction factor C" } },
+          "reject": { "type": "boolean", "description": { "de": "H₀ abgelehnt?", "en": "Reject H₀?" } }
+        }
+      }
+    },
+    "code_snippet": null
+  },
+
+  "try_it": {
+    "input_schema": {
+      "fields": [
+        {
+          "name": "groups",
+          "label": { "de": "Gruppen (eine Zeile pro Gruppe)", "en": "Groups (one line per group)" },
+          "type": "textarea",
+          "placeholder": { "de": "z.B.\n1.2, 1.5, 1.4\n2.1, 2.3, 2.0\n1.8, 1.9, 2.0", "en": "e.g.\n1.2, 1.5, 1.4\n2.1, 2.3, 2.0\n1.8, 1.9, 2.0" },
+          "parse_as": "number_array_2d",
+          "required": true
+        },
+        {
+          "name": "alpha",
+          "label": { "de": "Signifikanzniveau α", "en": "Significance Level α" },
+          "type": "number",
+          "placeholder": { "de": "0.05", "en": "0.05" },
+          "parse_as": "number",
+          "required": false
+        }
+      ]
+    },
+    "output_schema": {
+      "display_fields": ["statistic", "pValue", "df", "pooledVariance", "correction", "k", "N", "reject"],
+      "primary_field": "statistic",
+      "format": {
+        "statistic": { "decimals": 6, "label": "T" },
+        "pValue": { "decimals": 6, "label": "p-Value" },
+        "df": { "decimals": 0, "label": "df" },
+        "pooledVariance": { "decimals": 6, "label": "s²ₚ" },
+        "correction": { "decimals": 6, "label": "C" },
+        "k": { "decimals": 0, "label": "k" },
+        "N": { "decimals": 0, "label": "N" },
+        "reject": { "decimals": 0, "label": { "de": "H₀ abgelehnt", "en": "Reject H₀" } }
+      }
+    }
+  },
+
+  "changelog": [
+    {
+      "version": "1.0.0",
+      "date": "2026-05-06",
+      "type": "initial",
+      "description": {
+        "de": "Erstimplementierung mit Korrekturfaktor",
+        "en": "Initial implementation with correction factor"
+      },
+      "breaking": false
+    }
+  ]
+}

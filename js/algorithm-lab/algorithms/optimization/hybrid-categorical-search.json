@@ -1,0 +1,88 @@
+{
+  "id": "hybrid-categorical-search",
+  "name": {
+    "de": "Hybrid-Suche (Gitter über kategorial × Nelder-Mead über kontinuierlich)",
+    "en": "Hybrid Search (Grid over Categorical × Nelder–Mead over Continuous)"
+  },
+  "category": "optimization",
+  "subcategory": null,
+  "status": "validated",
+  "version": "1.0.0",
+
+  "description": {
+    "short": {
+      "de": "Optimiert Modelle mit gemischten Faktoren: enumeriert kartesisch alle kategorialen Stufen-Kombinationen und führt in jeder Zelle eine kontinuierliche Multi-Start-Nelder-Mead-Suche durch.",
+      "en": "Optimises models with mixed factors: enumerates the Cartesian product of categorical level combinations and runs a continuous multi-start Nelder–Mead inside each cell."
+    },
+    "long": {
+      "de": "Klassische derivativ-freie Optimizer wie Nelder-Mead arbeiten auf einem kontinuierlichen Raum. Kategoriale Faktoren (z.B. Werkzeug A vs. B vs. C) sind diskret und brauchen eine andere Behandlung. Die Hybrid-Suche umgeht das Problem strukturell: für jede mögliche Kombination kategorialer Stufen wird die kategoriale Faktor-Belegung fixiert, und nur die kontinuierlichen Faktoren werden optimiert. Bei n_cat Stufen-Kombinationen werden n_cat unabhängige Nelder-Mead-Läufe gemacht und das beste Ergebnis ausgewählt. Die kategoriale Suche ist damit erschöpfend (kein lokales Minimum-Risiko zwischen Kategorien), die kontinuierliche derivativ-frei und multi-start.",
+      "en": "Classical derivative-free optimisers like Nelder–Mead operate on a continuous space. Categorical factors (e.g. tool A vs. B vs. C) are discrete and need different treatment. The hybrid search sidesteps this structurally: for every possible categorical-level combination, the categorical factors are fixed, and only the continuous factors are optimised. With n_cat combinations, n_cat independent Nelder–Mead runs are performed and the global best is returned. The categorical search is thus exhaustive (no local-minimum risk between categories), the continuous part is derivative-free and multi-start."
+    }
+  },
+
+  "documentation": {
+    "formulas": [
+      {
+        "label": "Outer enumeration",
+        "latex": "\\mathcal{C} = \\bigtimes_{j \\in \\text{cat}} L_j,\\ \\ |\\mathcal{C}| = \\prod_{j \\in \\text{cat}} |L_j|",
+        "description": {
+          "de": "Kartesisches Produkt aller kategorialen Stufenmengen — über alle erschöpfend",
+          "en": "Cartesian product of all categorical level sets — exhaustive"
+        }
+      },
+      {
+        "label": "Inner optimisation",
+        "latex": "\\forall c \\in \\mathcal{C}: x^*_c = \\arg\\min_{x_{\\text{cont}}} -D\\bigl([x_{\\text{cont}}; c]\\bigr)",
+        "description": {
+          "de": "Pro Kategorien-Zelle eine Multi-Start-Nelder-Mead-Suche über die kontinuierlichen Slots",
+          "en": "Per categorical cell, one multi-start Nelder–Mead over the continuous slots"
+        }
+      },
+      {
+        "label": "Global best",
+        "latex": "x^* = \\arg\\max_{c \\in \\mathcal{C}} D\\bigl([x^*_c; c]\\bigr)",
+        "description": {
+          "de": "Globaler Maximierer über alle Zellen",
+          "en": "Global maximiser across all cells"
+        }
+      }
+    ],
+    "assumptions": [
+      { "de": "Modell trägt einen ModelSpec mit kontinuierlich/kategorial-Aufteilung der Predictors", "en": "Model carries a ModelSpec describing continuous/categorical predictors" },
+      { "de": "Jeder kategoriale Faktor hat eine endliche Stufenmenge", "en": "Each categorical factor has a finite level set" }
+    ],
+    "limitations": [
+      { "de": "Skaliert exponentiell in der Zahl kategorialer Faktoren — mit 5 ternären Faktoren = 243 NM-Läufe", "en": "Scales exponentially with the number of categorical factors — 5 ternary factors = 243 NM runs" },
+      { "de": "Bei sehr großen Stufen-Mengen (z.B. > 10) ineffizient — dann Mixed-Integer-Solver erwägen", "en": "Inefficient for very large level sets (> 10) — consider a mixed-integer solver" }
+    ],
+    "references": [
+      { "source": "Myers, R.H., Montgomery, D.C., Anderson-Cook, C.M. (2016). Response Surface Methodology, 4th Ed., Wiley", "chapter": "Chapter 7 (Mixed Factors in Optimisation)" },
+      { "source": "Nelder, J.A. & Mead, R. (1965). A simplex method for function minimization. The Computer Journal 7(4): 308-313" }
+    ],
+    "minitab_equivalent": "Stat > DOE > Response Optimizer (handles mixed factors via per-level enumeration)"
+  },
+
+  "source": {
+    "function_name": "optimizeResponses",
+    "file_path": "js/engines/response-optimization-engine.js",
+    "signature": {
+      "parameters": [
+        { "name": "models",        "type": "object[]",        "required": true,  "description": { "de": "Liste gespeicherter Modell-Records (state.models[id])", "en": "List of saved model records (state.models[id])" } },
+        { "name": "desirSpecs",    "type": "object[]",        "required": true,  "description": { "de": "Eine Wunschfunktion-Spezifikation pro Modell", "en": "One desirability spec per model" } },
+        { "name": "factorBounds",  "type": "[number,number][]","required": true, "description": { "de": "Pro Faktor [lo, hi] in Reihenfolge der spec.predictors", "en": "Per-factor [lo, hi] in spec.predictors order" } },
+        { "name": "opts",          "type": "object",          "required": false, "description": { "de": "{nStarts, seed, maxIter, tol}", "en": "{nStarts, seed, maxIter, tol}" } }
+      ],
+      "returns": {
+        "type": "object",
+        "description": { "de": "{xOpt, xOptByName, yPredictions, dPerResponse, D, iter, isHybrid}", "en": "{xOpt, xOptByName, yPredictions, dPerResponse, D, iter, isHybrid}" }
+      }
+    },
+    "code_snippet": null
+  },
+
+  "changelog": [
+    { "version": "1.0.0", "date": "2026-05-08", "type": "initial",
+      "description": { "de": "Erstimplementierung als Phase-4-Optimizer-Routing für Mixed-Spec-Modelle", "en": "Initial implementation as Phase-4 optimizer routing for mixed-spec models" },
+      "breaking": false }
+  ]
+}

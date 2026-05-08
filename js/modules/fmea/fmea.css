@@ -1,0 +1,514 @@
+/* ============================================================
+   FMEA Module Styles (fmea.css)
+   BEM: .fmea__ prefix
+   ============================================================ */
+
+/* ===== Stats Strip ===== */
+.fmea__stats {
+  display: flex;
+  gap: var(--spacing-sm);
+  flex-wrap: wrap;
+  align-items: center;
+  padding: var(--spacing-sm) 0;
+}
+
+.fmea__stat-card {
+  background: var(--color-bg-secondary);
+  border: var(--border-width) solid var(--color-border-secondary);
+  border-radius: var(--border-radius);
+  padding: var(--spacing-sm) var(--spacing-md);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  min-width: 120px;
+}
+
+.fmea__stat-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: var(--border-radius-sm);
+  display: grid;
+  place-items: center;
+  font-size: 12px;
+  flex-shrink: 0;
+}
+
+.fmea__stat-value {
+  font-family: var(--font-family-mono);
+  font-size: 16px;
+  font-weight: var(--font-weight-medium);
+  line-height: 1.1;
+}
+
+.fmea__stat-label {
+  font-size: var(--font-size-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.7px;
+  color: var(--color-text-tertiary);
+  font-weight: var(--font-weight-semibold);
+}
+
+/* ===== Risk Card ===== */
+.fmea__risk-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.fmea__risk-card {
+  background: var(--color-bg-secondary);
+  border: var(--border-width) solid var(--color-border-secondary);
+  border-radius: var(--border-radius-lg);
+  overflow: hidden;
+  transition: border-color 0.2s;
+}
+
+.fmea__risk-card:hover {
+  border-color: var(--color-border-primary);
+}
+
+.fmea__risk-card--critical { border-left: 3px solid var(--color-error); }
+.fmea__risk-card--high     { border-left: 3px solid var(--color-warning, #FB923C); }
+.fmea__risk-card--medium   { border-left: 3px solid var(--color-warning-text, #FBBF24); }
+.fmea__risk-card--low      { border-left: 3px solid var(--color-success, #34D399); }
+
+/* ── Risk Header ── */
+.fmea__risk-header {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-bottom: var(--border-width) solid var(--color-border-secondary);
+  background: var(--color-bg-tertiary);
+}
+
+.fmea__risk-number {
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-tertiary);
+  background: var(--color-bg-primary);
+  border: var(--border-width) solid var(--color-border-secondary);
+  border-radius: var(--border-radius-sm);
+  padding: 2px var(--spacing-sm);
+  white-space: nowrap;
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.15s;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.fmea__risk-number:hover {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+}
+
+.fmea__collapse-arrow {
+  font-size: 9px;
+  transition: transform 0.25s;
+  display: inline-block;
+}
+
+.fmea__risk-card--collapsed .fmea__collapse-arrow {
+  transform: rotate(-90deg);
+}
+
+.fmea__risk-card--collapsed .fmea__risk-body {
+  display: none;
+}
+
+.fmea__risk-title {
+  flex: 1;
+  font-family: var(--font-family);
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-semibold);
+  background: transparent;
+  border: none;
+  color: var(--color-text-primary);
+  padding: 4px 0;
+  outline: none;
+  min-width: 0;
+}
+
+.fmea__risk-title::placeholder {
+  color: var(--color-text-tertiary);
+}
+
+/* ── RPN Badges ── */
+.fmea__rpn-header-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.fmea__rpn-arrow-sep {
+  color: var(--color-text-tertiary);
+  font-size: 14px;
+  line-height: 1;
+}
+
+.fmea__rpn-badge {
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  padding: 3px 12px;
+  border-radius: 20px;
+  white-space: nowrap;
+}
+
+.fmea__rpn-badge--sm {
+  font-size: var(--font-size-xs);
+  padding: 2px 10px;
+}
+
+.fmea__rpn-badge--low      { background: rgba(52,211,153,0.1);  color: var(--color-success, #34D399); }
+.fmea__rpn-badge--medium   { background: rgba(251,191,36,0.1);  color: #FBBF24; }
+.fmea__rpn-badge--high     { background: rgba(251,146,60,0.1);  color: #FB923C; }
+.fmea__rpn-badge--critical { background: rgba(239,68,68,0.15);  color: var(--color-error); }
+.fmea__rpn-badge--none     { background: rgba(255,255,255,0.03); color: var(--color-text-tertiary); }
+
+.fmea__risk-delete {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--color-text-tertiary);
+  font-size: 16px;
+  padding: 4px var(--spacing-xs);
+  border-radius: var(--border-radius-sm);
+  transition: all 0.15s;
+}
+
+.fmea__risk-delete:hover {
+  color: var(--color-error);
+  background: rgba(255, 59, 48, 0.1);
+}
+
+/* ── Risk Body ── */
+.fmea__risk-body {
+  padding: var(--spacing-md) var(--spacing-md);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.fmea__fields-row {
+  display: grid;
+  gap: var(--spacing-sm);
+  grid-template-columns: 1fr 1fr 1fr;
+}
+
+.fmea__fields-row--2 {
+  grid-template-columns: 1fr 1fr;
+}
+
+/* Fields use global .field / .field-group (components.css) */
+
+/* ── SOD Row ── */
+.fmea__sod-row {
+  display: flex;
+  gap: var(--spacing-sm);
+  align-items: flex-end;
+  flex-wrap: wrap;
+}
+
+.fmea__sod-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.fmea__sod-group label {
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.7px;
+  color: var(--color-text-tertiary);
+}
+
+.fmea__sod-group select,
+.fmea__action-table select {
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  background: var(--color-bg-primary);
+  border: var(--border-width) solid var(--color-border-secondary);
+  border-radius: var(--border-radius);
+  color: var(--color-text-primary);
+  padding: var(--spacing-sm) var(--spacing-md);
+  min-width: 60px;
+  cursor: pointer;
+  transition: border-color 0.15s;
+  outline: none;
+}
+
+.fmea__sod-group select:focus,
+.fmea__action-table select:focus {
+  border-color: var(--color-accent);
+}
+
+
+/* ── Section Separator ── */
+.fmea__section-sep {
+  border: none;
+  border-top: 1px dashed var(--color-border-secondary);
+  margin: 4px 0;
+}
+
+.fmea__section-title {
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--color-accent);
+  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.fmea__section-title::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--color-border-secondary);
+}
+
+/* ── Actions Table ── */
+.fmea__action-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--font-size-sm);
+}
+
+.fmea__action-table th {
+  text-align: left;
+  padding: 6px var(--spacing-sm);
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: var(--color-text-tertiary);
+  border-bottom: var(--border-width) solid var(--color-border-secondary);
+  white-space: nowrap;
+}
+
+.fmea__action-table td {
+  padding: 4px 6px;
+  vertical-align: middle;
+  border-bottom: var(--border-width) solid var(--color-border-secondary);
+}
+
+.fmea__action-table tr:last-child td {
+  border-bottom: none;
+}
+
+.fmea__action-table input[type="text"],
+.fmea__action-table input[type="date"],
+.fmea__action-table textarea {
+  font-family: var(--font-family);
+  font-size: var(--font-size-sm);
+  background: var(--color-bg-primary);
+  border: var(--border-width) solid var(--color-border-secondary);
+  border-radius: var(--border-radius-sm);
+  color: var(--color-text-primary);
+  padding: 5px 7px;
+  width: 100%;
+  transition: border-color 0.15s;
+  outline: none;
+}
+
+.fmea__action-table textarea {
+  resize: vertical;
+  min-height: 32px;
+}
+
+.fmea__action-table input:focus,
+.fmea__action-table textarea:focus {
+  border-color: var(--color-accent);
+}
+
+.fmea__action-table select {
+  font-size: var(--font-size-sm);
+  padding: 5px 8px 5px 6px;
+  min-width: 56px;
+}
+
+.fmea__delta-cell {
+  text-align: center;
+  min-width: 56px;
+}
+
+.fmea__action-del-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--color-text-tertiary);
+  font-size: 14px;
+  padding: 4px;
+  border-radius: var(--border-radius-sm);
+  transition: color 0.15s;
+}
+
+.fmea__action-del-btn:hover {
+  color: var(--color-error);
+}
+
+.fmea__add-action-btn {
+  font-family: var(--font-family);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  background: none;
+  border: 1px dashed var(--color-border-primary);
+  border-radius: var(--border-radius);
+  color: var(--color-text-tertiary);
+  padding: 6px 14px;
+  cursor: pointer;
+  margin-top: 6px;
+  transition: all 0.15s;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.fmea__add-action-btn:hover {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+}
+
+.fmea__done-check {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  accent-color: var(--color-success, #34D399);
+}
+
+/* ── Projected RPN Bar ── */
+.fmea__projected-bar {
+  background: var(--color-bg-tertiary);
+  border: var(--border-width) solid var(--color-border-secondary);
+  border-radius: var(--border-radius);
+  padding: var(--spacing-sm) var(--spacing-md);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  flex-wrap: wrap;
+  margin-top: var(--spacing-sm);
+}
+
+.fmea__proj-label {
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.7px;
+  color: var(--color-text-secondary);
+}
+
+.fmea__proj-item {
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+.fmea__proj-item strong {
+  color: var(--color-text-primary);
+  font-weight: var(--font-weight-semibold);
+}
+
+.fmea__proj-arrow {
+  color: var(--color-text-tertiary);
+  font-size: 16px;
+}
+
+/* ── Scale Reference (inline) ── */
+.fmea__scale-ref {
+  display: none;
+  background: var(--color-bg-tertiary);
+  border: var(--border-width) solid var(--color-border-secondary);
+  border-radius: var(--border-radius-lg);
+  padding: var(--spacing-md);
+  margin-bottom: var(--spacing-md);
+}
+
+.fmea__scale-ref--visible {
+  display: block;
+}
+
+.fmea__scale-ref h3 {
+  font-size: var(--font-size-sm);
+  color: var(--color-accent);
+  margin: var(--spacing-md) 0 var(--spacing-xs);
+}
+
+.fmea__scale-ref h3:first-child {
+  margin-top: 0;
+}
+
+.fmea__scale-ref table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--font-size-sm);
+  margin-bottom: var(--spacing-sm);
+}
+
+.fmea__scale-ref th,
+.fmea__scale-ref td {
+  padding: 5px var(--spacing-sm);
+  text-align: left;
+  border-bottom: var(--border-width) solid var(--color-border-secondary);
+}
+
+.fmea__scale-ref th {
+  font-weight: 700;
+  font-size: var(--font-size-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: var(--color-text-tertiary);
+}
+
+.fmea__scale-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: var(--spacing-sm);
+}
+
+.fmea__scale-editable {
+  cursor: text;
+  border-radius: 3px;
+  transition: background 0.15s, outline 0.15s;
+  outline: 1px solid transparent;
+  min-width: 60px;
+}
+
+.fmea__scale-editable:hover {
+  background: var(--color-surface-hover, rgba(255,255,255,0.04));
+  outline: 1px dashed var(--color-border);
+}
+
+.fmea__scale-editable:focus {
+  background: var(--color-surface-hover, rgba(255,255,255,0.06));
+  outline: 1px solid var(--color-accent);
+}
+
+.fmea__legend-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: var(--spacing-sm);
+  margin-top: var(--spacing-sm);
+}
+
+.fmea__legend-item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  font-size: var(--font-size-sm);
+}
+
+.fmea__legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}

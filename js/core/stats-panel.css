@@ -1,0 +1,52 @@
+/* ============================================================
+   D.Mike — Shared Statistics Panel Styles (stats-panel.css)
+   Reusable statistics table rendered by js/core/stats-panel.js.
+   ============================================================ */
+
+/* Container — placed below the chart */
+.dmike-stats-panel {
+  overflow-x: auto;
+  margin-top: var(--spacing-md);
+}
+
+/* Table — monospace for numeric alignment */
+.dmike-stats-table {
+  font-family: var(--font-family-mono);
+}
+
+table.dmike-stats-table th:not(:first-child),
+table.dmike-stats-table td:not(:first-child) {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.dmike-stats-table td:first-child {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Color swatch next to series name */
+.dmike-stats-color {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+/* CI bounds — inline next to the value, smaller and secondary color */
+.dmike-stats-ci {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  margin-left: 4px;
+  white-space: nowrap;
+}
+
+/* Caption explaining the [...] notation, shown below the table */
+.dmike-stats-ci-caption {
+  margin-top: var(--spacing-xs);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  font-style: italic;
+}

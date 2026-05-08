@@ -1,0 +1,233 @@
+{
+  "id": "dagostino-pearson",
+  "name": {
+    "de": "D'Agostino-Pearson-Omnibus-Test",
+    "en": "D'Agostino-Pearson Omnibus Test"
+  },
+  "category": "hypothesis",
+  "subcategory": "normality",
+  "status": "validated",
+  "version": "1.0.0",
+
+  "description": {
+    "short": {
+      "de": "Omnibus-Normalitätstest: Kombiniert Z-Scores aus Schiefe und Kurtosis zu einer χ²(2)-Teststatistik. Erfordert n ≥ 20.",
+      "en": "Omnibus normality test: Combines Z-scores from skewness and kurtosis into a χ²(2) test statistic. Requires n ≥ 20."
+    },
+    "long": {
+      "de": "Der D'Agostino-Pearson-Omnibus-Test transformiert die Stichproben-Schiefe und -Kurtosis jeweils in approximativ standardnormalverteilte Z-Scores (Zs und Zk). Die Summe K² = Zs² + Zk² ist unter H₀ annähernd chi-quadrat-verteilt mit 2 Freiheitsgraden. Der Test ist besonders informativ, weil er zeigt, ob die Abweichung von der Normalverteilung auf Schiefe, Kurtosis oder beide zurückzuführen ist. Die Schiefe-Transformation stammt von D'Agostino (1970), die Kurtosis-Transformation von Anscombe & Glynn (1983). Der Test erfordert mindestens 20 Datenpunkte für zuverlässige Ergebnisse.",
+      "en": "The D'Agostino-Pearson omnibus test transforms sample skewness and kurtosis into approximately standard-normal Z-scores (Zs and Zk). The sum K² = Zs² + Zk² is approximately chi-squared distributed with 2 degrees of freedom under H₀. The test is particularly informative because it reveals whether deviation from normality is due to skewness, kurtosis, or both. The skewness transformation is from D'Agostino (1970), the kurtosis transformation from Anscombe & Glynn (1983). The test requires at least 20 data points for reliable results."
+    }
+  },
+
+  "documentation": {
+    "formulas": [
+      {
+        "label": "K²",
+        "latex": "K^2 = Z_s^2 + Z_k^2 \\sim \\chi^2(2)",
+        "description": {
+          "de": "Omnibus-Teststatistik: Summe der quadrierten Z-Scores von Schiefe und Kurtosis",
+          "en": "Omnibus test statistic: Sum of squared Z-scores from skewness and kurtosis"
+        }
+      },
+      {
+        "label": "Zs",
+        "latex": "Z_s = \\delta \\cdot \\ln\\!\\left(\\frac{Y}{\\alpha} + \\sqrt{\\left(\\frac{Y}{\\alpha}\\right)^2 + 1}\\right)",
+        "description": {
+          "de": "Z-Score der Schiefe nach D'Agostino (1970) — Y ist die skalierte Schiefe, δ und α hängen von n ab",
+          "en": "Skewness Z-score after D'Agostino (1970) — Y is the scaled skewness, δ and α depend on n"
+        }
+      },
+      {
+        "label": "Zk",
+        "latex": "Z_k = \\frac{\\left|\\frac{1 - 2/A}{1 + x_2 \\sqrt{2/(A-4)}}\\right|^{1/3} \\cdot \\mathrm{sign} - \\left(1 - \\frac{2}{9A}\\right)}{\\sqrt{2/(9A)}}",
+        "description": {
+          "de": "Z-Score der Kurtosis nach Anscombe & Glynn (1983) — Cube-Root-Transformation der standardisierten Kurtosis",
+          "en": "Kurtosis Z-score after Anscombe & Glynn (1983) — Cube-root transformation of standardized kurtosis"
+        }
+      },
+      {
+        "label": "p-Value",
+        "latex": "p = e^{-K^2/2}",
+        "description": {
+          "de": "Exakte Überlebensfunktion der χ²(2)-Verteilung",
+          "en": "Exact survival function of the χ²(2) distribution"
+        }
+      },
+      {
+        "label": "H₀",
+        "latex": "H_0: X_1, \\ldots, X_n \\sim \\mathcal{N}(\\mu, \\sigma^2)",
+        "description": {
+          "de": "Nullhypothese: Die Stichprobe stammt aus einer Normalverteilung",
+          "en": "Null hypothesis: The sample comes from a normal distribution"
+        }
+      }
+    ],
+    "assumptions": [
+      {
+        "de": "Daten sind unabhängig und identisch verteilt (i.i.d.)",
+        "en": "Data are independent and identically distributed (i.i.d.)"
+      },
+      {
+        "de": "Stichprobengröße: n ≥ 20 (Transformationen sind für kleinere n nicht zuverlässig)",
+        "en": "Sample size: n ≥ 20 (transformations are unreliable for smaller n)"
+      },
+      {
+        "de": "Stetige (kontinuierliche) Daten",
+        "en": "Continuous data"
+      }
+    ],
+    "limitations": [
+      {
+        "de": "Erfordert n ≥ 20 — für kleinere Stichproben Shapiro-Wilk verwenden",
+        "en": "Requires n ≥ 20 — use Shapiro-Wilk for smaller samples"
+      },
+      {
+        "de": "Die Z-Score-Transformationen sind Approximationen, keine exakten Ergebnisse",
+        "en": "The Z-score transformations are approximations, not exact results"
+      },
+      {
+        "de": "Für sehr schiefe Verteilungen kann der Kurtosis-Z-Score instabil werden",
+        "en": "For highly skewed distributions the kurtosis Z-score can become unstable"
+      }
+    ],
+    "references": [
+      {
+        "source": "D'Agostino, R. B. (1970), Transformation to normality of the null distribution of g1, Biometrika, 57(3), 679–681"
+      },
+      {
+        "source": "Anscombe, F. J. & Glynn, W. J. (1983), Distribution of the kurtosis statistic b2 for normal samples, Biometrika, 70(1), 227–234"
+      },
+      {
+        "source": "D'Agostino, R. B. & Pearson, E. S. (1973), Tests for departure from normality. Empirical results for the distributions of b2 and √b1, Biometrika, 60(3), 613–622"
+      },
+      {
+        "source": "D'Agostino, R. B., Belanger, A. & D'Agostino Jr., R. B. (1990), A suggestion for using powerful and informative tests of normality, The American Statistician, 44(4), 316–321"
+      }
+    ],
+    "minitab_equivalent": "Not directly in Minitab — available in SciPy (scipy.stats.normaltest), R (moments::agostino.test), Stata, EViews"
+  },
+
+  "source": {
+    "function_name": "dagostinoPearson",
+    "file_path": "js/engines/normality-test-engine.js",
+    "signature": {
+      "parameters": [
+        {
+          "name": "data",
+          "type": "number[]",
+          "required": true,
+          "description": {
+            "de": "Array von Messwerten (mindestens 20 Werte)",
+            "en": "Array of measurement values (at least 20 values)"
+          }
+        }
+      ],
+      "returns": {
+        "type": "object",
+        "properties": {
+          "statistic": {
+            "type": "number",
+            "description": {
+              "de": "K²-Teststatistik (Summe der quadrierten Z-Scores)",
+              "en": "K² test statistic (sum of squared Z-scores)"
+            }
+          },
+          "pValue": {
+            "type": "number",
+            "description": {
+              "de": "p-Wert des Tests (klein = Normalverteilung abgelehnt)",
+              "en": "p-value of the test (small = normality rejected)"
+            }
+          },
+          "skewnessZ": {
+            "type": "number",
+            "description": {
+              "de": "Z-Score der Schiefe (Zs)",
+              "en": "Skewness Z-score (Zs)"
+            }
+          },
+          "kurtosisZ": {
+            "type": "number",
+            "description": {
+              "de": "Z-Score der Kurtosis (Zk)",
+              "en": "Kurtosis Z-score (Zk)"
+            }
+          },
+          "skewness": {
+            "type": "number",
+            "description": {
+              "de": "Stichproben-Schiefe g₁ (Populationsmoment)",
+              "en": "Sample skewness g₁ (population moment)"
+            }
+          },
+          "kurtosis": {
+            "type": "number",
+            "description": {
+              "de": "Exzess-Kurtosis g₂ (Populationsmoment)",
+              "en": "Excess kurtosis g₂ (population moment)"
+            }
+          },
+          "n": {
+            "type": "number",
+            "description": {
+              "de": "Stichprobengröße",
+              "en": "Sample size"
+            }
+          }
+        }
+      }
+    },
+    "code_snippet": null
+  },
+
+  "try_it": {
+    "input_schema": {
+      "fields": [
+        {
+          "name": "data",
+          "label": {
+            "de": "Messdaten",
+            "en": "Measurement Data"
+          },
+          "type": "textarea",
+          "placeholder": {
+            "de": "Werte eingeben, getrennt durch Komma, Leerzeichen oder Zeilenumbruch\n(mindestens 20 Werte erforderlich)",
+            "en": "Enter values separated by commas, spaces, or newlines\n(at least 20 values required)"
+          },
+          "parse_as": "number_array",
+          "required": true
+        }
+      ],
+      "csv_mapping": {
+        "data_column": "Automatically uses first numeric column"
+      }
+    },
+    "output_schema": {
+      "display_fields": ["statistic", "pValue", "skewnessZ", "kurtosisZ", "skewness", "kurtosis", "n"],
+      "primary_field": "statistic",
+      "format": {
+        "statistic": { "decimals": 6, "label": "K²" },
+        "pValue": { "decimals": 6, "label": "p-Value" },
+        "skewnessZ": { "decimals": 6, "label": "Zs" },
+        "kurtosisZ": { "decimals": 6, "label": "Zk" },
+        "skewness": { "decimals": 6, "label": { "de": "Schiefe (g₁)", "en": "Skewness (g₁)" } },
+        "kurtosis": { "decimals": 6, "label": { "de": "Exzess-Kurtosis (g₂)", "en": "Excess Kurtosis (g₂)" } },
+        "n": { "decimals": 0, "label": "n" }
+      }
+    }
+  },
+
+  "changelog": [
+    {
+      "version": "1.0.0",
+      "date": "2026-03-28",
+      "type": "initial",
+      "description": {
+        "de": "Erstimplementierung mit K²-Statistik, Zs/Zk Z-Scores und p-Wert (χ²(2))",
+        "en": "Initial implementation with K² statistic, Zs/Zk Z-scores and p-value (χ²(2))"
+      },
+      "breaking": false
+    }
+  ]
+}

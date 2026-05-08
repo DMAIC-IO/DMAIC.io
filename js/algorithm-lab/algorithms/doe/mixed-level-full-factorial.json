@@ -1,0 +1,83 @@
+{
+  "id": "mixed-level-full-factorial",
+  "name": {
+    "de": "Voll-faktorieller Plan mit gemischten Stufenzahlen",
+    "en": "Full Factorial Design with Mixed Level Counts"
+  },
+  "category": "doe",
+  "subcategory": null,
+  "status": "validated",
+  "version": "1.0.0",
+
+  "description": {
+    "short": {
+      "de": "Erzeugt das kartesische Produkt aller Stufen-Kombinationen, wenn Faktoren unterschiedliche Stufenzahlen haben (z.B. 2 × 3 × 4).",
+      "en": "Generates the Cartesian product of all level combinations when factors have different level counts (e.g. 2 × 3 × 4)."
+    },
+    "long": {
+      "de": "Während der klassische 2^k-Voll-faktoriell-Plan annimmt, dass alle Faktoren genau zwei Stufen haben, kommt der General-Voll-faktorielle Plan mit beliebigen Stufenzahlen pro Faktor zurecht. Das ist Pflicht, sobald ein Versuchsplan ungerade Stufenzahlen kombiniert (z.B. ein 2-stufiger kategorialer Faktor wie Werkzeug A/B mit einem 3-stufigen kontinuierlichen Faktor wie Niedrig/Mittel/Hoch). Die Run-Zahl ist das Produkt aller Stufenzahlen — wächst schnell und sollte vor der Auswahl eines Voll-faktoriellen Plans bedacht werden.",
+      "en": "Whereas the classic 2^k full factorial assumes every factor has exactly two levels, the general full factorial accommodates arbitrary level counts per factor. This is required as soon as a design mixes level counts (e.g. a 2-level categorical factor like Tool A/B together with a 3-level continuous factor like Low/Mid/High). The run count is the product of all level counts — grows quickly, so the user should consider it before selecting a full factorial."
+    }
+  },
+
+  "documentation": {
+    "formulas": [
+      {
+        "label": "Run count",
+        "latex": "N = \\prod_{i=1}^{k} n_i",
+        "description": {
+          "de": "Anzahl Runs ist das Produkt der Stufenzahlen aller Faktoren",
+          "en": "Run count is the product of all factor level counts"
+        }
+      },
+      {
+        "label": "Cartesian product",
+        "latex": "\\mathcal{D} = \\{0,\\dots,n_1{-}1\\} \\times \\{0,\\dots,n_2{-}1\\} \\times \\dots \\times \\{0,\\dots,n_k{-}1\\}",
+        "description": {
+          "de": "Designraum als kartesisches Produkt der 0-indexierten Stufenmengen",
+          "en": "Design space as the Cartesian product of 0-indexed level sets"
+        }
+      },
+      {
+        "label": "Coding",
+        "latex": "\\text{coded}(j, l) = -1 + \\frac{2l}{n_j - 1}",
+        "description": {
+          "de": "Stufe l (0-indexiert) eines Faktors mit n_j Stufen wird auf evenly-spaced [-1, +1] kodiert",
+          "en": "Level l (0-indexed) of a factor with n_j levels maps to evenly-spaced [-1, +1]"
+        }
+      }
+    ],
+    "assumptions": [
+      { "de": "Faktoren sind unabhängig (keine Constraints zwischen ihnen)", "en": "Factors are independent (no constraints between them)" },
+      { "de": "Stufenzahl pro Faktor ≥ 2", "en": "Level count per factor ≥ 2" }
+    ],
+    "limitations": [
+      { "de": "Run-Zahl explodiert: 4 Faktoren mit 5 Stufen → 625 Runs. Bei großen Plänen Bruchpläne / D-optimal erwägen", "en": "Run count explodes: 4 factors at 5 levels → 625 runs. For large designs prefer fractional / D-optimal" }
+    ],
+    "references": [
+      { "source": "Montgomery, D.C. (2017). Design and Analysis of Experiments, 9th Ed., Wiley", "chapter": "Chapter 5 (General Factorial Designs)" }
+    ],
+    "minitab_equivalent": "Stat > DOE > Factorial > Create Factorial Design (General full factorial option)"
+  },
+
+  "source": {
+    "function_name": "fullFactorialGeneral",
+    "file_path": "js/engines/doe-planner-engine.js",
+    "signature": {
+      "parameters": [
+        { "name": "levelCounts", "type": "number[]", "required": true, "description": { "de": "Stufenzahl pro Faktor (z.B. [2, 3, 4])", "en": "Level count per factor (e.g. [2, 3, 4])" } }
+      ],
+      "returns": {
+        "type": "number[][]",
+        "description": { "de": "N × k Matrix coded levels in evenly-spaced [-1, +1]", "en": "N × k matrix of evenly-spaced coded levels in [-1, +1]" }
+      }
+    },
+    "code_snippet": null
+  },
+
+  "changelog": [
+    { "version": "1.0.0", "date": "2026-05-08", "type": "initial",
+      "description": { "de": "Bestehende Funktion für Phase 4 dokumentiert", "en": "Existing function documented for V0.4 Phase 4" },
+      "breaking": false }
+  ]
+}

@@ -1,0 +1,9 @@
+{
+  "private": true,
+  "scripts": {
+    "dev": "npx serve . --no-cache"
+  },
+  "devDependencies": {
+    "playwright": "^1.59.1"
+  }
+}

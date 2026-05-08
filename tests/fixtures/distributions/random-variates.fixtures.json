@@ -1,0 +1,271 @@
+{
+  "algorithm_id": "random-variates",
+  "generated_with": {
+    "runtime": "D.Mike Mulberry32 PRNG",
+    "note": "Values are deterministic — same seed always produces the same sequence. Gold standard is the JS implementation itself."
+  },
+  "generated_at": "2026-04-07T00:00:00.000Z",
+  "generator_script": "js/modules/random-generator/random-generator.js",
+  "generator_version": "1.0.0",
+  "tolerances": {
+    "default": {
+      "relative": 0,
+      "absolute": 0
+    },
+    "overrides": {}
+  },
+  "test_cases": [
+    {
+      "id": "rv_standard_normal_n10",
+      "tier": "standard",
+      "description": "Standard normal N(0,1), seed=42, n=10",
+      "inputs": {
+        "distribution": "normal",
+        "params": { "mu": 0, "sigma": 1, "epsilon": 0, "delta": 1 },
+        "n": 10,
+        "seed": 42
+      },
+      "expected": {
+        "n": 10,
+        "seed": 42,
+        "distribution": "normal"
+      }
+    },
+    {
+      "id": "rv_normal_shifted_n10",
+      "tier": "standard",
+      "description": "Shifted normal N(100,15), seed=123, n=10",
+      "inputs": {
+        "distribution": "normal",
+        "params": { "mu": 100, "sigma": 15, "epsilon": 0, "delta": 1 },
+        "n": 10,
+        "seed": 123
+      },
+      "expected": {
+        "n": 10,
+        "seed": 123,
+        "distribution": "normal"
+      }
+    },
+    {
+      "id": "rv_uniform_01",
+      "tier": "standard",
+      "description": "Uniform U(0,1), seed=42, n=10",
+      "inputs": {
+        "distribution": "uniform",
+        "params": { "a": 0, "b": 1 },
+        "n": 10,
+        "seed": 42
+      },
+      "expected": {
+        "n": 10,
+        "seed": 42,
+        "distribution": "uniform"
+      }
+    },
+    {
+      "id": "rv_exponential_rate1",
+      "tier": "standard",
+      "description": "Exponential Exp(1), seed=42, n=10",
+      "inputs": {
+        "distribution": "exponential",
+        "params": { "lambda": 1 },
+        "n": 10,
+        "seed": 42
+      },
+      "expected": {
+        "n": 10,
+        "seed": 42,
+        "distribution": "exponential"
+      }
+    },
+    {
+      "id": "rv_poisson_lambda5",
+      "tier": "standard",
+      "description": "Poisson Poi(5), seed=99, n=10",
+      "inputs": {
+        "distribution": "poisson",
+        "params": { "lambda": 5 },
+        "n": 10,
+        "seed": 99
+      },
+      "expected": {
+        "n": 10,
+        "seed": 99,
+        "distribution": "poisson"
+      }
+    },
+    {
+      "id": "rv_determinism_seed42",
+      "tier": "standard",
+      "description": "Determinism: same seed must produce identical sequence",
+      "inputs": {
+        "distribution": "uniform",
+        "params": { "a": 0, "b": 1 },
+        "n": 20,
+        "seed": 42
+      },
+      "expected": {
+        "n": 20,
+        "seed": 42,
+        "distribution": "uniform"
+      }
+    },
+    {
+      "id": "rv_edge_n1",
+      "tier": "edge",
+      "description": "Minimum n=1 should produce exactly 1 value",
+      "inputs": {
+        "distribution": "normal",
+        "params": { "mu": 0, "sigma": 1, "epsilon": 0, "delta": 1 },
+        "n": 1,
+        "seed": 42
+      },
+      "expected": {
+        "n": 1,
+        "seed": 42,
+        "distribution": "normal"
+      }
+    },
+    {
+      "id": "rv_edge_weibull",
+      "tier": "edge",
+      "description": "Weibull with shape=0.5 (sub-exponential)",
+      "inputs": {
+        "distribution": "weibull",
+        "params": { "alpha": 0.5, "beta": 1 },
+        "n": 10,
+        "seed": 42
+      },
+      "expected": {
+        "n": 10,
+        "seed": 42,
+        "distribution": "weibull"
+      }
+    },
+    {
+      "id": "rv_edge_beta_symmetric",
+      "tier": "edge",
+      "description": "Beta(2,2) symmetric distribution",
+      "inputs": {
+        "distribution": "beta",
+        "params": { "alpha": 2, "beta": 2 },
+        "n": 10,
+        "seed": 42
+      },
+      "expected": {
+        "n": 10,
+        "seed": 42,
+        "distribution": "beta"
+      }
+    },
+    {
+      "id": "rv_edge_binomial",
+      "tier": "edge",
+      "description": "Binomial Bin(20, 0.3), seed=77",
+      "inputs": {
+        "distribution": "binomial",
+        "params": { "n": 20, "p": 0.3 },
+        "n": 10,
+        "seed": 77
+      },
+      "expected": {
+        "n": 10,
+        "seed": 77,
+        "distribution": "binomial"
+      }
+    },
+    {
+      "id": "rv_edge_chisquare",
+      "tier": "edge",
+      "description": "Chi-square with k=3",
+      "inputs": {
+        "distribution": "chisquare",
+        "params": { "k": 3 },
+        "n": 10,
+        "seed": 42
+      },
+      "expected": {
+        "n": 10,
+        "seed": 42,
+        "distribution": "chisquare"
+      }
+    },
+    {
+      "id": "rv_stress_n1000",
+      "tier": "stress",
+      "description": "Large sample n=1000, normal",
+      "inputs": {
+        "distribution": "normal",
+        "params": { "mu": 0, "sigma": 1, "epsilon": 0, "delta": 1 },
+        "n": 1000,
+        "seed": 42
+      },
+      "expected": {
+        "n": 1000,
+        "seed": 42,
+        "distribution": "normal"
+      }
+    },
+    {
+      "id": "rv_robustness_unknown_dist",
+      "tier": "robustness",
+      "description": "Unknown distribution name should throw",
+      "inputs": {
+        "distribution": "nonexistent",
+        "params": {},
+        "n": 10,
+        "seed": 42
+      },
+      "expected_error": {
+        "type": "Error",
+        "message_contains": "unknownDistribution"
+      }
+    },
+    {
+      "id": "rv_robustness_n_zero",
+      "tier": "robustness",
+      "description": "n=0 should throw",
+      "inputs": {
+        "distribution": "normal",
+        "params": { "mu": 0, "sigma": 1, "epsilon": 0, "delta": 1 },
+        "n": 0,
+        "seed": 42
+      },
+      "expected_error": {
+        "type": "Error",
+        "message_contains": "n must be"
+      }
+    },
+    {
+      "id": "rv_robustness_no_distribution",
+      "tier": "robustness",
+      "description": "Missing distribution argument should throw",
+      "inputs": {
+        "distribution": "",
+        "params": {},
+        "n": 10,
+        "seed": 42
+      },
+      "expected_error": {
+        "type": "TypeError",
+        "message_contains": "distribution must be"
+      }
+    },
+    {
+      "id": "rv_robustness_seed_nan",
+      "tier": "robustness",
+      "description": "Non-finite seed should throw",
+      "inputs": {
+        "distribution": "normal",
+        "params": { "mu": 0, "sigma": 1, "epsilon": 0, "delta": 1 },
+        "n": 10,
+        "seed": null
+      },
+      "expected_error": {
+        "type": "Error",
+        "message_contains": "seed must be"
+      }
+    }
+  ]
+}

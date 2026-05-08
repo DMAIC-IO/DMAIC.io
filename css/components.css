@@ -1,0 +1,1216 @@
+/* ============================================================
+   D.Mike — Shared Component Styles (components.css)
+   Buttons, inputs, modals, tables, badges, toasts, etc.
+   ============================================================ */
+
+/* ===== Buttons ===== */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-xs) var(--spacing-md);
+  font-size: var(--font-size-sm);
+  font-family: var(--font-family);
+  font-weight: var(--font-weight-medium);
+  border-radius: var(--border-radius);
+  border: var(--border-width) solid transparent;
+  cursor: pointer;
+  transition: background var(--transition-speed), color var(--transition-speed),
+              border-color var(--transition-speed), box-shadow var(--transition-speed);
+  user-select: none;
+  white-space: nowrap;
+  outline: none;
+}
+
+.btn:focus-visible {
+  box-shadow: 0 0 0 3px var(--color-accent-light);
+}
+
+.btn--primary {
+  background: var(--color-accent);
+  color: var(--color-text-inverse);
+  border-color: var(--color-accent);
+}
+
+.btn--primary:hover {
+  background: var(--color-accent-hover);
+  border-color: var(--color-accent-hover);
+}
+
+.btn--secondary {
+  background: var(--color-bg-secondary);
+  color: var(--color-text-primary);
+  border-color: var(--color-border-primary);
+}
+
+.btn--secondary:hover {
+  background: var(--color-bg-tertiary);
+}
+
+.btn--ghost {
+  background: transparent;
+  color: var(--color-text-secondary);
+  border-color: transparent;
+}
+
+.btn--ghost:hover {
+  background: var(--color-bg-tertiary);
+  color: var(--color-text-primary);
+}
+
+.btn--ghost.btn--active {
+  background: var(--color-bg-tertiary);
+  color: var(--color-accent);
+}
+
+.btn--danger {
+  background: var(--color-error);
+  color: var(--color-text-inverse);
+  border-color: var(--color-error);
+}
+
+.btn--danger:hover {
+  opacity: 0.85;
+}
+
+.btn--icon {
+  padding: var(--spacing-xs);
+  width: 32px;
+  height: 32px;
+}
+
+/* Small icon-only button (22px) — borderless, ghost style.
+   Used for inline row actions (delete/edit in cards, trees, list items). */
+.btn--icon-sm {
+  padding: 0;
+  width: 22px;
+  height: 22px;
+  background: transparent;
+  border-color: transparent;
+  color: var(--color-text-tertiary);
+  border-radius: var(--border-radius-sm);
+}
+
+.btn--icon-sm:hover {
+  background: var(--color-bg-tertiary);
+  color: var(--color-text-primary);
+}
+
+.btn--icon-sm.btn--danger {
+  background: transparent;
+  color: var(--color-text-tertiary);
+  border-color: transparent;
+}
+
+.btn--icon-sm.btn--danger:hover {
+  background: transparent;
+  color: var(--color-error);
+  opacity: 1;
+}
+
+.btn--sm {
+  padding: 2px var(--spacing-sm);
+  font-size: var(--font-size-xs);
+}
+
+/* Segmented control — group of .btn--segment children forming a tab-like switch.
+   One child carries .btn--active to indicate the selection. */
+.btn-group {
+  display: flex;
+  gap: 2px;
+  background: var(--color-bg-tertiary);
+  border-radius: var(--border-radius);
+  padding: 2px;
+}
+
+.btn--segment {
+  flex: 1;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  background: transparent;
+  border: none;
+  border-radius: var(--border-radius-sm);
+  color: var(--color-text-secondary);
+  font-family: var(--font-family);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+  transition: background var(--transition-speed), color var(--transition-speed);
+}
+
+.btn--segment:hover {
+  color: var(--color-text-primary);
+}
+
+.btn--segment.btn--active {
+  background: var(--color-bg-primary);
+  color: var(--color-accent);
+  font-weight: var(--font-weight-semibold);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* ============================================================
+   Form Fields — unified input / select / textarea system.
+
+   Canonical class: .field  (alias: .input, kept for older modules)
+   Works on <input>, <select>, <textarea>.
+
+   Variants:
+     .field--sm        tighter padding / xs font (table cells, toolbars)
+     .field--num       right-aligned, monospace digits
+     .field--ghost     transparent until hover/focus (inline cell editing)
+     .field--inline    inline-flex width, does not stretch to 100%
+
+   States handled: :focus, :disabled, :invalid, ::placeholder
+   All colors come from CSS custom properties — theme-aware.
+   ============================================================ */
+.field,
+.input {
+  width: 100%;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  font-size: var(--font-size-sm);
+  line-height: 1.4;
+  font-family: var(--font-family);
+  color: var(--color-text-primary);
+  background: var(--color-input-bg);
+  border: var(--border-width) solid var(--color-input-border);
+  border-radius: var(--border-radius);
+  outline: none;
+  transition: border-color var(--transition-speed), box-shadow var(--transition-speed);
+  box-sizing: border-box;
+}
+
+textarea.field,
+textarea.input {
+  min-height: 56px;
+  line-height: 1.5;
+  resize: vertical;
+}
+
+select.field,
+select.input {
+  height: calc(var(--font-size-sm) * 1.4 + var(--spacing-xs) * 2 + var(--border-width) * 2);
+  cursor: pointer;
+}
+
+.field:hover:not(:disabled):not(:focus),
+.input:hover:not(:disabled):not(:focus) {
+  border-color: var(--color-text-tertiary);
+}
+
+.field:focus,
+.input:focus {
+  border-color: var(--color-accent);
+}
+
+.field::placeholder,
+.input::placeholder {
+  color: var(--color-text-tertiary);
+}
+
+.field:disabled,
+.input:disabled {
+  background: var(--color-bg-secondary);
+  color: var(--color-text-tertiary);
+  cursor: not-allowed;
+}
+
+/* Error state — set explicitly by modules after real validation.
+   Avoids false positives from HTML5 :invalid (float step mismatches,
+   untouched required fields, etc.). */
+.field--error,
+.field.field--error:focus {
+  border-color: var(--color-error);
+}
+
+/* ── Size variants ── */
+.field--sm {
+  /* tighter padding for dense layouts (table cells, toolbars) — font-size unchanged */
+  padding: 3px var(--spacing-xs);
+}
+
+.field--xs {
+  padding: 2px var(--spacing-xs);
+  font-size: var(--font-size-xs);
+}
+
+/* ── Numeric: monospace digits, right-aligned ── */
+.field--num {
+  font-family: var(--font-family-mono);
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Ghost: no border/bg until hover/focus (inline table editing) ── */
+.field--ghost {
+  background: transparent;
+  border-color: transparent;
+}
+
+.field--ghost:hover:not(:disabled):not(:focus) {
+  background: var(--color-input-bg);
+  border-color: var(--color-input-border);
+}
+
+/* ── Inline: auto width instead of stretching ── */
+.field--inline {
+  width: auto;
+}
+
+/* ============================================================
+   Field Group — label + control wrapper.
+
+     <div class="field-group">
+       <label>Alpha</label>
+       <input class="field" …>
+     </div>
+
+   A bare <label> inside a .field-group is styled automatically —
+   consumers don't need to add classes to labels.
+
+   Variants:
+     .field-group--inline   label and control side-by-side (label left)
+     .field-group--major    flex: 2 (when used inside .field-row)
+     .field-group--minor    flex: 1 (when used inside .field-row)
+
+   Horizontal row:
+     <div class="field-row">
+       <div class="field-group field-group--major">…</div>
+       <div class="field-group field-group--minor">…</div>
+     </div>
+   ============================================================ */
+.field-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  margin-bottom: var(--spacing-sm);
+  min-width: 0;
+}
+
+.field-group > label {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-secondary);
+  margin: 0;
+}
+
+/* Inline: label and control on one line */
+.field-group--inline {
+  flex-direction: row;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.field-group--inline > label {
+  min-width: 90px;
+  flex-shrink: 0;
+}
+
+/* Flex sizing (for use inside .field-row) */
+.field-group--major { flex: 2 1 0; }
+.field-group--minor { flex: 1 1 0; }
+.field-group--grow  { flex: 1 1 0; }
+
+/* ── Field row: horizontal container for multiple field-groups ── */
+.field-row {
+  display: flex;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-sm);
+}
+
+.field-row > .field-group {
+  margin-bottom: 0;
+}
+
+/* ===== Badges ===== */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 6px;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  border-radius: 10px;
+  white-space: nowrap;
+}
+
+.badge--info     { background: var(--color-accent-light); color: var(--color-accent); }
+.badge--success  { background: #d4f4dd; color: var(--color-success); }
+.badge--warning  { background: #fff3d6; color: var(--color-warning); }
+.badge--error    { background: #ffe5e5; color: var(--color-error); }
+
+[data-theme="dark"] .badge--success { background: #1a3d25; }
+[data-theme="dark"] .badge--warning { background: #3d2e00; }
+[data-theme="dark"] .badge--error   { background: #3d1a1a; }
+
+/* ===== Modal ===== */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: var(--color-modal-overlay);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fadeIn var(--transition-speed) ease;
+}
+
+.modal {
+  background: var(--color-bg-elevated);
+  border: var(--border-width) solid var(--color-border-primary);
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--shadow-lg);
+  min-width: 320px;
+  max-width: 600px;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  animation: slideUp var(--transition-speed) ease;
+}
+
+.modal__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--spacing-md) var(--spacing-lg);
+  border-bottom: var(--border-width) solid var(--color-border-secondary);
+}
+
+.modal__title {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+}
+
+.modal__body {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--spacing-lg);
+}
+
+.modal__footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-md) var(--spacing-lg);
+  border-top: var(--border-width) solid var(--color-border-secondary);
+}
+
+/* ===== Toast Notifications ===== */
+.toast-container {
+  position: fixed;
+  bottom: calc(var(--footer-height) + var(--spacing-md));
+  right: var(--spacing-md);
+  z-index: 2000;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  pointer-events: none;
+}
+
+.toast {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow-md);
+  font-size: var(--font-size-sm);
+  pointer-events: all;
+  animation: slideInRight var(--transition-speed) ease;
+  max-width: 360px;
+}
+
+.toast--info    { background: var(--color-info); color: #fff; }
+.toast--success { background: var(--color-success); color: #fff; }
+.toast--warning { background: var(--color-warning); color: #fff; }
+.toast--error   { background: var(--color-error); color: #fff; }
+
+/* ===== Language Toggle ===== */
+.lang-toggle {
+  display: flex;
+  align-items: center;
+  border: var(--border-width) solid var(--color-border-primary);
+  border-radius: var(--border-radius);
+  overflow: hidden;
+}
+
+.lang-toggle__option {
+  padding: 2px var(--spacing-sm);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+  color: var(--color-text-secondary);
+  background: transparent;
+  border: none;
+  font-family: var(--font-family);
+  transition: background var(--transition-speed), color var(--transition-speed);
+}
+
+.lang-toggle__option--active {
+  background: var(--color-accent);
+  color: var(--color-text-inverse);
+}
+
+/* ===== Tables ===== */
+/* Global table style for all module tables outside of DataGrid.
+   Applied via .dmike-table class or automatically to any <table>
+   inside .dmike-split that is not a datagrid. */
+
+.dmike-table,
+.stats-table,
+.dmike-split table:not(.datagrid__table):not(.corr__matrix-table) {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--font-size-sm);
+  font-variant-numeric: tabular-nums;
+}
+
+.dmike-table th,
+.stats-table th,
+.dmike-split table:not(.datagrid__table):not(.corr__matrix-table) th {
+  padding: var(--spacing-xs) var(--spacing-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-tertiary);
+  border-bottom: 2px solid var(--color-border-primary);
+}
+
+.dmike-table td,
+.stats-table td,
+.dmike-split table:not(.datagrid__table):not(.corr__matrix-table) td {
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-bottom: var(--border-width) solid var(--color-border-secondary);
+}
+
+.dmike-table tr:last-child td,
+.stats-table tr:last-child td,
+.dmike-split table:not(.datagrid__table):not(.corr__matrix-table) tr:last-child td {
+  border-bottom: none;
+}
+
+.dmike-table tr:hover td,
+.stats-table tr:hover td,
+.dmike-split table:not(.datagrid__table):not(.corr__matrix-table) tr:hover td {
+  background: var(--color-bg-secondary);
+}
+
+/* ===== Tabs ===== */
+/* Global tab bar for switching between charts/views in modules.
+   Use .dmike-tabs as container, .dmike-tab for each button,
+   .dmike-tab-content for panels, --active modifier to show. */
+
+.dmike-tabs {
+  display: flex;
+  gap: 2px;
+  background: var(--color-bg-primary);
+  border: var(--border-width) solid var(--color-border-secondary);
+  border-radius: var(--border-radius);
+  padding: 3px;
+  margin-bottom: var(--spacing-md);
+}
+
+.dmike-tab {
+  flex: 1;
+  padding: 7px 8px;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  font-family: var(--font-family);
+  text-align: center;
+  border-radius: var(--border-radius-sm, 4px);
+  cursor: pointer;
+  color: var(--color-text-tertiary);
+  transition: all 0.15s;
+  border: none;
+  background: none;
+}
+
+.dmike-tab--active {
+  background: var(--color-bg-secondary);
+  color: var(--color-text-primary);
+}
+
+.dmike-tab:hover:not(.dmike-tab--active) {
+  color: var(--color-text-secondary);
+}
+
+.dmike-tab-content {
+  display: none;
+}
+
+.dmike-tab-content--active {
+  display: block;
+}
+
+/* ===== KPI Strip ===== */
+/* Global KPI card row for displaying key metrics.
+   Use .dmike-kpi-strip as container, .dmike-kpi for each card,
+   .dmike-kpi-value for the number, .dmike-kpi-label for the caption.
+   Modifiers: --good, --warn, --bad for color coding. */
+
+.dmike-kpi-strip {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-md);
+}
+
+.dmike-kpi {
+  background: var(--color-bg-secondary);
+  border: var(--border-width) solid var(--color-border-secondary);
+  border-radius: var(--border-radius);
+  padding: var(--spacing-sm) var(--spacing-md);
+  text-align: center;
+}
+
+.dmike-kpi-value {
+  font-family: var(--font-family-mono);
+  font-size: 20px;
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-primary);
+}
+
+.dmike-kpi-label {
+  font-size: 10px;
+  color: var(--color-text-tertiary);
+  font-weight: var(--font-weight-medium);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-top: 2px;
+}
+
+.dmike-kpi-sub {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  margin-top: 1px;
+}
+
+.dmike-kpi--good .dmike-kpi-value { color: var(--color-success); }
+.dmike-kpi--warn .dmike-kpi-value { color: var(--color-warning); }
+.dmike-kpi--bad  .dmike-kpi-value { color: var(--color-error); }
+
+/* ===== Result Card — recommended badge with hover tooltip ===== */
+.result-card--recommended {
+  border-color: var(--color-success);
+  box-shadow: 0 0 12px rgba(52, 199, 89, 0.12);
+}
+
+.result-card__badge {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  font-family: var(--font-family-mono);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  background: var(--color-success);
+  color: #fff;
+  padding: 2px 6px;
+  border-radius: 3px;
+  display: none;
+  cursor: help;
+}
+
+.result-card--recommended .result-card__badge {
+  display: inline-block;
+}
+
+/* Tooltip shown on badge hover */
+.result-card__tooltip {
+  display: none;
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  width: 280px;
+  padding: var(--spacing-sm) var(--spacing-md);
+  background: var(--color-bg-elevated);
+  color: var(--color-text-primary);
+  border: var(--border-width) solid var(--color-border-primary);
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow-md);
+  font-family: var(--font-family);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-normal);
+  letter-spacing: normal;
+  text-transform: none;
+  line-height: 1.5;
+  white-space: normal;
+  z-index: 10;
+  pointer-events: none;
+}
+
+.result-card__badge:hover .result-card__tooltip {
+  display: block;
+}
+
+/* ===== Divider ===== */
+.divider {
+  height: var(--border-width);
+  background: var(--color-border-secondary);
+  margin: var(--spacing-sm) 0;
+}
+
+/* ===== Animations ===== */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { transform: translateY(12px); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+
+@keyframes slideInRight {
+  from { transform: translateX(12px); opacity: 0; }
+  to   { transform: translateX(0);    opacity: 1; }
+}
+
+/* ===== Focus visible (keyboard navigation) ===== */
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+/* Form fields handle their own focus via border-color — no outer ring */
+.field:focus,
+.field:focus-visible,
+.input:focus,
+.input:focus-visible {
+  outline: none;
+}
+
+/* ===== Settings Panel ===== */
+.settings-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.35);
+  z-index: 900;
+}
+
+.settings-panel {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 480px;
+  max-height: 80vh;
+  background: var(--color-bg-primary);
+  border: var(--border-width) solid var(--color-border-primary);
+  border-radius: var(--border-radius-lg);
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.2);
+  z-index: 901;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.settings-panel__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--spacing-md) var(--spacing-lg);
+  border-bottom: var(--border-width) solid var(--color-border-secondary);
+}
+
+.settings-panel__title {
+  font-size: var(--font-size-lg);
+  font-weight: 700;
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.settings-panel__close {
+  font-size: 20px;
+  line-height: 1;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.settings-panel__tabs {
+  display: flex;
+  gap: 0;
+  border-bottom: var(--border-width) solid var(--color-border-secondary);
+  padding: 0 var(--spacing-lg);
+}
+
+.settings-tab {
+  padding: var(--spacing-sm) var(--spacing-md);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--color-text-tertiary);
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+  margin-bottom: -1px;
+}
+
+.settings-tab:hover {
+  color: var(--color-text-primary);
+}
+
+.settings-tab--active {
+  color: var(--color-accent);
+  border-bottom-color: var(--color-accent);
+}
+
+.settings-panel__body {
+  padding: var(--spacing-lg);
+  overflow-y: auto;
+  flex: 1;
+}
+
+.settings-tab-content {
+  display: none;
+}
+
+.settings-tab-content--active {
+  display: block;
+}
+
+.settings-section {
+  margin-bottom: var(--spacing-lg);
+}
+
+.settings-section:last-child {
+  margin-bottom: 0;
+}
+
+.settings-section__label {
+  display: block;
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  margin-bottom: var(--spacing-sm);
+}
+
+.settings-checkbox-row {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-primary);
+  cursor: pointer;
+}
+
+/* Theme toggle buttons */
+.settings-theme-toggle {
+  display: flex;
+  gap: var(--spacing-sm);
+}
+
+.settings-theme-btn {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-sm) var(--spacing-md);
+  border: var(--border-width) solid var(--color-border-secondary);
+  border-radius: var(--border-radius);
+  background: var(--color-bg-secondary);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s, color 0.15s;
+}
+
+.settings-theme-btn:hover {
+  border-color: var(--color-border-primary);
+  color: var(--color-text-primary);
+}
+
+.settings-theme-btn--active {
+  border-color: var(--color-accent);
+  background: var(--color-accent-alpha, rgba(59, 130, 246, 0.08));
+  color: var(--color-accent);
+}
+
+.settings-theme-icon {
+  font-size: 16px;
+  line-height: 1;
+}
+
+/* ── Global Slider ────────────────────────────────────────── */
+
+/* Raw input — shared track & thumb for every range slider in the app */
+.dmike-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  flex: 1;
+  height: 4px;
+  background: var(--color-border-secondary);
+  border-radius: 2px;
+  outline: none;
+  cursor: pointer;
+}
+
+.dmike-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--color-accent);
+  border: 2px solid var(--color-bg-primary);
+  cursor: pointer;
+}
+
+.dmike-slider::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--color-accent);
+  border: 2px solid var(--color-bg-primary);
+  cursor: pointer;
+}
+
+/* Row: label + slider + numeric value */
+.dmike-slider-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+
+.dmike-slider-row__label {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+  min-width: 62px;
+  flex-shrink: 0;
+}
+
+.dmike-slider-row__value {
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  min-width: 28px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+/* ── Settings: font-size preview rows ────────────────────── */
+
+.settings-font-row {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-sm);
+}
+
+.settings-font-row:last-child {
+  margin-bottom: 0;
+}
+
+.settings-font-preview {
+  min-width: 60px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  white-space: nowrap;
+  transition: font-size 0.15s ease;
+}
+
+.settings-font-value {
+  min-width: 28px;
+  text-align: right;
+  font-size: var(--font-size-sm);
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text-secondary);
+}
+
+/* Chart background color */
+.settings-bg-color-row {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.settings-bg-color-swatch {
+  width: 48px;
+  height: 28px;
+  border: var(--border-width) solid var(--color-border-secondary);
+  border-radius: var(--border-radius-sm, 3px);
+  cursor: pointer;
+  transition: border-color 0.15s;
+  background: transparent;
+}
+
+.settings-bg-color-swatch:hover {
+  border-color: var(--color-accent);
+}
+
+/* Transparent checkerboard pattern for "no color" state */
+.settings-bg-color-swatch--none {
+  background-image:
+    linear-gradient(45deg, #ccc 25%, transparent 25%),
+    linear-gradient(-45deg, #ccc 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, #ccc 75%),
+    linear-gradient(-45deg, transparent 75%, #ccc 75%);
+  background-size: 8px 8px;
+  background-position: 0 0, 0 4px, 4px -4px, -4px 0;
+}
+
+/* Chart series color swatches */
+.settings-color-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-sm);
+}
+
+.settings-color-item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+.settings-color-index {
+  font-size: var(--font-size-xs);
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text-tertiary);
+  min-width: 16px;
+  text-align: right;
+}
+
+.settings-color-swatch {
+  width: 32px;
+  height: 24px;
+  padding: 0;
+  border: var(--border-width) solid var(--color-border-secondary);
+  border-radius: var(--border-radius-sm, 3px);
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+
+.settings-color-swatch:hover {
+  border-color: var(--color-accent);
+}
+
+.settings-color-reset {
+  margin-top: var(--spacing-xs);
+}
+
+/* Statistics settings */
+.settings-stat-row {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--spacing-sm);
+}
+
+.settings-stat-field {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.settings-stat-field__label {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+}
+
+.settings-stat-input-group {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.settings-stat-input {
+  width: 90px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.settings-stat-unit {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-tertiary);
+}
+
+.settings-stat-link {
+  color: var(--color-text-tertiary);
+  font-size: var(--font-size-lg);
+  padding-bottom: 4px;
+}
+
+/* ===== Column Picker (shared column-select widget) ===== */
+
+/* Container */
+.col-picker { display: flex; flex-direction: column; }
+
+/* Single-select: <select> dropdown */
+.col-picker__select {
+  width: 100%;
+}
+
+/* Multi-select: checkbox list */
+.col-picker--multi {
+  max-height: 260px;
+  overflow-y: auto;
+  border: var(--border-width) solid var(--color-border-secondary);
+  border-radius: var(--border-radius);
+  background: var(--color-bg-primary);
+  padding: var(--spacing-xs);
+  gap: 2px;
+}
+
+.col-picker--multi::-webkit-scrollbar { width: 5px; }
+.col-picker--multi::-webkit-scrollbar-thumb {
+  background: var(--color-border-secondary);
+  border-radius: 3px;
+}
+.col-picker--multi { scrollbar-width: thin; scrollbar-color: var(--color-border-secondary) transparent; }
+
+.col-picker__group { display: flex; flex-direction: column; gap: 1px; }
+.col-picker__group + .col-picker__group { margin-top: var(--spacing-xs); }
+
+.col-picker__group-label {
+  font-size: 10px;
+  font-weight: var(--font-weight-bold);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-text-tertiary);
+  padding: 2px 4px;
+}
+
+.col-picker__item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  padding: 3px 4px;
+  border-radius: var(--border-radius-sm);
+  cursor: pointer;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-primary);
+  transition: background var(--transition-speed);
+}
+
+.col-picker__item:hover {
+  background: var(--color-bg-tertiary);
+}
+
+.col-picker__name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.col-picker__count {
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+  flex-shrink: 0;
+}
+
+.col-picker__hint {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-tertiary);
+  font-style: italic;
+  padding: var(--spacing-xs);
+}
+
+/* ── Hide Algorithm Lab link icons globally via settings toggle ── */
+body.hide-algo-lab-links .distfit__ndd-algo-link { display: none; }
+
+/* ============================================================
+   Series Picker — shared multi-column selector
+   Used by modules that let the user pick multiple worksheet
+   columns (Histogram, Boxplot, etc.).
+   ============================================================ */
+
+/* Container for the list of already-selected series */
+.dmike-series-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+/* Single selected series row */
+.dmike-series-item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  background: var(--color-bg-secondary);
+  border: var(--border-width) solid var(--color-border-secondary);
+  border-radius: var(--border-radius-sm);
+  font-size: var(--font-size-sm);
+}
+
+.dmike-series-color {
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+.dmike-series-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dmike-series-remove {
+  width: 18px;
+  height: 18px;
+  border: none;
+  background: transparent;
+  color: var(--color-text-tertiary);
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  flex-shrink: 0;
+  transition: color var(--transition-speed), background var(--transition-speed);
+}
+
+.dmike-series-remove:hover {
+  color: var(--color-error);
+  background: var(--color-bg-tertiary);
+}
+
+/* Add-row: always-visible select for picking the next column */
+.dmike-series-add {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  margin-top: var(--spacing-xs);
+}
+
+.dmike-series-add select {
+  flex: 1;
+  min-width: 0;
+  font-family: var(--font-family);
+  font-size: var(--font-size-sm);
+  padding: 6px 8px;
+  border: var(--border-width) solid var(--color-border-secondary);
+  border-radius: var(--border-radius);
+  background: var(--color-bg-primary);
+  color: var(--color-text-primary);
+  outline: none;
+}
+
+.dmike-series-add select:focus {
+  border-color: var(--color-accent);
+}
+
+/* ===== Embedded DataGrid ===== */
+/* Shared wrapper for modules that embed a DataGrid (DoE, Data Generator, etc.) */
+.dmike-embedded-grid {
+  border: var(--border-width) solid var(--color-border-secondary);
+  border-radius: var(--border-radius);
+  overflow: hidden;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.dmike-embedded-grid--sm  { height: 260px; }
+.dmike-embedded-grid--md  { height: 400px; }
+.dmike-embedded-grid--lg  { height: 500px; }
+.dmike-embedded-grid--fill { flex: 1; min-height: 0; }

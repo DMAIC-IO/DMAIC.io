@@ -1,0 +1,78 @@
+{
+  "id": "ccd-with-categorical",
+  "name": {
+    "de": "CCD mit kategorialen Faktoren (Cartesian × Continuous-CCD)",
+    "en": "CCD with Categorical Factors (Cartesian × Continuous CCD)"
+  },
+  "category": "doe",
+  "subcategory": null,
+  "status": "validated",
+  "version": "1.0.0",
+
+  "description": {
+    "short": {
+      "de": "Erweitert das klassische Central-Composite-Design auf Versuchspläne mit gemischten kontinuierlich/kategorialen Faktoren — jede kategoriale Stufen-Kombination bekommt ein vollständiges CCD über die kontinuierlichen Faktoren.",
+      "en": "Extends the classical central composite design to plans with mixed continuous/categorical factors — every categorical level combination gets a full CCD over the continuous factors."
+    },
+    "long": {
+      "de": "Das klassische CCD nimmt an, dass alle Faktoren kontinuierlich sind und Achspunkte (±α) sinnvoll bilden können. Bei einem kategorialen Faktor wie Werkzeug = {Stahl, HSS, Carbide} sind Achspunkte aber bedeutungslos (es gibt keinen ‚Stahl × 1.4‘-Wert). Die hier dokumentierte Erweiterung schneidet das Problem strukturell: das CCD wird nur über die kontinuierlichen Faktoren gebildet, und das Ergebnis wird kartesisch mit allen kategorialen Stufen-Kombinationen multipliziert. Jede kategoriale Zelle bekommt damit ein eigenes vollständiges CCD — Eckpunkte, Achspunkte und Mittelpunkte. Das ist die saubere Mathematik für quadratische Modellierung in Mixed-Faktor-RSM.",
+      "en": "The classical CCD assumes every factor is continuous and can take meaningful axial points (±α). For a categorical factor like Tool = {Steel, HSS, Carbide}, axial points are meaningless (there's no ‘Steel × 1.4’ value). The extension documented here cuts the problem structurally: the CCD is generated over the continuous factors only, and the result is Cartesian-multiplied by all categorical level combinations. Every categorical cell thus gets its own full CCD — corner points, axial points, and center points. This is the clean math for quadratic modelling in mixed-factor RSM."
+    }
+  },
+
+  "documentation": {
+    "formulas": [
+      {
+        "label": "Run count",
+        "latex": "N = N_{\\text{CCD}}(k_{\\text{cont}}) \\cdot \\prod_{j \\in \\text{cat}} |L_j|",
+        "description": {
+          "de": "Anzahl Runs = (CCD über kontinuierliche) × (Produkt aller kategorialen Stufenzahlen)",
+          "en": "Run count = (CCD over continuous) × (product of all categorical level counts)"
+        }
+      },
+      {
+        "label": "Cartesian construction",
+        "latex": "\\mathcal{D} = \\{ [r_{\\text{cont}};\\, c]\\ :\\ r_{\\text{cont}} \\in \\text{CCD}(k_{\\text{cont}}),\\ c \\in \\bigtimes_j L_j \\}",
+        "description": {
+          "de": "Designmatrix als Vereinigung aller (r_cont, c)-Paare",
+          "en": "Design matrix as union of all (r_cont, c) pairs"
+        }
+      }
+    ],
+    "assumptions": [
+      { "de": "Mindestens 2 kontinuierliche Faktoren (CCD braucht ≥ 2 Achsen)", "en": "At least 2 continuous factors (CCD needs ≥ 2 axes)" },
+      { "de": "Kategoriale Faktoren haben endliche Stufenmengen", "en": "Categorical factors have finite level sets" }
+    ],
+    "limitations": [
+      { "de": "Run-Zahl wächst multiplikativ in den kategorialen Stufenzahlen — bei 2 ternären Kategorien × CCD(3) = 9 × 17 = 153 Runs", "en": "Run count grows multiplicatively in categorical levels — 2 ternary categories × CCD(3) = 9 × 17 = 153 runs" },
+      { "de": "Schätzt nur Kategorie-Hauptwirkungen und Kategorie × Kontinuierlich-Wechselwirkungen — keine Wechselwirkungen zwischen kategorialen Faktoren", "en": "Estimates only categorical main effects and categorical × continuous interactions — not categorical × categorical" }
+    ],
+    "references": [
+      { "source": "Box, G.E.P. & Wilson, K.B. (1951). On the experimental attainment of optimum conditions, JRSS B 13:1-45" },
+      { "source": "Myers, R.H., Montgomery, D.C., Anderson-Cook, C.M. (2016). Response Surface Methodology, 4th Ed., Wiley", "chapter": "Chapter 7.6 (Designs with Categorical Factors)" }
+    ],
+    "minitab_equivalent": "Stat > DOE > Response Surface > Create Response Surface Design (Categorical-factor option)"
+  },
+
+  "source": {
+    "function_name": "generateDesign",
+    "file_path": "js/engines/doe-planner-engine.js",
+    "signature": {
+      "parameters": [
+        { "name": "factors", "type": "Factor[]", "required": true, "description": { "de": "Faktor-Liste mit kind: 'continuous' | 'categorical'", "en": "Factor list with kind: 'continuous' | 'categorical'" } },
+        { "name": "opts",    "type": "object",   "required": true, "description": { "de": "{ designType: 'ccd', alphaType, ccdCenterPoints, … }", "en": "{ designType: 'ccd', alphaType, ccdCenterPoints, … }" } }
+      ],
+      "returns": {
+        "type": "DesignResult",
+        "description": { "de": "{ codedMatrix, actualMatrix, stdOrder, … }", "en": "{ codedMatrix, actualMatrix, stdOrder, … }" }
+      }
+    },
+    "code_snippet": null
+  },
+
+  "changelog": [
+    { "version": "1.0.0", "date": "2026-05-08", "type": "initial",
+      "description": { "de": "Erstimplementierung — kartesisches Crossen via crossContinuousWithCategorical für Phase 4", "en": "Initial implementation — Cartesian crossing via crossContinuousWithCategorical for V0.4 Phase 4" },
+      "breaking": false }
+  ]
+}

@@ -1,0 +1,257 @@
+{
+  "id": "cp",
+  "name": {
+    "de": "Prozessfähigkeit Cp",
+    "en": "Process Capability Cp"
+  },
+  "category": "capability",
+  "subcategory": null,
+  "status": "validated",
+  "version": "1.0.0",
+
+  "description": {
+    "short": {
+      "de": "Misst die Streuung eines Prozesses relativ zur Toleranzbreite, ohne Berücksichtigung der Zentrierung.",
+      "en": "Measures process spread relative to the tolerance width, ignoring centering."
+    },
+    "long": {
+      "de": "Cp vergleicht die Toleranzbreite (USL − LSL) mit der Prozessstreuung (6s) und beantwortet die Frage: Passt die natürliche Streuung des Prozesses überhaupt in die Toleranz? Cp benutzt die Stichproben-Standardabweichung (ddof = 1) und wird als 'Kurzzeit-Fähigkeit' interpretiert. Cp ≥ 1,33 gilt als fähig, Cp ≥ 1,67 als hoch fähig. Cp sagt nichts über die Lage des Prozesses aus — dafür ist Cpk da. Cp ist nur für zweiseitige Spezifikationen definiert.",
+      "en": "Cp compares the tolerance width (USL − LSL) to process spread (6s) and answers: does the natural process variation even fit within the tolerance? Cp uses the sample standard deviation (ddof = 1) and is interpreted as 'short-term capability'. Cp ≥ 1.33 is considered capable, Cp ≥ 1.67 highly capable. Cp says nothing about process location — that is what Cpk is for. Cp is only defined for two-sided specifications."
+    }
+  },
+
+  "documentation": {
+    "formulas": [
+      {
+        "label": "Cp",
+        "latex": "C_p = \\frac{USL - LSL}{6s}",
+        "description": {
+          "de": "Prozessfähigkeit ohne Berücksichtigung der Zentrierung (s = Stichproben-Standardabweichung, ddof = 1)",
+          "en": "Process capability ignoring centering (s = sample standard deviation, ddof = 1)"
+        }
+      },
+      {
+        "label": "CPU",
+        "latex": "C_{PU} = \\frac{USL - \\bar{x}}{3s}",
+        "description": {
+          "de": "Oberer Fähigkeitsindex",
+          "en": "Upper capability index"
+        }
+      },
+      {
+        "label": "CPL",
+        "latex": "C_{PL} = \\frac{\\bar{x} - LSL}{3s}",
+        "description": {
+          "de": "Unterer Fähigkeitsindex",
+          "en": "Lower capability index"
+        }
+      },
+      {
+        "label": "CI(Cp)",
+        "latex": "CI(C_p) = \\left[\\; C_p \\sqrt{\\frac{\\chi^2_{\\alpha/2,\\,n-1}}{n-1}} \\;,\\; C_p \\sqrt{\\frac{\\chi^2_{1-\\alpha/2,\\,n-1}}{n-1}} \\;\\right]",
+        "description": {
+          "de": "Exaktes Konfidenzintervall für Cp basierend auf der Chi-Quadrat-Verteilung (α = 1 − Konfidenzniveau)",
+          "en": "Exact confidence interval for Cp based on the chi-squared distribution (α = 1 − confidence level)"
+        }
+      }
+    ],
+    "assumptions": [
+      {
+        "de": "Daten sind annähernd normalverteilt",
+        "en": "Data is approximately normally distributed"
+      },
+      {
+        "de": "Prozess ist statistisch beherrscht",
+        "en": "Process is in statistical control"
+      },
+      {
+        "de": "Zweiseitige Spezifikation (LSL und USL erforderlich)",
+        "en": "Two-sided specification (both LSL and USL required)"
+      }
+    ],
+    "limitations": [
+      {
+        "de": "Unempfindlich gegen Lageabweichungen — ein stark außermittiger Prozess kann trotz hohem Cp unfähig sein (Cpk verwenden)",
+        "en": "Insensitive to location shifts — a strongly off-center process can be incapable despite a high Cp (use Cpk)"
+      },
+      {
+        "de": "Benötigt mindestens zweiseitige Spezifikation",
+        "en": "Requires a two-sided specification"
+      },
+      {
+        "de": "Stichprobenumfang sollte ≥ 30 sein, damit die Konfidenzintervalle aussagekräftig sind",
+        "en": "Sample size should be ≥ 30 for the confidence intervals to be meaningful"
+      }
+    ],
+    "references": [
+      {
+        "source": "Montgomery, Introduction to Statistical Quality Control, 8th Ed.",
+        "chapter": "Chapter 7"
+      },
+      {
+        "source": "Kotz, S. & Johnson, N. L. (1993), Process Capability Indices, Chapman & Hall"
+      }
+    ],
+    "minitab_equivalent": "Stat > Quality Tools > Capability Analysis > Normal"
+  },
+
+  "source": {
+    "function_name": "capabilityAnalyze",
+    "file_path": "js/engines/process-capability-engine.js",
+    "signature": {
+      "parameters": [
+        {
+          "name": "data",
+          "type": "number[]",
+          "required": true,
+          "description": {
+            "de": "Array von Messwerten",
+            "en": "Array of measurement values"
+          }
+        },
+        {
+          "name": "lsl",
+          "type": "number",
+          "required": true,
+          "description": {
+            "de": "Untere Spezifikationsgrenze",
+            "en": "Lower specification limit"
+          }
+        },
+        {
+          "name": "usl",
+          "type": "number",
+          "required": true,
+          "description": {
+            "de": "Obere Spezifikationsgrenze",
+            "en": "Upper specification limit"
+          }
+        },
+        {
+          "name": "confidence",
+          "type": "number",
+          "required": false,
+          "description": {
+            "de": "Konfidenzniveau (Default 0.95)",
+            "en": "Confidence level (default 0.95)"
+          }
+        }
+      ],
+      "returns": {
+        "type": "object",
+        "properties": {
+          "cp": {
+            "type": "number|null",
+            "description": { "de": "Prozessfähigkeit (zentrierungsunabhängig)", "en": "Process capability (centering-independent)" }
+          },
+          "cpu": {
+            "type": "number|null",
+            "description": { "de": "Oberer Fähigkeitsindex", "en": "Upper capability index" }
+          },
+          "cpl": {
+            "type": "number|null",
+            "description": { "de": "Unterer Fähigkeitsindex", "en": "Lower capability index" }
+          },
+          "CpCI": {
+            "type": "[number,number]|null",
+            "description": { "de": "Exaktes χ²-Konfidenzintervall für Cp", "en": "Exact χ² confidence interval for Cp" }
+          },
+          "mean": {
+            "type": "number",
+            "description": { "de": "Stichprobenmittelwert", "en": "Sample mean" }
+          },
+          "stddev": {
+            "type": "number",
+            "description": { "de": "Stichproben-Standardabweichung (n−1)", "en": "Sample standard deviation (n−1)" }
+          },
+          "n": {
+            "type": "number",
+            "description": { "de": "Stichprobengröße", "en": "Sample size" }
+          }
+        }
+      }
+    },
+    "code_snippet": null
+  },
+
+  "try_it": {
+    "input_schema": {
+      "fields": [
+        {
+          "name": "values",
+          "label": {
+            "de": "Messdaten",
+            "en": "Measurement Data"
+          },
+          "type": "textarea",
+          "placeholder": {
+            "de": "Werte eingeben, getrennt durch Komma, Leerzeichen oder Zeilenumbruch\nz.B.: 10.02; 9.99; 10.01; 10.00; 9.98",
+            "en": "Enter values separated by commas, spaces, or newlines\ne.g.: 10.02, 9.99, 10.01, 10.00, 9.98"
+          },
+          "parse_as": "number_array",
+          "required": true
+        },
+        {
+          "name": "params.lsl",
+          "label": {
+            "de": "Untere Spezifikationsgrenze (LSL)",
+            "en": "Lower Spec Limit (LSL)"
+          },
+          "type": "number",
+          "placeholder": { "de": "z.B.: 9.80", "en": "e.g.: 9.80" },
+          "parse_as": "number",
+          "required": true
+        },
+        {
+          "name": "params.usl",
+          "label": {
+            "de": "Obere Spezifikationsgrenze (USL)",
+            "en": "Upper Spec Limit (USL)"
+          },
+          "type": "number",
+          "placeholder": { "de": "z.B.: 10.20", "en": "e.g.: 10.20" },
+          "parse_as": "number",
+          "required": true
+        },
+        {
+          "name": "params.confidence",
+          "label": {
+            "de": "Konfidenzniveau",
+            "en": "Confidence Level"
+          },
+          "type": "number",
+          "placeholder": { "de": "Standard: 0.95", "en": "Default: 0.95" },
+          "parse_as": "number",
+          "required": false,
+          "default": 0.95
+        }
+      ]
+    },
+    "output_schema": {
+      "display_fields": ["Cp", "CPU", "CPL", "CpCI", "xbar", "s", "n"],
+      "primary_field": "Cp",
+      "format": {
+        "Cp":  { "decimals": 6, "label": "Cp" },
+        "CPU": { "decimals": 6, "label": "CPU" },
+        "CPL": { "decimals": 6, "label": "CPL" },
+        "CpCI": { "decimals": 4, "label": { "de": "KI Cp", "en": "CI Cp" }, "type": "interval" },
+        "xbar": { "decimals": 6, "label": { "de": "Mittelwert (x̄)", "en": "Mean (x̄)" } },
+        "s":    { "decimals": 6, "label": { "de": "Std.abw. (s, ddof=1)", "en": "Std Dev (s, ddof=1)" } },
+        "n":    { "decimals": 0, "label": "n" }
+      }
+    }
+  },
+
+  "changelog": [
+    {
+      "version": "1.0.0",
+      "date": "2026-04-11",
+      "type": "initial",
+      "description": {
+        "de": "Erstimplementierung mit Cp, CPU, CPL und exaktem χ²-Konfidenzintervall",
+        "en": "Initial implementation with Cp, CPU, CPL and exact χ² confidence interval"
+      },
+      "breaking": false
+    }
+  ]
+}

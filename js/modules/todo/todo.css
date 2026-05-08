@@ -1,0 +1,261 @@
+/* D.Mike — Todo Module */
+
+.module-todo {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-md);
+}
+
+/* ─── Toolbar ─────────────────────────────────────────── */
+
+.todo__toolbar {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  flex-wrap: wrap;
+}
+
+.todo__add-btn {
+  white-space: nowrap;
+}
+
+.todo__filter-group {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  margin-left: auto;
+}
+
+.todo__filter-label {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+}
+
+.todo__filter-select {
+  min-width: 120px;
+}
+
+.todo__search {
+  min-width: 160px;
+}
+
+.todo__counter {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+}
+
+/* ─── Table ───────────────────────────────────────────── */
+
+.todo__table-wrap {
+  flex: 1;
+  overflow: auto;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+}
+
+.todo__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--font-size-sm);
+}
+
+.todo__table th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--color-bg-secondary);
+  text-align: left;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  font-weight: 600;
+  border-bottom: 2px solid var(--color-border);
+  white-space: nowrap;
+  cursor: pointer;
+  user-select: none;
+}
+
+.todo__table th:hover {
+  color: var(--color-accent);
+}
+
+.todo__sort-arrow {
+  font-size: 10px;
+  margin-left: 3px;
+  opacity: 0.5;
+}
+
+.todo__sort-arrow--active {
+  opacity: 1;
+  color: var(--color-accent);
+}
+
+.todo__table td {
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-bottom: 1px solid var(--color-border);
+  vertical-align: middle;
+}
+
+.todo__table tr:hover td {
+  background: var(--color-bg-tertiary);
+}
+
+.todo__col-check { width: 32px; text-align: center; }
+.todo__col-text  { min-width: 200px; }
+.todo__col-owner { width: 140px; }
+.todo__col-due   { width: 120px; }
+.todo__col-status { width: 120px; }
+.todo__col-cal    { width: 36px; text-align: center; }
+.todo__col-actions { width: 56px; text-align: center; }
+
+/* ─── Inline editing ──────────────────────────────────── */
+
+.todo__inline-input {
+  width: 100%;
+  border: none;
+  background: transparent;
+  font: inherit;
+  color: inherit;
+  padding: 2px 4px;
+  border-bottom: 1px dashed var(--color-border);
+  outline: none;
+}
+
+.todo__inline-input:focus {
+  border-bottom-color: var(--color-accent);
+}
+
+.todo__inline-date {
+  border: none;
+  background: transparent;
+  font: inherit;
+  color: inherit;
+  padding: 2px;
+  cursor: pointer;
+}
+
+.todo__inline-select {
+  border: none;
+  background: transparent;
+  font: inherit;
+  color: inherit;
+  padding: 2px;
+  cursor: pointer;
+}
+
+/* ─── Status badges ───────────────────────────────────── */
+
+.todo__status {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.todo__status--open {
+  background: var(--color-bg-tertiary);
+  color: var(--color-text-secondary);
+}
+
+.todo__status--in-progress {
+  background: var(--color-phase-measure);
+  color: #fff;
+  opacity: 0.85;
+}
+
+.todo__status--done {
+  background: var(--color-phase-control);
+  color: #fff;
+  opacity: 0.85;
+}
+
+.todo__status--blocked {
+  background: var(--color-danger, #e74c3c);
+  color: #fff;
+  opacity: 0.85;
+}
+
+/* ─── Row states ──────────────────────────────────────── */
+
+.todo__row--done .todo__cell-text {
+  text-decoration: line-through;
+  opacity: 0.55;
+}
+
+.todo__row--overdue .todo__cell-due {
+  color: var(--color-danger, #e74c3c);
+  font-weight: 600;
+}
+
+/* ─── Checkbox ────────────────────────────────────────── */
+
+.todo__check {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  accent-color: var(--color-accent);
+}
+
+/* ─── Calendar toggle ────────────────────────────────── */
+
+.todo__cal-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  padding: 2px 4px;
+  border-radius: var(--radius-sm);
+  opacity: 0.3;
+  transition: opacity 0.15s;
+  filter: grayscale(1);
+}
+
+.todo__table tr:hover .todo__cal-btn {
+  opacity: 0.5;
+}
+
+.todo__cal-btn:hover {
+  opacity: 0.8 !important;
+}
+
+.todo__cal-btn--active {
+  opacity: 1 !important;
+  filter: none;
+}
+
+/* ─── Delete button ───────────────────────────────────── */
+
+.todo__delete-btn {
+  background: none;
+  border: none;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  font-size: 14px;
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
+.todo__table tr:hover .todo__delete-btn {
+  opacity: 0.6;
+}
+
+.todo__delete-btn:hover {
+  opacity: 1 !important;
+  color: var(--color-danger, #e74c3c);
+  background: var(--color-bg-tertiary);
+}
+
+/* ─── Empty state ─────────────────────────────────────── */
+
+.todo__empty {
+  text-align: center;
+  padding: var(--spacing-xl);
+  color: var(--color-text-secondary);
+  font-style: italic;
+}

@@ -1,0 +1,114 @@
+{
+  "id": "pareto-front-2d",
+  "name": {
+    "de": "Pareto-Front (2D, Nicht-Dominanz-Filter)",
+    "en": "Pareto Frontier (2D, Non-Dominance Filter)"
+  },
+  "category": "optimization",
+  "subcategory": null,
+  "status": "validated",
+  "version": "1.0.0",
+
+  "description": {
+    "short": {
+      "de": "Filtert eine Menge von Punkten auf die nicht-dominierten Lösungen — die Pareto-Front einer Multi-Ziel-Optimierung.",
+      "en": "Filters a set of points down to the non-dominated solutions — the Pareto frontier of a multi-objective optimisation."
+    },
+    "long": {
+      "de": "Bei konkurrierenden Zielen (z.B. Mittelwert maximieren UND Streuung minimieren) gibt es selten eine einzelne Lösung, die alle Ziele gleichzeitig optimiert. Die Pareto-Front ist die Menge aller Punkte, bei denen keine Verbesserung in einem Ziel ohne Verschlechterung in einem anderen möglich ist. Algorithmus: ein Punkt a dominiert b, wenn a in jedem Ziel ≤ b ist und in mindestens einem Ziel echt kleiner. Nicht-dominierte Punkte (jene, die von keinem anderen dominiert werden) bilden die Front. Die Funktion erwartet Minimierung — für Maximierungs-Ziele die Vorzeichen tauschen.",
+      "en": "When goals compete (e.g. maximise mean AND minimise variance), there is rarely a single solution that optimises every goal at once. The Pareto frontier is the set of points where no improvement in one goal is possible without degrading another. Algorithm: a point a dominates b if a is ≤ b in every objective and strictly smaller in at least one. Non-dominated points (those not dominated by any other) make up the frontier. The function expects minimisation — flip the sign for maximisation goals."
+    }
+  },
+
+  "documentation": {
+    "formulas": [
+      {
+        "label": "Dominanz",
+        "latex": "a \\succ b \\iff (\\forall i:\\ a_i \\le b_i)\\ \\land\\ (\\exists i:\\ a_i < b_i)",
+        "description": {
+          "de": "a dominiert b, wenn a in jeder Komponente kleiner-gleich und in mindestens einer echt kleiner ist",
+          "en": "a dominates b iff a is ≤ b in every component and strictly smaller in at least one"
+        }
+      },
+      {
+        "label": "Frontier",
+        "latex": "\\mathcal{P} = \\{ x \\in X : \\nexists y \\in X \\text{ mit } y \\succ x \\}",
+        "description": {
+          "de": "Pareto-Front: Punkte, die von keinem anderen dominiert werden",
+          "en": "Pareto frontier: points not dominated by any other"
+        }
+      }
+    ],
+    "assumptions": [
+      { "de": "Alle Ziele werden minimiert (für Maximierung Vorzeichen umdrehen)", "en": "All objectives are minimised (flip the sign for maximisation)" },
+      { "de": "Punkte haben dieselbe Dimension (Anzahl Ziele)", "en": "All points share the same dimension (number of objectives)" }
+    ],
+    "limitations": [
+      { "de": "Naïver O(n²)-Algorithmus — bei n > 10 000 Punkten effizientere Verfahren erwägen", "en": "Naïve O(n²) algorithm — consider more efficient methods for n > 10 000 points" },
+      { "de": "Bei mehr als 3 Zielen wird die Pareto-Front in der Praxis schnell groß und schwer interpretierbar", "en": "Beyond 3 objectives the Pareto front quickly grows large and hard to interpret in practice" }
+    ],
+    "references": [
+      { "source": "Pareto, V. (1906). Manuale di Economia Politica" },
+      { "source": "Deb, K. (2001). Multi-Objective Optimization Using Evolutionary Algorithms, Wiley", "chapter": "Chapter 2.4" },
+      { "source": "Myers, R.H., Montgomery, D.C., Anderson-Cook, C.M. (2016). Response Surface Methodology, 4th Ed., Wiley", "chapter": "Chapter 6.5 (Multi-Response Optimization)" }
+    ]
+  },
+
+  "source": {
+    "function_name": "paretoFrontier",
+    "file_path": "js/engines/response-optimization-engine.js",
+    "signature": {
+      "parameters": [
+        {
+          "name": "points",
+          "type": "number[][]",
+          "required": true,
+          "description": { "de": "Liste von Punkten, jeder Punkt ist ein Vektor von Zielwerten (Minimierung)", "en": "List of points; each point is a vector of objective values (minimisation)" }
+        }
+      ],
+      "returns": {
+        "type": "number[]",
+        "description": { "de": "Indizes der nicht-dominierten Punkte (in Eingabe-Reihenfolge)", "en": "Indices of non-dominated points (in input order)" }
+      }
+    },
+    "code_snippet": null
+  },
+
+  "try_it": {
+    "input_schema": {
+      "fields": [
+        {
+          "name": "points",
+          "label": { "de": "Punkte (eine Zeile pro Punkt, Komponenten leerzeichengetrennt)", "en": "Points (one row per point, components space-separated)" },
+          "type": "textarea",
+          "placeholder": {
+            "de": "z.B. (5 Punkte mit je 2 Zielen):\n1 4\n2 3\n3 2\n4 1\n3 5",
+            "en": "e.g. (5 points with 2 objectives each):\n1 4\n2 3\n3 2\n4 1\n3 5"
+          },
+          "parse_as": "string",
+          "required": true
+        }
+      ]
+    },
+    "output_schema": {
+      "display_fields": ["nonDominatedIndices"],
+      "primary_field": "nonDominatedIndices",
+      "format": {
+        "nonDominatedIndices": { "label": { "de": "Indizes der Front", "en": "Frontier indices" } }
+      }
+    }
+  },
+
+  "changelog": [
+    {
+      "version": "1.0.0",
+      "date": "2026-05-08",
+      "type": "initial",
+      "description": {
+        "de": "Erstimplementierung: naïver O(n²)-Nicht-Dominanz-Filter für 2D und höher",
+        "en": "Initial implementation: naïve O(n²) non-dominance filter for 2D and higher"
+      },
+      "breaking": false
+    }
+  ]
+}

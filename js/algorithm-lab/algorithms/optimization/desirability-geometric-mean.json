@@ -1,0 +1,124 @@
+{
+  "id": "desirability-geometric-mean",
+  "name": {
+    "de": "Composite Desirability D (geometrisches Mittel)",
+    "en": "Composite Desirability D (Geometric Mean)"
+  },
+  "category": "optimization",
+  "subcategory": null,
+  "status": "validated",
+  "version": "1.0.0",
+
+  "description": {
+    "short": {
+      "de": "Verschmilzt mehrere individuelle Wunschbarkeiten d_i zu einer Gesamtwunschbarkeit D ∈ [0, 1] über das gewichtete geometrische Mittel.",
+      "en": "Blends several individual desirabilities d_i into a single composite D ∈ [0, 1] via the weighted geometric mean."
+    },
+    "long": {
+      "de": "D = (∏ d_i^{w_i})^{1/Σw_i}. Schlüsseleigenschaft: Sobald irgendein d_i = 0 ist, kollabiert D auf 0 — keine einzelne Antwort darf außerhalb ihres akzeptablen Bereichs liegen, sonst ist die Lösung ungültig (hartes Veto). Gewichte w_i ≥ 0 verzerren das geometrische Mittel zugunsten wichtiger Antworten.",
+      "en": "D = (∏ d_i^{w_i})^{1/Σw_i}. Key property: the moment any d_i = 0, D collapses to 0 — no individual response is allowed to leave its acceptable range, otherwise the solution is invalid (hard veto). Weights w_i ≥ 0 bias the geometric mean toward higher-priority responses."
+    }
+  },
+
+  "documentation": {
+    "formulas": [
+      {
+        "label": "D",
+        "latex": "D = \\left( \\prod_{i=1}^{m} d_i^{w_i} \\right)^{1 / \\sum_{i} w_i}",
+        "description": {
+          "de": "Gewichtetes geometrisches Mittel — log-linear: Σ w_i · ln(d_i) / Σ w_i, dann exponentieren",
+          "en": "Weighted geometric mean — log-linearised: Σ w_i · ln(d_i) / Σ w_i, then exponentiated"
+        }
+      },
+      {
+        "label": "Veto",
+        "latex": "\\exists i:\\ d_i = 0 \\implies D = 0",
+        "description": {
+          "de": "Nullen werden nicht 'gemittelt' — ein einziges d_i = 0 macht D = 0",
+          "en": "Zeros are not 'averaged out' — a single d_i = 0 forces D = 0"
+        }
+      }
+    ],
+    "assumptions": [
+      { "de": "Jedes d_i ∈ [0, 1] (z.B. aus der Wunschfunktion einer einzelnen Antwort)", "en": "Each d_i ∈ [0, 1] (e.g. from an individual response's desirability function)" },
+      { "de": "Gewichte w_i ≥ 0; mindestens ein w_i > 0", "en": "Weights w_i ≥ 0; at least one w_i > 0" }
+    ],
+    "limitations": [
+      { "de": "Hartes Veto kann unbeabsichtigt streng sein, wenn d_i nahe 0 sind aber nicht exakt 0", "en": "The hard veto can be unintentionally strict when d_i values are near zero but not exactly zero" },
+      { "de": "Das geometrische Mittel ist symmetrisch in den d_i (jenseits der Gewichtung) — bevorzugt ausgewogene Lösungen gegenüber extremen", "en": "The geometric mean is symmetric in the d_i (beyond weighting) — it prefers balanced solutions over extreme ones" }
+    ],
+    "references": [
+      { "source": "Derringer, G. & Suich, R. (1980). Simultaneous Optimization of Several Response Variables. Journal of Quality Technology 12(4): 214-219" },
+      { "source": "Harrington, E.C. (1965). The desirability function. Industrial Quality Control 21(10): 494-498" }
+    ]
+  },
+
+  "source": {
+    "function_name": "combinedDesirability",
+    "file_path": "js/engines/response-optimization-engine.js",
+    "signature": {
+      "parameters": [
+        {
+          "name": "individuals",
+          "type": "number[]",
+          "required": true,
+          "description": { "de": "Array der individuellen Wunschbarkeiten d_i ∈ [0, 1]", "en": "Array of individual desirabilities d_i ∈ [0, 1]" }
+        },
+        {
+          "name": "weights",
+          "type": "number[]",
+          "required": false,
+          "description": { "de": "Gewichte w_i (gleiche Länge wie individuals; Standard: alle = 1)", "en": "Weights w_i (same length as individuals; default: all = 1)" }
+        }
+      ],
+      "returns": {
+        "type": "number",
+        "description": { "de": "Composite Desirability D ∈ [0, 1]", "en": "Composite desirability D ∈ [0, 1]" }
+      }
+    },
+    "code_snippet": null
+  },
+
+  "try_it": {
+    "input_schema": {
+      "fields": [
+        {
+          "name": "individuals",
+          "label": { "de": "Individuelle Wunschbarkeiten d_i", "en": "Individual desirabilities d_i" },
+          "type": "textarea",
+          "placeholder": { "de": "Komma- oder leerzeichengetrennt, z.B.:\n0.8, 0.5, 0.9", "en": "Comma- or space-separated, e.g.:\n0.8, 0.5, 0.9" },
+          "parse_as": "number_array",
+          "required": true
+        },
+        {
+          "name": "weights",
+          "label": { "de": "Gewichte w_i (optional, gleich lang)", "en": "Weights w_i (optional, same length)" },
+          "type": "textarea",
+          "placeholder": { "de": "z.B.: 1, 2, 1", "en": "e.g.: 1, 2, 1" },
+          "parse_as": "number_array",
+          "required": false
+        }
+      ]
+    },
+    "output_schema": {
+      "display_fields": ["D"],
+      "primary_field": "D",
+      "format": {
+        "D": { "decimals": 6, "label": "D" }
+      }
+    }
+  },
+
+  "changelog": [
+    {
+      "version": "1.0.0",
+      "date": "2026-05-08",
+      "type": "initial",
+      "description": {
+        "de": "Erstimplementierung: gewichtetes geometrisches Mittel mit Zero-Veto",
+        "en": "Initial implementation: weighted geometric mean with zero-veto"
+      },
+      "breaking": false
+    }
+  ]
+}

@@ -1,0 +1,78 @@
+{
+  "id": "box-behnken-with-categorical",
+  "name": {
+    "de": "Box-Behnken mit kategorialen Faktoren (Cartesian × Continuous-BB)",
+    "en": "Box-Behnken with Categorical Factors (Cartesian × Continuous BB)"
+  },
+  "category": "doe",
+  "subcategory": null,
+  "status": "validated",
+  "version": "1.0.0",
+
+  "description": {
+    "short": {
+      "de": "Erweitert das Box-Behnken-Design auf gemischte Faktoren — kontinuierliche bekommen den klassischen 3-Level-RSM-Plan, kategoriale werden kartesisch dazugekreuzt.",
+      "en": "Extends the Box-Behnken design to mixed factors — continuous get the classical 3-level RSM plan, categorical are Cartesian-crossed alongside."
+    },
+    "long": {
+      "de": "Box-Behnken hat den Vorteil, dass keine Eckpunkte des Designwürfels eingebettet werden — alle Runs liegen auf den Mittelpunkten der Würfelkanten. Das ist nützlich, wenn extreme Faktor-Kombinationen physisch unmöglich oder unsicher sind. Mit kategorialen Faktoren würde das klassische Box-Behnken die Kategorie an einer ‚Mittelpunkt‘-Stelle (z.B. zwischen Stahl und Carbide) anlegen wollen, was sinnlos ist. Die Mixed-Variante schneidet das Problem analog zum CCD: Box-Behnken nur über die kontinuierlichen Faktoren, dann kartesisch mit kategorialen kreuzen. Mindestens 3 kontinuierliche Faktoren erforderlich (Box-Behnken nicht für k < 3 definiert).",
+      "en": "Box-Behnken has the advantage that no corner points of the design cube are embedded — all runs sit on the midpoints of cube edges. This is useful when extreme factor combinations are physically impossible or unsafe. With categorical factors, the classical Box-Behnken would try to place a category at a ‘midpoint‘ position (e.g. between Steel and Carbide), which is meaningless. The mixed variant cuts the problem analogously to the CCD case: Box-Behnken over the continuous factors only, then Cartesian-cross with the categorical level combinations. Requires at least 3 continuous factors (Box-Behnken is undefined for k < 3)."
+    }
+  },
+
+  "documentation": {
+    "formulas": [
+      {
+        "label": "Run count",
+        "latex": "N = N_{\\text{BB}}(k_{\\text{cont}}) \\cdot \\prod_{j \\in \\text{cat}} |L_j|",
+        "description": {
+          "de": "Anzahl Runs = (Box-Behnken über kontinuierliche) × (Produkt aller kategorialen Stufenzahlen)",
+          "en": "Run count = (Box-Behnken over continuous) × (product of all categorical level counts)"
+        }
+      },
+      {
+        "label": "Continuous BB structure",
+        "latex": "\\text{BB}(k): k_{\\text{cont}} \\ge 3,\\ \\ \\text{Eckpunkte des Designs} = 0\\text{ (keine Würfel-Ecken)}",
+        "description": {
+          "de": "Box-Behnken nutzt nur die Kanten-Mittelpunkte des k-dimensionalen Würfels",
+          "en": "Box-Behnken uses only edge midpoints of the k-dimensional cube"
+        }
+      }
+    ],
+    "assumptions": [
+      { "de": "Mindestens 3 kontinuierliche Faktoren (Box-Behnken-Voraussetzung)", "en": "At least 3 continuous factors (Box-Behnken prerequisite)" },
+      { "de": "Kategoriale Faktoren haben endliche Stufenmengen", "en": "Categorical factors have finite level sets" }
+    ],
+    "limitations": [
+      { "de": "Box-Behnken nicht für k_cont = 2 verfügbar — bei zwei kontinuierlichen Faktoren CCD nutzen", "en": "Box-Behnken not available for k_cont = 2 — use CCD for two continuous factors" },
+      { "de": "Wie CCD: schätzt Kategorie-Hauptwirkungen und Kategorie × Kontinuierlich-Wechselwirkungen, keine Cat × Cat", "en": "Like CCD: estimates categorical main effects and categorical × continuous interactions, not Cat × Cat" }
+    ],
+    "references": [
+      { "source": "Box, G.E.P. & Behnken, D.W. (1960). Some new three level designs for the study of quantitative variables, Technometrics 2:455-475" },
+      { "source": "Myers, R.H., Montgomery, D.C., Anderson-Cook, C.M. (2016). Response Surface Methodology, 4th Ed., Wiley", "chapter": "Chapter 7.7" }
+    ],
+    "minitab_equivalent": "Stat > DOE > Response Surface > Create Response Surface Design (Box-Behnken with categorical option)"
+  },
+
+  "source": {
+    "function_name": "generateDesign",
+    "file_path": "js/engines/doe-planner-engine.js",
+    "signature": {
+      "parameters": [
+        { "name": "factors", "type": "Factor[]", "required": true, "description": { "de": "Faktor-Liste mit kind: 'continuous' | 'categorical'", "en": "Factor list with kind: 'continuous' | 'categorical'" } },
+        { "name": "opts",    "type": "object",   "required": true, "description": { "de": "{ designType: 'bb', bbCenterPoints, … }", "en": "{ designType: 'bb', bbCenterPoints, … }" } }
+      ],
+      "returns": {
+        "type": "DesignResult",
+        "description": { "de": "{ codedMatrix, actualMatrix, stdOrder, … }", "en": "{ codedMatrix, actualMatrix, stdOrder, … }" }
+      }
+    },
+    "code_snippet": null
+  },
+
+  "changelog": [
+    { "version": "1.0.0", "date": "2026-05-08", "type": "initial",
+      "description": { "de": "Erstimplementierung — kartesisches Crossen via crossContinuousWithCategorical für Phase 4", "en": "Initial implementation — Cartesian crossing via crossContinuousWithCategorical for V0.4 Phase 4" },
+      "breaking": false }
+  ]
+}

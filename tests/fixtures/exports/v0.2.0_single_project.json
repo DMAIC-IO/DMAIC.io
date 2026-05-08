@@ -1,0 +1,255 @@
+{
+  "appVersion": "0.2.0",
+  "exportedAt": "2026-03-15T14:00:00.000Z",
+  "version": "0.2.0",
+  "settings": {
+    "language": "de",
+    "theme": "light",
+    "chartTitleSize": 15,
+    "chartLabelSize": 12,
+    "chartTickSize": 11,
+    "chartColors": null,
+    "chartBgColor": null,
+    "chartShowLegend": true,
+    "showAlgoLabLinks": true,
+    "confidenceLevel": 95,
+    "power": 80
+  },
+  "projectMeta": {
+    "name": "Goldene Fixture v0.2 — Reduktion Nacharbeit Schweißnaht",
+    "created": "2026-02-01T08:00:00.000Z",
+    "modified": "2026-03-15T14:00:00.000Z",
+    "owner": "U. Becker",
+    "department": "Produktion"
+  },
+  "phases": {
+    "define": [
+      { "instanceId": "v2-charter",     "moduleId": "project-charter" },
+      { "instanceId": "v2-sipoc",       "moduleId": "sipoc" },
+      { "instanceId": "v2-stakeholders","moduleId": "stakeholder-analysis" },
+      { "instanceId": "v2-todo",        "moduleId": "todo" },
+      { "instanceId": "v2-raci",        "moduleId": "raci-matrix" },
+      { "instanceId": "v2-5why",        "moduleId": "five-why" }
+    ],
+    "measure": [
+      { "instanceId": "v2-worksheet",   "moduleId": "worksheet" },
+      { "instanceId": "v2-pmap",        "moduleId": "process-map" },
+      { "instanceId": "v2-msa1",        "moduleId": "msa-typ1" },
+      { "instanceId": "v2-cpk",         "moduleId": "process-capability" }
+    ],
+    "analyze": [
+      { "instanceId": "v2-ce",          "moduleId": "ce-matrix" },
+      { "instanceId": "v2-ishi",        "moduleId": "ishikawa" },
+      { "instanceId": "v2-fmea",        "moduleId": "fmea" },
+      { "instanceId": "v2-htest",       "moduleId": "hypothesis-test" },
+      { "instanceId": "v2-distfit",     "moduleId": "distribution-fit" }
+    ],
+    "improve": [
+      { "instanceId": "v2-doep",        "moduleId": "doe-planner" },
+      { "instanceId": "v2-reg",         "moduleId": "regression" }
+    ],
+    "control": [
+      { "instanceId": "v2-cc",          "moduleId": "control-chart" },
+      { "instanceId": "v2-ll",          "moduleId": "lessons-learned" }
+    ]
+  },
+  "phaseAchievement": {
+    "define":  100,
+    "measure": 100,
+    "analyze":  80,
+    "improve":  50,
+    "control":  10
+  },
+  "dashboard": {
+    "layout": null
+  },
+  "moduleStates": {
+    "v2-charter": {
+      "problemStatement": "Nacharbeitsquote bei Schweißnähten T-Profil 'B17' liegt seit Q4/2025 bei 6,8 % — Zielwert ≤ 2 %. Hauptkosten: Mehrarbeit + Lieferverzug.",
+      "goals": [
+        { "id": "g1", "text": "Nacharbeitsquote auf ≤ 2 % senken", "status": "open" },
+        { "id": "g2", "text": "Erstprüfungs-Bestehensquote auf ≥ 95 % heben", "status": "open" },
+        { "id": "g3", "text": "Cpk der Nahtbreite ≥ 1,33", "status": "in-progress" }
+      ],
+      "orgChart": [
+        { "id": "n1", "title": "Sponsor",      "desc": "Werksleitung",    "pid": null },
+        { "id": "n2", "title": "Champion",     "desc": "U. Becker",       "pid": "n1" },
+        { "id": "n3", "title": "Black Belt",   "desc": "F. Gerhardt",     "pid": "n2" },
+        { "id": "n4", "title": "Schweißmeister","desc": "R. Bauer",       "pid": "n3" }
+      ],
+      "orgStyle": { "bgColor": "#ffffff", "borderColor": "#94a3b8", "borderWidth": 1, "fontColor": "#1e293b", "fontSize": 12, "lineColor": "#64748b" }
+    },
+    "v2-sipoc": {
+      "columns": {
+        "suppliers": ["Stahlwerk Süd", "Schutzgaslieferant", "interne Vorrichtungsbau"],
+        "inputs":    ["Bleche T-Profil B17", "Schutzgas Argon-Mix", "Schweißprogramm v3.2"],
+        "process":   ["Vorbereitung", "Heften", "Schweißen", "Sicht- + Riss-Prüfung", "Nacharbeit (falls nötig)"],
+        "outputs":   ["Geprüftes T-Profil", "Prüfprotokoll", "Nacharbeits-Datensatz"],
+        "customers": ["Montage Linie 4", "Qualitätssicherung", "Endkunde Werk Bremen"]
+      }
+    },
+    "v2-stakeholders": {
+      "stakeholders": [
+        { "id": "s1", "name": "Werksleitung",     "power": 5, "interest": 4, "category": "manage-closely",  "notes": "Sponsor" },
+        { "id": "s2", "name": "QS-Leitung",       "power": 4, "interest": 5, "category": "manage-closely",  "notes": "Owner Prüfprozess" },
+        { "id": "s3", "name": "Schichtmeister",   "power": 3, "interest": 5, "category": "keep-informed",   "notes": "Operativ" },
+        { "id": "s4", "name": "Instandhaltung",   "power": 3, "interest": 3, "category": "keep-satisfied",  "notes": "Werkzeugwechsel" },
+        { "id": "s5", "name": "Betriebsrat",      "power": 4, "interest": 2, "category": "keep-satisfied",  "notes": "" }
+      ]
+    },
+    "v2-todo": {
+      "items": [
+        { "id": "t1", "text": "Daten KW6–10 aus MES extrahieren",    "due": "2026-02-20", "owner": "F. Gerhardt", "status": "done" },
+        { "id": "t2", "text": "MSA Typ 1 mit Kalibrierprobe durchführen","due": "2026-02-25", "owner": "QS",          "status": "done" },
+        { "id": "t3", "text": "Hypothesentest Maschine M1 vs. M2",    "due": "2026-03-08", "owner": "F. Gerhardt", "status": "in-progress" },
+        { "id": "t4", "text": "DOE-Plan Schutzgas-Mischverhältnis",    "due": "2026-03-20", "owner": "U. Becker",   "status": "open" }
+      ],
+      "filterStatus": "",
+      "filterOwner": "",
+      "sortCol": "due",
+      "sortAsc": true
+    },
+    "v2-raci": {
+      "activities": ["Datenerfassung", "MSA", "Hypothesentest", "DOE", "Pilot"],
+      "stakeholders": ["Sponsor", "Champion", "Black Belt", "Schweißmeister", "QS"],
+      "assignments": {
+        "0_0": "I", "0_1": "I", "0_2": "A", "0_3": "R", "0_4": "C",
+        "1_0": "I", "1_1": "I", "1_2": "A", "1_3": "C", "1_4": "R",
+        "2_0": "I", "2_1": "C", "2_2": "R", "2_3": "C", "2_4": "C",
+        "3_0": "I", "3_1": "A", "3_2": "R", "3_3": "C", "3_4": "C",
+        "4_0": "A", "4_1": "R", "4_2": "C", "4_3": "C", "4_4": "I"
+      }
+    },
+    "v2-5why": {
+      "problem": "6,8 % Nacharbeitsquote bei T-Profil B17",
+      "nodes": [
+        { "id": 1, "level": 0, "parent": 0, "text": "6,8 % Nacharbeit B17" },
+        { "id": 2, "level": 1, "parent": 1, "text": "Schweißnaht zu schmal" },
+        { "id": 3, "level": 2, "parent": 2, "text": "Schweißstrom zu niedrig" },
+        { "id": 4, "level": 3, "parent": 3, "text": "Stromregelung nicht kalibriert" },
+        { "id": 5, "level": 4, "parent": 4, "text": "Letzte Kalibrierung > 12 Monate" }
+      ]
+    },
+    "v2-worksheet": {
+      "sheets": [
+        {
+          "id": "vs-sh-1",
+          "name": "Nahtbreite",
+          "state": {
+            "columns": [
+              { "id": "vc-id",       "name": "ID",        "shortName": "C1", "type": "numeric", "unit": null, "values": [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24], "formulas": [null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null], "format": {} },
+              { "id": "vc-width",    "name": "Nahtbreite","shortName": "C2", "type": "numeric", "unit": "mm", "values": [3.42,3.51,3.38,3.55,3.48,3.62,3.41,3.50,3.33,3.59,3.44,3.52,3.36,3.47,3.61,3.40,3.49,3.58,3.43,3.54,3.37,3.46,3.60,3.50], "formulas": [null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null], "format": { "decimals": 2 } },
+              { "id": "vc-machine",  "name": "Maschine",  "shortName": "C3", "type": "text",    "unit": null, "values": ["M1","M1","M1","M1","M2","M2","M2","M2","M1","M1","M1","M1","M2","M2","M2","M2","M1","M1","M2","M2","M1","M1","M2","M2"], "formulas": [null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null], "format": {} }
+            ],
+            "rowCount": 24,
+            "colWidths": { "vc-id": 60, "vc-width": 110, "vc-machine": 90 },
+            "sortCol": null, "sortDir": null, "selection": null
+          }
+        }
+      ],
+      "activeSheetId": "vs-sh-1",
+      "sheetCounter": 1
+    },
+    "v2-pmap": {
+      "steps": [
+        { "id": "vp1", "seq": 1, "type": "start",    "text": "Bleche bereitstellen",  "owner": "Lager",     "valueType": "non-value", "substeps": [], "expanded": false, "loop": null },
+        { "id": "vp2", "seq": 2, "type": "process",  "text": "Heftpunkte setzen",    "owner": "Schweißer", "valueType": "value-add", "substeps": [], "expanded": false, "loop": null },
+        { "id": "vp3", "seq": 3, "type": "process",  "text": "Vollnaht schweißen",   "owner": "Schweißer", "valueType": "value-add", "substeps": [], "expanded": false, "loop": null },
+        { "id": "vp4", "seq": 4, "type": "decision", "text": "Sicht-Prüfung i.O.?",  "owner": "QS",        "valueType": "non-value", "substeps": [], "expanded": false, "loop": "vp3" },
+        { "id": "vp5", "seq": 5, "type": "end",      "text": "Freigabe",             "owner": "QS",        "valueType": "value-add", "substeps": [], "expanded": false, "loop": null }
+      ]
+    },
+    "v2-msa1": {
+      "params": { "repeats": 25, "tolerance": 0.6, "reference": 3.50, "kCg": 0.2, "kCgk": 0.1 },
+      "columnRef": { "instanceId": "v2-worksheet", "sheetId": "vs-sh-1", "columnId": "vc-width" },
+      "lastResult": { "n": 25, "mean": 3.498, "sd": 0.018, "Cg": 1.67, "Cgk": 1.61, "bias": -0.002, "biasPct": -0.057, "passed": true }
+    },
+    "v2-cpk": {
+      "params": { "lsl": 3.20, "usl": 3.80, "target": 3.50, "subgroupSize": 1 },
+      "columnRef": { "instanceId": "v2-worksheet", "sheetId": "vs-sh-1", "columnId": "vc-width" },
+      "lastResult": { "n": 24, "mean": 3.4858, "sd": 0.0858, "withinSd": 0.0791, "cp": 1.165, "cpk": 1.108, "pp": 1.073, "ppk": 1.020, "ppmAboveUSL": 590 }
+    },
+    "v2-ce": {
+      "inputs":  ["Schweißstrom", "Schutzgas-Mischung", "Vorschubgeschwindigkeit", "Werkzeugverschleiß", "Materialcharge"],
+      "outputs": ["Nahtbreite", "Nacharbeitsquote", "Festigkeit"],
+      "scores": {
+        "0_0": 9, "0_1": 9, "0_2": 7,
+        "1_0": 5, "1_1": 7, "1_2": 5,
+        "2_0": 7, "2_1": 5, "2_2": 3,
+        "3_0": 3, "3_1": 7, "3_2": 5,
+        "4_0": 5, "4_1": 5, "4_2": 7
+      },
+      "weights": [10, 9, 7]
+    },
+    "v2-ishi": {
+      "problem": "Schweißnaht zu schmal",
+      "experts": [
+        { "id": "x1", "name": "R. Bauer",    "time": "2026-02-28T10:00:00.000Z" },
+        { "id": "x2", "name": "F. Gerhardt", "time": "2026-02-28T10:00:00.000Z" }
+      ],
+      "catLabels": { "man": "Mensch", "machine": "Maschine", "method": "Methode", "material": "Material", "measurement": "Messung", "milieu": "Mitwelt" },
+      "rows": [
+        { "id": "r1", "cat": "machine", "text": "Stromregelung verschoben",         "votes": 5 },
+        { "id": "r2", "cat": "machine", "text": "Brennerverschleiß",                 "votes": 3 },
+        { "id": "r3", "cat": "method",  "text": "Vorschub manuell justiert",         "votes": 4 },
+        { "id": "r4", "cat": "material","text": "Charge mit höherer Streuung",       "votes": 3 },
+        { "id": "r5", "cat": "man",     "text": "Schichtwechsel ohne Übergabe",      "votes": 2 }
+      ],
+      "snapshots": [], "experiments": [], "facts": [], "images": []
+    },
+    "v2-fmea": {
+      "risks": [
+        { "id": "f1", "process": "Heften",      "failure": "Heftpunkt löst sich",   "causes": "Stromspitze",         "effects": "Versatz",       "detection": "Sicht",         "sev": 6, "occ": 4, "det": 5, "rpn": 120 },
+        { "id": "f2", "process": "Vollnaht",    "failure": "Naht zu schmal",        "causes": "Strom zu niedrig",    "effects": "Festigkeit < spec","detection": "Sicht/Riss",   "sev": 8, "occ": 6, "det": 5, "rpn": 240 },
+        { "id": "f3", "process": "Sicht-Prüfung","failure": "Fehlinterpretation",   "causes": "Beleuchtung schwach",  "effects": "Out the door",  "detection": "QS-Audit",     "sev": 9, "occ": 2, "det": 7, "rpn": 126 }
+      ],
+      "scales": null
+    },
+    "v2-htest": {
+      "category": "mean", "testType": "two-sample-t", "direction": "two-sided",
+      "alpha": 0.05, "powerGoal": 0.8, "targetValue": 0, "targetType": "null",
+      "colRef1": { "instanceId": "v2-worksheet", "sheetId": "vs-sh-1", "columnId": "vc-width" },
+      "colRef2": null
+    },
+    "v2-distfit": {
+      "columnRef": { "instanceId": "v2-worksheet", "sheetId": "vs-sh-1", "columnId": "vc-width" },
+      "dataType": "continuous"
+    },
+    "v2-doep": {
+      "version": 3, "doeName": "Schweißparameter B17", "designType": "full",
+      "factors": [
+        { "name": "Strom",   "levels": ["180A", "220A"], "encoding": [ { "value": "180A", "num": -1 }, { "value": "220A", "num": 1 } ] },
+        { "name": "Vorschub","levels": ["8mm/s", "12mm/s"], "encoding": [ { "value": "8mm/s", "num": -1 }, { "value": "12mm/s", "num": 1 } ] },
+        { "name": "Gas",     "levels": ["80/20", "90/10"], "encoding": [ { "value": "80/20", "num": -1 }, { "value": "90/10", "num": 1 } ] }
+      ],
+      "responses": [
+        { "name": "Nahtbreite", "unit": "mm", "goalsense": "target", "nreps": 2, "levels": [] }
+      ],
+      "options": { "centerPoints": 2, "blockCount": 1, "randomize": true, "seed": 13 },
+      "selectedRes": null, "selectedPBIdx": 0, "design": null, "worksheetRef": null,
+      "evaluation": null, "analysisResponseIdx": 0, "fid": "doe-b17-001",
+      "projectMode": false, "projectName": "", "projectPhases": [], "activePhaseIdx": 0
+    },
+    "v2-reg": {
+      "colRefs": [
+        { "instanceId": "v2-worksheet", "sheetId": "vs-sh-1", "columnId": "vc-id" },
+        { "instanceId": "v2-worksheet", "sheetId": "vs-sh-1", "columnId": "vc-width" }
+      ],
+      "yKey": "vc-width", "regType": "polynomial", "polyDegree": 1,
+      "confLevel": 95, "alpha": 0.05, "showCI": true,
+      "result": null, "perXResults": null, "activeXKey": "vc-id",
+      "activeTab": "summary", "excludedTerms": [], "coefSortByP": false
+    },
+    "v2-cc": {
+      "chartTypeId": "i-mr", "subgroupSize": 1,
+      "columnRef": { "instanceId": "v2-worksheet", "sheetId": "vs-sh-1", "columnId": "vc-width" },
+      "baselineCount": 24, "usl": 3.80, "lsl": 3.20,
+      "enabledRules": [1, 2, 3, 4]
+    },
+    "v2-ll": {
+      "lessons": [
+        { "id": "l1", "category": "Methodik", "text": "MSA muss vor Cpk laufen — wir haben die Streuung anfangs der Maschine zugeschrieben statt dem Messmittel.", "date": "2026-03-10", "owner": "F. Gerhardt", "impact": "high" }
+      ]
+    }
+  }
+}

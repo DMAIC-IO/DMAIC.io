@@ -1,0 +1,276 @@
+/**
+ * D.Mike — 5-Why Module Styles
+ * BEM-light naming: .five-why__*
+ */
+
+/* ── Toolbar ── */
+.five-why__toolbar {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  flex: 1;
+}
+
+.five-why__toolbar-spacer {
+  flex: 1;
+}
+
+/* ── Problem Statement ── */
+.five-why__problem {
+  background: var(--color-bg-secondary);
+  border: var(--border-width) solid var(--color-border-primary);
+  border-radius: var(--border-radius);
+  padding: var(--spacing-md);
+  margin-bottom: var(--spacing-lg);
+  position: relative;
+  overflow: hidden;
+}
+
+.five-why__problem::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--color-accent), transparent);
+}
+
+.five-why__problem-label {
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-accent);
+  margin-bottom: var(--spacing-xs);
+}
+
+.five-why__problem-input {
+  font-size: var(--font-size-md);
+  font-weight: 600;
+}
+
+.five-why__problem-input::placeholder {
+  font-weight: 400;
+}
+
+/* ── Tree ── */
+.five-why__tree {
+  min-height: 100px;
+}
+
+
+/* ── Node ── */
+.five-why__node {
+  margin-bottom: 3px;
+}
+
+/* ── Card (compact single-row layout: tag | textarea | actions) ── */
+.five-why__card {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-sm);
+  background: var(--color-bg-secondary);
+  border: var(--border-width) solid var(--color-border-primary);
+  border-radius: var(--border-radius);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  transition: border-color var(--transition-speed), box-shadow var(--transition-speed);
+}
+
+.five-why__card:hover {
+  border-color: var(--color-border-hover, var(--color-border-secondary));
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.08);
+}
+
+/* Root Cause card */
+.five-why__card--root-cause {
+  border-color: var(--color-five-why-5, #a855f7);
+  background: linear-gradient(
+    135deg,
+    rgba(168, 85, 247, 0.06),
+    rgba(236, 72, 153, 0.04)
+  );
+}
+
+.five-why__tag {
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  padding: 4px 8px;
+  border-radius: 4px;
+  white-space: nowrap;
+  flex-shrink: 0;
+  margin-top: 3px;
+  line-height: 1;
+}
+
+.five-why__tag[data-level="1"] {
+  background: rgba(245, 158, 11, 0.15);
+  color: var(--color-five-why-1, #f59e0b);
+  border: 1px solid rgba(245, 158, 11, 0.25);
+}
+.five-why__tag[data-level="2"] {
+  background: rgba(249, 115, 22, 0.15);
+  color: var(--color-five-why-2, #f97316);
+  border: 1px solid rgba(249, 115, 22, 0.25);
+}
+.five-why__tag[data-level="3"] {
+  background: rgba(239, 68, 68, 0.15);
+  color: var(--color-five-why-3, #ef4444);
+  border: 1px solid rgba(239, 68, 68, 0.25);
+}
+.five-why__tag[data-level="4"] {
+  background: rgba(236, 72, 153, 0.15);
+  color: var(--color-five-why-4, #ec4899);
+  border: 1px solid rgba(236, 72, 153, 0.25);
+}
+.five-why__tag[data-level="5"] {
+  background: rgba(168, 85, 247, 0.15);
+  color: var(--color-five-why-5, #a855f7);
+  border: 1px solid rgba(168, 85, 247, 0.25);
+}
+
+/* ── Card Actions ── */
+.five-why__card-actions {
+  display: flex;
+  gap: 2px;
+  flex-shrink: 0;
+  opacity: 0;
+  transition: opacity var(--transition-speed);
+  margin-top: 1px;
+}
+
+.five-why__card:hover .five-why__card-actions {
+  opacity: 1;
+}
+
+/* Card actions use global .btn .btn--icon-sm */
+.five-why__icon-btn {
+  font-size: 12px;
+}
+
+.five-why__icon-btn--add:hover {
+  color: var(--color-success);
+}
+
+.five-why__icon-btn--delete:hover {
+  color: var(--color-error);
+}
+
+/* ── Answer Textarea (inline, grows with card) ── */
+.five-why__answer {
+  flex: 1;
+  min-height: 28px;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid transparent;
+  padding: 4px 4px;
+  font-family: var(--font-family);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-primary);
+  outline: none;
+  resize: none;
+  overflow: hidden;
+  transition: border-color var(--transition-speed);
+  line-height: 1.4;
+}
+
+.five-why__answer:focus {
+  border-bottom-color: var(--color-accent);
+}
+
+.five-why__answer::placeholder {
+  color: var(--color-text-tertiary);
+  font-size: var(--font-size-xs);
+}
+
+/* ── Children Container ── */
+.five-why__children {
+  margin-left: 20px;
+  padding-left: var(--spacing-sm);
+  border-left: 2px solid var(--color-border-primary);
+  margin-top: 2px;
+}
+
+.five-why__children[data-level="1"] { border-left-color: rgba(245, 158, 11, 0.3); }
+.five-why__children[data-level="2"] { border-left-color: rgba(249, 115, 22, 0.3); }
+.five-why__children[data-level="3"] { border-left-color: rgba(239, 68, 68, 0.3); }
+.five-why__children[data-level="4"] { border-left-color: rgba(236, 72, 153, 0.3); }
+.five-why__children[data-level="5"] { border-left-color: rgba(168, 85, 247, 0.3); }
+
+/* ── Add Buttons ── */
+.five-why__add-child-btn {
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-xs);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--border-radius);
+  border: 1px dashed var(--color-border-primary);
+  background: transparent;
+  color: var(--color-text-tertiary);
+  cursor: pointer;
+  transition: all var(--transition-speed);
+  margin-top: var(--spacing-xs);
+  margin-bottom: var(--spacing-xs);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+.five-why__add-child-btn:hover {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+  background: rgba(var(--color-accent-rgb, 59, 130, 246), 0.06);
+}
+
+.five-why__add-root-btn {
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-radius: var(--border-radius);
+  border: var(--border-width) solid var(--color-accent);
+  background: var(--color-accent);
+  color: var(--color-bg-primary);
+  cursor: pointer;
+  transition: all var(--transition-speed);
+  margin-top: var(--spacing-md);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+.five-why__add-root-btn:hover {
+  box-shadow: 0 0 16px rgba(var(--color-accent-rgb, 59, 130, 246), 0.25);
+}
+
+/* ── Stats Bar ── */
+.five-why__stats {
+  display: flex;
+  gap: var(--spacing-lg);
+  padding: var(--spacing-sm) 0;
+  margin-top: var(--spacing-md);
+  border-top: var(--border-width) solid var(--color-border-primary);
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+}
+
+.five-why__stat {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+.five-why__stat-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.five-why__stat-dot--nodes   { background: var(--color-accent); }
+.five-why__stat-dot--depth   { background: var(--color-five-why-3, #ef4444); }
+.five-why__stat-dot--branches { background: var(--color-five-why-5, #a855f7); }
+.five-why__stat-dot--answered { background: var(--color-success); }

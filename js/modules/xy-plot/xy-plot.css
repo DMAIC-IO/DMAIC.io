@@ -1,0 +1,46 @@
+/* ============================================================
+   XY-Plot Module Styles (xy-plot.css)
+   BEM: .xyplot__ prefix
+   ============================================================ */
+
+/* Layout provided by .dmike-split (css/modules.css) */
+.xyplot .dmike-split__input { width: 280px; }
+
+/* Section labels: use global .dmike-split__output-section (css/modules.css) */
+
+/* Fields use global .field / .field-group (components.css) */
+/* Column selects: use global .ds-picker (dataset-picker.css) */
+
+.xyplot__error {
+  display: none;
+  font-size: var(--font-size-sm);
+  color: var(--color-error, #ef4444);
+  background: rgba(239, 68, 68, 0.08);
+  border: var(--border-width) solid rgba(239, 68, 68, 0.2);
+  border-radius: var(--border-radius);
+  padding: var(--spacing-sm);
+}
+
+/* Placeholder */
+.xyplot__placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  min-height: 300px;
+  color: var(--color-text-tertiary);
+  gap: var(--spacing-md);
+}
+
+.xyplot__placeholder p {
+  max-width: 300px;
+  text-align: center;
+  font-size: var(--font-size-sm);
+}
+
+/* Plot container — fixed height so the chart framework gets a definite size */
+.xyplot__plot-wrap {
+  width: 100%;
+  height: 450px;
+}

@@ -1,0 +1,52 @@
+/* ============================================================
+   Pie Chart Module Styles (pie-chart.css)
+   BEM: .pie-chart__ prefix
+   ============================================================ */
+
+/* Layout provided by .dmike-split (css/modules.css) */
+.pie-chart .dmike-split__input { width: 280px; }
+
+.pie-chart__error {
+  display: none;
+  font-size: var(--font-size-sm);
+  color: var(--color-error, #ef4444);
+  background: rgba(239, 68, 68, 0.08);
+  border: var(--border-width) solid rgba(239, 68, 68, 0.2);
+  border-radius: var(--border-radius);
+  padding: var(--spacing-sm);
+}
+
+/* Chart area */
+.pie-chart__chart-area {
+  display: flex;
+  flex-direction: column;
+}
+
+.pie-chart__chart-wrap {
+  height: 480px;
+  overflow: hidden;
+}
+
+/* Statistics table */
+.pie-chart__stats-panel {
+  overflow-x: auto;
+  margin-top: var(--spacing-md);
+}
+
+.pie-chart__stats-table {
+  font-family: var(--font-family-mono);
+}
+
+table.pie-chart__stats-table th:not(:first-child),
+table.pie-chart__stats-table td:not(:first-child) {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.pie-chart__stats-color {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}

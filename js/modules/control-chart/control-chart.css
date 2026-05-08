@@ -1,0 +1,183 @@
+/* ============================================================
+   Control Chart Module Styles (control-chart.css)
+   BEM: .control-chart__ prefix
+   ============================================================ */
+
+/* Layout provided by .dmike-split (css/modules.css) */
+.control-chart .dmike-split__input { width: 300px; }
+
+/* Fields use global .field / .field-group (components.css) */
+
+.control-chart__hint {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+  margin-top: 2px;
+}
+
+.control-chart__spec-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--spacing-sm);
+}
+
+/* ── Nelson Rules ── */
+
+.control-chart__collapsible {
+  cursor: pointer;
+  user-select: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.control-chart__chevron {
+  font-size: 10px;
+  transition: transform 0.2s;
+  color: var(--color-text-tertiary);
+}
+
+.control-chart__collapsible--collapsed .control-chart__chevron {
+  transform: rotate(-90deg);
+}
+
+.control-chart__nelson-panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  margin-bottom: var(--spacing-sm);
+}
+
+.control-chart__nelson-panel--collapsed {
+  display: none;
+}
+
+.control-chart__nelson-rule {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-xs);
+  cursor: pointer;
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  text-transform: none;
+  letter-spacing: normal;
+}
+
+.control-chart__nelson-rule input[type="checkbox"] {
+  margin-top: 2px;
+  accent-color: var(--color-accent);
+}
+
+.control-chart__nelson-rule strong {
+  color: var(--color-text-primary);
+  font-weight: var(--font-weight-medium);
+}
+
+.control-chart__nelson-desc {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+}
+
+
+
+/* ── Chart Sections ── */
+
+.control-chart__chart-section {
+  background: var(--color-bg-secondary);
+  border: var(--border-width) solid var(--color-border-secondary);
+  border-radius: var(--border-radius);
+  overflow: hidden;
+  margin-bottom: var(--spacing-md);
+}
+
+.control-chart__chart-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-bottom: var(--border-width) solid var(--color-border-secondary);
+}
+
+.control-chart__chart-title {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+}
+
+.control-chart__badge {
+  font-size: var(--font-size-xs);
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-weight: var(--font-weight-medium);
+}
+
+.control-chart__badge--stable {
+  background: rgba(34, 197, 94, 0.12);
+  color: var(--color-success);
+}
+
+.control-chart__badge--unstable {
+  background: rgba(239, 68, 68, 0.12);
+  color: var(--color-error);
+}
+
+.control-chart__plot-wrap {
+  height: 420px;
+  overflow: hidden;
+}
+
+/* ── Violations Table ── */
+
+.control-chart__violations-panel {
+  background: var(--color-bg-secondary);
+  border: var(--border-width) solid var(--color-border-secondary);
+  border-radius: var(--border-radius);
+  margin-bottom: var(--spacing-md);
+}
+
+.control-chart__violations-header {
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-bottom: var(--border-width) solid var(--color-border-secondary);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-text-secondary);
+}
+
+.control-chart__violations-list {
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+.control-chart__violation-row {
+  display: grid;
+  grid-template-columns: 50px 80px 1fr;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-xs) var(--spacing-md);
+  border-bottom: var(--border-width) solid var(--color-border-secondary);
+  font-size: var(--font-size-xs);
+  align-items: center;
+}
+
+.control-chart__violation-row:last-child {
+  border-bottom: none;
+}
+
+.control-chart__v-idx {
+  color: var(--color-text-tertiary);
+}
+
+.control-chart__v-rule {
+  font-weight: var(--font-weight-medium);
+  color: var(--color-error);
+}
+
+.control-chart__v-desc {
+  color: var(--color-text-secondary);
+}
+
+.control-chart__no-violations {
+  padding: var(--spacing-lg) var(--spacing-md);
+  text-align: center;
+  color: var(--color-text-tertiary);
+  font-size: var(--font-size-sm);
+}

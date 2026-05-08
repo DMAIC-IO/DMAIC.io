@@ -1,0 +1,78 @@
+{
+  "algorithm_id": "hampel-identifier",
+  "generated_with": {
+    "engine": "js/engines/outlier-test-engine.js"
+  },
+  "generated_at": "2026-05-06T00:00:00Z",
+  "generator_version": "1.0.0",
+  "tolerances": {
+    "default": { "relative": 1e-12, "absolute": 1e-14 }
+  },
+  "test_cases": [
+    {
+      "id": "hampel_single_outlier",
+      "tier": "standard",
+      "description": "Sample with a single very large value (100). MAD = 2.5; scaled MAD ≈ 3.7065; threshold k=3 → 11.1195.",
+      "reference": "Hampel (1974), JASA 69(346), 383–393",
+      "inputs": {
+        "data": [1, 2, 3, 4, 5, 6, 7, 8, 9, 100],
+        "k": 3
+      },
+      "expected": {
+        "n": 10,
+        "median": 5.5,
+        "mad": 2.5,
+        "madScaled": 3.7065,
+        "threshold": 11.1195
+      }
+    },
+    {
+      "id": "hampel_clean_uniform",
+      "tier": "standard",
+      "description": "Symmetric integer sequence — no values exceed the threshold",
+      "reference": "Synthetic",
+      "inputs": {
+        "data": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+        "k": 3
+      },
+      "expected": {
+        "n": 10,
+        "median": 5.5,
+        "mad": 2.5,
+        "madScaled": 3.7065,
+        "threshold": 11.1195
+      }
+    },
+    {
+      "id": "hampel_degenerate_mad",
+      "tier": "edge",
+      "description": "More than half the values are identical → MAD = 0; method reports `degenerate: true`",
+      "reference": "Synthetic",
+      "inputs": {
+        "data": [5, 5, 5, 5, 5, 5, 7, 9, 100],
+        "k": 3
+      },
+      "expected": {
+        "n": 9,
+        "median": 5,
+        "mad": 0,
+        "madScaled": 0,
+        "threshold": 0,
+        "degenerate": true
+      }
+    },
+    {
+      "id": "hampel_too_few",
+      "tier": "edge",
+      "description": "Sample size below 3 — method not applicable",
+      "inputs": {
+        "data": [1, 2],
+        "k": 3
+      },
+      "expected_error": {
+        "type": "Error",
+        "message_contains": "min3"
+      }
+    }
+  ]
+}

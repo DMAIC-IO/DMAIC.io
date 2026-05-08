@@ -1,0 +1,79 @@
+{
+  "id": "d-optimal-mixed-level",
+  "name": {
+    "de": "D-optimaler Plan mit gemischten Stufenzahlen",
+    "en": "D-Optimal Design with Mixed Level Counts"
+  },
+  "category": "doe",
+  "subcategory": null,
+  "status": "validated",
+  "version": "1.0.0",
+
+  "description": {
+    "short": {
+      "de": "D-optimal-Suche, die kategoriale Faktoren auf ihre diskreten Stufen beschränkt — kontinuierliche bekommen weiterhin das 5-Level-Gitter für quadratische Modelle.",
+      "en": "D-optimal search that constrains categorical factors to their discrete levels — continuous factors keep the 5-level grid for quadratic models."
+    },
+    "long": {
+      "de": "Vor Phase 4 nutzte die Coordinate-Exchange-Suche (für quadratische Modelle) ein einheitliches 5-Level-Gitter [-1, -0.5, 0, 0.5, 1] für ALLE Faktoren. Bei kategorialen Faktoren erzeugte das fraktionale Werte (-0.5, 0.5), die keiner echten Stufe entsprechen — mathematisch sinnlos. Der Fix: pro Faktor wird die Kandidaten-Menge nach Faktor-Typ gewählt — kontinuierliche bekommen weiterhin das 5-Level-Gitter, kategoriale werden auf ihre evenly-spaced diskreten Codings (-1, …, +1 entsprechend ihrer Stufenzahl) beschränkt. Der Linear-Pfad via Point Exchange war schon vorher korrekt (`fullFactorialGeneral` als Kandidaten-Quelle).",
+      "en": "Before Phase 4, the coordinate-exchange search (for quadratic models) used a uniform 5-level grid [-1, -0.5, 0, 0.5, 1] for ALL factors. For categorical factors that produced fractional values (-0.5, 0.5) which correspond to no real level — mathematically meaningless. The fix: per-factor candidate sets chosen by factor kind — continuous factors keep the 5-level grid, categorical factors are restricted to their evenly-spaced discrete codings (-1, …, +1 according to their level count). The linear path via point exchange was already correct (`fullFactorialGeneral` as the candidate source)."
+    }
+  },
+
+  "documentation": {
+    "formulas": [
+      {
+        "label": "D-criterion",
+        "latex": "D = \\det(X'X)",
+        "description": {
+          "de": "Determinante der Informationsmatrix — wird maximiert, um die Genauigkeit der Koeffizienten zu maximieren",
+          "en": "Determinant of the information matrix — maximised to maximise coefficient precision"
+        }
+      },
+      {
+        "label": "Per-factor candidate set",
+        "latex": "L_j = \\begin{cases} \\{-1, -\\tfrac{1}{2}, 0, \\tfrac{1}{2}, 1\\} & j \\text{ continuous, quadratic} \\\\ \\{-1 + \\tfrac{2k}{n_j-1}\\ :\\ k = 0, \\dots, n_j-1\\} & j \\text{ categorical} \\end{cases}",
+        "description": {
+          "de": "Pro Faktor j wird je nach Typ entweder das 5-Level-Gitter oder die diskreten Stufen-Codings gewählt",
+          "en": "Per factor j either the 5-level grid or the discrete level codings, depending on the kind"
+        }
+      }
+    ],
+    "assumptions": [
+      { "de": "Modell ist linear (point exchange) oder quadratisch (coordinate exchange)", "en": "Model is linear (point exchange) or quadratic (coordinate exchange)" },
+      { "de": "Anzahl Runs ≥ Anzahl Modell-Parameter", "en": "Run count ≥ number of model parameters" }
+    ],
+    "limitations": [
+      { "de": "D-optimale Lösung lokal — Multi-Start (Default 10) reduziert das Risiko, in einem lokalen Optimum stecken zu bleiben", "en": "D-optimal solution is local — multi-start (default 10) mitigates the risk of getting stuck in a local optimum" },
+      { "de": "Coordinate exchange ist O(maxIter · nRuns · k · |L|) — bei sehr großen Designs Compute-intensiv", "en": "Coordinate exchange is O(maxIter · nRuns · k · |L|) — compute-intensive for very large designs" }
+    ],
+    "references": [
+      { "source": "Atkinson, A.C., Donev, A.N. & Tobias, R.D. (2007). Optimum Experimental Designs, with SAS, Oxford University Press" },
+      { "source": "Myers, R.H., Montgomery, D.C., Anderson-Cook, C.M. (2016). Response Surface Methodology, 4th Ed., Wiley", "chapter": "Chapter 8 (Optimum Designs)" }
+    ],
+    "minitab_equivalent": "Stat > DOE > Response Surface > Create Response Surface Design (D-Optimal with multi-level factors)"
+  },
+
+  "source": {
+    "function_name": "dOptimalDesign",
+    "file_path": "js/engines/doe-planner-engine.js",
+    "signature": {
+      "parameters": [
+        { "name": "k",                "type": "number",   "required": true,  "description": { "de": "Anzahl Faktoren", "en": "Number of factors" } },
+        { "name": "nRuns",            "type": "number",   "required": true,  "description": { "de": "Gewünschte Anzahl Runs", "en": "Desired number of runs" } },
+        { "name": "opts",             "type": "object",   "required": false, "description": { "de": "{ quadratic, levelCounts, categoricalFlags, seed, nStarts, maxIter }", "en": "{ quadratic, levelCounts, categoricalFlags, seed, nStarts, maxIter }" } }
+      ],
+      "returns": {
+        "type": "number[][]",
+        "description": { "de": "n × k coded design matrix", "en": "n × k coded design matrix" }
+      }
+    },
+    "code_snippet": null
+  },
+
+  "changelog": [
+    { "version": "1.0.0", "date": "2026-05-08", "type": "initial",
+      "description": { "de": "Phase-4-Fix: Per-Faktor Kandidaten-Mengen via categoricalFlags + levelsPerFactor in coordinateExchange", "en": "V0.4 Phase 4 fix: per-factor candidate sets via categoricalFlags + levelsPerFactor in coordinateExchange" },
+      "breaking": false }
+  ]
+}

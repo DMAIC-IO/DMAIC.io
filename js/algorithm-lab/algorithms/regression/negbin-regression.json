@@ -1,0 +1,223 @@
+{
+  "id": "negbin-regression",
+  "name": {
+    "de": "Negative Binomialregression",
+    "en": "Negative Binomial Regression"
+  },
+  "category": "regression",
+  "subcategory": null,
+  "status": "validated",
+  "version": "1.0.0",
+
+  "description": {
+    "short": {
+      "de": "Regressionsmodell für überdispergierte Zähldaten mit Log-Link und negativer Binomialverteilung.",
+      "en": "Regression model for overdispersed count data using a log link and negative binomial distribution."
+    },
+    "long": {
+      "de": "Die negative Binomialregression erweitert die Poisson-Regression um einen Dispersionsparameter θ, der Überdispersion (Var(Y) > E(Y)) modelliert. Die Varianzfunktion V(Y) = μ + μ²/θ enthält einen quadratischen Term, der die zusätzliche Streuung gegenüber dem Poisson-Modell erfasst. Die Koeffizienten β werden mittels Maximum-Likelihood (IRLS) geschätzt, θ wird simultan über Profile-Likelihood optimiert. Die Exponentialwerte exp(βⱼ) sind als Rate Ratios interpretierbar: Ein RR von 1,5 bedeutet, dass eine Einheitenerhöhung im Prädiktor die erwartete Rate um 50 % steigert.",
+      "en": "Negative binomial regression extends Poisson regression by adding a dispersion parameter θ that models overdispersion (Var(Y) > E(Y)). The variance function V(Y) = μ + μ²/θ includes a quadratic term capturing extra-Poisson variation. Coefficients β are estimated via maximum likelihood (IRLS), while θ is simultaneously optimized through profile likelihood. The exponentiated coefficients exp(βⱼ) are interpretable as rate ratios: an RR of 1.5 means a one-unit increase in the predictor raises the expected rate by 50%."
+    }
+  },
+
+  "documentation": {
+    "formulas": [
+      {
+        "label": "Link",
+        "latex": "\\log(\\mu) = \\mathbf{X}' \\boldsymbol{\\beta}",
+        "description": {
+          "de": "Log-Link-Funktion: Der natürliche Logarithmus des Erwartungswertes ist eine Linearkombination der Prädiktoren",
+          "en": "Log link function: the natural logarithm of the expected value is a linear combination of predictors"
+        }
+      },
+      {
+        "label": "Varianz",
+        "latex": "V(Y) = \\mu + \\frac{\\mu^2}{\\theta}",
+        "description": {
+          "de": "Quadratische Varianzfunktion: Die Varianz wächst schneller als der Erwartungswert. Für θ → ∞ konvergiert sie zum Poisson-Fall V(Y) = μ",
+          "en": "Quadratic variance function: variance grows faster than the mean. As θ → ∞ it converges to the Poisson case V(Y) = μ"
+        }
+      },
+      {
+        "label": "PMF",
+        "latex": "P(Y = y) = \\frac{\\Gamma(y + \\theta)}{\\Gamma(\\theta)\\, y!} \\left(\\frac{\\theta}{\\theta + \\mu}\\right)^{\\!\\theta} \\left(\\frac{\\mu}{\\theta + \\mu}\\right)^{\\!y}",
+        "description": {
+          "de": "Wahrscheinlichkeitsfunktion der negativen Binomialverteilung (NB2-Parametrisierung mit Mittelwert μ und Dispersionsparameter θ)",
+          "en": "Probability mass function of the negative binomial distribution (NB2 parameterization with mean μ and dispersion parameter θ)"
+        }
+      },
+      {
+        "label": "Log-Likelihood",
+        "latex": "\\ell = \\sum_{i=1}^{n} \\left[ \\log\\Gamma(y_i + \\theta) - \\log\\Gamma(\\theta) - \\log(y_i!) + \\theta\\log\\!\\left(\\frac{\\theta}{\\theta + \\mu_i}\\right) + y_i \\log\\!\\left(\\frac{\\mu_i}{\\theta + \\mu_i}\\right) \\right]",
+        "description": {
+          "de": "Log-Likelihood-Funktion der negativen Binomialverteilung, die gemeinsam über β und θ maximiert wird",
+          "en": "Log-likelihood function of the negative binomial distribution, jointly maximized over β and θ"
+        }
+      },
+      {
+        "label": "IRLS-Gewichte",
+        "latex": "w_i = \\frac{\\mu_i}{1 + \\mu_i / \\theta}",
+        "description": {
+          "de": "Gewichte für Iteratively Reweighted Least Squares: Kombination aus erwarteter Zählrate und Dispersionskorrektur",
+          "en": "Weights for Iteratively Reweighted Least Squares: combination of expected count rate and dispersion correction"
+        }
+      },
+      {
+        "label": "θ-Schätzung",
+        "latex": "S(\\theta) = \\sum_{i=1}^{n} \\left[ \\psi(y_i + \\theta) - \\psi(\\theta) + \\log\\!\\left(\\frac{\\theta}{\\theta + \\mu_i}\\right) + \\frac{y_i - \\mu_i}{\\theta + \\mu_i} \\right] = 0",
+        "description": {
+          "de": "Score-Funktion für θ: Lösung mittels Profile-Likelihood unter Verwendung der Digamma-Funktion ψ",
+          "en": "Score function for θ: solved via profile likelihood using the digamma function ψ"
+        }
+      },
+      {
+        "label": "Rate Ratio",
+        "latex": "RR_j = \\exp(\\hat{\\beta}_j)",
+        "description": {
+          "de": "Rate Ratio: Der Faktor, um den sich die erwartete Rate bei einer Einheitenerhöhung des j-ten Prädiktors ändert",
+          "en": "Rate ratio: the factor by which the expected rate changes for a one-unit increase in the j-th predictor"
+        }
+      },
+      {
+        "label": "Dispersion",
+        "latex": "\\phi = 1",
+        "description": {
+          "de": "Der Skalenparameter φ ist auf 1 fixiert — die gesamte Überdispersion wird durch θ erfasst, kein zusätzliches Scaling",
+          "en": "The scale parameter φ is fixed at 1 — all overdispersion is captured by θ, no additional scaling"
+        }
+      }
+    ],
+    "assumptions": [
+      { "de": "Zielvariable ist Zähldaten (nicht-negative Ganzzahlen)", "en": "Response is count data (non-negative integers)" },
+      { "de": "Überdispersion vorhanden: Var(Y) > E(Y)", "en": "Overdispersion present: Var(Y) > E(Y)" },
+      { "de": "Unabhängigkeit der Beobachtungen", "en": "Independence of observations" },
+      { "de": "Log-linearer Zusammenhang zwischen log(μ) und den Prädiktoren", "en": "Log-linear relationship between log(μ) and predictors" },
+      { "de": "Keine perfekte Multikollinearität", "en": "No perfect multicollinearity" }
+    ],
+    "limitations": [
+      { "de": "Die θ-Schätzung über Profile-Likelihood erhöht den Rechenaufwand (äußere Optimierungsschleife)", "en": "θ estimation via profile likelihood adds computational cost (outer optimization loop)" },
+      { "de": "Bei kleinen Stichproben kann die θ-Schätzung instabil sein", "en": "Small samples may give unstable θ estimates" },
+      { "de": "Nicht geeignet für zero-inflated Daten — hier sollte ein ZINB-Modell in Betracht gezogen werden", "en": "Not appropriate for zero-inflated data — consider a ZINB model instead" },
+      { "de": "Konvergenz kann langsamer sein als bei Poisson-Regression, da β und θ gemeinsam geschätzt werden", "en": "Convergence may be slower than Poisson due to joint β/θ estimation" }
+    ],
+    "references": [
+      { "source": "Hilbe, J.M., Negative Binomial Regression, 2nd Ed., Cambridge University Press" },
+      { "source": "Cameron, A.C., Trivedi, P.K., Regression Analysis of Count Data, 2nd Ed., Cambridge University Press" },
+      { "source": "Lawless, J.F., Negative Binomial and Mixed Poisson Regression, Canadian Journal of Statistics, 1987" }
+    ],
+    "minitab_equivalent": "Stat > Regression > Poisson Regression (with overdispersion test)"
+  },
+
+  "source": {
+    "function_name": "runNegBinRegression",
+    "file_path": "js/engines/glm-engine.js",
+    "signature": {
+      "parameters": [
+        {
+          "name": "xColumns",
+          "type": "number[][]",
+          "required": true,
+          "description": { "de": "Array von X-Spaltenvektoren (k Prädiktoren, je n Werte)", "en": "Array of X column vectors (k predictors, each n values)" }
+        },
+        {
+          "name": "y",
+          "type": "number[]",
+          "required": true,
+          "description": { "de": "Y-Vektor (Zähldaten, nicht-negative Ganzzahlen)", "en": "Y vector (count data, non-negative integers)" }
+        },
+        {
+          "name": "confLevel",
+          "type": "number",
+          "required": false,
+          "description": { "de": "Konfidenzniveau (Standard: 0.95)", "en": "Confidence level (default: 0.95)" }
+        }
+      ],
+      "returns": {
+        "type": "object",
+        "properties": {
+          "converged": { "type": "boolean", "description": { "de": "Ob der IRLS-Algorithmus konvergiert ist", "en": "Whether the IRLS algorithm converged" } },
+          "iterations": { "type": "number", "description": { "de": "Anzahl der IRLS-Iterationen bis zur Konvergenz", "en": "Number of IRLS iterations until convergence" } },
+          "coefficients": { "type": "number[]", "description": { "de": "Geschätzte Regressionskoeffizienten β̂ (inkl. Intercept)", "en": "Estimated regression coefficients β̂ (including intercept)" } },
+          "stdErrors": { "type": "number[]", "description": { "de": "Standardfehler der Koeffizienten", "en": "Standard errors of the coefficients" } },
+          "zValues": { "type": "number[]", "description": { "de": "Wald-z-Statistiken (β̂ⱼ / SE(β̂ⱼ))", "en": "Wald z-statistics (β̂ⱼ / SE(β̂ⱼ))" } },
+          "pValues": { "type": "number[]", "description": { "de": "Zweiseitige p-Werte aus der Standardnormalverteilung", "en": "Two-sided p-values from the standard normal distribution" } },
+          "rateRatios": { "type": "object[]", "description": { "de": "Rate Ratios mit Konfidenzintervallen ({rr, lower, upper})", "en": "Rate ratios with confidence intervals ({rr, lower, upper})" } },
+          "deviance": { "type": "number", "description": { "de": "Residual-Devianz des angepassten Modells", "en": "Residual deviance of the fitted model" } },
+          "nullDeviance": { "type": "number", "description": { "de": "Devianz des Nullmodells (nur Intercept)", "en": "Deviance of the null model (intercept only)" } },
+          "aic": { "type": "number", "description": { "de": "Akaike-Informationskriterium", "en": "Akaike Information Criterion" } },
+          "bic": { "type": "number", "description": { "de": "Bayessches Informationskriterium", "en": "Bayesian Information Criterion" } },
+          "logLikelihood": { "type": "number", "description": { "de": "Log-Likelihood des angepassten Modells", "en": "Log-likelihood of the fitted model" } },
+          "pseudoR2": { "type": "object", "description": { "de": "Pseudo-R²-Maße: McFadden, Cox-Snell, Nagelkerke", "en": "Pseudo R² measures: McFadden, Cox-Snell, Nagelkerke" } },
+          "pseudoR2.mcfadden": { "type": "number", "description": { "de": "McFadden-Pseudo-R²: 1 − (ℓ_Modell / ℓ_Null)", "en": "McFadden pseudo R²: 1 − (ℓ_model / ℓ_null)" } },
+          "pseudoR2.coxSnell": { "type": "number", "description": { "de": "Cox-Snell-Pseudo-R²", "en": "Cox-Snell pseudo R²" } },
+          "pseudoR2.nagelkerke": { "type": "number", "description": { "de": "Nagelkerke-Pseudo-R² (adjustiertes Cox-Snell)", "en": "Nagelkerke pseudo R² (adjusted Cox-Snell)" } },
+          "n": { "type": "number", "description": { "de": "Anzahl der Beobachtungen", "en": "Number of observations" } },
+          "p": { "type": "number", "description": { "de": "Anzahl der Parameter (inkl. Intercept)", "en": "Number of parameters (including intercept)" } },
+          "family.theta": { "type": "number", "description": { "de": "Geschätzter Dispersionsparameter θ der negativen Binomialverteilung", "en": "Estimated dispersion parameter θ of the negative binomial distribution" } }
+        }
+      }
+    },
+    "code_snippet": null
+  },
+
+  "try_it": {
+    "input_schema": {
+      "fields": [
+        {
+          "name": "xColumns",
+          "label": { "de": "X-Werte (Prädiktoren)", "en": "X Values (Predictors)" },
+          "type": "textarea",
+          "placeholder": { "de": "Kommagetrennte Werte, z.B.:\n1, 2, 3, 4, 5, 6, 7, 8, 9, 10", "en": "Comma-separated values, e.g.:\n1, 2, 3, 4, 5, 6, 7, 8, 9, 10" },
+          "parse_as": "number_array",
+          "required": true
+        },
+        {
+          "name": "y",
+          "label": { "de": "Y-Werte (Zähldaten, überdispergiert)", "en": "Y Values (Count Data, Overdispersed)" },
+          "type": "textarea",
+          "placeholder": { "de": "Kommagetrennte Werte, z.B.:\n0, 1, 3, 2, 8, 5, 12, 7, 20, 15", "en": "Comma-separated values, e.g.:\n0, 1, 3, 2, 8, 5, 12, 7, 20, 15" },
+          "parse_as": "number_array",
+          "required": true
+        },
+        {
+          "name": "confLevel",
+          "label": { "de": "Konfidenzniveau", "en": "Confidence Level" },
+          "type": "number",
+          "placeholder": { "de": "0.95", "en": "0.95" },
+          "parse_as": "number",
+          "required": false
+        }
+      ]
+    },
+    "output_schema": {
+      "display_fields": ["converged", "coefficients", "stdErrors", "zValues", "pValues", "family.theta", "deviance", "nullDeviance", "aic", "logLikelihood", "pseudoR2.mcfadden"],
+      "primary_field": "family.theta",
+      "format": {
+        "converged": { "label": { "de": "Konvergiert", "en": "Converged" } },
+        "coefficients": { "decimals": 6, "label": { "de": "Koeffizienten (β̂)", "en": "Coefficients (β̂)" } },
+        "stdErrors": { "decimals": 6, "label": { "de": "Standardfehler", "en": "Std. Errors" } },
+        "zValues": { "decimals": 4, "label": "z" },
+        "pValues": { "decimals": 6, "label": "p-Value" },
+        "family.theta": { "decimals": 4, "label": "θ (Dispersion)" },
+        "deviance": { "decimals": 4, "label": { "de": "Residual-Devianz", "en": "Residual Deviance" } },
+        "nullDeviance": { "decimals": 4, "label": { "de": "Null-Devianz", "en": "Null Deviance" } },
+        "aic": { "decimals": 4, "label": "AIC" },
+        "logLikelihood": { "decimals": 4, "label": "Log-Likelihood" },
+        "pseudoR2.mcfadden": { "decimals": 6, "label": "McFadden R²" }
+      }
+    }
+  },
+
+  "changelog": [
+    {
+      "version": "1.0.0",
+      "date": "2026-04-27",
+      "type": "initial",
+      "description": {
+        "de": "Erstimplementierung: NB2-Regression mit IRLS, Profile-Likelihood für θ, Rate Ratios, Pseudo-R², AIC/BIC",
+        "en": "Initial implementation: NB2 regression with IRLS, profile likelihood for θ, rate ratios, pseudo R², AIC/BIC"
+      },
+      "breaking": false
+    }
+  ]
+}

@@ -1,0 +1,198 @@
+{
+  "id": "desirability-individual",
+  "name": {
+    "de": "Wunschfunktion (Derringer-Suich)",
+    "en": "Desirability Function (Derringer-Suich)"
+  },
+  "category": "optimization",
+  "subcategory": null,
+  "status": "validated",
+  "version": "1.0.0",
+
+  "description": {
+    "short": {
+      "de": "Bildet einen Antwortwert y auf eine dimensionslose Wunschbarkeit d ∈ [0, 1] ab — die Grundbausteine der Multi-Antwort-Optimierung.",
+      "en": "Maps a response value y onto a dimensionless desirability d ∈ [0, 1] — the building block of multi-response optimisation."
+    },
+    "long": {
+      "de": "Drei Formen je nach Ziel: Maximieren mappt linear (oder mit Form-Exponent) zwischen einer nicht akzeptablen Untergrenze und einem zufriedenstellenden Wert; Minimieren ist gespiegelt; der Zielwert-Modus ist zweiseitig mit Maximum d=1 genau am Zielwert. Werte außerhalb des akzeptablen Bereichs erhalten d=0 — keine 'sanfte' Penalisierung. Die Form-Exponenten s, t steuern, wie streng die Funktion in Grenznähe wird: s>1 macht die Funktion konkav (anspruchsvoller bei der Obergrenze), s<1 konvex (großzügiger).",
+      "en": "Three flavours depending on the goal: maximise maps linearly (or with a shape exponent) between an unacceptable lower bound and a fully satisfactory upper bound; minimise is the mirror image; target-is-best is two-sided with peak d=1 exactly at the target. Values outside the acceptable range receive d=0 — no 'soft' penalty. The shape exponents s, t control how demanding the function becomes near the bounds: s>1 makes it concave (more demanding near the upper bound), s<1 convex (more lenient)."
+    }
+  },
+
+  "documentation": {
+    "formulas": [
+      {
+        "label": "max",
+        "latex": "d_{\\text{max}}(y) = \\begin{cases} 0 & y \\le L \\\\ \\left(\\frac{y - L}{U - L}\\right)^s & L < y < U \\\\ 1 & y \\ge U \\end{cases}",
+        "description": {
+          "de": "Larger-the-better mit Untergrenze L (nicht akzeptabel) und Obergrenze U (zufriedenstellend)",
+          "en": "Larger-the-better with lower bound L (unacceptable) and upper bound U (satisfactory)"
+        }
+      },
+      {
+        "label": "min",
+        "latex": "d_{\\text{min}}(y) = \\begin{cases} 1 & y \\le L \\\\ \\left(\\frac{U - y}{U - L}\\right)^s & L < y < U \\\\ 0 & y \\ge U \\end{cases}",
+        "description": {
+          "de": "Smaller-the-better — gespiegelt: L ist der Wunschwert, U der noch akzeptable Maximalwert",
+          "en": "Smaller-the-better — mirror image: L is the desired value, U the still-acceptable maximum"
+        }
+      },
+      {
+        "label": "target",
+        "latex": "d_{\\text{tgt}}(y) = \\begin{cases} \\left(\\frac{y - L}{T - L}\\right)^s & L < y < T \\\\ \\left(\\frac{U - y}{U - T}\\right)^t & T < y < U \\\\ 1 & y = T \\\\ 0 & \\text{sonst} \\end{cases}",
+        "description": {
+          "de": "Target-is-best: zweiseitige Funktion mit Maximum genau am Zielwert T. Asymmetrische Schultern via Form-Exponenten s und t.",
+          "en": "Target-is-best: two-sided function with peak exactly at target T. Asymmetric shoulders via shape exponents s and t."
+        }
+      }
+    ],
+    "assumptions": [
+      { "de": "Die Antwort y ist auf einer kontinuierlichen Skala mit interpretierbaren Grenzen messbar", "en": "Response y is measurable on a continuous scale with interpretable bounds" },
+      { "de": "Untergrenze L < Obergrenze U; bei target zusätzlich L < T < U", "en": "Lower bound L < upper bound U; for target additionally L < T < U" }
+    ],
+    "limitations": [
+      { "de": "Werte außerhalb [L, U] erhalten d=0 — kein gradueller Übergang außerhalb der Grenzen", "en": "Values outside [L, U] receive d=0 — no graceful degradation beyond the bounds" },
+      { "de": "Form-Exponenten ändern die Wunschbarkeit nichtlinear; Wahl erfordert Verständnis ihrer Auswirkung", "en": "Shape exponents change desirability non-linearly; choosing them requires understanding their effect" }
+    ],
+    "references": [
+      { "source": "Derringer, G. & Suich, R. (1980). Simultaneous Optimization of Several Response Variables. Journal of Quality Technology 12(4): 214-219" },
+      { "source": "Myers, R.H., Montgomery, D.C., Anderson-Cook, C.M. (2016). Response Surface Methodology, 4th Ed., Wiley", "chapter": "Chapter 6" }
+    ],
+    "minitab_equivalent": "Stat > DOE > Response Optimizer (Goals tab)"
+  },
+
+  "source": {
+    "function_name": "desirabilityIndividual",
+    "file_path": "js/engines/response-optimization-engine.js",
+    "signature": {
+      "parameters": [
+        {
+          "name": "y",
+          "type": "number",
+          "required": true,
+          "description": { "de": "Antwortwert", "en": "Response value" }
+        },
+        {
+          "name": "kind",
+          "type": "string",
+          "required": true,
+          "description": { "de": "Zielmodus: 'max', 'min' oder 'target'", "en": "Goal kind: 'max', 'min', or 'target'" }
+        },
+        {
+          "name": "lower",
+          "type": "number",
+          "required": true,
+          "description": { "de": "Untergrenze L", "en": "Lower bound L" }
+        },
+        {
+          "name": "target",
+          "type": "number",
+          "required": true,
+          "description": { "de": "Zielwert T (nur bei kind='target' verwendet, bei max/min beliebigen Wert übergeben)", "en": "Target value T (only used for kind='target'; pass any number otherwise)" }
+        },
+        {
+          "name": "upper",
+          "type": "number",
+          "required": true,
+          "description": { "de": "Obergrenze U", "en": "Upper bound U" }
+        },
+        {
+          "name": "shapeS",
+          "type": "number",
+          "required": false,
+          "description": { "de": "Form-Exponent (Standard 1; bei kind='target' der untere Schenkel)", "en": "Shape exponent (default 1; for kind='target' the lower-side exponent)" }
+        },
+        {
+          "name": "shapeT",
+          "type": "number",
+          "required": false,
+          "description": { "de": "Form-Exponent rechte Seite (nur bei kind='target', Standard 1)", "en": "Right-side shape exponent (kind='target' only, default 1)" }
+        }
+      ],
+      "returns": {
+        "type": "number",
+        "description": { "de": "Wunschbarkeit d ∈ [0, 1]", "en": "Desirability d ∈ [0, 1]" }
+      }
+    },
+    "code_snippet": null
+  },
+
+  "try_it": {
+    "input_schema": {
+      "fields": [
+        {
+          "name": "y",
+          "label": { "de": "Antwortwert y", "en": "Response value y" },
+          "type": "number",
+          "placeholder": { "de": "z.B. 7.5", "en": "e.g. 7.5" },
+          "parse_as": "number",
+          "required": true
+        },
+        {
+          "name": "kind",
+          "label": { "de": "Zielmodus", "en": "Goal kind" },
+          "type": "string",
+          "placeholder": { "de": "max, min oder target", "en": "max, min, or target" },
+          "parse_as": "string",
+          "required": true
+        },
+        {
+          "name": "lower",
+          "label": { "de": "Untergrenze L", "en": "Lower bound L" },
+          "type": "number",
+          "parse_as": "number",
+          "required": true
+        },
+        {
+          "name": "target",
+          "label": { "de": "Zielwert T (für kind='target')", "en": "Target T (for kind='target')" },
+          "type": "number",
+          "parse_as": "number",
+          "required": true
+        },
+        {
+          "name": "upper",
+          "label": { "de": "Obergrenze U", "en": "Upper bound U" },
+          "type": "number",
+          "parse_as": "number",
+          "required": true
+        },
+        {
+          "name": "shapeS",
+          "label": { "de": "Form-Exponent s (Standard 1)", "en": "Shape exponent s (default 1)" },
+          "type": "number",
+          "parse_as": "number",
+          "required": false
+        },
+        {
+          "name": "shapeT",
+          "label": { "de": "Form-Exponent t (Standard 1, nur target)", "en": "Shape exponent t (default 1, target only)" },
+          "type": "number",
+          "parse_as": "number",
+          "required": false
+        }
+      ]
+    },
+    "output_schema": {
+      "display_fields": ["d"],
+      "primary_field": "d",
+      "format": {
+        "d": { "decimals": 6, "label": "d" }
+      }
+    }
+  },
+
+  "changelog": [
+    {
+      "version": "1.0.0",
+      "date": "2026-05-08",
+      "type": "initial",
+      "description": {
+        "de": "Erstimplementierung: Wrapper über desirabilityMax/Min/Target mit kind-Dispatch",
+        "en": "Initial implementation: wrapper over desirabilityMax/Min/Target with kind dispatch"
+      },
+      "breaking": false
+    }
+  ]
+}

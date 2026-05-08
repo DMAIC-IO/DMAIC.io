@@ -1,0 +1,86 @@
+{
+  "id": "taguchi-l18-mixed",
+  "name": {
+    "de": "Taguchi L18 (2¹·3⁷, gemischte Stufen)",
+    "en": "Taguchi L18 (2¹·3⁷, Mixed-Level Array)"
+  },
+  "category": "doe",
+  "subcategory": null,
+  "status": "validated",
+  "version": "1.0.0",
+
+  "description": {
+    "short": {
+      "de": "Orthogonales Array mit 18 Runs und einer 2-stufigen plus sieben 3-stufigen Spalten — dem klassischen Mixed-Level-Plan für Screening.",
+      "en": "Orthogonal array with 18 runs and one 2-level plus seven 3-level columns — the classic mixed-level screening design."
+    },
+    "long": {
+      "de": "L18 ist eines der wichtigsten Taguchi-Mixed-Level-Arrays: es hat 18 Runs und kann bis zu acht Faktoren aufnehmen, von denen einer 2-stufig und bis zu sieben 3-stufig sein können. Praktischer Anwendungsfall: ein binärer Faktor (Lieferant alt/neu, Werkzeug A/B) plus mehrere 3-stufige Prozessparameter (niedrig/mittel/hoch). Im D.Mike-Versuchsplaner wird L18 automatisch ausgewählt, sobald die Faktor-Mischung zur Stufenstruktur passt; die Faktor-zu-Spalte-Zuordnung erfolgt nach Stufenzahl. Pro Spalte wird mit der korrekten Stufenzahl kodiert: ±1 für die 2-stufige Spalte, −1/0/+1 für die 3-stufigen — in derselben Zeile.",
+      "en": "L18 is one of the key Taguchi mixed-level arrays: 18 runs covering up to eight factors, of which one is 2-level and up to seven are 3-level. Practical use: a binary factor (supplier old/new, tool A/B) plus several 3-level process parameters (low/mid/high). In D.Mike's design planner, L18 is auto-selected as soon as the factor mix matches its level structure; factor-to-column assignment is by level count. Per column, the correct level count is used for coding: ±1 for the 2-level column, −1/0/+1 for the 3-level columns — in the same row."
+    }
+  },
+
+  "documentation": {
+    "formulas": [
+      {
+        "label": "Level structure",
+        "latex": "\\text{L18}: \\quad 2^1 \\cdot 3^7 = \\underbrace{[2}_{\\text{col 0}}, \\underbrace{3, 3, 3, 3, 3, 3, 3]}_{\\text{cols 1–7}}",
+        "description": {
+          "de": "Spalte 0 hat 2 Stufen; Spalten 1–7 haben jeweils 3 Stufen",
+          "en": "Column 0 has 2 levels; columns 1–7 each have 3 levels"
+        }
+      },
+      {
+        "label": "Run-count",
+        "latex": "N = 18 \\quad \\text{(unabhängig von der genutzten Faktor-Anzahl)}",
+        "description": {
+          "de": "Konstant 18 Runs, egal wie viele der bis zu 8 Spalten benutzt werden",
+          "en": "Constant 18 runs regardless of how many of the up-to-8 columns are used"
+        }
+      },
+      {
+        "label": "Per-column coding",
+        "latex": "v \\in \\{0, 1, \\dots, n_j - 1\\}\\ \\to\\ -1 + \\frac{2v}{n_j - 1}",
+        "description": {
+          "de": "Spalte j mit n_j Stufen kodiert evenly-spaced auf [-1, +1]",
+          "en": "Column j with n_j levels maps evenly-spaced to [-1, +1]"
+        }
+      }
+    ],
+    "assumptions": [
+      { "de": "Genau 1 Faktor mit 2 Stufen plus 1–7 Faktoren mit 3 Stufen", "en": "Exactly 1 factor with 2 levels plus 1–7 factors with 3 levels" },
+      { "de": "Lineares oder Haupteffekt-Modell — L18 unterstützt keine Wechselwirkungs-Schätzung", "en": "Linear or main-effects model — L18 cannot estimate interactions" }
+    ],
+    "limitations": [
+      { "de": "Wechselwirkungen sind in L18 mit Hauptwirkungen verschmiert; bei Interaktions-Verdacht D-optimal oder Voll-faktoriell wählen", "en": "Interactions are confounded with main effects in L18; for interaction estimation prefer D-optimal or full factorial" },
+      { "de": "Genau ein 2-Level-Faktor — bei zwei oder mehr 2-Level-Faktoren passt L18 nicht", "en": "Exactly one 2-level factor — two or more 2-level factors don't fit L18" }
+    ],
+    "references": [
+      { "source": "Taguchi, G. (1987). System of Experimental Design, UNIPUB/Kraus" },
+      { "source": "Phadke, M.S. (1989). Quality Engineering Using Robust Design, Prentice Hall", "chapter": "Chapter 6 (Mixed-Level Orthogonal Arrays)" }
+    ],
+    "minitab_equivalent": "Stat > DOE > Taguchi > Create Taguchi Design (L18 selection)"
+  },
+
+  "source": {
+    "function_name": "taguchiDesign",
+    "file_path": "js/engines/doe-planner-engine.js",
+    "signature": {
+      "parameters": [
+        { "name": "factorLevelCounts", "type": "number[]", "required": true, "description": { "de": "Stufenzahl pro Faktor — z.B. [2, 3, 3, 3] für 1 binärer + 3 ternäre", "en": "Level count per factor — e.g. [2, 3, 3, 3] for 1 binary + 3 ternary" } },
+        { "name": "arrayName",         "type": "string",   "required": false, "description": { "de": "Optional ein Array-Name; auto-Auswahl wenn weggelassen", "en": "Optional explicit array name; auto-selected if omitted" } }
+      ],
+      "returns": {
+        "type": "object",
+        "description": { "de": "{ codedMatrix, arrayName }", "en": "{ codedMatrix, arrayName }" }
+      }
+    },
+    "code_snippet": null
+  },
+
+  "changelog": [
+    { "version": "1.0.0", "date": "2026-05-08", "type": "initial",
+      "description": { "de": "Erstimplementierung Mixed-Level-Routing für Phase 4", "en": "Initial implementation of mixed-level routing for V0.4 Phase 4" },
+      "breaking": false }
+  ]
+}

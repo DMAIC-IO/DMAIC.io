@@ -1,0 +1,282 @@
+{
+  "id": "cpk",
+  "name": {
+    "de": "Prozessfähigkeitsindex Cpk",
+    "en": "Process Capability Index Cpk"
+  },
+  "category": "capability",
+  "subcategory": null,
+  "status": "validated",
+  "version": "1.0.0",
+
+  "description": {
+    "short": {
+      "de": "Misst, wie gut ein Prozess innerhalb der Spezifikationsgrenzen liegt, unter Berücksichtigung der Zentrierung.",
+      "en": "Measures how well a process fits within specification limits, accounting for centering."
+    },
+    "long": {
+      "de": "Cpk ist das Minimum von CPU und CPL. Er quantifiziert die Fähigkeit eines Prozesses relativ zu beiden Spezifikationsgrenzen und bestraft außermittige Prozesse. Ein Cpk ≥ 1,33 gilt allgemein als fähig. Im Gegensatz zu Cp, der nur die Streuung misst, berücksichtigt Cpk auch, wie gut der Prozess zwischen den Spezifikationsgrenzen zentriert ist.",
+      "en": "Cpk is the minimum of CPU and CPL. It quantifies the capability of a process relative to both upper and lower specification limits, penalizing off-center processes. A Cpk ≥ 1.33 is generally considered capable. Unlike Cp, which only measures spread, Cpk also accounts for how well the process is centered between the specification limits."
+    }
+  },
+
+  "documentation": {
+    "formulas": [
+      {
+        "label": "Cpk",
+        "latex": "C_{pk} = \\min\\left(\\frac{USL - \\bar{x}}{3s}, \\frac{\\bar{x} - LSL}{3s}\\right)",
+        "description": {
+          "de": "Minimum aus oberem und unterem Fähigkeitsindex",
+          "en": "Minimum of upper and lower capability indices"
+        }
+      },
+      {
+        "label": "Cp",
+        "latex": "C_p = \\frac{USL - LSL}{6s}",
+        "description": {
+          "de": "Prozessfähigkeit ohne Berücksichtigung der Zentrierung",
+          "en": "Process capability regardless of centering"
+        }
+      },
+      {
+        "label": "CPU",
+        "latex": "C_{PU} = \\frac{USL - \\bar{x}}{3s}",
+        "description": {
+          "de": "Oberer Fähigkeitsindex",
+          "en": "Upper capability index"
+        }
+      },
+      {
+        "label": "CPL",
+        "latex": "C_{PL} = \\frac{\\bar{x} - LSL}{3s}",
+        "description": {
+          "de": "Unterer Fähigkeitsindex",
+          "en": "Lower capability index"
+        }
+      },
+      {
+        "label": "CI(Cp)",
+        "latex": "CI(C_p) = \\left[\\; C_p \\sqrt{\\frac{\\chi^2_{\\alpha/2,\\,n-1}}{n-1}} \\;,\\; C_p \\sqrt{\\frac{\\chi^2_{1-\\alpha/2,\\,n-1}}{n-1}} \\;\\right]",
+        "description": {
+          "de": "Exaktes Konfidenzintervall für Cp basierend auf der Chi-Quadrat-Verteilung (α = 1 − Konfidenzniveau)",
+          "en": "Exact confidence interval for Cp based on the chi-squared distribution (α = 1 − confidence level)"
+        }
+      },
+      {
+        "label": "CI(Cpk)",
+        "latex": "CI(C_{pk}) = C_{pk} \\pm z_{1-\\alpha/2} \\cdot \\sqrt{\\frac{1}{9n} + \\frac{C_{pk}^2}{2(n-1)}}",
+        "description": {
+          "de": "Approximatives Konfidenzintervall für Cpk nach Kushler & Hurley (Normalapproximation)",
+          "en": "Approximate confidence interval for Cpk per Kushler & Hurley (normal approximation)"
+        }
+      },
+      {
+        "label": "χ² approx.",
+        "latex": "\\chi^2_{p,\\nu} \\approx \\nu \\left(1 - \\frac{2}{9\\nu} + z_p \\sqrt{\\frac{2}{9\\nu}}\\right)^{\\!3}",
+        "description": {
+          "de": "Wilson-Hilferty-Approximation der Chi-Quadrat-Quantilfunktion (z_p = Normalverteilungs-Quantil)",
+          "en": "Wilson-Hilferty approximation of the chi-squared quantile function (z_p = normal quantile)"
+        }
+      }
+    ],
+    "assumptions": [
+      {
+        "de": "Daten sind annähernd normalverteilt",
+        "en": "Data is approximately normally distributed"
+      },
+      {
+        "de": "Prozess ist statistisch beherrscht",
+        "en": "Process is in statistical control"
+      },
+      {
+        "de": "Messwerte sind unabhängig",
+        "en": "Measurements are independent"
+      }
+    ],
+    "limitations": [
+      {
+        "de": "Nicht geeignet für nicht-normalverteilte Daten ohne Transformation",
+        "en": "Not suitable for non-normal distributions without transformation"
+      },
+      {
+        "de": "Ausreichender Stichprobenumfang erforderlich (n ≥ 30 empfohlen)",
+        "en": "Requires sufficient sample size (n ≥ 30 recommended)"
+      },
+      {
+        "de": "Berücksichtigt keine Zwischen-Untergruppen-Variation (dafür Ppk verwenden)",
+        "en": "Does not account for between-subgroup variation (use Ppk for that)"
+      }
+    ],
+    "references": [
+      {
+        "source": "Montgomery, Introduction to Statistical Quality Control, 8th Ed.",
+        "chapter": "Chapter 7"
+      },
+      {
+        "source": "Kushler, R. & Hurley, P. (1992), Confidence Bounds for Capability Indices, Journal of Quality Technology, 24(4), 188–195"
+      },
+      {
+        "source": "Wilson, E.B. & Hilferty, M.M. (1931), The Distribution of Chi-Square, PNAS, 17(12), 684–688"
+      }
+    ],
+    "minitab_equivalent": "Stat > Quality Tools > Capability Analysis > Normal"
+  },
+
+  "source": {
+    "function_name": "capabilityAnalyze",
+    "file_path": "js/engines/process-capability-engine.js",
+    "signature": {
+      "parameters": [
+        {
+          "name": "data",
+          "type": "number[]",
+          "required": true,
+          "description": {
+            "de": "Array von Messwerten",
+            "en": "Array of measurement values"
+          }
+        },
+        {
+          "name": "lsl",
+          "type": "number",
+          "required": true,
+          "description": {
+            "de": "Untere Spezifikationsgrenze",
+            "en": "Lower specification limit"
+          }
+        },
+        {
+          "name": "usl",
+          "type": "number",
+          "required": true,
+          "description": {
+            "de": "Obere Spezifikationsgrenze",
+            "en": "Upper specification limit"
+          }
+        }
+      ],
+      "returns": {
+        "type": "object",
+        "properties": {
+          "cpk": { "type": "number", "description": { "de": "Prozessfähigkeitsindex", "en": "Process capability index" } },
+          "cp": { "type": "number|null", "description": { "de": "Prozessfähigkeit (ohne Zentrierung)", "en": "Process capability (centering ignored)" } },
+          "cpu": { "type": "number|null", "description": { "de": "Oberer Fähigkeitsindex", "en": "Upper capability index" } },
+          "cpl": { "type": "number|null", "description": { "de": "Unterer Fähigkeitsindex", "en": "Lower capability index" } },
+          "pp": { "type": "number|null", "description": { "de": "Langzeit-Prozessfähigkeit", "en": "Overall process capability" } },
+          "ppk": { "type": "number|null", "description": { "de": "Langzeit-Prozessfähigkeitsindex", "en": "Overall process capability index" } },
+          "CpCI": { "type": "[number,number]|null", "description": { "de": "Konfidenzintervall für Cp (exakt, χ²-basiert)", "en": "Confidence interval for Cp (exact, χ²-based)" } },
+          "CpkCI": { "type": "[number,number]|null", "description": { "de": "Konfidenzintervall für Cpk (Kushler-Hurley-Approximation)", "en": "Confidence interval for Cpk (Kushler-Hurley approximation)" } },
+          "PpCI": { "type": "[number,number]|null", "description": { "de": "Konfidenzintervall für Pp", "en": "Confidence interval for Pp" } },
+          "PpkCI": { "type": "[number,number]|null", "description": { "de": "Konfidenzintervall für Ppk", "en": "Confidence interval for Ppk" } },
+          "ppmTotal": { "type": "number", "description": { "de": "Erwartete fehlerhafte Teile pro Million", "en": "Expected defective parts per million" } },
+          "sigmaLevel": { "type": "number", "description": { "de": "Sigma-Level (Z = 3·Cpk)", "en": "Sigma level (Z = 3·Cpk)" } },
+          "mean": { "type": "number", "description": { "de": "Stichprobenmittelwert", "en": "Sample mean" } },
+          "stddev": { "type": "number", "description": { "de": "Stichproben-Standardabweichung (n−1)", "en": "Sample standard deviation (n−1)" } }
+        }
+      }
+    },
+    "code_snippet": null
+  },
+
+  "try_it": {
+    "input_schema": {
+      "fields": [
+        {
+          "name": "data",
+          "label": {
+            "de": "Messdaten",
+            "en": "Measurement Data"
+          },
+          "type": "textarea",
+          "placeholder": {
+            "de": "Werte eingeben, getrennt durch Komma, Leerzeichen oder Zeilenumbruch\nz.B.: 2,01; 1,98; 2,03; 1,99; 2,02",
+            "en": "Enter values separated by commas, spaces, or newlines\ne.g.: 2.01, 1.98, 2.03, 1.99, 2.02"
+          },
+          "parse_as": "number_array",
+          "required": true
+        },
+        {
+          "name": "lsl",
+          "label": {
+            "de": "Untere Spezifikationsgrenze (USG)",
+            "en": "Lower Spec Limit (LSL)"
+          },
+          "type": "number",
+          "placeholder": {
+            "de": "z.B.: 1,90",
+            "en": "e.g.: 1.90"
+          },
+          "required": true
+        },
+        {
+          "name": "usl",
+          "label": {
+            "de": "Obere Spezifikationsgrenze (OSG)",
+            "en": "Upper Spec Limit (USL)"
+          },
+          "type": "number",
+          "placeholder": {
+            "de": "z.B.: 2,10",
+            "en": "e.g.: 2.10"
+          },
+          "required": true
+        },
+        {
+          "name": "confidence",
+          "label": {
+            "de": "Konfidenzniveau (%)",
+            "en": "Confidence Level (%)"
+          },
+          "type": "number",
+          "placeholder": {
+            "de": "z.B.: 95",
+            "en": "e.g.: 95"
+          },
+          "default": 95,
+          "required": false
+        }
+      ],
+      "csv_mapping": {
+        "data_column": "Automatically uses first numeric column",
+        "parameter_columns": ["LSL", "USL"]
+      }
+    },
+    "output_schema": {
+      "display_fields": ["cpk", "cp", "cpu", "cpl", "cpkCI", "cpCI", "mean", "stddev"],
+      "primary_field": "cpk",
+      "format": {
+        "cpk": { "decimals": 6, "label": "Cpk" },
+        "cp": { "decimals": 6, "label": "Cp" },
+        "cpu": { "decimals": 6, "label": "CPU" },
+        "cpl": { "decimals": 6, "label": "CPL" },
+        "cpkCI": { "decimals": 4, "label": { "de": "KI Cpk", "en": "CI Cpk" }, "type": "interval" },
+        "cpCI": { "decimals": 4, "label": { "de": "KI Cp", "en": "CI Cp" }, "type": "interval" },
+        "mean": { "decimals": 6, "label": { "de": "Mittelwert (x̄)", "en": "Mean (x̄)" } },
+        "stddev": { "decimals": 6, "label": { "de": "Std.abw. (s)", "en": "Std Dev (s)" } }
+      }
+    }
+  },
+
+  "changelog": [
+    {
+      "version": "1.1.0",
+      "date": "2026-03-22",
+      "type": "feature",
+      "description": {
+        "de": "Konfidenzintervalle für Cp (exakt, χ²) und Cpk (Kushler-Hurley) ergänzt",
+        "en": "Added confidence intervals for Cp (exact, χ²) and Cpk (Kushler-Hurley)"
+      },
+      "breaking": false
+    },
+    {
+      "version": "1.0.0",
+      "date": "2026-03-22",
+      "type": "initial",
+      "description": {
+        "de": "Erstimplementierung mit Cp, Cpk, CPU, CPL",
+        "en": "Initial implementation with Cp, Cpk, CPU, CPL"
+      },
+      "breaking": false
+    }
+  ]
+}
