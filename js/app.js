@@ -2530,7 +2530,17 @@ function _initFooter(stateManager, eventBus, i18n) {
   const footerStorage = document.getElementById('footer-storage');
   const footerVersion = document.getElementById('footer-version');
 
-  if (footerVersion) footerVersion.textContent = `v${VERSION}`;
+  if (footerVersion) {
+    footerVersion.textContent = `v${VERSION}`;
+    fetch('./release.json', { cache: 'no-cache' })
+      .then(r => r.ok ? r.json() : null)
+      .then(rel => {
+        if (!rel?.version) return;
+        footerVersion.textContent = `v${rel.version}`;
+        if (rel.date) footerVersion.title = rel.title ? `${rel.title} (${rel.date})` : rel.date;
+      })
+      .catch(() => {});
+  }
 
   const refresh = () => {
     if (footerName) footerName.textContent = stateManager.get('projectMeta.name') ?? '';
