@@ -34,6 +34,7 @@ jobs:
   release:
     name: Deploy and publish ${{ github.ref_name }}
     runs-on: ubuntu-latest
+    environment: production
 
     env:
       DEPLOY_HOST: ${{ vars.DEPLOY_HOST }}
