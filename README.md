@@ -11,7 +11,7 @@
 ---
 
 ## About the Project
-
+ 
 **D.Mike** is a web application that covers the full DMAIC cycle (**D**efine, **M**easure, **A**nalyze, **I**mprove, **C**ontrol) directly in the browser. Each phase can be freely composed from tool modules (SIPOC, C&E Matrix, Process Capability, MSA, DOE, and many more). All data stays locally in the browser — no backend, no tracking, no runtime dependency on external services.
 
 The project targets quality engineers, Six Sigma practitioners (Green/Black Belts), process improvement specialists, and students looking for a lean, transparent, and extensible alternative to traditional statistics software.
