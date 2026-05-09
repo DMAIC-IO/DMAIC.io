@@ -1,0 +1,78 @@
+# Nightly deploy on every push to dev.
+#
+# Required GitHub configuration (Settings → Secrets and variables → Actions):
+#
+#   Variables (vars.*):
+#     NIGHTLY_HOST   — SSH hostname, e.g. "nightly.dmaic.io"
+#     NIGHTLY_USER   — SSH username on the nightly server
+#     NIGHTLY_PORT   — optional, default 22
+#     NIGHTLY_ROOT   — vhost docroot, e.g. "/var/www/nightly.dmaic.io"
+#
+#   Secrets (secrets.*):
+#     DEPLOY_SSH_KEY     — same private key as production (or a separate one if
+#                          you prefer; both workflows read this secret)
+#     DEPLOY_KNOWN_HOSTS — known_hosts entries; should include the nightly host
+#                          (and the production host if you share the secret).
+#
+# Trigger: any push to the `dev` branch in this repo.
+# No build step, no versioning — the latest dev state always wins.
+
+name: Nightly Deploy
+
+on:
+  push:
+    branches: [dev]
+
+concurrency:
+  group: nightly
+  cancel-in-progress: true   # if a newer push lands, abandon the older one
+
+jobs:
+  nightly:
+    name: rsync dev → nightly.dmaic.io
+    runs-on: ubuntu-latest
+    environment: production
+
+    env:
+      NIGHTLY_HOST: ${{ vars.NIGHTLY_HOST }}
+      NIGHTLY_USER: ${{ vars.NIGHTLY_USER }}
+      NIGHTLY_PORT: ${{ vars.NIGHTLY_PORT || '22' }}
+      NIGHTLY_ROOT: ${{ vars.NIGHTLY_ROOT }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure SSH (deploy key, known_hosts)
+        run: |
+          set -euo pipefail
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          echo "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/id_deploy
+          chmod 600 ~/.ssh/id_deploy
+          echo "${{ secrets.DEPLOY_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/known_hosts
+
+      - name: Rsync to nightly staging dir
+        run: |
+          set -euo pipefail
+          ssh -i ~/.ssh/id_deploy -p "$NIGHTLY_PORT" "$NIGHTLY_USER@$NIGHTLY_HOST" \
+            "mkdir -p '${NIGHTLY_ROOT}.staging'"
+          rsync -avz --delete \
+            --exclude='.git' \
+            --exclude='.github' \
+            --exclude='tests' \
+            --exclude='node_modules' \
+            --exclude='package*.json' \
+            --exclude='package-lock.json' \
+            --exclude='.gitignore' \
+            --exclude='README.md' \
+            -e "ssh -i ~/.ssh/id_deploy -p $NIGHTLY_PORT" \
+            ./ \
+            "$NIGHTLY_USER@$NIGHTLY_HOST:${NIGHTLY_ROOT}.staging/"
+
+      - name: Atomic swap into docroot
+        run: |
+          set -euo pipefail
+          ssh -i ~/.ssh/id_deploy -p "$NIGHTLY_PORT" "$NIGHTLY_USER@$NIGHTLY_HOST" \
+            "NIGHTLY_ROOT='$NIGHTLY_ROOT' bash -s" \
+            < .github/scripts/remote-nightly.sh
