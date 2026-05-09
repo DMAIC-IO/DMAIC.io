@@ -88,6 +88,18 @@ jobs:
             > release.json
           cat release.json
 
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Build static handbook → docs/
+        run: |
+          set -euo pipefail
+          node tools/static-handbook/build.mjs --clean
+          # Sanity check: at least the language picker must exist.
+          test -f docs/index.html
+
       - name: Configure SSH (deploy key, known_hosts)
         run: |
           set -euo pipefail
