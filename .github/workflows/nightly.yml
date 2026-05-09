@@ -21,7 +21,7 @@ name: Nightly Deploy
 
 on:
   push:
-    branches: [dev]
+    branches: [dev,main]
 
 concurrency:
   group: nightly
