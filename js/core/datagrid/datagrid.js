@@ -348,6 +348,9 @@ export class DataGrid {
 
     if (value === '' || value == null) {
       col.values[rowIndex] = null;
+    } else if (col.type === 'binary') {
+      // Strict binary: only 0 or 1 are accepted; everything else becomes null.
+      col.values[rowIndex] = parseCellInput(col, value);
     } else {
       const detected = detectInputType(value);
       const detectedType = detected ? detected.type : null;
@@ -2017,7 +2020,16 @@ export class DataGrid {
     }
     col.type = type;
 
-    if (isNumericType(type)) {
+    if (type === 'binary') {
+      col.values = col.values.map(v => {
+        if (v == null) return null;
+        if (v === 0 || v === 1) return v;
+        const n = parseNumeric(v);
+        if (n === 0) return 0;
+        if (n === 1) return 1;
+        return null;
+      });
+    } else if (isNumericType(type)) {
       col.values = col.values.map(v => {
         if (v == null) return null;
         const n = parseNumeric(v);
@@ -2236,7 +2248,7 @@ export class DataGrid {
       ? this._typeLabel(scan.dominantType)
       : '—';
 
-    const typeLabels = { numeric: '#', text: 'Abc', date: '\u{1F4C5}', time: '\u{1F550}', currency: '\u20AC', percent: '%' };
+    const typeLabels = { numeric: '#', text: 'Abc', date: '\u{1F4C5}', time: '\u{1F550}', currency: '\u20AC', percent: '%', binary: '01' };
 
     let html = `
       <div class="column-scan__header">

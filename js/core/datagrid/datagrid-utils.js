@@ -62,6 +62,7 @@ export const COLUMN_TYPES = {
   time:     { label: 'Time',     badge: '\u{1F550}', isNumeric: false },
   currency: { label: 'Currency', badge: '\u20AC',  isNumeric: true  },
   percent:  { label: 'Percent',  badge: '%',   isNumeric: true  },
+  binary:   { label: 'Binary',   badge: '01',  isNumeric: true  },
 };
 
 /** @param {string} type @returns {boolean} */
@@ -94,6 +95,10 @@ export function formatCellValue(col, val) {
         const d = col.format.decimals ?? 1;
         return formatNumber(val, d) + ' %';
       }
+      return String(val);
+    case 'binary':
+      if (val === 0 || val === 1) return String(val);
+      if (typeof val === 'number') return val ? '1' : '0';
       return String(val);
     case 'date':
       if (!val) return '';
@@ -135,6 +140,13 @@ export function parseCellInput(col, raw) {
         .replace(/%/g, '')
         .trim();
       return parseNumeric(cleaned);
+    }
+    case 'binary': {
+      if (raw === 0 || raw === 1) return raw;
+      const s = String(raw).trim();
+      if (s === '0') return 0;
+      if (s === '1') return 1;
+      return null;
     }
     case 'date': {
       const s = String(raw).trim();

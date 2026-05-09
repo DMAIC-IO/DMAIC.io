@@ -12,7 +12,7 @@
 
 import { escapeHtml, escapeAttr } from './escape.mjs';
 
-const SITE_ORIGIN = 'https://docs.dmaic.io';
+const SITE_ORIGIN = 'https://dmaic.io/app/latest/docs';
 const APP_ORIGIN = 'https://dmaic.io';
 
 const PHASES = ['define', 'measure', 'analyze', 'improve', 'control', 'data'];
