@@ -1,4 +1,4 @@
-# D.Mike — A DMAIC Toolbox
+# DMAIC.io — A Six Sigma Toolbox
 
 **A modular, browser-based Six Sigma toolbox — inspired by Minitab, running without a server, without a build step, without a framework.**
 
@@ -11,8 +11,8 @@
 ---
 
 ## About the Project
- 
-**D.Mike** is a web application that covers the full DMAIC cycle (**D**efine, **M**easure, **A**nalyze, **I**mprove, **C**ontrol) directly in the browser. Each phase can be freely composed from tool modules (SIPOC, C&E Matrix, Process Capability, MSA, DOE, and many more). All data stays locally in the browser — no backend, no tracking, no runtime dependency on external services.
+
+**DMAIC.io** is a web application that supports multiple Six Sigma cycles directly in the browser — currently **DMAIC** (**D**efine, **M**easure, **A**nalyze, **I**mprove, **C**ontrol) and **DMADV** (**D**efine, **M**easure, **A**nalyze, **D**esign, **V**erify). Each phase can be freely composed from tool modules (SIPOC, C&E Matrix, Process Capability, MSA, DOE, and many more). All data stays locally in the browser — no backend, no tracking, no runtime dependency on external services.
 
 The project targets quality engineers, Six Sigma practitioners (Green/Black Belts), process improvement specialists, and students looking for a lean, transparent, and extensible alternative to traditional statistics software.
 
@@ -20,12 +20,12 @@ The project targets quality engineers, Six Sigma practitioners (Green/Black Belt
 
 ## Features
 
-- **DMAIC workflow** — Phase tiles (D · M · A · I · C) as the central navigation
+- **Multi-cycle support** — DMAIC and DMADV with phase tiles as the central navigation; extensible to additional methodologies
 - **Module system** — Each tool is a self-contained, standardized module with lifecycle hooks (`init`, `destroy`, `getState`, `setState`)
-- **Custom SVG chart engine** — Scatter, histogram, box plot, control charts, probability plot, Pareto, pie, capability plots — no third-party charting library
+- **Custom SVG chart engine** — Scatter, histogram, box plot, bar chart, control charts, probability plot, individual value plot, Pareto, pie — no third-party charting library
 - **DataGrid** — Built-in spreadsheet component with copy/paste, CSV/XLSX import/export, and undo/redo
 - **Algorithm Lab** — Interactive sandbox for statistical algorithms with LaTeX formulas (KaTeX), syntax highlighting (Prism.js), and a Try-It panel (manual, fixtures, CSV)
-- **Verified statistical engines** — Shapiro-Wilk (AS R94), Anderson-Darling, Jarque-Bera, Cp/Cpk/Pp/Ppk, Pearson/Spearman/Kendall, MSA Type 1 & 2 (Gage R&R), DOE planner
+- **Verified statistical engines** — Shapiro-Wilk (AS R94), Anderson-Darling, Jarque-Bera, Cp/Cpk/Pp/Ppk, Pearson/Spearman/Kendall, MSA Type 1 & 2 (Gage R&R), DOE planner, GLM regression, distribution fitting, hypothesis testing, outlier detection, response optimization
 - **Offline-first** — Persistence via `localStorage` / `IndexedDB`, no network requests after the initial load
 - **Export / Import** — Projects can be saved, versioned, and restored as JSON (with a migration chain for older formats)
 - **Bilingual** — English and German, switchable at runtime, no hardcoded strings
@@ -92,24 +92,21 @@ Simply open `index.html` in any modern browser (current versions of Chrome, Fire
 ```
 DMAIC.io/
 ├── index.html                  # Entry point
-├── app.html                    # Main application shell
 ├── css/                        # Variables, layout, components, modules
 ├── js/
 │   ├── app.js                  # Bootstrap
-│   ├── core/                   # Module registry, event bus, state, i18n, theme
+│   ├── core/                   # Module registry, event bus, state, i18n, theme, cycles
 │   │   ├── chart/              # SVG chart framework
 │   │   └── datagrid/           # Spreadsheet component
 │   ├── engines/                # Statistical engines (normality, capability, MSA, DOE …)
 │   ├── algorithm-lab/          # Interactive algorithm sandbox
-│   ├── modules/                # One folder per tool (SIPOC, C&E Matrix, …)
+│   ├── modules/                # One folder per tool (44 modules across all phases)
 │   └── ui/                     # Sidebar, DMAIC tiles, workspace, help panel, modal
 ├── i18n/                       # de.json · en.json
 ├── tests/                      # Browser-based test runner + fixtures
-├── tools/                      # Fixture generator (Python/SciPy), static-handbook builder
+├── tools/                      # Static-handbook builder
 ├── vendor/                     # SheetJS, KaTeX, Prism.js, PapaParse
-├── assets/icons/               # SVG icons
-├── docs-dist/                  # Generated static handbook (docs.dmaic.io)
-└── CHANGELOG.md
+└── assets/icons/               # SVG icons
 ```
 
 ---
@@ -121,7 +118,7 @@ Every module exports a default object conforming to this contract:
 ```js
 export default {
   id: 'sipoc',
-  phase: 'define',            // define | measure | analyze | improve | control
+  phase: 'define',            // mapped to cycles via manifest.js
   icon: 'clipboard-list',
   i18nKey: 'modules.sipoc',
   version: '1.0.0',
@@ -210,7 +207,7 @@ Contributions are welcome. Before opening a PR for a new tool module:
 2. Place your module under `js/modules/<your-module>/` following the standard structure (`.js`, `.html`, `.css`, `-help.js`).
 3. Add translations in `i18n/de.json` and `i18n/en.json`.
 4. Write tests under `tests/modules/` — include fixture validation for anything with statistical logic.
-5. If your module or help content changes: regenerate the static handbook (`node tools/static-handbook/build.mjs`) and commit `docs-dist/` together with the source changes.
+5. If your module or help content changes: the static handbook (`node tools/static-handbook/build.mjs`) is regenerated automatically during deploy — no need to commit the output.
 6. Update `CHANGELOG.md` following the Keep a Changelog format.
 
 Please file issues and pull requests on GitHub: <https://github.com/DMAIC-IO/DMAIC.io>
@@ -227,7 +224,7 @@ Commercial licensing is available for organizations that cannot comply with the 
 
 ## Roadmap (Excerpt)
 
-- Additional DMAIC modules across all five phases
+- Additional modules across all phases and cycles
 - Extension of the Algorithm Lab with more categories (e.g. time series, non-parametric methods)
 - Expansion of the DOE planner (D-optimal, response-surface methods)
 - More tutorials and walkthroughs in the static handbook (docs.dmaic.io)
