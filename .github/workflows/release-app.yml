@@ -1,0 +1,151 @@
+# Production deploy on stable SemVer tag push.
+#
+# Required GitHub configuration (Settings → Secrets and variables → Actions):
+#
+#   Variables (vars.*):
+#     DEPLOY_HOST   — SSH hostname, e.g. "dmaic.io"
+#     DEPLOY_USER   — SSH username on the server
+#     DEPLOY_PORT   — optional, default 22
+#     DEPLOY_ROOT   — vhost docroot, e.g. "/var/www/dmaic.io"
+#
+#   Secrets (secrets.*):
+#     DEPLOY_SSH_KEY     — private SSH key (PEM) for the deploy user
+#     DEPLOY_KNOWN_HOSTS — known_hosts line(s) for DEPLOY_HOST
+#                          (generate via:  ssh-keyscan -p <port> <host>)
+#
+# Trigger: pushing a tag matching v[0-9]+.[0-9]+.[0-9]+
+# Example: git tag v0.4.0 && git push origin v0.4.0
+
+name: Release App
+
+on:
+  push:
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+'   # strict SemVer; pre-release suffixes don't match
+
+permissions:
+  contents: write   # needed for `gh release create`
+
+concurrency:
+  group: release-app
+  cancel-in-progress: false
+
+jobs:
+  release:
+    name: Deploy and publish ${{ github.ref_name }}
+    runs-on: ubuntu-latest
+
+    env:
+      DEPLOY_HOST: ${{ vars.DEPLOY_HOST }}
+      DEPLOY_USER: ${{ vars.DEPLOY_USER }}
+      DEPLOY_PORT: ${{ vars.DEPLOY_PORT || '22' }}
+      DEPLOY_ROOT: ${{ vars.DEPLOY_ROOT }}
+
+    steps:
+      - name: Checkout (full history for tag log)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Resolve tag metadata
+        id: meta
+        run: |
+          set -euo pipefail
+          TAG="${GITHUB_REF#refs/tags/}"
+          VERSION="${TAG#v}"
+          MAJOR_MINOR=$(echo "$TAG" | sed 's/\.[0-9]\+$//')   # v0.4
+          PREV_TAG=$(git tag --sort=-v:refname | grep -v "^${TAG}$" | head -n1 || true)
+          DATE=$(git log -1 --format=%cs "$TAG")
+          # Annotated tag subject; fall back to commit subject for lightweight tags.
+          TITLE=$(git tag -l --format='%(contents:subject)' "$TAG")
+          [ -z "$TITLE" ] && TITLE=$(git log -1 --format=%s "$TAG")
+          {
+            echo "tag=$TAG"
+            echo "version=$VERSION"
+            echo "major_minor=$MAJOR_MINOR"
+            echo "prev_tag=$PREV_TAG"
+            echo "date=$DATE"
+            echo "title<<HEREDOC"
+            echo "$TITLE"
+            echo "HEREDOC"
+          } >> "$GITHUB_OUTPUT"
+          echo "Resolved: tag=$TAG version=$VERSION major_minor=$MAJOR_MINOR prev=$PREV_TAG date=$DATE title=$TITLE"
+
+      - name: Write per-version release.json
+        env:
+          VERSION: ${{ steps.meta.outputs.version }}
+          DATE: ${{ steps.meta.outputs.date }}
+          TITLE: ${{ steps.meta.outputs.title }}
+        run: |
+          set -euo pipefail
+          # jq -Rs encodes the title as a properly escaped JSON string.
+          jq -n \
+            --arg version "$VERSION" \
+            --arg date    "$DATE" \
+            --arg title   "$TITLE" \
+            '{version: $version, date: $date, title: $title}' \
+            > release.json
+          cat release.json
+
+      - name: Configure SSH (deploy key, known_hosts)
+        run: |
+          set -euo pipefail
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          echo "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/id_deploy
+          chmod 600 ~/.ssh/id_deploy
+          echo "${{ secrets.DEPLOY_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/known_hosts
+
+      - name: Rsync runtime bundle to server staging dir
+        env:
+          TAG: ${{ steps.meta.outputs.tag }}
+        run: |
+          set -euo pipefail
+          ssh -i ~/.ssh/id_deploy -p "$DEPLOY_PORT" "$DEPLOY_USER@$DEPLOY_HOST" \
+            "mkdir -p '$DEPLOY_ROOT/app/.staging'"
+          rsync -avz --delete \
+            --exclude='.git' \
+            --exclude='.github' \
+            --exclude='tests' \
+            --exclude='node_modules' \
+            --exclude='package*.json' \
+            --exclude='package-lock.json' \
+            --exclude='.gitignore' \
+            --exclude='README.md' \
+            -e "ssh -i ~/.ssh/id_deploy -p $DEPLOY_PORT" \
+            ./ \
+            "$DEPLOY_USER@$DEPLOY_HOST:$DEPLOY_ROOT/app/.staging/$TAG/"
+
+      - name: Atomic swap, update symlinks, regenerate versions.json
+        env:
+          TAG: ${{ steps.meta.outputs.tag }}
+          MAJOR_MINOR: ${{ steps.meta.outputs.major_minor }}
+        run: |
+          set -euo pipefail
+          ssh -i ~/.ssh/id_deploy -p "$DEPLOY_PORT" "$DEPLOY_USER@$DEPLOY_HOST" \
+            "DEPLOY_ROOT='$DEPLOY_ROOT' TAG='$TAG' MAJOR_MINOR='$MAJOR_MINOR' bash -s" \
+            < .github/scripts/remote-deploy.sh
+
+      - name: Create GitHub Release with auto-generated notes
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ steps.meta.outputs.tag }}
+          PREV_TAG: ${{ steps.meta.outputs.prev_tag }}
+          TITLE: ${{ steps.meta.outputs.title }}
+        run: |
+          set -euo pipefail
+          if [ -n "$PREV_TAG" ]; then
+            NOTES=$(git log --pretty=format:'- %s (%h)' "${PREV_TAG}..${TAG}")
+          else
+            NOTES=$(git log --pretty=format:'- %s (%h)' "$TAG")
+          fi
+          # Title: "v0.4.0" alone, or "v0.4.0 — Multi-Cycle Support" if tag has annotation.
+          if [ -n "$TITLE" ] && [ "$TITLE" != "$TAG" ]; then
+            DISPLAY_TITLE="$TAG — $TITLE"
+          else
+            DISPLAY_TITLE="$TAG"
+          fi
+          gh release create "$TAG" \
+            --title "$DISPLAY_TITLE" \
+            --notes "$NOTES"
