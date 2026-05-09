@@ -56,7 +56,7 @@ jobs:
         run: |
           set -euo pipefail
           ssh -i ~/.ssh/id_deploy -p "$NIGHTLY_PORT" "$NIGHTLY_USER@$NIGHTLY_HOST" \
-            "mkdir -p '${NIGHTLY_ROOT}.staging'"
+            "mkdir -p '${NIGHTLY_ROOT}'"
           rsync -avz --delete \
             --exclude='.git' \
             --exclude='.github' \
@@ -68,11 +68,5 @@ jobs:
             --exclude='README.md' \
             -e "ssh -i ~/.ssh/id_deploy -p $NIGHTLY_PORT" \
             ./ \
-            "$NIGHTLY_USER@$NIGHTLY_HOST:${NIGHTLY_ROOT}.staging/"
+            "$NIGHTLY_USER@$NIGHTLY_HOST:${NIGHTLY_ROOT}"
 
-      - name: Atomic swap into docroot
-        run: |
-          set -euo pipefail
-          ssh -i ~/.ssh/id_deploy -p "$NIGHTLY_PORT" "$NIGHTLY_USER@$NIGHTLY_HOST" \
-            "NIGHTLY_ROOT='$NIGHTLY_ROOT' bash -s" \
-            < .github/scripts/remote-nightly.sh
