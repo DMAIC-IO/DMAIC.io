@@ -46,12 +46,19 @@ function _renderBanner(i18n) {
   banner.id = 'nightly-banner';
   banner.className = 'nightly-banner';
   banner.setAttribute('role', 'alert');
-  banner.innerHTML = `
-    <span class="nightly-banner__badge" data-i18n="nightly.badge">Nightly</span>
-    <span class="nightly-banner__text" data-i18n="nightly.banner"></span>
-  `;
+
+  const badge = document.createElement('span');
+  badge.className = 'nightly-banner__badge';
+  badge.dataset.i18n = 'nightly.badge';
+  badge.textContent = i18n.t('nightly.badge');
+
+  const text = document.createElement('span');
+  text.className = 'nightly-banner__text';
+  text.dataset.i18n = 'nightly.banner';
+  text.textContent = i18n.t('nightly.banner');
+
+  banner.append(badge, text);
   document.body.prepend(banner);
-  i18n.applyTranslations();
 }
 
 async function _showWelcomeModal(modal, i18n) {
