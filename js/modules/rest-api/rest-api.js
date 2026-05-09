@@ -566,8 +566,9 @@ export default {
         const id = btn.dataset.del;
         const ep = this._endpoints.find(e => e.id === id);
         if (!ep) return;
-        const confirmed = await this._context.showModal.confirm(
-          this._t('deleteConfirm', { name: ep.name || ep.url || this._t('unnamed') })
+        const confirmed = await this._context.confirmPopout(
+          this._t('deleteConfirm', { name: ep.name || ep.url || this._t('unnamed') }),
+          { danger: true }
         );
         if (!confirmed) return;
         this._stopSchedule(id);

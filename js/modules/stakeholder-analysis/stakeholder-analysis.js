@@ -361,7 +361,7 @@ export default {
         e.stopPropagation();
         const sh = this._stakeholders.find(s => s.id === btn.dataset.id);
         if (!sh) return;
-        const confirmed = await this._context.showModal.confirm(
+        const confirmed = await this._context.confirmPopout(
           t('deleteConfirm', { name: sh.name }),
           { danger: true }
         );
@@ -373,9 +373,9 @@ export default {
     });
   },
 
-  // ─── Modal ────────────────────────────────────────────────
+  // ─── Popout Form ──────────────────────────────────────────
 
-  async _openModal(existing, t) {
+  _openModal(existing, t) {
     const isEdit = !!existing;
     const sh = existing || {
       name: '', role: '', power: 3, interest: 3,
@@ -439,52 +439,122 @@ export default {
       </div>
     `;
 
-    const result = await this._context.showModal.form(
-      isEdit ? t('editStakeholder') : t('addStakeholder'),
-      formHtml,
-      {
-        confirmLabel: this._context.i18n.t('common.save'),
-        onMount: (formEl) => {
-          // Wire up slider value displays
-          const powerSlider = formEl.querySelector('[data-field="power"]');
-          const interestSlider = formEl.querySelector('[data-field="interest"]');
-          powerSlider?.addEventListener('input', () => {
-            formEl.querySelector('[data-ref="vPower"]').textContent = powerSlider.value;
-          });
-          interestSlider?.addEventListener('input', () => {
-            formEl.querySelector('[data-ref="vInterest"]').textContent = interestSlider.value;
-          });
-          // Focus name field
-          formEl.querySelector('[data-field="name"]')?.focus();
-        },
-        onConfirm: (formEl) => {
-          const name = formEl.querySelector('[data-field="name"]').value.trim();
-          if (!name) {
-            formEl.querySelector('[data-field="name"]').focus();
-            return false; // prevent close
-          }
-          const data = {
-            id: existing?.id || crypto.randomUUID(),
-            name,
-            role: formEl.querySelector('[data-field="role"]').value.trim(),
-            power: parseInt(formEl.querySelector('[data-field="power"]').value, 10),
-            interest: parseInt(formEl.querySelector('[data-field="interest"]').value, 10),
-            support: formEl.querySelector('[data-field="support"]').value,
-            category: formEl.querySelector('[data-field="category"]').value,
-            notes: formEl.querySelector('[data-field="notes"]').value.trim(),
-          };
-          if (existing) {
-            const idx = this._stakeholders.findIndex(s => s.id === existing.id);
-            if (idx !== -1) this._stakeholders[idx] = data;
-          } else {
-            this._stakeholders.push(data);
-          }
-          this._save();
-          this._render();
-          return true;
-        },
-      }
-    );
+    return new Promise((resolve) => {
+      // ── Build popout overlay (reuses dmike-chart-popout CSS) ──
+      const overlay = document.createElement('div');
+      overlay.className = 'dmike-chart-popout-overlay';
+
+      const win = document.createElement('div');
+      win.className = 'dmike-chart-popout';
+      win.style.width = '520px';
+      win.style.height = 'auto';
+      win.style.maxHeight = '80vh';
+      win.style.left = 'calc(50% - 260px)';
+      win.style.top = '60px';
+
+      const titleBar = document.createElement('div');
+      titleBar.className = 'dmike-chart-popout-titlebar';
+      const titleText = document.createElement('span');
+      titleText.textContent = isEdit ? t('editStakeholder') : t('addStakeholder');
+      const closeBtn = document.createElement('button');
+      closeBtn.className = 'dmike-chart-popout-close';
+      closeBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>';
+      titleBar.append(titleText, closeBtn);
+
+      const body = document.createElement('div');
+      body.className = 'dmike-chart-popout-body sha__popout-body';
+
+      const formArea = document.createElement('div');
+      formArea.className = 'sha__popout-form';
+      formArea.innerHTML = formHtml;
+
+      const footer = document.createElement('div');
+      footer.className = 'sha__popout-footer';
+      const cancelBtn = document.createElement('button');
+      cancelBtn.className = 'btn btn--secondary';
+      cancelBtn.textContent = this._context.i18n.t('common.cancel');
+      const saveBtn = document.createElement('button');
+      saveBtn.className = 'btn btn--primary';
+      saveBtn.textContent = this._context.i18n.t('common.save');
+      footer.append(cancelBtn, saveBtn);
+
+      body.append(formArea, footer);
+      win.append(titleBar, body);
+      overlay.appendChild(win);
+      document.body.appendChild(overlay);
+
+      // ── Drag title bar ──
+      let dragX = 0, dragY = 0, isDragging = false;
+      const onDragStart = (e) => {
+        if (closeBtn.contains(e.target)) return;
+        isDragging = true;
+        dragX = e.clientX - win.offsetLeft;
+        dragY = e.clientY - win.offsetTop;
+        win.style.transition = 'none';
+      };
+      const onDragMove = (e) => {
+        if (!isDragging) return;
+        win.style.left = (e.clientX - dragX) + 'px';
+        win.style.top = (e.clientY - dragY) + 'px';
+      };
+      const onDragEnd = () => { isDragging = false; win.style.transition = ''; };
+      titleBar.addEventListener('mousedown', onDragStart);
+      window.addEventListener('mousemove', onDragMove);
+      window.addEventListener('mouseup', onDragEnd);
+
+      const close = (result) => {
+        window.removeEventListener('mousemove', onDragMove);
+        window.removeEventListener('mouseup', onDragEnd);
+        window.removeEventListener('keydown', onKeyDown);
+        overlay.remove();
+        resolve(result);
+      };
+      const onKeyDown = (e) => { if (e.key === 'Escape') close(false); };
+      window.addEventListener('keydown', onKeyDown);
+      closeBtn.addEventListener('click', () => close(false));
+      cancelBtn.addEventListener('click', () => close(false));
+      overlay.addEventListener('click', (e) => { if (e.target === overlay) close(false); });
+
+      // ── Wire up sliders + initial focus ──
+      const powerSlider = formArea.querySelector('[data-field="power"]');
+      const interestSlider = formArea.querySelector('[data-field="interest"]');
+      powerSlider?.addEventListener('input', () => {
+        formArea.querySelector('[data-ref="vPower"]').textContent = powerSlider.value;
+      });
+      interestSlider?.addEventListener('input', () => {
+        formArea.querySelector('[data-ref="vInterest"]').textContent = interestSlider.value;
+      });
+      formArea.querySelector('[data-field="name"]')?.focus();
+
+      // ── Save ──
+      saveBtn.addEventListener('click', () => {
+        const nameField = formArea.querySelector('[data-field="name"]');
+        const name = nameField.value.trim();
+        if (!name) {
+          nameField.focus();
+          return;
+        }
+        const data = {
+          id: existing?.id || crypto.randomUUID(),
+          name,
+          role: formArea.querySelector('[data-field="role"]').value.trim(),
+          power: parseInt(formArea.querySelector('[data-field="power"]').value, 10),
+          interest: parseInt(formArea.querySelector('[data-field="interest"]').value, 10),
+          support: formArea.querySelector('[data-field="support"]').value,
+          category: formArea.querySelector('[data-field="category"]').value,
+          notes: formArea.querySelector('[data-field="notes"]').value.trim(),
+        };
+        if (existing) {
+          const idx = this._stakeholders.findIndex(s => s.id === existing.id);
+          if (idx !== -1) this._stakeholders[idx] = data;
+        } else {
+          this._stakeholders.push(data);
+        }
+        this._save();
+        this._render();
+        close(true);
+      });
+    });
   },
 
   // ─── Persistence ──────────────────────────────────────────

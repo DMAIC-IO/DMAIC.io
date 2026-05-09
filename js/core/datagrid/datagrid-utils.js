@@ -256,17 +256,100 @@ export function detectInputType(raw) {
 // ─── Column Analysis ──────────────────────────────────────
 
 /**
+ * Normalize a text value for exact-match cluster comparison.
+ *
+ * Conservative folding only — case, whitespace, ß, and combining diacritics.
+ * Aggressive typo detection (e.g. Mueller ↔ Muller) is handled separately by
+ * the fuzzy phase via {@link damerauLevenshtein}.
+ *
+ * Stages:
+ *   1. NFKC, trim, collapse internal whitespace, locale-aware lowercase.
+ *   2. ß → ss (universal German transliteration).
+ *   3. NFD + strip combining marks (\p{M}). Catches: Müller→muller (¨ stripped),
+ *      café→cafe, naïve→naive, Straße→strasse (after step 2).
+ *
+ * Result: Müller/Muller exact-match. Mueller stays distinct (caught by fuzzy).
+ * @param {string} s
+ * @returns {string}
+ */
+export function normalizeTextForClustering(s) {
+  let n = String(s).normalize('NFKC').trim().replace(/\s+/g, ' ').toLocaleLowerCase();
+  n = n.replace(/ß/g, 'ss');
+  n = n.normalize('NFD').replace(/\p{M}+/gu, '').normalize('NFC');
+  return n;
+}
+
+/**
+ * Damerau-Levenshtein edit distance with optional cap for early termination.
+ * Counts insertions, deletions, substitutions, and adjacent transpositions
+ * (so "teh" ↔ "the" = 1). Returns `maxDist + 1` when distance exceeds the cap,
+ * which lets callers prune impossible matches cheaply.
+ * @param {string} a
+ * @param {string} b
+ * @param {number} [maxDist=Infinity]
+ * @returns {number}
+ */
+export function damerauLevenshtein(a, b, maxDist = Infinity) {
+  if (a === b) return 0;
+  const la = a.length, lb = b.length;
+  if (Math.abs(la - lb) > maxDist) return maxDist + 1;
+  if (la === 0) return lb;
+  if (lb === 0) return la;
+
+  // Two-row + transposition row, Damerau variant.
+  let prevPrev = new Array(lb + 1);
+  let prev = new Array(lb + 1);
+  let curr = new Array(lb + 1);
+  for (let j = 0; j <= lb; j++) prev[j] = j;
+
+  for (let i = 1; i <= la; i++) {
+    curr[0] = i;
+    let rowMin = curr[0];
+    const ai = a.charCodeAt(i - 1);
+    const aim1 = i > 1 ? a.charCodeAt(i - 2) : -1;
+    for (let j = 1; j <= lb; j++) {
+      const bj = b.charCodeAt(j - 1);
+      const cost = ai === bj ? 0 : 1;
+      let v = Math.min(
+        curr[j - 1] + 1,    // insert
+        prev[j] + 1,        // delete
+        prev[j - 1] + cost, // substitute
+      );
+      if (i > 1 && j > 1 && ai === b.charCodeAt(j - 2) && aim1 === bj) {
+        v = Math.min(v, prevPrev[j - 2] + 1); // transposition
+      }
+      curr[j] = v;
+      if (v < rowMin) rowMin = v;
+    }
+    if (rowMin > maxDist) return maxDist + 1;
+    [prevPrev, prev, curr] = [prev, curr, prevPrev];
+  }
+  return prev[lb];
+}
+
+/** Adaptive edit-distance threshold by token length. */
+function fuzzyThresholdFor(len) {
+  if (len < 4) return 0;       // too short — too many false positives
+  if (len <= 7) return 1;
+  if (len <= 11) return 2;
+  return 3;
+}
+
+/**
  * Analyze a column's values and classify each cell by detected data type.
  * Determines the dominant type from actual values (ignores declared column type)
- * and reports cells that deviate from the majority as outliers.
+ * and reports cells that deviate from the majority as outliers. For text-typed
+ * values, also groups raw variants that collapse to the same normalized form
+ * (case- and whitespace-folded) so the user can spot likely typos.
  * @param {{ type: string, values: Array<*> }} col
  * @param {number} rowCount
- * @returns {{ total: number, empty: number, dominantType: string|null, types: Object<string, { count: number, rows: number[] }>, outliers: { count: number, rows: number[], values: string[], types: string[] } }}
+ * @returns {{ total: number, empty: number, dominantType: string|null, types: Object<string, { count: number, rows: number[] }>, outliers: { count: number, rows: number[], values: string[], types: string[] }, textClusters: Array<{ normalForm: string, total: number, variants: Array<{ value: string, count: number, firstRow: number }> }> }}
  */
 export function analyzeColumn(col, rowCount) {
   const total = rowCount;
   let empty = 0;
   const types = {};
+  const clusterMap = new Map(); // normForm → Map<rawValue, { count, firstRow }>
 
   for (let i = 0; i < rowCount; i++) {
     const val = col.values[i];
@@ -287,6 +370,16 @@ export function analyzeColumn(col, rowCount) {
     if (!types[detectedType]) types[detectedType] = { count: 0, rows: [] };
     types[detectedType].count++;
     types[detectedType].rows.push(i);
+
+    if (detectedType === 'text') {
+      const raw = String(val);
+      const norm = normalizeTextForClustering(raw);
+      let variants = clusterMap.get(norm);
+      if (!variants) { variants = new Map(); clusterMap.set(norm, variants); }
+      let entry = variants.get(raw);
+      if (!entry) { entry = { count: 0, firstRow: i }; variants.set(raw, entry); }
+      entry.count++;
+    }
   }
 
   let dominantType = null;
@@ -318,5 +411,99 @@ export function analyzeColumn(col, rowCount) {
     outliers.types = sortedTypes;
   }
 
-  return { total, empty, dominantType, types, outliers };
+  // Phase 1: build groups keyed by exact normalized form. Each group is a
+  // single-link union-find node; phase 2 may merge them via fuzzy match.
+  const groupKeys = [...clusterMap.keys()];
+  const groupVariants = groupKeys.map(k => {
+    const variants = clusterMap.get(k);
+    return Array.from(variants.entries())
+      .map(([value, v]) => ({ value, count: v.count, firstRow: v.firstRow, viaFuzzy: false }));
+  });
+  const G = groupKeys.length;
+  const parent = groupKeys.map((_, i) => i);
+  const find = (i) => { while (parent[i] !== i) { parent[i] = parent[parent[i]]; i = parent[i]; } return i; };
+  const union = (a, b) => { const ra = find(a), rb = find(b); if (ra !== rb) parent[ra] = rb; };
+
+  // Phase 2: fuzzy merge. Skip for very large columns to keep diagnose
+  // responsive — the user can still spot variants via the exact-match groups.
+  const FUZZY_LIMIT = 2000;
+  const fuzzyEdges = []; // [groupIdxA, groupIdxB] pairs that were fuzzy-merged
+  if (G > 1 && G <= FUZZY_LIMIT) {
+    // Bucket by normalized-form length for length-filter pruning.
+    const byLen = new Map();
+    for (let i = 0; i < G; i++) {
+      const len = groupKeys[i].length;
+      if (!byLen.has(len)) byLen.set(len, []);
+      byLen.get(len).push(i);
+    }
+    const lengths = [...byLen.keys()].sort((a, b) => a - b);
+    const maxThreshold = 3;
+    for (let li = 0; li < lengths.length; li++) {
+      const lenA = lengths[li];
+      for (let lj = li; lj < lengths.length && lengths[lj] - lenA <= maxThreshold; lj++) {
+        const lenB = lengths[lj];
+        const arrA = byLen.get(lenA);
+        const arrB = byLen.get(lenB);
+        for (let i = 0; i < arrA.length; i++) {
+          const idxA = arrA[i];
+          const keyA = groupKeys[idxA];
+          const startJ = (lenA === lenB) ? i + 1 : 0;
+          for (let j = startJ; j < arrB.length; j++) {
+            const idxB = arrB[j];
+            const keyB = groupKeys[idxB];
+            const threshold = fuzzyThresholdFor(Math.max(lenA, lenB));
+            if (threshold === 0) continue;
+            if (Math.abs(lenA - lenB) > threshold) continue;
+            if (find(idxA) === find(idxB)) continue;
+            const dist = damerauLevenshtein(keyA, keyB, threshold);
+            if (dist <= threshold) {
+              fuzzyEdges.push([idxA, idxB]);
+              union(idxA, idxB);
+            }
+          }
+        }
+      }
+    }
+  }
+
+  // Group the exact-match groups by their union-find root, then within each
+  // cluster pick the largest group (by total count) as the anchor. Anchor
+  // variants stay unmarked; variants from other groups get viaFuzzy=true so
+  // the UI can flag them with ≈.
+  const clustersByRoot = new Map();
+  for (let i = 0; i < G; i++) {
+    const r = find(i);
+    if (!clustersByRoot.has(r)) clustersByRoot.set(r, []);
+    clustersByRoot.get(r).push(i);
+  }
+
+  const textClusters = [];
+  for (const groupIdxs of clustersByRoot.values()) {
+    const groupTotals = groupIdxs.map(gi => groupVariants[gi].reduce((s, v) => s + v.count, 0));
+    let anchorPos = 0;
+    for (let i = 1; i < groupIdxs.length; i++) {
+      if (groupTotals[i] > groupTotals[anchorPos]) anchorPos = i;
+    }
+    if (groupIdxs.length > 1) {
+      for (let i = 0; i < groupIdxs.length; i++) {
+        if (i === anchorPos) continue;
+        for (const v of groupVariants[groupIdxs[i]]) v.viaFuzzy = true;
+      }
+    }
+    const allVariants = [];
+    for (const gi of groupIdxs) allVariants.push(...groupVariants[gi]);
+    if (allVariants.length < 2) continue;
+    allVariants.sort((a, b) => b.count - a.count || a.value.localeCompare(b.value));
+    const clusterTotal = allVariants.reduce((s, v) => s + v.count, 0);
+    const hasFuzzy = allVariants.some(v => v.viaFuzzy);
+    textClusters.push({
+      normalForm: groupKeys[groupIdxs[anchorPos]],
+      total: clusterTotal,
+      variants: allVariants,
+      hasFuzzy,
+    });
+  }
+  textClusters.sort((a, b) => b.total - a.total || b.variants.length - a.variants.length);
+
+  return { total, empty, dominantType, types, outliers, textClusters };
 }

@@ -326,6 +326,39 @@
   opacity: 1;
 }
 
+/* ── Compact popout (confirm / alert dialogs) ─────────────── */
+/* Overrides the default 280px min-height and disables resize, so short
+   dialogs (confirm, alert) don't get padded out to chart-sized boxes. */
+.dmike-chart-popout--compact {
+  min-height: 0;
+  resize: none;
+}
+
+/* ── Popout body column layout (form + footer / message + footer) ── */
+/* dmike-chart-popout-body is `flex: 1; overflow: hidden` by default. Add
+   this modifier when the body hosts stacked sections (e.g. scrollable
+   content + sticky footer). */
+.dmike-popout-body--column {
+  display: flex;
+  flex-direction: column;
+}
+
+.dmike-popout-message {
+  padding: var(--spacing-lg);
+  color: var(--color-text-primary);
+  line-height: 1.5;
+  overflow-y: auto;
+}
+
+.dmike-popout-footer {
+  flex-shrink: 0;
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-md) var(--spacing-lg);
+  border-top: var(--border-width) solid var(--color-border-secondary);
+}
+
 /* ── Editor Panel (shared) ────────────────────────────────── */
 
 /* Editor panel container (slide-out) */

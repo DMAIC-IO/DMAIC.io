@@ -1024,7 +1024,7 @@ export default {
   async _orgDeleteNode(id, t) {
     const node = this._orgNodes.find(n => n.id === id);
     if (!node) return;
-    const confirmed = await this._context.showModal.confirm(
+    const confirmed = await this._context.confirmPopout(
       t('orgDeleteConfirm', { name: node.title || t('nodeTitle') }),
       { danger: true }
     );

@@ -3594,6 +3594,26 @@
       "tzLosAngeles": "US Westküste (PST/PDT)",
       "tzMexicoCity": "Mexiko-Stadt (CST/CDT)",
       "tzSaoPaulo": "São Paulo (BRT)"
+    },
+    "triz-contradiction-matrix": {
+      "name": "Widerspruchsmatrix (TRIZ)",
+      "description": "Erfinderische Prinzipien für technische Widersprüche nach Altschuller",
+      "subtitle": "Wähle einen zu verbessernden und einen sich dabei verschlechternden Parameter — die Matrix empfiehlt erfinderische Prinzipien.",
+      "problemHeading": "Problembeschreibung",
+      "problemPlaceholder": "z.B. Die Tragstruktur soll fester werden — wird dabei aber zu schwer.",
+      "improvingParameter": "Zu verbessernder Parameter",
+      "worseningParameter": "Sich verschlechternder Parameter",
+      "selectPlaceholder": "— Parameter wählen —",
+      "swap": "Parameter tauschen",
+      "reset": "Zurücksetzen",
+      "recommendedHeading": "Empfohlene erfinderische Prinzipien",
+      "hintSelectBoth": "Beide Parameter wählen, um Empfehlungen zu sehen.",
+      "warnSameParameter": "Verbessernder und verschlechternder Parameter sind gleich — kein Widerspruch.",
+      "noContradiction": "Für diese Kombination liegt in der Standard-Matrix keine Empfehlung vor.",
+      "showMatrix": "Vollständige Matrix anzeigen",
+      "hideMatrix": "Matrix ausblenden",
+      "matrixLegend": "Zeile = Verbesserung (↑), Spalte = Verschlechterung (↓). Zahl in Zelle = Anzahl empfohlener Prinzipien. Klick auf eine Zelle setzt die Auswahl.",
+      "matrixCornerTip": "Zeile = Verbesserung, Spalte = Verschlechterung"
     }
   }
 }

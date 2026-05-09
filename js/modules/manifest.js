@@ -382,4 +382,15 @@ export default [
       dmadv: { phase: 'verify',  allowedPhases: ['verify']  },
     },
   },
+
+  // ─── Extras (cycle-independent catch-all, trailing tile) ─────
+  // Modules with cycles: {} land in the trailing extras tile (⋯) —
+  // the registry's cycle-mapping check (`m.cycles?.[cycleId]`) returns
+  // undefined for every cycle, so getByCycleAndPhase('extras') matches.
+  {
+    id: 'triz-contradiction-matrix',
+    phase: 'improve',
+    load: () => import('./triz-contradiction-matrix/triz-contradiction-matrix.js'),
+    cycles: {},
+  },
 ];

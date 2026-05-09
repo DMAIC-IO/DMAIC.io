@@ -407,7 +407,7 @@ export default {
     const node = findNode(id, this._nodes);
     // If node has children, ask confirmation
     if (node && node.children.length > 0) {
-      this._context.showModal.confirm(t('deleteConfirm')).then(confirmed => {
+      this._context.confirmPopout(t('deleteConfirm'), { danger: true }).then(confirmed => {
         if (!confirmed) return;
         const idx = arr.findIndex(n => n.id === id);
         if (idx > -1) arr.splice(idx, 1);

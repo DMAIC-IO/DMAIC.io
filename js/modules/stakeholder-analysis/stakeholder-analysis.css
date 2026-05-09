@@ -554,3 +554,25 @@
 .sha__slider-group .dmike-slider {
   width: 100%;
 }
+
+/* ===== Popout form layout (overrides dmike-chart-popout-body to allow scrollable form + footer) ===== */
+.sha__popout-body {
+  display: flex;
+  flex-direction: column;
+}
+
+.sha__popout-form {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: var(--spacing-lg);
+}
+
+.sha__popout-footer {
+  flex-shrink: 0;
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-md) var(--spacing-lg);
+  border-top: var(--border-width) solid var(--color-border-secondary);
+}

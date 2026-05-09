@@ -128,7 +128,7 @@ export const problemMethods = {
         const img = (this._images[kind] || []).find(x => x.id === id);
         if (!img) return;
         const label = (img.caption && img.caption.trim()) || `#${this._images[kind].indexOf(img) + 1}`;
-        const ok = await this._context.showModal.confirm(
+        const ok = await this._context.confirmPopout(
           t('delImageConfirm', { name: label }),
           {
             title: this._context.i18n.t('common.delete'),

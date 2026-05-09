@@ -383,7 +383,7 @@ export default {
         e.stopPropagation();
         const voc = this._vocs.find(v => v.id === btn.dataset.vocId);
         if (!voc) return;
-        const confirmed = await this._context.showModal.confirm(
+        const confirmed = await this._context.confirmPopout(
           t('deleteVocConfirm'),
           { danger: true }
         );

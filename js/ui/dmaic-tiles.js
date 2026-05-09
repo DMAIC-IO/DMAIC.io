@@ -449,6 +449,14 @@ export class DmaicTiles {
     this._eventBus.on('module:removed', () => {});
     this._eventBus.on('badge:update', () => {});
     this._eventBus.on('language:changed', () => this._refreshLabels());
+    // Sync highlight when another component (e.g. workspace) drives the phase
+    // change. Equality guard prevents the self-emit from `_selectPhase` from
+    // looping back through here.
+    this._eventBus.on('phase:selected', ({ phase }) => {
+      if (this._activePhase === phase) return;
+      this._activePhase = phase;
+      this._highlightActive();
+    });
   }
 
   _refreshLabels() {

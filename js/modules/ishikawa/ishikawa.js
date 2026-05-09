@@ -986,7 +986,7 @@ const mod = {
     const message = descIds.length > 0
       ? t('delRowConfirmWithSubs', { name: label, count: descIds.length })
       : t('delRowConfirm', { name: label });
-    const confirmed = await this._context.showModal.confirm(message, {
+    const confirmed = await this._context.confirmPopout(message, {
       title: i18n.t('common.delete'),
       confirmLabel: i18n.t('common.delete'),
       danger: true,
@@ -1044,7 +1044,7 @@ const mod = {
   async _loadSnapshot(id, t) {
     const snap = this._snapshots.find(s => s.id === id);
     if (!snap) return;
-    const confirmed = await this._context.showModal.confirm(t('loadSnapConfirm'));
+    const confirmed = await this._context.confirmPopout(t('loadSnapConfirm'));
     if (!confirmed) return;
     const d = snap.data;
     this._problem = d.problem || '';

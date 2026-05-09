@@ -6,6 +6,7 @@
 
 import { History } from './datagrid-history.js';
 import { isFormula, evaluateFormula, recalcAllFormulas } from './datagrid-formula.js';
+import { detectPattern, generateFill, shiftFormulaRefs, withCtrlModifier } from './datagrid-fill.js';
 import {
   uid, clamp, parseNumeric, formatNumber,
   COLUMN_TYPES, isNumericType, formatCellValue,
@@ -612,6 +613,21 @@ export class DataGrid {
         }
         break;
       }
+      case 'fill': {
+        // Restore each (col, row) we touched to its pre-fill value & formula.
+        for (const colIdx of Object.keys(action.oldData)) {
+          const col = this.columns[parseInt(colIdx)];
+          if (!col) continue;
+          const valMap = action.oldData[colIdx];
+          const fmlMap = action.oldFormulas?.[colIdx] || {};
+          for (const rowIdx of Object.keys(valMap)) {
+            const r = parseInt(rowIdx);
+            col.values[r] = valMap[rowIdx];
+            if (col.formulas) col.formulas[r] = fmlMap[rowIdx] ?? null;
+          }
+        }
+        break;
+      }
       case 'clear': {
         const { startCol, startRow, oldData, oldFormulas } = action;
         for (let ci = 0; ci < oldData.length; ci++) {
@@ -707,6 +723,20 @@ export class DataGrid {
           if (!col) continue;
           for (let ri = 0; ri < newData[ci].length; ri++) {
             col.values[startRow + ri] = newData[ci][ri];
+          }
+        }
+        break;
+      }
+      case 'fill': {
+        for (const colIdx of Object.keys(action.newData)) {
+          const col = this.columns[parseInt(colIdx)];
+          if (!col) continue;
+          const valMap = action.newData[colIdx];
+          const fmlMap = action.newFormulas?.[colIdx] || {};
+          for (const rowIdx of Object.keys(valMap)) {
+            const r = parseInt(rowIdx);
+            col.values[r] = valMap[rowIdx];
+            if (col.formulas) col.formulas[r] = fmlMap[rowIdx] ?? null;
           }
         }
         break;
@@ -951,6 +981,14 @@ export class DataGrid {
     this.tableEl.appendChild(this.theadEl);
     this.tableEl.appendChild(this.tbodyEl);
     this.scrollDiv.appendChild(this.tableEl);
+
+    // Fill-handle drag preview overlay (Excel-like dashed marquee).
+    // Lives inside scrollDiv so it auto-scrolls with the content.
+    this.fillPreviewEl = document.createElement('div');
+    this.fillPreviewEl.className = 'datagrid__fill-preview';
+    this.fillPreviewEl.style.display = 'none';
+    this.scrollDiv.appendChild(this.fillPreviewEl);
+
     this.container.appendChild(this.scrollDiv);
 
     // Aliases for backward compat with event binding / selection code
@@ -1092,12 +1130,14 @@ export class DataGrid {
   }
 
   _renderSelection() {
-    this.bodyDiv.querySelectorAll('.cell-selected, .cell-active').forEach(el => {
-      el.classList.remove('cell-selected', 'cell-active');
+    this.bodyDiv.querySelectorAll('.cell-selected, .cell-active, .cell-fill-anchor').forEach(el => {
+      el.classList.remove('cell-selected', 'cell-active', 'cell-fill-anchor');
     });
     this.headerDiv.querySelectorAll('.col-selected').forEach(el => el.classList.remove('col-selected'));
     this.bodyDiv.querySelectorAll('.row-header-selected').forEach(el => el.classList.remove('row-header-selected'));
-
+    // Detach the fill handle whenever selection changes — gets re-attached
+    // at the bottom-right of the new selection below.
+    if (this.fillHandleEl?.parentNode) this.fillHandleEl.parentNode.removeChild(this.fillHandleEl);
     if (!this.selection) return;
     const s = this.selection;
     const c1 = Math.min(s.startCol, s.endCol);
@@ -1126,6 +1166,22 @@ export class DataGrid {
     if (thRow) {
       for (let c = c1; c <= c2; c++) {
         thRow.children[c + 1]?.classList.add('col-selected');
+      }
+    }
+
+    // Fill handle on the bottom-right cell of the selection bounding box.
+    // Anchor cell needs overflow:visible so the handle can extend slightly
+    // past the cell edge — that's what .cell-fill-anchor enables in CSS.
+    if (!this.editingCell) {
+      const anchorTd = rows[r2]?.children[c2 + 1];
+      if (anchorTd) {
+        anchorTd.classList.add('cell-fill-anchor');
+        if (!this.fillHandleEl) {
+          this.fillHandleEl = document.createElement('div');
+          this.fillHandleEl.className = 'datagrid__fill-handle';
+          this.fillHandleEl.addEventListener('mousedown', (e) => this._onFillHandleMouseDown(e));
+        }
+        anchorTd.appendChild(this.fillHandleEl);
       }
     }
   }
@@ -1273,6 +1329,11 @@ export class DataGrid {
   }
 
   _onMouseMove(e) {
+    if (this._fillDrag) {
+      this._updateFillDrag(e);
+      return;
+    }
+
     if (this._resizing) {
       const dx = e.clientX - this._resizing.startX;
       const newWidth = Math.max(50, this._resizing.startWidth + dx);
@@ -1323,6 +1384,7 @@ export class DataGrid {
   _onMouseUp() {
     this._rowDragPending = null;
     this._colDragPending = null;
+    if (this._fillDrag) { this._finishFillDrag(); return; }
     if (this._rowDrag) { this._finishRowDrag(); return; }
     if (this._colDrag) { this._finishColDrag(); return; }
     if (this._resizing) {
@@ -1333,6 +1395,320 @@ export class DataGrid {
     if (this.isSelecting) {
       this.isSelecting = false;
     }
+  }
+
+  // ─── Fill-handle drag (Excel-like) ──────────────────────────
+
+  _onFillHandleMouseDown(e) {
+    if (!this.selection) return;
+    e.preventDefault();
+    e.stopPropagation();
+    const s = this.selection;
+    this._fillDrag = {
+      // Original (source) selection bounds — frozen for the duration of the drag.
+      srcC1: Math.min(s.startCol, s.endCol),
+      srcC2: Math.max(s.startCol, s.endCol),
+      srcR1: Math.min(s.startRow, s.endRow),
+      srcR2: Math.max(s.startRow, s.endRow),
+      // Current target range (defaults to source = no-op).
+      tgtC1: Math.min(s.startCol, s.endCol),
+      tgtC2: Math.max(s.startCol, s.endCol),
+      tgtR1: Math.min(s.startRow, s.endRow),
+      tgtR2: Math.max(s.startRow, s.endRow),
+      axis: null, // 'v' | 'h' — locked once movement starts
+      ctrl: !!(e.ctrlKey || e.metaKey), // Excel's Ctrl modifier — refreshed on each move
+    };
+    this.container.classList.add('datagrid--fill-dragging');
+    this._renderFillPreview();
+  }
+
+  _updateFillDrag(e) {
+    const fd = this._fillDrag;
+    // Refresh Ctrl/Cmd state on every move so toggling mid-drag works.
+    fd.ctrl = !!(e.ctrlKey || e.metaKey);
+    this.container.classList.toggle('datagrid--fill-ctrl', fd.ctrl);
+    const cell = this._getCellFromEvent(e);
+    if (!cell) return;
+
+    // Decide axis on first meaningful move (sticky once chosen).
+    if (fd.axis == null) {
+      const dC = Math.max(0, cell.colIdx - fd.srcC2, fd.srcC1 - cell.colIdx);
+      const dR = Math.max(0, cell.rowIdx - fd.srcR2, fd.srcR1 - cell.rowIdx);
+      if (dC === 0 && dR === 0) {
+        // Still on source — no axis lock yet, leave target = source.
+        fd.tgtC1 = fd.srcC1; fd.tgtC2 = fd.srcC2;
+        fd.tgtR1 = fd.srcR1; fd.tgtR2 = fd.srcR2;
+        this._renderFillPreview();
+        return;
+      }
+      fd.axis = dR >= dC ? 'v' : 'h';
+    }
+
+    if (fd.axis === 'v') {
+      // Vertical fill: extend rows above or below source, columns stay = source columns.
+      fd.tgtC1 = fd.srcC1; fd.tgtC2 = fd.srcC2;
+      if (cell.rowIdx > fd.srcR2) {
+        fd.tgtR1 = fd.srcR1; fd.tgtR2 = cell.rowIdx;
+      } else if (cell.rowIdx < fd.srcR1) {
+        fd.tgtR1 = cell.rowIdx; fd.tgtR2 = fd.srcR2;
+      } else {
+        fd.tgtR1 = fd.srcR1; fd.tgtR2 = fd.srcR2;
+      }
+    } else {
+      // Horizontal fill
+      fd.tgtR1 = fd.srcR1; fd.tgtR2 = fd.srcR2;
+      if (cell.colIdx > fd.srcC2) {
+        fd.tgtC1 = fd.srcC1; fd.tgtC2 = cell.colIdx;
+      } else if (cell.colIdx < fd.srcC1) {
+        fd.tgtC1 = cell.colIdx; fd.tgtC2 = fd.srcC2;
+      } else {
+        fd.tgtC1 = fd.srcC1; fd.tgtC2 = fd.srcC2;
+      }
+    }
+    this._renderFillPreview();
+  }
+
+  _renderFillPreview() {
+    const fd = this._fillDrag;
+    if (!fd || !this.fillPreviewEl) return;
+    const rows = this.tbodyEl.children;
+    const tlTd = rows[fd.tgtR1]?.children[fd.tgtC1 + 1];
+    const brTd = rows[fd.tgtR2]?.children[fd.tgtC2 + 1];
+    if (!tlTd || !brTd) { this.fillPreviewEl.style.display = 'none'; return; }
+    const sRect = this.scrollDiv.getBoundingClientRect();
+    const tl = tlTd.getBoundingClientRect();
+    const br = brTd.getBoundingClientRect();
+    const left = (tl.left - sRect.left) + this.scrollDiv.scrollLeft;
+    const top  = (tl.top  - sRect.top)  + this.scrollDiv.scrollTop;
+    this.fillPreviewEl.style.left   = left + 'px';
+    this.fillPreviewEl.style.top    = top + 'px';
+    this.fillPreviewEl.style.width  = (br.right - tl.left) + 'px';
+    this.fillPreviewEl.style.height = (br.bottom - tl.top) + 'px';
+    this.fillPreviewEl.style.display = 'block';
+  }
+
+  _cancelFillDrag() {
+    this._fillDrag = null;
+    if (this.fillPreviewEl) this.fillPreviewEl.style.display = 'none';
+    this.container.classList.remove('datagrid--fill-dragging');
+    this.container.classList.remove('datagrid--fill-ctrl');
+  }
+
+  _finishFillDrag() {
+    const fd = this._fillDrag;
+    this._cancelFillDrag();
+    if (!fd) return;
+    // No-op if user released inside source range.
+    const sameAsSrc = fd.tgtC1 === fd.srcC1 && fd.tgtC2 === fd.srcC2
+                   && fd.tgtR1 === fd.srcR1 && fd.tgtR2 === fd.srcR2;
+    if (sameAsSrc) return;
+    this._applyFill(fd);
+  }
+
+  /**
+   * Apply an Excel-like fill from `srcR1..srcR2 × srcC1..srcC2` to the
+   * extended target rectangle `tgtR1..tgtR2 × tgtC1..tgtC2`. Honours column
+   * locks (skipping them and emitting `cell:edit-blocked`), pushes a single
+   * 'fill' history action, then re-renders.
+   *
+   * @param {{srcC1:number,srcC2:number,srcR1:number,srcR2:number,
+   *          tgtC1:number,tgtC2:number,tgtR1:number,tgtR2:number,axis:'v'|'h'}} fd
+   */
+  _applyFill(fd) {
+    const { axis } = fd;
+    const isVertical = axis === 'v';
+    // Direction: forward (down/right) when target extends past source end,
+    // backward (up/left) when target extends before source start.
+    const dir = isVertical
+      ? (fd.tgtR2 > fd.srcR2 ? 1 : -1)
+      : (fd.tgtC2 > fd.srcC2 ? 1 : -1);
+
+    const numCols = this.columns.length;
+    const blockedCols = new Set();
+    const oldData = {};      // colIdx → { rowIdx → oldValue }
+    const oldFormulas = {};  // colIdx → { rowIdx → oldFormula }
+    const newData = {};
+    const newFormulas = {};
+
+    const recordOld = (colIdx, rowIdx) => {
+      const col = this.columns[colIdx];
+      if (!col) return;
+      (oldData[colIdx] ||= {})[rowIdx] = col.values[rowIdx];
+      (oldFormulas[colIdx] ||= {})[rowIdx] = col.formulas?.[rowIdx] ?? null;
+    };
+    const writeNew = (colIdx, rowIdx, value, formula) => {
+      const col = this.columns[colIdx];
+      if (!col) return;
+      col.values[rowIdx] = value;
+      if (col.formulas) col.formulas[rowIdx] = formula ?? null;
+      (newData[colIdx] ||= {})[rowIdx] = value;
+      (newFormulas[colIdx] ||= {})[rowIdx] = formula ?? null;
+    };
+
+    if (isVertical) {
+      // For each column in the source range, build a source vector (rows) and
+      // generate values for the rows above/below.
+      for (let c = fd.srcC1; c <= fd.srcC2; c++) {
+        const col = this.columns[c];
+        if (!col) continue;
+        if (col.meta?.lock) { blockedCols.add(c); continue; }
+        const srcLen = fd.srcR2 - fd.srcR1 + 1;
+        const sourceCells = [];
+        for (let r = fd.srcR1; r <= fd.srcR2; r++) {
+          sourceCells.push({ value: col.values[r], formula: col.formulas?.[r] || null });
+        }
+        const pattern = withCtrlModifier(detectPattern(sourceCells, col.type), fd.ctrl);
+
+        if (dir === 1) {
+          const count = fd.tgtR2 - fd.srcR2;
+          if (count <= 0) continue;
+          while (fd.tgtR2 >= this.rowCount) this.addRows(1);
+          const filled = generateFill(pattern, count, 1);
+          for (let i = 0; i < count; i++) {
+            const targetRow = fd.srcR2 + 1 + i;
+            const f = filled[i];
+            recordOld(c, targetRow);
+            // If source cell had a formula, propagate it with row shift.
+            const srcIdx = f.sourceIdx != null ? f.sourceIdx : (i % srcLen);
+            const srcRow = fd.srcR1 + srcIdx;
+            const srcFormula = col.formulas?.[srcRow];
+            if (srcFormula) {
+              const shifted = shiftFormulaRefs(srcFormula, targetRow - srcRow, 0, numCols);
+              writeNew(c, targetRow, null, shifted);
+            } else {
+              writeNew(c, targetRow, f.value, null);
+            }
+          }
+        } else {
+          const count = fd.srcR1 - fd.tgtR1;
+          if (count <= 0) continue;
+          const filled = generateFill(pattern, count, -1);
+          for (let i = 0; i < count; i++) {
+            const targetRow = fd.srcR1 - 1 - i;
+            if (targetRow < 0) break;
+            const f = filled[i];
+            recordOld(c, targetRow);
+            // For 'repeat' / 'copy' kinds, sourceIdx walks the reversed sequence;
+            // formulas should be picked from that same source row.
+            const srcIdx = f.sourceIdx != null ? (srcLen - 1 - f.sourceIdx) : ((srcLen - 1) - (i % srcLen));
+            const srcRow = fd.srcR1 + srcIdx;
+            const srcFormula = col.formulas?.[srcRow];
+            if (srcFormula) {
+              const shifted = shiftFormulaRefs(srcFormula, targetRow - srcRow, 0, numCols);
+              writeNew(c, targetRow, null, shifted);
+            } else {
+              writeNew(c, targetRow, f.value, null);
+            }
+          }
+        }
+      }
+    } else {
+      // Horizontal fill: for each row in the source range, build a source vector
+      // across columns and fill columns left or right.
+      for (let r = fd.srcR1; r <= fd.srcR2; r++) {
+        const srcLen = fd.srcC2 - fd.srcC1 + 1;
+        const sourceCells = [];
+        for (let c = fd.srcC1; c <= fd.srcC2; c++) {
+          const col = this.columns[c];
+          if (!col) continue;
+          sourceCells.push({ value: col.values[r], formula: col.formulas?.[r] || null });
+        }
+        // Use the source row's first column type for pattern classification —
+        // horizontal fills typically span homogeneous columns.
+        const refType = this.columns[fd.srcC1]?.type || 'text';
+        const pattern = withCtrlModifier(detectPattern(sourceCells, refType), fd.ctrl);
+
+        const writeAt = (targetCol, value, formula) => {
+          const col = this.columns[targetCol];
+          if (!col) return;
+          if (col.meta?.lock) { blockedCols.add(targetCol); return; }
+          recordOld(targetCol, r);
+          writeNew(targetCol, r, value, formula);
+        };
+
+        if (dir === 1) {
+          const count = fd.tgtC2 - fd.srcC2;
+          if (count <= 0) continue;
+          const filled = generateFill(pattern, count, 1);
+          for (let i = 0; i < count; i++) {
+            const targetCol = fd.srcC2 + 1 + i;
+            if (targetCol >= numCols) break;
+            const f = filled[i];
+            const srcIdx = f.sourceIdx != null ? f.sourceIdx : (i % srcLen);
+            const srcCol = fd.srcC1 + srcIdx;
+            const srcFormula = this.columns[srcCol]?.formulas?.[r];
+            if (srcFormula) {
+              const shifted = shiftFormulaRefs(srcFormula, 0, targetCol - srcCol, numCols);
+              writeAt(targetCol, null, shifted);
+            } else {
+              writeAt(targetCol, f.value, null);
+            }
+          }
+        } else {
+          const count = fd.srcC1 - fd.tgtC1;
+          if (count <= 0) continue;
+          const filled = generateFill(pattern, count, -1);
+          for (let i = 0; i < count; i++) {
+            const targetCol = fd.srcC1 - 1 - i;
+            if (targetCol < 0) break;
+            const f = filled[i];
+            const srcIdx = f.sourceIdx != null ? (srcLen - 1 - f.sourceIdx) : ((srcLen - 1) - (i % srcLen));
+            const srcCol = fd.srcC1 + srcIdx;
+            const srcFormula = this.columns[srcCol]?.formulas?.[r];
+            if (srcFormula) {
+              const shifted = shiftFormulaRefs(srcFormula, 0, targetCol - srcCol, numCols);
+              writeAt(targetCol, null, shifted);
+            } else {
+              writeAt(targetCol, f.value, null);
+            }
+          }
+        }
+      }
+    }
+
+    // Lock-blocked feedback: emit one event per locked column touched.
+    for (const c of blockedCols) {
+      const col = this.columns[c];
+      if (!col) continue;
+      this.emit('cell:edit-blocked', {
+        action: 'fill',
+        columnId: col.id,
+        lock: col.meta.lock,
+        reason: col.meta.reason,
+      });
+    }
+
+    // Nothing actually changed (everything we touched was locked) — bail.
+    if (Object.keys(newData).length === 0) return;
+
+    // Convert maps → column-keyed payload for compact undo storage.
+    const colIds = Object.keys(newData).map(idx => ({
+      idx: parseInt(idx),
+      colId: this.columns[parseInt(idx)]?.id,
+    })).filter(x => x.colId);
+
+    const action = {
+      type: 'fill',
+      colIds,
+      oldData,
+      oldFormulas,
+      newData,
+      newFormulas,
+    };
+    this.history.push(action);
+    this.metadata.modified = new Date().toISOString();
+
+    // Update the underlying selection state to cover the new range, then
+    // render the body — setSelection only updates classes, but the cell
+    // values themselves changed and need a full body re-render.
+    this.selection = {
+      startCol: fd.tgtC1, startRow: fd.tgtR1,
+      endCol: fd.tgtC2, endRow: fd.tgtR2,
+      activeCol: fd.srcC1, activeRow: fd.srcR1,
+    };
+    this.render();
+    this.emit('selection:changed', { range: this.selection });
+    this.emit('data:filled', { range: { ...fd } });
   }
 
   // ─── Row Drag & Drop ────────────────────────────────
@@ -1588,6 +1964,12 @@ export class DataGrid {
     const active = document.activeElement;
     if (active && active !== document.body && !this.container.contains(active) && active.tagName !== 'BODY') {
       return; // Don't intercept keys meant for other UI
+    }
+
+    if (this._fillDrag && e.key === 'Escape') {
+      e.preventDefault();
+      this._cancelFillDrag();
+      return;
     }
 
     if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) {
@@ -2215,18 +2597,72 @@ export class DataGrid {
     const col = this.columns[colIdx];
     if (!col) return;
 
+    const t = (k) => this._t(`ui.datagrid.${k}`);
+
+    // ── Build popout overlay (reuses dmike-chart-popout CSS) ──
     const overlay = document.createElement('div');
-    overlay.className = 'column-scan-overlay';
-    overlay.style.pointerEvents = 'none';
+    overlay.className = 'dmike-chart-popout-overlay';
 
-    const panel = document.createElement('div');
-    panel.className = 'column-scan';
-    panel.style.pointerEvents = 'auto';
+    const win = document.createElement('div');
+    win.className = 'dmike-chart-popout';
+    win.style.width = '440px';
+    win.style.height = 'auto';
+    win.style.maxHeight = '80vh';
+    win.style.left = 'calc(50% - 220px)';
+    win.style.top = '60px';
 
-    overlay.appendChild(panel);
+    const titleBar = document.createElement('div');
+    titleBar.className = 'dmike-chart-popout-titlebar';
+    const titleText = document.createElement('span');
+    titleText.textContent = t('scanTitle');
+    const closeBtn = document.createElement('button');
+    closeBtn.className = 'dmike-chart-popout-close';
+    closeBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>';
+    titleBar.append(titleText, closeBtn);
+
+    const body = document.createElement('div');
+    body.className = 'dmike-chart-popout-body';
+    const scanBody = document.createElement('div');
+    scanBody.className = 'column-scan__body';
+    scanBody.style.height = '100%';
+    body.appendChild(scanBody);
+
+    win.append(titleBar, body);
+    overlay.appendChild(win);
     document.body.appendChild(overlay);
 
-    this._columnScanState = { colIdx, overlay, panel };
+    // ── Drag title bar ──
+    let dragX = 0, dragY = 0, isDragging = false;
+    const onDragStart = (e) => {
+      if (closeBtn.contains(e.target)) return;
+      isDragging = true;
+      dragX = e.clientX - win.offsetLeft;
+      dragY = e.clientY - win.offsetTop;
+      win.style.transition = 'none';
+    };
+    const onDragMove = (e) => {
+      if (!isDragging) return;
+      win.style.left = (e.clientX - dragX) + 'px';
+      win.style.top = (e.clientY - dragY) + 'px';
+    };
+    const onDragEnd = () => { isDragging = false; win.style.transition = ''; };
+    titleBar.addEventListener('mousedown', onDragStart);
+    window.addEventListener('mousemove', onDragMove);
+    window.addEventListener('mouseup', onDragEnd);
+
+    const onKeyDown = (e) => { if (e.key === 'Escape') this._closeColumnScan(); };
+    window.addEventListener('keydown', onKeyDown);
+    closeBtn.addEventListener('click', () => this._closeColumnScan());
+    overlay.addEventListener('click', (e) => { if (e.target === overlay) this._closeColumnScan(); });
+
+    this._columnScanState = {
+      colIdx, overlay, titleText, scanBody,
+      teardown: () => {
+        window.removeEventListener('mousemove', onDragMove);
+        window.removeEventListener('mouseup', onDragEnd);
+        window.removeEventListener('keydown', onKeyDown);
+      },
+    };
     this._refreshColumnScan();
 
     this._columnScanRenderHandler = () => {
@@ -2236,7 +2672,7 @@ export class DataGrid {
   }
 
   _refreshColumnScan() {
-    const { colIdx, panel } = this._columnScanState;
+    const { colIdx, titleText, scanBody } = this._columnScanState;
     const col = this.columns[colIdx];
     if (!col) { this._closeColumnScan(); return; }
 
@@ -2248,20 +2684,16 @@ export class DataGrid {
       ? this._typeLabel(scan.dominantType)
       : '—';
 
+    titleText.textContent = `${t('scanTitle')} — ${colLabel} (${t('scanDominant')}: ${dominantLabel})`;
+
     const typeLabels = { numeric: '#', text: 'Abc', date: '\u{1F4C5}', time: '\u{1F550}', currency: '\u20AC', percent: '%', binary: '01' };
 
     let html = `
-      <div class="column-scan__header">
-        <div class="column-scan__title">${t('scanTitle')}</div>
-        <div class="column-scan__subtitle">${colLabel} — ${t('scanDominant')}: ${dominantLabel}</div>
-        <button class="column-scan__close">\u00D7</button>
-      </div>
-      <div class="column-scan__body">
-        <div class="column-scan__overview">
-          <span>${t('scanTotal')}: <strong>${scan.total}</strong></span>
-          <span>${t('scanFilled')}: <strong>${filled}</strong></span>
-          <span>${t('scanEmpty')}: <strong>${scan.empty}</strong></span>
-        </div>`;
+      <div class="column-scan__overview">
+        <span>${t('scanTotal')}: <strong>${scan.total}</strong></span>
+        <span>${t('scanFilled')}: <strong>${filled}</strong></span>
+        <span>${t('scanEmpty')}: <strong>${scan.empty}</strong></span>
+      </div>`;
 
     if (filled > 0) {
       html += `<div class="column-scan__bar">`;
@@ -2283,6 +2715,45 @@ export class DataGrid {
         </div>`;
       }
       html += `</div>`;
+    }
+
+    if (scan.textClusters && scan.textClusters.length > 0) {
+      html += `<div class="column-scan__clusters">
+        <div class="column-scan__clusters-header">${t('scanVariantsHeader').replace('{n}', scan.textClusters.length)}</div>
+        <div class="column-scan__clusters-list">`;
+      const maxClusters = 20;
+      const clustersShown = Math.min(scan.textClusters.length, maxClusters);
+      for (let ci = 0; ci < clustersShown; ci++) {
+        const cluster = scan.textClusters[ci];
+        const summary = t('scanVariantsGroupSummary')
+          .replace('{n}', cluster.variants.length)
+          .replace('{total}', cluster.total);
+        html += `<div class="column-scan__cluster">
+          <div class="column-scan__cluster-summary">${summary}</div>
+          <div class="column-scan__cluster-variants">`;
+        const maxVariants = 30;
+        const variantsShown = Math.min(cluster.variants.length, maxVariants);
+        for (let vi = 0; vi < variantsShown; vi++) {
+          const v = cluster.variants[vi];
+          const fuzzyClass = v.viaFuzzy ? ' column-scan__cluster-variant--fuzzy' : '';
+          const fuzzyMark = v.viaFuzzy
+            ? `<span class="column-scan__cluster-fuzzy" title="${this._escHtml(t('scanVariantFuzzy'))}">≈</span>`
+            : `<span class="column-scan__cluster-fuzzy column-scan__cluster-fuzzy--placeholder"></span>`;
+          html += `<div class="column-scan__cluster-variant${fuzzyClass}" data-row="${v.firstRow}" data-col="${colIdx}" title="${this._escHtml(t('scanVariantJump'))}">
+            ${fuzzyMark}
+            <span class="column-scan__cluster-value">"${this._escHtml(v.value)}"</span>
+            <span class="column-scan__cluster-count">×${v.count}</span>
+          </div>`;
+        }
+        if (cluster.variants.length > maxVariants) {
+          html += `<div class="column-scan__mismatch-more">… ${t('scanMore').replace('{n}', cluster.variants.length - maxVariants)}</div>`;
+        }
+        html += `</div></div>`;
+      }
+      if (scan.textClusters.length > maxClusters) {
+        html += `<div class="column-scan__mismatch-more">… ${t('scanMore').replace('{n}', scan.textClusters.length - maxClusters)}</div>`;
+      }
+      html += `</div></div>`;
     }
 
     if (scan.outliers.count > 0) {
@@ -2311,12 +2782,9 @@ export class DataGrid {
       html += `<div class="column-scan__ok">\u2714 ${t('scanAllMatch')}</div>`;
     }
 
-    html += `</div>`;
-    panel.innerHTML = html;
+    scanBody.innerHTML = html;
 
-    panel.querySelector('.column-scan__close').addEventListener('click', () => this._closeColumnScan());
-
-    panel.querySelectorAll('.column-scan__mismatch-row').forEach(el => {
+    scanBody.querySelectorAll('.column-scan__mismatch-row').forEach(el => {
       el.addEventListener('click', () => {
         const r = parseInt(el.dataset.row);
         const c = parseInt(el.dataset.col);
@@ -2325,8 +2793,22 @@ export class DataGrid {
         const cell = this.container.querySelector(`td[data-col-idx="${c}"][data-row-idx="${r}"]`);
         if (cell) cell.scrollIntoView({ block: 'center', behavior: 'smooth' });
 
-        panel.querySelectorAll('.column-scan__mismatch-row').forEach(r => r.classList.remove('column-scan__mismatch-row--active'));
+        scanBody.querySelectorAll('.column-scan__mismatch-row').forEach(r => r.classList.remove('column-scan__mismatch-row--active'));
         el.classList.add('column-scan__mismatch-row--active');
+      });
+    });
+
+    scanBody.querySelectorAll('.column-scan__cluster-variant').forEach(el => {
+      el.addEventListener('click', () => {
+        const r = parseInt(el.dataset.row);
+        const c = parseInt(el.dataset.col);
+        this.setSelection({ startCol: c, startRow: r, endCol: c, endRow: r, activeCol: c, activeRow: r });
+        this.render();
+        const cell = this.container.querySelector(`td[data-col-idx="${c}"][data-row-idx="${r}"]`);
+        if (cell) cell.scrollIntoView({ block: 'center', behavior: 'smooth' });
+
+        scanBody.querySelectorAll('.column-scan__cluster-variant').forEach(v => v.classList.remove('column-scan__cluster-variant--active'));
+        el.classList.add('column-scan__cluster-variant--active');
       });
     });
   }
@@ -2337,6 +2819,7 @@ export class DataGrid {
       this._columnScanRenderHandler = null;
     }
     if (this._columnScanState) {
+      this._columnScanState.teardown?.();
       this._columnScanState.overlay.remove();
       this._columnScanState = null;
     }

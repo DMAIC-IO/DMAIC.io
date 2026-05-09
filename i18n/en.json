@@ -3594,6 +3594,26 @@
       "tzLosAngeles": "US West Coast (PST/PDT)",
       "tzMexicoCity": "Mexico City (CST/CDT)",
       "tzSaoPaulo": "São Paulo (BRT)"
+    },
+    "triz-contradiction-matrix": {
+      "name": "Contradiction Matrix (TRIZ)",
+      "description": "Inventive principles for technical contradictions (Altschuller)",
+      "subtitle": "Pick a parameter to improve and a parameter that worsens — the matrix recommends inventive principles.",
+      "problemHeading": "Problem description",
+      "problemPlaceholder": "e.g. The support structure must become stronger — but then becomes too heavy.",
+      "improvingParameter": "Parameter to improve",
+      "worseningParameter": "Parameter that worsens",
+      "selectPlaceholder": "— select parameter —",
+      "swap": "Swap parameters",
+      "reset": "Reset",
+      "recommendedHeading": "Recommended inventive principles",
+      "hintSelectBoth": "Pick both parameters to see recommendations.",
+      "warnSameParameter": "Improving and worsening parameters are identical — no contradiction.",
+      "noContradiction": "No recommendation registered for this combination in the standard matrix.",
+      "showMatrix": "Show full matrix",
+      "hideMatrix": "Hide matrix",
+      "matrixLegend": "Row = improving (↑), column = worsening (↓). Cell number = count of recommended principles. Click a cell to apply the selection.",
+      "matrixCornerTip": "Row = improving, column = worsening"
     }
   }
 }

@@ -1,7 +1,11 @@
 /**
  * D.Mike — Modal / Dialog System (modal.js)
- * Shared modal dialogs: confirm, alert, custom content.
- * Traps focus while open. Closes on Escape or overlay click.
+ * Shared modal dialogs: alert + form + custom content.
+ *
+ * NOTE: For confirm dialogs use `context.confirmPopout(...)` (defined in
+ * js/ui/popout.js) — it builds on the dmike-chart-popout shell instead of
+ * this modal system. The legacy `confirm()` method here was removed in
+ * favor of the popout helper.
  */
 
 export class Modal {
@@ -11,49 +15,6 @@ export class Modal {
   constructor(i18n) {
     this._i18n = i18n;
     this._stack = [];
-  }
-
-  /**
-   * Show a confirmation dialog.
-   * @param {string} message
-   * @param {object} [options]
-   * @param {string} [options.title]
-   * @param {string} [options.confirmLabel]
-   * @param {string} [options.cancelLabel]
-   * @param {boolean} [options.danger=false]
-   * @returns {Promise<boolean>} true if confirmed
-   */
-  confirm(message, options = {}) {
-    return new Promise((resolve) => {
-      const title = options.title ?? this._i18n.t('common.confirm');
-      const confirmLabel = options.confirmLabel ?? this._i18n.t('common.yes');
-      const cancelLabel = options.cancelLabel ?? this._i18n.t('common.cancel');
-
-      const { overlay, modal } = this._create(title, `<p>${message}</p>`);
-      const footer = modal.querySelector('.modal__footer');
-
-      const cancelBtn = document.createElement('button');
-      cancelBtn.className = 'btn btn--secondary';
-      cancelBtn.textContent = cancelLabel;
-
-      const confirmBtn = document.createElement('button');
-      confirmBtn.className = options.danger ? 'btn btn--danger' : 'btn btn--primary';
-      confirmBtn.textContent = confirmLabel;
-
-      footer.append(cancelBtn, confirmBtn);
-
-      const close = (result) => {
-        this._close(overlay);
-        resolve(result);
-      };
-
-      cancelBtn.addEventListener('click', () => close(false));
-      confirmBtn.addEventListener('click', () => close(true));
-      overlay.addEventListener('click', (e) => { if (e.target === overlay) close(false); });
-      this._onEscape(() => close(false));
-
-      confirmBtn.focus();
-    });
   }
 
   /**

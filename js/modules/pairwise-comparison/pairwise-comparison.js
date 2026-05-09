@@ -614,7 +614,7 @@ export default {
 
   _resetAll() {
     const msg = this._t('resetConfirm');
-    Promise.resolve(this._context.showModal.confirm(msg)).then((confirmed) => {
+    Promise.resolve(this._context.confirmPopout(msg, { danger: true })).then((confirmed) => {
       if (!confirmed) return;
       this._criteria = [];
       this._matrix = [];

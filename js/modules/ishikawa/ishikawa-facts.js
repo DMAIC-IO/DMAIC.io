@@ -100,7 +100,7 @@ export const factsMethods = {
         if (!f) return;
         const i18n = this._context.i18n;
         const label = (f.name && f.name.trim()) || `#${this._facts.indexOf(f) + 1}`;
-        const ok = await this._context.showModal.confirm(
+        const ok = await this._context.confirmPopout(
           t('delFactConfirm', { name: label }),
           {
             title: i18n.t('common.delete'),

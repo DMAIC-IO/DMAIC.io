@@ -449,7 +449,7 @@ export default {
   },
 
   async _resetAll(t) {
-    const confirmed = await this._context.showModal.confirm(
+    const confirmed = await this._context.confirmPopout(
       t('resetConfirm'),
       { danger: true }
     );

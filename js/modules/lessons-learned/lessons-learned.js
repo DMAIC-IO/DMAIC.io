@@ -583,7 +583,7 @@ export default {
         const lesson = this._lessons.find(l => l.id === id);
         if (lesson) this._openModal(lesson);
       } else if (action === 'delete' && id) {
-        this._context.showModal.confirm(t('deleteConfirm')).then(confirmed => {
+        this._context.confirmPopout(t('deleteConfirm'), { danger: true }).then(confirmed => {
           if (!confirmed) return;
           this._lessons = this._lessons.filter(l => l.id !== id);
           this._openCards.delete(id);

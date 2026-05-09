@@ -179,7 +179,7 @@ export const experimentsMethods = {
         if (!x) return;
         const i18n = this._context.i18n;
         const label = (x.title && x.title.trim()) || `#${this._experiments.indexOf(x) + 1}`;
-        const ok = await this._context.showModal.confirm(
+        const ok = await this._context.confirmPopout(
           t('delExperimentConfirm', { name: label }),
           {
             title: i18n.t('common.delete'),

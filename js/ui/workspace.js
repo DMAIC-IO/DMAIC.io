@@ -4,6 +4,8 @@
  * Handles tab switching, module activation, and empty state.
  */
 
+import { confirmPopout } from './popout.js';
+
 export class Workspace {
   /**
    * @param {HTMLElement} container
@@ -286,6 +288,7 @@ export class Workspace {
       stateManager: this._stateManager,
       i18n: this._i18n,
       showModal: this._modal,
+      confirmPopout: (message, options = {}) => confirmPopout(message, { ...options, i18n: this._i18n }),
       notify: this._context.notify,
       chartManager: this._context.chartManager,
       theme: document.documentElement.dataset.theme || 'light',
@@ -296,9 +299,9 @@ export class Workspace {
   async _removeModule(instanceId, moduleId, phase) {
     if (this._stateManager.isCompleted()) return;
     const name = this._i18n.t(`modules.${moduleId}.name`);
-    const confirmed = await this._modal.confirm(
+    const confirmed = await confirmPopout(
       this._i18n.t('workspace.removeConfirm', { name }),
-      { danger: true }
+      { i18n: this._i18n, danger: true }
     );
     if (!confirmed) return;
 

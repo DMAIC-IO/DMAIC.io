@@ -1,0 +1,274 @@
+/* TRIZ Contradiction Matrix — module styles. BEM-light, theme-variable driven. */
+
+.triz-cm__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+  padding: var(--spacing-md);
+}
+
+.triz-cm__section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.triz-cm__section-title {
+  margin: 0;
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* ── Problem note ── */
+.triz-cm__problem {
+  width: 100%;
+  resize: vertical;
+  min-height: 48px;
+}
+
+/* ── Selectors row ── */
+/* align-items: start keeps the two label/select columns top-aligned regardless
+   of whether the description below the select is rendered (only when a
+   parameter is selected). The buttons push themselves down to line up with
+   the selects via margin-top. */
+.triz-cm__selectors {
+  display: grid;
+  grid-template-columns: 1fr 1fr auto auto;
+  gap: var(--spacing-md);
+  align-items: start;
+}
+
+.triz-cm__selector {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  min-width: 0;
+}
+
+.triz-cm__label {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-primary);
+}
+
+.triz-cm__dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex: 0 0 auto;
+}
+.triz-cm__dot--improving { background: var(--color-success); }
+.triz-cm__dot--worsening { background: var(--color-error); }
+
+.triz-cm__select {
+  width: 100%;
+}
+
+.triz-cm__param-desc {
+  margin: 0;
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+  line-height: 1.4;
+}
+
+.triz-cm__swap-btn,
+.triz-cm__reset-btn {
+  white-space: nowrap;
+  /* Sit on the same baseline as the selects, not the labels above them. */
+  margin-top: calc(var(--font-size-sm) * 1.4 + var(--spacing-xs));
+}
+
+/* ── Result panel ── */
+.triz-cm__hint {
+  margin: 0;
+  padding: var(--spacing-md);
+  background: var(--color-bg-secondary);
+  border: 1px dashed var(--color-border-primary);
+  border-radius: var(--border-radius);
+  color: var(--color-text-tertiary);
+  font-size: var(--font-size-sm);
+  text-align: center;
+}
+
+.triz-cm__warn {
+  margin: 0;
+  padding: var(--spacing-sm) var(--spacing-md);
+  background: color-mix(in srgb, var(--color-warning) 15%, transparent);
+  border-left: 3px solid var(--color-warning);
+  border-radius: var(--border-radius-sm);
+  color: var(--color-text-primary);
+  font-size: var(--font-size-sm);
+}
+
+.triz-cm__principles {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: var(--spacing-md);
+}
+
+.triz-cm__principle {
+  display: flex;
+  gap: var(--spacing-md);
+  padding: var(--spacing-md);
+  background: var(--color-bg-elevated);
+  border: 1px solid var(--color-border-primary);
+  border-radius: var(--border-radius);
+  transition: border-color var(--transition-speed), box-shadow var(--transition-speed);
+}
+
+.triz-cm__principle:hover {
+  border-color: var(--color-accent);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+
+.triz-cm__principle-num {
+  flex: 0 0 auto;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--color-phase-improve);
+  color: var(--color-text-inverse);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--font-size-md);
+}
+
+.triz-cm__principle-body {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.triz-cm__principle-name {
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--font-size-md);
+  color: var(--color-text-primary);
+  margin-bottom: 2px;
+}
+
+.triz-cm__principle-desc {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  line-height: 1.5;
+}
+
+/* ── Matrix overview ── */
+.triz-cm__matrix-toggle {
+  align-self: flex-start;
+}
+
+.triz-cm__mx-wrap {
+  margin-top: var(--spacing-sm);
+  overflow: auto;
+  border: 1px solid var(--color-border-primary);
+  border-radius: var(--border-radius);
+  max-height: 480px;
+}
+
+.triz-cm__mx-legend {
+  margin: 0;
+  padding: var(--spacing-sm) var(--spacing-md);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+  background: var(--color-bg-secondary);
+  border-bottom: 1px solid var(--color-border-primary);
+  position: sticky;
+  top: 0;
+  z-index: 3;
+}
+
+.triz-cm__mx {
+  border-collapse: collapse;
+  font-size: 10px;
+  table-layout: fixed;
+}
+
+.triz-cm__mx th,
+.triz-cm__mx td {
+  border: 1px solid var(--color-border-secondary);
+  width: 22px;
+  height: 22px;
+  text-align: center;
+  vertical-align: middle;
+  padding: 0;
+}
+
+.triz-cm__mx-corner {
+  position: sticky;
+  top: 32px;  /* below legend */
+  left: 0;
+  background: var(--color-bg-tertiary);
+  z-index: 2;
+}
+
+.triz-cm__mx-col-head {
+  position: sticky;
+  top: 32px;  /* below legend */
+  background: var(--color-bg-secondary);
+  color: var(--color-text-secondary);
+  font-weight: var(--font-weight-medium);
+  z-index: 1;
+}
+
+.triz-cm__mx-row-head {
+  position: sticky;
+  left: 0;
+  background: var(--color-bg-secondary);
+  color: var(--color-text-secondary);
+  font-weight: var(--font-weight-medium);
+  z-index: 1;
+}
+
+.triz-cm__mx-col-head.is-active {
+  background: color-mix(in srgb, var(--color-error) 22%, var(--color-bg-secondary));
+  color: var(--color-text-primary);
+}
+
+.triz-cm__mx-row-head.is-active {
+  background: color-mix(in srgb, var(--color-success) 22%, var(--color-bg-secondary));
+  color: var(--color-text-primary);
+}
+
+.triz-cm__mx-cell {
+  cursor: pointer;
+  color: var(--color-text-tertiary);
+}
+
+.triz-cm__mx-cell.is-diag {
+  background: var(--color-bg-tertiary);
+  color: var(--color-text-tertiary);
+  cursor: default;
+}
+
+.triz-cm__mx-cell.is-empty {
+  background: var(--color-bg-primary);
+}
+
+.triz-cm__mx-cell.is-filled {
+  background: color-mix(in srgb, var(--color-phase-improve) 25%, var(--color-bg-primary));
+  color: var(--color-text-primary);
+  font-weight: var(--font-weight-medium);
+}
+
+.triz-cm__mx-cell.is-filled:hover {
+  background: color-mix(in srgb, var(--color-phase-improve) 50%, var(--color-bg-primary));
+}
+
+.triz-cm__mx-cell.is-picked {
+  outline: 2px solid var(--color-accent);
+  outline-offset: -2px;
+  background: var(--color-accent-light);
+  color: var(--color-text-primary);
+  font-weight: var(--font-weight-semibold);
+}
