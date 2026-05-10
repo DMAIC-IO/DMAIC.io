@@ -33,8 +33,14 @@ export default class ControlChartType extends ChartBase {
       labels: [],
       /** Set of indices that are violations */
       violationIndices: new Set(),
+      /** Set of indices marked excluded by the user (Phase-I exclusion) */
+      excludedIndices: new Set(),
+      /** Color for excluded points */
+      excludedColor: 'var(--color-text-tertiary)',
       /** Index marking end of baseline (null = no divider) */
       baselineEnd: null,
+      /** Optional list of stage boundary indices for multi-stage charts */
+      stageBoundaries: null,
       /** Show zone bands */
       showZones: true,
       /** Zone colors */
@@ -74,7 +80,19 @@ export default class ControlChartType extends ChartBase {
     const valid = values.filter(v => v !== null && v !== undefined);
     if (!valid.length) return { xMin: 0, xMax: 1, yMin: 0, yMax: 1 };
 
-    const yVals = [...valid, ucl, lcl, cl + 3.2 * sigma, cl - 3.2 * sigma];
+    const yVals = [...valid];
+    const flat = (v) => Array.isArray(v) ? v : [v];
+    const clArr = flat(cl);
+    const sigmaArr = flat(sigma);
+    flat(ucl).forEach(v => yVals.push(v));
+    flat(lcl).forEach(v => yVals.push(v));
+    clArr.forEach(c => yVals.push(c));
+    // Pad ±3.2σ around the matching center line (same length when both arrays)
+    for (let i = 0; i < Math.max(clArr.length, sigmaArr.length); i++) {
+      const c = clArr[i] ?? clArr[0];
+      const s = sigmaArr[i] ?? sigmaArr[0];
+      yVals.push(c + 3.2 * s, c - 3.2 * s);
+    }
     if (usl != null) yVals.push(usl);
     if (lsl != null) yVals.push(lsl);
     const yMin = Math.min(...yVals);
@@ -97,8 +115,11 @@ export default class ControlChartType extends ChartBase {
     const { values, cl, ucl, lcl, sigma, violationIndices, baselineEnd, showZones } = this.config;
     if (!values.length) return;
 
-    // ── Zone bands ──
-    if (showZones && sigma > 0) {
+    const variableLimits = Array.isArray(ucl) || Array.isArray(lcl) || Array.isArray(sigma);
+    const sigmaScalar = !Array.isArray(sigma) ? sigma : 0;
+
+    // ── Zone bands (only meaningful for constant σ) ──
+    if (showZones && !variableLimits && sigma > 0) {
       const zones = [
         { from: cl + 2 * sigma, to: cl + 3 * sigma, color: this.config.zoneAColor },
         { from: cl + sigma, to: cl + 2 * sigma, color: this.config.zoneBColor },
@@ -120,11 +141,11 @@ export default class ControlChartType extends ChartBase {
       }
     }
 
-    // ── σ grid lines ──
-    if (sigma > 0) {
+    // ── σ grid lines (only for constant σ) ──
+    if (!variableLimits && sigmaScalar > 0) {
       for (let m = -3; m <= 3; m++) {
         if (m === 0) continue;
-        const y = yScale(cl + m * sigma);
+        const y = yScale(cl + m * sigmaScalar);
         if (y >= plotArea.y && y <= plotArea.y + plotArea.h) {
           plotGroup.appendChild(svgEl('line', {
             x1: plotArea.x, y1: y, x2: plotArea.x + plotArea.w, y2: y,
@@ -136,9 +157,21 @@ export default class ControlChartType extends ChartBase {
     }
 
     // ── Control lines (UCL, CL, LCL) ──
-    this._drawControlLine(plotGroup, plotArea, yScale, ucl, this.config.uclColor, 'UCL', true);
-    this._drawControlLine(plotGroup, plotArea, yScale, cl, this.config.clColor, 'CL', false);
-    this._drawControlLine(plotGroup, plotArea, yScale, lcl, this.config.lclColor, 'LCL', true);
+    if (Array.isArray(ucl)) {
+      this._drawSteppedLine(plotGroup, xScale, yScale, ucl, this.config.uclColor, 'UCL', true);
+    } else {
+      this._drawControlLine(plotGroup, plotArea, yScale, ucl, this.config.uclColor, 'UCL', true);
+    }
+    if (Array.isArray(cl)) {
+      this._drawSteppedLine(plotGroup, xScale, yScale, cl, this.config.clColor, 'CL', false);
+    } else {
+      this._drawControlLine(plotGroup, plotArea, yScale, cl, this.config.clColor, 'CL', false);
+    }
+    if (Array.isArray(lcl)) {
+      this._drawSteppedLine(plotGroup, xScale, yScale, lcl, this.config.lclColor, 'LCL', true);
+    } else {
+      this._drawControlLine(plotGroup, plotArea, yScale, lcl, this.config.lclColor, 'LCL', true);
+    }
 
     // ── Specification limits (USL, LSL) ──
     if (this.config.usl != null) {
@@ -148,7 +181,20 @@ export default class ControlChartType extends ChartBase {
       this._drawControlLine(plotGroup, plotArea, yScale, this.config.lsl, this.config.lslColor, 'LSL', false);
     }
 
-    // ── Phase divider ──
+    // ── Stage dividers (multiple) ──
+    const stageBoundaries = Array.isArray(this.config.stageBoundaries)
+      ? this.config.stageBoundaries.filter(b => b > 0 && b < values.length)
+      : [];
+    for (const b of stageBoundaries) {
+      const sx = xScale(b + 0.5);
+      plotGroup.appendChild(svgEl('line', {
+        x1: sx, y1: plotArea.y, x2: sx, y2: plotArea.y + plotArea.h,
+        stroke: resolveColor(this.config.phaseColor), 'stroke-width': 1.5,
+        'stroke-dasharray': '6,4',
+      }));
+    }
+
+    // ── Phase divider (legacy single-baseline) ──
     if (baselineEnd !== null && baselineEnd < values.length) {
       const px = xScale(baselineEnd + 0.5);
       plotGroup.appendChild(svgEl('line', {
@@ -175,6 +221,9 @@ export default class ControlChartType extends ChartBase {
 
     // ── Data points ──
     const violSet = violationIndices instanceof Set ? violationIndices : new Set(violationIndices);
+    const exclSet = this.config.excludedIndices instanceof Set
+      ? this.config.excludedIndices
+      : new Set(this.config.excludedIndices || []);
     const hasUSL = this.config.usl != null;
     const hasLSL = this.config.lsl != null;
 
@@ -182,9 +231,25 @@ export default class ControlChartType extends ChartBase {
       if (values[i] === null) continue;
       const x = xScale(i + 1);
       const y = yScale(values[i]);
+      const isExcluded = exclSet.has(i);
       const isViol = violSet.has(i);
       const isOutOfSpec = (hasUSL && values[i] > this.config.usl)
                        || (hasLSL && values[i] < this.config.lsl);
+
+      // Excluded points: render as a gray ✕ and skip the regular marker logic.
+      if (isExcluded) {
+        const r = (this.config.pointSize ?? this.config.pointRadius * 2) / 2;
+        const c = resolveColor(this.config.excludedColor);
+        plotGroup.appendChild(svgEl('line', {
+          x1: x - r, y1: y - r, x2: x + r, y2: y + r,
+          stroke: c, 'stroke-width': 1.5, opacity: 0.7,
+        }));
+        plotGroup.appendChild(svgEl('line', {
+          x1: x - r, y1: y + r, x2: x + r, y2: y - r,
+          stroke: c, 'stroke-width': 1.5, opacity: 0.7,
+        }));
+        continue;
+      }
 
       if (isViol) {
         plotGroup.appendChild(svgEl('circle', {
@@ -335,5 +400,45 @@ export default class ControlChartType extends ChartBase {
     });
     txt.textContent = `${label} ${formatNum(value, null, this.locale)}`;
     plotGroup.appendChild(txt);
+  }
+
+  /**
+   * Draw a stepped (per-sample) control line — used for variable-n attribute
+   * charts where UCL/LCL change with subgroup size.
+   * The label shows the mean of the limit values (typical convention).
+   * @private
+   */
+  _drawSteppedLine(plotGroup, xScale, yScale, valuesArr, color, label, dashed) {
+    if (!valuesArr || !valuesArr.length) return;
+    let pathD = '';
+    for (let i = 0; i < valuesArr.length; i++) {
+      const v = valuesArr[i];
+      if (v == null || !Number.isFinite(v)) continue;
+      const x1 = xScale(i + 0.5);
+      const x2 = xScale(i + 1.5);
+      const y = yScale(v);
+      pathD += (pathD === '' ? `M${x1},${y}` : ` L${x1},${y}`);
+      pathD += ` L${x2},${y}`;
+    }
+    if (pathD) {
+      plotGroup.appendChild(svgEl('path', {
+        d: pathD, fill: 'none',
+        stroke: resolveColor(color), 'stroke-width': 1.5,
+        'stroke-dasharray': dashed ? '6,4' : 'none',
+      }));
+    }
+    // Label using the mean of the limit array (left edge)
+    const finite = valuesArr.filter(v => v != null && Number.isFinite(v));
+    if (finite.length) {
+      const mean = finite.reduce((a, b) => a + b, 0) / finite.length;
+      const yMean = yScale(mean);
+      const txt = svgEl('text', {
+        x: xScale(0.5) - 4, y: yMean + 4,
+        fill: resolveColor(color), 'font-size': 10, 'font-weight': 500,
+        'text-anchor': 'end',
+      });
+      txt.textContent = `${label}̄ ${formatNum(mean, null, this.locale)}`;
+      plotGroup.appendChild(txt);
+    }
   }
 }

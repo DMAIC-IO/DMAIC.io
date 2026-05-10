@@ -85,6 +85,104 @@ export default {
       },
     },
 
+    stages: {
+      de: {
+        title: 'Stages — mehrere Baselines',
+        blocks: [
+          {
+            type: 'paragraph',
+            content: 'Wenn ein Prozess durch eine bekannte Veränderung neu eingestellt wurde (Werkzeugwechsel, neue Charge, Materialwechsel, Maschinen-Override), liefern globale Grenzen ein verzerrtes Bild — sie mischen die alten und neuen Streuungen. Mit Stages werden für jeden Abschnitt eigene Mittellinie und Eingriffsgrenzen berechnet.',
+          },
+          {
+            type: 'definition',
+            term: 'Eingabe',
+            content: 'Im Feld „Stage-Grenzen" Indizes mit Komma trennen, an denen jeweils ein neuer Abschnitt beginnt. Beispiel: „12, 25" bei 30 Punkten ergibt drei Stages: 1–12, 13–25, 26–30.',
+          },
+          {
+            type: 'definition',
+            term: 'Wirkung',
+            content: 'Die Karte zeigt treppenförmige Mittellinie und Grenzen, mit gestrichelten vertikalen Trennlinien an jedem Stage-Wechsel. Nelson-Regeln werden gegen die Grenzen der ersten Stage geprüft (im Multi-Stage-Modus konzentriert die Karte sich auf das Bild „Out-of-Limit").',
+          },
+          {
+            type: 'paragraph',
+            content: 'Stages ersetzen den Baseline-Count nicht — sie sind ein anderer Mechanismus. Setze entweder einen Baseline-Count (klassisch Phase I/II) oder Stage-Grenzen (mehrere stabile Abschnitte). Die Stages-Eingabe übersteuert den Baseline-Count, sobald sie gesetzt ist.',
+          },
+        ],
+      },
+      en: {
+        title: 'Stages — multiple baselines',
+        blocks: [
+          {
+            type: 'paragraph',
+            content: 'When a process has been deliberately retuned (tool change, new batch, material switch, machine override), global limits produce a misleading picture — they mix the old and new variation. With stages each section gets its own center line and control limits.',
+          },
+          {
+            type: 'definition',
+            term: 'Input',
+            content: 'In the "Stage boundaries" field, list indices separated by commas where a new stage starts. Example: "12, 25" with 30 points yields three stages: 1–12, 13–25, 26–30.',
+          },
+          {
+            type: 'definition',
+            term: 'Effect',
+            content: 'The chart shows stepped center line and limits with dashed vertical separators at each stage break. Nelson rules are evaluated against the first stage\'s limits (in multi-stage mode the chart focuses on the "out-of-limit" view).',
+          },
+          {
+            type: 'paragraph',
+            content: 'Stages do not replace the baseline count — they are a different mechanism. Either use a baseline count (classic Phase I/II) or stage boundaries (multiple stable sections). When set, stages override the baseline count.',
+          },
+        ],
+      },
+    },
+
+    phase1and2: {
+      de: {
+        title: 'Phase I / II und Annotationen',
+        blocks: [
+          {
+            type: 'paragraph',
+            content: 'Der klassische SPC-Workflow trennt zwei Phasen: Phase I sammelt Vorlaufdaten, identifiziert Sonderursachen und schließt sie aus, bis die Baseline „stabil" ist. Phase II hält die so ermittelten Grenzen fest und prüft neue Datenpunkte gegen sie.',
+          },
+          {
+            type: 'definition',
+            term: 'Annotationen (Phase I)',
+            content: 'Klick auf eine Regelverletzung in der Tabelle öffnet einen Dialog: Ursache als Freitext eintragen und den Punkt optional aus der Grenzen-Berechnung ausschließen. Ausgeschlossene Punkte erscheinen als graues ✕ — sie stehen weiterhin im Chart, beeinflussen aber UCL/LCL nicht mehr. Die Limits passen sich nach jedem Ausschluss live an.',
+          },
+          {
+            type: 'definition',
+            term: 'Phase II — Grenzen einfrieren',
+            content: 'Mit „Grenzen einfrieren" werden die aktuellen Limits gespeichert. Anschließend hinzukommende Daten werden gegen diese fixen Limits geprüft, ohne dass UCL/LCL sich verändern. Über „Auftauen" lässt sich der Live-Modus wieder einschalten.',
+          },
+          {
+            type: 'paragraph',
+            content: 'Phase II funktioniert nur ohne Stages — bei Multi-Stage-Karten gibt es bereits per Stage eigene Grenzen, ein zusätzliches Einfrieren wäre doppelte Buchführung.',
+          },
+        ],
+      },
+      en: {
+        title: 'Phase I / II and Annotations',
+        blocks: [
+          {
+            type: 'paragraph',
+            content: 'The classic SPC workflow has two phases: Phase I collects baseline data, identifies special causes and excludes them until the baseline is "in control". Phase II locks those limits and checks new data points against them.',
+          },
+          {
+            type: 'definition',
+            term: 'Annotations (Phase I)',
+            content: 'Click a violation row to open a dialog: record the cause as free text and optionally exclude the point from the limit computation. Excluded points appear as a gray ✕ — they stay on the chart but no longer influence UCL/LCL. Limits update live after each exclusion.',
+          },
+          {
+            type: 'definition',
+            term: 'Phase II — Freeze limits',
+            content: '"Freeze limits" stores the current limits. Subsequent data points are checked against these fixed limits without UCL/LCL changing. "Thaw" returns to the live recompute mode.',
+          },
+          {
+            type: 'paragraph',
+            content: 'Phase II is only available without stages — multi-stage charts already have per-stage limits; an additional freeze would be double bookkeeping.',
+          },
+        ],
+      },
+    },
+
     methodology: {
       de: {
         title: 'Vorgehen',

@@ -1,0 +1,14 @@
+[
+  {
+    "id": "datagrid-formula",
+    "event": "datagrid:selection:changed",
+    "conditionId": "isNotFormulaCell",
+    "i18nKey": "tips.datagridFormula"
+  },
+  {
+    "id": "datagrid-formula-edit",
+    "event": "datagrid:selection:changed",
+    "conditionId": "isFormulaCell",
+    "i18nKey": "tips.datagridFormulaEdit"
+  }
+]

@@ -105,37 +105,132 @@ export function getChartType(id) {
   return CHART_TYPES.find(ct => ct.id === id);
 }
 
+// ── Stage Helpers ──
+
+/**
+ * Normalize a stages spec into an array of {start, end} segments covering [0, N).
+ * Stage end indices are 1-based exclusive (i.e. the index after the last point
+ * of the stage). The final stage end is implicitly N.
+ *
+ * @param {number} N — total point count
+ * @param {number[]|undefined} stages — stage end indices (sorted/dedup'd internally)
+ * @returns {{start:number,end:number}[]}
+ */
+function _normalizeStages(N, stages) {
+  if (!Array.isArray(stages) || stages.length === 0) return [{ start: 0, end: N }];
+  const ends = [...new Set(stages.map(e => Math.max(1, Math.min(N, Math.floor(e)))))]
+    .sort((a, b) => a - b);
+  if (ends[ends.length - 1] !== N) ends.push(N);
+  const out = [];
+  let prev = 0;
+  for (const e of ends) {
+    if (e > prev) out.push({ start: prev, end: e });
+    prev = e;
+  }
+  return out;
+}
+
+/** Build a per-point array by broadcasting per-stage scalars. */
+function _broadcastStages(segments, N, perStage) {
+  const arr = new Array(N);
+  segments.forEach((seg, idx) => {
+    for (let i = seg.start; i < seg.end; i++) arr[i] = perStage[idx];
+  });
+  return arr;
+}
+
 // ── Compute Functions ──
 
 /**
  * I-MR (Individual & Moving Range) chart computation.
+ *
+ * Single-stage mode (default, backward-compatible): pass `baselineEnd` to
+ * carve out the baseline; result has scalar cl/ucl/lcl/sigma.
+ *
+ * Multi-stage mode: pass `stages` (e.g. [12, 25]) → each segment gets its own
+ * limits computed from its own data. Result has per-point arrays for cl/ucl/
+ * lcl/sigma so the chart renders stepped limits.
+ *
  * @param {number[]} values
  * @param {number} _n — ignored (always 1)
- * @param {number} [baselineEnd] — index after last baseline point
+ * @param {number} [baselineEnd] — index after last baseline point (single-stage only)
+ * @param {number[]} [stages] — stage end indices (multi-stage)
+ * @param {number[]} [excludedIndices] — raw-value indices to exclude from baseline aggregation
+ *                                        (single-stage only — multi-stage exclusion not yet supported)
  * @returns {ComputeResult}
  */
-export function computeIMR(values, _n, baselineEnd) {
-  const blEnd = baselineEnd || values.length;
-  const baseline = values.slice(0, blEnd);
-
+export function computeIMR(values, _n, baselineEnd, stages, excludedIndices) {
+  const N = values.length;
   const mrAll = [null];
-  for (let i = 1; i < values.length; i++) {
-    mrAll.push(Math.abs(values[i] - values[i - 1]));
+  for (let i = 1; i < N; i++) mrAll.push(Math.abs(values[i] - values[i - 1]));
+
+  const segments = (Array.isArray(stages) && stages.length > 0)
+    ? _normalizeStages(N, stages)
+    : null;
+
+  // Single-stage / baselineEnd path — preserves the existing scalar output shape.
+  if (!segments || segments.length <= 1) {
+    const blEnd = baselineEnd || N;
+    const excluded = Array.isArray(excludedIndices) ? new Set(excludedIndices) : new Set();
+    // Baseline mean — skip excluded indices
+    const baselinePts = [];
+    for (let i = 0; i < blEnd; i++) if (!excluded.has(i)) baselinePts.push(values[i]);
+    // Moving ranges — skip MR_i if either i or i-1 is excluded
+    const mrBaseline = [];
+    for (let i = 1; i < blEnd; i++) {
+      if (excluded.has(i) || excluded.has(i - 1)) continue;
+      mrBaseline.push(Math.abs(values[i] - values[i - 1]));
+    }
+    const mrBar = mrBaseline.length ? mrBaseline.reduce((a, b) => a + b, 0) / mrBaseline.length : 0;
+    const xBar  = baselinePts.length ? baselinePts.reduce((a, b) => a + b, 0) / baselinePts.length : 0;
+
+    const d2 = SPC_CONSTANTS.d2[2];
+    const D4 = SPC_CONSTANTS.D4[2];
+    const D3 = SPC_CONSTANTS.D3[2];
+    const sigmaI = mrBar / d2;
+
+    return {
+      subcharts: {
+        i:  { values, cl: xBar, ucl: xBar + 3 * sigmaI, lcl: xBar - 3 * sigmaI, sigma: sigmaI },
+        mr: { values: mrAll, cl: mrBar, ucl: D4 * mrBar, lcl: D3 * mrBar, sigma: (D4 * mrBar - mrBar) / 3 },
+      },
+      labels: values.map((_, i) => i + 1),
+    };
   }
 
-  const mrBaseline = mrAll.slice(1, blEnd).filter(v => v !== null);
-  const mrBar = mrBaseline.reduce((a, b) => a + b, 0) / mrBaseline.length;
-  const xBar = baseline.reduce((a, b) => a + b, 0) / baseline.length;
-
+  // Multi-stage path — per-stage stats, broadcast to per-point arrays.
   const d2 = SPC_CONSTANTS.d2[2];
   const D4 = SPC_CONSTANTS.D4[2];
   const D3 = SPC_CONSTANTS.D3[2];
-  const sigmaI = mrBar / d2;
+
+  const xBarsPerStage  = [];
+  const mrBarsPerStage = [];
+  const sigmaIPerStage = [];
+  for (const seg of segments) {
+    const slice = values.slice(seg.start, seg.end);
+    const xBar = slice.reduce((a, b) => a + b, 0) / slice.length;
+    // Moving ranges *within* the stage (skip the first cross-stage MR)
+    const mrSlice = mrAll.slice(seg.start + 1, seg.end).filter(v => v !== null);
+    const mrBar = mrSlice.length ? mrSlice.reduce((a, b) => a + b, 0) / mrSlice.length : 0;
+    xBarsPerStage.push(xBar);
+    mrBarsPerStage.push(mrBar);
+    sigmaIPerStage.push(mrBar / d2);
+  }
+
+  const i_cl    = _broadcastStages(segments, N, xBarsPerStage);
+  const i_sigma = _broadcastStages(segments, N, sigmaIPerStage);
+  const i_ucl   = i_cl.map((m, k) => m + 3 * i_sigma[k]);
+  const i_lcl   = i_cl.map((m, k) => m - 3 * i_sigma[k]);
+
+  const mr_cl    = _broadcastStages(segments, N, mrBarsPerStage);
+  const mr_ucl   = mr_cl.map(m => D4 * m);
+  const mr_lcl   = mr_cl.map(m => D3 * m);
+  const mr_sigma = mr_cl.map(m => (D4 * m - m) / 3);
 
   return {
     subcharts: {
-      i: { values, cl: xBar, ucl: xBar + 3 * sigmaI, lcl: xBar - 3 * sigmaI, sigma: sigmaI },
-      mr: { values: mrAll, cl: mrBar, ucl: D4 * mrBar, lcl: D3 * mrBar, sigma: (D4 * mrBar - mrBar) / 3 },
+      i:  { values, cl: i_cl, ucl: i_ucl, lcl: i_lcl, sigma: i_sigma },
+      mr: { values: mrAll, cl: mr_cl, ucl: mr_ucl, lcl: mr_lcl, sigma: mr_sigma },
     },
     labels: values.map((_, i) => i + 1),
   };
@@ -143,37 +238,91 @@ export function computeIMR(values, _n, baselineEnd) {
 
 /**
  * X̄-R (Subgroup Mean & Range) chart computation.
+ *
+ * Single-stage / multi-stage modes — see {@link computeIMR} for semantics.
+ * Stage end indices are interpreted in raw-value space and converted to
+ * subgroup space via ceil(end/n).
+ *
  * @param {number[]} values
  * @param {number} n — subgroup size
- * @param {number} [baselineEnd] — index (in raw values) after last baseline value
+ * @param {number} [baselineEnd]
+ * @param {number[]} [stages]
+ * @param {number[]} [excludedIndices] — raw indices to exclude (any raw index in a subgroup excludes the whole subgroup)
  * @returns {ComputeResult}
  */
-export function computeXbarR(values, n, baselineEnd) {
+export function computeXbarR(values, n, baselineEnd, stages, excludedIndices) {
   const subgroups = [];
   for (let i = 0; i + n <= values.length; i += n) {
     subgroups.push(values.slice(i, i + n));
   }
-
-  const blEnd = baselineEnd ? Math.ceil(baselineEnd / n) : subgroups.length;
-  const means = subgroups.map(sg => sg.reduce((a, b) => a + b, 0) / sg.length);
+  const K = subgroups.length;
+  const means  = subgroups.map(sg => sg.reduce((a, b) => a + b, 0) / sg.length);
   const ranges = subgroups.map(sg => Math.max(...sg) - Math.min(...sg));
-
-  const blMeans = means.slice(0, blEnd);
-  const blRanges = ranges.slice(0, blEnd);
-
-  const xBarBar = blMeans.reduce((a, b) => a + b, 0) / blMeans.length;
-  const rBar = blRanges.reduce((a, b) => a + b, 0) / blRanges.length;
 
   const A2 = SPC_CONSTANTS.A2[n];
   const D3 = SPC_CONSTANTS.D3[n];
   const D4 = SPC_CONSTANTS.D4[n];
   const d2 = SPC_CONSTANTS.d2[n];
-  const sigmaXbar = rBar / (d2 * Math.sqrt(n));
+
+  // Single-stage path
+  const segmentsRaw = (Array.isArray(stages) && stages.length > 0)
+    ? _normalizeStages(values.length, stages)
+    : null;
+
+  if (!segmentsRaw || segmentsRaw.length <= 1) {
+    const blEnd = baselineEnd ? Math.ceil(baselineEnd / n) : K;
+    const excluded = Array.isArray(excludedIndices) ? new Set(excludedIndices) : new Set();
+    const isSubgroupExcluded = (k) => {
+      for (let r = k * n; r < (k + 1) * n; r++) if (excluded.has(r)) return true;
+      return false;
+    };
+    const blMeans  = [];
+    const blRanges = [];
+    for (let k = 0; k < blEnd; k++) {
+      if (isSubgroupExcluded(k)) continue;
+      blMeans.push(means[k]);
+      blRanges.push(ranges[k]);
+    }
+    const xBarBar = blMeans.length ? blMeans.reduce((a, b) => a + b, 0) / blMeans.length : 0;
+    const rBar    = blRanges.length ? blRanges.reduce((a, b) => a + b, 0) / blRanges.length : 0;
+    const sigmaXbar = rBar / (d2 * Math.sqrt(n));
+
+    return {
+      subcharts: {
+        xbar: { values: means,  cl: xBarBar, ucl: xBarBar + A2 * rBar, lcl: xBarBar - A2 * rBar, sigma: sigmaXbar },
+        r:    { values: ranges, cl: rBar,    ucl: D4 * rBar,           lcl: D3 * rBar,           sigma: (D4 * rBar - rBar) / 3 },
+      },
+      labels: subgroups.map((_, i) => i + 1),
+    };
+  }
+
+  // Multi-stage path — convert raw indices to subgroup indices
+  const segments = segmentsRaw
+    .map(seg => ({ start: Math.ceil(seg.start / n), end: Math.ceil(seg.end / n) }))
+    .filter(seg => seg.end > seg.start);
+
+  const xBarBars = segments.map(seg => {
+    const sl = means.slice(seg.start, seg.end);
+    return sl.reduce((a, b) => a + b, 0) / sl.length;
+  });
+  const rBars = segments.map(seg => {
+    const sl = ranges.slice(seg.start, seg.end);
+    return sl.reduce((a, b) => a + b, 0) / sl.length;
+  });
+
+  const xbar_cl    = _broadcastStages(segments, K, xBarBars);
+  const r_cl       = _broadcastStages(segments, K, rBars);
+  const xbar_sigma = r_cl.map(rb => rb / (d2 * Math.sqrt(n)));
+  const xbar_ucl   = xbar_cl.map((m, i) => m + A2 * r_cl[i]);
+  const xbar_lcl   = xbar_cl.map((m, i) => m - A2 * r_cl[i]);
+  const r_ucl      = r_cl.map(rb => D4 * rb);
+  const r_lcl      = r_cl.map(rb => D3 * rb);
+  const r_sigma    = r_cl.map(rb => (D4 * rb - rb) / 3);
 
   return {
     subcharts: {
-      xbar: { values: means, cl: xBarBar, ucl: xBarBar + A2 * rBar, lcl: xBarBar - A2 * rBar, sigma: sigmaXbar },
-      r: { values: ranges, cl: rBar, ucl: D4 * rBar, lcl: D3 * rBar, sigma: (D4 * rBar - rBar) / 3 },
+      xbar: { values: means,  cl: xbar_cl, ucl: xbar_ucl, lcl: xbar_lcl, sigma: xbar_sigma },
+      r:    { values: ranges, cl: r_cl,    ucl: r_ucl,    lcl: r_lcl,    sigma: r_sigma },
     },
     labels: subgroups.map((_, i) => i + 1),
   };
@@ -181,40 +330,90 @@ export function computeXbarR(values, n, baselineEnd) {
 
 /**
  * X̄-S (Subgroup Mean & Std Dev) chart computation.
+ *
+ * Single-stage / multi-stage modes — see {@link computeIMR} for semantics.
+ *
  * @param {number[]} values
  * @param {number} n — subgroup size
- * @param {number} [baselineEnd] — index (in raw values) after last baseline value
+ * @param {number} [baselineEnd]
+ * @param {number[]} [stages]
+ * @param {number[]} [excludedIndices]
  * @returns {ComputeResult}
  */
-export function computeXbarS(values, n, baselineEnd) {
+export function computeXbarS(values, n, baselineEnd, stages, excludedIndices) {
   const subgroups = [];
   for (let i = 0; i + n <= values.length; i += n) {
     subgroups.push(values.slice(i, i + n));
   }
-
-  const blEnd = baselineEnd ? Math.ceil(baselineEnd / n) : subgroups.length;
+  const K = subgroups.length;
   const means = subgroups.map(sg => sg.reduce((a, b) => a + b, 0) / sg.length);
   const stddevs = subgroups.map(sg => {
     const m = sg.reduce((a, b) => a + b, 0) / sg.length;
     return Math.sqrt(sg.reduce((a, v) => a + (v - m) ** 2, 0) / (sg.length - 1));
   });
 
-  const blMeans = means.slice(0, blEnd);
-  const blStds = stddevs.slice(0, blEnd);
-
-  const xBarBar = blMeans.reduce((a, b) => a + b, 0) / blMeans.length;
-  const sBar = blStds.reduce((a, b) => a + b, 0) / blStds.length;
-
   const A3 = SPC_CONSTANTS.A3[n];
   const B3 = SPC_CONSTANTS.B3[n];
   const B4 = SPC_CONSTANTS.B4[n];
   const c4 = SPC_CONSTANTS.c4[n];
-  const sigmaXbar = sBar / (c4 * Math.sqrt(n));
+
+  const segmentsRaw = (Array.isArray(stages) && stages.length > 0)
+    ? _normalizeStages(values.length, stages)
+    : null;
+
+  if (!segmentsRaw || segmentsRaw.length <= 1) {
+    const blEnd = baselineEnd ? Math.ceil(baselineEnd / n) : K;
+    const excluded = Array.isArray(excludedIndices) ? new Set(excludedIndices) : new Set();
+    const isSubgroupExcluded = (k) => {
+      for (let r = k * n; r < (k + 1) * n; r++) if (excluded.has(r)) return true;
+      return false;
+    };
+    const blMeans = [];
+    const blStds  = [];
+    for (let k = 0; k < blEnd; k++) {
+      if (isSubgroupExcluded(k)) continue;
+      blMeans.push(means[k]);
+      blStds.push(stddevs[k]);
+    }
+    const xBarBar = blMeans.length ? blMeans.reduce((a, b) => a + b, 0) / blMeans.length : 0;
+    const sBar    = blStds.length  ? blStds.reduce((a, b) => a + b, 0) / blStds.length    : 0;
+    const sigmaXbar = sBar / (c4 * Math.sqrt(n));
+
+    return {
+      subcharts: {
+        xbar: { values: means,   cl: xBarBar, ucl: xBarBar + A3 * sBar, lcl: xBarBar - A3 * sBar, sigma: sigmaXbar },
+        s:    { values: stddevs, cl: sBar,    ucl: B4 * sBar,           lcl: B3 * sBar,           sigma: (B4 * sBar - sBar) / 3 },
+      },
+      labels: subgroups.map((_, i) => i + 1),
+    };
+  }
+
+  const segments = segmentsRaw
+    .map(seg => ({ start: Math.ceil(seg.start / n), end: Math.ceil(seg.end / n) }))
+    .filter(seg => seg.end > seg.start);
+
+  const xBarBars = segments.map(seg => {
+    const sl = means.slice(seg.start, seg.end);
+    return sl.reduce((a, b) => a + b, 0) / sl.length;
+  });
+  const sBars = segments.map(seg => {
+    const sl = stddevs.slice(seg.start, seg.end);
+    return sl.reduce((a, b) => a + b, 0) / sl.length;
+  });
+
+  const xbar_cl    = _broadcastStages(segments, K, xBarBars);
+  const s_cl       = _broadcastStages(segments, K, sBars);
+  const xbar_sigma = s_cl.map(sb => sb / (c4 * Math.sqrt(n)));
+  const xbar_ucl   = xbar_cl.map((m, i) => m + A3 * s_cl[i]);
+  const xbar_lcl   = xbar_cl.map((m, i) => m - A3 * s_cl[i]);
+  const s_ucl      = s_cl.map(sb => B4 * sb);
+  const s_lcl      = s_cl.map(sb => B3 * sb);
+  const s_sigma    = s_cl.map(sb => (B4 * sb - sb) / 3);
 
   return {
     subcharts: {
-      xbar: { values: means, cl: xBarBar, ucl: xBarBar + A3 * sBar, lcl: xBarBar - A3 * sBar, sigma: sigmaXbar },
-      s: { values: stddevs, cl: sBar, ucl: B4 * sBar, lcl: B3 * sBar, sigma: (B4 * sBar - sBar) / 3 },
+      xbar: { values: means,   cl: xbar_cl, ucl: xbar_ucl, lcl: xbar_lcl, sigma: xbar_sigma },
+      s:    { values: stddevs, cl: s_cl,    ucl: s_ucl,    lcl: s_lcl,    sigma: s_sigma },
     },
     labels: subgroups.map((_, i) => i + 1),
   };
@@ -428,21 +627,25 @@ export function analyze(inputs) {
     if (!Array.isArray(values)) throw new Error('analyze: inputs.values (number[]) is required');
     let sub;
     if (mode === 'i-mr') {
-      sub = computeIMR(values, 1, inputs.baselineEnd).subcharts;
+      sub = computeIMR(values, 1, inputs.baselineEnd, inputs.stages, inputs.excludedIndices).subcharts;
     } else if (mode === 'xbar-r') {
       if (!Number.isFinite(inputs.n)) throw new Error('analyze: inputs.n (subgroup size) is required for xbar-r');
-      sub = computeXbarR(values, inputs.n, inputs.baselineEnd).subcharts;
+      sub = computeXbarR(values, inputs.n, inputs.baselineEnd, inputs.stages, inputs.excludedIndices).subcharts;
     } else {
       if (!Number.isFinite(inputs.n)) throw new Error('analyze: inputs.n (subgroup size) is required for xbar-s');
-      sub = computeXbarS(values, inputs.n, inputs.baselineEnd).subcharts;
+      sub = computeXbarS(values, inputs.n, inputs.baselineEnd, inputs.stages, inputs.excludedIndices).subcharts;
     }
+    // Multi-stage results are arrays — fixtures keep matching scalars by
+    // collapsing to the first element (which is the first stage's value).
+    // For single-stage, the values are already scalars so this is a no-op.
+    const collapse = (v) => Array.isArray(v) ? v[0] : v;
     const flat = {};
     for (const subId of Object.keys(sub)) {
       const s = sub[subId];
-      flat[`${subId}.cl`]    = s.cl;
-      flat[`${subId}.ucl`]   = s.ucl;
-      flat[`${subId}.lcl`]   = s.lcl;
-      flat[`${subId}.sigma`] = s.sigma;
+      flat[`${subId}.cl`]    = collapse(s.cl);
+      flat[`${subId}.ucl`]   = collapse(s.ucl);
+      flat[`${subId}.lcl`]   = collapse(s.lcl);
+      flat[`${subId}.sigma`] = collapse(s.sigma);
     }
     return flat;
   }

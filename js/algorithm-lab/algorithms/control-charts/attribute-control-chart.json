@@ -1,0 +1,88 @@
+{
+  "id": "attribute-control-chart",
+  "name": {
+    "de": "Attributive Regelkarten (p, np, c, u)",
+    "en": "Attribute Control Charts (p, np, c, u)"
+  },
+  "category": "control-charts",
+  "subcategory": null,
+  "status": "validated",
+  "version": "1.0.0",
+
+  "description": {
+    "short": {
+      "de": "Regelkartenkenngrößen (CL, UCL, LCL, σ̂) für p-, np-, c- und u-Karten plus reduzierte Nelson-Regelprüfung.",
+      "en": "Control chart core values (CL, UCL, LCL, σ̂) for p, np, c, u charts plus reduced Nelson rule evaluation."
+    },
+    "long": {
+      "de": "Engine für die vier klassischen attributiven Shewhart-Regelkarten: p (Anteil fehlerhaft, variable Stichprobengröße), np (Anzahl fehlerhaft, konstantes n), c (Fehler je Einheit, konstante Inspektionsgelegenheit) und u (Fehler je Einheit, variable Inspektionsgelegenheit). Bei p- und u-Karten mit variablem n liefert die Engine UCL/LCL/σ als Arrays (variableLimits=true), bei konstantem n als Skalare. Der Dispatcher analyze(inputs) akzeptiert die Modi p, np, c, u und nelson.",
+      "en": "Engine for the four classic attribute Shewhart control charts: p (fraction defective, variable subgroup size), np (number defective, constant n), c (defects per unit, constant inspection opportunity), u (defects per unit, variable opportunity). For p and u with variable n the engine returns UCL/LCL/σ as arrays (variableLimits=true); with constant n as scalars. The analyze(inputs) dispatcher supports modes p, np, c, u and nelson."
+    }
+  },
+
+  "documentation": {
+    "formulas": [
+      {
+        "label": "p-Chart",
+        "latex": "\\bar{p} = \\frac{\\sum D_i}{\\sum n_i},\\quad \\hat{\\sigma}_{p_i} = \\sqrt{\\frac{\\bar{p}(1-\\bar{p})}{n_i}},\\quad \\mathrm{UCL}_i = \\bar{p} + 3\\hat{\\sigma}_{p_i},\\quad \\mathrm{LCL}_i = \\max(0,\\bar{p} - 3\\hat{\\sigma}_{p_i})",
+        "description": { "de": "Anteilskarte mit (ggf. variablen) Grenzen pro Stichprobe", "en": "Fraction-defective chart with (possibly variable) per-sample limits" }
+      },
+      {
+        "label": "np-Chart",
+        "latex": "\\bar{p} = \\frac{\\sum D_i}{nk},\\quad \\mathrm{CL} = n\\bar{p},\\quad \\mathrm{UCL} = n\\bar{p} + 3\\sqrt{n\\bar{p}(1-\\bar{p})}",
+        "description": { "de": "Anzahl-fehlerhaft-Karte bei konstantem n", "en": "Number-defective chart, constant n" }
+      },
+      {
+        "label": "c-Chart",
+        "latex": "\\bar{c} = \\frac{\\sum c_i}{k},\\quad \\mathrm{UCL} = \\bar{c} + 3\\sqrt{\\bar{c}},\\quad \\mathrm{LCL} = \\max(0,\\bar{c} - 3\\sqrt{\\bar{c}})",
+        "description": { "de": "Fehler je Einheit bei konstanter Inspektionsgelegenheit (Poisson)", "en": "Defects per unit, constant inspection opportunity (Poisson)" }
+      },
+      {
+        "label": "u-Chart",
+        "latex": "\\bar{u} = \\frac{\\sum c_i}{\\sum n_i},\\quad \\hat{\\sigma}_{u_i} = \\sqrt{\\bar{u}/n_i},\\quad \\mathrm{UCL}_i = \\bar{u} + 3\\hat{\\sigma}_{u_i}",
+        "description": { "de": "Fehler je Einheit mit (ggf. variablen) Grenzen", "en": "Defects per unit with (possibly variable) limits" }
+      }
+    ],
+    "assumptions": [
+      { "de": "p-/np-Karten: Defekte sind binomialverteilt; n·p̄ ≥ 5 für tragfähige Normalapproximation", "en": "p/np charts: defects are binomial; n·p̄ ≥ 5 for usable normal approximation" },
+      { "de": "c-/u-Karten: Fehlerzahlen sind Poisson-verteilt; keine Überdispersion", "en": "c/u charts: defect counts are Poisson; no overdispersion" },
+      { "de": "Untergruppen sind unabhängig und stammen aus stabilem Prozess", "en": "Subgroups are independent and from a stable process" }
+    ],
+    "limitations": [
+      { "de": "Bei variablem n in p-/u-Karten sind Zonen-Regeln (5–8) nicht definiert; nur Regeln 1–3 werden geprüft", "en": "With variable n on p/u charts, zone rules (5–8) are undefined; only rules 1–3 are evaluated" },
+      { "de": "Überdispersion erzeugt false-positive Verletzungen — Laney p'/u' nicht implementiert", "en": "Overdispersion creates false-positive violations — Laney p'/u' not implemented" }
+    ],
+    "references": [
+      { "source": "Montgomery, Introduction to Statistical Quality Control, 8th Ed.", "chapter": "Chapter 7" },
+      { "source": "AIAG — Statistical Process Control (SPC) Reference Manual, 2nd Edition" }
+    ],
+    "minitab_equivalent": "Stat > Control Charts > Attributes Charts (P, NP, C, U)"
+  },
+
+  "source": {
+    "function_name": "analyze",
+    "file_path": "js/engines/attribute-control-chart-engine.js",
+    "signature": {
+      "parameters": [
+        {
+          "name": "inputs",
+          "type": "object",
+          "required": true,
+          "description": {
+            "de": "Objekt mit mode (p|np|c|u|nelson) und modusspezifischen Feldern (defects, n, baselineEnd, values, cl, ucl, lcl, sigma, enabledRules)",
+            "en": "Object with mode (p|np|c|u|nelson) and mode-specific fields (defects, n, baselineEnd, values, cl, ucl, lcl, sigma, enabledRules)"
+          }
+        }
+      ],
+      "returns": {
+        "type": "object",
+        "properties": {
+          "p.cl": { "type": "number", "description": { "de": "p̄", "en": "p̄" } },
+          "p.ucl_mean": { "type": "number", "description": { "de": "Mittlere UCL", "en": "Mean UCL" } },
+          "p.lcl_mean": { "type": "number", "description": { "de": "Mittlere LCL", "en": "Mean LCL" } },
+          "violationCount": { "type": "number", "description": { "de": "Anzahl Regelverletzungen", "en": "Number of rule violations" } }
+        }
+      }
+    }
+  }
+}

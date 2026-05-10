@@ -1,0 +1,161 @@
+{
+  "algorithm_id": "attribute-control-chart",
+  "generated_with": {
+    "method": "Hand-verified textbook examples (Montgomery 8th Ed.)"
+  },
+  "generator_version": "1.0.0",
+  "tolerances": {
+    "default": {
+      "relative": 1e-10,
+      "absolute": 1e-9
+    },
+    "overrides": {
+      "binomial_rounding": {
+        "relative": 1e-08,
+        "absolute": 1e-08,
+        "reason": "Square-root binomial sigma — small accumulation"
+      }
+    }
+  },
+  "test_cases": [
+    {
+      "id": "acc_p_constant_n",
+      "tier": "standard",
+      "description": "p-chart, constant n=50, hand-verified CL/UCL/LCL",
+      "reference": "Hand-verified",
+      "inputs": {
+        "mode": "p",
+        "defects": [4, 6, 5, 3, 8, 7],
+        "n": [50, 50, 50, 50, 50, 50]
+      },
+      "expected": {
+        "p.cl": 0.11,
+        "p.ucl_mean": 0.24274788133902553,
+        "p.lcl_mean": 0,
+        "p.variableLimits": false
+      }
+    },
+    {
+      "id": "acc_p_variable_n",
+      "tier": "standard",
+      "description": "p-chart with varying subgroup sizes — variable limits, mean reported",
+      "reference": "Hand-verified",
+      "inputs": {
+        "mode": "p",
+        "defects": [3, 5, 2],
+        "n": [40, 60, 50]
+      },
+      "expected": {
+        "p.cl": 0.06666666666666667,
+        "p.ucl_mean": 0.17358694213750184,
+        "p.lcl_mean": 0,
+        "p.variableLimits": true
+      }
+    },
+    {
+      "id": "acc_np_basic",
+      "tier": "standard",
+      "description": "np-chart, n=100, ΣD=36 over 10 subgroups",
+      "reference": "Hand-verified",
+      "inputs": {
+        "mode": "np",
+        "defects": [3, 2, 5, 4, 3, 2, 5, 4, 3, 5],
+        "n": 100
+      },
+      "expected": {
+        "np.cl": 3.6,
+        "np.ucl_mean": 9.188702890653609,
+        "np.lcl_mean": 0,
+        "np.variableLimits": false
+      }
+    },
+    {
+      "id": "acc_c_basic",
+      "tier": "standard",
+      "description": "c-chart with c̄=4, σ=2",
+      "reference": "Hand-verified",
+      "inputs": {
+        "mode": "c",
+        "defects": [4, 5, 3, 6, 2, 5, 4, 3, 5, 3]
+      },
+      "expected": {
+        "c.cl": 4,
+        "c.ucl_mean": 10,
+        "c.lcl_mean": 0,
+        "c.variableLimits": false
+      }
+    },
+    {
+      "id": "acc_u_constant_n",
+      "tier": "standard",
+      "description": "u-chart, constant n=10 inspection units, ū=0.5",
+      "reference": "Hand-verified",
+      "inputs": {
+        "mode": "u",
+        "defects": [4, 6, 5, 3, 7, 5],
+        "n": [10, 10, 10, 10, 10, 10]
+      },
+      "expected": {
+        "u.cl": 0.5,
+        "u.ucl_mean": 1.1708203932499369,
+        "u.lcl_mean": 0,
+        "u.variableLimits": false
+      }
+    },
+    {
+      "id": "acc_u_variable_n",
+      "tier": "standard",
+      "description": "u-chart with varying inspection sizes",
+      "reference": "Hand-verified",
+      "inputs": {
+        "mode": "u",
+        "defects": [4, 6, 8, 5],
+        "n": [10, 12, 14, 11]
+      },
+      "expected": {
+        "u.cl": 0.48936170212765956,
+        "u.variableLimits": true
+      }
+    },
+    {
+      "id": "acc_nelson_rule1",
+      "tier": "standard",
+      "description": "Constant-σ rule 1 — point beyond UCL",
+      "reference": "Hand-verified",
+      "inputs": {
+        "mode": "nelson",
+        "values": [3, 4, 3, 5, 12, 4, 3, 5, 4],
+        "cl": 4,
+        "ucl": 10,
+        "lcl": 0,
+        "sigma": 2,
+        "enabledRules": [1]
+      },
+      "expected": {
+        "violationCount": 1,
+        "rulesTriggered": [1],
+        "violationIndices": [4]
+      }
+    },
+    {
+      "id": "acc_nelson_rule1_variable",
+      "tier": "standard",
+      "description": "Variable-limit rule 1 — per-point UCL/LCL arrays",
+      "reference": "Hand-verified",
+      "inputs": {
+        "mode": "nelson",
+        "values": [0.10, 0.12, 0.30, 0.08],
+        "cl": 0.10,
+        "ucl": [0.20, 0.22, 0.18, 0.21],
+        "lcl": [0, 0, 0, 0],
+        "sigma": [0.033, 0.040, 0.027, 0.037],
+        "enabledRules": [1]
+      },
+      "expected": {
+        "violationCount": 1,
+        "rulesTriggered": [1],
+        "violationIndices": [2]
+      }
+    }
+  ]
+}

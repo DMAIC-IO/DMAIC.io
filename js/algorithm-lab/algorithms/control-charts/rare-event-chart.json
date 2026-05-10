@@ -1,0 +1,56 @@
+{
+  "id": "rare-event-chart",
+  "name": {
+    "de": "Regelkarten für seltene Ereignisse (g, t)",
+    "en": "Rare-Event Control Charts (g, t)"
+  },
+  "category": "control-charts",
+  "subcategory": null,
+  "status": "validated",
+  "version": "1.0.0",
+
+  "description": {
+    "short": {
+      "de": "g-Karte (Benneyan) und t-Karte (Nelson 1/3.6-Transform) für seltene Ereignisse.",
+      "en": "g chart (Benneyan) and t chart (Nelson 1/3.6 transform) for rare events."
+    },
+    "long": {
+      "de": "g-Karte: Anzahl Gelegenheiten zwischen aufeinanderfolgenden Ereignissen. Geometrisch verteilt; Eingriffsgrenzen via Benneyan-Formel CL=ḡ, UCL/LCL = ḡ ± 3·√(ḡ·(ḡ+1)). t-Karte: Zeit zwischen Ereignissen, exponentialverteilt. Nelson-Transform y = t^(1/3.6) bringt die Reihe näher an Normalverteilung; auf y wird I-MR-Limit gerechnet, das Ergebnis wird zur Anzeige rück-transformiert.",
+      "en": "g chart: count of opportunities between consecutive events. Geometric distribution; limits via Benneyan: CL=ḡ, UCL/LCL = ḡ ± 3·√(ḡ·(ḡ+1)). t chart: time between events, exponentially distributed. Nelson transform y = t^(1/3.6) brings the series closer to normal; I-MR limits computed on y, results back-transformed for display."
+    }
+  },
+
+  "documentation": {
+    "formulas": [
+      { "label": "g chart", "latex": "\\mathrm{CL} = \\bar{g},\\quad \\mathrm{UCL/LCL} = \\bar{g} \\pm 3\\sqrt{\\bar{g}(\\bar{g}+1)}", "description": { "de": "Benneyan 1999", "en": "Benneyan 1999" } },
+      { "label": "t chart (transformed)", "latex": "y_i = t_i^{1/3.6},\\quad \\mathrm{UCL/LCL} = \\bar{y} \\pm 3\\,\\overline{MR}_y / d_2", "description": { "de": "Nelson 1994 — I-MR auf y", "en": "Nelson 1994 — I-MR on y" } }
+    ],
+    "references": [
+      { "source": "Benneyan, J. C. (1999), Geometric-based g-Type Statistical Control Charts" },
+      { "source": "Nelson, L. S. (1994), A Control Chart for Parts-per-Million Nonconforming Items" }
+    ],
+    "minitab_equivalent": "Stat > Control Charts > Rare Event Charts (G, T)"
+  },
+
+  "source": {
+    "function_name": "analyze",
+    "file_path": "js/engines/rare-event-chart-engine.js",
+    "signature": {
+      "parameters": [
+        { "name": "inputs", "type": "object", "required": true, "description": { "de": "{mode: 'g'|'t', values: number[]}", "en": "{mode: 'g'|'t', values: number[]}" } }
+      ],
+      "returns": {
+        "type": "object",
+        "properties": {
+          "g.cl":   { "type": "number" },
+          "g.ucl":  { "type": "number" },
+          "g.lcl":  { "type": "number" },
+          "g.sigma":{ "type": "number" },
+          "t.cl":   { "type": "number" },
+          "t.ucl":  { "type": "number" },
+          "t.lcl":  { "type": "number" }
+        }
+      }
+    }
+  }
+}

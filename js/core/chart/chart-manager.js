@@ -12,6 +12,7 @@ const TYPE_MAP = {
   boxplot:            () => import('./types/boxplot.js'),
   'individual-value-plot': () => import('./types/individual-value-plot.js'),
   'control-chart':    () => import('./types/control-chart.js'),
+  'run-chart':        () => import('./types/run-chart.js'),
   'probability-plot': () => import('./types/probability-plot.js'),
   pareto:             () => import('./types/pareto.js'),
   pie:                () => import('./types/pie.js'),

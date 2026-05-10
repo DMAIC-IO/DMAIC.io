@@ -61,6 +61,12 @@ export default [
     load: () => import('./individual-value-plot/individual-value-plot.js'),
   },
   {
+    id: 'run-chart',
+    phase: 'data',
+    group: 'visualize',
+    load: () => import('./run-chart/run-chart.js'),
+  },
+  {
     id: 'probability-plot',
     phase: 'data',
     group: 'visualize',
@@ -317,6 +323,7 @@ export default [
   {
     id: 'doe-advisor',
     phase: 'improve',
+    group: 'plan',
     load: () => import('./doe-advisor/doe-advisor.js'),
     cycles: {
       dmaic: { phase: 'improve' },
@@ -326,6 +333,7 @@ export default [
   {
     id: 'doe-planner',
     phase: 'improve',
+    group: 'plan',
     load: () => import('./doe-planner/doe-planner.js'),
     cycles: {
       dmaic: { phase: 'improve' },
@@ -335,6 +343,7 @@ export default [
   {
     id: 'regression',
     phase: 'improve',
+    group: 'evaluate',
     load: () => import('./regression/regression.js'),
     cycles: {
       dmaic: { phase: 'improve' },
@@ -342,17 +351,9 @@ export default [
     },
   },
   {
-    id: 'response-optimization',
-    phase: 'improve',
-    load: () => import('./response-optimization/response-optimization.js'),
-    cycles: {
-      dmaic: { phase: 'improve' },
-      dmadv: { phase: 'design' },
-    },
-  },
-  {
     id: 'glm-regression',
     phase: 'improve',
+    group: 'evaluate',
     allowedPhases: ['analyze', 'improve'],
     load: () => import('./glm-regression/glm-regression.js'),
     cycles: {
@@ -360,13 +361,90 @@ export default [
       dmadv: { phase: 'design',  allowedPhases: ['analyze', 'design', 'verify'] },
     },
   },
+  {
+    id: 'response-optimization',
+    phase: 'improve',
+    group: 'optimize',
+    load: () => import('./response-optimization/response-optimization.js'),
+    cycles: {
+      dmaic: { phase: 'improve' },
+      dmadv: { phase: 'design' },
+    },
+  },
 
   // ─── Control (DMAIC) / Verify (DMADV) ────────────────────────
   {
     id: 'control-chart',
     phase: 'control',
+    group: 'charts',
     allowedPhases: ['control'],
     load: () => import('./control-chart/control-chart.js'),
+    cycles: {
+      dmaic: { phase: 'control', allowedPhases: ['control'] },
+      dmadv: { phase: 'verify',  allowedPhases: ['verify']  },
+    },
+  },
+  {
+    id: 'attribute-control-chart',
+    phase: 'control',
+    group: 'charts',
+    allowedPhases: ['control'],
+    load: () => import('./attribute-control-chart/attribute-control-chart.js'),
+    cycles: {
+      dmaic: { phase: 'control', allowedPhases: ['control'] },
+      dmadv: { phase: 'verify',  allowedPhases: ['verify']  },
+    },
+  },
+  {
+    id: 'time-weighted-chart',
+    phase: 'control',
+    group: 'charts',
+    allowedPhases: ['control'],
+    load: () => import('./time-weighted-chart/time-weighted-chart.js'),
+    cycles: {
+      dmaic: { phase: 'control', allowedPhases: ['control'] },
+      dmadv: { phase: 'verify',  allowedPhases: ['verify']  },
+    },
+  },
+  {
+    id: 'rare-event-chart',
+    phase: 'control',
+    group: 'charts',
+    allowedPhases: ['control'],
+    load: () => import('./rare-event-chart/rare-event-chart.js'),
+    cycles: {
+      dmaic: { phase: 'control', allowedPhases: ['control'] },
+      dmadv: { phase: 'verify',  allowedPhases: ['verify']  },
+    },
+  },
+  {
+    id: 'multivariate-control-chart',
+    phase: 'control',
+    group: 'charts',
+    allowedPhases: ['control'],
+    load: () => import('./multivariate-control-chart/multivariate-control-chart.js'),
+    cycles: {
+      dmaic: { phase: 'control', allowedPhases: ['control'] },
+      dmadv: { phase: 'verify',  allowedPhases: ['verify']  },
+    },
+  },
+  {
+    id: 'short-run-chart',
+    phase: 'control',
+    group: 'charts',
+    allowedPhases: ['control'],
+    load: () => import('./short-run-chart/short-run-chart.js'),
+    cycles: {
+      dmaic: { phase: 'control', allowedPhases: ['control'] },
+      dmadv: { phase: 'verify',  allowedPhases: ['verify']  },
+    },
+  },
+  {
+    id: 'transformed-imr-chart',
+    phase: 'control',
+    group: 'charts',
+    allowedPhases: ['control'],
+    load: () => import('./transformed-imr-chart/transformed-imr-chart.js'),
     cycles: {
       dmaic: { phase: 'control', allowedPhases: ['control'] },
       dmadv: { phase: 'verify',  allowedPhases: ['verify']  },
@@ -391,6 +469,12 @@ export default [
     id: 'triz-contradiction-matrix',
     phase: 'improve',
     load: () => import('./triz-contradiction-matrix/triz-contradiction-matrix.js'),
+    cycles: {},
+  },
+  {
+    id: 'triz-9-windows',
+    phase: 'improve',
+    load: () => import('./triz-9-windows/triz-9-windows.js'),
     cycles: {},
   },
 ];

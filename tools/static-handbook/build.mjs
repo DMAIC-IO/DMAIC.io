@@ -36,6 +36,7 @@ import {
   renderLangPicker,
   renderTrainingIndex,
   renderTrainingCyclePage,
+  renderTrainingTrizPage,
   renderTrainingToolPage,
   renderCycleIndex,
 } from './render/pages.mjs';
@@ -163,6 +164,12 @@ async function main() {
       sitemapEntries.push({ path: cyclePage.pathFromRoot, priority: '0.7', changefreq: 'monthly' });
       pageCount++;
     }
+
+    // TRIZ methodology page — not a cycle (no phase ids), so it has its own renderer.
+    const trizPage = renderTrainingTrizPage({ lang, i18n: sources.i18n });
+    await writeOut(path.join(OUT, rel(trizPage.pathFromRoot)), trizPage.html);
+    sitemapEntries.push({ path: trizPage.pathFromRoot, priority: '0.7', changefreq: 'monthly' });
+    pageCount++;
 
     for (const topic of ['minitab', 'jmp']) {
       const page = renderTrainingToolPage({ lang, i18n: sources.i18n, topic });

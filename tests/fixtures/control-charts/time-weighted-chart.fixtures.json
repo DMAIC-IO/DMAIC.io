@@ -1,0 +1,148 @@
+{
+  "algorithm_id": "time-weighted-chart",
+  "generated_with": {
+    "method": "Hand-verified — formulas from Montgomery 8th Ed., chapter 9"
+  },
+  "generator_version": "1.0.0",
+  "tolerances": {
+    "default": {
+      "relative": 1e-10,
+      "absolute": 1e-10
+    },
+    "overrides": {
+      "ewma_accumulation": {
+        "relative": 1e-10,
+        "absolute": 1e-9,
+        "reason": "Cumulative recursion accumulates floating-point noise"
+      }
+    }
+  },
+  "test_cases": [
+    {
+      "id": "twc_ewma_flat",
+      "tier": "standard",
+      "description": "EWMA with constant input at target — z stays at target, signal count = 0",
+      "reference": "Hand-verified",
+      "inputs": {
+        "mode": "ewma",
+        "values": [10, 10, 10, 10, 10],
+        "target": 10,
+        "sigma": 1,
+        "lambda": 0.2,
+        "L": 3
+      },
+      "tolerance_override": "ewma_accumulation",
+      "expected": {
+        "ewma.cl": 10,
+        "ewma.sigma_steady": 0.33333333333333337,
+        "ewma.signal_count": 0
+      }
+    },
+    {
+      "id": "twc_ewma_stable",
+      "tier": "standard",
+      "description": "EWMA stable noise around target — no signals",
+      "reference": "Hand-verified",
+      "inputs": {
+        "mode": "ewma",
+        "values": [9.8, 10.2, 9.9, 10.1, 9.95, 10.05, 10.0, 9.92, 10.08, 10.03],
+        "target": 10,
+        "sigma": 0.1,
+        "lambda": 0.2,
+        "L": 3
+      },
+      "tolerance_override": "ewma_accumulation",
+      "expected": {
+        "ewma.cl": 10,
+        "ewma.sigma_steady": 0.03333333333333334,
+        "ewma.signal_count": 0
+      }
+    },
+    {
+      "id": "twc_ewma_drift",
+      "tier": "standard",
+      "description": "EWMA with linear upward drift — multiple signals expected",
+      "reference": "Hand-verified",
+      "inputs": {
+        "mode": "ewma",
+        "values": [10.0, 10.1, 10.2, 10.4, 10.6, 10.8, 11.0, 11.2, 11.4, 11.6, 11.8, 12.0],
+        "target": 10,
+        "sigma": 0.5,
+        "lambda": 0.2,
+        "L": 3
+      },
+      "tolerance_override": "ewma_accumulation",
+      "expected": {
+        "ewma.cl": 10,
+        "ewma.sigma_steady": 0.16666666666666669,
+        "ewma.signal_count": 5
+      }
+    },
+    {
+      "id": "twc_cusum_stable",
+      "tier": "standard",
+      "description": "CUSUM with stable noise around target — no signals",
+      "reference": "Hand-verified",
+      "inputs": {
+        "mode": "cusum",
+        "values": [9.8, 10.2, 9.9, 10.1, 9.95, 10.05, 10.0, 9.92, 10.08, 10.03],
+        "target": 10,
+        "sigma": 0.1,
+        "kSigma": 0.5,
+        "hSigma": 4
+      },
+      "tolerance_override": "ewma_accumulation",
+      "expected": {
+        "cusum.h": 0.4,
+        "cusum.k": 0.05,
+        "cusum.signal_count_hi": 0,
+        "cusum.signal_count_lo": 0,
+        "cusum.cminus_last": 0
+      }
+    },
+    {
+      "id": "twc_cusum_step_shift",
+      "tier": "standard",
+      "description": "CUSUM detects a 2σ step shift after a few points",
+      "reference": "Hand-verified — values 10×5, then 12×5; σ=1, k=0.5, h=4",
+      "inputs": {
+        "mode": "cusum",
+        "values": [10, 10, 10, 10, 10, 12, 12, 12, 12, 12],
+        "target": 10,
+        "sigma": 1,
+        "kSigma": 0.5,
+        "hSigma": 4
+      },
+      "tolerance_override": "ewma_accumulation",
+      "expected": {
+        "cusum.h": 4,
+        "cusum.k": 0.5,
+        "cusum.signal_count_hi": 3,
+        "cusum.signal_count_lo": 0,
+        "cusum.cplus_last": 7.5
+      }
+    },
+    {
+      "id": "twc_cusum_drift",
+      "tier": "standard",
+      "description": "CUSUM with linear drift — many C⁺ signals, no C⁻",
+      "reference": "Hand-verified",
+      "inputs": {
+        "mode": "cusum",
+        "values": [10.0, 10.1, 10.2, 10.4, 10.6, 10.8, 11.0, 11.2, 11.4, 11.6, 11.8, 12.0],
+        "target": 10,
+        "sigma": 0.5,
+        "kSigma": 0.5,
+        "hSigma": 4
+      },
+      "tolerance_override": "ewma_accumulation",
+      "expected": {
+        "cusum.h": 2,
+        "cusum.k": 0.25,
+        "cusum.signal_count_hi": 5,
+        "cusum.signal_count_lo": 0,
+        "cusum.cplus_last": 8.55
+      }
+    }
+  ]
+}

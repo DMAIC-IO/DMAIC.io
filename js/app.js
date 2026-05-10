@@ -25,6 +25,7 @@ import { getChartType, evaluateNelsonRules, computeCapability, DEFAULT_ENABLED_R
 import { getColumnValues, getColumnName } from './ui/column-picker.js';
 import { CYCLES, getCycle, getPhaseIds, DEFAULT_CYCLE } from './core/cycles/cycles.js';
 import { initNightlyMode }   from './core/nightly-mode.js';
+import { TipEngine }         from './core/tips/tip-engine.js';
 
 async function init() {
   // ─── Core Services ───────────────────────────────────────
@@ -53,6 +54,9 @@ async function init() {
   stateManager.setModuleRegistry(moduleRegistry);
 
   const chartManager = new ChartManager(eventBus, i18n, stateManager);
+
+  const tipEngine = new TipEngine({ eventBus, stateManager, i18n });
+  await tipEngine.init();
 
   // ─── UI Components ───────────────────────────────────────
 
@@ -94,7 +98,7 @@ async function init() {
   // ─── Header Controls ─────────────────────────────────────
 
   _initProjectName(stateManager, eventBus, i18n, modal, moduleRegistry);
-  _initSettings(themeManager, i18n, stateManager);
+  _initSettings(themeManager, i18n, stateManager, tipEngine);
   _initDevArea(eventBus, i18n);
   _initModuleHelp(workspace, helpPanel, i18n, eventBus);
   _initTraining(eventBus, i18n);
@@ -125,6 +129,14 @@ async function init() {
   // Module states are handled by StateManager's own unload hooks
   // (visibilitychange / pagehide / beforeunload → IDB flush).
   window.addEventListener('beforeunload', () => stateManager.save());
+
+  // E2E test handle: opt-in via ?e2e=1 so the production bundle stays clean.
+  // Lets headless tests force a synchronous flush instead of sleeping past
+  // the 2 s localStorage / 500 ms IDB debounces, and reach into live module
+  // instances via the workspace.
+  if (new URLSearchParams(location.search).get('e2e') === '1') {
+    window.__dmike = { stateManager, eventBus, moduleRegistry, i18n, themeManager, workspace, chartManager };
+  }
 
   // ─── Update title ────────────────────────────────────────
 
@@ -1995,6 +2007,7 @@ function _initTraining(eventBus, i18n) {
   const TABS = [
     { id: 'dmaic',   labelKey: 'training.tabDmaic',   render: () => _renderCycleTab('dmaic') },
     { id: 'dmadv',   labelKey: 'training.tabDmadv',   render: () => _renderCycleTab('dmadv') },
+    { id: 'triz',    labelKey: 'training.tabTriz',    render: () => _renderTrizTab() },
     { id: 'minitab', labelKey: 'training.tabMinitab', render: () => _renderToolTab('minitab') },
     { id: 'jmp',     labelKey: 'training.tabJmp',     render: () => _renderToolTab('jmp') },
   ];
@@ -2024,6 +2037,54 @@ function _initTraining(eventBus, i18n) {
 
       <h3>${t('phasesTitle')}</h3>
       ${phaseSections}
+
+      <h3>${t('whenTitle')}</h3>
+      <p>${t('whenBody')}</p>
+
+      <h3>${t('pitfallsTitle')}</h3>
+      <ul>
+        <li>${t('pitfall1')}</li>
+        <li>${t('pitfall2')}</li>
+        <li>${t('pitfall3')}</li>
+        <li>${t('pitfall4')}</li>
+      </ul>
+
+      <h3>${t('appTitle')}</h3>
+      <p>${t('appBody')}</p>
+    `;
+  }
+
+  /**
+   * Render the TRIZ methodology primer from i18n namespace `training.triz`.
+   * TRIZ is a methodology, not a phase-based cycle, so the structure differs
+   * from `_renderCycleTab`: the "phases" section is replaced by core concepts
+   * and a tools section.
+   */
+  function _renderTrizTab() {
+    const t = (k) => _escapeHtml(i18n.t(`training.triz.${k}`));
+    return `
+      <p>${t('intro')}</p>
+
+      <h3>${t('whyTitle')}</h3>
+      <p>${t('whyBody')}</p>
+
+      <h3>${t('conceptsTitle')}</h3>
+      <h4>${t('contradictionTitle')}</h4>
+      <p>${t('contradictionBody')}</p>
+      <h4>${t('idealityTitle')}</h4>
+      <p>${t('idealityBody')}</p>
+      <h4>${t('evolutionTitle')}</h4>
+      <p>${t('evolutionBody')}</p>
+
+      <h3>${t('toolsTitle')}</h3>
+      <h4>${t('tool40Title')}</h4>
+      <p>${t('tool40Body')}</p>
+      <h4>${t('toolMatrixTitle')}</h4>
+      <p>${t('toolMatrixBody')}</p>
+      <h4>${t('tool9WindowsTitle')}</h4>
+      <p>${t('tool9WindowsBody')}</p>
+      <h4>${t('toolArizTitle')}</h4>
+      <p>${t('toolArizBody')}</p>
 
       <h3>${t('whenTitle')}</h3>
       <p>${t('whenBody')}</p>
@@ -2147,7 +2208,7 @@ function _initTraining(eventBus, i18n) {
   eventBus.on('language:changed', () => { if (open) render(); });
 }
 
-function _initSettings(themeManager, i18n, stateManager) {
+function _initSettings(themeManager, i18n, stateManager, tipEngine) {
   const settingsBtn   = document.getElementById('settings-btn');
   const overlay       = document.getElementById('settings-overlay');
   const panel         = document.getElementById('settings-panel');
@@ -2203,6 +2264,19 @@ function _initSettings(themeManager, i18n, stateManager) {
       refreshTheme();
     });
   });
+
+  // ── Tips toggle + reset ────────────────────────────────────
+  const tipsCb = document.getElementById('settings-tips-enabled');
+  if (tipsCb) {
+    tipsCb.checked = stateManager.get('settings.tipsEnabled') !== false;
+    tipsCb.addEventListener('change', () => {
+      stateManager.set('settings.tipsEnabled', tipsCb.checked);
+    });
+  }
+  const tipsResetBtn = document.getElementById('settings-tips-reset');
+  if (tipsResetBtn && tipEngine) {
+    tipsResetBtn.addEventListener('click', () => tipEngine.resetDismissed());
+  }
 
   // ── Show Algorithm Lab link icons ──────────────────────────
   const algoLinkCb = document.getElementById('settings-show-algo-links');

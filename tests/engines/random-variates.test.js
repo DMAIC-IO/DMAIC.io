@@ -7,7 +7,7 @@ import { suite, test, assertEqual, assertAlmostEqual } from '../test-utils.js';
 import { generateRandomVariates } from '../../js/modules/random-generator/random-generator.js';
 
 async function loadFixture(path) {
-  const resp = await fetch(path);
+  const resp = await fetch(new URL(path, import.meta.url));
   return resp.json();
 }
 

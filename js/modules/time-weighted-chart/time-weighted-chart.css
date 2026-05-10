@@ -1,0 +1,65 @@
+/* ============================================================
+   Time-Weighted Chart Module Styles (time-weighted-chart.css)
+   BEM: .twc__ prefix
+   ============================================================ */
+
+.twc .dmike-split__input { width: 320px; }
+
+.twc__hint {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+  margin-top: 2px;
+}
+
+.twc__row-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--spacing-sm);
+}
+
+/* ── Chart sections ── */
+
+.twc__chart-section {
+  background: var(--color-bg-secondary);
+  border: var(--border-width) solid var(--color-border-secondary);
+  border-radius: var(--border-radius);
+  overflow: hidden;
+  margin-bottom: var(--spacing-md);
+}
+
+.twc__chart-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-bottom: var(--border-width) solid var(--color-border-secondary);
+}
+
+.twc__chart-title {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+}
+
+.twc__badge {
+  font-size: var(--font-size-xs);
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-weight: var(--font-weight-medium);
+}
+
+.twc__badge--stable   { background: rgba(34, 197, 94, 0.12); color: var(--color-success); }
+.twc__badge--unstable { background: rgba(239, 68, 68, 0.12); color: var(--color-error); }
+
+.twc__plot-wrap { height: 320px; overflow: hidden; }
+
+/* ── Param helper text ── */
+
+.twc__param-note {
+  background: var(--color-bg-tertiary);
+  border-left: 3px solid var(--color-info);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  margin-bottom: var(--spacing-sm);
+  border-radius: 2px;
+}

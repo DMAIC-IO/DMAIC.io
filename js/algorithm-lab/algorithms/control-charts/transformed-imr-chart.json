@@ -1,0 +1,58 @@
+{
+  "id": "transformed-imr-chart",
+  "name": {
+    "de": "Box-Cox-transformierte I-MR-Regelkarte",
+    "en": "Box-Cox-Transformed I-MR Control Chart"
+  },
+  "category": "control-charts",
+  "subcategory": null,
+  "status": "validated",
+  "version": "1.0.0",
+  "description": {
+    "short": {
+      "de": "Box-Cox-Transform mit Auto-λ via Anderson-Darling, I-MR auf der transformierten Skala, Rück-Transformation der Grenzen.",
+      "en": "Box-Cox transform with auto λ via Anderson-Darling, I-MR on the transformed scale, back-transformed limits."
+    },
+    "long": {
+      "de": "Box-Cox y = (xᵏ−1)/λ für λ ≠ 0, y = ln(x) für λ = 0. λ wird über ein [−3, 3]-Gitter (Schritt 0,05) per Anderson-Darling-Statistik gesucht. Auf y wird I-MR ausgewertet. Die Eingriffsgrenzen werden zur Anzeige auch auf die Originalskala zurückprojiziert (asymmetrisch — korrekt für rechtsschiefe Daten).",
+      "en": "Box-Cox y = (x^λ−1)/λ for λ ≠ 0, y = ln(x) for λ = 0. λ is searched on a [−3, 3] grid (step 0.05) via the Anderson-Darling statistic. I-MR is computed on y. Limits are back-transformed to the original scale for display (asymmetric — correct for right-skewed data)."
+    }
+  },
+  "documentation": {
+    "formulas": [
+      { "label": "Box-Cox", "latex": "y = \\begin{cases}(x^{\\lambda}-1)/\\lambda & \\lambda \\ne 0\\\\ \\ln x & \\lambda = 0\\end{cases}", "description": { "de": "x > 0 erforderlich", "en": "x > 0 required" } },
+      { "label": "Inverse", "latex": "x = \\begin{cases}(\\lambda y + 1)^{1/\\lambda} & \\lambda \\ne 0\\\\ \\exp(y) & \\lambda = 0\\end{cases}" }
+    ],
+    "references": [
+      { "source": "Box, G. E. P. & Cox, D. R. (1964), An analysis of transformations" }
+    ],
+    "minitab_equivalent": "Stat > Control Charts > Variables Charts for Individuals > I-MR (Box-Cox option)"
+  },
+  "source": {
+    "function_name": "analyze",
+    "file_path": "js/engines/transformed-chart-engine.js",
+    "signature": {
+      "parameters": [
+        { "name": "inputs", "type": "object", "required": true, "description": { "de": "{mode:'transformed-i-mr', values: number[] (>0), lambda?, baselineEnd?}", "en": "{mode:'transformed-i-mr', values: number[] (>0), lambda?, baselineEnd?}" } }
+      ],
+      "returns": {
+        "type": "object",
+        "properties": {
+          "lambda":       { "type": "number" },
+          "lambda_auto":  { "type": "boolean" },
+          "i.cl":         { "type": "number" },
+          "i.ucl":        { "type": "number" },
+          "i.lcl":        { "type": "number" },
+          "i.sigma":      { "type": "number" },
+          "mr.cl":        { "type": "number" },
+          "mr.ucl":       { "type": "number" },
+          "mr.lcl":       { "type": "number" },
+          "i.cl_original":  { "type": "number" },
+          "i.ucl_original": { "type": "number" },
+          "i.lcl_original": { "type": "number" },
+          "signal_count": { "type": "number" }
+        }
+      }
+    }
+  }
+}

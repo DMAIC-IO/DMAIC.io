@@ -1,0 +1,87 @@
+{
+  "id": "run-chart",
+  "name": {
+    "de": "Run Chart (Lauftests)",
+    "en": "Run Chart (runs tests)"
+  },
+  "category": "control-charts",
+  "subcategory": null,
+  "status": "validated",
+  "version": "1.0.0",
+
+  "description": {
+    "short": {
+      "de": "Median plus vier Lauftests (Clustering, Mischungen, Trends, Oszillation) mit p-Werten aus Normalapproximation.",
+      "en": "Median plus four runs tests (clustering, mixtures, trends, oscillation) with p-values from a normal approximation."
+    },
+    "long": {
+      "de": "Run-Chart-Engine zur Vorab-Beurteilung einer Datenreihe vor dem Aufbau einer Regelkarte. Die Engine berechnet den Median, die Anzahl Runs um den Median (Punkte gleich der Mittellinie werden ausgeschlossen) und die Anzahl Runs aufwärts/abwärts. Aus dem Wald-Wolfowitz-Erwartungswert und der Standardabweichung werden vier z-Statistiken und p-Werte gebildet: Clustering (zu wenige Median-Runs → Niveauverschiebung), Mischungen (zu viele → überlagerte Quellen), Trends (zu wenige Auf-/Ab-Runs → Drift) und Oszillation (zu viele → Zickzack/Übersteuerung).",
+      "en": "Run-chart engine for pre-assessment of a data series before setting up a control chart. Computes the median, the count of runs about the median (points equal to the median are excluded) and the count of runs up/down. From the Wald-Wolfowitz expectation and standard deviation it produces four z-statistics and p-values: clustering (too few median runs → level shift), mixtures (too many → mixed sources), trends (too few up/down runs → drift) and oscillation (too many → zigzag/overshoot)."
+    }
+  },
+
+  "documentation": {
+    "formulas": [
+      {
+        "label": "Runs about median",
+        "latex": "E[R] = \\frac{2 m_1 m_2}{N} + 1,\\quad \\mathrm{Var}[R] = \\frac{2 m_1 m_2 (2 m_1 m_2 - N)}{N^2 (N-1)},\\quad z = \\frac{R_{obs} - E[R]}{\\sqrt{\\mathrm{Var}[R]}}",
+        "description": { "de": "m₁/m₂ = Punkte über/unter Median; N = m₁+m₂", "en": "m₁/m₂ = points above/below median; N = m₁+m₂" }
+      },
+      {
+        "label": "Runs up or down",
+        "latex": "E[R] = \\frac{2n-1}{3},\\quad \\mathrm{Var}[R] = \\frac{16n-29}{90}",
+        "description": { "de": "n = Anzahl Punkte (nach Entfernen von Gleichständen)", "en": "n = number of points (after removing ties)" }
+      },
+      {
+        "label": "p-Werte",
+        "latex": "p_{\\mathrm{cluster/trend}} = \\Phi(z),\\quad p_{\\mathrm{mix/oszi}} = 1 - \\Phi(z)",
+        "description": { "de": "Φ ist die Standardnormal-CDF (Abramowitz/Stegun 7.1.26)", "en": "Φ is the standard normal CDF (Abramowitz/Stegun 7.1.26)" }
+      }
+    ],
+    "assumptions": [
+      { "de": "Datenreihenfolge entspricht der Erfassungsreihenfolge — sortierte Daten verfälschen die Tests", "en": "Data order matches collection order — sorted data invalidates the tests" },
+      { "de": "Werte gleich dem Median werden in den Tests ausgeschlossen (Minitab-Konvention)", "en": "Values equal to the median are excluded from the tests (Minitab convention)" },
+      { "de": "Normalapproximation greift erst ab ~10 Punkten zuverlässig", "en": "Normal approximation needs ~10 points or more for reliable p-values" }
+    ],
+    "limitations": [
+      { "de": "Vier simultane Tests erhöhen die Falsch-Alarm-Rate; einzelnes p < 0,05 ist schwacher Beweis", "en": "Four simultaneous tests inflate the false-alarm rate; single p < 0.05 is weak evidence" },
+      { "de": "Keine Eingriffsgrenzen — Run Chart ersetzt keine Regelkarte für laufende Überwachung", "en": "No control limits — run chart does not replace a control chart for ongoing monitoring" }
+    ],
+    "references": [
+      { "source": "Bradley, J. V. (1968), Distribution-Free Statistical Tests, Prentice-Hall" },
+      { "source": "Wald, A. & Wolfowitz, J. (1940), On a Test Whether Two Samples Are From the Same Population, Annals of Math. Stat." },
+      { "source": "Minitab — Run chart documentation" }
+    ],
+    "minitab_equivalent": "Stat > Quality Tools > Run Chart"
+  },
+
+  "source": {
+    "function_name": "analyze",
+    "file_path": "js/engines/run-chart-engine.js",
+    "signature": {
+      "parameters": [
+        {
+          "name": "inputs",
+          "type": "object",
+          "required": true,
+          "description": {
+            "de": "Objekt mit mode='run-chart' und values: number[]",
+            "en": "Object with mode='run-chart' and values: number[]"
+          }
+        }
+      ],
+      "returns": {
+        "type": "object",
+        "properties": {
+          "median": { "type": "number", "description": { "de": "Stichproben-Median", "en": "Sample median" } },
+          "runsAboutMedian": { "type": "number", "description": { "de": "Anzahl Runs um den Median", "en": "Number of runs about the median" } },
+          "runsUpDown": { "type": "number", "description": { "de": "Anzahl Runs aufwärts/abwärts", "en": "Number of runs up or down" } },
+          "pClustering":  { "type": "number" },
+          "pMixtures":    { "type": "number" },
+          "pTrends":      { "type": "number" },
+          "pOscillation": { "type": "number" }
+        }
+      }
+    }
+  }
+}

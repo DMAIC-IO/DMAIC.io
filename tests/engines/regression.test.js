@@ -7,15 +7,15 @@ import { suite, test, assertAlmostEqual } from '../test-utils.js';
 import { runMultiRegression } from '../../js/engines/regression-engine.js';
 
 async function loadFixture(path) {
-  const resp = await fetch(path);
+  const resp = await fetch(new URL(path, import.meta.url));
   return resp.json();
 }
 
 function getTol(tc, tolerances) {
   const key = tc.tolerance_override;
   return key && tolerances.overrides?.[key]
-    ? tolerances.overrides[key].absolute
-    : tolerances.default.absolute;
+    ? tolerances.overrides[key]
+    : tolerances.default;
 }
 
 // ─── Regression ANOVA ──────────────────────────────────────────

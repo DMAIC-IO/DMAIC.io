@@ -234,6 +234,8 @@ export class Workspace {
 
     const moduleContainer = document.createElement('div');
     moduleContainer.style.height = '100%';
+    moduleContainer.dataset.instanceId = instanceId;
+    moduleContainer.dataset.moduleId = record.moduleId;
     this._moduleArea.append(moduleContainer);
     this._containers.set(instanceId, moduleContainer);
 

@@ -1,0 +1,66 @@
+{
+  "algorithm_id": "multivariate-control-chart",
+  "generated_with": {
+    "method": "Hand-verified — Hotelling T² Phase II UCL formula"
+  },
+  "generator_version": "1.0.0",
+  "tolerances": {
+    "default": {
+      "relative": 1e-10,
+      "absolute": 1e-9
+    },
+    "overrides": {
+      "matrix_inversion": {
+        "relative": 1e-9,
+        "absolute": 1e-7,
+        "reason": "Gauss-Jordan inversion + F-quantile approximation"
+      }
+    }
+  },
+  "test_cases": [
+    {
+      "id": "mvcc_t2_stable",
+      "tier": "standard",
+      "description": "Hotelling T² with 10 baseline + 0 monitoring rows, 2 correlated variables — no signals",
+      "reference": "Hand-verified",
+      "inputs": {
+        "mode": "hotelling-t2",
+        "data": [
+          [10, 20], [10.2, 20.4], [9.8, 19.6], [10.1, 20.3], [9.9, 19.8],
+          [10.3, 20.5], [9.7, 19.5], [10, 20], [10.2, 20.3], [9.9, 19.9]
+        ]
+      },
+      "tolerance_override": "matrix_inversion",
+      "expected": {
+        "t2.ucl": 33.53044242744414,
+        "t2.cl": 2.25,
+        "t2.signal_count": 0,
+        "t2.m": 10,
+        "t2.p": 2
+      }
+    },
+    {
+      "id": "mvcc_t2_outlier",
+      "tier": "standard",
+      "description": "Hotelling T² with bivariate outlier (correlation break) — 1 signal",
+      "reference": "Hand-verified",
+      "inputs": {
+        "mode": "hotelling-t2",
+        "data": [
+          [10, 20], [10.2, 20.4], [9.8, 19.6], [10.1, 20.3], [9.9, 19.8],
+          [10.3, 20.5], [9.7, 19.5], [10, 20], [10.2, 20.3], [9.9, 19.9],
+          [12, 18]
+        ],
+        "baselineEnd": 10
+      },
+      "tolerance_override": "matrix_inversion",
+      "expected": {
+        "t2.ucl": 33.53044242744414,
+        "t2.cl": 2.25,
+        "t2.signal_count": 1,
+        "t2.m": 10,
+        "t2.p": 2
+      }
+    }
+  ]
+}

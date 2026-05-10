@@ -1338,6 +1338,50 @@
         "s.ucl": 1.4073137509765015,
         "s.lcl": 0.23291206601242795
       }
+    },
+    {
+      "id": "cc_standard_imr_excluded",
+      "tier": "standard",
+      "description": "I-MR with one excluded outlier — limits computed without it",
+      "reference": "Hand-verified: 11 stable points + outlier at index 5 (excluded)",
+      "inputs": {
+        "mode": "i-mr",
+        "values": [10, 10.5, 9.8, 10.2, 9.9, 60, 10.1, 10.0, 9.95, 10.05, 10.1, 9.92],
+        "excludedIndices": [5]
+      },
+      "tolerance_override": "spc_constant_rounding",
+      "expected": {
+        "i.cl": 10.047272727272727,
+        "i.ucl": 10.750582419944122,
+        "i.lcl": 9.343963034601332,
+        "i.sigma": 0.23443656422379802,
+        "mr.cl": 0.26444444444444415,
+        "mr.ucl": 0.863939999999999,
+        "mr.lcl": 0,
+        "mr.sigma": 0.19983185185185162
+      }
+    },
+    {
+      "id": "cc_standard_imr_staged",
+      "tier": "standard",
+      "description": "I-MR with two stages — analyze() collapses arrays to first stage's values",
+      "reference": "Hand-verified — 6 points around 10, 6 around 20, stage break at 6",
+      "inputs": {
+        "mode": "i-mr",
+        "values": [10, 10.5, 9.8, 10.2, 9.9, 10.1, 20, 20.5, 19.8, 20.2, 19.9, 20.1],
+        "stages": [6]
+      },
+      "tolerance_override": "spc_constant_rounding",
+      "expected": {
+        "i.cl": 10.083333333333334,
+        "i.ucl": 11.200354609929077,
+        "i.lcl": 8.966312056737591,
+        "i.sigma": 0.3723404255319142,
+        "mr.cl": 0.4199999999999992,
+        "mr.ucl": 1.3721399999999975,
+        "mr.lcl": 0,
+        "mr.sigma": 0.3173799999999994
+      }
     }
   ]
 }

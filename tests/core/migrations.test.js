@@ -25,7 +25,7 @@ const KNOWN_FIXTURES = [
 ];
 
 async function loadFixture(file) {
-  const res = await fetch(`../fixtures/exports/${file}`);
+  const res = await fetch(new URL(`../fixtures/exports/${file}`, import.meta.url));
   if (!res.ok) throw new Error(`Failed to load ${file}: ${res.status}`);
   return res.json();
 }

@@ -7,6 +7,7 @@
 import { DataGrid, isFormula, evaluateFormula, COLUMN_TYPES, uid } from '../../core/datagrid/datagrid.js';
 import { History } from '../../core/datagrid/datagrid-history.js';
 import { parseCellInput } from '../../core/datagrid/datagrid-utils.js';
+import { bridgeEmitter } from '../../core/tips/tip-engine.js';
 
 // ═══════════════════════════════════════════════════════════
 //  WORKBOOK (multi-sheet management)
@@ -604,6 +605,7 @@ export default {
     };
 
     this._grid = new DataGrid(gridWrap, { toast, t });
+    if (context.eventBus) bridgeEmitter(this._grid, context.eventBus, 'datagrid');
     this._grid.setDropzone(dropzone);
     this._workbook = new Workbook(this._grid, sheetTabs, t, toast);
     this._formulaEditor = new FormulaEditor(this._grid, feOverlay, t, toast);

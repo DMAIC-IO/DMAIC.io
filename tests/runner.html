@@ -97,6 +97,13 @@
     './engines/doe-taguchi-mixed.test.js',
     './engines/random-variates.test.js',
     './engines/control-chart.test.js',
+    './engines/attribute-control-chart.test.js',
+    './engines/run-chart.test.js',
+    './engines/time-weighted-chart.test.js',
+    './engines/rare-event-chart.test.js',
+    './engines/multivariate-control-chart.test.js',
+    './engines/short-run-chart.test.js',
+    './engines/transformed-imr-chart.test.js',
     './engines/response-optimization.test.js',
     './engines/response-surface-grid.test.js',
     './pipeline/full-rsm-continuous.test.js',
@@ -110,7 +117,7 @@
   async function loadTests() {
     for (const file of testFiles) {
       try { await import(file); }
-      catch (e) { console.warn(`Could not load ${file}:`, e.message); }
+      catch (e) { console.error(`Could not load ${file}:`, e.message); }
     }
   }
 

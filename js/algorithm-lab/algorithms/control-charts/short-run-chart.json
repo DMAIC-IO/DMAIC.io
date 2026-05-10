@@ -1,0 +1,54 @@
+{
+  "id": "short-run-chart",
+  "name": {
+    "de": "Z-MR (Kurzläufer-Regelkarte)",
+    "en": "Z-MR (Short-Run Control Chart)"
+  },
+  "category": "control-charts",
+  "subcategory": null,
+  "status": "validated",
+  "version": "1.0.0",
+  "description": {
+    "short": {
+      "de": "Standardisierte I-MR über mehrere Teile mit unterschiedlichen Targets/Spreizungen.",
+      "en": "Standardised I-MR across multiple parts with different targets/spreads."
+    },
+    "long": {
+      "de": "Berechnet pro Teil j den Mittelwert x̄_j und die Streuung σ̂_j aus MR̄_j/d₂. Die Werte werden zu z_ij = (x_ij − x̄_j)/σ̂_j transformiert; die z-Karte hat feste Grenzen ±3. Auf der MR-Karte gilt UCL = D₄·MR̄_z, LCL = D₃·MR̄_z.",
+      "en": "Computes mean x̄_j and σ̂_j (= MR̄_j/d₂) per part j. Values are transformed to z_ij = (x_ij − x̄_j)/σ̂_j; the z chart has fixed limits ±3. The MR chart uses UCL = D₄·MR̄_z, LCL = D₃·MR̄_z."
+    }
+  },
+  "documentation": {
+    "formulas": [
+      { "label": "Standardisation", "latex": "z_{ij} = \\frac{x_{ij} - \\bar{x}_j}{\\hat{\\sigma}_j},\\quad \\hat{\\sigma}_j = \\overline{MR}_j / d_2", "description": { "de": "innerhalb jedes Teils", "en": "within each part" } }
+    ],
+    "references": [
+      { "source": "Wheeler, D. J. (1991), Short Run SPC, SPC Press" },
+      { "source": "Montgomery, Introduction to Statistical Quality Control, 8th Ed." }
+    ],
+    "minitab_equivalent": "Stat > Control Charts > Variables Charts for Individuals > Z-MR"
+  },
+  "source": {
+    "function_name": "analyze",
+    "file_path": "js/engines/short-run-chart-engine.js",
+    "signature": {
+      "parameters": [
+        { "name": "inputs", "type": "object", "required": true, "description": { "de": "{mode:'z-mr', values: number[], groups: (string|number)[]}", "en": "{mode:'z-mr', values: number[], groups: (string|number)[]}" } }
+      ],
+      "returns": {
+        "type": "object",
+        "properties": {
+          "z.cl":         { "type": "number" },
+          "z.ucl":        { "type": "number" },
+          "z.lcl":        { "type": "number" },
+          "mr.cl":        { "type": "number" },
+          "mr.ucl":       { "type": "number" },
+          "mr.lcl":       { "type": "number" },
+          "signal_count": { "type": "number" },
+          "group_count":  { "type": "number" },
+          "skipped":      { "type": "number" }
+        }
+      }
+    }
+  }
+}

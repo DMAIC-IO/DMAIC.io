@@ -241,6 +241,7 @@ export class DmaicTiles {
       const def = entry;
       const item = document.createElement('button');
       item.className = 'dmaic-tile__dropdown-item';
+      item.dataset.moduleId = def.id;
 
       const check = this._canAdd(def, phase);
 
@@ -281,7 +282,7 @@ export class DmaicTiles {
    * @returns {Array<object|{divider:string}>}
    */
   _groupModules(modules) {
-    const GROUP_ORDER = ['collect', 'process', 'visualize'];
+    const GROUP_ORDER = ['collect', 'process', 'visualize', 'charts', 'plan', 'evaluate', 'optimize'];
     const hasGroups = modules.some(m => m.group);
     if (!hasGroups) return modules;
 

@@ -1,0 +1,53 @@
+/* ============================================================
+   Multivariate Control Chart Styles (multivariate-control-chart.css)
+   BEM: .mvcc__ prefix
+   ============================================================ */
+
+.mvcc .dmike-split__input { width: 320px; }
+
+.mvcc__hint {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+  margin-top: 2px;
+}
+
+.mvcc__chart-section {
+  background: var(--color-bg-secondary);
+  border: var(--border-width) solid var(--color-border-secondary);
+  border-radius: var(--border-radius);
+  overflow: hidden;
+  margin-bottom: var(--spacing-md);
+}
+
+.mvcc__chart-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-bottom: var(--border-width) solid var(--color-border-secondary);
+}
+
+.mvcc__chart-title {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+}
+
+.mvcc__plot-wrap { height: 380px; overflow: hidden; }
+
+.mvcc__badge {
+  font-size: var(--font-size-xs);
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-weight: var(--font-weight-medium);
+}
+.mvcc__badge--stable   { background: rgba(34, 197, 94, 0.12); color: var(--color-success); }
+.mvcc__badge--unstable { background: rgba(239, 68, 68, 0.12); color: var(--color-error); }
+
+.mvcc__error {
+  padding: var(--spacing-md);
+  background: rgba(239, 68, 68, 0.08);
+  border-left: 3px solid var(--color-error);
+  font-size: var(--font-size-sm);
+  color: var(--color-error);
+  border-radius: 2px;
+}

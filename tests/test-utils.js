@@ -132,12 +132,36 @@ export function assertEqual(actual, expected, message) {
 
 /**
  * Assert approximate equality for floating-point numbers.
+ *
+ * Tolerance can be either a number (absolute only) or a {absolute, relative}
+ * object (passes if either is satisfied). Fixture-driven validation uses the
+ * object form so values spanning many orders of magnitude — Cgk near 1.0 vs
+ * coefficients near 1e10 — share one tolerance config.
+ *
  * @param {number} actual
  * @param {number} expected
- * @param {number} [tolerance=1e-9]
+ * @param {number|{absolute?: number, relative?: number}} [tolerance=1e-9]
+ * @param {string} [message]
  */
 export function assertAlmostEqual(actual, expected, tolerance = EPSILON, message) {
-  if (Math.abs(actual - expected) > tolerance) {
+  // JSON has no Infinity/NaN literals — fixtures store them as string sentinels.
+  if (expected === 'Infinity')  expected = Infinity;
+  else if (expected === '-Infinity') expected = -Infinity;
+  else if (expected === 'NaN')  expected = NaN;
+  // Exact match shortcut — covers Infinity vs Infinity, where Math.abs(diff) is NaN.
+  if (actual === expected) return;
+  if (Number.isNaN(actual) && Number.isNaN(expected)) return;
+  const absDiff = Math.abs(actual - expected);
+  if (typeof tolerance === 'object' && tolerance !== null) {
+    const absTol = tolerance.absolute ?? 0;
+    const relTol = tolerance.relative ?? 0;
+    if (absDiff <= absTol) return;
+    const relDiff = expected !== 0 ? absDiff / Math.abs(expected) : absDiff;
+    if (relDiff <= relTol) return;
+    fail(message ?? `Expected ${expected} (abs±${absTol} or rel±${relTol}), got ${actual} — absDiff=${absDiff}, relDiff=${relDiff}`);
+    return;
+  }
+  if (absDiff > tolerance) {
     fail(message ?? `Expected ${expected} ± ${tolerance}, got ${actual}`);
   }
 }

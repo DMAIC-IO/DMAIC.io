@@ -1,0 +1,45 @@
+{
+  "algorithm_id": "transformed-imr-chart",
+  "generated_with": {
+    "method": "Hand-verified — Box-Cox transform + I-MR via control-chart engine"
+  },
+  "generator_version": "1.0.0",
+  "tolerances": {
+    "default": { "relative": 1e-10, "absolute": 1e-10 },
+    "overrides": {
+      "imr_chain": {
+        "relative": 1e-9, "absolute": 1e-8,
+        "reason": "Power transform + I-MR chained via SPC constants accumulates floating-point noise"
+      }
+    }
+  },
+  "test_cases": [
+    {
+      "id": "timr_lambda_0",
+      "tier": "standard",
+      "description": "Box-Cox with λ=0 (log transform) on right-skewed data; I-MR limits on transformed scale",
+      "reference": "Hand-verified",
+      "inputs": {
+        "mode": "transformed-i-mr",
+        "values": [10, 5, 20, 8, 15, 3, 12, 25, 7, 18, 4, 30, 11, 6, 14],
+        "lambda": 0
+      },
+      "tolerance_override": "imr_chain",
+      "expected": {
+        "lambda": 0,
+        "lambda_auto": false,
+        "i.cl": 2.330008500430913,
+        "i.ucl": 5.28350125430708,
+        "i.lcl": -0.623484253445254,
+        "i.sigma": 0.984497584625389,
+        "mr.cl": 1.1105132754574387,
+        "mr.ucl": 3.628046870919452,
+        "mr.lcl": 0,
+        "i.cl_original": 10.278028900346706,
+        "i.ucl_original": 197.05862125733998,
+        "i.lcl_original": 0.5360733643741928,
+        "signal_count": 0
+      }
+    }
+  ]
+}

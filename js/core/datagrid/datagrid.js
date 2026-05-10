@@ -459,7 +459,19 @@ export class DataGrid {
   setSelection(range) {
     this.selection = range ? { ...range } : null;
     this._renderSelection();
-    this.emit('selection:changed', { range: this.selection });
+    let activeCell = null;
+    if (range
+      && range.startCol === range.endCol
+      && range.startRow === range.endRow) {
+      const col = this.columns[range.startCol];
+      if (col) {
+        activeCell = {
+          value:   col.values?.[range.startRow]   ?? null,
+          formula: col.formulas?.[range.startRow] ?? null,
+        };
+      }
+    }
+    this.emit('selection:changed', { range: this.selection, activeCell });
   }
 
   selectColumn(colIdx) {

@@ -1,0 +1,65 @@
+{
+  "id": "multivariate-control-chart",
+  "name": {
+    "de": "Multivariate Regelkarte (Hotelling T²)",
+    "en": "Multivariate Control Chart (Hotelling T²)"
+  },
+  "category": "control-charts",
+  "subcategory": null,
+  "status": "validated",
+  "version": "1.0.0",
+
+  "description": {
+    "short": {
+      "de": "Hotelling T² für Einzelbeobachtungen mit Phase-II-UCL aus der F-Verteilung.",
+      "en": "Hotelling T² for individual observations with Phase II UCL from the F distribution."
+    },
+    "long": {
+      "de": "Berechnet T²ᵢ = (xᵢ − x̄)′ S⁻¹ (xᵢ − x̄) für jede Beobachtung. Die Eingriffsgrenze für Einzelbeobachtungen in Phase II ist UCL = (p(m+1)(m−1))/(m²−mp) · F_{α, p, m−p}, wobei p Variablen, m die Vorlauf-Stichprobengröße und α die Falsch-Alarm-Wahrscheinlichkeit (üblich 0,0027) sind.",
+      "en": "Computes T²ᵢ = (xᵢ − x̄)′ S⁻¹ (xᵢ − x̄) for every observation. The Phase II individuals UCL is UCL = (p(m+1)(m−1))/(m²−mp) · F_{α, p, m−p}, with p = number of variables, m = baseline sample size, α = false-alarm probability (typically 0.0027)."
+    }
+  },
+
+  "documentation": {
+    "formulas": [
+      { "label": "T² statistic", "latex": "T^2_i = (\\mathbf{x}_i - \\bar{\\mathbf{x}})' S^{-1} (\\mathbf{x}_i - \\bar{\\mathbf{x}})", "description": { "de": "Mahalanobis-Quadrat", "en": "Squared Mahalanobis distance" } },
+      { "label": "UCL Phase II", "latex": "\\mathrm{UCL} = \\frac{p(m+1)(m-1)}{m^2 - mp} F_{\\alpha, p, m-p}", "description": { "de": "Einzelbeobachtungen", "en": "Individual observations" } }
+    ],
+    "assumptions": [
+      { "de": "Beobachtungen multivariat normal verteilt", "en": "Observations multivariate normal" },
+      { "de": "Vorlauf m > p, ansonsten Kovarianzmatrix singulär", "en": "Baseline m > p, otherwise covariance singular" }
+    ],
+    "limitations": [
+      { "de": "Hochkorrelierte Variablen → Kovarianzmatrix instabil oder singulär", "en": "Highly correlated variables → covariance unstable or singular" },
+      { "de": "Ein T²-Alarm zeigt nicht, welches Merkmal verantwortlich ist", "en": "A T² alarm does not say which variable is responsible" }
+    ],
+    "references": [
+      { "source": "Hotelling, H. (1947), Multivariate Quality Control" },
+      { "source": "Montgomery, Introduction to Statistical Quality Control, 8th Ed." }
+    ],
+    "minitab_equivalent": "Stat > Control Charts > Multivariate Charts > T²"
+  },
+
+  "source": {
+    "function_name": "analyze",
+    "file_path": "js/engines/multivariate-chart-engine.js",
+    "signature": {
+      "parameters": [
+        { "name": "inputs", "type": "object", "required": true, "description": { "de": "{mode: 'hotelling-t2', data: number[][], alpha?, baselineEnd?}", "en": "{mode: 'hotelling-t2', data: number[][], alpha?, baselineEnd?}" } }
+      ],
+      "returns": {
+        "type": "object",
+        "properties": {
+          "t2.ucl":          { "type": "number" },
+          "t2.cl":           { "type": "number" },
+          "t2.signal_count": { "type": "number" },
+          "t2.first":        { "type": "number" },
+          "t2.last":         { "type": "number" },
+          "t2.max":          { "type": "number" },
+          "t2.m":            { "type": "number" },
+          "t2.p":            { "type": "number" }
+        }
+      }
+    }
+  }
+}

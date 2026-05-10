@@ -132,9 +132,21 @@ export function validate(params, values) {
  * @returns {object} Analysis results
  */
 export function analyze(params, values) {
+  if (!Array.isArray(values)) {
+    throw new TypeError('values must be an array');
+  }
+  if (values.length < 2) {
+    throw new Error(`Insufficient data: n < 2 (got ${values.length})`);
+  }
   const { lsl, usl, target, confidence = 0.95 } = params;
   const hasLsl = lsl != null && !isNaN(lsl);
   const hasUsl = usl != null && !isNaN(usl);
+  if (!hasLsl && !hasUsl) {
+    throw new Error('At least one spec limit (LSL or USL) is required');
+  }
+  if (hasLsl && hasUsl && usl <= lsl) {
+    throw new Error('USL must be greater than LSL');
+  }
   const twoSided = hasLsl && hasUsl;
 
   const n = values.length;

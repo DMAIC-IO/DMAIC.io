@@ -150,12 +150,43 @@
 
 .control-chart__violation-row {
   display: grid;
-  grid-template-columns: 50px 80px 1fr;
+  grid-template-columns: 50px 80px 1fr auto;
   gap: var(--spacing-sm);
   padding: var(--spacing-xs) var(--spacing-md);
   border-bottom: var(--border-width) solid var(--color-border-secondary);
   font-size: var(--font-size-xs);
   align-items: center;
+  cursor: pointer;
+  transition: background 0.1s;
+}
+
+.control-chart__violation-row:hover {
+  background: var(--color-bg-tertiary);
+}
+
+.control-chart__v-ann {
+  font-style: italic;
+  color: var(--color-text-secondary);
+  max-width: 240px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.control-chart__v-ann[data-excluded="1"] {
+  color: var(--color-text-tertiary);
+  text-decoration: line-through;
+}
+
+.control-chart__v-add {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
+.control-chart__violation-row:hover .control-chart__v-add {
+  opacity: 1;
 }
 
 .control-chart__violation-row:last-child {
@@ -180,4 +211,46 @@
   text-align: center;
   color: var(--color-text-tertiary);
   font-size: var(--font-size-sm);
+}
+
+/* ── Phase II ── */
+
+.control-chart__phase2 {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  flex-wrap: wrap;
+  margin-bottom: var(--spacing-sm);
+}
+
+.control-chart__phase2-status { flex: 0 0 auto; }
+
+.control-chart__phase2-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  background: var(--color-bg-tertiary);
+  color: var(--color-text-secondary);
+}
+
+.control-chart__phase2-badge--frozen {
+  background: rgba(59, 130, 246, 0.16);
+  color: var(--color-info);
+}
+
+/* ── Annotation dialog body ── */
+
+.control-chart__check {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  cursor: pointer;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-primary);
+}
+
+.control-chart__check input[type="checkbox"] {
+  accent-color: var(--color-accent);
 }

@@ -13,20 +13,23 @@ import {
 } from '../../js/engines/control-chart-engine.js';
 
 async function loadFixture(path) {
-  const resp = await fetch(path);
+  const resp = await fetch(new URL(path, import.meta.url));
   return resp.json();
 }
 
 function getTol(tc, tolerances) {
   const key = tc.tolerance_override;
   return key && tolerances.overrides?.[key]
-    ? tolerances.overrides[key].absolute
-    : tolerances.default.absolute;
+    ? tolerances.overrides[key]
+    : tolerances.default;
 }
 
 function getSubchartValue(result, path) {
   const [sub, prop] = path.split('.');
-  return result?.subcharts?.[sub]?.[prop];
+  const v = result?.subcharts?.[sub]?.[prop];
+  // Multi-stage results are per-point arrays; collapse to first stage's value
+  // so the same fixture shape works for both single- and multi-stage cases.
+  return Array.isArray(v) ? v[0] : v;
 }
 
 const data = await loadFixture('../fixtures/control-charts/control-chart.fixtures.json');
@@ -41,11 +44,11 @@ suite('Control Charts — I-MR / X̄-R / X̄-S (fixture validation)', () => {
     test(`${tc.id}: ${tc.description}`, () => {
       let result;
       if (mode === 'i-mr') {
-        result = computeIMR(tc.inputs.values, 1, tc.inputs.baselineEnd);
+        result = computeIMR(tc.inputs.values, 1, tc.inputs.baselineEnd, tc.inputs.stages, tc.inputs.excludedIndices);
       } else if (mode === 'xbar-r') {
-        result = computeXbarR(tc.inputs.values, tc.inputs.n, tc.inputs.baselineEnd);
+        result = computeXbarR(tc.inputs.values, tc.inputs.n, tc.inputs.baselineEnd, tc.inputs.stages, tc.inputs.excludedIndices);
       } else {
-        result = computeXbarS(tc.inputs.values, tc.inputs.n, tc.inputs.baselineEnd);
+        result = computeXbarS(tc.inputs.values, tc.inputs.n, tc.inputs.baselineEnd, tc.inputs.stages, tc.inputs.excludedIndices);
       }
       const tol = getTol(tc, data.tolerances);
 

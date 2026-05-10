@@ -3,10 +3,13 @@
  * Shared helpers for safe HTML/attribute string escaping.
  */
 
-const _d = document.createElement('div');
+// Lazy-init so the module imports cleanly in Node-side test runners that
+// only need other exports from files that transitively pull this in.
+let _d;
 
 /** @param {*} s  @returns {string} */
 export function esc(s) {
+  if (!_d) _d = document.createElement('div');
   _d.textContent = s ?? '';
   return _d.innerHTML;
 }

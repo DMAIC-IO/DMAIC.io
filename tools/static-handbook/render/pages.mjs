@@ -483,7 +483,7 @@ export function renderLabIndex({ algorithms, categories, categoryById, lang, i18
 
 // ─── Training (Schulungen) ───────────────────────────────────────
 
-const TRAINING_TOPICS = ['dmaic', 'dmadv', 'minitab', 'jmp'];
+const TRAINING_TOPICS = ['dmaic', 'dmadv', 'triz', 'minitab', 'jmp'];
 
 function _trainingNS(i18n, lang, topic) {
   return i18n?.[lang]?.training?.[topic] || i18n?.en?.training?.[topic] || {};
@@ -616,6 +616,98 @@ export function renderTrainingCyclePage({ lang, i18n, cycleId }) {
  */
 export function renderTrainingDmaicPage({ lang, i18n }) {
   return renderTrainingCyclePage({ lang, i18n, cycleId: 'dmaic' });
+}
+
+/**
+ * TRIZ methodology page — /{lang}/training/triz.html.
+ * TRIZ is a methodology, not a phase-based cycle, so the structure differs
+ * from `renderTrainingCyclePage`: the "phases" section is replaced by core
+ * concepts and a tools section. Reads from the `training.triz.*` i18n
+ * namespace (same source the app uses for the in-app Training tab).
+ */
+export function renderTrainingTrizPage({ lang, i18n }) {
+  const s = getStrings(lang);
+  const ns = _trainingNS(i18n, lang, 'triz');
+  const t = (k) => escapeHtml(ns[k] || '');
+
+  const pathFromRoot = `/${lang}/training/triz.html`;
+  const altLang = lang === 'de' ? 'en' : 'de';
+  const altPathFromRoot = `/${altLang}/training/triz.html`;
+
+  const titleLabel = s.training.trizTitle;
+  const title = `${titleLabel} — ${s.breadcrumbTraining} — ${s.handbookTitle}`;
+  const description = ns.intro || s.training.trizShort;
+
+  const body = `
+<article class="handbook-article">
+  <span class="handbook-article__tag">${escapeHtml(s.breadcrumbTraining)}</span>
+  <h1>${escapeHtml(titleLabel)}</h1>
+  <p class="handbook-article__lead">${t('intro')}</p>
+
+  <section class="handbook-section">
+    <h2>${t('whyTitle')}</h2>
+    <p>${t('whyBody')}</p>
+  </section>
+
+  <section class="handbook-section">
+    <h2>${t('conceptsTitle')}</h2>
+    <h3>${t('contradictionTitle')}</h3>
+    <p>${t('contradictionBody')}</p>
+    <h3>${t('idealityTitle')}</h3>
+    <p>${t('idealityBody')}</p>
+    <h3>${t('evolutionTitle')}</h3>
+    <p>${t('evolutionBody')}</p>
+  </section>
+
+  <section class="handbook-section">
+    <h2>${t('toolsTitle')}</h2>
+    <h3>${t('tool40Title')}</h3>
+    <p>${t('tool40Body')}</p>
+    <h3>${t('toolMatrixTitle')}</h3>
+    <p>${t('toolMatrixBody')}</p>
+    <h3>${t('tool9WindowsTitle')}</h3>
+    <p>${t('tool9WindowsBody')}</p>
+    <h3>${t('toolArizTitle')}</h3>
+    <p>${t('toolArizBody')}</p>
+  </section>
+
+  <section class="handbook-section">
+    <h2>${t('whenTitle')}</h2>
+    <p>${t('whenBody')}</p>
+  </section>
+
+  <section class="handbook-section">
+    <h2>${t('pitfallsTitle')}</h2>
+    <ul class="handbook-block__list">
+      <li>${t('pitfall1')}</li>
+      <li>${t('pitfall2')}</li>
+      <li>${t('pitfall3')}</li>
+      <li>${t('pitfall4')}</li>
+    </ul>
+  </section>
+
+  <section class="handbook-section">
+    <h2>${t('appTitle')}</h2>
+    <p>${t('appBody')}</p>
+  </section>
+</article>`;
+
+  const html = renderPage({
+    lang,
+    title,
+    description,
+    pathFromRoot,
+    altPathFromRoot,
+    breadcrumbs: [
+      { label: s.handbookTitle, href: `/${lang}/` },
+      { label: s.breadcrumbTraining, href: `/${lang}/training/` },
+      { label: titleLabel },
+    ],
+    bodyHtml: body,
+    headingKey: titleLabel,
+  });
+
+  return { html, pathFromRoot, altPathFromRoot };
 }
 
 /**

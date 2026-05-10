@@ -1,0 +1,58 @@
+{
+  "algorithm_id": "rare-event-chart",
+  "generated_with": {
+    "method": "Hand-verified — Benneyan 1999 (g) and Nelson 1994 power transform (t)"
+  },
+  "generator_version": "1.0.0",
+  "tolerances": {
+    "default": {
+      "relative": 1e-10,
+      "absolute": 1e-10
+    },
+    "overrides": {
+      "transform_accumulation": {
+        "relative": 1e-10,
+        "absolute": 1e-9,
+        "reason": "Power transform + I-MR accumulation accumulates floating-point noise"
+      }
+    }
+  },
+  "test_cases": [
+    {
+      "id": "rec_g_basic",
+      "tier": "standard",
+      "description": "g chart with 6 counts — Benneyan limits",
+      "reference": "Hand-verified",
+      "inputs": {
+        "mode": "g",
+        "values": [5, 10, 8, 12, 7, 9]
+      },
+      "expected": {
+        "g.cl": 8.5,
+        "g.ucl": 35.458301133417145,
+        "g.lcl": 0,
+        "g.sigma": 8.986100377805714
+      }
+    },
+    {
+      "id": "rec_t_basic",
+      "tier": "standard",
+      "description": "t chart with 8 inter-event times — Nelson 1/3.6 transform + I-MR",
+      "reference": "Hand-verified",
+      "inputs": {
+        "mode": "t",
+        "values": [10, 20, 15, 25, 12, 18, 22, 14]
+      },
+      "tolerance_override": "transform_accumulation",
+      "expected": {
+        "t.cl": 2.1785612373305323,
+        "t.ucl": 2.9375387661174073,
+        "t.lcl": 1.4195837085436573,
+        "t.sigma": 0.25299250959562497,
+        "t.cl_original": 16.497235703430828,
+        "t.ucl_original": 48.388368998424276,
+        "t.lcl_original": 3.5300399786803176
+      }
+    }
+  ]
+}

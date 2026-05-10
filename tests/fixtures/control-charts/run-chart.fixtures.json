@@ -1,0 +1,95 @@
+{
+  "algorithm_id": "run-chart",
+  "generated_with": {
+    "method": "Hand-verified — runs counts checked manually, p-values from normal-approx Φ(z)"
+  },
+  "generator_version": "1.0.0",
+  "tolerances": {
+    "default": {
+      "relative": 1e-10,
+      "absolute": 1e-10
+    },
+    "overrides": {
+      "phi_approx": {
+        "relative": 1e-7,
+        "absolute": 1e-7,
+        "reason": "Φ via Abramowitz-Stegun 7.1.26 — relative error ~1.5e-7"
+      }
+    }
+  },
+  "test_cases": [
+    {
+      "id": "rc_monotone_increasing",
+      "tier": "standard",
+      "description": "Monotone increasing series — strong trend, strong clustering",
+      "reference": "Hand-verified: median 5.5, all increases, 2 runs about median, 1 run up/down",
+      "inputs": {
+        "mode": "run-chart",
+        "values": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+      },
+      "tolerance_override": "phi_approx",
+      "expected": {
+        "median": 5.5,
+        "runsAboutMedian": 2,
+        "runsUpDown": 1,
+        "pClustering": 0.0036452261553154286,
+        "pMixtures": 0.9963547738446845,
+        "pTrends": 0.000004924752493751239,
+        "pOscillation": 0.9999950752475062
+      }
+    },
+    {
+      "id": "rc_alternating",
+      "tier": "standard",
+      "description": "Alternating values 5/6 — strong oscillation, strong mixtures",
+      "reference": "Hand-verified",
+      "inputs": {
+        "mode": "run-chart",
+        "values": [5, 6, 5, 6, 5, 6, 5, 6, 5, 6, 5, 6]
+      },
+      "tolerance_override": "phi_approx",
+      "expected": {
+        "median": 5.5,
+        "runsAboutMedian": 12,
+        "runsUpDown": 11,
+        "pClustering": 0.9987676153966994,
+        "pMixtures": 0.0012323846033005514,
+        "pTrends": 0.9933732977069267,
+        "pOscillation": 0.006626702293073272
+      }
+    },
+    {
+      "id": "rc_random_like",
+      "tier": "standard",
+      "description": "Visually random series — all four tests should be non-significant at α=0.05",
+      "reference": "Hand-verified",
+      "inputs": {
+        "mode": "run-chart",
+        "values": [3, 7, 4, 6, 5, 8, 2, 9, 1, 4, 6, 3]
+      },
+      "tolerance_override": "phi_approx",
+      "expected": {
+        "median": 4.5,
+        "runsAboutMedian": 9,
+        "runsUpDown": 10
+      }
+    },
+    {
+      "id": "rc_step_shift",
+      "tier": "standard",
+      "description": "Step shift halfway — clusters above and below the median, no trend within parts",
+      "reference": "Hand-verified",
+      "inputs": {
+        "mode": "run-chart",
+        "values": [10, 11, 9, 10, 11, 30, 31, 29, 30, 31]
+      },
+      "tolerance_override": "phi_approx",
+      "expected": {
+        "median": 20,
+        "runsAboutMedian": 2,
+        "runsUpDown": 5,
+        "pClustering": 0.0036452261553154286
+      }
+    }
+  ]
+}

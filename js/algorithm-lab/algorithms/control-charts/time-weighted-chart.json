@@ -1,0 +1,85 @@
+{
+  "id": "time-weighted-chart",
+  "name": {
+    "de": "Zeitgewichtete Regelkarten (EWMA, CUSUM)",
+    "en": "Time-Weighted Control Charts (EWMA, CUSUM)"
+  },
+  "category": "control-charts",
+  "subcategory": null,
+  "status": "validated",
+  "version": "1.0.0",
+
+  "description": {
+    "short": {
+      "de": "EWMA und tabular CUSUM mit transienten/festen Eingriffsgrenzen für kleine Drifts.",
+      "en": "EWMA and tabular CUSUM with transient/fixed control limits for small drifts."
+    },
+    "long": {
+      "de": "Engine für die zwei zeitgewichteten Standard-Regelkarten. EWMA glättet die Reihe via zᵢ = λ·xᵢ + (1−λ)·zᵢ₋₁ mit z₀ = μ₀; die Eingriffsgrenzen sind transient (engen sich anfangs auf σ_z(i) ein und nähern sich asymptotisch dem Steady-State σ·√(λ/(2−λ))). Tabular CUSUM bildet zwei einseitige Summen C⁺ und C⁻ mit Schlupf k und Eingriffsgrenze h (jeweils in σ-Einheiten); ein Signal entsteht, sobald eine Summe h überschreitet. Der Dispatcher analyze(inputs) akzeptiert Modi 'ewma' und 'cusum'.",
+      "en": "Engine for the two standard time-weighted control charts. EWMA smooths the series via zᵢ = λ·xᵢ + (1−λ)·zᵢ₋₁ with z₀ = μ₀; control limits are transient (narrow at first via σ_z(i) and approach the steady-state σ·√(λ/(2−λ)) asymptotically). Tabular CUSUM forms two one-sided sums C⁺ and C⁻ with slack k and decision interval h (both in σ units); a signal fires as soon as either sum exceeds h. The analyze(inputs) dispatcher accepts modes 'ewma' and 'cusum'."
+    }
+  },
+
+  "documentation": {
+    "formulas": [
+      {
+        "label": "EWMA",
+        "latex": "z_i = \\lambda x_i + (1-\\lambda) z_{i-1},\\quad z_0 = \\mu_0,\\quad \\sigma_{z_i} = \\sigma\\sqrt{\\frac{\\lambda}{2-\\lambda}\\left(1 - (1-\\lambda)^{2i}\\right)},\\quad \\mathrm{UCL}_i / \\mathrm{LCL}_i = \\mu_0 \\pm L\\sigma_{z_i}",
+        "description": { "de": "EWMA mit transienten Grenzen (asymptotisch σ·√(λ/(2−λ)))", "en": "EWMA with transient limits (asymptotically σ·√(λ/(2−λ)))" }
+      },
+      {
+        "label": "Tabular CUSUM",
+        "latex": "C_i^{+} = \\max\\!\\bigl(0,\\, x_i - (\\mu_0 + K) + C_{i-1}^{+}\\bigr),\\quad C_i^{-} = \\max\\!\\bigl(0,\\, (\\mu_0 - K) - x_i + C_{i-1}^{-}\\bigr),\\quad K = k\\sigma,\\; H = h\\sigma",
+        "description": { "de": "Zwei einseitige Summen — Signal wenn C⁺ oder C⁻ > H", "en": "Two one-sided sums — signal when C⁺ or C⁻ > H" }
+      }
+    ],
+    "assumptions": [
+      { "de": "Beobachtungen unabhängig und (annähernd) normalverteilt", "en": "Observations independent and (approximately) normally distributed" },
+      { "de": "Sollwert μ₀ und σ aus stabilem Vorlauf bekannt — vorzugsweise σ aus MR̄/d₂", "en": "Target μ₀ and σ known from stable baseline — preferably σ from MR̄/d₂" }
+    ],
+    "limitations": [
+      { "de": "Beide Karten sind träger gegenüber großen einzelnen Ausreißern als Shewhart-Karten", "en": "Both charts react slower to single large outliers than Shewhart charts" },
+      { "de": "Autokorrelation erzeugt false-positive Signale — vorher entkorrelieren", "en": "Autocorrelation produces false-positive signals — decorrelate first" }
+    ],
+    "references": [
+      { "source": "Montgomery, Introduction to Statistical Quality Control, 8th Ed.", "chapter": "Chapter 9" },
+      { "source": "Hunter, J. S. (1986), The Exponentially Weighted Moving Average, Journal of Quality Technology" },
+      { "source": "Page, E. S. (1954), Continuous Inspection Schemes, Biometrika" }
+    ],
+    "minitab_equivalent": "Stat > Control Charts > Time-Weighted Charts > EWMA / CUSUM"
+  },
+
+  "source": {
+    "function_name": "analyze",
+    "file_path": "js/engines/time-weighted-chart-engine.js",
+    "signature": {
+      "parameters": [
+        {
+          "name": "inputs",
+          "type": "object",
+          "required": true,
+          "description": {
+            "de": "Objekt mit mode='ewma'|'cusum' und values, target, sigma sowie modusspezifischen Parametern",
+            "en": "Object with mode='ewma'|'cusum' and values, target, sigma plus mode-specific parameters"
+          }
+        }
+      ],
+      "returns": {
+        "type": "object",
+        "properties": {
+          "ewma.cl":           { "type": "number" },
+          "ewma.ucl_mean":     { "type": "number" },
+          "ewma.lcl_mean":     { "type": "number" },
+          "ewma.sigma_steady": { "type": "number" },
+          "ewma.signal_count": { "type": "number" },
+          "cusum.h":               { "type": "number" },
+          "cusum.k":               { "type": "number" },
+          "cusum.signal_count_hi": { "type": "number" },
+          "cusum.signal_count_lo": { "type": "number" },
+          "cusum.cplus_last":      { "type": "number" },
+          "cusum.cminus_last":     { "type": "number" }
+        }
+      }
+    }
+  }
+}

@@ -8,15 +8,15 @@ import { analyze as analyzeTyp1 } from '../../js/engines/msa-typ1-engine.js';
 import { analyze as analyzeTyp2 } from '../../js/engines/msa-typ2-engine.js';
 
 async function loadFixture(path) {
-  const resp = await fetch(path);
+  const resp = await fetch(new URL(path, import.meta.url));
   return resp.json();
 }
 
 function getTol(tc, tolerances) {
   const key = tc.tolerance_override;
   return key && tolerances.overrides?.[key]
-    ? tolerances.overrides[key].absolute
-    : tolerances.default.absolute;
+    ? tolerances.overrides[key]
+    : tolerances.default;
 }
 
 /** Resolve dot-path on object, e.g. 'varComp.grr.pctStudyVar' */

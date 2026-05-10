@@ -13,7 +13,7 @@ import {
 
 // ─── Load fixtures ─────────────────────────────────────────────
 
-const fixtureResp = await fetch('../fixtures/distributions/math-utils.fixtures.json');
+const fixtureResp = await fetch(new URL('../fixtures/distributions/math-utils.fixtures.json', import.meta.url));
 const fixtureData = await fixtureResp.json();
 const cases = fixtureData.test_cases;
 const tolerances = fixtureData.tolerances;
@@ -22,9 +22,9 @@ const tolerances = fixtureData.tolerances;
 function getTolerance(tc) {
   const key = tc.tolerance_override;
   if (key && tolerances.overrides[key]) {
-    return tolerances.overrides[key].absolute;
+    return tolerances.overrides[key];
   }
-  return tolerances.default.absolute;
+  return tolerances.default;
 }
 
 /** Dispatch table: function name → JS function call */

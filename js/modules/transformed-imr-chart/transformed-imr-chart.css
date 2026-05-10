@@ -1,0 +1,77 @@
+/* ============================================================
+   Transformed I-MR Module Styles (transformed-imr-chart.css)
+   BEM: .timr__ prefix
+   ============================================================ */
+
+.timr .dmike-split__input { width: 320px; }
+
+.timr__hint {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+  margin-top: 2px;
+}
+
+.timr__lambda-row {
+  display: grid;
+  grid-template-columns: 1fr 80px;
+  gap: var(--spacing-sm);
+  align-items: end;
+}
+
+.timr__chart-section {
+  background: var(--color-bg-secondary);
+  border: var(--border-width) solid var(--color-border-secondary);
+  border-radius: var(--border-radius);
+  overflow: hidden;
+  margin-bottom: var(--spacing-md);
+}
+
+.timr__chart-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-bottom: var(--border-width) solid var(--color-border-secondary);
+}
+
+.timr__chart-title {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+}
+
+.timr__plot-wrap { height: 320px; overflow: hidden; }
+
+.timr__badge {
+  font-size: var(--font-size-xs);
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-weight: var(--font-weight-medium);
+}
+.timr__badge--stable   { background: rgba(34, 197, 94, 0.12); color: var(--color-success); }
+.timr__badge--unstable { background: rgba(239, 68, 68, 0.12); color: var(--color-error); }
+.timr__badge--info     { background: rgba(59, 130, 246, 0.16); color: var(--color-info); }
+
+.timr__error {
+  padding: var(--spacing-md);
+  background: rgba(239, 68, 68, 0.08);
+  border-left: 3px solid var(--color-error);
+  font-size: var(--font-size-sm);
+  color: var(--color-error);
+  border-radius: 2px;
+}
+
+.timr__limits-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--font-size-xs);
+  margin-top: var(--spacing-sm);
+}
+.timr__limits-table th,
+.timr__limits-table td {
+  padding: 4px 8px;
+  text-align: right;
+  border-bottom: var(--border-width) solid var(--color-border-secondary);
+}
+.timr__limits-table th { color: var(--color-text-tertiary); font-weight: var(--font-weight-medium); }
+.timr__limits-table td:first-child,
+.timr__limits-table th:first-child { text-align: left; }

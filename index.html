@@ -11,6 +11,7 @@
   <link rel="stylesheet" href="css/components.css">
   <link rel="stylesheet" href="css/modules.css">
   <link rel="stylesheet" href="js/core/datagrid/datagrid.css">
+  <link rel="stylesheet" href="js/core/tips/tip-engine.css">
   <link rel="stylesheet" href="js/modules/worksheet/worksheet.css">
   <link rel="stylesheet" href="js/modules/sipoc/sipoc.css">
   <link rel="stylesheet" href="js/modules/process-map/process-map.css">
@@ -37,6 +38,7 @@
   <link rel="stylesheet" href="js/modules/rest-api/rest-api.css">
   <link rel="stylesheet" href="js/modules/lessons-learned/lessons-learned.css">
   <link rel="stylesheet" href="js/modules/triz-contradiction-matrix/triz-contradiction-matrix.css">
+  <link rel="stylesheet" href="js/modules/triz-9-windows/triz-9-windows.css">
   <link rel="stylesheet" href="js/algorithm-lab/lab.css">
 </head>
 <body>
@@ -184,6 +186,13 @@
               <span data-i18n="settings.showAlgoLabLinks">Code-Symbole anzeigen</span>
             </label>
           </div>
+          <div class="settings-section">
+            <label class="settings-section__label">
+              <input type="checkbox" id="settings-tips-enabled" checked>
+              <span data-i18n="settings.tipsEnabled">Tipps anzeigen</span>
+            </label>
+            <button class="btn btn--sm btn--ghost" id="settings-tips-reset" data-i18n="settings.tipsResetDismissed">Abgehakte Tipps zurücksetzen</button>
+          </div>
         </div>
         <!-- Tab: Charts -->
         <div class="settings-tab-content" data-tab-content="charts">
@@ -310,6 +319,13 @@
       title="Zum Projektname springen"
     ></span>
     <span id="footer-last-saved"></span>
+    <span id="footer-tip" class="app-footer__tip" hidden>
+      <svg class="app-footer__tip-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M9 18h6"/><path d="M10 22h4"/><path d="M12 2a7 7 0 0 0-4 12.7c.6.5 1 1.2 1 2V17h6v-.3c0-.8.4-1.5 1-2A7 7 0 0 0 12 2z"/>
+      </svg>
+      <span class="app-footer__tip-text"></span>
+      <button type="button" class="app-footer__tip-dismiss" data-i18n-title="tips.dismissTitle" aria-label="Nicht mehr zeigen">&times;</button>
+    </span>
     <div class="app-footer__spacer"></div>
     <span id="footer-storage"></span>
     <a

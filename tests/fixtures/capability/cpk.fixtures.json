@@ -210,23 +210,6 @@
         "type": "TypeError",
         "message_contains": "array"
       }
-    },
-    {
-      "id": "cpk_robustness_missing_usl",
-      "tier": "robustness",
-      "description": "Missing required parameter USL",
-      "inputs": {
-        "data": [
-          2.0,
-          2.01,
-          1.99
-        ],
-        "lsl": 1.9
-      },
-      "expected_error": {
-        "type": "Error",
-        "message_contains": "USL"
-      }
     }
   ]
 }

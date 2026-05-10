@@ -15,3 +15,5 @@ node_modules/
 
 # Static handbook output (generated during release deploy → /app/<tag>/docs/)
 /docs/
+
+/.claude/

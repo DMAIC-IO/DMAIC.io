@@ -1,0 +1,41 @@
+{
+  "algorithm_id": "short-run-chart",
+  "generated_with": {
+    "method": "Hand-verified — within-part standardisation via MR̄/d₂"
+  },
+  "generator_version": "1.0.0",
+  "tolerances": {
+    "default": { "relative": 1e-10, "absolute": 1e-10 },
+    "overrides": {
+      "spc_constants": {
+        "relative": 1e-08, "absolute": 1e-9,
+        "reason": "d₂(2) and D₄(2) are table-rounded constants"
+      }
+    }
+  },
+  "test_cases": [
+    {
+      "id": "src_zmr_two_parts",
+      "tier": "standard",
+      "description": "Two parts (A around 100, B around 50), 6 measurements each — z within ±3, no signals",
+      "reference": "Hand-verified",
+      "inputs": {
+        "mode": "z-mr",
+        "values": [100, 102, 99, 101, 98, 103, 50, 51, 49, 52, 48, 50.5],
+        "groups": ["A", "A", "A", "A", "A", "A", "B", "B", "B", "B", "B", "B"]
+      },
+      "tolerance_override": "spc_constants",
+      "expected": {
+        "z.cl": 0,
+        "z.ucl": 3,
+        "z.lcl": -3,
+        "mr.cl": 1.1143272727272728,
+        "mr.ucl": 3.6405072,
+        "mr.lcl": 0,
+        "signal_count": 0,
+        "group_count": 2,
+        "skipped": 0
+      }
+    }
+  ]
+}

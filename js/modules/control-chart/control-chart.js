@@ -32,9 +32,14 @@ export default {
   _subgroupSize: 1,
   _columnRef: null,
   _baselineCount: null,
+  _stagesText: '',           // user-typed stages spec ("12, 25")
   _usl: null,
   _lsl: null,
   _enabledRules: [...DEFAULT_ENABLED_RULES],
+  /** @type {Object<number, {comment: string, excluded: boolean}>} */
+  _annotations: {},
+  /** Frozen limits for Phase-II monitoring (null = recompute live) */
+  _frozenLimits: null,
   _charts: [],
   _lastResult: null,
   _eventUnsubs: [],
@@ -89,9 +94,12 @@ export default {
       subgroupSize: this._subgroupSize,
       columnRef: this._columnRef,
       baselineCount: this._baselineCount,
+      stagesText: this._stagesText,
       usl: this._usl,
       lsl: this._lsl,
       enabledRules: this._enabledRules,
+      annotations: this._annotations,
+      frozenLimits: this._frozenLimits,
     };
   },
 
@@ -116,9 +124,35 @@ export default {
     this._subgroupSize = saved.subgroupSize || 1;
     this._columnRef = saved.columnRef || null;
     this._baselineCount = saved.baselineCount ?? null;
+    this._stagesText = saved.stagesText || '';
     this._usl = saved.usl ?? null;
     this._lsl = saved.lsl ?? null;
     this._enabledRules = saved.enabledRules || [...DEFAULT_ENABLED_RULES];
+    this._annotations = (saved.annotations && typeof saved.annotations === 'object') ? saved.annotations : {};
+    this._frozenLimits = saved.frozenLimits ?? null;
+  },
+
+  /** @private — list of indices marked excluded in annotations */
+  _excludedIndices() {
+    return Object.keys(this._annotations)
+      .map(Number)
+      .filter(k => this._annotations[k]?.excluded);
+  },
+
+  /**
+   * Parse a comma- or whitespace-separated string of stage end indices into
+   * a sorted, deduplicated array. Returns [] for empty/invalid input.
+   * @private
+   */
+  _parseStages(s) {
+    if (!s || typeof s !== 'string') return [];
+    const out = [];
+    for (const part of s.split(/[,;\s]+/)) {
+      if (!part) continue;
+      const v = parseInt(part, 10);
+      if (Number.isFinite(v) && v > 0) out.push(v);
+    }
+    return [...new Set(out)].sort((a, b) => a - b);
   },
 
   /** @private */
@@ -167,6 +201,28 @@ export default {
             <input type="number" class="field field--num" data-ref="baseline-count"
               value="${this._baselineCount ?? ''}" min="2" placeholder="${this._t('baselineAll')}">
             <span class="control-chart__hint">${this._t('baselineHint')}</span>
+          </div>
+
+          <div class="dmike-split__section-title">${this._t('sectionStages')}</div>
+          <div class="field-group">
+            <label>${this._t('stagesLabel')}</label>
+            <input type="text" class="field" data-ref="stages"
+              value="${this._stagesText || ''}" placeholder="${this._t('stagesPlaceholder')}">
+            <span class="control-chart__hint">${this._t('stagesHint')}</span>
+          </div>
+
+          <div class="dmike-split__section-title">${this._t('sectionPhase2')}</div>
+          <div class="control-chart__phase2">
+            <div class="control-chart__phase2-status">
+              ${this._frozenLimits
+                ? `<span class="control-chart__phase2-badge control-chart__phase2-badge--frozen">${this._t('phase2_frozen')}</span>`
+                : `<span class="control-chart__phase2-badge">${this._t('phase2_live')}</span>`}
+            </div>
+            <button type="button" class="btn btn--small ${this._frozenLimits ? 'btn--secondary' : 'btn--primary'}"
+              data-ref="phase2-toggle">
+              ${this._frozenLimits ? this._t('phase2_unfreeze') : this._t('phase2_freeze')}
+            </button>
+            <span class="control-chart__hint">${this._t('phase2Hint')}</span>
           </div>
 
           <div class="dmike-split__section-title">${this._t('sectionSpec')}</div>
@@ -247,6 +303,17 @@ export default {
         if (panel) panel.classList.toggle('control-chart__nelson-panel--collapsed');
         toggle.classList.toggle('control-chart__collapsible--collapsed');
       }
+      const phase2Btn = e.target.closest('[data-ref="phase2-toggle"]');
+      if (phase2Btn) {
+        this._togglePhase2();
+        return;
+      }
+      const violationRow = e.target.closest('[data-violation-index]');
+      if (violationRow) {
+        const idx = parseInt(violationRow.dataset.violationIndex, 10);
+        if (Number.isFinite(idx)) this._openAnnotationDialog(idx);
+        return;
+      }
     });
 
     this._container.addEventListener('change', (e) => {
@@ -275,6 +342,10 @@ export default {
       if (ref === 'baseline-count') {
         const val = parseInt(e.target.value);
         this._baselineCount = isNaN(val) ? null : val;
+        this._save();
+      }
+      if (ref === 'stages') {
+        this._stagesText = e.target.value || '';
         this._save();
       }
       if (ref === 'usl') {
@@ -308,6 +379,150 @@ export default {
   _scheduleAutoRun() {
     clearTimeout(this._autoRunTimer);
     this._autoRunTimer = setTimeout(() => this._runAnalysis(), 120);
+  },
+
+  /**
+   * Freeze the currently computed limits for Phase-II monitoring.
+   * Disabled when the chart is in multi-stage mode.
+   * @private
+   */
+  _togglePhase2() {
+    if (this._frozenLimits) {
+      this._frozenLimits = null;
+      this._save();
+      this._destroyPickerAndRerender();
+      return;
+    }
+    if (!this._lastResult) {
+      this._context.notify?.(this._t('phase2_needsData'), 'warning');
+      return;
+    }
+    if (this._parseStages(this._stagesText).length > 0) {
+      this._context.notify?.(this._t('phase2_noStages'), 'warning');
+      return;
+    }
+    const ct = this._lastResult.ct;
+    const primary = this._lastResult.result.subcharts[ct.subcharts[0].id];
+    const secondary = this._lastResult.result.subcharts[ct.subcharts[1].id];
+    const grab = (sc) => ({ cl: sc.cl, ucl: sc.ucl, lcl: sc.lcl, sigma: sc.sigma });
+
+    this._frozenLimits = {
+      chartTypeId: this._chartTypeId,
+      subgroupSize: this._subgroupSize,
+      columnRef: this._columnRef,
+      baselineEnd: this._lastResult.baselineEnd,
+      primary: grab(primary),
+      secondary: grab(secondary),
+      excludedIndices: this._excludedIndices(),
+    };
+    this._save();
+    this._destroyPickerAndRerender();
+  },
+
+  /**
+   * Re-mount the inputs panel (so the Phase-II badge/button reflect new state)
+   * and run the analysis.
+   * @private
+   */
+  _destroyPickerAndRerender() {
+    if (this._picker) { this._picker.destroy(); this._picker = null; }
+    this._render();
+    this._initPicker();
+    this._bindContainerEvents();
+    this._runAnalysis();
+  },
+
+  /**
+   * Open the annotation dialog for a single point. Built directly on the
+   * dmike-chart-popout shell (project convention — no modal.js for new
+   * overlays). Saves the comment + excluded flag and re-runs the analysis.
+   * @private
+   */
+  _openAnnotationDialog(idx) {
+    const existing = this._annotations[idx] || { comment: '', excluded: false };
+
+    const overlay = document.createElement('div');
+    overlay.className = 'dmike-chart-popout-overlay';
+
+    const win = document.createElement('div');
+    win.className = 'dmike-chart-popout dmike-chart-popout--compact';
+    win.style.width = '420px';
+    win.style.height = 'auto';
+    win.style.maxHeight = '80vh';
+    win.style.left = 'calc(50% - 210px)';
+    win.style.top = '120px';
+
+    const titleBar = document.createElement('div');
+    titleBar.className = 'dmike-chart-popout-titlebar';
+    const titleText = document.createElement('span');
+    titleText.textContent = this._t('annotationTitle', { idx: idx + 1 });
+    const closeBtn = document.createElement('button');
+    closeBtn.className = 'dmike-chart-popout-close';
+    closeBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>';
+    titleBar.append(titleText, closeBtn);
+
+    const body = document.createElement('div');
+    body.className = 'dmike-chart-popout-body dmike-popout-body--column';
+    body.innerHTML = `
+      <div class="field-group">
+        <label>${esc(this._t('annotationComment'))}</label>
+        <textarea class="field" data-ref="ann-comment" rows="3" placeholder="${esc(this._t('annotationPlaceholder'))}">${esc(existing.comment || '')}</textarea>
+      </div>
+      <div class="field-group">
+        <label class="control-chart__check">
+          <input type="checkbox" data-ref="ann-excluded" ${existing.excluded ? 'checked' : ''}>
+          <span>${esc(this._t('annotationExclude'))}</span>
+        </label>
+        <span class="control-chart__hint">${esc(this._t('annotationExcludeHint'))}</span>
+      </div>
+    `;
+
+    const footer = document.createElement('div');
+    footer.className = 'dmike-popout-footer';
+    const removeBtn = document.createElement('button');
+    removeBtn.className = 'btn btn--secondary';
+    removeBtn.textContent = this._t('annotationRemove');
+    if (!this._annotations[idx]) removeBtn.style.visibility = 'hidden';
+    const cancelBtn = document.createElement('button');
+    cancelBtn.className = 'btn btn--secondary';
+    cancelBtn.textContent = this._context.i18n.t('common.cancel');
+    const saveBtn = document.createElement('button');
+    saveBtn.className = 'btn btn--primary';
+    saveBtn.textContent = this._t('annotationSave');
+    footer.append(removeBtn, cancelBtn, saveBtn);
+
+    body.appendChild(footer);
+    win.append(titleBar, body);
+    overlay.appendChild(win);
+    document.body.appendChild(overlay);
+
+    const close = () => {
+      window.removeEventListener('keydown', onKey);
+      overlay.remove();
+    };
+    const onKey = (e) => { if (e.key === 'Escape') close(); };
+    window.addEventListener('keydown', onKey);
+    closeBtn.addEventListener('click', close);
+    cancelBtn.addEventListener('click', close);
+    overlay.addEventListener('click', (e) => { if (e.target === overlay) close(); });
+
+    saveBtn.addEventListener('click', () => {
+      const comment  = body.querySelector('[data-ref="ann-comment"]')?.value || '';
+      const excluded = !!body.querySelector('[data-ref="ann-excluded"]')?.checked;
+      if (!comment && !excluded) delete this._annotations[idx];
+      else this._annotations[idx] = { comment, excluded };
+      this._save();
+      this._scheduleAutoRun();
+      close();
+    });
+    removeBtn.addEventListener('click', () => {
+      delete this._annotations[idx];
+      this._save();
+      this._scheduleAutoRun();
+      close();
+    });
+
+    setTimeout(() => body.querySelector('[data-ref="ann-comment"]')?.focus(), 0);
   },
 
   // ─── Analysis ───────────────────────────────────────────────
@@ -344,25 +559,54 @@ export default {
     if (!ct) return;
 
     const n = this._subgroupSize;
-    const baselineEnd = this._baselineCount || values.length;
+    const stagesParsed = this._parseStages(this._stagesText)
+      .filter(b => b > 0 && b < values.length);
+    const usingStages = stagesParsed.length > 0;
+    const baselineEnd = usingStages ? values.length : (this._baselineCount || values.length);
+    const excluded = this._excludedIndices();
 
-    const result = ct.compute(values, n, baselineEnd);
+    let result;
+    if (this._frozenLimits && !usingStages
+        && this._frozenLimits.chartTypeId === this._chartTypeId
+        && this._frozenLimits.subgroupSize === this._subgroupSize) {
+      // Phase II — recompute the plotted series, but graft the frozen limits in.
+      const fresh = ct.compute(values, n, baselineEnd, undefined, excluded);
+      const primaryId = ct.subcharts[0].id;
+      const secondaryId = ct.subcharts[1].id;
+      result = {
+        subcharts: {
+          [primaryId]:   { values: fresh.subcharts[primaryId].values,   ...this._frozenLimits.primary },
+          [secondaryId]: { values: fresh.subcharts[secondaryId].values, ...this._frozenLimits.secondary },
+        },
+        labels: fresh.labels,
+      };
+    } else {
+      result = ct.compute(values, n, baselineEnd, usingStages ? stagesParsed : undefined, excluded);
+    }
 
     const primaryId = ct.subcharts[0].id;
     const primaryData = result.subcharts[primaryId];
+    // For Nelson rules, scalar limits are needed. With stages, use the first
+    // stage's values as a representative reference for the rule engine —
+    // violations are still mostly driven by Rule 1 (point beyond limits) which
+    // works per-point in the chart code path. Capability is also computed
+    // against the first stage for the same reason.
+    const refCL    = Array.isArray(primaryData.cl)    ? primaryData.cl[0]    : primaryData.cl;
+    const refSigma = Array.isArray(primaryData.sigma) ? primaryData.sigma[0] : primaryData.sigma;
+
     const primaryViolations = evaluateNelsonRules(
-      primaryData.values, primaryData.cl, primaryData.sigma, this._enabledRules
+      primaryData.values, refCL, refSigma, this._enabledRules
     );
 
     const capability = computeCapability(
       primaryData.values.filter(v => v !== null),
-      primaryData.cl, primaryData.sigma, this._usl, this._lsl
+      refCL, refSigma, this._usl, this._lsl
     );
 
-    this._lastResult = { result, ct, primaryViolations, capability, baselineEnd, n };
+    this._lastResult = { result, ct, primaryViolations, capability, baselineEnd, n, stages: stagesParsed };
 
     this._renderStats(primaryData, primaryViolations, capability);
-    await this._renderCharts(result, ct, primaryViolations, baselineEnd, n);
+    await this._renderCharts(result, ct, primaryViolations, baselineEnd, n, stagesParsed);
     this._renderViolations(primaryViolations);
   },
 
@@ -374,17 +618,21 @@ export default {
     const vCount = new Set(violations.map(v => v.index)).size;
     const total = data.values.filter(v => v !== null).length;
     const fmt = (v) => v.toFixed(4);
+    // With stages, cl/ucl/lcl/sigma are arrays — show first stage's values.
+    const first = (v) => Array.isArray(v) ? v[0] : v;
+    const isStaged = Array.isArray(data.cl);
+    const stageNote = isStaged ? ` <span class="control-chart__hint">(${this._t('stage1')})</span>` : '';
 
     let html = `<div class="dmike-kpi-strip">
       <div class="dmike-kpi">
-        <div class="dmike-kpi-value">${fmt(data.cl)}</div>
-        <div class="dmike-kpi-label">${this._t('statCL')}</div>
-        <div class="dmike-kpi-sub">σ̂ = ${fmt(data.sigma)}</div>
+        <div class="dmike-kpi-value">${fmt(first(data.cl))}</div>
+        <div class="dmike-kpi-label">${this._t('statCL')}${stageNote}</div>
+        <div class="dmike-kpi-sub">σ̂ = ${fmt(first(data.sigma))}</div>
       </div>
       <div class="dmike-kpi">
-        <div class="dmike-kpi-value">${data.ucl.toFixed(3)}</div>
+        <div class="dmike-kpi-value">${first(data.ucl).toFixed(3)}</div>
         <div class="dmike-kpi-label">UCL / LCL</div>
-        <div class="dmike-kpi-sub">${data.lcl.toFixed(3)}</div>
+        <div class="dmike-kpi-sub">${first(data.lcl).toFixed(3)}</div>
       </div>
       <div class="dmike-kpi ${vCount === 0 ? 'dmike-kpi--good' : 'dmike-kpi--bad'}">
         <div class="dmike-kpi-value">${vCount}</div>
@@ -407,7 +655,7 @@ export default {
   },
 
   /** @private */
-  async _renderCharts(result, ct, primaryViolations, baselineEnd, n) {
+  async _renderCharts(result, ct, primaryViolations, baselineEnd, n, stages) {
     this._destroyCharts();
     const chartsWrap = this._container.querySelector('[data-ref="charts-wrap"]');
     if (!chartsWrap) return;
@@ -417,6 +665,13 @@ export default {
     const primaryId = ct.subcharts[0].id;
     const lang = this._context.language || 'de';
     const colName = getColumnName(this._context.stateManager, this._columnRef);
+    const usingStages = Array.isArray(stages) && stages.length > 0;
+    // Convert raw-space stage boundaries to per-subchart space
+    const stageBoundariesFor = (subId) => {
+      if (!usingStages) return null;
+      if (ct.id === 'i-mr') return stages.slice();
+      return stages.map(b => Math.ceil(b / n));
+    };
 
     for (const sc of ct.subcharts) {
       const scData = result.subcharts[sc.id];
@@ -453,6 +708,12 @@ export default {
         ? { usl: this._usl, lsl: this._lsl }
         : { usl: null, lsl: null };
 
+      // Convert excluded indices from raw-space to subchart-space for x-bar/s
+      const excludedRaw = this._excludedIndices();
+      const excludedForSub = (sc.id === 'i' || sc.id === 'mr')
+        ? new Set(excludedRaw)
+        : new Set(excludedRaw.map(i => Math.floor(i / n)));
+
       const chart = await this._context.chartManager.create(plotEl, 'control-chart', {
         title: '',
         xLabel: this._t('xLabelSample'),
@@ -465,7 +726,9 @@ export default {
         lcl: scData.lcl,
         sigma: scData.sigma,
         violationIndices,
-        baselineEnd: blEndForChart < scData.values.length ? blEndForChart : null,
+        excludedIndices: excludedForSub,
+        baselineEnd: !usingStages && blEndForChart < scData.values.length ? blEndForChart : null,
+        stageBoundaries: stageBoundariesFor(sc.id),
         ...specOpts,
       });
       this._charts.push(chart);
@@ -494,10 +757,15 @@ export default {
     let rows = '';
     unique.forEach(v => {
       const rule = NELSON_RULES.find(r => r.id === v.ruleId);
-      rows += `<div class="control-chart__violation-row">
+      const ann = this._annotations[v.index];
+      const annHint = ann
+        ? `<span class="control-chart__v-ann"${ann.excluded ? ' data-excluded="1"' : ''}>${esc(ann.comment || '')}${ann.excluded ? ' ⊘' : ''}</span>`
+        : `<span class="control-chart__v-add">${esc(this._t('annotationAdd'))}</span>`;
+      rows += `<div class="control-chart__violation-row" data-violation-index="${v.index}" role="button" tabindex="0">
         <span class="control-chart__v-idx">#${v.index + 1}</span>
         <span class="control-chart__v-rule">Rule ${v.ruleId}</span>
         <span class="control-chart__v-desc">${esc(rule ? (rule.short[lang] || rule.short.de) : '')}</span>
+        ${annHint}
       </div>`;
     });
 

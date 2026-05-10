@@ -13,15 +13,15 @@ import {
 // ─── Generic helpers ───────────────────────────────────────────
 
 async function loadFixture(path) {
-  const resp = await fetch(path);
+  const resp = await fetch(new URL(path, import.meta.url));
   return resp.json();
 }
 
 function getTol(tc, tolerances) {
   const key = tc.tolerance_override;
   return key && tolerances.overrides?.[key]
-    ? tolerances.overrides[key].absolute
-    : tolerances.default.absolute;
+    ? tolerances.overrides[key]
+    : tolerances.default;
 }
 
 function assertFields(result, expected, tol, id) {

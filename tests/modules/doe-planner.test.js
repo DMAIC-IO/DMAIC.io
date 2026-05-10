@@ -479,7 +479,7 @@ suite('DoE Math: OLS Regression', () => {
 suite('DoE Math: Model Matrix Builder', () => {
   test('buildModelMatrix adds intercept and interactions', () => {
     const coded = [[-1, -1], [-1, 1], [1, -1], [1, 1]];
-    const X = buildModelMatrix(coded);
+    const { X } = buildModelMatrix(coded);
     // intercept + 2 main + 1 interaction = 4 columns
     assertEqual(X[0].length, 4);
     assertEqual(X.length, 4);
@@ -504,7 +504,7 @@ suite('DoE Analysis: analyzeResponse', () => {
   test('2^2 design with known effects', () => {
     // Factors: A, B. Design: full factorial
     const coded = [[-1, -1], [1, -1], [-1, 1], [1, 1]];
-    // y = 10 + 5*A + 3*B + 1*AB + noise
+    // y = 10 + 5*A + 3*B + 1*AB (no noise)
     const y = [
       10 - 5 - 3 + 1,  // A=-1, B=-1 → 3
       10 + 5 - 3 - 1,  // A=+1, B=-1 → 11
@@ -512,12 +512,14 @@ suite('DoE Analysis: analyzeResponse', () => {
       10 + 5 + 3 + 1,  // A=+1, B=+1 → 19
     ];
     const a = analyzeResponse(coded, y, ['A', 'B']);
-    // With no error df, may return null or degenerate — check it handles gracefully
+    // n=p=4 with full 2FI model would give zero error df → engine drops the
+    // interaction term to keep ANOVA computable. Saturated R²=1 is therefore
+    // unreachable; we only verify the reduced fit estimated the intercept and
+    // the two main effects correctly.
     if (a) {
-      // Intercept ≈ 10
-      assertAlmostEqual(a.coefficients[0].coefficient, 10, 0.1);
-      // R² should be 1 (perfect fit with 4 points, 4 parameters)
-      assertAlmostEqual(a.rSquared, 1.0, 1e-6);
+      assertAlmostEqual(a.coefficients[0].coefficient, 10, 1e-6);   // intercept
+      assertAlmostEqual(a.coefficients[1].coefficient,  5, 1e-6);   // A
+      assertAlmostEqual(a.coefficients[2].coefficient,  3, 1e-6);   // B
     }
   });
 
@@ -784,13 +786,13 @@ suite('DoE Gold Standard: 2^2 Factorial (Minitab reference)', () => {
 // Fixture Validation: exact-snapshot regression anchors
 // ═══════════════════════════════════════════════════════════════════
 
-const fixtureData = await (await fetch('../fixtures/doe/doe-planner.fixtures.json')).json();
+const fixtureData = await (await fetch(new URL('../fixtures/doe/doe-planner.fixtures.json', import.meta.url))).json();
 
 function getTol(tc, tolerances) {
   const key = tc.tolerance_override;
   return key && tolerances.overrides?.[key]
-    ? tolerances.overrides[key].absolute
-    : tolerances.default.absolute;
+    ? tolerances.overrides[key]
+    : tolerances.default;
 }
 
 function buildDesign(inputs) {
