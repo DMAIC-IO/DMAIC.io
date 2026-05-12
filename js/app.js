@@ -26,6 +26,7 @@ import { getColumnValues, getColumnName } from './ui/column-picker.js';
 import { CYCLES, getCycle, getPhaseIds, DEFAULT_CYCLE } from './core/cycles/cycles.js';
 import { initNightlyMode }   from './core/nightly-mode.js';
 import { TipEngine }         from './core/tips/tip-engine.js';
+import { ExportReminder }    from './core/export-reminder.js';
 
 async function init() {
   // ─── Core Services ───────────────────────────────────────
@@ -104,6 +105,9 @@ async function init() {
   _initTraining(eventBus, i18n);
   _initDashboard(eventBus, i18n, stateManager, chartManager);
   _initExportImport(stateManager, eventBus, i18n, notify, modal);
+
+  const exportReminder = new ExportReminder({ stateManager, eventBus, i18n, notify });
+  exportReminder.init();
   _initFullscreen();
   _initFooter(stateManager, eventBus, i18n);
   _updateReadOnlyBanner(stateManager, i18n);
@@ -135,7 +139,7 @@ async function init() {
   // the 2 s localStorage / 500 ms IDB debounces, and reach into live module
   // instances via the workspace.
   if (new URLSearchParams(location.search).get('e2e') === '1') {
-    window.__dmike = { stateManager, eventBus, moduleRegistry, i18n, themeManager, workspace, chartManager };
+    window.__dmike = { stateManager, eventBus, moduleRegistry, i18n, themeManager, workspace, chartManager, exportReminder };
   }
 
   // ─── Update title ────────────────────────────────────────
@@ -2278,6 +2282,24 @@ function _initSettings(themeManager, i18n, stateManager, tipEngine) {
     tipsResetBtn.addEventListener('click', () => tipEngine.resetDismissed());
   }
 
+  // ── Export reminder ────────────────────────────────────────
+  const reminderCb = document.getElementById('settings-export-reminder-enabled');
+  if (reminderCb) {
+    reminderCb.checked = stateManager.get('settings.exportReminderEnabled') !== false;
+    reminderCb.addEventListener('change', () => {
+      stateManager.set('settings.exportReminderEnabled', reminderCb.checked);
+    });
+  }
+  const reminderMin = document.getElementById('settings-export-reminder-minutes');
+  if (reminderMin) {
+    reminderMin.value = stateManager.get('settings.exportReminderMinutes') ?? 60;
+    reminderMin.addEventListener('change', () => {
+      const v = Math.min(1440, Math.max(1, parseInt(reminderMin.value, 10) || 60));
+      reminderMin.value = v;
+      stateManager.set('settings.exportReminderMinutes', v);
+    });
+  }
+
   // ── Show Algorithm Lab link icons ──────────────────────────
   const algoLinkCb = document.getElementById('settings-show-algo-links');
   if (algoLinkCb) {
@@ -2545,8 +2567,8 @@ function _initExportImport(stateManager, eventBus, i18n, notify, modal) {
           const json = stateManager.exportJSON();
           const name = (stateManager.get('projectMeta.name') ?? 'projekt').replace(/[^a-z0-9_-]/gi, '_');
           _downloadJSON(json, `${name}_${date}.json`);
-          eventBus.emit('project:exported');
         }
+        eventBus.emit('project:exported');
         notify(i18n.t('app.export') + ' ✓', 'success');
       },
     });
@@ -2593,6 +2615,7 @@ function _initExportImport(stateManager, eventBus, i18n, notify, modal) {
       const date = new Date().toISOString().split('T')[0];
       const json = await stateManager.exportAllJSON();
       _downloadJSON(json, `dmike_alle_projekte_${date}.json`);
+      eventBus.emit('project:exported');
       notify(i18n.t('app.export') + ' ✓', 'success');
     }
   });

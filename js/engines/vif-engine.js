@@ -29,10 +29,15 @@ import {
  * then computes VIF_j = diag_j((X'X)⁻¹) × n for each non-intercept term.
  *
  * @param {number[][]} codedMatrix - n×k coded design matrix (values: −1, 0, +1)
+ * @param {object} [opts]
+ * @param {Array<[number, number]>} [opts.excludedInteractions] - 2FI pairs to omit
  * @returns {{ term: string, vif: number }[]} VIF for each model term (excluding intercept)
  */
-export function computeVIF(codedMatrix) {
-  const { X, termNames } = buildModelMatrix(codedMatrix, { interactions: true });
+export function computeVIF(codedMatrix, opts = {}) {
+  const { X, termNames } = buildModelMatrix(codedMatrix, {
+    interactions: true,
+    excludedInteractions: opts.excludedInteractions,
+  });
   const Xt = matTranspose(X);
   const XtX = matMul(Xt, X);
   const XtXinv = matInverse(XtX);

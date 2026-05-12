@@ -193,6 +193,23 @@
             </label>
             <button class="btn btn--sm btn--ghost" id="settings-tips-reset" data-i18n="settings.tipsResetDismissed">Abgehakte Tipps zurücksetzen</button>
           </div>
+          <div class="settings-section">
+            <label class="settings-section__label" data-i18n="settings.exportReminderTitle">Export-Erinnerung</label>
+            <label class="settings-checkbox-row">
+              <input type="checkbox" id="settings-export-reminder-enabled" checked>
+              <span data-i18n="settings.exportReminderEnabled">Erinnerung aktivieren</span>
+            </label>
+            <div class="settings-stat-row">
+              <div class="settings-stat-field">
+                <label class="settings-stat-field__label" for="settings-export-reminder-minutes" data-i18n="settings.exportReminderMinutesLabel">Nach Netto-Arbeitszeit</label>
+                <div class="settings-stat-input-group">
+                  <input type="number" id="settings-export-reminder-minutes" class="field settings-stat-input" min="1" max="1440" step="1" value="60">
+                  <span class="settings-stat-unit" data-i18n="settings.minutesUnit">min</span>
+                </div>
+              </div>
+            </div>
+            <p class="settings-hint" data-i18n="settings.exportReminderHint">Nur sichtbare, fokussierte Zeit mit Datenänderungen wird gezählt. Jeder Export setzt den Zähler zurück.</p>
+          </div>
         </div>
         <!-- Tab: Charts -->
         <div class="settings-tab-content" data-tab-content="charts">

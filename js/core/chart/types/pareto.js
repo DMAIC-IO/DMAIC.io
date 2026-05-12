@@ -3,8 +3,13 @@
  * Bars sorted by descending value + cumulative percentage line (dual Y-axis).
  * Supports: category colors, configurable threshold line, cumulative line/dot styling.
  *
- * Config:
+ * Config (single-series):
  *   items: Array<{ name: string, value: number, color?: string }>
+ *   maxItems: number (default 20)
+ *
+ * Config (stacked multi-series — bars split into segments, sorted by total):
+ *   categories: string[]
+ *   groups: Array<{ name, values[], color }>
  *   maxItems: number (default 20)
  *
  *   Threshold reference line (the "80 % line"):
@@ -28,7 +33,7 @@
 
 import ChartBase from '../chart-base.js';
 import {
-  svgEl, svgText, resolveColor, formatNum, dashArray, drawMarker, createPattern
+  svgEl, svgText, resolveColor, formatNum, dashArray, drawMarker, createPattern, getChartColors,
 } from '../chart-core.js';
 
 /** Default cumulative line color */
@@ -95,11 +100,38 @@ export default class ParetoChart extends ChartBase {
 
   // ── Data helpers ───────────────────────────────────────────────
 
-  /** @private */
+  /**
+   * Normalize the configured input into a sorted list of pareto items.
+   * Single-series mode passes `items[]` through verbatim. Multi-series mode
+   * builds one item per category, with `segments[]` summed for the bar height
+   * and used as the input to the cumulative-% line.
+   *
+   * @private
+   */
   _getItems() {
-    const src = this.config.items || [];
     const max = this.config.maxItems || 20;
-    return src.slice(0, max);
+
+    // Multi-series stacked mode: categories + groups → items with segments.
+    if (Array.isArray(this.config.groups) && this.config.groups.length > 0 &&
+        Array.isArray(this.config.categories) && this.config.categories.length > 0) {
+      const cats = this.config.categories;
+      const groups = this.config.groups.filter(g => g.visible !== false);
+      const chartColors = getChartColors();
+      const items = cats.map((catName, ci) => {
+        const segments = groups.map((g, gi) => ({
+          name: g.name || `Group ${gi + 1}`,
+          value: Math.max(0, Number((g.values || [])[ci]) || 0),
+          color: g.color || chartColors[gi % chartColors.length] || `var(--color-chart-${gi + 1})`,
+        })).filter(s => s.value > 0);
+        const value = segments.reduce((s, seg) => s + seg.value, 0);
+        return { name: catName, value, segments };
+      });
+      items.sort((a, b) => b.value - a.value);
+      return items.slice(0, max);
+    }
+
+    // Single-series mode: items[] passes through with no extra processing.
+    return (this.config.items || []).slice(0, max);
   }
 
   // ── Abstract Implementation: Data Extent ──────────────────────
@@ -151,14 +183,34 @@ export default class ParetoChart extends ChartBase {
       const opacity = d.opacity ?? defaultOpacity;
       const bx = cx - barWidth / 2;
 
-      // Color fill
-      svgEl('rect', {
-        x: bx, y: yTop, width: barWidth, height: h,
-        rx: 3, fill: color, 'fill-opacity': opacity,
-      }, plotGroup);
+      if (Array.isArray(d.segments) && d.segments.length > 0) {
+        // Stacked segments — bottom-up, each segment owns its [yBot, yTop) band.
+        let cum = 0;
+        d.segments.forEach((seg) => {
+          const segColor = resolveColor(seg.color);
+          const segYTop = yScale(cum + seg.value);
+          const segYBot = yScale(cum);
+          const segH = segYBot - segYTop;
+          cum += seg.value;
+          if (segH <= 0) return;
+          svgEl('rect', {
+            x: bx, y: segYTop, width: barWidth, height: segH,
+            rx: 0, fill: segColor, 'fill-opacity': opacity,
+            stroke: segColor, 'stroke-width': 1,
+          }, plotGroup);
+        });
+        // Round the outer corners of the topmost segment.
+        // (Skipped here — flat tops keep the stack readable.)
+      } else {
+        // Single-series rect
+        svgEl('rect', {
+          x: bx, y: yTop, width: barWidth, height: h,
+          rx: 3, fill: color, 'fill-opacity': opacity,
+        }, plotGroup);
+      }
 
-      // Pattern overlay
-      if (d.pattern && d.pattern !== '') {
+      // Pattern overlay (single-series only)
+      if (d.pattern && d.pattern !== '' && !d.segments) {
         const patId = `pareto-pat-${this._uid}-${i}`;
         createPattern(defs, patId, {
           pattern: d.pattern,
@@ -171,13 +223,13 @@ export default class ParetoChart extends ChartBase {
         }, plotGroup);
       }
 
-      // Score label above bar
+      // Score label above bar (total, for stacked mode)
       svgText(formatNum(d.value, 1, this.locale), {
         x: cx, y: yTop - 5,
         'text-anchor': 'middle',
         'font-size': '10px',
         'font-weight': '700',
-        fill: color,
+        fill: d.segments ? resolveColor('var(--color-text-primary)') : color,
       }, plotGroup);
     });
 
@@ -297,6 +349,19 @@ export default class ParetoChart extends ChartBase {
 
   /** @override */
   _getLegendItems() {
+    // Stacked multi-series mode: show one swatch per group so the user can
+    // tell segments apart. Single-series mode keeps the legend hidden
+    // (sort order + cumulative line already convey the meaning).
+    if (Array.isArray(this.config.groups) && this.config.groups.length > 0) {
+      const chartColors = getChartColors();
+      return this.config.groups
+        .filter(g => g.visible !== false)
+        .map((g, i) => ({
+          type: 'rect',
+          color: g.color || chartColors[i % chartColors.length] || `var(--color-chart-${i + 1})`,
+          label: g.name || `Group ${i + 1}`,
+        }));
+    }
     return [];
   }
 
@@ -342,15 +407,32 @@ export default class ParetoChart extends ChartBase {
     for (let i = 0; i <= idx; i++) cumSum += items[i].value;
     const cumPct = totalValue > 0 ? ((cumSum / totalValue) * 100).toFixed(1) : '0';
 
+    // Stacked: which segment is the cursor's data-y inside?
+    let hitSegment = null;
+    if (Array.isArray(d.segments) && d.segments.length > 0) {
+      let cum = 0;
+      for (const seg of d.segments) {
+        if (dataY >= cum && dataY <= cum + seg.value) { hitSegment = seg; break; }
+        cum += seg.value;
+      }
+      // Cursor above the stack: snap to the topmost segment.
+      if (!hitSegment) hitSegment = d.segments[d.segments.length - 1];
+    }
+
     const px = this._xScale(idx);
     const py = this._yScale(d.value);
 
+    const segLine = hitSegment
+      ? `${hitSegment.name}: ${formatNum(hitSegment.value, 1, this.locale)}<br>`
+      : '';
+
     return [{
       html: `<b>${d.name}</b><br>`
+        + segLine
         + `${formatNum(d.value, 1, this.locale)}<br>`
         + `Σ ${cumPct}%`,
       px, py,
-      color: d.color || 'var(--color-chart-1)',
+      color: hitSegment?.color || d.color || 'var(--color-chart-1)',
     }];
   }
 }

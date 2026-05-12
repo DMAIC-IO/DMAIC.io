@@ -616,9 +616,12 @@ export class AlgorithmLab {
       return wrapper();
     }
 
-    // Primary path: dynamic import of the actual engine module
+    // Primary path: dynamic import of the actual engine module.
+    // file_path is repo-relative (e.g. "js/engines/math-utils.js"). Resolve it
+    // against document.baseURI so the import works regardless of where the app
+    // is deployed (`/`, `/app/dev/`, `/app/v0.4.0/`, …).
     if (src.file_path && src.function_name) {
-      const modulePath = '/' + src.file_path;
+      const modulePath = new URL(src.file_path, document.baseURI).href;
       const mod = await import(modulePath);
       const fn = mod[src.function_name];
       if (typeof fn !== 'function') {

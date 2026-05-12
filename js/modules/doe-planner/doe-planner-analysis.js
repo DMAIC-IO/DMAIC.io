@@ -168,9 +168,10 @@ export { computeDesignEfficiency };
  * @param {number} k - Number of factors
  * @param {number} effectSizes - Array of effect sizes (delta/sigma) to evaluate
  * @param {number} [alpha=0.05] - Significance level
+ * @param {Array<[number, number]>} [excludedInteractions] - 2FI pairs to omit from the model
  * @returns {PowerResult[]}
  */
-export function computePowerAnalysis(n, k, effectSizes = [0.5, 1.0, 1.5, 2.0], alpha = 0.05) {
+export function computePowerAnalysis(n, k, effectSizes = [0.5, 1.0, 1.5, 2.0], alpha = 0.05, excludedInteractions) {
   // For a main effect in a 2^k design:
   // SS_effect = n × effect^2 / 4
   // df_effect = 1 (for each main effect)
@@ -179,7 +180,7 @@ export function computePowerAnalysis(n, k, effectSizes = [0.5, 1.0, 1.5, 2.0], a
 
   const { termNames } = buildModelMatrix(
     Array.from({ length: n }, () => new Array(k).fill(0)),
-    { interactions: true }
+    { interactions: true, excludedInteractions }
   );
   const p = termNames.length;
   const dfEffect = 1;
@@ -229,13 +230,18 @@ export function computePowerAnalysis(n, k, effectSizes = [0.5, 1.0, 1.5, 2.0], a
  * @param {number} p - Number of generators (for alias computation)
  * @param {string} designType - 'full', 'frac', 'pb', 'ccd'
  * @param {number} [alpha=0.05] - Significance level for power analysis
+ * @param {object} [opts]
+ * @param {Array<[number, number]>} [opts.excludedInteractions] - 2FI pairs to omit
+ *   from VIF / efficiency / power evaluation (used for optimal designs where the
+ *   user explicitly removed certain interactions from the model)
  * @returns {DesignEvaluation}
  */
-export function evaluateDesign(codedMatrix, k, p, designType, alpha = 0.05) {
+export function evaluateDesign(codedMatrix, k, p, designType, alpha = 0.05, opts = {}) {
+  const ex = opts.excludedInteractions;
   const aliasStructure = computeAliasStructure(k, p, designType);
-  const vif = computeVIF(codedMatrix);
-  const efficiency = computeDesignEfficiency(codedMatrix);
-  const power = computePowerAnalysis(codedMatrix.length, k, [0.5, 1.0, 1.5, 2.0, 3.0], alpha);
+  const vif = computeVIF(codedMatrix, { excludedInteractions: ex });
+  const efficiency = computeDesignEfficiency(codedMatrix, { excludedInteractions: ex });
+  const power = computePowerAnalysis(codedMatrix.length, k, [0.5, 1.0, 1.5, 2.0, 3.0], alpha, ex);
 
   return { aliasStructure, vif, efficiency, power };
 }
@@ -292,16 +298,21 @@ export function evaluateDesign(codedMatrix, k, p, designType, alpha = 0.05) {
  * @param {number[]} y - Response values (length n)
  * @param {string[]} [factorNames] - Factor names (default: A, B, C, ...)
  * @param {number} [alpha=0.05] - Significance level
+ * @param {object} [opts]
+ * @param {Array<[number, number]>} [opts.excludedInteractions] - 2FI pairs to omit
+ *   from the fitted model (matches what the optimal design was generated for)
  * @returns {AnalysisResult|null} null if model is singular or insufficient data
  */
-export function analyzeResponse(codedMatrix, y, factorNames, alpha = 0.05) {
+export function analyzeResponse(codedMatrix, y, factorNames, alpha = 0.05, opts = {}) {
   const n = codedMatrix.length;
   const k = codedMatrix[0].length;
 
   if (n < k + 2) return null; // Need at least p+1 observations
 
-  // Build model matrix with intercept and 2FI
-  const { X, termNames } = buildModelMatrix(codedMatrix, { interactions: true });
+  const ex = opts.excludedInteractions;
+
+  // Build model matrix with intercept and 2FI (minus any excluded pairs)
+  const { X, termNames } = buildModelMatrix(codedMatrix, { interactions: true, excludedInteractions: ex });
   const p = termNames.length;
 
   // If n ≤ p, drop interactions to avoid singular matrix
@@ -680,7 +691,7 @@ export function recenteredFactors(currentFactors, bestPointCoded) {
  *   significantDispersion: { term: string, coefficient: number, effect: number, p: number, prefer: 'low'|'high'|'mid' }[]
  * } | { ok: false, reason: 'no-replicates'|'invalid-input'|'insufficient-data', details?: object }}
  */
-export function computeDispersionAnalysis(design, y, factorNames, alpha = 0.05) {
+export function computeDispersionAnalysis(design, y, factorNames, alpha = 0.05, opts = {}) {
   if (!design || !Array.isArray(y) || y.length === 0) {
     return { ok: false, reason: 'invalid-input' };
   }
@@ -739,7 +750,7 @@ export function computeDispersionAnalysis(design, y, factorNames, alpha = 0.05) 
   // Fit mean model on all unique design points
   const meanMatrix = allGroups.map(g => g.coded);
   const meanY = allGroups.map(g => g.mean);
-  const meanModel = analyzeResponse(meanMatrix, meanY, factorNames, alpha);
+  const meanModel = analyzeResponse(meanMatrix, meanY, factorNames, alpha, opts);
 
   // Fit dispersion model only on points with non-zero variance
   const usable = allGroups.filter(g => g.variance > 0);
@@ -747,7 +758,7 @@ export function computeDispersionAnalysis(design, y, factorNames, alpha = 0.05) 
   if (usable.length >= 2) {
     const dispMatrix = usable.map(g => g.coded);
     const dispY = usable.map(g => Math.log(g.variance));
-    dispersionModel = analyzeResponse(dispMatrix, dispY, factorNames, alpha);
+    dispersionModel = analyzeResponse(dispMatrix, dispY, factorNames, alpha, opts);
   }
 
   // Identify significant dispersion drivers and the preferred level

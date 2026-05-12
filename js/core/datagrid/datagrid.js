@@ -12,10 +12,14 @@ import {
   COLUMN_TYPES, isNumericType, formatCellValue,
   parseCellInput, detectInputType, analyzeColumn,
 } from './datagrid-utils.js';
+import {
+  ROLE, ALL_ROLES, inferRole, defaultRoleForType, isRoleValidForType, validRolesForType,
+} from './datagrid-roles.js';
 
 export { isFormula, evaluateFormula } from './datagrid-formula.js';
 import { ensureXLSX as _ensureXLSX } from '../export-utils.js';
 export { COLUMN_TYPES, isNumericType, formatCellValue, uid } from './datagrid-utils.js';
+export { ROLE, ALL_ROLES } from './datagrid-roles.js';
 
 // Inline SVG icons for column locks. 12×12 — placed inside a .col-lock-icon span;
 // `currentColor` lets CSS theme-tinting (Pastellblau / Pastellgrau) drive both states.
@@ -45,6 +49,10 @@ export class DataGrid {
     // Selection
     this.selection = null;
     this.isSelecting = false;
+    // Additional non-contiguous columns selected via Ctrl/Cmd+click on the
+    // column header. `selection` still holds the most-recently-clicked column
+    // as the "anchor" for cell-level operations; this set holds the others.
+    this._extraSelectedCols = new Set();
 
     // Editing
     this.editingCell = null;
@@ -106,17 +114,25 @@ export class DataGrid {
   // ═══════════════════════════════════════════════════════════
 
   setData(columnData) {
-    this.columns = columnData.map((c, i) => ({
-      id: c.id || uid(),
-      name: c.name || '',
-      shortName: c.shortName || `C${i + 1}`,
-      type: c.type || 'numeric',
-      unit: c.unit || null,
-      values: [...c.values],
-      formulas: c.formulas ? [...c.formulas] : new Array(c.values.length).fill(null),
-      format: c.format || {},
-      meta: c.meta ? { ...c.meta } : null,
-    }));
+    this.columns = columnData.map((c, i) => {
+      const col = {
+        id: c.id || uid(),
+        name: c.name || '',
+        shortName: c.shortName || `C${i + 1}`,
+        type: c.type || 'numeric',
+        unit: c.unit || null,
+        values: [...c.values],
+        formulas: c.formulas ? [...c.formulas] : new Array(c.values.length).fill(null),
+        format: c.format || {},
+        meta: c.meta ? { ...c.meta } : null,
+        role: c.role || null,
+        roleManual: c.roleManual === true,
+      };
+      // Infer role from data when not provided (covers both fresh imports
+      // and legacy worksheets restored via setState → setData paths).
+      if (!col.role) col.role = inferRole(col);
+      return col;
+    });
     this.rowCount = Math.max(0, ...this.columns.map(c => c.values.length));
     for (const col of this.columns) {
       while (col.values.length < this.rowCount) col.values.push(null);
@@ -124,6 +140,7 @@ export class DataGrid {
     }
     this._reassignShortNames();
     this.selection = null;
+    this._extraSelectedCols.clear();
     this.editingCell = null;
     this.sortCol = null;
     this.sortDir = null;
@@ -144,16 +161,19 @@ export class DataGrid {
 
   addColumn(opts = {}) {
     const idx = opts.position != null ? opts.position : this.columns.length;
+    const type = opts.type || 'numeric';
     const col = {
       id: uid(),
       name: opts.name || '',
       shortName: '',
-      type: opts.type || 'numeric',
+      type,
       unit: opts.unit || null,
       values: new Array(this.rowCount).fill(null),
       formulas: new Array(this.rowCount).fill(null),
       format: opts.format || {},
       meta: opts.meta ? { ...opts.meta } : null,
+      role: opts.role || defaultRoleForType(type),
+      roleManual: opts.roleManual === true,
     };
     this.columns.splice(idx, 0, col);
     this._reassignShortNames();
@@ -173,6 +193,9 @@ export class DataGrid {
     }
     this.columns.splice(idx, 1);
     this._reassignShortNames();
+    // Indices in the additive set are positional, so column removal can
+    // shift them. Drop them rather than try to remap.
+    this._extraSelectedCols.clear();
     this.history.push({ type: 'column-remove', column: col, index: idx });
     this.render();
     this.emit('column:removed', { columnId });
@@ -219,6 +242,52 @@ export class DataGrid {
     const reason = reasonKey ? this._t(`ui.datagrid.${reasonKey}`) : null;
     const managed = col.meta.managedBy ? `${t('lockManagedBy')}: ${col.meta.managedBy}` : null;
     return [head, reason, managed].filter(Boolean).join(' — ');
+  }
+
+  /**
+   * Set the analytical role of a column. Marks `roleManual = true` so the
+   * heuristic will not override the user's choice on subsequent type changes
+   * (unless the chosen role becomes invalid for the new storage type).
+   *
+   * @param {string} columnId
+   * @param {string} role — one of ALL_ROLES
+   * @param {{ auto?: boolean }} [options] — `auto: true` is reserved for
+   *   internal re-inference and leaves `roleManual` untouched.
+   */
+  setColumnRole(columnId, role, options = {}) {
+    const col = this.getColumn(columnId);
+    if (!col) return;
+    if (!ALL_ROLES.includes(role)) return;
+    if (!isRoleValidForType(role, col.type)) return;
+    const oldRole = col.role;
+    if (oldRole === role && (options.auto === true || col.roleManual)) return;
+    col.role = role;
+    if (options.auto !== true) col.roleManual = true;
+    if (options.auto !== true) this.render();
+    this.emit('column:role-changed', {
+      columnId, oldRole, newRole: role, auto: options.auto === true,
+    });
+  }
+
+  /**
+   * Re-evaluate the role after a storage-type change. Respects `roleManual`
+   * as long as the manual role is still valid for the new type; otherwise
+   * resets the manual flag and falls back to the heuristic.
+   * @private
+   */
+  _reinferRoleAfterTypeChange(col) {
+    if (col.roleManual && isRoleValidForType(col.role, col.type)) return;
+    const oldRole = col.role;
+    const newRole = inferRole(col);
+    if (col.roleManual && !isRoleValidForType(col.role, col.type)) {
+      col.roleManual = false;
+    }
+    if (newRole !== oldRole) {
+      col.role = newRole;
+      this.emit('column:role-changed', {
+        columnId: col.id, oldRole, newRole, auto: true,
+      });
+    }
   }
 
   renameColumn(columnId, newName) {
@@ -371,6 +440,7 @@ export class DataGrid {
             col.values = col.values.map(v => v == null ? null : String(v));
             col.values[rowIndex] = String(value);
             this._typeChanged = true;
+            this._reinferRoleAfterTypeChange(col);
             this.emit('column:type-changed', { columnId, oldType, newType: 'text' });
           }
         }
@@ -403,6 +473,7 @@ export class DataGrid {
     if (detected.type === 'currency' && !col.format.decimals) col.format.decimals = 2;
     if (detected.type === 'percent' && !col.format.decimals) col.format.decimals = 1;
     this._typeChanged = true;
+    this._reinferRoleAfterTypeChange(col);
     this.emit('column:type-changed', { columnId, oldType, newType: detected.type });
   }
 
@@ -425,11 +496,18 @@ export class DataGrid {
   }
 
   setState(state) {
-    this.columns = state.columns.map(c => ({
-      ...c,
-      values: [...c.values],
-      formulas: c.formulas ? [...c.formulas] : null,
-    }));
+    this.columns = state.columns.map(c => {
+      const col = {
+        ...c,
+        values: [...c.values],
+        formulas: c.formulas ? [...c.formulas] : null,
+        roleManual: c.roleManual === true,
+      };
+      // Migration for worksheets saved before column.role existed: infer
+      // from current type + values rather than leaving the field undefined.
+      if (!col.role) col.role = inferRole(col);
+      return col;
+    });
     this.rowCount = state.rowCount;
     this.colWidths = { ...state.colWidths };
     this.sortCol = state.sortCol;
@@ -458,6 +536,9 @@ export class DataGrid {
 
   setSelection(range) {
     this.selection = range ? { ...range } : null;
+    // Any explicit selection replacement also drops the additive
+    // column set — Ctrl+click paths re-populate it AFTER calling us.
+    this._extraSelectedCols.clear();
     this._renderSelection();
     let activeCell = null;
     if (range
@@ -480,6 +561,66 @@ export class DataGrid {
       endCol: colIdx, endRow: this.rowCount - 1,
       activeCol: colIdx, activeRow: 0,
     });
+  }
+
+  /**
+   * Ctrl/Cmd+click on a column header: toggle the column in the current
+   * multi-selection. The anchor (main range) tracks the most-recently-
+   * clicked column for cell-level operations; remaining columns live in
+   * `_extraSelectedCols`. When the toggle empties the union, the selection
+   * clears entirely.
+   */
+  toggleColumnSelection(colIdx) {
+    if (colIdx < 0 || colIdx >= this.columns.length) return;
+    const union = new Set();
+    if (this.selection) {
+      const a = Math.min(this.selection.startCol, this.selection.endCol);
+      const b = Math.max(this.selection.startCol, this.selection.endCol);
+      for (let i = a; i <= b; i++) union.add(i);
+    }
+    this._extraSelectedCols.forEach(i => union.add(i));
+
+    if (union.has(colIdx)) union.delete(colIdx);
+    else union.add(colIdx);
+
+    if (union.size === 0) {
+      this.setSelection(null);
+      return;
+    }
+
+    // Prefer the just-clicked column as the new anchor; fall back to the
+    // smallest remaining index when the toggle removed the click target.
+    const anchor = union.has(colIdx) ? colIdx : Math.min(...union);
+    union.delete(anchor);
+    // setSelection clears _extraSelectedCols, so re-populate afterwards.
+    this.setSelection({
+      startCol: anchor, startRow: 0,
+      endCol: anchor, endRow: this.rowCount - 1,
+      activeCol: anchor, activeRow: 0,
+    });
+    union.forEach(i => this._extraSelectedCols.add(i));
+    this._renderSelection();
+    this.emit('selection:changed', { range: this.selection });
+  }
+
+  /**
+   * Sorted union of column indices in the current selection: range columns
+   * plus additive columns from Ctrl/Cmd+click. Used by callers (worksheet,
+   * chart-suggestion) to drive multi-column features.
+   */
+  getSelectedColumnIndices() {
+    const set = new Set();
+    if (this.selection) {
+      const a = Math.min(this.selection.startCol, this.selection.endCol);
+      const b = Math.max(this.selection.startCol, this.selection.endCol);
+      for (let i = a; i <= b; i++) {
+        if (i >= 0 && i < this.columns.length) set.add(i);
+      }
+    }
+    this._extraSelectedCols.forEach(i => {
+      if (i >= 0 && i < this.columns.length) set.add(i);
+    });
+    return [...set].sort((a, b) => a - b);
   }
 
   selectRow(rowIdx) {
@@ -897,6 +1038,10 @@ export class DataGrid {
     } else {
       col.values = col.values.map(v => v == null ? null : String(v));
     }
+
+    // Paste path: type changed silently above. Re-infer role from the
+    // now-populated values so a freshly pasted column gets a meaningful role.
+    this._reinferRoleAfterTypeChange(col);
   }
 
   exportToCSV(options = {}) {
@@ -965,6 +1110,8 @@ export class DataGrid {
         values: new Array(30).fill(null),
         formulas: new Array(30).fill(null),
         format: {},
+        role: ROLE.CONTINUOUS,
+        roleManual: false,
       });
     }
     this.rowCount = 30;
@@ -1067,7 +1214,14 @@ export class DataGrid {
     for (let i = 0; i < cols.length; i++) {
       const col = cols[i];
       const typeDef = COLUMN_TYPES[col.type] || COLUMN_TYPES.text;
-      const typeTag = `<span class="col-type-badge col-type-${col.type}" data-col-idx="${i}" title="${this._typeLabel(col.type)}">${typeDef.badge}</span>`;
+      const roleKey = col.role || defaultRoleForType(col.type);
+      const manualMark = col.roleManual ? ' col-type-badge--role-manual' : '';
+      let badgeTitle = `${this._typeLabel(col.type)} · ${this._roleLabel(roleKey)}`;
+      if (col.roleManual) {
+        const suffix = this._t('ui.datagrid.roleManualSuffix');
+        badgeTitle += ' ' + ((suffix && suffix !== 'roleManualSuffix') ? suffix : '(manual)');
+      }
+      const typeTag = `<span class="col-type-badge col-role-${roleKey}${manualMark}" data-col-idx="${i}" title="${badgeTitle}">${typeDef.badge}</span>`;
       const sortClass = this.sortCol === i ? (this.sortDir === 'asc' ? ' sorted-asc' : ' sorted-desc') : '';
       const lockClass = col.meta?.lock ? ` col-locked col-locked--${col.meta.lock}` : '';
       const lockIcon = col.meta?.lock
@@ -1181,6 +1335,19 @@ export class DataGrid {
       }
     }
 
+    // Additive columns from Ctrl/Cmd+click — highlight header AND every cell
+    // in the column, mirroring the way the range columns above appear.
+    if (this._extraSelectedCols.size > 0) {
+      this._extraSelectedCols.forEach(c => {
+        if (c < 0 || c >= this.columns.length) return;
+        if (c >= c1 && c <= c2) return;
+        thRow?.children[c + 1]?.classList.add('col-selected');
+        for (let r = 0; r < rows.length; r++) {
+          rows[r].children[c + 1]?.classList.add('cell-selected');
+        }
+      });
+    }
+
     // Fill handle on the bottom-right cell of the selection bounding box.
     // Anchor cell needs overflow:visible so the handle can extend slightly
     // past the cell edge — that's what .cell-fill-anchor enables in CSS.
@@ -1217,7 +1384,7 @@ export class DataGrid {
       if (badge) {
         e.stopPropagation();
         const colIdx = parseInt(badge.dataset.colIdx);
-        if (!isNaN(colIdx)) this._showTypePicker(colIdx, badge);
+        if (!isNaN(colIdx)) this._showColumnAttrPicker(colIdx, badge);
         return;
       }
       const exportBtn = e.target.closest('.datagrid__export-btn');
@@ -1953,7 +2120,13 @@ export class DataGrid {
     const th = e.target.closest('.datagrid__column-header th[data-col-idx]');
     if (th) {
       const colIdx = parseInt(th.dataset.colIdx);
-      if (e.shiftKey) {
+      if (e.ctrlKey || e.metaKey) {
+        // Ctrl/Cmd+click: additive (toggle) column selection — lets the
+        // user pick non-contiguous columns for chart suggestions etc.
+        e.preventDefault();
+        this._commitEdit();
+        this.toggleColumnSelection(colIdx);
+      } else if (e.shiftKey) {
         this.sortByColumn(colIdx);
       } else {
         this._commitEdit();
@@ -2412,6 +2585,7 @@ export class DataGrid {
       });
       return;
     }
+    const oldType = col.type;
     col.type = type;
 
     if (type === 'binary') {
@@ -2439,51 +2613,54 @@ export class DataGrid {
       col.values = col.values.map(v => v == null ? null : parseCellInput({ type: 'time' }, String(v)));
     }
 
+    this._reinferRoleAfterTypeChange(col);
     this.render();
-    this.emit('column:type-changed', { columnId: col.id, newType: type });
+    this.emit('column:type-changed', { columnId: col.id, oldType, newType: type });
   }
 
-  _showTypePicker(colIdx, anchorEl) {
-    this._closeTypePicker();
+  /**
+   * Unified type+role picker. The two columns stay in sync: changing the
+   * storage type re-runs role inference and refreshes the role column
+   * (auto-reset if the previous manual role is no longer valid).
+   */
+  _showColumnAttrPicker(colIdx, anchorEl) {
+    this._closeColumnAttrPicker();
     const col = this.columns[colIdx];
     if (!col) return;
 
     const picker = document.createElement('div');
-    picker.className = 'type-picker';
+    picker.className = 'attr-picker';
 
     const title = document.createElement('div');
-    title.className = 'type-picker__title';
-    title.textContent = `Column type: ${col.shortName}`;
+    title.className = 'attr-picker__title';
+    const colLabel = col.name ? `${col.shortName} · ${col.name}` : col.shortName;
+    title.textContent = colLabel;
     picker.appendChild(title);
 
-    for (const [typeKey, typeDef] of Object.entries(COLUMN_TYPES)) {
-      const item = document.createElement('div');
-      item.className = 'type-picker__item' + (col.type === typeKey ? ' active' : '');
+    const cols = document.createElement('div');
+    cols.className = 'attr-picker__columns';
+    picker.appendChild(cols);
 
-      const badge = document.createElement('span');
-      badge.className = `type-picker__badge col-type-${typeKey}`;
-      badge.textContent = typeDef.badge;
+    // Anchor rect is captured once on open. After a type change the
+    // header is re-rendered (render() rebuilds theadEl.innerHTML) and
+    // the original anchor element becomes detached — its bounding rect
+    // would be all zeros, sending the picker to (0,0). Keeping the
+    // initial position avoids that jump.
+    const anchorRect = anchorEl.getBoundingClientRect();
 
-      const label = document.createElement('span');
-      label.textContent = this._typeLabel(typeKey);
+    const renderBody = () => {
+      cols.innerHTML = '';
+      cols.appendChild(this._renderAttrPickerTypeColumn(colIdx));
+      cols.appendChild(this._renderAttrPickerRoleColumn(colIdx, () => {
+        // Role click closes the picker; type click keeps it open and
+        // re-renders so the role column reflects the new valid set.
+        this._closeColumnAttrPicker();
+      }, () => {
+        renderBody();
+      }));
+    };
 
-      item.appendChild(badge);
-      item.appendChild(label);
-
-      item.addEventListener('click', (ev) => {
-        ev.stopPropagation();
-        this._closeTypePicker();
-        this._setColumnType(colIdx, typeKey);
-      });
-
-      picker.appendChild(item);
-    }
-
-    document.body.appendChild(picker);
-    this._typePicker = picker;
-
-    requestAnimationFrame(() => {
-      const anchorRect = anchorEl.getBoundingClientRect();
+    const positionPicker = () => {
       const pickerRect = picker.getBoundingClientRect();
       let top = anchorRect.bottom + 4;
       let left = anchorRect.left;
@@ -2491,21 +2668,115 @@ export class DataGrid {
       if (top + pickerRect.height > window.innerHeight) top = anchorRect.top - pickerRect.height - 4;
       picker.style.left = left + 'px';
       picker.style.top = top + 'px';
-    });
+    };
+
+    renderBody();
+    document.body.appendChild(picker);
+    this._attrPicker = picker;
+    requestAnimationFrame(positionPicker);
 
     const closeHandler = (ev) => {
       if (!picker.contains(ev.target)) {
-        this._closeTypePicker();
+        this._closeColumnAttrPicker();
         document.removeEventListener('mousedown', closeHandler);
       }
     };
     setTimeout(() => document.addEventListener('mousedown', closeHandler), 0);
   }
 
-  _closeTypePicker() {
-    if (this._typePicker) {
-      this._typePicker.remove();
-      this._typePicker = null;
+  _renderAttrPickerTypeColumn(colIdx) {
+    const col = this.columns[colIdx];
+    const colEl = document.createElement('div');
+    colEl.className = 'attr-picker__col attr-picker__col--type';
+
+    const colTitle = document.createElement('div');
+    colTitle.className = 'attr-picker__col-title';
+    const typeHeading = this._t('ui.datagrid.typeMenuTitle');
+    colTitle.textContent = (typeHeading && typeHeading !== 'typeMenuTitle')
+      ? typeHeading : 'Column type';
+    colEl.appendChild(colTitle);
+
+    for (const [typeKey, typeDef] of Object.entries(COLUMN_TYPES)) {
+      const item = document.createElement('div');
+      item.className = 'attr-picker__item' + (col.type === typeKey ? ' active' : '');
+      item.dataset.type = typeKey;
+
+      const badge = document.createElement('span');
+      badge.className = 'attr-picker__badge';
+      badge.textContent = typeDef.badge;
+
+      const label = document.createElement('span');
+      label.className = 'attr-picker__label';
+      label.textContent = this._typeLabel(typeKey);
+
+      item.appendChild(badge);
+      item.appendChild(label);
+      colEl.appendChild(item);
+    }
+    return colEl;
+  }
+
+  _renderAttrPickerRoleColumn(colIdx, onRoleClick, onTypeClick) {
+    const col = this.columns[colIdx];
+    const colEl = document.createElement('div');
+    colEl.className = 'attr-picker__col attr-picker__col--role';
+
+    const colTitle = document.createElement('div');
+    colTitle.className = 'attr-picker__col-title';
+    const roleHeading = this._t('ui.datagrid.roleMenuTitle');
+    colTitle.textContent = (roleHeading && roleHeading !== 'roleMenuTitle')
+      ? roleHeading : 'Column role';
+    colEl.appendChild(colTitle);
+
+    const validRoles = validRolesForType(col.type);
+    for (const role of validRoles) {
+      const item = document.createElement('div');
+      item.className = 'attr-picker__item' + (col.role === role ? ' active' : '');
+      item.dataset.role = role;
+
+      const dot = document.createElement('span');
+      dot.className = `attr-picker__role-dot col-role-${role}`;
+
+      const label = document.createElement('span');
+      label.className = 'attr-picker__label';
+      label.textContent = this._roleLabel(role);
+
+      item.appendChild(dot);
+      item.appendChild(label);
+
+      item.addEventListener('click', (ev) => {
+        ev.stopPropagation();
+        this.setColumnRole(col.id, role);
+        onRoleClick();
+      });
+
+      colEl.appendChild(item);
+    }
+
+    // Wire up type-column items here so the role column can re-render
+    // when the type changes — both rendering helpers share `onTypeClick`.
+    requestAnimationFrame(() => {
+      const root = this._attrPicker;
+      if (!root) return;
+      const typeItems = root.querySelectorAll('.attr-picker__col--type .attr-picker__item');
+      for (const item of typeItems) {
+        item.addEventListener('click', (ev) => {
+          ev.stopPropagation();
+          const typeKey = item.dataset.type;
+          if (!typeKey || this.columns[colIdx].type === typeKey) return;
+          this._setColumnType(colIdx, typeKey);
+          onTypeClick();
+        });
+      }
+    });
+
+    return colEl;
+  }
+
+  _closeColumnAttrPicker() {
+    if (this._attrPicker) {
+      this._attrPicker.remove();
+      this._attrPicker = null;
     }
   }
 
@@ -2850,6 +3121,22 @@ export class DataGrid {
     return COLUMN_TYPES[type]?.label || type;
   }
 
+  _roleLabel(role) {
+    const key = 'role' + role.charAt(0).toUpperCase() + role.slice(1);
+    const translated = this._t(`ui.datagrid.${key}`);
+    if (translated !== key && !translated.endsWith(key)) return translated;
+    // English fallback used when no i18n entry is registered.
+    const fallback = {
+      continuous:  'Continuous',
+      categorical: 'Categorical',
+      ordinal:     'Ordinal',
+      date:        'Date / time',
+      identifier:  'Identifier',
+      freeText:    'Free text',
+    };
+    return fallback[role] || role;
+  }
+
   // ═══════════════════════════════════════════════════════════
   //  FILE IMPORT
   // ═══════════════════════════════════════════════════════════
@@ -3012,7 +3299,7 @@ export class DataGrid {
     document.removeEventListener('cut', this._boundCut);
     document.removeEventListener('click', this._boundClick);
     this._closeContextMenu();
-    this._closeTypePicker();
+    this._closeColumnAttrPicker();
     this._closeColumnScan();
     this._closeColumnStats();
     this.container.innerHTML = '';

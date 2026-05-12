@@ -42,10 +42,15 @@ import {
  * then computes D-, A-, G-efficiency plus leverage and condition number.
  *
  * @param {number[][]} codedMatrix - n×k coded design matrix (values: −1, 0, +1)
+ * @param {object} [opts]
+ * @param {Array<[number, number]>} [opts.excludedInteractions] - 2FI pairs to omit
  * @returns {DesignEfficiency}
  */
-export function computeDesignEfficiency(codedMatrix) {
-  const { X, termNames } = buildModelMatrix(codedMatrix, { interactions: true });
+export function computeDesignEfficiency(codedMatrix, opts = {}) {
+  const { X, termNames } = buildModelMatrix(codedMatrix, {
+    interactions: true,
+    excludedInteractions: opts.excludedInteractions,
+  });
   const n = X.length;
   const p = termNames.length; // includes intercept
 

@@ -192,6 +192,123 @@ export default {
       },
     },
 
+    columnRoles: {
+      de: {
+        title: 'Spaltenrollen',
+        blocks: [
+          {
+            type: 'paragraph',
+            content: 'Neben dem Spaltentyp (wie sind die Werte gespeichert?) hat jede Spalte zusätzlich eine analytische Rolle (wie sind sie gemeint?). Die Rolle entscheidet, welche Diagramme und Statistiken sinnvoll sind — sie ist die Grundlage des Diagramm-Vorschlags und ähnelt dem Skalenniveau aus Tableau oder Minitab.',
+          },
+          {
+            type: 'paragraph',
+            content: 'Beispiel: Eine Spalte „Maschine" mit Werten 1, 2, 3, 4 ist numerisch gespeichert, aber kategorial gemeint — der Mittelwert ergibt keinen Sinn. Heuristik allein bekommt das nicht zuverlässig hin, deshalb gibt es ein zweites, explizites Rollen-Feld pro Spalte.',
+          },
+          {
+            type: 'definition',
+            term: 'Stetig (Continuous)',
+            content: 'Numerische Messwerte mit sinnvoller Arithmetik — z. B. Maße, Gewichte, Zeiten, Erträge. Mittelwert, Standardabweichung und Histogramm sind anwendbar.',
+          },
+          {
+            type: 'definition',
+            term: 'Kategorial (Categorical)',
+            content: 'Unordered Kategorien — z. B. Schicht, Maschine, Region. Wird per Pareto, Balken oder Tortendiagramm dargestellt. Kein Mittelwert.',
+          },
+          {
+            type: 'definition',
+            term: 'Ordinal',
+            content: 'Geordnete Kategorien mit Rangfolge ohne festen Abstand — z. B. „klein/mittel/groß", Schulnote, Likert-Skala. Bar (geordnet) ist der Standardplot.',
+          },
+          {
+            type: 'definition',
+            term: 'Datum/Zeit',
+            content: 'Zeitachse — Voraussetzung für Verlaufsdiagramm, Zeitreihe, Regelkarte über die Zeit.',
+          },
+          {
+            type: 'definition',
+            term: 'Identifier',
+            content: 'Eindeutige Kennzeichen wie Seriennummer, Werkstück-ID, Charge — keine Statistik, dient nur der Rückverfolgung. Wird beim Diagrammvorschlag ausgeblendet.',
+          },
+          {
+            type: 'definition',
+            term: 'Freier Text',
+            content: 'Kommentare, Beschreibungen, Beobachtungen — z. B. „kratzer auf oberseite". Nicht statistisch auswertbar, aber wertvoll als Kontext.',
+          },
+          {
+            type: 'definition',
+            term: 'Badge im Spaltenkopf',
+            content: 'Jede Spalte trägt einen Badge mit doppelter Codierung: Die Form (#, Abc, …) zeigt den Speichertyp, die Farbe die Rolle. Ein kleiner blauer Punkt oben rechts markiert manuell gesetzte Rollen — diese werden nicht durch die Heuristik überschrieben, solange sie zum Typ passen.',
+          },
+          {
+            type: 'definition',
+            term: 'Rolle manuell ändern',
+            content: 'Klick auf den Badge öffnet einen Auswahl-Picker: links Typ, rechts Rolle. Ungültige Rollen für den aktuellen Typ sind ausgeblendet. Ein Wechsel des Typs setzt die Rolle nur dann zurück, wenn die alte Rolle für den neuen Typ unzulässig ist.',
+          },
+          {
+            type: 'paragraph',
+            content: 'Automatisch erkannt werden nur vier Rollen: Stetig, Kategorial, Datum, Freier Text. Ordinal und Identifier müssen manuell gesetzt werden — die Heuristik kann ohne Domänenwissen nicht zwischen „Maschine 1–4" (kategorial) und „Note 1–6" (ordinal) unterscheiden.',
+          },
+        ],
+      },
+      en: {
+        title: 'Column roles',
+        blocks: [
+          {
+            type: 'paragraph',
+            content: 'In addition to the column type (how are the values stored?) each column carries an analytical role (how are they meant?). The role decides which charts and statistics make sense — it is the basis of the chart-suggestion tool and mirrors the scale-of-measurement idea in Tableau and Minitab.',
+          },
+          {
+            type: 'paragraph',
+            content: 'Example: a column "Machine" with values 1, 2, 3, 4 is numerically stored but semantically categorical — its mean is meaningless. Heuristics alone cannot get this right, so each column has an explicit role field on top of its storage type.',
+          },
+          {
+            type: 'definition',
+            term: 'Continuous',
+            content: 'Numeric measurements with meaningful arithmetic — lengths, weights, times, yields. Mean, standard deviation, and histogram apply.',
+          },
+          {
+            type: 'definition',
+            term: 'Categorical',
+            content: 'Unordered categories — shift, machine, region. Visualized with Pareto, bar, or pie. No meaningful mean.',
+          },
+          {
+            type: 'definition',
+            term: 'Ordinal',
+            content: 'Ordered categories with a rank but no fixed spacing — "small/medium/large", school grades, Likert scales. The bar (ordered) is the standard plot.',
+          },
+          {
+            type: 'definition',
+            term: 'Date / time',
+            content: 'A time axis — prerequisite for run charts, time series, and control charts over time.',
+          },
+          {
+            type: 'definition',
+            term: 'Identifier',
+            content: 'Unique keys such as serial numbers, part IDs, lot codes — no statistics, used purely for traceability. The chart-suggestion tool ignores identifier columns.',
+          },
+          {
+            type: 'definition',
+            term: 'Free text',
+            content: 'Comments, descriptions, observations — e.g. "scratch on top side". Not statistically analyzable, but valuable as context.',
+          },
+          {
+            type: 'definition',
+            term: 'Badge in the column header',
+            content: 'Each column shows a badge with dual encoding: the shape (#, Abc, …) indicates the storage type, the color the role. A small blue dot in the top-right marks manually-set roles — these are not overwritten by the heuristic as long as they remain valid for the type.',
+          },
+          {
+            type: 'definition',
+            term: 'Change role manually',
+            content: 'Clicking the badge opens a two-column picker: type on the left, role on the right. Roles that are not valid for the current type are hidden. Changing the type resets the role only when the previous role becomes invalid for the new type.',
+          },
+          {
+            type: 'paragraph',
+            content: 'Only four roles are inferred automatically: Continuous, Categorical, Date, Free text. Ordinal and Identifier must be set by hand — the heuristic cannot tell "Machine 1–4" (categorical) from "Grade 1–6" (ordinal) without domain knowledge.',
+          },
+        ],
+      },
+    },
+
     pitfalls: {
       de: {
         title: 'Stolperfallen',

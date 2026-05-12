@@ -139,6 +139,8 @@ export class StateManager {
       phases: Object.fromEntries(tileIds.map(id => [id, []])),
       phaseAchievement: Object.fromEntries(methodologyIds.map(id => [id, 0])),
       phaseAchievementHistory: {},
+      models: {},
+      optimizations: {},
       projectMeta: {
         name: 'Neues Projekt',
         cycle: cycle.id,
@@ -187,6 +189,7 @@ export class StateManager {
     obj[keys[keys.length - 1]] = value;
     this._state.projectMeta.modified = new Date().toISOString();
     this._scheduleSave();
+    if (!path.startsWith('settings.')) this._eventBus.emit('data:changed', path);
   }
 
   /**
@@ -223,6 +226,7 @@ export class StateManager {
     this._pendingPuts.set(instanceId, snapshot);
     this._pendingDeletes.delete(instanceId);
     this._scheduleFlush();
+    this._eventBus.emit('data:changed', `module:${instanceId}`);
   }
 
   /**
@@ -235,6 +239,7 @@ export class StateManager {
     this._pendingPuts.delete(instanceId);
     this._pendingDeletes.add(instanceId);
     this._scheduleFlush();
+    this._eventBus.emit('data:changed', `module:${instanceId}:removed`);
   }
 
   /**
@@ -260,6 +265,8 @@ export class StateManager {
       localStorage.setItem(`${p}phases`, JSON.stringify(this._state.phases));
       localStorage.setItem(`${p}phaseAchievement`, JSON.stringify(this._state.phaseAchievement));
       localStorage.setItem(`${p}phaseAchievementHistory`, JSON.stringify(this._state.phaseAchievementHistory || {}));
+      localStorage.setItem(`${p}models`, JSON.stringify(this._state.models || {}));
+      localStorage.setItem(`${p}optimizations`, JSON.stringify(this._state.optimizations || {}));
       localStorage.setItem(`${p}dashboard`, JSON.stringify(this._state.dashboard));
       localStorage.setItem(`${p}version`, this._state.version);
 
@@ -291,6 +298,8 @@ export class StateManager {
       const phases = localStorage.getItem(`${p}phases`);
       const phaseAchievement = localStorage.getItem(`${p}phaseAchievement`);
       const phaseAchievementHistory = localStorage.getItem(`${p}phaseAchievementHistory`);
+      const models = localStorage.getItem(`${p}models`);
+      const optimizations = localStorage.getItem(`${p}optimizations`);
       const dashboard = localStorage.getItem(`${p}dashboard`);
       const version = localStorage.getItem(`${p}version`);
 
@@ -305,6 +314,8 @@ export class StateManager {
       if (phases)                   this._state.phases                  = JSON.parse(phases);
       if (phaseAchievement)         this._state.phaseAchievement        = JSON.parse(phaseAchievement);
       if (phaseAchievementHistory)  this._state.phaseAchievementHistory = JSON.parse(phaseAchievementHistory);
+      if (models)                   this._state.models                  = JSON.parse(models);
+      if (optimizations)            this._state.optimizations           = JSON.parse(optimizations);
       if (dashboard)         this._state.dashboard          = JSON.parse(dashboard);
       if (version)           this._state.version            = version;
     } catch (err) {
@@ -556,6 +567,8 @@ export class StateManager {
       const phases = localStorage.getItem(`${p}phases`);
       const phaseAchievement = localStorage.getItem(`${p}phaseAchievement`);
       const phaseAchievementHistory = localStorage.getItem(`${p}phaseAchievementHistory`);
+      const models = localStorage.getItem(`${p}models`);
+      const optimizations = localStorage.getItem(`${p}optimizations`);
       const dashboard = localStorage.getItem(`${p}dashboard`);
       const version = localStorage.getItem(`${p}version`);
 
@@ -566,6 +579,8 @@ export class StateManager {
         phases: phases ? JSON.parse(phases) : {},
         phaseAchievement: phaseAchievement ? JSON.parse(phaseAchievement) : {},
         phaseAchievementHistory: phaseAchievementHistory ? JSON.parse(phaseAchievementHistory) : {},
+        models: models ? JSON.parse(models) : {},
+        optimizations: optimizations ? JSON.parse(optimizations) : {},
         dashboard: dashboard ? JSON.parse(dashboard) : null,
         version: version || VERSION,
         moduleStates: {},
@@ -624,6 +639,12 @@ export class StateManager {
       localStorage.setItem(`${p}phaseAchievement`, JSON.stringify(proj.phaseAchievement || {}));
       if (proj.phaseAchievementHistory) {
         localStorage.setItem(`${p}phaseAchievementHistory`, JSON.stringify(proj.phaseAchievementHistory));
+      }
+      if (proj.models) {
+        localStorage.setItem(`${p}models`, JSON.stringify(proj.models));
+      }
+      if (proj.optimizations) {
+        localStorage.setItem(`${p}optimizations`, JSON.stringify(proj.optimizations));
       }
       if (proj.dashboard) {
         localStorage.setItem(`${p}dashboard`, JSON.stringify(proj.dashboard));

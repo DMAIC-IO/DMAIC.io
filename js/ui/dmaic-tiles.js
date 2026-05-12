@@ -221,7 +221,8 @@ export class DmaicTiles {
     if (!this._moduleRegistry) return;
 
     const cycleId = this._getCycleId();
-    const modules = this._moduleRegistry.getByCycleAndPhase(cycleId, phase);
+    const modules = this._moduleRegistry.getByCycleAndPhase(cycleId, phase)
+      .filter(m => !m.hiddenFromMenu);
     if (modules.length === 0) return;
 
     const dropdown = document.createElement('div');

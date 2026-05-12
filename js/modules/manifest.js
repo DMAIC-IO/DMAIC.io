@@ -73,6 +73,16 @@ export default [
     load: () => import('./probability-plot/probability-plot.js'),
   },
   {
+    id: 'chart-suggestion',
+    phase: 'data',
+    group: 'visualize',
+    // Internal companion to the Worksheet — instantiated programmatically
+    // by the Worksheet toolbar's "Suggest chart" action. Hidden from the
+    // module-add dropdown because the standalone empty-state is confusing.
+    hiddenFromMenu: true,
+    load: () => import('./chart-suggestion/chart-suggestion.js'),
+  },
+  {
     id: 'data-import',
     phase: 'data',
     group: 'collect',

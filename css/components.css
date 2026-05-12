@@ -796,6 +796,13 @@ select.input {
   cursor: pointer;
 }
 
+.settings-hint {
+  margin: var(--spacing-sm) 0 0 0;
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted, var(--color-text-secondary));
+  line-height: 1.4;
+}
+
 /* Theme toggle buttons */
 .settings-theme-toggle {
   display: flex;

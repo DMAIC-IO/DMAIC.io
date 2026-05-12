@@ -78,6 +78,24 @@
   --color-error: #ff3b30;
   --color-info: #007aff;
 
+  /* Column-role palette (DataGrid header badges & attribute picker).
+     The *type* of a column (numeric, text, …) is encoded as a glyph;
+     its analytical *role* (continuous, categorical, …) is encoded as
+     color. Both axes are orthogonal — same color across types means
+     "this is a categorical thing", regardless of how it is stored. */
+  --color-role-continuous-fg:  #2563eb;  /* blue-600  */
+  --color-role-continuous-bg:  #dbeafe;  /* blue-100  */
+  --color-role-categorical-fg: #d97706;  /* amber-600 */
+  --color-role-categorical-bg: #fef3c7;  /* amber-100 */
+  --color-role-ordinal-fg:     #0d9488;  /* teal-600  */
+  --color-role-ordinal-bg:     #ccfbf1;  /* teal-100  */
+  --color-role-date-fg:        #9333ea;  /* purple-600 */
+  --color-role-date-bg:        #f3e8ff;  /* purple-100 */
+  --color-role-identifier-fg:  #475569;  /* slate-600 — cool gray */
+  --color-role-identifier-bg:  #cbd5e1;  /* slate-300              */
+  --color-role-freeText-fg:    #9d3866;  /* rose, desaturated      */
+  --color-role-freeText-bg:    #fce7ef;  /* rose-100               */
+
   /* Shadows */
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
   --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.1);
@@ -215,6 +233,20 @@
   --color-accent: #4da3ff;
   --color-accent-hover: #6db5ff;
   --color-accent-light: #1a3a5c;
+
+  /* Column-role palette (dark theme — brighter fg, low-luminance bg). */
+  --color-role-continuous-fg:  #60a5fa;  /* blue-400  */
+  --color-role-continuous-bg:  #1e3a5f;
+  --color-role-categorical-fg: #fbbf24;  /* amber-400 */
+  --color-role-categorical-bg: #4a330a;
+  --color-role-ordinal-fg:     #5eead4;  /* teal-300  */
+  --color-role-ordinal-bg:     #0e3b36;
+  --color-role-date-fg:        #c084fc;  /* purple-400 */
+  --color-role-date-bg:        #3a1a52;
+  --color-role-identifier-fg:  #94a3b8;  /* slate-400 — cool gray */
+  --color-role-identifier-bg:  #334155;  /* slate-700             */
+  --color-role-freeText-fg:    #f0a3b8;  /* rose, light + warm    */
+  --color-role-freeText-bg:    #4a2030;
 
   /* Phase Colors (brighter for dark bg)
      DMAIC: blue (Data) → red → orange → yellow → lime → green

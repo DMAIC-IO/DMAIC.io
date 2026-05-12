@@ -767,6 +767,16 @@ export default class ChartBase {
     const xTick = generateTicks(bounds.xMin, bounds.xMax);
     const yTick = generateTicks(bounds.yMin, bounds.yMax);
 
+    // Tick overrides — let callers pin specific x/y positions (e.g. one
+    // tick per categorical level). Scale & bounds stay untouched; only the
+    // visible tick set changes.
+    if (Array.isArray(this.config.xTicks) && this.config.xTicks.length) {
+      xTick.ticks = this.config.xTicks.slice();
+    }
+    if (Array.isArray(this.config.yTicks) && this.config.yTicks.length) {
+      yTick.ticks = this.config.yTicks.slice();
+    }
+
     const xScale = linearScale(xTick.min, xTick.max, pa.x, pa.x + pa.w);
     const yScale = linearScale(yTick.min, yTick.max, pa.y + pa.h, pa.y);
 

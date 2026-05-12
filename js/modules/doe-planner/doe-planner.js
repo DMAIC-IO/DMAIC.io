@@ -107,7 +107,7 @@ export default {
   _factors: [],
   /** @type {{ name: string, unit: string, goal: string }[]} */
   _responses: [],
-  _options: { randomize: true, centerPoints: false, replicates: 1, alphaType: 'rotatable', ccdCenterPoints: 3, bbCenterPoints: 3, taguchiArray: '', optimalRuns: 0, optimalQuadratic: false },
+  _options: { randomize: true, centerPoints: false, replicates: 1, alphaType: 'rotatable', ccdCenterPoints: 3, bbCenterPoints: 3, taguchiArray: '', optimalRuns: 0, optimalQuadratic: false, optimalExcludedInteractions: [] },
   /** @type {{ k: number, runs: number, res: string, p: number }|null} */
   _selectedRes: null,
   _selectedPBIdx: null,
@@ -144,7 +144,7 @@ export default {
     this._designType = 'full';
     this._factors = [];
     this._responses = [];
-    this._options = { randomize: true, centerPoints: false, replicates: 1, alphaType: 'rotatable', ccdCenterPoints: 3, bbCenterPoints: 3, taguchiArray: '' };
+    this._options = { randomize: true, centerPoints: false, replicates: 1, alphaType: 'rotatable', ccdCenterPoints: 3, bbCenterPoints: 3, taguchiArray: '', optimalRuns: 0, optimalQuadratic: false, optimalExcludedInteractions: [] };
     this._selectedRes = null;
     this._selectedPBIdx = null;
     this._design = null;
@@ -369,7 +369,11 @@ export default {
     if (this._designType === 'bb' && !BOX_BEHNKEN[this._factors.length]) return false;
     if (this._designType === 'taguchi' && !this._options.taguchiArray) return false;
     if (['dopt', 'aopt', 'gopt'].includes(this._designType)) {
-      const minRuns = minRunsForModel(this._factors.length, this._options.optimalQuadratic);
+      const minRuns = minRunsForModel(
+        this._factors.length,
+        this._options.optimalQuadratic,
+        this._options.optimalExcludedInteractions,
+      );
       const nRuns = this._options.optimalRuns || 0;
       if (nRuns < minRuns) return false;
     }
@@ -413,40 +417,34 @@ export default {
         taguchiArray: this._options.taguchiArray || undefined,
         optimalRuns: this._options.optimalRuns || undefined,
         optimalQuadratic: this._options.optimalQuadratic,
+        optimalExcludedInteractions: this._options.optimalExcludedInteractions,
       });
 
-      // Evaluate design
+      // Evaluate design — pass through excluded interactions so VIF/efficiency/power
+      // reflect the actual fitted model, not the full 2FI set.
+      const isOptimal = ['dopt', 'aopt', 'gopt'].includes(this._designType);
       this._evaluation = evaluateDesign(
         this._design.codedMatrix,
         this._factors.length,
         this._design.p,
-        this._design.designType
+        this._design.designType,
+        0.05,
+        { excludedInteractions: isOptimal ? this._options.optimalExcludedInteractions : undefined },
       );
 
-      // Create worksheet if none exists yet. We mint the experiment id up front so
-      // that column.meta.managedRef on the locked structural columns can point back
-      // to the corresponding state.experiments entry.
-      if (!this._worksheetRef || !isWorksheetValid(this._context, this._worksheetRef)) {
-        const expId = crypto.randomUUID();
-        this._worksheetRef = createDesignWorksheet(
-          this._context,
-          this._design,
-          this._factors,
-          this._responses,
-          this._doeName,
-          'improve',
-          expId
-        );
-        createExperimentRecord(
-          this._context,
-          expId,
-          this._design,
-          this._factors,
-          this._responses,
-          this._doeName,
-          this._worksheetRef
-        );
+      // Legacy migration: pre-feature worksheetRefs lack designSignature. Since the
+      // old behavior was to recreate the worksheet on every config change, any ref
+      // loaded from saved state can be assumed to match the design that was saved
+      // alongside it. Adopt by stamping the current signature so the user doesn't
+      // get a misleading "stale" banner on first open.
+      if (this._worksheetRef && !this._worksheetRef.designSignature) {
+        this._worksheetRef.designSignature = this._designSignature();
       }
+
+      // Note: worksheet (Datensammlung) is NOT auto-created. The user explicitly
+      // commits to a datasheet via the "Datenblatt anlegen" button — see
+      // _createOrRecreateDatasheet(). That avoids spawning a new worksheet on
+      // every config tweak.
 
       // Sync to project phase if in EVOP mode
       if (this._projectMode && this._activePhaseIdx >= 0 && this._activePhaseIdx < this._projectPhases.length) {
@@ -466,19 +464,115 @@ export default {
     }
   },
 
-  /** Explicit regenerate with new randomization */
+  /** Mark the current design as out of date — keep _worksheetRef so the render
+   * layer can detect staleness and prompt the user to recreate the Datensammlung. */
   _invalidateDesign() {
-    if (this._worksheetRef?.experimentId) {
-      removeExperimentRecord(this._context, this._worksheetRef.experimentId);
-    }
     this._design = null;
-    this._worksheetRef = null;
     this._evaluation = null;
     if (this._selectedRes && this._selectedRes.k !== this._factors.length) {
       this._selectedRes = null;
     }
     this._autoFixDesignType();
     this._scheduleAutoGenerate();
+  },
+
+  /**
+   * Stable identity for the currently generated _design. Because the engine's
+   * deterministicSeed makes the coded matrix reproducible for identical input,
+   * stringifying it is a sufficient signature to detect when the design has
+   * drifted from the one the worksheet was built on.
+   * @returns {string|null}
+   */
+  _designSignature() {
+    if (!this._design) return null;
+    return [
+      this._design.designType,
+      this._design.codedMatrix.length,
+      this._responses.length,
+      this._responses.map(r => `${r.name}|${r.unit}|${r.goal}`).join('||'),
+      this._design.codedMatrix.map(r => r.join(',')).join(';'),
+    ].join('#');
+  },
+
+  /**
+   * Classify the relationship between _design and _worksheetRef:
+   *   'unbound' — no datasheet yet; user can create one
+   *   'bound'   — datasheet exists AND its design matches the current preview
+   *   'stale'   — datasheet exists but the design has drifted
+   * @returns {'unbound'|'bound'|'stale'}
+   */
+  _worksheetStaleness() {
+    if (!this._worksheetRef || !isWorksheetValid(this._context, this._worksheetRef)) {
+      return 'unbound';
+    }
+    const cur = this._designSignature();
+    const saved = this._worksheetRef.designSignature || null;
+    if (cur && saved && cur === saved) return 'bound';
+    return 'stale';
+  },
+
+  /**
+   * Tear down a previously created worksheet completely: experiment record,
+   * module-instance entry in phases, persisted module state, and a removal
+   * event so the sidebar/tab strip updates.
+   */
+  _removeOldWorksheet(ref) {
+    if (!ref) return;
+    if (ref.experimentId) removeExperimentRecord(this._context, ref.experimentId);
+
+    // Drop the worksheet instance from every phase it might live in. We don't
+    // know the phase up front, so scan all of them — cheap and bulletproof.
+    const sm = this._context.stateManager;
+    const phases = sm.get('phases') || {};
+    for (const phaseId of Object.keys(phases)) {
+      const arr = sm.get(`phases.${phaseId}`) || [];
+      const next = arr.filter(i => i.instanceId !== ref.instanceId);
+      if (next.length !== arr.length) sm.set(`phases.${phaseId}`, next);
+    }
+    sm.removeModuleState(ref.instanceId);
+    this._context.eventBus.emit('module:removed', {
+      moduleId: 'worksheet',
+      instanceId: ref.instanceId,
+    });
+  },
+
+  /**
+   * User clicked "Datenblatt anlegen" / "Datenblatt neu anlegen". For the
+   * recreate path we first tear down the previous worksheet so we don't leave
+   * orphan datasheets behind.
+   */
+  _createOrRecreateDatasheet() {
+    if (!this._design) return;
+
+    if (this._worksheetRef) {
+      this._removeOldWorksheet(this._worksheetRef);
+      this._worksheetRef = null;
+    }
+
+    const expId = crypto.randomUUID();
+    const ref = createDesignWorksheet(
+      this._context,
+      this._design,
+      this._factors,
+      this._responses,
+      this._doeName,
+      'improve',
+      expId,
+    );
+    createExperimentRecord(
+      this._context,
+      expId,
+      this._design,
+      this._factors,
+      this._responses,
+      this._doeName,
+      ref,
+    );
+    ref.designSignature = this._designSignature();
+    this._worksheetRef = ref;
+
+    this._save();
+    this._renderOutput();
   },
 
   // ─── Main Render ────────────────────────────────────────────────
@@ -922,7 +1016,9 @@ export default {
   _renderOptimalOptions() {
     const k = this._factors.length;
     const quad = this._options.optimalQuadratic;
-    const minRuns = minRunsForModel(k, quad);
+    const excluded = Array.isArray(this._options.optimalExcludedInteractions)
+      ? this._options.optimalExcludedInteractions : [];
+    const minRuns = minRunsForModel(k, quad, excluded);
     const currentRuns = this._options.optimalRuns || 0;
     const valid = currentRuns >= minRuns;
     const criterionKey = this._designType; // 'dopt', 'aopt', 'gopt'
@@ -943,7 +1039,61 @@ export default {
           <span>${this._t('optimalQuadratic')}</span>
           <span class="doe__param-tooltip" title="${this._esc(this._t('tipOptimalQuadratic'))}">?</span>
         </label>
+        ${this._renderTermMatrix(k, excluded)}
         ${!valid ? `<div class="doe__optimal-warning">${this._t('optimalTooFewRuns', { min: minRuns })}</div>` : ''}
+      </div>
+    `;
+  },
+
+  /**
+   * Render a k×k upper-triangular matrix of 2-factor-interaction toggles.
+   * Diagonal is dashed (factor with itself). Each off-diagonal cell shows a
+   * checkbox-style state: filled = in model, empty = excluded.
+   * @param {number} k - number of factors
+   * @param {Array<[number, number]>} excluded - currently excluded pairs
+   */
+  _renderTermMatrix(k, excluded) {
+    if (k < 2) return '';
+    const isExcluded = (a, b) => excluded.some(p =>
+      Math.min(p[0], p[1]) === Math.min(a, b) && Math.max(p[0], p[1]) === Math.max(a, b)
+    );
+    const letter = (i) => String.fromCharCode(65 + i);
+
+    // Header row: blank corner + A, B, C, …
+    const headers = ['<th></th>'];
+    for (let j = 0; j < k; j++) headers.push(`<th>${letter(j)}</th>`);
+
+    // Body: row a = letter A + cells for b = 0..k-1
+    const rows = [];
+    for (let a = 0; a < k; a++) {
+      const cells = [`<th>${letter(a)}</th>`];
+      for (let b = 0; b < k; b++) {
+        if (b < a) {
+          // lower triangle — leave blank (symmetric)
+          cells.push('<td class="doe__term-blank"></td>');
+        } else if (a === b) {
+          cells.push('<td class="doe__term-diag">·</td>');
+        } else {
+          const off = isExcluded(a, b);
+          cells.push(
+            `<td class="doe__term-cell ${off ? 'doe__term-cell--off' : 'doe__term-cell--on'}" ` +
+            `data-a="${a}" data-b="${b}" ` +
+            `title="${letter(a)}×${letter(b)}: ${off ? this._t('termExcluded') : this._t('termIncluded')}">` +
+            `${off ? '☐' : '☑'}</td>`
+          );
+        }
+      }
+      rows.push(`<tr>${cells.join('')}</tr>`);
+    }
+
+    return `
+      <div class="doe__term-matrix-wrap">
+        <div class="doe__term-matrix-label">${this._t('modelTerms')}</div>
+        <div class="doe__term-matrix-hint">${this._t('modelTermsHint')}</div>
+        <table class="doe__term-matrix">
+          <thead><tr>${headers.join('')}</tr></thead>
+          <tbody>${rows.join('')}</tbody>
+        </table>
       </div>
     `;
   },
@@ -1055,7 +1205,7 @@ export default {
       case 'dopt':
       case 'aopt':
       case 'gopt': {
-        const minR = minRunsForModel(k, this._options.optimalQuadratic);
+        const minR = minRunsForModel(k, this._options.optimalQuadratic, this._options.optimalExcludedInteractions);
         runs = this._options.optimalRuns || minR;
         res = { dopt: 'D-Opt', aopt: 'A-Opt', gopt: 'G-Opt' }[this._designType];
         break;
@@ -1093,21 +1243,36 @@ export default {
       return '';
     }
 
-    const wsValid = isWorksheetValid(this._context, this._worksheetRef);
-    const resp = wsValid ? readResponsesFromWorksheet(this._context, this._worksheetRef) : null;
+    const state = this._worksheetStaleness();
+    const resp = state === 'bound' ? readResponsesFromWorksheet(this._context, this._worksheetRef) : null;
     const pct = resp && resp.totalCount > 0 ? Math.round(resp.filledCount / resp.totalCount * 100) : 0;
 
     let html = '';
 
-    // Worksheet header
+    // Section header
     html += `
       <div class="dmike-split__output-section-header">
         <span class="dmike-split__output-section">${this._t('stepResults')}</span>
       </div>
     `;
 
-    // Status bar
-    if (resp) {
+    if (state === 'stale') {
+      // Banner explaining the mismatch and offering the two paths forward.
+      html += `
+        <div class="doe__stale-banner">
+          <div class="doe__stale-text">${this._t('worksheetStaleWarning')}</div>
+          <div class="doe__stale-actions">
+            <button class="btn btn--primary doe__datasheet-recreate-btn" type="button">
+              ${this._t('worksheetRecreate')}
+            </button>
+            <button class="btn btn--secondary doe__open-old-worksheet-btn" type="button">
+              ${this._t('worksheetOpenOld')}
+            </button>
+          </div>
+        </div>
+      `;
+    } else if (state === 'bound') {
+      // Datasheet linked — show progress + a link to open it instead of an embedded grid.
       html += `
         <div class="doe__results-status">
           <div class="doe__results-bar">
@@ -1115,26 +1280,38 @@ export default {
           </div>
           <span class="doe__results-text">${resp.filledCount} / ${resp.totalCount} ${this._t('valuesFilled')} (${pct}%)</span>
         </div>
-      `;
-    }
-
-    // Transfer to Regression button (above data table, when all responses filled)
-    if (resp?.complete) {
-      html += `
-        <div class="doe__transfer-section">
-          <button class="btn btn--primary doe__transfer-regression-btn" type="button">
-            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-            ${this._t('transferToRegression')}
+        <div class="doe__datasheet-link-row">
+          <button class="btn btn--secondary doe__open-worksheet-btn" type="button">
+            ${this._t('worksheetOpen')}
           </button>
+        </div>
+      `;
+      if (resp?.complete) {
+        html += `
+          <div class="doe__transfer-section">
+            <button class="btn btn--primary doe__transfer-regression-btn" type="button">
+              <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+              ${this._t('transferToRegression')}
+            </button>
+          </div>
+        `;
+      }
+    } else {
+      // 'unbound' — show the create button up front.
+      html += `
+        <div class="doe__datasheet-create-row">
+          <button class="btn btn--primary doe__datasheet-create-btn" type="button">
+            ${this._t('worksheetCreate')}
+          </button>
+          <span class="doe__datasheet-create-hint">${this._t('worksheetCreateHint')}</span>
         </div>
       `;
     }
 
-    // Embedded grid
-    if (wsValid) {
-      html += `
-        <div class="dmike-embedded-grid dmike-embedded-grid--md doe__embedded-grid"></div>
-      `;
+    // Virtual preview of the design runs — shown in unbound + stale states
+    // (in 'bound' state the user enters data in the linked Datensammlung).
+    if (state !== 'bound') {
+      html += this._renderDesignPreview();
     }
 
     // Evaluation summary (design quality: efficiency, VIF, aliases, power)
@@ -1142,12 +1319,48 @@ export default {
       html += this._renderEvaluationSummary();
     }
 
-    // Dispersion analysis (only when replicates ≥ 2 and responses are filled)
-    if (this._design && resp?.complete && this._designType !== 'taguchi' && this._designType !== 'evop') {
+    // Dispersion analysis only makes sense when the datasheet matches the design
+    if (state === 'bound' && resp?.complete && this._designType !== 'taguchi' && this._designType !== 'evop') {
       html += this._renderDispersionAnalysis(resp);
     }
 
     return html;
+  },
+
+  /**
+   * Read-only preview of the runs the engine would produce, rendered when no
+   * Datensammlung is linked (or the linked one is stale). Lists run order,
+   * factor values, and empty response cells.
+   */
+  _renderDesignPreview() {
+    if (!this._design?.actualMatrix?.length) return '';
+    const mat = this._design.actualMatrix;
+    const order = this._design.runOrder || mat.map((_, i) => i + 1);
+
+    const factorHeads = this._factors
+      .map((f, i) => `<th>${this._esc(f.name || String.fromCharCode(65 + i))}${f.unit ? ` <span class="doe__preview-unit">[${this._esc(f.unit)}]</span>` : ''}</th>`)
+      .join('');
+    const responseHeads = this._responses
+      .map(r => `<th>${this._esc(r.name)}${r.unit ? ` <span class="doe__preview-unit">[${this._esc(r.unit)}]</span>` : ''}</th>`)
+      .join('');
+
+    const rows = mat.map((row, i) => {
+      const cells = row.map(v => `<td>${this._esc(String(v))}</td>`).join('');
+      const empties = this._responses.map(() => '<td class="doe__preview-empty"></td>').join('');
+      return `<tr><td class="doe__preview-run">${order[i]}</td>${cells}${empties}</tr>`;
+    }).join('');
+
+    return `
+      <div class="doe__preview-wrap">
+        <div class="doe__preview-label">${this._t('previewLabel')}</div>
+        <div class="doe__preview-scroll">
+          <table class="doe__preview-table">
+            <thead><tr><th>${this._t('colRunOrder')}</th>${factorHeads}${responseHeads}</tr></thead>
+            <tbody>${rows}</tbody>
+          </table>
+        </div>
+      </div>
+    `;
   },
 
   // ─── Dispersion Analysis (Streuungs-DoE) ────────────────────────
@@ -1167,7 +1380,10 @@ export default {
     const y = yRaw.map(v => (typeof v === 'number' && isFinite(v)) ? v : NaN);
 
     const factorNames = this._factors.map((f, i) => f.name || String.fromCharCode(65 + i));
-    const result = computeDispersionAnalysis(this._design, y, factorNames, 0.05);
+    const isOptimal = ['dopt', 'aopt', 'gopt'].includes(this._designType);
+    const result = computeDispersionAnalysis(this._design, y, factorNames, 0.05, {
+      excludedInteractions: isOptimal ? this._options.optimalExcludedInteractions : undefined,
+    });
 
     // Silently skip if no replicates — the section only makes sense for replicated designs
     if (!result.ok) {
@@ -1687,6 +1903,11 @@ export default {
       btn.addEventListener('click', () => {
         const id = parseInt(btn.dataset.factorId, 10);
         this._factors = this._factors.filter(f => f.id !== id);
+        // Excluded-interactions reference factor indices, which shift on removal.
+        // Wipe the list rather than try to remap — the user re-marks if needed.
+        if (Array.isArray(this._options.optimalExcludedInteractions) && this._options.optimalExcludedInteractions.length) {
+          this._options.optimalExcludedInteractions = [];
+        }
         this._invalidateDesign();
         this._save();
         this._render();
@@ -1751,7 +1972,11 @@ export default {
         this._selectedRes = null;
         this._selectedPBIdx = null;
         if (['dopt', 'aopt', 'gopt'].includes(this._designType) && !this._options.optimalRuns) {
-          this._options.optimalRuns = minRunsForModel(this._factors.length, this._options.optimalQuadratic) + 2;
+          this._options.optimalRuns = minRunsForModel(
+            this._factors.length,
+            this._options.optimalQuadratic,
+            this._options.optimalExcludedInteractions,
+          ) + 2;
         }
         this._invalidateDesign();
         this._save();
@@ -1818,7 +2043,7 @@ export default {
     // Optimal design options
     el.querySelector('.doe__optimal-runs-input')?.addEventListener('change', (e) => {
       const k = this._factors.length;
-      const minR = minRunsForModel(k, this._options.optimalQuadratic);
+      const minR = minRunsForModel(k, this._options.optimalQuadratic, this._options.optimalExcludedInteractions);
       this._options.optimalRuns = Math.max(minR, parseInt(e.target.value, 10) || minR);
       this._invalidateDesign(); this._save();
       this._render();
@@ -1826,10 +2051,36 @@ export default {
     el.querySelector('.doe__optimal-quad-check')?.addEventListener('change', (e) => {
       this._options.optimalQuadratic = e.target.checked;
       const k = this._factors.length;
-      const minR = minRunsForModel(k, this._options.optimalQuadratic);
+      const minR = minRunsForModel(k, this._options.optimalQuadratic, this._options.optimalExcludedInteractions);
       if ((this._options.optimalRuns || 0) < minR) this._options.optimalRuns = minR;
       this._invalidateDesign(); this._save();
       this._render();
+    });
+    // Optimal model-term matrix: toggle a 2FI in/out of the model
+    el.querySelectorAll('.doe__term-cell').forEach(cell => {
+      cell.addEventListener('click', () => {
+        const a = parseInt(cell.dataset.a, 10);
+        const b = parseInt(cell.dataset.b, 10);
+        if (!Number.isInteger(a) || !Number.isInteger(b)) return;
+        const lo = Math.min(a, b);
+        const hi = Math.max(a, b);
+        const list = Array.isArray(this._options.optimalExcludedInteractions)
+          ? [...this._options.optimalExcludedInteractions] : [];
+        const idx = list.findIndex(p => Math.min(p[0], p[1]) === lo && Math.max(p[0], p[1]) === hi);
+        if (idx >= 0) list.splice(idx, 1);
+        else list.push([lo, hi]);
+        this._options.optimalExcludedInteractions = list;
+
+        // If the user just shrank the model, leave optimalRuns unchanged (a larger
+        // n than the minimum is fine). If they grew it past the current run count,
+        // bump optimalRuns up so the design stays feasible.
+        const k = this._factors.length;
+        const minR = minRunsForModel(k, this._options.optimalQuadratic, list);
+        if ((this._options.optimalRuns || 0) < minR) this._options.optimalRuns = minR;
+
+        this._invalidateDesign(); this._save();
+        this._render();
+      });
     });
   },
 
@@ -1838,9 +2089,6 @@ export default {
   _bindOutputEvents() {
     const el = this._container;
     if (!el) return;
-
-    // Embedded grid
-    this._mountEmbeddedGrid(el);
 
     // Algorithm Lab links
     el.querySelectorAll('.doe__algo-link').forEach(link => {
@@ -1855,6 +2103,22 @@ export default {
 
     // Transfer to Regression
     el.querySelector('.doe__transfer-regression-btn')?.addEventListener('click', () => this._transferToRegression());
+
+    // Datasheet create / recreate
+    el.querySelector('.doe__datasheet-create-btn')?.addEventListener('click', () => {
+      this._createOrRecreateDatasheet();
+    });
+    el.querySelector('.doe__datasheet-recreate-btn')?.addEventListener('click', () => {
+      this._createOrRecreateDatasheet();
+    });
+    // Open the linked datasheet in its own tab
+    const openLinkedWorksheet = () => {
+      if (this._worksheetRef?.instanceId) {
+        this._context.eventBus.emit('module:activated', { instanceId: this._worksheetRef.instanceId });
+      }
+    };
+    el.querySelector('.doe__open-worksheet-btn')?.addEventListener('click', openLinkedWorksheet);
+    el.querySelector('.doe__open-old-worksheet-btn')?.addEventListener('click', openLinkedWorksheet);
   },
 
   // ─── Transfer to Regression ─────────────────────────────────────

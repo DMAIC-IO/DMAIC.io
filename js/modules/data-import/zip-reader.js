@@ -46,10 +46,14 @@ export async function readZip(buffer) {
     const extraLen    = view.getUint16(offset + 30, true);
     const commentLen  = view.getUint16(offset + 32, true);
     const localOffset = view.getUint32(offset + 42, true);
-    const name        = _readUtf8(bytes, offset + 46, nameLen);
+    const rawName     = _readUtf8(bytes, offset + 46, nameLen);
+    // Some producers (e.g. Minitab .mpx) prefix every entry with a leading
+    // slash. Strip it so downstream consumers can look entries up by their
+    // natural relative path.
+    const name = rawName.replace(/^\/+/, '');
 
-    // Skip directory entries (path ending in /)
-    const isDir = name.endsWith('/');
+    // Skip directory entries (path ending in /) and the root entry (now empty).
+    const isDir = name === '' || name.endsWith('/');
     if (!isDir) {
       const data = await _extract(view, bytes, localOffset, method, compSize, uncompSize);
       entries.set(name, data);

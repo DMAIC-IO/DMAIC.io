@@ -1,19 +1,23 @@
 /**
  * D.Mike — Minitab .mpx Parser (mpx-parser.js)
  *
- * .mpx is a ZIP archive (OPC packaging, like .xlsx) containing XML files
- * that describe a Minitab project's worksheets. Minitab does not publish
- * the schema, so this parser uses heuristics over the contained XML to
- * extract column names, types, and values.
+ * .mpx is a ZIP archive (OPC packaging, like .xlsx) containing one of two
+ * worksheet representations, depending on the Minitab version that wrote it:
  *
- * Strategies, in order:
- *   1. Element-based:  <Column Name="..." Type="..."> with <Value>… children.
- *   2. Tabular:        OOXML-style <row><c><v>…</v></c></row> grouped by column index.
- *   3. Cell-based:     repeated <Cell ColumnIndex="i" RowIndex="j">value</Cell>.
+ *   A) Modern JSON format (Minitab 21+): `project_metadata_NN.json` lists
+ *      worksheets, each `sheets/N/sheet.json` describes its columns, and the
+ *      raw cell data lives in `blobs/blobN` (numeric = Float64 LE array,
+ *      text = UTF-16 LE strings terminated by U+0000).
  *
- * The parser walks every XML entry in the archive that looks like worksheet
- * content (skipping `[Content_Types].xml`, `_rels/`, and `Project.xml`-style
- * metadata). Each worksheet XML produces one sheet in the output.
+ *   B) Legacy XML format (older Minitab, .mwx-style): worksheet data is
+ *      embedded directly in XML payloads inside the archive. Minitab does not
+ *      publish the schema, so this parser uses three heuristics:
+ *        1. Element-based:  <Column Name="..." Type="..."> with <Value>… children.
+ *        2. Tabular:        OOXML-style <row><c><v>…</v></c></row> grouped by column index.
+ *        3. Cell-based:     repeated <Cell ColumnIndex="i" RowIndex="j">value</Cell>.
+ *
+ * The parser auto-detects the format: if any `sheets/N/sheet.json` entry is
+ * present it takes the JSON path, otherwise it falls back to the XML strategies.
  *
  * Output schema:
  * {
@@ -45,10 +49,16 @@ export async function parseMpx(buffer) {
     throw e;
   }
 
+  // Prefer the JSON layout when present (Minitab 21+ writes only this).
+  const jsonSheets = _tryParseJsonMpx(entries);
+  if (jsonSheets && jsonSheets.length > 0) {
+    return { format: 'mpx', sheets: jsonSheets };
+  }
+
+  // Fall back to the legacy XML strategies.
   const sheets = [];
   let sheetCounter = 0;
 
-  // Walk all XML entries that could be worksheet payloads.
   for (const [path, bytes] of entries) {
     if (!_looksLikeWorksheetXml(path)) continue;
     const xml = bytesToText(bytes);
@@ -70,6 +80,225 @@ export async function parseMpx(buffer) {
   }
 
   return { format: 'mpx', sheets };
+}
+
+// ─── JSON-style mpx (Minitab 21+) ────────────────────────────────
+
+/**
+ * Detect & parse the JSON-style .mpx layout. Returns an array of sheets
+ * (possibly empty) on success, or `null` if the archive doesn't carry the
+ * expected JSON files.
+ * @param {Map<string,Uint8Array>} entries
+ */
+function _tryParseJsonMpx(entries) {
+  const sheetPaths = [];
+  for (const path of entries.keys()) {
+    if (/^sheets\/\d+\/sheet\.json$/i.test(path)) sheetPaths.push(path);
+  }
+  if (sheetPaths.length === 0) return null;
+
+  sheetPaths.sort((a, b) => {
+    const ia = parseInt(a.match(/sheets\/(\d+)/i)[1], 10);
+    const ib = parseInt(b.match(/sheets\/(\d+)/i)[1], 10);
+    return ia - ib;
+  });
+
+  // Pull worksheet display names from project_metadata_*.json if present.
+  const nameByUriBase = new Map();
+  let metaEntry = null;
+  for (const path of entries.keys()) {
+    if (/^project_metadata(_\d+)?\.json$/i.test(path)) { metaEntry = path; break; }
+  }
+  if (metaEntry) {
+    const meta = _parseJsonEntry(entries.get(metaEntry));
+    const items = meta?.Worksheets?.Items;
+    if (Array.isArray(items)) {
+      for (const item of items) {
+        if (item?.Uri && item?.Name) {
+          const base = String(item.Uri).replace(/^\/+/, '').replace(/\.json$/i, '');
+          nameByUriBase.set(base, String(item.Name));
+        }
+      }
+    }
+  }
+
+  const sheets = [];
+  for (let i = 0; i < sheetPaths.length; i++) {
+    const path = sheetPaths[i];
+    const json = _parseJsonEntry(entries.get(path));
+    if (!json) continue;
+
+    const sheet = _buildJsonSheet(json, entries);
+    if (!sheet || sheet.columns.length === 0) continue;
+
+    if (!sheet.name) {
+      const baseKey = path.replace(/\.json$/i, '');
+      sheet.name = nameByUriBase.get(baseKey) || `Worksheet ${i + 1}`;
+    }
+    sheets.push(sheet);
+  }
+  return sheets;
+}
+
+function _parseJsonEntry(bytes) {
+  if (!bytes) return null;
+  try {
+    return JSON.parse(bytesToText(bytes));
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Build one sheet from a parsed `sheet.json`. Columns reference blob entries
+ * via URIs like `/blobs/blob1?size=1000`.
+ */
+function _buildJsonSheet(sheetJson, entries) {
+  const data = sheetJson?.Data;
+  if (!data || !Array.isArray(data.Columns)) return null;
+
+  const sheetName = (data.PrivateTitle || data.Name || '').toString().trim();
+  const columns = [];
+
+  for (let i = 0; i < data.Columns.length; i++) {
+    const col = data.Columns[i];
+    const body = col?.WorksheetVarBody;
+    const varBody = body?.VarData?.VarDataBody;
+    if (!body || !varBody) continue;
+
+    const colName = (body.Name || '').toString().trim() || `C${i + 1}`;
+    const cellCt = Number.isFinite(varBody.CellCt) ? varBody.CellCt : 0;
+
+    let type, values;
+    if (varBody.HasTextData && typeof varBody.TextData === 'string') {
+      type = 'text';
+      values = _readTextBlob(entries, varBody.TextData, cellCt);
+    } else if (varBody.HasNumericData && typeof varBody.NumericData === 'string') {
+      type = 'numeric';
+      values = _readNumericBlob(entries, varBody.NumericData, cellCt);
+    } else {
+      // Unknown variable type (e.g. date/time, formula). Skip — keeping the
+      // surrounding columns intact is more useful than failing the import.
+      continue;
+    }
+
+    columns.push({
+      name: colName,
+      shortName: `C${i + 1}`,
+      type,
+      values,
+    });
+  }
+
+  if (columns.length === 0) return null;
+
+  // Trim trailing empty rows shared across all columns — Minitab pre-allocates
+  // CellCt slots (commonly 1000) even when only a fraction is filled.
+  const populatedRows = _trailingNullCutoff(columns);
+  for (const c of columns) c.values.length = populatedRows;
+
+  return { name: sheetName, columns, rowCount: populatedRows };
+}
+
+/**
+ * Return the row count after stripping trailing rows where every column is
+ * null/empty. We keep interior nulls intact (they are real missing values).
+ */
+function _trailingNullCutoff(columns) {
+  let n = 0;
+  for (const c of columns) if (c.values.length > n) n = c.values.length;
+  while (n > 0) {
+    let allEmpty = true;
+    for (const c of columns) {
+      const v = c.values[n - 1];
+      if (v != null && v !== '') { allEmpty = false; break; }
+    }
+    if (!allEmpty) break;
+    n--;
+  }
+  return n;
+}
+
+/**
+ * Decode a numeric blob: a contiguous array of IEEE-754 Float64 values,
+ * little-endian. The blob URI looks like `/blobs/blob2?size=1000`.
+ */
+function _readNumericBlob(entries, uri, cellCt) {
+  const path = _resolveBlobPath(uri);
+  const bytes = path ? entries.get(path) : null;
+  if (!bytes) return new Array(cellCt).fill(null);
+
+  const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+  const available = Math.floor(bytes.byteLength / 8);
+  const count = cellCt > 0 ? Math.min(cellCt, available) : available;
+  const out = new Array(count);
+  for (let i = 0; i < count; i++) {
+    const v = view.getFloat64(i * 8, true);
+    out[i] = _isMissingNumeric(v) ? null : v;
+  }
+  while (cellCt > 0 && out.length < cellCt) out.push(null);
+  return out;
+}
+
+/**
+ * Minitab stores numeric missing values either as IEEE NaN or as the sentinel
+ * 1.0e30 (the published "max value" in the .mpx numeric format). Anything
+ * outside the finite range, or whose absolute value crosses 1e29, is treated
+ * as missing.
+ */
+function _isMissingNumeric(v) {
+  if (!Number.isFinite(v)) return true;
+  if (Math.abs(v) >= 1e29) return true;
+  return false;
+}
+
+/**
+ * Decode a text blob: UTF-16 LE strings (with a BOM at the start), each cell
+ * terminated by U+0000. The blob URI looks like `/blobs/blob1?size=1000`.
+ */
+function _readTextBlob(entries, uri, cellCt) {
+  const path = _resolveBlobPath(uri);
+  const bytes = path ? entries.get(path) : null;
+  if (!bytes) return new Array(cellCt).fill(null);
+
+  let off = 0;
+  let encoding = 'utf-16le';
+  if (bytes.length >= 2 && bytes[0] === 0xFF && bytes[1] === 0xFE) {
+    off = 2;
+  } else if (bytes.length >= 2 && bytes[0] === 0xFE && bytes[1] === 0xFF) {
+    off = 2;
+    encoding = 'utf-16be';
+  }
+  const decoder = new TextDecoder(encoding);
+
+  const out = [];
+  let start = off;
+  for (let i = off; i + 1 < bytes.length; i += 2) {
+    if (bytes[i] === 0 && bytes[i + 1] === 0) {
+      const chunk = bytes.subarray(start, i);
+      const s = chunk.byteLength > 0 ? decoder.decode(chunk) : '';
+      out.push(s === '' ? null : s);
+      start = i + 2;
+      if (cellCt > 0 && out.length >= cellCt) break;
+    }
+  }
+  if (start < bytes.length && (cellCt <= 0 || out.length < cellCt)) {
+    const tail = decoder.decode(bytes.subarray(start)).replace(/ +$/, '');
+    if (tail !== '') out.push(tail);
+  }
+  while (cellCt > 0 && out.length < cellCt) out.push(null);
+  return out;
+}
+
+/**
+ * Extract the entry path from a blob URI like `/blobs/blob1?size=1000` →
+ * `blobs/blob1`. Returns null for empty / unparseable URIs.
+ */
+function _resolveBlobPath(uri) {
+  if (!uri || typeof uri !== 'string') return null;
+  const trimmed = uri.trim();
+  if (trimmed === '') return null;
+  return trimmed.replace(/^\/+/, '').split('?')[0];
 }
 
 // ─── XML entry filtering ──────────────────────────────────────────

@@ -325,13 +325,25 @@ function buildPolyDesignMatrix(xCols, degree, xNames) {
  * @param {object} [opts]
  * @param {boolean} [opts.interactions=true] - Include 2-factor interactions
  * @param {boolean} [opts.intercept=true] - Include intercept column
+ * @param {Array<[number, number]>} [opts.excludedInteractions] - 2FI pairs
+ *   [a,b] (0-based factor indices, order irrelevant) to omit from the model
  * @returns {{ X: number[][], termNames: string[] }}
  */
 export function buildModelMatrix(codedMatrix, opts = {}) {
   const includeIx = opts.interactions !== false;
   const includeIntercept = opts.intercept !== false;
+  const excluded = opts.excludedInteractions || [];
   const n = codedMatrix.length;
   const k = codedMatrix[0].length;
+
+  const excludedSet = new Set();
+  for (const pair of excluded) {
+    if (!Array.isArray(pair) || pair.length !== 2) continue;
+    const a = Math.min(pair[0], pair[1]);
+    const b = Math.max(pair[0], pair[1]);
+    if (a === b) continue;
+    excludedSet.add(a + '_' + b);
+  }
 
   const termNames = [];
   const X = Array.from({ length: n }, () => []);
@@ -352,6 +364,7 @@ export function buildModelMatrix(codedMatrix, opts = {}) {
   if (includeIx) {
     for (let a = 0; a < k; a++) {
       for (let b = a + 1; b < k; b++) {
+        if (excludedSet.has(a + '_' + b)) continue;
         termNames.push(String.fromCharCode(65 + a) + '\u00d7' + String.fromCharCode(65 + b));
         for (let i = 0; i < n; i++) {
           X[i].push(codedMatrix[i][a] * codedMatrix[i][b]);

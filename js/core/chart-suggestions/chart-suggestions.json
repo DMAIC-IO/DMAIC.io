@@ -1,0 +1,121 @@
+{
+  "version": 1,
+  "_comment": "Show-Me rules: given a set of selected columns (each with an analytical role), suggest chart types ordered by score (higher = better fit). Conditions (minN, maxN, maxCategories) hard-filter a chart when the selection violates them.",
+  "rules": [
+    {
+      "id": "single-continuous",
+      "match": { "continuous": 1 },
+      "charts": [
+        { "type": "histogram",             "score": 90, "i18nKey": "histogram",              "conditions": { "minN": 20 } },
+        { "type": "boxplot",               "score": 88, "i18nKey": "boxplotSingle" },
+        { "type": "individual-value-plot", "score": 82, "i18nKey": "ivpSingle",              "conditions": { "maxN": 200 } },
+        { "type": "run-chart",             "score": 75, "i18nKey": "runChart" },
+        { "type": "probability-plot",      "score": 70, "i18nKey": "probabilityPlot",        "conditions": { "minN": 10 } }
+      ]
+    },
+    {
+      "id": "single-categorical",
+      "match": { "categorical": 1 },
+      "charts": [
+        { "type": "pareto", "score": 92, "i18nKey": "pareto" },
+        { "type": "bar",    "score": 88, "i18nKey": "bar" },
+        { "type": "pie",    "score": 70, "i18nKey": "pie",       "conditions": { "maxCategories": 7 } }
+      ]
+    },
+    {
+      "id": "single-ordinal",
+      "match": { "ordinal": 1 },
+      "charts": [
+        { "type": "bar",    "score": 90, "i18nKey": "barOrdered" },
+        { "type": "pareto", "score": 78, "i18nKey": "pareto" }
+      ]
+    },
+    {
+      "id": "two-continuous",
+      "match": { "continuous": 2 },
+      "charts": [
+        { "type": "scatter", "score": 95, "i18nKey": "scatter" }
+      ]
+    },
+    {
+      "id": "continuous-by-categorical",
+      "match": { "continuous": 1, "categorical": 1 },
+      "charts": [
+        { "type": "boxplot",               "score": 92, "i18nKey": "boxplotByGroup" },
+        { "type": "main-effects",          "score": 90, "i18nKey": "mainEffects" },
+        { "type": "individual-value-plot", "score": 88, "i18nKey": "ivpByGroup",       "conditions": { "maxN": 500 } },
+        { "type": "bar",                   "score": 75, "i18nKey": "barAggregated" }
+      ]
+    },
+    {
+      "id": "continuous-by-ordinal",
+      "match": { "continuous": 1, "ordinal": 1 },
+      "charts": [
+        { "type": "boxplot",               "score": 92, "i18nKey": "boxplotByGroup" },
+        { "type": "main-effects",          "score": 90, "i18nKey": "mainEffects" },
+        { "type": "individual-value-plot", "score": 88, "i18nKey": "ivpByGroup" },
+        { "type": "run-chart",             "score": 78, "i18nKey": "runChartOrdered" }
+      ]
+    },
+    {
+      "id": "continuous-by-two-categorical",
+      "match": { "continuous": 1, "categorical": 2 },
+      "charts": [
+        { "type": "interaction-plot", "score": 92, "i18nKey": "interactionPlot" },
+        { "type": "main-effects",     "score": 90, "i18nKey": "mainEffects" },
+        { "type": "boxplot",          "score": 80, "i18nKey": "boxplotByGroup" }
+      ]
+    },
+    {
+      "id": "continuous-by-cat-ord",
+      "match": { "continuous": 1, "categorical": 1, "ordinal": 1 },
+      "charts": [
+        { "type": "interaction-plot", "score": 92, "i18nKey": "interactionPlot" },
+        { "type": "main-effects",     "score": 90, "i18nKey": "mainEffects" },
+        { "type": "boxplot",          "score": 80, "i18nKey": "boxplotByGroup" }
+      ]
+    },
+    {
+      "id": "continuous-by-two-ordinal",
+      "match": { "continuous": 1, "ordinal": 2 },
+      "charts": [
+        { "type": "interaction-plot", "score": 92, "i18nKey": "interactionPlot" },
+        { "type": "main-effects",     "score": 90, "i18nKey": "mainEffects" },
+        { "type": "boxplot",          "score": 80, "i18nKey": "boxplotByGroup" }
+      ]
+    },
+    {
+      "id": "date-and-continuous",
+      "match": { "date": 1, "continuous": 1 },
+      "charts": [
+        { "type": "run-chart",     "score": 95, "i18nKey": "timeSeries" },
+        { "type": "control-chart", "score": 88, "i18nKey": "controlChart",     "conditions": { "minN": 25 } },
+        { "type": "scatter",       "score": 75, "i18nKey": "scatterOverTime" }
+      ]
+    },
+    {
+      "id": "multi-continuous",
+      "match": { "continuous": ">=3" },
+      "charts": [
+        { "type": "scatter-matrix",        "score": 90, "i18nKey": "scatterMatrix" },
+        { "type": "boxplot",               "score": 75, "i18nKey": "boxplotMulti" },
+        { "type": "individual-value-plot", "score": 70, "i18nKey": "ivpMulti",         "conditions": { "maxN": 200 } }
+      ]
+    },
+    {
+      "id": "two-categorical",
+      "match": { "categorical": 2 },
+      "charts": [
+        { "type": "bar",    "score": 88, "i18nKey": "barStacked" },
+        { "type": "pareto", "score": 70, "i18nKey": "paretoStacked" }
+      ]
+    },
+    {
+      "id": "categorical-and-ordinal",
+      "match": { "categorical": 1, "ordinal": 1 },
+      "charts": [
+        { "type": "bar", "score": 86, "i18nKey": "barOrderedStacked" }
+      ]
+    }
+  ]
+}

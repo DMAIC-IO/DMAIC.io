@@ -523,10 +523,11 @@ function randomStartDesign(n, k, levelsPerFactor, rng) {
 /**
  * Compute D-criterion: det(X'X) for a coded design matrix.
  * @param {number[][]} coded - n×k coded design
+ * @param {Array<[number, number]>} [excluded] - 2FI pairs to omit from the model
  * @returns {number}
  */
-function dCriterion(coded) {
-  const { X } = buildModelMatrix(coded, { interactions: true });
+function dCriterion(coded, excluded) {
+  const { X } = buildModelMatrix(coded, { interactions: true, excludedInteractions: excluded });
   const Xt = matTranspose(X);
   const XtX = matMul(Xt, X);
   return matDeterminant(XtX);
@@ -536,10 +537,11 @@ function dCriterion(coded) {
  * Compute A-criterion: tr((X'X)⁻¹) for a coded design matrix.
  * Lower is better, so we return -trace for maximization.
  * @param {number[][]} coded
+ * @param {Array<[number, number]>} [excluded] - 2FI pairs to omit from the model
  * @returns {number}
  */
-function aCriterion(coded) {
-  const { X } = buildModelMatrix(coded, { interactions: true });
+function aCriterion(coded, excluded) {
+  const { X } = buildModelMatrix(coded, { interactions: true, excludedInteractions: excluded });
   const Xt = matTranspose(X);
   const XtX = matMul(Xt, X);
   const inv = matInverse(XtX);
@@ -551,10 +553,11 @@ function aCriterion(coded) {
  * Compute G-criterion: max leverage h_ii.
  * Lower is better, so we return -maxLev for maximization.
  * @param {number[][]} coded
+ * @param {Array<[number, number]>} [excluded] - 2FI pairs to omit from the model
  * @returns {number}
  */
-function gCriterion(coded) {
-  const { X } = buildModelMatrix(coded, { interactions: true });
+function gCriterion(coded, excluded) {
+  const { X } = buildModelMatrix(coded, { interactions: true, excludedInteractions: excluded });
   const n = X.length;
   const p = X[0].length;
   const Xt = matTranspose(X);
@@ -752,6 +755,11 @@ function optimalDesign(k, nRuns, criterion, opts = {}) {
   const quadratic = opts.quadratic ?? false;
   const levelCounts = opts.levelCounts;
   const categoricalFlags = opts.categoricalFlags;
+  const excluded = opts.excludedInteractions;
+
+  // Wrap the criterion so the exchange algorithms can keep their (coded) → number signature
+  // while we still pass the excluded-interactions list down to buildModelMatrix.
+  const wrapped = (coded) => criterion(coded, excluded);
 
   // Per-factor candidate levels for coordinate exchange. Continuous factors
   // get the dense 5-level grid (so the optimiser can explore interior points
@@ -768,7 +776,7 @@ function optimalDesign(k, nRuns, criterion, opts = {}) {
   });
 
   if (quadratic) {
-    return coordinateExchange(k, nRuns, criterion, {
+    return coordinateExchange(k, nRuns, wrapped, {
       ...opts,
       levelsPerFactor: buildLevelsPerFactor(),
     });
@@ -783,10 +791,10 @@ function optimalDesign(k, nRuns, criterion, opts = {}) {
   }
 
   if (nRuns <= candidates.length) {
-    return pointExchange(k, nRuns, criterion, { ...opts, candidates });
+    return pointExchange(k, nRuns, wrapped, { ...opts, candidates });
   }
 
-  return coordinateExchange(k, nRuns, criterion, {
+  return coordinateExchange(k, nRuns, wrapped, {
     ...opts,
     levelsPerFactor: buildLevelsPerFactor(),
   });
@@ -827,13 +835,27 @@ export function gOptimalDesign(k, nRuns, opts = {}) {
 
 /**
  * Compute the minimum number of runs required for a model with k factors.
- * For main effects + 2FI: p = 1 + k + k*(k-1)/2
+ * For main effects + 2FI: p = 1 + k + k*(k-1)/2 − |excluded|
  * @param {number} k - Number of factors
  * @param {boolean} [quadratic=false] - Include squared terms
+ * @param {Array<[number, number]>} [excludedInteractions] - 2FI pairs to omit
  * @returns {number}
  */
-export function minRunsForModel(k, quadratic = false) {
-  let p = 1 + k + k * (k - 1) / 2;
+export function minRunsForModel(k, quadratic = false, excludedInteractions) {
+  const allPairs = k * (k - 1) / 2;
+  let excludedCount = 0;
+  if (Array.isArray(excludedInteractions)) {
+    const seen = new Set();
+    for (const pair of excludedInteractions) {
+      if (!Array.isArray(pair) || pair.length !== 2) continue;
+      const a = Math.min(pair[0], pair[1]);
+      const b = Math.max(pair[0], pair[1]);
+      if (a === b || a < 0 || b >= k) continue;
+      const key = a + '_' + b;
+      if (!seen.has(key)) { seen.add(key); excludedCount++; }
+    }
+  }
+  let p = 1 + k + (allPairs - excludedCount);
   if (quadratic) p += k;
   return p;
 }
@@ -861,6 +883,15 @@ function deterministicSeed(factors, opts) {
   feedStr(opts.designType || '');
   feed(opts.optimalRuns || 0);
   feed(opts.optimalQuadratic ? 1 : 0);
+  if (Array.isArray(opts.optimalExcludedInteractions)) {
+    // Sort canonically so [[0,1],[2,3]] and [[3,2],[1,0]] hash the same
+    const normalized = opts.optimalExcludedInteractions
+      .filter(p => Array.isArray(p) && p.length === 2)
+      .map(p => [Math.min(p[0], p[1]), Math.max(p[0], p[1])])
+      .sort((a, b) => a[0] - b[0] || a[1] - b[1]);
+    feed(normalized.length);
+    for (const [a, b] of normalized) { feed(a); feed(b); }
+  }
   feed(opts.replicates || 1);
   feed(opts.centerPoints ? 1 : 0);
   feed(opts.ccdCenterPoints || 3);
@@ -1073,28 +1104,31 @@ export function generateDesign(factors, opts) {
     }
 
     case 'dopt': {
-      const nRuns = opts.optimalRuns || minRunsForModel(k, opts.optimalQuadratic) + 2;
+      const ex = opts.optimalExcludedInteractions;
+      const nRuns = opts.optimalRuns || minRunsForModel(k, opts.optimalQuadratic, ex) + 2;
       const lc = factors.map(f => f.levels.length);
       const cf = factors.map(f => f.kind === 'categorical');
-      coded = dOptimalDesign(k, nRuns, { quadratic: opts.optimalQuadratic, levelCounts: lc, categoricalFlags: cf, seed });
+      coded = dOptimalDesign(k, nRuns, { quadratic: opts.optimalQuadratic, levelCounts: lc, categoricalFlags: cf, seed, excludedInteractions: ex });
       resLabel = 'D-Opt';
       break;
     }
 
     case 'aopt': {
-      const nRuns = opts.optimalRuns || minRunsForModel(k, opts.optimalQuadratic) + 2;
+      const ex = opts.optimalExcludedInteractions;
+      const nRuns = opts.optimalRuns || minRunsForModel(k, opts.optimalQuadratic, ex) + 2;
       const lc = factors.map(f => f.levels.length);
       const cf = factors.map(f => f.kind === 'categorical');
-      coded = aOptimalDesign(k, nRuns, { quadratic: opts.optimalQuadratic, levelCounts: lc, categoricalFlags: cf, seed });
+      coded = aOptimalDesign(k, nRuns, { quadratic: opts.optimalQuadratic, levelCounts: lc, categoricalFlags: cf, seed, excludedInteractions: ex });
       resLabel = 'A-Opt';
       break;
     }
 
     case 'gopt': {
-      const nRuns = opts.optimalRuns || minRunsForModel(k, opts.optimalQuadratic) + 2;
+      const ex = opts.optimalExcludedInteractions;
+      const nRuns = opts.optimalRuns || minRunsForModel(k, opts.optimalQuadratic, ex) + 2;
       const lc = factors.map(f => f.levels.length);
       const cf = factors.map(f => f.kind === 'categorical');
-      coded = gOptimalDesign(k, nRuns, { quadratic: opts.optimalQuadratic, levelCounts: lc, categoricalFlags: cf, seed });
+      coded = gOptimalDesign(k, nRuns, { quadratic: opts.optimalQuadratic, levelCounts: lc, categoricalFlags: cf, seed, excludedInteractions: ex });
       resLabel = 'G-Opt';
       break;
     }

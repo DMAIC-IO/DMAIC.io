@@ -40,10 +40,17 @@ export function renderModulePage({ module, lang, i18n }) {
 
   const sections = help.sections || {};
 
+  // Render in canonical SECTION_ORDER first, then any extra section keys
+  // the module defines (in their declared order) so new section names
+  // (e.g. `columnRoles`) don't get silently dropped.
+  const known = new Set(SECTION_ORDER);
+  const extras = Object.keys(sections).filter(k => !known.has(k));
+  const orderedKeys = [...SECTION_ORDER, ...extras];
+
   const sectionHtmlParts = [];
   let leadText = tagline;
 
-  for (const key of SECTION_ORDER) {
+  for (const key of orderedKeys) {
     if (!sections[key]) continue;
     const localized = sections[key][lang] || sections[key].en || sections[key].de;
     if (!localized) continue;

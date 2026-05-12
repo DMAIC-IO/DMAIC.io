@@ -7,6 +7,7 @@
 import { DataGrid, isFormula, evaluateFormula, COLUMN_TYPES, uid } from '../../core/datagrid/datagrid.js';
 import { History } from '../../core/datagrid/datagrid-history.js';
 import { parseCellInput } from '../../core/datagrid/datagrid-utils.js';
+import { validRolesForType } from '../../core/datagrid/datagrid-roles.js';
 import { bridgeEmitter } from '../../core/tips/tip-engine.js';
 
 // ═══════════════════════════════════════════════════════════
@@ -523,6 +524,7 @@ const ICONS = {
   trash:   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>',
   formula: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 7c0-1.1.9-2 2-2h3l2 4-2 4H6a2 2 0 0 1-2-2V7z"/><path d="M20 7c0-1.1-.9-2-2-2h-3l-2 4 2 4h3a2 2 0 0 0 2-2V7z"/></svg>',
   check:   '<svg style="width:13px;height:13px;margin-right:4px;vertical-align:middle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>',
+  suggest: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M5 12l3 3 8-8"/><circle cx="18" cy="6" r="1.5" fill="currentColor"/><circle cx="6" cy="18" r="1.5" fill="currentColor"/><path d="M20 12l-1.5 1.5L17 12l1.5-1.5L20 12z" fill="currentColor"/></svg>',
 };
 
 // ═══════════════════════════════════════════════════════════
@@ -644,6 +646,27 @@ export default {
       e.target.value = '';
     });
 
+    // ─── Suggest-Chart button — opens chart-suggestion tab ─────
+    const suggestBtn = btn('[data-action="suggest-chart"]');
+    suggestBtn.addEventListener('click', () => this._openChartSuggestion(toast, t));
+    const updateSuggestBtn = () => {
+      const enabled = this._canSuggestChart();
+      suggestBtn.disabled = !enabled;
+      suggestBtn.title = enabled
+        ? t('modules.worksheet.suggestChartTitle')
+        : t('modules.worksheet.suggestChartNoSelection');
+    };
+    this._grid.on('selection:changed', updateSuggestBtn);
+    this._grid.on('render', updateSuggestBtn);
+    // Data mutations don't always trigger a render in the same tick — wire
+    // explicit cell-change events so the button reflects empty→filled.
+    this._grid.on('cell:changed',     updateSuggestBtn);
+    this._grid.on('data:pasted',      updateSuggestBtn);
+    this._grid.on('data:imported',    updateSuggestBtn);
+    this._grid.on('column:removed',   updateSuggestBtn);
+    this._grid.on('rows:removed',     updateSuggestBtn);
+    updateSuggestBtn();
+
     // ─── Update toolbar & status on grid render ──────────
 
     // ─── Auto-save worksheet state ─────
@@ -742,7 +765,7 @@ export default {
     document.addEventListener('keydown', this._boundKeyDown, true);
 
     // ─── Listen for external appendColumn requests ───────
-    this._onAppendColumn = ({ instanceId, sheetId, colId, name, values, discrete, type }) => {
+    this._onAppendColumn = ({ instanceId, sheetId, colId, slot, name, values, discrete, type }) => {
       if (instanceId !== context.instanceId) return;
 
       const colType = type === 'text' ? 'text' : 'numeric';
@@ -750,16 +773,30 @@ export default {
       const format = isText ? {} : { decimals: discrete ? 0 : 6 };
 
       const isActiveSheet = sheetId === this._workbook.activeSheetId;
-      // __first__ = overwrite first existing column
+      // __first__  = overwrite first existing column (slot 0).
+      // __slot__   = overwrite column at `slot` if it exists, otherwise append.
+      //              Used by data-import to map imported columns 0..N-1 onto the
+      //              worksheet's default empty C1..C5 slots; any extras append.
+      // The caller's `name` should win over whatever default the slot carried.
+      const isFirstSlot = colId === '__first__';
+      const isSlotIndex = colId === '__slot__' && Number.isInteger(slot) && slot >= 0;
       let resolvedColId = colId;
-      if (colId === '__first__') {
+      if (isFirstSlot) {
         if (isActiveSheet) {
           resolvedColId = this._grid.columns[0]?.id;
         } else {
           const sh = this._workbook.sheets.find(s => s.id === sheetId);
           resolvedColId = sh?.state?.columns?.[0]?.id;
         }
+      } else if (isSlotIndex) {
+        if (isActiveSheet) {
+          resolvedColId = this._grid.columns[slot]?.id;
+        } else {
+          const sh = this._workbook.sheets.find(s => s.id === sheetId);
+          resolvedColId = sh?.state?.columns?.[slot]?.id;
+        }
       }
+      const overwriteName = isFirstSlot || isSlotIndex;
       const isNewCol = !resolvedColId || resolvedColId === '__new__';
 
       if (isActiveSheet) {
@@ -773,6 +810,7 @@ export default {
           // Overwrite existing column in the live grid
           const col = this._grid.columns.find(c => c.id === resolvedColId);
           if (!col) return;
+          if (overwriteName && name) col.name = name;
           if (isText && col.type !== 'text') {
             col.type = 'text';
             col.format = {};
@@ -808,6 +846,7 @@ export default {
         } else {
           const col = cols.find(c => c.id === resolvedColId);
           if (!col) return;
+          if (overwriteName && name) col.name = name;
           if (isText) {
             col.type = 'text';
             col.format = {};
@@ -871,6 +910,282 @@ export default {
 
   // ─── Helpers ──────────────────────────────────────────
 
+  /**
+   * Return the indices of the columns that intersect the current selection.
+   * Includes the main range AND any additive columns picked via Ctrl/Cmd+click
+   * on column headers. Empty array if no selection.
+   */
+  _selectedColumnIndices(_sel) {
+    if (!this._grid) return [];
+    return this._grid.getSelectedColumnIndices();
+  },
+
+  /**
+   * True if the column has at least one non-null, non-empty value.
+   * Empty strings and null/undefined are treated as "no data".
+   */
+  _columnHasData(col) {
+    if (!col || !Array.isArray(col.values)) return false;
+    for (const v of col.values) {
+      if (v != null && v !== '') return true;
+    }
+    return false;
+  },
+
+  /**
+   * Predicate for the Suggest-Chart button — also used as a click-time
+   * guard to keep enable-state and execution-path in sync.
+   *
+   * Conditions:
+   *   - at least one column intersects the selection (cell or column)
+   *   - every intersecting column has at least one non-empty value
+   */
+  _canSuggestChart() {
+    const indices = this._selectedColumnIndices(this._grid?.selection);
+    if (indices.length === 0) return false;
+    return indices.every(i => this._columnHasData(this._grid.columns[i]));
+  },
+
+  /**
+   * Build a snapshot of the selected columns suitable for the chart-suggestion
+   * module: {id, name, role, type, values}. Empty columns and out-of-range
+   * indices are silently dropped.
+   */
+  _snapshotSelectedColumns() {
+    const indices = this._selectedColumnIndices(this._grid.selection);
+    const out = [];
+    for (const idx of indices) {
+      const col = this._grid.columns[idx];
+      if (!col) continue;
+      out.push({
+        id:    col.id,
+        name:  col.name || col.shortName || `C${idx + 1}`,
+        role:  col.role,
+        type:  col.type,
+        values: Array.isArray(col.values) ? col.values.slice() : [],
+      });
+    }
+    return out;
+  },
+
+  /**
+   * Find which workspace phase contains this worksheet instance, so the
+   * chart-suggestion tab opens in the same phase. Falls back to the
+   * `data` phase if not found.
+   */
+  _findOwnPhase() {
+    const stateManager = this._context.stateManager;
+    const phases = stateManager.get('phases') || {};
+    for (const phase of Object.keys(phases)) {
+      if ((phases[phase] || []).some(i => i.instanceId === this._context.instanceId)) {
+        return phase;
+      }
+    }
+    return 'data';
+  },
+
+  /**
+   * Find an existing chart-suggestion tab in `phase`, or create one. Returns
+   * `{ instanceId, created }`.
+   */
+  _findOrCreateChartSuggestion(phase) {
+    const stateManager = this._context.stateManager;
+    const instances = stateManager.get(`phases.${phase}`) || [];
+    const existing = instances.find(i => i.moduleId === 'chart-suggestion');
+    if (existing) return { instanceId: existing.instanceId, created: false };
+    const instanceId = (typeof crypto !== 'undefined' && crypto.randomUUID)
+      ? crypto.randomUUID()
+      : 'cs-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 8);
+    const updated = instances.slice();
+    updated.push({ instanceId, moduleId: 'chart-suggestion', order: updated.length, state: {} });
+    stateManager.set(`phases.${phase}`, updated);
+    return { instanceId, created: true };
+  },
+
+  /**
+   * Open (or reuse) the chart-suggestion tab with a snapshot of the current
+   * column selection. Reuses an existing chart-suggestion instance in the
+   * same phase to avoid tab spam.
+   */
+  async _openChartSuggestion(toast, t) {
+    if (!this._canSuggestChart()) {
+      toast(t('modules.worksheet.suggestChartNoSelection'), 'error');
+      return;
+    }
+    // Block on unconfirmed roles before opening the suggestion tab — the
+    // user picked option A ("prompt whenever any role is auto-inferred")
+    // so suggestions always run against explicitly-confirmed semantics.
+    const proceed = await this._confirmAutoInferredRoles(t);
+    if (!proceed) return;
+
+    const columns = this._snapshotSelectedColumns();
+    if (columns.length === 0) {
+      toast(t('modules.worksheet.suggestChartNoSelection'), 'error');
+      return;
+    }
+    const phase = this._findOwnPhase();
+    const { instanceId, created } = this._findOrCreateChartSuggestion(phase);
+    const selection = {
+      sourceInstanceId: this._context.instanceId,
+      sourceSheetId: this._workbook?.activeSheetId || null,
+      ts: Date.now(),
+      columns,
+    };
+    // Persist the selection in module state BEFORE notifying — the module's
+    // init reads from state on first instantiation. The live event covers
+    // the case where the module is already alive.
+    this._context.stateManager.setModuleState(instanceId, {
+      selection,
+      selectedChartType: null,
+    });
+    this._context.eventBus.emit('chart-suggestion:load', { instanceId, selection });
+    if (created) {
+      this._context.eventBus.emit('module:added', {
+        moduleId: 'chart-suggestion', phase, instanceId,
+      });
+    } else {
+      this._context.eventBus.emit('module:activated', { instanceId });
+    }
+  },
+
+  /**
+   * If any currently-selected column has a role that the user has not
+   * explicitly confirmed (`roleManual !== true`), show a popout with one
+   * row per affected column and a role dropdown so the user can confirm or
+   * change each role inline. The chosen roles are committed via
+   * `grid.setColumnRole()` (which also sets `roleManual: true`), so the
+   * popout never appears again for those columns.
+   *
+   * @param {(key: string, vars?: object) => string} t — i18n helper
+   * @returns {Promise<boolean>} true = proceed with the suggestion;
+   *                              false = user cancelled
+   */
+  _confirmAutoInferredRoles(t) {
+    const indices = this._selectedColumnIndices(this._grid?.selection) || [];
+    const unconfirmed = indices
+      .map(idx => this._grid.columns[idx])
+      .filter(col => col && this._columnHasData(col) && col.roleManual !== true);
+    if (unconfirmed.length === 0) return Promise.resolve(true);
+    return this._openRoleConfirmPopout(unconfirmed, t);
+  },
+
+  /**
+   * Build the inline role-confirmation popout. Each row carries a select
+   * pre-populated with the heuristic's guess; submitting calls
+   * `setColumnRole()` for each column with `{ silent: false }` so the
+   * DataGrid re-renders the badges.
+   *
+   * @param {Array<object>} columns — Live column refs (not snapshots).
+   * @param {(key: string, vars?: object) => string} t
+   * @returns {Promise<boolean>}
+   */
+  _openRoleConfirmPopout(columns, t) {
+    return new Promise((resolve) => {
+      const overlay = document.createElement('div');
+      overlay.className = 'dmike-chart-popout-overlay';
+
+      const win = document.createElement('div');
+      win.className = 'dmike-chart-popout dmike-chart-popout--compact worksheet-role-confirm';
+      win.style.width = '480px';
+      win.style.height = 'auto';
+      win.style.maxHeight = '80vh';
+      win.style.left = 'calc(50% - 240px)';
+      win.style.top = '120px';
+
+      const titleBar = document.createElement('div');
+      titleBar.className = 'dmike-chart-popout-titlebar';
+      const titleText = document.createElement('span');
+      titleText.textContent = t('modules.worksheet.confirmRolesTitle');
+      const closeBtn = document.createElement('button');
+      closeBtn.className = 'dmike-chart-popout-close';
+      closeBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>';
+      titleBar.append(titleText, closeBtn);
+
+      const body = document.createElement('div');
+      body.className = 'dmike-chart-popout-body dmike-popout-body--column';
+
+      const message = document.createElement('div');
+      message.className = 'dmike-popout-message';
+      message.textContent = t('modules.worksheet.confirmRolesIntro');
+      body.appendChild(message);
+
+      const list = document.createElement('div');
+      list.className = 'worksheet-role-confirm__list';
+      const roleLabels = {
+        continuous:  t('ui.datagrid.roleContinuous'),
+        categorical: t('ui.datagrid.roleCategorical'),
+        ordinal:     t('ui.datagrid.roleOrdinal'),
+        date:        t('ui.datagrid.roleDate'),
+        identifier:  t('ui.datagrid.roleIdentifier'),
+        freeText:    t('ui.datagrid.roleFreeText'),
+      };
+      const rowSelects = [];
+      for (const col of columns) {
+        const row = document.createElement('div');
+        row.className = 'worksheet-role-confirm__row';
+
+        const nameEl = document.createElement('div');
+        nameEl.className = 'worksheet-role-confirm__name';
+        nameEl.textContent = col.name || col.shortName || '?';
+        row.appendChild(nameEl);
+
+        const typeEl = document.createElement('div');
+        typeEl.className = 'worksheet-role-confirm__type';
+        typeEl.textContent = col.type || '';
+        row.appendChild(typeEl);
+
+        const select = document.createElement('select');
+        select.className = 'worksheet-role-confirm__select';
+        const valid = validRolesForType(col.type);
+        for (const role of valid) {
+          const opt = document.createElement('option');
+          opt.value = role;
+          opt.textContent = roleLabels[role] || role;
+          if (role === col.role) opt.selected = true;
+          select.appendChild(opt);
+        }
+        row.appendChild(select);
+        list.appendChild(row);
+        rowSelects.push({ colId: col.id, select });
+      }
+      body.appendChild(list);
+
+      const footer = document.createElement('div');
+      footer.className = 'dmike-popout-footer';
+      const cancelBtn = document.createElement('button');
+      cancelBtn.className = 'btn btn--secondary';
+      cancelBtn.textContent = this._context.i18n.t('common.cancel');
+      const confirmBtn = document.createElement('button');
+      confirmBtn.className = 'btn btn--primary';
+      confirmBtn.textContent = t('modules.worksheet.confirmRolesConfirm');
+      footer.append(cancelBtn, confirmBtn);
+      body.appendChild(footer);
+
+      win.append(titleBar, body);
+      overlay.appendChild(win);
+      document.body.appendChild(overlay);
+
+      const close = (result) => {
+        window.removeEventListener('keydown', onKey);
+        overlay.remove();
+        resolve(result);
+      };
+      const onKey = (e) => { if (e.key === 'Escape') close(false); };
+      window.addEventListener('keydown', onKey);
+      closeBtn.addEventListener('click', () => close(false));
+      cancelBtn.addEventListener('click', () => close(false));
+      overlay.addEventListener('click', (e) => { if (e.target === overlay) close(false); });
+      confirmBtn.addEventListener('click', () => {
+        for (const { colId, select } of rowSelects) {
+          try { this._grid.setColumnRole(colId, select.value); } catch {}
+        }
+        close(true);
+      });
+
+      setTimeout(() => confirmBtn.focus(), 0);
+    });
+  },
+
   _buildToolbarHTML(t) {
     return `
       <button class="toolbar__btn" data-action="undo" title="${t('modules.worksheet.undo')}" disabled>
@@ -908,6 +1223,10 @@ export default {
       <div class="toolbar__sep"></div>
       <button class="toolbar__btn toolbar__btn--accent" data-action="formula-editor" title="${t('modules.worksheet.formulaEditor')} (F4)">
         ${ICONS.formula} ${t('modules.worksheet.formula')}
+      </button>
+      <div class="toolbar__sep"></div>
+      <button class="toolbar__btn" data-action="suggest-chart" title="${t('modules.worksheet.suggestChartNoSelection')}" disabled>
+        ${ICONS.suggest} ${t('modules.worksheet.suggestChart')}
       </button>
       <div class="toolbar__spacer"></div>
     `;
