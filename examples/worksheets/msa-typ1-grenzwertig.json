@@ -1,0 +1,48 @@
+{
+  "sheets": [
+    {
+      "id": "sheet-msa-typ1-grenzwertig",
+      "name": "Messreihe",
+      "state": {
+        "columns": [
+          {
+            "id": "c-messwert",
+            "name": "Messwert",
+            "shortName": "M",
+            "type": "numeric",
+            "values": [
+              10.0077,
+              10.0039,
+              9.9959,
+              10.0115,
+              10.0066,
+              10.0025,
+              10.0097,
+              10.0041,
+              10.0176,
+              9.9974,
+              10.0112,
+              10.018,
+              10.0079,
+              10.0053,
+              10.0056,
+              10.0107,
+              9.9973,
+              9.9927,
+              10.0129,
+              10.0088,
+              9.9975,
+              10.0129,
+              10.0117,
+              10.0106,
+              10.0051
+            ]
+          }
+        ],
+        "rowCount": 25
+      }
+    }
+  ],
+  "activeSheetId": "sheet-msa-typ1-grenzwertig",
+  "sheetCounter": 1
+}

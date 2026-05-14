@@ -596,12 +596,43 @@ function gCriterion(coded, excluded) {
  * @param {number} [opts.seed] - Seed for reproducibility
  * @returns {number[][]} Best coded design matrix found
  */
+/**
+ * Return true if `row` matches any pattern in `forbiddenList`. A pattern is a
+ * length-k array of coded values; entries of `null` match any value (wildcard
+ * for "factor irrelevant in this rule"). All non-null entries must match the
+ * corresponding row coordinate within `tol`.
+ *
+ * @param {number[]} row
+ * @param {Array<Array<number|null>>|null|undefined} forbiddenList
+ * @param {number} [tol=1e-9]
+ */
+export function isForbiddenRow(row, forbiddenList, tol = 1e-9) {
+  if (!Array.isArray(forbiddenList) || !forbiddenList.length) return false;
+  outer: for (const pattern of forbiddenList) {
+    if (!Array.isArray(pattern) || pattern.length !== row.length) continue;
+    for (let j = 0; j < pattern.length; j++) {
+      const p = pattern[j];
+      if (p == null) continue;            // wildcard
+      if (Math.abs(row[j] - p) > tol) continue outer;
+    }
+    return true;
+  }
+  return false;
+}
+
 function pointExchange(k, nRuns, criterion, opts = {}) {
   const maxIter = opts.maxIter ?? 50;
   const nStarts = opts.nStarts ?? 10;
   const baseSeed = opts.seed ?? Date.now();
+  const forbidden = Array.isArray(opts.forbiddenVertices) ? opts.forbiddenVertices : null;
 
-  const candidates = opts.candidates || fullFactorial2k(k);
+  // Drop forbidden vertices from the candidate set up front — they will
+  // never be considered for swaps. If everything is forbidden the optimiser
+  // gets nothing to chew on, which is a config error (caller's job to surface).
+  const rawCandidates = opts.candidates || fullFactorial2k(k);
+  const candidates = forbidden
+    ? rawCandidates.filter(c => !isForbiddenRow(c, forbidden))
+    : rawCandidates;
   const nCand = candidates.length;
 
   let bestDesign = null;
@@ -673,6 +704,10 @@ function pointExchange(k, nRuns, criterion, opts = {}) {
  * factor levels) are needed.  For discrete candidate sets, prefer
  * pointExchange() which uses row-level swaps.
  *
+ * Augmentation: pass `opts.fixedRows` (M × k coded matrix) to pin the
+ * first M rows. Only rows M..nRuns-1 are optimized — useful when adding
+ * runs to a design whose first M experiments have already been conducted.
+ *
  * @param {number} k - Number of factors
  * @param {number} nRuns - Desired number of runs
  * @param {(coded: number[][]) => number} criterion - Criterion function (higher = better)
@@ -680,6 +715,7 @@ function pointExchange(k, nRuns, criterion, opts = {}) {
  * @param {number} [opts.maxIter=20] - Maximum exchange iterations
  * @param {number} [opts.nStarts=10] - Number of random restarts
  * @param {number} [opts.seed] - Seed for reproducibility
+ * @param {number[][]} [opts.fixedRows] - Coded rows pinned at the start of the design (augmentation)
  * @returns {number[][]} Best coded design matrix found
  */
 function coordinateExchange(k, nRuns, criterion, opts = {}) {
@@ -692,6 +728,33 @@ function coordinateExchange(k, nRuns, criterion, opts = {}) {
   const levelsPerFactor = opts.levelsPerFactor
     ?? Array.from({ length: k }, () => defaultLevels);
   const baseSeed = opts.seed ?? Date.now();
+  const fixedRows = Array.isArray(opts.fixedRows) ? opts.fixedRows : null;
+  const fixedPrefix = fixedRows ? Math.min(fixedRows.length, nRuns) : 0;
+  const forbidden = Array.isArray(opts.forbiddenVertices) ? opts.forbiddenVertices : null;
+
+  // Repair forbidden rows in the random start by trying each factor's other
+  // levels until the row leaves the forbidden region. Returns true if the row
+  // is clean, false if no escape was found (should be rare unless almost
+  // everything is forbidden).
+  const tryRepairRow = (row, rng) => {
+    if (!forbidden || !isForbiddenRow(row, forbidden)) return true;
+    const factorOrder = Array.from({ length: k }, (_, j) => j);
+    // Shuffle factor order so repeated restarts explore different escapes.
+    for (let i = k - 1; i > 0; i--) {
+      const s = Math.floor(rng() * (i + 1));
+      [factorOrder[i], factorOrder[s]] = [factorOrder[s], factorOrder[i]];
+    }
+    for (const j of factorOrder) {
+      const orig = row[j];
+      for (const lv of levelsPerFactor[j]) {
+        if (lv === orig) continue;
+        row[j] = lv;
+        if (!isForbiddenRow(row, forbidden)) return true;
+      }
+      row[j] = orig;
+    }
+    return false;
+  };
 
   let bestDesign = null;
   let bestVal = -Infinity;
@@ -699,18 +762,30 @@ function coordinateExchange(k, nRuns, criterion, opts = {}) {
   for (let start = 0; start < nStarts; start++) {
     const rng = lcgRng(baseSeed + start * 7919);
     let design = randomStartDesign(nRuns, k, levelsPerFactor, rng);
+    // Pin the prefix to the existing runs; the optimizer only mutates the suffix.
+    for (let i = 0; i < fixedPrefix; i++) {
+      design[i] = [...fixedRows[i]];
+    }
+    if (forbidden) {
+      for (let i = fixedPrefix; i < nRuns; i++) tryRepairRow(design[i], rng);
+    }
     let val = criterion(design);
 
     for (let iter = 0; iter < maxIter; iter++) {
       let improved = false;
 
-      for (let i = 0; i < nRuns; i++) {
+      for (let i = fixedPrefix; i < nRuns; i++) {
         for (let j = 0; j < k; j++) {
           const original = design[i][j];
 
           for (const lv of levelsPerFactor[j]) {
             if (lv === original) continue;
             design[i][j] = lv;
+            // Reject moves that would push this row into the forbidden region.
+            if (forbidden && isForbiddenRow(design[i], forbidden)) {
+              design[i][j] = original;
+              continue;
+            }
             const newVal = criterion(design);
             if (newVal > val) {
               val = newVal;
@@ -749,6 +824,9 @@ function coordinateExchange(k, nRuns, criterion, opts = {}) {
  * @param {boolean} [opts.quadratic=false] - Second-order model
  * @param {number[]} [opts.levelCounts] - Level count per factor (e.g. [3, 3, 2, 2])
  * @param {number} [opts.seed]
+ * @param {Array<Array<number|null>>} [opts.forbiddenVertices] - Coded patterns
+ *   that the optimiser must avoid. Each pattern is length k; `null` entries
+ *   are wildcards. A row matches if all non-null entries agree.
  * @returns {number[][]}
  */
 function optimalDesign(k, nRuns, criterion, opts = {}) {
@@ -788,6 +866,16 @@ function optimalDesign(k, nRuns, criterion, opts = {}) {
     candidates = fullFactorialGeneral(levelCounts);
   } else {
     candidates = fullFactorial2k(k);
+  }
+
+  // Apply the forbidden-vertex filter BEFORE picking the exchange algorithm.
+  // If we leave it to pointExchange to filter, the branch decision below
+  // would still compare against the pre-filter count and (with forbids that
+  // remove enough candidates) we'd send nRuns rows into a smaller candidate
+  // pool than pointExchange can place.
+  const forbidden = opts.forbiddenVertices;
+  if (Array.isArray(forbidden) && forbidden.length) {
+    candidates = candidates.filter(c => !isForbiddenRow(c, forbidden));
   }
 
   if (nRuns <= candidates.length) {
@@ -831,6 +919,62 @@ export function aOptimalDesign(k, nRuns, opts = {}) {
  */
 export function gOptimalDesign(k, nRuns, opts = {}) {
   return optimalDesign(k, nRuns, gCriterion, opts);
+}
+
+/**
+ * Augment an existing optimal design with additional D/A/G-optimal runs.
+ *
+ * The coordinate-exchange algorithm runs over (M + addRuns) rows but pins
+ * the first M to the existing matrix, so only the new runs are optimized.
+ * Returns just the new addRuns rows (coded).
+ *
+ * @param {number[][]} existingCoded - M × k coded matrix of already-conducted runs
+ * @param {number} k - Number of factors
+ * @param {number} addRuns - Number of additional runs to generate (>0)
+ * @param {'dopt'|'aopt'|'gopt'} criterionType - Optimality criterion
+ * @param {object} [opts]
+ * @param {boolean} [opts.quadratic=false] - Include squared terms in the model
+ * @param {number[]} [opts.levelCounts] - Levels per factor (for categorical handling)
+ * @param {boolean[]} [opts.categoricalFlags] - Mark which factors are categorical
+ * @param {number} [opts.seed]
+ * @param {Array<[number,number]>} [opts.excludedInteractions]
+ * @returns {number[][]} The addRuns new coded rows
+ */
+export function augmentOptimalDesign(existingCoded, k, addRuns, criterionType, opts = {}) {
+  if (!Array.isArray(existingCoded) || !existingCoded.length) {
+    throw new Error('augmentOptimalDesign: existingCoded is required');
+  }
+  if (!Number.isFinite(addRuns) || addRuns <= 0) {
+    throw new Error('augmentOptimalDesign: addRuns must be > 0');
+  }
+  const criterion = criterionType === 'aopt' ? aCriterion
+                  : criterionType === 'gopt' ? gCriterion
+                  : dCriterion;
+  const excluded = opts.excludedInteractions;
+  const wrapped = (coded) => criterion(coded, excluded);
+
+  const quadratic = opts.quadratic ?? false;
+  const levelCounts = opts.levelCounts;
+  const categoricalFlags = opts.categoricalFlags;
+
+  const levelsPerFactor = Array.from({ length: k }, (_, j) => {
+    const isCategorical = !!categoricalFlags?.[j];
+    if (isCategorical) {
+      const n = levelCounts?.[j] ?? 2;
+      if (n <= 1) return [0];
+      return Array.from({ length: n }, (_, i) => -1 + (2 * i) / (n - 1));
+    }
+    return candidateLevels(quadratic);
+  });
+
+  const nTotal = existingCoded.length + addRuns;
+  const full = coordinateExchange(k, nTotal, wrapped, {
+    ...opts,
+    levelsPerFactor,
+    fixedRows: existingCoded,
+  });
+
+  return full.slice(existingCoded.length);
 }
 
 /**
@@ -1105,30 +1249,33 @@ export function generateDesign(factors, opts) {
 
     case 'dopt': {
       const ex = opts.optimalExcludedInteractions;
+      const fv = opts.forbiddenVertices;
       const nRuns = opts.optimalRuns || minRunsForModel(k, opts.optimalQuadratic, ex) + 2;
       const lc = factors.map(f => f.levels.length);
       const cf = factors.map(f => f.kind === 'categorical');
-      coded = dOptimalDesign(k, nRuns, { quadratic: opts.optimalQuadratic, levelCounts: lc, categoricalFlags: cf, seed, excludedInteractions: ex });
+      coded = dOptimalDesign(k, nRuns, { quadratic: opts.optimalQuadratic, levelCounts: lc, categoricalFlags: cf, seed, excludedInteractions: ex, forbiddenVertices: fv });
       resLabel = 'D-Opt';
       break;
     }
 
     case 'aopt': {
       const ex = opts.optimalExcludedInteractions;
+      const fv = opts.forbiddenVertices;
       const nRuns = opts.optimalRuns || minRunsForModel(k, opts.optimalQuadratic, ex) + 2;
       const lc = factors.map(f => f.levels.length);
       const cf = factors.map(f => f.kind === 'categorical');
-      coded = aOptimalDesign(k, nRuns, { quadratic: opts.optimalQuadratic, levelCounts: lc, categoricalFlags: cf, seed, excludedInteractions: ex });
+      coded = aOptimalDesign(k, nRuns, { quadratic: opts.optimalQuadratic, levelCounts: lc, categoricalFlags: cf, seed, excludedInteractions: ex, forbiddenVertices: fv });
       resLabel = 'A-Opt';
       break;
     }
 
     case 'gopt': {
       const ex = opts.optimalExcludedInteractions;
+      const fv = opts.forbiddenVertices;
       const nRuns = opts.optimalRuns || minRunsForModel(k, opts.optimalQuadratic, ex) + 2;
       const lc = factors.map(f => f.levels.length);
       const cf = factors.map(f => f.kind === 'categorical');
-      coded = gOptimalDesign(k, nRuns, { quadratic: opts.optimalQuadratic, levelCounts: lc, categoricalFlags: cf, seed, excludedInteractions: ex });
+      coded = gOptimalDesign(k, nRuns, { quadratic: opts.optimalQuadratic, levelCounts: lc, categoricalFlags: cf, seed, excludedInteractions: ex, forbiddenVertices: fv });
       resLabel = 'G-Opt';
       break;
     }

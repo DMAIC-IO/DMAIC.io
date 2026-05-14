@@ -1,0 +1,21 @@
+{
+  "colRefs": [
+    {
+      "instanceId": "__source__",
+      "sheetId": "sheet-collinear",
+      "columnId": "c-rpm"
+    },
+    {
+      "instanceId": "__source__",
+      "sheetId": "sheet-collinear",
+      "columnId": "c-torque"
+    }
+  ],
+  "yKey": "__source__|sheet-collinear|c-power",
+  "regType": "polynomial",
+  "polyDegree": 1,
+  "showCI": true,
+  "activeTab": "scatter",
+  "excludedTerms": [],
+  "sourceWorksheetFile": "worksheets/regression-collinear.json"
+}

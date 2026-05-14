@@ -10,6 +10,7 @@
 
 import { validate, analyze } from '../../engines/msa-typ1-engine.js';
 import { ColumnPicker, getColumnValues } from '../../ui/column-picker.js';
+import { provisionWorksheet as _provisionWorksheet, removeProvisionedWorksheet as _removeProvisionedWorksheet } from '../../core/examples-registry.js';
 
 /** Mapping: KPI name → Algorithm Lab algorithm ID. */
 const ALGO_LAB_IDS = { Cg: 'cg', Cgk: 'cgk' };
@@ -33,6 +34,8 @@ export default {
   _result: null,
   /** @type {{ instanceId: string, sheetId: string, columnId: string }|null} */
   _columnRef: null,
+  /** Instance id of a worksheet provisioned by loadExample; tracked so a follow-up load can remove the previous one. */
+  _exampleWorksheetId: null,
   _picker: null,
   _params: { name: '', ref: NaN, unit: 'mm', lsl: NaN, usl: NaN, k1: 0.2, k2: 4 },
   _charts: [],
@@ -98,6 +101,7 @@ export default {
       params: { ...this._params },
       columnRef: this._columnRef ? { ...this._columnRef } : null,
       lastResult: this._result,
+      exampleWorksheetId: this._exampleWorksheetId,
     };
   },
 
@@ -105,12 +109,58 @@ export default {
     if (!data) return;
     if (data.params) this._params = { ...this._params, ...data.params };
     if (data.columnRef !== undefined) this._columnRef = data.columnRef ? { ...data.columnRef } : null;
+    if (data.exampleWorksheetId !== undefined) this._exampleWorksheetId = data.exampleWorksheetId;
     this._result = data.lastResult || null;
     this._render();
     if (this._result) {
       this._renderResults(this._result);
     }
     this._tryAutoAnalysis();
+  },
+
+  /**
+   * Load a catalog example into the module. MSA-Typ1 examples ship a full
+   * worksheet (`sourceWorksheetData`) and the module state using the literal
+   * placeholder `__source__` as instanceId in `columnRef`. On load we
+   * provision a fresh worksheet, rewrite the placeholder, then apply state.
+   *
+   * @param {{ meta: object, data: object }} payload
+   */
+  async loadExample(payload) {
+    if (!payload || !payload.data) return;
+    const t = this._t;
+
+    const hasContent = !!this._columnRef || !!this._result;
+    if (hasContent && this._context?.confirmPopout) {
+      const ok = await this._context.confirmPopout(t('moduleHelp.confirmOverwrite'), { danger: true });
+      if (!ok) return;
+    }
+
+    const data = { ...payload.data };
+
+    if (data.sourceWorksheetData) {
+      const wsState = data.sourceWorksheetData;
+      delete data.sourceWorksheetData;
+      if (this._exampleWorksheetId) {
+        _removeProvisionedWorksheet(this._context, this._exampleWorksheetId);
+        this._exampleWorksheetId = null;
+      }
+      const ref = _provisionWorksheet(this._context, wsState);
+      if (ref) {
+        this._exampleWorksheetId = ref.instanceId;
+        data.exampleWorksheetId = ref.instanceId;
+        if (data.columnRef && data.columnRef.instanceId === '__source__') {
+          data.columnRef = { ...data.columnRef, instanceId: ref.instanceId };
+        }
+      }
+    }
+
+    this.setState(data);
+    this._save();
+
+    const lang = this._context.i18n.getLanguage();
+    const title = payload.meta?.title?.[lang] || payload.meta?.title?.en || payload.meta?.id || '';
+    this._context.notify?.(t('moduleHelp.exampleLoaded', { title }), 'success');
   },
 
   // ─── Column Values ─────────────────────────────────────────

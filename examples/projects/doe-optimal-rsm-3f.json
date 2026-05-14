@@ -1,0 +1,39 @@
+{
+  "version": 3,
+  "doeName": "D-optimal RSM — 3 Faktoren, quadratisch",
+  "designType": "dopt",
+  "factors": [
+    { "id": 1, "name": "Temperatur", "unit": "°C",  "kind": "continuous", "levels": ["150", "200"] },
+    { "id": 2, "name": "Druck",      "unit": "bar", "kind": "continuous", "levels": ["1",   "5"]   },
+    { "id": 3, "name": "Zeit",       "unit": "min", "kind": "continuous", "levels": ["10",  "30"]  }
+  ],
+  "responses": [
+    { "name": "Ausbeute", "unit": "%" }
+  ],
+  "options": {
+    "randomize": true,
+    "centerPoints": false,
+    "replicates": 1,
+    "alphaType": "rotatable",
+    "ccdCenterPoints": 3,
+    "bbCenterPoints": 3,
+    "taguchiArray": "",
+    "optimalRuns": 12,
+    "optimalQuadratic": true,
+    "optimalExcludedInteractions": []
+  },
+  "selectedRes": null,
+  "selectedPBIdx": null,
+  "design": null,
+  "previewEdits": null,
+  "previewDirty": false,
+  "worksheetRef": null,
+  "sourceWorksheet": null,
+  "evaluation": null,
+  "analysisResponseIdx": 0,
+  "fid": 3,
+  "projectMode": false,
+  "projectName": "",
+  "projectPhases": [],
+  "activePhaseIdx": -1
+}

@@ -15,6 +15,7 @@ import {
 } from '../../engines/regression-engine.js';
 import { tInv } from '../../engines/math-utils.js';
 import { ColumnPicker, getColumnValues, getColumnName, discoverColumns, refToKey, keyToRef, isPickerFocused } from '../../ui/column-picker.js';
+import { provisionWorksheet as _provisionWorksheet, removeProvisionedWorksheet as _removeProvisionedWorksheet } from '../../core/examples-registry.js';
 import { esc } from '../../core/html-utils.js';
 import { saveModel, buildDataSnapshot, computeDataHash } from '../../core/models-store.js';
 import { chartsMethods } from './regression-charts.js';
@@ -85,6 +86,10 @@ const mod = {
   /** Set after the user clicks "save as model" — subsequent clicks update in place. */
   _savedModelId: null,
   _savedModelName: null,
+  /** Tracks the worksheet this module created via loadExample; on re-load the
+   *  old sheet is removed first so the column picker doesn't accumulate
+   *  duplicates. */
+  _exampleWorksheetId: null,
 
   help: () => import('./regression-help.js'),
 
@@ -180,8 +185,8 @@ const mod = {
       confLevel: this._confLevel,
       alpha: this._alpha,
       showCI: this._showCI,
-      result: this._result,
-      perXResults: this._perXResults,
+      result: _stripFunctions(this._result),
+      perXResults: _stripFunctions(this._perXResults),
       activeXKey: this._activeXKey,
       activeTab: this._activeTab,
       excludedTerms: this._excludedTerms,
@@ -189,7 +194,59 @@ const mod = {
       activeImportSource: this._activeImportSource,
       savedModelId: this._savedModelId,
       savedModelName: this._savedModelName,
+      exampleWorksheetId: this._exampleWorksheetId,
     };
+  },
+
+  /**
+   * Load a catalog example into the module. Regression examples ship a
+   * full worksheet (`sourceWorksheetData`) and the planner state using
+   * the literal placeholder `__source__` as instanceId in `colRefs` / `yKey`.
+   * On load we provision a fresh worksheet, rewrite the placeholder to its
+   * real instanceId, then apply the state and trigger auto-analysis.
+   *
+   * @param {{ meta: object, data: object }} payload
+   */
+  async loadExample(payload) {
+    if (!payload || !payload.data) return;
+    const t = (k) => this._context.i18n.t(k);
+
+    const hasContent = (this._colRefs?.length > 0) || this._yKey;
+    if (hasContent && this._context?.confirmPopout) {
+      const ok = await this._context.confirmPopout(t('moduleHelp.confirmOverwrite'), { danger: true });
+      if (!ok) return;
+    }
+
+    const data = { ...payload.data };
+
+    if (data.sourceWorksheetData) {
+      const wsState = data.sourceWorksheetData;
+      delete data.sourceWorksheetData;
+      if (this._exampleWorksheetId) {
+        _removeProvisionedWorksheet(this._context, this._exampleWorksheetId);
+        this._exampleWorksheetId = null;
+      }
+      const ref = _provisionWorksheet(this._context, wsState);
+      if (ref) {
+        this._exampleWorksheetId = ref.instanceId;
+        data.exampleWorksheetId = ref.instanceId;
+        // Rewrite placeholder instanceId in colRefs + yKey.
+        data.colRefs = (data.colRefs || []).map(r =>
+          r?.instanceId === '__source__' ? { ...r, instanceId: ref.instanceId } : r,
+        );
+        if (typeof data.yKey === 'string' && data.yKey.startsWith('__source__|')) {
+          data.yKey = data.yKey.replace('__source__', ref.instanceId);
+        }
+      }
+    }
+
+    this.setState(data);
+    this._autoRun();
+    this._save();
+
+    const lang = this._context.i18n.getLanguage();
+    const title = payload.meta?.title?.[lang] || payload.meta?.title?.en || payload.meta?.id || '';
+    this._context.notify?.(t('moduleHelp.exampleLoaded').replace('{title}', title), 'success');
   },
 
   setState(data) {
@@ -211,6 +268,7 @@ const mod = {
     this._activeImportSource = data.activeImportSource || null;
     this._savedModelId = data.savedModelId || null;
     this._savedModelName = data.savedModelName || null;
+    if (data.exampleWorksheetId !== undefined) this._exampleWorksheetId = data.exampleWorksheetId;
     if (this._container) {
       this._render();
       if (this._result || (this._perXResults && this._activeXKey)) this._renderResults();
@@ -1727,4 +1785,22 @@ const mod = {
 };
 
 Object.assign(mod, chartsMethods);
+
+/**
+ * Recursively strip function-valued properties so the result can be
+ * structured-cloned into the module-state cache. The polynomial fit carries
+ * `predict` closures (top-level and on `fit`) — those are recomputed by
+ * `_runAnalysis` on reload and don't need to be persisted.
+ */
+function _stripFunctions(obj) {
+  if (obj == null || typeof obj !== 'object') return obj;
+  if (Array.isArray(obj)) return obj.map(_stripFunctions);
+  const out = {};
+  for (const [k, v] of Object.entries(obj)) {
+    if (typeof v === 'function') continue;
+    out[k] = (v && typeof v === 'object') ? _stripFunctions(v) : v;
+  }
+  return out;
+}
+
 export default mod;

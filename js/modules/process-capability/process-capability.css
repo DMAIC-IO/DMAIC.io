@@ -31,6 +31,24 @@
 
 
 
+/* ─── Embedded Example Data ──────────────────────────────── */
+.pc__embedded {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  background: var(--color-bg-tertiary);
+  border: var(--border-width) dashed var(--color-accent);
+  border-radius: var(--border-radius);
+  font-size: var(--font-size-sm);
+}
+
+.pc__embedded-label {
+  color: var(--color-text-primary);
+  font-weight: var(--font-weight-medium);
+}
+
 /* ─── Error Box ──────────────────────────────────────────── */
 .pc__error {
   display: none;

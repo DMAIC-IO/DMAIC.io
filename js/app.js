@@ -10,6 +10,7 @@ import { findOtherVersions, importFromVersion } from './core/cross-version-impor
 import { I18n }           from './core/i18n.js';
 import { ThemeManager }   from './core/theme-manager.js';
 import { ModuleRegistry } from './core/module-registry.js';
+import { ExamplesRegistry } from './core/examples-registry.js';
 import ChartManager       from './core/chart/chart-manager.js';
 import { DmaicTiles }     from './ui/dmaic-tiles.js';
 import { Workspace }      from './ui/workspace.js';
@@ -56,6 +57,9 @@ async function init() {
 
   const chartManager = new ChartManager(eventBus, i18n, stateManager);
 
+  const examplesRegistry = new ExamplesRegistry();
+  await examplesRegistry.init();
+
   const tipEngine = new TipEngine({ eventBus, stateManager, i18n });
   await tipEngine.init();
 
@@ -89,7 +93,7 @@ async function init() {
 
   const workspace = new Workspace(
     document.getElementById('app-workspace'),
-    { moduleRegistry, eventBus, stateManager, i18n, modal, notify, helpPanel, chartManager }
+    { moduleRegistry, eventBus, stateManager, i18n, modal, notify, helpPanel, chartManager, examples: examplesRegistry }
   );
   workspace.render();
 
@@ -101,10 +105,11 @@ async function init() {
   _initProjectName(stateManager, eventBus, i18n, modal, moduleRegistry);
   _initSettings(themeManager, i18n, stateManager, tipEngine);
   _initDevArea(eventBus, i18n);
-  _initModuleHelp(workspace, helpPanel, i18n, eventBus);
+  _initModuleHelp(workspace, helpPanel, i18n, eventBus, examplesRegistry);
   _initTraining(eventBus, i18n);
   _initDashboard(eventBus, i18n, stateManager, chartManager);
   _initExportImport(stateManager, eventBus, i18n, notify, modal);
+  _handleExampleDeeplink({ stateManager, eventBus, moduleRegistry, examplesRegistry, workspace, notify, i18n });
 
   const exportReminder = new ExportReminder({ stateManager, eventBus, i18n, notify });
   exportReminder.init();
@@ -139,7 +144,7 @@ async function init() {
   // the 2 s localStorage / 500 ms IDB debounces, and reach into live module
   // instances via the workspace.
   if (new URLSearchParams(location.search).get('e2e') === '1') {
-    window.__dmike = { stateManager, eventBus, moduleRegistry, i18n, themeManager, workspace, chartManager, exportReminder };
+    window.__dmike = { stateManager, eventBus, moduleRegistry, i18n, themeManager, workspace, chartManager, exportReminder, examplesRegistry };
   }
 
   // ─── Update title ────────────────────────────────────────
@@ -665,23 +670,38 @@ function _initDevArea(eventBus, i18n) {
 
 /**
  * Wire the global "Module Help" header button.
- * Clicking it loads the active module's help content (lazy-imported via the
- * module's `help` field) and shows it in the right-side help panel.
+ * Opens the right-side help panel showing two tabs for the active module:
+ *   - "Hilfe"        — lazy-loaded module help (via the module's `help` field)
+ *   - "Beispieldaten" — catalog examples matching the active module
+ *
+ * The button is visible whenever the active module exposes at least one
+ * of these (help loader OR matching catalog examples + loadExample method).
  *
  * @param {import('./ui/workspace.js').Workspace} workspace
  * @param {import('./ui/help-panel.js').HelpPanel} helpPanel
  * @param {import('./core/i18n.js').I18n} i18n
+ * @param {import('./core/event-bus.js').EventBus} eventBus
+ * @param {import('./core/examples-registry.js').ExamplesRegistry} examplesRegistry
  */
-function _initModuleHelp(workspace, helpPanel, i18n, eventBus) {
+function _initModuleHelp(workspace, helpPanel, i18n, eventBus, examplesRegistry) {
   const btn = document.getElementById('module-help-btn');
   if (!btn || !workspace || !helpPanel) return;
 
-  // Show the button only when the active module exposes a help loader.
-  const updateVisibility = () => {
+  const _activeContext = () => {
     const info = workspace.getActiveModuleInfo();
-    const hasHelp = !!(info && typeof info.instance?.help === 'function');
-    btn.style.display = hasHelp ? '' : 'none';
-    if (!hasHelp && helpPanel.isVisible()) {
+    if (!info) return { info: null, hasHelp: false, examples: [], canLoadExample: false };
+    const hasHelp = typeof info.instance?.help === 'function';
+    const examples = examplesRegistry ? examplesRegistry.getForModule(info.moduleId) : [];
+    const canLoadExample = typeof info.instance?.loadExample === 'function';
+    return { info, hasHelp, examples, canLoadExample };
+  };
+
+  const updateVisibility = () => {
+    const { hasHelp, examples, canLoadExample } = _activeContext();
+    const hasExamples = canLoadExample && examples.length > 0;
+    const show = hasHelp || hasExamples;
+    btn.style.display = show ? '' : 'none';
+    if (!show && helpPanel.isVisible()) {
       helpPanel.hide();
       btn.classList.remove('btn--active');
     }
@@ -696,6 +716,24 @@ function _initModuleHelp(workspace, helpPanel, i18n, eventBus) {
     eventBus.on('phase:selected', updateVisibility);
   }
 
+  const loadExampleAndApply = async (exampleId) => {
+    const { info, canLoadExample } = _activeContext();
+    if (!info || !canLoadExample || !examplesRegistry) return;
+
+    try {
+      const payload = await examplesRegistry.load(exampleId);
+      await info.instance.loadExample(payload);
+      const title = payload.meta?.title?.[i18n.getLanguage()] || payload.meta?.title?.en || exampleId;
+      if (typeof workspace.notify === 'function') {
+        // Workspace doesn't expose notify directly; emit a simple event instead.
+      }
+      eventBus?.emit?.('example:loaded', { moduleId: info.moduleId, exampleId, title });
+    } catch (err) {
+      console.error('[ModuleHelp] Failed to load example', exampleId, err);
+      eventBus?.emit?.('example:loadFailed', { exampleId, error: err.message });
+    }
+  };
+
   btn.addEventListener('click', async () => {
     // Toggle: if already visible, close.
     if (helpPanel.isVisible()) {
@@ -704,44 +742,47 @@ function _initModuleHelp(workspace, helpPanel, i18n, eventBus) {
       return;
     }
 
-    const info = workspace.getActiveModuleInfo();
-    if (!info) {
-      helpPanel.show(
-        i18n.t('moduleHelp.title'),
-        `<p style="color:var(--color-text-secondary)">${i18n.t('moduleHelp.noActiveModule')}</p>`
-      );
-      btn.classList.add('btn--active');
-      return;
-    }
-
-    const { instance, moduleId } = info;
-    const moduleName = i18n.t(`modules.${moduleId}.name`);
-
-    // Module has no help loader at all.
-    if (typeof instance.help !== 'function') {
-      helpPanel.show(
-        moduleName,
-        `<p style="color:var(--color-text-secondary)">${i18n.t('moduleHelp.notAvailable')}</p>`
-      );
-      btn.classList.add('btn--active');
-      return;
-    }
-
-    // Lazy-load the help module and render its content.
-    helpPanel.show(moduleName, `<p>${i18n.t('moduleHelp.loading')}</p>`);
+    const { info, hasHelp, examples, canLoadExample } = _activeContext();
     btn.classList.add('btn--active');
 
+    if (!info) {
+      helpPanel.showWithTabs(i18n.t('moduleHelp.title'), {
+        helpHtml: `<p style="color:var(--color-text-secondary)">${i18n.t('moduleHelp.noActiveModule')}</p>`,
+      });
+      return;
+    }
+
+    const moduleName = i18n.t(`modules.${info.moduleId}.name`);
+    const tabExamples = canLoadExample ? examples : [];
+
+    // Loading placeholder for help tab.
+    const loadingHelp = hasHelp ? `<p>${i18n.t('moduleHelp.loading')}</p>` : '';
+
+    helpPanel.showWithTabs(moduleName, {
+      helpHtml: hasHelp ? loadingHelp : `<p style="color:var(--color-text-secondary)">${i18n.t('moduleHelp.notAvailable')}</p>`,
+      examples: tabExamples,
+      onLoadExample: loadExampleAndApply,
+    });
+
+    if (!hasHelp) return;
+
     try {
-      const mod = await instance.help();
+      const mod = await info.instance.help();
       const helpDef = mod?.default || mod;
       const html = _renderModuleHelp(helpDef, i18n.getLanguage());
-      helpPanel.show(moduleName, html);
+      helpPanel.showWithTabs(moduleName, {
+        helpHtml: html,
+        examples: tabExamples,
+        onLoadExample: loadExampleAndApply,
+        preferredTab: 'help',
+      });
     } catch (err) {
-      console.error('[ModuleHelp] Failed to load help for', moduleId, err);
-      helpPanel.show(
-        moduleName,
-        `<p style="color:var(--color-error)">${i18n.t('moduleHelp.loadError')}: ${err.message}</p>`
-      );
+      console.error('[ModuleHelp] Failed to load help for', info.moduleId, err);
+      helpPanel.showWithTabs(moduleName, {
+        helpHtml: `<p style="color:var(--color-error)">${i18n.t('moduleHelp.loadError')}: ${err.message}</p>`,
+        examples: tabExamples,
+        onLoadExample: loadExampleAndApply,
+      });
     }
   });
 
@@ -753,6 +794,106 @@ function _initModuleHelp(workspace, helpPanel, i18n, eventBus) {
     });
     observer.observe(helpEl, { attributes: true, attributeFilter: ['class'] });
   }
+}
+
+/**
+ * Honor deeplinks like `?module=process-capability&example=capability-bolzendurchmesser`.
+ * Activates the requested module (creating an instance in its default phase if
+ * none exists), then asks the module to load the requested example.
+ * Query parameters are stripped from the URL afterwards so a reload doesn't
+ * repeat the action.
+ */
+function _handleExampleDeeplink({ stateManager, eventBus, moduleRegistry, examplesRegistry, workspace, notify, i18n }) {
+  const params = new URLSearchParams(location.search);
+  const moduleId = params.get('module');
+  const exampleId = params.get('example');
+  if (!moduleId && !exampleId) return;
+
+  // Strip these params immediately so reload/back doesn't re-trigger.
+  const next = new URLSearchParams(location.search);
+  next.delete('module');
+  next.delete('example');
+  const cleaned = next.toString();
+  history.replaceState(null, '', location.pathname + (cleaned ? `?${cleaned}` : '') + location.hash);
+
+  if (!moduleId) return;
+  const def = moduleRegistry.get(moduleId);
+  if (!def) {
+    console.warn(`[Deeplink] Unknown module: ${moduleId}`);
+    return;
+  }
+
+  // Run async work without blocking init.
+  (async () => {
+    const instanceId = _ensureInstance(stateManager, moduleRegistry, eventBus, moduleId, def);
+    if (!instanceId) return;
+
+    if (!exampleId) return;
+
+    const instance = await _waitForActivation(workspace, eventBus, instanceId, 4000);
+    if (!instance) {
+      console.warn('[Deeplink] Module did not activate in time:', moduleId);
+      return;
+    }
+    if (typeof instance.loadExample !== 'function') {
+      notify?.(i18n.t('moduleHelp.exampleLoadError'), 'error');
+      return;
+    }
+    try {
+      const payload = await examplesRegistry.load(exampleId);
+      await instance.loadExample(payload);
+    } catch (err) {
+      console.error('[Deeplink] Failed to load example', exampleId, err);
+      notify?.(i18n.t('moduleHelp.exampleLoadError'), 'error');
+    }
+  })();
+}
+
+function _ensureInstance(stateManager, moduleRegistry, eventBus, moduleId, def) {
+  // Existing instance in any phase?
+  for (const phase of Object.keys(stateManager.get('phases') || {})) {
+    const insts = stateManager.get(`phases.${phase}`) ?? [];
+    const found = insts.find(i => i.moduleId === moduleId);
+    if (found) {
+      eventBus.emit('module:activated', { instanceId: found.instanceId });
+      return found.instanceId;
+    }
+  }
+
+  // Create a new instance in the module's default phase for the active cycle.
+  const activeCycle = moduleRegistry.getActiveCycle();
+  const targetPhase = def.phase === 'data'
+    ? 'data'
+    : (def.cycles?.[activeCycle]?.phase || def.phase || 'extras');
+
+  const instanceId = crypto.randomUUID();
+  const phases = stateManager.get(`phases.${targetPhase}`) ?? [];
+  phases.push({ instanceId, moduleId, order: phases.length, state: {} });
+  stateManager.set(`phases.${targetPhase}`, phases);
+  eventBus.emit('module:added', { moduleId, phase: targetPhase, instanceId });
+  return instanceId;
+}
+
+function _waitForActivation(workspace, eventBus, instanceId, timeoutMs) {
+  return new Promise((resolve) => {
+    const check = () => {
+      const info = workspace.getActiveModuleInfo();
+      if (info?.instanceId === instanceId) return info.instance;
+      return null;
+    };
+    const immediate = check();
+    if (immediate) return resolve(immediate);
+
+    let done = false;
+    const finish = (instance) => { if (done) return; done = true; eventBus.off('module:activated', listener); clearTimeout(timer); resolve(instance); };
+    const listener = ({ instanceId: id }) => {
+      if (id !== instanceId) return;
+      // Wait a tick for the workspace to swap _activeInstanceId.
+      setTimeout(() => finish(check()), 0);
+    };
+    eventBus.on('module:activated', listener);
+    const timer = setTimeout(() => finish(null), timeoutMs);
+  });
 }
 
 /**

@@ -11,6 +11,7 @@ import {
   uid, clamp, parseNumeric, formatNumber,
   COLUMN_TYPES, isNumericType, formatCellValue,
   parseCellInput, detectInputType, analyzeColumn,
+  DATE_FORMATS, TIME_FORMATS,
 } from './datagrid-utils.js';
 import {
   ROLE, ALL_ROLES, inferRole, defaultRoleForType, isRoleValidForType, validRolesForType,
@@ -270,6 +271,29 @@ export class DataGrid {
   }
 
   /**
+   * Merge a display-format patch into `col.format` and re-render.
+   * Recognized keys: `decimals` (number|null), `dateFormat` (string|null),
+   * `timeFormat` (string|null), `currencySymbol` (string).
+   * `null` removes the key, restoring the type's built-in default.
+   *
+   * @param {string} columnId
+   * @param {Object} patch
+   */
+  setColumnFormat(columnId, patch) {
+    const col = this.getColumn(columnId);
+    if (!col || !patch || typeof patch !== 'object') return;
+    const oldFormat = { ...col.format };
+    const next = { ...col.format };
+    for (const [k, v] of Object.entries(patch)) {
+      if (v === null || v === undefined) delete next[k];
+      else next[k] = v;
+    }
+    col.format = next;
+    this.render();
+    this.emit('column:format-changed', { columnId, oldFormat, newFormat: { ...next } });
+  }
+
+  /**
    * Re-evaluate the role after a storage-type change. Respects `roleManual`
    * as long as the manual role is still valid for the new type; otherwise
    * resets the manual flag and falls back to the heuristic.
@@ -501,6 +525,7 @@ export class DataGrid {
         ...c,
         values: [...c.values],
         formulas: c.formulas ? [...c.formulas] : null,
+        format: c.format ? { ...c.format } : {},
         roleManual: c.roleManual === true,
       };
       // Migration for worksheets saved before column.role existed: infer
@@ -2511,6 +2536,20 @@ export class DataGrid {
         this.removeRows(indices);
       }},
     ];
+
+    // Allow embedding modules to inject extra row-level actions (e.g. the
+    // DoE-Planer preview adds "Diesen Punkt verbieten"). The hook receives
+    // the cell info and returns either an array of items or null/undefined.
+    if (typeof this.options.extraRowMenuItems === 'function') {
+      try {
+        const extras = this.options.extraRowMenuItems(cell);
+        if (Array.isArray(extras) && extras.length) {
+          menuItems.push({ type: 'sep' });
+          for (const it of extras) menuItems.push(it);
+        }
+      } catch { /* host's problem; ignore */ }
+    }
+
     this._showContextMenu(e.clientX, e.clientY, menuItems);
   }
 
@@ -2652,12 +2691,12 @@ export class DataGrid {
       cols.innerHTML = '';
       cols.appendChild(this._renderAttrPickerTypeColumn(colIdx));
       cols.appendChild(this._renderAttrPickerRoleColumn(colIdx, () => {
-        // Role click closes the picker; type click keeps it open and
-        // re-renders so the role column reflects the new valid set.
-        this._closeColumnAttrPicker();
+        renderBody();
       }, () => {
         renderBody();
       }));
+      const formatCol = this._renderAttrPickerFormatColumn(colIdx, () => renderBody());
+      if (formatCol) cols.appendChild(formatCol);
     };
 
     const positionPicker = () => {
@@ -2733,6 +2772,8 @@ export class DataGrid {
       const item = document.createElement('div');
       item.className = 'attr-picker__item' + (col.role === role ? ' active' : '');
       item.dataset.role = role;
+      const tip = this._roleTooltip(role);
+      if (tip) item.title = tip;
 
       const dot = document.createElement('span');
       dot.className = `attr-picker__role-dot col-role-${role}`;
@@ -2771,6 +2812,91 @@ export class DataGrid {
     });
 
     return colEl;
+  }
+
+  /**
+   * Render the contextual Format column for the attribute picker.
+   * Numeric/currency/percent → decimal places. Date → date pattern.
+   * Time → time pattern. Other types → no format column (returns null).
+   *
+   * @param {number} colIdx
+   * @param {() => void} onChange — re-render the picker body to update the
+   *        active marker without closing the popup.
+   * @returns {HTMLElement|null}
+   */
+  _renderAttrPickerFormatColumn(colIdx, onChange) {
+    const col = this.columns[colIdx];
+    if (!col) return null;
+
+    const t = (k) => this._t(`ui.datagrid.${k}`);
+
+    const colEl = document.createElement('div');
+    colEl.className = 'attr-picker__col attr-picker__col--format';
+
+    const colTitle = document.createElement('div');
+    colTitle.className = 'attr-picker__col-title';
+    const heading = this._t('ui.datagrid.formatMenuTitle');
+    colTitle.textContent = (heading && heading !== 'formatMenuTitle') ? heading : 'Format';
+    colEl.appendChild(colTitle);
+
+    const addItem = ({ label, isActive, onClick }) => {
+      const item = document.createElement('div');
+      item.className = 'attr-picker__item' + (isActive ? ' active' : '');
+      const labelEl = document.createElement('span');
+      labelEl.className = 'attr-picker__label';
+      labelEl.textContent = label;
+      item.appendChild(labelEl);
+      item.addEventListener('click', (ev) => {
+        ev.stopPropagation();
+        onClick();
+        onChange();
+      });
+      colEl.appendChild(item);
+    };
+
+    if (col.type === 'numeric' || col.type === 'currency' || col.type === 'percent') {
+      const current = col.format.decimals;
+      const autoLabel = this._t('ui.datagrid.decimalsAuto');
+      addItem({
+        label: (autoLabel && autoLabel !== 'decimalsAuto') ? autoLabel : 'Auto',
+        isActive: current == null,
+        onClick: () => this.setColumnFormat(col.id, { decimals: null }),
+      });
+      for (const d of [0, 1, 2, 3, 4, 5, 6]) {
+        addItem({
+          label: String(d),
+          isActive: current === d,
+          onClick: () => this.setColumnFormat(col.id, { decimals: d }),
+        });
+      }
+      return colEl;
+    }
+
+    if (col.type === 'date') {
+      const current = col.format.dateFormat || 'dd.MM.yyyy';
+      for (const [pattern, example] of Object.entries(DATE_FORMATS)) {
+        addItem({
+          label: `${pattern}  ·  ${example}`,
+          isActive: current === pattern,
+          onClick: () => this.setColumnFormat(col.id, { dateFormat: pattern }),
+        });
+      }
+      return colEl;
+    }
+
+    if (col.type === 'time') {
+      const current = col.format.timeFormat || 'HH:mm';
+      for (const [pattern, example] of Object.entries(TIME_FORMATS)) {
+        addItem({
+          label: `${pattern}  ·  ${example}`,
+          isActive: current === pattern,
+          onClick: () => this.setColumnFormat(col.id, { timeFormat: pattern }),
+        });
+      }
+      return colEl;
+    }
+
+    return null;
   }
 
   _closeColumnAttrPicker() {
@@ -3135,6 +3261,21 @@ export class DataGrid {
       freeText:    'Free text',
     };
     return fallback[role] || role;
+  }
+
+  _roleTooltip(role) {
+    const key = 'role' + role.charAt(0).toUpperCase() + role.slice(1) + 'Tooltip';
+    const translated = this._t(`ui.datagrid.${key}`);
+    if (translated !== key && !translated.endsWith(key)) return translated;
+    const fallback = {
+      continuous:  'Numeric values on a continuous scale (e.g. length, weight, temperature). Used for mean, standard deviation, regression, capability analysis.',
+      categorical: 'Discrete groups without order (e.g. Machine A/B/C, Shift Day/Night). Used for frequencies, Pareto, chi-square tests, group comparisons.',
+      ordinal:     'Ordered categories with ranking but no uniform spacing (e.g. small/medium/large, grades 1–6). Used for rank-based tests.',
+      date:        'Date or time for time series, trend charts, and control charts with a time axis.',
+      identifier:  'Unique identifier of a record (e.g. sample ID, serial number, batch). Used as the row label in result tables and drill-downs (e.g. flagged outliers) so a finding can be traced back to the physical sample. Excluded from statistical calculations.',
+      freeText:    'Unstructured text such as notes or comments. Excluded from calculations.',
+    };
+    return fallback[role] || '';
   }
 
   // ═══════════════════════════════════════════════════════════

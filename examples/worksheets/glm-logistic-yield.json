@@ -1,0 +1,79 @@
+{
+  "sheets": [
+    {
+      "id": "sheet-logistic",
+      "name": "Yield-Versuche",
+      "state": {
+        "columns": [
+          {
+            "id": "c-temp",
+            "name": "Temperatur",
+            "shortName": "T",
+            "type": "numeric",
+            "values": [
+              140,
+              150,
+              160,
+              170,
+              175,
+              180,
+              190,
+              200
+            ]
+          },
+          {
+            "id": "c-trials",
+            "name": "Versuche",
+            "shortName": "n",
+            "type": "numeric",
+            "values": [
+              50,
+              50,
+              50,
+              50,
+              50,
+              50,
+              50,
+              50
+            ]
+          },
+          {
+            "id": "c-success",
+            "name": "Erfolge",
+            "shortName": "k",
+            "type": "numeric",
+            "values": [
+              19,
+              18,
+              28,
+              30,
+              36,
+              32,
+              38,
+              45
+            ]
+          },
+          {
+            "id": "c-anteil",
+            "name": "Anteil",
+            "shortName": "p",
+            "type": "numeric",
+            "values": [
+              0.38,
+              0.36,
+              0.56,
+              0.6,
+              0.72,
+              0.64,
+              0.76,
+              0.9
+            ]
+          }
+        ],
+        "rowCount": 8
+      }
+    }
+  ],
+  "activeSheetId": "sheet-logistic",
+  "sheetCounter": 1
+}

@@ -457,7 +457,7 @@ select.input {
 
 .dmike-table,
 .stats-table,
-.dmike-split table:not(.datagrid__table):not(.corr__matrix-table) {
+.dmike-split table:not(.datagrid__table):not(.corr__matrix-table):not(.doe__preview-table) {
   width: 100%;
   border-collapse: collapse;
   font-size: var(--font-size-sm);
@@ -466,7 +466,7 @@ select.input {
 
 .dmike-table th,
 .stats-table th,
-.dmike-split table:not(.datagrid__table):not(.corr__matrix-table) th {
+.dmike-split table:not(.datagrid__table):not(.corr__matrix-table):not(.doe__preview-table) th {
   padding: var(--spacing-xs) var(--spacing-sm);
   font-weight: var(--font-weight-medium);
   color: var(--color-text-tertiary);
@@ -475,20 +475,20 @@ select.input {
 
 .dmike-table td,
 .stats-table td,
-.dmike-split table:not(.datagrid__table):not(.corr__matrix-table) td {
+.dmike-split table:not(.datagrid__table):not(.corr__matrix-table):not(.doe__preview-table) td {
   padding: var(--spacing-xs) var(--spacing-sm);
   border-bottom: var(--border-width) solid var(--color-border-secondary);
 }
 
 .dmike-table tr:last-child td,
 .stats-table tr:last-child td,
-.dmike-split table:not(.datagrid__table):not(.corr__matrix-table) tr:last-child td {
+.dmike-split table:not(.datagrid__table):not(.corr__matrix-table):not(.doe__preview-table) tr:last-child td {
   border-bottom: none;
 }
 
 .dmike-table tr:hover td,
 .stats-table tr:hover td,
-.dmike-split table:not(.datagrid__table):not(.corr__matrix-table) tr:hover td {
+.dmike-split table:not(.datagrid__table):not(.corr__matrix-table):not(.doe__preview-table) tr:hover td {
   background: var(--color-bg-secondary);
 }
 

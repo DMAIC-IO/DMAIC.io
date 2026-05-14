@@ -1,0 +1,40 @@
+{
+  "version": 3,
+  "doeName": "D-optimal mixed — 3 cont. + 1 kategorisch (3 Stufen)",
+  "designType": "dopt",
+  "factors": [
+    { "id": 1, "name": "Temperatur", "unit": "°C",  "kind": "continuous",  "levels": ["150", "220"]          },
+    { "id": 2, "name": "Zeit",       "unit": "min", "kind": "continuous",  "levels": ["10",  "40"]           },
+    { "id": 3, "name": "Druck",      "unit": "bar", "kind": "continuous",  "levels": ["1",   "5"]            },
+    { "id": 4, "name": "Material",   "unit": "",    "kind": "categorical", "levels": ["Stahl", "Aluminium", "Kupfer"] }
+  ],
+  "responses": [
+    { "name": "Ausbeute", "unit": "%" }
+  ],
+  "options": {
+    "randomize": true,
+    "centerPoints": false,
+    "replicates": 1,
+    "alphaType": "rotatable",
+    "ccdCenterPoints": 3,
+    "bbCenterPoints": 3,
+    "taguchiArray": "",
+    "optimalRuns": 15,
+    "optimalQuadratic": false,
+    "optimalExcludedInteractions": []
+  },
+  "selectedRes": null,
+  "selectedPBIdx": null,
+  "design": null,
+  "previewEdits": null,
+  "previewDirty": false,
+  "worksheetRef": null,
+  "sourceWorksheet": null,
+  "evaluation": null,
+  "analysisResponseIdx": 0,
+  "fid": 4,
+  "projectMode": false,
+  "projectName": "",
+  "projectPhases": [],
+  "activePhaseIdx": -1
+}

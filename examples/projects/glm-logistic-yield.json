@@ -1,0 +1,15 @@
+{
+  "colRefs": [
+    {
+      "instanceId": "__source__",
+      "sheetId": "sheet-logistic",
+      "columnId": "c-temp"
+    }
+  ],
+  "yKey": "__source__|sheet-logistic|c-anteil",
+  "trialsKey": "__source__|sheet-logistic|c-trials",
+  "method": "binomial",
+  "cutoff": 0.5,
+  "activeTab": "model",
+  "sourceWorksheetFile": "worksheets/glm-logistic-yield.json"
+}

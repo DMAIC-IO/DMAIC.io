@@ -1,0 +1,23 @@
+{
+  "model": "quadratic",
+  "b": [-638.5, 7.35, 18, -0.02, -1.5, -0.05],
+  "customFormula": "",
+  "xLabel": "Temperatur",
+  "yLabel": "Druck",
+  "zLabel": "Ausbeute",
+  "xMin": 150,
+  "xMax": 210,
+  "yMin": 1,
+  "yMax": 5,
+  "numLevels": 10,
+  "gridRes": 100,
+  "colorScheme": "viridis",
+  "showLines": true,
+  "showLabels": true,
+  "showDataPoints": false,
+  "colRefX": null,
+  "colRefY": null,
+  "colRefZ": null,
+  "refLines": [],
+  "refAreas": []
+}

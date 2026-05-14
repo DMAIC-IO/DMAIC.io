@@ -73,6 +73,51 @@ export function isNumericType(type) {
 // ─── Cell Display Formatting ───────────────────────────────
 
 /**
+ * Supported date format patterns. Stored as `col.format.dateFormat`.
+ * Keys are persisted; values are user-facing examples for the picker.
+ */
+export const DATE_FORMATS = Object.freeze({
+  'dd.MM.yyyy':   '31.12.2025',
+  'yyyy-MM-dd':   '2025-12-31',
+  'dd/MM/yyyy':   '31/12/2025',
+  'MM/dd/yyyy':   '12/31/2025',
+  'd. MMMM yyyy': '31. Dezember 2025',
+});
+
+/** Supported time format patterns. Stored as `col.format.timeFormat`. */
+export const TIME_FORMATS = Object.freeze({
+  'HH:mm':    '14:30',
+  'HH:mm:ss': '14:30:45',
+});
+
+const MONTH_NAMES_DE = ['Januar', 'Februar', 'M\u00E4rz', 'April', 'Mai', 'Juni', 'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'];
+
+function pad2(n) { return String(n).padStart(2, '0'); }
+
+function formatDate(dt, pattern) {
+  const y = dt.getFullYear();
+  const m = dt.getMonth() + 1;
+  const d = dt.getDate();
+  switch (pattern) {
+    case 'yyyy-MM-dd':   return `${y}-${pad2(m)}-${pad2(d)}`;
+    case 'dd/MM/yyyy':   return `${pad2(d)}/${pad2(m)}/${y}`;
+    case 'MM/dd/yyyy':   return `${pad2(m)}/${pad2(d)}/${y}`;
+    case 'd. MMMM yyyy': return `${d}. ${MONTH_NAMES_DE[m - 1]} ${y}`;
+    case 'dd.MM.yyyy':
+    default:             return `${pad2(d)}.${pad2(m)}.${y}`;
+  }
+}
+
+function formatTime(timeStr, pattern) {
+  const match = /^(\d{1,2}):(\d{2})(?::(\d{2}))?$/.exec(timeStr);
+  if (!match) return timeStr;
+  const hh = pad2(match[1]);
+  const mm = match[2];
+  const ss = match[3] ?? '00';
+  return pattern === 'HH:mm:ss' ? `${hh}:${mm}:${ss}` : `${hh}:${mm}`;
+}
+
+/**
  * Format a cell value for display based on column type & format.
  * @param {{ type: string, format: object }} col
  * @param {*} val
@@ -100,21 +145,32 @@ export function formatCellValue(col, val) {
       if (val === 0 || val === 1) return String(val);
       if (typeof val === 'number') return val ? '1' : '0';
       return String(val);
-    case 'date':
+    case 'date': {
       if (!val) return '';
+      const pattern = col.format.dateFormat || 'dd.MM.yyyy';
       try {
         const dt = new Date(val);
-        if (!isNaN(dt)) return dt.toLocaleDateString('de-DE');
+        if (!isNaN(dt)) return formatDate(dt, pattern);
       } catch { /* ignore */ }
       return String(val);
-    case 'time':
+    }
+    case 'time': {
       if (!val) return '';
+      const pattern = col.format.timeFormat || 'HH:mm';
+      if (typeof val === 'string' && /^\d{1,2}:\d{2}(:\d{2})?$/.test(val)) {
+        return formatTime(val, pattern);
+      }
       try {
-        if (typeof val === 'string' && /^\d{1,2}:\d{2}(:\d{2})?$/.test(val)) return val;
         const dt = new Date(val);
-        if (!isNaN(dt)) return dt.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
+        if (!isNaN(dt)) {
+          const hh = pad2(dt.getHours());
+          const mm = pad2(dt.getMinutes());
+          const ss = pad2(dt.getSeconds());
+          return pattern === 'HH:mm:ss' ? `${hh}:${mm}:${ss}` : `${hh}:${mm}`;
+        }
       } catch { /* ignore */ }
       return String(val);
+    }
     case 'text':
     default:
       return String(val);

@@ -19,6 +19,7 @@ import {
 
 import { computeSeriesStats, renderStatsTable } from '../../core/stats-panel.js';
 import { CHART_COLORS } from '../../core/chart/chart-colors.js';
+import { provisionWorksheet, removeProvisionedWorksheet } from '../../core/examples-registry.js';
 
 export default {
   id: 'xy-plot',
@@ -73,6 +74,7 @@ export default {
     this._showStats = true;
     this._confLevel = 95;
     this._picker = null;
+    this._exampleWorksheetId = null;
 
     if (!document.getElementById('xy-plot-css')) {
       const link = document.createElement('link');
@@ -123,6 +125,7 @@ export default {
       bgColor: this._bgColor,
       showStats: this._showStats,
       confLevel: this._confLevel,
+      exampleWorksheetId: this._exampleWorksheetId,
     };
   },
 
@@ -133,6 +136,55 @@ export default {
       this._render();
       this._plot();
     }
+  },
+
+  /**
+   * Load a catalog example — provision a worksheet, rewrite the placeholder
+   * `__source__` instanceId in each dataset's xRef/yRef/groupRef, then
+   * apply the state and re-plot.
+   * @param {{ meta: object, data: object }} payload
+   */
+  async loadExample(payload) {
+    if (!payload || !payload.data) return;
+    const t = (k) => this._context.i18n.t(k);
+
+    const hasContent = Array.isArray(this._datasets)
+      && this._datasets.some(d => d.xRef || d.yRef);
+    if (hasContent && this._context?.confirmPopout) {
+      const ok = await this._context.confirmPopout(t('moduleHelp.confirmOverwrite'), { danger: true });
+      if (!ok) return;
+    }
+
+    const data = { ...payload.data };
+
+    if (data.sourceWorksheetData) {
+      const wsState = data.sourceWorksheetData;
+      delete data.sourceWorksheetData;
+      if (this._exampleWorksheetId) {
+        removeProvisionedWorksheet(this._context, this._exampleWorksheetId);
+        this._exampleWorksheetId = null;
+      }
+      const ref = provisionWorksheet(this._context, wsState);
+      if (ref) {
+        this._exampleWorksheetId = ref.instanceId;
+        data.exampleWorksheetId = ref.instanceId;
+        const rewrite = (r) => (r && r.instanceId === '__source__')
+          ? { ...r, instanceId: ref.instanceId }
+          : r;
+        data.datasets = (data.datasets || []).map(d => ({
+          ...d,
+          xRef: rewrite(d.xRef),
+          yRef: rewrite(d.yRef),
+          groupRef: rewrite(d.groupRef),
+        }));
+      }
+    }
+
+    this.setState(data);
+
+    const lang = this._context.i18n.getLanguage();
+    const title = payload.meta?.title?.[lang] || payload.meta?.title?.en || payload.meta?.id || '';
+    this._context.notify?.(t('moduleHelp.exampleLoaded').replace('{title}', title), 'success');
   },
 
   /** @private — load state with backward compat for v1 format (colRefX + seriesRefs) */
@@ -153,6 +205,7 @@ export default {
     } else {
       this._datasets = [{ xRef: null, yRef: null, groupRef: null }];
     }
+    if (saved.exampleWorksheetId !== undefined) this._exampleWorksheetId = saved.exampleWorksheetId;
     this._showLines = saved.showLines ?? false;
     this._showMarkers = saved.showMarkers ?? true;
     this._seriesOverrides = saved.seriesOverrides || [];

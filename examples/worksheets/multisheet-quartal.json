@@ -1,0 +1,96 @@
+{
+  "sheets": [
+    {
+      "id": "sheet-q1",
+      "name": "Q1",
+      "state": {
+        "columns": [
+          {
+            "id": "c-q1-charge",
+            "name": "Charge",
+            "shortName": "C",
+            "type": "text",
+            "values": ["A-001", "A-002", "A-003", "A-004", "A-005", "A-006", "A-007", "A-008", "A-009", "A-010"]
+          },
+          {
+            "id": "c-q1-stueckzahl",
+            "name": "Stueckzahl",
+            "shortName": "n",
+            "type": "numeric",
+            "values": [1240, 1198, 1305, 1267, 1289, 1276, 1322, 1255, 1281, 1298]
+          },
+          {
+            "id": "c-q1-ausschuss",
+            "name": "Ausschuss",
+            "shortName": "X",
+            "type": "numeric",
+            "values": [12, 18, 9, 14, 11, 16, 8, 19, 13, 10]
+          }
+        ],
+        "rowCount": 10
+      }
+    },
+    {
+      "id": "sheet-q2",
+      "name": "Q2",
+      "state": {
+        "columns": [
+          {
+            "id": "c-q2-charge",
+            "name": "Charge",
+            "shortName": "C",
+            "type": "text",
+            "values": ["B-001", "B-002", "B-003", "B-004", "B-005", "B-006", "B-007", "B-008", "B-009", "B-010"]
+          },
+          {
+            "id": "c-q2-stueckzahl",
+            "name": "Stueckzahl",
+            "shortName": "n",
+            "type": "numeric",
+            "values": [1312, 1345, 1298, 1367, 1321, 1389, 1356, 1334, 1372, 1318]
+          },
+          {
+            "id": "c-q2-ausschuss",
+            "name": "Ausschuss",
+            "shortName": "X",
+            "type": "numeric",
+            "values": [9, 7, 11, 6, 8, 5, 10, 7, 4, 12]
+          }
+        ],
+        "rowCount": 10
+      }
+    },
+    {
+      "id": "sheet-q3",
+      "name": "Q3",
+      "state": {
+        "columns": [
+          {
+            "id": "c-q3-charge",
+            "name": "Charge",
+            "shortName": "C",
+            "type": "text",
+            "values": ["C-001", "C-002", "C-003", "C-004", "C-005", "C-006", "C-007", "C-008", "C-009", "C-010"]
+          },
+          {
+            "id": "c-q3-stueckzahl",
+            "name": "Stueckzahl",
+            "shortName": "n",
+            "type": "numeric",
+            "values": [1402, 1378, 1421, 1395, 1438, 1412, 1387, 1425, 1409, 1431]
+          },
+          {
+            "id": "c-q3-ausschuss",
+            "name": "Ausschuss",
+            "shortName": "X",
+            "type": "numeric",
+            "values": [3, 5, 2, 4, 3, 6, 4, 2, 5, 3]
+          }
+        ],
+        "rowCount": 10
+      }
+    }
+  ],
+  "activeSheetId": "sheet-q1",
+  "sheetCounter": 3
+}

@@ -1,0 +1,17 @@
+{
+  "params": {
+    "name": "Bolzendurchmesser",
+    "ref": 10.0,
+    "unit": "mm",
+    "lsl": 9.9,
+    "usl": 10.1,
+    "k1": 0.2,
+    "k2": 4
+  },
+  "columnRef": {
+    "instanceId": "__source__",
+    "sheetId": "sheet-msa-typ1-grenzwertig",
+    "columnId": "c-messwert"
+  },
+  "sourceWorksheetFile": "worksheets/msa-typ1-grenzwertig.json"
+}

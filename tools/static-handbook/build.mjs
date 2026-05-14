@@ -39,6 +39,7 @@ import {
   renderTrainingTrizPage,
   renderTrainingToolPage,
   renderCycleIndex,
+  renderExamplePage,
 } from './render/pages.mjs';
 import { renderSitemap, renderRobots } from './render/sitemap.mjs';
 import { CYCLES } from '../../js/core/cycles/cycles.js';
@@ -88,7 +89,8 @@ async function main() {
   await copyFonts();
   await copyKatexAssets();
   await writeFile(path.join(OUT, 'assets/favicon.svg'), FAVICON_SVG, 'utf8');
-  log(`${COLORS.green}✓${COLORS.reset} Copied assets (CSS, fonts, KaTeX, favicon)`);
+  await copyExampleFiles(sources.examples);
+  log(`${COLORS.green}✓${COLORS.reset} Copied assets (CSS, fonts, KaTeX, favicon, examples)`);
 
   // ─── Generate pages ────────────────────────────────────────────
   const sitemapEntries = [];
@@ -119,10 +121,25 @@ async function main() {
         module: mod,
         lang,
         i18n: sources.i18n,
+        examples: sources.examples,
       });
       const dest = path.join(OUT, rel(page.pathFromRoot));
       await writeOut(dest, page.html);
       sitemapEntries.push({ path: page.pathFromRoot, priority: '0.8', changefreq: 'monthly' });
+      pageCount++;
+    }
+
+    // Example detail pages
+    for (const ex of sources.examples.entries) {
+      const page = renderExamplePage({
+        example: ex,
+        modules: sources.modules,
+        lang,
+        i18n: sources.i18n,
+      });
+      const dest = path.join(OUT, rel(page.pathFromRoot));
+      await writeOut(dest, page.html);
+      sitemapEntries.push({ path: page.pathFromRoot, priority: '0.6', changefreq: 'monthly' });
       pageCount++;
     }
 
@@ -223,6 +240,27 @@ async function copyFonts() {
   for (const f of files) {
     if (f.endsWith('.woff2')) {
       await copyFile(path.join(FONTS_SRC, f), path.join(OUT, 'assets/fonts', f));
+    }
+  }
+}
+
+/**
+ * Copy example data/project files into docs/examples/data/ so the static
+ * handbook can serve direct downloads from the detail pages.
+ * Generator-type entries have no file — nothing to copy.
+ */
+async function copyExampleFiles(examples) {
+  if (!examples?.entries?.length) return;
+  const destDir = path.join(OUT, 'examples', 'data');
+  await mkdir(destDir, { recursive: true });
+  for (const ex of examples.entries) {
+    if (!ex.file) continue;
+    const src = path.join(REPO, 'examples', ex.file);
+    const dest = path.join(destDir, path.basename(ex.file));
+    try {
+      await copyFile(src, dest);
+    } catch (err) {
+      console.warn(`[handbook] Could not copy ${ex.file}: ${err.message}`);
     }
   }
 }

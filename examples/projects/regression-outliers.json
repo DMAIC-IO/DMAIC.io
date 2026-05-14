@@ -1,0 +1,16 @@
+{
+  "colRefs": [
+    {
+      "instanceId": "__source__",
+      "sheetId": "sheet-outliers",
+      "columnId": "c-speed"
+    }
+  ],
+  "yKey": "__source__|sheet-outliers|c-consum",
+  "regType": "polynomial",
+  "polyDegree": 1,
+  "showCI": true,
+  "activeTab": "scatter",
+  "excludedTerms": [],
+  "sourceWorksheetFile": "worksheets/regression-outliers.json"
+}

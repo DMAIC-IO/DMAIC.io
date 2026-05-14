@@ -1,0 +1,21 @@
+{
+  "colRefs": [
+    {
+      "instanceId": "__source__",
+      "sheetId": "sheet-pizza",
+      "columnId": "c-entfernung"
+    },
+    {
+      "instanceId": "__source__",
+      "sheetId": "sheet-pizza",
+      "columnId": "c-verkehr"
+    }
+  ],
+  "yKey": "__source__|sheet-pizza|c-lieferzeit",
+  "regType": "polynomial",
+  "polyDegree": 1,
+  "showCI": true,
+  "activeTab": "scatter",
+  "excludedTerms": [],
+  "sourceWorksheetFile": "worksheets/pizza-delivery.json"
+}

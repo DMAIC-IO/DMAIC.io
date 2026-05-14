@@ -214,10 +214,18 @@ export class Workspace {
 
   /**
    * Save all live module states so cross-module data access
-   * (e.g. MSA reading worksheet columns) works reliably.
+   * (e.g. MSA reading worksheet columns) works reliably. Skips instances
+   * that have already been dropped from `phases` — otherwise a freshly
+   * removed module would resurrect its own state on the next tab switch.
    */
   _persistAllModuleStates() {
+    const phases = this._stateManager.get('phases') || {};
+    const live = new Set();
+    for (const arr of Object.values(phases)) {
+      if (Array.isArray(arr)) for (const i of arr) live.add(i.instanceId);
+    }
     this._instances.forEach((instance, id) => {
+      if (!live.has(id)) return;
       try {
         const state = instance.getState?.();
         if (!state) return;
@@ -293,6 +301,7 @@ export class Workspace {
       confirmPopout: (message, options = {}) => confirmPopout(message, { ...options, i18n: this._i18n }),
       notify: this._context.notify,
       chartManager: this._context.chartManager,
+      examples: this._context.examples,
       theme: document.documentElement.dataset.theme || 'light',
       language: this._i18n.getLanguage(),
     };

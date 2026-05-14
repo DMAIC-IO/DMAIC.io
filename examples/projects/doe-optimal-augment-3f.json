@@ -1,0 +1,59 @@
+{
+  "version": 3,
+  "doeName": "D-optimal Augment — auf bestehender Datensammlung",
+  "designType": "dopt",
+  "factors": [
+    { "id": 1, "name": "Temperatur", "unit": "°C",  "kind": "continuous", "levels": ["150", "200"] },
+    { "id": 2, "name": "Druck",      "unit": "bar", "kind": "continuous", "levels": ["1",   "5"]   },
+    { "id": 3, "name": "Zeit",       "unit": "min", "kind": "continuous", "levels": ["10",  "30"]  }
+  ],
+  "responses": [
+    { "name": "Ausbeute", "unit": "%" }
+  ],
+  "options": {
+    "randomize": true,
+    "centerPoints": false,
+    "replicates": 1,
+    "alphaType": "rotatable",
+    "ccdCenterPoints": 3,
+    "bbCenterPoints": 3,
+    "taguchiArray": "",
+    "optimalRuns": 6,
+    "optimalQuadratic": true,
+    "optimalExcludedInteractions": []
+  },
+  "selectedRes": null,
+  "selectedPBIdx": null,
+  "design": null,
+  "previewEdits": null,
+  "previewDirty": false,
+  "worksheetRef": null,
+  "sourceWorksheet": null,
+  "evaluation": null,
+  "analysisResponseIdx": 0,
+  "fid": 3,
+  "projectMode": false,
+  "projectName": "",
+  "projectPhases": [],
+  "activePhaseIdx": -1,
+
+  "sourceWorksheetData": {
+    "sheets": [
+      {
+        "id": "sheet-augment-data",
+        "name": "Messdaten",
+        "state": {
+          "columns": [
+            { "id": "c-temp",   "name": "Temperatur", "shortName": "T",   "type": "numeric", "values": [150, 200, 150, 200, 150, 175] },
+            { "id": "c-druck",  "name": "Druck",      "shortName": "p",   "type": "numeric", "values": [1,   1,   5,   5,   1,   3]   },
+            { "id": "c-zeit",   "name": "Zeit",       "shortName": "t",   "type": "numeric", "values": [10,  10,  10,  10,  30,  20]  },
+            { "id": "c-yield",  "name": "Ausbeute",   "shortName": "Y",   "type": "numeric", "values": [65,  72,  68,  78,  70,  85]  }
+          ],
+          "rowCount": 6
+        }
+      }
+    ],
+    "activeSheetId": "sheet-augment-data",
+    "sheetCounter": 1
+  }
+}

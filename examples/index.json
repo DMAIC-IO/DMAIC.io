@@ -1,0 +1,466 @@
+{
+  "version": "1.0",
+  "examples": [
+    {
+      "id": "capability-bolzendurchmesser",
+      "type": "dataset",
+      "title":       { "de": "Bolzendurchmesser (fähig)", "en": "Bolt Diameter (capable)" },
+      "description": {
+        "de": "100 normalverteilte Messwerte um μ ≈ 10,00 mm mit σ ≈ 0,05 mm. Lehrbuch-Fall eines fähigen Prozesses.",
+        "en": "100 normally distributed measurements around μ ≈ 10.00 mm with σ ≈ 0.05 mm. Textbook capable-process example."
+      },
+      "source":      "DMAIC.io synthetisch, NumPy default_rng, Seed=42",
+      "license":     "public-domain",
+      "file":        "data/capability-bolzendurchmesser.csv",
+      "format":      "csv",
+      "modules":     ["process-capability", "histogram", "control-chart"],
+      "tags":        ["continuous", "capable"],
+      "columns":     [{ "name": "Durchmesser", "type": "numeric", "unit": "mm" }],
+      "spec":        { "lsl": 9.8, "usl": 10.2, "target": 10.0 },
+      "preview":     { "rows": 10 }
+    },
+    {
+      "id": "capability-shifted",
+      "type": "generator",
+      "title":       { "de": "Verschobener Prozess", "en": "Shifted Process" },
+      "description": {
+        "de": "Mittelwert außerhalb der Spezifikationsmitte (μ ≈ 10,08 mm) → niedriger Cpk trotz geringer Streuung.",
+        "en": "Mean off-center (μ ≈ 10.08 mm) → low Cpk despite small dispersion."
+      },
+      "source":      "DMAIC.io synthetisch, Mulberry32 + Box-Muller, Seed=7",
+      "license":     "public-domain",
+      "generator":   {
+        "algorithm": "normal",
+        "params":    { "n": 100, "mu": 10.08, "sigma": 0.05, "name": "Durchmesser" },
+        "seed":      7
+      },
+      "modules":     ["process-capability"],
+      "tags":        ["continuous", "shifted"],
+      "columns":     [{ "name": "Durchmesser", "type": "numeric", "unit": "mm" }],
+      "spec":        { "lsl": 9.8, "usl": 10.2, "target": 10.0 }
+    },
+    {
+      "id": "capability-bimodal",
+      "type": "dataset",
+      "title":       { "de": "Bimodaler Prozess", "en": "Bimodal Process" },
+      "description": {
+        "de": "Mischung zweier Normalverteilungen um 9,93 und 10,07 mm. Die Normalverteilungs-Annahme der Cpk-Berechnung ist verletzt.",
+        "en": "Mixture of two normal distributions around 9.93 and 10.07 mm. Violates the normality assumption of Cpk."
+      },
+      "source":      "DMAIC.io synthetisch, NumPy default_rng, Seed=13",
+      "license":     "public-domain",
+      "file":        "data/capability-bimodal.csv",
+      "format":      "csv",
+      "modules":     ["process-capability", "histogram"],
+      "tags":        ["continuous", "bimodal", "assumption-violation"],
+      "columns":     [{ "name": "Durchmesser", "type": "numeric", "unit": "mm" }],
+      "spec":        { "lsl": 9.8, "usl": 10.2, "target": 10.0 },
+      "preview":     { "rows": 10 }
+    },
+    {
+      "id": "doe-optimal-rsm-3f",
+      "type": "project",
+      "title":       { "de": "D-optimal RSM: 3 Faktoren, quadratisch", "en": "D-optimal RSM: 3 factors, quadratic" },
+      "description": {
+        "de": "Response-Surface-Modell mit drei kontinuierlichen Faktoren und vollem quadratischem Polynom in 12 Versuchsläufen. Klassischer Anwendungsfall für D-optimale Designs.",
+        "en": "Response-surface model with three continuous factors and a full quadratic polynomial in 12 runs. Classic D-optimal use case."
+      },
+      "source":      "DMAIC.io Lehrkonfiguration",
+      "license":     "public-domain",
+      "file":        "projects/doe-optimal-rsm-3f.json",
+      "format":      "json",
+      "modules":     ["doe-planner"],
+      "tags":        ["doe", "optimal", "d-optimal", "rsm", "quadratic"]
+    },
+    {
+      "id": "doe-optimal-screening-5f",
+      "type": "project",
+      "title":       { "de": "D-optimal Screening: 5 Faktoren, linear + 2FI", "en": "D-optimal screening: 5 factors, linear + 2FI" },
+      "description": {
+        "de": "Fünf kontinuierliche Faktoren mit Hauptwirkungen und Zweifach-Wechselwirkungen in 18 Versuchsläufen. Optimaler Ersatz für Plackett-Burman, wenn 2FI mit ins Modell sollen.",
+        "en": "Five continuous factors with main effects and two-factor interactions in 18 runs. D-optimal alternative to Plackett-Burman when 2FI must stay in the model."
+      },
+      "source":      "DMAIC.io Lehrkonfiguration",
+      "license":     "public-domain",
+      "file":        "projects/doe-optimal-screening-5f.json",
+      "format":      "json",
+      "modules":     ["doe-planner"],
+      "tags":        ["doe", "optimal", "d-optimal", "screening", "2fi"]
+    },
+    {
+      "id": "doe-optimal-mixed-4f",
+      "type": "project",
+      "title":       { "de": "D-optimal mixed: 3 cont. + 1 kategorisch", "en": "D-optimal mixed: 3 cont. + 1 categorical" },
+      "description": {
+        "de": "Drei kontinuierliche Faktoren und ein kategorischer Faktor mit drei Stufen (Material). Gemischt-stufige Optimal-Designs sind klassische Schemata vorbehalten — ein typischer D-optimaler Anwendungsfall.",
+        "en": "Three continuous factors plus one three-level categorical factor (material). Mixed-level optimal designs are a textbook D-optimal use case — classic schemes cannot handle this."
+      },
+      "source":      "DMAIC.io Lehrkonfiguration",
+      "license":     "public-domain",
+      "file":        "projects/doe-optimal-mixed-4f.json",
+      "format":      "json",
+      "modules":     ["doe-planner"],
+      "tags":        ["doe", "optimal", "d-optimal", "mixed-level", "categorical"]
+    },
+    {
+      "id": "regression-pizza-delivery",
+      "type": "project",
+      "title":       { "de": "Pizza-Lieferzeit (multiple lineare Regression)", "en": "Pizza Delivery Time (multiple linear regression)" },
+      "description": {
+        "de": "30 Pizza-Lieferungen mit Entfernung (km), Verkehrslevel (1–5) und gemessener Lieferzeit (min). Linearer Zusammenhang Lieferzeit ≈ 5 + 2,5·Entfernung + 1,2·Verkehr — Lehrbuch-Datensatz für multiple lineare Regression mit hohem R².",
+        "en": "30 pizza deliveries with distance (km), traffic level (1–5) and measured delivery time (min). Linear model Time ≈ 5 + 2.5·distance + 1.2·traffic — textbook dataset for multiple linear regression with high R²."
+      },
+      "source":      "DMAIC.io synthetisch, NumPy default_rng, Seed=2026",
+      "license":     "public-domain",
+      "file":        "projects/regression-pizza-delivery.json",
+      "format":      "json",
+      "modules":     ["regression"],
+      "tags":        ["regression", "linear", "multivariate"]
+    },
+    {
+      "id": "regression-collinear",
+      "type": "project",
+      "title":       { "de": "Motor-Versuche (Multikollinearität)", "en": "Motor Trials (multicollinearity)" },
+      "description": {
+        "de": "30 Motor-Versuche mit Drehzahl und Drehmoment als Prädiktoren, Leistung als Response. Drehmoment ≈ 0,04·Drehzahl — die beiden Prädiktoren sind stark korreliert, der VIF schlägt aus. Lehrcase für Multikollinearität.",
+        "en": "30 motor trials with rpm and torque as predictors, power as response. Torque ≈ 0.04·rpm — predictors are highly collinear, VIF spikes. Textbook multicollinearity case."
+      },
+      "source":      "DMAIC.io synthetisch, NumPy default_rng, Seed=303",
+      "license":     "public-domain",
+      "file":        "projects/regression-collinear.json",
+      "format":      "json",
+      "modules":     ["regression"],
+      "tags":        ["regression", "multicollinearity", "vif"]
+    },
+    {
+      "id": "regression-outliers",
+      "type": "project",
+      "title":       { "de": "Spritverbrauch mit Ausreißern", "en": "Fuel Consumption with Outliers" },
+      "description": {
+        "de": "30 Fahrzeug-Messungen Geschwindigkeit → Verbrauch. Zwei eingebaute Ausreißer (Zeilen 6 und 23) drücken das R² gegenüber der sauberen Linearität. Lehrcase für Residuen-Diagnostik und Outlier-Detection.",
+        "en": "30 vehicle measurements speed → fuel consumption. Two deliberate outliers (rows 6 and 23) drop R² compared to the clean linear fit. Textbook case for residual diagnostics and outlier detection."
+      },
+      "source":      "DMAIC.io synthetisch, NumPy default_rng, Seed=404",
+      "license":     "public-domain",
+      "file":        "projects/regression-outliers.json",
+      "format":      "json",
+      "modules":     ["regression"],
+      "tags":        ["regression", "outliers", "diagnostics"]
+    },
+    {
+      "id": "correlation-pizza-delivery",
+      "type": "project",
+      "title":       { "de": "Pizza-Lieferzeit (Korrelationsmatrix)", "en": "Pizza Delivery Time (correlation matrix)" },
+      "description": {
+        "de": "Selbe 30 Pizza-Lieferungen wie der Regressions-Datensatz — hier als Korrelationsmatrix über Entfernung, Verkehrslevel und Lieferzeit. Zeigt die starken paarweisen Pearson-Korrelationen.",
+        "en": "Same 30 pizza deliveries as the regression dataset — here as a correlation matrix over distance, traffic level and delivery time. Highlights the strong pairwise Pearson correlations."
+      },
+      "source":      "DMAIC.io synthetisch, NumPy default_rng, Seed=2026",
+      "license":     "public-domain",
+      "file":        "projects/correlation-pizza-delivery.json",
+      "format":      "json",
+      "modules":     ["correlation"],
+      "tags":        ["correlation", "pearson", "multivariate"]
+    },
+    {
+      "id": "glm-logistic-yield",
+      "type": "project",
+      "title":       { "de": "Yield-Versuche (logistische GLM)", "en": "Yield Trials (logistic GLM)" },
+      "description": {
+        "de": "Acht Temperaturstufen mit je 50 Versuchen. Binomial-Response (Erfolge / Versuche) folgt einer logistischen Kurve mit Wendepunkt um 160 °C. Klassischer Anwendungsfall für binomiale GLM mit Trials-Spalte.",
+        "en": "Eight temperature levels with 50 trials each. Binomial response (successes / trials) follows a logistic curve with inflection around 160 °C. Textbook case for binomial GLM with a trials column."
+      },
+      "source":      "DMAIC.io synthetisch, NumPy default_rng, Seed=101",
+      "license":     "public-domain",
+      "file":        "projects/glm-logistic-yield.json",
+      "format":      "json",
+      "modules":     ["glm-regression"],
+      "tags":        ["glm", "binomial", "logistic"]
+    },
+    {
+      "id": "glm-poisson-defects",
+      "type": "project",
+      "title":       { "de": "Defekte pro Schicht (Poisson-GLM)", "en": "Defects per Shift (Poisson GLM)" },
+      "description": {
+        "de": "40 Schichten mit Vorschub (mm/s) und Werkzeugverschleiß (h) als Prädiktoren, Defekt-Counts als Response. Poisson-Modell mit log(λ) = -1 + 0,02·Vorschub + 0,03·Verschleiß.",
+        "en": "40 shifts with feed rate (mm/s) and tool wear (h) as predictors, defect counts as response. Poisson model with log(λ) = -1 + 0.02·feed + 0.03·wear."
+      },
+      "source":      "DMAIC.io synthetisch, NumPy default_rng, Seed=202",
+      "license":     "public-domain",
+      "file":        "projects/glm-poisson-defects.json",
+      "format":      "json",
+      "modules":     ["glm-regression"],
+      "tags":        ["glm", "poisson", "counts"]
+    },
+    {
+      "id": "contour-rsm-yield",
+      "type": "project",
+      "title":       { "de": "Ausbeute-Optimum (Response-Surface)", "en": "Yield Optimum (response surface)" },
+      "description": {
+        "de": "Quadratisches Modell für Ausbeute = f(Temperatur, Druck) mit Optimum bei 180 °C und 3 bar. Zeigt eine klassische Höhenlinien-Karte mit ausgeprägtem Maximum.",
+        "en": "Quadratic model for yield = f(temperature, pressure) with optimum at 180 °C and 3 bar. Shows a classic contour map with a pronounced maximum."
+      },
+      "source":      "DMAIC.io Lehrkonfiguration",
+      "license":     "public-domain",
+      "file":        "projects/contour-rsm-yield.json",
+      "format":      "json",
+      "modules":     ["contour-plot"],
+      "tags":        ["contour", "rsm", "quadratic"]
+    },
+    {
+      "id": "control-chart-xbar-r-stable",
+      "type": "project",
+      "title":       { "de": "Wellen-Durchmesser (X̄-R, stabil)", "en": "Shaft Diameter (X̄-R, in control)" },
+      "description": {
+        "de": "25 Untergruppen à 5 Messungen aus einem stabilen Prozess (μ = 10,00 mm, σ = 0,05 mm). X̄-R-Karte zeigt keine Verletzungen der Nelson-Regeln.",
+        "en": "25 subgroups of 5 measurements each from a stable process (μ = 10.00 mm, σ = 0.05 mm). X̄-R chart shows no Nelson-rule violations."
+      },
+      "source":      "DMAIC.io synthetisch, NumPy default_rng, Seed=501",
+      "license":     "public-domain",
+      "file":        "projects/control-chart-xbar-r-stable.json",
+      "format":      "json",
+      "modules":     ["control-chart"],
+      "tags":        ["spc", "control-chart", "xbar-r", "stable"]
+    },
+    {
+      "id": "control-chart-imr-shift",
+      "type": "project",
+      "title":       { "de": "I-MR-Karte mit Shift", "en": "I-MR Chart with Shift" },
+      "description": {
+        "de": "50 Einzelmessungen mit einem Sprung von μ = 10,00 auf μ = 10,18 ab Wert 30. Die Nelson-Regeln (insbesondere Regel 1 und Regel 5) sollten den Shift detektieren.",
+        "en": "50 individual measurements with a step shift from μ = 10.00 to μ = 10.18 at observation 30. The Nelson rules (especially rule 1 and rule 5) should flag the shift."
+      },
+      "source":      "DMAIC.io synthetisch, NumPy default_rng, Seed=502",
+      "license":     "public-domain",
+      "file":        "projects/control-chart-imr-shift.json",
+      "format":      "json",
+      "modules":     ["control-chart"],
+      "tags":        ["spc", "control-chart", "i-mr", "shift", "out-of-control"]
+    },
+    {
+      "id": "control-chart-imr-trend",
+      "type": "project",
+      "title":       { "de": "I-MR-Karte mit Drift", "en": "I-MR Chart with Drift" },
+      "description": {
+        "de": "50 Einzelmessungen mit linearem Aufwärtstrend (+0,6 über die Serie). Nelson-Regel 3 (sechs Punkte in Folge steigend) sollte mehrfach feuern.",
+        "en": "50 individual measurements with a linear upward drift (+0.6 across the series). Nelson rule 3 (six points in a row trending up) should fire multiple times."
+      },
+      "source":      "DMAIC.io synthetisch, NumPy default_rng, Seed=503",
+      "license":     "public-domain",
+      "file":        "projects/control-chart-imr-trend.json",
+      "format":      "json",
+      "modules":     ["control-chart"],
+      "tags":        ["spc", "control-chart", "i-mr", "trend", "out-of-control"]
+    },
+    {
+      "id": "xy-plot-pizza-delivery",
+      "type": "project",
+      "title":       { "de": "Pizza-Lieferzeit (Streudiagramm)", "en": "Pizza Delivery Time (scatter plot)" },
+      "description": {
+        "de": "Selbe 30 Pizza-Lieferungen wie der Regressions-Datensatz — Streudiagramm Lieferzeit über Entfernung mit Statistik-Panel. Ideal für Erkundung des Zusammenhangs vor der Regression.",
+        "en": "Same 30 pizza deliveries as the regression dataset — scatter plot of delivery time over distance with stats panel. Useful for visual exploration before fitting a regression."
+      },
+      "source":      "DMAIC.io synthetisch, NumPy default_rng, Seed=2026",
+      "license":     "public-domain",
+      "file":        "projects/xy-plot-pizza-delivery.json",
+      "format":      "json",
+      "modules":     ["xy-plot"],
+      "tags":        ["xy-plot", "scatter"]
+    },
+    {
+      "id": "doe-optimal-augment-3f",
+      "type": "project",
+      "title":       { "de": "D-optimal Augment: auf bestehender Datensammlung", "en": "D-optimal augment: on existing data set" },
+      "description": {
+        "de": "Drei kontinuierliche Faktoren, quadratisches Modell, 12 Versuchsläufe gesamt — sechs davon bereits gemessen. Das Beispiel legt eine Datensammlung mit den bestehenden Messwerten an und ergänzt sie um sechs weitere D-optimale Versuchsläufe.",
+        "en": "Three continuous factors, quadratic model, 12 runs total — six already measured. The example creates a data sheet with the existing measurements and augments it with six additional D-optimal runs."
+      },
+      "source":      "DMAIC.io Lehrkonfiguration",
+      "license":     "public-domain",
+      "file":        "projects/doe-optimal-augment-3f.json",
+      "format":      "json",
+      "modules":     ["doe-planner"],
+      "tags":        ["doe", "optimal", "d-optimal", "augment", "rsm"]
+    },
+    {
+      "id": "worksheet-pizza-delivery",
+      "type": "project",
+      "title":       { "de": "Pizza-Lieferungen (Datensammlung)", "en": "Pizza Deliveries (data sheet)" },
+      "description": {
+        "de": "30 Pizza-Lieferungen mit Entfernung (km), Verkehrslevel (1–5) und Lieferzeit (min) als rohe Datensammlung. Lehrcase, der von Korrelation, XY-Plot und Regression weiterverwendet wird.",
+        "en": "30 pizza deliveries with distance (km), traffic level (1–5) and delivery time (min) as a raw data sheet. Teaching case reused by correlation, XY plot and regression examples."
+      },
+      "source":      "DMAIC.io synthetisch, NumPy default_rng, Seed=2026",
+      "license":     "public-domain",
+      "file":        "worksheets/pizza-delivery.json",
+      "format":      "json",
+      "modules":     ["worksheet"],
+      "tags":        ["worksheet", "multivariate", "pizza"]
+    },
+    {
+      "id": "worksheet-glm-logistic-yield",
+      "type": "project",
+      "title":       { "de": "Yield-Versuche (Datensammlung)", "en": "Yield Trials (data sheet)" },
+      "description": {
+        "de": "Acht Temperaturstufen mit je 50 Versuchen und Erfolgs-Counts. Rohformat als Datensammlung — Basis für das GLM-Logistic-Yield-Regressionsbeispiel.",
+        "en": "Eight temperature levels with 50 trials each and success counts. Raw data sheet — basis for the GLM logistic-yield regression example."
+      },
+      "source":      "DMAIC.io synthetisch, NumPy default_rng, Seed=101",
+      "license":     "public-domain",
+      "file":        "worksheets/glm-logistic-yield.json",
+      "format":      "json",
+      "modules":     ["worksheet"],
+      "tags":        ["worksheet", "binomial", "glm"]
+    },
+    {
+      "id": "worksheet-glm-poisson-defects",
+      "type": "project",
+      "title":       { "de": "Defekte pro Schicht (Datensammlung)", "en": "Defects per Shift (data sheet)" },
+      "description": {
+        "de": "40 Schichten mit Vorschub (mm/s), Werkzeugverschleiß (h) und Defekt-Counts. Rohformat als Datensammlung — Basis für das GLM-Poisson-Regressionsbeispiel.",
+        "en": "40 shifts with feed rate (mm/s), tool wear (h) and defect counts. Raw data sheet — basis for the GLM Poisson regression example."
+      },
+      "source":      "DMAIC.io synthetisch, NumPy default_rng, Seed=202",
+      "license":     "public-domain",
+      "file":        "worksheets/glm-poisson-defects.json",
+      "format":      "json",
+      "modules":     ["worksheet"],
+      "tags":        ["worksheet", "counts", "glm"]
+    },
+    {
+      "id": "worksheet-multisheet-quartal",
+      "type": "project",
+      "title":       { "de": "Produktion Q1–Q3 (Mehrblatt-Demo)", "en": "Production Q1–Q3 (multi-sheet demo)" },
+      "description": {
+        "de": "Drei Tabellenblätter (Q1/Q2/Q3) mit Produktionsdaten je 10 Chargen. Demonstriert die Mehrblatt-Funktion der Datensammlung — Tabs unten zum Wechseln.",
+        "en": "Three sheets (Q1/Q2/Q3) with production data of 10 batches each. Demonstrates the multi-sheet feature of the worksheet — switch via tabs at the bottom."
+      },
+      "source":      "DMAIC.io Lehrkonfiguration",
+      "license":     "public-domain",
+      "file":        "worksheets/multisheet-quartal.json",
+      "format":      "json",
+      "modules":     ["worksheet"],
+      "tags":        ["worksheet", "multi-sheet", "didactic"]
+    },
+    {
+      "id": "worksheet-mixed-types-training",
+      "type": "project",
+      "title":       { "de": "Mitarbeiter-Schulung (gemischte Spaltentypen)", "en": "Employee Training (mixed column types)" },
+      "description": {
+        "de": "12 Mitarbeiter mit ID, Name, Abteilung und Status (Text), Punkten vor/nach (Zahl) und einer Prozent-Spalte. Demonstriert Text-, Zahl- und Prozent-Spalten in einer Tabelle, inkl. einer Lücke im Nachher-Wert.",
+        "en": "12 employees with ID, name, department and status (text), pre/post scores (numeric) and a percent column. Demonstrates text, numeric and percent columns side by side, including a gap in the post-training score."
+      },
+      "source":      "DMAIC.io Lehrkonfiguration",
+      "license":     "public-domain",
+      "file":        "worksheets/mixed-types-training.json",
+      "format":      "json",
+      "modules":     ["worksheet"],
+      "tags":        ["worksheet", "mixed-types", "didactic"]
+    },
+    {
+      "id": "worksheet-time-series-gaps",
+      "type": "project",
+      "title":       { "de": "Messreihe Januar (Zeitreihe mit Lücken)", "en": "January Series (time series with gaps)" },
+      "description": {
+        "de": "20 Werktage im Januar 2026 mit Schicht (F/S/N), Messwert und Temperatur. Einzelne Messungen fehlen (null-Werte). Demonstriert Datums-Spalten und das Verhalten bei fehlenden Daten.",
+        "en": "20 working days in January 2026 with shift (F/S/N), measurement and temperature. Some measurements are missing (null values). Demonstrates date columns and how the grid handles gaps."
+      },
+      "source":      "DMAIC.io Lehrkonfiguration",
+      "license":     "public-domain",
+      "file":        "worksheets/time-series-gaps.json",
+      "format":      "json",
+      "modules":     ["worksheet"],
+      "tags":        ["worksheet", "time-series", "missing-data", "didactic"]
+    },
+    {
+      "id": "worksheet-formula-demo",
+      "type": "project",
+      "title":       { "de": "Bestellungen mit Formelspalten", "en": "Orders with Formula Columns" },
+      "description": {
+        "de": "10 Bestellzeilen mit Anzahl, Preis (€), berechneter Gesamtsumme (=Anzahl·Preis), Rabatt (%) und Endpreis (=Gesamt·(1-Rabatt)). Demonstriert Zell-Referenz-Formeln und Currency-/Percent-Spalten.",
+        "en": "10 order rows with quantity, unit price (€), calculated total (=qty·price), discount (%) and final price (=total·(1-discount)). Demonstrates cell-reference formulas and currency/percent columns."
+      },
+      "source":      "DMAIC.io Lehrkonfiguration",
+      "license":     "public-domain",
+      "file":        "worksheets/formula-demo.json",
+      "format":      "json",
+      "modules":     ["worksheet"],
+      "tags":        ["worksheet", "formulas", "currency", "didactic"]
+    },
+    {
+      "id": "msa-typ1-faehig",
+      "type": "project",
+      "title":       { "de": "MSA Typ 1: fähiger Messprozess", "en": "MSA Type 1: capable gage" },
+      "description": {
+        "de": "25 Wiederholmessungen eines 10,0 mm Referenzteils (LSL 9,9 / USL 10,1, T = 0,2 mm). Sehr geringe Streuung, vernachlässigbarer Bias → Cg ≈ 3,8 und Cgk ≈ 3,8 weit über der 1,33-Schwelle. Lehrbuch-Fall eines fähigen Messmittels.",
+        "en": "25 repeated measurements of a 10.0 mm reference part (LSL 9.9 / USL 10.1, T = 0.2 mm). Very small spread, negligible bias → Cg ≈ 3.8 and Cgk ≈ 3.8 well above the 1.33 threshold. Textbook capable-gage case."
+      },
+      "source":      "DMAIC.io synthetisch, NumPy default_rng, Seed=601",
+      "license":     "public-domain",
+      "file":        "projects/msa-typ1-faehig.json",
+      "format":      "json",
+      "modules":     ["msa-typ1"],
+      "tags":        ["msa", "cg", "cgk", "capable"]
+    },
+    {
+      "id": "msa-typ1-grenzwertig",
+      "type": "project",
+      "title":       { "de": "MSA Typ 1: grenzwertiger Messprozess", "en": "MSA Type 1: marginal gage" },
+      "description": {
+        "de": "25 Wiederholmessungen mit moderater Streuung und leichtem positiven Bias. Cg ≈ 1,5 liegt knapp über, Cgk ≈ 1,0 knapp unter der 1,33-Schwelle — der Bias zieht die Fähigkeit nach unten. Klassischer Fall für die Bedeutung von Cgk neben Cg.",
+        "en": "25 repeated measurements with moderate spread and slight positive bias. Cg ≈ 1.5 just above the 1.33 threshold, Cgk ≈ 1.0 just below — bias pulls capability down. Classic case for the role of Cgk alongside Cg."
+      },
+      "source":      "DMAIC.io synthetisch, NumPy default_rng, Seed=602",
+      "license":     "public-domain",
+      "file":        "projects/msa-typ1-grenzwertig.json",
+      "format":      "json",
+      "modules":     ["msa-typ1"],
+      "tags":        ["msa", "cg", "cgk", "marginal", "bias"]
+    },
+    {
+      "id": "msa-typ1-nicht-faehig",
+      "type": "project",
+      "title":       { "de": "MSA Typ 1: nicht fähiger Messprozess", "en": "MSA Type 1: incapable gage" },
+      "description": {
+        "de": "25 Wiederholmessungen mit hoher Streuung und deutlichem Bias. Cg ≈ 0,6 und Cgk ≈ 0,3 — das Messmittel verfehlt die Fähigkeitsgrenze deutlich. Lehrbuch-Fall für ein abzulehnendes Messsystem.",
+        "en": "25 repeated measurements with large spread and noticeable bias. Cg ≈ 0.6 and Cgk ≈ 0.3 — gage clearly fails the capability threshold. Textbook case for a measurement system that must be rejected."
+      },
+      "source":      "DMAIC.io synthetisch, NumPy default_rng, Seed=603",
+      "license":     "public-domain",
+      "file":        "projects/msa-typ1-nicht-faehig.json",
+      "format":      "json",
+      "modules":     ["msa-typ1"],
+      "tags":        ["msa", "cg", "cgk", "incapable", "bias"]
+    },
+    {
+      "id": "msa-typ2-akzeptabel",
+      "type": "project",
+      "title":       { "de": "MSA Typ 2: akzeptables Gage R&R", "en": "MSA Type 2: acceptable Gage R&R" },
+      "description": {
+        "de": "Gekreuzte ANOVA-Studie: 10 Teile × 3 Operatoren × 3 Wiederholungen (90 Messungen). Geringe Wiederhol- und Vergleichsstreuung, dominante Teilevarianz → %GRR ≈ 6 % bezogen auf die Studienvarianz. Lehrbuch-Fall eines akzeptablen Messsystems.",
+        "en": "Crossed ANOVA study: 10 parts × 3 operators × 3 replicates (90 measurements). Small repeatability and reproducibility variation, dominant part variance → %GRR ≈ 6 % of study variation. Textbook acceptable measurement system."
+      },
+      "source":      "DMAIC.io synthetisch, NumPy default_rng, Seed=611",
+      "license":     "public-domain",
+      "file":        "projects/msa-typ2-akzeptabel.json",
+      "format":      "json",
+      "modules":     ["msa-typ2"],
+      "tags":        ["msa", "grr", "anova", "acceptable"]
+    },
+    {
+      "id": "msa-typ2-problematisch",
+      "type": "project",
+      "title":       { "de": "MSA Typ 2: problematisches Gage R&R", "en": "MSA Type 2: problematic Gage R&R" },
+      "description": {
+        "de": "Gekreuzte ANOVA-Studie mit hoher Wiederhol- und Vergleichsstreuung gegenüber kleiner Teilevarianz. 10 Teile × 3 Operatoren × 3 Wiederholungen → %GRR im Bereich 40–50 %. Lehrbuch-Fall, in dem das Messsystem die Teileunterschiede maskiert.",
+        "en": "Crossed ANOVA study with large repeatability and reproducibility variation versus small part variance. 10 parts × 3 operators × 3 replicates → %GRR in the 40–50 % range. Textbook case where the measurement system masks part-to-part variation."
+      },
+      "source":      "DMAIC.io synthetisch, NumPy default_rng, Seed=612",
+      "license":     "public-domain",
+      "file":        "projects/msa-typ2-problematisch.json",
+      "format":      "json",
+      "modules":     ["msa-typ2"],
+      "tags":        ["msa", "grr", "anova", "problematic"]
+    }
+  ]
+}

@@ -122,6 +122,35 @@ const mod = {
   getState() { return { ...this._state }; },
   setState(data) { if (data) this._state = { ...data }; },
 
+  /**
+   * Load a catalog example. The contour-plot example payload is a pure
+   * model state — no worksheet involved, just b coefficients, axis ranges
+   * and labels. We replace state, refresh the controls, and redraw.
+   *
+   * @param {{ meta: object, data: object }} payload
+   */
+  async loadExample(payload) {
+    if (!payload || !payload.data) return;
+    const t = (k) => this._context.i18n.t(k);
+
+    // No overwrite-confirm: contour-plot state is purely a model spec
+    // (coefficients / labels / axis ranges) — no measurements to protect.
+    // Defaults are always present, so a confirm would fire on every load.
+
+    this._state = { ...payload.data };
+
+    // Re-render input panel so the new field values are visible, then apply
+    // the state (writes back into DOM + draws the contour).
+    this._render();
+    if (this._state.model) this._applyState();
+
+    this._context.stateManager.setModuleState(this._context.instanceId, this._state);
+
+    const lang = this._context.i18n.getLanguage();
+    const title = payload.meta?.title?.[lang] || payload.meta?.title?.en || payload.meta?.id || '';
+    this._context.notify?.(t('moduleHelp.exampleLoaded').replace('{title}', title), 'success');
+  },
+
   // ─── Helpers ────────────────────────────────────────────────
 
   _t(key) { return this._context.i18n.t(`modules.contour-plot.${key}`); },

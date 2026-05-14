@@ -1,0 +1,26 @@
+{
+  "chartTypeId": "i-mr",
+  "subgroupSize": 1,
+  "columnRef": {
+    "instanceId": "__source__",
+    "sheetId": "sheet-imr-trend",
+    "columnId": "c-value"
+  },
+  "baselineCount": null,
+  "stagesText": "",
+  "usl": null,
+  "lsl": null,
+  "enabledRules": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8
+  ],
+  "annotations": {},
+  "frozenLimits": null,
+  "sourceWorksheetFile": "worksheets/spc-imr-trend.json"
+}

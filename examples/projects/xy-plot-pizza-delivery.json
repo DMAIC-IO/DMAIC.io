@@ -1,0 +1,13 @@
+{
+  "datasets": [
+    {
+      "xRef":     { "instanceId": "__source__", "sheetId": "sheet-pizza", "columnId": "c-entfernung" },
+      "yRef":     { "instanceId": "__source__", "sheetId": "sheet-pizza", "columnId": "c-lieferzeit" },
+      "groupRef": null
+    }
+  ],
+  "showLines": false,
+  "showMarkers": true,
+  "showStats": true,
+  "sourceWorksheetFile": "worksheets/pizza-delivery.json"
+}

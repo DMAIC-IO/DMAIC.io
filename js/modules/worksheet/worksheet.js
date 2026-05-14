@@ -908,6 +908,63 @@ export default {
     this._workbook.setState(data);
   },
 
+  /**
+   * Load a catalog example into the workbook. Worksheet examples ship a full
+   * workbook state ({ sheets, activeSheetId, sheetCounter }) — payload.data
+   * maps directly to setState().
+   *
+   * @param {{ meta: object, data: object }} payload
+   */
+  async loadExample(payload) {
+    if (!payload || !payload.data || !this._workbook) return;
+    const t = this._t;
+
+    if (this._hasUserContent() && this._context?.confirmPopout) {
+      const ok = await this._context.confirmPopout(t('moduleHelp.confirmOverwrite'), { danger: true });
+      if (!ok) return;
+    }
+
+    if (!payload.data.sheets || !Array.isArray(payload.data.sheets) || payload.data.sheets.length === 0) {
+      this._context?.notify?.(t('moduleHelp.exampleLoadError'), 'error');
+      return;
+    }
+
+    try {
+      this.setState(payload.data);
+    } catch {
+      this._context?.notify?.(t('moduleHelp.exampleLoadError'), 'error');
+      return;
+    }
+
+    try {
+      if (this._context?.stateManager && this._context?.instanceId) {
+        this._context.stateManager.setModuleState(this._context.instanceId, this.getState());
+        this._context.eventBus?.emit('worksheet:dataChanged', { instanceId: this._context.instanceId });
+      }
+    } catch { /* ignore */ }
+
+    const lang = this._context.i18n.getLanguage();
+    const title = payload.meta?.title?.[lang] || payload.meta?.title?.en || payload.meta?.id || '';
+    this._context?.notify?.(t('moduleHelp.exampleLoaded', { title }), 'success');
+  },
+
+  /**
+   * True if the workbook contains any user data — used to decide whether
+   * loadExample needs a confirmation prompt before overwriting.
+   * A fresh workbook has one sheet with empty default columns; that is
+   * treated as "no content".
+   */
+  _hasUserContent() {
+    if (!this._workbook) return false;
+    const state = this._workbook.getState();
+    if (!state?.sheets || state.sheets.length === 0) return false;
+    if (state.sheets.length > 1) return true;
+    const cols = state.sheets[0]?.state?.columns || [];
+    return cols.some(col =>
+      Array.isArray(col.values) && col.values.some(v => v != null && v !== ''),
+    );
+  },
+
   // ─── Helpers ──────────────────────────────────────────
 
   /**

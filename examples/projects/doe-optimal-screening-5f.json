@@ -1,0 +1,41 @@
+{
+  "version": 3,
+  "doeName": "D-optimal Screening — 5 Faktoren, linear + 2FI",
+  "designType": "dopt",
+  "factors": [
+    { "id": 1, "name": "Temperatur",     "unit": "°C",   "kind": "continuous", "levels": ["140", "200"] },
+    { "id": 2, "name": "Vorschub",       "unit": "mm/s", "kind": "continuous", "levels": ["20",  "80"]  },
+    { "id": 3, "name": "Druck",          "unit": "bar",  "kind": "continuous", "levels": ["1",   "8"]   },
+    { "id": 4, "name": "Konzentration",  "unit": "%",    "kind": "continuous", "levels": ["5",   "20"]  },
+    { "id": 5, "name": "Mischzeit",      "unit": "s",    "kind": "continuous", "levels": ["10",  "60"]  }
+  ],
+  "responses": [
+    { "name": "Ausbeute", "unit": "%" }
+  ],
+  "options": {
+    "randomize": true,
+    "centerPoints": false,
+    "replicates": 1,
+    "alphaType": "rotatable",
+    "ccdCenterPoints": 3,
+    "bbCenterPoints": 3,
+    "taguchiArray": "",
+    "optimalRuns": 18,
+    "optimalQuadratic": false,
+    "optimalExcludedInteractions": []
+  },
+  "selectedRes": null,
+  "selectedPBIdx": null,
+  "design": null,
+  "previewEdits": null,
+  "previewDirty": false,
+  "worksheetRef": null,
+  "sourceWorksheet": null,
+  "evaluation": null,
+  "analysisResponseIdx": 0,
+  "fid": 5,
+  "projectMode": false,
+  "projectName": "",
+  "projectPhases": [],
+  "activePhaseIdx": -1
+}

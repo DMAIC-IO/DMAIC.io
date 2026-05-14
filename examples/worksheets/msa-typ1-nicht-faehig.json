@@ -1,0 +1,48 @@
+{
+  "sheets": [
+    {
+      "id": "sheet-msa-typ1-nicht-faehig",
+      "name": "Messreihe",
+      "state": {
+        "columns": [
+          {
+            "id": "c-messwert",
+            "name": "Messwert",
+            "shortName": "M",
+            "type": "numeric",
+            "values": [
+              9.9943,
+              10.0131,
+              10.0071,
+              10.0087,
+              10.0115,
+              10.0003,
+              9.9813,
+              10.0079,
+              9.9947,
+              10.0385,
+              10.0077,
+              10.0415,
+              10.0171,
+              10.0309,
+              10.0085,
+              9.995,
+              10.022,
+              10.0328,
+              9.9989,
+              10.0215,
+              9.9999,
+              10.0128,
+              9.9786,
+              10.0361,
+              10.0214
+            ]
+          }
+        ],
+        "rowCount": 25
+      }
+    }
+  ],
+  "activeSheetId": "sheet-msa-typ1-nicht-faehig",
+  "sheetCounter": 1
+}

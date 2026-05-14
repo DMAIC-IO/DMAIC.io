@@ -12,6 +12,7 @@ import { runCorrelationAnalysis, pearsonR, spearmanR, kendallTau, fisherCI, kend
 import { isPickerFocused } from '../../ui/column-picker.js';
 import { esc } from '../../core/html-utils.js';
 import { renderMethods } from './correlation-render.js';
+import { provisionWorksheet, removeProvisionedWorksheet } from '../../core/examples-registry.js';
 
 // Phase iteration is now cycle-agnostic via `Object.keys(state.phases)` — see
 // js/core/cycles/cycles.js for the cycle/phase model.
@@ -66,6 +67,10 @@ const mod = {
   _matrixMethod: 'pearson',
   _result: null,
   _matrixResult: null,
+  /** @type {string|null} Worksheet instance this module created via loadExample,
+   *  removed and recreated on every subsequent example load so the column
+   *  picker doesn't accumulate stale sheets. */
+  _exampleWorksheetId: null,
   /** @type {number|null} Filter: minimum |r| threshold (null = disabled) */
   _filterMinR: null,
   /** @type {number|null} Filter: maximum p-value threshold (null = disabled) */
@@ -173,6 +178,7 @@ const mod = {
       matrixResult: this._matrixResult || null,
       filterMinR: this._filterMinR,
       filterMaxP: this._filterMaxP,
+      exampleWorksheetId: this._exampleWorksheetId,
     };
   },
 
@@ -184,11 +190,60 @@ const mod = {
     if (data?.matrixResult) this._matrixResult = data.matrixResult;
     this._filterMinR = data?.filterMinR ?? null;
     this._filterMaxP = data?.filterMaxP ?? null;
+    if (data?.exampleWorksheetId !== undefined) this._exampleWorksheetId = data.exampleWorksheetId;
     this._lastFingerprint = null;
     if (this._container) {
       this._render();
       this._autoRun();
     }
+  },
+
+  /**
+   * Load a catalog example. Provisioned worksheet + state placeholders are
+   * rewritten to point at the new instance, then auto-run computes the
+   * correlation matrix / pair analysis.
+   * @param {{ meta: object, data: object }} payload
+   */
+  async loadExample(payload) {
+    if (!payload || !payload.data) return;
+    const t = (k) => this._context.i18n.t(k);
+
+    const hasContent = (this._colRefs?.length > 0);
+    if (hasContent && this._context?.confirmPopout) {
+      const ok = await this._context.confirmPopout(t('moduleHelp.confirmOverwrite'), { danger: true });
+      if (!ok) return;
+    }
+
+    const data = { ...payload.data };
+
+    if (data.sourceWorksheetData) {
+      const wsState = data.sourceWorksheetData;
+      delete data.sourceWorksheetData;
+      // Discard the previous example-provisioned worksheet (if any) so the
+      // column picker doesn't accumulate stale sheets across re-loads.
+      if (this._exampleWorksheetId) {
+        removeProvisionedWorksheet(this._context, this._exampleWorksheetId);
+        this._exampleWorksheetId = null;
+      }
+      const ref = provisionWorksheet(this._context, wsState);
+      if (ref) {
+        this._exampleWorksheetId = ref.instanceId;
+        data.exampleWorksheetId = ref.instanceId;
+        data.colRefs = (data.colRefs || []).map(r =>
+          r?.instanceId === '__source__' ? { ...r, instanceId: ref.instanceId } : r,
+        );
+      }
+    }
+
+    // Drop any computed result from the snapshot — auto-run recomputes.
+    delete data.result;
+    delete data.matrixResult;
+
+    this.setState(data);
+
+    const lang = this._context.i18n.getLanguage();
+    const title = payload.meta?.title?.[lang] || payload.meta?.title?.en || payload.meta?.id || '';
+    this._context.notify?.(t('moduleHelp.exampleLoaded').replace('{title}', title), 'success');
   },
 
   // ─── Worksheet Column Discovery ─────────────────────────────

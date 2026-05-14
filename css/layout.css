@@ -1699,13 +1699,96 @@ body.training-area-open .dmaic-tiles {
   line-height: 1;
 }
 
-.help-panel__content {
+.help-panel__tabs {
+  display: flex;
+  border-bottom: var(--border-width) solid var(--color-border-primary);
+  background: var(--color-bg-secondary);
+  flex-shrink: 0;
+}
+
+.help-panel__tab {
+  flex: 1;
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  font: inherit;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+}
+
+.help-panel__tab:hover {
+  color: var(--color-text-primary);
+}
+
+.help-panel__tab--active {
+  color: var(--color-text-primary);
+  border-bottom-color: var(--color-accent);
+}
+
+.help-panel__body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.help-panel__content,
+.help-panel__examples {
   flex: 1;
   overflow-y: auto;
   padding: var(--spacing-md);
   font-size: var(--font-size-sm);
   line-height: 1.5;
   color: var(--color-text-primary);
+}
+
+.help-panel__example {
+  border: var(--border-width) solid var(--color-border-primary);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-sm) var(--spacing-md);
+  margin-bottom: var(--spacing-sm);
+  background: var(--color-bg-primary);
+}
+
+.help-panel__example-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-xs);
+}
+
+.help-panel__example-title {
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+}
+
+.help-panel__example-badge {
+  font-size: var(--font-size-xs);
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+  background: var(--color-bg-tertiary);
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.help-panel__example-desc {
+  margin: 0 0 var(--spacing-xs);
+  color: var(--color-text-secondary);
+}
+
+.help-panel__example-meta {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary, var(--color-text-secondary));
+  margin-bottom: var(--spacing-xs);
+}
+
+.help-panel__example-load {
+  width: 100%;
+  margin-top: var(--spacing-xs);
 }
 
 .help-panel__content h3 {

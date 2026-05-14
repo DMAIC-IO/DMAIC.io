@@ -1,0 +1,26 @@
+{
+  "params": {
+    "lsl": 6.0,
+    "usl": 14.0,
+    "alpha": 0.05,
+    "studyVarMultiplier": 5.15
+  },
+  "columnRefs": {
+    "part": {
+      "instanceId": "__source__",
+      "sheetId": "sheet-msa-typ2-problematisch",
+      "columnId": "c-teil"
+    },
+    "operator": {
+      "instanceId": "__source__",
+      "sheetId": "sheet-msa-typ2-problematisch",
+      "columnId": "c-operator"
+    },
+    "measurement": {
+      "instanceId": "__source__",
+      "sheetId": "sheet-msa-typ2-problematisch",
+      "columnId": "c-messwert"
+    }
+  },
+  "sourceWorksheetFile": "worksheets/msa-typ2-problematisch.json"
+}

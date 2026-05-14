@@ -11,6 +11,7 @@
 
 import { validate, analyze } from '../../engines/msa-typ2-engine.js';
 import { ColumnPicker, getColumnValues } from '../../ui/column-picker.js';
+import { provisionWorksheet as _provisionWorksheet, removeProvisionedWorksheet as _removeProvisionedWorksheet } from '../../core/examples-registry.js';
 
 /** Algorithm Lab ID for the Gage R&R algorithm. */
 const ALGO_LAB_ID_GRR = 'grr';
@@ -33,6 +34,8 @@ export default {
   _t: null,
   _result: null,
   _columnRefs: { part: null, operator: null, measurement: null },
+  /** Instance id of a worksheet provisioned by loadExample; tracked so a follow-up load can remove the previous one. */
+  _exampleWorksheetId: null,
   _pickers: { part: null, operator: null, measurement: null },
   _params: { lsl: NaN, usl: NaN, alpha: null, studyVarMultiplier: 5.15 },
   _charts: [],
@@ -107,6 +110,7 @@ export default {
         measurement: this._columnRefs.measurement ? { ...this._columnRefs.measurement } : null,
       },
       lastResult: this._result,
+      exampleWorksheetId: this._exampleWorksheetId,
     };
   },
 
@@ -118,10 +122,63 @@ export default {
         this._columnRefs[key] = data.columnRefs[key] ? { ...data.columnRefs[key] } : null;
       }
     }
+    if (data.exampleWorksheetId !== undefined) this._exampleWorksheetId = data.exampleWorksheetId;
     this._result = data.lastResult || null;
     this._render();
     if (this._result) this._renderResults(this._result);
     this._tryAutoAnalysis();
+  },
+
+  /**
+   * Load a catalog example into the module. MSA-Typ2 examples ship a full
+   * worksheet (`sourceWorksheetData`) and the module state using the literal
+   * placeholder `__source__` as instanceId in `columnRefs.{part,operator,measurement}`.
+   * On load we provision a fresh worksheet, rewrite the placeholders, then apply state.
+   *
+   * @param {{ meta: object, data: object }} payload
+   */
+  async loadExample(payload) {
+    if (!payload || !payload.data) return;
+    const t = this._t;
+
+    const hasContent = !!(this._columnRefs.part || this._columnRefs.operator || this._columnRefs.measurement || this._result);
+    if (hasContent && this._context?.confirmPopout) {
+      const ok = await this._context.confirmPopout(t('moduleHelp.confirmOverwrite'), { danger: true });
+      if (!ok) return;
+    }
+
+    const data = { ...payload.data };
+
+    if (data.sourceWorksheetData) {
+      const wsState = data.sourceWorksheetData;
+      delete data.sourceWorksheetData;
+      if (this._exampleWorksheetId) {
+        _removeProvisionedWorksheet(this._context, this._exampleWorksheetId);
+        this._exampleWorksheetId = null;
+      }
+      const ref = _provisionWorksheet(this._context, wsState);
+      if (ref) {
+        this._exampleWorksheetId = ref.instanceId;
+        data.exampleWorksheetId = ref.instanceId;
+        if (data.columnRefs) {
+          const next = { ...data.columnRefs };
+          for (const key of ['part', 'operator', 'measurement']) {
+            const r = next[key];
+            if (r && r.instanceId === '__source__') {
+              next[key] = { ...r, instanceId: ref.instanceId };
+            }
+          }
+          data.columnRefs = next;
+        }
+      }
+    }
+
+    this.setState(data);
+    this._save();
+
+    const lang = this._context.i18n.getLanguage();
+    const title = payload.meta?.title?.[lang] || payload.meta?.title?.en || payload.meta?.id || '';
+    this._context.notify?.(t('moduleHelp.exampleLoaded', { title }), 'success');
   },
 
   // ─── Render ─────────────────────────────────────────────────

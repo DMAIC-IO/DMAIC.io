@@ -12,13 +12,16 @@
 
 import { DataGrid } from '../../core/datagrid/datagrid.js';
 import { FRAC, PB_DESIGNS, ALL_RUNS, K_RANGE, BOX_BEHNKEN, TAGUCHI } from './doe-planner-designs.js';
-import { generateDesign, selectTaguchiArray, taguchiCandidates, minRunsForModel } from '../../engines/doe-planner-engine.js';
+import { generateDesign, selectTaguchiArray, taguchiCandidates, minRunsForModel, augmentOptimalDesign, formatValue, codedToActual } from '../../engines/doe-planner-engine.js';
 import {
   createDesignWorksheet,
   createExperimentRecord,
   removeExperimentRecord,
   readResponsesFromWorksheet,
   isWorksheetValid,
+  appendDoERowsToWorksheet,
+  listProjectWorksheets,
+  readSourceData,
 } from './doe-planner-worksheet.js';
 import {
   evaluateDesign,
@@ -105,9 +108,9 @@ export default {
   _designType: 'full',
   /** @type {{ id: number, name: string, unit: string, kind: 'continuous'|'categorical', levels: string[] }[]} */
   _factors: [],
-  /** @type {{ name: string, unit: string, goal: string }[]} */
+  /** @type {{ name: string, unit: string }[]} */
   _responses: [],
-  _options: { randomize: true, centerPoints: false, replicates: 1, alphaType: 'rotatable', ccdCenterPoints: 3, bbCenterPoints: 3, taguchiArray: '', optimalRuns: 0, optimalQuadratic: false, optimalExcludedInteractions: [] },
+  _options: { randomize: true, centerPoints: false, replicates: 1, alphaType: 'rotatable', ccdCenterPoints: 3, bbCenterPoints: 3, taguchiArray: '', optimalRuns: 0, optimalQuadratic: false, optimalExcludedInteractions: [], forbiddenVertices: [] },
   /** @type {{ k: number, runs: number, res: string, p: number }|null} */
   _selectedRes: null,
   _selectedPBIdx: null,
@@ -115,6 +118,11 @@ export default {
   _design: null,
   /** @type {import('./doe-planner-worksheet.js').WorksheetRef|null} */
   _worksheetRef: null,
+  /** Source worksheet for D/A/G-Opt designs that build on top of existing
+   *  measurements. When set, the chosen rows are treated as fixed prefix and
+   *  the optimiser only generates `optimalRuns − M` new D/A/G-optimal runs.
+   *  @type {{ instanceId: string, sheetId: string }|null} */
+  _sourceWorksheet: null,
   /** @type {import('./doe-planner-analysis.js').DesignEvaluation|null} */
   _evaluation: null,
   _analysisResponseIdx: 0,
@@ -122,6 +130,15 @@ export default {
   _charts: [],
   /** @type {DataGrid|null} Embedded worksheet grid */
   _embeddedGrid: null,
+  /** @type {DataGrid|null} Temporary preview grid (before "Datenblatt anlegen") */
+  _previewGrid: null,
+  /** Edits the user made in the temporary preview grid, applied on
+   *  "Datenblatt anlegen". Keyed per design via factor/response position.
+   *  @type {{ factors: (number|null)[][], responses: (number|null)[][] } | null} */
+  _previewEdits: null,
+  /** True when factor cells were edited — surface a "score no longer
+   *  guaranteed" note in the preview header. */
+  _previewDirty: false,
   _fid: 0,
   _autoGenTimer: null,
   /** @type {boolean} Evaluation detail expanded */
@@ -144,15 +161,19 @@ export default {
     this._designType = 'full';
     this._factors = [];
     this._responses = [];
-    this._options = { randomize: true, centerPoints: false, replicates: 1, alphaType: 'rotatable', ccdCenterPoints: 3, bbCenterPoints: 3, taguchiArray: '', optimalRuns: 0, optimalQuadratic: false, optimalExcludedInteractions: [] };
+    this._options = { randomize: true, centerPoints: false, replicates: 1, alphaType: 'rotatable', ccdCenterPoints: 3, bbCenterPoints: 3, taguchiArray: '', optimalRuns: 0, optimalQuadratic: false, optimalExcludedInteractions: [], forbiddenVertices: [] };
     this._selectedRes = null;
     this._selectedPBIdx = null;
     this._design = null;
     this._worksheetRef = null;
+    this._sourceWorksheet = null;
     this._evaluation = null;
     this._analysisResponseIdx = 0;
     this._charts = [];
     this._embeddedGrid = null;
+    this._previewGrid = null;
+    this._previewEdits = null;
+    this._previewDirty = false;
     this._fid = 0;
     this._autoGenTimer = null;
     this._projectMode = false;
@@ -170,7 +191,7 @@ export default {
       this._addFactor('', '');
     }
     if (this._responses.length === 0) {
-      this._responses.push({ name: '', unit: '', goal: 'max' });
+      this._responses.push({ name: '', unit: '' });
     }
 
     // Listen for worksheet changes → update right panel
@@ -204,6 +225,7 @@ export default {
     if (this._autoGenTimer) clearTimeout(this._autoGenTimer);
     this._destroyCharts();
     this._destroyEmbeddedGrid();
+    this._destroyPreviewGrid();
     for (const unsub of this._eventUnsubs) unsub();
     this._eventUnsubs = [];
     if (this._container) this._container.innerHTML = '';
@@ -225,7 +247,10 @@ export default {
       selectedRes: this._selectedRes ? { ...this._selectedRes } : null,
       selectedPBIdx: this._selectedPBIdx,
       design: this._design ? JSON.parse(JSON.stringify(this._design)) : null,
+      previewEdits: this._previewEdits ? JSON.parse(JSON.stringify(this._previewEdits)) : null,
+      previewDirty: !!this._previewDirty,
       worksheetRef: this._worksheetRef ? { ...this._worksheetRef } : null,
+      sourceWorksheet: this._sourceWorksheet ? { ...this._sourceWorksheet } : null,
       evaluation: this._evaluation ? JSON.parse(JSON.stringify(this._evaluation)) : null,
       analysisResponseIdx: this._analysisResponseIdx,
       fid: this._fid,
@@ -242,6 +267,85 @@ export default {
   },
 
   help: () => import('./doe-planner-help.js'),
+
+  /**
+   * Load a catalog example into the module. Example payloads carry a full
+   * module-state snapshot (type 'project'); apply via setState and then
+   * synchronously run the design generator so the result is visible
+   * immediately.
+   *
+   * Augment examples carry an additional `sourceWorksheetData` field — a
+   * full Worksheet module-state. When present, a new Worksheet instance is
+   * created in the data phase, populated with that state, and the planner's
+   * `sourceWorksheet` reference is wired to point at it. The optimal-design
+   * engine then augments those rows instead of generating from scratch.
+   *
+   * @param {{ meta: object, data: object }} payload
+   */
+  async loadExample(payload) {
+    if (!payload || !payload.data) return;
+    const t = (k) => this._context.i18n.t(k);
+
+    // Warn before overwriting a configured design.
+    const hasContent = (this._factors.some(f => (f.name || '').trim() !== '')) || this._design;
+    if (hasContent && this._context?.confirmPopout) {
+      const ok = await this._context.confirmPopout(t('moduleHelp.confirmOverwrite'), { danger: true });
+      if (!ok) return;
+    }
+
+    // Cancel any pending auto-generate from previous edits.
+    if (this._autoGenTimer) { clearTimeout(this._autoGenTimer); this._autoGenTimer = null; }
+
+    // Work on a shallow copy so we don't mutate the caller's payload.
+    const data = { ...payload.data };
+
+    // Augment variant — provision a fresh Worksheet with the supplied data
+    // and rewrite `sourceWorksheet` to reference it.
+    if (data.sourceWorksheetData) {
+      const wsData = data.sourceWorksheetData;
+      delete data.sourceWorksheetData;
+      const ref = this._provisionSourceWorksheet(wsData);
+      if (ref) data.sourceWorksheet = ref;
+    }
+
+    this._importState(data);
+    this._render();
+    this._tryAutoGenerate();
+    this._save();
+
+    const lang = this._context.i18n.getLanguage();
+    const title = payload.meta?.title?.[lang] || payload.meta?.title?.en || payload.meta?.id || '';
+    this._context.notify?.(t('moduleHelp.exampleLoaded').replace('{title}', title), 'success');
+  },
+
+  /**
+   * Create a new Worksheet instance in the data phase, seeded with the
+   * supplied module-state, and return a `sourceWorksheet` reference pointing
+   * at the first sheet. Emits `module:added` with `silent: true` so the
+   * workspace tab list updates without switching focus away from the planner.
+   *
+   * @param {object} wsState — module-state for the new worksheet
+   *                          ({ sheets: [{ id, name, state }], activeSheetId, sheetCounter })
+   * @returns {{ instanceId: string, sheetId: string } | null}
+   */
+  _provisionSourceWorksheet(wsState) {
+    if (!wsState?.sheets?.length) return null;
+    const sheetId = wsState.activeSheetId || wsState.sheets[0].id;
+    if (!sheetId) return null;
+
+    const sm = this._context.stateManager;
+    const instanceId = crypto.randomUUID();
+    const dataPhase = sm.get('phases.data') ?? [];
+    dataPhase.push({ instanceId, moduleId: 'worksheet', order: dataPhase.length, state: {} });
+    sm.set('phases.data', dataPhase);
+    sm.setModuleState(instanceId, wsState);
+
+    this._context.eventBus.emit('module:added', {
+      moduleId: 'worksheet', phase: 'data', instanceId, silent: true,
+    });
+
+    return { instanceId, sheetId };
+  },
 
   // ─── State import ───────────────────────────────────────────────
 
@@ -274,7 +378,10 @@ export default {
     this._selectedRes = saved.selectedRes ? { ...saved.selectedRes } : null;
     this._selectedPBIdx = saved.selectedPBIdx ?? null;
     this._design = saved.design ? JSON.parse(JSON.stringify(saved.design)) : null;
+    this._previewEdits = saved.previewEdits ? JSON.parse(JSON.stringify(saved.previewEdits)) : null;
+    this._previewDirty = !!saved.previewDirty;
     this._worksheetRef = saved.worksheetRef ? { ...saved.worksheetRef } : null;
+    this._sourceWorksheet = saved.sourceWorksheet ? { ...saved.sourceWorksheet } : null;
     this._evaluation = saved.evaluation ? JSON.parse(JSON.stringify(saved.evaluation)) : null;
     this._analysisResponseIdx = saved.analysisResponseIdx ?? 0;
     if (typeof saved.fid === 'number') this._fid = saved.fid;
@@ -347,6 +454,20 @@ export default {
 
   // ─── Config Validation ──────────────────────────────────────────
 
+  /**
+   * Number of rows in the currently selected source Datensammlung. Returns 0
+   * when no source is bound or the reference no longer resolves. Used to
+   * interpret `optimalRuns` as the count of NEW runs the optimiser should
+   * produce on top of an existing dataset.
+   */
+  _sourceRowCount() {
+    const ref = this._sourceWorksheet;
+    if (!ref?.instanceId) return 0;
+    const ws = this._context.stateManager.getModuleState(ref.instanceId);
+    const sheet = ws?.sheets?.find(s => s.id === ref.sheetId);
+    return sheet?.state?.rowCount || 0;
+  },
+
   _isConfigValid() {
     // Factors valid?
     if (this._factors.length < 2) return false;
@@ -374,8 +495,14 @@ export default {
         this._options.optimalQuadratic,
         this._options.optimalExcludedInteractions,
       );
-      const nRuns = this._options.optimalRuns || 0;
-      if (nRuns < minRuns) return false;
+      // `optimalRuns` is the number of NEW runs to generate. When a source
+      // dataset with M rows is bound, only minRuns − M new runs are needed
+      // to satisfy the model (clamped to ≥ 1 — generating 0 new runs would
+      // make the optimiser a no-op).
+      const M = this._sourceRowCount();
+      const minNew = M > 0 ? Math.max(1, minRuns - M) : minRuns;
+      const nNew = this._options.optimalRuns || 0;
+      if (nNew < minNew) return false;
     }
 
     return true;
@@ -404,25 +531,50 @@ export default {
       return;
     }
 
+    const isOptimal = ['dopt', 'aopt', 'gopt'].includes(this._designType);
     try {
-      this._design = generateDesign(this._factors, {
-        designType: this._designType,
-        selectedRes: this._selectedRes,
-        randomize: this._options.randomize,
-        centerPoints: this._options.centerPoints,
-        replicates: this._options.replicates || 1,
-        alphaType: this._options.alphaType,
-        ccdCenterPoints: this._options.ccdCenterPoints,
-        bbCenterPoints: this._options.bbCenterPoints,
-        taguchiArray: this._options.taguchiArray || undefined,
-        optimalRuns: this._options.optimalRuns || undefined,
-        optimalQuadratic: this._options.optimalQuadratic,
-        optimalExcludedInteractions: this._options.optimalExcludedInteractions,
-      });
+      // Branch: if the user picked an existing Datensammlung as the seed for
+      // an optimal design, read its rows and route through augment instead of
+      // generating a fresh design. Mapping errors abort generation so the
+      // picker UI can show what went wrong.
+      if (isOptimal && this._sourceWorksheet) {
+        const source = readSourceData(
+          this._context, this._sourceWorksheet, this._factors, this._responses,
+        );
+        if (!source.ok) {
+          this._design = null;
+          this._evaluation = null;
+          this._save();
+          this._renderOutput();
+          return;
+        }
+        this._design = this._buildDesignFromSource(source);
+      } else {
+        this._design = generateDesign(this._factors, {
+          designType: this._designType,
+          selectedRes: this._selectedRes,
+          randomize: this._options.randomize,
+          centerPoints: this._options.centerPoints,
+          replicates: this._options.replicates || 1,
+          alphaType: this._options.alphaType,
+          ccdCenterPoints: this._options.ccdCenterPoints,
+          bbCenterPoints: this._options.bbCenterPoints,
+          taguchiArray: this._options.taguchiArray || undefined,
+          optimalRuns: this._options.optimalRuns || undefined,
+          optimalQuadratic: this._options.optimalQuadratic,
+          optimalExcludedInteractions: this._options.optimalExcludedInteractions,
+          forbiddenVertices: this._options.forbiddenVertices,
+        });
+      }
+
+      // Fresh design → drop any preview edits that were tied to the
+      // previous design. They will be re-derived from the new matrix
+      // lazily by _mountPreviewGrid().
+      this._previewEdits = null;
+      this._previewDirty = false;
 
       // Evaluate design — pass through excluded interactions so VIF/efficiency/power
       // reflect the actual fitted model, not the full 2FI set.
-      const isOptimal = ['dopt', 'aopt', 'gopt'].includes(this._designType);
       this._evaluation = evaluateDesign(
         this._design.codedMatrix,
         this._factors.length,
@@ -489,7 +641,7 @@ export default {
       this._design.designType,
       this._design.codedMatrix.length,
       this._responses.length,
-      this._responses.map(r => `${r.name}|${r.unit}|${r.goal}`).join('||'),
+      this._responses.map(r => `${r.name}|${r.unit}`).join('||'),
       this._design.codedMatrix.map(r => r.join(',')).join(';'),
     ].join('#');
   },
@@ -544,6 +696,12 @@ export default {
   _createOrRecreateDatasheet() {
     if (!this._design) return;
 
+    // Flush any unsaved grid edits before applying them. cell:changed fires
+    // on commit, but a pending cell that hasn't been committed yet would
+    // otherwise be lost — so we re-snapshot defensively.
+    if (this._previewGrid) this._capturePreviewEdits();
+    this._applyPreviewEditsToDesign();
+
     if (this._worksheetRef) {
       this._removeOldWorksheet(this._worksheetRef);
       this._worksheetRef = null;
@@ -571,8 +729,266 @@ export default {
     ref.designSignature = this._designSignature();
     this._worksheetRef = ref;
 
+    // Preview is now consumed: the values live in the new datasheet.
+    this._previewEdits = null;
+    this._previewDirty = false;
+
     this._save();
     this._renderOutput();
+
+    // Switch the workspace to the freshly-created datasheet so the user can
+    // start entering measurements right away.
+    this._context.eventBus.emit('module:activated', { instanceId: ref.instanceId });
+  },
+
+  /**
+   * Fold preview-grid edits into `_design` so that `createDesignWorksheet`
+   * picks them up:
+   *   - Continuous factor edits overwrite `actualMatrix[i][fi]`.
+   *   - Response edits go into `sourceResponseSeeds` with `sourceRowCount =
+   *     nRuns` (the seed mechanism already used by Situation-4 augment).
+   *     Existing seeds (from an augment source) are preserved where the
+   *     preview cell is empty.
+   *
+   * Note: continuous factor edits do NOT touch `codedMatrix`. The coded
+   * matrix continues to reflect the optimiser's choice; only the natural-
+   * units column visible to the user shifts. That is a Phase-1 simplification
+   * — categorical edits and full re-coding are out of scope here.
+   */
+  _applyPreviewEditsToDesign() {
+    const edits = this._previewEdits;
+    if (!edits || !this._design?.actualMatrix?.length) return;
+    const nRuns = this._design.actualMatrix.length;
+
+    if (Array.isArray(edits.factors)) {
+      this._factors.forEach((f, fi) => {
+        if (f.kind === 'categorical') return;
+        const colEdits = edits.factors[fi];
+        if (!Array.isArray(colEdits)) return;
+        for (let i = 0; i < nRuns; i++) {
+          const v = colEdits[i];
+          if (v != null && Number.isFinite(v)) {
+            this._design.actualMatrix[i][fi] = v;
+          }
+        }
+      });
+    }
+
+    if (Array.isArray(edits.responses)) {
+      const seeds = Array.isArray(this._design.sourceResponseSeeds)
+        ? this._design.sourceResponseSeeds.map(col => Array.isArray(col) ? [...col] : new Array(nRuns).fill(null))
+        : this._responses.map(() => new Array(nRuns).fill(null));
+      let touched = false;
+      this._responses.forEach((_, ri) => {
+        while (seeds[ri].length < nRuns) seeds[ri].push(null);
+        const colEdits = edits.responses[ri];
+        if (!Array.isArray(colEdits)) return;
+        for (let i = 0; i < nRuns; i++) {
+          const v = colEdits[i];
+          if (v != null && Number.isFinite(v)) {
+            seeds[ri][i] = v;
+            touched = true;
+          }
+        }
+      });
+      if (touched) {
+        this._design.sourceResponseSeeds = seeds;
+        this._design.sourceRowCount = nRuns;
+      }
+    }
+  },
+
+  /**
+   * Convert a coded matrix to worksheet-ready values. For categorical factors
+   * the coded value is mapped back to the level *label*; for continuous
+   * factors the coded value is mapped to a formatted real number using the
+   * factor's range.
+   *
+   * @param {number[][]} codedRows
+   * @param {object[]} factors
+   * @returns {Array<Array<number|string>>}
+   */
+  _codedToWorksheetRows(codedRows, factors) {
+    return codedRows.map(row => row.map((c, fi) => {
+      const f = factors[fi];
+      const nLv = f.levels.length;
+      if (f.kind === 'categorical') {
+        const idx = Math.round((c + 1) * (nLv - 1) / 2);
+        const clamped = Math.max(0, Math.min(nLv - 1, idx));
+        return f.levels[clamped] ?? '';
+      }
+      if (nLv <= 2) {
+        const lo = parseFloat(f.levels[0]) || -1;
+        const hi = parseFloat(f.levels[nLv - 1]) || 1;
+        return formatValue(codedToActual(c, lo, hi));
+      }
+      const idx = Math.round((c + 1) * (nLv - 1) / 2);
+      const clamped = Math.max(0, Math.min(nLv - 1, idx));
+      const val = parseFloat(f.levels[clamped]);
+      return isFinite(val)
+        ? formatValue(val)
+        : formatValue(codedToActual(c, parseFloat(f.levels[0]) || -1, parseFloat(f.levels[nLv - 1]) || 1));
+    }));
+  },
+
+  /**
+   * Build a design from an existing Datensammlung. The user's recorded runs
+   * become the fixed prefix (rows 0..M−1); the optimiser produces
+   * `optimalRuns` ADDITIONAL D/A/G-optimal rows on top. If the requested
+   * number of new runs is below what the model needs (minR − M), it is
+   * silently bumped up so the resulting design stays feasible.
+   *
+   * Stores source response values on `_design.sourceResponseSeeds` so that
+   * `createDesignWorksheet` later copies them verbatim into the new sheet.
+   *
+   * @param {ReturnType<typeof readSourceData>} source - readSourceData() result with ok=true
+   * @returns {object} new _design value
+   */
+  _buildDesignFromSource(source) {
+    const factors = this._factors;
+    const k = factors.length;
+    const ex = this._options.optimalExcludedInteractions;
+    const minR = minRunsForModel(k, this._options.optimalQuadratic, ex);
+    const M = source.rowCount;
+    const requested = this._options.optimalRuns || 0;
+    const minNew = Math.max(0, minR - M);
+    const addRuns = Math.max(requested, minNew);
+
+    let newCoded = [];
+    let newRows = [];
+    if (addRuns > 0) {
+      newCoded = augmentOptimalDesign(
+        source.codedMatrix,
+        k,
+        addRuns,
+        this._designType,
+        {
+          quadratic: this._options.optimalQuadratic,
+          levelCounts: factors.map(f => f.levels.length),
+          categoricalFlags: factors.map(f => f.kind === 'categorical'),
+          seed: Date.now(),
+          excludedInteractions: ex,
+          forbiddenVertices: this._options.forbiddenVertices,
+        },
+      );
+      newRows = this._codedToWorksheetRows(newCoded, factors);
+    }
+
+    const total = M + addRuns;
+    const resLabel = this._designType === 'dopt' ? 'D-Opt'
+                   : this._designType === 'aopt' ? 'A-Opt' : 'G-Opt';
+
+    return {
+      codedMatrix:  [...source.codedMatrix, ...newCoded],
+      actualMatrix: [...source.actualRows,  ...newRows],
+      runOrder:     Array.from({ length: total }, (_, i) => i + 1),
+      stdOrder:     Array.from({ length: total }, (_, i) => i + 1),
+      replicateIds: new Array(total).fill(1),
+      resolution:   resLabel,
+      p:            minR,
+      designType:   this._designType,
+      sourceResponseSeeds: source.responseValues,
+      sourceRowCount:      M,
+    };
+  },
+
+  /**
+   * Augment the current optimal design by adding `addRuns` D/A/G-optimal runs
+   * that complement the existing matrix. The existing rows (and their response
+   * data) stay untouched; new rows are appended to both `_design` and the
+   * bound Datensammlung.
+   *
+   * Only valid in the bound state with an optimal design type.
+   *
+   * @param {number} addRuns - Number of additional runs to generate (>0)
+   */
+  _augmentDesign(addRuns) {
+    if (!this._design || !this._worksheetRef) return;
+    if (!isWorksheetValid(this._context, this._worksheetRef)) return;
+    if (!['dopt', 'aopt', 'gopt'].includes(this._designType)) return;
+    const n = Math.floor(addRuns);
+    if (!Number.isFinite(n) || n <= 0) return;
+
+    try {
+      const factors = this._factors;
+      const k = factors.length;
+      const lc = factors.map(f => f.levels.length);
+      const cf = factors.map(f => f.kind === 'categorical');
+
+      // 1. Compute new coded rows via coordinate-exchange with fixed prefix.
+      const newCoded = augmentOptimalDesign(
+        this._design.codedMatrix,
+        k,
+        n,
+        this._designType,
+        {
+          quadratic: this._options.optimalQuadratic,
+          levelCounts: lc,
+          categoricalFlags: cf,
+          seed: Date.now(),
+          excludedInteractions: this._options.optimalExcludedInteractions,
+          forbiddenVertices: this._options.forbiddenVertices,
+        },
+      );
+
+      // 2. Convert coded → worksheet-style values (labels for categorical,
+      //    formatted numbers for continuous). Mirrors what the worksheet
+      //    create-path produces, kept consistent so column types don't change.
+      const newRows = this._codedToWorksheetRows(newCoded, factors);
+
+      // 3. Extend in-memory design (runOrder/stdOrder continue monotonically,
+      //    replicateIds default to 1 — augmented points are treated as fresh
+      //    design points; if any duplicate an existing coded combination, the
+      //    replicate-grouping in the experiment record will pick it up by
+      //    coded-value, not by stdOrder).
+      const oldN = this._design.codedMatrix.length;
+      const newRunOrders = Array.from({ length: n }, (_, i) => oldN + i + 1);
+      const newStdOrders = Array.from({ length: n }, (_, i) => oldN + i + 1);
+
+      this._design.codedMatrix  = [...this._design.codedMatrix,  ...newCoded];
+      this._design.actualMatrix = [...this._design.actualMatrix, ...newRows];
+      this._design.runOrder     = [...(this._design.runOrder     || []), ...newRunOrders];
+      this._design.stdOrder     = [...(this._design.stdOrder     || []), ...newStdOrders];
+      this._design.replicateIds = [...(this._design.replicateIds || []), ...new Array(n).fill(1)];
+
+      // 4. Re-evaluate the combined design.
+      this._evaluation = evaluateDesign(
+        this._design.codedMatrix,
+        k,
+        this._design.p,
+        this._design.designType,
+        0.05,
+        { excludedInteractions: this._options.optimalExcludedInteractions },
+      );
+
+      // 5. Append rows to the bound Datensammlung.
+      appendDoERowsToWorksheet(this._context, this._worksheetRef, factors, newRows);
+
+      // 6. Refresh the experiment record so downstream consumers
+      //    (Regression DoE-mode, Response Optimization) see the augmented
+      //    matrix — replicateGroups in particular are derived from coded values
+      //    and would otherwise stay stale.
+      if (this._worksheetRef.experimentId) {
+        createExperimentRecord(
+          this._context,
+          this._worksheetRef.experimentId,
+          this._design,
+          this._factors,
+          this._responses,
+          this._doeName,
+          this._worksheetRef,
+        );
+      }
+
+      // 7. Re-stamp the design signature so the worksheet stays 'bound'.
+      this._worksheetRef.designSignature = this._designSignature();
+
+      this._save();
+      this._renderOutput();
+      this._context.notify(this._t('augmentSuccess', { n }), 'success');
+    } catch (err) {
+      this._context.notify(err.message, 'error');
+    }
   },
 
   // ─── Main Render ────────────────────────────────────────────────
@@ -606,12 +1022,14 @@ export default {
   _renderOutput() {
     this._destroyCharts();
     this._destroyEmbeddedGrid();
+    this._destroyPreviewGrid();
 
     const el = this._container?.querySelector('.doe__output');
     if (!el) return;
 
     el.innerHTML = this._renderOutputContent();
     this._bindOutputEvents();
+    this._mountPreviewGrid(el);
   },
 
   // ─── Header ─────────────────────────────────────────────────────
@@ -731,13 +1149,6 @@ export default {
             ? `<button class="doe__response-remove-btn" type="button" data-idx="${index}"
                      title="${this._t('removeResponse')}">\u2715</button>`
             : ''}
-        </div>
-        <div class="doe__response-bottom">
-          <select class="field doe__response-goal" data-idx="${index}">
-            <option value="max" ${r.goal === 'max' ? 'selected' : ''}>${this._t('goalMax')}</option>
-            <option value="min" ${r.goal === 'min' ? 'selected' : ''}>${this._t('goalMin')}</option>
-            <option value="target" ${r.goal === 'target' ? 'selected' : ''}>${this._t('goalTarget')}</option>
-          </select>
         </div>
       </div>
     `;
@@ -1019,19 +1430,28 @@ export default {
     const excluded = Array.isArray(this._options.optimalExcludedInteractions)
       ? this._options.optimalExcludedInteractions : [];
     const minRuns = minRunsForModel(k, quad, excluded);
+    const M = this._sourceRowCount();
+    const minNew = M > 0 ? Math.max(1, minRuns - M) : minRuns;
     const currentRuns = this._options.optimalRuns || 0;
-    const valid = currentRuns >= minRuns;
+    const valid = currentRuns >= minNew;
     const criterionKey = this._designType; // 'dopt', 'aopt', 'gopt'
+    const runsLabel = M > 0 ? this._t('optimalRunsNew') : this._t('optimalRuns');
+    const runsHint  = M > 0
+      ? this._t('optimalMinRunsNew', { min: minNew, m: M })
+      : this._t('optimalMinRuns', { min: minNew });
+    const tooFewMsg = M > 0
+      ? this._t('optimalTooFewRunsNew', { min: minNew, m: M })
+      : this._t('optimalTooFewRuns',     { min: minNew });
 
     return `
       <div class="doe__sub-panel">
         <div class="dmike-split__section-title">${this._t('optimalTitle')}</div>
         <div class="doe__optimal-info">${this._t('optimalInfo_' + criterionKey)}</div>
         <div class="field-group">
-          <label class="doe__input-label">${this._t('optimalRuns')}</label>
-          <input type="number" class="field doe__optimal-runs-input" min="${minRuns}" max="200"
-                 value="${currentRuns || minRuns}" />
-          <span class="doe__optimal-hint">${this._t('optimalMinRuns', { min: minRuns })}</span>
+          <label class="doe__input-label">${runsLabel}</label>
+          <input type="number" class="field doe__optimal-runs-input" min="${minNew}" max="200"
+                 value="${currentRuns || minNew}" />
+          <span class="doe__optimal-hint">${runsHint}</span>
         </div>
         <label class="doe__check-row">
           <input type="checkbox" class="doe__optimal-quad-check"
@@ -1040,7 +1460,138 @@ export default {
           <span class="doe__param-tooltip" title="${this._esc(this._t('tipOptimalQuadratic'))}">?</span>
         </label>
         ${this._renderTermMatrix(k, excluded)}
-        ${!valid ? `<div class="doe__optimal-warning">${this._t('optimalTooFewRuns', { min: minRuns })}</div>` : ''}
+        ${this._renderForbiddenVertices()}
+        ${!valid ? `<div class="doe__optimal-warning">${tooFewMsg}</div>` : ''}
+        ${this._renderSourceWorksheetPicker()}
+      </div>
+    `;
+  },
+
+  /**
+   * Convert a coded value (-1..+1) back to the factor's natural label so the
+   * forbidden-vertex list reads naturally. For continuous factors the value
+   * is mapped to one of the defined levels; for categorical factors the level
+   * label is returned verbatim.
+   */
+  _codedToLabel(fi, coded) {
+    const f = this._factors[fi];
+    if (!f) return String(coded);
+    const nLv = f.levels.length;
+    if (nLv <= 1) return f.levels[0] ?? '';
+    const idx = Math.round((coded + 1) * (nLv - 1) / 2);
+    const clamped = Math.max(0, Math.min(nLv - 1, idx));
+    return f.levels[clamped] ?? String(coded);
+  },
+
+  /**
+   * Forbidden-combinations section. Each rule is a length-k array of coded
+   * values (-1..+1) or `null` for "factor unconstrained". Renders one row per
+   * rule with a delete button, plus an "add" row with one <select> per factor.
+   */
+  _renderForbiddenVertices() {
+    const k = this._factors.length;
+    const list = Array.isArray(this._options.forbiddenVertices)
+      ? this._options.forbiddenVertices : [];
+
+    const ruleRows = list.length
+      ? list.map((pattern, ri) => {
+          const parts = this._factors.map((f, fi) => {
+            const v = pattern?.[fi];
+            const name = this._esc(f.name || String.fromCharCode(65 + fi));
+            const label = v == null ? this._t('forbiddenAny') : this._codedToLabel(fi, v);
+            return `<span class="doe__forbidden-part">${name} = ${this._esc(label)}</span>`;
+          }).join('<span class="doe__forbidden-sep">∧</span>');
+          return `
+            <li class="doe__forbidden-row" data-rule-idx="${ri}">
+              <span class="doe__forbidden-rule">${parts}</span>
+              <button type="button" class="doe__forbidden-remove-btn"
+                      data-rule-idx="${ri}"
+                      title="${this._esc(this._t('forbiddenRemoveTitle'))}">✕</button>
+            </li>`;
+        }).join('')
+      : `<li class="doe__forbidden-empty">${this._t('forbiddenEmpty')}</li>`;
+
+    // Compose the "add new rule" row — one <select> per factor.
+    const factorSelectors = this._factors.map((f, fi) => {
+      const name = this._esc(f.name || String.fromCharCode(65 + fi));
+      const nLv = f.levels.length;
+      const options = [`<option value="">${this._esc(this._t('forbiddenAny'))}</option>`];
+      for (let li = 0; li < nLv; li++) {
+        const coded = nLv === 1 ? 0 : -1 + (2 * li) / (nLv - 1);
+        const label = this._esc(f.levels[li] ?? '');
+        options.push(`<option value="${coded}">${label}</option>`);
+      }
+      return `
+        <label class="doe__forbidden-factor">
+          <span class="doe__forbidden-factor-name">${name}</span>
+          <select class="doe__forbidden-input" data-factor-idx="${fi}">
+            ${options.join('')}
+          </select>
+        </label>`;
+    }).join('');
+
+    return `
+      <div class="doe__forbidden-block">
+        <div class="doe__forbidden-title">${this._t('forbiddenTitle')}</div>
+        <div class="doe__forbidden-hint">${this._t('forbiddenHint')}</div>
+        <ul class="doe__forbidden-list">${ruleRows}</ul>
+        <div class="doe__forbidden-add" data-factor-count="${k}">
+          ${factorSelectors}
+          <button type="button" class="btn btn--secondary doe__forbidden-add-btn">
+            ${this._t('forbiddenAddBtn')}
+          </button>
+        </div>
+      </div>
+    `;
+  },
+
+  /**
+   * Picker für eine bestehende Datensammlung, deren Versuche als Fix-Prefix
+   * in das D/A/G-optimale Design übernommen werden. Spalten-Mapping erfolgt
+   * automatisch per Spaltenname (case-insensitive, getrimmt).
+   */
+  _renderSourceWorksheetPicker() {
+    const sheets = listProjectWorksheets(this._context);
+    // Eigene Datensammlung aus dem Picker entfernen, sonst läuft der Planer
+    // im Kreis (Quelle = Ergebnis).
+    const own = this._worksheetRef?.instanceId;
+    const ownSheet = this._worksheetRef?.sheetId;
+    const list = sheets.filter(s => !(s.instanceId === own && s.sheetId === ownSheet));
+
+    const current = this._sourceWorksheet;
+    const selectedKey = current ? `${current.instanceId}::${current.sheetId}` : '';
+
+    // Mapping-Status (nur sinnvoll, wenn etwas ausgewählt ist)
+    let statusHtml = '';
+    if (current) {
+      const result = readSourceData(this._context, current, this._factors, this._responses);
+      if (result.ok) {
+        statusHtml = `<div class="doe__source-mapping-ok">${this._esc(this._t('sourceMappingOk', {
+          rows: result.rowCount,
+          responses: result.mappedResponseCount,
+        }))}${result.skippedRows ? ` ${this._esc(this._t('sourceSkipped', { n: result.skippedRows }))}` : ''}</div>`;
+      } else {
+        const reason = result.missingFactors?.length
+          ? this._t('sourceMissingFactors', { names: result.missingFactors.join(', ') })
+          : this._t('sourceMappingErrorGeneric');
+        statusHtml = `<div class="doe__source-mapping-error">${this._esc(reason)}</div>`;
+      }
+    }
+
+    const options = list.map(s => {
+      const key = `${s.instanceId}::${s.sheetId}`;
+      return `<option value="${this._esc(key)}" ${key === selectedKey ? 'selected' : ''}>${this._esc(s.name)} (${s.rowCount})</option>`;
+    }).join('');
+
+    return `
+      <div class="doe__source-section">
+        <div class="doe__source-label">${this._t('sourceTitle')}</div>
+        <div class="doe__source-hint">${this._t('sourceHint')}</div>
+        <select class="field doe__source-select">
+          <option value="">${this._t('sourceNone')}</option>
+          ${options}
+        </select>
+        ${statusHtml}
       </div>
     `;
   },
@@ -1057,16 +1608,20 @@ export default {
     const isExcluded = (a, b) => excluded.some(p =>
       Math.min(p[0], p[1]) === Math.min(a, b) && Math.max(p[0], p[1]) === Math.max(a, b)
     );
-    const letter = (i) => String.fromCharCode(65 + i);
+    const nameOf = (i) => {
+      const n = this._factors[i]?.name?.trim();
+      return n || String.fromCharCode(65 + i);
+    };
+    const labelOf = (i) => this._esc(nameOf(i));
 
-    // Header row: blank corner + A, B, C, …
+    // Header row: blank corner + factor names (fallback A, B, C, …)
     const headers = ['<th></th>'];
-    for (let j = 0; j < k; j++) headers.push(`<th>${letter(j)}</th>`);
+    for (let j = 0; j < k; j++) headers.push(`<th>${labelOf(j)}</th>`);
 
-    // Body: row a = letter A + cells for b = 0..k-1
+    // Body: row a = factor name + cells for b = 0..k-1
     const rows = [];
     for (let a = 0; a < k; a++) {
-      const cells = [`<th>${letter(a)}</th>`];
+      const cells = [`<th>${labelOf(a)}</th>`];
       for (let b = 0; b < k; b++) {
         if (b < a) {
           // lower triangle — leave blank (symmetric)
@@ -1078,7 +1633,7 @@ export default {
           cells.push(
             `<td class="doe__term-cell ${off ? 'doe__term-cell--off' : 'doe__term-cell--on'}" ` +
             `data-a="${a}" data-b="${b}" ` +
-            `title="${letter(a)}×${letter(b)}: ${off ? this._t('termExcluded') : this._t('termIncluded')}">` +
+            `title="${labelOf(a)}×${labelOf(b)}: ${off ? this._t('termExcluded') : this._t('termIncluded')}">` +
             `${off ? '☐' : '☑'}</td>`
           );
         }
@@ -1296,6 +1851,25 @@ export default {
           </div>
         `;
       }
+      // Augment-Sektion — nur bei optimalen Designs (D/A/G-Opt). Erweitert
+      // das bestehende Design um zusätzliche optimale Versuche, die
+      // bereits durchgeführte Läufe als fix behandeln.
+      if (['dopt', 'aopt', 'gopt'].includes(this._designType)) {
+        html += `
+          <div class="doe__augment-section">
+            <div class="doe__augment-title">${this._t('augmentSectionTitle')}</div>
+            <div class="doe__augment-hint">${this._t('augmentHint')}</div>
+            <div class="doe__augment-row">
+              <label class="doe__input-label" for="doe-augment-runs">${this._t('augmentLabel')}</label>
+              <input type="number" id="doe-augment-runs" class="field doe__augment-runs-input"
+                     min="1" max="200" step="1" value="4" />
+              <button class="btn btn--primary doe__augment-btn" type="button">
+                ${this._t('augmentButton')}
+              </button>
+            </div>
+          </div>
+        `;
+      }
     } else {
       // 'unbound' — show the create button up front.
       html += `
@@ -1328,39 +1902,243 @@ export default {
   },
 
   /**
-   * Read-only preview of the runs the engine would produce, rendered when no
-   * Datensammlung is linked (or the linked one is stale). Lists run order,
-   * factor values, and empty response cells.
+   * Temporary preview of the runs the engine would produce. Renders an empty
+   * container; the actual DataGrid is mounted by `_mountPreviewGrid()` after
+   * the DOM is in place. Continuous-factor and response cells are editable —
+   * the values are applied to the new datasheet when the user clicks
+   * "Datenblatt anlegen".
    */
   _renderDesignPreview() {
     if (!this._design?.actualMatrix?.length) return '';
-    const mat = this._design.actualMatrix;
-    const order = this._design.runOrder || mat.map((_, i) => i + 1);
-
-    const factorHeads = this._factors
-      .map((f, i) => `<th>${this._esc(f.name || String.fromCharCode(65 + i))}${f.unit ? ` <span class="doe__preview-unit">[${this._esc(f.unit)}]</span>` : ''}</th>`)
-      .join('');
-    const responseHeads = this._responses
-      .map(r => `<th>${this._esc(r.name)}${r.unit ? ` <span class="doe__preview-unit">[${this._esc(r.unit)}]</span>` : ''}</th>`)
-      .join('');
-
-    const rows = mat.map((row, i) => {
-      const cells = row.map(v => `<td>${this._esc(String(v))}</td>`).join('');
-      const empties = this._responses.map(() => '<td class="doe__preview-empty"></td>').join('');
-      return `<tr><td class="doe__preview-run">${order[i]}</td>${cells}${empties}</tr>`;
-    }).join('');
-
+    const staleNote = this._previewDirty
+      ? `<div class="doe__preview-stale-note">${this._esc(this._t('previewStaleNote'))}</div>`
+      : '';
     return `
       <div class="doe__preview-wrap">
-        <div class="doe__preview-label">${this._t('previewLabel')}</div>
-        <div class="doe__preview-scroll">
-          <table class="doe__preview-table">
-            <thead><tr><th>${this._t('colRunOrder')}</th>${factorHeads}${responseHeads}</tr></thead>
-            <tbody>${rows}</tbody>
-          </table>
-        </div>
+        <div class="doe__preview-label">${this._esc(this._t('previewLabel'))}</div>
+        <div class="doe__preview-hint">${this._esc(this._t('previewHint'))}</div>
+        ${staleNote}
+        <div class="doe__preview-grid"></div>
       </div>
     `;
+  },
+
+  /**
+   * Build the column descriptors handed to the DataGrid. Mirrors the layout
+   * the future worksheet will use (see `createDesignWorksheet`) so that the
+   * user's mental model carries over, but with two simplifications:
+   *
+   *   - No replicate-aggregate columns (those become formulas only after the
+   *     real datasheet is created).
+   *   - Categorical factor columns are hard-locked. Editing them would
+   *     require updating `codedMatrix` too, which is out of scope for
+   *     Phase 1 of the preview rework.
+   *
+   * @returns {Array} column descriptors for DataGrid.setData
+   */
+  _buildPreviewColumns() {
+    const design = this._design;
+    if (!design?.actualMatrix?.length) return [];
+    const nRuns = design.actualMatrix.length;
+    const order = design.runOrder || design.actualMatrix.map((_, i) => i + 1);
+    const stdOrder = design.stdOrder || design.actualMatrix.map((_, i) => i + 1);
+    const replicateIds = design.replicateIds || new Array(nRuns).fill(1);
+
+    const lockMeta = (reason) => ({ lock: 'hard', managedBy: 'doe-planner', reason });
+    const cols = [
+      { id: '__run', name: this._t('colRunOrder'),  type: 'numeric', values: [...order],         format: { decimals: 0 }, meta: lockMeta('run-order') },
+      { id: '__std', name: this._t('colStdOrder'),  type: 'numeric', values: [...stdOrder],      format: { decimals: 0 }, meta: lockMeta('group-id') },
+      { id: '__blk', name: this._t('colBlock'),     type: 'numeric', values: new Array(nRuns).fill(1), format: { decimals: 0 }, meta: lockMeta('block-column') },
+      { id: '__rep', name: this._t('colReplicate'), type: 'numeric', values: [...replicateIds],  format: { decimals: 0 }, meta: lockMeta('replicate-id') },
+    ];
+
+    const edits = this._previewEdits;
+    const factorEdits   = edits?.factors  || null;
+    const responseEdits = edits?.responses || null;
+
+    this._factors.forEach((f, fi) => {
+      const isCategorical = f.kind === 'categorical';
+      const letter = String.fromCharCode(65 + fi);
+      const baseValues = design.actualMatrix.map(row => row[fi]);
+      const values = baseValues.map((v, i) => {
+        if (!isCategorical && factorEdits?.[fi]?.[i] != null) return factorEdits[fi][i];
+        return v;
+      });
+      cols.push({
+        id: `__f${fi}`,
+        name: f.name || `${this._t('factor')} ${letter}`,
+        type: isCategorical ? 'text' : 'numeric',
+        unit: isCategorical ? '' : (f.unit || ''),
+        values,
+        format: isCategorical ? null : { decimals: 2 },
+        meta: isCategorical ? lockMeta('design-factor') : null,
+      });
+    });
+
+    // When the planner is built on top of an existing Datensammlung, the first
+    // `sourceRowCount` rows already have response measurements. Show them in
+    // the preview so the user sees the historical data alongside the rows the
+    // optimiser proposes. Any preview-grid edits the user has made overlay on
+    // top of the source seeds.
+    const sourceSeeds = Array.isArray(design.sourceResponseSeeds) ? design.sourceResponseSeeds : null;
+    const seedRows = Number.isFinite(design.sourceRowCount) ? design.sourceRowCount : 0;
+
+    this._responses.forEach((r, ri) => {
+      const values = new Array(nRuns).fill(null);
+      if (sourceSeeds && sourceSeeds[ri] && seedRows > 0) {
+        const limit = Math.min(seedRows, sourceSeeds[ri].length, nRuns);
+        for (let i = 0; i < limit; i++) {
+          const v = sourceSeeds[ri][i];
+          if (v != null && Number.isFinite(v)) values[i] = v;
+        }
+      }
+      if (responseEdits?.[ri]) {
+        for (let i = 0; i < nRuns; i++) {
+          const v = responseEdits[ri][i];
+          if (v != null && Number.isFinite(v)) values[i] = v;
+        }
+      }
+      cols.push({
+        id: `__r${ri}`,
+        name: r.name || `Y${ri + 1}`,
+        type: 'numeric',
+        unit: r.unit || '',
+        values,
+        format: { decimals: 4 },
+        meta: null,
+      });
+    });
+
+    return cols;
+  },
+
+  /**
+   * Instantiate the preview DataGrid into the `.doe__preview-grid` slot
+   * produced by `_renderDesignPreview()`. Subscribes to `cell:changed` so
+   * edits are captured into `_previewEdits` and survive re-renders.
+   */
+  _mountPreviewGrid(root) {
+    if (!root) return;
+    const slot = root.querySelector('.doe__preview-grid');
+    if (!slot) return;
+    if (!this._design?.actualMatrix?.length) return;
+
+    const cols = this._buildPreviewColumns();
+    if (!cols.length) return;
+
+    const isOptimal = ['dopt', 'aopt', 'gopt'].includes(this._designType);
+    this._previewGrid = new DataGrid(slot, {
+      toast: this._context.notify || (() => {}),
+      t: (key) => this._context.i18n.t(key),
+      // Inject the "Forbid this point" action into the row context menu —
+      // only for optimal designs, where the forbidden-vertices machinery
+      // actually feeds back into the optimiser.
+      extraRowMenuItems: isOptimal
+        ? (cell) => [{
+            label: this._t('forbiddenContextAction'),
+            action: () => this._forbidPreviewRow(cell.rowIdx),
+          }]
+        : undefined,
+    });
+    this._previewGrid.setData(cols);
+
+    this._previewGrid.on('cell:changed', () => this._capturePreviewEdits());
+    this._previewGrid.on('data:pasted', () => this._capturePreviewEdits());
+  },
+
+  /**
+   * Append the coded vector of preview row `rowIdx` to `forbiddenVertices`
+   * (skipping duplicates) and trigger a re-generation. Used by the
+   * "Diesen Punkt verbieten" context-menu action.
+   */
+  _forbidPreviewRow(rowIdx) {
+    const coded = this._design?.codedMatrix?.[rowIdx];
+    if (!Array.isArray(coded)) return;
+    const pattern = [...coded];
+    const list = Array.isArray(this._options.forbiddenVertices)
+      ? [...this._options.forbiddenVertices] : [];
+    const eq = (a, b) => a.length === b.length && a.every((v, i) => v === b[i]);
+    if (list.some(p => eq(p, pattern))) return;
+    list.push(pattern);
+    this._options.forbiddenVertices = list;
+    this._invalidateDesign();
+    this._save();
+    this._render();
+  },
+
+  _destroyPreviewGrid() {
+    if (this._previewGrid) {
+      this._previewGrid.destroy?.();
+      this._previewGrid = null;
+    }
+  },
+
+  /**
+   * Snapshot the current grid contents into `_previewEdits`. Called on every
+   * cell change so that a subsequent `_renderOutput()` (which destroys and
+   * re-creates the grid) can restore the user's edits.
+   *
+   * Sets `_previewDirty = true` when a continuous factor cell deviates from
+   * the engine's original suggestion — that's the trigger for the "score no
+   * longer guaranteed" note.
+   */
+  _capturePreviewEdits() {
+    if (!this._previewGrid || !this._design) return;
+    const data = this._previewGrid.getData();
+    const nFactors = this._factors.length;
+    const nResp = this._responses.length;
+    const nRuns = this._design.actualMatrix.length;
+
+    const factorEdits = Array.from({ length: nFactors }, () => new Array(nRuns).fill(null));
+    const responseEdits = Array.from({ length: nResp }, () => new Array(nRuns).fill(null));
+
+    let dirty = false;
+    // First 4 grid columns are run/std/block/replicate (locked), so the
+    // factor columns start at index 4.
+    const FACTOR_OFFSET = 4;
+    for (let fi = 0; fi < nFactors; fi++) {
+      const col = data[FACTOR_OFFSET + fi];
+      if (!col) continue;
+      const isCategorical = this._factors[fi].kind === 'categorical';
+      if (isCategorical) continue;   // locked column, not editable
+      for (let i = 0; i < nRuns; i++) {
+        const v = col.values[i];
+        const orig = this._design.actualMatrix[i][fi];
+        if (v != null && Number.isFinite(v)) {
+          factorEdits[fi][i] = v;
+          if (Math.abs(v - orig) > 1e-9) dirty = true;
+        }
+      }
+    }
+    for (let ri = 0; ri < nResp; ri++) {
+      const col = data[FACTOR_OFFSET + nFactors + ri];
+      if (!col) continue;
+      for (let i = 0; i < nRuns; i++) {
+        const v = col.values[i];
+        if (v != null && Number.isFinite(v)) responseEdits[ri][i] = v;
+      }
+    }
+
+    this._previewEdits = { factors: factorEdits, responses: responseEdits };
+    const wasDirty = this._previewDirty;
+    this._previewDirty = dirty;
+    this._save();
+
+    // Toggle the stale-note visibility in place without rebuilding the whole
+    // right panel — that would destroy the grid mid-edit.
+    if (wasDirty !== dirty) {
+      const wrap = this._container?.querySelector('.doe__preview-wrap');
+      const existing = wrap?.querySelector('.doe__preview-stale-note');
+      if (dirty && !existing && wrap) {
+        const note = document.createElement('div');
+        note.className = 'doe__preview-stale-note';
+        note.textContent = this._t('previewStaleNote');
+        const hint = wrap.querySelector('.doe__preview-hint');
+        (hint?.nextSibling ? wrap.insertBefore(note, hint.nextSibling) : wrap.appendChild(note));
+      } else if (!dirty && existing) {
+        existing.remove();
+      }
+    }
   },
 
   // ─── Dispersion Analysis (Streuungs-DoE) ────────────────────────
@@ -1845,7 +2623,13 @@ export default {
     el.querySelectorAll('.doe__factor-name').forEach(input => {
       input.addEventListener('change', () => {
         const f = this._factors.find(f => f.id === parseInt(input.dataset.factorId, 10));
-        if (f) { f.name = input.value; this._invalidateDesign(); this._save(); this._markDuplicateFactors(el); }
+        if (f) {
+          f.name = input.value;
+          this._invalidateDesign();
+          this._save();
+          this._markDuplicateFactors(el);
+          if (['dopt', 'aopt', 'gopt'].includes(this._designType)) this._render();
+        }
       });
     });
     el.querySelectorAll('.doe__factor-unit').forEach(input => {
@@ -1908,6 +2692,11 @@ export default {
         if (Array.isArray(this._options.optimalExcludedInteractions) && this._options.optimalExcludedInteractions.length) {
           this._options.optimalExcludedInteractions = [];
         }
+        // Forbidden-vertex patterns are k-wide vectors. Once k changes they
+        // no longer line up with the factor list — drop them.
+        if (Array.isArray(this._options.forbiddenVertices) && this._options.forbiddenVertices.length) {
+          this._options.forbiddenVertices = [];
+        }
         this._invalidateDesign();
         this._save();
         this._render();
@@ -1915,6 +2704,11 @@ export default {
     });
     el.querySelector('.doe__add-factor-btn')?.addEventListener('click', () => {
       this._addFactor('', '');
+      // Vertex patterns are length-k vectors — once k changes they no longer
+      // align with the factor list.
+      if (Array.isArray(this._options.forbiddenVertices) && this._options.forbiddenVertices.length) {
+        this._options.forbiddenVertices = [];
+      }
       this._save();
       this._render();
     });
@@ -1933,12 +2727,6 @@ export default {
         if (this._responses[idx]) { this._responses[idx].unit = input.value; this._invalidateDesign(); this._save(); }
       });
     });
-    el.querySelectorAll('.doe__response-goal').forEach(select => {
-      select.addEventListener('change', () => {
-        const idx = parseInt(select.dataset.idx, 10);
-        if (this._responses[idx]) { this._responses[idx].goal = select.value; this._save(); }
-      });
-    });
     el.querySelectorAll('.doe__response-remove-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         const idx = parseInt(btn.dataset.idx, 10);
@@ -1949,7 +2737,7 @@ export default {
       });
     });
     el.querySelector('.doe__add-response-btn')?.addEventListener('click', () => {
-      this._responses.push({ name: '', unit: '', goal: 'max' });
+      this._responses.push({ name: '', unit: '' });
       this._save();
       this._render();
     });
@@ -1972,11 +2760,14 @@ export default {
         this._selectedRes = null;
         this._selectedPBIdx = null;
         if (['dopt', 'aopt', 'gopt'].includes(this._designType) && !this._options.optimalRuns) {
-          this._options.optimalRuns = minRunsForModel(
+          const minR = minRunsForModel(
             this._factors.length,
             this._options.optimalQuadratic,
             this._options.optimalExcludedInteractions,
-          ) + 2;
+          );
+          const M = this._sourceRowCount();
+          const minNew = M > 0 ? Math.max(1, minR - M) : minR;
+          this._options.optimalRuns = minNew + 2;
         }
         this._invalidateDesign();
         this._save();
@@ -2044,7 +2835,9 @@ export default {
     el.querySelector('.doe__optimal-runs-input')?.addEventListener('change', (e) => {
       const k = this._factors.length;
       const minR = minRunsForModel(k, this._options.optimalQuadratic, this._options.optimalExcludedInteractions);
-      this._options.optimalRuns = Math.max(minR, parseInt(e.target.value, 10) || minR);
+      const M = this._sourceRowCount();
+      const minNew = M > 0 ? Math.max(1, minR - M) : minR;
+      this._options.optimalRuns = Math.max(minNew, parseInt(e.target.value, 10) || minNew);
       this._invalidateDesign(); this._save();
       this._render();
     });
@@ -2052,10 +2845,38 @@ export default {
       this._options.optimalQuadratic = e.target.checked;
       const k = this._factors.length;
       const minR = minRunsForModel(k, this._options.optimalQuadratic, this._options.optimalExcludedInteractions);
-      if ((this._options.optimalRuns || 0) < minR) this._options.optimalRuns = minR;
+      const M = this._sourceRowCount();
+      const minNew = M > 0 ? Math.max(1, minR - M) : minR;
+      if ((this._options.optimalRuns || 0) < minNew) this._options.optimalRuns = minNew;
       this._invalidateDesign(); this._save();
       this._render();
     });
+    // Source-Worksheet picker — when set, the planner builds an optimal
+    // design on top of the chosen Datensammlung instead of starting fresh.
+    el.querySelector('.doe__source-select')?.addEventListener('change', (e) => {
+      const v = e.target.value;
+      if (!v) {
+        this._sourceWorksheet = null;
+      } else {
+        const [instanceId, sheetId] = v.split('::');
+        this._sourceWorksheet = { instanceId, sheetId };
+      }
+      // optimalRuns is "number of NEW runs". When a source is added, the
+      // minimum shrinks (M of the work is already done); when a source is
+      // removed, the minimum grows back to minR. Only clamp upward — never
+      // silently drop the user's chosen run count.
+      if (['dopt', 'aopt', 'gopt'].includes(this._designType)) {
+        const k = this._factors.length;
+        const minR = minRunsForModel(k, this._options.optimalQuadratic, this._options.optimalExcludedInteractions);
+        const M = this._sourceRowCount();
+        const minNew = M > 0 ? Math.max(1, minR - M) : minR;
+        if ((this._options.optimalRuns || 0) < minNew) this._options.optimalRuns = minNew;
+      }
+      this._invalidateDesign();
+      this._save();
+      this._render();
+    });
+
     // Optimal model-term matrix: toggle a 2FI in/out of the model
     el.querySelectorAll('.doe__term-cell').forEach(cell => {
       cell.addEventListener('click', () => {
@@ -2073,15 +2894,72 @@ export default {
 
         // If the user just shrank the model, leave optimalRuns unchanged (a larger
         // n than the minimum is fine). If they grew it past the current run count,
-        // bump optimalRuns up so the design stays feasible.
+        // bump optimalRuns up so the design stays feasible. With a source bound,
+        // the minimum is expressed in NEW runs.
         const k = this._factors.length;
         const minR = minRunsForModel(k, this._options.optimalQuadratic, list);
-        if ((this._options.optimalRuns || 0) < minR) this._options.optimalRuns = minR;
+        const M = this._sourceRowCount();
+        const minNew = M > 0 ? Math.max(1, minR - M) : minR;
+        if ((this._options.optimalRuns || 0) < minNew) this._options.optimalRuns = minNew;
 
         this._invalidateDesign(); this._save();
         this._render();
       });
     });
+
+    // Forbidden combinations — add / remove
+    el.querySelector('.doe__forbidden-add-btn')?.addEventListener('click', () => {
+      this._addForbiddenVertexFromInputs();
+    });
+    el.querySelectorAll('.doe__forbidden-remove-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const idx = parseInt(btn.dataset.ruleIdx, 10);
+        if (!Number.isInteger(idx)) return;
+        const list = Array.isArray(this._options.forbiddenVertices)
+          ? [...this._options.forbiddenVertices] : [];
+        if (idx < 0 || idx >= list.length) return;
+        list.splice(idx, 1);
+        this._options.forbiddenVertices = list;
+        this._invalidateDesign(); this._save();
+        this._render();
+      });
+    });
+  },
+
+  /**
+   * Read the per-factor <select> values in the "add forbidden combination"
+   * row and append a new rule. Empty value = wildcard. A rule that is
+   * entirely wildcards is rejected (it would forbid everything).
+   */
+  _addForbiddenVertexFromInputs() {
+    const el = this._container;
+    if (!el) return;
+    const k = this._factors.length;
+    const pattern = new Array(k).fill(null);
+    let anyBound = false;
+    for (let fi = 0; fi < k; fi++) {
+      const sel = el.querySelector(`.doe__forbidden-input[data-factor-idx="${fi}"]`);
+      const raw = sel?.value ?? '';
+      if (raw === '') continue;
+      const num = parseFloat(raw);
+      if (Number.isFinite(num)) {
+        pattern[fi] = num;
+        anyBound = true;
+      }
+    }
+    if (!anyBound) {
+      this._context.notify?.(this._t('forbiddenHint'), 'info');
+      return;
+    }
+    const list = Array.isArray(this._options.forbiddenVertices)
+      ? [...this._options.forbiddenVertices] : [];
+    // Reject duplicates so the list stays clean.
+    const eq = (a, b) => a.length === b.length && a.every((v, i) => v === b[i]);
+    if (list.some(p => eq(p, pattern))) return;
+    list.push(pattern);
+    this._options.forbiddenVertices = list;
+    this._invalidateDesign(); this._save();
+    this._render();
   },
 
   // ─── Event Binding: Right Panel ────────────────────────────────
@@ -2119,6 +2997,17 @@ export default {
     };
     el.querySelector('.doe__open-worksheet-btn')?.addEventListener('click', openLinkedWorksheet);
     el.querySelector('.doe__open-old-worksheet-btn')?.addEventListener('click', openLinkedWorksheet);
+
+    // Augment: zusätzliche Versuche an ein optimales Design anhängen
+    el.querySelector('.doe__augment-btn')?.addEventListener('click', () => {
+      const input = el.querySelector('.doe__augment-runs-input');
+      const n = parseInt(input?.value, 10);
+      if (!Number.isFinite(n) || n <= 0) {
+        this._context.notify(this._t('augmentInvalidCount'), 'error');
+        return;
+      }
+      this._augmentDesign(n);
+    });
   },
 
   // ─── Transfer to Regression ─────────────────────────────────────

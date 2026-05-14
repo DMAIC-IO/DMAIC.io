@@ -18,6 +18,7 @@ import {
 } from '../../engines/control-chart-engine.js';
 
 import { esc } from '../../core/html-utils.js';
+import { provisionWorksheet, removeProvisionedWorksheet } from '../../core/examples-registry.js';
 
 export default {
   id: 'control-chart',
@@ -43,6 +44,10 @@ export default {
   _charts: [],
   _lastResult: null,
   _eventUnsubs: [],
+  /** Worksheet provisioned by loadExample; removed and recreated on each
+   *  subsequent example load so the column picker doesn't accumulate stale
+   *  sheets. */
+  _exampleWorksheetId: null,
   _autoRunTimer: null,
   _picker: null,
 
@@ -100,6 +105,7 @@ export default {
       enabledRules: this._enabledRules,
       annotations: this._annotations,
       frozenLimits: this._frozenLimits,
+      exampleWorksheetId: this._exampleWorksheetId,
     };
   },
 
@@ -112,6 +118,54 @@ export default {
       this._bindContainerEvents();
       this._runAnalysis();
     }
+  },
+
+  /**
+   * Load a catalog example. Example payloads ship a worksheet
+   * (`sourceWorksheetData`) and columnRef with the literal placeholder
+   * `__source__` as instanceId. We provision the worksheet (replacing any
+   * previously example-provisioned one), rewrite the placeholder, then
+   * apply the state — setState calls _runAnalysis itself.
+   *
+   * @param {{ meta: object, data: object }} payload
+   */
+  async loadExample(payload) {
+    if (!payload || !payload.data) return;
+    const t = (k) => this._context.i18n.t(k);
+
+    const hasContent = !!this._columnRef;
+    if (hasContent && this._context?.confirmPopout) {
+      const ok = await this._context.confirmPopout(t('moduleHelp.confirmOverwrite'), { danger: true });
+      if (!ok) return;
+    }
+
+    const data = { ...payload.data };
+
+    if (data.sourceWorksheetData) {
+      const wsState = data.sourceWorksheetData;
+      delete data.sourceWorksheetData;
+      if (this._exampleWorksheetId) {
+        removeProvisionedWorksheet(this._context, this._exampleWorksheetId);
+        this._exampleWorksheetId = null;
+      }
+      const ref = provisionWorksheet(this._context, wsState);
+      if (ref) {
+        this._exampleWorksheetId = ref.instanceId;
+        data.exampleWorksheetId = ref.instanceId;
+        if (data.columnRef?.instanceId === '__source__') {
+          data.columnRef = { ...data.columnRef, instanceId: ref.instanceId };
+        }
+      }
+    }
+
+    this.setState(data);
+    // setState's _runAnalysis renders the chart but doesn't persist — write
+    // through so the loaded example survives a reload.
+    this._save();
+
+    const lang = this._context.i18n.getLanguage();
+    const title = payload.meta?.title?.[lang] || payload.meta?.title?.en || payload.meta?.id || '';
+    this._context.notify?.(t('moduleHelp.exampleLoaded').replace('{title}', title), 'success');
   },
 
   help: () => import('./control-chart-help.js'),
@@ -130,6 +184,7 @@ export default {
     this._enabledRules = saved.enabledRules || [...DEFAULT_ENABLED_RULES];
     this._annotations = (saved.annotations && typeof saved.annotations === 'object') ? saved.annotations : {};
     this._frozenLimits = saved.frozenLimits ?? null;
+    if (saved.exampleWorksheetId !== undefined) this._exampleWorksheetId = saved.exampleWorksheetId;
   },
 
   /** @private — list of indices marked excluded in annotations */

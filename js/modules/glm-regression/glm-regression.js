@@ -21,6 +21,7 @@ import {
 import { ColumnPicker, getColumnValues, getColumnName, discoverColumns, refToKey, keyToRef, isPickerFocused } from '../../ui/column-picker.js';
 import { esc } from '../../core/html-utils.js';
 import { chartsMethods } from './glm-regression-charts.js';
+import { provisionWorksheet, removeProvisionedWorksheet } from '../../core/examples-registry.js';
 
 /** @param {number} v @param {number} d */
 function fmt(v, d = 4) {
@@ -71,6 +72,10 @@ const mod = {
   _charts: [],
   _picker: null,
   _eventUnsubs: [],
+  /** Worksheet provisioned by loadExample; removed and recreated on each
+   *  subsequent example load so the column picker doesn't accumulate stale
+   *  sheets. */
+  _exampleWorksheetId: null,
 
   help: () => import('./glm-regression-help.js'),
 
@@ -183,6 +188,7 @@ const mod = {
       cutoff: this._cutoff,
       result: this._slimResult(this._result),
       activeTab: this._activeTab,
+      exampleWorksheetId: this._exampleWorksheetId,
     };
   },
 
@@ -211,6 +217,68 @@ const mod = {
     return slim;
   },
 
+  /**
+   * Load a catalog example. Project payloads ship a worksheet
+   * (`sourceWorksheetData`) and colRefs/yKey/trialsKey with the literal
+   * placeholder `__source__` as instanceId. We provision the worksheet,
+   * rewrite the placeholder, apply the state, then run the GLM fit.
+   *
+   * @param {{ meta: object, data: object }} payload
+   */
+  async loadExample(payload) {
+    if (!payload || !payload.data) return;
+    const t = (k) => this._context.i18n.t(k);
+
+    const hasContent = (this._colRefs?.length > 0) || this._yKey || this._trialsKey;
+    if (hasContent && this._context?.confirmPopout) {
+      const ok = await this._context.confirmPopout(t('moduleHelp.confirmOverwrite'), { danger: true });
+      if (!ok) return;
+    }
+
+    const data = { ...payload.data };
+
+    if (data.sourceWorksheetData) {
+      const wsState = data.sourceWorksheetData;
+      delete data.sourceWorksheetData;
+      if (this._exampleWorksheetId) {
+        removeProvisionedWorksheet(this._context, this._exampleWorksheetId);
+        this._exampleWorksheetId = null;
+      }
+      const ref = provisionWorksheet(this._context, wsState);
+      if (ref) {
+        this._exampleWorksheetId = ref.instanceId;
+        data.exampleWorksheetId = ref.instanceId;
+        data.colRefs = (data.colRefs || []).map(r =>
+          r?.instanceId === '__source__' ? { ...r, instanceId: ref.instanceId } : r,
+        );
+        if (typeof data.yKey === 'string' && data.yKey.startsWith('__source__|')) {
+          data.yKey = data.yKey.replace('__source__', ref.instanceId);
+        }
+        if (typeof data.trialsKey === 'string' && data.trialsKey.startsWith('__source__|')) {
+          data.trialsKey = data.trialsKey.replace('__source__', ref.instanceId);
+        }
+      }
+    }
+
+    // Drop any persisted result — the new worksheet will produce a fresh fit.
+    delete data.result;
+
+    this.setState(data);
+
+    // setState doesn't auto-fit on its own (the guard `_autoRun` checks for
+    // an existing _result). Trigger the analysis explicitly.
+    try {
+      this._runAnalysis();
+    } catch (err) {
+      console.error('[GLM-Regression] loadExample fit failed:', err);
+    }
+    this._save();
+
+    const lang = this._context.i18n.getLanguage();
+    const title = payload.meta?.title?.[lang] || payload.meta?.title?.en || payload.meta?.id || '';
+    this._context.notify?.(t('moduleHelp.exampleLoaded').replace('{title}', title), 'success');
+  },
+
   setState(data) {
     if (!data) return;
     this._colRefs = data.colRefs || [];
@@ -224,6 +292,7 @@ const mod = {
     this._cutoff = data.cutoff ?? 0.5;
     this._result = data.result || null;
     this._activeTab = data.activeTab || 'model';
+    if (data.exampleWorksheetId !== undefined) this._exampleWorksheetId = data.exampleWorksheetId;
     if (this._container) {
       this._render();
       if (this._result) {

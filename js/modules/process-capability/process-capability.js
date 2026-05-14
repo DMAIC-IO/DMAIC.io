@@ -28,6 +28,10 @@ export default {
   _result: null,
   /** @type {{ instanceId: string, sheetId: string, columnId: string }|null} */
   _columnRef: null,
+  /** @type {number[]|null} values loaded directly from an example (bypasses worksheet) */
+  _embeddedValues: null,
+  /** @type {string} display label for embedded example data */
+  _embeddedLabel: '',
   _params: { name: '', lsl: NaN, usl: NaN, target: NaN, unit: 'mm', confidence: null },
   _charts: [],
   _renderGen: 0,
@@ -113,6 +117,8 @@ export default {
     return {
       params: { ...this._params },
       columnRef: this._columnRef ? { ...this._columnRef } : null,
+      embeddedValues: this._embeddedValues ? [...this._embeddedValues] : null,
+      embeddedLabel: this._embeddedLabel || '',
       lastResult: this._result,
     };
   },
@@ -121,12 +127,72 @@ export default {
     if (!data) return;
     if (data.params) this._params = { ...this._params, ...data.params };
     if (data.columnRef !== undefined) this._columnRef = data.columnRef ? { ...data.columnRef } : null;
+    if (data.embeddedValues !== undefined) this._embeddedValues = Array.isArray(data.embeddedValues) ? [...data.embeddedValues] : null;
+    if (data.embeddedLabel !== undefined) this._embeddedLabel = data.embeddedLabel || '';
     this._result = data.lastResult || null;
     this._render();
     if (this._result) {
       this._renderResults(this._result);
     }
     this._tryAutoAnalysis();
+  },
+
+  // ─── Example Data ───────────────────────────────────────────
+
+  /**
+   * Load a catalog example into the module. Activates "embedded data" mode:
+   * values come directly from the example, bypassing the worksheet column
+   * selector. Switching the column selector clears the embedded data.
+   *
+   * @param {{ meta: object, data: any }} payload
+   */
+  async loadExample(payload) {
+    if (!payload || !payload.data) return;
+    const t = this._t;
+
+    // Warn before overwriting existing data.
+    const hasData = this._embeddedValues || this._columnRef;
+    if (hasData && this._context?.confirmPopout) {
+      const ok = await this._context.confirmPopout(t('moduleHelp.confirmOverwrite'), { danger: true });
+      if (!ok) return;
+    }
+
+    const col = payload.data.columns?.[0];
+    if (!col || !Array.isArray(col.values)) {
+      this._notify(t('moduleHelp.exampleLoadError'), 'error');
+      return;
+    }
+    const values = col.values.filter(v => typeof v === 'number' && !isNaN(v));
+    if (values.length === 0) {
+      this._notify(t('moduleHelp.exampleLoadError'), 'error');
+      return;
+    }
+
+    this._embeddedValues = values;
+    const lang = this._context.i18n.getLanguage();
+    this._embeddedLabel = payload.meta?.title?.[lang] || payload.meta?.title?.en || payload.meta?.id || '';
+    this._columnRef = null;
+
+    // Apply spec from meta if present.
+    const spec = payload.meta?.spec || {};
+    if (typeof spec.lsl    === 'number') this._params.lsl    = spec.lsl;
+    if (typeof spec.usl    === 'number') this._params.usl    = spec.usl;
+    if (typeof spec.target === 'number') this._params.target = spec.target;
+
+    // Use feature name from meta and unit from first column.
+    if (payload.meta?.title) this._params.name = this._embeddedLabel;
+    if (col.unit) this._params.unit = col.unit;
+    else if (payload.meta?.columns?.[0]?.unit) this._params.unit = payload.meta.columns[0].unit;
+
+    this._render();
+    this._tryAutoAnalysis();
+    this._save();
+    this._notify(t('moduleHelp.exampleLoaded', { title: this._embeddedLabel }), 'success');
+  },
+
+  _clearEmbedded() {
+    this._embeddedValues = null;
+    this._embeddedLabel = '';
   },
 
   // ─── Worksheet Column Discovery ─────────────────────────────
@@ -166,6 +232,11 @@ export default {
   },
 
   _getColumnValues() {
+    // Embedded example data takes precedence over any worksheet column.
+    if (this._embeddedValues) {
+      return this._embeddedValues.filter(v => typeof v === 'number' && !isNaN(v));
+    }
+
     if (!this._columnRef) return [];
     const sm = this._context?.stateManager;
     if (!sm) return [];
@@ -260,6 +331,17 @@ export default {
 
   _buildColumnSelectorHTML() {
     const t = this._t;
+
+    // Embedded example data — show a "remove" pill instead of the selector.
+    if (this._embeddedValues) {
+      const n = this._embeddedValues.length;
+      const label = this._embeddedLabel || t('modules.process-capability.exampleData');
+      return `<div class="pc__embedded">
+        <span class="pc__embedded-label">${this._esc(label)} (n=${n})</span>
+        <button class="btn btn--sm btn--ghost" data-ref="btn-clear-embedded" type="button" title="${t('common.remove')}">✕</button>
+      </div>`;
+    }
+
     const hasWs = this._hasWorksheet();
 
     if (!hasWs) {
@@ -337,7 +419,19 @@ export default {
         } else {
           const [instanceId, sheetId, columnId] = val.split('|');
           this._columnRef = { instanceId, sheetId, columnId };
+          // Picking a worksheet column clears any embedded example data.
+          this._clearEmbedded();
         }
+        this._refreshColumnSelector();
+        this._save();
+        this._tryAutoAnalysis();
+      });
+    }
+
+    const clearBtn = c.querySelector('[data-ref="btn-clear-embedded"]');
+    if (clearBtn) {
+      clearBtn.addEventListener('click', () => {
+        this._clearEmbedded();
         this._refreshColumnSelector();
         this._save();
         this._tryAutoAnalysis();
@@ -354,7 +448,8 @@ export default {
   _tryAutoAnalysis() {
     this._readInputs();
 
-    if (!this._columnRef) return this._clearResults();
+    // Data must come from either an embedded example or a worksheet column.
+    if (!this._columnRef && !this._embeddedValues) return this._clearResults();
 
     const values = this._getColumnValues();
     if (values.length === 0) return this._clearResults();

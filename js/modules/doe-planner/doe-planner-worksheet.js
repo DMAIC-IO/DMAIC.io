@@ -37,7 +37,7 @@
  * @param {number[]} design.runOrder - Run order (1-based)
  * @param {number[]} design.stdOrder - Standard order (1-based)
  * @param {object[]} factors - Factor definitions [{name, unit, levels}]
- * @param {object[]} responses - Response definitions [{name, unit, goal}]
+ * @param {object[]} responses - Response definitions [{name, unit}]
  * @param {string} doeName - Name of the DoE plan (used as sheet name)
  * @param {string} [phase='improve'] - DMAIC phase to register the worksheet in
  * @param {string|null} [experimentId=null] - Optional id to embed in column.meta.managedRef
@@ -165,17 +165,31 @@ export function createDesignWorksheet(context, design, factors, responses, doeNa
     });
   });
 
-  // Response columns (empty — user fills in results)
+  // Response columns. Seeded from `design.sourceResponseSeeds` when the design
+  // was built on top of an existing Datensammlung: the first `sourceRowCount`
+  // response values are copied verbatim from the source so the user doesn't
+  // need to re-enter measurements that already exist. The new (augmented) rows
+  // stay null and wait for fresh measurements.
+  const seedRows = Number.isFinite(design.sourceRowCount) ? design.sourceRowCount : 0;
+  const seeds = Array.isArray(design.sourceResponseSeeds) ? design.sourceResponseSeeds : null;
   responses.forEach((r, ri) => {
     const colId = crypto.randomUUID();
     responseColumnIds.push(colId);
+    const values = new Array(nRuns).fill(null);
+    if (seeds && seeds[ri]) {
+      const limit = Math.min(seedRows, seeds[ri].length, nRuns);
+      for (let i = 0; i < limit; i++) {
+        const v = seeds[ri][i];
+        if (v != null && Number.isFinite(v)) values[i] = v;
+      }
+    }
     columns.push({
       id: colId,
       name: r.name || `Y${ri + 1}`,
       shortName: `C${columns.length + 1}`,
       type: 'numeric',
       unit: r.unit || '',
-      values: new Array(nRuns).fill(null),
+      values,
       formulas: new Array(nRuns).fill(null),
       format: { decimals: 4 },
       meta: null,    // explicit null — user fills these in, no lock.
@@ -382,7 +396,6 @@ export function createExperimentRecord(context, experimentId, design, factors, r
     responseColumns: responses.map((r, i) => ({
       name: r.name || `Y${i + 1}`,
       unit: r.unit ?? null,
-      goal: r.goal ?? null,
       columnId: worksheetRef.responseColumnIds[i],
       meanColumnId:  worksheetRef.meanColumnIds?.[i]  ?? null,
       lnVarColumnId: worksheetRef.lnVarColumnIds?.[i] ?? null,
@@ -463,4 +476,254 @@ export function isWorksheetValid(context, ref) {
   const ws = sm.getModuleState(ref.instanceId);
   if (!ws?.sheets) return false;
   return ws.sheets.some(s => s.id === ref.sheetId);
+}
+
+// ─── Append Rows (Design Augmentation) ─────────────────────────────
+
+/**
+ * Append additional design rows to the bound worksheet. Used when augmenting
+ * an optimal design with extra runs — the originally created columns stay
+ * intact, only their `values` and `formulas` arrays grow.
+ *
+ * RunOrder/StdOrder continue monotonically from the previous max; Block and
+ * Replicate default to 1; factor columns receive the new actual values (label
+ * for categorical, number for continuous); response columns get `null`.
+ * Mean/ln(variance) helper columns extend their per-row formulas with the new
+ * row index — the formula template is cloned from an existing row.
+ *
+ * @param {object} context - Module context (stateManager, eventBus)
+ * @param {WorksheetRef} ref - Worksheet reference
+ * @param {object[]} factors - Factor definitions (same order as factorColumnIds)
+ * @param {Array<Array<number|string>>} newActualRows - addRuns × k matrix of new actual values
+ * @returns {{ added: number, totalRuns: number } | null}
+ */
+export function appendDoERowsToWorksheet(context, ref, factors, newActualRows) {
+  if (!ref || !Array.isArray(newActualRows) || !newActualRows.length) return null;
+  const { stateManager: sm, eventBus } = context;
+
+  const ws = sm.getModuleState(ref.instanceId);
+  if (!ws?.sheets) return null;
+  const sheet = ws.sheets.find(s => s.id === ref.sheetId);
+  if (!sheet?.state?.columns) return null;
+
+  const addRuns = newActualRows.length;
+  const oldN = sheet.state.rowCount ?? 0;
+
+  const newRunOrders = Array.from({ length: addRuns }, (_, i) => oldN + i + 1);
+  const newStdOrders = Array.from({ length: addRuns }, (_, i) => oldN + i + 1);
+
+  // Map column ID → role for fast lookup
+  const factorIdToIdx = new Map(ref.factorColumnIds.map((id, i) => [id, i]));
+  const responseIds = new Set(ref.responseColumnIds);
+  const meanIds = new Set(ref.meanColumnIds || []);
+  const lnVarIds = new Set(ref.lnVarColumnIds || []);
+
+  for (const col of sheet.state.columns) {
+    let appendValues;
+    const appendFormulas = new Array(addRuns).fill(null);
+
+    if (col.id === ref.runOrderColumnId) {
+      appendValues = newRunOrders;
+    } else if (col.id === ref.stdOrderColumnId) {
+      appendValues = newStdOrders;
+    } else if (col.meta?.reason === 'block-column') {
+      appendValues = new Array(addRuns).fill(1);
+    } else if (col.meta?.reason === 'replicate-id') {
+      appendValues = new Array(addRuns).fill(1);
+    } else if (factorIdToIdx.has(col.id)) {
+      const fIdx = factorIdToIdx.get(col.id);
+      appendValues = newActualRows.map(row => row[fIdx]);
+    } else if (responseIds.has(col.id)) {
+      appendValues = new Array(addRuns).fill(null);
+    } else if (meanIds.has(col.id) || lnVarIds.has(col.id)) {
+      // Clone the template by reading any existing per-row formula and
+      // substituting the row index. The formula format is
+      //   =AVERAGEIF('STD'; 'STD'[N]; 'RESP')
+      // where N is the only bracketed number.
+      const template = (col.formulas || []).find(f => typeof f === 'string') || null;
+      appendValues = new Array(addRuns).fill(null);
+      if (template) {
+        for (let i = 0; i < addRuns; i++) {
+          appendFormulas[i] = template.replace(/\[\d+\]/, `[${oldN + i + 1}]`);
+        }
+      }
+    } else {
+      // Unknown column (e.g., user-added) — extend with nulls.
+      appendValues = new Array(addRuns).fill(null);
+    }
+
+    col.values = [...col.values, ...appendValues];
+    col.formulas = [...(col.formulas || new Array(oldN).fill(null)), ...appendFormulas];
+  }
+
+  sheet.state.rowCount = oldN + addRuns;
+
+  sm.setModuleState(ref.instanceId, ws);
+  eventBus?.emit('worksheet:dataChanged', { instanceId: ref.instanceId });
+
+  return { added: addRuns, totalRuns: oldN + addRuns };
+}
+
+// ─── Source-Worksheet enumeration & reader ─────────────────────────
+
+/**
+ * List every worksheet sheet currently registered in any project phase.
+ * The DoE planner uses this to populate a picker so users can build an
+ * optimal design on top of measurements that already live in a Datensammlung.
+ *
+ * @param {object} context
+ * @returns {Array<{instanceId:string, sheetId:string, name:string, phaseId:string, rowCount:number, columns:Array<{id:string,name:string,type:string}>}>}
+ */
+export function listProjectWorksheets(context) {
+  const { stateManager: sm } = context;
+  const phases = sm.get('phases') || {};
+  const out = [];
+  for (const [phaseId, instances] of Object.entries(phases)) {
+    if (!Array.isArray(instances)) continue;
+    for (const inst of instances) {
+      if (inst.moduleId !== 'worksheet') continue;
+      const ws = sm.getModuleState(inst.instanceId);
+      if (!ws?.sheets) continue;
+      for (const sheet of ws.sheets) {
+        const cols = sheet.state?.columns || [];
+        out.push({
+          instanceId: inst.instanceId,
+          sheetId: sheet.id,
+          name: sheet.name || sheet.id,
+          phaseId,
+          rowCount: sheet.state?.rowCount || 0,
+          columns: cols.map(c => ({ id: c.id, name: c.name, type: c.type })),
+        });
+      }
+    }
+  }
+  return out;
+}
+
+/**
+ * Read factor + response values from a picked source worksheet and convert
+ * them to the coded representation the optimal-design engine expects.
+ *
+ * Columns are matched to factors/responses by **name** (case-insensitive,
+ * trimmed). Missing factor columns abort with `errors.missingFactors`;
+ * missing response columns are silently treated as "no data" (the response
+ * stays empty for those rows).
+ *
+ * For continuous factors the coded value is `2·(v − lo)/(hi − lo) − 1`,
+ * clamped to [−1, +1] if the source value falls outside the planner's
+ * declared range. For categorical factors the value is matched against the
+ * factor's `levels` (case-insensitive); unmatched cells abort the row.
+ *
+ * Rows with any missing/invalid factor cell are skipped.
+ *
+ * @param {object} context
+ * @param {{instanceId:string, sheetId:string}} sourceRef
+ * @param {object[]} factors
+ * @param {object[]} responses
+ * @returns {{
+ *   ok: boolean,
+ *   codedMatrix?: number[][],
+ *   actualRows?: Array<Array<number|string>>,
+ *   responseValues?: Array<Array<number|null>>,
+ *   rowCount?: number,
+ *   mappedResponseCount?: number,
+ *   skippedRows?: number,
+ *   errors: string[],
+ *   missingFactors?: string[],
+ * }}
+ */
+export function readSourceData(context, sourceRef, factors, responses) {
+  const { stateManager: sm } = context;
+  if (!sourceRef?.instanceId || !sourceRef?.sheetId) {
+    return { ok: false, errors: ['source-missing-ref'] };
+  }
+
+  const ws = sm.getModuleState(sourceRef.instanceId);
+  if (!ws?.sheets) return { ok: false, errors: ['source-not-found'] };
+  const sheet = ws.sheets.find(s => s.id === sourceRef.sheetId);
+  if (!sheet?.state?.columns) return { ok: false, errors: ['source-sheet-not-found'] };
+
+  const columns = sheet.state.columns;
+  const rowCount = sheet.state.rowCount ?? 0;
+  if (rowCount === 0) return { ok: false, errors: ['source-empty'] };
+
+  const norm = (s) => String(s ?? '').trim().toLowerCase();
+  const findCol = (name) => columns.find(c => norm(c.name) === norm(name));
+
+  // Factor mapping is mandatory — bail early with a useful error
+  const factorMap = factors.map(f => ({ factor: f, col: findCol(f.name) }));
+  const missing = factorMap.filter(m => !m.col).map(m => m.factor.name);
+  if (missing.length) {
+    return { ok: false, errors: ['source-missing-factor-columns'], missingFactors: missing };
+  }
+
+  // Response mapping is optional — unmapped responses just stay empty
+  const responseMap = responses.map(r => ({ response: r, col: findCol(r.name) }));
+
+  const codedMatrix = [];
+  const actualRows = [];
+  const responseValues = responses.map(() => []);
+  let skipped = 0;
+
+  for (let i = 0; i < rowCount; i++) {
+    const codedRow = [];
+    const actualRow = [];
+    let rowValid = true;
+
+    for (let fi = 0; fi < factors.length; fi++) {
+      const f = factors[fi];
+      const raw = factorMap[fi].col.values[i];
+      if (raw == null || raw === '') { rowValid = false; break; }
+
+      let coded;
+      if (f.kind === 'categorical') {
+        const idx = f.levels.findIndex(l => norm(l) === norm(raw));
+        if (idx < 0) { rowValid = false; break; }
+        const nLv = f.levels.length;
+        coded = nLv === 1 ? 0 : -1 + (2 * idx) / (nLv - 1);
+        actualRow.push(f.levels[idx]); // keep canonical casing from factor defn
+      } else {
+        const num = parseFloat(raw);
+        if (!isFinite(num)) { rowValid = false; break; }
+        const lo = parseFloat(f.levels[0]);
+        const hi = parseFloat(f.levels[f.levels.length - 1]);
+        if (!isFinite(lo) || !isFinite(hi) || lo === hi) { rowValid = false; break; }
+        coded = -1 + (2 * (num - lo)) / (hi - lo);
+        coded = Math.max(-1, Math.min(1, coded));
+        actualRow.push(num);
+      }
+      codedRow.push(coded);
+    }
+
+    if (!rowValid) { skipped++; continue; }
+
+    codedMatrix.push(codedRow);
+    actualRows.push(actualRow);
+
+    for (let ri = 0; ri < responses.length; ri++) {
+      const rc = responseMap[ri];
+      if (rc.col) {
+        const v = rc.col.values[i];
+        const num = (v == null || v === '') ? null : parseFloat(v);
+        responseValues[ri].push(Number.isFinite(num) ? num : null);
+      } else {
+        responseValues[ri].push(null);
+      }
+    }
+  }
+
+  if (codedMatrix.length === 0) {
+    return { ok: false, errors: ['source-no-valid-rows'], skippedRows: skipped };
+  }
+
+  return {
+    ok: true,
+    codedMatrix,
+    actualRows,
+    responseValues,
+    rowCount: codedMatrix.length,
+    mappedResponseCount: responseMap.filter(rc => rc.col).length,
+    skippedRows: skipped,
+    errors: [],
+  };
 }

@@ -12,9 +12,11 @@
 import { renderPage, getStrings, CONSTANTS } from './page-shell.mjs';
 import { renderBlocks, firstParagraphText } from './blocks.mjs';
 import { escapeHtml, escapeAttr, pick } from './escape.mjs';
-import { getModuleName } from '../loaders/load-sources.mjs';
+import { getModuleName, getExamplesForModule } from '../loaders/load-sources.mjs';
 import { renderLatex } from './katex.mjs';
 import { CYCLES, getCycle, getPhaseIds } from '../../../js/core/cycles/cycles.js';
+
+const APP_ORIGIN = 'https://dmaic.io';
 
 const SECTION_ORDER = [
   'overview',
@@ -30,7 +32,7 @@ const SECTION_ORDER = [
 
 // ─── Module page ─────────────────────────────────────────────────
 
-export function renderModulePage({ module, lang, i18n }) {
+export function renderModulePage({ module, lang, i18n, examples }) {
   const s = getStrings(lang);
   const { id, phase, help, cycles: moduleCycles } = module;
 
@@ -74,6 +76,20 @@ export function renderModulePage({ module, lang, i18n }) {
   const title = `${name} — ${phaseLabel} — ${s.handbookTitle}`;
   const description = leadText || `${name} — ${phaseLabel} — ${s.handbookTitle}`;
 
+  // ─── Examples section (linked detail pages per example) ──
+  let examplesSectionHtml = '';
+  const moduleExamples = examples ? getExamplesForModule(examples, id) : [];
+  if (moduleExamples.length > 0) {
+    const cards = moduleExamples.map((ex) => {
+      const exName = pick(ex.title, lang) || ex.id;
+      const exDesc = pick(ex.description, lang) || '';
+      const typeLabel = s.exampleTypeLabel[ex.type] || ex.type;
+      const href = `../examples/${ex.id}.html`;
+      return `<a class="handbook-card" href="${escapeAttr(href)}"><div class="handbook-card__title">${escapeHtml(exName)} <span style="font-weight:400;color:var(--t3);font-size:.8em;">— ${escapeHtml(typeLabel)}</span></div>${exDesc ? `<div class="handbook-card__desc">${escapeHtml(exDesc)}</div>` : ''}</a>`;
+    }).join('');
+    examplesSectionHtml = `<section class="handbook-section" id="examples"><h2>${escapeHtml(s.examplesHeading)}</h2><p>${escapeHtml(s.examplesIntro)}</p><div class="handbook-grid">${cards}</div></section>`;
+  }
+
   // ─── Per-cycle assignments (DMAIC, DMADV, …) ──────────────
   // Show every cycle this module is part of so cross-cycle users see where
   // it lands. Data modules are cycle-independent — skip the section.
@@ -101,6 +117,7 @@ export function renderModulePage({ module, lang, i18n }) {
   <h1>${escapeHtml(name)}</h1>
   ${leadText ? `<p class="handbook-article__lead">${escapeHtml(leadText)}</p>` : ''}
   ${sectionHtmlParts.join('\n')}
+  ${examplesSectionHtml}
   ${cyclesSectionHtml}
 </article>`;
 
@@ -815,6 +832,182 @@ export function renderTrainingToolPage({ lang, i18n, topic }) {
 }
 
 export { TRAINING_TOPICS };
+
+// ─── Example detail page ─────────────────────────────────────────
+
+/**
+ * Render a per-example detail page — /{lang}/examples/{exampleId}.html.
+ *
+ * Shows title, description, source/license, spec (modul-spezifisch),
+ * column metadata, table preview, and a deeplink that opens the example
+ * directly in the app. CSV/JSON files are served from /examples/data/
+ * (language-neutral, one copy).
+ *
+ * @param {object} opts
+ * @param {object} opts.example       — catalog entry with optional `previewData`
+ * @param {object[]} opts.modules     — all modules (for cross-linking)
+ * @param {'de'|'en'} opts.lang
+ * @param {object} opts.i18n
+ */
+export function renderExamplePage({ example, modules, lang, i18n }) {
+  const s = getStrings(lang);
+  const ex = example;
+
+  const name = pick(ex.title, lang) || ex.id;
+  const desc = pick(ex.description, lang) || '';
+  const typeLabel = s.exampleTypeLabel[ex.type] || ex.type;
+
+  const pathFromRoot = `/${lang}/examples/${ex.id}.html`;
+  const altLang = lang === 'de' ? 'en' : 'de';
+  const altPathFromRoot = `/${altLang}/examples/${ex.id}.html`;
+
+  // Primary module (first in modules[]) drives breadcrumb.
+  const primaryModuleId = ex.modules?.[0];
+  const primaryModule = modules.find(m => m.id === primaryModuleId);
+  const primaryModuleName = primaryModuleId ? getModuleName(primaryModuleId, i18n, lang) : null;
+
+  // ─── Meta row (source, license, type) ────────────────────
+  const metaItems = [];
+  metaItems.push(`<div class="algo-meta__item"><span class="algo-meta__label">${escapeHtml(s.exampleTypeLabel.dataset === typeLabel ? s.exampleTypeLabel.dataset : 'Typ')}</span><span class="algo-meta__value">${escapeHtml(typeLabel)}</span></div>`);
+  if (ex.source) {
+    metaItems.push(`<div class="algo-meta__item"><span class="algo-meta__label">${escapeHtml(s.exampleSource)}</span><span class="algo-meta__value">${escapeHtml(ex.source)}</span></div>`);
+  }
+  if (ex.license) {
+    metaItems.push(`<div class="algo-meta__item"><span class="algo-meta__label">${escapeHtml(s.exampleLicense)}</span><span class="algo-meta__value">${escapeHtml(ex.license)}</span></div>`);
+  }
+  const metaHtml = `<div class="algo-meta">${metaItems.join('')}</div>`;
+
+  // ─── Spec (LSL / USL / Target / …) ───────────────────────
+  let specHtml = '';
+  if (ex.spec && Object.keys(ex.spec).length > 0) {
+    const rows = Object.entries(ex.spec).map(([k, v]) =>
+      `<li><strong>${escapeHtml(k.toUpperCase())}</strong>: ${escapeHtml(String(v))}</li>`,
+    ).join('');
+    specHtml = `<section class="handbook-section"><h2>${escapeHtml(s.exampleSpec)}</h2><ul class="handbook-block__list">${rows}</ul></section>`;
+  }
+
+  // ─── Columns ─────────────────────────────────────────────
+  let columnsHtml = '';
+  if (Array.isArray(ex.columns) && ex.columns.length > 0) {
+    const rows = ex.columns.map(c => {
+      const unit = c.unit ? ` (${escapeHtml(c.unit)})` : '';
+      const type = c.type ? ` — ${escapeHtml(c.type)}` : '';
+      return `<li><strong>${escapeHtml(c.name)}</strong>${unit}${type}</li>`;
+    }).join('');
+    columnsHtml = `<section class="handbook-section"><h2>${escapeHtml(s.exampleColumns)}</h2><ul class="handbook-block__list">${rows}</ul></section>`;
+  }
+
+  // ─── Generator details (when type === 'generator') ───────
+  let generatorHtml = '';
+  if (ex.type === 'generator' && ex.generator) {
+    const g = ex.generator;
+    const paramRows = Object.entries(g.params || {}).map(([k, v]) =>
+      `<li><strong>${escapeHtml(k)}</strong>: ${escapeHtml(String(v))}</li>`,
+    ).join('');
+    generatorHtml = `<section class="handbook-section"><h2>${escapeHtml(typeLabel)}</h2>
+      <p>${escapeHtml(s.exampleRuntime)}</p>
+      <ul class="handbook-block__list">
+        <li><strong>algorithm</strong>: ${escapeHtml(g.algorithm || '')}</li>
+        ${g.seed != null ? `<li><strong>seed</strong>: ${escapeHtml(String(g.seed))}</li>` : ''}
+      </ul>
+      ${paramRows ? `<p><strong>params</strong></p><ul class="handbook-block__list">${paramRows}</ul>` : ''}
+    </section>`;
+  }
+
+  // ─── Table preview ───────────────────────────────────────
+  let previewHtml = '';
+  if (ex.previewData && ex.previewData.rows.length > 0) {
+    const p = ex.previewData;
+    const headerCells = p.header.map(h => `<th>${escapeHtml(h)}</th>`).join('');
+    const bodyRows = p.rows.map(r =>
+      `<tr>${r.map(c => `<td>${escapeHtml(c)}</td>`).join('')}</tr>`,
+    ).join('');
+    const note = s.examplePreviewNote
+      .replace('{n}', String(p.rows.length))
+      .replace('{total}', String(p.totalRows));
+    previewHtml = `<section class="handbook-section"><h2>${escapeHtml(s.examplePreview)}</h2>
+      <p>${escapeHtml(note)}</p>
+      <div class="handbook-block__table-wrap">
+        <table class="handbook-block__table">
+          <thead><tr>${headerCells}</tr></thead>
+          <tbody>${bodyRows}</tbody>
+        </table>
+      </div>
+    </section>`;
+  }
+
+  // ─── Download + deeplink actions ─────────────────────────
+  const actions = [];
+  if (ex.file && (ex.type === 'dataset' || ex.type === 'project')) {
+    // Files are shipped at /examples/data/<basename> — relative path from /{lang}/examples/<id>.html
+    const fileBasename = ex.file.split('/').pop();
+    const downloadHref = `../../examples/data/${fileBasename}`;
+    const downloadLabel = ex.type === 'project' ? s.exampleProjectDownload : s.exampleDownload;
+    actions.push(`<a class="handbook-cta__button" href="${escapeAttr(downloadHref)}" download>${escapeHtml(downloadLabel)} ↓</a>`);
+  }
+  if (primaryModuleId) {
+    const deeplink = `${APP_ORIGIN}/?module=${encodeURIComponent(primaryModuleId)}&example=${encodeURIComponent(ex.id)}`;
+    actions.push(`<a class="handbook-cta__button" href="${escapeAttr(deeplink)}">${escapeHtml(s.exampleOpenInApp)} →</a>`);
+  }
+  const actionsHtml = actions.length
+    ? `<aside class="handbook-cta"><div style="display:flex;gap:1rem;flex-wrap:wrap;">${actions.join('')}</div></aside>`
+    : '';
+
+  // ─── Cross-linked modules (other than primary) ───────────
+  let alsoInHtml = '';
+  const otherModuleIds = (ex.modules || []).filter(m => m !== primaryModuleId);
+  if (otherModuleIds.length > 0) {
+    const links = otherModuleIds.map(mid => {
+      const m = modules.find(x => x.id === mid);
+      if (!m) return null;
+      const mName = getModuleName(mid, i18n, lang);
+      const href = `../${m.phase}/${mid}.html`;
+      return `<a href="${escapeAttr(href)}">${escapeHtml(mName)}</a>`;
+    }).filter(Boolean).join(', ');
+    if (links) {
+      alsoInHtml = `<section class="handbook-section"><h2>${escapeHtml(s.exampleAlsoIn)}</h2><p>${links}</p></section>`;
+    }
+  }
+
+  const body = `
+<article class="handbook-article">
+  <span class="handbook-article__tag">${escapeHtml(s.examplesHeading)}</span>
+  <h1>${escapeHtml(name)}</h1>
+  ${desc ? `<p class="handbook-article__lead">${escapeHtml(desc)}</p>` : ''}
+  ${metaHtml}
+  ${specHtml}
+  ${columnsHtml}
+  ${generatorHtml}
+  ${previewHtml}
+  ${alsoInHtml}
+  ${actionsHtml}
+</article>`;
+
+  const breadcrumbs = [
+    { label: s.handbookTitle, href: `/${lang}/` },
+  ];
+  if (primaryModule && primaryModuleName) {
+    const phaseLabel = s.phase[primaryModule.phase] || primaryModule.phase;
+    breadcrumbs.push({ label: phaseLabel, href: `/${lang}/#${primaryModule.phase}` });
+    breadcrumbs.push({ label: primaryModuleName, href: `/${lang}/${primaryModule.phase}/${primaryModule.id}.html` });
+  }
+  breadcrumbs.push({ label: s.breadcrumbExamples });
+  breadcrumbs.push({ label: name });
+
+  const html = renderPage({
+    lang,
+    title: `${name} — ${s.examplesHeading} — ${s.handbookTitle}`,
+    description: desc || `${name} — ${s.examplesHeading}`,
+    pathFromRoot,
+    altPathFromRoot,
+    breadcrumbs,
+    bodyHtml: body,
+    headingKey: name,
+    showCta: false,
+  });
+
+  return { html, pathFromRoot, altPathFromRoot };
+}
 
 // ─── Language picker (root index) ────────────────────────────────
 

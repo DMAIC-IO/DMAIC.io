@@ -16,12 +16,13 @@ import path from 'node:path';
  * @param {string} repoRoot
  */
 export async function loadAllSources(repoRoot) {
-  const [modules, algorithms, i18n] = await Promise.all([
+  const [modules, algorithms, i18n, examples] = await Promise.all([
     loadModules(repoRoot),
     loadAlgorithms(repoRoot),
     loadI18n(repoRoot),
+    loadExamples(repoRoot),
   ]);
-  return { modules, algorithms, i18n };
+  return { modules, algorithms, i18n, examples };
 }
 
 // ─── Modules ────────────────────────────────────────────────────────
@@ -116,6 +117,69 @@ async function loadAlgorithms(repoRoot) {
     categoryById,
     algorithms,
   };
+}
+
+// ─── Examples ───────────────────────────────────────────────────────
+
+/**
+ * Load the example data catalog (`app/dev/examples/index.json`) and, for
+ * dataset-type entries, attach a small preview (the first `preview.rows`
+ * lines of the CSV file). Generator entries materialise their data at
+ * runtime in the app — for the handbook we render only the spec.
+ *
+ * Empty/missing catalog → returns { entries: [] } without warning, so the
+ * handbook still builds in environments without examples.
+ */
+async function loadExamples(repoRoot) {
+  const indexPath = path.join(repoRoot, 'examples/index.json');
+  let catalog;
+  try {
+    catalog = JSON.parse(await readFile(indexPath, 'utf8'));
+  } catch (err) {
+    if (err?.code === 'ENOENT') return { entries: [] };
+    console.warn(`[handbook] Failed to load examples catalog: ${err.message}`);
+    return { entries: [] };
+  }
+
+  const entries = [];
+  for (const ex of catalog.examples || []) {
+    const enriched = { ...ex };
+    if (ex.type === 'dataset' && ex.file) {
+      const filePath = path.join(repoRoot, 'examples', ex.file);
+      try {
+        const previewRows = ex.preview?.rows || 10;
+        enriched.previewData = await readCsvPreview(filePath, previewRows);
+      } catch (err) {
+        console.warn(`[handbook] Could not read preview for ${ex.id}: ${err.message}`);
+      }
+    }
+    entries.push(enriched);
+  }
+  return { entries };
+}
+
+/**
+ * Read the first N data rows (plus header) of a CSV file. Tolerates the
+ * simple comma-separated, optionally quoted format produced by our
+ * example-data generator.
+ */
+async function readCsvPreview(filePath, rows) {
+  const text = await readFile(filePath, 'utf8');
+  const lines = text.split('\n').filter(l => l.length > 0);
+  if (lines.length === 0) return { header: [], rows: [], totalRows: 0 };
+  const splitRow = (l) => l.split(',').map(c => c.replace(/^"(.*)"$/, '$1').trim());
+  const header = splitRow(lines[0]);
+  const dataLines = lines.slice(1);
+  const preview = dataLines.slice(0, rows).map(splitRow);
+  return { header, rows: preview, totalRows: dataLines.length };
+}
+
+/**
+ * Return all examples that declare compatibility with the given moduleId.
+ */
+export function getExamplesForModule(examples, moduleId) {
+  if (!examples?.entries) return [];
+  return examples.entries.filter(e => Array.isArray(e.modules) && e.modules.includes(moduleId));
 }
 
 // ─── i18n ───────────────────────────────────────────────────────────

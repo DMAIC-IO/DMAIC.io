@@ -1,0 +1,63 @@
+{
+  "sheets": [
+    {
+      "id": "sheet-formula",
+      "name": "Bestellungen",
+      "state": {
+        "columns": [
+          {
+            "id": "c-anzahl",
+            "name": "Anzahl",
+            "shortName": "n",
+            "type": "numeric",
+            "values": [12, 8, 25, 4, 17, 9, 21, 6, 14, 11],
+            "format": { "decimals": 0 }
+          },
+          {
+            "id": "c-preis",
+            "name": "Preis",
+            "shortName": "p",
+            "type": "currency",
+            "values": [4.50, 7.20, 3.10, 12.00, 5.80, 6.40, 2.90, 9.50, 4.20, 8.10],
+            "format": { "decimals": 2, "currencySymbol": "€" }
+          },
+          {
+            "id": "c-gesamt",
+            "name": "Gesamt",
+            "shortName": "G",
+            "type": "currency",
+            "values": [54.00, 57.60, 77.50, 48.00, 98.60, 57.60, 60.90, 57.00, 58.80, 89.10],
+            "formulas": [
+              "=C1[1]*C2[1]", "=C1[2]*C2[2]", "=C1[3]*C2[3]", "=C1[4]*C2[4]", "=C1[5]*C2[5]",
+              "=C1[6]*C2[6]", "=C1[7]*C2[7]", "=C1[8]*C2[8]", "=C1[9]*C2[9]", "=C1[10]*C2[10]"
+            ],
+            "format": { "decimals": 2, "currencySymbol": "€" }
+          },
+          {
+            "id": "c-rabatt",
+            "name": "Rabatt",
+            "shortName": "r",
+            "type": "percent",
+            "values": [0.0, 0.05, 0.1, 0.0, 0.15, 0.0, 0.1, 0.05, 0.0, 0.15],
+            "format": { "decimals": 0 }
+          },
+          {
+            "id": "c-endpreis",
+            "name": "Endpreis",
+            "shortName": "E",
+            "type": "currency",
+            "values": [54.00, 54.72, 69.75, 48.00, 83.81, 57.60, 54.81, 54.15, 58.80, 75.735],
+            "formulas": [
+              "=C3[1]*(1-C4[1])", "=C3[2]*(1-C4[2])", "=C3[3]*(1-C4[3])", "=C3[4]*(1-C4[4])", "=C3[5]*(1-C4[5])",
+              "=C3[6]*(1-C4[6])", "=C3[7]*(1-C4[7])", "=C3[8]*(1-C4[8])", "=C3[9]*(1-C4[9])", "=C3[10]*(1-C4[10])"
+            ],
+            "format": { "decimals": 2, "currencySymbol": "€" }
+          }
+        ],
+        "rowCount": 10
+      }
+    }
+  ],
+  "activeSheetId": "sheet-formula",
+  "sheetCounter": 1
+}

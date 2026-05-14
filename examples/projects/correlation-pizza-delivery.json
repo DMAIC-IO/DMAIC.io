@@ -1,0 +1,9 @@
+{
+  "colRefs": [
+    { "instanceId": "__source__", "sheetId": "sheet-pizza", "columnId": "c-entfernung" },
+    { "instanceId": "__source__", "sheetId": "sheet-pizza", "columnId": "c-verkehr" },
+    { "instanceId": "__source__", "sheetId": "sheet-pizza", "columnId": "c-lieferzeit" }
+  ],
+  "matrixMethod": "pearson",
+  "sourceWorksheetFile": "worksheets/pizza-delivery.json"
+}
