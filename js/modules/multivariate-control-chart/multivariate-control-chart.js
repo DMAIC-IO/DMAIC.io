@@ -12,6 +12,7 @@ import {
 
 import { computeHotellingT2 } from '../../engines/multivariate-chart-engine.js';
 import { esc } from '../../core/html-utils.js';
+import { provisionWorksheet, removeProvisionedWorksheet } from '../../core/examples-registry.js';
 
 const ALPHA_DEFAULT = 0.0027;
 
@@ -30,6 +31,8 @@ export default {
   _picker: null,
   _chart: null,
   _autoRunTimer: null,
+  /** Worksheet provisioned by loadExample; replaced on each subsequent load. */
+  _exampleWorksheetId: null,
 
   // ─── Lifecycle ──────────────────────────────────────────────
 
@@ -92,6 +95,52 @@ export default {
   },
 
   help: () => import('./multivariate-control-chart-help.js'),
+
+  /**
+   * Load a catalog example. Project payloads carry an inlined source
+   * worksheet plus an array of columnRefs whose `instanceId` is the
+   * literal placeholder `__source__`. Provision a new worksheet, rewrite
+   * each ref, then apply the state.
+   *
+   * @param {{ meta: object, data: object }} payload
+   */
+  async loadExample(payload) {
+    if (!payload || !payload.data) return;
+    const t = (k) => this._context.i18n.t(k);
+
+    const hasContent = Array.isArray(this._columnRefs) && this._columnRefs.length > 0;
+    if (hasContent && this._context?.confirmPopout) {
+      const ok = await this._context.confirmPopout(t('moduleHelp.confirmOverwrite'), { danger: true });
+      if (!ok) return;
+    }
+
+    const data = { ...payload.data };
+
+    if (data.sourceWorksheetData) {
+      const wsState = data.sourceWorksheetData;
+      delete data.sourceWorksheetData;
+      if (this._exampleWorksheetId) {
+        removeProvisionedWorksheet(this._context, this._exampleWorksheetId);
+        this._exampleWorksheetId = null;
+      }
+      const ref = provisionWorksheet(this._context, wsState);
+      if (ref) {
+        this._exampleWorksheetId = ref.instanceId;
+        if (Array.isArray(data.columnRefs)) {
+          data.columnRefs = data.columnRefs.map(cr =>
+            cr?.instanceId === '__source__' ? { ...cr, instanceId: ref.instanceId } : cr,
+          );
+        }
+      }
+    }
+
+    this.setState(data);
+    this._save();
+
+    const lang = this._context.i18n.getLanguage();
+    const title = payload.meta?.title?.[lang] || payload.meta?.title?.en || payload.meta?.id || '';
+    this._context.notify?.(t('moduleHelp.exampleLoaded').replace('{title}', title), 'success');
+  },
 
   // ─── State ──────────────────────────────────────────────────
 

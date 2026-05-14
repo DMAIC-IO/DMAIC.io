@@ -1,0 +1,16 @@
+{
+  "columnRefs": [
+    {
+      "instanceId": "__source__",
+      "sheetId": "sheet-spc-multi",
+      "columnId": "c-x1"
+    },
+    {
+      "instanceId": "__source__",
+      "sheetId": "sheet-spc-multi",
+      "columnId": "c-x2"
+    }
+  ],
+  "alpha": 0.0027,
+  "sourceWorksheetFile": "worksheets/spc-multivariate-correlated.json"
+}

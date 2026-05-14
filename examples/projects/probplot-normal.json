@@ -1,0 +1,10 @@
+{
+  "columnRef": {
+    "instanceId": "__source__",
+    "sheetId": "sheet-dist-normal",
+    "columnId": "c-messwert"
+  },
+  "showStats": true,
+  "confLevel": 95,
+  "sourceWorksheetFile": "worksheets/distribution-normal.json"
+}

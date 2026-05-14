@@ -1,0 +1,13 @@
+{
+  "criteria": [
+    "Lieferzeit",
+    "Pizzaqualität",
+    "Preis",
+    "Mitarbeiterzufriedenheit",
+    "Reklamationsquote"
+  ],
+  "matrix": [],
+  "pairs": [],
+  "currentPair": 0,
+  "viewPhase": "input"
+}

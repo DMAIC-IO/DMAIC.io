@@ -1,0 +1,22 @@
+{
+  "colRef": {
+    "instanceId": "__source__",
+    "sheetId": "sheet-outlier-bolzen",
+    "columnId": "c-durchmesser"
+  },
+  "alpha": 0.05,
+  "side": "two-sided",
+  "tukeyFactor": 1.5,
+  "hampelK": 3,
+  "zThreshold": 3,
+  "modZThreshold": 3.5,
+  "esdMaxOutliers": null,
+  "enabled": [
+    "grubbs",
+    "generalized-esd",
+    "tukey-iqr",
+    "modified-z"
+  ],
+  "chartMethod": "all",
+  "sourceWorksheetFile": "worksheets/outlier-bolzen-grubbs.json"
+}

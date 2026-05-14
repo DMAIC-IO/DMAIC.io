@@ -47,10 +47,12 @@ import {
  * @returns {DesignEfficiency}
  */
 export function computeDesignEfficiency(codedMatrix, opts = {}) {
-  const { X, termNames } = buildModelMatrix(codedMatrix, {
-    interactions: true,
-    excludedInteractions: opts.excludedInteractions,
-  });
+  const { X, termNames } = buildModelMatrix(
+    codedMatrix,
+    Array.isArray(opts.terms)
+      ? { terms: opts.terms }
+      : { interactions: true, excludedInteractions: opts.excludedInteractions },
+  );
   const n = X.length;
   const p = termNames.length; // includes intercept
 

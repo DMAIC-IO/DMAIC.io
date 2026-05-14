@@ -1,0 +1,97 @@
+{
+  "risks": [
+    {
+      "id": "r1",
+      "step": "Bestellung annehmen",
+      "failureMode": "Falsche Adresse erfasst",
+      "effect": "Fahrer findet Kunde nicht, +15 min Verspätung",
+      "cause": "Kein Plausibilitäts-Check der Eingabe",
+      "control": "Mündliche Bestätigung am Telefon",
+      "sev": "7",
+      "occ": "4",
+      "det": "5",
+      "actions": [
+        {
+          "text": "Adress-Autovervollständigung im Bestellsystem aktivieren",
+          "resp": "IT",
+          "date": "2026-07-15",
+          "done": false,
+          "deltaS": 0,
+          "deltaO": -2,
+          "deltaD": -1
+        }
+      ],
+      "collapsed": false
+    },
+    {
+      "id": "r2",
+      "step": "Pizza backen",
+      "failureMode": "Ofen-Überlastung in Stoßzeiten",
+      "effect": "Pizza unter-/überbacken, Wartezeit +10 min",
+      "cause": "Bestellungen nicht zeitlich gepuffert",
+      "control": "Visuelle Sichtkontrolle Pizzabäcker",
+      "sev": "6",
+      "occ": "6",
+      "det": "4",
+      "actions": [
+        {
+          "text": "Bestellannahme-Takt + Vorbereitungs-Vorlauf einführen",
+          "resp": "Filialleiter",
+          "date": "2026-07-30",
+          "done": false,
+          "deltaS": -1,
+          "deltaO": -3,
+          "deltaD": 0
+        }
+      ],
+      "collapsed": false
+    },
+    {
+      "id": "r3",
+      "step": "Verpacken",
+      "failureMode": "Thermo-Box nicht ausreichend isoliert",
+      "effect": "Pizza-Temperatur < 40 °C beim Kunden",
+      "cause": "Boxen veraltet, Dichtung defekt",
+      "control": "—",
+      "sev": "8",
+      "occ": "5",
+      "det": "8",
+      "actions": [
+        {
+          "text": "Thermo-Boxen mit Doppelwand-Isolation beschaffen",
+          "resp": "Einkauf",
+          "date": "2026-08-15",
+          "done": false,
+          "deltaS": 0,
+          "deltaO": -3,
+          "deltaD": -4
+        }
+      ],
+      "collapsed": false
+    },
+    {
+      "id": "r4",
+      "step": "Auslieferung",
+      "failureMode": "Verkehrsstau, Umleitung",
+      "effect": "Lieferzeit > 45 min",
+      "cause": "Keine Echtzeit-Routenoptimierung",
+      "control": "Erfahrungswerte des Fahrers",
+      "sev": "5",
+      "occ": "7",
+      "det": "6",
+      "actions": [
+        {
+          "text": "Routenplanungs-App mit Live-Traffic einführen",
+          "resp": "IT",
+          "date": "2026-09-01",
+          "done": false,
+          "deltaS": 0,
+          "deltaO": -4,
+          "deltaD": -2
+        }
+      ],
+      "collapsed": false
+    }
+  ],
+  "scales": null
+}

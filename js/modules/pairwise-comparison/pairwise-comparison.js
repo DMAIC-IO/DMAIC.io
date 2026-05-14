@@ -133,6 +133,30 @@ export default {
     this._render();
   },
 
+  /**
+   * Load a catalog example. Kein Worksheet-Bezug — die Bewertungskriterien
+   * werden direkt aus payload.data übernommen; der eigentliche Vergleich
+   * läuft im Modul.
+   * @param {{ meta: object, data: object }} payload
+   */
+  async loadExample(payload) {
+    if (!payload || !payload.data) return;
+    const t = (k) => this._context.i18n.t(k);
+
+    const hasContent = (this._criteria?.length || 0) > 0;
+    if (hasContent && this._context?.confirmPopout) {
+      const ok = await this._context.confirmPopout(t('moduleHelp.confirmOverwrite'), { danger: true });
+      if (!ok) return;
+    }
+
+    this.setState(payload.data);
+    this._save();
+
+    const lang = this._context.i18n.getLanguage();
+    const title = payload.meta?.title?.[lang] || payload.meta?.title?.en || payload.meta?.id || '';
+    this._context.notify?.(t('moduleHelp.exampleLoaded').replace('{title}', title), 'success');
+  },
+
   // ─── Help ───────────────────────────────────────────────────
 
   help: () => import('./pairwise-comparison-help.js'),

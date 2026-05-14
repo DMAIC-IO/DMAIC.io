@@ -1,0 +1,42 @@
+{
+  "activities": [
+    "Bestellung annehmen",
+    "An Küche weiterleiten",
+    "Pizza belegen + backen",
+    "Verpacken",
+    "Auslieferung",
+    "Kundenservice / Reklamation",
+    "Schichtplanung",
+    "Lieferzeiten-Monitoring"
+  ],
+  "stakeholders": [
+    "Geschäftsführer",
+    "Filialleiter",
+    "Bestellannahme",
+    "Pizzabäcker",
+    "Fahrer",
+    "Black Belt"
+  ],
+  "assignments": {
+    "0:2": "R",
+    "0:1": "A",
+    "0:5": "I",
+    "1:2": "R",
+    "1:3": "I",
+    "2:3": "R",
+    "2:1": "A",
+    "3:3": "R",
+    "3:1": "A",
+    "4:4": "R",
+    "4:1": "A",
+    "4:5": "C",
+    "5:1": "R",
+    "5:2": "C",
+    "5:0": "I",
+    "6:1": "R",
+    "6:0": "A",
+    "7:5": "R",
+    "7:1": "C",
+    "7:0": "A"
+  }
+}

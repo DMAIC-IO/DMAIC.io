@@ -12,6 +12,7 @@ import {
 
 import { computeZMR } from '../../engines/short-run-chart-engine.js';
 import { esc } from '../../core/html-utils.js';
+import { provisionWorksheet, removeProvisionedWorksheet } from '../../core/examples-registry.js';
 
 export default {
   id: 'short-run-chart',
@@ -28,6 +29,8 @@ export default {
   _pickerGrp: null,
   _charts: [],
   _autoRunTimer: null,
+  /** Worksheet provisioned by loadExample; replaced on each subsequent load. */
+  _exampleWorksheetId: null,
 
   // ─── Lifecycle ──────────────────────────────────────────────
 
@@ -83,6 +86,51 @@ export default {
   },
 
   help: () => import('./short-run-chart-help.js'),
+
+  /**
+   * Load a catalog example. Provision the inlined worksheet and rewrite
+   * both `__source__` placeholders (valuesRef + groupsRef) to point at it.
+   *
+   * @param {{ meta: object, data: object }} payload
+   */
+  async loadExample(payload) {
+    if (!payload || !payload.data) return;
+    const t = (k) => this._context.i18n.t(k);
+
+    const hasContent = !!(this._valuesRef || this._groupsRef);
+    if (hasContent && this._context?.confirmPopout) {
+      const ok = await this._context.confirmPopout(t('moduleHelp.confirmOverwrite'), { danger: true });
+      if (!ok) return;
+    }
+
+    const data = { ...payload.data };
+
+    if (data.sourceWorksheetData) {
+      const wsState = data.sourceWorksheetData;
+      delete data.sourceWorksheetData;
+      if (this._exampleWorksheetId) {
+        removeProvisionedWorksheet(this._context, this._exampleWorksheetId);
+        this._exampleWorksheetId = null;
+      }
+      const ref = provisionWorksheet(this._context, wsState);
+      if (ref) {
+        this._exampleWorksheetId = ref.instanceId;
+        if (data.valuesRef?.instanceId === '__source__') {
+          data.valuesRef = { ...data.valuesRef, instanceId: ref.instanceId };
+        }
+        if (data.groupsRef?.instanceId === '__source__') {
+          data.groupsRef = { ...data.groupsRef, instanceId: ref.instanceId };
+        }
+      }
+    }
+
+    this.setState(data);
+    this._save();
+
+    const lang = this._context.i18n.getLanguage();
+    const title = payload.meta?.title?.[lang] || payload.meta?.title?.en || payload.meta?.id || '';
+    this._context.notify?.(t('moduleHelp.exampleLoaded').replace('{title}', title), 'success');
+  },
 
   _loadState(s) {
     this._valuesRef = s.valuesRef || null;

@@ -34,10 +34,12 @@ import {
  * @returns {{ term: string, vif: number }[]} VIF for each model term (excluding intercept)
  */
 export function computeVIF(codedMatrix, opts = {}) {
-  const { X, termNames } = buildModelMatrix(codedMatrix, {
-    interactions: true,
-    excludedInteractions: opts.excludedInteractions,
-  });
+  const { X, termNames } = buildModelMatrix(
+    codedMatrix,
+    Array.isArray(opts.terms)
+      ? { terms: opts.terms }
+      : { interactions: true, excludedInteractions: opts.excludedInteractions },
+  );
   const Xt = matTranspose(X);
   const XtX = matMul(Xt, X);
   const XtXinv = matInverse(XtX);

@@ -1,0 +1,57 @@
+{
+  "systemTitle": "Pizza-Lieferprozess Bella Margherita",
+  "colLabels": [
+    "Vergangenheit",
+    "Gegenwart",
+    "Zukunft"
+  ],
+  "rowLabels": [
+    "Subsystem",
+    "System",
+    "Übersystem"
+  ],
+  "cells": [
+    [
+      {
+        "text": "Wachspapier + einfache Pappschachtel; Pizza kühlt nach 10 min spürbar ab.",
+        "image": null
+      },
+      {
+        "text": "Karton + Thermo-Box mit defekter Dichtung; Wärmeverlust ~ 12 °C/15 min.",
+        "image": null
+      },
+      {
+        "text": "Doppelwand-Box mit Phase-Change-Insert; hält Temperatur ≥ 30 min über 50 °C.",
+        "image": null
+      }
+    ],
+    [
+      {
+        "text": "Festes Bestellfenster pro Schicht, Fahrer wählt Route aus dem Kopf.",
+        "image": null
+      },
+      {
+        "text": "Online-Bestellungen, manuelle Routenwahl, Engpässe in Stoßzeiten.",
+        "image": null
+      },
+      {
+        "text": "Live-Routenoptimierung, gepuffertes Backen, Echtzeit-Lieferprognose im Bestellsystem.",
+        "image": null
+      }
+    ],
+    [
+      {
+        "text": "Einzelne Filiale, kein Wettbewerbsdruck durch Lieferdienste.",
+        "image": null
+      },
+      {
+        "text": "Mehrere Pizzerien + Plattformen (Lieferando, Wolt); Kunden vergleichen Lieferzeit.",
+        "image": null
+      },
+      {
+        "text": "Vernetztes Filialnetz mit gemeinsamer Logistik-Plattform; Lieferzeiten als Wettbewerbsmerkmal.",
+        "image": null
+      }
+    ]
+  ]
+}

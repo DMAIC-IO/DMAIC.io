@@ -1,0 +1,9 @@
+{
+  "columnRef": {
+    "instanceId": "__source__",
+    "sheetId": "sheet-dist-weibull",
+    "columnId": "c-lebensdauer"
+  },
+  "dataType": "continuous",
+  "sourceWorksheetFile": "worksheets/distribution-weibull.json"
+}

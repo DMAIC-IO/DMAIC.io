@@ -1,0 +1,9 @@
+{
+  "columnRef": {
+    "instanceId": "__source__",
+    "sheetId": "sheet-dist-exponential",
+    "columnId": "c-wartezeit"
+  },
+  "dataType": "continuous",
+  "sourceWorksheetFile": "worksheets/distribution-exponential.json"
+}

@@ -9,6 +9,7 @@
 import { ColumnPicker, getColumnValues, getColumnName, refToKey, uniqueSheetName, buildInitialWorksheetState } from '../../ui/column-picker.js';
 import { mean, std, median, skewness, kurtosis } from '../../engines/distribution-fit-engine.js';
 import { andersonDarling } from '../../engines/normality-test-engine.js';
+import { provisionWorksheet, removeProvisionedWorksheet } from '../../core/examples-registry.js';
 
 // ═══════════════════════════════════════════════════════════════
 // Transform definitions
@@ -157,6 +158,8 @@ export default {
   _targetPicker: null,
   _autoRunTimer: 0,
   _lastColumnKey: null,
+  /** Worksheet provisioned by loadExample (cleaned up on next load). */
+  _exampleWorksheetId: null,
 
   async init(container, context) {
     this._container = container;
@@ -200,6 +203,55 @@ export default {
     if (data) {
       this._currentTF = data.currentTF || 'boxcox';
     }
+  },
+
+  /**
+   * Load a catalog example. data-transformation's persisted state only carries
+   * `currentTF`; the column ref lives in the picker. We provision the worksheet,
+   * apply currentTF, re-render to create a fresh picker, then assign the
+   * rewritten columnRef directly to the picker and trigger the transform.
+   *
+   * @param {{ meta: object, data: object }} payload
+   */
+  async loadExample(payload) {
+    if (!payload || !payload.data) return;
+    const t = (k) => this._context.i18n.t(k);
+
+    const hasContent = !!(this._columnPicker?.value || this._rawData.length);
+    if (hasContent && this._context?.confirmPopout) {
+      const ok = await this._context.confirmPopout(t('moduleHelp.confirmOverwrite'), { danger: true });
+      if (!ok) return;
+    }
+
+    const data = { ...payload.data };
+
+    let rewrittenRef = data.columnRef || null;
+    if (data.sourceWorksheetData) {
+      const wsState = data.sourceWorksheetData;
+      delete data.sourceWorksheetData;
+      if (this._exampleWorksheetId) {
+        removeProvisionedWorksheet(this._context, this._exampleWorksheetId);
+        this._exampleWorksheetId = null;
+      }
+      const ref = provisionWorksheet(this._context, wsState);
+      if (ref) {
+        this._exampleWorksheetId = ref.instanceId;
+        if (rewrittenRef?.instanceId === '__source__') {
+          rewrittenRef = { ...rewrittenRef, instanceId: ref.instanceId };
+        }
+      }
+    }
+
+    this._currentTF = data.currentTF || 'boxcox';
+    this._render();
+    if (rewrittenRef && this._columnPicker) {
+      this._columnPicker.value = rewrittenRef;
+      this._autoRun();
+    }
+
+    const lang = this._context.i18n.getLanguage();
+    const title = payload.meta?.title?.[lang] || payload.meta?.title?.en || payload.meta?.id || '';
+    this._context.notify?.(t('moduleHelp.exampleLoaded').replace('{title}', title), 'success');
   },
 
   help: () => import('./data-transformation-help.js'),

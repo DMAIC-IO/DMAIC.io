@@ -318,23 +318,83 @@ function buildPolyDesignMatrix(xCols, degree, xNames) {
 
 /**
  * Build a model matrix from a coded design matrix (±1 levels).
- * Includes intercept, main effects, and optionally 2-factor interactions.
- * Used by the DOE Planner for factorial/fractional designs.
+ *
+ * Two calling conventions:
+ *
+ *   (1) explicit term list (new): pass `opts.terms` as an array of
+ *       canonical term ids (see js/engines/doe-terms.js — "M0", "Q1",
+ *       "I0_1", "I0_1_2", …). The matrix gets exactly those columns,
+ *       in that order, plus an intercept column up front unless
+ *       `opts.intercept === false`.
+ *
+ *   (2) legacy: pass `opts.interactions` (default true) and optionally
+ *       `opts.excludedInteractions` as [a,b] pairs to omit. Produces
+ *       intercept + main effects + 2-factor interactions (minus the
+ *       excluded ones). Quadratic terms are not generated in this mode
+ *       — callers that need them must use the new term-list form.
  *
  * @param {number[][]} codedMatrix - n×k coded design matrix
  * @param {object} [opts]
- * @param {boolean} [opts.interactions=true] - Include 2-factor interactions
+ * @param {string[]} [opts.terms] - Canonical term ids (preferred). When
+ *   present, `interactions` and `excludedInteractions` are ignored.
+ * @param {boolean} [opts.interactions=true] - Legacy: include 2FI
  * @param {boolean} [opts.intercept=true] - Include intercept column
- * @param {Array<[number, number]>} [opts.excludedInteractions] - 2FI pairs
- *   [a,b] (0-based factor indices, order irrelevant) to omit from the model
+ * @param {Array<[number, number]>} [opts.excludedInteractions] - Legacy:
+ *   2FI pairs [a,b] (0-based factor indices, order irrelevant) to omit
  * @returns {{ X: number[][], termNames: string[] }}
  */
 export function buildModelMatrix(codedMatrix, opts = {}) {
-  const includeIx = opts.interactions !== false;
   const includeIntercept = opts.intercept !== false;
-  const excluded = opts.excludedInteractions || [];
   const n = codedMatrix.length;
   const k = codedMatrix[0].length;
+  const letter = (j) => String.fromCharCode(65 + j);
+
+  // ── New form: explicit term ids ──────────────────────────────
+  if (Array.isArray(opts.terms)) {
+    const termNames = [];
+    const X = Array.from({ length: n }, () => []);
+
+    if (includeIntercept) {
+      termNames.push('Intercept');
+      for (let i = 0; i < n; i++) X[i].push(1);
+    }
+
+    for (const id of opts.terms) {
+      if (typeof id !== 'string' || id.length < 2) continue;
+      const tag = id[0];
+      if (tag === 'M') {
+        const f = parseInt(id.slice(1), 10);
+        if (!Number.isFinite(f) || f < 0 || f >= k) continue;
+        termNames.push(letter(f));
+        for (let i = 0; i < n; i++) X[i].push(codedMatrix[i][f]);
+      } else if (tag === 'Q') {
+        const f = parseInt(id.slice(1), 10);
+        if (!Number.isFinite(f) || f < 0 || f >= k) continue;
+        termNames.push(letter(f) + '²');
+        for (let i = 0; i < n; i++) {
+          const v = codedMatrix[i][f];
+          X[i].push(v * v);
+        }
+      } else if (tag === 'I') {
+        const parts = id.slice(1).split('_').map(s => parseInt(s, 10));
+        if (parts.some(p => !Number.isFinite(p) || p < 0 || p >= k)) continue;
+        if (parts.length < 2) continue;
+        const sorted = [...new Set(parts)].sort((a, b) => a - b);
+        termNames.push(sorted.map(letter).join('×'));
+        for (let i = 0; i < n; i++) {
+          let prod = 1;
+          for (const f of sorted) prod *= codedMatrix[i][f];
+          X[i].push(prod);
+        }
+      }
+    }
+
+    return { X, termNames };
+  }
+
+  // ── Legacy form: interactions + excludedInteractions ─────────
+  const includeIx = opts.interactions !== false;
+  const excluded = opts.excludedInteractions || [];
 
   const excludedSet = new Set();
   for (const pair of excluded) {

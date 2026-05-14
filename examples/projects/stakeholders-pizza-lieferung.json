@@ -1,0 +1,74 @@
+{
+  "stakeholders": [
+    {
+      "id": "s1",
+      "name": "S. Conti",
+      "role": "Geschäftsführerin",
+      "power": 5,
+      "interest": 5,
+      "support": "supporter",
+      "category": "Sponsor",
+      "notes": "Treibt Projekt aktiv, finanziert Investitionen"
+    },
+    {
+      "id": "s2",
+      "name": "M. Müller",
+      "role": "Filialleiter",
+      "power": 4,
+      "interest": 5,
+      "support": "supporter",
+      "category": "Kernteam",
+      "notes": "Operative Verantwortung, motiviert"
+    },
+    {
+      "id": "s3",
+      "name": "G. Rossi",
+      "role": "Senior-Pizzabäcker",
+      "power": 3,
+      "interest": 3,
+      "support": "neutral",
+      "category": "Kernteam",
+      "notes": "Skeptisch gegenüber Prozessänderungen in der Küche"
+    },
+    {
+      "id": "s4",
+      "name": "Fahrer-Team",
+      "role": "Auslieferer",
+      "power": 2,
+      "interest": 4,
+      "support": "supporter",
+      "category": "Anwender",
+      "notes": "Möchten besseres Routenplanungs-Tool"
+    },
+    {
+      "id": "s5",
+      "name": "Kunden Berlin-Mitte",
+      "role": "Endkunden",
+      "power": 5,
+      "interest": 4,
+      "support": "neutral",
+      "category": "Extern",
+      "notes": "Reklamationen steigend, Abwanderungsrisiko"
+    },
+    {
+      "id": "s6",
+      "name": "Bewertungsplattformen",
+      "role": "Multiplikator",
+      "power": 4,
+      "interest": 2,
+      "support": "neutral",
+      "category": "Extern",
+      "notes": "Schlechte Bewertungen schaden Reichweite"
+    },
+    {
+      "id": "s7",
+      "name": "Buchhaltung",
+      "role": "Controlling",
+      "power": 2,
+      "interest": 2,
+      "support": "resistor",
+      "category": "Intern",
+      "notes": "Investitionen in Thermo-Boxen sind nicht eingeplant"
+    }
+  ]
+}

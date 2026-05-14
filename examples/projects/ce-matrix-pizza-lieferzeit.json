@@ -1,0 +1,53 @@
+{
+  "inputs": [
+    "Routenplanung",
+    "Anzahl Bestellungen pro Stunde",
+    "Backofen-Auslastung",
+    "Erfahrung des Fahrers",
+    "Wetter / Verkehr",
+    "Qualität der Thermo-Verpackung",
+    "Zeit zwischen Backen und Abfahrt"
+  ],
+  "outputs": [
+    "Lieferzeit",
+    "Pizza-Temperatur",
+    "Adress-Trefferquote",
+    "Reklamationsquote"
+  ],
+  "weights": [
+    10,
+    9,
+    7,
+    8
+  ],
+  "scores": {
+    "0-0": 9,
+    "0-1": 4,
+    "0-2": 7,
+    "0-3": 7,
+    "1-0": 8,
+    "1-1": 5,
+    "1-2": 2,
+    "1-3": 6,
+    "2-0": 7,
+    "2-1": 8,
+    "2-2": 1,
+    "2-3": 7,
+    "3-0": 6,
+    "3-1": 2,
+    "3-2": 8,
+    "3-3": 5,
+    "4-0": 8,
+    "4-1": 6,
+    "4-2": 3,
+    "4-3": 6,
+    "5-0": 2,
+    "5-1": 9,
+    "5-2": 1,
+    "5-3": 8,
+    "6-0": 5,
+    "6-1": 9,
+    "6-2": 0,
+    "6-3": 7
+  }
+}

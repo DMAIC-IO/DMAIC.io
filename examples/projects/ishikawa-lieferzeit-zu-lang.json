@@ -1,0 +1,111 @@
+{
+  "problem": "Pizza-Lieferzeit übersteigt 30 min in Stoßzeiten",
+  "experts": [
+    {
+      "id": 1,
+      "name": "M. Müller (Filialleiter)"
+    },
+    {
+      "id": 2,
+      "name": "G. Rossi (Pizzabäcker)"
+    },
+    {
+      "id": 3,
+      "name": "K. Schmidt (Fahrer)"
+    }
+  ],
+  "catLabels": {},
+  "rows": [
+    {
+      "id": 1,
+      "stableId": "H-001",
+      "parentId": null,
+      "category": "M1",
+      "name": "Fahrer-Erfahrung gering",
+      "description": "Neue Fahrer kennen Berliner Innenstadt schlecht",
+      "ratings": {
+        "1": 6,
+        "2": 4,
+        "3": 5
+      },
+      "status": "open"
+    },
+    {
+      "id": 2,
+      "stableId": "H-002",
+      "parentId": null,
+      "category": "M2",
+      "name": "Suboptimale Routenplanung",
+      "description": "Fahrer fahren nach eigenem Gefühl, keine Optimierung",
+      "ratings": {
+        "1": 8,
+        "2": 5,
+        "3": 9
+      },
+      "status": "confirmed"
+    },
+    {
+      "id": 3,
+      "stableId": "H-003",
+      "parentId": null,
+      "category": "M3",
+      "name": "Ofen-Kapazität in Spitzen",
+      "description": "Nur ein Holzofen, max. 4 Pizzen parallel",
+      "ratings": {
+        "1": 7,
+        "2": 9,
+        "3": 4
+      },
+      "status": "confirmed"
+    },
+    {
+      "id": 4,
+      "stableId": "H-004",
+      "parentId": null,
+      "category": "M4",
+      "name": "Thermo-Boxen veraltet",
+      "description": "Dichtungen porös, Wärmeverlust hoch",
+      "ratings": {
+        "1": 5,
+        "2": 3,
+        "3": 8
+      },
+      "status": "confirmed"
+    },
+    {
+      "id": 5,
+      "stableId": "H-005",
+      "parentId": null,
+      "category": "M5",
+      "name": "Verkehr Berlin-Mitte zur Hauptverkehrszeit",
+      "description": "Rush Hour 17–19 Uhr",
+      "ratings": {
+        "1": 8,
+        "2": 4,
+        "3": 9
+      },
+      "status": "open"
+    },
+    {
+      "id": 6,
+      "stableId": "H-006",
+      "parentId": null,
+      "category": "M6",
+      "name": "Keine kontinuierliche Zeitmessung",
+      "description": "Lieferzeiten nur stichprobenartig erfasst",
+      "ratings": {
+        "1": 6,
+        "2": 5,
+        "3": 5
+      },
+      "status": "open"
+    }
+  ],
+  "snapshots": [],
+  "experiments": [],
+  "facts": [],
+  "images": {
+    "inScope": [],
+    "outScope": []
+  }
+}

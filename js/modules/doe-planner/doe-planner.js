@@ -12,7 +12,12 @@
 
 import { DataGrid } from '../../core/datagrid/datagrid.js';
 import { FRAC, PB_DESIGNS, ALL_RUNS, K_RANGE, BOX_BEHNKEN, TAGUCHI } from './doe-planner-designs.js';
-import { generateDesign, selectTaguchiArray, taguchiCandidates, minRunsForModel, augmentOptimalDesign, formatValue, codedToActual } from '../../engines/doe-planner-engine.js';
+import { generateDesign, selectTaguchiArray, taguchiCandidates, minRunsForTerms, augmentOptimalDesign, formatValue, codedToActual } from '../../engines/doe-planner-engine.js';
+import {
+  mainTermId, quadTermId, interactionTermId, parseTermId, termOrder,
+  termDisplay, enumerateTerms, activateTerm, deactivateTerm,
+  defaultActiveTerms, termsFromLegacyOptions, termSortKey,
+} from '../../engines/doe-terms.js';
 import {
   createDesignWorksheet,
   createExperimentRecord,
@@ -110,7 +115,7 @@ export default {
   _factors: [],
   /** @type {{ name: string, unit: string }[]} */
   _responses: [],
-  _options: { randomize: true, centerPoints: false, replicates: 1, alphaType: 'rotatable', ccdCenterPoints: 3, bbCenterPoints: 3, taguchiArray: '', optimalRuns: 0, optimalQuadratic: false, optimalExcludedInteractions: [], forbiddenVertices: [] },
+  _options: { randomize: true, centerPoints: false, replicates: 1, alphaType: 'rotatable', ccdCenterPoints: 3, bbCenterPoints: 3, taguchiArray: '', optimalRuns: 0, optimalActiveTerms: null, forbiddenVertices: [] },
   /** @type {{ k: number, runs: number, res: string, p: number }|null} */
   _selectedRes: null,
   _selectedPBIdx: null,
@@ -161,7 +166,7 @@ export default {
     this._designType = 'full';
     this._factors = [];
     this._responses = [];
-    this._options = { randomize: true, centerPoints: false, replicates: 1, alphaType: 'rotatable', ccdCenterPoints: 3, bbCenterPoints: 3, taguchiArray: '', optimalRuns: 0, optimalQuadratic: false, optimalExcludedInteractions: [], forbiddenVertices: [] };
+    this._options = { randomize: true, centerPoints: false, replicates: 1, alphaType: 'rotatable', ccdCenterPoints: 3, bbCenterPoints: 3, taguchiArray: '', optimalRuns: 0, optimalActiveTerms: null, forbiddenVertices: [] };
     this._selectedRes = null;
     this._selectedPBIdx = null;
     this._design = null;
@@ -374,7 +379,26 @@ export default {
     if (Array.isArray(saved.responses)) {
       this._responses = JSON.parse(JSON.stringify(saved.responses));
     }
-    if (saved.options) this._options = { ...this._options, ...saved.options };
+    if (saved.options) {
+      const incoming = { ...saved.options };
+      // Legacy → hierarchical term migration. Before optimalActiveTerms
+      // existed, projects stored optimalQuadratic + optimalExcludedInteractions.
+      // Convert that pair into the new canonical term list so existing
+      // optimal-design configurations keep producing the same model.
+      if (!Array.isArray(incoming.optimalActiveTerms)) {
+        const k = Array.isArray(saved.factors) ? saved.factors.length : 0;
+        if (k >= 2 && (incoming.optimalQuadratic || Array.isArray(incoming.optimalExcludedInteractions))) {
+          incoming.optimalActiveTerms = termsFromLegacyOptions(
+            k,
+            !!incoming.optimalQuadratic,
+            incoming.optimalExcludedInteractions,
+          );
+        }
+      }
+      delete incoming.optimalQuadratic;
+      delete incoming.optimalExcludedInteractions;
+      this._options = { ...this._options, ...incoming };
+    }
     this._selectedRes = saved.selectedRes ? { ...saved.selectedRes } : null;
     this._selectedPBIdx = saved.selectedPBIdx ?? null;
     this._design = saved.design ? JSON.parse(JSON.stringify(saved.design)) : null;
@@ -395,6 +419,34 @@ export default {
 
   _t(key, params) {
     return this._context.i18n.t('modules.doe-planner.' + key, params);
+  },
+
+  /**
+   * Active model terms for the current optimal-design configuration.
+   *
+   * Reads from `_options.optimalActiveTerms` and falls back to the default
+   * (intercept + main effects + all 2-way interactions) when nothing has
+   * been chosen yet. The result is filtered against the current factor
+   * count so renaming/removing factors never leaks dangling indices.
+   *
+   * @returns {string[]}
+   */
+  _getActiveTerms() {
+    const k = this._factors.length;
+    if (k < 1) return [];
+    let list = this._options.optimalActiveTerms;
+    if (!Array.isArray(list)) list = defaultActiveTerms(k);
+    const seen = new Set();
+    const cleaned = [];
+    for (const id of list) {
+      const parsed = parseTermId(id);
+      if (!parsed) continue;
+      if (parsed.factors.some(f => f < 0 || f >= k)) continue;
+      if (seen.has(id)) continue;
+      seen.add(id);
+      cleaned.push(id);
+    }
+    return cleaned;
   },
 
   _esc(str) {
@@ -490,11 +542,7 @@ export default {
     if (this._designType === 'bb' && !BOX_BEHNKEN[this._factors.length]) return false;
     if (this._designType === 'taguchi' && !this._options.taguchiArray) return false;
     if (['dopt', 'aopt', 'gopt'].includes(this._designType)) {
-      const minRuns = minRunsForModel(
-        this._factors.length,
-        this._options.optimalQuadratic,
-        this._options.optimalExcludedInteractions,
-      );
+      const minRuns = minRunsForTerms(this._getActiveTerms());
       // `optimalRuns` is the number of NEW runs to generate. When a source
       // dataset with M rows is bound, only minRuns − M new runs are needed
       // to satisfy the model (clamped to ≥ 1 — generating 0 new runs would
@@ -561,8 +609,7 @@ export default {
           bbCenterPoints: this._options.bbCenterPoints,
           taguchiArray: this._options.taguchiArray || undefined,
           optimalRuns: this._options.optimalRuns || undefined,
-          optimalQuadratic: this._options.optimalQuadratic,
-          optimalExcludedInteractions: this._options.optimalExcludedInteractions,
+          optimalActiveTerms: ['dopt','aopt','gopt'].includes(this._designType) ? this._getActiveTerms() : undefined,
           forbiddenVertices: this._options.forbiddenVertices,
         });
       }
@@ -581,7 +628,7 @@ export default {
         this._design.p,
         this._design.designType,
         0.05,
-        { excludedInteractions: isOptimal ? this._options.optimalExcludedInteractions : undefined },
+        { terms: isOptimal ? this._getActiveTerms() : undefined },
       );
 
       // Legacy migration: pre-feature worksheetRefs lack designSignature. Since the
@@ -847,8 +894,8 @@ export default {
   _buildDesignFromSource(source) {
     const factors = this._factors;
     const k = factors.length;
-    const ex = this._options.optimalExcludedInteractions;
-    const minR = minRunsForModel(k, this._options.optimalQuadratic, ex);
+    const terms = this._getActiveTerms();
+    const minR = minRunsForTerms(terms);
     const M = source.rowCount;
     const requested = this._options.optimalRuns || 0;
     const minNew = Math.max(0, minR - M);
@@ -863,11 +910,10 @@ export default {
         addRuns,
         this._designType,
         {
-          quadratic: this._options.optimalQuadratic,
+          terms,
           levelCounts: factors.map(f => f.levels.length),
           categoricalFlags: factors.map(f => f.kind === 'categorical'),
           seed: Date.now(),
-          excludedInteractions: ex,
           forbiddenVertices: this._options.forbiddenVertices,
         },
       );
@@ -916,17 +962,17 @@ export default {
       const cf = factors.map(f => f.kind === 'categorical');
 
       // 1. Compute new coded rows via coordinate-exchange with fixed prefix.
+      const terms = this._getActiveTerms();
       const newCoded = augmentOptimalDesign(
         this._design.codedMatrix,
         k,
         n,
         this._designType,
         {
-          quadratic: this._options.optimalQuadratic,
+          terms,
           levelCounts: lc,
           categoricalFlags: cf,
           seed: Date.now(),
-          excludedInteractions: this._options.optimalExcludedInteractions,
           forbiddenVertices: this._options.forbiddenVertices,
         },
       );
@@ -958,7 +1004,7 @@ export default {
         this._design.p,
         this._design.designType,
         0.05,
-        { excludedInteractions: this._options.optimalExcludedInteractions },
+        { terms },
       );
 
       // 5. Append rows to the bound Datensammlung.
@@ -1426,15 +1472,13 @@ export default {
 
   _renderOptimalOptions() {
     const k = this._factors.length;
-    const quad = this._options.optimalQuadratic;
-    const excluded = Array.isArray(this._options.optimalExcludedInteractions)
-      ? this._options.optimalExcludedInteractions : [];
-    const minRuns = minRunsForModel(k, quad, excluded);
+    const terms = this._getActiveTerms();
+    const minRuns = minRunsForTerms(terms);
     const M = this._sourceRowCount();
     const minNew = M > 0 ? Math.max(1, minRuns - M) : minRuns;
     const currentRuns = this._options.optimalRuns || 0;
     const valid = currentRuns >= minNew;
-    const criterionKey = this._designType; // 'dopt', 'aopt', 'gopt'
+    const criterionKey = this._designType;
     const runsLabel = M > 0 ? this._t('optimalRunsNew') : this._t('optimalRuns');
     const runsHint  = M > 0
       ? this._t('optimalMinRunsNew', { min: minNew, m: M })
@@ -1453,13 +1497,7 @@ export default {
                  value="${currentRuns || minNew}" />
           <span class="doe__optimal-hint">${runsHint}</span>
         </div>
-        <label class="doe__check-row">
-          <input type="checkbox" class="doe__optimal-quad-check"
-                 ${quad ? 'checked' : ''} />
-          <span>${this._t('optimalQuadratic')}</span>
-          <span class="doe__param-tooltip" title="${this._esc(this._t('tipOptimalQuadratic'))}">?</span>
-        </label>
-        ${this._renderTermMatrix(k, excluded)}
+        ${this._renderTermList(k, terms)}
         ${this._renderForbiddenVertices()}
         ${!valid ? `<div class="doe__optimal-warning">${tooFewMsg}</div>` : ''}
         ${this._renderSourceWorksheetPicker()}
@@ -1597,58 +1635,69 @@ export default {
   },
 
   /**
-   * Render a k×k upper-triangular matrix of 2-factor-interaction toggles.
-   * Diagonal is dashed (factor with itself). Each off-diagonal cell shows a
-   * checkbox-style state: filled = in model, empty = excluded.
+   * Render the hierarchical model-term selector. Terms are grouped by
+   * kind/order (main effects, quadratic, 2-way, 3-way, …). Higher-order
+   * groups (≥ 3-way) collapse by default to keep the panel compact.
+   *
+   * Main effects are shown as locked (disabled) checkboxes — marginality
+   * requires them whenever any superterm is active. To turn off a main
+   * effect the user has to remove every interaction/quadratic containing
+   * its factor first; the cascade in deactivateTerm handles that order.
+   *
    * @param {number} k - number of factors
-   * @param {Array<[number, number]>} excluded - currently excluded pairs
+   * @param {string[]} active - canonical ids currently in the model
    */
-  _renderTermMatrix(k, excluded) {
-    if (k < 2) return '';
-    const isExcluded = (a, b) => excluded.some(p =>
-      Math.min(p[0], p[1]) === Math.min(a, b) && Math.max(p[0], p[1]) === Math.max(a, b)
+  _renderTermList(k, active) {
+    if (k < 1) return '';
+    const activeSet = new Set(active);
+    const factorNames = this._factors.map(
+      (f, i) => f?.name?.trim() || String.fromCharCode(65 + i),
     );
-    const nameOf = (i) => {
-      const n = this._factors[i]?.name?.trim();
-      return n || String.fromCharCode(65 + i);
+
+    const groups = enumerateTerms(k);
+    const expandedFlags = this._termGroupExpanded || {};
+
+    const renderGroup = (g, gi) => {
+      const onCount = g.ids.filter(id => activeSet.has(id)).length;
+      const isHigh = g.kind === 'ix' && g.order >= 3;
+      const expanded = expandedFlags[gi] ?? !isHigh;
+      const headerLabel = g.kind === 'main'
+        ? this._t('termGroupMain')
+        : g.kind === 'quad'
+          ? this._t('termGroupQuad')
+          : this._t('termGroupNFI', { n: g.order });
+      const arrow = expanded ? '▾' : '▸';
+      const items = expanded ? g.ids.map(id => {
+        const on = activeSet.has(id);
+        const disabled = g.kind === 'main';
+        const label = this._esc(termDisplay(id, factorNames));
+        return `
+          <label class="doe__term-chip${on ? ' doe__term-chip--on' : ''}${disabled ? ' doe__term-chip--locked' : ''}">
+            <input type="checkbox" class="doe__term-check"
+              data-term-id="${this._esc(id)}"
+              ${on ? 'checked' : ''}${disabled ? ' disabled' : ''} />
+            <span>${label}</span>
+          </label>`;
+      }).join('') : '';
+
+      return `
+        <div class="doe__term-group${expanded ? ' doe__term-group--open' : ''}" data-group-idx="${gi}">
+          <button type="button" class="doe__term-group-header" data-group-idx="${gi}">
+            <span class="doe__term-group-arrow">${arrow}</span>
+            <span class="doe__term-group-title">${headerLabel}</span>
+            <span class="doe__term-group-count">(${onCount}/${g.ids.length})</span>
+          </button>
+          <div class="doe__term-group-body">${items}</div>
+        </div>`;
     };
-    const labelOf = (i) => this._esc(nameOf(i));
-
-    // Header row: blank corner + factor names (fallback A, B, C, …)
-    const headers = ['<th></th>'];
-    for (let j = 0; j < k; j++) headers.push(`<th>${labelOf(j)}</th>`);
-
-    // Body: row a = factor name + cells for b = 0..k-1
-    const rows = [];
-    for (let a = 0; a < k; a++) {
-      const cells = [`<th>${labelOf(a)}</th>`];
-      for (let b = 0; b < k; b++) {
-        if (b < a) {
-          // lower triangle — leave blank (symmetric)
-          cells.push('<td class="doe__term-blank"></td>');
-        } else if (a === b) {
-          cells.push('<td class="doe__term-diag">·</td>');
-        } else {
-          const off = isExcluded(a, b);
-          cells.push(
-            `<td class="doe__term-cell ${off ? 'doe__term-cell--off' : 'doe__term-cell--on'}" ` +
-            `data-a="${a}" data-b="${b}" ` +
-            `title="${labelOf(a)}×${labelOf(b)}: ${off ? this._t('termExcluded') : this._t('termIncluded')}">` +
-            `${off ? '☐' : '☑'}</td>`
-          );
-        }
-      }
-      rows.push(`<tr>${cells.join('')}</tr>`);
-    }
 
     return `
-      <div class="doe__term-matrix-wrap">
-        <div class="doe__term-matrix-label">${this._t('modelTerms')}</div>
-        <div class="doe__term-matrix-hint">${this._t('modelTermsHint')}</div>
-        <table class="doe__term-matrix">
-          <thead><tr>${headers.join('')}</tr></thead>
-          <tbody>${rows.join('')}</tbody>
-        </table>
+      <div class="doe__term-list-wrap">
+        <div class="doe__term-list-label">${this._t('modelTerms')}</div>
+        <div class="doe__term-list-hint">${this._t('modelTermsHintHier')}</div>
+        <div class="doe__term-list">
+          ${groups.map((g, i) => renderGroup(g, i)).join('')}
+        </div>
       </div>
     `;
   },
@@ -1760,7 +1809,7 @@ export default {
       case 'dopt':
       case 'aopt':
       case 'gopt': {
-        const minR = minRunsForModel(k, this._options.optimalQuadratic, this._options.optimalExcludedInteractions);
+        const minR = minRunsForTerms(this._getActiveTerms());
         runs = this._options.optimalRuns || minR;
         res = { dopt: 'D-Opt', aopt: 'A-Opt', gopt: 'G-Opt' }[this._designType];
         break;
@@ -2160,7 +2209,7 @@ export default {
     const factorNames = this._factors.map((f, i) => f.name || String.fromCharCode(65 + i));
     const isOptimal = ['dopt', 'aopt', 'gopt'].includes(this._designType);
     const result = computeDispersionAnalysis(this._design, y, factorNames, 0.05, {
-      excludedInteractions: isOptimal ? this._options.optimalExcludedInteractions : undefined,
+      terms: isOptimal ? this._getActiveTerms() : undefined,
     });
 
     // Silently skip if no replicates — the section only makes sense for replicated designs
@@ -2687,11 +2736,9 @@ export default {
       btn.addEventListener('click', () => {
         const id = parseInt(btn.dataset.factorId, 10);
         this._factors = this._factors.filter(f => f.id !== id);
-        // Excluded-interactions reference factor indices, which shift on removal.
-        // Wipe the list rather than try to remap — the user re-marks if needed.
-        if (Array.isArray(this._options.optimalExcludedInteractions) && this._options.optimalExcludedInteractions.length) {
-          this._options.optimalExcludedInteractions = [];
-        }
+        // Active-term ids reference factor indices, which shift on removal.
+        // Wipe the selection rather than try to remap — the user re-picks if needed.
+        this._options.optimalActiveTerms = null;
         // Forbidden-vertex patterns are k-wide vectors. Once k changes they
         // no longer line up with the factor list — drop them.
         if (Array.isArray(this._options.forbiddenVertices) && this._options.forbiddenVertices.length) {
@@ -2760,11 +2807,7 @@ export default {
         this._selectedRes = null;
         this._selectedPBIdx = null;
         if (['dopt', 'aopt', 'gopt'].includes(this._designType) && !this._options.optimalRuns) {
-          const minR = minRunsForModel(
-            this._factors.length,
-            this._options.optimalQuadratic,
-            this._options.optimalExcludedInteractions,
-          );
+          const minR = minRunsForTerms(this._getActiveTerms());
           const M = this._sourceRowCount();
           const minNew = M > 0 ? Math.max(1, minR - M) : minR;
           this._options.optimalRuns = minNew + 2;
@@ -2833,21 +2876,10 @@ export default {
     });
     // Optimal design options
     el.querySelector('.doe__optimal-runs-input')?.addEventListener('change', (e) => {
-      const k = this._factors.length;
-      const minR = minRunsForModel(k, this._options.optimalQuadratic, this._options.optimalExcludedInteractions);
+      const minR = minRunsForTerms(this._getActiveTerms());
       const M = this._sourceRowCount();
       const minNew = M > 0 ? Math.max(1, minR - M) : minR;
       this._options.optimalRuns = Math.max(minNew, parseInt(e.target.value, 10) || minNew);
-      this._invalidateDesign(); this._save();
-      this._render();
-    });
-    el.querySelector('.doe__optimal-quad-check')?.addEventListener('change', (e) => {
-      this._options.optimalQuadratic = e.target.checked;
-      const k = this._factors.length;
-      const minR = minRunsForModel(k, this._options.optimalQuadratic, this._options.optimalExcludedInteractions);
-      const M = this._sourceRowCount();
-      const minNew = M > 0 ? Math.max(1, minR - M) : minR;
-      if ((this._options.optimalRuns || 0) < minNew) this._options.optimalRuns = minNew;
       this._invalidateDesign(); this._save();
       this._render();
     });
@@ -2866,8 +2898,7 @@ export default {
       // removed, the minimum grows back to minR. Only clamp upward — never
       // silently drop the user's chosen run count.
       if (['dopt', 'aopt', 'gopt'].includes(this._designType)) {
-        const k = this._factors.length;
-        const minR = minRunsForModel(k, this._options.optimalQuadratic, this._options.optimalExcludedInteractions);
+        const minR = minRunsForTerms(this._getActiveTerms());
         const M = this._sourceRowCount();
         const minNew = M > 0 ? Math.max(1, minR - M) : minR;
         if ((this._options.optimalRuns || 0) < minNew) this._options.optimalRuns = minNew;
@@ -2877,32 +2908,42 @@ export default {
       this._render();
     });
 
-    // Optimal model-term matrix: toggle a 2FI in/out of the model
-    el.querySelectorAll('.doe__term-cell').forEach(cell => {
-      cell.addEventListener('click', () => {
-        const a = parseInt(cell.dataset.a, 10);
-        const b = parseInt(cell.dataset.b, 10);
-        if (!Number.isInteger(a) || !Number.isInteger(b)) return;
-        const lo = Math.min(a, b);
-        const hi = Math.max(a, b);
-        const list = Array.isArray(this._options.optimalExcludedInteractions)
-          ? [...this._options.optimalExcludedInteractions] : [];
-        const idx = list.findIndex(p => Math.min(p[0], p[1]) === lo && Math.max(p[0], p[1]) === hi);
-        if (idx >= 0) list.splice(idx, 1);
-        else list.push([lo, hi]);
-        this._options.optimalExcludedInteractions = list;
+    // Hierarchical model-term list — toggle a term in/out, with marginality
+    // enforced (activating a higher-order term pulls in all subterms;
+    // deactivating a lower-order term cascades out all superterms that
+    // depended on it).
+    el.querySelectorAll('.doe__term-check').forEach(input => {
+      input.addEventListener('change', (e) => {
+        const id = e.target.dataset.termId;
+        if (!id) return;
+        const active = new Set(this._getActiveTerms());
+        if (e.target.checked) activateTerm(active, id);
+        else deactivateTerm(active, id);
+        this._options.optimalActiveTerms = [...active].sort((a, b) =>
+          termSortKey(a).localeCompare(termSortKey(b))
+        );
 
-        // If the user just shrank the model, leave optimalRuns unchanged (a larger
-        // n than the minimum is fine). If they grew it past the current run count,
-        // bump optimalRuns up so the design stays feasible. With a source bound,
-        // the minimum is expressed in NEW runs.
-        const k = this._factors.length;
-        const minR = minRunsForModel(k, this._options.optimalQuadratic, list);
+        const minR = minRunsForTerms(this._options.optimalActiveTerms);
         const M = this._sourceRowCount();
         const minNew = M > 0 ? Math.max(1, minR - M) : minR;
         if ((this._options.optimalRuns || 0) < minNew) this._options.optimalRuns = minNew;
 
         this._invalidateDesign(); this._save();
+        this._render();
+      });
+    });
+
+    // Term-group expand/collapse — local UI state only, no persistence.
+    el.querySelectorAll('.doe__term-group-header').forEach(header => {
+      header.addEventListener('click', () => {
+        const gi = parseInt(header.dataset.groupIdx, 10);
+        if (!Number.isInteger(gi)) return;
+        if (!this._termGroupExpanded) this._termGroupExpanded = {};
+        const groups = enumerateTerms(this._factors.length);
+        const g = groups[gi];
+        const isHigh = g?.kind === 'ix' && g.order >= 3;
+        const current = this._termGroupExpanded[gi] ?? !isHigh;
+        this._termGroupExpanded[gi] = !current;
         this._render();
       });
     });

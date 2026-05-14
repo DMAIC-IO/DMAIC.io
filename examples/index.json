@@ -4,463 +4,2217 @@
     {
       "id": "capability-bolzendurchmesser",
       "type": "dataset",
-      "title":       { "de": "Bolzendurchmesser (fähig)", "en": "Bolt Diameter (capable)" },
+      "title": {
+        "de": "Bolzendurchmesser (fähig)",
+        "en": "Bolt Diameter (capable)"
+      },
       "description": {
         "de": "100 normalverteilte Messwerte um μ ≈ 10,00 mm mit σ ≈ 0,05 mm. Lehrbuch-Fall eines fähigen Prozesses.",
         "en": "100 normally distributed measurements around μ ≈ 10.00 mm with σ ≈ 0.05 mm. Textbook capable-process example."
       },
-      "source":      "DMAIC.io synthetisch, NumPy default_rng, Seed=42",
-      "license":     "public-domain",
-      "file":        "data/capability-bolzendurchmesser.csv",
-      "format":      "csv",
-      "modules":     ["process-capability", "histogram", "control-chart"],
-      "tags":        ["continuous", "capable"],
-      "columns":     [{ "name": "Durchmesser", "type": "numeric", "unit": "mm" }],
-      "spec":        { "lsl": 9.8, "usl": 10.2, "target": 10.0 },
-      "preview":     { "rows": 10 }
+      "source": "DMAIC.io synthetisch, NumPy default_rng, Seed=42",
+      "license": "public-domain",
+      "file": "data/capability-bolzendurchmesser.csv",
+      "format": "csv",
+      "modules": [
+        "process-capability",
+        "histogram",
+        "control-chart"
+      ],
+      "tags": [
+        "continuous",
+        "capable"
+      ],
+      "columns": [
+        {
+          "name": "Durchmesser",
+          "type": "numeric",
+          "unit": "mm"
+        }
+      ],
+      "spec": {
+        "lsl": 9.8,
+        "usl": 10.2,
+        "target": 10.0
+      },
+      "preview": {
+        "rows": 10
+      }
     },
     {
       "id": "capability-shifted",
       "type": "generator",
-      "title":       { "de": "Verschobener Prozess", "en": "Shifted Process" },
+      "title": {
+        "de": "Verschobener Prozess",
+        "en": "Shifted Process"
+      },
       "description": {
         "de": "Mittelwert außerhalb der Spezifikationsmitte (μ ≈ 10,08 mm) → niedriger Cpk trotz geringer Streuung.",
         "en": "Mean off-center (μ ≈ 10.08 mm) → low Cpk despite small dispersion."
       },
-      "source":      "DMAIC.io synthetisch, Mulberry32 + Box-Muller, Seed=7",
-      "license":     "public-domain",
-      "generator":   {
+      "source": "DMAIC.io synthetisch, Mulberry32 + Box-Muller, Seed=7",
+      "license": "public-domain",
+      "generator": {
         "algorithm": "normal",
-        "params":    { "n": 100, "mu": 10.08, "sigma": 0.05, "name": "Durchmesser" },
-        "seed":      7
+        "params": {
+          "n": 100,
+          "mu": 10.08,
+          "sigma": 0.05,
+          "name": "Durchmesser"
+        },
+        "seed": 7
       },
-      "modules":     ["process-capability"],
-      "tags":        ["continuous", "shifted"],
-      "columns":     [{ "name": "Durchmesser", "type": "numeric", "unit": "mm" }],
-      "spec":        { "lsl": 9.8, "usl": 10.2, "target": 10.0 }
+      "modules": [
+        "process-capability",
+        "histogram"
+      ],
+      "tags": [
+        "continuous",
+        "shifted"
+      ],
+      "columns": [
+        {
+          "name": "Durchmesser",
+          "type": "numeric",
+          "unit": "mm"
+        }
+      ],
+      "spec": {
+        "lsl": 9.8,
+        "usl": 10.2,
+        "target": 10.0
+      }
     },
     {
       "id": "capability-bimodal",
       "type": "dataset",
-      "title":       { "de": "Bimodaler Prozess", "en": "Bimodal Process" },
+      "title": {
+        "de": "Bimodaler Prozess",
+        "en": "Bimodal Process"
+      },
       "description": {
         "de": "Mischung zweier Normalverteilungen um 9,93 und 10,07 mm. Die Normalverteilungs-Annahme der Cpk-Berechnung ist verletzt.",
         "en": "Mixture of two normal distributions around 9.93 and 10.07 mm. Violates the normality assumption of Cpk."
       },
-      "source":      "DMAIC.io synthetisch, NumPy default_rng, Seed=13",
-      "license":     "public-domain",
-      "file":        "data/capability-bimodal.csv",
-      "format":      "csv",
-      "modules":     ["process-capability", "histogram"],
-      "tags":        ["continuous", "bimodal", "assumption-violation"],
-      "columns":     [{ "name": "Durchmesser", "type": "numeric", "unit": "mm" }],
-      "spec":        { "lsl": 9.8, "usl": 10.2, "target": 10.0 },
-      "preview":     { "rows": 10 }
+      "source": "DMAIC.io synthetisch, NumPy default_rng, Seed=13",
+      "license": "public-domain",
+      "file": "data/capability-bimodal.csv",
+      "format": "csv",
+      "modules": [
+        "process-capability",
+        "histogram"
+      ],
+      "tags": [
+        "continuous",
+        "bimodal",
+        "assumption-violation"
+      ],
+      "columns": [
+        {
+          "name": "Durchmesser",
+          "type": "numeric",
+          "unit": "mm"
+        }
+      ],
+      "spec": {
+        "lsl": 9.8,
+        "usl": 10.2,
+        "target": 10.0
+      },
+      "preview": {
+        "rows": 10
+      }
     },
     {
       "id": "doe-optimal-rsm-3f",
       "type": "project",
-      "title":       { "de": "D-optimal RSM: 3 Faktoren, quadratisch", "en": "D-optimal RSM: 3 factors, quadratic" },
+      "title": {
+        "de": "D-optimal RSM: 3 Faktoren, quadratisch",
+        "en": "D-optimal RSM: 3 factors, quadratic"
+      },
       "description": {
         "de": "Response-Surface-Modell mit drei kontinuierlichen Faktoren und vollem quadratischem Polynom in 12 Versuchsläufen. Klassischer Anwendungsfall für D-optimale Designs.",
         "en": "Response-surface model with three continuous factors and a full quadratic polynomial in 12 runs. Classic D-optimal use case."
       },
-      "source":      "DMAIC.io Lehrkonfiguration",
-      "license":     "public-domain",
-      "file":        "projects/doe-optimal-rsm-3f.json",
-      "format":      "json",
-      "modules":     ["doe-planner"],
-      "tags":        ["doe", "optimal", "d-optimal", "rsm", "quadratic"]
+      "source": "DMAIC.io Lehrkonfiguration",
+      "license": "public-domain",
+      "file": "projects/doe-optimal-rsm-3f.json",
+      "format": "json",
+      "modules": [
+        "doe-planner"
+      ],
+      "tags": [
+        "doe",
+        "optimal",
+        "d-optimal",
+        "rsm",
+        "quadratic"
+      ]
     },
     {
       "id": "doe-optimal-screening-5f",
       "type": "project",
-      "title":       { "de": "D-optimal Screening: 5 Faktoren, linear + 2FI", "en": "D-optimal screening: 5 factors, linear + 2FI" },
+      "title": {
+        "de": "D-optimal Screening: 5 Faktoren, linear + 2FI",
+        "en": "D-optimal screening: 5 factors, linear + 2FI"
+      },
       "description": {
         "de": "Fünf kontinuierliche Faktoren mit Hauptwirkungen und Zweifach-Wechselwirkungen in 18 Versuchsläufen. Optimaler Ersatz für Plackett-Burman, wenn 2FI mit ins Modell sollen.",
         "en": "Five continuous factors with main effects and two-factor interactions in 18 runs. D-optimal alternative to Plackett-Burman when 2FI must stay in the model."
       },
-      "source":      "DMAIC.io Lehrkonfiguration",
-      "license":     "public-domain",
-      "file":        "projects/doe-optimal-screening-5f.json",
-      "format":      "json",
-      "modules":     ["doe-planner"],
-      "tags":        ["doe", "optimal", "d-optimal", "screening", "2fi"]
+      "source": "DMAIC.io Lehrkonfiguration",
+      "license": "public-domain",
+      "file": "projects/doe-optimal-screening-5f.json",
+      "format": "json",
+      "modules": [
+        "doe-planner"
+      ],
+      "tags": [
+        "doe",
+        "optimal",
+        "d-optimal",
+        "screening",
+        "2fi"
+      ]
     },
     {
       "id": "doe-optimal-mixed-4f",
       "type": "project",
-      "title":       { "de": "D-optimal mixed: 3 cont. + 1 kategorisch", "en": "D-optimal mixed: 3 cont. + 1 categorical" },
+      "title": {
+        "de": "D-optimal mixed: 3 cont. + 1 kategorisch",
+        "en": "D-optimal mixed: 3 cont. + 1 categorical"
+      },
       "description": {
         "de": "Drei kontinuierliche Faktoren und ein kategorischer Faktor mit drei Stufen (Material). Gemischt-stufige Optimal-Designs sind klassische Schemata vorbehalten — ein typischer D-optimaler Anwendungsfall.",
         "en": "Three continuous factors plus one three-level categorical factor (material). Mixed-level optimal designs are a textbook D-optimal use case — classic schemes cannot handle this."
       },
-      "source":      "DMAIC.io Lehrkonfiguration",
-      "license":     "public-domain",
-      "file":        "projects/doe-optimal-mixed-4f.json",
-      "format":      "json",
-      "modules":     ["doe-planner"],
-      "tags":        ["doe", "optimal", "d-optimal", "mixed-level", "categorical"]
+      "source": "DMAIC.io Lehrkonfiguration",
+      "license": "public-domain",
+      "file": "projects/doe-optimal-mixed-4f.json",
+      "format": "json",
+      "modules": [
+        "doe-planner"
+      ],
+      "tags": [
+        "doe",
+        "optimal",
+        "d-optimal",
+        "mixed-level",
+        "categorical"
+      ]
     },
     {
       "id": "regression-pizza-delivery",
       "type": "project",
-      "title":       { "de": "Pizza-Lieferzeit (multiple lineare Regression)", "en": "Pizza Delivery Time (multiple linear regression)" },
+      "title": {
+        "de": "Pizza-Lieferzeit (multiple lineare Regression)",
+        "en": "Pizza Delivery Time (multiple linear regression)"
+      },
       "description": {
         "de": "30 Pizza-Lieferungen mit Entfernung (km), Verkehrslevel (1–5) und gemessener Lieferzeit (min). Linearer Zusammenhang Lieferzeit ≈ 5 + 2,5·Entfernung + 1,2·Verkehr — Lehrbuch-Datensatz für multiple lineare Regression mit hohem R².",
         "en": "30 pizza deliveries with distance (km), traffic level (1–5) and measured delivery time (min). Linear model Time ≈ 5 + 2.5·distance + 1.2·traffic — textbook dataset for multiple linear regression with high R²."
       },
-      "source":      "DMAIC.io synthetisch, NumPy default_rng, Seed=2026",
-      "license":     "public-domain",
-      "file":        "projects/regression-pizza-delivery.json",
-      "format":      "json",
-      "modules":     ["regression"],
-      "tags":        ["regression", "linear", "multivariate"]
+      "source": "DMAIC.io synthetisch, NumPy default_rng, Seed=2026",
+      "license": "public-domain",
+      "file": "projects/regression-pizza-delivery.json",
+      "format": "json",
+      "modules": [
+        "regression"
+      ],
+      "tags": [
+        "regression",
+        "linear",
+        "multivariate"
+      ]
     },
     {
       "id": "regression-collinear",
       "type": "project",
-      "title":       { "de": "Motor-Versuche (Multikollinearität)", "en": "Motor Trials (multicollinearity)" },
+      "title": {
+        "de": "Motor-Versuche (Multikollinearität)",
+        "en": "Motor Trials (multicollinearity)"
+      },
       "description": {
         "de": "30 Motor-Versuche mit Drehzahl und Drehmoment als Prädiktoren, Leistung als Response. Drehmoment ≈ 0,04·Drehzahl — die beiden Prädiktoren sind stark korreliert, der VIF schlägt aus. Lehrcase für Multikollinearität.",
         "en": "30 motor trials with rpm and torque as predictors, power as response. Torque ≈ 0.04·rpm — predictors are highly collinear, VIF spikes. Textbook multicollinearity case."
       },
-      "source":      "DMAIC.io synthetisch, NumPy default_rng, Seed=303",
-      "license":     "public-domain",
-      "file":        "projects/regression-collinear.json",
-      "format":      "json",
-      "modules":     ["regression"],
-      "tags":        ["regression", "multicollinearity", "vif"]
+      "source": "DMAIC.io synthetisch, NumPy default_rng, Seed=303",
+      "license": "public-domain",
+      "file": "projects/regression-collinear.json",
+      "format": "json",
+      "modules": [
+        "regression",
+        "xy-plot"
+      ],
+      "tags": [
+        "regression",
+        "multicollinearity",
+        "vif"
+      ]
     },
     {
       "id": "regression-outliers",
       "type": "project",
-      "title":       { "de": "Spritverbrauch mit Ausreißern", "en": "Fuel Consumption with Outliers" },
+      "title": {
+        "de": "Spritverbrauch mit Ausreißern",
+        "en": "Fuel Consumption with Outliers"
+      },
       "description": {
         "de": "30 Fahrzeug-Messungen Geschwindigkeit → Verbrauch. Zwei eingebaute Ausreißer (Zeilen 6 und 23) drücken das R² gegenüber der sauberen Linearität. Lehrcase für Residuen-Diagnostik und Outlier-Detection.",
         "en": "30 vehicle measurements speed → fuel consumption. Two deliberate outliers (rows 6 and 23) drop R² compared to the clean linear fit. Textbook case for residual diagnostics and outlier detection."
       },
-      "source":      "DMAIC.io synthetisch, NumPy default_rng, Seed=404",
-      "license":     "public-domain",
-      "file":        "projects/regression-outliers.json",
-      "format":      "json",
-      "modules":     ["regression"],
-      "tags":        ["regression", "outliers", "diagnostics"]
+      "source": "DMAIC.io synthetisch, NumPy default_rng, Seed=404",
+      "license": "public-domain",
+      "file": "projects/regression-outliers.json",
+      "format": "json",
+      "modules": [
+        "regression",
+        "xy-plot"
+      ],
+      "tags": [
+        "regression",
+        "outliers",
+        "diagnostics"
+      ]
     },
     {
       "id": "correlation-pizza-delivery",
       "type": "project",
-      "title":       { "de": "Pizza-Lieferzeit (Korrelationsmatrix)", "en": "Pizza Delivery Time (correlation matrix)" },
+      "title": {
+        "de": "Pizza-Lieferzeit (Korrelationsmatrix)",
+        "en": "Pizza Delivery Time (correlation matrix)"
+      },
       "description": {
         "de": "Selbe 30 Pizza-Lieferungen wie der Regressions-Datensatz — hier als Korrelationsmatrix über Entfernung, Verkehrslevel und Lieferzeit. Zeigt die starken paarweisen Pearson-Korrelationen.",
         "en": "Same 30 pizza deliveries as the regression dataset — here as a correlation matrix over distance, traffic level and delivery time. Highlights the strong pairwise Pearson correlations."
       },
-      "source":      "DMAIC.io synthetisch, NumPy default_rng, Seed=2026",
-      "license":     "public-domain",
-      "file":        "projects/correlation-pizza-delivery.json",
-      "format":      "json",
-      "modules":     ["correlation"],
-      "tags":        ["correlation", "pearson", "multivariate"]
+      "source": "DMAIC.io synthetisch, NumPy default_rng, Seed=2026",
+      "license": "public-domain",
+      "file": "projects/correlation-pizza-delivery.json",
+      "format": "json",
+      "modules": [
+        "correlation"
+      ],
+      "tags": [
+        "correlation",
+        "pearson",
+        "multivariate"
+      ]
     },
     {
       "id": "glm-logistic-yield",
       "type": "project",
-      "title":       { "de": "Yield-Versuche (logistische GLM)", "en": "Yield Trials (logistic GLM)" },
+      "title": {
+        "de": "Yield-Versuche (logistische GLM)",
+        "en": "Yield Trials (logistic GLM)"
+      },
       "description": {
         "de": "Acht Temperaturstufen mit je 50 Versuchen. Binomial-Response (Erfolge / Versuche) folgt einer logistischen Kurve mit Wendepunkt um 160 °C. Klassischer Anwendungsfall für binomiale GLM mit Trials-Spalte.",
         "en": "Eight temperature levels with 50 trials each. Binomial response (successes / trials) follows a logistic curve with inflection around 160 °C. Textbook case for binomial GLM with a trials column."
       },
-      "source":      "DMAIC.io synthetisch, NumPy default_rng, Seed=101",
-      "license":     "public-domain",
-      "file":        "projects/glm-logistic-yield.json",
-      "format":      "json",
-      "modules":     ["glm-regression"],
-      "tags":        ["glm", "binomial", "logistic"]
+      "source": "DMAIC.io synthetisch, NumPy default_rng, Seed=101",
+      "license": "public-domain",
+      "file": "projects/glm-logistic-yield.json",
+      "format": "json",
+      "modules": [
+        "glm-regression"
+      ],
+      "tags": [
+        "glm",
+        "binomial",
+        "logistic"
+      ]
     },
     {
       "id": "glm-poisson-defects",
       "type": "project",
-      "title":       { "de": "Defekte pro Schicht (Poisson-GLM)", "en": "Defects per Shift (Poisson GLM)" },
+      "title": {
+        "de": "Defekte pro Schicht (Poisson-GLM)",
+        "en": "Defects per Shift (Poisson GLM)"
+      },
       "description": {
         "de": "40 Schichten mit Vorschub (mm/s) und Werkzeugverschleiß (h) als Prädiktoren, Defekt-Counts als Response. Poisson-Modell mit log(λ) = -1 + 0,02·Vorschub + 0,03·Verschleiß.",
         "en": "40 shifts with feed rate (mm/s) and tool wear (h) as predictors, defect counts as response. Poisson model with log(λ) = -1 + 0.02·feed + 0.03·wear."
       },
-      "source":      "DMAIC.io synthetisch, NumPy default_rng, Seed=202",
-      "license":     "public-domain",
-      "file":        "projects/glm-poisson-defects.json",
-      "format":      "json",
-      "modules":     ["glm-regression"],
-      "tags":        ["glm", "poisson", "counts"]
+      "source": "DMAIC.io synthetisch, NumPy default_rng, Seed=202",
+      "license": "public-domain",
+      "file": "projects/glm-poisson-defects.json",
+      "format": "json",
+      "modules": [
+        "glm-regression"
+      ],
+      "tags": [
+        "glm",
+        "poisson",
+        "counts"
+      ]
     },
     {
       "id": "contour-rsm-yield",
       "type": "project",
-      "title":       { "de": "Ausbeute-Optimum (Response-Surface)", "en": "Yield Optimum (response surface)" },
+      "title": {
+        "de": "Ausbeute-Optimum (Response-Surface)",
+        "en": "Yield Optimum (response surface)"
+      },
       "description": {
         "de": "Quadratisches Modell für Ausbeute = f(Temperatur, Druck) mit Optimum bei 180 °C und 3 bar. Zeigt eine klassische Höhenlinien-Karte mit ausgeprägtem Maximum.",
         "en": "Quadratic model for yield = f(temperature, pressure) with optimum at 180 °C and 3 bar. Shows a classic contour map with a pronounced maximum."
       },
-      "source":      "DMAIC.io Lehrkonfiguration",
-      "license":     "public-domain",
-      "file":        "projects/contour-rsm-yield.json",
-      "format":      "json",
-      "modules":     ["contour-plot"],
-      "tags":        ["contour", "rsm", "quadratic"]
+      "source": "DMAIC.io Lehrkonfiguration",
+      "license": "public-domain",
+      "file": "projects/contour-rsm-yield.json",
+      "format": "json",
+      "modules": [
+        "contour-plot"
+      ],
+      "tags": [
+        "contour",
+        "rsm",
+        "quadratic"
+      ]
     },
     {
       "id": "control-chart-xbar-r-stable",
       "type": "project",
-      "title":       { "de": "Wellen-Durchmesser (X̄-R, stabil)", "en": "Shaft Diameter (X̄-R, in control)" },
+      "title": {
+        "de": "Wellen-Durchmesser (X̄-R, stabil)",
+        "en": "Shaft Diameter (X̄-R, in control)"
+      },
       "description": {
         "de": "25 Untergruppen à 5 Messungen aus einem stabilen Prozess (μ = 10,00 mm, σ = 0,05 mm). X̄-R-Karte zeigt keine Verletzungen der Nelson-Regeln.",
         "en": "25 subgroups of 5 measurements each from a stable process (μ = 10.00 mm, σ = 0.05 mm). X̄-R chart shows no Nelson-rule violations."
       },
-      "source":      "DMAIC.io synthetisch, NumPy default_rng, Seed=501",
-      "license":     "public-domain",
-      "file":        "projects/control-chart-xbar-r-stable.json",
-      "format":      "json",
-      "modules":     ["control-chart"],
-      "tags":        ["spc", "control-chart", "xbar-r", "stable"]
+      "source": "DMAIC.io synthetisch, NumPy default_rng, Seed=501",
+      "license": "public-domain",
+      "file": "projects/control-chart-xbar-r-stable.json",
+      "format": "json",
+      "modules": [
+        "control-chart"
+      ],
+      "tags": [
+        "spc",
+        "control-chart",
+        "xbar-r",
+        "stable"
+      ]
     },
     {
       "id": "control-chart-imr-shift",
       "type": "project",
-      "title":       { "de": "I-MR-Karte mit Shift", "en": "I-MR Chart with Shift" },
+      "title": {
+        "de": "I-MR-Karte mit Shift",
+        "en": "I-MR Chart with Shift"
+      },
       "description": {
         "de": "50 Einzelmessungen mit einem Sprung von μ = 10,00 auf μ = 10,18 ab Wert 30. Die Nelson-Regeln (insbesondere Regel 1 und Regel 5) sollten den Shift detektieren.",
         "en": "50 individual measurements with a step shift from μ = 10.00 to μ = 10.18 at observation 30. The Nelson rules (especially rule 1 and rule 5) should flag the shift."
       },
-      "source":      "DMAIC.io synthetisch, NumPy default_rng, Seed=502",
-      "license":     "public-domain",
-      "file":        "projects/control-chart-imr-shift.json",
-      "format":      "json",
-      "modules":     ["control-chart"],
-      "tags":        ["spc", "control-chart", "i-mr", "shift", "out-of-control"]
+      "source": "DMAIC.io synthetisch, NumPy default_rng, Seed=502",
+      "license": "public-domain",
+      "file": "projects/control-chart-imr-shift.json",
+      "format": "json",
+      "modules": [
+        "control-chart"
+      ],
+      "tags": [
+        "spc",
+        "control-chart",
+        "i-mr",
+        "shift",
+        "out-of-control"
+      ]
     },
     {
       "id": "control-chart-imr-trend",
       "type": "project",
-      "title":       { "de": "I-MR-Karte mit Drift", "en": "I-MR Chart with Drift" },
+      "title": {
+        "de": "I-MR-Karte mit Drift",
+        "en": "I-MR Chart with Drift"
+      },
       "description": {
         "de": "50 Einzelmessungen mit linearem Aufwärtstrend (+0,6 über die Serie). Nelson-Regel 3 (sechs Punkte in Folge steigend) sollte mehrfach feuern.",
         "en": "50 individual measurements with a linear upward drift (+0.6 across the series). Nelson rule 3 (six points in a row trending up) should fire multiple times."
       },
-      "source":      "DMAIC.io synthetisch, NumPy default_rng, Seed=503",
-      "license":     "public-domain",
-      "file":        "projects/control-chart-imr-trend.json",
-      "format":      "json",
-      "modules":     ["control-chart"],
-      "tags":        ["spc", "control-chart", "i-mr", "trend", "out-of-control"]
+      "source": "DMAIC.io synthetisch, NumPy default_rng, Seed=503",
+      "license": "public-domain",
+      "file": "projects/control-chart-imr-trend.json",
+      "format": "json",
+      "modules": [
+        "control-chart"
+      ],
+      "tags": [
+        "spc",
+        "control-chart",
+        "i-mr",
+        "trend",
+        "out-of-control"
+      ]
     },
     {
       "id": "xy-plot-pizza-delivery",
       "type": "project",
-      "title":       { "de": "Pizza-Lieferzeit (Streudiagramm)", "en": "Pizza Delivery Time (scatter plot)" },
+      "title": {
+        "de": "Pizza-Lieferzeit (Streudiagramm)",
+        "en": "Pizza Delivery Time (scatter plot)"
+      },
       "description": {
         "de": "Selbe 30 Pizza-Lieferungen wie der Regressions-Datensatz — Streudiagramm Lieferzeit über Entfernung mit Statistik-Panel. Ideal für Erkundung des Zusammenhangs vor der Regression.",
         "en": "Same 30 pizza deliveries as the regression dataset — scatter plot of delivery time over distance with stats panel. Useful for visual exploration before fitting a regression."
       },
-      "source":      "DMAIC.io synthetisch, NumPy default_rng, Seed=2026",
-      "license":     "public-domain",
-      "file":        "projects/xy-plot-pizza-delivery.json",
-      "format":      "json",
-      "modules":     ["xy-plot"],
-      "tags":        ["xy-plot", "scatter"]
+      "source": "DMAIC.io synthetisch, NumPy default_rng, Seed=2026",
+      "license": "public-domain",
+      "file": "projects/xy-plot-pizza-delivery.json",
+      "format": "json",
+      "modules": [
+        "xy-plot"
+      ],
+      "tags": [
+        "xy-plot",
+        "scatter"
+      ]
     },
     {
       "id": "doe-optimal-augment-3f",
       "type": "project",
-      "title":       { "de": "D-optimal Augment: auf bestehender Datensammlung", "en": "D-optimal augment: on existing data set" },
+      "title": {
+        "de": "D-optimal Augment: auf bestehender Datensammlung",
+        "en": "D-optimal augment: on existing data set"
+      },
       "description": {
         "de": "Drei kontinuierliche Faktoren, quadratisches Modell, 12 Versuchsläufe gesamt — sechs davon bereits gemessen. Das Beispiel legt eine Datensammlung mit den bestehenden Messwerten an und ergänzt sie um sechs weitere D-optimale Versuchsläufe.",
         "en": "Three continuous factors, quadratic model, 12 runs total — six already measured. The example creates a data sheet with the existing measurements and augments it with six additional D-optimal runs."
       },
-      "source":      "DMAIC.io Lehrkonfiguration",
-      "license":     "public-domain",
-      "file":        "projects/doe-optimal-augment-3f.json",
-      "format":      "json",
-      "modules":     ["doe-planner"],
-      "tags":        ["doe", "optimal", "d-optimal", "augment", "rsm"]
+      "source": "DMAIC.io Lehrkonfiguration",
+      "license": "public-domain",
+      "file": "projects/doe-optimal-augment-3f.json",
+      "format": "json",
+      "modules": [
+        "doe-planner"
+      ],
+      "tags": [
+        "doe",
+        "optimal",
+        "d-optimal",
+        "augment",
+        "rsm"
+      ]
     },
     {
       "id": "worksheet-pizza-delivery",
       "type": "project",
-      "title":       { "de": "Pizza-Lieferungen (Datensammlung)", "en": "Pizza Deliveries (data sheet)" },
+      "title": {
+        "de": "Pizza-Lieferungen (Datensammlung)",
+        "en": "Pizza Deliveries (data sheet)"
+      },
       "description": {
         "de": "30 Pizza-Lieferungen mit Entfernung (km), Verkehrslevel (1–5) und Lieferzeit (min) als rohe Datensammlung. Lehrcase, der von Korrelation, XY-Plot und Regression weiterverwendet wird.",
         "en": "30 pizza deliveries with distance (km), traffic level (1–5) and delivery time (min) as a raw data sheet. Teaching case reused by correlation, XY plot and regression examples."
       },
-      "source":      "DMAIC.io synthetisch, NumPy default_rng, Seed=2026",
-      "license":     "public-domain",
-      "file":        "worksheets/pizza-delivery.json",
-      "format":      "json",
-      "modules":     ["worksheet"],
-      "tags":        ["worksheet", "multivariate", "pizza"]
+      "source": "DMAIC.io synthetisch, NumPy default_rng, Seed=2026",
+      "license": "public-domain",
+      "file": "worksheets/pizza-delivery.json",
+      "format": "json",
+      "modules": [
+        "worksheet"
+      ],
+      "tags": [
+        "worksheet",
+        "multivariate",
+        "pizza"
+      ]
     },
     {
       "id": "worksheet-glm-logistic-yield",
       "type": "project",
-      "title":       { "de": "Yield-Versuche (Datensammlung)", "en": "Yield Trials (data sheet)" },
+      "title": {
+        "de": "Yield-Versuche (Datensammlung)",
+        "en": "Yield Trials (data sheet)"
+      },
       "description": {
         "de": "Acht Temperaturstufen mit je 50 Versuchen und Erfolgs-Counts. Rohformat als Datensammlung — Basis für das GLM-Logistic-Yield-Regressionsbeispiel.",
         "en": "Eight temperature levels with 50 trials each and success counts. Raw data sheet — basis for the GLM logistic-yield regression example."
       },
-      "source":      "DMAIC.io synthetisch, NumPy default_rng, Seed=101",
-      "license":     "public-domain",
-      "file":        "worksheets/glm-logistic-yield.json",
-      "format":      "json",
-      "modules":     ["worksheet"],
-      "tags":        ["worksheet", "binomial", "glm"]
+      "source": "DMAIC.io synthetisch, NumPy default_rng, Seed=101",
+      "license": "public-domain",
+      "file": "worksheets/glm-logistic-yield.json",
+      "format": "json",
+      "modules": [
+        "worksheet"
+      ],
+      "tags": [
+        "worksheet",
+        "binomial",
+        "glm"
+      ]
     },
     {
       "id": "worksheet-glm-poisson-defects",
       "type": "project",
-      "title":       { "de": "Defekte pro Schicht (Datensammlung)", "en": "Defects per Shift (data sheet)" },
+      "title": {
+        "de": "Defekte pro Schicht (Datensammlung)",
+        "en": "Defects per Shift (data sheet)"
+      },
       "description": {
         "de": "40 Schichten mit Vorschub (mm/s), Werkzeugverschleiß (h) und Defekt-Counts. Rohformat als Datensammlung — Basis für das GLM-Poisson-Regressionsbeispiel.",
         "en": "40 shifts with feed rate (mm/s), tool wear (h) and defect counts. Raw data sheet — basis for the GLM Poisson regression example."
       },
-      "source":      "DMAIC.io synthetisch, NumPy default_rng, Seed=202",
-      "license":     "public-domain",
-      "file":        "worksheets/glm-poisson-defects.json",
-      "format":      "json",
-      "modules":     ["worksheet"],
-      "tags":        ["worksheet", "counts", "glm"]
+      "source": "DMAIC.io synthetisch, NumPy default_rng, Seed=202",
+      "license": "public-domain",
+      "file": "worksheets/glm-poisson-defects.json",
+      "format": "json",
+      "modules": [
+        "worksheet"
+      ],
+      "tags": [
+        "worksheet",
+        "counts",
+        "glm"
+      ]
     },
     {
       "id": "worksheet-multisheet-quartal",
       "type": "project",
-      "title":       { "de": "Produktion Q1–Q3 (Mehrblatt-Demo)", "en": "Production Q1–Q3 (multi-sheet demo)" },
+      "title": {
+        "de": "Produktion Q1–Q3 (Mehrblatt-Demo)",
+        "en": "Production Q1–Q3 (multi-sheet demo)"
+      },
       "description": {
         "de": "Drei Tabellenblätter (Q1/Q2/Q3) mit Produktionsdaten je 10 Chargen. Demonstriert die Mehrblatt-Funktion der Datensammlung — Tabs unten zum Wechseln.",
         "en": "Three sheets (Q1/Q2/Q3) with production data of 10 batches each. Demonstrates the multi-sheet feature of the worksheet — switch via tabs at the bottom."
       },
-      "source":      "DMAIC.io Lehrkonfiguration",
-      "license":     "public-domain",
-      "file":        "worksheets/multisheet-quartal.json",
-      "format":      "json",
-      "modules":     ["worksheet"],
-      "tags":        ["worksheet", "multi-sheet", "didactic"]
+      "source": "DMAIC.io Lehrkonfiguration",
+      "license": "public-domain",
+      "file": "worksheets/multisheet-quartal.json",
+      "format": "json",
+      "modules": [
+        "worksheet"
+      ],
+      "tags": [
+        "worksheet",
+        "multi-sheet",
+        "didactic"
+      ]
     },
     {
       "id": "worksheet-mixed-types-training",
       "type": "project",
-      "title":       { "de": "Mitarbeiter-Schulung (gemischte Spaltentypen)", "en": "Employee Training (mixed column types)" },
+      "title": {
+        "de": "Mitarbeiter-Schulung (gemischte Spaltentypen)",
+        "en": "Employee Training (mixed column types)"
+      },
       "description": {
         "de": "12 Mitarbeiter mit ID, Name, Abteilung und Status (Text), Punkten vor/nach (Zahl) und einer Prozent-Spalte. Demonstriert Text-, Zahl- und Prozent-Spalten in einer Tabelle, inkl. einer Lücke im Nachher-Wert.",
         "en": "12 employees with ID, name, department and status (text), pre/post scores (numeric) and a percent column. Demonstrates text, numeric and percent columns side by side, including a gap in the post-training score."
       },
-      "source":      "DMAIC.io Lehrkonfiguration",
-      "license":     "public-domain",
-      "file":        "worksheets/mixed-types-training.json",
-      "format":      "json",
-      "modules":     ["worksheet"],
-      "tags":        ["worksheet", "mixed-types", "didactic"]
+      "source": "DMAIC.io Lehrkonfiguration",
+      "license": "public-domain",
+      "file": "worksheets/mixed-types-training.json",
+      "format": "json",
+      "modules": [
+        "worksheet"
+      ],
+      "tags": [
+        "worksheet",
+        "mixed-types",
+        "didactic"
+      ]
     },
     {
       "id": "worksheet-time-series-gaps",
       "type": "project",
-      "title":       { "de": "Messreihe Januar (Zeitreihe mit Lücken)", "en": "January Series (time series with gaps)" },
+      "title": {
+        "de": "Messreihe Januar (Zeitreihe mit Lücken)",
+        "en": "January Series (time series with gaps)"
+      },
       "description": {
         "de": "20 Werktage im Januar 2026 mit Schicht (F/S/N), Messwert und Temperatur. Einzelne Messungen fehlen (null-Werte). Demonstriert Datums-Spalten und das Verhalten bei fehlenden Daten.",
         "en": "20 working days in January 2026 with shift (F/S/N), measurement and temperature. Some measurements are missing (null values). Demonstrates date columns and how the grid handles gaps."
       },
-      "source":      "DMAIC.io Lehrkonfiguration",
-      "license":     "public-domain",
-      "file":        "worksheets/time-series-gaps.json",
-      "format":      "json",
-      "modules":     ["worksheet"],
-      "tags":        ["worksheet", "time-series", "missing-data", "didactic"]
+      "source": "DMAIC.io Lehrkonfiguration",
+      "license": "public-domain",
+      "file": "worksheets/time-series-gaps.json",
+      "format": "json",
+      "modules": [
+        "worksheet"
+      ],
+      "tags": [
+        "worksheet",
+        "time-series",
+        "missing-data",
+        "didactic"
+      ]
     },
     {
       "id": "worksheet-formula-demo",
       "type": "project",
-      "title":       { "de": "Bestellungen mit Formelspalten", "en": "Orders with Formula Columns" },
+      "title": {
+        "de": "Bestellungen mit Formelspalten",
+        "en": "Orders with Formula Columns"
+      },
       "description": {
         "de": "10 Bestellzeilen mit Anzahl, Preis (€), berechneter Gesamtsumme (=Anzahl·Preis), Rabatt (%) und Endpreis (=Gesamt·(1-Rabatt)). Demonstriert Zell-Referenz-Formeln und Currency-/Percent-Spalten.",
         "en": "10 order rows with quantity, unit price (€), calculated total (=qty·price), discount (%) and final price (=total·(1-discount)). Demonstrates cell-reference formulas and currency/percent columns."
       },
-      "source":      "DMAIC.io Lehrkonfiguration",
-      "license":     "public-domain",
-      "file":        "worksheets/formula-demo.json",
-      "format":      "json",
-      "modules":     ["worksheet"],
-      "tags":        ["worksheet", "formulas", "currency", "didactic"]
+      "source": "DMAIC.io Lehrkonfiguration",
+      "license": "public-domain",
+      "file": "worksheets/formula-demo.json",
+      "format": "json",
+      "modules": [
+        "worksheet"
+      ],
+      "tags": [
+        "worksheet",
+        "formulas",
+        "currency",
+        "didactic"
+      ]
     },
     {
       "id": "msa-typ1-faehig",
       "type": "project",
-      "title":       { "de": "MSA Typ 1: fähiger Messprozess", "en": "MSA Type 1: capable gage" },
+      "title": {
+        "de": "MSA Typ 1: fähiger Messprozess",
+        "en": "MSA Type 1: capable gage"
+      },
       "description": {
         "de": "25 Wiederholmessungen eines 10,0 mm Referenzteils (LSL 9,9 / USL 10,1, T = 0,2 mm). Sehr geringe Streuung, vernachlässigbarer Bias → Cg ≈ 3,8 und Cgk ≈ 3,8 weit über der 1,33-Schwelle. Lehrbuch-Fall eines fähigen Messmittels.",
         "en": "25 repeated measurements of a 10.0 mm reference part (LSL 9.9 / USL 10.1, T = 0.2 mm). Very small spread, negligible bias → Cg ≈ 3.8 and Cgk ≈ 3.8 well above the 1.33 threshold. Textbook capable-gage case."
       },
-      "source":      "DMAIC.io synthetisch, NumPy default_rng, Seed=601",
-      "license":     "public-domain",
-      "file":        "projects/msa-typ1-faehig.json",
-      "format":      "json",
-      "modules":     ["msa-typ1"],
-      "tags":        ["msa", "cg", "cgk", "capable"]
+      "source": "DMAIC.io synthetisch, NumPy default_rng, Seed=601",
+      "license": "public-domain",
+      "file": "projects/msa-typ1-faehig.json",
+      "format": "json",
+      "modules": [
+        "msa-typ1",
+        "histogram"
+      ],
+      "tags": [
+        "msa",
+        "cg",
+        "cgk",
+        "capable"
+      ]
     },
     {
       "id": "msa-typ1-grenzwertig",
       "type": "project",
-      "title":       { "de": "MSA Typ 1: grenzwertiger Messprozess", "en": "MSA Type 1: marginal gage" },
+      "title": {
+        "de": "MSA Typ 1: grenzwertiger Messprozess",
+        "en": "MSA Type 1: marginal gage"
+      },
       "description": {
         "de": "25 Wiederholmessungen mit moderater Streuung und leichtem positiven Bias. Cg ≈ 1,5 liegt knapp über, Cgk ≈ 1,0 knapp unter der 1,33-Schwelle — der Bias zieht die Fähigkeit nach unten. Klassischer Fall für die Bedeutung von Cgk neben Cg.",
         "en": "25 repeated measurements with moderate spread and slight positive bias. Cg ≈ 1.5 just above the 1.33 threshold, Cgk ≈ 1.0 just below — bias pulls capability down. Classic case for the role of Cgk alongside Cg."
       },
-      "source":      "DMAIC.io synthetisch, NumPy default_rng, Seed=602",
-      "license":     "public-domain",
-      "file":        "projects/msa-typ1-grenzwertig.json",
-      "format":      "json",
-      "modules":     ["msa-typ1"],
-      "tags":        ["msa", "cg", "cgk", "marginal", "bias"]
+      "source": "DMAIC.io synthetisch, NumPy default_rng, Seed=602",
+      "license": "public-domain",
+      "file": "projects/msa-typ1-grenzwertig.json",
+      "format": "json",
+      "modules": [
+        "msa-typ1",
+        "histogram"
+      ],
+      "tags": [
+        "msa",
+        "cg",
+        "cgk",
+        "marginal",
+        "bias"
+      ]
     },
     {
       "id": "msa-typ1-nicht-faehig",
       "type": "project",
-      "title":       { "de": "MSA Typ 1: nicht fähiger Messprozess", "en": "MSA Type 1: incapable gage" },
+      "title": {
+        "de": "MSA Typ 1: nicht fähiger Messprozess",
+        "en": "MSA Type 1: incapable gage"
+      },
       "description": {
         "de": "25 Wiederholmessungen mit hoher Streuung und deutlichem Bias. Cg ≈ 0,6 und Cgk ≈ 0,3 — das Messmittel verfehlt die Fähigkeitsgrenze deutlich. Lehrbuch-Fall für ein abzulehnendes Messsystem.",
         "en": "25 repeated measurements with large spread and noticeable bias. Cg ≈ 0.6 and Cgk ≈ 0.3 — gage clearly fails the capability threshold. Textbook case for a measurement system that must be rejected."
       },
-      "source":      "DMAIC.io synthetisch, NumPy default_rng, Seed=603",
-      "license":     "public-domain",
-      "file":        "projects/msa-typ1-nicht-faehig.json",
-      "format":      "json",
-      "modules":     ["msa-typ1"],
-      "tags":        ["msa", "cg", "cgk", "incapable", "bias"]
+      "source": "DMAIC.io synthetisch, NumPy default_rng, Seed=603",
+      "license": "public-domain",
+      "file": "projects/msa-typ1-nicht-faehig.json",
+      "format": "json",
+      "modules": [
+        "msa-typ1",
+        "histogram"
+      ],
+      "tags": [
+        "msa",
+        "cg",
+        "cgk",
+        "incapable",
+        "bias"
+      ]
     },
     {
       "id": "msa-typ2-akzeptabel",
       "type": "project",
-      "title":       { "de": "MSA Typ 2: akzeptables Gage R&R", "en": "MSA Type 2: acceptable Gage R&R" },
+      "title": {
+        "de": "MSA Typ 2: akzeptables Gage R&R",
+        "en": "MSA Type 2: acceptable Gage R&R"
+      },
       "description": {
         "de": "Gekreuzte ANOVA-Studie: 10 Teile × 3 Operatoren × 3 Wiederholungen (90 Messungen). Geringe Wiederhol- und Vergleichsstreuung, dominante Teilevarianz → %GRR ≈ 6 % bezogen auf die Studienvarianz. Lehrbuch-Fall eines akzeptablen Messsystems.",
         "en": "Crossed ANOVA study: 10 parts × 3 operators × 3 replicates (90 measurements). Small repeatability and reproducibility variation, dominant part variance → %GRR ≈ 6 % of study variation. Textbook acceptable measurement system."
       },
-      "source":      "DMAIC.io synthetisch, NumPy default_rng, Seed=611",
-      "license":     "public-domain",
-      "file":        "projects/msa-typ2-akzeptabel.json",
-      "format":      "json",
-      "modules":     ["msa-typ2"],
-      "tags":        ["msa", "grr", "anova", "acceptable"]
+      "source": "DMAIC.io synthetisch, NumPy default_rng, Seed=611",
+      "license": "public-domain",
+      "file": "projects/msa-typ2-akzeptabel.json",
+      "format": "json",
+      "modules": [
+        "msa-typ2"
+      ],
+      "tags": [
+        "msa",
+        "grr",
+        "anova",
+        "acceptable"
+      ]
     },
     {
       "id": "msa-typ2-problematisch",
       "type": "project",
-      "title":       { "de": "MSA Typ 2: problematisches Gage R&R", "en": "MSA Type 2: problematic Gage R&R" },
+      "title": {
+        "de": "MSA Typ 2: problematisches Gage R&R",
+        "en": "MSA Type 2: problematic Gage R&R"
+      },
       "description": {
         "de": "Gekreuzte ANOVA-Studie mit hoher Wiederhol- und Vergleichsstreuung gegenüber kleiner Teilevarianz. 10 Teile × 3 Operatoren × 3 Wiederholungen → %GRR im Bereich 40–50 %. Lehrbuch-Fall, in dem das Messsystem die Teileunterschiede maskiert.",
         "en": "Crossed ANOVA study with large repeatability and reproducibility variation versus small part variance. 10 parts × 3 operators × 3 replicates → %GRR in the 40–50 % range. Textbook case where the measurement system masks part-to-part variation."
       },
-      "source":      "DMAIC.io synthetisch, NumPy default_rng, Seed=612",
-      "license":     "public-domain",
-      "file":        "projects/msa-typ2-problematisch.json",
-      "format":      "json",
-      "modules":     ["msa-typ2"],
-      "tags":        ["msa", "grr", "anova", "problematic"]
+      "source": "DMAIC.io synthetisch, NumPy default_rng, Seed=612",
+      "license": "public-domain",
+      "file": "projects/msa-typ2-problematisch.json",
+      "format": "json",
+      "modules": [
+        "msa-typ2"
+      ],
+      "tags": [
+        "msa",
+        "grr",
+        "anova",
+        "problematic"
+      ]
+    },
+    {
+      "id": "spc-attribute-p-chart",
+      "type": "project",
+      "title": {
+        "de": "p-Chart: variable Stichprobengrößen",
+        "en": "p-Chart: variable sample sizes"
+      },
+      "description": {
+        "de": "30 Inspektionsserien mit variabler Stichprobengröße (80–120) und schwankender Defektrate. Lots 18–20 mit erhöhter Rate (~10 %) — die p-Karte sollte sie als out-of-control markieren.",
+        "en": "30 inspection lots with variable sample size (80–120) and varying defect rate. Lots 18–20 at ~10 % — the p-chart should flag them as out-of-control."
+      },
+      "source": "DMAIC.io synthetisch, NumPy default_rng, Seed=701",
+      "license": "public-domain",
+      "file": "projects/spc-attribute-p-chart.json",
+      "format": "json",
+      "modules": [
+        "attribute-control-chart",
+        "pie-chart"
+      ],
+      "tags": [
+        "spc",
+        "attribute",
+        "p-chart",
+        "binomial"
+      ]
+    },
+    {
+      "id": "spc-attribute-c-chart",
+      "type": "project",
+      "title": {
+        "de": "c-Chart: Defekte pro Einheit",
+        "en": "c-Chart: defects per unit"
+      },
+      "description": {
+        "de": "30 Inspektionseinheiten mit konstanter Stichprobengröße. Mittlere Defektrate ≈ 3, Einheiten 22–23 mit Spike (~8) — c-Karte schlägt an.",
+        "en": "30 inspection units of constant size. Mean defects ≈ 3, units 22–23 spike to ~8 — c-chart triggers."
+      },
+      "source": "DMAIC.io synthetisch, NumPy default_rng, Seed=702",
+      "license": "public-domain",
+      "file": "projects/spc-attribute-c-chart.json",
+      "format": "json",
+      "modules": [
+        "attribute-control-chart",
+        "pie-chart"
+      ],
+      "tags": [
+        "spc",
+        "attribute",
+        "c-chart",
+        "poisson"
+      ]
+    },
+    {
+      "id": "spc-multivariate-t2",
+      "type": "project",
+      "title": {
+        "de": "Hotelling T²: bivariate Korrelation",
+        "en": "Hotelling T²: bivariate correlation"
+      },
+      "description": {
+        "de": "40 bivariate Beobachtungen mit ρ ≈ 0,85. Beobachtungen 30 und 31 sind multivariate-Outlier (auf den Marginalen plausibel, joint vom Korrelationsellipsoid abweichend).",
+        "en": "40 bivariate observations with ρ ≈ 0.85. Observations 30 and 31 are multivariate outliers — plausible on each margin but joint deviates from the correlation ellipse."
+      },
+      "source": "DMAIC.io synthetisch, NumPy default_rng, Seed=705",
+      "license": "public-domain",
+      "file": "projects/spc-multivariate-t2.json",
+      "format": "json",
+      "modules": [
+        "multivariate-control-chart"
+      ],
+      "tags": [
+        "spc",
+        "multivariate",
+        "t-squared",
+        "hotelling"
+      ]
+    },
+    {
+      "id": "spc-rare-event-t-chart",
+      "type": "project",
+      "title": {
+        "de": "t-Chart: Tage zwischen seltenen Ereignissen",
+        "en": "t-Chart: days between rare events"
+      },
+      "description": {
+        "de": "25 Intervalle aus Exponential(μ=35 Tage). Bei Beobachtungen 16–18 verdoppelt sich die Rate (μ=12) — t-Karte zeigt einen sichtbaren Wechsel.",
+        "en": "25 intervals from Exponential(μ=35 days). At observations 16–18 the rate doubles (μ=12) — t-chart shows a visible shift."
+      },
+      "source": "DMAIC.io synthetisch, NumPy default_rng, Seed=704",
+      "license": "public-domain",
+      "file": "projects/spc-rare-event-t-chart.json",
+      "format": "json",
+      "modules": [
+        "rare-event-chart"
+      ],
+      "tags": [
+        "spc",
+        "rare-event",
+        "t-chart",
+        "exponential"
+      ]
+    },
+    {
+      "id": "spc-run-chart-shift",
+      "type": "project",
+      "title": {
+        "de": "Run-Chart mit Shift",
+        "en": "Run-Chart with shift"
+      },
+      "description": {
+        "de": "I-MR-Datensatz: Beobachtungen 1–29 stabil bei μ=10, ab Beobachtung 30 Sprung auf μ=10,18. Westerm-Electric- / Nelson-Regeln markieren den Shift.",
+        "en": "I-MR series: observations 1–29 stable at μ=10, from obs. 30 shift to μ=10.18. Western Electric / Nelson rules flag the shift."
+      },
+      "source": "DMAIC.io synthetisch, NumPy default_rng, Seed=502",
+      "license": "public-domain",
+      "file": "projects/spc-run-chart-shift.json",
+      "format": "json",
+      "modules": [
+        "run-chart"
+      ],
+      "tags": [
+        "spc",
+        "run-chart",
+        "shift"
+      ]
+    },
+    {
+      "id": "spc-short-run-zmr",
+      "type": "project",
+      "title": {
+        "de": "Short-Run Z-MR-Karte",
+        "en": "Short-Run Z-MR chart"
+      },
+      "description": {
+        "de": "Drei kurze Setups mit unterschiedlichen Mittelwerten (10, 25, 7,5), je 8 Messungen. Nach Nominal-Zentrierung gemeinsam vergleichbar (σ ≈ 0,05).",
+        "en": "Three short setups with different means (10, 25, 7.5), 8 measurements each. After nominal centering they form one comparable process (σ ≈ 0.05)."
+      },
+      "source": "DMAIC.io synthetisch, NumPy default_rng, Seed=706",
+      "license": "public-domain",
+      "file": "projects/spc-short-run-zmr.json",
+      "format": "json",
+      "modules": [
+        "short-run-chart"
+      ],
+      "tags": [
+        "spc",
+        "short-run",
+        "z-mr"
+      ]
+    },
+    {
+      "id": "spc-time-weighted-ewma",
+      "type": "project",
+      "title": {
+        "de": "EWMA-Karte: kleiner Drift",
+        "en": "EWMA chart: small drift"
+      },
+      "description": {
+        "de": "60 Beobachtungen: Mittelwert 30 Punkte bei μ=10, dann Verschiebung auf μ=10,1 (≈ 1σ). EWMA mit λ=0,2 erkennt den Drift, eine Shewhart-I-Karte nicht.",
+        "en": "60 observations: mean stays at μ=10 for the first 30 points, then shifts to μ=10.1 (≈ 1σ). EWMA with λ=0.2 detects the drift; a Shewhart I-chart misses it."
+      },
+      "source": "DMAIC.io synthetisch, NumPy default_rng, Seed=703",
+      "license": "public-domain",
+      "file": "projects/spc-time-weighted-ewma.json",
+      "format": "json",
+      "modules": [
+        "time-weighted-chart"
+      ],
+      "tags": [
+        "spc",
+        "ewma",
+        "cusum",
+        "drift"
+      ]
+    },
+    {
+      "id": "spc-transformed-imr",
+      "type": "project",
+      "title": {
+        "de": "Box-Cox-I-MR-Karte: lognormale Standzeiten",
+        "en": "Box-Cox I-MR chart: lognormal lifetimes"
+      },
+      "description": {
+        "de": "50 lognormal-verteilte Standzeiten. Eine plain I-MR-Karte produziert wegen der Rechtsschiefe Fehlalarme. Nach Box-Cox-Transformation (λ ≈ 0) sind die Residuen wieder annähernd normal.",
+        "en": "50 lognormally distributed lifetimes. A plain I-MR chart raises false alarms because of the right skew. After Box-Cox transformation (λ ≈ 0) the residuals become approximately normal."
+      },
+      "source": "DMAIC.io synthetisch, NumPy default_rng, Seed=707",
+      "license": "public-domain",
+      "file": "projects/spc-transformed-imr.json",
+      "format": "json",
+      "modules": [
+        "transformed-imr-chart",
+        "histogram"
+      ],
+      "tags": [
+        "spc",
+        "box-cox",
+        "lognormal",
+        "transform"
+      ]
+    },
+    {
+      "id": "hypothesis-pizza-fahrer",
+      "type": "project",
+      "title": {
+        "de": "Lieferzeit pro Fahrer (k-Stichproben-ANOVA)",
+        "en": "Delivery time by driver (k-sample ANOVA)"
+      },
+      "description": {
+        "de": "Lieferzeit-Messungen (min) für drei Fahrer A/B/C, je 15 Werte. Wahre Mittelwerte 22/25/28 min bei σ ≈ 3 — Cohen's f ≈ 0,82, klare ANOVA-Signifikanz erwartet.",
+        "en": "Delivery times (min) for three drivers A/B/C, 15 each. True means 22/25/28 min at σ ≈ 3 — Cohen's f ≈ 0.82, strong ANOVA signal."
+      },
+      "source": "DMAIC.io synthetisch, NumPy default_rng, Seed=801",
+      "license": "public-domain",
+      "file": "projects/hypothesis-pizza-fahrer.json",
+      "format": "json",
+      "modules": [
+        "hypothesis-test"
+      ],
+      "tags": [
+        "hypothesis",
+        "anova",
+        "k-sample",
+        "balanced",
+        "pizza"
+      ]
+    },
+    {
+      "id": "boxplot-pizza-fahrer",
+      "type": "project",
+      "title": {
+        "de": "Lieferzeit pro Fahrer (Boxplot)",
+        "en": "Delivery time by driver (boxplot)"
+      },
+      "description": {
+        "de": "Drei Boxen Lieferzeit-Verteilung für Fahrer A/B/C. Bedient denselben Datensatz wie das ANOVA-Beispiel — Boxen zeigen visuell die ANOVA-Signifikanz.",
+        "en": "Three boxes showing delivery-time distributions for drivers A/B/C. Same data as the ANOVA example — the boxplot visualizes the ANOVA effect."
+      },
+      "source": "DMAIC.io synthetisch, NumPy default_rng, Seed=801",
+      "license": "public-domain",
+      "file": "projects/boxplot-pizza-fahrer.json",
+      "format": "json",
+      "modules": [
+        "boxplot"
+      ],
+      "tags": [
+        "boxplot",
+        "groups",
+        "pizza"
+      ]
+    },
+    {
+      "id": "ivplot-pizza-fahrer",
+      "type": "project",
+      "title": {
+        "de": "Lieferzeit pro Fahrer (Einzelwertdiagramm)",
+        "en": "Delivery time by driver (individual value plot)"
+      },
+      "description": {
+        "de": "Drei Punktwolken Lieferzeit für Fahrer A/B/C mit verbundenen Mittelwerten — derselbe Datensatz wie ANOVA und Boxplot.",
+        "en": "Three point clouds of delivery time for drivers A/B/C with connected means — same data as the ANOVA and boxplot examples."
+      },
+      "source": "DMAIC.io synthetisch, NumPy default_rng, Seed=801",
+      "license": "public-domain",
+      "file": "projects/ivplot-pizza-fahrer.json",
+      "format": "json",
+      "modules": [
+        "individual-value-plot"
+      ],
+      "tags": [
+        "individual-value-plot",
+        "groups",
+        "pizza"
+      ]
+    },
+    {
+      "id": "hypothesis-5-filialen",
+      "type": "project",
+      "title": {
+        "de": "Reklamationen je Filiale (5-Stichproben-ANOVA, unbalanciert)",
+        "en": "Complaints by branch (5-sample ANOVA, unbalanced)"
+      },
+      "description": {
+        "de": "Reklamationen pro Tag in fünf Filialen A–E, Stichprobengrößen 8/10/12/15/9. Filiale D mit deutlich erhöhtem Mittelwert (6,2 vs. ~5,0) — post-hoc-Vergleiche heben D von den übrigen ab.",
+        "en": "Complaints per day across five branches A–E, sample sizes 8/10/12/15/9. Branch D has a clearly elevated mean (6.2 vs. ~5.0) — post-hoc comparisons separate D from the rest."
+      },
+      "source": "DMAIC.io synthetisch, NumPy default_rng, Seed=802",
+      "license": "public-domain",
+      "file": "projects/hypothesis-5-filialen.json",
+      "format": "json",
+      "modules": [
+        "hypothesis-test"
+      ],
+      "tags": [
+        "hypothesis",
+        "anova",
+        "k-sample",
+        "unbalanced"
+      ]
+    },
+    {
+      "id": "outlier-bolzen-grubbs",
+      "type": "project",
+      "title": {
+        "de": "Bolzendurchmesser mit Ausreißern (Grubbs)",
+        "en": "Bolt diameter with outliers (Grubbs)"
+      },
+      "description": {
+        "de": "30 Bolzendurchmesser aus N(10,000; 0,050) mit zwei eingebauten Ausreißern bei 9,745 und 10,260 (≈ ±5σ). Grubbs (zweiseitig), Generalized ESD und Tukey-IQR sollten beide markieren.",
+        "en": "30 bolt diameters from N(10.000, 0.050) with two seeded outliers at 9.745 and 10.260 (≈ ±5σ). Grubbs (two-sided), generalized ESD and Tukey IQR should flag both."
+      },
+      "source": "DMAIC.io synthetisch, NumPy default_rng, Seed=803",
+      "license": "public-domain",
+      "file": "projects/outlier-bolzen-grubbs.json",
+      "format": "json",
+      "modules": [
+        "outlier-test",
+        "histogram"
+      ],
+      "tags": [
+        "outlier",
+        "grubbs",
+        "esd",
+        "tukey"
+      ]
+    },
+    {
+      "id": "pairwise-projektauswahl",
+      "type": "project",
+      "title": {
+        "de": "Projektauswahl-Kriterien",
+        "en": "Project selection criteria"
+      },
+      "description": {
+        "de": "Vorgefüllte Kriterien für die Projektauswahl im Pizza-Lieferprozess: Lieferzeit, Pizzaqualität, Preis, Mitarbeiterzufriedenheit, Reklamationsquote. Vergleiche werden im Modul selbst durchgeführt.",
+        "en": "Pre-filled criteria for project selection in the pizza-delivery process: delivery time, pizza quality, price, employee satisfaction, complaint rate. Pairwise comparisons are run inside the module."
+      },
+      "source": "DMAIC.io Lehrkonfiguration",
+      "license": "public-domain",
+      "file": "projects/pairwise-projektauswahl.json",
+      "format": "json",
+      "modules": [
+        "pairwise-comparison"
+      ],
+      "tags": [
+        "pairwise",
+        "ahp",
+        "project-selection"
+      ]
+    },
+    {
+      "id": "distfit-normal",
+      "type": "project",
+      "title": {
+        "de": "Normalverteilung anpassen",
+        "en": "Fit normal distribution"
+      },
+      "description": {
+        "de": "80 Werte aus N(μ=10, σ=2) — sauberer Lehrcase einer Normalverteilung. Shapiro-Wilk / Anderson-Darling sollten H₀ nicht ablehnen.",
+        "en": "80 values from N(μ=10, σ=2) — clean textbook normal distribution. Shapiro-Wilk / Anderson-Darling should not reject H₀."
+      },
+      "source": "DMAIC.io synthetisch, NumPy default_rng, Seed=901",
+      "license": "public-domain",
+      "file": "projects/distfit-normal.json",
+      "format": "json",
+      "modules": [
+        "distribution-fit",
+        "histogram"
+      ],
+      "tags": [
+        "distribution-fit",
+        "normal",
+        "continuous"
+      ]
+    },
+    {
+      "id": "distfit-weibull",
+      "type": "project",
+      "title": {
+        "de": "Weibull-Lebensdauern anpassen",
+        "en": "Fit Weibull lifetimes"
+      },
+      "description": {
+        "de": "80 Bauteil-Lebensdauern aus Weibull(k=2,5; λ=100 h). Klassischer Verschleißfall (β > 1); Weibull sollte als beste Anpassung gelistet werden.",
+        "en": "80 component lifetimes from Weibull(k=2.5, λ=100 h). Classic wear-out case (β > 1); Weibull should rank as best fit."
+      },
+      "source": "DMAIC.io synthetisch, NumPy default_rng, Seed=902",
+      "license": "public-domain",
+      "file": "projects/distfit-weibull.json",
+      "format": "json",
+      "modules": [
+        "distribution-fit",
+        "histogram"
+      ],
+      "tags": [
+        "distribution-fit",
+        "weibull",
+        "reliability",
+        "lifetime"
+      ]
+    },
+    {
+      "id": "distfit-lognormal",
+      "type": "project",
+      "title": {
+        "de": "Lognormale Zykluszeiten anpassen",
+        "en": "Fit lognormal cycle times"
+      },
+      "description": {
+        "de": "80 Zykluszeiten aus Lognormal(μ_log=ln 5; σ_log=0,6) — stark rechtsschief. Distribution-fit sollte Lognormal an die Spitze setzen.",
+        "en": "80 cycle times from Lognormal(μ_log=ln 5, σ_log=0.6) — strongly right-skewed. Distribution-fit should rank lognormal first."
+      },
+      "source": "DMAIC.io synthetisch, NumPy default_rng, Seed=903",
+      "license": "public-domain",
+      "file": "projects/distfit-lognormal.json",
+      "format": "json",
+      "modules": [
+        "distribution-fit",
+        "histogram"
+      ],
+      "tags": [
+        "distribution-fit",
+        "lognormal",
+        "skewed"
+      ]
+    },
+    {
+      "id": "distfit-exponential",
+      "type": "project",
+      "title": {
+        "de": "Exponentielle Wartezeiten anpassen",
+        "en": "Fit exponential waiting times"
+      },
+      "description": {
+        "de": "80 Wartezeiten aus Exponential(μ=15 min) — gedächtnislose Verteilung. Exponential und Gamma stehen an der Spitze der Anpassung.",
+        "en": "80 waiting times from Exponential(μ=15 min) — memoryless distribution. Exponential and gamma rank highest."
+      },
+      "source": "DMAIC.io synthetisch, NumPy default_rng, Seed=904",
+      "license": "public-domain",
+      "file": "projects/distfit-exponential.json",
+      "format": "json",
+      "modules": [
+        "distribution-fit",
+        "histogram"
+      ],
+      "tags": [
+        "distribution-fit",
+        "exponential",
+        "waiting-time"
+      ]
+    },
+    {
+      "id": "probplot-normal",
+      "type": "project",
+      "title": {
+        "de": "Q-Q-Plot: Normalverteilung",
+        "en": "Q-Q plot: normal distribution"
+      },
+      "description": {
+        "de": "80 normalverteilte Werte aus N(μ=10, σ=2) — Lehrbuch-Wahrscheinlichkeitsnetz, alle Punkte folgen der Referenzgerade.",
+        "en": "80 normal values from N(μ=10, σ=2) — textbook probability plot with points following the reference line."
+      },
+      "source": "DMAIC.io synthetisch, NumPy default_rng, Seed=901",
+      "license": "public-domain",
+      "file": "projects/probplot-normal.json",
+      "format": "json",
+      "modules": [
+        "probability-plot"
+      ],
+      "tags": [
+        "probability-plot",
+        "normal",
+        "q-q"
+      ]
+    },
+    {
+      "id": "probplot-weibull",
+      "type": "project",
+      "title": {
+        "de": "Q-Q-Plot: Weibull-Lebensdauern",
+        "en": "Q-Q plot: Weibull lifetimes"
+      },
+      "description": {
+        "de": "80 Weibull(k=2,5)-Lebensdauern auf dem Normalverteilungs-Wahrscheinlichkeitsnetz — sichtbare Krümmung in den Schwanzbereichen.",
+        "en": "80 Weibull(k=2.5) lifetimes on the normal probability plot — visible curvature in the tails."
+      },
+      "source": "DMAIC.io synthetisch, NumPy default_rng, Seed=902",
+      "license": "public-domain",
+      "file": "projects/probplot-weibull.json",
+      "format": "json",
+      "modules": [
+        "probability-plot"
+      ],
+      "tags": [
+        "probability-plot",
+        "weibull",
+        "non-normal"
+      ]
+    },
+    {
+      "id": "transform-lognormal-boxcox",
+      "type": "project",
+      "title": {
+        "de": "Box-Cox-Transformation: Lognormale Zykluszeiten",
+        "en": "Box-Cox transformation: lognormal cycle times"
+      },
+      "description": {
+        "de": "80 stark rechtsschiefe Lognormal-Zykluszeiten. Mit Box-Cox (optimales λ ≈ 0) werden die Werte annähernd normalverteilt.",
+        "en": "80 strongly right-skewed lognormal cycle times. Box-Cox (optimal λ ≈ 0) makes the values approximately normal."
+      },
+      "source": "DMAIC.io synthetisch, NumPy default_rng, Seed=903",
+      "license": "public-domain",
+      "file": "projects/transform-lognormal-boxcox.json",
+      "format": "json",
+      "modules": [
+        "data-transformation"
+      ],
+      "tags": [
+        "data-transformation",
+        "box-cox",
+        "lognormal"
+      ]
+    },
+    {
+      "id": "charter-pizza-lieferzeit",
+      "type": "project",
+      "title": {
+        "de": "Pizza-Lieferzeit (Project Charter)",
+        "en": "Pizza Delivery Time (Project Charter)"
+      },
+      "description": {
+        "de": "Lehrcase „Bella Margherita\": Lieferzeiten zu lang, Reklamationen wegen kalter Pizza steigend. Vorbefüllt mit Problemstellung, drei messbaren Zielen und Org-Chart des Projektteams.",
+        "en": "Teaching case 'Bella Margherita': delivery times too long, cold-pizza complaints rising. Pre-filled with problem statement, three measurable goals, and the project-team org chart."
+      },
+      "source": "DMAIC.io Lehrkonfiguration",
+      "license": "public-domain",
+      "file": "projects/charter-pizza-lieferzeit.json",
+      "format": "json",
+      "modules": [
+        "project-charter"
+      ],
+      "tags": [
+        "define",
+        "charter",
+        "pizza-lehrcase"
+      ]
+    },
+    {
+      "id": "sipoc-pizza-lieferprozess",
+      "type": "project",
+      "title": {
+        "de": "Pizza-Lieferprozess (SIPOC)",
+        "en": "Pizza Delivery (SIPOC)"
+      },
+      "description": {
+        "de": "Suppliers, Inputs, Process, Outputs, Customers für den Bella-Margherita-Lieferprozess — 8 Prozessschritte von Bestellannahme bis Übergabe.",
+        "en": "Suppliers, Inputs, Process, Outputs, Customers for the Bella Margherita delivery process — 8 process steps from order intake to handover."
+      },
+      "source": "DMAIC.io Lehrkonfiguration",
+      "license": "public-domain",
+      "file": "projects/sipoc-pizza-lieferprozess.json",
+      "format": "json",
+      "modules": [
+        "sipoc"
+      ],
+      "tags": [
+        "define",
+        "sipoc",
+        "pizza-lehrcase"
+      ]
+    },
+    {
+      "id": "ce-matrix-pizza-lieferzeit",
+      "type": "project",
+      "title": {
+        "de": "C&E-Matrix Pizza-Lieferzeit",
+        "en": "C&E Matrix Pizza Delivery"
+      },
+      "description": {
+        "de": "Inputs (Routenplanung, Ofen, Verkehr, …) gegen Outputs (Lieferzeit, Temperatur, Reklamationsquote) — gewichtete 0–9-Bewertung der Zusammenhänge.",
+        "en": "Inputs (routing, oven, traffic, …) versus outputs (delivery time, temperature, complaint rate) — weighted 0–9 ratings of the dependencies."
+      },
+      "source": "DMAIC.io Lehrkonfiguration",
+      "license": "public-domain",
+      "file": "projects/ce-matrix-pizza-lieferzeit.json",
+      "format": "json",
+      "modules": [
+        "ce-matrix"
+      ],
+      "tags": [
+        "measure",
+        "ce-matrix",
+        "pizza-lehrcase"
+      ]
+    },
+    {
+      "id": "fmea-pizza-lieferprozess",
+      "type": "project",
+      "title": {
+        "de": "FMEA Pizza-Lieferprozess",
+        "en": "FMEA Pizza Delivery"
+      },
+      "description": {
+        "de": "4 Risiken entlang des Lieferprozesses (Adress-Erfassung, Ofen-Überlastung, Thermo-Verpackung, Verkehrsstau) mit S/O/D-Bewertung und Maßnahmen-Plan.",
+        "en": "4 risks along the delivery process (address entry, oven overload, thermal packaging, traffic) with S/O/D ratings and action plan."
+      },
+      "source": "DMAIC.io Lehrkonfiguration",
+      "license": "public-domain",
+      "file": "projects/fmea-pizza-lieferprozess.json",
+      "format": "json",
+      "modules": [
+        "fmea"
+      ],
+      "tags": [
+        "analyze",
+        "fmea",
+        "pizza-lehrcase"
+      ]
+    },
+    {
+      "id": "ishikawa-lieferzeit-zu-lang",
+      "type": "project",
+      "title": {
+        "de": "Ishikawa: Lieferzeit zu lang",
+        "en": "Ishikawa: Delivery Time Too Long"
+      },
+      "description": {
+        "de": "6-M-Ursachenanalyse mit 6 Hypothesen quer durch die Kategorien Mensch, Methode, Maschine, Material, Milieu, Messung. Bewertet von drei Experten.",
+        "en": "6-M cause analysis with 6 hypotheses across Man, Method, Machine, Material, Environment, Measurement. Rated by three experts."
+      },
+      "source": "DMAIC.io Lehrkonfiguration",
+      "license": "public-domain",
+      "file": "projects/ishikawa-lieferzeit-zu-lang.json",
+      "format": "json",
+      "modules": [
+        "ishikawa"
+      ],
+      "tags": [
+        "analyze",
+        "ishikawa",
+        "6m",
+        "pizza-lehrcase"
+      ]
+    },
+    {
+      "id": "five-why-lieferzeit",
+      "type": "project",
+      "title": {
+        "de": "5 Why: Lieferzeit > 30 min",
+        "en": "5 Why: Delivery Time > 30 min"
+      },
+      "description": {
+        "de": "5-Why-Kette vom Symptom „Pizza kommt zu spät\" bis zur Grundursache „Bestellsystem ohne Logistikfunktion\".",
+        "en": "5-Why chain from symptom 'pizza arrives late' down to root cause 'order system without logistics function'."
+      },
+      "source": "DMAIC.io Lehrkonfiguration",
+      "license": "public-domain",
+      "file": "projects/five-why-lieferzeit.json",
+      "format": "json",
+      "modules": [
+        "five-why"
+      ],
+      "tags": [
+        "analyze",
+        "five-why",
+        "root-cause",
+        "pizza-lehrcase"
+      ]
+    },
+    {
+      "id": "process-map-pizza-lieferung",
+      "type": "project",
+      "title": {
+        "de": "Process Map Pizza-Lieferung",
+        "en": "Process Map Pizza Delivery"
+      },
+      "description": {
+        "de": "8 Prozessschritte mit Value-Type-Klassifikation (VA / BNVA). Bestellung → Küche → Backen → Verpacken → Auslieferung → Übergabe.",
+        "en": "8 process steps with value-type classification (VA / BNVA). Order → kitchen → bake → pack → deliver → handover."
+      },
+      "source": "DMAIC.io Lehrkonfiguration",
+      "license": "public-domain",
+      "file": "projects/process-map-pizza-lieferung.json",
+      "format": "json",
+      "modules": [
+        "process-map"
+      ],
+      "tags": [
+        "measure",
+        "process-map",
+        "value-stream",
+        "pizza-lehrcase"
+      ]
+    },
+    {
+      "id": "raci-pizza-lieferprozess",
+      "type": "project",
+      "title": {
+        "de": "RACI Pizza-Lieferprozess",
+        "en": "RACI Pizza Delivery"
+      },
+      "description": {
+        "de": "RACI-Matrix für 8 Aktivitäten × 6 Rollen — wer ist R(esponsible), A(ccountable), C(onsulted), I(nformed)?",
+        "en": "RACI matrix for 8 activities × 6 roles — who is R(esponsible), A(ccountable), C(onsulted), I(nformed)?"
+      },
+      "source": "DMAIC.io Lehrkonfiguration",
+      "license": "public-domain",
+      "file": "projects/raci-pizza-lieferprozess.json",
+      "format": "json",
+      "modules": [
+        "raci-matrix"
+      ],
+      "tags": [
+        "define",
+        "raci",
+        "roles",
+        "pizza-lehrcase"
+      ]
+    },
+    {
+      "id": "stakeholders-pizza-lieferung",
+      "type": "project",
+      "title": {
+        "de": "Stakeholder-Analyse Pizza-Projekt",
+        "en": "Stakeholder Analysis Pizza Project"
+      },
+      "description": {
+        "de": "7 Stakeholder von Geschäftsführerin bis Buchhaltung mit Macht/Interesse-Skalen und Support-Haltung (Supporter / Neutral / Resistor).",
+        "en": "7 stakeholders from CEO to accounting with power/interest ratings and support attitude (supporter / neutral / resistor)."
+      },
+      "source": "DMAIC.io Lehrkonfiguration",
+      "license": "public-domain",
+      "file": "projects/stakeholders-pizza-lieferung.json",
+      "format": "json",
+      "modules": [
+        "stakeholder-analysis"
+      ],
+      "tags": [
+        "define",
+        "stakeholder",
+        "pizza-lehrcase"
+      ]
+    },
+    {
+      "id": "voc-ctx-pizza-lieferung",
+      "type": "project",
+      "title": {
+        "de": "VoC → CTQ Pizza-Lieferung",
+        "en": "VoC → CTQ Pizza Delivery"
+      },
+      "description": {
+        "de": "3 Voice-of-Customer-Aussagen (kalte Pizza, lange Lieferzeit, Adressprobleme) übersetzt in CTQs mit messbaren Anforderungen.",
+        "en": "3 Voice-of-Customer quotes (cold pizza, long delivery, address issues) translated into CTQs with measurable requirements."
+      },
+      "source": "DMAIC.io Lehrkonfiguration",
+      "license": "public-domain",
+      "file": "projects/voc-ctx-pizza-lieferung.json",
+      "format": "json",
+      "modules": [
+        "voc-ctx-tree"
+      ],
+      "tags": [
+        "define",
+        "voc",
+        "ctq",
+        "pizza-lehrcase"
+      ]
+    },
+    {
+      "id": "lessons-pizza-pilotprojekt",
+      "type": "project",
+      "title": {
+        "de": "Lessons Learned Pizza-Pilotprojekt",
+        "en": "Lessons Learned Pizza Pilot"
+      },
+      "description": {
+        "de": "4 Lessons aus dem Pilot: Vorab-Routenplanung (Erfolg), Doppelwand-Thermo-Boxen (Erfolg), Wochenstart-Standup (Verbesserung), Bestellannahme als Engpass (Problem).",
+        "en": "4 lessons from the pilot: pre-route planning (success), double-wall thermal boxes (success), Monday standup (improvement), order intake bottleneck (problem)."
+      },
+      "source": "DMAIC.io Lehrkonfiguration",
+      "license": "public-domain",
+      "file": "projects/lessons-pizza-pilotprojekt.json",
+      "format": "json",
+      "modules": [
+        "lessons-learned"
+      ],
+      "tags": [
+        "control",
+        "lessons-learned",
+        "pizza-lehrcase"
+      ]
+    },
+    {
+      "id": "triz-contradiction-speed-vs-productivity",
+      "type": "project",
+      "title": {
+        "de": "TRIZ-Konflikt: Speed vs. Productivity",
+        "en": "TRIZ Contradiction: Speed vs. Productivity"
+      },
+      "description": {
+        "de": "Klassischer TRIZ-Konflikt aus dem Pizza-Lehrcase: schneller liefern, ohne Produktivität zu opfern. Improving = 9 (Speed), worsening = 39 (Productivity).",
+        "en": "Classic TRIZ contradiction from the pizza case: deliver faster without sacrificing productivity. Improving = 9 (Speed), worsening = 39 (Productivity)."
+      },
+      "source": "DMAIC.io Lehrkonfiguration",
+      "license": "public-domain",
+      "file": "projects/triz-contradiction-speed-vs-productivity.json",
+      "format": "json",
+      "modules": [
+        "triz-contradiction-matrix"
+      ],
+      "tags": [
+        "improve",
+        "triz",
+        "contradiction",
+        "pizza-lehrcase"
+      ]
+    },
+    {
+      "id": "triz-9windows-pizza-lieferung",
+      "type": "project",
+      "title": {
+        "de": "TRIZ 9 Windows Pizza-Lieferung",
+        "en": "TRIZ 9 Windows Pizza Delivery"
+      },
+      "description": {
+        "de": "3×3 Matrix Subsystem/System/Übersystem × Vergangenheit/Gegenwart/Zukunft — angewandt auf den Pizza-Lieferprozess.",
+        "en": "3×3 matrix Sub-/System/Super-system × Past/Present/Future — applied to the pizza delivery process."
+      },
+      "source": "DMAIC.io Lehrkonfiguration",
+      "license": "public-domain",
+      "file": "projects/triz-9windows-pizza-lieferung.json",
+      "format": "json",
+      "modules": [
+        "triz-9-windows"
+      ],
+      "tags": [
+        "improve",
+        "triz",
+        "9-windows",
+        "pizza-lehrcase"
+      ]
+    },
+    {
+      "id": "worksheet-hypothesis-pizza-fahrer",
+      "type": "project",
+      "title": {
+        "de": "Worksheet: Lieferzeit pro Fahrer",
+        "en": "Worksheet: Delivery time by driver"
+      },
+      "description": {
+        "de": "Wide-Format-Worksheet mit drei Spalten Fahrer_A/B/C, je 15 Lieferzeit-Messungen. Quelldaten für ANOVA-, Boxplot- und Einzelwertdiagramm-Beispiele.",
+        "en": "Wide-format worksheet with three columns Fahrer_A/B/C, 15 delivery times each. Source data for the ANOVA, boxplot and individual-value-plot examples."
+      },
+      "source": "DMAIC.io synthetisch, NumPy default_rng, Seed=801",
+      "license": "public-domain",
+      "file": "worksheets/hypothesis-pizza-fahrer.json",
+      "format": "json",
+      "modules": [
+        "worksheet"
+      ],
+      "tags": [
+        "worksheet",
+        "groups",
+        "pizza"
+      ]
+    },
+    {
+      "id": "worksheet-hypothesis-5-filialen",
+      "type": "project",
+      "title": {
+        "de": "Worksheet: Reklamationen je Filiale (unbalanciert)",
+        "en": "Worksheet: Complaints by branch (unbalanced)"
+      },
+      "description": {
+        "de": "Wide-Format-Worksheet mit fünf Filial-Spalten, Stichprobengrößen 8/10/12/15/9. Lehrcase für ungleiche Gruppen.",
+        "en": "Wide-format worksheet with five branch columns, sample sizes 8/10/12/15/9. Teaching case for unequal-group designs."
+      },
+      "source": "DMAIC.io synthetisch, NumPy default_rng, Seed=802",
+      "license": "public-domain",
+      "file": "worksheets/hypothesis-5-filialen.json",
+      "format": "json",
+      "modules": [
+        "worksheet"
+      ],
+      "tags": [
+        "worksheet",
+        "groups",
+        "unbalanced"
+      ]
+    },
+    {
+      "id": "worksheet-outlier-bolzen-grubbs",
+      "type": "project",
+      "title": {
+        "de": "Worksheet: Bolzendurchmesser mit Ausreißern",
+        "en": "Worksheet: Bolt diameter with outliers"
+      },
+      "description": {
+        "de": "30 Bolzendurchmesser-Messungen mit zwei eingebauten Ausreißern. Quelldaten für den Outlier-Test.",
+        "en": "30 bolt-diameter measurements with two seeded outliers. Source data for the outlier test."
+      },
+      "source": "DMAIC.io synthetisch, NumPy default_rng, Seed=803",
+      "license": "public-domain",
+      "file": "worksheets/outlier-bolzen-grubbs.json",
+      "format": "json",
+      "modules": [
+        "worksheet"
+      ],
+      "tags": [
+        "worksheet",
+        "outliers"
+      ]
+    },
+    {
+      "id": "worksheet-distribution-normal",
+      "type": "project",
+      "title": {
+        "de": "Worksheet: Normalverteilte Messwerte",
+        "en": "Worksheet: Normal measurements"
+      },
+      "description": {
+        "de": "80 normalverteilte Messwerte. Quelldaten für Distribution-Fit- und Q-Q-Plot-Beispiele.",
+        "en": "80 normally distributed measurements. Source data for the distribution-fit and Q-Q-plot examples."
+      },
+      "source": "DMAIC.io synthetisch, NumPy default_rng, Seed=901",
+      "license": "public-domain",
+      "file": "worksheets/distribution-normal.json",
+      "format": "json",
+      "modules": [
+        "worksheet"
+      ],
+      "tags": [
+        "worksheet",
+        "normal"
+      ]
+    },
+    {
+      "id": "worksheet-distribution-weibull",
+      "type": "project",
+      "title": {
+        "de": "Worksheet: Weibull-Lebensdauern",
+        "en": "Worksheet: Weibull lifetimes"
+      },
+      "description": {
+        "de": "80 Bauteil-Lebensdauern aus Weibull(2,5; 100). Quelldaten für Distribution-Fit und Q-Q-Plot.",
+        "en": "80 component lifetimes from Weibull(2.5, 100). Source data for distribution-fit and Q-Q-plot."
+      },
+      "source": "DMAIC.io synthetisch, NumPy default_rng, Seed=902",
+      "license": "public-domain",
+      "file": "worksheets/distribution-weibull.json",
+      "format": "json",
+      "modules": [
+        "worksheet"
+      ],
+      "tags": [
+        "worksheet",
+        "weibull",
+        "lifetime"
+      ]
+    },
+    {
+      "id": "worksheet-distribution-lognormal",
+      "type": "project",
+      "title": {
+        "de": "Worksheet: Lognormale Zykluszeiten",
+        "en": "Worksheet: Lognormal cycle times"
+      },
+      "description": {
+        "de": "80 Zykluszeiten aus Lognormal. Quelldaten für Distribution-Fit und Box-Cox-Transformation.",
+        "en": "80 cycle times from lognormal distribution. Source data for distribution-fit and Box-Cox transformation."
+      },
+      "source": "DMAIC.io synthetisch, NumPy default_rng, Seed=903",
+      "license": "public-domain",
+      "file": "worksheets/distribution-lognormal.json",
+      "format": "json",
+      "modules": [
+        "worksheet"
+      ],
+      "tags": [
+        "worksheet",
+        "lognormal",
+        "skewed"
+      ]
+    },
+    {
+      "id": "worksheet-distribution-exponential",
+      "type": "project",
+      "title": {
+        "de": "Worksheet: Exponentielle Wartezeiten",
+        "en": "Worksheet: Exponential waiting times"
+      },
+      "description": {
+        "de": "80 Wartezeiten aus Exponential(15 min). Quelldaten für Distribution-Fit.",
+        "en": "80 waiting times from Exponential(15 min). Source data for distribution-fit."
+      },
+      "source": "DMAIC.io synthetisch, NumPy default_rng, Seed=904",
+      "license": "public-domain",
+      "file": "worksheets/distribution-exponential.json",
+      "format": "json",
+      "modules": [
+        "worksheet"
+      ],
+      "tags": [
+        "worksheet",
+        "exponential"
+      ]
+    },
+    {
+      "id": "worksheet-spc-subgroups-stable",
+      "type": "project",
+      "title": {
+        "de": "Worksheet: SPC stabile Subgroups",
+        "en": "Worksheet: SPC stable subgroups"
+      },
+      "description": {
+        "de": "125 Werte (25 Subgroups × 5 Messungen) aus N(10, 0,05). Quelldaten für X-bar/R-Karten.",
+        "en": "125 values (25 subgroups × 5 measurements) from N(10, 0.05). Source data for X-bar/R charts."
+      },
+      "source": "DMAIC.io synthetisch, NumPy default_rng, Seed=501",
+      "license": "public-domain",
+      "file": "worksheets/spc-subgroups-stable.json",
+      "format": "json",
+      "modules": [
+        "worksheet"
+      ],
+      "tags": [
+        "worksheet",
+        "spc",
+        "subgroups"
+      ]
+    },
+    {
+      "id": "worksheet-spc-imr-shift",
+      "type": "project",
+      "title": {
+        "de": "Worksheet: I-MR mit Shift",
+        "en": "Worksheet: I-MR with shift"
+      },
+      "description": {
+        "de": "50 Werte mit Shift bei Beobachtung 30 — von μ=10 auf μ=10,18.",
+        "en": "50 values with shift at observation 30 — μ moves from 10 to 10.18."
+      },
+      "source": "DMAIC.io synthetisch, NumPy default_rng, Seed=502",
+      "license": "public-domain",
+      "file": "worksheets/spc-imr-shift.json",
+      "format": "json",
+      "modules": [
+        "worksheet"
+      ],
+      "tags": [
+        "worksheet",
+        "spc",
+        "shift"
+      ]
+    },
+    {
+      "id": "worksheet-spc-imr-trend",
+      "type": "project",
+      "title": {
+        "de": "Worksheet: I-MR mit Trend",
+        "en": "Worksheet: I-MR with trend"
+      },
+      "description": {
+        "de": "50 Werte mit linearem Drift von 0 auf 0,6 über die Beobachtungsspanne.",
+        "en": "50 values with linear drift from 0 to 0.6 across the observation span."
+      },
+      "source": "DMAIC.io synthetisch, NumPy default_rng, Seed=503",
+      "license": "public-domain",
+      "file": "worksheets/spc-imr-trend.json",
+      "format": "json",
+      "modules": [
+        "worksheet"
+      ],
+      "tags": [
+        "worksheet",
+        "spc",
+        "trend"
+      ]
+    },
+    {
+      "id": "worksheet-spc-attribute-p-defects",
+      "type": "project",
+      "title": {
+        "de": "Worksheet: Attribut-Defekte (variable Stichprobe)",
+        "en": "Worksheet: Attribute defects (variable sample)"
+      },
+      "description": {
+        "de": "30 Inspektionsserien mit variabler Stichprobe + Defektzählungen. Quelldaten für p-/u-Karten.",
+        "en": "30 inspection lots with variable sample size + defect counts. Source data for p/u charts."
+      },
+      "source": "DMAIC.io synthetisch, NumPy default_rng, Seed=701",
+      "license": "public-domain",
+      "file": "worksheets/spc-attribute-p-defects.json",
+      "format": "json",
+      "modules": [
+        "worksheet"
+      ],
+      "tags": [
+        "worksheet",
+        "spc",
+        "attribute"
+      ]
+    },
+    {
+      "id": "worksheet-spc-attribute-c-defects",
+      "type": "project",
+      "title": {
+        "de": "Worksheet: Attribut-Defekte (konstante Einheit)",
+        "en": "Worksheet: Attribute defects (constant unit)"
+      },
+      "description": {
+        "de": "30 Inspektionseinheiten konstanter Größe + Defektzählungen. Quelldaten für c-/np-Karten.",
+        "en": "30 inspection units of constant size + defect counts. Source data for c/np charts."
+      },
+      "source": "DMAIC.io synthetisch, NumPy default_rng, Seed=702",
+      "license": "public-domain",
+      "file": "worksheets/spc-attribute-c-defects.json",
+      "format": "json",
+      "modules": [
+        "worksheet"
+      ],
+      "tags": [
+        "worksheet",
+        "spc",
+        "attribute"
+      ]
+    },
+    {
+      "id": "worksheet-spc-time-weighted-drift",
+      "type": "project",
+      "title": {
+        "de": "Worksheet: EWMA-Drift",
+        "en": "Worksheet: EWMA drift"
+      },
+      "description": {
+        "de": "60 Beobachtungen mit kleinem Mittelwert-Drift (≈ 1σ) ab Beobachtung 30.",
+        "en": "60 observations with small mean drift (≈ 1σ) starting at observation 30."
+      },
+      "source": "DMAIC.io synthetisch, NumPy default_rng, Seed=703",
+      "license": "public-domain",
+      "file": "worksheets/spc-time-weighted-drift.json",
+      "format": "json",
+      "modules": [
+        "worksheet"
+      ],
+      "tags": [
+        "worksheet",
+        "spc",
+        "drift"
+      ]
+    },
+    {
+      "id": "worksheet-spc-rare-event-days",
+      "type": "project",
+      "title": {
+        "de": "Worksheet: Tage zwischen seltenen Ereignissen",
+        "en": "Worksheet: Days between rare events"
+      },
+      "description": {
+        "de": "25 Intervalle aus Exponential — mit Cluster erhöhter Rate. Quelldaten für t-/g-Karten.",
+        "en": "25 intervals from exponential — with cluster of elevated rate. Source data for t/g charts."
+      },
+      "source": "DMAIC.io synthetisch, NumPy default_rng, Seed=704",
+      "license": "public-domain",
+      "file": "worksheets/spc-rare-event-days.json",
+      "format": "json",
+      "modules": [
+        "worksheet"
+      ],
+      "tags": [
+        "worksheet",
+        "spc",
+        "rare-event"
+      ]
+    },
+    {
+      "id": "worksheet-spc-multivariate-correlated",
+      "type": "project",
+      "title": {
+        "de": "Worksheet: Multivariate korrelierte Daten",
+        "en": "Worksheet: Multivariate correlated data"
+      },
+      "description": {
+        "de": "40 bivariate Beobachtungen mit ρ ≈ 0,85 und zwei multivariaten Outliern. Quelldaten für T²-Karten.",
+        "en": "40 bivariate observations with ρ ≈ 0.85 and two multivariate outliers. Source data for T² charts."
+      },
+      "source": "DMAIC.io synthetisch, NumPy default_rng, Seed=705",
+      "license": "public-domain",
+      "file": "worksheets/spc-multivariate-correlated.json",
+      "format": "json",
+      "modules": [
+        "worksheet"
+      ],
+      "tags": [
+        "worksheet",
+        "spc",
+        "multivariate"
+      ]
+    },
+    {
+      "id": "worksheet-spc-short-run-setups",
+      "type": "project",
+      "title": {
+        "de": "Worksheet: Short-Run Setups",
+        "en": "Worksheet: Short-run setups"
+      },
+      "description": {
+        "de": "Drei kurze Setups (je 8 Messungen) mit unterschiedlichen Mittelwerten. Quelldaten für Z-MR-Karten.",
+        "en": "Three short setups (8 measurements each) with different means. Source data for Z-MR charts."
+      },
+      "source": "DMAIC.io synthetisch, NumPy default_rng, Seed=706",
+      "license": "public-domain",
+      "file": "worksheets/spc-short-run-setups.json",
+      "format": "json",
+      "modules": [
+        "worksheet"
+      ],
+      "tags": [
+        "worksheet",
+        "spc",
+        "short-run"
+      ]
+    },
+    {
+      "id": "worksheet-spc-transformed-lognormal",
+      "type": "project",
+      "title": {
+        "de": "Worksheet: Lognormale Standzeiten",
+        "en": "Worksheet: Lognormal lifetimes"
+      },
+      "description": {
+        "de": "50 lognormal-verteilte Standzeiten — Box-Cox-Kandidat für Transformed I-MR.",
+        "en": "50 lognormally distributed lifetimes — Box-Cox candidate for transformed I-MR."
+      },
+      "source": "DMAIC.io synthetisch, NumPy default_rng, Seed=707",
+      "license": "public-domain",
+      "file": "worksheets/spc-transformed-lognormal.json",
+      "format": "json",
+      "modules": [
+        "worksheet"
+      ],
+      "tags": [
+        "worksheet",
+        "spc",
+        "lognormal"
+      ]
+    },
+    {
+      "id": "worksheet-msa-typ1-faehig",
+      "type": "project",
+      "title": {
+        "de": "Worksheet: MSA Typ 1 (fähig)",
+        "en": "Worksheet: MSA Type 1 (capable)"
+      },
+      "description": {
+        "de": "25 Wiederholmessungen einer Referenz, fähig (Cg ≈ 2,2).",
+        "en": "25 repeated measurements of a reference, capable (Cg ≈ 2.2)."
+      },
+      "source": "DMAIC.io synthetisch, NumPy default_rng, Seed=601",
+      "license": "public-domain",
+      "file": "worksheets/msa-typ1-faehig.json",
+      "format": "json",
+      "modules": [
+        "worksheet"
+      ],
+      "tags": [
+        "worksheet",
+        "msa",
+        "typ1"
+      ]
+    },
+    {
+      "id": "worksheet-msa-typ1-grenzwertig",
+      "type": "project",
+      "title": {
+        "de": "Worksheet: MSA Typ 1 (grenzwertig)",
+        "en": "Worksheet: MSA Type 1 (marginal)"
+      },
+      "description": {
+        "de": "25 Wiederholmessungen, grenzwertig (Cg ≈ 0,95).",
+        "en": "25 repeated measurements, marginal (Cg ≈ 0.95)."
+      },
+      "source": "DMAIC.io synthetisch, NumPy default_rng, Seed=602",
+      "license": "public-domain",
+      "file": "worksheets/msa-typ1-grenzwertig.json",
+      "format": "json",
+      "modules": [
+        "worksheet"
+      ],
+      "tags": [
+        "worksheet",
+        "msa",
+        "typ1"
+      ]
+    },
+    {
+      "id": "worksheet-msa-typ1-nicht-faehig",
+      "type": "project",
+      "title": {
+        "de": "Worksheet: MSA Typ 1 (nicht fähig)",
+        "en": "Worksheet: MSA Type 1 (not capable)"
+      },
+      "description": {
+        "de": "25 Wiederholmessungen, nicht fähig (Cg ≈ 0,37).",
+        "en": "25 repeated measurements, not capable (Cg ≈ 0.37)."
+      },
+      "source": "DMAIC.io synthetisch, NumPy default_rng, Seed=603",
+      "license": "public-domain",
+      "file": "worksheets/msa-typ1-nicht-faehig.json",
+      "format": "json",
+      "modules": [
+        "worksheet"
+      ],
+      "tags": [
+        "worksheet",
+        "msa",
+        "typ1"
+      ]
+    },
+    {
+      "id": "worksheet-msa-typ2-akzeptabel",
+      "type": "project",
+      "title": {
+        "de": "Worksheet: MSA Typ 2 (akzeptabel)",
+        "en": "Worksheet: MSA Type 2 (acceptable)"
+      },
+      "description": {
+        "de": "10 Teile × 3 Operatoren × 3 Replikate — akzeptable GRR (~6 %).",
+        "en": "10 parts × 3 operators × 3 replicates — acceptable GRR (~6 %)."
+      },
+      "source": "DMAIC.io synthetisch, NumPy default_rng, Seed=611",
+      "license": "public-domain",
+      "file": "worksheets/msa-typ2-akzeptabel.json",
+      "format": "json",
+      "modules": [
+        "worksheet"
+      ],
+      "tags": [
+        "worksheet",
+        "msa",
+        "typ2",
+        "grr"
+      ]
+    },
+    {
+      "id": "worksheet-msa-typ2-problematisch",
+      "type": "project",
+      "title": {
+        "de": "Worksheet: MSA Typ 2 (problematisch)",
+        "en": "Worksheet: MSA Type 2 (problematic)"
+      },
+      "description": {
+        "de": "10 Teile × 3 Operatoren × 3 Replikate — problematische GRR (~45 %).",
+        "en": "10 parts × 3 operators × 3 replicates — problematic GRR (~45 %)."
+      },
+      "source": "DMAIC.io synthetisch, NumPy default_rng, Seed=612",
+      "license": "public-domain",
+      "file": "worksheets/msa-typ2-problematisch.json",
+      "format": "json",
+      "modules": [
+        "worksheet"
+      ],
+      "tags": [
+        "worksheet",
+        "msa",
+        "typ2",
+        "grr"
+      ]
+    },
+    {
+      "id": "worksheet-regression-collinear",
+      "type": "project",
+      "title": {
+        "de": "Worksheet: Multikollinearität",
+        "en": "Worksheet: Multicollinearity"
+      },
+      "description": {
+        "de": "30 Motor-Versuche mit kollinearen Prädiktoren. Quelldaten für Regression mit VIF-Lehrfall.",
+        "en": "30 motor trials with collinear predictors. Source data for regression with VIF teaching case."
+      },
+      "source": "DMAIC.io synthetisch, NumPy default_rng, Seed=303",
+      "license": "public-domain",
+      "file": "worksheets/regression-collinear.json",
+      "format": "json",
+      "modules": [
+        "worksheet"
+      ],
+      "tags": [
+        "worksheet",
+        "regression",
+        "collinear"
+      ]
+    },
+    {
+      "id": "worksheet-regression-outliers",
+      "type": "project",
+      "title": {
+        "de": "Worksheet: Regression mit Ausreißern",
+        "en": "Worksheet: Regression with outliers"
+      },
+      "description": {
+        "de": "30 Datenpunkte mit zwei eingebauten Y-Outliern. Quelldaten für robuste Regression.",
+        "en": "30 data points with two seeded Y-outliers. Source data for robust regression."
+      },
+      "source": "DMAIC.io synthetisch, NumPy default_rng, Seed=404",
+      "license": "public-domain",
+      "file": "worksheets/regression-outliers.json",
+      "format": "json",
+      "modules": [
+        "worksheet"
+      ],
+      "tags": [
+        "worksheet",
+        "regression",
+        "outliers"
+      ]
     }
   ]
 }

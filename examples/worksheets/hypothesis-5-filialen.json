@@ -1,0 +1,130 @@
+{
+  "sheets": [
+    {
+      "id": "sheet-5-filialen",
+      "name": "5 Filialen Reklamationen",
+      "state": {
+        "columns": [
+          {
+            "id": "c-filiale-a",
+            "name": "Filiale_A",
+            "shortName": "A",
+            "type": "numeric",
+            "values": [
+              3.8806,
+              3.3642,
+              5.306,
+              4.8077,
+              2.9803,
+              4.4262,
+              4.4453,
+              4.9842,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null
+            ]
+          },
+          {
+            "id": "c-filiale-b",
+            "name": "Filiale_B",
+            "shortName": "B",
+            "type": "numeric",
+            "values": [
+              3.3449,
+              5.9104,
+              4.3727,
+              5.0122,
+              4.8252,
+              4.4479,
+              5.7389,
+              5.1111,
+              3.7752,
+              5.1902,
+              null,
+              null,
+              null,
+              null,
+              null
+            ]
+          },
+          {
+            "id": "c-filiale-c",
+            "name": "Filiale_C",
+            "shortName": "C",
+            "type": "numeric",
+            "values": [
+              6.107,
+              5.0188,
+              4.1353,
+              5.8259,
+              4.6637,
+              4.8626,
+              5.7743,
+              3.8119,
+              4.8878,
+              5.0329,
+              5.0091,
+              4.3397,
+              null,
+              null,
+              null
+            ]
+          },
+          {
+            "id": "c-filiale-d",
+            "name": "Filiale_D",
+            "shortName": "D",
+            "type": "numeric",
+            "values": [
+              5.0016,
+              4.4422,
+              6.5268,
+              6.6319,
+              6.6368,
+              5.8517,
+              6.1959,
+              6.3358,
+              6.264,
+              5.976,
+              6.7908,
+              7.4488,
+              8.4731,
+              6.7067,
+              6.9457
+            ]
+          },
+          {
+            "id": "c-filiale-e",
+            "name": "Filiale_E",
+            "shortName": "E",
+            "type": "numeric",
+            "values": [
+              4.6435,
+              5.4482,
+              4.4609,
+              4.1761,
+              6.7987,
+              5.3002,
+              4.5051,
+              4.8659,
+              6.0124,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null
+            ]
+          }
+        ],
+        "rowCount": 15
+      }
+    }
+  ],
+  "activeSheetId": "sheet-5-filialen",
+  "sheetCounter": 1
+}

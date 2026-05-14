@@ -1,0 +1,82 @@
+{
+  "problemStatement": "Lieferzeiten der Bella Margherita liegen seit Q3 im Schnitt bei 42 min (Ziel war 30 min). Reklamationsquote wegen kalter Pizza ist von 4 % auf 11 % gestiegen. Im Mittagsgeschäft und in den Abendspitzen treten regelmäßig Wartezeiten über 60 min auf.",
+  "goals": [
+    {
+      "id": "g1",
+      "description": "Lieferzeit für 95 % der Bestellungen unter 30 min senken",
+      "targetDate": "2026-09-30",
+      "metric": "Lieferzeit (min, 95-%-Quantil)",
+      "targetValue": "30",
+      "achievementLevel": 0
+    },
+    {
+      "id": "g2",
+      "description": "Pizza-Temperatur bei Übergabe mindestens 50 °C",
+      "targetDate": "2026-08-31",
+      "metric": "Pizza-Temperatur (°C)",
+      "targetValue": "50",
+      "achievementLevel": 0
+    },
+    {
+      "id": "g3",
+      "description": "Reklamationsquote auf < 5 % senken",
+      "targetDate": "2026-10-31",
+      "metric": "Reklamationsquote (%)",
+      "targetValue": "5",
+      "achievementLevel": 0
+    }
+  ],
+  "orgChart": [
+    {
+      "id": "n1",
+      "title": "Geschäftsführung",
+      "desc": "Eigentümerin S. Conti",
+      "pid": null
+    },
+    {
+      "id": "n2",
+      "title": "Projektleitung",
+      "desc": "Black Belt L. Becker",
+      "pid": "n1"
+    },
+    {
+      "id": "n3",
+      "title": "Filialleiter",
+      "desc": "M. Müller",
+      "pid": "n2"
+    },
+    {
+      "id": "n4",
+      "title": "Küche",
+      "desc": "Pizzabäcker, 3 MA",
+      "pid": "n3"
+    },
+    {
+      "id": "n5",
+      "title": "Logistik",
+      "desc": "Fahrer, 4 MA",
+      "pid": "n3"
+    },
+    {
+      "id": "n6",
+      "title": "Bestellannahme",
+      "desc": "Front Desk, 2 MA",
+      "pid": "n3"
+    },
+    {
+      "id": "n7",
+      "title": "Sponsor",
+      "desc": "Geschäftsführung S. Conti",
+      "pid": "n2"
+    }
+  ],
+  "orgStyle": {
+    "nodeBg": "",
+    "nodeBorderColor": "",
+    "nodeBorderStyle": "solid",
+    "nodeBorderWidth": 1,
+    "lineColor": "",
+    "lineStyle": "solid",
+    "lineWidth": 2
+  }
+}

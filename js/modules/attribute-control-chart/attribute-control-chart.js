@@ -24,6 +24,7 @@ import {
 } from '../../engines/attribute-control-chart-engine.js';
 
 import { esc } from '../../core/html-utils.js';
+import { provisionWorksheet, removeProvisionedWorksheet } from '../../core/examples-registry.js';
 
 export default {
   id: 'attribute-control-chart',
@@ -45,6 +46,8 @@ export default {
   _autoRunTimer: null,
   _pickerDefects: null,
   _pickerSize: null,
+  /** Worksheet provisioned by loadExample; replaced on each subsequent load. */
+  _exampleWorksheetId: null,
 
   // ─── Lifecycle ──────────────────────────────────────────────
 
@@ -110,6 +113,53 @@ export default {
   },
 
   help: () => import('./attribute-control-chart-help.js'),
+
+  /**
+   * Load a catalog example. The payload carries the project state plus an
+   * inlined `sourceWorksheetData` (resolved from `sourceWorksheetFile` by
+   * the registry). We provision a fresh worksheet, rewrite the `__source__`
+   * placeholder in defectsRef/sizeRef, then apply the state.
+   *
+   * @param {{ meta: object, data: object }} payload
+   */
+  async loadExample(payload) {
+    if (!payload || !payload.data) return;
+    const t = (k) => this._context.i18n.t(k);
+
+    const hasContent = !!(this._defectsRef || this._sizeRef);
+    if (hasContent && this._context?.confirmPopout) {
+      const ok = await this._context.confirmPopout(t('moduleHelp.confirmOverwrite'), { danger: true });
+      if (!ok) return;
+    }
+
+    const data = { ...payload.data };
+
+    if (data.sourceWorksheetData) {
+      const wsState = data.sourceWorksheetData;
+      delete data.sourceWorksheetData;
+      if (this._exampleWorksheetId) {
+        removeProvisionedWorksheet(this._context, this._exampleWorksheetId);
+        this._exampleWorksheetId = null;
+      }
+      const ref = provisionWorksheet(this._context, wsState);
+      if (ref) {
+        this._exampleWorksheetId = ref.instanceId;
+        if (data.defectsRef?.instanceId === '__source__') {
+          data.defectsRef = { ...data.defectsRef, instanceId: ref.instanceId };
+        }
+        if (data.sizeRef?.instanceId === '__source__') {
+          data.sizeRef = { ...data.sizeRef, instanceId: ref.instanceId };
+        }
+      }
+    }
+
+    this.setState(data);
+    this._save();
+
+    const lang = this._context.i18n.getLanguage();
+    const title = payload.meta?.title?.[lang] || payload.meta?.title?.en || payload.meta?.id || '';
+    this._context.notify?.(t('moduleHelp.exampleLoaded').replace('{title}', title), 'success');
+  },
 
   // ─── State ──────────────────────────────────────────────────
 

@@ -10,6 +10,7 @@ import {
   DatasetPicker,
   getColumnValues,
 } from '../../ui/dataset-picker.js';
+import { provisionWorksheet, removeProvisionedWorksheet } from '../../core/examples-registry.js';
 
 const PALETTE = [
   'rgba(44,95,138,1)', 'rgba(39,174,96,1)', 'rgba(231,76,60,1)',
@@ -32,6 +33,8 @@ export default {
   _eventUnsubs: [],
   /** @type {DatasetPicker|null} */
   _picker: null,
+  /** Worksheet provisioned by loadExample (cleaned up on next load). */
+  _exampleWorksheetId: null,
   /** @type {import('../../core/chart/chart-base.js').default|null} */
   _chart: null,
 
@@ -120,6 +123,61 @@ export default {
       this._chart = null;
       this._render();
     }
+  },
+
+  /**
+   * Load a catalog example. Pie-chart's native state uses labelRef + valueRef.
+   * For examples that ship only a numeric `columnRef` (process-capability,
+   * outlier-test, distribution-fit, attribute SPC defectsRef), translate to
+   * valueRef and let the module derive slices from value frequencies.
+   *
+   * @param {{ meta: object, data: object }} payload
+   */
+  async loadExample(payload) {
+    if (!payload || !payload.data) return;
+    const t = (k) => this._context.i18n.t(k);
+
+    const hasContent = !!(this._valueRef || (this._slices && this._slices.length));
+    if (hasContent && this._context?.confirmPopout) {
+      const ok = await this._context.confirmPopout(t('moduleHelp.confirmOverwrite'), { danger: true });
+      if (!ok) return;
+    }
+
+    const data = { ...payload.data };
+
+    if (data.sourceWorksheetData) {
+      const wsState = data.sourceWorksheetData;
+      delete data.sourceWorksheetData;
+      if (this._exampleWorksheetId) {
+        removeProvisionedWorksheet(this._context, this._exampleWorksheetId);
+        this._exampleWorksheetId = null;
+      }
+      const ref = provisionWorksheet(this._context, wsState);
+      if (ref) {
+        this._exampleWorksheetId = ref.instanceId;
+        const rewrite = (r) => (r && r.instanceId === '__source__') ? { ...r, instanceId: ref.instanceId } : r;
+        if (data.labelRef)   data.labelRef   = rewrite(data.labelRef);
+        if (data.valueRef)   data.valueRef   = rewrite(data.valueRef);
+        if (data.columnRef)  data.columnRef  = rewrite(data.columnRef);
+        if (data.colRef)     data.colRef     = rewrite(data.colRef);
+        if (data.defectsRef) data.defectsRef = rewrite(data.defectsRef);
+        if (data.sizeRef)    data.sizeRef    = rewrite(data.sizeRef);
+      }
+    }
+
+    // Foreign-state translation: pick the most pie-chart-appropriate field as
+    // valueRef. Attribute-SPC examples ship defectsRef (counts); distfit/
+    // outlier-test ship columnRef (numeric values that get binned by name).
+    if (!data.valueRef) {
+      data.valueRef = data.defectsRef || data.columnRef || data.colRef || null;
+    }
+
+    this.setState(data);
+    this._context.stateManager.setModuleState(this._context.instanceId, this.getState());
+
+    const lang = this._context.i18n.getLanguage();
+    const title = payload.meta?.title?.[lang] || payload.meta?.title?.en || payload.meta?.id || '';
+    this._context.notify?.(t('moduleHelp.exampleLoaded').replace('{title}', title), 'success');
   },
 
   help: () => import('./pie-chart-help.js'),

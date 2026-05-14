@@ -1,0 +1,13 @@
+{
+  "valuesRef": {
+    "instanceId": "__source__",
+    "sheetId": "sheet-spc-short",
+    "columnId": "c-messwert"
+  },
+  "groupsRef": {
+    "instanceId": "__source__",
+    "sheetId": "sheet-spc-short",
+    "columnId": "c-setup"
+  },
+  "sourceWorksheetFile": "worksheets/spc-short-run-setups.json"
+}

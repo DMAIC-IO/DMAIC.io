@@ -11,6 +11,7 @@
 import { ColumnPicker, getColumnValues, getColumnName } from '../../ui/column-picker.js';
 import { computeRunChart } from '../../engines/run-chart-engine.js';
 import { esc } from '../../core/html-utils.js';
+import { provisionWorksheet, removeProvisionedWorksheet } from '../../core/examples-registry.js';
 
 const DEFAULT_ALPHA = 0.05;
 
@@ -29,6 +30,8 @@ export default {
   _picker: null,
   _chart: null,
   _autoRunTimer: null,
+  /** Worksheet provisioned by loadExample; replaced on each subsequent load. */
+  _exampleWorksheetId: null,
 
   // ─── Lifecycle ──────────────────────────────────────────────
 
@@ -90,6 +93,48 @@ export default {
   },
 
   help: () => import('./run-chart-help.js'),
+
+  /**
+   * Load a catalog example. Provision the inlined worksheet, rewrite the
+   * `__source__` placeholder in columnRef, then apply the state.
+   *
+   * @param {{ meta: object, data: object }} payload
+   */
+  async loadExample(payload) {
+    if (!payload || !payload.data) return;
+    const t = (k) => this._context.i18n.t(k);
+
+    const hasContent = !!this._columnRef;
+    if (hasContent && this._context?.confirmPopout) {
+      const ok = await this._context.confirmPopout(t('moduleHelp.confirmOverwrite'), { danger: true });
+      if (!ok) return;
+    }
+
+    const data = { ...payload.data };
+
+    if (data.sourceWorksheetData) {
+      const wsState = data.sourceWorksheetData;
+      delete data.sourceWorksheetData;
+      if (this._exampleWorksheetId) {
+        removeProvisionedWorksheet(this._context, this._exampleWorksheetId);
+        this._exampleWorksheetId = null;
+      }
+      const ref = provisionWorksheet(this._context, wsState);
+      if (ref) {
+        this._exampleWorksheetId = ref.instanceId;
+        if (data.columnRef?.instanceId === '__source__') {
+          data.columnRef = { ...data.columnRef, instanceId: ref.instanceId };
+        }
+      }
+    }
+
+    this.setState(data);
+    this._save();
+
+    const lang = this._context.i18n.getLanguage();
+    const title = payload.meta?.title?.[lang] || payload.meta?.title?.en || payload.meta?.id || '';
+    this._context.notify?.(t('moduleHelp.exampleLoaded').replace('{title}', title), 'success');
+  },
 
   // ─── State ──────────────────────────────────────────────────
 

@@ -1,0 +1,39 @@
+{
+  "columns": {
+    "suppliers": [
+      "Mehl-Lieferant Italia Mulini",
+      "Gemüsegroßhandel Berlin-Süd",
+      "Käserei Lombardia",
+      "Verpackungslieferant ThermoBox GmbH",
+      "Bestellplattform Lieferando"
+    ],
+    "inputs": [
+      "Pizzateig (vorbereitet)",
+      "Tomatensauce, Käse, Beläge",
+      "Bestellung (Kunde, Adresse, Wunschzeit)",
+      "Thermo-Verpackung",
+      "Fahrer + Fahrzeug"
+    ],
+    "process": [
+      "Bestellung annehmen",
+      "An Küche weiterleiten",
+      "Pizza belegen",
+      "Pizza im Holzofen backen (4–6 min)",
+      "Schneiden und verpacken",
+      "Fahrer übernimmt",
+      "Auslieferung zum Kunden",
+      "Übergabe + Bezahlung"
+    ],
+    "outputs": [
+      "Warm gelieferte Pizza (≥ 50 °C)",
+      "Bezahlte Rechnung",
+      "Lieferzeitdaten",
+      "Kundenfeedback"
+    ],
+    "customers": [
+      "Privatkunden Berlin-Mitte",
+      "Büros (Mittagsgeschäft)",
+      "Veranstaltungen (Catering-Light)"
+    ]
+  }
+}

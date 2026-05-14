@@ -1,0 +1,90 @@
+{
+  "vocs": [
+    {
+      "id": "v1",
+      "text": "Die Pizza kommt manchmal lauwarm an, das finde ich enttäuschend.",
+      "source": "Trustpilot-Kundenbewertung (2026-04)",
+      "needs": [
+        {
+          "id": "n1",
+          "text": "Heiße Pizza beim Auspacken",
+          "drivers": [
+            {
+              "id": "d1",
+              "text": "Temperatur bei Übergabe",
+              "type": "ctq",
+              "requirements": [
+                {
+                  "id": "r1",
+                  "text": "Pizza-Temperatur ≥ 50 °C bei Übergabe"
+                },
+                {
+                  "id": "r2",
+                  "text": "Thermo-Verpackung hält Temperatur ≥ 15 min"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "v2",
+      "text": "Lieferzeit von 45 Minuten ist mir zu lang — ich bestelle dann woanders.",
+      "source": "Kunden-Telefonbefragung, 12 Antworten",
+      "needs": [
+        {
+          "id": "n2",
+          "text": "Pizza in akzeptabler Zeit",
+          "drivers": [
+            {
+              "id": "d2",
+              "text": "Versprochene und tatsächliche Lieferzeit",
+              "type": "ctq",
+              "requirements": [
+                {
+                  "id": "r3",
+                  "text": "95 % der Bestellungen ≤ 30 min"
+                },
+                {
+                  "id": "r4",
+                  "text": "Im Bestellsystem realistische Zeitprognose anzeigen"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "v3",
+      "text": "Der Fahrer hat zweimal angerufen, weil er die Adresse nicht fand.",
+      "source": "Reklamationsmail, K. Hartmann",
+      "needs": [
+        {
+          "id": "n3",
+          "text": "Fahrer findet zuverlässig zum Kunden",
+          "drivers": [
+            {
+              "id": "d3",
+              "text": "Adress-Korrektheit + Navigation",
+              "type": "ctq",
+              "requirements": [
+                {
+                  "id": "r5",
+                  "text": "Adress-Plausibilitäts-Check bei der Bestellung"
+                },
+                {
+                  "id": "r6",
+                  "text": "Routenplanungs-App mit Hausnummer-Genauigkeit"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "activeVocId": "v1",
+  "styles": {}
+}

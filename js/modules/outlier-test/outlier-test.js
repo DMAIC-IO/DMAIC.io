@@ -23,6 +23,7 @@ import {
 
 import { ColumnPicker, getColumnValues, getColumnName } from '../../ui/column-picker.js';
 import { esc } from '../../core/html-utils.js';
+import { provisionWorksheet, removeProvisionedWorksheet } from '../../core/examples-registry.js';
 
 /** Mapping: test id → Algorithm Lab algorithm id. */
 const ALGO_LAB_IDS = {
@@ -68,6 +69,10 @@ export default {
   // Which method the chart highlights — 'all' = union over all enabled methods.
   _chartMethod: 'all',
 
+  // Worksheet provisioned by loadExample; tracked so the next example load can
+  // remove the previous one instead of leaving orphans in the data phase.
+  _exampleWorksheetId: null,
+
   // Chart
   _chart: null,
 
@@ -99,6 +104,7 @@ export default {
       this._esdMaxOutliers = saved.esdMaxOutliers ?? null;
       this._enabled = Array.isArray(saved.enabled) ? new Set(saved.enabled) : null;
       this._chartMethod = saved.chartMethod || 'all';
+      if (saved.exampleWorksheetId !== undefined) this._exampleWorksheetId = saved.exampleWorksheetId;
     }
 
     if (this._alpha == null) {
@@ -131,6 +137,7 @@ export default {
       esdMaxOutliers: this._esdMaxOutliers,
       enabled: Array.from(this._enabled),
       chartMethod: this._chartMethod,
+      exampleWorksheetId: this._exampleWorksheetId,
     };
   },
 
@@ -146,7 +153,50 @@ export default {
     if (data.esdMaxOutliers !== undefined) this._esdMaxOutliers = data.esdMaxOutliers;
     if (Array.isArray(data.enabled)) this._enabled = new Set(data.enabled);
     if (data.chartMethod) this._chartMethod = data.chartMethod;
+    if (data.exampleWorksheetId !== undefined) this._exampleWorksheetId = data.exampleWorksheetId;
     if (this._container) this._render();
+  },
+
+  /**
+   * Load a catalog example. Provisions the included worksheet, rewrites the
+   * `__source__` placeholder in `colRef`, then applies via setState.
+   * @param {{ meta: object, data: object }} payload
+   */
+  async loadExample(payload) {
+    if (!payload || !payload.data) return;
+    const t = (k) => this._context.i18n.t(k);
+
+    const hasContent = !!this._colRef;
+    if (hasContent && this._context?.confirmPopout) {
+      const ok = await this._context.confirmPopout(t('moduleHelp.confirmOverwrite'), { danger: true });
+      if (!ok) return;
+    }
+
+    const data = { ...payload.data };
+
+    if (data.sourceWorksheetData) {
+      const wsState = data.sourceWorksheetData;
+      delete data.sourceWorksheetData;
+      if (this._exampleWorksheetId) {
+        removeProvisionedWorksheet(this._context, this._exampleWorksheetId);
+        this._exampleWorksheetId = null;
+      }
+      const ref = provisionWorksheet(this._context, wsState);
+      if (ref) {
+        this._exampleWorksheetId = ref.instanceId;
+        data.exampleWorksheetId = ref.instanceId;
+        if (data.colRef?.instanceId === '__source__') {
+          data.colRef = { ...data.colRef, instanceId: ref.instanceId };
+        }
+      }
+    }
+
+    this.setState(data);
+    this._save();
+
+    const lang = this._context.i18n.getLanguage();
+    const title = payload.meta?.title?.[lang] || payload.meta?.title?.en || payload.meta?.id || '';
+    this._context.notify?.(t('moduleHelp.exampleLoaded').replace('{title}', title), 'success');
   },
 
   _save() {

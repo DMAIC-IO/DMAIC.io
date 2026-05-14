@@ -1,0 +1,9 @@
+{
+  "chartTypeId": "t",
+  "columnRef": {
+    "instanceId": "__source__",
+    "sheetId": "sheet-spc-rare",
+    "columnId": "c-tage"
+  },
+  "sourceWorksheetFile": "worksheets/spc-rare-event-days.json"
+}

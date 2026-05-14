@@ -260,6 +260,12 @@ export class DataGrid {
     if (!col) return;
     if (!ALL_ROLES.includes(role)) return;
     if (!isRoleValidForType(role, col.type)) return;
+    if (col.meta?.lock && options.auto !== true && !options.bypassLock) {
+      this.emit('column:edit-blocked', {
+        columnId, action: 'role-change', lock: col.meta.lock, reason: col.meta.reason,
+      });
+      return;
+    }
     const oldRole = col.role;
     if (oldRole === role && (options.auto === true || col.roleManual)) return;
     col.role = role;
@@ -279,9 +285,15 @@ export class DataGrid {
    * @param {string} columnId
    * @param {Object} patch
    */
-  setColumnFormat(columnId, patch) {
+  setColumnFormat(columnId, patch, options = {}) {
     const col = this.getColumn(columnId);
     if (!col || !patch || typeof patch !== 'object') return;
+    if (col.meta?.lock && !options.bypassLock) {
+      this.emit('column:edit-blocked', {
+        columnId, action: 'format-change', lock: col.meta.lock, reason: col.meta.reason,
+      });
+      return;
+    }
     const oldFormat = { ...col.format };
     const next = { ...col.format };
     for (const [k, v] of Object.entries(patch)) {
@@ -314,9 +326,15 @@ export class DataGrid {
     }
   }
 
-  renameColumn(columnId, newName) {
+  renameColumn(columnId, newName, options = {}) {
     const col = this.getColumn(columnId);
     if (!col) return;
+    if (col.meta?.lock && !options.bypassLock) {
+      this.emit('column:edit-blocked', {
+        columnId, action: 'rename', lock: col.meta.lock, reason: col.meta.reason,
+      });
+      return;
+    }
     const oldName = col.name;
     const uniqueName = this._uniqueColumnName(newName, columnId);
     col.name = uniqueName;
@@ -2082,6 +2100,12 @@ export class DataGrid {
     if (this._editingHeader) return;
     const col = this.columns[colIdx];
     if (!col) return;
+    if (col.meta?.lock) {
+      this.emit('column:edit-blocked', {
+        columnId: col.id, action: 'rename', lock: col.meta.lock, reason: col.meta.reason,
+      });
+      return;
+    }
 
     this._editingHeader = true;
     const oldName = col.name || '';
@@ -2484,19 +2508,21 @@ export class DataGrid {
     if (!col) return;
 
     const t = (k) => this._t(`ui.datagrid.${k}`);
+    const isLocked = !!col.meta?.lock;
     const isHardLocked = col.meta?.lock === 'hard';
-    const items = [
-      { label: t('renameColumn'), action: () => this._promptRenameColumn(colIdx) },
-      { type: 'sep' },
-      { label: t('sortAsc'), action: () => { this.sortCol = null; this.sortDir = null; this.sortByColumn(colIdx); } },
-      { label: t('sortDesc'), action: () => { this.sortCol = colIdx; this.sortDir = 'asc'; this.sortByColumn(colIdx); } },
-      { type: 'sep' },
-      { label: t('insertColLeft'), action: () => this.addColumn({ position: colIdx }) },
-      { label: t('insertColRight'), action: () => this.addColumn({ position: colIdx + 1 }) },
-      { type: 'sep' },
-      { label: t('columnStats'), action: () => this._showColumnStats(colIdx) },
-      { label: t('columnScan'), action: () => this._showColumnScan(colIdx) },
-    ];
+    const items = [];
+    if (!isLocked) {
+      items.push({ label: t('renameColumn'), action: () => this._promptRenameColumn(colIdx) });
+      items.push({ type: 'sep' });
+    }
+    items.push({ label: t('sortAsc'), action: () => { this.sortCol = null; this.sortDir = null; this.sortByColumn(colIdx); } });
+    items.push({ label: t('sortDesc'), action: () => { this.sortCol = colIdx; this.sortDir = 'asc'; this.sortByColumn(colIdx); } });
+    items.push({ type: 'sep' });
+    items.push({ label: t('insertColLeft'), action: () => this.addColumn({ position: colIdx }) });
+    items.push({ label: t('insertColRight'), action: () => this.addColumn({ position: colIdx + 1 }) });
+    items.push({ type: 'sep' });
+    items.push({ label: t('columnStats'), action: () => this._showColumnStats(colIdx) });
+    items.push({ label: t('columnScan'), action: () => this._showColumnScan(colIdx) });
     if (!isHardLocked) {
       items.push({ type: 'sep' });
       items.push({ label: t('deleteColumn'), danger: true, action: () => this.removeColumn(col.id) });
@@ -2615,10 +2641,10 @@ export class DataGrid {
     if (name !== null) this.renameColumn(col.id, name);
   }
 
-  _setColumnType(colIdx, type) {
+  _setColumnType(colIdx, type, options = {}) {
     const col = this.columns[colIdx];
     if (!col || col.type === type) return;
-    if (col.meta?.lock) {
+    if (col.meta?.lock && !options.bypassLock) {
       this.emit('column:edit-blocked', {
         columnId: col.id, action: 'type-change', lock: col.meta.lock, reason: col.meta.reason,
       });
@@ -2669,12 +2695,20 @@ export class DataGrid {
 
     const picker = document.createElement('div');
     picker.className = 'attr-picker';
+    if (col.meta?.lock) picker.classList.add(`attr-picker--locked-${col.meta.lock}`);
 
     const title = document.createElement('div');
     title.className = 'attr-picker__title';
     const colLabel = col.name ? `${col.shortName} · ${col.name}` : col.shortName;
     title.textContent = colLabel;
     picker.appendChild(title);
+
+    if (col.meta?.lock) {
+      const note = document.createElement('div');
+      note.className = 'attr-picker__lock-note';
+      note.textContent = this._lockTooltip(col);
+      picker.appendChild(note);
+    }
 
     const cols = document.createElement('div');
     cols.className = 'attr-picker__columns';
@@ -2725,8 +2759,9 @@ export class DataGrid {
 
   _renderAttrPickerTypeColumn(colIdx) {
     const col = this.columns[colIdx];
+    const isLocked = !!col.meta?.lock;
     const colEl = document.createElement('div');
-    colEl.className = 'attr-picker__col attr-picker__col--type';
+    colEl.className = 'attr-picker__col attr-picker__col--type' + (isLocked ? ' attr-picker__col--disabled' : '');
 
     const colTitle = document.createElement('div');
     colTitle.className = 'attr-picker__col-title';
@@ -2737,7 +2772,9 @@ export class DataGrid {
 
     for (const [typeKey, typeDef] of Object.entries(COLUMN_TYPES)) {
       const item = document.createElement('div');
-      item.className = 'attr-picker__item' + (col.type === typeKey ? ' active' : '');
+      item.className = 'attr-picker__item'
+        + (col.type === typeKey ? ' active' : '')
+        + (isLocked ? ' attr-picker__item--disabled' : '');
       item.dataset.type = typeKey;
 
       const badge = document.createElement('span');
@@ -2757,8 +2794,9 @@ export class DataGrid {
 
   _renderAttrPickerRoleColumn(colIdx, onRoleClick, onTypeClick) {
     const col = this.columns[colIdx];
+    const isLocked = !!col.meta?.lock;
     const colEl = document.createElement('div');
-    colEl.className = 'attr-picker__col attr-picker__col--role';
+    colEl.className = 'attr-picker__col attr-picker__col--role' + (isLocked ? ' attr-picker__col--disabled' : '');
 
     const colTitle = document.createElement('div');
     colTitle.className = 'attr-picker__col-title';
@@ -2770,7 +2808,9 @@ export class DataGrid {
     const validRoles = validRolesForType(col.type);
     for (const role of validRoles) {
       const item = document.createElement('div');
-      item.className = 'attr-picker__item' + (col.role === role ? ' active' : '');
+      item.className = 'attr-picker__item'
+        + (col.role === role ? ' active' : '')
+        + (isLocked ? ' attr-picker__item--disabled' : '');
       item.dataset.role = role;
       const tip = this._roleTooltip(role);
       if (tip) item.title = tip;
@@ -2785,11 +2825,13 @@ export class DataGrid {
       item.appendChild(dot);
       item.appendChild(label);
 
-      item.addEventListener('click', (ev) => {
-        ev.stopPropagation();
-        this.setColumnRole(col.id, role);
-        onRoleClick();
-      });
+      if (!isLocked) {
+        item.addEventListener('click', (ev) => {
+          ev.stopPropagation();
+          this.setColumnRole(col.id, role);
+          onRoleClick();
+        });
+      }
 
       colEl.appendChild(item);
     }
@@ -2799,6 +2841,7 @@ export class DataGrid {
     requestAnimationFrame(() => {
       const root = this._attrPicker;
       if (!root) return;
+      if (isLocked) return;
       const typeItems = root.querySelectorAll('.attr-picker__col--type .attr-picker__item');
       for (const item of typeItems) {
         item.addEventListener('click', (ev) => {
@@ -2827,11 +2870,12 @@ export class DataGrid {
   _renderAttrPickerFormatColumn(colIdx, onChange) {
     const col = this.columns[colIdx];
     if (!col) return null;
+    const isLocked = !!col.meta?.lock;
 
     const t = (k) => this._t(`ui.datagrid.${k}`);
 
     const colEl = document.createElement('div');
-    colEl.className = 'attr-picker__col attr-picker__col--format';
+    colEl.className = 'attr-picker__col attr-picker__col--format' + (isLocked ? ' attr-picker__col--disabled' : '');
 
     const colTitle = document.createElement('div');
     colTitle.className = 'attr-picker__col-title';
@@ -2841,16 +2885,20 @@ export class DataGrid {
 
     const addItem = ({ label, isActive, onClick }) => {
       const item = document.createElement('div');
-      item.className = 'attr-picker__item' + (isActive ? ' active' : '');
+      item.className = 'attr-picker__item'
+        + (isActive ? ' active' : '')
+        + (isLocked ? ' attr-picker__item--disabled' : '');
       const labelEl = document.createElement('span');
       labelEl.className = 'attr-picker__label';
       labelEl.textContent = label;
       item.appendChild(labelEl);
-      item.addEventListener('click', (ev) => {
-        ev.stopPropagation();
-        onClick();
-        onChange();
-      });
+      if (!isLocked) {
+        item.addEventListener('click', (ev) => {
+          ev.stopPropagation();
+          onClick();
+          onChange();
+        });
+      }
       colEl.appendChild(item);
     };
 

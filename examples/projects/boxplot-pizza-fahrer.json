@@ -1,0 +1,33 @@
+{
+  "seriesRefs": [
+    {
+      "instanceId": "__source__",
+      "sheetId": "sheet-pizza-fahrer",
+      "columnId": "c-fahrer-a"
+    },
+    {
+      "instanceId": "__source__",
+      "sheetId": "sheet-pizza-fahrer",
+      "columnId": "c-fahrer-b"
+    },
+    {
+      "instanceId": "__source__",
+      "sheetId": "sheet-pizza-fahrer",
+      "columnId": "c-fahrer-c"
+    }
+  ],
+  "groupRefs": [
+    null,
+    null,
+    null
+  ],
+  "showMean": true,
+  "showOutliers": true,
+  "showStats": true,
+  "confLevel": 95,
+  "refLines": [],
+  "refAreas": [],
+  "bgColor": null,
+  "boxColors": [],
+  "sourceWorksheetFile": "worksheets/hypothesis-pizza-fahrer.json"
+}

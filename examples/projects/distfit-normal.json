@@ -1,0 +1,9 @@
+{
+  "columnRef": {
+    "instanceId": "__source__",
+    "sheetId": "sheet-dist-normal",
+    "columnId": "c-messwert"
+  },
+  "dataType": "continuous",
+  "sourceWorksheetFile": "worksheets/distribution-normal.json"
+}

@@ -1,0 +1,84 @@
+{
+  "sheets": [
+    {
+      "id": "sheet-spc-rare",
+      "name": "Ereignis-Intervalle",
+      "state": {
+        "columns": [
+          {
+            "id": "c-ereignis",
+            "name": "Ereignis",
+            "shortName": "E",
+            "type": "numeric",
+            "values": [
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7,
+              8,
+              9,
+              10,
+              11,
+              12,
+              13,
+              14,
+              15,
+              16,
+              17,
+              18,
+              19,
+              20,
+              21,
+              22,
+              23,
+              24,
+              25
+            ]
+          },
+          {
+            "id": "c-tage",
+            "name": "TageSeitLetztem",
+            "shortName": "T",
+            "type": "numeric",
+            "values": [
+              11.6921,
+              41.4018,
+              3.2852,
+              249.9181,
+              10.2135,
+              7.0512,
+              4.6458,
+              1.8973,
+              14.238,
+              35.9576,
+              14.8728,
+              5.0957,
+              24.9812,
+              32.2817,
+              64.412,
+              14.9008,
+              40.216,
+              7.3493,
+              61.4168,
+              28.4459,
+              28.5454,
+              46.1187,
+              9.5312,
+              35.235,
+              25.4252
+            ],
+            "format": {
+              "decimals": 2
+            }
+          }
+        ],
+        "rowCount": 25
+      }
+    }
+  ],
+  "activeSheetId": "sheet-spc-rare",
+  "sheetCounter": 1
+}

@@ -18,6 +18,7 @@ import {
 
 import { computeSeriesStats, renderStatsTable } from '../../core/stats-panel.js';
 import { CHART_COLORS } from '../../core/chart/chart-colors.js';
+import { provisionWorksheet, removeProvisionedWorksheet } from '../../core/examples-registry.js';
 
 export default {
   id: 'boxplot',
@@ -45,6 +46,8 @@ export default {
   _eventUnsubs: [],
   /** @type {DatasetPicker|null} */
   _picker: null,
+  /** Worksheet provisioned by loadExample (cleaned up on next load). */
+  _exampleWorksheetId: null,
 
   // ─── Lifecycle ──────────────────────────────────────────────
 
@@ -97,6 +100,7 @@ export default {
       refAreas: this._refAreas,
       bgColor: this._bgColor,
       boxColors: this._boxColors,
+      exampleWorksheetId: this._exampleWorksheetId,
     };
   },
 
@@ -128,6 +132,49 @@ export default {
     this._refAreas = saved.refAreas || [];
     this._bgColor = saved.bgColor || null;
     this._boxColors = saved.boxColors || [];
+    if (saved.exampleWorksheetId !== undefined) this._exampleWorksheetId = saved.exampleWorksheetId;
+  },
+
+  /**
+   * Load a catalog example. Provisions the included worksheet and rewrites
+   * `__source__` placeholders in seriesRefs / groupRefs to the new instanceId.
+   * @param {{ meta: object, data: object }} payload
+   */
+  async loadExample(payload) {
+    if (!payload || !payload.data) return;
+    const t = (k) => this._context.i18n.t(k);
+
+    const hasContent = (this._seriesRefs?.length || 0) > 0;
+    if (hasContent && this._context?.confirmPopout) {
+      const ok = await this._context.confirmPopout(t('moduleHelp.confirmOverwrite'), { danger: true });
+      if (!ok) return;
+    }
+
+    const data = { ...payload.data };
+
+    if (data.sourceWorksheetData) {
+      const wsState = data.sourceWorksheetData;
+      delete data.sourceWorksheetData;
+      if (this._exampleWorksheetId) {
+        removeProvisionedWorksheet(this._context, this._exampleWorksheetId);
+        this._exampleWorksheetId = null;
+      }
+      const ref = provisionWorksheet(this._context, wsState);
+      if (ref) {
+        this._exampleWorksheetId = ref.instanceId;
+        data.exampleWorksheetId = ref.instanceId;
+        const rewrite = (r) => (r && r.instanceId === '__source__') ? { ...r, instanceId: ref.instanceId } : r;
+        if (Array.isArray(data.seriesRefs)) data.seriesRefs = data.seriesRefs.map(rewrite);
+        if (Array.isArray(data.groupRefs)) data.groupRefs = data.groupRefs.map(rewrite);
+      }
+    }
+
+    this.setState(data);
+    this._save();
+
+    const lang = this._context.i18n.getLanguage();
+    const title = payload.meta?.title?.[lang] || payload.meta?.title?.en || payload.meta?.id || '';
+    this._context.notify?.(t('moduleHelp.exampleLoaded').replace('{title}', title), 'success');
   },
 
   // ─── Column helpers ────────────────────────────────────────

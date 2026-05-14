@@ -1,0 +1,82 @@
+{
+  "sheets": [
+    {
+      "id": "sheet-spc-short",
+      "name": "Setups",
+      "state": {
+        "columns": [
+          {
+            "id": "c-setup",
+            "name": "Setup",
+            "shortName": "S",
+            "type": "text",
+            "values": [
+              "S1",
+              "S1",
+              "S1",
+              "S1",
+              "S1",
+              "S1",
+              "S1",
+              "S1",
+              "S2",
+              "S2",
+              "S2",
+              "S2",
+              "S2",
+              "S2",
+              "S2",
+              "S2",
+              "S3",
+              "S3",
+              "S3",
+              "S3",
+              "S3",
+              "S3",
+              "S3",
+              "S3"
+            ]
+          },
+          {
+            "id": "c-messwert",
+            "name": "Messwert",
+            "shortName": "M",
+            "type": "numeric",
+            "values": [
+              10.0111,
+              9.9897,
+              10.0091,
+              10.0067,
+              10.0251,
+              9.9943,
+              10.0251,
+              10.0946,
+              24.959,
+              24.965,
+              25.0404,
+              24.9539,
+              24.964,
+              24.9321,
+              25.037,
+              25.0329,
+              7.5503,
+              7.375,
+              7.4981,
+              7.5581,
+              7.5165,
+              7.4624,
+              7.4675,
+              7.6009
+            ],
+            "format": {
+              "decimals": 4
+            }
+          }
+        ],
+        "rowCount": 24
+      }
+    }
+  ],
+  "activeSheetId": "sheet-spc-short",
+  "sheetCounter": 1
+}

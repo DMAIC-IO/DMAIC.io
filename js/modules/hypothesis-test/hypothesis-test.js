@@ -26,6 +26,7 @@ import { shapiroWilk, andersonDarling, descriptiveStats } from '../../engines/no
 import { tInv, chi2Inv } from '../../engines/math-utils.js';
 import { ColumnPicker, getColumnValues, getColumnName } from '../../ui/column-picker.js';
 import { esc } from '../../core/html-utils.js';
+import { provisionWorksheet, removeProvisionedWorksheet } from '../../core/examples-registry.js';
 
 /** Mapping: test name → Algorithm Lab ID. */
 const ALGO_LAB_IDS = {
@@ -82,6 +83,10 @@ export default {
   _colRef2: null,
   _colRefsK: [],
 
+  // Worksheet provisioned by loadExample; tracked so the next example load can
+  // remove the previous one instead of leaving orphans in the data phase.
+  _exampleWorksheetId: null,
+
   // Runtime analysis results (not persisted fully)
   _normality: null,
   _varEquality: null,
@@ -108,6 +113,7 @@ export default {
       this._colRef1 = saved.colRef1 || null;
       this._colRef2 = saved.colRef2 || null;
       this._colRefsK = Array.isArray(saved.colRefsK) ? saved.colRefsK : [];
+      if (saved.exampleWorksheetId !== undefined) this._exampleWorksheetId = saved.exampleWorksheetId;
     }
 
     const globalConf = (context.stateManager.get('settings.confidenceLevel') ?? 95) / 100;
@@ -142,6 +148,7 @@ export default {
       colRef1: this._picker1?.value || this._colRef1 || null,
       colRef2: this._picker2?.value || this._colRef2 || null,
       colRefsK: this._pickerK?.value || this._colRefsK || [],
+      exampleWorksheetId: this._exampleWorksheetId,
     };
   },
 
@@ -157,7 +164,51 @@ export default {
     if (data.colRef1 !== undefined) this._colRef1 = data.colRef1;
     if (data.colRef2 !== undefined) this._colRef2 = data.colRef2;
     if (data.colRefsK !== undefined) this._colRefsK = Array.isArray(data.colRefsK) ? data.colRefsK : [];
+    if (data.exampleWorksheetId !== undefined) this._exampleWorksheetId = data.exampleWorksheetId;
     if (this._container) this._render();
+  },
+
+  /**
+   * Load a catalog example. Source-Worksheet pattern: provision the included
+   * worksheet, rewrite `__source__` placeholders in all column refs, then apply.
+   * @param {{ meta: object, data: object }} payload
+   */
+  async loadExample(payload) {
+    if (!payload || !payload.data) return;
+    const t = (k) => this._context.i18n.t(k);
+
+    const hasContent = !!(this._colRef1 || this._colRef2 || (this._colRefsK && this._colRefsK.length));
+    if (hasContent && this._context?.confirmPopout) {
+      const ok = await this._context.confirmPopout(t('moduleHelp.confirmOverwrite'), { danger: true });
+      if (!ok) return;
+    }
+
+    const data = { ...payload.data };
+
+    if (data.sourceWorksheetData) {
+      const wsState = data.sourceWorksheetData;
+      delete data.sourceWorksheetData;
+      if (this._exampleWorksheetId) {
+        removeProvisionedWorksheet(this._context, this._exampleWorksheetId);
+        this._exampleWorksheetId = null;
+      }
+      const ref = provisionWorksheet(this._context, wsState);
+      if (ref) {
+        this._exampleWorksheetId = ref.instanceId;
+        data.exampleWorksheetId = ref.instanceId;
+        const rewrite = (r) => (r && r.instanceId === '__source__') ? { ...r, instanceId: ref.instanceId } : r;
+        if (data.colRef1) data.colRef1 = rewrite(data.colRef1);
+        if (data.colRef2) data.colRef2 = rewrite(data.colRef2);
+        if (Array.isArray(data.colRefsK)) data.colRefsK = data.colRefsK.map(rewrite);
+      }
+    }
+
+    this.setState(data);
+    this._save();
+
+    const lang = this._context.i18n.getLanguage();
+    const title = payload.meta?.title?.[lang] || payload.meta?.title?.en || payload.meta?.id || '';
+    this._context.notify?.(t('moduleHelp.exampleLoaded').replace('{title}', title), 'success');
   },
 
   _save() {

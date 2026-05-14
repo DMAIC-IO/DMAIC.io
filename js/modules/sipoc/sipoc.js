@@ -90,6 +90,28 @@ export default {
   // ─── Help ───────────────────────────────────────────────────
 
   help: () => import('./sipoc-help.js'),
+  /**
+   * Load a catalog example. Editorial — no worksheet is provisioned.
+   * @param { meta: object, data: object } payload
+   */
+  async loadExample(payload) {
+    if (!payload || !payload.data) return;
+    const t = (k) => this._context.i18n.t(k);
+
+    const hasContent = Object.values(this._data || {}).some(arr => Array.isArray(arr) && arr.length > 0);
+    if (hasContent && this._context?.confirmPopout) {
+      const ok = await this._context.confirmPopout(t('moduleHelp.confirmOverwrite'), { danger: true });
+      if (!ok) return;
+    }
+
+    this.setState(payload.data);
+    this._context.stateManager.setModuleState(this._context.instanceId, this.getState());
+
+    const lang = this._context.i18n.getLanguage();
+    const title = payload.meta?.title?.[lang] || payload.meta?.title?.en || payload.meta?.id || '';
+    this._context.notify?.(t('moduleHelp.exampleLoaded').replace('{title}', title), 'success');
+  },
+
 
   // ─── Internal: state import ─────────────────────────────────
 

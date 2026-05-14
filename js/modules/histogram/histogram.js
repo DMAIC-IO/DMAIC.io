@@ -24,6 +24,7 @@ import { computeSeriesStats, renderStatsTable } from '../../core/stats-panel.js'
 import { CHART_COLORS, CHART_COLORS_RGBA, BORDER_COLORS } from '../../core/chart/chart-colors.js';
 import { autoBinCount, computeBins, globalRange, autoBinWidth, binAll, percentile, computeBoxStats, createBarPattern } from './histogram-binning.js';
 import { editorMethods } from './histogram-editor.js';
+import { provisionWorksheet, removeProvisionedWorksheet } from '../../core/examples-registry.js';
 
 // ─── Module ─────────────────────────────────────────────────
 
@@ -68,6 +69,8 @@ const mod = {
   _activeColorPicker: null,
   /** @type {DatasetPicker|null} */
   _picker: null,
+  /** Worksheet provisioned by loadExample (cleaned up on next load). */
+  _exampleWorksheetId: null,
 
   // Rendering state (kept across renders for tooltip interaction)
   _curBinData: null,
@@ -240,6 +243,66 @@ const mod = {
       if (this._picker) { this._picker.destroy(); this._picker = null; }
       this._render();
     }
+  },
+
+  /**
+   * Load a catalog example. Histogram is often listed as a secondary module
+   * on examples that store a single `columnRef` (process-capability, outlier-
+   * test, distribution-fit, msa). Translate that into the native datasets[]
+   * shape on the fly so cross-module sharing works without dedicated entries.
+   *
+   * @param {{ meta: object, data: object }} payload
+   */
+  async loadExample(payload) {
+    if (!payload || !payload.data) return;
+    const t = (k) => this._context.i18n.t(k);
+
+    const hasContent = Array.isArray(this._datasets)
+      && this._datasets.some(d => d.valueRef);
+    if (hasContent && this._context?.confirmPopout) {
+      const ok = await this._context.confirmPopout(t('moduleHelp.confirmOverwrite'), { danger: true });
+      if (!ok) return;
+    }
+
+    const data = { ...payload.data };
+
+    if (data.sourceWorksheetData) {
+      const wsState = data.sourceWorksheetData;
+      delete data.sourceWorksheetData;
+      if (this._exampleWorksheetId) {
+        removeProvisionedWorksheet(this._context, this._exampleWorksheetId);
+        this._exampleWorksheetId = null;
+      }
+      const ref = provisionWorksheet(this._context, wsState);
+      if (ref) {
+        this._exampleWorksheetId = ref.instanceId;
+        const rewrite = (r) => (r && r.instanceId === '__source__') ? { ...r, instanceId: ref.instanceId } : r;
+        if (Array.isArray(data.datasets)) {
+          data.datasets = data.datasets.map(d => ({ ...d, valueRef: rewrite(d.valueRef), groupRef: rewrite(d.groupRef) }));
+        }
+        if (data.columnRef) data.columnRef = rewrite(data.columnRef);
+        if (data.colRef)    data.colRef    = rewrite(data.colRef);
+        if (Array.isArray(data.seriesRefs)) data.seriesRefs = data.seriesRefs.map(rewrite);
+      }
+    }
+
+    // Foreign-state translation: single columnRef / colRef / first seriesRef →
+    // one dataset with that valueRef. Keep native datasets[] verbatim.
+    if (!Array.isArray(data.datasets)) {
+      const singleRef = data.columnRef || data.colRef
+        || (Array.isArray(data.seriesRefs) ? data.seriesRefs[0] : null)
+        || (Array.isArray(data.colRefsK) ? data.colRefsK[0] : null);
+      if (singleRef) {
+        data.datasets = [{ valueRef: singleRef, groupRef: null }];
+      }
+    }
+
+    this.setState(data);
+    this._context.stateManager.setModuleState(this._context.instanceId, this.getState());
+
+    const lang = this._context.i18n.getLanguage();
+    const title = payload.meta?.title?.[lang] || payload.meta?.title?.en || payload.meta?.id || '';
+    this._context.notify?.(t('moduleHelp.exampleLoaded').replace('{title}', title), 'success');
   },
 
   help: () => import('./histogram-help.js'),

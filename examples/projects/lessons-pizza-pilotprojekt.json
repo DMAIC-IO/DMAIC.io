@@ -1,0 +1,80 @@
+{
+  "lessons": [
+    {
+      "id": "l1",
+      "title": "Vorab-Routenplanung spart im Pilot 5 min pro Bestellung",
+      "category": "success",
+      "phase": "improve",
+      "impact": "high",
+      "owner": "L. Becker",
+      "description": "Im Pilot wurden Routen vor Übergabe an den Fahrer in der App vorgeplant. Die durchschnittliche Lieferzeit sank von 42 auf 37 min.",
+      "rootCause": "Routen wurden bisher erst nach Übergabe spontan vom Fahrer entschieden.",
+      "recommendation": "Vorab-Routenplanung in den Standard-Prozess aufnehmen, App-Lizenzen für alle Schichten beschaffen.",
+      "actions": [
+        {
+          "id": "a1",
+          "text": "App-Lizenzen für alle Fahrer-Tablets",
+          "done": false,
+          "owner": "IT",
+          "dueDate": "2026-08-30"
+        }
+      ],
+      "createdAt": 1715000000000
+    },
+    {
+      "id": "l2",
+      "title": "Thermo-Doppelwand-Boxen halten Temperatur signifikant länger",
+      "category": "success",
+      "phase": "improve",
+      "impact": "high",
+      "owner": "Einkauf",
+      "description": "Im Test waren Pizzen aus den Doppelwand-Boxen nach 20 min noch bei 52 °C statt 38 °C in der Altbox.",
+      "rootCause": "Alte Boxen mit defekten Dichtungen, Wärmeverlust > 10 °C/15 min.",
+      "recommendation": "Komplettausstattung mit Doppelwand-Boxen, alte Boxen entsorgen.",
+      "actions": [
+        {
+          "id": "a2",
+          "text": "30 Doppelwand-Boxen beschaffen",
+          "done": true,
+          "owner": "Einkauf",
+          "dueDate": "2026-06-15"
+        }
+      ],
+      "createdAt": 1715086400000
+    },
+    {
+      "id": "l3",
+      "title": "Wochenstart-Standup verkürzt Schnittstellen-Probleme",
+      "category": "improve",
+      "phase": "control",
+      "impact": "medium",
+      "owner": "M. Müller",
+      "description": "Ein 15-min-Standup am Montagmorgen mit Bestellannahme, Küche, Fahrern reduziert Missverständnisse über die Woche.",
+      "rootCause": "Frühere Kommunikation lief nur ad-hoc bei akuten Problemen.",
+      "recommendation": "Standup dauerhaft etablieren, Filialleiter moderiert.",
+      "actions": [],
+      "createdAt": 1715172800000
+    },
+    {
+      "id": "l4",
+      "title": "Bestellannahme war unterschätzter Engpass",
+      "category": "problem",
+      "phase": "analyze",
+      "impact": "medium",
+      "owner": "L. Becker",
+      "description": "Adresseingabe ohne Autocomplete führt zu 15 % Adress-Korrekturen — verzögert die gesamte Liefer-Kette.",
+      "rootCause": "Bestellsystem ohne Adress-Datenbank gewählt, weil ursprünglich nur Kassenbetrieb.",
+      "recommendation": "Bei Neuanschaffung von Software die Logistikfunktionen mit-evaluieren.",
+      "actions": [
+        {
+          "id": "a3",
+          "text": "Adress-Autovervollständigung im Bestellsystem aktivieren",
+          "done": false,
+          "owner": "IT",
+          "dueDate": "2026-07-15"
+        }
+      ],
+      "createdAt": 1715259200000
+    }
+  ]
+}

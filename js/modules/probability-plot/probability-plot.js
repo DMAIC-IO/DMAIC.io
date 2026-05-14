@@ -21,6 +21,7 @@ import {
 } from '../../ui/column-picker.js';
 
 import { computeSeriesStats, renderStatsTable } from '../../core/stats-panel.js';
+import { provisionWorksheet, removeProvisionedWorksheet } from '../../core/examples-registry.js';
 
 export default {
   id: 'probability-plot',
@@ -47,6 +48,8 @@ export default {
   _showStats: true,
   _confLevel: 95,
   _eventUnsubs: [],
+  /** Worksheet provisioned by loadExample (cleaned up on next load). */
+  _exampleWorksheetId: null,
 
   // ─── Lifecycle ──────────────────────────────────────────────
 
@@ -117,6 +120,7 @@ export default {
       markerStrokeWidth: this._markerStrokeWidth,
       showStats: this._showStats,
       confLevel: this._confLevel,
+      exampleWorksheetId: this._exampleWorksheetId,
     };
   },
 
@@ -145,6 +149,49 @@ export default {
     this._markerStrokeWidth = saved.markerStrokeWidth ?? null;
     this._showStats = saved.showStats ?? true;
     this._confLevel = saved.confLevel ?? 95;
+    if (saved.exampleWorksheetId !== undefined) this._exampleWorksheetId = saved.exampleWorksheetId;
+  },
+
+  /**
+   * Load a catalog example. Provisions the included worksheet and rewrites
+   * the `__source__` placeholder in `columnRef`.
+   * @param {{ meta: object, data: object }} payload
+   */
+  async loadExample(payload) {
+    if (!payload || !payload.data) return;
+    const t = (k) => this._context.i18n.t(k);
+
+    const hasContent = !!this._columnRef;
+    if (hasContent && this._context?.confirmPopout) {
+      const ok = await this._context.confirmPopout(t('moduleHelp.confirmOverwrite'), { danger: true });
+      if (!ok) return;
+    }
+
+    const data = { ...payload.data };
+
+    if (data.sourceWorksheetData) {
+      const wsState = data.sourceWorksheetData;
+      delete data.sourceWorksheetData;
+      if (this._exampleWorksheetId) {
+        removeProvisionedWorksheet(this._context, this._exampleWorksheetId);
+        this._exampleWorksheetId = null;
+      }
+      const ref = provisionWorksheet(this._context, wsState);
+      if (ref) {
+        this._exampleWorksheetId = ref.instanceId;
+        data.exampleWorksheetId = ref.instanceId;
+        if (data.columnRef?.instanceId === '__source__') {
+          data.columnRef = { ...data.columnRef, instanceId: ref.instanceId };
+        }
+      }
+    }
+
+    this.setState(data);
+    this._context.stateManager.setModuleState(this._context.instanceId, this.getState());
+
+    const lang = this._context.i18n.getLanguage();
+    const title = payload.meta?.title?.[lang] || payload.meta?.title?.en || payload.meta?.id || '';
+    this._context.notify?.(t('moduleHelp.exampleLoaded').replace('{title}', title), 'success');
   },
 
   // ─── Worksheet Column Discovery ─────────────────────────────
