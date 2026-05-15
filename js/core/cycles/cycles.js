@@ -1,12 +1,16 @@
 /**
  * D.Mike — Cycle Definitions (cycles.js)
  * Single source of truth for all improvement / development cycles
- * (DMAIC, DMADV, … later: PDCA, IDOV, 8D).
+ * (DMAIC, DMADV, 8D, … later: PDCA, IDOV).
  *
  * A cycle is an ordered list of methodology phases. The tile renderer wraps
  * this list with two virtual frame tiles: `data` (leading, phase-independent
  * tools) and `extras` (trailing, catch-all for tools without a cycle-specific
  * mapping). Both frame tiles exist in every cycle.
+ *
+ * Phase letters are normally a single character (D, M, A, …) but the tile
+ * renderer also supports multi-character letters (e.g. 'D0' … 'D8' for the
+ * 8D cycle) — the renderer adds a CSS modifier when `letter.length > 1`.
  *
  * See `.claude/V0.3-MULTI-CYCLE.md` for the design rationale.
  */
@@ -51,6 +55,21 @@ export const CYCLES = Object.freeze({
       { id: 'analyze', letter: 'A', i18nKey: 'phases.analyze' },
       { id: 'design',  letter: 'D', i18nKey: 'phases.design', color: '#5e35b1' },
       { id: 'verify',  letter: 'V', i18nKey: 'phases.verify', color: '#00897b' },
+    ],
+  },
+  eightd: {
+    id: 'eightd',
+    i18nKey: 'cycles.eightd',
+    phases: [
+      { id: 'prepare',        letter: 'D0', i18nKey: 'phases.prepare'        },
+      { id: 'team',           letter: 'D1', i18nKey: 'phases.team'           },
+      { id: 'problem',        letter: 'D2', i18nKey: 'phases.problem'        },
+      { id: 'containment',    letter: 'D3', i18nKey: 'phases.containment'    },
+      { id: 'rootcause',      letter: 'D4', i18nKey: 'phases.rootcause'      },
+      { id: 'corrective',     letter: 'D5', i18nKey: 'phases.corrective'     },
+      { id: 'implementation', letter: 'D6', i18nKey: 'phases.implementation' },
+      { id: 'prevent',        letter: 'D7', i18nKey: 'phases.prevent'        },
+      { id: 'recognize',      letter: 'D8', i18nKey: 'phases.recognize'      },
     ],
   },
 });

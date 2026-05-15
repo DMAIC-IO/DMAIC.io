@@ -61,16 +61,27 @@
 
   /* Phase Colors
      DMAIC: blue (Data) → red (D) → orange (M) → yellow (A) → lime (I) → green (C)
-     DMADV adds: design (deep purple), verify (teal). extras: neutral grey. */
-  --color-phase-data:    #5c6bc0;
-  --color-phase-define:  #e53935;
-  --color-phase-measure: #fb8c00;
-  --color-phase-analyze: #e6b800;
-  --color-phase-improve: #7cb342;
-  --color-phase-control: #2e7d32;
-  --color-phase-design:  #5e35b1;
-  --color-phase-verify:  #00897b;
-  --color-phase-extras:  #757575;
+     DMADV adds: design (deep purple), verify (teal). extras: neutral grey.
+     8D (D0–D8): neutral grey-blue → blue → red → orange → yellow →
+     lime → green → cyan → purple. */
+  --color-phase-data:           #5c6bc0;
+  --color-phase-define:         #e53935;
+  --color-phase-measure:        #fb8c00;
+  --color-phase-analyze:        #e6b800;
+  --color-phase-improve:        #7cb342;
+  --color-phase-control:        #2e7d32;
+  --color-phase-design:         #5e35b1;
+  --color-phase-verify:         #00897b;
+  --color-phase-prepare:        #607d8b;
+  --color-phase-team:           #1976d2;
+  --color-phase-problem:        #d32f2f;
+  --color-phase-containment:    #f57c00;
+  --color-phase-rootcause:      #fbc02d;
+  --color-phase-corrective:     #689f38;
+  --color-phase-implementation: #388e3c;
+  --color-phase-prevent:        #00838f;
+  --color-phase-recognize:      #6a1b9a;
+  --color-phase-extras:         #757575;
 
   /* Status */
   --color-success: #34c759;
@@ -251,15 +262,24 @@
   /* Phase Colors (brighter for dark bg)
      DMAIC: blue (Data) → red → orange → yellow → lime → green
      DMADV adds: design (lighter purple), verify (lighter teal). extras: neutral grey. */
-  --color-phase-data:    #7986cb;
-  --color-phase-define:  #ef5350;
-  --color-phase-measure: #ffa726;
-  --color-phase-analyze: #ffd600;
-  --color-phase-improve: #9ccc65;
-  --color-phase-control: #43a047;
-  --color-phase-design:  #9575cd;
-  --color-phase-verify:  #4db6ac;
-  --color-phase-extras:  #9e9e9e;
+  --color-phase-data:           #7986cb;
+  --color-phase-define:         #ef5350;
+  --color-phase-measure:        #ffa726;
+  --color-phase-analyze:        #ffd600;
+  --color-phase-improve:        #9ccc65;
+  --color-phase-control:        #43a047;
+  --color-phase-design:         #9575cd;
+  --color-phase-verify:         #4db6ac;
+  --color-phase-prepare:        #90a4ae;
+  --color-phase-team:           #42a5f5;
+  --color-phase-problem:        #ef5350;
+  --color-phase-containment:    #ffa726;
+  --color-phase-rootcause:      #ffd54f;
+  --color-phase-corrective:     #9ccc65;
+  --color-phase-implementation: #66bb6a;
+  --color-phase-prevent:        #4dd0e1;
+  --color-phase-recognize:      #ba68c8;
+  --color-phase-extras:         #9e9e9e;
 
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
   --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.4);

@@ -512,7 +512,7 @@ export function renderLabIndex({ algorithms, categories, categoryById, lang, i18
 
 // ─── Training (Schulungen) ───────────────────────────────────────
 
-const TRAINING_TOPICS = ['dmaic', 'dmadv', 'triz', 'minitab', 'jmp'];
+const TRAINING_TOPICS = ['dmaic', 'dmadv', 'eightd', 'triz', 'minitab', 'jmp'];
 
 function _trainingNS(i18n, lang, topic) {
   return i18n?.[lang]?.training?.[topic] || i18n?.en?.training?.[topic] || {};

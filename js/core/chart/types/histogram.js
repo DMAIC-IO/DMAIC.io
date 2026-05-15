@@ -123,9 +123,53 @@ export default class HistogramChart extends ChartBase {
       barBorderColor: null,
       showNormalCurve: false,
       normalCurveColor: null,
+      normalCurves: [],
       specLimits: { lsl: null, usl: null, target: null },
     };
     super(container, Object.assign(defaults, config), context);
+  }
+
+  /**
+   * Build the list of normal curves to render, merging the legacy
+   * `showNormalCurve` shorthand (auto-fit to data) with the explicit
+   * `normalCurves` array. Returns curves with resolved mean/stdDev/color/label.
+   * @private
+   * @returns {{ mean: number, stdDev: number, color: string, label: string, lineStyle?: string, strokeWidth?: number }[]}
+   */
+  _getActiveNormalCurves() {
+    const data = this.config.data || [];
+    const chartColors = getChartColors();
+    const out = [];
+
+    if (this.config.showNormalCurve && data.length > 1) {
+      const mean = data.reduce((s, v) => s + v, 0) / data.length;
+      const variance = data.reduce((s, v) => s + (v - mean) ** 2, 0) / (data.length - 1);
+      const stdDev = Math.sqrt(variance);
+      if (stdDev > 0) {
+        out.push({
+          mean,
+          stdDev,
+          color: this.config.normalCurveColor || chartColors[1] || 'var(--color-chart-2)',
+          label: 'Normal',
+        });
+      }
+    }
+
+    const explicit = Array.isArray(this.config.normalCurves) ? this.config.normalCurves : [];
+    for (let i = 0; i < explicit.length; i++) {
+      const c = explicit[i];
+      if (!c || !Number.isFinite(c.mean) || !Number.isFinite(c.stdDev) || c.stdDev <= 0) continue;
+      out.push({
+        mean: c.mean,
+        stdDev: c.stdDev,
+        color: c.color || chartColors[(i + 2) % chartColors.length] || 'var(--color-chart-3)',
+        label: c.label || `Normal ${out.length + 1}`,
+        lineStyle: c.lineStyle,
+        strokeWidth: c.strokeWidth,
+      });
+    }
+
+    return out;
   }
 
   // ── Abstract Implementation: Data Extent ─────────────────────────
@@ -155,16 +199,11 @@ export default class HistogramChart extends ChartBase {
       xMax = Math.max(xMax, sl.target);
     }
 
-    // Include normal curve peak
-    if (this.config.showNormalCurve && data.length > 1) {
-      const mean = data.reduce((s, v) => s + v, 0) / data.length;
-      const variance = data.reduce((s, v) => s + (v - mean) ** 2, 0) / (data.length - 1);
-      const stdDev = Math.sqrt(variance);
-      if (stdDev > 0) {
-        yMax = Math.max(yMax, normalPdf(mean, mean, stdDev));
-        xMin = Math.min(xMin, mean - 4 * stdDev);
-        xMax = Math.max(xMax, mean + 4 * stdDev);
-      }
+    // Include normal curve peaks (auto-fit + explicit curves)
+    for (const curve of this._getActiveNormalCurves()) {
+      yMax = Math.max(yMax, normalPdf(curve.mean, curve.mean, curve.stdDev));
+      xMin = Math.min(xMin, curve.mean - 4 * curve.stdDev);
+      xMax = Math.max(xMax, curve.mean + 4 * curve.stdDev);
     }
 
     return { xMin, xMax, yMin: 0, yMax };
@@ -208,32 +247,28 @@ export default class HistogramChart extends ChartBase {
       }, plotGroup);
     }
 
-    // Normal curve overlay
-    if (this.config.showNormalCurve && data.length > 1) {
-      const mean = data.reduce((s, v) => s + v, 0) / data.length;
-      const variance = data.reduce((s, v) => s + (v - mean) ** 2, 0) / (data.length - 1);
-      const stdDev = Math.sqrt(variance);
+    // Normal curve overlays (auto-fit + explicit curves)
+    for (const curve of this._getActiveNormalCurves()) {
+      const curveColor = resolveColor(curve.color);
+      const points = [];
+      const steps = 100;
+      const cxMin = curve.mean - 4 * curve.stdDev;
+      const cxMax = curve.mean + 4 * curve.stdDev;
 
-      if (stdDev > 0) {
-        const curveColor = resolveColor(this.config.normalCurveColor || chartColors[1] || 'var(--color-chart-2)');
-        const points = [];
-        const steps = 100;
-        const cxMin = mean - 4 * stdDev;
-        const cxMax = mean + 4 * stdDev;
-
-        for (let i = 0; i <= steps; i++) {
-          const x = cxMin + (cxMax - cxMin) * i / steps;
-          const y = normalPdf(x, mean, stdDev);
-          points.push(`${xScale(x)},${yScale(y)}`);
-        }
-
-        svgEl('polyline', {
-          points: points.join(' '),
-          fill: 'none',
-          stroke: curveColor,
-          'stroke-width': 2,
-        }, plotGroup);
+      for (let i = 0; i <= steps; i++) {
+        const x = cxMin + (cxMax - cxMin) * i / steps;
+        const y = normalPdf(x, curve.mean, curve.stdDev);
+        points.push(`${xScale(x)},${yScale(y)}`);
       }
+
+      const attrs = {
+        points: points.join(' '),
+        fill: 'none',
+        stroke: curveColor,
+        'stroke-width': curve.strokeWidth || 2,
+      };
+      if (curve.lineStyle === 'dashed') attrs['stroke-dasharray'] = '6,3';
+      svgEl('polyline', attrs, plotGroup);
     }
 
     // Spec limit lines
@@ -360,6 +395,20 @@ export default class HistogramChart extends ChartBase {
         setVisible: () => {},
       });
     }
+    const explicit = Array.isArray(cfg.normalCurves) ? cfg.normalCurves : [];
+    explicit.forEach((curve, i) => {
+      if (!curve || !Number.isFinite(curve.mean) || !Number.isFinite(curve.stdDev) || curve.stdDev <= 0) return;
+      const fallback = chartColors[(i + 2) % chartColors.length] || 'var(--color-chart-3)';
+      descriptors.push({
+        index: descriptors.length,
+        getName: () => curve.label || `Normal ${i + 1}`,
+        setName: (s) => { curve.label = s; },
+        getColor: () => curve.color || fallback,
+        setColor: (c) => { curve.color = c; },
+        isVisible: () => true,
+        setVisible: () => {},
+      });
+    });
     return descriptors;
   }
 
@@ -376,6 +425,12 @@ export default class HistogramChart extends ChartBase {
       const curveColor = this.config.normalCurveColor || chartColors[1] || 'var(--color-chart-2)';
       items.push({ type: 'line', color: curveColor, label: 'Normal' });
     }
+    const explicit = Array.isArray(this.config.normalCurves) ? this.config.normalCurves : [];
+    explicit.forEach((curve, i) => {
+      if (!curve || !Number.isFinite(curve.mean) || !Number.isFinite(curve.stdDev) || curve.stdDev <= 0) return;
+      const color = curve.color || chartColors[(i + 2) % chartColors.length] || 'var(--color-chart-3)';
+      items.push({ type: 'line', color, label: curve.label || `Normal ${i + 1}` });
+    });
 
     return items;
   }

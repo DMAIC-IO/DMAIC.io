@@ -2150,8 +2150,9 @@ function _initTraining(eventBus, i18n) {
   if (!btn || !area) return;
 
   const TABS = [
-    { id: 'dmaic',   labelKey: 'training.tabDmaic',   render: () => _renderCycleTab('dmaic') },
-    { id: 'dmadv',   labelKey: 'training.tabDmadv',   render: () => _renderCycleTab('dmadv') },
+    { id: 'dmaic',   labelKey: 'training.tabDmaic',   render: () => _renderCycleTab('dmaic')  },
+    { id: 'dmadv',   labelKey: 'training.tabDmadv',   render: () => _renderCycleTab('dmadv')  },
+    { id: 'eightd', labelKey: 'training.tabEightd', render: () => _renderCycleTab('eightd') },
     { id: 'triz',    labelKey: 'training.tabTriz',    render: () => _renderTrizTab() },
     { id: 'minitab', labelKey: 'training.tabMinitab', render: () => _renderToolTab('minitab') },
     { id: 'jmp',     labelKey: 'training.tabJmp',     render: () => _renderToolTab('jmp') },

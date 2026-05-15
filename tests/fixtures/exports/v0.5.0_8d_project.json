@@ -1,0 +1,305 @@
+{
+  "appVersion": "0.5.0",
+  "exportedAt": "2026-05-15T10:00:00.000Z",
+  "version": "0.5.0",
+  "settings": {
+    "language": "de",
+    "theme": "light",
+    "chartTitleSize": 15,
+    "chartLabelSize": 12,
+    "chartTickSize": 11,
+    "chartColors": null,
+    "chartBgColor": null,
+    "chartShowLegend": true,
+    "showAlgoLabLinks": true,
+    "confidenceLevel": 95,
+    "power": 80
+  },
+  "projectMeta": {
+    "name": "Goldene Fixture v0.5 — 8D-Reklamation Lackabplatzungen",
+    "cycle": "eightd",
+    "created": "2026-05-01T08:00:00.000Z",
+    "modified": "2026-05-15T10:00:00.000Z"
+  },
+  "phases": {
+    "data": [
+      { "instanceId": "inst-ws",        "moduleId": "worksheet" },
+      { "instanceId": "inst-histogram", "moduleId": "histogram" }
+    ],
+    "prepare": [],
+    "team": [
+      { "instanceId": "inst-raci",         "moduleId": "raci-matrix" },
+      { "instanceId": "inst-stakeholders", "moduleId": "stakeholder-analysis" },
+      { "instanceId": "inst-todo",         "moduleId": "todo" }
+    ],
+    "problem": [
+      { "instanceId": "inst-charter", "moduleId": "project-charter" },
+      { "instanceId": "inst-sipoc",   "moduleId": "sipoc" },
+      { "instanceId": "inst-pmap",    "moduleId": "process-map" },
+      { "instanceId": "inst-msa1",    "moduleId": "msa-typ1" }
+    ],
+    "containment": [],
+    "rootcause": [
+      { "instanceId": "inst-5why",  "moduleId": "five-why" },
+      { "instanceId": "inst-ishi",  "moduleId": "ishikawa" },
+      { "instanceId": "inst-htest", "moduleId": "hypothesis-test" }
+    ],
+    "corrective": [
+      { "instanceId": "inst-doep", "moduleId": "doe-planner" },
+      { "instanceId": "inst-reg",  "moduleId": "regression" }
+    ],
+    "implementation": [
+      { "instanceId": "inst-cc",  "moduleId": "control-chart" },
+      { "instanceId": "inst-cpk", "moduleId": "process-capability" }
+    ],
+    "prevent": [
+      { "instanceId": "inst-fmea", "moduleId": "fmea" }
+    ],
+    "recognize": [
+      { "instanceId": "inst-ll", "moduleId": "lessons-learned" }
+    ],
+    "extras": []
+  },
+  "phaseAchievement": {
+    "prepare": 100,
+    "team": 100,
+    "problem": 100,
+    "containment": 100,
+    "rootcause": 80,
+    "corrective": 50,
+    "implementation": 30,
+    "prevent": 0,
+    "recognize": 0
+  },
+  "phaseAchievementHistory": {
+    "prepare":      [ { "ts": "2026-05-02T10:00:00.000Z", "value": 100 } ],
+    "team":         [ { "ts": "2026-05-03T10:00:00.000Z", "value": 100 } ],
+    "problem":      [ { "ts": "2026-05-06T10:00:00.000Z", "value":  50 }, { "ts": "2026-05-08T10:00:00.000Z", "value": 100 } ],
+    "containment":  [ { "ts": "2026-05-04T10:00:00.000Z", "value": 100 } ],
+    "rootcause":    [ { "ts": "2026-05-10T10:00:00.000Z", "value":  40 }, { "ts": "2026-05-13T10:00:00.000Z", "value":  80 } ],
+    "corrective":   [ { "ts": "2026-05-14T10:00:00.000Z", "value":  50 } ],
+    "implementation": [ { "ts": "2026-05-15T10:00:00.000Z", "value":  30 } ]
+  },
+  "dashboard": {
+    "layout": []
+  },
+  "moduleStates": {
+    "inst-ws": {
+      "sheets": [
+        {
+          "id": "sheet-1",
+          "name": "Reklamationsmessungen",
+          "state": {
+            "columns": [
+              { "id": "col-id",    "name": "ID",        "shortName": "C1", "type": "numeric", "unit": null, "values": [1,2,3,4,5,6,7,8,9,10], "formulas": [null,null,null,null,null,null,null,null,null,null], "format": {} },
+              { "id": "col-thick", "name": "Schichtdicke", "shortName": "C2", "type": "numeric", "unit": "µm", "values": [45.2,44.1,46.8,43.5,47.2,42.9,45.6,44.8,46.1,43.2], "formulas": [null,null,null,null,null,null,null,null,null,null], "format": { "decimals": 1 } }
+            ],
+            "rowCount": 10,
+            "colWidths": { "col-id": 50, "col-thick": 110 },
+            "sortCol": null,
+            "sortDir": null,
+            "selection": null
+          }
+        }
+      ],
+      "activeSheetId": "sheet-1",
+      "sheetCounter": 1
+    },
+    "inst-histogram": {
+      "datasets": [
+        { "valueRef": { "instanceId": "inst-ws", "sheetId": "sheet-1", "columnId": "col-thick" }, "groupRef": null }
+      ],
+      "binMode": "auto",
+      "binWidth": null,
+      "showTitle": true,
+      "chartTitleText": "Schichtdickenverteilung",
+      "showPareto": false,
+      "showStats": true,
+      "showBoxplot": false,
+      "confLevel": 95,
+      "titleSize": 15,
+      "labelSize": 12,
+      "tickSize": 11,
+      "showXLabel": true,
+      "showYLabel": true,
+      "showXTicks": true,
+      "showYTicks": true,
+      "barGap": 0,
+      "bgColor": null,
+      "refLines": [],
+      "refAreas": [],
+      "seriesOverrides": []
+    },
+    "inst-charter": {
+      "problemStatement": "Häufung von Lackabplatzungen bei Modellreihe X seit KW 18. Kundenreklamationen aktuell bei 8,3 % (Ziel: < 0,5 %). Sicherheitskritisch nicht — aber kosmetisch wertmindernd.",
+      "goals": [
+        { "id": "g1", "text": "Reklamationsquote auf < 0,5 % senken", "status": "open" },
+        { "id": "g2", "text": "Wurzelursache statistisch belegt",     "status": "in-progress" },
+        { "id": "g3", "text": "FMEA Karosseriebau aktualisiert",      "status": "open" }
+      ],
+      "orgChart": [],
+      "orgStyle": {}
+    },
+    "inst-sipoc": {
+      "columns": {
+        "suppliers": ["Lacklieferant", "Vorbehandlungsbad-Hersteller"],
+        "inputs":    ["KTL-Bad", "Pulverlack", "Karosserie roh"],
+        "process":   ["Vorbehandeln", "KTL aufbringen", "Füller", "Decklack", "Klarlack"],
+        "outputs":   ["Lackierte Karosserie", "QS-Protokoll"],
+        "customers": ["Endmontage", "Endkunde"]
+      }
+    },
+    "inst-raci": {
+      "activities": ["8D-Report Kunde", "Containment-Sortierung", "Ursachenanalyse", "DOE-Planung", "FMEA-Update", "Schulung"],
+      "stakeholders": ["Champion", "Teamleiter", "Qualität", "Produktion", "Lackchemiker"],
+      "assignments": {
+        "0_0": "A", "0_1": "R", "0_2": "C", "0_3": "I", "0_4": "I",
+        "1_0": "I", "1_1": "A", "1_2": "C", "1_3": "R", "1_4": "I",
+        "2_0": "I", "2_1": "A", "2_2": "C", "2_3": "C", "2_4": "R",
+        "3_0": "I", "3_1": "A", "3_2": "C", "3_3": "C", "3_4": "R",
+        "4_0": "I", "4_1": "C", "4_2": "A", "4_3": "C", "4_4": "R",
+        "5_0": "I", "5_1": "C", "5_2": "R", "5_3": "A", "5_4": "C"
+      }
+    },
+    "inst-stakeholders": {
+      "stakeholders": [
+        { "id": "s1", "name": "Werkleitung",      "power": 5, "interest": 4, "category": "manage-closely", "notes": "Eskalationsstufe" },
+        { "id": "s2", "name": "Kunde (OEM)",      "power": 5, "interest": 5, "category": "manage-closely", "notes": "8D-Report erwartet bis KW 22" },
+        { "id": "s3", "name": "Lacklieferant",    "power": 3, "interest": 4, "category": "keep-informed",  "notes": "Mögliche Mitverantwortung" }
+      ]
+    },
+    "inst-todo": {
+      "items": [
+        { "id": "t1", "text": "Containment: 100 %-Sichtprüfung Schicht ab KW 19", "due": "2026-05-04", "owner": "Qualität",      "status": "done" },
+        { "id": "t2", "text": "Rückläufer-Charge sortieren",                       "due": "2026-05-05", "owner": "Werkstatt",     "status": "done" },
+        { "id": "t3", "text": "Ursachenhypothesen mit Hypothesentest absichern",   "due": "2026-05-12", "owner": "Lackchemiker",  "status": "in-progress" },
+        { "id": "t4", "text": "DOE für Trocknungsfenster aufsetzen",                "due": "2026-05-20", "owner": "Lackchemiker",  "status": "open" }
+      ],
+      "filterStatus": "",
+      "filterOwner": "",
+      "sortCol": "due",
+      "sortAsc": true
+    },
+    "inst-pmap": {
+      "steps": [
+        { "id": "p1", "seq": 1, "type": "start",   "text": "Karosserie roh", "owner": "Karosseriebau", "valueType": "value-add", "substeps": [], "expanded": false, "loop": null },
+        { "id": "p2", "seq": 2, "type": "process", "text": "Vorbehandeln",   "owner": "Lack",           "valueType": "value-add", "substeps": [], "expanded": false, "loop": null },
+        { "id": "p3", "seq": 3, "type": "process", "text": "KTL",            "owner": "Lack",           "valueType": "value-add", "substeps": [], "expanded": false, "loop": null },
+        { "id": "p4", "seq": 4, "type": "process", "text": "Füller",         "owner": "Lack",           "valueType": "value-add", "substeps": [], "expanded": false, "loop": null },
+        { "id": "p5", "seq": 5, "type": "process", "text": "Decklack",       "owner": "Lack",           "valueType": "value-add", "substeps": [], "expanded": false, "loop": null },
+        { "id": "p6", "seq": 6, "type": "end",     "text": "Klarlack",       "owner": "Lack",           "valueType": "value-add", "substeps": [], "expanded": false, "loop": null }
+      ]
+    },
+    "inst-msa1": {
+      "params": { "repeats": 25, "tolerance": 10, "reference": 45.0, "kCg": 0.2, "kCgk": 0.1 },
+      "columnRef": { "instanceId": "inst-ws", "sheetId": "sheet-1", "columnId": "col-thick" },
+      "lastResult": null
+    },
+    "inst-5why": {
+      "problem": "Lackabplatzungen an Türsäule bei Modellreihe X",
+      "nodes": [
+        { "id": 1, "level": 0, "parent": 0, "text": "Lack platzt nach 2–6 Wochen ab" },
+        { "id": 2, "level": 1, "parent": 1, "text": "Haftung zwischen KTL und Füller ungenügend" },
+        { "id": 3, "level": 2, "parent": 2, "text": "Trocknungsfenster KTL zu kurz" },
+        { "id": 4, "level": 3, "parent": 3, "text": "Taktung Linie 2 wurde im Februar reduziert" },
+        { "id": 5, "level": 4, "parent": 4, "text": "Linienänderung ohne FMEA-Bewertung des Trocknungsfensters" }
+      ]
+    },
+    "inst-ishi": {
+      "problem": "Lackabplatzungen Modellreihe X",
+      "experts": [],
+      "catLabels": { "man": "Mensch", "machine": "Maschine", "method": "Methode", "material": "Material", "measurement": "Messung", "milieu": "Mitwelt" },
+      "rows": [
+        { "id": "r1", "cat": "method",   "text": "Trocknungsfenster KTL zu kurz",    "votes": 5 },
+        { "id": "r2", "cat": "material", "text": "Lackcharge LF-19 neue Rezeptur",   "votes": 3 },
+        { "id": "r3", "cat": "machine",  "text": "Düsenverschleiß Vorbehandlung",    "votes": 2 }
+      ],
+      "snapshots": [],
+      "experiments": [],
+      "facts": [],
+      "images": []
+    },
+    "inst-htest": {
+      "category": "mean",
+      "testType": "two-sample-t",
+      "direction": "two-sided",
+      "alpha": 0.05,
+      "powerGoal": 0.8,
+      "targetValue": 0,
+      "targetType": "null",
+      "colRef1": { "instanceId": "inst-ws", "sheetId": "sheet-1", "columnId": "col-thick" },
+      "colRef2": null
+    },
+    "inst-doep": {
+      "version": 3,
+      "doeName": "Trocknungsfenster KTL",
+      "designType": "full",
+      "factors": [
+        { "name": "Trocknungszeit", "levels": ["short", "long"], "encoding": [ { "value": "short", "num": -1 }, { "value": "long", "num": 1 } ] },
+        { "name": "Temperatur",     "levels": ["170", "190"],    "encoding": [ { "value": "170", "num": -1 }, { "value": "190", "num": 1 } ] }
+      ],
+      "responses": [ { "name": "Haftung", "unit": "MPa", "goalsense": "maximize", "nreps": 2, "levels": [] } ],
+      "options": { "centerPoints": 2, "blockCount": 1, "randomize": true, "seed": 7 },
+      "selectedRes": null,
+      "selectedPBIdx": 0,
+      "design": null,
+      "worksheetRef": null,
+      "evaluation": null,
+      "analysisResponseIdx": 0,
+      "fid": "doe-trocknung-001",
+      "projectMode": false,
+      "projectName": "",
+      "projectPhases": [],
+      "activePhaseIdx": 0
+    },
+    "inst-reg": {
+      "colRefs": [
+        { "instanceId": "inst-ws", "sheetId": "sheet-1", "columnId": "col-id" },
+        { "instanceId": "inst-ws", "sheetId": "sheet-1", "columnId": "col-thick" }
+      ],
+      "yKey": "col-thick",
+      "regType": "polynomial",
+      "polyDegree": 1,
+      "confLevel": 95,
+      "alpha": 0.05,
+      "showCI": true,
+      "result": null,
+      "perXResults": null,
+      "activeXKey": "col-id",
+      "activeTab": "summary",
+      "excludedTerms": [],
+      "coefSortByP": false
+    },
+    "inst-cc": {
+      "chartTypeId": "i-mr",
+      "subgroupSize": 1,
+      "columnRef": { "instanceId": "inst-ws", "sheetId": "sheet-1", "columnId": "col-thick" },
+      "baselineCount": 10,
+      "usl": null,
+      "lsl": null,
+      "enabledRules": [1, 2, 3, 4, 5, 6, 7, 8]
+    },
+    "inst-cpk": {
+      "params": { "lsl": 40, "usl": 50, "target": 45.0, "subgroupSize": 1 },
+      "columnRef": { "instanceId": "inst-ws", "sheetId": "sheet-1", "columnId": "col-thick" },
+      "lastResult": null
+    },
+    "inst-fmea": {
+      "risks": [
+        { "id": "f1", "process": "KTL-Trocknung",      "failure": "Unzureichende Haftung", "causes": "Trocknungsfenster zu kurz; Temperatur zu niedrig", "effects": "Lackabplatzung", "detection": "Visuell nach 2 Wochen Außenexposition", "sev": 8, "occ": 5, "det": 8, "rpn": 320 },
+        { "id": "f2", "process": "Linienänderung",     "failure": "FMEA nicht aktualisiert", "causes": "Change-Prozess umgangen", "effects": "Latentes Qualitätsrisiko", "detection": "Audit", "sev": 7, "occ": 3, "det": 7, "rpn": 147 }
+      ],
+      "scales": {
+        "severity":   [ { "value": 1, "label": "Vernachlässigbar" }, { "value": 5, "label": "Mittel" }, { "value": 10, "label": "Katastrophal" } ],
+        "occurrence": [ { "value": 1, "label": "Sehr selten" }, { "value": 5, "label": "Gelegentlich" }, { "value": 10, "label": "Sehr häufig" } ],
+        "detection":  [ { "value": 1, "label": "Fast sicher" }, { "value": 5, "label": "Mäßig" }, { "value": 10, "label": "Praktisch unmöglich" } ]
+      }
+    },
+    "inst-ll": {
+      "lessons": [
+        { "id": "l1", "category": "Methodik", "text": "Jede Linienänderung muss zwingend mit FMEA-Re-Review verknüpft sein.", "date": "2026-05-15", "owner": "Qualität", "impact": "high" },
+        { "id": "l2", "category": "Tooling",  "text": "Trocknungsfenster der KTL automatisiert protokollieren — manuelle Erfassung war fehleranfällig.", "date": "2026-05-15", "owner": "Engineering", "impact": "medium" }
+      ]
+    }
+  }
+}

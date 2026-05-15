@@ -28,11 +28,16 @@ Aktueller Stand:
 | v0.2.0_all_projects.json        | 2        | 18              |
 | v0.3.0_single_project.json      | 1        | 34              |
 | v0.3.0_all_projects.json        | 3        | 38              |
+| v0.5.0_8d_project.json          | 1        | 19              |
 
-Die v0.3-Fixtures decken zusammen **alle 39** produktiven Module aus
+Die v0.3-Fixtures decken zusammen **alle produktiven Module** aus
 `js/modules/manifest.js` mindestens einmal ab. Wenn ein neues Modul hinzukommt,
 **muss** es in mindestens eine der v0.3-Fixtures aufgenommen werden, damit der
 Import-Pfad in der Regression mitläuft.
+
+Die v0.5-Fixture demonstriert den neuen `eightd`-Zyklus mit Modulen über alle
+D-Phasen — sie hält die Phasen-Struktur D0…D8 + `data`/`extras` für künftige
+Regressionen fest.
 
 ## Pflicht beim Release
 

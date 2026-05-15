@@ -453,6 +453,13 @@ html.is-nightly body {
   line-height: 1;
 }
 
+/* Multi-character letters (e.g. 'D0' … 'D8' in the 8D cycle) — slightly
+   smaller and tighter so two glyphs fit the same tile width. */
+.dmaic-tile__letter--multichar {
+  font-size: var(--font-size-sm);
+  letter-spacing: -0.02em;
+}
+
 .dmaic-tile__name {
   font-size: var(--font-size-xs);
   color: var(--color-text-secondary);
@@ -516,6 +523,15 @@ html.is-nightly body {
 .dmaic-tile[data-phase="control"] .dmaic-tile__progress-fill { background: var(--color-phase-control); }
 .dmaic-tile[data-phase="design"]  .dmaic-tile__progress-fill { background: var(--color-phase-design); }
 .dmaic-tile[data-phase="verify"]  .dmaic-tile__progress-fill { background: var(--color-phase-verify); }
+.dmaic-tile[data-phase="prepare"]        .dmaic-tile__progress-fill { background: var(--color-phase-prepare); }
+.dmaic-tile[data-phase="team"]           .dmaic-tile__progress-fill { background: var(--color-phase-team); }
+.dmaic-tile[data-phase="problem"]        .dmaic-tile__progress-fill { background: var(--color-phase-problem); }
+.dmaic-tile[data-phase="containment"]    .dmaic-tile__progress-fill { background: var(--color-phase-containment); }
+.dmaic-tile[data-phase="rootcause"]      .dmaic-tile__progress-fill { background: var(--color-phase-rootcause); }
+.dmaic-tile[data-phase="corrective"]     .dmaic-tile__progress-fill { background: var(--color-phase-corrective); }
+.dmaic-tile[data-phase="implementation"] .dmaic-tile__progress-fill { background: var(--color-phase-implementation); }
+.dmaic-tile[data-phase="prevent"]        .dmaic-tile__progress-fill { background: var(--color-phase-prevent); }
+.dmaic-tile[data-phase="recognize"]      .dmaic-tile__progress-fill { background: var(--color-phase-recognize); }
 .dmaic-tile[data-phase="extras"]  .dmaic-tile__progress-fill { background: var(--color-phase-extras); }
 
 /* Phase-specific accent colors */
@@ -527,6 +543,15 @@ html.is-nightly body {
 .dmaic-tile[data-phase="control"] .dmaic-tile__letter    { color: var(--color-phase-control); }
 .dmaic-tile[data-phase="design"]  .dmaic-tile__letter    { color: var(--color-phase-design); }
 .dmaic-tile[data-phase="verify"]  .dmaic-tile__letter    { color: var(--color-phase-verify); }
+.dmaic-tile[data-phase="prepare"]        .dmaic-tile__letter { color: var(--color-phase-prepare); }
+.dmaic-tile[data-phase="team"]           .dmaic-tile__letter { color: var(--color-phase-team); }
+.dmaic-tile[data-phase="problem"]        .dmaic-tile__letter { color: var(--color-phase-problem); }
+.dmaic-tile[data-phase="containment"]    .dmaic-tile__letter { color: var(--color-phase-containment); }
+.dmaic-tile[data-phase="rootcause"]      .dmaic-tile__letter { color: var(--color-phase-rootcause); }
+.dmaic-tile[data-phase="corrective"]     .dmaic-tile__letter { color: var(--color-phase-corrective); }
+.dmaic-tile[data-phase="implementation"] .dmaic-tile__letter { color: var(--color-phase-implementation); }
+.dmaic-tile[data-phase="prevent"]        .dmaic-tile__letter { color: var(--color-phase-prevent); }
+.dmaic-tile[data-phase="recognize"]      .dmaic-tile__letter { color: var(--color-phase-recognize); }
 .dmaic-tile[data-phase="extras"]  .dmaic-tile__letter    { color: var(--color-phase-extras); }
 
 .dmaic-tile--active[data-phase="data"]    { box-shadow: inset 0 -2px 0 var(--color-phase-data); }
@@ -537,6 +562,15 @@ html.is-nightly body {
 .dmaic-tile--active[data-phase="control"] { box-shadow: inset 0 -2px 0 var(--color-phase-control); }
 .dmaic-tile--active[data-phase="design"]  { box-shadow: inset 0 -2px 0 var(--color-phase-design); }
 .dmaic-tile--active[data-phase="verify"]  { box-shadow: inset 0 -2px 0 var(--color-phase-verify); }
+.dmaic-tile--active[data-phase="prepare"]        { box-shadow: inset 0 -2px 0 var(--color-phase-prepare); }
+.dmaic-tile--active[data-phase="team"]           { box-shadow: inset 0 -2px 0 var(--color-phase-team); }
+.dmaic-tile--active[data-phase="problem"]        { box-shadow: inset 0 -2px 0 var(--color-phase-problem); }
+.dmaic-tile--active[data-phase="containment"]    { box-shadow: inset 0 -2px 0 var(--color-phase-containment); }
+.dmaic-tile--active[data-phase="rootcause"]      { box-shadow: inset 0 -2px 0 var(--color-phase-rootcause); }
+.dmaic-tile--active[data-phase="corrective"]     { box-shadow: inset 0 -2px 0 var(--color-phase-corrective); }
+.dmaic-tile--active[data-phase="implementation"] { box-shadow: inset 0 -2px 0 var(--color-phase-implementation); }
+.dmaic-tile--active[data-phase="prevent"]        { box-shadow: inset 0 -2px 0 var(--color-phase-prevent); }
+.dmaic-tile--active[data-phase="recognize"]      { box-shadow: inset 0 -2px 0 var(--color-phase-recognize); }
 .dmaic-tile--active[data-phase="extras"]  { box-shadow: inset 0 -2px 0 var(--color-phase-extras); }
 
 .dmaic-tile--drop-target {

@@ -133,8 +133,9 @@ export default [
     allowedPhases: ['define'],
     load: () => import('./project-charter/project-charter.js'),
     cycles: {
-      dmaic: { phase: 'define', allowedPhases: ['define'] },
-      dmadv: { phase: 'define', allowedPhases: ['define'] },
+      dmaic:  { phase: 'define',  allowedPhases: ['define']  },
+      dmadv:  { phase: 'define',  allowedPhases: ['define']  },
+      eightd: { phase: 'problem', allowedPhases: ['problem'] },
     },
   },
   {
@@ -143,8 +144,9 @@ export default [
     allowedPhases: ['define'],
     load: () => import('./dmaic-calendar/dmaic-calendar.js'),
     cycles: {
-      dmaic: { phase: 'define', allowedPhases: ['define'] },
-      dmadv: { phase: 'define', allowedPhases: ['define'] },
+      dmaic:  { phase: 'define', allowedPhases: ['define'] },
+      dmadv:  { phase: 'define', allowedPhases: ['define'] },
+      eightd: { phase: 'team',   allowedPhases: ['team']   },
     },
   },
   {
@@ -153,8 +155,9 @@ export default [
     allowedPhases: ['define'],
     load: () => import('./todo/todo.js'),
     cycles: {
-      dmaic: { phase: 'define', allowedPhases: ['define'] },
-      dmadv: { phase: 'define', allowedPhases: ['define'] },
+      dmaic:  { phase: 'define', allowedPhases: ['define'] },
+      dmadv:  { phase: 'define', allowedPhases: ['define'] },
+      eightd: { phase: 'team',   allowedPhases: ['team', 'containment'] },
     },
   },
   {
@@ -163,8 +166,9 @@ export default [
     allowedPhases: ['define'],
     load: () => import('./stakeholder-analysis/stakeholder-analysis.js'),
     cycles: {
-      dmaic: { phase: 'define', allowedPhases: ['define'] },
-      dmadv: { phase: 'define', allowedPhases: ['define'] },
+      dmaic:  { phase: 'define', allowedPhases: ['define'] },
+      dmadv:  { phase: 'define', allowedPhases: ['define'] },
+      eightd: { phase: 'team',   allowedPhases: ['team']   },
     },
   },
   {
@@ -174,8 +178,9 @@ export default [
     allowedPhases: ['define'],
     load: () => import('./voc-ctx-tree/voc-ctx-tree.js'),
     cycles: {
-      dmaic: { phase: 'define', allowedPhases: ['define'] },
-      dmadv: { phase: 'define', allowedPhases: ['define'] },
+      dmaic:  { phase: 'define',  allowedPhases: ['define']  },
+      dmadv:  { phase: 'define',  allowedPhases: ['define']  },
+      eightd: { phase: 'problem', allowedPhases: ['problem'] },
     },
   },
   {
@@ -184,8 +189,9 @@ export default [
     allowedPhases: ['define'],
     load: () => import('./raci-matrix/raci-matrix.js'),
     cycles: {
-      dmaic: { phase: 'define', allowedPhases: ['define'] },
-      dmadv: { phase: 'define', allowedPhases: ['define'] },
+      dmaic:  { phase: 'define', allowedPhases: ['define'] },
+      dmadv:  { phase: 'define', allowedPhases: ['define'] },
+      eightd: { phase: 'team',   allowedPhases: ['team']   },
     },
   },
   {
@@ -193,8 +199,9 @@ export default [
     phase: 'define',
     load: () => import('./sipoc/sipoc.js'),
     cycles: {
-      dmaic: { phase: 'define' },
-      dmadv: { phase: 'define' },
+      dmaic:  { phase: 'define'  },
+      dmadv:  { phase: 'define'  },
+      eightd: { phase: 'problem' },
     },
   },
   {
@@ -202,8 +209,9 @@ export default [
     phase: 'define',
     load: () => import('./five-why/five-why.js'),
     cycles: {
-      dmaic: { phase: 'define' },
-      dmadv: { phase: 'define', allowedPhases: ['define', 'analyze'] },
+      dmaic:  { phase: 'define' },
+      dmadv:  { phase: 'define',    allowedPhases: ['define', 'analyze'] },
+      eightd: { phase: 'rootcause', allowedPhases: ['problem', 'rootcause'] },
     },
   },
 
@@ -213,8 +221,9 @@ export default [
     phase: 'measure',
     load: () => import('./process-map/process-map.js'),
     cycles: {
-      dmaic: { phase: 'measure' },
-      dmadv: { phase: 'measure' },
+      dmaic:  { phase: 'measure' },
+      dmadv:  { phase: 'measure' },
+      eightd: { phase: 'problem', allowedPhases: ['problem', 'rootcause'] },
     },
   },
   {
@@ -222,8 +231,9 @@ export default [
     phase: 'measure',
     load: () => import('./msa-typ1/msa-typ1.js'),
     cycles: {
-      dmaic: { phase: 'measure' },
-      dmadv: { phase: 'measure' },
+      dmaic:  { phase: 'measure' },
+      dmadv:  { phase: 'measure' },
+      eightd: { phase: 'problem' },
     },
   },
   {
@@ -231,8 +241,9 @@ export default [
     phase: 'measure',
     load: () => import('./msa-typ2/msa-typ2.js'),
     cycles: {
-      dmaic: { phase: 'measure' },
-      dmadv: { phase: 'measure' },
+      dmaic:  { phase: 'measure' },
+      dmadv:  { phase: 'measure' },
+      eightd: { phase: 'problem' },
     },
   },
   {
@@ -240,8 +251,9 @@ export default [
     phase: 'measure',
     load: () => import('./process-capability/process-capability.js'),
     cycles: {
-      dmaic: { phase: 'measure' },
-      dmadv: { phase: 'measure', allowedPhases: ['measure', 'verify'] },
+      dmaic:  { phase: 'measure' },
+      dmadv:  { phase: 'measure', allowedPhases: ['measure', 'verify']   },
+      eightd: { phase: 'problem', allowedPhases: ['problem', 'implementation'] },
     },
   },
 
@@ -251,8 +263,9 @@ export default [
     phase: 'analyze',
     load: () => import('./ce-matrix/ce-matrix.js'),
     cycles: {
-      dmaic: { phase: 'analyze' },
-      dmadv: { phase: 'analyze' },
+      dmaic:  { phase: 'analyze' },
+      dmadv:  { phase: 'analyze' },
+      eightd: { phase: 'rootcause' },
     },
   },
   {
@@ -261,8 +274,9 @@ export default [
     allowedPhases: ['measure', 'analyze', 'improve'],
     load: () => import('./ishikawa/ishikawa.js'),
     cycles: {
-      dmaic: { phase: 'analyze', allowedPhases: ['measure', 'analyze', 'improve'] },
-      dmadv: { phase: 'analyze', allowedPhases: ['measure', 'analyze', 'design'] },
+      dmaic:  { phase: 'analyze',   allowedPhases: ['measure', 'analyze', 'improve'] },
+      dmadv:  { phase: 'analyze',   allowedPhases: ['measure', 'analyze', 'design']  },
+      eightd: { phase: 'rootcause', allowedPhases: ['problem', 'rootcause', 'corrective'] },
     },
   },
   {
@@ -270,8 +284,9 @@ export default [
     phase: 'analyze',
     load: () => import('./correlation/correlation.js'),
     cycles: {
-      dmaic: { phase: 'analyze' },
-      dmadv: { phase: 'analyze' },
+      dmaic:  { phase: 'analyze' },
+      dmadv:  { phase: 'analyze' },
+      eightd: { phase: 'rootcause' },
     },
   },
   {
@@ -279,8 +294,9 @@ export default [
     phase: 'analyze',
     load: () => import('./distribution-fit/distribution-fit.js'),
     cycles: {
-      dmaic: { phase: 'analyze' },
-      dmadv: { phase: 'analyze' },
+      dmaic:  { phase: 'analyze' },
+      dmadv:  { phase: 'analyze' },
+      eightd: { phase: 'rootcause' },
     },
   },
   {
@@ -288,8 +304,9 @@ export default [
     phase: 'analyze',
     load: () => import('./fmea/fmea.js'),
     cycles: {
-      dmaic: { phase: 'analyze' },
-      dmadv: { phase: 'analyze', allowedPhases: ['analyze', 'design'] },
+      dmaic:  { phase: 'analyze' },
+      dmadv:  { phase: 'analyze', allowedPhases: ['analyze', 'design']  },
+      eightd: { phase: 'prevent', allowedPhases: ['rootcause', 'corrective', 'prevent'] },
     },
   },
   {
@@ -297,8 +314,9 @@ export default [
     phase: 'analyze',
     load: () => import('./hypothesis-test/hypothesis-test.js'),
     cycles: {
-      dmaic: { phase: 'analyze' },
-      dmadv: { phase: 'analyze', allowedPhases: ['analyze', 'verify'] },
+      dmaic:  { phase: 'analyze' },
+      dmadv:  { phase: 'analyze',   allowedPhases: ['analyze', 'verify'] },
+      eightd: { phase: 'rootcause', allowedPhases: ['rootcause', 'implementation'] },
     },
   },
   {
@@ -306,8 +324,9 @@ export default [
     phase: 'analyze',
     load: () => import('./sample-size/sample-size.js'),
     cycles: {
-      dmaic: { phase: 'analyze' },
-      dmadv: { phase: 'analyze' },
+      dmaic:  { phase: 'analyze' },
+      dmadv:  { phase: 'analyze' },
+      eightd: { phase: 'rootcause' },
     },
   },
   {
@@ -315,8 +334,9 @@ export default [
     phase: 'analyze',
     load: () => import('./pairwise-comparison/pairwise-comparison.js'),
     cycles: {
-      dmaic: { phase: 'analyze' },
-      dmadv: { phase: 'analyze' },
+      dmaic:  { phase: 'analyze' },
+      dmadv:  { phase: 'analyze' },
+      eightd: { phase: 'rootcause' },
     },
   },
   {
@@ -324,8 +344,9 @@ export default [
     phase: 'analyze',
     load: () => import('./outlier-test/outlier-test.js'),
     cycles: {
-      dmaic: { phase: 'analyze' },
-      dmadv: { phase: 'analyze' },
+      dmaic:  { phase: 'analyze' },
+      dmadv:  { phase: 'analyze' },
+      eightd: { phase: 'rootcause' },
     },
   },
 
@@ -336,8 +357,9 @@ export default [
     group: 'plan',
     load: () => import('./doe-advisor/doe-advisor.js'),
     cycles: {
-      dmaic: { phase: 'improve' },
-      dmadv: { phase: 'design' },
+      dmaic:  { phase: 'improve' },
+      dmadv:  { phase: 'design'  },
+      eightd: { phase: 'corrective' },
     },
   },
   {
@@ -346,8 +368,9 @@ export default [
     group: 'plan',
     load: () => import('./doe-planner/doe-planner.js'),
     cycles: {
-      dmaic: { phase: 'improve' },
-      dmadv: { phase: 'design' },
+      dmaic:  { phase: 'improve' },
+      dmadv:  { phase: 'design'  },
+      eightd: { phase: 'corrective' },
     },
   },
   {
@@ -356,8 +379,9 @@ export default [
     group: 'evaluate',
     load: () => import('./regression/regression.js'),
     cycles: {
-      dmaic: { phase: 'improve' },
-      dmadv: { phase: 'design', allowedPhases: ['design', 'verify'] },
+      dmaic:  { phase: 'improve' },
+      dmadv:  { phase: 'design',     allowedPhases: ['design', 'verify'] },
+      eightd: { phase: 'corrective', allowedPhases: ['rootcause', 'corrective'] },
     },
   },
   {
@@ -367,8 +391,9 @@ export default [
     allowedPhases: ['analyze', 'improve'],
     load: () => import('./glm-regression/glm-regression.js'),
     cycles: {
-      dmaic: { phase: 'improve', allowedPhases: ['analyze', 'improve'] },
-      dmadv: { phase: 'design',  allowedPhases: ['analyze', 'design', 'verify'] },
+      dmaic:  { phase: 'improve',    allowedPhases: ['analyze', 'improve'] },
+      dmadv:  { phase: 'design',     allowedPhases: ['analyze', 'design', 'verify'] },
+      eightd: { phase: 'corrective', allowedPhases: ['rootcause', 'corrective'] },
     },
   },
   {
@@ -377,8 +402,9 @@ export default [
     group: 'optimize',
     load: () => import('./response-optimization/response-optimization.js'),
     cycles: {
-      dmaic: { phase: 'improve' },
-      dmadv: { phase: 'design' },
+      dmaic:  { phase: 'improve' },
+      dmadv:  { phase: 'design'  },
+      eightd: { phase: 'corrective' },
     },
   },
 
@@ -390,8 +416,9 @@ export default [
     allowedPhases: ['control'],
     load: () => import('./control-chart/control-chart.js'),
     cycles: {
-      dmaic: { phase: 'control', allowedPhases: ['control'] },
-      dmadv: { phase: 'verify',  allowedPhases: ['verify']  },
+      dmaic:  { phase: 'control',        allowedPhases: ['control'] },
+      dmadv:  { phase: 'verify',         allowedPhases: ['verify']  },
+      eightd: { phase: 'implementation', allowedPhases: ['implementation', 'prevent'] },
     },
   },
   {
@@ -401,8 +428,9 @@ export default [
     allowedPhases: ['control'],
     load: () => import('./attribute-control-chart/attribute-control-chart.js'),
     cycles: {
-      dmaic: { phase: 'control', allowedPhases: ['control'] },
-      dmadv: { phase: 'verify',  allowedPhases: ['verify']  },
+      dmaic:  { phase: 'control',        allowedPhases: ['control'] },
+      dmadv:  { phase: 'verify',         allowedPhases: ['verify']  },
+      eightd: { phase: 'implementation', allowedPhases: ['implementation', 'prevent'] },
     },
   },
   {
@@ -412,8 +440,9 @@ export default [
     allowedPhases: ['control'],
     load: () => import('./time-weighted-chart/time-weighted-chart.js'),
     cycles: {
-      dmaic: { phase: 'control', allowedPhases: ['control'] },
-      dmadv: { phase: 'verify',  allowedPhases: ['verify']  },
+      dmaic:  { phase: 'control',        allowedPhases: ['control'] },
+      dmadv:  { phase: 'verify',         allowedPhases: ['verify']  },
+      eightd: { phase: 'implementation', allowedPhases: ['implementation', 'prevent'] },
     },
   },
   {
@@ -423,8 +452,9 @@ export default [
     allowedPhases: ['control'],
     load: () => import('./rare-event-chart/rare-event-chart.js'),
     cycles: {
-      dmaic: { phase: 'control', allowedPhases: ['control'] },
-      dmadv: { phase: 'verify',  allowedPhases: ['verify']  },
+      dmaic:  { phase: 'control',        allowedPhases: ['control'] },
+      dmadv:  { phase: 'verify',         allowedPhases: ['verify']  },
+      eightd: { phase: 'implementation', allowedPhases: ['implementation', 'prevent'] },
     },
   },
   {
@@ -434,8 +464,9 @@ export default [
     allowedPhases: ['control'],
     load: () => import('./multivariate-control-chart/multivariate-control-chart.js'),
     cycles: {
-      dmaic: { phase: 'control', allowedPhases: ['control'] },
-      dmadv: { phase: 'verify',  allowedPhases: ['verify']  },
+      dmaic:  { phase: 'control',        allowedPhases: ['control'] },
+      dmadv:  { phase: 'verify',         allowedPhases: ['verify']  },
+      eightd: { phase: 'implementation', allowedPhases: ['implementation', 'prevent'] },
     },
   },
   {
@@ -445,8 +476,9 @@ export default [
     allowedPhases: ['control'],
     load: () => import('./short-run-chart/short-run-chart.js'),
     cycles: {
-      dmaic: { phase: 'control', allowedPhases: ['control'] },
-      dmadv: { phase: 'verify',  allowedPhases: ['verify']  },
+      dmaic:  { phase: 'control',        allowedPhases: ['control'] },
+      dmadv:  { phase: 'verify',         allowedPhases: ['verify']  },
+      eightd: { phase: 'implementation', allowedPhases: ['implementation', 'prevent'] },
     },
   },
   {
@@ -456,8 +488,9 @@ export default [
     allowedPhases: ['control'],
     load: () => import('./transformed-imr-chart/transformed-imr-chart.js'),
     cycles: {
-      dmaic: { phase: 'control', allowedPhases: ['control'] },
-      dmadv: { phase: 'verify',  allowedPhases: ['verify']  },
+      dmaic:  { phase: 'control',        allowedPhases: ['control'] },
+      dmadv:  { phase: 'verify',         allowedPhases: ['verify']  },
+      eightd: { phase: 'implementation', allowedPhases: ['implementation', 'prevent'] },
     },
   },
   {
@@ -466,8 +499,9 @@ export default [
     allowedPhases: ['control'],
     load: () => import('./lessons-learned/lessons-learned.js'),
     cycles: {
-      dmaic: { phase: 'control', allowedPhases: ['control'] },
-      dmadv: { phase: 'verify',  allowedPhases: ['verify']  },
+      dmaic:  { phase: 'control',   allowedPhases: ['control']   },
+      dmadv:  { phase: 'verify',    allowedPhases: ['verify']    },
+      eightd: { phase: 'recognize', allowedPhases: ['recognize'] },
     },
   },
 
@@ -479,12 +513,16 @@ export default [
     id: 'triz-contradiction-matrix',
     phase: 'improve',
     load: () => import('./triz-contradiction-matrix/triz-contradiction-matrix.js'),
-    cycles: {},
+    cycles: {
+      eightd: { phase: 'corrective' },
+    },
   },
   {
     id: 'triz-9-windows',
     phase: 'improve',
     load: () => import('./triz-9-windows/triz-9-windows.js'),
-    cycles: {},
+    cycles: {
+      eightd: { phase: 'corrective' },
+    },
   },
 ];

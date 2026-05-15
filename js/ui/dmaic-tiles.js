@@ -139,8 +139,9 @@ export class DmaicTiles {
 
     const pct = isVirtual ? 0 : (this._stateManager.get(`phaseAchievement.${phase}`) ?? 0);
 
+    const letterClass = letter.length > 1 ? ' dmaic-tile__letter--multichar' : '';
     tile.innerHTML = `
-      <span class="dmaic-tile__letter">${letter}</span>
+      <span class="dmaic-tile__letter${letterClass}">${letter}</span>
       <span class="dmaic-tile__name">${this._i18n.t(`phases.${phase}`)}</span>
       ${isVirtual ? '' : `<span class="dmaic-tile__zeg"
             title="${this._i18n.t('phases.achievementTooltip')}">${pct}%</span>`}

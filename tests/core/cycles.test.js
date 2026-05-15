@@ -45,6 +45,14 @@ suite('Cycles', () => {
     assertEqual(c.phases.length, 5);
   });
 
+  test('getCycle returns 8D definition with 9 phases (D0–D8)', () => {
+    const c = getCycle('eightd');
+    assertEqual(c.id, 'eightd');
+    assertEqual(c.phases.length, 9);
+    assertEqual(c.phases[0].letter, 'D0');
+    assertEqual(c.phases[8].letter, 'D8');
+  });
+
   test('getCycle falls back to DEFAULT for unknown cycle id', () => {
     assertEqual(getCycle('does-not-exist').id, DEFAULT_CYCLE);
   });
@@ -70,6 +78,13 @@ suite('Cycles', () => {
     );
   });
 
+  test('getPhaseIds returns 8D phases (D0–D8) in order', () => {
+    assertEqual(
+      getPhaseIds('eightd').join(','),
+      'prepare,team,problem,containment,rootcause,corrective,implementation,prevent,recognize',
+    );
+  });
+
   test('getPhaseIds excludes virtual frame tiles (data, extras)', () => {
     const ids = getPhaseIds('dmaic');
     assertEqual(ids.includes('data'), false);
@@ -89,6 +104,13 @@ suite('Cycles', () => {
     assertEqual(
       getAllPhaseIds('dmadv').join(','),
       'data,define,measure,analyze,design,verify,extras',
+    );
+  });
+
+  test('getAllPhaseIds for 8D wraps 9 phases with data + extras', () => {
+    assertEqual(
+      getAllPhaseIds('eightd').join(','),
+      'data,prepare,team,problem,containment,rootcause,corrective,implementation,prevent,recognize,extras',
     );
   });
 
@@ -155,6 +177,25 @@ suite('Cycles', () => {
   test('isValidPhase: DMADV rejects DMAIC-only phases', () => {
     assertEqual(isValidPhase('dmadv', 'improve'), false);
     assertEqual(isValidPhase('dmadv', 'control'), false);
+  });
+
+  test('isValidPhase: 8D accepts its own phases + frame tiles', () => {
+    assertEqual(isValidPhase('eightd', 'prepare'), true);
+    assertEqual(isValidPhase('eightd', 'containment'), true);
+    assertEqual(isValidPhase('eightd', 'recognize'), true);
+    assertEqual(isValidPhase('eightd', 'data'), true);
+    assertEqual(isValidPhase('eightd', 'extras'), true);
+  });
+
+  test('isValidPhase: 8D rejects DMAIC/DMADV-only phases', () => {
+    assertEqual(isValidPhase('eightd', 'define'), false);
+    assertEqual(isValidPhase('eightd', 'improve'), false);
+    assertEqual(isValidPhase('eightd', 'verify'), false);
+  });
+
+  test('isValidPhase: DMAIC rejects 8D-only phases', () => {
+    assertEqual(isValidPhase('dmaic', 'prepare'), false);
+    assertEqual(isValidPhase('dmaic', 'rootcause'), false);
   });
 
   test('isValidPhase: data + extras valid in every known cycle', () => {
