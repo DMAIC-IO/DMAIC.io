@@ -1,0 +1,16 @@
+{
+  "s1": "Bohrer",
+  "s2": "Werkstück (Beton)",
+  "field": "M",
+  "link": "insufficient",
+  "problemNote": "Bohrer dringt zu langsam ein — mechanisches Feld zu schwach. Höhere Drehzahl überhitzt den Bohrer. Klassischer Fall für Klasse-2-Entwicklung.",
+  "notes": {
+    "2.2.5": "Pulsbetrieb: Schlagbohren statt kontinuierlicher Rotation — höhere Spitzenleistung ohne Überhitzung.",
+    "2.4.1": "Ferromagnetische Schwingungserregung am Werkstückhalter — Vibration unterstützt Materialabtrag."
+  },
+  "selected": {
+    "2.2.5": true
+  },
+  "filterMode": "auto",
+  "expandedClasses": [2]
+}

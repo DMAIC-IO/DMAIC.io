@@ -1,0 +1,36 @@
+{
+  "system": "Pkw-Beleuchtung (Hauptscheinwerfer)",
+  "trends": {
+    "aggregation": {
+      "stage": 2,
+      "notes": "Heute: LED-Matrix (Poly). Nächste Stufe: integriertes Beleuchtungssystem mit Front-/Seitenlicht-Kopplung über eine gemeinsame Sensorik."
+    },
+    "dynamism": {
+      "stage": 1,
+      "notes": "Heute: schwenkbare Module (gelenkig). Nächste Stufe: elastisch verformbare Lichtquelle / OLED-Folie, dann Feld-Lösung (Laser-Phosphor)."
+    },
+    "scale": {
+      "stage": 1,
+      "notes": "Heute: Meso (mm-LEDs). Nächste Stufe: Mikro-LED-Arrays für pixelgenaue Lichtverteilung."
+    },
+    "automation": {
+      "stage": 2,
+      "notes": "Heute: automatisch (Sensor-Schalter, Fernlichtassistent). Nächste Stufe: autonome Beleuchtung, die Verkehrsteilnehmer einzeln ausblendet."
+    },
+    "completeness": {
+      "stage": 3,
+      "notes": "Vollständig (Energie + Übertragung + Lichtquelle + Steuerung). Trend gesättigt — Fortschritt verlagert sich auf andere Linien."
+    },
+    "controllability": {
+      "stage": 2,
+      "notes": "Adaptive Regelung (Kurvenlicht, Geschwindigkeit, Gegenverkehr). Nächste Stufe: lernend / kontextabhängig (Wetterdaten, Karten-Topografie)."
+    },
+    "matching": {
+      "stage": 1,
+      "notes": "Einstellbar (Höhenkorrektur, Fahrmodus). Nächste Stufe: individuelle Lichtsignatur pro Fahrer, dann selbstadaptierend an Sehprofil."
+    },
+    "uneven": {
+      "notes": "Das Bordnetz (12 V-Architektur) ist auf Stand von 1980 — limitiert Leistung und Schaltgeschwindigkeit moderner LED-Matrix-Systeme."
+    }
+  }
+}

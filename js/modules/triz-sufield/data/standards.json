@@ -1,0 +1,315 @@
+{
+  "standards": [
+    { "id": "1.1.1", "class": 1, "group": "1.1",
+      "de": { "title": "Synthese eines Substanz-Feld-Modells", "description": "Wenn die Wechselwirkung schwach oder unbekannt ist und das Modell unvollständig ist, füge das fehlende Element (Substanz oder Feld) hinzu.", "trigger": "Unvollständiges Su-Field (eines der drei Elemente fehlt).", "example": "Wenn zwei Werkstücke verklebt werden sollen, fehlt das Feld — füge Wärme (thermisches Feld) hinzu, damit der Kleber aushärtet." },
+      "en": { "title": "Synthesis of a Su-Field model", "description": "When the interaction is weak or unknown and the model is incomplete, add the missing element (substance or field).", "trigger": "Incomplete Su-Field (one of the three elements is missing).", "example": "If two workpieces need to be glued, the field is missing — add heat (thermal field) so the adhesive cures." } },
+
+    { "id": "1.1.2", "class": 1, "group": "1.1",
+      "de": { "title": "Innere komplexe Substanz-Substanz-Feld-Synthese", "description": "Wenn die Eigenschaften der Objekte den Aufbau eines klassischen Su-Field-Modells verhindern, modifiziere S2 von innen durch Beimischung einer Hilfssubstanz.", "trigger": "S2 widersteht direkter Wechselwirkung; Eigenschaften sind nicht direkt veränderbar.", "example": "Stahl, der sich nicht weich biegen lässt — durch Wasserstoff-Einlagerung im Inneren weicher (Hydrieren)." },
+      "en": { "title": "Inner complex Su-Field", "description": "When the object’s properties block a classical Su-Field, modify S2 internally by adding an auxiliary substance.", "trigger": "S2 resists direct interaction; properties cannot be changed directly.", "example": "Steel that cannot be bent — soften from inside by hydrogen embedding (hydriding)." } },
+
+    { "id": "1.1.3", "class": 1, "group": "1.1",
+      "de": { "title": "Äußere komplexe Substanz-Feld-Synthese", "description": "Wenn S2 nicht intern verändert werden kann, befestige eine Hilfssubstanz außen (Beschichtung, Beilage).", "trigger": "S2 darf nicht modifiziert werden, aber eine Oberflächenbeschichtung ist akzeptabel.", "example": "Werkstück mit Anti-Haft-Beschichtung statt Materialwechsel." },
+      "en": { "title": "Outer complex Su-Field", "description": "When S2 cannot be changed internally, attach an auxiliary substance externally (coating, additive).", "trigger": "S2 must not be modified, but a surface coating is acceptable.", "example": "Workpiece with a non-stick coating instead of changing the material." } },
+
+    { "id": "1.1.4", "class": 1, "group": "1.1",
+      "de": { "title": "Su-Field-Synthese unter Nutzung der Umgebung", "description": "Verwende eine bereits in der Umgebung vorhandene Substanz als S1 oder Vermittler.", "trigger": "Eine geeignete Substanz ist in der Umgebung bereits präsent (Luft, Wasser, Staub).", "example": "Luftpolster (Luftkissen) statt mechanischer Rolle für reibungsarme Bewegung." },
+      "en": { "title": "Su-Field synthesis using the environment", "description": "Use a substance already present in the environment as S1 or mediator.", "trigger": "A suitable substance already exists in the environment (air, water, dust).", "example": "Air cushion instead of mechanical rollers for low-friction motion." } },
+
+    { "id": "1.1.5", "class": 1, "group": "1.1",
+      "de": { "title": "Su-Field-Synthese mit modifizierter Umgebung", "description": "Wenn die natürliche Umgebung allein nicht reicht, verändere sie chemisch oder physikalisch.", "trigger": "Umgebung ist verfügbar, aber zu schwach oder ungeeignet.", "example": "Atmosphäre durch Schutzgas (Argon) ersetzen, damit das Werkstück nicht oxidiert." },
+      "en": { "title": "Su-Field synthesis using modified environment", "description": "If the natural environment alone is insufficient, alter it chemically or physically.", "trigger": "Environment is available but too weak or unsuitable.", "example": "Replace the atmosphere with inert gas (argon) so the workpiece does not oxidise." } },
+
+    { "id": "1.1.6", "class": 1, "group": "1.1",
+      "de": { "title": "Maximalwirkung trotz Beschränkungen", "description": "Wenn maximale Feldwirkung nötig ist, aber das Feld nicht direkt auf S2 wirken darf, wirke auf einen Zwischenträger.", "trigger": "Direkte Maximalwirkung würde S2 beschädigen.", "example": "Hochfrequenz-Schweißen über einen Zwischenträger statt direkt auf das empfindliche Bauteil." },
+      "en": { "title": "Maximum action where prohibited", "description": "When maximum field action is required but the field must not act on S2 directly, act on an intermediate carrier.", "trigger": "Direct maximum action would damage S2.", "example": "High-frequency welding via an intermediate carrier rather than directly on the sensitive part." } },
+
+    { "id": "1.1.7", "class": 1, "group": "1.1",
+      "de": { "title": "Selektive Feldwirkung", "description": "Wenn das Feld auf manchen Bereichen maximal und auf anderen minimal wirken soll, nutze eine Schutzsubstanz bzw. einen Modifikator.", "trigger": "Inhomogene Wirkung auf S2 gefordert (z.B. lokal härten).", "example": "Lokal-induktives Härten — Feld wirkt nur auf den induzierten Bereich, Rest bleibt weich." },
+      "en": { "title": "Selective field action", "description": "When the field should act with maximum effect in some regions and minimum in others, use a protective or modifying substance.", "trigger": "Inhomogeneous effect on S2 is required (e.g. local hardening).", "example": "Local induction hardening — field acts only on the induced region; the rest stays soft." } },
+
+    { "id": "1.1.8", "class": 1, "group": "1.1",
+      "de": { "title": "Ferromagnetische Substanz + Magnetfeld", "description": "Verwende eine ferromagnetische Substanz und ein Magnetfeld, wenn herkömmliche Felder die Aufgabe nicht erfüllen.", "trigger": "Klassische Felder reichen nicht, magnetische Manipulation ist möglich.", "example": "Eisenpulver + Magnetfeld als formanpassbares Werkzeug." },
+      "en": { "title": "Ferromagnetic substance + magnetic field", "description": "Use a ferromagnetic substance and a magnetic field when ordinary fields cannot do the job.", "trigger": "Classical fields are insufficient; magnetic manipulation is possible.", "example": "Iron powder + magnetic field as a shape-adaptive tool." } },
+
+    { "id": "1.2.1", "class": 1, "group": "1.2",
+      "de": { "title": "Drittsubstanz zur Neutralisierung", "description": "Wenn zwei Substanzen eine schädliche Wechselwirkung haben, führe eine dritte Substanz ein, die diese trennt oder neutralisiert.", "trigger": "Schädliche Wechselwirkung zwischen S1 und S2 vorhanden.", "example": "Schmierfilm zwischen reibenden Flächen reduziert Verschleiß." },
+      "en": { "title": "Introducing a third substance to neutralise", "description": "When two substances interact harmfully, introduce a third substance that separates or neutralises them.", "trigger": "Harmful interaction between S1 and S2 is present.", "example": "Lubrication film between rubbing surfaces reduces wear." } },
+
+    { "id": "1.2.2", "class": 1, "group": "1.2",
+      "de": { "title": "Modifikation einer der Substanzen", "description": "Verändere eine der beiden Substanzen so, dass die schädliche Wechselwirkung verschwindet.", "trigger": "Schädliche Wechselwirkung; eine Modifikation von S1 oder S2 ist akzeptabel.", "example": "Anti-Reflex-Beschichtung auf Linse — schädliche Reflexion verschwindet." },
+      "en": { "title": "Modification of one substance", "description": "Modify one of the two substances so the harmful interaction disappears.", "trigger": "Harmful interaction; modification of S1 or S2 is acceptable.", "example": "Anti-reflective coating on a lens — harmful reflection disappears." } },
+
+    { "id": "1.2.3", "class": 1, "group": "1.2",
+      "de": { "title": "Entfernen / Ableiten des schädlichen Feldes", "description": "Wenn ein Feld einen schädlichen Effekt erzeugt, leite es ab oder schirme es ab.", "trigger": "Schädliches Feld zwischen S1 und S2.", "example": "Faraday-Käfig schirmt elektromagnetische Störungen ab." },
+      "en": { "title": "Removing or diverting the harmful field", "description": "When a field causes a harmful effect, divert or shield it.", "trigger": "Harmful field between S1 and S2.", "example": "Faraday cage shields against electromagnetic interference." } },
+
+    { "id": "1.2.4", "class": 1, "group": "1.2",
+      "de": { "title": "Gegenfeld zur Neutralisierung", "description": "Erzeuge ein Gegenfeld, das das schädliche Feld auslöscht.", "trigger": "Schädliches Feld; Erzeugung eines Gegenfeldes ist möglich.", "example": "Aktive Geräuschunterdrückung (ANC) — Gegenschall löscht Lärm aus." },
+      "en": { "title": "Counter-field for neutralisation", "description": "Generate a counter-field that cancels the harmful field.", "trigger": "Harmful field; generating a counter-field is possible.", "example": "Active noise cancellation (ANC) — counter-sound nulls the noise." } },
+
+    { "id": "1.2.5", "class": 1, "group": "1.2",
+      "de": { "title": "Schädliche Wechselwirkung über eine Hilfssubstanz absorbieren", "description": "Führe eine Substanz ein, die die schädliche Wechselwirkung aufnimmt und unschädlich macht.", "trigger": "Schädliche Wirkung soll absorbiert (nicht nur abgeleitet) werden.", "example": "Aktivkohlefilter bindet Schadstoffe im Abgas." },
+      "en": { "title": "Absorbing the harmful interaction via an auxiliary substance", "description": "Introduce a substance that absorbs the harmful interaction and renders it harmless.", "trigger": "Harmful effect should be absorbed (not just diverted).", "example": "Activated-carbon filter binds pollutants in exhaust gas." } },
+
+    { "id": "2.1.1", "class": 2, "group": "2.1",
+      "de": { "title": "Übergang zum Ketten-Su-Field", "description": "Wenn ein einfaches Su-Field nicht reicht, verkette mehrere Su-Felder (S1 wirkt über S3 auf S2).", "trigger": "Einfacher Aufbau zu schwach; Zwischenschritt ist machbar.", "example": "Hebel-Übersetzung: Kraft → Zwischenträger → Werkstück." },
+      "en": { "title": "Transition to a chain Su-Field", "description": "When a simple Su-Field is insufficient, chain several Su-Fields (S1 acts on S2 via S3).", "trigger": "Simple model too weak; an intermediate step is feasible.", "example": "Lever transmission: force → intermediate carrier → workpiece." } },
+
+    { "id": "2.1.2", "class": 2, "group": "2.1",
+      "de": { "title": "Übergang zum Doppel-Su-Field", "description": "Verwende eine zweite Substanz oder ein zweites Feld parallel, um die Wirkung zu verstärken oder zu spezialisieren.", "trigger": "Eine Wirkung reicht nicht; eine zweite, ergänzende Wirkung ist nötig.", "example": "Schleifscheibe + Kühlmittel: mechanisches + thermisches Feld parallel." },
+      "en": { "title": "Transition to a double Su-Field", "description": "Use a second substance or a second field in parallel to amplify or specialise the action.", "trigger": "One action is insufficient; a complementary second action is needed.", "example": "Grinding wheel + coolant: mechanical + thermal field in parallel." } },
+
+    { "id": "2.2.1", "class": 2, "group": "2.2",
+      "de": { "title": "Von unkontrolliertem zu kontrolliertem Feld", "description": "Ersetze ein schwer steuerbares Feld durch ein leichter steuerbares (oft elektromagnetisch).", "trigger": "Mechanisches / chemisches Feld ist schwer dosierbar.", "example": "Mechanische Bremse → elektromagnetische Wirbelstrombremse." },
+      "en": { "title": "From uncontrolled to controlled field", "description": "Replace a hard-to-control field with a more controllable one (often electromagnetic).", "trigger": "Mechanical / chemical field is hard to meter.", "example": "Mechanical brake → electromagnetic eddy-current brake." } },
+
+    { "id": "2.2.2", "class": 2, "group": "2.2",
+      "de": { "title": "Fragmentierung / Aufteilung einer Substanz", "description": "Teile eine massive Substanz in kleinere Teile (Pulver, Partikel) für feinere Kontrolle.", "trigger": "Kontrolle über S1 oder S2 muss feinkörniger werden.", "example": "Pulver-Lack statt Lack-Block — feinere Schichtdicke steuerbar." },
+      "en": { "title": "Fragmenting a substance", "description": "Break a solid substance into smaller parts (powder, particles) for finer control.", "trigger": "Control over S1 or S2 needs to be more fine-grained.", "example": "Powder coating instead of a solid coating block — finer thickness control." } },
+
+    { "id": "2.2.3", "class": 2, "group": "2.2",
+      "de": { "title": "Übergang zur porösen Struktur", "description": "Mache eine Substanz porös, damit sie Felder und andere Substanzen aufnehmen kann.", "trigger": "Substanz muss Stoffe / Wärme / Felder zwischenspeichern.", "example": "Poröser Sinterkörper als Wärmespeicher." },
+      "en": { "title": "Transition to porous structure", "description": "Make a substance porous so it can hold fields and other substances.", "trigger": "Substance needs to buffer materials / heat / fields.", "example": "Porous sintered body as a heat store." } },
+
+    { "id": "2.2.4", "class": 2, "group": "2.2",
+      "de": { "title": "Dynamisierung", "description": "Wechsle vom statischen zum beweglichen System (starr → gelenkig → elastisch → flüssig → Feld).", "trigger": "Statische Lösung erreicht Grenzen; Anpassung an Bedingungen nötig.", "example": "Starres Tragwerk → gelenkig → Hydraulik → Elektromagnet." },
+      "en": { "title": "Dynamisation", "description": "Switch from a static to a moving system (rigid → jointed → elastic → fluid → field).", "trigger": "Static solution hits limits; adaptation to conditions is needed.", "example": "Rigid structure → jointed → hydraulic → electromagnet." } },
+
+    { "id": "2.2.5", "class": 2, "group": "2.2",
+      "de": { "title": "Von konstantem zu variablem / gepulstem Feld", "description": "Ersetze konstante Wirkung durch zeitlich variable, gepulste oder modulierte Wirkung.", "trigger": "Konstante Wirkung verschwendet Energie oder schädigt S2.", "example": "Gepulste statt kontinuierliche Laser für saubere Materialbearbeitung." },
+      "en": { "title": "From constant to variable / pulsed field", "description": "Replace constant action with time-varying, pulsed or modulated action.", "trigger": "Constant action wastes energy or damages S2.", "example": "Pulsed instead of continuous laser for clean machining." } },
+
+    { "id": "2.2.6", "class": 2, "group": "2.2",
+      "de": { "title": "Strukturierung des Feldes / der Substanz", "description": "Bringe Struktur ins Feld oder die Substanz — räumlich (Muster) oder zeitlich (Sequenz).", "trigger": "Homogene Wirkung ist suboptimal; Struktur erhöht Wirkungsgrad.", "example": "Strukturierte Laser-Strahlen für Hologramme oder Mustererzeugung." },
+      "en": { "title": "Structuring the field or substance", "description": "Add structure to the field or substance — spatial (pattern) or temporal (sequence).", "trigger": "Homogeneous action is suboptimal; structure raises efficiency.", "example": "Structured laser beams for holography or pattern generation." } },
+
+    { "id": "2.3.1", "class": 2, "group": "2.3",
+      "de": { "title": "Anpassung an die Eigenfrequenz", "description": "Stimme die Feldfrequenz auf die Eigen-/Resonanzfrequenz des Objekts ab.", "trigger": "Energie soll effizient eingekoppelt werden.", "example": "Ultraschall-Reinigung: Frequenz angepasst an Kavitationsblasen." },
+      "en": { "title": "Matching natural frequency", "description": "Tune the field frequency to the natural / resonance frequency of the object.", "trigger": "Energy should couple efficiently.", "example": "Ultrasonic cleaning: frequency tuned to cavitation bubbles." } },
+
+    { "id": "2.3.2", "class": 2, "group": "2.3",
+      "de": { "title": "Mehrere Frequenzen für mehrere Aufgaben", "description": "Wenn das System mehrere Aufgaben hat, verwende unterschiedliche Frequenzen für jede.", "trigger": "Mehrere unabhängige Aufgaben sollen mit einem Träger erfüllt werden.", "example": "Multiplexing — verschiedene Frequenzbänder transportieren parallel verschiedene Signale." },
+      "en": { "title": "Multiple frequencies for multiple tasks", "description": "If the system has several tasks, use different frequencies for each.", "trigger": "Multiple independent tasks should be served by one carrier.", "example": "Multiplexing — different frequency bands carry different signals in parallel." } },
+
+    { "id": "2.3.3", "class": 2, "group": "2.3",
+      "de": { "title": "Pausen für andere Aktionen nutzen", "description": "Während der Pausen einer Aktion können andere Aktionen ablaufen — keine Konflikte, gemeinsame Ressourcen.", "trigger": "Aktion arbeitet nicht kontinuierlich; Pausen sind nutzbar.", "example": "MRI-Sequenzen — verschiedene Pulse zwischen Datenerfassungs-Phasen." },
+      "en": { "title": "Use pauses for other actions", "description": "During pauses of one action, other actions can run — no conflicts, shared resources.", "trigger": "Action does not run continuously; pauses are usable.", "example": "MRI sequences — different pulses between acquisition windows." } },
+
+    { "id": "2.3.4", "class": 2, "group": "2.3",
+      "de": { "title": "Anpassung an unkontrollierbaren Rhythmus", "description": "Wenn ein Rhythmus nicht kontrollierbar ist, passe das System an seinen natürlichen Takt an.", "trigger": "Externer / natürlicher Rhythmus ist gegeben (Tageszeit, Maschinentakt).", "example": "Energiespeicher passt sich an die natürliche Pulsation der PV-Anlage an." },
+      "en": { "title": "Matching an uncontrollable rhythm", "description": "When a rhythm cannot be controlled, align the system to its natural cadence.", "trigger": "External / natural rhythm is given (time of day, machine cycle).", "example": "Energy storage matches the natural pulsation of the PV plant." } },
+
+    { "id": "2.3.5", "class": 2, "group": "2.3",
+      "de": { "title": "Resonanz nutzen", "description": "Erzeuge gezielt Resonanz, um Wirkung mit minimaler Eingangsenergie zu erzielen.", "trigger": "Energieeffizienz ist entscheidend; resonanzfähiges System vorhanden.", "example": "Schwingender Förderer nutzt Eigenresonanz für niedrigen Energieverbrauch." },
+      "en": { "title": "Using resonance", "description": "Deliberately drive a resonance to maximise effect at minimal input energy.", "trigger": "Energy efficiency is critical; system can resonate.", "example": "Vibratory conveyor exploits resonance for low energy use." } },
+
+    { "id": "2.4.1", "class": 2, "group": "2.4",
+      "de": { "title": "Ferromagnetisches Material + Magnetfeld", "description": "Führe ferromagnetische Partikel oder Bauteile ein, die mit einem Magnetfeld gesteuert werden.", "trigger": "Steuerbarkeit über klassische Felder unzureichend.", "example": "Magnetorheologische Flüssigkeit als adaptive Stoßdämpfer-Füllung." },
+      "en": { "title": "Ferromagnetic material + magnetic field", "description": "Introduce ferromagnetic particles or parts controlled via a magnetic field.", "trigger": "Controllability via classical fields is insufficient.", "example": "Magneto-rheological fluid as adaptive shock-absorber fill." } },
+
+    { "id": "2.4.2", "class": 2, "group": "2.4",
+      "de": { "title": "Magnetische Flüssigkeit (Ferrofluid)", "description": "Verwende eine Flüssigkeit mit suspendierten ferromagnetischen Partikeln für formfreie magnetfeldgesteuerte Wirkung.", "trigger": "Form / Position muss formfrei und feldsteuerbar sein.", "example": "Ferrofluid als Lager-Dichtung in Computer-Festplatten." },
+      "en": { "title": "Magnetic fluid (ferrofluid)", "description": "Use a liquid with suspended ferromagnetic particles for shape-free, field-controlled action.", "trigger": "Shape / position must be free and field-controllable.", "example": "Ferrofluid as a bearing seal in hard-disk drives." } },
+
+    { "id": "2.4.3", "class": 2, "group": "2.4",
+      "de": { "title": "Kapillar-Porenstrukturen mit Magnetflüssigkeit", "description": "Kombiniere Magnetflüssigkeit mit kapillaren Strukturen für gerichteten Transport.", "trigger": "Flüssigkeitstransport muss gerichtet und feldgesteuert sein.", "example": "Magnetisch gesteuerte Mikrofluidik in Lab-on-a-chip-Geräten." },
+      "en": { "title": "Capillary porous structures with magnetic liquid", "description": "Combine magnetic liquid with capillary structures for directed transport.", "trigger": "Liquid transport must be directional and field-controlled.", "example": "Magnetically steered microfluidics in lab-on-a-chip devices." } },
+
+    { "id": "2.4.4", "class": 2, "group": "2.4",
+      "de": { "title": "Komplexes ferromagnetisches Su-Field", "description": "Baue ein komplexes Modell mit mehreren ferromagnetischen Komponenten auf.", "trigger": "Einfaches ferromagnetisches Modell reicht nicht.", "example": "Stapel-Magnetisierung zur räumlichen Mustererzeugung." },
+      "en": { "title": "Complex ferromagnetic Su-Field", "description": "Build a complex model with several ferromagnetic components.", "trigger": "Simple ferromagnetic model is insufficient.", "example": "Stacked magnetisation to create spatial patterns." } },
+
+    { "id": "2.4.5", "class": 2, "group": "2.4",
+      "de": { "title": "Zusatzstoffe in der Umgebung", "description": "Verteile ferromagnetische Zusätze in der Arbeitsumgebung, um Wirkung dort zu erzielen.", "trigger": "Direkter Eingriff am Werkstück ist schwierig.", "example": "Magnetit-Tracer in einer Strömung machen den Volumenstrom messbar." },
+      "en": { "title": "Additives in the environment", "description": "Distribute ferromagnetic additives into the environment to achieve the effect there.", "trigger": "Direct intervention on the workpiece is hard.", "example": "Magnetite tracers in a flow make the volume rate measurable." } },
+
+    { "id": "2.4.6", "class": 2, "group": "2.4",
+      "de": { "title": "Magnetische Substanz in die Umgebung einbringen", "description": "Wenn die Umgebung selbst nicht magnetisch ist, mache sie magnetisch.", "trigger": "Umgebung kann modifiziert werden; magnetische Trennung gewünscht.", "example": "Magnetit-Anreicherung im Schlamm zur magnetischen Phasentrennung." },
+      "en": { "title": "Adding magnetic substance to the environment", "description": "When the environment itself is non-magnetic, make it magnetic.", "trigger": "Environment can be modified; magnetic separation is desired.", "example": "Magnetite enrichment of sludge for magnetic phase separation." } },
+
+    { "id": "2.4.7", "class": 2, "group": "2.4",
+      "de": { "title": "Natürlichen Ferromagnetismus nutzen", "description": "Suche, ob die Umgebung bereits ferromagnetische Substanzen enthält (z.B. Eisen, Stahl).", "trigger": "Industrielle Umgebung mit metallischen Anteilen.", "example": "Magnetische Aufrichtung von Eisenpartikeln im Schmierstoff zur Verschleißüberwachung." },
+      "en": { "title": "Using natural ferromagnetism", "description": "Check whether the environment already contains ferromagnetic substances (iron, steel).", "trigger": "Industrial environment with metallic components.", "example": "Magnetic alignment of iron particles in lubricant for wear monitoring." } },
+
+    { "id": "2.4.8", "class": 2, "group": "2.4",
+      "de": { "title": "Physikalische Effekte nutzen (Curie-Punkt, Hysterese)", "description": "Verwende physikalische Effekte wie Curie-Temperatur oder magnetische Hysterese als selbstgesteuerten Schalter.", "trigger": "Selbsttätige Steuerung an einem Schwellwert ist nötig.", "example": "Selbstregelnde Heizpatrone: Material verliert oberhalb der Curie-Temperatur sein Magnetfeld und reduziert den Strom." },
+      "en": { "title": "Using physical effects (Curie point, hysteresis)", "description": "Use physical effects such as the Curie temperature or magnetic hysteresis as a self-controlled switch.", "trigger": "Self-acting control at a threshold is needed.", "example": "Self-regulating heater cartridge: material loses its magnetism above the Curie point, reducing current." } },
+
+    { "id": "2.4.9", "class": 2, "group": "2.4",
+      "de": { "title": "Dynamisierung des ferromagnetischen Su-Fields", "description": "Wechsel von statischer ferromagnetischer Konstruktion zu beweglichen / variablen.", "trigger": "Statisches Magnetfeld reicht nicht; Variabilität verbessert Wirkung.", "example": "Drehender Magnet erzeugt rotierendes Feld für berührungslose Motoren." },
+      "en": { "title": "Dynamising the ferromagnetic Su-Field", "description": "Move from a static ferromagnetic construction to a moving / variable one.", "trigger": "Static magnetic field insufficient; variability improves effect.", "example": "Rotating magnet creates a rotating field for contactless motors." } },
+
+    { "id": "2.4.10", "class": 2, "group": "2.4",
+      "de": { "title": "Strukturierung des Magnetfeldes", "description": "Erzeuge gezielte räumliche Strukturen im Magnetfeld (Inhomogenitäten, Gradienten).", "trigger": "Räumlich differenzierte Wirkung gewünscht.", "example": "Magnetische Gradientenfelder in MRI für räumliche Kodierung." },
+      "en": { "title": "Structuring the magnetic field", "description": "Create deliberate spatial structures in the magnetic field (inhomogeneities, gradients).", "trigger": "Spatially differentiated action desired.", "example": "Magnetic gradient fields in MRI for spatial encoding." } },
+
+    { "id": "2.4.11", "class": 2, "group": "2.4",
+      "de": { "title": "Rhythmus-Anpassung in ferromagnetischen Systemen", "description": "Stimme magnetische Pulsfrequenzen auf die natürliche Frequenz des ferromagnetischen Systems ab.", "trigger": "Effizienz der magnetischen Wechselwirkung soll maximal werden.", "example": "Resonanz-Drahtloses-Laden: optimale Frequenz für maximale Energieübertragung." },
+      "en": { "title": "Rhythm matching in ferromagnetic systems", "description": "Tune magnetic pulse frequencies to the natural frequency of the ferromagnetic system.", "trigger": "Efficiency of the magnetic interaction must be maximised.", "example": "Resonant wireless charging: optimal frequency for maximum energy transfer." } },
+
+    { "id": "2.4.12", "class": 2, "group": "2.4",
+      "de": { "title": "Elektrisches statt magnetisches Feld", "description": "Wenn Magnetfeld nicht passt, ersetze es durch ein elektrisches Feld oder kombiniere beide.", "trigger": "Magnetische Lösung scheitert (z.B. nicht-ferromagnetisches Material).", "example": "Elektrostatische Pulverbeschichtung statt magnetischer Anziehung." },
+      "en": { "title": "Electric instead of magnetic field", "description": "When magnetic fields fail, replace them with an electric field or combine both.", "trigger": "Magnetic solution fails (e.g. non-ferromagnetic material).", "example": "Electrostatic powder coating instead of magnetic attraction." } },
+
+    { "id": "3.1.1", "class": 3, "group": "3.1",
+      "de": { "title": "Bi-System: zwei gleiche Systeme koppeln", "description": "Kopple zwei gleichartige Systeme miteinander, um Synergie zu schaffen.", "trigger": "Einzelsystem ist gesättigt; Verdopplung bringt neue Eigenschaften.", "example": "Doppelschneider — zwei parallele Klingen erzeugen feinere Schnitte." },
+      "en": { "title": "Bi-system: pair two identical systems", "description": "Pair two identical systems for synergy.", "trigger": "Single system saturated; doubling brings new properties.", "example": "Double cutter — two parallel blades create finer cuts." } },
+
+    { "id": "3.1.2", "class": 3, "group": "3.1",
+      "de": { "title": "Poly-System: viele gleiche Systeme", "description": "Kombiniere viele gleichartige Systeme zu einem Poly-System (Array).", "trigger": "Massive Parallelisierung möglich, einzelne Einheit unwesentlich.", "example": "LED-Matrix als Scheinwerfer statt einer einzelnen Lampe." },
+      "en": { "title": "Poly-system: many identical systems", "description": "Combine many identical systems into a poly-system (array).", "trigger": "Massive parallelisation possible; individual unit insignificant.", "example": "LED matrix as headlight instead of a single lamp." } },
+
+    { "id": "3.1.3", "class": 3, "group": "3.1",
+      "de": { "title": "Differenzierung der Bi-/Poly-Systeme", "description": "Bi-/Poly-Systeme werden ergiebiger, wenn ihre Eigenschaften differenziert (nicht identisch) sind.", "trigger": "Bi-/Poly-System mit identischen Einheiten erreicht Grenzen.", "example": "Stereo statt Mono — zwei Lautsprecher mit unterschiedlichem Signal." },
+      "en": { "title": "Differentiating bi- / poly-systems", "description": "Bi- / poly-systems become richer when their elements have differentiated (not identical) properties.", "trigger": "Bi- / poly-system with identical units saturates.", "example": "Stereo instead of mono — two speakers carrying different signals." } },
+
+    { "id": "3.1.4", "class": 3, "group": "3.1",
+      "de": { "title": "Gegensätzliche Eigenschaften kombinieren", "description": "Kombiniere Systeme mit entgegengesetzten Eigenschaften (heiß + kalt, hart + weich, schwarz + weiß).", "trigger": "Widerspruch zwischen den Anforderungen.", "example": "Sandwich-Bauteil mit harter Außen- und weicher Innenschicht." },
+      "en": { "title": "Combining opposite properties", "description": "Combine systems with opposite properties (hot + cold, hard + soft, black + white).", "trigger": "Conflict between requirements.", "example": "Sandwich part with a hard outer and a soft inner layer." } },
+
+    { "id": "3.1.5", "class": 3, "group": "3.1",
+      "de": { "title": "Faltung — Bi-System zurück in Mono-System", "description": "Wenn das Bi-System seine Aufgabe erfüllt hat, integriere die Funktionalität in ein einzelnes System.", "trigger": "Bi-System überdimensioniert; Integration in Monolith möglich.", "example": "Doppelter Schraubendreher (Phillips + Schlitz) als Reversiblefassung." },
+      "en": { "title": "Folding — bi-system back into mono", "description": "When the bi-system has done its job, integrate the functionality into a single system.", "trigger": "Bi-system over-dimensioned; integration into one system possible.", "example": "Reversible Phillips + slot screwdriver bit head." } },
+
+    { "id": "3.2.1", "class": 3, "group": "3.2",
+      "de": { "title": "Übergang zur Mikroebene", "description": "Ersetze makroskopische Elemente durch mikroskopische / molekulare / Feldlösungen.", "trigger": "Makro-System ist gesättigt; Mikro-Lösung verfügbar.", "example": "Mikrofluidik statt Pumpen-Schlauch-System für kleine Volumenströme." },
+      "en": { "title": "Transition to the microlevel", "description": "Replace macroscopic elements with microscopic / molecular / field solutions.", "trigger": "Macro system saturated; micro solution available.", "example": "Microfluidics replacing pump-hose systems for small flow rates." } },
+
+    { "id": "4.1.1", "class": 4, "group": "4.1",
+      "de": { "title": "Messung vermeiden durch Systemänderung", "description": "Wenn etwas schwer zu messen ist, ändere das System so, dass die Messung überflüssig wird.", "trigger": "Messung ist teuer oder unzuverlässig.", "example": "Selbstdiagnose-Sensoren mit Schwellwert-Schaltung statt Messung + Logik." },
+      "en": { "title": "Avoid measurement by changing the system", "description": "When something is hard to measure, change the system so measurement is no longer required.", "trigger": "Measurement is expensive or unreliable.", "example": "Self-diagnostic sensors with threshold switches instead of measure + logic." } },
+
+    { "id": "4.1.2", "class": 4, "group": "4.1",
+      "de": { "title": "Kopien / Modelle verwenden", "description": "Statt das Original zu messen, miss ein einfacheres Modell oder eine Kopie.", "trigger": "Originalsystem zu komplex oder unzugänglich.", "example": "Modellversuch im Windkanal statt Vollskala-Flugzeug." },
+      "en": { "title": "Use copies / models", "description": "Rather than measuring the original, measure a simpler model or copy.", "trigger": "Original system too complex or inaccessible.", "example": "Wind-tunnel model instead of full-scale aircraft." } },
+
+    { "id": "4.1.3", "class": 4, "group": "4.1",
+      "de": { "title": "Sukzessive Änderungen messen", "description": "Messe relative Änderungen statt Absolutwerte — oft genauer und einfacher.", "trigger": "Absolute Messung schwierig; Relativwerte ausreichend.", "example": "Vergleichsmessung mit Referenzmuster (Differenz statt Absolutwert)." },
+      "en": { "title": "Measure successive changes", "description": "Measure relative changes instead of absolute values — often more accurate and simpler.", "trigger": "Absolute measurement is hard; relative values are sufficient.", "example": "Comparator measurement against a reference (difference, not absolute)." } },
+
+    { "id": "4.2.1", "class": 4, "group": "4.2",
+      "de": { "title": "Indirektes Mess-Su-Field synthetisieren", "description": "Wenn ein Effekt nicht direkt messbar ist, koppele ihn an ein leicht messbares Feld.", "trigger": "Effekt ist nicht direkt messbar.", "example": "Druckmessung über Verformung eines Membrans (mechanisch → elektrisch)." },
+      "en": { "title": "Synthesise an indirect measuring Su-Field", "description": "When an effect cannot be measured directly, couple it to an easily measurable field.", "trigger": "Effect is not directly measurable.", "example": "Pressure measurement via membrane deformation (mechanical → electrical)." } },
+
+    { "id": "4.2.2", "class": 4, "group": "4.2",
+      "de": { "title": "Inneres komplexes Mess-Su-Field", "description": "Verändere das Objekt, sodass es selbst Information abgibt (z.B. fluoreszierend bei Belastung).", "trigger": "Objekt darf modifiziert werden.", "example": "Spannungs-anzeigende Lacke (Tribolumineszenz) für Belastungsanalysen." },
+      "en": { "title": "Inner complex measuring Su-Field", "description": "Modify the object so it itself emits information (e.g. fluoresces under load).", "trigger": "Object may be modified.", "example": "Stress-indicating paints (tribo-luminescence) for load analysis." } },
+
+    { "id": "4.2.3", "class": 4, "group": "4.2",
+      "de": { "title": "Äußeres komplexes Mess-Su-Field", "description": "Bringe einen Mess-Marker außen am Objekt an (Beschichtung, aufgeklebter Sensor).", "trigger": "Objekt darf nicht intern verändert werden.", "example": "Tape-Sensor für Dehnungsmessung." },
+      "en": { "title": "Outer complex measuring Su-Field", "description": "Attach a measurement marker externally (coating, applied sensor).", "trigger": "Object may not be internally modified.", "example": "Strain-gauge tape sensor." } },
+
+    { "id": "4.2.4", "class": 4, "group": "4.2",
+      "de": { "title": "Die Umgebung als Messträger nutzen", "description": "Lass die Umgebung um das Objekt herum die Information liefern (Schatten, Verzerrung, Echo).", "trigger": "Berührungslose Messung gewünscht.", "example": "Radar-Messung — Echo der Umgebung beschreibt das Objekt." },
+      "en": { "title": "Use the environment as a measurement carrier", "description": "Let the environment around the object carry the information (shadow, distortion, echo).", "trigger": "Non-contact measurement desired.", "example": "Radar measurement — the environment’s echo describes the object." } },
+
+    { "id": "4.3.1", "class": 4, "group": "4.3",
+      "de": { "title": "Physikalische Effekte zur Messung nutzen", "description": "Greife auf physikalische Effekte zurück (Piezo, Doppler, Hall), um eine Größe in ein elektrisches Signal zu wandeln.", "trigger": "Mechanische / chemische Messung soll elektrifiziert werden.", "example": "Doppler-Effekt zur Geschwindigkeitsmessung (Radar, Ultraschall-Sonde)." },
+      "en": { "title": "Use physical effects for measurement", "description": "Use physical effects (piezo, Doppler, Hall) to convert a quantity into an electrical signal.", "trigger": "Mechanical / chemical measurement should be electrified.", "example": "Doppler effect for speed measurement (radar, ultrasonic probe)." } },
+
+    { "id": "4.3.2", "class": 4, "group": "4.3",
+      "de": { "title": "Resonanz für die Messung nutzen", "description": "Eigenfrequenz oder Resonanz eines Bauteils gibt Aufschluss über seinen Zustand.", "trigger": "Zustand korreliert mit Eigenfrequenz.", "example": "Stimmgabel-Frequenz misst Flüssigkeitsstand / Dichte." },
+      "en": { "title": "Use resonance for measurement", "description": "Natural frequency or resonance of a part reveals its state.", "trigger": "State correlates with natural frequency.", "example": "Tuning-fork frequency measures liquid level / density." } },
+
+    { "id": "4.3.3", "class": 4, "group": "4.3",
+      "de": { "title": "Resonanz eines assoziierten Objekts", "description": "Wenn das Hauptobjekt schwer messbar ist, messe ein assoziiertes Objekt mit gekoppelter Resonanz.", "trigger": "Direkte Messung an S2 schwierig; assoziiertes Objekt verfügbar.", "example": "Kavitationsblasen-Resonanz misst Ultraschall-Intensität indirekt." },
+      "en": { "title": "Resonance of an associated object", "description": "When the main object is hard to measure, measure an associated object with coupled resonance.", "trigger": "Direct measurement on S2 hard; associated object available.", "example": "Cavitation bubble resonance measures ultrasound intensity indirectly." } },
+
+    { "id": "4.4.1", "class": 4, "group": "4.4",
+      "de": { "title": "Magnetfeld + Ferromagnetik zur Messung", "description": "Verwende magnetische Felder und ferromagnetische Materialien als Messelement.", "trigger": "Berührungslose / verschleißfreie Messung gewünscht.", "example": "Hall-Sensor misst Strom über das erzeugte Magnetfeld." },
+      "en": { "title": "Magnetic field + ferromagnetism for measurement", "description": "Use magnetic fields and ferromagnetic materials as the measuring element.", "trigger": "Non-contact / wear-free measurement desired.", "example": "Hall sensor measures current via its induced magnetic field." } },
+
+    { "id": "4.4.2", "class": 4, "group": "4.4",
+      "de": { "title": "Magnetisch markierte Indikatoren", "description": "Bringe einen ferromagnetischen Marker an einem zu messenden Teil an und detektiere ihn.", "trigger": "Position / Bewegung eines Bauteils muss berührungslos gemessen werden.", "example": "Drehzahlerfassung mit Zahnscheibe + Hall-Sensor." },
+      "en": { "title": "Magnetically marked indicators", "description": "Attach a ferromagnetic marker to the part of interest and detect it.", "trigger": "Position / motion of a part must be measured contactlessly.", "example": "Speed measurement with a toothed wheel + Hall sensor." } },
+
+    { "id": "4.4.3", "class": 4, "group": "4.4",
+      "de": { "title": "Magnetische Substanz + Curie-Punkt zur Temperaturmessung", "description": "Verwende den Curie-Punkt eines ferromagnetischen Materials als selbsttätige Temperaturschwelle.", "trigger": "Temperaturschaltung an genau einem Schwellwert gewünscht.", "example": "Magnet-Schalter, der oberhalb der Curie-Temperatur abfällt." },
+      "en": { "title": "Magnetic substance + Curie point for temperature", "description": "Use the Curie point of a ferromagnetic material as a self-acting temperature threshold.", "trigger": "Temperature switching at a precise threshold desired.", "example": "Magnet switch that drops out above the Curie temperature." } },
+
+    { "id": "4.4.4", "class": 4, "group": "4.4",
+      "de": { "title": "Strukturierung in der magnetischen Messung", "description": "Erzeuge magnetische Gradienten / Muster, um räumliche Information zu kodieren.", "trigger": "Räumliche Auflösung der Messung gefordert.", "example": "MRI — Gradientenfelder kodieren Ort in Frequenz." },
+      "en": { "title": "Structuring in magnetic measurement", "description": "Create magnetic gradients / patterns to encode spatial information.", "trigger": "Spatial resolution of the measurement is required.", "example": "MRI — gradient fields encode location in frequency." } },
+
+    { "id": "4.4.5", "class": 4, "group": "4.4",
+      "de": { "title": "Rhythmusanpassung in der magnetischen Messung", "description": "Stimme Mess-Pulse auf die Eigendynamik des magnetischen Systems ab (Larmor-Frequenz etc.).", "trigger": "Effizienz / Empfindlichkeit der Messung soll maximal werden.", "example": "Larmor-Resonanz in NMR — Pulsfolge passt zur Eigenfrequenz der Kernspins." },
+      "en": { "title": "Rhythm matching in magnetic measurement", "description": "Tune measurement pulses to the inherent dynamics of the magnetic system (Larmor frequency etc.).", "trigger": "Efficiency / sensitivity of measurement must be maximised.", "example": "Larmor resonance in NMR — pulse sequence matches the natural frequency of nuclear spins." } },
+
+    { "id": "4.5.1", "class": 4, "group": "4.5",
+      "de": { "title": "Übergang Bi → Poly-System in der Messung", "description": "Mehrere Sensoren parallel — Mittelung, Fehlerkorrektur, räumliche Verteilung.", "trigger": "Einzelsensor ist unzuverlässig oder zu eindimensional.", "example": "Sensor-Array (mehrere Mikrofone, redundante Hall-Sensoren)." },
+      "en": { "title": "Transition bi → poly in measurement", "description": "Multiple sensors in parallel — averaging, error correction, spatial coverage.", "trigger": "Single sensor is unreliable or one-dimensional.", "example": "Sensor array (multiple microphones, redundant Hall sensors)." } },
+
+    { "id": "4.5.2", "class": 4, "group": "4.5",
+      "de": { "title": "Evolution der Mess-Systeme", "description": "Messsysteme entwickeln sich von einfach → komplex → intelligent (auto-kalibrierend, lernend).", "trigger": "Genauigkeit / Selbstkorrektur muss langfristig steigen.", "example": "Smart-Sensor mit Selbstkalibrierung und Drift-Korrektur." },
+      "en": { "title": "Evolution of measurement systems", "description": "Measurement systems evolve from simple → complex → intelligent (auto-calibrating, learning).", "trigger": "Accuracy / self-correction must improve long-term.", "example": "Smart sensor with self-calibration and drift compensation." } },
+
+    { "id": "5.1.1", "class": 5, "group": "5.1",
+      "de": { "title": "Indirekt: bestehende Substanz nutzen", "description": "Verwende eine bereits vorhandene Substanz, statt eine neue einzuführen.", "trigger": "Vermeidung neuer Komponenten gefordert.", "example": "Eigenes Werkstückmaterial als Späne-Bürste verwenden." },
+      "en": { "title": "Indirect: use an existing substance", "description": "Use a substance already present rather than introducing a new one.", "trigger": "Avoid new components.", "example": "Use the workpiece’s own chips as a brush." } },
+
+    { "id": "5.1.2", "class": 5, "group": "5.1",
+      "de": { "title": "Substanz erscheint nur, wenn nötig", "description": "Eine Substanz wird nur lokal / temporär erzeugt — nicht dauerhaft vorhanden.", "trigger": "Permanente Existenz der Substanz wäre störend.", "example": "Eis als temporäres Werkzeug, das nach Gebrauch verdunstet." },
+      "en": { "title": "Substance appears only when needed", "description": "A substance is generated only locally / temporarily — not present permanently.", "trigger": "Permanent existence of the substance would be problematic.", "example": "Ice as a temporary tool that disappears after use." } },
+
+    { "id": "5.1.3", "class": 5, "group": "5.1",
+      "de": { "title": "Substanz verschwindet nach Gebrauch", "description": "Verbrauchsstoff, der sich nach getaner Arbeit auflöst, verdunstet oder zerfällt.", "trigger": "Rückstände müssen vermieden werden.", "example": "Auflösbare chirurgische Nähte." },
+      "en": { "title": "Substance disappears after use", "description": "Consumable that dissolves, evaporates or degrades after doing its job.", "trigger": "Residues must be avoided.", "example": "Dissolvable surgical sutures." } },
+
+    { "id": "5.1.4", "class": 5, "group": "5.1",
+      "de": { "title": "Aufblasbare / hohle / schaumartige Strukturen", "description": "Verwende minimal Masse, indem du das System aufblasbar / hohl / schaumförmig konstruierst.", "trigger": "Masse / Volumen muss minimal sein.", "example": "Airbag — riesiges Volumen aus minimalem Materialeinsatz." },
+      "en": { "title": "Inflatable / hollow / foam structures", "description": "Use minimum mass by building the system inflatable / hollow / foamed.", "trigger": "Mass / volume must be minimal.", "example": "Airbag — huge volume from minimal material." } },
+
+    { "id": "5.2.1", "class": 5, "group": "5.2",
+      "de": { "title": "Bestehendes Feld der Umgebung nutzen", "description": "Statt ein Feld zu erzeugen, nutze ein bereits vorhandenes (Erdmagnetfeld, Schwerkraft, Sonnenstrahlung).", "trigger": "Energieeinsparung; vorhandenes Feld ist nutzbar.", "example": "Solarzelle nutzt die Sonnenstrahlung der Umgebung." },
+      "en": { "title": "Use an existing field from the environment", "description": "Rather than generating a field, use one already present (Earth’s magnetism, gravity, solar radiation).", "trigger": "Energy saving; ambient field is usable.", "example": "Solar cell uses ambient sunlight." } },
+
+    { "id": "5.2.2", "class": 5, "group": "5.2",
+      "de": { "title": "Felder aus Umgebungssubstanzen erzeugen", "description": "Erzeuge ein Feld aus den vorhandenen Substanzen heraus (z.B. Verbrennung, Verdampfung).", "trigger": "Externer Energie-Eintrag soll vermieden werden.", "example": "Selbsterhitzende Mahlzeit — chemische Reaktion erzeugt Wärme aus Reagenzien." },
+      "en": { "title": "Generate fields from environmental substances", "description": "Generate a field from existing substances (combustion, evaporation).", "trigger": "External energy input should be avoided.", "example": "Self-heating meal — chemical reaction generates heat from reagents." } },
+
+    { "id": "5.2.3", "class": 5, "group": "5.2",
+      "de": { "title": "Ferromagnetische Substanz + Magnetfeld als Helfer", "description": "Bring im Notfall ein Mini-Su-Field aus Ferromagnetik + Magnetfeld ein.", "trigger": "Fallback, wenn andere Lösungen versagen.", "example": "Magnetischer Späne-Sammler im Bohrwasser." },
+      "en": { "title": "Ferromagnetic substance + magnetic field helper", "description": "As a fallback, drop in a mini-Su-Field of ferromagnet + magnetic field.", "trigger": "Fallback when other solutions fail.", "example": "Magnetic chip collector in drilling coolant." } },
+
+    { "id": "5.3.1", "class": 5, "group": "5.3",
+      "de": { "title": "Phasenübergang für neue Eigenschaft", "description": "Nutze Phasenübergänge (fest ↔ flüssig ↔ gasförmig) für sprunghafte Eigenschaftsänderungen.", "trigger": "Eine Eigenschaft soll sich plötzlich / drastisch ändern.", "example": "Latentwärmespeicher — Phasenwechsel bei konstanter Temperatur." },
+      "en": { "title": "Phase transition for new properties", "description": "Use phase changes (solid ↔ liquid ↔ gas) for stepwise property changes.", "trigger": "A property should change suddenly / drastically.", "example": "Latent heat storage — phase change at constant temperature." } },
+
+    { "id": "5.3.2", "class": 5, "group": "5.3",
+      "de": { "title": "Doppelte Eigenschaften an Phasenübergängen", "description": "Bei Phasenübergängen liegen oft zwei Eigenschaften gleichzeitig vor (Übergangszone).", "trigger": "Zwei gegensätzliche Eigenschaften gefordert.", "example": "Wasserdampf bei 100 °C: kondensiert UND verdampft — Wärme wird gehalten." },
+      "en": { "title": "Dual properties at phase transitions", "description": "Phase transitions often combine two properties (transition zone).", "trigger": "Two opposing properties required.", "example": "Water vapour at 100 °C: condenses AND evaporates — heat is held." } },
+
+    { "id": "5.3.3", "class": 5, "group": "5.3",
+      "de": { "title": "Physikalische Effekte beim Phasenwechsel", "description": "Nutze Volumen-, Wärme- oder Leitfähigkeitsänderungen beim Phasenwechsel als Funktionsträger.", "trigger": "Effekt am Phasenwechsel ist nutzbar.", "example": "Bimetall-Schalter nutzt unterschiedliche Wärmeausdehnung." },
+      "en": { "title": "Physical effects at phase transitions", "description": "Use volume, heat or conductivity changes at phase transitions as function carriers.", "trigger": "Effect at the phase change is usable.", "example": "Bimetallic switch uses differential thermal expansion." } },
+
+    { "id": "5.3.4", "class": 5, "group": "5.3",
+      "de": { "title": "Zweiphasensystem nutzen", "description": "System mit zwei stabilen Phasen — Eigenschaften können durch Phasenwahl gesteuert werden.", "trigger": "Diskrete Zustände gewünscht.", "example": "Schaltbare Optik mit Flüssigkristallphasen." },
+      "en": { "title": "Two-phase system", "description": "System with two stable phases — properties controlled by phase choice.", "trigger": "Discrete states desired.", "example": "Switchable optics with liquid-crystal phases." } },
+
+    { "id": "5.3.5", "class": 5, "group": "5.3",
+      "de": { "title": "Wechselwirkung zwischen Phasen", "description": "Erzeuge gezielte Wechselwirkungen zwischen koexistierenden Phasen (Verdampfungs-Kühlung etc.).", "trigger": "Phasen sind koexistent; ihre Wechselwirkung ist nutzbar.", "example": "Verdunstungskühlung — Verdampfung entzieht der Flüssigkeit Wärme." },
+      "en": { "title": "Interaction between phases", "description": "Engineer deliberate interactions between coexisting phases (evaporative cooling etc.).", "trigger": "Phases coexist; their interaction is usable.", "example": "Evaporative cooling — vaporisation removes heat from the liquid." } },
+
+    { "id": "5.4.1", "class": 5, "group": "5.4",
+      "de": { "title": "Selbstgesteuerte Übergänge (Curie, Hysterese, Sättigung)", "description": "Nutze physikalische Effekte, die das System selbst auf Schwellwerte reagieren lassen.", "trigger": "Selbsttätige Reaktion auf Bedingung gewünscht.", "example": "Selbstregelnde Heizung mit Curie-Punkt-Schalter." },
+      "en": { "title": "Self-controlled transitions (Curie, hysteresis, saturation)", "description": "Use physical effects that let the system respond to thresholds on its own.", "trigger": "Self-acting response to a condition desired.", "example": "Self-regulating heater with Curie-point switch." } },
+
+    { "id": "5.4.2", "class": 5, "group": "5.4",
+      "de": { "title": "Effekte kombinieren für stärkere Wirkung", "description": "Mehrere physikalische Effekte in Kette / parallel kombinieren für eine starke Gesamtwirkung.", "trigger": "Einzeleffekt ist zu schwach.", "example": "Piezo-Effekt + Resonanz erzeugt hohe Spannung aus mechanischer Vibration (Energy Harvesting)." },
+      "en": { "title": "Combine effects for stronger action", "description": "Combine several physical effects in series / parallel for a strong total effect.", "trigger": "Single effect is too weak.", "example": "Piezo effect + resonance generates high voltage from mechanical vibration (energy harvesting)." } },
+
+    { "id": "5.5.1", "class": 5, "group": "5.5",
+      "de": { "title": "Selbstbedienung", "description": "Das System erfüllt eine Funktion selbst, ohne externe Eingabe (vgl. IFR-1).", "trigger": "Eingriff von außen soll minimiert werden.", "example": "Selbstreinigender Ofen (Pyrolyse-Modus)." },
+      "en": { "title": "Self-service", "description": "The system performs a function on its own, with no external input (cf. IFR-1).", "trigger": "External intervention should be minimised.", "example": "Self-cleaning oven (pyrolysis mode)." } },
+
+    { "id": "5.5.2", "class": 5, "group": "5.5",
+      "de": { "title": "Erzeugung von Teilchen durch Zerlegung", "description": "Gewinne neue Substanzen durch Zerlegen vorhandener (Elektrolyse, Photolyse, Pyrolyse).", "trigger": "Eine spezielle Substanz wird vor Ort benötigt.", "example": "Sauerstoffgewinnung aus Wasser durch Elektrolyse." },
+      "en": { "title": "Particle generation by decomposition", "description": "Generate new substances by decomposing existing ones (electrolysis, photolysis, pyrolysis).", "trigger": "A specific substance is needed locally.", "example": "Oxygen produced from water by electrolysis." } },
+
+    { "id": "5.5.3", "class": 5, "group": "5.5",
+      "de": { "title": "Erzeugung von Teilchen durch Verbindung", "description": "Vereinige vorhandene Substanzen / Partikel zu einer neuen Substanz mit gewünschten Eigenschaften.", "trigger": "Neue Substanz mit spezifischen Eigenschaften gefordert.", "example": "Pulverbettverfahren — Partikel sintern zu einem Festkörper zusammen." },
+      "en": { "title": "Particle generation by combination", "description": "Combine existing substances / particles into a new substance with desired properties.", "trigger": "New substance with specific properties required.", "example": "Powder-bed processes — particles sinter into a solid." } }
+  ]
+}

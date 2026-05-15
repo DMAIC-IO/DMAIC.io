@@ -224,8 +224,9 @@ export default class ScatterChart extends ChartBase {
       if (s.visible === false) return;
       // Per-series markerSize overrides global
       if (s.markerSize !== undefined && s.markerSize <= 0) return;
-      const r = s.markerSize !== undefined ? s.markerSize / 2 + 1 : markerR;
-      if (r <= 0) return;
+      const baseR = s.markerSize !== undefined ? s.markerSize / 2 + 1 : markerR;
+      const sizes = Array.isArray(s.sizes) ? s.sizes : null;
+      if (!sizes && baseR <= 0) return;
       const sym = s.symbol || 'circle';
       const strokeC = resolveColor(s.stroke || 'var(--color-text-primary)');
       const strokeW = s.strokeWidth !== undefined ? s.strokeWidth : 1.5;
@@ -233,6 +234,10 @@ export default class ScatterChart extends ChartBase {
       for (let i = 0; i < s.x.length; i++) {
         const cx = xScale(s.x[i]);
         const cy = yScale(s.y[i]);
+        const r = sizes
+          ? (Number.isFinite(sizes[i]) && sizes[i] > 0 ? sizes[i] / 2 + 1 : 0)
+          : baseR;
+        if (r <= 0) continue;
         drawMarker(plotGroup, sym, cx, cy, r,
           resolveColor(s.color), strokeC, strokeW, {});
       }
@@ -294,6 +299,11 @@ export default class ScatterChart extends ChartBase {
       let html = `<b style="color:${resolveColor(s.color)}">${s.name || 'Series'}</b><br>`;
       html += `${xName}: ${formatNum(s.x[pt.i], null, this.locale)}<br>`;
       html += `${yName}: ${formatNum(s.y[pt.i], null, this.locale)}`;
+
+      // Bubble size dimension (raw value, separate from rendered radius).
+      if (Array.isArray(s.sizeValues) && s.sizeLabel && Number.isFinite(s.sizeValues[pt.i])) {
+        html += `<br>${s.sizeLabel}: ${formatNum(s.sizeValues[pt.i], null, this.locale)}`;
+      }
 
       // Error bar info
       const eb = s.errorBars;

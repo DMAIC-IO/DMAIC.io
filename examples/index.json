@@ -1642,6 +1642,131 @@
       ]
     },
     {
+      "id": "triz-physical-contradiction-tragfluegel",
+      "type": "project",
+      "title": {
+        "de": "TRIZ Physikalischer Widerspruch: Tragflügel",
+        "en": "TRIZ Physical Contradiction: Aircraft Wing"
+      },
+      "description": {
+        "de": "Klassisches Lehrbeispiel: Tragflügel soll gleichzeitig lang (Auftrieb) und kurz (Widerstand) sein. Auflösung über Separation in der Zeit — Schwenkflügel.",
+        "en": "Classic textbook case: a wing must be both long (lift) and short (drag). Resolved via separation in time — swing wing."
+      },
+      "source": "DMAIC.io Lehrkonfiguration",
+      "license": "public-domain",
+      "file": "projects/triz-physical-contradiction-tragfluegel.json",
+      "format": "json",
+      "modules": [
+        "triz-physical-contradiction"
+      ],
+      "tags": [
+        "improve",
+        "triz",
+        "physical-contradiction",
+        "separation"
+      ]
+    },
+    {
+      "id": "triz-ifr-bandfoerderer",
+      "type": "project",
+      "title": {
+        "de": "TRIZ IFR: Bandförderer",
+        "en": "TRIZ IFR: Belt Conveyor"
+      },
+      "description": {
+        "de": "Drei IFR-Stufen für einen verklemmenden Bandförderer-Übergabe-Trichter, mit Hindernis-Analyse als Aufgabenliste.",
+        "en": "Three IFR levels for a jamming belt-conveyor transfer chute, with an obstacle list as the task backlog."
+      },
+      "source": "DMAIC.io Lehrkonfiguration",
+      "license": "public-domain",
+      "file": "projects/triz-ifr-bandfoerderer.json",
+      "format": "json",
+      "modules": [
+        "triz-ifr"
+      ],
+      "tags": [
+        "improve",
+        "triz",
+        "ifr",
+        "bandfoerderer"
+      ]
+    },
+    {
+      "id": "triz-resources-bandfoerderer",
+      "type": "project",
+      "title": {
+        "de": "TRIZ Ressourcen-Checkliste: Bandförderer",
+        "en": "TRIZ Resources Checklist: Belt Conveyor"
+      },
+      "description": {
+        "de": "Ressourcen-Inventar über 6 Kategorien × 3 Systemebenen für den Bandförderer-Lehrcase — passend zum IFR-Beispiel.",
+        "en": "Resources inventory across 6 categories × 3 system levels for the belt-conveyor case — companion to the IFR example."
+      },
+      "source": "DMAIC.io Lehrkonfiguration",
+      "license": "public-domain",
+      "file": "projects/triz-resources-bandfoerderer.json",
+      "format": "json",
+      "modules": [
+        "triz-resources"
+      ],
+      "tags": [
+        "improve",
+        "triz",
+        "resources",
+        "bandfoerderer"
+      ]
+    },
+    {
+      "id": "triz-evolution-trends-pkw-beleuchtung",
+      "type": "project",
+      "title": {
+        "de": "TRIZ Evolutionstrends: Pkw-Beleuchtung",
+        "en": "TRIZ Evolution Trends: Passenger-Car Headlight"
+      },
+      "description": {
+        "de": "Acht klassische Evolutionslinien angewandt auf den Pkw-Hauptscheinwerfer — vom Bi-Scheinwerfer zur adaptiven LED-Matrix und darüber hinaus.",
+        "en": "Eight classical evolution trajectories applied to a passenger-car headlight — from twin-headlight to adaptive LED matrix and beyond."
+      },
+      "source": "DMAIC.io Lehrkonfiguration",
+      "license": "public-domain",
+      "file": "projects/triz-evolution-trends-pkw-beleuchtung.json",
+      "format": "json",
+      "modules": [
+        "triz-evolution-trends"
+      ],
+      "tags": [
+        "improve",
+        "triz",
+        "evolution-trends",
+        "automotive"
+      ]
+    },
+    {
+      "id": "triz-sufield-bohrer-beton",
+      "type": "project",
+      "title": {
+        "de": "TRIZ Substanz-Feld: Bohrer / Beton",
+        "en": "TRIZ Substance-Field: Drill / Concrete"
+      },
+      "description": {
+        "de": "Su-Field-Modell für eine unzureichende mechanische Wirkung (Bohrer auf Beton). Diagnose: Klasse 2 — gepulster Betrieb (Schlagbohren) ausgewählt.",
+        "en": "Su-Field model for an insufficient mechanical action (drill on concrete). Diagnosis: class 2 — pulsed mode (hammer drilling) selected."
+      },
+      "source": "DMAIC.io Lehrkonfiguration",
+      "license": "public-domain",
+      "file": "projects/triz-sufield-bohrer-beton.json",
+      "format": "json",
+      "modules": [
+        "triz-sufield"
+      ],
+      "tags": [
+        "improve",
+        "triz",
+        "sufield",
+        "standards"
+      ]
+    },
+    {
       "id": "worksheet-hypothesis-pizza-fahrer",
       "type": "project",
       "title": {

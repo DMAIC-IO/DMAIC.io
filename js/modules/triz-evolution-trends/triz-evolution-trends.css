@@ -1,0 +1,147 @@
+/* TRIZ Evolution Trends — module styles. BEM-light, theme-driven. */
+
+.triz-evo__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  padding: var(--spacing-md);
+}
+
+/* ── Top bar ──────────────────────────────────────────────── */
+.triz-evo__topbar {
+  display: grid;
+  grid-template-columns: auto 1fr auto auto;
+  gap: var(--spacing-sm);
+  align-items: center;
+}
+
+.triz-evo__label {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.triz-evo__system-input {
+  width: 100%;
+}
+
+/* ── Trend card ───────────────────────────────────────────── */
+.triz-evo__trend {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-sm);
+  background: var(--color-bg-elevated);
+  border: 1px solid var(--color-border-primary);
+  border-left: 4px solid var(--color-accent, #2e7dd9);
+  border-radius: var(--border-radius);
+}
+
+.triz-evo__trend--qualitative {
+  border-left-color: var(--color-warning, #d29922);
+}
+
+.triz-evo__trend-head {
+  display: flex;
+  align-items: baseline;
+  gap: var(--spacing-xs);
+}
+
+.triz-evo__trend-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 26px;
+  height: 22px;
+  padding: 0 6px;
+  background: var(--color-bg-tertiary);
+  color: var(--color-text-secondary);
+  border-radius: var(--border-radius-sm);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+}
+
+.triz-evo__trend-title {
+  margin: 0;
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+}
+
+.triz-evo__trend-desc {
+  margin: 0;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  font-style: italic;
+}
+
+/* ── Stage radio group ───────────────────────────────────── */
+.triz-evo__stages {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-xs);
+}
+
+.triz-evo__stage {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  background: var(--color-bg-secondary);
+  border: 1px solid var(--color-border-primary);
+  border-radius: var(--border-radius-sm);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: border-color var(--transition-speed), background var(--transition-speed);
+}
+
+.triz-evo__stage:hover {
+  border-color: var(--color-accent);
+}
+
+.triz-evo__stage.is-selected {
+  border-color: var(--color-accent);
+  background: color-mix(in srgb, var(--color-accent) 12%, transparent);
+  color: var(--color-text-primary);
+}
+
+.triz-evo__stage input[type="radio"] {
+  margin: 0;
+  cursor: pointer;
+}
+
+.triz-evo__stage-idx {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--color-bg-tertiary);
+  color: var(--color-text-tertiary);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+}
+
+.triz-evo__stage.is-selected .triz-evo__stage-idx {
+  background: var(--color-accent);
+  color: #fff;
+}
+
+/* Hide the actual radio circle — clicking the label fires the radio anyway. */
+.triz-evo__stage input[type="radio"] {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* ── Notes ────────────────────────────────────────────────── */
+.triz-evo__notes {
+  width: 100%;
+  resize: vertical;
+  min-height: 48px;
+  font-size: var(--font-size-sm);
+}

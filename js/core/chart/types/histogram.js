@@ -6,7 +6,7 @@
 
 import ChartBase from '../chart-base.js';
 import {
-  svgEl, svgText, resolveColor, formatNum, getChartColors
+  svgEl, resolveColor, formatNum, getChartColors
 } from '../chart-core.js';
 import {
   edSection, edSelectRow, edCheckboxRow, edInlineNum,
@@ -114,8 +114,12 @@ export default class HistogramChart extends ChartBase {
    * @param {Object} context
    */
   constructor(container, config, context) {
+    const isHorizontal = config?.orientation === 'horizontal';
     const defaults = {
-      yMin: 0,
+      orientation: 'vertical',  // 'vertical' (default, bars rise up) | 'horizontal' (bars extend right)
+      // Pin the density-axis baseline to zero — bars/curve hang off it.
+      yMin: isHorizontal ? null : 0,
+      xMin: isHorizontal ? 0 : null,
       data: [],
       binMethod: 'sturges',
       binCount: null,
@@ -124,7 +128,6 @@ export default class HistogramChart extends ChartBase {
       showNormalCurve: false,
       normalCurveColor: null,
       normalCurves: [],
-      specLimits: { lsl: null, usl: null, target: null },
     };
     super(container, Object.assign(defaults, config), context);
   }
@@ -182,31 +185,22 @@ export default class HistogramChart extends ChartBase {
     const binCount = computeBinCount(data, this.config.binMethod, this.config.binCount);
     const { bins } = buildBins(data, binCount);
 
-    let xMin = bins[0].x0;
-    let xMax = bins[bins.length - 1].x1;
-    let yMax = 0;
-
-    for (const bin of bins) {
-      yMax = Math.max(yMax, bin.density);
-    }
-
-    // Include spec limits
-    const sl = this.config.specLimits || {};
-    if (sl.lsl != null) xMin = Math.min(xMin, sl.lsl);
-    if (sl.usl != null) xMax = Math.max(xMax, sl.usl);
-    if (sl.target != null) {
-      xMin = Math.min(xMin, sl.target);
-      xMax = Math.max(xMax, sl.target);
-    }
+    let valMin = bins[0].x0;
+    let valMax = bins[bins.length - 1].x1;
+    let denMax = 0;
+    for (const bin of bins) denMax = Math.max(denMax, bin.density);
 
     // Include normal curve peaks (auto-fit + explicit curves)
     for (const curve of this._getActiveNormalCurves()) {
-      yMax = Math.max(yMax, normalPdf(curve.mean, curve.mean, curve.stdDev));
-      xMin = Math.min(xMin, curve.mean - 4 * curve.stdDev);
-      xMax = Math.max(xMax, curve.mean + 4 * curve.stdDev);
+      denMax = Math.max(denMax, normalPdf(curve.mean, curve.mean, curve.stdDev));
+      valMin = Math.min(valMin, curve.mean - 4 * curve.stdDev);
+      valMax = Math.max(valMax, curve.mean + 4 * curve.stdDev);
     }
 
-    return { xMin, xMax, yMin: 0, yMax };
+    // Horizontal: bin values on Y, density on X. Vertical (default): the other way.
+    return this.config.orientation === 'horizontal'
+      ? { xMin: 0, xMax: denMax, yMin: valMin, yMax: valMax }
+      : { xMin: valMin, xMax: valMax, yMin: 0, yMax: denMax };
   }
 
   // ── Abstract Implementation: Render Data ─────────────────────────
@@ -227,21 +221,40 @@ export default class HistogramChart extends ChartBase {
     this._bins = bins;
     this._binWidth = binWidth;
 
-    // Pre-compute shared pixel positions for all bin edges
-    const yBase = Math.round(yScale(0));
-    const edges = bins.map(b => Math.round(xScale(b.x0)));
-    edges.push(Math.round(xScale(bins[bins.length - 1].x1)));
+    const isHorizontal = this.config.orientation === 'horizontal';
+    // In horizontal mode bin values run along Y and density along X; the
+    // bar rectangle starts at density=0 and extends rightward to density.
+    const valueScale   = isHorizontal ? yScale : xScale;
+    const densityScale = isHorizontal ? xScale : yScale;
 
-    // Render each bar as fill + outline path (shared edges overlap exactly)
+    const densityBase = Math.round(densityScale(0));
+    const edges = bins.map(b => Math.round(valueScale(b.x0)));
+    edges.push(Math.round(valueScale(bins[bins.length - 1].x1)));
+
     for (let i = 0; i < bins.length; i++) {
-      const y0 = Math.round(yScale(bins[i].density));
-      const barH = yBase - y0;
-      const barW = edges[i + 1] - edges[i];
-      if (barH <= 0 || barW <= 0) continue;
+      const densityPx = Math.round(densityScale(bins[i].density));
+      // Span along the value axis (between consecutive bin edges).
+      const e0 = edges[i], e1 = edges[i + 1];
+      const valSpan = Math.abs(e1 - e0);
+      // Span along the density axis (between zero baseline and density value).
+      const densSpan = Math.abs(densityBase - densityPx);
+      if (valSpan <= 0 || densSpan <= 0) continue;
+
+      let x, y, w, h;
+      if (isHorizontal) {
+        x = Math.min(densityBase, densityPx);
+        y = Math.min(e0, e1);
+        w = densSpan;
+        h = valSpan;
+      } else {
+        x = Math.min(e0, e1);
+        y = Math.min(densityBase, densityPx);
+        w = valSpan;
+        h = densSpan;
+      }
 
       svgEl('rect', {
-        x: edges[i], y: y0,
-        width: barW, height: barH,
+        x, y, width: w, height: h,
         fill: barFill, 'fill-opacity': 0.6,
         stroke: barStroke, 'stroke-width': 1,
       }, plotGroup);
@@ -252,13 +265,17 @@ export default class HistogramChart extends ChartBase {
       const curveColor = resolveColor(curve.color);
       const points = [];
       const steps = 100;
-      const cxMin = curve.mean - 4 * curve.stdDev;
-      const cxMax = curve.mean + 4 * curve.stdDev;
+      const cvMin = curve.mean - 4 * curve.stdDev;
+      const cvMax = curve.mean + 4 * curve.stdDev;
 
       for (let i = 0; i <= steps; i++) {
-        const x = cxMin + (cxMax - cxMin) * i / steps;
-        const y = normalPdf(x, curve.mean, curve.stdDev);
-        points.push(`${xScale(x)},${yScale(y)}`);
+        const v = cvMin + (cvMax - cvMin) * i / steps;
+        const d = normalPdf(v, curve.mean, curve.stdDev);
+        if (isHorizontal) {
+          points.push(`${densityScale(d)},${valueScale(v)}`);
+        } else {
+          points.push(`${valueScale(v)},${densityScale(d)}`);
+        }
       }
 
       const attrs = {
@@ -270,16 +287,6 @@ export default class HistogramChart extends ChartBase {
       if (curve.lineStyle === 'dashed') attrs['stroke-dasharray'] = '6,3';
       svgEl('polyline', attrs, plotGroup);
     }
-
-    // Spec limit lines
-    const sl = this.config.specLimits || {};
-    const styles = getComputedStyle(document.documentElement);
-    const errorColor = styles.getPropertyValue('--color-error').trim() || '#e15759';
-    const successColor = styles.getPropertyValue('--color-success').trim() || '#59a14f';
-
-    if (sl.lsl != null) this._drawSpecLine(plotGroup, xScale, plotArea, sl.lsl, errorColor, 'LSL');
-    if (sl.usl != null) this._drawSpecLine(plotGroup, xScale, plotArea, sl.usl, errorColor, 'USL');
-    if (sl.target != null) this._drawSpecLine(plotGroup, xScale, plotArea, sl.target, successColor, 'Target');
   }
 
   // ── Type-Specific Editor ──────────────────────────────────────
@@ -327,44 +334,6 @@ export default class HistogramChart extends ChartBase {
     }));
 
     inner.appendChild(curveSec);
-
-    // ── Spec Limits ──
-    const specSec = edSection(th('specLimits'));
-    const sl = cfg.specLimits || (cfg.specLimits = {});
-
-    specSec.appendChild(edInlineNum(th('lsl'), sl.lsl ?? '', (v) => {
-      sl.lsl = (v === '' || isNaN(v)) ? null : v;
-      this.render();
-    }));
-    specSec.appendChild(edInlineNum(th('usl'), sl.usl ?? '', (v) => {
-      sl.usl = (v === '' || isNaN(v)) ? null : v;
-      this.render();
-    }));
-    specSec.appendChild(edInlineNum(th('target'), sl.target ?? '', (v) => {
-      sl.target = (v === '' || isNaN(v)) ? null : v;
-      this.render();
-    }));
-
-    inner.appendChild(specSec);
-  }
-
-  /**
-   * Draw a spec limit line with label.
-   * @private
-   */
-  _drawSpecLine(plotGroup, xScale, plotArea, value, color, label) {
-    const x = xScale(value);
-    svgEl('line', {
-      x1: x, y1: plotArea.y,
-      x2: x, y2: plotArea.y + plotArea.h,
-      stroke: color, 'stroke-width': 1.5, 'stroke-dasharray': '6,3',
-    }, plotGroup);
-
-    svgText(label, {
-      x, y: plotArea.y - 4,
-      'text-anchor': 'middle', 'font-size': '10px', fill: color,
-      'font-weight': '600',
-    }, plotGroup);
   }
 
   // ── Series Descriptors (for base editor) ──────────────────────
@@ -442,12 +411,17 @@ export default class HistogramChart extends ChartBase {
     const bins = this._bins;
     if (!bins) return [];
 
-    // Find which bin the mouse is in
+    const isHorizontal = this.config.orientation === 'horizontal';
+    // Map cursor data coords onto (value, density) regardless of orientation.
+    const valCoord = isHorizontal ? dataY : dataX;
+    const denCoord = isHorizontal ? dataX : dataY;
+
     for (const bin of bins) {
-      if (dataX >= bin.x0 && dataX < bin.x1 && dataY >= 0 && dataY <= bin.density) {
-        const midX = (bin.x0 + bin.x1) / 2;
-        const px = this._xScale(midX);
-        const py = this._yScale(bin.density / 2);
+      if (valCoord >= bin.x0 && valCoord < bin.x1 && denCoord >= 0 && denCoord <= bin.density) {
+        const midVal = (bin.x0 + bin.x1) / 2;
+        const halfDen = bin.density / 2;
+        const px = isHorizontal ? this._xScale(halfDen) : this._xScale(midVal);
+        const py = isHorizontal ? this._yScale(midVal) : this._yScale(halfDen);
 
         return [{
           html: `<b>${formatNum(bin.x0, 2, this.locale)} – ${formatNum(bin.x1, 2, this.locale)}</b><br>`

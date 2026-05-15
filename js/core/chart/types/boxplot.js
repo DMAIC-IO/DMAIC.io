@@ -73,12 +73,16 @@ export default class BoxplotChart extends ChartBase {
    * @param {Object} context
    */
   constructor(container, config, context) {
+    const isVertical = config?.orientation === 'vertical';
     const defaults = {
       groups: [],         // [{ name: string, values: number[] }]
-      boxHeight: 0.6,     // fraction of slot height
+      orientation: 'horizontal',  // 'horizontal' (default, data on X) | 'vertical' (data on Y)
+      boxHeight: 0.6,     // fraction of slot dimension perpendicular to data axis
       showOutliers: true,
       showMean: true,
-      showYTicks: false,  // suppress numeric Y ticks — we draw category labels
+      // Suppress numeric ticks on the group axis — group names are drawn manually.
+      showXTicks: !isVertical,
+      showYTicks: isVertical,
       boxColors: [],
       // Outlier marker styling — null fields fall back to per-group color.
       outlierSymbol: 'circle',
@@ -92,30 +96,36 @@ export default class BoxplotChart extends ChartBase {
 
   /* ── Data Extent ─────────────────────────────────────────── */
 
-  /** @override — horizontal: X = data values, Y = group index */
+  /**
+   * @override — extent along the data axis spans the union of values;
+   * extent along the group axis covers [-0.5, n-0.5]. Axis assignment
+   * depends on orientation: horizontal → data on X, vertical → data on Y.
+   */
   _getDataExtent() {
     const groups = this.config.groups || [];
     const visible = groups.filter(g => g.visible !== false);
     if (!visible.length) return { xMin: 0, xMax: 1, yMin: 0, yMax: 1 };
 
-    let xMin = Infinity, xMax = -Infinity;
+    let dMin = Infinity, dMax = -Infinity;
     for (const g of visible) {
       if (!g.values || !g.values.length) continue;
       for (const v of g.values) {
-        if (v < xMin) xMin = v;
-        if (v > xMax) xMax = v;
+        if (v < dMin) dMin = v;
+        if (v > dMax) dMax = v;
       }
     }
-    if (!isFinite(xMin)) { xMin = 0; xMax = 1; }
+    if (!isFinite(dMin)) { dMin = 0; dMax = 1; }
 
-    // Pad X by 5 %
-    const pad = (xMax - xMin) * 0.05 || 0.5;
-    return {
-      xMin: xMin - pad,
-      xMax: xMax + pad,
-      yMin: -0.5,
-      yMax: visible.length - 0.5,
-    };
+    // Pad the data axis by 5 %.
+    const pad = (dMax - dMin) * 0.05 || 0.5;
+    const dataMin = dMin - pad;
+    const dataMax = dMax + pad;
+    const groupMin = -0.5;
+    const groupMax = visible.length - 0.5;
+
+    return this.config.orientation === 'vertical'
+      ? { xMin: groupMin, xMax: groupMax, yMin: dataMin, yMax: dataMax }
+      : { xMin: dataMin,  xMax: dataMax,  yMin: groupMin, yMax: groupMax };
   }
 
   /* ── Render ──────────────────────────────────────────────── */
@@ -133,6 +143,12 @@ export default class BoxplotChart extends ChartBase {
     const chartColors = getChartColors();
     const cfg = this.config;
     const nGroups = visibleEntries.length;
+    const isVertical = cfg.orientation === 'vertical';
+
+    // In vertical orientation the data axis is Y and the group axis is X;
+    // in horizontal (default) it's the other way round.
+    const dataScale  = isVertical ? yScale : xScale;
+    const groupScale = isVertical ? xScale : yScale;
 
     // Theme colors for category labels
     const textColor = resolveColor('var(--color-text-secondary)');
@@ -156,86 +172,144 @@ export default class BoxplotChart extends ChartBase {
       );
       const boxSW = (cfg.boxStrokeWidths && cfg.boxStrokeWidths[origIdx]) ?? 1.5;
 
-      // Y position: group index mapped via yScale (inverted: group 0 at top)
-      const yCentre = yScale(i);
-      const slotH = Math.abs(yScale(0) - yScale(1));
-      const boxH = slotH * (cfg.boxHeight || 0.6);
-      const halfH = boxH / 2;
+      const groupCentre = groupScale(i);
+      const slotSpan = Math.abs(groupScale(0) - groupScale(1));
+      const boxSpan = slotSpan * (cfg.boxHeight || 0.6);
+      const halfSpan = boxSpan / 2;
+      const capSpan = halfSpan * 0.5;
 
-      // X positions
-      const xQ1 = xScale(stats.q1);
-      const xQ3 = xScale(stats.q3);
-      const xMed = xScale(stats.median);
-      const xWLo = xScale(stats.whiskerLo);
-      const xWHi = xScale(stats.whiskerHi);
+      const dQ1  = dataScale(stats.q1);
+      const dQ3  = dataScale(stats.q3);
+      const dMed = dataScale(stats.median);
+      const dWLo = dataScale(stats.whiskerLo);
+      const dWHi = dataScale(stats.whiskerHi);
 
-      // Whisker lines (horizontal thin lines)
-      svgEl('line', {
-        x1: xWLo, y1: yCentre, x2: xQ1, y2: yCentre,
-        stroke: boxStroke, 'stroke-width': boxSW,
-      }, plotGroup);
-      svgEl('line', {
-        x1: xQ3, y1: yCentre, x2: xWHi, y2: yCentre,
-        stroke: boxStroke, 'stroke-width': boxSW,
-      }, plotGroup);
-
-      // Whisker caps (vertical lines)
-      const capH = halfH * 0.5;
-      svgEl('line', {
-        x1: xWLo, y1: yCentre - capH, x2: xWLo, y2: yCentre + capH,
-        stroke: boxStroke, 'stroke-width': boxSW,
-      }, plotGroup);
-      svgEl('line', {
-        x1: xWHi, y1: yCentre - capH, x2: xWHi, y2: yCentre + capH,
-        stroke: boxStroke, 'stroke-width': boxSW,
-      }, plotGroup);
-
-      // Box (IQR)
-      svgEl('rect', {
-        x: xQ1, y: yCentre - halfH,
-        width: Math.max(1, xQ3 - xQ1), height: boxH,
-        fill: color, 'fill-opacity': 0.35,
-        stroke: boxStroke, 'stroke-width': boxSW,
-        rx: 2,
-      }, plotGroup);
-
-      // Median line
-      svgEl('line', {
-        x1: xMed, y1: yCentre - halfH, x2: xMed, y2: yCentre + halfH,
-        stroke: color, 'stroke-width': 2.5,
-      }, plotGroup);
-
-      // Mean diamond
-      if (cfg.showMean) {
-        const xM = xScale(stats.mean);
-        const dSize = Math.min(halfH * 0.45, 5);
-        svgEl('polygon', {
-          points: `${xM},${yCentre - dSize} ${xM + dSize},${yCentre} ${xM},${yCentre + dSize} ${xM - dSize},${yCentre}`,
-          fill: color, stroke: resolveColor('var(--color-bg-primary)'), 'stroke-width': 0.8,
+      if (isVertical) {
+        // ── Vertical: data on Y, groups on X ──
+        // Whisker spines (vertical lines from cap to box)
+        svgEl('line', {
+          x1: groupCentre, y1: dWLo, x2: groupCentre, y2: dQ1,
+          stroke: boxStroke, 'stroke-width': boxSW,
         }, plotGroup);
-      }
-
-      // Outliers
-      if (cfg.showOutliers && stats.outliers.length) {
-        const oSym = cfg.outlierSymbol || 'circle';
-        const oR = (cfg.outlierSize ?? 6) / 2;
-        const oFill = cfg.outlierColor != null ? resolveColor(cfg.outlierColor) : 'none';
-        const oStroke = cfg.outlierStroke != null ? resolveColor(cfg.outlierStroke) : color;
-        const oSW = cfg.outlierStrokeWidth ?? 1.5;
-        for (const ov of stats.outliers) {
-          drawMarker(plotGroup, oSym, xScale(ov), yCentre, oR, oFill, oStroke, oSW);
+        svgEl('line', {
+          x1: groupCentre, y1: dQ3, x2: groupCentre, y2: dWHi,
+          stroke: boxStroke, 'stroke-width': boxSW,
+        }, plotGroup);
+        // Whisker caps (horizontal lines)
+        svgEl('line', {
+          x1: groupCentre - capSpan, y1: dWLo, x2: groupCentre + capSpan, y2: dWLo,
+          stroke: boxStroke, 'stroke-width': boxSW,
+        }, plotGroup);
+        svgEl('line', {
+          x1: groupCentre - capSpan, y1: dWHi, x2: groupCentre + capSpan, y2: dWHi,
+          stroke: boxStroke, 'stroke-width': boxSW,
+        }, plotGroup);
+        // Box (IQR) — note Y axis points down, so q3 has smaller pixel-y than q1.
+        svgEl('rect', {
+          x: groupCentre - halfSpan, y: Math.min(dQ1, dQ3),
+          width: boxSpan, height: Math.max(1, Math.abs(dQ3 - dQ1)),
+          fill: color, 'fill-opacity': 0.35,
+          stroke: boxStroke, 'stroke-width': boxSW,
+          rx: 2,
+        }, plotGroup);
+        // Median (horizontal line across box)
+        svgEl('line', {
+          x1: groupCentre - halfSpan, y1: dMed, x2: groupCentre + halfSpan, y2: dMed,
+          stroke: color, 'stroke-width': 2.5,
+        }, plotGroup);
+        // Mean diamond
+        if (cfg.showMean) {
+          const dM = dataScale(stats.mean);
+          const dSize = Math.min(halfSpan * 0.45, 5);
+          svgEl('polygon', {
+            points: `${groupCentre},${dM - dSize} ${groupCentre + dSize},${dM} ${groupCentre},${dM + dSize} ${groupCentre - dSize},${dM}`,
+            fill: color, stroke: resolveColor('var(--color-bg-primary)'), 'stroke-width': 0.8,
+          }, plotGroup);
         }
+        // Outliers
+        if (cfg.showOutliers && stats.outliers.length) {
+          const oSym = cfg.outlierSymbol || 'circle';
+          const oR = (cfg.outlierSize ?? 6) / 2;
+          const oFill = cfg.outlierColor != null ? resolveColor(cfg.outlierColor) : 'none';
+          const oStroke = cfg.outlierStroke != null ? resolveColor(cfg.outlierStroke) : color;
+          const oSW = cfg.outlierStrokeWidth ?? 1.5;
+          for (const ov of stats.outliers) {
+            drawMarker(plotGroup, oSym, groupCentre, dataScale(ov), oR, oFill, oStroke, oSW);
+          }
+        }
+        // Category label below the plot area
+        svgText(g.name || `Group ${i + 1}`, {
+          x: groupCentre,
+          y: plotArea.y + plotArea.h + tickSize + 4,
+          'text-anchor': 'middle',
+          'dominant-baseline': 'hanging',
+          'font-size': `${tickSize}px`,
+          fill: textColor,
+        }, svg);
+      } else {
+        // ── Horizontal (default): data on X, groups on Y ──
+        const yCentre = groupCentre;
+        // Whisker lines (horizontal)
+        svgEl('line', {
+          x1: dWLo, y1: yCentre, x2: dQ1, y2: yCentre,
+          stroke: boxStroke, 'stroke-width': boxSW,
+        }, plotGroup);
+        svgEl('line', {
+          x1: dQ3, y1: yCentre, x2: dWHi, y2: yCentre,
+          stroke: boxStroke, 'stroke-width': boxSW,
+        }, plotGroup);
+        // Whisker caps (vertical)
+        svgEl('line', {
+          x1: dWLo, y1: yCentre - capSpan, x2: dWLo, y2: yCentre + capSpan,
+          stroke: boxStroke, 'stroke-width': boxSW,
+        }, plotGroup);
+        svgEl('line', {
+          x1: dWHi, y1: yCentre - capSpan, x2: dWHi, y2: yCentre + capSpan,
+          stroke: boxStroke, 'stroke-width': boxSW,
+        }, plotGroup);
+        // Box (IQR)
+        svgEl('rect', {
+          x: dQ1, y: yCentre - halfSpan,
+          width: Math.max(1, dQ3 - dQ1), height: boxSpan,
+          fill: color, 'fill-opacity': 0.35,
+          stroke: boxStroke, 'stroke-width': boxSW,
+          rx: 2,
+        }, plotGroup);
+        // Median line
+        svgEl('line', {
+          x1: dMed, y1: yCentre - halfSpan, x2: dMed, y2: yCentre + halfSpan,
+          stroke: color, 'stroke-width': 2.5,
+        }, plotGroup);
+        // Mean diamond
+        if (cfg.showMean) {
+          const dM = dataScale(stats.mean);
+          const dSize = Math.min(halfSpan * 0.45, 5);
+          svgEl('polygon', {
+            points: `${dM},${yCentre - dSize} ${dM + dSize},${yCentre} ${dM},${yCentre + dSize} ${dM - dSize},${yCentre}`,
+            fill: color, stroke: resolveColor('var(--color-bg-primary)'), 'stroke-width': 0.8,
+          }, plotGroup);
+        }
+        // Outliers
+        if (cfg.showOutliers && stats.outliers.length) {
+          const oSym = cfg.outlierSymbol || 'circle';
+          const oR = (cfg.outlierSize ?? 6) / 2;
+          const oFill = cfg.outlierColor != null ? resolveColor(cfg.outlierColor) : 'none';
+          const oStroke = cfg.outlierStroke != null ? resolveColor(cfg.outlierStroke) : color;
+          const oSW = cfg.outlierStrokeWidth ?? 1.5;
+          for (const ov of stats.outliers) {
+            drawMarker(plotGroup, oSym, dataScale(ov), yCentre, oR, oFill, oStroke, oSW);
+          }
+        }
+        // Category label to the left of the plot area
+        svgText(g.name || `Group ${i + 1}`, {
+          x: plotArea.x - 8,
+          y: yCentre,
+          'text-anchor': 'end',
+          'dominant-baseline': 'central',
+          'font-size': `${tickSize}px`,
+          fill: textColor,
+        }, svg);
       }
-
-      // Category label (drawn outside clip group on svg root)
-      svgText(g.name || `Group ${i + 1}`, {
-        x: plotArea.x - 8,
-        y: yCentre,
-        'text-anchor': 'end',
-        'dominant-baseline': 'central',
-        'font-size': `${tickSize}px`,
-        fill: textColor,
-      }, svg);
     }
   }
 
@@ -262,8 +336,12 @@ export default class BoxplotChart extends ChartBase {
     const entries = this._visibleEntries || [];
     if (!this._groupStats || !entries.length) return [];
 
-    // Find which visible group band the mouse is in
-    const idx = Math.round(dataY);
+    const isVertical = this.config.orientation === 'vertical';
+    // Group axis carries the slot index; data axis carries the measurement.
+    const groupCoord = isVertical ? dataX : dataY;
+    const dataCoord  = isVertical ? dataY : dataX;
+
+    const idx = Math.round(groupCoord);
     if (idx < 0 || idx >= entries.length) return [];
 
     const stats = this._groupStats[idx];
@@ -271,14 +349,14 @@ export default class BoxplotChart extends ChartBase {
 
     const { group: g, origIdx } = entries[idx];
 
-    // Check if mouse X is within whisker range (with margin)
+    // Check if cursor is within whisker range along the data axis (with margin).
     const margin = (stats.whiskerHi - stats.whiskerLo) * 0.1 || 1;
-    if (dataX < stats.whiskerLo - margin || dataX > stats.whiskerHi + margin) return [];
+    if (dataCoord < stats.whiskerLo - margin || dataCoord > stats.whiskerHi + margin) return [];
 
     const loc = this.locale || 'en';
     const dec = this.config.xDec ?? 4;
-    const px = this._xScale(stats.median);
-    const py = this._yScale(idx);
+    const px = isVertical ? this._xScale(idx) : this._xScale(stats.median);
+    const py = isVertical ? this._yScale(stats.median) : this._yScale(idx);
     const chartColors = getChartColors();
     const color = resolveColor(
       (this.config.boxColors && this.config.boxColors[origIdx]) || chartColors[origIdx % chartColors.length] || 'var(--color-chart-1)'

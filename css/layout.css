@@ -1562,6 +1562,22 @@ body.dashboard-area-open .dmaic-tiles {
   background: var(--color-bg-secondary);
 }
 
+.training-area__phase-col {
+  white-space: nowrap;
+}
+
+.training-area__phase-col strong {
+  display: inline-block;
+  min-width: 2ch;
+  text-align: center;
+  font-family: var(--font-family-mono);
+}
+
+.training-area__module-hint {
+  color: var(--color-text-secondary);
+  font-size: 0.9em;
+}
+
 body.training-area-open #app-workspace {
   visibility: hidden;
 }

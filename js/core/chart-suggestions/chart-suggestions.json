@@ -34,7 +34,9 @@
       "id": "two-continuous",
       "match": { "continuous": 2 },
       "charts": [
-        { "type": "scatter", "score": 95, "i18nKey": "scatter" }
+        { "type": "scatter",                    "score": 95, "i18nKey": "scatter" },
+        { "type": "scatter-marginal-boxplot",   "score": 85, "i18nKey": "scatterMarginalBoxplot" },
+        { "type": "scatter-marginal-histogram", "score": 80, "i18nKey": "scatterMarginalHistogram" }
       ]
     },
     {
@@ -63,7 +65,8 @@
       "charts": [
         { "type": "interaction-plot", "score": 92, "i18nKey": "interactionPlot" },
         { "type": "main-effects",     "score": 90, "i18nKey": "mainEffects" },
-        { "type": "boxplot",          "score": 80, "i18nKey": "boxplotByGroup" }
+        { "type": "boxplot",          "score": 80, "i18nKey": "boxplotByGroup" },
+        { "type": "heatmap",          "score": 78, "i18nKey": "heatmapMean" }
       ]
     },
     {
@@ -90,7 +93,30 @@
       "charts": [
         { "type": "run-chart",     "score": 95, "i18nKey": "timeSeries" },
         { "type": "control-chart", "score": 88, "i18nKey": "controlChart",     "conditions": { "minN": 25 } },
+        { "type": "ewma",          "score": 80, "i18nKey": "ewma",             "conditions": { "minN": 20 } },
+        { "type": "cusum",         "score": 78, "i18nKey": "cusum",            "conditions": { "minN": 20 } },
         { "type": "scatter",       "score": 75, "i18nKey": "scatterOverTime" }
+      ]
+    },
+    {
+      "id": "date-and-multi-continuous",
+      "match": { "date": 1, "continuous": ">=2" },
+      "charts": [
+        { "type": "scatter", "score": 92, "i18nKey": "multiTimeSeries" }
+      ]
+    },
+    {
+      "id": "date-cont-cat",
+      "match": { "date": 1, "continuous": 1, "categorical": 1 },
+      "charts": [
+        { "type": "scatter", "score": 92, "i18nKey": "groupedTimeSeries" }
+      ]
+    },
+    {
+      "id": "date-cont-ord",
+      "match": { "date": 1, "continuous": 1, "ordinal": 1 },
+      "charts": [
+        { "type": "scatter", "score": 92, "i18nKey": "groupedTimeSeries" }
       ]
     },
     {
@@ -98,6 +124,7 @@
       "match": { "continuous": ">=3" },
       "charts": [
         { "type": "scatter-matrix",        "score": 90, "i18nKey": "scatterMatrix" },
+        { "type": "bubble",                "score": 80, "i18nKey": "bubble" },
         { "type": "boxplot",               "score": 75, "i18nKey": "boxplotMulti" },
         { "type": "individual-value-plot", "score": 70, "i18nKey": "ivpMulti",         "conditions": { "maxN": 200 } }
       ]
@@ -106,8 +133,10 @@
       "id": "two-categorical",
       "match": { "categorical": 2 },
       "charts": [
-        { "type": "bar",    "score": 88, "i18nKey": "barStacked" },
-        { "type": "pareto", "score": 70, "i18nKey": "paretoStacked" }
+        { "type": "bar",     "score": 88, "i18nKey": "barStacked" },
+        { "type": "pareto",  "score": 70, "i18nKey": "paretoStacked" },
+        { "type": "mosaic",  "score": 65, "i18nKey": "mosaic" },
+        { "type": "heatmap", "score": 60, "i18nKey": "heatmap" }
       ]
     },
     {

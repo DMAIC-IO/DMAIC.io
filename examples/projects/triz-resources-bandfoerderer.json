@@ -1,0 +1,35 @@
+{
+  "system": "Bandförderer für lose Schüttgut",
+  "cells": {
+    "substance": {
+      "sub":   { "notes": "Förderband (Gummi), Antriebsrolle, Lagerschilde, Aufnahmetrichter.", "status": "full" },
+      "sys":   { "notes": "Schüttgut selbst, Staub als Nebenprodukt, Schmierfett der Lager.", "status": "partial" },
+      "super": { "notes": "Hallenboden, Hallenluft mit Feuchte und Staub, Sammelbehälter.", "status": "unused" }
+    },
+    "field": {
+      "sub":   { "notes": "Reibung Band/Rolle, Antriebsdrehmoment.", "status": "full" },
+      "sys":   { "notes": "Schwerkraft auf das Schüttgut, Eigengewicht der Brücken, Vibration der Rollen.", "status": "partial" },
+      "super": { "notes": "Hallentemperatur (saisonale Schwankung), elektromagnetisches Feld der Antriebe.", "status": "unknown" }
+    },
+    "space": {
+      "sub":   { "notes": "Bandquerschnitt — Material liegt nur in der Mitte.", "status": "partial" },
+      "sys":   { "notes": "Hohlraum unter dem Band, Übergangstrichter (Hauptklemmstelle).", "status": "unused" },
+      "super": { "notes": "Freier Raum oberhalb des Förderers, Wand des Übergangsbereichs.", "status": "unused" }
+    },
+    "time": {
+      "sub":   { "notes": "Stillstandszeit zwischen Förder-Chargen ~ 30 s.", "status": "unused" },
+      "sys":   { "notes": "Vorlaufzeit beim Anfahren — Material liegt zunächst still.", "status": "unknown" },
+      "super": { "notes": "Schichtwechsel — keine Förderlast für ~ 10 min.", "status": "unused" }
+    },
+    "info": {
+      "sub":   { "notes": "Motorstrom (steigt bei Verstopfung), Lagertemperatur.", "status": "partial" },
+      "sys":   { "notes": "Geräusch des Förderbands ändert sich vor Stau (Operator hört es).", "status": "unused" },
+      "super": { "notes": "Kein Schüttgut-Füllstandsensor im Übergabe-Trichter.", "status": "unknown" }
+    },
+    "function": {
+      "sub":   { "notes": "Antrieb dreht Rollen — könnte zusätzlich Vibration erzeugen.", "status": "unused" },
+      "sys":   { "notes": "Kinetische Energie des fließenden Materials — könnte Brückenbildung selbst stören.", "status": "unused" },
+      "super": { "notes": "Bestehender Druckluftring zur Reinigung — könnte als Klopfer dienen.", "status": "unknown" }
+    }
+  }
+}

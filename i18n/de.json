@@ -177,6 +177,7 @@
     "tabDmadv": "DMADV verstehen",
     "tabEightd": "8D verstehen",
     "tabTriz": "TRIZ verstehen",
+    "tabModules": "Modulübersicht",
     "tabMinitab": "Für Minitab-Nutzer",
     "tabJmp": "Für JMP-Nutzer",
     "dmaic": {
@@ -387,6 +388,24 @@
       "pitfall4": "Das Ideale Endergebnis im realen Entwurf zu verwässern. Die Stärke des IER liegt darin, dass es nicht erreichbar sein muss — es zeigt nur die Richtung. Wer es zu früh „realistisch“ macht, verliert genau diese Orientierung.",
       "appTitle": "TRIZ in dieser App",
       "appBody": "DMAIC.io enthält zwei TRIZ-Werkzeuge in der Improve-Phase: das Modul „9 Fenster“ für die Systemanalyse über Hierarchie und Zeit sowie das Modul „Widerspruchsmatrix“ mit den 39 Parametern und 40 Prinzipien nach Altschuller. Beide Module speichern ihren Zustand im Projekt und lassen sich wie alle anderen Module per JSON exportieren und importieren. Du erreichst sie über das Hamburger-Menü (☰) der Improve-Kachel, oder per Drag & Drop aus dem „Weitere“-Tile in eine andere Phase, falls du TRIZ schon im Define- oder Analyze-Schritt einsetzen möchtest."
+    },
+    "modules": {
+      "intro": "Diese Übersicht zeigt, welche Module in welcher Phase eines Zyklus voreingestellt sind. Module, die im aktiven Zyklus keine Phasenzuordnung haben, landen in der „Weitere“-Kachel (⋯) und können von dort per Drag & Drop in eine beliebige Phase verschoben werden.",
+      "dataTitle": "Daten-Bereich (zyklusunabhängig)",
+      "dataIntro": "Diese Module gehören zum globalen Daten-Bereich und stehen in jedem Zyklus zur Verfügung. Sie sind nach Aufgabe gruppiert.",
+      "groupCollect": "Erfassen",
+      "groupVisualize": "Visualisieren",
+      "groupProcess": "Verarbeiten",
+      "groupOther": "Sonstige",
+      "cyclesTitle": "Module pro Zyklus und Phase",
+      "cyclesIntro": "Für jeden Zyklus listet die Tabelle die Phasen und die ihnen voreingestellten Module. Module, die in zusätzlich erlaubten Phasen verwendet werden dürfen, sind in Klammern als „auch in: …“ vermerkt.",
+      "colPhase": "Phase",
+      "colGroup": "Gruppe",
+      "colModules": "Module",
+      "phaseEmpty": "— keine Module hinterlegt —",
+      "alsoAllowed": "auch in {phases}",
+      "extras": "Weitere (⋯)",
+      "extrasIntro": "Diese Module haben in diesem Zyklus keine voreingestellte Phasenzuordnung und erscheinen in der „Weitere“-Kachel."
     }
   },
   "dashboard": {
@@ -579,11 +598,7 @@
         "barOpacity": "Transparenz",
         "normalCurve": "Normalverteilungskurve",
         "showNormalCurve": "Kurve anzeigen",
-        "curveColor": "Kurvenfarbe",
-        "specLimits": "Spezifikationsgrenzen",
-        "lsl": "USG (LSL)",
-        "usl": "OSG (USL)",
-        "target": "Zielwert"
+        "curveColor": "Kurvenfarbe"
       },
       "boxplot": {
         "appearance": "Darstellung",
@@ -1804,7 +1819,10 @@
       "axis": {
         "frequency": "Häufigkeit",
         "count": "Anzahl",
+        "mean": "Mittelwert",
         "observation": "Beobachtung",
+        "other": "Sonstige",
+        "otherCategories": "{n} weitere Kategorien",
         "percentile": "Wahrscheinlichkeit"
       },
       "charts": {
@@ -1819,10 +1837,16 @@
         "runChartOrdered": "Verlaufsdiagramm (geordnet)",
         "probabilityPlot": "Wahrscheinlichkeitsnetz",
         "scatter": "Streudiagramm",
+        "scatterMarginalBoxplot": "Streudiagramm mit Boxplot-Randverteilungen",
+        "scatterMarginalHistogram": "Streudiagramm mit Histogramm-Randverteilungen",
         "scatterMatrix": "Streudiagramm-Matrix",
         "scatterOverTime": "Streudiagramm über die Zeit",
         "timeSeries": "Zeitreihe",
+        "multiTimeSeries": "Mehrlinien-Zeitreihe",
+        "groupedTimeSeries": "Gruppierte Zeitreihe",
         "controlChart": "Regelkarte",
+        "ewma": "EWMA-Regelkarte",
+        "cusum": "CUSUM-Regelkarte",
         "bar": "Balkendiagramm",
         "barOrdered": "Balken (geordnet)",
         "barOrderedStacked": "Balken (geordnet, gestapelt)",
@@ -1832,7 +1856,11 @@
         "paretoStacked": "Pareto (gestapelt)",
         "pie": "Tortendiagramm",
         "mainEffects": "Diagramm der Haupteffekte",
-        "interactionPlot": "Wechselwirkungsdiagramm"
+        "interactionPlot": "Wechselwirkungsdiagramm",
+        "mosaic": "Mosaikplot",
+        "heatmap": "Wärmekarte (Häufigkeit)",
+        "heatmapMean": "Wärmekarte (Mittelwert)",
+        "bubble": "Blasendiagramm"
       },
       "notes": {
         "matrixTruncated": "Nur die ersten {shown} von {total} Spalten werden in der Matrix gezeigt."
@@ -4109,6 +4137,404 @@
             "Smart-Grid, V2X-Vernetzung, Mobility-as-a-Service, neue Haftungsregeln."
           ]
         ]
+      }
+    },
+    "triz-physical-contradiction": {
+      "name": "Physikalischer Widerspruch (TRIZ)",
+      "description": "Ein Parameter soll A und ¬A sein — Auflösung über vier Separationsprinzipien",
+      "subtitle": "Formuliere einen Parameter, der gleichzeitig zwei entgegengesetzte Werte annehmen muss, und löse den Widerspruch über Zeit, Raum, Bedingung oder Systemebene.",
+      "problemHeading": "Widerspruch",
+      "parameterLabel": "Parameter (ein messbares Attribut)",
+      "parameterPlaceholder": "z.B. Länge des Tragflügels",
+      "requirementALabel": "soll A sein, damit …",
+      "requirementAPlaceholder": "z.B. lang — für hohen Auftrieb beim Start",
+      "requirementNotALabel": "soll ¬A sein, damit …",
+      "requirementNotAPlaceholder": "z.B. kurz — für niedrigen Widerstand im Reiseflug",
+      "problemNoteLabel": "Notiz / Kontext",
+      "problemNotePlaceholder": "Hintergrund, Randbedingungen, Verweis auf Widerspruchsmatrix oder 9-Fenster …",
+      "swap": "A und ¬A tauschen",
+      "reset": "Zurücksetzen",
+      "loadExample": "Beispiel laden",
+      "resetTitle": "Physikalischen Widerspruch zurücksetzen?",
+      "resetMessage": "Alle Eingaben, Notizen und die ausgewählte Lösungsrichtung werden gelöscht. Diese Aktion lässt sich nicht rückgängig machen.",
+      "separationHeading": "Separationsprinzipien",
+      "separationHint": "Pro Prinzip notieren, ob und wie es im konkreten Fall anwendbar ist. Anschließend das passende Prinzip auswählen.",
+      "exampleLead": "Beispiel",
+      "principleNotePlaceholder": "Wie ließe sich dieses Prinzip auf den konkreten Widerspruch anwenden?",
+      "selectPrinciple": "Diese Richtung wählen",
+      "solutionHeading": "Lösungsrichtung",
+      "chosenPrinciple": "Gewähltes Prinzip",
+      "solutionPlaceholder": "Konkrete Lösungsidee aus dem gewählten Prinzip ableiten — was wird wann / wo / unter welcher Bedingung / auf welcher Ebene anders?",
+      "principles": {
+        "time": {
+          "name": "Trennung in der Zeit",
+          "icon": "⏱",
+          "question": "Kann der Parameter zu unterschiedlichen Zeitpunkten verschiedene Werte annehmen?",
+          "example": "Klapptragwerk — Flügel lang beim Start, kurz im Reiseflug. Auch: Fahrwerk, Airbag, Sägeblatt (Hin- vs. Rückhub)."
+        },
+        "space": {
+          "name": "Trennung im Raum",
+          "icon": "📍",
+          "question": "Kann der Parameter an unterschiedlichen Stellen des Systems verschiedene Werte annehmen?",
+          "example": "Schraube — Kopf hart, Schaft elastisch. Auch: Bohrer scharf an der Spitze, Gleitsichtbrille."
+        },
+        "condition": {
+          "name": "Trennung nach Bedingung",
+          "icon": "⚖",
+          "question": "Kann der Parameter abhängig von Last, Temperatur, Geschwindigkeit, Nutzer … unterschiedliche Werte annehmen?",
+          "example": "Nicht-Newton'sche Flüssigkeit — flüssig bei Ruhe, fest beim Schlag. Auch: photochrome Brille, Memory-Schaum, ABS."
+        },
+        "system": {
+          "name": "Trennung in der Systemebene",
+          "icon": "🪜",
+          "question": "Lässt sich der Widerspruch auflösen, wenn man zwischen Sub-, System- und Supersystem wechselt?",
+          "example": "Fahrradkette — als Ganzes flexibel, einzelne Glieder starr. Auch: Litze (dünne Drähte, dicker Strang), Sandwich-Bauteile."
+        }
+      },
+      "example": {
+        "parameter": "Länge des Tragflügels",
+        "requirementA": "lang — für hohen Auftrieb beim Start und im Langsamflug",
+        "requirementNotA": "kurz — für niedrigen Luftwiderstand im Reiseflug",
+        "problemNote": "Klassisches Lehrbeispiel. Aus der Widerspruchsmatrix kommt hier kein eindeutiger Vorschlag, weil sich derselbe Parameter widerspricht.",
+        "principleNotes": {
+          "time": "Variable Geometrie: Flügel zum Start ausgefahren, im Reiseflug eingefahren (Schwenkflügel — F-14, B-1).",
+          "space": "Flügelinnenbereich lang (Auftrieb), Flügelspitzen pfeilförmig kurz (Widerstand) — Pfeilflügel, Winglets.",
+          "condition": "Klappen/Slats: nur bei niedriger Geschwindigkeit ausgefahren (geschwindigkeitsabhängig).",
+          "system": "Hauptflügel klein, separates Auftriebshilfssystem (Hochauftriebsklappen, Vorflügel) als eigenes Subsystem."
+        },
+        "selectedPrinciple": "time",
+        "solutionNote": "Schwenkflügel-Mechanik: Aktor stellt die effektive Spannweite je Flugphase ein. Zusätzlich Hochauftriebsklappen (Bedingungs-Separation) für die Übergänge."
+      }
+    },
+    "triz-ifr": {
+      "name": "Ideales Endresultat (TRIZ)",
+      "description": "Formuliere den Idealzustand und arbeite rückwärts zur Lösung",
+      "subtitle": "Funktion erfüllt, System verschwindet, keine Kosten, keine schädliche Nebenwirkung — formuliere drei IFR-Stufen und analysiere die Lücke.",
+      "taskHeading": "Aufgabe",
+      "systemLabel": "System",
+      "systemPlaceholder": "z.B. Bandförderer für lose Schüttgut",
+      "usefulLabel": "Nützliche Funktion",
+      "usefulPlaceholder": "z.B. transportiert Material von A nach B",
+      "harmfulLabel": "Schädliche Wirkung / Kompromiss",
+      "harmfulPlaceholder": "z.B. Material verklemmt im Übergang und blockiert den Förderer",
+      "ifrHeading": "IFR-Formulierungen",
+      "ifrHint": "Drei zunehmend radikale Idealformulierungen. Bewusst psychologisch unbequem — gerade dort sitzt der Erkenntnisgewinn.",
+      "ifr1Title": "System löst das Problem selbst",
+      "ifr1Desc": "Das System bleibt, die schädliche Wirkung verschwindet ohne neuen Mechanismus.",
+      "ifr1Placeholder": "z.B. Der Bandförderer verhindert das Verklemmen von selbst.",
+      "ifr2Title": "Funktion ohne System",
+      "ifr2Desc": "Die nützliche Funktion entsteht, ohne dass das System überhaupt existiert.",
+      "ifr2Placeholder": "z.B. Das Material verklemmt nicht. (Das Problem existiert nicht.)",
+      "ifr3Title": "Supersystem-Ressource erfüllt die Funktion",
+      "ifr3Desc": "Eine bereits vorhandene Ressource aus der Umgebung übernimmt die Aufgabe — kostenfrei, ohne neue Komponente.",
+      "ifr3Placeholder": "z.B. Schwerkraft orientiert die Partikel ohne Eingriff.",
+      "obstaclesHeading": "Hindernisse zum IFR",
+      "obstaclesHint": "Was hindert das System heute daran, den IFR zu erreichen? Diese Liste ist die eigentliche Aufgabenliste.",
+      "obstaclesPlaceholder": "• Partikelgrößenverteilung zu breit\n• Übergangswinkel zu steil\n• …",
+      "openResources": "→ Ressourcen-Checkliste öffnen",
+      "openResourcesHint": "Füge das Modul „Ressourcen-Checkliste (TRIZ)“ über die Extras-Tile (⋯) hinzu — IFR-3 fragt nach genau diesen Ressourcen.",
+      "loadExample": "Beispiel laden",
+      "reset": "Zurücksetzen",
+      "resetTitle": "IFR zurücksetzen?",
+      "resetMessage": "Alle Eingaben werden gelöscht. Diese Aktion lässt sich nicht rückgängig machen.",
+      "example": {
+        "system": "Bandförderer für lose Schüttgut",
+        "usefulFunction": "Transportiert Schüttgut zuverlässig von A nach B",
+        "harmfulEffect": "Partikel verklemmen am Übergabe-Trichter und blockieren den Förderer",
+        "ifr1": "Der Bandförderer verhindert das Verklemmen am Übergabe-Trichter von selbst — kein Eingriff, keine Reinigungsstation nötig.",
+        "ifr2": "Das Material verklemmt nicht. (Idealerweise existiert das Problem gar nicht — z.B. weil die Korngrößenverteilung am Eingang bereits passend ist.)",
+        "ifr3": "Die Schwerkraft selbst löst die Verklemmung auf — etwa durch geschickte Übergangsgeometrie, die Klemm-Brücken einfach zerfallen lässt.",
+        "obstacles": "• Übergangswinkel < Schüttwinkel → Materialbrücken bilden sich\n• Korngrößenverteilung zu breit → Verkeilung\n• Keine Vibration / Rüttler im Übergangsbereich\n• Operator hat keine Frühwarnung — erkennt Stau erst beim Stillstand"
+      }
+    },
+    "triz-resources": {
+      "name": "Ressourcen-Checkliste (TRIZ)",
+      "description": "Systematische Inventarisierung von Stoffen, Feldern, Raum, Zeit, Information und Funktionen",
+      "subtitle": "Inventarisiere verfügbare Ressourcen über sechs Kategorien × drei Systemebenen, bevor neue Komponenten erfunden werden.",
+      "systemLabel": "System",
+      "systemPlaceholder": "z.B. Bandförderer für lose Schüttgut",
+      "loadExample": "Beispiel laden",
+      "reset": "Zurücksetzen",
+      "resetTitle": "Ressourcen-Checkliste zurücksetzen?",
+      "resetMessage": "Alle Eingaben und Statusbewertungen werden gelöscht. Diese Aktion lässt sich nicht rückgängig machen.",
+      "gridAriaLabel": "Ressourcen-Raster",
+      "cornerTip": "Kategorie ↓ / Ebene →",
+      "statusLegend": "Status: ○ unbekannt · ◔ ungenutzt · ◑ tlw. genutzt · ● voll genutzt — Klick zum Wechseln.",
+      "level": {
+        "sub": "Subsystem",
+        "sys": "System",
+        "super": "Supersystem"
+      },
+      "status": {
+        "unknown": "unbekannt — noch nicht untersucht",
+        "unused": "ungenutzt — vorhanden, aber unverwendet",
+        "partial": "teilweise genutzt",
+        "full": "voll genutzt"
+      },
+      "category": {
+        "substance": {
+          "name": "Stoffe",
+          "icon": "🧱",
+          "prompt": "Materialien, Bauteile, Abfall, Nebenprodukte, Atmosphäre, Verunreinigungen …"
+        },
+        "field": {
+          "name": "Felder",
+          "icon": "🧲",
+          "prompt": "Mechanisch, thermisch, chemisch, elektrisch, magnetisch, akustisch, optisch, gravitativ …"
+        },
+        "space": {
+          "name": "Raum",
+          "icon": "📐",
+          "prompt": "Ungenutzte Volumina, Oberflächen, Spalte, Hohlräume, Kontaktflächen …"
+        },
+        "time": {
+          "name": "Zeit",
+          "icon": "⏱",
+          "prompt": "Leerlaufphasen, Übergänge, Pausen zwischen Zyklen, Vor-/Nachlaufzeiten …"
+        },
+        "info": {
+          "name": "Information",
+          "icon": "📡",
+          "prompt": "Sensorsignale, Indikatoren, natürlich anfallende Daten, Nebenprodukt-Informationen …"
+        },
+        "function": {
+          "name": "Funktion / Energie",
+          "icon": "⚙",
+          "prompt": "Bestehende Funktionen für Doppelnutzung; Energie, die ohnehin durch das System fließt …"
+        }
+      },
+      "example": {
+        "system": "Bandförderer für lose Schüttgut",
+        "cells": {
+          "substance": {
+            "sub":   { "notes": "Förderband (Gummi), Antriebsrolle, Lagerschilde, Aufnahmetrichter.", "status": "full" },
+            "sys":   { "notes": "Schüttgut selbst, Staub als Nebenprodukt, Schmierfett der Lager.", "status": "partial" },
+            "super": { "notes": "Hallenboden, Hallenluft mit Feuchte und Staub, Sammelbehälter.", "status": "unused" }
+          },
+          "field": {
+            "sub":   { "notes": "Reibung Band/Rolle, Antriebsdrehmoment.", "status": "full" },
+            "sys":   { "notes": "Schwerkraft auf das Schüttgut, Eigengewicht der Brücken, Vibration der Rollen.", "status": "partial" },
+            "super": { "notes": "Hallentemperatur (saisonale Schwankung), elektromagnetisches Feld der Antriebe.", "status": "unknown" }
+          },
+          "space": {
+            "sub":   { "notes": "Bandquerschnitt — Material liegt nur in der Mitte.", "status": "partial" },
+            "sys":   { "notes": "Hohlraum unter dem Band, Übergangstrichter (Hauptklemmstelle).", "status": "unused" },
+            "super": { "notes": "Freier Raum oberhalb des Förderers, Wand des Übergangsbereichs.", "status": "unused" }
+          },
+          "time": {
+            "sub":   { "notes": "Stillstandszeit zwischen Förder-Chargen ~ 30 s.", "status": "unused" },
+            "sys":   { "notes": "Vorlaufzeit beim Anfahren — Material liegt zunächst still.", "status": "unknown" },
+            "super": { "notes": "Schichtwechsel — keine Förderlast für ~ 10 min.", "status": "unused" }
+          },
+          "info": {
+            "sub":   { "notes": "Motorstrom (steigt bei Verstopfung), Lagertemperatur.", "status": "partial" },
+            "sys":   { "notes": "Geräusch des Förderbands ändert sich vor Stau (Operator hört es).", "status": "unused" },
+            "super": { "notes": "Kein Schüttgut-Füllstandsensor im Übergabe-Trichter.", "status": "unknown" }
+          },
+          "function": {
+            "sub":   { "notes": "Antrieb dreht Rollen — könnte zusätzlich Vibration erzeugen.", "status": "unused" },
+            "sys":   { "notes": "Kinetische Energie des fließenden Materials — könnte Brückenbildung selbst stören.", "status": "unused" },
+            "super": { "notes": "Bestehender Druckluftring zur Reinigung — könnte als Klopfer dienen.", "status": "unknown" }
+          }
+        }
+      }
+    },
+    "triz-evolution-trends": {
+      "name": "Trends der technischen Evolution (TRIZ)",
+      "description": "Acht klassische Evolutionslinien — verorte das System und identifiziere den nächsten Stufensprung",
+      "subtitle": "Verorte das System auf acht Evolutionslinien und identifiziere für jede den nächsten Stufensprung.",
+      "systemLabel": "System",
+      "systemPlaceholder": "z.B. Pkw-Beleuchtung",
+      "loadExample": "Beispiel laden",
+      "reset": "Zurücksetzen",
+      "resetTitle": "Evolutions-Checkliste zurücksetzen?",
+      "resetMessage": "Alle Stufen-Verortungen und Notizen werden gelöscht. Diese Aktion lässt sich nicht rückgängig machen.",
+      "notesPlaceholder": "Heutige Stufe begründen + nächste Stufe skizzieren …",
+      "trend": {
+        "aggregation": {
+          "name": "Aggregation",
+          "description": "Ein System entwickelt sich von einem Einzel-Element zu mehreren, dann zu vielen, schließlich zu einem integrierten Gesamtsystem.",
+          "stages": [
+            "Mono — ein einzelnes Element erfüllt die Funktion.",
+            "Bi — zwei gleichartige Elemente arbeiten zusammen.",
+            "Poly — viele gleichartige oder verschiedenartige Elemente.",
+            "Integriertes System — die Elemente verschmelzen funktional zu einer Einheit."
+          ]
+        },
+        "dynamism": {
+          "name": "Dynamisierung",
+          "description": "Starre Systeme werden zunehmend beweglich — bis hin zur Auflösung in ein Feld.",
+          "stages": [
+            "Starr — feste Form, keine Bewegung.",
+            "Gelenkig — diskrete Gelenke ermöglichen einzelne Freiheitsgrade.",
+            "Elastisch — kontinuierliche Verformung (Federn, Membranen).",
+            "Flüssig / pulverförmig — formlos beweglich.",
+            "Feld — die mechanische Substanz verschwindet, ein Feld wirkt (magnetisch, elektrisch, akustisch …)."
+          ]
+        },
+        "scale": {
+          "name": "Skala",
+          "description": "Die Arbeitsebene des Systems verschiebt sich zu immer kleineren Strukturen.",
+          "stages": [
+            "Makro — Bauteile im cm- bis m-Bereich.",
+            "Meso — Strukturen im mm-Bereich.",
+            "Mikro — μm-Strukturen (MEMS, Mikrofluidik).",
+            "Nano / molekular — direkte Manipulation einzelner Moleküle / Atome."
+          ]
+        },
+        "automation": {
+          "name": "Automatisierung",
+          "description": "Menschliche Eingriffe werden schrittweise durch Maschine, Regelung und schließlich Autonomie ersetzt.",
+          "stages": [
+            "Manuell — Mensch bedient direkt.",
+            "Mechanisiert — Werkzeug verstärkt menschliche Kraft / Präzision.",
+            "Automatisch — fester Ablauf ohne Eingriff im Normalfall.",
+            "Autonom — System trifft selbst Entscheidungen, lernt, passt sich an."
+          ]
+        },
+        "completeness": {
+          "name": "Vollständigkeit",
+          "description": "Ein technisches System bekommt nacheinander alle vier Subfunktionen Motor / Übertragung / Werkzeug / Steuerung integriert.",
+          "stages": [
+            "Werkzeug — passive Komponente, externe Energiequelle.",
+            "+ Übertragung — Kraftübertragung integriert.",
+            "+ Motor — eigene Energieumsetzung an Bord.",
+            "+ Steuerung — vollständiges System mit Regelkreis."
+          ]
+        },
+        "controllability": {
+          "name": "Steuerbarkeit",
+          "description": "Vom offenen, unkalibrierten Ablauf hin zu lernenden Regelkreisen.",
+          "stages": [
+            "Offene Steuerung — kein Feedback, fester Sollwert.",
+            "Messung — Sensor liefert Ist-Wert, Operator korrigiert.",
+            "Adaptive Regelung — geschlossener Kreis passt Stellgröße automatisch an.",
+            "Smart — lernender Regelkreis, Modell-prädiktiv, kontextabhängig."
+          ]
+        },
+        "matching": {
+          "name": "Anpassung an die Nische",
+          "description": "Vom universellen Massenprodukt zum selbst-anpassenden System.",
+          "stages": [
+            "Universal — eine Größe für alle.",
+            "Einstellbar — diskrete Einstellungen, vom Nutzer gewählt.",
+            "Individuell angepasst — pro Nutzer / Anwendung maßgefertigt.",
+            "Selbstadaptierend — System passt sich Nutzer / Umgebung automatisch an."
+          ]
+        },
+        "uneven": {
+          "name": "Ungleichmäßige Entwicklung",
+          "description": "Welches Subsystem hinkt nach und limitiert das Gesamtsystem? Klassisches Bottleneck-Phänomen.",
+          "notesPlaceholder": "Welche Komponente ist auf einem älteren Entwicklungsstand als der Rest und limitiert dadurch den Sprung in einem anderen Trend?"
+        }
+      },
+      "example": {
+        "system": "Pkw-Beleuchtung (Hauptscheinwerfer)",
+        "trends": {
+          "aggregation": {
+            "stage": 2,
+            "notes": "Heute: LED-Matrix (Poly). Nächste Stufe: integriertes Beleuchtungssystem mit Front-/Seitenlicht-Kopplung über eine gemeinsame Sensorik."
+          },
+          "dynamism": {
+            "stage": 1,
+            "notes": "Heute: schwenkbare Module (gelenkig). Nächste Stufe: elastisch verformbare Lichtquelle / OLED-Folie, dann Feld-Lösung (Laser-Phosphor)."
+          },
+          "scale": {
+            "stage": 1,
+            "notes": "Heute: Meso (mm-LEDs). Nächste Stufe: Mikro-LED-Arrays für pixelgenaue Lichtverteilung."
+          },
+          "automation": {
+            "stage": 2,
+            "notes": "Heute: automatisch (Sensor-Schalter, Fernlichtassistent). Nächste Stufe: autonome Beleuchtung, die Verkehrsteilnehmer einzeln ausblendet."
+          },
+          "completeness": {
+            "stage": 3,
+            "notes": "Vollständig (Energie + Übertragung + Lichtquelle + Steuerung). Trend gesättigt — Fortschritt verlagert sich auf andere Linien."
+          },
+          "controllability": {
+            "stage": 2,
+            "notes": "Adaptive Regelung (Kurvenlicht, Geschwindigkeit, Gegenverkehr). Nächste Stufe: lernend / kontextabhängig (Wetterdaten, Karten-Topografie)."
+          },
+          "matching": {
+            "stage": 1,
+            "notes": "Einstellbar (Höhenkorrektur, Fahrmodus). Nächste Stufe: individuelle Lichtsignatur pro Fahrer, dann selbstadaptierend an Sehprofil."
+          },
+          "uneven": {
+            "notes": "Das Bordnetz (12 V-Architektur) ist auf Stand von 1980 — limitiert Leistung und Schaltgeschwindigkeit moderner LED-Matrix-Systeme."
+          }
+        }
+      }
+    },
+    "triz-sufield": {
+      "name": "Substanz-Feld-Analyse (TRIZ)",
+      "description": "Wechselwirkung als S1-S2-Feld-Dreieck modellieren und Altschullers 76 Standardlösungen anwenden",
+      "subtitle": "Modelliere die Wechselwirkung als Substanz-Substanz-Feld-Dreieck und nutze die Diagnose, um die passenden Standardlösungen zu finden.",
+      "s1Label": "Tool (S1)",
+      "s1Placeholder": "z.B. Bohrer",
+      "s2Label": "Objekt (S2)",
+      "s2Placeholder": "z.B. Werkstück",
+      "fieldLabel": "Feld (F)",
+      "linkLabel": "Wirkungstyp",
+      "selectPlaceholder": "— bitte wählen —",
+      "fieldEmpty": "— kein Feld —",
+      "field": {
+        "M":  "Mechanisch",
+        "A":  "Akustisch",
+        "T":  "Thermisch",
+        "C":  "Chemisch",
+        "E":  "Elektrisch",
+        "Mg": "Magnetisch"
+      },
+      "link": {
+        "useful":       "nützlich (Wirkung okay)",
+        "insufficient": "unzureichend (zu schwach)",
+        "excessive":    "exzessiv (zu stark)",
+        "harmful":      "schädlich (Nebeneffekt)",
+        "missing":      "fehlend (sollte wirken)"
+      },
+      "diagramAria": "Su-Field-Modell: Substanz-Substanz-Feld-Dreieck",
+      "diagnosisLabel": "Diagnose",
+      "suggestedClasses": "Empfohlene Klassen",
+      "situation": {
+        "partial":               "S1 oder S2 fehlt — bitte beide Substanzen benennen.",
+        "incomplete":            "Unvollständiges Modell (kein Feld) — neue Wechselwirkung muss aufgebaut werden.",
+        "complete-useful":       "Vollständig, Wirkung nützlich — Verbesserung & nächster Generationssprung möglich.",
+        "complete-insufficient": "Vollständig, aber Wirkung unzureichend — Feld verstärken oder dynamisieren.",
+        "complete-excessive":    "Vollständig, aber Wirkung exzessiv — Wirkung dämpfen / selbsttätig begrenzen.",
+        "complete-harmful":      "Vollständig, aber Wirkung schädlich — Su-Field zerstören oder neutralisieren."
+      },
+      "problemNotePlaceholder": "Optional: Kontext, Randbedingungen, Verweis auf 9-Fenster / IFR / Widerspruchsmatrix …",
+      "filterAuto": "Nur empfohlene Klassen",
+      "filterAll":  "Alle anzeigen",
+      "loadExample": "Beispiel laden",
+      "reset": "Zurücksetzen",
+      "resetTitle": "Substanz-Feld-Analyse zurücksetzen?",
+      "resetMessage": "Alle Eingaben, Notizen und Auswahlmarkierungen werden gelöscht. Diese Aktion lässt sich nicht rückgängig machen.",
+      "class": {
+        "1": { "name": "Aufbau / Zerstörung von Su-Field-Modellen", "description": "Für unvollständige Modelle (1.1 Synthese) oder schädliche Wechselwirkungen (1.2 Zerstörung)." },
+        "2": { "name": "Entwicklung von Su-Field-Modellen", "description": "Für vollständige Modelle mit unzureichender oder ausbaufähiger Wirkung — Übergang zu komplexen, dynamischen oder ferromagnetischen Su-Fields." },
+        "3": { "name": "Übergang zu Supersystem / Mikroebene", "description": "Wenn das System an seine Grenzen stößt — Bi-/Poly-System oder Sprung in die Mikroebene." },
+        "4": { "name": "Messung & Detektion", "description": "Mess- und Steuerungsprobleme — Messung umgehen, indirekt messen, ferromagnetische Detektion." },
+        "5": { "name": "Hilfsstandards", "description": "Vereinfachung und Idealität — bestehende Substanzen / Felder nutzen, Phasenwechsel, selbstgesteuerte Übergänge." }
+      },
+      "triggerLead": "Anwenden, wenn",
+      "exampleLead": "Beispiel",
+      "standardNotePlaceholder": "Wie passt dieser Standard auf den konkreten Fall?",
+      "considered": "berücksichtigt / anwendbar",
+      "noStandardsHint": "Keine passenden Standards in dieser Konfiguration — Eingaben prüfen oder „Alle anzeigen“ wählen.",
+      "example": {
+        "s1": "Bohrer",
+        "s2": "Werkstück (Beton)",
+        "field": "M",
+        "link": "insufficient",
+        "problemNote": "Bohrer dringt zu langsam ein — mechanisches Feld zu schwach. Höhere Drehzahl überhitzt den Bohrer. Klassischer Fall für Klasse-2-Entwicklung.",
+        "notes": {
+          "2.2.5": "Pulsbetrieb: Schlagbohren statt kontinuierlicher Rotation — höhere Spitzenleistung ohne Überhitzung.",
+          "2.4.1": "Ferromagnetische Schwingungserregung am Werkstückhalter — Vibration unterstützt Materialabtrag."
+        },
+        "selected": {
+          "2.2.5": true
+        }
       }
     }
   }

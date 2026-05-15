@@ -55,6 +55,13 @@ export default class ParetoChart extends ChartBase {
     const defaults = {
       items: [],
       maxItems: 20,
+      // When true and the data has more than `maxItems` categories, keep
+      // the top `maxItems - 1` and aggregate the tail into one "Sonstige"
+      // bucket appended at the end (so the bar count stays ≤ maxItems).
+      // Default off for backward compatibility — existing callers truncate.
+      otherBucket: false,
+      otherLabel: 'Sonstige',
+      otherColor: 'var(--color-text-tertiary)',
       yMin: 0,
       barOpacity: 0.75,
       showLegend: false,
@@ -110,6 +117,7 @@ export default class ParetoChart extends ChartBase {
    */
   _getItems() {
     const max = this.config.maxItems || 20;
+    const bucket = this.config.otherBucket === true;
 
     // Multi-series stacked mode: categories + groups → items with segments.
     if (Array.isArray(this.config.groups) && this.config.groups.length > 0 &&
@@ -127,11 +135,42 @@ export default class ParetoChart extends ChartBase {
         return { name: catName, value, segments };
       });
       items.sort((a, b) => b.value - a.value);
-      return items.slice(0, max);
+      return this._applyTopNBucket(items, max, bucket);
     }
 
     // Single-series mode: items[] passes through with no extra processing.
-    return (this.config.items || []).slice(0, max);
+    const items = (this.config.items || []).slice();
+    return this._applyTopNBucket(items, max, bucket);
+  }
+
+  /**
+   * Cap the items list to `max`. With `bucket=true` and >max items, keep
+   * the top `max-1` and append one "Sonstige" item summing the rest. The
+   * bucket carries `_bucketSize` (number of aggregated categories) for
+   * tooltip annotation. Without bucketing, items are simply truncated.
+   * @private
+   */
+  _applyTopNBucket(items, max, bucket) {
+    if (!bucket || items.length <= max) return items.slice(0, max);
+    const head = items.slice(0, max - 1);
+    const tail = items.slice(max - 1);
+    const tailValue = tail.reduce((s, d) => s + (d.value || 0), 0);
+    const otherItem = {
+      name: this.config.otherLabel || 'Sonstige',
+      value: tailValue,
+      color: this.config.otherColor,
+      _bucketSize: tail.length,
+    };
+    // Stacked mode: collapse the bucket into a single segment so the gray
+    // bar reads as "everything else" rather than dozens of tiny strata.
+    if (tail[0] && Array.isArray(tail[0].segments)) {
+      otherItem.segments = [{
+        name: otherItem.name,
+        value: tailValue,
+        color: this.config.otherColor,
+      }];
+    }
+    return [...head, otherItem];
   }
 
   // ── Abstract Implementation: Data Extent ──────────────────────
@@ -426,8 +465,15 @@ export default class ParetoChart extends ChartBase {
       ? `${hitSegment.name}: ${formatNum(hitSegment.value, 1, this.locale)}<br>`
       : '';
 
+    const bucketLine = (typeof d._bucketSize === 'number' && d._bucketSize > 0)
+      ? `<span style="opacity:.7">${this.config.otherCountTemplate
+          ? this.config.otherCountTemplate.replace('{n}', String(d._bucketSize))
+          : `${d._bucketSize} ×`}</span><br>`
+      : '';
+
     return [{
       html: `<b>${d.name}</b><br>`
+        + bucketLine
         + segLine
         + `${formatNum(d.value, 1, this.locale)}<br>`
         + `Σ ${cumPct}%`,

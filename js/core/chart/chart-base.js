@@ -925,6 +925,26 @@ export default class ChartBase {
     const da = dashArray(line.dash, line.width);
     if (da !== 'none') lineAttrs['stroke-dasharray'] = da;
     svgEl('line', lineAttrs, parent);
+
+    // Static label (e.g. for spec limits — always-visible USL/LSL/Target markers).
+    // Vertical lines: label above the top edge, centered on x. Horizontal lines:
+    // label inside the plot at the left edge, just above the line.
+    if (line.showLabel && line.label) {
+      const labelColor = resolveColor(line.color);
+      if (line.dir === 'h') {
+        svgEl('text', {
+          x: pa.x + 4, y: yScale(line.value) - 3,
+          'text-anchor': 'start', 'font-size': '10px', 'font-weight': '600',
+          fill: labelColor, 'pointer-events': 'none',
+        }, parent).textContent = line.label;
+      } else {
+        svgEl('text', {
+          x: xScale(line.value), y: pa.y - 4,
+          'text-anchor': 'middle', 'font-size': '10px', 'font-weight': '600',
+          fill: labelColor, 'pointer-events': 'none',
+        }, parent).textContent = line.label;
+      }
+    }
   }
 
   // ── Reference Areas ──────────────────────────────────────────────

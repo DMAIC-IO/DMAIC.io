@@ -1,0 +1,14 @@
+{
+  "parameter": "Länge des Tragflügels",
+  "requirementA": "lang — für hohen Auftrieb beim Start und im Langsamflug",
+  "requirementNotA": "kurz — für niedrigen Luftwiderstand im Reiseflug",
+  "problemNote": "Klassisches Lehrbeispiel. Aus der Widerspruchsmatrix kommt hier kein eindeutiger Vorschlag, weil sich derselbe Parameter widerspricht — Fall für den physikalischen Widerspruch.",
+  "principleNotes": {
+    "time": "Variable Geometrie: Flügel zum Start ausgefahren, im Reiseflug eingefahren (Schwenkflügel — F-14, B-1).",
+    "space": "Flügelinnenbereich lang (Auftrieb), Flügelspitzen pfeilförmig kurz (Widerstand) — Pfeilflügel, Winglets.",
+    "condition": "Klappen/Slats: nur bei niedriger Geschwindigkeit ausgefahren (geschwindigkeitsabhängig).",
+    "system": "Hauptflügel klein, separates Auftriebshilfssystem (Hochauftriebsklappen, Vorflügel) als eigenes Subsystem."
+  },
+  "selectedPrinciple": "time",
+  "solutionNote": "Schwenkflügel-Mechanik: Aktor stellt die effektive Spannweite je Flugphase ein. Zusätzlich Hochauftriebsklappen (Bedingungs-Separation) für die Übergänge."
+}

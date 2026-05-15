@@ -525,4 +525,44 @@ export default [
       eightd: { phase: 'corrective' },
     },
   },
+  {
+    id: 'triz-physical-contradiction',
+    phase: 'improve',
+    load: () => import('./triz-physical-contradiction/triz-physical-contradiction.js'),
+    cycles: {
+      eightd: { phase: 'corrective' },
+    },
+  },
+  {
+    id: 'triz-ifr',
+    phase: 'improve',
+    load: () => import('./triz-ifr/triz-ifr.js'),
+    cycles: {
+      eightd: { phase: 'corrective' },
+    },
+  },
+  {
+    id: 'triz-resources',
+    phase: 'improve',
+    load: () => import('./triz-resources/triz-resources.js'),
+    cycles: {
+      eightd: { phase: 'corrective' },
+    },
+  },
+  {
+    id: 'triz-evolution-trends',
+    phase: 'improve',
+    load: () => import('./triz-evolution-trends/triz-evolution-trends.js'),
+    cycles: {
+      eightd: { phase: 'corrective' },
+    },
+  },
+  {
+    id: 'triz-sufield',
+    phase: 'improve',
+    load: () => import('./triz-sufield/triz-sufield.js'),
+    cycles: {
+      eightd: { phase: 'corrective' },
+    },
+  },
 ];

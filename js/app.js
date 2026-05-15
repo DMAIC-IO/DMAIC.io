@@ -24,7 +24,7 @@ import { DashboardGrid }  from './ui/dashboard-grid.js';
 import { DASHBOARD_TILES, DEFAULT_DASHBOARD_LAYOUT, getTileDef } from './ui/dashboard-tiles.js';
 import { getChartType, evaluateNelsonRules, computeCapability, DEFAULT_ENABLED_RULES } from './engines/control-chart-engine.js';
 import { getColumnValues, getColumnName } from './ui/column-picker.js';
-import { CYCLES, getCycle, getPhaseIds, DEFAULT_CYCLE } from './core/cycles/cycles.js';
+import { CYCLES, getCycle, getPhaseIds, getPhaseDef, DEFAULT_CYCLE } from './core/cycles/cycles.js';
 import { initNightlyMode }   from './core/nightly-mode.js';
 import { TipEngine }         from './core/tips/tip-engine.js';
 import { ExportReminder }    from './core/export-reminder.js';
@@ -106,7 +106,7 @@ async function init() {
   _initSettings(themeManager, i18n, stateManager, tipEngine);
   _initDevArea(eventBus, i18n);
   _initModuleHelp(workspace, helpPanel, i18n, eventBus, examplesRegistry);
-  _initTraining(eventBus, i18n);
+  _initTraining(eventBus, i18n, moduleRegistry);
   _initDashboard(eventBus, i18n, stateManager, chartManager);
   _initExportImport(stateManager, eventBus, i18n, notify, modal);
   _handleExampleDeeplink({ stateManager, eventBus, moduleRegistry, examplesRegistry, workspace, notify, i18n });
@@ -2143,8 +2143,9 @@ function _initDashboard(eventBus, i18n, stateManager, chartManager) {
  *
  * @param {import('./core/event-bus.js').EventBus} eventBus
  * @param {import('./core/i18n.js').I18n} i18n
+ * @param {import('./core/module-registry.js').ModuleRegistry} moduleRegistry
  */
-function _initTraining(eventBus, i18n) {
+function _initTraining(eventBus, i18n, moduleRegistry) {
   const btn  = document.getElementById('training-btn');
   const area = document.getElementById('training-area');
   if (!btn || !area) return;
@@ -2154,6 +2155,7 @@ function _initTraining(eventBus, i18n) {
     { id: 'dmadv',   labelKey: 'training.tabDmadv',   render: () => _renderCycleTab('dmadv')  },
     { id: 'eightd', labelKey: 'training.tabEightd', render: () => _renderCycleTab('eightd') },
     { id: 'triz',    labelKey: 'training.tabTriz',    render: () => _renderTrizTab() },
+    { id: 'modules', labelKey: 'training.tabModules', render: () => _renderModulesTab() },
     { id: 'minitab', labelKey: 'training.tabMinitab', render: () => _renderToolTab('minitab') },
     { id: 'jmp',     labelKey: 'training.tabJmp',     render: () => _renderToolTab('jmp') },
   ];
@@ -2245,6 +2247,137 @@ function _initTraining(eventBus, i18n) {
 
       <h3>${t('appTitle')}</h3>
       <p>${t('appBody')}</p>
+    `;
+  }
+
+  /**
+   * Render the "Module overview" tab: for each cycle, list which modules are
+   * preconfigured for each phase, plus a separate section for cycle-independent
+   * data-area modules. Sources data from the live module registry, so the
+   * overview stays in sync with `js/modules/manifest.js` automatically.
+   */
+  function _renderModulesTab() {
+    const t = (k, vars) => _escapeHtml(vars ? i18n.t(`training.modules.${k}`, vars) : i18n.t(`training.modules.${k}`));
+
+    const moduleName = (m) => {
+      const key = `modules.${m.id}.name`;
+      return i18n.exists(key) ? i18n.t(key) : m.id;
+    };
+
+    const visibleModules = moduleRegistry.getAll().filter(m => !m.hiddenFromMenu);
+
+    // ─── Data area section ─────────────────────────────────────
+    const dataGroupOrder = ['collect', 'visualize', 'process'];
+    const dataGroupLabels = {
+      collect:   t('groupCollect'),
+      visualize: t('groupVisualize'),
+      process:   t('groupProcess'),
+    };
+    const dataModulesByGroup = new Map();
+    visibleModules
+      .filter(m => m.phase === 'data')
+      .sort((a, b) => moduleName(a).localeCompare(moduleName(b)))
+      .forEach(m => {
+        const g = m.group || 'other';
+        if (!dataModulesByGroup.has(g)) dataModulesByGroup.set(g, []);
+        dataModulesByGroup.get(g).push(m);
+      });
+
+    const orderedGroups = [
+      ...dataGroupOrder.filter(g => dataModulesByGroup.has(g)),
+      ...[...dataModulesByGroup.keys()].filter(g => !dataGroupOrder.includes(g)),
+    ];
+
+    const dataRows = orderedGroups.map(g => {
+      const label = dataGroupLabels[g] || _escapeHtml(i18n.t('training.modules.groupOther'));
+      const mods = dataModulesByGroup.get(g)
+        .map(m => _escapeHtml(moduleName(m)))
+        .join(', ');
+      return `<tr><td>${label}</td><td>${mods}</td></tr>`;
+    }).join('');
+
+    // ─── Per-cycle phase → modules sections ────────────────────
+    const cycleIds = Object.keys(CYCLES);
+
+    const cycleSections = cycleIds.map(cycleId => {
+      const cycle = getCycle(cycleId);
+      const cycleName = _escapeHtml(i18n.t(`cycles.${cycleId}.name`));
+
+      // Bucket non-data, visible modules by primary phase for this cycle.
+      const phaseBuckets = new Map();
+      const extras = [];
+      visibleModules
+        .filter(m => m.phase !== 'data')
+        .forEach(m => {
+          const mapping = m.cycles?.[cycleId];
+          if (!mapping) { extras.push(m); return; }
+          const list = phaseBuckets.get(mapping.phase) || [];
+          list.push(m);
+          phaseBuckets.set(mapping.phase, list);
+        });
+
+      const rows = cycle.phases.map(phase => {
+        const mods = (phaseBuckets.get(phase.id) || [])
+          .sort((a, b) => moduleName(a).localeCompare(moduleName(b)))
+          .map(m => {
+            const name = _escapeHtml(moduleName(m));
+            const allowed = m.cycles?.[cycleId]?.allowedPhases || [];
+            const extraPhases = allowed.filter(p => p !== phase.id);
+            if (extraPhases.length === 0) return name;
+            const labels = extraPhases.map(pid => {
+              const pdef = getPhaseDef(cycleId, pid);
+              return pdef ? `${pdef.letter}` : pid;
+            }).join(', ');
+            const hint = _escapeHtml(i18n.t('training.modules.alsoAllowed', { phases: labels }));
+            return `${name} <span class="training-area__module-hint">(${hint})</span>`;
+          })
+          .join(', ');
+
+        const phaseLabel = `<strong>${_escapeHtml(phase.letter)}</strong> — ${_escapeHtml(i18n.t(phase.i18nKey))}`;
+        const cell = mods || `<span class="training-area__module-hint">${t('phaseEmpty')}</span>`;
+        return `<tr><td class="training-area__phase-col">${phaseLabel}</td><td>${cell}</td></tr>`;
+      });
+
+      // Trailing "extras" row (modules without a mapping in this cycle).
+      const extrasMods = extras
+        .sort((a, b) => moduleName(a).localeCompare(moduleName(b)))
+        .map(m => _escapeHtml(moduleName(m)))
+        .join(', ');
+      const extrasCell = extrasMods || `<span class="training-area__module-hint">${t('phaseEmpty')}</span>`;
+      rows.push(`<tr><td class="training-area__phase-col"><strong>⋯</strong> — ${t('extras')}</td><td>${extrasCell}</td></tr>`);
+
+      return `
+        <h3>${cycleName}</h3>
+        <table class="training-area__table">
+          <thead>
+            <tr>
+              <th style="width: 22%;">${t('colPhase')}</th>
+              <th>${t('colModules')}</th>
+            </tr>
+          </thead>
+          <tbody>${rows.join('')}</tbody>
+        </table>
+      `;
+    }).join('');
+
+    return `
+      <p>${t('intro')}</p>
+
+      <h3>${t('dataTitle')}</h3>
+      <p>${t('dataIntro')}</p>
+      <table class="training-area__table">
+        <thead>
+          <tr>
+            <th style="width: 22%;">${t('colGroup')}</th>
+            <th>${t('colModules')}</th>
+          </tr>
+        </thead>
+        <tbody>${dataRows}</tbody>
+      </table>
+
+      <h3>${t('cyclesTitle')}</h3>
+      <p>${t('cyclesIntro')}</p>
+      ${cycleSections}
     `;
   }
 

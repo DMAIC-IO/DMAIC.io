@@ -650,10 +650,10 @@ export default {
     const values = this._getColumnValues();
     if (values.length === 0) return;
 
-    const specLimits = {};
-    if (r.hasLsl) specLimits.lsl = r.lsl;
-    if (r.hasUsl) specLimits.usl = r.usl;
-    if (r.targetVal != null) specLimits.target = r.targetVal;
+    const refLines = [];
+    if (r.hasLsl)            refLines.push({ dir: 'v', value: r.lsl,       label: 'LSL',    color: 'var(--color-error)',   dash: 'dash', width: 1.5, showLabel: true });
+    if (r.hasUsl)            refLines.push({ dir: 'v', value: r.usl,       label: 'USL',    color: 'var(--color-error)',   dash: 'dash', width: 1.5, showLabel: true });
+    if (r.targetVal != null) refLines.push({ dir: 'v', value: r.targetVal, label: 'Target', color: 'var(--color-success)', dash: 'dash', width: 1.5, showLabel: true });
 
     const chart = await this._context.chartManager.create(el, 'histogram', {
       data: values,
@@ -662,7 +662,7 @@ export default {
       barColor: 'var(--color-accent)',
       normalCurveColor: 'var(--color-info)',
       showLegend: true,
-      specLimits,
+      refLines,
     });
     this._charts.push(chart);
   },

@@ -516,6 +516,11 @@ export default {
     const el = this._container.querySelector('[data-ref="chart-hist"]');
     if (!el) return;
 
+    const refLines = [];
+    if (r.params.lsl != null) refLines.push({ dir: 'v', value: r.params.lsl, label: 'LSL',    color: 'var(--color-error)',   dash: 'dash', width: 1.5, showLabel: true });
+    if (r.params.usl != null) refLines.push({ dir: 'v', value: r.params.usl, label: 'USL',    color: 'var(--color-error)',   dash: 'dash', width: 1.5, showLabel: true });
+    if (r.params.ref != null) refLines.push({ dir: 'v', value: r.params.ref, label: 'Target', color: 'var(--color-success)', dash: 'dash', width: 1.5, showLabel: true });
+
     const chart = await this._context.chartManager.create(el, 'histogram', {
       data: values,
       binMethod: 'sturges',
@@ -523,7 +528,7 @@ export default {
       barColor: 'var(--color-accent)',
       normalCurveColor: 'var(--color-info)',
       showLegend: true,
-      specLimits: { lsl: r.params.lsl, usl: r.params.usl, target: r.params.ref },
+      refLines,
     });
     this._charts.push(chart);
   },

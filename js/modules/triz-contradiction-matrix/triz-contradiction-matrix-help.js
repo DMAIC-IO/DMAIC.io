@@ -122,6 +122,14 @@ export default {
             type: 'paragraph',
             content: 'Wichtig: Die empfohlenen Prinzipien sind Anregungen, keine Patentrezepte. Erst die Übertragung auf den konkreten Sachverhalt schafft eine Lösung — dort liegt die kreative Arbeit.',
           },
+          {
+            type: 'paragraph',
+            content: 'Wenn die Matrix mehrere widersprüchliche Prinzipien empfiehlt oder die Zelle leer bleibt, liegt häufig ein **physikalischer Widerspruch** zugrunde (derselbe Parameter muss zwei entgegengesetzte Werte annehmen). Dafür gibt es das Modul „Physikalischer Widerspruch (TRIZ)" mit den vier Separationsprinzipien.',
+          },
+          {
+            type: 'paragraph',
+            content: 'Wer den Lösungsraum noch weiter öffnen will, formuliert vor der Matrix-Analyse ein **Ideales Endresultat** (Modul „Ideales Endresultat (TRIZ)") und inventarisiert die verfügbaren Ressourcen über die **Ressourcen-Checkliste**. Häufig wird die Matrix dadurch überflüssig — eine Ressource erledigt den Job direkt.',
+          },
         ],
       },
       en: {
@@ -138,6 +146,14 @@ export default {
           {
             type: 'paragraph',
             content: 'Important: the recommended principles are prompts, not recipes. Only the transfer to the concrete case creates a solution — that is where the creative work happens.',
+          },
+          {
+            type: 'paragraph',
+            content: 'When the matrix recommends conflicting principles or the cell stays empty, the underlying problem is often a **physical contradiction** (the same parameter must take two opposite values). The "Physical Contradiction (TRIZ)" module addresses exactly that case via the four separation principles.',
+          },
+          {
+            type: 'paragraph',
+            content: 'To widen the solution space further, formulate an **Ideal Final Result** (module "Ideal Final Result (TRIZ)") before running the matrix and inventory available resources via the **Resources Checklist**. Quite often the matrix becomes unnecessary — an existing resource performs the job directly.',
           },
         ],
       },

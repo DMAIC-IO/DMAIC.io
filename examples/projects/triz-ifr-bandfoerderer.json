@@ -1,0 +1,9 @@
+{
+  "system": "Bandförderer für lose Schüttgut",
+  "usefulFunction": "Transportiert Schüttgut zuverlässig von A nach B",
+  "harmfulEffect": "Partikel verklemmen am Übergabe-Trichter und blockieren den Förderer",
+  "ifr1": "Der Bandförderer verhindert das Verklemmen am Übergabe-Trichter von selbst — kein Eingriff, keine Reinigungsstation nötig.",
+  "ifr2": "Das Material verklemmt nicht. (Idealerweise existiert das Problem gar nicht — z.B. weil die Korngrößenverteilung am Eingang bereits passend ist.)",
+  "ifr3": "Die Schwerkraft selbst löst die Verklemmung auf — etwa durch geschickte Übergangsgeometrie, die Klemm-Brücken einfach zerfallen lässt.",
+  "obstacles": "• Übergangswinkel < Schüttwinkel → Materialbrücken bilden sich\n• Korngrößenverteilung zu breit → Verkeilung\n• Keine Vibration / Rüttler im Übergangsbereich\n• Operator hat keine Frühwarnung — erkennt Stau erst beim Stillstand"
+}

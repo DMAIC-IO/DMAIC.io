@@ -16,6 +16,8 @@ const TYPE_MAP = {
   'probability-plot': () => import('./types/probability-plot.js'),
   pareto:             () => import('./types/pareto.js'),
   pie:                () => import('./types/pie.js'),
+  mosaic:             () => import('./types/mosaic.js'),
+  heatmap:            () => import('./types/heatmap.js'),
 };
 
 export default class ChartManager {

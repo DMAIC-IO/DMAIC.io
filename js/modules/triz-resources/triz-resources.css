@@ -1,0 +1,145 @@
+/* TRIZ Resources Checklist — module styles. BEM-light, theme-driven. */
+
+.triz-res__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  padding: var(--spacing-md);
+}
+
+/* ── Top bar ──────────────────────────────────────────────── */
+.triz-res__topbar {
+  display: grid;
+  grid-template-columns: auto 1fr auto auto;
+  gap: var(--spacing-sm);
+  align-items: center;
+}
+
+.triz-res__label {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.triz-res__system-input {
+  width: 100%;
+}
+
+/* ── Grid 6×3 ─────────────────────────────────────────────── */
+.triz-res__grid {
+  display: grid;
+  grid-template-columns: minmax(150px, 200px) repeat(3, 1fr);
+  gap: var(--spacing-sm);
+  align-items: stretch;
+}
+
+.triz-res__corner,
+.triz-res__col-head {
+  padding: var(--spacing-xs) var(--spacing-sm);
+  background: var(--color-bg-tertiary);
+  border: 1px dashed var(--color-border-secondary);
+  border-radius: var(--border-radius-sm);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+  font-style: italic;
+  text-align: center;
+  min-height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.triz-res__col-head {
+  font-style: normal;
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-secondary);
+  background: var(--color-bg-secondary);
+  border-style: solid;
+  border-color: var(--color-border-primary);
+}
+
+.triz-res__row-head {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 4px;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  background: var(--color-bg-secondary);
+  border: 1px solid var(--color-border-primary);
+  border-radius: var(--border-radius-sm);
+}
+
+.triz-res__row-icon {
+  font-size: var(--font-size-md);
+}
+
+.triz-res__row-title {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+}
+
+/* ── Cell ─────────────────────────────────────────────────── */
+.triz-res__cell {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-sm);
+  background: var(--color-bg-elevated);
+  border: 1px solid var(--color-border-primary);
+  border-radius: var(--border-radius);
+  min-height: 120px;
+  transition: border-color var(--transition-speed), box-shadow var(--transition-speed);
+}
+
+.triz-res__cell:focus-within {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-accent) 25%, transparent);
+}
+
+.triz-res__notes {
+  flex: 1 1 auto;
+  width: 100%;
+  resize: vertical;
+  min-height: 60px;
+  font-size: var(--font-size-sm);
+}
+
+/* ── Status pill ─────────────────────────────────────────── */
+.triz-res__status {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 1px solid var(--color-border-primary);
+  background: var(--color-bg-secondary);
+  color: var(--color-text-secondary);
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+.triz-res__status:hover {
+  border-color: var(--color-accent);
+}
+
+.triz-res__status--unknown { color: var(--color-text-tertiary); }
+.triz-res__status--unused  { color: var(--color-warning, #d29922); }
+.triz-res__status--partial { color: var(--color-accent, #2e7dd9); }
+.triz-res__status--full    { color: var(--color-success, #2ea043); }
+
+.triz-res__legend {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+  margin: 0;
+}

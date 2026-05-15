@@ -1,0 +1,116 @@
+/* TRIZ Ideal Final Result — module styles. BEM-light, theme-driven. */
+
+.triz-ifr__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+  padding: var(--spacing-md);
+}
+
+.triz-ifr__section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.triz-ifr__section-title {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin: 0;
+}
+
+.triz-ifr__hint {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-tertiary);
+  margin: 0;
+}
+
+.triz-ifr__field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.triz-ifr__label {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+.triz-ifr__textarea {
+  width: 100%;
+  resize: vertical;
+  min-height: 56px;
+}
+
+/* ── IFR level cards ──────────────────────────────────────── */
+.triz-ifr__level {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: var(--spacing-sm);
+  background: var(--color-bg-elevated);
+  border: 1px solid var(--color-border-primary);
+  border-left: 4px solid var(--color-accent, #2e7dd9);
+  border-radius: var(--border-radius);
+}
+
+.triz-ifr__level + .triz-ifr__level {
+  margin-top: var(--spacing-sm);
+}
+
+.triz-ifr__level-head {
+  display: flex;
+  align-items: baseline;
+  gap: var(--spacing-xs);
+}
+
+.triz-ifr__level-num {
+  display: inline-block;
+  padding: 2px 8px;
+  background: var(--color-accent, #2e7dd9);
+  color: #fff;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  border-radius: var(--border-radius-sm);
+  letter-spacing: 0.04em;
+}
+
+.triz-ifr__level-title {
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+}
+
+.triz-ifr__level-desc {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  margin: 0;
+  font-style: italic;
+}
+
+/* ── Obstacles block ──────────────────────────────────────── */
+.triz-ifr__obstacles {
+  min-height: 88px;
+}
+
+/* ── Actions ──────────────────────────────────────────────── */
+.triz-ifr__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+.triz-ifr__spacer { flex: 1 1 auto; }
+
+.triz-ifr__resources-btn {
+  background: var(--color-accent, #2e7dd9);
+  color: #fff;
+  border-color: var(--color-accent, #2e7dd9);
+}
+
+.triz-ifr__resources-btn:hover {
+  filter: brightness(0.92);
+}

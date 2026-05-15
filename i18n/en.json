@@ -177,6 +177,7 @@
     "tabDmadv": "Understanding DMADV",
     "tabEightd": "Understanding 8D",
     "tabTriz": "Understanding TRIZ",
+    "tabModules": "Module overview",
     "tabMinitab": "For Minitab users",
     "tabJmp": "For JMP users",
     "dmaic": {
@@ -387,6 +388,24 @@
       "pitfall4": "Watering down the Ideal Final Result during the real design. The strength of the IFR is precisely that it does not have to be reachable — it only points the direction. Making it \"realistic\" too early destroys exactly that orientation.",
       "appTitle": "TRIZ in this app",
       "appBody": "DMAIC.io contains two TRIZ tools in the Improve phase: the \"9 Windows\" module for system analysis across hierarchy and time, and the \"Contradiction Matrix\" module with the 39 parameters and 40 principles after Altshuller. Both modules persist their state inside the project and can be JSON-exported and re-imported like any other module. You reach them via the hamburger menu (☰) on the Improve tile, or by drag-and-dropping them from the \"More\" tile into another phase if you want to use TRIZ already in the Define or Analyze step."
+    },
+    "modules": {
+      "intro": "This overview shows which modules are preconfigured for each phase of a cycle. Modules without a phase mapping in the active cycle land in the \"More\" tile (⋯) and can be drag-and-dropped from there into any phase.",
+      "dataTitle": "Data area (cycle-independent)",
+      "dataIntro": "These modules belong to the global data area and are available in every cycle. They are grouped by task.",
+      "groupCollect": "Collect",
+      "groupVisualize": "Visualize",
+      "groupProcess": "Process",
+      "groupOther": "Other",
+      "cyclesTitle": "Modules per cycle and phase",
+      "cyclesIntro": "For each cycle, the table lists the phases and the modules preconfigured for them. Modules that may also be used in additional allowed phases are noted in parentheses as \"also in: …\".",
+      "colPhase": "Phase",
+      "colGroup": "Group",
+      "colModules": "Modules",
+      "phaseEmpty": "— no modules assigned —",
+      "alsoAllowed": "also in {phases}",
+      "extras": "More (⋯)",
+      "extrasIntro": "These modules have no preconfigured phase mapping in this cycle and appear in the \"More\" tile."
     }
   },
   "dashboard": {
@@ -579,11 +598,7 @@
         "barOpacity": "Opacity",
         "normalCurve": "Normal Curve",
         "showNormalCurve": "Show curve",
-        "curveColor": "Curve color",
-        "specLimits": "Specification Limits",
-        "lsl": "LSL",
-        "usl": "USL",
-        "target": "Target"
+        "curveColor": "Curve color"
       },
       "boxplot": {
         "appearance": "Appearance",
@@ -1804,7 +1819,10 @@
       "axis": {
         "frequency": "Frequency",
         "count": "Count",
+        "mean": "Mean",
         "observation": "Observation",
+        "other": "Other",
+        "otherCategories": "{n} more categories",
         "percentile": "Probability"
       },
       "charts": {
@@ -1819,10 +1837,16 @@
         "runChartOrdered": "Run chart (ordered)",
         "probabilityPlot": "Probability plot",
         "scatter": "Scatter plot",
+        "scatterMarginalBoxplot": "Scatter plot with marginal boxplots",
+        "scatterMarginalHistogram": "Scatter plot with marginal histograms",
         "scatterMatrix": "Scatter matrix",
         "scatterOverTime": "Scatter plot over time",
         "timeSeries": "Time series",
+        "multiTimeSeries": "Multi-line time series",
+        "groupedTimeSeries": "Grouped time series",
         "controlChart": "Control chart",
+        "ewma": "EWMA control chart",
+        "cusum": "CUSUM control chart",
         "bar": "Bar chart",
         "barOrdered": "Bar chart (ordered)",
         "barOrderedStacked": "Bar chart (ordered, stacked)",
@@ -1832,7 +1856,11 @@
         "paretoStacked": "Pareto (stacked)",
         "pie": "Pie chart",
         "mainEffects": "Main effects plot",
-        "interactionPlot": "Interaction plot"
+        "interactionPlot": "Interaction plot",
+        "mosaic": "Mosaic plot",
+        "heatmap": "Heatmap (count)",
+        "heatmapMean": "Heatmap (mean)",
+        "bubble": "Bubble chart"
       },
       "notes": {
         "matrixTruncated": "Only the first {shown} of {total} columns are shown in the matrix."
@@ -4109,6 +4137,404 @@
             "Smart grid, V2X connectivity, mobility-as-a-service, new liability rules."
           ]
         ]
+      }
+    },
+    "triz-physical-contradiction": {
+      "name": "Physical Contradiction (TRIZ)",
+      "description": "One parameter must be A and ¬A — resolution via four separation principles",
+      "subtitle": "State a parameter that must take two opposite values at the same time, then resolve the contradiction via time, space, condition or system level.",
+      "problemHeading": "Contradiction",
+      "parameterLabel": "Parameter (one measurable attribute)",
+      "parameterPlaceholder": "e.g. wing length",
+      "requirementALabel": "should be A, in order to …",
+      "requirementAPlaceholder": "e.g. long — for high lift at take-off",
+      "requirementNotALabel": "should be ¬A, in order to …",
+      "requirementNotAPlaceholder": "e.g. short — for low drag at cruise",
+      "problemNoteLabel": "Note / context",
+      "problemNotePlaceholder": "Background, boundary conditions, cross-reference to contradiction matrix or 9-Windows …",
+      "swap": "Swap A and ¬A",
+      "reset": "Reset",
+      "loadExample": "Load example",
+      "resetTitle": "Reset physical contradiction?",
+      "resetMessage": "All inputs, notes and the chosen solution direction will be cleared. This cannot be undone.",
+      "separationHeading": "Separation principles",
+      "separationHint": "For each principle, note whether and how it can be applied to the case. Then pick the principle that fits.",
+      "exampleLead": "Example",
+      "principleNotePlaceholder": "How could this principle be applied to the contradiction at hand?",
+      "selectPrinciple": "Choose this direction",
+      "solutionHeading": "Solution direction",
+      "chosenPrinciple": "Chosen principle",
+      "solutionPlaceholder": "Derive the concrete solution from the chosen principle — what changes when / where / under which condition / at which level?",
+      "principles": {
+        "time": {
+          "name": "Separation in time",
+          "icon": "⏱",
+          "question": "Can the parameter take different values at different moments?",
+          "example": "Folding wing — long for take-off, short at cruise. Also: landing gear, airbag, saw blade (cut vs. return stroke)."
+        },
+        "space": {
+          "name": "Separation in space",
+          "icon": "📍",
+          "question": "Can the parameter take different values in different regions of the system?",
+          "example": "Screw — hard head, elastic shaft. Also: drill bit sharp at the tip, progressive eyeglass lenses."
+        },
+        "condition": {
+          "name": "Separation on condition",
+          "icon": "⚖",
+          "question": "Can the parameter take different values depending on load, temperature, speed, user …?",
+          "example": "Non-Newtonian fluid — liquid at rest, solid under impact. Also: photochromic glasses, memory foam, ABS."
+        },
+        "system": {
+          "name": "Separation between system levels",
+          "icon": "🪜",
+          "question": "Does the contradiction dissolve when you switch between sub-, system and supersystem?",
+          "example": "Bicycle chain — flexible as a whole, rigid in each link. Also: stranded wire (thin threads, thick strand), sandwich composites."
+        }
+      },
+      "example": {
+        "parameter": "Wing length",
+        "requirementA": "long — for high lift at take-off and slow flight",
+        "requirementNotA": "short — for low drag at cruise",
+        "problemNote": "Classical textbook example. The contradiction matrix gives no clear advice here because the same parameter contradicts itself.",
+        "principleNotes": {
+          "time": "Variable geometry: wing extended for take-off, retracted at cruise (swing wing — F-14, B-1).",
+          "space": "Inner wing long (lift), wingtips short and swept (drag) — swept wings, winglets.",
+          "condition": "Flaps / slats deployed only at low speed (speed-dependent).",
+          "system": "Smaller main wing plus a separate high-lift subsystem (flaps, slats) as its own subsystem."
+        },
+        "selectedPrinciple": "time",
+        "solutionNote": "Swing-wing mechanism: an actuator sets the effective span per flight phase. Plus flaps for transitions (condition separation)."
+      }
+    },
+    "triz-ifr": {
+      "name": "Ideal Final Result (TRIZ)",
+      "description": "State the ideal and work backwards to a solution",
+      "subtitle": "Useful function fulfilled, system disappears, no cost, no harmful side-effect — phrase three IFR levels and analyse the gap.",
+      "taskHeading": "Task",
+      "systemLabel": "System",
+      "systemPlaceholder": "e.g. belt conveyor for bulk solids",
+      "usefulLabel": "Useful function",
+      "usefulPlaceholder": "e.g. transports material from A to B",
+      "harmfulLabel": "Harmful effect / compromise",
+      "harmfulPlaceholder": "e.g. material jams at the transition and blocks the conveyor",
+      "ifrHeading": "IFR formulations",
+      "ifrHint": "Three increasingly radical ideal statements. Deliberately psychologically uncomfortable — that is where the insight comes from.",
+      "ifr1Title": "The system solves the problem itself",
+      "ifr1Desc": "The system remains; the harmful effect disappears without a new mechanism.",
+      "ifr1Placeholder": "e.g. The conveyor itself prevents jamming.",
+      "ifr2Title": "Function without the system",
+      "ifr2Desc": "The useful function exists without the system being present at all.",
+      "ifr2Placeholder": "e.g. The material does not jam. (The problem ceases to exist.)",
+      "ifr3Title": "A supersystem resource performs the function",
+      "ifr3Desc": "A resource already present in the environment takes over — for free, no new component.",
+      "ifr3Placeholder": "e.g. Gravity orients the particles with no intervention.",
+      "obstaclesHeading": "Obstacles to the IFR",
+      "obstaclesHint": "What blocks the system from reaching the IFR today? This list is the actual task list.",
+      "obstaclesPlaceholder": "• particle size distribution too wide\n• transition angle too steep\n• …",
+      "openResources": "→ Open Resources Checklist",
+      "openResourcesHint": "Add the \"Resources Checklist (TRIZ)\" module from the extras tile (⋯) — IFR-3 asks for exactly these resources.",
+      "loadExample": "Load example",
+      "reset": "Reset",
+      "resetTitle": "Reset IFR?",
+      "resetMessage": "All inputs will be cleared. This cannot be undone.",
+      "example": {
+        "system": "Belt conveyor for bulk solids",
+        "usefulFunction": "Transports bulk material reliably from A to B",
+        "harmfulEffect": "Particles jam at the transfer chute and block the conveyor",
+        "ifr1": "The belt conveyor prevents the transfer-chute jam by itself — no intervention, no cleaning station required.",
+        "ifr2": "The material does not jam. (Ideally the problem ceases to exist — e.g. because the particle distribution at the inlet is already suitable.)",
+        "ifr3": "Gravity itself dissolves the jam — for instance via a clever transition geometry that lets material bridges collapse on their own.",
+        "obstacles": "• transition angle < repose angle → material bridges form\n• particle size distribution too wide → wedging\n• no vibration / rapper in the transition area\n• operator has no early warning — only notices a jam when the system stops"
+      }
+    },
+    "triz-resources": {
+      "name": "Resources Checklist (TRIZ)",
+      "description": "Systematic inventory of substances, fields, space, time, information and functions",
+      "subtitle": "Inventory available resources across six categories × three system levels before inventing new components.",
+      "systemLabel": "System",
+      "systemPlaceholder": "e.g. belt conveyor for bulk solids",
+      "loadExample": "Load example",
+      "reset": "Reset",
+      "resetTitle": "Reset resources checklist?",
+      "resetMessage": "All inputs and status ratings will be cleared. This cannot be undone.",
+      "gridAriaLabel": "Resources grid",
+      "cornerTip": "Category ↓ / level →",
+      "statusLegend": "Status: ○ unknown · ◔ unused · ◑ partly used · ● fully used — click to cycle.",
+      "level": {
+        "sub": "Subsystem",
+        "sys": "System",
+        "super": "Supersystem"
+      },
+      "status": {
+        "unknown": "unknown — not yet investigated",
+        "unused": "unused — present but not exploited",
+        "partial": "partly used",
+        "full": "fully used"
+      },
+      "category": {
+        "substance": {
+          "name": "Substances",
+          "icon": "🧱",
+          "prompt": "Materials, parts, waste, by-products, atmosphere, contaminants …"
+        },
+        "field": {
+          "name": "Fields",
+          "icon": "🧲",
+          "prompt": "Mechanical, thermal, chemical, electrical, magnetic, acoustic, optical, gravitational …"
+        },
+        "space": {
+          "name": "Space",
+          "icon": "📐",
+          "prompt": "Unused volumes, surfaces, gaps, cavities, contact regions …"
+        },
+        "time": {
+          "name": "Time",
+          "icon": "⏱",
+          "prompt": "Idle phases, transitions, pauses between cycles, lead/lag windows …"
+        },
+        "info": {
+          "name": "Information",
+          "icon": "📡",
+          "prompt": "Sensor signals, indicators, naturally occurring data, by-product information …"
+        },
+        "function": {
+          "name": "Function / energy",
+          "icon": "⚙",
+          "prompt": "Existing functions usable for double duty; energy already flowing through the system …"
+        }
+      },
+      "example": {
+        "system": "Belt conveyor for bulk solids",
+        "cells": {
+          "substance": {
+            "sub":   { "notes": "Belt (rubber), drive pulley, bearing housings, intake chute.", "status": "full" },
+            "sys":   { "notes": "Bulk material itself, dust as by-product, bearing grease.", "status": "partial" },
+            "super": { "notes": "Plant floor, hall air (humidity + dust), collection bin.", "status": "unused" }
+          },
+          "field": {
+            "sub":   { "notes": "Belt/pulley friction, drive torque.", "status": "full" },
+            "sys":   { "notes": "Gravity on the bulk material, weight of formed bridges, roller vibration.", "status": "partial" },
+            "super": { "notes": "Plant temperature (seasonal swing), electromagnetic field of the drives.", "status": "unknown" }
+          },
+          "space": {
+            "sub":   { "notes": "Belt cross-section — material sits only in the middle.", "status": "partial" },
+            "sys":   { "notes": "Cavity under the belt, transition chute (main jam location).", "status": "unused" },
+            "super": { "notes": "Free space above the conveyor, wall of the transition area.", "status": "unused" }
+          },
+          "time": {
+            "sub":   { "notes": "Idle time between batches ~ 30 s.", "status": "unused" },
+            "sys":   { "notes": "Spool-up time at start — material initially at rest.", "status": "unknown" },
+            "super": { "notes": "Shift change — no load for ~ 10 min.", "status": "unused" }
+          },
+          "info": {
+            "sub":   { "notes": "Motor current (rises with clogging), bearing temperature.", "status": "partial" },
+            "sys":   { "notes": "Belt sound changes before a jam (operators hear it).", "status": "unused" },
+            "super": { "notes": "No fill-level sensor on the transfer chute.", "status": "unknown" }
+          },
+          "function": {
+            "sub":   { "notes": "Drive rotates pulleys — could additionally generate vibration.", "status": "unused" },
+            "sys":   { "notes": "Kinetic energy of the flowing material — could break bridges on its own.", "status": "unused" },
+            "super": { "notes": "Existing compressed-air ring for cleaning — could double as a rapper.", "status": "unknown" }
+          }
+        }
+      }
+    },
+    "triz-evolution-trends": {
+      "name": "Trends of Technical Evolution (TRIZ)",
+      "description": "Eight classical evolution trajectories — locate the system and identify the next stage jump",
+      "subtitle": "Place the system on eight evolution trajectories and identify the next stage jump for each.",
+      "systemLabel": "System",
+      "systemPlaceholder": "e.g. passenger-car headlight",
+      "loadExample": "Load example",
+      "reset": "Reset",
+      "resetTitle": "Reset evolution checklist?",
+      "resetMessage": "All stage placements and notes will be cleared. This cannot be undone.",
+      "notesPlaceholder": "Justify the current stage + sketch the next one …",
+      "trend": {
+        "aggregation": {
+          "name": "Aggregation",
+          "description": "A system evolves from a single element to several, then many, finally an integrated whole.",
+          "stages": [
+            "Mono — a single element performs the function.",
+            "Bi — two similar elements cooperate.",
+            "Poly — many similar or diverse elements.",
+            "Integrated system — the elements functionally merge into one unit."
+          ]
+        },
+        "dynamism": {
+          "name": "Dynamism",
+          "description": "Rigid systems become increasingly mobile — up to dissolution into a field.",
+          "stages": [
+            "Rigid — fixed shape, no motion.",
+            "Jointed — discrete joints enable single degrees of freedom.",
+            "Elastic — continuous deformation (springs, membranes).",
+            "Fluid / powdery — formless, freely flowing.",
+            "Field — the mechanical substance disappears, a field acts (magnetic, electric, acoustic …)."
+          ]
+        },
+        "scale": {
+          "name": "Scale",
+          "description": "The working level of the system shifts to ever smaller structures.",
+          "stages": [
+            "Macro — parts in cm to m range.",
+            "Meso — structures in mm range.",
+            "Micro — μm structures (MEMS, microfluidics).",
+            "Nano / molecular — direct manipulation of individual molecules / atoms."
+          ]
+        },
+        "automation": {
+          "name": "Automation",
+          "description": "Human intervention is progressively replaced by machine, control loop, and finally autonomy.",
+          "stages": [
+            "Manual — human operates directly.",
+            "Mechanised — tool amplifies human force / precision.",
+            "Automatic — fixed sequence without intervention in normal operation.",
+            "Autonomous — system decides on its own, learns, adapts."
+          ]
+        },
+        "completeness": {
+          "name": "Completeness",
+          "description": "A technical system gradually internalises all four sub-functions: engine / transmission / tool / control.",
+          "stages": [
+            "Tool — passive component, external energy source.",
+            "+ Transmission — power transmission integrated.",
+            "+ Engine — energy conversion on board.",
+            "+ Control — complete system with feedback loop."
+          ]
+        },
+        "controllability": {
+          "name": "Controllability",
+          "description": "From open, uncalibrated operation to learning feedback loops.",
+          "stages": [
+            "Open loop — no feedback, fixed set-point.",
+            "Measured — sensor delivers actual value, operator corrects.",
+            "Adaptive control — closed loop adjusts actuation automatically.",
+            "Smart — learning loop, model-predictive, context-aware."
+          ]
+        },
+        "matching": {
+          "name": "Niche matching",
+          "description": "From universal mass product to self-adapting system.",
+          "stages": [
+            "Universal — one size fits all.",
+            "Adjustable — discrete settings chosen by the user.",
+            "Individually fitted — custom-made per user / application.",
+            "Self-adapting — system adjusts to user / environment automatically."
+          ]
+        },
+        "uneven": {
+          "name": "Uneven development",
+          "description": "Which subsystem lags and limits the whole? The classical bottleneck phenomenon.",
+          "notesPlaceholder": "Which component is at an older stage than the rest and thereby blocks the jump on another trend?"
+        }
+      },
+      "example": {
+        "system": "Passenger-car headlight",
+        "trends": {
+          "aggregation": {
+            "stage": 2,
+            "notes": "Today: LED matrix (poly). Next stage: integrated lighting system with front + side-light coupling through a shared sensor suite."
+          },
+          "dynamism": {
+            "stage": 1,
+            "notes": "Today: swivel modules (jointed). Next stage: elastically deformable light source / OLED foil, then a field solution (laser phosphor)."
+          },
+          "scale": {
+            "stage": 1,
+            "notes": "Today: meso (mm-scale LEDs). Next stage: micro-LED arrays for pixel-precise light distribution."
+          },
+          "automation": {
+            "stage": 2,
+            "notes": "Today: automatic (sensor switch, high-beam assist). Next stage: autonomous lighting that masks individual road users."
+          },
+          "completeness": {
+            "stage": 3,
+            "notes": "Complete (energy + transmission + light source + control). Trend saturated — progress shifts to other lines."
+          },
+          "controllability": {
+            "stage": 2,
+            "notes": "Adaptive control (curve light, speed, oncoming traffic). Next stage: learning / context-aware (weather data, map topography)."
+          },
+          "matching": {
+            "stage": 1,
+            "notes": "Adjustable (level correction, drive mode). Next stage: individual lighting signature per driver, then self-adapting to vision profile."
+          },
+          "uneven": {
+            "notes": "The on-board electrical system (12 V architecture) is at 1980s level — limits power and switching speed of modern LED matrix systems."
+          }
+        }
+      }
+    },
+    "triz-sufield": {
+      "name": "Substance-Field Analysis (TRIZ)",
+      "description": "Model the interaction as an S1-S2-field triangle and apply Altshuller's 76 standard solutions",
+      "subtitle": "Model the interaction as a substance-substance-field triangle and use the diagnosis to find the matching standard solutions.",
+      "s1Label": "Tool (S1)",
+      "s1Placeholder": "e.g. drill",
+      "s2Label": "Object (S2)",
+      "s2Placeholder": "e.g. workpiece",
+      "fieldLabel": "Field (F)",
+      "linkLabel": "Link type",
+      "selectPlaceholder": "— please select —",
+      "fieldEmpty": "— no field —",
+      "field": {
+        "M":  "Mechanical",
+        "A":  "Acoustic",
+        "T":  "Thermal",
+        "C":  "Chemical",
+        "E":  "Electric",
+        "Mg": "Magnetic"
+      },
+      "link": {
+        "useful":       "useful (works fine)",
+        "insufficient": "insufficient (too weak)",
+        "excessive":    "excessive (too strong)",
+        "harmful":      "harmful (side effect)",
+        "missing":      "missing (should act)"
+      },
+      "diagramAria": "Su-Field model: substance-substance-field triangle",
+      "diagnosisLabel": "Diagnosis",
+      "suggestedClasses": "Suggested classes",
+      "situation": {
+        "partial":               "S1 or S2 missing — please name both substances.",
+        "incomplete":            "Incomplete model (no field) — a new interaction must be built.",
+        "complete-useful":       "Complete, useful — improvement & next-generation jump possible.",
+        "complete-insufficient": "Complete but insufficient — strengthen or dynamise the field.",
+        "complete-excessive":    "Complete but excessive — damp the action / self-limit.",
+        "complete-harmful":      "Complete but harmful — destroy or neutralise the Su-Field."
+      },
+      "problemNotePlaceholder": "Optional: context, boundary conditions, cross-reference to 9-Windows / IFR / matrix …",
+      "filterAuto": "Suggested classes only",
+      "filterAll":  "Show all",
+      "loadExample": "Load example",
+      "reset": "Reset",
+      "resetTitle": "Reset Substance-Field analysis?",
+      "resetMessage": "All inputs, notes and selections will be cleared. This cannot be undone.",
+      "class": {
+        "1": { "name": "Building / destroying Su-Field models", "description": "For incomplete models (1.1 synthesis) or harmful interactions (1.2 destruction)." },
+        "2": { "name": "Developing Su-Field models", "description": "For complete models with insufficient or improvable action — transition to complex, dynamic or ferromagnetic Su-Fields." },
+        "3": { "name": "Transition to supersystem / microlevel", "description": "When the system reaches its limits — bi-/poly-system or jump to the microlevel." },
+        "4": { "name": "Detection & measurement", "description": "Measurement / control problems — avoid measurement, measure indirectly, ferromagnetic detection." },
+        "5": { "name": "Helper standards", "description": "Simplification and ideality — use existing substances / fields, phase changes, self-controlled transitions." }
+      },
+      "triggerLead": "Apply when",
+      "exampleLead": "Example",
+      "standardNotePlaceholder": "How does this standard apply to the case at hand?",
+      "considered": "considered / applicable",
+      "noStandardsHint": "No matching standards in this configuration — check inputs or switch to \"show all\".",
+      "example": {
+        "s1": "Drill bit",
+        "s2": "Workpiece (concrete)",
+        "field": "M",
+        "link": "insufficient",
+        "problemNote": "Drill penetrates too slowly — mechanical field is too weak. Higher rpm overheats the bit. Classical class-2 development case.",
+        "notes": {
+          "2.2.5": "Pulsed mode: hammer drilling instead of continuous rotation — high peak power without overheating.",
+          "2.4.1": "Ferromagnetic vibration excitation at the workpiece holder — vibration assists material removal."
+        },
+        "selected": {
+          "2.2.5": true
+        }
       }
     }
   }
