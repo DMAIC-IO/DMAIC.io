@@ -356,7 +356,7 @@ export function renderCycleIndex({ cycleId, modules, lang, i18n }) {
 
 // ─── Language index (DMAIC overview) ─────────────────────────────
 
-export function renderLangIndex({ modules, lang, i18n }) {
+export function renderLangIndex({ modules, lang, i18n, examples }) {
   const s = getStrings(lang);
   const pathFromRoot = `/${lang}/index.html`;
   const altLang = lang === 'de' ? 'en' : 'de';
@@ -414,12 +414,17 @@ export function renderLangIndex({ modules, lang, i18n }) {
     <div class="handbook-grid">${cycleCards}</div>
   </section>`;
 
-  // Promo cards — Training + Lab — both reachable from the language index.
+  // Promo cards — Training + Lab + Examples — all reachable from the language index.
+  const hasExamples = examples?.entries?.length > 0;
+  const examplesPromo = hasExamples
+    ? `<a class="handbook-card" href="./examples/"><div class="handbook-card__title">${escapeHtml(s.breadcrumbExamples)} →</div><div class="handbook-card__desc">${escapeHtml(s.examplesIndexIntro)}</div></a>`
+    : '';
   const labCard = `<section class="handbook-phase-group">
     <h2>${escapeHtml(s.breadcrumbTraining)} &amp; ${escapeHtml(s.breadcrumbLab)}</h2>
     <div class="handbook-grid">
       <a class="handbook-card" href="./training/"><div class="handbook-card__title">${escapeHtml(s.breadcrumbTraining)} →</div><div class="handbook-card__desc">${escapeHtml(s.trainingIntro)}</div></a>
       <a class="handbook-card" href="./lab/"><div class="handbook-card__title">${escapeHtml(s.breadcrumbLab)} →</div><div class="handbook-card__desc">${escapeHtml(s.labIntro)}</div></a>
+      ${examplesPromo}
     </div>
   </section>`;
 
@@ -1004,6 +1009,111 @@ export function renderExamplePage({ example, modules, lang, i18n }) {
     bodyHtml: body,
     headingKey: name,
     showCta: false,
+  });
+
+  return { html, pathFromRoot, altPathFromRoot };
+}
+
+// ─── Examples index page ─────────────────────────────────────────
+
+/**
+ * Render the central examples landing page — /{lang}/examples/index.html.
+ *
+ * Groups all examples by the phase of their primary module so visitors can
+ * browse the catalog independently of the module hierarchy. Each card links
+ * to the per-example detail page; the type (dataset / project / generator)
+ * is shown as a badge.
+ *
+ * @param {object} opts
+ * @param {object[]} opts.examples  — full examples.entries list
+ * @param {object[]} opts.modules   — all modules (for phase lookup)
+ * @param {'de'|'en'} opts.lang
+ * @param {object} opts.i18n
+ */
+export function renderExamplesIndex({ examples, modules, lang, i18n }) {
+  const s = getStrings(lang);
+  const pathFromRoot = `/${lang}/examples/index.html`;
+  const altLang = lang === 'de' ? 'en' : 'de';
+  const altPathFromRoot = `/${altLang}/examples/index.html`;
+
+  const moduleById = new Map(modules.map(m => [m.id, m]));
+
+  // Group by primary module's phase. Examples without a known primary
+  // module fall back to the "extras" bucket.
+  const byPhase = new Map();
+  for (const phase of CONSTANTS.PHASES) byPhase.set(phase, []);
+  byPhase.set('extras', []);
+
+  const modulesWithExamples = new Set();
+  for (const ex of examples) {
+    const primaryId = ex.modules?.[0];
+    if (primaryId) modulesWithExamples.add(primaryId);
+    const mod = primaryId ? moduleById.get(primaryId) : null;
+    const phase = mod?.phase && byPhase.has(mod.phase) ? mod.phase : 'extras';
+    byPhase.get(phase).push(ex);
+  }
+
+  const groupHtmlParts = [];
+  for (const [phase, entries] of byPhase) {
+    if (entries.length === 0) continue;
+    const phaseLabel = s.phase[phase] || phase;
+
+    const cards = entries
+      .slice()
+      .sort((a, b) => (pick(a.title, lang) || a.id).localeCompare(pick(b.title, lang) || b.id, lang))
+      .map((ex) => {
+        const name = pick(ex.title, lang) || ex.id;
+        const desc = pick(ex.description, lang) || '';
+        const typeLabel = s.exampleTypeLabel[ex.type] || ex.type;
+        const primaryId = ex.modules?.[0];
+        const moduleName = primaryId ? getModuleName(primaryId, i18n, lang) : '';
+        const moduleHint = moduleName
+          ? s.examplesIndexInModule.replace('{module}', moduleName)
+          : '';
+        const href = `./${ex.id}.html`;
+        return `<a class="handbook-card" href="${escapeAttr(href)}">
+          <div class="handbook-card__title">${escapeHtml(name)}</div>
+          ${desc ? `<div class="handbook-card__desc">${escapeHtml(desc)}</div>` : ''}
+          <div class="handbook-card__meta" style="margin-top:.5rem;display:flex;gap:.5rem;flex-wrap:wrap;font-size:.85em;color:var(--text-muted);">
+            <span class="handbook-card__badge">${escapeHtml(typeLabel)}</span>
+            ${moduleHint ? `<span>${escapeHtml(moduleHint)}</span>` : ''}
+          </div>
+        </a>`;
+      })
+      .join('');
+
+    groupHtmlParts.push(
+      `<section class="handbook-phase-group" id="${escapeAttr(phase)}">
+        <h2>${escapeHtml(phaseLabel)}</h2>
+        <div class="handbook-grid">${cards}</div>
+      </section>`,
+    );
+  }
+
+  const countLine = s.examplesIndexCount
+    .replace('{n}', String(examples.length))
+    .replace('{modules}', String(modulesWithExamples.size));
+
+  const body = `
+<article class="handbook-article">
+  <h1>${escapeHtml(s.examplesIndexHeading)}</h1>
+  <p class="handbook-article__lead">${escapeHtml(s.examplesIndexIntro)}</p>
+  <p><strong>${escapeHtml(countLine)}</strong></p>
+  ${groupHtmlParts.join('\n')}
+</article>`;
+
+  const html = renderPage({
+    lang,
+    title: `${s.examplesIndexHeading} — ${s.handbookTitle}`,
+    description: s.examplesIndexIntro,
+    pathFromRoot,
+    altPathFromRoot,
+    breadcrumbs: [
+      { label: s.handbookTitle, href: `/${lang}/` },
+      { label: s.breadcrumbExamples },
+    ],
+    bodyHtml: body,
+    headingKey: s.examplesIndexHeading,
   });
 
   return { html, pathFromRoot, altPathFromRoot };

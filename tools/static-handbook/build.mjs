@@ -40,6 +40,7 @@ import {
   renderTrainingToolPage,
   renderCycleIndex,
   renderExamplePage,
+  renderExamplesIndex,
 } from './render/pages.mjs';
 import { renderSitemap, renderRobots } from './render/sitemap.mjs';
 import { CYCLES } from '../../js/core/cycles/cycles.js';
@@ -110,6 +111,7 @@ async function main() {
       modules: sources.modules,
       lang,
       i18n: sources.i18n,
+      examples: sources.examples,
     });
     await writeOut(path.join(OUT, rel(langIndex.pathFromRoot)), langIndex.html);
     sitemapEntries.push({ path: langIndex.pathFromRoot, priority: '0.9', changefreq: 'monthly' });
@@ -126,6 +128,19 @@ async function main() {
       const dest = path.join(OUT, rel(page.pathFromRoot));
       await writeOut(dest, page.html);
       sitemapEntries.push({ path: page.pathFromRoot, priority: '0.8', changefreq: 'monthly' });
+      pageCount++;
+    }
+
+    // Examples landing page — central catalog grouped by phase.
+    if (sources.examples?.entries?.length) {
+      const examplesIndex = renderExamplesIndex({
+        examples: sources.examples.entries,
+        modules: sources.modules,
+        lang,
+        i18n: sources.i18n,
+      });
+      await writeOut(path.join(OUT, rel(examplesIndex.pathFromRoot)), examplesIndex.html);
+      sitemapEntries.push({ path: examplesIndex.pathFromRoot, priority: '0.7', changefreq: 'monthly' });
       pageCount++;
     }
 
