@@ -1,0 +1,19 @@
+{
+  "colRefs": [
+    {
+      "instanceId": "__source__",
+      "sheetId": "sheet-solder",
+      "columnId": "c-temp"
+    },
+    {
+      "instanceId": "__source__",
+      "sheetId": "sheet-solder",
+      "columnId": "c-press"
+    }
+  ],
+  "yKey": "__source__|sheet-solder|c-defect",
+  "method": "binomial",
+  "cutoff": 0.5,
+  "activeTab": "model",
+  "sourceWorksheetFile": "worksheets/glm-soldering.json"
+}

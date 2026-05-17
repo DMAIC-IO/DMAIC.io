@@ -152,15 +152,18 @@
 
 /* ===== Input name cells ===== */
 .ce-matrix__name-cell {
+  width: 1%;
   min-width: 130px;
-  max-width: 200px;
   text-align: left !important;
   padding: 0 !important;
   background: var(--color-bg-secondary);
+  white-space: nowrap;
 }
 
 .ce-matrix__input-name {
   width: 100%;
+  min-width: 130px;
+  field-sizing: content;
   border: none;
   background: transparent;
   color: var(--color-text-primary);
@@ -180,34 +183,7 @@
   opacity: 0.6;
 }
 
-/* ===== Delete buttons ===== */
-.ce-matrix__del-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 18px;
-  height: 18px;
-  border: none;
-  border-radius: 50%;
-  background: transparent;
-  color: var(--color-text-tertiary);
-  cursor: pointer;
-  font-size: var(--font-size-xs);
-  line-height: 1;
-  transition: all var(--transition-speed);
-  opacity: 0;
-}
-
-.ce-matrix__name-cell:hover .ce-matrix__row-del-btn,
-.ce-matrix__output-header:hover .ce-matrix__col-del-btn {
-  opacity: 1;
-}
-
-.ce-matrix__del-btn:hover {
-  background: var(--color-error, #ef4444);
-  color: #fff;
-}
-
+/* ===== Delete buttons (base styles + reveal: see .dmike-del-btn in components.css) ===== */
 .ce-matrix__row-del-btn {
   position: absolute;
   right: 4px;

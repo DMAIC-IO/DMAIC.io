@@ -37,7 +37,7 @@ export const experimentsMethods = {
     let head = `<tr>
       <th class="ishikawa__col-nr">#</th>
       <th class="ishikawa__col-exp-title">${t('experimentTitle')}</th>
-      <th>${t('experimentDescription')}</th>
+      <th class="ishikawa__col-desc">${t('experimentDescription')}</th>
       <th class="ishikawa__col-resp">${t('responsible')}</th>
       <th class="ishikawa__col-exp-status">${t('statusHeader')}</th>
       <th class="ishikawa__col-date">${t('startDate')}</th>
@@ -62,8 +62,8 @@ export const experimentsMethods = {
         <td class="ishikawa__col-nr"><span class="ishikawa__nr-text">${idx + 1}</span></td>
         <td><input class="ishikawa__exp-title-input" type="text" value="${this._escapeAttr(x.title || '')}"
                    placeholder="${t('experimentTitlePlaceholder')}" data-xp-title="${x.id}" /></td>
-        <td><input class="ishikawa__exp-desc-input" type="text" value="${this._escapeAttr(x.description || '')}"
-                   placeholder="${t('experimentDescPlaceholder')}" data-xp-desc="${x.id}" /></td>
+        <td><textarea class="ishikawa__exp-desc-input" rows="1"
+                   placeholder="${t('experimentDescPlaceholder')}" data-xp-desc="${x.id}">${this._escapeHtml(x.description || '')}</textarea></td>
         <td><input class="ishikawa__exp-resp-input" type="text" value="${this._escapeAttr(x.responsible || '')}"
                    placeholder="${t('responsiblePlaceholder')}" list="${datalistId}" data-xp-resp="${x.id}" /></td>
         <td><select class="ishikawa__exp-status-select ishikawa__expstatus-${x.status || 'planned'}" data-xp-status="${x.id}">${stOpts}</select></td>

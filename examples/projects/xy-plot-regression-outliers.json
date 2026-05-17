@@ -1,0 +1,13 @@
+{
+  "datasets": [
+    {
+      "xRef":     { "instanceId": "__source__", "sheetId": "sheet-outliers", "columnId": "c-speed" },
+      "yRef":     { "instanceId": "__source__", "sheetId": "sheet-outliers", "columnId": "c-consum" },
+      "groupRef": null
+    }
+  ],
+  "showLines": false,
+  "showMarkers": true,
+  "showStats": true,
+  "sourceWorksheetFile": "worksheets/regression-outliers.json"
+}

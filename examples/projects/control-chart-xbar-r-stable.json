@@ -1,5 +1,5 @@
 {
-  "chartTypeId": "x-bar-r",
+  "chartTypeId": "xbar-r",
   "subgroupSize": 5,
   "columnRef": {
     "instanceId": "__source__",

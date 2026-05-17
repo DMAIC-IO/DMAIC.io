@@ -236,7 +236,7 @@ export default {
           },
           {
             type: 'paragraph',
-            content: 'Nutzen Sie den Demo-Datensatz „Lötstellen-Inspektion", um dieses Beispiel direkt auszuprobieren.',
+            content: 'Im Reiter „Beispieldaten" finden Sie unter „Lötstellen-Inspektion (logistische GLM)" einen ladefertigen Datensatz, um dieses Beispiel direkt auszuprobieren.',
           },
         ],
       },
@@ -259,7 +259,7 @@ export default {
           },
           {
             type: 'paragraph',
-            content: 'Use the built-in demo dataset "Solder Inspection" to try this example directly.',
+            content: 'In the "Example data" tab you will find "Solder Inspection (logistic GLM)" — a ready-to-load dataset for trying this example directly.',
           },
         ],
       },

@@ -198,9 +198,9 @@ export default {
     let tableHtml = '';
     if (hasActivities) {
       const sHeaders = stakeholders.map((s, sIdx) =>
-        `<th class="raci__th-stakeholder">
+        `<th class="raci__th-stakeholder dmike-del-btn-host">
           <span class="raci__th-text" title="${this._escAttr(s + ' — ' + t('renameHint'))}" data-rename="stakeholder" data-idx="${sIdx}">${this._esc(s)}</span>
-          <button class="raci__del-btn" data-del="stakeholder" data-idx="${sIdx}" title="${t('removeStakeholder')}">&times;</button>
+          <button class="dmike-del-btn raci__del-btn" data-del="stakeholder" data-idx="${sIdx}" title="${t('removeStakeholder')}"></button>
         </th>`
       ).join('');
 
@@ -217,11 +217,11 @@ export default {
           ? `<span class="raci__row-warn" title="${issues.map(i => t('warn_' + i)).join(', ')}">&#9888;</span>`
           : '';
         return `<tr class="${rowCls}" draggable="true" data-drag-a="${aIdx}">
-          <td class="raci__activity-cell">
+          <td class="raci__activity-cell dmike-del-btn-host">
             <span class="raci__drag-handle" title="${t('dragHint')}">⠿</span>
             <span class="raci__activity-text" title="${this._escAttr(a + ' — ' + t('renameHint'))}" data-rename="activity" data-idx="${aIdx}">${this._esc(a)}</span>
             ${warnIcon}
-            <button class="raci__del-btn" data-del="activity" data-idx="${aIdx}" title="${t('removeActivity')}">&times;</button>
+            <button class="dmike-del-btn raci__del-btn" data-del="activity" data-idx="${aIdx}" title="${t('removeActivity')}"></button>
           </td>
           ${cells}
         </tr>`;

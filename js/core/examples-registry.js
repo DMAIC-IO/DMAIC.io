@@ -191,6 +191,40 @@ export function provisionWorksheet(context, wsState) {
   return { instanceId, sheetId };
 }
 
+/**
+ * Convert a CSV-shaped example payload (`{ columns:[{name,type,values}] }`)
+ * into the worksheet state shape consumed by `provisionWorksheet()`. Used
+ * by chart modules so a `dataset`/`csv` example can be loaded into them via
+ * the same andock path as a `project`/`json` example.
+ *
+ * Column ids are assigned `c-0`, `c-1`, …; sheet id is `sheet-csv`.
+ *
+ * @param {{ columns: {name: string, type: string, values: any[]}[] }} csvData
+ * @param {{ id?: string, title?: { de?: string, en?: string } }} [meta]
+ * @returns {{ sheets: object[], activeSheetId: string } | null}
+ */
+export function csvPayloadToWorksheetState(csvData, meta = {}) {
+  if (!csvData || !Array.isArray(csvData.columns) || csvData.columns.length === 0) return null;
+  const sheetId = 'sheet-csv';
+  const name = meta.title?.de || meta.title?.en || meta.id || 'CSV';
+  return {
+    sheets: [{
+      id: sheetId,
+      name,
+      state: {
+        columns: csvData.columns.map((c, i) => ({
+          id: `c-${i}`,
+          name: c.name,
+          shortName: c.name,
+          type: c.type || 'numeric',
+          values: c.values,
+        })),
+      },
+    }],
+    activeSheetId: sheetId,
+  };
+}
+
 // ─── CSV parsing ───────────────────────────────────────────────
 
 /**

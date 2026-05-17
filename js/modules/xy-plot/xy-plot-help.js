@@ -65,6 +65,71 @@ export default {
       },
     },
 
+    bubble: {
+      de: {
+        title: 'Blasendiagramm (dritte Spalte als Größe)',
+        blocks: [
+          {
+            type: 'paragraph',
+            content: 'Wird im Datensatz zusätzlich ein S-Slot (Size) belegt, entsteht ein Blasendiagramm: die Punktgröße codiert eine dritte numerische Spalte. So lassen sich drei Variablen gleichzeitig darstellen.',
+          },
+          {
+            type: 'definition',
+            term: 'Flächentreue Skalierung',
+            content: 'Die Rohwerte werden über eine Wurzel-Normalisierung auf einen Durchmesser von 6–28 px abgebildet. Dadurch ist die Bubble-Fläche (nicht der Radius) proportional zum Wert — visuell korrekt nach Wahrnehmungsforschung.',
+          },
+          {
+            type: 'definition',
+            term: 'Negative oder fehlende Werte',
+            content: 'Zeilen mit fehlenden, nicht-numerischen oder negativen Größenwerten werden stillschweigend übersprungen — eine negative Fläche hat keine sinnvolle Darstellung.',
+          },
+          {
+            type: 'list',
+            items: [
+              'Typische Anwendung: Projekt-Priorisierung (Aufwand × Nutzen × Risiko), Marketing (CPC × Conversion × Reichweite), Maschinen (Zykluszeit × Ausschuss × Output).',
+              'Tooltip zeigt den Rohwert der Größenspalte zusätzlich zu X und Y.',
+              'Mit Gruppierungs-Slot (G) zusammen: jede Gruppe erhält ihre eigene Blasen-Normalisierung innerhalb der Gruppe.',
+            ],
+          },
+          {
+            type: 'paragraph',
+            content: 'Stolperfallen: Wenn alle Größenwerte fast gleich sind, fallen die Unterschiede visuell weg (sqrt-Skalierung dämpft zusätzlich). Wenn die Spannweite sehr groß ist, werden Mittelwerte zu klein. In beiden Fällen vorab transformieren oder die Spalte filtern.',
+          },
+        ],
+      },
+      en: {
+        title: 'Bubble plot (third column as size)',
+        blocks: [
+          {
+            type: 'paragraph',
+            content: 'When the S-slot (Size) of a dataset is also filled, the result is a bubble plot: marker size encodes a third numeric column, allowing three variables to be shown at once.',
+          },
+          {
+            type: 'definition',
+            term: 'Area-proportional scaling',
+            content: 'Raw values are mapped through a square-root normalisation to a 6–28 px diameter range. As a result the bubble AREA (not the radius) is proportional to the value — visually correct according to perceptual research.',
+          },
+          {
+            type: 'definition',
+            term: 'Negative or missing values',
+            content: 'Rows with missing, non-numeric, or negative size values are silently skipped — a negative area has no sensible visual representation.',
+          },
+          {
+            type: 'list',
+            items: [
+              'Typical uses: project prioritisation (effort × benefit × risk), marketing (CPC × conversion × reach), machines (cycle time × scrap × output).',
+              'The tooltip shows the raw value of the size column in addition to X and Y.',
+              'Combined with the grouping slot (G): each group receives its own bubble normalisation within the group.',
+            ],
+          },
+          {
+            type: 'paragraph',
+            content: 'Pitfalls: when all size values are nearly equal, differences disappear visually (sqrt scaling damps them further). When the range is very wide, mid-range values become too small. In both cases transform the column up front or filter it.',
+          },
+        ],
+      },
+    },
+
     methodology: {
       de: {
         title: 'Bedienung',

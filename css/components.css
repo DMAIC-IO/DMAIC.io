@@ -114,6 +114,12 @@
   font-size: var(--font-size-xs);
 }
 
+.btn--xs {
+  padding: 1px var(--spacing-xs);
+  font-size: var(--font-size-xs);
+  line-height: 1.4;
+}
+
 /* Segmented control — group of .btn--segment children forming a tab-like switch.
    One child carries .btn--active to indicate the selection. */
 .btn-group {
@@ -147,6 +153,43 @@
   color: var(--color-accent);
   font-weight: var(--font-weight-semibold);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* ===== Inline delete button =====
+   × appears (grey) when hovering a host element marked .dmike-del-btn-host,
+   turns red when hovering the button itself.
+   Module CSS only needs to add positioning rules (absolute/right/top etc.). */
+.dmike-del-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--color-text-tertiary);
+  font-size: var(--font-size-xs);
+  line-height: 1;
+  cursor: pointer;
+  opacity: 0;
+  transition: all var(--transition-speed);
+}
+
+.dmike-del-btn::before {
+  content: "\2715";
+}
+
+.dmike-del-btn-host:hover .dmike-del-btn,
+.dmike-del-btn:focus-visible {
+  opacity: 1;
+}
+
+.dmike-del-btn:hover {
+  background: var(--color-error);
+  color: #fff;
+  opacity: 1;
 }
 
 /* ============================================================

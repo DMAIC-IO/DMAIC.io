@@ -1,0 +1,32 @@
+{
+  "labelRef": {
+    "instanceId": "__source__",
+    "sheetId": "sheet-pie-reklamationen",
+    "columnId": "c-grund"
+  },
+  "valueRef": {
+    "instanceId": "__source__",
+    "sheetId": "sheet-pie-reklamationen",
+    "columnId": "c-anzahl"
+  },
+  "chartConfig": {
+    "showTitle": true,
+    "title": "Reklamationsgründe Q1",
+    "titleSize": 15,
+    "showLegend": true,
+    "showLabels": true,
+    "labelMode": "both",
+    "labelSize": 11,
+    "innerRadius": 0.5,
+    "padAngle": 0.8,
+    "startAngle": -90,
+    "explodeDistance": 12,
+    "strokeColor": "rgba(255,255,255,1)",
+    "strokeWidth": 2,
+    "sortSlices": "desc",
+    "centerLabel": "248",
+    "centerSub": "Reklamationen",
+    "bgColor": null
+  },
+  "sourceWorksheetFile": "worksheets/pie-reklamationen-q1.json"
+}

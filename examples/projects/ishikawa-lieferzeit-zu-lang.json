@@ -20,7 +20,7 @@
       "id": 1,
       "stableId": "H-001",
       "parentId": null,
-      "category": "M1",
+      "category": "man",
       "name": "Fahrer-Erfahrung gering",
       "description": "Neue Fahrer kennen Berliner Innenstadt schlecht",
       "ratings": {
@@ -34,7 +34,7 @@
       "id": 2,
       "stableId": "H-002",
       "parentId": null,
-      "category": "M2",
+      "category": "method",
       "name": "Suboptimale Routenplanung",
       "description": "Fahrer fahren nach eigenem Gefühl, keine Optimierung",
       "ratings": {
@@ -48,7 +48,7 @@
       "id": 3,
       "stableId": "H-003",
       "parentId": null,
-      "category": "M3",
+      "category": "machine",
       "name": "Ofen-Kapazität in Spitzen",
       "description": "Nur ein Holzofen, max. 4 Pizzen parallel",
       "ratings": {
@@ -62,7 +62,7 @@
       "id": 4,
       "stableId": "H-004",
       "parentId": null,
-      "category": "M4",
+      "category": "material",
       "name": "Thermo-Boxen veraltet",
       "description": "Dichtungen porös, Wärmeverlust hoch",
       "ratings": {
@@ -76,7 +76,7 @@
       "id": 5,
       "stableId": "H-005",
       "parentId": null,
-      "category": "M5",
+      "category": "environment",
       "name": "Verkehr Berlin-Mitte zur Hauptverkehrszeit",
       "description": "Rush Hour 17–19 Uhr",
       "ratings": {
@@ -90,7 +90,7 @@
       "id": 6,
       "stableId": "H-006",
       "parentId": null,
-      "category": "M6",
+      "category": "measurement",
       "name": "Keine kontinuierliche Zeitmessung",
       "description": "Lieferzeiten nur stichprobenartig erfasst",
       "ratings": {
@@ -102,8 +102,131 @@
     }
   ],
   "snapshots": [],
-  "experiments": [],
-  "facts": [],
+  "experiments": [
+    {
+      "id": 1,
+      "title": "Fahrer-Onboarding & Navi-App-Pflicht",
+      "description": "Strukturierte Einweisung neuer Fahrer in Top-50-Routen, verpflichtende Navi-App-Nutzung",
+      "responsible": "M. Müller (Filialleiter)",
+      "status": "done",
+      "startDate": "2026-04-06",
+      "endDate": "2026-04-20",
+      "costMoney": 800,
+      "costHours": 16,
+      "hypothesisIds": ["H-001"]
+    },
+    {
+      "id": 2,
+      "title": "Routen-Optimierungs-Pilot",
+      "description": "Cloud-Routing-Software für alle Lieferungen einer Woche, Vergleich Soll-Ist-Zeit",
+      "responsible": "M. Müller (Filialleiter)",
+      "status": "running",
+      "startDate": "2026-05-04",
+      "endDate": "2026-05-31",
+      "costMoney": 1500,
+      "costHours": 40,
+      "hypothesisIds": ["H-002", "H-005"]
+    },
+    {
+      "id": 3,
+      "title": "Teig-Vorgaren in Rush Hour",
+      "description": "Teig-Vorgaren ab 17:00 Uhr testen, um Ofenzeit pro Pizza zu reduzieren — Geschmacks-Abnahme durch Stammkunden",
+      "responsible": "G. Rossi (Pizzabäcker)",
+      "status": "running",
+      "startDate": "2026-05-10",
+      "endDate": "2026-05-24",
+      "costMoney": 200,
+      "costHours": 20,
+      "hypothesisIds": ["H-003"]
+    },
+    {
+      "id": 4,
+      "title": "Beschaffung Thermo-Boxen Gen. 3",
+      "description": "Austausch der 8 vorhandenen Boxen gegen neue Generation mit verbesserter Isolation",
+      "responsible": "M. Müller (Filialleiter)",
+      "status": "planned",
+      "startDate": "2026-06-01",
+      "endDate": "2026-06-15",
+      "costMoney": 1200,
+      "costHours": 12,
+      "hypothesisIds": ["H-004"]
+    },
+    {
+      "id": 5,
+      "title": "Automatische Zeitmessung über Bestell-App",
+      "description": "Bestelleingang → Auslieferung wird per App-Statuswechsel automatisch erfasst (100% statt 65%)",
+      "responsible": "K. Schmidt (Fahrer)",
+      "status": "planned",
+      "startDate": "2026-06-08",
+      "endDate": "2026-07-06",
+      "costMoney": 600,
+      "costHours": 24,
+      "hypothesisIds": ["H-006"]
+    },
+    {
+      "id": 6,
+      "title": "Zusatzfahrer in Rush Hour (17–20 Uhr)",
+      "description": "Vier Wochen lang einen weiteren Fahrer in der Hauptverkehrszeit; A/B-Vergleich Lieferzeit-Verteilung",
+      "responsible": "K. Schmidt (Fahrer)",
+      "status": "planned",
+      "startDate": "2026-06-22",
+      "endDate": "2026-07-20",
+      "costMoney": 2400,
+      "costHours": 60,
+      "hypothesisIds": ["H-005", "H-001"]
+    }
+  ],
+  "facts": [
+    {
+      "id": 1,
+      "name": "Lieferzeit-Median 32 min",
+      "description": "Median der gemessenen Lieferzeit der letzten 4 Wochen liegt bei 32 min (Sollwert ≤ 30 min)",
+      "date": "2026-04-12",
+      "owner": "M. Müller (Filialleiter)"
+    },
+    {
+      "id": 2,
+      "name": "44 % > 30 min in Rush Hour",
+      "description": "Zwischen 17:00 und 20:00 Uhr überschreiten 44 % aller Lieferungen die 30-Minuten-Grenze",
+      "date": "2026-04-14",
+      "owner": "M. Müller (Filialleiter)"
+    },
+    {
+      "id": 3,
+      "name": "11 Reklamationen „Pizza kalt“ / Monat",
+      "description": "Im März 2026 wurden 11 Reklamationen wegen kalter Pizza erfasst, gegenüber 4 im Vorjahresmonat",
+      "date": "2026-04-02",
+      "owner": "M. Müller (Filialleiter)"
+    },
+    {
+      "id": 4,
+      "name": "Bestell-Peak 18:30–19:15",
+      "description": "Höchste Bestelldichte mit > 9 Pizzen / 15 min — Ofen läuft an der Kapazitätsgrenze",
+      "date": "2026-04-20",
+      "owner": "G. Rossi (Pizzabäcker)"
+    },
+    {
+      "id": 5,
+      "name": "Neue Fahrer: +6,2 min ggü. Stammfahrern",
+      "description": "Lieferzeit-Vergleich Fahrer < 3 Monate Erfahrung vs. Stammfahrer (> 12 Monate): ø +6,2 min",
+      "date": "2026-04-25",
+      "owner": "K. Schmidt (Fahrer)"
+    },
+    {
+      "id": 6,
+      "name": "Thermo-Box-Audit: 5 von 8 defekt",
+      "description": "Sichtprüfung Dichtungen: 5 von 8 Boxen mit sichtbar porösen Dichtungen, 3 davon kritisch",
+      "date": "2026-05-03",
+      "owner": "M. Müller (Filialleiter)"
+    },
+    {
+      "id": 7,
+      "name": "Datenlücke: 35 % ohne Zeit-Datensatz",
+      "description": "Lieferzeit wird nur händisch in der Bestell-App eingetragen, ca. 35 % aller Bestellungen ohne erfassten Zeitstempel",
+      "date": "2026-05-10",
+      "owner": "K. Schmidt (Fahrer)"
+    }
+  ],
   "images": {
     "inScope": [],
     "outScope": []

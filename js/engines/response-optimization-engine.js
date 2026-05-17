@@ -4,10 +4,11 @@
  * Pure-math toolbox for the Response Optimization module:
  *   - Derringer–Suich desirability functions (max / min / target) and the
  *     geometric-mean composite D over multiple responses with weights.
- *   - Polynomial / mixed model evaluation (`predictFromModel`) — handles two
- *     model shapes: pre-Phase-3 polynomial models (term-name strings) and
- *     spec-based models (V0.4 Phase 3+) where `model.spec` describes the
- *     predictors and terms structurally and supports categorical inputs.
+ *   - Polynomial / GLM / mixed model evaluation (`predictFromModel`) — handles
+ *     three model shapes: pre-Phase-3 polynomial models (term-name strings),
+ *     spec-based polynomial models (V0.4 Phase 3+) where `model.spec`
+ *     describes effect-coded predictors, and GLM models where `model.family`
+ *     specifies the inverse link to apply to η = Xβ.
  *   - Multi-start Nelder–Mead with box projection — derivative-free, no
  *     external dependencies, sufficient for the smooth desirability surface
  *     produced by polynomial regression in the Improve phase.
@@ -148,18 +149,81 @@ function evalTerm(term, x, factorIndex) {
 }
 
 /**
+ * Evaluate a GLM-style term name at a factor value map.
+ *
+ * GLM design matrices (see `buildGLMDesignMatrix`) are dummy-coded, so a
+ * categorical predictor with k levels contributes k − 1 columns named
+ * `colName[level]` — `1` when the input matches that level, `0` otherwise
+ * (reference level → all indicators are 0). Continuous predictors keep their
+ * raw value; interactions are products of components.
+ *
+ * Recognised forms:
+ *   'Intercept' / '1'      → 1
+ *   '<colName>'            → raw numeric value
+ *   '<colName>[<level>]'   → 1 if factor equals <level>, else 0
+ *   'A·B' / 'A[L1]·B[L2]'  → product of components
+ *
+ * @param {string} term
+ * @param {Map<string, number|string>} factorValueByName
+ */
+function evalGLMTerm(term, factorValueByName) {
+  if (!term || term === 'Intercept' || term === '1') return 1;
+  let value = 1;
+  for (const part of term.split('·')) {
+    const m = part.match(/^(.+?)(?:\[(.+)\])?$/);
+    if (!m) return 0;
+    const name = m[1].trim();
+    const level = m[2];
+    const v = factorValueByName.get(name);
+    if (level !== undefined) {
+      // Dummy indicator: only the active non-reference level contributes 1.
+      if (String(v) !== String(level)) return 0;
+    } else {
+      const num = Number(v);
+      if (!Number.isFinite(num)) return 0;
+      value *= num;
+    }
+  }
+  return value;
+}
+
+/**
+ * Apply the inverse link of a GLM family to the linear predictor η.
+ * Identity for OLS-shaped models (no family) and unknown links — keep the
+ * existing behaviour where ŷ = η.
+ *
+ * @param {number} eta
+ * @param {{link?: string}} [family]
+ */
+function applyInverseLink(eta, family) {
+  if (!family) return eta;
+  switch (family.link) {
+    case 'logit':  return 1 / (1 + Math.exp(-eta));
+    case 'log':    return Math.exp(eta);
+    case 'identity':
+    default:       return eta;
+  }
+}
+
+/**
  * Predict the response value from a stored regression model.
  *
- * Two paths:
+ * Three paths:
  *
- *   1. Spec-based models (V0.4 Phase 3+): `model.spec` is present and
- *      describes both continuous and categorical predictors. The input `x`
+ *   1. GLM models: `model.family` is present (e.g. `{name:'binomial', link:'logit'}`).
+ *      Coefficients are calibrated for a dummy-coded design (per
+ *      `buildGLMDesignMatrix`); we rebuild a one-row design from the input,
+ *      compute η = Xβ, then apply the inverse link so the optimiser sees the
+ *      natural response scale (probability for logit, rate for log, …).
+ *
+ *   2. Spec-based polynomial models (V0.4 Phase 3+): `model.spec` is present
+ *      and describes both continuous and categorical predictors. The input `x`
  *      may be either an array (positional, in spec.predictors order — number
  *      for continuous, label string for categorical) or an object keyed by
  *      predictor id. We compile a one-row design matrix and dot-product
  *      with `model.coef`.
  *
- *   2. Legacy polynomial models: `model.termSet` carries term-name strings
+ *   3. Legacy polynomial models: `model.termSet` carries term-name strings
  *      and `x` is a positional number array; this is the pre-spec path used
  *      for ad-hoc continuous fits.
  *
@@ -169,6 +233,22 @@ function evalTerm(term, x, factorIndex) {
  */
 export function predictFromModel(model, x) {
   if (!model?.coef) return NaN;
+
+  if (model.family && Array.isArray(model.terms)) {
+    // GLM path: dummy-coded design driven by model.terms[] + factorSpec[].
+    const factorValueByName = new Map();
+    const specs = model.factorSpec ?? [];
+    if (Array.isArray(x)) {
+      specs.forEach((f, i) => factorValueByName.set(f.name, x[i]));
+    } else {
+      for (const f of specs) factorValueByName.set(f.name, x[f.name]);
+    }
+    let eta = 0;
+    for (let i = 0; i < model.terms.length; i++) {
+      eta += model.coef[i] * evalGLMTerm(model.terms[i], factorValueByName);
+    }
+    return applyInverseLink(eta, model.family);
+  }
 
   if (model.spec) {
     // Build a 1-row column dict in the predictor order required by compileModelSpec.
@@ -532,33 +612,20 @@ export function buildResponseSurface(model, opts) {
   const yTicks = Array.from({ length: N }, (_, i) => yRange[0] + (i / (N - 1)) * (yRange[1] - yRange[0]));
   const grid = Array.from({ length: N }, () => new Array(N).fill(NaN));
 
-  // Build columns once per row of the grid; predict over the full N points
-  // in one call to compileModelSpec to amortise the spec lookups.
-  const baseColumns = {};
+  // Use `predictFromModel` per grid point so GLM models pick up the inverse
+  // link (logit → probability, log → rate) instead of returning η. The cost
+  // is N² evaluations instead of N batched compilations — negligible for the
+  // default grid size and worth the consistency.
+  const xInput = {};
   for (const p of model.spec.predictors) {
-    baseColumns[p.id] = new Array(N);
+    if (p.id === xId || p.id === yId) continue;
+    xInput[p.id] = fixings[p.id];
   }
   for (let i = 0; i < N; i++) {
-    // Inner loop sweeps X across N columns at fixed Y = yTicks[i].
+    xInput[yId] = yTicks[i];
     for (let j = 0; j < N; j++) {
-      baseColumns[xId][j] = xTicks[j];
-      baseColumns[yId][j] = yTicks[i];
-      for (const p of model.spec.predictors) {
-        if (p.id === xId || p.id === yId) continue;
-        baseColumns[p.id][j] = fixings[p.id];
-      }
-    }
-    let compiled;
-    try {
-      compiled = compileModelSpec(model.spec, { columns: baseColumns });
-    } catch {
-      continue;       // leaves NaN row — caller renders blank cells
-    }
-    const X = compiled.X;
-    for (let j = 0; j < N; j++) {
-      let yhat = 0;
-      for (let c = 0; c < X[j].length; c++) yhat += X[j][c] * model.coef[c];
-      grid[i][j] = yhat;
+      xInput[xId] = xTicks[j];
+      grid[i][j] = predictFromModel(model, xInput);
     }
   }
 

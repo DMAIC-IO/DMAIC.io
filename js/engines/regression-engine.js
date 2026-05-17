@@ -1719,6 +1719,22 @@ export function predictValue(result, xVal) {
  * @returns {{ upper: number, lower: number }|null}
  */
 export function confidenceBand(result, xVal) {
+  return _polyBand(result, xVal, false);
+}
+
+/**
+ * Compute prediction band for polynomial regression (single-X only).
+ * Uses sqrt(1 + hii) — covers the variance of a single new observation,
+ * always wider than the confidence band (which uses sqrt(hii)).
+ * @param {Object} result — runMultiRegression result with xCount === 1
+ * @param {number} xVal
+ * @returns {{ upper: number, lower: number }|null}
+ */
+export function predictionBand(result, xVal) {
+  return _polyBand(result, xVal, true);
+}
+
+function _polyBand(result, xVal, isPrediction) {
   if (!result.multiX || result.xCount !== 1 || !result.invXtX) return null;
 
   const fullX0 = [1, xVal];
@@ -1735,7 +1751,7 @@ export function confidenceBand(result, xVal) {
   }
 
   const tCrit = tInv((1 + result.confLevel) / 2, result.dfRes);
-  const se = result.Se * Math.sqrt(hii);
+  const se = result.Se * Math.sqrt(isPrediction ? 1 + hii : hii);
   const yVal = result.reg.predict([xVal]);
   return { upper: yVal + tCrit * se, lower: yVal - tCrit * se };
 }

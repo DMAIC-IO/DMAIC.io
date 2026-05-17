@@ -1,8 +1,8 @@
 {
   "columnRef": {
     "instanceId": "__source__",
-    "sheetId": "sheet-spc-shift",
-    "columnId": "c-wert"
+    "sheetId": "sheet-imr-shift",
+    "columnId": "c-value"
   },
   "alpha": 0.05,
   "sourceWorksheetFile": "worksheets/spc-imr-shift.json"

@@ -1,0 +1,18 @@
+{
+  "colRefs": [
+    {
+      "instanceId": "__source__",
+      "sheetId": "sheet-complaints",
+      "columnId": "c-batch"
+    },
+    {
+      "instanceId": "__source__",
+      "sheetId": "sheet-complaints",
+      "columnId": "c-supplier"
+    }
+  ],
+  "yKey": "__source__|sheet-complaints|c-complaints",
+  "method": "negbin",
+  "activeTab": "model",
+  "sourceWorksheetFile": "worksheets/glm-batch-complaints.json"
+}

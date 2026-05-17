@@ -277,15 +277,15 @@ export default {
     html += '<th class="ce-matrix__corner"></th>';
     for (let c = 0; c < this._outputs.length; c++) {
       html += `
-        <th class="ce-matrix__output-header">
+        <th class="ce-matrix__output-header dmike-del-btn-host">
           <div class="ce-matrix__output-header-content">
             <input type="text" class="ce-matrix__output-name"
                    value="${this._escapeAttr(this._outputs[c])}"
                    placeholder="${t('outputPlaceholder')}"
                    data-col="${c}" />
           </div>
-          <button class="ce-matrix__del-btn ce-matrix__col-del-btn" data-col="${c}"
-                  title="${t('removeOutput')}">&#x2715;</button>
+          <button class="dmike-del-btn ce-matrix__del-btn ce-matrix__col-del-btn" data-col="${c}"
+                  title="${t('removeOutput')}"></button>
         </th>`;
     }
     html += `<th class="ce-matrix__total-label ce-matrix__total-label--vertical">
@@ -302,13 +302,13 @@ export default {
     for (let r = 0; r < this._inputs.length; r++) {
       html += '<tr>';
       html += `
-        <td class="ce-matrix__name-cell">
+        <td class="ce-matrix__name-cell dmike-del-btn-host">
           <input type="text" class="ce-matrix__input-name"
                  value="${this._escapeAttr(this._inputs[r])}"
                  placeholder="${this._context.i18n.t('modules.ce-matrix.inputPlaceholder')}"
                  data-row="${r}" />
-          <button class="ce-matrix__del-btn ce-matrix__row-del-btn" data-row="${r}"
-                  title="${this._context.i18n.t('modules.ce-matrix.removeInput')}">&#x2715;</button>
+          <button class="dmike-del-btn ce-matrix__del-btn ce-matrix__row-del-btn" data-row="${r}"
+                  title="${this._context.i18n.t('modules.ce-matrix.removeInput')}"></button>
         </td>`;
       for (let c = 0; c < this._outputs.length; c++) {
         const v = this._scores[this._key(r, c)];

@@ -4,7 +4,7 @@
  * Mixed into the module object via Object.assign — all methods use `this`.
  */
 
-import { regressionCurvePoints, confidenceBand, normalQuantile, predictMulti } from '../../engines/regression-engine.js';
+import { regressionCurvePoints, confidenceBand, predictionBand, normalQuantile, predictMulti } from '../../engines/regression-engine.js';
 import { getChartColors } from '../../core/chart/chart-core.js';
 import { esc } from '../../core/html-utils.js';
 
@@ -137,6 +137,31 @@ export const chartsMethods = {
             name: '', color: 'rgba(0,0,0,0)', stroke: 'rgba(0,0,0,0)', markerSize: 0,
             x: lower.map(p => p.x), y: lower.map(p => p.y),
             connectLine: { show: true, dash: 'dash', width: 1.2, color: 'var(--color-chart-2)' },
+            hideLegend: true,
+          });
+        }
+      }
+
+      if (this._showPI && r.multiX) {
+        const upper = [], lower = [];
+        for (const pt of curvePts) {
+          const band = predictionBand(r, pt.x);
+          if (band) {
+            upper.push({ x: pt.x, y: band.upper });
+            lower.push({ x: pt.x, y: band.lower });
+          }
+        }
+        if (upper.length > 0) {
+          series.push({
+            name: `PI ${(r.confLevel * 100).toFixed(0)}%`,
+            color: 'rgba(0,0,0,0)', stroke: 'rgba(0,0,0,0)', markerSize: 0,
+            x: upper.map(p => p.x), y: upper.map(p => p.y),
+            connectLine: { show: true, dash: 'dot', width: 1.2, color: 'var(--color-chart-4)' },
+          });
+          series.push({
+            name: '', color: 'rgba(0,0,0,0)', stroke: 'rgba(0,0,0,0)', markerSize: 0,
+            x: lower.map(p => p.x), y: lower.map(p => p.y),
+            connectLine: { show: true, dash: 'dot', width: 1.2, color: 'var(--color-chart-4)' },
             hideLegend: true,
           });
         }

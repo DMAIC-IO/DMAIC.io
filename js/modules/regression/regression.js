@@ -70,6 +70,7 @@ const mod = {
   _confLevel: null,
   _alpha: null,
   _showCI: true,
+  _showPI: false,
   /** Single combined result (polynomial) or per-X results (exp/log/power). */
   _result: null,
   _perXResults: null,
@@ -136,6 +137,7 @@ const mod = {
       this._confLevel = saved.confLevel ?? null;
       this._alpha = saved.alpha ?? null;
       this._showCI = saved.showCI ?? true;
+      this._showPI = saved.showPI ?? false;
       this._result = saved.result || null;
       this._perXResults = saved.perXResults || null;
       this._activeXKey = saved.activeXKey || null;
@@ -185,6 +187,7 @@ const mod = {
       confLevel: this._confLevel,
       alpha: this._alpha,
       showCI: this._showCI,
+      showPI: this._showPI,
       result: _stripFunctions(this._result),
       perXResults: _stripFunctions(this._perXResults),
       activeXKey: this._activeXKey,
@@ -259,6 +262,7 @@ const mod = {
     this._confLevel = data.confLevel ?? _gc;
     this._alpha = data.alpha ?? +(1 - _gc).toFixed(4);
     this._showCI = data.showCI ?? true;
+    this._showPI = data.showPI ?? false;
     this._result = data.result || null;
     this._perXResults = data.perXResults || null;
     this._activeXKey = data.activeXKey || null;
@@ -503,6 +507,11 @@ const mod = {
             <button class="reg__toggle${this._showCI ? ' reg__toggle--active' : ''}" data-action="toggle-ci" type="button"></button>
           </div>
 
+          <div class="reg__toggle-row">
+            <label>${t('showPI')}</label>
+            <button class="reg__toggle${this._showPI ? ' reg__toggle--active' : ''}" data-action="toggle-pi" type="button"></button>
+          </div>
+
           <div class="reg__error" data-ref="error-box"></div>
 
           <div class="dmike-split__section-title reg__predict-title" data-ref="predict-title" style="display:none">${t('prediction')}</div>
@@ -702,6 +711,13 @@ const mod = {
     c.querySelector('[data-action="toggle-ci"]').addEventListener('click', (e) => {
       this._showCI = !this._showCI;
       e.currentTarget.classList.toggle('reg__toggle--active', this._showCI);
+      this._save();
+      this._autoRun();
+    });
+
+    c.querySelector('[data-action="toggle-pi"]').addEventListener('click', (e) => {
+      this._showPI = !this._showPI;
+      e.currentTarget.classList.toggle('reg__toggle--active', this._showPI);
       this._save();
       this._autoRun();
     });
@@ -1151,7 +1167,7 @@ const mod = {
 
       ${r.multiX && this._isPolynomial() ? `
       <div class="reg__model-actions">
-        <button class="dmike-btn dmike-btn--primary" data-action="save-as-model" type="button">
+        <button class="btn btn--primary" data-action="save-as-model" type="button">
           ${this._savedModelId ? t('updateModel') : t('saveAsModel')}
         </button>
         <span class="reg__model-status" data-ref="model-status">${this._savedModelId ? t('modelSaved') : ''}</span>

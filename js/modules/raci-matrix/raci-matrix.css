@@ -108,7 +108,7 @@
 }
 
 /* Activity row header */
-.raci__activity-cell {
+.raci__table td.raci__activity-cell {
   background: var(--color-bg-secondary);
   text-align: left !important;
   font-weight: var(--font-weight-semibold);
@@ -116,8 +116,9 @@
   left: 0;
   z-index: 1;
   white-space: nowrap;
-  max-width: 220px;
+  max-width: 250px;
   position: relative;
+  padding-right: 26px;
 }
 
 .raci__activity-text {
@@ -151,36 +152,13 @@
   transform: scale(0.95);
 }
 
-/* ── Delete buttons ─────────────────────────────────────── */
+/* ── Delete buttons (base styles + reveal: see .dmike-del-btn in components.css) ── */
 
 .raci__del-btn {
-  display: none;
   position: absolute;
-  top: 2px;
+  top: 50%;
   right: 2px;
-  width: 18px;
-  height: 18px;
-  border: none;
-  border-radius: 50%;
-  background: var(--color-error);
-  color: #fff;
-  font-size: 12px;
-  line-height: 1;
-  cursor: pointer;
-  padding: 0;
-  opacity: 0.7;
-  transition: opacity 0.15s;
-}
-
-.raci__del-btn:hover {
-  opacity: 1;
-}
-
-.raci__th-stakeholder:hover .raci__del-btn,
-.raci__activity-cell:hover .raci__del-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  transform: translateY(-50%);
 }
 
 /* ── Validation warnings ────────────────────────────────── */
@@ -193,6 +171,7 @@
   color: var(--color-warning);
   font-size: 13px;
   margin-left: var(--spacing-xs);
+  margin-right: var(--spacing-xs);
   vertical-align: middle;
   cursor: help;
 }

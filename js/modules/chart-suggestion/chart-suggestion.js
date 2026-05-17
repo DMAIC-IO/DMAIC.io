@@ -18,6 +18,7 @@ import { CHART_COLORS } from '../../core/chart/chart-colors.js';
 import { computeIMR } from '../../engines/control-chart-engine.js';
 import { computeEWMA, computeCUSUM, estimateSigma } from '../../engines/time-weighted-chart-engine.js';
 import { groupedMeans, cellMeans } from '../../engines/grouped-aggregations.js';
+import { provisionWorksheet, removeProvisionedWorksheet } from '../../core/examples-registry.js';
 
 const mod = {
   id: 'chart-suggestion',
@@ -37,6 +38,8 @@ const mod = {
   /** Live chart instances in the preview (single chart, or matrix cells). */
   _charts: [],
   _eventUnsubs: [],
+  /** Worksheet instanceId provisioned by loadExample; removed on next load. */
+  _exampleWorksheetId: null,
 
   // ─── Lifecycle ──────────────────────────────────────────────
 
@@ -79,6 +82,7 @@ const mod = {
     return {
       selection: this._selection,
       selectedChartType: this._selectedChartType,
+      exampleWorksheetId: this._exampleWorksheetId,
     };
   },
 
@@ -95,6 +99,66 @@ const mod = {
   _loadState(saved) {
     this._selection = saved.selection || null;
     this._selectedChartType = saved.selectedChartType || null;
+    if (saved.exampleWorksheetId !== undefined) this._exampleWorksheetId = saved.exampleWorksheetId;
+  },
+
+  // ─── Example Data ───────────────────────────────────────────
+
+  /**
+   * Load a catalog example. Provisions a worksheet from `sourceWorksheetData`
+   * so the user can inspect/modify the rows, rewrites the placeholder
+   * `__source__` in the selection to the live instanceId, and pre-picks the
+   * supplied chart type (e.g. `bubble`) so the preview renders immediately.
+   *
+   * @param {{ meta: object, data: object }} payload
+   */
+  async loadExample(payload) {
+    if (!payload || !payload.data) return;
+    const t = (k) => this._context.i18n.t(k);
+
+    const hasContent = this._selection && Array.isArray(this._selection.columns)
+      && this._selection.columns.length > 0;
+    if (hasContent && this._context?.confirmPopout) {
+      const ok = await this._context.confirmPopout(t('moduleHelp.confirmOverwrite'), { danger: true });
+      if (!ok) return;
+    }
+
+    const data = { ...payload.data };
+
+    // Replace any previously-provisioned example worksheet so reloads don't
+    // pile up duplicate sheets in the workspace.
+    if (this._exampleWorksheetId) {
+      removeProvisionedWorksheet(this._context, this._exampleWorksheetId);
+      this._exampleWorksheetId = null;
+    }
+
+    let sourceInstanceId = data.selection?.sourceInstanceId || null;
+    let sourceSheetId = data.selection?.sourceSheetId || null;
+
+    if (data.sourceWorksheetData) {
+      const ref = provisionWorksheet(this._context, data.sourceWorksheetData);
+      if (ref) {
+        this._exampleWorksheetId = ref.instanceId;
+        if (sourceInstanceId === '__source__' || !sourceInstanceId) sourceInstanceId = ref.instanceId;
+        if (!sourceSheetId) sourceSheetId = ref.sheetId;
+      }
+    }
+
+    this._selection = {
+      sourceInstanceId,
+      sourceSheetId,
+      ts: Date.now(),
+      columns: Array.isArray(data.selection?.columns) ? data.selection.columns : [],
+    };
+    this._selectedChartType = data.selectedChartType || null;
+
+    this._recomputeSuggestions();
+    this._save();
+    this._render();
+
+    const lang = this._context.i18n.getLanguage();
+    const title = payload.meta?.title?.[lang] || payload.meta?.title?.en || payload.meta?.id || '';
+    this._context.notify?.(t('moduleHelp.exampleLoaded').replace('{title}', title), 'success');
   },
 
   _save() {

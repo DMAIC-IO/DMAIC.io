@@ -174,7 +174,7 @@ const mod = {
             </div>
           ` : ''}
 
-          <button class="dmike-btn dmike-btn--primary ro__optimize-btn"
+          <button class="btn btn--primary ro__optimize-btn"
                   data-action="optimize" type="button"
                   ${canOptimize ? '' : 'disabled'}>
             ${t('optimizeButton')}

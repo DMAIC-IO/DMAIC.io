@@ -18,7 +18,7 @@ import {
 } from '../../engines/control-chart-engine.js';
 
 import { esc } from '../../core/html-utils.js';
-import { provisionWorksheet, removeProvisionedWorksheet } from '../../core/examples-registry.js';
+import { provisionWorksheet, removeProvisionedWorksheet, csvPayloadToWorksheetState } from '../../core/examples-registry.js';
 
 export default {
   id: 'control-chart',
@@ -139,7 +139,19 @@ export default {
       if (!ok) return;
     }
 
-    const data = { ...payload.data };
+    let data = { ...payload.data };
+
+    // CSV-shape payload (type: dataset) → synthesize sourceWorksheetData + columnRef
+    // so it flows through the same provisioning path as project-shape payloads.
+    if (!data.sourceWorksheetData && !data.columnRef && Array.isArray(data.columns)) {
+      const wsState = csvPayloadToWorksheetState(data, payload.meta);
+      if (wsState) {
+        data = {
+          sourceWorksheetData: wsState,
+          columnRef: { instanceId: '__source__', sheetId: wsState.activeSheetId, columnId: 'c-0' },
+        };
+      }
+    }
 
     if (data.sourceWorksheetData) {
       const wsState = data.sourceWorksheetData;

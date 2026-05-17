@@ -1,0 +1,91 @@
+{
+  "sheets": [
+    {
+      "id": "sheet-fertigungslinien",
+      "name": "Fertigungslinien",
+      "state": {
+        "columns": [
+          {
+            "id": "c-linie",
+            "name": "Linie",
+            "shortName": "L",
+            "type": "text",
+            "role": "free-text",
+            "values": [
+              "L-01",
+              "L-02",
+              "L-03",
+              "L-04",
+              "L-05",
+              "L-06",
+              "L-07",
+              "L-08",
+              "L-09",
+              "L-10"
+            ]
+          },
+          {
+            "id": "c-defektrate",
+            "name": "Defektrate",
+            "shortName": "D",
+            "type": "numeric",
+            "role": "continuous",
+            "values": [
+              1.2,
+              2.8,
+              0.5,
+              3.5,
+              1.8,
+              4.2,
+              2.1,
+              0.9,
+              5.1,
+              1.5
+            ]
+          },
+          {
+            "id": "c-kosten-pro-defekt",
+            "name": "Kosten pro Defekt",
+            "shortName": "K",
+            "type": "numeric",
+            "role": "continuous",
+            "values": [
+              45,
+              30,
+              120,
+              25,
+              80,
+              35,
+              65,
+              95,
+              20,
+              75
+            ]
+          },
+          {
+            "id": "c-defektanzahl",
+            "name": "Defekte pro Monat",
+            "shortName": "M",
+            "type": "numeric",
+            "role": "continuous",
+            "values": [
+              180,
+              420,
+              80,
+              640,
+              220,
+              580,
+              310,
+              150,
+              780,
+              190
+            ]
+          }
+        ],
+        "rowCount": 10
+      }
+    }
+  ],
+  "activeSheetId": "sheet-fertigungslinien",
+  "sheetCounter": 1
+}

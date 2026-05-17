@@ -23,7 +23,7 @@ export const factsMethods = {
     const head = `<tr>
       <th class="ishikawa__col-nr">#</th>
       <th class="ishikawa__col-fact-name">${t('factName')}</th>
-      <th>${t('factDescription')}</th>
+      <th class="ishikawa__col-desc">${t('factDescription')}</th>
       <th class="ishikawa__col-date">${t('factDate')}</th>
       <th class="ishikawa__col-resp">${t('factOwner')}</th>
       <th class="ishikawa__col-actions"></th>
@@ -39,8 +39,8 @@ export const factsMethods = {
         <td class="ishikawa__col-nr"><span class="ishikawa__nr-text">${idx + 1}</span></td>
         <td><input class="ishikawa__exp-title-input" type="text" value="${this._escapeAttr(f.name || '')}"
                    placeholder="${t('factNamePlaceholder')}" data-fact-name="${f.id}" /></td>
-        <td><input class="ishikawa__exp-desc-input" type="text" value="${this._escapeAttr(f.description || '')}"
-                   placeholder="${t('factDescPlaceholder')}" data-fact-desc="${f.id}" /></td>
+        <td><textarea class="ishikawa__exp-desc-input" rows="1"
+                   placeholder="${t('factDescPlaceholder')}" data-fact-desc="${f.id}">${this._escapeHtml(f.description || '')}</textarea></td>
         <td><input class="ishikawa__exp-date-input" type="date" value="${this._escapeAttr(f.date || '')}" data-fact-date="${f.id}" /></td>
         <td><input class="ishikawa__exp-resp-input" type="text" value="${this._escapeAttr(f.owner || '')}"
                    placeholder="${t('factOwnerPlaceholder')}" list="${datalistId}" data-fact-owner="${f.id}" /></td>

@@ -1,0 +1,32 @@
+{
+  "labelRef": {
+    "instanceId": "__source__",
+    "sheetId": "sheet-pie-defekte",
+    "columnId": "c-defektart"
+  },
+  "valueRef": {
+    "instanceId": "__source__",
+    "sheetId": "sheet-pie-defekte",
+    "columnId": "c-anzahl"
+  },
+  "chartConfig": {
+    "showTitle": true,
+    "title": "Ausschuss nach Defektart",
+    "titleSize": 15,
+    "showLegend": true,
+    "showLabels": true,
+    "labelMode": "both",
+    "labelSize": 11,
+    "innerRadius": 0,
+    "padAngle": 0.8,
+    "startAngle": -90,
+    "explodeDistance": 12,
+    "strokeColor": "rgba(255,255,255,1)",
+    "strokeWidth": 2,
+    "sortSlices": "desc",
+    "centerLabel": "",
+    "centerSub": "",
+    "bgColor": null
+  },
+  "sourceWorksheetFile": "worksheets/pie-defekte-ausschuss.json"
+}

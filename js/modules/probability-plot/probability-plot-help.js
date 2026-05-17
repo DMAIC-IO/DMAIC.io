@@ -98,6 +98,11 @@ export default {
             term: 'Referenzgerade',
             content: 'Die gestrichelte Linie wird durch das erste und dritte Quartil (Q1/Q3) der Daten gelegt. Sie dient als visueller Vergleich: Punkte auf der Linie → normalverteilt, systematische Abweichungen → andere Verteilungsform.',
           },
+          {
+            type: 'definition',
+            term: 'Gruppen im selben Plot',
+            content: 'Optional kann eine kategoriale Spalte als Gruppierung hinzugefügt werden (z. B. Schicht, Maschine, Charge). Pro eindeutigem Gruppen-Wert entsteht eine eigene Serie mit eigener Q1/Q3-Anpassungsgerade — so lassen sich Verteilungsform, Lage und Streuung der Gruppen direkt im selben Plot vergleichen.',
+          },
         ],
       },
       en: {
@@ -121,6 +126,11 @@ export default {
             type: 'definition',
             term: 'Reference Line',
             content: 'The dashed line passes through the first and third quartile (Q1/Q3) of the data. Use it as a visual yardstick: points on the line → normal, systematic deviations → different distribution shape.',
+          },
+          {
+            type: 'definition',
+            term: 'Groups in the same plot',
+            content: 'Optionally add a categorical column as grouping (e.g. shift, machine, batch). Each distinct group value yields its own series with its own Q1/Q3 fit line — letting you compare distribution shape, location and spread of the groups directly in the same plot.',
           },
         ],
       },

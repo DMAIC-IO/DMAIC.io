@@ -1,0 +1,120 @@
+{
+  "sheets": [
+    {
+      "id": "sheet-projektportfolio",
+      "name": "Projektportfolio",
+      "state": {
+        "columns": [
+          {
+            "id": "c-projekt",
+            "name": "Projekt",
+            "shortName": "P",
+            "type": "text",
+            "role": "free-text",
+            "values": [
+              "P-01",
+              "P-02",
+              "P-03",
+              "P-04",
+              "P-05",
+              "P-06",
+              "P-07",
+              "P-08",
+              "P-09",
+              "P-10",
+              "P-11",
+              "P-12"
+            ]
+          },
+          {
+            "id": "c-aufwand",
+            "name": "Aufwand",
+            "shortName": "A",
+            "type": "numeric",
+            "role": "continuous",
+            "values": [
+              15,
+              25,
+              45,
+              90,
+              30,
+              120,
+              60,
+              40,
+              80,
+              150,
+              20,
+              55
+            ]
+          },
+          {
+            "id": "c-nutzen",
+            "name": "Jahresnutzen",
+            "shortName": "N",
+            "type": "numeric",
+            "role": "continuous",
+            "values": [
+              45,
+              80,
+              120,
+              200,
+              55,
+              180,
+              150,
+              70,
+              230,
+              90,
+              100,
+              135
+            ]
+          },
+          {
+            "id": "c-risiko",
+            "name": "Risiko",
+            "shortName": "R",
+            "type": "numeric",
+            "role": "continuous",
+            "values": [
+              3,
+              4,
+              5,
+              7,
+              2,
+              8,
+              5,
+              3,
+              6,
+              9,
+              4,
+              6
+            ]
+          },
+          {
+            "id": "c-bereich",
+            "name": "Bereich",
+            "shortName": "B",
+            "type": "text",
+            "role": "categorical",
+            "values": [
+              "Qualität",
+              "Qualität",
+              "Produktion",
+              "Produktion",
+              "Qualität",
+              "Produktion",
+              "Produktion",
+              "Qualität",
+              "Produktion",
+              "Produktion",
+              "Qualität",
+              "Qualität"
+            ]
+          }
+        ],
+        "rowCount": 12
+      }
+    }
+  ],
+  "activeSheetId": "sheet-projektportfolio",
+  "sheetCounter": 1
+}

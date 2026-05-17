@@ -12,13 +12,22 @@
       "det": "5",
       "actions": [
         {
+          "text": "Telefonisches Adress-Briefing für neue Mitarbeitende",
+          "resp": "Filialleiter",
+          "date": "2026-03-20",
+          "done": true,
+          "deltaS": "0",
+          "deltaO": "1",
+          "deltaD": "0"
+        },
+        {
           "text": "Adress-Autovervollständigung im Bestellsystem aktivieren",
           "resp": "IT",
           "date": "2026-07-15",
           "done": false,
-          "deltaS": 0,
-          "deltaO": -2,
-          "deltaD": -1
+          "deltaS": "0",
+          "deltaO": "2",
+          "deltaD": "1"
         }
       ],
       "collapsed": false
@@ -35,13 +44,22 @@
       "det": "4",
       "actions": [
         {
+          "text": "Sichtkontroll-Checkliste am Ofen einführen",
+          "resp": "Schichtleiter",
+          "date": "2026-04-10",
+          "done": true,
+          "deltaS": "0",
+          "deltaO": "0",
+          "deltaD": "1"
+        },
+        {
           "text": "Bestellannahme-Takt + Vorbereitungs-Vorlauf einführen",
           "resp": "Filialleiter",
           "date": "2026-07-30",
           "done": false,
-          "deltaS": -1,
-          "deltaO": -3,
-          "deltaD": 0
+          "deltaS": "1",
+          "deltaO": "3",
+          "deltaD": "0"
         }
       ],
       "collapsed": false
@@ -58,13 +76,22 @@
       "det": "8",
       "actions": [
         {
+          "text": "Dichtungen aller vorhandenen Boxen prüfen und defekte tauschen",
+          "resp": "Einkauf",
+          "date": "2026-05-05",
+          "done": true,
+          "deltaS": "0",
+          "deltaO": "1",
+          "deltaD": "2"
+        },
+        {
           "text": "Thermo-Boxen mit Doppelwand-Isolation beschaffen",
           "resp": "Einkauf",
           "date": "2026-08-15",
           "done": false,
-          "deltaS": 0,
-          "deltaO": -3,
-          "deltaD": -4
+          "deltaS": "0",
+          "deltaO": "2",
+          "deltaD": "3"
         }
       ],
       "collapsed": false
@@ -81,13 +108,22 @@
       "det": "6",
       "actions": [
         {
+          "text": "Fahrer-Briefing für Stoßzeiten-Routen erstellt",
+          "resp": "Filialleiter",
+          "date": "2026-02-25",
+          "done": true,
+          "deltaS": "0",
+          "deltaO": "1",
+          "deltaD": "1"
+        },
+        {
           "text": "Routenplanungs-App mit Live-Traffic einführen",
           "resp": "IT",
           "date": "2026-09-01",
           "done": false,
-          "deltaS": 0,
-          "deltaO": -4,
-          "deltaD": -2
+          "deltaS": "0",
+          "deltaO": "3",
+          "deltaD": "2"
         }
       ],
       "collapsed": false

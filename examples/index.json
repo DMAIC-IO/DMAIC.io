@@ -243,8 +243,7 @@
       "file": "projects/regression-collinear.json",
       "format": "json",
       "modules": [
-        "regression",
-        "xy-plot"
+        "regression"
       ],
       "tags": [
         "regression",
@@ -268,8 +267,7 @@
       "file": "projects/regression-outliers.json",
       "format": "json",
       "modules": [
-        "regression",
-        "xy-plot"
+        "regression"
       ],
       "tags": [
         "regression",
@@ -346,6 +344,80 @@
       "tags": [
         "glm",
         "poisson",
+        "counts"
+      ]
+    },
+    {
+      "id": "glm-soldering",
+      "type": "project",
+      "title": {
+        "de": "Lötstellen-Inspektion (logistische GLM)",
+        "en": "Solder Inspection (logistic GLM)"
+      },
+      "description": {
+        "de": "50 Leiterplatten mit Löttemperatur (220–255 °C) und Anpressdruck (2,0–3,5 bar) als Prädiktoren, Defekt (0/1) als Response. Klassischer Anwendungsfall für binäre logistische Regression ohne Trials-Spalte.",
+        "en": "50 PCBs with solder temperature (220–255 °C) and pressure (2.0–3.5 bar) as predictors, defect (0/1) as response. Textbook case for binary logistic regression without a trials column."
+      },
+      "source": "DMAIC.io Lehrkonfiguration",
+      "license": "public-domain",
+      "file": "projects/glm-soldering.json",
+      "format": "json",
+      "modules": [
+        "glm-regression"
+      ],
+      "tags": [
+        "glm",
+        "binomial",
+        "logistic",
+        "binary"
+      ]
+    },
+    {
+      "id": "glm-line-defects",
+      "type": "project",
+      "title": {
+        "de": "Oberflächendefekte (Poisson-GLM)",
+        "en": "Surface Defects (Poisson GLM)"
+      },
+      "description": {
+        "de": "30 Fertigungslinien mit Geschwindigkeit (Stück/min) und Anlagenalter (Jahre) als Prädiktoren, gezählte Oberflächendefekte als Response. Poisson-Modell zur Vorhersage der erwarteten Defektrate.",
+        "en": "30 production lines with speed (parts/min) and line age (years) as predictors, surface defect counts as response. Poisson model for predicting the expected defect rate."
+      },
+      "source": "DMAIC.io Lehrkonfiguration",
+      "license": "public-domain",
+      "file": "projects/glm-line-defects.json",
+      "format": "json",
+      "modules": [
+        "glm-regression"
+      ],
+      "tags": [
+        "glm",
+        "poisson",
+        "counts"
+      ]
+    },
+    {
+      "id": "glm-batch-complaints",
+      "type": "project",
+      "title": {
+        "de": "Chargen-Reklamationen (NegBin-GLM)",
+        "en": "Batch Complaints (NegBin GLM)"
+      },
+      "description": {
+        "de": "30 Chargen mit Chargengröße und Lieferant als Prädiktoren, Reklamationen als Response. Überdispergierte Zähldaten — die Negativ-Binomial-Regression schätzt zusätzlich den Dispersionsparameter θ.",
+        "en": "30 batches with batch size and supplier as predictors, complaints as response. Overdispersed count data — negative binomial regression additionally estimates the dispersion parameter θ."
+      },
+      "source": "DMAIC.io Lehrkonfiguration",
+      "license": "public-domain",
+      "file": "projects/glm-batch-complaints.json",
+      "format": "json",
+      "modules": [
+        "glm-regression"
+      ],
+      "tags": [
+        "glm",
+        "negbin",
+        "overdispersion",
         "counts"
       ]
     },
@@ -471,6 +543,106 @@
       "tags": [
         "xy-plot",
         "scatter"
+      ]
+    },
+    {
+      "id": "xy-plot-regression-collinear",
+      "type": "project",
+      "title": {
+        "de": "Motor-Versuche (Multikollinearität)",
+        "en": "Motor Trials (multicollinearity)"
+      },
+      "description": {
+        "de": "Selbe 30 Motor-Versuche wie der Regressions-Datensatz — zwei Streudiagramme Leistung über Drehzahl und Leistung über Drehmoment, mit Statistik-Panel. Visualisiert die starke Korrelation der Prädiktoren vor der Regression.",
+        "en": "Same 30 motor trials as the regression dataset — two scatter plots of power over rpm and power over torque, with stats panel. Visualises the strong predictor correlation before fitting a regression."
+      },
+      "source": "DMAIC.io synthetisch, NumPy default_rng, Seed=303",
+      "license": "public-domain",
+      "file": "projects/xy-plot-regression-collinear.json",
+      "format": "json",
+      "modules": [
+        "xy-plot"
+      ],
+      "tags": [
+        "xy-plot",
+        "scatter",
+        "multicollinearity"
+      ]
+    },
+    {
+      "id": "xy-plot-regression-outliers",
+      "type": "project",
+      "title": {
+        "de": "Spritverbrauch mit Ausreißern (Streudiagramm)",
+        "en": "Fuel Consumption with Outliers (scatter plot)"
+      },
+      "description": {
+        "de": "Selbe 30 Fahrzeug-Messungen wie der Regressions-Datensatz — Streudiagramm Verbrauch über Geschwindigkeit mit Statistik-Panel. Zwei eingebaute Ausreißer (Zeilen 6 und 23) sind im Plot direkt sichtbar.",
+        "en": "Same 30 vehicle measurements as the regression dataset — scatter plot of fuel consumption over speed with stats panel. Two deliberate outliers (rows 6 and 23) are directly visible in the plot."
+      },
+      "source": "DMAIC.io synthetisch, NumPy default_rng, Seed=404",
+      "license": "public-domain",
+      "file": "projects/xy-plot-regression-outliers.json",
+      "format": "json",
+      "modules": [
+        "xy-plot"
+      ],
+      "tags": [
+        "xy-plot",
+        "scatter",
+        "outliers"
+      ]
+    },
+    {
+      "id": "xy-plot-bubble-projektportfolio",
+      "type": "project",
+      "title": {
+        "de": "Projektportfolio (Blasendiagramm)",
+        "en": "Project Portfolio (bubble chart)"
+      },
+      "description": {
+        "de": "12 Six-Sigma-Projektkandidaten mit Aufwand (Personentage), Jahresnutzen (k€) und Risiko-Score, gruppiert nach Bereich (Produktion vs. Qualität). Das Blasendiagramm priorisiert die Project-Selection und zeigt zugleich, wie sich die beiden Bereiche im Aufwand/Nutzen/Risiko-Raum positionieren: kleine Bubbles oben links sind Quick Wins, große Bubbles unten rechts sollten zurückgestellt werden.",
+        "en": "12 Six Sigma project candidates with effort (person-days), annual benefit (k€) and risk score, grouped by area (Production vs. Quality). The bubble chart prioritises project selection while showing how the two areas position themselves in the effort/benefit/risk landscape: small bubbles in the upper left are quick wins; large bubbles in the lower right should be deferred."
+      },
+      "source": "DMAIC.io Lehrkonfiguration",
+      "license": "public-domain",
+      "file": "projects/xy-plot-bubble-projektportfolio.json",
+      "format": "json",
+      "modules": [
+        "xy-plot"
+      ],
+      "tags": [
+        "xy-plot",
+        "scatter",
+        "bubble",
+        "define",
+        "project-selection"
+      ]
+    },
+    {
+      "id": "xy-plot-bubble-fertigungslinien",
+      "type": "project",
+      "title": {
+        "de": "Fertigungslinien-Defekte (Blasendiagramm)",
+        "en": "Production Line Defects (bubble chart)"
+      },
+      "description": {
+        "de": "10 Fertigungslinien mit Defektrate, Reparaturkosten pro Defekt und Defektanzahl pro Monat. Das Blasendiagramm zeigt den klassischen Trade-off Häufigkeit ↔ Stückkosten; die Bubble-Größe verrät, welche Linien das größte absolute Verlustpotenzial haben — der ideale Einstieg in die DMAIC-Projektauswahl.",
+        "en": "10 production lines with defect rate, repair cost per defect, and monthly defect count. The bubble chart shows the classic frequency ↔ unit-cost trade-off; bubble size reveals which lines carry the largest absolute loss potential — an ideal entry point for DMAIC project selection."
+      },
+      "source": "DMAIC.io Lehrkonfiguration",
+      "license": "public-domain",
+      "file": "projects/xy-plot-bubble-fertigungslinien.json",
+      "format": "json",
+      "modules": [
+        "xy-plot"
+      ],
+      "tags": [
+        "xy-plot",
+        "scatter",
+        "bubble",
+        "define",
+        "pareto"
       ]
     },
     {
@@ -815,8 +987,7 @@
       "file": "projects/spc-attribute-p-chart.json",
       "format": "json",
       "modules": [
-        "attribute-control-chart",
-        "pie-chart"
+        "attribute-control-chart"
       ],
       "tags": [
         "spc",
@@ -841,14 +1012,63 @@
       "file": "projects/spc-attribute-c-chart.json",
       "format": "json",
       "modules": [
-        "attribute-control-chart",
-        "pie-chart"
+        "attribute-control-chart"
       ],
       "tags": [
         "spc",
         "attribute",
         "c-chart",
         "poisson"
+      ]
+    },
+    {
+      "id": "pie-defekte-ausschuss",
+      "type": "project",
+      "title": {
+        "de": "Ausschuss nach Defektart",
+        "en": "Scrap by defect type"
+      },
+      "description": {
+        "de": "395 Ausschussteile aus einer Fertigungslinie, aufgeteilt auf sechs sich gegenseitig ausschließende Defektarten. Klassischer Anwendungsfall für ein Tortendiagramm: Anteil weniger Kategorien an einem Ganzen. Variante mit vollem Kreis (innerRadius = 0).",
+        "en": "395 scrap parts from a production line, split across six mutually exclusive defect types. Textbook pie-chart use case: share of a few categories of a whole. Full-circle variant (innerRadius = 0)."
+      },
+      "source": "DMAIC.io synthetisch",
+      "license": "public-domain",
+      "file": "projects/pie-defekte-ausschuss.json",
+      "format": "json",
+      "modules": [
+        "pie-chart"
+      ],
+      "tags": [
+        "pie",
+        "categorical",
+        "defects",
+        "full-circle"
+      ]
+    },
+    {
+      "id": "pie-reklamationen-q1",
+      "type": "project",
+      "title": {
+        "de": "Reklamationsgründe Q1 (Donut)",
+        "en": "Complaint reasons Q1 (donut)"
+      },
+      "description": {
+        "de": "248 Kundenreklamationen aus dem ersten Quartal, aufgeteilt auf sechs Gründe. Donut-Variante (innerRadius = 0,5) mit Gesamtsumme als Mittelpunkt-Beschriftung — eignet sich, wenn die Summe selbst eine wichtige Aussage trägt.",
+        "en": "248 customer complaints from Q1, split across six reasons. Donut variant (innerRadius = 0.5) with the total shown as the center label — useful when the total itself carries a key message."
+      },
+      "source": "DMAIC.io synthetisch",
+      "license": "public-domain",
+      "file": "projects/pie-reklamationen-q1.json",
+      "format": "json",
+      "modules": [
+        "pie-chart"
+      ],
+      "tags": [
+        "pie",
+        "donut",
+        "categorical",
+        "complaints"
       ]
     },
     {
@@ -1402,8 +1622,8 @@
         "en": "FMEA Pizza Delivery"
       },
       "description": {
-        "de": "4 Risiken entlang des Lieferprozesses (Adress-Erfassung, Ofen-Überlastung, Thermo-Verpackung, Verkehrsstau) mit S/O/D-Bewertung und Maßnahmen-Plan.",
-        "en": "4 risks along the delivery process (address entry, oven overload, thermal packaging, traffic) with S/O/D ratings and action plan."
+        "de": "4 Risiken entlang des Lieferprozesses (Adress-Erfassung, Ofen-Überlastung, Thermo-Verpackung, Verkehrsstau) mit S/O/D-Bewertung und je 2 datierten Maßnahmen (Sofort-Maßnahme bereits umgesetzt, Folge-Maßnahme geplant) — Burndown zeigt Plan- und Ist-Verlauf.",
+        "en": "4 risks along the delivery process (address entry, oven overload, thermal packaging, traffic) with S/O/D ratings and 2 dated actions each (one already completed, one planned) — burndown shows plan and actual lines."
       },
       "source": "DMAIC.io Lehrkonfiguration",
       "license": "public-domain",
@@ -1426,8 +1646,8 @@
         "en": "Ishikawa: Delivery Time Too Long"
       },
       "description": {
-        "de": "6-M-Ursachenanalyse mit 6 Hypothesen quer durch die Kategorien Mensch, Methode, Maschine, Material, Milieu, Messung. Bewertet von drei Experten.",
-        "en": "6-M cause analysis with 6 hypotheses across Man, Method, Machine, Material, Environment, Measurement. Rated by three experts."
+        "de": "Vollständiges 6-M-Beispiel: 6 Hypothesen quer durch Mensch, Methode, Maschine, Material, Milieu, Messung — bewertet von drei Experten — plus 7 belegende Fakten und 6 Versuche (mit Status, Zeitplan, Kosten und Verknüpfung zu den Hypothesen).",
+        "en": "Full 6-M example: 6 hypotheses across Man, Method, Machine, Material, Environment, Measurement — rated by three experts — plus 7 supporting facts and 6 experiments (with status, schedule, cost, linked to hypotheses)."
       },
       "source": "DMAIC.io Lehrkonfiguration",
       "license": "public-domain",
@@ -1476,8 +1696,8 @@
         "en": "Process Map Pizza Delivery"
       },
       "description": {
-        "de": "8 Prozessschritte mit Value-Type-Klassifikation (VA / BNVA). Bestellung → Küche → Backen → Verpacken → Auslieferung → Übergabe.",
-        "en": "8 process steps with value-type classification (VA / BNVA). Order → kitchen → bake → pack → deliver → handover."
+        "de": "8 Prozessschritte mit Value-Type-Klassifikation (VA / BNVA) und Input-Typen (Parameter x / Störgröße n). Bestellung → Küche → Backen → Verpacken → Auslieferung → Übergabe.",
+        "en": "8 process steps with value-type classification (VA / BNVA) and input types (parameter x / noise n). Order → kitchen → bake → pack → deliver → handover."
       },
       "source": "DMAIC.io Lehrkonfiguration",
       "license": "public-domain",
@@ -2339,6 +2559,54 @@
         "worksheet",
         "regression",
         "outliers"
+      ]
+    },
+    {
+      "id": "chart-suggestion-bubble-lieferanten",
+      "type": "project",
+      "title": {
+        "de": "Lieferanten-Scorecard (Blasendiagramm)",
+        "en": "Supplier Scorecard (bubble chart)"
+      },
+      "description": {
+        "de": "12 Lieferanten mit Preisindex, Liefertreue und Bestellvolumen. Das Blasendiagramm zeigt den klassischen Trade-off Preis ↔ Liefertreue; die Bubble-Größe verrät, welche Lieferanten strategisch das größte Gewicht haben.",
+        "en": "12 suppliers with price index, on-time delivery rate and annual order volume. The bubble chart visualises the classic price ↔ reliability trade-off; bubble size reveals which suppliers carry the largest strategic weight."
+      },
+      "source": "DMAIC.io Lehrkonfiguration",
+      "license": "public-domain",
+      "file": "projects/chart-suggestion-bubble-lieferanten.json",
+      "format": "json",
+      "modules": [
+        "chart-suggestion"
+      ],
+      "tags": [
+        "chart-suggestion",
+        "bubble",
+        "scorecard"
+      ]
+    },
+    {
+      "id": "chart-suggestion-bubble-maschinenpark",
+      "type": "project",
+      "title": {
+        "de": "Maschinenpark (Blasendiagramm)",
+        "en": "Machine Fleet (bubble chart)"
+      },
+      "description": {
+        "de": "10 Maschinen mit Zykluszeit, Ausschussrate und Tagesausstoß. Das Blasendiagramm priorisiert Six-Sigma-Verbesserungsprojekte: große Bubbles oben rechts (hoher Ausschuss bei hohem Output) sind die teuersten Problemfälle.",
+        "en": "10 machines with cycle time, scrap rate and daily output. The bubble chart prioritises Six Sigma improvement projects: large bubbles in the upper right (high scrap at high output) are the most expensive problem cases."
+      },
+      "source": "DMAIC.io Lehrkonfiguration",
+      "license": "public-domain",
+      "file": "projects/chart-suggestion-bubble-maschinenpark.json",
+      "format": "json",
+      "modules": [
+        "chart-suggestion"
+      ],
+      "tags": [
+        "chart-suggestion",
+        "bubble",
+        "prioritization"
       ]
     }
   ]

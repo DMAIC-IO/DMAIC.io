@@ -1,0 +1,99 @@
+{
+  "sheets": [
+    {
+      "id": "sheet-lieferanten",
+      "name": "Lieferanten-Scorecard",
+      "state": {
+        "columns": [
+          {
+            "id": "c-name",
+            "name": "Lieferant",
+            "shortName": "N",
+            "type": "text",
+            "role": "free-text",
+            "values": [
+              "Lieferant A",
+              "Lieferant B",
+              "Lieferant C",
+              "Lieferant D",
+              "Lieferant E",
+              "Lieferant F",
+              "Lieferant G",
+              "Lieferant H",
+              "Lieferant I",
+              "Lieferant J",
+              "Lieferant K",
+              "Lieferant L"
+            ]
+          },
+          {
+            "id": "c-preisindex",
+            "name": "Preisindex",
+            "shortName": "P",
+            "type": "numeric",
+            "role": "continuous",
+            "values": [
+              0.86,
+              0.90,
+              0.92,
+              0.95,
+              0.98,
+              1.02,
+              1.05,
+              1.08,
+              1.12,
+              1.16,
+              1.22,
+              1.28
+            ]
+          },
+          {
+            "id": "c-liefertreue",
+            "name": "Liefertreue",
+            "shortName": "L",
+            "type": "numeric",
+            "role": "continuous",
+            "values": [
+              70.2,
+              75.4,
+              78.1,
+              82.3,
+              85.7,
+              88.4,
+              91.2,
+              92.8,
+              94.5,
+              96.1,
+              97.8,
+              99.0
+            ]
+          },
+          {
+            "id": "c-bestellvolumen",
+            "name": "Bestellvolumen",
+            "shortName": "V",
+            "type": "numeric",
+            "role": "continuous",
+            "values": [
+              380,
+              620,
+              1180,
+              850,
+              1740,
+              2880,
+              3760,
+              3320,
+              2080,
+              1490,
+              1100,
+              740
+            ]
+          }
+        ],
+        "rowCount": 12
+      }
+    }
+  ],
+  "activeSheetId": "sheet-lieferanten",
+  "sheetCounter": 1
+}

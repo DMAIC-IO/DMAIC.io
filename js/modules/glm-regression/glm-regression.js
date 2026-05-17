@@ -16,12 +16,13 @@ import {
   fitGLM, autoDetect, buildGLMDesignMatrix, predictGLM,
   computeROC, classificationTable, hosmerLemeshow,
   overdispersionCheck, hatValues, cookDistance, computeGLMVIF,
-  normalOrderStats, DEMO_DATASETS,
+  normalOrderStats,
 } from '../../engines/glm-engine.js';
 import { ColumnPicker, getColumnValues, getColumnName, discoverColumns, refToKey, keyToRef, isPickerFocused } from '../../ui/column-picker.js';
 import { esc } from '../../core/html-utils.js';
 import { chartsMethods } from './glm-regression-charts.js';
 import { provisionWorksheet, removeProvisionedWorksheet } from '../../core/examples-registry.js';
+import { saveModel, buildDataSnapshot, computeDataHash } from '../../core/models-store.js';
 
 /** @param {number} v @param {number} d */
 function fmt(v, d = 4) {
@@ -76,6 +77,11 @@ const mod = {
    *  subsequent example load so the column picker doesn't accumulate stale
    *  sheets. */
   _exampleWorksheetId: null,
+  /** Id of the project-wide model record this instance has written to
+   *  `state.models` — re-used on subsequent saves so the same record updates
+   *  instead of accumulating duplicates. */
+  _savedModelId: null,
+  _savedModelName: null,
 
   help: () => import('./glm-regression-help.js'),
 
@@ -127,6 +133,23 @@ const mod = {
       () => context.eventBus.off('worksheet:dataChanged', onDataChange),
     );
 
+    // Delegated click handler bound once on the persistent container. Inner
+    // controls are rebound per render in _bindEvents() because their elements
+    // are replaced when innerHTML is rewritten, but this listener sits on the
+    // container itself and would accumulate (double-/triple-firing tab clicks)
+    // if it were rebound there.
+    const onContainerClick = (e) => {
+      const btn = e.target.closest('[data-action]');
+      if (!btn || !this._container.contains(btn)) return;
+      const action = btn.dataset.action;
+      if (action === 'predict') this._runPrediction();
+      else if (action === 'tab') this._switchTab(btn.dataset.tab);
+      else if (action === 'swap-success') this._swapSuccessClass();
+      else if (action === 'save-as-model') this._saveAsModel();
+    };
+    container.addEventListener('click', onContainerClick);
+    this._eventUnsubs.push(() => container.removeEventListener('click', onContainerClick));
+
     const saved = context.stateManager.getModuleState(context.instanceId);
     if (saved) {
       this._colRefs = saved.colRefs || [];
@@ -139,6 +162,8 @@ const mod = {
       this._cutoff = saved.cutoff ?? 0.5;
       this._result = saved.result || null;
       this._activeTab = saved.activeTab || 'model';
+      this._savedModelId = saved.savedModelId ?? null;
+      this._savedModelName = saved.savedModelName ?? null;
     }
 
     const globalConf = (context.stateManager.get('settings.confidenceLevel') ?? 95) / 100;
@@ -154,6 +179,10 @@ const mod = {
       if (this._result._slim && this._yKey && this._colRefs.length > 0) {
         try { this._runAnalysis(); } catch { /* fall back to slim view */ }
       }
+    } else {
+      // No saved result yet but inputs already valid (e.g. restored session) —
+      // fit immediately so users don't see an empty output panel.
+      this._autoRun();
     }
   },
 
@@ -189,6 +218,8 @@ const mod = {
       result: this._slimResult(this._result),
       activeTab: this._activeTab,
       exampleWorksheetId: this._exampleWorksheetId,
+      savedModelId: this._savedModelId,
+      savedModelName: this._savedModelName,
     };
   },
 
@@ -293,6 +324,8 @@ const mod = {
     this._result = data.result || null;
     this._activeTab = data.activeTab || 'model';
     if (data.exampleWorksheetId !== undefined) this._exampleWorksheetId = data.exampleWorksheetId;
+    this._savedModelId = data.savedModelId ?? null;
+    this._savedModelName = data.savedModelName ?? null;
     if (this._container) {
       this._render();
       if (this._result) {
@@ -400,28 +433,20 @@ const mod = {
 
           <div class="dmike-split__section-title">${t('sectionSettings')}</div>
 
-          <div class="field-group">
-            <label>${t('confLevel')} (%)</label>
-            <input type="text" class="field field--num" data-ref="conf-level" inputmode="decimal"
-              value="${+(this._confLevel * 100).toFixed(2)}" placeholder="95">
-          </div>
-
-          <div class="field-group">
-            <label>${t('alphaRisk')} (%)</label>
-            <input type="text" class="field field--num" data-ref="alpha-level" inputmode="decimal"
-              value="${+(this._alpha * 100).toFixed(2)}" placeholder="5">
+          <div class="field-row">
+            <div class="field-group field-group--grow">
+              <label>${t('confLevel')} (%)</label>
+              <input type="text" class="field field--num" data-ref="conf-level" inputmode="decimal"
+                value="${+(this._confLevel * 100).toFixed(2)}" placeholder="95">
+            </div>
+            <div class="field-group field-group--grow">
+              <label>${t('alphaRisk')} (%)</label>
+              <input type="text" class="field field--num" data-ref="alpha-level" inputmode="decimal"
+                value="${+(this._alpha * 100).toFixed(2)}" placeholder="5">
+            </div>
           </div>
 
           <div class="glm__error" data-ref="error-box"></div>
-
-          <button class="dmike-btn-run" data-action="run" type="button">${t('runAnalysis')}</button>
-
-          <div class="dmike-split__section-title" style="margin-top:12px">${t('sectionDemo')}</div>
-          <div class="field-group" style="display:flex;gap:4px;flex-wrap:wrap">
-            <button class="dmike-btn dmike-btn--xs" data-action="demo" data-demo="solder" type="button">${t('demoSolder')}</button>
-            <button class="dmike-btn dmike-btn--xs" data-action="demo" data-demo="defects" type="button">${t('demoDefects')}</button>
-            <button class="dmike-btn dmike-btn--xs" data-action="demo" data-demo="complaints" type="button">${t('demoComplaints')}</button>
-          </div>
         </div>
 
         <div class="glm__output dmike-split__output">
@@ -450,6 +475,7 @@ const mod = {
         }
         this._updateYDropdown(true);
         this._save();
+        this._autoRun();
       },
     });
     if (this._colRefs.length > 0) this._picker.value = this._colRefs;
@@ -501,17 +527,20 @@ const mod = {
       if (this._yKey && this._trialsKey === this._yKey) this._trialsKey = null;
       this._updateYDropdown(true);
       this._save();
+      this._autoRun();
     });
 
     c.querySelector('[data-ref="trials-select"]')?.addEventListener('change', (e) => {
       this._trialsKey = e.target.value || null;
       this._save();
+      this._autoRun();
     });
 
     c.querySelector('[data-ref="method-group"]')?.addEventListener('change', (e) => {
       if (e.target.name?.startsWith('glm-method')) {
         this._method = e.target.value;
         this._save();
+        this._autoRun();
       }
     });
 
@@ -527,6 +556,7 @@ const mod = {
         const alphaEl = c.querySelector('[data-ref="alpha-level"]');
         if (alphaEl) alphaEl.value = +(this._alpha * 100).toFixed(2);
         this._save();
+        this._autoRun();
       }
     });
 
@@ -538,20 +568,12 @@ const mod = {
         const confEl = c.querySelector('[data-ref="conf-level"]');
         if (confEl) confEl.value = +(this._confLevel * 100).toFixed(2);
         this._save();
+        this._autoRun();
       }
     });
 
-    c.addEventListener('click', (e) => {
-      const btn = e.target.closest('[data-action]');
-      if (!btn) return;
-      const action = btn.dataset.action;
-
-      if (action === 'run') this._runAnalysis();
-      if (action === 'demo') this._loadDemo(btn.dataset.demo);
-      if (action === 'predict') this._runPrediction();
-      if (action === 'tab') this._switchTab(btn.dataset.tab);
-      if (action === 'swap-success') this._swapSuccessClass();
-    });
+    // Container-level click delegation is bound once in init() so it doesn't
+    // accumulate across re-renders.
   },
 
   /** Toggle which y level represents success and re-run the binomial fit. */
@@ -564,64 +586,14 @@ const mod = {
   },
 
   _autoRun() {
-    if (this._colRefs.length > 0 && this._yKey && this._result) {
+    if (this._colRefs.length > 0 && this._yKey) {
       this._runAnalysis();
     }
-  },
-
-  // ─── Demo loading ──────────────────────────────────────────
-
-  _loadDemo(demoKey) {
-    const demo = DEMO_DATASETS[demoKey];
-    if (!demo) return;
-
-    const t = (k) => this._context.i18n.t(`modules.glm-regression.${k}`);
-
-    const xNames = Object.keys(demo.x);
-    const n = demo.y.length;
-
-    const yValues = [...demo.y];
-    const xCols = xNames.map(name => ({
-      values: [...demo.x[name]],
-      name: demo.xNames[name] || name,
-    }));
-
-    this._demoData = { y: yValues, xCols, yName: demo.yName };
-
-    if (demo.family === 'binomial') this._method = 'binomial';
-    else if (demo.family === 'poisson') this._method = 'poisson';
-    else if (demo.family === 'negbin') this._method = 'negbin';
-
-    const radios = this._container.querySelectorAll(`[name="glm-method-${this._context.instanceId}"]`);
-    radios.forEach(r => { r.checked = r.value === this._method; });
-
-    // Demo loads pin a specific family — hide any leftover auto-detect text.
-    const infoEl = this._container.querySelector('[data-ref="detect-info"]');
-    if (infoEl) infoEl.classList.remove('glm__detect-info--visible');
-
-    this._runAnalysisFromDemo();
-  },
-
-  _runAnalysisFromDemo() {
-    const data = this._demoData;
-    if (!data) return;
-
-    const columns = data.xCols.map(col => ({
-      values: col.values,
-      name: col.name,
-      categorical: false,
-    }));
-
-    const { X, terms } = buildGLMDesignMatrix(columns);
-    this._fitAndDisplay(X, data.y, terms, data.yName, data.xCols.map(c => c.name));
   },
 
   // ─── Analysis ──────────────────────────────────────────────
 
   _runAnalysis() {
-    // Switching from a demo to a real worksheet run — drop the demo cache so
-    // it can't leak into the next demo button click or get persisted.
-    this._demoData = null;
     const t = (k) => this._context.i18n.t(`modules.glm-regression.${k}`);
     const errBox = this._container.querySelector('[data-ref="error-box"]');
     const show = (msg) => { if (errBox) { errBox.textContent = msg; errBox.style.display = 'block'; } };
@@ -903,6 +875,18 @@ const mod = {
       html += warnings.map(w => `<div class="glm__warning">${esc(w)}</div>`).join('');
     }
 
+    // Save-as-Model action — exposes this fit to the Response Optimizer
+    // (modules/response-optimization) via state.models[].
+    html += `
+      <div class="glm__model-actions">
+        <button class="btn btn--primary" data-action="save-as-model" type="button"
+                title="${esc(t('saveAsModelHint'))}">
+          ${this._savedModelId ? t('updateModel') : t('saveAsModel')}
+        </button>
+        <span class="glm__model-status" data-ref="model-status">${this._savedModelId ? t('modelSaved') : ''}</span>
+      </div>
+    `;
+
     // Family info
     html += `<div class="dmike-split__output-section">${t('modelSummary')}</div>`;
     html += `<div class="glm__quality-grid">`;
@@ -919,7 +903,7 @@ const mod = {
         <span class="glm__quality-label">${t('successClass')}</span>
         <span class="glm__quality-value">
           ${esc(String(info.success))}
-          <button class="dmike-btn dmike-btn--xs" data-action="swap-success" type="button"
+          <button class="btn btn--xs" data-action="swap-success" type="button"
                   title="${esc(t('swapSuccessTitle'))}">
             ↔ ${esc(String(info.failure))}
           </button>
@@ -1171,10 +1155,159 @@ const mod = {
     }
     html += `</div>`;
 
-    html += `<button class="dmike-btn dmike-btn--xs" data-action="predict" type="button">${t('predictCalc')}</button>`;
+    html += `<button class="btn btn--xs" data-action="predict" type="button">${t('predictCalc')}</button>`;
     html += `<div class="glm__predict-result" data-ref="predict-result" style="display:none"></div>`;
 
     return html;
+  },
+
+  /**
+   * Persist the current GLM fit as a `state.models[id]` entry so it can be
+   * referenced from the response-optimization module. Re-uses an existing id
+   * (`_savedModelId`) when present so repeated clicks update the same record
+   * instead of creating duplicates.
+   *
+   * The record carries `family` ({name, link, theta?}) which makes
+   * `predictFromModel` apply the inverse link (logit→probability, log→rate)
+   * so the optimiser works on the response scale, not on η = Xβ.
+   */
+  _saveAsModel() {
+    const r = this._result;
+    if (!r || !r.converged) return;
+    const t = (k, v) => this._context.i18n.t(`modules.glm-regression.${k}`, v);
+
+    // Re-read raw factor columns from the worksheet so we get the natural-scale
+    // values needed for factorSpec bounds and the data snapshot. Mirrors the
+    // row-filtering logic in _runAnalysis so that (X, y) here matches the fit.
+    const yRef = keyToRef(this._yKey);
+    const yRaw = this._getRawValues(yRef);
+    const yName = this._getColumnDisplayName(yRef);
+
+    const xNames = [];
+    const xRawCols = [];
+    const xIsCat = [];
+    for (const ref of this._colRefs) {
+      xNames.push(this._getColumnDisplayName(ref));
+      xIsCat.push(this._isCategorical(ref));
+      xRawCols.push(this._isCategorical(ref) ? this._getRawValues(ref) : this._getNumericValues(ref));
+    }
+
+    const trialsRef = this._trialsKey ? keyToRef(this._trialsKey) : null;
+    const trialsRaw = trialsRef ? this._getNumericValues(trialsRef) : null;
+
+    const maxLen = Math.min(
+      yRaw.length,
+      ...xRawCols.map(c => c.length),
+      ...(trialsRaw ? [trialsRaw.length] : []),
+    );
+    const y = [];
+    const xCols = xRawCols.map(() => []);
+    for (let i = 0; i < maxLen; i++) {
+      const yv = this._toNumeric(yRaw[i]);
+      if (yv === null) continue;
+      let allOk = true;
+      for (let j = 0; j < xRawCols.length; j++) {
+        const v = xRawCols[j][i];
+        if (xIsCat[j] ? (v == null || v === '') : v === null) { allOk = false; break; }
+      }
+      if (!allOk) continue;
+      if (trialsRaw) {
+        const w = trialsRaw[i];
+        if (w === null || w <= 0) continue;
+      }
+      y.push(yv);
+      for (let j = 0; j < xRawCols.length; j++) xCols[j].push(xRawCols[j][i]);
+    }
+
+    if (y.length === 0) {
+      this._context.notify(t('errorTooFew'), 'error');
+      return;
+    }
+
+    // factorSpec: continuous → numeric bounds (used by optimiser as box).
+    //             categorical → levels list + reference (used by hybrid path).
+    const factorSpec = xNames.map((name, j) => {
+      if (xIsCat[j]) {
+        const levels = [...new Set(xCols[j])].sort();
+        return { name, kind: 'categorical', levels, reference: levels[0] };
+      }
+      let lo =  Infinity, hi = -Infinity;
+      for (const v of xCols[j]) { if (v < lo) lo = v; if (v > hi) hi = v; }
+      if (!Number.isFinite(lo) || !Number.isFinite(hi) || lo === hi) {
+        return { name, kind: 'continuous', low: -1, high: 1 };
+      }
+      return { name, kind: 'continuous', low: lo, high: hi };
+    });
+
+    // spec.predictors drives the optimiser's hybrid-path detection (any
+    // predictor with kind: 'categorical' triggers Cartesian enumeration of
+    // levels). `spec.terms` is intentionally empty — for GLM, predictFromModel
+    // evaluates `model.terms` (dummy-coded) and not spec.terms.
+    const specPredictors = factorSpec.map(f => f.kind === 'categorical'
+      ? { id: f.name, kind: 'categorical', levels: f.levels, reference: f.reference }
+      : { id: f.name, kind: 'continuous' });
+
+    // X for the dataSnapshot/hash — the dummy-coded design matrix produced by
+    // buildGLMDesignMatrix matches r.X, but live `r.X` may have been slim-stripped
+    // after a reload; rebuild here so the call is reliable.
+    const columns = xCols.map((vals, j) => ({
+      values: vals,
+      name: xNames[j],
+      categorical: xIsCat[j],
+    }));
+    const { X } = buildGLMDesignMatrix(columns);
+
+    const dataSnapshot = buildDataSnapshot({
+      X, y, factorSpec,
+      termSet: [...r.terms],
+      experimentId: null,
+      responseColumn: this._yKey,
+    });
+
+    const family = {
+      name: r.family.name,
+      link: r.family.link,
+      ...(r.family.theta != null ? { theta: r.family.theta } : {}),
+    };
+
+    const record = {
+      id: this._savedModelId ?? undefined,
+      name: this._savedModelName || `${yName} — ${t('family_' + r.family.name)}`,
+      experimentId: null,
+      responseSpec: {
+        sourceColumn: this._yKey,
+        transform: 'identity',
+        aggregateOver: null,
+      },
+      family,
+      terms: [...r.terms],
+      // Mirror into termSet for the legacy/diagnostic code paths that read it.
+      termSet: [...r.terms],
+      coef: [...r.coefficients],
+      vcov: null,
+      sigma2: null,
+      df: r.n - r.p,
+      // Nagelkerke pseudo-R² is on a comparable [0, 1] scale to OLS R² and is
+      // the most defensible substitute for the optimiser's MIN_R2_ADJ gate.
+      rSqAdj: r.pseudoR2?.nagelkerke ?? 0,
+      lofPValue: null,
+      factorSpec,
+      spec: { predictors: specPredictors, terms: [] },
+      dataSnapshot,
+      dataHash: computeDataHash(X, y),
+      createdFromInstanceId: this._context.instanceId,
+    };
+
+    const id = saveModel(this._context.stateManager, record);
+    this._savedModelId = id;
+    this._savedModelName = record.name;
+    this._save();
+    this._context.notify(t('modelSaved'), 'success');
+
+    const btn = this._container.querySelector('[data-action="save-as-model"]');
+    const status = this._container.querySelector('[data-ref="model-status"]');
+    if (btn) btn.textContent = t('updateModel');
+    if (status) status.textContent = t('modelSaved');
   },
 
   _runPrediction() {

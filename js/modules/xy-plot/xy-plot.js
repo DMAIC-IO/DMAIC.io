@@ -2,6 +2,8 @@
  * D.Mike — XY-Plot Module (xy-plot.js)
  * Data phase: scatter/line plot of worksheet columns.
  * Each dataset has its own X and Y column — datasets need not share X data.
+ * Optional Size slot turns the dataset into a bubble plot (third numeric column
+ * sqrt-mapped to 6–28 px marker diameter so area stays proportional to value).
  * Uses the SVG chart framework (chartManager) for rendering.
  * Includes editor panel for series customization, reference lines/areas.
  */
@@ -26,7 +28,7 @@ export default {
   phase: 'data',
   icon: 'scatter-chart',
   i18nKey: 'modules.xy-plot',
-  version: '1.3.0',
+  version: '1.4.0',
   help: () => import('./xy-plot-help.js'),
 
   _container: null,
@@ -60,7 +62,7 @@ export default {
     // Reset per-instance state — the registry uses a shallow spread of the
     // module export, so arrays/objects from the definition are shared across
     // instances until reassigned.
-    this._datasets = [{ xRef: null, yRef: null, groupRef: null }];
+    this._datasets = [{ xRef: null, yRef: null, groupRef: null, sizeRef: null }];
     this._showLines = false;
     this._showMarkers = true;
     this._seriesOverrides = [];
@@ -116,6 +118,7 @@ export default {
         xRef: d.xRef,
         yRef: d.yRef,
         groupRef: d.groupRef || null,
+        sizeRef: d.sizeRef || null,
       })),
       showLines: this._showLines,
       showMarkers: this._showMarkers,
@@ -176,6 +179,7 @@ export default {
           xRef: rewrite(d.xRef),
           yRef: rewrite(d.yRef),
           groupRef: rewrite(d.groupRef),
+          sizeRef: rewrite(d.sizeRef),
         }));
       }
     }
@@ -194,6 +198,7 @@ export default {
         xRef: d.xRef || null,
         yRef: d.yRef || null,
         groupRef: d.groupRef || null,
+        sizeRef: d.sizeRef || null,
       }));
     } else if (saved.colRefX && saved.seriesRefs) {
       // Migrate v1 → v2: shared X becomes per-dataset X
@@ -201,9 +206,10 @@ export default {
         xRef: saved.colRefX,
         yRef,
         groupRef: null,
+        sizeRef: null,
       }));
     } else {
-      this._datasets = [{ xRef: null, yRef: null, groupRef: null }];
+      this._datasets = [{ xRef: null, yRef: null, groupRef: null, sizeRef: null }];
     }
     if (saved.exampleWorksheetId !== undefined) this._exampleWorksheetId = saved.exampleWorksheetId;
     this._showLines = saved.showLines ?? false;
@@ -265,12 +271,14 @@ export default {
         { key: 'x', label: 'X', title: this._context.i18n.t('ui.datasetPicker.slotX'), types: ['numeric'], minCount: 1, required: true },
         { key: 'y', label: 'Y', title: this._context.i18n.t('ui.datasetPicker.slotY'), types: ['numeric'], minCount: 1, required: true },
         { key: 'group', label: 'G', title: this._context.i18n.t('ui.datasetPicker.slotG'), group: true },
+        { key: 'size', label: 'S', title: this._context.i18n.t('ui.datasetPicker.slotS'), types: ['numeric'], minCount: 1 },
       ],
       onChange: (datasets) => {
         this._datasets = datasets.map(ds => ({
           xRef: ds.x || null,
           yRef: ds.y || null,
           groupRef: ds.group || null,
+          sizeRef: ds.size || null,
         }));
         // Series count may change — drop stale overrides when structure changes.
         this._seriesOverrides = [];
@@ -280,11 +288,12 @@ export default {
     });
 
     // Restore saved refs
-    if (this._datasets.some(ds => ds.xRef || ds.yRef || ds.groupRef)) {
+    if (this._datasets.some(ds => ds.xRef || ds.yRef || ds.groupRef || ds.sizeRef)) {
       this._picker.value = this._datasets.map(ds => ({
         x: ds.xRef,
         y: ds.yRef,
         group: ds.groupRef,
+        size: ds.sizeRef,
       }));
     }
   },
@@ -329,11 +338,11 @@ export default {
     if (errBox) errBox.style.display = 'none';
 
     const series = [];
-    const pushSeries = (x, y, name) => {
+    const pushSeries = (x, y, name, bubble) => {
       const seriesIdx = series.length;
       const defaultColor = CHART_COLORS[seriesIdx % CHART_COLORS.length];
       const ovr = this._seriesOverrides[seriesIdx] || {};
-      series.push({
+      const s = {
         name: ovr.name || name,
         color: ovr.color || defaultColor,
         stroke: ovr.stroke || 'rgba(255,255,255,1)',
@@ -349,7 +358,13 @@ export default {
           dash: 'solid',
           width: 2,
         },
-      });
+      };
+      if (bubble && this._showMarkers) {
+        s.sizes = bubble.sizes;
+        s.sizeValues = bubble.rawSizes;
+        s.sizeLabel = bubble.label;
+      }
+      series.push(s);
     };
 
     let firstReadyXRef = null;
@@ -363,24 +378,34 @@ export default {
       const yVals = this._getColumnValues(ds.yRef);
       const yName = this._getColumnName(ds.yRef);
       const groupVals = ds.groupRef ? this._getColumnValues(ds.groupRef) : null;
+      const sizeVals = ds.sizeRef ? this._getColumnValues(ds.sizeRef) : null;
+      const sizeName = ds.sizeRef ? this._getColumnName(ds.sizeRef) : '';
 
       if (groupVals) {
         // Split into one sub-series per unique group level (insertion order).
         const buckets = new Map();
-        const len = Math.min(xVals.length, yVals.length, groupVals.length);
+        const len = Math.min(
+          xVals.length, yVals.length, groupVals.length,
+          sizeVals ? sizeVals.length : Infinity,
+        );
         for (let r = 0; r < len; r++) {
           const vx = xVals[r], vy = yVals[r], vg = groupVals[r];
           if (vx == null || typeof vx !== 'number' || isNaN(vx)) continue;
           if (vy == null || typeof vy !== 'number' || isNaN(vy)) continue;
           if (vg == null || vg === '') continue;
+          if (sizeVals) {
+            const vs = sizeVals[r];
+            if (typeof vs !== 'number' || isNaN(vs) || vs < 0) continue;
+          }
           const key = String(vg);
           let b = buckets.get(key);
           if (!b) {
-            b = { level: vg, x: [], y: [] };
+            b = { level: vg, x: [], y: [], rawSizes: sizeVals ? [] : null };
             buckets.set(key, b);
           }
           b.x.push(vx);
           b.y.push(vy);
+          if (sizeVals) b.rawSizes.push(sizeVals[r]);
         }
 
         if (buckets.size === 0) {
@@ -392,7 +417,8 @@ export default {
         let hasAny = false;
         for (const b of buckets.values()) {
           if (b.x.length < 2) continue;
-          pushSeries(b.x, b.y, t('groupSeriesName', { y: yName, level: String(b.level) }));
+          const bubble = b.rawSizes ? this._buildBubble(b.rawSizes, sizeName) : null;
+          pushSeries(b.x, b.y, t('groupSeriesName', { y: yName, level: String(b.level) }), bubble);
           hasAny = true;
         }
         if (!hasAny) {
@@ -401,15 +427,22 @@ export default {
           return;
         }
       } else {
-        const x = [], y = [];
-        const len = Math.min(xVals.length, yVals.length);
+        const x = [], y = [], rawSizes = sizeVals ? [] : null;
+        const len = Math.min(
+          xVals.length, yVals.length,
+          sizeVals ? sizeVals.length : Infinity,
+        );
         for (let r = 0; r < len; r++) {
           const vx = xVals[r], vy = yVals[r];
-          if (vx != null && typeof vx === 'number' && !isNaN(vx) &&
-              vy != null && typeof vy === 'number' && !isNaN(vy)) {
-            x.push(vx);
-            y.push(vy);
+          if (vx == null || typeof vx !== 'number' || isNaN(vx)) continue;
+          if (vy == null || typeof vy !== 'number' || isNaN(vy)) continue;
+          if (sizeVals) {
+            const vs = sizeVals[r];
+            if (typeof vs !== 'number' || isNaN(vs) || vs < 0) continue;
+            rawSizes.push(vs);
           }
+          x.push(vx);
+          y.push(vy);
         }
 
         if (x.length < 2) {
@@ -418,7 +451,8 @@ export default {
           return;
         }
 
-        pushSeries(x, y, yName);
+        const bubble = rawSizes ? this._buildBubble(rawSizes, sizeName) : null;
+        pushSeries(x, y, yName, bubble);
       }
     }
 
@@ -489,6 +523,29 @@ export default {
       i18n: this._context.i18n,
       confLevel: this._confLevel,
     });
+  },
+
+  // ─── Bubble helper ──────────────────────────────────────────
+
+  /**
+   * Map non-negative raw sizes to a 6–28 px diameter range via sqrt-normalisation,
+   * so that bubble AREA stays proportional to the raw value.
+   * @private
+   * @param {number[]} rawSizes
+   * @param {string} label
+   * @returns {{ sizes: number[], rawSizes: number[], label: string }}
+   */
+  _buildBubble(rawSizes, label) {
+    const D_MIN = 6, D_MAX = 28;
+    const sqrtVals = rawSizes.map(Math.sqrt);
+    const sMin = Math.min(...sqrtVals);
+    const sMax = Math.max(...sqrtVals);
+    const span = sMax - sMin;
+    const sizes = sqrtVals.map(sv => {
+      const t = span > 0 ? (sv - sMin) / span : 0.5;
+      return D_MIN + t * (D_MAX - D_MIN);
+    });
+    return { sizes, rawSizes, label };
   },
 
   // ─── Chart cleanup ──────────────────────────────────────────

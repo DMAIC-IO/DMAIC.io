@@ -7,8 +7,18 @@
       "valueType": "va",
       "inputs": [
         {
-          "id": "i1",
+          "id": "i1a",
           "name": "Kundenanruf / Online-Order"
+        },
+        {
+          "id": "i1b",
+          "name": "Adressdaten",
+          "inputType": "noise"
+        },
+        {
+          "id": "i1c",
+          "name": "Wunschlieferzeit",
+          "inputType": "param"
         }
       ],
       "outputs": [
@@ -26,7 +36,17 @@
       "title": "Auftrag an Küche weiterleiten",
       "description": "Bon-Drucker in der Küche",
       "valueType": "bnva",
-      "inputs": [],
+      "inputs": [
+        {
+          "id": "i2a",
+          "name": "Auftrag im System"
+        },
+        {
+          "id": "i2b",
+          "name": "Bon-Drucker-Status",
+          "inputType": "noise"
+        }
+      ],
       "outputs": [
         {
           "id": "o2",
@@ -42,7 +62,38 @@
       "title": "Pizza belegen",
       "description": "Teig ausrollen, Tomatensauce, Käse, Beläge",
       "valueType": "va",
-      "inputs": [],
+      "inputs": [
+        {
+          "id": "i3a",
+          "name": "Teigmenge (g)",
+          "inputType": "param"
+        },
+        {
+          "id": "i3b",
+          "name": "Sauce-Menge (ml)",
+          "inputType": "param"
+        },
+        {
+          "id": "i3c",
+          "name": "Käse-Menge (g)",
+          "inputType": "param"
+        },
+        {
+          "id": "i3d",
+          "name": "Belag-Auswahl",
+          "inputType": "param"
+        },
+        {
+          "id": "i3e",
+          "name": "Teig-Reifegrad",
+          "inputType": "noise"
+        },
+        {
+          "id": "i3f",
+          "name": "Belag-Frische",
+          "inputType": "noise"
+        }
+      ],
       "outputs": [
         {
           "id": "o3",
@@ -58,7 +109,32 @@
       "title": "Pizza backen",
       "description": "Im Holzofen 4–6 min bei ca. 350 °C",
       "valueType": "va",
-      "inputs": [],
+      "inputs": [
+        {
+          "id": "i4a",
+          "name": "Roh-Pizza"
+        },
+        {
+          "id": "i4b",
+          "name": "Ofentemperatur (°C)",
+          "inputType": "param"
+        },
+        {
+          "id": "i4c",
+          "name": "Backzeit (min)",
+          "inputType": "param"
+        },
+        {
+          "id": "i4d",
+          "name": "Ofenauslastung",
+          "inputType": "noise"
+        },
+        {
+          "id": "i4e",
+          "name": "Holzfeuchte",
+          "inputType": "noise"
+        }
+      ],
       "outputs": [
         {
           "id": "o4",
@@ -74,7 +150,22 @@
       "title": "Schneiden + verpacken",
       "description": "Pizzaschneider, Karton, in Thermo-Box",
       "valueType": "va",
-      "inputs": [],
+      "inputs": [
+        {
+          "id": "i5a",
+          "name": "Fertige Pizza"
+        },
+        {
+          "id": "i5b",
+          "name": "Kartongröße",
+          "inputType": "param"
+        },
+        {
+          "id": "i5c",
+          "name": "Thermo-Box-Temperatur",
+          "inputType": "param"
+        }
+      ],
       "outputs": [
         {
           "id": "o5",
@@ -90,8 +181,28 @@
       "title": "Fahrer übernimmt + Adresse prüfen",
       "description": "Bestellung an Fahrer, Adresse abgleichen",
       "valueType": "bnva",
-      "inputs": [],
-      "outputs": [],
+      "inputs": [
+        {
+          "id": "i6a",
+          "name": "Verpackte Pizza"
+        },
+        {
+          "id": "i6b",
+          "name": "Fahrer-Verfügbarkeit",
+          "inputType": "noise"
+        },
+        {
+          "id": "i6c",
+          "name": "Zugewiesene Tour",
+          "inputType": "param"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "o6",
+          "name": "Übergabeprotokoll"
+        }
+      ],
       "substeps": [],
       "expanded": false,
       "loop": null
@@ -101,8 +212,39 @@
       "title": "Auslieferung",
       "description": "Fahrt zum Kunden",
       "valueType": "va",
-      "inputs": [],
-      "outputs": [],
+      "inputs": [
+        {
+          "id": "i7a",
+          "name": "Route",
+          "inputType": "param"
+        },
+        {
+          "id": "i7b",
+          "name": "Fahrer-Erfahrung",
+          "inputType": "param"
+        },
+        {
+          "id": "i7c",
+          "name": "Verkehrslage",
+          "inputType": "noise"
+        },
+        {
+          "id": "i7d",
+          "name": "Wetter",
+          "inputType": "noise"
+        },
+        {
+          "id": "i7e",
+          "name": "Distanz (km)",
+          "inputType": "noise"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "o7",
+          "name": "Pizza beim Kunden"
+        }
+      ],
       "substeps": [],
       "expanded": false,
       "loop": null
@@ -112,7 +254,22 @@
       "title": "Übergabe + Bezahlung",
       "description": "Pizza übergeben, Bezahlung kontaktlos/bar",
       "valueType": "va",
-      "inputs": [],
+      "inputs": [
+        {
+          "id": "i8a",
+          "name": "Pizza beim Kunden"
+        },
+        {
+          "id": "i8b",
+          "name": "Kundenpräsenz",
+          "inputType": "noise"
+        },
+        {
+          "id": "i8c",
+          "name": "Zahlungsmethode",
+          "inputType": "param"
+        }
+      ],
       "outputs": [
         {
           "id": "o8",

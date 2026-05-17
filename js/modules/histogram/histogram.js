@@ -24,7 +24,7 @@ import { computeSeriesStats, renderStatsTable } from '../../core/stats-panel.js'
 import { CHART_COLORS, CHART_COLORS_RGBA, BORDER_COLORS } from '../../core/chart/chart-colors.js';
 import { autoBinCount, computeBins, globalRange, autoBinWidth, binAll, percentile, computeBoxStats, createBarPattern } from './histogram-binning.js';
 import { editorMethods } from './histogram-editor.js';
-import { provisionWorksheet, removeProvisionedWorksheet } from '../../core/examples-registry.js';
+import { provisionWorksheet, removeProvisionedWorksheet, csvPayloadToWorksheetState } from '../../core/examples-registry.js';
 
 // ─── Module ─────────────────────────────────────────────────
 
@@ -242,6 +242,11 @@ const mod = {
     if (this._container) {
       if (this._picker) { this._picker.destroy(); this._picker = null; }
       this._render();
+      // Mirror init's auto-plot — without this, loadExample populates state
+      // but _render only paints the empty input panel; the chart never draws.
+      if (this._datasets.some(d => d.valueRef)) {
+        requestAnimationFrame(() => this._plot());
+      }
     }
   },
 
@@ -264,7 +269,19 @@ const mod = {
       if (!ok) return;
     }
 
-    const data = { ...payload.data };
+    let data = { ...payload.data };
+
+    // CSV-shape payload (type: dataset) → synthesize sourceWorksheetData + columnRef
+    // so it flows through the same provisioning path as project-shape payloads.
+    if (!data.sourceWorksheetData && !data.datasets && !data.columnRef && Array.isArray(data.columns)) {
+      const wsState = csvPayloadToWorksheetState(data, payload.meta);
+      if (wsState) {
+        data = {
+          sourceWorksheetData: wsState,
+          columnRef: { instanceId: '__source__', sheetId: wsState.activeSheetId, columnId: 'c-0' },
+        };
+      }
+    }
 
     if (data.sourceWorksheetData) {
       const wsState = data.sourceWorksheetData;

@@ -122,6 +122,7 @@ export default {
       if (this._picker) { this._picker.destroy(); this._picker = null; }
       this._chart = null;
       this._render();
+      this._plot();
     }
   },
 

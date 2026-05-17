@@ -1,0 +1,14 @@
+{
+  "datasets": [
+    {
+      "xRef":    { "instanceId": "__source__", "sheetId": "sheet-projektportfolio", "columnId": "c-aufwand" },
+      "yRef":    { "instanceId": "__source__", "sheetId": "sheet-projektportfolio", "columnId": "c-nutzen" },
+      "groupRef": { "instanceId": "__source__", "sheetId": "sheet-projektportfolio", "columnId": "c-bereich" },
+      "sizeRef": { "instanceId": "__source__", "sheetId": "sheet-projektportfolio", "columnId": "c-risiko" }
+    }
+  ],
+  "showLines": false,
+  "showMarkers": true,
+  "showStats": true,
+  "sourceWorksheetFile": "worksheets/xy-plot-bubble-projektportfolio.json"
+}

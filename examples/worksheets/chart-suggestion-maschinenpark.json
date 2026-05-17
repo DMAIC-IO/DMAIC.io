@@ -1,0 +1,91 @@
+{
+  "sheets": [
+    {
+      "id": "sheet-maschinenpark",
+      "name": "Maschinenpark",
+      "state": {
+        "columns": [
+          {
+            "id": "c-maschine",
+            "name": "Maschine",
+            "shortName": "M",
+            "type": "text",
+            "role": "free-text",
+            "values": [
+              "M-01",
+              "M-02",
+              "M-03",
+              "M-04",
+              "M-05",
+              "M-06",
+              "M-07",
+              "M-08",
+              "M-09",
+              "M-10"
+            ]
+          },
+          {
+            "id": "c-zykluszeit",
+            "name": "Zykluszeit",
+            "shortName": "Z",
+            "type": "numeric",
+            "role": "continuous",
+            "values": [
+              12.4,
+              18.7,
+              22.5,
+              26.8,
+              31.2,
+              38.5,
+              44.1,
+              52.3,
+              64.7,
+              78.9
+            ]
+          },
+          {
+            "id": "c-ausschussrate",
+            "name": "Ausschussrate",
+            "shortName": "A",
+            "type": "numeric",
+            "role": "continuous",
+            "values": [
+              2.8,
+              0.6,
+              4.2,
+              1.1,
+              5.7,
+              0.8,
+              3.4,
+              2.1,
+              6.1,
+              1.3
+            ]
+          },
+          {
+            "id": "c-tagesausstoss",
+            "name": "Tagesausstoß",
+            "shortName": "T",
+            "type": "numeric",
+            "role": "continuous",
+            "values": [
+              1960,
+              1380,
+              1080,
+              980,
+              760,
+              680,
+              520,
+              420,
+              290,
+              220
+            ]
+          }
+        ],
+        "rowCount": 10
+      }
+    }
+  ],
+  "activeSheetId": "sheet-maschinenpark",
+  "sheetCounter": 1
+}

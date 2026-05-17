@@ -118,7 +118,7 @@
 
 .pmap__io-item {
   display: flex;
-  align-items: start;
+  align-items: center;
   gap: var(--spacing-xs);
   padding: 5px var(--spacing-sm);
   border-radius: var(--border-radius-sm);
@@ -172,7 +172,7 @@
 .pmap__input-type--none {
   background: transparent;
   color: var(--color-text-tertiary);
-  opacity: 0;
+  opacity: 0.45;
 }
 
 .pmap__io-item:hover .pmap__input-type--none {
@@ -182,6 +182,7 @@
 .pmap__input-type--none:hover {
   background: var(--color-bg-primary);
   color: var(--color-text-secondary);
+  opacity: 1;
 }
 
 .pmap__input-type--param {

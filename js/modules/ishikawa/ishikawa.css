@@ -1226,19 +1226,34 @@
   background: var(--color-bg-secondary);
 }
 
-.ishikawa__exp-table thead th.ishikawa__col-exp-title { width: 11rem; }
-.ishikawa__exp-table thead th.ishikawa__col-resp { width: 9rem; }
-.ishikawa__exp-table thead th.ishikawa__col-exp-status { width: 7.5rem; }
-.ishikawa__exp-table thead th.ishikawa__col-date { width: 8rem; }
-.ishikawa__exp-table thead th.ishikawa__col-money { width: 6rem; }
-.ishikawa__exp-table thead th.ishikawa__col-hours { width: 6rem; }
-.ishikawa__exp-table thead th.ishikawa__col-hyp-link { width: 9rem; }
-.ishikawa__exp-table thead th.ishikawa__col-fact-name { width: 14rem; }
+/* Columns with variable-width text content shrink to their input's content
+   width (via field-sizing on the input). width:1% + nowrap is the table-
+   layout trick that says "be as small as possible". */
+.ishikawa__exp-table thead th.ishikawa__col-exp-title,
+.ishikawa__exp-table thead th.ishikawa__col-resp,
+.ishikawa__exp-table thead th.ishikawa__col-fact-name {
+  width: 1%;
+  white-space: nowrap;
+}
+
+/* Fixed-width controls (selects, dates, numbers, buttons): min-width so
+   labels and options aren't truncated even when the table is crowded. */
+.ishikawa__exp-table thead th.ishikawa__col-exp-status { width: 9.5rem; min-width: 9.5rem; }
+.ishikawa__exp-table thead th.ishikawa__col-date { width: 8rem; min-width: 8rem; }
+.ishikawa__exp-table thead th.ishikawa__col-money { width: 6rem; min-width: 6rem; }
+.ishikawa__exp-table thead th.ishikawa__col-hours { width: 6rem; min-width: 6rem; }
+.ishikawa__exp-table thead th.ishikawa__col-hyp-link { width: 9rem; min-width: 9rem; }
+
+/* Description column claims all leftover space; min-width keeps it usable
+   even when the row has many other columns. */
+.ishikawa__exp-table thead th.ishikawa__col-desc {
+  width: 100%;
+  min-width: 16rem;
+}
 
 .ishikawa__exp-title-input,
 .ishikawa__exp-desc-input,
 .ishikawa__exp-resp-input {
-  width: 100%;
   padding: 4px 6px;
   background: transparent;
   border: 1px solid transparent;
@@ -1246,6 +1261,27 @@
   color: var(--color-text-primary);
   font-size: var(--font-size-sm);
   font-family: inherit;
+}
+
+/* Title + Owner: hug their content. */
+.ishikawa__exp-title-input,
+.ishikawa__exp-resp-input {
+  width: auto;
+  min-width: 8rem;
+  field-sizing: content;
+}
+
+/* Description: textarea that fills the remaining column space, wraps text
+   and auto-grows in height with content. */
+.ishikawa__exp-desc-input {
+  display: block;
+  width: 100%;
+  min-height: calc(var(--font-size-sm) + 12px);
+  resize: vertical;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  field-sizing: content;
+  line-height: 1.4;
 }
 
 .ishikawa__exp-title-input:hover,
