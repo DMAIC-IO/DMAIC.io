@@ -15,7 +15,7 @@
  *
  * State structure (cycle-scoped — keys depend on the project's cycle):
  * {
- *   version: '0.5.0',
+ *   version: '0.6.0',
  *   settings: { language, theme, … },
  *   phases: { data, …<methodology phases>, extras },        // arrays of module instances
  *   phaseAchievement: { …<methodology phases> },             // 0–100, no data/extras
