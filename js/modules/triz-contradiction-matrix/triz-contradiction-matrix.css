@@ -78,8 +78,7 @@
   line-height: 1.4;
 }
 
-.triz-cm__swap-btn,
-.triz-cm__reset-btn {
+.triz-cm__swap-btn {
   white-space: nowrap;
   /* Sit on the same baseline as the selects, not the labels above them. */
   margin-top: calc(var(--font-size-sm) * 1.4 + var(--spacing-xs));

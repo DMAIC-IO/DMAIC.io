@@ -407,19 +407,25 @@ export default {
       </div>
     </div>`;
 
-    // Stats panel
+    // Stats table (horizontal)
+    const statCols = [
+      { label: t('modules.msa-typ1.statN'), value: r.n },
+      { label: t('modules.msa-typ1.statMean'), value: `${fmt(r.xbar)} ${unit}` },
+      { label: t('modules.msa-typ1.statStddev'), value: `${fmt(r.sg)} ${unit}` },
+      { label: t('modules.msa-typ1.statMin'), value: `${fmt(r.xmin)} ${unit}` },
+      { label: t('modules.msa-typ1.statMax'), value: `${fmt(r.xmax)} ${unit}` },
+      { label: t('modules.msa-typ1.statRange'), value: `${fmt(r.range)} ${unit}` },
+      { label: t('modules.msa-typ1.statRef'), value: `${fmt(r.params.ref)} ${unit}` },
+      { label: t('modules.msa-typ1.statTol'), value: `${fmt(r.T)} ${unit}` },
+      { label: t('modules.msa-typ1.statResolution'), value: r.resolution > 0 ? `${fmt(r.resolution)} ${unit} (${fmt(r.resPercent)} % T)` : '–' },
+      { label: 'k₁ / k₂', value: `${r.params.k1} / ${r.params.k2}` },
+    ];
     html += `<div class="dmike-split__output-section">${t('modules.msa-typ1.statsTitle')}</div>
     <div class="msa-typ1__stats-panel">
-      ${this._statsRow(t('modules.msa-typ1.statN'), r.n)}
-      ${this._statsRow(t('modules.msa-typ1.statMean'), `${fmt(r.xbar)} ${unit}`)}
-      ${this._statsRow(t('modules.msa-typ1.statStddev'), `${fmt(r.sg)} ${unit}`)}
-      ${this._statsRow(t('modules.msa-typ1.statMin'), `${fmt(r.xmin)} ${unit}`)}
-      ${this._statsRow(t('modules.msa-typ1.statMax'), `${fmt(r.xmax)} ${unit}`)}
-      ${this._statsRow(t('modules.msa-typ1.statRange'), `${fmt(r.range)} ${unit}`)}
-      ${this._statsRow(t('modules.msa-typ1.statRef'), `${fmt(r.params.ref)} ${unit}`)}
-      ${this._statsRow(t('modules.msa-typ1.statTol'), `${fmt(r.T)} ${unit}`)}
-      ${this._statsRow(t('modules.msa-typ1.statResolution'), r.resolution > 0 ? `${fmt(r.resolution)} ${unit} (${fmt(r.resPercent)} % T)` : '–')}
-      ${this._statsRow('k₁ / k₂', `${r.params.k1} / ${r.params.k2}`)}
+      <table class="dmike-table msa-typ1__stats-table">
+        <thead><tr>${statCols.map(c => `<th>${c.label}</th>`).join('')}</tr></thead>
+        <tbody><tr>${statCols.map(c => `<td>${c.value}</td>`).join('')}</tr></tbody>
+      </table>
     </div>`;
 
     // Chart containers
@@ -543,13 +549,6 @@ export default {
   },
 
   // ─── Helpers ────────────────────────────────────────────────
-
-  _statsRow(label, value) {
-    return `<div class="msa-typ1__stats-row">
-      <span class="msa-typ1__stats-row-label">${label}</span>
-      <span class="msa-typ1__stats-row-value">${value}</span>
-    </div>`;
-  },
 
   _readInputs() {
     const c = this._container;

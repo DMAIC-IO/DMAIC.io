@@ -90,20 +90,6 @@
   border-radius: var(--border-radius-sm);
 }
 
-/* Right-pointing arrow between time columns (past → present → future).
-   Marker class is set in JS for col-heads that have a successor. */
-.triz-9w__col-head--has-arrow::after {
-  content: '→';
-  position: absolute;
-  right: calc(var(--spacing-sm) * -1);
-  top: 50%;
-  transform: translate(50%, -50%);
-  font-size: var(--font-size-lg);
-  color: var(--color-text-tertiary);
-  pointer-events: none;
-  z-index: 1;
-}
-
 /* The row-head occupies grid column 1 in each row of cells. We need the row
    header for row N to span the same row as the cells for row N. Default flow
    inside the grid handles that — the column-template defines 4 columns, and

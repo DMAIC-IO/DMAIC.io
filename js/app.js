@@ -186,7 +186,23 @@ function _maybeOfferCrossVersionImport(stateManager, modal, notify, i18n) {
       const picked = body.querySelector('input[name="cv-version"]:checked')?.value;
       if (!picked) return false;
       try {
+        // _isFreshInstall guard above guarantees this is the auto-created
+        // empty placeholder project. Capture its id so we can replace it
+        // with the migrated projects instead of leaving both behind.
+        const placeholderId = stateManager.getActiveProjectId();
+
         await importFromVersion(picked, stateManager);
+
+        const imported = stateManager.getProjects().filter(p => p.id !== placeholderId);
+        if (imported.length > 0) {
+          await stateManager.deleteProject(placeholderId);
+          // Re-read prefix because GLOBAL_PREFIX is private; on reload
+          // _ensureActiveProject picks the first project when activeId
+          // is invalid, but we set it explicitly for clarity.
+          const mm = VERSION.split('.').slice(0, 2).join('.');
+          localStorage.setItem(`dmike_v${mm}_activeProject`, imported[0].id);
+        }
+
         localStorage.setItem(CROSS_VERSION_DISMISSED_KEY, '1');
         notify(i18n.t('crossVersion.success'), 'success');
         setTimeout(() => location.reload(), 800);

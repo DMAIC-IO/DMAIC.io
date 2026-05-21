@@ -90,7 +90,6 @@ export default {
     if (saved) this._loadState(saved);
 
     this._render();
-    this._bindContainerEvents();
     this._autoPlot();
   },
 
@@ -106,7 +105,6 @@ export default {
     if (this._picker) { this._picker.destroy(); this._picker = null; }
     this._destroyChart();
     this._render();
-    this._bindContainerEvents();
     this._autoPlot();
   },
 
@@ -134,7 +132,6 @@ export default {
     if (this._container) {
       if (this._picker) { this._picker.destroy(); this._picker = null; }
       this._render();
-      this._bindContainerEvents();
       this._autoPlot();
     }
   },
@@ -306,14 +303,6 @@ export default {
 
   // ─── Events ─────────────────────────────────────────────────
 
-  _bindContainerEvents() {
-    this._container.addEventListener('click', (e) => {
-      const action = e.target.closest('[data-action]')?.dataset.action;
-      if (!action) return;
-      if (action === 'reset') this._reset();
-    });
-  },
-
   _showError(msg) {
     const errBox = this._container?.querySelector('[data-ref="error-box"]');
     if (errBox) {
@@ -325,18 +314,6 @@ export default {
 
   _save() {
     this._context.stateManager.setModuleState(this._context.instanceId, this.getState());
-  },
-
-  _reset() {
-    this._datasets = [{ valueRef: null, groupRef: null }];
-    this._seriesOverrides = [];
-    this._refLines = [];
-    this._refAreas = [];
-    this._bgColor = null;
-    this._destroyChart();
-    this._save();
-    this._render();
-    this._bindContainerEvents();
   },
 
   _destroyChart() {

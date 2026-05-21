@@ -161,8 +161,6 @@ export default {
               data-role="system"
               value="${this._escape(this._system)}"
               placeholder="${t('systemPlaceholder')}" />
-            <button class="btn btn--sm" type="button" data-action="example">${t('loadExample')}</button>
-            <button class="btn btn--sm" type="button" data-action="reset">${t('reset')}</button>
           </section>
 
           ${TRENDS.map((trend, idx) => this._renderTrend(trend, idx + 1, t)).join('')}
@@ -269,43 +267,6 @@ export default {
         this._persist();
       });
     });
-
-    c.querySelector('[data-action="example"]')?.addEventListener('click', () => this._loadBuiltInExample());
-    c.querySelector('[data-action="reset"]')?.addEventListener('click', () => this._reset());
-  },
-
-  _loadBuiltInExample() {
-    const ex = this._context.i18n.t('modules.triz-evolution-trends.example');
-    if (!ex || typeof ex !== 'object') return;
-    this._system = String(ex.system ?? '');
-    const trends = emptyTrends();
-    for (const t of TRENDS) {
-      const src = ex.trends?.[t.id];
-      if (!src) continue;
-      if (t.stages > 0) {
-        const s = Number(src.stage);
-        trends[t.id].stage = Number.isInteger(s) && s >= -1 && s < t.stages ? s : -1;
-      }
-      trends[t.id].notes = typeof src.notes === 'string' ? src.notes : '';
-    }
-    this._trends = trends;
-    this._persist();
-    this._render();
-  },
-
-  async _reset() {
-    const ctx = this._context;
-    const ok = await ctx.showModal?.confirm?.({
-      title: ctx.i18n.t('modules.triz-evolution-trends.resetTitle'),
-      message: ctx.i18n.t('modules.triz-evolution-trends.resetMessage'),
-      confirmText: ctx.i18n.t('modules.triz-evolution-trends.reset'),
-      cancelText: ctx.i18n.t('common.cancel'),
-    });
-    if (ok === false) return;
-    this._system = '';
-    this._trends = emptyTrends();
-    this._persist();
-    this._render();
   },
 
   _persist() {

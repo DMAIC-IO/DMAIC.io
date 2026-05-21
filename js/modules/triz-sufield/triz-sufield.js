@@ -238,8 +238,6 @@ export default {
               ${t('filterAll')}
             </label>
             <div class="triz-sf__filter-spacer"></div>
-            <button class="btn btn--sm" type="button" data-action="example">${t('loadExample')}</button>
-            <button class="btn btn--sm" type="button" data-action="reset">${t('reset')}</button>
           </section>
 
           <section class="triz-sf__standards">
@@ -440,45 +438,6 @@ export default {
         this._render();
       });
     });
-
-    c.querySelector('[data-action="example"]')?.addEventListener('click', () => this._loadBuiltInExample());
-    c.querySelector('[data-action="reset"]')?.addEventListener('click', () => this._reset());
-  },
-
-  _loadBuiltInExample() {
-    const ex = this._context.i18n.t('modules.triz-sufield.example');
-    if (!ex || typeof ex !== 'object') return;
-    this._s1 = String(ex.s1 ?? '');
-    this._s2 = String(ex.s2 ?? '');
-    this._field = FIELDS.includes(ex.field) ? ex.field : '';
-    this._link  = LINKS.includes(ex.link) ? ex.link : '';
-    this._problemNote = String(ex.problemNote ?? '');
-    this._notes = (ex.notes && typeof ex.notes === 'object') ? { ...ex.notes } : {};
-    this._selected = (ex.selected && typeof ex.selected === 'object') ? { ...ex.selected } : {};
-    // Expand the suggested classes so the user sees the marked standards.
-    const diag = diagnose(this._s1, this._s2, this._field, this._link);
-    this._expandedClasses = new Set(diag.suggestedClasses);
-    this._persist();
-    this._render();
-  },
-
-  async _reset() {
-    const ctx = this._context;
-    const ok = await ctx.showModal?.confirm?.({
-      title: ctx.i18n.t('modules.triz-sufield.resetTitle'),
-      message: ctx.i18n.t('modules.triz-sufield.resetMessage'),
-      confirmText: ctx.i18n.t('modules.triz-sufield.reset'),
-      cancelText: ctx.i18n.t('common.cancel'),
-    });
-    if (ok === false) return;
-    this._s1 = ''; this._s2 = ''; this._field = ''; this._link = '';
-    this._problemNote = '';
-    this._notes = {};
-    this._selected = {};
-    this._filterMode = 'auto';
-    this._expandedClasses = new Set([1]);
-    this._persist();
-    this._render();
   },
 
   _persist() {

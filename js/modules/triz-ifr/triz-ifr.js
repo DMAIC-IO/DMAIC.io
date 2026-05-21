@@ -167,9 +167,6 @@ export default {
             <button class="btn btn--sm triz-ifr__resources-btn" type="button" data-action="open-resources">
               ${t('openResources')}
             </button>
-            <div class="triz-ifr__spacer"></div>
-            <button class="btn btn--sm" type="button" data-action="example">${t('loadExample')}</button>
-            <button class="btn btn--sm" type="button" data-action="reset">${t('reset')}</button>
           </section>
         </div>
       </div>
@@ -215,8 +212,6 @@ export default {
     bind('ifr3',      '_ifr3');
     bind('obstacles', '_obstacles');
 
-    c.querySelector('[data-action="example"]')?.addEventListener('click', () => this._loadBuiltInExample());
-    c.querySelector('[data-action="reset"]')?.addEventListener('click', () => this._reset());
     c.querySelector('[data-action="open-resources"]')?.addEventListener('click', () => this._openResources());
   },
 
@@ -225,40 +220,6 @@ export default {
     // surface a hint that points the user at the extras tile.  Once such an API
     // exists, this can switch to an event-driven add.
     this._context.notify?.(this._context.i18n.t('modules.triz-ifr.openResourcesHint'), 'info');
-  },
-
-  _loadBuiltInExample() {
-    const ex = this._context.i18n.t('modules.triz-ifr.example');
-    if (!ex || typeof ex !== 'object') return;
-    this._system         = String(ex.system         ?? '');
-    this._usefulFunction = String(ex.usefulFunction ?? '');
-    this._harmfulEffect  = String(ex.harmfulEffect  ?? '');
-    this._ifr1           = String(ex.ifr1           ?? '');
-    this._ifr2           = String(ex.ifr2           ?? '');
-    this._ifr3           = String(ex.ifr3           ?? '');
-    this._obstacles      = String(ex.obstacles      ?? '');
-    this._persist();
-    this._render();
-  },
-
-  async _reset() {
-    const ctx = this._context;
-    const ok = await ctx.showModal?.confirm?.({
-      title: ctx.i18n.t('modules.triz-ifr.resetTitle'),
-      message: ctx.i18n.t('modules.triz-ifr.resetMessage'),
-      confirmText: ctx.i18n.t('modules.triz-ifr.reset'),
-      cancelText: ctx.i18n.t('common.cancel'),
-    });
-    if (ok === false) return;
-    this._system = '';
-    this._usefulFunction = '';
-    this._harmfulEffect = '';
-    this._ifr1 = '';
-    this._ifr2 = '';
-    this._ifr3 = '';
-    this._obstacles = '';
-    this._persist();
-    this._render();
   },
 
   _persist() {

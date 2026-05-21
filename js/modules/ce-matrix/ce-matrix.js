@@ -470,21 +470,6 @@ export default {
     this._render();
   },
 
-  async _resetAll(t) {
-    const confirmed = await this._context.confirmPopout(
-      t('resetConfirm'),
-      { danger: true }
-    );
-    if (!confirmed) return;
-    this._inputs = ['Input 1', 'Input 2', 'Input 3'];
-    this._outputs = ['Output 1', 'Output 2', 'Output 3'];
-    this._scores = {};
-    this._weights = [1, 1, 1];
-    this._save();
-    this._render();
-    this._context.notify(t('resetDone'));
-  },
-
   // ─── Deferred render ────────────────────────────────────────
 
   _deferRender() {

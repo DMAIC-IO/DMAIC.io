@@ -340,8 +340,8 @@ export const renderMethods = {
               <span>${esc(names[pair.i])} ↔ ${esc(names[pair.j])}</span>
               <span class="corr__matrix-plot-header-right">
                 <span class="corr__matrix-plot-r" style="color:${color}">r = ${rLabel}</span>
-                <span class="corr__matrix-plot-meta">p = ${pLabel}</span>
-                ${ciLabel ? `<span class="corr__matrix-plot-meta">${confPct}% CI ${ciLabel}</span>` : ''}
+                ${ciLabel ? `<span class="corr__matrix-plot-meta">${confPct}% ${t('ciShort')} ${ciLabel}</span>` : ''}
+                <span class="corr__matrix-plot-meta">| p = ${pLabel}</span>
                 <span class="corr__matrix-plot-chevron">▼</span>
               </span>
             </div>

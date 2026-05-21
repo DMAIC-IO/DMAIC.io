@@ -441,9 +441,6 @@ export default {
         <button class="pairwise__btn pairwise__btn--outline" type="button" data-action="copy-results">
           ⎘ ${t('copyResults')}
         </button>
-        <button class="pairwise__btn pairwise__btn--danger" type="button" data-action="reset">
-          ↺ ${t('resetAll')}
-        </button>
       </div>
     `;
   },
@@ -522,7 +519,6 @@ export default {
     } else if (action === 'export-csv') this._exportCSV();
     else if (action === 'export-json') this._exportJSON();
     else if (action === 'copy-results') this._copyResults();
-    else if (action === 'reset') this._resetAll();
   },
 
   _handleCompareKey(e) {
@@ -634,21 +630,6 @@ export default {
     this._matrix[j][i] = next === 0.5 ? 0.5 : 1 - next;
     this._save();
     this._renderContent();
-  },
-
-  _resetAll() {
-    const msg = this._t('resetConfirm');
-    Promise.resolve(this._context.confirmPopout(msg, { danger: true })).then((confirmed) => {
-      if (!confirmed) return;
-      this._criteria = [];
-      this._matrix = [];
-      this._pairs = [];
-      this._currentPair = 0;
-      this._viewPhase = 'input';
-      this._save();
-      this._render();
-      this._context.notify(this._t('resetDone'));
-    });
   },
 
   // ─── Export ────────────────────────────────────────────────

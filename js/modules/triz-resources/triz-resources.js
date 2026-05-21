@@ -164,8 +164,6 @@ export default {
               data-role="system"
               value="${this._escape(this._system)}"
               placeholder="${t('systemPlaceholder')}" />
-            <button class="btn btn--sm" type="button" data-action="example">${t('loadExample')}</button>
-            <button class="btn btn--sm" type="button" data-action="reset">${t('reset')}</button>
           </section>
 
           <section class="triz-res__grid" aria-label="${t('gridAriaLabel')}">
@@ -271,44 +269,6 @@ export default {
         this._render();
       });
     });
-
-    c.querySelector('[data-action="example"]')?.addEventListener('click', () => this._loadBuiltInExample());
-    c.querySelector('[data-action="reset"]')?.addEventListener('click', () => this._reset());
-  },
-
-  _loadBuiltInExample() {
-    const ex = this._context.i18n.t('modules.triz-resources.example');
-    if (!ex || typeof ex !== 'object') return;
-    this._system = String(ex.system ?? '');
-    const cells = emptyCells();
-    for (const cat of CATEGORIES) {
-      for (const lvl of LEVELS) {
-        const src = ex.cells?.[cat]?.[lvl];
-        if (!src) continue;
-        cells[cat][lvl] = {
-          notes: String(src.notes ?? ''),
-          status: STATUS_CYCLE.includes(src.status) ? src.status : 'unknown',
-        };
-      }
-    }
-    this._cells = cells;
-    this._persist();
-    this._render();
-  },
-
-  async _reset() {
-    const ctx = this._context;
-    const ok = await ctx.showModal?.confirm?.({
-      title: ctx.i18n.t('modules.triz-resources.resetTitle'),
-      message: ctx.i18n.t('modules.triz-resources.resetMessage'),
-      confirmText: ctx.i18n.t('modules.triz-resources.reset'),
-      cancelText: ctx.i18n.t('common.cancel'),
-    });
-    if (ok === false) return;
-    this._system = '';
-    this._cells = emptyCells();
-    this._persist();
-    this._render();
   },
 
   _persist() {

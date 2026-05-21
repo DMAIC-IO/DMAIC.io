@@ -64,7 +64,6 @@ const mod = {
   _eventUnsubs: [],
   _plotting: false,
   _interactionsReady: false,
-  _clickBound: false,
   _containerEventsBound: false,
   _activeColorPicker: null,
   /** @type {DatasetPicker|null} */
@@ -163,7 +162,6 @@ const mod = {
     }
     if (this._globalMoveHandler) window.removeEventListener('mousemove', this._globalMoveHandler);
     if (this._globalUpHandler) window.removeEventListener('mouseup', this._globalUpHandler);
-    this._clickBound = false;
     this._container.innerHTML = '';
   },
 
@@ -485,16 +483,6 @@ const mod = {
   // ─── Events ─────────────────────────────────────────────────
 
   _bindEvents() {
-    // Delegated click handler — guard against stacking on re-render
-    if (!this._clickBound) {
-      this._clickBound = true;
-      this._container.addEventListener('click', (e) => {
-        const action = e.target.closest('[data-action]')?.dataset.action;
-        if (!action) return;
-        if (action === 'reset' && !e.target.closest('.dmike-chart-modebar')) this._resetAll();
-      });
-    }
-
     // Bin mode
     const binModeEl = this._container.querySelector('[data-ref="bin-mode"]');
     if (binModeEl) binModeEl.addEventListener('change', () => {
@@ -610,33 +598,6 @@ const mod = {
 
   _save() {
     this._context.stateManager.setModuleState(this._context.instanceId, this.getState());
-  },
-
-  _resetAll() {
-    this._datasets = [{ valueRef: null, groupRef: null }];
-    this._binMode = 'auto';
-    this._binWidth = null;
-    this._showPareto = true;
-    this._showStats = true;
-    this._showBoxplot = true;
-    this._confLevel = 95;
-    this._chartConfig = {
-      showTitle: true, title: '',
-      titleSize: 15, labelSize: 12, tickSize: 11,
-      showXLabel: true, showYLabel: true,
-      showXTicks: true, showYTicks: true,
-      bgColor: null,
-    };
-    this._barGap = 1;
-    this._refLines = [];
-    this._refAreas = [];
-    this._editorOpen = false;
-    this._seriesData = null;
-    this._seriesOverrides = [];
-    this._closeColorPicker();
-    if (this._picker) { this._picker.destroy(); this._picker = null; }
-    this._save();
-    this._render();
   },
 
   // ─── Plot ───────────────────────────────────────────────────

@@ -7,6 +7,8 @@
  * Follows the same pattern as MSA modules (msa-typ1.js, msa-typ2.js).
  */
 
+import { ROLE } from '../../core/datagrid/datagrid-roles.js';
+
 // ─── Create Worksheet ──────────────────────────────────────────────
 
 /**
@@ -82,6 +84,8 @@ export function createDesignWorksheet(context, design, factors, responses, doeNa
     formulas: new Array(nRuns).fill(null),
     format: { decimals: 0 },
     meta: lockMeta('hard', 'run-order'),
+    role: ROLE.IDENTIFIER,
+    roleManual: true,
   });
 
   // StdOrder column — also serves as group id for replicate aggregates,
@@ -97,6 +101,8 @@ export function createDesignWorksheet(context, design, factors, responses, doeNa
     formulas: new Array(nRuns).fill(null),
     format: { decimals: 0 },
     meta: lockMeta('hard', 'group-id'),
+    role: ROLE.IDENTIFIER,
+    roleManual: true,
   });
 
   // Block column (always 1 for now — multi-block support in Phase E)
@@ -110,6 +116,8 @@ export function createDesignWorksheet(context, design, factors, responses, doeNa
     formulas: new Array(nRuns).fill(null),
     format: { decimals: 0 },
     meta: lockMeta('hard', 'block-column'),
+    role: ROLE.CATEGORICAL,
+    roleManual: true,
   });
 
   // Replicate column
@@ -123,6 +131,8 @@ export function createDesignWorksheet(context, design, factors, responses, doeNa
     formulas: new Array(nRuns).fill(null),
     format: { decimals: 0 },
     meta: lockMeta('hard', 'replicate-id'),
+    role: ROLE.CATEGORICAL,
+    roleManual: true,
   });
 
   // Factor columns. For categorical factors the natural-units column carries
@@ -162,6 +172,8 @@ export function createDesignWorksheet(context, design, factors, responses, doeNa
       formulas: new Array(nRuns).fill(null),
       format: isCategorical ? null : { decimals: 2 },
       meta: coding ? { ...baseMeta, categoricalCoding: coding } : baseMeta,
+      role: isCategorical ? ROLE.CATEGORICAL : ROLE.CONTINUOUS,
+      roleManual: true,
     });
   });
 
@@ -193,6 +205,8 @@ export function createDesignWorksheet(context, design, factors, responses, doeNa
       formulas: new Array(nRuns).fill(null),
       format: { decimals: 4 },
       meta: null,    // explicit null — user fills these in, no lock.
+      role: ROLE.CONTINUOUS,
+      roleManual: true,
     });
   });
 
@@ -234,6 +248,8 @@ export function createDesignWorksheet(context, design, factors, responses, doeNa
         formulas: meanFormulas,
         format: { decimals: 4 },
         meta: lockMeta('soft', 'replicate-aggregate'),
+        role: ROLE.CONTINUOUS,
+        roleManual: true,
       });
       columns.push({
         id: lnVarId,
@@ -245,6 +261,8 @@ export function createDesignWorksheet(context, design, factors, responses, doeNa
         formulas: lnVarFormulas,
         format: { decimals: 4 },
         meta: lockMeta('soft', 'replicate-aggregate'),
+        role: ROLE.CONTINUOUS,
+        roleManual: true,
       });
     });
   }

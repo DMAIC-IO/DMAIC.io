@@ -153,8 +153,6 @@ export default {
               value="${this._escape(this._systemTitle)}"
               placeholder="${t('systemPlaceholder')}"
             />
-            <button class="btn btn--sm" type="button" data-action="example">${t('loadExample')}</button>
-            <button class="btn btn--sm" type="button" data-action="reset">${t('reset')}</button>
           </section>
 
           <section class="triz-9w__grid" aria-label="${t('gridAriaLabel')}">
@@ -173,9 +171,8 @@ export default {
   _renderHeaderRow(colDefaults, t) {
     const headers = COLS.map((_, c) => {
       const value = this._colLabels[c];
-      const hasArrow = c < COLS.length - 1;
       return `
-        <div class="triz-9w__col-head${hasArrow ? ' triz-9w__col-head--has-arrow' : ''}">
+        <div class="triz-9w__col-head">
           <input
             class="field field--ghost triz-9w__axis-input triz-9w__col-input"
             type="text"
@@ -189,8 +186,6 @@ export default {
       `;
     }).join('');
 
-    // Column header row: empty corner + 3 col headers. Arrows between time
-    // columns are rendered by CSS via :not(:last-of-type)::after on .triz-9w__col-head.
     return `
       <div class="triz-9w__corner triz-9w__corner-top" title="${t('cornerTip')}">
         <div class="triz-9w__corner-rows">${t('axisRows')}</div>
@@ -341,9 +336,6 @@ export default {
         this._render();
       });
     });
-
-    c.querySelector('[data-action="example"]')?.addEventListener('click', () => this._loadExample());
-    c.querySelector('[data-action="reset"]')?.addEventListener('click', () => this._reset());
   },
 
   /** Update the small "row · col" chip inside each cell when axis labels change,
@@ -389,38 +381,6 @@ export default {
       });
     };
     reader.readAsDataURL(file);
-  },
-
-  async _reset() {
-    const ctx = this._context;
-    const ok = await ctx.showModal?.confirm?.({
-      title: ctx.i18n.t('modules.triz-9-windows.resetTitle'),
-      message: ctx.i18n.t('modules.triz-9-windows.resetMessage'),
-      confirmText: ctx.i18n.t('modules.triz-9-windows.reset'),
-      cancelText: ctx.i18n.t('common.cancel'),
-    });
-    if (ok === false) return; // explicit cancel; if showModal is missing we proceed
-    this._systemTitle = '';
-    this._colLabels = ['', '', ''];
-    this._rowLabels = ['', '', ''];
-    this._cells = emptyCells();
-    this._enlarged = null;
-    this._persist();
-    this._render();
-  },
-
-  _loadExample() {
-    const ex = this._context.i18n.t('modules.triz-9-windows.example');
-    // The example block lives in i18n so it can be localized. Defensive: only
-    // overwrite when the i18n object is well-formed, otherwise no-op.
-    if (!ex || typeof ex !== 'object' || !Array.isArray(ex.cells) || ex.cells.length !== 3) return;
-    this._systemTitle = String(ex.systemTitle ?? '');
-    this._colLabels = ['', '', ''];
-    this._rowLabels = ['', '', ''];
-    this._cells = ex.cells.map(row => row.map(text => ({ text: String(text ?? ''), image: null })));
-    this._enlarged = null;
-    this._persist();
-    this._render();
   },
 
   _persist() {

@@ -1627,6 +1627,7 @@
       "noNumericColumns": "Keine numerischen Spalten in den Worksheets gefunden.",
       "confidenceLevel": "Konfidenzniveau",
       "confidenceInterval": "Konfidenzintervall",
+      "ciShort": "KI",
       "placeholderText": "Wählen Sie numerische Spalten aus — die Korrelationsanalyse läuft automatisch. Bei 2 Spalten: Detailansicht. Bei 3+: Korrelationsmatrix.",
       "filter": "Filter",
       "strongPositive": "Stark positiv",

@@ -191,7 +191,6 @@ export default {
             </div>
 
             <button class="btn btn--sm triz-cm__swap-btn" type="button" data-action="swap" title="${t('swap')}" aria-label="${t('swap')}">⇅</button>
-            <button class="btn btn--sm triz-cm__reset-btn" type="button" data-action="reset" title="${t('reset')}">${t('reset')}</button>
           </section>
 
           <section class="triz-cm__section">
@@ -324,13 +323,6 @@ export default {
       const a = this._improving;
       this._improving = this._worsening;
       this._worsening = a;
-      this._persist();
-      this._render();
-    });
-
-    c.querySelector('[data-action="reset"]')?.addEventListener('click', () => {
-      this._improving = null;
-      this._worsening = null;
       this._persist();
       this._render();
     });

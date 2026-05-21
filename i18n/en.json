@@ -1627,6 +1627,7 @@
       "noNumericColumns": "No numeric columns found in any worksheet.",
       "confidenceLevel": "Confidence Level",
       "confidenceInterval": "Confidence Interval",
+      "ciShort": "CI",
       "placeholderText": "Select numeric columns — the correlation analysis runs automatically. 2 columns: detailed view. 3+: correlation matrix.",
       "filter": "Filter",
       "strongPositive": "Strong positive",

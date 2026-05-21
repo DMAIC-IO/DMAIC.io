@@ -191,11 +191,6 @@ export default {
                 placeholder="${t('problemNotePlaceholder')}"
               >${this._escape(this._problemNote)}</textarea>
             </div>
-
-            <div class="triz-pc__actions">
-              <button class="btn btn--sm" type="button" data-action="example">${t('loadExample')}</button>
-              <button class="btn btn--sm" type="button" data-action="reset">${t('reset')}</button>
-            </div>
           </section>
 
           <section class="triz-pc__section">
@@ -319,48 +314,6 @@ export default {
       this._persist();
       this._render();
     });
-
-    c.querySelector('[data-action="reset"]')?.addEventListener('click', () => this._reset());
-    c.querySelector('[data-action="example"]')?.addEventListener('click', () => this._loadBuiltInExample());
-  },
-
-  _loadBuiltInExample() {
-    const ex = this._context.i18n.t('modules.triz-physical-contradiction.example');
-    if (!ex || typeof ex !== 'object') return;
-    this._parameter = String(ex.parameter ?? '');
-    this._requirementA = String(ex.requirementA ?? '');
-    this._requirementNotA = String(ex.requirementNotA ?? '');
-    this._problemNote = String(ex.problemNote ?? '');
-    this._principleNotes = {
-      time:      String(ex.principleNotes?.time      ?? ''),
-      space:     String(ex.principleNotes?.space     ?? ''),
-      condition: String(ex.principleNotes?.condition ?? ''),
-      system:    String(ex.principleNotes?.system    ?? ''),
-    };
-    this._selectedPrinciple = PRINCIPLES.includes(ex.selectedPrinciple) ? ex.selectedPrinciple : null;
-    this._solutionNote = String(ex.solutionNote ?? '');
-    this._persist();
-    this._render();
-  },
-
-  async _reset() {
-    const ctx = this._context;
-    const ok = await ctx.showModal?.confirm?.({
-      title: ctx.i18n.t('modules.triz-physical-contradiction.resetTitle'),
-      message: ctx.i18n.t('modules.triz-physical-contradiction.resetMessage'),
-      confirmText: ctx.i18n.t('modules.triz-physical-contradiction.reset'),
-      cancelText: ctx.i18n.t('common.cancel'),
-    });
-    if (ok === false) return;
-    this._parameter = '';
-    this._requirementA = '';
-    this._requirementNotA = '';
-    this._problemNote = '';
-    this._principleNotes = emptyPrincipleNotes();
-    this._selectedPrinciple = null;
-    this._solutionNote = '';
-    this._persist();
-    this._render();
   },
 
   _persist() {

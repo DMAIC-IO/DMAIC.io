@@ -67,7 +67,6 @@ export default {
     if (saved) this._loadState(saved);
 
     this._render();
-    this._bindContainerEvents();
     this._autoPlot();
   },
 
@@ -252,14 +251,6 @@ export default {
 
   // ─── Events ─────────────────────────────────────────────────
 
-  _bindContainerEvents() {
-    this._container.addEventListener('click', (e) => {
-      const action = e.target.closest('[data-action]')?.dataset.action;
-      if (!action) return;
-      if (action === 'reset') this._reset();
-    });
-  },
-
   _bindEvents() {
   },
 
@@ -275,21 +266,6 @@ export default {
   _save() {
     this._syncFromChart();
     this._context.stateManager.setModuleState(this._context.instanceId, this.getState());
-  },
-
-  _reset() {
-    this._seriesRefs = [];
-    this._groupRefs = [];
-    this._boxColors = [];
-    this._refLines = [];
-    this._refAreas = [];
-    this._bgColor = null;
-    this._lastGroups = null;
-    this._destroyChart();
-    this._save();
-    if (this._picker) { this._picker.destroy(); this._picker = null; }
-    this._render();
-    this._bindContainerEvents();
   },
 
   _destroyChart() {

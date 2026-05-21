@@ -90,7 +90,6 @@ export default {
     if (saved) this._loadState(saved);
 
     this._render();
-    this._bindContainerEvents();
     this._plot();
   },
 
@@ -299,9 +298,6 @@ export default {
   },
 
   // ─── Events ─────────────────────────────────────────────────
-
-  _bindContainerEvents() {
-  },
 
   _showError(msg) {
     const errBox = this._container?.querySelector('[data-ref="error-box"]');
