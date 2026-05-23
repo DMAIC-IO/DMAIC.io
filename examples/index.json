@@ -2608,6 +2608,57 @@
         "bubble",
         "prioritization"
       ]
+    },
+    {
+      "id": "makigami-auftragsabwicklung",
+      "type": "project",
+      "title": {
+        "de": "Auftragsabwicklung Innendienst",
+        "en": "Internal sales order processing"
+      },
+      "description": {
+        "de": "8 Schritte über 5 Rollen (Kunde, Vertrieb, Disposition, Lager, Buchhaltung). Bearbeitung ≈ 53 min, Wartezeit dominiert mit ca. 2 d 13 h 30 min — PCE liegt unter 3 %. Zeigt Standardprobleme der Auftragsabwicklung: Postfach-Liegezeiten, Übergabe-Wartezeiten, kundenseitige Verzögerungen.",
+        "en": "8 steps across 5 roles (customer, sales, dispatch, warehouse, accounting). Processing ≈ 53 min, waiting time dominates with ca. 2 d 13 h 30 min — PCE below 3 %. Showcases standard issues: inbox idle time, handover waiting, customer-side delays."
+      },
+      "source": "DMAIC.io Lehrkonfiguration",
+      "license": "public-domain",
+      "file": "projects/makigami-auftragsabwicklung.json",
+      "format": "json",
+      "modules": [
+        "makigami"
+      ],
+      "tags": [
+        "makigami",
+        "office",
+        "sales",
+        "lead-time"
+      ]
+    },
+    {
+      "id": "makigami-urlaubsantrag",
+      "type": "project",
+      "title": {
+        "de": "Urlaubsantrag (klassisches Genehmigungsverfahren)",
+        "en": "Vacation request (classic approval flow)"
+      },
+      "description": {
+        "de": "9 Schritte über 4 Rollen, Papier-Workflow vom Antrag bis zur Buchung. Bearbeitung ≈ 22 min, Lead Time > 4 Arbeitstage — PCE < 1 %. Klassischer Office-Hebel: ein riesiger Wartezeit-Block im Postkorb der Vorgesetzten.",
+        "en": "9 steps across 4 roles, paper-based workflow from application to system booking. Processing ≈ 22 min, Lead Time > 4 workdays — PCE < 1 %. Classic office lever: one huge idle block in the manager's inbox."
+      },
+      "source": "DMAIC.io Lehrkonfiguration",
+      "license": "public-domain",
+      "file": "projects/makigami-urlaubsantrag.json",
+      "format": "json",
+      "modules": [
+        "makigami"
+      ],
+      "tags": [
+        "makigami",
+        "office",
+        "hr",
+        "approval",
+        "lead-time"
+      ]
     }
   ]
 }

@@ -280,6 +280,16 @@ export default [
     },
   },
   {
+    id: 'makigami',
+    phase: 'analyze',
+    load: () => import('./makigami/makigami.js'),
+    cycles: {
+      dmaic:  { phase: 'analyze'   },
+      dmadv:  { phase: 'analyze'   },
+      eightd: { phase: 'rootcause' },
+    },
+  },
+  {
     id: 'correlation',
     phase: 'analyze',
     load: () => import('./correlation/correlation.js'),

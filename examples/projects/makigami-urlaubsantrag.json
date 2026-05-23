@@ -1,0 +1,111 @@
+{
+  "title": "Urlaubsantrag (klassisches Genehmigungsverfahren)",
+  "roles": [
+    { "id": "r-ma",   "label": "Mitarbeiter:in" },
+    { "id": "r-vg",   "label": "Vorgesetzte/r" },
+    { "id": "r-hr",   "label": "Personalabteilung" },
+    { "id": "r-sys",  "label": "Urlaubsdatenbank (IT)" }
+  ],
+  "steps": [
+    {
+      "id": "s-1",
+      "title": "Antrag ausfüllen",
+      "description": "Mitarbeiter:in füllt das PDF-Formular aus, druckt es aus.",
+      "roleIds": ["r-ma"],
+      "processTime": "5min",
+      "waitTime": "",
+      "mudaIds": ["muda-overprocessing"],
+      "notes": "PDF-Formular existiert nur als Druckvorlage — keine elektronische Erfassung.",
+      "expanded": true
+    },
+    {
+      "id": "s-2",
+      "title": "Antrag einreichen",
+      "description": "Mitarbeiter:in legt den Antrag in den Postkorb der Vorgesetzten.",
+      "roleIds": ["r-ma"],
+      "processTime": "2min",
+      "waitTime": "",
+      "mudaIds": ["muda-motion", "muda-transport"],
+      "notes": "Wegezeit zum Büro der Vorgesetzten — bei mehreren Standorten erheblich.",
+      "expanded": true
+    },
+    {
+      "id": "s-3",
+      "title": "Im Postkorb liegen",
+      "description": "Antrag wartet im physischen Postkorb auf Bearbeitung.",
+      "roleIds": [],
+      "processTime": "",
+      "waitTime": "2d",
+      "mudaIds": ["muda-waiting", "muda-inventory"],
+      "notes": "Größter Anteil der Lead Time — typischer Hebelpunkt.",
+      "expanded": true
+    },
+    {
+      "id": "s-4",
+      "title": "Antrag prüfen",
+      "description": "Vorgesetzte:r prüft Antrag gegen Teamkalender und Vertretungsregelung.",
+      "roleIds": ["r-vg"],
+      "processTime": "3min",
+      "waitTime": "",
+      "mudaIds": [],
+      "notes": "",
+      "expanded": true
+    },
+    {
+      "id": "s-5",
+      "title": "Rückfragen klären",
+      "description": "Bei Konflikten: Rückfrage an Mitarbeiter:in (E-Mail oder persönlich).",
+      "roleIds": ["r-vg", "r-ma"],
+      "processTime": "5min",
+      "waitTime": "1d",
+      "mudaIds": ["muda-waiting", "muda-defects"],
+      "notes": "Häufig bei Doppelbelegung im Team — wäre durch einsehbaren Kalender vermeidbar.",
+      "expanded": true
+    },
+    {
+      "id": "s-6",
+      "title": "Genehmigung erteilen",
+      "description": "Vorgesetzte:r unterschreibt und legt Antrag in den HR-Postkorb.",
+      "roleIds": ["r-vg"],
+      "processTime": "1min",
+      "waitTime": "",
+      "mudaIds": ["muda-motion"],
+      "notes": "",
+      "expanded": true
+    },
+    {
+      "id": "s-7",
+      "title": "Übergabe HR",
+      "description": "HR holt Anträge aus dem Postkorb (täglich 1×).",
+      "roleIds": ["r-hr"],
+      "processTime": "2min",
+      "waitTime": "1d",
+      "mudaIds": ["muda-waiting", "muda-transport"],
+      "notes": "Festes Abholfenster verlängert Wartezeit um bis zu einem Arbeitstag.",
+      "expanded": true
+    },
+    {
+      "id": "s-8",
+      "title": "Buchung im System",
+      "description": "HR überträgt den Urlaub in die Urlaubsdatenbank.",
+      "roleIds": ["r-hr", "r-sys"],
+      "processTime": "3min",
+      "waitTime": "4h",
+      "mudaIds": ["muda-waiting", "muda-overprocessing"],
+      "notes": "Doppelte Erfassung: einmal Papier, einmal System.",
+      "expanded": true
+    },
+    {
+      "id": "s-9",
+      "title": "Bestätigung an Mitarbeiter:in",
+      "description": "Automatische E-Mail aus dem System nach Buchung.",
+      "roleIds": ["r-sys"],
+      "processTime": "1min",
+      "waitTime": "",
+      "mudaIds": [],
+      "notes": "",
+      "expanded": true
+    }
+  ],
+  "settingsOpen": false
+}

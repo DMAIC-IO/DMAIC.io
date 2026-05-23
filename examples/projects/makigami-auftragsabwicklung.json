@@ -1,0 +1,101 @@
+{
+  "title": "Auftragsabwicklung Innendienst",
+  "roles": [
+    { "id": "r-kunde",     "label": "Kunde" },
+    { "id": "r-vertrieb",  "label": "Vertriebsinnendienst" },
+    { "id": "r-disp",      "label": "Disposition" },
+    { "id": "r-lager",     "label": "Lager" },
+    { "id": "r-buha",      "label": "Buchhaltung" }
+  ],
+  "steps": [
+    {
+      "id": "s-1",
+      "title": "Anfrage absenden",
+      "description": "Kunde sendet Anfrage per E-Mail oder über Webformular.",
+      "roleIds": ["r-kunde"],
+      "processTime": "3min",
+      "waitTime": "",
+      "mudaIds": [],
+      "notes": "",
+      "expanded": true
+    },
+    {
+      "id": "s-2",
+      "title": "Anfrage erfassen",
+      "description": "Vertrieb übernimmt die Anfrage aus dem zentralen Postfach, legt einen Vorgang im CRM an.",
+      "roleIds": ["r-vertrieb"],
+      "processTime": "8min",
+      "waitTime": "1h",
+      "mudaIds": ["muda-inventory", "muda-waiting"],
+      "notes": "Anfragen sammeln sich im Postfach; vereinzelt Liegezeiten über Stunden.",
+      "expanded": true
+    },
+    {
+      "id": "s-3",
+      "title": "Verfügbarkeit prüfen",
+      "description": "Vertrieb fragt beim Lager nach Bestand und Liefertermin.",
+      "roleIds": ["r-vertrieb", "r-lager"],
+      "processTime": "5min",
+      "waitTime": "2h",
+      "mudaIds": ["muda-waiting", "muda-motion"],
+      "notes": "Übergabe Vertrieb → Lager per E-Mail; Rückmeldung nicht zugesichert.",
+      "expanded": true
+    },
+    {
+      "id": "s-4",
+      "title": "Angebot erstellen",
+      "description": "Angebot im Word-Template erstellen, Preise aus Kalkulationstabelle ziehen.",
+      "roleIds": ["r-vertrieb"],
+      "processTime": "15min",
+      "waitTime": "30min",
+      "mudaIds": ["muda-overprocessing"],
+      "notes": "Template wird manuell befüllt — Über-Bearbeitung bei Standard-Anfragen.",
+      "expanded": true
+    },
+    {
+      "id": "s-5",
+      "title": "Angebot prüfen",
+      "description": "Kunde prüft, holt ggf. interne Freigaben ein.",
+      "roleIds": ["r-kunde"],
+      "processTime": "5min",
+      "waitTime": "1d",
+      "mudaIds": ["muda-waiting"],
+      "notes": "Kunde-seitige Wartezeit — größter Hebel auf Lead Time.",
+      "expanded": true
+    },
+    {
+      "id": "s-6",
+      "title": "Auftragsbestätigung",
+      "description": "Vertrieb bestätigt den Auftrag, sendet AB an Kunde und intern an Disposition.",
+      "roleIds": ["r-vertrieb"],
+      "processTime": "4min",
+      "waitTime": "4h",
+      "mudaIds": ["muda-waiting"],
+      "notes": "",
+      "expanded": true
+    },
+    {
+      "id": "s-7",
+      "title": "Disposition",
+      "description": "Disposition plant Kommissionierung und Versandtermin ein.",
+      "roleIds": ["r-disp"],
+      "processTime": "8min",
+      "waitTime": "6h",
+      "mudaIds": ["muda-waiting", "muda-transport"],
+      "notes": "Wartezeit hängt am Versandfenster (täglich 14:00 Uhr).",
+      "expanded": true
+    },
+    {
+      "id": "s-8",
+      "title": "Rechnung erstellen",
+      "description": "Buchhaltung erstellt Rechnung nach Lieferschein-Eingang.",
+      "roleIds": ["r-buha"],
+      "processTime": "5min",
+      "waitTime": "1d",
+      "mudaIds": ["muda-waiting", "muda-defects"],
+      "notes": "Rückläufer bei fehlenden Steuernummern oder Adressabweichungen.",
+      "expanded": true
+    }
+  ],
+  "settingsOpen": false
+}
