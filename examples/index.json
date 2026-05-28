@@ -1567,6 +1567,30 @@
       ]
     },
     {
+      "id": "dmaic-calendar-pizza-projekt",
+      "type": "project",
+      "title": {
+        "de": "DMAIC-Projektplan Pizza-Lieferzeit",
+        "en": "DMAIC Project Plan Pizza Delivery"
+      },
+      "description": {
+        "de": "32 Termine über 7 Wochen — vom Kickoff bis zum Projektabschluss, je Phase ein Gate Review. Daten werden beim Laden auf die aktuelle Woche (Montag = Anker) verschoben, sodass der Plan immer um heute zentriert ist.",
+        "en": "32 events across 7 weeks — from kickoff to project closure, with a gate review per phase. Dates are remapped to the current week (Monday anchor) on load so the plan always centers on today."
+      },
+      "source": "DMAIC.io Lehrkonfiguration",
+      "license": "public-domain",
+      "file": "projects/dmaic-calendar-pizza-projekt.json",
+      "format": "json",
+      "modules": [
+        "dmaic-calendar"
+      ],
+      "tags": [
+        "define",
+        "calendar",
+        "pizza-lehrcase"
+      ]
+    },
+    {
       "id": "sipoc-pizza-lieferprozess",
       "type": "project",
       "title": {
@@ -2658,6 +2682,131 @@
         "hr",
         "approval",
         "lead-time"
+      ]
+    },
+    {
+      "id": "bar-defekte-pro-schicht",
+      "type": "project",
+      "title": {
+        "de": "Defekte pro Schicht (Säulendiagramm)",
+        "en": "Defects per Shift (bar chart)"
+      },
+      "description": {
+        "de": "60 Defektereignisse über drei Schichten (Früh/Spät/Nacht) und vier Defektarten (Kratzer, Maßabweichung, Oberfläche, Sonstige). Das gestapelte Säulendiagramm zeigt auf einen Blick, dass die Frühschicht von Maßabweichungen dominiert wird, während die Nachtschicht vor allem Oberflächendefekte produziert — klassische Anomalie für die Measure-Phase.",
+        "en": "60 defect events across three shifts (Early/Late/Night) and four defect types (scratches, dimensional, surface, other). The stacked bar chart shows at a glance that the early shift is dominated by dimensional defects while the night shift produces mostly surface defects — a classic anomaly for the Measure phase."
+      },
+      "source": "DMAIC.io Lehrkonfiguration",
+      "license": "public-domain",
+      "file": "projects/bar-defekte-pro-schicht.json",
+      "format": "json",
+      "modules": [
+        "bar"
+      ],
+      "tags": [
+        "bar",
+        "categorical",
+        "cross-tab",
+        "defects"
+      ]
+    },
+    {
+      "id": "pareto-reklamationskosten",
+      "type": "project",
+      "title": {
+        "de": "Reklamationskosten Q2 (Pareto)",
+        "en": "Complaint Cost Q2 (Pareto)"
+      },
+      "description": {
+        "de": "50 Reklamationen aus Q2 mit Grund und individueller Kostenposition. Die Pareto-Auswertung summiert die Kosten je Grund und sortiert absteigend — die 80%-Linie zeigt, dass „Maßabweichung“ allein bereits den Großteil der Kosten verursacht, obwohl es nicht die häufigste Reklamation ist. Klassisches Lehrbeispiel: Frequenz ≠ Wichtigkeit.",
+        "en": "50 Q2 complaints with reason and individual cost. The Pareto analysis sums cost per reason and sorts descending — the 80 % line shows that 'dimensional deviation' alone accounts for most of the cost, even though it is not the most frequent reason. Textbook example: frequency ≠ importance."
+      },
+      "source": "DMAIC.io Lehrkonfiguration",
+      "license": "public-domain",
+      "file": "projects/pareto-reklamationskosten.json",
+      "format": "json",
+      "modules": [
+        "pareto"
+      ],
+      "tags": [
+        "pareto",
+        "categorical",
+        "cost",
+        "vital-few"
+      ]
+    },
+    {
+      "id": "mosaic-lieferantenfreigabe",
+      "type": "project",
+      "title": {
+        "de": "Lieferantenfreigabe nach Werk (Mosaik)",
+        "en": "Supplier Approval per Plant (mosaic)"
+      },
+      "description": {
+        "de": "60 Freigabe-Entscheidungen über drei Werke und drei Status-Stufen (OK/Bedingt/Abgelehnt). Das Mosaikdiagramm macht zwei Effekte gleichzeitig sichtbar: die unterschiedlichen Volumen (Spaltenbreiten — Werk-A doppelt so viele Entscheidungen wie Werk-B, dreimal so viele wie Werk-C) und die unterschiedliche Qualität (Segmenthöhen — Werk-C deutlich mehr Ablehnungen pro Werk).",
+        "en": "60 approval decisions across three plants and three status levels (OK/conditional/rejected). The mosaic plot reveals two effects at once: the volume differences (column widths — plant A has twice as many decisions as plant B, three times more than plant C) and the quality differences (segment heights — plant C has clearly more rejections per plant)."
+      },
+      "source": "DMAIC.io Lehrkonfiguration",
+      "license": "public-domain",
+      "file": "projects/mosaic-lieferantenfreigabe.json",
+      "format": "json",
+      "modules": [
+        "mosaic"
+      ],
+      "tags": [
+        "mosaic",
+        "categorical",
+        "cross-tab",
+        "supplier"
+      ]
+    },
+    {
+      "id": "heatmap-zykluszeit-schicht-linie",
+      "type": "project",
+      "title": {
+        "de": "Zykluszeit Schicht × Linie (Heatmap)",
+        "en": "Cycle Time Shift × Line (heatmap)"
+      },
+      "description": {
+        "de": "45 Zykluszeit-Messungen (in Sekunden) über drei Schichten (Früh/Spät/Nacht) und drei Produktionslinien (L1/L2/L3) — 5 Messungen pro Kombination. Die Heatmap zeigt zwei Effekte gleichzeitig: einen Linieneffekt (L3 ≈ 30 s langsamer als L1) und einen Schichteffekt (Nacht ≈ 10 s langsamer als Früh). Die Kombination (Nacht, L3) ist mit 82 s das klare Worst-Case-Feld — perfekter Einstieg für die Analyze-Phase.",
+        "en": "45 cycle-time measurements (in seconds) across three shifts (early/late/night) and three production lines (L1/L2/L3) — 5 readings per combination. The heatmap reveals two effects at once: a line effect (L3 ≈ 30 s slower than L1) and a shift effect (night ≈ 10 s slower than early). The (night, L3) cell at 82 s is the clear worst case — a perfect starting point for the Analyze phase."
+      },
+      "source": "DMAIC.io Lehrkonfiguration",
+      "license": "public-domain",
+      "file": "projects/heatmap-zykluszeit-schicht-linie.json",
+      "format": "json",
+      "modules": [
+        "heatmap"
+      ],
+      "tags": [
+        "heatmap",
+        "categorical",
+        "cross-tab",
+        "cycle-time"
+      ]
+    },
+    {
+      "id": "todo-pizza-lieferzeit",
+      "type": "project",
+      "title": {
+        "de": "Pizza-Lieferzeit Projektplan (Todo-Liste)",
+        "en": "Pizza Delivery Project Plan (todo list)"
+      },
+      "description": {
+        "de": "15 Aufgaben für das Pizza-Lieferzeit-Projekt über den DMAIC-Zyklus hinweg — von Kickoff und SIPOC über Ishikawa und Hypothesentest bis zum Reaktionsplan und Lessons Learned. Status, Owner und Zieldaten realistisch verteilt: drei erledigt, drei in Bearbeitung, acht offen, eine blockiert (wartet auf Sponsor-Entscheidung). Einträge mit aktivem Kalender-Flag wandern automatisch in den DMAIC-Kalender, sobald dieser im Define-Tile vorhanden ist.",
+        "en": "15 tasks for the pizza delivery project across the DMAIC cycle — from kickoff and SIPOC through Ishikawa and hypothesis test to the reaction plan and lessons learned. Status, owner and target dates spread realistically: three done, three in progress, eight open, one blocked (waiting on a sponsor decision). Items with the calendar flag enabled appear in the DMAIC calendar as soon as that module is added to the Define tile."
+      },
+      "source": "DMAIC.io Lehrkonfiguration",
+      "license": "public-domain",
+      "file": "projects/todo-pizza-lieferzeit.json",
+      "format": "json",
+      "modules": [
+        "todo"
+      ],
+      "tags": [
+        "todo",
+        "define",
+        "project-plan",
+        "pizza"
       ]
     }
   ]

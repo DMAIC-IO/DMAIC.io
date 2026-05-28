@@ -550,7 +550,7 @@
       "skewness": "Skewness",
       "kurtosis": "Kurtosis",
       "ci": "CI",
-      "ciCaption": "[…] = {n}% confidence interval"
+      "ciTitle": "{n}% confidence interval"
     }
   },
   "chart": {
@@ -570,6 +570,8 @@
       "axisTicks": "Axis Ticks",
       "showXTicks": "X axis ticks",
       "showYTicks": "Y axis ticks",
+      "showXGrid": "X axis grid lines",
+      "showYGrid": "Y axis grid lines",
       "series": "Series",
       "bgColor": "Background",
       "bgColorLabel": "Plot area",
@@ -627,7 +629,27 @@
         "marker": "Data Points"
       },
       "pareto": {
-        "cumulativeDots": "Cumulative Dots"
+        "cumulativeDots": "Cumulative Dots",
+        "threshold": "80% threshold",
+        "thresholdValue": "Value (%)",
+        "categories": "Categories",
+        "maxItems": "Max. bar count",
+        "otherBucket": "Bundle tail into \"Other\""
+      },
+      "mosaic": {
+        "appearance": "Appearance",
+        "showCellLabels": "Show cell labels",
+        "columnGap": "Column gap (px)",
+        "segmentGap": "Segment gap (px)"
+      },
+      "heatmap": {
+        "appearance": "Appearance",
+        "showCellLabels": "Show cell labels",
+        "cellGap": "Cell gap (px)",
+        "valueDecimals": "Decimal places",
+        "colorScheme": "Color scheme",
+        "schemeGreen": "Green gradient",
+        "schemeGray": "Grayscale"
       },
       "pie": {
         "labels": "Labels",
@@ -1849,6 +1871,8 @@
       "name": "Individual Value Plot",
       "description": "Plot every individual observation per group as a point",
       "sectionData": "Data Source",
+      "sectionOptions": "Options",
+      "confLevel": "Confidence level (%)",
       "datasets": "Data series",
       "showMean": "Show mean",
       "showMedian": "Show median",
@@ -2035,6 +2059,84 @@
         "bgColorLabel": "Color",
         "slices": "Segments"
       }
+    },
+    "bar": {
+      "name": "Bar Chart",
+      "description": "Bar chart from worksheet columns: frequency, mean, or sum per category",
+      "sectionData": "Data Source",
+      "slotX": "Category column (X axis)",
+      "slotY": "Value column (numeric, optional)",
+      "slotG": "Grouping (optional)",
+      "placeholderPickX": "Pick a category column (X) — optionally a numeric value column (Y) and a grouping column (G).",
+      "aggregation": "Aggregation",
+      "aggMean": "Mean",
+      "aggSum": "Sum",
+      "stacked": "Stacked",
+      "axisCount": "Count",
+      "axisMeanOf": "Mean of",
+      "axisSumOf": "Sum of",
+      "statsTitle": "Statistics",
+      "statCategory": "Category",
+      "statGroup": "Group",
+      "statCount": "Count",
+      "statMean": "Mean",
+      "statSum": "Sum",
+      "statTotal": "Total"
+    },
+    "pareto": {
+      "name": "Pareto Chart",
+      "description": "Bar chart sorted by descending value with a cumulative-percentage line — the classic \"vital few\" tool.",
+      "sectionData": "Data Source",
+      "slotX": "Category column (X axis)",
+      "slotY": "Value column (numeric, optional — sum per category)",
+      "slotG": "Grouping (optional, stacked Pareto)",
+      "placeholderPickX": "Pick a category column (X) — optionally a numeric value column (Y, e.g. cost) and a grouping column (G).",
+      "aggregation": "Aggregation",
+      "aggSum": "Sum",
+      "aggMean": "Mean",
+      "axisCount": "Count",
+      "axisMeanOf": "Mean of",
+      "axisSumOf": "Sum of",
+      "otherLabel": "Other",
+      "otherCountTemplate": "({n} more)",
+      "statsTitle": "Statistics (sorted)",
+      "statCategory": "Category",
+      "statCount": "Count",
+      "statMean": "Mean",
+      "statSum": "Sum",
+      "statCumPct": "Cumulative %",
+      "statTotal": "Total"
+    },
+    "mosaic": {
+      "name": "Mosaic Plot",
+      "description": "Visualises the joint distribution of two categorical variables — column widths show the marginal frequency, segment heights show the conditional shares.",
+      "sectionData": "Data Source",
+      "slotX": "1st category (X — sets column widths)",
+      "slotG": "2nd category (G — sets segment heights)",
+      "placeholderPickBoth": "Pick two categorical columns (X and G). Both are required — without them the mosaic plot is undefined.",
+      "statsTitle": "Cross-tabulation",
+      "statX": "X category",
+      "statG": "G category",
+      "statTotal": "Total"
+    },
+    "heatmap": {
+      "name": "Heatmap",
+      "description": "Cross-tabulation as a color-coded grid — cell color shows frequency, mean, or sum per (X, G) combination.",
+      "sectionData": "Data Source",
+      "slotX": "Column variable (X — categorical)",
+      "slotG": "Row variable (G — categorical)",
+      "slotV": "Value column (numeric, optional — mean/sum per cell)",
+      "placeholderPickBoth": "Pick two categorical columns (X and G). Optionally a numeric value column (V) — otherwise the heatmap shows frequencies.",
+      "aggregation": "Aggregation",
+      "aggMean": "Mean",
+      "aggSum": "Sum",
+      "axisCount": "Count",
+      "axisMeanOf": "Mean of",
+      "axisSumOf": "Sum of",
+      "statsTitle": "Cross-tabulation",
+      "statX": "X category",
+      "statG": "G category",
+      "statTotal": "Total"
     },
     "doe-planner": {
       "name": "DoE Planner",

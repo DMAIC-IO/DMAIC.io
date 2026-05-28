@@ -16,10 +16,10 @@
           "text": "App-Lizenzen für alle Fahrer-Tablets",
           "done": false,
           "owner": "IT",
-          "dueDate": "2026-08-30"
+          "dueDate": "+94d"
         }
       ],
-      "createdAt": 1715000000000
+      "createdAt": "-30d"
     },
     {
       "id": "l2",
@@ -37,10 +37,10 @@
           "text": "30 Doppelwand-Boxen beschaffen",
           "done": true,
           "owner": "Einkauf",
-          "dueDate": "2026-06-15"
+          "dueDate": "+18d"
         }
       ],
-      "createdAt": 1715086400000
+      "createdAt": "-29d"
     },
     {
       "id": "l3",
@@ -53,7 +53,7 @@
       "rootCause": "Frühere Kommunikation lief nur ad-hoc bei akuten Problemen.",
       "recommendation": "Standup dauerhaft etablieren, Filialleiter moderiert.",
       "actions": [],
-      "createdAt": 1715172800000
+      "createdAt": "-28d"
     },
     {
       "id": "l4",
@@ -71,10 +71,10 @@
           "text": "Adress-Autovervollständigung im Bestellsystem aktivieren",
           "done": false,
           "owner": "IT",
-          "dueDate": "2026-07-15"
+          "dueDate": "+48d"
         }
       ],
-      "createdAt": 1715259200000
+      "createdAt": "-27d"
     }
   ]
 }

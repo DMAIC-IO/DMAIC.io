@@ -4,26 +4,26 @@
     {
       "id": "g1",
       "description": "Lieferzeit für 95 % der Bestellungen unter 30 min senken",
-      "targetDate": "2026-09-30",
+      "targetDate": "+4M",
       "metric": "Lieferzeit (min, 95-%-Quantil)",
       "targetValue": "30",
-      "achievementLevel": 0
+      "achievementLevel": 60
     },
     {
       "id": "g2",
       "description": "Pizza-Temperatur bei Übergabe mindestens 50 °C",
-      "targetDate": "2026-08-31",
+      "targetDate": "+3M",
       "metric": "Pizza-Temperatur (°C)",
       "targetValue": "50",
-      "achievementLevel": 0
+      "achievementLevel": 100
     },
     {
       "id": "g3",
       "description": "Reklamationsquote auf < 5 % senken",
-      "targetDate": "2026-10-31",
+      "targetDate": "+5M",
       "metric": "Reklamationsquote (%)",
       "targetValue": "5",
-      "achievementLevel": 0
+      "achievementLevel": 85
     }
   ],
   "orgChart": [

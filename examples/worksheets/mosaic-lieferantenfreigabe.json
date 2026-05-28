@@ -1,0 +1,49 @@
+{
+  "sheets": [
+    {
+      "id": "sheet-lieferanten",
+      "name": "Lieferantenfreigaben",
+      "state": {
+        "columns": [
+          {
+            "id": "c-werk",
+            "name": "Werk",
+            "shortName": "W",
+            "type": "text",
+            "values": [
+              "Werk-A", "Werk-A", "Werk-A", "Werk-A", "Werk-A", "Werk-A", "Werk-A", "Werk-A", "Werk-A", "Werk-A",
+              "Werk-A", "Werk-A", "Werk-A", "Werk-A", "Werk-A", "Werk-A", "Werk-A", "Werk-A", "Werk-A", "Werk-A",
+              "Werk-A", "Werk-A", "Werk-A", "Werk-A", "Werk-A", "Werk-A", "Werk-A", "Werk-A", "Werk-A", "Werk-A",
+              "Werk-B", "Werk-B", "Werk-B", "Werk-B", "Werk-B", "Werk-B", "Werk-B", "Werk-B", "Werk-B", "Werk-B",
+              "Werk-B", "Werk-B", "Werk-B", "Werk-B", "Werk-B", "Werk-B", "Werk-B", "Werk-B", "Werk-B", "Werk-B",
+              "Werk-C", "Werk-C", "Werk-C", "Werk-C", "Werk-C", "Werk-C", "Werk-C", "Werk-C", "Werk-C", "Werk-C"
+            ]
+          },
+          {
+            "id": "c-status",
+            "name": "Freigabe-Status",
+            "shortName": "St",
+            "type": "text",
+            "values": [
+              "OK", "OK", "OK", "OK", "OK", "OK", "OK", "OK", "OK", "OK",
+              "OK", "OK", "OK", "OK", "OK", "OK", "OK", "OK", "OK", "OK",
+              "OK", "OK", "OK", "OK",
+              "Bedingt", "Bedingt", "Bedingt", "Bedingt",
+              "Abgelehnt", "Abgelehnt",
+              "OK", "OK", "OK", "OK", "OK", "OK", "OK", "OK", "OK", "OK",
+              "OK", "OK",
+              "Bedingt", "Bedingt", "Bedingt", "Bedingt", "Bedingt",
+              "Abgelehnt", "Abgelehnt", "Abgelehnt",
+              "OK", "OK", "OK", "OK",
+              "Bedingt", "Bedingt", "Bedingt",
+              "Abgelehnt", "Abgelehnt", "Abgelehnt"
+            ]
+          }
+        ],
+        "rowCount": 60
+      }
+    }
+  ],
+  "activeSheetId": "sheet-lieferanten",
+  "sheetCounter": 1
+}

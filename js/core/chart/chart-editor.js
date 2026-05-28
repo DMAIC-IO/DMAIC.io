@@ -327,17 +327,40 @@ export function edAxisLabelSection(config, onUpdate, t) {
 }
 
 /**
- * Build axis tick visibility toggles.
+ * Build axis tick + grid visibility toggles.
  * Mutates config in-place, calls onUpdate() after each change.
- * @param {{ showXTicks: boolean, showYTicks: boolean }} config - Mutated in-place
+ *
+ * Per axis the section shows:
+ *   - Tick toggle (`showXTicks` / `showYTicks`) — skipped when the axis is
+ *     declared `categoricalX` / `categoricalY`, because the labels are
+ *     drawn by the chart type itself.
+ *   - Grid toggle (`showXGrid` / `showYGrid`) — skipped for the same reason
+ *     (the grid wouldn't render anyway since chart-base short-circuits on
+ *     the categorical flag).
+ *
+ * If both axes are fully categorical, the entire section is suppressed
+ * (returns `null`).
+ *
+ * @param {{
+ *   showXTicks: boolean, showYTicks: boolean,
+ *   showXGrid?: boolean, showYGrid?: boolean,
+ *   categoricalX?: boolean, categoricalY?: boolean
+ * }} config - Mutated in-place
  * @param {function} onUpdate - Called after config is mutated
  * @param {function} t
- * @returns {HTMLElement}
+ * @returns {HTMLElement|null}
  */
 export function edAxisTickSection(config, onUpdate, t) {
+  if (config.categoricalX === true && config.categoricalY === true) return null;
   const sec = edSection(t('axisTicks'));
-  sec.appendChild(edCheckboxRow(t('showXTicks'), config.showXTicks !== false, (v) => { config.showXTicks = v; onUpdate(); }));
-  sec.appendChild(edCheckboxRow(t('showYTicks'), config.showYTicks !== false, (v) => { config.showYTicks = v; onUpdate(); }));
+  if (config.categoricalX !== true) {
+    sec.appendChild(edCheckboxRow(t('showXTicks'), config.showXTicks !== false, (v) => { config.showXTicks = v; onUpdate(); }));
+    sec.appendChild(edCheckboxRow(t('showXGrid'),  config.showXGrid  !== false, (v) => { config.showXGrid  = v; onUpdate(); }));
+  }
+  if (config.categoricalY !== true) {
+    sec.appendChild(edCheckboxRow(t('showYTicks'), config.showYTicks !== false, (v) => { config.showYTicks = v; onUpdate(); }));
+    sec.appendChild(edCheckboxRow(t('showYGrid'),  config.showYGrid  !== false, (v) => { config.showYGrid  = v; onUpdate(); }));
+  }
   return sec;
 }
 

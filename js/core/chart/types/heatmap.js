@@ -2,9 +2,10 @@
  * heatmap.js — Heatmap / pivot grid for two categorical factors.
  *
  * Cells are arranged in an `nY × nX` grid (one row per Y-level, one
- * column per X-level). Cell colour is the chart accent at a linear
- * opacity from 0.08 (min value) to 0.95 (max value). NaN / missing
- * cells render as a light-gray placeholder.
+ * column per X-level). Cell colour is sampled from a sequential
+ * scheme (viridis / plasma / thermal / green / grayscale, same as the
+ * Contour Plot module). NaN / missing cells render as a light-gray
+ * placeholder.
  *
  * Config:
  *   xCategories: string[]      — column labels (top→bottom in cells matrix)
@@ -14,11 +15,14 @@
  *   valueDecimals: 1           — digits for inline value labels and tooltip
  *   valueLabel: ''             — semantic prefix in tooltip ('n' / 'Mittelwert')
  *   showCellLabels: true       — draw values inside cells when they fit
+ *   colorScheme: 'viridis'     — sequential color ramp; see core/chart/color-schemes.js
  *   showYLabel/showXLabel come from base; row/col labels are drawn here.
  */
 
 import ChartBase from '../chart-base.js';
 import { svgEl, svgText, resolveColor, formatNum } from '../chart-core.js';
+import { edSection, edCheckboxRow, edRangeRow, edInlineNum, edSelectRow } from '../chart-editor.js';
+import { getColor, rgbLuminance } from '../color-schemes.js';
 
 export default class HeatmapChart extends ChartBase {
   /**
@@ -35,10 +39,15 @@ export default class HeatmapChart extends ChartBase {
       valueDecimals: 1,
       valueLabel: '',
       showCellLabels: true,
+      colorScheme: 'viridis',
       // No standard legend; the colour ramp is implicit + cell labels carry values.
       showLegend: false,
       showXTicks: false,
       showYTicks: false,
+      // Both axes are categorical → suppress the entire axis-tick section
+      // in the standard editor.
+      categoricalX: true,
+      categoricalY: true,
     };
     super(container, Object.assign(defaults, config), context);
   }
@@ -76,8 +85,8 @@ export default class HeatmapChart extends ChartBase {
     const hasRange = Number.isFinite(minV) && Number.isFinite(maxV);
     const span = hasRange ? (maxV - minV) : 0;
 
-    const accent = resolveColor('var(--color-accent)');
     const missing = resolveColor('var(--color-background-secondary)');
+    const scheme = this.config.colorScheme || 'viridis';
 
     this._cellRects = [];
 
@@ -95,11 +104,11 @@ export default class HeatmapChart extends ChartBase {
           continue;
         }
         const t = span > 0 ? (v - minV) / span : 0.5;
-        // 0.08 .. 0.95 — keep the lowest cell visible against the background.
-        const opacity = 0.08 + t * (0.95 - 0.08);
+        const rgb = getColor(t, scheme);
+        const fill = `rgb(${rgb[0]},${rgb[1]},${rgb[2]})`;
         svgEl('rect', {
           x: cx, y: cy, width: cellW, height: cellH,
-          fill: accent, 'fill-opacity': opacity,
+          fill,
         }, plotGroup);
 
         this._cellRects.push({
@@ -108,10 +117,10 @@ export default class HeatmapChart extends ChartBase {
         });
 
         if (this.config.showCellLabels && cellW >= 36 && cellH >= 18) {
-          // Use dark text on light cells (low opacity), light text on dark cells.
-          const txtFill = opacity > 0.5
-            ? resolveColor('var(--color-background-primary)')
-            : resolveColor('var(--color-text-primary)');
+          // Pick readable text per cell using luminance of the fill color.
+          // Fixed black/white (not theme variables) — those would invert in dark mode
+          // and make labels unreadable on e.g. purple plasma cells.
+          const txtFill = rgbLuminance(rgb) > 0.6 ? '#000' : '#fff';
           svgText(formatNum(v, this.config.valueDecimals, this.locale), {
             x: cx + cellW / 2,
             y: cy + cellH / 2 + 4,
@@ -151,6 +160,68 @@ export default class HeatmapChart extends ChartBase {
   /** @override */
   _getLegendItems() {
     return [];
+  }
+
+  /** @override */
+  _buildTypeEditor(inner, t, onUpdate) {
+    const cfg = this.config;
+    const th = (key) => {
+      if (this.context && this.context.i18n) {
+        const full = `chart.editor.heatmap.${key}`;
+        const val = this.context.i18n.t(full);
+        if (val !== full) return val;
+      }
+      return key;
+    };
+
+    const sec = edSection(th('appearance'));
+
+    const preview = document.createElement('div');
+    preview.className = 'dmike-chart-ed__color-preview';
+
+    // Color scheme — same options as the Contour Plot module.
+    sec.appendChild(edSelectRow(th('colorScheme'), [
+      { value: 'viridis', label: 'Viridis' },
+      { value: 'plasma', label: 'Plasma' },
+      { value: 'thermal', label: 'Thermal' },
+      { value: 'green', label: th('schemeGreen') },
+      { value: 'grayscale', label: th('schemeGray') },
+    ], cfg.colorScheme || 'viridis', (v) => {
+      cfg.colorScheme = v;
+      this._updateColorPreview(preview);
+      onUpdate();
+    }));
+
+    sec.appendChild(preview);
+    this._updateColorPreview(preview);
+
+    sec.appendChild(edCheckboxRow(th('showCellLabels'), cfg.showCellLabels !== false, (v) => {
+      cfg.showCellLabels = v;
+      onUpdate();
+    }));
+    sec.appendChild(edRangeRow(th('cellGap'), cfg.cellGap ?? 1, (v) => {
+      cfg.cellGap = Math.max(0, Math.round(v));
+      // Use render() — not onUpdate() — so we don't rebuild the editor (and
+      // tear down the live slider element) on every drag step.
+      this.render();
+    }, 0, 8, 1));
+    sec.appendChild(edInlineNum(th('valueDecimals'), cfg.valueDecimals ?? 1, (v) => {
+      cfg.valueDecimals = Math.max(0, Math.min(6, Math.round(v)));
+      onUpdate();
+    }, 0, 6, 1));
+    inner.appendChild(sec);
+  }
+
+  _updateColorPreview(el) {
+    if (!el) return;
+    const scheme = this.config.colorScheme || 'viridis';
+    el.innerHTML = '';
+    for (let i = 0; i < 12; i++) {
+      const c = getColor(i / 11, scheme);
+      const d = document.createElement('div');
+      d.style.background = `rgb(${c[0]},${c[1]},${c[2]})`;
+      el.appendChild(d);
+    }
   }
 
   /** @override */

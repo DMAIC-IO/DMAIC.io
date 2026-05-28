@@ -1111,10 +1111,111 @@ const MODULE_PREFILL = {
       state: { columnRef: _ref(srcId, sheetId, cont[0]) },
     };
   },
+  bar(cols, srcId, sheetId) {
+    const cont = cols.filter(c => c.role === 'continuous');
+    const cat  = cols.filter(c => c.role === 'categorical' || c.role === 'ordinal');
+    // 2× cat → stacked cross-tab (counts).
+    if (cat.length >= 2) {
+      return {
+        target: 'bar',
+        state: {
+          xRef: _ref(srcId, sheetId, cat[0]),
+          gRef: _ref(srcId, sheetId, cat[1]),
+          yRef: null,
+          chartConfig: { stacked: true, aggregation: 'mean' },
+        },
+      };
+    }
+    // 1× cont + 1× cat → mean of Y per factor level.
+    if (cont.length >= 1 && cat.length >= 1) {
+      return {
+        target: 'bar',
+        state: {
+          xRef: _ref(srcId, sheetId, cat[0]),
+          yRef: _ref(srcId, sheetId, cont[0]),
+          gRef: null,
+        },
+      };
+    }
+    // Single categorical → frequency bar.
+    const cc = cat[0] || cont[0];
+    if (!cc) return null;
+    return {
+      target: 'bar',
+      state: {
+        xRef: _ref(srcId, sheetId, cc),
+        yRef: null,
+        gRef: null,
+      },
+    };
+  },
+  pareto(cols, srcId, sheetId) {
+    const cat  = cols.filter(c => c.role === 'categorical' || c.role === 'ordinal');
+    const cont = cols.filter(c => c.role === 'continuous');
+    // 2× cat → stacked Pareto on cross-tab counts.
+    if (cat.length >= 2) {
+      return {
+        target: 'pareto',
+        state: {
+          xRef: _ref(srcId, sheetId, cat[0]),
+          gRef: _ref(srcId, sheetId, cat[1]),
+          yRef: null,
+        },
+      };
+    }
+    // Single categorical → frequency Pareto.
+    const cc = cat[0] || cont[0];
+    if (!cc) return null;
+    return {
+      target: 'pareto',
+      state: {
+        xRef: _ref(srcId, sheetId, cc),
+        yRef: null,
+        gRef: null,
+      },
+    };
+  },
+  mosaic(cols, srcId, sheetId) {
+    const cat = cols.filter(c => c.role === 'categorical' || c.role === 'ordinal');
+    if (cat.length < 2) return null;
+    return {
+      target: 'mosaic',
+      state: {
+        xRef: _ref(srcId, sheetId, cat[0]),
+        gRef: _ref(srcId, sheetId, cat[1]),
+      },
+    };
+  },
+  heatmap(cols, srcId, sheetId) {
+    const cat  = cols.filter(c => c.role === 'categorical' || c.role === 'ordinal');
+    const cont = cols.filter(c => c.role === 'continuous');
+    if (cat.length < 2) return null;
+    // 1× cont + 2× cat → mean of V per (X, G) cell.
+    if (cont.length >= 1) {
+      return {
+        target: 'heatmap',
+        state: {
+          xRef: _ref(srcId, sheetId, cat[1]),
+          gRef: _ref(srcId, sheetId, cat[0]),
+          vRef: _ref(srcId, sheetId, cont[0]),
+          chartConfig: { aggregation: 'mean', valueDecimals: 2 },
+        },
+      };
+    }
+    // 2× cat → frequency cross-tab.
+    return {
+      target: 'heatmap',
+      state: {
+        xRef: _ref(srcId, sheetId, cat[1]),
+        gRef: _ref(srcId, sheetId, cat[0]),
+        vRef: null,
+      },
+    };
+  },
 };
 
 /** Suggestion chart-type → prefill adapter. Types not in this table have no
- *  open-in-module button (bar, pareto, pie, control-chart, scatter-matrix). */
+ *  open-in-module button (pie, control-chart, scatter-matrix). */
 const CHART_TYPE_TO_PREFILL = {
   'histogram':             MODULE_PREFILL.histogram,
   'scatter':               MODULE_PREFILL.xy,
@@ -1122,6 +1223,10 @@ const CHART_TYPE_TO_PREFILL = {
   'boxplot':               MODULE_PREFILL.boxplot,
   'individual-value-plot': MODULE_PREFILL.ivp,
   'probability-plot':      MODULE_PREFILL.probability,
+  'bar':                   MODULE_PREFILL.bar,
+  'pareto':                MODULE_PREFILL.pareto,
+  'mosaic':                MODULE_PREFILL.mosaic,
+  'heatmap':               MODULE_PREFILL.heatmap,
 };
 
 // ─── Helpers (module-scope, pure) ────────────────────────────────

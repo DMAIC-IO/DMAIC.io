@@ -12,6 +12,7 @@ import { problemMethods } from './ishikawa-problem.js';
 import { experimentsMethods } from './ishikawa-experiments.js';
 import { factsMethods } from './ishikawa-facts.js';
 import { chartsMethods } from './ishikawa-charts.js';
+import { resolveDateOffset } from '../../core/date-offset.js';
 
 const mod = {
   id: 'ishikawa',
@@ -131,7 +132,18 @@ const mod = {
       if (!ok) return;
     }
 
-    this.setState(payload.data);
+    const data = JSON.parse(JSON.stringify(payload.data));
+    if (Array.isArray(data.experiments)) {
+      data.experiments.forEach(e => {
+        e.startDate = resolveDateOffset(e.startDate);
+        e.endDate   = resolveDateOffset(e.endDate);
+      });
+    }
+    if (Array.isArray(data.facts)) {
+      data.facts.forEach(f => { f.date = resolveDateOffset(f.date); });
+    }
+
+    this.setState(data);
     this._context.stateManager.setModuleState(this._context.instanceId, this.getState());
 
     const lang = this._context.i18n.getLanguage();

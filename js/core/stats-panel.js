@@ -19,7 +19,7 @@
 import { descriptiveStats } from '../engines/normality-test-engine.js';
 import { tInv } from '../engines/math-utils.js';
 import { chiSquaredInv } from '../engines/process-capability-engine.js';
-import { esc } from './html-utils.js';
+import { esc, escAttr } from './html-utils.js';
 
 // ─── Helpers ────────────────────────────────────────────────
 
@@ -174,7 +174,8 @@ export function renderStatsTable(container, seriesStats, options = {}) {
   const confPct = options.confLevel ?? 95;
   const cols = options.columns || DEFAULT_COLUMNS;
   const prefix = options.cssPrefix || 'dmike';
-  const hasAnyCI = cols.some(c => c.ci);
+
+  const ciTitle = escAttr(t('ciTitle', { n: confPct }));
 
   let html = `<table class="dmike-table ${prefix}-stats-table"><thead><tr>`;
   html += `<th>${t('series')}</th>`;
@@ -195,7 +196,7 @@ export function renderStatsTable(container, seriesStats, options = {}) {
         if (c.ci) {
           const bounds = s.ci[c.key];
           if (bounds && isFinite(bounds[0]) && isFinite(bounds[1])) {
-            cell += ` <span class="${prefix}-stats-ci">[${fmtCI(bounds[0])};&nbsp;${fmtCI(bounds[1])}]</span>`;
+            cell += ` <span class="${prefix}-stats-ci" title="${ciTitle}">[${fmtCI(bounds[0])};&nbsp;${fmtCI(bounds[1])}]</span>`;
           }
         }
         html += `<td>${cell}</td>`;
@@ -209,10 +210,6 @@ export function renderStatsTable(container, seriesStats, options = {}) {
   });
 
   html += '</tbody></table>';
-
-  if (hasAnyCI) {
-    html += `<div class="${prefix}-stats-ci-caption">${t('ciCaption', { n: confPct })}</div>`;
-  }
 
   container.innerHTML = html;
 }

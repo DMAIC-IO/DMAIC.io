@@ -1,0 +1,37 @@
+{
+  "sheets": [
+    {
+      "id": "sheet-zykluszeit",
+      "name": "Zykluszeit Werk 1",
+      "state": {
+        "columns": [
+          {
+            "id": "c-schicht",
+            "name": "Schicht",
+            "shortName": "Sch",
+            "type": "text",
+            "values": ["Früh","Früh","Früh","Früh","Früh","Früh","Früh","Früh","Früh","Früh","Früh","Früh","Früh","Früh","Früh","Spät","Spät","Spät","Spät","Spät","Spät","Spät","Spät","Spät","Spät","Spät","Spät","Spät","Spät","Spät","Nacht","Nacht","Nacht","Nacht","Nacht","Nacht","Nacht","Nacht","Nacht","Nacht","Nacht","Nacht","Nacht","Nacht","Nacht"]
+          },
+          {
+            "id": "c-linie",
+            "name": "Linie",
+            "shortName": "Li",
+            "type": "text",
+            "values": ["L1","L1","L1","L1","L1","L2","L2","L2","L2","L2","L3","L3","L3","L3","L3","L1","L1","L1","L1","L1","L2","L2","L2","L2","L2","L3","L3","L3","L3","L3","L1","L1","L1","L1","L1","L2","L2","L2","L2","L2","L3","L3","L3","L3","L3"]
+          },
+          {
+            "id": "c-zykluszeit",
+            "name": "Zykluszeit",
+            "shortName": "s",
+            "type": "numeric",
+            "format": { "decimals": 0, "unit": "s" },
+            "values": [44,40,43,41,42,60,56,59,57,58,75,71,74,72,73,49,45,48,46,47,64,60,63,61,62,79,75,78,76,77,55,51,54,52,53,70,66,69,67,68,84,80,83,81,82]
+          }
+        ],
+        "rowCount": 45
+      }
+    }
+  ],
+  "activeSheetId": "sheet-zykluszeit",
+  "sheetCounter": 1
+}

@@ -6,6 +6,7 @@
  */
 
 import { escHtml, escAttr } from '../../core/html-utils.js';
+import { resolveDateOffset, resolveEpochOffset } from '../../core/date-offset.js';
 
 /** @type {number} Auto-incrementing lesson ID counter */
 let lessonIdCounter = 0;
@@ -119,7 +120,17 @@ export default {
       if (!ok) return;
     }
 
-    this.setState(payload.data);
+    const data = JSON.parse(JSON.stringify(payload.data));
+    if (Array.isArray(data.lessons)) {
+      data.lessons.forEach(l => {
+        l.createdAt = resolveEpochOffset(l.createdAt);
+        if (Array.isArray(l.actions)) {
+          l.actions.forEach(a => { a.dueDate = resolveDateOffset(a.dueDate); });
+        }
+      });
+    }
+
+    this.setState(data);
     this._context.stateManager.setModuleState(this._context.instanceId, this.getState());
 
     const lang = this._context.i18n.getLanguage();

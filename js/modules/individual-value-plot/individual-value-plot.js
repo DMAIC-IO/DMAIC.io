@@ -37,7 +37,7 @@ export default {
   _showOverallMean: false,
   _jitter: 0.6,
   _showStats: true,
-  _confLevel: 95,
+  _confLevel: null,
   _chart: null,
   _plotting: false,
   _refLines: [],
@@ -68,6 +68,10 @@ export default {
 
     const saved = context.stateManager.getModuleState(context.instanceId);
     if (saved) this._loadState(saved);
+
+    if (this._confLevel == null) {
+      this._confLevel = context.stateManager.get('settings.confidenceLevel') ?? 95;
+    }
 
     this._render();
     this._autoPlot();
@@ -113,6 +117,9 @@ export default {
 
   setState(data) {
     if (data) this._loadState(data);
+    if (this._confLevel == null) {
+      this._confLevel = this._context?.stateManager.get('settings.confidenceLevel') ?? 95;
+    }
     if (this._container) {
       if (this._picker) { this._picker.destroy(); this._picker = null; }
       this._render();
@@ -139,7 +146,7 @@ export default {
     this._showOverallMean = saved.showOverallMean ?? false;
     this._jitter = saved.jitter ?? 0.6;
     this._showStats = saved.showStats ?? true;
-    this._confLevel = saved.confLevel ?? 95;
+    this._confLevel = saved.confLevel ?? null;
     this._refLines = saved.refLines || [];
     this._refAreas = saved.refAreas || [];
     this._bgColor = saved.bgColor || null;
@@ -223,6 +230,14 @@ export default {
 
           <div data-ref="picker-wrap"></div>
 
+          <div class="dmike-split__section-title">${t('sectionOptions')}</div>
+
+          <div class="field-group">
+            <label>${t('confLevel')}</label>
+            <input type="text" class="field field--num" data-ref="conf-level" inputmode="decimal"
+                   value="${this._confLevel}" placeholder="95">
+          </div>
+
           <div class="ivplot__error" data-ref="error-box"></div>
         </div>
 
@@ -283,7 +298,20 @@ export default {
 
   // ─── Events ─────────────────────────────────────────────────
 
-  _bindEvents() {},
+  _bindEvents() {
+    const confInput = this._container.querySelector('[data-ref="conf-level"]');
+    if (confInput) {
+      confInput.addEventListener('change', () => {
+        const v = parseFloat(confInput.value.replace(',', '.'));
+        if (Number.isFinite(v) && v > 0 && v < 100) {
+          this._confLevel = v;
+        }
+        confInput.value = this._confLevel;
+        this._save();
+        this._renderStats();
+      });
+    }
+  },
 
   _showError(msg) {
     const errBox = this._container?.querySelector('[data-ref="error-box"]');

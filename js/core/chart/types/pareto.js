@@ -35,12 +35,21 @@ import ChartBase from '../chart-base.js';
 import {
   svgEl, svgText, resolveColor, formatNum, dashArray, drawMarker, createPattern, getChartColors,
 } from '../chart-core.js';
+import {
+  edSection, edCheckboxRow, edInlineNum, edRangeRow,
+} from '../chart-editor.js';
 
 /** Default cumulative line color */
 const CUM_COLOR = '#ef4444';
 
 /** Margins — extra right for %-axis label, extra bottom for rotated labels */
 const PARETO_MARGIN = { top: 48, right: 72, bottom: 90, left: 72 };
+
+/** Extra bottom space reserved when an x-axis title is present (below the rotated labels) */
+const PARETO_X_LABEL_EXTRA = 24;
+
+/** Vertical offset of the x-axis title from the plot-area bottom (clears the rotated labels) */
+const PARETO_X_LABEL_OFFSET = 88;
 
 /** Font families (must match chart-base.js) */
 const FONT_MAIN = "'Segoe UI', 'Helvetica Neue', Arial, sans-serif";
@@ -67,6 +76,11 @@ export default class ParetoChart extends ChartBase {
       showLegend: false,
       showCrosshair: false,
       showXTicks: false,
+      // The rotated category labels reach ~60–70 px below the plot area, which
+      // collides with the base class's x-axis title (drawn 46 px below). Suppress
+      // the base rendering — Pareto draws its own x-label below the rotated labels.
+      showXLabel: false,
+      categoricalX: true,  // suppress the "X-Achse Skala" toggle in the editor
 
       // Threshold reference line
       refLineValue: 80,
@@ -94,11 +108,12 @@ export default class ParetoChart extends ChartBase {
   /** @override */
   _getPlotArea() {
     const size = this._getSize();
+    const bottom = PARETO_MARGIN.bottom + (this.config.xLabel ? PARETO_X_LABEL_EXTRA : 0);
     return {
       x: PARETO_MARGIN.left,
       y: PARETO_MARGIN.top,
       w: size.w - PARETO_MARGIN.left - PARETO_MARGIN.right,
-      h: size.h - PARETO_MARGIN.top - PARETO_MARGIN.bottom,
+      h: size.h - PARETO_MARGIN.top - bottom,
       totalW: size.w,
       totalH: size.h,
       rMargin: PARETO_MARGIN.right,
@@ -109,9 +124,12 @@ export default class ParetoChart extends ChartBase {
 
   /**
    * Normalize the configured input into a sorted list of pareto items.
-   * Single-series mode passes `items[]` through verbatim. Multi-series mode
-   * builds one item per category, with `segments[]` summed for the bar height
-   * and used as the input to the cumulative-% line.
+   * Both single- and multi-series modes are sorted by descending value here
+   * — Pareto by definition is sorted, so callers don't have to pre-sort
+   * (any input order works).
+   *
+   * Multi-series mode builds one item per category, with `segments[]` summed
+   * for the bar height and used as the input to the cumulative-% line.
    *
    * @private
    */
@@ -138,8 +156,8 @@ export default class ParetoChart extends ChartBase {
       return this._applyTopNBucket(items, max, bucket);
     }
 
-    // Single-series mode: items[] passes through with no extra processing.
-    const items = (this.config.items || []).slice();
+    // Single-series mode: sort by descending value before bucketing.
+    const items = (this.config.items || []).slice().sort((a, b) => (b.value || 0) - (a.value || 0));
     return this._applyTopNBucket(items, max, bucket);
   }
 
@@ -382,6 +400,19 @@ export default class ParetoChart extends ChartBase {
       }, svg);
       txt.style.pointerEvents = 'none';
     });
+
+    // \u2500\u2500 X-axis title (below the rotated labels) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+    if (cfg.xLabel) {
+      svgText(cfg.xLabel, {
+        x: plotArea.x + plotArea.w / 2,
+        y: plotArea.y + plotArea.h + PARETO_X_LABEL_OFFSET,
+        'text-anchor': 'middle',
+        'font-size': (cfg.labelSize ?? 12) + 'px',
+        'font-weight': '600',
+        fill: textPrimary,
+        'font-family': FONT_MAIN,
+      }, svg);
+    }
   }
 
   // ── Abstract Implementation: Legend Items ──────────────────────
@@ -402,6 +433,43 @@ export default class ParetoChart extends ChartBase {
         }));
     }
     return [];
+  }
+
+  // ── Type-Specific Editor ────────────────────────────────────────
+
+  /** @override */
+  _buildTypeEditor(inner, t, onUpdate) {
+    const cfg = this.config;
+    const tp = (key) => {
+      if (this.context && this.context.i18n) {
+        const full = `chart.editor.pareto.${key}`;
+        const val = this.context.i18n.t(full);
+        if (val !== full) return val;
+      }
+      return key;
+    };
+
+    // ── Threshold (80 % line) ──
+    const thrSec = edSection(tp('threshold'));
+    thrSec.appendChild(edRangeRow(tp('thresholdValue'), cfg.refLineValue ?? 80, (v) => {
+      cfg.refLineValue = Math.max(0, Math.min(100, Math.round(v)));
+      // Use render() — not onUpdate() — so we don't rebuild the editor (and
+      // tear down the live slider element) on every drag step.
+      this.render();
+    }, 0, 100, 1));
+    inner.appendChild(thrSec);
+
+    // ── Categories (top-N + other bucket) ──
+    const catSec = edSection(tp('categories'));
+    catSec.appendChild(edInlineNum(tp('maxItems'), cfg.maxItems ?? 20, (v) => {
+      cfg.maxItems = Math.max(1, Math.round(v));
+      onUpdate();
+    }, 1, 100, 1));
+    catSec.appendChild(edCheckboxRow(tp('otherBucket'), cfg.otherBucket === true, (v) => {
+      cfg.otherBucket = v;
+      onUpdate();
+    }));
+    inner.appendChild(catSec);
   }
 
   // ── Series Descriptors (for base editor) ────────────────────────

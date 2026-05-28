@@ -1,0 +1,11 @@
+{
+  "xRef": { "instanceId": "__source__", "sheetId": "sheet-defekte", "columnId": "c-schicht" },
+  "gRef": { "instanceId": "__source__", "sheetId": "sheet-defekte", "columnId": "c-defektart" },
+  "yRef": null,
+  "chartConfig": {
+    "stacked": true,
+    "showLegend": true,
+    "title": "Defekte pro Schicht nach Defektart"
+  },
+  "sourceWorksheetFile": "worksheets/bar-defekte-pro-schicht.json"
+}

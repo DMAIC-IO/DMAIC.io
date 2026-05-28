@@ -9,6 +9,7 @@
 
 import { createModebar, exportSvgAsPNG, exportSvgAsFile } from '../../core/chart/modebar.js';
 import { edSection, edInlineNum, edSelectRow, edColorPair, openColorPicker } from '../../core/chart/chart-editor.js';
+import { resolveDateOffset } from '../../core/date-offset.js';
 
 const NW = 220;   // node width (px)
 const HG = 44;    // horizontal gap between sibling subtrees
@@ -139,7 +140,11 @@ export default {
       if (!ok) return;
     }
 
-    this.setState(payload.data);
+    const data = { ...payload.data };
+    if (Array.isArray(data.goals)) {
+      data.goals = data.goals.map(g => ({ ...g, targetDate: resolveDateOffset(g.targetDate) }));
+    }
+    this.setState(data);
     this._context.stateManager.setModuleState(this._context.instanceId, this.getState());
 
     const lang = this._context.i18n.getLanguage();
@@ -231,9 +236,8 @@ export default {
                   <table class="pc__goals-table">
                     <thead>
                       <tr>
-                        <th class="pc__col-nr">#</th>
-                        <th class="pc__col-drag" aria-label="Reihenfolge"></th>
-                        <th>${t('goalDescription')}</th>
+                        <th class="pc__col-nr" aria-label="Reihenfolge">#</th>
+                        <th class="pc__col-description">${t('goalDescription')}</th>
                         <th class="pc__col-date">${t('goalTargetDate')}</th>
                         <th class="pc__col-metric">${t('goalMetric')}</th>
                         <th class="pc__col-target">${t('goalTargetValue')}</th>
@@ -322,17 +326,15 @@ export default {
 
     return `
       <tr class="pc__goal-row" data-id="${goal.id}">
-        <td class="pc__col-nr">${index + 1}</td>
-        <td class="pc__col-drag" draggable="true" aria-hidden="true">⠿</td>
-        <td>
-          <input
-            class="field field--sm field--ghost pc__cell-input"
-            type="text"
-            value="${this._escapeHtml(goal.description)}"
+        <td class="pc__col-nr" draggable="true">${index + 1}</td>
+        <td class="pc__col-description">
+          <textarea
+            class="field field--sm field--ghost pc__cell-input pc__cell-textarea"
+            rows="1"
             data-field="description"
             placeholder="${t('goalDescription')}"
             aria-label="${t('goalDescription')}"
-          >
+          >${this._escapeHtml(goal.description)}</textarea>
         </td>
         <td class="pc__col-date">
           <input
@@ -1151,7 +1153,7 @@ export default {
     // Goal row reordering (drag & drop via grip handle)
     el.querySelectorAll('.pc__goal-row').forEach(row => {
       const id = row.dataset.id;
-      const handle = row.querySelector('.pc__col-drag');
+      const handle = row.querySelector('.pc__col-nr');
       if (handle) {
         handle.addEventListener('dragstart', (e) => {
           e.dataTransfer.effectAllowed = 'move';

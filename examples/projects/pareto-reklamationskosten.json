@@ -1,0 +1,13 @@
+{
+  "xRef": { "instanceId": "__source__", "sheetId": "sheet-reklamationen", "columnId": "c-grund" },
+  "yRef": { "instanceId": "__source__", "sheetId": "sheet-reklamationen", "columnId": "c-kosten" },
+  "gRef": null,
+  "chartConfig": {
+    "aggregation": "sum",
+    "refLineValue": 80,
+    "maxItems": 20,
+    "otherBucket": true,
+    "title": "Reklamationskosten Q2 nach Grund"
+  },
+  "sourceWorksheetFile": "worksheets/pareto-reklamationskosten.json"
+}

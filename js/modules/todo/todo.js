@@ -5,6 +5,8 @@
  * DMAIC phase: Define
  */
 
+import { resolveDateOffset } from '../../core/date-offset.js';
+
 const STATUSES = ['open', 'in-progress', 'done', 'blocked'];
 
 function uid() {
@@ -98,6 +100,36 @@ export default {
   setState(data) {
     this._importState(data);
     this._render();
+  },
+
+  /**
+   * Load a catalog example. Editorial — no worksheet is provisioned.
+   * `due` may be an absolute YYYY-MM-DD or a relative offset (`+Nd` / `-Nd`)
+   * that is resolved to today's date here so examples stay evergreen.
+   * @param { meta: object, data: object } payload
+   */
+  async loadExample(payload) {
+    if (!payload || !payload.data) return;
+    const t = (k) => this._context.i18n.t(k);
+
+    const hasContent = (this._items?.length || 0) > 0;
+    if (hasContent && this._context?.confirmPopout) {
+      const ok = await this._context.confirmPopout(t('moduleHelp.confirmOverwrite'), { danger: true });
+      if (!ok) return;
+    }
+
+    const data = JSON.parse(JSON.stringify(payload.data));
+    if (Array.isArray(data.items)) {
+      data.items = data.items.map(item => ({ ...item, due: resolveDateOffset(item.due) }));
+    }
+
+    this.setState(data);
+    this._context.stateManager.setModuleState(this._context.instanceId, this.getState());
+    this._syncCalendar();
+
+    const lang = this._context.i18n.getLanguage();
+    const title = payload.meta?.title?.[lang] || payload.meta?.title?.en || payload.meta?.id || '';
+    this._context.notify?.(t('moduleHelp.exampleLoaded').replace('{title}', title), 'success');
   },
 
   _importState(data) {

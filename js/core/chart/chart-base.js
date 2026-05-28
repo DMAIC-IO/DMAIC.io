@@ -270,8 +270,9 @@ export default class ChartBase {
     // Axis labels
     inner.appendChild(edAxisLabelSection(cfg, () => this.render(), t));
 
-    // Axis ticks
-    inner.appendChild(edAxisTickSection(cfg, () => this.render(), t));
+    // Axis ticks (suppressed when both axes are categorical)
+    const tickSec = edAxisTickSection(cfg, () => this.render(), t);
+    if (tickSec) inner.appendChild(tickSec);
 
     // Background color
     inner.appendChild(edBgColorSection(cfg, (changes) => {
@@ -808,16 +809,25 @@ export default class ChartBase {
       this._drawRefArea(areaGroup, area, i, xScale, yScale, pa);
     });
 
-    // Grid lines
+    // Grid lines — per-axis toggle. Two ways to suppress:
+    //   1. `categoricalX/Y: true` (chart-type convenience default) — implies
+    //      the axis labels are drawn by the chart type itself and a numeric
+    //      grid behind them is misleading.
+    //   2. `showXGrid/showYGrid: false` (explicit caller override, also
+    //      surfaced as a checkbox in the standard editor).
     const gridGroup = svgEl('g', { 'clip-path': `url(#${clipId})` }, svg);
-    xTick.ticks.forEach((v) => {
-      const x = Math.round(xScale(v)) + 0.5;
-      svgEl('line', { x1: x, y1: pa.y, x2: x, y2: pa.y + pa.h, stroke: gridColor, 'stroke-width': 1 }, gridGroup);
-    });
-    yTick.ticks.forEach((v) => {
-      const y = Math.round(yScale(v)) + 0.5;
-      svgEl('line', { x1: pa.x, y1: y, x2: pa.x + pa.w, y2: y, stroke: gridColor, 'stroke-width': 1 }, gridGroup);
-    });
+    if (this.config.categoricalX !== true && this.config.showXGrid !== false) {
+      xTick.ticks.forEach((v) => {
+        const x = Math.round(xScale(v)) + 0.5;
+        svgEl('line', { x1: x, y1: pa.y, x2: x, y2: pa.y + pa.h, stroke: gridColor, 'stroke-width': 1 }, gridGroup);
+      });
+    }
+    if (this.config.categoricalY !== true && this.config.showYGrid !== false) {
+      yTick.ticks.forEach((v) => {
+        const y = Math.round(yScale(v)) + 0.5;
+        svgEl('line', { x1: pa.x, y1: y, x2: pa.x + pa.w, y2: y, stroke: gridColor, 'stroke-width': 1 }, gridGroup);
+      });
+    }
 
     // Reference lines
     const refLineGroup = svgEl('g', { 'clip-path': `url(#${clipId})` }, svg);

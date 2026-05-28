@@ -550,7 +550,7 @@
       "skewness": "Schiefe",
       "kurtosis": "Kurtosis",
       "ci": "KI",
-      "ciCaption": "[…] = {n}%-Konfidenzintervall"
+      "ciTitle": "{n}%-Konfidenzintervall"
     }
   },
   "chart": {
@@ -570,6 +570,8 @@
       "axisTicks": "Achsenskala",
       "showXTicks": "X-Achse Skala",
       "showYTicks": "Y-Achse Skala",
+      "showXGrid": "X-Achse Rasterlinien",
+      "showYGrid": "Y-Achse Rasterlinien",
       "series": "Datenreihen",
       "bgColor": "Hintergrund",
       "bgColorLabel": "Plotfläche",
@@ -627,7 +629,27 @@
         "marker": "Datenpunkte"
       },
       "pareto": {
-        "cumulativeDots": "Kumulative Punkte"
+        "cumulativeDots": "Kumulative Punkte",
+        "threshold": "80%-Schwelle",
+        "thresholdValue": "Wert (%)",
+        "categories": "Kategorien",
+        "maxItems": "Max. Anzahl Balken",
+        "otherBucket": "Tail als „Sonstige“ bündeln"
+      },
+      "mosaic": {
+        "appearance": "Darstellung",
+        "showCellLabels": "Zellbeschriftung anzeigen",
+        "columnGap": "Spaltenabstand (px)",
+        "segmentGap": "Segmentabstand (px)"
+      },
+      "heatmap": {
+        "appearance": "Darstellung",
+        "showCellLabels": "Zellbeschriftung anzeigen",
+        "cellGap": "Zellabstand (px)",
+        "valueDecimals": "Nachkommastellen",
+        "colorScheme": "Farbschema",
+        "schemeGreen": "Grün-Verlauf",
+        "schemeGray": "Graustufen"
       },
       "pie": {
         "labels": "Beschriftung",
@@ -1849,6 +1871,8 @@
       "name": "Einzelwertdiagramm",
       "description": "Punktdiagramm jeder einzelnen Beobachtung pro Gruppe",
       "sectionData": "Datenquelle",
+      "sectionOptions": "Optionen",
+      "confLevel": "Konfidenzniveau (%)",
       "datasets": "Datenreihen",
       "showMean": "Mittelwert anzeigen",
       "showMedian": "Median anzeigen",
@@ -2035,6 +2059,84 @@
         "bgColorLabel": "Farbe",
         "slices": "Segmente"
       }
+    },
+    "bar": {
+      "name": "Säulendiagramm",
+      "description": "Säulen-/Balkendiagramm aus Worksheet-Spalten: Häufigkeit, Mittelwert oder Summe je Kategorie",
+      "sectionData": "Datenquelle",
+      "slotX": "Kategorie-Spalte (X-Achse)",
+      "slotY": "Wert-Spalte (numerisch, optional)",
+      "slotG": "Gruppierung (optional)",
+      "placeholderPickX": "Wähle eine Kategorie-Spalte (X) — optional eine numerische Wert-Spalte (Y) und eine Gruppierungs-Spalte (G).",
+      "aggregation": "Aggregation",
+      "aggMean": "Mittelwert",
+      "aggSum": "Summe",
+      "stacked": "Gestapelt",
+      "axisCount": "Häufigkeit",
+      "axisMeanOf": "Mittelwert von",
+      "axisSumOf": "Summe von",
+      "statsTitle": "Statistik",
+      "statCategory": "Kategorie",
+      "statGroup": "Gruppe",
+      "statCount": "Häufigkeit",
+      "statMean": "Mittelwert",
+      "statSum": "Summe",
+      "statTotal": "Gesamt"
+    },
+    "pareto": {
+      "name": "Pareto-Diagramm",
+      "description": "Nach Größe sortiertes Säulendiagramm mit kumulativer Prozent-Linie — das klassische „vital few“-Werkzeug.",
+      "sectionData": "Datenquelle",
+      "slotX": "Kategorie-Spalte (X-Achse)",
+      "slotY": "Wert-Spalte (numerisch, optional — Summe je Kategorie)",
+      "slotG": "Gruppierung (optional, gestapeltes Pareto)",
+      "placeholderPickX": "Wähle eine Kategorie-Spalte (X) — optional eine numerische Wert-Spalte (Y, z. B. Kosten) und eine Gruppierungs-Spalte (G).",
+      "aggregation": "Aggregation",
+      "aggSum": "Summe",
+      "aggMean": "Mittelwert",
+      "axisCount": "Häufigkeit",
+      "axisMeanOf": "Mittelwert von",
+      "axisSumOf": "Summe von",
+      "otherLabel": "Sonstige",
+      "otherCountTemplate": "({n} weitere)",
+      "statsTitle": "Statistik (sortiert)",
+      "statCategory": "Kategorie",
+      "statCount": "Häufigkeit",
+      "statMean": "Mittelwert",
+      "statSum": "Summe",
+      "statCumPct": "Kumuliert %",
+      "statTotal": "Gesamt"
+    },
+    "mosaic": {
+      "name": "Mosaikdiagramm",
+      "description": "Visualisiert die gemeinsame Verteilung zweier kategorialer Variablen — Spaltenbreiten zeigen die Randhäufigkeit, Segmenthöhen die bedingten Anteile.",
+      "sectionData": "Datenquelle",
+      "slotX": "1. Kategorie (X — bestimmt Spaltenbreiten)",
+      "slotG": "2. Kategorie (G — bestimmt Segmenthöhen)",
+      "placeholderPickBoth": "Wähle zwei kategoriale Spalten (X und G). Beide werden benötigt, sonst ist das Mosaikdiagramm nicht definiert.",
+      "statsTitle": "Kreuztabelle",
+      "statX": "X-Kategorie",
+      "statG": "G-Kategorie",
+      "statTotal": "Gesamt"
+    },
+    "heatmap": {
+      "name": "Heatmap",
+      "description": "Kreuztabelle als farbcodiertes Gitter — Zellfarbe zeigt Häufigkeit, Mittelwert oder Summe je (X, G)-Kombination.",
+      "sectionData": "Datenquelle",
+      "slotX": "Spalten-Variable (X — kategorial)",
+      "slotG": "Zeilen-Variable (G — kategorial)",
+      "slotV": "Wert-Spalte (numerisch, optional — Mittelwert/Summe je Zelle)",
+      "placeholderPickBoth": "Wähle zwei kategoriale Spalten (X und G). Optional eine numerische Wert-Spalte (V) — sonst zeigt die Heatmap die Häufigkeit.",
+      "aggregation": "Aggregation",
+      "aggMean": "Mittelwert",
+      "aggSum": "Summe",
+      "axisCount": "Häufigkeit",
+      "axisMeanOf": "Mittelwert von",
+      "axisSumOf": "Summe von",
+      "statsTitle": "Kreuztabelle",
+      "statX": "X-Kategorie",
+      "statG": "G-Kategorie",
+      "statTotal": "Gesamt"
     },
     "doe-planner": {
       "name": "DoE-Planer",

@@ -516,6 +516,16 @@ select.input {
   border-bottom: 2px solid var(--color-border-primary);
 }
 
+/* Default header alignment for the two well-known classes — kept at low
+   specificity so per-module per-column overrides (e.g. right-align numeric
+   columns) win without needing extra prefixes. The broad
+   `.dmike-split table:not(...)` rule deliberately stays out of this so it
+   doesn't beat module-level overrides. */
+.dmike-table th,
+.stats-table th {
+  text-align: left;
+}
+
 .dmike-table td,
 .stats-table td,
 .dmike-split table:not(.datagrid__table):not(.corr__matrix-table):not(.doe__preview-table) td {

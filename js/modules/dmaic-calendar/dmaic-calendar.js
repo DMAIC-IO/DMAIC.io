@@ -154,6 +154,57 @@ export default {
 
   setState(data) { this._importState(data); this._render(); },
 
+  /**
+   * Load a catalog example. Resolves relative `dayOffset` values (days from
+   * the Monday of the current week) into absolute `date` strings so the same
+   * snapshot stays meaningful regardless of when it is loaded.
+   * @param {{ meta: object, data: object }} payload
+   */
+  async loadExample(payload) {
+    if (!payload || !payload.data) return;
+    const t = (k) => this._context.i18n.t(k);
+
+    if (this._events.length && this._context?.confirmPopout) {
+      const ok = await this._context.confirmPopout(t('moduleHelp.confirmOverwrite'), { danger: true });
+      if (!ok) return;
+    }
+
+    const data = payload.data;
+    const anchor = getMonday(new Date());
+    const raw = Array.isArray(data.events) ? data.events : [];
+    this._events = raw.map(ev => {
+      const offset = typeof ev.dayOffset === 'number' ? ev.dayOffset : 0;
+      const d = new Date(anchor);
+      d.setDate(d.getDate() + offset);
+      return {
+        id: uid(),
+        title: ev.title || '',
+        date: dkd(d),
+        time: ev.time || '09:00',
+        duration: typeof ev.duration === 'number' ? ev.duration : 60,
+        desc: ev.desc || '',
+        phase: ev.phase || 'define',
+      };
+    });
+    if (typeof data.axisFrom === 'number') this._axisFrom = data.axisFrom;
+    if (typeof data.axisTo === 'number') this._axisTo = data.axisTo;
+    if (typeof data.dayFrom === 'number') this._dayFrom = data.dayFrom;
+    if (typeof data.dayTo === 'number') this._dayTo = data.dayTo;
+
+    const today = new Date();
+    this._currentYear = today.getFullYear();
+    this._currentMonth = today.getMonth();
+    this._currentWeekStart = anchor;
+
+    this._populateSelects();
+    this._saveState();
+    this._render();
+
+    const lang = this._context.i18n.getLanguage();
+    const title = payload.meta?.title?.[lang] || payload.meta?.title?.en || payload.meta?.id || '';
+    this._context.notify?.(t('moduleHelp.exampleLoaded').replace('{title}', title), 'success');
+  },
+
   _importState(data) {
     if (!data) return;
     this._events = Array.isArray(data.events) ? data.events : [];

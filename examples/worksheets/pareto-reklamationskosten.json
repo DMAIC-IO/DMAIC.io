@@ -1,0 +1,58 @@
+{
+  "sheets": [
+    {
+      "id": "sheet-reklamationen",
+      "name": "Reklamationen Q2",
+      "state": {
+        "columns": [
+          {
+            "id": "c-grund",
+            "name": "Reklamationsgrund",
+            "shortName": "G",
+            "type": "text",
+            "values": [
+              "Verspätete Lieferung", "Transportschaden", "Falschlieferung", "Beschädigte Verpackung",
+              "Verspätete Lieferung", "Verspätete Lieferung", "Maßabweichung", "Transportschaden",
+              "Verspätete Lieferung", "Falschlieferung", "Maßabweichung", "Verspätete Lieferung",
+              "Transportschaden", "Verspätete Lieferung", "Maßabweichung", "Beschädigte Verpackung",
+              "Verspätete Lieferung", "Falschlieferung", "Maßabweichung", "Transportschaden",
+              "Verspätete Lieferung", "Maßabweichung", "Verspätete Lieferung", "Falschlieferung",
+              "Maßabweichung", "Verspätete Lieferung", "Transportschaden", "Maßabweichung",
+              "Verspätete Lieferung", "Maßabweichung", "Falschlieferung", "Verspätete Lieferung",
+              "Maßabweichung", "Beschädigte Verpackung", "Verspätete Lieferung", "Maßabweichung",
+              "Falschlieferung", "Maßabweichung", "Verspätete Lieferung", "Maßabweichung",
+              "Sonstige", "Falschlieferung", "Maßabweichung", "Verspätete Lieferung",
+              "Maßabweichung", "Transportschaden", "Verspätete Lieferung", "Maßabweichung",
+              "Falschlieferung", "Maßabweichung"
+            ]
+          },
+          {
+            "id": "c-kosten",
+            "name": "Kosten",
+            "shortName": "€",
+            "type": "currency",
+            "format": { "decimals": 2, "currency": "EUR" },
+            "values": [
+              420, 380, 220, 95,
+              510, 480, 1850, 290,
+              360, 175, 1620, 540,
+              340, 460, 1490, 110,
+              520, 195, 1730, 270,
+              490, 1540, 380, 210,
+              1680, 410, 320, 1410,
+              530, 1590, 165, 470,
+              1520, 105, 440, 1640,
+              185, 1380, 510, 1550,
+              60, 200, 1470, 400,
+              1610, 310, 460, 1490,
+              155, 1400
+            ]
+          }
+        ],
+        "rowCount": 50
+      }
+    }
+  ],
+  "activeSheetId": "sheet-reklamationen",
+  "sheetCounter": 1
+}

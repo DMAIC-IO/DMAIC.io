@@ -22,6 +22,7 @@
 
 import ChartBase from '../chart-base.js';
 import { svgEl, svgText, resolveColor, formatNum, getChartColors } from '../chart-core.js';
+import { edSection, edCheckboxRow, edRangeRow } from '../chart-editor.js';
 
 export default class MosaicChart extends ChartBase {
   /**
@@ -39,6 +40,10 @@ export default class MosaicChart extends ChartBase {
       // Mosaic uses plotArea pixels directly — no numeric axes.
       showXTicks: false,
       showYTicks: false,
+      // Both axes are categorical → suppress the entire axis-tick section
+      // in the standard editor.
+      categoricalX: true,
+      categoricalY: true,
     };
     super(container, Object.assign(defaults, config), context);
   }
@@ -164,6 +169,36 @@ export default class MosaicChart extends ChartBase {
       isVisible: () => g.visible !== false,
       setVisible: (v) => { g.visible = v; },
     }));
+  }
+
+  /** @override */
+  _buildTypeEditor(inner, t, onUpdate) {
+    const cfg = this.config;
+    const tm = (key) => {
+      if (this.context && this.context.i18n) {
+        const full = `chart.editor.mosaic.${key}`;
+        const val = this.context.i18n.t(full);
+        if (val !== full) return val;
+      }
+      return key;
+    };
+
+    const sec = edSection(tm('appearance'));
+    sec.appendChild(edCheckboxRow(tm('showCellLabels'), cfg.showCellLabels !== false, (v) => {
+      cfg.showCellLabels = v;
+      onUpdate();
+    }));
+    sec.appendChild(edRangeRow(tm('columnGap'), cfg.columnGap ?? 2, (v) => {
+      cfg.columnGap = Math.max(0, Math.round(v));
+      // Use render() — not onUpdate() — so we don't rebuild the editor (and
+      // tear down the live slider element) on every drag step.
+      this.render();
+    }, 0, 12, 1));
+    sec.appendChild(edRangeRow(tm('segmentGap'), cfg.segmentGap ?? 1, (v) => {
+      cfg.segmentGap = Math.max(0, Math.round(v));
+      this.render();
+    }, 0, 8, 1));
+    inner.appendChild(sec);
   }
 
   /** @override */

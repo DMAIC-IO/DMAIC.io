@@ -32,6 +32,7 @@ export default class BarChart extends ChartBase {
       categoryGap: 0.3,
       yMin: 0,
       showXTicks: false,   // we draw our own category labels
+      categoricalX: true,  // suppress the "X-Achse Skala" toggle in the editor
     };
     super(container, Object.assign(defaults, config), context);
   }

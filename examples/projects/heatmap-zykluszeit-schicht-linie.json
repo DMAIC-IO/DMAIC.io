@@ -1,0 +1,12 @@
+{
+  "xRef": { "instanceId": "__source__", "sheetId": "sheet-zykluszeit", "columnId": "c-linie" },
+  "gRef": { "instanceId": "__source__", "sheetId": "sheet-zykluszeit", "columnId": "c-schicht" },
+  "vRef": { "instanceId": "__source__", "sheetId": "sheet-zykluszeit", "columnId": "c-zykluszeit" },
+  "chartConfig": {
+    "aggregation": "mean",
+    "valueDecimals": 0,
+    "showCellLabels": true,
+    "title": "Mittlere Zykluszeit nach Schicht × Linie (s)"
+  },
+  "sourceWorksheetFile": "worksheets/heatmap-zykluszeit-schicht-linie.json"
+}

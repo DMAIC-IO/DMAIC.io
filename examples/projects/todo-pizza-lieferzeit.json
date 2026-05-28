@@ -1,0 +1,129 @@
+{
+  "_dateNote": "`due` uses [+|-]Nd offsets relative to today; loadExample() resolves them via core/date-offset.js so the example stays evergreen.",
+  "items": [
+    {
+      "id": "t01",
+      "text": "Projekt-Kickoff mit Geschäftsführung und Projektteam",
+      "owner": "L. Becker",
+      "due": "-16d",
+      "status": "done",
+      "cal": true
+    },
+    {
+      "id": "t02",
+      "text": "Project Charter finalisieren und freigeben lassen",
+      "owner": "L. Becker",
+      "due": "-8d",
+      "status": "done",
+      "cal": true
+    },
+    {
+      "id": "t03",
+      "text": "SIPOC für den Pizza-Lieferprozess erstellen",
+      "owner": "M. Müller",
+      "due": "-3d",
+      "status": "done",
+      "cal": false
+    },
+    {
+      "id": "t04",
+      "text": "Voice of the Customer: 30 Kundeninterviews führen",
+      "owner": "S. Klein",
+      "due": "+8d",
+      "status": "in-progress",
+      "cal": true
+    },
+    {
+      "id": "t05",
+      "text": "Stakeholder-Analyse aktualisieren (RACI je Filiale)",
+      "owner": "L. Becker",
+      "due": "+11d",
+      "status": "in-progress",
+      "cal": false
+    },
+    {
+      "id": "t06",
+      "text": "Datenerhebungsplan: Lieferzeiten und Pizza-Temperatur (2 Wochen)",
+      "owner": "M. Müller",
+      "due": "+15d",
+      "status": "in-progress",
+      "cal": true
+    },
+    {
+      "id": "t07",
+      "text": "Messmittel-Fähigkeit (Typ 1) für Infrarot-Thermometer durchführen",
+      "owner": "A. Schäfer",
+      "due": "+18d",
+      "status": "open",
+      "cal": true
+    },
+    {
+      "id": "t08",
+      "text": "Baseline-Auswertung Lieferzeit (Cpk, Histogramm, X̄-R-Karte)",
+      "owner": "L. Becker",
+      "due": "+25d",
+      "status": "open",
+      "cal": false
+    },
+    {
+      "id": "t09",
+      "text": "Ishikawa-Workshop „Lieferzeit zu lang“ mit Fahrern und Küche",
+      "owner": "M. Müller",
+      "due": "+29d",
+      "status": "open",
+      "cal": true
+    },
+    {
+      "id": "t10",
+      "text": "5-Why-Analyse zu den drei wichtigsten Ursachen aus Ishikawa",
+      "owner": "L. Becker",
+      "due": "+36d",
+      "status": "open",
+      "cal": false
+    },
+    {
+      "id": "t11",
+      "text": "Hypothesentest: Lieferzeit-Mittelwerte zwischen den drei Fahrern (ANOVA)",
+      "owner": "L. Becker",
+      "due": "+43d",
+      "status": "open",
+      "cal": false
+    },
+    {
+      "id": "t12",
+      "text": "Routenplanungs-Tool bewerten und Pilotanbieter auswählen",
+      "owner": "S. Conti",
+      "due": "+48d",
+      "status": "blocked",
+      "cal": true
+    },
+    {
+      "id": "t13",
+      "text": "Pilot Routenplanung in Filiale Nord (2 Wochen) durchführen",
+      "owner": "M. Müller",
+      "due": "+69d",
+      "status": "open",
+      "cal": true
+    },
+    {
+      "id": "t14",
+      "text": "Reaktionsplan und Control Chart für Lieferzeit aufsetzen",
+      "owner": "L. Becker",
+      "due": "+96d",
+      "status": "open",
+      "cal": false
+    },
+    {
+      "id": "t15",
+      "text": "Lessons Learned Workshop und Projektabschluss",
+      "owner": "L. Becker",
+      "due": "+140d",
+      "status": "open",
+      "cal": true
+    }
+  ],
+  "filterStatus": "all",
+  "filterOwner": "all",
+  "sortCol": "due",
+  "sortAsc": true
+}

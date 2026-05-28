@@ -37,6 +37,30 @@ export default [
     load: () => import('./pie-chart/pie-chart.js'),
   },
   {
+    id: 'bar',
+    phase: 'data',
+    group: 'visualize',
+    load: () => import('./bar/bar.js'),
+  },
+  {
+    id: 'pareto',
+    phase: 'data',
+    group: 'visualize',
+    load: () => import('./pareto/pareto.js'),
+  },
+  {
+    id: 'mosaic',
+    phase: 'data',
+    group: 'visualize',
+    load: () => import('./mosaic/mosaic.js'),
+  },
+  {
+    id: 'heatmap',
+    phase: 'data',
+    group: 'visualize',
+    load: () => import('./heatmap/heatmap.js'),
+  },
+  {
     id: 'contour-plot',
     phase: 'data',
     group: 'visualize',

@@ -1,0 +1,77 @@
+/* ============================================================
+   Pareto Chart Module Styles (pareto.css)
+   BEM: .pareto-module__ prefix
+   ============================================================ */
+
+.pareto-module .dmike-split__input { width: 280px; }
+
+.pareto-module__error {
+  display: none;
+  font-size: var(--font-size-sm);
+  color: var(--color-error, #ef4444);
+  background: rgba(239, 68, 68, 0.08);
+  border: var(--border-width) solid rgba(239, 68, 68, 0.2);
+  border-radius: var(--border-radius);
+  padding: var(--spacing-sm);
+}
+
+.pareto-module__placeholder {
+  color: var(--color-text-secondary);
+  font-style: italic;
+  padding: var(--spacing-md);
+}
+
+.pareto-module__chart-area {
+  display: flex;
+  flex-direction: column;
+}
+
+.pareto-module__chart-wrap {
+  height: 480px;
+  overflow: hidden;
+}
+
+.pareto-module__options {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  margin-bottom: var(--spacing-sm);
+}
+
+.pareto-module__opt-row {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-primary);
+}
+
+.pareto-module__opt-row select {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-size: var(--font-size-sm);
+}
+
+.pareto-module__stats-panel {
+  overflow-x: auto;
+  margin-top: var(--spacing-md);
+}
+
+.pareto-module__stats-table {
+  font-family: var(--font-family-mono);
+}
+
+table.pareto-module__stats-table th:not(:first-child),
+table.pareto-module__stats-table td:not(:first-child) {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.pareto-module__stats-color {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  flex-shrink: 0;
+  margin-right: 4px;
+}

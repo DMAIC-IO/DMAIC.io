@@ -1,0 +1,87 @@
+/* ============================================================
+   Bar Chart Module Styles (bar.css)
+   BEM: .bar-module__ prefix
+   ============================================================ */
+
+/* Layout provided by .dmike-split (css/modules.css) */
+.bar-module .dmike-split__input { width: 280px; }
+
+.bar-module__error {
+  display: none;
+  font-size: var(--font-size-sm);
+  color: var(--color-error, #ef4444);
+  background: rgba(239, 68, 68, 0.08);
+  border: var(--border-width) solid rgba(239, 68, 68, 0.2);
+  border-radius: var(--border-radius);
+  padding: var(--spacing-sm);
+}
+
+.bar-module__placeholder {
+  color: var(--color-text-secondary);
+  font-style: italic;
+  padding: var(--spacing-md);
+}
+
+.bar-module__chart-area {
+  display: flex;
+  flex-direction: column;
+}
+
+.bar-module__chart-wrap {
+  height: 480px;
+  overflow: hidden;
+}
+
+/* Options panel */
+.bar-module__options {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  margin-bottom: var(--spacing-sm);
+}
+
+.bar-module__opt-row {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-primary);
+}
+
+.bar-module__opt-row--block {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 2px;
+}
+
+.bar-module__opt-row select,
+.bar-module__opt-row input[type="text"] {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-size: var(--font-size-sm);
+}
+
+/* Statistics table */
+.bar-module__stats-panel {
+  overflow-x: auto;
+  margin-top: var(--spacing-md);
+}
+
+.bar-module__stats-table {
+  font-family: var(--font-family-mono);
+}
+
+table.bar-module__stats-table th:last-child,
+table.bar-module__stats-table td:last-child {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.bar-module__stats-color {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  flex-shrink: 0;
+  margin-right: 4px;
+}

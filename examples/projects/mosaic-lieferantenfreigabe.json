@@ -1,0 +1,10 @@
+{
+  "xRef": { "instanceId": "__source__", "sheetId": "sheet-lieferanten", "columnId": "c-werk" },
+  "gRef": { "instanceId": "__source__", "sheetId": "sheet-lieferanten", "columnId": "c-status" },
+  "chartConfig": {
+    "showLegend": true,
+    "showCellLabels": true,
+    "title": "Lieferantenfreigabe nach Werk"
+  },
+  "sourceWorksheetFile": "worksheets/mosaic-lieferantenfreigabe.json"
+}

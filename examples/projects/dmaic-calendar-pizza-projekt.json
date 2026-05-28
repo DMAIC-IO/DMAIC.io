@@ -1,0 +1,45 @@
+{
+  "_comment": "Termine verwenden dayOffset relativ zum Montag der aktuellen Woche (0 = Mo, 1 = Di, …, 7 = Mo nächste Woche). Der Kalender löst die Offsets beim Laden in echte Daten auf, sodass der Projektplan immer um das aktuelle Datum zentriert ist.",
+  "axisFrom": 8,
+  "axisTo": 18,
+  "dayFrom": 0,
+  "dayTo": 4,
+  "events": [
+    { "title": "Kickoff Pizza-Lieferzeit-Projekt", "dayOffset": -21, "time": "09:00", "duration": 60, "phase": "define", "desc": "Projekt-Auftakt mit Sponsor (Filialleitung), Champion und Kernteam. Vorstellung Anlass, Zielsetzung, Beteiligte." },
+    { "title": "Project Charter Entwurf", "dayOffset": -19, "time": "10:00", "duration": 120, "phase": "define", "desc": "Erster Charter-Entwurf: Problemstellung (Lieferzeit > 45 min in 18 % der Fälle), Zielwert, Scope, Team, Meilensteine." },
+    { "title": "Stakeholder-Analyse", "dayOffset": -18, "time": "14:00", "duration": 90, "phase": "define", "desc": "Stakeholder-Mapping (Fahrer, Küche, Kunden, Lieferando, Nachbarschaft). Einflussreich/Betroffen-Matrix." },
+    { "title": "VOC-Interviews Stammkunden", "dayOffset": -16, "time": "11:00", "duration": 60, "phase": "define", "desc": "Telefon-Interviews mit 8 Stammkunden zum Thema Lieferzeit, Temperatur, Kommunikation." },
+    { "title": "SIPOC-Workshop", "dayOffset": -14, "time": "09:00", "duration": 120, "phase": "define", "desc": "Gemeinsamer SIPOC-Workshop mit Küche und Fahrern. End-to-End-Prozess festhalten." },
+    { "title": "Charter-Freigabe Sponsor", "dayOffset": -12, "time": "15:00", "duration": 45, "phase": "define", "desc": "Charter-Review mit Sponsor, schriftliche Freigabe." },
+    { "title": "Define Gate Review", "dayOffset": -10, "time": "15:00", "duration": 60, "phase": "define", "desc": "Phasen-Gate Define abgeschlossen. Übergabe an Measure." },
+
+    { "title": "Datensammlungsplan finalisieren", "dayOffset": -7, "time": "10:00", "duration": 60, "phase": "measure", "desc": "Operationale Definition Lieferzeit, Erfassung in Lieferando-Backend + manueller Stoppuhr-Stichprobe." },
+    { "title": "MSA Lieferzeit-Messung", "dayOffset": -5, "time": "09:00", "duration": 120, "phase": "measure", "desc": "Mess-System-Analyse: Vergleich Stoppuhr-Fahrer vs. Lieferando-Zeitstempel, Wiederholbarkeit + Reproduzierbarkeit." },
+    { "title": "Schulung Fahrer Zeiterfassung", "dayOffset": -4, "time": "14:00", "duration": 60, "phase": "measure", "desc": "Briefing aller 6 Fahrer zur einheitlichen Erfassung von Abfahrt- und Übergabezeit." },
+    { "title": "Baseline-Messung Start", "dayOffset": 0, "time": "08:00", "duration": 30, "phase": "measure", "desc": "Start der 2-Wochen-Baseline-Messung. Erfassung aller Lieferungen mit Lieferzeit, Temperatur, Distanz." },
+    { "title": "Daily Standup Messphase", "dayOffset": 1, "time": "09:00", "duration": 15, "phase": "measure", "desc": "Kurzes Standup, offene Punkte bei Erfassung." },
+    { "title": "Daily Standup Messphase", "dayOffset": 2, "time": "09:00", "duration": 15, "phase": "measure", "desc": "Kurzes Standup, offene Punkte bei Erfassung." },
+    { "title": "Daily Standup Messphase", "dayOffset": 3, "time": "09:00", "duration": 15, "phase": "measure", "desc": "Kurzes Standup, offene Punkte bei Erfassung." },
+    { "title": "Measure Gate Review", "dayOffset": 4, "time": "15:00", "duration": 60, "phase": "measure", "desc": "Phasen-Gate Measure: Baseline-Cpk vorgestellt, Übergabe an Analyze." },
+
+    { "title": "C&E-Matrix Workshop", "dayOffset": 7, "time": "09:00", "duration": 120, "phase": "analyze", "desc": "Ursache-Wirkungs-Matrix: Inputs (Routenplanung, Ofen-Belegung, Verkehr, Wetter, …) vs. Outputs (Lieferzeit, Temperatur, Reklamationen)." },
+    { "title": "Hypothesentests Lieferzeit", "dayOffset": 8, "time": "14:00", "duration": 90, "phase": "analyze", "desc": "2-Sample-t-Test Lieferzeit Mittag- vs. Abend-Schicht, ANOVA über 5 Filialen." },
+    { "title": "Ishikawa-Workshop", "dayOffset": 9, "time": "09:00", "duration": 120, "phase": "analyze", "desc": "Fischgrät-Diagramm für Hauptursache 'Lieferzeit zu lang'. 6M-Methode mit dem gesamten Team." },
+    { "title": "5-Why \"Verspätungen\"", "dayOffset": 10, "time": "11:00", "duration": 60, "phase": "analyze", "desc": "5-Why für die Top-3-Ausreißer aus der Baseline. Wurzelursachen dokumentieren." },
+    { "title": "FMEA-Bewertung", "dayOffset": 10, "time": "14:00", "duration": 120, "phase": "analyze", "desc": "Risiko-Bewertung Lieferprozess: S/O/D für identifizierte Fehlermodi." },
+    { "title": "Analyze Gate Review", "dayOffset": 11, "time": "15:00", "duration": 60, "phase": "analyze", "desc": "Phasen-Gate Analyze: 3 verifizierte Wurzelursachen vorgestellt, Übergabe an Improve." },
+
+    { "title": "Brainstorming Maßnahmen", "dayOffset": 14, "time": "09:00", "duration": 120, "phase": "improve", "desc": "Lösungs-Brainstorming für die 3 Wurzelursachen. Aufwand-Nutzen-Bewertung pro Maßnahme." },
+    { "title": "Pilot-Planung Routenoptimierung", "dayOffset": 15, "time": "14:00", "duration": 90, "phase": "improve", "desc": "Konzept Pilotlauf: routenoptimierende App für Fahrer, 2 Wochen Testphase auf einer Schicht." },
+    { "title": "Pilot Start", "dayOffset": 16, "time": "08:00", "duration": 30, "phase": "improve", "desc": "Start des Pilotbetriebs Routenoptimierung. Erfassung der Vergleichswerte." },
+    { "title": "Tagesreview Pilot", "dayOffset": 17, "time": "16:00", "duration": 30, "phase": "improve", "desc": "Tagesreview Pilot Routenoptimierung." },
+    { "title": "Pilot Zwischenstand", "dayOffset": 18, "time": "16:00", "duration": 60, "phase": "improve", "desc": "Zwischenstand Pilot: Lieferzeit-Median bereits 7 min unter Baseline." },
+    { "title": "Improve Gate Review", "dayOffset": 21, "time": "15:00", "duration": 60, "phase": "improve", "desc": "Phasen-Gate Improve: Pilot-Ergebnisse, Hochlauf auf alle Schichten beschlossen." },
+
+    { "title": "Control Plan Workshop", "dayOffset": 22, "time": "09:00", "duration": 120, "phase": "control", "desc": "Control Plan: SPC-Karten für Lieferzeit (I-MR), Eskalationspfade, Verantwortlichkeiten." },
+    { "title": "Schulung Routenoptimierung Rollout", "dayOffset": 23, "time": "14:00", "duration": 90, "phase": "control", "desc": "Schulung aller Fahrer auf das neue Routen-Tool. Aushändigung Quick-Reference." },
+    { "title": "Übergabe an Prozessverantwortliche", "dayOffset": 24, "time": "11:00", "duration": 60, "phase": "control", "desc": "Formale Übergabe an Filialleitung. Verantwortlichkeiten für Regelkarten und Eskalation festgelegt." },
+    { "title": "Lessons Learned", "dayOffset": 24, "time": "14:00", "duration": 90, "phase": "control", "desc": "Lessons-Learned-Workshop Kernteam: was lief gut, was nicht, was nehmen wir mit in das nächste Projekt." },
+    { "title": "Projektabschluss & Feier", "dayOffset": 25, "time": "16:00", "duration": 60, "phase": "control", "desc": "Offizieller Projektabschluss mit Sponsor. Pizza für das Team — was sonst." }
+  ]
+}

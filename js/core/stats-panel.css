@@ -41,12 +41,5 @@ table.dmike-stats-table td:not(:first-child) {
   color: var(--color-text-secondary);
   margin-left: 4px;
   white-space: nowrap;
-}
-
-/* Caption explaining the [...] notation, shown below the table */
-.dmike-stats-ci-caption {
-  margin-top: var(--spacing-xs);
-  font-size: var(--font-size-xs);
-  color: var(--color-text-secondary);
-  font-style: italic;
+  cursor: help;
 }

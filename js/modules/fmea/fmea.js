@@ -6,6 +6,7 @@
  */
 
 import { esc } from '../../core/html-utils.js';
+import { resolveDateOffset } from '../../core/date-offset.js';
 
 function generateId() {
   return 'f' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -140,7 +141,16 @@ export default {
       if (!ok) return;
     }
 
-    this.setState(payload.data);
+    const data = JSON.parse(JSON.stringify(payload.data));
+    if (Array.isArray(data.risks)) {
+      data.risks.forEach(r => {
+        if (Array.isArray(r.actions)) {
+          r.actions.forEach(a => { a.date = resolveDateOffset(a.date); });
+        }
+      });
+    }
+
+    this.setState(data);
     this._context.stateManager.setModuleState(this._context.instanceId, this.getState());
 
     const lang = this._context.i18n.getLanguage();

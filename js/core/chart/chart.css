@@ -861,3 +861,15 @@
 .dmike-slider.dmike-chart-ed-cp-a { background: linear-gradient(to right, transparent, #555); height: 6px; border-radius: 3px; }
 
 /* Color-picker thumb: use same style as standard sliders (no override needed) */
+
+/* Color-scheme preview strip (used by heatmap / contour-style editors) */
+.dmike-chart-ed__color-preview {
+  display: flex;
+  gap: 1px;
+  margin-top: 4px;
+  height: 8px;
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.dmike-chart-ed__color-preview div { flex: 1; }
