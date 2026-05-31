@@ -1,0 +1,15 @@
+{
+  "datasets": [
+    {
+      "valueRef": {
+        "instanceId": "__source__",
+        "sheetId": "sheet-probplot-resolution",
+        "columnId": "c-durchmesser"
+      },
+      "groupRef": null
+    }
+  ],
+  "showStats": true,
+  "confLevel": 95,
+  "sourceWorksheetFile": "worksheets/probplot-resolution.json"
+}

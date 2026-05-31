@@ -17,7 +17,7 @@ export default {
           {
             type: 'definition',
             term: 'Cp',
-            content: 'Potenzielle Fähigkeit — vergleicht die Breite der Spezifikation (USL − LSL) mit der natürlichen Streuung (6σ). Cp ignoriert die Lage des Mittelwerts; er sagt nur, ob der Prozess theoretisch schmal genug ist.',
+            content: 'Potenzielle Fähigkeit — vergleicht die Breite der Spezifikation (USL − LSL) mit der natürlichen Streuung (6σ). Cp ignoriert die Lage des {{term:mittelwert|Mittelwerts}}; er sagt nur, ob der Prozess theoretisch schmal genug ist.',
           },
           {
             type: 'definition',
@@ -55,7 +55,7 @@ export default {
           {
             type: 'definition',
             term: 'Cp',
-            content: 'Potential capability — compares the specification width (USL − LSL) with natural variation (6σ). Cp ignores the mean\'s location; it only says whether the process is theoretically narrow enough.',
+            content: 'Potential capability — compares the specification width (USL − LSL) with natural variation (6σ). Cp ignores the {{term:mittelwert|mean}}\'s location; it only says whether the process is theoretically narrow enough.',
           },
           {
             type: 'definition',

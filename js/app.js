@@ -11,6 +11,9 @@ import { I18n }           from './core/i18n.js';
 import { ThemeManager }   from './core/theme-manager.js';
 import { ModuleRegistry } from './core/module-registry.js';
 import { ExamplesRegistry } from './core/examples-registry.js';
+import { GlossaryRegistry } from './core/glossary-registry.js';
+import { configureStatsPanel } from './core/stats-panel.js';
+import { setGlossaryInlineConfig, startGlossaryAugmenter, isGlossaryInlineEnabled } from './core/glossary-inline.js';
 import ChartManager       from './core/chart/chart-manager.js';
 import { DmaicTiles }     from './ui/dmaic-tiles.js';
 import { Workspace }      from './ui/workspace.js';
@@ -28,6 +31,7 @@ import { CYCLES, getCycle, getPhaseIds, getPhaseDef, DEFAULT_CYCLE } from './cor
 import { initNightlyMode }   from './core/nightly-mode.js';
 import { TipEngine }         from './core/tips/tip-engine.js';
 import { ExportReminder }    from './core/export-reminder.js';
+import { shortcutRegistry, normalizeCombo, formatCombo }  from './core/shortcut-registry.js';
 
 async function init() {
   // ─── Core Services ───────────────────────────────────────
@@ -50,6 +54,8 @@ async function init() {
   const themeManager = new ThemeManager(stateManager, eventBus);
   themeManager.init();
 
+  shortcutRegistry.init(stateManager, eventBus);
+
   const moduleRegistry = new ModuleRegistry();
   manifest.forEach(def => moduleRegistry.register(def));
   moduleRegistry.setActiveCycle(stateManager.getProjectCycle());
@@ -59,6 +65,32 @@ async function init() {
 
   const examplesRegistry = new ExamplesRegistry();
   await examplesRegistry.init();
+
+  const glossaryRegistry = new GlossaryRegistry();
+  await glossaryRegistry.init();
+  // Warm the full term cache so `getForModule()` is synchronous from here
+  // on (the help-panel tab visibility check reads from cache).
+  await glossaryRegistry.warmAll();
+  // Configure the shared stats-panel with the set of known glossary IDs so
+  // module column headers (Varianz, Standardabweichung, …) become inline
+  // links — without each module needing to know about it.
+  const knownGlossaryIds = new Set(glossaryRegistry.getAll().map(t => t.id));
+  const inlineLinksOn = () => stateManager.get('settings.glossary.inlineLinksEnabled') ?? true;
+  configureStatsPanel({ glossaryIds: knownGlossaryIds, glossaryEnabled: inlineLinksOn() });
+  setGlossaryInlineConfig({
+    ariaTemplate: i18n.t('moduleHelp.glossaryOpenAria') || 'Glossar: {term} öffnen',
+    enabled: inlineLinksOn(),
+  });
+  // Re-apply when the user toggles the setting (UI for the toggle comes later).
+  eventBus.on('settings:changed', () => {
+    const on = inlineLinksOn();
+    configureStatsPanel({ glossaryEnabled: on });
+    setGlossaryInlineConfig({ enabled: on });
+  });
+  // Re-apply aria-label template when the UI language changes.
+  eventBus.on('language:changed', () => {
+    setGlossaryInlineConfig({ ariaTemplate: i18n.t('moduleHelp.glossaryOpenAria') || 'Glossar: {term} öffnen' });
+  });
 
   const tipEngine = new TipEngine({ eventBus, stateManager, i18n });
   await tipEngine.init();
@@ -90,10 +122,66 @@ async function init() {
     i18n
   );
   helpPanel.render();
+  // Permanent loader so [data-glossary-term] clicks work even before any
+  // module-help has been opened (e.g. clicking "Varianz" in a stats table).
+  helpPanel.setGlossaryLoader((id) => glossaryRegistry.get(id));
+  // Sync title resolver so the seeAlso list and {{term:id}} cross-refs in
+  // the glossary detail view show real titles ("Standardabweichung")
+  // instead of the kebab-case ids ("standardabweichung").
+  helpPanel.setGlossaryTitleResolver((id, lang) => glossaryRegistry.getCachedTitle(id, lang));
+  // Augment any `.glossary-term` markers anywhere in the DOM with the
+  // hover button + SVG icon. Idempotent + MutationObserver-backed, so
+  // later renders (module switches, stats-table updates) are auto-handled.
+  startGlossaryAugmenter();
+
+  // Header glossary button — opens the help-panel with the full term
+  // catalog (modul-unabhängig). Toggle: clicking again while the panel
+  // shows the glossary closes it.
+  const glossaryBtn = document.getElementById('glossary-btn');
+  if (glossaryBtn) {
+    glossaryBtn.addEventListener('click', () => {
+      const showingGlossary = helpPanel.isVisible() && helpPanel.getActiveTab?.() === 'glossary';
+      if (showingGlossary) {
+        helpPanel.hide();
+        glossaryBtn.classList.remove('btn--active');
+        return;
+      }
+      // Announce ourselves as the active overlay so Dashboard/AlgoLab/Training
+      // close themselves — only one header icon should be blue at a time.
+      eventBus.emit('overlay:opened', 'help-panel');
+      helpPanel.openGlossaryCatalog(glossaryRegistry.getAllCached());
+      glossaryBtn.classList.add('btn--active');
+    });
+    // Mirror the active state when the panel is closed via its own ✕ or
+    // when the user switches to a different tab (Hilfe / Beispieldaten).
+    const helpEl = document.getElementById('help-panel');
+    if (helpEl) {
+      new MutationObserver(() => {
+        const stillShowing = helpPanel.isVisible() && helpPanel.getActiveTab?.() === 'glossary';
+        glossaryBtn.classList.toggle('btn--active', stillShowing);
+      }).observe(helpEl, { attributes: true, attributeFilter: ['class', 'data-active-tab'] });
+    }
+  }
+
+  // Global delegated click handler for inline glossary refs — covers
+  // stats-panel headers, module-help cross-refs, and any future caller
+  // that emits `[data-glossary-term="..."]`.
+  document.body.addEventListener('click', (e) => {
+    if (!isGlossaryInlineEnabled()) return;
+    const el = e.target.closest('[data-glossary-term]');
+    if (!el) return;
+    // Don't steal clicks inside the glossary tab itself — its own handlers
+    // route via `data-glossary-seealso`/`data-glossary-id`.
+    if (el.closest('.help-panel__glossary')) return;
+    const id = el.dataset.glossaryTerm;
+    if (!id) return;
+    e.preventDefault();
+    helpPanel.openGlossaryTerm(id);
+  });
 
   const workspace = new Workspace(
     document.getElementById('app-workspace'),
-    { moduleRegistry, eventBus, stateManager, i18n, modal, notify, helpPanel, chartManager, examples: examplesRegistry }
+    { moduleRegistry, eventBus, stateManager, i18n, modal, notify, helpPanel, chartManager, examples: examplesRegistry, glossary: glossaryRegistry }
   );
   workspace.render();
 
@@ -103,11 +191,12 @@ async function init() {
   // ─── Header Controls ─────────────────────────────────────
 
   _initProjectName(stateManager, eventBus, i18n, modal, moduleRegistry);
-  _initSettings(themeManager, i18n, stateManager, tipEngine);
+  _initSettings(themeManager, i18n, stateManager, tipEngine, eventBus);
   _initDevArea(eventBus, i18n);
-  _initModuleHelp(workspace, helpPanel, i18n, eventBus, examplesRegistry);
+  _initModuleHelp(workspace, helpPanel, i18n, eventBus, examplesRegistry, glossaryRegistry);
   _initTraining(eventBus, i18n, moduleRegistry);
   _initDashboard(eventBus, i18n, stateManager, chartManager);
+  _initHeaderCoordinator(eventBus, helpPanel);
   _initExportImport(stateManager, eventBus, i18n, notify, modal);
   _handleExampleDeeplink({ stateManager, eventBus, moduleRegistry, examplesRegistry, workspace, notify, i18n });
 
@@ -144,7 +233,7 @@ async function init() {
   // the 2 s localStorage / 500 ms IDB debounces, and reach into live module
   // instances via the workspace.
   if (new URLSearchParams(location.search).get('e2e') === '1') {
-    window.__dmike = { stateManager, eventBus, moduleRegistry, i18n, themeManager, workspace, chartManager, exportReminder, examplesRegistry };
+    window.__dmike = { stateManager, eventBus, moduleRegistry, i18n, themeManager, workspace, chartManager, exportReminder, examplesRegistry, glossaryRegistry, shortcutRegistry };
   }
 
   // ─── Update title ────────────────────────────────────────
@@ -623,6 +712,26 @@ async function _confirmCycleSwitch(modal, i18n, stateManager, moduleRegistry, fr
   );
 }
 
+/**
+ * Mutual exclusivity for the header icon menu (Dashboard, AlgoLab,
+ * Fragezeichen, Glossar, Schulungen): only one button is blue at a time.
+ *
+ * Dashboard / AlgoLab / Schulungen already participate via `overlay:opened`
+ * (each one closes the others). The help-panel (Fragezeichen + Glossar)
+ * is wired in here: when any other overlay opens, the panel hides; its
+ * MutationObservers then clear `btn--active` on the two buttons.
+ *
+ * Both Fragezeichen and Glossar emit `overlay:opened='help-panel'` in their
+ * click handlers, so opening either one also closes Dashboard/AlgoLab/
+ * Schulungen via their existing `overlay:opened` listeners.
+ */
+function _initHeaderCoordinator(eventBus, helpPanel) {
+  eventBus.on('overlay:opened', (id) => {
+    if (id === 'help-panel') return;
+    if (helpPanel.isVisible()) helpPanel.hide();
+  });
+}
+
 function _initDevArea(eventBus, i18n) {
   const btn  = document.getElementById('dev-area-btn');
   const area = document.getElementById('dev-area');
@@ -698,24 +807,27 @@ function _initDevArea(eventBus, i18n) {
  * @param {import('./core/i18n.js').I18n} i18n
  * @param {import('./core/event-bus.js').EventBus} eventBus
  * @param {import('./core/examples-registry.js').ExamplesRegistry} examplesRegistry
+ * @param {import('./core/glossary-registry.js').GlossaryRegistry} glossaryRegistry
  */
-function _initModuleHelp(workspace, helpPanel, i18n, eventBus, examplesRegistry) {
+function _initModuleHelp(workspace, helpPanel, i18n, eventBus, examplesRegistry, glossaryRegistry) {
   const btn = document.getElementById('module-help-btn');
   if (!btn || !workspace || !helpPanel) return;
 
   const _activeContext = () => {
     const info = workspace.getActiveModuleInfo();
-    if (!info) return { info: null, hasHelp: false, examples: [], canLoadExample: false };
+    if (!info) return { info: null, hasHelp: false, examples: [], canLoadExample: false, glossary: [] };
     const hasHelp = typeof info.instance?.help === 'function';
     const examples = examplesRegistry ? examplesRegistry.getForModule(info.moduleId) : [];
     const canLoadExample = typeof info.instance?.loadExample === 'function';
-    return { info, hasHelp, examples, canLoadExample };
+    const glossary = glossaryRegistry ? glossaryRegistry.getForModule(info.moduleId) : [];
+    return { info, hasHelp, examples, canLoadExample, glossary };
   };
 
   const updateVisibility = () => {
-    const { hasHelp, examples, canLoadExample } = _activeContext();
+    const { hasHelp, examples, canLoadExample, glossary } = _activeContext();
     const hasExamples = canLoadExample && examples.length > 0;
-    const show = hasHelp || hasExamples;
+    const hasGlossary = glossary.length > 0;
+    const show = hasHelp || hasExamples || hasGlossary;
     btn.style.display = show ? '' : 'none';
     if (!show && helpPanel.isVisible()) {
       helpPanel.hide();
@@ -750,15 +862,26 @@ function _initModuleHelp(workspace, helpPanel, i18n, eventBus, examplesRegistry)
     }
   };
 
+  const glossaryGet = glossaryRegistry ? (termId) => glossaryRegistry.get(termId) : null;
+
   btn.addEventListener('click', async () => {
-    // Toggle: if already visible, close.
-    if (helpPanel.isVisible()) {
+    // Toggle only when *we* own the panel (Hilfe- oder Beispieldaten-Tab).
+    // If the panel is showing the Glossar catalog, the click should switch
+    // to module help — not close — uniform with how glossary-btn behaves
+    // when module help is currently shown.
+    const tab = helpPanel.getActiveTab?.();
+    const ownsPanel = helpPanel.isVisible() && (tab === 'help' || tab === 'examples');
+    if (ownsPanel) {
       helpPanel.hide();
       btn.classList.remove('btn--active');
       return;
     }
 
-    const { info, hasHelp, examples, canLoadExample } = _activeContext();
+    // Announce ourselves as the active overlay so Dashboard/AlgoLab/Training
+    // close themselves — only one header icon should be blue at a time.
+    eventBus.emit('overlay:opened', 'help-panel');
+
+    const { info, hasHelp, examples, canLoadExample, glossary } = _activeContext();
     btn.classList.add('btn--active');
 
     if (!info) {
@@ -778,6 +901,8 @@ function _initModuleHelp(workspace, helpPanel, i18n, eventBus, examplesRegistry)
       helpHtml: hasHelp ? loadingHelp : `<p style="color:var(--color-text-secondary)">${i18n.t('moduleHelp.notAvailable')}</p>`,
       examples: tabExamples,
       onLoadExample: loadExampleAndApply,
+      glossary,
+      glossaryGet,
     });
 
     if (!hasHelp) return;
@@ -790,6 +915,8 @@ function _initModuleHelp(workspace, helpPanel, i18n, eventBus, examplesRegistry)
         helpHtml: html,
         examples: tabExamples,
         onLoadExample: loadExampleAndApply,
+        glossary,
+        glossaryGet,
         preferredTab: 'help',
       });
     } catch (err) {
@@ -798,17 +925,24 @@ function _initModuleHelp(workspace, helpPanel, i18n, eventBus, examplesRegistry)
         helpHtml: `<p style="color:var(--color-error)">${i18n.t('moduleHelp.loadError')}: ${err.message}</p>`,
         examples: tabExamples,
         onLoadExample: loadExampleAndApply,
+        glossary,
+        glossaryGet,
       });
     }
   });
 
-  // Sync button active state when help panel is closed via its own ✕.
+  // Sync button active state when the panel is closed via its own ✕ or
+  // when the user switches tabs. Only light up Fragezeichen when the
+  // panel actually shows module help (Hilfe or Beispieldaten tabs) —
+  // the standalone Glossar catalog belongs to glossary-btn.
   const helpEl = document.getElementById('help-panel');
   if (helpEl) {
     const observer = new MutationObserver(() => {
-      btn.classList.toggle('btn--active', helpPanel.isVisible());
+      const tab = helpPanel.getActiveTab?.();
+      const ownsPanel = helpPanel.isVisible() && (tab === 'help' || tab === 'examples');
+      btn.classList.toggle('btn--active', ownsPanel);
     });
-    observer.observe(helpEl, { attributes: true, attributeFilter: ['class'] });
+    observer.observe(helpEl, { attributes: true, attributeFilter: ['class', 'data-active-tab'] });
   }
 }
 
@@ -932,19 +1066,30 @@ function _renderModuleHelp(helpDef, lang) {
     return d.innerHTML;
   };
 
+  // `{{term:id|label}}` and `{{term:id}}` → marker span only.
+  // The hover button (icon + aria-label) is appended at runtime by
+  // augmentGlossaryTerms() in core/glossary-inline.js — keeps the
+  // presentation source-of-truth in one place.
+  const linkTerms = (escapedHtml) =>
+    escapedHtml.replace(/\{\{term:([a-z0-9-]+)(?:\|([^}]+))?\}\}/gi, (_, id, label) =>
+      `<span class="glossary-term" data-glossary-term="${id}">${label || id}</span>`,
+    );
+
+  const esc = (s) => linkTerms(escape(s));
+
   const renderBlock = (b) => {
     if (!b) return '';
     switch (b.type) {
       case 'paragraph':
-        return `<p>${escape(b.content)}</p>`;
+        return `<p>${esc(b.content)}</p>`;
       case 'definition':
-        return `<p><strong>${escape(b.term)}:</strong> ${escape(b.content)}</p>`;
+        return `<p><strong>${esc(b.term)}:</strong> ${esc(b.content)}</p>`;
       case 'heading':
-        return `<h4>${escape(b.content)}</h4>`;
+        return `<h4>${esc(b.content)}</h4>`;
       case 'list':
-        return `<ul>${(b.items || []).map(it => `<li>${escape(it)}</li>`).join('')}</ul>`;
+        return `<ul>${(b.items || []).map(it => `<li>${esc(it)}</li>`).join('')}</ul>`;
       default:
-        return b.content ? `<p>${escape(b.content)}</p>` : '';
+        return b.content ? `<p>${esc(b.content)}</p>` : '';
     }
   };
 
@@ -952,7 +1097,7 @@ function _renderModuleHelp(helpDef, lang) {
   for (const [, section] of Object.entries(helpDef.sections)) {
     const localized = section?.[lang] || section?.en || section?.de;
     if (!localized) continue;
-    if (localized.title) parts.push(`<h3>${escape(localized.title)}</h3>`);
+    if (localized.title) parts.push(`<h3>${esc(localized.title)}</h3>`);
     for (const block of localized.blocks || []) {
       parts.push(renderBlock(block));
     }
@@ -2503,23 +2648,55 @@ function _initTraining(eventBus, i18n, moduleRegistry) {
   eventBus.on('language:changed', () => { if (open) render(); });
 }
 
-function _initSettings(themeManager, i18n, stateManager, tipEngine) {
+function _initSettings(themeManager, i18n, stateManager, tipEngine, eventBus) {
   const settingsBtn   = document.getElementById('settings-btn');
   const overlay       = document.getElementById('settings-overlay');
   const panel         = document.getElementById('settings-panel');
   const closeBtn      = document.getElementById('settings-close');
+  const titleBar      = panel?.querySelector('.dmike-chart-popout-titlebar');
   if (!settingsBtn || !panel) return;
 
-  // ── Open / Close ────────────────────────────────────────────
-  const open  = () => { overlay.style.display = ''; panel.style.display = ''; };
-  const close = () => { overlay.style.display = 'none'; panel.style.display = 'none'; };
+  // ── Open / Close (dmike-chart-popout overlay) ───────────────
+  const isOpen = () => overlay.style.display !== 'none';
+  const open   = () => {
+    // Reset to centered position each time the panel is opened, so a
+    // previously dragged-off position does not persist.
+    panel.style.left = '';
+    panel.style.top  = '';
+    overlay.style.display = '';
+  };
+  const close  = () => { overlay.style.display = 'none'; };
 
   settingsBtn.addEventListener('click', open);
   closeBtn?.addEventListener('click', close);
-  overlay?.addEventListener('click', close);
+  // Click outside the popout window closes; clicks inside the panel bubble
+  // up to the overlay, so guard against them.
+  overlay?.addEventListener('click', (e) => { if (e.target === overlay) close(); });
   document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && panel.style.display !== 'none') close();
+    if (e.key === 'Escape' && isOpen()) close();
   });
+
+  // ── Drag from titlebar ──────────────────────────────────────
+  if (titleBar) {
+    let dragX = 0, dragY = 0, dragging = false;
+    titleBar.addEventListener('mousedown', (e) => {
+      if (closeBtn?.contains(e.target)) return;
+      dragging = true;
+      dragX = e.clientX - panel.offsetLeft;
+      dragY = e.clientY - panel.offsetTop;
+      panel.style.transition = 'none';
+    });
+    window.addEventListener('mousemove', (e) => {
+      if (!dragging) return;
+      panel.style.left = (e.clientX - dragX) + 'px';
+      panel.style.top  = (e.clientY - dragY) + 'px';
+    });
+    window.addEventListener('mouseup', () => {
+      if (!dragging) return;
+      dragging = false;
+      panel.style.transition = '';
+    });
+  }
 
   // ── Tab switching ───────────────────────────────────────────
   const tabs     = panel.querySelectorAll('.settings-tab');
@@ -2588,6 +2765,16 @@ function _initSettings(themeManager, i18n, stateManager, tipEngine) {
       const v = Math.min(1440, Math.max(1, parseInt(reminderMin.value, 10) || 60));
       reminderMin.value = v;
       stateManager.set('settings.exportReminderMinutes', v);
+    });
+  }
+
+  // ── Glossary inline-link toggle ────────────────────────────
+  const glossaryCb = document.getElementById('settings-glossary-inline-enabled');
+  if (glossaryCb) {
+    glossaryCb.checked = stateManager.get('settings.glossary.inlineLinksEnabled') !== false;
+    glossaryCb.addEventListener('change', () => {
+      stateManager.set('settings.glossary.inlineLinksEnabled', glossaryCb.checked);
+      eventBus?.emit?.('settings:changed', { key: 'glossary.inlineLinksEnabled', value: glossaryCb.checked });
     });
   }
 
@@ -2776,6 +2963,173 @@ function _initSettings(themeManager, i18n, stateManager, tipEngine) {
       loadStatValues();
     });
   }
+
+  _initShortcutsTab(i18n, eventBus);
+}
+
+// ─── Keyboard Shortcuts tab ───────────────────────────────────
+function _initShortcutsTab(i18n, eventBus) {
+  const list = document.getElementById('settings-shortcuts-list');
+  const resetAllBtn = document.getElementById('settings-shortcuts-reset');
+  if (!list) return;
+
+  let capturingId = null;
+  let pendingConflict = null; // { id, combo, conflicts }
+
+  const groupOrder = ['general', 'datagrid', 'worksheet', 'vocCtxTree'];
+
+  const render = () => {
+    const all = shortcutRegistry.getAll();
+    const byGroup = new Map();
+    for (const sc of all) {
+      if (!byGroup.has(sc.category)) byGroup.set(sc.category, []);
+      byGroup.get(sc.category).push(sc);
+    }
+
+    list.innerHTML = '';
+    const orderedGroups = groupOrder.filter(g => byGroup.has(g))
+      .concat([...byGroup.keys()].filter(g => !groupOrder.includes(g)));
+
+    for (const groupId of orderedGroups) {
+      const groupEl = document.createElement('div');
+      groupEl.className = 'settings-shortcuts-group';
+      const title = document.createElement('h4');
+      title.className = 'settings-shortcuts-group__title';
+      title.textContent = i18n.t(`settings.shortcutsGroup.${groupId}`) || groupId;
+      groupEl.appendChild(title);
+
+      for (const sc of byGroup.get(groupId)) {
+        const row = document.createElement('div');
+        row.className = 'settings-shortcut-row';
+        row.dataset.shortcutId = sc.id;
+
+        const label = document.createElement('span');
+        label.className = 'settings-shortcut-row__label';
+        label.textContent = i18n.t(sc.descriptionKey) || sc.id;
+        row.appendChild(label);
+
+        const controls = document.createElement('span');
+        controls.className = 'settings-shortcut-row__controls';
+
+        const keyBtn = document.createElement('button');
+        keyBtn.type = 'button';
+        keyBtn.className = 'settings-shortcut-key';
+        if (capturingId === sc.id) {
+          keyBtn.classList.add('settings-shortcut-key--capturing');
+          keyBtn.textContent = i18n.t('settings.shortcutsCapture') || 'Tasten drücken…';
+        } else {
+          keyBtn.textContent = sc.currentCombo;
+        }
+        keyBtn.addEventListener('click', () => startCapture(sc.id));
+        controls.appendChild(keyBtn);
+
+        const resetBtn = document.createElement('button');
+        resetBtn.type = 'button';
+        resetBtn.className = 'btn btn--icon btn--ghost settings-shortcut-reset';
+        resetBtn.title = i18n.t('settings.shortcutsResetOne') || 'Zurücksetzen';
+        resetBtn.setAttribute('aria-label', resetBtn.title);
+        resetBtn.disabled = !sc.isCustom;
+        resetBtn.innerHTML = '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>';
+        resetBtn.addEventListener('click', () => {
+          shortcutRegistry.resetBinding(sc.id);
+        });
+        controls.appendChild(resetBtn);
+        row.appendChild(controls);
+
+        // Highlight if currently part of a conflict with another binding
+        const conflicts = shortcutRegistry.findConflicts(sc.currentCombo, sc.scope, sc.id);
+        if (conflicts.length > 0) row.classList.add('settings-shortcut-row--conflict');
+
+        if (pendingConflict && pendingConflict.id === sc.id) {
+          const warn = document.createElement('div');
+          warn.className = 'settings-shortcut-conflict';
+          const names = pendingConflict.conflicts
+            .map(c => `„${i18n.t(c.descriptionKey) || c.id}"`)
+            .join(', ');
+          const msg = (i18n.t('settings.shortcutsConflict') || 'Konflikt mit {name}.')
+            .replace('{name}', names);
+          const text = document.createElement('span');
+          text.textContent = msg + ' ';
+          warn.appendChild(text);
+
+          const useBtn = document.createElement('button');
+          useBtn.type = 'button';
+          useBtn.className = 'btn btn--sm';
+          useBtn.textContent = i18n.t('settings.shortcutsConflictUseAnyway') || 'Trotzdem verwenden';
+          useBtn.addEventListener('click', () => {
+            const combo = pendingConflict.combo;
+            const id = pendingConflict.id;
+            pendingConflict = null;
+            shortcutRegistry.setBinding(id, combo);
+          });
+          warn.appendChild(useBtn);
+
+          const cancelBtn = document.createElement('button');
+          cancelBtn.type = 'button';
+          cancelBtn.className = 'btn btn--sm btn--ghost';
+          cancelBtn.textContent = i18n.t('settings.shortcutsConflictCancel') || 'Abbrechen';
+          cancelBtn.addEventListener('click', () => {
+            pendingConflict = null;
+            render();
+          });
+          warn.appendChild(cancelBtn);
+          row.appendChild(warn);
+        }
+
+        groupEl.appendChild(row);
+      }
+      list.appendChild(groupEl);
+    }
+  };
+
+  const stopCapture = () => {
+    capturingId = null;
+    document.removeEventListener('keydown', onCaptureKey, true);
+  };
+
+  const startCapture = (id) => {
+    if (capturingId === id) { stopCapture(); render(); return; }
+    capturingId = id;
+    pendingConflict = null;
+    document.addEventListener('keydown', onCaptureKey, true);
+    render();
+  };
+
+  function onCaptureKey(e) {
+    if (!capturingId) return;
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.key === 'Escape') {
+      stopCapture();
+      render();
+      return;
+    }
+    const parsed = normalizeCombo(e);
+    if (!parsed) return; // pure modifier
+    const combo = formatCombo(parsed);
+    const def = shortcutRegistry.getDefinition(capturingId);
+    const conflicts = shortcutRegistry.findConflicts(combo, def.scope, capturingId);
+    if (conflicts.length > 0) {
+      pendingConflict = { id: capturingId, combo, conflicts };
+      stopCapture();
+      render();
+      return;
+    }
+    const id = capturingId;
+    stopCapture();
+    shortcutRegistry.setBinding(id, combo);
+  }
+
+  resetAllBtn?.addEventListener('click', () => {
+    pendingConflict = null;
+    shortcutRegistry.resetAll();
+  });
+
+  eventBus.on('shortcuts:changed', () => render());
+  eventBus.on('language:changed', () => render());
+
+  // Initial render so the tab is populated even before being visited.
+  render();
 }
 
 function _downloadJSON(json, filename) {
@@ -2899,9 +3253,9 @@ function _initExportImport(stateManager, eventBus, i18n, notify, modal) {
     importInput.value = '';
   });
 
-  // Ctrl+S — export all projects as JSON
+  // Ctrl+S — export all projects as JSON (configurable via shortcut registry)
   document.addEventListener('keydown', async (e) => {
-    if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+    if (shortcutRegistry.matches(e, 'global.exportProject')) {
       e.preventDefault();
       const date = new Date().toISOString().split('T')[0];
       const json = await stateManager.exportAllJSON();
@@ -2913,7 +3267,6 @@ function _initExportImport(stateManager, eventBus, i18n, notify, modal) {
 }
 
 function _initFooter(stateManager, eventBus, i18n) {
-  const footerName = document.getElementById('footer-project-name');
   const footerSaved = document.getElementById('footer-last-saved');
   const footerStorage = document.getElementById('footer-storage');
   const footerVersion = document.getElementById('footer-version');
@@ -2930,11 +3283,29 @@ function _initFooter(stateManager, eventBus, i18n) {
       .catch(() => {});
   }
 
+  const formatWhen = (iso) => {
+    if (!iso) return null;
+    const d = new Date(iso);
+    if (isNaN(d.getTime())) return null;
+    const locale = i18n.getLanguage() === 'en' ? 'en-US' : 'de-DE';
+    const now = new Date();
+    const sameDay = d.toDateString() === now.toDateString();
+    const time = d.toLocaleTimeString(locale);
+    return sameDay ? time : `${d.toLocaleDateString(locale)}, ${time}`;
+  };
+
   const refresh = () => {
-    if (footerName) footerName.textContent = stateManager.get('projectMeta.name') ?? '';
     if (footerSaved) {
       const mod = stateManager.get('projectMeta.modified');
-      footerSaved.textContent = mod ? new Date(mod).toLocaleTimeString() : '';
+      const exp = stateManager.get('settings.lastExportAt');
+      const parts = [];
+      const modStr = formatWhen(mod);
+      if (modStr) parts.push(i18n.t('app.lastChangeInBrowser', { when: modStr }));
+      const expStr = formatWhen(exp);
+      parts.push(expStr
+        ? i18n.t('app.lastExport', { when: expStr })
+        : i18n.t('app.lastExportNever'));
+      footerSaved.textContent = parts.join(' · ');
     }
     if (footerStorage) {
       const { used, total } = stateManager.getStorageUsage();
@@ -2946,9 +3317,8 @@ function _initFooter(stateManager, eventBus, i18n) {
 
   refresh();
   eventBus.on('state:saved', refresh);
-  footerName?.addEventListener('click', () => {
-    document.getElementById('project-name-display')?.click();
-  });
+  eventBus.on('project:exported', refresh);
+  eventBus.on('language:changed', refresh);
 }
 
 /**

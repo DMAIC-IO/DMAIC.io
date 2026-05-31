@@ -79,8 +79,7 @@
 }
 
 .distfit__params-cell {
-  font-family: var(--font-family-mono);
-  font-size: 10px;
+  font-size: var(--font-size-sm);
 }
 
 .distfit__tag {
@@ -96,7 +95,7 @@
 .distfit__tag--disc { background: rgba(168, 85, 247, 0.15); color: #a855f7; }
 .distfit__tag--best { background: rgba(var(--color-success-rgb, 52, 211, 153), 0.15); color: var(--color-success); font-weight: 600; }
 
-.distfit__p-cell { font-family: var(--font-family-mono); font-weight: 600; }
+.distfit__p-cell { font-weight: 600; }
 .distfit__p-cell--good { color: var(--color-success); }
 .distfit__p-cell--moderate { color: var(--color-warning, #fbbf24); }
 .distfit__p-cell--poor { color: var(--color-error); }

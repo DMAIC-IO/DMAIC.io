@@ -1785,13 +1785,202 @@ body.training-area-open .dmaic-tiles {
 }
 
 .help-panel__content,
-.help-panel__examples {
+.help-panel__examples,
+.help-panel__glossary {
   flex: 1;
   overflow-y: auto;
   padding: var(--spacing-md);
   font-size: var(--font-size-sm);
   line-height: 1.5;
   color: var(--color-text-primary);
+}
+
+/* ─── Glossary tab ──────────────────────────────────────── */
+
+.help-panel__glossary-search {
+  margin-bottom: var(--spacing-sm);
+}
+
+.help-panel__glossary-search input {
+  width: 100%;
+}
+
+.help-panel__glossary-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.help-panel__glossary-item {
+  text-align: left;
+  background: var(--color-bg-primary);
+  border: var(--border-width) solid var(--color-border-primary);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-sm) var(--spacing-md);
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.help-panel__glossary-item:hover,
+.help-panel__glossary-item:focus-visible {
+  border-color: var(--color-accent);
+  outline: none;
+}
+
+.help-panel__glossary-item-title {
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+}
+
+.help-panel__glossary-item-short {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+}
+
+.help-panel__glossary-empty,
+.help-panel__glossary-loading,
+.help-panel__glossary-error {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  margin: var(--spacing-md) 0;
+}
+
+.help-panel__glossary-error {
+  color: var(--color-error, var(--color-text-secondary));
+}
+
+.help-panel__glossary-back {
+  background: transparent;
+  border: none;
+  padding: 0;
+  margin-bottom: var(--spacing-sm);
+  cursor: pointer;
+  font: inherit;
+  font-size: var(--font-size-xs);
+  color: var(--color-accent);
+}
+
+.help-panel__glossary-back:hover {
+  text-decoration: underline;
+}
+
+.help-panel__glossary-title {
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-semibold);
+  margin: 0 0 var(--spacing-xs);
+  color: var(--color-text-primary);
+}
+
+.help-panel__glossary-aliases {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  margin: 0 0 var(--spacing-sm);
+}
+
+.help-panel__glossary-body p {
+  margin: 0 0 var(--spacing-sm);
+}
+
+.help-panel__glossary-body ul {
+  margin: 0 0 var(--spacing-sm);
+  padding-left: var(--spacing-lg);
+}
+
+.help-panel__glossary-note {
+  background: var(--color-bg-secondary);
+  border-left: 3px solid var(--color-accent);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--radius-sm);
+  margin: 0 0 var(--spacing-sm);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+}
+
+.help-panel__glossary-formula {
+  margin: var(--spacing-sm) 0;
+  padding: var(--spacing-xs) 0;
+  overflow-x: auto;
+  font-size: var(--font-size-sm);
+}
+
+.help-panel__glossary-formula code {
+  font-family: var(--font-family-mono, monospace);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+}
+
+.help-panel__glossary-xref {
+  color: var(--color-accent);
+  text-decoration: none;
+  border-bottom: 1px dashed var(--color-accent);
+}
+
+.help-panel__glossary-xref:hover {
+  text-decoration: none;
+  border-bottom-style: solid;
+}
+
+.help-panel__glossary-seealso,
+.help-panel__glossary-modules,
+.help-panel__glossary-sources {
+  margin-top: var(--spacing-md);
+  padding-top: var(--spacing-sm);
+  border-top: var(--border-width) solid var(--color-border-primary);
+}
+
+.help-panel__glossary-seealso h4,
+.help-panel__glossary-modules h4,
+.help-panel__glossary-sources h4 {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  margin: 0 0 var(--spacing-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-text-secondary);
+}
+
+.help-panel__glossary-seealso ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-xs);
+}
+
+.help-panel__glossary-seealso a {
+  color: var(--color-accent);
+  text-decoration: none;
+  padding: 2px var(--spacing-xs);
+  border: var(--border-width) solid var(--color-border-primary);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-xs);
+}
+
+.help-panel__glossary-seealso a:hover {
+  border-color: var(--color-accent);
+}
+
+.help-panel__glossary-modules p {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  margin: 0;
+}
+
+.help-panel__glossary-sources ul {
+  list-style: disc;
+  padding-left: var(--spacing-md);
+  margin: 0;
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+}
+
+.help-panel__glossary-sources a {
+  color: var(--color-accent);
 }
 
 .help-panel__example {
@@ -1813,16 +2002,6 @@ body.training-area-open .dmaic-tiles {
 .help-panel__example-title {
   font-weight: var(--font-weight-semibold);
   color: var(--color-text-primary);
-}
-
-.help-panel__example-badge {
-  font-size: var(--font-size-xs);
-  padding: 2px 6px;
-  border-radius: var(--radius-sm);
-  background: var(--color-bg-tertiary);
-  color: var(--color-text-secondary);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
 }
 
 .help-panel__example-desc {
@@ -1887,15 +2066,6 @@ body.training-area-open .dmaic-tiles {
   border-top: var(--border-width) solid var(--color-border-primary);
   font-size: var(--font-size-xs);
   color: var(--color-text-tertiary);
-}
-
-.app-footer__project-name {
-  cursor: pointer;
-  color: var(--color-text-secondary);
-}
-
-.app-footer__project-name:hover {
-  color: var(--color-accent);
 }
 
 .app-footer__spacer {

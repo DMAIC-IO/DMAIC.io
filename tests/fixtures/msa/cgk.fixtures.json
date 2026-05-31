@@ -5,7 +5,7 @@
     "scipy": "1.15.3",
     "numpy": "2.2.6"
   },
-  "generated_at": "2026-04-11T13:15:12.073131+00:00",
+  "generated_at": "2026-05-31T00:00:00Z",
   "generator_script": "tools/fixture-generator/generate_fixtures.py",
   "generator_version": "1.0.0",
   "tolerances": {
@@ -15,8 +15,8 @@
     },
     "overrides": {
       "stress_large_dataset": {
-        "relative": 1e-06,
-        "absolute": 1e-08,
+        "relative": 0.000001,
+        "absolute": 1e-8,
         "reason": "Floating-point accumulation in large arrays"
       }
     }
@@ -29,7 +29,7 @@
       "reference": "VDA 5",
       "inputs": {
         "params": {
-          "ref": 50.0,
+          "ref": 50,
           "lsl": 49.95,
           "usl": 50.05,
           "k1": 0.2,
@@ -39,28 +39,28 @@
           50.001,
           50.002,
           49.999,
-          50.0,
+          50,
           50.001,
           49.998,
           50.003,
-          50.0,
+          50,
           50.002,
           49.999,
           50.001,
-          50.0,
+          50,
           49.998,
           50.002,
           50.001,
           49.999,
-          50.0,
+          50,
           50.001,
           50.002,
           49.998,
-          50.0,
+          50,
           50.001,
           49.999,
           50.002,
-          50.0
+          50
         ]
       },
       "expected": {
@@ -81,7 +81,7 @@
       "reference": "VDA 5",
       "inputs": {
         "params": {
-          "ref": 50.0,
+          "ref": 50,
           "lsl": 49.95,
           "usl": 50.05,
           "k1": 0.2,
@@ -134,7 +134,7 @@
       "reference": "VDA 5",
       "inputs": {
         "params": {
-          "ref": 50.0,
+          "ref": 50,
           "lsl": 49.95,
           "usl": 50.05,
           "k1": 0.2,
@@ -187,7 +187,7 @@
       "reference": "VDA 5 boundary check",
       "inputs": {
         "params": {
-          "ref": 50.0,
+          "ref": 50,
           "lsl": 49.95,
           "usl": 50.05,
           "k1": 0.2,
@@ -235,9 +235,9 @@
       "description": "Small sg + moderate bias — Cg high, Cgk substantially lower",
       "inputs": {
         "params": {
-          "ref": 100.0,
-          "lsl": 99.0,
-          "usl": 101.0,
+          "ref": 100,
+          "lsl": 99,
+          "usl": 101,
           "k1": 0.2,
           "k2": 4
         },
@@ -275,7 +275,7 @@
         "bias": 0.050039999999995644,
         "biasPercent": 2.501999999999782,
         "tolUsage": 0.3158058475280443,
-        "T": 2.0
+        "T": 2
       }
     },
     {
@@ -284,7 +284,7 @@
       "description": "|bias| > k1·T/2 — Cgk turns negative",
       "inputs": {
         "params": {
-          "ref": 50.0,
+          "ref": 50,
           "lsl": 49.95,
           "usl": 50.05,
           "k1": 0.2,
@@ -332,7 +332,7 @@
       "description": "Extreme bias ≫ k1·T/2 — Cgk strongly negative",
       "inputs": {
         "params": {
-          "ref": 50.0,
+          "ref": 50,
           "lsl": 49.95,
           "usl": 50.05,
           "k1": 0.2,
@@ -380,7 +380,7 @@
       "description": "Negative reference value — bias sign handling",
       "inputs": {
         "params": {
-          "ref": -10.0,
+          "ref": -10,
           "lsl": -10.5,
           "usl": -9.5,
           "k1": 0.2,
@@ -390,28 +390,28 @@
           -10.001,
           -10.002,
           -9.999,
-          -10.0,
+          -10,
           -10.001,
           -9.998,
           -10.003,
-          -10.0,
+          -10,
           -10.002,
           -9.999,
           -10.001,
-          -10.0,
+          -10,
           -9.998,
           -10.002,
           -10.001,
           -9.999,
-          -10.0,
+          -10,
           -10.001,
           -10.002,
           -9.998,
-          -10.0,
+          -10,
           -10.001,
           -9.999,
           -10.002,
-          -10.0
+          -10
         ]
       },
       "expected": {
@@ -422,7 +422,7 @@
         "bias": -0.0003600000000005821,
         "biasPercent": -0.03600000000005821,
         "n": 25,
-        "T": 1.0
+        "T": 1
       }
     },
     {
@@ -431,9 +431,9 @@
       "description": "Minimum n=25 with small positive bias",
       "inputs": {
         "params": {
-          "ref": 10.0,
-          "lsl": 9.0,
-          "usl": 11.0,
+          "ref": 10,
+          "lsl": 9,
+          "usl": 11,
           "k1": 0.2,
           "k2": 4
         },
@@ -473,7 +473,7 @@
         "bias": 0.015000000000000568,
         "biasPercent": 0.7500000000000284,
         "n": 25,
-        "T": 2.0
+        "T": 2
       }
     },
     {
@@ -482,9 +482,9 @@
       "description": "|bias| exactly = k1·T/2 — Cgk = 0 analytically",
       "inputs": {
         "params": {
-          "ref": 0.0,
-          "lsl": -1.0,
-          "usl": 1.0,
+          "ref": 0,
+          "lsl": -1,
+          "usl": 1,
           "k1": 0.2,
           "k2": 4
         },
@@ -520,7 +520,7 @@
         "bias": 0.20000000000000004,
         "biasPercent": 10.000000000000002,
         "n": 25,
-        "T": 2.0
+        "T": 2
       }
     },
     {
@@ -529,7 +529,7 @@
       "description": "n=50 seeded normal with bias = 0.001",
       "inputs": {
         "params": {
-          "ref": 25.0,
+          "ref": 25,
           "lsl": 24.9,
           "usl": 25.1,
           "k1": 0.2,
@@ -607,7 +607,7 @@
       "description": "n=100 seeded normal with bias = 0.004 — Cgk visibly penalized",
       "inputs": {
         "params": {
-          "ref": 25.0,
+          "ref": 25,
           "lsl": 24.9,
           "usl": 25.1,
           "k1": 0.2,
@@ -735,7 +735,7 @@
       "description": "n=150 seeded normal with bias = −0.003",
       "inputs": {
         "params": {
-          "ref": 25.0,
+          "ref": 25,
           "lsl": 24.9,
           "usl": 25.1,
           "k1": 0.2,
@@ -913,7 +913,7 @@
       "description": "n=200 seeded normal with bias = 0.012 — Cgk drops to ~1.0",
       "inputs": {
         "params": {
-          "ref": 25.0,
+          "ref": 25,
           "lsl": 24.9,
           "usl": 25.1,
           "k1": 0.2,
@@ -1133,6 +1133,71 @@
         "tolUsage": 7.9266661473339495,
         "n": 200,
         "T": 0.20000000000000284
+      }
+    },
+    {
+      "id": "cgk_robust_empty_values",
+      "tier": "robustness",
+      "description": "robustness tier",
+      "inputs": {
+        "params": {
+          "ref": 50,
+          "lsl": 49.95,
+          "usl": 50.05,
+          "k1": 0.2,
+          "k2": 4
+        },
+        "values": []
+      },
+      "expected": {
+        "n": 0,
+        "T": 0.09999999999999432,
+        "xbar": "NaN",
+        "sg": "NaN",
+        "xmin": "Infinity",
+        "xmax": "-Infinity",
+        "range": "-Infinity",
+        "bias": "NaN",
+        "biasPercent": "NaN",
+        "Cg": "NaN",
+        "Cgk": "NaN",
+        "cgStatus": "fail",
+        "cgkStatus": "fail",
+        "overall": "fail",
+        "tolUsage": "NaN",
+        "resolution": 0,
+        "resPercent": 0,
+        "zoneHi": 50.01,
+        "zoneLo": 49.99,
+        "upperThreshold": "NaN",
+        "lowerThreshold": "NaN",
+        "details": [],
+        "params": {
+          "ref": 50,
+          "lsl": 49.95,
+          "usl": 50.05,
+          "k1": 0.2,
+          "k2": 4
+        }
+      }
+    },
+    {
+      "id": "cgk_robust_non_array_values",
+      "tier": "robustness",
+      "description": "robustness tier",
+      "inputs": {
+        "params": {
+          "ref": 50,
+          "lsl": 49.95,
+          "usl": 50.05,
+          "k1": 0.2,
+          "k2": 4
+        },
+        "values": "x"
+      },
+      "expected_error": {
+        "type": "TypeError",
+        "message_contains": ""
       }
     }
   ]

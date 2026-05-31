@@ -5,7 +5,7 @@
     "scipy": "1.15.3",
     "numpy": "2.2.6"
   },
-  "generated_at": "2026-04-11T16:18:21.783489+00:00",
+  "generated_at": "2026-05-31T00:00:00Z",
   "generator_script": "tools/fixture-generator/generate_fixtures.py",
   "generator_version": "1.0.0",
   "tolerances": {
@@ -15,13 +15,13 @@
     },
     "overrides": {
       "non_orthogonal": {
-        "relative": 1e-08,
+        "relative": 1e-8,
         "absolute": 1e-10,
         "reason": "Non-orthogonal designs accumulate floating-point error in determinant computation"
       },
       "near_singular": {
-        "relative": 1e-06,
-        "absolute": 1e-08,
+        "relative": 0.000001,
+        "absolute": 1e-8,
         "reason": "Near-singular X'X amplifies inverse instability"
       }
     }
@@ -54,11 +54,11 @@
       },
       "expected": {
         "dEfficiency": 99.99999999999999,
-        "aEfficiency": 100.0,
-        "gEfficiency": 100.0,
-        "maxLeverage": 1.0,
-        "avgLeverage": 1.0,
-        "conditionNumber": 1.0
+        "aEfficiency": 100,
+        "gEfficiency": 100,
+        "maxLeverage": 1,
+        "avgLeverage": 1,
+        "conditionNumber": 1
       }
     },
     {
@@ -112,11 +112,11 @@
       },
       "expected": {
         "dEfficiency": 99.99999999999999,
-        "aEfficiency": 100.0,
-        "gEfficiency": 100.0,
+        "aEfficiency": 100,
+        "gEfficiency": 100,
         "maxLeverage": 0.875,
         "avgLeverage": 0.875,
-        "conditionNumber": 1.0
+        "conditionNumber": 1
       }
     },
     {
@@ -225,12 +225,12 @@
         ]
       },
       "expected": {
-        "dEfficiency": 100.0,
-        "aEfficiency": 100.0,
-        "gEfficiency": 100.0,
+        "dEfficiency": 100,
+        "aEfficiency": 100,
+        "gEfficiency": 100,
         "maxLeverage": 0.6875,
         "avgLeverage": 0.6875,
-        "conditionNumber": 1.0
+        "conditionNumber": 1
       }
     },
     {
@@ -356,11 +356,11 @@
       },
       "expected": {
         "dEfficiency": 99.99999999999999,
-        "aEfficiency": 100.0,
-        "gEfficiency": 100.0,
-        "maxLeverage": 1.0,
-        "avgLeverage": 1.0,
-        "conditionNumber": 1.0
+        "aEfficiency": 100,
+        "gEfficiency": 100,
+        "maxLeverage": 1,
+        "avgLeverage": 1,
+        "conditionNumber": 1
       }
     },
     {
@@ -402,8 +402,8 @@
       "tolerance_override": "non_orthogonal",
       "expected": {
         "dEfficiency": 65.72361810832017,
-        "aEfficiency": 64.0,
-        "gEfficiency": 64.0,
+        "aEfficiency": 64,
+        "gEfficiency": 64,
         "maxLeverage": 0.8928571428571428,
         "avgLeverage": 0.5714285714285714,
         "conditionNumber": 1.75
@@ -451,11 +451,11 @@
       },
       "expected": {
         "dEfficiency": 99.99999999999997,
-        "aEfficiency": 100.0,
-        "gEfficiency": 100.0,
+        "aEfficiency": 100,
+        "gEfficiency": 100,
         "maxLeverage": 0.5,
         "avgLeverage": 0.5,
-        "conditionNumber": 1.0
+        "conditionNumber": 1
       }
     },
     {
@@ -647,7 +647,7 @@
         "gEfficiency": 59.32203389830508,
         "maxLeverage": 0.7375,
         "avgLeverage": 0.43749999999999983,
-        "conditionNumber": 2.0
+        "conditionNumber": 2
       }
     },
     {
@@ -679,9 +679,9 @@
         ]
       },
       "expected": {
-        "dEfficiency": 0.0,
-        "aEfficiency": 0.0,
-        "gEfficiency": 0.0,
+        "dEfficiency": 0,
+        "aEfficiency": 0,
+        "gEfficiency": 0,
         "avgLeverage": 1.75
       }
     },
@@ -742,9 +742,9 @@
         ]
       },
       "expected": {
-        "dEfficiency": 0.0,
-        "aEfficiency": 0.0,
-        "gEfficiency": 0.0,
+        "dEfficiency": 0,
+        "aEfficiency": 0,
+        "gEfficiency": 0,
         "avgLeverage": 1.375
       }
     },
@@ -763,12 +763,12 @@
         ]
       },
       "expected": {
-        "dEfficiency": 100.0,
-        "aEfficiency": 100.0,
-        "gEfficiency": 100.0,
-        "maxLeverage": 1.0,
-        "avgLeverage": 1.0,
-        "conditionNumber": 1.0
+        "dEfficiency": 100,
+        "aEfficiency": 100,
+        "gEfficiency": 100,
+        "maxLeverage": 1,
+        "avgLeverage": 1,
+        "conditionNumber": 1
       }
     },
     {
@@ -806,11 +806,11 @@
       "tolerance_override": "non_orthogonal",
       "expected": {
         "dEfficiency": 87.73826753016617,
-        "aEfficiency": 80.0,
+        "aEfficiency": 80,
         "gEfficiency": 66.66666666666666,
-        "maxLeverage": 1.0,
+        "maxLeverage": 1,
         "avgLeverage": 0.6666666666666666,
-        "conditionNumber": 1.0
+        "conditionNumber": 1
       }
     },
     {
@@ -860,10 +860,10 @@
       "expected": {
         "dEfficiency": 84.91395937925421,
         "aEfficiency": 57.14285714285715,
-        "gEfficiency": 100.0,
-        "maxLeverage": 1.0,
+        "gEfficiency": 100,
+        "maxLeverage": 1,
         "avgLeverage": 0.9999999999999999,
-        "conditionNumber": 1.0
+        "conditionNumber": 1
       }
     },
     {
@@ -1132,11 +1132,23 @@
       },
       "expected": {
         "dEfficiency": 99.99999999999997,
-        "aEfficiency": 100.0,
-        "gEfficiency": 100.0,
+        "aEfficiency": 100,
+        "gEfficiency": 100,
         "maxLeverage": 0.6875,
         "avgLeverage": 0.6875,
-        "conditionNumber": 1.0
+        "conditionNumber": 1
+      }
+    },
+    {
+      "id": "deff_robust_empty_matrix",
+      "tier": "robustness",
+      "description": "robustness tier",
+      "inputs": {
+        "codedMatrix": []
+      },
+      "expected_error": {
+        "type": "TypeError",
+        "message_contains": ""
       }
     }
   ]

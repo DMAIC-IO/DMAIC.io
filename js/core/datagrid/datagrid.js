@@ -16,6 +16,7 @@ import {
 import {
   ROLE, ALL_ROLES, inferRole, defaultRoleForType, isRoleValidForType, validRolesForType,
 } from './datagrid-roles.js';
+import { shortcutRegistry } from '../shortcut-registry.js';
 
 export { isFormula, evaluateFormula } from './datagrid-formula.js';
 import { ensureXLSX as _ensureXLSX } from '../export-utils.js';
@@ -2206,13 +2207,13 @@ export class DataGrid {
       return;
     }
 
-    if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) {
+    if (shortcutRegistry.matches(e, 'datagrid.undo')) {
       e.preventDefault(); this.undo(); return;
     }
-    if ((e.ctrlKey || e.metaKey) && (e.key === 'y' || (e.key === 'z' && e.shiftKey))) {
+    if (shortcutRegistry.matches(e, 'datagrid.redo')) {
       e.preventDefault(); this.redo(); return;
     }
-    if ((e.ctrlKey || e.metaKey) && e.key === 'a') {
+    if (shortcutRegistry.matches(e, 'datagrid.selectAll')) {
       e.preventDefault(); this.selectAll(); return;
     }
 
@@ -2275,7 +2276,7 @@ export class DataGrid {
       return;
     }
 
-    if (e.key === 'F2') {
+    if (shortcutRegistry.matches(e, 'datagrid.editCell')) {
       e.preventDefault();
       this._startEdit(s.activeCol, s.activeRow);
       return;

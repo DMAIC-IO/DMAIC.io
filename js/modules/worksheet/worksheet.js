@@ -9,6 +9,7 @@ import { History } from '../../core/datagrid/datagrid-history.js';
 import { parseCellInput } from '../../core/datagrid/datagrid-utils.js';
 import { validRolesForType } from '../../core/datagrid/datagrid-roles.js';
 import { bridgeEmitter } from '../../core/tips/tip-engine.js';
+import { shortcutRegistry } from '../../core/shortcut-registry.js';
 
 // ═══════════════════════════════════════════════════════════
 //  WORKBOOK (multi-sheet management)
@@ -270,10 +271,13 @@ class FormulaEditor {
 
     this.textarea = overlayEl.querySelector('.formula-editor__textarea');
     this.previewVal = overlayEl.querySelector('.formula-editor__preview-value');
-    this.cellLabel = overlayEl.querySelector('.formula-editor__title-sub');
+    this.cellLabel = overlayEl.querySelector('.formula-editor__cell-ref');
     this.colsBar = overlayEl.querySelector('.formula-editor__cols-bar');
+    this.win = overlayEl.querySelector('.dmike-chart-popout');
+    this.titlebar = overlayEl.querySelector('.dmike-chart-popout-titlebar');
 
     this._bindUI();
+    this._initDrag();
   }
 
   get isOpen() { return this._open; }
@@ -317,7 +321,7 @@ class FormulaEditor {
   }
 
   _bindUI() {
-    this.overlay.querySelector('.formula-editor__close').addEventListener('click', () => this.close());
+    this.overlay.querySelector('.dmike-chart-popout-close').addEventListener('click', () => this.close());
     this.overlay.querySelector('[data-action="fe-cancel"]').addEventListener('click', () => this.close());
     this.overlay.querySelector('[data-action="fe-apply"]').addEventListener('click', () => this._apply());
 
@@ -328,7 +332,7 @@ class FormulaEditor {
     this.textarea.addEventListener('input', () => this._updatePreview());
     this.textarea.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') { e.preventDefault(); this.close(); }
-      if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); this._apply(); }
+      if (shortcutRegistry.matches(e, 'worksheet.applyFormula')) { e.preventDefault(); this._apply(); }
       e.stopPropagation();
     });
 
@@ -506,8 +510,46 @@ class FormulaEditor {
     this._toast(this._t('modules.worksheet.formulaApplied'), 'success');
   }
 
+  /**
+   * Wire drag on the popout titlebar. Mirrors the chart-popout drag pattern
+   * from chart-base._openPopout — kept inline here because there is no shared
+   * helper for it yet. The first drag sets `win.style.left/top`, which then
+   * takes precedence over the CSS-default position on subsequent opens (the
+   * user's position is remembered until the module is destroyed).
+   */
+  _initDrag() {
+    if (!this.titlebar || !this.win) return;
+    let dx = 0, dy = 0, dragging = false;
+
+    this._onDragStart = (e) => {
+      // Ignore clicks on the close button (it lives inside the titlebar).
+      if (e.target.closest('.dmike-chart-popout-close')) return;
+      dragging = true;
+      const rect = this.win.getBoundingClientRect();
+      dx = e.clientX - rect.left;
+      dy = e.clientY - rect.top;
+      // Pin to current pixel position so the next mousemove can offset from a
+      // known origin instead of fighting with the CSS calc() default.
+      this.win.style.left = rect.left + 'px';
+      this.win.style.top = rect.top + 'px';
+      e.preventDefault();
+    };
+    this._onDragMove = (e) => {
+      if (!dragging) return;
+      this.win.style.left = (e.clientX - dx) + 'px';
+      this.win.style.top = (e.clientY - dy) + 'px';
+    };
+    this._onDragEnd = () => { dragging = false; };
+
+    this.titlebar.addEventListener('mousedown', this._onDragStart);
+    window.addEventListener('mousemove', this._onDragMove);
+    window.addEventListener('mouseup', this._onDragEnd);
+  }
+
   destroy() {
-    // all listeners are on elements inside overlay, will be GC'd
+    if (this._onDragMove) window.removeEventListener('mousemove', this._onDragMove);
+    if (this._onDragEnd)  window.removeEventListener('mouseup',   this._onDragEnd);
+    // mousedown handler on titlebar is GC'd with the overlay element
   }
 }
 
@@ -579,9 +621,11 @@ export default {
     sheetTabs.className = 'sheet-tabs';
     container.appendChild(sheetTabs);
 
-    // Formula editor overlay
+    // Formula editor overlay — reuses the shared dmike-chart-popout shell
+    // (titlebar/close/body/footer) so it behaves and looks like every other
+    // popout in the app; only the inner UI is formula-editor-specific.
     const feOverlay = document.createElement('div');
-    feOverlay.className = 'formula-editor-overlay';
+    feOverlay.className = 'dmike-chart-popout-overlay';
     feOverlay.style.display = 'none';
     feOverlay.setAttribute('role', 'dialog');
     feOverlay.setAttribute('aria-modal', 'true');
@@ -749,7 +793,7 @@ export default {
 
     this._boundKeyDown = (e) => {
       if (!container.closest('.app-workspace')) return;
-      if (e.key === 'F4' && !this._formulaEditor.isOpen) {
+      if (shortcutRegistry.matches(e, 'worksheet.openFormulaEditor') && !this._formulaEditor.isOpen) {
         e.preventDefault();
         const sel = this._grid.selection;
         if (!sel) return;
@@ -1291,15 +1335,18 @@ export default {
 
   _buildFormulaEditorHTML(t) {
     return `
-    <div class="formula-editor">
-      <div class="formula-editor__header">
-        <div class="formula-editor__icon">\u0192</div>
-        <div class="formula-editor__title">
-          <div class="formula-editor__title-main">${t('modules.worksheet.formulaEditor')}</div>
-          <div class="formula-editor__title-sub">${t('modules.worksheet.feCell')} \u2014</div>
-        </div>
-        <button class="formula-editor__close" title="${t('common.close')} (Esc)">\u00D7</button>
+    <div class="dmike-chart-popout dmike-chart-popout--formula-editor">
+      <div class="dmike-chart-popout-titlebar">
+        <span>
+          <span class="formula-editor__icon">\u0192</span>
+          ${t('modules.worksheet.formulaEditor')}
+          <span class="formula-editor__cell-ref">${t('modules.worksheet.feCell')} \u2014</span>
+        </span>
+        <button class="dmike-chart-popout-close" title="${t('common.close')} (Esc)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+        </button>
       </div>
+      <div class="dmike-chart-popout-body dmike-popout-body--column">
 
       <div class="formula-editor__fn-bar">
         <div class="formula-editor__fn-label">${t('modules.worksheet.feFunctions')}</div>
@@ -1434,13 +1481,12 @@ export default {
         </div>
       </div>
 
-      <div class="formula-editor__footer">
-        <div class="formula-editor__footer-btns">
-          <button class="btn" data-action="fe-cancel">${t('common.cancel')}</button>
-          <button class="btn btn--primary" data-action="fe-apply">
-            ${ICONS.check} ${t('modules.worksheet.feApply')}
-          </button>
-        </div>
+      </div>
+      <div class="dmike-popout-footer">
+        <button class="btn" data-action="fe-cancel">${t('common.cancel')}</button>
+        <button class="btn btn--primary" data-action="fe-apply">
+          ${ICONS.check} ${t('modules.worksheet.feApply')}
+        </button>
       </div>
     </div>
     `;

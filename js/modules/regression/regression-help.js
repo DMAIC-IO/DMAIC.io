@@ -66,7 +66,7 @@ export default {
           {
             type: 'definition',
             term: 'R² (coefficient of determination)',
-            content: 'Share of Y variation explained by the model. 0 = model explains nothing, 1 = perfect explanation. R² = 0.85 means: 85% of Y variation is explained by the X.',
+            content: 'Share of Y variation explained by the model. 0 = model explains nothing, 1 = perfect explanation. R² = 0.85 {{term:mittelwert|means}}: 85% of Y variation is explained by the X.',
           },
           {
             type: 'definition',

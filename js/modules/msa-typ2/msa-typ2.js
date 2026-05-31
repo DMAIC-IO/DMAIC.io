@@ -467,7 +467,7 @@ export default {
     const a = r.anova;
     let html = `<div class="dmike-split__output-section">${t('modules.msa-typ2.anovaTitle')}</div>
     <div class="msa-typ2__stats-panel">
-      <table class="msa-typ2__anova-table">
+      <table class="dmike-table msa-typ2__stats-table">
         <thead><tr>
           <th>${t('modules.msa-typ2.anovaSource')}</th>
           <th>SS</th><th>df</th><th>MS</th><th>F</th><th>p</th>
@@ -519,7 +519,7 @@ export default {
 
     let html = `<div class="dmike-split__output-section">${t('modules.msa-typ2.varCompTitle')}</div>
     <div class="msa-typ2__stats-panel">
-      <table class="msa-typ2__anova-table">
+      <table class="dmike-table msa-typ2__stats-table">
         <thead><tr>
           <th>${t('modules.msa-typ2.anovaSource')}</th>
           <th>σ²</th><th>σ</th>

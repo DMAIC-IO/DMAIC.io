@@ -124,6 +124,28 @@ export default {
     if (this._container) this._render();
   },
 
+  /**
+   * Load a catalog example. Parameter-only — no worksheet is provisioned.
+   * @param {{ meta: object, data: object }} payload
+   */
+  async loadExample(payload) {
+    if (!payload || !payload.data) return;
+    const t = (k) => this._context.i18n.t(k);
+
+    const hasInputs = !!(this._sigma0 || this._sigmaAlt || this._ratio || this._delta || this._sigma);
+    if (hasInputs && this._context?.confirmPopout) {
+      const ok = await this._context.confirmPopout(t('moduleHelp.confirmOverwrite'), { danger: true });
+      if (!ok) return;
+    }
+
+    this.setState(payload.data);
+    this._save();
+
+    const lang = this._context.i18n.getLanguage();
+    const title = payload.meta?.title?.[lang] || payload.meta?.title?.en || payload.meta?.id || '';
+    this._context.notify?.(t('moduleHelp.exampleLoaded').replace('{title}', title), 'success');
+  },
+
   _save() {
     this._context.stateManager.setModuleState(this._context.instanceId, this.getState());
   },

@@ -1,0 +1,64 @@
+{
+  "id": "median",
+  "category": "descriptive",
+  "title": {
+    "de": "Median",
+    "en": "Median"
+  },
+  "short": {
+    "de": "Mittlerer Wert einer nach Größe sortierten Datenreihe — der 50-%-Wert.",
+    "en": "Middle value of a sorted dataset — the 50 % value."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "Der **Median** $\\tilde{x}$ teilt eine sortierte Datenreihe in zwei gleich große Hälften: 50 % der Werte liegen darunter, 50 % darüber. Bei ungeradem $n$ ist es der mittlere Wert; bei geradem $n$ der Durchschnitt der beiden mittleren Werte."
+      },
+      {
+        "type": "paragraph",
+        "text": "Anders als der {{term:mittelwert|Mittelwert}} ist der Median **robust gegen Ausreißer** — ein einzelner Extremwert verschiebt ihn nicht. Bei stark schiefen Verteilungen (Einkommen, Wartezeiten, Lebensdauern) ist der Median daher oft das ehrlichere Lagemaß."
+      },
+      {
+        "type": "note",
+        "text": "Im Boxplot ist der Median die mittlere Linie der Box. In nichtparametrischen Tests (Mann-Whitney, Kruskal-Wallis) vergleicht man Mediane statt Mittelwerten — diese Tests setzen keine Normalverteilung voraus."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "The **median** $\\tilde{x}$ splits a sorted dataset into two equal halves: 50 % of values fall below, 50 % above. For odd $n$ it is the middle value; for even $n$ the average of the two middle values."
+      },
+      {
+        "type": "paragraph",
+        "text": "Unlike the {{term:mittelwert|mean}}, the median is **robust against outliers** — a single extreme value does not shift it. For strongly skewed distributions (income, waiting times, lifetimes) the median is therefore often the more honest measure of location."
+      },
+      {
+        "type": "note",
+        "text": "In a boxplot the median is the middle line of the box. Non-parametric tests (Mann-Whitney, Kruskal-Wallis) compare medians instead of means — they do not require normality."
+      }
+    ]
+  },
+  "aliases": {
+    "de": ["50. Perzentil", "Q2", "Zentralwert"],
+    "en": ["50th percentile", "Q2"]
+  },
+  "seeAlso": ["mittelwert", "spannweite", "schiefe"],
+  "modules": [
+    "histogram", "boxplot", "process-capability", "hypothesis-test",
+    "regression", "glm-regression", "correlation", "msa-typ2",
+    "doe-planner", "doe-advisor", "sample-size", "data-transformation",
+    "distribution-fit", "calculator", "outlier-test",
+    "multivariate-control-chart", "pairwise-comparison",
+    "control-chart", "individual-value-plot", "xy-plot",
+    "probability-plot", "run-chart"
+  ],
+  "algoLab": [
+    "hypothesis/mann-whitney",
+    "hypothesis/kruskal-wallis",
+    "hypothesis/wilcoxon-signed-rank"
+  ],
+  "sources": [
+    { "label": "Montgomery, D.C.: Introduction to Statistical Quality Control, 8th ed., Wiley, 2020 — Kap. 3", "url": null }
+  ]
+}

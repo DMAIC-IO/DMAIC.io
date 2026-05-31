@@ -12,17 +12,20 @@ import { readFile, readdir } from 'node:fs/promises';
 import { pathToFileURL } from 'node:url';
 import path from 'node:path';
 
+import { loadGlossary } from './load-glossary.mjs';
+
 /**
  * @param {string} repoRoot
  */
 export async function loadAllSources(repoRoot) {
-  const [modules, algorithms, i18n, examples] = await Promise.all([
+  const [modules, algorithms, i18n, examples, glossary] = await Promise.all([
     loadModules(repoRoot),
     loadAlgorithms(repoRoot),
     loadI18n(repoRoot),
     loadExamples(repoRoot),
+    loadGlossary(repoRoot),
   ]);
-  return { modules, algorithms, i18n, examples };
+  return { modules, algorithms, i18n, examples, glossary };
 }
 
 // ─── Modules ────────────────────────────────────────────────────────

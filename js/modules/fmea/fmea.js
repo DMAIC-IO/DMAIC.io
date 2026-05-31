@@ -882,9 +882,14 @@ export default {
 
     const body = document.createElement('div');
     body.className = 'dmike-chart-popout-body';
+    // The popout shell is content-driven; the chart owns its render box.
+    // Resize: both lets the user drag the corner to enlarge; the shell
+    // grows along.
     const chartWrap = document.createElement('div');
     chartWrap.style.width = '100%';
-    chartWrap.style.height = '100%';
+    chartWrap.style.height = '500px';
+    chartWrap.style.resize = 'both';
+    chartWrap.style.overflow = 'auto';
     body.appendChild(chartWrap);
 
     win.append(titleBar, body);

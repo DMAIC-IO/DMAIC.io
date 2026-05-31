@@ -133,17 +133,41 @@ export function computeSeriesStats(series, confLevel = 0.95) {
  * Each entry: { key, i18nKey, ci? }
  * Modules can pass a subset via options.columns.
  */
+/** Module-level defaults populated by `configureStatsPanel()` at bootstrap.
+ *  Lets every `renderStatsTable()` caller inherit glossary wiring without
+ *  threading it through five module call sites. */
+const _config = {
+  /** @type {?Set<string>} known glossary IDs (null = unknown, render all) */
+  glossaryIds: null,
+  /** @type {boolean} respects settings.glossary.inlineLinksEnabled */
+  glossaryEnabled: true,
+};
+
+/**
+ * Configure module-wide defaults for glossary wiring. Call once at app
+ * bootstrap after the GlossaryRegistry has warmed; callers can still
+ * override per-render via the same option keys.
+ *
+ * @param {object} opts
+ * @param {Iterable<string>=} opts.glossaryIds       known glossary term IDs
+ * @param {boolean=}          opts.glossaryEnabled   master toggle (default true)
+ */
+export function configureStatsPanel({ glossaryIds, glossaryEnabled } = {}) {
+  if (glossaryIds !== undefined) _config.glossaryIds = new Set(glossaryIds);
+  if (glossaryEnabled !== undefined) _config.glossaryEnabled = !!glossaryEnabled;
+}
+
 const DEFAULT_COLUMNS = [
   { key: 'n',        i18nKey: 'n',        ci: false },
-  { key: 'mean',     i18nKey: 'mean',     ci: true  },
-  { key: 'stddev',   i18nKey: 'stddev',   ci: true  },
+  { key: 'mean',     i18nKey: 'mean',     ci: true,  glossaryTerm: 'mittelwert' },
+  { key: 'stddev',   i18nKey: 'stddev',   ci: true,  glossaryTerm: 'standardabweichung' },
   { key: 'min',      i18nKey: 'min',      ci: false },
   { key: 'max',      i18nKey: 'max',      ci: false },
-  { key: 'median',   i18nKey: 'median',   ci: false },
-  { key: 'variance', i18nKey: 'variance', ci: true  },
-  { key: 'range',    i18nKey: 'range',    ci: false },
-  { key: 'skewness', i18nKey: 'skewness', ci: false },
-  { key: 'kurtosis', i18nKey: 'kurtosis', ci: false },
+  { key: 'median',   i18nKey: 'median',   ci: false, glossaryTerm: 'median' },
+  { key: 'variance', i18nKey: 'variance', ci: true,  glossaryTerm: 'varianz' },
+  { key: 'range',    i18nKey: 'range',    ci: false, glossaryTerm: 'spannweite' },
+  { key: 'skewness', i18nKey: 'skewness', ci: false, glossaryTerm: 'schiefe' },
+  { key: 'kurtosis', i18nKey: 'kurtosis', ci: false, glossaryTerm: 'kurtosis' },
 ];
 
 // ─── Rendering ──────────────────────────────────────────────
@@ -177,10 +201,29 @@ export function renderStatsTable(container, seriesStats, options = {}) {
 
   const ciTitle = escAttr(t('ciTitle', { n: confPct }));
 
+  // Glossary inline-link policy:
+  //   - Skip wrapping if a known set is provided and the term isn't in it,
+  //     so we don't render dead links for terms whose entry doesn't exist yet.
+  //   - Skip wrapping if the global toggle is off.
+  //   - Per-call options override module-wide `_config` set via configureStatsPanel().
+  //
+  // The wrapper emits ONLY the marker span — the hover button (and its
+  // icon, aria-label, etc.) is appended at runtime by augmentGlossaryTerms()
+  // in core/glossary-inline.js. Keeps source-of-truth for presentation
+  // in one place, so visual tweaks don't need to touch every emitter.
+  const glossaryIds = options.glossaryIds instanceof Set ? options.glossaryIds : _config.glossaryIds;
+  const glossaryEnabled = options.glossaryEnabled !== undefined ? !!options.glossaryEnabled : _config.glossaryEnabled;
+  const wrapHeader = (label, termId) => {
+    if (!termId || !glossaryEnabled) return esc(label);
+    if (glossaryIds && !glossaryIds.has(termId)) return esc(label);
+    return `<span class="glossary-term" data-glossary-term="${escAttr(termId)}">${esc(label)}</span>`;
+  };
+
   let html = `<table class="dmike-table ${prefix}-stats-table"><thead><tr>`;
   html += `<th>${t('series')}</th>`;
   cols.forEach(c => {
-    html += `<th>${t(c.i18nKey)}</th>`;
+    const label = t(c.i18nKey);
+    html += `<th>${wrapHeader(label, c.glossaryTerm)}</th>`;
   });
   html += '</tr></thead><tbody>';
 

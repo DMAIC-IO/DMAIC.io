@@ -22,12 +22,12 @@ export default {
           {
             type: 'definition',
             term: 'Grubbs-Test',
-            content: 'Sucht den am stärksten vom Mittelwert abweichenden Punkt und prüft per t-Verteilung, ob diese Abweichung mit Normalverteilung verträglich ist. Klassischer Einzel-Ausreißer-Test, n ≥ 3, setzt Normalverteilung voraus.',
+            content: 'Sucht den am stärksten vom {{term:mittelwert|Mittelwert}} abweichenden Punkt und prüft per t-Verteilung, ob diese Abweichung mit Normalverteilung verträglich ist. Klassischer Einzel-Ausreißer-Test, n ≥ 3, setzt Normalverteilung voraus.',
           },
           {
             type: 'definition',
             term: 'Dixon Q-Test',
-            content: 'Vergleicht den verdächtigen Wert mit seinem Nachbarn relativ zur Spannweite. Tabelliert für n = 3..30. Sehr beliebt in der Analytik (DIN 53804) bei kleinen Stichproben.',
+            content: 'Vergleicht den verdächtigen Wert mit seinem Nachbarn relativ zur {{term:spannweite|Spannweite}}. Tabelliert für n = 3..30. Sehr beliebt in der Analytik (DIN 53804) bei kleinen Stichproben.',
           },
           {
             type: 'definition',
@@ -42,7 +42,7 @@ export default {
           {
             type: 'definition',
             term: 'Hampel-Identifier',
-            content: 'Wie der Z-Score, aber auf Median und MAD (Median Absolute Deviation) statt Mittelwert und Standardabweichung. Robust gegen die Verzerrung, die echte Ausreißer auf x̄ und s ausüben — ideal für „verseuchte" Daten.',
+            content: 'Wie der Z-Score, aber auf {{term:median|Median}} und MAD (Median Absolute Deviation) statt Mittelwert und {{term:standardabweichung|Standardabweichung}}. Robust gegen die Verzerrung, die echte Ausreißer auf x̄ und s ausüben — ideal für „verseuchte" Daten.',
           },
           {
             type: 'definition',
@@ -66,7 +66,7 @@ export default {
           {
             type: 'definition',
             term: 'Grubbs\' Test',
-            content: 'Identifies the point most distant from the mean and checks via the t-distribution whether that distance is compatible with normality. Classical single-outlier test, n ≥ 3, requires normality.',
+            content: 'Identifies the point most distant from the {{term:mittelwert|mean}} and checks via the t-distribution whether that distance is compatible with normality. Classical single-outlier test, n ≥ 3, requires normality.',
           },
           {
             type: 'definition',
@@ -86,7 +86,7 @@ export default {
           {
             type: 'definition',
             term: 'Hampel Identifier',
-            content: 'Like the Z-score but using the median and MAD (Median Absolute Deviation) in place of mean and standard deviation. Robust against the bias that real outliers exert on x̄ and s — ideal for "contaminated" data.',
+            content: 'Like the Z-score but using the {{term:median|median}} and MAD (Median Absolute Deviation) in place of mean and {{term:standardabweichung|standard deviation}}. Robust against the bias that real outliers exert on x̄ and s — ideal for "contaminated" data.',
           },
           {
             type: 'definition',

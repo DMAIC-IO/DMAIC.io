@@ -1,0 +1,123 @@
+{
+  "id": "varianz",
+  "category": "descriptive",
+  "title": {
+    "de": "Varianz",
+    "en": "Variance"
+  },
+  "short": {
+    "de": "Mittlere quadrierte Abweichung der Werte vom Mittelwert — Maß für die Streuung eines Datensatzes.",
+    "en": "Mean squared deviation of values from the mean — a measure of dispersion in a dataset."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "Die **Varianz** beschreibt, wie stark einzelne Messwerte um ihren Mittelwert streuen. Sie ist die mittlere quadrierte Abweichung — durch das Quadrieren wirken Abweichungen nach oben und unten gleich, und größere Abweichungen werden überproportional gewichtet."
+      },
+      {
+        "type": "paragraph",
+        "text": "Man unterscheidet zwei Varianten: die **Populations-Varianz** $\\sigma^2$ (Division durch $n$) für vollständig bekannte Grundgesamtheiten und die **Stichproben-Varianz** $s^2$ (Division durch $n-1$, sog. Bessel-Korrektur) für Schätzungen aus einer Stichprobe."
+      },
+      {
+        "type": "formula",
+        "latex": "s^2 = \\frac{1}{n-1} \\sum_{i=1}^{n} \\left( x_i - \\bar{x} \\right)^2"
+      },
+      {
+        "type": "paragraph",
+        "text": "Die Einheit der Varianz ist die quadrierte Einheit der Messgröße (z. B. mm²). Für eine in der Ursprungs-Einheit interpretierbare Größe zieht man die Wurzel — das Ergebnis ist die {{term:standardabweichung}}."
+      },
+      {
+        "type": "note",
+        "text": "Im Six-Sigma-Kontext ist die Varianz der zentrale Anknüpfpunkt fast aller statistischen Verfahren: ANOVA zerlegt sie, Regression minimiert sie, Prozessfähigkeit normiert die Toleranzbreite an ihr, und die Messsystemanalyse trennt Mess- von Prozess-Anteilen daran."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "The **variance** describes how strongly individual observations scatter around their mean. It is the mean squared deviation — squaring makes deviations symmetric in sign and weights larger deviations disproportionately."
+      },
+      {
+        "type": "paragraph",
+        "text": "Two variants are distinguished: the **population variance** $\\sigma^2$ (dividing by $n$) when the full population is known, and the **sample variance** $s^2$ (dividing by $n-1$, Bessel's correction) when estimating from a sample."
+      },
+      {
+        "type": "formula",
+        "latex": "s^2 = \\frac{1}{n-1} \\sum_{i=1}^{n} \\left( x_i - \\bar{x} \\right)^2"
+      },
+      {
+        "type": "paragraph",
+        "text": "The unit of the variance is the squared unit of the measurand (e.g. mm²). To obtain a value interpretable in the original unit, take its square root — the result is the {{term:standardabweichung}}."
+      },
+      {
+        "type": "note",
+        "text": "In Six Sigma, variance is the central anchor for nearly every statistical method: ANOVA decomposes it, regression minimises it, process capability normalises the tolerance width by it, and measurement-system analysis separates measurement variance from process variance."
+      }
+    ]
+  },
+  "aliases": {
+    "de": [
+      "Streuung (im Sinne von Varianz)",
+      "σ²",
+      "s²"
+    ],
+    "en": [
+      "dispersion (in the sense of variance)",
+      "σ²",
+      "s²"
+    ]
+  },
+  "seeAlso": [
+    "standardabweichung",
+    "mittelwert",
+    "spannweite",
+    "schiefe",
+    "kurtosis"
+  ],
+  "modules": [
+    "histogram",
+    "boxplot",
+    "process-capability",
+    "hypothesis-test",
+    "regression",
+    "glm-regression",
+    "correlation",
+    "msa-typ2",
+    "doe-planner",
+    "doe-advisor",
+    "sample-size",
+    "data-transformation",
+    "distribution-fit",
+    "calculator",
+    "outlier-test",
+    "multivariate-control-chart",
+    "pairwise-comparison",
+    "control-chart",
+    "individual-value-plot",
+    "random-generator",
+    "response-optimization"
+  ],
+  "algoLab": [
+    "hypothesis/f-test",
+    "hypothesis/levene-test",
+    "hypothesis/bartlett-test",
+    "hypothesis/chi-square-variance",
+    "hypothesis/one-way-anova",
+    "regression/regression-anova",
+    "msa/grr"
+  ],
+  "sources": [
+    {
+      "label": "Montgomery, D.C.: Introduction to Statistical Quality Control, 8th ed., Wiley, 2020 — Kap. 3",
+      "url": null
+    },
+    {
+      "label": "AIAG: Statistical Process Control (SPC) Reference Manual, 2nd ed., 2005",
+      "url": null
+    },
+    {
+      "label": "DIN ISO 3534-1: Statistik — Begriffe und Formelzeichen, Teil 1: Wahrscheinlichkeit und allgemeine statistische Begriffe",
+      "url": null
+    }
+  ]
+}

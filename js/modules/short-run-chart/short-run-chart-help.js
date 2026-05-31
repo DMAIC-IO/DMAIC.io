@@ -16,7 +16,7 @@ export default {
           {
             type: 'definition',
             term: 'Standardisierung',
-            content: 'Pro Teil j wird Mittelwert x̄_j und σ̂_j (aus MR̄_j/d₂) berechnet. Jeder Messwert wird transformiert zu z_ij = (x_ij − x̄_j) / σ̂_j. Die z-Werte sind unter stabilen Bedingungen ~N(0,1).',
+            content: 'Pro Teil j wird {{term:mittelwert|Mittelwert}} x̄_j und σ̂_j (aus MR̄_j/d₂) berechnet. Jeder Messwert wird transformiert zu z_ij = (x_ij − x̄_j) / σ̂_j. Die z-Werte sind unter stabilen Bedingungen ~N(0,1).',
           },
           {
             type: 'definition',
@@ -39,7 +39,7 @@ export default {
           {
             type: 'definition',
             term: 'Standardisation',
-            content: 'For each part j compute mean x̄_j and σ̂_j (from MR̄_j/d₂). Each value is transformed to z_ij = (x_ij − x̄_j) / σ̂_j. Under stable conditions z is ~N(0,1).',
+            content: 'For each part j compute {{term:mittelwert|mean}} x̄_j and σ̂_j (from MR̄_j/d₂). Each value is transformed to z_ij = (x_ij − x̄_j) / σ̂_j. Under stable conditions z is ~N(0,1).',
           },
           {
             type: 'definition',

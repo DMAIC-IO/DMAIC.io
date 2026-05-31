@@ -12,6 +12,7 @@ import {
   openColorPicker, parseRGBA, rgbaStr,
 } from '../../core/chart/chart-editor.js';
 import { ensureXLSX as _ensureXLSX } from '../../core/export-utils.js';
+import { shortcutRegistry } from '../../core/shortcut-registry.js';
 
 /* ── Default node colors ── */
 const DEFAULT_COLORS = {
@@ -1017,7 +1018,7 @@ export default {
 
       const onKeyDown = (e) => {
         if (e.key === 'Escape') close(false);
-        else if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+        else if (shortcutRegistry.matches(e, 'vocCtxTree.commit')) {
           e.preventDefault();
           confirmBtn.click();
         }

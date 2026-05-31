@@ -1,0 +1,119 @@
+{
+  "id": "mittelwert",
+  "category": "descriptive",
+  "title": {
+    "de": "Mittelwert (arithmetisches Mittel)",
+    "en": "Mean (Arithmetic Mean)"
+  },
+  "short": {
+    "de": "Summe aller Werte geteilt durch ihre Anzahl — das gebräuchlichste Lagemaß.",
+    "en": "Sum of all values divided by their count — the most common measure of central tendency."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "Der **Mittelwert** $\\bar{x}$ ist die wichtigste Kennzahl der Lage einer Verteilung. Er beantwortet die Frage „Wo liegt das Zentrum meiner Daten?“."
+      },
+      {
+        "type": "formula",
+        "latex": "\\bar{x} = \\frac{1}{n} \\sum_{i=1}^{n} x_i"
+      },
+      {
+        "type": "paragraph",
+        "text": "Im Gegensatz zum {{term:median|Median}} reagiert der Mittelwert empfindlich auf Ausreißer — schon ein einziger Extremwert kann ihn deutlich verschieben. Bei stark schiefen Verteilungen ist deshalb oft der Median das aussagekräftigere Lagemaß."
+      },
+      {
+        "type": "note",
+        "text": "In Six Sigma ist der Mittelwert das zentrale Ziel-/Ist-Maß: Prozessfähigkeit normiert die Toleranz an seiner Lage, t-Tests prüfen seine Abweichung vom Sollwert, Regelkarten überwachen seine Stabilität."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "The **mean** $\\bar{x}$ is the primary measure of location of a distribution. It answers the question \"Where is the centre of my data?\"."
+      },
+      {
+        "type": "formula",
+        "latex": "\\bar{x} = \\frac{1}{n} \\sum_{i=1}^{n} x_i"
+      },
+      {
+        "type": "paragraph",
+        "text": "Unlike the {{term:median|median}}, the mean is sensitive to outliers — a single extreme value can shift it noticeably. For strongly skewed distributions the median is often the more informative location measure."
+      },
+      {
+        "type": "note",
+        "text": "In Six Sigma the mean is the central target/actual measure: process capability normalises the tolerance around it, t-tests check its deviation from a target value, and control charts monitor its stability."
+      }
+    ]
+  },
+  "aliases": {
+    "de": [
+      "arithmetisches Mittel",
+      "Durchschnitt",
+      "μ",
+      "x̄",
+      "x quer"
+    ],
+    "en": [
+      "arithmetic mean",
+      "average",
+      "μ",
+      "x̄"
+    ]
+  },
+  "seeAlso": [
+    "median",
+    "varianz",
+    "standardabweichung"
+  ],
+  "modules": [
+    "histogram",
+    "boxplot",
+    "process-capability",
+    "hypothesis-test",
+    "regression",
+    "glm-regression",
+    "correlation",
+    "msa-typ2",
+    "doe-planner",
+    "doe-advisor",
+    "sample-size",
+    "data-transformation",
+    "distribution-fit",
+    "calculator",
+    "outlier-test",
+    "multivariate-control-chart",
+    "pairwise-comparison",
+    "control-chart",
+    "individual-value-plot",
+    "xy-plot",
+    "probability-plot",
+    "run-chart",
+    "short-run-chart",
+    "attribute-control-chart",
+    "time-weighted-chart",
+    "transformed-imr-chart",
+    "msa-typ1",
+    "random-generator",
+    "worksheet",
+    "response-optimization"
+  ],
+  "algoLab": [
+    "hypothesis/one-sample-t-test",
+    "hypothesis/two-sample-t-test",
+    "hypothesis/welch-t-test",
+    "hypothesis/one-way-anova",
+    "regression/regression-coefficients"
+  ],
+  "sources": [
+    {
+      "label": "Montgomery, D.C.: Introduction to Statistical Quality Control, 8th ed., Wiley, 2020 — Kap. 3",
+      "url": null
+    },
+    {
+      "label": "DIN ISO 3534-1: Statistik — Begriffe und Formelzeichen, Teil 1",
+      "url": null
+    }
+  ]
+}

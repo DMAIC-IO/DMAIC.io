@@ -136,7 +136,7 @@ export default {
           {
             type: 'definition',
             term: 'Gemischte Populationen übersehen',
-            content: 'Ein einzelner Gipfel kann durch zwei sehr nahe Mittelwerte entstehen. Wenn Stratifizierungsmerkmale vorliegen (Schicht, Maschine), die Daten getrennt darstellen.',
+            content: 'Ein einzelner Gipfel kann durch zwei sehr nahe {{term:mittelwert|Mittelwerte}} entstehen. Wenn Stratifizierungsmerkmale vorliegen (Schicht, Maschine), die Daten getrennt darstellen.',
           },
           {
             type: 'definition',
@@ -166,7 +166,7 @@ export default {
           {
             type: 'definition',
             term: 'Missed mixed populations',
-            content: 'A single peak can be produced by two very close means. If stratification attributes exist (shift, machine), display the data separately.',
+            content: 'A single peak can be produced by two very close {{term:mittelwert|means}}. If stratification attributes exist (shift, machine), display the data separately.',
           },
           {
             type: 'definition',

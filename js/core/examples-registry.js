@@ -207,18 +207,29 @@ export function csvPayloadToWorksheetState(csvData, meta = {}) {
   if (!csvData || !Array.isArray(csvData.columns) || csvData.columns.length === 0) return null;
   const sheetId = 'sheet-csv';
   const name = meta.title?.de || meta.title?.en || meta.id || 'CSV';
+  const columns = csvData.columns.map((c, i) => ({
+    id: `c-${i}`,
+    name: c.name,
+    shortName: `C${i + 1}`,
+    type: c.type || 'numeric',
+    values: c.values,
+  }));
+  // datagrid.setState reads rowCount directly (no derivation from values),
+  // so a sheet missing rowCount renders zero rows even when columns are set.
+  // datagrid.setState reads rowCount directly (no derivation from values),
+  // so a sheet missing rowCount renders zero rows even when columns are set.
+  const rowCount = Math.max(0, ...columns.map(c => c.values.length));
   return {
     sheets: [{
       id: sheetId,
       name,
       state: {
-        columns: csvData.columns.map((c, i) => ({
-          id: `c-${i}`,
-          name: c.name,
-          shortName: c.name,
-          type: c.type || 'numeric',
-          values: c.values,
-        })),
+        columns,
+        rowCount,
+        colWidths: {},
+        sortCol: null,
+        sortDir: null,
+        selection: null,
       },
     }],
     activeSheetId: sheetId,

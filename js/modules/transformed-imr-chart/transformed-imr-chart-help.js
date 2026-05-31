@@ -34,7 +34,7 @@ export default {
         blocks: [
           {
             type: 'paragraph',
-            content: 'Classic Shewhart charts assume approximate normality. For right-skewed data (lifetime, cost, defect rate) the limits become biased: too many false alarms above the mean, too few below. This module brings the data onto a normal scale via Box-Cox, computes I-MR there, and back-transforms the limits to the original scale for display.',
+            content: 'Classic Shewhart charts assume approximate normality. For right-skewed data (lifetime, cost, defect rate) the limits become biased: too many false alarms above the {{term:mittelwert|mean}}, too few below. This module brings the data onto a normal scale via Box-Cox, computes I-MR there, and back-transforms the limits to the original scale for display.',
           },
           {
             type: 'definition',

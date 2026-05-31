@@ -594,20 +594,26 @@ export default {
     html += `</div>`;
 
     // Stats panel
+    const statCols = [
+      { label: t('modules.process-capability.statN'), value: r.n },
+      { label: t('modules.process-capability.statMean'), value: `${fmt(r.xbar)} ${unit}` },
+      { label: t('modules.process-capability.statStddevS'), value: `${fmt(r.s)} ${unit}` },
+      { label: t('modules.process-capability.statStddevSigma'), value: `${fmt(r.sigma)} ${unit}` },
+      { label: t('modules.process-capability.statMin'), value: `${fmt(r.xmin)} ${unit}` },
+      { label: t('modules.process-capability.statMax'), value: `${fmt(r.xmax)} ${unit}` },
+      r.hasLsl ? { label: 'LSL', value: `${fmt(r.lsl)} ${unit}` } : null,
+      r.hasUsl ? { label: 'USL', value: `${fmt(r.usl)} ${unit}` } : null,
+      r.T != null ? { label: t('modules.process-capability.statTol'), value: `${fmt(r.T)} ${unit}` } : null,
+      r.targetVal != null ? { label: t('modules.process-capability.statTarget'), value: `${fmt(r.targetVal)} ${unit}` } : null,
+      r.ppmBelowLsl != null ? { label: 'PPM < LSL', value: fmt(r.ppmBelowLsl) } : null,
+      r.ppmAboveUsl != null ? { label: 'PPM > USL', value: fmt(r.ppmAboveUsl) } : null,
+    ].filter(Boolean);
     html += `<div class="dmike-split__output-section">${t('modules.process-capability.statsTitle')}</div>
     <div class="pc__stats-panel">
-      ${this._statsRow(t('modules.process-capability.statN'), r.n)}
-      ${this._statsRow(t('modules.process-capability.statMean'), `${fmt(r.xbar)} ${unit}`)}
-      ${this._statsRow(t('modules.process-capability.statStddevS'), `${fmt(r.s)} ${unit}`)}
-      ${this._statsRow(t('modules.process-capability.statStddevSigma'), `${fmt(r.sigma)} ${unit}`)}
-      ${this._statsRow(t('modules.process-capability.statMin'), `${fmt(r.xmin)} ${unit}`)}
-      ${this._statsRow(t('modules.process-capability.statMax'), `${fmt(r.xmax)} ${unit}`)}
-      ${r.hasLsl ? this._statsRow('LSL', `${fmt(r.lsl)} ${unit}`) : ''}
-      ${r.hasUsl ? this._statsRow('USL', `${fmt(r.usl)} ${unit}`) : ''}
-      ${r.T != null ? this._statsRow(t('modules.process-capability.statTol'), `${fmt(r.T)} ${unit}`) : ''}
-      ${r.targetVal != null ? this._statsRow(t('modules.process-capability.statTarget'), `${fmt(r.targetVal)} ${unit}`) : ''}
-      ${r.ppmBelowLsl != null ? this._statsRow('PPM < LSL', fmt(r.ppmBelowLsl)) : ''}
-      ${r.ppmAboveUsl != null ? this._statsRow('PPM > USL', fmt(r.ppmAboveUsl)) : ''}
+      <table class="dmike-table pc__stats-table">
+        <thead><tr>${statCols.map(c => `<th>${c.label}</th>`).join('')}</tr></thead>
+        <tbody><tr>${statCols.map(c => `<td>${c.value}</td>`).join('')}</tr></tbody>
+      </table>
     </div>`;
 
     // Chart
@@ -677,13 +683,6 @@ export default {
   },
 
   // ─── Helpers ────────────────────────────────────────────────
-
-  _statsRow(label, value) {
-    return `<div class="pc__stats-row">
-      <span class="pc__stats-row-label">${label}</span>
-      <span class="pc__stats-row-value">${value}</span>
-    </div>`;
-  },
 
   _readInputs() {
     const c = this._container;

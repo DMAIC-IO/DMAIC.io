@@ -27,12 +27,12 @@ export default {
           {
             type: 'definition',
             term: 'Bias',
-            content: 'Systematische Abweichung: Mittelwert der Wiederholmessungen − Referenzwert. Ein Bias ≠ 0 deutet auf eine Kalibrierabweichung oder ein systematisches Offset hin.',
+            content: 'Systematische Abweichung: {{term:mittelwert|Mittelwert}} der Wiederholmessungen − Referenzwert. Ein Bias ≠ 0 deutet auf eine Kalibrierabweichung oder ein systematisches Offset hin.',
           },
           {
             type: 'definition',
             term: 'Cg',
-            content: 'Maß für die Wiederholbarkeit im Verhältnis zur Toleranz. Typische Formel: Cg = 0,2·T / (6·s), wobei T die Toleranzbreite und s die Standardabweichung der Wiederholmessungen ist. Akzeptanz üblich Cg ≥ 1,33.',
+            content: 'Maß für die Wiederholbarkeit im Verhältnis zur Toleranz. Typische Formel: Cg = 0,2·T / (6·s), wobei T die Toleranzbreite und s die {{term:standardabweichung|Standardabweichung}} der Wiederholmessungen ist. Akzeptanz üblich Cg ≥ 1,33.',
           },
           {
             type: 'definition',
@@ -65,12 +65,12 @@ export default {
           {
             type: 'definition',
             term: 'Bias',
-            content: 'Systematic deviation: mean of repeat measurements − reference value. A bias ≠ 0 indicates a calibration offset or systematic shift.',
+            content: 'Systematic deviation: {{term:mittelwert|mean}} of repeat measurements − reference value. A bias ≠ 0 indicates a calibration offset or systematic shift.',
           },
           {
             type: 'definition',
             term: 'Cg',
-            content: 'Measure of repeatability relative to tolerance. Typical formula: Cg = 0.2·T / (6·s), where T is the tolerance width and s the standard deviation of repeats. Accepted when Cg ≥ 1.33.',
+            content: 'Measure of repeatability relative to tolerance. Typical formula: Cg = 0.2·T / (6·s), where T is the tolerance width and s the {{term:standardabweichung|standard deviation}} of repeats. Accepted when Cg ≥ 1.33.',
           },
           {
             type: 'definition',

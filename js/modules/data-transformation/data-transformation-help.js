@@ -59,7 +59,7 @@ export default {
           },
           {
             type: 'paragraph',
-            content: 'Faustregel: Wenn der Anderson-Darling- oder Shapiro-Wilk-Test die Normalitätshypothese verwirft UND das Histogramm/Wahrscheinlichkeitsnetz eine klare, einseitige Schiefe zeigt, ist eine Transformation einen Versuch wert.',
+            content: 'Faustregel: Wenn der Anderson-Darling- oder Shapiro-Wilk-Test die Normalitätshypothese verwirft UND das Histogramm/Wahrscheinlichkeitsnetz eine klare, einseitige {{term:schiefe|Schiefe}} zeigt, ist eine Transformation einen Versuch wert.',
           },
         ],
       },
@@ -86,7 +86,7 @@ export default {
           },
           {
             type: 'paragraph',
-            content: 'Rule of thumb: if Anderson-Darling or Shapiro-Wilk rejects normality AND the histogram / probability plot shows a clear one-sided skewness, a transformation is worth trying.',
+            content: 'Rule of thumb: if Anderson-Darling or Shapiro-Wilk rejects normality AND the histogram / probability plot shows a clear one-sided {{term:schiefe|skewness}}, a transformation is worth trying.',
           },
         ],
       },

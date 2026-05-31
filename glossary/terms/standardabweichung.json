@@ -1,0 +1,118 @@
+{
+  "id": "standardabweichung",
+  "category": "descriptive",
+  "title": {
+    "de": "Standardabweichung",
+    "en": "Standard Deviation"
+  },
+  "short": {
+    "de": "Wurzel der Varianz — Maß für die Streuung in der ursprünglichen Einheit der Daten.",
+    "en": "Square root of the variance — measure of dispersion in the original units of the data."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "Die **Standardabweichung** $s$ (bzw. $\\sigma$ für die Grundgesamtheit) ist die Quadratwurzel der {{term:varianz|Varianz}}. Sie hat denselben Maßstab wie die Daten selbst und ist daher direkt interpretierbar — etwa „im Mittel ±0,03 mm Abweichung vom Sollwert“."
+      },
+      {
+        "type": "formula",
+        "latex": "s = \\sqrt{\\frac{1}{n-1} \\sum_{i=1}^{n} (x_i - \\bar{x})^2}"
+      },
+      {
+        "type": "paragraph",
+        "text": "Bei näherungsweise normalverteilten Daten liegen rund 68 % der Werte innerhalb ±1 s, 95 % innerhalb ±2 s und 99,7 % innerhalb ±3 s vom {{term:mittelwert|Mittelwert}}. Diese „68-95-99,7-Regel“ ist die Grundlage der 6-σ-Definition."
+      },
+      {
+        "type": "note",
+        "text": "Im SPC-Kontext bezeichnet σ je nach Quelle die kurzfristige (innerhalb von Subgruppen) oder die Gesamt-Streuung. Cp/Cpk nutzen die kurzfristige, Pp/Ppk die langfristige Standardabweichung."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "The **standard deviation** $s$ (or $\\sigma$ for the population) is the square root of the {{term:varianz|variance}}. It is expressed in the same units as the data and can be interpreted directly — e.g. \"±0.03 mm average deviation from the target\"."
+      },
+      {
+        "type": "formula",
+        "latex": "s = \\sqrt{\\frac{1}{n-1} \\sum_{i=1}^{n} (x_i - \\bar{x})^2}"
+      },
+      {
+        "type": "paragraph",
+        "text": "For approximately normal data, about 68 % of values fall within ±1 s of the {{term:mittelwert|mean}}, 95 % within ±2 s and 99.7 % within ±3 s — the so-called 68-95-99.7 rule that underpins the 6-σ definition."
+      },
+      {
+        "type": "note",
+        "text": "In SPC σ refers, depending on the source, either to short-term (within subgroup) or overall variation. Cp/Cpk use short-term, Pp/Ppk long-term standard deviation."
+      }
+    ]
+  },
+  "aliases": {
+    "de": [
+      "StdAbw",
+      "σ",
+      "s",
+      "SD"
+    ],
+    "en": [
+      "std dev",
+      "stdev",
+      "SD",
+      "σ",
+      "s"
+    ]
+  },
+  "seeAlso": [
+    "varianz",
+    "mittelwert",
+    "spannweite"
+  ],
+  "modules": [
+    "histogram",
+    "boxplot",
+    "process-capability",
+    "hypothesis-test",
+    "regression",
+    "glm-regression",
+    "correlation",
+    "msa-typ2",
+    "doe-planner",
+    "doe-advisor",
+    "sample-size",
+    "data-transformation",
+    "distribution-fit",
+    "calculator",
+    "outlier-test",
+    "multivariate-control-chart",
+    "pairwise-comparison",
+    "control-chart",
+    "individual-value-plot",
+    "xy-plot",
+    "probability-plot",
+    "run-chart",
+    "short-run-chart",
+    "attribute-control-chart",
+    "time-weighted-chart",
+    "transformed-imr-chart",
+    "msa-typ1",
+    "random-generator",
+    "worksheet",
+    "response-optimization"
+  ],
+  "algoLab": [
+    "hypothesis/levene-test",
+    "hypothesis/bartlett-test",
+    "hypothesis/f-test",
+    "capability/cpk"
+  ],
+  "sources": [
+    {
+      "label": "Montgomery, D.C.: Introduction to Statistical Quality Control, 8th ed., Wiley, 2020",
+      "url": null
+    },
+    {
+      "label": "AIAG: Statistical Process Control (SPC) Reference Manual, 2nd ed., 2005",
+      "url": null
+    }
+  ]
+}

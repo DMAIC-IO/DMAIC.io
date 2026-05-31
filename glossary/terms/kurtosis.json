@@ -1,0 +1,68 @@
+{
+  "id": "kurtosis",
+  "category": "descriptive",
+  "title": {
+    "de": "Kurtosis (Wölbung)",
+    "en": "Kurtosis"
+  },
+  "short": {
+    "de": "Maß für die Spitzheit bzw. Schwere der Verteilungs-Enden relativ zur Normalverteilung.",
+    "en": "Measure of the heaviness of the tails of a distribution relative to the normal."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "Die **Kurtosis** $g_2$ misst, wie ausgeprägt die Enden („Tails“) einer Verteilung sind. Die häufig angegebene **Exzess-Kurtosis** ist relativ zur Normalverteilung normiert (Normalverteilung → 0)."
+      },
+      {
+        "type": "formula",
+        "latex": "g_2 = \\frac{1}{n} \\sum_{i=1}^{n} \\left( \\frac{x_i - \\bar{x}}{s} \\right)^4 - 3"
+      },
+      {
+        "type": "paragraph",
+        "text": "Interpretation: **g₂ ≈ 0** normalverteilt-ähnlich (mesokurtisch). **g₂ > 0** schwere Enden, mehr Ausreißer als Normalverteilung erwartet (leptokurtisch). **g₂ < 0** leichte Enden, weniger Ausreißer (platykurtisch)."
+      },
+      {
+        "type": "note",
+        "text": "Hohe Kurtosis ist ein Warnsignal für ausreißer-anfällige Verfahren: Mittelwert und {{term:standardabweichung|Standardabweichung}} werden instabil, parametrische Tests verlieren an Power. Ein Ausreißertest oder robuste Maße ({{term:median|Median}}, IQR) sind dann sinnvoll."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "**Kurtosis** $g_2$ quantifies the heaviness of the tails of a distribution. The commonly reported **excess kurtosis** is normalised relative to the normal distribution (normal → 0)."
+      },
+      {
+        "type": "formula",
+        "latex": "g_2 = \\frac{1}{n} \\sum_{i=1}^{n} \\left( \\frac{x_i - \\bar{x}}{s} \\right)^4 - 3"
+      },
+      {
+        "type": "paragraph",
+        "text": "Interpretation: **g₂ ≈ 0** normal-like (mesokurtic). **g₂ > 0** heavy tails, more outliers than expected under normality (leptokurtic). **g₂ < 0** light tails, fewer outliers (platykurtic)."
+      },
+      {
+        "type": "note",
+        "text": "High kurtosis is a warning sign for outlier-sensitive methods: mean and {{term:standardabweichung|standard deviation}} become unstable, parametric tests lose power. An outlier test or robust measures ({{term:median|median}}, IQR) are then advisable."
+      }
+    ]
+  },
+  "aliases": {
+    "de": ["Wölbung", "Exzess", "g₂"],
+    "en": ["excess kurtosis", "g₂"]
+  },
+  "seeAlso": ["schiefe", "varianz", "standardabweichung"],
+  "modules": [
+    "histogram", "boxplot",
+    "distribution-fit", "outlier-test",
+    "probability-plot", "calculator", "individual-value-plot"
+  ],
+  "algoLab": [
+    "hypothesis/anderson-darling",
+    "hypothesis/shapiro-wilk"
+  ],
+  "sources": [
+    { "label": "Joanes, D.N.; Gill, C.A.: Comparing measures of sample skewness and kurtosis, J. R. Statist. Soc. D, 47(1), 1998", "url": null },
+    { "label": "DIN ISO 3534-1: Statistik — Begriffe und Formelzeichen, Teil 1", "url": null }
+  ]
+}

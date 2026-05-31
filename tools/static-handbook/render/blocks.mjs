@@ -8,51 +8,72 @@
  * All output is static HTML — no runtime JS needed on the published pages.
  */
 
-import { escapeHtml } from './escape.mjs';
+import { escapeHtml, escapeAttr } from './escape.mjs';
 
 const CALLOUT_KINDS = new Set(['pitfall', 'scenario', 'result', 'decision']);
 
-export function renderBlock(block) {
+/**
+ * Escape `s` and, if `opts.glossaryHref` is supplied, post-process
+ * `{{term:id|label}}` / `{{term:id}}` markers into static glossary links.
+ * The latex `{`/`|`/`}` chars are not HTML-special, so the markers survive
+ * the escape step and we can match them on the already-escaped string.
+ *
+ * @param {string} s
+ * @param {{ glossaryHref?: (id: string) => string }} [opts]
+ */
+function escAndLink(s, opts) {
+  const out = escapeHtml(s);
+  if (!opts?.glossaryHref) return out;
+  return out.replace(/\{\{term:([a-z0-9-]+)(?:\|([^}]+))?\}\}/gi, (_, id, label) => {
+    const text = label || id;
+    const href = opts.glossaryHref(id);
+    // Unknown term → strip the marker and emit plain text (no broken link).
+    if (!href) return text;
+    return `<a class="handbook-glossary-link" href="${escapeAttr(href)}">${text}</a>`;
+  });
+}
+
+export function renderBlock(block, opts = {}) {
   if (!block || typeof block !== 'object') return '';
   const type = block.type;
 
   switch (type) {
     case 'paragraph':
     case 'text':
-      return `<p>${escapeHtml(block.content)}</p>`;
+      return `<p>${escAndLink(block.content, opts)}</p>`;
 
     case 'heading':
-      return `<h3 class="handbook-block__heading">${escapeHtml(block.content)}</h3>`;
+      return `<h3 class="handbook-block__heading">${escAndLink(block.content, opts)}</h3>`;
 
     case 'definition':
-      return `<p class="handbook-block__definition"><strong>${escapeHtml(block.term)}:</strong> ${escapeHtml(block.content)}</p>`;
+      return `<p class="handbook-block__definition"><strong>${escapeHtml(block.term)}:</strong> ${escAndLink(block.content, opts)}</p>`;
 
     case 'list':
-      return `<ul class="handbook-block__list">${(block.items || []).map((it) => `<li>${escapeHtml(it)}</li>`).join('')}</ul>`;
+      return `<ul class="handbook-block__list">${(block.items || []).map((it) => `<li>${escAndLink(it, opts)}</li>`).join('')}</ul>`;
 
     case 'steps':
-      return `<ol class="handbook-block__steps">${(block.items || []).map((it) => `<li>${escapeHtml(it)}</li>`).join('')}</ol>`;
+      return `<ol class="handbook-block__steps">${(block.items || []).map((it) => `<li>${escAndLink(it, opts)}</li>`).join('')}</ol>`;
 
     case 'table': {
       const head = (block.headers || []).map((h) => `<th>${escapeHtml(h)}</th>`).join('');
       const rows = (block.rows || [])
-        .map((row) => `<tr>${(row || []).map((cell) => `<td>${escapeHtml(cell)}</td>`).join('')}</tr>`)
+        .map((row) => `<tr>${(row || []).map((cell) => `<td>${escAndLink(cell, opts)}</td>`).join('')}</tr>`)
         .join('');
       return `<div class="handbook-block__table-wrap"><table class="handbook-block__table"><thead><tr>${head}</tr></thead><tbody>${rows}</tbody></table></div>`;
     }
 
     default:
       if (CALLOUT_KINDS.has(type)) {
-        return `<aside class="handbook-callout handbook-callout--${type}"><p>${escapeHtml(block.content)}</p></aside>`;
+        return `<aside class="handbook-callout handbook-callout--${type}"><p>${escAndLink(block.content, opts)}</p></aside>`;
       }
       // Unknown block — fall back to plain paragraph if it carries text.
-      if (block.content) return `<p>${escapeHtml(block.content)}</p>`;
+      if (block.content) return `<p>${escAndLink(block.content, opts)}</p>`;
       return '';
   }
 }
 
-export function renderBlocks(blocks) {
-  return (blocks || []).map(renderBlock).join('\n');
+export function renderBlocks(blocks, opts = {}) {
+  return (blocks || []).map(b => renderBlock(b, opts)).join('\n');
 }
 
 /**

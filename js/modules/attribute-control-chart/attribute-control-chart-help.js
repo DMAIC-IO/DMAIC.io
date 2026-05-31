@@ -211,7 +211,7 @@ export default {
           {
             type: 'definition',
             term: 'Constant limits on variable n',
-            content: 'For p and u charts with varying sample size, limits must be computed per point. A blanket mean limit underestimates risk for small n and overestimates it for large n.',
+            content: 'For p and u charts with varying sample size, limits must be computed per point. A blanket {{term:mittelwert|mean}} limit underestimates risk for small n and overestimates it for large n.',
           },
           {
             type: 'definition',

@@ -213,6 +213,19 @@
   --color-rank-silver: #a8b4c4;
   --color-rank-bronze: #cd8a5c;
 
+  /* ===== Glossary inline-link tokens (used by .glossary-term) =====
+     Theme-aware; never overridden per module — see .claude/GLOSSAR-KONZEPT.md. */
+  --glossary-term-bg-hover:        rgba(0, 0, 0, 0.04);
+  --glossary-term-bg-focus:        rgba(0, 0, 0, 0.06);
+  --glossary-term-outline-focus:   var(--color-accent);
+  --glossary-term-radius:          3px;
+  --glossary-term-padding-x:       2px;
+  --glossary-term-transition:      background-color 120ms ease-out;
+  --glossary-button-size:          18px;
+  --glossary-button-gap:           4px;
+  --glossary-button-color:         var(--color-accent);
+  --glossary-button-color-hover:   var(--color-accent-hover);
+
   /* Chart color sequence (Tableau 10 — accessible, works in both themes) */
   --color-chart-1: #4e79a7;
   --color-chart-2: #f28e2b;
@@ -332,4 +345,8 @@
   --color-vct-req-bg: rgba(121, 192, 255, 0.08);
   --color-vct-req-border: rgba(121, 192, 255, 0.25);
   --color-vct-req-badge-bg: rgba(121, 192, 255, 0.15);
+
+  /* Glossary inline-link tokens — dark variants */
+  --glossary-term-bg-hover: rgba(255, 255, 255, 0.05);
+  --glossary-term-bg-focus: rgba(255, 255, 255, 0.08);
 }

@@ -142,6 +142,14 @@ const UI_STRINGS = {
       project: 'Projektvorlage',
       generator: 'Generator',
     },
+    glossaryHandbookTitle: 'Glossar',
+    glossaryIndexIntro: 'Fachbegriffe der Six-Sigma-Statistik — kurze Definitionen mit Formeln, Querverweisen und Modul-Bezug.',
+    glossaryIndexCount: '{n} Begriffe',
+    glossaryAliases: 'Auch bekannt als',
+    glossarySeeAlso: 'Siehe auch',
+    glossaryUsedIn: 'Verwendet in',
+    glossaryAlgoLab: 'Im Algorithm-Lab',
+    glossarySources: 'Quellen',
     langOther: 'English',
     langOtherPath: '/en/',
   },
@@ -269,6 +277,14 @@ const UI_STRINGS = {
       project: 'Project template',
       generator: 'Generator',
     },
+    glossaryHandbookTitle: 'Glossary',
+    glossaryIndexIntro: 'Six Sigma statistics terminology — concise definitions with formulas, cross-references, and module context.',
+    glossaryIndexCount: '{n} terms',
+    glossaryAliases: 'Also known as',
+    glossarySeeAlso: 'See also',
+    glossaryUsedIn: 'Used in',
+    glossaryAlgoLab: 'In the Algorithm Lab',
+    glossarySources: 'Sources',
     langOther: 'Deutsch',
     langOtherPath: '/de/',
   },
@@ -310,6 +326,7 @@ export function renderPage(opts) {
     headingKey,
     showCta = true,
     needsKatex = false,
+    jsonLdOverride = null,
   } = opts;
 
   const s = getStrings(lang);
@@ -321,7 +338,7 @@ export function renderPage(opts) {
   const faviconHref = relativeTo(pathFromRoot, '/assets/favicon.svg');
   const katexCssHref = needsKatex ? relativeTo(pathFromRoot, '/assets/katex/katex.min.css') : null;
 
-  const jsonLd = {
+  const jsonLd = jsonLdOverride || {
     '@context': 'https://schema.org',
     '@type': 'TechArticle',
     headline: headingKey || title,

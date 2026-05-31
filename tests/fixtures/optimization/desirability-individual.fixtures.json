@@ -1,0 +1,337 @@
+{
+  "algorithm_id": "desirability-individual",
+  "generated_with": {
+    "node": "v22.11.0",
+    "source": "engine-snapshot"
+  },
+  "generated_at": "2026-05-31T00:00:00Z",
+  "generator_script": "tools/lab-test-runner/bootstrap-fixtures.mjs",
+  "generator_version": "1.0.0",
+  "tolerances": {
+    "default": {
+      "relative": 1e-10,
+      "absolute": 1e-12
+    }
+  },
+  "test_cases": [
+    {
+      "id": "di_max_below_lower",
+      "tier": "standard",
+      "description": "kind=max, y < L → d=0",
+      "inputs": {
+        "y": 0,
+        "kind": "max",
+        "lower": 5,
+        "target": 0,
+        "upper": 10
+      },
+      "expected": {
+        "value": 0
+      }
+    },
+    {
+      "id": "di_max_at_lower",
+      "tier": "standard",
+      "description": "kind=max, y = L → d=0",
+      "inputs": {
+        "y": 5,
+        "kind": "max",
+        "lower": 5,
+        "target": 0,
+        "upper": 10
+      },
+      "expected": {
+        "value": 0
+      }
+    },
+    {
+      "id": "di_max_midpoint",
+      "tier": "standard",
+      "description": "kind=max, y midway → d=0.5",
+      "inputs": {
+        "y": 7.5,
+        "kind": "max",
+        "lower": 5,
+        "target": 0,
+        "upper": 10
+      },
+      "expected": {
+        "value": 0.5
+      }
+    },
+    {
+      "id": "di_max_at_upper",
+      "tier": "standard",
+      "description": "kind=max, y = U → d=1",
+      "inputs": {
+        "y": 10,
+        "kind": "max",
+        "lower": 5,
+        "target": 0,
+        "upper": 10
+      },
+      "expected": {
+        "value": 1
+      }
+    },
+    {
+      "id": "di_max_above_upper",
+      "tier": "standard",
+      "description": "kind=max, y > U → d=1",
+      "inputs": {
+        "y": 15,
+        "kind": "max",
+        "lower": 5,
+        "target": 0,
+        "upper": 10
+      },
+      "expected": {
+        "value": 1
+      }
+    },
+    {
+      "id": "di_max_shape_2",
+      "tier": "standard",
+      "description": "kind=max, shape=2 (concave) → squared",
+      "inputs": {
+        "y": 7.5,
+        "kind": "max",
+        "lower": 5,
+        "target": 0,
+        "upper": 10,
+        "shapeS": 2
+      },
+      "expected": {
+        "value": 0.25
+      }
+    },
+    {
+      "id": "di_max_shape_half",
+      "tier": "standard",
+      "description": "kind=max, shape=0.5 (convex) → square-root",
+      "inputs": {
+        "y": 7.5,
+        "kind": "max",
+        "lower": 5,
+        "target": 0,
+        "upper": 10,
+        "shapeS": 0.5
+      },
+      "expected": {
+        "value": 0.7071067811865476
+      }
+    },
+    {
+      "id": "di_min_above_upper",
+      "tier": "standard",
+      "description": "kind=min, y > U → d=0",
+      "inputs": {
+        "y": 12,
+        "kind": "min",
+        "lower": 5,
+        "target": 0,
+        "upper": 10
+      },
+      "expected": {
+        "value": 0
+      }
+    },
+    {
+      "id": "di_min_at_lower",
+      "tier": "standard",
+      "description": "kind=min, y = L → d=1",
+      "inputs": {
+        "y": 5,
+        "kind": "min",
+        "lower": 5,
+        "target": 0,
+        "upper": 10
+      },
+      "expected": {
+        "value": 1
+      }
+    },
+    {
+      "id": "di_min_midpoint",
+      "tier": "standard",
+      "description": "kind=min, y midway → d=0.5",
+      "inputs": {
+        "y": 7.5,
+        "kind": "min",
+        "lower": 5,
+        "target": 0,
+        "upper": 10
+      },
+      "expected": {
+        "value": 0.5
+      }
+    },
+    {
+      "id": "di_target_at_target",
+      "tier": "standard",
+      "description": "kind=target, y=T → d=1",
+      "inputs": {
+        "y": 7,
+        "kind": "target",
+        "lower": 5,
+        "target": 7,
+        "upper": 10
+      },
+      "expected": {
+        "value": 1
+      }
+    },
+    {
+      "id": "di_target_left_branch",
+      "tier": "standard",
+      "description": "kind=target, y between L and T → linear",
+      "inputs": {
+        "y": 6,
+        "kind": "target",
+        "lower": 5,
+        "target": 7,
+        "upper": 10
+      },
+      "expected": {
+        "value": 0.5
+      }
+    },
+    {
+      "id": "di_target_right_branch",
+      "tier": "standard",
+      "description": "kind=target, y between T and U → linear",
+      "inputs": {
+        "y": 8.5,
+        "kind": "target",
+        "lower": 5,
+        "target": 7,
+        "upper": 10
+      },
+      "expected": {
+        "value": 0.5
+      }
+    },
+    {
+      "id": "di_target_outside_lower",
+      "tier": "standard",
+      "description": "kind=target, y < L → d=0",
+      "inputs": {
+        "y": 4,
+        "kind": "target",
+        "lower": 5,
+        "target": 7,
+        "upper": 10
+      },
+      "expected": {
+        "value": 0
+      }
+    },
+    {
+      "id": "di_target_asym_shapes",
+      "tier": "standard",
+      "description": "kind=target, asymmetric shapes (s=2, t=3)",
+      "inputs": {
+        "y": 6,
+        "kind": "target",
+        "lower": 5,
+        "target": 7,
+        "upper": 10,
+        "shapeS": 2,
+        "shapeT": 3
+      },
+      "expected": {
+        "value": 0.25
+      }
+    },
+    {
+      "id": "di_edge_unknown_kind",
+      "tier": "edge",
+      "description": "Unknown kind → returns 0",
+      "inputs": {
+        "y": 7,
+        "kind": "unknown",
+        "lower": 0,
+        "target": 0,
+        "upper": 10
+      },
+      "expected": {
+        "value": 0
+      }
+    },
+    {
+      "id": "di_edge_nan_y",
+      "tier": "edge",
+      "description": "NaN response → d=0",
+      "inputs": {
+        "y": null,
+        "kind": "max",
+        "lower": 0,
+        "target": 0,
+        "upper": 10
+      },
+      "expected": {
+        "value": 0
+      }
+    },
+    {
+      "id": "di_stress_extreme_large",
+      "tier": "stress",
+      "description": "stress tier",
+      "inputs": {
+        "y": 1000000000000000,
+        "kind": "max",
+        "lower": 0,
+        "target": 0,
+        "upper": 10000000000
+      },
+      "expected": {
+        "value": 1
+      }
+    },
+    {
+      "id": "di_stress_extreme_small",
+      "tier": "stress",
+      "description": "stress tier",
+      "inputs": {
+        "y": 1e-15,
+        "kind": "min",
+        "lower": 0,
+        "target": 0,
+        "upper": 10000000000
+      },
+      "expected": {
+        "value": 1
+      }
+    },
+    {
+      "id": "di_robust_string_y",
+      "tier": "robustness",
+      "description": "robustness tier",
+      "inputs": {
+        "y": "x",
+        "kind": "max",
+        "lower": 0,
+        "target": 0,
+        "upper": 10
+      },
+      "expected": {
+        "value": 0
+      }
+    },
+    {
+      "id": "di_robust_inverted_bounds",
+      "tier": "robustness",
+      "description": "robustness tier",
+      "inputs": {
+        "y": 5,
+        "kind": "max",
+        "lower": 10,
+        "target": 0,
+        "upper": 0
+      },
+      "expected": {
+        "value": 0
+      }
+    }
+  ]
+}

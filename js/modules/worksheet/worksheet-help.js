@@ -202,12 +202,12 @@ export default {
           },
           {
             type: 'paragraph',
-            content: 'Beispiel: Eine Spalte „Maschine" mit Werten 1, 2, 3, 4 ist numerisch gespeichert, aber kategorial gemeint — der Mittelwert ergibt keinen Sinn. Heuristik allein bekommt das nicht zuverlässig hin, deshalb gibt es ein zweites, explizites Rollen-Feld pro Spalte.',
+            content: 'Beispiel: Eine Spalte „Maschine" mit Werten 1, 2, 3, 4 ist numerisch gespeichert, aber kategorial gemeint — der {{term:mittelwert|Mittelwert}} ergibt keinen Sinn. Heuristik allein bekommt das nicht zuverlässig hin, deshalb gibt es ein zweites, explizites Rollen-Feld pro Spalte.',
           },
           {
             type: 'definition',
             term: 'Stetig (Continuous)',
-            content: 'Numerische Messwerte mit sinnvoller Arithmetik — z. B. Maße, Gewichte, Zeiten, Erträge. Mittelwert, Standardabweichung und Histogramm sind anwendbar.',
+            content: 'Numerische Messwerte mit sinnvoller Arithmetik — z. B. Maße, Gewichte, Zeiten, Erträge. Mittelwert, {{term:standardabweichung|Standardabweichung}} und Histogramm sind anwendbar.',
           },
           {
             type: 'definition',
@@ -259,12 +259,12 @@ export default {
           },
           {
             type: 'paragraph',
-            content: 'Example: a column "Machine" with values 1, 2, 3, 4 is numerically stored but semantically categorical — its mean is meaningless. Heuristics alone cannot get this right, so each column has an explicit role field on top of its storage type.',
+            content: 'Example: a column "Machine" with values 1, 2, 3, 4 is numerically stored but semantically categorical — its {{term:mittelwert|mean}} is meaningless. Heuristics alone cannot get this right, so each column has an explicit role field on top of its storage type.',
           },
           {
             type: 'definition',
             term: 'Continuous',
-            content: 'Numeric measurements with meaningful arithmetic — lengths, weights, times, yields. Mean, standard deviation, and histogram apply.',
+            content: 'Numeric measurements with meaningful arithmetic — lengths, weights, times, yields. Mean, {{term:standardabweichung|standard deviation}}, and histogram apply.',
           },
           {
             type: 'definition',

@@ -12,7 +12,7 @@ export default {
         blocks: [
           {
             type: 'paragraph',
-            content: 'Ein Hypothesentest prüft, ob eine in den Daten beobachtete Abweichung wirklich ein echter Effekt ist oder durch Zufall entstanden sein könnte. Er ist das zentrale Entscheidungsinstrument der Analyze-Phase — mit ihm lassen sich Aussagen wie „der Mittelwert hat sich verändert" oder „die beiden Maschinen liefern unterschiedliche Qualität" statistisch absichern.',
+            content: 'Ein Hypothesentest prüft, ob eine in den Daten beobachtete Abweichung wirklich ein echter Effekt ist oder durch Zufall entstanden sein könnte. Er ist das zentrale Entscheidungsinstrument der Analyze-Phase — mit ihm lassen sich Aussagen wie „der {{term:mittelwert|Mittelwert}} hat sich verändert" oder „die beiden Maschinen liefern unterschiedliche Qualität" statistisch absichern.',
           },
           {
             type: 'definition',
@@ -56,7 +56,7 @@ export default {
           {
             type: 'definition',
             term: 'k-Stichproben-Vergleich (Varianzen)',
-            content: 'Für die Gleichheit von Varianzen über mehrere Gruppen stehen zwei Tests bereit: der Bartlett-Test (parametrisch, sehr trennscharf bei Normalverteilung, aber empfindlich gegen Abweichungen davon) und der Levene-Test (Brown-Forsythe-Variante, robust gegen Nicht-Normalität). Das Modul wählt automatisch je nach Normalverteilungsprüfung.',
+            content: 'Für die Gleichheit von {{term:varianz|Varianzen}} über mehrere Gruppen stehen zwei Tests bereit: der Bartlett-Test (parametrisch, sehr trennscharf bei Normalverteilung, aber empfindlich gegen Abweichungen davon) und der Levene-Test (Brown-Forsythe-Variante, robust gegen Nicht-Normalität). Das Modul wählt automatisch je nach Normalverteilungsprüfung.',
           },
         ],
       },
@@ -65,7 +65,7 @@ export default {
         blocks: [
           {
             type: 'paragraph',
-            content: 'A hypothesis test checks whether an observed deviation in the data is a real effect or could have arisen by chance. It is the central decision instrument of the Analyze phase — used to statistically back up statements like "the mean has changed" or "the two machines deliver different quality".',
+            content: 'A hypothesis test checks whether an observed deviation in the data is a real effect or could have arisen by chance. It is the central decision instrument of the Analyze phase — used to statistically back up statements like "the {{term:mittelwert|mean}} has changed" or "the two machines deliver different quality".',
           },
           {
             type: 'definition',
@@ -104,7 +104,7 @@ export default {
           {
             type: 'definition',
             term: 'k-sample comparison (means)',
-            content: 'For more than two groups, one-way analysis of variance (One-Way ANOVA) is the appropriate procedure — it decomposes the total variation into between- and within-group components and compares them via an F-statistic. For non-normal data the module automatically switches to the rank-based Kruskal-Wallis test. Both are omnibus tests: they show that at least one mean differs without identifying which one — that requires follow-up post-hoc comparisons (e.g. Tukey HSD).',
+            content: 'For more than two groups, one-way analysis of {{term:varianz|variance}} (One-Way ANOVA) is the appropriate procedure — it decomposes the total variation into between- and within-group components and compares them via an F-statistic. For non-normal data the module automatically switches to the rank-based Kruskal-Wallis test. Both are omnibus tests: they show that at least one mean differs without identifying which one — that requires follow-up post-hoc comparisons (e.g. Tukey HSD).',
           },
           {
             type: 'definition',

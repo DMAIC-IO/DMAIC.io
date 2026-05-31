@@ -158,7 +158,7 @@ export default {
           {
             type: 'definition',
             term: 'Full factorial with too many factors',
-            content: 'A full factorial with 8 factors means 256 runs — too much even with a generous budget. From 5–6 factors onward, always consider fractional, Plackett-Burman or DSD.',
+            content: 'A full factorial with 8 factors {{term:mittelwert|means}} 256 runs — too much even with a generous budget. From 5–6 factors onward, always consider fractional, Plackett-Burman or DSD.',
           },
           {
             type: 'definition',

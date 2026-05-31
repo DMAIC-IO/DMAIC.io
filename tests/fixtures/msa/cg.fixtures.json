@@ -5,7 +5,7 @@
     "scipy": "1.15.3",
     "numpy": "2.2.6"
   },
-  "generated_at": "2026-04-11T18:30:30.604245+00:00",
+  "generated_at": "2026-05-31T00:00:00Z",
   "generator_script": "tools/fixture-generator/generate_fixtures.py",
   "generator_version": "1.0.0",
   "tolerances": {
@@ -15,13 +15,13 @@
     },
     "overrides": {
       "stress_large_dataset": {
-        "relative": 1e-06,
-        "absolute": 1e-08,
+        "relative": 0.000001,
+        "absolute": 1e-8,
         "reason": "Floating-point accumulation in large arrays"
       },
       "large_magnitude_subtraction": {
-        "relative": 1e-05,
-        "absolute": 1e-09,
+        "relative": 0.00001,
+        "absolute": 1e-9,
         "reason": "Bias = mean − ref loses precision by catastrophic cancellation when ref ≈ 1e6 and bias ≈ 1e-4"
       }
     }
@@ -34,9 +34,9 @@
       "reference": "VDA 5",
       "inputs": {
         "params": {
-          "ref": 100.0,
-          "lsl": 99.0,
-          "usl": 101.0,
+          "ref": 100,
+          "lsl": 99,
+          "usl": 101,
           "k1": 0.2,
           "k2": 4
         },
@@ -44,28 +44,28 @@
           100.001,
           100.002,
           99.999,
-          100.0,
+          100,
           100.001,
           99.998,
           100.003,
-          100.0,
+          100,
           100.002,
           99.999,
           100.001,
-          100.0,
+          100,
           99.998,
           100.002,
           100.001,
           99.999,
-          100.0,
+          100,
           100.001,
           100.002,
           99.998,
-          100.0,
+          100,
           100.001,
           99.999,
           100.002,
-          100.0
+          100
         ]
       },
       "expected": {
@@ -77,7 +77,7 @@
         "biasPercent": 0.018000000000029104,
         "tolUsage": 0.564269439186321,
         "n": 25,
-        "T": 2.0
+        "T": 2
       }
     },
     {
@@ -87,7 +87,7 @@
       "reference": "VDA 5",
       "inputs": {
         "params": {
-          "ref": 50.0,
+          "ref": 50,
           "lsl": 49.5,
           "usl": 50.5,
           "k1": 0.2,
@@ -97,7 +97,7 @@
           50.005,
           50.01,
           49.995,
-          50.0,
+          50,
           50.008,
           49.992,
           50.012,
@@ -129,7 +129,7 @@
         "biasPercent": 0.19200000000125783,
         "tolUsage": 5.72209751751931,
         "n": 25,
-        "T": 1.0
+        "T": 1
       }
     },
     {
@@ -139,7 +139,7 @@
       "reference": "VDA 5",
       "inputs": {
         "params": {
-          "ref": 50.0,
+          "ref": 50,
           "lsl": 49.95,
           "usl": 50.05,
           "k1": 0.2,
@@ -189,7 +189,7 @@
       "description": "k1=0.10 (strict) — halves the numerator, Cg halved",
       "inputs": {
         "params": {
-          "ref": 50.0,
+          "ref": 50,
           "lsl": 49.95,
           "usl": 50.05,
           "k1": 0.1,
@@ -199,28 +199,28 @@
           50.001,
           50.002,
           49.999,
-          50.0,
+          50,
           50.001,
           49.998,
           50.003,
-          50.0,
+          50,
           50.002,
           49.999,
           50.001,
-          50.0,
+          50,
           49.998,
           50.002,
           50.001,
           49.999,
-          50.0,
+          50,
           50.001,
           50.002,
           49.998,
-          50.0,
+          50,
           50.001,
           49.999,
           50.002,
-          50.0
+          50
         ]
       },
       "expected": {
@@ -238,7 +238,7 @@
       "description": "k2=6 (6σ coverage) vs k2=4 — Cg drops by factor 4/6",
       "inputs": {
         "params": {
-          "ref": 50.0,
+          "ref": 50,
           "lsl": 49.95,
           "usl": 50.05,
           "k1": 0.2,
@@ -248,28 +248,28 @@
           50.001,
           50.002,
           49.999,
-          50.0,
+          50,
           50.001,
           49.998,
           50.003,
-          50.0,
+          50,
           50.002,
           49.999,
           50.001,
-          50.0,
+          50,
           49.998,
           50.002,
           50.001,
           49.999,
-          50.0,
+          50,
           50.001,
           50.002,
           49.998,
-          50.0,
+          50,
           50.001,
           49.999,
           50.002,
-          50.0
+          50
         ]
       },
       "expected": {
@@ -287,7 +287,7 @@
       "description": "Same data, wider tolerance window — Cg increases",
       "inputs": {
         "params": {
-          "ref": 50.0,
+          "ref": 50,
           "lsl": 49.5,
           "usl": 50.5,
           "k1": 0.2,
@@ -297,35 +297,35 @@
           50.001,
           50.002,
           49.999,
-          50.0,
+          50,
           50.001,
           49.998,
           50.003,
-          50.0,
+          50,
           50.002,
           49.999,
           50.001,
-          50.0,
+          50,
           49.998,
           50.002,
           50.001,
           49.999,
-          50.0,
+          50,
           50.001,
           50.002,
           49.998,
-          50.0,
+          50,
           50.001,
           49.999,
           50.002,
-          50.0
+          50
         ]
       },
       "expected": {
         "Cg": 17.722030125202455,
         "Cgk": 17.658230816751622,
         "tolUsage": 1.1285388783736492,
-        "T": 1.0
+        "T": 1
       }
     },
     {
@@ -334,9 +334,9 @@
       "description": "Exactly 25 measurements — minimum allowed per VDA 5",
       "inputs": {
         "params": {
-          "ref": 10.0,
-          "lsl": 9.0,
-          "usl": 11.0,
+          "ref": 10,
+          "lsl": 9,
+          "usl": 11,
           "k1": 0.2,
           "k2": 4
         },
@@ -344,28 +344,28 @@
           10.01,
           10.02,
           9.99,
-          10.0,
+          10,
           10.01,
           9.98,
           10.03,
-          10.0,
+          10,
           10.02,
           9.99,
           10.01,
-          10.0,
+          10,
           9.98,
           10.02,
           10.01,
           9.99,
-          10.0,
+          10,
           10.01,
           10.02,
           9.98,
-          10.0,
+          10,
           10.01,
           9.99,
           10.02,
-          10.0
+          10
         ]
       },
       "expected": {
@@ -375,7 +375,7 @@
         "sg": 0.014106735979665583,
         "biasPercent": 0.18000000000002458,
         "n": 25,
-        "T": 2.0
+        "T": 2
       }
     },
     {
@@ -384,44 +384,44 @@
       "description": "All values identical — sg = 0 (Cg/Cgk degenerate to Infinity, not checked)",
       "inputs": {
         "params": {
-          "ref": 50.0,
+          "ref": 50,
           "lsl": 49.95,
           "usl": 50.05,
           "k1": 0.2,
           "k2": 4
         },
         "values": [
-          50.0,
-          50.0,
-          50.0,
-          50.0,
-          50.0,
-          50.0,
-          50.0,
-          50.0,
-          50.0,
-          50.0,
-          50.0,
-          50.0,
-          50.0,
-          50.0,
-          50.0,
-          50.0,
-          50.0,
-          50.0,
-          50.0,
-          50.0,
-          50.0,
-          50.0,
-          50.0,
-          50.0,
-          50.0
+          50,
+          50,
+          50,
+          50,
+          50,
+          50,
+          50,
+          50,
+          50,
+          50,
+          50,
+          50,
+          50,
+          50,
+          50,
+          50,
+          50,
+          50,
+          50,
+          50,
+          50,
+          50,
+          50,
+          50,
+          50
         ]
       },
       "expected": {
-        "xbar": 50.0,
-        "sg": 0.0,
-        "bias": 0.0,
+        "xbar": 50,
+        "sg": 0,
+        "bias": 0,
         "n": 25,
         "T": 0.09999999999999432
       }
@@ -432,9 +432,9 @@
       "description": "Large measurement magnitudes (~1e6) — Cg unchanged by scale",
       "inputs": {
         "params": {
-          "ref": 1000000.0,
-          "lsl": 999999.0,
-          "usl": 1000001.0,
+          "ref": 1000000,
+          "lsl": 999999,
+          "usl": 1000001,
           "k1": 0.2,
           "k2": 4
         },
@@ -442,28 +442,28 @@
           1000000.001,
           1000000.002,
           999999.999,
-          1000000.0,
+          1000000,
           1000000.001,
           999999.998,
           1000000.003,
-          1000000.0,
+          1000000,
           1000000.002,
           999999.999,
           1000000.001,
-          1000000.0,
+          1000000,
           999999.998,
           1000000.002,
           1000000.001,
           999999.999,
-          1000000.0,
+          1000000,
           1000000.001,
           1000000.002,
           999999.998,
-          1000000.0,
+          1000000,
           1000000.001,
           999999.999,
           1000000.002,
-          1000000.0
+          1000000
         ]
       },
       "tolerance_override": "large_magnitude_subtraction",
@@ -473,7 +473,7 @@
         "sg": 0.0014106736033515975,
         "bias": 0.0003599999472498894,
         "n": 25,
-        "T": 2.0
+        "T": 2
       }
     },
     {
@@ -482,44 +482,44 @@
       "description": "Tiny measurement magnitudes (~1e-6)",
       "inputs": {
         "params": {
-          "ref": 1e-06,
-          "lsl": -2e-06,
-          "usl": 4e-06,
+          "ref": 0.000001,
+          "lsl": -0.000002,
+          "usl": 0.000004,
           "k1": 0.2,
           "k2": 4
         },
         "values": [
-          1.1e-06,
-          1.2e-06,
-          9e-07,
-          1e-06,
-          1.1e-06,
-          8e-07,
-          1.3e-06,
-          1e-06,
-          1.2e-06,
-          9e-07,
-          1.1e-06,
-          1e-06,
-          8e-07,
-          1.2e-06,
-          1.1e-06,
-          9e-07,
-          1e-06,
-          1.1e-06,
-          1.2e-06,
-          8e-07,
-          1e-06,
-          1.1e-06,
-          9e-07,
-          1.2e-06,
-          1e-06
+          0.0000011,
+          0.0000012,
+          9e-7,
+          0.000001,
+          0.0000011,
+          8e-7,
+          0.0000013,
+          0.000001,
+          0.0000012,
+          9e-7,
+          0.0000011,
+          0.000001,
+          8e-7,
+          0.0000012,
+          0.0000011,
+          9e-7,
+          0.000001,
+          0.0000011,
+          0.0000012,
+          8e-7,
+          0.000001,
+          0.0000011,
+          9e-7,
+          0.0000012,
+          0.000001
         ]
       },
       "expected": {
         "Cg": 1.0633218075125037,
         "Cgk": 0.9995224990617536,
-        "sg": 1.4106735979665887e-07,
+        "sg": 1.4106735979665887e-7,
         "n": 25
       }
     },
@@ -529,7 +529,7 @@
       "description": "Ref not centered in tolerance (LSL=49.8, USL=50.1) — Cg unaffected, tolUsage based on full T",
       "inputs": {
         "params": {
-          "ref": 50.0,
+          "ref": 50,
           "lsl": 49.8,
           "usl": 50.1,
           "k1": 0.2,
@@ -539,28 +539,28 @@
           50.001,
           50.002,
           49.999,
-          50.0,
+          50,
           50.001,
           49.998,
           50.003,
-          50.0,
+          50,
           50.002,
           49.999,
           50.001,
-          50.0,
+          50,
           49.998,
           50.002,
           50.001,
           49.999,
-          50.0,
+          50,
           50.001,
           50.002,
           49.998,
-          50.0,
+          50,
           50.001,
           49.999,
           50.002,
-          50.0
+          50
         ]
       },
       "expected": {
@@ -578,7 +578,7 @@
       "description": "n=50 measurements seeded normal — industrial capable scenario",
       "inputs": {
         "params": {
-          "ref": 25.0,
+          "ref": 25,
           "lsl": 24.9,
           "usl": 25.1,
           "k1": 0.2,
@@ -656,7 +656,7 @@
       "description": "n=100 seeded normal with wider spread — marginal capability",
       "inputs": {
         "params": {
-          "ref": 25.0,
+          "ref": 25,
           "lsl": 24.9,
           "usl": 25.1,
           "k1": 0.2,
@@ -784,7 +784,7 @@
       "description": "n=200 seeded normal — wide spread, failing Cg",
       "inputs": {
         "params": {
-          "ref": 25.0,
+          "ref": 25,
           "lsl": 24.9,
           "usl": 25.1,
           "k1": 0.2,
@@ -1002,6 +1002,112 @@
         "tolUsage": 39.9569452400907,
         "n": 200,
         "T": 0.20000000000000284
+      }
+    },
+    {
+      "id": "cg_robust_empty_values",
+      "tier": "robustness",
+      "description": "robustness tier",
+      "inputs": {
+        "params": {
+          "ref": 100,
+          "lsl": 99,
+          "usl": 101,
+          "k1": 0.2,
+          "k2": 4
+        },
+        "values": []
+      },
+      "expected": {
+        "n": 0,
+        "T": 2,
+        "xbar": "NaN",
+        "sg": "NaN",
+        "xmin": "Infinity",
+        "xmax": "-Infinity",
+        "range": "-Infinity",
+        "bias": "NaN",
+        "biasPercent": "NaN",
+        "Cg": "NaN",
+        "Cgk": "NaN",
+        "cgStatus": "fail",
+        "cgkStatus": "fail",
+        "overall": "fail",
+        "tolUsage": "NaN",
+        "resolution": 0,
+        "resPercent": 0,
+        "zoneHi": 100.2,
+        "zoneLo": 99.8,
+        "upperThreshold": "NaN",
+        "lowerThreshold": "NaN",
+        "details": [],
+        "params": {
+          "ref": 100,
+          "lsl": 99,
+          "usl": 101,
+          "k1": 0.2,
+          "k2": 4
+        }
+      }
+    },
+    {
+      "id": "cg_robust_missing_params",
+      "tier": "robustness",
+      "description": "robustness tier",
+      "inputs": {
+        "params": {},
+        "values": [
+          100,
+          100.01,
+          100.02
+        ]
+      },
+      "expected": {
+        "n": 3,
+        "T": "NaN",
+        "xbar": 100.00999999999999,
+        "sg": 0.00999999999999801,
+        "xmin": 100,
+        "xmax": 100.02,
+        "range": 0.01999999999999602,
+        "bias": "NaN",
+        "biasPercent": "NaN",
+        "Cg": "NaN",
+        "Cgk": "NaN",
+        "cgStatus": "fail",
+        "cgkStatus": "fail",
+        "overall": "fail",
+        "tolUsage": "NaN",
+        "resolution": 0.009999999999990905,
+        "resPercent": "NaN",
+        "zoneHi": "NaN",
+        "zoneLo": "NaN",
+        "upperThreshold": 100.03999999999999,
+        "lowerThreshold": 99.97999999999999,
+        "details": [
+          {
+            "index": 1,
+            "value": 100,
+            "deviation": "NaN",
+            "devFromMean": 0.009999999999990905,
+            "isOutlier": false
+          },
+          {
+            "index": 2,
+            "value": 100.01,
+            "deviation": "NaN",
+            "devFromMean": 1.4210854715202004e-14,
+            "isOutlier": false
+          },
+          {
+            "index": 3,
+            "value": 100.02,
+            "deviation": "NaN",
+            "devFromMean": 0.010000000000005116,
+            "isOutlier": false
+          }
+        ],
+        "params": {}
       }
     }
   ]

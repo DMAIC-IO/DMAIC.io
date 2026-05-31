@@ -112,49 +112,29 @@
 /* ═══ STATS / ANOVA TABLE ═══ */
 
 .msa-typ2__stats-panel {
-  border: 1px solid var(--color-border-secondary);
-  border-radius: var(--border-radius);
-  overflow: hidden;
   margin-bottom: var(--spacing-lg);
+  overflow-x: auto;
 }
 
+.msa-typ2__stats-table th,
+.msa-typ2__stats-table td {
+  white-space: nowrap;
+}
 
-.msa-typ2__anova-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: var(--font-size-sm);
+.msa-typ2__stats-table th:not(:first-child),
+.msa-typ2__stats-table td:not(:first-child) {
+  text-align: right;
+}
+
+.msa-typ2__stats-table td {
   font-family: var(--font-family-mono);
-}
-
-.msa-typ2__anova-table th {
-  padding: 8px 12px;
-  text-align: right;
-  background: var(--color-bg-tertiary);
-  color: var(--color-text-secondary);
-  font-weight: var(--font-weight-semibold);
-  font-size: var(--font-size-xs);
-  border-bottom: 1px solid var(--color-border-secondary);
-}
-
-.msa-typ2__anova-table th:first-child {
-  text-align: left;
-}
-
-.msa-typ2__anova-table td {
-  padding: 7px 12px;
-  text-align: right;
+  font-weight: var(--font-weight-medium);
   color: var(--color-text-primary);
-  border-bottom: 1px solid var(--color-border-secondary);
 }
 
-.msa-typ2__anova-table td:first-child {
-  text-align: left;
-  color: var(--color-text-secondary);
+.msa-typ2__stats-table td:first-child {
   font-family: var(--font-family-base);
-}
-
-.msa-typ2__anova-table tbody tr:nth-child(even) td {
-  background: var(--color-bg-secondary);
+  color: var(--color-text-secondary);
 }
 
 .msa-typ2__anova-total td {
@@ -163,11 +143,10 @@
 }
 
 .msa-typ2__var-note {
-  padding: 8px 16px;
+  padding: var(--spacing-xs) 0;
   font-size: var(--font-size-xs);
   color: var(--color-text-tertiary);
   font-family: var(--font-family-mono);
-  border-top: 1px solid var(--color-border-secondary);
 }
 
 /* ═══ CHARTS ═══ */

@@ -1,10 +1,19 @@
 {
-  "columnRef": {
-    "instanceId": "__source__",
-    "sheetId": "sheet-dist-normal",
-    "columnId": "c-messwert"
-  },
+  "datasets": [
+    {
+      "valueRef": {
+        "instanceId": "__source__",
+        "sheetId": "sheet-probplot-two-groups",
+        "columnId": "c-messwert"
+      },
+      "groupRef": {
+        "instanceId": "__source__",
+        "sheetId": "sheet-probplot-two-groups",
+        "columnId": "c-schicht"
+      }
+    }
+  ],
   "showStats": true,
   "confLevel": 95,
-  "sourceWorksheetFile": "worksheets/distribution-normal.json"
+  "sourceWorksheetFile": "worksheets/probplot-two-groups.json"
 }

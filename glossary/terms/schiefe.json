@@ -1,0 +1,91 @@
+{
+  "id": "schiefe",
+  "category": "descriptive",
+  "title": {
+    "de": "Schiefe",
+    "en": "Skewness"
+  },
+  "short": {
+    "de": "Maß für die Asymmetrie einer Verteilung um ihren Mittelwert.",
+    "en": "Measure of the asymmetry of a distribution about its mean."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "Die **Schiefe** $g_1$ misst, wie asymmetrisch eine Verteilung um ihren {{term:mittelwert|Mittelwert}} liegt. Sie ist das standardisierte dritte zentrale Moment."
+      },
+      {
+        "type": "formula",
+        "latex": "g_1 = \\frac{1}{n} \\sum_{i=1}^{n} \\left( \\frac{x_i - \\bar{x}}{s} \\right)^3"
+      },
+      {
+        "type": "paragraph",
+        "text": "Interpretation: **g₁ ≈ 0** symmetrisch (z. B. Normalverteilung). **g₁ > 0** rechtsschief — der Schwanz zieht nach rechts (typisch für Wartezeiten, Lebensdauern). **g₁ < 0** linksschief — der Schwanz zieht nach links."
+      },
+      {
+        "type": "note",
+        "text": "Bei stark schiefen Daten ist der {{term:median|Median}} aussagekräftiger als der Mittelwert. Auch parametrische Tests (t-Test, ANOVA) verlieren bei starker Schiefe an Power — eine Transformation (Log, Box-Cox) oder ein nichtparametrischer Test ist dann angebracht."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "**Skewness** $g_1$ quantifies the asymmetry of a distribution about its {{term:mittelwert|mean}}. It is the standardised third central moment."
+      },
+      {
+        "type": "formula",
+        "latex": "g_1 = \\frac{1}{n} \\sum_{i=1}^{n} \\left( \\frac{x_i - \\bar{x}}{s} \\right)^3"
+      },
+      {
+        "type": "paragraph",
+        "text": "Interpretation: **g₁ ≈ 0** symmetric (e.g. normal distribution). **g₁ > 0** right-skewed — the tail extends to the right (typical for waiting times, lifetimes). **g₁ < 0** left-skewed — the tail extends to the left."
+      },
+      {
+        "type": "note",
+        "text": "For strongly skewed data the {{term:median|median}} is more informative than the mean. Parametric tests (t-test, ANOVA) also lose power under strong skew — a transformation (log, Box-Cox) or a non-parametric test is then preferable."
+      }
+    ]
+  },
+  "aliases": {
+    "de": [
+      "Skewness",
+      "g₁"
+    ],
+    "en": [
+      "g₁"
+    ]
+  },
+  "seeAlso": [
+    "kurtosis",
+    "mittelwert",
+    "median",
+    "standardabweichung"
+  ],
+  "modules": [
+    "histogram",
+    "boxplot",
+    "process-capability",
+    "distribution-fit",
+    "data-transformation",
+    "outlier-test",
+    "probability-plot",
+    "calculator",
+    "individual-value-plot",
+    "random-generator"
+  ],
+  "algoLab": [
+    "hypothesis/anderson-darling",
+    "hypothesis/shapiro-wilk"
+  ],
+  "sources": [
+    {
+      "label": "Joanes, D.N.; Gill, C.A.: Comparing measures of sample skewness and kurtosis, J. R. Statist. Soc. D, 47(1), 1998",
+      "url": null
+    },
+    {
+      "label": "Montgomery, D.C.: Introduction to Statistical Quality Control, 8th ed., Wiley, 2020",
+      "url": null
+    }
+  ]
+}

@@ -5,23 +5,23 @@
     "scipy": "1.15.3",
     "numpy": "2.2.6"
   },
-  "generated_at": "2026-04-11T18:31:20.074248+00:00",
+  "generated_at": "2026-05-31T00:00:00Z",
   "generator_script": "tools/fixture-generator/generate_fixtures.py",
   "generator_version": "1.0.0",
   "tolerances": {
     "default": {
-      "relative": 1e-06,
-      "absolute": 1e-07
+      "relative": 0.000001,
+      "absolute": 1e-7
     },
     "overrides": {
       "tail_precision": {
         "relative": 0.001,
-        "absolute": 1e-07,
+        "absolute": 1e-7,
         "reason": "Extreme tail probabilities lose precision in polynomial approximations"
       },
       "inverse_precision": {
-        "relative": 1e-06,
-        "absolute": 1e-08,
+        "relative": 0.000001,
+        "absolute": 1e-8,
         "reason": "Inverse CDF functions use iterative approximations with bounded precision"
       }
     }
@@ -47,7 +47,7 @@
       "reference": "SciPy scipy.stats.norm.cdf",
       "inputs": {
         "function": "normalCDF",
-        "x": 1.0
+        "x": 1
       },
       "expected": {
         "result": 0.8413447460685429
@@ -60,7 +60,7 @@
       "reference": "SciPy scipy.stats.norm.cdf",
       "inputs": {
         "function": "normalCDF",
-        "x": -1.0
+        "x": -1
       },
       "expected": {
         "result": 0.15865525393145707
@@ -73,7 +73,7 @@
       "reference": "SciPy scipy.stats.norm.cdf",
       "inputs": {
         "function": "normalCDF",
-        "x": 2.0
+        "x": 2
       },
       "expected": {
         "result": 0.9772498680518208
@@ -86,7 +86,7 @@
       "reference": "SciPy scipy.stats.norm.cdf",
       "inputs": {
         "function": "normalCDF",
-        "x": -2.0
+        "x": -2
       },
       "expected": {
         "result": 0.022750131948179195
@@ -99,7 +99,7 @@
       "reference": "SciPy scipy.stats.norm.cdf",
       "inputs": {
         "function": "normalCDF",
-        "x": 3.0
+        "x": 3
       },
       "expected": {
         "result": 0.9986501019683699
@@ -138,9 +138,9 @@
       "reference": "SciPy scipy.stats.norm.cdf",
       "inputs": {
         "function": "normalCDF",
-        "x": 115.0,
-        "mu": 100.0,
-        "sigma": 15.0
+        "x": 115,
+        "mu": 100,
+        "sigma": 15
       },
       "expected": {
         "result": 0.8413447460685429
@@ -153,11 +153,11 @@
       "reference": "SciPy scipy.stats.norm.cdf",
       "inputs": {
         "function": "normalCDF",
-        "x": -4.0
+        "x": -4
       },
       "tolerance_override": "tail_precision",
       "expected": {
-        "result": 3.167124183311986e-05
+        "result": 0.00003167124183311986
       }
     },
     {
@@ -167,7 +167,7 @@
       "reference": "SciPy scipy.stats.norm.cdf",
       "inputs": {
         "function": "normalCDF",
-        "x": 5.0
+        "x": 5
       },
       "tolerance_override": "tail_precision",
       "expected": {
@@ -181,7 +181,7 @@
       "reference": "SciPy scipy.stats.norm.cdf",
       "inputs": {
         "function": "normalCDF",
-        "x": -6.0
+        "x": -6
       },
       "tolerance_override": "tail_precision",
       "expected": {
@@ -212,7 +212,7 @@
       },
       "tolerance_override": "inverse_precision",
       "expected": {
-        "result": 0.0
+        "result": 0
       }
     },
     {
@@ -268,7 +268,7 @@
       },
       "tolerance_override": "inverse_precision",
       "expected": {
-        "result": 1.0
+        "result": 1
       }
     },
     {
@@ -281,7 +281,7 @@
         "x": 0
       },
       "expected": {
-        "result": 0.0
+        "result": 0
       }
     },
     {
@@ -291,7 +291,7 @@
       "reference": "SciPy scipy.special.erf",
       "inputs": {
         "function": "erf",
-        "x": 1.0
+        "x": 1
       },
       "expected": {
         "result": 0.8427007929497148
@@ -304,7 +304,7 @@
       "reference": "SciPy scipy.special.erf",
       "inputs": {
         "function": "erf",
-        "x": -1.0
+        "x": -1
       },
       "expected": {
         "result": -0.8427007929497148
@@ -317,7 +317,7 @@
       "reference": "SciPy scipy.special.erf",
       "inputs": {
         "function": "erf",
-        "x": 2.0
+        "x": 2
       },
       "expected": {
         "result": 0.9953222650189527
@@ -444,7 +444,7 @@
       "reference": "SciPy scipy.special.gammaln",
       "inputs": {
         "function": "lnGamma",
-        "x": 5.0
+        "x": 5
       },
       "expected": {
         "result": 3.1780538303479458
@@ -474,6 +474,31 @@
       },
       "expected": {
         "result": -0.12078223763524526
+      }
+    },
+    {
+      "id": "mu_robust_unknown_function",
+      "tier": "robustness",
+      "description": "robustness tier",
+      "inputs": {
+        "function": "__no_such_function__",
+        "x": 0
+      },
+      "expected_error": {
+        "type": "Error",
+        "message_contains": ""
+      }
+    },
+    {
+      "id": "mu_robust_missing_function_key",
+      "tier": "robustness",
+      "description": "robustness tier",
+      "inputs": {
+        "x": 0
+      },
+      "expected_error": {
+        "type": "Error",
+        "message_contains": ""
       }
     }
   ]

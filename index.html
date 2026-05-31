@@ -134,6 +134,14 @@
         data-i18n-aria-label="moduleHelp.title"
       ><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></button>
 
+      <!-- Glossary -->
+      <button
+        id="glossary-btn"
+        class="btn btn--icon btn--ghost"
+        data-i18n-title="moduleHelp.glossaryHeaderTitle"
+        data-i18n-aria-label="moduleHelp.glossaryHeaderTitle"
+      ><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg></button>
+
       <!-- Training -->
       <button
         id="training-btn"
@@ -151,19 +159,23 @@
       ><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
     </div>
 
-    <!-- Settings Panel (overlay) -->
-    <div id="settings-overlay" class="settings-overlay" style="display:none"></div>
-    <div id="settings-panel" class="settings-panel" style="display:none">
-      <div class="settings-panel__header">
-        <h3 class="settings-panel__title" data-i18n="settings.title">Einstellungen</h3>
-        <button id="settings-close" class="btn btn--icon btn--ghost settings-panel__close" aria-label="Schließen">&times;</button>
-      </div>
-      <div class="settings-panel__tabs" role="tablist">
-        <button class="settings-tab settings-tab--active" data-tab="appearance" role="tab" data-i18n="settings.tabAppearance">Ansicht</button>
-        <button class="settings-tab" data-tab="charts" role="tab" data-i18n="settings.tabCharts">Diagramme</button>
-        <button class="settings-tab" data-tab="statistics" role="tab" data-i18n="settings.tabStatistics">Statistik</button>
-      </div>
-      <div class="settings-panel__body">
+    <!-- Settings Panel (dmike-chart-popout shell) -->
+    <div id="settings-overlay" class="dmike-chart-popout-overlay" style="display:none">
+      <div id="settings-panel" class="dmike-chart-popout">
+        <div class="dmike-chart-popout-titlebar">
+          <span data-i18n="settings.title">Einstellungen</span>
+          <button id="settings-close" class="dmike-chart-popout-close" aria-label="Schließen">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+          </button>
+        </div>
+        <div class="dmike-chart-popout-body settings-panel__layout">
+          <div class="settings-panel__tabs" role="tablist">
+            <button class="settings-tab settings-tab--active" data-tab="appearance" role="tab" data-i18n="settings.tabAppearance">Ansicht</button>
+            <button class="settings-tab" data-tab="charts" role="tab" data-i18n="settings.tabCharts">Diagramme</button>
+            <button class="settings-tab" data-tab="statistics" role="tab" data-i18n="settings.tabStatistics">Statistik</button>
+            <button class="settings-tab" data-tab="shortcuts" role="tab" data-i18n="settings.tabShortcuts">Tastaturkürzel</button>
+          </div>
+          <div class="settings-panel__body">
         <!-- Tab: Appearance -->
         <div class="settings-tab-content settings-tab-content--active" data-tab-content="appearance">
           <div class="settings-section">
@@ -198,6 +210,13 @@
               <span data-i18n="settings.tipsEnabled">Tipps anzeigen</span>
             </label>
             <button class="btn btn--sm btn--ghost" id="settings-tips-reset" data-i18n="settings.tipsResetDismissed">Abgehakte Tipps zurücksetzen</button>
+          </div>
+          <div class="settings-section">
+            <label class="settings-section__label">
+              <input type="checkbox" id="settings-glossary-inline-enabled" checked>
+              <span data-i18n="settings.glossaryInlineLinks">Fachbegriffe im Hilfetext verlinken</span>
+            </label>
+            <p class="settings-hint" data-i18n="settings.glossaryInlineLinksHint">Beim Überfahren mit der Maus erscheint ein Knopf zum Glossar.</p>
           </div>
           <div class="settings-section">
             <label class="settings-section__label" data-i18n="settings.exportReminderTitle">Export-Erinnerung</label>
@@ -311,8 +330,19 @@
             <button class="btn btn--sm btn--ghost" id="settings-stat-reset" data-i18n="settings.statReset">Standardwerte</button>
           </div>
         </div>
+        <!-- Tab: Shortcuts -->
+        <div class="settings-tab-content" data-tab-content="shortcuts">
+          <p class="settings-hint" data-i18n="settings.shortcutsHint">Hier kannst du Tastenkombinationen anpassen. Standard-Tasten (Enter, Escape, Pfeiltasten) sind nicht editierbar.</p>
+          <div id="settings-shortcuts-list" class="settings-shortcuts-list"></div>
+          <div class="settings-section">
+            <button class="btn btn--sm btn--ghost" id="settings-shortcuts-reset" data-i18n="settings.shortcutsResetAll">Alle Standardwerte</button>
+          </div>
+        </div>
+          </div>
+        </div>
       </div>
     </div>
+    <!-- /Settings Panel -->
 
   </header>
 
@@ -336,11 +366,6 @@
 
   <!-- ── Footer ────────────────────────────────────────────── -->
   <footer class="app-footer" role="contentinfo">
-    <span
-      id="footer-project-name"
-      class="app-footer__project-name"
-      title="Zum Projektname springen"
-    ></span>
     <span id="footer-last-saved"></span>
     <span id="footer-tip" class="app-footer__tip" hidden>
       <svg class="app-footer__tip-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">

@@ -110,7 +110,10 @@
   border-color: var(--color-border-secondary) !important;
 }
 
-/* ===== Output headers (vertical) ===== */
+/* ===== Output headers (vertical) =====
+   height acts as min-height on table cells — long output names grow the
+   header row instead of being clipped. The content wrapper has no fixed
+   height so it uses its intrinsic (rotated) size. */
 .ce-matrix__output-header {
   white-space: nowrap;
   height: 140px;
@@ -126,7 +129,6 @@
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  height: 100%;
 }
 
 .ce-matrix__output-name {
@@ -137,7 +139,6 @@
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-medium);
   width: auto;
-  height: 100%;
   box-sizing: border-box;
   outline: none;
   padding: 2px 4px;

@@ -5,7 +5,7 @@
     "scipy": "1.15.3",
     "numpy": "2.2.6"
   },
-  "generated_at": "2026-03-28T06:50:21.420412+00:00",
+  "generated_at": "2026-05-31T00:00:00Z",
   "generator_script": "tools/fixture-generator/generate_fixtures.py",
   "generator_version": "1.0.0",
   "tolerances": {
@@ -15,13 +15,13 @@
     },
     "overrides": {
       "p_value_relaxed": {
-        "relative": 1e-06,
-        "absolute": 1e-08,
+        "relative": 0.000001,
+        "absolute": 1e-8,
         "reason": "Z-score transformations involve multiple approximation steps; small deviations accumulate"
       },
       "stress_large_dataset": {
-        "relative": 1e-06,
-        "absolute": 1e-08,
+        "relative": 0.000001,
+        "absolute": 1e-8,
         "reason": "Floating-point accumulation in large arrays reduces precision"
       }
     }
@@ -38,7 +38,7 @@
           50.2,
           49.8,
           51.3,
-          50.0,
+          50,
           49.1,
           50.7,
           48.9,
@@ -50,7 +50,7 @@
           49.2,
           50.6,
           49.4,
-          51.0,
+          51,
           48.8,
           50.1,
           49.9
@@ -86,7 +86,7 @@
           99.6,
           100.8,
           99.2,
-          101.0,
+          101,
           98.9,
           100.3,
           99.7,
@@ -98,15 +98,15 @@
           99.9,
           101.2,
           98.7,
-          100.0,
-          99.0,
+          100,
+          99,
           101.3,
           98.6,
           100.2,
           99.5,
           100.8,
           99.3,
-          101.0,
+          101,
           98.9,
           100.4,
           99.6,
@@ -122,7 +122,7 @@
           99.8,
           100.1,
           99.9,
-          100.0,
+          100,
           100.2
         ]
       },
@@ -150,15 +150,15 @@
           0.4,
           0.5,
           0.7,
-          1.0,
+          1,
           1.5,
-          2.0,
-          3.0,
-          4.0,
+          2,
+          3,
+          4,
           5.5,
-          7.0,
-          9.0,
-          12.0,
+          7,
+          9,
+          12,
           0.15,
           0.25,
           0.6,
@@ -167,9 +167,9 @@
           1.8,
           2.5,
           3.5,
-          6.0,
-          8.0,
-          10.0,
+          6,
+          8,
+          10,
           0.35,
           0.45,
           0.9,
@@ -207,9 +207,9 @@
           0.6,
           -0.4,
           1.2,
-          -1.0,
+          -1,
           3.5,
-          -4.0,
+          -4,
           0.2,
           -0.6,
           0.9,
@@ -218,13 +218,13 @@
           -1.3,
           0.4,
           -0.5,
-          5.0,
+          5,
           -3.2,
           0.7,
           -0.8,
-          1.0,
+          1,
           -1.1,
-          0.0,
+          0,
           0.1,
           -0.2,
           0.3,
@@ -290,9 +290,9 @@
       "expected": {
         "statistic": 5.419188147156362,
         "pValue": 0.06656382124547083,
-        "skewnessZ": 0.0,
+        "skewnessZ": 0,
         "kurtosisZ": 2.32791497850681,
-        "skewness": 0.0,
+        "skewness": 0,
         "kurtosis": -1.202669632925473,
         "n": 30
       }
@@ -335,9 +335,9 @@
       "description": "n=3 — well below minimum",
       "inputs": {
         "data": [
-          1.0,
-          2.0,
-          3.0
+          1,
+          2,
+          3
         ]
       },
       "expected_error": {
@@ -363,26 +363,26 @@
       "description": "All identical values (n=20) — zero variance should throw error",
       "inputs": {
         "data": [
-          5.0,
-          5.0,
-          5.0,
-          5.0,
-          5.0,
-          5.0,
-          5.0,
-          5.0,
-          5.0,
-          5.0,
-          5.0,
-          5.0,
-          5.0,
-          5.0,
-          5.0,
-          5.0,
-          5.0,
-          5.0,
-          5.0,
-          5.0
+          5,
+          5,
+          5,
+          5,
+          5,
+          5,
+          5,
+          5,
+          5,
+          5,
+          5,
+          5,
+          5,
+          5,
+          5,
+          5,
+          5,
+          5,
+          5,
+          5
         ]
       },
       "expected_error": {
@@ -422,9 +422,9 @@
       "expected": {
         "statistic": 0.6957647998297191,
         "pValue": 0.7061819183851322,
-        "skewnessZ": 0.0,
+        "skewnessZ": 0,
         "kurtosisZ": -0.8341251703609711,
-        "skewness": 0.0,
+        "skewness": 0,
         "kurtosis": 0.19982567362199477,
         "n": 20
       }
@@ -10458,16 +10458,16 @@
       "description": "Data with wide range — numerical stability of Z-score transforms",
       "inputs": {
         "data": [
-          1e-08,
-          1e-06,
+          1e-8,
+          0.000001,
           0.0001,
           0.01,
           1,
           10,
           100,
           1000,
-          10000.0,
-          1000000.0,
+          10000,
+          1000000,
           0.5,
           5,
           50,
@@ -10489,6 +10489,34 @@
         "skewness": 4.128679574386054,
         "kurtosis": 15.048428700332597,
         "n": 20
+      }
+    },
+    {
+      "id": "dap_robust_empty",
+      "tier": "robustness",
+      "description": "robustness tier",
+      "inputs": {
+        "data": []
+      },
+      "expected_error": {
+        "type": "Error",
+        "message_contains": ""
+      }
+    },
+    {
+      "id": "dap_robust_n_too_small",
+      "tier": "robustness",
+      "description": "robustness tier",
+      "inputs": {
+        "data": [
+          1,
+          2,
+          3
+        ]
+      },
+      "expected_error": {
+        "type": "Error",
+        "message_contains": ""
       }
     }
   ]

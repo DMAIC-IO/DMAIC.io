@@ -1273,6 +1273,11 @@ export default class ChartBase {
 
     const win = document.createElement('div');
     win.className = 'dmike-chart-popout';
+    // Popout shell is content-driven; the chart owns its render box.
+    // Width override only — height comes from `card` below. Resize: both
+    // belongs on the inner render box, not the shell, so dragging the
+    // corner grows the chart and the content-driven shell follows.
+    win.style.width = '720px';
 
     // ── Title bar ──
     const titleBar = document.createElement('div');
@@ -1292,6 +1297,12 @@ export default class ChartBase {
 
     const card = document.createElement('div');
     card.className = 'dmike-chart-card';
+    // Render box dimensions live on the chart, not the popout shell. The
+    // shell is content-driven and just follows. Resize: both lets the user
+    // drag the corner to enlarge the chart; the popout grows along.
+    card.style.height = '500px';
+    card.style.resize = 'both';
+    card.style.overflow = 'auto';
 
     const wrap = document.createElement('div');
     wrap.className = 'dmike-chart-wrap';

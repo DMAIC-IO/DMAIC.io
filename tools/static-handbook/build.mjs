@@ -42,6 +42,7 @@ import {
   renderExamplePage,
   renderExamplesIndex,
 } from './render/pages.mjs';
+import { renderGlossaryIndex, renderGlossaryTermPage } from './render/glossary-page.mjs';
 import { renderSitemap, renderRobots } from './render/sitemap.mjs';
 import { CYCLES } from '../../js/core/cycles/cycles.js';
 
@@ -124,11 +125,38 @@ async function main() {
         lang,
         i18n: sources.i18n,
         examples: sources.examples,
+        glossary: sources.glossary,
       });
       const dest = path.join(OUT, rel(page.pathFromRoot));
       await writeOut(dest, page.html);
       sitemapEntries.push({ path: page.pathFromRoot, priority: '0.8', changefreq: 'monthly' });
       pageCount++;
+    }
+
+    // Glossary index + per-term pages
+    if (sources.glossary?.terms?.length) {
+      const idx = renderGlossaryIndex({
+        glossary: sources.glossary,
+        modules: sources.modules,
+        lang,
+        i18n: sources.i18n,
+      });
+      await writeOut(path.join(OUT, rel(idx.pathFromRoot)), idx.html);
+      sitemapEntries.push({ path: idx.pathFromRoot, priority: '0.7', changefreq: 'monthly' });
+      pageCount++;
+
+      for (const term of sources.glossary.terms) {
+        const page = await renderGlossaryTermPage({
+          term,
+          glossary: sources.glossary,
+          modules: sources.modules,
+          lang,
+          i18n: sources.i18n,
+        });
+        await writeOut(path.join(OUT, rel(page.pathFromRoot)), page.html);
+        sitemapEntries.push({ path: page.pathFromRoot, priority: '0.6', changefreq: 'monthly' });
+        pageCount++;
+      }
     }
 
     // Examples landing page — central catalog grouped by phase.

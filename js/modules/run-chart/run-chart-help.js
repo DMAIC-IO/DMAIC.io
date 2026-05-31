@@ -17,7 +17,7 @@ export default {
           {
             type: 'definition',
             term: 'Medianlinie',
-            content: 'Der Median der Werte. Bei zufällig schwankenden Daten liegt etwa die Hälfte der Punkte oberhalb, die andere Hälfte unterhalb. Punkte genau auf dem Median werden in den Tests nicht mitgezählt.',
+            content: 'Der {{term:median|Median}} der Werte. Bei zufällig schwankenden Daten liegt etwa die Hälfte der Punkte oberhalb, die andere Hälfte unterhalb. Punkte genau auf dem Median werden in den Tests nicht mitgezählt.',
           },
           {
             type: 'definition',
@@ -40,7 +40,7 @@ export default {
         blocks: [
           {
             type: 'paragraph',
-            content: 'A run chart shows a data series in time order and tests whether that order looks random. Unlike a control chart it has no control limits — only a median line. Four formal runs tests detect typical non-random patterns.',
+            content: 'A run chart shows a data series in time order and tests whether that order looks random. Unlike a control chart it has no control limits — only a {{term:median|median}} line. Four formal runs tests detect typical non-random patterns.',
           },
           {
             type: 'definition',

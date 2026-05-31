@@ -1,0 +1,424 @@
+{
+  "algorithm_id": "hybrid-categorical-search",
+  "generated_with": {
+    "node": "v22.11.0",
+    "source": "engine-snapshot"
+  },
+  "generated_at": "2026-05-31T00:00:00Z",
+  "generator_script": "tools/lab-test-runner/bootstrap-fixtures.mjs",
+  "generator_version": "1.0.0",
+  "tolerances": {
+    "default": {
+      "relative": 1e-10,
+      "absolute": 1e-12
+    },
+    "overrides": {
+      "optimization_seeded": {
+        "relative": 0.000001,
+        "absolute": 1e-8,
+        "reason": "Seeded multi-start Nelder-Mead"
+      }
+    }
+  },
+  "test_cases": [
+    {
+      "id": "hybrid_max_1cont_1cat",
+      "tier": "standard",
+      "description": "Maximize y = x1 + 0.5·I(x2=B), bounds x1∈[-1,1], x2∈{A,B}",
+      "inputs": {
+        "models": [
+          {
+            "id": "m1",
+            "name": "demo",
+            "spec": {
+              "response": "y",
+              "predictors": [
+                {
+                  "id": "x1",
+                  "name": "x1",
+                  "kind": "continuous"
+                },
+                {
+                  "id": "x2",
+                  "name": "x2",
+                  "kind": "categorical",
+                  "levels": [
+                    "A",
+                    "B"
+                  ]
+                }
+              ],
+              "terms": [
+                "Intercept",
+                "x1",
+                "x2[B]"
+              ]
+            },
+            "coef": [
+              0,
+              1,
+              0.5
+            ]
+          }
+        ],
+        "desirSpecs": [
+          {
+            "kind": "max",
+            "lower": -2,
+            "target": 0,
+            "upper": 2
+          }
+        ],
+        "factorBounds": [
+          [
+            -1,
+            1
+          ]
+        ],
+        "opts": {
+          "nStarts": 4,
+          "seed": 42,
+          "maxIter": 200,
+          "tol": 1e-8
+        }
+      },
+      "tolerance_override": "optimization_seeded",
+      "expected": {
+        "D": 0,
+        "isHybrid": true,
+        "iter": 48
+      }
+    },
+    {
+      "id": "hybrid_target_1cont_1cat",
+      "tier": "standard",
+      "description": "Target y=0.5 — find x1, x2 maximizing target desirability",
+      "inputs": {
+        "models": [
+          {
+            "id": "m1",
+            "name": "demo",
+            "spec": {
+              "response": "y",
+              "predictors": [
+                {
+                  "id": "x1",
+                  "name": "x1",
+                  "kind": "continuous"
+                },
+                {
+                  "id": "x2",
+                  "name": "x2",
+                  "kind": "categorical",
+                  "levels": [
+                    "A",
+                    "B"
+                  ]
+                }
+              ],
+              "terms": [
+                "Intercept",
+                "x1",
+                "x2[B]"
+              ]
+            },
+            "coef": [
+              0,
+              1,
+              0.5
+            ]
+          }
+        ],
+        "desirSpecs": [
+          {
+            "kind": "target",
+            "lower": -2,
+            "target": 0.5,
+            "upper": 2
+          }
+        ],
+        "factorBounds": [
+          [
+            -1,
+            1
+          ]
+        ],
+        "opts": {
+          "nStarts": 4,
+          "seed": 7,
+          "maxIter": 200,
+          "tol": 1e-8
+        }
+      },
+      "tolerance_override": "optimization_seeded",
+      "expected": {
+        "D": 0,
+        "isHybrid": true,
+        "iter": 48
+      }
+    },
+    {
+      "id": "hybrid_min_1cont_1cat",
+      "tier": "standard",
+      "description": "Minimize y",
+      "inputs": {
+        "models": [
+          {
+            "id": "m1",
+            "name": "demo",
+            "spec": {
+              "response": "y",
+              "predictors": [
+                {
+                  "id": "x1",
+                  "name": "x1",
+                  "kind": "continuous"
+                },
+                {
+                  "id": "x2",
+                  "name": "x2",
+                  "kind": "categorical",
+                  "levels": [
+                    "A",
+                    "B"
+                  ]
+                }
+              ],
+              "terms": [
+                "Intercept",
+                "x1",
+                "x2[B]"
+              ]
+            },
+            "coef": [
+              0,
+              1,
+              0.5
+            ]
+          }
+        ],
+        "desirSpecs": [
+          {
+            "kind": "min",
+            "lower": -2,
+            "target": 0,
+            "upper": 2
+          }
+        ],
+        "factorBounds": [
+          [
+            -1,
+            1
+          ]
+        ],
+        "opts": {
+          "nStarts": 4,
+          "seed": 99,
+          "maxIter": 200,
+          "tol": 1e-8
+        }
+      },
+      "tolerance_override": "optimization_seeded",
+      "expected": {
+        "D": 0,
+        "isHybrid": true,
+        "iter": 48
+      }
+    },
+    {
+      "id": "hybrid_edge_single_start",
+      "tier": "edge",
+      "description": "edge tier",
+      "inputs": {
+        "models": [
+          {
+            "id": "m1",
+            "name": "demo",
+            "spec": {
+              "response": "y",
+              "predictors": [
+                {
+                  "id": "x1",
+                  "name": "x1",
+                  "kind": "continuous"
+                },
+                {
+                  "id": "x2",
+                  "name": "x2",
+                  "kind": "categorical",
+                  "levels": [
+                    "A",
+                    "B"
+                  ]
+                }
+              ],
+              "terms": [
+                "Intercept",
+                "x1",
+                "x2[B]"
+              ]
+            },
+            "coef": [
+              0,
+              1,
+              0.5
+            ]
+          }
+        ],
+        "desirSpecs": [
+          {
+            "kind": "max",
+            "lower": -2,
+            "target": 0,
+            "upper": 2
+          }
+        ],
+        "factorBounds": [
+          [
+            -1,
+            1
+          ]
+        ],
+        "opts": {
+          "nStarts": 1,
+          "seed": 1,
+          "maxIter": 50,
+          "tol": 0.000001
+        }
+      },
+      "tolerance_override": "optimization_seeded",
+      "expected": {
+        "D": 0,
+        "isHybrid": true,
+        "iter": 34
+      }
+    },
+    {
+      "id": "hybrid_stress_3cont_2cat",
+      "tier": "stress",
+      "description": "stress tier",
+      "inputs": {
+        "models": [
+          {
+            "id": "m1",
+            "name": "demo",
+            "spec": {
+              "response": "y",
+              "predictors": [
+                {
+                  "id": "x1",
+                  "name": "x1",
+                  "kind": "continuous"
+                },
+                {
+                  "id": "x2",
+                  "name": "x2",
+                  "kind": "continuous"
+                },
+                {
+                  "id": "x3",
+                  "name": "x3",
+                  "kind": "continuous"
+                },
+                {
+                  "id": "c1",
+                  "name": "c1",
+                  "kind": "categorical",
+                  "levels": [
+                    "A",
+                    "B",
+                    "C"
+                  ]
+                },
+                {
+                  "id": "c2",
+                  "name": "c2",
+                  "kind": "categorical",
+                  "levels": [
+                    "X",
+                    "Y"
+                  ]
+                }
+              ],
+              "terms": [
+                "Intercept",
+                "x1",
+                "x2",
+                "x3",
+                "c1[B]",
+                "c1[C]",
+                "c2[Y]"
+              ]
+            },
+            "coef": [
+              0,
+              1,
+              -0.5,
+              0.3,
+              0.4,
+              -0.2,
+              0.1
+            ]
+          }
+        ],
+        "desirSpecs": [
+          {
+            "kind": "max",
+            "lower": -5,
+            "target": 0,
+            "upper": 5
+          }
+        ],
+        "factorBounds": [
+          [
+            -1,
+            1
+          ],
+          [
+            -1,
+            1
+          ],
+          [
+            -1,
+            1
+          ]
+        ],
+        "opts": {
+          "nStarts": 3,
+          "seed": 999,
+          "maxIter": 100,
+          "tol": 0.000001
+        }
+      },
+      "tolerance_override": "optimization_seeded",
+      "expected": {
+        "D": 0,
+        "isHybrid": true,
+        "iter": 102
+      }
+    },
+    {
+      "id": "hybrid_robust_empty_models",
+      "tier": "robustness",
+      "description": "robustness tier",
+      "inputs": {
+        "models": [],
+        "desirSpecs": [],
+        "factorBounds": [],
+        "opts": {
+          "nStarts": 1,
+          "seed": 1
+        }
+      },
+      "expected": {
+        "xOpt": [],
+        "xOptByName": {},
+        "yPredictions": [],
+        "dPerResponse": [],
+        "D": 0,
+        "iter": 0,
+        "isHybrid": false
+      }
+    }
+  ]
+}

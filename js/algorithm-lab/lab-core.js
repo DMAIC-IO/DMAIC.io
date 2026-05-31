@@ -668,7 +668,13 @@ export class AlgorithmLab {
    * Resolve a dot-separated path on an object (e.g. "varComp.grr.pctStudyVar").
    */
   _getByPath(obj, path) {
-    if (obj == null) return undefined;
+    // Primitive (non-object), undefined, or null result: synthetic `value` key
+    // returns the result itself, so fixtures for number- or null-returning
+    // functions can write `expected: { value: 0.5 }` or `expected: { value: null }`.
+    // Without the type guard, `path in primitive` would throw.
+    if (obj == null || typeof obj !== 'object') {
+      return path === 'value' ? obj : undefined;
+    }
     // Fast path: direct key exists (no traversal needed)
     if (path in obj) return obj[path];
     const parts = path.split('.');
@@ -681,9 +687,18 @@ export class AlgorithmLab {
   }
 
   _compare(actual, expected, tol) {
-    if (expected === 'Infinity') return actual === Infinity;
-    if (expected === '-Infinity') return actual === -Infinity;
-    if (expected === 'NaN') return Number.isNaN(actual);
+    // Sentinel-string handling for special numeric values. We only apply the
+    // sentinel interpretation when `actual` is itself a number — otherwise both
+    // sides may legitimately be the literal string "NaN"/"Infinity" (engines
+    // sometimes use these as their own serialization sentinels) and we should
+    // fall through to plain string equality.
+    if (expected === 'Infinity' && typeof actual === 'number') return actual === Infinity;
+    if (expected === '-Infinity' && typeof actual === 'number') return actual === -Infinity;
+    if (expected === 'NaN' && typeof actual === 'number') return Number.isNaN(actual);
+    // JSON round-trips undefined → null, so treat them as interchangeable in
+    // expected/actual comparisons. Without this, snapshot fixtures recorded with
+    // `null` at array slots that the engine actually returns as `undefined` fail.
+    if (expected === null) return actual === null || actual === undefined;
     // Arrays: element-by-element recursive comparison
     if (Array.isArray(expected)) {
       if (!Array.isArray(actual) || actual.length !== expected.length) return false;

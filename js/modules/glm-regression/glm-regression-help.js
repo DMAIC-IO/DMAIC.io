@@ -22,7 +22,7 @@ export default {
           {
             type: 'definition',
             term: 'Poisson-Regression',
-            content: 'Für Zähldaten (0, 1, 2, 3, …). Modelliert den Erwartungswert E(Y|X) = exp(β₀ + β₁X₁ + …). Koeffizienten werden als Rate Ratios interpretiert. Voraussetzung: Varianz ≈ Mittelwert.',
+            content: 'Für Zähldaten (0, 1, 2, 3, …). Modelliert den Erwartungswert E(Y|X) = exp(β₀ + β₁X₁ + …). Koeffizienten werden als Rate Ratios interpretiert. Voraussetzung: {{term:varianz|Varianz}} ≈ {{term:mittelwert|Mittelwert}}.',
           },
           {
             type: 'definition',
@@ -51,7 +51,7 @@ export default {
           {
             type: 'definition',
             term: 'Poisson regression',
-            content: 'For count data (0, 1, 2, 3, …). Models the expected value E(Y|X) = exp(β₀ + β₁X₁ + …). Coefficients are interpreted as rate ratios. Assumption: variance ≈ mean.',
+            content: 'For count data (0, 1, 2, 3, …). Models the expected value E(Y|X) = exp(β₀ + β₁X₁ + …). Coefficients are interpreted as rate ratios. Assumption: {{term:varianz|variance}} ≈ {{term:mittelwert|mean}}.',
           },
           {
             type: 'definition',

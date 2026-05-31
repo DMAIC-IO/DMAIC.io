@@ -5,7 +5,7 @@
     "scipy": "1.15.3",
     "numpy": "2.2.6"
   },
-  "generated_at": "2026-04-11T16:24:47.585745+00:00",
+  "generated_at": "2026-05-31T00:00:00Z",
   "generator_script": "tools/fixture-generator/generate_fixtures.py",
   "generator_version": "1.0.0",
   "tolerances": {
@@ -15,8 +15,8 @@
     },
     "overrides": {
       "stress_large_dataset": {
-        "relative": 1e-06,
-        "absolute": 1e-08,
+        "relative": 0.000001,
+        "absolute": 1e-8,
         "reason": "Accumulation in long arrays"
       }
     }
@@ -31,13 +31,13 @@
           10.02,
           9.99,
           10.01,
-          10.0,
+          10,
           9.98,
           10.03,
           10.01,
           9.97,
           10.02,
-          10.0
+          10
         ],
         "lsl": 9.8,
         "usl": 10.2
@@ -84,7 +84,7 @@
       "description": "Cp ≈ 1.0 (borderline capable)",
       "inputs": {
         "data": [
-          50.0,
+          50,
           50.08,
           49.92,
           50.05,
@@ -124,11 +124,11 @@
           100.01,
           99.99
         ],
-        "lsl": 99.0,
-        "usl": 101.0
+        "lsl": 99,
+        "usl": 101
       },
       "expected": {
-        "mean": 100.0,
+        "mean": 100,
         "stddev": 0.03496029493900577,
         "cp": 9.534625892455725,
         "cpk": 9.534625892455725
@@ -140,7 +140,7 @@
       "description": "Minimum sample n=2",
       "inputs": {
         "data": [
-          10.0,
+          10,
           10.1
         ],
         "lsl": 9.5,
@@ -162,13 +162,13 @@
           -10.02,
           -9.99,
           -10.01,
-          -10.0,
+          -10,
           -9.98,
           -10.03,
           -10.01,
           -9.97,
           -10.02,
-          -10.0
+          -10
         ],
         "lsl": -10.2,
         "usl": -9.8
@@ -189,13 +189,13 @@
           1000000.02,
           999999.99,
           1000000.01,
-          1000000.0,
+          1000000,
           999999.98,
           1000000.03,
           1000000.01,
           999999.97,
           1000000.02,
-          1000000.0
+          1000000
         ],
         "lsl": 999999.8,
         "usl": 1000000.2
@@ -591,6 +591,40 @@
         "stddev": 0.07956728983020624,
         "cp": 1.0473315543505841,
         "cpk": 1.0226876493203831
+      }
+    },
+    {
+      "id": "cp_robust_empty_data",
+      "tier": "robustness",
+      "description": "robustness tier",
+      "inputs": {
+        "data": [],
+        "lsl": 0,
+        "usl": 10
+      },
+      "expected_error": {
+        "type": "Error",
+        "message_contains": ""
+      }
+    },
+    {
+      "id": "cp_robust_invalid_lsl_gt_usl",
+      "tier": "robustness",
+      "description": "robustness tier",
+      "inputs": {
+        "data": [
+          1,
+          2,
+          3,
+          4,
+          5
+        ],
+        "lsl": 10,
+        "usl": 0
+      },
+      "expected_error": {
+        "type": "Error",
+        "message_contains": ""
       }
     }
   ]

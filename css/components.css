@@ -64,6 +64,13 @@
   color: var(--color-accent);
 }
 
+.btn--ghost.btn--disabled,
+.btn--icon.btn--disabled {
+  opacity: 0.4;
+  pointer-events: none;
+  cursor: not-allowed;
+}
+
 .btn--danger {
   background: var(--color-error);
   color: var(--color-text-inverse);
@@ -731,54 +738,21 @@ select.input {
   outline: none;
 }
 
-/* ===== Settings Panel ===== */
-.settings-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.35);
-  z-index: 900;
-}
+/* ===== Settings Panel =====
+   Hosted inside the global dmike-chart-popout shell (see js/core/chart/chart.css).
+   The popout provides the overlay, frame, titlebar, drag, and close affordances;
+   the rules below only describe the inner layout (tabs + scrolling content). */
 
-.settings-panel {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
+#settings-panel.dmike-chart-popout {
   width: 480px;
   max-height: 80vh;
-  background: var(--color-bg-primary);
-  border: var(--border-width) solid var(--color-border-primary);
-  border-radius: var(--border-radius-lg);
-  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.2);
-  z-index: 901;
+  left: calc(50% - 240px);
+  top: 10vh;
+}
+
+.settings-panel__layout {
   display: flex;
   flex-direction: column;
-  overflow: hidden;
-}
-
-.settings-panel__header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: var(--spacing-md) var(--spacing-lg);
-  border-bottom: var(--border-width) solid var(--color-border-secondary);
-}
-
-.settings-panel__title {
-  font-size: var(--font-size-lg);
-  font-weight: 700;
-  color: var(--color-text-primary);
-  margin: 0;
-}
-
-.settings-panel__close {
-  font-size: 20px;
-  line-height: 1;
-  width: 32px;
-  height: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }
 
 .settings-panel__tabs {
@@ -786,6 +760,7 @@ select.input {
   gap: 0;
   border-bottom: var(--border-width) solid var(--color-border-secondary);
   padding: 0 var(--spacing-lg);
+  flex-shrink: 0;
 }
 
 .settings-tab {
@@ -890,6 +865,100 @@ select.input {
 .settings-theme-icon {
   font-size: 16px;
   line-height: 1;
+}
+
+/* ── Shortcuts tab ────────────────────────────────────────── */
+
+.settings-shortcuts-list {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  margin-top: 18px;
+  margin-bottom: 16px;
+}
+
+.settings-shortcuts-group__title {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-text-secondary);
+  margin: 0 0 6px 0;
+}
+
+.settings-shortcut-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 10px;
+  border: 1px solid var(--color-border-secondary);
+  border-radius: 6px;
+  margin-bottom: 4px;
+  background: var(--color-bg-secondary);
+}
+
+.settings-shortcut-row--conflict {
+  border-color: var(--color-danger, #d93b3b);
+  background: var(--color-danger-alpha, rgba(217, 59, 59, 0.06));
+}
+
+.settings-shortcut-row__label {
+  flex: 1;
+  font-size: 13px;
+  color: var(--color-text-primary);
+}
+
+.settings-shortcut-row__controls {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.settings-shortcut-key {
+  font-family: var(--font-mono, ui-monospace, Menlo, Consolas, monospace);
+  font-size: 12px;
+  min-width: 90px;
+  padding: 4px 10px;
+  border: 1px solid var(--color-border-primary);
+  border-radius: 4px;
+  background: var(--color-bg-primary);
+  color: var(--color-text-primary);
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.settings-shortcut-key:hover {
+  border-color: var(--color-accent);
+}
+
+.settings-shortcut-key--capturing {
+  border-color: var(--color-warning, #e0a800);
+  background: var(--color-warning-alpha, rgba(224, 168, 0, 0.1));
+  color: var(--color-warning, #e0a800);
+  animation: settings-shortcut-pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes settings-shortcut-pulse {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.55; }
+}
+
+.settings-shortcut-reset[disabled] {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.settings-shortcut-conflict {
+  flex-basis: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 6px;
+  font-size: 12px;
+  color: var(--color-danger, #d93b3b);
 }
 
 /* ── Global Slider ────────────────────────────────────────── */
@@ -1274,3 +1343,81 @@ body.hide-algo-lab-links .distfit__ndd-algo-link { display: none; }
 .dmike-embedded-grid--md  { height: 400px; }
 .dmike-embedded-grid--lg  { height: 500px; }
 .dmike-embedded-grid--fill { flex: 1; min-height: 0; }
+
+/* ============================================================
+   Glossary inline links — global, theme-aware, single-source.
+   Never override in module CSS. See .claude/GLOSSAR-KONZEPT.md.
+   ============================================================ */
+
+.glossary-term {
+  position: relative;
+  border-radius: var(--glossary-term-radius);
+  padding: 0 var(--glossary-term-padding-x);
+  transition: var(--glossary-term-transition);
+  cursor: help;
+  /* No color/underline at rest — looks like normal text until hovered. */
+}
+
+.glossary-term:hover {
+  background: var(--glossary-term-bg-hover);
+}
+
+.glossary-term:focus-within {
+  background: var(--glossary-term-bg-focus);
+  outline: none;
+}
+
+/* Small filled "info" icon that appears on hover/focus. Real <button>,
+   so it's reachable via keyboard (Tab → Enter). The icon itself is an
+   inline SVG using currentColor — see the markup emitters in
+   app.js (_renderModuleHelp) and core/stats-panel.js (wrapHeader). */
+.glossary-term__btn {
+  display: none;
+  margin-left: var(--glossary-button-gap);
+  width: var(--glossary-button-size);
+  height: var(--glossary-button-size);
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--glossary-button-color);
+  cursor: pointer;
+  vertical-align: middle;
+  line-height: 0;
+  transition: color 120ms ease-out, transform 120ms ease-out;
+}
+
+.glossary-term__btn svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.glossary-term:hover .glossary-term__btn,
+.glossary-term:focus-within .glossary-term__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.glossary-term__btn:hover {
+  color: var(--glossary-button-color-hover);
+  transform: scale(1.1);
+}
+
+.glossary-term__btn:focus-visible {
+  outline: 2px solid var(--glossary-term-outline-focus);
+  outline-offset: 2px;
+  border-radius: 50%;
+}
+
+/* When the global toggle is off, marker spans look and behave like plain text.
+   Buttons are detached by the augmenter; CSS here strips hover affordances. */
+body.dmike-glossary-inline-off .glossary-term {
+  cursor: inherit;
+  background: transparent !important;
+  outline: none !important;
+}
+body.dmike-glossary-inline-off .glossary-term:hover,
+body.dmike-glossary-inline-off .glossary-term:focus-within {
+  background: transparent;
+}

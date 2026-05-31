@@ -22,7 +22,7 @@ export default {
           {
             type: 'definition',
             term: 'Modus „Statistik"',
-            content: 'Eingabe einer Werteliste; ausgegeben werden Mittelwert, Median, Standardabweichung, Varianz, Minimum, Maximum, Schiefe und Stichprobenumfang. Praktisch für eine schnelle Beschreibung kleiner Datensätze.',
+            content: 'Eingabe einer Werteliste; ausgegeben werden {{term:mittelwert|Mittelwert}}, {{term:median|Median}}, {{term:standardabweichung|Standardabweichung}}, {{term:varianz|Varianz}}, Minimum, Maximum, {{term:schiefe|Schiefe}} und Stichprobenumfang. Praktisch für eine schnelle Beschreibung kleiner Datensätze.',
           },
           {
             type: 'definition',
@@ -50,7 +50,7 @@ export default {
           {
             type: 'definition',
             term: 'Statistics mode',
-            content: 'Enter a list of values; the calculator returns mean, median, standard deviation, variance, minimum, maximum, skewness, and sample size. Handy for a quick description of small datasets.',
+            content: 'Enter a list of values; the calculator returns {{term:mittelwert|mean}}, {{term:median|median}}, {{term:standardabweichung|standard deviation}}, {{term:varianz|variance}}, minimum, maximum, {{term:schiefe|skewness}}, and sample size. Handy for a quick description of small datasets.',
           },
           {
             type: 'definition',

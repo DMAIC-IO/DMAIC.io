@@ -27,12 +27,12 @@ export default {
           {
             type: 'definition',
             term: 'Mittelwert-Raute',
-            content: 'Eine Raute pro Gruppe markiert den arithmetischen Mittelwert. Sie hilft beim schnellen Vergleich der Lage über mehrere Gruppen hinweg.',
+            content: 'Eine Raute pro Gruppe markiert den arithmetischen {{term:mittelwert|Mittelwert}}. Sie hilft beim schnellen Vergleich der Lage über mehrere Gruppen hinweg.',
           },
           {
             type: 'definition',
             term: 'Median-Strich (optional)',
-            content: 'Ein kurzer waagerechter Strich pro Gruppe kennzeichnet den Median. In Kombination mit der Mittelwert-Raute lässt sich Schiefe sofort erkennen: Liegen Mittelwert und Median weit auseinander, ist die Verteilung asymmetrisch.',
+            content: 'Ein kurzer waagerechter Strich pro Gruppe kennzeichnet den {{term:median|Median}}. In Kombination mit der Mittelwert-Raute lässt sich {{term:schiefe|Schiefe}} sofort erkennen: Liegen Mittelwert und Median weit auseinander, ist die Verteilung asymmetrisch.',
           },
           {
             type: 'definition',
@@ -70,12 +70,12 @@ export default {
           {
             type: 'definition',
             term: 'Mean diamond',
-            content: 'One diamond per group marks the arithmetic mean. It enables quick comparison of location across groups.',
+            content: 'One diamond per group marks the arithmetic {{term:mittelwert|mean}}. It enables quick comparison of location across groups.',
           },
           {
             type: 'definition',
             term: 'Median tick (optional)',
-            content: 'A short horizontal tick per group marks the median. Combined with the mean diamond it makes skewness visible at a glance: a clear gap between mean and median indicates an asymmetric distribution.',
+            content: 'A short horizontal tick per group marks the {{term:median|median}}. Combined with the mean diamond it makes {{term:schiefe|skewness}} visible at a glance: a clear gap between mean and median indicates an asymmetric distribution.',
           },
           {
             type: 'definition',
@@ -314,7 +314,7 @@ export default {
           },
           {
             type: 'pitfall',
-            content: 'Gruppengröße ignorieren: Eine Gruppe mit 5 Punkten und eine mit 50 Punkten sehen optisch unterschiedlich „streuend" aus, obwohl die Standardabweichung gleich sein kann. Im Tooltip immer auf n achten.',
+            content: 'Gruppengröße ignorieren: Eine Gruppe mit 5 Punkten und eine mit 50 Punkten sehen optisch unterschiedlich „streuend" aus, obwohl die {{term:standardabweichung|Standardabweichung}} gleich sein kann. Im Tooltip immer auf n achten.',
           },
           {
             type: 'pitfall',
@@ -343,7 +343,7 @@ export default {
           },
           {
             type: 'pitfall',
-            content: 'Ignoring group size: a group of 5 points and a group of 50 points look visually different even when the standard deviations are identical. Always check n in the tooltip.',
+            content: 'Ignoring group size: a group of 5 points and a group of 50 points look visually different even when the {{term:standardabweichung|standard deviations}} are identical. Always check n in the tooltip.',
           },
           {
             type: 'pitfall',

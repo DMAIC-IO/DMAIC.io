@@ -17,12 +17,12 @@ export default {
           {
             type: 'definition',
             term: 'Mittellinie (CL)',
-            content: 'Der Mittelwert der beobachteten Messwerte oder Teilgruppen-Mittelwerte. Sie repräsentiert das aktuelle Prozessniveau.',
+            content: 'Der {{term:mittelwert|Mittelwert}} der beobachteten Messwerte oder Teilgruppen-Mittelwerte. Sie repräsentiert das aktuelle Prozessniveau.',
           },
           {
             type: 'definition',
             term: 'UCL und LCL (±3σ)',
-            content: 'Obere und untere Eingriffsgrenze, typischerweise im Abstand von 3 Standardabweichungen vom Mittelwert. Innerhalb dieser Grenzen gelten Abweichungen als zufällig; Werte außerhalb deuten auf eine Sonderursache hin.',
+            content: 'Obere und untere Eingriffsgrenze, typischerweise im Abstand von 3 {{term:standardabweichung|Standardabweichungen}} vom Mittelwert. Innerhalb dieser Grenzen gelten Abweichungen als zufällig; Werte außerhalb deuten auf eine Sonderursache hin.',
           },
           {
             type: 'definition',
@@ -55,12 +55,12 @@ export default {
           {
             type: 'definition',
             term: 'Center line (CL)',
-            content: 'The mean of observed values or subgroup means. It represents the current process level.',
+            content: 'The {{term:mittelwert|mean}} of observed values or subgroup means. It represents the current process level.',
           },
           {
             type: 'definition',
             term: 'UCL and LCL (±3σ)',
-            content: 'Upper and lower control limits, typically at 3 standard deviations from the mean. Deviations within are treated as random; points outside indicate a special cause.',
+            content: 'Upper and lower control limits, typically at 3 {{term:standardabweichung|standard deviations}} from the mean. Deviations within are treated as random; points outside indicate a special cause.',
           },
           {
             type: 'definition',

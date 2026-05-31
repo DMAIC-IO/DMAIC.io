@@ -89,7 +89,7 @@ export default {
         },
         {
           type: 'text',
-          content: 'Das Modul führt vier spezialisierte Normalitätstests durch und bildet ein Konsens-Urteil. Shapiro-Wilk ist der Goldstandard für kleine Stichproben, Anderson-Darling ist besonders empfindlich in den Verteilungsrändern, Jarque-Bera ist ein asymptotischer Test basierend auf Schiefe und Kurtosis (ideal für n > 30), und D\'Agostino-Pearson zeigt, warum Normalität scheitert (Schiefe vs. Kurtosis).',
+          content: 'Das Modul führt vier spezialisierte Normalitätstests durch und bildet ein Konsens-Urteil. Shapiro-Wilk ist der Goldstandard für kleine Stichproben, Anderson-Darling ist besonders empfindlich in den Verteilungsrändern, Jarque-Bera ist ein asymptotischer Test basierend auf {{term:schiefe|Schiefe}} und {{term:kurtosis|Kurtosis}} (ideal für n > 30), und D\'Agostino-Pearson zeigt, warum Normalität scheitert (Schiefe vs. Kurtosis).',
         },
       ],
     },
@@ -156,7 +156,7 @@ export default {
       blocks: [
         {
           type: 'text',
-          content: 'A manufacturing process produces cycle times in seconds. The data shows right skewness — typical for log-normal distributions.',
+          content: 'A manufacturing process produces cycle times in seconds. The data shows right {{term:schiefe|skewness}} — typical for log-normal distributions.',
         },
         {
           type: 'list',
@@ -195,7 +195,7 @@ export default {
         },
         {
           type: 'text',
-          content: 'The module runs four specialized normality tests and forms a consensus verdict. Shapiro-Wilk is the gold standard for small samples, Anderson-Darling is especially sensitive in the distribution tails, Jarque-Bera is an asymptotic test based on skewness and kurtosis (ideal for n > 30), and D\'Agostino-Pearson reveals why normality fails (skewness vs. kurtosis).',
+          content: 'The module runs four specialized normality tests and forms a consensus verdict. Shapiro-Wilk is the gold standard for small samples, Anderson-Darling is especially sensitive in the distribution tails, Jarque-Bera is an asymptotic test based on skewness and {{term:kurtosis|kurtosis}} (ideal for n > 30), and D\'Agostino-Pearson reveals why normality fails (skewness vs. kurtosis).',
         },
       ],
     },

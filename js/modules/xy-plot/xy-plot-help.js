@@ -93,7 +93,7 @@ export default {
           },
           {
             type: 'paragraph',
-            content: 'Stolperfallen: Wenn alle Größenwerte fast gleich sind, fallen die Unterschiede visuell weg (sqrt-Skalierung dämpft zusätzlich). Wenn die Spannweite sehr groß ist, werden Mittelwerte zu klein. In beiden Fällen vorab transformieren oder die Spalte filtern.',
+            content: 'Stolperfallen: Wenn alle Größenwerte fast gleich sind, fallen die Unterschiede visuell weg (sqrt-Skalierung dämpft zusätzlich). Wenn die {{term:spannweite|Spannweite}} sehr groß ist, werden {{term:mittelwert|Mittelwerte}} zu klein. In beiden Fällen vorab transformieren oder die Spalte filtern.',
           },
         ],
       },
@@ -256,7 +256,7 @@ export default {
           {
             type: 'definition',
             term: 'Visual relationship ≠ correlation',
-            content: 'Even a clearly visible pattern does not automatically mean a statistically significant relationship. When in doubt, follow up with the correlation module and check Pearson or Spearman coefficients with p-values.',
+            content: 'Even a clearly visible pattern does not automatically {{term:mittelwert|mean}} a statistically significant relationship. When in doubt, follow up with the correlation module and check Pearson or Spearman coefficients with p-values.',
           },
           {
             type: 'definition',

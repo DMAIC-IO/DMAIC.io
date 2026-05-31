@@ -12,7 +12,7 @@ export default {
         blocks: [
           {
             type: 'paragraph',
-            content: 'Ein Boxplot fasst eine Verteilung in einer kompakten Grafik zusammen. Alle Elemente leiten sich aus den sortierten Messwerten ab und zeigen auf einen Blick Lage, Streuung, Schiefe und Ausreißer.',
+            content: 'Ein Boxplot fasst eine Verteilung in einer kompakten Grafik zusammen. Alle Elemente leiten sich aus den sortierten Messwerten ab und zeigen auf einen Blick Lage, Streuung, {{term:schiefe|Schiefe}} und Ausreißer.',
           },
           {
             type: 'definition',
@@ -22,12 +22,12 @@ export default {
           {
             type: 'definition',
             term: 'Median-Linie',
-            content: 'Die Linie quer durch die Box markiert den Median (Q2, 50 %-Punkt) — den Wert, unter und über dem jeweils die Hälfte der Daten liegt. Liegt die Linie mittig in der Box, ist die Verteilung symmetrisch; ist sie verschoben, liegt Schiefe vor.',
+            content: 'Die Linie quer durch die Box markiert den {{term:median|Median}} (Q2, 50 %-Punkt) — den Wert, unter und über dem jeweils die Hälfte der Daten liegt. Liegt die Linie mittig in der Box, ist die Verteilung symmetrisch; ist sie verschoben, liegt Schiefe vor.',
           },
           {
             type: 'definition',
             term: 'Mittelwert-Markierung',
-            content: 'Eine Raute (oder ein Kreuz) zeigt den arithmetischen Mittelwert. Liegen Median und Mittelwert dicht beieinander, ist die Verteilung weitgehend symmetrisch. Eine deutliche Lücke deutet auf Schiefe oder den Einfluss von Ausreißern hin.',
+            content: 'Eine Raute (oder ein Kreuz) zeigt den arithmetischen {{term:mittelwert|Mittelwert}}. Liegen Median und Mittelwert dicht beieinander, ist die Verteilung weitgehend symmetrisch. Eine deutliche Lücke deutet auf Schiefe oder den Einfluss von Ausreißern hin.',
           },
           {
             type: 'definition',
@@ -55,7 +55,7 @@ export default {
         blocks: [
           {
             type: 'paragraph',
-            content: 'A boxplot summarizes a distribution in one compact graphic. All elements are derived from the sorted observations and show location, spread, skewness, and outliers at a glance.',
+            content: 'A boxplot summarizes a distribution in one compact graphic. All elements are derived from the sorted observations and show location, spread, {{term:schiefe|skewness}}, and outliers at a glance.',
           },
           {
             type: 'definition',
@@ -65,12 +65,12 @@ export default {
           {
             type: 'definition',
             term: 'Median Line',
-            content: 'The line crossing the box marks the median (Q2, 50 % point) — the value with half the data above and half below. If the line sits centered in the box, the distribution is symmetric; if it is shifted, the distribution is skewed.',
+            content: 'The line crossing the box marks the {{term:median|median}} (Q2, 50 % point) — the value with half the data above and half below. If the line sits centered in the box, the distribution is symmetric; if it is shifted, the distribution is skewed.',
           },
           {
             type: 'definition',
             term: 'Mean Marker',
-            content: 'A diamond (or cross) marks the arithmetic mean. When mean and median sit close together, the distribution is roughly symmetric. A noticeable gap indicates skewness or the influence of outliers.',
+            content: 'A diamond (or cross) marks the arithmetic {{term:mittelwert|mean}}. When mean and median sit close together, the distribution is roughly symmetric. A noticeable gap indicates skewness or the influence of outliers.',
           },
           {
             type: 'definition',

@@ -1,0 +1,351 @@
+{
+  "algorithm_id": "desirability-geometric-mean",
+  "generated_with": {
+    "node": "v22.11.0",
+    "source": "engine-snapshot"
+  },
+  "generated_at": "2026-05-31T00:00:00Z",
+  "generator_script": "tools/lab-test-runner/bootstrap-fixtures.mjs",
+  "generator_version": "1.0.0",
+  "tolerances": {
+    "default": {
+      "relative": 1e-10,
+      "absolute": 1e-12
+    }
+  },
+  "test_cases": [
+    {
+      "id": "cd_three_equal",
+      "tier": "standard",
+      "description": "Three equal d_i = 0.5 → D = 0.5",
+      "inputs": {
+        "individuals": [
+          0.5,
+          0.5,
+          0.5
+        ]
+      },
+      "expected": {
+        "value": 0.5
+      }
+    },
+    {
+      "id": "cd_three_distinct",
+      "tier": "standard",
+      "description": "d = [0.8, 0.5, 0.9], no weights → geometric mean",
+      "inputs": {
+        "individuals": [
+          0.8,
+          0.5,
+          0.9
+        ]
+      },
+      "expected": {
+        "value": 0.7113786608980126
+      }
+    },
+    {
+      "id": "cd_weighted",
+      "tier": "standard",
+      "description": "d = [0.8, 0.5, 0.9], weights = [1, 2, 1]",
+      "inputs": {
+        "individuals": [
+          0.8,
+          0.5,
+          0.9
+        ],
+        "weights": [
+          1,
+          2,
+          1
+        ]
+      },
+      "expected": {
+        "value": 0.6513555624326306
+      }
+    },
+    {
+      "id": "cd_two_high",
+      "tier": "standard",
+      "description": "d = [0.95, 0.95], equal weights → D ≈ 0.95",
+      "inputs": {
+        "individuals": [
+          0.95,
+          0.95
+        ]
+      },
+      "expected": {
+        "value": 0.95
+      }
+    },
+    {
+      "id": "cd_zero_veto",
+      "tier": "standard",
+      "description": "d = [0.8, 0.0, 0.9] → veto, D = 0",
+      "inputs": {
+        "individuals": [
+          0.8,
+          0,
+          0.9
+        ]
+      },
+      "expected": {
+        "value": 0
+      }
+    },
+    {
+      "id": "cd_near_zero",
+      "tier": "standard",
+      "description": "d contains 1e-6 → D is very small but > 0",
+      "inputs": {
+        "individuals": [
+          0.9,
+          0.000001,
+          0.9
+        ]
+      },
+      "expected": {
+        "value": 0.009321697517861575
+      }
+    },
+    {
+      "id": "cd_single_value",
+      "tier": "standard",
+      "description": "Single d_i = 0.7 → D = 0.7",
+      "inputs": {
+        "individuals": [
+          0.7
+        ]
+      },
+      "expected": {
+        "value": 0.7
+      }
+    },
+    {
+      "id": "cd_all_ones",
+      "tier": "standard",
+      "description": "All d_i = 1 → D = 1",
+      "inputs": {
+        "individuals": [
+          1,
+          1,
+          1,
+          1
+        ]
+      },
+      "expected": {
+        "value": 1
+      }
+    },
+    {
+      "id": "cd_weights_zero",
+      "tier": "edge",
+      "description": "All weights zero → D = 0",
+      "inputs": {
+        "individuals": [
+          0.8,
+          0.5
+        ],
+        "weights": [
+          0,
+          0
+        ]
+      },
+      "expected": {
+        "value": 0
+      }
+    },
+    {
+      "id": "cd_empty",
+      "tier": "edge",
+      "description": "Empty individuals → D = 0",
+      "inputs": {
+        "individuals": []
+      },
+      "expected": {
+        "value": 0
+      }
+    },
+    {
+      "id": "cd_heavy_weight_strong",
+      "tier": "standard",
+      "description": "Heavily weighted strong d should keep D high",
+      "inputs": {
+        "individuals": [
+          0.9,
+          0.4
+        ],
+        "weights": [
+          10,
+          1
+        ]
+      },
+      "expected": {
+        "value": 0.8360378060226882
+      }
+    },
+    {
+      "id": "cd_heavy_weight_weak",
+      "tier": "standard",
+      "description": "Heavily weighted weak d drags D down",
+      "inputs": {
+        "individuals": [
+          0.9,
+          0.4
+        ],
+        "weights": [
+          1,
+          10
+        ]
+      },
+      "expected": {
+        "value": 0.4306025366396295
+      }
+    },
+    {
+      "id": "cd_stress_n100",
+      "tier": "stress",
+      "description": "stress tier",
+      "inputs": {
+        "individuals": [
+          0.6679445081544712,
+          0.7548184499461038,
+          0.717742946081179,
+          0.7468802884040796,
+          0.7844976803835764,
+          0.9062205958957597,
+          0.7314334722246212,
+          0.666306094823357,
+          0.7029733694300597,
+          0.5957444541756831,
+          0.8328424143842406,
+          0.6621470189680506,
+          0.665981355407464,
+          0.671294735947577,
+          0.6351099818218735,
+          0.6010964476204441,
+          0.7977526073014017,
+          0.7831096130812485,
+          0.7658837649230315,
+          0.5497507277581837,
+          0.7420527964842271,
+          0.5116508366516734,
+          0.7285398784564265,
+          0.6295979734612005,
+          0.9092075782155551,
+          0.6763251149168504,
+          0.7035865442934295,
+          0.7226477982626556,
+          0.8369600012747479,
+          0.8020148275264674,
+          0.6790595045187069,
+          0.6268652970630668,
+          0.8435602458267151,
+          0.6684103579168688,
+          0.6982712319925215,
+          0.4569810216437409,
+          0.75612090002878,
+          0.809215961312687,
+          0.6495528288471492,
+          0.7785481461428991,
+          0.678909144550523,
+          0.6962745103589143,
+          0.6884239505783545,
+          0.6793031595627623,
+          0.7093290965912619,
+          0.682373791534712,
+          0.6373011263869804,
+          0.7835965394830781,
+          0.5707998412010098,
+          0.5251449402847871,
+          0.7787417624660841,
+          0.6416668220864367,
+          0.7891333501108019,
+          0.639527677333044,
+          0.603337619075071,
+          0.8682205623445387,
+          0.6589266728427385,
+          0.8819874194008631,
+          0.7365016302857444,
+          0.8507855996616236,
+          0.7697091403649218,
+          0.6423794377037165,
+          0.5832026832882943,
+          0.7242244850636297,
+          0.6157020135776404,
+          0.5877060644124268,
+          0.7332265244668447,
+          0.5548220666834665,
+          0.6346608526443648,
+          0.8103505252504786,
+          0.6436242518625728,
+          0.7071416784378766,
+          0.6859311105786529,
+          0.7615291642356362,
+          0.8794401153094273,
+          0.7589050491348143,
+          0.7496921657634349,
+          0.7396780984049208,
+          0.7536483993793123,
+          0.6577406754742958,
+          1,
+          0.682557933866122,
+          0.828057092951608,
+          0.542311224686642,
+          0.6163894463107726,
+          0.7303946615011347,
+          0.666431934729639,
+          0.6743732381108036,
+          0.5246745644667776,
+          0.6883389990299653,
+          0.7919917126427899,
+          0.6776580491280443,
+          0.8111807136416438,
+          0.4814689688131806,
+          0.7129163029876917,
+          0.5086066014562741,
+          0.9373903528802152,
+          0.8068337343905343,
+          0.7736517249259511,
+          0.4906857583277593
+        ]
+      },
+      "expected": {
+        "value": 0.6972564167203461
+      }
+    },
+    {
+      "id": "cd_robust_negative_d",
+      "tier": "robustness",
+      "description": "robustness tier",
+      "inputs": {
+        "individuals": [
+          -0.5,
+          0.5
+        ]
+      },
+      "expected": {
+        "value": 0
+      }
+    },
+    {
+      "id": "cd_robust_weights_length_mismatch",
+      "tier": "robustness",
+      "description": "robustness tier",
+      "inputs": {
+        "individuals": [
+          0.5,
+          0.7
+        ],
+        "weights": [
+          1,
+          2,
+          3
+        ]
+      },
+      "expected": {
+        "value": 0.6257324745675973
+      }
+    }
+  ]
+}

@@ -32,7 +32,7 @@ const SECTION_ORDER = [
 
 // ─── Module page ─────────────────────────────────────────────────
 
-export function renderModulePage({ module, lang, i18n, examples }) {
+export function renderModulePage({ module, lang, i18n, examples, glossary }) {
   const s = getStrings(lang);
   const { id, phase, help, cycles: moduleCycles } = module;
 
@@ -41,6 +41,13 @@ export function renderModulePage({ module, lang, i18n, examples }) {
   const tagline = i18nEntry?.description || '';
 
   const sections = help.sections || {};
+  // Inline `{{term:id|label}}` markers in module help text get linked to the
+  // corresponding glossary page when the term exists in the catalog.
+  const knownIds = glossary?.termById instanceof Map ? glossary.termById : new Map();
+  const blockOpts = {
+    glossaryHref: (termId) =>
+      knownIds.has(termId) ? `/${lang}/glossar/${termId}.html` : '',
+  };
 
   // Render in canonical SECTION_ORDER first, then any extra section keys
   // the module defines (in their declared order) so new section names
@@ -64,7 +71,7 @@ export function renderModulePage({ module, lang, i18n, examples }) {
 
     const heading = localized.title || s.sectionHeadings[key] || key;
     sectionHtmlParts.push(
-      `<section class="handbook-section" id="${escapeAttr(key)}"><h2>${escapeHtml(heading)}</h2>${renderBlocks(localized.blocks)}</section>`,
+      `<section class="handbook-section" id="${escapeAttr(key)}"><h2>${escapeHtml(heading)}</h2>${renderBlocks(localized.blocks, blockOpts)}</section>`,
     );
   }
 

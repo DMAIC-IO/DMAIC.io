@@ -5,23 +5,23 @@
     "scipy": "1.15.3",
     "numpy": "2.2.6"
   },
-  "generated_at": "2026-04-11T18:31:20.945961+00:00",
+  "generated_at": "2026-05-31T00:00:00Z",
   "generator_script": "tools/fixture-generator/generate_fixtures.py",
   "generator_version": "1.0.0",
   "tolerances": {
     "default": {
       "relative": 0.001,
-      "absolute": 1e-06
+      "absolute": 0.000001
     },
     "overrides": {
       "near_perfect": {
-        "relative": 1e-06,
-        "absolute": 1e-09,
+        "relative": 0.000001,
+        "absolute": 1e-9,
         "reason": "p-values for r ≈ ±1 are extremely small but finite — only upper bounds are meaningful"
       },
       "stress_large_dataset": {
-        "relative": 1e-06,
-        "absolute": 1e-08,
+        "relative": 0.000001,
+        "absolute": 1e-8,
         "reason": "Floating-point accumulation in large arrays reduces precision"
       }
     }
@@ -34,22 +34,22 @@
       "reference": "NumPy + JS engine mirror",
       "inputs": {
         "x": [
-          1.0,
-          2.0,
-          3.0,
-          4.0,
-          5.0,
-          6.0,
-          7.0,
-          8.0,
-          9.0,
-          10.0
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10
         ],
         "y": [
           2.1,
           3.9,
           6.1,
-          8.0,
+          8,
           10.2,
           11.9,
           14.1,
@@ -76,16 +76,16 @@
         "spearman.r2": 0.9999999999999996,
         "spearman.ci": [
           0.999999999999999,
-          1.0
+          1
         ],
-        "kendall.tau": 1.0,
+        "kendall.tau": 1,
         "kendall.z": 4.024922359499621,
-        "kendall.p": 5.6994116233166636e-05,
+        "kendall.p": 0.000056994116233166636,
         "kendall.concordant": 45,
         "kendall.discordant": 0,
         "kendall.ci": [
-          1.0,
-          1.0
+          1,
+          1
         ]
       }
     },
@@ -96,16 +96,16 @@
       "reference": "NumPy + JS engine mirror",
       "inputs": {
         "x": [
-          1.0,
-          2.0,
-          3.0,
-          4.0,
-          5.0,
-          6.0,
-          7.0,
-          8.0,
-          9.0,
-          10.0
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10
         ],
         "y": [
           19.9,
@@ -114,7 +114,7 @@
           14.1,
           11.9,
           10.2,
-          8.0,
+          8,
           6.1,
           3.9,
           2.1
@@ -134,17 +134,17 @@
         "spearman.r": -0.9999999999999998,
         "spearman.p": 1.0635035875250979e-62,
         "spearman.ci": [
-          -1.0,
+          -1,
           -0.999999999999999
         ],
-        "kendall.tau": -1.0,
+        "kendall.tau": -1,
         "kendall.z": -4.024922359499621,
-        "kendall.p": 5.6994116233166636e-05,
+        "kendall.p": 0.000056994116233166636,
         "kendall.concordant": 0,
         "kendall.discordant": 45,
         "kendall.ci": [
-          -1.0,
-          -1.0
+          -1,
+          -1
         ]
       }
     },
@@ -155,32 +155,32 @@
       "reference": "NumPy + JS engine mirror",
       "inputs": {
         "x": [
-          1.0,
-          2.0,
-          3.0,
-          4.0,
-          5.0,
-          6.0,
-          7.0,
-          8.0,
-          9.0,
-          10.0,
-          11.0,
-          12.0
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12
         ],
         "y": [
-          2.0,
+          2,
           3.5,
-          3.0,
+          3,
           5.5,
-          4.0,
+          4,
           6.5,
-          7.0,
-          6.0,
+          7,
+          6,
           8.5,
-          8.0,
+          8,
           9.5,
-          10.0
+          10
         ],
         "confidenceLevel": 0.95
       },
@@ -189,14 +189,14 @@
         "df": 10,
         "pearson.r": 0.9579679607320948,
         "pearson.t": 10.559855205236865,
-        "pearson.p": 9.626828008781156e-07,
+        "pearson.p": 9.626828008781156e-7,
         "pearson.ci": [
           0.8530625010413216,
           0.9884436556530077
         ],
         "spearman.r": 0.9580419580419582,
         "spearman.t": 10.569779472403322,
-        "spearman.p": 9.543581826838278e-07,
+        "spearman.p": 9.543581826838278e-7,
         "spearman.ci": [
           0.8533073473535671,
           0.9884643166727382
@@ -206,7 +206,7 @@
         "kendall.p": 0.00012300289391031782,
         "kendall.ci": [
           0.4154190690003831,
-          1.0
+          1
         ]
       }
     },
@@ -217,16 +217,16 @@
       "reference": "NumPy + JS engine mirror",
       "inputs": {
         "x": [
-          1.0,
-          2.0,
-          3.0,
-          4.0,
-          5.0,
-          6.0,
-          7.0,
-          8.0,
-          9.0,
-          10.0
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10
         ],
         "y": [
           5.2,
@@ -236,7 +236,7 @@
           5.1,
           5.3,
           4.7,
-          5.0,
+          5,
           5.4,
           4.9
         ],
@@ -259,28 +259,28 @@
       "reference": "NumPy + JS engine mirror",
       "inputs": {
         "x": [
-          1.0,
-          2.0,
-          3.0,
-          4.0,
-          5.0,
-          6.0,
-          7.0,
-          8.0,
-          9.0,
-          10.0
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10
         ],
         "y": [
-          1.0,
-          2.0,
-          4.0,
-          8.0,
-          16.0,
-          32.0,
-          64.0,
-          128.0,
-          256.0,
-          512.0
+          1,
+          2,
+          4,
+          8,
+          16,
+          32,
+          64,
+          128,
+          256,
+          512
         ],
         "confidenceLevel": 0.95
       },
@@ -288,7 +288,7 @@
         "n": 10,
         "pearson.r": 0.7988372426181232,
         "spearman.r": 0.9999999999999998,
-        "kendall.tau": 1.0,
+        "kendall.tau": 1,
         "kendall.concordant": 45,
         "kendall.discordant": 0
       }
@@ -300,28 +300,28 @@
       "reference": "NumPy + JS engine mirror",
       "inputs": {
         "x": [
-          1.0,
-          2.0,
-          2.0,
-          3.0,
-          3.0,
-          3.0,
-          4.0,
-          4.0,
-          5.0,
-          5.0
+          1,
+          2,
+          2,
+          3,
+          3,
+          3,
+          4,
+          4,
+          5,
+          5
         ],
         "y": [
-          2.0,
-          3.0,
-          3.0,
-          4.0,
-          5.0,
-          5.0,
-          6.0,
-          7.0,
-          7.0,
-          8.0
+          2,
+          3,
+          3,
+          4,
+          5,
+          5,
+          6,
+          7,
+          7,
+          8
         ],
         "confidenceLevel": 0.95
       },
@@ -341,22 +341,22 @@
       "reference": "NumPy + JS engine mirror",
       "inputs": {
         "x": [
-          1.0,
-          2.0,
-          3.0,
-          4.0,
-          5.0,
-          6.0,
-          7.0,
-          8.0,
-          9.0,
-          10.0
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10
         ],
         "y": [
           2.1,
           3.9,
           6.1,
-          8.0,
+          8,
           10.2,
           11.9,
           14.1,
@@ -377,12 +377,12 @@
         "spearman.r": 0.9999999999999998,
         "spearman.ci": [
           0.9999999999999984,
-          1.0
+          1
         ],
-        "kendall.tau": 1.0,
+        "kendall.tau": 1,
         "kendall.ci": [
-          1.0,
-          1.0
+          1,
+          1
         ]
       }
     },
@@ -393,22 +393,22 @@
       "reference": "NumPy + JS engine mirror",
       "inputs": {
         "x": [
-          1.0,
-          2.0,
-          3.0,
-          4.0,
-          5.0,
-          6.0,
-          7.0,
-          8.0,
-          9.0,
-          10.0
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10
         ],
         "y": [
           2.1,
           3.9,
           6.1,
-          8.0,
+          8,
           10.2,
           11.9,
           14.1,
@@ -431,10 +431,10 @@
           0.9999999999999992,
           0.9999999999999999
         ],
-        "kendall.tau": 1.0,
+        "kendall.tau": 1,
         "kendall.ci": [
-          1.0,
-          1.0
+          1,
+          1
         ]
       }
     },
@@ -445,36 +445,36 @@
       "reference": "Analytic",
       "inputs": {
         "x": [
-          10.0,
-          20.0,
-          30.0
+          10,
+          20,
+          30
         ],
         "y": [
-          10.0,
-          20.0,
-          30.0
+          10,
+          20,
+          30
         ],
         "confidenceLevel": 0.95
       },
       "expected": {
         "n": 3,
         "df": 1,
-        "pearson.r": 1.0,
+        "pearson.r": 1,
         "pearson.t": "Infinity",
-        "pearson.p": 0.0,
-        "pearson.r2": 1.0,
+        "pearson.p": 0,
+        "pearson.r2": 1,
         "pearson.ci": [
-          1.0,
-          1.0
+          1,
+          1
         ],
-        "spearman.r": 1.0,
+        "spearman.r": 1,
         "spearman.t": "Infinity",
-        "spearman.p": 0.0,
+        "spearman.p": 0,
         "spearman.ci": [
-          1.0,
-          1.0
+          1,
+          1
         ],
-        "kendall.tau": 1.0,
+        "kendall.tau": 1,
         "kendall.concordant": 3,
         "kendall.discordant": 0
       }
@@ -486,39 +486,39 @@
       "reference": "JS engine with clamp",
       "inputs": {
         "x": [
-          1.0,
-          2.0,
-          3.0,
-          4.0
+          1,
+          2,
+          3,
+          4
         ],
         "y": [
-          1.0,
-          2.0,
-          3.0,
-          4.0
+          1,
+          2,
+          3,
+          4
         ],
         "confidenceLevel": 0.95
       },
       "expected": {
         "n": 4,
         "df": 2,
-        "pearson.r": 1.0,
+        "pearson.r": 1,
         "pearson.t": "Infinity",
-        "pearson.p": 0.0,
-        "pearson.r2": 1.0,
+        "pearson.p": 0,
+        "pearson.r2": 1,
         "pearson.ci": [
-          1.0,
-          1.0
+          1,
+          1
         ],
-        "spearman.r": 1.0,
+        "spearman.r": 1,
         "spearman.t": "Infinity",
-        "spearman.p": 0.0,
-        "spearman.r2": 1.0,
+        "spearman.p": 0,
+        "spearman.r2": 1,
         "spearman.ci": [
-          1.0,
-          1.0
+          1,
+          1
         ],
-        "kendall.tau": 1.0,
+        "kendall.tau": 1,
         "kendall.concordant": 6,
         "kendall.discordant": 0
       }
@@ -530,18 +530,18 @@
       "reference": "JS engine mirror",
       "inputs": {
         "x": [
-          1.0,
-          2.0,
-          3.0,
-          4.0,
-          5.0
+          1,
+          2,
+          3,
+          4,
+          5
         ],
         "y": [
-          5.0,
-          4.0,
-          3.0,
-          2.0,
-          1.0
+          5,
+          4,
+          3,
+          2,
+          1
         ],
         "confidenceLevel": 0.95
       },
@@ -552,7 +552,7 @@
         "pearson.p": 3.9718624100817096e-24,
         "spearman.r": -0.9999999999999998,
         "spearman.p": 3.9718624100817096e-24,
-        "kendall.tau": -1.0,
+        "kendall.tau": -1,
         "kendall.concordant": 0,
         "kendall.discordant": 10
       }
@@ -564,15 +564,15 @@
       "reference": "JS engine mirror",
       "inputs": {
         "x": [
-          1.0,
-          2.0,
-          3.0,
-          5.0
+          1,
+          2,
+          3,
+          5
         ],
         "y": [
-          2.0,
+          2,
           3.5,
-          4.0,
+          4,
           6.5
         ],
         "confidenceLevel": 0.95
@@ -587,9 +587,9 @@
           0.6328718835987052,
           0.9998229683511767
         ],
-        "spearman.r": 1.0,
-        "spearman.p": 0.0,
-        "kendall.tau": 1.0,
+        "spearman.r": 1,
+        "spearman.p": 0,
+        "kendall.tau": 1,
         "kendall.p": 0.04154006700988511
       }
     },
@@ -614,10 +614,10 @@
           3.9e-10,
           6.1e-10,
           8e-10,
-          1.02e-09,
-          1.19e-09,
-          1.41e-09,
-          1.58e-09
+          1.02e-9,
+          1.19e-9,
+          1.41e-9,
+          1.58e-9
         ],
         "confidenceLevel": 0.95
       },
@@ -626,9 +626,9 @@
         "pearson.r": 0.9996506444313675,
         "pearson.t": 92.64307819845139,
         "pearson.p": 1.0656859003905644e-10,
-        "spearman.r": 1.0,
-        "spearman.p": 0.0,
-        "kendall.tau": 1.0
+        "spearman.r": 1,
+        "spearman.p": 0,
+        "kendall.tau": 1
       }
     },
     {
@@ -638,24 +638,24 @@
       "reference": "JS engine mirror",
       "inputs": {
         "x": [
-          1000000000000.0,
-          1000100000000.0,
-          1000200000000.0,
-          1000300000000.0,
-          1000400000000.0,
-          1000500000000.0,
-          1000600000000.0,
-          1000700000000.0
+          1000000000000,
+          1000100000000,
+          1000200000000,
+          1000300000000,
+          1000400000000,
+          1000500000000,
+          1000600000000,
+          1000700000000
         ],
         "y": [
-          2000000000000.0,
-          2000200000000.0,
-          2000500000000.0,
-          2000800000000.0,
-          2001000000000.0,
-          2001300000000.0,
-          2001600000000.0,
-          2001900000000.0
+          2000000000000,
+          2000200000000,
+          2000500000000,
+          2000800000000,
+          2001000000000,
+          2001300000000,
+          2001600000000,
+          2001900000000
         ],
         "confidenceLevel": 0.95
       },
@@ -663,10 +663,10 @@
         "n": 8,
         "pearson.r": 0.9988388136758325,
         "pearson.t": 50.78450131458364,
-        "pearson.p": 3.910816565327753e-09,
-        "spearman.r": 1.0,
-        "spearman.p": 0.0,
-        "kendall.tau": 1.0
+        "pearson.p": 3.910816565327753e-9,
+        "spearman.r": 1,
+        "spearman.p": 0,
+        "kendall.tau": 1
       }
     },
     {
@@ -676,32 +676,32 @@
       "reference": "JS engine mirror",
       "inputs": {
         "x": [
-          1.0,
-          2.0,
-          3.0,
-          4.0,
-          5.0,
-          6.0,
-          7.0,
-          100.0
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          100
         ],
         "y": [
-          1.0,
+          1,
           1.5,
-          2.0,
+          2,
           2.5,
-          3.0,
+          3,
           3.5,
-          4.0,
-          200.0
+          4,
+          200
         ],
         "confidenceLevel": 0.95
       },
       "expected": {
         "n": 8,
         "pearson.r": 0.9990083768296643,
-        "spearman.r": 1.0,
-        "kendall.tau": 1.0
+        "spearman.r": 1,
+        "kendall.tau": 1
       }
     },
     {
@@ -2148,6 +2148,219 @@
         "spearman.p": 0.43331972431339777,
         "kendall.tau": -0.022829659318637275,
         "kendall.p": 0.4454284065436418
+      }
+    },
+    {
+      "id": "corr_robust_empty",
+      "tier": "robustness",
+      "description": "robustness tier",
+      "inputs": {
+        "x": [],
+        "y": [],
+        "confidenceLevel": 0.95
+      },
+      "expected": {
+        "n": 0,
+        "df": -2,
+        "confidenceLevel": 0.95,
+        "pearson": {
+          "r": "NaN",
+          "t": "NaN",
+          "p": "NaN",
+          "r2": "NaN",
+          "ci": [
+            "NaN",
+            "NaN"
+          ]
+        },
+        "spearman": {
+          "r": "NaN",
+          "t": "NaN",
+          "p": "NaN",
+          "r2": "NaN",
+          "ci": [
+            "NaN",
+            "NaN"
+          ]
+        },
+        "kendall": {
+          "tau": 0,
+          "z": "NaN",
+          "p": "NaN",
+          "concordant": 0,
+          "discordant": 0,
+          "ci": [
+            "NaN",
+            "NaN"
+          ]
+        },
+        "descriptive": {
+          "meanX": "NaN",
+          "meanY": "NaN",
+          "stdX": "NaN",
+          "stdY": "NaN",
+          "cov": 0
+        },
+        "diagnostics": {
+          "normX": {
+            "normal": true,
+            "jb": 0,
+            "label": "≈ normal"
+          },
+          "normY": {
+            "normal": true,
+            "jb": 0,
+            "label": "≈ normal"
+          },
+          "skewX": 0,
+          "skewY": 0,
+          "kurtX": -0.5,
+          "kurtY": -0.5,
+          "mono": 1,
+          "outliers": 0
+        },
+        "recommendation": {
+          "best": "pearson",
+          "reasons": [
+            {
+              "ok": true,
+              "key": "recNormal"
+            },
+            {
+              "ok": true,
+              "key": "recNoOutliers"
+            },
+            {
+              "ok": true,
+              "key": "recLinear",
+              "params": {
+                "delta": "NaN"
+              }
+            },
+            {
+              "ok": false,
+              "key": "recSmallN",
+              "params": {
+                "n": 0
+              }
+            }
+          ],
+          "scores": {
+            "pearson": 5,
+            "spearman": 0,
+            "kendall": 2
+          }
+        }
+      }
+    },
+    {
+      "id": "corr_robust_length_mismatch",
+      "tier": "robustness",
+      "description": "robustness tier",
+      "inputs": {
+        "x": [
+          1,
+          2,
+          3
+        ],
+        "y": [
+          1,
+          2
+        ],
+        "confidenceLevel": 0.95
+      },
+      "expected": {
+        "n": 3,
+        "df": 1,
+        "confidenceLevel": 0.95,
+        "pearson": {
+          "r": "NaN",
+          "t": "NaN",
+          "p": "NaN",
+          "r2": "NaN",
+          "ci": [
+            "NaN",
+            "NaN"
+          ]
+        },
+        "spearman": {
+          "r": "NaN",
+          "t": "NaN",
+          "p": "NaN",
+          "r2": "NaN",
+          "ci": [
+            "NaN",
+            "NaN"
+          ]
+        },
+        "kendall": {
+          "tau": 0.3333333333333333,
+          "z": 0.5222329678670935,
+          "p": 0.6015081080462701,
+          "concordant": 1,
+          "discordant": 0,
+          "ci": [
+            -0.9176817670250947,
+            1
+          ]
+        },
+        "descriptive": {
+          "meanX": 2,
+          "meanY": 1.5,
+          "stdX": 1,
+          "stdY": 0.7071067811865476,
+          "cov": "NaN"
+        },
+        "diagnostics": {
+          "normX": {
+            "normal": false,
+            "jb": "NaN",
+            "label": "≠ normal"
+          },
+          "normY": {
+            "normal": false,
+            "jb": "NaN",
+            "label": "≠ normal"
+          },
+          "skewX": 0,
+          "skewY": "NaN",
+          "kurtX": "NaN",
+          "kurtY": "NaN",
+          "mono": 1,
+          "outliers": 0
+        },
+        "recommendation": {
+          "best": "kendall",
+          "reasons": [
+            {
+              "ok": false,
+              "key": "recNotNormal"
+            },
+            {
+              "ok": true,
+              "key": "recNoOutliers"
+            },
+            {
+              "ok": true,
+              "key": "recLinear",
+              "params": {
+                "delta": "NaN"
+              }
+            },
+            {
+              "ok": false,
+              "key": "recSmallN",
+              "params": {
+                "n": 3
+              }
+            }
+          ],
+          "scores": {
+            "pearson": 2,
+            "spearman": 2,
+            "kendall": 4
+          }
+        }
       }
     }
   ]

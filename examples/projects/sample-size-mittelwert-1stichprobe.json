@@ -1,0 +1,12 @@
+{
+  "category": "mean",
+  "testType": "one",
+  "direction": "two-sided",
+  "alpha": 0.05,
+  "power": 0.8,
+  "sigma0": "",
+  "sigmaAlt": "",
+  "ratio": "",
+  "delta": "0.3",
+  "sigma": "0.5"
+}

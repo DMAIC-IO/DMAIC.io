@@ -129,32 +129,6 @@
   align-self: center;
 }
 
-/* Button styles inside formula editor footer (scoped) */
-.formula-editor .btn {
-  padding: 7px 16px;
-  border: 1px solid var(--color-border-primary);
-  border-radius: var(--border-radius-sm);
-  background: var(--color-bg-elevated);
-  color: var(--color-text-secondary);
-  font-family: var(--font-family);
-  font-size: var(--font-size-sm);
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 120ms ease;
-}
-.formula-editor .btn:hover {
-  background: var(--color-border-primary);
-  color: var(--color-text-primary);
-}
-.formula-editor .btn--primary {
-  background: var(--color-accent);
-  border-color: var(--color-accent);
-  color: #fff;
-}
-.formula-editor .btn--primary:hover {
-  background: var(--color-accent-hover);
-}
-
 /* ─── Role confirmation popout (Suggest-Chart guard) ─────── */
 .worksheet-role-confirm__list {
   display: flex;

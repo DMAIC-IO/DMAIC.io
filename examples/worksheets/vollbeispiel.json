@@ -1,0 +1,120 @@
+{
+  "sheets": [
+    {
+      "id": "sheet-vollbeispiel",
+      "name": "Prüfprotokoll",
+      "state": {
+        "columns": [
+          {
+            "id": "c-pruef-id",
+            "name": "Prüf-ID",
+            "shortName": "ID",
+            "type": "text",
+            "values": [
+              "PR-26-001", "PR-26-002", "PR-26-003", "PR-26-004", "PR-26-005",
+              "PR-26-006", "PR-26-007", "PR-26-008", "PR-26-009", "PR-26-010",
+              "PR-26-011", "PR-26-012", "PR-26-013", "PR-26-014", "PR-26-015"
+            ]
+          },
+          {
+            "id": "c-datum",
+            "name": "Datum",
+            "shortName": "D",
+            "type": "date",
+            "values": [
+              "2026-01-12", "2026-01-12", "2026-01-12",
+              "2026-01-13", "2026-01-13", "2026-01-13",
+              "2026-01-14", "2026-01-14", "2026-01-14",
+              "2026-01-15", "2026-01-15", "2026-01-15",
+              "2026-01-16", "2026-01-16", "2026-01-16"
+            ],
+            "format": { "dateFormat": "dd.MM.yyyy" }
+          },
+          {
+            "id": "c-uhrzeit",
+            "name": "Uhrzeit",
+            "shortName": "t",
+            "type": "time",
+            "values": [
+              "06:15", "14:20", "22:10",
+              "06:05", "14:30", "22:25",
+              "06:20", "14:15", "22:00",
+              "06:10", "14:45", "22:30",
+              "06:00", "14:25", "22:15"
+            ],
+            "format": { "timeFormat": "HH:mm" }
+          },
+          {
+            "id": "c-schicht",
+            "name": "Schicht",
+            "shortName": "Sch",
+            "type": "text",
+            "values": [
+              "F", "S", "N", "F", "S", "N", "F", "S", "N",
+              "F", "S", "N", "F", "S", "N"
+            ]
+          },
+          {
+            "id": "c-durchmesser",
+            "name": "Durchmesser",
+            "shortName": "Ø",
+            "type": "numeric",
+            "unit": "mm",
+            "values": [
+              10.012, 10.008, 10.045,
+              9.997, 10.022, null,
+              10.005, 10.018, 10.039,
+              10.001, 10.054, 10.024,
+              10.010, 9.992, 10.029
+            ],
+            "format": { "decimals": 3 }
+          },
+          {
+            "id": "c-stueckkosten",
+            "name": "Stückkosten",
+            "shortName": "K",
+            "type": "currency",
+            "values": [
+              2.45, 2.42, 2.51,
+              2.40, 2.48, 2.55,
+              2.41, 2.46, 2.53,
+              2.39, 2.58, 2.49,
+              null, 2.38, 2.50
+            ],
+            "format": { "decimals": 2, "currencySymbol": "€" }
+          },
+          {
+            "id": "c-schwund",
+            "name": "Schwund",
+            "shortName": "S",
+            "type": "percent",
+            "values": [
+              0.012, 0.018, 0.041,
+              0.015, 0.027, null,
+              0.011, 0.022, 0.038,
+              0.009, 0.048, 0.029,
+              0.014, 0.020, 0.034
+            ],
+            "format": { "decimals": 1 }
+          },
+          {
+            "id": "c-io",
+            "name": "IO",
+            "shortName": "OK",
+            "type": "binary",
+            "values": [
+              1, 1, 0,
+              1, 1, 0,
+              1, 1, 1,
+              1, 0, 1,
+              1, 1, 1
+            ]
+          }
+        ],
+        "rowCount": 15
+      }
+    }
+  ],
+  "activeSheetId": "sheet-vollbeispiel",
+  "sheetCounter": 1
+}

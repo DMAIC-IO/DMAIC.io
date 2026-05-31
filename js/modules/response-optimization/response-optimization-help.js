@@ -35,7 +35,7 @@ export default {
         blocks: [
           {
             type: 'paragraph',
-            content: 'The response optimizer finds the factor point at which every selected response is simultaneously as good as possible. Each response is mapped through a desirability function to d ∈ [0, 1], and the geometric mean D of those values is maximised over the factor box via multi-start Nelder–Mead.',
+            content: 'The response optimizer finds the factor point at which every selected response is simultaneously as good as possible. Each response is mapped through a desirability function to d ∈ [0, 1], and the geometric {{term:mittelwert|mean}} D of those values is maximised over the factor box via multi-start Nelder–Mead.',
           },
           {
             type: 'definition',

@@ -1,0 +1,46 @@
+{
+  "version": "1.0",
+  "categories": [
+    {
+      "id": "descriptive",
+      "label": { "de": "Deskriptive Statistik", "en": "Descriptive Statistics" }
+    },
+    {
+      "id": "capability",
+      "label": { "de": "Prozessfähigkeit", "en": "Process Capability" }
+    },
+    {
+      "id": "hypothesis",
+      "label": { "de": "Hypothesentests", "en": "Hypothesis Tests" }
+    },
+    {
+      "id": "msa",
+      "label": { "de": "Messsystemanalyse", "en": "Measurement System Analysis" }
+    },
+    {
+      "id": "doe",
+      "label": { "de": "Versuchsplanung", "en": "Design of Experiments" }
+    },
+    {
+      "id": "spc",
+      "label": { "de": "Statistische Prozesslenkung", "en": "Statistical Process Control" }
+    },
+    {
+      "id": "regression",
+      "label": { "de": "Regression", "en": "Regression" }
+    },
+    {
+      "id": "methodology",
+      "label": { "de": "Methodik", "en": "Methodology" }
+    }
+  ],
+  "terms": [
+    { "id": "mittelwert",         "category": "descriptive", "file": "terms/mittelwert.json" },
+    { "id": "standardabweichung", "category": "descriptive", "file": "terms/standardabweichung.json" },
+    { "id": "varianz",            "category": "descriptive", "file": "terms/varianz.json" },
+    { "id": "median",             "category": "descriptive", "file": "terms/median.json" },
+    { "id": "spannweite",         "category": "descriptive", "file": "terms/spannweite.json" },
+    { "id": "schiefe",            "category": "descriptive", "file": "terms/schiefe.json" },
+    { "id": "kurtosis",           "category": "descriptive", "file": "terms/kurtosis.json" }
+  ]
+}

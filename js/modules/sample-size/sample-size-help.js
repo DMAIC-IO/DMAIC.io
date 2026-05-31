@@ -60,7 +60,7 @@ export default {
           {
             type: 'definition',
             term: 'Power (1 − β)',
-            content: 'The probability of detecting an effect that really exists. Common: power = 0.80 or 0.90. Low power means: even a real effect is often missed.',
+            content: 'The probability of detecting an effect that really exists. Common: power = 0.80 or 0.90. Low power {{term:mittelwert|means}}: even a real effect is often missed.',
           },
           {
             type: 'definition',

@@ -4,11 +4,15 @@
  */
 
 .pairwise {
-  --pairwise-max-width: 960px;
+  --pairwise-narrow-width: 760px;
 }
 
-.pairwise .module-container__body {
-  max-width: var(--pairwise-max-width);
+/* Input + Compare are centred and capped — they are simple, vertical flows
+   that read better at a comfortable line length. Results uses the full body
+   width so the ranking + matrix grid can breathe. */
+.pairwise__content--input,
+.pairwise__content--compare {
+  max-width: var(--pairwise-narrow-width);
   margin: 0 auto;
   width: 100%;
 }
@@ -53,6 +57,12 @@
 
 .pairwise__tab--done {
   color: var(--color-text-secondary);
+}
+
+.pairwise__tab--disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+  pointer-events: none;
 }
 
 /* ── Section labels ── */
@@ -495,48 +505,112 @@
   border-radius: 99px;
 }
 
-/* ── Matrix ── */
+/* ── Matrix (Layout aligned with C&E matrix for visual consistency) ── */
 .pairwise__matrix-wrap {
-  overflow-x: auto;
+  display: inline-block;
+  max-width: 100%;
+  overflow: auto;
   border: var(--border-width) solid var(--color-border-secondary);
-  border-radius: var(--border-radius);
+  border-radius: var(--border-radius-lg);
+  background: var(--color-bg-secondary);
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-border-secondary) transparent;
+}
+
+.pairwise__matrix-wrap::-webkit-scrollbar { height: 6px; width: 6px; }
+.pairwise__matrix-wrap::-webkit-scrollbar-thumb {
+  background: var(--color-border-secondary);
+  border-radius: 3px;
 }
 
 .pairwise__matrix {
   border-collapse: collapse;
-  width: 100%;
+  width: max-content;
   font-size: var(--font-size-sm);
 }
 
 .pairwise__matrix th,
 .pairwise__matrix td {
-  padding: var(--spacing-xs) var(--spacing-sm);
+  padding: var(--spacing-sm) 10px;
   text-align: center;
   border: var(--border-width) solid var(--color-border-secondary);
-  white-space: nowrap;
+  font-size: var(--font-size-sm);
+  position: relative;
 }
 
 .pairwise__matrix thead th {
   background: var(--color-bg-tertiary);
   font-family: var(--font-family-mono);
   font-size: var(--font-size-xs);
-  letter-spacing: 0.04em;
+  letter-spacing: 0.03em;
   color: var(--color-text-secondary);
-  font-weight: var(--font-weight-medium);
-  position: sticky;
-  top: 0;
+  font-weight: var(--font-weight-semibold);
+  text-transform: uppercase;
 }
 
+/* Corner cell — empty top-left */
+.pairwise__matrix-corner {
+  background: var(--color-bg-secondary) !important;
+  border-color: var(--color-border-secondary) !important;
+}
+
+/* Vertical column headers (criterion names + Σ).
+   height acts as min-height on table cells — long labels grow the header row
+   instead of being clipped. The span has no fixed height so it uses its
+   intrinsic (rotated) size. */
+.pairwise__matrix-col-header {
+  white-space: nowrap;
+  height: 140px;
+  vertical-align: bottom;
+  padding-top: var(--spacing-sm) !important;
+  padding-bottom: var(--spacing-sm) !important;
+}
+
+.pairwise__matrix-col-header-content {
+  writing-mode: vertical-lr;
+  text-orientation: mixed;
+  transform: rotate(180deg);
+  display: inline-block;
+  font-family: var(--font-family);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-secondary);
+  text-transform: none;
+  letter-spacing: normal;
+  padding: 2px 4px;
+}
+
+.pairwise__matrix-col-header--sum .pairwise__matrix-col-header-content {
+  font-family: var(--font-family-mono);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-accent);
+}
+
+/* Row labels — sans-serif, left-aligned, matches C&E input-name style */
 .pairwise__matrix-row-label {
+  width: 1%;
+  min-width: 130px;
   background: var(--color-bg-secondary);
-  text-align: left;
+  text-align: left !important;
+  font-family: var(--font-family);
+  font-size: var(--font-size-sm);
   font-weight: var(--font-weight-medium);
   color: var(--color-text-primary);
+  white-space: nowrap;
+  text-transform: none !important;
+  letter-spacing: normal !important;
+  padding: var(--spacing-sm) 12px !important;
 }
 
+/* Body cells — compact, fixed-width matrix data */
 .pairwise__matrix-cell {
+  width: 52px;
+  min-width: 52px;
   background: var(--color-bg-primary);
   color: var(--color-text-secondary);
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-semibold);
 }
 
 .pairwise__matrix-cell--editable {
@@ -553,29 +627,31 @@
 }
 
 .pairwise__matrix-cell--win {
-  color: var(--color-accent);
-  font-weight: var(--font-weight-semibold);
+  color: var(--color-success);
 }
 
 .pairwise__matrix-cell--tie {
-  color: var(--color-rank-gold);
-  font-weight: var(--font-weight-medium);
+  color: var(--color-text-tertiary);
 }
 
 .pairwise__matrix-cell--lose {
-  color: var(--color-text-tertiary);
+  color: var(--color-warning);
+  font-weight: var(--font-weight-medium);
 }
 
 .pairwise__matrix-cell--diag {
   background: var(--color-bg-tertiary);
   color: var(--color-text-tertiary);
+  font-weight: var(--font-weight-regular);
 }
 
 .pairwise__matrix-cell--sum {
   font-family: var(--font-family-mono);
-  font-weight: var(--font-weight-semibold);
+  font-weight: 700;
+  font-size: var(--font-size-md);
   color: var(--color-accent);
-  background: var(--color-accent-light);
+  background: var(--color-bg-tertiary) !important;
+  min-width: 60px;
 }
 
 .pairwise__matrix-hint {
@@ -602,9 +678,9 @@
   display: inline-block;
 }
 
-.pairwise__dot--win  { background: var(--color-accent); }
-.pairwise__dot--tie  { background: var(--color-rank-gold); }
-.pairwise__dot--lose { background: var(--color-text-tertiary); }
+.pairwise__dot--win  { background: var(--color-success); }
+.pairwise__dot--tie  { background: var(--color-text-tertiary); }
+.pairwise__dot--lose { background: var(--color-warning); }
 
 /* ── Action row ── */
 .pairwise__actions {

@@ -52,7 +52,7 @@ export default {
           {
             type: 'definition',
             term: 'Streuungs-DoE (Dual Response)',
-            content: 'Bei Designs mit mindestens zwei Replikaten pro Versuchspunkt schätzt der Planner zusätzlich ein Modell für ln(s²). Damit lassen sich Faktoreinstellungen identifizieren, die die Prozessstreuung unabhängig vom Mittelwert reduzieren — sichtbar im Auswertebereich unterhalb der Designqualität.',
+            content: 'Bei Designs mit mindestens zwei Replikaten pro Versuchspunkt schätzt der Planner zusätzlich ein Modell für ln(s²). Damit lassen sich Faktoreinstellungen identifizieren, die die Prozessstreuung unabhängig vom {{term:mittelwert|Mittelwert}} reduzieren — sichtbar im Auswertebereich unterhalb der Designqualität.',
           },
           {
             type: 'paragraph',
@@ -105,7 +105,7 @@ export default {
           {
             type: 'definition',
             term: 'Dispersion DoE (dual response)',
-            content: 'For designs with at least two replicates per point, the planner additionally fits a model for ln(s²). This identifies factor settings that reduce process variability independently of the mean — shown in the analysis section below the design quality summary.',
+            content: 'For designs with at least two replicates per point, the planner additionally fits a model for ln(s²). This identifies factor settings that reduce process variability independently of the {{term:mittelwert|mean}} — shown in the analysis section below the design quality summary.',
           },
           {
             type: 'paragraph',

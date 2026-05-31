@@ -17,12 +17,12 @@ export default {
           {
             type: 'definition',
             term: 'Verteilungsform',
-            content: 'Liegen die Datenpunkte annähernd auf einer Geraden, sind deine Daten normalverteilt. Systematische Abweichungen (S-Kurven, Ausreißer, Knicke) deuten auf Schiefe, Ausreißer oder eine andere Verteilung hin.',
+            content: 'Liegen die Datenpunkte annähernd auf einer Geraden, sind deine Daten normalverteilt. Systematische Abweichungen (S-Kurven, Ausreißer, Knicke) deuten auf {{term:schiefe|Schiefe}}, Ausreißer oder eine andere Verteilung hin.',
           },
           {
             type: 'definition',
             term: 'Lage und Streuung',
-            content: 'Der Median (50%-Punkt) zeigt dir die zentrale Lage, und die Steigung der Geraden spiegelt die Streuung wider – eine flache Gerade bedeutet große Streuung, eine steile geringe.',
+            content: 'Der {{term:median|Median}} (50%-Punkt) zeigt dir die zentrale Lage, und die Steigung der Geraden spiegelt die Streuung wider – eine flache Gerade bedeutet große Streuung, eine steile geringe.',
           },
           {
             type: 'definition',
@@ -50,12 +50,12 @@ export default {
           {
             type: 'definition',
             term: 'Distribution shape',
-            content: 'If the data points lie approximately on a straight line, your data is normally distributed. Systematic deviations (S-curves, outliers, kinks) indicate skewness, outliers, or a different distribution.',
+            content: 'If the data points lie approximately on a straight line, your data is normally distributed. Systematic deviations (S-curves, outliers, kinks) indicate {{term:schiefe|skewness}}, outliers, or a different distribution.',
           },
           {
             type: 'definition',
             term: 'Location and spread',
-            content: 'The median (50% point) tells you the central location, and the slope of the line reflects the spread — a flat line means large spread, a steep line means small spread.',
+            content: 'The {{term:median|median}} (50% point) tells you the central location, and the slope of the line reflects the spread — a flat line {{term:mittelwert|means}} large spread, a steep line means small spread.',
           },
           {
             type: 'definition',

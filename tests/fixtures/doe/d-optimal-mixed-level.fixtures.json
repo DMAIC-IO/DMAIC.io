@@ -1,0 +1,830 @@
+{
+  "algorithm_id": "d-optimal-mixed-level",
+  "generated_with": {
+    "node": "v22.11.0",
+    "source": "engine-snapshot"
+  },
+  "generated_at": "2026-05-31T00:00:00Z",
+  "generator_script": "tools/lab-test-runner/bootstrap-fixtures.mjs",
+  "generator_version": "1.0.0",
+  "tolerances": {
+    "default": {
+      "relative": 1e-10,
+      "absolute": 1e-12
+    },
+    "overrides": {
+      "d_opt": {
+        "relative": 1e-8,
+        "absolute": 1e-10,
+        "reason": "Seeded coordinate-exchange is deterministic but accumulates FP error in det() across iterations"
+      }
+    }
+  },
+  "test_cases": [
+    {
+      "id": "dopt_3factors_linear",
+      "tier": "standard",
+      "description": "D-optimal linear, 3 binary factors, 8 runs, seeded",
+      "inputs": {
+        "k": 3,
+        "nRuns": 8,
+        "opts": {
+          "quadratic": false,
+          "levelCounts": [
+            2,
+            2,
+            2
+          ],
+          "categoricalFlags": [
+            false,
+            false,
+            false
+          ],
+          "seed": 42,
+          "nStarts": 3,
+          "maxIter": 50
+        }
+      },
+      "tolerance_override": "d_opt",
+      "expected": [
+        [
+          1,
+          -1,
+          1
+        ],
+        [
+          1,
+          1,
+          1
+        ],
+        [
+          1,
+          1,
+          -1
+        ],
+        [
+          1,
+          -1,
+          -1
+        ],
+        [
+          -1,
+          -1,
+          1
+        ],
+        [
+          -1,
+          1,
+          1
+        ],
+        [
+          -1,
+          -1,
+          -1
+        ],
+        [
+          -1,
+          1,
+          -1
+        ]
+      ]
+    },
+    {
+      "id": "dopt_3factors_quadratic",
+      "tier": "standard",
+      "description": "D-optimal quadratic, 3 continuous factors, 12 runs",
+      "inputs": {
+        "k": 3,
+        "nRuns": 12,
+        "opts": {
+          "quadratic": true,
+          "levelCounts": [
+            2,
+            2,
+            2
+          ],
+          "categoricalFlags": [
+            false,
+            false,
+            false
+          ],
+          "seed": 7,
+          "nStarts": 3,
+          "maxIter": 50
+        }
+      },
+      "tolerance_override": "d_opt",
+      "expected": [
+        [
+          1,
+          0,
+          -1
+        ],
+        [
+          -1,
+          0,
+          1
+        ],
+        [
+          -1,
+          -1,
+          -1
+        ],
+        [
+          1,
+          -1,
+          1
+        ],
+        [
+          1,
+          1,
+          1
+        ],
+        [
+          0.5,
+          0,
+          -1
+        ],
+        [
+          0,
+          0.5,
+          0.5
+        ],
+        [
+          0,
+          -0.5,
+          0
+        ],
+        [
+          -1,
+          0.5,
+          -0.5
+        ],
+        [
+          1,
+          0,
+          0
+        ],
+        [
+          1,
+          1,
+          -1
+        ],
+        [
+          0.5,
+          -0.5,
+          0
+        ]
+      ]
+    },
+    {
+      "id": "dopt_mixed_2cont_1cat3",
+      "tier": "standard",
+      "description": "D-optimal mixed: 2 continuous + 1 categorical (3 levels), quadratic",
+      "inputs": {
+        "k": 3,
+        "nRuns": 10,
+        "opts": {
+          "quadratic": true,
+          "levelCounts": [
+            2,
+            2,
+            3
+          ],
+          "categoricalFlags": [
+            false,
+            false,
+            true
+          ],
+          "seed": 123,
+          "nStarts": 3,
+          "maxIter": 50
+        }
+      },
+      "tolerance_override": "d_opt",
+      "expected": [
+        [
+          1,
+          -1,
+          0
+        ],
+        [
+          0,
+          1,
+          1
+        ],
+        [
+          -1,
+          -0.5,
+          -1
+        ],
+        [
+          0,
+          0.5,
+          -1
+        ],
+        [
+          -0.5,
+          1,
+          -1
+        ],
+        [
+          1,
+          -0.5,
+          1
+        ],
+        [
+          -1,
+          0,
+          1
+        ],
+        [
+          1,
+          1,
+          1
+        ],
+        [
+          0.5,
+          -1,
+          1
+        ],
+        [
+          1,
+          0,
+          -1
+        ]
+      ]
+    },
+    {
+      "id": "dopt_mixed_3cont_1cat2_linear",
+      "tier": "standard",
+      "description": "D-optimal mixed linear: 3 cont + 1 cat (2 levels), 8 runs",
+      "inputs": {
+        "k": 4,
+        "nRuns": 8,
+        "opts": {
+          "quadratic": false,
+          "levelCounts": [
+            2,
+            2,
+            2,
+            2
+          ],
+          "categoricalFlags": [
+            false,
+            false,
+            false,
+            true
+          ],
+          "seed": 99,
+          "nStarts": 3,
+          "maxIter": 50
+        }
+      },
+      "tolerance_override": "d_opt",
+      "expected": [
+        [
+          1,
+          1,
+          1,
+          -1
+        ],
+        [
+          -1,
+          -1,
+          -1,
+          1
+        ],
+        [
+          1,
+          1,
+          1,
+          1
+        ],
+        [
+          1,
+          -1,
+          -1,
+          -1
+        ],
+        [
+          -1,
+          -1,
+          1,
+          -1
+        ],
+        [
+          -1,
+          1,
+          -1,
+          -1
+        ],
+        [
+          1,
+          1,
+          -1,
+          1
+        ],
+        [
+          1,
+          -1,
+          1,
+          1
+        ]
+      ]
+    },
+    {
+      "id": "dopt_4factors_linear_aug",
+      "tier": "standard",
+      "description": "D-optimal linear, 4 factors, 12 runs",
+      "inputs": {
+        "k": 4,
+        "nRuns": 12,
+        "opts": {
+          "quadratic": false,
+          "levelCounts": [
+            2,
+            2,
+            2,
+            2
+          ],
+          "categoricalFlags": [
+            false,
+            false,
+            false,
+            false
+          ],
+          "seed": 314,
+          "nStarts": 3,
+          "maxIter": 50
+        }
+      },
+      "tolerance_override": "d_opt",
+      "expected": [
+        [
+          1,
+          -1,
+          1,
+          1
+        ],
+        [
+          1,
+          -1,
+          -1,
+          1
+        ],
+        [
+          1,
+          -1,
+          -1,
+          -1
+        ],
+        [
+          1,
+          1,
+          1,
+          1
+        ],
+        [
+          1,
+          1,
+          -1,
+          -1
+        ],
+        [
+          1,
+          1,
+          -1,
+          1
+        ],
+        [
+          1,
+          -1,
+          1,
+          -1
+        ],
+        [
+          -1,
+          -1,
+          -1,
+          1
+        ],
+        [
+          -1,
+          -1,
+          1,
+          -1
+        ],
+        [
+          -1,
+          1,
+          1,
+          -1
+        ],
+        [
+          -1,
+          1,
+          -1,
+          -1
+        ],
+        [
+          -1,
+          1,
+          1,
+          1
+        ]
+      ]
+    },
+    {
+      "id": "dopt_mixed_3cont_2cat",
+      "tier": "standard",
+      "description": "D-optimal mixed quadratic: 3 cont + 2 cat (each 2 levels)",
+      "inputs": {
+        "k": 5,
+        "nRuns": 16,
+        "opts": {
+          "quadratic": true,
+          "levelCounts": [
+            2,
+            2,
+            2,
+            2,
+            2
+          ],
+          "categoricalFlags": [
+            false,
+            false,
+            false,
+            true,
+            true
+          ],
+          "seed": 271,
+          "nStarts": 3,
+          "maxIter": 50
+        }
+      },
+      "tolerance_override": "d_opt",
+      "expected": [
+        [
+          0,
+          1,
+          1,
+          1,
+          -1
+        ],
+        [
+          0,
+          1,
+          1,
+          -1,
+          1
+        ],
+        [
+          1,
+          -0.5,
+          1,
+          1,
+          -1
+        ],
+        [
+          1,
+          1,
+          -1,
+          -1,
+          1
+        ],
+        [
+          -0.5,
+          -1,
+          -1,
+          -1,
+          1
+        ],
+        [
+          0,
+          1,
+          0,
+          -1,
+          -1
+        ],
+        [
+          -1,
+          1,
+          -0.5,
+          1,
+          -1
+        ],
+        [
+          1,
+          -1,
+          1,
+          -1,
+          1
+        ],
+        [
+          -1,
+          -1,
+          1,
+          1,
+          1
+        ],
+        [
+          1,
+          -1,
+          0,
+          1,
+          1
+        ],
+        [
+          -0.5,
+          -1,
+          0,
+          1,
+          -1
+        ],
+        [
+          0.5,
+          -0.5,
+          0,
+          -1,
+          -1
+        ],
+        [
+          0.5,
+          1,
+          -1,
+          1,
+          -1
+        ],
+        [
+          1,
+          0.5,
+          1,
+          -1,
+          -1
+        ],
+        [
+          0.5,
+          -1,
+          -1,
+          -1,
+          -1
+        ],
+        [
+          1,
+          0,
+          1,
+          1,
+          1
+        ]
+      ]
+    },
+    {
+      "id": "dopt_edge_min_runs",
+      "tier": "edge",
+      "description": "edge tier",
+      "inputs": {
+        "k": 3,
+        "nRuns": 4,
+        "opts": {
+          "quadratic": false,
+          "levelCounts": [
+            2,
+            2,
+            2
+          ],
+          "categoricalFlags": [
+            false,
+            false,
+            false
+          ],
+          "seed": 1,
+          "nStarts": 2,
+          "maxIter": 30
+        }
+      },
+      "tolerance_override": "d_opt",
+      "expected": [
+        [
+          1,
+          -1,
+          -1
+        ],
+        [
+          1,
+          1,
+          -1
+        ],
+        [
+          1,
+          1,
+          1
+        ],
+        [
+          -1,
+          -1,
+          -1
+        ]
+      ]
+    },
+    {
+      "id": "dopt_stress_5fac_quadratic_20runs",
+      "tier": "stress",
+      "description": "stress tier",
+      "inputs": {
+        "k": 5,
+        "nRuns": 20,
+        "opts": {
+          "quadratic": true,
+          "levelCounts": [
+            2,
+            2,
+            2,
+            2,
+            2
+          ],
+          "categoricalFlags": [
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "seed": 42,
+          "nStarts": 3,
+          "maxIter": 50
+        }
+      },
+      "tolerance_override": "d_opt",
+      "expected": [
+        [
+          -0.5,
+          -1,
+          1,
+          1,
+          -0.5
+        ],
+        [
+          -1,
+          0,
+          -1,
+          1,
+          1
+        ],
+        [
+          1,
+          0,
+          0.5,
+          1,
+          0
+        ],
+        [
+          1,
+          -1,
+          1,
+          1,
+          1
+        ],
+        [
+          1,
+          -1,
+          0,
+          -0.5,
+          1
+        ],
+        [
+          1,
+          -1,
+          1,
+          0,
+          -1
+        ],
+        [
+          -1,
+          0,
+          1,
+          1,
+          0.5
+        ],
+        [
+          -0.5,
+          0,
+          0.5,
+          0.5,
+          0.5
+        ],
+        [
+          1,
+          0,
+          -1,
+          -1,
+          0
+        ],
+        [
+          -1,
+          0.5,
+          0,
+          1,
+          -0.5
+        ],
+        [
+          -0.5,
+          -0.5,
+          -1,
+          -0.5,
+          -0.5
+        ],
+        [
+          1,
+          1,
+          -1,
+          1,
+          0
+        ],
+        [
+          -0.5,
+          -0.5,
+          -1,
+          1,
+          -1
+        ],
+        [
+          1,
+          1,
+          0,
+          0.5,
+          -0.5
+        ],
+        [
+          -1,
+          0,
+          -1,
+          -0.5,
+          0.5
+        ],
+        [
+          0.5,
+          0,
+          -0.5,
+          -0.5,
+          0.5
+        ],
+        [
+          1,
+          1,
+          0.5,
+          1,
+          1
+        ],
+        [
+          1,
+          -1,
+          0,
+          0.5,
+          1
+        ],
+        [
+          0,
+          0.5,
+          0,
+          -1,
+          -1
+        ],
+        [
+          1,
+          1,
+          0.5,
+          -1,
+          -0.5
+        ]
+      ]
+    },
+    {
+      "id": "dopt_robust_zero_runs",
+      "tier": "robustness",
+      "description": "robustness tier",
+      "inputs": {
+        "k": 3,
+        "nRuns": 0,
+        "opts": {
+          "quadratic": false,
+          "levelCounts": [
+            2,
+            2,
+            2
+          ],
+          "categoricalFlags": [
+            false,
+            false,
+            false
+          ],
+          "seed": 1
+        }
+      },
+      "expected_error": {
+        "type": "TypeError",
+        "message_contains": ""
+      }
+    }
+  ]
+}

@@ -1,0 +1,71 @@
+{
+  "id": "spannweite",
+  "category": "descriptive",
+  "title": {
+    "de": "Spannweite",
+    "en": "Range"
+  },
+  "short": {
+    "de": "Differenz zwischen größtem und kleinstem Wert — das einfachste Streuungsmaß.",
+    "en": "Difference between the largest and smallest value — the simplest measure of dispersion."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "Die **Spannweite** $R$ ist die Differenz zwischen Maximum und Minimum einer Stichprobe."
+      },
+      {
+        "type": "formula",
+        "latex": "R = x_{\\max} - x_{\\min}"
+      },
+      {
+        "type": "paragraph",
+        "text": "Sie ist intuitiv und schnell berechnet, aber **extrem ausreißerempfindlich**: ein einzelner Extremwert kann die Spannweite verdoppeln, ohne dass sich an der eigentlichen Streuung der Masse der Daten etwas ändert. Für robuste Schätzungen sind {{term:standardabweichung|Standardabweichung}} oder der Interquartilsabstand vorzuziehen."
+      },
+      {
+        "type": "note",
+        "text": "In SPC-Karten für kleine Subgruppen (X̄-R-Karte) wird die mittlere Spannweite R̄ verwendet, um die kurzfristige Standardabweichung zu schätzen: σ̂ = R̄/d₂. Der Faktor d₂ hängt von der Subgruppengröße ab."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "The **range** $R$ is the difference between the maximum and minimum of a sample."
+      },
+      {
+        "type": "formula",
+        "latex": "R = x_{\\max} - x_{\\min}"
+      },
+      {
+        "type": "paragraph",
+        "text": "It is intuitive and quick to compute but **extremely sensitive to outliers**: a single extreme value can double the range without changing the actual spread of the bulk of the data. For robust estimates prefer the {{term:standardabweichung|standard deviation}} or the interquartile range."
+      },
+      {
+        "type": "note",
+        "text": "SPC charts for small subgroups (X̄-R chart) use the average range R̄ to estimate short-term standard deviation: σ̂ = R̄/d₂. The factor d₂ depends on subgroup size."
+      }
+    ]
+  },
+  "aliases": {
+    "de": ["Range", "R"],
+    "en": ["span", "R"]
+  },
+  "seeAlso": ["varianz", "standardabweichung", "median"],
+  "modules": [
+    "histogram", "boxplot", "process-capability", "hypothesis-test",
+    "regression", "glm-regression", "correlation", "msa-typ2",
+    "doe-planner", "doe-advisor", "sample-size", "data-transformation",
+    "distribution-fit", "calculator", "outlier-test",
+    "multivariate-control-chart", "pairwise-comparison",
+    "control-chart", "individual-value-plot", "xy-plot",
+    "probability-plot", "run-chart"
+  ],
+  "algoLab": [
+    "control-charts/xbar-r"
+  ],
+  "sources": [
+    { "label": "Montgomery, D.C.: Introduction to Statistical Quality Control, 8th ed., Wiley, 2020 — Kap. 6", "url": null },
+    { "label": "AIAG: Statistical Process Control (SPC) Reference Manual, 2nd ed., 2005", "url": null }
+  ]
+}

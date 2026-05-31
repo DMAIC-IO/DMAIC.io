@@ -39,7 +39,7 @@ export default {
           {
             type: 'definition',
             term: 'T² statistic',
-            content: 'T²ᵢ = (xᵢ − x̄)′ S⁻¹ (xᵢ − x̄). Squared Mahalanobis distance of each observation from the sample mean vector, weighted by the inverse covariance matrix.',
+            content: 'T²ᵢ = (xᵢ − x̄)′ S⁻¹ (xᵢ − x̄). Squared Mahalanobis distance of each observation from the sample {{term:mittelwert|mean}} vector, weighted by the inverse covariance matrix.',
           },
           {
             type: 'definition',

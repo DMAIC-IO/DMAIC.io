@@ -5,7 +5,7 @@
     "scipy": "1.15.3",
     "numpy": "2.2.6"
   },
-  "generated_at": "2026-04-11T16:24:47.975611+00:00",
+  "generated_at": "2026-05-31T00:00:00Z",
   "generator_script": "tools/fixture-generator/generate_fixtures.py",
   "generator_version": "1.0.0",
   "tolerances": {
@@ -15,8 +15,8 @@
     },
     "overrides": {
       "stress_large_dataset": {
-        "relative": 1e-06,
-        "absolute": 1e-08,
+        "relative": 0.000001,
+        "absolute": 1e-8,
         "reason": "Accumulation in long arrays"
       }
     }
@@ -31,13 +31,13 @@
           10.02,
           9.99,
           10.01,
-          10.0,
+          10,
           9.98,
           10.03,
           10.01,
           9.97,
           10.02,
-          10.0
+          10
         ],
         "lsl": 9.8,
         "usl": 10.2
@@ -86,7 +86,7 @@
       "description": "Same data as Cp test — Ppk differs because ddof=0 (smaller denominator)",
       "inputs": {
         "data": [
-          50.0,
+          50,
           50.08,
           49.92,
           50.05,
@@ -126,11 +126,11 @@
           100.01,
           99.99
         ],
-        "lsl": 99.0,
-        "usl": 101.0
+        "lsl": 99,
+        "usl": 101
       },
       "expected": {
-        "mean": 100.0,
+        "mean": 100,
         "sigma": 0.033166247903554685,
         "pp": 10.050378152591913,
         "ppk": 10.050378152591913
@@ -142,7 +142,7 @@
       "description": "Minimum sample n=2",
       "inputs": {
         "data": [
-          10.0,
+          10,
           10.1
         ],
         "lsl": 9.5,
@@ -161,7 +161,7 @@
       "description": "Upper-only spec — Ppk = PPU",
       "inputs": {
         "data": [
-          10.0,
+          10,
           10.05,
           9.95,
           10.02,
@@ -188,7 +188,7 @@
       "description": "Lower-only spec — Ppk = PPL",
       "inputs": {
         "data": [
-          10.0,
+          10,
           10.05,
           9.95,
           10.02,
@@ -218,13 +218,13 @@
           -10.02,
           -9.99,
           -10.01,
-          -10.0,
+          -10,
           -9.98,
           -10.03,
           -10.01,
           -9.97,
           -10.02,
-          -10.0
+          -10
         ],
         "lsl": -10.2,
         "usl": -9.8
@@ -672,6 +672,34 @@
         "ppu": 0.9161614408035939,
         "ppl": 1.1977966653225016,
         "ppk": 0.9161614408035939
+      }
+    },
+    {
+      "id": "ppk_robust_empty_data",
+      "tier": "robustness",
+      "description": "robustness tier",
+      "inputs": {
+        "data": [],
+        "lsl": 0,
+        "usl": 10
+      },
+      "expected_error": {
+        "type": "Error",
+        "message_contains": ""
+      }
+    },
+    {
+      "id": "ppk_robust_non_array",
+      "tier": "robustness",
+      "description": "robustness tier",
+      "inputs": {
+        "data": "x",
+        "lsl": 0,
+        "usl": 10
+      },
+      "expected_error": {
+        "type": "TypeError",
+        "message_contains": ""
       }
     }
   ]

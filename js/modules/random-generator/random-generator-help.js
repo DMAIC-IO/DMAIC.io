@@ -32,7 +32,7 @@ export default {
           {
             type: 'definition',
             term: 'Stichprobenstatistik & Histogramm',
-            content: 'Direkt nach der Generierung werden Mittelwert, Standardabweichung, Schiefe, Min/Max und ein Histogramm der erzeugten Werte angezeigt — so lässt sich auf einen Blick prüfen, ob die Stichprobe der theoretischen Verteilung entspricht.',
+            content: 'Direkt nach der Generierung werden {{term:mittelwert|Mittelwert}}, {{term:standardabweichung|Standardabweichung}}, {{term:schiefe|Schiefe}}, Min/Max und ein Histogramm der erzeugten Werte angezeigt — so lässt sich auf einen Blick prüfen, ob die Stichprobe der theoretischen Verteilung entspricht.',
           },
         ],
       },
@@ -61,7 +61,7 @@ export default {
           {
             type: 'definition',
             term: 'Sample statistics & histogram',
-            content: 'Right after generation, mean, standard deviation, skewness, min/max, and a histogram of the produced values are displayed — letting you check at a glance whether the sample matches the theoretical distribution.',
+            content: 'Right after generation, {{term:mittelwert|mean}}, {{term:standardabweichung|standard deviation}}, {{term:schiefe|skewness}}, min/max, and a histogram of the produced values are displayed — letting you check at a glance whether the sample matches the theoretical distribution.',
           },
         ],
       },

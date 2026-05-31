@@ -188,10 +188,15 @@ export default {
     const t = (k, p) => this._t(k, p);
     const order = ['input', 'compare', 'results'];
     const active = order.indexOf(this._viewPhase);
+    const compareReachable = this._pairs.length > 0 && this._currentPair < this._pairs.length;
+    const resultsReachable = this._pairs.length > 0 && this._currentPair >= this._pairs.length;
     const tabClass = (i) => {
-      if (i === active) return 'pairwise__tab--active';
-      if (i < active) return 'pairwise__tab--done';
-      return '';
+      const cls = [];
+      if (i === active) cls.push('pairwise__tab--active');
+      else if (i < active) cls.push('pairwise__tab--done');
+      if (i === 1 && !compareReachable) cls.push('pairwise__tab--disabled');
+      if (i === 2 && !resultsReachable) cls.push('pairwise__tab--disabled');
+      return cls.join(' ');
     };
     const tabLabel = (num, key) => `<span class="pairwise__tab-num">${num}</span>${t(key)}`;
 
@@ -206,7 +211,7 @@ export default {
             <div class="pairwise__tab ${tabClass(1)}" data-tab="compare">${tabLabel('02', 'tabCompare')}</div>
             <div class="pairwise__tab ${tabClass(2)}" data-tab="results">${tabLabel('03', 'tabResults')}</div>
           </div>
-          <div class="pairwise__content" data-ref="content"></div>
+          <div class="pairwise__content pairwise__content--${this._viewPhase}" data-ref="content"></div>
         </div>
       </div>
     `;
@@ -393,7 +398,7 @@ export default {
     }
 
     const headerCells = this._criteria
-      .map((c) => `<th>${this._escapeHtml(c)}</th>`)
+      .map((c) => `<th class="pairwise__matrix-col-header"><span class="pairwise__matrix-col-header-content">${this._escapeHtml(c)}</span></th>`)
       .join('');
 
     return `
@@ -408,9 +413,9 @@ export default {
             <table class="pairwise__matrix">
               <thead>
                 <tr>
-                  <th></th>
+                  <th class="pairwise__matrix-corner"></th>
                   ${headerCells}
-                  <th>Σ</th>
+                  <th class="pairwise__matrix-col-header pairwise__matrix-col-header--sum"><span class="pairwise__matrix-col-header-content">Σ</span></th>
                 </tr>
               </thead>
               <tbody>${rows}</tbody>
@@ -450,7 +455,8 @@ export default {
   _bindEvents() {
     const el = this._container;
 
-    // Tabs (only allow clicks back to earlier completed phases)
+    // Tabs (only allow clicks to reachable phases — compare is only reachable
+    // while pairs remain unvoted; once complete it would just mirror results)
     el.querySelectorAll('.pairwise__tab').forEach((tab) => {
       tab.addEventListener('click', () => {
         const target = tab.dataset.tab;
@@ -458,11 +464,15 @@ export default {
           this._viewPhase = 'input';
           this._save();
           this._render();
-        } else if (target === 'compare' && this._pairs.length > 0) {
+        } else if (target === 'compare'
+            && this._pairs.length > 0
+            && this._currentPair < this._pairs.length) {
           this._viewPhase = 'compare';
           this._save();
           this._render();
-        } else if (target === 'results' && this._currentPair >= Math.max(1, this._pairs.length)) {
+        } else if (target === 'results'
+            && this._pairs.length > 0
+            && this._currentPair >= this._pairs.length) {
           this._viewPhase = 'results';
           this._save();
           this._render();
