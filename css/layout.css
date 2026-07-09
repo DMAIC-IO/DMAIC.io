@@ -697,8 +697,7 @@ html.is-nightly body {
 
 /* ===== Dev Area ===== */
 .dev-area {
-  grid-column: 1 / -1;
-  grid-row: 2 / 3;
+  grid-area: workspace;
   z-index: 50;
   display: flex;
   flex-direction: column;
@@ -719,8 +718,7 @@ body.dev-area-open .dmaic-tiles {
 
 /* ===== Dashboard Area ===== */
 .dashboard-area {
-  grid-column: 1 / -1;
-  grid-row: 2 / 3;
+  grid-area: workspace;
   z-index: 50;
   display: flex;
   flex-direction: column;
@@ -1483,8 +1481,7 @@ body.dashboard-area-open .dmaic-tiles {
 
 /* ===== Training Area ===== */
 .training-area {
-  grid-column: 1 / -1;
-  grid-row: 2 / 3;
+  grid-area: workspace;
   z-index: 50;
   display: flex;
   flex-direction: column;
