@@ -80,7 +80,7 @@
 
 .five-why__card:hover {
   border-color: var(--color-border-hover, var(--color-border-secondary));
-  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 1px 6px rgb(0 0 0 / 8%);
 }
 
 /* Root Cause card */
@@ -88,8 +88,8 @@
   border-color: var(--color-five-why-5, #a855f7);
   background: linear-gradient(
     135deg,
-    rgba(168, 85, 247, 0.06),
-    rgba(236, 72, 153, 0.04)
+    rgb(168 85 247 / 6%),
+    rgb(236 72 153 / 4%)
   );
 }
 
@@ -107,29 +107,33 @@
 }
 
 .five-why__tag[data-level="1"] {
-  background: rgba(245, 158, 11, 0.15);
+  background: rgb(245 158 11 / 15%);
   color: var(--color-five-why-1, #f59e0b);
-  border: 1px solid rgba(245, 158, 11, 0.25);
+  border: 1px solid rgb(245 158 11 / 25%);
 }
+
 .five-why__tag[data-level="2"] {
-  background: rgba(249, 115, 22, 0.15);
+  background: rgb(249 115 22 / 15%);
   color: var(--color-five-why-2, #f97316);
-  border: 1px solid rgba(249, 115, 22, 0.25);
+  border: 1px solid rgb(249 115 22 / 25%);
 }
+
 .five-why__tag[data-level="3"] {
-  background: rgba(239, 68, 68, 0.15);
+  background: rgb(239 68 68 / 15%);
   color: var(--color-five-why-3, #ef4444);
-  border: 1px solid rgba(239, 68, 68, 0.25);
+  border: 1px solid rgb(239 68 68 / 25%);
 }
+
 .five-why__tag[data-level="4"] {
-  background: rgba(236, 72, 153, 0.15);
+  background: rgb(236 72 153 / 15%);
   color: var(--color-five-why-4, #ec4899);
-  border: 1px solid rgba(236, 72, 153, 0.25);
+  border: 1px solid rgb(236 72 153 / 25%);
 }
+
 .five-why__tag[data-level="5"] {
-  background: rgba(168, 85, 247, 0.15);
+  background: rgb(168 85 247 / 15%);
   color: var(--color-five-why-5, #a855f7);
-  border: 1px solid rgba(168, 85, 247, 0.25);
+  border: 1px solid rgb(168 85 247 / 25%);
 }
 
 /* ── Card Actions ── */
@@ -166,7 +170,7 @@
   background: transparent;
   border: none;
   border-bottom: 1px solid transparent;
-  padding: 4px 4px;
+  padding: 4px;
   font-family: var(--font-family);
   font-size: var(--font-size-sm);
   color: var(--color-text-primary);
@@ -194,11 +198,11 @@
   margin-top: 2px;
 }
 
-.five-why__children[data-level="1"] { border-left-color: rgba(245, 158, 11, 0.3); }
-.five-why__children[data-level="2"] { border-left-color: rgba(249, 115, 22, 0.3); }
-.five-why__children[data-level="3"] { border-left-color: rgba(239, 68, 68, 0.3); }
-.five-why__children[data-level="4"] { border-left-color: rgba(236, 72, 153, 0.3); }
-.five-why__children[data-level="5"] { border-left-color: rgba(168, 85, 247, 0.3); }
+.five-why__children[data-level="1"] { border-left-color: rgb(245 158 11 / 30%); }
+.five-why__children[data-level="2"] { border-left-color: rgb(249 115 22 / 30%); }
+.five-why__children[data-level="3"] { border-left-color: rgb(239 68 68 / 30%); }
+.five-why__children[data-level="4"] { border-left-color: rgb(236 72 153 / 30%); }
+.five-why__children[data-level="5"] { border-left-color: rgb(168 85 247 / 30%); }
 
 /* ── Add Buttons ── */
 .five-why__add-child-btn {
@@ -221,7 +225,7 @@
 .five-why__add-child-btn:hover {
   border-color: var(--color-accent);
   color: var(--color-accent);
-  background: rgba(var(--color-accent-rgb, 59, 130, 246), 0.06);
+  background: rgb(var(--color-accent-rgb, 59, 130, 246), 0.06);
 }
 
 .five-why__add-root-btn {
@@ -242,7 +246,7 @@
 }
 
 .five-why__add-root-btn:hover {
-  box-shadow: 0 0 16px rgba(var(--color-accent-rgb, 59, 130, 246), 0.25);
+  box-shadow: 0 0 16px rgb(var(--color-accent-rgb, 59, 130, 246), 0.25);
 }
 
 /* ── Stats Bar ── */

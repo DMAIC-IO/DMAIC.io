@@ -112,7 +112,6 @@
   background: var(--color-bg-secondary);
   text-align: left !important;
   font-weight: var(--font-weight-semibold);
-  position: sticky;
   left: 0;
   z-index: 1;
   white-space: nowrap;

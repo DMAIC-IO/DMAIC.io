@@ -98,7 +98,7 @@
 }
 
 .doe-advisor__table tbody tr:hover {
-  background: rgba(var(--color-accent-rgb, 59, 130, 246), 0.04);
+  background: rgb(var(--color-accent-rgb, 59, 130, 246), 0.04);
 }
 
 .doe-advisor__row-name {
@@ -232,9 +232,9 @@
 
 .doe-advisor__option:hover {
   border-color: var(--color-accent);
-  background: rgba(var(--color-accent-rgb, 59, 130, 246), 0.05);
+  background: rgb(var(--color-accent-rgb, 59, 130, 246), 0.05);
   transform: translateY(-1px);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 2px 8px rgb(0 0 0 / 8%);
 }
 
 .doe-advisor__option-label {

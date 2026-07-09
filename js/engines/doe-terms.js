@@ -36,7 +36,7 @@
  * @returns {string}
  */
 export function mainTermId(factorIdx) {
-  return 'M' + factorIdx;
+  return `M${  factorIdx}`;
 }
 
 /**
@@ -45,7 +45,7 @@ export function mainTermId(factorIdx) {
  * @returns {string}
  */
 export function quadTermId(factorIdx) {
-  return 'Q' + factorIdx;
+  return `Q${  factorIdx}`;
 }
 
 /**
@@ -58,7 +58,7 @@ export function interactionTermId(factorIndices) {
     throw new Error('interactionTermId: need ≥ 2 factor indices');
   }
   const sorted = [...new Set(factorIndices)].sort((a, b) => a - b);
-  return 'I' + sorted.join('_');
+  return `I${  sorted.join('_')}`;
 }
 
 /**
@@ -112,7 +112,7 @@ export function termDisplay(id, factorNames) {
   if (!t) return id;
   const nameOf = (i) => factorNames?.[i] || String.fromCharCode(65 + i);
   if (t.kind === 'main') return nameOf(t.factors[0]);
-  if (t.kind === 'quad') return nameOf(t.factors[0]) + '²';
+  if (t.kind === 'quad') return `${nameOf(t.factors[0])  }²`;
   return t.factors.map(nameOf).join('·');
 }
 
@@ -340,7 +340,7 @@ export function termsFromLegacyOptions(k, quadratic, excludedInteractions) {
       const a = Math.min(pair[0], pair[1]);
       const b = Math.max(pair[0], pair[1]);
       if (a === b || a < 0 || b >= k) continue;
-      excluded.add(a + '_' + b);
+      excluded.add(`${a  }_${  b}`);
     }
   }
   const out = [];
@@ -348,7 +348,7 @@ export function termsFromLegacyOptions(k, quadratic, excludedInteractions) {
   if (quadratic) for (let i = 0; i < k; i++) out.push(quadTermId(i));
   for (let a = 0; a < k; a++) {
     for (let b = a + 1; b < k; b++) {
-      if (!excluded.has(a + '_' + b)) out.push(interactionTermId([a, b]));
+      if (!excluded.has(`${a  }_${  b}`)) out.push(interactionTermId([a, b]));
     }
   }
   return out;
@@ -389,10 +389,10 @@ export function termValue(id, row) {
  */
 export function termSortKey(id) {
   const t = parseTermId(id);
-  if (!t) return 'Z' + id;
-  if (t.kind === 'main') return 'A' + String(t.factors[0]).padStart(4, '0');
-  if (t.kind === 'quad') return 'B' + String(t.factors[0]).padStart(4, '0');
+  if (!t) return `Z${  id}`;
+  if (t.kind === 'main') return `A${  String(t.factors[0]).padStart(4, '0')}`;
+  if (t.kind === 'quad') return `B${  String(t.factors[0]).padStart(4, '0')}`;
   const order = String(t.factors.length).padStart(2, '0');
   const idx = t.factors.map(f => String(f).padStart(4, '0')).join('_');
-  return 'C' + order + '_' + idx;
+  return `C${  order  }_${  idx}`;
 }

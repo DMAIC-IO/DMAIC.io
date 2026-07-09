@@ -159,7 +159,7 @@
   background: var(--color-bg-primary);
   color: var(--color-accent);
   font-weight: var(--font-weight-semibold);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 1px 3px rgb(0 0 0 / 10%);
 }
 
 /* ===== Inline delete button =====
@@ -243,8 +243,8 @@ select.input {
   cursor: pointer;
 }
 
-.field:hover:not(:disabled):not(:focus),
-.input:hover:not(:disabled):not(:focus) {
+.field:hover:not(:disabled, :focus),
+.input:hover:not(:disabled, :focus) {
   border-color: var(--color-text-tertiary);
 }
 
@@ -297,7 +297,7 @@ select.input {
   border-color: transparent;
 }
 
-.field--ghost:hover:not(:disabled):not(:focus) {
+.field--ghost:hover:not(:disabled, :focus) {
   background: var(--color-input-bg);
   border-color: var(--color-input-border);
 }
@@ -501,13 +501,14 @@ select.input {
 }
 
 /* ===== Tables ===== */
+
 /* Global table style for all module tables outside of DataGrid.
    Applied via .dmike-table class or automatically to any <table>
    inside .dmike-split that is not a datagrid. */
 
 .dmike-table,
 .stats-table,
-.dmike-split table:not(.datagrid__table):not(.corr__matrix-table):not(.doe__preview-table) {
+.dmike-split table:not(.datagrid__table, .corr__matrix-table, .doe__preview-table) {
   width: 100%;
   border-collapse: collapse;
   font-size: var(--font-size-sm);
@@ -516,7 +517,7 @@ select.input {
 
 .dmike-table th,
 .stats-table th,
-.dmike-split table:not(.datagrid__table):not(.corr__matrix-table):not(.doe__preview-table) th {
+.dmike-split table:not(.datagrid__table, .corr__matrix-table, .doe__preview-table) th {
   padding: var(--spacing-xs) var(--spacing-sm);
   font-weight: var(--font-weight-medium);
   color: var(--color-text-tertiary);
@@ -535,24 +536,25 @@ select.input {
 
 .dmike-table td,
 .stats-table td,
-.dmike-split table:not(.datagrid__table):not(.corr__matrix-table):not(.doe__preview-table) td {
+.dmike-split table:not(.datagrid__table, .corr__matrix-table, .doe__preview-table) td {
   padding: var(--spacing-xs) var(--spacing-sm);
   border-bottom: var(--border-width) solid var(--color-border-secondary);
 }
 
 .dmike-table tr:last-child td,
 .stats-table tr:last-child td,
-.dmike-split table:not(.datagrid__table):not(.corr__matrix-table):not(.doe__preview-table) tr:last-child td {
+.dmike-split table:not(.datagrid__table, .corr__matrix-table, .doe__preview-table) tr:last-child td {
   border-bottom: none;
 }
 
 .dmike-table tr:hover td,
 .stats-table tr:hover td,
-.dmike-split table:not(.datagrid__table):not(.corr__matrix-table):not(.doe__preview-table) tr:hover td {
+.dmike-split table:not(.datagrid__table, .corr__matrix-table, .doe__preview-table) tr:hover td {
   background: var(--color-bg-secondary);
 }
 
 /* ===== Tabs ===== */
+
 /* Global tab bar for switching between charts/views in modules.
    Use .dmike-tabs as container, .dmike-tab for each button,
    .dmike-tab-content for panels, --active modifier to show. */
@@ -600,6 +602,7 @@ select.input {
 }
 
 /* ===== KPI Strip ===== */
+
 /* Global KPI card row for displaying key metrics.
    Use .dmike-kpi-strip as container, .dmike-kpi for each card,
    .dmike-kpi-value for the number, .dmike-kpi-label for the caption.
@@ -649,7 +652,7 @@ select.input {
 /* ===== Result Card — recommended badge with hover tooltip ===== */
 .result-card--recommended {
   border-color: var(--color-success);
-  box-shadow: 0 0 12px rgba(52, 199, 89, 0.12);
+  box-shadow: 0 0 12px rgb(52 199 89 / 12%);
 }
 
 .result-card__badge {
@@ -742,6 +745,13 @@ select.input {
    Hosted inside the global dmike-chart-popout shell (see js/core/chart/chart.css).
    The popout provides the overlay, frame, titlebar, drag, and close affordances;
    the rules below only describe the inner layout (tabs + scrolling content). */
+
+/* The settings template mounts an inner wrapper inside #settings-overlay so its
+   @click.self (outside-click close) covers the whole dimmed backdrop. */
+.dmike-chart-popout-overlay-inner {
+  position: absolute;
+  inset: 0;
+}
 
 #settings-panel.dmike-chart-popout {
   width: 480px;
@@ -858,7 +868,7 @@ select.input {
 
 .settings-theme-btn--active {
   border-color: var(--color-accent);
-  background: var(--color-accent-alpha, rgba(59, 130, 246, 0.08));
+  background: var(--color-accent-alpha, rgb(59 130 246 / 8%));
   color: var(--color-accent);
 }
 
@@ -883,7 +893,7 @@ select.input {
   text-transform: uppercase;
   letter-spacing: 0.05em;
   color: var(--color-text-secondary);
-  margin: 0 0 6px 0;
+  margin: 0 0 6px;
 }
 
 .settings-shortcut-row {
@@ -901,7 +911,7 @@ select.input {
 
 .settings-shortcut-row--conflict {
   border-color: var(--color-danger, #d93b3b);
-  background: var(--color-danger-alpha, rgba(217, 59, 59, 0.06));
+  background: var(--color-danger-alpha, rgb(217 59 59 / 6%));
 }
 
 .settings-shortcut-row__label {
@@ -935,7 +945,7 @@ select.input {
 
 .settings-shortcut-key--capturing {
   border-color: var(--color-warning, #e0a800);
-  background: var(--color-warning-alpha, rgba(224, 168, 0, 0.1));
+  background: var(--color-warning-alpha, rgb(224 168 0 / 10%));
   color: var(--color-warning, #e0a800);
   animation: settings-shortcut-pulse 1.2s ease-in-out infinite;
 }
@@ -965,7 +975,6 @@ select.input {
 
 /* Raw input — shared track & thumb for every range slider in the app */
 .dmike-slider {
-  -webkit-appearance: none;
   appearance: none;
   flex: 1;
   height: 4px;
@@ -976,7 +985,7 @@ select.input {
 }
 
 .dmike-slider::-webkit-slider-thumb {
-  -webkit-appearance: none;
+  appearance: none;
   width: 14px;
   height: 14px;
   border-radius: 50%;
@@ -1183,6 +1192,7 @@ select.input {
 }
 
 .col-picker--multi::-webkit-scrollbar { width: 5px; }
+
 .col-picker--multi::-webkit-scrollbar-thumb {
   background: var(--color-border-secondary);
   border-radius: 3px;
@@ -1329,6 +1339,7 @@ body.hide-algo-lab-links .distfit__ndd-algo-link { display: none; }
 }
 
 /* ===== Embedded DataGrid ===== */
+
 /* Shared wrapper for modules that embed a DataGrid (DoE, Data Generator, etc.) */
 .dmike-embedded-grid {
   border: var(--border-width) solid var(--color-border-secondary);
@@ -1355,6 +1366,7 @@ body.hide-algo-lab-links .distfit__ndd-algo-link { display: none; }
   padding: 0 var(--glossary-term-padding-x);
   transition: var(--glossary-term-transition);
   cursor: help;
+
   /* No color/underline at rest — looks like normal text until hovered. */
 }
 
@@ -1386,7 +1398,8 @@ body.hide-algo-lab-links .distfit__ndd-algo-link { display: none; }
   transition: color 120ms ease-out, transform 120ms ease-out;
 }
 
-.glossary-term__btn svg {
+.glossary-term__btn svg,
+.glossary-term__btn .icon {
   display: block;
   width: 100%;
   height: 100%;
@@ -1417,7 +1430,137 @@ body.dmike-glossary-inline-off .glossary-term {
   background: transparent !important;
   outline: none !important;
 }
+
 body.dmike-glossary-inline-off .glossary-term:hover,
 body.dmike-glossary-inline-off .glossary-term:focus-within {
   background: transparent;
+}
+
+/* ─── Mask icons (glyph: assets/icons/icons.css, generated; colour: currentColor) ─── */
+.icon {
+  display: inline-block;
+  width: 1em; height: 1em;
+  vertical-align: -0.125em;
+  background-color: currentcolor;
+  mask: var(--icon) center / contain no-repeat;
+}
+.icon--accent { background-color: var(--color-accent); }
+.icon--muted  { background-color: var(--color-text-tertiary); }
+
+/* Raw icons render the baked SVG directly (background-image, no mask) — for
+   glyphs that carry their own colour/opacity (e.g. accent chart thumbnails).
+   Theme-swapped via [data-theme] overrides of --icon (see icons.css). */
+.icon--raw {
+  mask: none;
+  background: transparent var(--icon) center / contain no-repeat;
+}
+
+/* ── Open-Source Licenses panel ─────────────────────────────────────────
+   Attribution overlay listing bundled third-party runtime libraries.
+   Hosted inside the global dmike-chart-popout shell (see chart.css); the
+   rules below cover the inner layout (subtitle, table, badges, links). */
+.dmike-chart-popout.licenses-panel {
+  width: 560px;
+  max-width: calc(100vw - 48px);
+  max-height: 80vh;
+  left: calc(50% - 280px);
+  top: 10vh;
+}
+
+.licenses-panel .dmike-chart-popout-body {
+  padding: var(--spacing-lg);
+  overflow-y: auto;
+}
+
+.licenses-panel__subtitle {
+  margin: 0 0 var(--spacing-md);
+  font-size: var(--font-size-sm);
+  line-height: 1.5;
+  color: var(--color-text-secondary);
+}
+
+.licenses-panel__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--font-size-sm);
+}
+
+.licenses-panel__row {
+  border-top: var(--border-width) solid var(--color-border-secondary);
+  transition: background-color var(--transition-speed);
+}
+
+.licenses-panel__row:first-child {
+  border-top: none;
+}
+
+.licenses-panel__row:hover {
+  background: var(--color-bg-secondary);
+}
+
+.licenses-panel__table td {
+  padding: var(--spacing-sm);
+  vertical-align: baseline;
+}
+
+.licenses-panel__name {
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  white-space: nowrap;
+}
+
+.licenses-panel__version {
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+  white-space: nowrap;
+}
+
+.licenses-panel__license {
+  width: 1%;
+  white-space: nowrap;
+}
+
+/* SPDX identifier rendered as a compact pill. */
+.licenses-panel__badge {
+  display: inline-block;
+  padding: 2px var(--spacing-sm);
+  border-radius: var(--border-radius-sm);
+  background: var(--color-bg-tertiary);
+  color: var(--color-text-secondary);
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  line-height: 1.4;
+}
+
+.licenses-panel__link {
+  width: 1%;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.licenses-panel__link a {
+  color: var(--color-accent);
+  text-decoration: none;
+}
+
+.licenses-panel__link a:hover {
+  text-decoration: underline;
+}
+
+.licenses-panel__full-text {
+  margin: var(--spacing-md) 0 0;
+  padding-top: var(--spacing-md);
+  border-top: var(--border-width) solid var(--color-border-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.licenses-panel__full-text a {
+  color: var(--color-accent);
+  text-decoration: none;
+}
+
+.licenses-panel__full-text a:hover {
+  text-decoration: underline;
 }

@@ -30,6 +30,7 @@
 }
 
 /* ── Selectors row ── */
+
 /* align-items: start keeps the two label/select columns top-aligned regardless
    of whether the description below the select is rendered (only when a
    parameter is selected). The buttons push themselves down to line up with
@@ -80,6 +81,7 @@
 
 .triz-cm__swap-btn {
   white-space: nowrap;
+
   /* Sit on the same baseline as the selects, not the labels above them. */
   margin-top: calc(var(--font-size-sm) * 1.4 + var(--spacing-xs));
 }
@@ -127,7 +129,7 @@
 
 .triz-cm__principle:hover {
   border-color: var(--color-accent);
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 2px 6px rgb(0 0 0 / 8%);
 }
 
 .triz-cm__principle-num {

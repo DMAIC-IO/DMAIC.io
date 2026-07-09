@@ -1,0 +1,88 @@
+<section class="module-container triz-ifr" x-data="trizIfr">
+  <div class="module-container__header">
+    <h2 class="module-container__title" x-text="t('name')"></h2>
+    <div class="module-container__subtitle" x-text="t('subtitle')"></div>
+  </div>
+
+  <div class="module-container__body triz-ifr__body">
+
+    <section class="triz-ifr__section">
+      <h3 class="triz-ifr__section-title" x-text="t('taskHeading')"></h3>
+
+      <div class="triz-ifr__field">
+        <label class="triz-ifr__label" for="triz-ifr-system" x-text="t('systemLabel')"></label>
+        <input id="triz-ifr-system" class="field" type="text" data-role="system"
+          x-model="model.system"
+          :placeholder="t('systemPlaceholder')">
+      </div>
+
+      <div class="triz-ifr__field">
+        <label class="triz-ifr__label" for="triz-ifr-useful" x-text="t('usefulLabel')"></label>
+        <input id="triz-ifr-useful" class="field" type="text" data-role="useful"
+          x-model="model.usefulFunction"
+          :placeholder="t('usefulPlaceholder')">
+      </div>
+
+      <div class="triz-ifr__field">
+        <label class="triz-ifr__label" for="triz-ifr-harmful" x-text="t('harmfulLabel')"></label>
+        <input id="triz-ifr-harmful" class="field" type="text" data-role="harmful"
+          x-model="model.harmfulEffect"
+          :placeholder="t('harmfulPlaceholder')">
+      </div>
+    </section>
+
+    <section class="triz-ifr__section">
+      <h3 class="triz-ifr__section-title" x-text="t('ifrHeading')"></h3>
+      <p class="triz-ifr__hint" x-text="t('ifrHint')"></p>
+
+      <div class="triz-ifr__level">
+        <div class="triz-ifr__level-head">
+          <span class="triz-ifr__level-num">IFR-1</span>
+          <span class="triz-ifr__level-title" x-text="t('ifr1Title')"></span>
+        </div>
+        <p class="triz-ifr__level-desc" x-text="t('ifr1Desc')"></p>
+        <textarea class="field triz-ifr__textarea" rows="2" data-role="ifr1"
+          :placeholder="t('ifr1Placeholder')"
+          x-model="model.ifr1"></textarea>
+      </div>
+
+      <div class="triz-ifr__level">
+        <div class="triz-ifr__level-head">
+          <span class="triz-ifr__level-num">IFR-2</span>
+          <span class="triz-ifr__level-title" x-text="t('ifr2Title')"></span>
+        </div>
+        <p class="triz-ifr__level-desc" x-text="t('ifr2Desc')"></p>
+        <textarea class="field triz-ifr__textarea" rows="2" data-role="ifr2"
+          :placeholder="t('ifr2Placeholder')"
+          x-model="model.ifr2"></textarea>
+      </div>
+
+      <div class="triz-ifr__level">
+        <div class="triz-ifr__level-head">
+          <span class="triz-ifr__level-num">IFR-3</span>
+          <span class="triz-ifr__level-title" x-text="t('ifr3Title')"></span>
+        </div>
+        <p class="triz-ifr__level-desc" x-text="t('ifr3Desc')"></p>
+        <textarea class="field triz-ifr__textarea" rows="2" data-role="ifr3"
+          :placeholder="t('ifr3Placeholder')"
+          x-model="model.ifr3"></textarea>
+      </div>
+    </section>
+
+    <section class="triz-ifr__section">
+      <h3 class="triz-ifr__section-title" x-text="t('obstaclesHeading')"></h3>
+      <p class="triz-ifr__hint" x-text="t('obstaclesHint')"></p>
+      <textarea class="field triz-ifr__textarea triz-ifr__obstacles" rows="4" data-role="obstacles"
+        :placeholder="t('obstaclesPlaceholder')"
+        x-model="model.obstacles"></textarea>
+    </section>
+
+    <section class="triz-ifr__actions">
+      <button class="btn btn--sm triz-ifr__resources-btn" type="button" data-action="open-resources"
+        @click="openResources()">
+        <span x-text="t('openResources')"></span>
+      </button>
+    </section>
+
+  </div>
+</section>

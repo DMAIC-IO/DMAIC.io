@@ -185,6 +185,15 @@
   margin-left: var(--spacing-xs);
 }
 
+/* The leading month/week-range part keeps the title's own styling — only the
+   trailing year span is accented (matches the legacy single-text-node layout). */
+.module-calendar__title .module-calendar__title-main {
+  color: var(--color-text-primary);
+  font-family: var(--font-family);
+  font-weight: var(--font-weight-semibold);
+  margin-left: 0;
+}
+
 .module-calendar__right {
   margin-left: auto;
   display: flex;
@@ -357,6 +366,11 @@
   display: flex;
 }
 
+/* Alpine x-if wrapper — let header/body join the flex column directly. */
+.module-calendar__week-inner {
+  display: contents;
+}
+
 .module-calendar__week-header {
   display: grid;
   background: var(--color-bg-secondary);
@@ -504,6 +518,21 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+/* Live duration label shown on the block while resizing (e.g. "1h 30min") */
+.module-calendar__we-dur {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-xs);
+  color: var(--color-accent);
+  opacity: 0.85;
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 6;
 }
 
 /* Resize handles */
@@ -673,7 +702,7 @@
 
 .module-calendar__phase-chip--selected {
   opacity: 1;
-  border-color: currentColor;
+  border-color: currentcolor;
 }
 
 .module-calendar__modal-actions {
@@ -713,7 +742,7 @@
 }
 
 .module-calendar__btn-delete {
-  background: rgba(255, 59, 48, 0.1);
+  background: rgb(255 59 48 / 10%);
   color: var(--color-error);
   font-size: var(--font-size-sm);
   padding: var(--spacing-xs) 12px;
@@ -726,5 +755,5 @@
 }
 
 .module-calendar__btn-delete:hover {
-  background: rgba(255, 59, 48, 0.2);
+  background: rgb(255 59 48 / 20%);
 }

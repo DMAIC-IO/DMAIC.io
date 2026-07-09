@@ -13,6 +13,7 @@
 /* ===== Container (split-panel via dmike-split) ===== */
 .doe {
   --dmike-split-input-width: 420px;
+
   animation: doe-fade-in 0.3s ease;
 }
 
@@ -41,6 +42,28 @@
 
 
 /* ===== Evaluation Badges (compact) ===== */
+
+/* Alpine x-if regions need exactly one child element, so the output panel's
+   four logical states are each wrapped in a region div. display:contents
+   dissolves those wrappers so their children remain direct children of
+   .doe__output — preserving the legacy flat sibling order. */
+.doe__output-content,
+.doe__bound-region,
+.doe__eval-region,
+.doe__dispersion-region {
+  display: contents;
+}
+
+/* :first-child / :not(:first-child) resolve against the REAL DOM parent, not
+   the display:contents-flattened tree. The Evaluate / Dispersion section
+   headers are first-child of their region wrapper, so they lose the legacy
+   :not(:first-child) top margin — restore it explicitly (they always follow
+   the Results section + preview/grid). */
+.doe__eval-region > .dmike-split__output-section-header,
+.doe__dispersion-region > .dmike-split__output-section-header {
+  margin-top: var(--spacing-lg);
+}
+
 .doe__eval-compact {
   margin-bottom: var(--spacing-sm);
 }
@@ -121,6 +144,13 @@
   flex: 1;
 }
 
+/* x-for over levels wraps each chip + trailing insert-button in a fragment
+   div; display:contents keeps those children as direct flex items of the
+   levels row (mirrors the legacy flat structure). */
+.doe__level-frag {
+  display: contents;
+}
+
 .doe__level-chip {
   display: inline-flex;
   align-items: center;
@@ -187,7 +217,7 @@
 .doe__factor-remove-btn:hover,
 .doe__response-remove-btn:hover {
   color: var(--color-error, #e53935);
-  background: rgba(229, 57, 53, 0.08);
+  background: rgb(229 57 53 / 8%);
 }
 
 /* ===== Response Rows ===== */
@@ -351,7 +381,7 @@
   transition: transform var(--transition-speed), box-shadow var(--transition-speed);
 }
 
-.doe__res-cell:not(.doe__res-cell--disabled):not(.doe__res-cell--empty):hover {
+.doe__res-cell:not(.doe__res-cell--disabled, .doe__res-cell--empty):hover {
   transform: scale(1.15);
 }
 
@@ -684,27 +714,32 @@
   padding-top: var(--spacing-sm);
   border-top: 1px dashed var(--color-border);
 }
+
 .doe__source-label {
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-medium);
   color: var(--color-text-secondary);
   margin-bottom: 2px;
 }
+
 .doe__source-hint {
   font-size: var(--font-size-xs);
   color: var(--color-text-muted);
   line-height: 1.4;
   margin-bottom: var(--spacing-sm);
 }
+
 .doe__source-select {
   width: 100%;
   margin-bottom: var(--spacing-xs);
 }
+
 .doe__source-mapping-ok {
   font-size: var(--font-size-xs);
   color: var(--color-success, #2e7d32);
   margin-top: var(--spacing-xs);
 }
+
 .doe__source-mapping-error {
   font-size: var(--font-size-xs);
   color: var(--color-danger);
@@ -718,28 +753,33 @@
   padding-top: var(--spacing-sm);
   border-top: 1px solid var(--color-border);
 }
+
 .doe__term-list-label {
   font-size: var(--font-size-sm);
   font-weight: 600;
   color: var(--color-text-primary);
   margin-bottom: 4px;
 }
+
 .doe__term-list-hint {
   font-size: var(--font-size-xs);
   color: var(--color-text-muted);
   line-height: 1.4;
   margin-bottom: var(--spacing-sm);
 }
+
 .doe__term-list {
   display: flex;
   flex-direction: column;
   gap: 4px;
 }
+
 .doe__term-group {
   border: 1px solid var(--color-border);
   border-radius: var(--border-radius);
   background: var(--color-bg-tertiary, var(--color-bg-secondary));
 }
+
 .doe__term-group-header {
   width: 100%;
   display: flex;
@@ -753,30 +793,43 @@
   font-size: var(--font-size-xs);
   text-align: left;
 }
+
 .doe__term-group-header:hover {
   background: var(--color-hover, var(--color-surface-alt));
 }
+
 .doe__term-group-arrow {
   width: 12px;
   color: var(--color-text-secondary);
 }
+
 .doe__term-group-title {
   font-weight: 600;
 }
+
 .doe__term-group-count {
   color: var(--color-text-muted);
   margin-left: auto;
   font-variant-numeric: tabular-nums;
 }
+
 .doe__term-group-body {
   display: flex;
   flex-wrap: wrap;
   gap: 4px;
   padding: 0 var(--spacing-sm) var(--spacing-sm) var(--spacing-sm);
 }
+
+/* x-if wraps the chips in an items div; display:contents keeps them as direct
+   flex children of the group body (mirrors the legacy flat chip layout). */
+.doe__term-group-items {
+  display: contents;
+}
+
 .doe__term-group:not(.doe__term-group--open) .doe__term-group-body {
   display: none;
 }
+
 .doe__term-chip {
   display: inline-flex;
   align-items: center;
@@ -790,18 +843,22 @@
   user-select: none;
   color: var(--color-text-muted);
 }
+
 .doe__term-chip input[type="checkbox"] {
   margin: 0;
 }
+
 .doe__term-chip--on {
   background: var(--color-surface);
   border-color: var(--color-primary);
   color: var(--color-primary);
 }
+
 .doe__term-chip--locked {
   cursor: default;
   opacity: 0.85;
 }
+
 .doe__term-chip--locked input[type="checkbox"] {
   cursor: default;
 }
@@ -812,18 +869,21 @@
   padding-top: var(--spacing-sm);
   border-top: 1px solid var(--color-border);
 }
+
 .doe__forbidden-title {
   font-size: var(--font-size-sm);
   font-weight: 600;
   color: var(--color-text-secondary);
   margin-bottom: var(--spacing-xs);
 }
+
 .doe__forbidden-hint {
   font-size: var(--font-size-xs);
   color: var(--color-text-tertiary);
   margin-bottom: var(--spacing-sm);
   line-height: 1.4;
 }
+
 .doe__forbidden-list {
   list-style: none;
   padding: 0;
@@ -832,6 +892,7 @@
   flex-direction: column;
   gap: 4px;
 }
+
 .doe__forbidden-row {
   display: flex;
   align-items: center;
@@ -842,25 +903,30 @@
   border-radius: var(--border-radius);
   font-size: var(--font-size-xs);
 }
+
 .doe__forbidden-empty {
   font-size: var(--font-size-xs);
   color: var(--color-text-tertiary);
   font-style: italic;
   padding: 4px var(--spacing-sm);
 }
+
 .doe__forbidden-rule {
   display: flex;
   flex-wrap: wrap;
   gap: 4px;
   align-items: center;
 }
+
 .doe__forbidden-part {
   white-space: nowrap;
 }
+
 .doe__forbidden-sep {
   color: var(--color-text-tertiary);
   margin: 0 2px;
 }
+
 .doe__forbidden-remove-btn {
   background: transparent;
   border: none;
@@ -870,51 +936,61 @@
   padding: 2px 6px;
   border-radius: var(--border-radius);
 }
+
 .doe__forbidden-remove-btn:hover {
   color: var(--color-danger, var(--color-text-primary));
   background: var(--color-bg-hover, transparent);
 }
+
 .doe__forbidden-add {
   display: flex;
   flex-wrap: wrap;
   align-items: end;
   gap: var(--spacing-sm);
 }
+
 .doe__forbidden-factor {
   display: flex;
   flex-direction: column;
   gap: 2px;
   font-size: var(--font-size-xs);
 }
+
 .doe__forbidden-factor-name {
   font-weight: 600;
   color: var(--color-text-secondary);
 }
+
 .doe__forbidden-input {
   font-size: var(--font-size-xs);
   padding: 2px 4px;
   min-width: 70px;
 }
+
 .doe__forbidden-add-btn {
   align-self: end;
 }
+
 .doe__term-matrix-label {
   font-size: var(--font-size-sm);
   font-weight: 600;
   color: var(--color-text-primary);
   margin-bottom: 4px;
 }
+
 .doe__term-matrix-hint {
   font-size: var(--font-size-xs);
   color: var(--color-text-muted);
   line-height: 1.4;
   margin-bottom: var(--spacing-sm);
 }
+
 .doe__term-matrix {
   border-collapse: collapse;
   font-size: var(--font-size-xs);
   color: var(--color-text-primary);
 }
+
 .doe__term-matrix th,
 .doe__term-matrix td {
   width: 24px;
@@ -923,16 +999,20 @@
   vertical-align: middle;
   padding: 0;
 }
+
 .doe__term-matrix th {
   font-weight: 600;
   color: var(--color-text-secondary);
 }
+
 .doe__term-diag {
   color: var(--color-text-muted);
 }
+
 .doe__term-blank {
   background: transparent;
 }
+
 .doe__term-cell {
   cursor: pointer;
   user-select: none;
@@ -942,14 +1022,17 @@
   line-height: 1;
   transition: background-color 0.1s ease;
 }
+
 .doe__term-cell--on {
   color: var(--color-primary);
   background: var(--color-surface);
 }
+
 .doe__term-cell--off {
   color: var(--color-text-muted);
   background: var(--color-surface-alt, transparent);
 }
+
 .doe__term-cell:hover {
   background: var(--color-hover, var(--color-surface-alt));
 }
@@ -1060,31 +1143,36 @@
   margin-bottom: var(--spacing-md);
   flex-wrap: wrap;
 }
+
 .doe__datasheet-create-hint {
   font-size: var(--font-size-xs);
   color: var(--color-text-secondary);
   flex: 1 1 200px;
   line-height: 1.4;
 }
+
 .doe__datasheet-link-row {
   margin-bottom: var(--spacing-md);
 }
+
 .doe__stale-banner {
   display: flex;
   flex-direction: column;
   gap: var(--spacing-sm);
   padding: var(--spacing-md);
   margin-bottom: var(--spacing-md);
-  background: var(--color-warning-bg, rgba(255, 193, 7, 0.08));
+  background: var(--color-warning-bg, rgb(255 193 7 / 8%));
   border: var(--border-width) solid var(--color-warning, #ffb300);
   border-left-width: 4px;
   border-radius: var(--border-radius);
 }
+
 .doe__stale-text {
   font-size: var(--font-size-sm);
   color: var(--color-text-primary);
   line-height: 1.4;
 }
+
 .doe__stale-actions {
   display: flex;
   gap: var(--spacing-sm);
@@ -1099,6 +1187,7 @@
   background: var(--color-bg-secondary);
   overflow: hidden;
 }
+
 .doe__preview-label {
   padding: var(--spacing-sm) var(--spacing-md);
   font-size: var(--font-size-sm);
@@ -1106,12 +1195,14 @@
   color: var(--color-text-secondary);
   border-bottom: var(--border-width) solid var(--color-border);
 }
+
 .doe__preview-hint {
   padding: var(--spacing-xs) var(--spacing-md);
   font-size: var(--font-size-xs);
   color: var(--color-text-tertiary);
   border-bottom: var(--border-width) solid var(--color-border);
 }
+
 .doe__preview-stale-note {
   padding: var(--spacing-xs) var(--spacing-md);
   font-size: var(--font-size-xs);
@@ -1119,6 +1210,7 @@
   background: var(--color-warning-bg, transparent);
   border-bottom: var(--border-width) solid var(--color-border);
 }
+
 .doe__preview-grid {
   max-height: 360px;
   overflow: auto;
@@ -1193,7 +1285,9 @@
 }
 
 /* --- Efficiency Cards --- */
+
 /* Efficiency KPI cards — uses global .dmike-kpi-strip / .dmike-kpi from components.css */
+
 /* Progress bar (DOE-specific addition inside KPI cards) */
 .doe__eff-bar {
   height: 4px;
@@ -1484,7 +1578,7 @@
 
 .doe__timeline-item--active {
   border-color: var(--color-accent);
-  background: rgba(var(--color-accent-rgb, 66, 133, 244), 0.1);
+  background: rgb(var(--color-accent-rgb, 66, 133, 244), 0.1);
   font-weight: 600;
 }
 
@@ -1567,7 +1661,7 @@
 }
 
 .doe__evop-sig {
-  background: rgba(76, 175, 80, 0.08);
+  background: rgb(76 175 80 / 8%);
   font-weight: 600;
 }
 
@@ -1596,19 +1690,19 @@
 }
 
 .doe__evop-rec--repeat {
-  background: rgba(255, 193, 7, 0.1);
+  background: rgb(255 193 7 / 10%);
   color: var(--color-warning, #f59e0b);
   border-left: 3px solid var(--color-warning, #f59e0b);
 }
 
 .doe__evop-rec--recenter {
-  background: rgba(76, 175, 80, 0.1);
+  background: rgb(76 175 80 / 10%);
   color: var(--color-success, #4caf50);
   border-left: 3px solid var(--color-success, #4caf50);
 }
 
 .doe__evop-rec--stop {
-  background: rgba(var(--color-accent-rgb, 66, 133, 244), 0.1);
+  background: rgb(var(--color-accent-rgb, 66, 133, 244), 0.1);
   color: var(--color-accent);
   border-left: 3px solid var(--color-accent);
 }
@@ -1622,6 +1716,7 @@
   width: 100%;
   margin-bottom: var(--spacing-md);
 }
+
 .doe__transfer-regression-btn {
   display: inline-flex;
   align-items: center;
@@ -1636,23 +1731,27 @@
   border-radius: var(--border-radius);
   background: var(--color-bg-secondary);
 }
+
 .doe__augment-title {
   font-size: var(--font-size-sm);
   font-weight: 600;
   color: var(--color-text-secondary);
   margin-bottom: 2px;
 }
+
 .doe__augment-hint {
   font-size: var(--font-size-xs);
   color: var(--color-text-muted);
   line-height: 1.4;
   margin-bottom: var(--spacing-sm);
 }
+
 .doe__augment-row {
   display: flex;
   align-items: center;
   gap: var(--spacing-sm);
 }
+
 .doe__augment-runs-input {
   width: 80px;
 }
@@ -1660,9 +1759,15 @@
 /* ─── Dark mode adjustments ─── */
 
 [data-theme="dark"] .doe__evop-sig {
-  background: rgba(76, 175, 80, 0.12);
+  background: rgb(76 175 80 / 12%);
 }
 
 [data-theme="dark"] .doe__timeline-item--active {
-  background: rgba(var(--color-accent-rgb, 66, 133, 244), 0.15);
+  background: rgb(var(--color-accent-rgb, 66, 133, 244), 0.15);
+}
+
+/* ─── Preview-grid download icon: use primary text colour instead of the
+       datagrid-global tertiary (grey) so it matches surrounding table text ─── */
+.doe__preview-grid .datagrid__export-btn .icon {
+  background-color: var(--color-text-primary);
 }

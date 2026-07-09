@@ -8,7 +8,7 @@
  * the build reads fresh every run so it is always in sync with the sources.
  */
 
-import { readFile, readdir } from 'node:fs/promises';
+import { readFile } from 'node:fs/promises';
 import { pathToFileURL } from 'node:url';
 import path from 'node:path';
 

@@ -11,6 +11,7 @@
  */
 
 import { DEFAULT_CYCLE } from './cycles/cycles.js';
+import { h } from './dom.js';
 
 export class ModuleRegistry {
   constructor() {
@@ -54,6 +55,23 @@ export class ModuleRegistry {
    */
   get(moduleId) {
     return this._registry.get(moduleId);
+  }
+
+  /**
+   * Lazily load and return a module's default export (the live module object,
+   * incl. static descriptors like `dashboardTile`). Loads once, then caches on
+   * the registry entry. Returns `undefined` for unknown ids.
+   * @param {string} moduleId
+   * @returns {Promise<object|undefined>}
+   */
+  async loadExport(moduleId) {
+    const definition = this._registry.get(moduleId);
+    if (!definition) return undefined;
+    if (!definition._loaded) {
+      const module = await definition.load();
+      definition._loaded = module.default;
+    }
+    return definition._loaded;
   }
 
   /**
@@ -154,12 +172,12 @@ export class ModuleRegistry {
   // ─── Internal ───────────────────────────────────────────────
 
   _renderErrorCard(container, moduleId, err) {
-    container.innerHTML = `
-      <div class="module-error">
-        <div class="module-error__icon">⚠</div>
-        <div class="module-error__title">Module failed to load</div>
-        <div class="module-error__message">${moduleId}: ${err.message}</div>
-      </div>
-    `;
+    container.replaceChildren(
+      h('div', { class: 'module-error' },
+        h('div', { class: 'module-error__icon' }, '⚠'),
+        h('div', { class: 'module-error__title' }, 'Module failed to load'),
+        h('div', { class: 'module-error__message' }, `${moduleId}: ${err.message}`),
+      ),
+    );
   }
 }

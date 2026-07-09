@@ -4,6 +4,7 @@
    ============================================================ */
 
 /* ── Chart wrapper ─────────────────────────────────────────── */
+
 /* Outer card — flex row housing chart + editor side-by-side.
    overflow:hidden ensures the editor panel never grows taller than
    the chart area and scrolls independently instead. */
@@ -58,7 +59,7 @@
 .dmike-chart-tooltip {
   position: absolute;
   pointer-events: none;
-  background: rgba(26, 26, 46, 0.92);
+  background: rgb(26 26 46 / 92%);
   color: #fff;
   font-size: var(--font-size-sm, 12px);
   padding: 6px 10px;
@@ -76,8 +77,14 @@
 }
 
 [data-theme="dark"] .dmike-chart-tooltip {
-  background: rgba(245, 245, 247, 0.92);
+  background: rgb(245 245 247 / 92%);
   color: #1c1c1e;
+}
+
+/* Separator between multiple tooltip entries (was an inline-styled div). */
+.dmike-chart-tip-sep {
+  border-top: 1px solid rgb(255 255 255 / 20%);
+  margin: 4px 0;
 }
 
 /* ── Crosshair ─────────────────────────────────────────────── */
@@ -105,7 +112,7 @@
 
 .dmike-chart-crosshair-label {
   position: absolute;
-  background: rgba(26, 26, 46, 0.85);
+  background: rgb(26 26 46 / 85%);
   color: #fff;
   font-size: 10px;
   font-family: var(--font-family-mono);
@@ -115,7 +122,7 @@
 }
 
 [data-theme="dark"] .dmike-chart-crosshair-label {
-  background: rgba(245, 245, 247, 0.85);
+  background: rgb(245 245 247 / 85%);
   color: #1c1c1e;
 }
 
@@ -164,7 +171,8 @@
   border-color: var(--color-accent);
 }
 
-.dmike-chart-modebar-btn svg {
+.dmike-chart-modebar-btn svg,
+.dmike-chart-modebar-btn .icon {
   width: 14px;
   height: 14px;
 }
@@ -180,6 +188,11 @@
 /* ── Download dropdown ─────────────────────────────────────── */
 .dmike-chart-dropdown {
   position: relative;
+}
+
+.dmike-chart-dropdown .btn .icon {
+  width: 16px;
+  height: 16px;
 }
 
 .dmike-chart-dropdown-menu {
@@ -220,7 +233,8 @@
   background: var(--color-bg-secondary);
 }
 
-.dmike-chart-dropdown-item svg {
+.dmike-chart-dropdown-item svg,
+.dmike-chart-dropdown-item .icon {
   width: 14px;
   height: 14px;
   flex-shrink: 0;
@@ -232,14 +246,14 @@
   position: fixed;
   inset: 0;
   z-index: 2000;
-  background: rgba(0, 0, 0, 0.35);
+  background: rgb(0 0 0 / 35%);
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 [data-theme="dark"] .dmike-chart-popout-overlay {
-  background: rgba(0, 0, 0, 0.55);
+  background: rgb(0 0 0 / 55%);
 }
 
 .dmike-chart-popout {
@@ -260,7 +274,7 @@
   background: var(--color-bg-primary);
   border: 1px solid var(--color-border-primary);
   border-radius: var(--border-radius-lg, 8px);
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 12px 40px rgb(0 0 0 / 25%);
   overflow: hidden;
   resize: none;
 }
@@ -307,7 +321,8 @@
   color: #fff;
 }
 
-.dmike-chart-popout-close svg {
+.dmike-chart-popout-close svg,
+.dmike-chart-popout-close .icon {
   width: 14px;
   height: 14px;
 }
@@ -332,11 +347,13 @@
 }
 
 /* ── Compact popout (confirm / alert dialogs) ─────────────── */
+
 /* Legacy modifier — kept so existing callsites don't churn. The default
    popout is already content-driven; this modifier is a no-op. */
-.dmike-chart-popout--compact { }
+.dmike-chart-popout--compact { /* reserved: legacy modifier, intentional no-op */ }
 
 /* ── Popout body column layout (form + footer / message + footer) ── */
+
 /* The outer popout has `overflow: hidden`, so when content exceeds
    max-height the scrollbar must live inside the body. Stacked sections
    (heading / fields / footer) lay out via flex-column. */
@@ -380,7 +397,7 @@
   background: var(--color-bg-secondary);
   border: 1px solid var(--color-border-primary);
   border-radius: var(--border-radius-sm);
-  box-shadow: -2px 0 6px rgba(0, 0, 0, 0.08);
+  box-shadow: -2px 0 6px rgb(0 0 0 / 8%);
 }
 
 .dmike-chart-editor-inner {
@@ -555,7 +572,8 @@
   background: var(--color-bg-tertiary);
 }
 
-.dmike-chart-ed-vis-toggle svg {
+.dmike-chart-ed-vis-toggle svg,
+.dmike-chart-ed-vis-toggle .icon {
   width: 16px;
   height: 16px;
 }
@@ -582,13 +600,15 @@
   color: var(--color-accent);
 }
 
-.dmike-chart-ed-expand-btn svg {
+.dmike-chart-ed-expand-btn svg,
+.dmike-chart-ed-expand-btn .icon {
   width: 12px;
   height: 12px;
   transition: transform 0.2s;
 }
 
-.dmike-chart-ed-expand-btn.open svg {
+.dmike-chart-ed-expand-btn.open svg,
+.dmike-chart-ed-expand-btn.open .icon {
   transform: rotate(180deg);
 }
 
@@ -773,7 +793,7 @@
   background: var(--color-bg-primary);
   border: var(--border-width) solid var(--color-border-secondary);
   border-radius: var(--border-radius-lg, 8px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+  box-shadow: 0 8px 24px rgb(0 0 0 / 18%);
   padding: 14px;
   width: 240px;
 }
@@ -797,7 +817,7 @@
   position: absolute;
   inset: 0;
   border-radius: var(--border-radius-sm);
-  border: var(--border-width) solid rgba(0, 0, 0, 0.08);
+  border: var(--border-width) solid rgb(0 0 0 / 8%);
 }
 
 /* Hex input row */

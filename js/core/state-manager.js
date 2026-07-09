@@ -24,15 +24,11 @@
  * }
  */
 
-import { EventBus } from './event-bus.js';
 import { VERSION } from './version.js';
 import { parseVersion, stripPatch } from './version-utils.js';
 import { migrateToLatest } from './migrations.js';
-import {
-  idbBatch,
-  idbDeleteAllForProject,
-  idbGetAllForProject,
-} from './idb-store.js';
+import { idbDeleteAllForProject } from './idb-store.js';
+import { LocalAdapter } from './storage/local-adapter.js';
 import {
   DEFAULT_CYCLE,
   getCycle,
@@ -80,25 +76,25 @@ function _assertNotFutureMajor(fileVersion) {
 export class StateManager {
   /**
    * @param {EventBus} eventBus
+   * @param {import('./storage/storage-adapter.js').StorageAdapter} [adapter]
+   *   Persistence + project-registry seam. Defaults to LocalAdapter (web build).
    */
-  constructor(eventBus) {
+  constructor(eventBus, adapter = new LocalAdapter()) {
     this._eventBus = eventBus;
+    this._adapter = adapter;
     this._state = this._defaultState();
     this._saveTimer = null;
     this._projectId = null;
     /** @type {import('./module-registry.js').ModuleRegistry | null} */
     this._moduleRegistry = null;
 
-    // Module-state cache (synchronous façade in front of IndexedDB).
+    // Module-state cache (synchronous façade in front of the adapter's IDB).
     /** @type {Map<string, object>} */
     this._moduleCache = new Map();
-    /** @type {Map<string, object>} */
-    this._pendingPuts = new Map();
-    /** @type {Set<string>} */
-    this._pendingDeletes = new Set();
     this._flushTimer = null;
-    /** @type {Promise<void> | null} */
-    this._flushInFlight = null;
+
+    this._unsub = null;           // adapter.subscribe() teardown handle
+    this._applyingRemote = false; // true while applying a remote change (suppresses write-back)
 
     this._installUnloadFlush();
   }
@@ -151,14 +147,6 @@ export class StateManager {
         layout: null, // null = use default layout from dashboard-tiles.js
       },
     };
-  }
-
-  // ─── Project prefix (per-project storage namespace) ────────
-
-  /** @returns {string} localStorage prefix for the active project */
-  _prefix() {
-    if (!this._projectId) this._ensureActiveProject();
-    return `${GLOBAL_PREFIX}p_${this._projectId}_`;
   }
 
   // ─── Public API ─────────────────────────────────────────────
@@ -214,6 +202,7 @@ export class StateManager {
    * @param {object} state
    */
   setModuleState(instanceId, state) {
+    if (this._applyingRemote) return;   // do not echo a remote apply back to the adapter
     if (this.isCompleted()) return;
     let snapshot;
     try {
@@ -223,8 +212,7 @@ export class StateManager {
       return;
     }
     this._moduleCache.set(instanceId, snapshot);
-    this._pendingPuts.set(instanceId, snapshot);
-    this._pendingDeletes.delete(instanceId);
+    this._adapter.putModule(this._projectId, instanceId, snapshot);
     this._scheduleFlush();
     this._eventBus.emit('data:changed', `module:${instanceId}`);
   }
@@ -234,10 +222,10 @@ export class StateManager {
    * @param {string} instanceId
    */
   removeModuleState(instanceId) {
+    if (this._applyingRemote) return;   // do not echo a remote apply back to the adapter
     if (this.isCompleted()) return;
     this._moduleCache.delete(instanceId);
-    this._pendingPuts.delete(instanceId);
-    this._pendingDeletes.add(instanceId);
+    this._adapter.removeModule(this._projectId, instanceId);
     this._scheduleFlush();
     this._eventBus.emit('data:changed', `module:${instanceId}:removed`);
   }
@@ -248,6 +236,7 @@ export class StateManager {
    * loop; this call does not block on them.
    */
   save() {
+    if (this._applyingRemote) return;   // do not echo a remote apply back to the adapter
     try {
       // Global (shared across projects)
       localStorage.setItem(`${GLOBAL_PREFIX}settings`, JSON.stringify(this._state.settings));
@@ -259,16 +248,18 @@ export class StateManager {
         return;
       }
 
-      // Per-project
-      const p = this._prefix();
-      localStorage.setItem(`${p}projectMeta`, JSON.stringify(this._state.projectMeta));
-      localStorage.setItem(`${p}phases`, JSON.stringify(this._state.phases));
-      localStorage.setItem(`${p}phaseAchievement`, JSON.stringify(this._state.phaseAchievement));
-      localStorage.setItem(`${p}phaseAchievementHistory`, JSON.stringify(this._state.phaseAchievementHistory || {}));
-      localStorage.setItem(`${p}models`, JSON.stringify(this._state.models || {}));
-      localStorage.setItem(`${p}optimizations`, JSON.stringify(this._state.optimizations || {}));
-      localStorage.setItem(`${p}dashboard`, JSON.stringify(this._state.dashboard));
-      localStorage.setItem(`${p}version`, this._state.version);
+      // Per-project — delegated to the storage adapter.
+      if (!this._projectId) this._ensureActiveProject();
+      this._adapter.saveProjectMeta(this._projectId, {
+        projectMeta: this._state.projectMeta,
+        phases: this._state.phases,
+        phaseAchievement: this._state.phaseAchievement,
+        phaseAchievementHistory: this._state.phaseAchievementHistory || {},
+        models: this._state.models || {},
+        optimizations: this._state.optimizations || {},
+        dashboard: this._state.dashboard,
+        version: this._state.version,
+      });
 
       // Update project name in project list
       this._updateProjectList();
@@ -288,42 +279,100 @@ export class StateManager {
     this._ensureActiveProject();
 
     try {
-      // Global settings
+      // Global settings — stay inline in localStorage (not via the adapter).
       const settings = localStorage.getItem(`${GLOBAL_PREFIX}settings`);
       if (settings) this._state.settings = JSON.parse(settings);
 
-      // Per-project data
-      const p = this._prefix();
-      const projectMeta = localStorage.getItem(`${p}projectMeta`);
-      const phases = localStorage.getItem(`${p}phases`);
-      const phaseAchievement = localStorage.getItem(`${p}phaseAchievement`);
-      const phaseAchievementHistory = localStorage.getItem(`${p}phaseAchievementHistory`);
-      const models = localStorage.getItem(`${p}models`);
-      const optimizations = localStorage.getItem(`${p}optimizations`);
-      const dashboard = localStorage.getItem(`${p}dashboard`);
-      const version = localStorage.getItem(`${p}version`);
-
-      if (projectMeta) {
-        const parsed = JSON.parse(projectMeta);
+      // Per-project doc (top-level state + module states) via the adapter.
+      const doc = await this._adapter.loadProjectDoc(this._projectId);
+      if (doc) {
+        const meta = doc.projectMeta || {};
         // Legacy 0.2 data has no cycle field — assume DMAIC. The full
         // 0.2→0.3 migration in migrations.js applies the same rule for
         // imported exports; this branch covers in-place LS data.
-        if (!parsed.cycle) parsed.cycle = DEFAULT_CYCLE;
-        this._state.projectMeta = parsed;
+        if (meta && Object.keys(meta).length > 0) {
+          if (!meta.cycle) meta.cycle = DEFAULT_CYCLE;
+          this._state.projectMeta = meta;
+        }
+        if (doc.phases && Object.keys(doc.phases).length > 0) this._state.phases = doc.phases;
+        if (doc.phaseAchievement && Object.keys(doc.phaseAchievement).length > 0) this._state.phaseAchievement = doc.phaseAchievement;
+        if (doc.phaseAchievementHistory) this._state.phaseAchievementHistory = doc.phaseAchievementHistory;
+        if (doc.models) this._state.models = doc.models;
+        if (doc.optimizations) this._state.optimizations = doc.optimizations;
+        if (doc.dashboard) this._state.dashboard = doc.dashboard;
+        if (doc.version) this._state.version = doc.version;
+
+        // Module states for the active project → cache.
+        this._moduleCache = new Map(Object.entries(doc.moduleStates || {}));
+      } else {
+        this._moduleCache.clear();
       }
-      if (phases)                   this._state.phases                  = JSON.parse(phases);
-      if (phaseAchievement)         this._state.phaseAchievement        = JSON.parse(phaseAchievement);
-      if (phaseAchievementHistory)  this._state.phaseAchievementHistory = JSON.parse(phaseAchievementHistory);
-      if (models)                   this._state.models                  = JSON.parse(models);
-      if (optimizations)            this._state.optimizations           = JSON.parse(optimizations);
-      if (dashboard)         this._state.dashboard          = JSON.parse(dashboard);
-      if (version)           this._state.version            = version;
     } catch (err) {
       console.error('[StateManager] Failed to load state:', err);
     }
 
-    // Load module states for the active project into the cache.
-    await this._loadModuleCache();
+    // Live remote sync: the adapter notifies us when a co-author writes.
+    if (this._unsub) this._unsub();
+    this._applyingRemote = false;
+    this._unsub = this._adapter.subscribe(() => this._onRemoteChange());
+  }
+
+  // ─── Remote Sync ────────────────────────────────────────────
+
+  /**
+   * Called by the adapter when the backing store changed remotely.
+   * Reloads the ProjectDoc (the adapter has already merged the remote update),
+   * diffs it against local cache/state, applies in place under the guard,
+   * and emits `state:remote-changed`.
+   * @private
+   */
+  async _onRemoteChange() {
+    if (this._applyingRemote) return;      // reentrancy guard
+    this._applyingRemote = true;
+    try {
+      const doc = await this._adapter.loadProjectDoc(this._projectId);
+      if (!doc) return;
+      const { instanceIds, metaChanged } = this._diffRemote(doc);
+      if (metaChanged) {
+        this._state.projectMeta = doc.projectMeta;
+        this._state.phases = doc.phases;
+        this._state.phaseAchievement = doc.phaseAchievement;
+        this._state.phaseAchievementHistory = doc.phaseAchievementHistory;
+        this._state.models = doc.models;
+        this._state.optimizations = doc.optimizations;
+        this._state.dashboard = doc.dashboard;
+        this._state.version = doc.version;
+      }
+      this._moduleCache = new Map(Object.entries(doc.moduleStates || {}));
+      this._eventBus.emit('state:remote-changed', { instanceIds, metaChanged });
+    } finally {
+      queueMicrotask(() => { this._applyingRemote = false; });
+    }
+  }
+
+  /**
+   * Compute which module instanceIds changed vs. the current cache and whether
+   * any meta/phases field changed vs. current state.
+   * @param {object} doc - the newly loaded ProjectDoc
+   * @returns {{ instanceIds: string[], metaChanged: boolean }}
+   * @private
+   */
+  _diffRemote(doc) {
+    const next = doc.moduleStates || {};
+    const changed = new Set();
+    for (const id of Object.keys(next)) {
+      const before = this._moduleCache.get(id);
+      if (JSON.stringify(before) !== JSON.stringify(next[id])) changed.add(id);
+    }
+    for (const id of this._moduleCache.keys()) if (!(id in next)) changed.add(id);
+
+    const metaFields = ['projectMeta', 'phases', 'phaseAchievement', 'phaseAchievementHistory',
+      'models', 'optimizations', 'dashboard', 'version'];
+    let metaChanged = false;
+    for (const f of metaFields) {
+      if (JSON.stringify(this._state[f]) !== JSON.stringify(doc[f])) { metaChanged = true; break; }
+    }
+    return { instanceIds: [...changed], metaChanged };
   }
 
   // ─── Multi-Project API ────────────────────────────────────────
@@ -341,10 +390,7 @@ export class StateManager {
    * @returns {{ id: string, name: string, created: string, modified: string }[]}
    */
   getProjects() {
-    try {
-      const raw = localStorage.getItem(`${GLOBAL_PREFIX}projects`);
-      return raw ? JSON.parse(raw) : [];
-    } catch { return []; }
+    return this._adapter.listProjects();
   }
 
   /**
@@ -356,14 +402,7 @@ export class StateManager {
    * @returns {string} new project ID
    */
   createProject(name, cycleId = DEFAULT_CYCLE) {
-    const id = genId();
-    const cycle = getCycle(cycleId).id;
-    const projects = this.getProjects();
-    const now = new Date().toISOString();
-    projects.push({ id, name: name || 'Neues Projekt', cycle, created: now, modified: now, status: 'active' });
-    localStorage.setItem(`${GLOBAL_PREFIX}projects`, JSON.stringify(projects));
-    localStorage.setItem(`${GLOBAL_PREFIX}activeProject`, id);
-    return id;
+    return this._adapter.createProject(name, cycleId);
   }
 
   /**
@@ -476,32 +515,19 @@ export class StateManager {
   async deleteProject(projectId) {
     const projects = this.getProjects();
     if (projects.length <= 1) return false;
+    if (!projects.some(p => p.id === projectId)) return false;
 
-    // If deleting the active project, drop any cached state and pending
-    // writes so a follow-up save/flush cannot resurrect zombie entries.
+    // If deleting the active project, drop any cached state and cancel the
+    // pending flush so a follow-up save/flush cannot resurrect zombie
+    // entries. The adapter drains its own pending queue in deleteProject().
     if (projectId === this._projectId) {
       this._moduleCache.clear();
-      this._pendingPuts.clear();
-      this._pendingDeletes.clear();
       if (this._flushTimer) { clearTimeout(this._flushTimer); this._flushTimer = null; }
     }
 
-    // Remove all localStorage keys for this project
-    const prefix = `${GLOBAL_PREFIX}p_${projectId}_`;
-    Object.keys(localStorage)
-      .filter(k => k.startsWith(prefix))
-      .forEach(k => localStorage.removeItem(k));
-
-    // Remove all IDB module states for this project
-    try {
-      await idbDeleteAllForProject(projectId);
-    } catch (err) {
-      console.error('[StateManager] IDB delete failed:', err);
-    }
-
-    // Remove from project list
-    const updated = projects.filter(p => p.id !== projectId);
-    localStorage.setItem(`${GLOBAL_PREFIX}projects`, JSON.stringify(updated));
+    // Adapter removes per-project storage (localStorage + IDB) and the
+    // registry entry, and drains its pending writes for this project.
+    await this._adapter.deleteProject(projectId);
 
     return true;
   }
@@ -512,11 +538,7 @@ export class StateManager {
    * @param {number} toIdx
    */
   reorderProjects(fromIdx, toIdx) {
-    const projects = this.getProjects();
-    if (fromIdx < 0 || fromIdx >= projects.length || toIdx < 0 || toIdx >= projects.length) return;
-    const [moved] = projects.splice(fromIdx, 1);
-    projects.splice(toIdx, 0, moved);
-    localStorage.setItem(`${GLOBAL_PREFIX}projects`, JSON.stringify(projects));
+    return this._adapter.reorderProjects(fromIdx, toIdx);
   }
 
   /**
@@ -535,12 +557,7 @@ export class StateManager {
    * @param {string} status - 'active' | 'completed'
    */
   setProjectStatus(projectId, status) {
-    const projects = this.getProjects();
-    const p = projects.find(pr => pr.id === projectId);
-    if (p) {
-      p.status = status;
-      localStorage.setItem(`${GLOBAL_PREFIX}projects`, JSON.stringify(projects));
-    }
+    return this._adapter.setProjectStatus(projectId, status);
   }
 
   /**
@@ -549,7 +566,9 @@ export class StateManager {
    * @returns {Promise<string>}
    */
   async exportAllJSON() {
-    // Capture any unsaved live edits in the active project before reading the cache.
+    // Capture any unsaved live edits in the active project before reading.
+    // After flushNow(), the active project's module states are in IDB, so
+    // the adapter's loadProjectDoc returns them for every project uniformly.
     this._eventBus.emit('project:before-export');
     await this.flushNow();
 
@@ -561,48 +580,28 @@ export class StateManager {
       projects: [],
     };
 
-    for (const proj of projects) {
-      const p = `${GLOBAL_PREFIX}p_${proj.id}_`;
-      const projectMeta = localStorage.getItem(`${p}projectMeta`);
-      const phases = localStorage.getItem(`${p}phases`);
-      const phaseAchievement = localStorage.getItem(`${p}phaseAchievement`);
-      const phaseAchievementHistory = localStorage.getItem(`${p}phaseAchievementHistory`);
-      const models = localStorage.getItem(`${p}models`);
-      const optimizations = localStorage.getItem(`${p}optimizations`);
-      const dashboard = localStorage.getItem(`${p}dashboard`);
-      const version = localStorage.getItem(`${p}version`);
+    const docs = await this._adapter.exportProjectDocs(projects.map(p => p.id));
+    const docById = new Map(docs.map(d => [d.id, d]));
 
-      const entry = {
+    for (const proj of projects) {
+      const doc = docById.get(proj.id) || {};
+      const meta = doc.projectMeta && Object.keys(doc.projectMeta).length > 0
+        ? doc.projectMeta
+        : { name: proj.name };
+
+      allData.projects.push({
         id: proj.id,
         status: proj.status || 'active',
-        projectMeta: projectMeta ? JSON.parse(projectMeta) : { name: proj.name },
-        phases: phases ? JSON.parse(phases) : {},
-        phaseAchievement: phaseAchievement ? JSON.parse(phaseAchievement) : {},
-        phaseAchievementHistory: phaseAchievementHistory ? JSON.parse(phaseAchievementHistory) : {},
-        models: models ? JSON.parse(models) : {},
-        optimizations: optimizations ? JSON.parse(optimizations) : {},
-        dashboard: dashboard ? JSON.parse(dashboard) : null,
-        version: version || VERSION,
-        moduleStates: {},
-      };
-
-      // Module states: active project from cache, others from IDB.
-      let moduleMap;
-      if (proj.id === this._projectId) {
-        moduleMap = this._moduleCache;
-      } else {
-        try {
-          moduleMap = await idbGetAllForProject(proj.id);
-        } catch (err) {
-          console.error('[StateManager] IDB read failed for project', proj.id, err);
-          moduleMap = new Map();
-        }
-      }
-      for (const [instanceId, state] of moduleMap) {
-        entry.moduleStates[instanceId] = state;
-      }
-
-      allData.projects.push(entry);
+        projectMeta: meta,
+        phases: doc.phases || {},
+        phaseAchievement: doc.phaseAchievement || {},
+        phaseAchievementHistory: doc.phaseAchievementHistory || {},
+        models: doc.models || {},
+        optimizations: doc.optimizations || {},
+        dashboard: doc.dashboard ?? null,
+        version: doc.version || VERSION,
+        moduleStates: doc.moduleStates || {},
+      });
     }
 
     return JSON.stringify(allData, null, 2);
@@ -631,46 +630,31 @@ export class StateManager {
 
     for (const proj of data.projects) {
       const id = genId();
-      const p = `${GLOBAL_PREFIX}p_${id}_`;
 
-      // Write project data
-      localStorage.setItem(`${p}projectMeta`, JSON.stringify(proj.projectMeta));
-      localStorage.setItem(`${p}phases`, JSON.stringify(proj.phases || {}));
-      localStorage.setItem(`${p}phaseAchievement`, JSON.stringify(proj.phaseAchievement || {}));
-      if (proj.phaseAchievementHistory) {
-        localStorage.setItem(`${p}phaseAchievementHistory`, JSON.stringify(proj.phaseAchievementHistory));
-      }
-      if (proj.models) {
-        localStorage.setItem(`${p}models`, JSON.stringify(proj.models));
-      }
-      if (proj.optimizations) {
-        localStorage.setItem(`${p}optimizations`, JSON.stringify(proj.optimizations));
-      }
-      if (proj.dashboard) {
-        localStorage.setItem(`${p}dashboard`, JSON.stringify(proj.dashboard));
-      }
-      localStorage.setItem(`${p}version`, proj.version || VERSION);
+      // Persist the per-project doc (top-level state + module states) via the
+      // adapter. Does NOT activate the project or stamp its own timestamps.
+      await this._adapter.importProjectDoc(id, {
+        projectMeta: proj.projectMeta,
+        phases: proj.phases || {},
+        phaseAchievement: proj.phaseAchievement || {},
+        phaseAchievementHistory: proj.phaseAchievementHistory || {},
+        models: proj.models || {},
+        optimizations: proj.optimizations || {},
+        dashboard: proj.dashboard ?? null,
+        version: proj.version || VERSION,
+        moduleStates: proj.moduleStates || {},
+      });
 
-      // Write module states directly to IDB (new project, not in cache).
-      if (proj.moduleStates && Object.keys(proj.moduleStates).length > 0) {
-        const puts = new Map(Object.entries(proj.moduleStates));
-        try {
-          await idbBatch(id, { puts });
-        } catch (err) {
-          console.error('[StateManager] IDB import failed for project', id, err);
-        }
-      }
-
-      // Add to project list
-      const projects = this.getProjects();
-      projects.push({
+      // Register the project with the FILE's status/timestamps/name-fallback,
+      // without activating it.
+      this._adapter.addProjectEntry({
         id,
         name: proj.projectMeta?.name || 'Importiert',
+        cycle: proj.projectMeta?.cycle || DEFAULT_CYCLE,
         created: proj.projectMeta?.created || new Date().toISOString(),
         modified: proj.projectMeta?.modified || new Date().toISOString(),
         status: proj.status || 'active',
       });
-      localStorage.setItem(`${GLOBAL_PREFIX}projects`, JSON.stringify(projects));
     }
   }
 
@@ -686,8 +670,8 @@ export class StateManager {
     this.save();
     await this.flushNow();
 
-    // Set new active
-    localStorage.setItem(`${GLOBAL_PREFIX}activeProject`, projectId);
+    // Set new active (via the adapter registry).
+    this._adapter.setActiveProjectId(projectId);
     this._projectId = projectId;
 
     // Seed defaults with the project's cycle so missing persistent state
@@ -695,11 +679,9 @@ export class StateManager {
     const proj = this.getProjects().find(p => p.id === projectId);
     const cycleId = proj?.cycle || DEFAULT_CYCLE;
 
-    // Reset and load new project
+    // Reset and reload the new project from the adapter.
     this._state = this._defaultState(cycleId);
     this._moduleCache.clear();
-    this._pendingPuts.clear();
-    this._pendingDeletes.clear();
     await this.load();
   }
 
@@ -749,14 +731,13 @@ export class StateManager {
     this._state.dashboard                = data.dashboard                 ?? this._defaultState().dashboard;
     this._state.version                  = VERSION;
 
-    // Replace module-state cache with imported states.
+    // Replace module-state cache with imported states, queueing each write
+    // through the adapter so save()/flushNow() persists them.
     this._moduleCache.clear();
-    this._pendingPuts.clear();
-    this._pendingDeletes.clear();
     if (data.moduleStates) {
       for (const [instanceId, state] of Object.entries(data.moduleStates)) {
         this._moduleCache.set(instanceId, state);
-        this._pendingPuts.set(instanceId, state);
+        this._adapter.putModule(this._projectId, instanceId, state);
       }
     }
 
@@ -770,7 +751,11 @@ export class StateManager {
    * @returns {Promise<void>}
    */
   async reset() {
-    const prefix = this._prefix();
+    if (!this._projectId) this._ensureActiveProject();
+
+    // Wipe this project's per-project localStorage keys but keep it
+    // registered (the adapter has no "reset one project" primitive).
+    const prefix = `${GLOBAL_PREFIX}p_${this._projectId}_`;
     Object.keys(localStorage)
       .filter(k => k.startsWith(prefix))
       .forEach(k => localStorage.removeItem(k));
@@ -781,10 +766,12 @@ export class StateManager {
       console.error('[StateManager] IDB reset failed:', err);
     }
 
+    // Drop any queued adapter writes for this project so they cannot
+    // resurrect the data we just wiped.
+    this._adapter.dropPending(this._projectId);
+
     this._state = this._defaultState();
     this._moduleCache.clear();
-    this._pendingPuts.clear();
-    this._pendingDeletes.clear();
   }
 
   /**
@@ -813,8 +800,8 @@ export class StateManager {
   }
 
   /**
-   * Flush queued writes to IndexedDB. Safe to call concurrently —
-   * overlapping calls await the in-flight promise and queue no extra work.
+   * Flush queued module-state writes to storage. The adapter owns the
+   * pending queue, batching, and re-queue-on-failure.
    * @private
    * @returns {Promise<void>}
    */
@@ -823,85 +810,36 @@ export class StateManager {
       clearTimeout(this._flushTimer);
       this._flushTimer = null;
     }
-    if (this._flushInFlight) return this._flushInFlight;
-    if (this._pendingPuts.size === 0 && this._pendingDeletes.size === 0) return;
-    if (!this._projectId) return;
-
-    const projectId = this._projectId;
-    const puts = this._pendingPuts;
-    const deletes = this._pendingDeletes;
-    this._pendingPuts = new Map();
-    this._pendingDeletes = new Set();
-
-    this._flushInFlight = (async () => {
-      try {
-        await idbBatch(projectId, { puts, deletes });
-      } catch (err) {
-        console.error('[StateManager] IDB flush failed:', err);
-        // Re-queue on failure so the next flush retries.
-        for (const [k, v] of puts) {
-          if (!this._pendingPuts.has(k)) this._pendingPuts.set(k, v);
-        }
-        for (const k of deletes) {
-          if (!this._pendingPuts.has(k)) this._pendingDeletes.add(k);
-        }
-      } finally {
-        this._flushInFlight = null;
-      }
-    })();
-    return this._flushInFlight;
+    return this._adapter.flush();
   }
 
   /**
-   * Force an immediate flush and wait until pending writes reach IDB.
+   * Force an immediate flush and wait until pending writes reach storage.
    * @returns {Promise<void>}
    */
   async flushNow() {
-    // Drain the queue; repeat once if new writes came in during flush.
-    for (let i = 0; i < 2; i++) {
-      if (this._pendingPuts.size === 0 && this._pendingDeletes.size === 0 && !this._flushInFlight) {
-        return;
-      }
-      await this._flush();
-      if (this._flushInFlight) await this._flushInFlight;
+    if (this._flushTimer) {
+      clearTimeout(this._flushTimer);
+      this._flushTimer = null;
     }
+    return this._adapter.flush();
   }
 
   /**
-   * Best-effort synchronous flush on page unload. IndexedDB transactions
-   * kicked off in beforeunload/visibilitychange are usually allowed to
-   * complete even after the handler returns.
+   * Best-effort flush on page unload. Storage transactions kicked off in
+   * beforeunload/visibilitychange are usually allowed to complete even
+   * after the handler returns.
    * @private
    */
   _installUnloadFlush() {
     if (typeof window === 'undefined') return;
-    const flush = () => {
-      if (this._pendingPuts.size === 0 && this._pendingDeletes.size === 0) return;
-      // Fire-and-forget. The transaction is queued on IDB synchronously.
-      this._flush();
-    };
+    // Fire-and-forget. The adapter queues its transaction synchronously.
+    const flush = () => { this._adapter.flush(); };
     window.addEventListener('visibilitychange', () => {
       if (document.visibilityState === 'hidden') flush();
     });
     window.addEventListener('pagehide', flush);
     window.addEventListener('beforeunload', flush);
-  }
-
-  /**
-   * Bulk-load all module states for the active project into the cache.
-   * @private
-   * @returns {Promise<void>}
-   */
-  async _loadModuleCache() {
-    this._moduleCache.clear();
-    try {
-      const map = await idbGetAllForProject(this._projectId);
-      for (const [instanceId, state] of map) {
-        this._moduleCache.set(instanceId, state);
-      }
-    } catch (err) {
-      console.error('[StateManager] Failed to load module cache:', err);
-    }
   }
 
   // ─── Internal ───────────────────────────────────────────────
@@ -912,68 +850,28 @@ export class StateManager {
   }
 
   /**
-   * Ensure a project ID is set. Migrates legacy single-project data if needed.
+   * Ensure a project ID is set, reading/creating via the adapter registry.
+   * Legacy single-project migration now lives in the adapter (see Task 5).
    * @private
    */
   _ensureActiveProject() {
-    let activeId = localStorage.getItem(`${GLOBAL_PREFIX}activeProject`);
-    let projects = this.getProjects();
+    const activeId = this._adapter.getActiveProjectId();
+    const projects = this._adapter.listProjects();
 
     if (activeId && projects.some(p => p.id === activeId)) {
       this._projectId = activeId;
       return;
     }
 
-    // First run or migration from legacy (single-project) format
+    // First run — create a default project (adapter activates it).
     if (projects.length === 0) {
-      const legacyMeta = localStorage.getItem(`${GLOBAL_PREFIX}projectMeta`);
-      if (legacyMeta) {
-        // Migrate legacy data into a new project. Legacy data predates the
-        // cycle concept → assume DMAIC.
-        const id = genId();
-        this._projectId = id;
-        this._migrateLegacy(id);
-        projects = [{ id, name: JSON.parse(legacyMeta).name || 'Neues Projekt', cycle: DEFAULT_CYCLE, created: new Date().toISOString(), modified: new Date().toISOString(), status: 'active' }];
-        localStorage.setItem(`${GLOBAL_PREFIX}projects`, JSON.stringify(projects));
-        localStorage.setItem(`${GLOBAL_PREFIX}activeProject`, id);
-        return;
-      }
-      // Truly first run — create default project
-      const id = this.createProject();
-      this._projectId = id;
+      this._projectId = this._adapter.createProject('Neues Projekt', DEFAULT_CYCLE);
       return;
     }
 
-    // activeId invalid — pick first project
+    // activeId invalid — pick first project.
     this._projectId = projects[0].id;
-    localStorage.setItem(`${GLOBAL_PREFIX}activeProject`, this._projectId);
-  }
-
-  /**
-   * Migrate legacy single-project localStorage keys into a project namespace.
-   * @private
-   * @param {string} projectId
-   */
-  _migrateLegacy(projectId) {
-    const p = `${GLOBAL_PREFIX}p_${projectId}_`;
-    const legacyKeys = ['projectMeta', 'phases', 'phaseAchievement', 'phaseAchievementHistory', 'version'];
-    for (const key of legacyKeys) {
-      const val = localStorage.getItem(`${GLOBAL_PREFIX}${key}`);
-      if (val) {
-        localStorage.setItem(`${p}${key}`, val);
-        localStorage.removeItem(`${GLOBAL_PREFIX}${key}`);
-      }
-    }
-    // Migrate module states: dmike_module_xxx → dmike_p_{id}_module_xxx
-    // (The later dmike_p_*_module_* → IDB migration then relocates these.)
-    const modulePrefix = `${GLOBAL_PREFIX}module_`;
-    Object.keys(localStorage)
-      .filter(k => k.startsWith(modulePrefix))
-      .forEach(k => {
-        const suffix = k.slice(GLOBAL_PREFIX.length); // module_xxx
-        localStorage.setItem(`${p}${suffix}`, localStorage.getItem(k));
-        localStorage.removeItem(k);
-      });
+    this._adapter.setActiveProjectId(this._projectId);
   }
 
   /**
@@ -981,16 +879,9 @@ export class StateManager {
    * @private
    */
   _updateProjectList() {
-    const projects = this.getProjects();
-    const p = projects.find(pr => pr.id === this._projectId);
-    if (p) {
-      p.name = this._state.projectMeta.name;
-      p.modified = this._state.projectMeta.modified;
-      // Keep project-list cycle in sync with projectMeta. For legacy entries
-      // that never had a cycle, this fills it in on the next save.
-      if (this._state.projectMeta.cycle) p.cycle = this._state.projectMeta.cycle;
-      else if (!p.cycle) p.cycle = DEFAULT_CYCLE;
-      localStorage.setItem(`${GLOBAL_PREFIX}projects`, JSON.stringify(projects));
-    }
+    const meta = this._state.projectMeta;
+    const patch = { name: meta.name, modified: meta.modified };
+    if (meta.cycle) patch.cycle = meta.cycle;
+    this._adapter.updateProjectEntry(this._projectId, patch);
   }
 }

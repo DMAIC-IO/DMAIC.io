@@ -130,12 +130,14 @@ suite('Math-Utils — lnGamma (fixture validation)', () => {
 // inline suite locks the implementation to SciPy's values.
 
 const DIGAMMA_CASES = [
+  // eslint-disable-next-line no-loss-of-precision -- SciPy gold-standard reference value
   { x: 0.01,  expected: -100.56088545780984,    tol: 1e-9,  desc: 'ψ(0.01) — small x, exercises recurrence' },
   { x: 0.5,   expected:   -1.9635100260214235,  tol: 1e-11, desc: 'ψ(0.5) = −γ − 2 ln 2' },
   { x: 1.0,   expected:   -0.5772156649015329,  tol: 1e-11, desc: 'ψ(1) = −γ' },
   { x: 1.5,   expected:    0.03648997397857652, tol: 1e-11, desc: 'ψ(1.5)' },
   { x: 2.0,   expected:    0.42278433509846713, tol: 1e-11, desc: 'ψ(2) = 1 − γ' },
   { x: 3.0,   expected:    0.9227843350984671,  tol: 1e-11, desc: 'ψ(3)' },
+  // eslint-disable-next-line no-loss-of-precision -- SciPy gold-standard reference value
   { x: 5.0,   expected:    1.5061176684318004,  tol: 1e-11, desc: 'ψ(5) = H_4 − γ' },
   { x: 10.0,  expected:    2.251752589066721,   tol: 1e-11, desc: 'ψ(10) = H_9 − γ' },
   { x: 100.0, expected:    4.600161852738087,   tol: 1e-12, desc: 'ψ(100) — pure asymptotic regime' },

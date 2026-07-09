@@ -62,11 +62,11 @@ export function lnGamma(z) {
   if (z < 0.5) {
     return Math.log(Math.PI / Math.sin(Math.PI * z)) - lnGamma(1 - z);
   }
-  z -= 1;
+  const zz = z - 1;
   let x = c[0];
-  for (let i = 1; i < 9; i++) x += c[i] / (z + i);
-  const t = z + 7.5;
-  return LN_SQRT2PI + (z + 0.5) * Math.log(t) - t + Math.log(x);
+  for (let i = 1; i < 9; i++) x += c[i] / (zz + i);
+  const t = zz + 7.5;
+  return LN_SQRT2PI + (zz + 0.5) * Math.log(t) - t + Math.log(x);
 }
 
 /**
@@ -97,9 +97,10 @@ export function digamma(x) {
     return digamma(1 - x) - Math.PI / Math.tan(Math.PI * x);
   }
   let r = 0;
-  while (x < 10) { r -= 1 / x; x += 1; }
-  const xx = 1 / (x * x);
-  r += Math.log(x) - 0.5 / x
+  let xv = x;
+  while (xv < 10) { r -= 1 / xv; xv += 1; }
+  const xx = 1 / (xv * xv);
+  r += Math.log(xv) - 0.5 / xv
      - xx * (1 / 12 - xx * (1 / 120 - xx * (1 / 252 - xx * (1 / 240))));
   return r;
 }
@@ -247,16 +248,16 @@ export function normalQuantile(p) {
     q = Math.sqrt(-2 * Math.log(p));
     return (((((c[0]*q+c[1])*q+c[2])*q+c[3])*q+c[4])*q+c[5]) /
            ((((d[0]*q+d[1])*q+d[2])*q+d[3])*q+1);
-  } else if (p <= pHigh) {
+  } if (p <= pHigh) {
     q = p - 0.5;
     const r = q * q;
     return (((((a[0]*r+a[1])*r+a[2])*r+a[3])*r+a[4])*r+a[5]) * q /
            (((((b[0]*r+b[1])*r+b[2])*r+b[3])*r+b[4])*r+1);
-  } else {
+  } 
     q = Math.sqrt(-2 * Math.log(1 - p));
     return -(((((c[0]*q+c[1])*q+c[2])*q+c[3])*q+c[4])*q+c[5]) /
             ((((d[0]*q+d[1])*q+d[2])*q+d[3])*q+1);
-  }
+  
 }
 
 // ─── Chi-Squared Distribution ───────────────────────────────

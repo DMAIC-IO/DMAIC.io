@@ -6,6 +6,7 @@
     "projectSwitcher": "Projekt wechseln",
     "projectName": "Projektname",
     "phaseNav": "Zyklus-Phasen",
+    "loading": "Anwendung wird geladen …",
     "desktopOnly": "DMAIC.io ist für Desktop-Monitore konzipiert. Bitte verwenden Sie einen Bildschirm mit mindestens 1280 px Breite.",
     "export": "Exportieren",
     "import": "Importieren",
@@ -26,7 +27,15 @@
     "importMigrated": "Datei aus v{from} auf v{to} migriert"
   },
   "footer": {
-    "versionsLink": "Alle Versionen anzeigen"
+    "versionsLink": "Alle Versionen anzeigen",
+    "licenses": "Lizenzen"
+  },
+  "licenses": {
+    "title": "Open-Source-Lizenzen",
+    "subtitle": "Diese Anwendung nutzt die folgenden Open-Source-Bibliotheken.",
+    "view": "Projektseite",
+    "fullText": "Vollständige Lizenztexte",
+    "close": "Schließen"
   },
   "tips": {
     "dismissTitle": "Diesen Tipp nicht mehr zeigen",
@@ -196,6 +205,8 @@
     "confirmOverwrite": "Das Modul enthält bereits Daten. Soll das Beispiel diese ersetzen?",
     "glossarySearchPlaceholder": "Begriff suchen …",
     "glossaryNoMatch": "Keine passenden Begriffe.",
+    "glossaryOtherTerms": "Weitere Begriffe",
+    "glossarySearchHint": "Suchen, um alle Begriffe zu durchsuchen.",
     "glossaryBack": "Zurück zur Liste",
     "glossaryAliases": "Auch bekannt als",
     "glossarySeeAlso": "Siehe auch",
@@ -3227,7 +3238,11 @@
       "moreRows": "weitere Zeilen (im Export enthalten)",
       "csvExported": "CSV exportiert",
       "sentToWorksheet": "Daten an Arbeitsblatt gesendet",
-      "noWorksheet": "Kein Arbeitsblatt vorhanden"
+      "noWorksheet": "Kein Arbeitsblatt vorhanden",
+      "min": "Min",
+      "max": "Max",
+      "seed": "Seed",
+      "remove": "Entfernen"
     },
     "distribution-fit": {
       "name": "Verteilungstests",
@@ -3367,6 +3382,13 @@
       "modelCustom": "Eigene Formel (JS)",
       "coeffLabel": "Koeffizienten: β₀ + β₁x + β₂y + β₃x² + β₄y² + β₅xy",
       "customFormula": "JavaScript-Formel (Variablen: x, y)",
+      "formulaHint": "Variablen: x, y · Operatoren: + − * / ^ ** · Funktionen z. B. sin, cos, exp, sqrt, log, ln, min, max, pow · Math.-Präfix optional, Winkel in Radiant.",
+      "formulaErrFn": "Funktion {name} ist nicht erlaubt.",
+      "formulaErrVar": "Unbekannte Variable {name} — erlaubt sind nur x und y.",
+      "formulaErrChar": "Unerlaubtes Zeichen {name} in der Formel.",
+      "formulaErrNum": "Ungültige Zahl {name} in der Formel.",
+      "formulaErrEmpty": "Die Formel ist leer.",
+      "formulaErrSyntax": "Syntaxfehler in der Formel.",
       "sectionAxes": "Achsen / Faktoren",
       "xFactorName": "X-Faktor Name",
       "yFactorName": "Y-Faktor Name",
@@ -3790,6 +3812,7 @@
       "ciLow": "KI unten",
       "ciHigh": "KI oben",
       "sortByPValue": "Nach p-Wert sortieren (höchster zuerst)",
+      "algoLabTitle": "Algorithm Lab",
       "errSelectBoth": "Bitte X- und Y-Spalte auswählen.",
       "errMinData": "Mindestens 3 gültige Wertepaare benötigt (aktuell: {n}).",
       "errInsufficientDf": "Zu wenige Datenpunkte für die gewählte Modellkomplexität.",
@@ -4307,7 +4330,8 @@
       "showMatrix": "Vollständige Matrix anzeigen",
       "hideMatrix": "Matrix ausblenden",
       "matrixLegend": "Zeile = Verbesserung (↑), Spalte = Verschlechterung (↓). Zahl in Zelle = Anzahl empfohlener Prinzipien. Klick auf eine Zelle setzt die Auswahl.",
-      "matrixCornerTip": "Zeile = Verbesserung, Spalte = Verschlechterung"
+      "matrixCornerTip": "Zeile = Verbesserung, Spalte = Verschlechterung",
+      "loadError": "Daten konnten nicht geladen werden"
     },
     "triz-9-windows": {
       "name": "9-Fenster (TRIZ Systemoperator)",
@@ -4339,6 +4363,7 @@
       "close": "Schließen",
       "imageTooLarge": "Bild zu groß (max. 2 MB).",
       "imageReadError": "Bild konnte nicht gelesen werden.",
+      "imageTypeError": "Ausgewählte Datei ist kein Bild.",
       "example": {
         "systemTitle": "Pkw mit Verbrennungsmotor",
         "cells": [
@@ -4727,6 +4752,7 @@
       "problemNotePlaceholder": "Optional: Kontext, Randbedingungen, Verweis auf 9-Fenster / IFR / Widerspruchsmatrix …",
       "filterAuto": "Nur empfohlene Klassen",
       "filterAll":  "Alle anzeigen",
+      "loading": "Lade Standardlösungen…",
       "loadExample": "Beispiel laden",
       "reset": "Zurücksetzen",
       "resetTitle": "Substanz-Feld-Analyse zurücksetzen?",

@@ -11,7 +11,7 @@
 export function parseRGBA(str) {
   const m = str.match(/rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*(?:,\s*([\d.]+))?\s*\)/);
   if (!m) return { r: 100, g: 100, b: 100, a: 1 };
-  return { r: +m[1], g: +m[2], b: +m[3], a: m[4] !== undefined ? +m[4] : 1 };
+  return { r: Number(m[1]), g: Number(m[2]), b: Number(m[3]), a: m[4] !== undefined ? Number(m[4]) : 1 };
 }
 
 /** { r, g, b, a } → rgba() string */
@@ -26,7 +26,7 @@ export function rgbaStr(c) {
  */
 export function rgbaToHex(c) {
   const hex = (v) => Math.round(v).toString(16).padStart(2, '0');
-  return '#' + hex(c.r) + hex(c.g) + hex(c.b) + hex(c.a * 255);
+  return `#${  hex(c.r)  }${hex(c.g)  }${hex(c.b)  }${hex(c.a * 255)}`;
 }
 
 /**
@@ -64,7 +64,7 @@ export function hexToRGBA(hex) {
 export function rgbaToHex6(rgba) {
   const c = parseRGBA(rgba);
   const hex = (v) => Math.round(v).toString(16).padStart(2, '0');
-  return '#' + hex(c.r) + hex(c.g) + hex(c.b);
+  return `#${  hex(c.r)  }${hex(c.g)  }${hex(c.b)}`;
 }
 
 // ── Color Picker ─────────────────────────────────────────────
@@ -147,8 +147,8 @@ export function openColorPicker(e, currentColor, onChange) {
     sliderRefs.set(ch.key, { slider, val });
     slider.addEventListener('input', () => {
       val.textContent = slider.value;
-      if (ch.key === 'a') c.a = +slider.value / 100;
-      else c[ch.key] = +slider.value;
+      if (ch.key === 'a') c.a = Number(slider.value) / 100;
+      else c[ch.key] = Number(slider.value);
       update();
     });
     row.appendChild(span);

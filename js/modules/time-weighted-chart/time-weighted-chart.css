@@ -17,6 +17,11 @@
   gap: var(--spacing-sm);
 }
 
+/* Wrapper from the <template x-if> param block. `display: contents` lets its
+   children (param-note + row-2) participate directly in the .dmike-split__input
+   flex column, so the spacing matches the legacy flat layout exactly. */
+.twc__params { display: contents; }
+
 /* ── Chart sections ── */
 
 .twc__chart-section {
@@ -47,8 +52,8 @@
   font-weight: var(--font-weight-medium);
 }
 
-.twc__badge--stable   { background: rgba(34, 197, 94, 0.12); color: var(--color-success); }
-.twc__badge--unstable { background: rgba(239, 68, 68, 0.12); color: var(--color-error); }
+.twc__badge--stable   { background: rgb(34 197 94 / 12%); color: var(--color-success); }
+.twc__badge--unstable { background: rgb(239 68 68 / 12%); color: var(--color-error); }
 
 .twc__plot-wrap { height: 320px; overflow: hidden; }
 

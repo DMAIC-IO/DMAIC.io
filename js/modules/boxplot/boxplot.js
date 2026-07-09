@@ -7,430 +7,380 @@
  * With grouping → one boxplot per unique group value.
  *
  * Uses the SVG chart framework (chartManager) for rendering.
+ * Migrated to createModule + Alpine CSP.
+ *
+ * Imperative widgets:
+ *   - DatasetPicker  (mounted in init(), disposed in destroy())
+ *   - chartManager   (stale-render-guard via _renderGen)
+ *   - Stats table    (renderStatsTable — POM locates [data-ref="stats-panel"] table)
+ *
+ * Key reference: js/modules/msa-typ1/ (DatasetPicker + chartManager pattern)
  */
 
-import { esc } from '../../core/html-utils.js';
-
+import { createModule } from '../../core/template-module.js';
+import { State } from './boxplot-model.js';
 import {
   DatasetPicker,
   getColumnValues, getColumnName,
 } from '../../ui/dataset-picker.js';
-
 import { computeSeriesStats, renderStatsTable } from '../../core/stats-panel.js';
 import { CHART_COLORS } from '../../core/chart/chart-colors.js';
 import { provisionWorksheet, removeProvisionedWorksheet } from '../../core/examples-registry.js';
 
-export default {
-  id: 'boxplot',
-  phase: 'data',
-  icon: 'bar-chart-2',
-  i18nKey: 'modules.boxplot',
-  version: '1.0.0',
-
-  _container: null,
-  _context: null,
-  /** Array of column refs (one per dataset row) */
-  _seriesRefs: [],
-  /** Parallel array: optional grouping column per dataset */
-  _groupRefs: [],
-  _showMean: true,
-  _showOutliers: true,
-  _showStats: true,
-  _confLevel: 95,
-  _chart: null,
-  _plotting: false,
-  _refLines: [],
-  _refAreas: [],
-  _bgColor: null,
-  _boxColors: [],
-  _eventUnsubs: [],
-  /** @type {DatasetPicker|null} */
-  _picker: null,
-  /** Worksheet provisioned by loadExample (cleaned up on next load). */
-  _exampleWorksheetId: null,
-
-  // ─── Lifecycle ──────────────────────────────────────────────
-
-  async init(container, context) {
-    this._container = container;
-    this._context = context;
-
-    if (!document.getElementById('boxplot-css')) {
-      const link = document.createElement('link');
-      link.id = 'boxplot-css';
-      link.rel = 'stylesheet';
-      link.href = './js/modules/boxplot/boxplot.css';
-      document.head.appendChild(link);
-    }
-
-    const saved = context.stateManager.getModuleState(context.instanceId);
-    if (saved) this._loadState(saved);
-
-    this._render();
-    this._autoPlot();
+const mod = createModule({
+  config: {
+    id: 'boxplot',
+    engine: 'alpine',
+    phase: 'data',
+    icon: 'bar-chart-2',
+    version: '1.0.0',
+    meta: import.meta,
   },
+  Model: State,
 
-  async destroy() {
-    for (const unsub of this._eventUnsubs) unsub();
-    this._eventUnsubs = [];
-    if (this._picker) { this._picker.destroy(); this._picker = null; }
-    this._destroyChart();
-    this._container.innerHTML = '';
-  },
-
-  onLanguageChange() {
-    this._destroyChart();
-    if (this._picker) { this._picker.destroy(); this._picker = null; }
-    this._render();
-    this._autoPlot();
-  },
-
-  onThemeChange() {},
-
-  getState() {
+  data(module, _t) {
     return {
-      seriesRefs: this._seriesRefs,
-      groupRefs: this._groupRefs,
-      showMean: this._showMean,
-      showOutliers: this._showOutliers,
-      showStats: this._showStats,
-      confLevel: this._confLevel,
-      refLines: this._refLines,
-      refAreas: this._refAreas,
-      bgColor: this._bgColor,
-      boxColors: this._boxColors,
-      exampleWorksheetId: this._exampleWorksheetId,
-    };
-  },
+      // ── Transient view state (not persisted) ──────────────────
+      /** @type {import('../../ui/dataset-picker.js').DatasetPicker|null} */
+      _picker: null,
+      /** @type {object|null} — active chart instance */
+      _chart: null,
+      /** Stale-render guard: incremented before each async chart.create */
+      _renderGen: 0,
+      /** @type {Array} — unsub functions for event-bus listeners */
+      _unsubs: [],
+      /** Groups from the last successful plot (for stats re-render) */
+      _lastGroups: null,
+      /** True while a plot is in progress (prevents concurrent renders) */
+      _plotting: false,
 
-  setState(data) {
-    if (data) this._loadState(data);
-    if (this._container) {
-      if (this._picker) { this._picker.destroy(); this._picker = null; }
-      this._render();
-      this._autoPlot();
-    }
-  },
+      // ── Column helpers ────────────────────────────────────────
 
-  help: () => import('./boxplot-help.js'),
+      /** @param {object} ref @returns {number[]} */
+      _getColumnValues(ref) {
+        return getColumnValues(module._context.stateManager, ref);
+      },
 
-  /** @private */
-  _loadState(saved) {
-    this._seriesRefs = saved.seriesRefs || [];
-    this._groupRefs = saved.groupRefs || [];
-    // Backward compat: old format had single valueRef/groupRef in grouped mode
-    if (saved.mode === 'grouped' && saved.valueRef) {
-      this._seriesRefs = [saved.valueRef];
-      this._groupRefs = [saved.groupRef || null];
-    }
-    this._showMean = saved.showMean ?? true;
-    this._showOutliers = saved.showOutliers ?? true;
-    this._showStats = saved.showStats ?? true;
-    this._confLevel = saved.confLevel ?? 95;
-    this._refLines = saved.refLines || [];
-    this._refAreas = saved.refAreas || [];
-    this._bgColor = saved.bgColor || null;
-    this._boxColors = saved.boxColors || [];
-    if (saved.exampleWorksheetId !== undefined) this._exampleWorksheetId = saved.exampleWorksheetId;
-  },
+      /** @param {object} ref @returns {string} */
+      _getColumnName(ref) {
+        return getColumnName(module._context.stateManager, ref);
+      },
 
-  /**
-   * Load a catalog example. Provisions the included worksheet and rewrites
-   * `__source__` placeholders in seriesRefs / groupRefs to the new instanceId.
-   * @param {{ meta: object, data: object }} payload
-   */
-  async loadExample(payload) {
-    if (!payload || !payload.data) return;
-    const t = (k) => this._context.i18n.t(k);
+      // ── Business logic (needs live column data — lives in data-Fn) ───
 
-    const hasContent = (this._seriesRefs?.length || 0) > 0;
-    if (hasContent && this._context?.confirmPopout) {
-      const ok = await this._context.confirmPopout(t('moduleHelp.confirmOverwrite'), { danger: true });
-      if (!ok) return;
-    }
+      /**
+       * Build chart groups from all dataset references.
+       * @param {function} t — i18n translator
+       * @returns {Array<{name:string, values:number[]}>}
+       */
+      _buildGroups(t) {
+        if (this.model.seriesRefs.length === 0) {
+          throw new Error(t('errNoSeries'));
+        }
+        const groups = [];
+        for (let i = 0; i < this.model.seriesRefs.length; i++) {
+          const ref = this.model.seriesRefs[i];
+          const groupRef = this.model.groupRefs[i] || null;
+          const rawVals = this._getColumnValues(ref);
+          const colName = this._getColumnName(ref);
 
-    const data = { ...payload.data };
+          if (!groupRef) {
+            // No grouping: one boxplot from this column
+            const values = rawVals.filter(v => v != null && typeof v === 'number' && !isNaN(v));
+            if (values.length < 2) {
+              throw new Error(t('errTooFew', { col: colName }));
+            }
+            groups.push({ name: colName, values });
+          } else {
+            // Grouped: split by group column values
+            const rawGroups = this._getColumnValues(groupRef);
+            const len = Math.min(rawVals.length, rawGroups.length);
+            const buckets = new Map();
+            for (let j = 0; j < len; j++) {
+              const v = rawVals[j];
+              const g = rawGroups[j];
+              if (v == null || typeof v !== 'number' || isNaN(v)) continue;
+              if (g == null) continue;
+              const key = String(g);
+              if (!buckets.has(key)) buckets.set(key, []);
+              buckets.get(key).push(v);
+            }
+            for (const [key, values] of buckets) {
+              if (values.length < 2) continue;
+              groups.push({ name: `${colName} — ${key}`, values });
+            }
+          }
+        }
+        if (groups.length === 0) throw new Error(t('errNoData'));
+        return groups;
+      },
 
-    if (data.sourceWorksheetData) {
-      const wsState = data.sourceWorksheetData;
-      delete data.sourceWorksheetData;
-      if (this._exampleWorksheetId) {
-        removeProvisionedWorksheet(this._context, this._exampleWorksheetId);
-        this._exampleWorksheetId = null;
-      }
-      const ref = provisionWorksheet(this._context, wsState);
-      if (ref) {
-        this._exampleWorksheetId = ref.instanceId;
-        data.exampleWorksheetId = ref.instanceId;
-        const rewrite = (r) => (r && r.instanceId === '__source__') ? { ...r, instanceId: ref.instanceId } : r;
-        if (Array.isArray(data.seriesRefs)) data.seriesRefs = data.seriesRefs.map(rewrite);
-        if (Array.isArray(data.groupRefs)) data.groupRefs = data.groupRefs.map(rewrite);
-      }
-    }
+      // ── Chart rendering ───────────────────────────────────────
 
-    this.setState(data);
-    this._save();
+      _syncFromChart() {
+        if (this._chart && this._chart.config) {
+          this.model.showMean = this._chart.config.showMean ?? this.model.showMean;
+          this.model.showOutliers = this._chart.config.showOutliers ?? this.model.showOutliers;
+        }
+      },
 
-    const lang = this._context.i18n.getLanguage();
-    const title = payload.meta?.title?.[lang] || payload.meta?.title?.en || payload.meta?.id || '';
-    this._context.notify?.(t('moduleHelp.exampleLoaded').replace('{title}', title), 'success');
-  },
+      _destroyChart() {
+        if (this._chart) {
+          try { module._context.chartManager.destroy(this._chart); } catch { /* ignore */ }
+          this._chart = null;
+        }
+      },
 
-  // ─── Column helpers ────────────────────────────────────────
+      _showError(msg) {
+        const errBox = module._container.querySelector('[data-ref="error-box"]');
+        if (errBox) {
+          errBox.textContent = msg;
+          errBox.style.display = 'block';
+          setTimeout(() => { errBox.style.display = 'none'; }, 4000);
+        }
+      },
 
-  _getColumnValues(ref) {
-    return getColumnValues(this._context?.stateManager, ref);
-  },
+      /** Show placeholder, hide chart */
+      _showPlaceholder() {
+        const placeholder = module._container.querySelector('[data-ref="placeholder"]');
+        const chartCard = module._container.querySelector('[data-ref="chart-card"]');
+        if (placeholder) placeholder.style.display = '';
+        if (chartCard) chartCard.style.display = 'none';
+      },
 
-  _getColumnName(ref) {
-    return getColumnName(this._context?.stateManager, ref);
-  },
+      /** Hide placeholder, show chart card */
+      _showChartCard() {
+        const placeholder = module._container.querySelector('[data-ref="placeholder"]');
+        const chartCard = module._container.querySelector('[data-ref="chart-card"]');
+        if (placeholder) placeholder.style.display = 'none';
+        if (chartCard) chartCard.style.display = '';
+      },
 
-  // ─── Render ─────────────────────────────────────────────────
+      /** Auto-plot if enough data is selected; hide chart otherwise */
+      _autoPlot() {
+        const hasData = this.model.seriesRefs.length > 0;
+        if (!hasData) {
+          this._destroyChart();
+          this._showPlaceholder();
+          return;
+        }
+        this._syncFromChart();
+        this._plot();
+      },
 
-  _render() {
-    const t = (k, v) => this._context.i18n.t(`modules.boxplot.${k}`, v);
+      async _plot() {
+        if (this._plotting) return;
+        this._plotting = true;
 
-    this._container.innerHTML = `
-      <div class="boxplot dmike-split">
-        <div class="boxplot__input dmike-split__input">
-          <div class="dmike-split__section-title">${t('sectionData')}</div>
+        // Hide any previous error
+        const errBox = module._container.querySelector('[data-ref="error-box"]');
+        if (errBox) errBox.style.display = 'none';
 
-          <div data-ref="picker-wrap"></div>
+        let groups;
+        try {
+          groups = this._buildGroups(_t);
+        } catch (err) {
+          this._showError(err.message);
+          this._plotting = false;
+          return;
+        }
 
-          <div class="boxplot__error" data-ref="error-box"></div>
-        </div>
+        if (!groups || groups.length === 0) {
+          this._showError(_t('errNoData'));
+          this._plotting = false;
+          return;
+        }
 
-        <div class="boxplot__output dmike-split__output">
-          <div class="boxplot__placeholder" data-ref="placeholder"></div>
-          <div class="boxplot__chart-card" data-ref="chart-card" style="display:none">
-            <div class="boxplot__chart-main">
-              <div class="boxplot__plot-wrap" data-ref="plot"></div>
-            </div>
-          </div>
-          <div class="dmike-stats-panel" data-ref="stats-panel"></div>
-        </div>
-      </div>
-    `;
+        this._showChartCard();
 
-    this._createPicker();
-    this._bindEvents();
-  },
+        const gen = ++this._renderGen;
+        this._destroyChart();
 
-  _createPicker() {
-    const pickerWrap = this._container.querySelector('[data-ref="picker-wrap"]');
-    if (!pickerWrap) return;
+        const plotEl = module._container.querySelector('[data-ref="plot"]');
+        if (plotEl) plotEl.replaceChildren();
 
-    if (this._picker) { this._picker.destroy(); this._picker = null; }
+        try {
+          const chart = await module._context.chartManager.create(plotEl, 'boxplot', {
+            title: _t('chartTitle'),
+            xLabel: _t('xLabel'),
+            yLabel: '',
+            showLegend: groups.length > 1,
+            showYTicks: false,
+            showMean: this.model.showMean,
+            showOutliers: this.model.showOutliers,
+            groups,
+            boxColors: this.model.boxColors,
+            refLines: this.model.refLines,
+            refAreas: this.model.refAreas,
+            bgColor: this.model.bgColor,
+          });
 
-    this._picker = new DatasetPicker(pickerWrap, this._context, {
-      multi: true,
-      colors: CHART_COLORS,
-      slots: [
-        { key: 'value', label: 'V', title: this._context.i18n.t('ui.datasetPicker.slotV'), types: ['numeric'], minCount: 1, required: true },
-        { key: 'group', label: 'G', title: this._context.i18n.t('ui.datasetPicker.slotG'), group: true },
-      ],
-      onChange: (datasets) => {
-        // Only keep datasets that have a value column selected
-        const valid = datasets.filter(ds => ds.value != null);
-        this._seriesRefs = valid.map(ds => ds.value);
-        this._groupRefs = valid.map(ds => ds.group || null);
-        this._save();
+          if (gen !== this._renderGen) {
+            // Stale render — a newer render started while awaiting
+            try { module._context.chartManager.destroy(chart); } catch { /* ignore */ }
+            this._plotting = false;
+            return;
+          }
+          this._chart = chart;
+        } catch (err) {
+          this._showError(err.message || _t('errGeneric'));
+        }
+
+        this._lastGroups = groups;
+        this._renderStats();
+        this._plotting = false;
+      },
+
+      _renderStats() {
+        const panel = module._container.querySelector('[data-ref="stats-panel"]');
+        if (!panel) return;
+
+        if (!this.model.showStats || !this._lastGroups) {
+          panel.style.display = 'none';
+          panel.replaceChildren();
+          return;
+        }
+
+        const series = this._lastGroups.map((g, i) => ({
+          name: g.name,
+          values: g.values,
+          color: (this.model.boxColors[i] || CHART_COLORS[i % CHART_COLORS.length]),
+          visible: true,
+        }));
+        const seriesStats = computeSeriesStats(series, this.model.confLevel / 100);
+        renderStatsTable(panel, seriesStats, {
+          i18n: module._context.i18n,
+          confLevel: this.model.confLevel,
+        });
+      },
+
+      // ── DatasetPicker (imperative widget) ─────────────────────
+
+      _mountPicker() {
+        const pickerWrap = module._container.querySelector('[data-ref="picker-wrap"]');
+        if (!pickerWrap) return;
+
+        this._picker?.destroy();
+        this._picker = new DatasetPicker(pickerWrap, module._context, {
+          multi: true,
+          colors: CHART_COLORS,
+          slots: [
+            { key: 'value', label: 'V', title: module._context.i18n.t('ui.datasetPicker.slotV'), types: ['numeric'], minCount: 1, required: true },
+            { key: 'group', label: 'G', title: module._context.i18n.t('ui.datasetPicker.slotG'), group: true },
+          ],
+          onChange: (datasets) => {
+            // Only keep datasets that have a value column selected
+            const valid = datasets.filter(ds => ds.value != null);
+            this.model.seriesRefs = valid.map(ds => ds.value);
+            this.model.groupRefs = valid.map(ds => ds.group || null);
+            this._autoPlot();
+          },
+        });
+
+        // Restore saved refs
+        if (this.model.seriesRefs.length > 0) {
+          this._picker.value = this.model.seriesRefs.map((ref, i) => ({
+            value: ref,
+            group: this.model.groupRefs[i] || null,
+          }));
+        }
+      },
+
+      // ── Alpine component lifecycle ────────────────────────────
+
+      init() {
+        // Fresh per-instance transient collections
+        this._chart = null;
+        this._picker = null;
+        this._unsubs = [];
+        this._lastGroups = null;
+        this._plotting = false;
+        this._renderGen = 0;
+
+        this._mountPicker();
+
+        const eb = module._context.eventBus;
+
+        // Refresh picker when the user switches back to this module
+        const onActivated = ({ instanceId }) => {
+          if (instanceId === module._context.instanceId) this._picker?.refresh();
+        };
+        eb.on('module:activated', onActivated);
+        this._unsubs.push(() => eb.off('module:activated', onActivated));
+
+        // Re-render chart on theme change
+        const onTheme = () => {
+          if (this._lastGroups) this._plot();
+        };
+        eb.on('theme:changed', onTheme);
+        this._unsubs.push(() => eb.off('theme:changed', onTheme));
+
+        // Trigger initial plot from restored state
         this._autoPlot();
       },
-    });
 
-    // Restore saved refs
-    if (this._seriesRefs.length > 0) {
-      this._picker.value = this._seriesRefs.map((ref, i) => ({
-        value: ref,
-        group: this._groupRefs?.[i] || null,
-      }));
-    }
+      destroy() {
+        for (const unsub of this._unsubs) unsub();
+        this._unsubs = [];
+        this._picker?.destroy();
+        this._picker = null;
+        this._destroyChart();
+      },
+    };
   },
+});
 
-  // ─── Events ─────────────────────────────────────────────────
+/**
+ * Custom loadExample: Boxplot examples ship a full worksheet
+ * (`sourceWorksheetFile` resolved externally → `sourceWorksheetData`) and use
+ * the literal placeholder `__source__` as the seriesRef.instanceId / groupRef.instanceId.
+ * On load we provision a fresh worksheet, rewrite the placeholder, then apply state.
+ *
+ * This replaces the generic createModule loadExample because of the worksheet
+ * provisioning the generic helper cannot perform.
+ *
+ * @param {{ meta: object, data: object }} payload
+ */
+mod.loadExample = async function loadExample(payload) {
+  if (!payload || !payload.data) return;
+  const ctx = this._context;
+  const t = (key) => ctx.i18n.t(key);
 
-  _bindEvents() {
-  },
+  const current = this.getState();
+  const currentModel = current ? State.fromJSON(current) : null;
+  if (currentModel && currentModel.hasContent() && ctx.confirmPopout) {
+    const ok = await ctx.confirmPopout(t('moduleHelp.confirmOverwrite'), { danger: true });
+    if (!ok) return;
+  }
 
-  _showError(msg) {
-    const errBox = this._container?.querySelector('[data-ref="error-box"]');
-    if (errBox) {
-      errBox.textContent = msg;
-      errBox.style.display = 'block';
-      setTimeout(() => { errBox.style.display = 'none'; }, 4000);
+  const data = { ...payload.data };
+
+  if (data.sourceWorksheetData) {
+    const wsState = data.sourceWorksheetData;
+    delete data.sourceWorksheetData;
+
+    // Clean up previously provisioned worksheet
+    const prevId = currentModel && currentModel.exampleWorksheetId;
+    if (prevId) removeProvisionedWorksheet(ctx, prevId);
+
+    const ref = provisionWorksheet(ctx, wsState);
+    if (ref) {
+      data.exampleWorksheetId = ref.instanceId;
+      // Rewrite __source__ placeholder in all series and group refs
+      const rewrite = (r) => (r && r.instanceId === '__source__') ? { ...r, instanceId: ref.instanceId } : r;
+      if (Array.isArray(data.seriesRefs)) data.seriesRefs = data.seriesRefs.map(rewrite);
+      if (Array.isArray(data.groupRefs)) data.groupRefs = data.groupRefs.map(r => (r ? rewrite(r) : r));
     }
-  },
+  }
 
-  _save() {
-    this._syncFromChart();
-    this._context.stateManager.setModuleState(this._context.instanceId, this.getState());
-  },
+  this.setState(data);
+  ctx.stateManager.setModuleState(ctx.instanceId, this.getState());
 
-  _destroyChart() {
-    if (this._chart) {
-      this._context.chartManager.destroy(this._chart);
-      this._chart = null;
-    }
-  },
-
-  // ─── Auto-Plot ──────────────────────────────────────────────
-
-  /** Sync showMean/showOutliers from live chart config back to module state */
-  _syncFromChart() {
-    if (this._chart && this._chart.config) {
-      this._showMean = this._chart.config.showMean ?? this._showMean;
-      this._showOutliers = this._chart.config.showOutliers ?? this._showOutliers;
-    }
-  },
-
-  /** Auto-plot if enough data is selected; hide chart otherwise */
-  _autoPlot() {
-    const hasData = this._seriesRefs.length > 0;
-
-    if (!hasData) {
-      this._destroyChart();
-      const placeholder = this._container?.querySelector('[data-ref="placeholder"]');
-      const chartCard = this._container?.querySelector('[data-ref="chart-card"]');
-      if (placeholder) placeholder.style.display = '';
-      if (chartCard) chartCard.style.display = 'none';
-      return;
-    }
-
-    this._syncFromChart();
-    this._plot();
-  },
-
-  // ─── Plot ───────────────────────────────────────────────────
-
-  async _plot() {
-    if (this._plotting) return;
-    this._plotting = true;
-
-    const t = (k, v) => this._context.i18n.t(`modules.boxplot.${k}`, v);
-    const errBox = this._container?.querySelector('[data-ref="error-box"]');
-    if (errBox) errBox.style.display = 'none';
-
-    let groups;
-
-    try {
-      groups = this._buildGroups(t);
-    } catch (err) {
-      this._showError(err.message);
-      this._plotting = false;
-      return;
-    }
-
-    if (!groups || groups.length === 0) {
-      this._showError(t('errNoData'));
-      this._plotting = false;
-      return;
-    }
-
-    const placeholder = this._container.querySelector('[data-ref="placeholder"]');
-    const chartCard = this._container.querySelector('[data-ref="chart-card"]');
-    const plotEl = this._container.querySelector('[data-ref="plot"]');
-    if (placeholder) placeholder.style.display = 'none';
-    if (chartCard) chartCard.style.display = '';
-
-    this._destroyChart();
-    if (plotEl) plotEl.innerHTML = '';
-
-    try {
-      this._chart = await this._context.chartManager.create(plotEl, 'boxplot', {
-        title: t('chartTitle'),
-        xLabel: t('xLabel'),
-        yLabel: '',
-        showLegend: groups.length > 1,
-        showYTicks: false,
-        showMean: this._showMean,
-        showOutliers: this._showOutliers,
-        groups,
-        boxColors: this._boxColors,
-        refLines: this._refLines,
-        refAreas: this._refAreas,
-        bgColor: this._bgColor,
-      });
-    } catch (err) {
-      this._showError(err.message || t('errGeneric'));
-    }
-
-    this._lastGroups = groups;
-    this._renderStats();
-    this._plotting = false;
-  },
-
-  _renderStats() {
-    const panel = this._container?.querySelector('[data-ref="stats-panel"]');
-    if (!panel) return;
-
-    if (!this._showStats || !this._lastGroups) {
-      panel.style.display = 'none';
-      panel.innerHTML = '';
-      return;
-    }
-
-    const series = this._lastGroups.map((g, i) => ({
-      name: g.name,
-      values: g.values,
-      color: (this._boxColors[i] || CHART_COLORS[i % CHART_COLORS.length]),
-      visible: true,
-    }));
-    const seriesStats = computeSeriesStats(series, this._confLevel / 100);
-    renderStatsTable(panel, seriesStats, {
-      i18n: this._context.i18n,
-      confLevel: this._confLevel,
-    });
-  },
-
-  /**
-   * Build groups from all datasets.
-   * Each dataset has a value column and optionally a grouping column.
-   * Without grouping: one boxplot per dataset.
-   * With grouping: one boxplot per unique group value within that dataset.
-   */
-  _buildGroups(t) {
-    if (this._seriesRefs.length === 0) {
-      throw new Error(t('errNoSeries'));
-    }
-
-    const groups = [];
-    for (let i = 0; i < this._seriesRefs.length; i++) {
-      const ref = this._seriesRefs[i];
-      const groupRef = this._groupRefs[i] || null;
-      const rawVals = this._getColumnValues(ref);
-      const colName = this._getColumnName(ref);
-
-      if (!groupRef) {
-        // No grouping: one boxplot from this column
-        const values = rawVals.filter(v => v != null && typeof v === 'number' && !isNaN(v));
-        if (values.length < 2) {
-          throw new Error(t('errTooFew', { col: colName }));
-        }
-        groups.push({ name: colName, values });
-      } else {
-        // Grouped: split by group column values
-        const rawGroups = this._getColumnValues(groupRef);
-        const len = Math.min(rawVals.length, rawGroups.length);
-        const buckets = new Map();
-        for (let j = 0; j < len; j++) {
-          const v = rawVals[j];
-          const g = rawGroups[j];
-          if (v == null || typeof v !== 'number' || isNaN(v)) continue;
-          if (g == null) continue;
-          const key = String(g);
-          if (!buckets.has(key)) buckets.set(key, []);
-          buckets.get(key).push(v);
-        }
-        for (const [key, values] of buckets) {
-          if (values.length < 2) continue;
-          groups.push({ name: `${colName} — ${key}`, values });
-        }
-      }
-    }
-
-    if (groups.length === 0) throw new Error(t('errNoData'));
-    return groups;
-  },
+  const lang = ctx.i18n.getLanguage();
+  const title = payload.meta && payload.meta.title
+    ? (payload.meta.title[lang] || payload.meta.title.en || payload.meta.id || '')
+    : (payload.meta && payload.meta.id ? payload.meta.id : '');
+  ctx.notify && ctx.notify(t('moduleHelp.exampleLoaded').replace('{title}', title), 'success');
 };
+
+export default mod;

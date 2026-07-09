@@ -32,6 +32,7 @@
  */
 
 import ChartBase from '../chart-base.js';
+import { h } from '../../dom.js';
 import {
   svgEl, svgText, resolveColor, formatNum, dashArray, drawMarker, createPattern, getChartColors,
 } from '../chart-core.js';
@@ -233,8 +234,8 @@ export default class ParetoChart extends ChartBase {
       const cx = xScale(i);
       const yTop = yScale(d.value);
       const yBase = yScale(0);
-      const h = yBase - yTop;
-      if (h <= 0) return;
+      const barH = yBase - yTop;
+      if (barH <= 0) return;
 
       const color = d.color ? resolveColor(d.color) : resolveColor('var(--color-chart-1)');
       const opacity = d.opacity ?? defaultOpacity;
@@ -271,7 +272,7 @@ export default class ParetoChart extends ChartBase {
         const patId = `pareto-pat-${this._uid}-${i}`;
         createPattern(defs, patId, {
           pattern: d.pattern,
-          color: color,
+          color,
           patternSolidity: 0.6,
         });
         svgEl('rect', {
@@ -343,7 +344,7 @@ export default class ParetoChart extends ChartBase {
         svgEl('line', refAttrs, plotGroup);
 
         // Label on right edge
-        svgText(refVal + '%', {
+        svgText(`${refVal  }%`, {
           x: plotArea.x + plotArea.w + 8,
           y: yRef + 3,
           'text-anchor': 'start',
@@ -363,7 +364,7 @@ export default class ParetoChart extends ChartBase {
           x2: plotArea.x + plotArea.w + 5, y2: y,
           stroke: tickColor, 'stroke-width': 1,
         }, svg);
-        svgText(pct + '%', {
+        svgText(`${pct  }%`, {
           x: plotArea.x + plotArea.w + 8,
           y: y + 4,
           'text-anchor': 'start',
@@ -390,7 +391,7 @@ export default class ParetoChart extends ChartBase {
     // ── Rotated X-axis labels ───────────────────────────────────
     items.forEach((d, i) => {
       const cx = xScale(i);
-      const label = d.name.length > 16 ? d.name.substring(0, 14) + '\u2026' : d.name;
+      const label = d.name.length > 16 ? `${d.name.substring(0, 14)  }\u2026` : d.name;
       const txt = svgText(label, {
         x: 0, y: 0,
         'text-anchor': 'start',
@@ -407,7 +408,7 @@ export default class ParetoChart extends ChartBase {
         x: plotArea.x + plotArea.w / 2,
         y: plotArea.y + plotArea.h + PARETO_X_LABEL_OFFSET,
         'text-anchor': 'middle',
-        'font-size': (cfg.labelSize ?? 12) + 'px',
+        'font-size': `${cfg.labelSize ?? 12  }px`,
         'font-weight': '600',
         fill: textPrimary,
         'font-family': FONT_MAIN,
@@ -499,7 +500,7 @@ export default class ParetoChart extends ChartBase {
   // ── Abstract Implementation: Find Nearby ──────────────────────
 
   /** @override */
-  _findNearby(dataX, dataY, proximityPx) {
+  _findNearby(dataX, dataY, _proximityPx) {
     const items = this._items;
     if (!items || !items.length) return [];
 
@@ -529,22 +530,24 @@ export default class ParetoChart extends ChartBase {
     const px = this._xScale(idx);
     const py = this._yScale(d.value);
 
-    const segLine = hitSegment
-      ? `${hitSegment.name}: ${formatNum(hitSegment.value, 1, this.locale)}<br>`
-      : '';
-
-    const bucketLine = (typeof d._bucketSize === 'number' && d._bucketSize > 0)
-      ? `<span style="opacity:.7">${this.config.otherCountTemplate
+    const hasBucket = (typeof d._bucketSize === 'number' && d._bucketSize > 0);
+    const bucketText = hasBucket
+      ? (this.config.otherCountTemplate
           ? this.config.otherCountTemplate.replace('{n}', String(d._bucketSize))
-          : `${d._bucketSize} ×`}</span><br>`
+          : `${d._bucketSize} ×`)
       : '';
 
     return [{
-      html: `<b>${d.name}</b><br>`
-        + bucketLine
-        + segLine
-        + `${formatNum(d.value, 1, this.locale)}<br>`
-        + `Σ ${cumPct}%`,
+      node: h('div', null,
+        h('b', null, d.name),
+        h('br'),
+        hasBucket ? h('span', { style: 'opacity:.7' }, bucketText) : null,
+        hasBucket ? h('br') : null,
+        hitSegment ? `${hitSegment.name}: ${formatNum(hitSegment.value, 1, this.locale)}` : null,
+        hitSegment ? h('br') : null,
+        `${formatNum(d.value, 1, this.locale)}`, h('br'),
+        `Σ ${cumPct}%`,
+      ),
       px, py,
       color: hitSegment?.color || d.color || 'var(--color-chart-1)',
     }];

@@ -188,46 +188,46 @@ suite('chart-suggestions — getSuggestionsFor: single categorical', () => {
 });
 
 suite('chart-suggestions — getSuggestionsFor: two continuous', () => {
-  test('exactly 2 continuous → scatter only', () => {
+  test('exactly 2 continuous → scatter, scatter-marginal-boxplot, scatter-marginal-histogram', () => {
     const out = chartTypes(getSuggestionsFor([cont(), cont()]));
-    assertArrayEqual(out, ['scatter']);
+    assertArrayEqual(out, ['scatter', 'scatter-marginal-boxplot', 'scatter-marginal-histogram']);
   });
 });
 
 suite('chart-suggestions — getSuggestionsFor: continuous + categorical', () => {
-  test('continuous + categorical → boxplot first, then IVP, bar', () => {
+  test('continuous + categorical → boxplot, main-effects, IVP, bar', () => {
     const out = chartTypes(getSuggestionsFor([cont(), cat()]));
-    assertArrayEqual(out, ['boxplot', 'individual-value-plot', 'bar']);
+    assertArrayEqual(out, ['boxplot', 'main-effects', 'individual-value-plot', 'bar']);
   });
 
   test('order of columns does not matter (categorical first)', () => {
     const out = chartTypes(getSuggestionsFor([cat(), cont()]));
-    assertArrayEqual(out, ['boxplot', 'individual-value-plot', 'bar']);
+    assertArrayEqual(out, ['boxplot', 'main-effects', 'individual-value-plot', 'bar']);
   });
 });
 
 suite('chart-suggestions — getSuggestionsFor: date + continuous', () => {
-  test('n=50 → run-chart, control-chart, scatter', () => {
+  test('n=50 → run-chart, control-chart, ewma, cusum, scatter', () => {
     const out = chartTypes(getSuggestionsFor([date(50), cont(50)]));
-    assertArrayEqual(out, ['run-chart', 'control-chart', 'scatter']);
+    assertArrayEqual(out, ['run-chart', 'control-chart', 'ewma', 'cusum', 'scatter']);
   });
 
-  test('n=20 → control-chart filtered out (minN 25)', () => {
+  test('n=20 → control-chart filtered out (minN 25), ewma and cusum stay', () => {
     const out = chartTypes(getSuggestionsFor([date(20), cont(20)]));
-    assertArrayEqual(out, ['run-chart', 'scatter']);
+    assertArrayEqual(out, ['run-chart', 'ewma', 'cusum', 'scatter']);
   });
 });
 
 suite('chart-suggestions — getSuggestionsFor: multi-continuous (≥3)', () => {
-  test('3 continuous → scatter-matrix, boxplot, IVP', () => {
+  test('3 continuous → scatter-matrix, bubble, boxplot, IVP', () => {
     const out = chartTypes(getSuggestionsFor([cont(), cont(), cont()]));
-    assertArrayEqual(out, ['scatter-matrix', 'boxplot', 'individual-value-plot']);
+    assertArrayEqual(out, ['scatter-matrix', 'bubble', 'boxplot', 'individual-value-plot']);
   });
 
   test('5 continuous matches the same rule', () => {
     const cols = [cont(), cont(), cont(), cont(), cont()];
     const out = chartTypes(getSuggestionsFor(cols));
-    assertArrayEqual(out, ['scatter-matrix', 'boxplot', 'individual-value-plot']);
+    assertArrayEqual(out, ['scatter-matrix', 'bubble', 'boxplot', 'individual-value-plot']);
   });
 
   test('multi-continuous scatter-matrix is top-ranked', () => {
@@ -244,14 +244,14 @@ suite('chart-suggestions — getSuggestionsFor: ordinal & combinations', () => {
     assertArrayEqual(out, ['bar', 'pareto']);
   });
 
-  test('continuous + ordinal → boxplot, IVP, run-chart', () => {
+  test('continuous + ordinal → boxplot, main-effects, IVP, run-chart', () => {
     const out = chartTypes(getSuggestionsFor([cont(), ordinal()]));
-    assertArrayEqual(out, ['boxplot', 'individual-value-plot', 'run-chart']);
+    assertArrayEqual(out, ['boxplot', 'main-effects', 'individual-value-plot', 'run-chart']);
   });
 
-  test('two categorical → bar, pareto', () => {
+  test('two categorical → bar, pareto, mosaic, heatmap', () => {
     const out = chartTypes(getSuggestionsFor([cat(), cat(['X', 'Y'])]));
-    assertArrayEqual(out, ['bar', 'pareto']);
+    assertArrayEqual(out, ['bar', 'pareto', 'mosaic', 'heatmap']);
   });
 
   test('categorical + ordinal → bar only', () => {
@@ -270,8 +270,8 @@ suite('chart-suggestions — getSuggestionsFor: no-match cases', () => {
     assertEqual(getSuggestionsFor([identifier]).length, 0);
   });
 
-  test('three columns of mismatched kinds → no rule fires', () => {
-    assertEqual(getSuggestionsFor([cont(), cat(), date()]).length, 0);
+  test('three columns with no matching rule → no rule fires', () => {
+    assertEqual(getSuggestionsFor([cont(), cont(), cat()]).length, 0);
   });
 });
 

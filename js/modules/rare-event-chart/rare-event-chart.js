@@ -7,343 +7,220 @@
  * Both detect drifts in the rate of rare events (failures, accidents,
  * incidents) where Shewhart-style charts on counts/intervals fail because
  * the underlying distribution is geometric / exponential, not normal.
+ *
+ * Migrated to createModule + Alpine CSP. The Model holds only the persisted
+ * inputs (chart type, the referenced column, the example-worksheet id); the
+ * analysis result (limits, signals) is derived transiently in the view from
+ * those inputs plus the live worksheet column values. The SPC math lives in
+ * `js/engines/rare-event-chart-engine.js`. The ColumnPicker and the SVG
+ * control chart are mounted imperatively (they are not pure-template concerns).
  */
+
+import { createModule } from '../../core/template-module.js';
+import { State } from './rare-event-chart-model.js';
 
 import { ColumnPicker, getColumnValues, getColumnName } from '../../ui/column-picker.js';
 import { computeGChart, computeTChart } from '../../engines/rare-event-chart-engine.js';
-import { esc } from '../../core/html-utils.js';
-import { provisionWorksheet, removeProvisionedWorksheet } from '../../core/examples-registry.js';
+import { loadWorksheetExample, rewriteRefFields } from '../../core/examples-registry.js';
+import { chartModuleLifecycle } from '../../core/chart/chart-module-base.js';
 
-const TYPES = ['g', 't'];
-
-export default {
-  id: 'rare-event-chart',
-  phase: 'control',
-  icon: 'activity',
-  i18nKey: 'modules.rare-event-chart',
-  version: '1.0.0',
-
-  _container: null,
-  _context: null,
-  _chartTypeId: 'g',
-  _columnRef: null,
-  _picker: null,
-  _chart: null,
-  _autoRunTimer: null,
-  /** Worksheet provisioned by loadExample; replaced on each subsequent load. */
-  _exampleWorksheetId: null,
-
-  // ─── Lifecycle ──────────────────────────────────────────────
-
-  async init(container, context) {
-    this._container = container;
-    this._context = context;
-
-    if (!document.getElementById('rare-event-chart-css')) {
-      const link = document.createElement('link');
-      link.id = 'rare-event-chart-css';
-      link.rel = 'stylesheet';
-      link.href = './js/modules/rare-event-chart/rare-event-chart.css';
-      document.head.appendChild(link);
-    }
-
-    const saved = context.stateManager.getModuleState(context.instanceId);
-    if (saved) this._loadState(saved);
-
-    this._render();
-    this._initPicker();
-    this._bindEvents();
-    this._runAnalysis();
+const mod = createModule({
+  config: {
+    id: 'rare-event-chart',
+    engine: 'alpine',
+    phase: 'control',
+    icon: 'activity',
+    version: '1.0.0',
+    meta: import.meta,
   },
+  Model: State,
 
-  async destroy() {
-    clearTimeout(this._autoRunTimer);
-    this._destroyPicker();
-    this._destroyChart();
-    this._container.innerHTML = '';
-  },
+  data(module, _t) {
+    return {
+      ...chartModuleLifecycle(module, {
+        mountPicker() { this._mountPicker(); },
+        themeMode: 'rerun',
+        autorun: true,
+        onTheme() {
+          if (this.result) {
+            this.$nextTick(() => this._renderChart(this.result, ++this._renderGen));
+          }
+        },
+      }),
 
-  onLanguageChange() {
-    this._destroyChart();
-    this._destroyPicker();
-    this._render();
-    this._initPicker();
-    this._bindEvents();
-    this._runAnalysis();
-  },
+      // ── Transient view state (not persisted) ──────────────────
+      /**
+       * Derived analysis result for the template, or null. Shape:
+       *   { cl, ucl, lcl, sigma, n, signals, transformedNote,
+       *     chartValues, chartCl, chartUcl, chartLcl, chartSigma, yLabel }
+       * KPI fields (cl/ucl/lcl) use the ORIGINAL scale for t-charts;
+       * the chart* fields use the (possibly transformed) plotting scale.
+       */
+      result: null,
 
-  onThemeChange() {},
+      // ── View transformations ──────────────────────────────────
 
-  getState() {
-    return { chartTypeId: this._chartTypeId, columnRef: this._columnRef };
-  },
+      fmt(v) {
+        return Number.isFinite(v) ? v.toFixed(3) : '–';
+      },
 
-  setState(data) {
-    if (data) this._loadState(data);
-    if (this._container) {
-      this._destroyPicker();
-      this._render();
-      this._initPicker();
-      this._bindEvents();
-      this._runAnalysis();
-    }
-  },
+      signalsClass() {
+        const r = this.result;
+        return r && r.signals === 0 ? 'dmike-kpi--good' : 'dmike-kpi--bad';
+      },
 
-  help: () => import('./rare-event-chart-help.js'),
+      chartTitle() {
+        const colName = getColumnName(module._context.stateManager, this.model.columnRef);
+        return _t(`chartTitle_${  this.model.chartTypeId}`, { col: colName });
+      },
 
-  /**
-   * Load a catalog example. The payload carries the project state plus an
-   * inlined source worksheet. Provision the worksheet, rewrite the
-   * `__source__` placeholder in columnRef, then apply the state.
-   *
-   * @param {{ meta: object, data: object }} payload
-   */
-  async loadExample(payload) {
-    if (!payload || !payload.data) return;
-    const t = (k) => this._context.i18n.t(k);
+      isStable() {
+        return Boolean(this.result) && this.result.signals === 0;
+      },
 
-    const hasContent = !!this._columnRef;
-    if (hasContent && this._context?.confirmPopout) {
-      const ok = await this._context.confirmPopout(t('moduleHelp.confirmOverwrite'), { danger: true });
-      if (!ok) return;
-    }
+      badgeClass() {
+        return this.isStable() ? 'rec__badge--stable' : 'rec__badge--unstable';
+      },
 
-    const data = { ...payload.data };
+      badgeText() {
+        const r = this.result;
+        if (!r) return '';
+        return r.signals === 0 ? _t('stable') : _t('unstable', { count: r.signals });
+      },
 
-    if (data.sourceWorksheetData) {
-      const wsState = data.sourceWorksheetData;
-      delete data.sourceWorksheetData;
-      if (this._exampleWorksheetId) {
-        removeProvisionedWorksheet(this._context, this._exampleWorksheetId);
-        this._exampleWorksheetId = null;
-      }
-      const ref = provisionWorksheet(this._context, wsState);
-      if (ref) {
-        this._exampleWorksheetId = ref.instanceId;
-        if (data.columnRef?.instanceId === '__source__') {
-          data.columnRef = { ...data.columnRef, instanceId: ref.instanceId };
-        }
-      }
-    }
+      // ── Event handlers ─────────────────────────────────────────
 
-    this.setState(data);
-    this._save();
-
-    const lang = this._context.i18n.getLanguage();
-    const title = payload.meta?.title?.[lang] || payload.meta?.title?.en || payload.meta?.id || '';
-    this._context.notify?.(t('moduleHelp.exampleLoaded').replace('{title}', title), 'success');
-  },
-
-  // ─── State ──────────────────────────────────────────────────
-
-  _loadState(s) {
-    this._chartTypeId = TYPES.includes(s.chartTypeId) ? s.chartTypeId : 'g';
-    this._columnRef = s.columnRef || null;
-  },
-
-  _save() {
-    this._context.stateManager.setModuleState(this._context.instanceId, this.getState());
-  },
-
-  // ─── Render ─────────────────────────────────────────────────
-
-  _t(key, vars) { return this._context.i18n.t(`modules.rare-event-chart.${key}`, vars); },
-
-  _render() {
-    this._container.innerHTML = `
-      <div class="rec dmike-split">
-        <div class="rec__input dmike-split__input">
-
-          <div class="dmike-split__section-title">${this._t('sectionChartType')}</div>
-          <div class="field-group">
-            <label>${this._t('chartType')}</label>
-            <select class="field" data-ref="chart-type">
-              <option value="g"${this._chartTypeId === 'g' ? ' selected' : ''}>${this._t('type_g')}</option>
-              <option value="t"${this._chartTypeId === 't' ? ' selected' : ''}>${this._t('type_t')}</option>
-            </select>
-            <span class="rec__hint">${this._t('typeHint_' + this._chartTypeId)}</span>
-          </div>
-
-          <div class="dmike-split__section-title">${this._t('sectionData')}</div>
-          <div class="field-group">
-            <label>${this._t('dataColumn')}</label>
-            <div data-ref="col-picker-wrap"></div>
-            <span class="rec__hint">${this._t('dataHint_' + this._chartTypeId)}</span>
-          </div>
-
-        </div>
-
-        <div class="rec__output dmike-split__output">
-          <div data-ref="stats-bar"></div>
-          <div data-ref="chart-wrap"></div>
-        </div>
-      </div>
-    `;
-  },
-
-  _initPicker() {
-    const wrap = this._container.querySelector('[data-ref="col-picker-wrap"]');
-    if (!wrap) return;
-    this._picker = new ColumnPicker(wrap, this._context, {
-      mode: 'single',
-      types: ['numeric'],
-      minCount: 2,
-      onChange: (ref) => {
-        this._columnRef = ref;
-        this._save();
+      chartTypeChanged() {
+        // The column picker is type-agnostic; rebuild it so a fresh selection
+        // is required (matches legacy re-render-on-type-change behaviour).
+        this._mountPicker();
         this._scheduleAutoRun();
       },
-    });
-    if (this._columnRef) this._picker.value = this._columnRef;
-  },
 
-  _destroyPicker() {
-    if (this._picker) { this._picker.destroy(); this._picker = null; }
-  },
+      // ── Analysis (controller — needs context + live worksheet data) ──
 
-  _bindEvents() {
-    this._container.addEventListener('change', (e) => {
-      if (e.target.dataset?.ref === 'chart-type') {
-        this._chartTypeId = e.target.value;
-        this._save();
-        this._destroyPicker();
-        this._render();
-        this._initPicker();
-        this._scheduleAutoRun();
-      }
-    });
-  },
+      _runAnalysis() {
+        const clear = () => {
+          this._destroyChart();
+          this.result = null;
+        };
 
-  _scheduleAutoRun() {
-    clearTimeout(this._autoRunTimer);
-    this._autoRunTimer = setTimeout(() => this._runAnalysis(), 120);
-  },
+        if (!this.model.columnRef) return clear();
 
-  // ─── Analysis ───────────────────────────────────────────────
+        const raw = getColumnValues(module._context.stateManager, this.model.columnRef);
+        const valid = raw.filter(v => typeof v === 'number' && !isNaN(v));
+        const minPositive = (this.model.chartTypeId === 't')
+          ? valid.filter(v => v > 0).length
+          : valid.length;
+        if (minPositive < 2) return clear();
 
-  async _runAnalysis() {
-    const statsBar = this._container.querySelector('[data-ref="stats-bar"]');
-    const chartWrap = this._container.querySelector('[data-ref="chart-wrap"]');
-    const clear = () => {
-      this._destroyChart();
-      if (statsBar) statsBar.innerHTML = '';
-      if (chartWrap) chartWrap.innerHTML = '';
+        let result;
+        if (this.model.chartTypeId === 'g') {
+          const r = computeGChart(valid);
+          const signals = this.model.countSignals(r.values, r.ucl, r.lcl);
+          result = {
+            cl: r.cl, ucl: r.ucl, lcl: r.lcl, sigma: r.sigma,
+            n: valid.length, signals, transformedNote: false,
+            chartValues: r.values, chartCl: r.cl, chartUcl: r.ucl,
+            chartLcl: r.lcl, chartSigma: r.sigma,
+            yLabel: _t('yLabel_g'),
+          };
+        } else {
+          const r = computeTChart(valid);
+          const transformedVals = r.transformed.filter(v => v !== null);
+          const signals = this.model.countSignals(r.transformed, r.ucl, r.lcl);
+          result = {
+            cl: r.clOriginal, ucl: r.uclOriginal, lcl: r.lclOriginal, sigma: r.sigma,
+            n: transformedVals.length, signals, transformedNote: true,
+            chartValues: r.transformed, chartCl: r.cl, chartUcl: r.ucl,
+            chartLcl: r.lcl, chartSigma: r.sigma,
+            yLabel: _t('yLabel_t'),
+          };
+        }
+
+        this.result = result;
+
+        const gen = ++this._renderGen;
+        this.$nextTick(() => this._renderChart(result, gen));
+      },
+
+      // ── SVG control chart (imperative via chartManager) ───────
+
+      async _renderChart(result, gen) {
+        this._destroyChart();
+        const plotEl = module._container.querySelector('[data-ref="plot"]');
+        if (!plotEl) return;
+        plotEl.replaceChildren();
+
+        // Out-of-limit points get the standard red marker.
+        const violationIndices = new Set();
+        const values = result.chartValues;
+        for (let i = 0; i < values.length; i++) {
+          const v = values[i];
+          if (v == null) continue;
+          if (v > result.chartUcl || v < result.chartLcl) violationIndices.add(i);
+        }
+
+        const chart = await module._context.chartManager.create(plotEl, 'control-chart', {
+          title: '',
+          xLabel: _t('xLabelSample'),
+          yLabel: result.yLabel,
+          showLegend: false,
+          showTitle: false,
+          values,
+          cl: result.chartCl,
+          ucl: result.chartUcl,
+          lcl: result.chartLcl,
+          sigma: result.chartSigma,
+          violationIndices,
+          usl: null, lsl: null,
+          // Zone bands assume normal — disable for rare-event charts (they make
+          // the geometric/exponential case look misleadingly Gaussian).
+          showZones: false,
+        });
+        if (gen !== this._renderGen) {
+          try { module._context.chartManager.destroy(chart); } catch { /* ignore */ }
+          return;
+        }
+        this._chart = chart;
+      },
+
+      // ── ColumnPicker (imperative widget) ──────────────────────
+
+      _mountPicker() {
+        const wrap = module._container.querySelector('[data-ref="col-picker-wrap"]');
+        if (!wrap) return;
+        this._picker?.destroy();
+        this._picker = new ColumnPicker(wrap, module._context, {
+          mode: 'single',
+          types: ['numeric'],
+          minCount: 2,
+          onChange: (ref) => {
+            this.model.columnRef = ref;
+            this._scheduleAutoRun();
+          },
+        });
+        if (this.model.columnRef) this._picker.value = this.model.columnRef;
+      },
     };
-
-    if (!this._columnRef) { clear(); return; }
-    const raw = getColumnValues(this._context.stateManager, this._columnRef);
-    const valid = raw.filter(v => typeof v === 'number' && !isNaN(v));
-    const minPositive = (this._chartTypeId === 't')
-      ? valid.filter(v => v > 0).length
-      : valid.length;
-    if (minPositive < 2) { clear(); return; }
-
-    if (this._chartTypeId === 'g') {
-      const r = computeGChart(valid);
-      this._renderStats({ cl: r.cl, ucl: r.ucl, lcl: r.lcl, sigma: r.sigma, n: valid.length, signals: this._countSignals(r.values, r.ucl, r.lcl) });
-      await this._renderChartScalar(r.values, r.cl, r.ucl, r.lcl, r.sigma, this._t('yLabel_g'));
-    } else {
-      const r = computeTChart(valid);
-      const transformedVals = r.transformed.filter(v => v !== null);
-      const signals = this._countSignals(r.transformed, r.ucl, r.lcl);
-      this._renderStats({
-        cl: r.clOriginal, ucl: r.uclOriginal, lcl: r.lclOriginal,
-        sigma: r.sigma, n: transformedVals.length, signals,
-        transformedNote: true,
-      });
-      await this._renderChartScalar(r.transformed, r.cl, r.ucl, r.lcl, r.sigma, this._t('yLabel_t'));
-    }
   },
+});
 
-  _countSignals(values, ucl, lcl) {
-    let s = 0;
-    for (let i = 0; i < values.length; i++) {
-      const v = values[i];
-      if (v == null) continue;
-      if (v > ucl || v < lcl) s++;
-    }
-    return s;
-  },
-
-  _renderStats({ cl, ucl, lcl, sigma, n, signals, transformedNote }) {
-    const statsBar = this._container.querySelector('[data-ref="stats-bar"]');
-    if (!statsBar) return;
-    const fmt = (v) => Number.isFinite(v) ? v.toFixed(3) : '–';
-    const cls = signals === 0 ? 'dmike-kpi--good' : 'dmike-kpi--bad';
-    const note = transformedNote
-      ? `<span class="rec__hint">${this._t('originalScaleNote')}</span>` : '';
-    statsBar.innerHTML = `<div class="dmike-kpi-strip">
-      <div class="dmike-kpi">
-        <div class="dmike-kpi-value">${fmt(cl)}</div>
-        <div class="dmike-kpi-label">${this._t('statCL')}</div>
-        <div class="dmike-kpi-sub">σ̂ = ${fmt(sigma)}</div>
-      </div>
-      <div class="dmike-kpi">
-        <div class="dmike-kpi-value">${fmt(ucl)}</div>
-        <div class="dmike-kpi-label">UCL / LCL</div>
-        <div class="dmike-kpi-sub">${fmt(lcl)}</div>
-      </div>
-      <div class="dmike-kpi ${cls}">
-        <div class="dmike-kpi-value">${signals}</div>
-        <div class="dmike-kpi-label">${this._t('statSignals')}</div>
-        <div class="dmike-kpi-sub">${this._t('statOf', { total: n })}</div>
-      </div>
-    </div>${note}`;
-  },
-
-  async _renderChartScalar(values, cl, ucl, lcl, sigma, yLabel) {
-    this._destroyChart();
-    const chartWrap = this._container.querySelector('[data-ref="chart-wrap"]');
-    if (!chartWrap) return;
-    chartWrap.innerHTML = '';
-
-    const colName = getColumnName(this._context.stateManager, this._columnRef);
-    const wrapper = document.createElement('div');
-    wrapper.className = 'rec__chart-section';
-    const header = document.createElement('div');
-    header.className = 'rec__chart-header';
-    const sigCount = this._countSignals(values, ucl, lcl);
-    const isStable = sigCount === 0;
-    header.innerHTML = `
-      <span class="rec__chart-title">${esc(this._t('chartTitle_' + this._chartTypeId, { col: colName }))}</span>
-      <span class="rec__badge ${isStable ? 'rec__badge--stable' : 'rec__badge--unstable'}">
-        ${isStable ? this._t('stable') : this._t('unstable', { count: sigCount })}
-      </span>
-    `;
-    wrapper.appendChild(header);
-    const plotEl = document.createElement('div');
-    plotEl.className = 'rec__plot-wrap';
-    wrapper.appendChild(plotEl);
-    chartWrap.appendChild(wrapper);
-
-    // Build a violation index set so out-of-limit points get the standard red marker.
-    const violationIndices = new Set();
-    for (let i = 0; i < values.length; i++) {
-      const v = values[i];
-      if (v == null) continue;
-      if (v > ucl || v < lcl) violationIndices.add(i);
-    }
-
-    this._chart = await this._context.chartManager.create(plotEl, 'control-chart', {
-      title: '',
-      xLabel: this._t('xLabelSample'),
-      yLabel,
-      showLegend: false,
-      showTitle: false,
-      values,
-      cl, ucl, lcl, sigma,
-      violationIndices,
-      usl: null, lsl: null,
-      // Zone bands assume normal — disable for rare-event charts (they make
-      // the geometric/exponential case look misleadingly Gaussian).
-      showZones: false,
-    });
-  },
-
-  _destroyChart() {
-    if (this._chart) {
-      this._context.chartManager.destroy(this._chart);
-      this._chart = null;
-    }
-  },
+/**
+ * Custom loadExample: rare-event-chart examples ship a full worksheet
+ * (`sourceWorksheetData`) and use the literal placeholder `__source__` as the
+ * `columnRef` instanceId. On load we provision a fresh worksheet, rewrite the
+ * placeholder, then apply state (which re-runs the analysis on the new data).
+ * This replaces the generic createModule loadExample because of the worksheet
+ * provisioning the generic helper cannot perform.
+ *
+ * @param {{ meta: object, data: object }} payload
+ */
+mod.loadExample = function loadExample(payload) {
+  return loadWorksheetExample(this, payload, {
+    Model: State,
+    rewriteRefs: rewriteRefFields(['columnRef']),
+  });
 };
+
+export default mod;

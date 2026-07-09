@@ -12,12 +12,13 @@
  */
 
 import ChartBase from '../chart-base.js';
+import { h } from '../../dom.js';
 import {
   svgEl, svgText, resolveColor, formatNum, getChartColors, drawMarker
 } from '../chart-core.js';
 import {
   edSection, edCheckboxRow, edInlineNum,
-  openColorPicker, edMarkerSection
+  edMarkerSection
 } from '../chart-editor.js';
 
 /* ── Statistics helpers ─────────────────────────────────────── */
@@ -372,15 +373,19 @@ export default class BoxplotChart extends ChartBase {
     };
 
     return [{
-      html: `<b style="color:${color}">${g.name || `Group ${origIdx + 1}`}</b><br>`
-        + `n = ${stats.n}<br>`
-        + `${t('min')}: ${formatNum(stats.min, dec, loc)}<br>`
-        + `Q1: ${formatNum(stats.q1, dec, loc)}<br>`
-        + `${t('median')}: ${formatNum(stats.median, dec, loc)}<br>`
-        + `Q3: ${formatNum(stats.q3, dec, loc)}<br>`
-        + `${t('max')}: ${formatNum(stats.max, dec, loc)}<br>`
-        + `${t('mean')}: ${formatNum(stats.mean, dec, loc)}`
-        + (stats.outliers.length ? `<br>${t('outliers')}: ${stats.outliers.length}` : ''),
+      node: h('div', null,
+        h('b', { style: `color:${color}` }, g.name || `Group ${origIdx + 1}`),
+        h('br'),
+        `n = ${stats.n}`, h('br'),
+        `${t('min')}: ${formatNum(stats.min, dec, loc)}`, h('br'),
+        `Q1: ${formatNum(stats.q1, dec, loc)}`, h('br'),
+        `${t('median')}: ${formatNum(stats.median, dec, loc)}`, h('br'),
+        `Q3: ${formatNum(stats.q3, dec, loc)}`, h('br'),
+        `${t('max')}: ${formatNum(stats.max, dec, loc)}`, h('br'),
+        `${t('mean')}: ${formatNum(stats.mean, dec, loc)}`,
+        stats.outliers.length ? h('br') : null,
+        stats.outliers.length ? `${t('outliers')}: ${stats.outliers.length}` : null,
+      ),
       px,
       py,
       color,

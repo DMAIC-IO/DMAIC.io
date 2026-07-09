@@ -95,12 +95,12 @@
 }
 
 .attr-cc__badge--stable {
-  background: rgba(34, 197, 94, 0.12);
+  background: rgb(34 197 94 / 12%);
   color: var(--color-success);
 }
 
 .attr-cc__badge--unstable {
-  background: rgba(239, 68, 68, 0.12);
+  background: rgb(239 68 68 / 12%);
   color: var(--color-error);
 }
 
@@ -158,7 +158,7 @@
   padding: 2px 8px;
   margin-left: var(--spacing-sm);
   font-size: var(--font-size-xs);
-  background: rgba(234, 179, 8, 0.12);
+  background: rgb(234 179 8 / 12%);
   color: var(--color-warning);
   border-radius: 10px;
   font-weight: var(--font-weight-medium);

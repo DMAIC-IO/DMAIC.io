@@ -18,6 +18,7 @@
  */
 
 import ChartBase from '../chart-base.js';
+import { h } from '../../dom.js';
 import {
   svgEl, svgText, resolveColor, formatNum, getChartColors, parseRGBA,
 } from '../chart-core.js';
@@ -100,7 +101,7 @@ export default class PieChart extends ChartBase {
 
   _getSortedSlices() {
     const colors = getChartColors();
-    let slices = (this.config.slices || []).map((s, i) => ({
+    const slices = (this.config.slices || []).map((s, i) => ({
       ...s,
       origIdx: i,
       color: s.color || colors[i % colors.length],
@@ -132,7 +133,7 @@ export default class PieChart extends ChartBase {
     svg.setAttribute('viewBox', `0 0 ${size.w} ${size.h}`);
     svg.setAttribute('width', size.w);
     svg.setAttribute('height', size.h);
-    svg.innerHTML = '';
+    svg.replaceChildren();
     svg.style.background = this.config.bgColor || '';
 
     const styles = getComputedStyle(document.documentElement);
@@ -166,7 +167,7 @@ export default class PieChart extends ChartBase {
     if (cfg.showTitle !== false && cfg.title) {
       svgText(cfg.title, {
         x: size.w / 2, y: 26,
-        'text-anchor': 'middle', 'font-size': (cfg.titleSize || 15) + 'px',
+        'text-anchor': 'middle', 'font-size': `${cfg.titleSize || 15  }px`,
         'font-weight': '700', fill: textPrimary,
       }, svg);
     }
@@ -238,7 +239,7 @@ export default class PieChart extends ChartBase {
         const lx = ecx + labelR * Math.cos(arc.mid);
         const ly = ecy + labelR * Math.sin(arc.mid);
 
-        const pct = (arc.frac * 100).toFixed(1) + ' %';
+        const pct = `${(arc.frac * 100).toFixed(1)  } %`;
         let text;
         switch (cfg.labelMode) {
           case 'name': text = arc.name; break;
@@ -254,7 +255,7 @@ export default class PieChart extends ChartBase {
         svgText(text, {
           x: lx, y: ly + 1,
           'text-anchor': 'middle', 'dominant-baseline': 'central',
-          'font-size': (cfg.labelSize || 12) + 'px', 'font-weight': '600',
+          'font-size': `${cfg.labelSize || 12  }px`, 'font-weight': '600',
           fill: labelColor, 'pointer-events': 'none',
         }, svg);
 
@@ -269,7 +270,7 @@ export default class PieChart extends ChartBase {
           svgText(arc.name, {
             x: olx, y: oly,
             'text-anchor': anchor, 'dominant-baseline': 'central',
-            'font-size': ((cfg.labelSize || 12) - 1) + 'px',
+            'font-size': `${(cfg.labelSize || 12) - 1  }px`,
             fill: textSecondary, 'pointer-events': 'none',
           }, svg);
 
@@ -331,7 +332,7 @@ export default class PieChart extends ChartBase {
     const target = e.target;
 
     if (target.tagName === 'path' && target.hasAttribute('data-slice')) {
-      const idx = +target.getAttribute('data-slice');
+      const idx = Number(target.getAttribute('data-slice'));
       if (this._hoveredSlice !== idx) {
         this._hoveredSlice = idx;
         this.render();
@@ -341,10 +342,16 @@ export default class PieChart extends ChartBase {
         let total = 0;
         for (const a of this._arcs) total += a.value;
         const pct = total > 0 ? ((arc.value / total) * 100).toFixed(1) : '0.0';
-        this._tooltip.innerHTML = `<b style="color:${arc.color}">${arc.name}</b><br>${formatNum(arc.value, 2, this.locale)}<br>${pct} %`;
+        this._tooltip.replaceChildren(
+          h('b', { style: `color:${arc.color}` }, arc.name),
+          h('br'),
+          document.createTextNode(formatNum(arc.value, 2, this.locale)),
+          h('br'),
+          document.createTextNode(`${pct  } %`),
+        );
         this._tooltip.classList.add('visible');
-        this._tooltip.style.left = (mx + 14) + 'px';
-        this._tooltip.style.top = (my - 10) + 'px';
+        this._tooltip.style.left = `${mx + 14  }px`;
+        this._tooltip.style.top = `${my - 10  }px`;
       }
     } else {
       if (this._hoveredSlice !== -1) {
@@ -367,7 +374,7 @@ export default class PieChart extends ChartBase {
 
   _buildEditor() {
     const inner = this._editorInner;
-    inner.innerHTML = '';
+    inner.replaceChildren();
     const cfg = this.config;
     const t = (key) => {
       if (this.context && this.context.i18n) {

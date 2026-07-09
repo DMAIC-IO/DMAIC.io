@@ -149,6 +149,26 @@
   min-width: 0;
 }
 
+/* ── Algorithm view (x-if wrapper) ──
+   The Alpine `x-if` template introduces this wrapper div between
+   `.lab__content` and the header/tabs/tab-content slots. It must behave as the
+   flex column itself so `.lab__tab-content` keeps `flex: 1` filling the height
+   (otherwise the wrapper collapses to content height). */
+.lab__algo-view {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* The header/tabs slots are transparent passthroughs — keep their children as
+   direct flex rows so they don't grow. */
+.lab__algo-header-slot,
+.lab__tabs-slot {
+  flex-shrink: 0;
+}
+
 /* ── Algorithm header ── */
 .lab__algo-header {
   display: flex;
@@ -182,22 +202,22 @@
 }
 
 .lab__status-badge--validated {
-  background: rgba(52, 199, 89, 0.15);
+  background: rgb(52 199 89 / 15%);
   color: var(--color-success);
 }
 
 .lab__status-badge--in-progress {
-  background: rgba(255, 149, 0, 0.15);
+  background: rgb(255 149 0 / 15%);
   color: var(--color-warning);
 }
 
 .lab__status-badge--experimental {
-  background: rgba(255, 149, 0, 0.10);
+  background: rgb(255 149 0 / 10%);
   color: var(--color-warning);
 }
 
 .lab__status-badge--deprecated {
-  background: rgba(255, 59, 48, 0.15);
+  background: rgb(255 59 48 / 15%);
   color: var(--color-error);
 }
 
@@ -544,11 +564,11 @@
 }
 
 .lab__timeline-type--initial { background: var(--color-bg-tertiary); color: var(--color-text-secondary); }
-.lab__timeline-type--feature { background: rgba(0, 122, 255, 0.15); color: var(--color-info); }
-.lab__timeline-type--fix { background: rgba(255, 149, 0, 0.15); color: var(--color-warning); }
-.lab__timeline-type--breaking { background: rgba(255, 59, 48, 0.15); color: var(--color-error); }
+.lab__timeline-type--feature { background: rgb(0 122 255 / 15%); color: var(--color-info); }
+.lab__timeline-type--fix { background: rgb(255 149 0 / 15%); color: var(--color-warning); }
+.lab__timeline-type--breaking { background: rgb(255 59 48 / 15%); color: var(--color-error); }
 .lab__timeline-type--refactor { background: var(--color-bg-tertiary); color: var(--color-text-secondary); }
-.lab__timeline-type--deprecation { background: rgba(255, 59, 48, 0.10); color: var(--color-error); }
+.lab__timeline-type--deprecation { background: rgb(255 59 48 / 10%); color: var(--color-error); }
 
 .lab__timeline-desc {
   font-size: var(--font-size-sm);
@@ -671,7 +691,7 @@
 
 .lab__error {
   padding: var(--spacing-md);
-  background: rgba(255, 59, 48, 0.08);
+  background: rgb(255 59 48 / 8%);
   border: var(--border-width) solid var(--color-error);
   border-radius: var(--border-radius);
   color: var(--color-error);
@@ -769,7 +789,7 @@
 
 .lab__tryit-error {
   padding: var(--spacing-sm) var(--spacing-md);
-  background: rgba(255, 59, 48, 0.08);
+  background: rgb(255 59 48 / 8%);
   border-radius: var(--border-radius-sm);
   color: var(--color-error);
   font-size: var(--font-size-sm);
@@ -787,12 +807,12 @@
 }
 
 .lab__tryit-badge--pass {
-  background: rgba(52, 199, 89, 0.15);
+  background: rgb(52 199 89 / 15%);
   color: var(--color-success);
 }
 
 .lab__tryit-badge--fail {
-  background: rgba(255, 59, 48, 0.15);
+  background: rgb(255 59 48 / 15%);
   color: var(--color-error);
 }
 

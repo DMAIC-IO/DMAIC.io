@@ -15,7 +15,6 @@
   flex: 1;
 }
 
-
 /* ===== Body override — don't stretch to fill viewport ===== */
 .ce-matrix .module-container__body {
   flex: none;
@@ -34,6 +33,7 @@
 }
 
 .ce-matrix__wrap::-webkit-scrollbar { height: 6px; width: 6px; }
+
 .ce-matrix__wrap::-webkit-scrollbar-thumb {
   background: var(--color-border-secondary);
   border-radius: 3px;
@@ -101,7 +101,7 @@
 
 .ce-matrix__weight-select:focus {
   border-color: var(--color-accent);
-  box-shadow: 0 0 0 2px rgba(0, 102, 204, 0.15);
+  box-shadow: 0 0 0 2px rgb(0 102 204 / 15%);
 }
 
 /* ===== Corner cell ===== */
@@ -147,7 +147,7 @@
 
 .ce-matrix__output-name:focus {
   background: var(--color-accent);
-  background: rgba(0, 102, 204, 0.1);
+  background: rgb(0 102 204 / 10%);
   color: var(--color-text-primary);
 }
 
@@ -176,7 +176,7 @@
 }
 
 .ce-matrix__input-name:focus {
-  background: rgba(0, 102, 204, 0.08);
+  background: rgb(0 102 204 / 8%);
 }
 
 .ce-matrix__input-name::placeholder {
@@ -218,17 +218,17 @@
   text-align: center;
   padding: 8px 0;
   outline: none;
-  -moz-appearance: textfield;
+  appearance: textfield;
 }
 
 .ce-matrix__score-input::-webkit-inner-spin-button,
 .ce-matrix__score-input::-webkit-outer-spin-button {
-  -webkit-appearance: none;
+  appearance: none;
   margin: 0;
 }
 
 .ce-matrix__score-input:focus {
-  background: rgba(0, 102, 204, 0.08);
+  background: rgb(0 102 204 / 8%);
 }
 
 /* ===== Result cells ===== */

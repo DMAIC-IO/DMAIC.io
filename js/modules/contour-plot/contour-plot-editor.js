@@ -7,7 +7,7 @@
 
 import {
   edSection, edCheckboxRow, edSelectRow, edRangeRow, edInputRow,
-  edTitleSection, edFontSizeSection, edAxisLabelSection, edAxisTickSection,
+  edTitleSection, edFontSizeSection, edAxisTickSection,
   edBgColorSection, edRefLinesSection, edRefAreasSection,
   edColorPair, openColorPicker,
 } from '../../core/chart/chart-editor.js';
@@ -19,7 +19,7 @@ export const editorMethods = {
   _buildEditor() {
     const inner = this._container?.querySelector('[data-ref="editor-inner"]');
     if (!inner) return;
-    inner.innerHTML = '';
+    inner.replaceChildren();
 
     const t = (k) => this._t(k);
     const te = (k) => this._context.i18n.t(`chart.editor.${k}`);
@@ -179,7 +179,7 @@ export const editorMethods = {
     const el = this._container?.querySelector('[data-ref="edColorPreview"]');
     if (!el) return;
     const scheme = this._state.colorScheme || 'viridis';
-    el.innerHTML = '';
+    el.replaceChildren();
     for (let i = 0; i < 12; i++) {
       const c = getColor(i / 11, scheme);
       const d = document.createElement('div');

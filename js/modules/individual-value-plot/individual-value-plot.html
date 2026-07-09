@@ -1,0 +1,29 @@
+<div class="ivplot dmike-split" x-data="individualValuePlot">
+  <div class="ivplot__input dmike-split__input">
+    <div class="dmike-split__section-title" x-text="t('sectionData')"></div>
+
+    <div data-ref="picker-wrap"></div>
+
+    <div class="dmike-split__section-title" x-text="t('sectionOptions')"></div>
+
+    <div class="field-group">
+      <label x-text="t('confLevel')"></label>
+      <input type="text" class="field field--num" data-ref="conf-level" inputmode="decimal"
+             :value="confLevelDisplay()" placeholder="95" @change="confChanged($event)">
+    </div>
+
+    <div class="ivplot__error" data-ref="error-box"></div>
+  </div>
+
+  <div class="ivplot__output dmike-split__output">
+    <div class="ivplot__placeholder" data-ref="placeholder">
+      <p x-text="t('placeholderText')"></p>
+    </div>
+    <div class="ivplot__chart-card" data-ref="chart-card" style="display:none">
+      <div class="ivplot__chart-main">
+        <div class="ivplot__plot-wrap" data-ref="plot"></div>
+      </div>
+    </div>
+    <div class="dmike-stats-panel" data-ref="stats-panel"></div>
+  </div>
+</div>

@@ -1,0 +1,390 @@
+<div class="lab" x-data="algorithmLab">
+  <!-- ── Sidebar ───────────────────────────────────────── -->
+  <div class="lab__sidebar">
+    <div class="lab__sidebar-header">
+      <div class="lab__sidebar-title" x-text="t('lab.title')"></div>
+      <input class="field lab__search" type="text"
+             x-model="search"
+             :placeholder="t('lab.search')" :aria-label="t('lab.search')">
+    </div>
+    <div class="lab__sidebar-nav">
+      <template x-for="cat in visibleCategories" :key="cat.id">
+        <div class="lab__category" :class="cat.open && 'lab__category--open'"
+             :data-category-id="cat.id">
+          <button class="lab__category-toggle" @click="toggleCategory(cat)">
+            <svg class="lab__category-chevron" width="10" height="10" viewBox="0 0 10 10"
+                 fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 1.5L7 5L3 8.5"/></svg>
+            <span x-text="loc(cat.name)"></span>
+            <span class="lab__category-count" x-text="cat.algos.length"></span>
+          </button>
+          <div class="lab__category-items">
+            <template x-for="algo in cat.algos" :key="algo.id">
+              <button class="lab__algo-item"
+                      :class="selectedId === algo.id && 'lab__algo-item--active'"
+                      :data-algo-id="algo.id"
+                      x-show="algoMatches(algo)"
+                      @click="navigate(algo.id)">
+                <span class="lab__status-dot" :class="'lab__status-dot--' + algo.status"></span>
+                <span x-text="loc(algo.name)"></span>
+              </button>
+            </template>
+          </div>
+        </div>
+      </template>
+    </div>
+  </div>
+
+  <!-- ── Content ───────────────────────────────────────── -->
+  <div class="lab__content">
+    <!-- Overview (no algo selected) -->
+    <div class="lab__tab-content" x-show="!selectedAlgo">
+      <div class="lab__overview">
+        <h2 class="lab__overview-title" x-text="t('lab.overview.title')"></h2>
+        <div class="lab__overview-stats">
+          <div class="lab__stat-card">
+            <div class="lab__stat-value" x-text="stats.total"></div>
+            <div class="lab__stat-label" x-text="t('lab.overview.totalAlgorithms')"></div>
+          </div>
+          <div class="lab__stat-card">
+            <div class="lab__stat-value" style="color: var(--color-success)" x-text="stats.validated"></div>
+            <div class="lab__stat-label" x-text="t('lab.status.validated')"></div>
+          </div>
+          <div class="lab__stat-card">
+            <div class="lab__stat-value" style="color: var(--color-warning)" x-text="stats.inProgress"></div>
+            <div class="lab__stat-label" x-text="t('lab.status.in-progress')"></div>
+          </div>
+        </div>
+        <div class="lab__category-cards">
+          <template x-for="cat in categories" :key="cat.id">
+            <div class="lab__category-card" @click="navigateFirstAlgo(cat)">
+              <div class="lab__category-card-name" x-text="loc(cat.name)"></div>
+              <div class="lab__category-card-count"
+                   x-text="cat.algos.length + ' ' + t('lab.overview.totalAlgorithms')"></div>
+            </div>
+          </template>
+        </div>
+      </div>
+    </div>
+
+    <!-- Algorithm view -->
+    <template x-if="selectedAlgo">
+      <div class="lab__algo-view">
+        <div class="lab__algo-header-slot">
+          <div class="lab__algo-header">
+            <span class="lab__algo-name" x-text="loc(selectedAlgo.name)"></span>
+            <span class="lab__algo-version" x-text="'v' + selectedAlgo.version"></span>
+            <span class="lab__status-badge" :class="'lab__status-badge--' + selectedAlgo.status"
+                  x-text="t('lab.status.' + selectedAlgo.status)"></span>
+          </div>
+        </div>
+
+        <div class="lab__tabs-slot">
+          <div class="lab__tabs">
+            <template x-for="tab in TABS" :key="tab">
+              <button class="lab__tab" :class="activeTab === tab && 'lab__tab--active'"
+                      :data-tab="tab" @click="setTab(tab)" x-text="t('lab.tabs.' + tab)"></button>
+            </template>
+          </div>
+        </div>
+
+        <div class="lab__tab-content">
+          <!-- Docs -->
+          <div x-show="activeTab === 'docs'">
+            <div class="lab__docs-section" x-show="docLong">
+              <p class="lab__docs-description" x-text="docLong"></p>
+            </div>
+            <div class="lab__docs-section" x-show="formulas.length">
+              <h3 x-text="t('lab.docs.formulas')"></h3>
+              <div>
+                <template x-for="(f, i) in formulas" :key="i">
+                  <div class="lab__formula" x-effect="renderFormula($el, f, lang)"></div>
+                </template>
+              </div>
+            </div>
+            <div class="lab__docs-section" x-show="assumptions.length">
+              <h3 x-text="t('lab.docs.assumptions')"></h3>
+              <ul class="lab__docs-list">
+                <template x-for="(a, i) in assumptions" :key="i"><li x-text="loc(a)"></li></template>
+              </ul>
+            </div>
+            <div class="lab__docs-section" x-show="limitations.length">
+              <h3 x-text="t('lab.docs.limitations')"></h3>
+              <ul class="lab__docs-list">
+                <template x-for="(l, i) in limitations" :key="i"><li x-text="loc(l)"></li></template>
+              </ul>
+            </div>
+            <div class="lab__docs-section" x-show="references.length">
+              <h3 x-text="t('lab.docs.references')"></h3>
+              <template x-for="(ref, i) in references" :key="i">
+                <div class="lab__docs-ref">
+                  <template x-if="ref.url">
+                    <span><span x-text="ref.source + ' — '"></span><a :href="ref.url" target="_blank"
+                          x-text="ref.chapter || 'Link'"></a></span>
+                  </template>
+                  <template x-if="!ref.url">
+                    <span x-text="refLabel(ref)"></span>
+                  </template>
+                </div>
+              </template>
+            </div>
+            <div class="lab__docs-section" x-show="minitab">
+              <h3>Minitab</h3>
+              <div class="lab__minitab-callout" x-text="minitab"></div>
+            </div>
+          </div>
+
+          <!-- Source -->
+          <div x-show="activeTab === 'source'">
+            <div class="lab__empty" x-show="!selectedAlgo.source" x-text="t('lab.noSource')"></div>
+            <template x-if="selectedAlgo.source">
+              <div>
+                <div class="lab__source-meta">
+                  <span x-text="selectedAlgo.source.file_path"></span>
+                  <button class="btn btn--sm btn--ghost lab__source-copy" title="Copy code" @click="copySource()">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+                  </button>
+                </div>
+                <div class="lab__source-code" x-effect="renderSource($el)"></div>
+                <template x-if="selectedAlgo.source.signature">
+                  <div class="lab__signature">
+                    <h4 x-text="t('lab.source.parameters')"></h4>
+                    <table class="lab__sig-table">
+                      <thead><tr><th>Name</th><th>Type</th>
+                        <th x-text="t('lab.source.required')"></th>
+                        <th x-text="t('lab.source.description')"></th></tr></thead>
+                      <tbody>
+                        <template x-for="(p, i) in (selectedAlgo.source.signature.parameters || [])" :key="i">
+                          <tr><td><code x-text="p.name"></code></td>
+                            <td class="lab__sig-type" x-text="p.type"></td>
+                            <td x-text="requiredGlyph(p)"></td>
+                            <td x-text="loc(p.description)"></td></tr>
+                        </template>
+                      </tbody>
+                    </table>
+                    <template x-if="selectedAlgo.source.signature.returns">
+                      <div>
+                        <h4 style="margin-top:var(--spacing-md)" x-text="t('lab.source.returns')"></h4>
+                        <table class="lab__sig-table">
+                          <thead><tr><th x-text="t('lab.source.field')"></th><th>Type</th>
+                            <th x-text="t('lab.source.description')"></th></tr></thead>
+                          <tbody>
+                            <template x-for="ret in returnRows" :key="ret.key">
+                              <tr><td><code x-text="ret.key"></code></td>
+                                <td class="lab__sig-type" x-text="ret.type"></td>
+                                <td x-text="loc(ret.description)"></td></tr>
+                            </template>
+                          </tbody>
+                        </table>
+                      </div>
+                    </template>
+                  </div>
+                </template>
+              </div>
+            </template>
+          </div>
+
+          <!-- Validation -->
+          <div x-show="activeTab === 'validation'">
+            <div class="lab__empty" x-show="vReady && !fixtures" x-text="t('lab.noFixtures')"></div>
+            <div class="lab__loading" x-show="!vReady" x-text="t('lab.loading')"></div>
+            <template x-if="vReady && fixtures">
+              <div>
+                <div class="lab__validation-header">
+                  <span class="lab__validation-summary" :class="'lab__test-' + vSummary.state"
+                        x-text="vSummary.text"></span>
+                  <span class="lab__validation-meta" x-text="vGenInfo"></span>
+                  <button class="lab__run-all-btn" :disabled="vRunning" @click="runAll()"
+                          x-text="runAllLabel()"></button>
+                </div>
+                <template x-for="tier in vTiers" :key="tier.name">
+                  <div class="lab__tier-section">
+                    <div class="lab__tier-title">
+                      <span x-text="tier.label"></span>
+                      <span class="lab__tier-count" :data-tier="tier.name" x-text="tier.countText"></span>
+                    </div>
+                    <table class="lab__test-table">
+                      <thead><tr><th>Test</th><th>Status</th>
+                        <th x-text="t('lab.validation.details')"></th>
+                        <th x-text="t('lab.validation.duration')"></th></tr></thead>
+                      <tbody>
+                        <template x-for="row in tier.rows" :key="row.id">
+                          <tr :data-test-id="row.id">
+                            <td :title="row.description" x-text="row.id"></td>
+                            <td :class="'lab__test-' + row.status" x-text="row.statusGlyph"></td>
+                            <td class="lab__test-diff" x-text="row.details"></td>
+                            <td class="lab__test-duration" x-text="row.durationText"></td>
+                          </tr>
+                        </template>
+                      </tbody>
+                    </table>
+                  </div>
+                </template>
+              </div>
+            </template>
+          </div>
+
+          <!-- Try-It (nested component) -->
+          <div x-show="activeTab === 'tryit'">
+            <template x-if="selectedAlgo">
+              <div class="lab__tryit" x-data="labTryIt" x-effect="onAlgoChange(selectedAlgo)">
+                <div class="lab__tryit-header"><h3 x-text="t('lab.tryIt.title')"></h3></div>
+                <div class="lab__tryit-modes">
+                  <template x-for="m in MODES" :key="m">
+                    <button class="lab__tryit-mode" :class="mode === m && 'lab__tryit-mode--active'"
+                            :data-mode="m" @click="setMode(m)" x-text="t('lab.tryIt.mode.' + m)"></button>
+                  </template>
+                </div>
+
+                <div class="lab__tryit-input">
+                  <!-- manual -->
+                  <template x-if="mode === 'manual'">
+                    <div>
+                      <div class="lab__empty" x-show="!schemaFields.length" x-text="t('lab.tryIt.noSchema')"></div>
+                      <template x-for="field in schemaFields" :key="field.name">
+                        <div class="field-group">
+                          <label><span x-text="loc(field.label)"></span><span class="lab__tryit-required"
+                                 x-show="field.required"> *</span></label>
+                          <template x-if="field.type === 'textarea'">
+                            <textarea class="field lab__tryit-textarea" rows="4"
+                                      :name="field.name" :placeholder="loc(field.placeholder) || ''"
+                                      x-model="manual[field.name]"></textarea>
+                          </template>
+                          <template x-if="field.type !== 'textarea'">
+                            <input class="field lab__tryit-input-field"
+                                   :type="field.type === 'number' ? 'number' : 'text'"
+                                   :name="field.name" :placeholder="loc(field.placeholder) || ''"
+                                   x-model="manual[field.name]">
+                          </template>
+                        </div>
+                      </template>
+                    </div>
+                  </template>
+                  <!-- fixture -->
+                  <template x-if="mode === 'fixture'">
+                    <div>
+                      <div class="lab__empty" x-show="!fixtures || !fixtures.test_cases.length"
+                           x-text="t('lab.tryIt.noFixtures')"></div>
+                      <template x-if="fixtures && fixtures.test_cases.length">
+                        <div class="field-group">
+                          <label x-text="t('lab.tryIt.selectFixture')"></label>
+                          <select class="field lab__tryit-select" name="__fixture_id" x-model="fixtureId">
+                            <option value="" x-text="'— ' + t('lab.tryIt.chooseFixture') + ' —'"></option>
+                            <template x-for="tc in fixtures.test_cases" :key="tc.id">
+                              <option :value="tc.id" x-text="'[' + tc.tier + '] ' + tc.id + ' — ' + tc.description"></option>
+                            </template>
+                          </select>
+                          <div class="lab__tryit-preview" x-show="fixturePreview">
+                            <template x-if="fixturePreview">
+                              <div>
+                                <div class="lab__tryit-preview-section">
+                                  <strong x-text="t('lab.tryIt.inputs') + ':'"></strong>
+                                  <pre class="lab__tryit-json" x-text="fixturePreview.inputs"></pre>
+                                </div>
+                                <div class="lab__tryit-preview-section" x-show="fixturePreview.expected">
+                                  <strong x-text="t('lab.tryIt.expected') + ':'"></strong>
+                                  <pre class="lab__tryit-json" x-text="fixturePreview.expected"></pre>
+                                </div>
+                                <div class="lab__tryit-preview-section" x-show="fixturePreview.expectedError">
+                                  <strong x-text="t('lab.tryIt.expectedError') + ':'"></strong>
+                                  <pre class="lab__tryit-json" x-text="fixturePreview.expectedError"></pre>
+                                </div>
+                              </div>
+                            </template>
+                          </div>
+                        </div>
+                      </template>
+                    </div>
+                  </template>
+                  <!-- csv -->
+                  <template x-if="mode === 'csv'">
+                    <div>
+                      <div class="field-group">
+                        <label x-text="t('lab.tryIt.csvData')"></label>
+                        <textarea class="field lab__tryit-textarea lab__tryit-csv" rows="6"
+                                  name="__csv_data" :placeholder="t('lab.tryIt.csvPlaceholder')"
+                                  x-model="csvText"></textarea>
+                        <div class="lab__tryit-file-row">
+                          <input type="file" accept=".csv,.txt" @change="loadCsvFile($event)">
+                        </div>
+                      </div>
+                      <template x-for="field in csvParamFields" :key="field.name">
+                        <div class="field-group">
+                          <label x-text="loc(field.label)"></label>
+                          <input class="field lab__tryit-input-field"
+                                 :type="field.type === 'number' ? 'number' : 'text'"
+                                 :name="field.name" :placeholder="loc(field.placeholder) || ''"
+                                 x-model="csvParams[field.name]">
+                        </div>
+                      </template>
+                    </div>
+                  </template>
+                </div>
+
+                <div class="lab__tryit-actions">
+                  <button class="btn btn--primary lab__tryit-run" @click="run()" x-text="t('lab.tryIt.run')"></button>
+                </div>
+
+                <div class="lab__tryit-output" x-show="output">
+                  <template x-if="output">
+                    <div>
+                      <div class="lab__tryit-duration" x-show="!output.simpleError"
+                           x-text="output.duration != null ? output.duration.toFixed(2) + ' ms' : ''"></div>
+                      <div class="lab__tryit-error" x-show="output.error">
+                        <span class="lab__tryit-badge" :class="errorBadgeClass()" x-show="output.errorBadge" x-text="output.errorBadge"></span>
+                        <strong x-show="hasErrorType()" x-text="errorTypeText()"></strong>
+                        <span x-text="errorMessageText()"></span>
+                      </div>
+                      <div class="lab__empty" x-show="output.noResult">No result</div>
+                      <div class="lab__tryit-error" x-show="output.expectedMissError">
+                        <span class="lab__tryit-badge lab__tryit-badge--fail">FAIL</span>
+                        <span x-text="' Expected ' + output.expectedMissError + ' but got a result'"></span>
+                      </div>
+                      <table class="lab__tryit-results" x-show="output.rows">
+                        <thead><tr><th x-text="t('lab.source.field')"></th><th x-text="t('lab.tryIt.value')"></th>
+                          <template x-if="output.hasExpected">
+                            <th x-text="t('lab.tryIt.expected')"></th></template>
+                          <template x-if="output.hasExpected"><th x-text="t('lab.tryIt.match')"></th></template>
+                        </tr></thead>
+                        <tbody>
+                          <template x-for="row in (output.rows || [])" :key="row.key">
+                            <tr :class="row.primary && 'lab__tryit-primary'">
+                              <td x-text="row.label"></td>
+                              <td class="lab__tryit-value" x-text="row.displayVal"></td>
+                              <template x-if="row.hasExpected">
+                                <td :class="!row.noExpected && 'lab__tryit-value'" x-text="row.displayExp"></td></template>
+                              <template x-if="row.hasExpected">
+                                <td :class="row.noExpected ? '' : (row.pass ? 'lab__test-pass' : 'lab__test-fail')" x-text="row.matchGlyph"></td></template>
+                            </tr>
+                          </template>
+                        </tbody>
+                      </table>
+                    </div>
+                  </template>
+                </div>
+              </div>
+            </template>
+          </div>
+
+          <!-- History -->
+          <div x-show="activeTab === 'history'">
+            <div class="lab__empty" x-show="!changelog.length" x-text="t('lab.noHistory')"></div>
+            <div class="lab__timeline" x-show="changelog.length">
+              <template x-for="(entry, i) in changelog" :key="i">
+                <div class="lab__timeline-entry" :class="entry.breaking && 'lab__timeline-breaking'">
+                  <div class="lab__timeline-dot" :class="'lab__timeline-dot--' + entry.type"></div>
+                  <div class="lab__timeline-header">
+                    <span class="lab__timeline-version" x-text="'v' + entry.version"></span>
+                    <span class="lab__timeline-date" x-text="entry.date"></span>
+                    <span class="lab__timeline-type" :class="'lab__timeline-type--' + entry.type"
+                          x-text="entry.type"></span>
+                  </div>
+                  <div class="lab__timeline-desc" x-text="loc(entry.description)"></div>
+                </div>
+              </template>
+            </div>
+          </div>
+        </div>
+      </div>
+    </template>
+  </div>
+</div>

@@ -1,192 +1,134 @@
 /**
  * Algorithm Lab — Renderer Utilities
- * KaTeX formula rendering, Prism.js code highlighting, timeline rendering.
+ * KaTeX formula rendering, Prism.js code highlighting.
  */
 
-let _katexLoaded = false;
-let _prismLoaded = false;
-
-/**
- * Ensure KaTeX CSS + JS is loaded.
- */
-async function ensureKaTeX() {
-  if (_katexLoaded) return;
-  // CSS
-  if (!document.querySelector('link[href*="katex"]')) {
-    const link = document.createElement('link');
-    link.rel = 'stylesheet';
-    link.href = 'vendor/katex/katex.min.css';
-    document.head.append(link);
-  }
-  // JS
-  if (!window.katex) {
-    await new Promise((resolve, reject) => {
-      const s = document.createElement('script');
-      s.src = 'vendor/katex/katex.min.js';
-      s.onload = resolve;
-      s.onerror = reject;
-      document.head.append(s);
-    });
-  }
-  _katexLoaded = true;
-}
+import { h } from '../core/dom.js';
+import katex from 'katex';
+import { Prism } from '../core/vendor/prism.js';
 
 /**
- * Ensure Prism.js CSS + JS is loaded.
+ * KaTeX + Prism are bundled from node_modules (their CSS ships in app.min.css),
+ * so these "ensure" helpers are resolved no-ops kept for their existing
+ * `await ensureKaTeX()` / `await ensurePrism()` call sites.
  */
-async function ensurePrism() {
-  if (_prismLoaded) return;
-  // CSS — use light theme by default, dark theme handled via variables
-  const theme = document.documentElement.dataset.theme === 'dark'
-    ? 'vendor/prism/prism-tomorrow.css'
-    : 'vendor/prism/prism.css';
-  if (!document.querySelector('link[href*="prism"]')) {
-    const link = document.createElement('link');
-    link.rel = 'stylesheet';
-    link.href = theme;
-    link.id = 'prism-theme';
-    document.head.append(link);
-  }
-  // JS
-  if (!window.Prism) {
-    await new Promise((resolve, reject) => {
-      const s = document.createElement('script');
-      s.src = 'vendor/prism/prism.min.js';
-      s.onload = resolve;
-      s.onerror = reject;
-      document.head.append(s);
-    });
-    // Load JS language component
-    await new Promise((resolve, reject) => {
-      const s = document.createElement('script');
-      s.src = 'vendor/prism/prism-javascript.min.js';
-      s.onload = resolve;
-      s.onerror = reject;
-      document.head.append(s);
-    });
-  }
-  _prismLoaded = true;
-}
+async function ensureKaTeX() {}
+
+async function ensurePrism() {}
 
 /**
- * Render LaTeX formulas into a container.
- * @param {Array<{label: string, latex: string, description?: string|object}>} formulas
- * @param {HTMLElement} container
- * @param {function} [loc] - Localization function for bilingual values
+ * Render ONE LaTeX formula block into `el` (idempotent — clears first).
+ * @param {HTMLElement} el     - the per-formula container (from x-for)
+ * @param {{label:string, latex:string, description?:string|object}} f
+ * @param {string} lang        - current language (pass the reactive `lang` so
+ *                               x-effect re-renders the localized description)
  */
-export async function renderFormulas(formulas, container, loc) {
-  if (!loc) loc = (v) => (typeof v === 'string' ? v : '');
+export async function renderFormula(el, f, lang) {
   await ensureKaTeX();
-  container.innerHTML = '';
-  for (const f of formulas) {
-    const div = document.createElement('div');
-    div.className = 'lab__formula';
+  el.replaceChildren();
+  el.className = 'lab__formula';
 
-    const label = document.createElement('div');
-    label.className = 'lab__formula-label';
-    label.textContent = f.label;
-    div.append(label);
+  const label = document.createElement('div');
+  label.className = 'lab__formula-label';
+  label.textContent = f.label;
+  el.append(label);
 
-    const math = document.createElement('div');
-    try {
-      window.katex.render(f.latex, math, { throwOnError: false, displayMode: true });
-    } catch {
-      math.textContent = f.latex;
-    }
-    div.append(math);
+  const math = document.createElement('div');
+  try {
+    katex.render(f.latex, math, { throwOnError: false, displayMode: true });
+  } catch {
+    math.textContent = f.latex;
+  }
+  el.append(math);
 
-    const descText = loc(f.description);
-    if (descText) {
-      const desc = document.createElement('div');
-      desc.className = 'lab__formula-description';
-      desc.textContent = descText;
-      div.append(desc);
-    }
-
-    container.append(div);
+  const descText = locDesc(f.description, lang);
+  if (descText) {
+    const desc = document.createElement('div');
+    desc.className = 'lab__formula-description';
+    desc.textContent = descText;
+    el.append(desc);
   }
 }
 
-/**
- * Render code with syntax highlighting.
- * @param {string} code
- * @param {string} language
- * @param {HTMLElement} container
- */
-export async function renderCode(code, language, container) {
-  await ensurePrism();
-  container.innerHTML = '';
+/** Local copy of the loc() resolver (renderer must not depend on lab-core). */
+function locDesc(value, lang) {
+  if (value == null) return '';
+  if (typeof value === 'string') return value;
+  if (typeof value === 'object') return value[lang] ?? value.en ?? value.de ?? '';
+  return String(value);
+}
 
+/**
+ * Convert a Prism token stream into DOM nodes (no innerHTML, no eval).
+ *
+ * Mirrors Prism's stringifier class output exactly: each `Token` becomes a
+ * `<span class="token <type> <alias…>">`, so existing prism.css /
+ * prism-tomorrow.css selectors keep matching. Plain strings become text nodes.
+ * `token.content` may itself be a string or an array of tokens (nested
+ * grammars, e.g. template strings / interpolation) — handled recursively.
+ *
+ * Duck-types on `.content` rather than `instanceof Prism.Token`, so the walker
+ * is unit-testable with hand-built token objects and never touches Prism.
+ *
+ * @param {Array<string|{type:string, content:(string|Array), alias?:(string|string[])}>} tokens
+ * @returns {Node[]} flat list of text nodes and <span> elements, in order
+ */
+export function tokensToNodes(tokens) {
+  const out = [];
+  for (const token of tokens) {
+    if (typeof token === 'string') {
+      out.push(document.createTextNode(token));
+      continue;
+    }
+    // Build the class list exactly like Prism: ["token", type, ...aliases].
+    const classes = ['token', token.type];
+    const alias = token.alias;
+    if (Array.isArray(alias)) classes.push(...alias);
+    else if (alias) classes.push(alias);
+
+    // content is a string (leaf) or an array of child tokens (recurse).
+    const children = typeof token.content === 'string'
+      ? [document.createTextNode(token.content)]
+      : tokensToNodes(token.content);
+
+    out.push(h('span', { class: classes.join(' ') }, ...children));
+  }
+  return out;
+}
+
+/**
+ * Render syntax-highlighted code into `el` — no innerHTML, no eval.
+ * Tokenizes via Prism, then walks the token tree to DOM (see tokensToNodes).
+ * @param {HTMLElement} el
+ * @param {string} code
+ * @param {string} [language='javascript']
+ */
+export async function renderCode(el, code, language = 'javascript') {
+  await ensurePrism();
+  el.replaceChildren();
   const pre = document.createElement('pre');
   const codeEl = document.createElement('code');
   codeEl.className = `language-${language}`;
-  codeEl.textContent = code;
+
+  const grammar = Prism && Prism.languages[language];
+  if (grammar) {
+    const tokens = Prism.tokenize(code, grammar);
+    codeEl.append(...tokensToNodes(tokens));
+  } else {
+    // No grammar loaded → render plain (still no innerHTML).
+    codeEl.append(document.createTextNode(code));
+  }
+
   pre.append(codeEl);
-  container.append(pre);
-
-  if (window.Prism) {
-    window.Prism.highlightElement(codeEl);
-  }
-}
-
-/**
- * Render a changelog as a vertical timeline.
- * @param {Array<{version: string, date: string, type: string, description: string|object, breaking?: boolean}>} changelog
- * @param {HTMLElement} container
- * @param {function} [loc] - Localization function for bilingual values
- */
-export function renderTimeline(changelog, container, loc) {
-  if (!loc) loc = (v) => (typeof v === 'string' ? v : '');
-  container.innerHTML = '';
-  container.className = 'lab__timeline';
-
-  for (const entry of changelog) {
-    const el = document.createElement('div');
-    el.className = 'lab__timeline-entry';
-    if (entry.breaking) el.classList.add('lab__timeline-breaking');
-
-    el.innerHTML = `
-      <div class="lab__timeline-dot lab__timeline-dot--${entry.type}"></div>
-      <div class="lab__timeline-header">
-        <span class="lab__timeline-version">v${entry.version}</span>
-        <span class="lab__timeline-date">${entry.date}</span>
-        <span class="lab__timeline-type lab__timeline-type--${entry.type}">${entry.type}</span>
-      </div>
-      <div class="lab__timeline-desc">${loc(entry.description)}</div>
-    `;
-
-    container.append(el);
-  }
-}
-
-/**
- * Return HTML string for a status badge.
- * @param {string} status
- * @param {object} i18n
- * @returns {string}
- */
-export function statusBadgeHTML(status, i18n) {
-  const label = i18n?.t(`lab.status.${status}`) ?? status;
-  return `<span class="lab__status-badge lab__status-badge--${status}">${label}</span>`;
-}
-
-/**
- * Return HTML string for a status dot.
- * @param {string} status
- * @returns {string}
- */
-export function statusDotHTML(status) {
-  return `<span class="lab__status-dot lab__status-dot--${status}"></span>`;
+  el.append(pre);
 }
 
 /**
  * Update the Prism.js theme link when the app theme changes.
  * @param {string} theme - 'light' or 'dark'
  */
-export function updatePrismTheme(theme) {
-  const link = document.getElementById('prism-theme');
-  if (!link) return;
-  link.href = theme === 'dark'
-    ? 'vendor/prism/prism-tomorrow.css'
-    : 'vendor/prism/prism.css';
+export function updatePrismTheme(_theme) {
+  // No-op: Prism CSS is bundled into app.min.css (single theme); the runtime
+  // <link> swap is gone with the vendor tags. Dark-mode code-block styling is
+  // carried by the bundled theme + app CSS variables (see Task 1.6 / CSS bundle).
 }

@@ -44,7 +44,7 @@ export async function parseMpx(buffer) {
   try {
     entries = await readZip(buffer);
   } catch (err) {
-    const e = new Error('zip: ' + err.message);
+    const e = new Error(`zip: ${  err.message}`);
     e.code = 'errZip';
     throw e;
   }
@@ -283,6 +283,7 @@ function _readTextBlob(entries, uri, cellCt) {
     }
   }
   if (start < bytes.length && (cellCt <= 0 || out.length < cellCt)) {
+    // eslint-disable-next-line no-control-regex -- strip trailing NUL padding from decoded MPX bytes
     const tail = decoder.decode(bytes.subarray(start)).replace(/ +$/, '');
     if (tail !== '') out.push(tail);
   }
@@ -526,9 +527,8 @@ function _buildSheetFromRows(rowNodes, doc, path) {
       const ln = _localName(cell);
       if (!/^(c|cell|td|column|d)$/.test(ln)) continue;
       // OOXML <c><v>1.5</v></c>; otherwise text content.
-      let text;
       const v = cell.querySelector(':scope > v, :scope > V, :scope > Value, :scope > value');
-      text = v ? v.textContent : cell.textContent;
+      const text = v ? v.textContent : cell.textContent;
       rowVals.push(_trim(text));
     }
     if (rowVals.length > 0) grid.push(rowVals);

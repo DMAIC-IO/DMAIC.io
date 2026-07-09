@@ -38,7 +38,7 @@ function _collectCSS() {
   let rules = '';
   for (const sheet of document.styleSheets) {
     try {
-      for (const rule of sheet.cssRules) rules += rule.cssText + '\n';
+      for (const rule of sheet.cssRules) rules += `${rule.cssText  }\n`;
     } catch { /* cross-origin — skip */ }
   }
 
@@ -54,7 +54,7 @@ function _collectCSS() {
     `:root{--font-family:${resolvedFont};--font-family-mono:${resolvedMono};}` +
     `body,html,div,span,p,h1,h2,h3,h4,h5,h6,li,ol,ul,section,header,nav,button,input,label{font-family:${resolvedFont};}`;
 
-  return vars + '\n' + fontOverride + '\n' + rules;
+  return `${vars  }\n${  fontOverride  }\n${  rules}`;
 }
 
 /** Shared: clone element, embed full CSS, wrap in foreignObject SVG. */
@@ -111,7 +111,7 @@ function _buildExportSvg(el) {
 async function domToPngBlob(el, scale = 2) {
   const { svg, w, h } = _buildExportSvg(el);
   const svgData = new XMLSerializer().serializeToString(svg);
-  const dataUrl = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svgData);
+  const dataUrl = `data:image/svg+xml;charset=utf-8,${  encodeURIComponent(svgData)}`;
   const img = new Image();
 
   return new Promise((resolve, reject) => {
@@ -146,6 +146,9 @@ function _downloadBlob(blob, filename) {
   a.click();
   URL.revokeObjectURL(a.href);
 }
+
+import { h } from '../core/dom.js';
+import { icon } from '../core/icon.js';
 
 export class DashboardGrid {
   /**
@@ -206,10 +209,10 @@ export class DashboardGrid {
   addTile(def) {
     if (this._tiles.has(def.id)) return false;
     const w = def.defaultW ?? def.minW ?? 3;
-    const h = def.defaultH ?? def.minH ?? 3;
-    const spot = this._findFreeSpot(w, h);
+    const gh = def.defaultH ?? def.minH ?? 3;
+    const spot = this._findFreeSpot(w, gh);
     if (!spot) return false;
-    this._createTile(def, { x: spot.x, y: spot.y, w, h });
+    this._createTile(def, { x: spot.x, y: spot.y, w, h: gh });
     this._updateContainerHeight();
     this._notifyChange();
     return true;
@@ -347,12 +350,12 @@ export class DashboardGrid {
     return false;
   }
 
-  _findFreeSpot(w, h) {
+  _findFreeSpot(w, gh) {
     if (w > this.cols) return null;
     const maxRows = 60;
     for (let y = 0; y < maxRows; y++) {
       for (let x = 0; x <= this.cols - w; x++) {
-        if (!this._hasCollision({ x, y, w, h })) return { x, y };
+        if (!this._hasCollision({ x, y, w, h: gh })) return { x, y };
       }
     }
     return { x: 0, y: 0 };
@@ -364,35 +367,40 @@ export class DashboardGrid {
     const el = document.createElement('section');
     el.className = 'dashboard-grid__tile';
     el.dataset.tileId = def.id;
-    el.innerHTML = `
-      <div class="dashboard-grid__tile-move" title="${_escapeAttr(def.moveTitle || '')}" aria-label="${_escapeAttr(def.moveTitle || '')}">
-        <svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
-          <circle cx="5" cy="4" r="0.5" fill="currentColor"/><circle cx="11" cy="4" r="0.5" fill="currentColor"/>
-          <circle cx="5" cy="8" r="0.5" fill="currentColor"/><circle cx="11" cy="8" r="0.5" fill="currentColor"/>
-          <circle cx="5" cy="12" r="0.5" fill="currentColor"/><circle cx="11" cy="12" r="0.5" fill="currentColor"/>
-        </svg>
-      </div>
-      <h3 class="dashboard-grid__tile-title">${_escapeText(def.title || '')}</h3>
-      <div class="dashboard-grid__tile-export">
-        <button type="button" class="dashboard-grid__tile-export-btn" data-export="png" title="PNG">
-          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
-        </button>
-        <button type="button" class="dashboard-grid__tile-export-btn" data-export="svg" title="SVG">
-          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 3v4a1 1 0 0 0 1 1h4"/><path d="M17 21H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2z"/><path d="M9 15l2 2 4-4"/></svg>
-        </button>
-      </div>
-      <button type="button" class="dashboard-grid__tile-remove" aria-label="${_escapeAttr(def.removeLabel || '')}" title="${_escapeAttr(def.removeLabel || '')}">
-        <svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
-          <line x1="4" y1="4" x2="12" y2="12"/><line x1="12" y1="4" x2="4" y2="12"/>
-        </svg>
-      </button>
-      <div class="dashboard-grid__tile-body"></div>
-      <div class="dashboard-grid__tile-resize" title="${_escapeAttr(def.resizeTitle || '')}" aria-label="${_escapeAttr(def.resizeTitle || '')}">
-        <svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
-          <line x1="14" y1="6" x2="6" y2="14"/><line x1="14" y1="10" x2="10" y2="14"/>
-        </svg>
-      </div>
-    `;
+    el.replaceChildren(
+      h('div', {
+        class: 'dashboard-grid__tile-move',
+        title: def.moveTitle || '',
+        'aria-label': def.moveTitle || '',
+      }, icon('move')),
+      h('h3', { class: 'dashboard-grid__tile-title' }, def.title || ''),
+      h('div', { class: 'dashboard-grid__tile-export' },
+        h('button', {
+          type: 'button',
+          class: 'dashboard-grid__tile-export-btn',
+          'data-export': 'png',
+          title: 'PNG',
+        }, icon('export-png')),
+        h('button', {
+          type: 'button',
+          class: 'dashboard-grid__tile-export-btn',
+          'data-export': 'svg',
+          title: 'SVG',
+        }, icon('export-svg')),
+      ),
+      h('button', {
+        type: 'button',
+        class: 'dashboard-grid__tile-remove',
+        'aria-label': def.removeLabel || '',
+        title: def.removeLabel || '',
+      }, icon('close')),
+      h('div', { class: 'dashboard-grid__tile-body' }),
+      h('div', {
+        class: 'dashboard-grid__tile-resize',
+        title: def.resizeTitle || '',
+        'aria-label': def.resizeTitle || '',
+      }, icon('resize')),
+    );
 
     el.querySelector('.dashboard-grid__tile-remove')
       .addEventListener('click', (e) => { e.stopPropagation(); this.removeTile(def.id); });
@@ -476,10 +484,10 @@ export class DashboardGrid {
     for (const t of this._tiles.values()) {
       maxRow = Math.max(maxRow, t.layout.y + t.layout.h);
     }
-    const h = maxRow > 0
+    const gh = maxRow > 0
       ? maxRow * this.rowHeight + (maxRow - 1) * this.gap + this.gap
       : 0;
-    this.container.style.minHeight = `${h}px`;
+    this.container.style.minHeight = `${gh}px`;
   }
 
   _notifyChange() {
@@ -558,12 +566,3 @@ export class DashboardGrid {
     document.addEventListener('pointercancel', onUp);
   }
 }
-
-// ─── Helpers ─────────────────────────────────────────────────────
-
-function _escapeText(s) {
-  return String(s ?? '').replace(/[&<>"']/g,
-    c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
-}
-
-function _escapeAttr(s) { return _escapeText(s); }

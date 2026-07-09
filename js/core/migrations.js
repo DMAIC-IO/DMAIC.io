@@ -44,21 +44,22 @@ const migrations = {
  * @returns {object} migrated data
  */
 export function migrateToLatest(data, targetVersion) {
-  let current = stripPatch(data.appVersion || '0.1.0');
+  let result = data;
+  let current = stripPatch(result.appVersion || '0.1.0');
   const target = stripPatch(targetVersion);
 
-  if (current === target) return data;
+  if (current === target) return result;
 
   const steps = Object.keys(migrations);
   for (const step of steps) {
     const [from, to] = step.split('→');
     if (current === from) {
-      data = migrations[step](data);
+      result = migrations[step](result);
       current = to;
     }
     if (current === target) break;
   }
 
-  data.appVersion = targetVersion;
-  return data;
+  result.appVersion = targetVersion;
+  return result;
 }

@@ -1,12 +1,27 @@
 /* D.Mike — Chart Suggestion module styles */
 
+/* The Alpine x-data wrapper must pass the workspace module-area's definite
+   height down to the split, so the preview plot's height:100% chain resolves
+   against a definite block height. Without this, .dmike-split's min-height:100%
+   leaves the chain indefinite → the preview chart svg drives its own container
+   height → the ResizeObserver re-measures and re-renders taller each tick
+   (measure→render→measure feedback loop). See docs/superpowers/plans
+   2026-06-16-plan-0. */
+.chart-suggestion-root {
+  height: 100%;
+}
+
 .chart-suggestion {
   height: 100%;
   width: 100%;
 }
 
+/* Definite height (not just .dmike-split's min-height:100%) so the preview
+   plot resolves a real block height and the resize feedback loop breaks. */
 .chart-suggestion.dmike-split {
   --dmike-split-input-width: 320px;
+
+  height: 100%;
 }
 
 /* ─── Empty state ──────────────────────────────────────────── */
@@ -35,7 +50,7 @@
 .chart-suggestion__empty-title {
   font-size: 16px;
   font-weight: 600;
-  margin: 0 0 8px 0;
+  margin: 0 0 8px;
   color: var(--color-text-primary);
 }
 
@@ -78,7 +93,9 @@
 .chart-suggestion__col-chip.col-role-ordinal     { background: var(--color-role-ordinal-bg);     color: var(--color-role-ordinal-fg);     }
 .chart-suggestion__col-chip.col-role-date        { background: var(--color-role-date-bg);        color: var(--color-role-date-fg);        }
 .chart-suggestion__col-chip.col-role-identifier  { background: var(--color-role-identifier-bg);  color: var(--color-role-identifier-fg);  }
+/* stylelint-disable-next-line selector-class-pattern -- class derives from the camelCase column-role id 'freeText' (persisted enum), not free to rename */
 .chart-suggestion__col-chip.col-role-freeText    { background: var(--color-role-freeText-bg);    color: var(--color-role-freeText-fg);    }
+
 .chart-suggestion__col-chip em {
   font-style: normal;
   font-size: 10px;
@@ -138,7 +155,7 @@
   color: var(--color-accent);
 }
 
-.chart-suggestion__card-thumb svg {
+.chart-suggestion__card-thumb .icon {
   width: 28px;
   height: 28px;
 }
@@ -222,6 +239,8 @@
 }
 
 .chart-suggestion__placeholder {
+  flex: 1;
+  min-width: 0;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -271,7 +290,6 @@
   background: var(--color-bg);
   padding: 0 6px;
   text-align: center;
-  word-break: break-word;
   overflow-wrap: anywhere;
 }
 

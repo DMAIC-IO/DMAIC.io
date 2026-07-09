@@ -1,0 +1,113 @@
+<div class="module-data-transformation dmike-split" x-data="dataTransformation">
+  <div class="dmike-split__input">
+    <div class="dmike-split__section-title" x-text="t('selectColumn')"></div>
+    <div id="dt-col-picker" data-ref="col-picker-wrap"></div>
+
+    <div class="dmike-split__section-title" x-text="t('selectTransform')"></div>
+    <div class="dt-tf-grid" id="dt-tf-grid">
+      <template x-for="tf in transforms" :key="tf.id">
+        <div class="dt-tf-opt" :class="tfOptClass(tf.id)" :data-id="tf.id" @click="selectTF(tf.id)">
+          <span class="dt-tf-opt__dot"></span>
+          <div>
+            <div class="dt-tf-opt__name" x-text="tfName(tf.id)"></div>
+            <div class="dt-tf-opt__desc" x-text="tfDesc(tf.id)"></div>
+          </div>
+        </div>
+      </template>
+    </div>
+
+    <div id="dt-param-panel" x-show="paramRows.length > 0">
+      <div class="dmike-split__section-title" x-text="t('parameters')"></div>
+      <div class="dt-param-group" id="dt-param-group">
+        <template x-for="p in paramRows" :key="p.key">
+          <div class="dt-param">
+            <label class="dt-param__label" x-text="paramLabel(p.labelKey)"></label>
+            <input class="field field--num field--inline dt-param__number" type="number"
+                   :data-param-key="p.key" :min="p.min" :max="p.max"
+                   x-model="p.val" @input="paramNumberChanged(p)">
+            <input class="dt-param__range" type="range"
+                   :min="p.min" :max="p.max" :step="p.step"
+                   :data-range-for="p.key"
+                   x-model="p.val" @input="paramSliderChanged(p)">
+          </div>
+        </template>
+      </div>
+    </div>
+  </div>
+
+  <div class="dmike-split__output" id="dt-output">
+    <template x-if="errorMsg">
+      <div class="dt-error-msg" x-text="errorMsg"></div>
+    </template>
+
+    <template x-if="!errorMsg && hasResults">
+      <div>
+        <div class="dmike-split__output-section" x-text="t('charts')"></div>
+        <div class="dt-results-grid">
+          <div class="dt-chart-card">
+            <div class="dt-chart-card__title" x-text="t('histOriginal')"></div>
+            <div id="dt-hist-orig" data-ref="chart-hist-orig" style="height:200px"></div>
+          </div>
+          <div class="dt-chart-card">
+            <div class="dt-chart-card__title" x-text="t('histTransformed')"></div>
+            <div id="dt-hist-trans" data-ref="chart-hist-trans" style="height:200px"></div>
+          </div>
+          <div class="dt-chart-card">
+            <div class="dt-chart-card__title" x-text="t('ppOriginal')"></div>
+            <div id="dt-pp-orig" data-ref="chart-pp-orig" style="height:200px"></div>
+          </div>
+          <div class="dt-chart-card">
+            <div class="dt-chart-card__title" x-text="t('ppTransformed')"></div>
+            <div id="dt-pp-trans" data-ref="chart-pp-trans" style="height:200px"></div>
+          </div>
+        </div>
+
+        <div class="dmike-split__output-section" x-text="t('descriptiveStats')"></div>
+        <table class="dmike-table dt-stats-table">
+          <thead><tr>
+            <th x-text="t('statistic')"></th>
+            <th x-text="t('original')"></th>
+            <th x-text="t('transformed')"></th>
+          </tr></thead>
+          <tbody id="dt-stats-body">
+            <template x-for="row in statRows" :key="row.label">
+              <tr>
+                <td x-text="row.label"></td>
+                <td x-text="row.orig"></td>
+                <td x-text="row.trans"></td>
+              </tr>
+            </template>
+          </tbody>
+        </table>
+
+        <div class="dmike-split__output-section" x-text="t('normalityTest')"></div>
+        <div class="dt-normality" id="dt-normality">
+          <div class="dt-normality__row">
+            <strong x-text="normLabel('original')"></strong>
+            <span x-text="normStat('orig')"></span>
+            <template x-if="normHasBadge('orig')">
+              <span class="dt-badge" :class="normBadgeClass('orig')" x-text="normBadgeText('orig')"></span>
+            </template>
+          </div>
+          <div class="dt-normality__row">
+            <strong x-text="normLabel('transformed')"></strong>
+            <span x-text="normStat('trans')"></span>
+            <template x-if="normHasBadge('trans')">
+              <span class="dt-badge" :class="normBadgeClass('trans')" x-text="normBadgeText('trans')"></span>
+            </template>
+          </div>
+          <div class="dt-normality__alpha" x-text="normAlpha()"></div>
+        </div>
+
+        <div class="dmike-split__output-section" x-text="t('exportData')"></div>
+        <div class="dt-export-box" id="dt-export-box" x-text="exportText"></div>
+        <div class="dt-export-actions">
+          <button class="btn btn--secondary btn--sm" data-action="copy" @click="copyExport()" x-text="t('copy')"></button>
+          <button class="btn btn--secondary btn--sm" data-action="csv" @click="downloadCSV()" x-text="t('downloadCSV')"></button>
+          <span id="dt-target-wrap" data-ref="target-wrap"></span>
+          <button class="btn btn--secondary btn--sm" data-action="to-worksheet" @click="toWorksheet()" x-text="t('toWorksheet')"></button>
+        </div>
+      </div>
+    </template>
+  </div>
+</div>

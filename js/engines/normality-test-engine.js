@@ -56,7 +56,7 @@ export function descriptiveStats(data) {
  * @param {number} x — evaluation point
  */
 function _swPoly(c, nord, x) {
-  let res = c[0];
+  const res = c[0];
   if (nord === 1) return res;
   let p = x * c[nord - 1];
   if (nord === 2) return res + p;
@@ -98,8 +98,9 @@ function _swPpnd(p) {
 function _swAlnorm(x, upper) {
   const ltone = 7, utzero = 38, con = 1.28;
   let z = x;
-  if (!(z > 0)) { upper = false; z = -z; }
-  if (!((z <= ltone) || (upper && z <= utzero))) return upper ? 0 : 1;
+  let up = upper;
+  if (!(z > 0)) { up = false; z = -z; }
+  if (!((z <= ltone) || (up && z <= utzero))) return up ? 0 : 1;
   const y = 0.5 * z * z;
   let temp;
   if (z <= con) {
@@ -116,7 +117,7 @@ function _swAlnorm(x, upper) {
               (z + 0.742380924027 + 30.789933034 /
                 (z + 3.99019417011))))));
   }
-  return upper ? temp : 1 - temp;
+  return up ? temp : 1 - temp;
 }
 
 /**
@@ -163,7 +164,7 @@ export function shapiroWilk(data) {
     const ssumm2 = Math.sqrt(summ2);
     const rsn = 1 / Math.sqrt(an);
 
-    let A1 = _swPoly(c1, 6, rsn) - a[0] / ssumm2;
+    const A1 = _swPoly(c1, 6, rsn) - a[0] / ssumm2;
     let i1, fac;
 
     if (n > 5) {

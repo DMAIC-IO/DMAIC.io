@@ -4,13 +4,20 @@
  * Provides:
  *  - downloadFile / downloadBlob — trigger browser download
  *  - ensureXLSX — lazy-load SheetJS
- *  - EXPORT_ICONS — SVG icon markup for export formats
  *  - createExportDropdown — reusable dropdown button + menu
  *  - exportTableAsPNG / exportTableAsSVG — render a table descriptor
  *    to a pixel-perfect PNG (2×) or true-vector SVG
  *
  * @module export-utils
  */
+
+import { escAttr } from './html-utils.js';
+import { h } from './dom.js';
+import { icon } from './icon.js';
+import { XLSX } from './vendor/xlsx.js';
+import { opentype } from './vendor/opentype.js';
+
+export { XLSX };
 
 // ─── Download helpers ────────────────────────────────────────
 
@@ -20,7 +27,7 @@
  * @param {string} mimeType
  */
 export function downloadFile(content, filename, mimeType = 'text/plain') {
-  const blob = new Blob(['\uFEFF' + content], { type: mimeType });
+  const blob = new Blob([`\uFEFF${  content}`], { type: mimeType });
   downloadBlob(blob, filename);
 }
 
@@ -37,33 +44,69 @@ export function downloadBlob(blob, filename) {
   URL.revokeObjectURL(url);
 }
 
-// ─── XLSX lazy loader ────────────────────────────────────────
+// ─── SVG-string → PNG rasterization ──────────────────────────
 
-let _xlsxPromise = null;
+/**
+ * Rasterize an SVG string to a PNG Blob via an offscreen canvas.
+ *
+ * Loads the SVG markup into an `Image`, paints it onto a canvas sized
+ * `width·scale × height·scale`, and resolves with a PNG `Blob`. This is the
+ * shared core behind every "serialize an SVG, draw it to a canvas, read back
+ * a PNG" export in the app — callers parameterize only the differences
+ * (output dimensions, HiDPI scale, optional background fill).
+ *
+ * @param {string} svgString - Serialized SVG markup.
+ * @param {Object} [opts]
+ * @param {number} opts.width  - Logical (1×) width of the image in px.
+ * @param {number} opts.height - Logical (1×) height of the image in px.
+ * @param {number} [opts.scale=2] - HiDPI multiplier for the output canvas.
+ * @param {?string} [opts.background=null] - Solid fill behind the SVG
+ *   (e.g. '#fff'). `null` keeps the canvas transparent.
+ * @returns {Promise<Blob>} resolves with the PNG Blob; rejects if the SVG
+ *   fails to load or the canvas yields no blob.
+ */
+export function svgStringToPngBlob(svgString, { width, height, scale = 2, background = null } = {}) {
+  return new Promise((resolve, reject) => {
+    const canvasW = width * scale;
+    const canvasH = height * scale;
+    const canvas = document.createElement('canvas');
+    canvas.width = canvasW;
+    canvas.height = canvasH;
+    const ctx = canvas.getContext('2d');
+    if (background) {
+      ctx.fillStyle = background;
+      ctx.fillRect(0, 0, canvasW, canvasH);
+    }
 
-export function ensureXLSX() {
-  if (typeof XLSX !== 'undefined') return Promise.resolve();
-  if (_xlsxPromise) return _xlsxPromise;
-  _xlsxPromise = new Promise((resolve, reject) => {
-    const s = document.createElement('script');
-    s.src = 'vendor/xlsx.full.min.js';
-    s.onload = resolve;
-    s.onerror = () => { _xlsxPromise = null; reject(new Error('Failed to load SheetJS')); };
-    document.head.appendChild(s);
+    const blob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const img = new Image();
+    img.onload = () => {
+      ctx.drawImage(img, 0, 0, canvasW, canvasH);
+      URL.revokeObjectURL(url);
+      canvas.toBlob((png) => {
+        png ? resolve(png) : reject(new Error('Canvas produced no PNG blob'));
+      }, 'image/png');
+    };
+    img.onerror = () => {
+      URL.revokeObjectURL(url);
+      reject(new Error('Failed to load SVG for rasterization'));
+    };
+    img.src = url;
   });
-  return _xlsxPromise;
 }
 
-// ─── Export icons ────────────────────────────────────────────
+// ─── XLSX lazy loader ────────────────────────────────────────
 
-export const EXPORT_ICONS = {
-  download: '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>',
-  png:  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>',
-  svg:  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 3v4a1 1 0 0 0 1 1h4"/><path d="M17 21H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2z"/><path d="M9 15l2 2 4-4"/></svg>',
-  csv:  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 3v4a1 1 0 0 0 1 1h4"/><path d="M17 21H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2z"/><path d="M8 15h2M11 15h2M14 15h2"/></svg>',
-  xlsx: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 3v4a1 1 0 0 0 1 1h4"/><path d="M17 21H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2z"/><path d="M9 13l6 6M15 13l-6 6"/></svg>',
-  json: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 3v4a1 1 0 0 0 1 1h4"/><path d="M17 21H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2z"/><path d="M10 12h1M13 12h1"/></svg>',
-};
+/**
+ * SheetJS (XLSX) is statically bundled from node_modules (see ./vendor/xlsx.js),
+ * so it is always present. Kept async for callers that `await ensureXLSX()`
+ * before touching `XLSX`. Signature/Promise contract is unchanged.
+ * @returns {Promise<void>}
+ */
+export function ensureXLSX() {
+  return Promise.resolve();
+}
 
 // ─── Export dropdown ─────────────────────────────────────────
 
@@ -83,11 +126,11 @@ export const EXPORT_ICONS = {
  */
 export function createExportDropdown(formats, onExport) {
   const LABELS = {
-    xlsx: `${EXPORT_ICONS.xlsx} Excel`,
-    csv:  `${EXPORT_ICONS.csv} CSV`,
-    json: `${EXPORT_ICONS.json} JSON`,
-    png:  `${EXPORT_ICONS.png} PNG`,
-    svg:  `${EXPORT_ICONS.svg} SVG`,
+    xlsx: 'Excel',
+    csv:  'CSV',
+    json: 'JSON',
+    png:  'PNG',
+    svg:  'SVG',
   };
 
   const wrap = document.createElement('div');
@@ -97,16 +140,18 @@ export function createExportDropdown(formats, onExport) {
   btn.className = 'btn btn--sm btn--secondary';
   btn.type = 'button';
   btn.style.cssText = 'display:inline-flex;align-items:center;gap:6px';
-  btn.innerHTML = `${EXPORT_ICONS.download} Export`;
+  btn.replaceChildren(icon('download'), document.createTextNode(' Export'));
 
   const menu = document.createElement('div');
   menu.className = 'dmike-chart-dropdown-menu';
 
   for (const fmt of formats) {
-    const item = document.createElement('button');
-    item.className = 'dmike-chart-dropdown-item';
-    item.dataset.export = fmt;
-    item.innerHTML = LABELS[fmt] || fmt;
+    const item = h(
+      'button',
+      { class: 'dmike-chart-dropdown-item', 'data-export': fmt },
+      icon(`export-${  fmt}`),
+      LABELS[fmt] || fmt,
+    );
     menu.appendChild(item);
   }
 
@@ -116,8 +161,8 @@ export function createExportDropdown(formats, onExport) {
   const openMenu = () => {
     const rect = btn.getBoundingClientRect();
     menu.style.position = 'fixed';
-    menu.style.top = (rect.bottom + 4) + 'px';
-    menu.style.left = rect.left + 'px';
+    menu.style.top = `${rect.bottom + 4  }px`;
+    menu.style.left = `${rect.left  }px`;
     menu.style.right = 'auto';
     menu.classList.add('open');
   };
@@ -208,9 +253,9 @@ function _dims(td) {
   const extraCol = hasSumCol ? _CELL_W : 0;
 
   const w = _NAME_W + cols * _CELL_W + extraCol + _PAD * 2;
-  const h = (hasWeights ? _WEIGHT_H : 0) + _HEADER_H + rows * _ROW_H
+  const height = (hasWeights ? _WEIGHT_H : 0) + _HEADER_H + rows * _ROW_H
           + (hasSumRow ? _ROW_H : 0) + _PAD * 2;
-  return { w, h, cols, rows, hasWeights, hasSumCol, hasSumRow, extraCol };
+  return { w, h: height, cols, rows, hasWeights, hasSumCol, hasSumRow, extraCol };
 }
 
 /**
@@ -378,11 +423,11 @@ function _drawTable(ctx, td) {
  * @param {string} [filename='table.png']
  */
 export function exportTableAsPNG(td, filename = 'table.png') {
-  const { w, h } = _dims(td);
+  const { w, h: height } = _dims(td);
   const scale = 2;
   const canvas = document.createElement('canvas');
   canvas.width = w * scale;
-  canvas.height = h * scale;
+  canvas.height = height * scale;
   const ctx = canvas.getContext('2d');
   ctx.scale(scale, scale);
   _drawTable(ctx, td);
@@ -391,19 +436,13 @@ export function exportTableAsPNG(td, filename = 'table.png') {
 
 // ─── opentype.js lazy loader ────────────────────────────────
 
-let _opentypePromise = null;
-
+/**
+ * opentype.js is statically bundled from node_modules (see ./vendor/opentype.js),
+ * so it is always present. Kept async for callers. Signature unchanged.
+ * @returns {Promise<void>}
+ */
 function _ensureOpentype() {
-  if (typeof opentype !== 'undefined') return Promise.resolve();
-  if (_opentypePromise) return _opentypePromise;
-  _opentypePromise = new Promise((resolve, reject) => {
-    const s = document.createElement('script');
-    s.src = 'vendor/opentype.min.js';
-    s.onload = resolve;
-    s.onerror = () => { _opentypePromise = null; reject(new Error('Failed to load opentype.js')); };
-    document.head.appendChild(s);
-  });
-  return _opentypePromise;
+  return Promise.resolve();
 }
 
 /** @type {Map<string, opentype.Font>} */
@@ -424,8 +463,8 @@ async function _ensureSVGFonts() {
   if (_svgFonts) return _svgFonts;
   await _ensureOpentype();
   const [sans, mono] = await Promise.all([
-    _loadFont('vendor/fonts/dmsans-latin.ttf'),
-    _loadFont('vendor/fonts/jetbrainsmono-full.ttf'),
+    _loadFont('assets/fonts/dmsans-latin.ttf'),
+    _loadFont('assets/fonts/jetbrainsmono-full.ttf'),
   ]);
   _svgFonts = { sans, mono };
   return _svgFonts;
@@ -478,8 +517,8 @@ export async function exportTableAsSVG(td, filename = 'table.svg') {
   const col = _themeColors();
   const d = _dims(td);
 
-  const _parseBgHex = (hex) => {
-    hex = hex.replace('#', '');
+  const _parseBgHex = (hexIn) => {
+    let hex = hexIn.replace('#', '');
     if (hex.length === 3) hex = hex[0]+hex[0]+hex[1]+hex[1]+hex[2]+hex[2];
     return [parseInt(hex.slice(0,2),16), parseInt(hex.slice(2,4),16), parseInt(hex.slice(4,6),16)];
   };
@@ -488,7 +527,7 @@ export async function exportTableAsSVG(td, filename = 'table.svg') {
     if (!color || color === 'transparent' || color === 'none') return color;
     const m = color.match(/^rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*(?:,\s*([\d.]+))?\s*\)$/);
     if (!m) return color;
-    const r = +m[1], g = +m[2], b = +m[3], a = m[4] !== undefined ? +m[4] : 1;
+    const r = Number(m[1]), g = Number(m[2]), b = Number(m[3]), a = m[4] !== undefined ? Number(m[4]) : 1;
     if (a >= 1) return `rgb(${r},${g},${b})`;
     const br = Math.round(r * a + bgR * (1 - a));
     const bg = Math.round(g * a + bgG * (1 - a));
@@ -496,8 +535,8 @@ export async function exportTableAsSVG(td, filename = 'table.svg') {
     return `#${((1<<24)+(br<<16)+(bg<<8)+bb).toString(16).slice(1)}`;
   };
 
-  const rect = (x, y, w, h, fill, stroke) =>
-    `<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="${solidify(fill)}" stroke="${stroke}" stroke-width="1"/>`;
+  const rect = (x, y, w, height, fill, stroke) =>
+    `<rect x="${x}" y="${y}" width="${w}" height="${height}" fill="${solidify(fill)}" stroke="${stroke}" stroke-width="1"/>`;
 
   const text = (x, y, txt, opts = {}) => {
     const font = opts.mono ? fonts.mono : fonts.sans;
@@ -604,6 +643,261 @@ export async function exportTableAsSVG(td, filename = 'table.svg') {
     if (d.hasSumCol && td.grandTotal !== undefined) {
       svg += rect(sumX, fY, _CELL_W, _ROW_H, col.bgTertiary, col.borderStrong);
       svg += text(sumX + _CELL_W / 2, fY + _ROW_H / 2, String(td.grandTotal), { mono: true, size: 14, bold: true, color: col.accentColor });
+    }
+  }
+
+  svg += '</svg>';
+  downloadBlob(new Blob([svg], { type: 'image/svg+xml' }), filename);
+}
+
+// ─── Column / card image export ──────────────────────────────
+//
+// Generic renderer for a row of N labelled columns, each holding a stack of
+// text-cards (e.g. SIPOC's Supplier-Input-Process-Output-Customer board).
+// This is DISTINCT from the table exporters above (which draw a grid). The
+// input is intentionally generic — no module-specific names or CSS classes.
+
+/**
+ * One column of a column/card export.
+ *
+ * @typedef {Object} ExportColumn
+ * @property {string}   title  - Header label (rendered UPPERCASE by the caller's choice; drawn verbatim)
+ * @property {string}   [desc] - Optional sub-label under the title (mono)
+ * @property {string}   color  - Accent color (CSS hex) for the header tint + dot
+ * @property {string[]} items  - Card labels, top to bottom
+ */
+
+/**
+ * Default geometry + font settings for a column/card export.
+ * Callers may override any subset via the `opts` argument.
+ */
+const _COL_DEFAULTS = {
+  COL_W: 200,
+  GAP: 8,
+  PAD: 20,
+  HEADER_H: 48,
+  ITEM_H: 32,
+  ITEM_PAD: 6,
+  ITEM_MAX: 28,        // truncate item labels longer than this …
+  ITEM_TRUNC: 26,      // … to this many chars + '…'
+  FONT: '13px "DM Sans", system-ui, sans-serif',
+  FONT_SM: '10px "JetBrains Mono", monospace',
+  FONT_LABEL: 'bold 11px "DM Sans", system-ui, sans-serif',
+};
+
+/**
+ * Merge caller options over the column-export defaults.
+ * @param {Object} [opts]
+ * @returns {Object} resolved geometry/font config
+ */
+function _colOpts(opts = {}) {
+  return { ..._COL_DEFAULTS, ...opts };
+}
+
+/**
+ * Compute total canvas dimensions for a column/card export.
+ * Pure geometry — unit-testable.
+ * @param {ExportColumn[]} columns
+ * @param {Object} [opts]
+ * @returns {{ w: number, h: number, maxItems: number }}
+ */
+export function columnExportDims(columns, opts = {}) {
+  const o = _colOpts(opts);
+  const maxItems = Math.max(...columns.map(c => c.items.length), 1);
+  const w = o.PAD * 2 + columns.length * o.COL_W + (columns.length - 1) * o.GAP;
+  const height = o.PAD * 2 + o.HEADER_H + maxItems * (o.ITEM_H + o.ITEM_PAD) + o.ITEM_PAD;
+  return { w, h: height, maxItems };
+}
+
+/**
+ * Truncate a card label to fit one card. Pure — unit-testable.
+ * @param {string} label
+ * @param {number} [max=28]   - max length before truncation
+ * @param {number} [trunc=26] - chars kept when truncating (+ '…')
+ * @returns {string}
+ */
+export function truncateColumnLabel(label, max = _COL_DEFAULTS.ITEM_MAX, trunc = _COL_DEFAULTS.ITEM_TRUNC) {
+  return label.length > max ? `${label.slice(0, trunc)  }…` : label;
+}
+
+/**
+ * Read the theme colors a column/card export needs from the document.
+ * @returns {Object} color map
+ */
+function _columnThemeColors() {
+  const cs = getComputedStyle(document.documentElement);
+  const cv = (v, fb) => cs.getPropertyValue(v).trim() || fb;
+  return {
+    bgPrimary:     cv('--color-bg-primary', '#ffffff'),
+    bgSecondary:   cv('--color-bg-secondary', '#f8f9fa'),
+    borderColor:   cv('--color-border-secondary', '#dee2e6'),
+    textPrimary:   cv('--color-text-primary', '#212529'),
+    textSecondary: cv('--color-text-secondary', '#6c757d'),
+    textTertiary:  cv('--color-text-tertiary', '#adb5bd'),
+  };
+}
+
+/**
+ * Trace a fully-rounded rectangle path on a Canvas 2D context.
+ * @param {CanvasRenderingContext2D} ctx
+ */
+function _roundRect(ctx, x, y, w, height, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + w - r, y);
+  ctx.arcTo(x + w, y, x + w, y + r, r);
+  ctx.lineTo(x + w, y + height - r);
+  ctx.arcTo(x + w, y + height, x + w - r, y + height, r);
+  ctx.lineTo(x + r, y + height);
+  ctx.arcTo(x, y + height, x, y + height - r, r);
+  ctx.lineTo(x, y + r);
+  ctx.arcTo(x, y, x + r, y, r);
+  ctx.closePath();
+}
+
+/**
+ * Trace a rectangle with only its top two corners rounded.
+ * @param {CanvasRenderingContext2D} ctx
+ */
+function _roundRectTop(ctx, x, y, w, height, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + w - r, y);
+  ctx.arcTo(x + w, y, x + w, y + r, r);
+  ctx.lineTo(x + w, y + height);
+  ctx.lineTo(x, y + height);
+  ctx.lineTo(x, y + r);
+  ctx.arcTo(x, y, x + r, y, r);
+  ctx.closePath();
+}
+
+/**
+ * Draw a column/card board onto a Canvas 2D context.
+ * @param {CanvasRenderingContext2D} ctx
+ * @param {ExportColumn[]} columns
+ * @param {Object} o - resolved options (from _colOpts) incl. theme colors
+ */
+function _drawColumns(ctx, columns, o) {
+  const { W, H } = o;
+
+  ctx.fillStyle = o.bgPrimary;
+  ctx.fillRect(0, 0, W, H);
+
+  for (let ci = 0; ci < columns.length; ci++) {
+    const col = columns[ci];
+    const x = o.PAD + ci * (o.COL_W + o.GAP);
+    const color = col.color;
+    const items = col.items;
+
+    ctx.fillStyle = o.bgSecondary;
+    ctx.strokeStyle = o.borderColor;
+    ctx.lineWidth = 1;
+    const colH = o.HEADER_H + Math.max(items.length, 1) * (o.ITEM_H + o.ITEM_PAD) + o.ITEM_PAD;
+    _roundRect(ctx, x, o.PAD, o.COL_W, colH, 6);
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.fillStyle = `${color  }18`;
+    _roundRectTop(ctx, x, o.PAD, o.COL_W, o.HEADER_H, 6);
+    ctx.fill();
+    ctx.strokeStyle = o.borderColor;
+    ctx.beginPath();
+    ctx.moveTo(x, o.PAD + o.HEADER_H);
+    ctx.lineTo(x + o.COL_W, o.PAD + o.HEADER_H);
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.arc(x + 14, o.PAD + o.HEADER_H / 2, 5, 0, Math.PI * 2);
+    ctx.fillStyle = color;
+    ctx.fill();
+
+    ctx.fillStyle = o.textPrimary;
+    ctx.font = o.FONT_LABEL;
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(col.title, x + 26, o.PAD + o.HEADER_H / 2 - 6);
+
+    ctx.fillStyle = o.textTertiary;
+    ctx.font = o.FONT_SM;
+    ctx.fillText(col.desc || '', x + 26, o.PAD + o.HEADER_H / 2 + 8);
+
+    for (let i = 0; i < items.length; i++) {
+      const iy = o.PAD + o.HEADER_H + o.ITEM_PAD + i * (o.ITEM_H + o.ITEM_PAD);
+      ctx.fillStyle = o.bgPrimary;
+      ctx.strokeStyle = o.borderColor;
+      _roundRect(ctx, x + 8, iy, o.COL_W - 16, o.ITEM_H, 4);
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.fillStyle = o.textPrimary;
+      ctx.font = o.FONT;
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'middle';
+      const txt = truncateColumnLabel(items[i], o.ITEM_MAX, o.ITEM_TRUNC);
+      ctx.fillText(txt, x + 14, iy + o.ITEM_H / 2);
+    }
+  }
+}
+
+/**
+ * Export a column/card board as PNG (2× resolution).
+ *
+ * @param {ExportColumn[]} columns - the columns to render
+ * @param {Object} [opts] - geometry/font overrides (see _COL_DEFAULTS).
+ *   Theme colors are read from the document unless explicitly provided.
+ * @param {string} [filename='columns.png']
+ */
+export function exportColumnsAsPNG(columns, opts = {}, filename = 'columns.png') {
+  const o = { ..._colOpts(opts), ..._columnThemeColors(), ...opts };
+  const { w, h: height } = columnExportDims(columns, o);
+  o.W = w; o.H = height;
+
+  const scale = 2;
+  const canvas = document.createElement('canvas');
+  canvas.width = w * scale;
+  canvas.height = height * scale;
+  const ctx = canvas.getContext('2d');
+  ctx.scale(scale, scale);
+  _drawColumns(ctx, columns, o);
+  canvas.toBlob(blob => downloadBlob(blob, filename), 'image/png');
+}
+
+/**
+ * Export a column/card board as SVG (native `<text>`, not vectorised paths —
+ * matching the historical SIPOC export output byte-for-byte).
+ *
+ * @param {ExportColumn[]} columns - the columns to render
+ * @param {Object} [opts] - geometry/font overrides + optional theme colors
+ * @param {string} [filename='columns.svg']
+ */
+export function exportColumnsAsSVG(columns, opts = {}, filename = 'columns.svg') {
+  const o = { ..._colOpts(opts), ..._columnThemeColors(), ...opts };
+  const { w: W, h: H } = columnExportDims(columns, o);
+
+  let svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">`;
+  svg += `<rect width="${W}" height="${H}" fill="${o.bgPrimary}"/>`;
+
+  for (let ci = 0; ci < columns.length; ci++) {
+    const col = columns[ci];
+    const x = o.PAD + ci * (o.COL_W + o.GAP);
+    const color = col.color;
+    const items = col.items;
+    const colH = o.HEADER_H + Math.max(items.length, 1) * (o.ITEM_H + o.ITEM_PAD) + o.ITEM_PAD;
+
+    svg += `<rect x="${x}" y="${o.PAD}" width="${o.COL_W}" height="${colH}" rx="6" fill="${o.bgSecondary}" stroke="${o.borderColor}"/>`;
+    svg += `<rect x="${x}" y="${o.PAD}" width="${o.COL_W}" height="${o.HEADER_H}" rx="6" fill="${color}" fill-opacity="0.09"/>`;
+    svg += `<rect x="${x}" y="${o.PAD + o.HEADER_H - 6}" width="${o.COL_W}" height="6" fill="${color}" fill-opacity="0.09"/>`;
+    svg += `<line x1="${x}" y1="${o.PAD + o.HEADER_H}" x2="${x + o.COL_W}" y2="${o.PAD + o.HEADER_H}" stroke="${o.borderColor}"/>`;
+
+    svg += `<circle cx="${x + 14}" cy="${o.PAD + o.HEADER_H / 2}" r="5" fill="${color}"/>`;
+    svg += `<text x="${x + 26}" y="${o.PAD + o.HEADER_H / 2 - 6}" fill="${o.textPrimary}" font-size="11" font-weight="bold" font-family="DM Sans, system-ui, sans-serif" dominant-baseline="central">${escAttr(col.title)}</text>`;
+    svg += `<text x="${x + 26}" y="${o.PAD + o.HEADER_H / 2 + 8}" fill="${o.textTertiary}" font-size="10" font-family="JetBrains Mono, monospace" dominant-baseline="central">${escAttr(col.desc || '')}</text>`;
+
+    for (let i = 0; i < items.length; i++) {
+      const iy = o.PAD + o.HEADER_H + o.ITEM_PAD + i * (o.ITEM_H + o.ITEM_PAD);
+      svg += `<rect x="${x + 8}" y="${iy}" width="${o.COL_W - 16}" height="${o.ITEM_H}" rx="4" fill="${o.bgPrimary}" stroke="${o.borderColor}"/>`;
+      const txt = truncateColumnLabel(items[i], o.ITEM_MAX, o.ITEM_TRUNC);
+      svg += `<text x="${x + 14}" y="${iy + o.ITEM_H / 2}" fill="${o.textPrimary}" font-size="13" font-family="DM Sans, system-ui, sans-serif" dominant-baseline="central">${escAttr(txt)}</text>`;
     }
   }
 

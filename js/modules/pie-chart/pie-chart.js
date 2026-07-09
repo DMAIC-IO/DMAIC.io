@@ -1,374 +1,246 @@
 /**
  * D.Mike — Pie Chart Module (pie-chart.js)
  * Data phase: pie/donut chart from worksheet columns.
- * Uses the global pie chart type via chartManager.
+ *
+ * Two input modes (driven by the column slots the user fills):
+ *   - value only   → frequency count per distinct value (one slice per value)
+ *   - value+label  → sum of value per label              (one slice per label)
+ *
+ * Renders through the shared pie chart type (`pie.js` in core/chart/types).
+ *
+ * Migrated to createModule + Alpine CSP. The Model (`pie-chart-model.js`) holds
+ * only the persisted inputs (valueRef/labelRef, the chartConfig block, the
+ * example worksheet id) plus the slice-aggregation business logic. Everything
+ * transient — the DatasetPicker, the SVG chart, the imperatively rendered stats
+ * table, render generation — lives in the data-fn. The DatasetPicker, the SVG
+ * chart and the stats `<table>` are mounted imperatively to keep the legacy DOM
+ * selectors and style-based visibility toggles byte-identical for the Page
+ * Object Model.
+ *
+ * The chart-editor the user edits (`.dmike-chart-editor`) is built INSIDE the
+ * pie chart type and owned by the chart instance — the module mounts no separate
+ * editor widget, mirroring the legacy behavior (it only imports `esc`).
  */
 
+import { createModule } from '../../core/template-module.js';
+import { State } from './pie-chart-model.js';
+
 import { formatNum } from '../../core/chart/chart-core.js';
-import { esc } from '../../core/chart/chart-editor.js';
 import {
   DatasetPicker,
   getColumnValues,
 } from '../../ui/dataset-picker.js';
 import { provisionWorksheet, removeProvisionedWorksheet } from '../../core/examples-registry.js';
+import { chartModuleLifecycle } from '../../core/chart/chart-module-base.js';
 
-const PALETTE = [
-  'rgba(44,95,138,1)', 'rgba(39,174,96,1)', 'rgba(231,76,60,1)',
-  'rgba(243,156,18,1)', 'rgba(142,68,173,1)', 'rgba(52,152,219,1)',
-  'rgba(230,126,34,1)', 'rgba(26,188,156,1)', 'rgba(241,196,15,1)',
-  'rgba(192,57,43,1)', 'rgba(44,62,80,1)', 'rgba(127,140,141,1)',
-];
-
-export default {
-  id: 'pie-chart',
-  phase: 'data',
-  icon: 'pie-chart',
-  i18nKey: 'modules.pie-chart',
-  version: '1.1.0',
-
-  _container: null,
-  _context: null,
-  _labelRef: null,
-  _valueRef: null,
-  _eventUnsubs: [],
-  /** @type {DatasetPicker|null} */
-  _picker: null,
-  /** Worksheet provisioned by loadExample (cleaned up on next load). */
-  _exampleWorksheetId: null,
-  /** @type {import('../../core/chart/chart-base.js').default|null} */
-  _chart: null,
-
-  _slices: [],
-
-  _chartConfig: {
-    showTitle: true,
-    title: '',
-    titleSize: 15,
-    showLegend: true,
-    showLabels: true,
-    labelMode: 'both',
-    labelSize: 11,
-    innerRadius: 0,
-    padAngle: 0.8,
-    startAngle: -90,
-    explodeDistance: 12,
-    strokeColor: 'rgba(255,255,255,1)',
-    strokeWidth: 2,
-    sortSlices: 'none',
-    centerLabel: '',
-    centerSub: '',
-    bgColor: null,
+const mod = createModule({
+  config: {
+    id: 'pie-chart',
+    engine: 'alpine',
+    phase: 'data',
+    icon: 'pie-chart',
+    version: '1.1.0',
+    meta: import.meta,
   },
+  Model: State,
 
-  // ─── Lifecycle ──────────────────────────────────────────────
-
-  async init(container, context) {
-    this._container = container;
-    this._context = context;
-
-    if (!document.getElementById('pie-chart-css')) {
-      const link = document.createElement('link');
-      link.id = 'pie-chart-css';
-      link.rel = 'stylesheet';
-      link.href = './js/modules/pie-chart/pie-chart.css';
-      document.head.appendChild(link);
-    }
-
-    this._picker = null;
-    this._chart = null;
-
-    const saved = context.stateManager.getModuleState(context.instanceId);
-    if (saved) this._loadState(saved);
-
-    this._render();
-    if (this._slices.length > 0) {
-      requestAnimationFrame(() => this._plot());
-    }
-  },
-
-  async destroy() {
-    for (const unsub of this._eventUnsubs) unsub();
-    this._eventUnsubs = [];
-    if (this._picker) { this._picker.destroy(); this._picker = null; }
-    if (this._chart) {
-      this._context.chartManager.destroy(this._chart);
-      this._chart = null;
-    }
-    this._container.innerHTML = '';
-  },
-
-  onLanguageChange() {
-    if (this._picker) { this._picker.destroy(); this._picker = null; }
-    this._chart = null;
-    this._render();
-  },
-
-  onThemeChange() {
-    if (this._chart) this._chart.render();
-  },
-
-  getState() {
+  data(module, _t) {
     return {
-      labelRef: this._labelRef,
-      valueRef: this._valueRef,
-      slices: this._slices,
-      chartConfig: { ...this._chartConfig },
-    };
-  },
+      ...chartModuleLifecycle(module, {
+        mountPicker() {
+          const wrap = module._container.querySelector('[data-ref="picker-wrap"]');
+          if (!wrap) return;
+          this._picker?.destroy();
 
-  setState(data) {
-    if (data) this._loadState(data);
-    if (this._container) {
-      if (this._picker) { this._picker.destroy(); this._picker = null; }
-      this._chart = null;
-      this._render();
-      this._plot();
-    }
-  },
+          const ctx = module._context;
+          const i18n = ctx.i18n;
+          this._picker = new DatasetPicker(wrap, ctx, {
+            slots: [
+              { key: 'value', label: 'V', title: i18n.t('ui.datasetPicker.slotV'), minCount: 1, required: true },
+              { key: 'label', label: 'G', title: i18n.t('ui.datasetPicker.slotG'), minCount: 1, group: true },
+            ],
+            onChange: (datasets) => {
+              const ds = datasets[0] || {};
+              this.model.valueRef = ds.value || null;
+              this.model.labelRef = ds.label || null;
+              this._plot();
+            },
+          });
 
-  /**
-   * Load a catalog example. Pie-chart's native state uses labelRef + valueRef.
-   * For examples that ship only a numeric `columnRef` (process-capability,
-   * outlier-test, distribution-fit, attribute SPC defectsRef), translate to
-   * valueRef and let the module derive slices from value frequencies.
-   *
-   * @param {{ meta: object, data: object }} payload
-   */
-  async loadExample(payload) {
-    if (!payload || !payload.data) return;
-    const t = (k) => this._context.i18n.t(k);
+          if (this.model.labelRef || this.model.valueRef) {
+            this._picker.value = [{ label: this.model.labelRef, value: this.model.valueRef }];
+          }
+        },
+        themeMode: 'render',
+        autorun: false,
+        initialRender() {
+          if (this.model.valueRef) {
+            requestAnimationFrame(() => this._plot());
+          }
+        },
+      }),
 
-    const hasContent = !!(this._valueRef || (this._slices && this._slices.length));
-    if (hasContent && this._context?.confirmPopout) {
-      const ok = await this._context.confirmPopout(t('moduleHelp.confirmOverwrite'), { danger: true });
-      if (!ok) return;
-    }
+      // ── Transient view state (not persisted) ──────────────────
+      /** Last computed slices, for the stats re-render. */
+      _slices: [],
 
-    const data = { ...payload.data };
+      // ── Stats table (declarative — structured reactive data) ──
+      /** @type {Array<{color:string, name:string, value:string, pct:string}>} */
+      statsRows: [],
+      statsTotal: '',
+      statsShow: false,
 
-    if (data.sourceWorksheetData) {
-      const wsState = data.sourceWorksheetData;
-      delete data.sourceWorksheetData;
-      if (this._exampleWorksheetId) {
-        removeProvisionedWorksheet(this._context, this._exampleWorksheetId);
-        this._exampleWorksheetId = null;
-      }
-      const ref = provisionWorksheet(this._context, wsState);
-      if (ref) {
-        this._exampleWorksheetId = ref.instanceId;
-        const rewrite = (r) => (r && r.instanceId === '__source__') ? { ...r, instanceId: ref.instanceId } : r;
-        if (data.labelRef)   data.labelRef   = rewrite(data.labelRef);
-        if (data.valueRef)   data.valueRef   = rewrite(data.valueRef);
-        if (data.columnRef)  data.columnRef  = rewrite(data.columnRef);
-        if (data.colRef)     data.colRef     = rewrite(data.colRef);
-        if (data.defectsRef) data.defectsRef = rewrite(data.defectsRef);
-        if (data.sizeRef)    data.sizeRef    = rewrite(data.sizeRef);
-      }
-    }
+      // ── Column helpers ────────────────────────────────────────
 
-    // Foreign-state translation: pick the most pie-chart-appropriate field as
-    // valueRef. Attribute-SPC examples ship defectsRef (counts); distfit/
-    // outlier-test ship columnRef (numeric values that get binned by name).
-    if (!data.valueRef) {
-      data.valueRef = data.defectsRef || data.columnRef || data.colRef || null;
-    }
-
-    this.setState(data);
-    this._context.stateManager.setModuleState(this._context.instanceId, this.getState());
-
-    const lang = this._context.i18n.getLanguage();
-    const title = payload.meta?.title?.[lang] || payload.meta?.title?.en || payload.meta?.id || '';
-    this._context.notify?.(t('moduleHelp.exampleLoaded').replace('{title}', title), 'success');
-  },
-
-  help: () => import('./pie-chart-help.js'),
-
-  _loadState(data) {
-    if (data.labelRef) this._labelRef = data.labelRef;
-    if (data.valueRef) this._valueRef = data.valueRef;
-    if (data.slices) this._slices = data.slices;
-    if (data.chartConfig) Object.assign(this._chartConfig, data.chartConfig);
-  },
-
-  // ─── Build Slices From Worksheet ──────────────────────────
-
-  _buildSlicesFromWorksheet() {
-    if (!this._valueRef) return [];
-    const sm = this._context.stateManager;
-    const values = getColumnValues(sm, this._valueRef);
-    if (!values || values.length === 0) return [];
-
-    if (this._labelRef) {
-      const labels = getColumnValues(sm, this._labelRef);
-      const sums = new Map();
-      for (let i = 0; i < values.length; i++) {
-        const v = parseFloat(values[i]);
-        if (isNaN(v) || v < 0) continue;
-        const name = labels && labels[i] != null ? String(labels[i]) : `${i + 1}`;
-        sums.set(name, (sums.get(name) || 0) + v);
-      }
-      const slices = [];
-      for (const [name, total] of sums) {
-        slices.push({ name, value: total, color: PALETTE[slices.length % PALETTE.length] });
-      }
-      return slices;
-    }
-
-    const counts = new Map();
-    for (const raw of values) {
-      if (raw == null || raw === '') continue;
-      const key = String(raw);
-      counts.set(key, (counts.get(key) || 0) + 1);
-    }
-    const slices = [];
-    for (const [name, count] of counts) {
-      slices.push({ name, value: count, color: PALETTE[slices.length % PALETTE.length] });
-    }
-    return slices;
-  },
-
-  // ─── Render ─────────────────────────────────────────────────
-
-  _render() {
-    const t = (k, v) => this._context.i18n.t(`modules.pie-chart.${k}`, v);
-
-    this._container.innerHTML = `
-      <div class="pie-chart dmike-split">
-        <div class="pie-chart__input dmike-split__input">
-          <div class="dmike-split__section-title">${t('sectionData')}</div>
-          <div data-ref="picker-wrap"></div>
-
-          <div class="pie-chart__error" data-ref="error-box"></div>
-        </div>
-
-        <div class="pie-chart__output dmike-split__output">
-          <div data-ref="placeholder"></div>
-          <div class="pie-chart__chart-area" data-ref="chart-area" style="display:none">
-            <div class="pie-chart__chart-wrap" data-ref="chart-wrap"></div>
-            <div class="pie-chart__stats-panel" data-ref="stats-panel"></div>
-          </div>
-        </div>
-      </div>
-    `;
-
-    this._createPicker();
-  },
-
-  _createPicker() {
-    const pickerWrap = this._container.querySelector('[data-ref="picker-wrap"]');
-    if (!pickerWrap) return;
-
-    if (this._picker) { this._picker.destroy(); this._picker = null; }
-
-    this._picker = new DatasetPicker(pickerWrap, this._context, {
-      slots: [
-        { key: 'value', label: 'V', title: this._context.i18n.t('ui.datasetPicker.slotV'), minCount: 1, required: true },
-        { key: 'label', label: 'G', title: this._context.i18n.t('ui.datasetPicker.slotG'), minCount: 1, group: true },
-      ],
-      onChange: (datasets) => {
-        const ds = datasets[0] || {};
-        this._valueRef = ds.value || null;
-        this._labelRef = ds.label || null;
-        this._plot();
+      _getColumnValues(ref) {
+        return getColumnValues(module._context.stateManager, ref);
       },
-    });
 
-    if (this._labelRef || this._valueRef) {
-      this._picker.value = [{ label: this._labelRef, value: this._valueRef }];
-    }
-  },
+      // ── Plot (controller — needs context + live worksheet data) ──
 
-  async _plot() {
-    this._slices = this._buildSlicesFromWorksheet();
+      async _plot() {
+        this._slices = this.model.buildSlices((ref) => this._getColumnValues(ref));
 
-    const chartArea = this._container?.querySelector('[data-ref="chart-area"]');
-    const placeholder = this._container?.querySelector('[data-ref="placeholder"]');
+        const chartArea = module._container?.querySelector('[data-ref="chart-area"]');
+        const placeholder = module._container?.querySelector('[data-ref="placeholder"]');
 
-    if (this._slices.length === 0) {
-      if (chartArea) chartArea.style.display = 'none';
-      if (placeholder) placeholder.style.display = '';
-      if (this._chart) {
-        this._context.chartManager.destroy(this._chart);
-        this._chart = null;
-      }
-      return;
-    }
+        if (this._slices.length === 0) {
+          if (chartArea) chartArea.style.display = 'none';
+          if (placeholder) placeholder.style.display = '';
+          this._destroyChart();
+          this._clearStats();
+          return;
+        }
 
-    if (chartArea) chartArea.style.display = '';
-    if (placeholder) placeholder.style.display = 'none';
+        if (chartArea) chartArea.style.display = '';
+        if (placeholder) placeholder.style.display = 'none';
 
-    const cfg = this._chartConfig;
-    const pieConfig = {
-      slices: this._slices,
-      title: cfg.title,
-      showTitle: cfg.showTitle,
-      titleSize: cfg.titleSize,
-      showLegend: cfg.showLegend,
-      showLabels: cfg.showLabels,
-      labelMode: cfg.labelMode,
-      labelSize: cfg.labelSize,
-      innerRadius: cfg.innerRadius,
-      padAngle: cfg.padAngle,
-      startAngle: cfg.startAngle,
-      explodeDistance: cfg.explodeDistance,
-      strokeColor: cfg.strokeColor,
-      strokeWidth: cfg.strokeWidth,
-      sortSlices: cfg.sortSlices,
-      centerLabel: cfg.centerLabel,
-      centerSub: cfg.centerSub,
-      bgColor: cfg.bgColor,
+        const cfg = this.model.chartConfig;
+        const pieConfig = {
+          slices: this._slices,
+          title: cfg.title,
+          showTitle: cfg.showTitle,
+          titleSize: cfg.titleSize,
+          showLegend: cfg.showLegend,
+          showLabels: cfg.showLabels,
+          labelMode: cfg.labelMode,
+          labelSize: cfg.labelSize,
+          innerRadius: cfg.innerRadius,
+          padAngle: cfg.padAngle,
+          startAngle: cfg.startAngle,
+          explodeDistance: cfg.explodeDistance,
+          strokeColor: cfg.strokeColor,
+          strokeWidth: cfg.strokeWidth,
+          sortSlices: cfg.sortSlices,
+          centerLabel: cfg.centerLabel,
+          centerSub: cfg.centerSub,
+          bgColor: cfg.bgColor,
+        };
+
+        const chartWrap = module._container.querySelector('[data-ref="chart-wrap"]');
+        if (this._chart) {
+          module._context.chartManager.update(this._chart, pieConfig);
+        } else {
+          const gen = ++this._renderGen;
+          chartWrap.replaceChildren();
+          const chart = await module._context.chartManager.create(chartWrap, 'pie', pieConfig);
+          if (gen !== this._renderGen) {
+            try { module._context.chartManager.destroy(chart); } catch { /* ignore */ }
+            return;
+          }
+          this._chart = chart;
+        }
+
+        this._renderStats();
+      },
+
+      // ── Stats table (declarative — structured reactive data) ──
+
+      _renderStats() {
+        let total = 0;
+        for (const s of this._slices) total += Math.max(0, s.value);
+
+        // Build structured rows with RAW text — x-text escapes structurally.
+        // Number formatting matches the legacy string output (formatNum /
+        // toFixed(1) + '%'). The color swatch is a structured 'color' field.
+        this.statsRows = this._slices.map((s) => ({
+          color: s.color,
+          name: s.name,
+          value: formatNum(s.value),
+          pct: `${total > 0 ? ((s.value / total) * 100).toFixed(1) : '0.0'  }%`,
+        }));
+        this.statsTotal = formatNum(total);
+        this.statsShow = true;
+      },
+
+      _clearStats() {
+        this.statsRows = [];
+        this.statsShow = false;
+      },
+
     };
+  },
+});
 
-    const chartWrap = this._container.querySelector('[data-ref="chart-wrap"]');
-    if (this._chart) {
-      this._context.chartManager.update(this._chart, pieConfig);
-    } else {
-      chartWrap.innerHTML = '';
-      this._chart = await this._context.chartManager.create(chartWrap, 'pie', pieConfig);
+/**
+ * Custom loadExample. Pie-chart's native state uses valueRef + labelRef.
+ * Catalog examples ship a full worksheet (`sourceWorksheetData`) and use the
+ * literal placeholder `__source__` as the column-ref instanceId. On load we
+ * provision a fresh worksheet, rewrite the placeholder across all known column
+ * refs, then translate foreign state: for examples that ship only a numeric
+ * `columnRef` (process-capability, outlier-test, distribution-fit) or a
+ * `defectsRef` (attribute SPC), pick the most pie-chart-appropriate field as
+ * valueRef and let the module derive slices from value frequencies.
+ *
+ * @param {{ meta: object, data: object }} payload
+ */
+mod.loadExample = async function loadExample(payload) {
+  if (!payload || !payload.data) return;
+  const ctx = this._context;
+  const t = (key) => ctx.i18n.t(key);
+
+  const current = this.getState();
+  const currentModel = current ? State.fromJSON(current) : null;
+  if (currentModel?.hasContent() && ctx?.confirmPopout) {
+    const ok = await ctx.confirmPopout(t('moduleHelp.confirmOverwrite'), { danger: true });
+    if (!ok) return;
+  }
+
+  const data = { ...payload.data };
+
+  if (data.sourceWorksheetData) {
+    const wsState = data.sourceWorksheetData;
+    delete data.sourceWorksheetData;
+
+    const prevId = currentModel?.exampleWorksheetId;
+    if (prevId) removeProvisionedWorksheet(ctx, prevId);
+
+    const ref = provisionWorksheet(ctx, wsState);
+    if (ref) {
+      data.exampleWorksheetId = ref.instanceId;
+      const rewrite = (r) => (r && r.instanceId === '__source__') ? { ...r, instanceId: ref.instanceId } : r;
+      if (data.labelRef)   data.labelRef   = rewrite(data.labelRef);
+      if (data.valueRef)   data.valueRef   = rewrite(data.valueRef);
+      if (data.columnRef)  data.columnRef  = rewrite(data.columnRef);
+      if (data.colRef)     data.colRef     = rewrite(data.colRef);
+      if (data.defectsRef) data.defectsRef = rewrite(data.defectsRef);
+      if (data.sizeRef)    data.sizeRef    = rewrite(data.sizeRef);
     }
+  }
 
-    this._renderStats();
-    this._saveState();
-  },
+  // Foreign-state translation: pick the most pie-chart-appropriate field as
+  // valueRef. Attribute-SPC examples ship defectsRef (counts); distfit/
+  // outlier-test ship columnRef (numeric values that get binned by name).
+  if (!data.valueRef) {
+    data.valueRef = data.defectsRef || data.columnRef || data.colRef || null;
+  }
 
-  _saveState() {
-    this._context.stateManager.setModuleState(this._context.instanceId, this.getState());
-  },
+  this.setState(data);
+  ctx.stateManager.setModuleState(ctx.instanceId, this.getState());
 
-  // ─── Stats Table ────────────────────────────────────────────
-
-  _renderStats() {
-    const panel = this._container?.querySelector('[data-ref="stats-panel"]');
-    if (!panel) return;
-
-    const t = (k, v) => this._context.i18n.t(`modules.pie-chart.${k}`, v);
-    let total = 0;
-    for (const s of this._slices) total += Math.max(0, s.value);
-
-    let rows = '';
-    for (const s of this._slices) {
-      const pct = total > 0 ? ((s.value / total) * 100).toFixed(1) : '0.0';
-      rows += `<tr>
-        <td><span class="pie-chart__stats-color" style="background:${s.color}"></span> ${esc(s.name)}</td>
-        <td>${formatNum(s.value)}</td>
-        <td>${pct}%</td>
-      </tr>`;
-    }
-    rows += `<tr style="font-weight:600;border-top:2px solid var(--color-border-primary)">
-      <td>${t('statTotal')}</td>
-      <td>${formatNum(total)}</td>
-      <td>100.0%</td>
-    </tr>`;
-
-    panel.innerHTML = `
-      <div class="dmike-split__output-section">${t('statsTitle')}</div>
-      <table class="dmike-table pie-chart__stats-table">
-        <thead><tr>
-          <th>${t('statName')}</th>
-          <th>${t('statValue')}</th>
-          <th>${t('statPercent')}</th>
-        </tr></thead>
-        <tbody>${rows}</tbody>
-      </table>`;
-  },
+  const lang = ctx.i18n.getLanguage();
+  const title = payload.meta?.title?.[lang] || payload.meta?.title?.en || payload.meta?.id || '';
+  ctx.notify?.(t('moduleHelp.exampleLoaded').replace('{title}', title), 'success');
 };
+
+export default mod;

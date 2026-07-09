@@ -38,6 +38,7 @@
 }
 
 /* ===== Split-Panel Layout ===== */
+
 /* Shared Input | Output split for modules with a data entry panel (left)
    and a visualization/results area (right).
    See docs/SPLIT-PANEL.md for full specification.
@@ -92,6 +93,7 @@
 }
 
 /* ===== Output-panel section label ===== */
+
 /* Separates logical sections inside dmike-split__output.
    Use <div class="dmike-split__output-section"> for a standalone label.
    Use <div class="dmike-split__output-section-header"> as a flex row

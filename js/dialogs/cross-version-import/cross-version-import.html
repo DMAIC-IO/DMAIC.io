@@ -1,0 +1,15 @@
+<div class="cv-import__content" x-data="crossVersionImport">
+  <p x-text="t('intro', { current: currentVersion })"></p>
+  <ul class="cv-import__list" style="list-style:none; padding:0; margin:12px 0;">
+    <template x-for="v in model.versions" :key="v.versionMM">
+      <li>
+        <label class="cv-import__item">
+          <input type="radio" name="cv-version" :value="v.versionMM" x-model="model.selected">
+          <strong x-text="v.label"></strong>
+          <span x-text="' — ' + t('projectsCount', { count: v.projectCount })"></span>
+        </label>
+      </li>
+    </template>
+  </ul>
+  <p style="font-size:12px; opacity:0.7;" x-text="t('note')"></p>
+</div>

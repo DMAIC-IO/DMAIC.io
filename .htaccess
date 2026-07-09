@@ -1,0 +1,47 @@
+# Security headers for D.Mike (OSS app).
+# The CSP mirrors the <meta http-equiv="Content-Security-Policy"> in index.html
+# but is delivered as a real HTTP header so header-only directives
+# (frame-ancestors) take effect. Strict policy: no unsafe-eval, Trusted Types
+# enforced for every DOM-XSS sink. The app is fully migrated to support this
+# (DOMParser / textContent / js/core/dom.js builder; Alpine CSP build, no eval).
+<IfModule mod_headers.c>
+  Header always set Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self'; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'self'; require-trusted-types-for 'script'; trusted-types 'none'"
+  Header always set X-Content-Type-Options "nosniff"
+  Header always set Referrer-Policy "strict-origin-when-cross-origin"
+</IfModule>
+
+# Compression — brotli preferred, gzip fallback.
+<IfModule mod_brotli.c>
+  AddOutputFilterByType BROTLI_COMPRESS text/html text/css application/javascript application/json image/svg+xml
+</IfModule>
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/css application/javascript application/json image/svg+xml
+</IfModule>
+
+# Caching — hashed bundles are immutable; HTML always revalidates.
+# NOTE: only takes effect on the Apache production host. The local DDEV stack
+# is nginx-fpm and ignores .htaccess, so Lighthouse's cache audits will still
+# flag missing headers when auditing dmike.ddev.site — expected, not a regression.
+<IfModule mod_headers.c>
+  # Hashed/minified bundles never change under a given name → cache forever.
+  <FilesMatch "\.min\.(js|css)$">
+    Header set Cache-Control "public, max-age=31536000, immutable"
+  </FilesMatch>
+  # Self-hosted fonts are versioned by path and effectively immutable.
+  <FilesMatch "\.(woff2?|ttf|otf|eot)$">
+    Header set Cache-Control "public, max-age=31536000, immutable"
+  </FilesMatch>
+  # Static images / icons — long TTL, revalidatable (no immutable, filenames
+  # are not content-hashed so a swap must be picked up after expiry).
+  <FilesMatch "\.(svg|png|jpe?g|gif|ico|webp)$">
+    Header set Cache-Control "public, max-age=2592000"
+  </FilesMatch>
+  # Entry HTML and version manifests must always revalidate so a deploy is
+  # visible immediately.
+  <FilesMatch "^index\.html$">
+    Header set Cache-Control "no-cache"
+  </FilesMatch>
+  <FilesMatch "^(release|versions)\.json$">
+    Header set Cache-Control "no-cache"
+  </FilesMatch>
+</IfModule>

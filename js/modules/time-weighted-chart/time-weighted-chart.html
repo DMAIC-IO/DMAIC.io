@@ -1,0 +1,122 @@
+<div class="twc dmike-split" x-data="timeWeightedChart">
+  <div class="twc__input dmike-split__input">
+
+    <div class="dmike-split__section-title" x-text="t('sectionChartType')"></div>
+    <div class="field-group">
+      <label x-text="t('chartType')"></label>
+      <select class="field" data-ref="chart-type" x-model="model.chartTypeId" @change="onChartTypeChange()">
+        <option value="ewma" x-text="t('type_ewma')"></option>
+        <option value="cusum" x-text="t('type_cusum')"></option>
+      </select>
+      <span class="twc__hint" x-text="typeHint()"></span>
+    </div>
+
+    <div class="dmike-split__section-title" x-text="t('sectionData')"></div>
+    <div class="field-group">
+      <label x-text="t('dataColumn')"></label>
+      <div data-ref="col-picker-wrap"></div>
+    </div>
+
+    <div class="field-group">
+      <label x-text="t('baselineCount')"></label>
+      <input type="number" class="field field--num" data-ref="baseline-count"
+        min="2" :placeholder="t('baselineAll')"
+        :value="baselineCountValue()" @change="onBaselineCountChange($event)">
+      <span class="twc__hint" x-text="t('baselineHint')"></span>
+    </div>
+
+    <div class="dmike-split__section-title" x-text="t('sectionEstimation')"></div>
+    <div class="twc__row-2">
+      <div class="field-group">
+        <label x-text="t('targetOverride')"></label>
+        <input type="number" class="field field--num" data-ref="target-override"
+          step="any" :placeholder="t('targetAuto')"
+          :value="targetOverrideValue()" @change="onTargetOverrideChange($event)">
+      </div>
+      <div class="field-group">
+        <label x-text="t('sigmaOverride')"></label>
+        <input type="number" class="field field--num" data-ref="sigma-override"
+          step="any" min="0" :placeholder="t('sigmaAuto')"
+          :value="sigmaOverrideValue()" @change="onSigmaOverrideChange($event)">
+      </div>
+    </div>
+    <div class="field-group">
+      <label x-text="t('sigmaMethod')"></label>
+      <select class="field" data-ref="sigma-method" x-model="model.sigmaMethod" @change="onSigmaMethodChange()">
+        <option value="mr" x-text="t('sigma_mr')"></option>
+        <option value="sd" x-text="t('sigma_sd')"></option>
+      </select>
+      <span class="twc__hint" x-text="t('sigmaMethodHint')"></span>
+    </div>
+
+    <div class="dmike-split__section-title" x-text="sectionParamsLabel()"></div>
+
+    <template x-if="model.chartTypeId === 'ewma'">
+      <div class="twc__params">
+        <div class="twc__param-note" x-text="t('paramNote_ewma')"></div>
+        <div class="twc__row-2">
+          <div class="field-group">
+            <label x-text="t('lambda')"></label>
+            <input type="number" class="field field--num" data-ref="lambda"
+              x-model.number="model.lambda" @change="onLambdaChange($event)"
+              step="0.05" min="0.05" max="1">
+          </div>
+          <div class="field-group">
+            <label x-text="t('L')"></label>
+            <input type="number" class="field field--num" data-ref="L"
+              x-model.number="model.L" @change="onLChange($event)"
+              step="0.1" min="1" max="5">
+          </div>
+        </div>
+      </div>
+    </template>
+
+    <template x-if="model.chartTypeId === 'cusum'">
+      <div class="twc__params">
+        <div class="twc__param-note" x-text="t('paramNote_cusum')"></div>
+        <div class="twc__row-2">
+          <div class="field-group">
+            <label x-text="t('kSigma')"></label>
+            <input type="number" class="field field--num" data-ref="kSigma"
+              x-model.number="model.kSigma" @change="onKSigmaChange($event)"
+              step="0.1" min="0.1" max="2">
+          </div>
+          <div class="field-group">
+            <label x-text="t('hSigma')"></label>
+            <input type="number" class="field field--num" data-ref="hSigma"
+              x-model.number="model.hSigma" @change="onHSigmaChange($event)"
+              step="0.5" min="2" max="10">
+          </div>
+        </div>
+      </div>
+    </template>
+
+  </div>
+
+  <div class="twc__output dmike-split__output">
+    <div data-ref="stats-bar">
+      <template x-if="kpiCells.length">
+        <div class="dmike-kpi-strip">
+          <template x-for="(c, i) in kpiCells" :key="i">
+            <div class="dmike-kpi" :class="c.mod">
+              <div class="dmike-kpi-value" x-text="c.value"></div>
+              <div class="dmike-kpi-label"><span x-text="c.label"></span><template x-if="c.labelHint"><span class="twc__hint" x-text="' (' + c.labelHint + ')'"></span></template></div>
+              <div class="dmike-kpi-sub" x-text="c.sub"></div>
+            </div>
+          </template>
+        </div>
+      </template>
+    </div>
+    <div data-ref="charts-wrap">
+      <template x-for="(cv, i) in chartViews" :key="cv.id">
+        <div class="twc__chart-section">
+          <div class="twc__chart-header">
+            <span class="twc__chart-title" x-text="cv.title"></span>
+            <span class="twc__badge" :class="cv.badgeClass" x-text="cv.badgeText"></span>
+          </div>
+          <div class="twc__plot-wrap" :data-chart-host="cv.id"></div>
+        </div>
+      </template>
+    </div>
+  </div>
+</div>

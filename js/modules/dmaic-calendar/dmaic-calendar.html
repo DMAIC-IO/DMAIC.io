@@ -1,0 +1,217 @@
+<div class="module-calendar dmike-split" x-data="dmaicCalendar" style="flex:1;min-height:0">
+  <div class="dmike-split__input">
+    <div class="module-calendar__input-body">
+      <div>
+        <div class="dmike-split__section-title" x-text="t('phases')"></div>
+        <div class="module-calendar__phase-legend" data-ref="phaseLegend">
+          <template x-for="p in phaseIds">
+            <div class="module-calendar__phase-tag" :key="p"
+              :class="phaseTagClass(p)"
+              @click="togglePhaseFilter(p)">
+              <span class="module-calendar__phase-dot" :style="phaseDotStyle(p)"></span>
+              <span x-text="phaseName(p)"></span>
+            </div>
+          </template>
+        </div>
+      </div>
+      <div>
+        <div class="dmike-split__section-title" x-text="t('timeAxis')"></div>
+        <div class="module-calendar__axis">
+          <div class="module-calendar__axis-label" x-text="t('time')"></div>
+          <div class="module-calendar__axis-pair">
+            <div class="module-calendar__axis-col">
+              <label x-text="t('from')"></label>
+              <select class="field" data-ref="axisFrom" @change="axisFromChanged($event)">
+                <template x-for="h in hours24" :key="h">
+                  <option :value="h" :selected="model.axisFrom === h" x-text="hourLabel(h)"></option>
+                </template>
+              </select>
+            </div>
+            <div class="module-calendar__axis-col">
+              <label x-text="t('to')"></label>
+              <select class="field" data-ref="axisTo" @change="axisToChanged($event)">
+                <template x-for="h in hours24" :key="h">
+                  <option :value="h" :selected="model.axisTo === h" x-text="hourLabel(h)"></option>
+                </template>
+              </select>
+            </div>
+          </div>
+          <div class="module-calendar__axis-label" x-text="t('weekdays')"></div>
+          <div class="module-calendar__axis-pair">
+            <div class="module-calendar__axis-col">
+              <label x-text="t('from')"></label>
+              <select class="field" data-ref="dayFrom" @change="dayFromChanged($event)">
+                <template x-for="(d, i) in allDayNames()" :key="i">
+                  <option :value="i" :selected="model.dayFrom === i" x-text="d"></option>
+                </template>
+              </select>
+            </div>
+            <div class="module-calendar__axis-col">
+              <label x-text="t('to')"></label>
+              <select class="field" data-ref="dayTo" @change="dayToChanged($event)">
+                <template x-for="(d, i) in allDayNames()" :key="i">
+                  <option :value="i" :selected="model.dayTo === i" x-text="d"></option>
+                </template>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="dmike-split__section-title" x-text="t('upcoming')"></div>
+        <div class="module-calendar__upcoming" data-ref="upcoming">
+          <template x-if="upcomingList().length === 0">
+            <div class="module-calendar__upcoming-empty" x-text="t('noEvents')"></div>
+          </template>
+          <template x-for="ev in upcomingList()" :key="ev.id">
+            <div class="module-calendar__upcoming-item" :style="upcomingStyle(ev)" @click="openEdit(ev.id)">
+              <div class="module-calendar__upcoming-date" x-text="upcomingDateLabel(ev)"></div>
+              <div class="module-calendar__upcoming-title" x-text="ev.title"></div>
+            </div>
+          </template>
+        </div>
+      </div>
+      <button class="dmike-btn-run module-calendar__btn-new" data-ref="btnNew" @click="openNew('')">
+        <span x-text="newEventBtnLabel()"></span>
+      </button>
+    </div>
+  </div>
+  <div class="dmike-split__output">
+    <div class="module-calendar__controls">
+      <button class="module-calendar__nav-btn" data-ref="prevPeriod" @click="prevPeriod()">&#9664;</button>
+      <div class="module-calendar__title" data-ref="calTitle"><span class="module-calendar__title-main" x-text="calTitleMain()"></span> <span x-text="calTitleYear()"></span></div>
+      <button class="module-calendar__nav-btn" data-ref="nextPeriod" @click="nextPeriod()">&#9654;</button>
+      <div class="module-calendar__right">
+        <div class="module-calendar__view-toggle" data-ref="viewToggle">
+          <button :class="viewBtnClass('month')" data-view="month" @click="setView('month')" x-text="t('month')"></button>
+          <button :class="viewBtnClass('week')" data-view="week" @click="setView('week')" x-text="t('week')"></button>
+        </div>
+        <button class="module-calendar__today-btn" data-ref="todayBtn" @click="goToday()" x-text="t('today')"></button>
+      </div>
+    </div>
+
+    <div class="module-calendar__grid" data-ref="calGrid" :style="monthGridStyle()" x-show="viewMode === 'month'">
+      <template x-for="(d, i) in dayHeads()" :key="'h' + i">
+        <div :class="headClass(i)" x-text="d"></div>
+      </template>
+      <template x-for="(cell, ci) in monthCells()" :key="'c' + ci">
+        <div :class="dayClass(cell)" @click="onDayClick(cell)">
+          <div class="module-calendar__day-num" x-text="cell.num"></div>
+          <template x-if="cell.events.length > 0">
+            <div class="module-calendar__day-events">
+              <template x-for="ev in firstEvents(cell)" :key="ev.id">
+                <div class="module-calendar__day-ev" :style="monthEvStyle(ev)"
+                  @click="onMonthEventClick(ev, $event)" x-text="ev.title"></div>
+              </template>
+              <template x-if="cell.events.length > 3">
+                <div class="module-calendar__day-more" x-text="moreText(cell.events.length - 3)"></div>
+              </template>
+            </div>
+          </template>
+        </div>
+      </template>
+    </div>
+
+    <div class="module-calendar__week" data-ref="weekView" :class="weekShowClass()">
+      <template x-if="viewMode === 'week'">
+        <div class="module-calendar__week-inner">
+          <div class="module-calendar__week-header" :style="weekColStyle()">
+            <div class="module-calendar__week-hcorner"></div>
+            <template x-for="(d, di) in weekDates()" :key="'wh' + di">
+              <div :class="weekHdayClass(d)">
+                <span x-text="weekHdayName(d)"></span>
+                <div class="module-calendar__week-hday-num" x-text="d.getDate()"></div>
+              </div>
+            </template>
+          </div>
+          <div class="module-calendar__week-body" :style="weekColStyle()" data-ref="weekBody">
+            <div class="module-calendar__week-time-col">
+              <template x-for="h in hoursList()" :key="'tl' + h">
+                <div class="module-calendar__week-time-label" x-text="weekTimeLabel(h)"></div>
+              </template>
+            </div>
+            <template x-for="(d, ci) in weekDates()" :key="'col' + dkd(d)">
+              <div class="module-calendar__week-day-col" :data-col-idx="ci">
+                <template x-for="h in hoursList()" :key="'sl' + h">
+                  <div class="module-calendar__week-slot" @click="onSlotClick(d, h)"></div>
+                </template>
+                <template x-if="showNowLine(d)">
+                  <div class="module-calendar__now-line" :style="nowLineStyle()">
+                    <div class="module-calendar__now-dot"></div>
+                  </div>
+                </template>
+                <template x-for="ev in weekEventsForDay(d)" :key="ev.id">
+                  <div class="module-calendar__week-ev" :data-ev-id="ev.id" :style="weekEvStyle(ev)"
+                    @mousedown="weekEvMouseDown(ev, $event)"
+                    @click="weekEvClick(ev, $event)">
+                    <div class="module-calendar__week-ev-content">
+                      <div class="module-calendar__we-time" x-text="weekEvTimeText(ev)"></div>
+                      <div class="module-calendar__we-title" x-text="ev.title"></div>
+                    </div>
+                    <div class="module-calendar__we-dur" x-show="showResizeDur(ev)" x-text="resizeDurText()"></div>
+                    <div class="module-calendar__ev-handle module-calendar__ev-handle--top" @mousedown="startResize(ev, 'top', $event)">
+                      <div class="module-calendar__ev-handle-pip"></div>
+                    </div>
+                    <div class="module-calendar__ev-handle module-calendar__ev-handle--bot" @mousedown="startResize(ev, 'bottom', $event)">
+                      <div class="module-calendar__ev-handle-pip"></div>
+                    </div>
+                  </div>
+                </template>
+              </div>
+            </template>
+          </div>
+        </div>
+      </template>
+    </div>
+  </div>
+
+  <div class="module-calendar__overlay" data-ref="overlay" :class="overlayClass()"
+    @click.self="closeModal()" @keydown.escape.window="closeModal()">
+    <div class="module-calendar__modal">
+      <div class="module-calendar__modal-header">
+        <h2 data-ref="modalTitle" x-text="modalTitle()"></h2>
+        <button class="module-calendar__modal-close" data-ref="modalClose" @click="closeModal()">&times;</button>
+      </div>
+      <div class="module-calendar__modal-body">
+        <div class="field-group">
+          <label x-text="t('title')"></label>
+          <input type="text" class="field" data-ref="evTitle" x-model="form.title" :placeholder="t('titlePlaceholder')">
+        </div>
+        <div class="module-calendar__row-3">
+          <div class="field-group">
+            <label x-text="t('date')"></label>
+            <input type="date" class="field" data-ref="evDate" x-model="form.date">
+          </div>
+          <div class="field-group">
+            <label x-text="t('time')"></label>
+            <input type="time" class="field" data-ref="evTime" x-model="form.time" value="09:00" step="300">
+          </div>
+          <div class="field-group">
+            <label x-text="t('duration')"></label>
+            <input type="number" class="field field--num" data-ref="evDuration" x-model="form.duration" value="60" min="5">
+          </div>
+        </div>
+        <div class="field-group">
+          <label x-text="t('phase')"></label>
+          <div class="module-calendar__phase-select" data-ref="phaseSelect">
+            <template x-for="p in phaseIds" :key="p">
+              <span class="module-calendar__phase-chip" :data-phase="p"
+                :class="phaseChipClass(p)" :style="phaseChipStyle(p)"
+                @click="form.phase = p" x-text="phaseName(p)"></span>
+            </template>
+          </div>
+        </div>
+        <div class="field-group">
+          <label x-text="t('description')"></label>
+          <textarea class="field" data-ref="evDesc" x-model="form.desc" :placeholder="t('descPlaceholder')"></textarea>
+        </div>
+        <button class="module-calendar__btn-delete" data-ref="btnDelete" :style="deleteBtnStyle()"
+          @click="handleDelete()" x-text="t('deleteEvent')"></button>
+        <div class="module-calendar__modal-actions">
+          <button class="module-calendar__btn-cancel" data-ref="btnCancel" @click="closeModal()" x-text="t('cancel')"></button>
+          <button class="module-calendar__btn-save" data-ref="btnSave" @click="handleSave()" x-text="t('save')"></button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

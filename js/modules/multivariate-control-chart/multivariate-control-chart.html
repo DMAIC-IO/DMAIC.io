@@ -1,0 +1,66 @@
+<div class="mvcc dmike-split" x-data="multivariateControlChart">
+  <div class="mvcc__input dmike-split__input">
+
+    <div class="dmike-split__section-title" x-text="t('sectionData')"></div>
+
+    <div class="field-group">
+      <label x-text="t('variables')"></label>
+      <div data-ref="col-picker-wrap"></div>
+      <span class="mvcc__hint" x-text="t('variablesHint')"></span>
+    </div>
+
+    <div class="field-group">
+      <label x-text="t('baselineCount')"></label>
+      <input type="number" class="field field--num" data-ref="baseline-count"
+        :value="baselineCountValue()"
+        min="2"
+        :placeholder="t('baselineAll')"
+        @change="baselineCountChanged($event)">
+      <span class="mvcc__hint" x-text="t('baselineHint')"></span>
+    </div>
+
+    <div class="dmike-split__section-title" x-text="t('sectionLimit')"></div>
+
+    <div class="field-group">
+      <label x-text="t('alpha')"></label>
+      <input type="number" class="field field--num" data-ref="alpha"
+        :value="model.alpha"
+        step="0.001" min="0.0001" max="0.5"
+        @change="alphaChanged($event)">
+      <span class="mvcc__hint" x-text="t('alphaHint')"></span>
+    </div>
+
+  </div>
+
+  <div class="mvcc__output dmike-split__output">
+    <div data-ref="stats-bar">
+      <template x-if="kpiCells.length">
+        <div class="dmike-kpi-strip">
+          <template x-for="(c, i) in kpiCells" :key="i">
+            <div class="dmike-kpi" :class="c.mod">
+              <div class="dmike-kpi-value" x-text="c.value"></div>
+              <div class="dmike-kpi-label"><span x-text="c.label"></span><template x-if="c.labelHint"><span class="mvcc__hint" x-text="' (' + c.labelHint + ')'"></span></template></div>
+              <div class="dmike-kpi-sub" x-text="c.sub"></div>
+            </div>
+          </template>
+        </div>
+      </template>
+    </div>
+    <div data-ref="error-area">
+      <template x-if="errorMsg">
+        <div class="mvcc__error" x-text="errorMsg"></div>
+      </template>
+    </div>
+    <div data-ref="chart-wrap">
+      <template x-for="(cv, i) in chartViews" :key="cv.id">
+        <div class="mvcc__chart-section">
+          <div class="mvcc__chart-header">
+            <span class="mvcc__chart-title" x-text="cv.title"></span>
+            <span class="mvcc__badge" :class="cv.badgeClass" x-text="cv.badgeText"></span>
+          </div>
+          <div class="mvcc__plot-wrap" :data-chart-host="cv.id"></div>
+        </div>
+      </template>
+    </div>
+  </div>
+</div>

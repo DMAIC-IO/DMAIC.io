@@ -51,6 +51,7 @@
   cursor: pointer;
   transition: background .15s, color .15s;
 }
+
 .rest-api__add-btn:hover {
   background: var(--color-accent);
   color: var(--color-text-inverse);
@@ -74,9 +75,11 @@
   cursor: pointer;
   transition: background .15s;
 }
+
 .rest-api__list-item:hover {
   background: var(--color-bg-tertiary);
 }
+
 .rest-api__list-item--active {
   background: var(--color-accent-light);
 }
@@ -93,10 +96,12 @@
   border-radius: 3px;
   font-family: inherit;
 }
+
 .rest-api__ep-name-input:focus {
   background: var(--color-bg-secondary);
   box-shadow: 0 0 0 1px var(--color-accent);
 }
+
 .rest-api__ep-name-input::placeholder {
   color: var(--color-text-tertiary);
 }
@@ -110,9 +115,11 @@
   padding: 2px;
   transition: opacity .15s, color .15s;
 }
+
 .rest-api__list-item:hover .rest-api__item-del {
   opacity: 1;
 }
+
 .rest-api__item-del:hover {
   color: var(--color-danger);
 }
@@ -214,6 +221,7 @@
   padding: 2px 4px;
   line-height: 1;
 }
+
 .rest-api__header-del:hover {
   color: var(--color-danger);
 }
@@ -229,6 +237,7 @@
   cursor: pointer;
   padding: 2px 0;
 }
+
 .rest-api__add-header-btn:hover {
   text-decoration: underline;
 }
@@ -292,6 +301,7 @@
   padding: 2px 4px;
   line-height: 1;
 }
+
 .rest-api__mapping-del:hover {
   color: var(--color-danger);
 }
@@ -307,6 +317,7 @@
   cursor: pointer;
   padding: 2px 0;
 }
+
 .rest-api__add-mapping-btn:hover {
   text-decoration: underline;
 }
@@ -329,6 +340,7 @@
   cursor: pointer;
   padding: 2px;
 }
+
 .rest-api__copy-btn:hover {
   color: var(--color-accent);
 }
@@ -432,8 +444,9 @@
   padding: 4px var(--spacing-sm) !important;
   text-align: center;
   font-variant-numeric: tabular-nums;
-  -moz-appearance: textfield;
+  appearance: textfield;
 }
+
 .rest-api__schedule-interval-value::-webkit-inner-spin-button,
 .rest-api__schedule-interval-value::-webkit-outer-spin-button {
   opacity: 1;

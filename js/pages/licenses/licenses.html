@@ -1,0 +1,35 @@
+<div class="dmike-chart-popout-overlay-inner"
+  @click.self="close()"
+  x-data="licenses">
+  <div class="dmike-chart-popout licenses-panel">
+    <div class="dmike-chart-popout-titlebar">
+      <span x-text="t('title')"></span>
+      <button class="dmike-chart-popout-close" type="button"
+        :aria-label="t('close')" @click="close()">&#x2715;</button>
+    </div>
+    <div class="dmike-chart-popout-body">
+      <p class="licenses-panel__subtitle" x-text="t('subtitle')"></p>
+      <table class="licenses-panel__table">
+        <tbody>
+          <template x-for="lib in libs">
+            <tr :key="lib.name" class="licenses-panel__row">
+              <td class="licenses-panel__name" x-text="lib.name"></td>
+              <td class="licenses-panel__version" x-text="lib.versionLabel"></td>
+              <td class="licenses-panel__license">
+                <span class="licenses-panel__badge" x-text="lib.license"></span>
+              </td>
+              <td class="licenses-panel__link">
+                <a :href="lib.url" target="_blank" rel="noopener noreferrer"
+                  x-text="t('view')"></a>
+              </td>
+            </tr>
+          </template>
+        </tbody>
+      </table>
+      <p class="licenses-panel__full-text">
+        <a href="THIRD-PARTY-LICENSES.txt" target="_blank" rel="noopener noreferrer"
+          x-text="t('fullText')"></a>
+      </p>
+    </div>
+  </div>
+</div>

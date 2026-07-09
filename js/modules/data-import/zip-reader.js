@@ -37,7 +37,7 @@ export async function readZip(buffer) {
   for (let i = 0; i < eocd.totalEntries; i++) {
     if (offset + 46 > bytes.length) throw new Error('zip: truncated central directory');
     if (view.getUint32(offset, true) !== SIG_CD) {
-      throw new Error('zip: bad central-directory signature at ' + offset);
+      throw new Error(`zip: bad central-directory signature at ${  offset}`);
     }
     const method      = view.getUint16(offset + 10, true);
     const compSize    = view.getUint32(offset + 20, true);
@@ -82,7 +82,7 @@ async function _extract(view, bytes, localOffset, method, compSize, uncompSize) 
   if (method === 8) {
     return await _inflateRaw(compressed, uncompSize);
   }
-  throw new Error('zip: unsupported compression method ' + method);
+  throw new Error(`zip: unsupported compression method ${  method}`);
 }
 
 /** Inflate a raw DEFLATE stream into a Uint8Array. */

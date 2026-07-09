@@ -5,6 +5,13 @@
 
 /* Layout provided by .dmike-split (css/modules.css) */
 
+/* Wrapper for the Alpine x-if scatter-plots block. The legacy markup placed
+   the section header directly after the legend, so it inherited
+   `.dmike-split__output-section-header:not(:first-child) { margin-top: lg }`.
+   In the Alpine template the header is the first child of this x-if wrapper,
+   resetting that margin — so we re-apply it here for byte-parity spacing. */
+.corr__matrix-scatter-block { margin-top: var(--spacing-lg); }
+
 /* Section labels: use global .dmike-split__output-section (css/modules.css) */
 
 /* Fields use global .field / .field-group (components.css) */
@@ -91,8 +98,8 @@
   display: none;
   font-size: var(--font-size-sm);
   color: var(--color-error, #ef4444);
-  background: rgba(239, 68, 68, 0.08);
-  border: var(--border-width) solid rgba(239, 68, 68, 0.2);
+  background: rgb(239 68 68 / 8%);
+  border: var(--border-width) solid rgb(239 68 68 / 20%);
   border-radius: var(--border-radius);
   padding: var(--spacing-sm);
 }

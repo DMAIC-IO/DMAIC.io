@@ -5,6 +5,8 @@
  */
 
 import { confirmPopout } from './popout.js';
+import { h } from '../core/dom.js';
+import { icon } from '../core/icon.js';
 
 export class Workspace {
   /**
@@ -30,7 +32,15 @@ export class Workspace {
     this._instances = new Map();
     /** @type {Map<string, HTMLElement>} instanceId → container element */
     this._containers = new Map();
+    /** @type {object|null} router instance (set via setRouter) */
+    this._router = null;
   }
+
+  /**
+   * Wire the router so workspace tab clicks navigate through it.
+   * @param {object} router
+   */
+  setRouter(router) { this._router = router; }
 
   /**
    * Render the workspace shell.
@@ -42,12 +52,10 @@ export class Workspace {
     // sibling nodes (e.g. #help-panel) that already live inside the
     // same <main> container — using innerHTML on the container would
     // wipe them out and detach their event listeners.
-    const content = document.createElement('div');
-    content.className = 'workspace__content';
-    content.innerHTML = `
-      <div class="workspace__tabs" role="tablist"></div>
-      <div class="workspace__module-area"></div>
-    `;
+    const content = h('div', { class: 'workspace__content' },
+      h('div', { class: 'workspace__tabs', role: 'tablist' }),
+      h('div', { class: 'workspace__module-area' }),
+    );
     // Insert before the help panel (if present) so workspace content
     // sits on the left and help panel on the right.
     const helpPanelEl = this._container.querySelector('#help-panel');
@@ -73,7 +81,7 @@ export class Workspace {
     this._activePhase = phase;
     const instances = this._stateManager.get(`phases.${phase}`) ?? [];
 
-    this._tabsEl.innerHTML = '';
+    this._tabsEl.replaceChildren();
 
     // Detach ALL children from moduleArea (module containers + empty-state div)
     // without destroying them. replaceChildren() severs the parent-child link
@@ -118,23 +126,35 @@ export class Workspace {
 
     const defaultName = this._i18n.t(`modules.${moduleId}.name`);
     const customName = this._getCustomName(instanceId, phase);
-    tab.innerHTML = `
-      <span class="workspace__tab-name">${customName || defaultName}</span>
-      <span class="workspace__tab-close" title="${this._i18n.t('workspace.tabs.close')}" aria-label="${this._i18n.t('workspace.tabs.close')}">✕</span>
-    `;
+    const closeLabel = this._i18n.t('workspace.tabs.close');
+    const nameSpan = h('span', { class: 'workspace__tab-name' }, customName || defaultName);
+    const closeSpan = h('span', {
+      class: 'workspace__tab-close',
+      title: closeLabel,
+      'aria-label': closeLabel,
+    }, icon('close'));
+    tab.append(nameSpan, closeSpan);
 
     tab.addEventListener('click', (e) => {
-      if (!e.target.classList.contains('workspace__tab-close') &&
+      if (!e.target.closest('.workspace__tab-close') &&
           !e.target.classList.contains('workspace__tab-name-input')) {
-        this._activateTab(instanceId);
+        if (this._router) {
+          this._router.navigate({
+            kind: 'module',
+            projectId: this._stateManager.getActiveProjectId(),
+            instanceId,
+            sub: [],
+          });
+        } else {
+          this._activateTab(instanceId);
+        }
       }
     });
-    tab.querySelector('.workspace__tab-close').addEventListener('click', () => {
+    closeSpan.addEventListener('click', () => {
       this._removeModule(instanceId, moduleId, phase);
     });
 
     // Double-click on tab name → inline rename
-    const nameSpan = tab.querySelector('.workspace__tab-name');
     nameSpan.addEventListener('dblclick', (e) => {
       e.stopPropagation();
       if (this._stateManager.isCompleted()) return;
@@ -204,8 +224,13 @@ export class Workspace {
 
     this._activeInstanceId = instanceId;
 
-    // Instantiate module if not yet done
-    if (!this._instances.has(instanceId)) {
+    // Instantiate module if not yet done. Guard on _containers (set
+    // synchronously in _instantiateModule) rather than _instances (set only
+    // after the async instantiate resolves) — otherwise two concurrent
+    // _activateTab calls for the same new instance both pass the guard and
+    // mount duplicate containers (e.g. add-via-router fires module:added →
+    // phase:selected → activate, then the redirect activates again).
+    if (!this._containers.has(instanceId)) {
       await this._instantiateModule(instanceId);
     }
 
@@ -235,6 +260,9 @@ export class Workspace {
   }
 
   async _instantiateModule(instanceId) {
+    // Idempotency guard: never mount a second container for an instance that
+    // already has one (defends against concurrent activation races).
+    if (this._containers.has(instanceId)) return;
     const phase = this._activePhase;
     const instances = this._stateManager.get(`phases.${phase}`) ?? [];
     const record = instances.find(i => i.instanceId === instanceId);
@@ -256,7 +284,7 @@ export class Workspace {
       // Restore saved state
       const saved = this._stateManager.getModuleState(instanceId);
       if (saved) {
-        try { instance.setState?.(saved); } catch {}
+        try { instance.setState?.(saved); } catch { /* ignore restore errors */ }
       }
     } catch {
       // Error card already rendered by module registry
@@ -318,7 +346,7 @@ export class Workspace {
 
     // Destroy module instance
     const instance = this._instances.get(instanceId);
-    try { await instance?.destroy?.(); } catch {}
+    try { await instance?.destroy?.(); } catch { /* ignore destroy errors */ }
 
     this._instances.delete(instanceId);
     this._containers.get(instanceId)?.remove();
@@ -421,12 +449,10 @@ export class Workspace {
   }
 
   _renderEmptyState() {
-    const el = document.createElement('div');
-    el.className = 'workspace__empty';
-    el.innerHTML = `
-      <div class="workspace__empty-icon">⊞</div>
-      <p class="workspace__empty-text">${this._i18n.t('workspace.emptyState')}</p>
-    `;
+    const el = h('div', { class: 'workspace__empty' },
+      h('div', { class: 'workspace__empty-icon' }, '⊞'),
+      h('p', { class: 'workspace__empty-text' }, this._i18n.t('workspace.emptyState')),
+    );
     this._moduleArea.append(el);
   }
 
@@ -557,16 +583,34 @@ export class Workspace {
     });
     this._eventBus.on('theme:changed', ({ theme }) => {
       this._instances.forEach(inst => {
-        try { inst.onThemeChange?.(theme); } catch {}
+        try { inst.onThemeChange?.(theme); } catch { /* ignore module hook errors */ }
       });
     });
     this._eventBus.on('language:changed', ({ lang }) => {
       this._instances.forEach(inst => {
-        try { inst.onLanguageChange?.(lang); } catch {}
+        try { inst.onLanguageChange?.(lang); } catch { /* ignore module hook errors */ }
       });
     });
     this._eventBus.on('project:before-export', () => {
       this._persistAllModuleStates();
     });
+    this._eventBus.on('state:remote-changed', ({ instanceIds, metaChanged }) => {
+      for (const instanceId of instanceIds) {
+        const inst = this._instances.get(instanceId);
+        if (inst) {
+          try {
+            inst.applyRemoteState?.(this._stateManager.getModuleState(instanceId));
+          } catch { /* module not mounted or state absent — fresh on next mount */ }
+        }
+      }
+      if (metaChanged) this._onRemoteMetaChanged();
+    });
+  }
+
+  /**
+   * Re-renders the active phase after remote metadata changes (e.g. added/removed/renamed instance).
+   */
+  _onRemoteMetaChanged() {
+    this._showPhase(this._activePhase);
   }
 }

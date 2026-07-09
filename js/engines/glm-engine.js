@@ -624,7 +624,7 @@ export function fitGLM(X, y, opts = {}) {
 
 // ── Pseudo-R² ─────────────────────────────────────────────────────
 
-function pseudoR2(deviance, nullDeviance, logLik, nullLogLik, n, p) {
+function pseudoR2(deviance, nullDeviance, logLik, nullLogLik, n, _p) {
   const mcfadden = nullLogLik !== 0 ? 1 - logLik / nullLogLik : 0;
   const coxSnell = 1 - Math.exp(-(2 / n) * (logLik - nullLogLik));
   const maxCS = 1 - Math.exp((2 / n) * nullLogLik);
@@ -805,8 +805,8 @@ export function computeROC(yTrue, probs) {
   }
 
   let auc = 0;
-  for (let i = 1; i < fpr.length; i++) {
-    auc += (fpr[i] - fpr[i - 1]) * (tpr[i] + tpr[i - 1]) / 2;
+  for (let k = 1; k < fpr.length; k++) {
+    auc += (fpr[k] - fpr[k - 1]) * (tpr[k] + tpr[k - 1]) / 2;
   }
 
   return { fpr, tpr, thresholds, auc };
@@ -988,7 +988,6 @@ export function predictGLM(result, newX) {
  */
 export function autoDetect(y) {
   const unique = new Set(y);
-  const vals = [...unique];
 
   if (unique.size === 2) {
     return { familyName: 'binomial', link: 'logit', reason: 'binary', reasonKey: 'autoDetectBinary' };

@@ -44,9 +44,6 @@
 }
 
 /* ===== Step Row ===== */
-.pmap__step-row {
-}
-
 .pmap__step-row--dragging .pmap__step-card {
   opacity: 0.45;
   transform: scale(0.97);
@@ -214,7 +211,6 @@
   min-width: 0;
   resize: none;
   overflow: hidden;
-  word-wrap: break-word;
   overflow-wrap: break-word;
   line-height: 1.4;
   padding: 0;
@@ -242,7 +238,7 @@
 
 .pmap__io-remove:hover {
   color: var(--color-error);
-  background: rgba(255, 59, 48, 0.1);
+  background: rgb(255 59 48 / 10%);
 }
 
 /* ===== Step Card ===== */
@@ -379,7 +375,7 @@
 
 .pmap__step-delete:hover {
   color: var(--color-error);
-  background: rgba(255, 59, 48, 0.1);
+  background: rgb(255 59 48 / 10%);
 }
 
 .pmap__step-body {
@@ -610,7 +606,7 @@
 
 .pmap__substep-remove:hover {
   color: var(--color-error);
-  background: rgba(255, 59, 48, 0.1);
+  background: rgb(255 59 48 / 10%);
 }
 
 /* ===== Substep Add Button ===== */
@@ -713,7 +709,7 @@
 
 .pmap__loop-remove:hover {
   color: var(--color-error);
-  background: rgba(255, 59, 48, 0.1);
+  background: rgb(255 59 48 / 10%);
 }
 
 .pmap__loop-body {
@@ -827,7 +823,7 @@
 
 .pmap__loop-step-remove:hover {
   color: var(--color-error);
-  background: rgba(255, 59, 48, 0.1);
+  background: rgb(255 59 48 / 10%);
 }
 
 .pmap__loop-step-add {

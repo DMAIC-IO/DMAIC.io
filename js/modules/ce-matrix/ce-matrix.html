@@ -1,0 +1,108 @@
+<div class="module-container ce-matrix" x-data="ceMatrix">
+  <div class="module-container__header">
+    <h2 class="module-container__title" x-text="t('name')"></h2>
+    <div class="ce-matrix__toolbar">
+      <div class="ce-matrix__toolbar-spacer"></div>
+      <button class="btn btn--sm ce-matrix__add-input-btn" type="button"
+              x-text="addLabel('addInput')" @click="addInput()"></button>
+      <button class="btn btn--sm ce-matrix__add-output-btn" type="button"
+              x-text="addLabel('addOutput')" @click="addOutput()"></button>
+      <span class="ce-matrix__export-anchor" data-ref="export-anchor"></span>
+    </div>
+  </div>
+
+  <div class="module-container__body">
+    <div class="ce-matrix__wrap">
+      <table class="ce-matrix__table">
+        <thead>
+          <!-- Weight row -->
+          <tr class="ce-matrix__weight-row">
+            <th class="ce-matrix__weight-label" x-text="t('weight')"></th>
+            <template x-for="(out, c) in model.outputs">
+              <th class="ce-matrix__weight-cell" :key="'w-' + c">
+                <select class="ce-matrix__weight-select" :data-col="c"
+                        @change="weightChanged(c, $event)">
+                  <template x-for="w in weightOptions" >
+                    <option :key="w" :value="w" :selected="w === model.getWeight(c)" x-text="w"></option>
+                  </template>
+                </select>
+              </th>
+            </template>
+            <th class="ce-matrix__corner"></th>
+          </tr>
+
+          <!-- Output name row -->
+          <tr>
+            <th class="ce-matrix__corner"></th>
+            <template x-for="(out, c) in model.outputs">
+              <th class="ce-matrix__output-header dmike-del-btn-host" :key="'o-' + c">
+                <div class="ce-matrix__output-header-content">
+                  <input type="text" class="ce-matrix__output-name"
+                         :value="model.outputs[c]"
+                         :placeholder="t('outputPlaceholder')"
+                         :data-col="c"
+                         @change="outputNameChanged(c, $event)" />
+                </div>
+                <button class="dmike-del-btn ce-matrix__del-btn ce-matrix__col-del-btn"
+                        :data-col="c" :title="t('removeOutput')"
+                        @click="removeOutput(c)"></button>
+              </th>
+            </template>
+            <th class="ce-matrix__total-label ce-matrix__total-label--vertical">
+              <div class="ce-matrix__output-header-content" x-text="t('rowSum')"></div>
+            </th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <template x-for="(inp, r) in model.inputs">
+            <tr :key="'r-' + r">
+              <td class="ce-matrix__name-cell dmike-del-btn-host">
+                <input type="text" class="ce-matrix__input-name"
+                       :value="model.inputs[r]"
+                       :placeholder="t('inputPlaceholder')"
+                       :data-row="r"
+                       @change="inputNameChanged(r, $event)" />
+                <button class="dmike-del-btn ce-matrix__del-btn ce-matrix__row-del-btn"
+                        :data-row="r" :title="t('removeInput')"
+                        @click="removeInput(r)"></button>
+              </td>
+              <template x-for="(out, c) in model.outputs">
+                <td class="ce-matrix__score-cell" :key="'s-' + r + '-' + c">
+                  <input type="number" min="0" max="9"
+                         class="ce-matrix__score-input"
+                         :value="scoreDisplay(r, c)"
+                         :data-r="r" :data-c="c"
+                         @input="scoreInput(r, c, $event)"
+                         @focus="$event.target.select()" />
+                </td>
+              </template>
+              <td class="ce-matrix__result-cell"
+                  :style="rowSumStyle(r)"
+                  x-text="model.rowSum(r)"></td>
+            </tr>
+          </template>
+        </tbody>
+
+        <tfoot>
+          <tr>
+            <td class="ce-matrix__total-label" x-text="t('colSum')"></td>
+            <template x-for="(out, c) in model.outputs">
+              <td class="ce-matrix__result-cell" :key="'cs-' + c"
+                  :style="colSumStyle(c)"
+                  x-text="model.colSum(c)"></td>
+            </template>
+            <td class="ce-matrix__grand-total" x-text="model.grandTotal()"></td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+
+    <div class="ce-matrix__legend">
+      <span class="ce-matrix__legend-label" x-text="t('legendLow')"></span>
+      <div class="ce-matrix__legend-bar"></div>
+      <span class="ce-matrix__legend-label" x-text="t('legendHigh')"></span>
+      <span class="ce-matrix__legend-info" x-text="t('legendInfo')"></span>
+    </div>
+  </div>
+</div>

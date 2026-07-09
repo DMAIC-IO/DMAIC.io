@@ -1,0 +1,66 @@
+<div class="bar-module dmike-split" x-data="bar">
+  <div class="bar-module__input dmike-split__input">
+    <div class="dmike-split__section-title" x-text="t('sectionData')"></div>
+    <div data-ref="picker-wrap"></div>
+
+    <div class="bar-module__options" data-ref="options-wrap" x-show="!!model.yRef || !!model.gRef">
+      <label class="bar-module__opt-row" x-show="!!model.yRef">
+        <span x-text="t('aggregation')"></span>
+        <select data-action="set-agg" x-model="model.chartConfig.aggregation" @change="aggregationChanged()">
+          <option value="mean" x-text="t('aggMean')"></option>
+          <option value="sum" x-text="t('aggSum')"></option>
+        </select>
+      </label>
+
+      <label class="bar-module__opt-row" x-show="!!model.gRef">
+        <input type="checkbox" data-action="set-stacked" x-model="model.chartConfig.stacked" @change="stackedChanged()">
+        <span x-text="t('stacked')"></span>
+      </label>
+    </div>
+
+    <div class="bar-module__error" data-ref="error-box"></div>
+  </div>
+
+  <div class="bar-module__output dmike-split__output">
+    <div data-ref="placeholder" class="bar-module__placeholder" x-text="t('placeholderPickX')"></div>
+    <div class="bar-module__chart-area" data-ref="chart-area" style="display:none">
+      <div class="bar-module__chart-wrap" data-ref="chart-wrap"></div>
+      <div class="bar-module__stats-panel" data-ref="stats-panel">
+        <template x-if="statsShow">
+          <div>
+            <div class="dmike-split__output-section" x-text="t('statsTitle')"></div>
+            <table class="dmike-table bar-module__stats-table">
+              <thead><tr>
+                <th x-text="t('statCategory')"></th>
+                <template x-if="statsShowGroupCol">
+                  <th x-text="statsGroupHeader"></th>
+                </template>
+                <th x-text="statsValueHeader"></th>
+              </tr></thead>
+              <tbody>
+                <template x-for="(r, i) in statsRows" :key="i">
+                  <tr>
+                    <td><span class="bar-module__stats-color" :style="'background:' + r.color"></span><span x-text="' ' + r.name"></span></td>
+                    <template x-if="statsShowGroupCol">
+                      <td x-text="r.group"></td>
+                    </template>
+                    <td x-text="r.value"></td>
+                  </tr>
+                </template>
+                <template x-if="statsShowTotal">
+                  <tr style="font-weight:600;border-top:2px solid var(--color-border-primary)">
+                    <td x-text="statsTotalLabel"></td>
+                    <template x-if="statsShowGroupCol">
+                      <td></td>
+                    </template>
+                    <td x-text="statsTotal"></td>
+                  </tr>
+                </template>
+              </tbody>
+            </table>
+          </div>
+        </template>
+      </div>
+    </div>
+  </div>
+</div>

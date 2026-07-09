@@ -1,0 +1,49 @@
+<div class="mosaic-module dmike-split" x-data="mosaic">
+  <div class="mosaic-module__input dmike-split__input">
+    <div class="dmike-split__section-title" x-text="t('sectionData')"></div>
+    <div data-ref="picker-wrap"></div>
+
+    <div class="mosaic-module__error" data-ref="error-box"></div>
+  </div>
+
+  <div class="mosaic-module__output dmike-split__output">
+    <div data-ref="placeholder" class="mosaic-module__placeholder" x-text="t('placeholderPickBoth')"></div>
+    <div class="mosaic-module__chart-area" data-ref="chart-area" style="display:none">
+      <div class="mosaic-module__chart-wrap" data-ref="chart-wrap"></div>
+      <div class="mosaic-module__stats-panel" data-ref="stats-panel">
+        <template x-if="statsShow">
+          <div>
+            <div class="dmike-split__output-section" x-text="t('statsTitle')"></div>
+            <table class="dmike-table mosaic-module__stats-table">
+              <thead><tr>
+                <th x-text="statsCorner"></th>
+                <template x-for="(h, hi) in statsHeaders" :key="hi">
+                  <th><span class="mosaic-module__stats-color" :style="'background:' + h.color"></span><span x-text="' ' + h.name"></span></th>
+                </template>
+                <th x-text="statsTotalHeader"></th>
+              </tr></thead>
+              <tbody>
+                <template x-for="(r, i) in statsRows" :key="i">
+                  <tr>
+                    <td x-text="r.label"></td>
+                    <template x-for="(c, ci) in r.cells" :key="ci">
+                      <td x-text="c"></td>
+                    </template>
+                    <td x-text="r.total"></td>
+                  </tr>
+                </template>
+                <tr style="font-weight:600;border-top:2px solid var(--color-border-primary)">
+                  <td x-text="statsTotalLabel"></td>
+                  <template x-for="(c, ci) in statsColTotals" :key="ci">
+                    <td x-text="c"></td>
+                  </template>
+                  <td x-text="statsGrandTotal"></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </template>
+      </div>
+    </div>
+  </div>
+</div>

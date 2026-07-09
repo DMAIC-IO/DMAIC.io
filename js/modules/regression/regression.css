@@ -4,6 +4,7 @@
    ============================================================ */
 
 /* Layout provided by .dmike-split (css/modules.css) */
+
 /* Section labels: use global .dmike-split__output-section */
 
 /* Fields use global .field / .field-group (components.css) */
@@ -48,7 +49,7 @@
 }
 
 .reg__toggle--active {
-  background: var(--color-accent-dim, rgba(74, 144, 217, 0.12));
+  background: var(--color-accent-dim, rgb(74 144 217 / 12%));
   border-color: var(--color-accent);
 }
 
@@ -72,7 +73,7 @@
   padding: 8px 10px;
   font-size: var(--font-size-xs);
   color: var(--color-error);
-  background: var(--color-error-bg, rgba(239, 68, 68, 0.08));
+  background: var(--color-error-bg, rgb(239 68 68 / 8%));
   border: var(--border-width) solid var(--color-error);
   border-radius: var(--border-radius);
 }
@@ -172,16 +173,16 @@
 
 /* Row highlighting for significant terms (p < α) */
 .reg__tr--sig td {
-  background: rgba(46, 125, 50, 0.06);
+  background: rgb(46 125 50 / 6%);
 }
 
 [data-theme="dark"] .reg__tr--sig td {
-  background: rgba(165, 214, 167, 0.08);
+  background: rgb(165 214 167 / 8%);
 }
 
 /* Row highlighting for non-significant terms (p > α) */
 .reg__tr--not-sig td {
-  background: var(--color-error-bg, rgba(239, 68, 68, 0.06));
+  background: var(--color-error-bg, rgb(239 68 68 / 6%));
 }
 
 /* Error row (residuals) in ANOVA */
@@ -261,7 +262,7 @@
   opacity: 1;
   color: var(--color-accent);
   border-color: var(--color-accent);
-  background: var(--color-accent-dim, rgba(74, 144, 217, 0.1));
+  background: var(--color-accent-dim, rgb(74 144 217 / 10%));
 }
 
 /* Algorithm Lab link icon */
@@ -308,7 +309,7 @@
 .reg__predict-result {
   margin-top: var(--spacing-sm);
   padding: var(--spacing-sm) var(--spacing-md);
-  background: var(--color-accent-dim, rgba(74, 144, 217, 0.08));
+  background: var(--color-accent-dim, rgb(74 144 217 / 8%));
   border: var(--border-width) solid var(--color-accent);
   border-radius: var(--border-radius);
   font-family: var(--font-family-mono);

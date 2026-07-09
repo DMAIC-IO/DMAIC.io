@@ -1,0 +1,204 @@
+<div class="module-container data-import" x-data="dataImport">
+  <!-- ── Empty state ───────────────────────────────────────────── -->
+  <template x-if="!model.file">
+    <div class="data-import__empty">
+      <div class="data-import__dropzone" data-ref="dropzone" tabindex="0" role="button"
+        :class="dragOver ? 'data-import__dropzone--over' : ''"
+        @click="openPicker()"
+        @keydown="onDropzoneKey($event)"
+        @dragover="onDragOver($event)"
+        @dragleave="onDragLeave()"
+        @drop="onDrop($event)">
+        <div class="data-import__dropzone-icon" aria-hidden="true">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="17 8 12 3 7 8"></polyline>
+            <line x1="12" y1="3" x2="12" y2="15"></line>
+          </svg>
+        </div>
+        <div class="data-import__dropzone-title" x-text="t('dropHere')"></div>
+        <div class="data-import__dropzone-hint" x-text="t('dropHint')"></div>
+        <div class="data-import__dropzone-formats" x-text="t('supportedFormats')"></div>
+      </div>
+      <input type="file" data-ref="file-input" :accept="acceptAttr" hidden
+        @change="onFileInput($event)">
+    </div>
+  </template>
+
+  <!-- ── Loaded state ──────────────────────────────────────────── -->
+  <template x-if="model.file">
+    <div class="data-import__loaded"
+      @dragover="onDragOver($event)"
+      @dragleave="onDragLeave()"
+      @drop="onDrop($event)">
+      <div class="data-import__file-card">
+        <div class="data-import__file-info">
+          <div class="data-import__file-row">
+            <span class="data-import__file-label" x-text="t('fileName') + ':'"></span>
+            <span class="data-import__file-value" x-text="fileName()"></span>
+          </div>
+          <div class="data-import__file-row">
+            <span class="data-import__file-label" x-text="t('fileType') + ':'"></span>
+            <span class="data-import__file-value" x-text="formatLabel()"></span>
+          </div>
+          <div class="data-import__file-row">
+            <span class="data-import__file-label" x-text="t('fileSize') + ':'"></span>
+            <span class="data-import__file-value" x-text="fileSizeText()"></span>
+          </div>
+        </div>
+        <div class="data-import__file-actions">
+          <button class="data-import__btn-secondary" data-action="replace" type="button"
+            @click="openPicker()" x-text="t('replaceFile')"></button>
+        </div>
+      </div>
+
+      <!-- CSV options -->
+      <template x-if="isCsv()">
+        <div class="data-import__options">
+          <label class="data-import__option">
+            <span class="data-import__option-label" x-text="t('csv_preset')"></span>
+            <select data-csv-opt="preset" @change="onCsvOpt('preset', $event)">
+              <option value="generic" :selected="model.csvOptions.preset === 'generic'" x-text="t('csv_preset_generic')"></option>
+              <option value="zeiss-calypso" :selected="model.csvOptions.preset === 'zeiss-calypso'" x-text="t('csv_preset_zeiss_calypso')"></option>
+              <option value="hexagon-pcdmis" :selected="model.csvOptions.preset === 'hexagon-pcdmis'" x-text="t('csv_preset_hexagon_pcdmis')"></option>
+              <option value="mitutoyo-measurlink" :selected="model.csvOptions.preset === 'mitutoyo-measurlink'" x-text="t('csv_preset_mitutoyo_measurlink')"></option>
+            </select>
+          </label>
+          <label class="data-import__option">
+            <span class="data-import__option-label" x-text="t('delimiter')"></span>
+            <select data-csv-opt="delimiter" @change="onCsvOpt('delimiter', $event)">
+              <option value="auto" :selected="model.csvOptions.delimiter === 'auto'" x-text="t('delim_auto')"></option>
+              <option value="comma" :selected="model.csvOptions.delimiter === 'comma'" x-text="t('delim_comma')"></option>
+              <option value="semicolon" :selected="model.csvOptions.delimiter === 'semicolon'" x-text="t('delim_semicolon')"></option>
+              <option value="tab" :selected="model.csvOptions.delimiter === 'tab'" x-text="t('delim_tab')"></option>
+              <option value="pipe" :selected="model.csvOptions.delimiter === 'pipe'" x-text="t('delim_pipe')"></option>
+            </select>
+          </label>
+          <label class="data-import__option">
+            <span class="data-import__option-label" x-text="t('encoding')"></span>
+            <select data-csv-opt="encoding" @change="onCsvOpt('encoding', $event)">
+              <option value="utf-8" :selected="model.csvOptions.encoding === 'utf-8'" x-text="t('enc_utf8')"></option>
+              <option value="windows-1252" :selected="model.csvOptions.encoding === 'windows-1252'" x-text="t('enc_windows1252')"></option>
+              <option value="iso-8859-1" :selected="model.csvOptions.encoding === 'iso-8859-1'" x-text="t('enc_latin1')"></option>
+            </select>
+          </label>
+          <label class="data-import__option">
+            <span class="data-import__option-label" x-text="t('csv_skipRows')"></span>
+            <input type="number" min="0" step="1" data-csv-opt="skipRows" class="data-import__num-input"
+              :value="model.csvOptions.skipRows" @change="onCsvOpt('skipRows', $event)">
+          </label>
+          <label class="data-import__option data-import__option--check">
+            <input type="checkbox" data-csv-opt="hasHeader"
+              :checked="model.csvOptions.hasHeader" @change="onCsvOpt('hasHeader', $event)">
+            <span class="data-import__option-label" x-text="t('useFirstRowAsHeader')"></span>
+          </label>
+        </div>
+      </template>
+
+      <!-- XLSX options -->
+      <template x-if="isXlsx()">
+        <div class="data-import__options">
+          <label class="data-import__option data-import__option--check">
+            <input type="checkbox" data-xlsx-opt="hasHeader"
+              :checked="model.xlsxOptions.hasHeader" @change="onXlsxOpt('hasHeader', $event)">
+            <span class="data-import__option-label" x-text="t('useFirstRowAsHeader')"></span>
+          </label>
+        </div>
+      </template>
+
+      <!-- AQDEF options -->
+      <template x-if="isAqdef()">
+        <div class="data-import__options">
+          <label class="data-import__option">
+            <span class="data-import__option-label" x-text="t('encoding')"></span>
+            <select data-aqdef-opt="encoding" @change="onAqdefOpt('encoding', $event)">
+              <option value="windows-1252" :selected="model.aqdefOptions.encoding === 'windows-1252'" x-text="t('enc_windows1252')"></option>
+              <option value="iso-8859-1" :selected="model.aqdefOptions.encoding === 'iso-8859-1'" x-text="t('enc_latin1')"></option>
+              <option value="utf-8" :selected="model.aqdefOptions.encoding === 'utf-8'" x-text="t('enc_utf8')"></option>
+            </select>
+          </label>
+        </div>
+      </template>
+
+      <!-- Result: busy / error / no-file / preview -->
+      <template x-if="busy">
+        <div class="data-import__status" x-text="t('parsing')"></div>
+      </template>
+
+      <template x-if="!busy && errorMsg">
+        <div class="data-import__error">
+          <strong x-text="t('parseError')"></strong>
+          <div class="data-import__error-detail" x-text="errorMsg"></div>
+        </div>
+      </template>
+
+      <template x-if="!busy && !errorMsg && !parsed">
+        <div class="data-import__status" x-text="t('noFile')"></div>
+      </template>
+
+      <template x-if="!busy && !errorMsg && parsed">
+        <div class="data-import__preview-block">
+          <div class="data-import__preview-header">
+            <span class="data-import__preview-title" x-text="t('preview')"></span>
+            <span class="data-import__preview-meta" x-text="previewMeta()"></span>
+          </div>
+
+          <template x-if="hasMultipleSheets()">
+            <div class="data-import__sheet-tabs">
+              <template x-for="(tab, i) in sheetTabs" :key="i">
+                <button class="data-import__sheet-tab" type="button"
+                  :class="sheetTabClass(i)" :data-sheet-idx="i" @click="selectSheet(i)">
+                  <span x-text="tab.name"></span>
+                  <span class="data-import__sheet-tab-meta" x-text="tab.meta"></span>
+                </button>
+              </template>
+            </div>
+          </template>
+
+          <template x-if="hasColumns()">
+            <div class="data-import__preview-table-wrap">
+              <table class="data-import__preview-table">
+                <thead>
+                  <tr>
+                    <template x-for="(col, ci) in previewColumns" :key="ci">
+                      <th>
+                        <div class="data-import__col-name" x-text="col.name"></div>
+                        <div class="data-import__col-type" x-text="col.typeLabel"></div>
+                      </th>
+                    </template>
+                  </tr>
+                </thead>
+                <tbody>
+                  <template x-for="(row, ri) in previewRows" :key="ri">
+                    <tr>
+                      <template x-for="(cell, ci) in row" :key="ci">
+                        <td :class="cell.cls" x-text="cell.text"></td>
+                      </template>
+                    </tr>
+                  </template>
+                </tbody>
+              </table>
+            </div>
+          </template>
+
+          <template x-if="!hasColumns()">
+            <div class="data-import__status" x-text="t('noColumns')"></div>
+          </template>
+
+          <template x-if="hasColumns() && moreRowsCount() > 0">
+            <div class="data-import__more" x-text="moreRowsText()"></div>
+          </template>
+
+          <div class="data-import__send-row">
+            <button class="dmike-btn-run" data-action="send" type="button"
+              @click="sendToWorksheet()" x-text="t('sendToWorksheet')"></button>
+          </div>
+        </div>
+      </template>
+
+      <input type="file" data-ref="file-input" :accept="acceptAttr" hidden
+        @change="onFileInput($event)">
+    </div>
+  </template>
+</div>

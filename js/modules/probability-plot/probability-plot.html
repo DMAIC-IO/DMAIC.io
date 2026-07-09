@@ -1,0 +1,21 @@
+<div class="probplot dmike-split" x-data="probabilityPlot">
+  <div class="probplot__input dmike-split__input">
+    <div class="dmike-split__section-title" x-text="t('sectionData')"></div>
+
+    <div data-ref="picker-wrap"></div>
+
+    <div class="probplot__error" data-ref="error-box"></div>
+  </div>
+
+  <div class="probplot__output dmike-split__output">
+    <div class="probplot__placeholder" data-ref="placeholder">
+      <p x-text="t('placeholderText')"></p>
+    </div>
+    <div class="probplot__chart-card" data-ref="chart-card" style="display:none">
+      <div class="probplot__chart-main">
+        <div class="probplot__plot-wrap" data-ref="plot"></div>
+      </div>
+    </div>
+    <div class="dmike-stats-panel" data-ref="stats-panel"></div>
+  </div>
+</div>

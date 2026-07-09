@@ -5,7 +5,7 @@
  * Gold-standard validation against Minitab / R expected values.
  */
 
-import { suite, test, beforeEach, assertEqual, assertAlmostEqual, assertArrayAlmostEqual, assertInRange, assertThrows } from '../test-utils.js';
+import { suite, test, assertEqual, assertAlmostEqual, assertArrayAlmostEqual, assertInRange, assertThrows } from '../test-utils.js';
 import {
   fullFactorial2k,
   fullFactorialGeneral,
@@ -30,17 +30,13 @@ import {
   buildModelMatrix,
   normalCDF,
   fDistCDF,
-  fDistQuantile,
-  tDistCDF,
   tDistPValue,
   olsRegression,
-  typeIIISS,
 } from '../../js/modules/doe-planner/doe-planner-math.js';
 
 import {
   analyzeResponse,
   mainEffectMeans,
-  interactionMeans,
   normalOrderStatistics,
   computeEVOPEffects,
   recenteredFactors,

@@ -23,7 +23,7 @@
  * Nightly does not generate docs.
  */
 
-import { mkdir, writeFile, readFile, rm, copyFile, readdir } from 'node:fs/promises';
+import { mkdir, writeFile, rm, copyFile, readdir } from 'node:fs/promises';
 import path from 'node:path';
 import { existsSync } from 'node:fs';
 
@@ -48,10 +48,10 @@ import { CYCLES } from '../../js/core/cycles/cycles.js';
 
 const REPO = path.resolve(new URL('../..', import.meta.url).pathname);
 const OUT = path.join(REPO, 'docs');
-const FONTS_SRC = path.join(REPO, 'vendor/fonts');
+const FONTS_SRC = path.join(REPO, 'assets/fonts');
 const CSS_SRC = path.join(REPO, 'tools/static-handbook/render/handbook.css');
-const KATEX_CSS_SRC = path.join(REPO, 'vendor/katex/katex.min.css');
-const KATEX_FONTS_SRC = path.join(REPO, 'vendor/katex/fonts');
+const KATEX_CSS_SRC = path.join(REPO, 'node_modules/katex/dist/katex.min.css');
+const KATEX_FONTS_SRC = path.join(REPO, 'node_modules/katex/dist/fonts');
 
 const LANGS = ['de', 'en'];
 

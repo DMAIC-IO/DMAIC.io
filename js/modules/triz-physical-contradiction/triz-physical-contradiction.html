@@ -1,0 +1,105 @@
+<div class="module-container triz-pc" x-data="trizPhysicalContradiction">
+  <div class="module-container__header">
+    <h2 class="module-container__title" x-text="t('name')"></h2>
+    <div class="module-container__subtitle" x-text="t('subtitle')"></div>
+  </div>
+
+  <div class="module-container__body triz-pc__body">
+    <section class="triz-pc__section">
+      <h3 class="triz-pc__section-title" x-text="t('problemHeading')"></h3>
+
+      <div class="triz-pc__field">
+        <label class="triz-pc__label" :for="paramId" x-text="t('parameterLabel')">
+        </label>
+        <input class="field triz-pc__input" type="text" data-role="parameter"
+          :id="paramId"
+          x-model="model.parameter"
+          :placeholder="t('parameterPlaceholder')">
+      </div>
+
+      <div class="triz-pc__requirements">
+        <div class="triz-pc__field triz-pc__field--a">
+          <label class="triz-pc__label triz-pc__label--a" :for="reqAId">
+            <span class="triz-pc__dot triz-pc__dot--a"></span>
+            <span x-text="t('requirementALabel')"></span>
+          </label>
+          <input class="field triz-pc__input" type="text" data-role="requirement-a"
+            :id="reqAId"
+            x-model="model.requirementA"
+            :placeholder="t('requirementAPlaceholder')">
+        </div>
+        <button class="btn btn--sm triz-pc__swap-btn" type="button" data-action="swap"
+          :title="t('swap')"
+          :aria-label="t('swap')"
+          @click="swap($event)">
+          ⇅
+        </button>
+        <div class="triz-pc__field triz-pc__field--b">
+          <label class="triz-pc__label triz-pc__label--b" :for="reqBId">
+            <span class="triz-pc__dot triz-pc__dot--b"></span>
+            <span x-text="t('requirementNotALabel')"></span>
+          </label>
+          <input class="field triz-pc__input" type="text" data-role="requirement-not-a"
+            :id="reqBId"
+            x-model="model.requirementNotA"
+            :placeholder="t('requirementNotAPlaceholder')">
+        </div>
+      </div>
+
+      <div class="triz-pc__field">
+        <label class="triz-pc__label" :for="problemNoteId" x-text="t('problemNoteLabel')">
+        </label>
+        <textarea class="field triz-pc__textarea" rows="2" data-role="problem-note"
+          :id="problemNoteId"
+          x-model="model.problemNote"
+          :placeholder="t('problemNotePlaceholder')"></textarea>
+      </div>
+    </section>
+
+    <section class="triz-pc__section">
+      <h3 class="triz-pc__section-title" x-text="t('separationHeading')"></h3>
+      <p class="triz-pc__hint" x-text="t('separationHint')"></p>
+      <div class="triz-pc__principles" role="radiogroup" :aria-label="t('separationHeading')">
+        <template x-for="(notes, key) in model.principleNotes"><article class="triz-pc__principle"
+            :key="key"
+            :class="principleSelectedClass(key, model.selectedPrinciple)"
+            :data-principle="key">
+            <header class="triz-pc__principle-head">
+              <span class="triz-pc__principle-num" x-text="principleNum(key)"></span>
+              <span class="triz-pc__principle-icon" aria-hidden="true" x-text="principleIcon(key)"></span>
+              <h4 class="triz-pc__principle-title" x-text="principleName(key)"></h4>
+            </header>
+            <p class="triz-pc__principle-question" x-text="principleQuestion(key)"></p>
+            <p class="triz-pc__principle-example">
+              <em x-text="t('exampleLead')"></em>: <span x-text="principleExample(key)"></span>
+            </p>
+            <textarea class="field triz-pc__principle-note" rows="3" data-role="principle-note"
+              :data-principle="key"
+              :placeholder="t('principleNotePlaceholder')"
+              @input="principleNoteChanged(key, $event)"
+              :value="notes"></textarea>
+            <label class="triz-pc__principle-select">
+              <input type="radio"
+                :name="radioName"
+                :value="key"
+                data-role="select-principle"
+                :checked="isChecked(key, model.selectedPrinciple)"
+                @change="selectPrinciple(key, $event)">
+              <span x-text="t('selectPrinciple')"></span>
+            </label>
+          </article></template>
+      </div>
+    </section>
+
+    <template x-if="model.selectedPrinciple"><section class="triz-pc__section triz-pc__solution">
+      <h3 class="triz-pc__section-title" x-text="t('solutionHeading')"></h3>
+      <p class="triz-pc__solution-chosen">
+        <span x-text="t('chosenPrinciple')"></span>:
+        <strong x-text="chosenPrincipleName(model.selectedPrinciple)"></strong>
+      </p>
+      <textarea class="field triz-pc__textarea" rows="3" data-role="solution-note"
+        :placeholder="t('solutionPlaceholder')"
+        x-model="model.solutionNote"></textarea>
+    </section></template>
+  </div>
+</div>

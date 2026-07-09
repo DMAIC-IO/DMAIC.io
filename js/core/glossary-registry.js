@@ -1,17 +1,17 @@
 /**
  * DMAIC.io — Glossary Registry (glossary-registry.js)
  *
- * Loads `app/dev/glossary/index.json` at bootstrap and lazy-fetches
- * individual term files on demand. Single source of truth for the
- * help-panel glossary tab, the `{{term:…}}` inline link renderer, and
- * the static handbook's `/glossar/` section.
+ * Reads the glossary catalog + all term entries from the bundled
+ * glossary-data.generated.js (produced by tools/build/glossary-data.mjs) —
+ * no runtime fetch. Single source of truth for the help-panel glossary tab,
+ * the `{{term:…}}` inline link renderer, and the static handbook's
+ * `/glossar/` section.
  *
  * Schema is documented in app/dev/glossary/README.md
  * and in .claude/GLOSSAR-KONZEPT.md.
  */
 
-const CATALOG_URL = './glossary/index.json';
-const BASE_PATH = './glossary/';
+import { GLOSSARY_CATALOG, GLOSSARY_TERMS } from './glossary-data.generated.js';
 
 export class GlossaryRegistry {
   constructor() {
@@ -32,17 +32,11 @@ export class GlossaryRegistry {
    * @returns {Promise<void>}
    */
   async init() {
-    try {
-      const res = await fetch(CATALOG_URL, { cache: 'no-cache' });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const catalog = await res.json();
-      this._index = Array.isArray(catalog?.terms) ? catalog.terms : [];
-      this._categories = Array.isArray(catalog?.categories) ? catalog.categories : [];
-    } catch (err) {
-      console.warn('[GlossaryRegistry] Could not load catalog:', err.message);
-      this._index = [];
-      this._categories = [];
-    }
+    this._index = Array.isArray(GLOSSARY_CATALOG?.terms) ? GLOSSARY_CATALOG.terms : [];
+    this._categories = Array.isArray(GLOSSARY_CATALOG?.categories) ? GLOSSARY_CATALOG.categories : [];
+    // Term bodies are bundled — warm the cache so getForModule/getAllCached
+    // return complete data synchronously without any lazy fetch.
+    for (const [id, term] of Object.entries(GLOSSARY_TERMS)) this._terms.set(id, term);
     this._initialized = true;
   }
 
@@ -127,35 +121,17 @@ export class GlossaryRegistry {
   }
 
   /**
-   * Lazy-load a single term entry by id.
+   * Resolve a single term entry by id from the bundled data. Async to preserve
+   * the historical lazy-load contract at call sites.
    * @param {string} termId
    * @returns {Promise<object|null>}
    */
   async get(termId) {
     if (!termId) return null;
     if (this._terms.has(termId)) return this._terms.get(termId);
-    if (this._inflight.has(termId)) return this._inflight.get(termId);
-
-    const idx = this._index.find(e => e.id === termId);
-    if (!idx) return null;
-
-    const url = `${BASE_PATH}${idx.file}`;
-    const p = (async () => {
-      try {
-        const res = await fetch(url, { cache: 'no-cache' });
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const term = await res.json();
-        this._terms.set(termId, term);
-        return term;
-      } catch (err) {
-        console.warn(`[GlossaryRegistry] Could not load term "${termId}":`, err.message);
-        return null;
-      } finally {
-        this._inflight.delete(termId);
-      }
-    })();
-    this._inflight.set(termId, p);
-    return p;
+    const term = GLOSSARY_TERMS[termId] ?? null;
+    if (term) this._terms.set(termId, term);
+    return term;
   }
 
   /**

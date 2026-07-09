@@ -1,0 +1,298 @@
+<section class="module-container fmea" x-data="fmea">
+  <div class="module-container__header">
+    <h2 class="module-container__title" x-text="t('name')"></h2>
+    <div class="pmap__toolbar">
+      <div class="pmap__toolbar-spacer"></div>
+      <button class="btn btn--sm" data-action="toggle-scale" type="button" @click="toggleScale()" x-text="t('scales')"></button>
+      <button class="btn btn--sm" data-action="show-burndown" type="button" @click="showBurndown()" x-text="t('burndown')"></button>
+      <button class="btn btn--sm" data-action="sort-rpn" type="button" @click="sortByRPN()" x-text="t('sortByRPN')"></button>
+      <button class="btn btn--sm" data-action="export-csv" type="button" @click="exportCSV()" x-text="t('exportCSV')"></button>
+      <button class="btn btn--sm btn--primary" data-action="add-risk" type="button" @click="addRisk()" x-text="t('addRisk')"></button>
+    </div>
+  </div>
+
+  <div class="module-container__body">
+
+    <!-- ── Scale reference (kept in DOM; visibility via --visible class) ── -->
+    <div class="fmea__scale-ref" :class="scaleVisible ? 'fmea__scale-ref--visible' : ''" data-ref="scale-ref">
+      <div class="fmea__scale-toolbar">
+        <button class="btn btn--sm btn--ghost" data-action="reset-scales" type="button" @click="resetScales()" x-text="t('resetScales')"></button>
+      </div>
+
+      <h3 x-text="t('scaleSeverity')"></h3>
+      <table>
+        <thead><tr>
+          <th x-text="t('scaleValue')"></th>
+          <th x-text="t('scaleMeaning')"></th>
+          <th x-text="t('scaleDescription')"></th>
+        </tr></thead>
+        <tbody>
+          <tr><td>1</td><td contenteditable="true" class="fmea__scale-editable" data-scale="sevNone" @blur="scaleEdited('sevNone', $event)" x-text="scaleText('sevNone')"></td><td contenteditable="true" class="fmea__scale-editable" data-scale="sevNoneDesc" @blur="scaleEdited('sevNoneDesc', $event)" x-text="scaleText('sevNoneDesc')"></td></tr>
+          <tr><td>2–3</td><td contenteditable="true" class="fmea__scale-editable" data-scale="sevLow" @blur="scaleEdited('sevLow', $event)" x-text="scaleText('sevLow')"></td><td contenteditable="true" class="fmea__scale-editable" data-scale="sevLowDesc" @blur="scaleEdited('sevLowDesc', $event)" x-text="scaleText('sevLowDesc')"></td></tr>
+          <tr><td>4–6</td><td contenteditable="true" class="fmea__scale-editable" data-scale="sevMod" @blur="scaleEdited('sevMod', $event)" x-text="scaleText('sevMod')"></td><td contenteditable="true" class="fmea__scale-editable" data-scale="sevModDesc" @blur="scaleEdited('sevModDesc', $event)" x-text="scaleText('sevModDesc')"></td></tr>
+          <tr><td>7–8</td><td contenteditable="true" class="fmea__scale-editable" data-scale="sevHigh" @blur="scaleEdited('sevHigh', $event)" x-text="scaleText('sevHigh')"></td><td contenteditable="true" class="fmea__scale-editable" data-scale="sevHighDesc" @blur="scaleEdited('sevHighDesc', $event)" x-text="scaleText('sevHighDesc')"></td></tr>
+          <tr><td>9–10</td><td contenteditable="true" class="fmea__scale-editable" data-scale="sevVHigh" @blur="scaleEdited('sevVHigh', $event)" x-text="scaleText('sevVHigh')"></td><td contenteditable="true" class="fmea__scale-editable" data-scale="sevVHighDesc" @blur="scaleEdited('sevVHighDesc', $event)" x-text="scaleText('sevVHighDesc')"></td></tr>
+        </tbody>
+      </table>
+
+      <h3 x-text="t('scaleOccurrence')"></h3>
+      <table>
+        <thead><tr>
+          <th x-text="t('scaleValue')"></th>
+          <th x-text="t('scaleProbability')"></th>
+          <th x-text="t('scaleRate')"></th>
+        </tr></thead>
+        <tbody>
+          <tr><td>1</td><td contenteditable="true" class="fmea__scale-editable" data-scale="occUnlikely" @blur="scaleEdited('occUnlikely', $event)" x-text="scaleText('occUnlikely')"></td><td contenteditable="true" class="fmea__scale-editable" data-scale="occUnlikelyRate" @blur="scaleEdited('occUnlikelyRate', $event)" x-text="scaleText('occUnlikelyRate')"></td></tr>
+          <tr><td>2–3</td><td contenteditable="true" class="fmea__scale-editable" data-scale="occLow" @blur="scaleEdited('occLow', $event)" x-text="scaleText('occLow')"></td><td contenteditable="true" class="fmea__scale-editable" data-scale="occLowRate" @blur="scaleEdited('occLowRate', $event)" x-text="scaleText('occLowRate')"></td></tr>
+          <tr><td>4–6</td><td contenteditable="true" class="fmea__scale-editable" data-scale="occMod" @blur="scaleEdited('occMod', $event)" x-text="scaleText('occMod')"></td><td contenteditable="true" class="fmea__scale-editable" data-scale="occModRate" @blur="scaleEdited('occModRate', $event)" x-text="scaleText('occModRate')"></td></tr>
+          <tr><td>7–8</td><td contenteditable="true" class="fmea__scale-editable" data-scale="occHigh" @blur="scaleEdited('occHigh', $event)" x-text="scaleText('occHigh')"></td><td contenteditable="true" class="fmea__scale-editable" data-scale="occHighRate" @blur="scaleEdited('occHighRate', $event)" x-text="scaleText('occHighRate')"></td></tr>
+          <tr><td>9–10</td><td contenteditable="true" class="fmea__scale-editable" data-scale="occVHigh" @blur="scaleEdited('occVHigh', $event)" x-text="scaleText('occVHigh')"></td><td contenteditable="true" class="fmea__scale-editable" data-scale="occVHighRate" @blur="scaleEdited('occVHighRate', $event)" x-text="scaleText('occVHighRate')"></td></tr>
+        </tbody>
+      </table>
+
+      <h3 x-text="t('scaleDetection')"></h3>
+      <table>
+        <thead><tr>
+          <th x-text="t('scaleValue')"></th>
+          <th x-text="t('scaleDetect')"></th>
+          <th x-text="t('scaleDescription')"></th>
+        </tr></thead>
+        <tbody>
+          <tr><td>1</td><td contenteditable="true" class="fmea__scale-editable" data-scale="detCertain" @blur="scaleEdited('detCertain', $event)" x-text="scaleText('detCertain')"></td><td contenteditable="true" class="fmea__scale-editable" data-scale="detCertainDesc" @blur="scaleEdited('detCertainDesc', $event)" x-text="scaleText('detCertainDesc')"></td></tr>
+          <tr><td>2–3</td><td contenteditable="true" class="fmea__scale-editable" data-scale="detHigh" @blur="scaleEdited('detHigh', $event)" x-text="scaleText('detHigh')"></td><td contenteditable="true" class="fmea__scale-editable" data-scale="detHighDesc" @blur="scaleEdited('detHighDesc', $event)" x-text="scaleText('detHighDesc')"></td></tr>
+          <tr><td>4–6</td><td contenteditable="true" class="fmea__scale-editable" data-scale="detMod" @blur="scaleEdited('detMod', $event)" x-text="scaleText('detMod')"></td><td contenteditable="true" class="fmea__scale-editable" data-scale="detModDesc" @blur="scaleEdited('detModDesc', $event)" x-text="scaleText('detModDesc')"></td></tr>
+          <tr><td>7–8</td><td contenteditable="true" class="fmea__scale-editable" data-scale="detLow" @blur="scaleEdited('detLow', $event)" x-text="scaleText('detLow')"></td><td contenteditable="true" class="fmea__scale-editable" data-scale="detLowDesc" @blur="scaleEdited('detLowDesc', $event)" x-text="scaleText('detLowDesc')"></td></tr>
+          <tr><td>9–10</td><td contenteditable="true" class="fmea__scale-editable" data-scale="detVLow" @blur="scaleEdited('detVLow', $event)" x-text="scaleText('detVLow')"></td><td contenteditable="true" class="fmea__scale-editable" data-scale="detVLowDesc" @blur="scaleEdited('detVLowDesc', $event)" x-text="scaleText('detVLowDesc')"></td></tr>
+        </tbody>
+      </table>
+
+      <h3 x-text="t('rpnCategories')"></h3>
+      <div class="fmea__legend-grid">
+        <div class="fmea__legend-item"><div class="fmea__legend-dot" style="background:var(--color-success, #34D399)"></div> &lt; 50 <span x-text="t('catLow')"></span></div>
+        <div class="fmea__legend-item"><div class="fmea__legend-dot" style="background:#FBBF24"></div> 50–124 <span x-text="t('catMedium')"></span></div>
+        <div class="fmea__legend-item"><div class="fmea__legend-dot" style="background:#FB923C"></div> 125–200 <span x-text="t('catHigh')"></span></div>
+        <div class="fmea__legend-item"><div class="fmea__legend-dot" style="background:var(--color-error)"></div> &gt; 200 <span x-text="t('catCritical')"></span></div>
+      </div>
+    </div>
+
+    <!-- ── Stats ── -->
+    <div class="fmea__stats">
+      <div class="fmea__stat-card">
+        <div class="fmea__stat-icon" style="background:rgba(74,124,255,0.12);color:var(--color-accent)">Σ</div>
+        <div><div class="fmea__stat-value" data-stat="total" x-text="stats().total"></div><div class="fmea__stat-label" x-text="t('statTotal')"></div></div>
+      </div>
+      <div class="fmea__stat-card">
+        <div class="fmea__stat-icon" style="background:rgba(239,68,68,0.12);color:var(--color-error)">⚠</div>
+        <div><div class="fmea__stat-value" data-stat="critical" x-text="stats().critical"></div><div class="fmea__stat-label" x-text="t('statCritical')"></div></div>
+      </div>
+      <div class="fmea__stat-card">
+        <div class="fmea__stat-icon" style="background:rgba(251,146,60,0.12);color:#FB923C">▲</div>
+        <div><div class="fmea__stat-value" data-stat="high" x-text="stats().high"></div><div class="fmea__stat-label" x-text="t('statHigh')"></div></div>
+      </div>
+      <div class="fmea__stat-card">
+        <div class="fmea__stat-icon" style="background:rgba(251,191,36,0.12);color:#FBBF24">●</div>
+        <div><div class="fmea__stat-value" data-stat="medium" x-text="stats().medium"></div><div class="fmea__stat-label" x-text="t('statMedium')"></div></div>
+      </div>
+      <div class="fmea__stat-card">
+        <div class="fmea__stat-icon" style="background:rgba(52,211,153,0.12);color:var(--color-success, #34D399)">✓</div>
+        <div><div class="fmea__stat-value" data-stat="low" x-text="stats().low"></div><div class="fmea__stat-label" x-text="t('statLow')"></div></div>
+      </div>
+      <div class="fmea__stat-card">
+        <div class="fmea__stat-icon" style="background:rgba(255,255,255,0.04);color:var(--color-text-secondary)">Ø</div>
+        <div><div class="fmea__stat-value" data-stat="avg" x-text="statAvg()"></div><div class="fmea__stat-label" x-text="t('statAvg')"></div></div>
+      </div>
+      <div class="fmea__stat-card">
+        <div class="fmea__stat-icon" style="background:rgba(239,68,68,0.12);color:var(--color-error)">↑</div>
+        <div><div class="fmea__stat-value" data-stat="max" x-text="statMax()"></div><div class="fmea__stat-label" x-text="t('statMax')"></div></div>
+      </div>
+    </div>
+
+    <!-- ── Risk list ── -->
+    <div class="fmea__risk-list" data-ref="risk-list">
+      <template x-for="(risk, ri) in model.risks">
+        <div class="fmea__risk-card" :key="risk.id" :class="cardClass(risk)" :data-risk-id="risk.id" :data-rpn="risk.rpn()" :data-proj-rpn="risk.projRpn()">
+          <div class="fmea__risk-header">
+            <span class="fmea__risk-number" data-action="toggle-collapse" :data-risk-id="risk.id" :title="t('collapseToggle')" @click="toggleCollapse(risk)">
+              <span class="fmea__collapse-arrow">▼</span> <span x-text="riskNum(ri)"></span>
+            </span>
+            <input class="fmea__risk-title" name="step" :placeholder="t('stepPlaceholder')" x-model="risk.step">
+            <div class="fmea__rpn-header-group">
+              <span class="fmea__rpn-badge" :class="rpnBadgeClass(risk.rpn())" data-rpn-badge x-text="rpnText(risk.rpn())"></span>
+              <span class="fmea__rpn-arrow-sep">→</span>
+              <span class="fmea__rpn-badge fmea__rpn-badge--sm" :class="rpnBadgeClass(risk.projRpn())" data-proj-rpn-badge x-text="targetText(risk.projRpn())"></span>
+            </div>
+            <button class="fmea__risk-delete" data-action="del-risk" :data-risk-id="risk.id" :title="t('common.delete')" @click="deleteRisk(risk.id)">✕</button>
+          </div>
+          <div class="fmea__risk-body">
+            <div class="fmea__fields-row">
+              <div class="field-group">
+                <label x-text="t('failureMode')"></label>
+                <textarea class="field" name="failureMode" :placeholder="t('failureModePlaceholder')" x-model="risk.failureMode"></textarea>
+              </div>
+              <div class="field-group">
+                <label x-text="t('effect')"></label>
+                <textarea class="field" name="effect" :placeholder="t('effectPlaceholder')" x-model="risk.effect"></textarea>
+              </div>
+              <div class="field-group">
+                <label x-text="t('cause')"></label>
+                <textarea class="field" name="cause" :placeholder="t('causePlaceholder')" x-model="risk.cause"></textarea>
+              </div>
+            </div>
+            <div class="fmea__fields-row fmea__fields-row--2">
+              <div class="field-group">
+                <label x-text="t('currentControls')"></label>
+                <textarea class="field" name="control" :placeholder="t('controlPlaceholder')" x-model="risk.control"></textarea>
+              </div>
+              <div class="field-group">
+                <label x-text="t('rating')"></label>
+                <div class="fmea__sod-row">
+                  <div class="fmea__sod-group"><label :title="t('tipS')">S</label>
+                    <select name="sev" x-model="risk.sev">
+                      <option value="">—</option>
+                      <option value="1" :title="sevTitle(1)">1</option>
+                      <option value="2" :title="sevTitle(2)">2</option>
+                      <option value="3" :title="sevTitle(3)">3</option>
+                      <option value="4" :title="sevTitle(4)">4</option>
+                      <option value="5" :title="sevTitle(5)">5</option>
+                      <option value="6" :title="sevTitle(6)">6</option>
+                      <option value="7" :title="sevTitle(7)">7</option>
+                      <option value="8" :title="sevTitle(8)">8</option>
+                      <option value="9" :title="sevTitle(9)">9</option>
+                      <option value="10" :title="sevTitle(10)">10</option>
+                    </select>
+                  </div>
+                  <div class="fmea__sod-group"><label :title="t('tipO')">O</label>
+                    <select name="occ" x-model="risk.occ">
+                      <option value="">—</option>
+                      <option value="1" :title="occTitle(1)">1</option>
+                      <option value="2" :title="occTitle(2)">2</option>
+                      <option value="3" :title="occTitle(3)">3</option>
+                      <option value="4" :title="occTitle(4)">4</option>
+                      <option value="5" :title="occTitle(5)">5</option>
+                      <option value="6" :title="occTitle(6)">6</option>
+                      <option value="7" :title="occTitle(7)">7</option>
+                      <option value="8" :title="occTitle(8)">8</option>
+                      <option value="9" :title="occTitle(9)">9</option>
+                      <option value="10" :title="occTitle(10)">10</option>
+                    </select>
+                  </div>
+                  <div class="fmea__sod-group"><label :title="t('tipD')">D</label>
+                    <select name="det" x-model="risk.det">
+                      <option value="">—</option>
+                      <option value="1" :title="detTitle(1)">1</option>
+                      <option value="2" :title="detTitle(2)">2</option>
+                      <option value="3" :title="detTitle(3)">3</option>
+                      <option value="4" :title="detTitle(4)">4</option>
+                      <option value="5" :title="detTitle(5)">5</option>
+                      <option value="6" :title="detTitle(6)">6</option>
+                      <option value="7" :title="detTitle(7)">7</option>
+                      <option value="8" :title="detTitle(8)">8</option>
+                      <option value="9" :title="detTitle(9)">9</option>
+                      <option value="10" :title="detTitle(10)">10</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <hr class="fmea__section-sep">
+            <div class="fmea__section-title" x-text="t('actionsSection')"></div>
+            <div class="fmea__actions-section">
+              <table class="fmea__action-table">
+                <thead><tr>
+                  <th style="width:28px">✓</th>
+                  <th x-text="t('action')"></th>
+                  <th style="width:110px" x-text="t('responsible')"></th>
+                  <th style="width:105px" x-text="t('dueDate')"></th>
+                  <th class="fmea__delta-cell" style="width:62px">ΔS</th>
+                  <th class="fmea__delta-cell" style="width:62px">ΔO</th>
+                  <th class="fmea__delta-cell" style="width:62px">ΔD</th>
+                  <th style="width:28px"></th>
+                </tr></thead>
+                <tbody data-action-body>
+                  <template x-for="(act, ai) in risk.actions">
+                    <tr :key="act.id" :data-action-idx="ai">
+                      <td style="text-align:center"><input type="checkbox" class="fmea__done-check" x-model="act.done"></td>
+                      <td><textarea name="actionText" :placeholder="t('actionPlaceholder')" x-model="act.text"></textarea></td>
+                      <td><input type="text" name="actionResp" :placeholder="t('actionResp')" x-model="act.resp"></td>
+                      <td><input type="date" name="actionDate" x-model="act.date"></td>
+                      <td class="fmea__delta-cell"><select name="deltaS" title="ΔS" x-model="act.deltaS">
+                        <option value="0">0</option>
+                        <option value="1">−1</option>
+                        <option value="2">−2</option>
+                        <option value="3">−3</option>
+                        <option value="4">−4</option>
+                        <option value="5">−5</option>
+                        <option value="6">−6</option>
+                        <option value="7">−7</option>
+                        <option value="8">−8</option>
+                        <option value="9">−9</option>
+                      </select></td>
+                      <td class="fmea__delta-cell"><select name="deltaO" title="ΔO" x-model="act.deltaO">
+                        <option value="0">0</option>
+                        <option value="1">−1</option>
+                        <option value="2">−2</option>
+                        <option value="3">−3</option>
+                        <option value="4">−4</option>
+                        <option value="5">−5</option>
+                        <option value="6">−6</option>
+                        <option value="7">−7</option>
+                        <option value="8">−8</option>
+                        <option value="9">−9</option>
+                      </select></td>
+                      <td class="fmea__delta-cell"><select name="deltaD" title="ΔD" x-model="act.deltaD">
+                        <option value="0">0</option>
+                        <option value="1">−1</option>
+                        <option value="2">−2</option>
+                        <option value="3">−3</option>
+                        <option value="4">−4</option>
+                        <option value="5">−5</option>
+                        <option value="6">−6</option>
+                        <option value="7">−7</option>
+                        <option value="8">−8</option>
+                        <option value="9">−9</option>
+                      </select></td>
+                      <td style="text-align:center"><button class="fmea__action-del-btn" data-action="del-action" :data-risk-id="risk.id" :data-action-idx="ai" :title="t('common.delete')" @click="deleteAction(risk, ai)">✕</button></td>
+                    </tr>
+                  </template>
+                </tbody>
+              </table>
+              <button class="fmea__add-action-btn" data-action="add-action" :data-risk-id="risk.id" @click="addAction(risk)" x-text="addActionLabel()"></button>
+            </div>
+            <div class="fmea__projected-bar">
+              <span class="fmea__proj-label" x-text="t('projectedLabel')"></span>
+              <span class="fmea__proj-item">S: <strong data-proj-s x-text="projSDisp(risk)"></strong></span>
+              <span class="fmea__proj-item">O: <strong data-proj-o x-text="projODisp(risk)"></strong></span>
+              <span class="fmea__proj-item">D: <strong data-proj-d x-text="projDDisp(risk)"></strong></span>
+              <span class="fmea__proj-arrow">→</span>
+              <span class="fmea__rpn-badge" :class="rpnBadgeClass(risk.projRpn())" data-proj-rpn x-text="rpnText(risk.projRpn())"></span>
+            </div>
+          </div>
+        </div>
+      </template>
+    </div>
+
+  </div>
+
+  <!-- ── Burndown popout (declarative; chart mounted imperatively into anchor) ── -->
+  <template x-if="burndownOpen">
+    <div class="dmike-chart-popout-overlay"
+      @click.self="closeBurndown()"
+      @keydown.escape.window="closeBurndown()"
+      @mousemove.window="popoutDragMove($event)"
+      @mouseup.window="popoutDragEnd()">
+      <div class="dmike-chart-popout" :style="popoutStyle()">
+        <div class="dmike-chart-popout-titlebar" @mousedown="popoutDragStart($event)">
+          <span x-text="t('burndownTitle')"></span>
+          <button class="dmike-chart-popout-close" type="button" @click="closeBurndown()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"></path></svg>
+          </button>
+        </div>
+        <div class="dmike-chart-popout-body">
+          <div data-ref="burndown-chart" style="width:100%;height:500px;resize:both;overflow:auto"></div>
+        </div>
+      </div>
+    </div>
+  </template>
+</section>

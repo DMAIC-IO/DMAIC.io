@@ -1,0 +1,58 @@
+<div class="chart-suggestion-root" x-data="chartSuggestion">
+  <!-- Empty state: no selection, or a selection that matched no rule. -->
+  <template x-if="!model.suggestions || model.suggestions.length === 0">
+    <div class="chart-suggestion chart-suggestion--empty">
+      <div class="chart-suggestion__empty-card">
+        <div class="chart-suggestion__empty-icon">✨</div>
+        <h2 class="chart-suggestion__empty-title" x-text="t('emptyTitle')"></h2>
+        <p class="chart-suggestion__empty-text" x-text="emptyText()"></p>
+      </div>
+    </div>
+  </template>
+
+  <!-- Gallery + preview split (suggestions present). -->
+  <template x-if="model.suggestions && model.suggestions.length > 0">
+    <div class="chart-suggestion dmike-split">
+      <aside class="chart-suggestion__gallery dmike-split__input">
+        <div class="dmike-split__section-title" x-text="t('sectionSuggestions')"></div>
+        <div class="chart-suggestion__selection-info" data-ref="selection-info">
+          <div class="chart-suggestion__selection-label" x-text="selectionLabel()"></div>
+          <template x-for="c in selectionColumns()">
+            <span class="chart-suggestion__col-chip" :key="c.id" :class="'col-role-' + c.role">
+              <span x-text="c.name || '?'"></span> <em x-text="roleName(c.role)"></em>
+            </span>
+          </template>
+        </div>
+        <ul class="chart-suggestion__cards" data-ref="cards">
+          <template x-for="s in model.suggestions">
+            <li :key="s.type">
+              <button type="button" class="chart-suggestion__card"
+                      :class="cardClass(s)" :data-chart-type="s.type" @click="pickChart(s.type)">
+                <div class="chart-suggestion__card-thumb"
+                     :class="'chart-suggestion__card-thumb--' + s.type"
+                     aria-hidden="true" :data-thumb="s.type"></div>
+                <div class="chart-suggestion__card-body">
+                  <div class="chart-suggestion__card-title" x-text="chartTitle(s)"></div>
+                  <template x-if="s.notesKey">
+                    <div class="chart-suggestion__card-notes" x-text="chartNotes(s)"></div>
+                  </template>
+                </div>
+              </button>
+            </li>
+          </template>
+        </ul>
+      </aside>
+      <section class="chart-suggestion__preview dmike-split__output">
+        <header class="chart-suggestion__preview-header">
+          <span class="chart-suggestion__preview-title" data-ref="preview-title"></span>
+          <span class="chart-suggestion__preview-notes" data-ref="preview-notes"></span>
+          <button type="button" class="chart-suggestion__open-btn" data-ref="open-btn"
+                  data-action="open-in-module" x-show="openBtnVisible()" @click="openInModule()"
+                  x-text="t('openInModule')"></button>
+        </header>
+        <template x-if="previewPlaceholder"><div class="chart-suggestion__placeholder" x-text="previewPlaceholder"></div></template>
+        <div class="chart-suggestion__plot" data-ref="plot" x-show="!previewPlaceholder"></div>
+      </section>
+    </div>
+  </template>
+</div>

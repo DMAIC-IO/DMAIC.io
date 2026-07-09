@@ -1,9 +1,10 @@
 /**
  * Tests for js/core/state-manager.js
  */
-import { suite, test, assertEqual } from '../test-utils.js';
+import { suite, test, assertEqual, assertDeepEqual, assertTrue } from '../test-utils.js';
 import { EventBus } from '../../js/core/event-bus.js';
 import { StateManager } from '../../js/core/state-manager.js';
+import { StorageAdapter } from '../../js/core/storage/storage-adapter.js';
 import { ModuleRegistry } from '../../js/core/module-registry.js';
 import { VERSION } from '../../js/core/version.js';
 import { stripPatch } from '../../js/core/version-utils.js';
@@ -262,4 +263,128 @@ suite('StateManager', () => {
   test.todo('flushNow: drains pending writes to IndexedDB');
   test.todo('load: populates module cache from IndexedDB');
   test.todo('switchProject: flushes pending writes before switching');
+
+  // ─── Adapter injection (Task 4) ──────────────────────────────
+
+  test('constructor accepts an injected adapter', () => {
+    let created = false;
+    class Probe extends StorageAdapter {
+      supportsMultiProject = true;
+      listProjects() { created = true; return []; }
+      getActiveProjectId() { return null; }
+    }
+    const sm = new StateManager(new EventBus(), new Probe());
+    sm.getProjects();
+    assertEqual(created, true);
+  });
+
+  test('getProjects/createProject delegate to the injected adapter', () => {
+    const calls = [];
+    class Probe extends StorageAdapter {
+      supportsMultiProject = true;
+      listProjects() { calls.push('list'); return [{ id: 'p1', name: 'A', cycle: 'dmaic', created: '', modified: '', status: 'active' }]; }
+      getActiveProjectId() { return 'p1'; }
+      createProject(name, cycle) { calls.push(`create:${name}:${cycle}`); return 'new-id'; }
+    }
+    const sm = new StateManager(new EventBus(), new Probe());
+    const list = sm.getProjects();
+    assertEqual(list[0].id, 'p1');
+    const id = sm.createProject('X', 'dmadv');
+    assertEqual(id, 'new-id');
+    assertEqual(calls.includes('create:X:dmadv'), true);
+  });
+});
+
+// ─── Remote Sync (Task 4) ───────────────────────────────────────────────────
+
+// Minimal fake adapter: single project, manual subscribe trigger, mutable doc.
+function makeFakeAdapter(initialDoc) {
+  let doc = initialDoc;
+  let cb = null;
+  const writes = [];
+  return {
+    supportsMultiProject: false,
+    _writes: writes,
+    _setDoc(d) { doc = d; },
+    _fireRemote() { if (cb) cb(); },
+    subscribe(onRemoteChange) { cb = onRemoteChange; return () => { cb = null; }; },
+    async loadProjectDoc() { return doc; },
+    listProjects() { return [{ id: 'wb', name: 'WB', cycle: 'dmaic', status: 'active' }]; },
+    getActiveProjectId() { return 'wb'; },
+    setActiveProjectId() {},
+    createProject() { return 'wb'; },
+    saveProjectMeta(id, _d) { writes.push(['meta', id]); },
+    putModule(id, iid, s) { writes.push(['put', iid, s]); },
+    removeModule(id, iid) { writes.push(['rm', iid]); },
+    dropPending() {}, addProjectEntry() {}, updateProjectEntry() {},
+    setProjectStatus() {}, reorderProjects() {},
+    async deleteProject() {}, async flush() {},
+    async exportProjectDocs() { return []; }, async importProjectDoc() {},
+  };
+}
+
+function baseDoc() {
+  return {
+    projectMeta: { name: 'WB', cycle: 'dmaic' },
+    phases: { define: [{ instanceId: 'i1', moduleId: 'sipoc' }] },
+    phaseAchievement: {}, phaseAchievementHistory: [], models: [],
+    optimizations: [], dashboard: {}, version: '1.0.0',
+    moduleStates: { i1: { columns: [['a']] } },
+  };
+}
+
+suite('StateManager remote sync', () => {
+  test('remote change updates cache and emits state:remote-changed', async () => {
+    const bus = new EventBus();
+    const adapter = makeFakeAdapter(baseDoc());
+    const sm = new StateManager(bus, adapter);
+    await sm.load();
+
+    let event = null;
+    bus.on('state:remote-changed', (e) => { event = e; });
+
+    const next = baseDoc();
+    next.moduleStates.i1 = { columns: [['REMOTE']] };
+    adapter._setDoc(next);
+    adapter._fireRemote();
+    await Promise.resolve(); await Promise.resolve();
+
+    assertDeepEqual(sm.getModuleState('i1'), { columns: [['REMOTE']] });
+    assertTrue(event !== null, 'event emitted');
+    assertTrue(event.instanceIds.includes('i1'), 'i1 reported changed');
+  });
+
+  test('remote-apply guard suppresses write-back', async () => {
+    const bus = new EventBus();
+    const adapter = makeFakeAdapter(baseDoc());
+    const sm = new StateManager(bus, adapter);
+    await sm.load();
+    adapter._writes.length = 0;
+
+    const next = baseDoc();
+    next.moduleStates.i1 = { columns: [['REMOTE']] };
+    adapter._setDoc(next);
+    adapter._fireRemote();
+    await Promise.resolve(); await Promise.resolve();
+
+    // No adapter writes may result from applying a remote change.
+    assertEqual(adapter._writes.length, 0, 'no write-back during remote apply');
+  });
+
+  test('metaChanged flag set when a meta field changes remotely', async () => {
+    const bus = new EventBus();
+    const adapter = makeFakeAdapter(baseDoc());
+    const sm = new StateManager(bus, adapter);
+    await sm.load();
+    let event = null;
+    bus.on('state:remote-changed', (e) => { event = e; });
+
+    const next = baseDoc();
+    next.version = '2.0.0';
+    adapter._setDoc(next);
+    adapter._fireRemote();
+    await Promise.resolve(); await Promise.resolve();
+
+    assertEqual(event.metaChanged, true);
+  });
 });

@@ -1,17 +1,17 @@
 /**
  * KaTeX server-side rendering wrapper.
  *
- * Uses the vendored KaTeX at vendor/katex/katex.mjs to pre-render LaTeX
- * formulas to static HTML at build time. Pages that use these helpers
- * must also link the copied KaTeX CSS (vendor/katex/katex.min.css) so
- * the rendered HTML has the right typography and glyphs.
+ * Uses KaTeX from node_modules (node_modules/katex/dist/katex.mjs) to
+ * pre-render LaTeX formulas to static HTML at build time. Pages that use
+ * these helpers must also link the copied KaTeX CSS so the rendered HTML
+ * has the right typography and glyphs.
  */
 
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 
 const REPO = path.resolve(new URL('../../..', import.meta.url).pathname);
-const KATEX_PATH = path.join(REPO, 'vendor/katex/katex.mjs');
+const KATEX_PATH = path.join(REPO, 'node_modules/katex/dist/katex.mjs');
 
 let katex = null;
 

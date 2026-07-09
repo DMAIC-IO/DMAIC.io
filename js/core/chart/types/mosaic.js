@@ -21,6 +21,7 @@
  */
 
 import ChartBase from '../chart-base.js';
+import { h } from '../../dom.js';
 import { svgEl, svgText, resolveColor, formatNum, getChartColors } from '../chart-core.js';
 import { edSection, edCheckboxRow, edRangeRow } from '../chart-editor.js';
 
@@ -56,7 +57,7 @@ export default class MosaicChart extends ChartBase {
   }
 
   /** @override */
-  _renderData(svg, plotGroup, xScale, yScale, xTick, yTick, plotArea, defs) {
+  _renderData(svg, plotGroup, xScale, yScale, xTick, yTick, plotArea, _defs) {
     const cats = this.config.categories || [];
     const groups = (this.config.groups || []).filter(g => g.visible !== false);
     if (!cats.length || !groups.length) return;
@@ -202,7 +203,7 @@ export default class MosaicChart extends ChartBase {
   }
 
   /** @override */
-  _findNearby(dataX, dataY, proximityPx) {
+  _findNearby(dataX, dataY, _proximityPx) {
     const cells = this._cellRects;
     if (!cells || !cells.length) return [];
     // dataX/dataY are in [0,1]; convert to pixels via the scales.
@@ -216,7 +217,11 @@ export default class MosaicChart extends ChartBase {
     const bName = groups[hit.gi]?.name || '';
     const cond = hit.colTotal > 0 ? hit.count / hit.colTotal : 0;
     return [{
-      html: `<b>${aName} · ${bName}</b><br>${this.config.tooltipCountLabel || 'n'} = ${formatNum(hit.count, 0, this.locale)} (${formatNum(cond * 100, 1, this.locale)}%)`,
+      node: h('div', null,
+        h('b', null, `${aName} · ${bName}`),
+        h('br'),
+        `${this.config.tooltipCountLabel || 'n'} = ${formatNum(hit.count, 0, this.locale)} (${formatNum(cond * 100, 1, this.locale)}%)`,
+      ),
       px: hit.x + hit.w / 2,
       py: hit.y + hit.h / 2,
     }];

@@ -3,6 +3,17 @@
    Toolbar, status bar, and layout for the worksheet module.
    ============================================================ */
 
+/* Root layout — mirrors the legacy inline container styles
+   (display:flex; flex-direction:column; height:100%; overflow:hidden;
+   no padding). The module deliberately does NOT use .module-container
+   (which adds padding) so the grid fills the area edge to edge. */
+.worksheet-module {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
 /* Toolbar */
 .worksheet-toolbar {
   display: flex;
@@ -31,24 +42,30 @@
   transition: all 120ms ease;
   white-space: nowrap;
 }
+
 .worksheet-toolbar .toolbar__btn:hover {
   background: var(--color-bg-tertiary);
   color: var(--color-text-primary);
 }
+
 .worksheet-toolbar .toolbar__btn:active {
   background: var(--color-border-primary);
 }
+
 .worksheet-toolbar .toolbar__btn--accent {
   color: var(--color-accent);
 }
+
 .worksheet-toolbar .toolbar__btn--accent:hover {
   background: var(--color-accent-light);
   color: var(--color-accent-hover);
 }
+
 .worksheet-toolbar .toolbar__btn:disabled {
   opacity: .35;
   pointer-events: none;
 }
+
 .worksheet-toolbar .toolbar__btn svg {
   width: 15px;
   height: 15px;
@@ -64,6 +81,13 @@
 
 .worksheet-toolbar .toolbar__spacer {
   flex: 1;
+}
+
+/* Export trigger icon — solid black (uses stroke="currentColor", so color makes it black).
+   Scoped to the first svg (upload arrow) inside the export dropdown trigger only.
+   The :not(:disabled) guard prevents overriding the .toolbar__btn:disabled state. */
+.worksheet-toolbar .toolbar__dropdown[data-action="export-dropdown"] > .toolbar__btn:not(:disabled) > svg:first-of-type {
+  color: var(--color-text-primary);
 }
 
 /* ── Export dropdown ────────────────────────────────────── */
@@ -120,6 +144,7 @@
 .sheet-tabs__spacer {
   flex: 1;
 }
+
 .sheet-tabs__status {
   font-family: var(--font-family-mono);
   font-size: var(--font-size-xs);
@@ -174,4 +199,20 @@
   color: var(--color-text-primary);
   border: 1px solid var(--color-border-primary, var(--color-border));
   border-radius: 3px;
+}
+
+/* Formula-editor expand hint — the maximize glyph (was an inline 11px SVG
+   before the icon-sprite conversion; pin the themed <img> icon to the same
+   size). The hint button itself is styled imperatively via cssText. */
+.fe-expand-hint .icon {
+  width: 11px;
+  height: 11px;
+}
+
+/* Formula-editor apply button checkmark icon (was an inline 13px SVG). */
+.worksheet__fe-check {
+  width: 13px;
+  height: 13px;
+  margin-right: 4px;
+  vertical-align: middle;
 }

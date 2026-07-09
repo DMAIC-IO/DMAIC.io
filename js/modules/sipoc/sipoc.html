@@ -1,0 +1,93 @@
+<div class="module-container sipoc" x-data="sipoc">
+  <div class="module-container__header">
+    <h2 class="module-container__title" x-text="t('name')"></h2>
+    <div class="sipoc__toolbar">
+      <div class="sipoc__toolbar-spacer"></div>
+      <span class="sipoc__export-anchor" data-ref="export-anchor"></span>
+    </div>
+  </div>
+
+  <div class="module-container__body">
+    <div class="sipoc__flow-bar">
+      <div class="sipoc__flow-step"><div class="sipoc__flow-letter sipoc__flow-letter--s">S</div></div>
+      <div class="sipoc__flow-arrow sipoc__flow-arrow--si"></div>
+      <div class="sipoc__flow-step"><div class="sipoc__flow-letter sipoc__flow-letter--i">I</div></div>
+      <div class="sipoc__flow-arrow sipoc__flow-arrow--ip"></div>
+      <div class="sipoc__flow-step"><div class="sipoc__flow-letter sipoc__flow-letter--p">P</div></div>
+      <div class="sipoc__flow-arrow sipoc__flow-arrow--po"></div>
+      <div class="sipoc__flow-step"><div class="sipoc__flow-letter sipoc__flow-letter--o">O</div></div>
+      <div class="sipoc__flow-arrow sipoc__flow-arrow--oc"></div>
+      <div class="sipoc__flow-step"><div class="sipoc__flow-letter sipoc__flow-letter--c">C</div></div>
+    </div>
+
+    <div class="sipoc__grid" data-ref="sipocGrid">
+      <template x-for="col in columns">
+        <div class="sipoc__column" :data-col="col.key" :class="dragOverClass(col.key)" :key="col.key">
+          <div class="sipoc__col-header">
+            <div class="sipoc__col-title">
+              <div class="sipoc__col-indicator"></div>
+              <div>
+                <div class="sipoc__col-label" x-text="t('col.' + col.key)"></div>
+                <div class="sipoc__col-desc" x-text="t('colDesc.' + col.key)"></div>
+              </div>
+            </div>
+            <span class="sipoc__item-count" x-text="model.columns[col.key].length"></span>
+          </div>
+
+          <div class="sipoc__items-list" :data-col="col.key"
+            @dragover="dragOver(col.key, $event)"
+            @dragleave="dragLeave(col.key, $event)"
+            @drop="drop(col.key, $event)">
+
+            <template x-if="col.key === 'process' && model.columns[col.key].length > 0">
+              <div class="sipoc__process-cap sipoc__process-cap--start" x-text="t('processStart')"></div>
+            </template>
+
+            <template x-for="(item, i) in model.columns[col.key]">
+              <div class="sipoc__item" draggable="true" :data-col="col.key" :data-idx="i" :key="col.key + ':' + i"
+                @dragstart="dragStart(col.key, i, $event)"
+                @dragend="dragEnd($event)">
+                <span class="sipoc__grip" x-text="gripGlyph()"></span>
+                <template x-if="col.key === 'process'">
+                  <span class="sipoc__step-num" x-text="i + 1"></span>
+                </template>
+                <span class="sipoc__item-text" x-text="item"></span>
+                <div class="sipoc__item-actions">
+                  <button class="btn btn--icon-sm sipoc__item-btn" data-action="edit"
+                    :data-col="col.key" :data-idx="i" :title="t('common.edit')"
+                    x-text="editGlyph()" @click="editItem(col.key, i, $event)"></button>
+                  <button class="btn btn--icon-sm sipoc__item-btn sipoc__item-btn--delete" data-action="delete"
+                    :data-col="col.key" :data-idx="i" :title="t('common.delete')"
+                    x-text="deleteGlyph()" @click="deleteItem(col.key, i, $event)"></button>
+                </div>
+              </div>
+            </template>
+
+            <template x-if="col.key === 'process' && model.columns[col.key].length > 0">
+              <div class="sipoc__process-cap sipoc__process-cap--end" x-text="t('processEnd')"></div>
+            </template>
+          </div>
+
+          <div class="sipoc__add-area">
+            <div class="sipoc__add-row">
+              <input class="field sipoc__add-input" type="text"
+                :data-col="col.key"
+                :placeholder="t('placeholder.' + col.key)"
+                :aria-label="t('placeholder.' + col.key)"
+                @keydown.enter="addOnEnter(col.key, $event)">
+              <button class="sipoc__add-btn" :data-col="col.key" :title="t('common.add')"
+                @click="addOnClick(col.key, $event)">+</button>
+            </div>
+          </div>
+        </div>
+      </template>
+    </div>
+  </div>
+
+  <!-- Edit dialog: lives hidden here; borrowed into the shared modal on edit, restored on close -->
+  <div class="sipoc__modal-forms" hidden>
+    <div class="sipoc__edit-form" x-ref="editForm">
+      <textarea class="field" data-field="text" style="min-height:80px;" x-model="editDraft.text"></textarea>
+    </div>
+  </div>
+</div>

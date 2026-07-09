@@ -1,0 +1,11 @@
+<div class="app-export__content" x-data="exportScope"
+     style="display:flex; flex-direction:column; gap:12px; padding:4px 0;">
+  <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
+    <input type="radio" name="export-scope" value="current" x-model="model.scope">
+    <span x-text="t('exportCurrent')"></span>
+  </label>
+  <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
+    <input type="radio" name="export-scope" value="all" x-model="model.scope">
+    <span x-text="t('exportAll', { count: model.projectCount })"></span>
+  </label>
+</div>

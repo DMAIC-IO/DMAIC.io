@@ -9,8 +9,7 @@
  * resize via the `--compact` modifier.
  */
 
-const CLOSE_SVG =
-  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>';
+import { icon } from '../core/icon.js';
 
 /**
  * Show a confirmation dialog as a dmike-chart-popout.
@@ -50,7 +49,7 @@ export function confirmPopout(message, options = {}) {
     titleText.textContent = title;
     const closeBtn = document.createElement('button');
     closeBtn.className = 'dmike-chart-popout-close';
-    closeBtn.innerHTML = CLOSE_SVG;
+    closeBtn.replaceChildren(icon('close'));
     titleBar.append(titleText, closeBtn);
 
     const body = document.createElement('div');
@@ -85,8 +84,8 @@ export function confirmPopout(message, options = {}) {
     };
     const onDragMove = (e) => {
       if (!isDragging) return;
-      win.style.left = (e.clientX - dragX) + 'px';
-      win.style.top = (e.clientY - dragY) + 'px';
+      win.style.left = `${e.clientX - dragX  }px`;
+      win.style.top = `${e.clientY - dragY  }px`;
     };
     const onDragEnd = () => { isDragging = false; win.style.transition = ''; };
     titleBar.addEventListener('mousedown', onDragStart);

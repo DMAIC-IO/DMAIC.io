@@ -20,9 +20,7 @@ export function computeBins(values, globalMin, globalMax, binWidth) {
       const v = values[i];
       if (upper >= globalMax) {
         if (v >= edge && v <= upper) count++;
-      } else {
-        if (v >= edge && v < upper) count++;
-      }
+      } else if (v >= edge && v < upper) count++;
     }
     bins.push({ xMin: edge, xMax: upper, count });
     edge = upper;
@@ -53,7 +51,7 @@ export function binAll(seriesData, binWidth) {
   const range = globalRange(seriesData);
   if (range.count === 0) return { bins: [], globalMin: 0, globalMax: 1, binWidth: 1 };
   const bw = binWidth || autoBinWidth(seriesData);
-  let gMin = Math.floor(range.min / bw) * bw;
+  const gMin = Math.floor(range.min / bw) * bw;
   let gMax = Math.ceil(range.max / bw) * bw;
   if (gMax <= gMin) gMax = gMin + bw;
   const result = [];

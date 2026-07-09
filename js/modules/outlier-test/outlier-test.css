@@ -4,6 +4,25 @@
  * Section labels: use global .dmike-split__output-section.
  */
 
+/* ── Results panel wrapper ────────────────────────────────── */
+
+/* The composite results panel lives inside a single x-if root <div>
+   (Alpine requires exactly one root child). display:contents lets its
+   sections participate directly in [data-ref="results"]'s block layout,
+   so the legacy section-margin rules (:first-child / :not(:first-child))
+   behave identically — preserving byte/visual parity. */
+.outliertest__panel {
+  display: contents;
+}
+
+/* The flagged-points block is wrapped in a single x-if root (Alpine needs one
+   root child). Its inner section label is therefore :first-child of the wrapper
+   and loses the legacy :not(:first-child) top margin — restore it on the wrapper
+   so the gap above the section matches the original imperative layout. */
+.outliertest__flagged-block {
+  margin-top: var(--spacing-lg);
+}
+
 /* ── Method checkbox grid ─────────────────────────────────── */
 
 .outliertest__methods {
@@ -41,7 +60,7 @@
   margin-top: var(--spacing-sm);
   padding: var(--spacing-sm);
   border-radius: var(--border-radius);
-  background: rgba(var(--color-error-rgb, 239, 68, 68), 0.1);
+  background: rgb(var(--color-error-rgb, 239, 68, 68), 0.1);
   color: var(--color-error);
   font-size: var(--font-size-xs);
 }
@@ -72,8 +91,8 @@
 }
 
 .outliertest__card--error {
-  border-color: rgba(var(--color-error-rgb, 239, 68, 68), 0.4);
-  background: rgba(var(--color-error-rgb, 239, 68, 68), 0.05);
+  border-color: rgb(var(--color-error-rgb, 239, 68, 68), 0.4);
+  background: rgb(var(--color-error-rgb, 239, 68, 68), 0.05);
 }
 
 .outliertest__card-header {
@@ -105,12 +124,12 @@
 }
 
 .outliertest__verdict--clean {
-  background: rgba(var(--color-success-rgb, 52, 211, 153), 0.15);
+  background: rgb(var(--color-success-rgb, 52, 211, 153), 0.15);
   color: var(--color-success);
 }
 
 .outliertest__verdict--flag {
-  background: rgba(var(--color-error-rgb, 239, 68, 68), 0.15);
+  background: rgb(var(--color-error-rgb, 239, 68, 68), 0.15);
   color: var(--color-error);
 }
 
@@ -118,7 +137,7 @@
 .outliertest__card .dmike-kpi-value--sm {
   font-size: var(--font-size-sm);
   line-height: 1.2;
-  word-break: break-word;
+  overflow-wrap: break-word;
 }
 
 /* ── Outlier chips ────────────────────────────────────────── */
@@ -134,13 +153,13 @@
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  background: rgba(var(--color-error-rgb, 239, 68, 68), 0.08);
+  background: rgb(var(--color-error-rgb, 239, 68, 68), 0.08);
   color: var(--color-error);
   font-family: var(--font-mono);
   font-size: var(--font-size-xs);
   padding: 2px 8px;
   border-radius: var(--border-radius);
-  border: 1px solid rgba(var(--color-error-rgb, 239, 68, 68), 0.2);
+  border: 1px solid rgb(var(--color-error-rgb, 239, 68, 68), 0.2);
 }
 
 .outliertest__chip--more {
@@ -182,7 +201,7 @@
 }
 
 .outliertest__step--reject {
-  background: rgba(var(--color-error-rgb, 239, 68, 68), 0.06);
+  background: rgb(var(--color-error-rgb, 239, 68, 68), 0.06);
   color: var(--color-error);
 }
 

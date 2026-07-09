@@ -17,21 +17,13 @@ import {
   ROLE, ALL_ROLES, inferRole, defaultRoleForType, isRoleValidForType, validRolesForType,
 } from './datagrid-roles.js';
 import { shortcutRegistry } from '../shortcut-registry.js';
+import { h } from '../dom.js';
+import { icon } from '../icon.js';
 
 export { isFormula, evaluateFormula } from './datagrid-formula.js';
-import { ensureXLSX as _ensureXLSX } from '../export-utils.js';
+import { ensureXLSX as _ensureXLSX, XLSX } from '../export-utils.js';
 export { COLUMN_TYPES, isNumericType, formatCellValue, uid } from './datagrid-utils.js';
 export { ROLE, ALL_ROLES } from './datagrid-roles.js';
-
-// Inline SVG icons for column locks. 12×12 — placed inside a .col-lock-icon span;
-// `currentColor` lets CSS theme-tinting (Pastellblau / Pastellgrau) drive both states.
-const LOCK_ICON_CLOSED =
-  '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'
-  + '<rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>';
-
-const LOCK_ICON_OPEN =
-  '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'
-  + '<rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 7.5-1.7"/></svg>';
 
 export class DataGrid {
   /**
@@ -494,13 +486,11 @@ export class DataGrid {
         } else {
           col.values[rowIndex] = parseCellInput(col, value);
         }
-      } else {
-        if (detectedType && detectedType !== col.type) {
+      } else if (detectedType && detectedType !== col.type) {
           this._switchColumnType(col, columnId, rowIndex, detected);
         } else {
           col.values[rowIndex] = parseCellInput(col, value);
         }
-      }
     }
 
     const newValue = col.values[rowIndex];
@@ -1108,7 +1098,7 @@ export class DataGrid {
         }
         let s = String(v);
         if (s.includes(delim) || s.includes('"') || s.includes('\n')) {
-          s = '"' + s.replace(/"/g, '""') + '"';
+          s = `"${  s.replace(/"/g, '""')  }"`;
         }
         return s;
       });
@@ -1224,37 +1214,43 @@ export class DataGrid {
     const digits = String(this.rowCount || 1).length;
     // ~9px per digit + 24px padding for the buttons area
     const width = Math.max(36, digits * 9 + 24);
-    this.container.style.setProperty('--datagrid-row-header-width', width + 'px');
+    this.container.style.setProperty('--datagrid-row-header-width', `${width  }px`);
   }
 
   _renderHeader() {
     const cols = this.columns;
 
-    // Update shared colgroup
-    let cg = '<col style="width:var(--datagrid-row-header-width)">';
-    for (const col of cols) cg += `<col style="width:${this._getColWidth(col)}px">`;
-    // Replace or create colgroup
+    // Rebuild the shared <colgroup> with one <col> per column (plus the
+    // row-header col). Widths are inline styles, not user content.
     const existing = this.tableEl.querySelector('colgroup');
     if (existing) existing.remove();
-    const colgroup = document.createElement('colgroup');
-    colgroup.innerHTML = cg;
+    const colgroup = h('colgroup',
+      null,
+      h('col', { style: 'width:var(--datagrid-row-header-width)' }),
+      ...cols.map((col) => h('col', { style: `width:${this._getColWidth(col)}px` })),
+    );
     this.tableEl.prepend(colgroup);
 
-    // Single header row: shortName + type badge + column name
-    const openInWsTitle = this._t('ui.datagrid.openInWorksheet');
-    const openInWsBtn = this.options.openInWorksheet
-      ? '<button class="datagrid__open-in-ws-btn" type="button" title="' + openInWsTitle + '">'
-        + '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3h7v7"/><path d="M10 14L21 3"/><path d="M21 14v5a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5"/></svg>'
-        + '</button>'
-      : '';
-    let html = '<tr class="datagrid__column-header"><th class="datagrid__row-header datagrid__corner">'
-      + '<div class="datagrid__corner-btns">'
-      + '<button class="datagrid__export-btn" type="button" title="Export">'
-      + '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>'
-      + '</button>'
-      + openInWsBtn
-      + '</div></th>';
-    const lockTitle = (col) => this._lockTooltip(col);
+    // ── Corner cell: export button (+ optional "open in worksheet") ──
+    const exportBtn = h('button',
+      { class: 'datagrid__export-btn', type: 'button', title: 'Export' },
+      icon('download'),
+    );
+    const cornerBtns = h('div', { class: 'datagrid__corner-btns' }, exportBtn);
+    if (this.options.openInWorksheet) {
+      cornerBtns.append(h('button',
+        {
+          class: 'datagrid__open-in-ws-btn',
+          type: 'button',
+          title: this._t('ui.datagrid.openInWorksheet'),
+        },
+        icon('external-link'),
+      ));
+    }
+    const cornerTh = h('th', { class: 'datagrid__row-header datagrid__corner' }, cornerBtns);
+
+    // ── One header cell per column ──
+    const tr = h('tr', { class: 'datagrid__column-header' }, cornerTh);
     for (let i = 0; i < cols.length; i++) {
       const col = cols[i];
       const typeDef = COLUMN_TYPES[col.type] || COLUMN_TYPES.text;
@@ -1263,22 +1259,48 @@ export class DataGrid {
       let badgeTitle = `${this._typeLabel(col.type)} · ${this._roleLabel(roleKey)}`;
       if (col.roleManual) {
         const suffix = this._t('ui.datagrid.roleManualSuffix');
-        badgeTitle += ' ' + ((suffix && suffix !== 'roleManualSuffix') ? suffix : '(manual)');
+        badgeTitle += ` ${  (suffix && suffix !== 'roleManualSuffix') ? suffix : '(manual)'}`;
       }
-      const typeTag = `<span class="col-type-badge col-role-${roleKey}${manualMark}" data-col-idx="${i}" title="${badgeTitle}">${typeDef.badge}</span>`;
+      const typeTag = h('span', {
+        class: `col-type-badge col-role-${roleKey}${manualMark}`,
+        'data-col-idx': i,
+        title: badgeTitle,
+      }, typeDef.badge);
+
       const sortClass = this.sortCol === i ? (this.sortDir === 'asc' ? ' sorted-asc' : ' sorted-desc') : '';
       const lockClass = col.meta?.lock ? ` col-locked col-locked--${col.meta.lock}` : '';
-      const lockIcon = col.meta?.lock
-        ? `<span class="col-lock-icon" title="${lockTitle(col)}">${col.meta.lock === 'hard' ? LOCK_ICON_CLOSED : LOCK_ICON_OPEN}</span>`
-        : '';
-      const unit = col.unit ? ` <span class="col-unit">[${col.unit}]</span>` : '';
-      const nameHtml = col.name ? `<span class="col-name">${col.name}${unit}</span>` : '';
-      html += `<th data-col-idx="${i}" class="${sortClass}${lockClass}">`;
-      html += `<span class="col-id">${col.shortName}</span> ${typeTag} ${lockIcon}${nameHtml}`;
-      html += `<div class="col-resize-handle" data-col-idx="${i}"></div></th>`;
+
+      const th = h('th', {
+        'data-col-idx': i,
+        class: `${sortClass}${lockClass}`,
+      });
+      th.append(
+        h('span', { class: 'col-id' }, col.shortName),
+        ' ',
+        typeTag,
+        ' ',
+      );
+
+      if (col.meta?.lock) {
+        th.append(h('span',
+          { class: 'col-lock-icon', title: this._lockTooltip(col) },
+          icon(col.meta.lock === 'hard' ? 'lock-closed' : 'lock-open'),
+        ));
+      }
+
+      if (col.name) {
+        const nameSpan = h('span', { class: 'col-name' }, col.name);
+        if (col.unit) {
+          nameSpan.append(' ', h('span', { class: 'col-unit' }, `[${col.unit}]`));
+        }
+        th.append(nameSpan);
+      }
+
+      th.append(h('div', { class: 'col-resize-handle', 'data-col-idx': i }));
+      tr.append(th);
     }
-    html += '</tr>';
-    this.theadEl.innerHTML = html;
+
+    this.theadEl.replaceChildren(tr);
   }
 
   _renderBody() {
@@ -1318,7 +1340,7 @@ export class DataGrid {
             if (error) {
               cls += ' cell-formula-error';
               td.textContent = error;
-              td.title = formula + ' \u2192 ' + error;
+              td.title = `${formula  } \u2192 ${  error}`;
             } else {
               cls += ' cell-formula';
               td.textContent = formatCellValue(col, result);
@@ -1335,8 +1357,7 @@ export class DataGrid {
       frag.appendChild(tr);
     }
 
-    this.tbodyEl.innerHTML = '';
-    this.tbodyEl.appendChild(frag);
+    this.tbodyEl.replaceChildren(frag);
   }
 
   _renderSelection() {
@@ -1639,7 +1660,7 @@ export class DataGrid {
       tgtR1: Math.min(s.startRow, s.endRow),
       tgtR2: Math.max(s.startRow, s.endRow),
       axis: null, // 'v' | 'h' — locked once movement starts
-      ctrl: !!(e.ctrlKey || e.metaKey), // Excel's Ctrl modifier — refreshed on each move
+      ctrl: Boolean(e.ctrlKey || e.metaKey), // Excel's Ctrl modifier — refreshed on each move
     };
     this.container.classList.add('datagrid--fill-dragging');
     this._renderFillPreview();
@@ -1648,7 +1669,7 @@ export class DataGrid {
   _updateFillDrag(e) {
     const fd = this._fillDrag;
     // Refresh Ctrl/Cmd state on every move so toggling mid-drag works.
-    fd.ctrl = !!(e.ctrlKey || e.metaKey);
+    fd.ctrl = Boolean(e.ctrlKey || e.metaKey);
     this.container.classList.toggle('datagrid--fill-ctrl', fd.ctrl);
     const cell = this._getCellFromEvent(e);
     if (!cell) return;
@@ -1703,10 +1724,10 @@ export class DataGrid {
     const br = brTd.getBoundingClientRect();
     const left = (tl.left - sRect.left) + this.scrollDiv.scrollLeft;
     const top  = (tl.top  - sRect.top)  + this.scrollDiv.scrollTop;
-    this.fillPreviewEl.style.left   = left + 'px';
-    this.fillPreviewEl.style.top    = top + 'px';
-    this.fillPreviewEl.style.width  = (br.right - tl.left) + 'px';
-    this.fillPreviewEl.style.height = (br.bottom - tl.top) + 'px';
+    this.fillPreviewEl.style.left   = `${left  }px`;
+    this.fillPreviewEl.style.top    = `${top  }px`;
+    this.fillPreviewEl.style.width  = `${br.right - tl.left  }px`;
+    this.fillPreviewEl.style.height = `${br.bottom - tl.top  }px`;
     this.fillPreviewEl.style.display = 'block';
   }
 
@@ -1941,8 +1962,8 @@ export class DataGrid {
     const ghost = document.createElement('div');
     ghost.className = 'row-drag-ghost';
     ghost.textContent = `Row ${rowIdx + 1}`;
-    ghost.style.left = (e.clientX + 12) + 'px';
-    ghost.style.top = (e.clientY - 10) + 'px';
+    ghost.style.left = `${e.clientX + 12  }px`;
+    ghost.style.top = `${e.clientY - 10  }px`;
     document.body.appendChild(ghost);
 
     const indicator = document.createElement('div');
@@ -1958,8 +1979,8 @@ export class DataGrid {
 
   _updateRowDrag(e) {
     const drag = this._rowDrag;
-    drag.ghost.style.left = (e.clientX + 12) + 'px';
-    drag.ghost.style.top = (e.clientY - 10) + 'px';
+    drag.ghost.style.left = `${e.clientX + 12  }px`;
+    drag.ghost.style.top = `${e.clientY - 10  }px`;
 
     const rows = this.bodyDiv.querySelectorAll('tbody tr');
     const bodyRect = this.bodyDiv.getBoundingClientRect();
@@ -1975,10 +1996,10 @@ export class DataGrid {
 
     drag.toIdx = targetIdx;
     if (targetIdx < rows.length) {
-      drag.indicator.style.top = rows[targetIdx].offsetTop + 'px';
+      drag.indicator.style.top = `${rows[targetIdx].offsetTop  }px`;
     } else if (rows.length > 0) {
       const last = rows[rows.length - 1];
-      drag.indicator.style.top = (last.offsetTop + last.offsetHeight) + 'px';
+      drag.indicator.style.top = `${last.offsetTop + last.offsetHeight  }px`;
     }
     drag.indicator.style.display = 'block';
 
@@ -2012,9 +2033,9 @@ export class DataGrid {
 
     const ghost = document.createElement('div');
     ghost.className = 'col-drag-ghost';
-    ghost.textContent = col.shortName + (col.name ? ' · ' + col.name : '');
-    ghost.style.left = (e.clientX + 12) + 'px';
-    ghost.style.top = (e.clientY - 10) + 'px';
+    ghost.textContent = col.shortName + (col.name ? ` · ${  col.name}` : '');
+    ghost.style.left = `${e.clientX + 12  }px`;
+    ghost.style.top = `${e.clientY - 10  }px`;
     document.body.appendChild(ghost);
 
     const indicator = document.createElement('div');
@@ -2030,8 +2051,8 @@ export class DataGrid {
 
   _updateColDrag(e) {
     const drag = this._colDrag;
-    drag.ghost.style.left = (e.clientX + 12) + 'px';
-    drag.ghost.style.top = (e.clientY - 10) + 'px';
+    drag.ghost.style.left = `${e.clientX + 12  }px`;
+    drag.ghost.style.top = `${e.clientY - 10  }px`;
 
     const ths = this.theadEl.querySelectorAll('tr.datagrid__column-header th[data-col-idx]');
     const bodyRect = this.bodyDiv.getBoundingClientRect();
@@ -2048,13 +2069,13 @@ export class DataGrid {
     drag.toIdx = targetIdx;
     const indicatorTop = 0;
     const indicatorHeight = this.bodyDiv.scrollHeight;
-    drag.indicator.style.top = indicatorTop + 'px';
-    drag.indicator.style.height = indicatorHeight + 'px';
+    drag.indicator.style.top = `${indicatorTop  }px`;
+    drag.indicator.style.height = `${indicatorHeight  }px`;
     if (targetIdx < ths.length) {
-      drag.indicator.style.left = ths[targetIdx].offsetLeft + 'px';
+      drag.indicator.style.left = `${ths[targetIdx].offsetLeft  }px`;
     } else if (ths.length > 0) {
       const last = ths[ths.length - 1];
-      drag.indicator.style.left = (last.offsetLeft + last.offsetWidth) + 'px';
+      drag.indicator.style.left = `${last.offsetLeft + last.offsetWidth  }px`;
     }
     drag.indicator.style.display = 'block';
 
@@ -2338,7 +2359,7 @@ export class DataGrid {
       }
     });
 
-    this.emit('edit:start', { colIdx, rowIdx, initialChar, formula: !!formula });
+    this.emit('edit:start', { colIdx, rowIdx, initialChar, formula: Boolean(formula) });
   }
 
   _commitEdit() {
@@ -2509,7 +2530,7 @@ export class DataGrid {
     if (!col) return;
 
     const t = (k) => this._t(`ui.datagrid.${k}`);
-    const isLocked = !!col.meta?.lock;
+    const isLocked = Boolean(col.meta?.lock);
     const isHardLocked = col.meta?.lock === 'hard';
     const items = [];
     if (!isLocked) {
@@ -2584,8 +2605,8 @@ export class DataGrid {
     this._closeContextMenu();
     const menu = document.createElement('div');
     menu.className = 'context-menu';
-    menu.style.left = x + 'px';
-    menu.style.top = y + 'px';
+    menu.style.left = `${x  }px`;
+    menu.style.top = `${y  }px`;
 
     for (const item of items) {
       if (item.type === 'sep') {
@@ -2595,9 +2616,11 @@ export class DataGrid {
         continue;
       }
       const el = document.createElement('div');
-      el.className = 'context-menu__item' + (item.danger ? ' context-menu__item--danger' : '');
-      el.innerHTML = `<span>${item.label}</span>` +
-        (item.shortcut ? `<span class="context-menu__shortcut">${item.shortcut}</span>` : '');
+      el.className = `context-menu__item${  item.danger ? ' context-menu__item--danger' : ''}`;
+      el.append(h('span', null, item.label));
+      if (item.shortcut) {
+        el.append(h('span', { class: 'context-menu__shortcut' }, item.shortcut));
+      }
       el.addEventListener('click', (ev) => {
         ev.stopPropagation();
         this._closeContextMenu();
@@ -2611,8 +2634,8 @@ export class DataGrid {
 
     requestAnimationFrame(() => {
       const rect = menu.getBoundingClientRect();
-      if (rect.right > window.innerWidth) menu.style.left = (window.innerWidth - rect.width - 8) + 'px';
-      if (rect.bottom > window.innerHeight) menu.style.top = (window.innerHeight - rect.height - 8) + 'px';
+      if (rect.right > window.innerWidth) menu.style.left = `${window.innerWidth - rect.width - 8  }px`;
+      if (rect.bottom > window.innerHeight) menu.style.top = `${window.innerHeight - rect.height - 8  }px`;
     });
   }
 
@@ -2723,7 +2746,7 @@ export class DataGrid {
     const anchorRect = anchorEl.getBoundingClientRect();
 
     const renderBody = () => {
-      cols.innerHTML = '';
+      cols.replaceChildren();
       cols.appendChild(this._renderAttrPickerTypeColumn(colIdx));
       cols.appendChild(this._renderAttrPickerRoleColumn(colIdx, () => {
         renderBody();
@@ -2740,8 +2763,8 @@ export class DataGrid {
       let left = anchorRect.left;
       if (left + pickerRect.width > window.innerWidth) left = window.innerWidth - pickerRect.width - 8;
       if (top + pickerRect.height > window.innerHeight) top = anchorRect.top - pickerRect.height - 4;
-      picker.style.left = left + 'px';
-      picker.style.top = top + 'px';
+      picker.style.left = `${left  }px`;
+      picker.style.top = `${top  }px`;
     };
 
     renderBody();
@@ -2760,9 +2783,9 @@ export class DataGrid {
 
   _renderAttrPickerTypeColumn(colIdx) {
     const col = this.columns[colIdx];
-    const isLocked = !!col.meta?.lock;
+    const isLocked = Boolean(col.meta?.lock);
     const colEl = document.createElement('div');
-    colEl.className = 'attr-picker__col attr-picker__col--type' + (isLocked ? ' attr-picker__col--disabled' : '');
+    colEl.className = `attr-picker__col attr-picker__col--type${  isLocked ? ' attr-picker__col--disabled' : ''}`;
 
     const colTitle = document.createElement('div');
     colTitle.className = 'attr-picker__col-title';
@@ -2773,9 +2796,9 @@ export class DataGrid {
 
     for (const [typeKey, typeDef] of Object.entries(COLUMN_TYPES)) {
       const item = document.createElement('div');
-      item.className = 'attr-picker__item'
-        + (col.type === typeKey ? ' active' : '')
-        + (isLocked ? ' attr-picker__item--disabled' : '');
+      item.className = `attr-picker__item${
+         col.type === typeKey ? ' active' : ''
+         }${isLocked ? ' attr-picker__item--disabled' : ''}`;
       item.dataset.type = typeKey;
 
       const badge = document.createElement('span');
@@ -2795,9 +2818,9 @@ export class DataGrid {
 
   _renderAttrPickerRoleColumn(colIdx, onRoleClick, onTypeClick) {
     const col = this.columns[colIdx];
-    const isLocked = !!col.meta?.lock;
+    const isLocked = Boolean(col.meta?.lock);
     const colEl = document.createElement('div');
-    colEl.className = 'attr-picker__col attr-picker__col--role' + (isLocked ? ' attr-picker__col--disabled' : '');
+    colEl.className = `attr-picker__col attr-picker__col--role${  isLocked ? ' attr-picker__col--disabled' : ''}`;
 
     const colTitle = document.createElement('div');
     colTitle.className = 'attr-picker__col-title';
@@ -2809,9 +2832,9 @@ export class DataGrid {
     const validRoles = validRolesForType(col.type);
     for (const role of validRoles) {
       const item = document.createElement('div');
-      item.className = 'attr-picker__item'
-        + (col.role === role ? ' active' : '')
-        + (isLocked ? ' attr-picker__item--disabled' : '');
+      item.className = `attr-picker__item${
+         col.role === role ? ' active' : ''
+         }${isLocked ? ' attr-picker__item--disabled' : ''}`;
       item.dataset.role = role;
       const tip = this._roleTooltip(role);
       if (tip) item.title = tip;
@@ -2871,12 +2894,10 @@ export class DataGrid {
   _renderAttrPickerFormatColumn(colIdx, onChange) {
     const col = this.columns[colIdx];
     if (!col) return null;
-    const isLocked = !!col.meta?.lock;
-
-    const t = (k) => this._t(`ui.datagrid.${k}`);
+    const isLocked = Boolean(col.meta?.lock);
 
     const colEl = document.createElement('div');
-    colEl.className = 'attr-picker__col attr-picker__col--format' + (isLocked ? ' attr-picker__col--disabled' : '');
+    colEl.className = `attr-picker__col attr-picker__col--format${  isLocked ? ' attr-picker__col--disabled' : ''}`;
 
     const colTitle = document.createElement('div');
     colTitle.className = 'attr-picker__col-title';
@@ -2886,9 +2907,9 @@ export class DataGrid {
 
     const addItem = ({ label, isActive, onClick }) => {
       const item = document.createElement('div');
-      item.className = 'attr-picker__item'
-        + (isActive ? ' active' : '')
-        + (isLocked ? ' attr-picker__item--disabled' : '');
+      item.className = `attr-picker__item${
+         isActive ? ' active' : ''
+         }${isLocked ? ' attr-picker__item--disabled' : ''}`;
       const labelEl = document.createElement('span');
       labelEl.className = 'attr-picker__label';
       labelEl.textContent = label;
@@ -2971,7 +2992,24 @@ export class DataGrid {
     const panel = document.createElement('div');
     panel.className = 'column-scan';
 
-    let bodyHtml = '';
+    // Build a stats table DOM node from [label, value] rows (null = separator).
+    const statsTable = (rows) => {
+      const table = h('table', { class: 'column-stats__table' });
+      for (const row of rows) {
+        if (!row) {
+          table.append(h('tr', { class: 'column-stats__sep' }, h('td', { colspan: '2' })));
+        } else {
+          table.append(h('tr',
+            null,
+            h('td', { class: 'column-stats__label' }, row[0]),
+            h('td', { class: 'column-stats__value' }, row[1]),
+          ));
+        }
+      }
+      return table;
+    };
+
+    let bodyNode;
 
     if (isNumericType(col.type)) {
       const nums = vals.filter(v => typeof v === 'number');
@@ -2991,24 +3029,16 @@ export class DataGrid {
           ['n', nums.length],
           [t('statsEmpty'), this.rowCount - vals.length],
           null,
-          ['\u0078\u0304 (' + t('statsMean') + ')', mean.toFixed(4)],
-          ['s (' + t('statsStddev') + ')', stddev.toFixed(4)],
+          [`\u0078\u0304 (${  t('statsMean')  })`, mean.toFixed(4)],
+          [`s (${  t('statsStddev')  })`, stddev.toFixed(4)],
           ['Min', min],
           ['Median', median.toFixed(4)],
           ['Max', max],
-          ['\u03A3 (' + t('statsSum') + ')', sum.toFixed(4)],
+          [`\u03A3 (${  t('statsSum')  })`, sum.toFixed(4)],
         ];
-        bodyHtml = `<table class="column-stats__table">`;
-        for (const row of rows) {
-          if (!row) {
-            bodyHtml += `<tr class="column-stats__sep"><td colspan="2"></td></tr>`;
-          } else {
-            bodyHtml += `<tr><td class="column-stats__label">${row[0]}</td><td class="column-stats__value">${row[1]}</td></tr>`;
-          }
-        }
-        bodyHtml += `</table>`;
+        bodyNode = statsTable(rows);
       } else {
-        bodyHtml = `<div class="column-scan__overview"><span>${t('statsNoNumeric')}</span></div>`;
+        bodyNode = h('div', { class: 'column-scan__overview' }, h('span', null, t('statsNoNumeric')));
       }
     } else {
       const unique = new Set(vals.map(v => String(v)));
@@ -3017,20 +3047,17 @@ export class DataGrid {
         [t('statsEmpty'), this.rowCount - vals.length],
         [t('statsUnique'), unique.size],
       ];
-      bodyHtml = `<table class="column-stats__table">`;
-      for (const row of rows) {
-        bodyHtml += `<tr><td class="column-stats__label">${row[0]}</td><td class="column-stats__value">${row[1]}</td></tr>`;
-      }
-      bodyHtml += `</table>`;
+      bodyNode = statsTable(rows);
     }
 
-    panel.innerHTML = `
-      <div class="column-scan__header">
-        <div class="column-scan__title">${t('columnStats')}</div>
-        <div class="column-scan__subtitle">${colLabel} — ${this._typeLabel(col.type)}</div>
-        <button class="column-scan__close">\u00D7</button>
-      </div>
-      <div class="column-scan__body">${bodyHtml}</div>`;
+    panel.append(
+      h('div', { class: 'column-scan__header' },
+        h('div', { class: 'column-scan__title' }, t('columnStats')),
+        h('div', { class: 'column-scan__subtitle' }, `${colLabel} — ${this._typeLabel(col.type)}`),
+        h('button', { class: 'column-scan__close' }, '×'),
+      ),
+      h('div', { class: 'column-scan__body' }, bodyNode),
+    );
 
     overlay.appendChild(panel);
     document.body.appendChild(overlay);
@@ -3075,7 +3102,7 @@ export class DataGrid {
     titleText.textContent = t('scanTitle');
     const closeBtn = document.createElement('button');
     closeBtn.className = 'dmike-chart-popout-close';
-    closeBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>';
+    closeBtn.appendChild(icon('close'));
     titleBar.append(titleText, closeBtn);
 
     const body = document.createElement('div');
@@ -3100,8 +3127,8 @@ export class DataGrid {
     };
     const onDragMove = (e) => {
       if (!isDragging) return;
-      win.style.left = (e.clientX - dragX) + 'px';
-      win.style.top = (e.clientY - dragY) + 'px';
+      win.style.left = `${e.clientX - dragX  }px`;
+      win.style.top = `${e.clientY - dragY  }px`;
     };
     const onDragEnd = () => { isDragging = false; win.style.transition = ''; };
     titleBar.addEventListener('mousedown', onDragStart);
@@ -3146,39 +3173,44 @@ export class DataGrid {
 
     const typeLabels = { numeric: '#', text: 'Abc', date: '\u{1F4C5}', time: '\u{1F550}', currency: '\u20AC', percent: '%', binary: '01' };
 
-    let html = `
-      <div class="column-scan__overview">
-        <span>${t('scanTotal')}: <strong>${scan.total}</strong></span>
-        <span>${t('scanFilled')}: <strong>${filled}</strong></span>
-        <span>${t('scanEmpty')}: <strong>${scan.empty}</strong></span>
-      </div>`;
+    const frag = document.createDocumentFragment();
+
+    frag.append(h('div', { class: 'column-scan__overview' },
+      h('span', null, `${t('scanTotal')}: `, h('strong', null, scan.total)),
+      h('span', null, `${t('scanFilled')}: `, h('strong', null, filled)),
+      h('span', null, `${t('scanEmpty')}: `, h('strong', null, scan.empty)),
+    ));
 
     if (filled > 0) {
-      html += `<div class="column-scan__bar">`;
+      const bar = h('div', { class: 'column-scan__bar' });
       for (const [type, info] of Object.entries(scan.types)) {
         const pct = (info.count / filled * 100).toFixed(1);
-        html += `<div class="column-scan__bar-seg column-scan__bar-seg--${type}" title="${type}: ${info.count} (${pct}%)" style="width:${pct}%">${typeLabels[type] || type}</div>`;
+        bar.append(h('div', {
+          class: `column-scan__bar-seg column-scan__bar-seg--${type}`,
+          title: `${type}: ${info.count} (${pct}%)`,
+          style: `width:${pct}%`,
+        }, typeLabels[type] || type));
       }
-      html += `</div>`;
+      frag.append(bar);
 
-      html += `<div class="column-scan__types">`;
+      const types = h('div', { class: 'column-scan__types' });
       for (const [type, info] of Object.entries(scan.types)) {
         const pct = (info.count / filled * 100).toFixed(1);
         const isDominant = type === scan.dominantType;
-        html += `<div class="column-scan__type-row${isDominant ? ' column-scan__type-row--dominant' : ''}">
-          <span class="column-scan__type-badge column-scan__type-badge--${type}">${typeLabels[type] || type}</span>
-          <span class="column-scan__type-label">${this._typeLabel(type)}</span>
-          <span class="column-scan__type-count">${info.count}</span>
-          <span class="column-scan__type-pct">${pct}%</span>
-        </div>`;
+        types.append(h('div', {
+          class: `column-scan__type-row${isDominant ? ' column-scan__type-row--dominant' : ''}`,
+        },
+          h('span', { class: `column-scan__type-badge column-scan__type-badge--${type}` }, typeLabels[type] || type),
+          h('span', { class: 'column-scan__type-label' }, this._typeLabel(type)),
+          h('span', { class: 'column-scan__type-count' }, info.count),
+          h('span', { class: 'column-scan__type-pct' }, `${pct}%`),
+        ));
       }
-      html += `</div>`;
+      frag.append(types);
     }
 
     if (scan.textClusters && scan.textClusters.length > 0) {
-      html += `<div class="column-scan__clusters">
-        <div class="column-scan__clusters-header">${t('scanVariantsHeader').replace('{n}', scan.textClusters.length)}</div>
-        <div class="column-scan__clusters-list">`;
+      const list = h('div', { class: 'column-scan__clusters-list' });
       const maxClusters = 20;
       const clustersShown = Math.min(scan.textClusters.length, maxClusters);
       for (let ci = 0; ci < clustersShown; ci++) {
@@ -3186,38 +3218,48 @@ export class DataGrid {
         const summary = t('scanVariantsGroupSummary')
           .replace('{n}', cluster.variants.length)
           .replace('{total}', cluster.total);
-        html += `<div class="column-scan__cluster">
-          <div class="column-scan__cluster-summary">${summary}</div>
-          <div class="column-scan__cluster-variants">`;
+        const variants = h('div', { class: 'column-scan__cluster-variants' });
         const maxVariants = 30;
         const variantsShown = Math.min(cluster.variants.length, maxVariants);
         for (let vi = 0; vi < variantsShown; vi++) {
           const v = cluster.variants[vi];
           const fuzzyClass = v.viaFuzzy ? ' column-scan__cluster-variant--fuzzy' : '';
           const fuzzyMark = v.viaFuzzy
-            ? `<span class="column-scan__cluster-fuzzy" title="${this._escHtml(t('scanVariantFuzzy'))}">≈</span>`
-            : `<span class="column-scan__cluster-fuzzy column-scan__cluster-fuzzy--placeholder"></span>`;
-          html += `<div class="column-scan__cluster-variant${fuzzyClass}" data-row="${v.firstRow}" data-col="${colIdx}" title="${this._escHtml(t('scanVariantJump'))}">
-            ${fuzzyMark}
-            <span class="column-scan__cluster-value">"${this._escHtml(v.value)}"</span>
-            <span class="column-scan__cluster-count">×${v.count}</span>
-          </div>`;
+            ? h('span', { class: 'column-scan__cluster-fuzzy', title: t('scanVariantFuzzy') }, '≈')
+            : h('span', { class: 'column-scan__cluster-fuzzy column-scan__cluster-fuzzy--placeholder' });
+          variants.append(h('div', {
+            class: `column-scan__cluster-variant${fuzzyClass}`,
+            'data-row': v.firstRow,
+            'data-col': colIdx,
+            title: t('scanVariantJump'),
+          },
+            fuzzyMark,
+            h('span', { class: 'column-scan__cluster-value' }, `"${v.value}"`),
+            h('span', { class: 'column-scan__cluster-count' }, `×${v.count}`),
+          ));
         }
         if (cluster.variants.length > maxVariants) {
-          html += `<div class="column-scan__mismatch-more">… ${t('scanMore').replace('{n}', cluster.variants.length - maxVariants)}</div>`;
+          variants.append(h('div', { class: 'column-scan__mismatch-more' },
+            `… ${t('scanMore').replace('{n}', cluster.variants.length - maxVariants)}`));
         }
-        html += `</div></div>`;
+        list.append(h('div', { class: 'column-scan__cluster' },
+          h('div', { class: 'column-scan__cluster-summary' }, summary),
+          variants,
+        ));
       }
       if (scan.textClusters.length > maxClusters) {
-        html += `<div class="column-scan__mismatch-more">… ${t('scanMore').replace('{n}', scan.textClusters.length - maxClusters)}</div>`;
+        list.append(h('div', { class: 'column-scan__mismatch-more' },
+          `… ${t('scanMore').replace('{n}', scan.textClusters.length - maxClusters)}`));
       }
-      html += `</div></div>`;
+      frag.append(h('div', { class: 'column-scan__clusters' },
+        h('div', { class: 'column-scan__clusters-header' },
+          t('scanVariantsHeader').replace('{n}', scan.textClusters.length)),
+        list,
+      ));
     }
 
     if (scan.outliers.count > 0) {
-      html += `<div class="column-scan__mismatch">
-        <div class="column-scan__mismatch-header">${t('scanOutliers').replace('{n}', scan.outliers.count)}</div>
-        <div class="column-scan__mismatch-list">`;
+      const mlist = h('div', { class: 'column-scan__mismatch-list' });
       const maxShow = 50;
       const showCount = Math.min(scan.outliers.count, maxShow);
       for (let i = 0; i < showCount; i++) {
@@ -3225,22 +3267,31 @@ export class DataGrid {
         const val = scan.outliers.values[i];
         const oType = scan.outliers.types[i];
         const badge = typeLabels[oType] || oType;
-        const display = val.length > 30 ? val.substring(0, 27) + '\u2026' : val;
-        html += `<div class="column-scan__mismatch-row" data-row="${row}" data-col="${colIdx}">
-          <span class="column-scan__mismatch-rownum">${t('scanRow')} ${row + 1}</span>
-          <span class="column-scan__type-badge column-scan__type-badge--sm column-scan__type-badge--${oType}">${badge}</span>
-          <span class="column-scan__mismatch-val">${this._escHtml(display)}</span>
-        </div>`;
+        const display = val.length > 30 ? `${val.substring(0, 27)  }…` : val;
+        mlist.append(h('div', {
+          class: 'column-scan__mismatch-row',
+          'data-row': row,
+          'data-col': colIdx,
+        },
+          h('span', { class: 'column-scan__mismatch-rownum' }, `${t('scanRow')} ${row + 1}`),
+          h('span', { class: `column-scan__type-badge column-scan__type-badge--sm column-scan__type-badge--${oType}` }, badge),
+          h('span', { class: 'column-scan__mismatch-val' }, display),
+        ));
       }
       if (scan.outliers.count > maxShow) {
-        html += `<div class="column-scan__mismatch-more">\u2026 ${t('scanMore').replace('{n}', scan.outliers.count - maxShow)}</div>`;
+        mlist.append(h('div', { class: 'column-scan__mismatch-more' },
+          `… ${t('scanMore').replace('{n}', scan.outliers.count - maxShow)}`));
       }
-      html += `</div></div>`;
+      frag.append(h('div', { class: 'column-scan__mismatch' },
+        h('div', { class: 'column-scan__mismatch-header' },
+          t('scanOutliers').replace('{n}', scan.outliers.count)),
+        mlist,
+      ));
     } else if (filled > 0) {
-      html += `<div class="column-scan__ok">\u2714 ${t('scanAllMatch')}</div>`;
+      frag.append(h('div', { class: 'column-scan__ok' }, `✔ ${t('scanAllMatch')}`));
     }
 
-    scanBody.innerHTML = html;
+    scanBody.replaceChildren(frag);
 
     scanBody.querySelectorAll('.column-scan__mismatch-row').forEach(el => {
       el.addEventListener('click', () => {
@@ -3251,7 +3302,7 @@ export class DataGrid {
         const cell = this.container.querySelector(`td[data-col-idx="${c}"][data-row-idx="${r}"]`);
         if (cell) cell.scrollIntoView({ block: 'center', behavior: 'smooth' });
 
-        scanBody.querySelectorAll('.column-scan__mismatch-row').forEach(r => r.classList.remove('column-scan__mismatch-row--active'));
+        scanBody.querySelectorAll('.column-scan__mismatch-row').forEach(rowEl => rowEl.classList.remove('column-scan__mismatch-row--active'));
         el.classList.add('column-scan__mismatch-row--active');
       });
     });
@@ -3283,21 +3334,15 @@ export class DataGrid {
     }
   }
 
-  _escHtml(s) {
-    const d = document.createElement('div');
-    d.textContent = s;
-    return d.innerHTML;
-  }
-
   _typeLabel(type) {
-    const key = 'type' + type.charAt(0).toUpperCase() + type.slice(1);
+    const key = `type${  type.charAt(0).toUpperCase()  }${type.slice(1)}`;
     const translated = this._t(`ui.datagrid.${key}`);
     if (translated !== key && !translated.endsWith(key)) return translated;
     return COLUMN_TYPES[type]?.label || type;
   }
 
   _roleLabel(role) {
-    const key = 'role' + role.charAt(0).toUpperCase() + role.slice(1);
+    const key = `role${  role.charAt(0).toUpperCase()  }${role.slice(1)}`;
     const translated = this._t(`ui.datagrid.${key}`);
     if (translated !== key && !translated.endsWith(key)) return translated;
     // English fallback used when no i18n entry is registered.
@@ -3313,7 +3358,7 @@ export class DataGrid {
   }
 
   _roleTooltip(role) {
-    const key = 'role' + role.charAt(0).toUpperCase() + role.slice(1) + 'Tooltip';
+    const key = `role${  role.charAt(0).toUpperCase()  }${role.slice(1)  }Tooltip`;
     const translated = this._t(`ui.datagrid.${key}`);
     if (translated !== key && !translated.endsWith(key)) return translated;
     const fallback = {
@@ -3336,7 +3381,7 @@ export class DataGrid {
     if (ext === 'csv' || ext === 'tsv') {
       this._importCSV(file);
     } else {
-      this._toast('Unsupported format: ' + ext, 'error');
+      this._toast(`Unsupported format: ${  ext}`, 'error');
     }
   }
 
@@ -3410,11 +3455,9 @@ export class DataGrid {
         if (ch === '"' && line[i + 1] === '"') { current += '"'; i++; }
         else if (ch === '"') { inQuotes = false; }
         else { current += ch; }
-      } else {
-        if (ch === '"') { inQuotes = true; }
+      } else if (ch === '"') { inQuotes = true; }
         else if (ch === delim) { result.push(current); current = ''; }
         else { current += ch; }
-      }
     }
     result.push(current);
     return result;
@@ -3426,7 +3469,7 @@ export class DataGrid {
 
   downloadCSV() {
     const csv = this.exportToCSV();
-    const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8' });
+    const blob = new Blob([`\ufeff${  csv}`], { type: 'text/csv;charset=utf-8' });
     this._downloadBlob(blob, 'data.csv');
   }
 
@@ -3492,6 +3535,6 @@ export class DataGrid {
     this._closeColumnAttrPicker();
     this._closeColumnScan();
     this._closeColumnStats();
-    this.container.innerHTML = '';
+    this.container.replaceChildren();
   }
 }

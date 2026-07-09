@@ -164,11 +164,11 @@
   padding: 2px 10px;
 }
 
-.fmea__rpn-badge--low      { background: rgba(52,211,153,0.1);  color: var(--color-success, #34D399); }
-.fmea__rpn-badge--medium   { background: rgba(251,191,36,0.1);  color: #FBBF24; }
-.fmea__rpn-badge--high     { background: rgba(251,146,60,0.1);  color: #FB923C; }
-.fmea__rpn-badge--critical { background: rgba(239,68,68,0.15);  color: var(--color-error); }
-.fmea__rpn-badge--none     { background: rgba(255,255,255,0.03); color: var(--color-text-tertiary); }
+.fmea__rpn-badge--low      { background: rgb(52 211 153 / 10%);  color: var(--color-success, #34D399); }
+.fmea__rpn-badge--medium   { background: rgb(251 191 36 / 10%);  color: #FBBF24; }
+.fmea__rpn-badge--high     { background: rgb(251 146 60 / 10%);  color: #FB923C; }
+.fmea__rpn-badge--critical { background: rgb(239 68 68 / 15%);  color: var(--color-error); }
+.fmea__rpn-badge--none     { background: rgb(255 255 255 / 3%); color: var(--color-text-tertiary); }
 
 .fmea__risk-delete {
   background: none;
@@ -183,7 +183,7 @@
 
 .fmea__risk-delete:hover {
   color: var(--color-error);
-  background: rgba(255, 59, 48, 0.1);
+  background: rgb(255 59 48 / 10%);
 }
 
 /* ── Risk Body ── */
@@ -483,12 +483,12 @@
 }
 
 .fmea__scale-editable:hover {
-  background: var(--color-surface-hover, rgba(255,255,255,0.04));
+  background: var(--color-surface-hover, rgb(255 255 255 / 4%));
   outline: 1px dashed var(--color-border);
 }
 
 .fmea__scale-editable:focus {
-  background: var(--color-surface-hover, rgba(255,255,255,0.06));
+  background: var(--color-surface-hover, rgb(255 255 255 / 6%));
   outline: 1px solid var(--color-accent);
 }
 

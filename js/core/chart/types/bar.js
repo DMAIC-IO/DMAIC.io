@@ -13,6 +13,7 @@
  */
 
 import ChartBase from '../chart-base.js';
+import { h } from '../../dom.js';
 import {
   svgEl, svgText, resolveColor, formatNum, getChartColors
 } from '../chart-core.js';
@@ -73,7 +74,7 @@ export default class BarChart extends ChartBase {
   /* ── Render Data ─────────────────────────────────────────── */
 
   /** @override */
-  _renderData(svg, plotGroup, xScale, yScale, xTick, yTick, plotArea, defs) {
+  _renderData(svg, plotGroup, xScale, yScale, xTick, yTick, plotArea, _defs) {
     const cats = this.config.categories || [];
     const allGroups = this.config.groups || [];
     // Build visible-only list, keeping original indices for color/config lookup
@@ -234,7 +235,7 @@ export default class BarChart extends ChartBase {
   /* ── Find Nearby (tooltip) ──────────────────────────────── */
 
   /** @override */
-  _findNearby(dataX, dataY, proximityPx) {
+  _findNearby(dataX, dataY, _proximityPx) {
     const rects = this._barRects;
     if (!rects || !rects.length) return [];
 
@@ -264,18 +265,22 @@ export default class BarChart extends ChartBase {
       if (!hits.length) return [];
       // Pick closest group
       let bestDist = Infinity;
-      for (const h of hits) {
-        const cx = h.x + h.w / 2;
+      for (const hit of hits) {
+        const cx = hit.x + hit.w / 2;
         const px = this._xScale(dataX);
         const d = Math.abs(cx - px);
-        if (d < bestDist) { bestDist = d; best = h; }
+        if (d < bestDist) { bestDist = d; best = hit; }
       }
     }
     if (!best) return [];
 
     const g = groups[best.gi];
     return [{
-      html: `<b>${cats[best.ci]}</b><br>${g ? g.name : ''}: ${formatNum(best.val, 1, this.locale)}`,
+      node: h('div', null,
+        h('b', null, cats[best.ci]),
+        h('br'),
+        `${g ? g.name : ''}: ${formatNum(best.val, 1, this.locale)}`,
+      ),
       px: best.x + best.w / 2,
       py: best.y,
     }];

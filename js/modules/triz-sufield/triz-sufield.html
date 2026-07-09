@@ -1,0 +1,175 @@
+<section class="module-container triz-sf" x-data="trizSufield">
+  <div class="module-container__header">
+    <h2 class="module-container__title" x-text="t('name')"></h2>
+    <div class="module-container__subtitle" x-text="t('subtitle')"></div>
+  </div>
+
+  <div class="module-container__body triz-sf__body">
+
+    <!-- ── Model: inputs + SVG ── -->
+    <section class="triz-sf__model">
+      <div class="triz-sf__inputs">
+        <div class="triz-sf__field">
+          <label class="triz-sf__label" for="triz-sf-s1" x-text="t('s1Label')"></label>
+          <input id="triz-sf-s1" class="field" type="text" data-role="s1"
+            :value="model.s1"
+            :placeholder="t('s1Placeholder')"
+            @input="s1Changed($event)">
+        </div>
+        <div class="triz-sf__field">
+          <label class="triz-sf__label" for="triz-sf-s2" x-text="t('s2Label')"></label>
+          <input id="triz-sf-s2" class="field" type="text" data-role="s2"
+            :value="model.s2"
+            :placeholder="t('s2Placeholder')"
+            @input="s2Changed($event)">
+        </div>
+        <div class="triz-sf__field">
+          <label class="triz-sf__label" for="triz-sf-field" x-text="t('fieldLabel')"></label>
+          <select id="triz-sf-field" class="field" data-role="field"
+            @change="fieldChanged($event)">
+            <option value="" x-text="t('selectPlaceholder')"></option>
+            <template x-for="f in FIELDS">
+              <option :key="f" :value="f" :selected="isFieldSelected(f)" x-text="fieldOptionLabel(f)"></option>
+            </template>
+          </select>
+        </div>
+        <div class="triz-sf__field">
+          <label class="triz-sf__label" for="triz-sf-link" x-text="t('linkLabel')"></label>
+          <select id="triz-sf-link" class="field" data-role="link"
+            @change="linkChanged($event)">
+            <option value="" x-text="t('selectPlaceholder')"></option>
+            <template x-for="l in LINKS">
+              <option :key="l" :value="l" :selected="isLinkSelected(l)" x-text="linkOptionLabel(l)"></option>
+            </template>
+          </select>
+        </div>
+      </div>
+
+      <div class="triz-sf__diagram-wrap">
+        <svg class="triz-sf__diagram" viewBox="0 0 320 200"
+          xmlns="http://www.w3.org/2000/svg" role="img"
+          :aria-label="t('diagramAria')"
+          :class="diagramEdgeClass()">
+          <defs>
+            <marker id="triz-sf-arrow" viewBox="0 0 10 10" refX="9" refY="5"
+              markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M0,0 L10,5 L0,10 z" :fill="diagramEdgeColor()"/>
+            </marker>
+          </defs>
+          <!-- bottom edge -->
+          <line x1="60" y1="160" x2="260" y2="160" stroke-width="2.5"
+            :stroke="diagramEdgeColor()"
+            :stroke-dasharray="diagramDashArray()"
+            :marker-end="diagramMarkerEnd()"/>
+          <!-- side edges -->
+          <line x1="160" y1="30" x2="60" y2="160" stroke="var(--color-border-primary)" stroke-width="1.5"
+            :stroke-dasharray="diagramSideDash()"/>
+          <line x1="160" y1="30" x2="260" y2="160" stroke="var(--color-border-primary)" stroke-width="1.5"
+            :stroke-dasharray="diagramSideDash()"/>
+          <!-- nodes -->
+          <g class="triz-sf__diag-node">
+            <circle cx="160" cy="30" r="22" fill="var(--color-bg-secondary)" stroke="var(--color-border-primary)"/>
+            <text x="160" y="34" text-anchor="middle" font-size="14" font-weight="600" fill="var(--color-text-primary)">F</text>
+          </g>
+          <text x="160" y="14" text-anchor="middle" font-size="11" fill="var(--color-text-secondary)" x-text="diagramFieldLabel()"></text>
+          <g class="triz-sf__diag-node">
+            <circle cx="60" cy="160" r="22" fill="var(--color-bg-secondary)" stroke="var(--color-border-primary)"/>
+            <text x="60" y="164" text-anchor="middle" font-size="13" font-weight="600" fill="var(--color-text-primary)">S1</text>
+          </g>
+          <text x="60" y="195" text-anchor="middle" font-size="11" fill="var(--color-text-secondary)" x-text="diagramS1Text()"></text>
+          <g class="triz-sf__diag-node">
+            <circle cx="260" cy="160" r="22" fill="var(--color-bg-secondary)" stroke="var(--color-border-primary)"/>
+            <text x="260" y="164" text-anchor="middle" font-size="13" font-weight="600" fill="var(--color-text-primary)">S2</text>
+          </g>
+          <text x="260" y="195" text-anchor="middle" font-size="11" fill="var(--color-text-secondary)" x-text="diagramS2Text()"></text>
+        </svg>
+      </div>
+    </section>
+
+    <!-- ── Diagnosis ── -->
+    <section class="triz-sf__diagnosis">
+      <div class="triz-sf__diagnosis-text">
+        <strong x-text="t('diagnosisLabel')"></strong>:
+        <span x-text="situationLabel(diagSituation())"></span>
+        <span class="triz-sf__diagnosis-classes">
+          <span x-text="suggestedClassesLabel()"></span>
+          <template x-for="c in suggestedClassList()">
+            <code :key="c" x-text="c"></code>
+          </template>
+        </span>
+      </div>
+      <textarea class="field triz-sf__problem-note" rows="2" data-role="problem-note"
+        x-model="model.problemNote"
+        :placeholder="t('problemNotePlaceholder')"></textarea>
+    </section>
+
+    <!-- ── Filter ── -->
+    <section class="triz-sf__filter">
+      <label class="triz-sf__filter-label">
+        <input type="radio" name="triz-sf-filter" value="auto" data-role="filter"
+          :checked="model.filterMode === 'auto' || model.filterMode === ''"
+          @change="filterChanged($event)">
+        <span x-text="t('filterAuto')"></span>
+      </label>
+      <label class="triz-sf__filter-label">
+        <input type="radio" name="triz-sf-filter" value="all" data-role="filter"
+          :checked="model.filterMode === 'all'"
+          @change="filterChanged($event)">
+        <span x-text="t('filterAll')"></span>
+      </label>
+      <div class="triz-sf__filter-spacer"></div>
+    </section>
+
+    <!-- ── Standards ── -->
+    <p class="triz-sf__loading" x-show="!standards" x-text="t('loading')"></p>
+    <section class="triz-sf__standards" x-show="standards">
+      <template x-for="cls in classList">
+        <details class="triz-sf__class"
+          :key="cls.key"
+          x-show="cls.visible"
+          :data-class="cls.key"
+          :open="cls.open"
+          @toggle="classToggled(cls, $event)">
+          <summary class="triz-sf__class-head">
+            <span class="triz-sf__class-num" x-text="cls.key"></span>
+            <span class="triz-sf__class-title" x-text="className(cls.key)"></span>
+            <span class="triz-sf__class-count" x-text="classCount(cls.standards)"></span>
+          </summary>
+          <p class="triz-sf__class-desc" x-text="classDesc(cls.key)"></p>
+          <ul class="triz-sf__standard-list">
+            <template x-for="s in cls.standards">
+              <li class="triz-sf__standard"
+                :key="s.id"
+                :class="standardSelectedClass(s)"
+                :data-id="s.id">
+                <details>
+                  <summary class="triz-sf__standard-head">
+                    <span class="triz-sf__standard-id" x-text="s.id"></span>
+                    <span class="triz-sf__standard-title" x-text="stdTitle(s)"></span>
+                    <span class="triz-sf__standard-pin" x-show="isStandardSelected(s)">★</span>
+                  </summary>
+                  <p class="triz-sf__standard-desc" x-text="stdDesc(s)"></p>
+                  <p class="triz-sf__standard-trigger"><em x-text="t('triggerLead')"></em>: <span x-text="stdTrigger(s)"></span></p>
+                  <p class="triz-sf__standard-example"><em x-text="t('exampleLead')"></em>: <span x-text="stdExample(s)"></span></p>
+                  <textarea class="field triz-sf__standard-note" rows="2" data-role="standard-note"
+                    :data-id="s.id"
+                    :placeholder="t('standardNotePlaceholder')"
+                    :value="noteValue(s)"
+                    @input="noteChanged(s, $event)"></textarea>
+                  <label class="triz-sf__standard-select">
+                    <input type="checkbox" data-role="standard-select"
+                      :data-id="s.id"
+                      :checked="isStandardSelected(s)"
+                      @change="selectChanged(s, $event)">
+                    <span x-text="t('considered')"></span>
+                  </label>
+                </details>
+              </li>
+            </template>
+          </ul>
+        </details>
+      </template>
+    </section>
+
+  </div>
+</section>

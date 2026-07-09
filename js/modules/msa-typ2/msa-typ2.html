@@ -1,0 +1,182 @@
+<div class="module-msa-typ2 dmike-split" x-data="msaTyp2">
+  <div class="dmike-split__input">
+    <div class="dmike-split__section-title" x-text="t('sectionColumns')"></div>
+
+    <div class="field-group">
+      <label x-text="t('partColumn')"></label>
+      <div data-ref="col-part-wrap"></div>
+    </div>
+
+    <div class="field-group">
+      <label x-text="t('operatorColumn')"></label>
+      <div data-ref="col-operator-wrap"></div>
+    </div>
+
+    <div class="field-group">
+      <label x-text="t('measurementColumn')"></label>
+      <div data-ref="col-measurement-wrap"></div>
+    </div>
+
+    <div class="dmike-split__section-title" x-text="t('sectionParams')"></div>
+
+    <div class="msa-typ2__row">
+      <div class="field-group">
+        <label x-text="t('lsl')"></label>
+        <input type="text" class="field field--num" data-ref="inp-lsl"
+               placeholder="24.900" inputmode="decimal"
+               x-model="model.params.lsl" @input="scheduleAnalysis()" @change="runAnalysis()">
+      </div>
+      <div class="field-group">
+        <label x-text="t('usl')"></label>
+        <input type="text" class="field field--num" data-ref="inp-usl"
+               placeholder="25.100" inputmode="decimal"
+               x-model="model.params.usl" @input="scheduleAnalysis()" @change="runAnalysis()">
+      </div>
+    </div>
+
+    <div class="msa-typ2__row">
+      <div class="field-group">
+        <label x-text="t('alphaLabel')"></label>
+        <input type="text" class="field field--num" data-ref="inp-alpha" inputmode="decimal"
+               x-model="model.params.alpha" @input="scheduleAnalysis()" @change="runAnalysis()">
+      </div>
+      <div class="field-group">
+        <label x-text="t('kLabel')"></label>
+        <select class="field" data-ref="inp-k" x-model="model.params.k" @change="runAnalysis()">
+          <option value="5.15">5.15 (99 %)</option>
+          <option value="6">6.00 (99.73 %)</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="msa-typ2__error" data-ref="error-box" :class="{ visible: errorMsg }" x-text="errorMsg"></div>
+  </div>
+
+  <div class="dmike-split__output">
+    <div data-ref="results">
+      <template x-if="result">
+        <div>
+          <!-- Status bar -->
+          <div class="msa-typ2__status-bar" :class="'msa-typ2__status-bar--' + result.grrStatus">
+            <span class="msa-typ2__status-label" x-text="statusLabel(result.grrStatus)"></span>
+            <span class="msa-typ2__status-detail" x-text="statusDetail(result)"></span>
+          </div>
+
+          <!-- KPI strip -->
+          <div class="dmike-kpi-strip">
+            <div class="dmike-kpi" :class="kpiModClass(result.grrStatus)">
+              <div class="dmike-kpi-label">%GRR (<span x-text="t('studyVar')"></span>)
+                <button class="msa-typ2__algo-link" data-algo-id="grr" title="Algorithm Lab" @click="algoNavigate('grr', $event)"><svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg></button>
+              </div>
+              <div class="dmike-kpi-value"><span x-text="fmt(result.varComp.grr.pctStudyVar)"></span> %</div>
+              <div class="dmike-kpi-sub"><span x-text="t('threshold')"></span>: &lt; 10 % · <span x-text="badgeLabel(result.grrStatus)"></span></div>
+            </div>
+            <div class="dmike-kpi" :class="kpiModClass(result.ndcStatus)">
+              <div class="dmike-kpi-label">ndc</div>
+              <div class="dmike-kpi-value" x-text="result.ndc"></div>
+              <div class="dmike-kpi-sub"><span x-text="t('threshold')"></span>: ≥ 5 · <span x-text="ndcBadge(result.ndcStatus)"></span></div>
+            </div>
+            <div class="dmike-kpi">
+              <div class="dmike-kpi-label">%EV (<span x-text="t('repeatability')"></span>)</div>
+              <div class="dmike-kpi-value"><span x-text="fmt(result.varComp.repeatability.pctStudyVar)"></span> %</div>
+              <div class="dmike-kpi-sub" x-text="t('ofStudyVar')"></div>
+            </div>
+            <div class="dmike-kpi">
+              <div class="dmike-kpi-label">%AV (<span x-text="t('reproducibility')"></span>)</div>
+              <div class="dmike-kpi-value"><span x-text="fmt(result.varComp.reproducibility.pctStudyVar)"></span> %</div>
+              <div class="dmike-kpi-sub" x-text="t('ofStudyVar')"></div>
+            </div>
+          </div>
+
+          <!-- ANOVA table -->
+          <div class="dmike-split__output-section" x-text="t('anovaTitle')"></div>
+          <div class="msa-typ2__stats-panel">
+            <table class="dmike-table msa-typ2__stats-table">
+              <thead><tr>
+                <th x-text="t('anovaSource')"></th>
+                <th>SS</th><th>df</th><th>MS</th><th>F</th><th>p</th>
+              </tr></thead>
+              <tbody>
+                <template x-for="row in anovaRows()">
+                  <tr :key="row.key" :class="row.totalClass">
+                    <td x-text="row.label"></td>
+                    <td x-text="row.ss"></td>
+                    <td x-text="row.df"></td>
+                    <td x-text="row.ms"></td>
+                    <td x-text="row.f"></td>
+                    <td x-text="row.p"></td>
+                  </tr>
+                </template>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Variance components table -->
+          <div class="dmike-split__output-section" x-text="t('varCompTitle')"></div>
+          <div class="msa-typ2__stats-panel">
+            <table class="dmike-table msa-typ2__stats-table">
+              <thead><tr>
+                <th x-text="t('anovaSource')"></th>
+                <th>σ²</th><th>σ</th>
+                <th x-text="t('studyVarK')"></th>
+                <th>%<span x-text="t('contribution')"></span></th>
+                <th>%<span x-text="t('studyVar')"></span></th>
+                <template x-if="varCompHasTol()">
+                  <th>%<span x-text="t('tolerance')"></span></th>
+                </template>
+              </tr></thead>
+              <tbody>
+                <template x-for="row in varCompRows()">
+                  <tr :key="row.key" :class="row.totalClass">
+                    <td x-text="row.label"></td>
+                    <td x-text="row.variance"></td>
+                    <td x-text="row.sigma"></td>
+                    <td x-text="row.studyVar"></td>
+                    <td x-text="row.pctContribution"></td>
+                    <td x-text="row.pctStudyVar"></td>
+                    <template x-if="varCompHasTol()">
+                      <td x-text="row.pctTolerance"></td>
+                    </template>
+                  </tr>
+                </template>
+              </tbody>
+            </table>
+            <div class="msa-typ2__var-note">ndc = <span x-text="result.ndc"></span></div>
+          </div>
+
+          <!-- Charts -->
+          <div class="dmike-split__output-section" x-text="t('chartComponentsTitle')"></div>
+          <div class="msa-typ2__chart-plot" data-ref="chart-components"></div>
+
+          <div class="dmike-split__output-section" x-text="t('chartByPartTitle')"></div>
+          <div class="msa-typ2__chart-plot" data-ref="chart-by-part"></div>
+
+          <div class="dmike-split__output-section" x-text="t('chartByOperatorTitle')"></div>
+          <div class="msa-typ2__chart-plot" data-ref="chart-by-operator"></div>
+
+          <div class="dmike-split__output-section" x-text="t('chartInteractionTitle')"></div>
+          <div class="msa-typ2__chart-plot" data-ref="chart-interaction"></div>
+
+          <div class="dmike-split__output-section" x-text="t('chartXbarTitle')"></div>
+          <div class="msa-typ2__chart-plot" data-ref="chart-xbar"></div>
+
+          <div class="dmike-split__output-section" x-text="t('chartRTitle')"></div>
+          <div class="msa-typ2__chart-plot" data-ref="chart-r"></div>
+
+          <!-- Interpretation -->
+          <div class="dmike-split__output-section" x-text="t('interpretTitle')"></div>
+          <div class="msa-typ2__interpretation">
+            <p><span class="msa-typ2__tag msa-typ2__tag--pass">%GRR &lt; 10 %</span> <span x-text="t('interpPass')"></span></p>
+            <p><span class="msa-typ2__tag msa-typ2__tag--warn">10 % ≤ %GRR &lt; 30 %</span> <span x-text="t('interpWarn')"></span></p>
+            <p><span class="msa-typ2__tag msa-typ2__tag--fail">%GRR ≥ 30 %</span> <span x-text="t('interpFail')"></span></p>
+            <p><span class="msa-typ2__tag msa-typ2__tag--pass">ndc ≥ 5</span> <span x-text="t('interpNdcPass')"></span></p>
+            <p><span class="msa-typ2__tag msa-typ2__tag--fail">ndc &lt; 5</span> <span x-text="t('interpNdcFail')"></span></p>
+            <template x-if="result.interactionPooled">
+              <p class="msa-typ2__note" x-text="t('interactionPooledNote')"></p>
+            </template>
+          </div>
+        </div>
+      </template>
+    </div>
+  </div>
+</div>

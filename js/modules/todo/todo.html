@@ -1,0 +1,100 @@
+<section class="module-container module-todo" x-data="todo">
+  <div class="todo__toolbar">
+    <button class="dmike-btn-run todo__add-btn" data-action="add" @click="addTodo()" x-text="addBtnText()"></button>
+    <span class="todo__counter" x-text="filteredCount() + ' / ' + model.items.length"></span>
+    <div class="todo__filter-group">
+      <span class="todo__filter-label" x-text="t('filter') + ':'"></span>
+      <select class="field todo__filter-select" data-filter="status" x-model="model.filterStatus">
+        <option value="all" x-text="t('allStatuses')"></option>
+        <template x-for="s in statuses">
+          <option :value="s" x-text="statusName(s)"></option>
+        </template>
+      </select>
+      <select class="field todo__filter-select" data-filter="owner" x-model="model.filterOwner">
+        <option value="all" x-text="t('allOwners')"></option>
+        <template x-for="o in owners()">
+          <option :value="o" x-text="o"></option>
+        </template>
+      </select>
+      <input type="text" class="field todo__search" data-filter="search"
+             x-model="model.search" :placeholder="t('searchPlaceholder')">
+    </div>
+  </div>
+
+  <div class="todo__table-wrap">
+    <div class="todo__empty" x-show="model.items.length === 0" x-text="t('emptyState')"></div>
+    <div class="todo__empty" x-show="model.items.length > 0 && filteredCount() === 0" x-text="t('noMatch')"></div>
+
+    <table class="todo__table" x-show="filteredCount() > 0">
+      <thead>
+        <tr>
+          <th class="todo__col-check"></th>
+          <th class="todo__col-text" data-sort="text" @click="sortBy('text')">
+            <span x-text="t('colText')"></span>
+            <span class="todo__sort-arrow" :class="sortArrowClass('text')" x-text="sortArrow('text')"></span>
+          </th>
+          <th class="todo__col-owner" data-sort="owner" @click="sortBy('owner')">
+            <span x-text="t('colOwner')"></span>
+            <span class="todo__sort-arrow" :class="sortArrowClass('owner')" x-text="sortArrow('owner')"></span>
+          </th>
+          <th class="todo__col-due" data-sort="due" @click="sortBy('due')">
+            <span x-text="t('colDue')"></span>
+            <span class="todo__sort-arrow" :class="sortArrowClass('due')" x-text="sortArrow('due')"></span>
+          </th>
+          <th class="todo__col-status" data-sort="status" @click="sortBy('status')">
+            <span x-text="t('colStatus')"></span>
+            <span class="todo__sort-arrow" :class="sortArrowClass('status')" x-text="sortArrow('status')"></span>
+          </th>
+          <template x-if="hasCalendar">
+            <th class="todo__col-cal" :title="t('showInCalendar')">&#x1F4C5;</th>
+          </template>
+          <th class="todo__col-actions"></th>
+        </tr>
+      </thead>
+      <tbody>
+        <template x-for="item in filteredItems()" :key="item.id">
+          <tr class="todo__row" :class="rowClass(item)" :data-id="item.id">
+            <td class="todo__col-check">
+              <input type="checkbox" class="todo__check" data-action="toggle"
+                     :checked="item.status === 'done'"
+                     @change="toggleDone(item)">
+            </td>
+            <td class="todo__cell-text">
+              <input type="text" class="todo__inline-input" data-field="text"
+                     x-model="item.text" :placeholder="t('textPlaceholder')">
+            </td>
+            <td>
+              <input type="text" class="todo__inline-input" data-field="owner"
+                     x-model="item.owner" :placeholder="t('ownerPlaceholder')">
+            </td>
+            <td class="todo__cell-due">
+              <input type="date" class="todo__inline-date" data-field="due"
+                     x-model="item.due">
+            </td>
+            <td>
+              <select class="todo__inline-select" data-field="status"
+                      @change="item.status = $event.target.value">
+                <template x-for="s in statuses">
+                  <option :value="s" :selected="item.status === s" x-text="statusName(s)"></option>
+                </template>
+              </select>
+            </td>
+            <template x-if="hasCalendar">
+              <td class="todo__col-cal">
+                <button class="todo__cal-btn" :class="{ 'todo__cal-btn--active': item.cal }"
+                        data-action="cal" :title="t('showInCalendar')"
+                        @click="toggleCal(item)">&#x1F4C5;</button>
+              </td>
+            </template>
+            <td>
+              <button class="todo__delete-btn" data-action="delete"
+                      :title="t('delete')" @click="deleteTodo(item)">
+                <span x-text="deleteIcon()"></span>
+              </button>
+            </td>
+          </tr>
+        </template>
+      </tbody>
+    </table>
+  </div>
+</section>

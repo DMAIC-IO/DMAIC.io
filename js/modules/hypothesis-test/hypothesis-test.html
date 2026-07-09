@@ -1,0 +1,380 @@
+<div class="hyptest dmike-split" x-data="hypothesisTest">
+
+  <!-- ─── Input (left) ─────────────────────────────────────────── -->
+  <div class="hyptest__input dmike-split__input">
+
+    <div class="dmike-split__section-title" x-text="t('sectionCategory')"></div>
+    <div class="btn-group hyptest__toggle-row">
+      <button class="btn--segment hyptest__toggle-btn" data-cat="variance"
+        :class="model.category === 'variance' ? 'btn--active' : ''"
+        @click="setCategory('variance')">σ² <span x-text="t('catVariance')"></span></button>
+      <button class="btn--segment hyptest__toggle-btn" data-cat="mean"
+        :class="model.category === 'mean' ? 'btn--active' : ''"
+        @click="setCategory('mean')">μ <span x-text="t('catMean')"></span></button>
+    </div>
+
+    <div class="dmike-split__section-title" x-text="t('sectionTestType')"></div>
+    <div class="btn-group hyptest__toggle-row">
+      <button class="btn--segment hyptest__toggle-btn" data-type="one"
+        :class="model.testType === 'one' ? 'btn--active' : ''"
+        @click="setTestType('one')" x-text="t('oneSample')"></button>
+      <button class="btn--segment hyptest__toggle-btn" data-type="two"
+        :class="model.testType === 'two' ? 'btn--active' : ''"
+        @click="setTestType('two')" x-text="t('twoSample')"></button>
+      <button class="btn--segment hyptest__toggle-btn" data-type="k"
+        :class="model.testType === 'k' ? 'btn--active' : ''"
+        @click="setTestType('k')" x-text="t('kSample')"></button>
+    </div>
+
+    <div class="dmike-split__section-title" x-text="t('sectionData')"></div>
+
+    <template x-if="model.testType === 'k'">
+      <div class="field-group">
+        <label x-text="t('kSampleColumns')"></label>
+        <div data-ref="picker-k-wrap"></div>
+      </div>
+    </template>
+
+    <template x-if="model.testType !== 'k'">
+      <div class="hyptest__contents">
+        <div class="field-group">
+          <label x-text="t('sample1Column')"></label>
+          <div data-ref="picker1-wrap"></div>
+        </div>
+        <template x-if="model.testType === 'two'">
+          <div class="field-group">
+            <label x-text="t('sample2Column')"></label>
+            <div data-ref="picker2-wrap"></div>
+          </div>
+        </template>
+      </div>
+    </template>
+
+    <!-- Target (one-sample only) -->
+    <template x-if="model.testType === 'one'">
+      <div class="hyptest__contents">
+        <div class="dmike-split__section-title"
+          x-text="model.category === 'mean' ? t('targetMean') : t('targetVariance')"></div>
+
+        <template x-if="model.category === 'variance'">
+          <div class="field-row">
+            <div class="hyptest__field field-group field-group--major">
+              <label x-text="t('inputAs')"></label>
+              <select data-ref="target-type" class="field" x-model="model.targetType" @change="runAnalysis()">
+                <option value="variance" x-text="t('asVariance')"></option>
+                <option value="stddev" x-text="t('asStddev')"></option>
+              </select>
+            </div>
+            <div class="hyptest__field field-group field-group--minor">
+              <label>σ²₀</label>
+              <input type="number" data-ref="target" class="field field--num"
+                x-model="model.targetValue" :placeholder="t('targetVarPh')" @input="runAnalysis()">
+            </div>
+          </div>
+        </template>
+
+        <template x-if="model.category === 'mean'">
+          <div class="field-group">
+            <label>μ₀</label>
+            <input type="number" data-ref="target" class="field field--num"
+              x-model="model.targetValue" :placeholder="t('targetMeanPh')" @input="runAnalysis()">
+          </div>
+        </template>
+      </div>
+    </template>
+
+    <div class="dmike-split__section-title" x-text="t('sectionHypothesis')"></div>
+    <div class="field-row">
+      <template x-if="model.testType !== 'k'">
+        <div class="hyptest__field field-group field-group--major">
+          <label x-text="t('direction')"></label>
+          <select data-ref="direction" class="field" x-model="model.direction" @change="runAnalysis()">
+            <option value="two-sided">≠ <span x-text="t('twoSided')"></span></option>
+            <option value="greater">&gt; <span x-text="t('greater')"></span></option>
+            <option value="less">&lt; <span x-text="t('less')"></span></option>
+          </select>
+        </div>
+      </template>
+      <div class="hyptest__field field-group field-group--minor">
+        <label>α</label>
+        <input type="number" data-ref="alpha" class="field field--num" min="0.001" max="0.5"
+          x-model="model.alpha" @input="onAlphaInput($event)">
+      </div>
+      <template x-if="model.testType !== 'k'">
+        <div class="hyptest__field field-group field-group--minor">
+          <label x-text="t('powerGoal')"></label>
+          <input type="number" data-ref="power-goal" class="field field--num" min="0.5" max="0.99"
+            x-model="model.powerGoal" @input="onPowerGoalInput($event)">
+        </div>
+      </template>
+    </div>
+
+    <div class="hyptest__hypothesis-preview field-row">
+      <div class="hyptest__h-box">
+        <span class="hyptest__h-label">H₀</span>
+        <span class="hyptest__h-formula" x-text="previewH0()"></span>
+      </div>
+      <div class="hyptest__h-box">
+        <span class="hyptest__h-label">H₁</span>
+        <span class="hyptest__h-formula" x-text="previewH1()"></span>
+      </div>
+    </div>
+
+    <div class="hyptest__error" data-ref="error-box"></div>
+  </div>
+
+  <!-- ─── Output (right) ───────────────────────────────────────── -->
+  <div class="hyptest__output dmike-split__output">
+
+    <div class="hyptest__placeholder" data-ref="placeholder" x-show="!result">
+      <svg width="64" height="64" fill="none" stroke="currentColor" stroke-width="1" viewBox="0 0 24 24">
+        <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
+      </svg>
+      <p x-text="t('placeholderText')"></p>
+    </div>
+
+    <div data-ref="results" x-show="!!result">
+      <template x-if="result">
+        <div>
+          <!-- ── Section 1: Normality ── -->
+          <div class="dmike-split__output-section" x-text="t('sectionNormality')"></div>
+
+          <!-- k-sample: grid of per-group cards; otherwise stacked S1/S2 cards -->
+          <div :class="result.isK ? 'hyptest__norm-grid' : 'hyptest__contents'">
+            <template x-for="card in result.normCards">
+              <div class="hyptest__result-card" :key="card.label">
+                <div class="hyptest__card-header">
+                  <span x-text="card.label"></span>
+                  <span class="hyptest__badge" :class="card.badgeClass" x-text="card.badgeText"></span>
+                </div>
+                <table>
+                  <thead><tr>
+                    <th>Test</th><th x-text="t('statistic')"></th><th>p</th><th x-text="t('decision')"></th>
+                  </tr></thead>
+                  <tbody>
+                    <template x-for="row in card.rows">
+                      <tr :key="row.name">
+                        <td>
+                          <span x-text="row.name"></span>
+                          <button class="hyptest__algo-link" :data-algo-id="row.algoId"
+                            title="Algorithm Lab" @click="algoNavigate(row.algoId, $event)"><svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg></button>
+                        </td>
+                        <td x-text="row.stat"></td>
+                        <td :class="row.pClass" x-text="row.p"></td>
+                        <td x-text="row.decision"></td>
+                      </tr>
+                    </template>
+                  </tbody>
+                </table>
+                <div class="hyptest__metrics hyptest__metrics--sm">
+                  <template x-for="m in card.metrics">
+                    <div class="hyptest__metric" :title="m.title" :key="m.label">
+                      <div class="hyptest__metric-label" x-text="m.label"></div>
+                      <div class="hyptest__metric-value" x-text="m.value"></div>
+                      <template x-if="m.ci">
+                        <div class="hyptest__metric-ci" x-text="m.ci"></div>
+                      </template>
+                    </div>
+                  </template>
+                </div>
+              </div>
+            </template>
+          </div>
+
+          <!-- Routing trail -->
+          <div class="hyptest__route-card">
+            <div class="hyptest__route-title" x-text="t('algoRouting')"></div>
+            <div class="hyptest__route-trail">
+              <span class="hyptest__trail-dot" :class="result.allNormal ? 'hyptest__trail-dot--pass' : 'hyptest__trail-dot--fail'"></span>
+              <span><span x-text="t('normalLabel')"></span>: <strong x-text="result.allNormal ? t('yes') : t('no')"></strong></span>
+              <template x-if="result.varEquality">
+                <span style="display:contents">
+                  <span class="hyptest__trail-line"></span>
+                  <span class="hyptest__trail-dot" :class="result.varEquality.varsEqual ? 'hyptest__trail-dot--pass' : 'hyptest__trail-dot--fail'"></span>
+                  <span><span x-text="t('varEqualLabel')"></span>: <strong x-text="result.varEquality.varsEqual ? t('yes') : t('no')"></strong></span>
+                </span>
+              </template>
+              <span class="hyptest__trail-line"></span>
+              <span class="hyptest__trail-dot hyptest__trail-dot--info"></span>
+              <span>→ <strong>
+                <span x-text="result.route.name"></span>
+                <template x-if="result.route.algoId">
+                  <button class="hyptest__algo-link" :data-algo-id="result.route.algoId"
+                    title="Algorithm Lab" @click="algoNavigate(result.route.algoId, $event)"><svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg></button>
+                </template>
+              </strong></span>
+            </div>
+          </div>
+
+          <!-- ── Section 2: Variance Equality (if applicable) ── -->
+          <template x-if="result.varEquality">
+            <div class="hyptest__contents">
+              <div class="dmike-split__output-section" x-text="t('sectionVarEquality')"></div>
+              <div class="hyptest__result-card">
+                <div class="hyptest__metrics">
+                  <template x-for="m in result.varEquality.metrics">
+                    <div class="hyptest__metric" :title="m.title" :key="m.label">
+                      <div class="hyptest__metric-label" x-text="m.label"></div>
+                      <div class="hyptest__metric-value" :class="m.valueClass">
+                        <span x-text="m.value"></span>
+                        <template x-if="m.algoId">
+                          <button class="hyptest__algo-link" :data-algo-id="m.algoId"
+                            title="Algorithm Lab" @click="algoNavigate(m.algoId, $event)"><svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg></button>
+                        </template>
+                      </div>
+                    </div>
+                  </template>
+                </div>
+                <div class="hyptest__decision" :class="result.varEquality.varsEqual ? 'hyptest__decision--accept' : 'hyptest__decision--reject'">
+                  <strong x-text="result.varEquality.varsEqual ? t('varEqual') : t('varUnequal')"></strong>
+                </div>
+              </div>
+            </div>
+          </template>
+
+          <!-- ── Section 3: Main Test Result ── -->
+          <div class="dmike-split__output-section" x-text="t('sectionResult')"></div>
+          <div class="hyptest__result-card">
+            <div class="hyptest__hypothesis-preview hyptest__hypothesis-preview--sm field-row">
+              <div class="hyptest__h-box" :class="result.main.h0Class" :title="result.main.h0Tip">
+                <span class="hyptest__h-label">H₀</span>
+                <span class="hyptest__h-formula" x-text="result.main.h0"></span>
+              </div>
+              <div class="hyptest__h-box" :class="result.main.h1Class" :title="result.main.h1Tip">
+                <span class="hyptest__h-label">H₁</span>
+                <span class="hyptest__h-formula" x-text="result.main.h1"></span>
+              </div>
+            </div>
+            <div class="hyptest__metrics">
+              <template x-for="m in result.main.metrics">
+                <div class="hyptest__metric" :title="m.title" :key="m.label">
+                  <div class="hyptest__metric-label" x-text="m.label"></div>
+                  <div class="hyptest__metric-value" :class="m.valueClass">
+                    <span x-text="m.value"></span>
+                    <template x-if="m.algoId">
+                      <button class="hyptest__algo-link" :data-algo-id="m.algoId"
+                        title="Algorithm Lab" @click="algoNavigate(m.algoId, $event)"><svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg></button>
+                    </template>
+                  </div>
+                </div>
+              </template>
+            </div>
+
+            <!-- ANOVA table (k-sample mean, ANOVA route) -->
+            <template x-if="result.main.anovaRows">
+              <table>
+                <thead><tr>
+                  <th x-text="t('source')"></th><th>SS</th><th>df</th><th>MS</th><th>F</th><th>p</th>
+                </tr></thead>
+                <tbody>
+                  <template x-for="row in result.main.anovaRows">
+                    <tr :key="row.src">
+                      <td><strong x-show="row.bold" x-text="row.src"></strong><span x-show="!row.bold" x-text="row.src"></span></td>
+                      <td><strong x-show="row.bold" x-text="row.ss"></strong><span x-show="!row.bold" x-text="row.ss"></span></td>
+                      <td><strong x-show="row.bold" x-text="row.df"></strong><span x-show="!row.bold" x-text="row.df"></span></td>
+                      <td x-text="row.ms"></td>
+                      <td x-text="row.f"></td>
+                      <td :class="row.pClass" x-text="row.p"></td>
+                    </tr>
+                  </template>
+                </tbody>
+              </table>
+            </template>
+
+            <!-- Group summary table (k-sample) -->
+            <template x-if="result.main.groupRows">
+              <table>
+                <thead><tr>
+                  <th x-text="t('group')"></th><th>n</th><th>x̄</th><th>s²</th>
+                  <template x-if="result.main.showCld">
+                    <th :title="t('groupingHint')" x-text="t('groupingLabel')"></th>
+                  </template>
+                </tr></thead>
+                <tbody>
+                  <template x-for="row in result.main.groupRows">
+                    <tr :key="row.name">
+                      <td x-text="row.name"></td>
+                      <td x-text="row.n"></td>
+                      <td x-text="row.mean"></td>
+                      <td x-text="row.variance"></td>
+                      <template x-if="result.main.showCld">
+                        <td><strong class="hyptest__cld-letters" x-text="row.letters"></strong></td>
+                      </template>
+                    </tr>
+                  </template>
+                </tbody>
+              </table>
+            </template>
+          </div>
+
+          <!-- ── Section 4: Power Analysis (non-k) ── -->
+          <template x-if="result.power">
+            <div class="hyptest__contents">
+              <div class="dmike-split__output-section" x-text="t('sectionPower')"></div>
+              <div class="hyptest__result-card">
+                <div class="hyptest__decision" :class="result.power.goalBoxClass">
+                  <strong><span x-text="t('powerGoal')"></span>: <span x-text="result.power.goalPct"></span>%</strong>
+                  <p x-text="result.power.requiredLine"></p>
+                </div>
+                <div class="hyptest__metrics">
+                  <template x-for="m in result.power.metrics">
+                    <div class="hyptest__metric" :title="m.title" :key="m.label">
+                      <div class="hyptest__metric-label" x-text="m.label"></div>
+                      <div class="hyptest__metric-value" :class="m.valueClass" x-text="m.value"></div>
+                    </div>
+                  </template>
+                </div>
+              </div>
+            </div>
+          </template>
+
+          <!-- ── Section 5: Pairwise post-hoc (k ≥ 3) ── -->
+          <template x-if="result.pairwise">
+            <div class="hyptest__contents">
+              <div class="dmike-split__output-section" x-text="t('sectionPairwise')"></div>
+              <div class="hyptest__result-card">
+                <div class="hyptest__pairwise-meta">
+                  <span x-text="t('pairwiseMethod')"></span>: <strong>
+                    <span x-text="result.pairwise.methodName"></span>
+                    <template x-if="result.pairwise.methodAlgoId">
+                      <button class="hyptest__algo-link" :data-algo-id="result.pairwise.methodAlgoId"
+                        title="Algorithm Lab" @click="algoNavigate(result.pairwise.methodAlgoId, $event)"><svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg></button>
+                    </template>
+                  </strong>
+                  · <span x-text="result.pairwise.hint"></span>
+                </div>
+                <table class="hyptest__pairwise">
+                  <thead><tr>
+                    <th></th>
+                    <template x-for="h in result.pairwise.headers"><th :key="h" x-text="h"></th></template>
+                  </tr></thead>
+                  <tbody>
+                    <template x-for="row in result.pairwise.rows">
+                      <tr :key="row.head">
+                        <th x-text="row.head"></th>
+                        <template x-for="cell in row.cells">
+                          <td :class="cell.cls" :title="cell.title" x-text="cell.text" :key="cell.key"></td>
+                        </template>
+                      </tr>
+                    </template>
+                  </tbody>
+                </table>
+                <div class="hyptest__pairwise-legend">
+                  <span class="hyptest__pairwise-swatch hyptest__pairwise-equal"></span>
+                  <span x-text="t('pairwiseEqual')"></span> (p_adj ≥ <span x-text="model.alpha"></span>)
+                  <span class="hyptest__pairwise-swatch hyptest__pairwise-diff"></span>
+                  <span x-text="t('pairwiseDifferent')"></span> (p_adj &lt; <span x-text="model.alpha"></span>)
+                </div>
+                <div class="hyptest__cld-hint">
+                  <span x-text="t('groupingHint')"></span> (<span x-text="t('groupingLabel')"></span>:
+                  <strong x-text="result.pairwise.lettersJoined"></strong>)
+                </div>
+              </div>
+            </div>
+          </template>
+
+        </div>
+      </template>
+    </div>
+  </div>
+</div>

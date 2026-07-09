@@ -91,6 +91,20 @@ export class I18n {
   }
 
   /**
+   * Create a prefix-aware translation function for a module.
+   * The returned function tries `prefix.key` first, then falls back to bare `key`.
+   * @param {string} prefix - e.g. 'modules.triz-resources'
+   * @returns {(key: string, params?: object) => string}
+   */
+  tf(prefix) {
+    return (key, params) => {
+      const prefixed = `${prefix  }.${  key}`;
+      const result = this.t(prefixed, params);
+      return result !== prefixed ? result : this.t(key, params);
+    };
+  }
+
+  /**
    * Check if a translation key exists.
    * @param {string} key
    * @returns {boolean}

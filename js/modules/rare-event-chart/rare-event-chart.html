@@ -1,0 +1,61 @@
+<div class="rec dmike-split" x-data="rareEventChart">
+  <div class="rec__input dmike-split__input">
+
+    <div class="dmike-split__section-title" x-text="t('sectionChartType')"></div>
+    <div class="field-group">
+      <label x-text="t('chartType')"></label>
+      <select class="field" data-ref="chart-type" x-model="model.chartTypeId" @change="chartTypeChanged()">
+        <option value="g" x-text="t('type_g')"></option>
+        <option value="t" x-text="t('type_t')"></option>
+      </select>
+      <span class="rec__hint" x-text="t('typeHint_' + model.chartTypeId)"></span>
+    </div>
+
+    <div class="dmike-split__section-title" x-text="t('sectionData')"></div>
+    <div class="field-group">
+      <label x-text="t('dataColumn')"></label>
+      <div data-ref="col-picker-wrap"></div>
+      <span class="rec__hint" x-text="t('dataHint_' + model.chartTypeId)"></span>
+    </div>
+
+  </div>
+
+  <div class="rec__output dmike-split__output">
+    <div data-ref="stats-bar">
+      <template x-if="result">
+        <div>
+          <div class="dmike-kpi-strip">
+            <div class="dmike-kpi">
+              <div class="dmike-kpi-value" x-text="fmt(result.cl)"></div>
+              <div class="dmike-kpi-label" x-text="t('statCL')"></div>
+              <div class="dmike-kpi-sub" x-text="'σ̂ = ' + fmt(result.sigma)"></div>
+            </div>
+            <div class="dmike-kpi">
+              <div class="dmike-kpi-value" x-text="fmt(result.ucl)"></div>
+              <div class="dmike-kpi-label">UCL / LCL</div>
+              <div class="dmike-kpi-sub" x-text="fmt(result.lcl)"></div>
+            </div>
+            <div class="dmike-kpi" :class="signalsClass()">
+              <div class="dmike-kpi-value" x-text="result.signals"></div>
+              <div class="dmike-kpi-label" x-text="t('statSignals')"></div>
+              <div class="dmike-kpi-sub" x-text="t('statOf', { total: result.n })"></div>
+            </div>
+          </div>
+          <span class="rec__hint" x-show="result.transformedNote" x-text="t('originalScaleNote')"></span>
+        </div>
+      </template>
+    </div>
+
+    <div data-ref="chart-wrap">
+      <template x-if="result">
+        <div class="rec__chart-section">
+          <div class="rec__chart-header">
+            <span class="rec__chart-title" x-text="chartTitle()"></span>
+            <span class="rec__badge" :class="badgeClass()" x-text="badgeText()"></span>
+          </div>
+          <div class="rec__plot-wrap" data-ref="plot"></div>
+        </div>
+      </template>
+    </div>
+  </div>
+</div>

@@ -6,381 +6,228 @@
  * The chart is plotted on the transformed scale (where SPC limits are valid);
  * a side table shows the back-transformed limits on the original scale for
  * interpretation.
+ *
+ * Migrated to createModule + Alpine CSP.
+ *
+ * Architecture:
+ *   - Static structure (input panel, ColumnPicker anchor, lambda controls,
+ *     output placeholders) lives in the Alpine template (transformed-imr-chart.html).
+ *   - Dynamic output (error, stats KPI strip, chart section with header + badge,
+ *     limits table) is rendered imperatively into the data-ref anchors
+ *     because the POM relies on exact CSS selectors — POM-Byte-Parität.
+ *   - One ColumnPicker is an imperative widget mounted in init(), disposed in destroy().
+ *   - chartManager control-chart uses _renderGen stale-guard.
+ *   - _unsubs collects event-bus subscriptions for cleanup.
  */
 
+import { createModule } from '../../core/template-module.js';
+import { State } from './transformed-imr-chart-model.js';
 import {
   ColumnPicker, getColumnValues, getColumnName,
 } from '../../ui/column-picker.js';
-
 import { computeTransformedIMR } from '../../engines/transformed-chart-engine.js';
-import { esc } from '../../core/html-utils.js';
-import { provisionWorksheet, removeProvisionedWorksheet } from '../../core/examples-registry.js';
+import { loadWorksheetExample, rewriteRefFields } from '../../core/examples-registry.js';
+import { chartModuleLifecycle } from '../../core/chart/chart-module-base.js';
 
-export default {
-  id: 'transformed-imr-chart',
-  phase: 'control',
-  icon: 'activity',
-  i18nKey: 'modules.transformed-imr-chart',
-  version: '1.0.0',
-
-  _container: null,
-  _context: null,
-  _columnRef: null,
-  _lambdaMode: 'auto',  // 'auto' | 'manual'
-  _lambdaManual: 0,
-  _picker: null,
-  _charts: [],
-  _autoRunTimer: null,
-  _lastLambda: null,
-  /** Worksheet provisioned by loadExample; replaced on each subsequent load. */
-  _exampleWorksheetId: null,
-
-  // ─── Lifecycle ──────────────────────────────────────────────
-
-  async init(container, context) {
-    this._container = container;
-    this._context = context;
-
-    if (!document.getElementById('transformed-imr-chart-css')) {
-      const link = document.createElement('link');
-      link.id = 'transformed-imr-chart-css';
-      link.rel = 'stylesheet';
-      link.href = './js/modules/transformed-imr-chart/transformed-imr-chart.css';
-      document.head.appendChild(link);
-    }
-
-    const saved = context.stateManager.getModuleState(context.instanceId);
-    if (saved) this._loadState(saved);
-
-    this._render();
-    this._initPicker();
-    this._bindEvents();
-    this._runAnalysis();
+const mod = createModule({
+  config: {
+    id: 'transformed-imr-chart',
+    engine: 'alpine',
+    phase: 'control',
+    icon: 'activity',
+    version: '1.0.0',
+    meta: import.meta,
   },
+  Model: State,
 
-  async destroy() {
-    clearTimeout(this._autoRunTimer);
-    this._destroyPicker();
-    this._destroyCharts();
-    this._container.innerHTML = '';
-  },
-
-  onLanguageChange() {
-    this._destroyCharts();
-    this._destroyPicker();
-    this._render();
-    this._initPicker();
-    this._bindEvents();
-    this._runAnalysis();
-  },
-
-  onThemeChange() {},
-
-  getState() {
+  data(module, _t) {
     return {
-      columnRef: this._columnRef,
-      lambdaMode: this._lambdaMode,
-      lambdaManual: this._lambdaManual,
+      ...chartModuleLifecycle(module, {
+        mountPicker() {
+          const wrap = module._container.querySelector('[data-ref="col-picker"]');
+          if (!wrap) return;
+          this._picker = new ColumnPicker(wrap, module._context, {
+            mode: 'single', types: ['numeric'], minCount: 5,
+            onChange: (ref) => {
+              this.model.columnRef = ref;
+              this._scheduleAutoRun();
+            },
+          });
+          if (this.model.columnRef) this._picker.value = this.model.columnRef;
+        },
+        themeMode: 'rerun',
+        autorun: true,
+      }),
+
+      // ── Transient view state (not persisted) ──────────────────
+      /** KPI strip (declarative — structured cells, see _renderStats) */
+      kpiCells: [],
+      /** Error message (declarative — rendered via x-if/x-text in error-area) */
+      errorMsg: '',
+      /** Limits table rows (declarative — structured cells, see _renderLimitsTable) */
+      limitRows: [],
+      /** Chart sections (declarative — header markup; chart mounted imperatively
+       * into the templated host via _whenAnchor). See _renderCharts. */
+      /** @type {Array<{id:string, title:string, badgeText:string, badgeClass:string}>} */
+      chartViews: [],
+
+      // ── Lambda mode/manual change handlers ───────────────────
+
+      onLambdaModeChange() {
+        // model.lambdaMode already updated by x-model @change
+        this._scheduleAutoRun();
+      },
+
+      onLambdaManualChange() {
+        // model.lambdaManual already updated by x-model.number @change
+        if (this.model.lambdaMode === 'manual') {
+          this._scheduleAutoRun();
+        }
+      },
+
+      // ── Analysis ─────────────────────────────────────────────
+
+      async _runAnalysis() {
+        const clear = () => {
+          this._renderGen++;
+          this._destroyCharts();
+          this.chartViews = [];
+          this.errorMsg = '';
+          this.kpiCells = [];
+          this.limitRows = [];
+        };
+
+        if (!this.model.columnRef) { clear(); return; }
+
+        const sm = module._context.stateManager;
+        const raw = getColumnValues(sm, this.model.columnRef);
+        const values = raw.filter(v => typeof v === 'number' && !isNaN(v));
+
+        if (values.length < 5) { clear(); return; }
+
+        if (values.some(v => v <= 0)) {
+          clear();
+          this.errorMsg = _t('errPositiveOnly');
+          return;
+        }
+
+        let result;
+        try {
+          result = computeTransformedIMR(values, {
+            lambda: this.model.lambdaMode === 'manual' ? this.model.lambdaManual : undefined,
+          });
+        } catch (e) {
+          clear();
+          const key = e.message === 'errPositiveOnly' ? 'errPositiveOnly' : 'errCompute';
+          this.errorMsg = _t(key, { msg: e.message });
+          return;
+        }
+
+        // Sync the lambda input in auto mode so the user sees the computed value
+        if (this.model.lambdaMode === 'auto') {
+          this.model.lambdaManual = result.lambda;
+        }
+
+        // Clear any previous error
+        this.errorMsg = '';
+
+        this._renderStats(result, values.length);
+        await this._renderCharts(result);
+        this._renderLimitsTable(result);
+      },
+
+      // ── KPI strip (declarative — structured cells, RAW text; x-text escapes) ──
+      //
+      // The λ label is a composite plain-text string ("λ (auto)" / "λ (manual)")
+      // — the tag i18n strings already include the parentheses and the original
+      // markup rendered them inline within the same label text node (no separate
+      // span), so we keep one label string rather than splitting into labelHint.
+
+      _renderStats(r, total) {
+        const fmt = (v) => Number.isFinite(v) ? v.toFixed(3) : '–';
+        const cls = r.signalsI.length === 0 ? 'dmike-kpi--good' : 'dmike-kpi--bad';
+        this.kpiCells = [
+          { value: fmt(r.lambda), label: `λ ${r.lambdaAuto ? _t('lambdaAutoTag') : _t('lambdaManualTag')}`, labelHint: '', sub: _t('boxCoxLabel'), mod: '' },
+          { value: fmt(r.iLimits.cl), label: 'CL (y)', labelHint: '', sub: `σ̂ = ${fmt(r.iLimits.sigma)}`, mod: '' },
+          { value: r.signalsI.length, label: _t('statSignals'), labelHint: '', sub: _t('statOf', { total }), mod: cls },
+        ];
+      },
+
+      // ── Chart rendering (header declarative; chart mounts into templated host) ──
+
+      async _renderCharts(r) {
+        this._destroyCharts();
+
+        const sm = module._context.stateManager;
+        const colName = getColumnName(sm, this.model.columnRef);
+        const isStable = r.signalsI.length === 0;
+
+        const gen = ++this._renderGen;
+
+        // Declarative header markup (RAW text — x-text escapes).
+        this.chartViews = [{
+          id: 'i',
+          title: _t('chartTitle', { col: colName, lambda: r.lambda }),
+          badgeText: isStable ? _t('stable') : _t('unstable', { count: r.signalsI.length }),
+          badgeClass: isStable ? 'timr__badge--stable' : 'timr__badge--unstable',
+        }];
+
+        const host = await this.whenAnchor('[data-chart-host="i"]', gen);
+        if (!host) return;
+
+        const chart = await module._context.chartManager.create(host, 'control-chart', {
+          title: '',
+          xLabel: _t('xLabelSample'),
+          yLabel: _t('yLabel'),
+          showLegend: false,
+          showTitle: false,
+          values: r.transformed,
+          cl: r.iLimits.cl, ucl: r.iLimits.ucl, lcl: r.iLimits.lcl, sigma: r.iLimits.sigma,
+          violationIndices: new Set(r.signalsI),
+          usl: null, lsl: null,
+          showZones: true,
+        });
+
+        if (gen !== this._renderGen) {
+          // Stale render — a newer one started while awaiting
+          try { module._context.chartManager.destroy(chart); } catch { /* ignore */ }
+          return;
+        }
+
+        this._charts.push(chart);
+      },
+
+      // ── Limits table (declarative — structured rows, RAW text; x-text escapes) ──
+
+      _renderLimitsTable(r) {
+        const fmt = (v) => Number.isFinite(v) ? v.toFixed(3) : '–';
+        this.limitRows = [
+          { label: 'UCL', transformed: fmt(r.iLimits.ucl), original: fmt(r.iLimitsOriginal.ucl) },
+          { label: 'CL',  transformed: fmt(r.iLimits.cl),  original: fmt(r.iLimitsOriginal.cl) },
+          { label: 'LCL', transformed: fmt(r.iLimits.lcl), original: fmt(r.iLimitsOriginal.lcl) },
+        ];
+      },
+
     };
   },
+});
 
-  setState(data) {
-    if (data) this._loadState(data);
-    if (this._container) {
-      this._destroyPicker();
-      this._render();
-      this._initPicker();
-      this._bindEvents();
-      this._runAnalysis();
-    }
-  },
-
-  help: () => import('./transformed-imr-chart-help.js'),
-
-  /**
-   * Load a catalog example. Provision the inlined worksheet and rewrite
-   * the `__source__` placeholder in columnRef.
-   *
-   * @param {{ meta: object, data: object }} payload
-   */
-  async loadExample(payload) {
-    if (!payload || !payload.data) return;
-    const t = (k) => this._context.i18n.t(k);
-
-    const hasContent = !!this._columnRef;
-    if (hasContent && this._context?.confirmPopout) {
-      const ok = await this._context.confirmPopout(t('moduleHelp.confirmOverwrite'), { danger: true });
-      if (!ok) return;
-    }
-
-    const data = { ...payload.data };
-
-    if (data.sourceWorksheetData) {
-      const wsState = data.sourceWorksheetData;
-      delete data.sourceWorksheetData;
-      if (this._exampleWorksheetId) {
-        removeProvisionedWorksheet(this._context, this._exampleWorksheetId);
-        this._exampleWorksheetId = null;
-      }
-      const ref = provisionWorksheet(this._context, wsState);
-      if (ref) {
-        this._exampleWorksheetId = ref.instanceId;
-        if (data.columnRef?.instanceId === '__source__') {
-          data.columnRef = { ...data.columnRef, instanceId: ref.instanceId };
-        }
-      }
-    }
-
-    this.setState(data);
-    this._save();
-
-    const lang = this._context.i18n.getLanguage();
-    const title = payload.meta?.title?.[lang] || payload.meta?.title?.en || payload.meta?.id || '';
-    this._context.notify?.(t('moduleHelp.exampleLoaded').replace('{title}', title), 'success');
-  },
-
-  _loadState(s) {
-    this._columnRef = s.columnRef || null;
-    this._lambdaMode = s.lambdaMode === 'manual' ? 'manual' : 'auto';
-    this._lambdaManual = Number.isFinite(s.lambdaManual) ? s.lambdaManual : 0;
-  },
-
-  _save() {
-    this._context.stateManager.setModuleState(this._context.instanceId, this.getState());
-  },
-
-  _t(key, vars) { return this._context.i18n.t(`modules.transformed-imr-chart.${key}`, vars); },
-
-  _render() {
-    this._container.innerHTML = `
-      <div class="timr dmike-split">
-        <div class="timr__input dmike-split__input">
-
-          <div class="dmike-split__section-title">${this._t('sectionData')}</div>
-          <div class="field-group">
-            <label>${this._t('dataColumn')}</label>
-            <div data-ref="col-picker"></div>
-            <span class="timr__hint">${this._t('positiveHint')}</span>
-          </div>
-
-          <div class="dmike-split__section-title">${this._t('sectionLambda')}</div>
-          <div class="timr__lambda-row">
-            <div class="field-group">
-              <label>${this._t('lambdaMode')}</label>
-              <select class="field" data-ref="lambda-mode">
-                <option value="auto"${this._lambdaMode === 'auto' ? ' selected' : ''}>${this._t('lambdaAuto')}</option>
-                <option value="manual"${this._lambdaMode === 'manual' ? ' selected' : ''}>${this._t('lambdaManual')}</option>
-              </select>
-            </div>
-            <div class="field-group">
-              <label>λ</label>
-              <input type="number" class="field field--num" data-ref="lambda-manual"
-                value="${this._lambdaManual}" step="0.05" min="-3" max="3"
-                ${this._lambdaMode === 'auto' ? 'disabled' : ''}>
-            </div>
-          </div>
-          <span class="timr__hint">${this._t('lambdaHint')}</span>
-
-        </div>
-
-        <div class="timr__output dmike-split__output">
-          <div data-ref="error-area"></div>
-          <div data-ref="stats-bar"></div>
-          <div data-ref="charts-wrap"></div>
-          <div data-ref="limits-wrap"></div>
-        </div>
-      </div>
-    `;
-  },
-
-  _initPicker() {
-    const wrap = this._container.querySelector('[data-ref="col-picker"]');
-    if (!wrap) return;
-    this._picker = new ColumnPicker(wrap, this._context, {
-      mode: 'single', types: ['numeric'], minCount: 5,
-      onChange: (ref) => { this._columnRef = ref; this._save(); this._scheduleAutoRun(); },
-    });
-    if (this._columnRef) this._picker.value = this._columnRef;
-  },
-
-  _destroyPicker() {
-    if (this._picker) { this._picker.destroy(); this._picker = null; }
-  },
-
-  _bindEvents() {
-    this._container.addEventListener('change', (e) => {
-      const ref = e.target.dataset?.ref;
-      if (ref === 'lambda-mode') {
-        this._lambdaMode = e.target.value === 'manual' ? 'manual' : 'auto';
-        this._save();
-        const manualEl = this._container.querySelector('[data-ref="lambda-manual"]');
-        if (manualEl) manualEl.disabled = (this._lambdaMode === 'auto');
-        this._scheduleAutoRun();
-      }
-      if (ref === 'lambda-manual') {
-        const v = parseFloat(e.target.value);
-        if (Number.isFinite(v)) {
-          this._lambdaManual = v;
-          this._save();
-          if (this._lambdaMode === 'manual') this._scheduleAutoRun();
-        }
-      }
-    });
-  },
-
-  _scheduleAutoRun() {
-    clearTimeout(this._autoRunTimer);
-    this._autoRunTimer = setTimeout(() => this._runAnalysis(), 120);
-  },
-
-  // ─── Analysis ───────────────────────────────────────────────
-
-  _showError(msg) {
-    const errorArea = this._container.querySelector('[data-ref="error-area"]');
-    const statsBar  = this._container.querySelector('[data-ref="stats-bar"]');
-    const chartsWrap = this._container.querySelector('[data-ref="charts-wrap"]');
-    const limitsWrap = this._container.querySelector('[data-ref="limits-wrap"]');
-    if (errorArea) errorArea.innerHTML = `<div class="timr__error">${esc(msg)}</div>`;
-    if (statsBar)  statsBar.innerHTML = '';
-    if (chartsWrap) chartsWrap.innerHTML = '';
-    if (limitsWrap) limitsWrap.innerHTML = '';
-    this._destroyCharts();
-  },
-
-  _clear() {
-    const errorArea = this._container.querySelector('[data-ref="error-area"]');
-    const statsBar  = this._container.querySelector('[data-ref="stats-bar"]');
-    const chartsWrap = this._container.querySelector('[data-ref="charts-wrap"]');
-    const limitsWrap = this._container.querySelector('[data-ref="limits-wrap"]');
-    if (errorArea)  errorArea.innerHTML = '';
-    if (statsBar)   statsBar.innerHTML = '';
-    if (chartsWrap) chartsWrap.innerHTML = '';
-    if (limitsWrap) limitsWrap.innerHTML = '';
-    this._destroyCharts();
-  },
-
-  async _runAnalysis() {
-    if (!this._columnRef) { this._clear(); return; }
-    const raw = getColumnValues(this._context.stateManager, this._columnRef);
-    const values = raw.filter(v => typeof v === 'number' && !isNaN(v));
-    if (values.length < 5) { this._clear(); return; }
-    if (values.some(v => v <= 0)) {
-      this._showError(this._t('errPositiveOnly'));
-      return;
-    }
-
-    let result;
-    try {
-      result = computeTransformedIMR(values, {
-        lambda: this._lambdaMode === 'manual' ? this._lambdaManual : undefined,
-      });
-    } catch (e) {
-      const key = e.message === 'errPositiveOnly' ? 'errPositiveOnly' : 'errCompute';
-      this._showError(this._t(key, { msg: e.message }));
-      return;
-    }
-
-    this._lastLambda = result.lambda;
-    // Sync UI lambda input when auto-fitting
-    if (this._lambdaMode === 'auto') {
-      const manualEl = this._container.querySelector('[data-ref="lambda-manual"]');
-      if (manualEl) manualEl.value = result.lambda;
-    }
-
-    // Clear any previous error
-    const errorArea = this._container.querySelector('[data-ref="error-area"]');
-    if (errorArea) errorArea.innerHTML = '';
-
-    this._renderStats(result, values.length);
-    await this._renderCharts(result);
-    this._renderLimitsTable(result);
-  },
-
-  _renderStats(r, total) {
-    const statsBar = this._container.querySelector('[data-ref="stats-bar"]');
-    if (!statsBar) return;
-    const fmt = (v) => Number.isFinite(v) ? v.toFixed(3) : '–';
-    const cls = r.signalsI.length === 0 ? 'dmike-kpi--good' : 'dmike-kpi--bad';
-    statsBar.innerHTML = `<div class="dmike-kpi-strip">
-      <div class="dmike-kpi">
-        <div class="dmike-kpi-value">${fmt(r.lambda)}</div>
-        <div class="dmike-kpi-label">λ ${r.lambdaAuto ? this._t('lambdaAutoTag') : this._t('lambdaManualTag')}</div>
-        <div class="dmike-kpi-sub">${this._t('boxCoxLabel')}</div>
-      </div>
-      <div class="dmike-kpi">
-        <div class="dmike-kpi-value">${fmt(r.iLimits.cl)}</div>
-        <div class="dmike-kpi-label">CL (y)</div>
-        <div class="dmike-kpi-sub">σ̂ = ${fmt(r.iLimits.sigma)}</div>
-      </div>
-      <div class="dmike-kpi ${cls}">
-        <div class="dmike-kpi-value">${r.signalsI.length}</div>
-        <div class="dmike-kpi-label">${this._t('statSignals')}</div>
-        <div class="dmike-kpi-sub">${this._t('statOf', { total })}</div>
-      </div>
-    </div>`;
-  },
-
-  async _renderCharts(r) {
-    this._destroyCharts();
-    const chartsWrap = this._container.querySelector('[data-ref="charts-wrap"]');
-    if (!chartsWrap) return;
-    chartsWrap.innerHTML = '';
-
-    const colName = getColumnName(this._context.stateManager, this._columnRef);
-    const wrapper = document.createElement('div');
-    wrapper.className = 'timr__chart-section';
-    const header = document.createElement('div');
-    header.className = 'timr__chart-header';
-    const isStable = r.signalsI.length === 0;
-    header.innerHTML = `
-      <span class="timr__chart-title">${esc(this._t('chartTitle', { col: colName, lambda: r.lambda }))}</span>
-      <span class="timr__badge ${isStable ? 'timr__badge--stable' : 'timr__badge--unstable'}">
-        ${isStable ? this._t('stable') : this._t('unstable', { count: r.signalsI.length })}
-      </span>
-    `;
-    wrapper.appendChild(header);
-    const plotEl = document.createElement('div');
-    plotEl.className = 'timr__plot-wrap';
-    wrapper.appendChild(plotEl);
-    chartsWrap.appendChild(wrapper);
-
-    const chart = await this._context.chartManager.create(plotEl, 'control-chart', {
-      title: '',
-      xLabel: this._t('xLabelSample'),
-      yLabel: this._t('yLabel'),
-      showLegend: false,
-      showTitle: false,
-      values: r.transformed,
-      cl: r.iLimits.cl, ucl: r.iLimits.ucl, lcl: r.iLimits.lcl, sigma: r.iLimits.sigma,
-      violationIndices: new Set(r.signalsI),
-      usl: null, lsl: null,
-      showZones: true,
-    });
-    this._charts.push(chart);
-  },
-
-  _renderLimitsTable(r) {
-    const wrap = this._container.querySelector('[data-ref="limits-wrap"]');
-    if (!wrap) return;
-    const fmt = (v) => Number.isFinite(v) ? v.toFixed(3) : '–';
-    wrap.innerHTML = `
-      <table class="timr__limits-table">
-        <thead><tr>
-          <th>${this._t('thLimit')}</th>
-          <th>${this._t('thTransformed')}</th>
-          <th>${this._t('thOriginal')}</th>
-        </tr></thead>
-        <tbody>
-          <tr><td>UCL</td><td>${fmt(r.iLimits.ucl)}</td><td>${fmt(r.iLimitsOriginal.ucl)}</td></tr>
-          <tr><td>CL</td><td>${fmt(r.iLimits.cl)}</td><td>${fmt(r.iLimitsOriginal.cl)}</td></tr>
-          <tr><td>LCL</td><td>${fmt(r.iLimits.lcl)}</td><td>${fmt(r.iLimitsOriginal.lcl)}</td></tr>
-        </tbody>
-      </table>
-    `;
-  },
-
-  _destroyCharts() {
-    for (const c of this._charts) this._context.chartManager.destroy(c);
-    this._charts = [];
-  },
+/**
+ * Custom loadExample: transformed-imr-chart examples ship a full worksheet
+ * (`sourceWorksheetData`) and use the literal placeholder `__source__` as the
+ * `columnRef.instanceId`. On load we provision a fresh worksheet, rewrite the
+ * placeholder, then apply state (which re-runs the analysis on the new data).
+ *
+ * This replaces the generic createModule loadExample because of the worksheet
+ * provisioning the generic helper cannot perform.
+ *
+ * @param {{ meta: object, data: object }} payload
+ */
+mod.loadExample = function loadExample(payload) {
+  return loadWorksheetExample(this, payload, {
+    Model: State,
+    rewriteRefs: rewriteRefFields(['columnRef']),
+  });
 };
+
+export default mod;

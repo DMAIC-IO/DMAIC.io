@@ -1,0 +1,161 @@
+<div class="distfit dmike-split" x-data="distributionFit">
+  <div class="distfit__input dmike-split__input">
+    <div class="dmike-split__section-title" x-text="t('sectionData')"></div>
+
+    <div class="field-group">
+      <label x-text="t('columnSelectLabel')"></label>
+      <div data-ref="col-picker-wrap"></div>
+    </div>
+
+    <div class="field-group">
+      <label x-text="t('dataTypeLabel')"></label>
+      <div class="btn-group distfit__toggle-row">
+        <button class="btn--segment distfit__toggle-btn"
+                :class="model.dataType === 'auto' ? 'btn--active' : ''"
+                data-dtype="auto"
+                @click="setDataType('auto')"
+                x-text="t('dataTypeAuto')"></button>
+        <button class="btn--segment distfit__toggle-btn"
+                :class="model.dataType === 'continuous' ? 'btn--active' : ''"
+                data-dtype="continuous"
+                @click="setDataType('continuous')"
+                x-text="t('dataTypeCont')"></button>
+        <button class="btn--segment distfit__toggle-btn"
+                :class="model.dataType === 'discrete' ? 'btn--active' : ''"
+                data-dtype="discrete"
+                @click="setDataType('discrete')"
+                x-text="t('dataTypeDisc')"></button>
+      </div>
+    </div>
+
+    <div class="distfit__error" data-ref="error-box"></div>
+  </div>
+
+  <div class="distfit__output dmike-split__output">
+    <div class="distfit__placeholder" data-ref="placeholder">
+      <p x-text="t('placeholderText')"></p>
+    </div>
+    <div data-ref="results" style="display:none">
+      <template x-if="panelShow">
+        <div>
+          <div class="dmike-split__output-section" x-text="t('sectionDescriptive')"></div>
+          <div class="dmike-kpi-strip">
+            <template x-for="(c, i) in kpiCells" :key="i">
+              <div class="dmike-kpi">
+                <div class="dmike-kpi-value" x-text="c.value"></div>
+                <div class="dmike-kpi-label" x-text="c.label"></div>
+              </div>
+            </template>
+          </div>
+
+          <div class="dmike-split__output-section" x-text="t('sectionHistogram')"></div>
+          <div class="distfit__chart-wrap" data-ref="histogram"></div>
+
+          <div class="dmike-split__output-section" x-text="t('sectionRanking')"></div>
+          <div class="distfit__table-wrap">
+            <table class="dmike-table">
+              <thead><tr>
+                <th>#</th>
+                <th x-text="t('colDist')"></th>
+                <th x-text="t('colParams')"></th>
+                <th x-text="t('colTest')"></th>
+                <th x-text="t('colStat')"></th>
+                <th x-text="t('colP')"></th>
+                <th x-text="t('colFit')"></th>
+              </tr></thead>
+              <tbody>
+                <template x-for="(r, i) in rankRows" :key="i">
+                  <tr>
+                    <td><span class="distfit__rank" :class="'distfit__rank--' + r.rankSuffix" x-text="r.rank"></span></td>
+                    <td class="distfit__name-cell"><span x-text="r.name + ' '"></span><span class="distfit__tag" :class="r.typeTagClass" x-text="r.typeTagText"></span><template x-if="r.isBest"><span class="distfit__tag distfit__tag--best">BEST FIT</span></template></td>
+                    <td class="distfit__params-cell" x-text="r.params"></td>
+                    <td x-text="r.testName"></td>
+                    <td x-text="r.statVal"></td>
+                    <td class="distfit__p-cell" :class="'distfit__p-cell--' + r.q" x-text="r.pS"></td>
+                    <td>
+                      <div class="distfit__fit-bar"><div class="distfit__fit-bar-inner" :class="'distfit__fit-bar-inner--' + r.q" :style="'width:' + r.barWidth + '%'"></div></div>
+                      <span class="distfit__fit-label" x-text="r.qL"></span>
+                    </td>
+                  </tr>
+                </template>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="dmike-split__output-section" x-text="t('sectionDetails')"></div>
+          <template x-if="detailTiles.length">
+            <div class="distfit__detail-grid">
+              <template x-for="(d, i) in detailTiles" :key="i">
+                <div class="distfit__detail-tile">
+                  <h5>
+                    <span class="distfit__rank" :class="'distfit__rank--' + d.rankSuffix" x-text="d.rank"></span>
+                    <span x-text="' ' + d.name + ' '"></span><span class="distfit__tag" :class="d.typeTagClass" x-text="d.typeTagText"></span><template x-if="d.isBest"><span class="distfit__tag distfit__tag--best">BEST FIT</span></template>
+                    <span class="distfit__ndd-pill" :class="'distfit__ndd-pill--' + d.pillClass" x-text="d.qL"></span>
+                  </h5>
+                  <div class="distfit__detail-section">
+                    <div class="distfit__detail-subtitle" x-text="d.paramsLabel"></div>
+                    <div class="distfit__ndd-stats">
+                      <template x-for="(p, pi) in d.paramRows" :key="pi">
+                        <div class="distfit__ndd-row"><span x-text="p.key"></span><span x-text="p.val"></span></div>
+                      </template>
+                    </div>
+                  </div>
+                  <div class="distfit__detail-section">
+                    <div class="distfit__detail-subtitle" x-text="d.gofLabel"></div>
+                    <div class="distfit__ndd-stats">
+                      <div class="distfit__ndd-row"><span x-text="d.statRowLabel"></span><span x-text="d.statVal"></span></div>
+                      <template x-if="d.isDisc">
+                        <div class="distfit__ndd-row"><span>df</span><span x-text="d.df"></span></div>
+                      </template>
+                      <div class="distfit__ndd-row"><span x-text="d.pRowLabel"></span><span :class="d.pClass" x-text="d.pS"></span></div>
+                    </div>
+                  </div>
+                  <div class="distfit__interpret" :class="d.interpClass" x-text="d.interpText"></div>
+                </div>
+              </template>
+            </div>
+          </template>
+
+          <template x-if="nddShow">
+            <div class="distfit__ndd">
+              <div class="distfit__ndd-header">
+                <h4 x-text="t('nddTitle')"></h4>
+                <button class="distfit__ndd-toggle" data-action="toggle-ndd" @click="toggleNdd()" x-text="nddChevron()"></button>
+              </div>
+              <div class="distfit__ndd-body" data-ref="ndd-body" :class="nddBodyClass()">
+                <div class="distfit__ndd-grid">
+                  <template x-for="(c, i) in nddCards" :key="i">
+                    <div class="distfit__ndd-card">
+                      <template x-if="c.tooSmall">
+                        <div>
+                          <h5><span class="distfit__ndd-num" x-text="c.numText"></span><span x-text="c.name"></span><template x-if="c.hasAlgoLink"><button class="distfit__ndd-algo-link" :data-algo-id="c.algoId" title="Algorithm Lab" @click="openAlgoLab(c.algoId, $event)"><svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg></button></template></h5>
+                          <div class="distfit__ndd-desc" x-text="c.desc"></div>
+                          <div class="distfit__interpret distfit__interpret--moderate" x-text="c.tooSmallText"></div>
+                        </div>
+                      </template>
+                      <template x-if="!c.tooSmall">
+                        <div>
+                          <h5><span class="distfit__ndd-num" x-text="c.numText"></span><span x-text="c.name"></span><template x-if="c.hasAlgoLink"><button class="distfit__ndd-algo-link" :data-algo-id="c.algoId" title="Algorithm Lab" @click="openAlgoLab(c.algoId, $event)"><svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg></button></template><span class="distfit__ndd-pill" :class="c.pillClass" x-text="c.pillText"></span></h5>
+                          <div class="distfit__ndd-desc" x-text="c.desc"></div>
+                          <div class="distfit__ndd-stats">
+                            <div class="distfit__ndd-row"><span x-text="c.statRowLabel"></span><span x-text="c.statVal"></span></div>
+                            <div class="distfit__ndd-row"><span x-text="c.pRowLabel"></span><span :class="c.pClass" x-text="c.pS"></span></div>
+                          </div>
+                        </div>
+                      </template>
+                    </div>
+                  </template>
+                </div>
+                <div class="distfit__ndd-consensus" :class="nddConsensus.cls">
+                  <h5 x-text="nddConsensus.title"></h5>
+                  <div class="distfit__ndd-score"><template x-for="(dot, di) in nddDots" :key="di"><span class="distfit__ndd-dot" :class="dot.cls"></span></template><span class="distfit__ndd-score-label" x-text="nddConsensus.scoreLabel"></span></div>
+                  <p x-text="nddConsensus.text"></p>
+                </div>
+              </div>
+            </div>
+          </template>
+        </div>
+      </template>
+    </div>
+  </div>
+</div>

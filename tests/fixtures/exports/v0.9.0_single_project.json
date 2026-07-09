@@ -1,0 +1,185 @@
+{
+  "appVersion": "0.9.0",
+  "exportedAt": "2026-06-05T20:00:00.000Z",
+  "version": "0.9.0",
+  "settings": {
+    "language": "de",
+    "theme": "light",
+    "chartTitleSize": 15,
+    "chartLabelSize": 12,
+    "chartTickSize": 11,
+    "chartColors": null,
+    "chartBgColor": null,
+    "chartShowLegend": true,
+    "showAlgoLabLinks": true,
+    "confidenceLevel": 95,
+    "power": 80
+  },
+  "projectMeta": {
+    "name": "Goldene Fixture v0.9 — DMAIC-Prozessoptimierung",
+    "cycle": "dmaic",
+    "created": "2026-06-01T08:00:00.000Z",
+    "modified": "2026-06-05T20:00:00.000Z"
+  },
+  "phases": {
+    "data": [
+      { "instanceId": "inst-ws", "moduleId": "worksheet" },
+      { "instanceId": "inst-pareto", "moduleId": "pareto" }
+    ],
+    "define": [
+      { "instanceId": "inst-charter", "moduleId": "project-charter" },
+      { "instanceId": "inst-sipoc", "moduleId": "sipoc" }
+    ],
+    "measure": [
+      { "instanceId": "inst-msa", "moduleId": "msa-typ1" },
+      { "instanceId": "inst-cpk", "moduleId": "process-capability" }
+    ],
+    "analyze": [
+      { "instanceId": "inst-ishi", "moduleId": "ishikawa" },
+      { "instanceId": "inst-htest", "moduleId": "hypothesis-test" }
+    ],
+    "improve": [
+      { "instanceId": "inst-doep", "moduleId": "doe-planner" }
+    ],
+    "control": [
+      { "instanceId": "inst-cc", "moduleId": "control-chart" },
+      { "instanceId": "inst-ll", "moduleId": "lessons-learned" }
+    ],
+    "extras": []
+  },
+  "phaseAchievement": {
+    "define": 100,
+    "measure": 100,
+    "analyze": 80,
+    "improve": 50,
+    "control": 20
+  },
+  "phaseAchievementHistory": {
+    "define":  [ { "ts": "2026-06-02T10:00:00.000Z", "value": 100 } ],
+    "measure": [ { "ts": "2026-06-03T10:00:00.000Z", "value": 100 } ],
+    "analyze": [ { "ts": "2026-06-04T10:00:00.000Z", "value": 80 } ],
+    "improve": [ { "ts": "2026-06-05T10:00:00.000Z", "value": 50 } ]
+  },
+  "dashboard": {
+    "layout": []
+  },
+  "moduleStates": {
+    "inst-ws": {
+      "sheets": [
+        {
+          "id": "sheet-1",
+          "name": "Prozessdaten",
+          "state": {
+            "columns": [
+              { "id": "col-batch", "name": "Charge", "shortName": "C1", "type": "text", "unit": null, "values": ["A01","A02","A03","A04","A05","A06","A07","A08","A09","A10"], "formulas": [null,null,null,null,null,null,null,null,null,null], "format": {} },
+              { "id": "col-yield", "name": "Ausbeute", "shortName": "C2", "type": "numeric", "unit": "%", "values": [95.2,94.1,96.8,93.5,97.2,92.9,95.6,94.8,96.1,93.2], "formulas": [null,null,null,null,null,null,null,null,null,null], "format": { "decimals": 1 } }
+            ],
+            "rowCount": 10,
+            "colWidths": { "col-batch": 60, "col-yield": 90 },
+            "sortCol": null,
+            "sortDir": null,
+            "selection": null
+          }
+        }
+      ],
+      "activeSheetId": "sheet-1",
+      "sheetCounter": 1
+    },
+    "inst-pareto": {
+      "datasets": [
+        { "valueRef": { "instanceId": "inst-ws", "sheetId": "sheet-1", "columnId": "col-yield" }, "groupRef": null }
+      ],
+      "showTitle": true,
+      "chartTitleText": "Ausbeute pro Charge",
+      "showStats": true
+    },
+    "inst-charter": {
+      "problemStatement": "Prozessausbeute in den letzten Wochen von 97 % auf 93 % gefallen. Produktionsausfälle steigen.",
+      "goals": [
+        { "id": "g1", "text": "Ausbeute auf > 96 % steigern", "status": "open" },
+        { "id": "g2", "text": "Ursache statistisch absichern", "status": "in-progress" }
+      ],
+      "orgChart": [],
+      "orgStyle": {}
+    },
+    "inst-sipoc": {
+      "columns": {
+        "suppliers": ["Rohmaterial-Lieferant", "Energieversorger"],
+        "inputs": ["Vorprodukt A", "Hilfsstoff B"],
+        "process": ["Annahme", "Mischen", "Reagieren", "Abfüllen", "Prüfen"],
+        "outputs": ["Fertigprodukt", "Prüfprotokoll"],
+        "customers": ["Lager", "Versand"]
+      }
+    },
+    "inst-msa": {
+      "params": { "repeats": 25, "tolerance": 10, "reference": 95.0, "kCg": 0.2, "kCgk": 0.1 },
+      "columnRef": { "instanceId": "inst-ws", "sheetId": "sheet-1", "columnId": "col-yield" },
+      "lastResult": null
+    },
+    "inst-cpk": {
+      "params": { "lsl": 90, "usl": 100, "target": 95.0, "subgroupSize": 1 },
+      "columnRef": { "instanceId": "inst-ws", "sheetId": "sheet-1", "columnId": "col-yield" },
+      "lastResult": null
+    },
+    "inst-ishi": {
+      "problem": "Ausbeuterückgang in Produktion",
+      "experts": [],
+      "catLabels": { "man": "Mensch", "machine": "Maschine", "method": "Methode", "material": "Material", "measurement": "Messung", "milieu": "Mitwelt" },
+      "rows": [
+        { "id": "r1", "cat": "method", "text": "Temperaturführung instabil", "votes": 4 },
+        { "id": "r2", "cat": "material", "text": "Charge A02 abweichende Viskosität", "votes": 3 }
+      ],
+      "snapshots": [],
+      "experiments": [],
+      "facts": [],
+      "images": []
+    },
+    "inst-htest": {
+      "category": "mean",
+      "testType": "two-sample-t",
+      "direction": "two-sided",
+      "alpha": 0.05,
+      "powerGoal": 0.8,
+      "targetValue": 0,
+      "targetType": "null",
+      "colRef1": { "instanceId": "inst-ws", "sheetId": "sheet-1", "columnId": "col-yield" },
+      "colRef2": null
+    },
+    "inst-doep": {
+      "version": 3,
+      "doeName": "Temperaturoptimierung",
+      "designType": "full",
+      "factors": [
+        { "name": "Temperatur", "levels": ["180", "200"], "encoding": [ { "value": "180", "num": -1 }, { "value": "200", "num": 1 } ] },
+        { "name": "Rührzeit", "levels": ["10", "20"], "encoding": [ { "value": "10", "num": -1 }, { "value": "20", "num": 1 } ] }
+      ],
+      "responses": [ { "name": "Ausbeute", "unit": "%", "goalsense": "maximize", "nreps": 2, "levels": [] } ],
+      "options": { "centerPoints": 2, "blockCount": 1, "randomize": true, "seed": 42 },
+      "selectedRes": null,
+      "selectedPBIdx": 0,
+      "design": null,
+      "worksheetRef": null,
+      "evaluation": null,
+      "analysisResponseIdx": 0,
+      "fid": "doe-temp-001",
+      "projectMode": false,
+      "projectName": "",
+      "projectPhases": [],
+      "activePhaseIdx": 0
+    },
+    "inst-cc": {
+      "chartTypeId": "i-mr",
+      "subgroupSize": 1,
+      "columnRef": { "instanceId": "inst-ws", "sheetId": "sheet-1", "columnId": "col-yield" },
+      "baselineCount": 10,
+      "usl": null,
+      "lsl": null,
+      "enabledRules": [1, 2, 3, 4, 5, 6, 7, 8]
+    },
+    "inst-ll": {
+      "lessons": [
+        { "id": "l1", "category": "Methodik", "text": "Temperaturführung muss automatisiert geregelt werden.", "date": "2026-06-05", "owner": "Engineering", "impact": "high" }
+      ]
+    }
+  }
+}

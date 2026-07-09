@@ -1,0 +1,176 @@
+<section class="control-chart dmike-split" x-data="controlChart">
+  <div class="control-chart__input dmike-split__input">
+
+    <div class="dmike-split__section-title" x-text="t('sectionChartType')"></div>
+    <div class="field-group">
+      <label x-text="t('chartType')"></label>
+      <select class="field" data-ref="chart-type" x-model="model.chartTypeId" @change="chartTypeChanged()">
+        <option value="i-mr" x-text="t('type_i-mr')"></option>
+        <option value="xbar-r" x-text="t('type_xbar-r')"></option>
+        <option value="xbar-s" x-text="t('type_xbar-s')"></option>
+      </select>
+    </div>
+
+    <div class="field-group" data-ref="subgroup-row" x-show="showSubgroup()">
+      <label x-text="t('subgroupSize')"></label>
+      <input type="number" class="field field--num" data-ref="subgroup-size"
+        :value="model.subgroupSize" :min="subgroupMin()" :max="subgroupMax()"
+        @change="subgroupSizeChanged($event)">
+    </div>
+
+    <div class="dmike-split__section-title" x-text="t('sectionData')"></div>
+    <div class="field-group">
+      <label x-text="t('dataColumn')"></label>
+      <div data-ref="col-picker-wrap"></div>
+    </div>
+
+    <div class="field-group">
+      <label x-text="t('baselineCount')"></label>
+      <input type="number" class="field field--num" data-ref="baseline-count"
+        :value="baselineValue()" min="2" :placeholder="t('baselineAll')"
+        @change="baselineChanged($event)">
+      <span class="control-chart__hint" x-text="t('baselineHint')"></span>
+    </div>
+
+    <div class="dmike-split__section-title" x-text="t('sectionStages')"></div>
+    <div class="field-group">
+      <label x-text="t('stagesLabel')"></label>
+      <input type="text" class="field" data-ref="stages"
+        :value="model.stagesText" :placeholder="t('stagesPlaceholder')"
+        @change="stagesChanged($event)">
+      <span class="control-chart__hint" x-text="t('stagesHint')"></span>
+    </div>
+
+    <div class="dmike-split__section-title" x-text="t('sectionPhase2')"></div>
+    <div class="control-chart__phase2">
+      <div class="control-chart__phase2-status">
+        <span class="control-chart__phase2-badge" :class="phase2BadgeClass()" x-text="phase2BadgeText()"></span>
+      </div>
+      <button type="button" class="btn btn--small" :class="phase2BtnClass()"
+        data-ref="phase2-toggle" @click="phase2Toggle()" x-text="phase2BtnText()"></button>
+      <span class="control-chart__hint" x-text="t('phase2Hint')"></span>
+    </div>
+
+    <div class="dmike-split__section-title" x-text="t('sectionSpec')"></div>
+    <div class="control-chart__spec-row">
+      <div class="field-group">
+        <label x-text="t('lsl')"></label>
+        <input type="number" class="field field--num" data-ref="lsl"
+          :value="lslValue()" placeholder="—" @change="lslChanged($event)">
+      </div>
+      <div class="field-group">
+        <label x-text="t('usl')"></label>
+        <input type="number" class="field field--num" data-ref="usl"
+          :value="uslValue()" placeholder="—" @change="uslChanged($event)">
+      </div>
+    </div>
+    <span class="control-chart__hint" x-text="t('specHint')"></span>
+
+    <div class="dmike-split__section-title control-chart__collapsible" data-ref="nelson-toggle"
+      :class="nelsonToggleClass()" @click="toggleNelson()">
+      <span x-text="t('sectionNelson')"></span>
+      <span class="control-chart__chevron" x-text="chevronGlyph()"></span>
+    </div>
+    <div class="control-chart__nelson-panel" data-ref="nelson-panel" :class="nelsonPanelClass()">
+      <template x-for="rule in rulesView()">
+        <label class="control-chart__nelson-rule" :key="rule.id">
+          <input type="checkbox" :data-rule="rule.id" :checked="isRuleEnabled(rule.id)"
+            @change="toggleRule(rule.id, $event)">
+          <span>
+            <strong x-text="rule.short"></strong><br>
+            <span class="control-chart__nelson-desc" x-text="rule.desc"></span>
+          </span>
+        </label>
+      </template>
+    </div>
+
+  </div>
+
+  <div class="control-chart__output dmike-split__output">
+    <div data-ref="stats-bar">
+      <template x-if="kpiCells.length">
+        <div class="dmike-kpi-strip">
+          <template x-for="(c, i) in kpiCells" :key="i">
+            <div class="dmike-kpi" :class="c.mod">
+              <div class="dmike-kpi-value" x-text="c.value"></div>
+              <div class="dmike-kpi-label"><span x-text="c.label"></span><template x-if="c.labelHint"><span class="control-chart__hint" x-text="' (' + c.labelHint + ')'"></span></template></div>
+              <div class="dmike-kpi-sub" x-text="c.sub"></div>
+            </div>
+          </template>
+        </div>
+      </template>
+    </div>
+    <div data-ref="charts-wrap">
+      <template x-for="(cv, i) in chartViews" :key="cv.id">
+        <div class="control-chart__chart-section">
+          <div class="control-chart__chart-header">
+            <span class="control-chart__chart-title" x-text="cv.title"></span>
+            <span class="control-chart__badge" :class="cv.badgeClass" x-text="cv.badgeText"></span>
+          </div>
+          <div class="control-chart__plot-wrap" :data-chart-host="cv.id"></div>
+        </div>
+      </template>
+    </div>
+    <template x-if="noViolations">
+      <div class="control-chart__no-violations" x-text="t('noViolations')"></div>
+    </template>
+    <div data-ref="violations-wrap">
+      <template x-if="violationRows.length">
+        <div class="control-chart__violations-panel">
+          <div class="control-chart__violations-header" x-text="violationsHeaderText()"></div>
+          <div class="control-chart__violations-list">
+            <template x-for="(r, i) in violationRows" :key="i">
+              <div class="control-chart__violation-row" :data-violation-index="r.index" role="button" tabindex="0"
+                @click="openViolation(r)" @keydown="onViolationKey(r, $event)">
+                <span class="control-chart__v-idx" x-text="vIdxLabel(r)"></span>
+                <span class="control-chart__v-rule" x-text="vRuleLabel(r)"></span>
+                <span class="control-chart__v-desc" x-text="r.desc"></span>
+                <template x-if="r.hasAnn">
+                  <span class="control-chart__v-ann" :data-excluded="r.annExcluded ? '1' : false" x-text="r.annText"></span>
+                </template>
+                <template x-if="!r.hasAnn">
+                  <span class="control-chart__v-add" x-text="t('annotationAdd')"></span>
+                </template>
+              </div>
+            </template>
+          </div>
+        </div>
+      </template>
+    </div>
+  </div>
+
+  <template x-if="annOpen">
+    <div class="dmike-chart-popout-overlay" @click="annOverlayClick($event)"
+      @keydown.escape.window="closeAnnotation()">
+      <div class="dmike-chart-popout dmike-chart-popout--compact"
+        style="width:420px;height:auto;max-height:80vh;left:calc(50% - 210px);top:120px;">
+        <div class="dmike-chart-popout-titlebar">
+          <span x-text="annTitle()"></span>
+          <button class="dmike-chart-popout-close" type="button" @click="closeAnnotation()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+          </button>
+        </div>
+        <div class="dmike-chart-popout-body dmike-popout-body--column">
+          <div class="field-group">
+            <label x-text="t('annotationComment')"></label>
+            <textarea class="field" data-ref="ann-comment" rows="3"
+              :placeholder="t('annotationPlaceholder')" x-model="annComment"></textarea>
+          </div>
+          <div class="field-group">
+            <label class="control-chart__check">
+              <input type="checkbox" data-ref="ann-excluded" x-model="annExcluded">
+              <span x-text="t('annotationExclude')"></span>
+            </label>
+            <span class="control-chart__hint" x-text="t('annotationExcludeHint')"></span>
+          </div>
+          <div class="dmike-popout-footer">
+            <button class="btn btn--secondary" type="button"
+              :style="annRemoveStyle()" @click="removeAnnotation()" x-text="t('annotationRemove')"></button>
+            <button class="btn btn--secondary" type="button" @click="closeAnnotation()" x-text="cancelLabel()"></button>
+            <button class="btn btn--primary" type="button" @click="saveAnnotation()" x-text="t('annotationSave')"></button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </template>
+</section>

@@ -1,10 +1,11 @@
 /**
  * DMAIC.io — KaTeX Loader (katex-loader.js)
  *
- * Lazy-loads the vendor KaTeX CSS + JS bundle exactly once per session,
- * regardless of how many call sites need it (algorithm-lab, glossary
- * details, future module-help formulas). Also provides helpers to render
- * block and inline math from the DMAIC.io conventions:
+ * KaTeX is bundled from node_modules into app.min.js (CSS into app.min.css),
+ * so no runtime loading is needed. `ensureKaTeX()` is retained as a resolved
+ * async no-op for existing call sites (algorithm-lab, glossary details,
+ * module-help formulas). Also provides helpers to render block and inline
+ * math from the DMAIC.io conventions:
  *
  *   - **Block formulas:** `<element data-katex="\\sigma^2 = …">` — typically
  *     emitted by glossary `formula` blocks.
@@ -14,43 +15,16 @@
  * Failures are non-fatal — the raw LaTeX text remains visible.
  */
 
-let _katexPromise = null;
-
-const KATEX_CSS = './vendor/katex/katex.min.css';
-const KATEX_JS  = './vendor/katex/katex.min.js';
+import katex from 'katex';
 
 /**
- * Ensure KaTeX is loaded. Resolves once `window.katex` is available.
- * Safe to call concurrently — repeated calls share one underlying load.
+ * KaTeX is statically bundled from node_modules; its CSS ships inside
+ * app.min.css. Kept async so existing `await ensureKaTeX()` call sites are
+ * unchanged. Resolves immediately — the library is always present.
  * @returns {Promise<void>}
  */
 export function ensureKaTeX() {
-  if (typeof window !== 'undefined' && window.katex) return Promise.resolve();
-  if (_katexPromise) return _katexPromise;
-
-  _katexPromise = new Promise((resolve, reject) => {
-    // CSS — append if not already there.
-    if (!document.querySelector('link[href*="katex"]')) {
-      const link = document.createElement('link');
-      link.rel = 'stylesheet';
-      link.href = KATEX_CSS;
-      document.head.append(link);
-    }
-    // JS — reuse an existing tag (e.g. injected by algorithm-lab) if present.
-    const existing = document.querySelector('script[src*="katex.min.js"]');
-    if (existing) {
-      if (window.katex) return resolve();
-      existing.addEventListener('load', () => resolve());
-      existing.addEventListener('error', reject);
-      return;
-    }
-    const s = document.createElement('script');
-    s.src = KATEX_JS;
-    s.onload = () => resolve();
-    s.onerror = reject;
-    document.head.append(s);
-  });
-  return _katexPromise;
+  return Promise.resolve();
 }
 
 /**
@@ -68,11 +42,11 @@ export async function renderBlockMath(root) {
   } catch {
     return;
   }
-  if (!window.katex) return;
+  if (!katex) return;
   for (const el of els) {
     const latex = el.getAttribute('data-katex') || '';
     try {
-      window.katex.render(latex, el, { throwOnError: false, displayMode: true });
+      katex.render(latex, el, { throwOnError: false, displayMode: true });
       el.dataset.katexRendered = '1';
     } catch {
       el.textContent = latex;
@@ -94,11 +68,11 @@ export async function renderInlineMath(root) {
   } catch {
     return;
   }
-  if (!window.katex) return;
+  if (!katex) return;
   for (const el of els) {
     const latex = el.getAttribute('data-katex-inline') || '';
     try {
-      window.katex.render(latex, el, { throwOnError: false, displayMode: false });
+      katex.render(latex, el, { throwOnError: false, displayMode: false });
       el.dataset.katexRendered = '1';
     } catch {
       el.textContent = latex;

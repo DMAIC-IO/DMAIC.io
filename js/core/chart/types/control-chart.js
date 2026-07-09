@@ -9,6 +9,7 @@
  */
 
 import ChartBase from '../chart-base.js';
+import { h } from '../../dom.js';
 import { svgEl, resolveColor, formatNum, drawMarker } from '../chart-core.js';
 
 export default class ControlChartType extends ChartBase {
@@ -111,7 +112,7 @@ export default class ControlChartType extends ChartBase {
    * @override
    * plotGroup already has clip-path from ChartBase — no need to clip children.
    */
-  _renderData(svg, plotGroup, xScale, yScale, xTick, yTick, plotArea, defs) {
+  _renderData(svg, plotGroup, xScale, yScale, xTick, yTick, plotArea, _defs) {
     const { values, cl, ucl, lcl, sigma, violationIndices, baselineEnd, showZones } = this.config;
     if (!values.length) return;
 
@@ -336,12 +337,15 @@ export default class ControlChartType extends ChartBase {
 
       if (dist <= proximityPx * 2) {
         const isViol = violSet.has(i);
-        let html = `<strong>#${i + 1}</strong><br>${formatNum(values[i], null, this.locale)}`;
-        if (isViol) {
-          html += `<br><span style="color:${resolveColor('var(--color-error)')}">&#9873; Nelson Rule</span>`;
-        }
+        const node = h('div', null,
+          h('strong', null, `#${i + 1}`),
+          h('br'),
+          formatNum(values[i], null, this.locale),
+          isViol ? h('br') : null,
+          isViol ? h('span', { style: `color:${resolveColor('var(--color-error)')}` }, '⚑ Nelson Rule') : null,
+        );
         results.push({
-          html,
+          node,
           px, py,
           color: resolveColor(isViol ? 'var(--color-error)' : 'var(--color-accent)'),
           dist,
@@ -368,7 +372,7 @@ export default class ControlChartType extends ChartBase {
       setVisible: () => {},
       getSymbol: () => cfg.pointSymbol || 'circle',
       setSymbol: (v) => { cfg.pointSymbol = v; },
-      getSize: () => cfg.pointSize ?? (cfg.pointRadius * 2) ?? 6,
+      getSize: () => cfg.pointSize ?? (cfg.pointRadius * 2),
       setSize: (v) => { cfg.pointSize = v; },
       getStroke: () => cfg.pointStroke || 'rgba(0,0,0,0)',
       setStroke: (v) => { cfg.pointStroke = v; },

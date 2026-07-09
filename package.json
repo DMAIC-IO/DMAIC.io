@@ -1,9 +1,29 @@
 {
   "private": true,
+  "type": "module",
   "scripts": {
-    "dev": "npx serve . --no-cache"
+    "postinstall": "node tools/license-report/generate.mjs",
+    "dev": "npx serve . --no-cache",
+    "build": "node tools/build/build.mjs",
+    "build:check": "node tools/build/build.mjs --check",
+    "build:watch": "node tools/build/build.mjs --watch",
+    "test:build": "node --test tools/build/",
+    "test:unit": "node tests/run-node.mjs",
+    "docs": "node tools/static-handbook/build.mjs",
+    "docs:clean": "node tools/static-handbook/build.mjs --clean",
+    "licenses": "node tools/license-report/generate.mjs",
+    "licenses:check": "node tools/license-report/generate.mjs --check"
+  },
+  "dependencies": {
+    "@alpinejs/csp": "^3.14.0",
+    "katex": "^0.16.11",
+    "opentype.js": "^1.3.4",
+    "papaparse": "^5.4.1",
+    "prismjs": "^1.29.0",
+    "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz"
   },
   "devDependencies": {
+    "esbuild": "^0.25.0",
     "playwright": "^1.59.1"
   }
 }

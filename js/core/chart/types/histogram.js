@@ -5,6 +5,7 @@
  */
 
 import ChartBase from '../chart-base.js';
+import { h } from '../../dom.js';
 import {
   svgEl, resolveColor, formatNum, getChartColors
 } from '../chart-core.js';
@@ -42,14 +43,14 @@ function computeBinCount(data, method, manualCount) {
 
   switch (method) {
     case 'scott': {
-      const h = 3.49 * stdDev * Math.pow(n, -1 / 3);
-      if (h <= 0) return Math.max(5, Math.ceil(Math.sqrt(n)));
-      return Math.max(3, Math.ceil((sorted[n - 1] - sorted[0]) / h));
+      const binW = 3.49 * stdDev * Math.pow(n, -1 / 3);
+      if (binW <= 0) return Math.max(5, Math.ceil(Math.sqrt(n)));
+      return Math.max(3, Math.ceil((sorted[n - 1] - sorted[0]) / binW));
     }
     case 'freedman-diaconis': {
-      const h = 2 * iqr(sorted) * Math.pow(n, -1 / 3);
-      if (h <= 0) return Math.max(5, Math.ceil(Math.sqrt(n)));
-      return Math.max(3, Math.ceil((sorted[n - 1] - sorted[0]) / h));
+      const binW = 2 * iqr(sorted) * Math.pow(n, -1 / 3);
+      if (binW <= 0) return Math.max(5, Math.ceil(Math.sqrt(n)));
+      return Math.max(3, Math.ceil((sorted[n - 1] - sorted[0]) / binW));
     }
     default: // sturges
       return Math.max(3, Math.ceil(Math.log2(n) + 1));
@@ -206,7 +207,7 @@ export default class HistogramChart extends ChartBase {
   // ── Abstract Implementation: Render Data ─────────────────────────
 
   /** @override */
-  _renderData(svg, plotGroup, xScale, yScale, xTick, yTick, plotArea, defs) {
+  _renderData(svg, plotGroup, xScale, yScale, _xTick, _yTick, _plotArea, _defs) {
     const data = this.config.data || [];
     if (!data.length) return;
 
@@ -240,21 +241,21 @@ export default class HistogramChart extends ChartBase {
       const densSpan = Math.abs(densityBase - densityPx);
       if (valSpan <= 0 || densSpan <= 0) continue;
 
-      let x, y, w, h;
+      let x, y, w, rectH;
       if (isHorizontal) {
         x = Math.min(densityBase, densityPx);
         y = Math.min(e0, e1);
         w = densSpan;
-        h = valSpan;
+        rectH = valSpan;
       } else {
         x = Math.min(e0, e1);
         y = Math.min(densityBase, densityPx);
         w = valSpan;
-        h = densSpan;
+        rectH = densSpan;
       }
 
       svgEl('rect', {
-        x, y, width: w, height: h,
+        x, y, width: w, height: rectH,
         fill: barFill, 'fill-opacity': 0.6,
         stroke: barStroke, 'stroke-width': 1,
       }, plotGroup);
@@ -328,7 +329,7 @@ export default class HistogramChart extends ChartBase {
     // ── Normal Curve ──
     const curveSec = edSection(th('normalCurve'));
 
-    curveSec.appendChild(edCheckboxRow(th('showNormalCurve'), !!cfg.showNormalCurve, (v) => {
+    curveSec.appendChild(edCheckboxRow(th('showNormalCurve'), Boolean(cfg.showNormalCurve), (v) => {
       cfg.showNormalCurve = v;
       onUpdate();
     }));
@@ -407,7 +408,7 @@ export default class HistogramChart extends ChartBase {
   // ── Abstract Implementation: Find Nearby ─────────────────────────
 
   /** @override */
-  _findNearby(dataX, dataY, proximityPx) {
+  _findNearby(dataX, dataY, _proximityPx) {
     const bins = this._bins;
     if (!bins) return [];
 
@@ -424,8 +425,11 @@ export default class HistogramChart extends ChartBase {
         const py = isHorizontal ? this._yScale(midVal) : this._yScale(halfDen);
 
         return [{
-          html: `<b>${formatNum(bin.x0, 2, this.locale)} – ${formatNum(bin.x1, 2, this.locale)}</b><br>`
-            + `n = ${bin.count}`,
+          node: h('div', null,
+            h('b', null, `${formatNum(bin.x0, 2, this.locale)} – ${formatNum(bin.x1, 2, this.locale)}`),
+            h('br'),
+            `n = ${bin.count}`,
+          ),
           px, py,
         }];
       }

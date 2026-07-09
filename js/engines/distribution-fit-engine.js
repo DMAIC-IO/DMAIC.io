@@ -34,7 +34,7 @@ export function kurtosis(a) {
 
 /** @param {number[]} a */
 export function median(a) {
-  const s = [...a].sort((a, b) => a - b);
+  const s = [...a].sort((x, y) => x - y);
   const m = Math.floor(s.length / 2);
   return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2;
 }
@@ -60,8 +60,8 @@ export function descriptiveStats(data) {
 // ─── Special Functions (from math-utils.js) ─────────────────
 
 import {
-  erf, normalCDF, normalPDF, normalQuantile,
-  lnGamma, gammaFn, gammainc, chi2CDF,
+  erf, normalCDF, normalPDF,
+  lnGamma, gammaFn, gammainc,
 } from './math-utils.js';
 
 import {
@@ -70,10 +70,6 @@ import {
   jarqueBera as _jbTest,
   dagostinoPearson as _dpTest,
 } from './normality-test-engine.js';
-
-// Aliases used internally
-const stdNormalCDF = (x) => normalCDF(x);
-const stdNormalQuantile = normalQuantile;
 
 // ─── Distribution CDFs & PDFs ────────────────────────────────
 

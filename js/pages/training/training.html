@@ -1,0 +1,62 @@
+<section class="training-area__inner" x-data="training">
+  <header class="training-area__header">
+    <h2 class="training-area__title" x-text="pageTitle()"></h2>
+    <p class="training-area__subtitle" x-text="pageSubtitle()"></p>
+    <div class="training-area__tabs" role="tablist">
+      <template x-for="tab in tabs">
+        <button type="button" :key="tab.id"
+                :data-tab-id="tab.id"
+                :class="tabClass(tab.id)"
+                x-text="tab.label"
+                @click="selectTab(tab.id)"></button>
+      </template>
+    </div>
+  </header>
+  <div class="training-area__content">
+    <template x-for="(b, i) in blocks()">
+      <div :key="i">
+        <template x-if="isType(b, 'p')"><p x-text="b.text"></p></template>
+        <template x-if="isType(b, 'h3')"><h3 x-text="b.text"></h3></template>
+        <template x-if="isType(b, 'h4')"><h4 x-text="b.text"></h4></template>
+        <template x-if="isType(b, 'ul')">
+          <ul>
+            <template x-for="(it, j) in b.items"><li :key="j" x-text="it"></li></template>
+          </ul>
+        </template>
+        <template x-if="isType(b, 'ol')">
+          <ol>
+            <template x-for="(it, j) in b.items"><li :key="j" x-text="it"></li></template>
+          </ol>
+        </template>
+        <template x-if="isType(b, 'table')">
+          <table class="training-area__table">
+            <thead>
+              <tr>
+                <template x-for="(col, j) in b.cols">
+                  <th :key="j" :style="thStyle(col)" x-text="col.label"></th>
+                </template>
+              </tr>
+            </thead>
+            <tbody>
+              <template x-for="(row, r) in b.rows">
+                <tr :key="r">
+                  <template x-for="(c, ci) in row">
+                    <td :key="ci" :class="tdClass(c)">
+                      <template x-for="(seg, si) in c.segs">
+                        <span :key="si">
+                          <template x-if="isEm(seg)"><strong x-text="seg.text"></strong></template>
+                          <template x-if="isHint(seg)"><span class="training-area__module-hint" x-text="seg.text"></span></template>
+                          <template x-if="isPlain(seg)"><span x-text="seg.text"></span></template>
+                        </span>
+                      </template>
+                    </td>
+                  </template>
+                </tr>
+              </template>
+            </tbody>
+          </table>
+        </template>
+      </div>
+    </template>
+  </div>
+</section>

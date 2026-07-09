@@ -17,7 +17,7 @@
  * No DOM, no side effects.
  */
 
-import { mean, variance, stddev } from './stats-utils.js';
+import { mean, stddev } from './stats-utils.js';
 
 // ── Basic statistics ────────────────────────────────────────────────
 
@@ -27,9 +27,8 @@ function sum(arr) { return arr.reduce((s, v) => s + v, 0); }
 // ── Distribution helpers (from math-utils.js) ─────────────────────
 
 import {
-  normalCDF, normalQuantile, normalPDF, erfc,
-  tCDF, tPDF, tInv, tPValue, fCDF, fPDF, fPValue, fQuantile,
-  lnGamma,
+  normalCDF, normalQuantile, erfc,
+  tCDF, tInv, tPValue, fCDF, fPValue, fQuantile,
 } from './math-utils.js';
 
 // ── Matrix operations (public) ─────────────────────────────────────
@@ -92,7 +91,7 @@ export function matTrace(A) {
  */
 export function matIdentity(n) {
   return Array.from({ length: n }, (_, i) =>
-    Array.from({ length: n }, (_, j) => (i === j ? 1 : 0))
+    Array.from({ length: n }, (_j, j) => (i === j ? 1 : 0))
   );
 }
 
@@ -193,7 +192,7 @@ export function matInverse(A) {
   const P = aug.map(row => row.slice(n));
 
   const inv = Array.from({ length: n }, (_, i) =>
-    Array.from({ length: n }, (_, j) => P[i][j] / (colScale[i] * rowScale[j]))
+    Array.from({ length: n }, (_j, j) => P[i][j] / (colScale[i] * rowScale[j]))
   );
   return inv;
 }
@@ -370,7 +369,7 @@ export function buildModelMatrix(codedMatrix, opts = {}) {
       } else if (tag === 'Q') {
         const f = parseInt(id.slice(1), 10);
         if (!Number.isFinite(f) || f < 0 || f >= k) continue;
-        termNames.push(letter(f) + '²');
+        termNames.push(`${letter(f)  }²`);
         for (let i = 0; i < n; i++) {
           const v = codedMatrix[i][f];
           X[i].push(v * v);
@@ -402,7 +401,7 @@ export function buildModelMatrix(codedMatrix, opts = {}) {
     const a = Math.min(pair[0], pair[1]);
     const b = Math.max(pair[0], pair[1]);
     if (a === b) continue;
-    excludedSet.add(a + '_' + b);
+    excludedSet.add(`${a  }_${  b}`);
   }
 
   const termNames = [];
@@ -424,8 +423,8 @@ export function buildModelMatrix(codedMatrix, opts = {}) {
   if (includeIx) {
     for (let a = 0; a < k; a++) {
       for (let b = a + 1; b < k; b++) {
-        if (excludedSet.has(a + '_' + b)) continue;
-        termNames.push(String.fromCharCode(65 + a) + '\u00d7' + String.fromCharCode(65 + b));
+        if (excludedSet.has(`${a  }_${  b}`)) continue;
+        termNames.push(`${String.fromCharCode(65 + a)  }\u00d7${  String.fromCharCode(65 + b)}`);
         for (let i = 0; i < n; i++) {
           X[i].push(codedMatrix[i][a] * codedMatrix[i][b]);
         }
@@ -624,8 +623,8 @@ export function lackOfFitTest(y, predicted, replicateGroups, dfError) {
     if (!Array.isArray(group) || group.length < 2) continue;
     const usable = group.filter(i => Number.isFinite(y[i]));
     if (usable.length < 2) continue;
-    const mean = usable.reduce((s, i) => s + y[i], 0) / usable.length;
-    for (const i of usable) ssPE += (y[i] - mean) ** 2;
+    const groupMean = usable.reduce((s, i) => s + y[i], 0) / usable.length;
+    for (const i of usable) ssPE += (y[i] - groupMean) ** 2;
     dfPE += usable.length - 1;
   }
 
@@ -836,7 +835,6 @@ export function compileModelSpec(spec, data) {
   if (!spec || !Array.isArray(spec.predictors) || !Array.isArray(spec.terms)) {
     throw new Error('compileModelSpec: spec must have predictors[] and terms[]');
   }
-  const predById = new Map(spec.predictors.map(p => [p.id, p]));
   const cols = data?.columns || {};
   const lengths = Object.values(cols).map(c => Array.isArray(c) ? c.length : 0);
   if (lengths.length === 0) throw new Error('compileModelSpec: data.columns is empty');
@@ -865,7 +863,7 @@ export function compileModelSpec(spec, data) {
           throw new Error(`compileModelSpec: non-finite value in continuous predictor "${pred.id}" at row ${i}`);
         }
       }
-      expansions.set(pred.id, { kind: 'continuous', linear: colData.map(v => +v), powerCache: new Map() });
+      expansions.set(pred.id, { kind: 'continuous', linear: colData.map(v => Number(v)), powerCache: new Map() });
     } else if (pred.kind === 'categorical') {
       if (!Array.isArray(pred.levels) || pred.levels.length < 2) {
         throw new Error(`compileModelSpec: categorical predictor "${pred.id}" needs ≥ 2 levels`);

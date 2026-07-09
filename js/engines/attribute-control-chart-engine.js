@@ -263,7 +263,6 @@ export function evaluateAttributeRules(values, cl, ucl, lcl, sigma, enabledRules
 
   const uclAt = (i) => Array.isArray(ucl) ? ucl[i] : ucl;
   const lclAt = (i) => Array.isArray(lcl) ? lcl[i] : lcl;
-  const sigmaAt = (i) => Array.isArray(sigma) ? sigma[i] : sigma;
   const variableSigma = Array.isArray(sigma);
 
   // Rule 1: Beyond limits

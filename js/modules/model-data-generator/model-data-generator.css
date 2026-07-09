@@ -106,6 +106,13 @@
   padding: 3px 0;
 }
 
+/* 4th grid cell — wraps the (conditionally rendered) remove button */
+.mdg-factor-action {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 /* Remove button: global .btn--icon-sm .btn--danger with slightly larger size */
 .mdg-btn-remove {
   width: 24px;

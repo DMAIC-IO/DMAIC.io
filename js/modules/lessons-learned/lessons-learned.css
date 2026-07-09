@@ -35,27 +35,27 @@
 }
 
 .ll__stat-icon--total {
-  background: var(--color-accent-bg, rgba(56, 189, 248, 0.12));
+  background: var(--color-accent-bg, rgb(56 189 248 / 12%));
   color: var(--color-accent);
 }
 
 .ll__stat-icon--success {
-  background: var(--color-success-bg, rgba(52, 211, 153, 0.12));
+  background: var(--color-success-bg, rgb(52 211 153 / 12%));
   color: var(--color-success, #34d399);
 }
 
 .ll__stat-icon--problem {
-  background: var(--color-danger-bg, rgba(248, 113, 113, 0.12));
+  background: var(--color-danger-bg, rgb(248 113 113 / 12%));
   color: var(--color-danger, #f87171);
 }
 
 .ll__stat-icon--improve {
-  background: var(--color-warning-bg, rgba(251, 191, 36, 0.12));
+  background: var(--color-warning-bg, rgb(251 191 36 / 12%));
   color: var(--color-warning, #fbbf24);
 }
 
 .ll__stat-icon--actions {
-  background: var(--dmaic-define-bg, rgba(167, 139, 250, 0.12));
+  background: var(--dmaic-define-bg, rgb(167 139 250 / 12%));
   color: var(--dmaic-define, #a78bfa);
 }
 
@@ -115,7 +115,7 @@
 }
 
 .ll__filter-chip--active {
-  background: var(--color-accent-bg, rgba(56, 189, 248, 0.12));
+  background: var(--color-accent-bg, rgb(56 189 248 / 12%));
   border-color: var(--color-accent);
   color: var(--color-accent);
 }
@@ -196,27 +196,27 @@
 }
 
 .ll__phase-tag--define {
-  background: var(--dmaic-define-bg, rgba(167, 139, 250, 0.12));
+  background: var(--dmaic-define-bg, rgb(167 139 250 / 12%));
   color: var(--dmaic-define, #a78bfa);
 }
 
 .ll__phase-tag--measure {
-  background: var(--dmaic-measure-bg, rgba(56, 189, 248, 0.12));
+  background: var(--dmaic-measure-bg, rgb(56 189 248 / 12%));
   color: var(--dmaic-measure, #38bdf8);
 }
 
 .ll__phase-tag--analyze {
-  background: var(--dmaic-analyze-bg, rgba(251, 191, 36, 0.12));
+  background: var(--dmaic-analyze-bg, rgb(251 191 36 / 12%));
   color: var(--dmaic-analyze, #fbbf24);
 }
 
 .ll__phase-tag--improve {
-  background: var(--dmaic-improve-bg, rgba(52, 211, 153, 0.12));
+  background: var(--dmaic-improve-bg, rgb(52 211 153 / 12%));
   color: var(--dmaic-improve, #34d399);
 }
 
 .ll__phase-tag--control {
-  background: var(--dmaic-control-bg, rgba(248, 113, 113, 0.12));
+  background: var(--dmaic-control-bg, rgb(248 113 113 / 12%));
   color: var(--dmaic-control, #fb7185);
 }
 
@@ -229,17 +229,17 @@
 }
 
 .ll__impact-badge--high {
-  background: var(--color-danger-bg, rgba(248, 113, 113, 0.12));
+  background: var(--color-danger-bg, rgb(248 113 113 / 12%));
   color: var(--color-danger, #f87171);
 }
 
 .ll__impact-badge--medium {
-  background: var(--color-warning-bg, rgba(251, 191, 36, 0.12));
+  background: var(--color-warning-bg, rgb(251 191 36 / 12%));
   color: var(--color-warning, #fbbf24);
 }
 
 .ll__impact-badge--low {
-  background: var(--color-success-bg, rgba(52, 211, 153, 0.12));
+  background: var(--color-success-bg, rgb(52 211 153 / 12%));
   color: var(--color-success, #34d399);
 }
 
@@ -427,4 +427,8 @@
 
 .ll__action-tag-remove:hover {
   color: var(--color-danger, #f87171);
+}
+
+.ll__hidden {
+  display: none;
 }

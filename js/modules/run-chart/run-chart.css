@@ -80,6 +80,7 @@
 
 .run-chart__test-name { color: var(--color-text-primary); }
 .run-chart__test-name strong { font-weight: var(--font-weight-medium); }
+
 .run-chart__test-desc {
   display: block;
   font-size: var(--font-size-xs);

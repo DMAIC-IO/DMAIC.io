@@ -21,8 +21,8 @@
  */
 
 import {
-  lnGamma, betaIncomplete, normalCDF, normalPDF, normalQuantile,
-  chi2CDF, chi2PDF, chi2Inv, tCDF, tPDF, tInv, fCDF, fPDF, fQuantile as fInv,
+  normalCDF,
+  chi2CDF, chi2Inv, tCDF, tInv, fCDF, fQuantile as fInv,
 } from './math-utils.js';
 
 import { mean, variance, stddev } from './stats-utils.js';
@@ -689,11 +689,11 @@ export function powerChiSquare(n, sigma0Sq, sigmaAltSq, alpha, direction) {
   const r = sigmaAltSq / sigma0Sq;
   if (direction === 'two-sided') {
     return chi2CDF(chi2Inv(alpha / 2, df) / r, df) + (1 - chi2CDF(chi2Inv(1 - alpha / 2, df) / r, df));
-  } else if (direction === 'greater') {
+  } if (direction === 'greater') {
     return 1 - chi2CDF(chi2Inv(1 - alpha, df) / r, df);
-  } else {
+  } 
     return chi2CDF(chi2Inv(alpha, df) / r, df);
-  }
+  
 }
 
 /**
@@ -710,11 +710,11 @@ export function powerFTest(n1, n2, ratioAlt, alpha, direction) {
   if (direction === 'two-sided') {
     return fCDF(fInv(alpha / 2, df1, df2) / ratioAlt, df1, df2) +
            (1 - fCDF(fInv(1 - alpha / 2, df1, df2) / ratioAlt, df1, df2));
-  } else if (direction === 'greater') {
+  } if (direction === 'greater') {
     return 1 - fCDF(fInv(1 - alpha, df1, df2) / ratioAlt, df1, df2);
-  } else {
+  } 
     return fCDF(fInv(alpha, df1, df2) / ratioAlt, df1, df2);
-  }
+  
 }
 
 /**
@@ -733,11 +733,11 @@ export function powerOneSampleT(n, delta, sigma, alpha, direction) {
   if (direction === 'two-sided') {
     const cU = tInv(1 - alpha / 2, df), cL = -cU;
     return 1 - tCDF(cU - ncp, df) + tCDF(cL - ncp, df);
-  } else if (direction === 'greater') {
+  } if (direction === 'greater') {
     return 1 - tCDF(tInv(1 - alpha, df) - ncp, df);
-  } else {
+  } 
     return tCDF(tInv(alpha, df) - ncp, df);
-  }
+  
 }
 
 /**
@@ -757,11 +757,11 @@ export function powerTwoSampleT(n1, n2, delta, sigma, alpha, direction) {
   if (direction === 'two-sided') {
     const cU = tInv(1 - alpha / 2, df), cL = -cU;
     return 1 - tCDF(cU - ncp, df) + tCDF(cL - ncp, df);
-  } else if (direction === 'greater') {
+  } if (direction === 'greater') {
     return 1 - tCDF(tInv(1 - alpha, df) - ncp, df);
-  } else {
+  } 
     return tCDF(tInv(alpha, df) - ncp, df);
-  }
+  
 }
 
 /**

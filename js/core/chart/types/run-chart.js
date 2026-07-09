@@ -11,6 +11,7 @@
  */
 
 import ChartBase from '../chart-base.js';
+import { h } from '../../dom.js';
 import { svgEl, resolveColor, formatNum, drawMarker } from '../chart-core.js';
 
 export default class RunChartType extends ChartBase {
@@ -58,7 +59,7 @@ export default class RunChartType extends ChartBase {
   }
 
   /** @override */
-  _renderData(svg, plotGroup, xScale, yScale, xTick, yTick, plotArea, defs) {
+  _renderData(svg, plotGroup, xScale, yScale, xTick, yTick, plotArea, _defs) {
     const { values, median, colorBySide } = this.config;
     if (!values.length) return;
 
@@ -139,9 +140,14 @@ export default class RunChartType extends ChartBase {
       const dist = Math.sqrt(dx * dx + dy * dy);
       if (dist <= proximityPx * 2) {
         const side = v > median ? '↑' : v < median ? '↓' : '=';
-        const html = `<strong>#${i + 1}</strong> ${side}<br>${formatNum(v, null, this.locale)}`;
+        const node = h('div', null,
+          h('strong', null, `#${i + 1}`),
+          ` ${side}`,
+          h('br'),
+          formatNum(v, null, this.locale),
+        );
         results.push({
-          html, px, py,
+          node, px, py,
           color: resolveColor(this.config.pointColor),
           dist,
         });
@@ -164,7 +170,7 @@ export default class RunChartType extends ChartBase {
       setVisible: () => {},
       getSymbol: () => cfg.pointSymbol || 'circle',
       setSymbol: (v) => { cfg.pointSymbol = v; },
-      getSize: () => cfg.pointSize ?? (cfg.pointRadius * 2) ?? 6,
+      getSize: () => cfg.pointSize ?? (cfg.pointRadius * 2),
       setSize: (v) => { cfg.pointSize = v; },
       getStroke: () => cfg.pointStroke || 'rgba(0,0,0,0)',
       setStroke: (v) => { cfg.pointStroke = v; },

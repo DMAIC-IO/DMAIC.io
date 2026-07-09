@@ -1,0 +1,15 @@
+<div class="cycle-picker__content" x-data="cyclePicker">
+  <p x-text="t('pickerIntro')"></p>
+  <fieldset class="cycle-picker">
+    <template x-for="c in model.cycles" :key="c.id">
+      <label class="cycle-picker__option">
+        <input type="radio" name="cycle" :value="c.id" x-model="model.selected">
+        <span class="cycle-picker__body">
+          <span class="cycle-picker__name" x-text="c.name"></span>
+          <span class="cycle-picker__short" x-text="c.short"></span>
+          <span class="cycle-picker__desc" x-text="c.description"></span>
+        </span>
+      </label>
+    </template>
+  </fieldset>
+</div>

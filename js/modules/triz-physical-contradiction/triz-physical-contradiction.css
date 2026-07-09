@@ -91,7 +91,7 @@
   gap: var(--spacing-sm);
 }
 
-@media (max-width: 1400px) {
+@media (width <= 1400px) {
   .triz-pc__principles {
     grid-template-columns: repeat(2, 1fr);
   }

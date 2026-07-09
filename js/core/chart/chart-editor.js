@@ -16,11 +16,8 @@ export { createSliderInput, createSliderRow };
 import { esc } from '../html-utils.js';
 export { esc };
 
-// ── Helpers ──────────────────────────────────────────────────
-
-/** SVG eye icons */
-export const EYE_OPEN = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg>';
-export const EYE_CLOSED = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>';
+import { h } from '../dom.js';
+import { icon } from '../icon.js';
 
 // ── Low-Level Element Builders ───────────────────────────────
 
@@ -32,10 +29,10 @@ export const EYE_CLOSED = '<svg viewBox="0 0 24 24" fill="none" stroke="currentC
 export function edSection(title) {
   const div = document.createElement('div');
   div.className = 'dmike-chart-ed-section';
-  const h = document.createElement('div');
-  h.className = 'dmike-chart-ed-section-title';
-  h.textContent = title;
-  div.appendChild(h);
+  const titleEl = document.createElement('div');
+  titleEl.className = 'dmike-chart-ed-section-title';
+  titleEl.textContent = title;
+  div.appendChild(titleEl);
   return div;
 }
 
@@ -101,7 +98,7 @@ export function edInputRow(label, type, value, onChange) {
   const inp = document.createElement('input');
   inp.type = type;
   inp.value = value;
-  inp.addEventListener('input', () => onChange(type === 'number' ? +inp.value : inp.value));
+  inp.addEventListener('input', () => onChange(type === 'number' ? Number(inp.value) : inp.value));
   row.appendChild(lbl);
   row.appendChild(inp);
   return row;
@@ -150,7 +147,7 @@ export function edInlineNum(label, value, onChange, min, max, step) {
   inp.step = step !== undefined ? step : 'any';
   if (min !== undefined) inp.min = min;
   if (max !== undefined) inp.max = max;
-  inp.addEventListener('change', () => onChange(+inp.value));
+  inp.addEventListener('change', () => onChange(Number(inp.value)));
   row.appendChild(lbl);
   row.appendChild(inp);
   return row;
@@ -216,7 +213,7 @@ export function edColorSwatch(color, onClick) {
 export function edVisToggle(visible, onClick) {
   const btn = document.createElement('button');
   btn.className = 'dmike-chart-ed-vis-toggle';
-  btn.innerHTML = visible ? EYE_OPEN : EYE_CLOSED;
+  btn.replaceChildren(icon(visible ? 'eye' : 'eye-off'));
   btn.addEventListener('click', onClick);
   return btn;
 }
@@ -230,7 +227,7 @@ export function edVisToggle(visible, onClick) {
 export function edExpandBtn(label, target) {
   const btn = document.createElement('button');
   btn.className = 'dmike-chart-ed-expand-btn';
-  btn.innerHTML = `<span>${esc(label)}</span> <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>`;
+  btn.replaceChildren(h('span', null, label), document.createTextNode(' '), icon('chevron-down'));
   btn.addEventListener('click', () => {
     const isOpen = target.classList.toggle('open');
     btn.classList.toggle('open', isOpen);
@@ -240,15 +237,15 @@ export function edExpandBtn(label, target) {
 
 /**
  * Create an icon button (e.g. delete).
- * @param {string} icon - Inner HTML (e.g. '×')
+ * @param {string} glyph - Text glyph (e.g. '×')
  * @param {string} [extraClass] - e.g. 'danger'
  * @param {function} onClick
  * @returns {HTMLElement}
  */
-export function edBtnIcon(icon, extraClass, onClick) {
+export function edBtnIcon(glyph, extraClass, onClick) {
   const btn = document.createElement('button');
-  btn.className = 'dmike-chart-ed-btn-icon' + (extraClass ? ' ' + extraClass : '');
-  btn.innerHTML = icon;
+  btn.className = `dmike-chart-ed-btn-icon${  extraClass ? ` ${  extraClass}` : ''}`;
+  btn.textContent = glyph;
   btn.addEventListener('click', onClick);
   return btn;
 }
@@ -406,7 +403,10 @@ export function edRefLinesSection(refLines, callbacks, t) {
     colorBar.style.background = line.color;
     const info = document.createElement('div');
     info.className = 'dmike-chart-ed-ref-info';
-    info.innerHTML = `<div class="name">${esc(line.label || 'Line')}</div><div class="detail">${line.dir === 'h' ? 'Y' : 'X'} = ${line.value}</div>`;
+    info.replaceChildren(
+      h('div', { class: 'name' }, line.label || 'Line'),
+      h('div', { class: 'detail' }, `${line.dir === 'h' ? 'Y' : 'X'} = ${line.value}`),
+    );
 
     header.appendChild(colorBar);
     header.appendChild(info);
@@ -558,7 +558,10 @@ export function edRefAreasSection(refAreas, callbacks, t) {
     colorBar.style.borderRadius = '3px';
     const info = document.createElement('div');
     info.className = 'dmike-chart-ed-ref-info';
-    info.innerHTML = `<div class="name">${esc(area.label || 'Area')}</div><div class="detail">${area.dir === 'y' ? 'Y' : 'X'}: ${area.min} – ${area.max}</div>`;
+    info.replaceChildren(
+      h('div', { class: 'name' }, area.label || 'Area'),
+      h('div', { class: 'detail' }, `${area.dir === 'y' ? 'Y' : 'X'}: ${area.min} – ${area.max}`),
+    );
 
     header.appendChild(colorBar);
     header.appendChild(info);

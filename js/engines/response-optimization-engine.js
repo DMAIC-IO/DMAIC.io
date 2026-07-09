@@ -325,7 +325,7 @@ export function nelderMead(fn, x0, bounds, opts = {}) {
     v[i] = v[i] + initStep * span;
     simplex.push(boxProject(v, bounds));
   }
-  let fvals = simplex.map(fn);
+  const fvals = simplex.map(fn);
 
   const order = () => {
     const idx = simplex.map((_, i) => i).sort((a, b) => fvals[a] - fvals[b]);
@@ -433,7 +433,7 @@ export function optimizeResponses(models, desirSpecs, factorBounds, opts = {}) {
   }
   const weights = desirSpecs.map(s => s.weight ?? 1);
   const spec = models[0]?.spec;
-  const hasCategorical = !!spec?.predictors?.some(p => p.kind === 'categorical');
+  const hasCategorical = Boolean(spec?.predictors?.some(p => p.kind === 'categorical'));
 
   if (hasCategorical) {
     return optimizeResponsesHybrid(models, desirSpecs, factorBounds, weights, opts);

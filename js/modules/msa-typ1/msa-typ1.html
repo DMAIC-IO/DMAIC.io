@@ -1,0 +1,145 @@
+<div class="module-msa-typ1 dmike-split" x-data="msaTyp1">
+  <div class="dmike-split__input">
+    <div class="dmike-split__section-title" x-text="t('sectionParams')"></div>
+
+    <div class="field-group">
+      <label x-text="t('featureName')"></label>
+      <input type="text" class="field" data-ref="inp-name"
+             :placeholder="t('featureNamePh')"
+             x-model="model.params.name" @input="scheduleAnalysis()">
+    </div>
+
+    <div class="msa-typ1__row">
+      <div class="field-group">
+        <label x-text="t('refValue')"></label>
+        <input type="text" class="field field--num" data-ref="inp-ref"
+               placeholder="50.000" inputmode="decimal"
+               x-model="model.params.ref" @input="scheduleAnalysis()" @change="runAnalysis()">
+      </div>
+      <div class="field-group">
+        <label x-text="t('unit')"></label>
+        <input type="text" class="field" data-ref="inp-unit"
+               placeholder="mm"
+               x-model="model.params.unit" @input="scheduleAnalysis()">
+      </div>
+    </div>
+
+    <div class="msa-typ1__row">
+      <div class="field-group">
+        <label x-text="t('lsl')"></label>
+        <input type="text" class="field field--num" data-ref="inp-lsl"
+               placeholder="49.950" inputmode="decimal"
+               x-model="model.params.lsl" @input="scheduleAnalysis()" @change="runAnalysis()">
+      </div>
+      <div class="field-group">
+        <label x-text="t('usl')"></label>
+        <input type="text" class="field field--num" data-ref="inp-usl"
+               placeholder="50.050" inputmode="decimal"
+               x-model="model.params.usl" @input="scheduleAnalysis()" @change="runAnalysis()">
+      </div>
+    </div>
+
+    <div class="msa-typ1__row">
+      <div class="field-group">
+        <label x-text="t('k1Label')"></label>
+        <select class="field" data-ref="inp-k1" x-model="model.params.k1" @change="runAnalysis()">
+          <option value="0.2">0.20 (20 %)</option>
+          <option value="0.15">0.15 (15 %)</option>
+          <option value="0.1">0.10 (10 %)</option>
+        </select>
+      </div>
+      <div class="field-group">
+        <label x-text="t('k2Label')"></label>
+        <select class="field" data-ref="inp-k2" x-model="model.params.k2" @change="runAnalysis()">
+          <option value="3">3 (99.73 %)</option>
+          <option value="4">4 (99.99 %)</option>
+          <option value="6">6</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="dmike-split__section-title" x-text="t('sectionValues')"></div>
+
+    <div class="field-group">
+      <label x-text="t('columnSelectLabel')"></label>
+      <div data-ref="col-picker-wrap"></div>
+    </div>
+
+    <div class="msa-typ1__error" data-ref="error-box" :class="{ visible: errorMsg }" x-text="errorMsg"></div>
+  </div>
+
+  <div class="dmike-split__output">
+    <div data-ref="results">
+      <template x-if="result">
+        <div>
+          <!-- Status bar -->
+          <div class="msa-typ1__status-bar" :class="'msa-typ1__status-bar--' + result.overall">
+            <span class="msa-typ1__status-label" x-text="statusLabel(result.overall)"></span>
+            <span class="msa-typ1__status-detail">— <span x-text="featureName()"></span> — n = <span x-text="result.n"></span></span>
+          </div>
+
+          <!-- KPI strip -->
+          <div class="dmike-kpi-strip">
+            <div class="dmike-kpi" :class="kpiModClass(result.cgStatus)">
+              <div class="dmike-kpi-label">Cg (<span x-text="t('repeatability')"></span>)
+                <button class="msa-typ1__algo-link" data-algo-id="cg" title="Algorithm Lab" @click="algoNavigate('cg', $event)"><svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg></button>
+              </div>
+              <div class="dmike-kpi-value" x-text="fmt(result.Cg)"></div>
+              <div class="dmike-kpi-sub"><span x-text="t('threshold')"></span>: ≥ 1.33 · <span x-text="badgeLabel(result.cgStatus)"></span></div>
+            </div>
+            <div class="dmike-kpi" :class="kpiModClass(result.cgkStatus)">
+              <div class="dmike-kpi-label">Cgk (<span x-text="t('withBias')"></span>)
+                <button class="msa-typ1__algo-link" data-algo-id="cgk" title="Algorithm Lab" @click="algoNavigate('cgk', $event)"><svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg></button>
+              </div>
+              <div class="dmike-kpi-value" x-text="fmt(result.Cgk)"></div>
+              <div class="dmike-kpi-sub"><span x-text="t('threshold')"></span>: ≥ 1.33 · <span x-text="badgeLabel(result.cgkStatus)"></span></div>
+            </div>
+            <div class="dmike-kpi">
+              <div class="dmike-kpi-label" x-text="t('biasLabel')"></div>
+              <div class="dmike-kpi-value" x-text="fmt(result.bias)"></div>
+              <div class="dmike-kpi-sub"><span x-text="fmt(result.biasPercent)"></span> % <span x-text="t('ofTolerance')"></span> · <span x-text="model.params.unit"></span></div>
+            </div>
+            <div class="dmike-kpi">
+              <div class="dmike-kpi-label" x-text="t('spreadSg')"></div>
+              <div class="dmike-kpi-value" x-text="fmt(result.sg)"></div>
+              <div class="dmike-kpi-sub"><span x-text="t('tolUsage')"></span>: <span x-text="fmt(result.tolUsage)"></span> %</div>
+            </div>
+          </div>
+
+          <!-- Stats table -->
+          <div class="dmike-split__output-section" x-text="t('statsTitle')"></div>
+          <div class="msa-typ1__stats-panel">
+            <table class="dmike-table msa-typ1__stats-table">
+              <thead><tr>
+                <template x-for="col in statCols()"><th :key="col.label" x-text="col.label"></th></template>
+              </tr></thead>
+              <tbody><tr>
+                <template x-for="col in statCols()"><td :key="col.label" x-text="col.value"></td></template>
+              </tr></tbody>
+            </table>
+          </div>
+
+          <!-- Run chart -->
+          <div class="dmike-split__output-section" x-text="t('runChartTitle')"></div>
+          <div class="msa-typ1__chart-plot" data-ref="chart-run"></div>
+
+          <!-- Histogram -->
+          <div class="dmike-split__output-section" x-text="t('histTitle')"></div>
+          <div class="msa-typ1__chart-plot" data-ref="chart-hist"></div>
+
+          <!-- Interpretation -->
+          <div class="dmike-split__output-section" x-text="t('formulasTitle')"></div>
+          <div class="msa-typ1__interpretation">
+            <p><strong>Cg</strong> = (k₁ · T) / (2 · k₂ · sg) = (<span x-text="result.params.k1"></span> · <span x-text="fmt(result.T)"></span>) / (2 · <span x-text="result.params.k2"></span> · <span x-text="fmt(result.sg)"></span>) = <strong x-text="fmt(result.Cg)"></strong></p>
+            <p><strong>Cgk</strong> = (k₁ · T/2 − |x̄ − x<sub>ref</sub>|) / (k₂ · sg) = (<span x-text="fmt(result.params.k1 * result.T / 2)"></span> − <span x-text="fmt(abs(result.bias))"></span>) / (<span x-text="result.params.k2"></span> · <span x-text="fmt(result.sg)"></span>) = <strong x-text="fmt(result.Cgk)"></strong></p>
+            <div style="height:12px"></div>
+            <p><span class="msa-typ1__tag msa-typ1__tag--pass">Cg ≥ 1.33</span> <span x-text="t('interpCgPass')"></span></p>
+            <p><span class="msa-typ1__tag msa-typ1__tag--pass">Cgk ≥ 1.33</span> <span x-text="t('interpCgkPass')"></span></p>
+            <p><span class="msa-typ1__tag msa-typ1__tag--warn">1.00 ≤ <span x-text="t('value')"></span> &lt; 1.33</span> <span x-text="t('interpWarn')"></span></p>
+            <p><span class="msa-typ1__tag msa-typ1__tag--fail"><span x-text="t('value')"></span> &lt; 1.00</span> <span x-text="t('interpFail')"></span></p>
+          </div>
+        </div>
+      </template>
+    </div>
+  </div>
+</div>

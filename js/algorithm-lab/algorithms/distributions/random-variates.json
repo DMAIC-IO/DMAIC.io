@@ -212,7 +212,7 @@
 
   "source": {
     "function_name": "generateRandomVariates",
-    "file_path": "js/modules/random-generator/random-generator.js",
+    "file_path": "js/engines/random-variates-engine.js",
     "code_snippet": null,
     "signature": {
       "parameters": [

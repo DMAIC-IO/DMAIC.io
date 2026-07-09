@@ -1,0 +1,141 @@
+<div class="smpsize dmike-split" x-data="sampleSize">
+  <div class="smpsize__input dmike-split__input">
+
+    <div class="dmike-split__section-title" x-text="t('sectionCategory')"></div>
+    <div class="btn-group smpsize__toggle-row">
+      <button class="btn--segment smpsize__toggle-btn"
+              :class="catActiveClass('variance')"
+              data-cat="variance"
+              @click="setCategory('variance')"
+              x-text="catVarianceLabel()"></button>
+      <button class="btn--segment smpsize__toggle-btn"
+              :class="catActiveClass('mean')"
+              data-cat="mean"
+              @click="setCategory('mean')"
+              x-text="catMeanLabel()"></button>
+    </div>
+
+    <div class="dmike-split__section-title" x-text="t('sectionTestType')"></div>
+    <div class="btn-group smpsize__toggle-row">
+      <button class="btn--segment smpsize__toggle-btn"
+              :class="typeActiveClass('one')"
+              data-type="one"
+              @click="setTestType('one')"
+              x-text="t('oneSample')"></button>
+      <button class="btn--segment smpsize__toggle-btn"
+              :class="typeActiveClass('two')"
+              data-type="two"
+              @click="setTestType('two')"
+              x-text="t('twoSample')"></button>
+    </div>
+
+    <div class="dmike-split__section-title" x-text="t('sectionEffect')"></div>
+
+    <!-- Variance inputs: one-sample (sigma0 + sigmaAlt) -->
+    <template x-if="isVar() && !isTwoSample()">
+      <div class="field-row">
+        <div class="field-group field-group--grow">
+          <label x-text="hypothesizedStdLabel()"></label>
+          <input type="number" data-ref="sigma0" class="field field--num" min="0"
+                 x-model="model.sigma0"
+                 :placeholder="t('sigma0Placeholder')"
+                 @input="autoCalc()">
+        </div>
+        <div class="field-group field-group--grow">
+          <label x-text="expectedStdLabel()"></label>
+          <input type="number" data-ref="sigma-alt" class="field field--num" min="0"
+                 x-model="model.sigmaAlt"
+                 :placeholder="t('sigmaAltPlaceholder')"
+                 @input="autoCalc()">
+        </div>
+      </div>
+    </template>
+
+    <!-- Variance inputs: two-sample (ratio) -->
+    <template x-if="isVar() && isTwoSample()">
+      <div class="field-group">
+        <label x-text="varianceRatioLabel()"></label>
+        <input type="number" data-ref="ratio" class="field field--num" min="0"
+               x-model="model.ratio"
+               :placeholder="t('ratioPlaceholder')"
+               @input="autoCalc()">
+      </div>
+    </template>
+
+    <!-- Mean inputs (one or two sample) -->
+    <template x-if="!isVar()">
+      <div class="field-row">
+        <div class="field-group field-group--major">
+          <label x-text="meanDifferenceLabel()"></label>
+          <input type="number" data-ref="delta" class="field field--num" min="0"
+                 x-model="model.delta"
+                 :placeholder="t('deltaPlaceholder')"
+                 @input="autoCalc()">
+        </div>
+        <div class="field-group field-group--minor">
+          <label x-text="stdDevLabel()"></label>
+          <input type="number" data-ref="sigma" class="field field--num" min="0"
+                 x-model="model.sigma"
+                 :placeholder="t('sigmaPlaceholder')"
+                 @input="autoCalc()">
+        </div>
+      </div>
+    </template>
+
+    <div class="dmike-split__section-title" x-text="t('sectionParams')"></div>
+    <div class="field-row">
+      <div class="field-group field-group--major">
+        <label x-text="t('direction')"></label>
+        <select data-ref="direction" class="field" x-model="model.direction" @change="autoCalc()">
+          <option value="two-sided" x-text="directionTwoSidedLabel()"></option>
+          <option value="greater" x-text="directionGreaterLabel()"></option>
+          <option value="less" x-text="directionLessLabel()"></option>
+        </select>
+      </div>
+      <div class="field-group field-group--minor">
+        <label>&#945;</label>
+        <input type="number" data-ref="alpha" class="field field--num" min="0.001" max="0.5"
+               x-model="model.alpha"
+               @input="autoCalc()">
+      </div>
+    </div>
+    <div class="field-group">
+      <label x-text="targetPowerLabel()"></label>
+      <input type="number" data-ref="power" class="field field--num" min="0.5" max="0.99"
+             x-model="model.power"
+             @input="powerChanged($event)">
+    </div>
+
+    <div class="smpsize__error" data-ref="error-box"></div>
+  </div>
+
+  <div class="smpsize__output dmike-split__output">
+    <div class="smpsize__placeholder" data-ref="placeholder"></div>
+    <div data-ref="results" style="display:none">
+      <template x-if="resultShow">
+        <div>
+          <div class="dmike-split__output-section" x-text="t('sectionResult')"></div>
+          <div class="smpsize__summary">
+            <strong x-text="summaryStrong"></strong>
+            <p x-text="summaryText"></p>
+          </div>
+
+          <div class="dmike-kpi-strip">
+            <template x-for="(c, i) in kpiCells" :key="i">
+              <div class="dmike-kpi" :class="c.mod">
+                <div class="dmike-kpi-value" x-text="c.value"></div>
+                <div class="dmike-kpi-label" x-text="c.label"></div>
+              </div>
+            </template>
+          </div>
+
+          <div class="dmike-split__output-section">
+            <span x-text="t('sectionCurve')"></span>
+            <button class="smpsize__algo-link" :data-algo-id="curveAlgoId" title="Algorithm Lab" @click="openAlgoLab($event)"><svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg></button>
+          </div>
+          <div data-ref="power-chart" style="height:320px"></div>
+        </div>
+      </template>
+    </div>
+  </div>
+</div>

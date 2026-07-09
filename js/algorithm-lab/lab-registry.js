@@ -2,6 +2,7 @@
  * Algorithm Lab — Registry
  * Loads and caches algorithm index, algorithm JSONs, and fixture files.
  */
+import { INDEX, ALGOS } from './lab-data.generated.js';
 
 export class LabRegistry {
   constructor() {
@@ -19,6 +20,8 @@ export class LabRegistry {
    */
   async loadIndex() {
     if (this._index) return this._index;
+    // Prefer inlined data; fall back to fetch for un-built/un-generated checkouts.
+    if (INDEX) { this._index = INDEX; return this._index; }
     const resp = await fetch('js/algorithm-lab/algorithms/index.json', { cache: 'no-cache' });
     if (!resp.ok) throw new Error(`Failed to load algorithm index: ${resp.status}`);
     this._index = await resp.json();
@@ -48,6 +51,12 @@ export class LabRegistry {
    */
   async getAlgorithm(algoId) {
     if (this._algorithms.has(algoId)) return this._algorithms.get(algoId);
+
+    // Prefer inlined data; fall back to fetch for un-built/un-generated checkouts.
+    if (ALGOS && ALGOS[algoId]) {
+      this._algorithms.set(algoId, ALGOS[algoId]);
+      return ALGOS[algoId];
+    }
 
     const entry = this.getAllEntries().find(a => a.id === algoId);
     if (!entry) throw new Error(`Algorithm not found: ${algoId}`);

@@ -5,6 +5,7 @@
  */
 
 import ChartBase from '../chart-base.js';
+import { h } from '../../dom.js';
 import {
   svgEl, drawMarker, dashArray, resolveColor, resolveError,
   dataExtent, formatNum, createPattern, getChartColors
@@ -196,7 +197,7 @@ export default class ScatterChart extends ChartBase {
       if (s.visible === false) return;
       const cl = s.connectLine;
       if (!cl || !cl.show) return;
-      if (!!cl.foreground !== foregroundOnly) return;
+      if (Boolean(cl.foreground) !== foregroundOnly) return;
       if (s.x.length < 2) return;
 
       const pts = [];
@@ -296,13 +297,16 @@ export default class ScatterChart extends ChartBase {
 
     return results.map((pt) => {
       const s = series[pt.si];
-      let html = `<b style="color:${resolveColor(s.color)}">${s.name || 'Series'}</b><br>`;
-      html += `${xName}: ${formatNum(s.x[pt.i], null, this.locale)}<br>`;
-      html += `${yName}: ${formatNum(s.y[pt.i], null, this.locale)}`;
+      const children = [
+        h('b', { style: `color:${resolveColor(s.color)}` }, s.name || 'Series'),
+        h('br'),
+        `${xName}: ${formatNum(s.x[pt.i], null, this.locale)}`, h('br'),
+        `${yName}: ${formatNum(s.y[pt.i], null, this.locale)}`,
+      ];
 
       // Bubble size dimension (raw value, separate from rendered radius).
       if (Array.isArray(s.sizeValues) && s.sizeLabel && Number.isFinite(s.sizeValues[pt.i])) {
-        html += `<br>${s.sizeLabel}: ${formatNum(s.sizeValues[pt.i], null, this.locale)}`;
+        children.push(h('br'), `${s.sizeLabel}: ${formatNum(s.sizeValues[pt.i], null, this.locale)}`);
       }
 
       // Error bar info
@@ -312,23 +316,21 @@ export default class ScatterChart extends ChartBase {
           const ymv = eb.yMinus ? resolveError(eb.yMode, s.y[pt.i], eb.yMinus[pt.i], -1) : null;
           const ypv = eb.yPlus ? resolveError(eb.yMode, s.y[pt.i], eb.yPlus[pt.i], +1) : null;
           if (ymv !== null || ypv !== null) {
-            html += `<br><span style="opacity:.7">${yName}: `;
-            html += `${ymv !== null ? formatNum(ymv, 1, this.locale) : '–'} … ${ypv !== null ? formatNum(ypv, 1, this.locale) : '–'}`;
-            html += '</span>';
+            children.push(h('br'), h('span', { style: 'opacity:.7' },
+              `${yName}: ${ymv !== null ? formatNum(ymv, 1, this.locale) : '–'} … ${ypv !== null ? formatNum(ypv, 1, this.locale) : '–'}`));
           }
         }
         if (eb.xMode && eb.xMode !== 'none' && (eb.xMinus || eb.xPlus)) {
           const xmv = eb.xMinus ? resolveError(eb.xMode, s.x[pt.i], eb.xMinus[pt.i], -1) : null;
           const xpv = eb.xPlus ? resolveError(eb.xMode, s.x[pt.i], eb.xPlus[pt.i], +1) : null;
           if (xmv !== null || xpv !== null) {
-            html += `<br><span style="opacity:.7">${xName}: `;
-            html += `${xmv !== null ? formatNum(xmv, 1, this.locale) : '–'} … ${xpv !== null ? formatNum(xpv, 1, this.locale) : '–'}`;
-            html += '</span>';
+            children.push(h('br'), h('span', { style: 'opacity:.7' },
+              `${xName}: ${xmv !== null ? formatNum(xmv, 1, this.locale) : '–'} … ${xpv !== null ? formatNum(xpv, 1, this.locale) : '–'}`));
           }
         }
       }
 
-      return { html, px: pt.px, py: pt.py, color: resolveColor(s.color) };
+      return { node: h('div', null, ...children), px: pt.px, py: pt.py, color: resolveColor(s.color) };
     });
   }
 
