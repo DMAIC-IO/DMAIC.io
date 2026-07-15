@@ -54,9 +54,12 @@ const mod = createModule({
       badgeLabel: (s) => _t({ pass: 'capable', fail: 'notCapable', warn: 'condCapable' }[s] || 'condCapable'),
       ndcBadge: (s) => (s === 'pass' ? _t('capable') : _t('notCapable')),
       kpiModClass: (s) => ({ pass: 'dmike-kpi--good', warn: 'dmike-kpi--warn', fail: 'dmike-kpi--bad' }[s] || ''),
+      typeLabel: (mode) => _t(mode === 'typ3' ? 'typeLabelTyp3' : 'typeLabelTyp2'),
 
       statusDetail(r) {
-        return `— ${r.p} ${_t('parts')}, ${r.o} ${_t('operators')}, ${r.r} ${_t('replicates')} — n = ${r.n}`;
+        return r.mode === 'typ3'
+          ? `— ${r.p} ${_t('parts')}, ${r.r} ${_t('replicates')} — n = ${r.n}`
+          : `— ${r.p} ${_t('parts')}, ${r.o} ${_t('operators')}, ${r.r} ${_t('replicates')} — n = ${r.n}`;
       },
 
       fmtP(p) {
@@ -65,15 +68,17 @@ const mod = createModule({
         return p.toFixed(3);
       },
 
-      /** ANOVA table rows. Interaction row is present only when not pooled. */
+      /** ANOVA table rows. Operator/interaction rows only for Typ 2. */
       anovaRows() {
         const r = this.result;
         if (!r) return [];
         const a = r.anova;
         const rows = [
           { key: 'part', label: _t('sourcePart'), ss: fmt(a.part.ss), df: a.part.df, ms: fmt(a.part.ms), f: fmt(a.part.f), p: this.fmtP(a.part.pValue), totalClass: '' },
-          { key: 'operator', label: _t('sourceOperator'), ss: fmt(a.operator.ss), df: a.operator.df, ms: fmt(a.operator.ms), f: fmt(a.operator.f), p: this.fmtP(a.operator.pValue), totalClass: '' },
         ];
+        if (a.operator) {
+          rows.push({ key: 'operator', label: _t('sourceOperator'), ss: fmt(a.operator.ss), df: a.operator.df, ms: fmt(a.operator.ms), f: fmt(a.operator.f), p: this.fmtP(a.operator.pValue), totalClass: '' });
+        }
         if (a.interact) {
           rows.push({ key: 'interact', label: _t('sourceInteract'), ss: fmt(a.interact.ss), df: a.interact.df, ms: fmt(a.interact.ms), f: fmt(a.interact.f), p: this.fmtP(a.interact.pValue), totalClass: '' });
         }
@@ -97,7 +102,12 @@ const mod = createModule({
         const vc = r.varComp;
         const i2 = '  ';
         const i4 = '    ';
-        const defs = [
+        const defs = r.mode === 'typ3' ? [
+          ['grr', _t('gageRR')],
+          ['repeatability', `${i2}${_t('repeatability')}`],
+          ['part', _t('partToPartVar')],
+          ['total', _t('sourceTotal')],
+        ] : [
           ['grr', _t('gageRR')],
           ['repeatability', `${i2}${_t('repeatability')}`],
           ['reproducibility', `${i2}${_t('reproducibility')}`],
@@ -137,26 +147,32 @@ const mod = createModule({
         const sm = module._context.stateManager;
         const refs = this.model.columnRefs;
         const rawParts = getColumnValues(sm, refs.part);
-        const rawOps = getColumnValues(sm, refs.operator);
         const rawMeas = getColumnValues(sm, refs.measurement);
+        const hasOperator = !!refs.operator;
+        const rawOps = hasOperator ? getColumnValues(sm, refs.operator) : null;
 
         const parts = [], operators = [], measurements = [];
-        const len = Math.min(rawParts.length, rawOps.length, rawMeas.length);
+        const len = hasOperator
+          ? Math.min(rawParts.length, rawOps.length, rawMeas.length)
+          : Math.min(rawParts.length, rawMeas.length);
         for (let i = 0; i < len; i++) {
-          if (rawParts[i] == null || rawOps[i] == null || rawMeas[i] == null) continue;
-          parts.push(String(rawParts[i]));
-          operators.push(String(rawOps[i]));
+          if (rawParts[i] == null || rawMeas[i] == null) continue;
+          if (hasOperator && rawOps[i] == null) continue;
           const m = typeof rawMeas[i] === 'number' ? rawMeas[i] : parseFloat(String(rawMeas[i]).replace(',', '.'));
           if (isNaN(m)) continue;
+          parts.push(String(rawParts[i]));
+          if (hasOperator) operators.push(String(rawOps[i]));
           measurements.push(m);
         }
 
-        const validLen = Math.min(parts.length, operators.length, measurements.length);
+        const validLen = hasOperator
+          ? Math.min(parts.length, operators.length, measurements.length)
+          : Math.min(parts.length, measurements.length);
         if (validLen === 0) return null;
 
         return {
           parts: parts.slice(0, validLen),
-          operators: operators.slice(0, validLen),
+          operators: hasOperator ? operators.slice(0, validLen) : null,
           measurements: measurements.slice(0, validLen),
         };
       },
@@ -167,7 +183,7 @@ const mod = createModule({
        */
       runAnalysis() {
         const refs = this.model.columnRefs;
-        if (!refs.part || !refs.operator || !refs.measurement) return this.clearResults();
+        if (!refs.part || !refs.measurement) return this.clearResults();
 
         const data = this._buildDataArrays();
         if (!data) return this.clearResults();
@@ -220,14 +236,17 @@ const mod = createModule({
 
       async _renderCharts(r, gen) {
         this._destroyCharts();
+        const isTyp3 = r.mode === 'typ3';
         await this._renderComponentsChart(r, gen);
         if (gen !== this._renderGen) return;
         await this._renderByPartChart(r, gen);
         if (gen !== this._renderGen) return;
-        await this._renderByOperatorChart(r, gen);
-        if (gen !== this._renderGen) return;
-        await this._renderInteractionChart(r, gen);
-        if (gen !== this._renderGen) return;
+        if (!isTyp3) {
+          await this._renderByOperatorChart(r, gen);
+          if (gen !== this._renderGen) return;
+          await this._renderInteractionChart(r, gen);
+          if (gen !== this._renderGen) return;
+        }
         await this._renderXbarChart(r, gen);
         if (gen !== this._renderGen) return;
         await this._renderRChart(r, gen);
@@ -262,20 +281,33 @@ const mod = createModule({
       async _renderByPartChart(r, gen) {
         const el = module._container.querySelector('[data-ref="chart-by-part"]');
         if (!el) return;
-        const opColors = this._operatorColors(r.o);
+        const isTyp3 = r.mode === 'typ3';
         const partIndex = {};
         r.partLabels.forEach((pl, i) => { partIndex[pl] = i; });
 
-        const series = r.operatorLabels.map((op, oi) => {
+        let series;
+        if (isTyp3) {
           const x = [], y = [];
           for (const pl of r.partLabels) {
-            for (const v of r.cellData[pl][op]) {
+            for (const v of r.cellData[pl]) {
               x.push(partIndex[pl]);
               y.push(v);
             }
           }
-          return { name: op, color: opColors[oi], x, y, symbol: 'circle', strokeWidth: 1.5 };
-        });
+          series = [{ name: _t('chartValues'), color: 'var(--color-chart-1)', x, y, symbol: 'circle', strokeWidth: 1.5 }];
+        } else {
+          const opColors = this._operatorColors(r.o);
+          series = r.operatorLabels.map((op, oi) => {
+            const x = [], y = [];
+            for (const pl of r.partLabels) {
+              for (const v of r.cellData[pl][op]) {
+                x.push(partIndex[pl]);
+                y.push(v);
+              }
+            }
+            return { name: op, color: opColors[oi], x, y, symbol: 'circle', strokeWidth: 1.5 };
+          });
+        }
 
         series.push({
           name: 'x̄ Part',
@@ -355,15 +387,20 @@ const mod = createModule({
         const el = module._container.querySelector('[data-ref="chart-xbar"]');
         if (!el) return;
         const ctrl = r.controlChart;
+        const isTyp3 = r.mode === 'typ3';
 
         const xArr = [], yArr = [];
         let idx = 0;
-        for (let oi = 0; oi < r.operatorLabels.length; oi++) {
-          const op = r.operatorLabels[oi];
-          for (const pl of r.partLabels) {
-            xArr.push(idx);
-            yArr.push(r.cellMeans[pl][op]);
-            idx++;
+        if (isTyp3) {
+          for (const pl of r.partLabels) { xArr.push(idx); yArr.push(r.cellMeans[pl]); idx++; }
+        } else {
+          for (let oi = 0; oi < r.operatorLabels.length; oi++) {
+            const op = r.operatorLabels[oi];
+            for (const pl of r.partLabels) {
+              xArr.push(idx);
+              yArr.push(r.cellMeans[pl][op]);
+              idx++;
+            }
           }
         }
 
@@ -392,15 +429,20 @@ const mod = createModule({
         const el = module._container.querySelector('[data-ref="chart-r"]');
         if (!el) return;
         const ctrl = r.controlChart;
+        const isTyp3 = r.mode === 'typ3';
 
         const xArr = [], yArr = [];
         let idx = 0;
-        for (let oi = 0; oi < r.operatorLabels.length; oi++) {
-          const op = r.operatorLabels[oi];
-          for (const pl of r.partLabels) {
-            xArr.push(idx);
-            yArr.push(r.cellRanges[pl][op]);
-            idx++;
+        if (isTyp3) {
+          for (const pl of r.partLabels) { xArr.push(idx); yArr.push(r.cellRanges[pl]); idx++; }
+        } else {
+          for (let oi = 0; oi < r.operatorLabels.length; oi++) {
+            const op = r.operatorLabels[oi];
+            for (const pl of r.partLabels) {
+              xArr.push(idx);
+              yArr.push(r.cellRanges[pl][op]);
+              idx++;
+            }
           }
         }
 

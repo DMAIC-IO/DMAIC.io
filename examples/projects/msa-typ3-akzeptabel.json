@@ -1,0 +1,22 @@
+{
+  "params": {
+    "lsl": 24.95,
+    "usl": 25.05,
+    "alpha": 0.05,
+    "studyVarMultiplier": 5.15
+  },
+  "columnRefs": {
+    "part": {
+      "instanceId": "__source__",
+      "sheetId": "sheet-msa-typ3-akzeptabel",
+      "columnId": "c-teil"
+    },
+    "operator": null,
+    "measurement": {
+      "instanceId": "__source__",
+      "sheetId": "sheet-msa-typ3-akzeptabel",
+      "columnId": "c-messwert"
+    }
+  },
+  "sourceWorksheetFile": "worksheets/msa-typ3-akzeptabel.json"
+}

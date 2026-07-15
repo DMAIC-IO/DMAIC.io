@@ -1,0 +1,101 @@
+{
+  "algorithm_id": "grr-typ3",
+  "generated_with": {
+    "note": "Hand-verified reference values (textbook one-way random-effects ANOVA). Python/SciPy generator to be extended for Typ 3 later — until then relative tolerance is loose (1e-6)."
+  },
+  "generator_version": "hand-1.0",
+  "tolerances": {
+    "default": {
+      "relative": 1e-6,
+      "absolute": 1e-9
+    },
+    "overrides": {}
+  },
+  "test_cases": [
+    {
+      "id": "grr_typ3_capable_3x4",
+      "tier": "standard",
+      "description": "Typ 3 (kein Prüfer) — 3 Teile × 4 Wiederholungen, deutlich fähig",
+      "reference": "hand-computed: one-way random-effects ANOVA",
+      "inputs": {
+        "data": {
+          "parts": ["A","A","A","A","B","B","B","B","C","C","C","C"],
+          "operators": null,
+          "measurements": [48.00, 48.10, 47.90, 48.00, 50.00, 50.10, 49.90, 50.00, 52.00, 52.10, 51.90, 52.00]
+        },
+        "options": {
+          "alpha": 0.05,
+          "studyVarMultiplier": 5.15,
+          "lsl": 44.0,
+          "usl": 56.0
+        }
+      },
+      "expected": {
+        "mode": "typ3",
+        "n": 12,
+        "p": 3,
+        "o": 0,
+        "r": 4,
+        "grandMean": 50.0,
+        "anova.part.ss": 32.0,
+        "anova.part.df": 2,
+        "anova.part.ms": 16.0,
+        "anova.part.f": 2400.0,
+        "anova.equip.df": 9,
+        "anova.equip.ms": 0.006666666666666667,
+        "anova.total.df": 11,
+        "varComp.repeatability.variance": 0.006666666666666667,
+        "varComp.reproducibility.variance": 0.0,
+        "varComp.reproducibility.sigma": 0.0,
+        "varComp.reproducibility.pctStudyVar": 0.0,
+        "varComp.grr.variance": 0.006666666666666667,
+        "varComp.part.variance": 3.9983333333333335,
+        "varComp.total.variance": 4.005,
+        "varComp.grr.pctContribution": 0.16645859342488557,
+        "varComp.grr.pctStudyVar": 4.079933340008373,
+        "ndc": 34,
+        "grrStatus": "pass",
+        "ndcStatus": "pass"
+      }
+    },
+    {
+      "id": "grr_typ3_borderline_3x2",
+      "tier": "standard",
+      "description": "Typ 3 — 3 Teile × 2 Wiederholungen, kleines Design (Warnung erwartet)",
+      "reference": "hand-computed: one-way random-effects ANOVA",
+      "inputs": {
+        "data": {
+          "parts": ["1","1","2","2","3","3"],
+          "operators": null,
+          "measurements": [10.0, 10.2, 12.0, 12.2, 14.0, 14.2]
+        },
+        "options": {
+          "alpha": 0.05,
+          "studyVarMultiplier": 5.15
+        }
+      },
+      "expected": {
+        "mode": "typ3",
+        "n": 6,
+        "p": 3,
+        "o": 0,
+        "r": 2,
+        "grandMean": 12.1,
+        "anova.part.ss": 16.0,
+        "anova.part.df": 2,
+        "anova.part.ms": 8.0,
+        "anova.part.f": 400.0,
+        "anova.equip.df": 3,
+        "anova.equip.ms": 0.02,
+        "anova.total.df": 5,
+        "varComp.repeatability.variance": 0.02,
+        "varComp.grr.variance": 0.02,
+        "varComp.part.variance": 3.99,
+        "varComp.total.variance": 4.01,
+        "varComp.grr.pctStudyVar": 7.062245515464462,
+        "ndc": 19,
+        "warnings.0": "warnFewReplicatesTyp3"
+      }
+    }
+  ]
+}

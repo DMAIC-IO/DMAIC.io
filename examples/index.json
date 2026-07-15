@@ -875,6 +875,32 @@
       ]
     },
     {
+      "id": "msa-typ3-akzeptabel",
+      "type": "project",
+      "title": {
+        "de": "MSA Typ 3: automatisiertes Messsystem (ohne Prüfer)",
+        "en": "MSA Type 3: automated measurement system (no operator)"
+      },
+      "description": {
+        "de": "One-Way-ANOVA-Studie ohne Prüfereinfluss (25 Teile × 2 Wiederholungen, Bosch-Konvention). Automatisiertes CMM misst Wellendurchmesser, Wiederholstreuung ≈ 1,5 µm gegenüber Teil-zu-Teil-Streuung ≈ 22 µm → %GRR ≈ 8 %, ndc = 16. Lehrbuch-Fall eines akzeptablen automatisierten Messsystems.",
+        "en": "One-way random-effects ANOVA study without operator influence (25 parts × 2 replicates, Bosch convention). Automated CMM measures shaft diameter, within-part variation ≈ 1.5 µm vs. part-to-part variation ≈ 22 µm → %GRR ≈ 8 %, ndc = 16. Textbook acceptable automated measurement system."
+      },
+      "source": "DMAIC.io synthetisch, Python random, Seed=2603",
+      "license": "public-domain",
+      "file": "projects/msa-typ3-akzeptabel.json",
+      "format": "json",
+      "modules": [
+        "msa-typ2"
+      ],
+      "tags": [
+        "msa",
+        "typ3",
+        "anova",
+        "automated",
+        "acceptable"
+      ]
+    },
+    {
       "id": "spc-attribute-p-chart",
       "type": "project",
       "title": {

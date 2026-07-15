@@ -12,22 +12,22 @@ export default {
         blocks: [
           {
             type: 'paragraph',
-            content: 'Die MSA Typ-2-Studie (Gage R&R, Repeatability & Reproducibility) zerlegt die Streuung eines Messsystems in drei Komponenten: Wiederholbarkeit (dasselbe Teil, derselbe Bediener), Reproduzierbarkeit (dasselbe Teil, verschiedene Bediener) und Teile-zu-Teile-Streuung. Sie ist der Standardtest, bevor Prozessfähigkeit oder Regelkarten belastbar sind.',
+            content: 'Die MSA Typ-2-Studie ({{term:gage-rr|Gage R&R}}, Repeatability & Reproducibility) zerlegt die Streuung eines Messsystems in drei Komponenten: {{term:wiederholbarkeit|Wiederholbarkeit}} (dasselbe Teil, derselbe Bediener), {{term:reproduzierbarkeit|Reproduzierbarkeit}} (dasselbe Teil, verschiedene Bediener) und {{term:teile-variation|Teile-zu-Teile-Streuung}}. Sie ist der Standardtest, bevor Prozessfähigkeit oder Regelkarten belastbar sind.',
           },
           {
             type: 'definition',
             term: 'Wiederholbarkeit (EV, Equipment Variation)',
-            content: 'Streuung, wenn ein Bediener dasselbe Teil mehrfach misst. Sie kommt rein aus dem Gerät und der Messprozedur — nicht vom Menschen, nicht vom Teil.',
+            content: '{{term:wiederholbarkeit|Wiederholbarkeit}} ist die Streuung, wenn ein Bediener dasselbe Teil mehrfach misst. Sie kommt rein aus dem Gerät und der Messprozedur — nicht vom Menschen, nicht vom Teil.',
           },
           {
             type: 'definition',
             term: 'Reproduzierbarkeit (AV, Appraiser Variation)',
-            content: 'Streuung, wenn verschiedene Bediener dasselbe Teil messen. Kommt aus Handhabung, Ablesen, Vorrichtung. Ein hoher AV-Anteil zeigt auf Schulungsbedarf oder unklare Messanweisung.',
+            content: '{{term:reproduzierbarkeit|Reproduzierbarkeit}} ist die Streuung, wenn verschiedene Bediener dasselbe Teil messen. Kommt aus Handhabung, Ablesen, Vorrichtung. Ein hoher AV-Anteil zeigt auf Schulungsbedarf oder unklare Messanweisung.',
           },
           {
             type: 'definition',
             term: 'Teile-zu-Teile (PV, Part Variation)',
-            content: 'Streuung zwischen den ausgewählten Teilen selbst. Sollte dominieren — wenn nicht, misst das Messsystem vor allem sich selbst, nicht den Prozess.',
+            content: '{{term:teile-variation|Teile-zu-Teile-Streuung}} zwischen den ausgewählten Teilen selbst. Sollte dominieren — wenn nicht, misst das Messsystem vor allem sich selbst, nicht den Prozess.',
           },
           {
             type: 'definition',
@@ -37,7 +37,7 @@ export default {
           {
             type: 'definition',
             term: 'Number of Distinct Categories (ndc)',
-            content: 'Wie viele unterschiedliche Stufen das Messsystem in der beobachteten Teilespanne unterscheiden kann. Faustregel: ndc ≥ 5. Unter 5 wird der Prozess nicht feinfühlig genug wahrgenommen.',
+            content: '{{term:ndc|ndc}} zeigt, wie viele unterschiedliche Stufen das Messsystem in der beobachteten Teilespanne unterscheiden kann. Faustregel: ndc ≥ 5. Unter 5 wird der Prozess nicht feinfühlig genug wahrgenommen.',
           },
           {
             type: 'paragraph',
@@ -50,22 +50,22 @@ export default {
         blocks: [
           {
             type: 'paragraph',
-            content: 'The MSA Type 2 study (Gage R&R, Repeatability & Reproducibility) decomposes measurement-system variation into three components: repeatability (same part, same operator), reproducibility (same part, different operators), and part-to-part variation. It is the standard check before process capability or control charts become trustworthy.',
+            content: 'The MSA Type 2 study ({{term:gage-rr|Gage R&R}}, Repeatability & Reproducibility) decomposes measurement-system variation into three components: {{term:wiederholbarkeit|repeatability}} (same part, same operator), {{term:reproduzierbarkeit|reproducibility}} (same part, different operators), and {{term:teile-variation|part-to-part variation}}. It is the standard check before process capability or control charts become trustworthy.',
           },
           {
             type: 'definition',
             term: 'Repeatability (EV, Equipment Variation)',
-            content: 'Variation when one operator measures the same part multiple times. It comes purely from the instrument and the measurement procedure — not from humans or parts.',
+            content: '{{term:wiederholbarkeit|Repeatability}} — variation when one operator measures the same part multiple times. It comes purely from the instrument and the measurement procedure — not from humans or parts.',
           },
           {
             type: 'definition',
             term: 'Reproducibility (AV, Appraiser Variation)',
-            content: 'Variation when different operators measure the same part. Comes from handling, reading, fixturing. A high AV share indicates training needs or an unclear procedure.',
+            content: '{{term:reproduzierbarkeit|Reproducibility}} — variation when different operators measure the same part. Comes from handling, reading, fixturing. A high AV share indicates training needs or an unclear procedure.',
           },
           {
             type: 'definition',
             term: 'Part-to-part (PV, Part Variation)',
-            content: 'Variation between the selected parts themselves. Should dominate — if not, the system is mostly measuring itself, not the process.',
+            content: '{{term:teile-variation|Part-to-part variation}} between the selected parts themselves. Should dominate — if not, the system is mostly measuring itself, not the process.',
           },
           {
             type: 'definition',
@@ -75,11 +75,72 @@ export default {
           {
             type: 'definition',
             term: 'Number of Distinct Categories (ndc)',
-            content: 'How many distinct levels the system can tell apart within the observed part range. Rule of thumb: ndc ≥ 5. Below 5 the process is seen too coarsely.',
+            content: '{{term:ndc|ndc}} counts how many distinct levels the system can tell apart within the observed part range. Rule of thumb: ndc ≥ 5. Below 5 the process is seen too coarsely.',
           },
           {
             type: 'paragraph',
             content: 'Gage R&R is a statistical experiment, not a number game. Part selection, order, operator blinding — all influence the result. A craftsmanlike setup matters more than the software.',
+          },
+        ],
+      },
+    },
+
+    typ3: {
+      de: {
+        title: 'Typ 2 vs. Typ 3',
+        blocks: [
+          {
+            type: 'paragraph',
+            content: 'Typ 2 misst mit Prüfern (klassisches Gage R&R). Typ 3 läuft ohne Prüfer — für automatisierte Messsysteme (KMG im Automatikmodus, In-Prozess-Sensoren, Prüfstände), bei denen der Prüfer keinen Einfluss auf das Messergebnis hat.',
+          },
+          {
+            type: 'definition',
+            term: 'Wann Typ 3?',
+            content: 'Immer dann, wenn der Prüfer physisch entkoppelt vom Messvorgang ist: automatisiertes Handling, festes Aufnahmesystem, Prüfling wird eingelegt und die Maschine misst selbstständig. Kein Ableseeffekt, keine Handhabung.',
+          },
+          {
+            type: 'definition',
+            term: 'Prüfer-Spalte leer lassen',
+            content: 'Im Modul einfach die Prüfer-Spalte nicht setzen — das Modul erkennt Typ 3 automatisch, blendet Reproduzierbarkeit (AV), die Wechselwirkungssektion sowie die „nach Bediener"-Diagramme aus. %GRR entspricht dann dem reinen Repeatability-Anteil (%EV).',
+          },
+          {
+            type: 'definition',
+            term: 'Versuchsplan (Bosch/VDA-Konvention)',
+            content: 'Typische Anordnungen: 25 Teile × 2 Wiederholungen oder 10 Teile × 3 Wiederholungen. Ohne Prüfer sind mehr Teile pro Studie realistisch. Mit nur 2 Wiederholungen zeigt das Modul einen Hinweis — mehr Wiederholungen erhöhen die Schätzgenauigkeit der Wiederholstreuung.',
+          },
+          {
+            type: 'definition',
+            term: 'Auswertung',
+            content: 'One-Way-ANOVA mit Teilen als zufälligem Effekt. σ²_GRR = σ²_Repeat, ndc und %GRR-Grenzen (< 10 % / 10–30 % / > 30 %) bleiben identisch zu Typ 2. Reproduzierbarkeit ist definitionsgemäß 0.',
+          },
+        ],
+      },
+      en: {
+        title: 'Type 2 vs. Type 3',
+        blocks: [
+          {
+            type: 'paragraph',
+            content: 'Type 2 measures with operators (classic Gage R&R). Type 3 runs without operators — for automated measurement systems (CMM in automatic mode, in-process sensors, test rigs) where the operator has no influence on the reading.',
+          },
+          {
+            type: 'definition',
+            term: 'When Type 3?',
+            content: 'Whenever the operator is physically decoupled from the measurement: automated handling, fixed fixture, the part is placed and the machine measures on its own. No reading effect, no handling variation.',
+          },
+          {
+            type: 'definition',
+            term: 'Leave the operator column empty',
+            content: 'In the module, simply leave the operator column unset — the module detects Type 3 automatically and hides reproducibility (AV), the interaction section, and the by-operator charts. %GRR then equals the pure repeatability share (%EV).',
+          },
+          {
+            type: 'definition',
+            term: 'Study plan (Bosch/VDA convention)',
+            content: 'Typical layouts: 25 parts × 2 replicates or 10 parts × 3 replicates. Without operators, more parts per study become realistic. With only 2 replicates the module shows a warning — more replicates improve the estimate of within-part variation.',
+          },
+          {
+            type: 'definition',
+            term: 'Analysis',
+            content: 'One-way random-effects ANOVA with parts as a random effect. σ²_GRR = σ²_Repeat, and the ndc plus %GRR thresholds (< 10 % / 10–30 % / > 30 %) remain identical to Type 2. Reproducibility is zero by definition.',
           },
         ],
       },
