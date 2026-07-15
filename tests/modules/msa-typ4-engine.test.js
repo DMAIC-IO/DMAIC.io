@@ -5,7 +5,7 @@
  */
 
 import { suite, test, assert, assertClose } from '../test-utils.js';
-import { validate, perReferenceStats, regressBiasVsReference, aiagKpis } from '../../js/engines/msa-typ4-engine.js';
+import { validate, perReferenceStats, regressBiasVsReference, aiagKpis, vda5Kpis } from '../../js/engines/msa-typ4-engine.js';
 import fixtures from '../fixtures/msa/msa-typ4.fixtures.json' with { type: 'json' };
 
 suite('msa-typ4-engine — validate', () => {
@@ -131,6 +131,26 @@ suite('msa-typ4-engine — aiagKpis', () => {
     const per = perReferenceStats(c.inputs.reference, c.inputs.measured, 0.05);
     const reg = regressBiasVsReference(c.inputs.reference, c.inputs.measured, 0.05);
     const kpi = aiagKpis(per, reg, c.inputs.params);
+    assert(kpi.verdict.color === 'green');
+  });
+});
+
+suite('msa-typ4-engine — vda5Kpis', () => {
+  test('linear-drift → Q_MS_BI matched Fixture', () => {
+    const c = fixtures.test_cases.find(x => x.id === 'linear-drift');
+    const per = perReferenceStats(c.inputs.reference, c.inputs.measured, 0.05);
+    const reg = regressBiasVsReference(c.inputs.reference, c.inputs.measured, 0.05);
+    const kpi = vda5Kpis(per, reg, c.inputs.params);
+    assertClose(kpi.u_BI, c.expected.uBI, 1e-5);
+    assertClose(kpi.U, c.expected.U, 1e-5);
+    assertClose(kpi.Q_MS_BI, c.expected.qMsBi, 1e-3);
+  });
+
+  test('clean → grün', () => {
+    const c = fixtures.test_cases.find(x => x.id === 'clean');
+    const per = perReferenceStats(c.inputs.reference, c.inputs.measured, 0.05);
+    const reg = regressBiasVsReference(c.inputs.reference, c.inputs.measured, 0.05);
+    const kpi = vda5Kpis(per, reg, c.inputs.params);
     assert(kpi.verdict.color === 'green');
   });
 });

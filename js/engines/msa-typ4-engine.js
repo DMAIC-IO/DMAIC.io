@@ -192,3 +192,23 @@ export function aiagKpis(perRef, regression, params) {
   }
   return { percentLinearity, maxPercentBias, slopeSignificant, interceptSignificant, verdict: { color, key } };
 }
+
+/**
+ * VDA 5 bias/linearity contribution to measurement uncertainty.
+ * Tolerance T = USL − LSL (also required when pvMode='sixSigma' for Q_MS_BI).
+ */
+export function vda5Kpis(perRef, regression, params) {
+  const xs = perRef.map(p => p.xRef);
+  const range = Math.max(...xs) - Math.min(...xs);
+  const maxAbsBias = Math.max(...perRef.map(p => Math.abs(p.bias)));
+  const u_BI = Math.sqrt(maxAbsBias * maxAbsBias + (regression.seSlope * range) ** 2);
+  const U = 2 * u_BI;
+  const T = Number(params.USL) - Number(params.LSL);
+  // U is already the expanded uncertainty (2·u_BI); do not double it again.
+  const Q_MS_BI = T > 0 ? (U / T) * 100 : Infinity;
+  let color, key;
+  if (Q_MS_BI <= 15) { color = 'green';  key = 'modules.msa-typ4.verdictVdaOk'; }
+  else if (Q_MS_BI <= 30) { color = 'yellow'; key = 'modules.msa-typ4.verdictVdaMarginal'; }
+  else { color = 'red'; key = 'modules.msa-typ4.verdictVdaFail'; }
+  return { u_BI, U, Q_MS_BI, verdict: { color, key } };
+}
