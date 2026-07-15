@@ -53,3 +53,44 @@
 }
 
 .msa-typ4__error.visible { display: block; }
+
+/* ─── Interpretation Box ─────────────────────────────────────── */
+.msa-typ4__interp {
+  border-radius: var(--border-radius);
+  padding: var(--spacing-md);
+  margin: var(--spacing-md) 0;
+  font-size: var(--font-size-sm);
+  line-height: 1.5;
+}
+
+.msa-typ4__interp--green {
+  background: rgba(52, 199, 89, 0.08);
+  border: 1px solid rgba(52, 199, 89, 0.3);
+}
+
+.msa-typ4__interp--yellow {
+  background: rgba(255, 149, 0, 0.08);
+  border: 1px solid rgba(255, 149, 0, 0.3);
+}
+
+.msa-typ4__interp--red {
+  background: rgba(255, 59, 48, 0.08);
+  border: 1px solid rgba(255, 59, 48, 0.3);
+}
+
+/* ─── Per-Reference Table row tints ──────────────────────────── */
+.msa-typ4__table tr.msa-typ4__row--yellow td { color: var(--color-warning); }
+.msa-typ4__table tr.msa-typ4__row--red    td { color: var(--color-error); }
+
+/* ─── Chart containers ───────────────────────────────────────── */
+.msa-typ4__chart {
+  width: 100%;
+  min-height: 260px;
+  margin-bottom: var(--spacing-md);
+}
+
+.msa-typ4__residuals summary {
+  cursor: pointer;
+  padding: var(--spacing-sm) 0;
+  color: var(--color-text-secondary);
+}

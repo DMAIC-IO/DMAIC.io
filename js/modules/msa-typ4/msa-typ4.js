@@ -307,15 +307,115 @@ export default {
   },
 
   /**
-   * Render the analysis result into the output panel.
-   * Placeholder — Task 11 fills in KPI tiles / interpretation / table;
-   * Task 12+13 fill in the chart containers.
+   * Render the analysis result into the output panel: norm-dependent KPI
+   * strip, interpretation, per-reference table, and the (empty, for now)
+   * chart containers that Task 12+13 populate.
    * @param {object} res  Output of engines/msa-typ4-engine.js analyze().
    */
   _renderResults(res) {
     const out = this._container.querySelector('[data-ref="results"]');
     if (!out) return;
-    out.innerHTML = `<div class="module-msa-typ4__ok" data-ref="results-ok"></div>`;
+
+    const t = this._t;
+    const norm = this._params.norm === 'VDA5' ? 'VDA5' : 'AIAG';
+    const kpi = norm === 'VDA5' ? res.kpi.vda5 : res.kpi.aiag;
+    const kpiMod = { green: 'dmike-kpi--good', yellow: 'dmike-kpi--warn', red: 'dmike-kpi--bad' };
+
+    let kpiHtml;
+    if (norm === 'VDA5') {
+      kpiHtml = `
+        <div class="dmike-kpi ${kpiMod[kpi.verdict.color] || ''}">
+          <div class="dmike-kpi-label">${t('modules.msa-typ4.kpi.uBi')}</div>
+          <div class="dmike-kpi-value">${this._fmt(kpi.u_BI, 4)}</div>
+        </div>
+        <div class="dmike-kpi ${kpiMod[kpi.verdict.color] || ''}">
+          <div class="dmike-kpi-label">${t('modules.msa-typ4.kpi.u')}</div>
+          <div class="dmike-kpi-value">${this._fmt(kpi.U, 4)}</div>
+        </div>
+        <div class="dmike-kpi ${kpiMod[kpi.verdict.color] || ''}">
+          <div class="dmike-kpi-label">${t('modules.msa-typ4.kpi.qMsBi')}</div>
+          <div class="dmike-kpi-value">${this._fmt(kpi.Q_MS_BI, 2)} %</div>
+          <div class="dmike-kpi-sub">${t(kpi.verdict.key)}</div>
+        </div>
+        <div class="dmike-kpi">
+          <div class="dmike-kpi-label">${t('modules.msa-typ4.kpi.maxPercentBias')}</div>
+          <div class="dmike-kpi-value">${this._fmt(res.kpi.aiag.maxPercentBias, 2)} %</div>
+        </div>
+      `;
+    } else {
+      kpiHtml = `
+        <div class="dmike-kpi ${kpiMod[kpi.verdict.color] || ''}">
+          <div class="dmike-kpi-label">${t('modules.msa-typ4.kpi.percentLinearity')}</div>
+          <div class="dmike-kpi-value">${this._fmt(kpi.percentLinearity, 2)} %</div>
+          <div class="dmike-kpi-sub">${t(kpi.verdict.key)}</div>
+        </div>
+        <div class="dmike-kpi ${kpi.slopeSignificant ? 'dmike-kpi--bad' : 'dmike-kpi--good'}">
+          <div class="dmike-kpi-label">${t('modules.msa-typ4.kpi.slope')}</div>
+          <div class="dmike-kpi-value">${this._fmt(res.regression.slope, 4)}</div>
+          <div class="dmike-kpi-sub">p = ${this._fmtP(res.regression.pSlope)}</div>
+        </div>
+        <div class="dmike-kpi ${kpi.interceptSignificant ? 'dmike-kpi--bad' : 'dmike-kpi--good'}">
+          <div class="dmike-kpi-label">${t('modules.msa-typ4.kpi.intercept')}</div>
+          <div class="dmike-kpi-value">${this._fmt(res.regression.intercept, 4)}</div>
+          <div class="dmike-kpi-sub">p = ${this._fmtP(res.regression.pIntercept)}</div>
+        </div>
+        <div class="dmike-kpi">
+          <div class="dmike-kpi-label">${t('modules.msa-typ4.kpi.maxPercentBias')}</div>
+          <div class="dmike-kpi-value">${this._fmt(kpi.maxPercentBias, 2)} %</div>
+        </div>
+      `;
+    }
+
+    const rows = res.perReference.map(p => `
+      <tr class="msa-typ4__row--${p.verdict}">
+        <td>${this._fmt(p.xRef, 3)}</td>
+        <td>${p.n}</td>
+        <td>${this._fmt(p.mean, 4)}</td>
+        <td>${this._fmt(p.bias, 4)}</td>
+        <td>${this._fmt(p.percentBias, 2)} %</td>
+        <td>${this._fmt(p.tStat, 2)}</td>
+        <td>${this._fmtP(p.pValue)}</td>
+      </tr>`).join('');
+
+    out.innerHTML = `
+      <div class="dmike-kpi-strip">${kpiHtml}</div>
+
+      <div class="msa-typ4__interp msa-typ4__interp--${kpi.verdict.color}">
+        ${t(res.interpretation.textKey, res.interpretation.params)}
+      </div>
+
+      <div class="dmike-split__output-section">${t('modules.msa-typ4.charts.linearity')}</div>
+      <div class="msa-typ4__chart" data-ref="chart-linearity"></div>
+
+      <div class="dmike-split__output-section">${t('modules.msa-typ4.charts.percentBias')}</div>
+      <div class="msa-typ4__chart" data-ref="chart-pctbias"></div>
+
+      <div class="dmike-split__output-section">${t('modules.msa-typ4.charts.perReference')}</div>
+      <div class="msa-typ4__chart" data-ref="chart-per-ref"></div>
+
+      <details class="msa-typ4__residuals" data-ref="residuals-details">
+        <summary>${t('modules.msa-typ4.charts.residuals')}</summary>
+        <div class="msa-typ4__chart" data-ref="chart-residuals"></div>
+      </details>
+
+      <div class="dmike-split__output-section">${t('modules.msa-typ4.sections.results')}</div>
+      <table class="dmike-table msa-typ4__table">
+        <thead>
+          <tr>
+            <th>${t('modules.msa-typ4.table.reference')}</th>
+            <th>${t('modules.msa-typ4.table.n')}</th>
+            <th>${t('modules.msa-typ4.table.mean')}</th>
+            <th>${t('modules.msa-typ4.table.bias')}</th>
+            <th>${t('modules.msa-typ4.table.percentBias')}</th>
+            <th>${t('modules.msa-typ4.table.tStat')}</th>
+            <th>${t('modules.msa-typ4.table.pValue')}</th>
+          </tr>
+        </thead>
+        <tbody>${rows}</tbody>
+      </table>
+    `;
+
+    // Task 12+13 populate the chart-* containers created above.
   },
 
   // ─── Charts ─────────────────────────────────────────────────
@@ -347,6 +447,16 @@ export default {
   _parseNum(s) {
     if (s == null || s === '') return NaN;
     return parseFloat(String(s).replace(',', '.').trim());
+  },
+
+  _fmt(v, d = 3) {
+    return Number.isFinite(v) ? v.toFixed(d) : '–';
+  },
+
+  _fmtP(p) {
+    if (p == null || !Number.isFinite(p)) return '–';
+    if (p < 0.001) return '< 0.001';
+    return p.toFixed(3);
   },
 
   _showError(msg) {
