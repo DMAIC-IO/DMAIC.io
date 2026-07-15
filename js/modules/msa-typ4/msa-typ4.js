@@ -56,6 +56,18 @@ export default {
     context.eventBus.on('module:activated', onModuleActivated);
     this._eventUnsubs.push(() => context.eventBus.off('module:activated', onModuleActivated));
 
+    // Re-run analysis whenever underlying worksheet data changes (cell
+    // edits don't change the column selection, so the ColumnPicker's own
+    // refresh() wouldn't catch them — see regression.js for the same
+    // pattern).
+    const onDataChange = () => this._tryAutoAnalysis();
+    context.eventBus.on('state:saved', onDataChange);
+    context.eventBus.on('worksheet:dataChanged', onDataChange);
+    this._eventUnsubs.push(
+      () => context.eventBus.off('state:saved', onDataChange),
+      () => context.eventBus.off('worksheet:dataChanged', onDataChange),
+    );
+
     container.innerHTML = '';
     this._render();
   },
@@ -235,7 +247,6 @@ export default {
   /**
    * Automatically run analysis if both columns are selected. Silently
    * clears results when data is incomplete (mirrors msa-typ1/msa-typ2).
-   * Task 10 fills in the actual engine call; for now this only clears.
    */
   _tryAutoAnalysis() {
     this._readInputs();
@@ -243,11 +254,68 @@ export default {
     if (!out) return;
     this._result = null;
     this._destroyCharts();
+
     if (!this._refColumn || !this._measColumn) {
       out.innerHTML = `<div class="module-msa-typ4__empty">${this._t('modules.msa-typ4.emptyState')}</div>`;
       return;
     }
-    out.innerHTML = '';
+
+    const data = this._buildDataArrays();
+    if (!data) {
+      out.innerHTML = `<div class="module-msa-typ4__empty">${this._t('modules.msa-typ4.emptyState')}</div>`;
+      return;
+    }
+
+    const p = this._params;
+    const flatParams = {
+      pvMode: p.pvMode, LSL: p.tolerance.LSL, USL: p.tolerance.USL,
+      sigmaP: p.sigmaP, alpha: p.alpha, norm: p.norm,
+    };
+    const res = analyze(data.reference, data.measured, flatParams);
+    if (!res.ok) {
+      this._hideError();
+      out.innerHTML = `<div class="module-msa-typ4__empty">${this._t(res.errorKey, res.errorVars)}</div>`;
+      return;
+    }
+
+    this._hideError();
+    this._result = res;
+    this._renderResults(res);
+  },
+
+  /**
+   * Build aligned {reference, measured} arrays from the two selected
+   * worksheet columns, dropping rows where either value is missing/non-numeric.
+   * @returns {{reference: number[], measured: number[]}|null}
+   */
+  _buildDataArrays() {
+    const sm = this._context.stateManager;
+    const rawRef = getColumnValues(sm, this._refColumn);
+    const rawMeas = getColumnValues(sm, this._measColumn);
+
+    const reference = [], measured = [];
+    const len = Math.min(rawRef.length, rawMeas.length);
+    for (let i = 0; i < len; i++) {
+      const r = typeof rawRef[i] === 'number' ? rawRef[i] : parseFloat(String(rawRef[i] ?? '').replace(',', '.'));
+      const m = typeof rawMeas[i] === 'number' ? rawMeas[i] : parseFloat(String(rawMeas[i] ?? '').replace(',', '.'));
+      if (!Number.isFinite(r) || !Number.isFinite(m)) continue;
+      reference.push(r);
+      measured.push(m);
+    }
+    if (reference.length === 0) return null;
+    return { reference, measured };
+  },
+
+  /**
+   * Render the analysis result into the output panel.
+   * Placeholder — Task 11 fills in KPI tiles / interpretation / table;
+   * Task 12+13 fill in the chart containers.
+   * @param {object} res  Output of engines/msa-typ4-engine.js analyze().
+   */
+  _renderResults(res) {
+    const out = this._container.querySelector('[data-ref="results"]');
+    if (!out) return;
+    out.innerHTML = `<div class="module-msa-typ4__ok" data-ref="results-ok"></div>`;
   },
 
   // ─── Charts ─────────────────────────────────────────────────
