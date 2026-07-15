@@ -212,3 +212,35 @@ export function vda5Kpis(perRef, regression, params) {
   else { color = 'red'; key = 'modules.msa-typ4.verdictVdaFail'; }
   return { u_BI, U, Q_MS_BI, verdict: { color, key } };
 }
+
+/**
+ * Full analysis orchestrator. Groups raw arrays by reference, runs both
+ * AIAG and VDA 5 KPI blocks so the UI can toggle without recomputation.
+ * @param {number[]} reference
+ * @param {number[]} measured
+ * @param {object}   params  { pvMode, LSL, USL, sigmaP, alpha, norm }
+ */
+export function analyze(reference, measured, params) {
+  const v = validate(reference, measured, params);
+  if (!v.valid) return { ok: false, errorKey: v.errorKey, errorVars: v.errorVars };
+  const alpha = params.alpha ?? 0.05;
+  const perReference = perReferenceStats(reference, measured, alpha);
+  const regression = regressBiasVsReference(reference, measured, alpha);
+  const kpiAiag = aiagKpis(perReference, regression, params);
+  const kpiVda5 = vda5Kpis(perReference, regression, params);
+  const pv = { mode: params.pvMode, value: pvValue(params), source: params.pvMode };
+  // Tag each per-reference row with its verdict (green/yellow/red based on alpha)
+  for (const p of perReference) {
+    p.percentBias = pv.value > 0 ? 100 * Math.abs(p.bias) / pv.value : Infinity;
+    p.verdict = p.pValue >= alpha ? 'green' : (p.percentBias <= 10 ? 'yellow' : 'red');
+  }
+  const norm = params.norm === 'VDA5' ? 'VDA5' : 'AIAG';
+  const activeVerdict = norm === 'VDA5' ? kpiVda5.verdict : kpiAiag.verdict;
+  const interpretation = {
+    textKey: `modules.msa-typ4.interp${norm}_${activeVerdict.color}`,
+    params: norm === 'VDA5'
+      ? { qMsBi: kpiVda5.Q_MS_BI.toFixed(2) }
+      : { pctLin: kpiAiag.percentLinearity.toFixed(2), maxPctBias: kpiAiag.maxPercentBias.toFixed(2) },
+  };
+  return { ok: true, perReference, regression, kpi: { aiag: kpiAiag, vda5: kpiVda5 }, pv, interpretation };
+}

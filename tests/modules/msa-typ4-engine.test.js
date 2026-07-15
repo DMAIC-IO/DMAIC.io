@@ -5,7 +5,7 @@
  */
 
 import { suite, test, assert, assertClose } from '../test-utils.js';
-import { validate, perReferenceStats, regressBiasVsReference, aiagKpis, vda5Kpis } from '../../js/engines/msa-typ4-engine.js';
+import { validate, perReferenceStats, regressBiasVsReference, aiagKpis, vda5Kpis, analyze } from '../../js/engines/msa-typ4-engine.js';
 import fixtures from '../fixtures/msa/msa-typ4.fixtures.json' with { type: 'json' };
 
 suite('msa-typ4-engine — validate', () => {
@@ -153,4 +153,47 @@ suite('msa-typ4-engine — vda5Kpis', () => {
     const kpi = vda5Kpis(per, reg, c.inputs.params);
     assert(kpi.verdict.color === 'green');
   });
+});
+
+suite('msa-typ4-engine — analyze', () => {
+  test('invalider Input propagiert errorKey', () => {
+    const r = analyze([], [], { pvMode: 'tolerance', LSL: 0, USL: 10, norm: 'AIAG' });
+    assert(!r.ok);
+    assert(r.errorKey === 'modules.msa-typ4.errTooFewReferences');
+  });
+
+  test('linear-drift: kpi.aiag + kpi.vda5 gefüllt, interpretation nutzt Norm', () => {
+    const c = fixtures.test_cases.find(x => x.id === 'linear-drift');
+    const r = analyze(c.inputs.reference, c.inputs.measured, { ...c.inputs.params, norm: 'AIAG' });
+    assert(r.ok);
+    assert(r.kpi.aiag && r.kpi.vda5);
+    assert(r.interpretation.textKey.startsWith('modules.msa-typ4.interp'));
+    assert(r.pv.mode === 'tolerance');
+  });
+
+  test('Norm-Umschalter ändert interpretation, nicht Rohrechnung', () => {
+    const c = fixtures.test_cases.find(x => x.id === 'clean');
+    const a = analyze(c.inputs.reference, c.inputs.measured, { ...c.inputs.params, norm: 'AIAG' });
+    const v = analyze(c.inputs.reference, c.inputs.measured, { ...c.inputs.params, norm: 'VDA5' });
+    assertClose(a.regression.slope, v.regression.slope, 1e-12);
+    assert(a.interpretation.textKey !== v.interpretation.textKey);
+  });
+});
+
+suite('msa-typ4-engine — analyze × alle Fixtures', () => {
+  for (const c of fixtures.test_cases) {
+    test(`Fixture "${c.id}" reproduziert SciPy-Werte`, () => {
+      const r = analyze(c.inputs.reference, c.inputs.measured, { ...c.inputs.params, norm: 'AIAG' });
+      assert(r.ok, `analyze failed for ${c.id}: ${r.errorKey}`);
+      assertClose(r.regression.slope,     c.expected.slope, 1e-4);
+      assertClose(r.regression.intercept, c.expected.intercept, 1e-4);
+      assertClose(r.kpi.aiag.percentLinearity, c.expected.percentLinearity, 1e-3);
+      const qMsBiExpected = Number(c.expected.qMsBi);
+      if (Number.isFinite(qMsBiExpected)) {
+        assertClose(r.kpi.vda5.Q_MS_BI, qMsBiExpected, 1e-3);
+      } else {
+        assert(!Number.isFinite(r.kpi.vda5.Q_MS_BI), `expected non-finite Q_MS_BI for ${c.id}, got ${r.kpi.vda5.Q_MS_BI}`);
+      }
+    });
+  }
 });
