@@ -12,32 +12,32 @@ export default {
         blocks: [
           {
             type: 'paragraph',
-            content: 'Eine Regelkarte (Control Chart, SPC-Karte) zeigt den zeitlichen Verlauf eines Prozesskennwerts zusammen mit statistischen Grenzen. Sie unterscheidet zufällige Streuung (Prozess „im Griff") von systematischen Abweichungen (Sonderursachen) — und ist das Standardwerkzeug der Control-Phase, um einen verbesserten Prozess dauerhaft zu überwachen.',
+            content: 'Eine {{term:regelkarte|Regelkarte}} (Control Chart, SPC-Karte) zeigt den zeitlichen Verlauf eines Prozesskennwerts zusammen mit statistischen Grenzen. Sie unterscheidet zufällige Streuung (Prozess „im Griff") von systematischen Abweichungen (Sonderursachen) — und ist das Standardwerkzeug der Control-Phase, um einen verbesserten Prozess dauerhaft zu überwachen.',
           },
           {
             type: 'definition',
             term: 'Mittellinie (CL)',
-            content: 'Der {{term:mittelwert|Mittelwert}} der beobachteten Messwerte oder Teilgruppen-Mittelwerte. Sie repräsentiert das aktuelle Prozessniveau.',
+            content: 'Die {{term:mittellinie|Mittellinie CL}} ist der {{term:mittelwert|Mittelwert}} der beobachteten Messwerte oder Teilgruppen-Mittelwerte. Sie repräsentiert das aktuelle Prozessniveau.',
           },
           {
             type: 'definition',
             term: 'UCL und LCL (±3σ)',
-            content: 'Obere und untere Eingriffsgrenze, typischerweise im Abstand von 3 {{term:standardabweichung|Standardabweichungen}} vom Mittelwert. Innerhalb dieser Grenzen gelten Abweichungen als zufällig; Werte außerhalb deuten auf eine Sonderursache hin.',
+            content: 'Die {{term:regelgrenze|UCL und LCL}} sind die obere und untere Eingriffsgrenze, typischerweise im Abstand von 3 {{term:standardabweichung|Standardabweichungen}} vom Mittelwert. Innerhalb dieser Grenzen gelten Abweichungen als zufällig; Werte außerhalb deuten auf eine Sonderursache hin.',
           },
           {
             type: 'definition',
             term: 'Zonen A, B, C',
-            content: 'Der Bereich zwischen Mittellinie und Grenzen wird in drei Zonen zu je einer Standardabweichung unterteilt. Western-Electric- und Nelson-Regeln nutzen diese Zonen, um nicht-zufällige Muster zu erkennen.',
+            content: 'Der Bereich zwischen Mittellinie und Grenzen wird in drei Zonen zu je einer Standardabweichung unterteilt. {{term:nelson-regeln|Western-Electric- und Nelson-Regeln}} nutzen diese Zonen, um nicht-zufällige Muster zu erkennen.',
           },
           {
             type: 'definition',
             term: 'Sonderursache (special cause)',
-            content: 'Ein Einfluss außerhalb der normalen Prozessstreuung — z. B. ein Werkzeugbruch, ein neuer Operator, ein Materialwechsel. Muss identifiziert und beseitigt werden, bevor der Prozess weiterläuft.',
+            content: 'Eine {{term:sonderursache|Sonderursache}} ist ein Einfluss außerhalb der normalen Prozessstreuung — z. B. ein Werkzeugbruch, ein neuer Operator, ein Materialwechsel. Muss identifiziert und beseitigt werden, bevor der Prozess weiterläuft.',
           },
           {
             type: 'definition',
             term: 'Kartentypen',
-            content: 'I-MR für Einzelwerte, X̄-R und X̄-S für Teilgruppen, p- und np-Karte für Anteile (defekt/nicht defekt), c- und u-Karte für Zählwerte (Fehler pro Einheit). Die Wahl hängt von Datentyp und Untergruppen ab.',
+            content: '{{term:i-mr-chart|I-MR}} für Einzelwerte, {{term:xbar-r-chart|X̄-R}} und X̄-S für {{term:subgruppe|Teilgruppen}}, {{term:p-chart|p- und np-Karte}} für Anteile (defekt/nicht defekt), {{term:c-chart|c- und u-Karte}} für Zählwerte (Fehler pro Einheit). Die Wahl hängt von Datentyp und Untergruppen ab.',
           },
           {
             type: 'paragraph',
@@ -50,32 +50,32 @@ export default {
         blocks: [
           {
             type: 'paragraph',
-            content: 'A control chart (SPC chart) plots a process metric over time together with statistical limits. It separates random variation (process "in control") from systematic deviations (special causes) — and is the standard Control-phase tool to keep an improved process in check long-term.',
+            content: 'A {{term:regelkarte|control chart}} (SPC chart) plots a process metric over time together with statistical limits. It separates random variation (process "in control") from systematic deviations (special causes) — and is the standard Control-phase tool to keep an improved process in check long-term.',
           },
           {
             type: 'definition',
             term: 'Center line (CL)',
-            content: 'The {{term:mittelwert|mean}} of observed values or subgroup means. It represents the current process level.',
+            content: 'The {{term:mittellinie|centre line CL}} is the {{term:mittelwert|mean}} of observed values or subgroup means. It represents the current process level.',
           },
           {
             type: 'definition',
             term: 'UCL and LCL (±3σ)',
-            content: 'Upper and lower control limits, typically at 3 {{term:standardabweichung|standard deviations}} from the mean. Deviations within are treated as random; points outside indicate a special cause.',
+            content: '{{term:regelgrenze|UCL and LCL}} are the upper and lower control limits, typically at 3 {{term:standardabweichung|standard deviations}} from the mean. Deviations within are treated as random; points outside indicate a special cause.',
           },
           {
             type: 'definition',
             term: 'Zones A, B, C',
-            content: 'The region between center line and limits is divided into three zones of one standard deviation each. Western Electric and Nelson rules use these zones to detect non-random patterns.',
+            content: 'The region between center line and limits is divided into three zones of one standard deviation each. {{term:nelson-regeln|Western Electric and Nelson rules}} use these zones to detect non-random patterns.',
           },
           {
             type: 'definition',
             term: 'Special cause',
-            content: 'An influence outside normal process variation — e.g. a tool break, a new operator, a material change. Must be identified and removed before the process continues.',
+            content: 'A {{term:sonderursache|special cause}} is an influence outside normal process variation — e.g. a tool break, a new operator, a material change. Must be identified and removed before the process continues.',
           },
           {
             type: 'definition',
             term: 'Chart types',
-            content: 'I-MR for individuals, X̄-R and X̄-S for subgroups, p and np for proportions (defective/not), c and u for counts (defects per unit). Choice depends on data type and subgroups.',
+            content: '{{term:i-mr-chart|I-MR}} for individuals, {{term:xbar-r-chart|X̄-R}} and X̄-S for {{term:subgruppe|subgroups}}, {{term:p-chart|p and np}} for proportions (defective/not), {{term:c-chart|c and u}} for counts (defects per unit). Choice depends on data type and subgroups.',
           },
           {
             type: 'paragraph',
@@ -222,7 +222,7 @@ export default {
 
     interpretation: {
       de: {
-        title: 'Regeln für Sonderursachen',
+        title: 'Regeln für Sonderursachen ({{term:nelson-regeln|Nelson}})',
         blocks: [
           {
             type: 'list',
@@ -242,7 +242,7 @@ export default {
         ],
       },
       en: {
-        title: 'Rules for Special Causes',
+        title: 'Rules for Special Causes ({{term:nelson-regeln|Nelson}})',
         blocks: [
           {
             type: 'list',
@@ -270,7 +270,7 @@ export default {
           {
             type: 'definition',
             term: 'Spezifikationsgrenzen statt Regelgrenzen',
-            content: 'USL/LSL kommen vom Kunden, UCL/LCL aus den Prozessdaten. Beides zu vermischen (Spezgrenzen in die Karte zu zeichnen und als Eingriffsgrenzen zu behandeln) ist einer der häufigsten SPC-Fehler.',
+            content: '{{term:spezifikationsgrenzen|USL/LSL}} kommen vom Kunden, {{term:regelgrenze|UCL/LCL}} aus den Prozessdaten. Beides zu vermischen (Spezgrenzen in die Karte zu zeichnen und als Eingriffsgrenzen zu behandeln) ist einer der häufigsten SPC-Fehler.',
           },
           {
             type: 'definition',
@@ -285,7 +285,7 @@ export default {
           {
             type: 'definition',
             term: 'Zu viele Regeln aktiviert',
-            content: 'Jede zusätzliche Regel erhöht die Fehlalarm-Rate. Wer alle Nelson-Regeln aktiviert, hat im Durchschnitt alle paar Datenpunkte einen „Treffer" — und nimmt die Karte dann nicht mehr ernst.',
+            content: 'Jede zusätzliche Regel erhöht die Fehlalarm-Rate. Wer alle {{term:nelson-regeln|Nelson-Regeln}} aktiviert, hat im Durchschnitt alle paar Datenpunkte einen „Treffer" — und nimmt die Karte dann nicht mehr ernst.',
           },
           {
             type: 'definition',
@@ -305,7 +305,7 @@ export default {
           {
             type: 'definition',
             term: 'Spec limits instead of control limits',
-            content: 'USL/LSL come from the customer, UCL/LCL from process data. Mixing them (drawing spec limits on the chart and treating them as control limits) is among the most common SPC mistakes.',
+            content: '{{term:spezifikationsgrenzen|USL/LSL}} come from the customer, {{term:regelgrenze|UCL/LCL}} from process data. Mixing them (drawing spec limits on the chart and treating them as control limits) is among the most common SPC mistakes.',
           },
           {
             type: 'definition',
@@ -320,7 +320,7 @@ export default {
           {
             type: 'definition',
             term: 'Too many rules enabled',
-            content: 'Every extra rule increases the false-alarm rate. Enabling all Nelson rules gives a "hit" every few points on average — and the team stops taking the chart seriously.',
+            content: 'Every extra rule increases the false-alarm rate. Enabling all {{term:nelson-regeln|Nelson rules}} gives a "hit" every few points on average — and the team stops taking the chart seriously.',
           },
           {
             type: 'definition',

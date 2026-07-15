@@ -1,7 +1,7 @@
 {
   "id": "cp",
   "name": {
-    "de": "Prozessfähigkeit Cp",
+    "de": "Prozessfähigkeit {{term:cp|Cp}}",
     "en": "Process Capability Cp"
   },
   "category": "capability",

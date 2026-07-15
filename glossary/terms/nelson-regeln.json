@@ -1,0 +1,102 @@
+{
+  "id": "nelson-regeln",
+  "category": "spc",
+  "title": {
+    "de": "Nelson-Regeln (Western Electric)",
+    "en": "Nelson Rules (Western Electric)"
+  },
+  "short": {
+    "de": "Muster-Regeln zur Erkennung von {{term:sonderursache|Sonderursachen}} auf {{term:regelkarte|Regelkarten}} — 8 Regeln, die über den reinen ±3σ-Test hinausgehen.",
+    "en": "Pattern rules for detecting {{term:sonderursache|special causes}} on {{term:regelkarte|control charts}} — 8 rules that go beyond the plain ±3σ test."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "Die **Nelson-Regeln** (Nelson, 1984) erweitern die klassischen **Western-Electric-Regeln** (1956) und definieren typische Muster, die auf eine {{term:sonderursache|Sonderursache}} hindeuten. Sie nutzen die Zonen A, B, C zwischen {{term:mittellinie|Mittellinie}} und {{term:regelgrenze|Regelgrenzen}} (je 1σ breit)."
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Regel 1** — 1 Punkt außerhalb ±3σ (out-of-limit)",
+          "**Regel 2** — 9 Punkte in Folge auf derselben Seite der Mittellinie (Niveauverschiebung)",
+          "**Regel 3** — 6 Punkte in Folge steigend oder fallend (Trend)",
+          "**Regel 4** — 14 Punkte alternierend (systematisches Zickzack)",
+          "**Regel 5** — 2 von 3 Punkten in Zone A (>2σ, gleiche Seite)",
+          "**Regel 6** — 4 von 5 Punkten in Zone B oder A (>1σ, gleiche Seite)",
+          "**Regel 7** — 15 Punkte in Folge in Zone C (Streuung zu klein → Mischung / falsche Grenzen)",
+          "**Regel 8** — 8 Punkte in Folge außerhalb Zone C (kein Punkt nah an der Mittellinie)"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "**Nicht alle Regeln gleichzeitig aktivieren.** Jede zusätzliche Regel erhöht die Fehlalarm-Rate — bei allen 8 aktiven Regeln steigt das Risiko eines Falschalarms auf ca. 5 % pro Punkt. Praxisempfehlung: Regel 1 immer, Regeln 2, 5, 6 oft; Regeln 7 und 8 nur bei begründetem Verdacht."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "The **Nelson rules** (Nelson, 1984) extend the classic **Western Electric rules** (1956) and codify typical patterns that indicate a {{term:sonderursache|special cause}}. They use zones A, B, C between the {{term:mittellinie|centre line}} and {{term:regelgrenze|control limits}} (each 1σ wide)."
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Rule 1** — 1 point outside ±3σ (out-of-limit)",
+          "**Rule 2** — 9 points in a row on the same side of the centre line (level shift)",
+          "**Rule 3** — 6 points in a row rising or falling (trend)",
+          "**Rule 4** — 14 points alternating (systematic zig-zag)",
+          "**Rule 5** — 2 of 3 points in zone A (>2σ, same side)",
+          "**Rule 6** — 4 of 5 points in zone B or beyond (>1σ, same side)",
+          "**Rule 7** — 15 points in a row within zone C (variance too small → mixing / wrong limits)",
+          "**Rule 8** — 8 points in a row outside zone C (no point near the centre line)"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "**Do not enable all rules at once.** Every extra rule raises the false-alarm rate — with all 8 active, the per-point false-alarm risk climbs to about 5 %. Practical recommendation: Rule 1 always, Rules 2, 5, 6 often; Rules 7 and 8 only on specific suspicion."
+      }
+    ]
+  },
+  "aliases": {
+    "de": [
+      "Nelson-Regeln",
+      "Western-Electric-Regeln",
+      "WE-Regeln",
+      "Runs Rules",
+      "SPC-Muster-Regeln"
+    ],
+    "en": [
+      "Nelson rules",
+      "Western Electric rules",
+      "WECO rules",
+      "runs rules"
+    ]
+  },
+  "seeAlso": [
+    "regelkarte",
+    "regelgrenze",
+    "sonderursache",
+    "mittellinie"
+  ],
+  "modules": [
+    "control-chart",
+    "attribute-control-chart"
+  ],
+  "algoLab": [
+    "control-charts/control-chart"
+  ],
+  "sources": [
+    {
+      "label": "Nelson, L. S. — Technical Aids: The Shewhart Control Chart — Tests for Special Causes, Journal of Quality Technology, 16(4), 1984",
+      "url": null
+    },
+    {
+      "label": "Western Electric Company — Statistical Quality Control Handbook, 1956",
+      "url": null
+    },
+    {
+      "label": "Montgomery, D. C. — Introduction to Statistical Quality Control, 8th Edition, Chapter 5",
+      "url": null
+    }
+  ]
+}

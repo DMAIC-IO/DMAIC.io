@@ -11,8 +11,8 @@
 
   "description": {
     "short": {
-      "de": "Erzeugt das kartesische Produkt aller Stufen-Kombinationen, wenn Faktoren unterschiedliche Stufenzahlen haben (z.B. 2 × 3 × 4).",
-      "en": "Generates the Cartesian product of all level combinations when factors have different level counts (e.g. 2 × 3 × 4)."
+      "de": "Erzeugt das kartesische Produkt aller Stufen-Kombinationen für einen {{term:vollfaktoriell|Vollplan}}, wenn Faktoren unterschiedliche Stufenzahlen haben (z.B. 2 × 3 × 4).",
+      "en": "Generates the Cartesian product of all level combinations for a {{term:vollfaktoriell|full factorial}} when factors have different level counts (e.g. 2 × 3 × 4)."
     },
     "long": {
       "de": "Während der klassische 2^k-Voll-faktoriell-Plan annimmt, dass alle Faktoren genau zwei Stufen haben, kommt der General-Voll-faktorielle Plan mit beliebigen Stufenzahlen pro Faktor zurecht. Das ist Pflicht, sobald ein Versuchsplan ungerade Stufenzahlen kombiniert (z.B. ein 2-stufiger kategorialer Faktor wie Werkzeug A/B mit einem 3-stufigen kontinuierlichen Faktor wie Niedrig/Mittel/Hoch). Die Run-Zahl ist das Produkt aller Stufenzahlen — wächst schnell und sollte vor der Auswahl eines Voll-faktoriellen Plans bedacht werden.",

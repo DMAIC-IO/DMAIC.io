@@ -1,0 +1,108 @@
+{
+  "id": "reproduzierbarkeit",
+  "category": "msa",
+  "title": {
+    "de": "Reproduzierbarkeit (Reproducibility)",
+    "en": "Reproducibility"
+  },
+  "short": {
+    "de": "{{term:praezision|Präzision}} unter geänderten Bedingungen — verschiedene Bediener, Geräte oder Labore am selben Teil.",
+    "en": "{{term:praezision|Precision}} under changed conditions — different operators, instruments, or laboratories on the same part."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "Die **Reproduzierbarkeit** ist die Streuung, die dazukommt, wenn *dasselbe Teil* unter *geänderten Rahmenbedingungen* gemessen wird — im Six-Sigma-Kontext typischerweise durch verschiedene Bediener (Appraiser Variation, AV). Sie ist immer ≥ der {{term:wiederholbarkeit|Wiederholbarkeit}}, weil sie deren Streuung noch enthält."
+      },
+      {
+        "type": "note",
+        "text": "In Gage R&R (MSA Typ 2) heißt dieser Anteil **AV** (Appraiser Variation). In der ANOVA-Auswertung setzt er sich zusammen aus dem Haupteffekt der Bediener und der Bediener × Teil-Wechselwirkung: σ²_AV = σ²_Operator + σ²_Interaction. Ein hoher AV-Anteil zeigt auf uneinheitliche Messanweisung, Schulungsbedarf oder eine unpraktikable Vorrichtung."
+      },
+      {
+        "type": "paragraph",
+        "text": "Die Kennzahl **GR&R = √(EV² + AV²)** fasst {{term:wiederholbarkeit|Wiederholbarkeit}} und Reproduzierbarkeit zur gesamten Messsystem-Streuung zusammen. Für einen fähigen Messprozess gilt %GR&R < 10 % (bezogen auf die Prozessstreuung oder Toleranz)."
+      },
+      {
+        "type": "list",
+        "items": [
+          "Wiederholbedingungen: gleich → misst {{term:wiederholbarkeit|Wiederholbarkeit}}",
+          "Bediener geändert → misst Reproduzierbarkeit (Standardfall in Gage R&R)",
+          "Labor geändert (Ringversuch) → Reproduzierbarkeit im ISO-5725-Sinn"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "Umgangssprachlich bedeutet „Reproduzierbarkeit“ oft nur „nachvollziehbar“ — z. B. beim JSON-Export eines Projekts. In der Messsystemanalyse ist der Begriff aber eng definiert und ausdrücklich von der Wiederholbarkeit zu trennen."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "**Reproducibility** is the additional variation that appears when *the same part* is measured under *changed conditions* — in Six Sigma typically by different operators (Appraiser Variation, AV). It is always ≥ {{term:wiederholbarkeit|repeatability}}, because it still contains the latter."
+      },
+      {
+        "type": "note",
+        "text": "In Gage R&R (MSA Type 2) this component is called **AV** (Appraiser Variation). The ANOVA decomposition splits it into operator main effect and operator × part interaction: σ²_AV = σ²_Operator + σ²_Interaction. A large AV share points to inconsistent procedures, training needs, or an impractical fixture."
+      },
+      {
+        "type": "paragraph",
+        "text": "The combined index **GR&R = √(EV² + AV²)** aggregates {{term:wiederholbarkeit|repeatability}} and reproducibility into total measurement-system variation. A capable system needs %GR&R < 10% (relative to process variation or tolerance)."
+      },
+      {
+        "type": "list",
+        "items": [
+          "Conditions constant → measures {{term:wiederholbarkeit|repeatability}}",
+          "Operator changed → measures reproducibility (standard Gage R&R case)",
+          "Laboratory changed (round-robin) → reproducibility in the ISO 5725 sense"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "Colloquially, \"reproducibility\" often just means \"reconstructable\" — e.g. for a project's JSON export. In measurement system analysis the term is narrowly defined and must be kept apart from repeatability."
+      }
+    ]
+  },
+  "aliases": {
+    "de": [
+      "Reproducibility",
+      "AV",
+      "Appraiser Variation",
+      "Vergleichpräzision"
+    ],
+    "en": [
+      "appraiser variation",
+      "AV",
+      "between-system variation"
+    ]
+  },
+  "seeAlso": [
+    "wiederholbarkeit",
+    "praezision",
+    "genauigkeit"
+  ],
+  "modules": [
+    "msa-typ2"
+  ],
+  "algoLab": [
+    "msa/grr"
+  ],
+  "sources": [
+    {
+      "label": "DIN ISO 5725-2: Genauigkeit (Richtigkeit und Präzision) von Messverfahren und Messergebnissen — Teil 2",
+      "url": null
+    },
+    {
+      "label": "AIAG — Measurement Systems Analysis Reference Manual, 4th Edition (MSA-4), Chapter 4",
+      "url": null
+    },
+    {
+      "label": "VDA Band 5 — Prüfprozesseignung, 3. Auflage",
+      "url": null
+    },
+    {
+      "label": "Wheeler, D. J. — EMP III: Evaluating the Measurement Process, SPC Press",
+      "url": null
+    }
+  ]
+}

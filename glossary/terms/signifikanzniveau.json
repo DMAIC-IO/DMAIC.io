@@ -1,0 +1,86 @@
+{
+  "id": "signifikanzniveau",
+  "category": "hypothesis",
+  "title": {
+    "de": "Signifikanzniveau (α)",
+    "en": "Significance Level (α)"
+  },
+  "short": {
+    "de": "Vorab festgelegte Risikogrenze, {{term:nullhypothese|H₀}} fälschlich zu verwerfen — meist α = 0,05.",
+    "en": "Pre-set risk threshold for wrongly rejecting {{term:nullhypothese|H₀}} — usually α = 0.05."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "Das **Signifikanzniveau** α legt fest, wie viel {{term:fehler-erster-art|Fehler-erster-Art-Risiko}} akzeptiert wird — also die Wahrscheinlichkeit, H₀ zu verwerfen, obwohl sie richtig ist („falscher Alarm“)."
+      },
+      {
+        "type": "list",
+        "items": [
+          "**α = 0,05** — Standard in Industrie und Forschung; 5 % Fehlalarmrisiko pro Test",
+          "**α = 0,01** — bei kritischen Entscheidungen (Sicherheit, Zulassung)",
+          "**α = 0,001** — sehr streng, z. B. bei Millionen von parallelen Tests (Genom-Studien)"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "**α ist eine Entscheidung des Analysten, nicht der Daten.** Sie wird vor der Analyse festgelegt — nachträgliches Anpassen an das Ergebnis untergräbt die gesamte Testlogik. Bei mehreren Tests am gleichen Datensatz muss α korrigiert werden (Bonferroni: α_korr = α/k; False Discovery Rate; Holm-Bonferroni), sonst häufen sich Falschalarme."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "The **significance level** α sets how much {{term:fehler-erster-art|Type I error risk}} is accepted — the probability of rejecting H₀ when it is actually true (\"false alarm\")."
+      },
+      {
+        "type": "list",
+        "items": [
+          "**α = 0.05** — standard in industry and research; 5 % false-alarm rate per test",
+          "**α = 0.01** — for critical decisions (safety, approvals)",
+          "**α = 0.001** — very strict, e.g. under millions of parallel tests (genome studies)"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "**α is an analyst decision, not a data property.** It is set before analysis — adjusting it later to fit the outcome undermines the whole test logic. When several tests share one dataset, α must be corrected (Bonferroni: α_corr = α/k; False Discovery Rate; Holm-Bonferroni), otherwise false alarms pile up."
+      }
+    ]
+  },
+  "aliases": {
+    "de": [
+      "Alpha",
+      "α",
+      "Signifikanzschwelle"
+    ],
+    "en": [
+      "alpha",
+      "α",
+      "significance threshold"
+    ]
+  },
+  "seeAlso": [
+    "fehler-erster-art",
+    "p-wert",
+    "hypothesentest",
+    "power"
+  ],
+  "modules": [
+    "hypothesis-test",
+    "sample-size"
+  ],
+  "algoLab": [
+    "hypothesis/one-sample-t-test",
+    "hypothesis/two-sample-t-test"
+  ],
+  "sources": [
+    {
+      "label": "Neyman, J. & Pearson, E. S. — On the Problem of the Most Efficient Tests, 1933",
+      "url": null
+    },
+    {
+      "label": "Wasserstein, R. L. & Lazar, N. A. — The ASA Statement on p-Values, 2016",
+      "url": null
+    }
+  ]
+}

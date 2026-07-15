@@ -1,0 +1,91 @@
+{
+  "id": "ctq",
+  "category": "methodology",
+  "title": {
+    "de": "CTQ (Critical to Quality)",
+    "en": "CTQ (Critical to Quality)"
+  },
+  "short": {
+    "de": "Messbare Qualitätsmerkmale, die aus der {{term:voc|Voice of Customer}} abgeleitet werden — inklusive Sollwert, Grenzen und Priorität.",
+    "en": "Measurable quality characteristics derived from the {{term:voc|Voice of Customer}} — with target, limits and priority."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "Ein **CTQ** ist ein präzises, messbares Merkmal, an dem die Qualität des Prozesses oder Produkts aus Kundensicht bewertet wird. Jedes CTQ entsteht durch Übersetzung eines {{term:voc|VoC}}-Zitats in eine **operationalisierbare Kennzahl** mit Zielwert und {{term:spezifikationsgrenzen|Grenzen}}."
+      },
+      {
+        "type": "list",
+        "items": [
+          "**CTQ (Critical to Quality)** — funktionale/qualitative Merkmale („Passform“, „Genauigkeit“, „Wartefreiheit“)",
+          "**CTC (Critical to Cost)** — Kostenrelevante Größen (Materialpreis, Verarbeitungskosten)",
+          "**CTD (Critical to Delivery)** — Liefertreue, Durchlaufzeit",
+          "**CTS (Critical to Safety)** — sicherheitskritische Merkmale, oft mit gesetzlichen Grenzen"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "Ein CTQ ohne **Sollwert** und {{term:spezifikationsgrenzen|Toleranzgrenzen}} ist wertlos — es lässt sich weder messen noch bewerten. Der VoC→CTQ-Baum (CTX-Baum) macht die Ableitungskette explizit: Kundenaussage → Bedürfnis → messbares Merkmal → Ziel/Toleranz. Diese Kette ist auch die Grundlage für {{term:prozessfaehigkeit|Prozessfähigkeits-Kennzahlen}} wie {{term:cpk|Cpk}}."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "A **CTQ** is a precise, measurable characteristic used to assess process or product quality from the customer's perspective. Every CTQ arises from translating a {{term:voc|VoC}} quote into an **operational metric** with target value and {{term:spezifikationsgrenzen|limits}}."
+      },
+      {
+        "type": "list",
+        "items": [
+          "**CTQ (Critical to Quality)** — functional/quality characteristics (\"fit\", \"accuracy\", \"no wait time\")",
+          "**CTC (Critical to Cost)** — cost-relevant quantities (material price, processing cost)",
+          "**CTD (Critical to Delivery)** — on-time delivery, lead time",
+          "**CTS (Critical to Safety)** — safety-critical features, often with regulatory limits"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "A CTQ without a **target** and {{term:spezifikationsgrenzen|tolerance limits}} is worthless — it cannot be measured or judged. The VoC→CTQ tree (CTX tree) makes the derivation chain explicit: customer quote → need → measurable characteristic → target/tolerance. That chain is also the basis of {{term:prozessfaehigkeit|process capability}} indices such as {{term:cpk|Cpk}}."
+      }
+    ]
+  },
+  "aliases": {
+    "de": [
+      "CTQ",
+      "Critical to Quality",
+      "CTQ-Baum",
+      "CTX-Baum"
+    ],
+    "en": [
+      "CTQ",
+      "Critical to Quality",
+      "CTX tree"
+    ]
+  },
+  "seeAlso": [
+    "voc",
+    "sipoc",
+    "spezifikationsgrenzen",
+    "prozessfaehigkeit",
+    "cpk"
+  ],
+  "modules": [
+    "voc-ctx-tree",
+    "sipoc"
+  ],
+  "algoLab": [],
+  "sources": [
+    {
+      "label": "Pyzdek, T. & Keller, P. — The Six Sigma Handbook, 5th Edition",
+      "url": null
+    },
+    {
+      "label": "George, M. L. — Lean Six Sigma Pocket Toolbook, McGraw-Hill",
+      "url": null
+    },
+    {
+      "label": "Womack, J. P. & Jones, D. T. — Lean Thinking, Free Press, 2003",
+      "url": null
+    }
+  ]
+}

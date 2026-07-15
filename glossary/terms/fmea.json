@@ -1,0 +1,100 @@
+{
+  "id": "fmea",
+  "category": "risk",
+  "title": {
+    "de": "FMEA (Fehlermöglichkeits- und Einflussanalyse)",
+    "en": "FMEA (Failure Mode and Effects Analysis)"
+  },
+  "short": {
+    "de": "Systematische Methode zur Identifikation und Priorisierung potenzieller Fehler in Produkten oder Prozessen — vor deren Auftreten.",
+    "en": "Systematic method to identify and prioritise potential failures in products or processes — before they occur."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "Die **FMEA** (Failure Mode and Effects Analysis, dt. Fehlermöglichkeits- und Einflussanalyse) ist ein Präventiv-Werkzeug: Ein interdisziplinäres Team betrachtet systematisch, *was* schiefgehen kann, *warum* es schiefgehen kann und *wie schwer* die Folgen wären — noch bevor der Fehler in Serie geht."
+      },
+      {
+        "type": "paragraph",
+        "text": "Jede Zeile der FMEA-Tabelle steht für eine Kombination aus Funktion → {{term:fehlermoeglichkeit|Fehlermöglichkeit}} → Folge → Ursache. Für jede Ursache werden drei Zahlen 1–10 vergeben: {{term:bedeutung|B}} (Bedeutung der Folge), {{term:auftreten|A}} (Auftreten der Ursache) und {{term:entdeckung|E}} (Entdeckung). Ihr Produkt ist die {{term:rpz|Risikoprioritätszahl (RPZ)}} — die grobe Priorisierungsgröße."
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Design-FMEA (DFMEA)** — Fehler am Produktentwurf",
+          "**Prozess-FMEA (PFMEA)** — Fehler in Fertigungs-/Geschäftsprozessen",
+          "**System-FMEA** — Zusammenspiel mehrerer Komponenten"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "Die FMEA ist ein **lebendes Dokument**: Sie wird bei jeder relevanten Änderung aktualisiert. Eine einmal abgeheftete FMEA verliert ihren Wert. In der aktuellen AIAG-VDA-Systematik (2019) ersetzt zusätzlich die **Aufgabenpriorität (AP)** die klassische RPZ, viele Firmen führen aber beides weiter."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "**FMEA** (Failure Mode and Effects Analysis) is a preventive tool: an interdisciplinary team systematically considers *what* can go wrong, *why* it can go wrong, and *how severe* the consequences would be — before the failure ever reaches production."
+      },
+      {
+        "type": "paragraph",
+        "text": "Each row of the FMEA table represents a combination of function → {{term:fehlermoeglichkeit|failure mode}} → effect → cause. For each cause, three 1–10 numbers are assigned: {{term:bedeutung|S}} (severity of the effect), {{term:auftreten|O}} (occurrence of the cause), and {{term:entdeckung|D}} (detection). Their product is the {{term:rpz|Risk Priority Number (RPN)}} — the rough prioritisation figure."
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Design FMEA (DFMEA)** — failures in the product design",
+          "**Process FMEA (PFMEA)** — failures in manufacturing or business processes",
+          "**System FMEA** — interplay of several components"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "FMEA is a **living document**: updated on every relevant change. An FMEA filed away once loses its value. The current AIAG-VDA framework (2019) additionally replaces the classic RPN with an **Action Priority (AP)**; many companies keep both in parallel."
+      }
+    ]
+  },
+  "aliases": {
+    "de": [
+      "Fehlermöglichkeits- und Einflussanalyse",
+      "Fehler-Möglichkeits- und Einflussanalyse",
+      "DFMEA",
+      "PFMEA",
+      "Design-FMEA",
+      "Prozess-FMEA"
+    ],
+    "en": [
+      "Failure Mode and Effects Analysis",
+      "DFMEA",
+      "PFMEA",
+      "Design FMEA",
+      "Process FMEA"
+    ]
+  },
+  "seeAlso": [
+    "fehlermoeglichkeit",
+    "bedeutung",
+    "auftreten",
+    "entdeckung",
+    "rpz"
+  ],
+  "modules": [
+    "fmea"
+  ],
+  "algoLab": [],
+  "sources": [
+    {
+      "label": "AIAG-VDA FMEA Handbook, 1st Edition, 2019 — Design and Process FMEA",
+      "url": null
+    },
+    {
+      "label": "VDA Band 4 — Sicherung der Qualität in der Prozesslandschaft, Ringbuch",
+      "url": null
+    },
+    {
+      "label": "DIN EN IEC 60812: Fehlzustandsart- und -auswirkungsanalyse (FMEA und FMECA)",
+      "url": null
+    }
+  ]
+}

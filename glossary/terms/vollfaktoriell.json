@@ -1,0 +1,94 @@
+{
+  "id": "vollfaktoriell",
+  "category": "doe",
+  "title": {
+    "de": "Vollfaktorieller Versuchsplan (Full Factorial)",
+    "en": "Full Factorial Design"
+  },
+  "short": {
+    "de": "Alle Kombinationen aller {{term:stufe|Stufen}} aller {{term:faktor|Faktoren}} werden gefahren — maximale Trennschärfe, aber Aufwand wächst exponentiell.",
+    "en": "Every combination of all {{term:stufe|levels}} of all {{term:faktor|factors}} is run — maximum separability, but effort grows exponentially."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "Ein **vollfaktorieller Versuchsplan** untersucht *alle* Kombinationen der Faktorstufen. Für $k$ Faktoren mit je zwei Stufen ergibt das $2^k$ Versuche (2ᵏ-Design); mit gemischten Stufenzahlen $n_1 \\times n_2 \\times \\ldots$ Versuche."
+      },
+      {
+        "type": "formula",
+        "latex": "N = \\prod_{i=1}^{k} n_i"
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Vorteil:** alle {{term:haupteffekt|Haupteffekte}} und alle {{term:wechselwirkung|Wechselwirkungen}} bis zur Ordnung $k$ sind sauber schätzbar — keine {{term:konfundierung|Konfundierung}}",
+          "**Nachteil:** Aufwand explodiert (6 Faktoren = 64 Versuche, 8 = 256)",
+          "**Praxis:** Ideal bis 4 Faktoren; darüber lieber {{term:teilfaktoriell|teilfaktoriell}} oder {{term:plackett-burman|Plackett-Burman}}"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "Vollfaktorielle Designs haben keine {{term:aufloesung|Auflösung}}-Angabe — es ist alles trennbar. Bei Erweiterung um {{term:zentralpunkt|Zentralpunkte}} lässt sich zusätzlich Krümmung testen; das ist die klassische Vorstufe zu {{term:ccd|CCD}} oder {{term:box-behnken|Box-Behnken}}."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "A **full factorial design** runs *all* combinations of the factor levels. For $k$ factors at two levels each, this gives $2^k$ runs (2ᵏ design); with mixed level counts, $n_1 \\times n_2 \\times \\ldots$ runs."
+      },
+      {
+        "type": "formula",
+        "latex": "N = \\prod_{i=1}^{k} n_i"
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Advantage:** all {{term:haupteffekt|main effects}} and all {{term:wechselwirkung|interactions}} up to order $k$ are cleanly estimable — no {{term:konfundierung|aliasing}}",
+          "**Disadvantage:** effort explodes (6 factors = 64 runs, 8 = 256)",
+          "**Practice:** ideal up to 4 factors; beyond that, use {{term:teilfaktoriell|fractional factorial}} or {{term:plackett-burman|Plackett-Burman}}"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "Full factorial designs carry no {{term:aufloesung|resolution}} label — everything is separable. Augmented with {{term:zentralpunkt|centre points}}, curvature can be tested; that is the classical stepping stone to {{term:ccd|CCD}} or {{term:box-behnken|Box-Behnken}}."
+      }
+    ]
+  },
+  "aliases": {
+    "de": [
+      "Full Factorial",
+      "2^k-Plan",
+      "Vollplan"
+    ],
+    "en": [
+      "full factorial",
+      "2^k design"
+    ]
+  },
+  "seeAlso": [
+    "teilfaktoriell",
+    "doe",
+    "faktor",
+    "stufe",
+    "zentralpunkt"
+  ],
+  "modules": [
+    "doe-planner",
+    "doe-advisor"
+  ],
+  "algoLab": [
+    "doe/mixed-level-full-factorial",
+    "doe/doe-planner"
+  ],
+  "sources": [
+    {
+      "label": "Montgomery, D. C. — Design and Analysis of Experiments, 10th Edition, Chapter 6",
+      "url": null
+    },
+    {
+      "label": "Box, Hunter & Hunter — Statistics for Experimenters, 2nd Edition",
+      "url": null
+    }
+  ]
+}

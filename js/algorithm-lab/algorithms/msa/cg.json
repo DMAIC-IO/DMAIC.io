@@ -11,12 +11,12 @@
 
   "description": {
     "short": {
-      "de": "Bewertet die Wiederholbarkeit eines Messmittels: Wie groß ist die Streuung der Wiederholmessungen im Verhältnis zur Toleranz?",
-      "en": "Evaluates the repeatability of a measurement instrument: How large is the spread of repeated measurements relative to the tolerance?"
+      "de": "Bewertet die {{term:wiederholbarkeit|Wiederholbarkeit}} eines Messmittels: Wie groß ist die Streuung der Wiederholmessungen im Verhältnis zur Toleranz?",
+      "en": "Evaluates the {{term:wiederholbarkeit|repeatability}} of a measurement instrument: How large is the spread of repeated measurements relative to the tolerance?"
     },
     "long": {
-      "de": "Der Wiederholbarkeitsindex Cg vergleicht die Streuung eines Messmittels mit einem definierten Anteil der Toleranz. Er wird aus mindestens 25 Wiederholmessungen an einem kalibrierten Referenzteil (Master) berechnet. Der Faktor k₁ legt fest, welcher Anteil der Toleranz dem Messmittel zugestanden wird (Standard: 20 % nach VDA 5), der Faktor k₂ bestimmt die Streuungsabdeckung (Standard: 4 für 99,99 %). Ein Cg ≥ 1,33 gilt als fähig. Im Gegensatz zu Cgk berücksichtigt Cg keine systematische Abweichung (Bias).",
-      "en": "The repeatability index Cg compares the spread of a measurement instrument against a defined fraction of the tolerance. It is calculated from at least 25 repeated measurements on a calibrated reference part (master). Factor k₁ defines the tolerance fraction allocated to the measurement system (default: 20% per VDA 5), factor k₂ defines the spread coverage (default: 4 for 99.99%). A Cg ≥ 1.33 is considered capable. Unlike Cgk, Cg does not account for systematic deviation (bias)."
+      "de": "Der Wiederholbarkeitsindex {{term:cg|Cg}} vergleicht die Streuung eines Messmittels mit einem definierten Anteil der Toleranz. Er wird aus mindestens 25 Wiederholmessungen an einem kalibrierten {{term:referenzteil|Referenzteil}} (Master) berechnet. Der Faktor k₁ legt fest, welcher Anteil der Toleranz dem Messmittel zugestanden wird (Standard: 20 % nach VDA 5), der Faktor k₂ bestimmt die Streuungsabdeckung (Standard: 4 für 99,99 %). Ein Cg ≥ 1,33 gilt als fähig. Im Gegensatz zu {{term:cgk|Cgk}} berücksichtigt Cg keine systematische Abweichung ({{term:bias|Bias}}).",
+      "en": "The repeatability index {{term:cg|Cg}} compares the spread of a measurement instrument against a defined fraction of the tolerance. It is calculated from at least 25 repeated measurements on a calibrated {{term:referenzteil|reference part}} (master). Factor k₁ defines the tolerance fraction allocated to the measurement system (default: 20% per VDA 5), factor k₂ defines the spread coverage (default: 4 for 99.99%). A Cg ≥ 1.33 is considered capable. Unlike {{term:cgk|Cgk}}, Cg does not account for systematic deviation ({{term:bias|bias}})."
     }
   },
 

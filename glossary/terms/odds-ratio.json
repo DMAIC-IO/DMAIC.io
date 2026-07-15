@@ -1,0 +1,71 @@
+{
+  "id": "odds-ratio",
+  "category": "regression",
+  "title": {
+    "de": "Odds Ratio (OR)",
+    "en": "Odds Ratio (OR)"
+  },
+  "short": {
+    "de": "Standard-Effektmaß der {{term:logistische-regression|logistischen Regression}} — Faktor, um den sich die Chance $p/(1-p)$ pro Einheit von X ändert.",
+    "en": "Standard effect measure of {{term:logistische-regression|logistic regression}} — factor by which the odds $p/(1-p)$ change per unit of X."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "Das **Odds Ratio** ist die Exponentierung eines Regressionskoeffizienten $\\beta_j$ in der logistischen Regression. Es beschreibt, wie sich die **Chance** (Odds) $p/(1-p)$ auf $Y=1$ ändert, wenn $X_j$ um eine Einheit steigt — bei Konstanthalten aller anderen Prädiktoren."
+      },
+      {
+        "type": "formula",
+        "latex": "\\text{OR}_j = e^{\\beta_j} = \\frac{\\text{Odds}(Y=1 \\mid X_j = x+1)}{\\text{Odds}(Y=1 \\mid X_j = x)}"
+      },
+      {
+        "type": "list",
+        "items": [
+          "**OR = 1** — kein Effekt",
+          "**OR > 1** — X erhöht die Chance auf $Y=1$ (z. B. OR = 2{,}5: 2,5-fache Chance)",
+          "**OR < 1** — X senkt die Chance (z. B. OR = 0{,}4: 60 % weniger Chance)",
+          "**Signifikanz:** das Konfidenzintervall darf die 1 nicht enthalten"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "**OR ≠ Risiko-Ratio (RR).** Bei seltenen Ereignissen ($p < 10\\,\\%$) sind sie ähnlich, bei häufigen Ereignissen weichen sie stark ab. „2-fache Chance“ ist **nicht** dasselbe wie „doppeltes Risiko“ — ein häufiger Interpretationsfehler in Prozess- und medizinischen Kontexten."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "The **odds ratio** is the exponentiation of a regression coefficient $\\beta_j$ in logistic regression. It describes how the **odds** $p/(1-p)$ of $Y=1$ change when $X_j$ rises by one unit — holding all other predictors constant."
+      },
+      {
+        "type": "formula",
+        "latex": "\\text{OR}_j = e^{\\beta_j} = \\frac{\\text{Odds}(Y=1 \\mid X_j = x+1)}{\\text{Odds}(Y=1 \\mid X_j = x)}"
+      },
+      {
+        "type": "list",
+        "items": [
+          "**OR = 1** — no effect",
+          "**OR > 1** — X raises the odds of $Y=1$ (e.g. OR = 2.5: 2.5× the odds)",
+          "**OR < 1** — X lowers the odds (e.g. OR = 0.4: 60 % lower odds)",
+          "**Significance:** the confidence interval must not contain 1"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "**OR ≠ risk ratio (RR).** For rare events ($p < 10\\,\\%$) they are similar; for frequent events they diverge strongly. \"Twice the odds\" is **not** the same as \"double the risk\" — a common interpretation error in process and medical contexts."
+      }
+    ]
+  },
+  "aliases": {
+    "de": ["Chancenverhältnis", "OR", "Odds-Ratio"],
+    "en": ["odds ratio", "OR"]
+  },
+  "seeAlso": ["logistische-regression", "rate-ratio", "glm"],
+  "modules": ["glm-regression"],
+  "algoLab": ["regression/logistic-regression"],
+  "sources": [
+    { "label": "Hosmer, D. W., Lemeshow, S. & Sturdivant, R. X. — Applied Logistic Regression, 3rd Edition, Wiley", "url": null },
+    { "label": "Agresti, A. — Categorical Data Analysis, 3rd Edition, Wiley", "url": null }
+  ]
+}

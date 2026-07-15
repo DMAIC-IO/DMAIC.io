@@ -1,7 +1,7 @@
 {
-  "id": "one-sample-t-test",
+  "id": "one-sample-{{term:t-test|t-test}}",
   "name": {
-    "de": "Ein-Stichproben-t-Test",
+    "de": "Ein-Stichproben-{{term:t-test|t-Test}}",
     "en": "One-Sample t-Test"
   },
   "category": "hypothesis",

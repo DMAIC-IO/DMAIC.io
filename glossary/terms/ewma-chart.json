@@ -1,0 +1,95 @@
+{
+  "id": "ewma-chart",
+  "category": "spc",
+  "title": {
+    "de": "EWMA-Karte",
+    "en": "EWMA Chart"
+  },
+  "short": {
+    "de": "Zeitgewichtete {{term:regelkarte|Regelkarte}} — jeder Punkt ist ein exponentiell gewichteter Durchschnitt; sensibel für kleine anhaltende Verschiebungen.",
+    "en": "Time-weighted {{term:regelkarte|control chart}} — each point is an exponentially weighted average; sensitive to small persistent shifts."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "Die **EWMA-Karte** (Exponentially Weighted Moving Average, Roberts 1959) integriert Information über mehrere aufeinanderfolgende Beobachtungen hinweg und erkennt so kleine, anhaltende Verschiebungen (0,5σ–1,5σ) deutlich schneller als klassische Shewhart-Karten."
+      },
+      {
+        "type": "formula",
+        "latex": "z_i = \\lambda x_i + (1 - \\lambda) z_{i-1}, \\quad 0 < \\lambda \\leq 1"
+      },
+      {
+        "type": "list",
+        "items": [
+          "**λ (Glättungsparameter)** — kleines λ (0,05–0,10) → langes „Gedächtnis“, sehr sensibel für 1σ-Shifts; großes λ (0,3–0,4) → verhält sich Shewhart-ähnlich",
+          "**Regelgrenzen** UCL/LCL = $\\bar{x} \\pm L \\hat{\\sigma}\\sqrt{\\lambda / (2 - \\lambda)}$; typisch $L = 3$, bei kleinem λ $L = 2{,}7$",
+          "**Startwert** $z_0 = \\bar{x}$ aus der Baseline"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "EWMA ist die Standard-Wahl der Control-Phase, wenn kleine Prozessdrift schnell entdeckt werden muss. Bei großen Sprüngen ist die klassische Shewhart-Karte gleichwertig oder besser. Alternative für dieselbe Aufgabe: {{term:cusum-chart|CUSUM}} — mathematisch verwandt, praktisch nahezu gleich sensitiv."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "The **EWMA chart** (Exponentially Weighted Moving Average, Roberts 1959) integrates information across successive observations and detects small persistent shifts (0.5σ–1.5σ) much faster than classical Shewhart charts."
+      },
+      {
+        "type": "formula",
+        "latex": "z_i = \\lambda x_i + (1 - \\lambda) z_{i-1}, \\quad 0 < \\lambda \\leq 1"
+      },
+      {
+        "type": "list",
+        "items": [
+          "**λ (smoothing)** — small λ (0.05–0.10) → long \"memory\", very sensitive to 1σ shifts; large λ (0.3–0.4) → Shewhart-like behaviour",
+          "**Control limits** UCL/LCL = $\\bar{x} \\pm L \\hat{\\sigma}\\sqrt{\\lambda / (2 - \\lambda)}$; typical $L = 3$, at small λ $L = 2.7$",
+          "**Starting value** $z_0 = \\bar{x}$ from the baseline"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "EWMA is the Control-phase default when small process drift must be caught fast. For large jumps a classical Shewhart chart is equal or better. Alternative for the same task: {{term:cusum-chart|CUSUM}} — mathematically related, practically almost equally sensitive."
+      }
+    ]
+  },
+  "aliases": {
+    "de": [
+      "EWMA",
+      "Exponentially Weighted Moving Average",
+      "exponentiell gewichtete Karte"
+    ],
+    "en": [
+      "EWMA",
+      "Exponentially Weighted Moving Average"
+    ]
+  },
+  "seeAlso": [
+    "cusum-chart",
+    "regelkarte",
+    "regelgrenze",
+    "sonderursache"
+  ],
+  "modules": [
+    "time-weighted-chart"
+  ],
+  "algoLab": [
+    "control-charts/time-weighted-chart"
+  ],
+  "sources": [
+    {
+      "label": "Roberts, S. W. — Control Chart Tests Based on Geometric Moving Averages, Technometrics, 1(3), 1959",
+      "url": null
+    },
+    {
+      "label": "Montgomery, D. C. — Introduction to Statistical Quality Control, 8th Edition, Chapter 9",
+      "url": null
+    },
+    {
+      "label": "Lucas, J. M. & Saccucci, M. S. — Exponentially Weighted Moving Average Control Schemes, Technometrics, 32(1), 1990",
+      "url": null
+    }
+  ]
+}

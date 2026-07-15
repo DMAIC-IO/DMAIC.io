@@ -1,0 +1,92 @@
+{
+  "id": "fehler-zweiter-art",
+  "category": "hypothesis",
+  "title": {
+    "de": "Fehler 2. Art (β, Type II)",
+    "en": "Type II Error (β)"
+  },
+  "short": {
+    "de": "{{term:nullhypothese|H₀}} nicht verwerfen, obwohl sie falsch ist — echten Effekt übersehen.",
+    "en": "Failing to reject {{term:nullhypothese|H₀}} when it is actually false — a real effect is missed."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "Der **Fehler 2. Art** (β-Fehler, false negative) tritt auf, wenn ein Test einen tatsächlich vorhandenen Effekt nicht als signifikant erkennt. Seine Wahrscheinlichkeit β hängt von Effektgröße, Streuung, Stichprobengröße und α ab."
+      },
+      {
+        "type": "formula",
+        "latex": "\\beta = P(\\,\\text{H}_0 \\text{ nicht verwerfen} \\mid \\text{H}_1 \\text{ wahr}\\,)"
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Power** = 1 − β — die Wahrscheinlichkeit, einen echten Effekt zu finden (siehe {{term:power|Power}})",
+          "**Übliches Ziel:** β ≤ 0,20 (Power ≥ 0,80)",
+          "**Kosten oft unsichtbar** — der übersehene Effekt bleibt einfach unentdeckt, es gibt keinen Alarm"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "Der Fehler 2. Art ist gefährlicher, wenn Handlungsbedarf besteht — z. B. wenn ein defekter Prozess weiterlaufen darf, weil der Test ihn nicht als problematisch identifiziert. Deshalb ist Power-Planung ({{term:power|Power}}, {{term:effektstaerke|Effektstärke}}) so wichtig: sie stellt sicher, dass ein relevanter Effekt nicht durch zu kleine Stichprobe verschluckt wird."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "A **Type II error** (β error, false negative) occurs when a test fails to declare an effect that actually exists. Its probability β depends on effect size, dispersion, sample size, and α."
+      },
+      {
+        "type": "formula",
+        "latex": "\\beta = P(\\,\\text{fail to reject } \\text{H}_0 \\mid \\text{H}_1 \\text{ true}\\,)"
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Power** = 1 − β — probability of finding a real effect (see {{term:power|power}})",
+          "**Common target:** β ≤ 0.20 (power ≥ 0.80)",
+          "**Costs often invisible** — the missed effect simply stays undetected, no alarm is raised"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "The Type II error is the more dangerous one where action is required — e.g. when a defective process runs on because the test failed to flag it. This is why power planning ({{term:power|power}}, {{term:effektstaerke|effect size}}) matters so much: it ensures a relevant effect is not swallowed by too small a sample."
+      }
+    ]
+  },
+  "aliases": {
+    "de": [
+      "β-Fehler",
+      "Type II",
+      "False Negative",
+      "Beta-Fehler"
+    ],
+    "en": [
+      "Type II error",
+      "false negative",
+      "beta error"
+    ]
+  },
+  "seeAlso": [
+    "fehler-erster-art",
+    "power",
+    "effektstaerke",
+    "signifikanzniveau"
+  ],
+  "modules": [
+    "hypothesis-test",
+    "sample-size"
+  ],
+  "algoLab": [],
+  "sources": [
+    {
+      "label": "Neyman, J. & Pearson, E. S. — On the Problem of the Most Efficient Tests, 1933",
+      "url": null
+    },
+    {
+      "label": "Cohen, J. — Statistical Power Analysis for the Behavioral Sciences, 2nd Edition, Erlbaum",
+      "url": null
+    }
+  ]
+}

@@ -1,0 +1,99 @@
+{
+  "id": "c-chart",
+  "category": "spc",
+  "title": {
+    "de": "c-/u-Karte (Fehler pro Einheit)",
+    "en": "c / u Chart (Defects per Unit)"
+  },
+  "short": {
+    "de": "Attributive {{term:regelkarte|Regelkarte}} für Fehleranzahlen pro Einheit — Poisson-verteilt.",
+    "en": "Attribute {{term:regelkarte|control chart}} for defect counts per unit — Poisson-distributed."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "Die **c-Karte** überwacht die **absolute Anzahl** Fehler pro Inspektionseinheit bei **konstanter** Gelegenheit (z. B. Anzahl Kratzer pro Karosserie). Die **u-Karte** überwacht Fehler **pro Einheit** bei **variabler** Gelegenheit (z. B. Fehler pro m² Stoff, bei unterschiedlich großen Stoffbahnen)."
+      },
+      {
+        "type": "formula",
+        "latex": "\\text{UCL}_c = \\bar{c} + 3\\sqrt{\\bar{c}}, \\quad \\text{UCL}_u = \\bar{u} + 3\\sqrt{\\bar{u}/n_i}"
+      },
+      {
+        "type": "list",
+        "items": [
+          "**c-Karte** — konstantes Inspektionsfeld (immer eine ganze Karosserie, immer 1 m² Stoff)",
+          "**u-Karte** — variables Inspektionsfeld; Grenzen pro Punkt aus $n_i$ berechnet",
+          "**Voraussetzung** — Fehler sind unabhängig und mit konstanter Rate verteilt (Poisson)"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "Bei starker {{term:ueberdispersion|Überdispersion}} — die reale Streuung übersteigt die Poisson-Erwartung — auf die Laney u'-Karte wechseln oder das Zähl-Verfahren überprüfen. Verwechslungsgefahr: **c/u-Karten zählen Fehler**, **{{term:p-chart|p/np-Karten}} zählen defekte Einheiten**. Eine Einheit mit 3 Fehlern zählt in der c-Karte als 3, in der p-Karte nur als 1 defekt."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "The **c chart** tracks the **absolute count** of defects per inspection unit at **constant** opportunity (e.g. scratches per car body). The **u chart** tracks defects **per unit** at **variable** opportunity (e.g. defects per m² of fabric, when fabric widths vary)."
+      },
+      {
+        "type": "formula",
+        "latex": "\\text{UCL}_c = \\bar{c} + 3\\sqrt{\\bar{c}}, \\quad \\text{UCL}_u = \\bar{u} + 3\\sqrt{\\bar{u}/n_i}"
+      },
+      {
+        "type": "list",
+        "items": [
+          "**c chart** — constant inspection area (always a whole body, always 1 m²)",
+          "**u chart** — variable area; limits per point computed from $n_i$",
+          "**Prerequisite** — defects are independent and occur at a constant rate (Poisson)"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "Under strong {{term:ueberdispersion|overdispersion}} — real variation exceeds the Poisson expectation — switch to the Laney u' chart or revisit the counting procedure. Confusion risk: **c/u charts count defects**, **{{term:p-chart|p/np charts}} count defective units**. A unit with 3 defects counts as 3 on a c chart but as 1 defective on a p chart."
+      }
+    ]
+  },
+  "aliases": {
+    "de": [
+      "c-Karte",
+      "u-Karte",
+      "Fehler-pro-Einheit-Karte",
+      "Defekt-Zählkarte"
+    ],
+    "en": [
+      "c chart",
+      "u chart",
+      "defect-count chart"
+    ]
+  },
+  "seeAlso": [
+    "p-chart",
+    "regelkarte",
+    "ueberdispersion",
+    "poisson-regression"
+  ],
+  "modules": [
+    "attribute-control-chart",
+    "rare-event-chart"
+  ],
+  "algoLab": [
+    "control-charts/attribute-control-chart",
+    "control-charts/rare-event-chart"
+  ],
+  "sources": [
+    {
+      "label": "Shewhart, W. A. — Economic Control of Quality of Manufactured Product, 1931",
+      "url": null
+    },
+    {
+      "label": "Montgomery, D. C. — Introduction to Statistical Quality Control, 8th Edition, Chapter 7",
+      "url": null
+    },
+    {
+      "label": "Laney, D. B. — Improved Control Charts for Attributes, Quality Engineering, 14(4), 2002",
+      "url": null
+    }
+  ]
+}

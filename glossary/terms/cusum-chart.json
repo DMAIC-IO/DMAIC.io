@@ -1,0 +1,95 @@
+{
+  "id": "cusum-chart",
+  "category": "spc",
+  "title": {
+    "de": "CUSUM-Karte",
+    "en": "CUSUM Chart"
+  },
+  "short": {
+    "de": "Kumulierte-Summen-{{term:regelkarte|Regelkarte}} — akkumuliert Abweichungen vom Sollwert und schlägt bei überschrittener Schranke $h$ Alarm.",
+    "en": "Cumulative-sum {{term:regelkarte|control chart}} — accumulates deviations from the target and alarms when a threshold $h$ is crossed."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "Die **CUSUM-Karte** (Cumulative Sum, Page 1954) summiert die Abweichungen jeder Beobachtung vom Sollwert und schlägt Alarm, sobald die kumulierte Summe eine Schranke $h$ überschreitet. Wie {{term:ewma-chart|EWMA}} ist sie hoch sensibel für kleine anhaltende Verschiebungen."
+      },
+      {
+        "type": "formula",
+        "latex": "C_i^+ = \\max(0,\\; x_i - \\mu_0 - k + C_{i-1}^+), \\quad C_i^- = \\max(0,\\; \\mu_0 - x_i - k + C_{i-1}^-)"
+      },
+      {
+        "type": "list",
+        "items": [
+          "**k (Referenzwert / Schlupf)** — die Verschiebung, ab der reagiert werden soll; typisch $k = 0{,}5\\sigma$ (auf 1σ-Shift optimiert: $k = \\Delta/2$)",
+          "**h (Entscheidungsschranke)** — Alarm bei $|C_i| > h$; typisch $h = 4\\sigma$ oder $5\\sigma$",
+          "**V-Maske** — grafisches Äquivalent, historisch beliebt, heute meist zugunsten der tabellarischen Form aufgegeben"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "CUSUM und {{term:ewma-chart|EWMA}} sind für dieselbe Aufgabe zuständig — Erkennung kleiner Shifts — und in ihrer Wirksamkeit praktisch austauschbar. Wahl oft nach Team-Präferenz: EWMA ist optisch leichter zu lesen, CUSUM parametrisch klarer (k = halbe Shift-Größe). Für **große** Sprünge ist eine klassische Shewhart-Karte oft schneller."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "The **CUSUM chart** (Cumulative Sum, Page 1954) accumulates each observation's deviation from the target and alarms as soon as the cumulative sum crosses a threshold $h$. Like {{term:ewma-chart|EWMA}} it is very sensitive to small persistent shifts."
+      },
+      {
+        "type": "formula",
+        "latex": "C_i^+ = \\max(0,\\; x_i - \\mu_0 - k + C_{i-1}^+), \\quad C_i^- = \\max(0,\\; \\mu_0 - x_i - k + C_{i-1}^-)"
+      },
+      {
+        "type": "list",
+        "items": [
+          "**k (reference / slack)** — the shift you want to react to; typically $k = 0.5\\sigma$ (optimally tuned for 1σ: $k = \\Delta/2$)",
+          "**h (decision interval)** — alarm when $|C_i| > h$; typical $h = 4\\sigma$ or $5\\sigma$",
+          "**V-mask** — graphical equivalent, historically popular, today mostly abandoned in favour of the tabular form"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "CUSUM and {{term:ewma-chart|EWMA}} address the same task — detecting small shifts — and are practically interchangeable in effectiveness. Choice is often team preference: EWMA is visually easier to read, CUSUM more parametrically transparent (k = half the shift size). For **large** jumps a classical Shewhart chart is often faster."
+      }
+    ]
+  },
+  "aliases": {
+    "de": [
+      "CUSUM",
+      "Cumulative Sum",
+      "Kumulierte Summen-Karte"
+    ],
+    "en": [
+      "CUSUM",
+      "Cumulative Sum"
+    ]
+  },
+  "seeAlso": [
+    "ewma-chart",
+    "regelkarte",
+    "sonderursache",
+    "regelgrenze"
+  ],
+  "modules": [
+    "time-weighted-chart"
+  ],
+  "algoLab": [
+    "control-charts/time-weighted-chart"
+  ],
+  "sources": [
+    {
+      "label": "Page, E. S. — Continuous Inspection Schemes, Biometrika, 41(1/2), 1954",
+      "url": null
+    },
+    {
+      "label": "Montgomery, D. C. — Introduction to Statistical Quality Control, 8th Edition, Chapter 9",
+      "url": null
+    },
+    {
+      "label": "Hawkins, D. M. & Olwell, D. H. — Cumulative Sum Charts and Charting for Quality Improvement, Springer",
+      "url": null
+    }
+  ]
+}

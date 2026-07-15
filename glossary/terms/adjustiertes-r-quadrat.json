@@ -1,0 +1,60 @@
+{
+  "id": "adjustiertes-r-quadrat",
+  "category": "regression",
+  "title": {
+    "de": "Adjustiertes R²",
+    "en": "Adjusted R²"
+  },
+  "short": {
+    "de": "{{term:r-quadrat|R²}}-Variante mit Strafe für zusätzliche Prädiktoren — steigt nur, wenn ein neues X wirklich beiträgt.",
+    "en": "{{term:r-quadrat|R²}} variant that penalises extra predictors — rises only when a new X truly contributes."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "Das **adjustierte $R^2$** korrigiert das gewöhnliche $R^2$ für die Anzahl der Prädiktoren. Es ist die richtige Kennzahl beim Vergleich verschieden großer Regressionsmodelle."
+      },
+      {
+        "type": "formula",
+        "latex": "R^2_{\\text{adj}} = 1 - (1 - R^2) \\cdot \\frac{n - 1}{n - p - 1}"
+      },
+      {
+        "type": "paragraph",
+        "text": "Dabei ist $n$ die Beobachtungszahl und $p$ die Zahl der Prädiktoren. Wird ein Prädiktor hinzugefügt, ohne die Anpassung wirklich zu verbessern, sinkt $R^2_{\\text{adj}}$ — im Gegensatz zum gewöhnlichen $R^2$, das mechanisch steigt."
+      },
+      {
+        "type": "note",
+        "text": "**Faustregel:** $R^2_{\\text{adj}} \\leq R^2$ immer. Die Differenz zwischen beiden ist ein Frühwarnindikator für {{term:overfitting|Overfitting}}: klafft sie deutlich auseinander, gibt es zu viele Prädiktoren für die verfügbaren Beobachtungen."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "**Adjusted $R^2$** corrects ordinary $R^2$ for the number of predictors. It is the right metric when comparing regression models of different sizes."
+      },
+      {
+        "type": "formula",
+        "latex": "R^2_{\\text{adj}} = 1 - (1 - R^2) \\cdot \\frac{n - 1}{n - p - 1}"
+      },
+      {
+        "type": "paragraph",
+        "text": "Here $n$ is the sample size and $p$ is the number of predictors. If a predictor is added without truly improving the fit, $R^2_{\\text{adj}}$ falls — unlike ordinary $R^2$, which rises mechanically."
+      },
+      {
+        "type": "note",
+        "text": "**Rule of thumb:** $R^2_{\\text{adj}} \\leq R^2$ always. The gap between the two is an early warning of {{term:overfitting|overfitting}}: if it widens noticeably, there are too many predictors for the available observations."
+      }
+    ]
+  },
+  "aliases": {
+    "de": ["Adjustiertes R-Quadrat", "korrigiertes R²", "adjustiertes Bestimmtheitsmaß"],
+    "en": ["adjusted R²", "adjusted R-squared", "adj-R²"]
+  },
+  "seeAlso": ["r-quadrat", "overfitting", "regression", "lineare-regression"],
+  "modules": ["regression", "doe-planner"],
+  "algoLab": ["regression/regression-coefficients"],
+  "sources": [
+    { "label": "Montgomery, D. C., Peck, E. A. & Vining, G. G. — Introduction to Linear Regression Analysis, 6th Edition, Chapter 3", "url": null }
+  ]
+}

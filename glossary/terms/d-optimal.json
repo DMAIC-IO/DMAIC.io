@@ -1,0 +1,98 @@
+{
+  "id": "d-optimal",
+  "category": "doe",
+  "title": {
+    "de": "D-optimales Design",
+    "en": "D-optimal Design"
+  },
+  "short": {
+    "de": "Algorithmisch generierter {{term:doe|Versuchsplan}}, der die Determinante der Informationsmatrix $\\mathbf{X}^\\top\\mathbf{X}$ maximiert — für Situationen ohne passenden Standardplan.",
+    "en": "Algorithmically generated {{term:doe|design}} that maximises the determinant of the information matrix $\\mathbf{X}^\\top\\mathbf{X}$ — for situations no standard design fits."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "Ein **D-optimales Design** wird per Optimierungs-Algorithmus (Coordinate Exchange, Fedorov-Algorithmus, Modified Fedorov) aus einer Kandidatenmenge zusammengestellt und maximiert die **D-Effizienz** — ein Maß für die Präzision der Regressionskoeffizienten."
+      },
+      {
+        "type": "formula",
+        "latex": "\\text{D-Effizienz} = \\left(\\frac{|\\mathbf{X}^\\top \\mathbf{X}|}{N^p}\\right)^{1/p}"
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Freie Läufezahl** — beliebige Anzahl Versuche vorgebbar, nicht an $2^k$ oder $2^k + 2k$ gebunden",
+          "**Nicht-standardisierte Faktorräume** — auch bei irregulären Zulässigkeitsbereichen oder ausgeschlossenen Kombinationen anwendbar",
+          "**Mischbare Faktortypen** — stetig, kategorial, gemischt, unterschiedliche Stufenzahlen"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "D-optimale Designs sind die richtige Wahl, wenn Standarddesigns (Vollfaktoriell, CCD, Box-Behnken) nicht passen — etwa bei harten Ausschlussbereichen im Faktorraum („Kombination A hoch + B hoch physikalisch unmöglich“) oder bei extrem eingeschränktem Versuchsbudget. Nachteil: die {{term:aufloesung|Alias-Struktur}} ist nicht mehr elegant tabelliert, sondern muss aus der Informationsmatrix abgelesen werden."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "A **D-optimal design** is assembled from a candidate set by an optimisation algorithm (coordinate exchange, Fedorov, modified Fedorov) that maximises the **D-efficiency** — a measure of regression-coefficient precision."
+      },
+      {
+        "type": "formula",
+        "latex": "\\text{D-efficiency} = \\left(\\frac{|\\mathbf{X}^\\top \\mathbf{X}|}{N^p}\\right)^{1/p}"
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Free run count** — arbitrary number of runs, not tied to $2^k$ or $2^k + 2k$",
+          "**Non-standard factor spaces** — usable with irregular feasible regions or forbidden combinations",
+          "**Mixed factor types** — continuous, categorical, mixed, different level counts"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "D-optimal designs are the right choice when standard designs (full factorial, CCD, Box-Behnken) do not fit — for instance under hard exclusion regions in the factor space (\"A-high + B-high physically impossible\") or under a very tight run budget. Downside: the {{term:aufloesung|alias structure}} is no longer neatly tabulated but must be read from the information matrix."
+      }
+    ]
+  },
+  "aliases": {
+    "de": [
+      "D-optimal",
+      "D-optimale Versuchsplanung"
+    ],
+    "en": [
+      "D-optimal",
+      "D-optimum design"
+    ]
+  },
+  "seeAlso": [
+    "vollfaktoriell",
+    "ccd",
+    "box-behnken",
+    "aufloesung",
+    "doe"
+  ],
+  "modules": [
+    "doe-planner",
+    "doe-advisor"
+  ],
+  "algoLab": [
+    "doe/d-optimal-mixed-level",
+    "doe/d-efficiency",
+    "doe/vif"
+  ],
+  "sources": [
+    {
+      "label": "Atkinson, A. C., Donev, A. N. & Tobias, R. D. — Optimum Experimental Designs, with SAS, Oxford University Press, 2007",
+      "url": null
+    },
+    {
+      "label": "Goos, P. & Jones, B. — Optimal Design of Experiments: A Case Study Approach, Wiley, 2011",
+      "url": null
+    },
+    {
+      "label": "Montgomery, D. C. — Design and Analysis of Experiments, 10th Edition, Chapter 11",
+      "url": null
+    }
+  ]
+}

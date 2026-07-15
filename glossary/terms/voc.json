@@ -1,0 +1,89 @@
+{
+  "id": "voc",
+  "category": "methodology",
+  "title": {
+    "de": "Voice of Customer (VoC)",
+    "en": "Voice of Customer (VoC)"
+  },
+  "short": {
+    "de": "Systematische Erfassung von Kundenaussagen und -bedürfnissen — Basis jeder {{term:ctq|CTQ}}-Ableitung.",
+    "en": "Systematic collection of customer statements and needs — the basis of every {{term:ctq|CTQ}} derivation."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "**Voice of Customer** (VoC) ist die strukturierte Erhebung dessen, *was* der Kunde tatsächlich sagt, will und wertschätzt — als **direktes Zitat**, nicht als Interpretation. Sie bildet den Ausgangspunkt jeder Six-Sigma-Verbesserung: ohne klare VoC keine glaubwürdige {{term:ctq|CTQ}}-Definition."
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Quellen** — Interviews, Befragungen, Beschwerden, Reklamationen, Support-Tickets, Beobachtungen im Einsatz",
+          "**Wörtlich zitieren** — „Die Lieferung war zu spät“ bleibt Zitat; die Übersetzung in „Liefertreue < 95 %“ ist eine spätere {{term:ctq|CTQ}}",
+          "**Interne und externe Kunden** unterscheiden — beide haben legitimen Bedarf",
+          "**Kano-Modell** — trennt Basis-, Leistungs- und Begeisterungsmerkmale"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "Häufige Falle: **VoC interpretieren statt zitieren.** Wer zu früh übersetzt („Der Kunde meinte wohl …“), verliert Information und projiziert eigene Annahmen. Erst Zitate sammeln, dann in einer separaten Analyse-Schritt zu messbaren {{term:ctq|CTQs}} überführen — mit Rückspiegelung an den Kunden zur Validierung."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "**Voice of Customer** (VoC) is the structured capture of what customers actually say, want and value — as a **direct quote**, not as an interpretation. It is the starting point of every Six Sigma improvement: without clear VoC, no credible {{term:ctq|CTQ}} definition."
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Sources** — interviews, surveys, complaints, returns, support tickets, in-use observation",
+          "**Quote verbatim** — \"the delivery was late\" stays a quote; translation into \"on-time-delivery < 95 %\" becomes a later {{term:ctq|CTQ}}",
+          "**Distinguish internal and external customers** — both have legitimate needs",
+          "**Kano model** — separates basic, performance and excitement features"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "Common pitfall: **interpreting VoC instead of quoting it.** Translating too early (\"what the customer probably meant …\") loses information and injects assumptions. First collect quotes, then in a separate analysis derive measurable {{term:ctq|CTQs}} — with feedback to the customer for validation."
+      }
+    ]
+  },
+  "aliases": {
+    "de": [
+      "VoC",
+      "Voice of the Customer",
+      "Kundenstimme"
+    ],
+    "en": [
+      "VoC",
+      "Voice of the Customer",
+      "customer voice"
+    ]
+  },
+  "seeAlso": [
+    "ctq",
+    "sipoc",
+    "dmaic",
+    "project-charter"
+  ],
+  "modules": [
+    "voc-ctx-tree",
+    "sipoc"
+  ],
+  "algoLab": [],
+  "sources": [
+    {
+      "label": "Griffin, A. & Hauser, J. R. — The Voice of the Customer, Marketing Science, 12(1), 1993",
+      "url": null
+    },
+    {
+      "label": "Pyzdek, T. & Keller, P. — The Six Sigma Handbook, 5th Edition",
+      "url": null
+    },
+    {
+      "label": "Kano, N. — Attractive Quality and Must-Be Quality, Journal of the Japanese Society for Quality Control, 14(2), 1984",
+      "url": null
+    }
+  ]
+}

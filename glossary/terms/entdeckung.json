@@ -1,0 +1,95 @@
+{
+  "id": "entdeckung",
+  "category": "risk",
+  "title": {
+    "de": "Entdeckung / Detection (E, D) — FMEA-Bewertungszahl",
+    "en": "Detection (D, E) — FMEA Rating"
+  },
+  "short": {
+    "de": "1–10-Skala dafür, wie sicher der Fehler *vor* dem Kunden entdeckt wird — hoher Wert ist **schlecht**.",
+    "en": "1–10 scale rating how reliably the failure is detected *before* the customer — a high value is **bad**."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "Die **Entdeckung** (englisch *Detection*, Kürzel **E** oder **D**) bewertet, wie wahrscheinlich der Fehler durch bestehende Kontrollen entdeckt wird, bevor er den Kunden erreicht — auf einer Skala von **1 = wird sicher gefunden** bis **10 = wird garantiert übersehen**."
+      },
+      {
+        "type": "note",
+        "text": "Achtung — **Skala umgekehrt zur Intuition**: hohe Zahl = schlechte Entdeckung. Dies ist so gewählt, damit alle drei Faktoren ({{term:bedeutung|B}}, {{term:auftreten|A}}, {{term:entdeckung|E}}) in der {{term:rpz|RPZ}} gleich orientiert sind: hoch = riskant."
+      },
+      {
+        "type": "list",
+        "items": [
+          "**1–2** — automatisierte Prüfung, Fehler kann nicht durchrutschen (z. B. Poka-Yoke)",
+          "**3–4** — Sichtkontrolle mit klarer Regel, geschulter Prüfer",
+          "**5–6** — Stichprobe, subjektive Bewertung",
+          "**7–8** — nur Endprüfung, Fehler oft im Feld sichtbar",
+          "**9–10** — keine wirksame Kontrolle vorhanden"
+        ]
+      },
+      {
+        "type": "paragraph",
+        "text": "Die Entdeckung lässt sich durch **zusätzliche oder bessere Kontrollen** senken. Sie ist der schwächste FMEA-Hebel — Fehler zu vermeiden ({{term:auftreten|A}} senken) schlägt fast immer Fehler zu entdecken."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "**Detection** (short **D** in English, **E** in German-language FMEAs) rates how likely the failure is caught by existing controls before reaching the customer — on a scale from **1 = will surely be found** to **10 = guaranteed to slip through**."
+      },
+      {
+        "type": "note",
+        "text": "Note — **scale inverted vs. intuition**: high number = poor detection. This is deliberate so all three factors ({{term:bedeutung|S}}, {{term:auftreten|O}}, {{term:entdeckung|D}}) point the same way in the {{term:rpz|RPN}}: high = risky."
+      },
+      {
+        "type": "list",
+        "items": [
+          "**1–2** — automated inspection, failure cannot pass (e.g. poka-yoke)",
+          "**3–4** — visual check with clear rule, trained inspector",
+          "**5–6** — sample-based, subjective judgement",
+          "**7–8** — end-of-line inspection only, failure often visible in the field",
+          "**9–10** — no effective control in place"
+        ]
+      },
+      {
+        "type": "paragraph",
+        "text": "Detection is lowered by **more or better controls**. It is the weakest FMEA lever — preventing the failure ({{term:auftreten|O}} down) almost always beats detecting it."
+      }
+    ]
+  },
+  "aliases": {
+    "de": [
+      "Detection",
+      "E",
+      "D",
+      "Entdeckungswahrscheinlichkeit"
+    ],
+    "en": [
+      "detection",
+      "D",
+      "E"
+    ]
+  },
+  "seeAlso": [
+    "fmea",
+    "bedeutung",
+    "auftreten",
+    "rpz"
+  ],
+  "modules": [
+    "fmea"
+  ],
+  "algoLab": [],
+  "sources": [
+    {
+      "label": "AIAG-VDA FMEA Handbook, 1st Edition, 2019 — Detection table",
+      "url": null
+    },
+    {
+      "label": "DIN EN IEC 60812",
+      "url": null
+    }
+  ]
+}

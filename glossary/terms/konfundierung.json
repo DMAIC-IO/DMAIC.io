@@ -1,0 +1,87 @@
+{
+  "id": "konfundierung",
+  "category": "doe",
+  "title": {
+    "de": "Konfundierung / Aliasing",
+    "en": "Aliasing / Confounding"
+  },
+  "short": {
+    "de": "In fraktionellen Designs werden Effekte nicht mehr getrennt geschätzt, sondern als Summe — z. B. Haupteffekt A + Wechselwirkung BC.",
+    "en": "In fractional designs, effects are no longer estimated separately but as sums — e.g. main effect A + interaction BC."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "**Konfundierung** (englisch Aliasing) bedeutet, dass zwei oder mehr Effekte im Versuchsplan mathematisch nicht mehr zu unterscheiden sind: das Design liefert nur ihre Summe. Dies ist der Preis für die Effizienz fraktioneller Designs — man tauscht Versuche gegen Trennschärfe."
+      },
+      {
+        "type": "list",
+        "items": [
+          "In einem 2ᴵᴵᴵ⁷⁻⁴-Screening werden **Haupteffekte mit Zweifach-{{term:wechselwirkung|Wechselwirkungen}}** vermischt",
+          "In einem 2ᴵⱽ⁻ᴰ Design sind Haupteffekte sauber, aber **Wechselwirkungen untereinander** vermischt",
+          "In einem 2ᵥ⁻ᴰ Design sind Haupteffekte und Zweifach-Wechselwirkungen **jeweils sauber schätzbar** (untereinander nicht vermischt)"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "Vor Auswertung eines fraktionellen Designs muss die **Konfundierungsstruktur** (Alias Structure) aufgeklärt sein — sonst werden Effekte einer Wechselwirkung fälschlich einem Haupteffekt zugerechnet. Die {{term:aufloesung|Auflösung}} des Designs macht diese Struktur unmittelbar sichtbar."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "**Aliasing** (also confounding) means that two or more effects can no longer be told apart in the design's math: the design delivers only their sum. This is the price for the efficiency of fractional designs — you trade runs for separability."
+      },
+      {
+        "type": "list",
+        "items": [
+          "In a 2ᴵᴵᴵ⁷⁻⁴ screening design, **main effects mix with two-factor {{term:wechselwirkung|interactions}}**",
+          "In a 2ᴵⱽ⁻ᴰ design, main effects are clean but **interactions among themselves** are aliased",
+          "In a 2ᵥ⁻ᴰ design, main effects and two-factor interactions are each **cleanly estimable** (not aliased with each other)"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "Before analysing a fractional design, the **alias structure** must be understood — otherwise interaction effects are wrongly credited to main effects. The design's {{term:aufloesung|resolution}} exposes this structure directly."
+      }
+    ]
+  },
+  "aliases": {
+    "de": [
+      "Aliasing",
+      "Alias-Struktur",
+      "Vermengung",
+      "Confounding"
+    ],
+    "en": [
+      "aliasing",
+      "alias structure",
+      "confounding"
+    ]
+  },
+  "seeAlso": [
+    "aufloesung",
+    "wechselwirkung",
+    "haupteffekt",
+    "doe"
+  ],
+  "modules": [
+    "doe-planner",
+    "doe-advisor"
+  ],
+  "algoLab": [
+    "doe/doe-planner",
+    "doe/vif"
+  ],
+  "sources": [
+    {
+      "label": "Montgomery, D. C. — Design and Analysis of Experiments, 10th Edition, Chapter 8",
+      "url": null
+    },
+    {
+      "label": "Box, Hunter & Hunter — Statistics for Experimenters, 2nd Edition, Chapter 6",
+      "url": null
+    }
+  ]
+}

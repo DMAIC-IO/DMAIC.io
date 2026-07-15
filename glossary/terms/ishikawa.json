@@ -1,0 +1,92 @@
+{
+  "id": "ishikawa",
+  "category": "methodology",
+  "title": {
+    "de": "Ishikawa-Diagramm (Fischgräten)",
+    "en": "Ishikawa Diagram (Fishbone)"
+  },
+  "short": {
+    "de": "Visuelle Ursachensammlung mit Hauptästen (typisch 6M) — bündelt alle möglichen Einflüsse auf ein Problem für die Analyze-Phase.",
+    "en": "Visual cause collection with main branches (typically 6M) — bundles all possible influences on a problem for the Analyze phase."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "Das **Ishikawa-Diagramm** (Kaoru Ishikawa, 1943), auch **Fischgräten-** oder **Ursache-Wirkungs-Diagramm** genannt, sortiert mögliche Ursachen eines Problems entlang standardisierter Hauptäste. Es ist ein Brainstorming-Werkzeug — es *sammelt* Hypothesen, es *beweist* keine."
+      },
+      {
+        "type": "list",
+        "items": [
+          "**6M** (Fertigung, Klassiker): **M**ensch — **M**aschine — **M**aterial — **M**ethode — **M**essung — **M**itwelt (Umgebung/Milieu)",
+          "**4P/8P** (Dienstleistung): **P**eople, **P**rocess, **P**rocedure, **P**olicy, Price, Promotion, Place, Product",
+          "**Effekt** (Fischkopf, rechts) — das zu erklärende Problem, präzise formuliert",
+          "**Ursachen** (Gräten, links) — auf jedem Hauptast Sub-Ursachen sammeln, ggf. mit {{term:five-why|5-Why}} vertiefen"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "Ishikawa ist **kein Priorisierungswerkzeug** — es liefert eine breite Ideensammlung, nicht die Rangfolge der Ursachen. Für Priorisierung folgen {{term:pareto|Pareto}} (aus Datenlage) oder {{term:hypothesentest|Hypothesentests}} und {{term:regression|Regressions-Analysen}}. Eine {{term:fmea|FMEA}} ergänzt Ishikawa um Risikobewertung."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "The **Ishikawa diagram** (Kaoru Ishikawa, 1943), also called **fishbone** or **cause-and-effect diagram**, sorts possible causes of a problem along standardised main branches. It is a brainstorming tool — it *collects* hypotheses, it *proves* none."
+      },
+      {
+        "type": "list",
+        "items": [
+          "**6M** (manufacturing, classic): **M**an — **M**achine — **M**aterial — **M**ethod — **M**easurement — **M**ilieu (environment)",
+          "**4P/8P** (service): **P**eople, **P**rocess, **P**rocedure, **P**olicy, Price, Promotion, Place, Product",
+          "**Effect** (fish head, right) — the problem to be explained, stated precisely",
+          "**Causes** (bones, left) — on each main branch collect sub-causes, deepen with {{term:five-why|5-Why}} if useful"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "Ishikawa is **not a prioritisation tool** — it produces a broad idea set, not a ranking of causes. For prioritisation, follow with {{term:pareto|Pareto}} (from data) or {{term:hypothesentest|hypothesis tests}} and {{term:regression|regression}}. An {{term:fmea|FMEA}} complements Ishikawa with risk assessment."
+      }
+    ]
+  },
+  "aliases": {
+    "de": [
+      "Ishikawa",
+      "Fischgrätendiagramm",
+      "Ursache-Wirkungs-Diagramm",
+      "6M",
+      "Fishbone"
+    ],
+    "en": [
+      "Ishikawa",
+      "fishbone",
+      "cause-and-effect diagram",
+      "6M"
+    ]
+  },
+  "seeAlso": [
+    "five-why",
+    "pareto",
+    "fmea",
+    "dmaic",
+    "regression"
+  ],
+  "modules": [
+    "ishikawa"
+  ],
+  "algoLab": [],
+  "sources": [
+    {
+      "label": "Ishikawa, K. — Guide to Quality Control, 2nd Edition, Asian Productivity Organization, 1982",
+      "url": null
+    },
+    {
+      "label": "Ishikawa, K. — What Is Total Quality Control? The Japanese Way, Prentice Hall, 1985",
+      "url": null
+    },
+    {
+      "label": "Pyzdek, T. & Keller, P. — The Six Sigma Handbook, 5th Edition",
+      "url": null
+    }
+  ]
+}

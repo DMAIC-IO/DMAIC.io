@@ -1,7 +1,7 @@
 {
   "id": "regression-coefficients",
   "name": {
-    "de": "Regressionskoeffizienten (t-Test & Konfidenzintervalle)",
+    "de": "{{term:regression|Regression}}skoeffizienten (t-Test & Konfidenzintervalle)",
     "en": "Regression Coefficients (t-Test & Confidence Intervals)"
   },
   "category": "regression",

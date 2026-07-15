@@ -1,0 +1,97 @@
+{
+  "id": "response-surface",
+  "category": "doe",
+  "title": {
+    "de": "Response Surface Methodology (RSM)",
+    "en": "Response Surface Methodology (RSM)"
+  },
+  "short": {
+    "de": "Familie von {{term:doe|DoE}}-Methoden, die die {{term:zielgroesse|Zielgröße}} als glatte Funktion der {{term:faktor|Faktoren}} modellieren — typischerweise mit quadratischem Modell.",
+    "en": "Family of {{term:doe|DoE}} methods that models the {{term:zielgroesse|response}} as a smooth function of the {{term:faktor|factors}} — typically with a quadratic model."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "Die **Response Surface Methodology** (RSM, Box & Wilson, 1951) ist die Standardstrategie, wenn nach dem {{term:screening-design|Screening}} die vitalen wenigen Faktoren feststehen und ein Optimum gesucht wird. Sie passt an die Daten ein quadratisches Modell an und liefert eine Antwortoberfläche (Response Surface), die abgesucht, optimiert und in Bezug auf Krümmung interpretiert werden kann."
+      },
+      {
+        "type": "formula",
+        "latex": "\\hat{y} = \\beta_0 + \\sum_i \\beta_i x_i + \\sum_i \\beta_{ii} x_i^2 + \\sum_{i<j} \\beta_{ij} x_i x_j"
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Gängige Designs:** {{term:ccd|Central Composite Design}} (rotatable oder face-centered), {{term:box-behnken|Box-Behnken}}, {{term:dsd|DSD}}",
+          "**Auswertung:** Regression mit ANOVA, Kontur- und 3D-Response-Plots, Optimierung per Desirability oder Gradientenverfahren",
+          "**Krümmung** ist zentral — ohne quadratische Terme kein Optimum im Inneren der Region"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "RSM lebt von der Voraussetzung, dass die Antwort im untersuchten Bereich glatt und quadratisch approximierbar ist. Extreme Nichtlinearitäten oder Sprünge — z. B. Phasenübergänge — brechen das Modell. Bei mehreren gleichzeitig zu optimierenden Zielgrößen kommt Desirability-Optimierung zum Einsatz."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "**Response Surface Methodology** (RSM, Box & Wilson, 1951) is the standard strategy when {{term:screening-design|screening}} has identified the vital few factors and an optimum is sought. It fits a quadratic model to the data and delivers a response surface that can be explored, optimised, and interpreted with respect to curvature."
+      },
+      {
+        "type": "formula",
+        "latex": "\\hat{y} = \\beta_0 + \\sum_i \\beta_i x_i + \\sum_i \\beta_{ii} x_i^2 + \\sum_{i<j} \\beta_{ij} x_i x_j"
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Common designs:** {{term:ccd|Central Composite Design}} (rotatable or face-centered), {{term:box-behnken|Box-Behnken}}, {{term:dsd|DSD}}",
+          "**Analysis:** regression with ANOVA, contour and 3D response plots, optimisation via desirability or gradient methods",
+          "**Curvature** is central — without quadratic terms, no interior optimum can exist"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "RSM assumes the response is smooth and quadratically approximable within the studied range. Strong non-linearities or jumps — e.g. phase transitions — break the model. When several responses must be optimised jointly, desirability optimisation is used."
+      }
+    ]
+  },
+  "aliases": {
+    "de": [
+      "Response Surface Methodology",
+      "RSM",
+      "Antwortflächen-Methode"
+    ],
+    "en": [
+      "Response Surface Methodology",
+      "RSM",
+      "response-surface analysis"
+    ]
+  },
+  "seeAlso": [
+    "ccd",
+    "box-behnken",
+    "dsd",
+    "doe",
+    "zentralpunkt"
+  ],
+  "modules": [
+    "doe-planner",
+    "doe-advisor",
+    "response-optimization"
+  ],
+  "algoLab": [
+    "doe/ccd-with-categorical",
+    "doe/box-behnken-with-categorical",
+    "doe/doe-planner"
+  ],
+  "sources": [
+    {
+      "label": "Box, G. E. P. & Wilson, K. B. — On the Experimental Attainment of Optimum Conditions, Journal of the Royal Statistical Society B, 1951",
+      "url": null
+    },
+    {
+      "label": "Myers, Montgomery & Anderson-Cook — Response Surface Methodology: Process and Product Optimization Using Designed Experiments, 4th Edition, Wiley",
+      "url": null
+    }
+  ]
+}

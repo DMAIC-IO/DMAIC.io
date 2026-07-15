@@ -11,8 +11,8 @@
 
   "description": {
     "short": {
-      "de": "D-optimal-Suche, die kategoriale Faktoren auf ihre diskreten Stufen beschränkt — kontinuierliche bekommen weiterhin das 5-Level-Gitter für quadratische Modelle.",
-      "en": "D-optimal search that constrains categorical factors to their discrete levels — continuous factors keep the 5-level grid for quadratic models."
+      "de": "{{term:d-optimal|D-optimal}}-Suche, die kategoriale Faktoren auf ihre diskreten Stufen beschränkt — kontinuierliche bekommen weiterhin das 5-Level-Gitter für quadratische Modelle.",
+      "en": "{{term:d-optimal|D-optimal}} search that constrains categorical factors to their discrete levels — continuous factors keep the 5-level grid for quadratic models."
     },
     "long": {
       "de": "Vor Phase 4 nutzte die Coordinate-Exchange-Suche (für quadratische Modelle) ein einheitliches 5-Level-Gitter [-1, -0.5, 0, 0.5, 1] für ALLE Faktoren. Bei kategorialen Faktoren erzeugte das fraktionale Werte (-0.5, 0.5), die keiner echten Stufe entsprechen — mathematisch sinnlos. Der Fix: pro Faktor wird die Kandidaten-Menge nach Faktor-Typ gewählt — kontinuierliche bekommen weiterhin das 5-Level-Gitter, kategoriale werden auf ihre evenly-spaced diskreten Codings (-1, …, +1 entsprechend ihrer Stufenzahl) beschränkt. Der Linear-Pfad via Point Exchange war schon vorher korrekt (`fullFactorialGeneral` als Kandidaten-Quelle).",

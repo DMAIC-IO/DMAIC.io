@@ -1,0 +1,88 @@
+{
+  "id": "project-charter",
+  "category": "methodology",
+  "title": {
+    "de": "Projektcharter",
+    "en": "Project Charter"
+  },
+  "short": {
+    "de": "Ein-Seiten-Vertrag zwischen Projektteam und Sponsor — definiert Problem, Ziel, Umfang, Team und Zeitplan in der Define-Phase des {{term:dmaic|DMAIC}}.",
+    "en": "One-page contract between project team and sponsor — defines problem, goal, scope, team and schedule in the Define phase of {{term:dmaic|DMAIC}}."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "Der **Projektcharter** (Project Charter, Projektauftrag) ist das erste Ergebnis der Define-Phase. Er formuliert das Verbesserungsproblem so klar, dass Sponsor, Team und Stakeholder gleiches Verständnis haben — und dient als Referenz für spätere Kurskorrekturen."
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Problem statement** — was ist heute nicht gut? Faktenbasiert, ohne Ursache und ohne Lösung",
+          "**Goal statement** — konkrete, messbare Zielverbesserung (SMART-Kriterium)",
+          "**Business case** — Nutzen in Euro / Zeit / Qualität; warum lohnt sich das Projekt?",
+          "**Scope (In/Out)** — was ist im Projekt drin, was explizit **nicht**?",
+          "**Team & Rollen** — Sponsor, Champion, Black/Green Belt, Fachleute",
+          "**Zeitplan** — mit den fünf {{term:dmaic|DMAIC}}-Tollgates"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "Der Charter ist **kein Einweg-Dokument**: bei jeder Tollgate wird er überprüft und ggf. angepasst. Häufigster Fehler: der Charter wird einmal geschrieben und nie mehr angefasst — dann läuft das Projekt neben dem Sponsor her, statt mit ihm."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "The **project charter** is the first deliverable of the Define phase. It states the improvement problem so clearly that sponsor, team and stakeholders share the same understanding — and serves as reference for later course corrections."
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Problem statement** — what is bad today? Fact-based, without cause and without solution",
+          "**Goal statement** — concrete measurable target improvement (SMART criterion)",
+          "**Business case** — value in euros / time / quality; why does the project matter?",
+          "**Scope (in/out)** — what is in the project, what is explicitly **not**?",
+          "**Team & roles** — sponsor, champion, Black/Green Belt, subject-matter experts",
+          "**Schedule** — with the five {{term:dmaic|DMAIC}} tollgates"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "The charter is **not a one-shot document**: at every tollgate it is reviewed and updated if needed. Most common mistake: the charter is written once and never touched again — the project then runs beside the sponsor rather than with them."
+      }
+    ]
+  },
+  "aliases": {
+    "de": [
+      "Projektauftrag",
+      "Charter",
+      "Project Charter"
+    ],
+    "en": [
+      "project charter",
+      "project brief"
+    ]
+  },
+  "seeAlso": [
+    "dmaic",
+    "sipoc",
+    "voc",
+    "ctq"
+  ],
+  "modules": [
+    "project-charter",
+    "dmaic-calendar"
+  ],
+  "algoLab": [],
+  "sources": [
+    {
+      "label": "Pyzdek, T. & Keller, P. — The Six Sigma Handbook, 5th Edition",
+      "url": null
+    },
+    {
+      "label": "George, M. L. — Lean Six Sigma Pocket Toolbook, McGraw-Hill",
+      "url": null
+    }
+  ]
+}

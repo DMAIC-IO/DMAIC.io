@@ -1,7 +1,7 @@
 {
-  "id": "welch-t-test",
+  "id": "welch-{{term:t-test|t-test}}",
   "name": {
-    "de": "Welch-t-Test",
+    "de": "Welch-{{term:t-test|t-Test}}",
     "en": "Welch t-Test"
   },
   "category": "hypothesis",

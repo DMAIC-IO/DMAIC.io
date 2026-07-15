@@ -1,7 +1,7 @@
 {
   "id": "run-chart",
   "name": {
-    "de": "Run Chart (Lauftests)",
+    "de": "{{term:run-chart|Run Chart}} (Lauftests)",
     "en": "Run Chart (runs tests)"
   },
   "category": "control-charts",
@@ -45,7 +45,7 @@
     ],
     "limitations": [
       { "de": "Vier simultane Tests erhöhen die Falsch-Alarm-Rate; einzelnes p < 0,05 ist schwacher Beweis", "en": "Four simultaneous tests inflate the false-alarm rate; single p < 0.05 is weak evidence" },
-      { "de": "Keine Eingriffsgrenzen — Run Chart ersetzt keine Regelkarte für laufende Überwachung", "en": "No control limits — run chart does not replace a control chart for ongoing monitoring" }
+      { "de": "Keine Eingriffsgrenzen — Run Chart ersetzt keine Regelkarte für laufende Überwachung", "en": "No control limits — {{term:run-chart|run chart}} does not replace a control chart for ongoing monitoring" }
     ],
     "references": [
       { "source": "Bradley, J. V. (1968), Distribution-Free Statistical Tests, Prentice-Hall" },

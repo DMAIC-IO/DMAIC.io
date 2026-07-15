@@ -1,0 +1,80 @@
+{
+  "id": "fehler-erster-art",
+  "category": "hypothesis",
+  "title": {
+    "de": "Fehler 1. Art (α, Type I)",
+    "en": "Type I Error (α)"
+  },
+  "short": {
+    "de": "{{term:nullhypothese|H₀}} verwerfen, obwohl sie wahr ist — „Alarm ohne Grund“.",
+    "en": "Rejecting {{term:nullhypothese|H₀}} when it is actually true — a \"false alarm\"."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "Der **Fehler 1. Art** (α-Fehler, false positive) tritt auf, wenn ein Test einen Effekt behauptet, den es in Wirklichkeit nicht gibt. Seine Wahrscheinlichkeit wird durch das {{term:signifikanzniveau|Signifikanzniveau α}} kontrolliert."
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Praktisches Beispiel:** Ein Qualitätstest schlägt Alarm über eine Produktionsabweichung, die tatsächlich keine ist — die Produktion wird unnötig gestoppt",
+          "**Kosten** meist gut sichtbar: unnötige Nacharbeit, Ressourcen, Vertrauensverlust in Statistik",
+          "**Kontrolle** durch die Wahl von α und durch Korrekturen bei Mehrfachtests"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "Der Fehler 1. Art ist der „Diebstahlalarm ohne Dieb“. Sein Gegenstück ist der {{term:fehler-zweiter-art|Fehler 2. Art (β)}} — den echten Dieb übersehen. Beide Fehler sind über die Stichprobengröße gekoppelt: bei fixem α senkt größeres n den β-Fehler."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "A **Type I error** (α error, false positive) occurs when a test claims an effect that does not exist. Its probability is controlled by the {{term:signifikanzniveau|significance level α}}."
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Practical example:** a quality test raises an alarm about a production deviation that is not real — production is stopped needlessly",
+          "**Costs** are usually visible: unnecessary rework, resources, lost trust in statistics",
+          "**Control** by the choice of α and by corrections for multiple testing"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "The Type I error is the \"burglar alarm without a burglar\". Its counterpart is the {{term:fehler-zweiter-art|Type II error (β)}} — missing the real burglar. Both errors are coupled through sample size: at fixed α, larger n reduces the β error."
+      }
+    ]
+  },
+  "aliases": {
+    "de": [
+      "α-Fehler",
+      "Type I",
+      "False Positive",
+      "Falschalarm"
+    ],
+    "en": [
+      "Type I error",
+      "false positive",
+      "alpha error"
+    ]
+  },
+  "seeAlso": [
+    "fehler-zweiter-art",
+    "signifikanzniveau",
+    "power",
+    "hypothesentest"
+  ],
+  "modules": [
+    "hypothesis-test",
+    "sample-size"
+  ],
+  "algoLab": [],
+  "sources": [
+    {
+      "label": "Neyman, J. & Pearson, E. S. — On the Problem of the Most Efficient Tests, 1933",
+      "url": null
+    }
+  ]
+}

@@ -1,0 +1,63 @@
+{
+  "id": "heteroskedastizitaet",
+  "category": "regression",
+  "title": {
+    "de": "Heteroskedastizität",
+    "en": "Heteroscedasticity"
+  },
+  "short": {
+    "de": "Die {{term:standardabweichung|Streuung}} der {{term:residuen|Residuen}} ist nicht konstant — sie hängt vom X-Wert oder Vorhersagewert ab (Trichterform im Residuenplot).",
+    "en": "The {{term:standardabweichung|dispersion}} of the {{term:residuen|residuals}} is not constant — it varies with the X value or fitted value (funnel shape in the residual plot)."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "**Heteroskedastizität** verletzt die OLS-Grundannahme der **Homoskedastizität** — konstanter Fehlervarianz $\\sigma^2$. In der Praxis zeigt sich das im Residuenplot als Trichter: kleine Y-Werte streuen wenig, große Y-Werte streuen stark (oder umgekehrt)."
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Konsequenz:** Punkt-Schätzer der Koeffizienten $\\hat{\\beta}$ bleiben unverzerrt, aber ihre Standardfehler sind falsch — p-Werte und Konfidenzintervalle sind zu optimistisch oder pessimistisch",
+          "**Gegenmittel 1:** Y transformieren (z. B. $\\ln Y$, $\\sqrt{Y}$) — Trichter verschwindet oft",
+          "**Gegenmittel 2:** Gewichtete Regression (WLS) — Beobachtungen mit hoher Streuung bekommen weniger Gewicht",
+          "**Gegenmittel 3:** Heteroskedastie-robuste Standardfehler (White / HC0-HC3)"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "Bei Zähl- oder Anteilsdaten ist Heteroskedastizität systembedingt — die Varianz hängt vom Mittelwert ab (bei Poisson $\\sigma^2 = \\mu$, bei Binomial $\\sigma^2 = np(1-p)$). Dann ist statt einer Transformation ein passendes {{term:glm|GLM}} die saubere Lösung."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "**Heteroscedasticity** violates the OLS assumption of **homoscedasticity** — constant error variance $\\sigma^2$. In practice the residual plot shows a funnel: small Y values scatter tightly, large Y values scatter strongly (or vice versa)."
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Consequence:** point estimates $\\hat{\\beta}$ remain unbiased, but their standard errors are wrong — p-values and confidence intervals are too optimistic or pessimistic",
+          "**Remedy 1:** transform Y (e.g. $\\ln Y$, $\\sqrt{Y}$) — the funnel often disappears",
+          "**Remedy 2:** weighted least squares (WLS) — high-variance observations get lower weight",
+          "**Remedy 3:** heteroscedasticity-robust standard errors (White / HC0-HC3)"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "For count or proportion data, heteroscedasticity is inherent — variance depends on the mean (Poisson: $\\sigma^2 = \\mu$; binomial: $\\sigma^2 = np(1-p)$). Rather than transforming, the clean fix is a suitable {{term:glm|GLM}}."
+      }
+    ]
+  },
+  "aliases": {
+    "de": ["Heteroskedastizität", "ungleiche Fehlervarianz"],
+    "en": ["heteroscedasticity", "non-constant error variance"]
+  },
+  "seeAlso": ["residuen", "lineare-regression", "glm", "regression"],
+  "modules": ["regression", "glm-regression"],
+  "algoLab": ["regression/regression-coefficients"],
+  "sources": [
+    { "label": "White, H. — A Heteroskedasticity-Consistent Covariance Matrix Estimator and a Direct Test for Heteroskedasticity, Econometrica, 48(4), 1980", "url": null },
+    { "label": "Montgomery, D. C., Peck, E. A. & Vining, G. G. — Introduction to Linear Regression Analysis, 6th Edition, Chapter 5", "url": null }
+  ]
+}

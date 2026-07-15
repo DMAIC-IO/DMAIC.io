@@ -1,0 +1,91 @@
+{
+  "id": "pareto",
+  "category": "methodology",
+  "title": {
+    "de": "Pareto-Prinzip / Pareto-Diagramm",
+    "en": "Pareto Principle / Pareto Chart"
+  },
+  "short": {
+    "de": "80/20-Regel — wenige Ursachen erzeugen den Großteil der Wirkung. Das Pareto-Diagramm visualisiert das mit sortierten Balken plus Kumulativkurve.",
+    "en": "80/20 rule — few causes produce most of the effect. The Pareto chart visualises this with sorted bars and a cumulative curve."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "Das **Pareto-Prinzip** (Vilfredo Pareto, 1896) besagt: rund 80 % der Wirkung stammen aus rund 20 % der Ursachen. In der Six-Sigma-Anwendung heißt das: konzentriere Verbesserungsarbeit auf die wenigen **vital few** Fehlerarten / Ursachen, nicht auf die **trivial many**."
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Pareto-Diagramm** — Balken absteigend nach Häufigkeit sortiert, ergänzt durch die kumulative Prozent-Linie",
+          "**Ablesen** — welche 2–3 Balken schon > 70–80 % der Gesamthäufigkeit ausmachen?",
+          "**Datenbasis** — braucht kategorisierte Zählwerte (Fehlerarten, Reklamationsgründe, Störungsursachen)",
+          "**Nach Verbesserung** — nochmals Pareto zeichnen; die Rangfolge verschiebt sich (die neu übriggebliebenen „vital few“ bekämpfen)"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "Pareto ist ein **Prioritätswerkzeug**, kein Kausal-Beweis. Die häufigsten Fehler sind nicht immer die wichtigsten (Schweregrad!) — häufig × schwer wäre die vollständige Priorisierung, aber dafür gibt es die {{term:fmea|FMEA}} mit {{term:rpz|RPZ}}. Pareto zeigt, wo *quantitativ* am meisten passiert; die Bewertung „wichtig für den Kunden?“ braucht {{term:voc|VoC}} und {{term:ctq|CTQ}}."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "The **Pareto principle** (Vilfredo Pareto, 1896) states: about 80 % of the effect comes from about 20 % of the causes. In Six Sigma this means: focus improvement work on the few **vital few** defect types / causes, not on the **trivial many**."
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Pareto chart** — bars sorted descending by frequency, plus a cumulative percentage line",
+          "**Reading** — which 2–3 bars already make up > 70–80 % of the total frequency?",
+          "**Data base** — needs categorised counts (defect types, complaint reasons, incident causes)",
+          "**After improvement** — draw the Pareto again; the ranking shifts (attack the new remaining \"vital few\")"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "Pareto is a **prioritisation tool**, not a proof of causation. The most frequent defects are not always the most important (severity!) — frequency × severity would be full prioritisation, but that is what {{term:fmea|FMEA}} with {{term:rpz|RPN}} is for. Pareto shows where *quantitatively* the most happens; the assessment \"important to the customer?\" needs {{term:voc|VoC}} and {{term:ctq|CTQ}}."
+      }
+    ]
+  },
+  "aliases": {
+    "de": [
+      "Pareto",
+      "Pareto-Prinzip",
+      "80-20-Regel",
+      "Pareto-Diagramm",
+      "ABC-Analyse"
+    ],
+    "en": [
+      "Pareto",
+      "Pareto principle",
+      "80/20 rule",
+      "Pareto chart"
+    ]
+  },
+  "seeAlso": [
+    "fmea",
+    "ishikawa",
+    "dmaic",
+    "ctq"
+  ],
+  "modules": [
+    "pareto"
+  ],
+  "algoLab": [],
+  "sources": [
+    {
+      "label": "Juran, J. M. — Juran's Quality Handbook, 5th Edition, McGraw-Hill, 1999",
+      "url": null
+    },
+    {
+      "label": "Pyzdek, T. & Keller, P. — The Six Sigma Handbook, 5th Edition",
+      "url": null
+    },
+    {
+      "label": "Ishikawa, K. — Guide to Quality Control, 2nd Edition, Asian Productivity Organization, 1982",
+      "url": null
+    }
+  ]
+}

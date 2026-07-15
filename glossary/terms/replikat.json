@@ -1,0 +1,84 @@
+{
+  "id": "replikat",
+  "category": "doe",
+  "title": {
+    "de": "Replikat (Replicate)",
+    "en": "Replicate"
+  },
+  "short": {
+    "de": "Echte, unabhängige Wiederholung eines Versuchslaufs — Grundlage für die Schätzung der reinen Streuung.",
+    "en": "A truly independent repeat of a run — foundation for estimating pure error."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "Ein **Replikat** ist eine vollständige Wiederholung eines Versuchslaufs unter identischer Einstellung aller {{term:faktor|Faktoren}}, aber mit erneutem Aufbau — neuer Rüstvorgang, neue Probe, neue Messung. Erst dadurch wird die Prozess-Streuung sichtbar, nicht nur die Messunsicherheit."
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Echte Replikate** — kompletter Neustart des Versuchslaufs; liefern die reine Streuung",
+          "**Pseudo-Replikate** — Mehrfachmessungen an derselben Probe/demselben Lauf; erfassen nur die Messstreuung, nicht die Prozessstreuung",
+          "**Zentralpunkt-Replikate** — {{term:zentralpunkt|Zentralpunkte}} mehrfach fahren; besonders effizient für Streuungsschätzung ohne Design-Aufblähung"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "Ohne Replikate lassen sich Effekte zwar schätzen, aber nicht statistisch prüfen — es fehlt der Vergleichs-Maßstab „Rauschen“. Für Streuungs-DoE / Dual-Response sind mindestens 2 echte Replikate pro Versuchspunkt Pflicht."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "A **replicate** is a full repetition of a run under identical settings of all {{term:faktor|factors}} but with a fresh setup — new preparation, new specimen, new measurement. Only this reveals process variability, not merely measurement uncertainty."
+      },
+      {
+        "type": "list",
+        "items": [
+          "**True replicates** — a complete re-run of the experiment; deliver pure error",
+          "**Pseudo-replicates** — multiple measurements on the same specimen or run; capture only measurement variation, not process variation",
+          "**Centre-point replicates** — run {{term:zentralpunkt|centre points}} multiple times; especially efficient for variance estimation without inflating the design"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "Without replicates, effects can be estimated but not tested statistically — the yardstick \"noise\" is missing. Dispersion DoE / dual response requires at least 2 true replicates per point."
+      }
+    ]
+  },
+  "aliases": {
+    "de": [
+      "Replicate",
+      "Replikation",
+      "Wiederholung"
+    ],
+    "en": [
+      "replication",
+      "replicated run"
+    ]
+  },
+  "seeAlso": [
+    "zentralpunkt",
+    "randomisierung",
+    "doe",
+    "wiederholbarkeit"
+  ],
+  "modules": [
+    "doe-planner",
+    "doe-advisor"
+  ],
+  "algoLab": [
+    "doe/doe-planner"
+  ],
+  "sources": [
+    {
+      "label": "Montgomery, D. C. — Design and Analysis of Experiments, 10th Edition, Chapter 3",
+      "url": null
+    },
+    {
+      "label": "Box, Hunter & Hunter — Statistics for Experimenters, 2nd Edition",
+      "url": null
+    }
+  ]
+}

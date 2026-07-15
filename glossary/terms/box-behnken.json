@@ -1,0 +1,85 @@
+{
+  "id": "box-behnken",
+  "category": "doe",
+  "title": {
+    "de": "Box-Behnken-Design",
+    "en": "Box-Behnken Design"
+  },
+  "short": {
+    "de": "3-Stufen-{{term:response-surface|Response-Surface-Design}} ohne Eckpunkte — für Prozesse, bei denen extreme Kombinationen aller Faktoren gleichzeitig unzulässig sind.",
+    "en": "3-level {{term:response-surface|response-surface design}} without corner points — for processes where extreme combinations of all factors simultaneously are not permitted."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "Das **Box-Behnken-Design** (Box & Behnken, 1960) ist ein rotierbares 3-Stufen-Design für 3 oder mehr {{term:faktor|Faktoren}}. Es vermeidet die Eckpunkte des Faktorwürfels — kein Versuch setzt alle Faktoren gleichzeitig auf ihr Extrem — und ist damit die erste Wahl, wenn simultan extreme Bedingungen unerwünscht oder unsicher wären."
+      },
+      {
+        "type": "list",
+        "items": [
+          "**3 Stufen pro Faktor** (−1, 0, +1); alle Versuche liegen auf der Kanten- oder Zentralebene, nicht in Ecken",
+          "**Rotierbar oder nahezu rotierbar** — konstante Vorhersagegenauigkeit in gleichem Abstand vom Zentrum",
+          "**Effizient:** weniger Läufe als ein {{term:ccd|CCD}} gleicher Ordnung; z. B. 15 Läufe für 3 Faktoren vs. 20 (CCC) bzw. 20 (CCF)"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "**Einschränkungen:** Box-Behnken benötigt mindestens 3 Faktoren (mit 2 undefiniert). Da keine Extremecken abgedeckt sind, können Modelle in den Würfelecken schwächer vorhersagen — das ist gleichzeitig sein größter Vorteil (Sicherheit) und seine bekannteste Grenze."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "The **Box-Behnken design** (Box & Behnken, 1960) is a rotatable 3-level design for 3 or more {{term:faktor|factors}}. It avoids the corner points of the factor cube — no run drives all factors to their extremes simultaneously — and is the first choice when simultaneous extreme conditions would be undesirable or unsafe."
+      },
+      {
+        "type": "list",
+        "items": [
+          "**3 levels per factor** (−1, 0, +1); all runs lie on edges or the central plane, never at corners",
+          "**Rotatable or near-rotatable** — constant prediction accuracy at equal distance from the centre",
+          "**Efficient:** fewer runs than a {{term:ccd|CCD}} of the same order; e.g. 15 runs for 3 factors vs. 20 (CCC) or 20 (CCF)"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "**Limitations:** Box-Behnken needs at least 3 factors (undefined for 2). Because no extreme corners are covered, model predictions can be weaker in the cube corners — this is both its greatest asset (safety) and its best-known limitation."
+      }
+    ]
+  },
+  "aliases": {
+    "de": [
+      "Box-Behnken",
+      "BBD"
+    ],
+    "en": [
+      "Box-Behnken",
+      "BBD"
+    ]
+  },
+  "seeAlso": [
+    "response-surface",
+    "ccd",
+    "doe",
+    "zentralpunkt"
+  ],
+  "modules": [
+    "doe-planner",
+    "doe-advisor",
+    "response-optimization"
+  ],
+  "algoLab": [
+    "doe/box-behnken-with-categorical",
+    "doe/doe-planner"
+  ],
+  "sources": [
+    {
+      "label": "Box, G. E. P. & Behnken, D. W. — Some New Three Level Designs for the Study of Quantitative Variables, Technometrics, 2(4), 1960",
+      "url": null
+    },
+    {
+      "label": "Myers, Montgomery & Anderson-Cook — Response Surface Methodology, 4th Edition",
+      "url": null
+    }
+  ]
+}

@@ -1,0 +1,99 @@
+{
+  "id": "sigma-niveau",
+  "category": "capability",
+  "title": {
+    "de": "Sigma-Niveau",
+    "en": "Sigma Level"
+  },
+  "short": {
+    "de": "Alternative Kennzahl der {{term:prozessfaehigkeit|Prozessfähigkeit}} — misst den Abstand von {{term:mittelwert|Mittelwert}} zur nächsten Spezifikationsgrenze in Vielfachen von σ.",
+    "en": "Alternative {{term:prozessfaehigkeit|process capability}} metric — measures the distance from the {{term:mittelwert|mean}} to the nearest specification limit in multiples of σ."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "Das **Sigma-Niveau** (Sigma-Level, Z-Wert) drückt die Prozessfähigkeit als Vielfaches der Standardabweichung aus, die zwischen Mittelwert und Spezifikationsgrenze passt. Es ist die namensgebende Kennzahl von Six Sigma."
+      },
+      {
+        "type": "formula",
+        "latex": "Z_{\\text{ST}} = 3 \\cdot C_{pk}"
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Z = 3σ** — Cpk = 1,00 — ca. 66 800 ppm defekt (kurzfristig)",
+          "**Z = 4σ** — Cpk = 1,33 — ca. 6 210 ppm",
+          "**Z = 6σ** — Cpk = 2,00 — ca. 3,4 ppm (mit dem üblichen 1,5σ-Shift für Langzeit)",
+          "**ppm** = parts per million, defekte Teile pro Million"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "**Der 1,5σ-Shift-Konvention:** Die berühmten „3,4 ppm bei 6σ“ beziehen sich auf ein Langzeit-Sigma-Niveau, das einen mittleren Drift von 1,5σ annimmt. Ohne diesen Shift würde 6σ auf 2 ppb (parts per billion) hinauslaufen. Die Konvention ist umstritten, aber Standard in Six-Sigma-Ausbildung und -Berichten."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "The **sigma level** (Z-value) expresses process capability as the number of standard deviations that fit between the mean and the nearest specification limit. It is the metric that gives Six Sigma its name."
+      },
+      {
+        "type": "formula",
+        "latex": "Z_{\\text{ST}} = 3 \\cdot C_{pk}"
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Z = 3σ** — Cpk = 1.00 — approx. 66,800 ppm defective (short-term)",
+          "**Z = 4σ** — Cpk = 1.33 — approx. 6,210 ppm",
+          "**Z = 6σ** — Cpk = 2.00 — approx. 3.4 ppm (with the usual 1.5σ shift for long-term)",
+          "**ppm** = parts per million defective"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "**The 1.5σ shift convention:** the famous \"3.4 ppm at 6σ\" refers to a long-term sigma level that assumes a 1.5σ average drift. Without the shift, 6σ would give 2 ppb (parts per billion). The convention is contested but standard in Six Sigma training and reporting."
+      }
+    ]
+  },
+  "aliases": {
+    "de": [
+      "Sigma-Level",
+      "Z-Wert",
+      "DPMO",
+      "ppm-Niveau"
+    ],
+    "en": [
+      "sigma level",
+      "Z-score capability",
+      "DPMO"
+    ]
+  },
+  "seeAlso": [
+    "cpk",
+    "ppk",
+    "prozessfaehigkeit"
+  ],
+  "modules": [
+    "process-capability"
+  ],
+  "algoLab": [
+    "capability/cpk",
+    "capability/ppk"
+  ],
+  "sources": [
+    {
+      "label": "Pyzdek, T. & Keller, P. — The Six Sigma Handbook, 5th Edition, McGraw-Hill",
+      "url": null
+    },
+    {
+      "label": "Harry, M. & Schroeder, R. — Six Sigma: The Breakthrough Management Strategy, Currency/Doubleday",
+      "url": null
+    },
+    {
+      "label": "Montgomery, D. C. — Introduction to Statistical Quality Control, 8th Edition",
+      "url": null
+    }
+  ]
+}

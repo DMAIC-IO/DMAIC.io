@@ -12,7 +12,7 @@ export default {
         blocks: [
           {
             type: 'paragraph',
-            content: 'Die 5-Why-Methode (auch 5×Warum) ist eine einfache, aber wirkungsvolle Technik zur Wurzelursachenanalyse. Ausgehend von einem konkreten Problem wird wiederholt „Warum?" gefragt — typischerweise fünfmal — bis eine grundlegende Ursache erreicht ist, deren Beseitigung das Problem nachhaltig löst.',
+            content: 'Die {{term:five-why|5-Why-Methode}} (auch 5×Warum) ist eine einfache, aber wirkungsvolle Technik zur Wurzelursachenanalyse. Ausgehend von einem konkreten Problem wird wiederholt „Warum?" gefragt — typischerweise fünfmal — bis eine grundlegende Ursache erreicht ist, deren Beseitigung das Problem nachhaltig löst.',
           },
           {
             type: 'definition',
@@ -36,7 +36,7 @@ export default {
           },
           {
             type: 'paragraph',
-            content: '5-Why ist günstig, schnell und team-tauglich. Es eignet sich besonders für klar abgegrenzte Einzelvorfälle. Bei komplexen, mehrfaktoriellen Problemen sind Ishikawa und FMEA besser geeignet.',
+            content: '5-Why ist günstig, schnell und team-tauglich. Es eignet sich besonders für klar abgegrenzte Einzelvorfälle. Bei komplexen, mehrfaktoriellen Problemen sind {{term:ishikawa|Ishikawa}} und {{term:fmea|FMEA}} besser geeignet.',
           },
         ],
       },
@@ -45,7 +45,7 @@ export default {
         blocks: [
           {
             type: 'paragraph',
-            content: 'The 5-Why method (also "5 Whys") is a simple but powerful technique for root-cause analysis. Starting from a concrete problem, you repeatedly ask "why?" — typically five times — until you reach a fundamental cause whose removal solves the problem sustainably.',
+            content: 'The {{term:five-why|5-Why method}} (also "5 Whys") is a simple but powerful technique for root-cause analysis. Starting from a concrete problem, you repeatedly ask "why?" — typically five times — until you reach a fundamental cause whose removal solves the problem sustainably.',
           },
           {
             type: 'definition',
@@ -69,7 +69,7 @@ export default {
           },
           {
             type: 'paragraph',
-            content: '5-Why is cheap, fast, and team-friendly. It suits clearly bounded individual incidents. For complex, multi-factor problems, Ishikawa and FMEA are better tools.',
+            content: '5-Why is cheap, fast, and team-friendly. It suits clearly bounded individual incidents. For complex, multi-factor problems, Ishikawa and {{term:fmea|FMEA}} are better tools.',
           },
         ],
       },

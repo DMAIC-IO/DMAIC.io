@@ -8,7 +8,7 @@ export default {
   sections: {
     overview: {
       de: {
-        title: 'Aufbau eines Pareto-Diagramms',
+        title: 'Aufbau eines {{term:pareto|Pareto}}-Diagramms',
         blocks: [
           {
             type: 'paragraph',

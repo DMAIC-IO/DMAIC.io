@@ -1,0 +1,95 @@
+{
+  "id": "ccd",
+  "category": "doe",
+  "title": {
+    "de": "Central Composite Design (CCD)",
+    "en": "Central Composite Design (CCD)"
+  },
+  "short": {
+    "de": "{{term:response-surface|Response-Surface-Design}} aus Eckpunkten, Sternpunkten und {{term:zentralpunkt|Zentralpunkten}} — Standard für Optimierung mit Krümmung.",
+    "en": "{{term:response-surface|Response-surface design}} of corner points, star points and {{term:zentralpunkt|centre points}} — standard for optimisation with curvature."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "Das **Central Composite Design** (CCD) erweitert einen zweistufigen faktoriellen Kern um axiale „Sternpunkte“ bei ±α und mehrere {{term:zentralpunkt|Zentralpunkte}}. Es erlaubt die Schätzung eines vollen quadratischen Modells mit Haupteffekten, Zweifach-{{term:wechselwirkung|Wechselwirkungen}} und quadratischen Termen — die typische Grundlage einer {{term:response-surface|Response-Surface-Analyse}}."
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Rotatable CCD (CCC)** — Sternpunkte liegen bei $\\alpha = \\sqrt[4]{2^k}$ **außerhalb** des Vollplan-Würfels; 5 Stufen pro Faktor; rotierbar (Vorhersage-Varianz unabhängig von der Richtung)",
+          "**Face-centered CCD (CCF)** — Sternpunkte auf den Würfelflächen ($\\alpha = 1$); 3 Stufen pro Faktor; nicht rotierbar, aber verletzt keine harten Faktorgrenzen",
+          "**Aufbau:** $N = 2^k + 2k + n_c$ Läufe ($2^k$ Eckpunkte + $2k$ Sternpunkte + $n_c$ Zentralpunkte)"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "Wahl zwischen rotatable und face-centered ist die zentrale CCD-Entscheidung: **rotatable** liefert statistisch elegantere Vorhersagen, benötigt aber Faktorwerte außerhalb des ursprünglich untersuchten Bereichs; **face-centered** hält alle Faktoren innerhalb ihrer Grenzen und ist bei harten Sicherheits-/Spezifikationsgrenzen der einzig zulässige Weg."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "The **Central Composite Design** (CCD) augments a two-level factorial core with axial \"star points\" at ±α and several {{term:zentralpunkt|centre points}}. It allows the estimation of a full quadratic model with main effects, two-factor {{term:wechselwirkung|interactions}} and quadratic terms — the typical basis of a {{term:response-surface|response-surface analysis}}."
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Rotatable CCD (CCC)** — star points at $\\alpha = \\sqrt[4]{2^k}$ **outside** the factorial cube; 5 levels per factor; rotatable (prediction variance direction-independent)",
+          "**Face-centered CCD (CCF)** — star points on the cube faces ($\\alpha = 1$); 3 levels per factor; not rotatable but never violates hard factor limits",
+          "**Structure:** $N = 2^k + 2k + n_c$ runs ($2^k$ corners + $2k$ star points + $n_c$ centre points)"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "Choosing between rotatable and face-centered is the central CCD decision: **rotatable** yields statistically nicer predictions but requires factor values outside the originally studied range; **face-centered** keeps every factor inside its bounds and is the only permissible route under hard safety or specification limits."
+      }
+    ]
+  },
+  "aliases": {
+    "de": [
+      "Central Composite Design",
+      "CCC",
+      "CCF",
+      "Zentral zusammengesetzter Plan",
+      "Sternpunktdesign"
+    ],
+    "en": [
+      "central composite design",
+      "CCC",
+      "CCF",
+      "star-point design"
+    ]
+  },
+  "seeAlso": [
+    "response-surface",
+    "box-behnken",
+    "zentralpunkt",
+    "vollfaktoriell",
+    "doe"
+  ],
+  "modules": [
+    "doe-planner",
+    "doe-advisor",
+    "response-optimization"
+  ],
+  "algoLab": [
+    "doe/ccd-with-categorical",
+    "doe/doe-planner"
+  ],
+  "sources": [
+    {
+      "label": "Box, G. E. P. & Wilson, K. B. — On the Experimental Attainment of Optimum Conditions, Journal of the Royal Statistical Society B, 1951",
+      "url": null
+    },
+    {
+      "label": "Myers, Montgomery & Anderson-Cook — Response Surface Methodology, 4th Edition, Wiley",
+      "url": null
+    },
+    {
+      "label": "Montgomery, D. C. — Design and Analysis of Experiments, 10th Edition, Chapter 11",
+      "url": null
+    }
+  ]
+}

@@ -1,0 +1,100 @@
+{
+  "id": "cpk",
+  "category": "capability",
+  "title": {
+    "de": "Cpk (zentrierter Prozessfähigkeitsindex)",
+    "en": "Cpk (Centred Process Capability Index)"
+  },
+  "short": {
+    "de": "Erweitert {{term:cp|Cp}} um die Lage — bewertet die *tatsächliche* Kurzzeit-Fähigkeit unter Berücksichtigung der Dezentrierung.",
+    "en": "Extends {{term:cp|Cp}} by the location — assesses the *actual* short-term capability accounting for off-centring."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "Der **Cpk-Index** ist die Standardkennzahl der Kurzzeit-Prozessfähigkeit. Er nimmt den *kleineren* der beiden Abstände {Mittelwert zur oberen} und {Mittelwert zur unteren} Spezifikationsgrenze und normiert ihn auf 3σ."
+      },
+      {
+        "type": "formula",
+        "latex": "C_{pk} = \\min\\!\\left( \\frac{USL - \\bar{x}}{3\\sigma_{\\text{within}}},\\; \\frac{\\bar{x} - LSL}{3\\sigma_{\\text{within}}} \\right)"
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Cpk < 1** — nicht fähig",
+          "**Cpk 1,00–1,33** — knapp fähig",
+          "**Cpk 1,33–1,67** — gut",
+          "**Cpk > 1,67** — sehr gut (Automotive-Ziel)",
+          "**Cp = Cpk** ⇔ Prozess exakt zentriert"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "Ein niedriger Cpk bei hohem Cp signalisiert **Dezentrierung** — die richtige Antwort ist meist Zentrieren, nicht Streuung reduzieren. Ein niedriger Cpk *und* niedriger Cp bedeutet dagegen: die Streuung selbst ist zu groß. Beide Kennzahlen zusammen erlauben diese Diagnose."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "**Cpk** is the standard short-term capability metric. It takes the *smaller* of the two distances {mean to upper spec} and {mean to lower spec}, normalised by 3σ."
+      },
+      {
+        "type": "formula",
+        "latex": "C_{pk} = \\min\\!\\left( \\frac{USL - \\bar{x}}{3\\sigma_{\\text{within}}},\\; \\frac{\\bar{x} - LSL}{3\\sigma_{\\text{within}}} \\right)"
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Cpk < 1** — not capable",
+          "**Cpk 1.00–1.33** — marginal",
+          "**Cpk 1.33–1.67** — good",
+          "**Cpk > 1.67** — very good (Automotive target)",
+          "**Cp = Cpk** ⇔ process exactly centred"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "A low Cpk with a high Cp signals **off-centring** — the right response is usually to recentre, not reduce variation. A low Cpk *and* low Cp means the variation itself is too big. Together the two indices enable this diagnosis."
+      }
+    ]
+  },
+  "aliases": {
+    "de": [
+      "Cpk-Wert",
+      "zentrierte Prozessfähigkeit"
+    ],
+    "en": [
+      "Cpk value",
+      "centred capability"
+    ]
+  },
+  "seeAlso": [
+    "cp",
+    "pp",
+    "ppk",
+    "prozessfaehigkeit",
+    "spezifikationsgrenzen"
+  ],
+  "modules": [
+    "process-capability"
+  ],
+  "algoLab": [
+    "capability/cpk",
+    "capability/cp"
+  ],
+  "sources": [
+    {
+      "label": "Montgomery, D. C. — Introduction to Statistical Quality Control, 8th Edition, Chapter 8",
+      "url": null
+    },
+    {
+      "label": "AIAG — Statistical Process Control (SPC) Reference Manual, 2nd Edition",
+      "url": null
+    },
+    {
+      "label": "Kane, V. E. — Process Capability Indices, Journal of Quality Technology, 18(1), 1986",
+      "url": null
+    }
+  ]
+}

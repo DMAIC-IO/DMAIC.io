@@ -1,0 +1,91 @@
+{
+  "id": "sonderursache",
+  "category": "spc",
+  "title": {
+    "de": "Sonderursache (Special Cause)",
+    "en": "Special Cause"
+  },
+  "short": {
+    "de": "Ein systematischer Einfluss außerhalb der normalen {{term:zufallsursache|Prozessstreuung}} — auslösend für Regelverletzungen einer {{term:regelkarte|Regelkarte}}.",
+    "en": "A systematic influence beyond the process's normal {{term:zufallsursache|common-cause variation}} — the trigger of a rule violation on a {{term:regelkarte|control chart}}."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "Eine **Sonderursache** (Special Cause, Assignable Cause) ist ein identifizierbares Ereignis, das ein Signal in der {{term:regelkarte|Regelkarte}} erzeugt: Punkt außerhalb der Grenzen oder ein Muster nach {{term:nelson-regeln|Nelson-/Western-Electric-Regeln}}."
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Typische Beispiele:** Werkzeugbruch, neue Bedienermannschaft, Materialwechsel, defekter Sensor, veränderte Umgebungsbedingung",
+          "**Unterscheidungsmerkmal:** einer konkreten Quelle zuordenbar (deshalb auch „assignable cause“)",
+          "**Reaktion:** Ursache identifizieren, dokumentieren, beseitigen — nicht ignorieren, nicht Grenzen anpassen"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "Sonderursachen sind das Gegenstück zu {{term:zufallsursache|Zufallsursachen}}. **Prozess-Verbesserung** heißt: Sonderursachen aus dem System nehmen, bis nur noch Zufallsstreuung übrig ist — erst dann liefert eine {{term:prozessfaehigkeit|Fähigkeitsanalyse}} sinnvolle Ergebnisse. Deming: Sonderursachen kann der Operator beheben, Zufallsursachen nur das Management (durch Systemänderung)."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "A **special cause** (assignable cause) is an identifiable event that produces a signal on the {{term:regelkarte|control chart}}: a point outside the limits or a pattern per {{term:nelson-regeln|Nelson / Western Electric rules}}."
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Typical examples:** tool break, new operator crew, material change, faulty sensor, changed ambient conditions",
+          "**Defining feature:** attributable to a concrete source (hence \"assignable cause\")",
+          "**Response:** identify, document, and remove the cause — do not ignore, do not adjust the limits"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "Special causes are the counterpart to {{term:zufallsursache|common causes}}. **Process improvement** means removing special causes from the system until only common-cause variation remains — only then does a {{term:prozessfaehigkeit|capability analysis}} yield meaningful results. Deming: operators can fix special causes, common causes only management (by system change)."
+      }
+    ]
+  },
+  "aliases": {
+    "de": [
+      "Special Cause",
+      "Assignable Cause",
+      "spezielle Ursache",
+      "Zuordenbare Ursache"
+    ],
+    "en": [
+      "special cause",
+      "assignable cause"
+    ]
+  },
+  "seeAlso": [
+    "zufallsursache",
+    "regelkarte",
+    "nelson-regeln",
+    "regelgrenze"
+  ],
+  "modules": [
+    "control-chart",
+    "attribute-control-chart",
+    "run-chart",
+    "time-weighted-chart"
+  ],
+  "algoLab": [
+    "control-charts/control-chart"
+  ],
+  "sources": [
+    {
+      "label": "Shewhart, W. A. — Economic Control of Quality of Manufactured Product, 1931",
+      "url": null
+    },
+    {
+      "label": "Deming, W. E. — Out of the Crisis, MIT Press, 1986",
+      "url": null
+    },
+    {
+      "label": "Wheeler, D. J. — Understanding Variation: The Key to Managing Chaos, 2nd Edition, SPC Press",
+      "url": null
+    }
+  ]
+}

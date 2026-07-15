@@ -1,7 +1,7 @@
 {
   "id": "cpk",
   "name": {
-    "de": "Prozessfähigkeitsindex Cpk",
+    "de": "Prozessfähigkeitsindex {{term:cpk|Cpk}}",
     "en": "Process Capability Index Cpk"
   },
   "category": "capability",

@@ -1,0 +1,90 @@
+{
+  "id": "zielgroesse",
+  "category": "doe",
+  "title": {
+    "de": "Zielgröße (Response)",
+    "en": "Response"
+  },
+  "short": {
+    "de": "Die im Versuch gemessene Ausgangsgröße — z. B. Ausbeute, Festigkeit, Zykluszeit. Was optimiert oder verstanden werden soll.",
+    "en": "The output measured in the experiment — e.g. yield, strength, cycle time. What is to be optimised or understood."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "Die **Zielgröße** (englisch Response) ist die abhängige Variable eines Versuchs: die Größe, deren Verhalten durch die {{term:faktor|Faktoren}} erklärt werden soll. Aus ihr ergibt sich das Modell $y = f(x_1, x_2, \\ldots)$."
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Skalar-Zielgröße** — ein Messwert pro Versuch (Ausbeute in %, Festigkeit in MPa)",
+          "**Mehrfach-Zielgrößen** — mehrere Größen gleichzeitig optimieren (z. B. Ausbeute UND Reinheit); Auswertung via Desirability oder Optimierungs-Verfahren",
+          "**Dual Response** — {{term:mittelwert|Mittelwert}} UND Streuung gemeinsam modellieren (Streuungs-DoE)"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "Die Zielgröße muss eindeutig operationalisiert sein: was genau gemessen wird, mit welchem Messmittel, in welcher Einheit. Vage Zielgrößen („Qualität“) führen zu vagen Ergebnissen. Für nicht direkt messbare Zielgrößen wird oft ein Ersatz-Messwert (Proxy) definiert."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "The **response** is the dependent variable of an experiment: the quantity whose behaviour is to be explained by the {{term:faktor|factors}}. It provides the model $y = f(x_1, x_2, \\ldots)$."
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Scalar response** — one measurement per run (yield in %, strength in MPa)",
+          "**Multiple responses** — several quantities optimised jointly (e.g. yield AND purity); analysed via desirability or multi-objective optimisation",
+          "**Dual response** — modelling {{term:mittelwert|mean}} AND spread together (dispersion DoE)"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "The response must be unambiguously operationalised: what exactly is measured, with which gauge, in which unit. Vague responses (\"quality\") produce vague results. When the true target cannot be measured directly, a proxy measurement is often defined."
+      }
+    ]
+  },
+  "aliases": {
+    "de": [
+      "Response",
+      "Zielvariable",
+      "Antwortgröße",
+      "abhängige Variable"
+    ],
+    "en": [
+      "response variable",
+      "output",
+      "dependent variable"
+    ]
+  },
+  "seeAlso": [
+    "faktor",
+    "doe",
+    "haupteffekt",
+    "wechselwirkung"
+  ],
+  "modules": [
+    "doe-planner",
+    "doe-advisor",
+    "regression",
+    "glm-regression",
+    "response-optimization"
+  ],
+  "algoLab": [
+    "doe/doe-planner",
+    "regression/regression-coefficients"
+  ],
+  "sources": [
+    {
+      "label": "Montgomery, D. C. — Design and Analysis of Experiments, 10th Edition",
+      "url": null
+    },
+    {
+      "label": "Myers, Montgomery & Anderson-Cook — Response Surface Methodology, 4th Edition, Wiley",
+      "url": null
+    }
+  ]
+}

@@ -1,0 +1,88 @@
+{
+  "id": "run-chart",
+  "category": "spc",
+  "title": {
+    "de": "Run Chart",
+    "en": "Run Chart"
+  },
+  "short": {
+    "de": "Zeitreihen-Diagramm mit {{term:median|Median}}-Linie und Lauftests — die Voranalyse zur {{term:regelkarte|Regelkarte}}, ohne Streuungsannahme.",
+    "en": "Time-series chart with {{term:median|median}} line and runs tests — the pre-analysis for a {{term:regelkarte|control chart}}, without any spread assumption."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "Ein **Run Chart** zeigt eine Datenreihe in zeitlicher Reihenfolge mit einer {{term:median|Median}}-Linie, aber ohne {{term:regelgrenze|Regelgrenzen}}. Statt der ±3σ-Grenzen prüfen vier formale **Lauftests** die Zufälligkeit der Reihenfolge:"
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Clustering** — zu wenige Runs um den Median (Punkte klumpen einseitig; Hinweis auf Niveauverschiebung)",
+          "**Mischungen (Mixtures)** — zu viele Runs um den Median (Punkte wechseln zu oft die Seite; Hinweis auf zwei überlagerte Quellen)",
+          "**Trends** — zu wenige Auf-/Abwärts-Läufe (lange monotone Strecken; Drift, Verschleiß)",
+          "**Oszillation** — zu viele Auf-/Abwärts-Läufe (Zickzack; Übersteuerung im Regler)"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "Run Charts werden in der **Measure-Phase** eingesetzt, um vor Aufbau einer {{term:regelkarte|Regelkarte}} einen ersten Eindruck zu bekommen — sie brauchen keine Normalverteilungsannahme, weil der {{term:median|Median}} verteilungsfrei ist. Sie ersetzen aber keine Regelkarte für dauerhafte Überwachung: ohne UCL/LCL kein „außerhalb-Grenzen“-Test."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "A **run chart** plots a data series in time order with a {{term:median|median}} line but no {{term:regelgrenze|control limits}}. Instead of ±3σ, four formal **runs tests** check the randomness of the order:"
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Clustering** — too few runs about the median (points bunch on one side; level shift)",
+          "**Mixtures** — too many runs about the median (points cross too often; two overlaid sources)",
+          "**Trends** — too few up/down runs (long monotone streaks; drift, wear)",
+          "**Oscillation** — too many up/down runs (zig-zag; controller over-correction)"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "Run charts belong to the **Measure phase** — a first look before setting up a {{term:regelkarte|control chart}}. They need no normality assumption because the {{term:median|median}} is distribution-free. They do not replace control charts for ongoing monitoring: no UCL/LCL means no \"out-of-limit\" test."
+      }
+    ]
+  },
+  "aliases": {
+    "de": [
+      "Lauftest",
+      "Run-Diagramm",
+      "Median-Chart"
+    ],
+    "en": [
+      "run chart",
+      "runs chart"
+    ]
+  },
+  "seeAlso": [
+    "regelkarte",
+    "median",
+    "sonderursache"
+  ],
+  "modules": [
+    "run-chart"
+  ],
+  "algoLab": [
+    "control-charts/run-chart"
+  ],
+  "sources": [
+    {
+      "label": "Provost, L. P. & Murray, S. K. — The Health Care Data Guide: Learning from Data for Improvement, Jossey-Bass, 2011",
+      "url": null
+    },
+    {
+      "label": "Anhøj, J. & Olesen, A. V. — Run Charts Revisited: A Simulation Study of Run Chart Rules for Detection of Non-Random Variation in Health Care Processes, PLoS ONE, 9(11), 2014",
+      "url": null
+    },
+    {
+      "label": "Montgomery, D. C. — Introduction to Statistical Quality Control, 8th Edition",
+      "url": null
+    }
+  ]
+}

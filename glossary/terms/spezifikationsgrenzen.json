@@ -1,0 +1,94 @@
+{
+  "id": "spezifikationsgrenzen",
+  "category": "capability",
+  "title": {
+    "de": "Spezifikationsgrenzen (USL, LSL)",
+    "en": "Specification Limits (USL, LSL)"
+  },
+  "short": {
+    "de": "Vom Kunden oder Konstrukteur festgelegte Toleranzgrenzen — die Bezugsbasis jeder {{term:prozessfaehigkeit|Prozessfähigkeit}}.",
+    "en": "Tolerance limits set by the customer or designer — the reference base of any {{term:prozessfaehigkeit|process capability}} measure."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "Die **Spezifikationsgrenzen** definieren, ab wann ein Merkmal noch akzeptabel oder bereits fehlerhaft ist. Sie unterscheiden sich grundlegend von den **Regelgrenzen** einer Regelkarte:"
+      },
+      {
+        "type": "list",
+        "items": [
+          "**USL** (Upper Specification Limit) — obere Toleranz, aus Anforderung/Zeichnung",
+          "**LSL** (Lower Specification Limit) — untere Toleranz",
+          "**Nominal / Sollwert** — optimaler Wert innerhalb der Toleranz",
+          "**Toleranzbreite** T = USL − LSL",
+          "**Einseitig spezifiziert** — nur USL *oder* LSL vorgegeben (z. B. „Festigkeit ≥ 500 MPa“)"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "**Verwechslungsfalle:** Spezifikationsgrenzen kommen von *außen* (Kunde, Funktion, Norm) und sagen, was **akzeptabel** ist. Regelgrenzen kommen von *innen* (Prozessdaten) und sagen, was **üblich** ist. Beide dürfen niemals gegeneinander getauscht werden — sonst produziert man Ausschuss innerhalb der Regelgrenzen oder wirft stabile Prozesse aus dem Fenster."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "**Specification limits** define when a characteristic is still acceptable or already defective. They differ fundamentally from a control chart's **control limits**:"
+      },
+      {
+        "type": "list",
+        "items": [
+          "**USL** (Upper Specification Limit) — upper tolerance, from requirement/drawing",
+          "**LSL** (Lower Specification Limit) — lower tolerance",
+          "**Nominal / target** — optimum value inside the tolerance",
+          "**Tolerance width** T = USL − LSL",
+          "**One-sided spec** — only USL *or* LSL is set (e.g. \"strength ≥ 500 MPa\")"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "**Common confusion:** specification limits come from *outside* (customer, function, standard) and say what is **acceptable**. Control limits come from *inside* (process data) and say what is **usual**. The two must never be swapped — you would produce scrap inside the control limits or reject stable processes."
+      }
+    ]
+  },
+  "aliases": {
+    "de": [
+      "USL",
+      "LSL",
+      "Toleranzgrenzen",
+      "Toleranzbreite"
+    ],
+    "en": [
+      "specification limits",
+      "USL",
+      "LSL",
+      "tolerance"
+    ]
+  },
+  "seeAlso": [
+    "cp",
+    "cpk",
+    "pp",
+    "ppk",
+    "prozessfaehigkeit"
+  ],
+  "modules": [
+    "process-capability",
+    "msa-typ1"
+  ],
+  "algoLab": [
+    "capability/cp",
+    "capability/cpk",
+    "capability/ppk"
+  ],
+  "sources": [
+    {
+      "label": "AIAG — Statistical Process Control (SPC) Reference Manual, 2nd Edition",
+      "url": null
+    },
+    {
+      "label": "Montgomery, D. C. — Introduction to Statistical Quality Control, 8th Edition",
+      "url": null
+    }
+  ]
+}

@@ -1,0 +1,69 @@
+{
+  "id": "negbin-regression",
+  "category": "regression",
+  "title": {
+    "de": "Negativ-Binomial-Regression",
+    "en": "Negative Binomial Regression"
+  },
+  "short": {
+    "de": "{{term:glm|GLM}} für Zähldaten mit {{term:ueberdispersion|Überdispersion}} — wie {{term:poisson-regression|Poisson}}, aber mit zusätzlichem Dispersionsparameter $\\theta$.",
+    "en": "{{term:glm|GLM}} for count data with {{term:ueberdispersion|overdispersion}} — like {{term:poisson-regression|Poisson}} but with an extra dispersion parameter $\\theta$."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "Die **Negativ-Binomial-Regression** modelliert Zähldaten, deren Varianz die Poisson-Annahme sprengt: $\\text{Var}(Y) > \\mathbb{E}[Y]$. Sie fügt einen **Dispersionsparameter** $\\theta$ hinzu, der die Extra-Streuung auffängt."
+      },
+      {
+        "type": "formula",
+        "latex": "\\text{Var}(Y) = \\mu + \\frac{\\mu^2}{\\theta}"
+      },
+      {
+        "type": "list",
+        "items": [
+          "**$\\theta \\to \\infty$** — die NegBin geht in die {{term:poisson-regression|Poisson-Regression}} über (keine Extra-Dispersion)",
+          "**$\\theta$ klein** — starke Überdispersion",
+          "**Log-Link** wie bei Poisson: Koeffizienten sind wieder als {{term:rate-ratio|Rate Ratios}} interpretierbar"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "Wann verwenden? Wenn der Overdispersion-Check der Poisson-Regression $\\text{Pearson-}\\chi^2/df > 1{,}5$ zeigt, ist NegBin die saubere Antwort (im Vergleich zu Quasi-Poisson, das nur die Standardfehler skaliert). Bei nahezu Poisson-verteilten Daten kann $\\theta$ divergieren — dann besser auf Poisson zurückfallen."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "**Negative binomial regression** models count data whose variance breaks the Poisson assumption: $\\text{Var}(Y) > \\mathbb{E}[Y]$. It adds a **dispersion parameter** $\\theta$ that absorbs the extra variability."
+      },
+      {
+        "type": "formula",
+        "latex": "\\text{Var}(Y) = \\mu + \\frac{\\mu^2}{\\theta}"
+      },
+      {
+        "type": "list",
+        "items": [
+          "**$\\theta \\to \\infty$** — NegBin collapses to {{term:poisson-regression|Poisson regression}} (no extra dispersion)",
+          "**Small $\\theta$** — strong overdispersion",
+          "**Log link** as in Poisson: coefficients are read as {{term:rate-ratio|rate ratios}}"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "When to use? Whenever the Poisson overdispersion check shows $\\text{Pearson-}\\chi^2/df > 1.5$, NegBin is the clean answer (compared to quasi-Poisson, which only rescales standard errors). For nearly Poisson data $\\theta$ can diverge — fall back to Poisson then."
+      }
+    ]
+  },
+  "aliases": {
+    "de": ["NegBin-Regression", "NB-Regression", "Negativ-Binomial-GLM"],
+    "en": ["NegBin regression", "NB regression", "negative binomial GLM"]
+  },
+  "seeAlso": ["poisson-regression", "ueberdispersion", "glm", "rate-ratio"],
+  "modules": ["glm-regression"],
+  "algoLab": ["regression/negbin-regression", "regression/overdispersion-check"],
+  "sources": [
+    { "label": "Hilbe, J. M. — Negative Binomial Regression, 2nd Edition, Cambridge University Press", "url": null },
+    { "label": "Cameron, A. C. & Trivedi, P. K. — Regression Analysis of Count Data, 2nd Edition", "url": null }
+  ]
+}

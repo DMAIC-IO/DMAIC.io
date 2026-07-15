@@ -1,7 +1,7 @@
 {
   "id": "logistic-regression",
   "name": {
-    "de": "Logistische Regression (Binomial GLM)",
+    "de": "{{term:logistische-regression|Logistische Regression}} (Binomial GLM)",
     "en": "Logistic Regression (Binomial GLM)"
   },
   "category": "regression",

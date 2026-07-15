@@ -1,0 +1,69 @@
+{
+  "id": "poisson-regression",
+  "category": "regression",
+  "title": {
+    "de": "Poisson-Regression",
+    "en": "Poisson Regression"
+  },
+  "short": {
+    "de": "{{term:glm|GLM}} für Zähldaten (0, 1, 2, …) — modelliert den Erwartungswert per Log-Link, Voraussetzung {{term:varianz|Varianz}} ≈ {{term:mittelwert|Mittelwert}}.",
+    "en": "{{term:glm|GLM}} for count data (0, 1, 2, …) — models the expected value via log link, assuming {{term:varianz|variance}} ≈ {{term:mittelwert|mean}}."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "Die **Poisson-Regression** ist das GLM für Zähldaten wie „Defekte pro Charge“, „Reklamationen pro Woche“ oder „Ausfälle pro Bauteil“. Sie verwendet den **Log-Link**, damit die vorhergesagte Rate immer positiv bleibt."
+      },
+      {
+        "type": "formula",
+        "latex": "\\ln \\mathbb{E}[Y \\mid X] = \\beta_0 + \\beta_1 X_1 + \\ldots + \\beta_p X_p"
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Koeffizienten** werden als {{term:rate-ratio|Rate Ratios}} interpretiert: $\\exp(\\beta_j)$ = Faktor, um den die erwartete Anzahl bei $+1$ in $X_j$ steigt",
+          "**Voraussetzung:** $\\text{Var}(Y) = \\mathbb{E}[Y]$ — die Kernbedingung der Poisson-Verteilung",
+          "**Offset** — bei unterschiedlicher Beobachtungsdauer/Größe: $\\ln \\text{Exposure}$ als fester Offset im Modell (z. B. „Defekte pro 1000 Teile“)"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "In der Praxis ist die Poisson-Annahme selten exakt erfüllt — meist liegt {{term:ueberdispersion|Überdispersion}} vor ($\\text{Var}(Y) > \\mathbb{E}[Y]$). Dann sind Poisson-Standardfehler zu klein und p-Werte zu optimistisch. Abhilfe: Quasi-Poisson (nur Skalierung der Standardfehler) oder {{term:negbin-regression|Negativ-Binomial-Regression}} (eigene Verteilung)."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "**Poisson regression** is the GLM for count data such as \"defects per batch\", \"complaints per week\", or \"failures per unit\". It uses the **log link** so that the predicted rate always stays positive."
+      },
+      {
+        "type": "formula",
+        "latex": "\\ln \\mathbb{E}[Y \\mid X] = \\beta_0 + \\beta_1 X_1 + \\ldots + \\beta_p X_p"
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Coefficients** are read as {{term:rate-ratio|rate ratios}}: $\\exp(\\beta_j)$ = factor by which the expected count changes for $+1$ in $X_j$",
+          "**Assumption:** $\\text{Var}(Y) = \\mathbb{E}[Y]$ — the core condition of the Poisson distribution",
+          "**Offset** — for unequal observation duration/size: $\\ln \\text{Exposure}$ as a fixed offset in the model (e.g. \"defects per 1000 parts\")"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "In practice the Poisson assumption is rarely exactly met — {{term:ueberdispersion|overdispersion}} usually shows up ($\\text{Var}(Y) > \\mathbb{E}[Y]$). Poisson standard errors are then too small and p-values too optimistic. Fixes: quasi-Poisson (only scales the standard errors) or {{term:negbin-regression|negative binomial regression}} (a distribution of its own)."
+      }
+    ]
+  },
+  "aliases": {
+    "de": ["Poisson-GLM", "Poisson-Modell"],
+    "en": ["Poisson GLM", "Poisson model"]
+  },
+  "seeAlso": ["glm", "negbin-regression", "ueberdispersion", "rate-ratio", "regression"],
+  "modules": ["glm-regression"],
+  "algoLab": ["regression/poisson-regression", "regression/overdispersion-check"],
+  "sources": [
+    { "label": "Cameron, A. C. & Trivedi, P. K. — Regression Analysis of Count Data, 2nd Edition, Cambridge University Press", "url": null },
+    { "label": "Hilbe, J. M. — Modeling Count Data, Cambridge University Press", "url": null }
+  ]
+}

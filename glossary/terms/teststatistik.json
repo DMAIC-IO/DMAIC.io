@@ -1,0 +1,87 @@
+{
+  "id": "teststatistik",
+  "category": "hypothesis",
+  "title": {
+    "de": "Teststatistik",
+    "en": "Test Statistic"
+  },
+  "short": {
+    "de": "Aus den Daten berechnete Kennzahl (z. B. t, z, F, χ²), aus der der {{term:p-wert|p-Wert}} des {{term:hypothesentest|Tests}} abgeleitet wird.",
+    "en": "A quantity computed from the data (e.g. t, z, F, χ²) from which the {{term:p-wert|p-value}} of the {{term:hypothesentest|test}} is derived."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "Eine **Teststatistik** ist die Brücke zwischen Daten und Entscheidung: sie fasst die Beobachtungen in einer einzigen Zahl zusammen, deren Verteilung unter H₀ bekannt ist. Aus dieser Verteilung wird der {{term:p-wert|p-Wert}} als Wahrscheinlichkeit ermittelt, mindestens diesen Wert unter H₀ zu sehen."
+      },
+      {
+        "type": "list",
+        "items": [
+          "**t-Statistik** — Ein-/Zwei-Stichproben-{{term:t-test|t-Test}}: $t = (\\bar{x} - \\mu_0) / (s/\\sqrt{n})$",
+          "**z-Statistik** — bei bekannter Streuung σ oder großem n",
+          "**F-Statistik** — {{term:anova|ANOVA}} und Varianzvergleiche: Verhältnis zweier Varianzschätzer",
+          "**χ²-Statistik** — Verteilungsvergleiche, Häufigkeitstabellen, Varianz-Tests"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "Die Teststatistik ist skalen- und modelltypisch. Ihre **Referenzverteilung** (t-Verteilung mit df Freiheitsgraden, F(df₁, df₂), χ²(df)) hängt von der Stichprobengröße und der Testkonfiguration ab. Ein „t = 3,2“ ist erst mit Kontext (df) interpretierbar."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "A **test statistic** is the bridge between data and decision: it condenses the observations into a single number whose distribution under H₀ is known. From this distribution the {{term:p-wert|p-value}} is obtained as the probability of seeing at least this value under H₀."
+      },
+      {
+        "type": "list",
+        "items": [
+          "**t statistic** — one-/two-sample {{term:t-test|t-test}}: $t = (\\bar{x} - \\mu_0) / (s/\\sqrt{n})$",
+          "**z statistic** — with known σ or large n",
+          "**F statistic** — {{term:anova|ANOVA}} and variance comparisons: ratio of two variance estimators",
+          "**χ² statistic** — distribution comparisons, frequency tables, variance tests"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "The test statistic is scale- and model-specific. Its **reference distribution** (t-distribution with df degrees of freedom, F(df₁, df₂), χ²(df)) depends on sample size and test configuration. A \"t = 3.2\" is only interpretable with context (df)."
+      }
+    ]
+  },
+  "aliases": {
+    "de": [
+      "Prüfgröße",
+      "Teststatistik"
+    ],
+    "en": [
+      "test statistic",
+      "test quantity"
+    ]
+  },
+  "seeAlso": [
+    "p-wert",
+    "hypothesentest",
+    "t-test",
+    "anova"
+  ],
+  "modules": [
+    "hypothesis-test"
+  ],
+  "algoLab": [
+    "hypothesis/one-sample-t-test",
+    "hypothesis/two-sample-t-test",
+    "hypothesis/f-test",
+    "hypothesis/chi-square-variance"
+  ],
+  "sources": [
+    {
+      "label": "Fisher, R. A. — Statistical Methods for Research Workers, 1925",
+      "url": null
+    },
+    {
+      "label": "Neyman, J. & Pearson, E. S. — On the Problem of the Most Efficient Tests, 1933",
+      "url": null
+    }
+  ]
+}

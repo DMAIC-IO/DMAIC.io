@@ -1,0 +1,87 @@
+{
+  "id": "cgk",
+  "category": "msa",
+  "title": {
+    "de": "Cgk (Wiederholbarkeits- und Bias-Index)",
+    "en": "Cgk (Repeatability and Bias Index)"
+  },
+  "short": {
+    "de": "MSA-Typ-1-Kennzahl, die {{term:wiederholbarkeit|Wiederholbarkeit}} und {{term:bias|Bias}} in einer Zahl kombiniert.",
+    "en": "MSA Type 1 metric combining {{term:wiederholbarkeit|repeatability}} and {{term:bias|bias}} in a single figure."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "Der **Cgk-Index** erweitert {{term:cg|Cg}} um die systematische Abweichung des Messmittels vom Referenzwert. Damit prüft er in einer Kennzahl sowohl die {{term:praezision|Präzision}} als auch die {{term:richtigkeit|Richtigkeit}}."
+      },
+      {
+        "type": "formula",
+        "latex": "C_{gk} = \\frac{\\tfrac{k_1 \\cdot T}{2} - |\\bar{x} - x_{\\text{ref}}|}{k_2 \\cdot s_g}"
+      },
+      {
+        "type": "paragraph",
+        "text": "Der halbe zugelassene Toleranzanteil wird um den Betrag des Bias reduziert und durch die gewichtete Streuung geteilt. Es gilt stets $C_{gk} \\leq C_g$ — die Differenz zeigt, wie viel Kapazität der Bias „verbraucht“."
+      },
+      {
+        "type": "note",
+        "text": "Akzeptanz üblich Cgk ≥ 1,33. Typisches Muster: Cg hoch, Cgk niedrig → präzise, aber verschoben — Kalibrierproblem. Cgk kann negativ werden, wenn der Bias die halbe zugelassene Toleranz übersteigt."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "The **Cgk index** extends {{term:cg|Cg}} to include the instrument's systematic deviation from the reference value. It thus covers both {{term:praezision|precision}} and {{term:richtigkeit|trueness}} in a single number."
+      },
+      {
+        "type": "formula",
+        "latex": "C_{gk} = \\frac{\\tfrac{k_1 \\cdot T}{2} - |\\bar{x} - x_{\\text{ref}}|}{k_2 \\cdot s_g}"
+      },
+      {
+        "type": "paragraph",
+        "text": "Half the allowed tolerance fraction is reduced by the absolute bias and divided by the weighted spread. It always holds $C_{gk} \\leq C_g$ — the gap shows how much capacity the bias \"consumes\"."
+      },
+      {
+        "type": "note",
+        "text": "Accepted when Cgk ≥ 1.33. Typical pattern: high Cg, low Cgk → precise but shifted — calibration issue. Cgk can turn negative when bias exceeds half the allowed tolerance fraction."
+      }
+    ]
+  },
+  "aliases": {
+    "de": [
+      "Wiederholbarkeits- und Bias-Index",
+      "Cgk-Wert"
+    ],
+    "en": [
+      "repeatability and bias index",
+      "Cgk value"
+    ]
+  },
+  "seeAlso": [
+    "cg",
+    "bias",
+    "richtigkeit",
+    "wiederholbarkeit"
+  ],
+  "modules": [
+    "msa-typ1"
+  ],
+  "algoLab": [
+    "msa/cgk",
+    "msa/cg"
+  ],
+  "sources": [
+    {
+      "label": "VDA Band 5 — Prüfprozesseignung, 3. Auflage",
+      "url": null
+    },
+    {
+      "label": "AIAG — Measurement Systems Analysis Reference Manual, 4th Edition (MSA-4)",
+      "url": null
+    },
+    {
+      "label": "Dietrich, E. & Schulze, A. — Statistische Verfahren zur Maschinen- und Prozessqualifikation, 7. Auflage, Hanser",
+      "url": null
+    }
+  ]
+}

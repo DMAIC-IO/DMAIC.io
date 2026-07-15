@@ -12,11 +12,11 @@ export default {
         blocks: [
           {
             type: 'paragraph',
-            content: 'Attributive Regelkarten überwachen Prozesse mit gezählten statt gemessenen Daten — Anzahl fehlerhafter Einheiten, Anzahl Fehler pro Einheit. Sie sind das Pendant zu Shewhart-Karten (I-MR, X̄-R) für Variablendaten und unterscheiden zufällige Streuung von systematischen Sonderursachen.',
+            content: 'Attributive {{term:regelkarte|Regelkarten}} überwachen Prozesse mit gezählten statt gemessenen Daten — Anzahl fehlerhafter Einheiten, Anzahl Fehler pro Einheit. Sie sind das Pendant zu Shewhart-Karten (I-MR, X̄-R) für Variablendaten und unterscheiden zufällige Streuung von systematischen {{term:sonderursache|Sonderursachen}}.',
           },
           {
             type: 'definition',
-            term: 'p-Karte (Anteil fehlerhaft)',
+            term: 'p-Karte (Anteil fehlerhaft) — siehe {{term:p-chart|p-Karte}}',
             content: 'Anteil defekter Einheiten pro Stichprobe. Stichprobengröße darf variieren. Grundlage: Binomialverteilung. Beispiel: Tagesproduktion 1.000–2.000 Stück, Anzahl Ausschuss pro Tag.',
           },
           {
@@ -26,7 +26,7 @@ export default {
           },
           {
             type: 'definition',
-            term: 'c-Karte (Fehler pro Einheit, konstante Gelegenheit)',
+            term: 'c-Karte (Fehler pro Einheit, konstante Gelegenheit) — siehe {{term:c-chart|c-Karte}}',
             content: 'Anzahl der Fehler pro Inspektionseinheit, wobei die „Inspektionsgelegenheit" (Fläche, Länge, Volumen, Zeit) konstant ist. Grundlage: Poisson-Verteilung. Beispiel: Lackfehler pro Karosserie.',
           },
           {
@@ -45,11 +45,11 @@ export default {
         blocks: [
           {
             type: 'paragraph',
-            content: 'Attribute control charts monitor processes with counted (not measured) data — number of defective units, number of defects per unit. They are the counterpart to Shewhart charts (I-MR, X̄-R) for variables data, separating random variation from systematic special causes.',
+            content: 'Attribute {{term:regelkarte|control charts}} monitor processes with counted (not measured) data — number of defective units, number of defects per unit. They are the counterpart to Shewhart charts (I-MR, X̄-R) for variables data, separating random variation from systematic {{term:sonderursache|special causes}}.',
           },
           {
             type: 'definition',
-            term: 'p chart (fraction defective)',
+            term: 'p chart (fraction defective) — see {{term:p-chart|p chart}}',
             content: 'Proportion of defective units per sample. Sample size may vary. Basis: binomial distribution. Example: daily production 1,000–2,000 pieces, number of rejects per day.',
           },
           {
@@ -59,7 +59,7 @@ export default {
           },
           {
             type: 'definition',
-            term: 'c chart (defects per unit, constant area)',
+            term: 'c chart (defects per unit, constant area) — see {{term:c-chart|c chart}}',
             content: 'Number of defects per inspection unit when the inspection opportunity (area, length, volume, time) is constant. Basis: Poisson distribution. Example: paint defects per car body.',
           },
           {
@@ -190,7 +190,7 @@ export default {
           },
           {
             type: 'definition',
-            term: 'Spezifikation und Eingriffsgrenze verwechseln',
+            term: 'Spezifikation und Eingriffsgrenze verwechseln — {{term:spezifikationsgrenzen|USL/LSL}} vs. {{term:regelgrenze|UCL/LCL}}',
             content: 'Auch bei attributiven Karten gilt: UCL/LCL kommen aus den Daten, nicht aus einer Spezifikation. Eine Forderung „weniger als 2% Ausschuss" ist eine Spezifikation, keine Regelgrenze.',
           },
         ],
@@ -211,7 +211,7 @@ export default {
           {
             type: 'definition',
             term: 'Constant limits on variable n',
-            content: 'For p and u charts with varying sample size, limits must be computed per point. A blanket {{term:mittelwert|mean}} limit underestimates risk for small n and overestimates it for large n.',
+            content: 'For p and u charts with varying sample size, limits must be computed per point. A blanket mean limit underestimates risk for small n and overestimates it for large n.',
           },
           {
             type: 'definition',
@@ -225,7 +225,7 @@ export default {
           },
           {
             type: 'definition',
-            term: 'Specification vs. control limits',
+            term: 'Specification vs. control limits — {{term:spezifikationsgrenzen|USL/LSL}} vs. {{term:regelgrenze|UCL/LCL}}',
             content: 'On attribute charts too: UCL/LCL come from the data, not from a specification. "Less than 2% reject" is a spec, not a control limit.',
           },
         ],

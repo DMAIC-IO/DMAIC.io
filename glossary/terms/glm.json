@@ -1,0 +1,88 @@
+{
+  "id": "glm",
+  "category": "regression",
+  "title": {
+    "de": "GLM (Generalized Linear Model)",
+    "en": "GLM (Generalized Linear Model)"
+  },
+  "short": {
+    "de": "Familie von {{term:regression|Regressionsmodellen}} für nicht-normalverteilte Antworten (binär, Zähldaten, Anteile) — Link-Funktion + Verteilung aus der Exponentialfamilie.",
+    "en": "Family of {{term:regression|regression models}} for non-normal responses (binary, counts, proportions) — link function plus exponential-family distribution."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "**Generalized Linear Models** (Nelder & Wedderburn, 1972) erweitern die klassische {{term:lineare-regression|lineare Regression}} auf Antworten, die nicht stetig und normalverteilt sind. Sie bestehen aus drei Bausteinen:"
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Zufallskomponente** — Verteilung von Y aus der Exponentialfamilie (Normal, Binomial, Poisson, Gamma, …)",
+          "**Systematische Komponente** — linearer Prädiktor $\\eta = \\beta_0 + \\sum \\beta_j X_j$",
+          "**Link-Funktion** — verbindet Erwartungswert mit linearem Prädiktor: $g(\\mu) = \\eta$"
+        ]
+      },
+      {
+        "type": "formula",
+        "latex": "g(\\mathbb{E}[Y \\mid X]) = \\beta_0 + \\beta_1 X_1 + \\ldots + \\beta_p X_p"
+      },
+      {
+        "type": "list",
+        "items": [
+          "{{term:logistische-regression|Logistische Regression}} — Binomial + Logit-Link",
+          "{{term:poisson-regression|Poisson-Regression}} — Poisson + Log-Link",
+          "{{term:negbin-regression|Negativ-Binomial-Regression}} — NegBin + Log-Link",
+          "Gamma-Regression — Gamma + Log-Link (positive, schiefe Y)"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "GLM werden über **Maximum Likelihood** geschätzt, in der Praxis meist per **IRLS** (Iteratively Reweighted Least Squares) — jeder Schritt läuft auf eine gewichtete OLS-Anpassung hinaus. Deshalb gelten viele OLS-Diagnostiken (Standardfehler, Wald-Tests) analog."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "**Generalized Linear Models** (Nelder & Wedderburn, 1972) extend classical {{term:lineare-regression|linear regression}} to responses that are not continuous and normally distributed. They combine three building blocks:"
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Random component** — distribution of Y from the exponential family (Normal, Binomial, Poisson, Gamma, …)",
+          "**Systematic component** — linear predictor $\\eta = \\beta_0 + \\sum \\beta_j X_j$",
+          "**Link function** — connects the expected value to the linear predictor: $g(\\mu) = \\eta$"
+        ]
+      },
+      {
+        "type": "formula",
+        "latex": "g(\\mathbb{E}[Y \\mid X]) = \\beta_0 + \\beta_1 X_1 + \\ldots + \\beta_p X_p"
+      },
+      {
+        "type": "list",
+        "items": [
+          "{{term:logistische-regression|Logistic regression}} — Binomial + logit link",
+          "{{term:poisson-regression|Poisson regression}} — Poisson + log link",
+          "{{term:negbin-regression|Negative binomial regression}} — NegBin + log link",
+          "Gamma regression — Gamma + log link (positive, skewed Y)"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "GLMs are fitted by **maximum likelihood**, in practice usually via **IRLS** (Iteratively Reweighted Least Squares) — every step reduces to a weighted OLS fit. Many OLS diagnostics (standard errors, Wald tests) therefore carry over."
+      }
+    ]
+  },
+  "aliases": {
+    "de": ["Generalized Linear Model", "verallgemeinertes lineares Modell", "GLMs"],
+    "en": ["Generalized Linear Model", "GLMs"]
+  },
+  "seeAlso": ["regression", "lineare-regression", "logistische-regression", "poisson-regression", "negbin-regression"],
+  "modules": ["glm-regression", "regression"],
+  "algoLab": ["regression/logistic-regression", "regression/poisson-regression", "regression/negbin-regression"],
+  "sources": [
+    { "label": "Nelder, J. A. & Wedderburn, R. W. M. — Generalized Linear Models, Journal of the Royal Statistical Society A, 135(3), 1972", "url": null },
+    { "label": "McCullagh, P. & Nelder, J. A. — Generalized Linear Models, 2nd Edition, Chapman & Hall", "url": null },
+    { "label": "Fahrmeir, L. et al. — Regression: Models, Methods and Applications, 2nd Edition, Springer", "url": null }
+  ]
+}

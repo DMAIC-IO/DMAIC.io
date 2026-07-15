@@ -1,0 +1,61 @@
+{
+  "id": "regression",
+  "category": "regression",
+  "title": {
+    "de": "Regression",
+    "en": "Regression"
+  },
+  "short": {
+    "de": "Beschreibt den Zusammenhang zwischen einer {{term:zielgroesse|Zielgröße}} Y und einer oder mehreren Einflussgrößen X als mathematisches Modell — nicht nur „bewegen sie sich zusammen“, sondern eine Vorhersagegleichung.",
+    "en": "Describes the relation between a {{term:zielgroesse|response}} Y and one or several predictors X as a mathematical model — not just \"do they move together\" but a predictive equation."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "Die **Regression** liefert eine Funktion $Y = f(X_1, \\ldots, X_p) + \\varepsilon$, die aus beobachteten Daten geschätzt wird. Sie beantwortet zwei Fragen: (1) **Vorhersage** — welcher Y-Wert ist bei neuen X zu erwarten? (2) **Verständnis** — welche X beeinflussen Y in welchem Ausmaß?"
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Klassisch:** {{term:lineare-regression|Lineare Regression}} (OLS) — stetiges Y, normalverteilt",
+          "**Attributiv:** {{term:glm|Generalized Linear Models}} — binäre, kategoriale oder Zähldaten",
+          "**Nichtlinear** — kubische Splines, Polynom-Regression, Nichtlineare Regression"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "Regression zeigt Zusammenhänge, aber **beweist keine Ursache**. Kausale Aussagen erfordern ein Experiment ({{term:doe|DoE}}) oder sehr starke inhaltliche Argumente — sonst bleibt es „X und Y bewegen sich gemeinsam“, nicht „X verursacht Y“."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "**Regression** yields a function $Y = f(X_1, \\ldots, X_p) + \\varepsilon$ estimated from observed data. It answers two questions: (1) **prediction** — what Y is expected at new X? (2) **understanding** — which X influence Y and by how much?"
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Classical:** {{term:lineare-regression|linear regression}} (OLS) — continuous, normally distributed Y",
+          "**Attributive:** {{term:glm|Generalized Linear Models}} — binary, categorical or count data",
+          "**Non-linear** — cubic splines, polynomial regression, non-linear regression"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "Regression shows relations but **does not prove causation**. Causal claims need an experiment ({{term:doe|DoE}}) or very strong domain arguments — otherwise it stays \"X and Y move together\", not \"X causes Y\"."
+      }
+    ]
+  },
+  "aliases": {
+    "de": ["Regressionsanalyse", "Regressionsmodell"],
+    "en": ["regression analysis", "regression model"]
+  },
+  "seeAlso": ["lineare-regression", "glm", "korrelation", "residuen", "r-quadrat"],
+  "modules": ["regression", "glm-regression", "correlation", "doe-planner"],
+  "algoLab": ["regression/regression-coefficients", "regression/regression-anova", "regression/correlation-analysis"],
+  "sources": [
+    { "label": "Montgomery, D. C., Peck, E. A. & Vining, G. G. — Introduction to Linear Regression Analysis, 6th Edition, Wiley", "url": null },
+    { "label": "Fahrmeir, L., Kneib, T., Lang, S. & Marx, B. — Regression: Models, Methods and Applications, 2nd Edition, Springer", "url": null }
+  ]
+}

@@ -1,0 +1,92 @@
+{
+  "id": "i-mr-chart",
+  "category": "spc",
+  "title": {
+    "de": "I-MR-Karte (Individuals / Moving Range)",
+    "en": "I-MR Chart (Individuals / Moving Range)"
+  },
+  "short": {
+    "de": "{{term:regelkarte|Regelkarte}} für Einzelwerte (n = 1) — nutzt Moving Range zweier aufeinanderfolgender Werte als σ-Schätzer.",
+    "en": "{{term:regelkarte|Control chart}} for individual values (n = 1) — uses the moving range of consecutive values as σ estimator."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "Die **I-MR-Karte** (auch X-MR, Individuals-Moving-Range) ist die Wahl, wenn keine natürliche {{term:subgruppe|Subgruppierung}} existiert — z. B. weil Messungen langsam oder teuer sind (Batch-Prozesse, chemische Analysen, Buchhaltungs-Kennzahlen)."
+      },
+      {
+        "type": "list",
+        "items": [
+          "**I-Karte** — überwacht die Einzelwerte; UCL/LCL = $\\bar{x} \\pm E_2 \\overline{MR}$ mit $E_2 = 2{,}66$ bei MR-Länge 2",
+          "**MR-Karte** — überwacht die gleitende Spannweite $|x_i - x_{i-1}|$; UCL = $D_4 \\overline{MR}$",
+          "**σ-Schätzer** — $\\hat{\\sigma} = \\overline{MR} / d_2 = \\overline{MR} / 1{,}128$ (bei MR-Länge 2)"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "**Nicht-Normalverteilung** ist bei I-MR problematischer als bei X̄-R, weil der Zentrale Grenzwertsatz nicht durch Mittelwertbildung wirkt. Bei stark schiefen Daten Box-Cox-Transformation oder eine Transformed-IMR-Karte verwenden. Für Zähldaten oder Anteile besser {{term:c-chart|c/u}}- bzw. {{term:p-chart|p/np}}-Karten."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "The **I-MR chart** (also X-MR, Individuals-Moving-Range) is the choice when no natural {{term:subgruppe|subgrouping}} exists — e.g. because measurements are slow or expensive (batch processes, chemical assays, accounting metrics)."
+      },
+      {
+        "type": "list",
+        "items": [
+          "**I chart** — tracks individual values; UCL/LCL = $\\bar{x} \\pm E_2 \\overline{MR}$ with $E_2 = 2.66$ at MR length 2",
+          "**MR chart** — tracks the moving range $|x_i - x_{i-1}|$; UCL = $D_4 \\overline{MR}$",
+          "**σ estimator** — $\\hat{\\sigma} = \\overline{MR} / d_2 = \\overline{MR} / 1.128$ (at MR length 2)"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "**Non-normality** is more troublesome for I-MR than for X̄-R because the central limit theorem does not help through mean-taking. For strongly skewed data use a Box-Cox transform or a transformed-IMR chart. For count or proportion data prefer {{term:c-chart|c/u}} or {{term:p-chart|p/np}} charts."
+      }
+    ]
+  },
+  "aliases": {
+    "de": [
+      "I-MR",
+      "X-MR",
+      "Individuals Chart",
+      "Einzelwert-Karte"
+    ],
+    "en": [
+      "I-MR",
+      "X-MR",
+      "individuals chart",
+      "moving range chart"
+    ]
+  },
+  "seeAlso": [
+    "regelkarte",
+    "xbar-r-chart",
+    "subgruppe",
+    "regelgrenze"
+  ],
+  "modules": [
+    "control-chart",
+    "transformed-imr-chart"
+  ],
+  "algoLab": [
+    "control-charts/control-chart",
+    "control-charts/transformed-imr-chart"
+  ],
+  "sources": [
+    {
+      "label": "Montgomery, D. C. — Introduction to Statistical Quality Control, 8th Edition, Chapter 6",
+      "url": null
+    },
+    {
+      "label": "Wheeler, D. J. — Understanding Variation: The Key to Managing Chaos, 2nd Edition, SPC Press",
+      "url": null
+    },
+    {
+      "label": "AIAG — SPC Reference Manual, 2nd Edition",
+      "url": null
+    }
+  ]
+}

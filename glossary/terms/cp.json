@@ -1,0 +1,94 @@
+{
+  "id": "cp",
+  "category": "capability",
+  "title": {
+    "de": "Cp (Prozessfähigkeitsindex)",
+    "en": "Cp (Process Capability Index)"
+  },
+  "short": {
+    "de": "Verhältnis von {{term:spezifikationsgrenzen|Toleranzbreite}} zu Kurzzeit-Streuung — ignoriert die Lage des {{term:mittelwert|Mittelwerts}}.",
+    "en": "Ratio of {{term:spezifikationsgrenzen|specification width}} to short-term variation — ignores the location of the {{term:mittelwert|mean}}."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "Der **Cp-Index** misst die *potenzielle* Fähigkeit eines Prozesses: passt seine natürliche Kurzzeit-Streuung überhaupt in die vom Kunden vorgegebenen Grenzen? Er sagt nichts über Zentrierung — dafür ist {{term:cpk|Cpk}} zuständig."
+      },
+      {
+        "type": "formula",
+        "latex": "C_p = \\frac{USL - LSL}{6 \\sigma_{\\text{within}}}"
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Cp = 1** — Prozessstreuung deckt genau die Toleranz ab (0,27 % außerhalb bei perfekter Zentrierung)",
+          "**Cp = 1,33** — Automotive-Minimum",
+          "**Cp = 1,67** — Six-Sigma-Ziel",
+          "**σ_within** wird aus Subgruppen geschätzt (Rbar/d₂ oder Sbar/c₄), nicht aus der Gesamtstichprobe"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "**Cp allein ist wertlos.** Ein Prozess kann Cp = 2,0 haben und trotzdem 30 % Ausschuss produzieren, wenn er weit von der Spezifikationsmitte liegt. Immer zusammen mit {{term:cpk|Cpk}} berichten — Cpk ≤ Cp, und die Differenz zeigt den Anteil der Dezentrierung."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "**Cp** measures the *potential* capability of a process: does its natural short-term variation even fit inside the customer's limits? It says nothing about centring — that is {{term:cpk|Cpk}}'s job."
+      },
+      {
+        "type": "formula",
+        "latex": "C_p = \\frac{USL - LSL}{6 \\sigma_{\\text{within}}}"
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Cp = 1** — process spread exactly covers the tolerance (0.27 % outside under perfect centring)",
+          "**Cp = 1.33** — Automotive minimum",
+          "**Cp = 1.67** — Six Sigma target",
+          "**σ_within** is estimated from subgroups (Rbar/d₂ or Sbar/c₄), not from the total sample"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "**Cp alone is worthless.** A process can have Cp = 2.0 and still ship 30 % out-of-spec parts when it sits far from the spec mid-point. Always report together with {{term:cpk|Cpk}} — Cpk ≤ Cp, and the gap reveals the off-centring share."
+      }
+    ]
+  },
+  "aliases": {
+    "de": [
+      "Cp-Wert",
+      "potenzielle Prozessfähigkeit"
+    ],
+    "en": [
+      "Cp value",
+      "potential capability"
+    ]
+  },
+  "seeAlso": [
+    "cpk",
+    "pp",
+    "ppk",
+    "prozessfaehigkeit",
+    "spezifikationsgrenzen"
+  ],
+  "modules": [
+    "process-capability"
+  ],
+  "algoLab": [
+    "capability/cp",
+    "capability/cpk"
+  ],
+  "sources": [
+    {
+      "label": "Montgomery, D. C. — Introduction to Statistical Quality Control, 8th Edition, Chapter 8",
+      "url": null
+    },
+    {
+      "label": "AIAG — Statistical Process Control (SPC) Reference Manual, 2nd Edition",
+      "url": null
+    }
+  ]
+}

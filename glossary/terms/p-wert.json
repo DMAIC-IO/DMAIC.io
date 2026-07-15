@@ -1,0 +1,100 @@
+{
+  "id": "p-wert",
+  "category": "hypothesis",
+  "title": {
+    "de": "p-Wert",
+    "en": "p-Value"
+  },
+  "short": {
+    "de": "Wahrscheinlichkeit, die beobachteten (oder extremeren) Daten zu sehen, *wenn* die {{term:nullhypothese|Nullhypothese}} wahr wäre. Klein = H₀ unwahrscheinlich.",
+    "en": "Probability of seeing data at least as extreme as observed, *if* the {{term:nullhypothese|null hypothesis}} were true. Small = H₀ unlikely."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "Der **p-Wert** ist die zentrale Entscheidungsgröße im klassischen Hypothesentest. Er beantwortet die Frage: „Angenommen H₀ stimmt — wie wahrscheinlich sind Daten, die mindestens so weit von H₀ entfernt liegen wie die beobachteten?“"
+      },
+      {
+        "type": "formula",
+        "latex": "p = P(\\,|\\,T\\,| \\geq |\\,T_{\\text{obs}}\\,| \\mid H_0\\,)"
+      },
+      {
+        "type": "list",
+        "items": [
+          "**p < α** → H₀ verwerfen (Effekt statistisch signifikant)",
+          "**p ≥ α** → H₀ nicht verwerfen (keine Evidenz gegen H₀)",
+          "**Übliche Schwellen:** α = 0,05 (Standard), 0,01 (strenger), 0,001 (sehr streng)"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "**Was der p-Wert NICHT ist:** (1) die Wahrscheinlichkeit, dass H₀ wahr ist. (2) die Wahrscheinlichkeit, dass der Effekt real ist. (3) ein Maß für die Effektgröße. (4) 1 − Fehler-1.-Art. Ein p = 0,001 heißt nicht „großer Effekt“, sondern nur „sehr unwahrscheinlich unter H₀“ — bei riesigen Stichproben werden auch triviale Effekte hochsignifikant. Immer zusätzlich {{term:effektstaerke|Effektstärke}} und Konfidenzintervall berichten."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "The **p-value** is the central decision figure of the classical hypothesis test. It answers the question: \"Assuming H₀ is true — how likely are data at least as far from H₀ as those observed?\""
+      },
+      {
+        "type": "formula",
+        "latex": "p = P(\\,|\\,T\\,| \\geq |\\,T_{\\text{obs}}\\,| \\mid H_0\\,)"
+      },
+      {
+        "type": "list",
+        "items": [
+          "**p < α** → reject H₀ (effect statistically significant)",
+          "**p ≥ α** → fail to reject H₀ (no evidence against H₀)",
+          "**Common thresholds:** α = 0.05 (default), 0.01 (stricter), 0.001 (very strict)"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "**What the p-value is NOT:** (1) the probability that H₀ is true. (2) the probability that the effect is real. (3) a measure of effect size. (4) 1 − Type I error. p = 0.001 does not mean \"big effect\", only \"very unlikely under H₀\" — with huge samples, even trivial effects turn highly significant. Always additionally report {{term:effektstaerke|effect size}} and a confidence interval."
+      }
+    ]
+  },
+  "aliases": {
+    "de": [
+      "p-Wert",
+      "P-Wert",
+      "Wahrscheinlichkeitswert"
+    ],
+    "en": [
+      "p-value",
+      "P-value",
+      "probability value"
+    ]
+  },
+  "seeAlso": [
+    "signifikanzniveau",
+    "nullhypothese",
+    "hypothesentest",
+    "effektstaerke",
+    "power"
+  ],
+  "modules": [
+    "hypothesis-test",
+    "sample-size"
+  ],
+  "algoLab": [
+    "hypothesis/one-sample-t-test",
+    "hypothesis/two-sample-t-test",
+    "hypothesis/one-way-anova"
+  ],
+  "sources": [
+    {
+      "label": "Wasserstein, R. L. & Lazar, N. A. — The ASA Statement on p-Values: Context, Process, and Purpose, The American Statistician, 70(2), 2016",
+      "url": null
+    },
+    {
+      "label": "Fisher, R. A. — Statistical Methods for Research Workers, Oliver and Boyd, 1925",
+      "url": null
+    },
+    {
+      "label": "Greenland, S. et al. — Statistical Tests, P Values, Confidence Intervals, and Power, European Journal of Epidemiology, 31(4), 2016",
+      "url": null
+    }
+  ]
+}

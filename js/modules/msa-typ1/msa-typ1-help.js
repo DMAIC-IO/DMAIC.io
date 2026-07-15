@@ -12,12 +12,12 @@ export default {
         blocks: [
           {
             type: 'paragraph',
-            content: 'Die MSA Typ-1-Studie prüft ein Messsystem auf Lage (Bias) und Streuung (Wiederholbarkeit) — an einem einzigen Normal, mit einem Bediener, in kurzer Zeit. Sie ist der erste Schritt jeder Messsystemanalyse: zeigt sie Schwächen, lohnt sich keine weitergehende Studie (Typ 2/Gage R&R).',
+            content: 'Die MSA Typ-1-Studie prüft ein Messsystem auf Lage ({{term:bias|Bias}}) und Streuung ({{term:wiederholbarkeit|Wiederholbarkeit}}) — an einem einzigen Normal, mit einem Bediener, in kurzer Zeit. Sie ist der erste Schritt jeder Messsystemanalyse: zeigt sie Schwächen, lohnt sich keine weitergehende Studie (Typ 2 / {{term:gage-rr|Gage R&R}}).',
           },
           {
             type: 'definition',
             term: 'Normal (Referenzteil)',
-            content: 'Ein Teil oder Master mit bekanntem, rückführbarem Referenzwert. Ohne diesen Wert kann keine Lage bestimmt werden — der Bias-Anteil der Studie wäre blind.',
+            content: 'Ein {{term:referenzteil|Referenzteil}} oder Master mit bekanntem, rückführbarem Referenzwert. Ohne diesen Wert kann keine Lage bestimmt werden — der Bias-Anteil der Studie wäre blind.',
           },
           {
             type: 'definition',
@@ -27,17 +27,17 @@ export default {
           {
             type: 'definition',
             term: 'Bias',
-            content: 'Systematische Abweichung: {{term:mittelwert|Mittelwert}} der Wiederholmessungen − Referenzwert. Ein Bias ≠ 0 deutet auf eine Kalibrierabweichung oder ein systematisches Offset hin.',
+            content: 'Systematische Abweichung: {{term:mittelwert|Mittelwert}} der Wiederholmessungen − Referenzwert. Ein Bias ≠ 0 deutet auf eine Kalibrierabweichung oder ein systematisches Offset hin und verletzt die {{term:richtigkeit|Richtigkeit}} des Messsystems.',
           },
           {
             type: 'definition',
             term: 'Cg',
-            content: 'Maß für die Wiederholbarkeit im Verhältnis zur Toleranz. Typische Formel: Cg = 0,2·T / (6·s), wobei T die Toleranzbreite und s die {{term:standardabweichung|Standardabweichung}} der Wiederholmessungen ist. Akzeptanz üblich Cg ≥ 1,33.',
+            content: '{{term:cg|Cg}} ist das Maß für die Wiederholbarkeit im Verhältnis zur Toleranz. Typische Formel: Cg = 0,2·T / (6·s), wobei T die Toleranzbreite und s die {{term:standardabweichung|Standardabweichung}} der Wiederholmessungen ist. Akzeptanz üblich Cg ≥ 1,33.',
           },
           {
             type: 'definition',
             term: 'Cgk',
-            content: 'Erweitert Cg um den Bias. Cgk ≥ 1,33 gilt als akzeptabel. Cg hoch, Cgk niedrig → das Messsystem ist präzise, aber verschoben (Kalibrierproblem).',
+            content: '{{term:cgk|Cgk}} erweitert Cg um den Bias. Cgk ≥ 1,33 gilt als akzeptabel. Cg hoch, Cgk niedrig → das Messsystem ist {{term:praezision|präzise}}, aber verschoben (Kalibrierproblem).',
           },
           {
             type: 'paragraph',
@@ -50,12 +50,12 @@ export default {
         blocks: [
           {
             type: 'paragraph',
-            content: 'The MSA Type 1 study checks a measurement system for bias (position) and repeatability (spread) — on one single reference part, with one operator, in a short time frame. It is the first step of any measurement-system analysis: if it fails, no deeper study (Type 2 / Gage R&R) is worthwhile.',
+            content: 'The MSA Type 1 study checks a measurement system for {{term:bias|bias}} (position) and {{term:wiederholbarkeit|repeatability}} (spread) — on one single reference part, with one operator, in a short time frame. It is the first step of any measurement-system analysis: if it fails, no deeper study (Type 2 / {{term:gage-rr|Gage R&R}}) is worthwhile.',
           },
           {
             type: 'definition',
             term: 'Reference part',
-            content: 'A part or master with a known, traceable reference value. Without this value, position cannot be judged — the bias part of the study would be blind.',
+            content: 'A {{term:referenzteil|reference part}} or master with a known, traceable reference value. Without this value, position cannot be judged — the bias part of the study would be blind.',
           },
           {
             type: 'definition',
@@ -65,17 +65,17 @@ export default {
           {
             type: 'definition',
             term: 'Bias',
-            content: 'Systematic deviation: {{term:mittelwert|mean}} of repeat measurements − reference value. A bias ≠ 0 indicates a calibration offset or systematic shift.',
+            content: 'Systematic deviation: {{term:mittelwert|mean}} of repeat measurements − reference value. A bias ≠ 0 indicates a calibration offset or systematic shift and breaks the {{term:richtigkeit|trueness}} of the system.',
           },
           {
             type: 'definition',
             term: 'Cg',
-            content: 'Measure of repeatability relative to tolerance. Typical formula: Cg = 0.2·T / (6·s), where T is the tolerance width and s the {{term:standardabweichung|standard deviation}} of repeats. Accepted when Cg ≥ 1.33.',
+            content: '{{term:cg|Cg}} measures repeatability relative to tolerance. Typical formula: Cg = 0.2·T / (6·s), where T is the tolerance width and s the {{term:standardabweichung|standard deviation}} of repeats. Accepted when Cg ≥ 1.33.',
           },
           {
             type: 'definition',
             term: 'Cgk',
-            content: 'Extends Cg to include bias. Cgk ≥ 1.33 is accepted. High Cg, low Cgk → the system is precise but shifted (calibration issue).',
+            content: '{{term:cgk|Cgk}} extends Cg to include bias. Cgk ≥ 1.33 is accepted. High Cg, low Cgk → the system is {{term:praezision|precise}} but shifted (calibration issue).',
           },
           {
             type: 'paragraph',

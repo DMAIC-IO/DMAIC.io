@@ -1,0 +1,84 @@
+{
+  "id": "aufloesung",
+  "category": "doe",
+  "title": {
+    "de": "Auflösung (Resolution)",
+    "en": "Resolution"
+  },
+  "short": {
+    "de": "Klassifiziert fraktionelle Designs (III / IV / V) danach, welche Effekt-Ordnungen mit welchen {{term:konfundierung|konfundiert}} sind.",
+    "en": "Classifies fractional designs (III / IV / V) by which effect orders are {{term:konfundierung|aliased}} with which."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "Die **Auflösung** eines fraktionellen Designs beschreibt kompakt, welche Effekte sauber trennbar sind und welche mit welchen vermischt werden. Sie wird als römische Zahl notiert."
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Auflösung III** — {{term:haupteffekt|Haupteffekte}} vermischt mit Zweifach-{{term:wechselwirkung|Wechselwirkungen}}. Nur fürs reine Screening; jede Wechselwirkung würde als Haupteffekt fehlinterpretiert",
+          "**Auflösung IV** — Haupteffekte sind sauber, aber Zweifach-Wechselwirkungen sind untereinander vermischt. Guter Kompromiss, wenn nur wenige Wechselwirkungen erwartet werden",
+          "**Auflösung V** — Haupteffekte und Zweifach-Wechselwirkungen sind jeweils sauber schätzbar; nur Dreifach- und höhere Wechselwirkungen sind vermischt. Empfohlen, wenn Wechselwirkungen verstanden werden sollen"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "Faustregel: **Auflösung III fürs Screening**, **IV im Zweifel**, **V wenn möglich**. Höhere Auflösung erfordert mehr Versuche — die Wahl ist ein Kompromiss zwischen Aufwand und Trennschärfe. Vollfaktorielle Designs haben keine Auflösungsangabe (alles ist getrennt)."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "The **resolution** of a fractional design compactly describes which effects are cleanly separable and which are mixed with which. It is written as a Roman numeral."
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Resolution III** — {{term:haupteffekt|main effects}} aliased with two-factor {{term:wechselwirkung|interactions}}. Screening only; any interaction would be misread as a main effect",
+          "**Resolution IV** — main effects clean, but two-factor interactions aliased among themselves. Good compromise when few interactions are expected",
+          "**Resolution V** — main effects and two-factor interactions each cleanly estimable; only three-factor and higher interactions are aliased. Recommended when interactions must be understood"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "Rule of thumb: **Resolution III for screening**, **IV in doubt**, **V when possible**. Higher resolution needs more runs — the choice trades effort against separability. Full factorial designs carry no resolution label (everything is separable)."
+      }
+    ]
+  },
+  "aliases": {
+    "de": [
+      "Resolution",
+      "Design-Auflösung",
+      "Auflösungsstufe"
+    ],
+    "en": [
+      "design resolution",
+      "resolution number"
+    ]
+  },
+  "seeAlso": [
+    "konfundierung",
+    "haupteffekt",
+    "wechselwirkung",
+    "doe"
+  ],
+  "modules": [
+    "doe-planner",
+    "doe-advisor"
+  ],
+  "algoLab": [
+    "doe/doe-planner"
+  ],
+  "sources": [
+    {
+      "label": "Montgomery, D. C. — Design and Analysis of Experiments, 10th Edition, Chapter 8",
+      "url": null
+    },
+    {
+      "label": "Box, Hunter & Hunter — Statistics for Experimenters, 2nd Edition, Chapter 6",
+      "url": null
+    }
+  ]
+}

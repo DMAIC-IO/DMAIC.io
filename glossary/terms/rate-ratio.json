@@ -1,0 +1,71 @@
+{
+  "id": "rate-ratio",
+  "category": "regression",
+  "title": {
+    "de": "Rate Ratio (RR)",
+    "en": "Rate Ratio (RR)"
+  },
+  "short": {
+    "de": "Effektmaß der {{term:poisson-regression|Poisson-}} und {{term:negbin-regression|Negativ-Binomial-Regression}} — Faktor, um den sich die erwartete Anzahl pro Einheit von X ändert.",
+    "en": "Effect measure of {{term:poisson-regression|Poisson}} and {{term:negbin-regression|negative binomial regression}} — factor by which the expected count changes per unit of X."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "Das **Rate Ratio** ist die Exponentierung eines Regressionskoeffizienten $\\beta_j$ in einem GLM mit Log-Link (Poisson / Negativ-Binomial). Es beschreibt den multiplikativen Effekt eines Prädiktors auf die erwartete Ereignis-Rate."
+      },
+      {
+        "type": "formula",
+        "latex": "\\text{RR}_j = e^{\\beta_j} = \\frac{\\mathbb{E}[Y \\mid X_j = x+1]}{\\mathbb{E}[Y \\mid X_j = x]}"
+      },
+      {
+        "type": "list",
+        "items": [
+          "**RR = 1** — kein Effekt",
+          "**RR > 1** — X erhöht die erwartete Anzahl (RR = 1{,}3 → 30 % mehr Ereignisse pro Einheit von X)",
+          "**RR < 1** — X senkt die erwartete Anzahl",
+          "**Signifikanz:** das Konfidenzintervall darf die 1 nicht enthalten"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "Analog zum {{term:odds-ratio|Odds Ratio}}, aber für Zähldaten — und mit sauberer Rate-Interpretation, weil die Log-Link direkt auf den Erwartungswert wirkt. Bei Modellen mit Offset (z. B. „Defekte pro 1000 Teile“) ist RR die Rate pro Zeit- oder Größeneinheit."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "The **rate ratio** is the exponentiation of a regression coefficient $\\beta_j$ in a log-link GLM (Poisson / negative binomial). It describes the multiplicative effect of a predictor on the expected event rate."
+      },
+      {
+        "type": "formula",
+        "latex": "\\text{RR}_j = e^{\\beta_j} = \\frac{\\mathbb{E}[Y \\mid X_j = x+1]}{\\mathbb{E}[Y \\mid X_j = x]}"
+      },
+      {
+        "type": "list",
+        "items": [
+          "**RR = 1** — no effect",
+          "**RR > 1** — X raises the expected count (RR = 1.3 → 30 % more events per unit of X)",
+          "**RR < 1** — X lowers the expected count",
+          "**Significance:** the confidence interval must not contain 1"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "Analogous to the {{term:odds-ratio|odds ratio}} but for count data — with a clean rate interpretation, because the log link acts directly on the expected value. With an offset (e.g. \"defects per 1000 parts\"), RR is the rate per unit time or size."
+      }
+    ]
+  },
+  "aliases": {
+    "de": ["Ratenverhältnis", "RR", "Rate-Ratio"],
+    "en": ["rate ratio", "RR", "incidence rate ratio", "IRR"]
+  },
+  "seeAlso": ["poisson-regression", "negbin-regression", "odds-ratio", "glm"],
+  "modules": ["glm-regression"],
+  "algoLab": ["regression/poisson-regression", "regression/negbin-regression"],
+  "sources": [
+    { "label": "Cameron, A. C. & Trivedi, P. K. — Regression Analysis of Count Data, 2nd Edition, Cambridge University Press", "url": null },
+    { "label": "Hilbe, J. M. — Modeling Count Data, Cambridge University Press", "url": null }
+  ]
+}

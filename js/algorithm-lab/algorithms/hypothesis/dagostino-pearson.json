@@ -11,8 +11,8 @@
 
   "description": {
     "short": {
-      "de": "Omnibus-Normalitätstest: Kombiniert Z-Scores aus Schiefe und Kurtosis zu einer χ²(2)-Teststatistik. Erfordert n ≥ 20.",
-      "en": "Omnibus normality test: Combines Z-scores from skewness and kurtosis into a χ²(2) test statistic. Requires n ≥ 20."
+      "de": "Omnibus-{{term:normalitaetstest|Normalitätstest}}: Kombiniert Z-Scores aus Schiefe und Kurtosis zu einer χ²(2)-Teststatistik. Erfordert n ≥ 20.",
+      "en": "Omnibus {{term:normalitaetstest|normality test}}: Combines Z-scores from skewness and kurtosis into a χ²(2) test statistic. Requires n ≥ 20."
     },
     "long": {
       "de": "Der D'Agostino-Pearson-Omnibus-Test transformiert die Stichproben-Schiefe und -Kurtosis jeweils in approximativ standardnormalverteilte Z-Scores (Zs und Zk). Die Summe K² = Zs² + Zk² ist unter H₀ annähernd chi-quadrat-verteilt mit 2 Freiheitsgraden. Der Test ist besonders informativ, weil er zeigt, ob die Abweichung von der Normalverteilung auf Schiefe, Kurtosis oder beide zurückzuführen ist. Die Schiefe-Transformation stammt von D'Agostino (1970), die Kurtosis-Transformation von Anscombe & Glynn (1983). Der Test erfordert mindestens 20 Datenpunkte für zuverlässige Ergebnisse.",

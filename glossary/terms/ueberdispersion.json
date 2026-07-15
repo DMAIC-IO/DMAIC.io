@@ -1,0 +1,79 @@
+{
+  "id": "ueberdispersion",
+  "category": "regression",
+  "title": {
+    "de": "Überdispersion (Overdispersion)",
+    "en": "Overdispersion"
+  },
+  "short": {
+    "de": "In {{term:poisson-regression|Poisson-Modellen}}: die beobachtete {{term:varianz|Varianz}} übersteigt den {{term:mittelwert|Mittelwert}} — die Poisson-Annahme ist verletzt.",
+    "en": "In {{term:poisson-regression|Poisson models}}: observed {{term:varianz|variance}} exceeds the {{term:mittelwert|mean}} — the Poisson assumption is violated."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "**Überdispersion** liegt vor, wenn Zähldaten eine größere Streuung zeigen, als die Poisson-Verteilung erlaubt: $\\text{Var}(Y) > \\mathbb{E}[Y]$. Ursachen sind meist unbeobachtete Heterogenität (Cluster, versteckte Untergruppen) oder zeitliche Häufungen."
+      },
+      {
+        "type": "formula",
+        "latex": "\\hat{\\phi} = \\frac{\\text{Pearson-}\\chi^2}{n - p}"
+      },
+      {
+        "type": "paragraph",
+        "text": "Der geschätzte **Dispersionsparameter** $\\hat{\\phi}$ ist im Idealfall $\\approx 1$. Werte $> 1{,}5$ gelten als klare Überdispersion. Konsequenzen und Gegenmaßnahmen:"
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Konsequenz:** Poisson-Standardfehler sind zu klein, p-Werte zu optimistisch, Konfidenzintervalle zu eng",
+          "**Quasi-Poisson** — behält Poisson-Punktschätzer, skaliert nur die Standardfehler um $\\sqrt{\\hat{\\phi}}$",
+          "**{{term:negbin-regression|Negativ-Binomial-Regression}}** — sauberere Lösung mit eigener Verteilung und Dispersionsparameter $\\theta$",
+          "**Modellrevision** — fehlende wichtige Prädiktoren, unmodellierte Interaktionen können Überdispersion verursachen"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "Umgekehrt existiert auch **Unterdispersion** ($\\hat{\\phi} < 1$), ist in Prozessdaten aber selten. Der klassische Auslöser ist eine Poisson-Modellierung von binären oder gruppierten Anteilsdaten — hier wäre logistische / binomiale Regression die richtige Wahl."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "**Overdispersion** appears when count data show greater spread than the Poisson distribution allows: $\\text{Var}(Y) > \\mathbb{E}[Y]$. Causes are usually unobserved heterogeneity (clusters, hidden subgroups) or temporal bursts."
+      },
+      {
+        "type": "formula",
+        "latex": "\\hat{\\phi} = \\frac{\\text{Pearson-}\\chi^2}{n - p}"
+      },
+      {
+        "type": "paragraph",
+        "text": "The estimated **dispersion parameter** $\\hat{\\phi}$ should ideally be $\\approx 1$. Values $> 1.5$ indicate clear overdispersion. Consequences and remedies:"
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Consequence:** Poisson standard errors are too small, p-values too optimistic, confidence intervals too tight",
+          "**Quasi-Poisson** — keeps Poisson point estimates, only rescales standard errors by $\\sqrt{\\hat{\\phi}}$",
+          "**{{term:negbin-regression|Negative binomial regression}}** — cleaner solution with its own distribution and dispersion parameter $\\theta$",
+          "**Model revision** — missing important predictors or unmodelled interactions can cause overdispersion"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "Conversely, **underdispersion** ($\\hat{\\phi} < 1$) also exists but is rare in process data. The classical trigger is Poisson modelling of binary or grouped proportion data — where logistic / binomial regression would be the right choice."
+      }
+    ]
+  },
+  "aliases": {
+    "de": ["Überdispersion", "Overdispersion", "Dispersionsparameter"],
+    "en": ["overdispersion", "dispersion", "extra-Poisson variation"]
+  },
+  "seeAlso": ["poisson-regression", "negbin-regression", "glm"],
+  "modules": ["glm-regression"],
+  "algoLab": ["regression/overdispersion-check", "regression/poisson-regression", "regression/negbin-regression"],
+  "sources": [
+    { "label": "Hilbe, J. M. — Negative Binomial Regression, 2nd Edition, Cambridge University Press", "url": null },
+    { "label": "McCullagh, P. & Nelder, J. A. — Generalized Linear Models, 2nd Edition, Chapman & Hall", "url": null }
+  ]
+}

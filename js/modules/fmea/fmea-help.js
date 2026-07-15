@@ -12,7 +12,7 @@ export default {
         blocks: [
           {
             type: 'paragraph',
-            content: 'Die FMEA (Failure Mode and Effects Analysis, dt. Fehlermöglichkeits- und Einflussanalyse) ist eine systematische Methode zur Identifikation und Bewertung potenzieller Fehler in Produkten oder Prozessen. Ziel ist, Risiken zu erkennen, bevor sie auftreten, und sie nach Priorität anzugehen — sie ist ein zentrales Werkzeug der Improve- und Control-Phase, sollte aber bereits in Define oder Analyze begonnen werden.',
+            content: 'Die {{term:fmea|FMEA}} (Failure Mode and Effects Analysis, dt. Fehlermöglichkeits- und Einflussanalyse) ist eine systematische Methode zur Identifikation und Bewertung potenzieller Fehler in Produkten oder Prozessen. Ziel ist, Risiken zu erkennen, bevor sie auftreten, und sie nach Priorität anzugehen — sie ist ein zentrales Werkzeug der Improve- und Control-Phase, sollte aber bereits in Define oder Analyze begonnen werden.',
           },
           {
             type: 'definition',
@@ -22,7 +22,7 @@ export default {
           {
             type: 'definition',
             term: 'Fehlermöglichkeit (Failure Mode)',
-            content: 'Die mögliche Art der Abweichung von der Funktion — z. B. „nicht eingerastet", „falsch dosiert", „zu spät geliefert". Pro Funktion können mehrere Fehlermöglichkeiten existieren.',
+            content: 'Die {{term:fehlermoeglichkeit|Fehlermöglichkeit}} ist die mögliche Art der Abweichung von der Funktion — z. B. „nicht eingerastet", „falsch dosiert", „zu spät geliefert". Pro Funktion können mehrere Fehlermöglichkeiten existieren.',
           },
           {
             type: 'definition',
@@ -37,22 +37,22 @@ export default {
           {
             type: 'definition',
             term: 'B (Bedeutung) / Severity',
-            content: 'Wie schwer wäre die Folge für den Kunden? Skala 1–10: 1 = unbedeutend, 10 = sicherheitskritisch. Wird durch das Produkt oder die Anforderung definiert, nicht durch den Prozess.',
+            content: '{{term:bedeutung|Bedeutung}}: Wie schwer wäre die Folge für den Kunden? Skala 1–10: 1 = unbedeutend, 10 = sicherheitskritisch. Wird durch das Produkt oder die Anforderung definiert, nicht durch den Prozess.',
           },
           {
             type: 'definition',
             term: 'A (Auftreten) / Occurrence',
-            content: 'Wie häufig tritt die Ursache erfahrungsgemäß auf? Skala 1–10: 1 = sehr selten, 10 = quasi permanent. Idealerweise mit Daten belegt, sonst geschätzt.',
+            content: '{{term:auftreten|Auftreten}}: Wie häufig tritt die Ursache erfahrungsgemäß auf? Skala 1–10: 1 = sehr selten, 10 = quasi permanent. Idealerweise mit Daten belegt, sonst geschätzt.',
           },
           {
             type: 'definition',
             term: 'E (Entdeckung) / Detection',
-            content: 'Wie wahrscheinlich wird der Fehler vor dem Kunden entdeckt? Skala 1–10: 1 = wird sicher gefunden, 10 = wird garantiert übersehen. Achtung: hohe Zahl ist schlecht (umgekehrt zur Intuition).',
+            content: '{{term:entdeckung|Entdeckung}}: Wie wahrscheinlich wird der Fehler vor dem Kunden entdeckt? Skala 1–10: 1 = wird sicher gefunden, 10 = wird garantiert übersehen. Achtung: hohe Zahl ist schlecht (umgekehrt zur Intuition).',
           },
           {
             type: 'definition',
             term: 'RPZ (Risikoprioritätszahl) / RPN',
-            content: 'B × A × E. Werte zwischen 1 und 1000. Die RPZ ist eine grobe Priorisierung — keine absolute Risikomessung. Hohe Bedeutung (B ≥ 9) wird oft unabhängig vom RPZ-Wert bearbeitet.',
+            content: '{{term:rpz|RPZ}} = B × A × E. Werte zwischen 1 und 1000. Die RPZ ist eine grobe Priorisierung — keine absolute Risikomessung. Hohe Bedeutung (B ≥ 9) wird oft unabhängig vom RPZ-Wert bearbeitet.',
           },
           {
             type: 'paragraph',
@@ -65,7 +65,7 @@ export default {
         blocks: [
           {
             type: 'paragraph',
-            content: 'FMEA (Failure Mode and Effects Analysis) is a systematic method for identifying and evaluating potential failures in products or processes. The goal is to spot risks before they occur and tackle them by priority — it is a central tool of the Improve and Control phases but should already begin in Define or Analyze.',
+            content: '{{term:fmea|FMEA}} (Failure Mode and Effects Analysis) is a systematic method for identifying and evaluating potential failures in products or processes. The goal is to spot risks before they occur and tackle them by priority — it is a central tool of the Improve and Control phases but should already begin in Define or Analyze.',
           },
           {
             type: 'definition',
@@ -75,7 +75,7 @@ export default {
           {
             type: 'definition',
             term: 'Failure mode',
-            content: 'The possible kind of deviation from the function — e.g. "not snapped in", "wrong dosage", "delivered too late". Several failure modes per function are possible.',
+            content: 'The {{term:fehlermoeglichkeit|failure mode}} is the possible kind of deviation from the function — e.g. "not snapped in", "wrong dosage", "delivered too late". Several failure modes per function are possible.',
           },
           {
             type: 'definition',
@@ -90,22 +90,22 @@ export default {
           {
             type: 'definition',
             term: 'S (Severity)',
-            content: 'How serious would the effect be for the customer? Scale 1–10: 1 = negligible, 10 = safety-critical. Defined by the product or requirement, not by the process.',
+            content: '{{term:bedeutung|Severity}}: How serious would the effect be for the customer? Scale 1–10: 1 = negligible, 10 = safety-critical. Defined by the product or requirement, not by the process.',
           },
           {
             type: 'definition',
             term: 'O (Occurrence)',
-            content: 'How often does the cause occur in practice? Scale 1–10: 1 = very rare, 10 = nearly permanent. Ideally backed by data, otherwise estimated.',
+            content: '{{term:auftreten|Occurrence}}: How often does the cause occur in practice? Scale 1–10: 1 = very rare, 10 = nearly permanent. Ideally backed by data, otherwise estimated.',
           },
           {
             type: 'definition',
             term: 'D (Detection)',
-            content: 'How likely is the failure detected before reaching the customer? Scale 1–10: 1 = will surely be found, 10 = guaranteed to slip through. Note: a high number is bad (counterintuitive).',
+            content: '{{term:entdeckung|Detection}}: How likely is the failure detected before reaching the customer? Scale 1–10: 1 = will surely be found, 10 = guaranteed to slip through. Note: a high number is bad (counterintuitive).',
           },
           {
             type: 'definition',
             term: 'RPN (Risk Priority Number)',
-            content: 'S × O × D. Values from 1 to 1000. The RPN is a rough prioritization — not an absolute risk measure. High severity (S ≥ 9) is often addressed regardless of RPN.',
+            content: '{{term:rpz|RPN}} = S × O × D. Values from 1 to 1000. The RPN is a rough prioritization — not an absolute risk measure. High severity (S ≥ 9) is often addressed regardless of RPN.',
           },
           {
             type: 'paragraph',

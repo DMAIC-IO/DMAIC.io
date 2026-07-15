@@ -11,12 +11,12 @@
 
   "description": {
     "short": {
-      "de": "Bewertet Wiederholbarkeit und systematische Abweichung (Bias) eines Messmittels in einer gemeinsamen Kennzahl.",
-      "en": "Evaluates repeatability and systematic deviation (bias) of a measurement instrument in a single index."
+      "de": "Bewertet {{term:wiederholbarkeit|Wiederholbarkeit}} und {{term:bias|systematische Abweichung}} eines Messmittels in einer gemeinsamen Kennzahl.",
+      "en": "Evaluates {{term:wiederholbarkeit|repeatability}} and {{term:bias|systematic deviation}} of a measurement instrument in a single index."
     },
     "long": {
-      "de": "Der Index Cgk erweitert Cg um die systematische Abweichung (Bias) des Messmittels vom Referenzwert. Er wird berechnet, indem der halbe zugelassene Toleranzanteil um den Betrag des Bias reduziert und durch die gewichtete Streuung geteilt wird. Cgk ist immer ≤ Cg: Ein Messmittel mit geringer Streuung (hoher Cg) kann trotzdem einen niedrigen Cgk haben, wenn ein großer Bias vorliegt. Ein Cgk ≥ 1,33 gilt als fähig und zeigt, dass sowohl Wiederholbarkeit als auch Genauigkeit (Bias) ausreichend sind.",
-      "en": "The index Cgk extends Cg by accounting for the systematic deviation (bias) of the measurement instrument from the reference value. It is calculated by reducing the half allowed tolerance fraction by the absolute bias and dividing by the weighted spread. Cgk is always ≤ Cg: an instrument with low spread (high Cg) can still have a low Cgk if a large bias is present. A Cgk ≥ 1.33 is considered capable, indicating that both repeatability and accuracy (bias) are adequate."
+      "de": "Der Index {{term:cgk|Cgk}} erweitert {{term:cg|Cg}} um die {{term:bias|systematische Abweichung}} des Messmittels vom Referenzwert. Er wird berechnet, indem der halbe zugelassene Toleranzanteil um den Betrag des Bias reduziert und durch die gewichtete Streuung geteilt wird. Cgk ist immer ≤ Cg: Ein Messmittel mit geringer Streuung (hoher Cg) kann trotzdem einen niedrigen Cgk haben, wenn ein großer Bias vorliegt. Ein Cgk ≥ 1,33 gilt als fähig und zeigt, dass sowohl Wiederholbarkeit als auch {{term:genauigkeit|Genauigkeit}} (Bias) ausreichend sind.",
+      "en": "The index {{term:cgk|Cgk}} extends {{term:cg|Cg}} by accounting for the {{term:bias|systematic deviation}} of the measurement instrument from the reference value. It is calculated by reducing the half allowed tolerance fraction by the absolute bias and dividing by the weighted spread. Cgk is always ≤ Cg: an instrument with low spread (high Cg) can still have a low Cgk if a large bias is present. A Cgk ≥ 1.33 is considered capable, indicating that both repeatability and {{term:genauigkeit|accuracy}} (bias) are adequate."
     }
   },
 

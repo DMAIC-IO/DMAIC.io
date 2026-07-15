@@ -1,0 +1,89 @@
+{
+  "id": "screening-design",
+  "category": "doe",
+  "title": {
+    "de": "Screening-Design",
+    "en": "Screening Design"
+  },
+  "short": {
+    "de": "{{term:doe|DoE}}-Plan mit dem Ziel, aus vielen Kandidaten die tatsächlich wirksamen {{term:faktor|Faktoren}} herauszufiltern — nicht zu optimieren.",
+    "en": "A {{term:doe|DoE}} plan aimed at filtering the truly effective {{term:faktor|factors}} out of many candidates — not at optimising."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "Ein **Screening-Design** untersucht viele Faktoren gleichzeitig mit wenigen Versuchen, um die vitalen wenigen (\"vital few\") von den trivialen vielen (\"trivial many\") zu trennen. Ziel ist nicht das Optimum, sondern eine Reduktion der Faktoranzahl für nachgelagerte Optimierungs-Designs."
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Fractional Factorial 2ᴵᴵᴵᵏ⁻ᵖ** — klassische Wahl mit 2 {{term:stufe|Stufen}} pro Faktor; kleine Anzahl Versuche, {{term:konfundierung|Haupteffekte vermischt mit Wechselwirkungen}}",
+          "**Plackett-Burman** — sehr effizient für viele Faktoren (bis ~20) in Vielfachen von 4 Versuchen; ebenfalls nur Haupteffekte identifizierbar",
+          "**Definitive Screening Design (DSD)** — 3 Stufen pro Faktor, erlaubt zusätzlich Krümmung und einzelne Zweifach-{{term:wechselwirkung|Wechselwirkungen}} zu erkennen; besonders bei mittelvielen (~6–12) Faktoren attraktiv"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "Screening-Ergebnisse müssen mit einem Optimierungs-Design (Vollfaktoriell, CCD, Box-Behnken) an den überlebenden Faktoren nachgezogen werden. Wer im Screening direkt „das Optimum“ liest, überschätzt regelmäßig die Wirkung einzelner Faktoren."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "A **screening design** studies many factors together with few runs to separate the \"vital few\" from the \"trivial many\". The goal is not the optimum but a reduction in factor count for follow-up optimisation designs."
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Fractional Factorial 2ᴵᴵᴵᵏ⁻ᵖ** — classical choice with 2 {{term:stufe|levels}} per factor; small run count, {{term:konfundierung|main effects aliased with interactions}}",
+          "**Plackett-Burman** — very efficient for many factors (up to ~20) in multiples of 4 runs; also only main effects identifiable",
+          "**Definitive Screening Design (DSD)** — 3 levels per factor, additionally detects curvature and isolated two-factor {{term:wechselwirkung|interactions}}; attractive for moderate factor counts (~6–12)"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "Screening results must be followed up with an optimisation design (full factorial, CCD, Box-Behnken) on the surviving factors. Reading \"the optimum\" directly from a screening design routinely overstates individual factor effects."
+      }
+    ]
+  },
+  "aliases": {
+    "de": [
+      "Screening",
+      "Screening-Versuchsplan",
+      "Sichtungsplan"
+    ],
+    "en": [
+      "screening experiment",
+      "factor-screening design"
+    ]
+  },
+  "seeAlso": [
+    "doe",
+    "faktor",
+    "haupteffekt",
+    "aufloesung",
+    "konfundierung"
+  ],
+  "modules": [
+    "doe-planner",
+    "doe-advisor"
+  ],
+  "algoLab": [
+    "doe/doe-planner"
+  ],
+  "sources": [
+    {
+      "label": "Montgomery, D. C. — Design and Analysis of Experiments, 10th Edition, Chapter 8",
+      "url": null
+    },
+    {
+      "label": "Jones, B. & Nachtsheim, C. J. — A Class of Three-Level Designs for Definitive Screening in the Presence of Second-Order Effects, Journal of Quality Technology, 2011",
+      "url": null
+    },
+    {
+      "label": "Kleppmann, W. — Versuchsplanung, 10. Auflage, Hanser",
+      "url": null
+    }
+  ]
+}

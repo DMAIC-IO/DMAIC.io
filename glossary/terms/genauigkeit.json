@@ -1,0 +1,100 @@
+{
+  "id": "genauigkeit",
+  "category": "msa",
+  "title": {
+    "de": "Genauigkeit (Accuracy)",
+    "en": "Accuracy"
+  },
+  "short": {
+    "de": "Übergriff aus {{term:richtigkeit|Richtigkeit}} und {{term:praezision|Präzision}} — wie nah eine Messung dem wahren Wert insgesamt kommt.",
+    "en": "Umbrella concept of {{term:richtigkeit|trueness}} and {{term:praezision|precision}} — how close a measurement gets to the true value overall."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "**Genauigkeit** ist nach ISO 5725 die Kombination aus zwei unabhängigen Eigenschaften: der {{term:richtigkeit|Richtigkeit}} (Nähe zum Referenzwert, kein systematischer {{term:bias|Bias}}) und der {{term:praezision|Präzision}} (kleine Streuung der Messwerte untereinander). Ein Messsystem ist erst dann genau, wenn *beide* Anforderungen erfüllt sind."
+      },
+      {
+        "type": "note",
+        "text": "In älterer Literatur und im Alltag wird „Genauigkeit“ oft synonym mit Richtigkeit verwendet. Die aktuelle Norm-Sprache (ISO 5725, DIN 1319, VDA 5) trennt beide bewusst — genau wie {{term:mittelwert|Mittelwert}} und {{term:standardabweichung|Standardabweichung}} zwei unabhängige Kennzahlen sind."
+      },
+      {
+        "type": "list",
+        "items": [
+          "Richtig **und** präzise → genau (Zielscheibe: alle Treffer eng beisammen, im Zentrum)",
+          "Richtig, aber unpräzise → im Mittel richtig, einzeln unbrauchbar",
+          "Präzise, aber unrichtig → reproduzierbar falsch (Kalibrierproblem)",
+          "Weder richtig noch präzise → nicht genau"
+        ]
+      },
+      {
+        "type": "paragraph",
+        "text": "In der Messsystemanalyse prüft die MSA Typ 1 beide Aspekte an einem Referenzteil (Cg für Präzision, Cgk zusätzlich für Richtigkeit); die MSA Typ 2 (Gage R&R) zerlegt die Präzision weiter in {{term:wiederholbarkeit|Wiederholbarkeit}} und {{term:reproduzierbarkeit|Reproduzierbarkeit}}."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "**Accuracy** per ISO 5725 combines two independent properties: {{term:richtigkeit|trueness}} (closeness to the reference value, no systematic {{term:bias|bias}}) and {{term:praezision|precision}} (small spread among measurements). A measurement system is accurate only when *both* conditions are met."
+      },
+      {
+        "type": "note",
+        "text": "Older literature and everyday usage often equate \"accuracy\" with trueness. Current standards (ISO 5725, DIN 1319, VDA 5) keep both apart — just as {{term:mittelwert|mean}} and {{term:standardabweichung|standard deviation}} are two independent statistics."
+      },
+      {
+        "type": "list",
+        "items": [
+          "True **and** precise → accurate (target: hits tight and centred)",
+          "True but imprecise → correct on average, useless individually",
+          "Precise but untrue → reproducibly wrong (calibration issue)",
+          "Neither true nor precise → not accurate"
+        ]
+      },
+      {
+        "type": "paragraph",
+        "text": "In measurement system analysis, MSA Type 1 checks both aspects on a reference part (Cg for precision, Cgk additionally for trueness); MSA Type 2 (Gage R&R) further decomposes precision into {{term:wiederholbarkeit|repeatability}} and {{term:reproduzierbarkeit|reproducibility}}."
+      }
+    ]
+  },
+  "aliases": {
+    "de": [
+      "Accuracy",
+      "Messgenauigkeit"
+    ],
+    "en": [
+      "measurement accuracy",
+      "overall accuracy"
+    ]
+  },
+  "seeAlso": [
+    "richtigkeit",
+    "praezision",
+    "wiederholbarkeit",
+    "reproduzierbarkeit"
+  ],
+  "modules": [
+    "msa-typ1",
+    "msa-typ2",
+    "unit-converter"
+  ],
+  "algoLab": [
+    "msa/cg",
+    "msa/cgk",
+    "msa/grr"
+  ],
+  "sources": [
+    {
+      "label": "DIN ISO 5725-1: Genauigkeit (Richtigkeit und Präzision) von Messverfahren und Messergebnissen — Teil 1: Allgemeine Grundlagen und Begriffe",
+      "url": null
+    },
+    {
+      "label": "VDA Band 5 — Prüfprozesseignung: Eignung von Messsystemen, Mess- und Prüfprozessen, 3. Auflage",
+      "url": null
+    },
+    {
+      "label": "DIN 1319-1: Grundlagen der Messtechnik — Teil 1: Grundbegriffe",
+      "url": null
+    }
+  ]
+}

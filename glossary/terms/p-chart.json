@@ -1,0 +1,97 @@
+{
+  "id": "p-chart",
+  "category": "spc",
+  "title": {
+    "de": "p-/np-Karte (Anteil defekt)",
+    "en": "p / np Chart (Fraction Defective)"
+  },
+  "short": {
+    "de": "Attributive {{term:regelkarte|Regelkarte}} für den Anteil defekter Einheiten je Stichprobe — binomialverteilt.",
+    "en": "Attribute {{term:regelkarte|control chart}} for the fraction of defective units per sample — binomial-distributed."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "Die **p-Karte** überwacht den **Anteil** defekter Einheiten $p_i = d_i / n_i$; die **np-Karte** die **Anzahl** defekter Einheiten $np_i$ bei konstantem $n$. Beide setzen die Binomial-Verteilung voraus (jede Einheit ist entweder defekt oder nicht)."
+      },
+      {
+        "type": "formula",
+        "latex": "\\text{UCL}_p = \\bar{p} + 3\\sqrt{\\frac{\\bar{p}(1-\\bar{p})}{n}}"
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Bei konstantem n** → np-Karte einfacher zu lesen (absolute Zahlen)",
+          "**Bei variablem n** → nur p-Karte sinnvoll; Grenzen werden **pro Punkt** neu berechnet",
+          "**Voraussetzung** $n\\bar{p} \\geq 5$ — sonst wird die Binomial-Näherung ungenau und die Grenzen unsymmetrisch"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "**Überdispersion vs. Unterdispersion** — reale Prozesse zeigen oft mehr Streuung als die reine Binomial-Annahme erlaubt (z. B. Batch-Effekte). Bei signifikanter Überdispersion: entweder auf Laney p'-Karte wechseln (skaliert die Grenzen) oder eine andere Datenerhebung wählen. Nicht mit {{term:c-chart|c-/u-Karten}} verwechseln — die zählen Fehler *pro Einheit*, nicht defekte Einheiten."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "The **p chart** tracks the **fraction** of defective units $p_i = d_i / n_i$; the **np chart** the **number** of defective units $np_i$ at constant $n$. Both assume the binomial distribution (each unit is either defective or not)."
+      },
+      {
+        "type": "formula",
+        "latex": "\\text{UCL}_p = \\bar{p} + 3\\sqrt{\\frac{\\bar{p}(1-\\bar{p})}{n}}"
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Constant n** → np chart is easier to read (absolute counts)",
+          "**Variable n** → only p chart is meaningful; limits recomputed **per point**",
+          "**Prerequisite** $n\\bar{p} \\geq 5$ — otherwise the binomial approximation breaks and limits become asymmetric"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "**Over- vs. under-dispersion** — real processes often show more variation than pure binomial allows (e.g. batch effects). On significant overdispersion switch to the Laney p' chart (rescaled limits) or restructure the data collection. Do not confuse with {{term:c-chart|c/u charts}} — those count defects *per unit*, not defective units."
+      }
+    ]
+  },
+  "aliases": {
+    "de": [
+      "p-Karte",
+      "np-Karte",
+      "Anteils-Regelkarte",
+      "Attribut-Karte"
+    ],
+    "en": [
+      "p chart",
+      "np chart",
+      "fraction defective chart"
+    ]
+  },
+  "seeAlso": [
+    "c-chart",
+    "regelkarte",
+    "regelgrenze",
+    "ueberdispersion"
+  ],
+  "modules": [
+    "attribute-control-chart"
+  ],
+  "algoLab": [
+    "control-charts/attribute-control-chart"
+  ],
+  "sources": [
+    {
+      "label": "Shewhart, W. A. — Economic Control of Quality of Manufactured Product, 1931",
+      "url": null
+    },
+    {
+      "label": "Montgomery, D. C. — Introduction to Statistical Quality Control, 8th Edition, Chapter 7",
+      "url": null
+    },
+    {
+      "label": "Laney, D. B. — Improved Control Charts for Attributes, Quality Engineering, 14(4), 2002",
+      "url": null
+    }
+  ]
+}

@@ -1,0 +1,90 @@
+{
+  "id": "ppk",
+  "category": "capability",
+  "title": {
+    "de": "Ppk (Langzeit-Prozessleistungsindex, zentriert)",
+    "en": "Ppk (Long-Term, Centred)"
+  },
+  "short": {
+    "de": "Langzeit-Pendant zu {{term:cpk|Cpk}} — verwendet Gesamtstreuung und berücksichtigt die Lage des Mittelwerts.",
+    "en": "Long-term counterpart to {{term:cpk|Cpk}} — uses overall variation and accounts for mean location."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "**Ppk** ist die realistischste Kundennahe-Kennzahl der Prozessfähigkeitsfamilie: er kombiniert die Gesamtstreuung von {{term:pp|Pp}} mit der Zentrierung von {{term:cpk|Cpk}}."
+      },
+      {
+        "type": "formula",
+        "latex": "P_{pk} = \\min\\!\\left( \\frac{USL - \\bar{x}}{3 s_{\\text{overall}}},\\; \\frac{\\bar{x} - LSL}{3 s_{\\text{overall}}} \\right)"
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Ppk ≤ Cpk** in aller Regel",
+          "**Ppk << Cpk** deutet auf große Drift oder Sonderursachen hin — der Prozess *kann* eigentlich, tut es aber im Alltag nicht",
+          "**Ppk als Reporting-Kennzahl** wird oft für Lieferantenaudits gefordert, weil er das tatsächliche Verhalten spiegelt"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "Faustregel: **Ppk zeigt dem Kunden, was er bekommt; Cpk zeigt der Fertigung, was möglich wäre.** Die Lücke zwischen beiden ist ein Verbesserungshebel — durch Ursachenanalyse für die zusätzliche Langzeitstreuung."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "**Ppk** is the most realistic customer-facing metric of the capability family: it combines the overall variation of {{term:pp|Pp}} with the centring of {{term:cpk|Cpk}}."
+      },
+      {
+        "type": "formula",
+        "latex": "P_{pk} = \\min\\!\\left( \\frac{USL - \\bar{x}}{3 s_{\\text{overall}}},\\; \\frac{\\bar{x} - LSL}{3 s_{\\text{overall}}} \\right)"
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Ppk ≤ Cpk** as a rule",
+          "**Ppk << Cpk** signals strong drift or special causes — the process *can* do it, but in daily life it does not",
+          "**Ppk as a reporting metric** is often required in supplier audits because it mirrors actual behaviour"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "Rule of thumb: **Ppk shows the customer what they get; Cpk shows manufacturing what is possible.** The gap between the two is an improvement lever — through root-cause analysis of the extra long-term variation."
+      }
+    ]
+  },
+  "aliases": {
+    "de": [
+      "Ppk-Wert",
+      "Long-term Cpk"
+    ],
+    "en": [
+      "Ppk value",
+      "long-term Cpk"
+    ]
+  },
+  "seeAlso": [
+    "pp",
+    "cpk",
+    "cp",
+    "prozessfaehigkeit"
+  ],
+  "modules": [
+    "process-capability"
+  ],
+  "algoLab": [
+    "capability/ppk"
+  ],
+  "sources": [
+    {
+      "label": "AIAG — Statistical Process Control (SPC) Reference Manual, 2nd Edition",
+      "url": null
+    },
+    {
+      "label": "Montgomery, D. C. — Introduction to Statistical Quality Control, 8th Edition, Chapter 8",
+      "url": null
+    }
+  ]
+}

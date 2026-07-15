@@ -1,0 +1,93 @@
+{
+  "id": "teilfaktoriell",
+  "category": "doe",
+  "title": {
+    "de": "Teilfaktorieller Versuchsplan (Fractional Factorial)",
+    "en": "Fractional Factorial Design"
+  },
+  "short": {
+    "de": "Ein gezielt gewählter Bruchteil des {{term:vollfaktoriell|Vollplans}} — weniger Versuche, dafür {{term:konfundierung|Effektvermischung}} nach Design-{{term:aufloesung|Auflösung}}.",
+    "en": "A deliberately chosen fraction of the {{term:vollfaktoriell|full factorial}} — fewer runs, at the cost of {{term:konfundierung|effect aliasing}} governed by design {{term:aufloesung|resolution}}."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "Ein **teilfaktorieller Plan** (2ᵏ⁻ᵖ) enthält nur einen Bruchteil (Hälfte, Viertel, Achtel …) der Läufe eines Vollfaktoriellen. Er ist die effiziente Wahl für 5 oder mehr {{term:faktor|Faktoren}} und für Screening-Phasen, in denen Wechselwirkungen höherer Ordnung als vernachlässigbar angenommen werden."
+      },
+      {
+        "type": "formula",
+        "latex": "N = 2^{k-p}, \\quad p = \\text{Anzahl der Generatoren}"
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Halber Plan (2ᵏ⁻¹)** — halbiert die Läufe; bei Auflösung ≥ IV oft brauchbar",
+          "**Viertel-Plan (2ᵏ⁻²)** — nur ein Viertel; braucht sorgfältige Wahl der Generatoren",
+          "**Screening-Fraktion** wie 2ᴵᴵᴵ⁷⁻⁴ mit nur 8 Versuchen für 7 Faktoren"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "Die zentrale Frage ist die {{term:aufloesung|Auflösung}}: Sie legt fest, welche Effekte mit welchen vermischt sind. Vor der Auswertung muss die Alias-Struktur bekannt sein — sonst können {{term:wechselwirkung|Wechselwirkungs}}-Effekte fälschlich einem {{term:haupteffekt|Haupteffekt}} zugeschrieben werden."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "A **fractional factorial design** (2ᵏ⁻ᵖ) contains only a fraction (half, quarter, eighth …) of the runs of the full factorial. It is the efficient choice for 5 or more {{term:faktor|factors}} and for screening phases where higher-order interactions can safely be assumed negligible."
+      },
+      {
+        "type": "formula",
+        "latex": "N = 2^{k-p}, \\quad p = \\text{number of generators}"
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Half fraction (2ᵏ⁻¹)** — halves the runs; often usable at resolution ≥ IV",
+          "**Quarter fraction (2ᵏ⁻²)** — only a quarter; requires careful generator choice",
+          "**Screening fractions** such as 2ᴵᴵᴵ⁷⁻⁴ with only 8 runs for 7 factors"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "The key question is {{term:aufloesung|resolution}}: it decides which effects are aliased with which. Before analysis the alias structure must be known — otherwise {{term:wechselwirkung|interaction}} effects can wrongly be credited to a {{term:haupteffekt|main effect}}."
+      }
+    ]
+  },
+  "aliases": {
+    "de": [
+      "Fractional Factorial",
+      "2^(k-p)-Plan",
+      "Fraktioneller Faktorplan"
+    ],
+    "en": [
+      "fractional factorial",
+      "2^(k-p) design"
+    ]
+  },
+  "seeAlso": [
+    "vollfaktoriell",
+    "aufloesung",
+    "konfundierung",
+    "screening-design",
+    "doe"
+  ],
+  "modules": [
+    "doe-planner",
+    "doe-advisor"
+  ],
+  "algoLab": [
+    "doe/doe-planner"
+  ],
+  "sources": [
+    {
+      "label": "Montgomery, D. C. — Design and Analysis of Experiments, 10th Edition, Chapter 8",
+      "url": null
+    },
+    {
+      "label": "Box, Hunter & Hunter — Statistics for Experimenters, 2nd Edition, Chapter 6",
+      "url": null
+    }
+  ]
+}

@@ -1,0 +1,84 @@
+{
+  "id": "dsd",
+  "category": "doe",
+  "title": {
+    "de": "Definitive Screening Design (DSD)",
+    "en": "Definitive Screening Design (DSD)"
+  },
+  "short": {
+    "de": "Modernes {{term:screening-design|Screening-Design}} mit 3 {{term:stufe|Stufen}}, das zusätzlich Krümmung und einzelne {{term:wechselwirkung|Zweifach-Wechselwirkungen}} auflöst.",
+    "en": "Modern {{term:screening-design|screening design}} with 3 {{term:stufe|levels}} that additionally resolves curvature and isolated two-factor {{term:wechselwirkung|interactions}}."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "Ein **Definitive Screening Design** (Jones & Nachtsheim, 2011) ist ein dreistufiger Screening-Plan mit typischerweise $2k+1$ Versuchen für $k$ Faktoren. Im Gegensatz zu klassischen 2-Stufen-Screening-Designs schlägt es zwei Fliegen mit einer Klappe: es identifiziert wichtige {{term:haupteffekt|Haupteffekte}} **und** kann Krümmung sowie einzelne aktive Zweifach-{{term:wechselwirkung|Wechselwirkungen}} sauber schätzen."
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Struktur:** je Faktor drei Stufen (−1, 0, +1); ein Zentralpunktlauf plus je zwei „Faltungen“ pro Faktor",
+          "**Trennschärfe:** {{term:haupteffekt|Haupteffekte}} sind orthogonal zu allen Zweifach-Wechselwirkungen und quadratischen Termen",
+          "**Sparsamkeit** — pro Faktor nur 2 zusätzliche Versuche; für 6 Faktoren nur 13 Läufe (statt 64 vollfaktoriell)"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "DSD ist attraktiv bei mittelvielen Faktoren (typischerweise 6–12), wenn *sowohl* die Frage „welche Faktoren?“ *als auch* „gibt es Krümmung?“ mit einem einzigen Design beantwortet werden soll. Es ersetzt in vielen Anwendungen die Kombination Plackett-Burman + Follow-up-CCD."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "A **Definitive Screening Design** (Jones & Nachtsheim, 2011) is a three-level screening plan with typically $2k+1$ runs for $k$ factors. Unlike classical two-level screening designs, it kills two birds with one stone: identifying important {{term:haupteffekt|main effects}} **and** cleanly estimating curvature plus isolated active two-factor {{term:wechselwirkung|interactions}}."
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Structure:** three levels per factor (−1, 0, +1); one centre run plus two \"foldover\" runs per factor",
+          "**Separability:** {{term:haupteffekt|main effects}} are orthogonal to all two-factor interactions and quadratic terms",
+          "**Parsimony** — only 2 extra runs per factor; 6 factors need just 13 runs (vs. 64 full factorial)"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "DSD is attractive at moderate factor counts (typically 6–12) when *both* \"which factors?\" *and* \"is there curvature?\" must be answered by a single design. In many applications it replaces the classical Plackett-Burman + follow-up CCD combination."
+      }
+    ]
+  },
+  "aliases": {
+    "de": [
+      "Definitive Screening Design",
+      "DSD-Design"
+    ],
+    "en": [
+      "Definitive Screening Design",
+      "Jones-Nachtsheim design"
+    ]
+  },
+  "seeAlso": [
+    "screening-design",
+    "plackett-burman",
+    "response-surface",
+    "haupteffekt",
+    "doe"
+  ],
+  "modules": [
+    "doe-planner",
+    "doe-advisor"
+  ],
+  "algoLab": [
+    "doe/doe-planner"
+  ],
+  "sources": [
+    {
+      "label": "Jones, B. & Nachtsheim, C. J. — A Class of Three-Level Designs for Definitive Screening in the Presence of Second-Order Effects, Journal of Quality Technology, 43(1), 2011",
+      "url": null
+    },
+    {
+      "label": "Jones, B. & Nachtsheim, C. J. — Definitive Screening Designs with Added Two-Level Categorical Factors, Journal of Quality Technology, 45(2), 2013",
+      "url": null
+    }
+  ]
+}

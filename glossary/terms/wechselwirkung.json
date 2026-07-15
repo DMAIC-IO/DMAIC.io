@@ -1,0 +1,97 @@
+{
+  "id": "wechselwirkung",
+  "category": "doe",
+  "title": {
+    "de": "Wechselwirkung (Interaction)",
+    "en": "Interaction"
+  },
+  "short": {
+    "de": "Zwei {{term:faktor|Faktoren}} wirken nicht unabhängig — der Effekt von A hängt vom Stand von B ab.",
+    "en": "Two {{term:faktor|factors}} do not act independently — the effect of A depends on the level of B."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "Eine **Wechselwirkung** liegt vor, wenn die Wirkung eines Faktors davon abhängt, auf welcher {{term:stufe|Stufe}} ein anderer Faktor steht. In der Regressionsgleichung erscheint sie als Produktterm $\\beta_{AB} \\cdot x_A \\cdot x_B$."
+      },
+      {
+        "type": "formula",
+        "latex": "\\text{WW}(A \\times B) = \\tfrac{1}{2}\\bigl[(\\bar{y}_{A+B+} - \\bar{y}_{A-B+}) - (\\bar{y}_{A+B-} - \\bar{y}_{A-B-})\\bigr]"
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Grafische Diagnose:** Interaktionsdiagramm — sich schneidende Linien deuten auf Wechselwirkung, parallele Linien auf reine {{term:haupteffekt|Haupteffekte}}",
+          "**Zweifach-Wechselwirkungen** (2fi) sind in der Praxis am häufigsten interpretierbar",
+          "**Höhere Ordnungen** (3fi, 4fi) sind meist klein und werden in vielen Designs zugunsten der Effizienz mit Haupteffekten verwechselt ({{term:konfundierung|Aliasing}})"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "Wechselwirkungen zu erkennen ist einer der Hauptnutzen von DoE — die klassische „ein Faktor nach dem anderen“-Methode übersieht sie systematisch. In fraktionellen Plänen bestimmt die {{term:aufloesung|Auflösung}}, welche Wechselwirkungen sauber schätzbar bleiben."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "An **interaction** exists when the effect of one factor depends on the {{term:stufe|level}} of another. In regression form it appears as a product term $\\beta_{AB} \\cdot x_A \\cdot x_B$."
+      },
+      {
+        "type": "formula",
+        "latex": "\\text{Int}(A \\times B) = \\tfrac{1}{2}\\bigl[(\\bar{y}_{A+B+} - \\bar{y}_{A-B+}) - (\\bar{y}_{A+B-} - \\bar{y}_{A-B-})\\bigr]"
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Graphical diagnostic:** interaction plot — crossing lines suggest an interaction, parallel lines suggest {{term:haupteffekt|main effects}} only",
+          "**Two-factor interactions** (2fi) are usually the most interpretable in practice",
+          "**Higher orders** (3fi, 4fi) are typically small and, in many designs, aliased with main effects for efficiency ({{term:konfundierung|aliasing}})"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "Detecting interactions is one of DoE's main benefits — the classical \"one factor at a time\" approach misses them systematically. In fractional designs, the {{term:aufloesung|resolution}} determines which interactions remain cleanly estimable."
+      }
+    ]
+  },
+  "aliases": {
+    "de": [
+      "Interaction",
+      "Interaktion",
+      "Wechselwirkungseffekt"
+    ],
+    "en": [
+      "interaction effect",
+      "two-factor interaction",
+      "2fi"
+    ]
+  },
+  "seeAlso": [
+    "haupteffekt",
+    "faktor",
+    "konfundierung",
+    "aufloesung",
+    "doe"
+  ],
+  "modules": [
+    "doe-planner",
+    "doe-advisor",
+    "regression",
+    "glm-regression"
+  ],
+  "algoLab": [
+    "doe/doe-planner",
+    "regression/regression-coefficients"
+  ],
+  "sources": [
+    {
+      "label": "Montgomery, D. C. — Design and Analysis of Experiments, 10th Edition, Chapter 6",
+      "url": null
+    },
+    {
+      "label": "Box, Hunter & Hunter — Statistics for Experimenters, 2nd Edition",
+      "url": null
+    }
+  ]
+}

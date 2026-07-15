@@ -1,0 +1,69 @@
+{
+  "id": "lineare-regression",
+  "category": "regression",
+  "title": {
+    "de": "Lineare Regression (OLS)",
+    "en": "Linear Regression (OLS)"
+  },
+  "short": {
+    "de": "Standard-{{term:regression|Regression}} für stetiges, normalverteiltes Y — Modell $Y = \\beta_0 + \\sum \\beta_j X_j + \\varepsilon$, geschätzt per kleinster Quadrate.",
+    "en": "Standard {{term:regression|regression}} for continuous, normally distributed Y — model $Y = \\beta_0 + \\sum \\beta_j X_j + \\varepsilon$, estimated by least squares."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "Die **lineare Regression** (Ordinary Least Squares, OLS) ist das klassische Regressionsmodell. Sie minimiert die Summe der quadrierten {{term:residuen|Residuen}} — die $\\hat{\\beta}$ werden so gewählt, dass die vorhergesagten Werte den beobachteten möglichst nahe kommen."
+      },
+      {
+        "type": "formula",
+        "latex": "\\hat{\\boldsymbol{\\beta}} = (\\mathbf{X}^\\top \\mathbf{X})^{-1} \\mathbf{X}^\\top \\mathbf{y}"
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Einfach** — ein X, ein Y: $Y = \\beta_0 + \\beta_1 X + \\varepsilon$",
+          "**Multipel** — mehrere X: $Y = \\beta_0 + \\beta_1 X_1 + \\beta_2 X_2 + \\ldots + \\varepsilon$",
+          "**Annahmen** — Linearität, unabhängige Beobachtungen, konstante Fehlervarianz (keine {{term:heteroskedastizitaet|Heteroskedastizität}}), normalverteilte Residuen"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "„Linear“ bezieht sich auf die Koeffizienten, nicht auf die Prädiktoren: $Y = \\beta_0 + \\beta_1 X + \\beta_2 X^2$ ist immer noch **lineare** Regression (linear in $\\beta$), obwohl die Kurve gekrümmt ist. Bei Antworten außerhalb der OLS-Voraussetzungen (binär, Zähldaten) besser {{term:glm|GLM}} verwenden."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "**Linear regression** (Ordinary Least Squares, OLS) is the classical regression model. It minimises the sum of squared {{term:residuen|residuals}} — the $\\hat{\\beta}$ are chosen so that predictions land as close as possible to observations."
+      },
+      {
+        "type": "formula",
+        "latex": "\\hat{\\boldsymbol{\\beta}} = (\\mathbf{X}^\\top \\mathbf{X})^{-1} \\mathbf{X}^\\top \\mathbf{y}"
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Simple** — one X, one Y: $Y = \\beta_0 + \\beta_1 X + \\varepsilon$",
+          "**Multiple** — several X: $Y = \\beta_0 + \\beta_1 X_1 + \\beta_2 X_2 + \\ldots + \\varepsilon$",
+          "**Assumptions** — linearity, independent observations, constant error variance (no {{term:heteroskedastizitaet|heteroscedasticity}}), normal residuals"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "\"Linear\" refers to the coefficients, not the predictors: $Y = \\beta_0 + \\beta_1 X + \\beta_2 X^2$ is still **linear** regression (linear in $\\beta$) even though the curve bends. For responses outside OLS assumptions (binary, count data) use {{term:glm|GLM}} instead."
+      }
+    ]
+  },
+  "aliases": {
+    "de": ["OLS", "Ordinary Least Squares", "Methode der kleinsten Quadrate", "Multiple lineare Regression"],
+    "en": ["OLS", "least squares", "multiple linear regression"]
+  },
+  "seeAlso": ["regression", "residuen", "r-quadrat", "glm", "haupteffekt"],
+  "modules": ["regression", "doe-planner", "correlation"],
+  "algoLab": ["regression/regression-coefficients", "regression/regression-anova"],
+  "sources": [
+    { "label": "Montgomery, D. C., Peck, E. A. & Vining, G. G. — Introduction to Linear Regression Analysis, 6th Edition", "url": null },
+    { "label": "Draper, N. R. & Smith, H. — Applied Regression Analysis, 3rd Edition, Wiley", "url": null }
+  ]
+}

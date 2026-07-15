@@ -1,0 +1,87 @@
+{
+  "id": "five-why",
+  "category": "methodology",
+  "title": {
+    "de": "5-Why (Ursachenanalyse)",
+    "en": "5-Why (Root-Cause Analysis)"
+  },
+  "short": {
+    "de": "Iterative Warum-Frage zur Ursachenkette — mindestens fünfmal „warum?“ fragen, bis die eigentliche Wurzelursache erreicht ist.",
+    "en": "Iterative why-questioning to trace the cause chain — ask \"why?\" at least five times until the true root cause is reached."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "Die **5-Why-Methode** (Toyota, 1930er) ist die einfachste Root-Cause-Analyse: Ausgangspunkt ist ein beobachtetes Problem; man fragt „warum passiert das?“, nimmt die Antwort als neues Problem und wiederholt — mindestens fünfmal. Am Ende steht in der Regel ein Systemproblem, nicht ein Einzelfehler."
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Beispiel** — Maschine steht → warum? Sicherung durchgebrannt → warum? Pumpe überlastet → warum? Filter verstopft → warum? Wartung ausgefallen → warum? kein Wartungsplan im System → **Wurzelursache**",
+          "**Team-Werkzeug** — nie allein anwenden; verschiedene Rollen sehen unterschiedliche Ursachenketten",
+          "**5 ist Faustzahl, nicht Regel** — manchmal reichen drei, manchmal braucht man sieben"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "5-Why ist günstig, schnell und team-tauglich — aber begrenzt: es liefert **eine** Kette. Bei komplexen, mehrfaktoriellen Problemen sind {{term:ishikawa|Ishikawa}} (breite Sammlung möglicher Ursachen) und {{term:fmea|FMEA}} (Bewertung und Priorisierung) besser. Faustregel: 5-Why für klar abgegrenzte Einzelvorfälle, Ishikawa/FMEA für Prozess- und Systemprobleme."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "**5-Why** (Toyota, 1930s) is the simplest root-cause analysis: start from an observed problem, ask \"why does this happen?\", take the answer as the new problem, and repeat — at least five times. What emerges is usually a system problem, not a single fault."
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Example** — machine down → why? fuse blew → why? pump overloaded → why? filter clogged → why? maintenance missed → why? no maintenance plan in the system → **root cause**",
+          "**Team tool** — never use alone; different roles trace different cause chains",
+          "**5 is a rule of thumb, not a law** — sometimes three suffice, sometimes seven are needed"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "5-Why is cheap, fast, team-friendly — but limited: it yields **one** chain. For complex multi-factor problems, {{term:ishikawa|Ishikawa}} (broad collection of possible causes) and {{term:fmea|FMEA}} (assessment and prioritisation) are better. Rule of thumb: 5-Why for clearly bounded individual incidents, Ishikawa/FMEA for process and system issues."
+      }
+    ]
+  },
+  "aliases": {
+    "de": [
+      "5-Why",
+      "Fünf-mal-Warum",
+      "Root-Cause-Analyse",
+      "Why-Why-Analyse"
+    ],
+    "en": [
+      "5 Whys",
+      "five whys",
+      "root cause analysis"
+    ]
+  },
+  "seeAlso": [
+    "ishikawa",
+    "fmea",
+    "dmaic",
+    "pareto"
+  ],
+  "modules": [
+    "five-why"
+  ],
+  "algoLab": [],
+  "sources": [
+    {
+      "label": "Ohno, T. — Toyota Production System: Beyond Large-Scale Production, Productivity Press, 1988",
+      "url": null
+    },
+    {
+      "label": "Serrat, O. — The Five Whys Technique, Asian Development Bank, 2009",
+      "url": null
+    },
+    {
+      "label": "Pyzdek, T. & Keller, P. — The Six Sigma Handbook, 5th Edition",
+      "url": null
+    }
+  ]
+}

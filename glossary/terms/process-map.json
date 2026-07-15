@@ -1,0 +1,92 @@
+{
+  "id": "process-map",
+  "category": "methodology",
+  "title": {
+    "de": "Prozesskarte (Flowchart)",
+    "en": "Process Map (Flowchart)"
+  },
+  "short": {
+    "de": "Detaillierte Darstellung des tatsächlichen Prozessablaufs — Grundlage für die Measure- und Analyze-Phase im {{term:dmaic|DMAIC}}.",
+    "en": "Detailed depiction of the actual process flow — foundation for the Measure and Analyze phases of {{term:dmaic|DMAIC}}."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "Eine **Prozesskarte** (Process Map, Flowchart) zeigt den tatsächlichen Ablauf eines Prozesses Schritt für Schritt — Aktivitäten, Entscheidungen, Wartezeiten, Übergaben zwischen Rollen. Sie ist die detaillierte Fortsetzung des groben {{term:sipoc|SIPOC}} in der Measure-Phase."
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Basis-Flowchart** — Rechtecke (Aktivität), Rauten (Entscheidung), Pfeile (Fluss)",
+          "**Swimlane-Diagramm** — mit Zeilen pro Rolle/Abteilung; zeigt Übergaben und Verantwortlichkeiten",
+          "**Value Stream Map** — Lean-Erweiterung mit Wertschöpfungs- vs. Nicht-Wertschöpfungszeiten",
+          "**Ist vs. Soll** — der Ist-Prozess wird zuerst dokumentiert; der Soll-Prozess kommt als Verbesserungsergebnis"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "**Häufigster Fehler:** die *ideale* Prozesskarte statt der *echten* zeichnen. Der Ist-Prozess enthält meist Workarounds, Nebenwege und unbelegte Übergaben, die im Ideal-Bild fehlen — genau dort verstecken sich aber die Verbesserungshebel. Karte immer im Team mit den Ausführenden erstellen, nicht mit dem Management. Sub-Prozesse ggf. mit {{term:ishikawa|Ishikawa}} und {{term:fmea|FMEA}} weiter untersuchen."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "A **process map** (flowchart) depicts the actual flow of a process step by step — activities, decisions, wait times, hand-offs between roles. It is the detailed follow-on to the coarse {{term:sipoc|SIPOC}} in the Measure phase."
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Basic flowchart** — rectangles (activity), diamonds (decision), arrows (flow)",
+          "**Swimlane diagram** — with rows per role/department; shows hand-offs and ownership",
+          "**Value Stream Map** — Lean extension distinguishing value-adding vs. non-value-adding times",
+          "**As-is vs. to-be** — the current process is documented first; the target process is a deliverable of improvement"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "**Most common mistake:** drawing the *ideal* process map instead of the *actual* one. The as-is process usually contains workarounds, side channels and unrecorded hand-offs missing from the ideal picture — but that is exactly where the improvement leverage hides. Always draft the map with the people doing the work, not with management. Sub-processes can be probed further with {{term:ishikawa|Ishikawa}} and {{term:fmea|FMEA}}."
+      }
+    ]
+  },
+  "aliases": {
+    "de": [
+      "Prozesskarte",
+      "Flowchart",
+      "Flussdiagramm",
+      "Swimlane",
+      "Value Stream Map"
+    ],
+    "en": [
+      "process map",
+      "flowchart",
+      "swimlane",
+      "value stream map"
+    ]
+  },
+  "seeAlso": [
+    "sipoc",
+    "dmaic",
+    "ishikawa",
+    "fmea"
+  ],
+  "modules": [
+    "process-map",
+    "sipoc"
+  ],
+  "algoLab": [],
+  "sources": [
+    {
+      "label": "Damelio, R. — The Basics of Process Mapping, 2nd Edition, Productivity Press, 2011",
+      "url": null
+    },
+    {
+      "label": "Rother, M. & Shook, J. — Learning to See: Value Stream Mapping, Lean Enterprise Institute, 1999",
+      "url": null
+    },
+    {
+      "label": "Pyzdek, T. & Keller, P. — The Six Sigma Handbook, 5th Edition",
+      "url": null
+    }
+  ]
+}
