@@ -1389,6 +1389,75 @@
       "errTooFewReplicates": "At least 2 replicates per cell required (currently: {n}).",
       "errUslLeqLsl": "USL must be greater than LSL."
     },
+    "msa-typ4": {
+      "title": "MSA Type 4",
+      "titleLong": "Linearity & Bias Across the Measurement Range",
+      "description": "Evaluates whether the measurement system measures consistently across the entire operating range.",
+      "sections": {
+        "feature": "Characteristic",
+        "dataSource": "Data Source",
+        "evaluation": "Evaluation Reference",
+        "results": "Results"
+      },
+      "labels": {
+        "name": "Name",
+        "unit": "Unit",
+        "referenceColumn": "Reference column",
+        "measuredColumn": "Measured column",
+        "norm": "Standard",
+        "normAiag": "AIAG MSA",
+        "normVda": "VDA 5",
+        "pvMode": "Process variation basis",
+        "pvModeTolerance": "Tolerance",
+        "pvModeSixSigma": "6·σₚ",
+        "lsl": "LSL",
+        "usl": "USL",
+        "sigmaP": "σₚ (process sigma)",
+        "alpha": "Significance level α"
+      },
+      "kpi": {
+        "percentLinearity": "%Linearity",
+        "slope": "Slope",
+        "intercept": "Intercept",
+        "maxPercentBias": "max. %Bias",
+        "uBi": "u_BI",
+        "u": "U (k=2)",
+        "qMsBi": "Q_MS,BI"
+      },
+      "table": {
+        "reference": "Reference",
+        "n": "n",
+        "mean": "Mean",
+        "bias": "Bias",
+        "percentBias": "%Bias",
+        "tStat": "t",
+        "pValue": "p"
+      },
+      "charts": {
+        "linearity": "Linearity plot",
+        "percentBias": "%Bias over reference",
+        "perReference": "Measurements per reference",
+        "residuals": "Residuals"
+      },
+      "emptyState": "Select reference and measured columns to start the analysis.",
+      "errLengthMismatch": "Reference and measured columns must have the same length.",
+      "errTooFewReferences": "At least 5 distinct reference values required (currently {got}).",
+      "errTooFewRepeats": "Reference {xRef} has only {n} repeats (minimum 3).",
+      "errInvalidPv": "Invalid process variation basis. Tolerance must be > 0, or σₚ > 0.",
+      "errNanValues": "Invalid value in row {row}.",
+      "verdictAiagOk": "AIAG: unremarkable",
+      "verdictAiagMarginal": "AIAG: marginal",
+      "verdictAiagFail": "AIAG: not acceptable",
+      "verdictVdaOk": "VDA 5: suitable",
+      "verdictVdaMarginal": "VDA 5: conditionally suitable",
+      "verdictVdaFail": "VDA 5: not suitable",
+      "interpAIAG_green": "No significant slope (p={pSlope}) and no significant bias. %Linearity {pctLin} %, max. %Bias {maxPctBias} % — measurement system is linear and unbiased across the measurement range.",
+      "interpAIAG_yellow": "%Linearity {pctLin} % or max. %Bias {maxPctBias} % in the gray zone (5–10 %). Investigate cause (calibration, gage).",
+      "interpAIAG_red": "%Linearity {pctLin} % or max. %Bias {maxPctBias} % > 10 %, or slope/intercept significant. Measurement system not suitable for this tolerance range — calibrate or replace.",
+      "interpVDA5_green": "Q_MS,BI = {qMsBi} % ≤ 15 %. Bias/linearity contribution to measurement uncertainty unremarkable.",
+      "interpVDA5_yellow": "Q_MS,BI = {qMsBi} % in the range 15–30 %. Conditionally suitable, review the overall uncertainty budget.",
+      "interpVDA5_red": "Q_MS,BI = {qMsBi} % > 30 %. Not suitable — rework the measurement system."
+    },
     "process-capability": {
       "name": "Process Capability",
       "description": "Process Capability Analysis — Cp, Cpk, Pp, Ppk, PPM, Sigma Level",

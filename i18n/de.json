@@ -1389,6 +1389,75 @@
       "errTooFewReplicates": "Mindestens 2 Wiederholungen pro Zelle benötigt (aktuell: {n}).",
       "errUslLeqLsl": "OSG muss größer als USG sein."
     },
+    "msa-typ4": {
+      "title": "MSA Typ 4",
+      "titleLong": "Linearität & Bias über den Messbereich",
+      "description": "Bewertet, ob das Messsystem über den gesamten Arbeitsbereich gleichmäßig misst.",
+      "sections": {
+        "feature": "Merkmal",
+        "dataSource": "Datenquelle",
+        "evaluation": "Bewertungsbezug",
+        "results": "Ergebnisse"
+      },
+      "labels": {
+        "name": "Name",
+        "unit": "Einheit",
+        "referenceColumn": "Referenz-Spalte",
+        "measuredColumn": "Mess-Spalte",
+        "norm": "Norm",
+        "normAiag": "AIAG MSA",
+        "normVda": "VDA 5",
+        "pvMode": "Bezugsstreuung",
+        "pvModeTolerance": "Toleranz",
+        "pvModeSixSigma": "6·σₚ",
+        "lsl": "USG (LSL)",
+        "usl": "OSG (USL)",
+        "sigmaP": "σₚ (Prozess-Sigma)",
+        "alpha": "Signifikanzniveau α"
+      },
+      "kpi": {
+        "percentLinearity": "%Linearität",
+        "slope": "Steigung",
+        "intercept": "Achsenabschnitt",
+        "maxPercentBias": "max. %Bias",
+        "uBi": "u_BI",
+        "u": "U (k=2)",
+        "qMsBi": "Q_MS,BI"
+      },
+      "table": {
+        "reference": "Referenz",
+        "n": "n",
+        "mean": "Mittel",
+        "bias": "Bias",
+        "percentBias": "%Bias",
+        "tStat": "t",
+        "pValue": "p"
+      },
+      "charts": {
+        "linearity": "Linearitäts-Plot",
+        "percentBias": "%Bias über Referenz",
+        "perReference": "Messwerte je Referenz",
+        "residuals": "Residuen"
+      },
+      "emptyState": "Referenz- und Mess-Spalte auswählen, um die Analyse zu starten.",
+      "errLengthMismatch": "Referenz- und Mess-Spalte müssen dieselbe Länge haben.",
+      "errTooFewReferences": "Mindestens 5 unterschiedliche Referenzwerte nötig (aktuell {got}).",
+      "errTooFewRepeats": "Referenz {xRef} hat nur {n} Wiederholungen (Minimum 3).",
+      "errInvalidPv": "Bezugsstreuung ungültig. Toleranz muss > 0 sein bzw. σₚ > 0.",
+      "errNanValues": "Ungültiger Wert in Zeile {row}.",
+      "verdictAiagOk": "AIAG: unauffällig",
+      "verdictAiagMarginal": "AIAG: grenzwertig",
+      "verdictAiagFail": "AIAG: nicht akzeptabel",
+      "verdictVdaOk": "VDA 5: geeignet",
+      "verdictVdaMarginal": "VDA 5: bedingt geeignet",
+      "verdictVdaFail": "VDA 5: nicht geeignet",
+      "interpAIAG_green": "Keine signifikante Steigung (p={pSlope}) und kein signifikanter Bias. %Linearität {pctLin} %, max. %Bias {maxPctBias} % — Messsystem ist über den Messbereich linear und unverzerrt.",
+      "interpAIAG_yellow": "%Linearität {pctLin} % oder max. %Bias {maxPctBias} % im Graubereich (5–10 %). Ursache prüfen (Kalibrierung, Prüfmittel).",
+      "interpAIAG_red": "%Linearität {pctLin} % oder max. %Bias {maxPctBias} % > 10 % bzw. Steigung/Achsenabschnitt signifikant. Messsystem für diesen Toleranzbereich nicht geeignet — kalibrieren oder ersetzen.",
+      "interpVDA5_green": "Q_MS,BI = {qMsBi} % ≤ 15 %. Bias/Linearitäts-Beitrag zur Messunsicherheit unauffällig.",
+      "interpVDA5_yellow": "Q_MS,BI = {qMsBi} % im Bereich 15–30 %. Bedingt geeignet, gesamtes Unsicherheitsbudget prüfen.",
+      "interpVDA5_red": "Q_MS,BI = {qMsBi} % > 30 %. Nicht geeignet — Messsystem überarbeiten."
+    },
     "process-capability": {
       "name": "Prozessfähigkeit",
       "description": "Prozessfähigkeitsanalyse — Cp, Cpk, Pp, Ppk, PPM, Sigma-Level",
