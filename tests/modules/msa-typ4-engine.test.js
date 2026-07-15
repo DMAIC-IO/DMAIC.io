@@ -5,7 +5,8 @@
  */
 
 import { suite, test, assert, assertClose } from '../test-utils.js';
-import { validate } from '../../js/engines/msa-typ4-engine.js';
+import { validate, perReferenceStats } from '../../js/engines/msa-typ4-engine.js';
+import fixtures from '../fixtures/msa/msa-typ4.fixtures.json' with { type: 'json' };
 
 suite('msa-typ4-engine — validate', () => {
   test('leere Eingabe → E_TOO_FEW_REFERENCES', () => {
@@ -58,5 +59,28 @@ suite('msa-typ4-engine — validate', () => {
     const r = validate(ref, y, { pvMode: 'tolerance', LSL: 0, USL: 10 });
     assert(r.valid);
     assert(r.errorKey === null);
+  });
+});
+
+suite('msa-typ4-engine — perReferenceStats', () => {
+  test('clean-Fixture: bias ≈ 0, hohe p-Werte', () => {
+    const c = fixtures.test_cases.find(x => x.id === 'clean');
+    const stats = perReferenceStats(c.inputs.reference, c.inputs.measured, 0.05);
+    assertClose(stats.length, c.expected.perReference.length, 0);
+    for (let i = 0; i < stats.length; i++) {
+      const got = stats[i], want = c.expected.perReference[i];
+      assertClose(got.xRef, want.xRef, 1e-9);
+      assertClose(got.n, want.n, 0);
+      assertClose(got.mean, want.mean, 1e-6);
+      assertClose(got.bias, want.bias, 1e-6);
+      assertClose(got.sd, want.sd, 1e-6);
+      assertClose(got.pValue, want.pValue, 1e-4);
+    }
+  });
+
+  test('offset-bias-Fixture: alle p-Werte klein', () => {
+    const c = fixtures.test_cases.find(x => x.id === 'offset-bias');
+    const stats = perReferenceStats(c.inputs.reference, c.inputs.measured, 0.05);
+    for (const s of stats) assert(s.pValue < 0.05, `pValue=${s.pValue} @ ref=${s.xRef}`);
   });
 });

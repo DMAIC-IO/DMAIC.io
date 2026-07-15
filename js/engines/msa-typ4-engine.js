@@ -7,6 +7,8 @@
  * Spec: docs/modules/MSA-TYP4.md
  */
 
+import { tDistPValue } from './regression-engine.js';
+
 const ERR = {
   LENGTH_MISMATCH:   'modules.msa-typ4.errLengthMismatch',
   TOO_FEW_REFS:      'modules.msa-typ4.errTooFewReferences',
@@ -60,4 +62,43 @@ export function pvValue(params) {
   }
   const T = Number(params?.USL) - Number(params?.LSL);
   return T;
+}
+
+/**
+ * Compute per-reference statistics: for each unique reference value, a
+ * one-sample t-test of H0: mean(measured) == xRef (i.e. bias == 0).
+ * Groups by unique reference value (ascending), returns one entry per group.
+ * @param {number[]} reference
+ * @param {number[]} measured
+ * @param {number}   alpha    Significance level (reserved for callers/verdicts; not used internally).
+ * @returns {Array<{xRef:number, n:number, mean:number, bias:number, sd:number, tStat:number, pValue:number}>}
+ */
+export function perReferenceStats(reference, measured, alpha = 0.05) {
+  const groups = new Map();
+  for (let i = 0; i < reference.length; i++) {
+    const x = reference[i];
+    if (!groups.has(x)) groups.set(x, []);
+    groups.get(x).push(measured[i]);
+  }
+  const sorted = [...groups.keys()].sort((a, b) => a - b);
+  const out = [];
+  for (const x of sorted) {
+    const y = groups.get(x);
+    const n = y.length;
+    const m = y.reduce((s, v) => s + v, 0) / n;
+    const varSum = y.reduce((s, v) => s + (v - m) ** 2, 0);
+    const sd = n > 1 ? Math.sqrt(varSum / (n - 1)) : 0;
+    const bias = m - x;
+    const tStat = sd > 0 ? bias / (sd / Math.sqrt(n)) : (bias === 0 ? 0 : (bias > 0 ? Infinity : -Infinity));
+    // tDistPValue(t, df) — from regression-engine.js (re-exported tPValue from
+    // math-utils.js) already returns the TWO-SIDED p-value P(|T| > |t|)
+    // (computed via the regularized incomplete beta function on df/(df+t²)).
+    // No further doubling/1-minus needed — see regression-engine.js:536 for
+    // an existing direct use of the same pattern.
+    const pValue = n > 1 && Number.isFinite(tStat)
+      ? tDistPValue(tStat, n - 1)
+      : (n > 1 ? 0 : 1);
+    out.push({ xRef: x, n, mean: m, bias, sd, tStat, pValue });
+  }
+  return out;
 }
