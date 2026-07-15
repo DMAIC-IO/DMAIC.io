@@ -164,3 +164,31 @@ export function regressBiasVsReference(reference, measured, alpha = 0.05) {
   };
   return { slope, intercept, seSlope, seIntercept, tSlope, tIntercept, pSlope, pIntercept, ciSlope, ciIntercept, ciBand, MSE, N, dfResid };
 }
+
+/**
+ * AIAG MSA 4th-edition KPIs for linearity study.
+ * @param {Array} perRef  Output of perReferenceStats.
+ * @param {object} regression  Output of regressBiasVsReference.
+ * @param {object} params  { pvMode, LSL, USL, sigmaP, alpha }
+ * @returns {{percentLinearity:number, maxPercentBias:number, slopeSignificant:boolean, interceptSignificant:boolean, verdict:{color:string, key:string}}}
+ */
+export function aiagKpis(perRef, regression, params) {
+  const alpha = params.alpha ?? 0.05;
+  const pv = pvValue(params);
+  const xs = perRef.map(p => p.xRef);
+  const range = Math.max(...xs) - Math.min(...xs);
+  const percentLinearity = pv > 0 ? 100 * Math.abs(regression.slope) * range / pv : Infinity;
+  const maxPercentBias = pv > 0 ? Math.max(...perRef.map(p => Math.abs(p.bias))) * 100 / pv : Infinity;
+  const slopeSignificant = regression.pSlope < alpha;
+  const interceptSignificant = regression.pIntercept < alpha;
+  const worst = Math.max(percentLinearity, maxPercentBias);
+  let color, key;
+  if (slopeSignificant || interceptSignificant || worst > 10) {
+    color = 'red';   key = 'modules.msa-typ4.verdictAiagFail';
+  } else if (worst > 5) {
+    color = 'yellow'; key = 'modules.msa-typ4.verdictAiagMarginal';
+  } else {
+    color = 'green'; key = 'modules.msa-typ4.verdictAiagOk';
+  }
+  return { percentLinearity, maxPercentBias, slopeSignificant, interceptSignificant, verdict: { color, key } };
+}

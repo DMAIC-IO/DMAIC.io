@@ -5,7 +5,7 @@
  */
 
 import { suite, test, assert, assertClose } from '../test-utils.js';
-import { validate, perReferenceStats, regressBiasVsReference } from '../../js/engines/msa-typ4-engine.js';
+import { validate, perReferenceStats, regressBiasVsReference, aiagKpis } from '../../js/engines/msa-typ4-engine.js';
 import fixtures from '../fixtures/msa/msa-typ4.fixtures.json' with { type: 'json' };
 
 suite('msa-typ4-engine — validate', () => {
@@ -111,5 +111,26 @@ suite('msa-typ4-engine — regressBiasVsReference', () => {
     const xBar = c.inputs.reference.reduce((s, v) => s + v, 0) / c.inputs.reference.length;
     const [lo, hi] = r.ciBand(xBar);
     assert(hi - lo < 0.02);  // schmales Band bei clean-Daten am Mittel
+  });
+});
+
+suite('msa-typ4-engine — aiagKpis', () => {
+  test('linear-drift → percentLinearity > 10, rot', () => {
+    const c = fixtures.test_cases.find(x => x.id === 'linear-drift');
+    const per = perReferenceStats(c.inputs.reference, c.inputs.measured, 0.05);
+    const reg = regressBiasVsReference(c.inputs.reference, c.inputs.measured, 0.05);
+    const kpi = aiagKpis(per, reg, c.inputs.params);
+    assertClose(kpi.percentLinearity, c.expected.percentLinearity, 1e-3);
+    assertClose(kpi.maxPercentBias, c.expected.maxPercentBias, 1e-3);
+    assert(kpi.percentLinearity > 10);
+    assert(kpi.verdict.color === 'red');
+  });
+
+  test('clean → grün', () => {
+    const c = fixtures.test_cases.find(x => x.id === 'clean');
+    const per = perReferenceStats(c.inputs.reference, c.inputs.measured, 0.05);
+    const reg = regressBiasVsReference(c.inputs.reference, c.inputs.measured, 0.05);
+    const kpi = aiagKpis(per, reg, c.inputs.params);
+    assert(kpi.verdict.color === 'green');
   });
 });
