@@ -5,7 +5,7 @@
  */
 
 import { suite, test, assert, assertClose } from '../test-utils.js';
-import { validate, perReferenceStats } from '../../js/engines/msa-typ4-engine.js';
+import { validate, perReferenceStats, regressBiasVsReference } from '../../js/engines/msa-typ4-engine.js';
 import fixtures from '../fixtures/msa/msa-typ4.fixtures.json' with { type: 'json' };
 
 suite('msa-typ4-engine — validate', () => {
@@ -82,5 +82,34 @@ suite('msa-typ4-engine — perReferenceStats', () => {
     const c = fixtures.test_cases.find(x => x.id === 'offset-bias');
     const stats = perReferenceStats(c.inputs.reference, c.inputs.measured, 0.05);
     for (const s of stats) assert(s.pValue < 0.05, `pValue=${s.pValue} @ ref=${s.xRef}`);
+  });
+});
+
+suite('msa-typ4-engine — regressBiasVsReference', () => {
+  test('linear-drift-Fixture: slope > 0, sig.', () => {
+    const c = fixtures.test_cases.find(x => x.id === 'linear-drift');
+    const r = regressBiasVsReference(c.inputs.reference, c.inputs.measured, 0.05);
+    assertClose(r.slope, c.expected.slope, 1e-4);
+    assertClose(r.intercept, c.expected.intercept, 1e-4);
+    assertClose(r.seSlope, c.expected.seSlope, 1e-5);
+    assertClose(r.seIntercept, c.expected.seIntercept, 1e-5);
+    assertClose(r.pSlope, c.expected.pSlope, 1e-4);
+  });
+
+  test('offset-bias-Fixture: slope ≈ 0, intercept ≈ 0.05', () => {
+    const c = fixtures.test_cases.find(x => x.id === 'offset-bias');
+    const r = regressBiasVsReference(c.inputs.reference, c.inputs.measured, 0.05);
+    assertClose(r.slope, 0, 2e-3);
+    assertClose(r.intercept, 0.05, 5e-3);
+    assert(r.pSlope > 0.10);
+    assert(r.pIntercept < 0.001);
+  });
+
+  test('CI-Band bei x̄ gibt schmale Grenzen', () => {
+    const c = fixtures.test_cases.find(x => x.id === 'clean');
+    const r = regressBiasVsReference(c.inputs.reference, c.inputs.measured, 0.05);
+    const xBar = c.inputs.reference.reduce((s, v) => s + v, 0) / c.inputs.reference.length;
+    const [lo, hi] = r.ciBand(xBar);
+    assert(hi - lo < 0.02);  // schmales Band bei clean-Daten am Mittel
   });
 });

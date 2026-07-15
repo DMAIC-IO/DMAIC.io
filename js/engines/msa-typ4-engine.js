@@ -7,7 +7,7 @@
  * Spec: docs/modules/MSA-TYP4.md
  */
 
-import { tDistPValue } from './regression-engine.js';
+import { tDistPValue, tDistCDF } from './regression-engine.js';
 
 const ERR = {
   LENGTH_MISMATCH:   'modules.msa-typ4.errLengthMismatch',
@@ -101,4 +101,66 @@ export function perReferenceStats(reference, measured, alpha = 0.05) {
     out.push({ xRef: x, n, mean: m, bias, sd, tStat, pValue });
   }
   return out;
+}
+
+/**
+ * Inverse of tDistCDF for two-sided (1-α/2) quantile via bisection.
+ * @param {number} p 0<p<1
+ * @param {number} df
+ * @returns {number}
+ */
+function tQuantile(p, df) {
+  // Approximate via Cornish–Fisher; refine with bisection over [0, 50].
+  let lo = 0, hi = 50, mid = 0;
+  for (let i = 0; i < 60; i++) {
+    mid = (lo + hi) / 2;
+    if (tDistCDF(mid, df) < p) lo = mid; else hi = mid;
+  }
+  return mid;
+}
+
+/**
+ * Simple OLS of bias_ij vs. x_ref_i (per-observation).
+ * @param {number[]} reference
+ * @param {number[]} measured
+ * @param {number}   alpha
+ * @returns {object} Regression results.
+ */
+export function regressBiasVsReference(reference, measured, alpha = 0.05) {
+  const N = reference.length;
+  const x = reference;
+  const b = measured.map((v, i) => v - reference[i]);
+  const xBar = x.reduce((s, v) => s + v, 0) / N;
+  const bBar = b.reduce((s, v) => s + v, 0) / N;
+  let Sxx = 0, Sxb = 0;
+  for (let i = 0; i < N; i++) {
+    const dx = x[i] - xBar;
+    Sxx += dx * dx;
+    Sxb += dx * (b[i] - bBar);
+  }
+  const slope = Sxx > 0 ? Sxb / Sxx : 0;
+  const intercept = bBar - slope * xBar;
+  let SSE = 0;
+  for (let i = 0; i < N; i++) {
+    const yhat = slope * x[i] + intercept;
+    SSE += (b[i] - yhat) ** 2;
+  }
+  const dfResid = Math.max(1, N - 2);
+  const MSE = SSE / dfResid;
+  const seSlope = Sxx > 0 ? Math.sqrt(MSE / Sxx) : Infinity;
+  const seIntercept = Sxx > 0 ? Math.sqrt(MSE * (1 / N + (xBar * xBar) / Sxx)) : Infinity;
+  const tSlope = Sxx > 0 && seSlope > 0 ? slope / seSlope : 0;
+  const tIntercept = Sxx > 0 && seIntercept > 0 ? intercept / seIntercept : 0;
+  const pSlope = Sxx > 0 ? 2 * (1 - tDistCDF(Math.abs(tSlope), dfResid)) : 1;
+  const pIntercept = Sxx > 0 ? 2 * (1 - tDistCDF(Math.abs(tIntercept), dfResid)) : 1;
+  const q = tQuantile(1 - alpha / 2, dfResid);
+  const ciSlope = [slope - q * seSlope, slope + q * seSlope];
+  const ciIntercept = [intercept - q * seIntercept, intercept + q * seIntercept];
+  const ciBand = (xv) => {
+    const dx = xv - xBar;
+    const se = Sxx > 0 ? Math.sqrt(MSE * (1 / N + (dx * dx) / Sxx)) : Infinity;
+    const yhat = slope * xv + intercept;
+    return [yhat - q * se, yhat + q * se];
+  };
+  return { slope, intercept, seSlope, seIntercept, tSlope, tIntercept, pSlope, pIntercept, ciSlope, ciIntercept, ciBand, MSE, N, dfResid };
 }
