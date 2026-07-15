@@ -122,6 +122,24 @@ function fail(message) {
 }
 
 /**
+ * Assert a value is truthy.
+ */
+export function assert(condition, message) {
+  if (!condition) {
+    fail(message ?? `Expected truthy value, got ${JSON.stringify(condition)}`);
+  }
+}
+
+/**
+ * Assert approximate equality using a plain absolute epsilon.
+ * Thin convenience wrapper around assertAlmostEqual for call sites that
+ * don't need the relative-tolerance object form.
+ */
+export function assertClose(actual, expected, eps = EPSILON, message) {
+  assertAlmostEqual(actual, expected, eps, message);
+}
+
+/**
  * Assert strict equality.
  */
 export function assertEqual(actual, expected, message) {
