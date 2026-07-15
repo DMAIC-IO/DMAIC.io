@@ -5,6 +5,7 @@
  */
 
 import { analyze } from '../../engines/msa-typ4-engine.js';
+import { ColumnPicker, getColumnValues } from '../../ui/column-picker.js';
 
 export default {
   id: 'msa-typ4',
@@ -76,6 +77,7 @@ export default {
   // ─── Data hooks ─────────────────────────────────────────────
 
   getState() {
+    this._readInputs();
     return {
       version: this.version,
       params: { ...this._params, tolerance: { ...this._params.tolerance } },
@@ -103,9 +105,149 @@ export default {
   // ─── Render ─────────────────────────────────────────────────
 
   _render() {
-    // Placeholder — Task 9+ fill in the split-panel structure.
+    this._pickerRef?.destroy();
+    this._pickerMeas?.destroy();
+    this._pickerRef = null;
+    this._pickerMeas = null;
     this._destroyCharts();
-    this._container.innerHTML = `<section class="module-msa-typ4"><div class="module-msa-typ4__empty">${this._t('modules.msa-typ4.emptyState')}</div></section>`;
+
+    const t = this._t;
+    const p = this._params;
+    const isTolerance = p.pvMode === 'tolerance';
+
+    this._container.innerHTML = `
+      <div class="module-msa-typ4 dmike-split">
+        <div class="dmike-split__input">
+          <div class="dmike-split__section-title">${t('modules.msa-typ4.sections.feature')}</div>
+
+          <div class="field-row">
+            <div class="field-group field-group--major">
+              <label>${t('modules.msa-typ4.labels.name')}</label>
+              <input type="text" class="field" data-ref="inp-name" value="${this._esc(p.name)}">
+            </div>
+            <div class="field-group field-group--minor">
+              <label>${t('modules.msa-typ4.labels.unit')}</label>
+              <input type="text" class="field" data-ref="inp-unit" value="${this._esc(p.unit)}" placeholder="mm">
+            </div>
+          </div>
+
+          <div class="dmike-split__section-title">${t('modules.msa-typ4.sections.dataSource')}</div>
+
+          <div class="field-group">
+            <label>${t('modules.msa-typ4.labels.referenceColumn')}</label>
+            <div data-ref="picker-ref"></div>
+          </div>
+          <div class="field-group">
+            <label>${t('modules.msa-typ4.labels.measuredColumn')}</label>
+            <div data-ref="picker-meas"></div>
+          </div>
+
+          <div class="dmike-split__section-title">${t('modules.msa-typ4.sections.evaluation')}</div>
+
+          <fieldset class="msa-typ4__radios">
+            <legend>${t('modules.msa-typ4.labels.norm')}</legend>
+            <label><input type="radio" name="msa4-norm" value="AIAG" ${p.norm === 'AIAG' ? 'checked' : ''}/> ${t('modules.msa-typ4.labels.normAiag')}</label>
+            <label><input type="radio" name="msa4-norm" value="VDA5" ${p.norm === 'VDA5' ? 'checked' : ''}/> ${t('modules.msa-typ4.labels.normVda')}</label>
+          </fieldset>
+
+          <fieldset class="msa-typ4__radios">
+            <legend>${t('modules.msa-typ4.labels.pvMode')}</legend>
+            <label><input type="radio" name="msa4-pv" value="tolerance" ${isTolerance ? 'checked' : ''}/> ${t('modules.msa-typ4.labels.pvModeTolerance')}</label>
+            <label><input type="radio" name="msa4-pv" value="sixSigma" ${!isTolerance ? 'checked' : ''}/> ${t('modules.msa-typ4.labels.pvModeSixSigma')}</label>
+          </fieldset>
+
+          <div class="field-row">
+            <div class="field-group">
+              <label>${t('modules.msa-typ4.labels.lsl')}</label>
+              <input type="text" class="field field--num" data-ref="inp-lsl" inputmode="decimal" placeholder="0.000" value="${isNaN(p.tolerance.LSL) ? '' : p.tolerance.LSL}">
+            </div>
+            <div class="field-group">
+              <label>${t('modules.msa-typ4.labels.usl')}</label>
+              <input type="text" class="field field--num" data-ref="inp-usl" inputmode="decimal" placeholder="0.000" value="${isNaN(p.tolerance.USL) ? '' : p.tolerance.USL}">
+            </div>
+          </div>
+
+          <div class="field-group${isTolerance ? ' msa-typ4__field--hidden' : ''}" data-ref="group-sigma">
+            <label>${t('modules.msa-typ4.labels.sigmaP')}</label>
+            <input type="text" class="field field--num" data-ref="inp-sigma" inputmode="decimal" value="${isNaN(p.sigmaP) ? '' : p.sigmaP}">
+          </div>
+
+          <div class="field-group">
+            <label>${t('modules.msa-typ4.labels.alpha')}</label>
+            <select class="field" data-ref="sel-alpha">
+              <option value="0.01" ${p.alpha === 0.01 ? 'selected' : ''}>0.01</option>
+              <option value="0.05" ${p.alpha === 0.05 ? 'selected' : ''}>0.05</option>
+              <option value="0.10" ${p.alpha === 0.10 ? 'selected' : ''}>0.10</option>
+            </select>
+          </div>
+
+          <div class="msa-typ4__error" data-ref="error-box"></div>
+        </div>
+
+        <div class="dmike-split__output">
+          <div data-ref="results"></div>
+        </div>
+      </div>
+    `;
+
+    const refWrap = this._container.querySelector('[data-ref="picker-ref"]');
+    this._pickerRef = new ColumnPicker(refWrap, this._context, {
+      mode: 'single',
+      types: ['numeric'],
+      onChange: (ref) => { this._refColumn = ref; this._save(); this._tryAutoAnalysis(); },
+    });
+    if (this._refColumn) this._pickerRef.value = this._refColumn;
+
+    const measWrap = this._container.querySelector('[data-ref="picker-meas"]');
+    this._pickerMeas = new ColumnPicker(measWrap, this._context, {
+      mode: 'single',
+      types: ['numeric'],
+      onChange: (ref) => { this._measColumn = ref; this._save(); this._tryAutoAnalysis(); },
+    });
+    if (this._measColumn) this._pickerMeas.value = this._measColumn;
+
+    this._bindEvents();
+    this._tryAutoAnalysis();
+  },
+
+  _bindEvents() {
+    const c = this._container;
+    const autoRun = this._debounce(() => { this._save(); this._tryAutoAnalysis(); }, 600);
+    c.querySelectorAll('[data-ref^="inp-"], [data-ref^="sel-"]').forEach(el => {
+      el.addEventListener('input', autoRun);
+      el.addEventListener('change', autoRun);
+    });
+    c.querySelectorAll('input[name="msa4-norm"]').forEach(el => el.addEventListener('change', (e) => {
+      this._params.norm = e.target.value;
+      this._save();
+      this._tryAutoAnalysis();
+    }));
+    c.querySelectorAll('input[name="msa4-pv"]').forEach(el => el.addEventListener('change', (e) => {
+      this._params.pvMode = e.target.value;
+      this._save();
+      this._render(); // structural change: shows/hides σₚ field
+      this._tryAutoAnalysis();
+    }));
+  },
+
+  // ─── Actions ────────────────────────────────────────────────
+
+  /**
+   * Automatically run analysis if both columns are selected. Silently
+   * clears results when data is incomplete (mirrors msa-typ1/msa-typ2).
+   * Task 10 fills in the actual engine call; for now this only clears.
+   */
+  _tryAutoAnalysis() {
+    this._readInputs();
+    const out = this._container?.querySelector('[data-ref="results"]');
+    if (!out) return;
+    this._result = null;
+    this._destroyCharts();
+    if (!this._refColumn || !this._measColumn) {
+      out.innerHTML = `<div class="module-msa-typ4__empty">${this._t('modules.msa-typ4.emptyState')}</div>`;
+      return;
+    }
+    out.innerHTML = '';
   },
 
   // ─── Charts ─────────────────────────────────────────────────
@@ -116,5 +258,59 @@ export default {
       try { if (cm) cm.destroy(c); } catch (_) { /* ignore */ }
     }
     this._charts = [];
+  },
+
+  // ─── Helpers ────────────────────────────────────────────────
+
+  _readInputs() {
+    const c = this._container;
+    if (!c) return;
+    const v = (ref) => c.querySelector(`[data-ref="${ref}"]`)?.value ?? '';
+    this._params.name = v('inp-name');
+    this._params.unit = v('inp-unit') || 'mm';
+    this._params.tolerance.LSL = this._parseNum(v('inp-lsl'));
+    this._params.tolerance.USL = this._parseNum(v('inp-usl'));
+    const sigma = v('inp-sigma');
+    if (sigma !== '') this._params.sigmaP = this._parseNum(sigma);
+    const alpha = v('sel-alpha');
+    if (alpha !== '') this._params.alpha = this._parseNum(alpha);
+  },
+
+  _parseNum(s) {
+    if (s == null || s === '') return NaN;
+    return parseFloat(String(s).replace(',', '.').trim());
+  },
+
+  _showError(msg) {
+    const el = this._container?.querySelector('[data-ref="error-box"]');
+    if (!el) return;
+    el.textContent = msg;
+    el.classList.add('visible');
+    clearTimeout(this._errorTimer);
+    this._errorTimer = setTimeout(() => this._hideError(), 6000);
+  },
+
+  _hideError() {
+    const el = this._container?.querySelector('[data-ref="error-box"]');
+    if (el) el.classList.remove('visible');
+  },
+
+  _save() {
+    this._readInputs();
+    if (this._context?.stateManager && this._context?.instanceId) {
+      this._context.stateManager.setModuleState(this._context.instanceId, this.getState());
+    }
+  },
+
+  _esc(s) {
+    if (!s) return '';
+    const el = document.createElement('span');
+    el.textContent = s;
+    return el.innerHTML;
+  },
+
+  _debounce(fn, ms) {
+    let timer;
+    return (...args) => { clearTimeout(timer); timer = setTimeout(() => fn(...args), ms); };
   },
 };
