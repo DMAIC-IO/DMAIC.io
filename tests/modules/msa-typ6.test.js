@@ -255,3 +255,64 @@ suite('msa-typ6 module — Regelkarten-Charts (Task 10)', () => {
       'secondary chart host must carry data-chart-host="secondary" (the selector _renderCharts() queries for)');
   });
 });
+
+/**
+ * Task 11: Output-Panel Verletzungs-Tabelle + Chart-Verlinkung.
+ *
+ * Same DOMParser-only constraint as Task 7–10 (see rationale above): the
+ * live click-to-highlight interaction needs a mounted Alpine component (a
+ * real click event + reactive `:class` re-evaluation), which the headless
+ * DOMParser-based runner used here cannot exercise. So this suite asserts
+ * the table + x-for row + click handler Task 11 ships are structurally
+ * present and wired to the right expressions. Live click behaviour belongs
+ * to the Playwright E2E suite (test/playwright/tests/modules/msa-typ6.spec.js,
+ * Task 19 per docs/superpowers/specs/2026-07-16-msa-typ6-design.md § 9).
+ */
+suite('msa-typ6 module — Verletzungs-Tabelle + Chart-Verlinkung (Task 11)', () => {
+  /** Fetch + parse the real shipped template once per test. */
+  async function loadTemplateDoc() {
+    const url = new URL('../../js/modules/msa-typ6/msa-typ6.html', import.meta.url);
+    const html = await (await fetch(url)).text();
+    return new DOMParser().parseFromString(html, 'text/html');
+  }
+
+  /** @param {Document} doc @returns {DocumentFragment} the `_lastResult` result branch's content. */
+  function resultFragment(doc) {
+    const tpl = [...doc.querySelectorAll('template[x-if]')]
+      .find((t) => t.getAttribute('x-if') === '_lastResult');
+    assertTrue(tpl !== null, 'template must have a <template x-if="_lastResult"> branch');
+    return tpl.content;
+  }
+
+  test('result branch has a .module-msa-typ6__violations table', async () => {
+    const doc = await loadTemplateDoc();
+    const frag = resultFragment(doc);
+    const table = frag.querySelector('table.module-msa-typ6__violations');
+    assertTrue(table !== null, 'missing table.module-msa-typ6__violations element');
+    assertEqual(table.getAttribute('x-show'), '_lastResult.ruleViolations.length > 0',
+      'violations table must be gated by x-show="_lastResult.ruleViolations.length > 0"');
+  });
+
+  test('violations table has a <template x-for="v in _lastResult.ruleViolations"> row loop', async () => {
+    const doc = await loadTemplateDoc();
+    const frag = resultFragment(doc);
+    const table = frag.querySelector('table.module-msa-typ6__violations');
+    assertTrue(table !== null, 'missing table.module-msa-typ6__violations element');
+    const xfor = table.querySelector('template[x-for]');
+    assertTrue(xfor !== null, 'violations table must contain a <template x-for="...">');
+    assertEqual(xfor.getAttribute('x-for'), 'v in _lastResult.ruleViolations',
+      'x-for must iterate _lastResult.ruleViolations as v');
+    assertEqual(xfor.getAttribute(':key'), 'v.primaryIndex', 'x-for row must key on v.primaryIndex');
+  });
+
+  test('violation row has a @click handler calling _highlight(v.primaryIndex)', async () => {
+    const doc = await loadTemplateDoc();
+    const frag = resultFragment(doc);
+    const table = frag.querySelector('table.module-msa-typ6__violations');
+    const xfor = table.querySelector('template[x-for]');
+    const row = xfor.content.querySelector('tr.module-msa-typ6__violation-row');
+    assertTrue(row !== null, 'missing tr.module-msa-typ6__violation-row inside the x-for template');
+    assertEqual(row.getAttribute('@click'), '_highlight(v.primaryIndex)',
+      'violation row must call _highlight(v.primaryIndex) on click');
+  });
+});

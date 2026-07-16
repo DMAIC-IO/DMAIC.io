@@ -14,11 +14,17 @@
  * Task 8: Input-Panel Controls (Kartentyp, drei ColumnPicker, Grenzen-Modus,
  * Nelson-Regeln, α) + debounced Auto-Run (`_analyzeNow()`).
  * Task 9: Output-Panel Verdikt-Header + KPI-Strip (`_fmt`/`_mean`-Helfer).
- * Task 10 (dieser Stand): Regelkarten-Charts primary (I bzw. x̄) + secondary
- * (MR bzw. R) via `_renderCharts()`/`_destroyCharts()`/`_whenAnchor()`
- * (chartManager 'control-chart', bounded rAF-Poll für den verschachtelten
- * `x-if`-Anker). Verletzungs-Tabelle, Drift-Analyse-Chart und Interpretation
- * folgen in Task 11–13.
+ * Task 10: Regelkarten-Charts primary (I bzw. x̄) + secondary (MR bzw. R) via
+ * `_renderCharts()`/`_destroyCharts()`/`_whenAnchor()` (chartManager
+ * 'control-chart', bounded rAF-Poll für den verschachtelten `x-if`-Anker).
+ * Task 11 (dieser Stand): Verletzungs-Tabelle unterhalb der Charts +
+ * `_highlight(primaryIndex)` (Klick auf eine Zeile scrollt zur Primärkarte
+ * + kurzzeitige Row-Highlight-Klasse). control-chart.js setzt keine
+ * Pro-Punkt-DOM-Hooks (kein `data-chart-index` o. Ä.) — ein Klick-zu-Punkt-
+ * Highlight auf dem SVG selbst würde eine Erweiterung des geteilten
+ * Chart-Typs voraussetzen, was außerhalb dieses Tasks liegt (siehe Plan
+ * Task 11, Variante c). Drift-Analyse-Chart und Interpretation folgen in
+ * Task 12–13.
  *
  * Spec: docs/superpowers/specs/2026-07-16-msa-typ6-design.md § 6
  */
@@ -52,6 +58,12 @@ const mod = createModule({
       _unsubs: [],
       _pickers: { timestamp: null, value: null, subgroup: null },
       _debTimer: null,
+
+      // Verletzungs-Tabelle Row-Highlight (Task 11): primaryIndex der zuletzt
+      // angeklickten Zeile, für die kurze Dauer der :class-Bindung im
+      // Template; danach von `_highlight()` per Timer wieder gelöscht.
+      _highlightedIndex: null,
+      _highlightTimer: null,
 
       // Typ-1-Instanzen für den "aus Typ-1-Instanz übernehmen"-Dropdown im
       // `given`-Grenzen-Modus. Bleibt leer (nur Platzhalter-Option im Select)
@@ -275,6 +287,30 @@ const mod = createModule({
         });
       },
 
+      // ── Verletzungs-Tabelle → Chart-Verlinkung (Task 11) ──────
+
+      /**
+       * Klick-Handler einer Verletzungs-Tabellenzeile: scrollt die
+       * Primär-Regelkarte in den sichtbaren Bereich und markiert die Zeile
+       * kurzzeitig per `_highlightedIndex` (Template bindet darüber die
+       * `module-msa-typ6__violation-row--active`-Klasse).
+       *
+       * v1.0-Umsetzung ohne Klick-zu-Punkt-Highlight auf dem Chart selbst:
+       * control-chart.js rendert Punkte als reine `<circle>`-Elemente ohne
+       * Index-Attribut (kein `data-chart-index` o. Ä.), ein Punkt-Highlight
+       * würde also eine Erweiterung des geteilten Chart-Typs voraussetzen —
+       * außerhalb dieses Tasks (siehe Task-Brief, Variante c).
+       * @param {number} primaryIndex
+       */
+      _highlight(primaryIndex) {
+        const host = module._container?.querySelector('[data-chart-host="primary"]');
+        host?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+
+        this._highlightedIndex = primaryIndex;
+        clearTimeout(this._highlightTimer);
+        this._highlightTimer = setTimeout(() => { this._highlightedIndex = null; }, 1500);
+      },
+
       // ── ColumnPickers (imperative widgets) ────────────────────
 
       _mountPickers() {
@@ -311,6 +347,8 @@ const mod = createModule({
         this._pickers = { timestamp: null, value: null, subgroup: null };
         this._debTimer = null;
         this._lastError = null;
+        this._highlightedIndex = null;
+        this._highlightTimer = null;
 
         this._mountPickers();
 
@@ -359,6 +397,7 @@ const mod = createModule({
 
       destroy() {
         clearTimeout(this._debTimer);
+        clearTimeout(this._highlightTimer);
         for (const unsub of this._unsubs) { try { unsub(); } catch { /* ignore */ } }
         this._unsubs = [];
         for (const p of Object.values(this._pickers)) { try { p?.destroy?.(); } catch { /* ignore */ } }

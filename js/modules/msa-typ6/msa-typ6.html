@@ -200,7 +200,34 @@
           <div class="module-msa-typ6__chart-host" x-ref="chartSecondary" data-chart-host="secondary"></div>
         </div>
 
-        <!-- Task 11–13: weitere Output-Sektionen (Verletzungs-Tabelle, Drift-Analyse, Interpretation) -->
+        <!-- Verletzungs-Tabelle (Task 11): Klick auf eine Zeile scrollt zur
+             Primär-Regelkarte und hebt die Zeile kurzzeitig hervor
+             (_highlight()). Siehe msa-typ6.js für die Begründung, warum das
+             v1.0 kein Klick-zu-Chart-Punkt-Highlight einschließt. -->
+        <table class="module-msa-typ6__violations" x-show="_lastResult.ruleViolations.length > 0">
+          <thead>
+            <tr>
+              <th x-text="t('violations.time')"></th>
+              <th x-text="t('violations.value')"></th>
+              <th x-text="t('violations.rules')"></th>
+              <th x-text="t('violations.description')"></th>
+            </tr>
+          </thead>
+          <tbody>
+            <template x-for="v in _lastResult.ruleViolations" :key="v.primaryIndex">
+              <tr class="module-msa-typ6__violation-row"
+                  :class="_highlightedIndex === v.primaryIndex ? 'module-msa-typ6__violation-row--active' : ''"
+                  @click="_highlight(v.primaryIndex)">
+                <td x-text="v.time"></td>
+                <td x-text="_fmt(v.value, 3)"></td>
+                <td x-text="v.ruleIds.join(', ')"></td>
+                <td x-text="v.ruleIds.map(id => _ruleShort(id)).join('; ')"></td>
+              </tr>
+            </template>
+          </tbody>
+        </table>
+
+        <!-- Task 12–13: weitere Output-Sektionen (Drift-Analyse, Interpretation) -->
       </div>
     </template>
     <template x-if="!_lastResult">

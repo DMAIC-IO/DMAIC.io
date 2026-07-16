@@ -8,7 +8,10 @@
    Task 8 adds input-control styles (radios, Nelson-Regel-Liste).
    Task 9 adds the verdict-dot styles (KPI-strip layout itself is the
    shared global .dmike-kpi-strip/.dmike-kpi from css/components.css).
-   Task 10–13 add chart/table/interpretation output styles.
+   Task 10 adds the chart-host layout. Task 11 adds the violations-table
+   row styles (base table layout/hover/borders come from the shared
+   `.dmike-split table:not(...)` rule in css/components.css). Task 12–13
+   add drift-analysis/interpretation output styles.
    ============================================================ */
 
 /* ─── Layout (extends global dmike-split from css/modules.css) ── */
@@ -106,4 +109,19 @@
   background: var(--color-background-primary);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md, 6px);
+}
+
+/* ─── Verletzungs-Tabelle (Task 11) ──────────────────────────── */
+/* Base layout (width/borders/hover) comes from the shared
+   `.dmike-split table:not(.datagrid__table, …)` rule in
+   css/components.css — this module only adds click affordance +
+   the transient row-highlight from `_highlight()`. */
+.module-msa-typ6__violations {
+  margin-bottom: var(--spacing-md);
+}
+.module-msa-typ6__violation-row {
+  cursor: pointer;
+}
+.module-msa-typ6__violation-row--active td {
+  background: var(--color-accent-light);
 }
