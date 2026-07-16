@@ -1,0 +1,61 @@
+{
+  "id": "wilson-konfidenzintervall",
+  "category": "msa",
+  "title": {
+    "de": "Wilson-Konfidenzintervall (Wilson-Score-KI)",
+    "en": "Wilson Confidence Interval (Wilson Score CI)"
+  },
+  "short": {
+    "de": "Konfidenzintervall für einen Anteil mit besserer Abdeckung als das Wald-Intervall, besonders bei kleinen n und Anteilen nahe 0 oder 1.",
+    "en": "Confidence interval for a proportion with better coverage than the Wald interval, especially for small n and proportions near 0 or 1."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "Das **Wilson-Konfidenzintervall** (Wilson 1927) ist die Standard-Alternative zum Wald-KI für einen Anteil $\\hat p = x/n$. Für ein Konfidenzniveau $1 - \\alpha$ mit $z = z_{1-\\alpha/2}$:"
+      },
+      {
+        "type": "formula",
+        "latex": "\\text{KI}_\\text{Wilson} = \\frac{\\hat p + \\dfrac{z^2}{2n} \\pm z\\sqrt{\\dfrac{\\hat p (1-\\hat p)}{n} + \\dfrac{z^2}{4n^2}}}{1 + \\dfrac{z^2}{n}}"
+      },
+      {
+        "type": "paragraph",
+        "text": "Das Wilson-Intervall liegt immer innerhalb $[0, 1]$ (für $\\hat p = 0$ bleibt die Untergrenze bei 0, für $\\hat p = 1$ die Obergrenze bei 1) und hat auch bei kleinen $n$ eine nahezu nominale Abdeckung. Das Wald-KI $\\hat p \\pm z\\sqrt{\\hat p(1-\\hat p)/n}$ dagegen kann außerhalb von $[0, 1]$ liegen und deckt bei Randanteilen deutlich schlechter."
+      },
+      {
+        "type": "note",
+        "text": "In MSA Typ 5 verwendet für {{term:effektivitaet|Effektivität}}, {{term:miss-rate|Miss-Rate}}, {{term:false-alarm-rate|False-Alarm-Rate}} und Wiederholbarkeit."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "The **Wilson confidence interval** (Wilson 1927) is the standard alternative to the Wald CI for a proportion $\\hat p = x/n$. For confidence level $1 - \\alpha$ with $z = z_{1-\\alpha/2}$:"
+      },
+      {
+        "type": "formula",
+        "latex": "\\text{CI}_\\text{Wilson} = \\frac{\\hat p + \\dfrac{z^2}{2n} \\pm z\\sqrt{\\dfrac{\\hat p (1-\\hat p)}{n} + \\dfrac{z^2}{4n^2}}}{1 + \\dfrac{z^2}{n}}"
+      },
+      {
+        "type": "paragraph",
+        "text": "The Wilson interval always lies inside $[0, 1]$ (the lower bound stays at 0 for $\\hat p = 0$, the upper bound at 1 for $\\hat p = 1$) and has near-nominal coverage even at small $n$. The Wald CI $\\hat p \\pm z\\sqrt{\\hat p(1-\\hat p)/n}$ by contrast can leak outside $[0, 1]$ and covers noticeably worse at boundary proportions."
+      },
+      {
+        "type": "note",
+        "text": "In MSA Type 5 used for {{term:effektivitaet|effectiveness}}, {{term:miss-rate|miss rate}}, {{term:false-alarm-rate|false-alarm rate}} and repeatability."
+      }
+    ]
+  },
+  "aliases": {
+    "de": ["Wilson-Score-KI", "Wilson-Intervall", "Score-Konfidenzintervall"],
+    "en": ["Wilson score interval", "Wilson interval", "score confidence interval"]
+  },
+  "seeAlso": ["effektivitaet", "miss-rate", "false-alarm-rate"],
+  "modules": ["msa-typ5"],
+  "algoLab": ["msa/effectiveness-wilson"],
+  "sources": [
+    { "label": "Wilson, E.B. (1927). Probable inference, the law of succession, and statistical inference. Journal of the American Statistical Association, 22(158), 209–212.", "url": null },
+    { "label": "Brown, L.D., Cai, T.T., & DasGupta, A. (2001). Interval estimation for a binomial proportion. Statistical Science, 16(2), 101–133.", "url": null }
+  ]
+}

@@ -1,0 +1,60 @@
+{
+  "id": "effektivitaet",
+  "category": "msa",
+  "title": {
+    "de": "Effektivität",
+    "en": "Effectiveness"
+  },
+  "short": {
+    "de": "Anteil der Prüfer-Bewertungen, die mit der Referenz übereinstimmen — die zentrale AIAG-Kennzahl bei attributiver MSA.",
+    "en": "Fraction of an appraiser's ratings that agree with the reference — the central AIAG metric in attribute MSA."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "Die **Effektivität** eines Prüfers ist der Anteil der Einzel-Bewertungen, die mit der Referenz übereinstimmen — je Prüfer, über alle Teile außer den ambigen."
+      },
+      {
+        "type": "formula",
+        "latex": "\\text{eff} = \\frac{\\#\\{(\\text{Teil}, \\text{rep}) : \\text{rating} = \\text{ref}\\}}{\\#\\{(\\text{Teil}, \\text{rep}) : \\text{Teil} \\notin \\text{ambig}\\}}"
+      },
+      {
+        "type": "paragraph",
+        "text": "Sie wird mit einem 95 %-{{term:wilson-konfidenzintervall|Wilson-Score-KI}} versehen. Die AIAG-Ampel für MSA Typ 5 fordert Effektivität $\\geq 0{,}90$ für Grün und meldet Rot bei Effektivität $< 0{,}80$."
+      },
+      {
+        "type": "note",
+        "text": "Ohne rückführbare Referenzurteile greift der {{term:konsens-fallback|Konsens-Fallback}}; für ambige Teile bleibt die Effektivität nicht definiert."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "An appraiser's **effectiveness** is the fraction of individual ratings that agree with the reference — per appraiser, across all non-ambiguous parts."
+      },
+      {
+        "type": "formula",
+        "latex": "\\text{eff} = \\frac{\\#\\{(\\text{part}, \\text{rep}) : \\text{rating} = \\text{ref}\\}}{\\#\\{(\\text{part}, \\text{rep}) : \\text{part} \\notin \\text{ambiguous}\\}}"
+      },
+      {
+        "type": "paragraph",
+        "text": "It is reported with a 95 % {{term:wilson-konfidenzintervall|Wilson score CI}}. The AIAG traffic light for MSA Type 5 requires effectiveness $\\geq 0.90$ for green and flags red at effectiveness $< 0.80$."
+      },
+      {
+        "type": "note",
+        "text": "Without traceable reference calls the {{term:konsens-fallback|consensus fallback}} kicks in; effectiveness is undefined for ambiguous parts."
+      }
+    ]
+  },
+  "aliases": {
+    "de": ["Trefferrate", "Übereinstimmung mit Referenz"],
+    "en": ["hit rate vs. reference", "agreement with reference"]
+  },
+  "seeAlso": ["kappa", "wilson-konfidenzintervall", "miss-rate", "false-alarm-rate", "konsens-fallback"],
+  "modules": ["msa-typ5"],
+  "algoLab": ["msa/effectiveness-wilson"],
+  "sources": [
+    { "label": "AIAG: Measurement Systems Analysis Reference Manual, 4th ed., 2010 — Kap. III-B", "url": null }
+  ]
+}

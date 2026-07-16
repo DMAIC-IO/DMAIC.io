@@ -1,0 +1,60 @@
+{
+  "id": "false-alarm-rate",
+  "category": "msa",
+  "title": {
+    "de": "False-Alarm-Rate (falscher Alarm)",
+    "en": "False-Alarm Rate"
+  },
+  "short": {
+    "de": "Anteil der tatsächlich guten Teile, die ein Prüfer fälschlich als n.i.O. bewertet — bei binärer attributiver MSA.",
+    "en": "Fraction of truly good parts that an appraiser wrongly rates as NOK — in binary attribute MSA."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "Die **False-Alarm-Rate** (auch: falscher Alarm, Fehlausschuss) ist die bedingte Wahrscheinlichkeit, dass ein Prüfer ein tatsächlich positives Teil (i.O., ref = pos) als negativ (n.i.O., rating = neg) bewertet."
+      },
+      {
+        "type": "formula",
+        "latex": "\\text{fa} = P(\\text{rating} = \\text{neg} \\mid \\text{ref} = \\text{pos})"
+      },
+      {
+        "type": "paragraph",
+        "text": "Sie verursacht Fehlausschuss und Nacharbeit; direkt kostenwirksam. Wilson-Score-KI (95 %) für den Anteil."
+      },
+      {
+        "type": "note",
+        "text": "Ergänzt {{term:miss-rate|Miss-Rate}} zum Bild der Prüfer-Neigung; $\\text{bias} = \\text{miss} - \\text{fa}$ negativ heißt: zu streng."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "The **false-alarm rate** is the conditional probability that an appraiser rates a truly positive part (OK, ref = pos) as negative (NOK, rating = neg)."
+      },
+      {
+        "type": "formula",
+        "latex": "\\text{fa} = P(\\text{rating} = \\text{neg} \\mid \\text{ref} = \\text{pos})"
+      },
+      {
+        "type": "paragraph",
+        "text": "It creates scrap and rework; directly cost-driving. Wilson score CI (95 %) for the proportion."
+      },
+      {
+        "type": "note",
+        "text": "Complements {{term:miss-rate|miss rate}} for a full picture of appraiser bias; $\\text{bias} = \\text{miss} - \\text{fa}$ negative means: too strict."
+      }
+    ]
+  },
+  "aliases": {
+    "de": ["falscher Alarm", "Fehlausschuss", "type I error rate (Prüfer)"],
+    "en": ["false alarm", "false rejection", "type I error rate (appraiser)"]
+  },
+  "seeAlso": ["miss-rate", "effektivitaet", "signal-detection", "wilson-konfidenzintervall"],
+  "modules": ["msa-typ5"],
+  "algoLab": ["msa/signal-detection"],
+  "sources": [
+    { "label": "AIAG: Measurement Systems Analysis Reference Manual, 4th ed., 2010 — Kap. III-B", "url": null }
+  ]
+}

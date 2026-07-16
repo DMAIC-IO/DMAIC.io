@@ -1,0 +1,60 @@
+{
+  "id": "konsens-fallback",
+  "category": "msa",
+  "title": {
+    "de": "Konsens-Fallback (Referenz-Ableitung)",
+    "en": "Consensus Fallback (Reference Derivation)"
+  },
+  "short": {
+    "de": "Wenn keine Referenz vorhanden ist, wird je Teil das Mehrheitsvotum der Prüfer als Referenz verwendet; bei Gleichstand ist das Teil ambig.",
+    "en": "Without a reference, the majority vote of the appraisers is used as the reference per part; ties leave the part ambiguous."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "Der **Konsens-Fallback** in MSA Typ 5 leitet die Referenz-Kategorie je Teil aus den Prüfer-Bewertungen ab, wenn keine externe Referenz-Spalte vorliegt. Die Aggregation hängt vom Merkmalstyp ab:"
+      },
+      {
+        "type": "note",
+        "text": "**Binär und nominal:** Mehrheitsvotum (Mode) über alle Bewertungen aller Prüfer × Wiederholungen. **Ordinal:** Median der Bewertungen auf der ordinalen Skala."
+      },
+      {
+        "type": "paragraph",
+        "text": "Bei Gleichstand (binär/nominal) oder wenn der Median exakt zwischen zwei Stufen fällt (ordinal), landet das Teil in $\\text{meta.ambiguousParts}$ und wird aus allen Vs-Referenz-Kennzahlen ({{term:effektivitaet|Effektivität}}, {{term:miss-rate|Miss}}-/{{term:false-alarm-rate|FA-Rate}}, κ vs. Referenz, {{term:signal-detection|SDT}}) ausgeschlossen. κ unter Prüfern bleibt unverändert."
+      },
+      {
+        "type": "note",
+        "text": "Die Engine meldet in diesem Fall zusätzlich die Warnung $\\texttt{W\\_AMBIGUOUS\\_CONSENSUS}$ mit der Liste der betroffenen Teile."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "The **consensus fallback** in MSA Type 5 derives the reference category per part from the appraisers' ratings when no external reference column is provided. Aggregation depends on the characteristic type:"
+      },
+      {
+        "type": "note",
+        "text": "**Binary and nominal:** majority vote (mode) across all ratings of all appraisers × replicates. **Ordinal:** median of the ratings on the ordinal scale."
+      },
+      {
+        "type": "paragraph",
+        "text": "Ties (binary/nominal) or a median falling exactly between two steps (ordinal) push the part into $\\text{meta.ambiguousParts}$ and exclude it from all vs-reference metrics ({{term:effektivitaet|effectiveness}}, {{term:miss-rate|miss}}/{{term:false-alarm-rate|FA rate}}, κ vs. reference, {{term:signal-detection|SDT}}). κ between appraisers is unaffected."
+      },
+      {
+        "type": "note",
+        "text": "The engine additionally emits the warning $\\texttt{W\\_AMBIGUOUS\\_CONSENSUS}$ with the list of affected parts."
+      }
+    ]
+  },
+  "aliases": {
+    "de": ["Konsens-Referenz", "Mehrheitsvotum-Referenz"],
+    "en": ["consensus reference", "majority-vote reference"]
+  },
+  "seeAlso": ["effektivitaet", "kappa", "cohen-kappa", "fleiss-kappa"],
+  "modules": ["msa-typ5"],
+  "algoLab": [],
+  "sources": [
+    { "label": "AIAG: Measurement Systems Analysis Reference Manual, 4th ed., 2010 — Kap. III-B", "url": null }
+  ]
+}

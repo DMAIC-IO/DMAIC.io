@@ -1,0 +1,61 @@
+{
+  "id": "signal-detection",
+  "category": "msa",
+  "title": {
+    "de": "Signal Detection Theory (SDT)",
+    "en": "Signal Detection Theory (SDT)"
+  },
+  "short": {
+    "de": "Rahmenwerk aus der Psychophysik, das die Trennschärfe (d′) und die Entscheidungsschwelle (c) eines binären Beurteilers getrennt schätzt.",
+    "en": "Psychophysics framework that separately estimates a binary judge's discriminability (d′) and decision threshold (c)."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "Die **Signal Detection Theory** (Green & Swets 1966) trennt die *Trennschärfe* eines binären Prüfers ($d'$, {{term:d-prime|d′}}) sauber von seiner *Entscheidungsschwelle* ($c$, {{term:criterion-c|Kriterium c}}). Aus Hit-Rate $h = P(\\text{rating}=\\text{pos} \\mid \\text{ref}=\\text{pos})$ und False-Alarm-Rate $f$:"
+      },
+      {
+        "type": "formula",
+        "latex": "d' = z(h) - z(f), \\qquad c = -\\tfrac{1}{2}\\bigl(z(h) + z(f)\\bigr)"
+      },
+      {
+        "type": "paragraph",
+        "text": "Ein Prüfer mit hoher Miss-Rate und niedriger False-Alarm-Rate kann trotzdem sehr trennscharf sein — er hat lediglich eine liberale Schwelle. SDT macht diese Zerlegung sichtbar."
+      },
+      {
+        "type": "note",
+        "text": "Nur bei binärer attributiver MSA mit Referenz sinnvoll. Randkorrektur nach Hautus (1995) bei $h \\in \\{0, 1\\}$ oder $f \\in \\{0, 1\\}$."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "**Signal detection theory** (Green & Swets 1966) cleanly separates a binary judge's *discriminability* ($d'$, {{term:d-prime|d′}}) from their *decision threshold* ($c$, {{term:criterion-c|criterion c}}). From hit rate $h = P(\\text{rating}=\\text{pos} \\mid \\text{ref}=\\text{pos})$ and false-alarm rate $f$:"
+      },
+      {
+        "type": "formula",
+        "latex": "d' = z(h) - z(f), \\qquad c = -\\tfrac{1}{2}\\bigl(z(h) + z(f)\\bigr)"
+      },
+      {
+        "type": "paragraph",
+        "text": "An appraiser with a high miss rate and low false-alarm rate can still be highly discriminating — they simply have a liberal threshold. SDT reveals this decomposition."
+      },
+      {
+        "type": "note",
+        "text": "Only meaningful for binary attribute MSA with a reference. Hautus (1995) edge correction at $h \\in \\{0, 1\\}$ or $f \\in \\{0, 1\\}$."
+      }
+    ]
+  },
+  "aliases": {
+    "de": ["SDT", "Signalentdeckungstheorie"],
+    "en": ["SDT"]
+  },
+  "seeAlso": ["d-prime", "criterion-c", "miss-rate", "false-alarm-rate"],
+  "modules": ["msa-typ5"],
+  "algoLab": ["msa/signal-detection"],
+  "sources": [
+    { "label": "Green, D.M. & Swets, J.A. (1966). Signal Detection Theory and Psychophysics. Wiley.", "url": null },
+    { "label": "Hautus, M.J. (1995). Corrections for extreme proportions and their biasing effects on estimated values of d′. Behavior Research Methods, Instruments, & Computers, 27(1), 46–51.", "url": null }
+  ]
+}

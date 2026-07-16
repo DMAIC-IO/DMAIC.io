@@ -35,12 +35,24 @@
     }
   ],
   "terms": [
-    { "id": "mittelwert",         "category": "descriptive", "file": "terms/mittelwert.json" },
-    { "id": "standardabweichung", "category": "descriptive", "file": "terms/standardabweichung.json" },
-    { "id": "varianz",            "category": "descriptive", "file": "terms/varianz.json" },
-    { "id": "median",             "category": "descriptive", "file": "terms/median.json" },
-    { "id": "spannweite",         "category": "descriptive", "file": "terms/spannweite.json" },
-    { "id": "schiefe",            "category": "descriptive", "file": "terms/schiefe.json" },
-    { "id": "kurtosis",           "category": "descriptive", "file": "terms/kurtosis.json" }
+    { "id": "mittelwert",               "category": "descriptive", "file": "terms/mittelwert.json" },
+    { "id": "standardabweichung",       "category": "descriptive", "file": "terms/standardabweichung.json" },
+    { "id": "varianz",                  "category": "descriptive", "file": "terms/varianz.json" },
+    { "id": "median",                   "category": "descriptive", "file": "terms/median.json" },
+    { "id": "spannweite",               "category": "descriptive", "file": "terms/spannweite.json" },
+    { "id": "schiefe",                  "category": "descriptive", "file": "terms/schiefe.json" },
+    { "id": "kurtosis",                 "category": "descriptive", "file": "terms/kurtosis.json" },
+    { "id": "kappa",                    "category": "msa",         "file": "terms/kappa.json" },
+    { "id": "cohen-kappa",              "category": "msa",         "file": "terms/cohen-kappa.json" },
+    { "id": "fleiss-kappa",             "category": "msa",         "file": "terms/fleiss-kappa.json" },
+    { "id": "weighted-kappa",           "category": "msa",         "file": "terms/weighted-kappa.json" },
+    { "id": "effektivitaet",            "category": "msa",         "file": "terms/effektivitaet.json" },
+    { "id": "miss-rate",                "category": "msa",         "file": "terms/miss-rate.json" },
+    { "id": "false-alarm-rate",         "category": "msa",         "file": "terms/false-alarm-rate.json" },
+    { "id": "signal-detection",         "category": "msa",         "file": "terms/signal-detection.json" },
+    { "id": "d-prime",                  "category": "msa",         "file": "terms/d-prime.json" },
+    { "id": "criterion-c",              "category": "msa",         "file": "terms/criterion-c.json" },
+    { "id": "konsens-fallback",         "category": "msa",         "file": "terms/konsens-fallback.json" },
+    { "id": "wilson-konfidenzintervall","category": "msa",         "file": "terms/wilson-konfidenzintervall.json" }
   ]
 }

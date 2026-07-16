@@ -1,0 +1,60 @@
+{
+  "id": "miss-rate",
+  "category": "msa",
+  "title": {
+    "de": "Miss-Rate (falsche Annahme)",
+    "en": "Miss Rate (Escape)"
+  },
+  "short": {
+    "de": "Anteil der tatsächlich schlechten Teile, die ein Prüfer fälschlich als i.O. bewertet — bei binärer attributiver MSA.",
+    "en": "Fraction of truly bad parts that an appraiser wrongly rates as OK — in binary attribute MSA."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "Die **Miss-Rate** (auch: falsche Annahme, Escape) ist die bedingte Wahrscheinlichkeit, dass ein Prüfer ein tatsächlich negatives Teil (n.i.O., ref = neg) als positiv (i.O., rating = pos) bewertet."
+      },
+      {
+        "type": "formula",
+        "latex": "\\text{miss} = P(\\text{rating} = \\text{pos} \\mid \\text{ref} = \\text{neg})"
+      },
+      {
+        "type": "paragraph",
+        "text": "Sie ist die aus Kundensicht kritischste Fehlerart: ein schlechtes Teil verlässt das Werk. Wilson-Score-KI (95 %) für den Anteil."
+      },
+      {
+        "type": "note",
+        "text": "Ergänzt {{term:false-alarm-rate|False-Alarm-Rate}} zum Bild der Prüfer-Neigung; $\\text{bias} = \\text{miss} - \\text{fa}$ ist positiv bei zu toleranten, negativ bei zu strengen Prüfern."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "The **miss rate** (also: escape, false acceptance) is the conditional probability that an appraiser rates a truly negative part (NOK, ref = neg) as positive (OK, rating = pos)."
+      },
+      {
+        "type": "formula",
+        "latex": "\\text{miss} = P(\\text{rating} = \\text{pos} \\mid \\text{ref} = \\text{neg})"
+      },
+      {
+        "type": "paragraph",
+        "text": "It is the customer-critical error type: a bad part ships. Wilson score CI (95 %) for the proportion."
+      },
+      {
+        "type": "note",
+        "text": "Complements {{term:false-alarm-rate|false-alarm rate}} for a full picture of appraiser bias; $\\text{bias} = \\text{miss} - \\text{fa}$ is positive for too-lenient, negative for too-strict appraisers."
+      }
+    ]
+  },
+  "aliases": {
+    "de": ["falsche Annahme", "Escape", "false acceptance"],
+    "en": ["escape", "false acceptance", "type II error rate (appraiser)"]
+  },
+  "seeAlso": ["false-alarm-rate", "effektivitaet", "signal-detection", "wilson-konfidenzintervall"],
+  "modules": ["msa-typ5"],
+  "algoLab": ["msa/signal-detection"],
+  "sources": [
+    { "label": "AIAG: Measurement Systems Analysis Reference Manual, 4th ed., 2010 — Kap. III-B", "url": null }
+  ]
+}

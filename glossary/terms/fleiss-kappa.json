@@ -1,0 +1,61 @@
+{
+  "id": "fleiss-kappa",
+  "category": "msa",
+  "title": {
+    "de": "Fleiss κ",
+    "en": "Fleiss κ"
+  },
+  "short": {
+    "de": "Kappa-Statistik für mehr als zwei Prüfer bei nominalen oder binären Merkmalen — Gesamt-Übereinstimmung.",
+    "en": "Kappa statistic for more than two raters on nominal or binary characteristics — overall agreement."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "**Fleiss κ** verallgemeinert {{term:cohen-kappa|Cohen κ}} auf $\\geq 3$ Prüfer und liefert *einen* Wert für die Gesamt-Übereinstimmung. Für jedes Teil $i$ und jede Klasse $j$ sei $n_{ij}$ die Anzahl der Prüfer-Bewertungen der Klasse $j$."
+      },
+      {
+        "type": "formula",
+        "latex": "P_i = \\frac{\\sum_j n_{ij}^2 - n_{i\\cdot}}{n_{i\\cdot}(n_{i\\cdot} - 1)}, \\quad \\kappa = \\frac{\\bar P - P_e}{1 - P_e}, \\quad P_e = \\sum_j \\bar p_j^{\\,2}"
+      },
+      {
+        "type": "paragraph",
+        "text": "$P_i$ ist die paarweise Übereinstimmung innerhalb eines Teils, $\\bar P$ deren Mittelwert. $\\bar p_j$ sind die Randanteile der Klassen. Bei ungleichen Rater-Zahlen wechselt die Engine auf die Randolph-Variante."
+      },
+      {
+        "type": "note",
+        "text": "Fleiss κ ist definitionsgemäß **unweighted** — für ordinale Skalen bewertet er kleine Fehlklassifikationen genauso hart wie große. In diesem Fall ergänzt {{term:weighted-kappa|Weighted κ}} die Interpretation."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "**Fleiss κ** generalises {{term:cohen-kappa|Cohen κ}} to $\\geq 3$ raters and yields *one* overall agreement value. For each part $i$ and class $j$ let $n_{ij}$ be the number of ratings of class $j$."
+      },
+      {
+        "type": "formula",
+        "latex": "P_i = \\frac{\\sum_j n_{ij}^2 - n_{i\\cdot}}{n_{i\\cdot}(n_{i\\cdot} - 1)}, \\quad \\kappa = \\frac{\\bar P - P_e}{1 - P_e}, \\quad P_e = \\sum_j \\bar p_j^{\\,2}"
+      },
+      {
+        "type": "paragraph",
+        "text": "$P_i$ is the pairwise agreement within a part, $\\bar P$ its mean. $\\bar p_j$ are the class marginals. Under unbalanced rater counts the engine switches to the Randolph variant."
+      },
+      {
+        "type": "note",
+        "text": "Fleiss κ is unweighted by definition — for ordinal scales it penalises small misclassifications just as harshly as large ones. In that case {{term:weighted-kappa|weighted κ}} complements the interpretation."
+      }
+    ]
+  },
+  "aliases": {
+    "de": ["Fleiss' Kappa", "κ (Fleiss)", "multirater kappa"],
+    "en": ["Fleiss' kappa", "κ (Fleiss)", "multirater kappa"]
+  },
+  "seeAlso": ["kappa", "cohen-kappa", "weighted-kappa"],
+  "modules": ["msa-typ5"],
+  "algoLab": ["msa/fleiss-kappa"],
+  "sources": [
+    { "label": "Fleiss, J.L. (1971). Measuring nominal scale agreement among many raters. Psychological Bulletin, 76(5), 378–382.", "url": null },
+    { "label": "Randolph, J.J. (2005). Free-marginal multirater kappa: An alternative to Fleiss' fixed-marginal multirater kappa. Joensuu Learning and Instruction Symposium.", "url": null }
+  ]
+}

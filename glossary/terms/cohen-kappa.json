@@ -1,0 +1,61 @@
+{
+  "id": "cohen-kappa",
+  "category": "msa",
+  "title": {
+    "de": "Cohen κ",
+    "en": "Cohen κ"
+  },
+  "short": {
+    "de": "Kappa-Statistik für exakt zwei Prüfer bei nominalen oder binären Merkmalen.",
+    "en": "Kappa statistic for exactly two raters on nominal or binary characteristics."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "**Cohen κ** ist die klassische Zweipersonen-Kappa-Statistik. Aus der Kreuztabelle der Bewertungen beider Prüfer über alle Teile:"
+      },
+      {
+        "type": "formula",
+        "latex": "\\kappa = \\frac{p_o - p_e}{1 - p_e}, \\quad p_o = \\frac{1}{N}\\sum_i n_{ii}, \\quad p_e = \\frac{1}{N^2}\\sum_i n_{i\\cdot}\\, n_{\\cdot i}"
+      },
+      {
+        "type": "paragraph",
+        "text": "$n_{ii}$ ist die Diagonale (beide Prüfer gaben Klasse $i$), $n_{i\\cdot}$ und $n_{\\cdot i}$ sind die Randsummen. Näherungs-Standardfehler nach Fleiss/Cohen/Everitt (1969); 95 %-KI = $\\kappa \\pm z_{1-\\alpha/2} \\cdot \\text{SE}(\\kappa)$."
+      },
+      {
+        "type": "note",
+        "text": "Bei ordinalen Skalen ergänzt {{term:weighted-kappa|Weighted κ}} die Sicht auf nahe Fehlklassifikationen. Für mehr als zwei Prüfer wird {{term:fleiss-kappa|Fleiss κ}} verwendet."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "**Cohen κ** is the classic two-rater kappa statistic. From the cross tab of both raters' ratings over all parts:"
+      },
+      {
+        "type": "formula",
+        "latex": "\\kappa = \\frac{p_o - p_e}{1 - p_e}, \\quad p_o = \\frac{1}{N}\\sum_i n_{ii}, \\quad p_e = \\frac{1}{N^2}\\sum_i n_{i\\cdot}\\, n_{\\cdot i}"
+      },
+      {
+        "type": "paragraph",
+        "text": "$n_{ii}$ is the diagonal (both raters gave class $i$), $n_{i\\cdot}$ and $n_{\\cdot i}$ are the marginals. Approximate SE after Fleiss/Cohen/Everitt (1969); 95 % CI = $\\kappa \\pm z_{1-\\alpha/2} \\cdot \\text{SE}(\\kappa)$."
+      },
+      {
+        "type": "note",
+        "text": "On ordinal scales {{term:weighted-kappa|weighted κ}} adds a view on near misclassifications. For more than two raters use {{term:fleiss-kappa|Fleiss κ}}."
+      }
+    ]
+  },
+  "aliases": {
+    "de": ["Cohens Kappa", "κ (Cohen)"],
+    "en": ["Cohen's kappa", "κ (Cohen)"]
+  },
+  "seeAlso": ["kappa", "fleiss-kappa", "weighted-kappa"],
+  "modules": ["msa-typ5"],
+  "algoLab": ["msa/cohen-kappa"],
+  "sources": [
+    { "label": "Cohen, J. (1960). A coefficient of agreement for nominal scales. Educational and Psychological Measurement, 20(1), 37–46.", "url": null },
+    { "label": "Fleiss, J.L., Cohen, J., & Everitt, B.S. (1969). Large sample standard errors of kappa and weighted kappa. Psychological Bulletin, 72(5), 323–327.", "url": null }
+  ]
+}

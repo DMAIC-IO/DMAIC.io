@@ -1,0 +1,61 @@
+{
+  "id": "weighted-kappa",
+  "category": "msa",
+  "title": {
+    "de": "Weighted κ (gewichtetes Kappa)",
+    "en": "Weighted κ"
+  },
+  "short": {
+    "de": "Kappa-Statistik für ordinale Skalen — gewichtet nahe Fehlklassifikationen milder als weit entfernte.",
+    "en": "Kappa statistic for ordinal scales — weighs near misclassifications more mildly than distant ones."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "**Weighted κ** erweitert {{term:cohen-kappa|Cohen κ}} um eine Gewichts-Matrix $W$, die berücksichtigt, wie weit zwei Klassen auf der ordinalen Skala auseinander liegen. Standard bei $k$ Stufen:"
+      },
+      {
+        "type": "formula",
+        "latex": "w_{ij}^{\\text{lin}} = 1 - \\frac{|i-j|}{k-1}, \\qquad w_{ij}^{\\text{quad}} = 1 - \\left(\\frac{i-j}{k-1}\\right)^{\\!2}"
+      },
+      {
+        "type": "paragraph",
+        "text": "Die quadratische Gewichtung (Cicchetti/Allison 1971) ist der Standard und bestraft weite Fehlklassifikationen (Note 1 statt 5) deutlich stärker als nahe (Note 3 statt 4). $\\kappa_w = (p_o^{w} - p_e^{w}) / (1 - p_e^{w})$."
+      },
+      {
+        "type": "note",
+        "text": "Nur bei ordinalen Merkmalen sinnvoll. Für nominale Skalen ohne Rangordnung liefert die Gewichts-Matrix keinen Mehrwert — dort {{term:cohen-kappa|Cohen κ}} oder {{term:fleiss-kappa|Fleiss κ}}."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "**Weighted κ** extends {{term:cohen-kappa|Cohen κ}} with a weight matrix $W$ that reflects how far apart two classes lie on the ordinal scale. Standard for $k$ steps:"
+      },
+      {
+        "type": "formula",
+        "latex": "w_{ij}^{\\text{lin}} = 1 - \\frac{|i-j|}{k-1}, \\qquad w_{ij}^{\\text{quad}} = 1 - \\left(\\frac{i-j}{k-1}\\right)^{\\!2}"
+      },
+      {
+        "type": "paragraph",
+        "text": "Quadratic weighting (Cicchetti/Allison 1971) is the standard and penalises distant misclassifications (grade 1 instead of 5) markedly more than near ones (3 instead of 4). $\\kappa_w = (p_o^{w} - p_e^{w}) / (1 - p_e^{w})$."
+      },
+      {
+        "type": "note",
+        "text": "Only meaningful for ordinal characteristics. Nominal scales without order gain nothing from a weight matrix — use {{term:cohen-kappa|Cohen κ}} or {{term:fleiss-kappa|Fleiss κ}} there."
+      }
+    ]
+  },
+  "aliases": {
+    "de": ["gewichtetes Kappa", "κ_w", "Cicchetti-Allison-Kappa"],
+    "en": ["weighted kappa", "κ_w", "Cicchetti–Allison kappa"]
+  },
+  "seeAlso": ["kappa", "cohen-kappa", "fleiss-kappa"],
+  "modules": ["msa-typ5"],
+  "algoLab": ["msa/weighted-kappa"],
+  "sources": [
+    { "label": "Cohen, J. (1968). Weighted kappa: Nominal scale agreement with provision for scaled disagreement. Psychological Bulletin, 70(4), 213–220.", "url": null },
+    { "label": "Cicchetti, D.V. & Allison, T. (1971). A new procedure for assessing reliability of scoring EEG sleep recordings. American Journal of EEG Technology, 11, 101–110.", "url": null }
+  ]
+}

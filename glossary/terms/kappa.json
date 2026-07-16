@@ -1,0 +1,70 @@
+{
+  "id": "kappa",
+  "category": "msa",
+  "title": {
+    "de": "Kappa-Koeffizient",
+    "en": "Kappa Coefficient"
+  },
+  "short": {
+    "de": "Statistisches Maß für die Übereinstimmung zwischen Prüfern, korrigiert um zufällige Übereinstimmung.",
+    "en": "Statistical measure of agreement between raters, corrected for chance agreement."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "Der **Kappa-Koeffizient** $\\kappa$ misst, wie stark die Übereinstimmung zwischen zwei oder mehreren Prüfern über die zufällig erwartete hinausgeht."
+      },
+      {
+        "type": "formula",
+        "latex": "\\kappa = \\frac{p_o - p_e}{1 - p_e}"
+      },
+      {
+        "type": "paragraph",
+        "text": "$p_o$ ist die beobachtete Übereinstimmung, $p_e$ die unter Zufall erwartete. $\\kappa = 1$ bedeutet perfekte Übereinstimmung, $\\kappa = 0$ Zufallsniveau. Werte < 0 zeigen systematische Uneinigkeit."
+      },
+      {
+        "type": "note",
+        "text": "Für zwei Prüfer wird {{term:cohen-kappa|Cohen κ}} verwendet; für mehr als zwei {{term:fleiss-kappa|Fleiss κ}}. Ordinale Skalen ergänzt {{term:weighted-kappa|Weighted κ}}, das nahe Fehlklassifikationen milder gewichtet."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "The **kappa coefficient** $\\kappa$ measures how much agreement between two or more raters exceeds what would be expected by chance."
+      },
+      {
+        "type": "formula",
+        "latex": "\\kappa = \\frac{p_o - p_e}{1 - p_e}"
+      },
+      {
+        "type": "paragraph",
+        "text": "$p_o$ is the observed agreement, $p_e$ the chance-expected. $\\kappa = 1$ is perfect agreement, $\\kappa = 0$ is chance level. Negative values indicate systematic disagreement."
+      },
+      {
+        "type": "note",
+        "text": "For two raters use {{term:cohen-kappa|Cohen κ}}; for more than two {{term:fleiss-kappa|Fleiss κ}}. Ordinal scales add {{term:weighted-kappa|weighted κ}} which weighs near misclassifications more mildly."
+      }
+    ]
+  },
+  "aliases": {
+    "de": ["κ", "Kappa-Statistik", "Übereinstimmungs-Koeffizient"],
+    "en": ["κ", "kappa statistic", "agreement coefficient"]
+  },
+  "seeAlso": [
+    "cohen-kappa",
+    "fleiss-kappa",
+    "weighted-kappa",
+    "effektivitaet"
+  ],
+  "modules": ["msa-typ5"],
+  "algoLab": [
+    "msa/cohen-kappa",
+    "msa/fleiss-kappa",
+    "msa/weighted-kappa"
+  ],
+  "sources": [
+    { "label": "Cohen, J. (1960). A coefficient of agreement for nominal scales. Educational and Psychological Measurement, 20(1), 37–46.", "url": null },
+    { "label": "AIAG: Measurement Systems Analysis Reference Manual, 4th ed., 2010 — Kap. III-B", "url": null }
+  ]
+}
