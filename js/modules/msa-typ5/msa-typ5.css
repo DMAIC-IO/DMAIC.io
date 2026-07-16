@@ -1,0 +1,8 @@
+/* MSA Typ 5 — BEM-light styles (module-msa-typ5*) */
+
+.module-msa-typ5 { display: grid; gap: var(--spacing-md); }
+.module-msa-typ5__empty {
+  padding: var(--spacing-xl);
+  text-align: center;
+  color: var(--color-text-secondary);
+}
