@@ -202,6 +202,33 @@ function _timeAxis(inputs, limits) {
 }
 
 /**
+ * Coerce a `_timeAxis()` result into a purely numeric axis for the drift
+ * regression. `_timeAxis()` is intentionally display-oriented for I-MR (it
+ * hands back the RAW timestamp values — e.g. ISO date strings — so
+ * `ruleViolations[i].time` stays human-readable in the violations table);
+ * X̄-R already returns averaged milliseconds. Feeding raw date strings
+ * straight into `_driftTest()`'s arithmetic (`t.reduce((a,b)=>a+b)`, `t[i] -
+ * tBar`, …) silently produces string concatenation / NaN instead of a
+ * numeric regression — `Stt` (sum of squared deviations) then evaluates to
+ * NaN, `Stt > 0` is false, and `_driftTest` falls back to `slope = 0` /
+ * `pValue = 1` with NO visible error. Bug found via the msa-typ6 E2E suite
+ * (Task 19): the `imr-drift` example's date-typed timestamp column made the
+ * drift test silently report "no trend" despite an obvious linear drift.
+ * Numbers pass through unchanged; date-parsable strings are converted via
+ * `Date.parse`; anything else that doesn't parse becomes `NaN` (matches the
+ * X̄-R branch's existing coercion).
+ * @param {Array<number|string>} axis
+ * @returns {number[]}
+ */
+function _toNumericTimeAxis(axis) {
+  return axis.map((t) => {
+    if (typeof t === 'number') return t;
+    const ms = typeof t === 'string' ? Date.parse(t) : Number(t);
+    return Number.isFinite(ms) ? ms : NaN;
+  });
+}
+
+/**
  * Drift-Test: einfache lineare Regression des Primär-Kennwerts über die
  * Zeitachse `t`, gefolgt von einem zweiseitigen t-Test auf β₁ = 0
  * (Spec § 4). Formeln decken sich mit `scipy.stats.linregress` — Referenz
@@ -334,7 +361,12 @@ export function analyze(inputs) {
       ruleIds: [...rules].sort((a, b) => a - b),
     }));
   const tScale = Array.isArray(inputs.timestamps) ? 'timestamp' : 'index';
-  const drift = _driftTest(limits.primary.series, timestamps, inputs.alpha, tScale);
+  // Drift-Regression braucht eine rein numerische Zeitachse — `timestamps`
+  // (oben) bleibt für I-MR bewusst display-orientiert (rohe Zeitstempel,
+  // damit `ruleViolations[i].time` lesbar bleibt) und wäre für date-typisierte
+  // Spalten sonst Zeichenketten-„Arithmetik" (siehe `_toNumericTimeAxis`).
+  const regressionAxis = _toNumericTimeAxis(timestamps);
+  const drift = _driftTest(limits.primary.series, regressionAxis, inputs.alpha, tScale);
 
   const verdict = _verdict(ruleViolations, drift, inputs.alpha);
   const warnings = _warnings(inputs, limits, ruleViolations);

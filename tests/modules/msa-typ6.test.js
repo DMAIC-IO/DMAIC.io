@@ -165,13 +165,17 @@ suite('msa-typ6 module — Output-Panel Verdikt-Header + KPI-Strip (Task 9)', ()
     const frag = resultFragment(doc);
     const dot = frag.querySelector('.module-msa-typ6__verdict-dot');
     assertTrue(dot !== null, 'missing .module-msa-typ6__verdict-dot element');
-    // Colour is driven dynamically via :class from verdict.level — assert the
-    // binding is wired to the expected good/warn/bad ternary, not a literal.
+    // Colour is driven dynamically via :class from verdict.level — the
+    // good/warn/bad mapping lives in the `_verdictDotClass()` data-fn helper,
+    // NOT inline as a template literal in the template: Alpine's CSP
+    // expression parser does not evaluate ES6 template literals
+    // (`` `...${cond ? a : b}` ``) — the directive stays in the DOM but the
+    // `class` attribute never updates (no visible error). Found via the
+    // msa-typ6 E2E suite (Task 19); see .claude/alpine.md "Kritische
+    // Stolpersteine" — complex expressions belong in the data-fn.
     const binding = dot.getAttribute(':class') || '';
-    assertTrue(binding.includes('module-msa-typ6__verdict-dot--'),
-      'verdict-dot :class binding must reference the --good/--warn/--bad modifiers');
-    assertTrue(binding.includes("_lastResult.verdict.level === 'stable'"),
-      'verdict-dot :class binding must branch on verdict.level');
+    assertTrue(binding.includes('_verdictDotClass(_lastResult.verdict.level)'),
+      'verdict-dot :class binding must call _verdictDotClass(_lastResult.verdict.level)');
   });
 
   test('result branch has a KPI strip with at least six KPI tiles', async () => {

@@ -168,7 +168,7 @@
         <!-- Verdikt-Header (Task 9) -->
         <div class="module-msa-typ6__verdict">
           <span class="module-msa-typ6__verdict-dot"
-                :class="`module-msa-typ6__verdict-dot--${_lastResult.verdict.level === 'stable' ? 'good' : (_lastResult.verdict.level === 'marginal' ? 'warn' : 'bad')}`"></span>
+                :class="_verdictDotClass(_lastResult.verdict.level)"></span>
           <span class="module-msa-typ6__verdict-label" x-text="t('verdict.' + _lastResult.verdict.level)"></span>
           <span class="module-msa-typ6__verdict-driver" x-text="t('driver.' + _lastResult.verdict.driver)"></span>
         </div>
