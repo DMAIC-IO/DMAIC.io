@@ -8,6 +8,8 @@
  * favor of the popout helper.
  */
 
+import { h } from '../core/dom.js';
+
 export class Modal {
   /**
    * @param {import('../core/i18n.js').I18n} i18n
@@ -25,7 +27,7 @@ export class Modal {
    */
   alert(message, title) {
     return new Promise((resolve) => {
-      const { overlay, modal } = this._create(title ?? this._i18n.t('common.ok'), `<p>${message}</p>`);
+      const { overlay, modal } = this._create(title ?? this._i18n.t('common.ok'), h('p', null, message));
       const footer = modal.querySelector('.modal__footer');
 
       const okBtn = document.createElement('button');
@@ -44,7 +46,7 @@ export class Modal {
   /**
    * Show a form dialog with confirm/cancel buttons.
    * @param {string} title
-   * @param {string|HTMLElement} content - form HTML
+   * @param {HTMLElement} content - form body node (e.g. a module's x-ref Alpine form)
    * @param {object} [options]
    * @param {string} [options.confirmLabel]
    * @param {string} [options.cancelLabel]
@@ -57,7 +59,7 @@ export class Modal {
       const confirmLabel = options.confirmLabel ?? this._i18n.t('common.save');
       const cancelLabel = options.cancelLabel ?? this._i18n.t('common.cancel');
 
-      const { overlay, modal, body, footer } = this._create(title, content);
+      const { overlay, body, footer } = this._create(title, content);
 
       const cancelBtn = document.createElement('button');
       cancelBtn.className = 'btn btn--secondary';
@@ -92,7 +94,7 @@ export class Modal {
   /**
    * Show a modal with custom HTML content.
    * @param {string} title
-   * @param {string|HTMLElement} content
+   * @param {HTMLElement} content
    * @param {object} [options]
    * @param {boolean} [options.wide=false]
    * @returns {{ close: function }} handle to close programmatically
@@ -119,18 +121,23 @@ export class Modal {
 
     const header = document.createElement('div');
     header.className = 'modal__header';
-    header.innerHTML = `
-      <span class="modal__title">${title}</span>
-      <button class="btn btn--icon btn--ghost modal__close" aria-label="${this._i18n.t('common.close')}">✕</button>
-    `;
+    const title_el = h('span', { class: 'modal__title' }, title);
+    const closeBtn = h('button', { class: 'btn btn--icon btn--ghost modal__close', 'aria-label': this._i18n.t('common.close') }, '✕');
+    header.append(title_el, closeBtn);
 
     const body = document.createElement('div');
     body.className = 'modal__body';
-    if (typeof content === 'string') {
-      body.innerHTML = content;
-    } else {
+    // Content is always a DOM node. Borrow/restore: a template-owned node passed
+    // as `content` is moved into the modal body and returned to its DOM home on
+    // close (so Alpine bindings survive — Alpine's reactive scope is cached on
+    // the element). Freshly-built nodes have no home and are discarded with the
+    // overlay.
+    let borrowed = null;
+    if (content) {
+      borrowed = content.parentNode ? { node: content, home: content.parentNode, next: content.nextSibling } : null;
       body.append(content);
     }
+    overlay._borrowed = borrowed;
 
     const footer = document.createElement('div');
     footer.className = 'modal__footer';
@@ -146,6 +153,10 @@ export class Modal {
   }
 
   _close(overlay) {
+    // Restore a borrowed template node to its home BEFORE removing the overlay,
+    // otherwise its removal would tear down the Alpine component.
+    const b = overlay._borrowed;
+    if (b && b.home) b.home.insertBefore(b.node, b.next);
     overlay.remove();
     this._stack = this._stack.filter(o => o !== overlay);
   }

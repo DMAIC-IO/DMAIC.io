@@ -1,0 +1,91 @@
+{
+  "id": "faktor",
+  "category": "doe",
+  "title": {
+    "de": "Faktor (Factor)",
+    "en": "Factor"
+  },
+  "short": {
+    "de": "Eine Einflussgröße, die im {{term:doe|Versuchsplan}} bewusst variiert wird — z. B. Temperatur, Druck, Materialtyp.",
+    "en": "An input deliberately varied in a {{term:doe|designed experiment}} — e.g. temperature, pressure, material type."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "Ein **Faktor** ist eine Größe, die im Experiment kontrolliert auf verschiedene {{term:stufe|Stufen}} gesetzt wird, um ihren Einfluss auf die {{term:zielgroesse|Zielgröße}} zu quantifizieren."
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Stetig** (numerisch) — z. B. Temperatur in °C, Konzentration in %, Zeit in Sekunden",
+          "**Kategorial** (qualitativ) — z. B. Lieferant A/B, Materialtyp, Maschine 1/2/3",
+          "**Steuerbar** — direkt einstellbar (Steuergröße)",
+          "**Störgröße** (Noise) — bekannt, aber nicht regelbar (Umgebungsfeuchte, Chargenschwankung)"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "Faktoren müssen für die Dauer eines Versuchs stabil einstellbar sein und den Prozess wirklich beeinflussen können. Wer Größen als Faktoren aufnimmt, ohne sie im Versuch verändern zu können, produziert Scheingenauigkeit ohne Erkenntnisgewinn."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "A **factor** is a quantity deliberately set to different {{term:stufe|levels}} during the experiment to quantify its effect on the {{term:zielgroesse|response}}."
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Continuous** (numeric) — e.g. temperature in °C, concentration in %, time in seconds",
+          "**Categorical** (qualitative) — e.g. supplier A/B, material type, machine 1/2/3",
+          "**Controllable** — directly adjustable (control factor)",
+          "**Noise** — known but not adjustable (ambient humidity, batch fluctuation)"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "Factors must be stably adjustable for the duration of a run and must actually influence the process. Listing quantities as factors that cannot be varied during the experiment yields false precision without insight."
+      }
+    ]
+  },
+  "aliases": {
+    "de": [
+      "Einflussgröße",
+      "Faktorvariable",
+      "Steuergröße"
+    ],
+    "en": [
+      "input variable",
+      "control factor",
+      "independent variable"
+    ]
+  },
+  "seeAlso": [
+    "stufe",
+    "zielgroesse",
+    "doe",
+    "haupteffekt",
+    "wechselwirkung"
+  ],
+  "modules": [
+    "doe-planner",
+    "doe-advisor",
+    "regression",
+    "glm-regression"
+  ],
+  "algoLab": [
+    "doe/doe-planner",
+    "doe/mixed-level-full-factorial"
+  ],
+  "sources": [
+    {
+      "label": "Montgomery, D. C. — Design and Analysis of Experiments, 10th Edition, Chapter 1",
+      "url": null
+    },
+    {
+      "label": "Kleppmann, W. — Versuchsplanung, 10. Auflage, Hanser",
+      "url": null
+    }
+  ]
+}

@@ -23,12 +23,7 @@
  * `{term}` is substituted with the span's visible text.
  */
 
-const SVG_ICON =
-  '<svg viewBox="0 0 16 16" aria-hidden="true" focusable="false">' +
-    '<circle cx="8" cy="8" r="7" fill="currentColor"/>' +
-    '<rect x="7" y="6.8" width="2" height="5" rx="0.4" fill="#fff"/>' +
-    '<circle cx="8" cy="4.7" r="1.05" fill="#fff"/>' +
-  '</svg>';
+import { icon } from './icon.js';
 
 const STATE = {
   ariaTemplate: 'Glossar: {term} öffnen',
@@ -108,7 +103,7 @@ function augmentOne(span) {
   btn.className = 'glossary-term__btn';
   btn.dataset.glossaryTerm = termId;
   btn.setAttribute('aria-label', aria);
-  btn.innerHTML = SVG_ICON;
+  btn.replaceChildren(icon('glossary'));
 
   span.appendChild(btn);
   span.dataset.glossaryAugmented = '1';

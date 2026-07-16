@@ -1,0 +1,129 @@
+<div class="attr-cc dmike-split" x-data="attributeControlChart">
+  <div class="attr-cc__input dmike-split__input">
+
+    <div class="dmike-split__section-title" x-text="t('sectionChartType')"></div>
+    <div class="field-group">
+      <label x-text="t('chartType')"></label>
+      <select class="field" data-ref="chart-type" x-model="model.chartTypeId" @change="chartTypeChanged()">
+        <option value="p" x-text="t('type_p')"></option>
+        <option value="np" x-text="t('type_np')"></option>
+        <option value="c" x-text="t('type_c')"></option>
+        <option value="u" x-text="t('type_u')"></option>
+      </select>
+      <span class="attr-cc__hint" x-text="t('typeHint_' + model.chartTypeId)"></span>
+    </div>
+
+    <div class="dmike-split__section-title" x-text="t('sectionData')"></div>
+
+    <div class="field-group">
+      <label x-text="t('defectsColumn')"></label>
+      <div data-ref="defects-picker"></div>
+    </div>
+
+    <div class="field-group" data-ref="size-row" x-show="requiresSampleSize()">
+      <label x-text="t('sizeColumn')"></label>
+      <div data-ref="size-picker"></div>
+      <span class="attr-cc__hint" x-text="t('sizeHint')"></span>
+    </div>
+
+    <div class="field-group" data-ref="constn-row" x-show="requiresConstantN()">
+      <label x-text="t('constantN')"></label>
+      <input type="number" class="field field--num" data-ref="constant-n"
+        min="1" step="1"
+        x-model="model.constantN" @change="constantNChanged($event)">
+      <span class="attr-cc__hint" x-text="t('constantNHint')"></span>
+    </div>
+
+    <div class="field-group">
+      <label x-text="t('baselineCount')"></label>
+      <input type="number" class="field field--num" data-ref="baseline-count"
+        min="2" :placeholder="t('baselineAll')"
+        :value="model.baselineCount == null ? '' : model.baselineCount"
+        @change="baselineCountChanged($event)">
+      <span class="attr-cc__hint" x-text="t('baselineHint')"></span>
+    </div>
+
+    <div class="dmike-split__section-title attr-cc__collapsible" data-ref="nelson-toggle"
+      :class="nelsonCollapsed ? 'attr-cc__collapsible--collapsed' : ''"
+      @click="toggleNelson()">
+      <span x-text="t('sectionNelson')"></span>
+      <span class="attr-cc__chevron" x-text="chevron()"></span>
+    </div>
+    <div class="attr-cc__nelson-panel" data-ref="nelson-panel"
+      :class="nelsonCollapsed ? 'attr-cc__nelson-panel--collapsed' : ''">
+      <template x-for="rule in nelsonRules" :key="rule.id">
+        <label class="attr-cc__nelson-rule">
+          <input type="checkbox" :data-rule="rule.id"
+            :checked="model.enabledRules.includes(rule.id)"
+            @change="toggleRule(rule.id, $event)">
+          <span>
+            <strong x-text="nelsonRuleShort(rule)"></strong><br>
+            <span class="attr-cc__nelson-desc" x-text="nelsonRuleDesc(rule)"></span>
+          </span>
+        </label>
+      </template>
+    </div>
+
+  </div>
+
+  <div class="attr-cc__output dmike-split__output">
+    <div data-ref="stats-bar">
+      <template x-if="result">
+        <div class="dmike-kpi-strip">
+          <div class="dmike-kpi">
+            <div class="dmike-kpi-value" x-text="fmtCL()"></div>
+            <div class="dmike-kpi-label" x-text="t('statCL')"></div>
+            <div class="dmike-kpi-sub" x-text="t('statCenterFor_' + model.chartTypeId)"></div>
+          </div>
+          <div class="dmike-kpi">
+            <div class="dmike-kpi-value" x-text="uclMeanStr()"></div>
+            <div class="dmike-kpi-label" x-text="limitsLabel()"></div>
+            <div class="dmike-kpi-sub">
+              <span x-text="lclMeanStr()"></span>
+              <span class="attr-cc__var-warning" x-show="result.variableLimits" x-text="t('variableLimits')"></span>
+            </div>
+          </div>
+          <div class="dmike-kpi" :class="violationCount() === 0 ? 'dmike-kpi--good' : 'dmike-kpi--bad'">
+            <div class="dmike-kpi-value" x-text="violationCount()"></div>
+            <div class="dmike-kpi-label" x-text="t('statViolations')"></div>
+            <div class="dmike-kpi-sub" x-text="t('statOf', { total: validCount() })"></div>
+          </div>
+        </div>
+      </template>
+    </div>
+
+    <div data-ref="charts-wrap">
+      <template x-if="result">
+        <div class="attr-cc__chart-section">
+          <div class="attr-cc__chart-header">
+            <span class="attr-cc__chart-title" x-text="chartTitle()"></span>
+            <span class="attr-cc__badge"
+              :class="isStable() ? 'attr-cc__badge--stable' : 'attr-cc__badge--unstable'"
+              x-text="badgeText()"></span>
+          </div>
+          <div class="attr-cc__plot-wrap" data-ref="plot"></div>
+        </div>
+      </template>
+    </div>
+
+    <div data-ref="violations-wrap">
+      <template x-if="result && violationRows().length === 0">
+        <div class="attr-cc__no-violations" x-text="t('noViolations')"></div>
+      </template>
+      <template x-if="result && violationRows().length > 0">
+        <div class="attr-cc__violations-panel">
+          <div class="attr-cc__violations-header" x-text="violationsHeader()"></div>
+          <div class="attr-cc__violations-list">
+            <template x-for="(v, i) in violationRows()" :key="i">
+              <div class="attr-cc__violation-row">
+                <span class="attr-cc__v-idx" x-text="'#' + (v.index + 1)"></span>
+                <span class="attr-cc__v-rule" x-text="'Rule ' + v.ruleId"></span>
+                <span class="attr-cc__v-desc" x-text="v.desc"></span>
+              </div>
+            </template>
+          </div>
+        </div>
+      </template>
+    </div>
+  </div>
+</div>

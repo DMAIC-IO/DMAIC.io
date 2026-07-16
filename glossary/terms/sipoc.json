@@ -1,0 +1,90 @@
+{
+  "id": "sipoc",
+  "category": "methodology",
+  "title": {
+    "de": "SIPOC",
+    "en": "SIPOC"
+  },
+  "short": {
+    "de": "Kompakte Prozess-Übersicht: **S**uppliers — **I**nputs — **P**rocess — **O**utputs — **C**ustomers. Standardwerkzeug der Define-Phase im {{term:dmaic|DMAIC}}.",
+    "en": "Compact process overview: **S**uppliers — **I**nputs — **P**rocess — **O**utputs — **C**ustomers. Standard Define-phase tool in {{term:dmaic|DMAIC}}."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "Ein **SIPOC** ist eine tabellarische Übersicht auf hoher Flughöhe, die zeigt, *woher* ein Prozess seine Zutaten bekommt, *was* er tut, *was* er liefert und *an wen*. Er zwingt das Team, Kunden und Lieferanten explizit zu benennen — nicht nur Prozessschritte."
+      },
+      {
+        "type": "list",
+        "items": [
+          "**S — Suppliers** — Wer liefert die Inputs? (intern und extern)",
+          "**I — Inputs** — Was fließt in den Prozess? (Material, Information, Auftrag, Datei)",
+          "**P — Process** — 4–7 Hauptschritte auf hoher Ebene (nicht die volle {{term:process-map|Prozesskarte}})",
+          "**O — Outputs** — Was verlässt den Prozess? (Produkt, Dienstleistung, Dokument)",
+          "**C — Customers** — Wer erhält die Outputs? Wer sind die Kunden der {{term:voc|Voice of Customer}}?"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "SIPOC wird **im Team** erstellt, nicht am Schreibtisch — verschiedene Rollen sehen die Prozessgrenzen unterschiedlich. Er bildet die Basis für die Kunden-Interviews ({{term:voc|VoC}}) und die {{term:ctq|CTQ}}-Ableitung. Der SIPOC ist absichtlich grob; die feine Modellierung folgt in der Measure-Phase mit der {{term:process-map|Prozesskarte}}."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "A **SIPOC** is a high-altitude tabular overview showing *where* a process gets its ingredients, *what* it does, *what* it delivers, and *to whom*. It forces the team to name customers and suppliers explicitly — not just process steps."
+      },
+      {
+        "type": "list",
+        "items": [
+          "**S — Suppliers** — who provides the inputs? (internal and external)",
+          "**I — Inputs** — what flows into the process? (material, information, order, file)",
+          "**P — Process** — 4–7 high-level main steps (not the full {{term:process-map|process map}})",
+          "**O — Outputs** — what leaves the process? (product, service, document)",
+          "**C — Customers** — who receives the outputs? Who are the customers for {{term:voc|Voice of Customer}}?"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "SIPOC is drafted **as a team**, not at a desk — different roles see the process boundaries differently. It is the foundation for customer interviews ({{term:voc|VoC}}) and {{term:ctq|CTQ}} derivation. SIPOC is deliberately coarse; the fine model comes later with the {{term:process-map|process map}} in the Measure phase."
+      }
+    ]
+  },
+  "aliases": {
+    "de": [
+      "SIPOC-Diagramm",
+      "Prozess-Übersicht"
+    ],
+    "en": [
+      "SIPOC",
+      "SIPOC diagram"
+    ]
+  },
+  "seeAlso": [
+    "dmaic",
+    "project-charter",
+    "voc",
+    "ctq",
+    "process-map"
+  ],
+  "modules": [
+    "sipoc",
+    "voc-ctx-tree"
+  ],
+  "algoLab": [],
+  "sources": [
+    {
+      "label": "Rasmusson, D. — The SIPOC Picture Book, Oriel Incorporated, 2006",
+      "url": null
+    },
+    {
+      "label": "Pyzdek, T. & Keller, P. — The Six Sigma Handbook, 5th Edition",
+      "url": null
+    },
+    {
+      "label": "George, M. L. — Lean Six Sigma Pocket Toolbook, McGraw-Hill",
+      "url": null
+    }
+  ]
+}

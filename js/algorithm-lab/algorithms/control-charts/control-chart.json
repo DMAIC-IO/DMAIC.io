@@ -1,7 +1,7 @@
 {
   "id": "control-chart",
   "name": {
-    "de": "SPC-Regelkarten (I-MR, X̄-R, X̄-S)",
+    "de": "SPC-{{term:regelkarte|Regelkarte}}n (I-MR, X̄-R, X̄-S)",
     "en": "SPC Control Charts (I-MR, X̄-R, X̄-S)"
   },
   "category": "control-charts",
@@ -16,7 +16,7 @@
     },
     "long": {
       "de": "Die SPC-Engine deckt die drei klassischen Shewhart-Regelkarten ab: I-MR (Einzelwerte + gleitende Spannweite), X̄-R (Untergruppen-Mittelwert + Spannweite, 2 ≤ n ≤ 10) und X̄-S (Untergruppen-Mittelwert + Standardabweichung, 2 ≤ n ≤ 25). Die Kontrollgrenzen werden aus den klassischen AIAG/Montgomery-SPC-Konstanten (d2, A2, A3, D3, D4, B3, B4, c4) berechnet. σ̂ wird aus der Baseline-Subgruppe abgeleitet; über baselineEnd lässt sich eine Phase-1/Phase-2-Analyse realisieren. Der Dispatcher analyze(inputs) akzeptiert zusätzlich den Modus 'nelson' zum Prüfen der acht Nelson-Regeln (Standardmäßig 1–6 aktiv) und 'capability' zur Berechnung von Cp/Cpk aus einem vorgegebenen CL und σ̂. Das flache Ausgabeformat (z.B. i.cl, xbar.ucl) matched 1:1 die Fixture-Referenzwerte.",
-      "en": "The SPC engine covers the three classic Shewhart control charts: I-MR (individuals + moving range), X̄-R (subgroup mean + range, 2 ≤ n ≤ 10), and X̄-S (subgroup mean + std-dev, 2 ≤ n ≤ 25). Control limits are computed from the classic AIAG/Montgomery SPC constants (d2, A2, A3, D3, D4, B3, B4, c4). σ̂ is derived from the baseline subgroup; `baselineEnd` enables a Phase-1/Phase-2 analysis. The analyze(inputs) dispatcher additionally supports mode 'nelson' for the eight Nelson rules (1–6 enabled by default) and 'capability' for Cp/Cpk from a supplied CL and σ̂. The flat output shape (e.g. i.cl, xbar.ucl) matches the fixture reference values 1:1."
+      "en": "The SPC engine covers the three classic Shewhart {{term:regelkarte|control chart}}s: I-MR (individuals + moving range), X̄-R (subgroup mean + range, 2 ≤ n ≤ 10), and X̄-S (subgroup mean + std-dev, 2 ≤ n ≤ 25). Control limits are computed from the classic AIAG/Montgomery SPC constants (d2, A2, A3, D3, D4, B3, B4, c4). σ̂ is derived from the baseline subgroup; `baselineEnd` enables a Phase-1/Phase-2 analysis. The analyze(inputs) dispatcher additionally supports mode 'nelson' for the eight Nelson rules (1–6 enabled by default) and 'capability' for Cp/Cpk from a supplied CL and σ̂. The flat output shape (e.g. i.cl, xbar.ucl) matches the fixture reference values 1:1."
     }
   },
 

@@ -1,0 +1,198 @@
+<section class="module-container pairwise" x-data="pairwiseComparison" @keydown.window="compareKey($event)">
+  <div class="module-container__header">
+    <h2 class="module-container__title" x-text="t('name')"></h2>
+  </div>
+  <div class="module-container__body">
+    <div class="pairwise__tabs">
+      <div class="pairwise__tab" data-tab="input" :class="tabClass(0)" @click="goToTab('input')">
+        <span class="pairwise__tab-num">01</span><span x-text="t('tabInput')"></span>
+      </div>
+      <div class="pairwise__tab" data-tab="compare" :class="tabClass(1)" @click="goToTab('compare')">
+        <span class="pairwise__tab-num">02</span><span x-text="t('tabCompare')"></span>
+      </div>
+      <div class="pairwise__tab" data-tab="results" :class="tabClass(2)" @click="goToTab('results')">
+        <span class="pairwise__tab-num">03</span><span x-text="t('tabResults')"></span>
+      </div>
+    </div>
+
+    <div class="pairwise__content" :class="contentClass()" data-ref="content">
+
+      <!-- INPUT PHASE -->
+      <template x-if="model.viewPhase === 'input'">
+        <div class="pairwise__section">
+          <div class="pairwise__section-label" x-text="t('addSectionLabel')"></div>
+          <div class="pairwise__input-row">
+            <input type="text" class="field pairwise__input" data-ref="criterionInput"
+              x-model="inputValue"
+              :placeholder="t('criterionPlaceholder')"
+              maxlength="60"
+              :disabled="atMax()"
+              @keydown.enter.prevent="addCriterion()">
+            <button class="pairwise__btn pairwise__btn--accent" type="button"
+              data-action="add" :disabled="atMax()" @click="addCriterion()"
+              x-text="addBtnLabel()"></button>
+          </div>
+          <div class="pairwise__chips">
+            <template x-for="(c, i) in model.criteria">
+              <span class="pairwise__chip" :key="c">
+                <span class="pairwise__chip-num" x-text="chipNum(i)"></span>
+                <span class="pairwise__chip-label" x-text="c"></span>
+                <button class="pairwise__chip-remove" type="button"
+                  data-action="remove" :data-idx="i"
+                  :title="t('removeCriterion')" :aria-label="t('removeCriterion')"
+                  @click="removeCriterion(i)">×</button>
+              </span>
+            </template>
+          </div>
+          <template x-if="model.criteria.length === 0">
+            <div class="pairwise__empty">
+              <strong x-text="t('emptyTitle')"></strong>
+              <span x-text="emptyHintText()"></span>
+            </div>
+          </template>
+          <template x-if="atMax()">
+            <div class="pairwise__hint" x-text="maxReachedText()"></div>
+          </template>
+          <button class="pairwise__btn pairwise__btn--start" type="button"
+            data-action="start" :disabled="model.criteria.length < 3"
+            @click="startComparison()"
+            x-text="startLabel()"></button>
+        </div>
+      </template>
+
+      <!-- COMPARE PHASE -->
+      <template x-if="model.viewPhase === 'compare'">
+        <div>
+          <div class="pairwise__progress">
+            <div class="pairwise__progress-bar">
+              <div class="pairwise__progress-fill" :style="progressStyle()"></div>
+            </div>
+            <div class="pairwise__progress-text" x-text="progressText()"></div>
+          </div>
+          <div class="pairwise__card">
+            <div class="pairwise__vs-label" x-text="t('vsPrompt')"></div>
+            <div class="pairwise__vs">
+              <button class="pairwise__vs-option" type="button" data-action="choose" @click="chooseLeft()">
+                <span class="pairwise__vs-hotkey">←</span>
+                <span class="pairwise__vs-name" x-text="leftName()"></span>
+              </button>
+              <div class="pairwise__vs-divider">vs</div>
+              <button class="pairwise__vs-option" type="button" data-action="choose" @click="chooseRight()">
+                <span class="pairwise__vs-hotkey">→</span>
+                <span class="pairwise__vs-name" x-text="rightName()"></span>
+              </button>
+            </div>
+            <button class="pairwise__vs-tie" type="button" data-action="tie" @click="tieCurrent()">
+              <span class="pairwise__vs-hotkey">␣</span>
+              <span x-text="tieLabel()"></span>
+            </button>
+          </div>
+          <div class="pairwise__compare-actions">
+            <button class="pairwise__btn pairwise__btn--outline" type="button"
+              data-action="back-to-input" @click="backToInput()">
+              <span class="pairwise__nav-arrow">← </span><span x-text="backLabel()"></span>
+            </button>
+          </div>
+        </div>
+      </template>
+
+      <!-- RESULTS PHASE -->
+      <template x-if="model.viewPhase === 'results'">
+        <div>
+          <template x-if="model.criteria.length === 0">
+            <div class="pairwise__empty"><strong x-text="t('noResults')"></strong></div>
+          </template>
+          <template x-if="model.criteria.length > 0">
+            <div>
+              <div class="pairwise__results-grid">
+                <div class="pairwise__results-col">
+                  <div class="pairwise__section-label" x-text="t('rankingLabel')"></div>
+                  <ol class="pairwise__rank-list">
+                    <template x-for="(r, pos) in model.ranked">
+                      <li class="pairwise__rank-item" :key="r.idx"
+                        :class="medalClass(pos)" :style="rankDelay(pos)">
+                        <span class="pairwise__rank-pos" x-text="pos + 1"></span>
+                        <span class="pairwise__rank-name" x-text="r.name"></span>
+                        <span class="pairwise__rank-bar-wrap">
+                          <span class="pairwise__rank-bar" :style="rankBarStyle(r.score)"></span>
+                        </span>
+                        <span class="pairwise__rank-score" x-text="rankScore(r.score)"></span>
+                      </li>
+                    </template>
+                  </ol>
+                </div>
+                <div class="pairwise__results-col">
+                  <div class="pairwise__section-label" x-text="t('matrixLabel')"></div>
+                  <div class="pairwise__matrix-wrap">
+                    <table class="pairwise__matrix">
+                      <thead>
+                        <tr>
+                          <th class="pairwise__matrix-corner"></th>
+                          <template x-for="(c, j) in model.criteria">
+                            <th class="pairwise__matrix-col-header" :key="j">
+                              <span class="pairwise__matrix-col-header-content" x-text="c"></span>
+                            </th>
+                          </template>
+                          <th class="pairwise__matrix-col-header pairwise__matrix-col-header--sum">
+                            <span class="pairwise__matrix-col-header-content">Σ</span>
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <template x-for="(rowName, i) in model.criteria">
+                          <tr :key="i">
+                            <th class="pairwise__matrix-row-label" x-text="rowName"></th>
+                            <template x-for="(colName, j) in model.criteria">
+                              <td class="pairwise__matrix-cell" :key="j"
+                                :class="matrixCellClass(i, j)"
+                                :data-i="i" :data-j="j"
+                                :title="cellTitle(i, j)"
+                                @click="cellClick(i, j)"
+                                x-text="matrixCellText(i, j)"></td>
+                            </template>
+                            <td class="pairwise__matrix-cell pairwise__matrix-cell--sum"
+                              x-text="scoreFmt(i)"></td>
+                          </tr>
+                        </template>
+                      </tbody>
+                    </table>
+                  </div>
+                  <div class="pairwise__matrix-hint">
+                    <span x-text="t('matrixHint')"></span>
+                    <span class="pairwise__matrix-legend">
+                      <span class="pairwise__dot pairwise__dot--win"></span>
+                      <span x-text="legendWinText()"></span>
+                    </span>
+                    <span class="pairwise__matrix-legend">
+                      <span class="pairwise__dot pairwise__dot--tie"></span>
+                      <span x-text="legendTieText()"></span>
+                    </span>
+                    <span class="pairwise__matrix-legend">
+                      <span class="pairwise__dot pairwise__dot--lose"></span>
+                      <span x-text="legendLoseText()"></span>
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <div class="pairwise__actions">
+                <button class="pairwise__btn pairwise__btn--outline" type="button"
+                  data-action="export-csv" @click="exportCSV()">
+                  <span class="pairwise__nav-arrow">⬇ </span><span x-text="t('exportCSV')"></span>
+                </button>
+                <button class="pairwise__btn pairwise__btn--outline" type="button"
+                  data-action="export-json" @click="exportJSON()">
+                  <span class="pairwise__nav-arrow">⬇ </span><span x-text="t('exportJSON')"></span>
+                </button>
+                <button class="pairwise__btn pairwise__btn--outline" type="button"
+                  data-action="copy-results" @click="copyResults()">
+                  <span class="pairwise__nav-arrow">⎘ </span><span x-text="t('copyResults')"></span>
+                </button>
+              </div>
+            </div>
+          </template>
+        </div>
+      </template>
+
+    </div>
+  </div>
+</section>

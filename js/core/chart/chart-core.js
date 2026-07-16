@@ -20,12 +20,10 @@ export function niceNum(range, round) {
     else if (frac < 3) nice = 2;
     else if (frac < 7) nice = 5;
     else nice = 10;
-  } else {
-    if (frac <= 1) nice = 1;
+  } else if (frac <= 1) nice = 1;
     else if (frac <= 2) nice = 2;
     else if (frac <= 5) nice = 5;
     else nice = 10;
-  }
   return nice * Math.pow(10, exp);
 }
 
@@ -37,11 +35,13 @@ export function niceNum(range, round) {
  * @returns {{ ticks: number[], min: number, max: number, step: number }}
  */
 export function generateTicks(dMin, dMax, maxTicks = 8) {
-  if (dMin === dMax) { dMin -= 1; dMax += 1; }
-  const range = niceNum(dMax - dMin, false);
+  let min = dMin;
+  let max = dMax;
+  if (min === max) { min -= 1; max += 1; }
+  const range = niceNum(max - min, false);
   const step = niceNum(range / (maxTicks - 1), true);
-  const lo = Math.floor(dMin / step) * step;
-  const hi = Math.ceil(dMax / step) * step;
+  const lo = Math.floor(min / step) * step;
+  const hi = Math.ceil(max / step) * step;
   const ticks = [];
   const precision = Math.max(0, -Math.floor(Math.log10(step)) + 1);
   for (let v = lo; v <= hi + step * 0.001; v += step) {
@@ -89,14 +89,14 @@ export function formatNum(val, decimals = null, locale = 'de') {
     // First replace . with placeholder, then handle
     const parts = str.split('.');
     if (parts.length === 2) {
-      str = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, '.') + ',' + parts[1];
+      str = `${parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, '.')  },${  parts[1]}`;
     } else {
       str = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, '.');
     }
   } else {
     const parts = str.split('.');
     if (parts.length === 2) {
-      str = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',') + '.' + parts[1];
+      str = `${parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',')  }.${  parts[1]}`;
     } else {
       str = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
     }
@@ -151,7 +151,7 @@ export function svgText(text, attrs, parent) {
 export function parseRGBA(str) {
   const m = str.match(/rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*(?:,\s*([\d.]+))?\s*\)/);
   if (!m) return { r: 100, g: 100, b: 100, a: 1 };
-  return { r: +m[1], g: +m[2], b: +m[3], a: m[4] !== undefined ? +m[4] : 1 };
+  return { r: Number(m[1]), g: Number(m[2]), b: Number(m[3]), a: m[4] !== undefined ? Number(m[4]) : 1 };
 }
 
 /**

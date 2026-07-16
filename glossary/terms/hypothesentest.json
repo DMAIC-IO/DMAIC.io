@@ -1,0 +1,97 @@
+{
+  "id": "hypothesentest",
+  "category": "hypothesis",
+  "title": {
+    "de": "Hypothesentest",
+    "en": "Hypothesis Test"
+  },
+  "short": {
+    "de": "Statistisches Entscheidungsverfahren — prüft, ob eine beobachtete Abweichung ein echter Effekt oder Zufall ist.",
+    "en": "Statistical decision procedure — checks whether an observed deviation is a real effect or chance."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "Ein **Hypothesentest** vergleicht zwei sich ausschließende Aussagen: die {{term:nullhypothese|Nullhypothese H₀}} („kein Effekt“) gegen die {{term:alternativhypothese|Alternativhypothese H₁}} („Effekt vorhanden“). Der Test bestimmt aus den Daten eine {{term:teststatistik|Teststatistik}} und daraus einen {{term:p-wert|p-Wert}}; dieser entscheidet zusammen mit dem {{term:signifikanzniveau|Signifikanzniveau α}} über die Ablehnung von H₀."
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Ein-Stichproben-Fragen** — Weicht ein Mittelwert von einem Sollwert ab? → {{term:t-test|1-Stichproben-t-Test}}",
+          "**Zwei-Stichproben-Vergleich** — Sind zwei Prozesse/Maschinen gleich? → 2-Stichproben-t oder Welch-t",
+          "**Mehrere Gruppen** — Unterscheidet sich mindestens einer? → {{term:anova|ANOVA}} (parametrisch) oder Kruskal-Wallis (nichtparametrisch)",
+          "**Varianzen vergleichen** → {{term:varianzhomogenitaet|Bartlett-/Levene-Test}}",
+          "**Verteilungsform prüfen** → {{term:normalitaetstest|Normalitätstests}} (Shapiro-Wilk, Anderson-Darling, D'Agostino-Pearson)"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "**Kernphilosophie:** Ein Test kann H₀ nur **verwerfen**, nicht **bestätigen**. „Nicht signifikant“ heißt „keine Evidenz gegen H₀“, nicht „H₀ ist wahr“. Diese Asymmetrie folgt der Popper-Logik der Falsifikation — man kann eine Aussage widerlegen, nicht beweisen."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "A **hypothesis test** compares two mutually exclusive statements: the {{term:nullhypothese|null hypothesis H₀}} (\"no effect\") against the {{term:alternativhypothese|alternative hypothesis H₁}} (\"effect present\"). The test computes a {{term:teststatistik|test statistic}} from the data and derives a {{term:p-wert|p-value}}; this together with the {{term:signifikanzniveau|significance level α}} decides whether H₀ is rejected."
+      },
+      {
+        "type": "list",
+        "items": [
+          "**One-sample questions** — Does a mean differ from a target? → {{term:t-test|one-sample t-test}}",
+          "**Two-sample comparison** — Are two processes/machines equal? → two-sample t or Welch t",
+          "**Several groups** — Does at least one differ? → {{term:anova|ANOVA}} (parametric) or Kruskal-Wallis (nonparametric)",
+          "**Compare variances** → {{term:varianzhomogenitaet|Bartlett / Levene test}}",
+          "**Check distribution shape** → {{term:normalitaetstest|normality tests}} (Shapiro-Wilk, Anderson-Darling, D'Agostino-Pearson)"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "**Core philosophy:** a test can only **reject** H₀, never **confirm** it. \"Not significant\" means \"no evidence against H₀\", not \"H₀ is true\". This asymmetry follows Popperian falsification logic — a statement can be refuted, not proven."
+      }
+    ]
+  },
+  "aliases": {
+    "de": [
+      "Statistischer Test",
+      "Hypothesenprüfung",
+      "Signifikanztest"
+    ],
+    "en": [
+      "hypothesis test",
+      "significance test",
+      "statistical test"
+    ]
+  },
+  "seeAlso": [
+    "nullhypothese",
+    "alternativhypothese",
+    "p-wert",
+    "signifikanzniveau",
+    "t-test",
+    "anova"
+  ],
+  "modules": [
+    "hypothesis-test",
+    "sample-size"
+  ],
+  "algoLab": [
+    "hypothesis/one-sample-t-test",
+    "hypothesis/two-sample-t-test",
+    "hypothesis/one-way-anova"
+  ],
+  "sources": [
+    {
+      "label": "Fisher, R. A. — Statistical Methods for Research Workers, Oliver and Boyd, 1925",
+      "url": null
+    },
+    {
+      "label": "Neyman, J. & Pearson, E. S. — On the Problem of the Most Efficient Tests of Statistical Hypotheses, Philosophical Transactions A, 231, 1933",
+      "url": null
+    },
+    {
+      "label": "Wasserstein, R. L. & Lazar, N. A. — The ASA Statement on p-Values, The American Statistician, 70(2), 2016",
+      "url": null
+    }
+  ]
+}

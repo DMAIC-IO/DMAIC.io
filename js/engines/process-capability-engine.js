@@ -67,16 +67,16 @@ export function normalInv(p) {
     q = Math.sqrt(-2 * Math.log(p));
     return (((((c[0]*q+c[1])*q+c[2])*q+c[3])*q+c[4])*q+c[5]) /
            ((((d[0]*q+d[1])*q+d[2])*q+d[3])*q+1);
-  } else if (p <= pHigh) {
+  } if (p <= pHigh) {
     q = p - 0.5;
     r = q * q;
     return (((((a[0]*r+a[1])*r+a[2])*r+a[3])*r+a[4])*r+a[5])*q /
            (((((b[0]*r+b[1])*r+b[2])*r+b[3])*r+b[4])*r+1);
-  } else {
+  } 
     q = Math.sqrt(-2 * Math.log(1 - p));
     return -(((((c[0]*q+c[1])*q+c[2])*q+c[3])*q+c[4])*q+c[5]) /
             ((((d[0]*q+d[1])*q+d[2])*q+d[3])*q+1);
-  }
+  
 }
 
 /**
@@ -162,7 +162,7 @@ export function analyze(params, values) {
   const targetVal = target != null && !isNaN(target) ? target : mid;
 
   // ─── Short-term (within) indices ─────────────
-  let Cp = null, CPU = null, CPL = null, Cpk = null;
+  let Cp = null, CPU = null, CPL = null, Cpk;
 
   if (twoSided) {
     Cp = T / (6 * s);
@@ -182,7 +182,7 @@ export function analyze(params, values) {
   }
 
   // ─── Long-term (overall) indices ─────────────
-  let Pp = null, PPU = null, PPL = null, Ppk = null;
+  let Pp = null, PPU = null, PPL = null, Ppk;
 
   if (twoSided) {
     Pp = T / (6 * sigma);
@@ -202,7 +202,7 @@ export function analyze(params, values) {
   }
 
   // ─── PPM (parts per million defective) ───────
-  let ppmAboveUsl = null, ppmBelowLsl = null, ppmTotal = null;
+  let ppmAboveUsl = null, ppmBelowLsl = null, ppmTotal;
   if (hasUsl) {
     ppmAboveUsl = (1 - normalCdf((usl - xbar) / s)) * 1e6;
   }

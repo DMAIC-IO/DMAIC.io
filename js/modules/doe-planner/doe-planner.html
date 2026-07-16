@@ -1,0 +1,849 @@
+<div class="doe dmike-split" x-data="doePlanner">
+  <div class="doe__input dmike-split__input">
+
+    <!-- Project (EVOP) toggle -->
+    <label class="doe__project-toggle">
+      <input type="checkbox" class="doe__project-check" x-model="model.projectMode" @change="projectModeChanged($event)" />
+      <span x-text="t('projectMode')"></span>
+    </label>
+
+    <!-- Project bar (EVOP) -->
+    <template x-if="model.projectMode">
+      <div class="doe__project-bar">
+        <div class="doe__project-name-row">
+          <label class="doe__name-label" x-text="t('projectName')"></label>
+          <input type="text" class="field doe__project-name-input"
+                 x-model="model.projectName" @change="save()"
+                 :placeholder="t('projectNamePlaceholder')" />
+        </div>
+
+        <!-- Timeline -->
+        <template x-if="model.projectPhases.length > 0">
+          <div class="doe__timeline">
+            <h4 class="doe__timeline-title" x-text="t('phaseHistory')"></h4>
+            <div class="doe__timeline-track">
+              <template x-for="(ph, idx) in model.projectPhases">
+                <button class="doe__timeline-item" :class="timelineItemClass(idx)"
+                        :key="idx" :data-phase-idx="idx" type="button" @click="viewPhase(idx)">
+                  <span class="doe__timeline-num" x-text="ph.cycleNumber"></span>
+                  <span class="doe__timeline-label" x-text="phaseLabel(ph)"></span>
+                  <template x-if="phaseDecIcon(ph)">
+                    <span class="doe__timeline-dec" x-text="phaseDecIcon(ph)"></span>
+                  </template>
+                </button>
+              </template>
+              <template x-if="canStartNewPhase()">
+                <button class="doe__timeline-item doe__timeline-item--new doe__new-phase-btn" type="button" @click="newPhase()">
+                  <span class="doe__timeline-num">+</span>
+                  <span class="doe__timeline-label" x-text="t('newPhase')"></span>
+                </button>
+              </template>
+            </div>
+          </div>
+        </template>
+
+        <!-- EVOP summary -->
+        <template x-if="evopSummary()">
+          <div class="doe__evop-summary">
+            <h4 class="doe__evop-title" x-text="t('evopEffectTable')"></h4>
+            <div class="doe__evop-meta">
+              <span x-text="t('evopCycles', { n: evopSummary().cycleCount })"></span>
+              <span x-text="t('evopTotalRuns', { n: evopSummary().totalRuns })"></span>
+              <span x-text="evopMeanLabel()"></span>
+            </div>
+            <table class="doe__evop-table">
+              <thead><tr>
+                <th x-text="t('term')"></th>
+                <th x-text="t('effect')"></th>
+                <th x-text="t('evopErrorLimit')"></th>
+                <th x-text="t('evopSignificant')"></th>
+              </tr></thead>
+              <tbody>
+                <template x-for="(e, ei) in evopSummary().effects">
+                  <tr :key="ei" :class="e.significant ? 'doe__evop-sig' : ''">
+                    <td x-text="e.term"></td>
+                    <td x-text="fmt4(e.cumulativeEffect)"></td>
+                    <td x-text="evopErrorLimit(e)"></td>
+                    <td x-text="e.significant ? '★' : '—'"></td>
+                  </tr>
+                </template>
+              </tbody>
+            </table>
+            <template x-if="evopSummary().bestPointDescription">
+              <div class="doe__evop-best">
+                <span class="doe__evop-best-label" x-text="t('evopBestPoint') + ':'"></span>
+                <code x-text="evopSummary().bestPointDescription"></code>
+              </div>
+            </template>
+            <div class="doe__evop-recommendation" :class="'doe__evop-rec--' + evopSummary().overallRecommendation"
+                 x-text="t('evopRec_' + evopSummary().overallRecommendation)"></div>
+          </div>
+        </template>
+      </div>
+    </template>
+
+    <!-- Name bar -->
+    <div class="doe__name-bar">
+      <label class="doe__name-label" x-text="model.projectMode ? t('phaseName') : t('doeName')"></label>
+      <input type="text" class="field doe__name-input"
+             x-model="model.doeName" @change="save()"
+             :placeholder="t('doeNamePlaceholder')" />
+    </div>
+
+    <!-- ── Factors section ────────────────────────────────────── -->
+    <div class="dmike-split__section-title" x-text="t('stepFactors')"></div>
+    <div class="doe__factors-list">
+      <template x-for="(f, fi) in model.factors">
+        <div class="doe__factor-row" :key="f.id" :data-factor-id="f.id" :data-factor-kind="factorKind(f)">
+          <div class="doe__factor-top">
+            <span class="doe__factor-letter" x-text="factorLetter(fi)"></span>
+            <input type="text" class="field doe__factor-name" :data-factor-id="f.id"
+                   :class="factorNameClass(f)" :title="factorNameTitle(f)"
+                   x-model="f.name" @change="factorNameChanged(f)"
+                   :placeholder="t('factorNamePlaceholder')" />
+            <input type="text" class="field doe__factor-unit doe__factor-unit--narrow" :data-factor-id="f.id"
+                   x-model="f.unit" @change="factorUnitChanged(f)"
+                   :placeholder="t('factorUnitPlaceholder')"
+                   :disabled="isCategorical(f)" :title="factorUnitTitle(f)" />
+            <select class="field doe__factor-kind" :data-factor-id="f.id"
+                    :title="t('factorKindLabel')"
+                    x-model="f.kind" @change="factorKindChanged(f)">
+              <option value="continuous" x-text="t('factorKindContinuous')"></option>
+              <option value="categorical" x-text="t('factorKindCategorical')"></option>
+            </select>
+            <button class="doe__factor-remove-btn" type="button" :data-factor-id="f.id"
+                    :title="t('removeFactor')" @click="removeFactor(f.id)">&#10005;</button>
+          </div>
+          <div class="doe__levels-row">
+            <button class="doe__insert-level-btn" type="button"
+                    :data-factor-id="f.id" data-insert-at="0"
+                    :title="t('insertLevel')" @click="insertLevel(f.id, 0)">+</button>
+            <template x-for="(val, li) in f.levels">
+              <div class="doe__level-frag" :key="li">
+                <div class="doe__level-chip">
+                  <span class="doe__level-num" x-text="li + 1"></span>
+                  <input type="text" class="field doe__factor-level-input"
+                         :data-factor-id="f.id" :data-level-idx="li"
+                         x-model="f.levels[li]" @change="levelChanged(f)"
+                         :placeholder="levelPlaceholder(f)" />
+                  <template x-if="f.levels.length > 2">
+                    <button class="doe__remove-level-btn" type="button"
+                            :data-factor-id="f.id" :data-level-idx="li"
+                            :title="t('removeLevel')" @click="removeLevel(f.id, li)">&#10005;</button>
+                  </template>
+                </div>
+                <button class="doe__insert-level-btn" type="button"
+                        :data-factor-id="f.id" :data-insert-at="li + 1"
+                        :title="t('insertLevel')" @click="insertLevel(f.id, li + 1)">+</button>
+              </div>
+            </template>
+          </div>
+        </div>
+      </template>
+    </div>
+    <button class="btn btn--sm doe__add-factor-btn" type="button" @click="addFactor()"><span x-text="'+ ' + t('addFactor')"></span></button>
+
+    <!-- ── Responses section ──────────────────────────────────── -->
+    <div class="dmike-split__section-title" x-text="t('stepResponses')"></div>
+    <div class="doe__responses-list">
+      <template x-for="(r, ri) in model.responses">
+        <div class="doe__response-row" :key="ri" :data-response-idx="ri">
+          <div class="doe__response-top">
+            <span class="doe__response-letter" x-text="responseLetter(ri)"></span>
+            <input type="text" class="field doe__response-name" :data-idx="ri"
+                   x-model="r.name" @change="responseNameChanged(ri)"
+                   :placeholder="t('responseNamePlaceholder')" />
+            <input type="text" class="field doe__response-unit doe__factor-unit--narrow" :data-idx="ri"
+                   x-model="r.unit" @change="responseUnitChanged(ri)"
+                   :placeholder="t('responseUnitPlaceholder')" />
+            <template x-if="model.responses.length > 1">
+              <button class="doe__response-remove-btn" type="button" :data-idx="ri"
+                      :title="t('removeResponse')" @click="removeResponse(ri)">&#10005;</button>
+            </template>
+          </div>
+        </div>
+      </template>
+    </div>
+    <button class="btn btn--sm doe__add-response-btn" type="button" @click="addResponse()"><span x-text="'+ ' + t('addResponse')"></span></button>
+
+    <!-- ── Design section ─────────────────────────────────────── -->
+    <div class="dmike-split__section-title" x-text="t('stepDesignType')"></div>
+
+    <!-- Recommendation -->
+    <template x-if="recommendation()">
+      <div class="doe__recommendation">
+        <span class="doe__recommendation-icon">&#10024;</span>
+        <span class="doe__recommendation-text" x-text="recommendationText()"></span>
+        <button class="doe__recommendation-btn" :data-rec-type="recommendation()" type="button"
+                @click="applyRecommendation()" x-text="t('design_' + recommendation())"></button>
+      </div>
+    </template>
+
+    <div class="doe__design-options">
+      <template x-for="dt in designTypes">
+        <button class="doe__design-opt" :key="dt.key"
+                :class="designOptClass(dt)" :data-type="dt.key" type="button"
+                :disabled="designOptDisabled(dt)" :title="designOptTip(dt)"
+                @click="selectDesignType(dt.key)">
+          <span class="doe__design-opt-label" x-text="t('design_' + dt.key)"></span>
+          <!-- Formula: full/frac carry HTML superscripts (cannot live in x-text);
+               full also collapses to a "n×m×…" product for mixed-level factors. -->
+          <template x-if="dt.key === 'full' && !fullIsProduct()">
+            <span class="doe__design-opt-desc">2<sup>k</sup></span>
+          </template>
+          <template x-if="dt.key === 'full' && fullIsProduct()">
+            <span class="doe__design-opt-desc" x-text="fullProductFormula()"></span>
+          </template>
+          <template x-if="dt.key === 'frac'">
+            <span class="doe__design-opt-desc">2<sup>(k&minus;p)</sup></span>
+          </template>
+          <template x-if="dt.key !== 'full' && dt.key !== 'frac'">
+            <span class="doe__design-opt-desc" x-text="dt.formula"></span>
+          </template>
+        </button>
+      </template>
+    </div>
+
+    <!-- Resolution table (frac) -->
+    <template x-if="model.designType === 'frac'">
+      <div class="doe__sub-panel">
+        <div class="dmike-split__section-title" x-text="t('resTableTitle')"></div>
+        <div class="doe__res-info" x-text="resInfoText()"></div>
+        <div class="doe__res-table-wrap">
+          <table class="doe__res-table">
+            <thead>
+              <tr>
+                <th class="doe__res-corner" x-text="t('runs')"></th>
+                <th :colspan="kRange.length" style="text-align:center;letter-spacing:2px" x-text="t('factorsHeader')"></th>
+              </tr>
+              <tr>
+                <th class="doe__res-corner"></th>
+                <template x-for="k in kRange">
+                  <th :key="k" :class="k === model.factors.length ? 'doe__res-col--active' : 'doe__res-col--inactive'" x-text="k"></th>
+                </template>
+              </tr>
+            </thead>
+            <tbody>
+              <template x-for="runs in allRuns">
+                <tr :key="runs">
+                  <td class="doe__res-run-label" x-text="runs"></td>
+                  <template x-for="k in kRange">
+                    <td :key="k">
+                      <span class="doe__res-cell"
+                            :class="resCellClass(k, runs)"
+                            :data-k="resCellData(k, runs, 'k')"
+                            :data-runs="resCellData(k, runs, 'runs')"
+                            :data-res="resCellData(k, runs, 'res')"
+                            :data-p="resCellData(k, runs, 'p')"
+                            @click="resCellClick(k, runs)"
+                            x-text="resCellLabel(k, runs)"></span>
+                    </td>
+                  </template>
+                </tr>
+              </template>
+            </tbody>
+          </table>
+        </div>
+        <!-- Alias detail -->
+        <template x-if="resAliasDetail()">
+          <div class="doe__res-alias-detail">
+            <span class="doe__res-alias-detail-title" x-text="t('aliasDetailTitle')"></span>
+            <template x-if="resAliasDetail().generators.length">
+              <div class="doe__res-alias-section">
+                <span class="doe__res-alias-label" x-text="t('generators') + ':'"></span>
+                <template x-for="(g, gi) in resAliasDetail().generators">
+                  <code class="doe__res-alias-code" :key="gi" x-text="g"></code>
+                </template>
+              </div>
+            </template>
+            <template x-if="resAliasDetail().defining.length">
+              <div class="doe__res-alias-section">
+                <span class="doe__res-alias-label" x-text="t('definingRelation') + ':'"></span>
+                <template x-for="(w, wi) in resAliasDetail().defining">
+                  <code class="doe__res-alias-code" :key="wi" x-text="w"></code>
+                </template>
+              </div>
+            </template>
+            <template x-if="resAliasDetail().aliases.length">
+              <table class="doe__res-alias-table">
+                <thead><tr><th x-text="t('term')"></th><th x-text="t('aliasedWith')"></th></tr></thead>
+                <tbody>
+                  <template x-for="(a, ai) in resAliasDetail().aliases">
+                    <tr :key="ai">
+                      <td><code x-text="a.term"></code></td>
+                      <td x-text="a.aliasedWith"></td>
+                    </tr>
+                  </template>
+                </tbody>
+              </table>
+            </template>
+          </div>
+        </template>
+        <!-- Legend -->
+        <div class="doe__res-legend">
+          <span class="doe__res-legend-title" x-text="t('resLegendTitle')"></span>
+          <dl class="doe__res-legend-list">
+            <div class="doe__res-legend-item"><dt><span class="doe__res-cell doe__res-full" x-text="t('resFull')"></span></dt><dd x-text="t('resLegendFull')"></dd></div>
+            <div class="doe__res-legend-item"><dt><span class="doe__res-cell doe__res-vii">VII</span></dt><dd x-text="t('resLegendVII')"></dd></div>
+            <div class="doe__res-legend-item"><dt><span class="doe__res-cell doe__res-vi">VI</span></dt><dd x-text="t('resLegendVI')"></dd></div>
+            <div class="doe__res-legend-item"><dt><span class="doe__res-cell doe__res-v">V</span></dt><dd x-text="t('resLegendV')"></dd></div>
+            <div class="doe__res-legend-item"><dt><span class="doe__res-cell doe__res-iv">IV</span></dt><dd x-text="t('resLegendIV')"></dd></div>
+            <div class="doe__res-legend-item"><dt><span class="doe__res-cell doe__res-iii">III</span></dt><dd x-text="t('resLegendIII')"></dd></div>
+          </dl>
+        </div>
+      </div>
+    </template>
+
+    <!-- PB table -->
+    <template x-if="model.designType === 'pb'">
+      <div class="doe__sub-panel">
+        <div class="dmike-split__section-title" x-text="t('pbTitle')"></div>
+        <div class="doe__pb-info" x-text="pbInfoText()"></div>
+        <table class="doe__pb-table">
+          <thead><tr><th></th><th x-text="t('factors')"></th><th x-text="t('runs')"></th></tr></thead>
+          <tbody>
+            <template x-for="(d, di) in pbDesigns">
+              <tr class="doe__pb-row" :class="model.selectedPBIdx === di ? 'doe__pb-row--selected' : ''"
+                  :key="di" :data-idx="di" @click="selectPB(di)">
+                <td><span class="doe__pb-radio"></span></td>
+                <td x-text="d.label"></td>
+                <td x-text="d.runs"></td>
+              </tr>
+            </template>
+          </tbody>
+        </table>
+      </div>
+    </template>
+
+    <!-- BB info -->
+    <template x-if="model.designType === 'bb'">
+      <div class="doe__sub-panel">
+        <div class="dmike-split__section-title" x-text="t('bbTitle')"></div>
+        <div class="doe__bb-info-body">
+          <template x-if="bbAvailable()">
+            <p class="doe__bb-detail" x-text="bbDetailText()"></p>
+          </template>
+          <template x-if="!bbAvailable()">
+            <p class="doe__bb-warning" x-text="bbWarningText()"></p>
+          </template>
+        </div>
+      </div>
+    </template>
+
+    <!-- Taguchi selector -->
+    <template x-if="model.designType === 'taguchi'">
+      <div class="doe__sub-panel">
+        <div class="dmike-split__section-title" x-text="t('taguchiTitle')"></div>
+        <div class="doe__taguchi-info" x-text="taguchiInfoText()"></div>
+        <template x-if="taguchiCandidatesList().length > 0">
+          <table class="doe__taguchi-table">
+            <thead><tr>
+              <th></th>
+              <th x-text="t('taguchiArray')"></th>
+              <th x-text="t('runs')"></th>
+              <th x-text="'max. ' + t('factors')"></th>
+            </tr></thead>
+            <tbody>
+              <template x-for="oa in taguchiCandidatesList()">
+                <tr class="doe__taguchi-row" :class="taguchiSelected() === oa.name ? 'doe__taguchi-row--selected' : ''"
+                    :key="oa.name" :data-oa="oa.name" @click="selectTaguchi(oa.name)">
+                  <td><span class="doe__taguchi-radio"></span></td>
+                  <td><strong x-text="oa.name"></strong></td>
+                  <td x-text="oa.runs"></td>
+                  <td x-text="oa.maxFactors"></td>
+                </tr>
+              </template>
+            </tbody>
+          </table>
+        </template>
+        <template x-if="taguchiCandidatesList().length === 0">
+          <p class="doe__taguchi-warning" x-text="t('taguchiNotAvailable', { k: model.factors.length, levels: taguchiFirstLevels() })"></p>
+        </template>
+      </div>
+    </template>
+
+    <!-- Optimal options -->
+    <template x-if="model.isOptimalType()">
+      <div class="doe__sub-panel">
+        <div class="dmike-split__section-title" x-text="t('optimalTitle')"></div>
+        <div class="doe__optimal-info" x-text="t('optimalInfo_' + model.designType)"></div>
+        <div class="field-group">
+          <label class="doe__input-label" x-text="optimalRunsLabel()"></label>
+          <input type="number" class="field doe__optimal-runs-input" :min="optimalMinNew()" max="200"
+                 :value="model.options.optimalRuns || optimalMinNew()" @change="optimalRunsChanged($event)" />
+          <span class="doe__optimal-hint" x-text="optimalRunsHint()"></span>
+        </div>
+
+        <!-- Term list -->
+        <template x-if="model.factors.length >= 1">
+          <div class="doe__term-list-wrap">
+            <div class="doe__term-list-label" x-text="t('modelTerms')"></div>
+            <div class="doe__term-list-hint" x-text="t('modelTermsHintHier')"></div>
+            <div class="doe__term-list">
+              <template x-for="(g, gi) in termGroups()">
+                <div class="doe__term-group" :class="termGroupExpanded(gi, g) ? 'doe__term-group--open' : ''"
+                     :key="gi" :data-group-idx="gi">
+                  <button type="button" class="doe__term-group-header" :data-group-idx="gi" @click="toggleTermGroup(gi)">
+                    <span class="doe__term-group-arrow" x-text="termGroupExpanded(gi, g) ? '▾' : '▸'"></span>
+                    <span class="doe__term-group-title" x-text="termGroupTitle(g)"></span>
+                    <span class="doe__term-group-count" x-text="termGroupCount(g)"></span>
+                  </button>
+                  <div class="doe__term-group-body">
+                    <template x-if="termGroupExpanded(gi, g)">
+                      <div class="doe__term-group-items">
+                        <template x-for="id in g.ids">
+                          <label class="doe__term-chip" :class="termChipClass(g, id)" :key="id">
+                            <input type="checkbox" class="doe__term-check"
+                                   :data-term-id="id" :checked="termActive(id)"
+                                   :disabled="g.kind === 'main'" @change="toggleTerm(id, $event)" />
+                            <span x-text="termLabel(id)"></span>
+                          </label>
+                        </template>
+                      </div>
+                    </template>
+                  </div>
+                </div>
+              </template>
+            </div>
+          </div>
+        </template>
+
+        <!-- Forbidden vertices -->
+        <div class="doe__forbidden-block">
+          <div class="doe__forbidden-title" x-text="t('forbiddenTitle')"></div>
+          <div class="doe__forbidden-hint" x-text="t('forbiddenHint')"></div>
+          <ul class="doe__forbidden-list">
+            <template x-if="forbiddenList().length === 0">
+              <li class="doe__forbidden-empty" x-text="t('forbiddenEmpty')"></li>
+            </template>
+            <template x-for="(rule, ri) in forbiddenList()">
+              <li class="doe__forbidden-row" :key="ri" :data-rule-idx="ri">
+                <span class="doe__forbidden-rule" x-text="forbiddenRuleText(rule)"></span>
+                <button type="button" class="doe__forbidden-remove-btn"
+                        :data-rule-idx="ri" :title="t('forbiddenRemoveTitle')"
+                        @click="removeForbiddenRule(ri)">&#10005;</button>
+              </li>
+            </template>
+          </ul>
+          <div class="doe__forbidden-add" :data-factor-count="model.factors.length">
+            <template x-for="(f, fi) in model.factors">
+              <label class="doe__forbidden-factor" :key="f.id">
+                <span class="doe__forbidden-factor-name" x-text="factorDisplayName(f, fi)"></span>
+                <select class="doe__forbidden-input" :data-factor-idx="fi">
+                  <option value="" x-text="t('forbiddenAny')"></option>
+                  <template x-for="(lv, li) in f.levels">
+                    <option :key="li" :value="forbiddenCoded(f, li)" x-text="lv"></option>
+                  </template>
+                </select>
+              </label>
+            </template>
+            <button type="button" class="btn btn--secondary doe__forbidden-add-btn"
+                    @click="addForbiddenVertex()" x-text="t('forbiddenAddBtn')"></button>
+          </div>
+        </div>
+
+        <template x-if="!optimalRunsValid()">
+          <div class="doe__optimal-warning" x-text="optimalTooFewText()"></div>
+        </template>
+
+        <!-- Source worksheet picker -->
+        <div class="doe__source-section">
+          <div class="doe__source-label" x-text="t('sourceTitle')"></div>
+          <div class="doe__source-hint" x-text="t('sourceHint')"></div>
+          <select class="field doe__source-select" @change="sourceWorksheetChanged($event)">
+            <option value="" :selected="!model.sourceWorksheet" x-text="t('sourceNone')"></option>
+            <template x-for="s in sourceWorksheetOptions()">
+              <option :key="s.key" :value="s.key" :selected="s.key === sourceWorksheetKey()" x-text="s.label"></option>
+            </template>
+          </select>
+          <template x-if="sourceMappingStatus()">
+            <div :class="sourceMappingStatus().ok ? 'doe__source-mapping-ok' : 'doe__source-mapping-error'"
+                 x-text="sourceMappingStatus().text"></div>
+          </template>
+        </div>
+      </div>
+    </template>
+
+    <!-- Design parameters -->
+    <div class="dmike-split__section-title" x-text="t('stepParameters')"></div>
+    <div class="doe__param-group">
+      <label class="doe__check-row">
+        <input type="checkbox" class="doe__randomize-check" x-model="model.options.randomize" @change="randomizeChanged()" />
+        <span x-text="t('optRandomize')"></span>
+        <span class="doe__param-tooltip" :title="t('tipRandomize')">?</span>
+      </label>
+      <template x-if="showCenterPointsOption()">
+        <label class="doe__check-row">
+          <input type="checkbox" class="doe__center-check" x-model="model.options.centerPoints" @change="centerPointsChanged()" />
+          <span x-text="t('optCenterPoints')"></span>
+          <span class="doe__param-tooltip" :title="t('tipCenterPoints')">?</span>
+        </label>
+      </template>
+      <div class="doe__replicates-row">
+        <label class="doe__input-label" x-text="t('optReplicates')"></label>
+        <input type="number" class="field doe__replicates-input" min="1" max="10"
+               :value="model.options.replicates || 1" @change="replicatesChanged($event)" />
+        <span class="doe__param-tooltip" :title="t('tipReplicates')">?</span>
+      </div>
+    </div>
+
+    <template x-if="model.designType === 'bb'">
+      <div class="field-group">
+        <label class="doe__input-label" x-text="t('bbCenterPoints')"></label>
+        <input type="number" class="field doe__bb-cp-input" min="1" max="10"
+               :value="model.options.bbCenterPoints" @change="bbCpChanged($event)" />
+      </div>
+    </template>
+
+    <template x-if="model.designType === 'ccd'">
+      <div class="doe__ccd-params">
+        <div class="field-group">
+          <label class="doe__input-label" x-text="t('alphaType')"></label>
+          <select class="field doe__alpha-type-select" x-model="model.options.alphaType" @change="alphaTypeChanged()">
+            <option value="rotatable" x-text="t('alphaRotatable')"></option>
+            <option value="face-centered" x-text="t('alphaFaceCentered')"></option>
+            <option value="spherical" x-text="t('alphaSpherical')"></option>
+          </select>
+        </div>
+        <div class="field-group">
+          <label class="doe__input-label" x-text="t('ccdCenterPoints')"></label>
+          <input type="number" class="field doe__ccd-cp-input" min="1" max="10"
+                 :value="model.options.ccdCenterPoints" @change="ccdCpChanged($event)" />
+        </div>
+      </div>
+    </template>
+
+    <!-- Design summary -->
+    <div class="doe__summary-card">
+      <div class="doe__summary-item"><span x-text="t('factors') + ': '"></span><strong x-text="model.factors.length"></strong></div>
+      <div class="doe__summary-item"><span x-text="t('runs') + ': '"></span><strong x-text="summaryRuns()"></strong></div>
+      <div class="doe__summary-item"><span x-text="t('resolution') + ': '"></span><strong x-text="summaryRes()"></strong></div>
+      <div class="doe__summary-item"><span x-text="t('responses') + ': '"></span><strong x-text="model.responses.length"></strong></div>
+      <template x-if="model.design">
+        <div class="doe__summary-item"><span class="doe__generated-badge" x-text="'✓ ' + t('generated', { runs: summaryGeneratedRuns() })"></span></div>
+      </template>
+      <template x-if="!model.design">
+        <div class="doe__summary-item doe__summary-item--pending" x-text="isConfigValid() ? t('configReady') : t('configIncomplete')"></div>
+      </template>
+    </div>
+  </div>
+
+  <!-- ════ Output (right) panel ════════════════════════════════ -->
+  <div class="doe__output dmike-split__output">
+
+    <!-- Placeholder when no design + invalid config -->
+    <template x-if="!model.design && !isConfigValid()">
+      <div class="doe__placeholder">
+        <p x-text="t('configureLeft')"></p>
+      </div>
+    </template>
+
+    <template x-if="model.design">
+      <div class="doe__output-content">
+        <div class="dmike-split__output-section-header">
+          <span class="dmike-split__output-section" x-text="t('stepResults')"></span>
+        </div>
+
+        <!-- Stale state -->
+        <template x-if="staleness() === 'stale'">
+          <div class="doe__stale-banner">
+            <div class="doe__stale-text" x-text="t('worksheetStaleWarning')"></div>
+            <div class="doe__stale-actions">
+              <button class="btn btn--primary doe__datasheet-recreate-btn" type="button" @click="createOrRecreateDatasheet()" x-text="t('worksheetRecreate')"></button>
+              <button class="btn btn--secondary doe__open-old-worksheet-btn" type="button" @click="openLinkedWorksheet()" x-text="t('worksheetOpenOld')"></button>
+            </div>
+          </div>
+        </template>
+
+        <!-- Bound state -->
+        <template x-if="staleness() === 'bound'">
+          <div class="doe__bound-region">
+            <div class="doe__results-status">
+              <div class="doe__results-bar">
+                <div class="doe__results-bar-fill" :style="'width:' + boundPct() + '%'"></div>
+              </div>
+              <span class="doe__results-text" x-text="boundProgressText()"></span>
+            </div>
+            <div class="doe__datasheet-link-row">
+              <button class="btn btn--secondary doe__open-worksheet-btn" type="button" @click="openLinkedWorksheet()" x-text="t('worksheetOpen')"></button>
+            </div>
+            <template x-if="boundComplete()">
+              <div class="doe__transfer-section">
+                <button class="btn btn--primary doe__transfer-regression-btn" type="button" @click="transferToRegression()">
+                  <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                  <span x-text="t('transferToRegression')"></span>
+                </button>
+              </div>
+            </template>
+            <template x-if="model.isOptimalType()">
+              <div class="doe__augment-section">
+                <div class="doe__augment-title" x-text="t('augmentSectionTitle')"></div>
+                <div class="doe__augment-hint" x-text="t('augmentHint')"></div>
+                <div class="doe__augment-row">
+                  <label class="doe__input-label" for="doe-augment-runs" x-text="t('augmentLabel')"></label>
+                  <input type="number" id="doe-augment-runs" class="field doe__augment-runs-input"
+                         min="1" max="200" step="1" value="4" />
+                  <button class="btn btn--primary doe__augment-btn" type="button" @click="clickAugment()" x-text="t('augmentButton')"></button>
+                </div>
+              </div>
+            </template>
+          </div>
+        </template>
+
+        <!-- Unbound state -->
+        <template x-if="staleness() === 'unbound'">
+          <div class="doe__datasheet-create-row">
+            <button class="btn btn--primary doe__datasheet-create-btn" type="button" @click="createOrRecreateDatasheet()" x-text="t('worksheetCreate')"></button>
+            <span class="doe__datasheet-create-hint" x-text="t('worksheetCreateHint')"></span>
+          </div>
+        </template>
+
+        <!-- Design preview (unbound + stale) -->
+        <template x-if="showPreview()">
+          <div class="doe__preview-wrap">
+            <div class="doe__preview-label" x-text="t('previewLabel')"></div>
+            <div class="doe__preview-hint" x-text="t('previewHint')"></div>
+            <template x-if="model.previewDirty">
+              <div class="doe__preview-stale-note" x-text="t('previewStaleNote')"></div>
+            </template>
+            <div class="doe__preview-grid" data-ref="preview-grid"></div>
+          </div>
+        </template>
+
+        <!-- Evaluation summary -->
+        <template x-if="model.evaluation">
+          <div class="doe__eval-region">
+            <div class="dmike-split__output-section-header">
+              <span class="dmike-split__output-section" x-text="t('stepEvaluate')"></span>
+            </div>
+            <div class="doe__eval-compact">
+              <div class="doe__eval-detail">
+                <!-- Efficiency -->
+                <div class="doe__eval-section">
+                  <h4 class="doe__eval-heading" x-text="t('efficiencyTitle')"></h4>
+                  <div class="dmike-kpi-strip">
+                    <template x-for="(c, ci) in effCards()">
+                      <div class="dmike-kpi" :class="c.cls" :title="c.tip" :key="ci">
+                        <div class="dmike-kpi-label">
+                          <span x-text="c.label"></span>
+                          <button class="doe__algo-link" :data-algo-id="c.algoId" type="button" @click="algoNavigate(c.algoId, $event)">
+                            <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+                          </button>
+                        </div>
+                        <div class="dmike-kpi-value" x-text="c.value"></div>
+                        <div class="doe__eff-bar"><div class="doe__eff-bar-fill" :class="c.cls" :style="'width:' + c.barWidth + '%'"></div></div>
+                      </div>
+                    </template>
+                    <div class="dmike-kpi" :title="t('tipCondNum')">
+                      <div class="dmike-kpi-label" x-text="t('condNum')"></div>
+                      <div class="dmike-kpi-value" x-text="condNumValue()"></div>
+                    </div>
+                    <div class="dmike-kpi" :title="t('tipMaxLev')">
+                      <div class="dmike-kpi-label" x-text="t('maxLeverage')"></div>
+                      <div class="dmike-kpi-value" x-text="maxLeverageValue()"></div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- VIF -->
+                <template x-if="hasVif()">
+                  <div class="doe__eval-section">
+                    <h4 class="doe__eval-heading">
+                      <span x-text="t('vifTitle')"></span>
+                      <span class="doe__eval-tooltip" :title="t('tipVIF')">?</span>
+                      <button class="doe__algo-link" data-algo-id="vif" type="button" @click="algoNavigate('vif', $event)">
+                        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+                      </button>
+                    </h4>
+                    <div class="doe__vif-tables">
+                      <template x-if="vifMain().length">
+                        <table class="doe__vif-table">
+                          <thead><tr><th x-text="t('mainEffects')"></th><th>VIF</th></tr></thead>
+                          <tbody>
+                            <template x-for="(v, vi) in vifMain()">
+                              <tr :key="vi" :class="vifRating(v.vif)"><td x-text="v.term"></td><td x-text="fmt2(v.vif)"></td></tr>
+                            </template>
+                          </tbody>
+                        </table>
+                      </template>
+                      <template x-if="vifInter().length">
+                        <table class="doe__vif-table">
+                          <thead><tr><th x-text="t('interactions')"></th><th>VIF</th></tr></thead>
+                          <tbody>
+                            <template x-for="(v, vi) in vifInter()">
+                              <tr :key="vi" :class="vifRating(v.vif)"><td x-text="v.term"></td><td x-text="fmt2(v.vif)"></td></tr>
+                            </template>
+                          </tbody>
+                        </table>
+                      </template>
+                    </div>
+                  </div>
+                </template>
+
+                <!-- Alias structure -->
+                <template x-if="hasAlias()">
+                  <div class="doe__eval-section">
+                    <h4 class="doe__eval-heading">
+                      <span x-text="t('aliasTitle')"></span>
+                      <span class="doe__eval-tooltip" :title="t('tipAlias')">?</span>
+                    </h4>
+                    <template x-if="aliasGenerators().length">
+                      <div class="doe__alias-gens">
+                        <span class="doe__alias-gen-label" x-text="t('generators') + ':'"></span>
+                        <template x-for="(g, gi) in aliasGenerators()">
+                          <code class="doe__alias-gen" :key="gi" x-text="g"></code>
+                        </template>
+                      </div>
+                    </template>
+                    <template x-if="aliasRows().length">
+                      <table class="doe__alias-table">
+                        <thead><tr><th x-text="t('term')"></th><th x-text="t('aliasedWith')"></th></tr></thead>
+                        <tbody>
+                          <template x-for="(a, ai) in aliasRows()">
+                            <tr :key="ai">
+                              <td><code x-text="a.term"></code></td>
+                              <td x-text="a.aliasedWith"></td>
+                            </tr>
+                          </template>
+                        </tbody>
+                      </table>
+                    </template>
+                    <template x-if="!aliasRows().length">
+                      <p class="doe__eval-note" x-text="t('noAliases')"></p>
+                    </template>
+                  </div>
+                </template>
+
+                <!-- Power -->
+                <template x-if="hasPower()">
+                  <div class="doe__eval-section">
+                    <h4 class="doe__eval-heading">
+                      <span x-text="t('powerTitle')"></span>
+                      <span class="doe__eval-tooltip" :title="t('tipPower')">?</span>
+                    </h4>
+                    <p class="doe__eval-note" x-text="powerDescText()"></p>
+                    <table class="doe__power-table">
+                      <thead><tr><th x-text="t('effectSize')"></th><th x-text="t('power')"></th><th></th></tr></thead>
+                      <tbody>
+                        <template x-for="(row, pi) in powerRows()">
+                          <tr :key="pi" :class="powerRating(row.power)">
+                            <td x-text="row.effectSize"></td>
+                            <td x-text="powerPct(row.power)"></td>
+                            <td><div class="doe__power-bar"><div class="doe__power-bar-fill" :style="'width:' + powerBarWidth(row.power) + '%'"></div></div></td>
+                          </tr>
+                        </template>
+                      </tbody>
+                    </table>
+                  </div>
+                </template>
+              </div>
+            </div>
+          </div>
+        </template>
+
+        <!-- Dispersion analysis -->
+        <template x-if="dispersion()">
+          <div class="doe__dispersion-region">
+            <div class="dmike-split__output-section-header">
+              <span class="dmike-split__output-section" x-text="t('dispersionSection')"></span>
+            </div>
+            <div class="doe__eval-detail">
+              <div class="doe__eval-section">
+                <h4 class="doe__eval-heading">
+                  <span x-text="t('dispersionTitle')"></span>
+                  <span class="doe__eval-tooltip" :title="t('tipDispersion')">?</span>
+                </h4>
+                <template x-if="dispersion().noReplicates">
+                  <p class="doe__eval-note" x-text="t('dispersionNoReplicates')"></p>
+                </template>
+                <template x-if="!dispersion().noReplicates">
+                  <div class="doe__dispersion-body">
+                    <p class="doe__eval-note" x-text="dispersionLeadText()"></p>
+                    <table class="doe__alias-table doe__dispersion-table">
+                      <thead>
+                        <tr>
+                          <th x-text="t('dispersionPoint')"></th>
+                          <th>n</th>
+                          <th x-text="t('dispersionMean')"></th>
+                          <th>s</th>
+                          <th>s&sup2;</th>
+                          <th>ln(s&sup2;)</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <template x-for="(g, gi) in dispersion().groups">
+                          <tr :key="gi">
+                            <td x-text="g.point"></td>
+                            <td x-text="g.n"></td>
+                            <td x-text="fmt4(g.mean)"></td>
+                            <td x-text="fmt4(g.sd)"></td>
+                            <td x-text="fmt6(g.variance)"></td>
+                            <td x-text="g.lnVariance != null ? fmt4(g.lnVariance) : '—'"></td>
+                          </tr>
+                        </template>
+                      </tbody>
+                    </table>
+                    <template x-if="dispersion().zeroVarPoints > 0">
+                      <p class="doe__eval-note" x-text="t('dispersionZeroVar', { n: dispersion().zeroVarPoints })"></p>
+                    </template>
+                    <div class="doe__dispersion-models">
+                      <template x-for="(m, mi) in dispersionModels()">
+                        <div class="doe__dispersion-model" :key="mi">
+                          <h5 class="doe__dispersion-model-title" x-text="m.title"></h5>
+                          <template x-if="!m.fitted">
+                            <p class="doe__eval-note" x-text="t('dispersionModelNotFitted')"></p>
+                          </template>
+                          <template x-if="m.fitted">
+                            <div class="doe__dispersion-model-body">
+                              <p class="doe__eval-note" x-text="m.r2Text"></p>
+                              <table class="doe__alias-table doe__dispersion-coef-table">
+                                <thead>
+                                  <tr>
+                                    <th x-text="t('term')"></th>
+                                    <th x-text="t('coefficient')"></th>
+                                    <th x-text="t('effect')"></th>
+                                    <th>p</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  <template x-for="(c, ci) in m.rows">
+                                    <tr :key="ci" :class="c.significant ? 'doe__dispersion-sig' : ''">
+                                      <td x-text="c.term"></td>
+                                      <td x-text="fmt4(c.coefficient)"></td>
+                                      <td x-text="fmt4(c.effect)"></td>
+                                      <td x-text="fmt4(c.p)"></td>
+                                    </tr>
+                                  </template>
+                                </tbody>
+                              </table>
+                            </div>
+                          </template>
+                        </div>
+                      </template>
+                    </div>
+                    <!-- Conclusion -->
+                    <template x-if="dispersionConclusion()">
+                      <div class="doe__dispersion-conclusion" :class="dispersionConclusion().cls">
+                        <strong x-text="t('dispersionConclusion') + ':'"></strong>
+                        <template x-if="dispersionConclusion().none">
+                          <span x-text="' ' + t('dispersionConclusionNone')"></span>
+                        </template>
+                        <template x-if="!dispersionConclusion().none">
+                          <ul>
+                            <template x-for="(item, ii) in dispersionConclusion().items">
+                              <li :key="ii" x-text="item"></li>
+                            </template>
+                          </ul>
+                        </template>
+                      </div>
+                    </template>
+                  </div>
+                </template>
+              </div>
+            </div>
+          </div>
+        </template>
+      </div>
+    </template>
+  </div>
+</div>

@@ -40,12 +40,12 @@
   border-radius: 12px;
   font-weight: var(--font-weight-medium);
 }
-.src__badge--stable   { background: rgba(34, 197, 94, 0.12); color: var(--color-success); }
-.src__badge--unstable { background: rgba(239, 68, 68, 0.12); color: var(--color-error); }
+.src__badge--stable   { background: rgb(34 197 94 / 12%); color: var(--color-success); }
+.src__badge--unstable { background: rgb(239 68 68 / 12%); color: var(--color-error); }
 
 .src__warning {
   padding: var(--spacing-xs) var(--spacing-sm);
-  background: rgba(234, 179, 8, 0.12);
+  background: rgb(234 179 8 / 12%);
   color: var(--color-warning);
   border-left: 3px solid var(--color-warning);
   border-radius: 2px;
@@ -59,6 +59,7 @@
   font-size: var(--font-size-xs);
   margin-top: var(--spacing-sm);
 }
+
 .src__groups-table th,
 .src__groups-table td {
   padding: 4px 8px;
@@ -66,5 +67,6 @@
   border-bottom: var(--border-width) solid var(--color-border-secondary);
 }
 .src__groups-table th { color: var(--color-text-tertiary); font-weight: var(--font-weight-medium); }
+
 .src__groups-table td:first-child,
 .src__groups-table th:first-child { text-align: left; }

@@ -1,0 +1,87 @@
+<section class="module-container triz-9w" x-data="triz9Windows">
+  <div class="module-container__header">
+    <h2 class="module-container__title" x-text="t('name')"></h2>
+    <div class="module-container__subtitle" x-text="t('subtitle')"></div>
+  </div>
+  <div class="module-container__body triz-9w__body">
+    <section class="triz-9w__topbar">
+      <label class="triz-9w__title-label" for="triz-9w-title" x-text="t('systemHeading')"></label>
+      <input id="triz-9w-title" class="field triz-9w__title-input" type="text"
+        data-role="system-title"
+        :placeholder="t('systemPlaceholder')"
+        x-model="model.systemTitle">
+    </section>
+
+    <section class="triz-9w__grid" :aria-label="t('gridAriaLabel')">
+      <div class="triz-9w__corner triz-9w__corner-top" :title="t('cornerTip')">
+        <div class="triz-9w__corner-rows" x-text="t('axisRows')"></div>
+        <div class="triz-9w__corner-cols" x-text="axisColsText()"></div>
+      </div>
+
+      <template x-for="(label, c) in model.colLabels">
+        <div class="triz-9w__col-head" :key="c">
+          <input class="field field--ghost triz-9w__axis-input triz-9w__col-input" type="text"
+            data-role="col-label"
+            :aria-label="colAxisAria(c)"
+            :data-c="c"
+            x-model="label.val"
+            :placeholder="colPlaceholder(c)">
+        </div>
+      </template>
+
+      <template x-for="(row, r) in model.rows">
+        <div class="triz-9w__row" :key="r">
+          <div class="triz-9w__row-head">
+            <input class="field field--ghost triz-9w__axis-input triz-9w__row-input" type="text"
+              data-role="row-label"
+              :aria-label="rowAxisAria(r)"
+              :data-r="r"
+              x-model="row.rowLabel.val"
+              :placeholder="rowPlaceholder(r)">
+          </div>
+
+          <template x-for="(cell, c) in row.cells">
+            <div class="triz-9w__cell" :data-r="r" :data-c="c" :key="c">
+              <div class="triz-9w__cell-head">
+                <span class="triz-9w__cell-coord" x-text="coordText(r, c)"></span>
+
+                <label class="triz-9w__upload-btn" :style="uploadBtnStyle(cell)"
+                  :title="t('addImage')">
+                  <span x-text="t('addImage')"></span>
+                  <input type="file" accept="image/*" data-role="image-upload"
+                    :data-r="r" :data-c="c" hidden
+                    @change="handleImageUpload(r, c, $event)">
+                </label>
+              </div>
+
+              <textarea class="field triz-9w__cell-text" rows="4" data-role="cell-text"
+                :data-r="r" :data-c="c"
+                :placeholder="t('cellPlaceholder')"
+                x-model="cell.text"></textarea>
+
+              <template x-if="cell.image"><div class="triz-9w__image-wrap">
+                <img class="triz-9w__image" :src="cell.image"
+                  :alt="imageAlt(r, c)" data-action="enlarge"
+                  :data-r="r" :data-c="c"
+                  @click="enlarge(r, c)">
+                <button class="triz-9w__image-clear" type="button" data-action="clear-image"
+                  :data-r="r" :data-c="c"
+                  :title="t('clearImage')"
+                  @click="clearImage(r, c)">&times;</button>
+              </div></template>
+            </div>
+          </template>
+        </div>
+      </template>
+    </section>
+
+    <template x-if="enlarged"><div class="triz-9w__overlay"
+      data-action="close-enlarged" role="dialog"
+      :aria-label="t('imageEnlargedAria')"
+      @click="closeEnlarged($event)">
+      <img class="triz-9w__overlay-img" :src="enlargedImageSrc()" alt="">
+      <button class="triz-9w__overlay-close" type="button" data-action="close-enlarged"
+        :aria-label="t('close')">&times;</button>
+    </div></template>
+  </div>
+</section>

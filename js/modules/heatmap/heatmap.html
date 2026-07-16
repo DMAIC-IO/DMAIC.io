@@ -1,0 +1,67 @@
+<div class="heatmap-module dmike-split" x-data="heatmap">
+  <div class="heatmap-module__input dmike-split__input">
+    <div class="dmike-split__section-title" x-text="t('sectionData')"></div>
+    <div data-ref="picker-wrap"></div>
+
+    <div class="heatmap-module__options" data-ref="options-wrap">
+      <template x-if="hasVRef">
+        <label class="heatmap-module__opt-row">
+          <span x-text="t('aggregation')"></span>
+          <select data-action="set-agg" x-model="model.chartConfig.aggregation" @change="onAggregationChange()">
+            <option value="mean" x-text="t('aggMean')"></option>
+            <option value="sum" x-text="t('aggSum')"></option>
+          </select>
+        </label>
+      </template>
+    </div>
+
+    <div class="heatmap-module__error" data-ref="error-box"></div>
+  </div>
+
+  <div class="heatmap-module__output dmike-split__output">
+    <div data-ref="placeholder" class="heatmap-module__placeholder" x-text="t('placeholderPickBoth')"></div>
+    <div class="heatmap-module__chart-area" data-ref="chart-area" style="display:none">
+      <div class="heatmap-module__chart-wrap" data-ref="chart-wrap"></div>
+      <div class="heatmap-module__stats-panel" data-ref="stats-panel">
+        <template x-if="statsShow">
+          <div>
+            <div class="dmike-split__output-section" x-text="t('statsTitle')"></div>
+            <table class="dmike-table heatmap-module__stats-table">
+              <thead><tr>
+                <th x-text="statsCorner"></th>
+                <template x-for="(h, hi) in statsHeaders" :key="hi">
+                  <th x-text="h"></th>
+                </template>
+                <template x-if="statsShowTotals">
+                  <th x-text="statsTotalHeader"></th>
+                </template>
+              </tr></thead>
+              <tbody>
+                <template x-for="(r, i) in statsRows" :key="i">
+                  <tr>
+                    <td x-text="r.label"></td>
+                    <template x-for="(c, ci) in r.cells" :key="ci">
+                      <td x-text="c"></td>
+                    </template>
+                    <template x-if="statsShowTotals">
+                      <td x-text="r.total"></td>
+                    </template>
+                  </tr>
+                </template>
+                <template x-if="statsShowTotals">
+                  <tr style="font-weight:600;border-top:2px solid var(--color-border-primary)">
+                    <td x-text="statsTotalLabel"></td>
+                    <template x-for="(c, ci) in statsColTotals" :key="ci">
+                      <td x-text="c"></td>
+                    </template>
+                    <td x-text="statsGrandTotal"></td>
+                  </tr>
+                </template>
+              </tbody>
+            </table>
+          </div>
+        </template>
+      </div>
+    </div>
+  </div>
+</div>

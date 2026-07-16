@@ -1,0 +1,82 @@
+{
+  "id": "fehlermoeglichkeit",
+  "category": "risk",
+  "title": {
+    "de": "Fehlermöglichkeit (Failure Mode)",
+    "en": "Failure Mode"
+  },
+  "short": {
+    "de": "Die mögliche Art der Abweichung einer Funktion von ihrer Sollvorstellung — Kernobjekt jeder Zeile einer {{term:fmea|FMEA}}.",
+    "en": "The possible way a function deviates from its intended behaviour — core object of every {{term:fmea|FMEA}} row."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "Eine **Fehlermöglichkeit** beschreibt, *wie* eine Funktion oder ein Prozessschritt versagen kann — nicht warum (das ist die Ursache) und nicht was daraus folgt (das ist die Folge). Beispiele: „nicht eingerastet“, „falsch dosiert“, „zu spät geliefert“, „im falschen Winkel montiert“."
+      },
+      {
+        "type": "list",
+        "items": [
+          "Pro Funktion sind mehrere Fehlermöglichkeiten die Regel",
+          "Jede Fehlermöglichkeit hat eine oder mehrere Folgen (unterschiedlich schwer, siehe {{term:bedeutung|Bedeutung}})",
+          "Jede Fehlermöglichkeit hat eine oder mehrere Ursachen (unterschiedlich häufig, siehe {{term:auftreten|Auftreten}})"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "Verbreiteter Anfängerfehler: die Fehlermöglichkeit ist eigentlich die Ursache („Werker vergisst Prüfung“ ist eine Ursache; die Fehlermöglichkeit dazu heißt „Bauteil nicht geprüft“). Sauber formuliert lautet die Fehlermöglichkeit immer als *Zustand des Merkmals*, nicht als Handlung."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "A **failure mode** describes *how* a function or process step can fail — not why (that is the cause) and not what follows (that is the effect). Examples: \"not snapped in\", \"wrong dosage\", \"delivered too late\", \"mounted at wrong angle\"."
+      },
+      {
+        "type": "list",
+        "items": [
+          "Multiple failure modes per function are the rule",
+          "Each failure mode has one or more effects (of varying severity — see {{term:bedeutung|severity}})",
+          "Each failure mode has one or more causes (of varying frequency — see {{term:auftreten|occurrence}})"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "A common beginner error: the failure mode is actually the cause (\"operator skips check\" is a cause; the corresponding failure mode is \"part not inspected\"). A well-worded failure mode is always the *state of the characteristic*, not an action."
+      }
+    ]
+  },
+  "aliases": {
+    "de": [
+      "Failure Mode",
+      "Fehlerart",
+      "Fehlzustandsart",
+      "Ausfallart"
+    ],
+    "en": [
+      "failure mode",
+      "fault mode"
+    ]
+  },
+  "seeAlso": [
+    "fmea",
+    "bedeutung",
+    "auftreten",
+    "entdeckung"
+  ],
+  "modules": [
+    "fmea"
+  ],
+  "algoLab": [],
+  "sources": [
+    {
+      "label": "AIAG-VDA FMEA Handbook, 1st Edition, 2019",
+      "url": null
+    },
+    {
+      "label": "DIN EN IEC 60812: Fehlzustandsart- und -auswirkungsanalyse (FMEA und FMECA)",
+      "url": null
+    }
+  ]
+}

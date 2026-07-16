@@ -1,0 +1,87 @@
+{
+  "id": "bedeutung",
+  "category": "risk",
+  "title": {
+    "de": "Bedeutung / Severity (B, S) — FMEA-Bewertungszahl",
+    "en": "Severity (S, B) — FMEA Rating"
+  },
+  "short": {
+    "de": "1–10-Skala für die Schwere der Fehlerfolge beim Kunden — ein Faktor der {{term:rpz|RPZ}}.",
+    "en": "1–10 scale rating the severity of the failure effect at the customer — one factor of the {{term:rpz|RPN}}."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "Die **Bedeutung** (englisch *Severity*, Kürzel **B** oder **S**) bewertet, wie schwer die Folge einer {{term:fehlermoeglichkeit|Fehlermöglichkeit}} für den Kunden oder das nachgelagerte System wäre — auf einer Skala von **1 = unbedeutend** bis **10 = sicherheitskritisch / gesetzeswidrig**."
+      },
+      {
+        "type": "list",
+        "items": [
+          "**1–2** — kaum wahrnehmbar",
+          "**3–4** — geringe Beeinträchtigung, Kunde beschwert sich selten",
+          "**5–6** — mäßige Beeinträchtigung, deutlicher Komfort- oder Funktionsverlust",
+          "**7–8** — schwere Beeinträchtigung, Kernfunktion ausgefallen",
+          "**9–10** — Sicherheit oder Gesetz betroffen"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "Die Bedeutung wird durch **Produkt und Anforderung** definiert, nicht durch den Prozess. Sie lässt sich deshalb nur durch **Designänderung** senken — nicht durch bessere Fertigungssteuerung. Bei B ≥ 9 wird die Maßnahme oft **unabhängig von der {{term:rpz|RPZ}}** verpflichtend."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "**Severity** (short **S** in English, **B** in German-language FMEAs) rates how serious the effect of a {{term:fehlermoeglichkeit|failure mode}} is for the customer or downstream system — on a scale from **1 = negligible** to **10 = safety-critical / non-compliant**."
+      },
+      {
+        "type": "list",
+        "items": [
+          "**1–2** — hardly noticeable",
+          "**3–4** — minor impact, customer rarely complains",
+          "**5–6** — moderate impact, notable loss of comfort or function",
+          "**7–8** — severe impact, core function lost",
+          "**9–10** — safety or legal implications"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "Severity is defined by **product and requirement**, not by the process. It can therefore only be lowered by a **design change** — not by better process control. When S ≥ 9, an action is often mandatory **regardless of the {{term:rpz|RPN}}**."
+      }
+    ]
+  },
+  "aliases": {
+    "de": [
+      "Severity",
+      "B",
+      "S",
+      "Schwere"
+    ],
+    "en": [
+      "severity",
+      "S",
+      "B"
+    ]
+  },
+  "seeAlso": [
+    "fmea",
+    "auftreten",
+    "entdeckung",
+    "rpz"
+  ],
+  "modules": [
+    "fmea"
+  ],
+  "algoLab": [],
+  "sources": [
+    {
+      "label": "AIAG-VDA FMEA Handbook, 1st Edition, 2019 — Severity table",
+      "url": null
+    },
+    {
+      "label": "DIN EN IEC 60812",
+      "url": null
+    }
+  ]
+}

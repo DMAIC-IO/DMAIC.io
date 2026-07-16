@@ -16,7 +16,7 @@
     },
     "long": {
       "de": "Der Shapiro-Wilk-Test ist einer der leistungsfähigsten Tests auf Normalverteilung, besonders für kleine Stichproben (n = 3–50). Er vergleicht die geordneten Stichprobenwerte mit den erwarteten Werten einer Normalverteilung. Die Teststatistik W liegt zwischen 0 und 1 — Werte nahe 1 sprechen für Normalverteilung. Bei p < α (z.B. 0,05) wird die Nullhypothese der Normalverteilung abgelehnt.",
-      "en": "The Shapiro-Wilk test is one of the most powerful normality tests, especially for small samples (n = 3–50). It compares the ordered sample values with the expected values from a normal distribution. The test statistic W ranges from 0 to 1 — values close to 1 indicate normality. If p < α (e.g. 0.05), the null hypothesis of normality is rejected."
+      "en": "The Shapiro-Wilk test is one of the most powerful {{term:normalitaetstest|normality test}}s, especially for small samples (n = 3–50). It compares the ordered sample values with the expected values from a normal distribution. The test statistic W ranges from 0 to 1 — values close to 1 indicate normality. If p < α (e.g. 0.05), the null hypothesis of normality is rejected."
     }
   },
 

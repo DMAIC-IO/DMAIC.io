@@ -1,7 +1,7 @@
 /**
  * D.Mike — XLSX / XLSM / XLS / ODS Parser (xlsx-parser.js)
  *
- * Reads spreadsheet files via SheetJS (already vendored at vendor/xlsx.full.min.js).
+ * Reads spreadsheet files via SheetJS (bundled from node_modules via core/vendor/xlsx.js).
  * Each sheet in the workbook becomes one entry in the output `sheets[]`,
  * preserving the sheet name from the source file. Column types (numeric/text)
  * are detected from the raw JS types SheetJS produces.
@@ -9,7 +9,7 @@
  * Output schema matches mpx-parser.js / csv-parser.js — see data-import.js.
  */
 
-import { ensureXLSX } from '../../core/export-utils.js';
+import { ensureXLSX, XLSX } from '../../core/export-utils.js';
 
 /** ≥80% non-empty cells with finite numeric value → numeric column. */
 function detectColumnType(values) {
@@ -77,7 +77,7 @@ export async function parseXlsx(buffer, opts = {}) {
   try {
     workbook = XLSX.read(buffer, { type: 'array', cellDates: true });
   } catch (err) {
-    const e = new Error('xlsx parse: ' + err.message);
+    const e = new Error(`xlsx parse: ${  err.message}`);
     e.code = 'errXlsxParse';
     throw e;
   }

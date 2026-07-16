@@ -51,7 +51,7 @@
 
 .app-footer__tip-dismiss:hover {
   opacity: 1;
-  background: rgba(255, 255, 255, 0.25);
+  background: rgb(255 255 255 / 25%);
 }
 
 @keyframes tip-pulse-in {

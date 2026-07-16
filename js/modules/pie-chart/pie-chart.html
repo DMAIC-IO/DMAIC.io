@@ -1,0 +1,43 @@
+<div class="pie-chart dmike-split" x-data="pieChart">
+  <div class="pie-chart__input dmike-split__input">
+    <div class="dmike-split__section-title" x-text="t('sectionData')"></div>
+    <div data-ref="picker-wrap"></div>
+
+    <div class="pie-chart__error" data-ref="error-box"></div>
+  </div>
+
+  <div class="pie-chart__output dmike-split__output">
+    <div data-ref="placeholder"></div>
+    <div class="pie-chart__chart-area" data-ref="chart-area" style="display:none">
+      <div class="pie-chart__chart-wrap" data-ref="chart-wrap"></div>
+      <div class="pie-chart__stats-panel" data-ref="stats-panel">
+        <template x-if="statsShow">
+          <div>
+            <div class="dmike-split__output-section" x-text="t('statsTitle')"></div>
+            <table class="dmike-table pie-chart__stats-table">
+              <thead><tr>
+                <th x-text="t('statName')"></th>
+                <th x-text="t('statValue')"></th>
+                <th x-text="t('statPercent')"></th>
+              </tr></thead>
+              <tbody>
+                <template x-for="(r, i) in statsRows" :key="i">
+                  <tr>
+                    <td><span class="pie-chart__stats-color" :style="'background:' + r.color"></span><span x-text="' ' + r.name"></span></td>
+                    <td x-text="r.value"></td>
+                    <td x-text="r.pct"></td>
+                  </tr>
+                </template>
+                <tr style="font-weight:600;border-top:2px solid var(--color-border-primary)">
+                  <td x-text="t('statTotal')"></td>
+                  <td x-text="statsTotal"></td>
+                  <td>100.0%</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </template>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,91 @@
+{
+  "id": "pp",
+  "category": "capability",
+  "title": {
+    "de": "Pp (Langzeit-Prozessleistungsindex)",
+    "en": "Pp (Long-Term Process Performance Index)"
+  },
+  "short": {
+    "de": "Langzeit-Pendant zu {{term:cp|Cp}} — verwendet die gesamte Stichprobenstreuung statt der Within-Subgruppen-Streuung.",
+    "en": "Long-term counterpart to {{term:cp|Cp}} — uses total sample variation instead of within-subgroup variation."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "**Pp** ist die Langzeit-Version von {{term:cp|Cp}}. Statt der Kurzzeitstreuung aus Subgruppen verwendet er die **Gesamtstreuung** der Stichprobe — inklusive Drift, Trends und Sonderursachen, die sich über die Messperiode aufgebaut haben."
+      },
+      {
+        "type": "formula",
+        "latex": "P_p = \\frac{USL - LSL}{6 s_{\\text{overall}}}"
+      },
+      {
+        "type": "list",
+        "items": [
+          "**s_overall** ist die klassische Stichproben-{{term:standardabweichung|Standardabweichung}} über alle Werte",
+          "**Pp ≤ Cp** in aller Regel — Langzeit-Streuung ist größer als Kurzzeit-Streuung",
+          "**Pp = Cp** nur, wenn der Prozess über den gesamten Beobachtungszeitraum wirklich stabil war"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "Wie {{term:cp|Cp}} ignoriert Pp die Lage — dafür ist {{term:ppk|Ppk}} zuständig. Beide Langzeit-Indizes berichten, wie es dem Kunden tatsächlich geht, während Cp/Cpk zeigen, was der Prozess unter idealen Bedingungen leisten könnte."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "**Pp** is the long-term version of {{term:cp|Cp}}. Instead of within-subgroup short-term variation, it uses the **overall** sample variation — including drift, trends, and special causes accumulated across the measurement period."
+      },
+      {
+        "type": "formula",
+        "latex": "P_p = \\frac{USL - LSL}{6 s_{\\text{overall}}}"
+      },
+      {
+        "type": "list",
+        "items": [
+          "**s_overall** is the classical sample {{term:standardabweichung|standard deviation}} over all values",
+          "**Pp ≤ Cp** as a rule — long-term variation is larger than short-term",
+          "**Pp = Cp** only when the process was genuinely stable across the whole observation window"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "Like {{term:cp|Cp}}, Pp ignores location — that is {{term:ppk|Ppk}}'s job. Both long-term indices report what the customer actually experiences, while Cp/Cpk show what the process could deliver under ideal conditions."
+      }
+    ]
+  },
+  "aliases": {
+    "de": [
+      "Pp-Wert",
+      "Prozessleistungsindex",
+      "Process Performance Index"
+    ],
+    "en": [
+      "Pp value",
+      "process performance"
+    ]
+  },
+  "seeAlso": [
+    "ppk",
+    "cp",
+    "cpk",
+    "prozessfaehigkeit"
+  ],
+  "modules": [
+    "process-capability"
+  ],
+  "algoLab": [
+    "capability/ppk"
+  ],
+  "sources": [
+    {
+      "label": "AIAG — Statistical Process Control (SPC) Reference Manual, 2nd Edition",
+      "url": null
+    },
+    {
+      "label": "Montgomery, D. C. — Introduction to Statistical Quality Control, 8th Edition, Chapter 8",
+      "url": null
+    }
+  ]
+}

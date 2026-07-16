@@ -1,7 +1,7 @@
 {
-  "id": "overdispersion-check",
+  "id": "{{term:ueberdispersion|overdispersion}}-check",
   "name": {
-    "de": "Überdispersions-Check",
+    "de": "{{term:ueberdispersion|Überdispersion}}s-Check",
     "en": "Overdispersion Check"
   },
   "category": "regression",

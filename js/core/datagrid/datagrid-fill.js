@@ -11,7 +11,6 @@
  */
 
 import { isNumericType } from './datagrid-utils.js';
-import { isFormula } from './datagrid-formula.js';
 
 /* ─── Cell reference shifting in formulas ─────────────────────
  *

@@ -1,0 +1,86 @@
+{
+  "id": "zentralpunkt",
+  "category": "doe",
+  "title": {
+    "de": "Zentralpunkt (Center Point)",
+    "en": "Center Point"
+  },
+  "short": {
+    "de": "Zusätzliche Versuchspunkte in der Mitte des Designbereichs — für Krümmungstest und Schätzung der {{term:standardabweichung|reinen Streuung}}.",
+    "en": "Extra runs at the middle of the design region — for curvature test and pure-error estimation of the {{term:standardabweichung|standard deviation}}."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "**Zentralpunkte** sind Versuche, bei denen alle Faktoren auf ihrer mittleren {{term:stufe|Stufe}} (kodiert 0) stehen. Sie werden zusätzlich zu den Eckpunkten eines 2ᵏ- oder fraktionellen Designs gefahren, üblicherweise 3–5 Wiederholungen."
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Krümmungstest** — ist die Antwort zwischen −1 und +1 linear oder gekrümmt? Ein signifikanter Unterschied zwischen Zentralpunkt-Mittel und Eckpunkt-Mittel deutet auf Krümmung — dann Aufrüstung zu CCD oder Box-Behnken sinnvoll",
+          "**Reine Streuung** — {{term:replikat|replizierte}} Zentralpunkte liefern eine modellunabhängige Schätzung der Prozess-Streuung",
+          "**Lack-of-Fit-Test** — ohne diese Streuungs-Schätzung ist der klassische Lack-of-Fit-Test nicht möglich"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "Zentralpunkte sind bei stetigen Faktoren gut definiert (der Mittelwert existiert). Bei rein kategorialen Faktoren gibt es keinen echten Zentralpunkt — dann ist eher {{term:replikat|Replikation}} an einzelnen Eckpunkten sinnvoll."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "**Center points** are runs with every factor at its middle {{term:stufe|level}} (coded 0). They are added to the corner points of a 2ᵏ or fractional design — usually 3–5 replicates."
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Curvature test** — is the response between −1 and +1 linear or curved? A significant gap between the centre-point mean and the corner-point mean indicates curvature — then upgrade to CCD or Box-Behnken",
+          "**Pure error** — {{term:replikat|replicated}} centre points provide a model-independent estimate of process variation",
+          "**Lack-of-fit test** — without this variance estimate the classical lack-of-fit test is unavailable"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "Centre points are well defined for continuous factors (the midpoint exists). For purely categorical factors there is no true centre — {{term:replikat|replication}} of selected corner points is more useful."
+      }
+    ]
+  },
+  "aliases": {
+    "de": [
+      "Center Point",
+      "Zentrumspunkt",
+      "Mittelpunktversuch"
+    ],
+    "en": [
+      "centre point",
+      "center run"
+    ]
+  },
+  "seeAlso": [
+    "replikat",
+    "randomisierung",
+    "doe",
+    "stufe"
+  ],
+  "modules": [
+    "doe-planner",
+    "doe-advisor"
+  ],
+  "algoLab": [
+    "doe/ccd-with-categorical",
+    "doe/box-behnken-with-categorical",
+    "doe/doe-planner"
+  ],
+  "sources": [
+    {
+      "label": "Montgomery, D. C. — Design and Analysis of Experiments, 10th Edition, Chapter 6",
+      "url": null
+    },
+    {
+      "label": "Myers, Montgomery & Anderson-Cook — Response Surface Methodology, 4th Edition",
+      "url": null
+    }
+  ]
+}

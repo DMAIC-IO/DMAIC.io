@@ -1,0 +1,94 @@
+{
+  "id": "streuungs-doe",
+  "category": "doe",
+  "title": {
+    "de": "Streuungs-DoE (Dispersion DoE / Dual Response)",
+    "en": "Dispersion DoE (Dual Response)"
+  },
+  "short": {
+    "de": "{{term:doe|Versuchsplan}} mit {{term:replikat|Replikaten}} pro Punkt — modelliert gleichzeitig {{term:mittelwert|Mittelwert}} UND {{term:standardabweichung|Streuung}} als Funktion der Faktoren.",
+    "en": "{{term:doe|Design}} with {{term:replikat|replicates}} per point — jointly models {{term:mittelwert|mean}} AND {{term:standardabweichung|dispersion}} as functions of the factors."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "Ein **Streuungs-DoE** (Dispersion DoE, Dual Response) hat pro Versuchspunkt mindestens zwei echte {{term:replikat|Replikate}}. Aus jedem Punkt werden dann zwei Größen berechnet: der Mittelwert $\\bar{y}$ und die Log-Varianz $\\ln(s^2)$. Beide werden separat mit einem Regressionsmodell an die Faktoren gebunden."
+      },
+      {
+        "type": "formula",
+        "latex": "\\hat{\\mu}(\\mathbf{x}) = f_\\mu(\\mathbf{x}), \\quad \\ln \\hat{\\sigma}^2(\\mathbf{x}) = f_\\sigma(\\mathbf{x})"
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Ziel:** Faktoreinstellungen finden, bei denen die Prozessstreuung minimal wird — unabhängig von der Zielgröße",
+          "**Robustheit** — die klassische {{term:taguchi|Taguchi}}-Frage („welche Einstellung ist unempfindlich gegen Störgrößen?“) mit sauberer Faktorstruktur",
+          "**Voraussetzung:** echte, unabhängige Replikate pro Lauf — nicht Mehrfachmessungen am selben Werkstück (Pseudo-Replikate erfassen nur die Messstreuung, nicht die Prozessstreuung)"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "Streuungs-DoE ist die moderne Alternative zu {{term:taguchi|Taguchi}}: gleiche Robustheits-Aussagen, aber in gängiger Faktorstruktur ({{term:vollfaktoriell|2ᵏ}}, {{term:ccd|CCD}}, {{term:box-behnken|Box-Behnken}}) und ohne die Kritik der vermischten {{term:wechselwirkung|Wechselwirkungen}}. Erlaubt zusätzlich die typische **Mean-Variance-Trade-off-Analyse:** wo liegt die kleinste Streuung bei annehmbarem Mittelwert?"
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "A **dispersion DoE** (dual response) has at least two true {{term:replikat|replicates}} at every design point. From each point two quantities are computed: the mean $\\bar{y}$ and the log-variance $\\ln(s^2)$. Both are separately regressed against the factors."
+      },
+      {
+        "type": "formula",
+        "latex": "\\hat{\\mu}(\\mathbf{x}) = f_\\mu(\\mathbf{x}), \\quad \\ln \\hat{\\sigma}^2(\\mathbf{x}) = f_\\sigma(\\mathbf{x})"
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Goal:** find factor settings that minimise process variability — independent of the target response",
+          "**Robustness** — the classical {{term:taguchi|Taguchi}} question (\"which setting is insensitive to noise?\") within a clean factorial structure",
+          "**Precondition:** true, independent replicates per run — not multiple measurements on the same specimen (pseudo-replicates capture only measurement variation, not process variation)"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "Dispersion DoE is the modern alternative to {{term:taguchi|Taguchi}}: the same robustness statements, but in a standard factorial structure ({{term:vollfaktoriell|2ᵏ}}, {{term:ccd|CCD}}, {{term:box-behnken|Box-Behnken}}) and without the criticism of aliased {{term:wechselwirkung|interactions}}. It also enables the typical **mean-variance trade-off analysis:** where is the smallest dispersion at an acceptable mean?"
+      }
+    ]
+  },
+  "aliases": {
+    "de": [
+      "Dispersion DoE",
+      "Dual Response",
+      "Streuungs-Versuchsplan",
+      "Robustheits-DoE"
+    ],
+    "en": [
+      "dispersion DoE",
+      "dual response",
+      "dual-response surface"
+    ]
+  },
+  "seeAlso": [
+    "taguchi",
+    "replikat",
+    "doe",
+    "response-surface"
+  ],
+  "modules": [
+    "doe-planner",
+    "doe-advisor"
+  ],
+  "algoLab": [
+    "doe/doe-planner"
+  ],
+  "sources": [
+    {
+      "label": "Vining, G. G. & Myers, R. H. — Combining Taguchi and Response Surface Philosophies: A Dual Response Approach, Journal of Quality Technology, 22(1), 1990",
+      "url": null
+    },
+    {
+      "label": "Myers, Montgomery & Anderson-Cook — Response Surface Methodology, 4th Edition, Chapter 10",
+      "url": null
+    }
+  ]
+}

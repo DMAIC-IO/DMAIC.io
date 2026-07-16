@@ -11,8 +11,8 @@
 
   "description": {
     "short": {
-      "de": "Erweitert das klassische Central-Composite-Design auf Versuchspläne mit gemischten kontinuierlich/kategorialen Faktoren — jede kategoriale Stufen-Kombination bekommt ein vollständiges CCD über die kontinuierlichen Faktoren.",
-      "en": "Extends the classical central composite design to plans with mixed continuous/categorical factors — every categorical level combination gets a full CCD over the continuous factors."
+      "de": "Erweitert das klassische {{term:ccd|Central-Composite-Design}} auf Versuchspläne mit gemischten kontinuierlich/kategorialen Faktoren — jede kategoriale Stufen-Kombination bekommt ein vollständiges CCD über die kontinuierlichen Faktoren.",
+      "en": "Extends the classical {{term:ccd|central composite design}} to plans with mixed continuous/categorical factors — every categorical level combination gets a full CCD over the continuous factors."
     },
     "long": {
       "de": "Das klassische CCD nimmt an, dass alle Faktoren kontinuierlich sind und Achspunkte (±α) sinnvoll bilden können. Bei einem kategorialen Faktor wie Werkzeug = {Stahl, HSS, Carbide} sind Achspunkte aber bedeutungslos (es gibt keinen ‚Stahl × 1.4‘-Wert). Die hier dokumentierte Erweiterung schneidet das Problem strukturell: das CCD wird nur über die kontinuierlichen Faktoren gebildet, und das Ergebnis wird kartesisch mit allen kategorialen Stufen-Kombinationen multipliziert. Jede kategoriale Zelle bekommt damit ein eigenes vollständiges CCD — Eckpunkte, Achspunkte und Mittelpunkte. Das ist die saubere Mathematik für quadratische Modellierung in Mixed-Faktor-RSM.",

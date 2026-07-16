@@ -22,7 +22,7 @@ export default {
           rows: [
             ['Quadratisch', 'β₀ + β₁x + β₂y + β₃x² + β₄y² + β₅xy', 'Response Surface Methodology (RSM), CCD, Box-Behnken'],
             ['Linear + Interaktion', 'β₀ + β₁x + β₂y + β₅xy', 'Faktorielle Versuchspläne (2k)'],
-            ['Eigene Formel', 'Beliebiger JS-Ausdruck', 'Komplexe oder nicht-polynomiale Modelle'],
+            ['Eigene Formel', 'Beliebiger JS-Ausdruck: Math.*-Aufrufe und arithmetische Ausdrücke werden voll unterstützt', 'Komplexe oder nicht-polynomiale Modelle'],
           ],
         },
         {
@@ -127,7 +127,7 @@ export default {
           rows: [
             ['Quadratic', 'β₀ + β₁x + β₂y + β₃x² + β₄y² + β₅xy', 'Response Surface Methodology (RSM), CCD, Box-Behnken'],
             ['Linear + Interaction', 'β₀ + β₁x + β₂y + β₅xy', 'Factorial designs (2k)'],
-            ['Custom Formula', 'Any JS expression', 'Complex or non-polynomial models'],
+            ['Custom Formula', 'Any JS expression: Math.* calls and arithmetic expressions are fully supported', 'Complex or non-polynomial models'],
           ],
         },
         {

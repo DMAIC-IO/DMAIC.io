@@ -1,0 +1,88 @@
+{
+  "id": "stufe",
+  "category": "doe",
+  "title": {
+    "de": "Stufe / Level (Faktorstufe)",
+    "en": "Level (Factor Level)"
+  },
+  "short": {
+    "de": "Konkreter Wert, auf den ein {{term:faktor|Faktor}} im Versuch gesetzt wird — Standard: 2 Stufen (−1 / +1) fürs Screening, 3+ für Optimierung.",
+    "en": "Concrete value a {{term:faktor|factor}} is set to in the experiment — standard: 2 levels (−1 / +1) for screening, 3+ for optimisation."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "Die **Stufen** eines Faktors sind die diskreten Werte, an denen im Versuch gemessen wird. In vielen Standarddesigns werden sie in kodierten Einheiten notiert — üblicherweise −1 (niedrig) und +1 (hoch), Zentralpunkte tragen 0."
+      },
+      {
+        "type": "list",
+        "items": [
+          "**2 Stufen** — Screening (2ᵏ, fractional 2ᵏ⁻ᵖ, Plackett-Burman): lineare Effekte, keine Krümmung",
+          "**3 Stufen** — Wechselwirkungen und leichte Krümmung (Box-Behnken, 3ᵏ)",
+          "**5 Stufen** — rotatable CCD mit Sternpunkten (±α) außerhalb der Ecken",
+          "**Face-centered CCD** — hält alle Stufen bei ±1 (α = 1), wenn Grenzen hart sind"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "Zu enge Stufenwahl versteckt Effekte im Rauschen — die Stufen sollten mutig, aber prozesstechnisch sinnvoll gespreizt sein. Zu weite Stufen führen dagegen an Grenzen, wo der Prozess nichtlinear oder unsicher wird."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "The **levels** of a factor are the discrete values used in the experiment. Standard designs notate them in coded units — typically −1 (low) and +1 (high), with centre points carrying 0."
+      },
+      {
+        "type": "list",
+        "items": [
+          "**2 levels** — screening (2ᵏ, fractional 2ᵏ⁻ᵖ, Plackett-Burman): linear effects, no curvature",
+          "**3 levels** — interactions and mild curvature (Box-Behnken, 3ᵏ)",
+          "**5 levels** — rotatable CCD with star points (±α) outside the corners",
+          "**Face-centered CCD** — keeps all levels at ±1 (α = 1) when limits are hard"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "Levels chosen too narrowly hide effects in noise — spread them boldly but within process reason. Levels chosen too widely push into regions where the process turns non-linear or unsafe."
+      }
+    ]
+  },
+  "aliases": {
+    "de": [
+      "Level",
+      "Faktorstufe",
+      "Stufenwert"
+    ],
+    "en": [
+      "factor level",
+      "setting"
+    ]
+  },
+  "seeAlso": [
+    "faktor",
+    "doe",
+    "zentralpunkt"
+  ],
+  "modules": [
+    "doe-planner",
+    "doe-advisor"
+  ],
+  "algoLab": [
+    "doe/doe-planner",
+    "doe/mixed-level-full-factorial",
+    "doe/ccd-with-categorical",
+    "doe/box-behnken-with-categorical"
+  ],
+  "sources": [
+    {
+      "label": "Montgomery, D. C. — Design and Analysis of Experiments, 10th Edition",
+      "url": null
+    },
+    {
+      "label": "Box, Hunter & Hunter — Statistics for Experimenters, 2nd Edition",
+      "url": null
+    }
+  ]
+}

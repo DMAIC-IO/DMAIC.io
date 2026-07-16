@@ -1,0 +1,101 @@
+{
+  "id": "wiederholbarkeit",
+  "category": "msa",
+  "title": {
+    "de": "Wiederholbarkeit (Repeatability)",
+    "en": "Repeatability"
+  },
+  "short": {
+    "de": "{{term:praezision|Präzision}} unter engsten Bedingungen: gleicher Bediener, gleiches Gerät, gleiches Teil, kurze Zeit.",
+    "en": "{{term:praezision|Precision}} under the tightest conditions: same operator, same instrument, same part, short time."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "Die **Wiederholbarkeit** ist die Streuung, die entsteht, wenn dieselbe Person mit demselben Messgerät dasselbe Merkmal an demselben Teil in kurzer Zeitspanne mehrfach misst. Sie beschreibt die reine Gerätestreuung — also alles, was das Messsystem an Zufallsstreuung mitbringt, ohne dass Bediener, Zeit oder Teil variiert werden."
+      },
+      {
+        "type": "note",
+        "text": "In Gage R&R (MSA Typ 2) heißt dieser Anteil **EV** (Equipment Variation). In der ANOVA-basierten Auswertung wird er als σ²_Repeatability geschätzt und ist die Untergrenze aller anderen Präzisionsmaße — {{term:reproduzierbarkeit|Reproduzierbarkeit}} ist per Definition ≥ Wiederholbarkeit."
+      },
+      {
+        "type": "paragraph",
+        "text": "In der MSA Typ 1 wird die Wiederholbarkeit an einem einzigen Referenzteil geprüft und mit Cg bzw. Cgk gegen die Toleranz normiert. Ein niedriger Cg (< 1,33) zeigt bereits schlechte Wiederholbarkeit — dann lohnt sich eine anschließende Gage R&R-Studie nicht."
+      },
+      {
+        "type": "list",
+        "items": [
+          "Ursachen: elektronisches Rauschen, mechanisches Spiel, Ablesungenauigkeit, thermische Drift auf Zeitskala einer Serie",
+          "Kein Bediener-Einfluss enthalten (das ist {{term:reproduzierbarkeit|Reproduzierbarkeit}})",
+          "Kein Teil-zu-Teil-Anteil enthalten (das ist Part-to-Part-Variation)"
+        ]
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "**Repeatability** is the variation observed when the same person measures the same characteristic on the same part with the same instrument multiple times in a short time frame. It captures pure equipment variation — the random spread the measurement system itself brings, with operator, time, and part held constant."
+      },
+      {
+        "type": "note",
+        "text": "In Gage R&R (MSA Type 2) this component is called **EV** (Equipment Variation). The ANOVA-based analysis estimates it as σ²_Repeatability; it is the lower bound of all other precision measures — {{term:reproduzierbarkeit|reproducibility}} is by definition ≥ repeatability."
+      },
+      {
+        "type": "paragraph",
+        "text": "In MSA Type 1, repeatability is checked on a single reference part and normalised against tolerance via Cg / Cgk. A low Cg (< 1.33) already reveals poor repeatability — running a subsequent Gage R&R then is not worthwhile."
+      },
+      {
+        "type": "list",
+        "items": [
+          "Causes: electronic noise, mechanical play, reading error, thermal drift over a series",
+          "Excludes operator effect (that is {{term:reproduzierbarkeit|reproducibility}})",
+          "Excludes part-to-part effect (that is part variation)"
+        ]
+      }
+    ]
+  },
+  "aliases": {
+    "de": [
+      "Repeatability",
+      "EV",
+      "Equipment Variation",
+      "Wiederholstreuung",
+      "Gerätestreuung"
+    ],
+    "en": [
+      "equipment variation",
+      "EV",
+      "within-system variation"
+    ]
+  },
+  "seeAlso": [
+    "reproduzierbarkeit",
+    "praezision",
+    "genauigkeit",
+    "standardabweichung"
+  ],
+  "modules": [
+    "msa-typ1",
+    "msa-typ2"
+  ],
+  "algoLab": [
+    "msa/cg",
+    "msa/cgk",
+    "msa/grr"
+  ],
+  "sources": [
+    {
+      "label": "DIN ISO 5725-2: Genauigkeit (Richtigkeit und Präzision) von Messverfahren und Messergebnissen — Teil 2: Grundlegende Methode zur Bestimmung der Wiederhol- und Vergleichpräzision",
+      "url": null
+    },
+    {
+      "label": "AIAG — Measurement Systems Analysis Reference Manual, 4th Edition (MSA-4), Chapter 4",
+      "url": null
+    },
+    {
+      "label": "VDA Band 5 — Prüfprozesseignung, 3. Auflage",
+      "url": null
+    }
+  ]
+}

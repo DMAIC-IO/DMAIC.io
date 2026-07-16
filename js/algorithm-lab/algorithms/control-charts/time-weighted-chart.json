@@ -1,7 +1,7 @@
 {
   "id": "time-weighted-chart",
   "name": {
-    "de": "Zeitgewichtete Regelkarten (EWMA, CUSUM)",
+    "de": "Zeitgewichtete Regelkarten ({{term:ewma-chart|EWMA}}, CUSUM)",
     "en": "Time-Weighted Control Charts (EWMA, CUSUM)"
   },
   "category": "control-charts",

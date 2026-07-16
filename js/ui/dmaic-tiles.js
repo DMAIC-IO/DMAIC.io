@@ -20,6 +20,8 @@ import {
   getAllPhaseIds,
   getPhaseDef,
 } from '../core/cycles/cycles.js';
+import { h } from '../core/dom.js';
+import { icon } from '../core/icon.js';
 
 export class DmaicTiles {
   /**
@@ -50,12 +52,18 @@ export class DmaicTiles {
     this._workspace = workspace;
   }
 
+  /**
+   * Set router reference so tile clicks navigate through the router.
+   * @param {import('../core/router/index.js').Router} router
+   */
+  setRouter(router) { this._router = router; }
+
   render() {
     const cycleId = this._getCycleId();
     this._applyPhaseColors(cycleId);
     this._moduleRegistry?.setActiveCycle(cycleId);
 
-    this._container.innerHTML = '';
+    this._container.replaceChildren();
     this._container.className = 'dmaic-tiles';
 
     const phases = getAllPhaseIds(cycleId);
@@ -81,7 +89,7 @@ export class DmaicTiles {
     return this._activePhase;
   }
 
-  updateBadge(phase) {
+  updateBadge(_phase) {
     // Kept for API compatibility.
   }
 
@@ -133,46 +141,60 @@ export class DmaicTiles {
     const tile = document.createElement('div');
     tile.className = 'dmaic-tile';
     tile.dataset.phase = phase;
-    tile.setAttribute('role', 'button');
-    tile.setAttribute('tabindex', '0');
-    tile.setAttribute('aria-label', this._i18n.t(`phases.${phase}`));
 
     const pct = isVirtual ? 0 : (this._stateManager.get(`phaseAchievement.${phase}`) ?? 0);
 
-    const letterClass = letter.length > 1 ? ' dmaic-tile__letter--multichar' : '';
-    tile.innerHTML = `
-      <span class="dmaic-tile__letter${letterClass}">${letter}</span>
-      <span class="dmaic-tile__name">${this._i18n.t(`phases.${phase}`)}</span>
-      ${isVirtual ? '' : `<span class="dmaic-tile__zeg"
-            title="${this._i18n.t('phases.achievementTooltip')}">${pct}%</span>`}
-      <button class="dmaic-tile__menu-btn" aria-label="Module" title="Module">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/></svg>
-      </button>
-      ${isVirtual ? '' : `<span class="dmaic-tile__progress-bar" aria-hidden="true">
-        <span class="dmaic-tile__progress-fill" style="width: ${pct}%"></span>
-      </span>`}
-    `;
+    const letterClass = letter.length > 1
+      ? 'dmaic-tile__letter dmaic-tile__letter--multichar'
+      : 'dmaic-tile__letter';
+    // Interactive controls are siblings (not nested) to satisfy the
+    // WAI/axe "nested-interactive" rule: a select button carries the phase
+    // navigation + keyboard semantics, the menu button opens the dropdown.
+    // No aria-label here: an explicit label would override the visible text
+    // ("Define 0%") and trip WCAG 2.5.3 (label-content-name-mismatch). The
+    // accessible name is computed from the visible children instead — the
+    // decorative first-letter badge is hidden so the name is "<Phase> <pct>%".
+    const body = h('button', {
+      class: 'dmaic-tile__body',
+      type: 'button',
+    },
+      h('span', { class: letterClass, 'aria-hidden': 'true' }, letter),
+      h('span', { class: 'dmaic-tile__name' }, this._i18n.t(`phases.${phase}`)),
+      isVirtual ? null : h('span', {
+        class: 'dmaic-tile__zeg',
+        title: this._i18n.t('phases.achievementTooltip'),
+      }, `${pct  }%`),
+    );
+    const children = [
+      body,
+      h('button', {
+        class: 'dmaic-tile__menu-btn',
+        type: 'button',
+        'aria-label': 'Module',
+        title: 'Module',
+      }, icon('menu')),
+      isVirtual ? null : h('span', {
+        class: 'dmaic-tile__progress-bar',
+        'aria-hidden': 'true',
+      }, h('span', {
+        class: 'dmaic-tile__progress-fill',
+        style: `width: ${pct}%`,
+      })),
+    ];
+    tile.append(...children.filter(Boolean));
 
     const menuBtn = tile.querySelector('.dmaic-tile__menu-btn');
 
-    // Click on tile body (not menu button) → select phase
-    tile.addEventListener('click', (e) => {
-      if (menuBtn.contains(e.target)) return;
+    // Click / Enter / Space on the body button → select phase
+    // (native button semantics cover keyboard activation).
+    body.addEventListener('click', () => {
       this._closeMenu();
-      this._selectPhase(phase);
-    });
-
-    tile.addEventListener('keydown', (e) => {
-      if ((e.key === 'Enter' || e.key === ' ') && document.activeElement === tile) {
-        e.preventDefault();
-        this._selectPhase(phase);
-      }
+      this._navigatePhase(phase);
     });
 
     // Double-click → edit ZEG (virtual tiles have no ZEG)
     if (!isVirtual) {
-      tile.addEventListener('dblclick', (e) => {
-        if (menuBtn.contains(e.target)) return;
+      body.addEventListener('dblclick', (e) => {
         e.preventDefault();
         const zegEl = tile.querySelector('.dmaic-tile__zeg');
         this._openProgressEditor(phase, tile, zegEl);
@@ -262,8 +284,16 @@ export class DmaicTiles {
       } else {
         item.addEventListener('click', (e) => {
           e.stopPropagation();
-          this._addModule(def.id, phase);
           this._closeMenu();
+          if (this._router) {
+            this._router.navigate({
+              kind: 'module-new',
+              projectId: this._stateManager.getActiveProjectId(),
+              moduleType: def.id,
+            });
+          } else {
+            this._addModule(def.id, phase);
+          }
         });
       }
 
@@ -433,6 +463,26 @@ export class DmaicTiles {
       e.stopPropagation();
     });
     input.addEventListener('click', (e) => e.stopPropagation());
+  }
+
+  /**
+   * Route a phase change through the router when available, falling back to
+   * direct `_selectPhase` for boot/test contexts that have no router.
+   * Used by both click and keydown handlers so keyboard navigation keeps the
+   * URL hash and history in sync.
+   * @param {string} phase
+   * @private
+   */
+  _navigatePhase(phase) {
+    if (this._router) {
+      this._router.navigate({
+        kind: 'phase',
+        projectId: this._stateManager.getActiveProjectId(),
+        phaseId: phase,
+      });
+    } else {
+      this._selectPhase(phase); // pre-router fallback (boot/tests)
+    }
   }
 
   _selectPhase(phase) {

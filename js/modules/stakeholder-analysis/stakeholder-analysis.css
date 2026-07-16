@@ -4,6 +4,7 @@
    ============================================================ */
 
 /* ===== Layout ===== */
+
 /* Base layout provided by .dmike-split__input (css/modules.css) */
 .sha__sidebar {
   padding: 0;          /* override dmike-split__input padding — sidebar has own header/body */
@@ -47,6 +48,7 @@
 
 /* Thin scrollbar for sidebar body */
 .sha__sidebar-body::-webkit-scrollbar { width: 5px; }
+
 .sha__sidebar-body::-webkit-scrollbar-thumb {
   background: var(--color-border-secondary);
   border-radius: 3px;
@@ -292,26 +294,26 @@
 
 /* Top-left: Keep Satisfied (yellow) */
 .sha__matrix-cell[data-quad="keep-satisfied"] {
-  background: rgba(234, 179, 8, 0.04);
+  background: rgb(234 179 8 / 4%);
   border-right: var(--border-width) solid var(--color-border-primary);
   border-bottom: var(--border-width) solid var(--color-border-primary);
 }
 
 /* Top-right: Manage Closely (red) */
 .sha__matrix-cell[data-quad="manage-closely"] {
-  background: rgba(239, 68, 68, 0.04);
+  background: rgb(239 68 68 / 4%);
   border-bottom: var(--border-width) solid var(--color-border-primary);
 }
 
 /* Bottom-left: Monitor (green) */
 .sha__matrix-cell[data-quad="monitor"] {
-  background: rgba(34, 197, 94, 0.04);
+  background: rgb(34 197 94 / 4%);
   border-right: var(--border-width) solid var(--color-border-primary);
 }
 
 /* Bottom-right: Keep Informed (blue) */
 .sha__matrix-cell[data-quad="keep-informed"] {
-  background: rgba(59, 130, 246, 0.04);
+  background: rgb(59 130 246 / 4%);
 }
 
 .sha__cell-label {
@@ -375,17 +377,17 @@
 }
 
 .sha__support-badge--supporter {
-  background: rgba(34, 197, 94, 0.12);
+  background: rgb(34 197 94 / 12%);
   color: var(--color-success);
 }
 
 .sha__support-badge--neutral {
-  background: rgba(234, 179, 8, 0.12);
+  background: rgb(234 179 8 / 12%);
   color: var(--color-warning);
 }
 
 .sha__support-badge--critic {
-  background: rgba(239, 68, 68, 0.12);
+  background: rgb(239 68 68 / 12%);
   color: var(--color-error);
 }
 

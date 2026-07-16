@@ -3,16 +3,22 @@
  * Analyze phase: guided hypothesis testing for variance and mean
  * with automatic normality assessment and algorithm routing.
  *
- * Workflow (stepper):
- *   1. Configuration  — category, test type, data, targets, direction, α
- *   2. Normality      — Shapiro-Wilk + Anderson-Darling auto-check
- *   3. Variance Check — (two-sample mean only) F-Test or Levene
- *   4. Main Test      — routed test result with decision
- *   5. Power Analysis — power curve, required n, interactive slider
+ * Migrated to createModule + Alpine CSP. The Model (hypothesis-test-model.js)
+ * holds only the persistent configuration; the full analysis result is derived
+ * transiently in the view from those inputs plus the live worksheet columns,
+ * and exposed to the template as a single plain `result` object (no HTML built
+ * in JS). All statistics stay in the engines (hypothesis-test-engine,
+ * normality-test-engine, math-utils) — nothing is reimplemented here.
  *
- * Data source: column from Worksheet (via shared ColumnPicker) or manual textarea.
+ * ColumnPickers are mounted imperatively (one / two / multi depending on the
+ * test type); they are not pure-template concerns.
+ *
+ * Workflow: configuration → normality → (variance check) → routed main test →
+ * power analysis (non-k) / pairwise post-hoc (k ≥ 3).
  */
 
+import { createModule } from '../../core/template-module.js';
+import { State } from './hypothesis-test-model.js';
 import {
   chiSquareVarianceTest, fTest, leveneTest,
   oneSampleTTest, twoSampleTTest, welchTTest,
@@ -21,12 +27,10 @@ import {
   powerChiSquare, powerFTest, powerOneSampleT, powerTwoSampleT,
   findRequiredN,
 } from '../../engines/hypothesis-test-engine.js';
-
 import { shapiroWilk, andersonDarling, descriptiveStats } from '../../engines/normality-test-engine.js';
 import { tInv, chi2Inv } from '../../engines/math-utils.js';
 import { ColumnPicker, getColumnValues, getColumnName } from '../../ui/column-picker.js';
-import { esc } from '../../core/html-utils.js';
-import { provisionWorksheet, removeProvisionedWorksheet } from '../../core/examples-registry.js';
+import { loadExampleViaWorksheet } from '../../core/examples-registry.js';
 
 /** Mapping: test name → Algorithm Lab ID. */
 const ALGO_LAB_IDS = {
@@ -45,1228 +49,714 @@ const ALGO_LAB_IDS = {
   "Bartlett's Test": 'bartlett-test',
 };
 
-const ALGO_LINK_SVG = '<svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>';
+/** @param {number} v @param {number} [d] @returns {string} */
+function fmt(v, d = 4) { return v != null && isFinite(v) ? v.toFixed(d) : '–'; }
 
-function fmt(v, d = 4) { return v != null && isFinite(v) ? v.toFixed(d) : '\u2013'; }
-
-function algoLink(name, eventBus) {
-  const id = ALGO_LAB_IDS[name];
-  if (!id) return esc(name);
-  return `${esc(name)} <button class="hyptest__algo-link" data-algo-id="${id}" title="Algorithm Lab">${ALGO_LINK_SVG}</button>`;
-}
-
-export default {
-  id: 'hypothesis-test',
-  phase: 'analyze',
-  icon: 'check-circle',
-  i18nKey: 'modules.hypothesis-test',
-  version: '1.0.0',
-
-  _container: null,
-  _context: null,
-  _eventUnsubs: [],
-
-  // State
-  _category: 'variance',  // 'variance' | 'mean'
-  _testType: 'one',       // 'one' | 'two' | 'k'
-  _direction: 'two-sided',
-  _alpha: null,
-  _powerGoal: null,
-  _targetValue: '',
-  _targetType: 'variance', // for variance: 'variance' | 'stddev'
-
-  // Column pickers (ColumnPicker instances)
-  _picker1: null,
-  _picker2: null,
-  _pickerK: null,
-  _colRef1: null,
-  _colRef2: null,
-  _colRefsK: [],
-
-  // Worksheet provisioned by loadExample; tracked so the next example load can
-  // remove the previous one instead of leaving orphans in the data phase.
-  _exampleWorksheetId: null,
-
-  // Runtime analysis results (not persisted fully)
-  _normality: null,
-  _varEquality: null,
-  _algoRoute: null,
-  _result: null,
-
-  help: () => import('./hypothesis-test-help.js'),
-
-  // ─── Lifecycle ──────────────────────────────────────────────
-
-  async init(container, context) {
-    this._container = container;
-    this._context = context;
-
-    const saved = context.stateManager.getModuleState(context.instanceId);
-    if (saved) {
-      this._category = saved.category || 'variance';
-      this._testType = saved.testType || 'one';
-      this._direction = saved.direction || 'two-sided';
-      this._alpha = saved.alpha ?? null;
-      this._powerGoal = saved.powerGoal ?? null;
-      this._targetValue = saved.targetValue || '';
-      this._targetType = saved.targetType || 'variance';
-      this._colRef1 = saved.colRef1 || null;
-      this._colRef2 = saved.colRef2 || null;
-      this._colRefsK = Array.isArray(saved.colRefsK) ? saved.colRefsK : [];
-      if (saved.exampleWorksheetId !== undefined) this._exampleWorksheetId = saved.exampleWorksheetId;
-    }
-
-    const globalConf = (context.stateManager.get('settings.confidenceLevel') ?? 95) / 100;
-    const globalPower = (context.stateManager.get('settings.power') ?? 80) / 100;
-    if (this._alpha == null) this._alpha = +(1 - globalConf).toFixed(4);
-    if (this._powerGoal == null) this._powerGoal = globalPower;
-
-    this._render();
+const mod = createModule({
+  config: {
+    id: 'hypothesis-test',
+    engine: 'alpine',
+    phase: 'analyze',
+    icon: 'check-circle',
+    version: '1.1.0',
+    meta: import.meta,
   },
+  Model: State,
 
-  async destroy() {
-    if (this._picker1) { this._picker1.destroy(); this._picker1 = null; }
-    if (this._picker2) { this._picker2.destroy(); this._picker2 = null; }
-    if (this._pickerK) { this._pickerK.destroy(); this._pickerK = null; }
-    for (const unsub of this._eventUnsubs) unsub();
-    this._eventUnsubs = [];
-    this._container.innerHTML = '';
-  },
-
-  onLanguageChange() { this._render(); },
-  onThemeChange() {},
-
-  getState() {
+  data(module, _t) {
     return {
-      category: this._category,
-      testType: this._testType,
-      direction: this._direction,
-      alpha: this._alpha,
-      powerGoal: this._powerGoal,
-      targetValue: this._targetValue,
-      targetType: this._targetType,
-      colRef1: this._picker1?.value || this._colRef1 || null,
-      colRef2: this._picker2?.value || this._colRef2 || null,
-      colRefsK: this._pickerK?.value || this._colRefsK || [],
-      exampleWorksheetId: this._exampleWorksheetId,
-    };
-  },
-
-  setState(data) {
-    if (!data) return;
-    if (data.category) this._category = data.category;
-    if (data.testType) this._testType = data.testType;
-    if (data.direction) this._direction = data.direction;
-    if (data.alpha != null) this._alpha = data.alpha;
-    if (data.powerGoal != null) this._powerGoal = data.powerGoal;
-    if (data.targetValue != null) this._targetValue = data.targetValue;
-    if (data.targetType) this._targetType = data.targetType;
-    if (data.colRef1 !== undefined) this._colRef1 = data.colRef1;
-    if (data.colRef2 !== undefined) this._colRef2 = data.colRef2;
-    if (data.colRefsK !== undefined) this._colRefsK = Array.isArray(data.colRefsK) ? data.colRefsK : [];
-    if (data.exampleWorksheetId !== undefined) this._exampleWorksheetId = data.exampleWorksheetId;
-    if (this._container) this._render();
-  },
-
-  /**
-   * Load a catalog example. Source-Worksheet pattern: provision the included
-   * worksheet, rewrite `__source__` placeholders in all column refs, then apply.
-   * @param {{ meta: object, data: object }} payload
-   */
-  async loadExample(payload) {
-    if (!payload || !payload.data) return;
-    const t = (k) => this._context.i18n.t(k);
-
-    const hasContent = !!(this._colRef1 || this._colRef2 || (this._colRefsK && this._colRefsK.length));
-    if (hasContent && this._context?.confirmPopout) {
-      const ok = await this._context.confirmPopout(t('moduleHelp.confirmOverwrite'), { danger: true });
-      if (!ok) return;
-    }
-
-    const data = { ...payload.data };
-
-    if (data.sourceWorksheetData) {
-      const wsState = data.sourceWorksheetData;
-      delete data.sourceWorksheetData;
-      if (this._exampleWorksheetId) {
-        removeProvisionedWorksheet(this._context, this._exampleWorksheetId);
-        this._exampleWorksheetId = null;
-      }
-      const ref = provisionWorksheet(this._context, wsState);
-      if (ref) {
-        this._exampleWorksheetId = ref.instanceId;
-        data.exampleWorksheetId = ref.instanceId;
-        const rewrite = (r) => (r && r.instanceId === '__source__') ? { ...r, instanceId: ref.instanceId } : r;
-        if (data.colRef1) data.colRef1 = rewrite(data.colRef1);
-        if (data.colRef2) data.colRef2 = rewrite(data.colRef2);
-        if (Array.isArray(data.colRefsK)) data.colRefsK = data.colRefsK.map(rewrite);
-      }
-    }
-
-    this.setState(data);
-    this._save();
-
-    const lang = this._context.i18n.getLanguage();
-    const title = payload.meta?.title?.[lang] || payload.meta?.title?.en || payload.meta?.id || '';
-    this._context.notify?.(t('moduleHelp.exampleLoaded').replace('{title}', title), 'success');
-  },
-
-  _save() {
-    this._context.stateManager.setModuleState(this._context.instanceId, this.getState());
-  },
-
-  // ─── Column Picker helpers ───────────────────────────────────
-
-  /** Read numeric values from a picker's selected column. */
-  _getPickerValues(picker) {
-    if (!picker?.value) return [];
-    const raw = getColumnValues(this._context.stateManager, picker.value);
-    return raw.filter(v => v != null && typeof v === 'number' && !isNaN(v));
-  },
-
-  // ─── Translation helper ─────────────────────────────────────
-
-  _t(k, v) { return this._context.i18n.t(`modules.hypothesis-test.${k}`, v); },
-
-  // ─── Main Render ────────────────────────────────────────────
-
-  _render() {
-    const t = (k, v) => this._t(k, v);
-    this._normality = null;
-    this._varEquality = null;
-    this._result = null;
-
-    // Destroy old pickers before re-rendering
-    if (this._picker1) { this._picker1.destroy(); this._picker1 = null; }
-    if (this._picker2) { this._picker2.destroy(); this._picker2 = null; }
-    if (this._pickerK) { this._pickerK.destroy(); this._pickerK = null; }
-
-    this._container.innerHTML = `
-      <div class="hyptest dmike-split">
-        <div class="hyptest__input dmike-split__input">
-          ${this._renderConfig(t)}
-        </div>
-        <div class="hyptest__output dmike-split__output">
-          <div class="hyptest__placeholder" data-ref="placeholder">
-            <svg width="64" height="64" fill="none" stroke="currentColor" stroke-width="1" viewBox="0 0 24 24">
-              <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
-            </svg>
-            <p>${t('placeholderText')}</p>
-          </div>
-          <div data-ref="results" style="display:none"></div>
-        </div>
-      </div>
-    `;
-
-    this._initPickers();
-    this._bindConfigEvents(t);
-  },
-
-  // ─── Config Panel (left side) ───────────────────────────────
-
-  _renderConfig(t) {
-    const isMean = this._category === 'mean';
-    const isTwo = this._testType === 'two';
-    const isK = this._testType === 'k';
-
-    // Hypothesis preview
-    const dir = this._direction;
-    const sym0 = dir === 'two-sided' ? '=' : dir === 'greater' ? '\u2264' : '\u2265';
-    const sym1 = dir === 'two-sided' ? '\u2260' : dir === 'greater' ? '>' : '<';
-    let h0, h1;
-    if (isK) {
-      if (isMean) {
-        h0 = `H\u2080: \u03BC\u2081 = \u03BC\u2082 = \u2026 = \u03BC\u2096`;
-        h1 = `H\u2081: ${t('kSampleH1')}`;
-      } else {
-        h0 = `H\u2080: \u03C3\u00B2\u2081 = \u03C3\u00B2\u2082 = \u2026 = \u03C3\u00B2\u2096`;
-        h1 = `H\u2081: ${t('kSampleVarH1')}`;
-      }
-    } else if (!isMean) {
-      h0 = isTwo ? `H\u2080: \u03C3\u00B2\u2081 ${sym0} \u03C3\u00B2\u2082` : `H\u2080: \u03C3\u00B2 ${sym0} \u03C3\u00B2\u2080`;
-      h1 = isTwo ? `H\u2081: \u03C3\u00B2\u2081 ${sym1} \u03C3\u00B2\u2082` : `H\u2081: \u03C3\u00B2 ${sym1} \u03C3\u00B2\u2080`;
-    } else {
-      h0 = isTwo ? `H\u2080: \u03BC\u2081 ${sym0} \u03BC\u2082` : `H\u2080: \u03BC ${sym0} \u03BC\u2080`;
-      h1 = isTwo ? `H\u2081: \u03BC\u2081 ${sym1} \u03BC\u2082` : `H\u2081: \u03BC ${sym1} \u03BC\u2080`;
-    }
-
-    return `
-      <div class="dmike-split__section-title">${t('sectionCategory')}</div>
-      <div class="btn-group hyptest__toggle-row">
-        <button class="btn--segment hyptest__toggle-btn${this._category === 'variance' ? ' btn--active' : ''}" data-cat="variance">\u03C3\u00B2 ${t('catVariance')}</button>
-        <button class="btn--segment hyptest__toggle-btn${this._category === 'mean' ? ' btn--active' : ''}" data-cat="mean">\u03BC ${t('catMean')}</button>
-      </div>
-
-      <div class="dmike-split__section-title">${t('sectionTestType')}</div>
-      <div class="btn-group hyptest__toggle-row">
-        <button class="btn--segment hyptest__toggle-btn${this._testType === 'one' ? ' btn--active' : ''}" data-type="one">${t('oneSample')}</button>
-        <button class="btn--segment hyptest__toggle-btn${this._testType === 'two' ? ' btn--active' : ''}" data-type="two">${t('twoSample')}</button>
-        <button class="btn--segment hyptest__toggle-btn${isK ? ' btn--active' : ''}" data-type="k">${t('kSample')}</button>
-      </div>
-
-      <div class="dmike-split__section-title">${t('sectionData')}</div>
-      ${isK ? `
-        <div class="field-group">
-          <label>${t('kSampleColumns')}</label>
-          <div data-ref="picker-k-wrap"></div>
-        </div>
-      ` : `
-        <div class="field-group">
-          <label>${t('sample1Column')}</label>
-          <div data-ref="picker1-wrap"></div>
-        </div>
-        ${isTwo ? `
-          <div class="field-group">
-            <label>${t('sample2Column')}</label>
-            <div data-ref="picker2-wrap"></div>
-          </div>
-        ` : ''}
-      `}
-
-      ${!isTwo && !isK ? `
-        <div class="dmike-split__section-title">${isMean ? t('targetMean') : t('targetVariance')}</div>
-        ${!isMean ? `
-          <div class="field-row">
-            <div class="hyptest__field field-group field-group--major">
-              <label>${t('inputAs')}</label>
-              <select data-ref="target-type" class="field">
-                <option value="variance" ${this._targetType === 'variance' ? 'selected' : ''}>${t('asVariance')}</option>
-                <option value="stddev" ${this._targetType === 'stddev' ? 'selected' : ''}>${t('asStddev')}</option>
-              </select>
-            </div>
-            <div class="hyptest__field field-group field-group--minor">
-              <label>\u03C3\u00B2\u2080</label>
-              <input type="number" data-ref="target" class="field field--num" value="${esc(String(this._targetValue))}" placeholder="${t('targetVarPh')}">
-            </div>
-          </div>
-        ` : `
-          <div class="field-group">
-            <label>\u03BC\u2080</label>
-            <input type="number" data-ref="target" class="field field--num" value="${esc(String(this._targetValue))}" placeholder="${t('targetMeanPh')}">
-          </div>
-        `}
-      ` : ''}
-
-      <div class="dmike-split__section-title">${t('sectionHypothesis')}</div>
-      <div class="field-row">
-        ${isK ? '' : `
-          <div class="hyptest__field field-group field-group--major">
-            <label>${t('direction')}</label>
-            <select data-ref="direction" class="field">
-              <option value="two-sided" ${this._direction === 'two-sided' ? 'selected' : ''}>\u2260 ${t('twoSided')}</option>
-              <option value="greater" ${this._direction === 'greater' ? 'selected' : ''}>&gt; ${t('greater')}</option>
-              <option value="less" ${this._direction === 'less' ? 'selected' : ''}>&lt; ${t('less')}</option>
-            </select>
-          </div>
-        `}
-        <div class="hyptest__field field-group field-group--minor">
-          <label>\u03B1</label>
-          <input type="number" data-ref="alpha" class="field field--num" min="0.001" max="0.5" value="${this._alpha}">
-        </div>
-        ${isK ? '' : `
-          <div class="hyptest__field field-group field-group--minor">
-            <label>${t('powerGoal')}</label>
-            <input type="number" data-ref="power-goal" class="field field--num" min="0.5" max="0.99" value="${this._powerGoal}">
-          </div>
-        `}
-      </div>
-
-      <div class="hyptest__hypothesis-preview field-row">
-        <div class="hyptest__h-box"><span class="hyptest__h-label">H\u2080</span><span class="hyptest__h-formula">${h0}</span></div>
-        <div class="hyptest__h-box"><span class="hyptest__h-label">H\u2081</span><span class="hyptest__h-formula">${h1}</span></div>
-      </div>
-
-      <div class="hyptest__error" data-ref="error-box"></div>
-    `;
-  },
-
-  /** Create ColumnPicker instances after DOM is ready. */
-  _initPickers() {
-    const wrap1 = this._container.querySelector('[data-ref="picker1-wrap"]');
-    if (wrap1) {
-      this._picker1 = new ColumnPicker(wrap1, this._context, {
-        mode: 'single',
-        types: ['numeric'],
-        minCount: 3,
-        onChange: (ref) => {
-          this._colRef1 = ref;
-          this._save();
-          this._runAnalysis();
-        },
-      });
-      if (this._colRef1) this._picker1.value = this._colRef1;
-    }
-
-    const wrap2 = this._container.querySelector('[data-ref="picker2-wrap"]');
-    if (wrap2) {
-      this._picker2 = new ColumnPicker(wrap2, this._context, {
-        mode: 'single',
-        types: ['numeric'],
-        minCount: 3,
-        onChange: (ref) => {
-          this._colRef2 = ref;
-          this._save();
-          this._runAnalysis();
-        },
-      });
-      if (this._colRef2) this._picker2.value = this._colRef2;
-    }
-
-    const wrapK = this._container.querySelector('[data-ref="picker-k-wrap"]');
-    if (wrapK) {
-      this._pickerK = new ColumnPicker(wrapK, this._context, {
-        mode: 'multi',
-        types: ['numeric'],
-        minCount: 3,
-        onChange: (refs) => {
-          this._colRefsK = refs;
-          this._save();
-          this._runAnalysis();
-        },
-      });
-      if (this._colRefsK?.length) this._pickerK.value = this._colRefsK;
-    }
-  },
-
-  _bindConfigEvents() {
-    const c = this._container;
-
-    // Category toggle
-    c.querySelectorAll('[data-cat]').forEach(btn => {
-      btn.addEventListener('click', () => {
-        this._category = btn.dataset.cat;
-        this._save();
-        this._render();
-      });
-    });
-
-    // Test type toggle
-    c.querySelectorAll('[data-type]').forEach(btn => {
-      btn.addEventListener('click', () => {
-        this._testType = btn.dataset.type;
-        this._save();
-        this._render();
-      });
-    });
-
-    const autoCalc = () => { this._save(); this._runAnalysis(); };
-
-    // Direction — re-renders hypothesis preview, then auto-calcs
-    const dirSel = c.querySelector('[data-ref="direction"]');
-    if (dirSel) dirSel.addEventListener('change', () => { this._direction = dirSel.value; this._save(); this._render(); });
-
-    // Alpha
-    const alphaInp = c.querySelector('[data-ref="alpha"]');
-    if (alphaInp) alphaInp.addEventListener('input', () => { this._alpha = parseFloat(alphaInp.value) || this._alpha; autoCalc(); });
-
-    // Power goal
-    const pgInp = c.querySelector('[data-ref="power-goal"]');
-    if (pgInp) pgInp.addEventListener('input', () => { this._powerGoal = Math.min(0.99, Math.max(0.5, parseFloat(pgInp.value) || this._powerGoal)); autoCalc(); });
-
-    // Target type
-    const ttSel = c.querySelector('[data-ref="target-type"]');
-    if (ttSel) ttSel.addEventListener('change', () => { this._targetType = ttSel.value; autoCalc(); });
-
-    // Target value
-    const tgt = c.querySelector('[data-ref="target"]');
-    if (tgt) tgt.addEventListener('input', () => { this._targetValue = tgt.value; autoCalc(); });
-
-    // Auto-calculate if inputs are already present (e.g. restored state)
-    this._runAnalysis();
-  },
-
-  // ─── Data Retrieval ─────────────────────────────────────────
-
-  _getData1() {
-    return this._getPickerValues(this._picker1);
-  },
-
-  _getData2() {
-    return this._getPickerValues(this._picker2);
-  },
-
-  /** Read numeric arrays for the multi-column picker (k-sample). */
-  _getDataK() {
-    const refs = this._pickerK?.value || [];
-    return refs.map(ref => {
-      const raw = getColumnValues(this._context.stateManager, ref);
-      return raw.filter(v => v != null && typeof v === 'number' && !isNaN(v));
-    });
-  },
-
-  /** Display name for a column ref (label for k-sample groups). */
-  _refName(ref) {
-    return getColumnName(this._context.stateManager, ref);
-  },
-
-  // ─── Analysis ───────────────────────────────────────────────
-
-  _hideResults() {
-    const resEl = this._container.querySelector('[data-ref="results"]');
-    const phEl = this._container.querySelector('[data-ref="placeholder"]');
-    if (resEl) resEl.style.display = 'none';
-    if (phEl) phEl.style.display = '';
-  },
-
-  _runAnalysis() {
-    const errBox = this._container.querySelector('[data-ref="error-box"]');
-    errBox.textContent = '';
-    errBox.style.display = 'none';
-
-    if (this._testType === 'k') {
-      this._runAnalysisK();
-      return;
-    }
-
-    const d1 = this._getData1();
-    if (d1.length < 3) { this._hideResults(); return; }
-
-    let d2 = null;
-    if (this._testType === 'two') {
-      d2 = this._getData2();
-      if (d2.length < 3) { this._hideResults(); return; }
-    }
-
-    let target = null;
-    if (this._testType === 'one') {
-      const tv = parseFloat(this._targetValue);
-      if (this._category === 'variance') {
-        if (isNaN(tv) || tv <= 0) { this._hideResults(); return; }
-        target = this._targetType === 'stddev' ? tv * tv : tv;
-      } else {
-        if (isNaN(tv)) { this._hideResults(); return; }
-        target = tv;
-      }
-    }
-
-    // Step 1: Normality
-    const alpha = this._alpha;
-    const sw1 = shapiroWilk(d1);
-    const ad1 = andersonDarling(d1);
-    const n1Normal = sw1.pValue >= alpha && ad1.pValue >= alpha;
-
-    let sw2 = null, ad2 = null, n2Normal = true;
-    if (d2) {
-      sw2 = shapiroWilk(d2);
-      ad2 = andersonDarling(d2);
-      n2Normal = sw2.pValue >= alpha && ad2.pValue >= alpha;
-    }
-    const allNormal = n1Normal && n2Normal;
-
-    this._normality = { sw1, ad1, n1Normal, sw2, ad2, n2Normal, allNormal };
-
-    // Determine algorithm route
-    let algo;
-    if (this._category === 'variance') {
-      if (this._testType === 'one') {
-        algo = n1Normal
-          ? { id: 'chi2', name: 'Chi-Square Variance Test', reason: 'normalRouteChiSq' }
-          : { id: 'chi2', name: 'Chi-Square Variance Test', reason: 'nonNormalWarnChiSq' };
-      } else {
-        algo = allNormal
-          ? { id: 'ftest', name: 'F-Test', reason: 'normalRouteFTest' }
-          : { id: 'levene', name: 'Levene Test (Brown-Forsythe)', reason: 'nonNormalRouteLevene' };
-      }
-    } else {
-      if (this._testType === 'one') {
-        algo = n1Normal
-          ? { id: 'ttest1', name: 'One-Sample t-Test', reason: 'normalRouteTTest1' }
-          : { id: 'wilcoxon', name: 'Wilcoxon Signed-Rank Test', reason: 'nonNormalRouteWilcoxon' };
-      } else {
-        // Need variance check first
-        algo = { id: 'pending', name: '', reason: 'pendingVarCheck' };
-      }
-    }
-
-    // For two-sample mean: variance equality check
-    if (this._category === 'mean' && this._testType === 'two') {
-      let veResult;
-      if (allNormal) {
-        veResult = fTest(d1, d2, 'two-sided', alpha);
-      } else {
-        veResult = leveneTest(d1, d2, alpha);
-      }
-      this._varEquality = { result: veResult, varsEqual: !veResult.reject };
-
-      if (allNormal && !veResult.reject) {
-        algo = { id: 'ttest2p', name: 'Two-Sample t-Test (pooled)', reason: 'normalEqualVarRoute' };
-      } else if (allNormal && veResult.reject) {
-        algo = { id: 'welch', name: 'Welch t-Test', reason: 'normalUnequalVarRoute' };
-      } else {
-        algo = { id: 'mannwhitney', name: 'Mann-Whitney U Test', reason: 'nonNormalRouteMannWhitney' };
-      }
-    }
-
-    this._algoRoute = algo;
-
-    // Run main test
-    let result;
-    const dir = this._direction;
-    if (algo.id === 'chi2') result = chiSquareVarianceTest(d1, target, dir, alpha);
-    else if (algo.id === 'ftest') result = fTest(d1, d2, dir, alpha);
-    else if (algo.id === 'levene') result = leveneTest(d1, d2, alpha);
-    else if (algo.id === 'ttest1') result = oneSampleTTest(d1, target, dir, alpha);
-    else if (algo.id === 'wilcoxon') result = wilcoxonSignedRank(d1, target, dir, alpha);
-    else if (algo.id === 'ttest2p') result = twoSampleTTest(d1, d2, dir, alpha);
-    else if (algo.id === 'welch') result = welchTTest(d1, d2, dir, alpha);
-    else if (algo.id === 'mannwhitney') result = mannWhitneyU(d1, d2, dir, alpha);
-
-    this._result = result;
-
-    // Render all results
-    this._renderAllResults(d1, d2, target);
-  },
-
-  // ─── Render Results ─────────────────────────────────────────
-
-  _renderAllResults(d1, d2, target) {
-    const t = (k, v) => this._t(k, v);
-    const resEl = this._container.querySelector('[data-ref="results"]');
-    const phEl = this._container.querySelector('[data-ref="placeholder"]');
-    phEl.style.display = 'none';
-    resEl.style.display = 'block';
-
-    const alpha = this._alpha;
-    const norm = this._normality;
-    const r = this._result;
-    const algo = this._algoRoute;
-
-    let html = '';
-
-    // ── Section 1: Normality ──
-    html += `<div class="dmike-split__output-section">${t('sectionNormality')}</div>`;
-    html += this._renderNormCard('S1', d1, norm.sw1, norm.ad1, norm.n1Normal, alpha);
-    if (d2) html += this._renderNormCard('S2', d2, norm.sw2, norm.ad2, norm.n2Normal, alpha);
-
-    // Routing
-    html += `<div class="hyptest__route-card">
-      <div class="hyptest__route-title">${t('algoRouting')}</div>
-      <div class="hyptest__route-trail">
-        <span class="hyptest__trail-dot ${norm.allNormal ? 'hyptest__trail-dot--pass' : 'hyptest__trail-dot--fail'}"></span>
-        <span>${t('normalLabel')}: <strong>${norm.allNormal ? t('yes') : t('no')}</strong></span>
-        ${this._varEquality ? `
-          <span class="hyptest__trail-line"></span>
-          <span class="hyptest__trail-dot ${this._varEquality.varsEqual ? 'hyptest__trail-dot--pass' : 'hyptest__trail-dot--fail'}"></span>
-          <span>${t('varEqualLabel')}: <strong>${this._varEquality.varsEqual ? t('yes') : t('no')}</strong></span>
-        ` : ''}
-        <span class="hyptest__trail-line"></span>
-        <span class="hyptest__trail-dot hyptest__trail-dot--info"></span>
-        <span>&rarr; <strong>${algoLink(algo.name, this._context.eventBus)}</strong></span>
-      </div>
-    </div>`;
-
-    // ── Section 2: Variance Equality (if applicable) ──
-    if (this._varEquality) {
-      const ve = this._varEquality.result;
-      html += `<div class="dmike-split__output-section">${t('sectionVarEquality')}</div>`;
-      html += `<div class="hyptest__result-card">
-        <div class="hyptest__metrics">
-          <div class="hyptest__metric"><div class="hyptest__metric-label">${t('testMethod')}</div><div class="hyptest__metric-value hyptest__metric-value--sm">${algoLink(ve.testName, this._context.eventBus)}</div></div>
-          <div class="hyptest__metric"><div class="hyptest__metric-label">${t('statistic')}</div><div class="hyptest__metric-value">${fmt(ve.statistic)}</div></div>
-          <div class="hyptest__metric"><div class="hyptest__metric-label">p</div><div class="hyptest__metric-value ${ve.pValue < alpha ? 'hyptest__metric-value--danger' : 'hyptest__metric-value--success'}">${fmt(ve.pValue)}</div></div>
-          <div class="hyptest__metric"><div class="hyptest__metric-label">s\u00B2\u2081</div><div class="hyptest__metric-value">${fmt(ve.variance1)}</div></div>
-          <div class="hyptest__metric"><div class="hyptest__metric-label">s\u00B2\u2082</div><div class="hyptest__metric-value">${fmt(ve.variance2)}</div></div>
-        </div>
-        <div class="hyptest__decision ${this._varEquality.varsEqual ? 'hyptest__decision--accept' : 'hyptest__decision--reject'}">
-          <strong>${this._varEquality.varsEqual ? t('varEqual') : t('varUnequal')}</strong>
-        </div>
-      </div>`;
-    }
-
-    // ── Section 3: Main Test Result ──
-    html += `<div class="dmike-split__output-section">${t('sectionResult')}</div>`;
-    html += this._renderMainResult(r, algo, alpha, d1, d2, target);
-
-    // ── Section 4: Power Analysis ──
-    html += `<div class="dmike-split__output-section">${t('sectionPower')}</div>`;
-    html += this._renderPower(d1, d2, target, alpha);
-
-    resEl.innerHTML = html;
-
-    // Bind algo links
-    resEl.querySelectorAll('.hyptest__algo-link').forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        e.preventDefault();
-        this._context.eventBus.emit('lab:navigate', { algoId: btn.dataset.algoId, tab: 'docs' });
-      });
-    });
-
-    // Add tooltips to metric tiles
-    this._addMetricTooltips(resEl);
-  },
-
-  _renderNormCard(label, data, sw, ad, isNormal, alpha) {
-    const t = (k, v) => this._t(k, v);
-    const badge = isNormal ? 'hyptest__badge--pass' : 'hyptest__badge--fail';
-    const badgeText = isNormal ? t('normal') : t('notNormal');
-
-    const _normDS = descriptiveStats(data);
-    const mean = _normDS.mean;
-    const sd = _normDS.stdDev;
-    const variance = _normDS.variance;
-    const n = data.length;
-
-    // Confidence intervals at 1 \u2212 \u03B1 level
-    const ciMean = this._ciMean(mean, sd, n, alpha);
-    const ciVar = this._ciVariance(variance, n, alpha);
-    const ciSd = ciVar ? [Math.sqrt(ciVar[0]), Math.sqrt(ciVar[1])] : null;
-    const ciFmt = (ci) => ci ? `[${fmt(ci[0])}, ${fmt(ci[1])}]` : '';
-
-    return `<div class="hyptest__result-card">
-      <div class="hyptest__card-header">${esc(label)} <span class="hyptest__badge ${badge}">${badgeText}</span></div>
-      <table>
-        <thead><tr><th>Test</th><th>${t('statistic')}</th><th>p</th><th>${t('decision')}</th></tr></thead>
-        <tbody>
-          <tr>
-            <td>${algoLink('Shapiro-Wilk', this._context.eventBus)}</td>
-            <td>${fmt(sw.statistic)}</td>
-            <td class="${sw.pValue < alpha ? 'hyptest__text-danger' : 'hyptest__text-success'}">${fmt(sw.pValue)}</td>
-            <td>${sw.pValue < alpha ? '\u2717 ' + t('reject') : '\u2713 ' + t('notReject')}</td>
-          </tr>
-          <tr>
-            <td>${algoLink('Anderson-Darling', this._context.eventBus)}</td>
-            <td>${fmt(ad.statistic)}</td>
-            <td class="${ad.pValue < alpha ? 'hyptest__text-danger' : 'hyptest__text-success'}">${fmt(ad.pValue)}</td>
-            <td>${ad.pValue < alpha ? '\u2717 ' + t('reject') : '\u2713 ' + t('notReject')}</td>
-          </tr>
-        </tbody>
-      </table>
-      <div class="hyptest__metrics hyptest__metrics--sm">
-        <div class="hyptest__metric"><div class="hyptest__metric-label">n</div><div class="hyptest__metric-value">${n}</div></div>
-        <div class="hyptest__metric"><div class="hyptest__metric-label">x\u0304</div><div class="hyptest__metric-value">${fmt(mean)}</div>${ciMean ? `<div class="hyptest__metric-ci">${ciFmt(ciMean)}</div>` : ''}</div>
-        <div class="hyptest__metric"><div class="hyptest__metric-label">s</div><div class="hyptest__metric-value">${fmt(sd)}</div>${ciSd ? `<div class="hyptest__metric-ci">${ciFmt(ciSd)}</div>` : ''}</div>
-        <div class="hyptest__metric"><div class="hyptest__metric-label">s\u00B2</div><div class="hyptest__metric-value">${fmt(variance)}</div>${ciVar ? `<div class="hyptest__metric-ci">${ciFmt(ciVar)}</div>` : ''}</div>
-      </div>
-    </div>`;
-  },
-
-  /** (1 \u2212 \u03B1) CI for the mean using t-distribution. */
-  _ciMean(mean, sd, n, alpha) {
-    if (n < 2 || !isFinite(sd) || sd <= 0) return null;
-    const tCrit = tInv(1 - alpha / 2, n - 1);
-    const se = sd / Math.sqrt(n);
-    return [mean - tCrit * se, mean + tCrit * se];
-  },
-
-  /** (1 \u2212 \u03B1) CI for the variance using \u03C7\u00B2 distribution. */
-  _ciVariance(variance, n, alpha) {
-    if (n < 2 || !isFinite(variance) || variance <= 0) return null;
-    const lo = (n - 1) * variance / chi2Inv(1 - alpha / 2, n - 1);
-    const hi = (n - 1) * variance / chi2Inv(alpha / 2, n - 1);
-    return [lo, hi];
-  },
-
-  /** Lookup table: metric label \u2192 tooltip text, applied via post-render pass. */
-  _metricTooltips() {
-    const t = (k) => this._t(k);
-    const map = {
-      [t('testMethod')]: t('tipTestMethod'),
-      [t('statistic')]: t('tipStatistic'),
-      [t('currentPower')]: t('tipCurrentPower'),
-      [t('powerGoal')]: t('tipPowerGoal'),
-      [t('requiredN')]: t('tipRequiredN'),
-      [t('varianceRatio')]: t('tipVarianceRatio'),
-      'p': t('tipPValue'),
-      'df': t('tipDf'),
-      'n': t('tipN'),
-      'N': t('tipBigN'),
-      'k': t('tipK'),
-      'x\u0304': t('tipMean'),
-      'x\u0304\u2081': t('tipMean1'),
-      'x\u0304\u2082': t('tipMean2'),
-      's': t('tipStdDev'),
-      's\u00B2': t('tipVariance'),
-      's\u00B2\u2081': t('tipVariance1'),
-      's\u00B2\u2082': t('tipVariance2'),
-      's\u00B2\u209A': t('tipPooledVar'),
-      '\u03B1': t('tipAlpha'),
-      "Cohen's d": t('tipCohensD'),
-    };
-    // CI label is dynamic ("95% KI" / "95% CI") \u2192 match by suffix
-    return map;
-  },
-
-  /** Walk all .hyptest__metric tiles and add a title attribute when a tooltip is known. */
-  _addMetricTooltips(root) {
-    const tips = this._metricTooltips();
-    const ciSuffix = this._t('tipConfidenceInterval');
-    root.querySelectorAll('.hyptest__metric').forEach(m => {
-      const labelEl = m.querySelector('.hyptest__metric-label');
-      if (!labelEl) return;
-      const label = labelEl.textContent.trim();
-      if (label.endsWith('KI') || label.endsWith('CI')) {
-        m.title = ciSuffix;
-        return;
-      }
-      if (tips[label]) m.title = tips[label];
-    });
-  },
-
-  _renderMainResult(r, algo, alpha, d1, d2, target) {
-    const t = (k, v) => this._t(k, v);
-    const dir = this._direction;
-    const sym0 = dir === 'two-sided' ? '=' : dir === 'greater' ? '\u2264' : '\u2265';
-    const sym1 = dir === 'two-sided' ? '\u2260' : dir === 'greater' ? '>' : '<';
-
-    let h0, h1;
-    if (this._category === 'variance') {
-      if (this._testType === 'one') { h0 = `\u03C3\u00B2 ${sym0} ${fmt(target)}`; h1 = `\u03C3\u00B2 ${sym1} ${fmt(target)}`; }
-      else { h0 = `\u03C3\u00B2\u2081 ${sym0} \u03C3\u00B2\u2082`; h1 = `\u03C3\u00B2\u2081 ${sym1} \u03C3\u00B2\u2082`; }
-    } else {
-      if (this._testType === 'one') { h0 = `\u03BC ${sym0} ${fmt(target)}`; h1 = `\u03BC ${sym1} ${fmt(target)}`; }
-      else { h0 = `\u03BC\u2081 ${sym0} \u03BC\u2082`; h1 = `\u03BC\u2081 ${sym1} \u03BC\u2082`; }
-    }
-
-    let metricsHTML = `
-      <div class="hyptest__metric"><div class="hyptest__metric-label">${t('testMethod')}</div><div class="hyptest__metric-value hyptest__metric-value--sm">${algoLink(r.testName, this._context.eventBus)}</div></div>
-      <div class="hyptest__metric"><div class="hyptest__metric-label">${t('statistic')}</div><div class="hyptest__metric-value">${fmt(r.statistic)}</div></div>
-      <div class="hyptest__metric"><div class="hyptest__metric-label">p</div><div class="hyptest__metric-value ${r.pValue < alpha ? 'hyptest__metric-value--danger' : 'hyptest__metric-value--success'}">${fmt(r.pValue)}</div></div>`;
-
-    if (r.df != null) metricsHTML += `<div class="hyptest__metric"><div class="hyptest__metric-label">df</div><div class="hyptest__metric-value">${typeof r.df === 'number' && r.df % 1 ? fmt(r.df, 1) : r.df}</div></div>`;
-    if (r.ci) metricsHTML += `<div class="hyptest__metric"><div class="hyptest__metric-label">${Math.round((1 - alpha) * 100)}% KI</div><div class="hyptest__metric-value hyptest__metric-value--sm">[${fmt(r.ci[0])}, ${fmt(r.ci[1])}]</div></div>`;
-    if (r.mean != null) metricsHTML += `<div class="hyptest__metric"><div class="hyptest__metric-label">x\u0304</div><div class="hyptest__metric-value">${fmt(r.mean)}</div></div>`;
-    if (r.mean1 != null) metricsHTML += `<div class="hyptest__metric"><div class="hyptest__metric-label">x\u0304\u2081</div><div class="hyptest__metric-value">${fmt(r.mean1)}</div></div><div class="hyptest__metric"><div class="hyptest__metric-label">x\u0304\u2082</div><div class="hyptest__metric-value">${fmt(r.mean2)}</div></div>`;
-    if (r.sampleVariance != null) metricsHTML += `<div class="hyptest__metric"><div class="hyptest__metric-label">s\u00B2</div><div class="hyptest__metric-value">${fmt(r.sampleVariance)}</div></div>`;
-    if (r.variance1 != null && !r.pooledVariance) metricsHTML += `<div class="hyptest__metric"><div class="hyptest__metric-label">s\u00B2\u2081</div><div class="hyptest__metric-value">${fmt(r.variance1)}</div></div><div class="hyptest__metric"><div class="hyptest__metric-label">s\u00B2\u2082</div><div class="hyptest__metric-value">${fmt(r.variance2)}</div></div>`;
-
-    const h0Class = r.reject ? 'hyptest__h-box--rejected' : 'hyptest__h-box--accepted';
-    const h1Class = r.reject ? 'hyptest__h-box--accepted' : 'hyptest__h-box--rejected';
-    const h0Tip = r.reject
-      ? `${t('h0Rejected')}: p (${fmt(r.pValue)}) < \u03B1 (${alpha})`
-      : `${t('h0NotRejected')}: p (${fmt(r.pValue)}) \u2265 \u03B1 (${alpha})`;
-    const h1Tip = r.reject
-      ? `${t('significant')}: ${t('h0Rejected')}`
-      : `${t('notSignificant')}: ${t('h0NotRejected')}`;
-
-    return `<div class="hyptest__result-card">
-      <div class="hyptest__hypothesis-preview hyptest__hypothesis-preview--sm field-row">
-        <div class="hyptest__h-box ${h0Class}" title="${esc(h0Tip)}"><span class="hyptest__h-label">H\u2080</span><span class="hyptest__h-formula">${h0}</span></div>
-        <div class="hyptest__h-box ${h1Class}" title="${esc(h1Tip)}"><span class="hyptest__h-label">H\u2081</span><span class="hyptest__h-formula">${h1}</span></div>
-      </div>
-      <div class="hyptest__metrics">${metricsHTML}</div>
-    </div>`;
-  },
-
-  _renderPower(d1, d2, target, alpha) {
-    const t = (k, v) => this._t(k, v);
-    const dir = this._direction;
-    const n1 = d1.length;
-
-    let curPow, curEff, effLabel, nForGoal;
-    const goal = this._powerGoal;
-
-    const _ds = (a) => descriptiveStats(a);
-    const mean = (a) => _ds(a).mean;
-    const vari = (a) => _ds(a).variance;
-    const sd = (a) => _ds(a).stdDev;
-
-    if (this._category === 'variance') {
-      if (this._testType === 'one') {
-        const s2 = vari(d1);
-        curEff = s2 / target;
-        curPow = powerChiSquare(n1, target, s2, alpha, dir);
-        effLabel = t('varianceRatio');
-        nForGoal = findRequiredN(goal, n => powerChiSquare(n, target, s2, alpha, dir));
-      } else {
-        const s1 = vari(d1), s2 = vari(d2);
-        curEff = s1 / s2;
-        curPow = powerFTest(n1, d2.length, curEff, alpha, dir);
-        effLabel = t('varianceRatio');
-        nForGoal = findRequiredN(goal, n => powerFTest(n, n, curEff, alpha, dir));
-      }
-    } else {
-      const sigma = sd(d1);
-      if (this._testType === 'one') {
-        const delta = Math.abs(mean(d1) - target);
-        curEff = sigma > 0 ? delta / sigma : 0;
-        curPow = powerOneSampleT(n1, delta, sigma, alpha, dir);
-        effLabel = "Cohen's d";
-        nForGoal = findRequiredN(goal, n => powerOneSampleT(n, delta, sigma, alpha, dir));
-      } else {
-        const delta = Math.abs(mean(d1) - mean(d2));
-        const sp = Math.sqrt(((d1.length - 1) * vari(d1) + (d2.length - 1) * vari(d2)) / (d1.length + d2.length - 2));
-        curEff = sp > 0 ? delta / sp : 0;
-        curPow = powerTwoSampleT(n1, d2.length, delta, sp, alpha, dir);
-        effLabel = "Cohen's d";
-        nForGoal = findRequiredN(goal, n => powerTwoSampleT(n, n, delta, sp, alpha, dir));
-      }
-    }
-
-    const goalPct = (goal * 100).toFixed(0);
-    const goalReached = curPow >= goal;
-    const powClass = goalReached ? 'hyptest__metric-value--success' : 'hyptest__metric-value--warning';
-    const goalBoxClass = goalReached ? 'hyptest__decision--accept' : 'hyptest__decision--warn';
-
-    return `<div class="hyptest__result-card">
-      <div class="hyptest__decision ${goalBoxClass}">
-        <strong>${t('powerGoal')}: ${goalPct}%</strong>
-        <p>${t('requiredN')}${d2 ? ' (' + t('perGroup') + ')' : ''}: ${nForGoal >= 5000 ? '> 5000' : nForGoal}
-         — ${goalReached ? '\u2713 ' + t('achieved') : '\u2717 ' + t('notAchieved')}</p>
-      </div>
-      <div class="hyptest__metrics">
-        <div class="hyptest__metric"><div class="hyptest__metric-label">${t('currentPower')}</div><div class="hyptest__metric-value ${powClass}">${(curPow * 100).toFixed(1)}%</div></div>
-        <div class="hyptest__metric"><div class="hyptest__metric-label">n</div><div class="hyptest__metric-value">${n1}${d2 ? ' / ' + d2.length : ''}</div></div>
-        <div class="hyptest__metric"><div class="hyptest__metric-label">${effLabel}</div><div class="hyptest__metric-value">${fmt(curEff, 3)}</div></div>
-        <div class="hyptest__metric"><div class="hyptest__metric-label">\u03B1</div><div class="hyptest__metric-value">${alpha}</div></div>
-      </div>
-    </div>`;
-  },
-
-  // ─── k-Sample Analysis ──────────────────────────────────────
-
-  _runAnalysisK() {
-    const refs = this._pickerK?.value || [];
-    const groups = this._getDataK();
-
-    if (groups.length < 2 || groups.some(g => g.length < 3)) {
-      this._hideResults();
-      return;
-    }
-
-    const alpha = this._alpha;
-    const isVariance = this._category === 'variance';
-
-    // Normality on each group
-    const sws = groups.map(g => shapiroWilk(g));
-    const ads = groups.map(g => andersonDarling(g));
-    const groupNormal = groups.map((_, i) => sws[i].pValue >= alpha && ads[i].pValue >= alpha);
-    const allNormal = groupNormal.every(Boolean);
-
-    let algo, result, ve = null;
-
-    if (isVariance) {
-      // k-sample variance test: Bartlett (normal) or Levene-k (robust)
-      if (allNormal) {
-        algo = { id: 'bartlett', name: "Bartlett's Test", reason: 'kSampleNormalRouteBartlett' };
-        result = bartlettTest(groups, alpha);
-      } else {
-        algo = { id: 'leveneK', name: 'Levene Test (Brown-Forsythe)', reason: 'kSampleNonNormalRouteLevene' };
-        result = leveneTestK(groups, alpha);
-      }
-    } else {
-      // k-sample mean: ANOVA (normal) or Kruskal-Wallis (non-normal)
-      // Levene-k is run informationally to flag the equal-variance assumption
-      const lev = leveneTestK(groups, alpha);
-      ve = { result: lev, varsEqual: !lev.reject };
-
-      if (allNormal) {
-        algo = { id: 'anova', name: 'One-Way ANOVA', reason: 'kSampleNormalRouteANOVA' };
-        result = oneWayANOVA(groups, alpha);
-      } else {
-        algo = { id: 'kruskalwallis', name: 'Kruskal-Wallis Test', reason: 'kSampleNonNormalRouteKW' };
-        result = kruskalWallis(groups, alpha);
-      }
-    }
-
-    this._normality = { sws, ads, groupNormal, allNormal };
-    this._varEquality = ve;
-    this._algoRoute = algo;
-    this._result = result;
-
-    // Post-hoc pairwise comparisons + compact letter display (only meaningful for k ≥ 3)
-    this._pairwise = groups.length >= 3
-      ? this._computePairwise(groups, alpha, isVariance, allNormal)
-      : null;
-
-    this._renderAllResultsK(refs, groups);
-  },
-
-  // ─── Pairwise post-hoc ──────────────────────────────────────
-
-  /**
-   * Run pairwise tests using the same family as the global test, with
-   * Bonferroni correction (p_adj = min(1, p × m), m = k(k−1)/2).
-   * Returns { comparisons: [{i,j,p,pAdj,equal}], letters: string[], m, methodName }
-   */
-  _computePairwise(groups, alpha, isVariance, isNormal) {
-    const k = groups.length;
-    const m = k * (k - 1) / 2;
-    const useWelch = !isVariance && isNormal && this._varEquality && !this._varEquality.varsEqual;
-
-    const methodName = isVariance
-      ? (isNormal ? 'F-Test' : 'Levene Test (Brown-Forsythe)')
-      : (isNormal ? (useWelch ? 'Welch t-Test' : 'Two-Sample t-Test (pooled)') : 'Mann-Whitney U Test');
-
-    const comparisons = [];
-    for (let i = 0; i < k; i++) {
-      for (let j = i + 1; j < k; j++) {
-        let r;
+      // ── Transient view state (not persisted) ────────────────────
+      result: null,
+      _picker1: null,
+      _picker2: null,
+      _pickerK: null,
+      _unsubs: [],
+
+      fmt,
+
+      // ── Hypothesis preview (input panel) ───────────────────────
+
+      _sym0() {
+        const d = this.model.direction;
+        return d === 'two-sided' ? '=' : d === 'greater' ? '≤' : '≥';
+      },
+      _sym1() {
+        const d = this.model.direction;
+        return d === 'two-sided' ? '≠' : d === 'greater' ? '>' : '<';
+      },
+
+      previewH0() {
+        const isMean = this.model.category === 'mean';
+        const isTwo = this.model.testType === 'two';
+        const isK = this.model.testType === 'k';
+        const s0 = this._sym0();
+        if (isK) {
+          return isMean
+            ? 'H₀: μ₁ = μ₂ = … = μₖ'
+            : 'H₀: σ²₁ = σ²₂ = … = σ²ₖ';
+        }
+        if (!isMean) {
+          return isTwo
+            ? `H₀: σ²₁ ${s0} σ²₂`
+            : `H₀: σ² ${s0} σ²₀`;
+        }
+        return isTwo
+          ? `H₀: μ₁ ${s0} μ₂`
+          : `H₀: μ ${s0} μ₀`;
+      },
+
+      previewH1() {
+        const isMean = this.model.category === 'mean';
+        const isTwo = this.model.testType === 'two';
+        const isK = this.model.testType === 'k';
+        const s1 = this._sym1();
+        if (isK) {
+          return isMean ? `H₁: ${_t('kSampleH1')}` : `H₁: ${_t('kSampleVarH1')}`;
+        }
+        if (!isMean) {
+          return isTwo
+            ? `H₁: σ²₁ ${s1} σ²₂`
+            : `H₁: σ² ${s1} σ²₀`;
+        }
+        return isTwo
+          ? `H₁: μ₁ ${s1} μ₂`
+          : `H₁: μ ${s1} μ₀`;
+      },
+
+      // ── Input handlers ─────────────────────────────────────────
+
+      setCategory(cat) {
+        this.model.category = cat;
+        this.$nextTick(() => { this._remountPickers(); this.runAnalysis(); });
+      },
+      setTestType(type) {
+        this.model.testType = type;
+        this.$nextTick(() => { this._remountPickers(); this.runAnalysis(); });
+      },
+      onAlphaInput(event) {
+        const v = parseFloat(event.target.value);
+        if (!isNaN(v)) this.model.alpha = v;
+        this.runAnalysis();
+      },
+      onPowerGoalInput(event) {
+        this.model.setPowerGoal(event.target.value);
+        this.runAnalysis();
+      },
+
+      // ── Algorithm Lab link ─────────────────────────────────────
+
+      algoId: (name) => ALGO_LAB_IDS[name] || '',
+      algoNavigate(algoId, event) {
+        event?.preventDefault();
+        event?.stopPropagation();
+        if (algoId && module._context?.eventBus) {
+          module._context.eventBus.emit('lab:navigate', { algoId, tab: 'docs' });
+        }
+      },
+
+      // ── Data retrieval (live worksheet) ────────────────────────
+
+      _pickerValues(picker) {
+        if (!picker?.value) return [];
+        const raw = getColumnValues(module._context.stateManager, picker.value);
+        return raw.filter(v => v != null && typeof v === 'number' && !isNaN(v));
+      },
+      _valuesForRef(ref) {
+        const raw = getColumnValues(module._context.stateManager, ref);
+        return raw.filter(v => v != null && typeof v === 'number' && !isNaN(v));
+      },
+      _refName(ref) {
+        return getColumnName(module._context.stateManager, ref);
+      },
+
+      // ── CI helpers (thin wrappers over math-utils) ─────────────
+
+      _ciMean(mean, sd, n, alpha) {
+        if (n < 2 || !isFinite(sd) || sd <= 0) return null;
+        const tCrit = tInv(1 - alpha / 2, n - 1);
+        const se = sd / Math.sqrt(n);
+        return [mean - tCrit * se, mean + tCrit * se];
+      },
+      _ciVariance(variance, n, alpha) {
+        if (n < 2 || !isFinite(variance) || variance <= 0) return null;
+        const lo = (n - 1) * variance / chi2Inv(1 - alpha / 2, n - 1);
+        const hi = (n - 1) * variance / chi2Inv(alpha / 2, n - 1);
+        return [lo, hi];
+      },
+
+      // ── Tooltips (declarative :title; matches legacy _metricTooltips) ──
+
+      _tip(label) {
+        const ci = _t('tipConfidenceInterval');
+        if (label.endsWith('KI') || label.endsWith('CI')) return ci;
+        const map = {
+          [_t('testMethod')]: _t('tipTestMethod'),
+          [_t('statistic')]: _t('tipStatistic'),
+          [_t('currentPower')]: _t('tipCurrentPower'),
+          [_t('powerGoal')]: _t('tipPowerGoal'),
+          [_t('requiredN')]: _t('tipRequiredN'),
+          [_t('varianceRatio')]: _t('tipVarianceRatio'),
+          'p': _t('tipPValue'),
+          'df': _t('tipDf'),
+          'n': _t('tipN'),
+          'N': _t('tipBigN'),
+          'k': _t('tipK'),
+          'x̄': _t('tipMean'),
+          'x̄₁': _t('tipMean1'),
+          'x̄₂': _t('tipMean2'),
+          's': _t('tipStdDev'),
+          's²': _t('tipVariance'),
+          's²₁': _t('tipVariance1'),
+          's²₂': _t('tipVariance2'),
+          's²ₚ': _t('tipPooledVar'),
+          'α': _t('tipAlpha'),
+          "Cohen's d": _t('tipCohensD'),
+        };
+        return map[label] || '';
+      },
+
+      // ── Normality card builder ─────────────────────────────────
+
+      _normCard(label, data, sw, ad, isNormal, alpha) {
+        const ds = descriptiveStats(data);
+        const { mean, stdDev: sd, variance } = ds;
+        const n = data.length;
+        const ciMean = this._ciMean(mean, sd, n, alpha);
+        const ciVar = this._ciVariance(variance, n, alpha);
+        const ciSd = ciVar ? [Math.sqrt(ciVar[0]), Math.sqrt(ciVar[1])] : null;
+        const ciFmt = (ci) => ci ? `[${fmt(ci[0])}, ${fmt(ci[1])}]` : '';
+        const decisionGlyph = (p) => p < alpha ? `✗ ${  _t('reject')}` : `✓ ${  _t('notReject')}`;
+        const pCls = (p) => p < alpha ? 'hyptest__text-danger' : 'hyptest__text-success';
+
+        return {
+          label: String(label),
+          badgeClass: isNormal ? 'hyptest__badge--pass' : 'hyptest__badge--fail',
+          badgeText: isNormal ? _t('normal') : _t('notNormal'),
+          rows: [
+            { name: 'Shapiro-Wilk', algoId: ALGO_LAB_IDS['Shapiro-Wilk'], stat: fmt(sw.statistic), p: fmt(sw.pValue), pClass: pCls(sw.pValue), decision: decisionGlyph(sw.pValue) },
+            { name: 'Anderson-Darling', algoId: ALGO_LAB_IDS['Anderson-Darling'], stat: fmt(ad.statistic), p: fmt(ad.pValue), pClass: pCls(ad.pValue), decision: decisionGlyph(ad.pValue) },
+          ],
+          metrics: [
+            { label: 'n', value: String(n), title: this._tip('n') },
+            { label: 'x̄', value: fmt(mean), ci: ciMean ? ciFmt(ciMean) : null, title: this._tip('x̄') },
+            { label: 's', value: fmt(sd), ci: ciSd ? ciFmt(ciSd) : null, title: this._tip('s') },
+            { label: 's²', value: fmt(variance), ci: ciVar ? ciFmt(ciVar) : null, title: this._tip('s²') },
+          ],
+        };
+      },
+
+      // ── Main test metrics (mirrors legacy _renderMainResult) ───
+
+      _mainResult(r, alpha, target) {
+        const s0 = this._sym0();
+        const s1 = this._sym1();
+        const isVariance = this.model.category === 'variance';
+        const isTwo = this.model.testType === 'two';
+        let h0, h1;
         if (isVariance) {
-          r = isNormal
-            ? fTest(groups[i], groups[j], 'two-sided', alpha)
-            : leveneTest(groups[i], groups[j], alpha);
-        } else if (isNormal) {
-          r = useWelch
-            ? welchTTest(groups[i], groups[j], 'two-sided', alpha)
-            : twoSampleTTest(groups[i], groups[j], 'two-sided', alpha);
+          h0 = isTwo ? `σ²₁ ${s0} σ²₂` : `σ² ${s0} ${fmt(target)}`;
+          h1 = isTwo ? `σ²₁ ${s1} σ²₂` : `σ² ${s1} ${fmt(target)}`;
         } else {
-          r = mannWhitneyU(groups[i], groups[j], 'two-sided', alpha);
+          h0 = isTwo ? `μ₁ ${s0} μ₂` : `μ ${s0} ${fmt(target)}`;
+          h1 = isTwo ? `μ₁ ${s1} μ₂` : `μ ${s1} ${fmt(target)}`;
         }
-        const p = r.pValue;
-        const pAdj = Math.min(1, p * m);
-        comparisons.push({ i, j, p, pAdj, equal: pAdj >= alpha });
-      }
-    }
 
-    const letters = this._compactLetterDisplay(k, comparisons);
-    return { comparisons, letters, m, methodName };
-  },
+        const pCls = r.pValue < alpha ? 'hyptest__metric-value--danger' : 'hyptest__metric-value--success';
+        const metrics = [
+          { label: _t('testMethod'), value: r.testName, algoId: ALGO_LAB_IDS[r.testName] || '', valueClass: 'hyptest__metric-value--sm', title: this._tip(_t('testMethod')) },
+          { label: _t('statistic'), value: fmt(r.statistic), valueClass: '', title: this._tip(_t('statistic')) },
+          { label: 'p', value: fmt(r.pValue), valueClass: pCls, title: this._tip('p') },
+        ];
+        if (r.df != null) {
+          metrics.push({ label: 'df', value: (typeof r.df === 'number' && r.df % 1) ? fmt(r.df, 1) : String(r.df), valueClass: '', title: this._tip('df') });
+        }
+        if (r.ci) {
+          metrics.push({ label: `${Math.round((1 - alpha) * 100)}% KI`, value: `[${fmt(r.ci[0])}, ${fmt(r.ci[1])}]`, valueClass: 'hyptest__metric-value--sm', title: this._tip('KI') });
+        }
+        if (r.mean != null) {
+          metrics.push({ label: 'x̄', value: fmt(r.mean), valueClass: '', title: this._tip('x̄') });
+        }
+        if (r.mean1 != null) {
+          metrics.push({ label: 'x̄₁', value: fmt(r.mean1), valueClass: '', title: this._tip('x̄₁') });
+          metrics.push({ label: 'x̄₂', value: fmt(r.mean2), valueClass: '', title: this._tip('x̄₂') });
+        }
+        if (r.sampleVariance != null) {
+          metrics.push({ label: 's²', value: fmt(r.sampleVariance), valueClass: '', title: this._tip('s²') });
+        }
+        if (r.variance1 != null && !r.pooledVariance) {
+          metrics.push({ label: 's²₁', value: fmt(r.variance1), valueClass: '', title: this._tip('s²₁') });
+          metrics.push({ label: 's²₂', value: fmt(r.variance2), valueClass: '', title: this._tip('s²₂') });
+        }
 
-  /**
-   * Compact letter display: groups sharing a letter are not significantly
-   * different. Implementation: enumerate maximal cliques in the
-   * "not-significantly-different" graph via Bron-Kerbosch; each clique → one
-   * letter; each group inherits letters of every clique it belongs to.
-   */
-  _compactLetterDisplay(k, comparisons) {
-    // Build adjacency of "compatible" groups (no significant difference)
-    const adj = Array.from({ length: k }, () => new Set());
-    for (let i = 0; i < k; i++) for (let j = 0; j < k; j++) if (i !== j) adj[i].add(j);
-    for (const c of comparisons) {
-      if (!c.equal) { adj[c.i].delete(c.j); adj[c.j].delete(c.i); }
-    }
+        const h0Tip = r.reject
+          ? `${_t('h0Rejected')}: p (${fmt(r.pValue)}) < α (${alpha})`
+          : `${_t('h0NotRejected')}: p (${fmt(r.pValue)}) ≥ α (${alpha})`;
+        const h1Tip = r.reject
+          ? `${_t('significant')}: ${_t('h0Rejected')}`
+          : `${_t('notSignificant')}: ${_t('h0NotRejected')}`;
 
-    // Bron-Kerbosch (no pivoting; k is small)
-    const cliques = [];
-    const bk = (R, P, X) => {
-      if (P.size === 0 && X.size === 0) { cliques.push([...R].sort((a, b) => a - b)); return; }
-      for (const v of [...P]) {
-        const N = adj[v];
-        bk(
-          new Set([...R, v]),
-          new Set([...P].filter(x => N.has(x))),
-          new Set([...X].filter(x => N.has(x))),
-        );
-        P.delete(v);
-        X.add(v);
-      }
+        return {
+          h0, h1,
+          h0Class: r.reject ? 'hyptest__h-box--rejected' : 'hyptest__h-box--accepted',
+          h1Class: r.reject ? 'hyptest__h-box--accepted' : 'hyptest__h-box--rejected',
+          h0Tip, h1Tip,
+          metrics,
+        };
+      },
+
+      // ── Variance-equality card (two-sample mean / k-sample mean) ──
+
+      _varEqualityCard(veResult, varsEqual, alpha, withDf) {
+        const pCls = veResult.pValue < alpha ? 'hyptest__metric-value--danger' : 'hyptest__metric-value--success';
+        const metrics = [
+          { label: _t('testMethod'), value: veResult.testName, algoId: ALGO_LAB_IDS[veResult.testName] || '', valueClass: 'hyptest__metric-value--sm', title: this._tip(_t('testMethod')) },
+          { label: _t('statistic'), value: fmt(veResult.statistic), valueClass: '', title: this._tip(_t('statistic')) },
+        ];
+        if (withDf) {
+          metrics.push({ label: 'df', value: `${veResult.df1} / ${veResult.df2}`, valueClass: '', title: this._tip('df') });
+        }
+        metrics.push({ label: 'p', value: fmt(veResult.pValue), valueClass: pCls, title: this._tip('p') });
+        if (!withDf) {
+          metrics.push({ label: 's²₁', value: fmt(veResult.variance1), valueClass: '', title: this._tip('s²₁') });
+          metrics.push({ label: 's²₂', value: fmt(veResult.variance2), valueClass: '', title: this._tip('s²₂') });
+        }
+        return { metrics, varsEqual };
+      },
+
+      // ── Power analysis (non-k; mirrors legacy _renderPower) ────
+
+      _powerInfo(d1, d2, target, alpha) {
+        const dir = this.model.direction;
+        const n1 = d1.length;
+        const goal = this.model.powerGoal;
+        const ds = (a) => descriptiveStats(a);
+        let curPow, curEff, effLabel, nForGoal;
+
+        if (this.model.category === 'variance') {
+          if (this.model.testType === 'one') {
+            const s2 = ds(d1).variance;
+            curEff = s2 / target;
+            curPow = powerChiSquare(n1, target, s2, alpha, dir);
+            effLabel = _t('varianceRatio');
+            nForGoal = findRequiredN(goal, n => powerChiSquare(n, target, s2, alpha, dir));
+          } else {
+            const s1 = ds(d1).variance, s2 = ds(d2).variance;
+            curEff = s1 / s2;
+            curPow = powerFTest(n1, d2.length, curEff, alpha, dir);
+            effLabel = _t('varianceRatio');
+            nForGoal = findRequiredN(goal, n => powerFTest(n, n, curEff, alpha, dir));
+          }
+        } else {
+          const sigma = ds(d1).stdDev;
+          if (this.model.testType === 'one') {
+            const delta = Math.abs(ds(d1).mean - target);
+            curEff = sigma > 0 ? delta / sigma : 0;
+            curPow = powerOneSampleT(n1, delta, sigma, alpha, dir);
+            effLabel = "Cohen's d";
+            nForGoal = findRequiredN(goal, n => powerOneSampleT(n, delta, sigma, alpha, dir));
+          } else {
+            const delta = Math.abs(ds(d1).mean - ds(d2).mean);
+            const sp = Math.sqrt(((d1.length - 1) * ds(d1).variance + (d2.length - 1) * ds(d2).variance) / (d1.length + d2.length - 2));
+            curEff = sp > 0 ? delta / sp : 0;
+            curPow = powerTwoSampleT(n1, d2.length, delta, sp, alpha, dir);
+            effLabel = "Cohen's d";
+            nForGoal = findRequiredN(goal, n => powerTwoSampleT(n, n, delta, sp, alpha, dir));
+          }
+        }
+
+        const goalPct = (goal * 100).toFixed(0);
+        const goalReached = curPow >= goal;
+        const nDisplay = nForGoal >= 5000 ? '> 5000' : String(nForGoal);
+        const requiredLine = `${_t('requiredN')}${d2 ? ` (${  _t('perGroup')  })` : ''}: ${nDisplay}`
+          + ` — ${goalReached ? `✓ ${  _t('achieved')}` : `✗ ${  _t('notAchieved')}`}`;
+
+        return {
+          goalPct,
+          goalBoxClass: goalReached ? 'hyptest__decision--accept' : 'hyptest__decision--warn',
+          requiredLine,
+          metrics: [
+            { label: _t('currentPower'), value: `${(curPow * 100).toFixed(1)}%`, valueClass: goalReached ? 'hyptest__metric-value--success' : 'hyptest__metric-value--warning', title: this._tip(_t('currentPower')) },
+            { label: 'n', value: `${n1}${d2 ? ` / ${  d2.length}` : ''}`, valueClass: '', title: this._tip('n') },
+            { label: effLabel, value: fmt(curEff, 3), valueClass: '', title: this._tip(effLabel) },
+            { label: 'α', value: String(alpha), valueClass: '', title: this._tip('α') },
+          ],
+        };
+      },
+
+      // ── Analysis controller ────────────────────────────────────
+
+      runAnalysis() {
+        if (this.model.testType === 'k') return this._runAnalysisK();
+        return this._runAnalysisOneTwo();
+      },
+
+      _runAnalysisOneTwo() {
+        const alpha = this.model.alpha;
+        const d1 = this._pickerValues(this._picker1);
+        if (d1.length < 3) { this.result = null; return; }
+
+        let d2 = null;
+        if (this.model.testType === 'two') {
+          d2 = this._pickerValues(this._picker2);
+          if (d2.length < 3) { this.result = null; return; }
+        }
+
+        let target = null;
+        if (this.model.testType === 'one') {
+          target = this.model.resolveTarget();
+          if (target == null) { this.result = null; return; }
+        }
+
+        // Normality
+        const sw1 = shapiroWilk(d1), ad1 = andersonDarling(d1);
+        const n1Normal = sw1.pValue >= alpha && ad1.pValue >= alpha;
+        let sw2 = null, ad2 = null, n2Normal = true;
+        if (d2) {
+          sw2 = shapiroWilk(d2); ad2 = andersonDarling(d2);
+          n2Normal = sw2.pValue >= alpha && ad2.pValue >= alpha;
+        }
+        const allNormal = n1Normal && n2Normal;
+
+        // Route
+        let algo;
+        if (this.model.category === 'variance') {
+          algo = this.model.testType === 'one'
+            ? { id: 'chi2', name: 'Chi-Square Variance Test' }
+            : (allNormal ? { id: 'ftest', name: 'F-Test' } : { id: 'levene', name: 'Levene Test (Brown-Forsythe)' });
+        } else if (this.model.testType === 'one') {
+          algo = n1Normal
+            ? { id: 'ttest1', name: 'One-Sample t-Test' }
+            : { id: 'wilcoxon', name: 'Wilcoxon Signed-Rank Test' };
+        } else {
+          algo = { id: 'pending', name: '' };
+        }
+
+        // Two-sample mean: variance-equality check first
+        let varEquality = null;
+        if (this.model.category === 'mean' && this.model.testType === 'two') {
+          const veResult = allNormal ? fTest(d1, d2, 'two-sided', alpha) : leveneTest(d1, d2, alpha);
+          const varsEqual = !veResult.reject;
+          varEquality = { ...this._varEqualityCard(veResult, varsEqual, alpha, false), varsEqual };
+          if (allNormal && varsEqual) algo = { id: 'ttest2p', name: 'Two-Sample t-Test (pooled)' };
+          else if (allNormal && !varsEqual) algo = { id: 'welch', name: 'Welch t-Test' };
+          else algo = { id: 'mannwhitney', name: 'Mann-Whitney U Test' };
+        }
+
+        // Run main test
+        const dir = this.model.direction;
+        let r;
+        if (algo.id === 'chi2') r = chiSquareVarianceTest(d1, target, dir, alpha);
+        else if (algo.id === 'ftest') r = fTest(d1, d2, dir, alpha);
+        else if (algo.id === 'levene') r = leveneTest(d1, d2, alpha);
+        else if (algo.id === 'ttest1') r = oneSampleTTest(d1, target, dir, alpha);
+        else if (algo.id === 'wilcoxon') r = wilcoxonSignedRank(d1, target, dir, alpha);
+        else if (algo.id === 'ttest2p') r = twoSampleTTest(d1, d2, dir, alpha);
+        else if (algo.id === 'welch') r = welchTTest(d1, d2, dir, alpha);
+        else if (algo.id === 'mannwhitney') r = mannWhitneyU(d1, d2, dir, alpha);
+
+        const normCards = [this._normCard('S1', d1, sw1, ad1, n1Normal, alpha)];
+        if (d2) normCards.push(this._normCard('S2', d2, sw2, ad2, n2Normal, alpha));
+
+        this.result = {
+          isK: false,
+          allNormal,
+          normCards,
+          route: { name: algo.name, algoId: ALGO_LAB_IDS[algo.name] || '' },
+          varEquality,
+          main: this._mainResult(r, alpha, target),
+          power: this._powerInfo(d1, d2, target, alpha),
+          pairwise: null,
+        };
+      },
+
+      _runAnalysisK() {
+        const refs = this._pickerK?.value || [];
+        const groups = refs.map(ref => this._valuesForRef(ref));
+        if (groups.length < 2 || groups.some(g => g.length < 3)) { this.result = null; return; }
+
+        const alpha = this.model.alpha;
+        const isVariance = this.model.category === 'variance';
+
+        const sws = groups.map(g => shapiroWilk(g));
+        const ads = groups.map(g => andersonDarling(g));
+        const groupNormal = groups.map((_, i) => sws[i].pValue >= alpha && ads[i].pValue >= alpha);
+        const allNormal = groupNormal.every(Boolean);
+
+        let algo, r, varEquality = null;
+        if (isVariance) {
+          if (allNormal) { algo = { name: "Bartlett's Test" }; r = bartlettTest(groups, alpha); }
+          else { algo = { name: 'Levene Test (Brown-Forsythe)' }; r = leveneTestK(groups, alpha); }
+        } else {
+          const lev = leveneTestK(groups, alpha);
+          const varsEqual = !lev.reject;
+          varEquality = { ...this._varEqualityCard(lev, varsEqual, alpha, true), varsEqual };
+          if (allNormal) { algo = { name: 'One-Way ANOVA' }; r = oneWayANOVA(groups, alpha); }
+          else { algo = { name: 'Kruskal-Wallis Test' }; r = kruskalWallis(groups, alpha); }
+        }
+
+        const pairwise = groups.length >= 3
+          ? this._computePairwise(groups, alpha, isVariance, allNormal, varEquality)
+          : null;
+
+        const normCards = groups.map((g, i) =>
+          this._normCard(this._refName(refs[i]), g, sws[i], ads[i], groupNormal[i], alpha));
+
+        this.result = {
+          isK: true,
+          allNormal,
+          normCards,
+          route: { name: algo.name, algoId: ALGO_LAB_IDS[algo.name] || '' },
+          varEquality,
+          main: this._kMainResult(r, refs, groups, alpha, pairwise),
+          power: null,
+          pairwise: pairwise ? this._pairwiseSection(pairwise, refs, groups, alpha) : null,
+        };
+      },
+
+      _kMainResult(r, refs, groups, alpha, pairwise) {
+        const isAnova = r.testName === 'One-Way ANOVA';
+        const isVariance = this.model.category === 'variance';
+        const has2Df = r.df1 != null && r.df2 != null;
+        const h0 = isVariance ? 'σ²₁ = σ²₂ = … = σ²ₖ' : 'μ₁ = μ₂ = … = μₖ';
+        const h1 = isVariance ? _t('kSampleVarH1') : _t('kSampleH1');
+        const dfDisplay = has2Df ? `${r.df1} / ${r.df2}` : String(r.df);
+        const pCls = r.pValue < alpha ? 'hyptest__metric-value--danger' : 'hyptest__metric-value--success';
+
+        const metrics = [
+          { label: _t('testMethod'), value: r.testName, algoId: ALGO_LAB_IDS[r.testName] || '', valueClass: 'hyptest__metric-value--sm', title: this._tip(_t('testMethod')) },
+          { label: _t('statistic'), value: fmt(r.statistic), valueClass: '', title: this._tip(_t('statistic')) },
+          { label: 'df', value: dfDisplay, valueClass: '', title: this._tip('df') },
+          { label: 'p', value: fmt(r.pValue), valueClass: pCls, title: this._tip('p') },
+          { label: 'k', value: String(r.k), valueClass: '', title: this._tip('k') },
+        ];
+        if (r.N != null) metrics.push({ label: 'N', value: String(r.N), valueClass: '', title: this._tip('N') });
+        if (r.pooledVariance != null) metrics.push({ label: 's²ₚ', value: fmt(r.pooledVariance), valueClass: '', title: this._tip('s²ₚ') });
+
+        let anovaRows = null;
+        if (isAnova) {
+          const dCls = r.pValue < alpha ? 'hyptest__text-danger' : 'hyptest__text-success';
+          anovaRows = [
+            { src: _t('between'), ss: fmt(r.SSB), df: String(r.df1), ms: fmt(r.MSB), f: fmt(r.statistic), p: fmt(r.pValue), pClass: dCls, bold: false },
+            { src: _t('within'), ss: fmt(r.SSW), df: String(r.df2), ms: fmt(r.MSW), f: '—', p: '—', pClass: '', bold: false },
+            { src: _t('total'), ss: fmt(r.SST), df: String(r.df1 + r.df2), ms: '—', f: '—', p: '—', pClass: '', bold: true },
+          ];
+        }
+
+        const letters = pairwise?.letters || [];
+        const showCld = letters.length > 0;
+        const groupRows = groups.map((g, i) => {
+          const ds = descriptiveStats(g);
+          return { name: this._refName(refs[i]), n: String(g.length), mean: fmt(ds.mean), variance: fmt(ds.variance), letters: letters[i] || '' };
+        });
+
+        return {
+          h0, h1,
+          h0Class: r.reject ? 'hyptest__h-box--rejected' : 'hyptest__h-box--accepted',
+          h1Class: r.reject ? 'hyptest__h-box--accepted' : 'hyptest__h-box--rejected',
+          h0Tip: '', h1Tip: '',
+          metrics,
+          anovaRows,
+          groupRows,
+          showCld,
+        };
+      },
+
+      // ── Pairwise post-hoc (Bonferroni + compact letter display) ──
+
+      _computePairwise(groups, alpha, isVariance, isNormal, varEquality) {
+        const k = groups.length;
+        const m = k * (k - 1) / 2;
+        const useWelch = !isVariance && isNormal && varEquality && !varEquality.varsEqual;
+        const methodName = isVariance
+          ? (isNormal ? 'F-Test' : 'Levene Test (Brown-Forsythe)')
+          : (isNormal ? (useWelch ? 'Welch t-Test' : 'Two-Sample t-Test (pooled)') : 'Mann-Whitney U Test');
+
+        const comparisons = [];
+        for (let i = 0; i < k; i++) {
+          for (let j = i + 1; j < k; j++) {
+            let r;
+            if (isVariance) {
+              r = isNormal ? fTest(groups[i], groups[j], 'two-sided', alpha) : leveneTest(groups[i], groups[j], alpha);
+            } else if (isNormal) {
+              r = useWelch ? welchTTest(groups[i], groups[j], 'two-sided', alpha) : twoSampleTTest(groups[i], groups[j], 'two-sided', alpha);
+            } else {
+              r = mannWhitneyU(groups[i], groups[j], 'two-sided', alpha);
+            }
+            const p = r.pValue;
+            const pAdj = Math.min(1, p * m);
+            comparisons.push({ i, j, p, pAdj, equal: pAdj >= alpha });
+          }
+        }
+        const letters = this._compactLetterDisplay(k, comparisons);
+        return { comparisons, letters, m, methodName };
+      },
+
+      _compactLetterDisplay(k, comparisons) {
+        const adj = Array.from({ length: k }, () => new Set());
+        for (let i = 0; i < k; i++) for (let j = 0; j < k; j++) if (i !== j) adj[i].add(j);
+        for (const c of comparisons) {
+          if (!c.equal) { adj[c.i].delete(c.j); adj[c.j].delete(c.i); }
+        }
+        const cliques = [];
+        const bk = (R, P, X) => {
+          if (P.size === 0 && X.size === 0) { cliques.push([...R].sort((a, b) => a - b)); return; }
+          for (const v of [...P]) {
+            const N = adj[v];
+            bk(new Set([...R, v]), new Set([...P].filter(x => N.has(x))), new Set([...X].filter(x => N.has(x))));
+            P.delete(v); X.add(v);
+          }
+        };
+        bk(new Set(), new Set(Array.from({ length: k }, (_, i) => i)), new Set());
+        const seen = new Set();
+        const unique = [];
+        for (const c of cliques) {
+          const key = c.join(',');
+          if (!seen.has(key)) { seen.add(key); unique.push(c); }
+        }
+        unique.sort((a, b) => {
+          for (let i = 0; i < Math.min(a.length, b.length); i++) if (a[i] !== b[i]) return a[i] - b[i];
+          return a.length - b.length;
+        });
+        const letters = Array.from({ length: k }, () => '');
+        for (let c = 0; c < unique.length; c++) {
+          const letter = String.fromCharCode(97 + c);
+          for (const v of unique[c]) letters[v] += letter;
+        }
+        for (let i = 0; i < k; i++) {
+          if (letters[i] === '') letters[i] = String.fromCharCode(97 + unique.length + i);
+        }
+        return letters;
+      },
+
+      _pairwiseSection(pairwise, refs, groups, _alpha) {
+        const { comparisons, m, methodName, letters } = pairwise;
+        const k = groups.length;
+        const find = (i, j) => comparisons.find(c => (c.i === i && c.j === j) || (c.i === j && c.j === i));
+        const headers = refs.map(ref => this._refName(ref));
+        const rows = [];
+        for (let i = 0; i < k; i++) {
+          const cells = [];
+          for (let j = 0; j < k; j++) {
+            if (j <= i) {
+              cells.push({ cls: 'hyptest__pairwise-empty', title: '', text: '—', key: `${i}-${j}` });
+            } else {
+              const c = find(i, j);
+              const cls = c.equal ? 'hyptest__pairwise-equal' : 'hyptest__pairwise-diff';
+              const tip = `p=${fmt(c.p)}  ·  p_adj=${fmt(c.pAdj)}  ·  ${c.equal ? _t('pairwiseEqual') : _t('pairwiseDifferent')}`;
+              cells.push({ cls, title: tip, text: fmt(c.pAdj), key: `${i}-${j}` });
+            }
+          }
+          rows.push({ head: this._refName(refs[i]), cells });
+        }
+        return {
+          methodName,
+          methodAlgoId: ALGO_LAB_IDS[methodName] || '',
+          hint: _t('pairwiseHint', { m }),
+          headers,
+          rows,
+          lettersJoined: letters.join(', '),
+        };
+      },
+
+      // ── ColumnPickers (imperative widgets) ─────────────────────
+
+      _remountPickers() {
+        this._disposePickers();
+        const ctx = module._context;
+        const c = module._container;
+
+        const wrap1 = c.querySelector('[data-ref="picker1-wrap"]');
+        if (wrap1) {
+          this._picker1 = new ColumnPicker(wrap1, ctx, {
+            mode: 'single', types: ['numeric'], minCount: 3,
+            onChange: (ref) => { this.model.colRef1 = ref; this.runAnalysis(); },
+          });
+          if (this.model.colRef1) this._picker1.value = this.model.colRef1;
+        }
+
+        const wrap2 = c.querySelector('[data-ref="picker2-wrap"]');
+        if (wrap2) {
+          this._picker2 = new ColumnPicker(wrap2, ctx, {
+            mode: 'single', types: ['numeric'], minCount: 3,
+            onChange: (ref) => { this.model.colRef2 = ref; this.runAnalysis(); },
+          });
+          if (this.model.colRef2) this._picker2.value = this.model.colRef2;
+        }
+
+        const wrapK = c.querySelector('[data-ref="picker-k-wrap"]');
+        if (wrapK) {
+          this._pickerK = new ColumnPicker(wrapK, ctx, {
+            mode: 'multi', types: ['numeric'], minCount: 3,
+            onChange: (refs) => { this.model.colRefsK = refs; this.runAnalysis(); },
+          });
+          if (this.model.colRefsK?.length) this._pickerK.value = this.model.colRefsK;
+        }
+      },
+
+      _disposePickers() {
+        this._picker1?.destroy(); this._picker1 = null;
+        this._picker2?.destroy(); this._picker2 = null;
+        this._pickerK?.destroy(); this._pickerK = null;
+      },
+
+      // ── Lifecycle ──────────────────────────────────────────────
+
+      init() {
+        this._unsubs = [];
+
+        // Seed alpha / powerGoal from global settings when not yet set.
+        const sm = module._context.stateManager;
+        const globalConf = (sm.get('settings.confidenceLevel') ?? 95) / 100;
+        const globalPower = (sm.get('settings.power') ?? 80) / 100;
+        if (this.model.alpha == null) this.model.alpha = Number((1 - globalConf).toFixed(4));
+        if (this.model.powerGoal == null) this.model.powerGoal = globalPower;
+
+        // Pickers live inside x-if blocks → their wrappers exist only after
+        // Alpine has processed the tree, so mount on the next tick.
+        this.$nextTick(() => { this._remountPickers(); this.runAnalysis(); });
+
+        const eb = module._context.eventBus;
+        const onActivated = ({ instanceId }) => {
+          if (instanceId === module._context.instanceId) {
+            this._picker1?.refresh(); this._picker2?.refresh(); this._pickerK?.refresh();
+          }
+        };
+        eb.on('module:activated', onActivated);
+        this._unsubs.push(() => eb.off('module:activated', onActivated));
+
+        this.runAnalysis();
+      },
+
+      destroy() {
+        for (const unsub of this._unsubs) unsub();
+        this._unsubs = [];
+        this._disposePickers();
+      },
     };
-    bk(new Set(), new Set(Array.from({ length: k }, (_, i) => i)), new Set());
-
-    // Dedupe (BK without pivoting can repeat) and sort for stable letter order
-    const seen = new Set();
-    const unique = [];
-    for (const c of cliques) {
-      const key = c.join(',');
-      if (!seen.has(key)) { seen.add(key); unique.push(c); }
-    }
-    unique.sort((a, b) => {
-      for (let i = 0; i < Math.min(a.length, b.length); i++) if (a[i] !== b[i]) return a[i] - b[i];
-      return a.length - b.length;
-    });
-
-    const letters = Array.from({ length: k }, () => '');
-    for (let c = 0; c < unique.length; c++) {
-      const letter = String.fromCharCode(97 + c);
-      for (const v of unique[c]) letters[v] += letter;
-    }
-    // Singleton fallback: a group disjoint from all others should still get a letter
-    for (let i = 0; i < k; i++) {
-      if (letters[i] === '') letters[i] = String.fromCharCode(97 + unique.length + i);
-    }
-    return letters;
   },
+});
 
-  _renderAllResultsK(refs, groups) {
-    const t = (k, v) => this._t(k, v);
-    const resEl = this._container.querySelector('[data-ref="results"]');
-    const phEl = this._container.querySelector('[data-ref="placeholder"]');
-    phEl.style.display = 'none';
-    resEl.style.display = 'block';
-
-    const alpha = this._alpha;
-    const norm = this._normality;
-    const ve = this._varEquality;
-    const algo = this._algoRoute;
-    const r = this._result;
-
-    let html = '';
-
-    // Section 1: Normality (per group) — grid so cards sit side-by-side
-    html += `<div class="dmike-split__output-section">${t('sectionNormality')}</div>`;
-    html += `<div class="hyptest__norm-grid">`;
-    for (let i = 0; i < groups.length; i++) {
-      const label = this._refName(refs[i]);
-      html += this._renderNormCard(label, groups[i], norm.sws[i], norm.ads[i], norm.groupNormal[i], alpha);
-    }
-    html += `</div>`;
-
-    // Routing
-    html += `<div class="hyptest__route-card">
-      <div class="hyptest__route-title">${t('algoRouting')}</div>
-      <div class="hyptest__route-trail">
-        <span class="hyptest__trail-dot ${norm.allNormal ? 'hyptest__trail-dot--pass' : 'hyptest__trail-dot--fail'}"></span>
-        <span>${t('normalLabel')}: <strong>${norm.allNormal ? t('yes') : t('no')}</strong></span>
-        ${ve ? `
-          <span class="hyptest__trail-line"></span>
-          <span class="hyptest__trail-dot ${ve.varsEqual ? 'hyptest__trail-dot--pass' : 'hyptest__trail-dot--fail'}"></span>
-          <span>${t('varEqualLabel')}: <strong>${ve.varsEqual ? t('yes') : t('no')}</strong></span>
-        ` : ''}
-        <span class="hyptest__trail-line"></span>
-        <span class="hyptest__trail-dot hyptest__trail-dot--info"></span>
-        <span>&rarr; <strong>${algoLink(algo.name, this._context.eventBus)}</strong></span>
-      </div>
-    </div>`;
-
-    // Section 2: Variance Equality (only for mean category — informational)
-    if (ve) {
-      const veRes = ve.result;
-      html += `<div class="dmike-split__output-section">${t('sectionVarEquality')}</div>`;
-      html += `<div class="hyptest__result-card">
-        <div class="hyptest__metrics">
-          <div class="hyptest__metric"><div class="hyptest__metric-label">${t('testMethod')}</div><div class="hyptest__metric-value hyptest__metric-value--sm">${algoLink(veRes.testName, this._context.eventBus)}</div></div>
-          <div class="hyptest__metric"><div class="hyptest__metric-label">${t('statistic')}</div><div class="hyptest__metric-value">${fmt(veRes.statistic)}</div></div>
-          <div class="hyptest__metric"><div class="hyptest__metric-label">df</div><div class="hyptest__metric-value">${veRes.df1} / ${veRes.df2}</div></div>
-          <div class="hyptest__metric"><div class="hyptest__metric-label">p</div><div class="hyptest__metric-value ${veRes.pValue < alpha ? 'hyptest__metric-value--danger' : 'hyptest__metric-value--success'}">${fmt(veRes.pValue)}</div></div>
-        </div>
-        <div class="hyptest__decision ${ve.varsEqual ? 'hyptest__decision--accept' : 'hyptest__decision--reject'}">
-          <strong>${ve.varsEqual ? t('varEqual') : t('varUnequal')}</strong>
-        </div>
-      </div>`;
-    }
-
-    // Section 3: Main Test Result
-    html += `<div class="dmike-split__output-section">${t('sectionResult')}</div>`;
-    html += this._renderKResult(r, refs, groups, alpha);
-
-    // Section 4: Pairwise post-hoc (only when k ≥ 3)
-    if (this._pairwise) {
-      html += `<div class="dmike-split__output-section">${t('sectionPairwise')}</div>`;
-      html += this._renderPairwiseSection(refs, groups, alpha);
-    }
-
-    resEl.innerHTML = html;
-
-    // Bind algo links
-    resEl.querySelectorAll('.hyptest__algo-link').forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        e.preventDefault();
-        this._context.eventBus.emit('lab:navigate', { algoId: btn.dataset.algoId, tab: 'docs' });
-      });
-    });
-
-    // Add tooltips to metric tiles
-    this._addMetricTooltips(resEl);
-  },
-
-  _renderKResult(r, refs, groups, alpha) {
-    const t = (k, v) => this._t(k, v);
-    const isAnova = r.testName === 'One-Way ANOVA';
-    const isVariance = this._category === 'variance';
-    // Bartlett & Levene-k both have df1/df2 (Levene) or df (Bartlett)
-    const has2Df = r.df1 != null && r.df2 != null;
-
-    let h0, h1;
-    if (isVariance) {
-      h0 = `σ²₁ = σ²₂ = … = σ²ₖ`;
-      h1 = t('kSampleVarH1');
-    } else {
-      h0 = `μ₁ = μ₂ = … = μₖ`;
-      h1 = t('kSampleH1');
-    }
-
-    const h0Class = r.reject ? 'hyptest__h-box--rejected' : 'hyptest__h-box--accepted';
-    const h1Class = r.reject ? 'hyptest__h-box--accepted' : 'hyptest__h-box--rejected';
-
-    const dfDisplay = has2Df ? `${r.df1} / ${r.df2}` : r.df;
-
-    let metricsHTML = `
-      <div class="hyptest__metric"><div class="hyptest__metric-label">${t('testMethod')}</div><div class="hyptest__metric-value hyptest__metric-value--sm">${algoLink(r.testName, this._context.eventBus)}</div></div>
-      <div class="hyptest__metric"><div class="hyptest__metric-label">${t('statistic')}</div><div class="hyptest__metric-value">${fmt(r.statistic)}</div></div>
-      <div class="hyptest__metric"><div class="hyptest__metric-label">df</div><div class="hyptest__metric-value">${dfDisplay}</div></div>
-      <div class="hyptest__metric"><div class="hyptest__metric-label">p</div><div class="hyptest__metric-value ${r.pValue < alpha ? 'hyptest__metric-value--danger' : 'hyptest__metric-value--success'}">${fmt(r.pValue)}</div></div>
-      <div class="hyptest__metric"><div class="hyptest__metric-label">k</div><div class="hyptest__metric-value">${r.k}</div></div>
-      ${r.N != null ? `<div class="hyptest__metric"><div class="hyptest__metric-label">N</div><div class="hyptest__metric-value">${r.N}</div></div>` : ''}
-      ${r.pooledVariance != null ? `<div class="hyptest__metric"><div class="hyptest__metric-label">s²ₚ</div><div class="hyptest__metric-value">${fmt(r.pooledVariance)}</div></div>` : ''}
-    `;
-
-    // ANOVA table
-    let anovaTable = '';
-    if (isAnova) {
-      anovaTable = `
-        <table>
-          <thead><tr><th>${t('source')}</th><th>SS</th><th>df</th><th>MS</th><th>F</th><th>p</th></tr></thead>
-          <tbody>
-            <tr><td>${t('between')}</td><td>${fmt(r.SSB)}</td><td>${r.df1}</td><td>${fmt(r.MSB)}</td><td>${fmt(r.statistic)}</td><td class="${r.pValue < alpha ? 'hyptest__text-danger' : 'hyptest__text-success'}">${fmt(r.pValue)}</td></tr>
-            <tr><td>${t('within')}</td><td>${fmt(r.SSW)}</td><td>${r.df2}</td><td>${fmt(r.MSW)}</td><td>—</td><td>—</td></tr>
-            <tr><td><strong>${t('total')}</strong></td><td><strong>${fmt(r.SST)}</strong></td><td><strong>${r.df1 + r.df2}</strong></td><td>—</td><td>—</td><td>—</td></tr>
-          </tbody>
-        </table>
-      `;
-    }
-
-    // Group summary table — adds compact-letter-display column when k ≥ 3
-    const letters = this._pairwise?.letters || [];
-    const showCld = letters.length > 0;
-    let groupTable = `
-      <table>
-        <thead><tr><th>${t('group')}</th><th>n</th><th>x̄</th><th>s²</th>${showCld ? `<th title="${esc(t('groupingHint'))}">${t('groupingLabel')}</th>` : ''}</tr></thead>
-        <tbody>
-          ${groups.map((g, i) => {
-            const ds = descriptiveStats(g);
-            return `<tr><td>${esc(this._refName(refs[i]))}</td><td>${g.length}</td><td>${fmt(ds.mean)}</td><td>${fmt(ds.variance)}</td>${showCld ? `<td><strong class="hyptest__cld-letters">${esc(letters[i])}</strong></td>` : ''}</tr>`;
-          }).join('')}
-        </tbody>
-      </table>
-    `;
-
-    return `<div class="hyptest__result-card">
-      <div class="hyptest__hypothesis-preview hyptest__hypothesis-preview--sm field-row">
-        <div class="hyptest__h-box ${h0Class}"><span class="hyptest__h-label">H₀</span><span class="hyptest__h-formula">${h0}</span></div>
-        <div class="hyptest__h-box ${h1Class}"><span class="hyptest__h-label">H₁</span><span class="hyptest__h-formula">${h1}</span></div>
-      </div>
-      <div class="hyptest__metrics">${metricsHTML}</div>
-      ${anovaTable}
-      ${groupTable}
-    </div>`;
-  },
-
-  /**
-   * Render the pairwise comparison section: meta line, k×k upper-triangle
-   * matrix of Bonferroni-corrected p-values colored by equality, plus a
-   * legend pointing back to the CLD column in the group summary table.
-   */
-  _renderPairwiseSection(refs, groups, alpha) {
-    const t = (k, v) => this._t(k, v);
-    const { comparisons, m, methodName, letters } = this._pairwise;
-    const k = groups.length;
-
-    const find = (i, j) => comparisons.find(c =>
-      (c.i === i && c.j === j) || (c.i === j && c.j === i));
-
-    let matrix = `<table class="hyptest__pairwise"><thead><tr><th></th>`;
-    for (let j = 0; j < k; j++) matrix += `<th>${esc(this._refName(refs[j]))}</th>`;
-    matrix += `</tr></thead><tbody>`;
-    for (let i = 0; i < k; i++) {
-      matrix += `<tr><th>${esc(this._refName(refs[i]))}</th>`;
-      for (let j = 0; j < k; j++) {
-        if (j <= i) {
-          matrix += `<td class="hyptest__pairwise-empty">—</td>`;
-        } else {
-          const c = find(i, j);
-          const cls = c.equal ? 'hyptest__pairwise-equal' : 'hyptest__pairwise-diff';
-          const tip = `p=${fmt(c.p)}  ·  p_adj=${fmt(c.pAdj)}  ·  ${c.equal ? t('pairwiseEqual') : t('pairwiseDifferent')}`;
-          matrix += `<td class="${cls}" title="${esc(tip)}">${fmt(c.pAdj)}</td>`;
-        }
-      }
-      matrix += `</tr>`;
-    }
-    matrix += `</tbody></table>`;
-
-    return `<div class="hyptest__result-card">
-      <div class="hyptest__pairwise-meta">
-        ${t('pairwiseMethod')}: <strong>${algoLink(methodName, this._context.eventBus)}</strong>
-        · ${t('pairwiseHint', { m })}
-      </div>
-      ${matrix}
-      <div class="hyptest__pairwise-legend">
-        <span class="hyptest__pairwise-swatch hyptest__pairwise-equal"></span> ${t('pairwiseEqual')} (p_adj ≥ ${alpha})
-        <span class="hyptest__pairwise-swatch hyptest__pairwise-diff"></span> ${t('pairwiseDifferent')} (p_adj &lt; ${alpha})
-      </div>
-      <div class="hyptest__cld-hint">${t('groupingHint')} (${t('groupingLabel')}: <strong>${letters.map(l => esc(l)).join(', ')}</strong>)</div>
-    </div>`;
-  },
-
-  // ─── Actions ────────────────────────────────────────────────
-
+/**
+ * Custom loadExample: hypothesis-test catalog examples ship a full worksheet
+ * (`sourceWorksheetData`) and use the literal placeholder `__source__` as the
+ * `instanceId` of every column ref (`colRef1`, `colRef2`, each `colRefsK[]`).
+ * On load we provision a fresh worksheet, rewrite the placeholders, then apply
+ * state (re-running the analysis on the new data).
+ *
+ * @param {{ meta: object, data: object }} payload
+ */
+mod.loadExample = function loadExample(payload) {
+  return loadExampleViaWorksheet(this, payload, {
+    State,
+    rewriteRefs(data, instanceId) {
+      const rewrite = (r) => (r && r.instanceId === '__source__') ? { ...r, instanceId } : r;
+      const out = { ...data };
+      if (out.colRef1) out.colRef1 = rewrite(out.colRef1);
+      if (out.colRef2) out.colRef2 = rewrite(out.colRef2);
+      if (Array.isArray(out.colRefsK)) out.colRefsK = out.colRefsK.map(rewrite);
+      return out;
+    },
+  });
 };
+
+export default mod;

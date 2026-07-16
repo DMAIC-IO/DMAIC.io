@@ -1,0 +1,107 @@
+{
+  "id": "praezision",
+  "category": "msa",
+  "title": {
+    "de": "Präzision (Precision)",
+    "en": "Precision"
+  },
+  "short": {
+    "de": "Nähe der Messwerte zueinander — kleine Streuung, unabhängig von der Lage zum Referenzwert.",
+    "en": "Closeness of measurements to each other — small spread, regardless of position relative to the reference value."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "Die **Präzision** ist ein reines Streuungsmaß und beschreibt, wie eng Wiederholmessungen beieinander liegen. Sie ist die zweite Hälfte der {{term:genauigkeit|Genauigkeit}} — parallel zur {{term:richtigkeit|Richtigkeit}}, die die Lage bewertet."
+      },
+      {
+        "type": "formula",
+        "latex": "s = \\sqrt{\\frac{1}{n-1} \\sum_{i=1}^{n} (x_i - \\bar{x})^2}"
+      },
+      {
+        "type": "paragraph",
+        "text": "Als Kennzahl dient meist die {{term:standardabweichung|Standardabweichung}} der Wiederholmessungen. Präzision wird nach ISO 5725 in Stufen betrachtet, je nachdem, welche Bedingungen zwischen den Messungen gleich gehalten werden:"
+      },
+      {
+        "type": "list",
+        "items": [
+          "{{term:wiederholbarkeit|Wiederholbarkeit}} — engste Bedingungen: gleicher Bediener, gleiches Gerät, gleiches Teil, kurze Zeit",
+          "{{term:reproduzierbarkeit|Reproduzierbarkeit}} — geänderte Bedingungen: verschiedene Bediener, Geräte oder Labore",
+          "Zwischenstufen (intermediate precision): einzelne Faktoren variiert (z. B. Tag, Charge, Kalibrierung)"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "„Präzise, aber unrichtig“ ist der reproduzierbar-falsche Treffer. Präzision allein sagt nichts über die Nähe zum Sollwert — dafür braucht es die {{term:richtigkeit|Richtigkeit}}. In der MSA Typ 1 misst der Cg-Index die Präzision im Verhältnis zur Toleranz."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "**Precision** is a pure dispersion property describing how tightly repeated measurements cluster. It is the second half of {{term:genauigkeit|accuracy}} — parallel to {{term:richtigkeit|trueness}}, which addresses position."
+      },
+      {
+        "type": "formula",
+        "latex": "s = \\sqrt{\\frac{1}{n-1} \\sum_{i=1}^{n} (x_i - \\bar{x})^2}"
+      },
+      {
+        "type": "paragraph",
+        "text": "The usual metric is the {{term:standardabweichung|standard deviation}} of repeated measurements. ISO 5725 grades precision by which conditions are held constant between measurements:"
+      },
+      {
+        "type": "list",
+        "items": [
+          "{{term:wiederholbarkeit|Repeatability}} — tightest conditions: same operator, same instrument, same part, short time",
+          "{{term:reproduzierbarkeit|Reproducibility}} — changed conditions: different operators, instruments, or laboratories",
+          "Intermediate precision: individual factors varied (e.g. day, batch, calibration)"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "\"Precise but untrue\" is the reproducibly-wrong hit. Precision alone says nothing about closeness to a target — that requires {{term:richtigkeit|trueness}}. In MSA Type 1, the Cg index measures precision relative to tolerance."
+      }
+    ]
+  },
+  "aliases": {
+    "de": [
+      "Precision",
+      "Streugenauigkeit",
+      "Messpräzision"
+    ],
+    "en": [
+      "measurement precision",
+      "measurement dispersion"
+    ]
+  },
+  "seeAlso": [
+    "genauigkeit",
+    "richtigkeit",
+    "wiederholbarkeit",
+    "reproduzierbarkeit",
+    "standardabweichung"
+  ],
+  "modules": [
+    "msa-typ1",
+    "msa-typ2"
+  ],
+  "algoLab": [
+    "msa/cg",
+    "msa/cgk",
+    "msa/grr"
+  ],
+  "sources": [
+    {
+      "label": "DIN ISO 5725-1/-2: Genauigkeit (Richtigkeit und Präzision) von Messverfahren und Messergebnissen",
+      "url": null
+    },
+    {
+      "label": "VDA Band 5 — Prüfprozesseignung, 3. Auflage",
+      "url": null
+    },
+    {
+      "label": "AIAG — Measurement Systems Analysis Reference Manual, 4th Edition (MSA-4)",
+      "url": null
+    }
+  ]
+}

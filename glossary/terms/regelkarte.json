@@ -1,0 +1,102 @@
+{
+  "id": "regelkarte",
+  "category": "spc",
+  "title": {
+    "de": "Regelkarte (Control Chart)",
+    "en": "Control Chart"
+  },
+  "short": {
+    "de": "Zeitreihen-Diagramm eines Prozesskennwerts mit statistischen {{term:regelgrenze|Grenzen}} — trennt {{term:zufallsursache|Zufalls-}} von {{term:sonderursache|Sonderursachen}}.",
+    "en": "Time-series chart of a process metric with statistical {{term:regelgrenze|limits}} — separates {{term:zufallsursache|common}} from {{term:sonderursache|special causes}}."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "Eine **Regelkarte** (auch Control Chart, SPC-Karte, Shewhart-Karte) zeigt den zeitlichen Verlauf eines Prozesskennwerts (Einzelwerte, Mittelwerte von {{term:subgruppe|Subgruppen}}, Anteile, Zählwerte) und legt darüber eine {{term:mittellinie|Mittellinie}} und zwei {{term:regelgrenze|Eingriffsgrenzen}} (UCL/LCL). Sie ist das Standardwerkzeug der Control-Phase."
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Variablen-Karten** — für stetige Messgrößen: {{term:i-mr-chart|I-MR}}, {{term:xbar-r-chart|X̄-R}}, X̄-S",
+          "**Attribut-Karten** — für gezählte Daten: {{term:p-chart|p-/np}}-Karte, {{term:c-chart|c-/u}}-Karte",
+          "**Zeit-gewichtete Karten** — für kleine, anhaltende Verschiebungen: {{term:ewma-chart|EWMA}}, {{term:cusum-chart|CUSUM}}",
+          "**Sonderformen** — Short-Run, Multivariat (Hotelling T²), Rare-Event (g/t)"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "Grundphilosophie (Shewhart, 1924): Jeder Prozess hat eine natürliche Streuung aus vielen kleinen {{term:zufallsursache|Zufallsursachen}}. Punkte innerhalb ±3σ gelten als „in Kontrolle“; Werte außerhalb oder auffällige Muster deuten auf {{term:sonderursache|Sonderursachen}} hin, die identifiziert und beseitigt werden müssen. **Regelkarten sind kein Qualitätsurteil, sondern ein Frühwarnsystem** — sie zeigen Bewegung, bevor die {{term:spezifikationsgrenzen|Spezifikation}} verletzt wird."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "A **control chart** (SPC chart, Shewhart chart) plots a process metric over time (individual values, {{term:subgruppe|subgroup}} means, proportions, counts) with a {{term:mittellinie|centre line}} and two {{term:regelgrenze|control limits}} (UCL/LCL). It is the standard tool of the Control phase."
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Variables charts** — for continuous measurements: {{term:i-mr-chart|I-MR}}, {{term:xbar-r-chart|X̄-R}}, X̄-S",
+          "**Attribute charts** — for count data: {{term:p-chart|p/np}} chart, {{term:c-chart|c/u}} chart",
+          "**Time-weighted charts** — for small persistent shifts: {{term:ewma-chart|EWMA}}, {{term:cusum-chart|CUSUM}}",
+          "**Special forms** — short-run, multivariate (Hotelling T²), rare-event (g/t)"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "Core philosophy (Shewhart, 1924): every process has natural variation from many small {{term:zufallsursache|common causes}}. Points inside ±3σ are considered \"in control\"; points outside or striking patterns indicate {{term:sonderursache|special causes}} that must be identified and removed. **Control charts are not quality verdicts but early-warning systems** — they show movement before the {{term:spezifikationsgrenzen|specification}} is violated."
+      }
+    ]
+  },
+  "aliases": {
+    "de": [
+      "Control Chart",
+      "SPC-Karte",
+      "Shewhart-Karte",
+      "Qualitätsregelkarte"
+    ],
+    "en": [
+      "control chart",
+      "SPC chart",
+      "Shewhart chart"
+    ]
+  },
+  "seeAlso": [
+    "regelgrenze",
+    "mittellinie",
+    "sonderursache",
+    "zufallsursache",
+    "nelson-regeln",
+    "subgruppe"
+  ],
+  "modules": [
+    "control-chart",
+    "attribute-control-chart",
+    "time-weighted-chart",
+    "short-run-chart",
+    "multivariate-control-chart",
+    "rare-event-chart",
+    "transformed-imr-chart",
+    "run-chart"
+  ],
+  "algoLab": [
+    "control-charts/control-chart",
+    "control-charts/attribute-control-chart",
+    "control-charts/time-weighted-chart"
+  ],
+  "sources": [
+    {
+      "label": "Shewhart, W. A. — Economic Control of Quality of Manufactured Product, Van Nostrand, 1931",
+      "url": null
+    },
+    {
+      "label": "Montgomery, D. C. — Introduction to Statistical Quality Control, 8th Edition, Wiley",
+      "url": null
+    },
+    {
+      "label": "AIAG — Statistical Process Control (SPC) Reference Manual, 2nd Edition, 2005",
+      "url": null
+    }
+  ]
+}

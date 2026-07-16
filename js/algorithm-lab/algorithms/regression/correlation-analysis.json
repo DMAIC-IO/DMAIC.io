@@ -1,7 +1,7 @@
 {
-  "id": "correlation-analysis",
+  "id": "{{term:korrelation|correlation}}-analysis",
   "name": {
-    "de": "Korrelationsanalyse (Pearson, Spearman, Kendall)",
+    "de": "{{term:korrelation|Korrelation}}sanalyse (Pearson, Spearman, Kendall)",
     "en": "Correlation Analysis (Pearson, Spearman, Kendall)"
   },
   "category": "regression",

@@ -11,8 +11,8 @@
 
   "description": {
     "short": {
-      "de": "Orthogonales Array mit 18 Runs und einer 2-stufigen plus sieben 3-stufigen Spalten — dem klassischen Mixed-Level-Plan für Screening.",
-      "en": "Orthogonal array with 18 runs and one 2-level plus seven 3-level columns — the classic mixed-level screening design."
+      "de": "Orthogonales {{term:taguchi|Taguchi}}-Array mit 18 Runs und einer 2-stufigen plus sieben 3-stufigen Spalten — dem klassischen Mixed-Level-Plan für {{term:screening-design|Screening}}.",
+      "en": "Orthogonal {{term:taguchi|Taguchi}} array with 18 runs and one 2-level plus seven 3-level columns — the classic mixed-level {{term:screening-design|screening design}}."
     },
     "long": {
       "de": "L18 ist eines der wichtigsten Taguchi-Mixed-Level-Arrays: es hat 18 Runs und kann bis zu acht Faktoren aufnehmen, von denen einer 2-stufig und bis zu sieben 3-stufig sein können. Praktischer Anwendungsfall: ein binärer Faktor (Lieferant alt/neu, Werkzeug A/B) plus mehrere 3-stufige Prozessparameter (niedrig/mittel/hoch). Im D.Mike-Versuchsplaner wird L18 automatisch ausgewählt, sobald die Faktor-Mischung zur Stufenstruktur passt; die Faktor-zu-Spalte-Zuordnung erfolgt nach Stufenzahl. Pro Spalte wird mit der korrekten Stufenzahl kodiert: ±1 für die 2-stufige Spalte, −1/0/+1 für die 3-stufigen — in derselben Zeile.",

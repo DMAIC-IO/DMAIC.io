@@ -1,0 +1,90 @@
+{
+  "id": "taguchi",
+  "category": "doe",
+  "title": {
+    "de": "Taguchi-Design",
+    "en": "Taguchi Design"
+  },
+  "short": {
+    "de": "Robustheits-orientierter {{term:doe|Versuchsplan}} mit orthogonalen Arrays und Signal-Rausch-Verhältnis als Zielgröße.",
+    "en": "Robustness-oriented {{term:doe|experimental design}} using orthogonal arrays and the signal-to-noise ratio as response."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "Das **Taguchi-Design** ist eine Familie von {{term:screening-design|Screening-Plänen}}, die von Genichi Taguchi in den 1950er-Jahren entwickelt wurden. Kernidee: Statt die {{term:zielgroesse|Zielgröße}} nur auf ihren {{term:mittelwert|Mittelwert}} zu optimieren, wird ihre **Robustheit gegen Störgrößen** maximiert — also die {{term:standardabweichung|Streuung}} minimiert."
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Orthogonale Arrays** — vorgefertigte Standardpläne (L4, L8, L9, L12, L16, L18, L27, …)",
+          "**Inner-Outer-Array** — innere Matrix mit steuerbaren Faktoren, äußere Matrix mit Störgrößen; jede Kombination wird gemessen",
+          "**Signal-Rausch-Verhältnis** — Log-Kennzahl zur gemeinsamen Bewertung von Mittelwert und Streuung (S/N-Ratio)"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "**Kontrovers:** Taguchi-Designs opfern die Trennschärfe für {{term:wechselwirkung|Wechselwirkungen}} zugunsten kompakter Läufe — Wechselwirkungen sind mit {{term:haupteffekt|Haupteffekten}} vermischt. Wer Wechselwirkungen verstehen will, greift zu 2ᵏ / {{term:ccd|CCD}}. Die {{term:streuungs-doe|Streuungs-DoE-Alternative}} (Dispersion DoE / Dual Response) kommt zu ähnlichen Robustheits-Aussagen mit klassischer Faktorstruktur."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "**Taguchi designs** are a family of {{term:screening-design|screening plans}} developed by Genichi Taguchi in the 1950s. Core idea: instead of optimising the {{term:zielgroesse|response}} on its {{term:mittelwert|mean}} alone, maximise its **robustness against noise factors** — i.e. minimise its {{term:standardabweichung|dispersion}}."
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Orthogonal arrays** — pre-built standard designs (L4, L8, L9, L12, L16, L18, L27, …)",
+          "**Inner-outer array** — inner matrix with control factors, outer matrix with noise factors; every combination is measured",
+          "**Signal-to-noise ratio** — log-based metric combining mean and dispersion (S/N ratio)"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "**Controversial:** Taguchi designs sacrifice {{term:wechselwirkung|interaction}} separability for compact run counts — interactions are aliased with {{term:haupteffekt|main effects}}. To understand interactions, choose 2ᵏ / {{term:ccd|CCD}}. The {{term:streuungs-doe|dispersion DoE alternative}} (dispersion DoE / dual response) reaches similar robustness conclusions within a classical factorial structure."
+      }
+    ]
+  },
+  "aliases": {
+    "de": [
+      "Taguchi",
+      "Orthogonales Array",
+      "Signal-Rausch-Design"
+    ],
+    "en": [
+      "Taguchi array",
+      "orthogonal array",
+      "signal-to-noise design"
+    ]
+  },
+  "seeAlso": [
+    "streuungs-doe",
+    "screening-design",
+    "doe",
+    "wechselwirkung"
+  ],
+  "modules": [
+    "doe-planner",
+    "doe-advisor"
+  ],
+  "algoLab": [
+    "doe/taguchi-l18-mixed",
+    "doe/doe-planner"
+  ],
+  "sources": [
+    {
+      "label": "Taguchi, G. — Introduction to Quality Engineering, Asian Productivity Organization, 1986",
+      "url": null
+    },
+    {
+      "label": "Roy, R. K. — A Primer on the Taguchi Method, 2nd Edition, Society of Manufacturing Engineers",
+      "url": null
+    },
+    {
+      "label": "Montgomery, D. C. — Design and Analysis of Experiments, 10th Edition, Chapter 12",
+      "url": null
+    }
+  ]
+}

@@ -93,11 +93,24 @@ jobs:
         with:
           node-version: '20'
 
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Verify license artifacts are up to date
+        run: |
+          git diff --exit-code -- THIRD-PARTY-LICENSES.txt js/pages/licenses/licenses-data.generated.js \
+            || { echo "::error::License artifacts are stale. Run 'npm install' (or 'npm run licenses') and commit THIRD-PARTY-LICENSES.txt + js/pages/licenses/licenses-data.generated.js."; exit 1; }
+
+      - name: Run unit tests (deploy gate — no build/deploy on failure)
+        run: npm run test:unit
+
+      - name: Build app (generate index.html + bundle)
+        run: npm run build
+
       - name: Build static handbook → docs/
         run: |
           set -euo pipefail
           node tools/static-handbook/build.mjs --clean
-          # Sanity check: at least the language picker must exist.
           test -f docs/index.html
 
       - name: Configure SSH (deploy key, known_hosts)

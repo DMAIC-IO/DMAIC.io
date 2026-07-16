@@ -6,6 +6,7 @@
    ============================================================ */
 
 /* ===== Layout ===== */
+
 /* Base layout provided by .dmike-split (css/modules.css) */
 .vct__sidebar {
   display: flex;
@@ -92,6 +93,7 @@
 
 /* Thin scrollbar for sidebar body */
 .vct__sidebar-body::-webkit-scrollbar { width: 5px; }
+
 .vct__sidebar-body::-webkit-scrollbar-thumb {
   background: var(--color-border-secondary);
   border-radius: 3px;
@@ -169,10 +171,11 @@
 
 .vct__card-action-btn--del:hover {
   color: var(--color-error);
-  background: rgba(239, 68, 68, 0.1);
+  background: rgb(239 68 68 / 10%);
 }
 
 /* ── Main area ── */
+
 /* flex-direction: column and overflow inherited from dmike-split__output */
 
 .vct__tree-area {
@@ -270,7 +273,7 @@
 
 .vct__node-btn--del:hover {
   color: var(--color-error);
-  background: rgba(239, 68, 68, 0.1);
+  background: rgb(239 68 68 / 10%);
 }
 
 /* ── Tree children containers ── */
@@ -287,10 +290,12 @@
   background: var(--color-vct-voc-bg);
   border: var(--border-width) solid var(--color-vct-voc-border);
 }
+
 .vct__node--voc .vct__node-badge {
   color: var(--color-vct-voc);
   background: var(--color-vct-voc-badge-bg);
 }
+
 .vct__children--voc {
   border-color: var(--color-vct-voc-line);
 }
@@ -300,10 +305,12 @@
   background: var(--color-vct-need-bg);
   border: var(--border-width) solid var(--color-vct-need-border);
 }
+
 .vct__node--need .vct__node-badge {
   color: var(--color-vct-need);
   background: var(--color-vct-need-badge-bg);
 }
+
 .vct__children--need {
   border-color: var(--color-vct-need-line);
 }
@@ -313,10 +320,12 @@
   background: var(--color-vct-ctq-bg);
   border: var(--border-width) solid var(--color-vct-ctq-border);
 }
+
 .vct__node--ctq .vct__node-badge {
   color: var(--color-vct-ctq);
   background: var(--color-vct-ctq-badge-bg);
 }
+
 .vct__children--ctq {
   border-color: var(--color-vct-ctq-line);
 }
@@ -326,10 +335,12 @@
   background: var(--color-vct-ctd-bg);
   border: var(--border-width) solid var(--color-vct-ctd-border);
 }
+
 .vct__node--ctd .vct__node-badge {
   color: var(--color-vct-ctd);
   background: var(--color-vct-ctd-badge-bg);
 }
+
 .vct__children--ctd {
   border-color: var(--color-vct-ctd-line);
 }
@@ -339,10 +350,12 @@
   background: var(--color-vct-ctc-bg);
   border: var(--border-width) solid var(--color-vct-ctc-border);
 }
+
 .vct__node--ctc .vct__node-badge {
   color: var(--color-vct-ctc);
   background: var(--color-vct-ctc-badge-bg);
 }
+
 .vct__children--ctc {
   border-color: var(--color-vct-ctc-line);
 }
@@ -352,6 +365,7 @@
   background: var(--color-vct-req-bg);
   border: var(--border-width) solid var(--color-vct-req-border);
 }
+
 .vct__node--req .vct__node-badge {
   color: var(--color-vct-req);
   background: var(--color-vct-req-badge-bg);
@@ -386,10 +400,12 @@
   grid-template-columns: repeat(3, 1fr);
   gap: var(--spacing-xs);
 }
+
 .vct__settings-panel .dmike-chart-ed-section-title {
   font-size: var(--font-size-xs);
   grid-column: 1 / -1;
 }
+
 .vct__settings-panel .dmike-chart-ed-color-pair {
   gap: var(--spacing-xs);
   min-width: 0;
@@ -397,6 +413,7 @@
   flex-direction: row-reverse;
   justify-content: flex-end;
 }
+
 .vct__settings-panel .dmike-chart-ed-color-pair label {
   font-size: var(--font-size-xs);
   min-width: 0;
@@ -404,6 +421,7 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
 .vct__settings-panel .dmike-chart-ed-inline-row,
 .vct__settings-panel .dmike-slider-row { grid-column: 1 / -1; }
 .vct__settings-panel .dmike-slider-row { margin-top: var(--spacing-md); }

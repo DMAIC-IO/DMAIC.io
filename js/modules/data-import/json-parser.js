@@ -138,7 +138,7 @@ function parseNdjson(text) {
     try {
       rec = JSON.parse(trimmed);
     } catch (err) {
-      const e = new Error('Invalid NDJSON line: ' + err.message);
+      const e = new Error(`Invalid NDJSON line: ${  err.message}`);
       e.code = 'errJsonParse';
       throw e;
     }
@@ -185,7 +185,7 @@ export async function parseJson(buffer, opts = {}) {
   const ext = extOf(opts.filename);
   const ndjsonByExt = NDJSON_EXTS.has(ext);
 
-  let columns = null;
+  let columns;
 
   if (ndjsonByExt) {
     columns = recordsToColumns(parseNdjson(text));

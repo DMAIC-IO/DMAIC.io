@@ -1,736 +1,647 @@
 /**
  * D.Mike — Correlation Analysis Module (correlation.js)
- * Analyze phase: computes Pearson, Spearman, and Kendall correlations.
+ * Analyze phase: Pearson, Spearman, Kendall correlations.
  *
- * - 2 columns selected → detailed pairwise analysis (cards, scatter, diagnostics)
- * - 3+ columns selected → correlation matrix (heatmap table)
+ * Migrated to createModule + Alpine CSP. The Model (correlation-model.js) holds
+ * only persistence state (selected columns, confidence, matrix method, filters)
+ * + thin orchestration that delegates ALL statistics to the unchanged engine
+ * (engines/correlation-engine.js). The analysis RESULT is derived transiently
+ * in the view and recomputed on every relevant change — it is NOT persisted.
  *
- * Data source: numeric columns from Worksheet modules.
+ * Output is declarative Alpine markup:
+ *   - 2 columns → pairwise cards + descriptive/diagnostic stat grids
+ *   - 3+ columns → correlation matrix (heatmap <table>) + per-pair scatter cards
+ * The only imperative widgets are the chartManager scatter plots, mounted into
+ * [data-ref] anchors and disposed in destroy() (sanctioned chart-tier exception).
+ * The previous correlation-render.js subfile is gone — its table/card HTML is
+ * now template, its chart config is now the data-fn chart helpers below.
  */
 
-import { runCorrelationAnalysis, pearsonR, spearmanR, kendallTau, fisherCI, kendallCI, pFromT, kendallPValue } from '../../engines/correlation-engine.js';
-import { isPickerFocused } from '../../ui/column-picker.js';
-import { esc } from '../../core/html-utils.js';
-import { renderMethods } from './correlation-render.js';
-import { provisionWorksheet, removeProvisionedWorksheet } from '../../core/examples-registry.js';
+import { createModule } from '../../core/template-module.js';
+import { State, parseConfPercent, formatConfPercent } from './correlation-model.js';
+import { isPickerFocused, refToKey } from '../../ui/column-picker.js';
+import { loadExampleViaWorksheet } from '../../core/examples-registry.js';
 
-// Phase iteration is now cycle-agnostic via `Object.keys(state.phases)` — see
-// js/core/cycles/cycles.js for the cycle/phase model.
+// Unicode glyphs carried over from the legacy innerHTML (kept out of x-text
+// literals — Alpine CSP would emit \u-escapes verbatim).
+const GLYPH_RHO = 'ρ';      // ρ
+const GLYPH_TAU = 'τ';      // τ
+const GLYPH_GE_R = '|r| ≥'; // |r| ≥
+const GLYPH_LE_P = 'p ≤';   // p ≤
+const BULLET = '●';         // ●
+const CHEVRON = '▼';        // ▼
+const EN_DASH = '–';        // –
+const HEART_LR = '↔';       // ↔
 
-
-/** Build a ref key string from a column reference */
-function refKey(ref) {
-  return `${ref.instanceId}|${ref.sheetId}|${ref.columnId}`;
+/** Format a number to d decimals, with dashes / infinities like legacy. */
+function fmt(v, d = 4) {
+  if (v == null) return EN_DASH;
+  if (v === Infinity) return '∞';        // ∞
+  if (v === -Infinity) return '−∞'; // −∞
+  if (Number.isNaN(v)) return EN_DASH;
+  return v.toFixed(d);
+}
+function fmtP(p) {
+  if (p == null || !isFinite(p)) return EN_DASH;
+  return p < 0.0001 ? '< 0.0001' : p.toFixed(4);
 }
 
-/**
- * Parse a free-text confidence-level entry into a decimal in (0, 1).
- * Accepts "95", "95 %", "95%", "0.95", "0,95", "97,5 %", …
- * Returns null for invalid or out-of-range input.
- * @param {string} raw
- * @returns {number | null}
- */
-function _parseConfPercent(raw) {
-  if (raw == null) return null;
-  const cleaned = String(raw).replace('%', '').replace(',', '.').trim();
-  if (cleaned === '') return null;
-  const n = parseFloat(cleaned);
-  if (!Number.isFinite(n)) return null;
-  const dec = n > 1 ? n / 100 : n;
-  if (dec <= 0 || dec >= 1) return null;
-  return dec;
-}
+const REC_NAMES = { pearson: 'Pearson r', spearman: `Spearman ${GLYPH_RHO}`, kendall: `Kendall ${GLYPH_TAU}` };
 
-/**
- * Format a decimal confidence level as a percent string for display,
- * stripping trailing zeros. 0.95 → "95 %", 0.975 → "97.5 %".
- * @param {number} dec
- * @returns {string}
- */
-function _formatConfPercent(dec) {
-  return `${+(dec * 100).toFixed(2)}`;
-}
-
-const mod = {
-  id: 'correlation',
-  phase: 'analyze',
-  icon: 'trending-up',
-  i18nKey: 'modules.correlation',
-  version: '1.1.0',
-
-  _container: null,
-  _context: null,
-  /** @type {Array<{ instanceId: string, sheetId: string, columnId: string }>} */
-  _colRefs: [],
-  _confidenceLevel: null,
-  /** @type {'pearson'|'spearman'|'kendall'} */
-  _matrixMethod: 'pearson',
-  _result: null,
-  _matrixResult: null,
-  /** @type {string|null} Worksheet instance this module created via loadExample,
-   *  removed and recreated on every subsequent example load so the column
-   *  picker doesn't accumulate stale sheets. */
-  _exampleWorksheetId: null,
-  /** @type {number|null} Filter: minimum |r| threshold (null = disabled) */
-  _filterMinR: null,
-  /** @type {number|null} Filter: maximum p-value threshold (null = disabled) */
-  _filterMaxP: null,
-  _selectedPair: null,
-  _renderGen: 0,
-  _eventUnsubs: [],
-  /** @type {string|null} Fingerprint of last successful analysis input (selection + data) */
-  _lastFingerprint: null,
-
-  help: () => import('./correlation-help.js'),
-
-  // ─── Lifecycle ──────────────────────────────────────────────
-
-  async init(container, context) {
-    this._container = container;
-    this._context = context;
-
-    if (!document.getElementById('correlation-css')) {
-      const link = document.createElement('link');
-      link.id = 'correlation-css';
-      link.rel = 'stylesheet';
-      link.href = './js/modules/correlation/correlation.css';
-      document.head.appendChild(link);
-    }
-
-    const onRefresh = () => {
-      this._refreshColumnList();
-      this._autoRun();
-    };
-    context.eventBus.on('state:saved', onRefresh);
-    context.eventBus.on('worksheet:dataChanged', onRefresh);
-    this._eventUnsubs.push(
-      () => context.eventBus.off('state:saved', onRefresh),
-      () => context.eventBus.off('worksheet:dataChanged', onRefresh),
-    );
-    const onAdd = ({ moduleId }) => { if (moduleId === 'worksheet') onRefresh(); };
-    context.eventBus.on('module:added', onAdd);
-    this._eventUnsubs.push(() => context.eventBus.off('module:added', onAdd));
-    const onRem = ({ moduleId }) => { if (moduleId === 'worksheet') onRefresh(); };
-    context.eventBus.on('module:removed', onRem);
-    this._eventUnsubs.push(() => context.eventBus.off('module:removed', onRem));
-    const onAct = ({ instanceId }) => { if (instanceId === context.instanceId) onRefresh(); };
-    context.eventBus.on('module:activated', onAct);
-    this._eventUnsubs.push(() => context.eventBus.off('module:activated', onAct));
-
-    const saved = context.stateManager.getModuleState(context.instanceId);
-    if (saved) {
-      // Migration: old format had colRefX / colRefY
-      if (saved.colRefs) {
-        this._colRefs = saved.colRefs;
-      } else if (saved.colRefX || saved.colRefY) {
-        this._colRefs = [saved.colRefX, saved.colRefY].filter(Boolean);
-      }
-      this._confidenceLevel = saved.confidenceLevel ?? null;
-      this._matrixMethod = saved.matrixMethod || 'pearson';
-      this._result = saved.result || null;
-      this._matrixResult = saved.matrixResult || null;
-      this._filterMinR = saved.filterMinR ?? null;
-      this._filterMaxP = saved.filterMaxP ?? null;
-    }
-
-    if (this._confidenceLevel == null) {
-      this._confidenceLevel = (context.stateManager.get('settings.confidenceLevel') ?? 95) / 100;
-    }
-
-    this._render();
-    this._autoRun();
+const mod = createModule({
+  config: {
+    id: 'correlation',
+    engine: 'alpine',
+    phase: 'analyze',
+    icon: 'trending-up',
+    version: '1.1.0',
+    meta: import.meta,
   },
+  Model: State,
 
-  async destroy() {
-    for (const unsub of this._eventUnsubs) unsub();
-    this._eventUnsubs = [];
-    this._destroyCharts();
-    this._container.innerHTML = '';
-  },
-
-  onLanguageChange() {
-    this._destroyCharts();
-    this._render();
-    if (this._colRefs.length === 2 && this._result) {
-      this._renderPairwiseResults(this._result);
-    } else if (this._colRefs.length > 2 && this._matrixResult) {
-      this._renderMatrixResults(this._matrixResult);
-    } else {
-      this._autoRun();
-    }
-  },
-
-  onThemeChange() {
-    this._destroyCharts();
-    if (this._colRefs.length === 2 && this._result?._x) {
-      this._renderScatterPlot(this._result);
-    } else if (this._colRefs.length > 2 && this._matrixResult?.pairs) {
-      this._renderMatrixScatterPlots(this._matrixResult);
-    }
-  },
-
-  getState() {
+  data(module, _t) {
     return {
-      colRefs: this._colRefs,
-      confidenceLevel: this._confidenceLevel,
-      matrixMethod: this._matrixMethod,
-      result: this._result || null,
-      matrixResult: this._matrixResult || null,
-      filterMinR: this._filterMinR,
-      filterMaxP: this._filterMaxP,
-      exampleWorksheetId: this._exampleWorksheetId,
-    };
-  },
+      // ── Glyph constants exposed to the template ──────────────
+      GLYPH_RHO, GLYPH_TAU, GLYPH_GE_R, GLYPH_LE_P, BULLET, CHEVRON,
 
-  setState(data) {
-    if (data?.colRefs) this._colRefs = data.colRefs;
-    if (data?.confidenceLevel) this._confidenceLevel = data.confidenceLevel;
-    if (data?.matrixMethod) this._matrixMethod = data.matrixMethod;
-    if (data?.result) this._result = data.result;
-    if (data?.matrixResult) this._matrixResult = data.matrixResult;
-    this._filterMinR = data?.filterMinR ?? null;
-    this._filterMaxP = data?.filterMaxP ?? null;
-    if (data?.exampleWorksheetId !== undefined) this._exampleWorksheetId = data.exampleWorksheetId;
-    this._lastFingerprint = null;
-    if (this._container) {
-      this._render();
-      this._autoRun();
-    }
-  },
+      // ── Transient view state (never persisted) ───────────────
+      result: null,         // pairwise engine result (or { error })
+      matrixResult: null,   // raw matrix from model.computeMatrix
+      matrixView: { names: [], rows: [] },
+      cards: [],
+      statGroups: [],
+      filteredPairs: [],
+      recTooltipLines: [],
+      errorKey: null,
+      _errN: 0,
+      hoverRow: -1,
+      hoverCol: -1,
+      selectedPair: null,
+      collapsedPairs: {},   // key → true when collapsed
+      allCollapsed: false,
+      _charts: [],
+      _unsubs: [],
+      _renderGen: 0,
+      _lastFingerprint: null,
 
-  /**
-   * Load a catalog example. Provisioned worksheet + state placeholders are
-   * rewritten to point at the new instance, then auto-run computes the
-   * correlation matrix / pair analysis.
-   * @param {{ meta: object, data: object }} payload
-   */
-  async loadExample(payload) {
-    if (!payload || !payload.data) return;
-    const t = (k) => this._context.i18n.t(k);
+      // ── stateManager accessor ────────────────────────────────
+      sm() { return module._context?.stateManager; },
 
-    const hasContent = (this._colRefs?.length > 0);
-    if (hasContent && this._context?.confirmPopout) {
-      const ok = await this._context.confirmPopout(t('moduleHelp.confirmOverwrite'), { danger: true });
-      if (!ok) return;
-    }
+      // ── Column list ──────────────────────────────────────────
+      colGroups() { return this.model.columnGroups(this.sm()); },
+      colKey(col) { return refToKey(col); },
+      colDisplayName(col) {
+        return col.columnName ? `${col.shortName} ${EN_DASH} ${col.columnName}` : col.shortName;
+      },
+      toggleColumn(col) {
+        this.model.toggleColumn(col);
+        this.result = null;
+        this.matrixResult = null;
+        this._lastFingerprint = null;
+        this.autoRun();
+      },
 
-    const data = { ...payload.data };
+      // ── Selected-info hint ───────────────────────────────────
+      selectedInfoText() {
+        const n = this.model.colRefs.length;
+        if (n === 0) return _t('selectMinTwo');
+        if (n === 1) return _t('selectOneMore');
+        if (n === 2) return _t('pairwiseMode');
+        return _t('matrixMode', { n });
+      },
+      selectedInfoClass() {
+        return this.model.colRefs.length < 2 ? 'corr__hint' : 'corr__col-info';
+      },
 
-    if (data.sourceWorksheetData) {
-      const wsState = data.sourceWorksheetData;
-      delete data.sourceWorksheetData;
-      // Discard the previous example-provisioned worksheet (if any) so the
-      // column picker doesn't accumulate stale sheets across re-loads.
-      if (this._exampleWorksheetId) {
-        removeProvisionedWorksheet(this._context, this._exampleWorksheetId);
-        this._exampleWorksheetId = null;
-      }
-      const ref = provisionWorksheet(this._context, wsState);
-      if (ref) {
-        this._exampleWorksheetId = ref.instanceId;
-        data.exampleWorksheetId = ref.instanceId;
-        data.colRefs = (data.colRefs || []).map(r =>
-          r?.instanceId === '__source__' ? { ...r, instanceId: ref.instanceId } : r,
-        );
-      }
-    }
+      // ── Confidence level ─────────────────────────────────────
+      confDisplay() { return formatConfPercent(this.model.confidenceLevel); },
+      confPctText() { return String(Math.round(this.model.confidenceLevel * 100)); },
+      commitConf(event) {
+        const input = event.target;
+        const parsed = parseConfPercent(input.value);
+        if (parsed == null) { input.value = formatConfPercent(this.model.confidenceLevel); return; }
+        if (parsed === this.model.confidenceLevel) { input.value = formatConfPercent(parsed); return; }
+        this.model.confidenceLevel = parsed;
+        input.value = formatConfPercent(parsed);
+        this._lastFingerprint = null;
+        this.autoRun();
+      },
+      confKeydown(event) {
+        if (event.key === 'Enter') { event.preventDefault(); event.target.blur(); }
+      },
 
-    // Drop any computed result from the snapshot — auto-run recomputes.
-    delete data.result;
-    delete data.matrixResult;
+      // ── Error box ────────────────────────────────────────────
+      errorText() {
+        if (!this.errorKey) return '';
+        if (this.errorKey === 'errMin4') return _t('errMin4', { n: this._errN ?? 0 });
+        return _t(this.errorKey);
+      },
+      errorDisplay() { return this.errorKey ? 'display:block' : 'display:none'; },
 
-    this.setState(data);
+      // ── Mode ─────────────────────────────────────────────────
+      mode() {
+        const n = this.model.colRefs.length;
+        if (n === 2 && this.result && !this.result.error) return 'pairwise';
+        if (n > 2 && this.matrixResult) return 'matrix';
+        return 'none';
+      },
 
-    const lang = this._context.i18n.getLanguage();
-    const title = payload.meta?.title?.[lang] || payload.meta?.title?.en || payload.meta?.id || '';
-    this._context.notify?.(t('moduleHelp.exampleLoaded').replace('{title}', title), 'success');
-  },
+      // ── Auto-run (recompute + chart mount) ───────────────────
+      autoRun() {
+        if (!module._container) return;
+        if (this.model.colRefs.length < 2) { this.clearResults(); return; }
+        const fp = this.model.inputFingerprint(this.sm());
+        if (fp === this._lastFingerprint && (this.result || this.matrixResult)) return;
+        this._lastFingerprint = fp;
+        this.runAnalysis();
+      },
 
-  // ─── Worksheet Column Discovery ─────────────────────────────
+      clearResults() {
+        this.result = null;
+        this.matrixResult = null;
+        this.matrixView = { names: [], rows: [] };
+        this.cards = [];
+        this.statGroups = [];
+        this.filteredPairs = [];
+        this.errorKey = null;
+        this.selectedPair = null;
+        // Reset index-keyed collapse state so stale "i-j" keys from a prior
+        // column-set don't apply to a different pair after a re-analysis.
+        this.collapsedPairs = {};
+        this.allCollapsed = false;
+        this._lastFingerprint = null;
+        this._renderGen++;
+        this.destroyCharts();
+      },
 
-  /** Accepted column types for correlation (everything except plain text). */
-  _CORR_TYPES: new Set(['numeric', 'currency', 'percent', 'date', 'time']),
+      runAnalysis() {
+        this.errorKey = null;
+        this._renderGen++;
+        this.destroyCharts();
+        const n = this.model.colRefs.length;
+        if (n < 2) return;
+        if (n === 2) this.runPairwise();
+        else this.runMatrix();
+      },
 
-  /**
-   * Convert a date string ("YYYY-MM-DD") to epoch ms.
-   * @param {string} s
-   * @returns {number|null}
-   */
-  _dateToNum(s) {
-    if (typeof s !== 'string') return null;
-    const t = Date.parse(s);
-    return Number.isFinite(t) ? t : null;
-  },
+      runPairwise() {
+        this.matrixResult = null;
+        const res = this.model.computePairwise(this.sm());
+        if (!res) { this.result = null; return; }
+        if (res.error) {
+          this.errorKey = res.error;
+          this._errN = res.n;
+          this.result = null;
+          return;
+        }
+        this.result = res;
+        this.buildPairwiseView(res);
+        this.$nextTick(() => this.mountScatter(res));
+      },
 
-  /**
-   * Convert a time string ("HH:MM" or "HH:MM:SS") to seconds since midnight.
-   * @param {string} s
-   * @returns {number|null}
-   */
-  _timeToNum(s) {
-    if (typeof s !== 'string') return null;
-    const m = s.match(/^(\d{1,2}):(\d{2})(?::(\d{2}))?$/);
-    if (!m) return null;
-    return parseInt(m[1]) * 3600 + parseInt(m[2]) * 60 + (m[3] ? parseInt(m[3]) : 0);
-  },
+      runMatrix() {
+        this.result = null;
+        // Fresh collapse state per analysis: "i-j" keys are index-based, so a
+        // changed column-set must not inherit collapse flags from the old one.
+        this.collapsedPairs = {};
+        this.allCollapsed = false;
+        const m = this.model.computeMatrix(this.sm());
+        this.matrixResult = m;
+        this.selectedPair = null;
+        this.buildMatrixView(m);
+        this.$nextTick(() => this.mountMatrixScatters(m));
+      },
 
-  /**
-   * Convert a single cell value to a number, respecting column type.
-   * @param {*} val
-   * @param {string} colType
-   * @returns {number|null}
-   */
-  _toNumeric(val, colType) {
-    if (val == null) return null;
-    if (colType === 'date') return this._dateToNum(val);
-    if (colType === 'time') return this._timeToNum(val);
-    // numeric / currency / percent — already numbers
-    return (typeof val === 'number' && !isNaN(val)) ? val : null;
-  },
+      // ── View builders (pairwise) ─────────────────────────────
+      buildPairwiseView(result) {
+        const { pearson, spearman, kendall, recommendation, descriptive, diagnostics, n, df } = result;
 
-  _getWorksheetColumns() {
-    const sm = this._context?.stateManager;
-    if (!sm) return [];
-    const columns = [];
-    for (const phase of Object.keys(sm.get('phases') || {})) {
-      const instances = sm.get(`phases.${phase}`) ?? [];
-      for (const inst of instances) {
-        if (inst.moduleId !== 'worksheet') continue;
-        const ws = sm.getModuleState(inst.instanceId);
-        if (!ws?.sheets) continue;
-        for (const sheet of ws.sheets) {
-          if (!sheet.state?.columns) continue;
-          for (const col of sheet.state.columns) {
-            if (!this._CORR_TYPES.has(col.type)) continue;
-            const numericCount = (col.values || []).filter(v => this._toNumeric(v, col.type) !== null).length;
-            if (numericCount < 5) continue;
-            columns.push({
-              instanceId: inst.instanceId,
-              sheetId: sheet.id,
-              sheetName: sheet.name,
-              columnId: col.id,
-              columnName: col.name || '',
-              shortName: col.shortName || '?',
-              valueCount: numericCount,
-              colType: col.type,
+        const corrColor = (r) => {
+          const a = Math.abs(r);
+          if (a >= 0.7) return r > 0 ? 'var(--color-success)' : 'var(--color-error)';
+          if (a >= 0.4) return 'var(--color-warning)';
+          return 'var(--color-text-tertiary)';
+        };
+        const interpretR = (r) => {
+          const a = Math.abs(r);
+          const dir = r >= 0 ? 'pos' : 'neg';
+          if (a >= 0.9) return _t(`interpVeryStrong_${dir}`);
+          if (a >= 0.7) return _t(`interpStrong_${dir}`);
+          if (a >= 0.5) return _t(`interpModerate_${dir}`);
+          if (a >= 0.3) return _t(`interpWeak_${dir}`);
+          return _t('interpVeryWeak');
+        };
+        const toP = (v) => ((v + 1) / 2) * 100;
+
+        // Recommendation tooltip lines.
+        const lines = [`${_t('recommendation')}: ${REC_NAMES[recommendation.best]}`];
+        for (const r of recommendation.reasons) {
+          const ico = r.ok ? '✓' : '⚠'; // ✓ / ⚠
+          lines.push(`${ico} ${_t(r.key, r.params)}`);
+        }
+        this.recTooltipLines = lines;
+
+        const makeCard = (method, label, rVal, stats, ci) => {
+          const color = corrColor(rVal);
+          return {
+            method, label, color,
+            recClass: recommendation.best === method ? 'result-card--recommended' : '',
+            rText: fmt(rVal),
+            interp: interpretR(rVal),
+            stats,
+            ciFillStyle: `background:${color};left:${toP(ci[0])}%;width:${toP(ci[1]) - toP(ci[0])}%`,
+            ciPointStyle: `left:${toP(rVal)}%`,
+            ciLow: fmt(ci[0]),
+            ciHigh: fmt(ci[1]),
+          };
+        };
+
+        this.cards = [
+          makeCard('pearson', 'Pearson r', pearson.r, [
+            { label: _t('pValue'), value: fmtP(pearson.p) },
+            { label: _t('tStat'), value: fmt(pearson.t) },
+            { label: 'R²', value: `${fmt(pearson.r2)} (${(pearson.r2 * 100).toFixed(1)} %)` },
+          ], pearson.ci),
+          makeCard('spearman', `Spearman ${GLYPH_RHO}`, spearman.r, [
+            { label: _t('pValue'), value: fmtP(spearman.p) },
+            { label: _t('tStat'), value: fmt(spearman.t) },
+            { label: `${GLYPH_RHO}²`, value: `${fmt(spearman.r2)} (${(spearman.r2 * 100).toFixed(1)} %)` },
+          ], spearman.ci),
+          makeCard('kendall', `Kendall ${GLYPH_TAU}`, kendall.tau, [
+            { label: _t('pValue'), value: fmtP(kendall.p) },
+            { label: _t('zStat'), value: fmt(kendall.z) },
+            { label: _t('concordant'), value: String(kendall.concordant) },
+            { label: _t('discordant'), value: String(kendall.discordant) },
+          ], kendall.ci),
+        ];
+
+        const normXColor = diagnostics.normX.normal ? 'var(--color-success)' : 'var(--color-warning)';
+        const normYColor = diagnostics.normY.normal ? 'var(--color-success)' : 'var(--color-warning)';
+        const monoColor = diagnostics.mono >= 0.85 ? 'var(--color-success)'
+          : diagnostics.mono >= 0.7 ? 'var(--color-warning)' : 'var(--color-error)';
+        const outlierColor = diagnostics.outliers === 0 ? 'var(--color-success)' : 'var(--color-warning)';
+
+        this.statGroups = [
+          {
+            title: _t('descriptiveStats'),
+            rows: [
+              { label: 'n', value: String(n) },
+              { label: _t('degreesOfFreedom'), value: String(df) },
+              { label: _t('meanX'), value: fmt(descriptive.meanX, 3) },
+              { label: _t('meanY'), value: fmt(descriptive.meanY, 3) },
+              { label: _t('stdDevX'), value: fmt(descriptive.stdX, 3) },
+              { label: _t('stdDevY'), value: fmt(descriptive.stdY, 3) },
+              { label: _t('covariance'), value: fmt(descriptive.cov, 3) },
+            ],
+          },
+          {
+            title: _t('diagnostics'),
+            rows: [
+              { label: _t('normalityX'), value: `${diagnostics.normX.label} (JB=${diagnostics.normX.jb.toFixed(2)})`, style: `color:${normXColor}` },
+              { label: _t('normalityY'), value: `${diagnostics.normY.label} (JB=${diagnostics.normY.jb.toFixed(2)})`, style: `color:${normYColor}` },
+              { label: _t('skewnessX'), value: fmt(diagnostics.skewX, 3) },
+              { label: _t('skewnessY'), value: fmt(diagnostics.skewY, 3) },
+              { label: _t('kurtosisX'), value: fmt(diagnostics.kurtX, 3) },
+              { label: _t('kurtosisY'), value: fmt(diagnostics.kurtY, 3) },
+              { label: _t('monotonicityIndex'), value: `${(diagnostics.mono * 100).toFixed(1)} %`, style: `color:${monoColor}` },
+              { label: _t('outliers'), value: diagnostics.outliers === 0 ? _t('none') : String(diagnostics.outliers), style: `color:${outlierColor}` },
+            ],
+          },
+        ];
+      },
+
+      // ── View builders (matrix) ───────────────────────────────
+      cellPassesFilter(r, p) {
+        const minR = this.model.filterMinR;
+        const maxP = this.model.filterMaxP;
+        if (minR == null && maxP == null) return true;
+        if (isNaN(r)) return false;
+        if (minR != null && Math.abs(r) < minR) return false;
+        if (maxP != null && (p == null || p > maxP)) return false;
+        return true;
+      },
+
+      buildMatrixView(matrixResult) {
+        const { names, matrix, ciMatrix, pMatrix, nMatrix, pairs } = matrixResult;
+        const k = names.length;
+        const method = this.model.matrixMethod;
+        const mat = matrix[method];
+        const ciMat = ciMatrix[method];
+        const pMat = pMatrix[method];
+
+        const corrColor = (r) => {
+          if (isNaN(r)) return 'var(--color-text-tertiary)';
+          const a = Math.abs(r);
+          if (a >= 0.7) return r > 0 ? 'var(--color-success)' : 'var(--color-error)';
+          if (a >= 0.4) return 'var(--color-warning)';
+          return 'var(--color-text-tertiary)';
+        };
+        const corrBg = (r) => {
+          if (isNaN(r)) return 'transparent';
+          const a = Math.abs(r);
+          return r > 0 ? `rgba(34, 197, 94, ${a * 0.25})` : `rgba(239, 68, 68, ${a * 0.25})`;
+        };
+
+        const rows = [];
+        for (let i = 0; i < k; i++) {
+          const row = [];
+          for (let j = 0; j < k; j++) {
+            if (j > i) {
+              row.push({ kind: 'empty', cls: 'corr__matrix-cell corr__matrix-cell--empty', style: '', title: '' });
+              continue;
+            }
+            if (i === j) {
+              row.push({ kind: 'diag', cls: 'corr__matrix-cell corr__matrix-cell--diag', style: '', title: '' });
+              continue;
+            }
+            const r = mat[i][j];
+            const p = pMat[i][j];
+            const passes = this.cellPassesFilter(r, p);
+            const color = corrColor(r);
+            const bg = passes ? corrBg(r) : 'transparent';
+            const ci = ciMat[i][j];
+            row.push({
+              kind: 'value',
+              cls: `corr__matrix-cell${  passes ? '' : ' corr__matrix-cell--dimmed'}`,
+              style: `background:${bg};color:${color}`,
+              title: `n = ${nMatrix[i][j]}`,
+              val: isNaN(r) ? EN_DASH : fmt(r),
+              pStr: p != null ? fmtP(p) : '',
+              ciStr: ci ? `[${fmt(ci[0], 3)}, ${fmt(ci[1], 3)}]` : '',
             });
           }
+          rows.push(row);
         }
-      }
-    }
-    return columns;
-  },
+        this.matrixView = { names, rows };
 
-  /**
-   * Resolve column metadata (including type) for a ref.
-   * @private
-   */
-  _resolveColumn(ref) {
-    if (!ref) return null;
-    const sm = this._context?.stateManager;
-    if (!sm) return null;
-    const ws = sm.getModuleState(ref.instanceId);
-    if (!ws?.sheets) return null;
-    const sheet = ws.sheets.find(s => s.id === ref.sheetId);
-    if (!sheet?.state?.columns) return null;
-    return sheet.state.columns.find(c => c.id === ref.columnId) || null;
-  },
+        // Filtered upper-triangle pairs for scatter cards.
+        const corrColorF = corrColor;
+        this.filteredPairs = (pairs || []).filter(pair => {
+          if (pair.x.length < 4) return false;
+          return this.cellPassesFilter(mat[pair.i][pair.j], pMat[pair.i][pair.j]);
+        }).map(pair => {
+          const r = mat[pair.i][pair.j];
+          const p = pMat[pair.i][pair.j];
+          const ci = ciMat[pair.i][pair.j];
+          return {
+            i: pair.i, j: pair.j,
+            key: `${pair.i}-${pair.j}`,
+            titleText: `${names[pair.i]} ${HEART_LR} ${names[pair.j]}`,
+            color: corrColorF(r),
+            rLabel: isNaN(r) ? EN_DASH : fmt(r, 3),
+            pLabel: p != null ? fmtP(p) : EN_DASH,
+            ciLabel: ci ? `[${fmt(ci[0], 3)}, ${fmt(ci[1], 3)}]` : '',
+          };
+        });
+      },
 
-  _getColumnValues(ref) {
-    const col = this._resolveColumn(ref);
-    if (!col) return [];
-    return (col.values || [])
-      .map(v => this._toNumeric(v, col.type))
-      .filter(v => v !== null);
-  },
+      setMethod(method) {
+        this.model.matrixMethod = method;
+        if (this.matrixResult) {
+          this._renderGen++;
+          this.destroyCharts();
+          this.selectedPair = null;
+          this.buildMatrixView(this.matrixResult);
+          this.$nextTick(() => this.mountMatrixScatters(this.matrixResult));
+        }
+      },
 
-  /**
-   * Get raw column values converted to numbers (including nulls) for row-aligned pairing.
-   */
-  _getRawColumnValues(ref) {
-    const col = this._resolveColumn(ref);
-    if (!col) return [];
-    return (col.values || []).map(v => this._toNumeric(v, col.type));
-  },
+      // ── Matrix filter inputs ─────────────────────────────────
+      filterMinRDisplay() { return this.model.filterMinR != null ? String(this.model.filterMinR) : ''; },
+      filterMaxPDisplay() { return this.model.filterMaxP != null ? String(this.model.filterMaxP) : ''; },
+      applyFilterMinR(event) {
+        const v = event.target.value.trim();
+        this.model.filterMinR = v !== '' ? parseFloat(v) : null;
+        this.rerenderMatrix();
+      },
+      applyFilterMaxP(event) {
+        const v = event.target.value.trim();
+        this.model.filterMaxP = v !== '' ? parseFloat(v) : null;
+        this.rerenderMatrix();
+      },
+      rerenderMatrix() {
+        if (!this.matrixResult) return;
+        this._renderGen++;
+        this.destroyCharts();
+        this.buildMatrixView(this.matrixResult);
+        this.$nextTick(() => this.mountMatrixScatters(this.matrixResult));
+      },
 
-  _getColumnName(ref) {
-    if (!ref) return '?';
-    const sm = this._context?.stateManager;
-    if (!sm) return '?';
-    const ws = sm.getModuleState(ref.instanceId);
-    if (!ws?.sheets) return '?';
-    const sheet = ws.sheets.find(s => s.id === ref.sheetId);
-    if (!sheet?.state?.columns) return '?';
-    const col = sheet.state.columns.find(c => c.id === ref.columnId);
-    return col ? (col.name || col.shortName) : '?';
-  },
+      // ── Matrix hover / select / collapse (transient) ─────────
+      matrixHover(event) {
+        const cell = event.target.closest('[data-row][data-col]');
+        if (!cell) return;
+        this.hoverRow = cell.dataset.row;
+        this.hoverCol = cell.dataset.col;
+      },
+      matrixHoverClear() { this.hoverRow = -1; this.hoverCol = -1; },
+      hoverClass(i, j) {
+        const hr = this.hoverRow, hc = this.hoverCol;
+        if (hr === -1 && hc === -1) return '';
+        const match = String(i) === String(hr) || String(j) === String(hc);
+        return match ? ' corr__matrix--highlight' : '';
+      },
+      matrixClick(event) {
+        const cell = event.target.closest('[data-row][data-col]');
+        if (!cell) return;
+        const row = parseInt(cell.dataset.row, 10);
+        const col = parseInt(cell.dataset.col, 10);
+        if (row === col || cell.classList.contains('corr__matrix-cell--empty')) return;
+        if (!this.filteredPairs.length) return;
+        const pairI = Math.max(row, col);
+        const pairJ = Math.min(row, col);
+        const pairKey = `${pairI}-${pairJ}`;
+        this.selectedPair = this.selectedPair === pairKey ? null : pairKey;
+      },
+      selectClass(i, j) {
+        if (!this.selectedPair) return '';
+        const [pi, pj] = this.selectedPair.split('-').map(Number);
+        const match = (i === pi && j === pj) || (i === pj && j === pi);
+        return match ? ' corr__matrix-cell--selected' : '';
+      },
+      plotCardClass(pair) {
+        return this.collapsedPairs[pair.key] ? 'corr__matrix-plot-card--collapsed' : '';
+      },
+      plotCardDisplay(pair) {
+        if (!this.selectedPair) return '';
+        return this.selectedPair === pair.key ? '' : 'display:none';
+      },
+      togglePlot(key) {
+        this.collapsedPairs = { ...this.collapsedPairs, [key]: !this.collapsedPairs[key] };
+      },
+      collapseAllLabel() { return this.allCollapsed ? _t('expandAll') : _t('collapseAll'); },
+      toggleAllPlots() {
+        const next = !this.allCollapsed;
+        const map = {};
+        for (const pair of this.filteredPairs) map[pair.key] = next;
+        this.collapsedPairs = map;
+        this.allCollapsed = next;
+      },
 
-  _hasWorksheet() {
-    const sm = this._context?.stateManager;
-    if (!sm) return false;
-    for (const phase of Object.keys(sm.get('phases') || {})) {
-      const instances = sm.get(`phases.${phase}`) ?? [];
-      if (instances.some(i => i.moduleId === 'worksheet')) return true;
-    }
-    return false;
-  },
+      // ── Chart mounting (imperative — sanctioned chart tier) ──
+      //
+      // Scatter anchors live INSIDE Alpine `x-if`/`x-for` templates (the
+      // pairwise `scatter-plot` anchor under `x-if="mode()==='pairwise'"`, the
+      // per-pair `matrix-plot-*` anchors under a nested `x-if`+`x-for`). Alpine
+      // materialises those deeply-nested nodes over several reactive flush
+      // cycles, so a single `$nextTick` can fire BEFORE the anchors exist in the
+      // DOM — `querySelector` then returns null and no chart mounts (the blank
+      // cards). `_whenAnchor` waits across animation frames (bounded) until the
+      // anchor is present before mounting, aborting if a newer render started.
+      _whenAnchor(selector, gen, maxFrames = 30) {
+        return new Promise((resolve) => {
+          const tick = (left) => {
+            if (gen !== this._renderGen) { resolve(null); return; }
+            const el = module._container?.querySelector(selector);
+            if (el) { resolve(el); return; }
+            if (left <= 0) { resolve(null); return; }
+            requestAnimationFrame(() => tick(left - 1));
+          };
+          tick(maxFrames);
+        });
+      },
 
-  // ─── Paired values (align two columns by row index) ────────
+      async mountScatter(result) {
+        const gen = this._renderGen;
+        if (!result._x || !result._y) return;
+        const plotEl = await this._whenAnchor('[data-ref="scatter-plot"]', gen);
+        if (!plotEl) return;
+        const x = result._x, y = result._y;
+        const { slope, intercept, xMin, xMax } = this._regression(x, y);
+        await this._mkScatter(plotEl, gen, {
+          xLabel: result._nameX || 'X', yLabel: result._nameY || 'Y', showLegend: true,
+          dataName: _t('dataPoints'), lineName: _t('regressionLine'),
+          x, y, slope, intercept, xMin, xMax,
+        });
+      },
 
-  _getPairedValues(refA, refB) {
-    if (!refA || !refB) return null;
-    const valsA = this._getRawColumnValues(refA);
-    const valsB = this._getRawColumnValues(refB);
-    const len = Math.min(valsA.length, valsB.length);
-    const a = [], b = [];
-    for (let i = 0; i < len; i++) {
-      const va = valsA[i], vb = valsB[i];
-      if (va !== null && vb !== null) {
-        a.push(va);
-        b.push(vb);
-      }
-    }
-    return { x: a, y: b };
-  },
+      async mountMatrixScatters(matrixResult) {
+        const gen = this._renderGen;
+        const { names } = matrixResult;
+        for (const pair of this.filteredPairs) {
+          if (this._renderGen !== gen) return;
+          if (pair.i == null) continue;
+          const raw = matrixResult.pairs.find(p => p.i === pair.i && p.j === pair.j);
+          if (!raw || raw.x.length < 4) continue;
+          const plotEl = await this._whenAnchor(`[data-ref="matrix-plot-${pair.key}"]`, gen);
+          if (!plotEl) continue;
+          const { slope, intercept, xMin, xMax } = this._regression(raw.x, raw.y);
+          await this._mkScatter(plotEl, gen, {
+            xLabel: names[pair.i], yLabel: names[pair.j], showLegend: false,
+            dataName: _t('dataPoints'), lineName: '',
+            x: raw.x, y: raw.y, slope, intercept, xMin, xMax,
+          });
+        }
+      },
 
-  // ─── Column ref helpers ─────────────────────────────────────
+      _regression(x, y) {
+        let sumX = 0, sumY = 0;
+        for (let n = 0; n < x.length; n++) { sumX += x[n]; sumY += y[n]; }
+        const mx = sumX / x.length, my = sumY / x.length;
+        let num = 0, den = 0;
+        for (let n = 0; n < x.length; n++) {
+          num += (x[n] - mx) * (y[n] - my);
+          den += (x[n] - mx) * (x[n] - mx);
+        }
+        const slope = den ? num / den : 0;
+        return { slope, intercept: my - slope * mx, xMin: Math.min(...x), xMax: Math.max(...x) };
+      },
 
-  _isSelected(col) {
-    const key = `${col.instanceId}|${col.sheetId}|${col.columnId}`;
-    return this._colRefs.some(r => refKey(r) === key);
-  },
+      async _mkScatter(plotEl, gen, o) {
+        const chart = await module._context.chartManager.create(plotEl, 'scatter', {
+          xLabel: o.xLabel, yLabel: o.yLabel, showLegend: o.showLegend,
+          series: [
+            { name: o.dataName, color: 'var(--color-chart-1)', markerSize: 4, strokeWidth: 0.75, x: o.x, y: o.y, symbol: 'circle' },
+            {
+              name: o.lineName, color: 'rgba(0,0,0,0)', stroke: 'rgba(0,0,0,0)', markerSize: 0,
+              x: [o.xMin, o.xMax], y: [o.slope * o.xMin + o.intercept, o.slope * o.xMax + o.intercept],
+              connectLine: { show: true, dash: 'solid', width: 2, color: 'var(--color-error)', foreground: true },
+            },
+          ],
+        });
+        if (gen !== this._renderGen) { try { module._context.chartManager.destroy(chart); } catch { /* ignore */ } return; }
+        this._charts.push(chart);
+      },
 
-  _toggleColumn(col) {
-    const key = `${col.instanceId}|${col.sheetId}|${col.columnId}`;
-    const idx = this._colRefs.findIndex(r => refKey(r) === key);
-    if (idx >= 0) {
-      this._colRefs.splice(idx, 1);
-    } else {
-      this._colRefs.push({ instanceId: col.instanceId, sheetId: col.sheetId, columnId: col.columnId });
-    }
-    this._result = null;
-    this._matrixResult = null;
-    this._save();
-    this._refreshColumnList();
-    this._autoRun();
-  },
+      destroyCharts() {
+        for (const chart of this._charts) {
+          try { module._context.chartManager.destroy(chart); } catch { /* ignore */ }
+        }
+        this._charts = [];
+      },
 
-  // ─── Render ─────────────────────────────────────────────────
+      // ── Lifecycle ────────────────────────────────────────────
+      init() {
+        const ctx = module._context;
 
-  _render() {
-    const t = (k, v) => this._context.i18n.t(`modules.correlation.${k}`, v);
+        // Default confidence from app settings on a fresh module.
+        if (this.model.confidenceLevel == null) {
+          this.model.confidenceLevel = (ctx.stateManager.get('settings.confidenceLevel') ?? 95) / 100;
+        }
 
-    this._container.innerHTML = `
-      <div class="corr dmike-split">
-        <div class="corr__input dmike-split__input">
-          <div class="dmike-split__section-title">${t('sectionData')}</div>
+        const onRefresh = () => {
+          if (isPickerFocused(module._container)) return;
+          this.autoRun();
+        };
+        const eb = ctx.eventBus;
+        eb.on('state:saved', onRefresh);
+        eb.on('worksheet:dataChanged', onRefresh);
+        this._unsubs.push(
+          () => eb.off('state:saved', onRefresh),
+          () => eb.off('worksheet:dataChanged', onRefresh),
+        );
+        const onMod = ({ moduleId }) => { if (moduleId === 'worksheet') onRefresh(); };
+        eb.on('module:added', onMod);
+        eb.on('module:removed', onMod);
+        this._unsubs.push(() => eb.off('module:added', onMod), () => eb.off('module:removed', onMod));
+        const onAct = ({ instanceId }) => { if (instanceId === ctx.instanceId) onRefresh(); };
+        eb.on('module:activated', onAct);
+        this._unsubs.push(() => eb.off('module:activated', onAct));
+        const onTheme = () => {
+          if (this.result && !this.result.error) { this._renderGen++; this.destroyCharts(); this.$nextTick(() => this.mountScatter(this.result)); }
+          else if (this.matrixResult) { this.rerenderMatrix(); }
+        };
+        eb.on('theme:changed', onTheme);
+        this._unsubs.push(() => eb.off('theme:changed', onTheme));
 
-          <div class="field-group">
-            <label>${t('selectColumns')}</label>
-            <div class="corr__col-list-wrap" data-ref="col-list">
-              ${this._buildColumnListHTML()}
-            </div>
-          </div>
+        this.$nextTick(() => this.autoRun());
+      },
 
-          <div class="corr__selected-info" data-ref="selected-info">
-            ${this._buildSelectedInfoHTML()}
-          </div>
-
-          <div class="field-group">
-            <label>${t('confidenceLevel')} (%)</label>
-            <input type="text" class="field field--num" data-ref="conf-input" inputmode="decimal"
-              value="${_formatConfPercent(this._confidenceLevel)}" placeholder="95">
-          </div>
-
-          <div class="corr__error" data-ref="error-box"></div>
-        </div>
-
-        <div class="corr__output dmike-split__output">
-          <div data-ref="results"></div>
-        </div>
-      </div>
-    `;
-
-    this._bindEvents();
-  },
-
-  _buildColumnListHTML() {
-    const t = (k, v) => this._context.i18n.t(`modules.correlation.${k}`, v);
-    if (!this._hasWorksheet()) {
-      return `<div class="corr__hint">${t('noWorksheet')}</div>`;
-    }
-    const columns = this._getWorksheetColumns();
-    if (columns.length === 0) {
-      return `<div class="corr__hint">${t('noNumericColumns')}</div>`;
-    }
-
-    let html = '';
-    let currentGroup = '';
-    for (const col of columns) {
-      if (col.sheetName !== currentGroup) {
-        if (currentGroup) html += '</div>';
-        html += `<div class="corr__col-group"><div class="corr__col-group-label">${esc(col.sheetName)}</div>`;
-        currentGroup = col.sheetName;
-      }
-      const key = `${col.instanceId}|${col.sheetId}|${col.columnId}`;
-      const checked = this._isSelected(col) ? ' checked' : '';
-      const displayName = col.columnName
-        ? `${col.shortName} \u2013 ${col.columnName}`
-        : col.shortName;
-      html += `
-        <label class="corr__col-item">
-          <input type="checkbox" data-col-key="${key}"${checked}>
-          <span class="corr__col-name">${esc(displayName)}</span>
-          <span class="corr__col-count">n=${col.valueCount}</span>
-        </label>`;
-    }
-    if (currentGroup) html += '</div>';
-    return html;
-  },
-
-  _buildSelectedInfoHTML() {
-    const t = (k, v) => this._context.i18n.t(`modules.correlation.${k}`, v);
-    const n = this._colRefs.length;
-    if (n === 0) return `<span class="corr__hint">${t('selectMinTwo')}</span>`;
-    if (n === 1) return `<span class="corr__hint">${t('selectOneMore')}</span>`;
-    if (n === 2) return `<span class="corr__col-info">${t('pairwiseMode')}</span>`;
-    return `<span class="corr__col-info">${t('matrixMode', { n })}</span>`;
-  },
-
-  _refreshColumnList() {
-    if (isPickerFocused(this._container)) return;
-
-    const wrap = this._container?.querySelector('[data-ref="col-list"]');
-    if (wrap) {
-      wrap.innerHTML = this._buildColumnListHTML();
-      this._bindColumnCheckboxes();
-    }
-    const info = this._container?.querySelector('[data-ref="selected-info"]');
-    if (info) info.innerHTML = this._buildSelectedInfoHTML();
-  },
-
-  _bindEvents() {
-    const c = this._container;
-
-    const confInput = c.querySelector('[data-ref="conf-input"]');
-    const commitConf = () => {
-      const parsed = _parseConfPercent(confInput.value);
-      if (parsed == null) {
-        // Invalid → revert to last good value
-        confInput.value = _formatConfPercent(this._confidenceLevel);
-        return;
-      }
-      if (parsed === this._confidenceLevel) {
-        confInput.value = _formatConfPercent(parsed);
-        return;
-      }
-      this._confidenceLevel = parsed;
-      confInput.value = _formatConfPercent(parsed);
-      this._save();
-      this._autoRun();
+      destroy() {
+        for (const u of this._unsubs) u();
+        this._unsubs = [];
+        // Bump the render generation so any in-flight `_whenAnchor` rAF-poll
+        // aborts on its next tick instead of running its full frame budget
+        // after teardown.
+        this._renderGen++;
+        this.destroyCharts();
+      },
     };
-    confInput.addEventListener('change', commitConf);
-    confInput.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') { e.preventDefault(); confInput.blur(); }
-    });
-
-    this._bindColumnCheckboxes();
   },
+});
 
-  _bindColumnCheckboxes() {
-    const checkboxes = this._container.querySelectorAll('[data-col-key]');
-    checkboxes.forEach(cb => {
-      cb.addEventListener('change', () => {
-        const [instanceId, sheetId, columnId] = cb.dataset.colKey.split('|');
-        this._toggleColumn({ instanceId, sheetId, columnId });
-      });
-    });
-  },
-
-  // ─── Actions ────────────────────────────────────────────────
-
-  _runAnalysis() {
-    const errBox = this._container.querySelector('[data-ref="error-box"]');
-    errBox.textContent = '';
-    errBox.style.display = 'none';
-
-    if (this._colRefs.length < 2) return;
-
-    if (this._colRefs.length === 2) {
-      this._runPairwiseAnalysis(errBox);
-    } else {
-      this._runMatrixAnalysis(errBox);
-    }
-  },
-
-  _runPairwiseAnalysis(errBox) {
-    const t = (k, v) => this._context.i18n.t(`modules.correlation.${k}`, v);
-    const paired = this._getPairedValues(this._colRefs[0], this._colRefs[1]);
-    if (!paired) return;
-    const { x, y } = paired;
-    if (x.length < 4) {
-      errBox.textContent = t('errMin4', { n: x.length });
-      errBox.style.display = 'block';
-      return;
-    }
-    try {
-      const result = runCorrelationAnalysis(x, y, this._confidenceLevel);
-      if (isNaN(result.pearson.r)) {
-        errBox.textContent = t('errZeroVariance');
-        errBox.style.display = 'block';
-        return;
-      }
-      result._x = x;
-      result._y = y;
-      result._nameX = this._getColumnName(this._colRefs[0]);
-      result._nameY = this._getColumnName(this._colRefs[1]);
-      this._result = result;
-      this._matrixResult = null;
-      this._save();
-      this._renderPairwiseResults(result);
-    } catch (e) {
-      errBox.textContent = t('errGeneric');
-      errBox.style.display = 'block';
-    }
-  },
-
-  _runMatrixAnalysis(errBox) {
-    const t = (k, v) => this._context.i18n.t(`modules.correlation.${k}`, v);
-    const refs = this._colRefs;
-    const k = refs.length;
-    const names = refs.map(r => this._getColumnName(r));
-
-    // Compute correlation for each pair
-    const alpha = 1 - this._confidenceLevel;
-    const matrix = { pearson: [], spearman: [], kendall: [] };
-    const ciMatrix = { pearson: [], spearman: [], kendall: [] };
-    const pMatrix = { pearson: [], spearman: [], kendall: [] };
-    const nMatrix = [];
-    const pairs = []; // upper triangle paired data for scatter plots
-
-    for (let i = 0; i < k; i++) {
-      matrix.pearson[i] = [];
-      matrix.spearman[i] = [];
-      matrix.kendall[i] = [];
-      ciMatrix.pearson[i] = [];
-      ciMatrix.spearman[i] = [];
-      ciMatrix.kendall[i] = [];
-      pMatrix.pearson[i] = [];
-      pMatrix.spearman[i] = [];
-      pMatrix.kendall[i] = [];
-      nMatrix[i] = [];
-      for (let j = 0; j < k; j++) {
-        if (i === j) {
-          matrix.pearson[i][j] = 1;
-          matrix.spearman[i][j] = 1;
-          matrix.kendall[i][j] = 1;
-          ciMatrix.pearson[i][j] = null;
-          ciMatrix.spearman[i][j] = null;
-          ciMatrix.kendall[i][j] = null;
-          pMatrix.pearson[i][j] = null;
-          pMatrix.spearman[i][j] = null;
-          pMatrix.kendall[i][j] = null;
-          nMatrix[i][j] = this._getColumnValues(refs[i]).length;
-        } else {
-          const paired = this._getPairedValues(refs[i], refs[j]);
-          if (!paired || paired.x.length < 4) {
-            matrix.pearson[i][j] = NaN;
-            matrix.spearman[i][j] = NaN;
-            matrix.kendall[i][j] = NaN;
-            ciMatrix.pearson[i][j] = null;
-            ciMatrix.spearman[i][j] = null;
-            ciMatrix.kendall[i][j] = null;
-            pMatrix.pearson[i][j] = null;
-            pMatrix.spearman[i][j] = null;
-            pMatrix.kendall[i][j] = null;
-            nMatrix[i][j] = paired ? paired.x.length : 0;
-          } else if (i < j) {
-            const n = paired.x.length;
-            const df = n - 2;
-            const pR = Math.max(-1, Math.min(1, pearsonR(paired.x, paired.y)));
-            const sR = Math.max(-1, Math.min(1, spearmanR(paired.x, paired.y)));
-            const kRes = kendallTau(paired.x, paired.y);
-            matrix.pearson[i][j] = pR;
-            matrix.spearman[i][j] = sR;
-            matrix.kendall[i][j] = kRes.tau;
-            const pPerfect = Math.abs(pR) >= 1;
-            const sPerfect = Math.abs(sR) >= 1;
-            ciMatrix.pearson[i][j] = pPerfect ? [pR, pR] : fisherCI(pR, n, alpha);
-            ciMatrix.spearman[i][j] = sPerfect ? [sR, sR] : fisherCI(sR, n, alpha);
-            ciMatrix.kendall[i][j] = kendallCI(kRes.tau, n, alpha);
-            // p-values (perfect correlation → p = 0; otherwise from t)
-            const pT = pPerfect ? Infinity : pR * Math.sqrt(df) / Math.sqrt(1 - pR * pR);
-            const sT = sPerfect ? Infinity : sR * Math.sqrt(df) / Math.sqrt(1 - sR * sR);
-            pMatrix.pearson[i][j] = pPerfect ? 0 : pFromT(pT, df);
-            pMatrix.spearman[i][j] = sPerfect ? 0 : pFromT(sT, df);
-            pMatrix.kendall[i][j] = kendallPValue(kRes.tau, n).p;
-            nMatrix[i][j] = n;
-            pairs.push({ i, j, x: paired.x, y: paired.y });
-          } else {
-            // Lower triangle: mirror from upper
-            matrix.pearson[i][j] = matrix.pearson[j][i];
-            matrix.spearman[i][j] = matrix.spearman[j][i];
-            matrix.kendall[i][j] = matrix.kendall[j][i];
-            ciMatrix.pearson[i][j] = ciMatrix.pearson[j][i];
-            ciMatrix.spearman[i][j] = ciMatrix.spearman[j][i];
-            ciMatrix.kendall[i][j] = ciMatrix.kendall[j][i];
-            pMatrix.pearson[i][j] = pMatrix.pearson[j][i];
-            pMatrix.spearman[i][j] = pMatrix.spearman[j][i];
-            pMatrix.kendall[i][j] = pMatrix.kendall[j][i];
-            nMatrix[i][j] = nMatrix[j][i];
-          }
-        }
-      }
-    }
-
-    const matrixResult = { names, matrix, ciMatrix, pMatrix, nMatrix, pairs };
-    this._matrixResult = matrixResult;
-    this._result = null;
-    this._save();
-    this._renderMatrixResults(matrixResult);
-  },
-
-  // ─── Auto-Run ───────────────────────────────────────────────
-
-  /**
-   * Lightweight fingerprint over the inputs that should trigger a re-run
-   * (selected columns, their values, confidence level). Used to skip
-   * redundant work when state:saved fires but nothing relevant changed.
-   */
-  _inputFingerprint() {
-    const parts = [`c=${this._confidenceLevel}`];
-    for (const ref of this._colRefs) {
-      const vals = this._getRawColumnValues(ref);
-      let sum = 0, n = 0;
-      for (const v of vals) {
-        if (v != null) { sum += v; n++; }
-      }
-      parts.push(`${ref.instanceId}|${ref.columnId}|len=${vals.length}|n=${n}|s=${sum}`);
-    }
-    return parts.join('::');
-  },
-
-  _autoRun() {
-    if (!this._container) return;
-    if (this._colRefs.length < 2) {
-      this._clearResults();
-      return;
-    }
-    const fp = this._inputFingerprint();
-    if (fp === this._lastFingerprint && (this._result || this._matrixResult)) return;
-    this._lastFingerprint = fp;
-    this._runAnalysis();
-  },
-
-  // ─── Persistence ────────────────────────────────────────────
-
-  _save() {
-    this._context.stateManager.setModuleState(
-      this._context.instanceId,
-      this.getState()
-    );
-  },
+/**
+ * Custom loadExample: correlation examples ship a worksheet snapshot
+ * (`sourceWorksheetData`, resolved from `sourceWorksheetFile` by the registry)
+ * plus a `colRefs` array using the `__source__` placeholder instanceId. We
+ * provision the worksheet (replacing any prior example-provisioned one),
+ * rewrite the placeholder refs to the new instance, then apply via setState —
+ * which rebuilds the Alpine tree and re-runs the analysis.
+ *
+ * @param {{ meta: object, data: object }} payload
+ */
+mod.loadExample = function loadExample(payload) {
+  return loadExampleViaWorksheet(this, payload, {
+    State,
+    rewriteRefs(data, instanceId) {
+      data.colRefs = (data.colRefs || []).map(r =>
+        (r && r.instanceId === '__source__') ? { ...r, instanceId } : r);
+      // Drop any persisted derived result from old snapshots — auto-run recomputes.
+      delete data.result;
+      delete data.matrixResult;
+      return data;
+    },
+  });
 };
 
-Object.assign(mod, renderMethods);
 export default mod;

@@ -1,0 +1,231 @@
+<div class="module-container five-why" x-data="fiveWhy">
+  <div class="module-container__header">
+    <h2 class="module-container__title" x-text="t('name')"></h2>
+    <div class="five-why__toolbar">
+      <div class="five-why__toolbar-spacer"></div>
+      <button class="btn btn--sm five-why__collapse-btn" type="button"
+              x-text="t('collapseAll')" @click="collapseAll()"></button>
+      <button class="btn btn--sm five-why__expand-btn" type="button"
+              x-text="t('expandAll')" @click="expandAll()"></button>
+      <button class="btn btn--sm five-why__export-json-btn" type="button"
+              x-text="t('exportJSON')" @click="exportJSON()"></button>
+    </div>
+  </div>
+
+  <div class="module-container__body">
+    <!-- Problem statement -->
+    <div class="five-why__problem">
+      <label class="five-why__problem-label" x-text="t('problem')"></label>
+      <input type="text" class="field five-why__problem-input"
+             data-ref="problemInput"
+             :placeholder="t('problemPlaceholder')"
+             x-model="model.problem" />
+    </div>
+
+    <!-- Tree (bounded recursion: levels 1..5) -->
+    <!--
+      ╔══════════════════════════════════════════════════════════════════════╗
+      ║  INTENTIONALLY UNROLLED — DO NOT "DRY" THIS STRUCTURE              ║
+      ║                                                                      ║
+      ║  Alpine CSP mode (no eval / new Function) cannot self-recurse.      ║
+      ║  The 5 node-card blocks below are structurally identical and MUST   ║
+      ║  be kept in sync manually whenever the card markup changes.         ║
+      ║                                                                      ║
+      ║  Level cap comes from `maxLevel` (data-fn) ← MAX_LEVEL (model).    ║
+      ╚══════════════════════════════════════════════════════════════════════╝
+    -->
+    <div class="five-why__tree" data-ref="tree">
+      <template x-for="(n1, i1) in model.nodes">
+        <div class="five-why__node" :key="n1.id" :data-node-id="n1.id">
+          <div class="five-why__card" :class="cardClass(n1)">
+            <span class="five-why__tag" :data-level="clampLevel(n1)"
+                  x-text="nodeTag(n1, nodeNum(i1))"></span>
+            <textarea class="five-why__answer" data-field="answer" :data-id="n1.id"
+                      :placeholder="answerPlaceholder(n1)"
+                      x-model="n1.answer"
+                      @input="autoGrow($event)" @focus="autoGrow($event)"></textarea>
+            <div class="five-why__card-actions">
+              <template x-if="n1.children.length > 0">
+                <button class="btn btn--icon-sm five-why__icon-btn" type="button"
+                        data-action="toggle" :data-id="n1.id" :title="toggleTitle(n1)"
+                        x-text="toggleGlyph(n1)" @click.stop="toggleCollapse(n1.id)"></button>
+              </template>
+              <template x-if="n1.level < maxLevel">
+                <button class="btn btn--icon-sm five-why__icon-btn five-why__icon-btn--add" type="button"
+                        data-action="add-child" :data-id="n1.id" :title="t('addSubQuestion')"
+                        @click.stop="addChild(n1.id)">＋</button>
+              </template>
+              <button class="btn btn--icon-sm five-why__icon-btn five-why__icon-btn--delete" type="button"
+                      data-action="delete" :data-id="n1.id" :title="deleteTitle()"
+                      @click.stop="deleteNode(n1)">✕</button>
+            </div>
+          </div>
+
+          <template x-if="n1.children.length > 0 || n1.level < maxLevel">
+            <div class="five-why__children" :data-level="clampLevel(n1)" :data-parent="n1.id"
+                 x-show="!n1.collapsed">
+              <template x-for="(n2, i2) in n1.children">
+                <div class="five-why__node" :key="n2.id" :data-node-id="n2.id">
+                  <div class="five-why__card" :class="cardClass(n2)">
+                    <span class="five-why__tag" :data-level="clampLevel(n2)"
+                          x-text="nodeTag(n2, nodeNum(i1, i2))"></span>
+                    <textarea class="five-why__answer" data-field="answer" :data-id="n2.id"
+                              :placeholder="answerPlaceholder(n2)"
+                              x-model="n2.answer"
+                              @input="autoGrow($event)" @focus="autoGrow($event)"></textarea>
+                    <div class="five-why__card-actions">
+                      <template x-if="n2.children.length > 0">
+                        <button class="btn btn--icon-sm five-why__icon-btn" type="button"
+                                data-action="toggle" :data-id="n2.id" :title="toggleTitle(n2)"
+                                x-text="toggleGlyph(n2)" @click.stop="toggleCollapse(n2.id)"></button>
+                      </template>
+                      <template x-if="n2.level < maxLevel">
+                        <button class="btn btn--icon-sm five-why__icon-btn five-why__icon-btn--add" type="button"
+                                data-action="add-child" :data-id="n2.id" :title="t('addSubQuestion')"
+                                @click.stop="addChild(n2.id)">＋</button>
+                      </template>
+                      <button class="btn btn--icon-sm five-why__icon-btn five-why__icon-btn--delete" type="button"
+                              data-action="delete" :data-id="n2.id" :title="deleteTitle()"
+                              @click.stop="deleteNode(n2)">✕</button>
+                    </div>
+                  </div>
+
+                  <template x-if="n2.children.length > 0 || n2.level < maxLevel">
+                    <div class="five-why__children" :data-level="clampLevel(n2)" :data-parent="n2.id"
+                         x-show="!n2.collapsed">
+                      <template x-for="(n3, i3) in n2.children">
+                        <div class="five-why__node" :key="n3.id" :data-node-id="n3.id">
+                          <div class="five-why__card" :class="cardClass(n3)">
+                            <span class="five-why__tag" :data-level="clampLevel(n3)"
+                                  x-text="nodeTag(n3, nodeNum(i1, i2, i3))"></span>
+                            <textarea class="five-why__answer" data-field="answer" :data-id="n3.id"
+                                      :placeholder="answerPlaceholder(n3)"
+                                      x-model="n3.answer"
+                                      @input="autoGrow($event)" @focus="autoGrow($event)"></textarea>
+                            <div class="five-why__card-actions">
+                              <template x-if="n3.children.length > 0">
+                                <button class="btn btn--icon-sm five-why__icon-btn" type="button"
+                                        data-action="toggle" :data-id="n3.id" :title="toggleTitle(n3)"
+                                        x-text="toggleGlyph(n3)" @click.stop="toggleCollapse(n3.id)"></button>
+                              </template>
+                              <template x-if="n3.level < maxLevel">
+                                <button class="btn btn--icon-sm five-why__icon-btn five-why__icon-btn--add" type="button"
+                                        data-action="add-child" :data-id="n3.id" :title="t('addSubQuestion')"
+                                        @click.stop="addChild(n3.id)">＋</button>
+                              </template>
+                              <button class="btn btn--icon-sm five-why__icon-btn five-why__icon-btn--delete" type="button"
+                                      data-action="delete" :data-id="n3.id" :title="deleteTitle()"
+                                      @click.stop="deleteNode(n3)">✕</button>
+                            </div>
+                          </div>
+
+                          <template x-if="n3.children.length > 0 || n3.level < maxLevel">
+                            <div class="five-why__children" :data-level="clampLevel(n3)" :data-parent="n3.id"
+                                 x-show="!n3.collapsed">
+                              <template x-for="(n4, i4) in n3.children">
+                                <div class="five-why__node" :key="n4.id" :data-node-id="n4.id">
+                                  <div class="five-why__card" :class="cardClass(n4)">
+                                    <span class="five-why__tag" :data-level="clampLevel(n4)"
+                                          x-text="nodeTag(n4, nodeNum(i1, i2, i3, i4))"></span>
+                                    <textarea class="five-why__answer" data-field="answer" :data-id="n4.id"
+                                              :placeholder="answerPlaceholder(n4)"
+                                              x-model="n4.answer"
+                                              @input="autoGrow($event)" @focus="autoGrow($event)"></textarea>
+                                    <div class="five-why__card-actions">
+                                      <template x-if="n4.children.length > 0">
+                                        <button class="btn btn--icon-sm five-why__icon-btn" type="button"
+                                                data-action="toggle" :data-id="n4.id" :title="toggleTitle(n4)"
+                                                x-text="toggleGlyph(n4)" @click.stop="toggleCollapse(n4.id)"></button>
+                                      </template>
+                                      <template x-if="n4.level < maxLevel">
+                                        <button class="btn btn--icon-sm five-why__icon-btn five-why__icon-btn--add" type="button"
+                                                data-action="add-child" :data-id="n4.id" :title="t('addSubQuestion')"
+                                                @click.stop="addChild(n4.id)">＋</button>
+                                      </template>
+                                      <button class="btn btn--icon-sm five-why__icon-btn five-why__icon-btn--delete" type="button"
+                                              data-action="delete" :data-id="n4.id" :title="deleteTitle()"
+                                              @click.stop="deleteNode(n4)">✕</button>
+                                    </div>
+                                  </div>
+
+                                  <template x-if="n4.children.length > 0 || n4.level < maxLevel">
+                                    <div class="five-why__children" :data-level="clampLevel(n4)" :data-parent="n4.id"
+                                         x-show="!n4.collapsed">
+                                      <template x-for="(n5, i5) in n4.children">
+                                        <div class="five-why__node" :key="n5.id" :data-node-id="n5.id">
+                                          <div class="five-why__card" :class="cardClass(n5)">
+                                            <span class="five-why__tag" :data-level="clampLevel(n5)"
+                                                  x-text="nodeTag(n5, nodeNum(i1, i2, i3, i4, i5))"></span>
+                                            <textarea class="five-why__answer" data-field="answer" :data-id="n5.id"
+                                                      :placeholder="answerPlaceholder(n5)"
+                                                      x-model="n5.answer"
+                                                      @input="autoGrow($event)" @focus="autoGrow($event)"></textarea>
+                                            <div class="five-why__card-actions">
+                                              <template x-if="n5.children.length > 0">
+                                                <button class="btn btn--icon-sm five-why__icon-btn" type="button"
+                                                        data-action="toggle" :data-id="n5.id" :title="toggleTitle(n5)"
+                                                        x-text="toggleGlyph(n5)" @click.stop="toggleCollapse(n5.id)"></button>
+                                              </template>
+                                              <button class="btn btn--icon-sm five-why__icon-btn five-why__icon-btn--delete" type="button"
+                                                      data-action="delete" :data-id="n5.id" :title="deleteTitle()"
+                                                      @click.stop="deleteNode(n5)">✕</button>
+                                            </div>
+                                          </div>
+                                        </div>
+                                      </template>
+                                    </div>
+                                  </template>
+                                </div>
+                              </template>
+                              <template x-if="n3.level < maxLevel">
+                                <button class="five-why__add-child-btn" type="button" :data-parent="n3.id"
+                                        @click="addChild(n3.id)" x-text="addChildLabel(n3)"></button>
+                              </template>
+                            </div>
+                          </template>
+                        </div>
+                      </template>
+                      <template x-if="n2.level < maxLevel">
+                        <button class="five-why__add-child-btn" type="button" :data-parent="n2.id"
+                                @click="addChild(n2.id)" x-text="addChildLabel(n2)"></button>
+                      </template>
+                    </div>
+                  </template>
+                </div>
+              </template>
+              <template x-if="n1.level < maxLevel">
+                <button class="five-why__add-child-btn" type="button" :data-parent="n1.id"
+                        @click="addChild(n1.id)" x-text="addChildLabel(n1)"></button>
+              </template>
+            </div>
+          </template>
+        </div>
+      </template>
+    </div>
+
+    <!-- Add root button -->
+    <button class="five-why__add-root-btn" type="button" data-ref="addRoot" @click="addRoot()">
+      <span x-text="addRootLabel()"></span>
+    </button>
+
+    <!-- Stats bar -->
+    <div class="five-why__stats">
+      <span class="five-why__stat">
+        <span class="five-why__stat-dot five-why__stat-dot--nodes"></span>
+        <span x-text="statText(model.stats().totalNodes, 'statsNodes')"></span>
+      </span>
+      <span class="five-why__stat">
+        <span class="five-why__stat-dot five-why__stat-dot--depth"></span>
+        <span x-text="statText(model.stats().maxDepth, 'statsDepth')"></span>
+      </span>
+      <span class="five-why__stat">
+        <span class="five-why__stat-dot five-why__stat-dot--branches"></span>
+        <span x-text="statText(model.stats().branches, 'statsBranches')"></span>
+      </span>
+      <span class="five-why__stat">
+        <span class="five-why__stat-dot five-why__stat-dot--answered"></span>
+        <span x-text="statText(model.stats().answered, 'statsAnswered')"></span>
+      </span>
+    </div>
+  </div>
+</div>

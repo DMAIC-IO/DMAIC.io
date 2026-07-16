@@ -1,0 +1,74 @@
+<div class="src dmike-split" x-data="shortRunChart">
+  <div class="src__input dmike-split__input">
+
+    <div class="dmike-split__section-title" x-text="t('sectionData')"></div>
+
+    <div class="field-group">
+      <label x-text="t('valuesColumn')"></label>
+      <div data-ref="val-picker"></div>
+    </div>
+
+    <div class="field-group">
+      <label x-text="t('groupsColumn')"></label>
+      <div data-ref="grp-picker"></div>
+      <span class="src__hint" x-text="t('groupsHint')"></span>
+    </div>
+
+  </div>
+
+  <div class="src__output dmike-split__output">
+    <div data-ref="warning-area">
+      <template x-if="warningMsg">
+        <div class="src__warning" x-text="warningMsg"></div>
+      </template>
+    </div>
+    <div data-ref="stats-bar">
+      <template x-if="kpiCells.length">
+        <div class="dmike-kpi-strip">
+          <template x-for="(c, i) in kpiCells" :key="i">
+            <div class="dmike-kpi" :class="c.mod">
+              <div class="dmike-kpi-value" x-text="c.value"></div>
+              <div class="dmike-kpi-label"><span x-text="c.label"></span><template x-if="c.labelHint"><span class="src__hint" x-text="' (' + c.labelHint + ')'"></span></template></div>
+              <div class="dmike-kpi-sub" x-text="c.sub"></div>
+            </div>
+          </template>
+        </div>
+      </template>
+    </div>
+    <div data-ref="charts-wrap">
+      <template x-for="(cv, i) in chartViews" :key="cv.id">
+        <div class="src__chart-section">
+          <div class="src__chart-header">
+            <span class="src__chart-title" x-text="cv.title"></span>
+            <span class="src__badge" :class="cv.badgeClass" x-text="cv.badgeText"></span>
+          </div>
+          <div class="src__plot-wrap" :data-chart-host="cv.id"></div>
+        </div>
+      </template>
+    </div>
+    <div data-ref="groups-wrap">
+      <template x-if="groupRows.length">
+        <table class="src__groups-table">
+          <thead><tr>
+            <th x-text="t('thGroup')"></th>
+            <th x-text="t('thCount')"></th>
+            <th x-text="t('thMean')"></th>
+            <th>σ̂</th>
+            <th>MR̄</th>
+          </tr></thead>
+          <tbody>
+            <template x-for="(g, i) in groupRows" :key="i">
+              <tr>
+                <td x-text="g.group"></td>
+                <td x-text="g.count"></td>
+                <td x-text="g.mean"></td>
+                <td x-text="g.sigma"></td>
+                <td x-text="g.mrBar"></td>
+              </tr>
+            </template>
+          </tbody>
+        </table>
+      </template>
+    </div>
+  </div>
+</div>

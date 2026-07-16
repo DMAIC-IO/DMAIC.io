@@ -1,0 +1,320 @@
+<div class="glm dmike-split" x-data="glmRegression">
+  <!-- ─── Input (left) ─────────────────────────────────────────── -->
+  <div class="glm__input dmike-split__input">
+    <div class="dmike-split__section-title" x-text="t('sectionData')"></div>
+
+    <div class="field-group">
+      <label x-text="t('selectColumns')"></label>
+      <div data-ref="picker-cols"></div>
+    </div>
+
+    <div class="field-group">
+      <label x-text="t('columnY')"></label>
+      <select class="field" data-ref="y-select" @change="onYChange($event)">
+        <option value="" :selected="!model.yKey" x-text="t('selectYHint')"></option>
+        <template x-for="opt in yOptions()" :key="opt.key">
+          <option :value="opt.key" :selected="opt.key === model.yKey" x-text="opt.name"></option>
+        </template>
+      </select>
+    </div>
+
+    <div class="field-group">
+      <label><span x-text="t('columnTrials')"></span> <span class="dmike-hint" x-text="t('columnTrialsHint')"></span></label>
+      <select class="field" data-ref="trials-select" @change="onTrialsChange($event)">
+        <option value="" :selected="!model.trialsKey" x-text="t('trialsNone')"></option>
+        <template x-for="opt in trialsOptions()" :key="opt.key">
+          <option :value="opt.key" :selected="opt.key === model.trialsKey" x-text="opt.name"></option>
+        </template>
+      </select>
+    </div>
+
+    <div class="dmike-split__section-title" x-text="t('sectionMethod')"></div>
+
+    <div class="glm__method-group" data-ref="method-group" @change="onMethodChange($event)">
+      <label class="glm__method-option">
+        <input type="radio" :name="methodRadioName()" value="auto" :checked="model.method === 'auto'">
+        <span x-text="t('methodAuto')"></span>
+      </label>
+      <label class="glm__method-option">
+        <input type="radio" :name="methodRadioName()" value="binomial" :checked="model.method === 'binomial'">
+        <span x-text="t('methodBinomial')"></span>
+      </label>
+      <label class="glm__method-option">
+        <input type="radio" :name="methodRadioName()" value="poisson" :checked="model.method === 'poisson'">
+        <span x-text="t('methodPoisson')"></span>
+      </label>
+      <label class="glm__method-option">
+        <input type="radio" :name="methodRadioName()" value="negbin" :checked="model.method === 'negbin'">
+        <span x-text="t('methodNegbin')"></span>
+      </label>
+    </div>
+
+    <div class="glm__detect-info" :class="detectInfoClass()" data-ref="detect-info" x-text="detectInfoText()"></div>
+
+    <div class="dmike-split__section-title" x-text="t('sectionSettings')"></div>
+
+    <div class="field-row">
+      <div class="field-group field-group--grow">
+        <label><span x-text="t('confLevel')"></span> (%)</label>
+        <input type="text" class="field field--num" data-ref="conf-level" inputmode="decimal"
+          :value="confDisplay()" placeholder="95" @change="onConfChange($event)">
+      </div>
+      <div class="field-group field-group--grow">
+        <label><span x-text="t('alphaRisk')"></span> (%)</label>
+        <input type="text" class="field field--num" data-ref="alpha-level" inputmode="decimal"
+          :value="alphaDisplay()" placeholder="5" @change="onAlphaChange($event)">
+      </div>
+    </div>
+
+    <div class="glm__error" data-ref="error-box" :style="errorStyle()" x-text="errorText()"></div>
+  </div>
+
+  <!-- ─── Output (right) ───────────────────────────────────────── -->
+  <div class="glm__output dmike-split__output">
+    <div data-ref="results" :style="resultsStyle()">
+      <template x-if="result">
+        <div>
+          <!-- Tabs -->
+          <div class="glm__tabs dmike-tabs">
+            <template x-for="tb in tabs()" :key="tb.id">
+              <button class="dmike-tab" :class="tb.id === model.activeTab ? 'dmike-tab--active' : ''"
+                data-action="tab" :data-tab="tb.id" @click="changeRoute(tb.id)" x-text="tb.label"></button>
+            </template>
+          </div>
+
+          <!-- ── Tab: Model ── -->
+          <div class="dmike-tab-content" :class="model.activeTab === 'model' ? 'dmike-tab-content--active' : ''"
+            data-tab-content="model" x-show="model.activeTab === 'model'">
+
+            <template x-for="(w, wi) in result.warnings" :key="wi">
+              <div class="glm__warning" x-text="w"></div>
+            </template>
+
+            <div class="glm__model-actions">
+              <button class="btn btn--primary" data-action="save-as-model" type="button"
+                :title="t('saveAsModelHint')" @click="saveAsModel()"
+                x-text="model.savedModelId ? t('updateModel') : t('saveAsModel')"></button>
+              <span class="glm__model-status" data-ref="model-status"
+                x-text="model.savedModelId ? t('modelSaved') : ''"></span>
+            </div>
+
+            <div class="dmike-split__output-section" x-text="t('modelSummary')"></div>
+            <div class="glm__quality-grid">
+              <template x-for="item in result.summaryItems" :key="item.label">
+                <div class="glm__quality-item">
+                  <span class="glm__quality-label" x-text="item.label"></span>
+                  <span class="glm__quality-value">
+                    <span x-text="item.value"></span>
+                    <template x-if="item.swap">
+                      <button class="btn btn--xs" data-action="swap-success" type="button"
+                        :title="t('swapSuccessTitle')" @click="swapSuccess()"
+                        x-text="item.swap"></button>
+                    </template>
+                  </span>
+                </div>
+              </template>
+            </div>
+
+            <!-- KPI strip -->
+            <div class="dmike-kpi-strip">
+              <template x-for="kpi in result.kpis" :key="kpi.label">
+                <div class="dmike-kpi" :class="kpi.mod">
+                  <div class="dmike-kpi-value" x-text="kpi.value"></div>
+                  <div class="dmike-kpi-label" x-text="kpi.label"></div>
+                </div>
+              </template>
+            </div>
+
+            <div class="dmike-split__output-section" x-text="t('modelQuality')"></div>
+            <div class="glm__quality-grid">
+              <template x-for="item in result.qualityItems" :key="item.label">
+                <div class="glm__quality-item">
+                  <span class="glm__quality-label" x-text="item.label"></span>
+                  <span class="glm__quality-value" x-text="item.value"></span>
+                </div>
+              </template>
+            </div>
+
+            <div class="dmike-split__output-section" x-text="t('equation')"></div>
+            <div class="glm__equation" x-text="result.equation"></div>
+
+            <div class="dmike-split__output-section" x-text="t('coefTable')"></div>
+            <table class="glm__coef-table">
+              <thead><tr>
+                <th x-text="t('term')"></th>
+                <th x-text="t('coefficient')"></th>
+                <th>SE</th>
+                <th>z</th>
+                <th x-text="t('pValue')"></th>
+                <template x-if="result.ratioHeader">
+                  <th x-text="result.ratioHeader"></th>
+                </template>
+                <th></th>
+              </tr></thead>
+              <tbody>
+                <template x-for="row in result.coefRows" :key="row.term">
+                  <tr>
+                    <td x-text="row.term"></td>
+                    <td x-text="row.coef"></td>
+                    <td x-text="row.se"></td>
+                    <td x-text="row.z"></td>
+                    <td :class="row.pClass" x-text="row.p"></td>
+                    <template x-if="result.ratioHeader">
+                      <td x-text="row.ratio"></td>
+                    </template>
+                    <td :class="row.pClass" x-text="row.stars"></td>
+                  </tr>
+                </template>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- ── Tab: Diagnostics ── -->
+          <div class="dmike-tab-content" :class="model.activeTab === 'diagnostics' ? 'dmike-tab-content--active' : ''"
+            data-tab-content="diagnostics" x-show="model.activeTab === 'diagnostics'">
+
+            <div class="dmike-split__output-section" x-text="t('residualsVsFitted')"></div>
+            <div data-ref="chart-residuals" style="height:280px"></div>
+            <template x-if="chartErr('residuals')">
+              <div class="dmike-chart-error" x-text="chartErr('residuals')"></div>
+            </template>
+
+            <div class="dmike-split__output-section" x-text="t('qqTitle')"></div>
+            <div data-ref="chart-qq" style="height:280px"></div>
+            <template x-if="chartErr('qq')">
+              <div class="dmike-chart-error" x-text="chartErr('qq')"></div>
+            </template>
+
+            <div class="dmike-split__output-section" x-text="t('cooksTitle')"></div>
+            <div data-ref="chart-cooks" style="height:250px"></div>
+            <template x-if="chartErr('cooks')">
+              <div class="dmike-chart-error" x-text="chartErr('cooks')"></div>
+            </template>
+
+            <template x-if="result.vifRows">
+              <div>
+                <div class="dmike-split__output-section">VIF</div>
+                <table class="glm__coef-table">
+                  <thead><tr><th x-text="t('term')"></th><th>VIF</th><th></th></tr></thead>
+                  <tbody>
+                    <template x-for="row in result.vifRows" :key="row.term">
+                      <tr>
+                        <td x-text="row.term"></td>
+                        <td x-text="row.vif"></td>
+                        <td :class="row.warnClass" x-text="row.warn"></td>
+                      </tr>
+                    </template>
+                  </tbody>
+                </table>
+              </div>
+            </template>
+
+            <template x-if="result.overdispersion">
+              <div>
+                <div class="dmike-split__output-section" x-text="t('overdispersionTitle')"></div>
+                <div class="glm__quality-grid">
+                  <template x-for="item in result.overdispersion.items" :key="item.label">
+                    <div class="glm__quality-item">
+                      <span class="glm__quality-label" x-text="item.label"></span>
+                      <span class="glm__quality-value" x-text="item.value"></span>
+                    </div>
+                  </template>
+                </div>
+                <template x-if="result.overdispersion.hint">
+                  <div class="glm__warning" x-text="result.overdispersion.hint"></div>
+                </template>
+              </div>
+            </template>
+          </div>
+
+          <!-- ── Tab: ROC (binomial only) ── -->
+          <template x-if="result.isBinomial">
+            <div class="dmike-tab-content" :class="model.activeTab === 'roc' ? 'dmike-tab-content--active' : ''"
+              data-tab-content="roc" x-show="model.activeTab === 'roc'">
+
+              <div class="dmike-split__output-section" x-text="t('rocCurve')"></div>
+              <div data-ref="chart-roc" style="height:320px"></div>
+              <template x-if="chartErr('roc')">
+                <div class="dmike-chart-error" x-text="chartErr('roc')"></div>
+              </template>
+
+              <div class="dmike-split__output-section" x-text="t('classificationTitle')"></div>
+
+              <div class="glm__cutoff-row">
+                <label x-text="t('cutoff')"></label>
+                <input type="range" min="0" max="1" step="0.01" :value="model.cutoff"
+                  data-ref="cutoff-slider" @input="onCutoff($event)">
+                <span class="glm__cutoff-value" data-ref="cutoff-display" x-text="cutoffDisplay()"></span>
+              </div>
+
+              <table class="glm__class-table">
+                <thead>
+                  <tr><th></th><th><span x-text="t('predicted')"></span> 1</th><th><span x-text="t('predicted')"></span> 0</th></tr>
+                </thead>
+                <tbody>
+                  <tr><th><span x-text="t('actual')"></span> 1</th><td class="glm__tp" x-text="classView().tp"></td><td class="glm__fn" x-text="classView().fn"></td></tr>
+                  <tr><th><span x-text="t('actual')"></span> 0</th><td class="glm__fp" x-text="classView().fp"></td><td class="glm__tn" x-text="classView().tn"></td></tr>
+                </tbody>
+              </table>
+
+              <div class="glm__quality-grid" data-ref="class-metrics">
+                <template x-for="item in classView().metrics" :key="item.label">
+                  <div class="glm__quality-item">
+                    <span class="glm__quality-label" x-text="item.label"></span>
+                    <span class="glm__quality-value" x-text="item.value"></span>
+                  </div>
+                </template>
+              </div>
+
+              <template x-if="result.aucText">
+                <div class="glm__quality-grid">
+                  <div class="glm__quality-item">
+                    <span class="glm__quality-label">AUC</span>
+                    <span class="glm__quality-value" x-text="result.aucText"></span>
+                  </div>
+                </div>
+              </template>
+            </div>
+          </template>
+
+          <!-- ── Tab: Prediction ── -->
+          <div class="dmike-tab-content" :class="model.activeTab === 'prediction' ? 'dmike-tab-content--active' : ''"
+            data-tab-content="prediction" x-show="model.activeTab === 'prediction'">
+
+            <div class="dmike-split__output-section" x-text="t('predictionTitle')"></div>
+
+            <div class="glm__predict-inputs">
+              <template x-for="term in predictionTerms()" :key="term.idx">
+                <div class="glm__predict-row">
+                  <label x-text="term.label"></label>
+                  <input type="text" class="field field--num" :data-ref="'pred-x-' + term.idx"
+                    inputmode="decimal" placeholder="0">
+                </div>
+              </template>
+            </div>
+
+            <button class="btn btn--xs" data-action="predict" type="button"
+              @click="runPrediction()" x-text="t('predictCalc')"></button>
+            <div class="glm__predict-result" data-ref="predict-result"
+              :style="(predictResult || predictError) ? '' : 'display:none'">
+              <template x-if="predictResult">
+                <div>
+                  <div><strong x-text="t('linearPredictor') + ':'"></strong> <span x-text="predictResult.linear"></span></div>
+                  <div><strong x-text="predictResult.respLabel + ':'"></strong> <span x-text="predictResult.response"></span></div>
+                  <div><strong x-text="predictResult.ciLabel"></strong> <span x-text="predictResult.ci"></span>
+                    <template x-if="predictResult.ciHint">
+                      <span class="dmike-hint" x-text="predictResult.ciHint"></span>
+                    </template>
+                  </div>
+                </div>
+              </template>
+              <template x-if="predictError">
+                <span x-text="predictError"></span>
+              </template>
+            </div>
+          </div>
+        </div>
+      </template>
+    </div>
+  </div>
+</div>

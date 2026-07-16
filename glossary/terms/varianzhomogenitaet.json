@@ -1,0 +1,95 @@
+{
+  "id": "varianzhomogenitaet",
+  "category": "hypothesis",
+  "title": {
+    "de": "Varianzhomogenität (Levene, Bartlett)",
+    "en": "Variance Homogeneity (Levene, Bartlett)"
+  },
+  "short": {
+    "de": "{{term:hypothesentest|Test}} auf gleiche {{term:varianz|Varianzen}} über mehrere Gruppen — Voraussetzung des {{term:t-test|t-Tests}} und der {{term:anova|ANOVA}}.",
+    "en": "{{term:hypothesentest|Test}} of equal {{term:varianz|variances}} across several groups — precondition of the {{term:t-test|t-test}} and {{term:anova|ANOVA}}."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "**Varianzhomogenitäts-Tests** prüfen die {{term:nullhypothese|Nullhypothese}} H₀: σ₁² = σ₂² = ... = σ_k². Sie sind der Torwächter vor jedem parametrischen Vergleich, der gleiche Streuungen voraussetzt."
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Bartlett-Test** — parametrisch, sehr trennscharf **unter Normalverteilung**, empfindlich gegen Abweichungen davon",
+          "**Levene-Test** (Brown-Forsythe-Variante) — nutzt absolute Abweichungen vom Median statt vom Mittelwert; **robust gegen Nicht-Normalität**",
+          "**F-Test** — Sonderfall für nur zwei Gruppen (σ₁² vs. σ₂²)",
+          "**Chi-Quadrat-Test für Varianz** — H₀: σ² = σ₀² gegen einen Sollwert"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "**Faustregel:** bei normalverteilten Daten Bartlett, bei schiefer oder unbekannter Verteilung Levene. Das Hypothesentest-Modul wählt automatisch anhand vorgeschalteter {{term:normalitaetstest|Normalitätsprüfung}}. Bei Verletzung der Varianzhomogenität: Welch-t-Test / Welch-ANOVA verwenden — diese sind explizit für ungleiche Varianzen ausgelegt."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "**Variance-homogeneity tests** check the {{term:nullhypothese|null hypothesis}} H₀: σ₁² = σ₂² = ... = σ_k². They are the gatekeeper before every parametric comparison that assumes equal spreads."
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Bartlett test** — parametric, very powerful **under normality**, sensitive to deviations from it",
+          "**Levene test** (Brown-Forsythe variant) — uses absolute deviations from the median instead of the mean; **robust to non-normality**",
+          "**F-test** — special case for two groups only (σ₁² vs. σ₂²)",
+          "**Chi-square test for variance** — H₀: σ² = σ₀² against a target"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "**Rule of thumb:** for normal data use Bartlett, for skewed or unknown distributions use Levene. The hypothesis-test module picks automatically based on a preceding {{term:normalitaetstest|normality check}}. On violated variance homogeneity, use the Welch t-test / Welch ANOVA — these are explicitly designed for unequal variances."
+      }
+    ]
+  },
+  "aliases": {
+    "de": [
+      "Varianzgleichheit",
+      "Homoskedastizitätstest",
+      "Levene-Test",
+      "Bartlett-Test"
+    ],
+    "en": [
+      "variance homogeneity",
+      "homoscedasticity test",
+      "Levene test",
+      "Bartlett test"
+    ]
+  },
+  "seeAlso": [
+    "hypothesentest",
+    "t-test",
+    "anova",
+    "normalitaetstest"
+  ],
+  "modules": [
+    "hypothesis-test"
+  ],
+  "algoLab": [
+    "hypothesis/levene-test",
+    "hypothesis/bartlett-test",
+    "hypothesis/f-test",
+    "hypothesis/chi-square-variance"
+  ],
+  "sources": [
+    {
+      "label": "Levene, H. — Robust Tests for Equality of Variances, in Contributions to Probability and Statistics, Stanford University Press, 1960",
+      "url": null
+    },
+    {
+      "label": "Bartlett, M. S. — Properties of Sufficiency and Statistical Tests, Proceedings of the Royal Society A, 160, 1937",
+      "url": null
+    },
+    {
+      "label": "Brown, M. B. & Forsythe, A. B. — Robust Tests for the Equality of Variances, JASA, 69(346), 1974",
+      "url": null
+    }
+  ]
+}

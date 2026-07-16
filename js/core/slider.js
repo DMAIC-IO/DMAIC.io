@@ -26,13 +26,13 @@
 export function createSliderInput(opts) {
   const slider = document.createElement('input');
   slider.type = 'range';
-  slider.className = 'dmike-slider' + (opts.className ? ' ' + opts.className : '');
+  slider.className = `dmike-slider${  opts.className ? ` ${  opts.className}` : ''}`;
   slider.min = opts.min ?? 0;
   slider.max = opts.max ?? 100;
   slider.step = opts.step ?? 1;
   slider.value = opts.value ?? opts.min ?? 0;
   if (opts.onInput) {
-    slider.addEventListener('input', () => opts.onInput(+slider.value));
+    slider.addEventListener('input', () => opts.onInput(Number(slider.value)));
   }
   return slider;
 }
@@ -73,7 +73,7 @@ export function createSliderRow(opts) {
 
   slider.addEventListener('input', () => {
     val.textContent = slider.value;
-    if (opts.onChange) opts.onChange(+slider.value);
+    if (opts.onChange) opts.onChange(Number(slider.value));
   });
 
   row.appendChild(lbl);

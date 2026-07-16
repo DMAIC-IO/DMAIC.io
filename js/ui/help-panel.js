@@ -1,4 +1,6 @@
-import { renderBlockMath, renderInlineMath, injectInlineMathMarkers } from '../core/katex-loader.js';
+import { renderBlockMath, renderInlineMath } from '../core/katex-loader.js';
+import { h } from '../core/dom.js';
+import { parseInline } from '../core/markdown-parser.js';
 
 /**
  * DMAIC.io — Help Panel (help-panel.js)
@@ -37,8 +39,10 @@ export class HelpPanel {
      *  seeAlso labels and `{{term:id}}` cross-refs with the real title
      *  instead of the kebab-case id. */
     this._glossaryTitleResolver = null;
-    /** Lightweight list passed in via showWithTabs(). */
+    /** Lightweight list passed in via showWithTabs() — module-specific terms. */
     this._glossaryItems = [];
+    /** Full-catalog provider `() => term[]` for non-module search results. */
+    this._glossaryCatalog = null;
     /** Currently open detail term (null = list view). */
     this._glossaryOpenId = null;
     /** Search query inside the glossary tab. */
@@ -49,28 +53,35 @@ export class HelpPanel {
     const t = (k) => this._i18n.t(k);
 
     this._container.className = 'help-panel help-panel--hidden';
-    this._container.innerHTML = `
-      <div class="help-panel__header">
-        <span class="help-panel__title">${t('moduleHelp.title')}</span>
-        <button class="btn btn--icon btn--ghost" id="help-close-btn" aria-label="${t('common.close')}">✕</button>
-      </div>
-      <div class="help-panel__tabs" role="tablist">
-        <button class="help-panel__tab help-panel__tab--active" data-tab="help" role="tab" aria-selected="true">
-          ${t('moduleHelp.tabHelp')}
-        </button>
-        <button class="help-panel__tab" data-tab="examples" role="tab" aria-selected="false">
-          ${t('moduleHelp.tabExamples')}
-        </button>
-        <button class="help-panel__tab" data-tab="glossary" role="tab" aria-selected="false">
-          ${t('moduleHelp.tabGlossary')}
-        </button>
-      </div>
-      <div class="help-panel__body">
-        <div class="help-panel__content"  data-pane="help"     role="tabpanel"></div>
-        <div class="help-panel__examples" data-pane="examples" role="tabpanel" hidden></div>
-        <div class="help-panel__glossary" data-pane="glossary" role="tabpanel" hidden></div>
-      </div>
-    `;
+    this._container.replaceChildren(
+      h('div', { class: 'help-panel__header' },
+        h('span', { class: 'help-panel__title' }, t('moduleHelp.title')),
+        h('button', {
+          class: 'btn btn--icon btn--ghost',
+          id: 'help-close-btn',
+          'aria-label': t('common.close'),
+        }, '✕'),
+      ),
+      h('div', { class: 'help-panel__tabs', role: 'tablist' },
+        h('button', {
+          class: 'help-panel__tab help-panel__tab--active',
+          'data-tab': 'help', role: 'tab', 'aria-selected': 'true',
+        }, t('moduleHelp.tabHelp')),
+        h('button', {
+          class: 'help-panel__tab',
+          'data-tab': 'examples', role: 'tab', 'aria-selected': 'false',
+        }, t('moduleHelp.tabExamples')),
+        h('button', {
+          class: 'help-panel__tab',
+          'data-tab': 'glossary', role: 'tab', 'aria-selected': 'false',
+        }, t('moduleHelp.tabGlossary')),
+      ),
+      h('div', { class: 'help-panel__body' },
+        h('div', { class: 'help-panel__content', 'data-pane': 'help', role: 'tabpanel' }),
+        h('div', { class: 'help-panel__examples', 'data-pane': 'examples', role: 'tabpanel', hidden: true }),
+        h('div', { class: 'help-panel__glossary', 'data-pane': 'glossary', role: 'tabpanel', hidden: true }),
+      ),
+    );
 
     this._content       = this._container.querySelector('[data-pane="help"]');
     this._examplesPane  = this._container.querySelector('[data-pane="examples"]');
@@ -111,11 +122,11 @@ export class HelpPanel {
   /**
    * Backwards-compatible single-tab show: fills the Help tab and hides the others.
    * @param {string} title
-   * @param {string} html
+   * @param {Node} helpNode
    */
-  show(title, html) {
+  show(title, helpNode) {
     this._titleEl.textContent = title;
-    this._content.innerHTML = html;
+    this._content.replaceChildren(helpNode || document.createDocumentFragment());
     this._hasHelp = true;
     this._hasExamples = false;
     this._hasGlossary = false;
@@ -131,33 +142,36 @@ export class HelpPanel {
    *
    * @param {string} title
    * @param {object} opts
-   * @param {?string} opts.helpHtml      HTML for the Help tab (null/empty → hidden)
+   * @param {?Node} opts.helpNode        Node for the Help tab (null → hidden)
    * @param {object[]=} opts.examples    Catalog entries to render in the Examples tab
    * @param {(exampleId: string) => void=} opts.onLoadExample
    * @param {object[]=} opts.glossary    Lightweight term entries for the Glossary tab
    * @param {(termId: string) => Promise<object|null>=} opts.glossaryGet  Lazy loader for full term
    * @param {'help'|'examples'|'glossary'=} opts.preferredTab
    */
-  showWithTabs(title, { helpHtml, examples, onLoadExample, glossary, glossaryGet, preferredTab } = {}) {
+  showWithTabs(title, { helpNode, examples, onLoadExample, glossary, glossaryGet, preferredTab } = {}) {
     this._titleEl.textContent = title;
 
-    this._hasHelp = !!helpHtml;
-    this._content.innerHTML = this._hasHelp ? helpHtml : '';
+    this._hasHelp = Boolean(helpNode);
+    if (this._hasHelp) this._content.replaceChildren(helpNode);
+    else this._content.replaceChildren();
 
     this._hasExamples = Array.isArray(examples) && examples.length > 0;
     this._onLoadExample = onLoadExample || null;
-    this._examplesPane.innerHTML = this._hasExamples
-      ? this._renderExamplesList(examples)
-      : '';
+    if (this._hasExamples) this._renderExamplesList(examples);
+    else this._examplesPane.replaceChildren();
 
     this._glossaryItems = Array.isArray(glossary) ? glossary : [];
-    this._hasGlossary = this._glossaryItems.length > 0;
     this._glossaryGet = glossaryGet || null;
+    // Glossary is always available when wired (glossaryGet given): the tab
+    // shows the module's terms and searching surfaces the full catalog. This
+    // keeps the sidebar's content stable so the header icon never has to hide.
+    this._hasGlossary = Boolean(this._glossaryGet) || this._glossaryItems.length > 0;
     // Reset detail view + search when the underlying list changes.
     this._glossaryOpenId = null;
     this._glossaryQuery = '';
     if (this._hasGlossary) this._renderGlossary();
-    else this._glossaryPane.innerHTML = '';
+    else this._glossaryPane.replaceChildren();
 
     this._updateTabVisibility();
 
@@ -231,8 +245,8 @@ export class HelpPanel {
     // Header invocation is glossary-only — hide the other tabs for clarity.
     this._hasHelp = false;
     this._hasExamples = false;
-    this._content.innerHTML = '';
-    this._examplesPane.innerHTML = '';
+    this._content.replaceChildren();
+    this._examplesPane.replaceChildren();
     this._glossaryOpenId = null;
     this._glossaryQuery = '';
     this._updateTabVisibility();
@@ -273,6 +287,15 @@ export class HelpPanel {
    */
   setGlossaryTitleResolver(fn) {
     this._glossaryTitleResolver = typeof fn === 'function' ? fn : null;
+  }
+
+  /**
+   * Set the full-catalog provider used to surface non-module-specific terms
+   * when searching the glossary tab. `() => term[]` (e.g. registry.getAllCached).
+   * @param {() => Array} fn
+   */
+  setGlossaryCatalog(fn) {
+    this._glossaryCatalog = typeof fn === 'function' ? fn : null;
   }
 
   // ─── Internal ─────────────────────────────────────────────
@@ -324,26 +347,25 @@ export class HelpPanel {
   _renderExamplesList(examples) {
     const lang = this._i18n.getLanguage();
     const t = (k) => this._i18n.t(k);
-    const esc = htmlEscape;
 
     const items = examples.map(ex => {
       const title = ex.title?.[lang] || ex.title?.en || ex.id;
       const desc  = ex.description?.[lang] || ex.description?.en || '';
-      const source = ex.source ? `<div class="help-panel__example-meta">${t('moduleHelp.source')}: ${esc(ex.source)}</div>` : '';
-      return `
-        <div class="help-panel__example">
-          <div class="help-panel__example-head">
-            <span class="help-panel__example-title">${esc(title)}</span>
-          </div>
-          ${desc ? `<p class="help-panel__example-desc">${esc(desc)}</p>` : ''}
-          ${source}
-          <button class="btn btn--sm btn--primary help-panel__example-load" data-example-id="${esc(ex.id)}">
-            ${t('moduleHelp.loadButton')}
-          </button>
-        </div>
-      `;
+      return h('div', { class: 'help-panel__example' },
+        h('div', { class: 'help-panel__example-head' },
+          h('span', { class: 'help-panel__example-title' }, title),
+        ),
+        desc ? h('p', { class: 'help-panel__example-desc' }, desc) : null,
+        ex.source
+          ? h('div', { class: 'help-panel__example-meta' }, `${t('moduleHelp.source')}: ${ex.source}`)
+          : null,
+        h('button', {
+          class: 'btn btn--sm btn--primary help-panel__example-load',
+          'data-example-id': ex.id,
+        }, t('moduleHelp.loadButton')),
+      );
     });
-    return items.join('');
+    this._examplesPane.replaceChildren(...items);
   }
 
   // ─── Glossary tab rendering ──────────────────────────────
@@ -356,46 +378,65 @@ export class HelpPanel {
   _renderGlossaryList() {
     const lang = this._i18n.getLanguage();
     const t = (k) => this._i18n.t(k);
-    const esc = htmlEscape;
 
     const q = this._glossaryQuery.trim().toLowerCase();
-    const visible = q
-      ? this._glossaryItems.filter(item => {
-          const hay = [item.title?.[lang], item.title?.de, item.title?.en,
-                       item.short?.[lang], item.short?.de, item.short?.en]
-                       .filter(Boolean).join('  ').toLowerCase();
-          return hay.includes(q);
-        })
-      : this._glossaryItems;
-
-    const items = visible.map(item => {
+    const matches = (item) => {
+      if (!q) return true;
+      const hay = [item.title?.[lang], item.title?.de, item.title?.en,
+                   item.short?.[lang], item.short?.de, item.short?.en]
+                   .filter(Boolean).join('  ').toLowerCase();
+      return hay.includes(q);
+    };
+    const renderItem = (item) => {
       const title = item.title?.[lang] || item.title?.en || item.id;
       const short = item.short?.[lang] || item.short?.en || '';
-      return `
-        <button type="button" class="help-panel__glossary-item" data-glossary-id="${esc(item.id)}">
-          <span class="help-panel__glossary-item-title">${esc(title)}</span>
-          ${short ? `<span class="help-panel__glossary-item-short">${esc(short)}</span>` : ''}
-        </button>
-      `;
-    }).join('');
+      return h('button', {
+        type: 'button',
+        class: 'help-panel__glossary-item',
+        'data-glossary-id': item.id,
+      },
+        h('span', { class: 'help-panel__glossary-item-title' }, title),
+        short ? h('span', { class: 'help-panel__glossary-item-short' }, short) : null,
+      );
+    };
 
-    const empty = visible.length === 0
-      ? `<p class="help-panel__glossary-empty">${t('moduleHelp.glossaryNoMatch')}</p>`
-      : '';
+    // Module-specific terms first.
+    const moduleMatches = this._glossaryItems.filter(matches);
+    // On search, surface non-module-specific terms from the full catalog after
+    // a separator. Without a query only the module's own terms are listed.
+    let otherMatches = [];
+    if (q && typeof this._glossaryCatalog === 'function') {
+      const moduleIds = new Set(this._glossaryItems.map(i => i.id));
+      otherMatches = (this._glossaryCatalog() || []).filter(c => !moduleIds.has(c.id) && matches(c));
+    }
 
-    this._glossaryPane.innerHTML = `
-      <div class="help-panel__glossary-search">
-        <input type="search"
-               data-glossary-search
-               class="input input--sm"
-               placeholder="${esc(t('moduleHelp.glossarySearchPlaceholder'))}"
-               value="${esc(this._glossaryQuery)}"
-               aria-label="${esc(t('moduleHelp.glossarySearchPlaceholder'))}">
-      </div>
-      <div class="help-panel__glossary-list">
-        ${items}${empty}
-      </div>
-    `;
+    const items = moduleMatches.map(renderItem);
+    if (otherMatches.length > 0) {
+      // Only show the separator when there are module-specific matches above it.
+      if (moduleMatches.length > 0) {
+        items.push(h('div', { class: 'help-panel__glossary-separator' }, t('moduleHelp.glossaryOtherTerms')));
+      }
+      items.push(...otherMatches.map(renderItem));
+    }
+    if (items.length === 0) {
+      items.push(h('p', { class: 'help-panel__glossary-empty' },
+        t(q ? 'moduleHelp.glossaryNoMatch' : 'moduleHelp.glossarySearchHint')));
+    }
+
+    const placeholder = t('moduleHelp.glossarySearchPlaceholder');
+    this._glossaryPane.replaceChildren(
+      h('div', { class: 'help-panel__glossary-search' },
+        h('input', {
+          type: 'search',
+          'data-glossary-search': true,
+          class: 'input input--sm',
+          placeholder,
+          value: this._glossaryQuery,
+          'aria-label': placeholder,
+        }),
+      ),
+      h('div', { class: 'help-panel__glossary-list' }, ...items),
+    );
 
     // Restore focus to search after re-render so live typing keeps caret.
     const input = this._glossaryPane.querySelector('[data-glossary-search]');
@@ -407,17 +448,18 @@ export class HelpPanel {
 
   async _renderGlossaryDetail() {
     const t = (k) => this._i18n.t(k);
-    const esc = htmlEscape;
+
+    const backBtn = () => h('button', {
+      type: 'button', class: 'help-panel__glossary-back', 'data-glossary-back': true,
+    }, `← ${t('moduleHelp.glossaryBack')}`);
 
     // Show loading state immediately.
-    this._glossaryPane.innerHTML = `
-      <div class="help-panel__glossary-detail">
-        <button type="button" class="help-panel__glossary-back" data-glossary-back>
-          ← ${esc(t('moduleHelp.glossaryBack'))}
-        </button>
-        <p class="help-panel__glossary-loading">${esc(t('moduleHelp.loading'))}</p>
-      </div>
-    `;
+    this._glossaryPane.replaceChildren(
+      h('div', { class: 'help-panel__glossary-detail' },
+        backBtn(),
+        h('p', { class: 'help-panel__glossary-loading' }, t('moduleHelp.loading')),
+      ),
+    );
 
     const term = this._glossaryGet ? await this._glossaryGet(this._glossaryOpenId) : null;
 
@@ -425,14 +467,12 @@ export class HelpPanel {
     if (this._glossaryOpenId !== (term?.id ?? this._glossaryOpenId)) return;
 
     if (!term) {
-      this._glossaryPane.innerHTML = `
-        <div class="help-panel__glossary-detail">
-          <button type="button" class="help-panel__glossary-back" data-glossary-back>
-            ← ${esc(t('moduleHelp.glossaryBack'))}
-          </button>
-          <p class="help-panel__glossary-error">${esc(t('moduleHelp.glossaryLoadError'))}</p>
-        </div>
-      `;
+      this._glossaryPane.replaceChildren(
+        h('div', { class: 'help-panel__glossary-detail' },
+          backBtn(),
+          h('p', { class: 'help-panel__glossary-error' }, t('moduleHelp.glossaryLoadError')),
+        ),
+      );
       return;
     }
 
@@ -440,7 +480,9 @@ export class HelpPanel {
     const titleOf = this._glossaryTitleResolver
       ? (id) => this._glossaryTitleResolver(id, lang)
       : (id) => id;
-    this._glossaryPane.innerHTML = renderGlossaryDetailHtml(term, lang, t, esc, titleOf);
+    // Glossary detail body is freeform, app-authored rich content (inline
+    // markdown, formulas, cross-refs) — built as DOM nodes via parseInline.
+    this._glossaryPane.replaceChildren(renderGlossaryDetail(term, lang, t, titleOf));
 
     // KaTeX render for block formulas (`formula` blocks) and inline `$…$`
     // patterns that were marked up during text rendering.
@@ -457,100 +499,105 @@ export class HelpPanel {
 
 // ─── Helpers ─────────────────────────────────────────────────
 
-function renderGlossaryDetailHtml(term, lang, t, esc, titleOf = (id) => id) {
+/**
+ * Build the glossary term-ref node for inline parsing inside glossary text.
+ * `{{term:id|label}}` keeps its explicit label; `{{term:id}}` resolves the
+ * label via the title resolver. Differs from the handbook term-ref (which
+ * emits a `span.glossary-term`).
+ * @param {(id:string) => string} titleOf
+ * @returns {(id:string, label:string|null) => Node}
+ */
+function glossaryTermRef(titleOf) {
+  return (id, label) => h('a', {
+    href: '#',
+    class: 'help-panel__glossary-xref',
+    'data-glossary-seealso': id,
+  }, label != null ? label : titleOf(id));
+}
+
+/** Inline-parse glossary text into DOM nodes with glossary cross-refs. */
+function glossaryInline(text, titleOf) {
+  return parseInline(text || '', { termRef: glossaryTermRef(titleOf) });
+}
+
+/**
+ * Render the glossary detail view for a term as a DOM node.
+ * @param {object} term
+ * @param {string} lang
+ * @param {(k:string) => string} t
+ * @param {(id:string) => string} [titleOf]
+ * @returns {HTMLElement} `.help-panel__glossary-detail`
+ */
+function renderGlossaryDetail(term, lang, t, titleOf = (id) => id) {
   const title = term.title?.[lang] || term.title?.en || term.id;
   const blocks = term.definition?.[lang] || term.definition?.en || [];
   const aliases = term.aliases?.[lang] || term.aliases?.en || [];
 
-  const body = blocks.map(b => renderGlossaryBlock(b, esc, titleOf)).join('\n');
+  const aliasesNode = aliases.length
+    ? h('p', { class: 'help-panel__glossary-aliases' },
+        h('em', null, `${t('moduleHelp.glossaryAliases')}:`), ' ', aliases.join(', '))
+    : null;
 
-  const aliasesHtml = aliases.length
-    ? `<p class="help-panel__glossary-aliases"><em>${esc(t('moduleHelp.glossaryAliases'))}:</em> ${aliases.map(esc).join(', ')}</p>`
-    : '';
+  const seeAlsoNode = Array.isArray(term.seeAlso) && term.seeAlso.length
+    ? h('div', { class: 'help-panel__glossary-seealso' },
+        h('h4', null, t('moduleHelp.glossarySeeAlso')),
+        h('ul', null, ...term.seeAlso.map(id =>
+          h('li', null, h('a', { href: '#', 'data-glossary-seealso': id }, titleOf(id))))),
+      )
+    : null;
 
-  const seeAlso = Array.isArray(term.seeAlso) && term.seeAlso.length
-    ? `<div class="help-panel__glossary-seealso">
-         <h4>${esc(t('moduleHelp.glossarySeeAlso'))}</h4>
-         <ul>${term.seeAlso.map(id => `<li><a href="#" data-glossary-seealso="${esc(id)}">${esc(titleOf(id))}</a></li>`).join('')}</ul>
-       </div>`
-    : '';
+  const modulesNode = Array.isArray(term.modules) && term.modules.length
+    ? h('div', { class: 'help-panel__glossary-modules' },
+        h('h4', null, t('moduleHelp.glossaryUsedIn')),
+        h('p', null, term.modules.join(', ')),
+      )
+    : null;
 
-  const modules = Array.isArray(term.modules) && term.modules.length
-    ? `<div class="help-panel__glossary-modules">
-         <h4>${esc(t('moduleHelp.glossaryUsedIn'))}</h4>
-         <p>${term.modules.map(esc).join(', ')}</p>
-       </div>`
-    : '';
+  const sourcesNode = Array.isArray(term.sources) && term.sources.length
+    ? h('div', { class: 'help-panel__glossary-sources' },
+        h('h4', null, t('moduleHelp.glossarySources')),
+        h('ul', null, ...term.sources.map(s => {
+          const label = s.label || '';
+          return h('li', null, s.url
+            ? h('a', { href: s.url, target: '_blank', rel: 'noopener' }, label)
+            : label);
+        })),
+      )
+    : null;
 
-  const sources = Array.isArray(term.sources) && term.sources.length
-    ? `<div class="help-panel__glossary-sources">
-         <h4>${esc(t('moduleHelp.glossarySources'))}</h4>
-         <ul>${term.sources.map(s => {
-           const label = esc(s.label || '');
-           return s.url
-             ? `<li><a href="${esc(s.url)}" target="_blank" rel="noopener">${label}</a></li>`
-             : `<li>${label}</li>`;
-         }).join('')}</ul>
-       </div>`
-    : '';
-
-  return `
-    <div class="help-panel__glossary-detail">
-      <button type="button" class="help-panel__glossary-back" data-glossary-back>
-        ← ${esc(t('moduleHelp.glossaryBack'))}
-      </button>
-      <h3 class="help-panel__glossary-title">${esc(title)}</h3>
-      ${aliasesHtml}
-      <div class="help-panel__glossary-body">${body}</div>
-      ${seeAlso}
-      ${modules}
-      ${sources}
-    </div>
-  `;
-}
-
-function renderGlossaryBlock(block, esc, titleOf = (id) => id) {
-  if (!block || typeof block !== 'object') return '';
-  switch (block.type) {
-    case 'paragraph':
-      return `<p>${renderInlineMarkdown(block.text || '', esc, titleOf)}</p>`;
-    case 'note':
-      return `<div class="help-panel__glossary-note">${renderInlineMarkdown(block.text || '', esc, titleOf)}</div>`;
-    case 'list':
-      return `<ul>${(block.items || []).map(it => `<li>${renderInlineMarkdown(it || '', esc, titleOf)}</li>`).join('')}</ul>`;
-    case 'formula':
-      // Rendered via KaTeX post-insert; fallback shows the raw LaTeX as code.
-      return `<div class="help-panel__glossary-formula" data-katex="${esc(block.latex || '')}"><code>${esc(block.latex || '')}</code></div>`;
-    default:
-      return block.text ? `<p>${esc(block.text)}</p>` : '';
-  }
+  return h('div', { class: 'help-panel__glossary-detail' },
+    h('button', { type: 'button', class: 'help-panel__glossary-back', 'data-glossary-back': true },
+      `← ${t('moduleHelp.glossaryBack')}`),
+    h('h3', { class: 'help-panel__glossary-title' }, title),
+    aliasesNode,
+    h('div', { class: 'help-panel__glossary-body' }, ...blocks.map(b => renderGlossaryBlock(b, titleOf))),
+    seeAlsoNode,
+    modulesNode,
+    sourcesNode,
+  );
 }
 
 /**
- * Lightweight inline rendering for glossary text blocks:
- *   - `**bold**` / `*italic*` — Markdown-lite
- *   - `$…$` — inline LaTeX (KaTeX, rendered post-insert)
- *   - `{{term:id}}` — cross-ref to another glossary term
- *
- * Order matters: HTML-escape first, then math markers (so they survive
- * subsequent regex passes), then bold/italic, then term refs.
+ * Render a single glossary definition block to a DOM node (or null if empty).
+ * @param {object} block
+ * @param {(id:string) => string} [titleOf]
+ * @returns {Node|null}
  */
-function renderInlineMarkdown(text, esc, titleOf = (id) => id) {
-  let s = esc(text);
-  s = injectInlineMathMarkers(s);
-  s = s.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
-  s = s.replace(/\*([^*]+)\*/g, '<em>$1</em>');
-  // Inside the glossary tab, {{term:id|label}} keeps its explicit label;
-  // the no-label form {{term:id}} resolves the label via the title resolver.
-  s = s.replace(/\{\{term:([a-z0-9-]+)\|([^}]+)\}\}/gi, (_, id, label) =>
-    `<a href="#" class="help-panel__glossary-xref" data-glossary-seealso="${id}">${label}</a>`);
-  s = s.replace(/\{\{term:([a-z0-9-]+)\}\}/gi, (_, id) =>
-    `<a href="#" class="help-panel__glossary-xref" data-glossary-seealso="${id}">${titleOf(id)}</a>`);
-  return s;
-}
-
-function htmlEscape(s) {
-  const d = document.createElement('div');
-  d.textContent = s == null ? '' : String(s);
-  return d.innerHTML;
+function renderGlossaryBlock(block, titleOf = (id) => id) {
+  if (!block || typeof block !== 'object') return null;
+  switch (block.type) {
+    case 'paragraph':
+      return h('p', null, ...glossaryInline(block.text, titleOf));
+    case 'note':
+      return h('div', { class: 'help-panel__glossary-note' }, ...glossaryInline(block.text, titleOf));
+    case 'list':
+      return h('ul', null, ...(block.items || []).map(it =>
+        h('li', null, ...glossaryInline(it, titleOf))));
+    case 'formula':
+      // Rendered via KaTeX post-insert; fallback shows the raw LaTeX as code.
+      return h('div', { class: 'help-panel__glossary-formula', 'data-katex': block.latex || '' },
+        h('code', null, block.latex || ''));
+    default:
+      return block.text ? h('p', null, ...glossaryInline(block.text, titleOf)) : null;
+  }
 }

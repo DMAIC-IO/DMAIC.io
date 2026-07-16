@@ -1,0 +1,93 @@
+{
+  "id": "normalitaetstest",
+  "category": "hypothesis",
+  "title": {
+    "de": "Normalitätstest",
+    "en": "Normality Test"
+  },
+  "short": {
+    "de": "{{term:hypothesentest|Test}} auf die Annahme, dass Daten aus einer Normalverteilung stammen — Voraussetzung vieler parametrischer Verfahren.",
+    "en": "{{term:hypothesentest|Test}} of the assumption that data come from a normal distribution — a precondition of many parametric procedures."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "Ein **Normalitätstest** prüft, ob eine Stichprobe mit einer Normalverteilung vereinbar ist. Die {{term:nullhypothese|Nullhypothese}} lautet stets „die Daten sind normalverteilt“ — signifikantes Ergebnis bedeutet Ablehnung dieser Annahme."
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Shapiro-Wilk** — der trennschärfste Test für kleine bis mittlere Stichproben (n < 5000); empirischer Standard",
+          "**Anderson-Darling** — ähnlich stark, empfindlicher gegen Abweichungen in den Verteilungsenden",
+          "**D'Agostino-Pearson** — kombiniert Tests auf Schiefe und Kurtosis; robust für größere n",
+          "**Jarque-Bera** — asymptotisch, für sehr große Stichproben verbreitet",
+          "**Grafisch:** Q-Q-Plot, Probability Plot, Histogramm mit Normalkurve — oft aussagekräftiger als die reine p-Wert-Zahl"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "**Vorsicht bei sehr großem n:** Normalitätstests werden dann übermäßig sensibel — schon minimale Abweichungen führen zu p < 0,05, obwohl die Daten für praktische Zwecke normal genug sind. Umgekehrt sind sie bei sehr kleinem n zu schwach, um klare Abweichungen zu erkennen. Immer zusätzlich grafisch prüfen. Bei signifikanter Nicht-Normalität: Transformation (log, Box-Cox) oder nichtparametrische Verfahren."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "A **normality test** checks whether a sample is compatible with a normal distribution. The {{term:nullhypothese|null hypothesis}} is always \"the data are normal\" — a significant result means rejecting normality."
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Shapiro-Wilk** — the most powerful test for small to medium samples (n < 5000); the empirical standard",
+          "**Anderson-Darling** — similarly powerful, more sensitive to tail departures",
+          "**D'Agostino-Pearson** — combines skewness and kurtosis tests; robust for larger n",
+          "**Jarque-Bera** — asymptotic, widespread for very large samples",
+          "**Graphical:** Q-Q plot, probability plot, histogram with normal curve — often more informative than the bare p-value"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "**Beware very large n:** normality tests become over-sensitive — even trivial deviations trigger p < 0.05 while the data are practically normal enough. Conversely, at very small n they are too weak to catch clear departures. Always inspect graphically as well. On significant non-normality: transform (log, Box-Cox) or use nonparametric procedures."
+      }
+    ]
+  },
+  "aliases": {
+    "de": [
+      "Normalitätsprüfung",
+      "Test auf Normalverteilung"
+    ],
+    "en": [
+      "normality test",
+      "test for normality"
+    ]
+  },
+  "seeAlso": [
+    "hypothesentest",
+    "p-wert",
+    "varianzhomogenitaet"
+  ],
+  "modules": [
+    "hypothesis-test",
+    "process-capability"
+  ],
+  "algoLab": [
+    "hypothesis/shapiro-wilk",
+    "hypothesis/anderson-darling",
+    "hypothesis/dagostino-pearson",
+    "hypothesis/jarque-bera"
+  ],
+  "sources": [
+    {
+      "label": "Shapiro, S. S. & Wilk, M. B. — An Analysis of Variance Test for Normality, Biometrika, 52(3/4), 1965",
+      "url": null
+    },
+    {
+      "label": "Anderson, T. W. & Darling, D. A. — Asymptotic Theory of Certain Goodness-of-Fit Criteria, Annals of Mathematical Statistics, 23(2), 1952",
+      "url": null
+    },
+    {
+      "label": "D'Agostino, R. B. & Pearson, E. S. — Tests for Departure from Normality, Biometrika, 60(3), 1973",
+      "url": null
+    }
+  ]
+}

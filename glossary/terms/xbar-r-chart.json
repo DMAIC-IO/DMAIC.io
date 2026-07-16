@@ -1,0 +1,98 @@
+{
+  "id": "xbar-r-chart",
+  "category": "spc",
+  "title": {
+    "de": "X̄-R-Karte",
+    "en": "X-Bar R Chart"
+  },
+  "short": {
+    "de": "Klassische {{term:regelkarte|Regelkarte}} für stetige Messgrößen in {{term:subgruppe|Subgruppen}} — X̄ überwacht Lage, R überwacht Streuung.",
+    "en": "Classical {{term:regelkarte|control chart}} for continuous measurements in {{term:subgruppe|subgroups}} — X̄ tracks location, R tracks spread."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "Die **X̄-R-Karte** kombiniert zwei Karten: die **X̄-Karte** überwacht den {{term:mittelwert|Mittelwert}} jeder {{term:subgruppe|Subgruppe}}, die **R-Karte** die Spannweite. So werden Verschiebungen der Prozesslage und der Prozessstreuung getrennt sichtbar."
+      },
+      {
+        "type": "formula",
+        "latex": "\\text{UCL}_{\\bar{X}} = \\bar{\\bar{x}} + A_2 \\bar{R}, \\quad \\text{UCL}_R = D_4 \\bar{R}"
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Subgruppengröße** typischerweise n = 4 oder 5 (bis 10)",
+          "**Faktoren** A_2, D_3, D_4 aus Tabellen (n-abhängig; z. B. A_2 = 0,577 bei n = 5)",
+          "**Reihenfolge des Lesens** — zuerst R-Karte prüfen; ist die Streuung außer Kontrolle, sind die X̄-Grenzen ungültig",
+          "**Für n > 10** stattdessen X̄-S-Karte (Standardabweichung statt Spannweite — effizienter bei großen Subgruppen)"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "Die X̄-R-Karte ist historisch die verbreitetste Regelkarte für Variablendaten. Voraussetzung: rationale {{term:subgruppe|Subgruppierung}}, in der innerhalb-Streuung nur Zufall enthält. Ohne Subgruppen (n = 1) → {{term:i-mr-chart|I-MR-Karte}}."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "The **X̄-R chart** combines two charts: the **X̄ chart** tracks each {{term:subgruppe|subgroup}}'s {{term:mittelwert|mean}}; the **R chart** tracks its range. Location and spread shifts thus appear separately."
+      },
+      {
+        "type": "formula",
+        "latex": "\\text{UCL}_{\\bar{X}} = \\bar{\\bar{x}} + A_2 \\bar{R}, \\quad \\text{UCL}_R = D_4 \\bar{R}"
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Subgroup size** typically n = 4 or 5 (up to 10)",
+          "**Factors** A_2, D_3, D_4 from tables (depend on n; e.g. A_2 = 0.577 at n = 5)",
+          "**Reading order** — inspect R first; if spread is out of control the X̄ limits are invalid",
+          "**For n > 10** use the X̄-S chart instead (standard deviation rather than range — more efficient for larger subgroups)"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "Historically the X̄-R chart is the most widely used control chart for variables data. Prerequisite: rational {{term:subgruppe|subgrouping}} whose within-group variation contains only chance. Without subgroups (n = 1) → {{term:i-mr-chart|I-MR chart}}."
+      }
+    ]
+  },
+  "aliases": {
+    "de": [
+      "X-Bar R",
+      "XBar R Chart",
+      "Mittelwert-Spannweite-Karte"
+    ],
+    "en": [
+      "X-Bar R",
+      "XBar R chart",
+      "mean-range chart"
+    ]
+  },
+  "seeAlso": [
+    "regelkarte",
+    "subgruppe",
+    "i-mr-chart",
+    "regelgrenze"
+  ],
+  "modules": [
+    "control-chart"
+  ],
+  "algoLab": [
+    "control-charts/control-chart"
+  ],
+  "sources": [
+    {
+      "label": "Shewhart, W. A. — Economic Control of Quality of Manufactured Product, 1931",
+      "url": null
+    },
+    {
+      "label": "Montgomery, D. C. — Introduction to Statistical Quality Control, 8th Edition, Chapter 5",
+      "url": null
+    },
+    {
+      "label": "AIAG — SPC Reference Manual, 2nd Edition",
+      "url": null
+    }
+  ]
+}

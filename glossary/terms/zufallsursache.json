@@ -1,0 +1,89 @@
+{
+  "id": "zufallsursache",
+  "category": "spc",
+  "title": {
+    "de": "Zufallsursache (Common Cause)",
+    "en": "Common Cause"
+  },
+  "short": {
+    "de": "Natürliche, unvermeidbare {{term:standardabweichung|Streuung}} eines Prozesses aus vielen kleinen Einflüssen — dem System eigen, nicht einer Einzelquelle zuordenbar.",
+    "en": "Natural, unavoidable {{term:standardabweichung|variation}} of a process arising from many small influences — inherent to the system, not attributable to any single source."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "Eine **Zufallsursache** (Common Cause, Chance Cause) ist Teil der inhärenten Prozessstreuung: unzählige kleine Schwankungen (Materialtoleranzen, Vibrationen, Ableseungenauigkeiten), die zusammen die natürliche Verteilung um die Mittellinie erzeugen."
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Prozess „in statistischer Kontrolle“** — Streuung besteht *nur* aus Zufallsursachen; Regelkarte zeigt zufälliges Muster innerhalb der Grenzen",
+          "**Reduzierbar nur durch Systemänderung** — anderer Prozess, neues Equipment, besseres Design — nicht durch Nacharbeit oder mehr Prüfung",
+          "**Verwechslungsgefahr** — Zufallsstreuung sieht nach Ursache aus, ist aber keine (Overreaction / Tampering)"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "Zentrale Deming-Regel: **an Zufallsstreuung reagieren macht sie schlimmer** (Tampering). Wer bei jeder Abweichung „nachstellt“, vergrößert die Streuung — das Nelson-Trichter-Experiment demonstriert das eindrücklich. Nur an echten {{term:sonderursache|Sonderursachen}} eingreifen; Zufallsursachen bearbeitet man durch Systemverbesserung."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "A **common cause** (chance cause) is part of the process's inherent variation: countless small fluctuations (material tolerances, vibrations, reading errors) that together form the natural distribution around the centre line."
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Process \"in statistical control\"** — variation consists *only* of common causes; the control chart shows a random pattern within the limits",
+          "**Reducible only by system change** — a different process, new equipment, better design — not by rework or more inspection",
+          "**Confusion risk** — common-cause variation looks like a cause but is not one (overreaction / tampering)"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "Deming's key rule: **reacting to common-cause variation makes it worse** (tampering). Adjusting on every deviation inflates variation — the Nelson funnel experiment demonstrates this vividly. Intervene only on real {{term:sonderursache|special causes}}; treat common causes by improving the system."
+      }
+    ]
+  },
+  "aliases": {
+    "de": [
+      "Common Cause",
+      "Chance Cause",
+      "Systemstreuung",
+      "natürliche Streuung"
+    ],
+    "en": [
+      "common cause",
+      "chance cause",
+      "random cause"
+    ]
+  },
+  "seeAlso": [
+    "sonderursache",
+    "regelkarte",
+    "standardabweichung",
+    "prozessfaehigkeit"
+  ],
+  "modules": [
+    "control-chart"
+  ],
+  "algoLab": [
+    "control-charts/control-chart"
+  ],
+  "sources": [
+    {
+      "label": "Shewhart, W. A. — Economic Control of Quality of Manufactured Product, 1931",
+      "url": null
+    },
+    {
+      "label": "Deming, W. E. — Out of the Crisis, MIT Press, 1986",
+      "url": null
+    },
+    {
+      "label": "Wheeler, D. J. — Understanding Variation: The Key to Managing Chaos, 2nd Edition, SPC Press",
+      "url": null
+    }
+  ]
+}

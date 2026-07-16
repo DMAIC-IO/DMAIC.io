@@ -12,22 +12,22 @@ export default {
         blocks: [
           {
             type: 'paragraph',
-            content: 'Die Regression für attributive Daten erweitert die klassische (OLS-)Regression um Verfahren für diskrete, kategoriale und Zähldaten. Sobald die Antwortvariable nicht stetig und normalverteilt ist — z. B. „OK/NOK", „Defektanzahl" oder „Reklamationen pro Charge" — liefern Generalized Linear Models (GLM) zuverlässigere Schätzer als OLS.',
+            content: 'Die {{term:regression|Regression}} für attributive Daten erweitert die klassische ({{term:lineare-regression|OLS}}-)Regression um Verfahren für diskrete, kategoriale und Zähldaten. Sobald die Antwortvariable nicht stetig und normalverteilt ist — z. B. „OK/NOK", „Defektanzahl" oder „Reklamationen pro Charge" — liefern {{term:glm|Generalized Linear Models (GLM)}} zuverlässigere Schätzer als OLS.',
           },
           {
             type: 'definition',
             term: 'Binäre logistische Regression',
-            content: 'Für eine binäre Antwort (0/1, OK/NOK). Modelliert die Wahrscheinlichkeit P(Y=1|X) über die Logit-Link-Funktion: logit(p) = β₀ + β₁X₁ + … Koeffizienten werden als Odds Ratios interpretiert.',
+            content: '{{term:logistische-regression|Binäre logistische Regression}} für eine binäre Antwort (0/1, OK/NOK). Modelliert die Wahrscheinlichkeit P(Y=1|X) über die Logit-Link-Funktion: logit(p) = β₀ + β₁X₁ + … Koeffizienten werden als {{term:odds-ratio|Odds Ratios}} interpretiert.',
           },
           {
             type: 'definition',
             term: 'Poisson-Regression',
-            content: 'Für Zähldaten (0, 1, 2, 3, …). Modelliert den Erwartungswert E(Y|X) = exp(β₀ + β₁X₁ + …). Koeffizienten werden als Rate Ratios interpretiert. Voraussetzung: {{term:varianz|Varianz}} ≈ {{term:mittelwert|Mittelwert}}.',
+            content: '{{term:poisson-regression|Poisson-Regression}} für Zähldaten (0, 1, 2, 3, …). Modelliert den Erwartungswert E(Y|X) = exp(β₀ + β₁X₁ + …). Koeffizienten werden als {{term:rate-ratio|Rate Ratios}} interpretiert. Voraussetzung: {{term:varianz|Varianz}} ≈ {{term:mittelwert|Mittelwert}}.',
           },
           {
             type: 'definition',
             term: 'Negativ-Binomial-Regression',
-            content: 'Wie Poisson, aber für Zähldaten mit Überdispersion (Varianz > Mittelwert). Ein zusätzlicher Dispersionsparameter θ fängt die Extra-Streuung auf.',
+            content: '{{term:negbin-regression|Negativ-Binomial-Regression}} — wie Poisson, aber für Zähldaten mit {{term:ueberdispersion|Überdispersion}} (Varianz > Mittelwert). Ein zusätzlicher Dispersionsparameter θ fängt die Extra-Streuung auf.',
           },
           {
             type: 'definition',
@@ -41,22 +41,22 @@ export default {
         blocks: [
           {
             type: 'paragraph',
-            content: 'Regression for attributive data extends classical (OLS) regression with methods for discrete, categorical, and count data. When the response is not continuous and normally distributed — e.g. "pass/fail", "defect count", or "complaints per batch" — Generalized Linear Models (GLM) provide more reliable estimates than OLS.',
+            content: 'Regression for attributive data extends classical ({{term:lineare-regression|OLS}}) regression with methods for discrete, categorical, and count data. When the response is not continuous and normally distributed — e.g. "pass/fail", "defect count", or "complaints per batch" — {{term:glm|Generalized Linear Models (GLM)}} provide more reliable estimates than OLS.',
           },
           {
             type: 'definition',
             term: 'Binary logistic regression',
-            content: 'For a binary response (0/1, OK/NOK). Models the probability P(Y=1|X) via the logit link: logit(p) = β₀ + β₁X₁ + … Coefficients are interpreted as odds ratios.',
+            content: '{{term:logistische-regression|Binary logistic regression}} for a binary response (0/1, OK/NOK). Models the probability P(Y=1|X) via the logit link: logit(p) = β₀ + β₁X₁ + … Coefficients are interpreted as {{term:odds-ratio|odds ratios}}.',
           },
           {
             type: 'definition',
             term: 'Poisson regression',
-            content: 'For count data (0, 1, 2, 3, …). Models the expected value E(Y|X) = exp(β₀ + β₁X₁ + …). Coefficients are interpreted as rate ratios. Assumption: {{term:varianz|variance}} ≈ {{term:mittelwert|mean}}.',
+            content: '{{term:poisson-regression|Poisson regression}} for count data (0, 1, 2, 3, …). Models the expected value E(Y|X) = exp(β₀ + β₁X₁ + …). Coefficients are interpreted as {{term:rate-ratio|rate ratios}}. Assumption: {{term:varianz|variance}} ≈ {{term:mittelwert|mean}}.',
           },
           {
             type: 'definition',
             term: 'Negative binomial regression',
-            content: 'Like Poisson, but for count data with overdispersion (variance > mean). An additional dispersion parameter θ captures the extra variability.',
+            content: '{{term:negbin-regression|Negative binomial regression}} — like Poisson, but for count data with {{term:ueberdispersion|overdispersion}} (variance > mean). An additional dispersion parameter θ captures the extra variability.',
           },
           {
             type: 'definition',
@@ -77,17 +77,17 @@ export default {
           {
             type: 'definition',
             term: 'Odds Ratio (OR)',
-            content: 'Logistische Regression: OR > 1 bedeutet, dass eine Einheitssteigerung von X die Chance für Y=1 erhöht. OR = 2,5 heißt: Die Chance steigt um den Faktor 2,5. OR < 1 = sinkende Chance. Das Konfidenzintervall darf die 1 nicht enthalten, damit der Effekt signifikant ist.',
+            content: '{{term:odds-ratio|Odds Ratio (OR)}} — logistische Regression: OR > 1 bedeutet, dass eine Einheitssteigerung von X die Chance für Y=1 erhöht. OR = 2,5 heißt: Die Chance steigt um den Faktor 2,5. OR < 1 = sinkende Chance. Das Konfidenzintervall darf die 1 nicht enthalten, damit der Effekt signifikant ist.',
           },
           {
             type: 'definition',
             term: 'Rate Ratio (RR)',
-            content: 'Poisson/NegBin: RR > 1 bedeutet, dass eine Einheitssteigerung von X die erwartete Anzahl erhöht. RR = 1,3 heißt: 30 % mehr erwartete Ereignisse. Interpretation analog zu OR.',
+            content: '{{term:rate-ratio|Rate Ratio (RR)}} — Poisson/NegBin: RR > 1 bedeutet, dass eine Einheitssteigerung von X die erwartete Anzahl erhöht. RR = 1,3 heißt: 30 % mehr erwartete Ereignisse. Interpretation analog zu OR.',
           },
           {
             type: 'definition',
             term: 'Pseudo-R²',
-            content: 'GLM haben kein echtes R². Stattdessen gibt es Pseudo-R²-Maße (McFadden, Cox-Snell, Nagelkerke), die die Modellverbesserung gegenüber dem Nullmodell quantifizieren. Werte > 0,2 (McFadden) gelten bereits als gute Anpassung.',
+            content: '{{term:pseudo-r-quadrat|Pseudo-R²}}: GLM haben kein echtes {{term:r-quadrat|R²}}. Stattdessen gibt es Pseudo-R²-Maße (McFadden, Cox-Snell, Nagelkerke), die die Modellverbesserung gegenüber dem Nullmodell quantifizieren. Werte > 0,2 (McFadden) gelten bereits als gute Anpassung.',
           },
           {
             type: 'definition',
@@ -97,7 +97,7 @@ export default {
           {
             type: 'definition',
             term: 'Überdispersion',
-            content: 'Bei Poisson-Daten: Wenn Pearson-χ²/df deutlich über 1 liegt (> 1,5), liegt Überdispersion vor. Lösung: Negativ-Binomial-Regression verwenden statt Poisson.',
+            content: '{{term:ueberdispersion|Überdispersion}} — bei Poisson-Daten: Wenn Pearson-χ²/df deutlich über 1 liegt (> 1,5), liegt Überdispersion vor. Lösung: Negativ-Binomial-Regression verwenden statt Poisson.',
           },
         ],
       },
@@ -111,17 +111,17 @@ export default {
           {
             type: 'definition',
             term: 'Odds Ratio (OR)',
-            content: 'Logistic regression: OR > 1 means a unit increase in X raises the odds of Y=1. OR = 2.5 means odds increase by a factor of 2.5. OR < 1 = decreasing odds. The confidence interval must not contain 1 for the effect to be significant.',
+            content: '{{term:odds-ratio|Odds Ratio (OR)}} — logistic regression: OR > 1 means a unit increase in X raises the odds of Y=1. OR = 2.5 means odds increase by a factor of 2.5. OR < 1 = decreasing odds. The confidence interval must not contain 1 for the effect to be significant.',
           },
           {
             type: 'definition',
             term: 'Rate Ratio (RR)',
-            content: 'Poisson/NegBin: RR > 1 means a unit increase in X raises the expected count. RR = 1.3 means 30% more expected events. Interpretation analogous to OR.',
+            content: '{{term:rate-ratio|Rate Ratio (RR)}} — Poisson/NegBin: RR > 1 means a unit increase in X raises the expected count. RR = 1.3 means 30% more expected events. Interpretation analogous to OR.',
           },
           {
             type: 'definition',
             term: 'Pseudo-R²',
-            content: 'GLMs have no true R². Instead, pseudo-R² measures (McFadden, Cox-Snell, Nagelkerke) quantify model improvement over the null model. Values > 0.2 (McFadden) are already considered a good fit.',
+            content: '{{term:pseudo-r-quadrat|Pseudo-R²}}: GLMs have no true {{term:r-quadrat|R²}}. Instead, pseudo-R² measures (McFadden, Cox-Snell, Nagelkerke) quantify model improvement over the null model. Values > 0.2 (McFadden) are already considered a good fit.',
           },
           {
             type: 'definition',
@@ -131,7 +131,7 @@ export default {
           {
             type: 'definition',
             term: 'Overdispersion',
-            content: 'For Poisson data: if Pearson χ²/df is clearly above 1 (> 1.5), overdispersion is present. Solution: use negative binomial regression instead of Poisson.',
+            content: '{{term:ueberdispersion|Overdispersion}} — for Poisson data: if Pearson χ²/df is clearly above 1 (> 1.5), overdispersion is present. Solution: use negative binomial regression instead of Poisson.',
           },
         ],
       },

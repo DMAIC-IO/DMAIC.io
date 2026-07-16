@@ -1,0 +1,294 @@
+<div class="module-container sha" x-data="stakeholderAnalysis">
+ <div class="dmike-split" style="flex:1;min-height:0">
+  <!-- Sidebar -->
+  <div class="sha__sidebar dmike-split__input">
+    <div class="sha__sidebar-header">
+      <span class="sha__sidebar-title" x-text="t('name')"></span>
+      <div class="sha__sidebar-header-right">
+        <span class="sha__counter" x-text="model.stakeholders.length"></span>
+        <button class="sha__add-btn" type="button" :title="t('addStakeholder')" @click="openModal(null)">+</button>
+      </div>
+    </div>
+    <div class="sha__sidebar-body" data-ref="shList">
+      <template x-if="model.stakeholders.length === 0">
+        <div class="sha__empty">
+          <div class="sha__empty-icon">&#128101;</div>
+          <div class="sha__empty-title" x-text="t('noStakeholders')"></div>
+          <p class="sha__empty-text" x-text="t('noStakeholdersHint')"></p>
+        </div>
+      </template>
+      <template x-for="sh in model.stakeholders">
+        <div class="sha__card" :key="sh.id" :data-id="sh.id">
+          <div class="sha__card-top">
+            <div class="sha__avatar" :style="'background:' + avatarColor(sh.name)" x-text="initials(sh.name)"></div>
+            <div class="sha__card-info">
+              <div class="sha__card-name" x-text="sh.name"></div>
+              <div class="sha__card-role" x-text="roleText(sh)"></div>
+            </div>
+            <div class="sha__card-actions">
+              <button class="btn btn--icon-sm sha__card-action-btn sha__edit-btn" :title="t('editStakeholder')" :data-id="sh.id" @click="openModal(sh)">&#9998;</button>
+              <button class="btn btn--icon-sm sha__card-action-btn sha__card-action-btn--del sha__del-btn" :title="t('common.delete')" :data-id="sh.id" @click="deleteStakeholder(sh)">&#128465;</button>
+            </div>
+          </div>
+          <div class="sha__meters">
+            <div>
+              <span class="sha__meter-label" x-text="t('fieldPower')"></span>
+              <div class="sha__meter-bar"><div class="sha__meter-fill" :style="meterStyle(sh.power * 20, 'var(--color-accent)')"></div></div>
+            </div>
+            <div>
+              <span class="sha__meter-label" x-text="t('fieldInterest')"></span>
+              <div class="sha__meter-bar"><div class="sha__meter-fill" :style="meterStyle(sh.interest * 20, 'var(--color-info)')"></div></div>
+            </div>
+            <div>
+              <span class="sha__meter-label" x-text="t('fieldSupport')"></span>
+              <div class="sha__meter-bar"><div class="sha__meter-fill" :style="meterStyle(supportPct(sh.support), supportColor(sh.support))"></div></div>
+            </div>
+          </div>
+          <div class="sha__strategy" :style="strategyStyle(sh.quadrant)" x-text="quadLabel(sh.quadrant)"></div>
+        </div>
+      </template>
+    </div>
+  </div>
+
+  <!-- Main -->
+  <div class="sha__main dmike-split__output">
+    <div class="sha__sections">
+      <div class="dmike-split__output-section" x-text="t('tabMatrix')"></div>
+      <div class="sha__section-body">
+        <div class="sha__matrix-container">
+          <div class="sha__matrix-wrapper">
+            <div class="sha__matrix-ylabel" x-text="axisYLabel()"></div>
+            <div class="sha__axis-labels" style="margin-bottom:6px">
+              <span x-text="t('axisLow')"></span>
+              <span x-text="axisXLabel()"></span>
+              <span x-text="t('axisHigh')"></span>
+            </div>
+            <div class="sha__matrix-grid">
+              <div class="sha__matrix-cell" data-quad="keep-satisfied">
+                <div class="sha__cell-label" x-text="quadLabel('keep-satisfied')"></div>
+                <div class="sha__cell-desc" x-text="quadDesc('keep-satisfied')"></div>
+                <div class="sha__cell-chips">
+                  <template x-for="sh in chipsFor('keep-satisfied')">
+                    <span class="sha__chip" :key="sh.id">
+                      <span class="sha__chip-dot" :style="'background:' + avatarColor(sh.name)"></span>
+                      <span x-text="sh.name"></span>
+                    </span>
+                  </template>
+                </div>
+              </div>
+              <div class="sha__matrix-cell" data-quad="manage-closely">
+                <div class="sha__cell-label" x-text="quadLabel('manage-closely')"></div>
+                <div class="sha__cell-desc" x-text="quadDesc('manage-closely')"></div>
+                <div class="sha__cell-chips">
+                  <template x-for="sh in chipsFor('manage-closely')">
+                    <span class="sha__chip" :key="sh.id">
+                      <span class="sha__chip-dot" :style="'background:' + avatarColor(sh.name)"></span>
+                      <span x-text="sh.name"></span>
+                    </span>
+                  </template>
+                </div>
+              </div>
+              <div class="sha__matrix-cell" data-quad="monitor">
+                <div class="sha__cell-label" x-text="quadLabel('monitor')"></div>
+                <div class="sha__cell-desc" x-text="quadDesc('monitor')"></div>
+                <div class="sha__cell-chips">
+                  <template x-for="sh in chipsFor('monitor')">
+                    <span class="sha__chip" :key="sh.id">
+                      <span class="sha__chip-dot" :style="'background:' + avatarColor(sh.name)"></span>
+                      <span x-text="sh.name"></span>
+                    </span>
+                  </template>
+                </div>
+              </div>
+              <div class="sha__matrix-cell" data-quad="keep-informed">
+                <div class="sha__cell-label" x-text="quadLabel('keep-informed')"></div>
+                <div class="sha__cell-desc" x-text="quadDesc('keep-informed')"></div>
+                <div class="sha__cell-chips">
+                  <template x-for="sh in chipsFor('keep-informed')">
+                    <span class="sha__chip" :key="sh.id">
+                      <span class="sha__chip-dot" :style="'background:' + avatarColor(sh.name)"></span>
+                      <span x-text="sh.name"></span>
+                    </span>
+                  </template>
+                </div>
+              </div>
+            </div>
+            <div class="sha__axis-labels" style="margin-top:8px">
+              <span x-text="t('axisLow')"></span>
+              <span></span>
+              <span x-text="t('axisHigh')"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="dmike-split__output-section" x-text="t('tabSummary')"></div>
+      <div class="sha__section-body">
+        <template x-if="model.stakeholders.length === 0">
+          <div class="sha__empty"><p class="sha__empty-text" x-text="t('noStakeholders')"></p></div>
+        </template>
+        <template x-if="model.stakeholders.length > 0">
+          <div class="sha__summary-container">
+            <table class="dmike-table">
+              <thead>
+                <tr>
+                  <th x-text="t('fieldName')"></th>
+                  <th x-text="t('fieldRole')"></th>
+                  <th x-text="t('fieldPower')"></th>
+                  <th x-text="t('fieldInterest')"></th>
+                  <th x-text="t('fieldSupport')"></th>
+                  <th>Quadrant</th>
+                </tr>
+              </thead>
+              <tbody>
+                <template x-for="sh in sortedStakeholders()">
+                  <tr :key="sh.id">
+                    <td><strong x-text="sh.name"></strong></td>
+                    <td x-text="roleText(sh)"></td>
+                    <td>
+                      <div class="sha__level-dots">
+                        <template x-for="i in [1,2,3,4,5]"><div :key="i" :class="dotClass(i, sh.power)"></div></template>
+                      </div>
+                    </td>
+                    <td>
+                      <div class="sha__level-dots">
+                        <template x-for="i in [1,2,3,4,5]"><div :key="i" :class="dotClass(i, sh.interest)"></div></template>
+                      </div>
+                    </td>
+                    <td><span :class="supportBadgeClass(sh.support)" x-text="supportLabel(sh.support)"></span></td>
+                    <td :style="'color:' + strategyColor(sh.quadrant) + ';font-weight:600;font-size:var(--font-size-xs)'" x-text="quadLabel(sh.quadrant)"></td>
+                  </tr>
+                </template>
+              </tbody>
+            </table>
+          </div>
+        </template>
+      </div>
+
+      <div class="dmike-split__output-section" x-text="t('tabComm')"></div>
+      <div class="sha__section-body">
+        <template x-if="model.stakeholders.length === 0">
+          <div class="sha__empty"><p class="sha__empty-text" x-text="t('noStakeholders')"></p></div>
+        </template>
+        <template x-if="model.stakeholders.length > 0">
+          <div class="sha__comm-container">
+            <template x-for="sh in sortedStakeholders()">
+              <div class="sha__comm-card" :key="sh.id">
+                <div class="sha__comm-header">
+                  <div class="sha__avatar" :style="'background:' + avatarColor(sh.name) + ';width:28px;height:28px;font-size:0.65rem'" x-text="initials(sh.name)"></div>
+                  <div>
+                    <div class="sha__comm-name" x-text="sh.name"></div>
+                    <div class="sha__comm-quad" :style="'color:' + strategyColor(sh.quadrant)" x-text="commQuadLine(sh)"></div>
+                  </div>
+                </div>
+                <div class="sha__comm-details">
+                  <div class="sha__comm-detail">
+                    <div class="sha__comm-detail-label" x-text="t('commFrequency')"></div>
+                    <div class="sha__comm-detail-value" x-text="commFreq(sh)"></div>
+                  </div>
+                  <div class="sha__comm-detail">
+                    <div class="sha__comm-detail-label" x-text="t('commChannel')"></div>
+                    <div class="sha__comm-detail-value" x-text="commChannel(sh)"></div>
+                  </div>
+                  <div class="sha__comm-detail">
+                    <div class="sha__comm-detail-label" x-text="t('commContent')"></div>
+                    <div class="sha__comm-detail-value" x-text="commContent(sh)"></div>
+                  </div>
+                  <div class="sha__comm-detail">
+                    <div class="sha__comm-detail-label" x-text="t('commAction')"></div>
+                    <div class="sha__comm-detail-value" x-text="commAction(sh)"></div>
+                  </div>
+                  <template x-if="sh.notes">
+                    <div class="sha__comm-detail" style="grid-column:1/-1">
+                      <div class="sha__comm-detail-label" x-text="t('notesLabel')"></div>
+                      <div class="sha__comm-detail-value" x-text="sh.notes"></div>
+                    </div>
+                  </template>
+                </div>
+              </div>
+            </template>
+          </div>
+        </template>
+      </div>
+    </div>
+  </div>
+ </div>
+
+ <!-- Add / Edit popout (reuses dmike-chart-popout overlay styling) -->
+ <template x-if="modalOpen">
+   <div class="dmike-chart-popout-overlay"
+     @click.self="closeModal()"
+     @keydown.escape.window="closeModal()"
+     @mousemove.window="popoutDragMove($event)"
+     @mouseup.window="popoutDragEnd()">
+     <div class="dmike-chart-popout sha__popout-win" :style="popoutStyle()">
+       <div class="dmike-chart-popout-titlebar" @mousedown="popoutDragStart($event)">
+         <span x-text="modalTitle()"></span>
+         <button class="dmike-chart-popout-close" type="button" @click="closeModal()">
+           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+         </button>
+       </div>
+       <div class="dmike-chart-popout-body sha__popout-body">
+         <div class="sha__popout-form">
+           <div class="sha__form-row">
+             <div class="sha__form-group">
+               <label><span x-text="t('fieldName')"></span> *</label>
+               <input type="text" class="field" data-field="name" x-model="modalData.name" maxlength="100" :placeholder="t('fieldName')">
+             </div>
+             <div class="sha__form-group">
+               <label x-text="t('fieldRole')"></label>
+               <input type="text" class="field" data-field="role" x-model="modalData.role" maxlength="200" :placeholder="t('fieldRole')">
+             </div>
+           </div>
+
+           <div class="sha__slider-group">
+             <div class="sha__slider-header">
+               <label x-text="t('fieldPower')"></label>
+               <span class="sha__slider-value" data-ref="vPower" x-text="modalData.power"></span>
+             </div>
+             <input type="range" class="dmike-slider" min="1" max="5" data-field="power" x-model="modalData.power">
+           </div>
+
+           <div class="sha__slider-group">
+             <div class="sha__slider-header">
+               <label x-text="t('fieldInterest')"></label>
+               <span class="sha__slider-value" data-ref="vInterest" x-text="modalData.interest"></span>
+             </div>
+             <input type="range" class="dmike-slider" min="1" max="5" data-field="interest" x-model="modalData.interest">
+           </div>
+
+           <div class="sha__form-row">
+             <div class="sha__form-group">
+               <label x-text="t('fieldSupport')"></label>
+               <select class="field" data-field="support" x-model="modalData.support">
+                 <option value="supporter" x-text="t('supportSupporter')"></option>
+                 <option value="neutral" x-text="t('supportNeutral')"></option>
+                 <option value="critic" x-text="t('supportCritic')"></option>
+               </select>
+             </div>
+             <div class="sha__form-group">
+               <label x-text="t('fieldCategory')"></label>
+               <select class="field" data-field="category" x-model="modalData.category">
+                 <option value="intern" x-text="t('categoryIntern')"></option>
+                 <option value="extern" x-text="t('categoryExtern')"></option>
+                 <option value="kunde" x-text="t('categoryCustomer')"></option>
+                 <option value="lieferant" x-text="t('categorySupplier')"></option>
+                 <option value="behoerde" x-text="t('categoryAuthority')"></option>
+               </select>
+             </div>
+           </div>
+
+           <div class="sha__form-group">
+             <label x-text="t('notesLabel')"></label>
+             <textarea class="field" data-field="notes" x-model="modalData.notes" maxlength="500" :placeholder="t('notesPlaceholder')"></textarea>
+           </div>
+         </div>
+         <div class="sha__popout-footer">
+           <button class="btn btn--secondary" type="button" @click="closeModal()" x-text="t('common.cancel')"></button>
+           <button class="btn btn--primary" type="button" @click="saveModal()" x-text="t('common.save')"></button>
+         </div>
+       </div>
+     </div>
+   </div>
+ </template>
+</div>

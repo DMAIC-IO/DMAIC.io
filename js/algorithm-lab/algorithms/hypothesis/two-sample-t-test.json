@@ -1,7 +1,7 @@
 {
-  "id": "two-sample-t-test",
+  "id": "two-sample-{{term:t-test|t-test}}",
   "name": {
-    "de": "Zwei-Stichproben-t-Test (pooled)",
+    "de": "Zwei-Stichproben-{{term:t-test|t-Test}} (pooled)",
     "en": "Two-Sample t-Test (pooled)"
   },
   "category": "hypothesis",

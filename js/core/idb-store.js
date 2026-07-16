@@ -168,7 +168,7 @@ export async function idbGetAllForProject(projectId) {
   const tx = db.transaction(STORE, 'readonly');
   const store = tx.objectStore(STORE);
   const prefix = `${projectId}${KEY_SEP}`;
-  const upper = prefix + '\uffff';
+  const upper = `${prefix  }\uffff`;
   const range = IDBKeyRange.bound(prefix, upper, false, false);
 
   const out = new Map();
@@ -195,7 +195,7 @@ export async function idbDeleteAllForProject(projectId) {
   const tx = db.transaction(STORE, 'readwrite');
   const store = tx.objectStore(STORE);
   const prefix = `${projectId}${KEY_SEP}`;
-  const upper = prefix + '\uffff';
+  const upper = `${prefix  }\uffff`;
   const range = IDBKeyRange.bound(prefix, upper, false, false);
   store.delete(range);
   return new Promise((resolve, reject) => {

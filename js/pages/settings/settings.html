@@ -1,0 +1,217 @@
+<div class="dmike-chart-popout-overlay-inner"
+     @click.self="close()"
+     @mousemove.window="popoutDragMove($event)"
+     @mouseup.window="popoutDragEnd()"
+     x-data="settings">
+  <div id="settings-panel" class="dmike-chart-popout" :style="popoutStyle()">
+    <div class="dmike-chart-popout-titlebar" @mousedown="popoutDragStart($event)">
+      <span x-text="t('title')"></span>
+      <button class="dmike-chart-popout-close" type="button"
+              :aria-label="t('title')" @click="close()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"></path></svg>
+      </button>
+    </div>
+    <div class="dmike-chart-popout-body settings-panel__layout">
+      <div class="settings-panel__tabs" role="tablist">
+        <template x-for="tab in tabs">
+          <button type="button" :key="tab.id" role="tab"
+                  :data-tab="tab.id" :class="tabClass(tab.id)"
+                  x-text="tab.label" @click="selectTab(tab.id)"></button>
+        </template>
+      </div>
+      <div class="settings-panel__body">
+
+        <!-- Tab: Appearance -->
+        <div class="settings-tab-content" :class="isTab('appearance') ? 'settings-tab-content--active' : ''"
+             data-tab-content="appearance" x-show="isTab('appearance')">
+          <div class="settings-section">
+            <label class="settings-section__label" x-text="t('language')"></label>
+            <div class="lang-toggle" role="group" aria-label="Sprache / Language">
+              <button :class="langClass('de')" data-lang="de" aria-label="Deutsch" @click="setLang('de')">DE</button>
+              <button :class="langClass('en')" data-lang="en" aria-label="English" @click="setLang('en')">EN</button>
+            </div>
+          </div>
+          <div class="settings-section">
+            <label class="settings-section__label" x-text="t('theme')"></label>
+            <div class="settings-theme-toggle">
+              <button id="theme-toggle-light" :class="themeClass('light')" data-theme="light" @click="setTheme('light')">
+                <span class="settings-theme-icon">☀</span><span x-text="t('themeLight')"></span>
+              </button>
+              <button id="theme-toggle-dark" :class="themeClass('dark')" data-theme="dark" @click="setTheme('dark')">
+                <span class="settings-theme-icon">🌙</span><span x-text="t('themeDark')"></span>
+              </button>
+            </div>
+          </div>
+          <div class="settings-section">
+            <label class="settings-section__label">
+              <input type="checkbox" id="settings-show-algo-links" x-model="showAlgoLinks" @change="onAlgoLinksToggle()">
+              <span x-text="t('showAlgoLabLinks')"></span>
+            </label>
+          </div>
+          <div class="settings-section">
+            <label class="settings-section__label">
+              <input type="checkbox" id="settings-tips-enabled" x-model="tipsEnabled" @change="onTipsToggle()">
+              <span x-text="t('tipsEnabled')"></span>
+            </label>
+            <button class="btn btn--sm btn--ghost" id="settings-tips-reset" @click="resetTips()" x-text="t('tipsResetDismissed')"></button>
+          </div>
+          <div class="settings-section">
+            <label class="settings-section__label">
+              <input type="checkbox" id="settings-glossary-inline-enabled" x-model="glossaryInline" @change="onGlossaryToggle()">
+              <span x-text="t('glossaryInlineLinks')"></span>
+            </label>
+            <p class="settings-hint" x-text="t('glossaryInlineLinksHint')"></p>
+          </div>
+          <div class="settings-section">
+            <label class="settings-section__label" x-text="t('exportReminderTitle')"></label>
+            <label class="settings-checkbox-row">
+              <input type="checkbox" id="settings-export-reminder-enabled" x-model="reminderEnabled" @change="onReminderToggle()">
+              <span x-text="t('exportReminderEnabled')"></span>
+            </label>
+            <div class="settings-stat-row">
+              <div class="settings-stat-field">
+                <label class="settings-stat-field__label" for="settings-export-reminder-minutes" x-text="t('exportReminderMinutesLabel')"></label>
+                <div class="settings-stat-input-group">
+                  <input type="number" id="settings-export-reminder-minutes" class="field settings-stat-input"
+                         min="1" max="1440" step="1" x-model="reminderMinutes" @change="onReminderMinutes()">
+                  <span class="settings-stat-unit" x-text="t('minutesUnit')"></span>
+                </div>
+              </div>
+            </div>
+            <p class="settings-hint" x-text="t('exportReminderHint')"></p>
+          </div>
+        </div>
+
+        <!-- Tab: Charts -->
+        <div class="settings-tab-content" :class="isTab('charts') ? 'settings-tab-content--active' : ''"
+             data-tab-content="charts" x-show="isTab('charts')">
+          <div class="settings-section">
+            <label class="settings-section__label" x-text="t('chartFontSizes')"></label>
+            <template x-for="(f, idx) in fontSliders">
+              <div class="settings-font-row" :key="f.key">
+                <span class="settings-font-preview" :data-preview="f.key" :style="previewStyle(idx)" x-text="t(fontPreviewKey(f.key))"></span>
+                <input type="range" class="dmike-slider settings-font-slider" :data-font="f.key"
+                       :min="f.min" :max="f.max" step="1" x-model="f.value" @input="onFontInput(idx)">
+                <span class="settings-font-value" :data-font-value="f.key" x-text="fontValue(idx)"></span>
+              </div>
+            </template>
+          </div>
+          <div class="settings-section">
+            <label class="settings-section__label" x-text="t('chartBgColor')"></label>
+            <div class="settings-bg-color-row">
+              <div class="settings-bg-color-swatch" id="settings-bg-color-swatch"
+                   :class="bgIsNone() ? 'settings-bg-color-swatch--none' : ''"
+                   :style="bgStyle()" @click="pickBgColor($event)"></div>
+              <button class="btn btn--sm btn--ghost" id="settings-bg-color-reset" @click="resetBgColor()" x-text="t('chartBgColorReset')"></button>
+            </div>
+          </div>
+          <div class="settings-section">
+            <label class="settings-checkbox-row">
+              <input type="checkbox" id="settings-show-legend" x-model="showLegend" @change="onLegendToggle()">
+              <span x-text="t('chartShowLegend')"></span>
+            </label>
+          </div>
+          <div class="settings-section">
+            <label class="settings-section__label" x-text="t('chartSeriesColors')"></label>
+            <div class="settings-color-grid" id="settings-color-grid">
+              <template x-for="(c, i) in colors">
+                <div class="settings-color-item" :key="i">
+                  <span class="settings-color-index" x-text="i + 1"></span>
+                  <div class="settings-color-swatch" :style="colorStyle(i)" :data-color="c" @click="pickColor(i, $event)"></div>
+                </div>
+              </template>
+            </div>
+            <button class="btn btn--sm btn--ghost settings-color-reset" id="settings-color-reset" @click="resetColors()" x-text="t('chartColorsReset')"></button>
+          </div>
+        </div>
+
+        <!-- Tab: Statistics -->
+        <div class="settings-tab-content" :class="isTab('statistics') ? 'settings-tab-content--active' : ''"
+             data-tab-content="statistics" x-show="isTab('statistics')">
+          <div class="settings-section">
+            <label class="settings-section__label" x-text="t('statConfidence')"></label>
+            <div class="settings-stat-row">
+              <div class="settings-stat-field">
+                <label class="settings-stat-field__label" x-text="t('statConfidenceLevel')"></label>
+                <div class="settings-stat-input-group">
+                  <input type="number" id="settings-confidence" class="field settings-stat-input" min="50" max="99.99" x-model="confidence" @input="onConfidence()">
+                  <span class="settings-stat-unit">%</span>
+                </div>
+              </div>
+              <span class="settings-stat-link">&harr;</span>
+              <div class="settings-stat-field">
+                <label class="settings-stat-field__label" x-text="t('statAlpha')"></label>
+                <div class="settings-stat-input-group">
+                  <input type="number" id="settings-alpha" class="field settings-stat-input" min="0.01" max="50" x-model="alpha" @input="onAlpha()">
+                  <span class="settings-stat-unit">%</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="settings-section">
+            <label class="settings-section__label" x-text="t('statPowerSection')"></label>
+            <div class="settings-stat-row">
+              <div class="settings-stat-field">
+                <label class="settings-stat-field__label" x-text="t('statPower')"></label>
+                <div class="settings-stat-input-group">
+                  <input type="number" id="settings-power" class="field settings-stat-input" min="50" max="99.99" x-model="power" @input="onPower()">
+                  <span class="settings-stat-unit">%</span>
+                </div>
+              </div>
+              <span class="settings-stat-link">&harr;</span>
+              <div class="settings-stat-field">
+                <label class="settings-stat-field__label" x-text="t('statBeta')"></label>
+                <div class="settings-stat-input-group">
+                  <input type="number" id="settings-beta" class="field settings-stat-input" min="0.01" max="50" x-model="beta" @input="onBeta()">
+                  <span class="settings-stat-unit">%</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="settings-section">
+            <button class="btn btn--sm btn--ghost" id="settings-stat-reset" @click="resetStats()" x-text="t('statReset')"></button>
+          </div>
+        </div>
+
+        <!-- Tab: Shortcuts -->
+        <div class="settings-tab-content" :class="isTab('shortcuts') ? 'settings-tab-content--active' : ''"
+             data-tab-content="shortcuts" x-show="isTab('shortcuts')">
+          <p class="settings-hint" x-text="t('shortcutsHint')"></p>
+          <div id="settings-shortcuts-list" class="settings-shortcuts-list">
+            <template x-for="g in shortcutGroups">
+              <div class="settings-shortcuts-group" :key="g.id">
+                <h4 class="settings-shortcuts-group__title" x-text="groupTitle(g)"></h4>
+                <template x-for="item in g.items">
+                  <div :class="rowClass(item)" :data-shortcut-id="item.id" :key="item.id">
+                    <div class="settings-shortcut-row__main">
+                      <span class="settings-shortcut-row__label" x-text="item.label"></span>
+                      <span class="settings-shortcut-row__controls">
+                        <button type="button" :class="keyClass(item)" x-text="keyText(item)" @click="startCapture(item)"></button>
+                        <button type="button" class="btn btn--icon btn--ghost settings-shortcut-reset"
+                                :title="t('shortcutsResetOne')" :aria-label="t('shortcutsResetOne')"
+                                :disabled="!item.isCustom" @click="resetOne(item)">
+                          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"></path><path d="M3 3v5h5"></path></svg>
+                        </button>
+                      </span>
+                    </div>
+                    <template x-if="showConflict(item)">
+                      <div class="settings-shortcut-conflict">
+                        <span x-text="conflictMsg() + ' '"></span>
+                        <button type="button" class="btn btn--sm" @click="useAnyway()" x-text="t('shortcutsConflictUseAnyway')"></button>
+                        <button type="button" class="btn btn--sm btn--ghost" @click="cancelConflict()" x-text="t('shortcutsConflictCancel')"></button>
+                      </div>
+                    </template>
+                  </div>
+                </template>
+              </div>
+            </template>
+          </div>
+          <div class="settings-section">
+            <button class="btn btn--sm btn--ghost" id="settings-shortcuts-reset" @click="resetAll()" x-text="t('shortcutsResetAll')"></button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>

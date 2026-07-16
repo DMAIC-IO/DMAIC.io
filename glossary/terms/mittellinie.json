@@ -1,0 +1,87 @@
+{
+  "id": "mittellinie",
+  "category": "spc",
+  "title": {
+    "de": "Mittellinie (CL)",
+    "en": "Centre Line (CL)"
+  },
+  "short": {
+    "de": "Referenzniveau einer {{term:regelkarte|Regelkarte}} — {{term:mittelwert|Mittelwert}} der Beobachtungen oder {{term:subgruppe|Subgruppen}}-Mittelwerte.",
+    "en": "Reference level of a {{term:regelkarte|control chart}} — {{term:mittelwert|mean}} of observations or {{term:subgruppe|subgroup}} means."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "Die **Mittellinie** CL (Center Line) einer Regelkarte repräsentiert das aktuelle Prozessniveau. Aus ihr werden die {{term:regelgrenze|Regelgrenzen}} in Abstand ±3σ abgeleitet."
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Variablen-Karten (X̄-R, X̄-S)** — CL = $\\bar{\\bar{x}}$ (Gesamt-Mittelwert der Untergruppen-Mittel)",
+          "**Individuals-Karte (I-MR)** — CL = $\\bar{x}$ auf der I-Karte, $\\bar{MR}$ auf der MR-Karte",
+          "**p-Karte** — CL = $\\bar{p}$ (mittlerer Anteil defekt)",
+          "**c-Karte** — CL = $\\bar{c}$ (mittlere Fehleranzahl pro Einheit)"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "Die CL wird aus der Baseline (Phase I) berechnet und in Phase II typischerweise **eingefroren**. Ein häufiger Fehler: die CL bei jeder Prozessänderung neu berechnen — dann verschiebt sich die Referenz mit dem Drift und der Drift wird nie sichtbar."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "The **centre line** CL of a control chart represents the current process level. Its {{term:regelgrenze|control limits}} sit ±3σ around it."
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Variables charts (X̄-R, X̄-S)** — CL = $\\bar{\\bar{x}}$ (grand mean of subgroup means)",
+          "**Individuals chart (I-MR)** — CL = $\\bar{x}$ on the I chart, $\\bar{MR}$ on the MR chart",
+          "**p chart** — CL = $\\bar{p}$ (average fraction defective)",
+          "**c chart** — CL = $\\bar{c}$ (average defects per unit)"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "The CL is computed from the baseline (Phase I) and typically **frozen** for Phase II. A common mistake: recomputing the CL after every process change — the reference then drifts along and the drift is never seen."
+      }
+    ]
+  },
+  "aliases": {
+    "de": [
+      "CL",
+      "Center Line",
+      "Zentrallinie"
+    ],
+    "en": [
+      "CL",
+      "centreline",
+      "centerline"
+    ]
+  },
+  "seeAlso": [
+    "regelkarte",
+    "regelgrenze",
+    "mittelwert",
+    "subgruppe"
+  ],
+  "modules": [
+    "control-chart",
+    "attribute-control-chart"
+  ],
+  "algoLab": [
+    "control-charts/control-chart"
+  ],
+  "sources": [
+    {
+      "label": "Shewhart, W. A. — Economic Control of Quality of Manufactured Product, 1931",
+      "url": null
+    },
+    {
+      "label": "Montgomery, D. C. — Introduction to Statistical Quality Control, 8th Edition",
+      "url": null
+    }
+  ]
+}

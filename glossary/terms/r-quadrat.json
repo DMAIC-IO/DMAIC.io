@@ -1,0 +1,69 @@
+{
+  "id": "r-quadrat",
+  "category": "regression",
+  "title": {
+    "de": "R² (Bestimmtheitsmaß)",
+    "en": "R² (Coefficient of Determination)"
+  },
+  "short": {
+    "de": "Anteil der Streuung in Y, den das {{term:regression|Regressionsmodell}} erklärt — 0 = nichts, 1 = perfekt.",
+    "en": "Share of Y variation the {{term:regression|regression}} model explains — 0 = nothing, 1 = perfect."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "Das **Bestimmtheitsmaß** $R^2$ misst, wie viel der Gesamtstreuung von Y durch das angepasste Modell abgedeckt wird — als Verhältnis der erklärten Varianz zur Gesamtvarianz."
+      },
+      {
+        "type": "formula",
+        "latex": "R^2 = 1 - \\frac{\\sum_{i} (y_i - \\hat{y}_i)^2}{\\sum_{i} (y_i - \\bar{y})^2} = \\frac{SS_{\\text{Regression}}}{SS_{\\text{Total}}}"
+      },
+      {
+        "type": "list",
+        "items": [
+          "**$R^2 = 0{,}85$** — 85 % der Y-Variation lässt sich auf die X zurückführen",
+          "**$R^2 = 1$** — perfekte Anpassung (verdächtig; oft {{term:overfitting|Overfitting}} oder identische Variablen)",
+          "**Negatives $R^2$** — kann bei Nichtlinearität oder Modell ohne Intercept auftreten (Modell schlechter als der Mittelwert)"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "$R^2$ steigt automatisch, wenn Prädiktoren hinzukommen — selbst wenn sie nur Rauschen sind. Bei multipler Regression stattdessen das {{term:adjustiertes-r-quadrat|adjustierte $R^2$}} lesen. Für {{term:glm|GLM}} gibt es kein echtes $R^2$ — dort {{term:pseudo-r-quadrat|Pseudo-$R^2$}} verwenden."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "The **coefficient of determination** $R^2$ measures how much of Y's total variation is captured by the fitted model — as the ratio of explained variance to total variance."
+      },
+      {
+        "type": "formula",
+        "latex": "R^2 = 1 - \\frac{\\sum_{i} (y_i - \\hat{y}_i)^2}{\\sum_{i} (y_i - \\bar{y})^2} = \\frac{SS_{\\text{Regression}}}{SS_{\\text{Total}}}"
+      },
+      {
+        "type": "list",
+        "items": [
+          "**$R^2 = 0.85$** — 85 % of Y variation is attributable to the X",
+          "**$R^2 = 1$** — perfect fit (suspicious; often {{term:overfitting|overfitting}} or identical variables)",
+          "**Negative $R^2$** — can occur under non-linearity or a no-intercept model (model worse than the mean)"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "$R^2$ mechanically increases when predictors are added — even if they are noise. For multiple regression, read the {{term:adjustiertes-r-quadrat|adjusted $R^2$}} instead. For {{term:glm|GLM}}, no true $R^2$ exists — use {{term:pseudo-r-quadrat|pseudo-$R^2$}} there."
+      }
+    ]
+  },
+  "aliases": {
+    "de": ["Bestimmtheitsmaß", "R²", "R-Quadrat", "Determinationskoeffizient"],
+    "en": ["coefficient of determination", "R²", "R-squared"]
+  },
+  "seeAlso": ["adjustiertes-r-quadrat", "regression", "lineare-regression", "residuen", "pseudo-r-quadrat"],
+  "modules": ["regression", "glm-regression", "doe-planner", "correlation"],
+  "algoLab": ["regression/regression-coefficients", "regression/regression-anova"],
+  "sources": [
+    { "label": "Montgomery, D. C., Peck, E. A. & Vining, G. G. — Introduction to Linear Regression Analysis, 6th Edition", "url": null },
+    { "label": "Fahrmeir, L. et al. — Regression: Models, Methods and Applications, 2nd Edition, Springer", "url": null }
+  ]
+}

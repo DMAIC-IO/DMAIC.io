@@ -8,7 +8,7 @@ export default {
   sections: {
     overview: {
       de: {
-        title: 'Aufbau eines Ishikawa-Diagramms',
+        title: 'Aufbau eines {{term:ishikawa|Ishikawa}}-Diagramms',
         blocks: [
           {
             type: 'paragraph',
@@ -45,7 +45,7 @@ export default {
         blocks: [
           {
             type: 'paragraph',
-            content: 'The Ishikawa diagram (also called fishbone or cause-and-effect diagram) collects possible causes of a defined problem, structured by main categories. It is one of the standard tools of the Analyze phase and is typically developed in a team workshop.',
+            content: 'The Ishikawa diagram (also called {{term:ishikawa|fishbone}} or cause-and-effect diagram) collects possible causes of a defined problem, structured by main categories. It is one of the standard tools of the Analyze phase and is typically developed in a team workshop.',
           },
           {
             type: 'definition',

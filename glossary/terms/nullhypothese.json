@@ -1,0 +1,86 @@
+{
+  "id": "nullhypothese",
+  "category": "hypothesis",
+  "title": {
+    "de": "Nullhypothese (H₀)",
+    "en": "Null Hypothesis (H₀)"
+  },
+  "short": {
+    "de": "„Es ist nichts los“-Annahme, die der {{term:hypothesentest|Hypothesentest}} zu widerlegen versucht — z. B. „die Mittelwerte sind gleich“.",
+    "en": "The \"nothing is going on\" assumption that a {{term:hypothesentest|hypothesis test}} tries to refute — e.g. \"the means are equal\"."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "Die **Nullhypothese** H₀ formuliert den Status quo: kein Effekt, keine Abweichung, alles wie zuvor. Der Test versucht, sie mit den Daten zu widerlegen — nicht, sie zu bestätigen."
+      },
+      {
+        "type": "list",
+        "items": [
+          "**H₀: μ = μ₀** — der Mittelwert entspricht einem Sollwert",
+          "**H₀: μ₁ = μ₂** — zwei Gruppen haben denselben Mittelwert",
+          "**H₀: σ₁² = σ₂²** — zwei Gruppen haben dieselbe Streuung",
+          "**H₀: Daten sind normalverteilt** (Normalitätstests)"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "H₀ wird **vor** der Datenanalyse formuliert. Wer H₀ erst nach dem Blick auf die Daten aufschreibt, betreibt „HARKing“ (Hypothesizing After the Results are Known) — eine Form von p-Hacking, die die Testlogik untergräbt."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "The **null hypothesis** H₀ states the status quo: no effect, no deviation, nothing new. The test tries to refute it using the data — not to confirm it."
+      },
+      {
+        "type": "list",
+        "items": [
+          "**H₀: μ = μ₀** — the mean matches a target",
+          "**H₀: μ₁ = μ₂** — two groups share the same mean",
+          "**H₀: σ₁² = σ₂²** — two groups have the same variance",
+          "**H₀: data are normally distributed** (normality tests)"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "H₀ is stated **before** analysing the data. Writing H₀ only after inspecting the data is \"HARKing\" (Hypothesizing After the Results are Known) — a form of p-hacking that undermines the test logic."
+      }
+    ]
+  },
+  "aliases": {
+    "de": [
+      "H₀",
+      "Null-Hypothese"
+    ],
+    "en": [
+      "H₀",
+      "null hypothesis"
+    ]
+  },
+  "seeAlso": [
+    "alternativhypothese",
+    "hypothesentest",
+    "p-wert",
+    "signifikanzniveau"
+  ],
+  "modules": [
+    "hypothesis-test"
+  ],
+  "algoLab": [
+    "hypothesis/one-sample-t-test",
+    "hypothesis/two-sample-t-test",
+    "hypothesis/one-way-anova"
+  ],
+  "sources": [
+    {
+      "label": "Neyman, J. & Pearson, E. S. — On the Problem of the Most Efficient Tests, 1933",
+      "url": null
+    },
+    {
+      "label": "Wasserstein, R. L. & Lazar, N. A. — The ASA Statement on p-Values, 2016",
+      "url": null
+    }
+  ]
+}

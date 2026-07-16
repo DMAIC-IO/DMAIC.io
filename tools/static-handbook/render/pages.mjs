@@ -14,7 +14,7 @@ import { renderBlocks, firstParagraphText } from './blocks.mjs';
 import { escapeHtml, escapeAttr, pick } from './escape.mjs';
 import { getModuleName, getExamplesForModule } from '../loaders/load-sources.mjs';
 import { renderLatex } from './katex.mjs';
-import { CYCLES, getCycle, getPhaseIds } from '../../../js/core/cycles/cycles.js';
+import { CYCLES, getPhaseIds } from '../../../js/core/cycles/cycles.js';
 
 const APP_ORIGIN = 'https://dmaic.io';
 
@@ -148,7 +148,7 @@ export function renderModulePage({ module, lang, i18n, examples, glossary }) {
 
 // ─── Algorithm page ──────────────────────────────────────────────
 
-export async function renderAlgoPage({ algorithm, lang, categoryById, i18n }) {
+export async function renderAlgoPage({ algorithm, lang, categoryById, i18n: _i18n }) {
   const s = getStrings(lang);
   const category = categoryById.get(algorithm.category);
   const categoryName = category ? pick(category.name, lang) : algorithm.category;
@@ -268,7 +268,6 @@ export async function renderAlgoPage({ algorithm, lang, categoryById, i18n }) {
  */
 export function renderCycleIndex({ cycleId, modules, lang, i18n }) {
   const s = getStrings(lang);
-  const cycle = getCycle(cycleId);
   const pathFromRoot = `/${lang}/cycles/${cycleId}/index.html`;
   const altLang = lang === 'de' ? 'en' : 'de';
   const altPathFromRoot = `/${altLang}/cycles/${cycleId}/index.html`;
@@ -460,7 +459,7 @@ export function renderLangIndex({ modules, lang, i18n, examples }) {
 
 // ─── Lab index ───────────────────────────────────────────────────
 
-export function renderLabIndex({ algorithms, categories, categoryById, lang, i18n }) {
+export function renderLabIndex({ algorithms, categories, categoryById: _categoryById, lang, i18n: _i18n }) {
   const s = getStrings(lang);
   const pathFromRoot = `/${lang}/lab/index.html`;
   const altLang = lang === 'de' ? 'en' : 'de';
@@ -529,7 +528,7 @@ function _trainingNS(i18n, lang, topic) {
  * Training overview page — /{lang}/training/index.html.
  * Three cards: DMAIC methodology, Minitab migration, JMP migration.
  */
-export function renderTrainingIndex({ lang, i18n }) {
+export function renderTrainingIndex({ lang, i18n: _i18n }) {
   const s = getStrings(lang);
   const pathFromRoot = `/${lang}/training/index.html`;
   const altLang = lang === 'de' ? 'en' : 'de';

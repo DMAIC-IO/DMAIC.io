@@ -20,6 +20,7 @@
  */
 
 import ChartBase from '../chart-base.js';
+import { h } from '../../dom.js';
 import {
   svgEl, svgText, resolveColor, formatNum, getChartColors, drawMarker,
 } from '../chart-core.js';
@@ -64,16 +65,16 @@ function normalQuantile(p) {
     q = Math.sqrt(-2 * Math.log(p));
     return (((((c[0] * q + c[1]) * q + c[2]) * q + c[3]) * q + c[4]) * q + c[5])
       / ((((d[0] * q + d[1]) * q + d[2]) * q + d[3]) * q + 1);
-  } else if (p <= pHigh) {
+  } if (p <= pHigh) {
     q = p - 0.5;
     r = q * q;
     return (((((a[0] * r + a[1]) * r + a[2]) * r + a[3]) * r + a[4]) * r + a[5]) * q
       / (((((b[0] * r + b[1]) * r + b[2]) * r + b[3]) * r + b[4]) * r + 1);
-  } else {
+  } 
     q = Math.sqrt(-2 * Math.log(1 - p));
     return -(((((c[0] * q + c[1]) * q + c[2]) * q + c[3]) * q + c[4]) * q + c[5])
       / ((((d[0] * q + d[1]) * q + d[2]) * q + d[3]) * q + 1);
-  }
+  
 }
 
 /**
@@ -190,7 +191,7 @@ export default class ProbabilityPlot extends ChartBase {
   // ── Render Data ───────────────────────────────────────────────
 
   /** @override */
-  _renderData(svg, plotGroup, xScale, yScale, xTick, yTick, plotArea, defs) {
+  _renderData(svg, plotGroup, xScale, yScale, xTick, yTick, plotArea, _defs) {
     const series = this._renderableSeries();
     if (series.length === 0) return;
 
@@ -399,12 +400,15 @@ export default class ProbabilityPlot extends ChartBase {
     const px = this._xScale(val);
     const py = this._yScale(z);
 
-    const nameLine = all.length > 1 ? `<b>${s.name}</b><br>` : '';
     return [{
-      html: nameLine
-        + `<b>${formatNum(val, 4, this.locale)}</b><br>`
-        + `z = ${formatNum(z, 3, this.locale)}<br>`
-        + `P = ${pct}%`,
+      node: h('div', null,
+        all.length > 1 ? h('b', null, s.name) : null,
+        all.length > 1 ? h('br') : null,
+        h('b', null, formatNum(val, 4, this.locale)),
+        h('br'),
+        `z = ${formatNum(z, 3, this.locale)}`, h('br'),
+        `P = ${pct}%`,
+      ),
       px, py,
     }];
   }

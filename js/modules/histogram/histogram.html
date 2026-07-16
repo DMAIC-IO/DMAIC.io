@@ -1,0 +1,68 @@
+<div class="histogram dmike-split" x-data="histogram">
+  <div class="histogram__input dmike-split__input">
+    <div class="dmike-split__section-title" x-text="t('sectionData')"></div>
+
+    <div data-ref="picker-wrap"></div>
+
+    <div class="dmike-split__section-title" x-text="t('sectionBinning')"></div>
+    <div class="histogram__options">
+      <div class="field-group">
+        <label x-text="t('binMode')"></label>
+        <select class="field" data-ref="bin-mode" x-model="model.binMode" @change="binModeChanged()">
+          <option value="auto" x-text="t('binAuto')"></option>
+          <option value="manual" x-text="t('binManual')"></option>
+        </select>
+      </div>
+      <div class="field-group" data-ref="bin-width-row" x-show="model.binMode === 'manual'">
+        <label x-text="t('binWidth')"></label>
+        <input type="number" class="field field--num" data-ref="bin-width" min="0.01"
+               x-model="binWidthInput" :placeholder="t('binWidthAuto')" @change="binWidthChanged($event)">
+      </div>
+    </div>
+
+    <div class="dmike-split__section-title" x-text="t('sectionOptions')"></div>
+    <div class="histogram__options">
+      <div class="field-group">
+        <label x-text="t('confLevel')"></label>
+        <input type="number" class="field field--num" data-ref="conf-level" min="50" max="99.9"
+               x-model="confLevelInput" @change="confLevelChanged($event)">
+      </div>
+    </div>
+
+    <div class="histogram__error" data-ref="error-box"></div>
+  </div>
+
+  <div class="histogram__output dmike-split__output">
+    <div class="histogram__placeholder" data-ref="placeholder"></div>
+    <div class="histogram__chart-area" data-ref="chart-area" style="display:none">
+      <div class="histogram__chart-card" data-ref="chart-card">
+        <div class="histogram__chart-main">
+          <div class="histogram__chart-wrap" data-ref="chart-wrap">
+            <svg data-ref="chart-svg"></svg>
+            <div class="dmike-chart-tooltip" data-ref="tooltip"
+                 :class="tip.visible ? 'visible' : ''"
+                 :style="'left:' + tip.left + 'px;top:' + tip.top + 'px'">
+              <template x-for="(ln, i) in tip.lines" :key="i">
+                <div :class="ln.dim ? 'dmike-chart-tooltip__line--dim' : ''" :style="ln.color ? 'color:' + ln.color : ''"><b class="dmike-chart-tooltip__b" x-show="!!ln.name" :style="ln.nameColor ? 'color:' + ln.nameColor : ''" x-text="ln.name"></b><span x-text="ln.text"></span></div>
+              </template>
+            </div>
+          </div>
+          <div class="histogram__boxplot-panel" data-ref="boxplot-panel">
+            <svg data-ref="boxplot-svg"></svg>
+          </div>
+          <div class="dmike-chart-tooltip" data-ref="boxplot-tooltip"
+               :class="bpTip.visible ? 'visible' : ''"
+               :style="'left:' + bpTip.left + 'px;top:' + bpTip.top + 'px'">
+            <template x-for="(ln, i) in bpTip.lines" :key="i">
+              <div :class="ln.dim ? 'dmike-chart-tooltip__line--dim' : ''" :style="ln.color ? 'color:' + ln.color : ''"><b class="dmike-chart-tooltip__b" x-show="!!ln.name" :style="ln.nameColor ? 'color:' + ln.nameColor : ''" x-text="ln.name"></b><span x-text="ln.text"></span></div>
+            </template>
+          </div>
+          <div class="dmike-stats-panel" data-ref="stats-panel"></div>
+        </div>
+        <div class="histogram__editor" data-ref="editor-panel">
+          <div class="histogram__editor-inner" data-ref="editor-inner"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

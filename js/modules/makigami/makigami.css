@@ -61,8 +61,7 @@
 }
 
 .makigami__matrix-scroll {
-  overflow-x: auto;
-  overflow-y: visible;
+  overflow: auto visible;
 }
 
 .makigami__matrix {

@@ -12,51 +12,51 @@ export default {
         blocks: [
           {
             type: 'paragraph',
-            content: 'Ein Hypothesentest prüft, ob eine in den Daten beobachtete Abweichung wirklich ein echter Effekt ist oder durch Zufall entstanden sein könnte. Er ist das zentrale Entscheidungsinstrument der Analyze-Phase — mit ihm lassen sich Aussagen wie „der {{term:mittelwert|Mittelwert}} hat sich verändert" oder „die beiden Maschinen liefern unterschiedliche Qualität" statistisch absichern.',
+            content: 'Ein {{term:hypothesentest|Hypothesentest}} prüft, ob eine in den Daten beobachtete Abweichung wirklich ein echter Effekt ist oder durch Zufall entstanden sein könnte. Er ist das zentrale Entscheidungsinstrument der Analyze-Phase — mit ihm lassen sich Aussagen wie „der {{term:mittelwert|Mittelwert}} hat sich verändert" oder „die beiden Maschinen liefern unterschiedliche Qualität" statistisch absichern.',
           },
           {
             type: 'definition',
             term: 'Nullhypothese (H₀)',
-            content: 'Die „Es ist nichts los"-Annahme. Typisch: „die Mittelwerte sind gleich", „es gibt keinen Unterschied". Der Test versucht, diese Annahme zu widerlegen — er bestätigt sie nie.',
+            content: 'Die {{term:nullhypothese|Nullhypothese H₀}} ist die „Es ist nichts los"-Annahme. Typisch: „die Mittelwerte sind gleich", „es gibt keinen Unterschied". Der Test versucht, diese Annahme zu widerlegen — er bestätigt sie nie.',
           },
           {
             type: 'definition',
             term: 'Alternativhypothese (H₁)',
-            content: 'Die interessante Gegenannahme: „die Mittelwerte unterscheiden sich", „der neue Prozess ist besser". Sie wird akzeptiert, wenn die Daten H₀ widerlegen.',
+            content: 'Die {{term:alternativhypothese|Alternativhypothese H₁}} — die interessante Gegenannahme: „die Mittelwerte unterscheiden sich", „der neue Prozess ist besser". Sie wird akzeptiert, wenn die Daten H₀ widerlegen.',
           },
           {
             type: 'definition',
             term: 'p-Wert',
-            content: 'Wahrscheinlichkeit, die beobachteten (oder extremere) Daten zu sehen, wenn H₀ wahr wäre. Klein = H₀ unwahrscheinlich. Übliche Schwelle: p < 0,05 → H₀ verwerfen.',
+            content: 'Der {{term:p-wert|p-Wert}} ist die Wahrscheinlichkeit, die beobachteten (oder extremere) Daten zu sehen, wenn H₀ wahr wäre. Klein = H₀ unwahrscheinlich. Übliche Schwelle: p < 0,05 → H₀ verwerfen.',
           },
           {
             type: 'definition',
             term: 'Signifikanzniveau (α)',
-            content: 'Die vorab festgelegte Risikogrenze, H₀ fälschlich zu verwerfen. Meist 0,05 (5 %). α ist eine Entscheidung des Analysten, nicht der Daten.',
+            content: 'Das {{term:signifikanzniveau|Signifikanzniveau α}} ist die vorab festgelegte Risikogrenze, H₀ fälschlich zu verwerfen. Meist 0,05 (5 %). α ist eine Entscheidung des Analysten, nicht der Daten.',
           },
           {
             type: 'definition',
             term: 'Fehler 1. und 2. Art',
-            content: 'Fehler 1. Art (α): H₀ verwerfen, obwohl sie stimmt — „Alarm ohne Grund". Fehler 2. Art (β): H₀ nicht verwerfen, obwohl sie falsch ist — „echten Effekt übersehen". Power = 1 − β.',
+            content: '{{term:fehler-erster-art|Fehler 1. Art (α)}}: H₀ verwerfen, obwohl sie stimmt — „Alarm ohne Grund". Fehler 2. Art (β): H₀ nicht verwerfen, obwohl sie falsch ist — „echten Effekt übersehen". Power = 1 − β.',
           },
           {
             type: 'definition',
             term: 'Teststatistik',
-            content: 'Eine aus den Daten berechnete Kennzahl (z. B. t, z, F, χ²), die in eine bekannte Verteilung eingeordnet wird. Aus ihr wird der p-Wert abgeleitet.',
+            content: 'Die {{term:teststatistik|Teststatistik}} ist eine aus den Daten berechnete Kennzahl (z. B. t, z, F, χ²), die in eine bekannte Verteilung eingeordnet wird. Aus ihr wird der p-Wert abgeleitet.',
           },
           {
             type: 'paragraph',
-            content: 'Die Wahl des richtigen Tests hängt von der Fragestellung (ein Mittelwert, Vergleich zweier Gruppen, mehr als zwei Gruppen?), der Skala (stetig, kategorial) und den Verteilungsannahmen ab. Häufige Tests: 1-Stichproben-t, 2-Stichproben-t, gepaarter t, ANOVA, Chi-Quadrat, Mann-Whitney (nichtparametrisch).',
+            content: 'Die Wahl des richtigen Tests hängt von der Fragestellung (ein Mittelwert, Vergleich zweier Gruppen, mehr als zwei Gruppen?), der Skala (stetig, kategorial) und den Verteilungsannahmen ab. Häufige Tests: 1-Stichproben-t, 2-Stichproben-{{term:t-test|t}}, gepaarter t, {{term:anova|ANOVA}}, Chi-Quadrat, Mann-Whitney (nichtparametrisch).',
           },
           {
             type: 'definition',
             term: 'k-Stichproben-Vergleich (Mittelwerte)',
-            content: 'Bei mehr als zwei Gruppen ist die einfaktorielle Varianzanalyse (One-Way ANOVA) das passende Verfahren — sie zerlegt die Gesamtvariation in Anteile zwischen und innerhalb der Gruppen und vergleicht diese über eine F-Statistik. Bei nicht normalverteilten Daten wird automatisch auf den Kruskal-Wallis-Test (rangbasiert) gewechselt. Beide Tests sind Omnibus-Tests: sie zeigen, dass mindestens ein Mittelwert abweicht, ohne zu sagen welcher — dafür sind anschließende Post-Hoc-Vergleiche (z. B. Tukey HSD) nötig.',
+            content: 'Bei mehr als zwei Gruppen ist die einfaktorielle {{term:anova|Varianzanalyse (One-Way ANOVA)}} das passende Verfahren — sie zerlegt die Gesamtvariation in Anteile zwischen und innerhalb der Gruppen und vergleicht diese über eine F-Statistik. Bei nicht normalverteilten Daten wird automatisch auf den Kruskal-Wallis-Test (rangbasiert; nichtparametrisches Pendant zur {{term:anova|ANOVA}}) gewechselt. Beide Tests sind Omnibus-Tests: sie zeigen, dass mindestens ein Mittelwert abweicht, ohne zu sagen welcher — dafür sind anschließende Post-Hoc-Vergleiche (z. B. Tukey HSD) nötig.',
           },
           {
             type: 'definition',
             term: 'k-Stichproben-Vergleich (Varianzen)',
-            content: 'Für die Gleichheit von {{term:varianz|Varianzen}} über mehrere Gruppen stehen zwei Tests bereit: der Bartlett-Test (parametrisch, sehr trennscharf bei Normalverteilung, aber empfindlich gegen Abweichungen davon) und der Levene-Test (Brown-Forsythe-Variante, robust gegen Nicht-Normalität). Das Modul wählt automatisch je nach Normalverteilungsprüfung.',
+            content: 'Für die Gleichheit von {{term:varianz|Varianzen}} über mehrere Gruppen stehen zwei Tests bereit: der {{term:varianzhomogenitaet|Bartlett-Test}} (parametrisch, sehr trennscharf bei Normalverteilung, aber empfindlich gegen Abweichungen davon) und der {{term:varianzhomogenitaet|Levene-Test}} (Brown-Forsythe-Variante, robust gegen Nicht-Normalität). Das Modul wählt automatisch je nach Normalverteilungsprüfung.',
           },
         ],
       },
@@ -65,51 +65,51 @@ export default {
         blocks: [
           {
             type: 'paragraph',
-            content: 'A hypothesis test checks whether an observed deviation in the data is a real effect or could have arisen by chance. It is the central decision instrument of the Analyze phase — used to statistically back up statements like "the {{term:mittelwert|mean}} has changed" or "the two machines deliver different quality".',
+            content: 'A {{term:hypothesentest|hypothesis test}} checks whether an observed deviation in the data is a real effect or could have arisen by chance. It is the central decision instrument of the Analyze phase — used to statistically back up statements like "the {{term:mittelwert|mean}} has changed" or "the two machines deliver different quality".',
           },
           {
             type: 'definition',
             term: 'Null hypothesis (H₀)',
-            content: 'The "nothing going on" assumption. Typical: "means are equal", "there is no difference". The test tries to refute it — never to confirm it.',
+            content: 'The {{term:nullhypothese|null hypothesis H₀}} is the "nothing going on" assumption. Typical: "means are equal", "there is no difference". The test tries to refute it — never to confirm it.',
           },
           {
             type: 'definition',
             term: 'Alternative hypothesis (H₁)',
-            content: 'The interesting counter-assumption: "the means differ", "the new process is better". Accepted when data refute H₀.',
+            content: 'The {{term:alternativhypothese|alternative hypothesis H₁}} is the interesting counter-assumption: "the means differ", "the new process is better". Accepted when data refute H₀.',
           },
           {
             type: 'definition',
             term: 'p-value',
-            content: 'Probability of seeing data this extreme (or more) if H₀ were true. Small = H₀ unlikely. Usual threshold: p < 0.05 → reject H₀.',
+            content: 'The {{term:p-wert|p-value}} is the probability of seeing data this extreme (or more) if H₀ were true. Small = H₀ unlikely. Usual threshold: p < 0.05 → reject H₀.',
           },
           {
             type: 'definition',
             term: 'Significance level (α)',
-            content: 'The risk threshold, set in advance, for wrongly rejecting H₀. Usually 0.05 (5%). α is an analyst decision, not a data property.',
+            content: 'The {{term:signifikanzniveau|significance level α}} — the risk threshold, set in advance, for wrongly rejecting H₀. Usually 0.05 (5%). α is an analyst decision, not a data property.',
           },
           {
             type: 'definition',
             term: 'Type I and Type II errors',
-            content: 'Type I (α): reject H₀ when it is true — "false alarm". Type II (β): fail to reject H₀ when it is false — "missed real effect". Power = 1 − β.',
+            content: '{{term:fehler-erster-art|Type I (α)}}: reject H₀ when it is true — "false alarm". Type II (β): fail to reject H₀ when it is false — "missed real effect". Power = 1 − β.',
           },
           {
             type: 'definition',
             term: 'Test statistic',
-            content: 'A quantity computed from the data (e.g. t, z, F, χ²) placed against a known distribution. From it the p-value is derived.',
+            content: 'The {{term:teststatistik|test statistic}} — a quantity computed from the data (e.g. t, z, F, χ²) placed against a known distribution. From it the p-value is derived.',
           },
           {
             type: 'paragraph',
-            content: 'The right test depends on the question (one mean, two groups, more than two?), the scale (continuous, categorical), and distributional assumptions. Common tests: 1-sample t, 2-sample t, paired t, ANOVA, chi-square, Mann-Whitney (nonparametric).',
+            content: 'The right test depends on the question (one mean, two groups, more than two?), the scale (continuous, categorical), and distributional assumptions. Common tests: 1-sample t, 2-sample {{term:t-test|t}}, paired t, {{term:anova|ANOVA}}, chi-square, Mann-Whitney (nonparametric).',
           },
           {
             type: 'definition',
             term: 'k-sample comparison (means)',
-            content: 'For more than two groups, one-way analysis of {{term:varianz|variance}} (One-Way ANOVA) is the appropriate procedure — it decomposes the total variation into between- and within-group components and compares them via an F-statistic. For non-normal data the module automatically switches to the rank-based Kruskal-Wallis test. Both are omnibus tests: they show that at least one mean differs without identifying which one — that requires follow-up post-hoc comparisons (e.g. Tukey HSD).',
+            content: 'For more than two groups, one-way {{term:anova|analysis of variance (One-Way ANOVA)}} is the appropriate procedure — it decomposes the total variation into between- and within-group components and compares them via an F-statistic. For non-normal data the module automatically switches to the rank-based Kruskal-Wallis test (nonparametric counterpart of {{term:anova|ANOVA}}). Both are omnibus tests: they show that at least one mean differs without identifying which one — that requires follow-up post-hoc comparisons (e.g. Tukey HSD).',
           },
           {
             type: 'definition',
             term: 'k-sample comparison (variances)',
-            content: 'For equality of variances across several groups, two tests are available: Bartlett (parametric, very powerful under normality but sensitive to departures from it) and Levene (Brown-Forsythe variant, robust to non-normality). The module picks automatically based on the normality assessment.',
+            content: 'For equality of variances across several groups, two tests are available: {{term:varianzhomogenitaet|Bartlett}} (parametric, very powerful under normality but sensitive to departures from it) and {{term:varianzhomogenitaet|Levene}} (Brown-Forsythe variant, robust to non-normality). The module picks automatically based on the normality assessment.',
           },
         ],
       },
@@ -124,12 +124,12 @@ export default {
             items: [
               'Fragestellung präzise formulieren — was will ich eigentlich wissen?',
               'H₀ und H₁ sauber aufschreiben — vor der Datenanalyse.',
-              'Signifikanzniveau α festlegen (typisch 0,05) — vor dem Rechnen.',
+              '{{term:signifikanzniveau|Signifikanzniveau α}} festlegen (typisch 0,05) — vor dem Rechnen.',
               'Passenden Test wählen (abhängig von Skala, Gruppenzahl, Verteilung, Unabhängigkeit).',
-              'Voraussetzungen prüfen (Normalverteilung? gleiche Varianzen? unabhängige Beobachtungen?).',
+              'Voraussetzungen prüfen ({{term:normalitaetstest|Normalverteilung}}? gleiche Varianzen? unabhängige Beobachtungen?).',
               'Test rechnen und p-Wert ablesen.',
               'Entscheidung: p < α → H₀ verwerfen; sonst keine Evidenz gegen H₀.',
-              'Zusätzlich Effektstärke und Konfidenzintervall berichten — der p-Wert allein sagt wenig über Größe und Relevanz.',
+              'Zusätzlich {{term:effektstaerke|Effektstärke}} und Konfidenzintervall berichten — der p-Wert allein sagt wenig über Größe und Relevanz.',
             ],
           },
         ],
@@ -142,12 +142,12 @@ export default {
             items: [
               'State the question precisely — what do I actually want to know?',
               'Write down H₀ and H₁ clearly — before analyzing data.',
-              'Set the significance level α (typically 0.05) — before computing.',
+              'Set the {{term:signifikanzniveau|significance level α}} (typically 0.05) — before computing.',
               'Choose the right test (based on scale, number of groups, distribution, independence).',
-              'Check assumptions (normality? equal variances? independent observations?).',
+              'Check assumptions ({{term:normalitaetstest|normality}}? equal variances? independent observations?).',
               'Run the test and read the p-value.',
               'Decide: p < α → reject H₀; otherwise no evidence against H₀.',
-              'Additionally report effect size and confidence interval — a p-value alone says little about magnitude and relevance.',
+              'Additionally report {{term:effektstaerke|effect size}} and confidence interval — a p-value alone says little about magnitude and relevance.',
             ],
           },
         ],
@@ -165,7 +165,7 @@ export default {
           },
           {
             type: 'definition',
-            term: 'p-Wert als Effektgröße missdeuten',
+            term: '{{term:p-wert|p-Wert}} als {{term:effektstaerke|Effektgröße}} missdeuten',
             content: 'p = 0,001 bedeutet nicht „großer Effekt", sondern nur „sehr unwahrscheinlich unter H₀". Ein p-Wert hängt stark von der Stichprobengröße ab. Effektstärke und Konfidenzintervall zeigen die Größe.',
           },
           {
@@ -200,7 +200,7 @@ export default {
           },
           {
             type: 'definition',
-            term: 'Reading the p-value as effect size',
+            term: 'Reading the {{term:p-wert|p-value}} as {{term:effektstaerke|effect size}}',
             content: 'p = 0.001 does not mean "large effect", only "very unlikely under H₀". p-values depend heavily on sample size. Effect size and confidence interval show magnitude.',
           },
           {

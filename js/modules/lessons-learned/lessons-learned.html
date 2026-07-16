@@ -1,0 +1,222 @@
+<section class="module-container lessons-learned" x-data="lessonsLearned">
+  <div class="module-container__header">
+    <h2 class="module-container__title" x-text="t('name')"></h2>
+    <div class="module-container__actions">
+      <button class="btn btn--sm" data-action="export-json" @click="exportJSON" type="button" x-text="t('exportJSON')"></button>
+      <button class="btn btn--sm" data-action="import-json" @click="openImport" type="button" x-text="t('importJSON')"></button>
+      <button class="btn btn--primary btn--sm" data-action="add" @click="openAddModal" type="button">+ <span x-text="t('addLesson')"></span></button>
+    </div>
+  </div>
+
+  <div class="module-container__body">
+    <div class="ll__stats-bar">
+      <div class="ll__stat">
+        <span class="ll__stat-icon ll__stat-icon--total">&Sigma;</span>
+        <div>
+          <div class="ll__stat-label" x-text="t('statTotal')"></div>
+          <div class="ll__stat-value" x-text="stats().total"></div>
+        </div>
+      </div>
+      <div class="ll__stat">
+        <span class="ll__stat-icon ll__stat-icon--success">&check;</span>
+        <div>
+          <div class="ll__stat-label" x-text="t('statSuccess')"></div>
+          <div class="ll__stat-value" x-text="stats().success"></div>
+        </div>
+      </div>
+      <div class="ll__stat">
+        <span class="ll__stat-icon ll__stat-icon--problem">&times;</span>
+        <div>
+          <div class="ll__stat-label" x-text="t('statProblem')"></div>
+          <div class="ll__stat-value" x-text="stats().problem"></div>
+        </div>
+      </div>
+      <div class="ll__stat">
+        <span class="ll__stat-icon ll__stat-icon--improve">&uarr;</span>
+        <div>
+          <div class="ll__stat-label" x-text="t('statImprove')"></div>
+          <div class="ll__stat-value" x-text="stats().improve"></div>
+        </div>
+      </div>
+      <div class="ll__stat">
+        <span class="ll__stat-icon ll__stat-icon--actions">&#9673;</span>
+        <div>
+          <div class="ll__stat-label" x-text="t('statOpenActions')"></div>
+          <div class="ll__stat-value" x-text="stats().openActions"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="ll__toolbar">
+      <div class="ll__search">
+        <input type="text" class="field ll__search-input" data-ref="search"
+          :placeholder="t('searchPlaceholder')"
+          x-model="search">
+      </div>
+      <div class="ll__filters">
+        <button class="ll__filter-chip" :class="{ 'll__filter-chip--active': filter === 'all' }"
+          data-filter="all" @click="setFilter('all')" type="button" x-text="t('filterAll')"></button>
+        <button class="ll__filter-chip" :class="{ 'll__filter-chip--active': filter === 'success' }"
+          data-filter="success" @click="setFilter('success')" type="button" x-text="t('filterSuccess')"></button>
+        <button class="ll__filter-chip" :class="{ 'll__filter-chip--active': filter === 'problem' }"
+          data-filter="problem" @click="setFilter('problem')" type="button" x-text="t('filterProblem')"></button>
+        <button class="ll__filter-chip" :class="{ 'll__filter-chip--active': filter === 'improve' }"
+          data-filter="improve" @click="setFilter('improve')" type="button" x-text="t('filterImprove')"></button>
+      </div>
+    </div>
+
+    <div class="ll__list" data-ref="list">
+      <template x-if="filteredLessons().length === 0">
+        <div class="ll__empty" x-text="model.lessons.length === 0 ? '' : t('noResults')"></div>
+      </template>
+      <template x-for="lesson in filteredLessons()">
+        <div class="ll__card" :class="{ 'll__card--open': openCards.includes(lesson.id) }"
+          :data-lesson-id="lesson.id" :key="lesson.id">
+          <div class="ll__card-head" data-action="toggle-card" @click="toggleCard(lesson.id)">
+            <span class="ll__cat-dot" :class="'ll__cat-dot--' + lesson.category"></span>
+            <div class="ll__card-content">
+              <div class="ll__card-title-row">
+                <span class="ll__card-title" x-text="lesson.title"></span>
+                <span class="ll__phase-tag" :class="'ll__phase-tag--' + lesson.phase"
+                  x-text="phaseLabel(lesson.phase)"></span>
+                <span class="ll__impact-badge" :class="'ll__impact-badge--' + lesson.impact"
+                  x-text="impactLabel(lesson.impact)"></span>
+              </div>
+              <div class="ll__card-meta">
+                <span x-text="catLabel(lesson.category)"></span>
+                <span x-show="lesson.owner" x-text="lesson.owner"></span>
+                <span x-text="formatDate(lesson.createdAt)"></span>
+                <span x-show="lesson.actions.length > 0" x-text="actionsSummary(lesson)"></span>
+              </div>
+            </div>
+            <span class="ll__chevron" x-text="chevron(lesson)"></span>
+          </div>
+
+          <div x-show="openCards.includes(lesson.id)" class="ll__card-body">
+            <template x-if="lesson.description">
+              <div class="ll__section">
+                <div class="ll__section-label" x-text="t('labelDescription')"></div>
+                <p class="ll__section-text" x-text="lesson.description"></p>
+              </div>
+            </template>
+            <template x-if="lesson.rootCause">
+              <div class="ll__section">
+                <div class="ll__section-label" x-text="t('labelRootCause')"></div>
+                <p class="ll__section-text" x-text="lesson.rootCause"></p>
+              </div>
+            </template>
+            <template x-if="lesson.recommendation">
+              <div class="ll__section">
+                <div class="ll__section-label" x-text="t('labelRecommendation')"></div>
+                <p class="ll__section-text" x-text="lesson.recommendation"></p>
+              </div>
+            </template>
+            <template x-if="lesson.actions.length > 0">
+              <div class="ll__section">
+                <div class="ll__section-label" x-text="t('labelActions')"></div>
+                <ul class="ll__action-list">
+                  <template x-for="(a, i) in lesson.actions">
+                    <li class="ll__action-item">
+                      <button class="ll__action-check" :class="{ 'll__action-check--done': a.done }"
+                        data-action="toggle-action"
+                        @click="toggleAction(lesson, i)"
+                        :data-lesson="lesson.id" :data-idx="i"
+                        type="button">
+                        <span x-text="a.done ? '\u2713' : ''"></span>
+                      </button>
+                      <span class="ll__action-text" :class="{ 'll__action-text--done': a.done }"
+                        x-text="a.text"></span>
+                    </li>
+                  </template>
+                </ul>
+              </div>
+            </template>
+            <div class="ll__card-actions">
+              <button class="btn btn--sm btn--ghost" data-action="edit"
+                @click="openEditModal(lesson)" type="button" x-text="t('edit')"></button>
+              <button class="btn btn--sm btn--ghost btn--danger" data-action="delete"
+                @click="deleteLesson(lesson)" type="button" x-text="t('delete')"></button>
+            </div>
+          </div>
+        </div>
+      </template>
+    </div>
+  </div>
+  <input type="file" data-ref="fileImport" accept=".json" class="ll__hidden" @change="handleImport">
+
+  <!-- Modal form: lives hidden here; borrowed into the shared modal on add/edit, restored on close -->
+  <div class="ll__modal-forms" hidden>
+    <div class="ll__form" x-ref="lessonForm">
+      <div class="ll__form-group">
+        <label class="ll__form-label" x-text="t('fieldTitle')"></label>
+        <input class="field ll__form-input" data-field="title" x-model="lessonDraft.title"
+          :placeholder="t('fieldTitlePlaceholder')">
+      </div>
+      <div class="ll__form-row">
+        <div class="ll__form-group">
+          <label class="ll__form-label" x-text="t('fieldCategory')"></label>
+          <select class="field ll__form-select" data-field="category" x-model="lessonDraft.category">
+            <template x-for="k in categoryOptions" :key="k">
+              <option :value="k" x-text="t('cat_' + k)"></option>
+            </template>
+          </select>
+        </div>
+        <div class="ll__form-group">
+          <label class="ll__form-label" x-text="t('fieldPhase')"></label>
+          <select class="field ll__form-select" data-field="phase" x-model="lessonDraft.phase">
+            <template x-for="opt in phaseOptions()" :key="opt.value">
+              <option :value="opt.value" x-text="opt.label"></option>
+            </template>
+          </select>
+        </div>
+      </div>
+      <div class="ll__form-row">
+        <div class="ll__form-group">
+          <label class="ll__form-label" x-text="t('fieldImpact')"></label>
+          <select class="field ll__form-select" data-field="impact" x-model="lessonDraft.impact">
+            <template x-for="k in impactOptions" :key="k">
+              <option :value="k" x-text="t('impact_' + k)"></option>
+            </template>
+          </select>
+        </div>
+        <div class="ll__form-group">
+          <label class="ll__form-label" x-text="t('fieldOwner')"></label>
+          <input class="field ll__form-input" data-field="owner" x-model="lessonDraft.owner"
+            :placeholder="t('fieldOwnerPlaceholder')">
+        </div>
+      </div>
+      <div class="ll__form-group">
+        <label class="ll__form-label" x-text="t('fieldDescription')"></label>
+        <textarea class="field ll__form-textarea" data-field="description" x-model="lessonDraft.description"
+          :placeholder="t('fieldDescriptionPlaceholder')"></textarea>
+      </div>
+      <div class="ll__form-group">
+        <label class="ll__form-label" x-text="t('fieldRootCause')"></label>
+        <textarea class="ll__form-textarea ll__form-textarea--sm" data-field="rootCause" x-model="lessonDraft.rootCause"
+          :placeholder="t('fieldRootCausePlaceholder')"></textarea>
+      </div>
+      <div class="ll__form-group">
+        <label class="ll__form-label" x-text="t('fieldRecommendation')"></label>
+        <textarea class="field ll__form-textarea" data-field="recommendation" x-model="lessonDraft.recommendation"
+          :placeholder="t('fieldRecommendationPlaceholder')"></textarea>
+      </div>
+      <div class="ll__form-group">
+        <label class="ll__form-label" x-text="t('fieldActions')"></label>
+        <div class="ll__action-input-row">
+          <input class="field ll__form-input" data-ref="actionInput" x-model="draftActionInput"
+            :placeholder="t('fieldActionPlaceholder')"
+            @keydown.enter.prevent="addDraftAction()">
+          <button class="btn btn--sm" data-ref="addActionBtn" type="button" @click="addDraftAction()">+</button>
+        </div>
+        <div class="ll__action-tags" data-ref="actionTags" @click="onActionTagsClick($event)">
+          <template x-for="a in lessonDraft.actions" :key="a.uid">
+            <span class="ll__action-tag">
+              <span x-text="a.text"></span><button class="ll__action-tag-remove" type="button"
+                :data-uid="a.uid">&times;</button>
+            </span>
+          </template>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

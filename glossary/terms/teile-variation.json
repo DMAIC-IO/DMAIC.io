@@ -1,0 +1,97 @@
+{
+  "id": "teile-variation",
+  "category": "msa",
+  "title": {
+    "de": "Teile-Variation (Part Variation, PV)",
+    "en": "Part Variation (PV)"
+  },
+  "short": {
+    "de": "Streuung zwischen den Teilen selbst — sollte in {{term:gage-rr|Gage R&R}} die Messsystem-Streuung dominieren.",
+    "en": "Variation between the parts themselves — should dominate the measurement-system variation in {{term:gage-rr|Gage R&R}}."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "Die **Teile-Variation** (Part Variation, PV, auch Part-to-Part) beschreibt die Streuung, die aus den tatsächlichen Unterschieden zwischen den in einer {{term:gage-rr|Gage R&R}}-Studie ausgewählten Teilen kommt — also der Prozess-Streuung, nicht der Messsystem-Streuung."
+      },
+      {
+        "type": "formula",
+        "latex": "\\sigma^2_{\\text{Total}} = \\sigma^2_{\\text{Part}} + \\sigma^2_{\\text{GRR}}"
+      },
+      {
+        "type": "paragraph",
+        "text": "Ein gutes Messsystem zeigt einen **hohen PV-Anteil** und einen kleinen GRR-Anteil — das heißt: was das Messsystem misst, ist tatsächlich der Prozess, nicht sein eigenes Rauschen. Dominiert dagegen die Messsystem-Streuung, ist die Studie nicht aussagekräftig."
+      },
+      {
+        "type": "list",
+        "items": [
+          "Teile müssen die relevante Prozessspanne abdecken — nicht alle nahe am {{term:mittelwert|Mittelwert}}",
+          "Zu enge Teilespanne → PV klein, %GRR künstlich groß, {{term:ndc|ndc}} niedrig",
+          "Randomisierte Reihenfolge und blinde Prüfer sind Pflicht, um PV sauber zu trennen"
+        ]
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "**Part variation** (PV, part-to-part) captures the spread produced by the actual differences between the parts selected for a {{term:gage-rr|Gage R&R}} study — i.e. the process variation, not the measurement-system variation."
+      },
+      {
+        "type": "formula",
+        "latex": "\\sigma^2_{\\text{Total}} = \\sigma^2_{\\text{Part}} + \\sigma^2_{\\text{GRR}}"
+      },
+      {
+        "type": "paragraph",
+        "text": "A good measurement system shows a **large PV share** and a small GRR share — meaning: what the system reports is actually the process, not its own noise. When measurement-system variation dominates instead, the study loses meaning."
+      },
+      {
+        "type": "list",
+        "items": [
+          "Parts must cover the relevant process range — not all near the {{term:mittelwert|mean}}",
+          "Too narrow a part range → PV small, %GRR artificially large, {{term:ndc|ndc}} low",
+          "Randomised order and blinded operators are mandatory to separate PV cleanly"
+        ]
+      }
+    ]
+  },
+  "aliases": {
+    "de": [
+      "PV",
+      "Part Variation",
+      "Teile-zu-Teile-Streuung",
+      "Prozess-Streuung"
+    ],
+    "en": [
+      "PV",
+      "part-to-part variation",
+      "part-to-part spread"
+    ]
+  },
+  "seeAlso": [
+    "gage-rr",
+    "wiederholbarkeit",
+    "reproduzierbarkeit",
+    "ndc"
+  ],
+  "modules": [
+    "msa-typ2"
+  ],
+  "algoLab": [
+    "msa/grr"
+  ],
+  "sources": [
+    {
+      "label": "AIAG — Measurement Systems Analysis Reference Manual, 4th Edition (MSA-4), Chapter 4",
+      "url": null
+    },
+    {
+      "label": "Wheeler, D. J. — EMP III: Evaluating the Measurement Process, SPC Press",
+      "url": null
+    },
+    {
+      "label": "Montgomery, D. C. — Design and Analysis of Experiments, 10th Edition, Chapter 14",
+      "url": null
+    }
+  ]
+}

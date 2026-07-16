@@ -1,0 +1,102 @@
+{
+  "id": "t-test",
+  "category": "hypothesis",
+  "title": {
+    "de": "t-Test (Ein-/Zwei-Stichproben, gepaart, Welch)",
+    "en": "t-Test (One/Two Sample, Paired, Welch)"
+  },
+  "short": {
+    "de": "Familie von {{term:hypothesentest|Tests}} für {{term:mittelwert|Mittelwerte}} unter Normalverteilungsannahme — mit t-Verteilung als Referenz.",
+    "en": "Family of {{term:hypothesentest|tests}} for {{term:mittelwert|means}} under normality assumption — using the t-distribution as reference."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "Der **t-Test** ist der Klassiker der Mittelwert-Vergleiche. Er nutzt die t-Verteilung, um zu prüfen, ob ein oder zwei beobachtete Mittelwerte mit einem Sollwert oder untereinander vereinbar sind."
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Ein-Stichproben-t-Test** — H₀: μ = μ₀; prüft, ob ein einzelner Mittelwert von einem Sollwert abweicht",
+          "**Zwei-Stichproben-t-Test** — H₀: μ₁ = μ₂; setzt gleiche {{term:varianzhomogenitaet|Varianzen}} voraus",
+          "**Welch-t-Test** — Zwei-Stichproben ohne Varianzgleichheit; robuster, in der Praxis oft die Standardwahl",
+          "**Gepaarter t-Test** — Vorher/Nachher-Messungen am selben Objekt; prüft die Differenzen"
+        ]
+      },
+      {
+        "type": "formula",
+        "latex": "t = \\frac{\\bar{x} - \\mu_0}{s / \\sqrt{n}}"
+      },
+      {
+        "type": "note",
+        "text": "**Voraussetzungen:** unabhängige Beobachtungen und annähernd normalverteilte Daten (bei n > 30 durch Zentralen Grenzwertsatz meist unkritisch). Bei starken Abweichungen von der Normalverteilung eher nichtparametrische Alternativen (Mann-Whitney-U, Wilcoxon-Signed-Rank) verwenden."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "The **t-test** is the classic mean-comparison test. It uses the t-distribution to check whether one or two observed means are compatible with a target or with each other."
+      },
+      {
+        "type": "list",
+        "items": [
+          "**One-sample t-test** — H₀: μ = μ₀; tests whether a single mean deviates from a target",
+          "**Two-sample t-test** — H₀: μ₁ = μ₂; assumes equal {{term:varianzhomogenitaet|variances}}",
+          "**Welch t-test** — two-sample without variance equality; more robust, often the default in practice",
+          "**Paired t-test** — before/after measurements on the same objects; tests the differences"
+        ]
+      },
+      {
+        "type": "formula",
+        "latex": "t = \\frac{\\bar{x} - \\mu_0}{s / \\sqrt{n}}"
+      },
+      {
+        "type": "note",
+        "text": "**Assumptions:** independent observations and approximately normal data (usually uncritical at n > 30 thanks to the central limit theorem). Under strong non-normality prefer nonparametric alternatives (Mann-Whitney-U, Wilcoxon signed-rank)."
+      }
+    ]
+  },
+  "aliases": {
+    "de": [
+      "Student t-Test",
+      "Student's t",
+      "Welch-Test"
+    ],
+    "en": [
+      "Student's t-test",
+      "Welch's t-test",
+      "paired t-test"
+    ]
+  },
+  "seeAlso": [
+    "hypothesentest",
+    "p-wert",
+    "teststatistik",
+    "anova",
+    "varianzhomogenitaet"
+  ],
+  "modules": [
+    "hypothesis-test",
+    "sample-size"
+  ],
+  "algoLab": [
+    "hypothesis/one-sample-t-test",
+    "hypothesis/two-sample-t-test",
+    "hypothesis/welch-t-test"
+  ],
+  "sources": [
+    {
+      "label": "Student — The Probable Error of a Mean, Biometrika, 6(1), 1908",
+      "url": null
+    },
+    {
+      "label": "Welch, B. L. — The Generalization of Student's Problem when Several Different Population Variances are Involved, Biometrika, 34(1/2), 1947",
+      "url": null
+    },
+    {
+      "label": "Fahrmeir, L. et al. — Statistik, Springer",
+      "url": null
+    }
+  ]
+}

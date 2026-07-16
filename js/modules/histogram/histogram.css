@@ -9,15 +9,17 @@
 /* Section labels: use global .dmike-split__output-section (css/modules.css) */
 
 /* Fields use global .field / .field-group (components.css) */
+
 /* Column selects: use global .ds-picker (dataset-picker.css) */
+
 /* Buttons: use global .btn (components.css) */
 
 .histogram__error {
   display: none;
   font-size: var(--font-size-sm);
   color: var(--color-error, #ef4444);
-  background: rgba(239, 68, 68, 0.08);
-  border: var(--border-width) solid rgba(239, 68, 68, 0.2);
+  background: rgb(239 68 68 / 8%);
+  border: var(--border-width) solid rgb(239 68 68 / 20%);
   border-radius: var(--border-radius);
   padding: var(--spacing-sm);
 }
@@ -82,12 +84,35 @@
 
 .histogram__boxplot-panel svg {
   display: block;
+
+  /* Scale to the panel width exactly like the chart svg (.histogram__chart-wrap > svg
+     uses width:100%). Both svgs share the chart's totalW-based viewBox, so mapping
+     them to the same panel width keeps the box/whiskers aligned under the histogram
+     bars even after a layout/resize that happens without a re-render. The height
+     attribute on the svg preserves the strip's aspect. */
+  width: 100%;
 }
 
 /* When boxplot panel is visible, connect chart-wrap and boxplot-panel */
 .histogram__chart-wrap--bp-open {
   border-bottom-left-radius: 0;
   border-bottom-right-radius: 0;
+}
+
+/* Tooltip line-model (declarative) — parity with the former <br>-joined,
+   <b>-headed inline markup. Block <div> lines stack exactly like <br> at the
+   inherited line-height; <b> stays bold; dim line mirrors the old opacity:.7. */
+.dmike-chart-tooltip > div {
+  margin: 0;
+  padding: 0;
+}
+
+.dmike-chart-tooltip__b {
+  font-weight: 700;
+}
+
+.dmike-chart-tooltip__line--dim {
+  opacity: 0.7;
 }
 
 /* Statistics table — uses shared dmike-stats-panel (js/core/stats-panel.css) */
@@ -126,7 +151,7 @@
   background: var(--color-bg-secondary);
   border: 1px solid var(--color-border-primary);
   border-radius: var(--border-radius-sm);
-  box-shadow: -2px 0 6px rgba(0, 0, 0, 0.08);
+  box-shadow: -2px 0 6px rgb(0 0 0 / 8%);
 }
 
 .histogram__editor-inner {

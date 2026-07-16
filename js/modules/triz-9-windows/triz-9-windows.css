@@ -36,6 +36,14 @@
   align-items: stretch;
 }
 
+/* Alpine's <template x-for> needs exactly one child element, so each body row
+   (row-head + its 3 cells) is wrapped in a div. display:contents lets the
+   row-head and cells participate directly in the parent grid instead of
+   collapsing into a single grid cell. */
+.triz-9w__row {
+  display: contents;
+}
+
 .triz-9w__corner {
   position: relative;
   padding: var(--spacing-xs) var(--spacing-sm);
@@ -191,7 +199,7 @@
   padding: 0;
   border: none;
   border-radius: 50%;
-  background: rgba(0, 0, 0, 0.55);
+  background: rgb(0 0 0 / 55%);
   color: #fff;
   font-size: 14px;
   line-height: 1;
@@ -209,7 +217,7 @@
 .triz-9w__overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.78);
+  background: rgb(0 0 0 / 78%);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -224,7 +232,7 @@
   background: var(--color-bg-elevated);
   border-radius: var(--border-radius);
   cursor: default;
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 12px 40px rgb(0 0 0 / 50%);
 }
 
 .triz-9w__overlay-close {
@@ -235,7 +243,7 @@
   height: 36px;
   border: none;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.15);
+  background: rgb(255 255 255 / 15%);
   color: #fff;
   font-size: 20px;
   cursor: pointer;
@@ -245,5 +253,5 @@
 }
 
 .triz-9w__overlay-close:hover {
-  background: rgba(255, 255, 255, 0.3);
+  background: rgb(255 255 255 / 30%);
 }

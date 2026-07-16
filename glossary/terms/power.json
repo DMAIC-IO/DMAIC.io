@@ -1,0 +1,101 @@
+{
+  "id": "power",
+  "category": "hypothesis",
+  "title": {
+    "de": "Power (Teststärke, 1 − β)",
+    "en": "Power (1 − β)"
+  },
+  "short": {
+    "de": "Wahrscheinlichkeit, einen tatsächlich vorhandenen Effekt mit dem Test auch zu entdecken — Zielwert meist 0,80 oder 0,90.",
+    "en": "Probability of detecting an effect that really exists — usual target 0.80 or 0.90."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "Die **Power** eines Tests ist die Gegenwahrscheinlichkeit zum {{term:fehler-zweiter-art|Fehler 2. Art}}: die Chance, einen realen Effekt korrekt als signifikant zu erkennen. Sie ist die zentrale Größe der Stichprobenplanung."
+      },
+      {
+        "type": "formula",
+        "latex": "\\text{Power} = 1 - \\beta = P(\\,\\text{H}_0 \\text{ verwerfen} \\mid \\text{H}_1 \\text{ wahr}\\,)"
+      },
+      {
+        "type": "paragraph",
+        "text": "Die Power hängt an vier gekoppelten Größen — sind drei festgelegt, ergibt sich die vierte:"
+      },
+      {
+        "type": "list",
+        "items": [
+          "**α** — {{term:signifikanzniveau|Signifikanzniveau}} (meist 0,05)",
+          "**{{term:effektstaerke|δ}}** — die kleinste noch relevante Effektgröße",
+          "**σ** — die {{term:standardabweichung|Streuung}} der einzelnen Messwerte",
+          "**n** — der Stichprobenumfang (Ergebnis der Planung)"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "**Post-hoc Power** (nach dem Test mit dem beobachteten Effekt gerechnet) ist statistisch bedeutungslos — sie korreliert direkt mit dem p-Wert und liefert keine neue Information. Power gehört **vor** die Studie, nicht in die Auswertung. Übliche Zielwerte: 0,80 = knapp akzeptabel, 0,90 = solide, 0,95 = konservativ."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "The **power** of a test is the complement of the {{term:fehler-zweiter-art|Type II error}}: the chance of correctly declaring a real effect significant. It is the central quantity of sample-size planning."
+      },
+      {
+        "type": "formula",
+        "latex": "\\text{Power} = 1 - \\beta = P(\\,\\text{reject } \\text{H}_0 \\mid \\text{H}_1 \\text{ true}\\,)"
+      },
+      {
+        "type": "paragraph",
+        "text": "Power depends on four coupled quantities — fix three and the fourth follows:"
+      },
+      {
+        "type": "list",
+        "items": [
+          "**α** — {{term:signifikanzniveau|significance level}} (usually 0.05)",
+          "**{{term:effektstaerke|δ}}** — the smallest still-relevant effect size",
+          "**σ** — the {{term:standardabweichung|dispersion}} of individual measurements",
+          "**n** — the sample size (the planning output)"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "**Post-hoc power** (computed after the test using the observed effect) is statistically meaningless — it correlates directly with the p-value and adds no information. Power belongs **before** the study, not in the analysis. Common targets: 0.80 = barely acceptable, 0.90 = solid, 0.95 = conservative."
+      }
+    ]
+  },
+  "aliases": {
+    "de": [
+      "Teststärke",
+      "1 − β",
+      "Power (1-β)"
+    ],
+    "en": [
+      "statistical power",
+      "1 − β"
+    ]
+  },
+  "seeAlso": [
+    "fehler-zweiter-art",
+    "signifikanzniveau",
+    "effektstaerke",
+    "hypothesentest"
+  ],
+  "modules": [
+    "sample-size",
+    "hypothesis-test",
+    "doe-planner"
+  ],
+  "algoLab": [],
+  "sources": [
+    {
+      "label": "Cohen, J. — Statistical Power Analysis for the Behavioral Sciences, 2nd Edition, Erlbaum",
+      "url": null
+    },
+    {
+      "label": "Chow, S.-C., Wang, H. & Shao, J. — Sample Size Calculations in Clinical Research, 3rd Edition, Chapman & Hall",
+      "url": null
+    }
+  ]
+}

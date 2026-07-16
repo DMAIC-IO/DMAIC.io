@@ -55,7 +55,7 @@ import {
 
 export { discoverColumns, getColumnValues, getColumnName, refToKey, keyToRef, isPickerFocused };
 
-import { esc } from '../core/html-utils.js';
+import { h } from '../core/dom.js';
 
 // ── DatasetPicker ──────────────────────────────────────────────────
 
@@ -73,7 +73,7 @@ export class DatasetPicker {
     this._container = container;
     this._ctx = context;
     this._slots = options.slots || [];
-    this._multi = !!options.multi;
+    this._multi = Boolean(options.multi);
     this._onChange = options.onChange || null;
     this._colors = options.colors || null;
 
@@ -106,8 +106,8 @@ export class DatasetPicker {
 
   /** Programmatically set datasets. */
   set value(datasets) {
-    if (!Array.isArray(datasets)) datasets = datasets ? [datasets] : [];
-    this._datasets = datasets.map(ds => {
+    const list = Array.isArray(datasets) ? datasets : (datasets ? [datasets] : []);
+    this._datasets = list.map(ds => {
       const obj = this._emptyDataset();
       for (const slot of this._slots) {
         obj[slot.key] = ds[slot.key] || null;
@@ -127,7 +127,7 @@ export class DatasetPicker {
   destroy() {
     for (const fn of this._unsubs) fn();
     this._unsubs = [];
-    this._container.innerHTML = '';
+    this._container.replaceChildren();
   }
 
   // ── Private ─────────────────────────────────────────────────────
@@ -160,92 +160,98 @@ export class DatasetPicker {
   // ── Rendering ───────────────────────────────────────────────────
 
   _render() {
-    this._container.innerHTML = this._buildHTML();
+    this._container.replaceChildren(this._buildEl());
     this._bindEvents();
   }
 
-  _buildHTML() {
-    let html = '<div class="ds-picker">';
+  _buildEl() {
+    const root = h('div', { class: 'ds-picker' });
 
     for (let i = 0; i < this._datasets.length; i++) {
-      html += this._buildDatasetHTML(i);
+      root.append(this._buildDatasetEl(i));
     }
 
     if (this._multi) {
-      html += `<button class="ds-picker__add-btn" data-action="add-dataset">
-        + ${esc(this._t('addDataset'))}
-      </button>`;
+      root.append(
+        h('button', { class: 'ds-picker__add-btn', 'data-action': 'add-dataset' },
+          `+ ${this._t('addDataset')}`),
+      );
     }
 
-    html += '</div>';
-    return html;
+    return root;
   }
 
-  _buildDatasetHTML(idx) {
+  _buildDatasetEl(idx) {
     const ds = this._datasets[idx];
     const showHeader = this._multi;
     const color = this._colors
       ? this._colors[idx % this._colors.length]
       : null;
 
-    let html = `<div class="ds-picker__item" data-ds-idx="${idx}">`;
+    const item = h('div', { class: 'ds-picker__item', 'data-ds-idx': idx });
 
     if (showHeader) {
-      html += `<div class="ds-picker__header">`;
+      const header = h('div', { class: 'ds-picker__header' });
       if (color) {
-        html += `<span class="ds-picker__color" style="background:${color}"></span>`;
+        header.append(h('span', { class: 'ds-picker__color', style: `background:${color}` }));
       }
-      html += `<span class="ds-picker__title">${esc(this._t('datasetLabel', { n: idx + 1 }))}</span>`;
+      header.append(h('span', { class: 'ds-picker__title' }, this._t('datasetLabel', { n: idx + 1 })));
       if (this._datasets.length > 1) {
-        html += `<button class="ds-picker__remove-btn" data-action="remove-dataset" data-ds-idx="${idx}">&times;</button>`;
+        header.append(
+          h('button', {
+            class: 'ds-picker__remove-btn',
+            'data-action': 'remove-dataset',
+            'data-ds-idx': idx,
+          }, '×'),
+        );
       }
-      html += `</div>`;
+      item.append(header);
     }
 
-    html += `<div class="ds-picker__slots">`;
+    const slots = h('div', { class: 'ds-picker__slots' });
     for (const slot of this._slots) {
-      html += this._buildSlotHTML(slot, ds[slot.key], idx);
+      slots.append(this._buildSlotEl(slot, ds[slot.key], idx));
     }
-    html += `</div></div>`;
+    item.append(slots);
 
-    return html;
+    return item;
   }
 
-  _buildSlotHTML(slot, currentRef, dsIdx) {
+  _buildSlotEl(slot, currentRef, dsIdx) {
     const columns = this._discoverForSlot(slot);
     const currentKey = currentRef ? refToKey(currentRef) : '';
 
-    let selectHTML;
+    let select;
     if (columns.length === 0) {
-      selectHTML = `<select class="ds-picker__select" data-ds="${dsIdx}" data-slot="${slot.key}" disabled>
-        <option>${esc(this._t('noColumns'))}</option>
-      </select>`;
+      select = h('select', {
+        class: 'ds-picker__select', 'data-ds': dsIdx, 'data-slot': slot.key, disabled: true,
+      }, h('option', null, this._t('noColumns')));
     } else {
       const placeholder = slot.group
         ? this._t('groupNone')
         : this._t('selectColumn');
-      let opts = `<option value="">${esc(placeholder)}</option>`;
+      select = h('select', { class: 'ds-picker__select', 'data-ds': dsIdx, 'data-slot': slot.key });
+      select.append(h('option', { value: '' }, placeholder));
 
       const grouped = {};
       for (const c of columns) (grouped[c.sheetName] ||= []).push(c);
       for (const [group, cols] of Object.entries(grouped)) {
-        opts += `<optgroup label="${esc(group)}">`;
+        const optgroup = h('optgroup', { label: group });
         for (const c of cols) {
           const key = refToKey(c);
-          const sel = key === currentKey ? ' selected' : '';
-          opts += `<option value="${key}"${sel}>${esc(c.shortName)} ${esc(c.columnName)} (n=${c.valueCount})</option>`;
+          optgroup.append(
+            h('option', { value: key, selected: key === currentKey },
+              `${c.shortName} ${c.columnName} (n=${c.valueCount})`),
+          );
         }
-        opts += `</optgroup>`;
+        select.append(optgroup);
       }
-
-      selectHTML = `<select class="ds-picker__select" data-ds="${dsIdx}" data-slot="${slot.key}">${opts}</select>`;
     }
 
-    const titleAttr = slot.title ? ` title="${esc(slot.title)}"` : '';
-    return `<div class="ds-picker__slot">
-      <span class="ds-picker__slot-label"${titleAttr}>${esc(slot.label)}</span>
-      ${selectHTML}
-    </div>`;
+    return h('div', { class: 'ds-picker__slot' },
+      h('span', { class: 'ds-picker__slot-label', title: slot.title || false }, slot.label),
+      select,
+    );
   }
 
   // ── Events ──────────────────────────────────────────────────────

@@ -1,0 +1,91 @@
+{
+  "id": "referenzteil",
+  "category": "msa",
+  "title": {
+    "de": "Referenzteil (Normal / Master)",
+    "en": "Reference Part (Master)"
+  },
+  "short": {
+    "de": "Kalibriertes Teil mit bekanntem, rückführbarem Wert — Voraussetzung für {{term:bias|Bias}}-Bestimmung in der MSA Typ 1.",
+    "en": "Calibrated part with a known, traceable value — prerequisite for {{term:bias|bias}} assessment in MSA Type 1."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "Ein **Referenzteil** (auch: Normal, Master) ist ein Werkstück oder Prüfmittel, dessen wahrer Wert für das zu prüfende Merkmal mit deutlich höherer Genauigkeit als die des Messsystems bekannt ist — üblicherweise durch Kalibrierung gegen einen nationalen Standard („rückführbar“)."
+      },
+      {
+        "type": "list",
+        "items": [
+          "Ohne bekannten Referenzwert kann kein {{term:bias|Bias}} bestimmt werden — die MSA Typ 1 reduziert sich auf reine {{term:wiederholbarkeit|Wiederholbarkeit}}",
+          "Der Referenzwert sollte im Bereich der mittleren Spezifikation liegen, damit der Bias-Test aussagekräftig ist",
+          "Rückführbarkeit heißt: das Kalibrierzertifikat verweist auf ein anerkanntes Normal (PTB, NIST o. ä.)"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "Bei einer Gage R&R (MSA Typ 2) sind kalibrierte Referenzteile nicht zwingend — dort werden die Teile-Werte statistisch aus der Studie geschätzt. Ein Referenzteil erhöht aber auch dort die Aussagekraft, weil er einen zusätzlichen Bias-Check erlaubt."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "A **reference part** (also: master) is a workpiece or gauge whose true value for the characteristic under test is known with substantially higher accuracy than the measurement system's — usually through calibration against a national standard (\"traceable\")."
+      },
+      {
+        "type": "list",
+        "items": [
+          "Without a known reference value, no {{term:bias|bias}} can be determined — MSA Type 1 then collapses to pure {{term:wiederholbarkeit|repeatability}}",
+          "The reference value should sit near the middle of the specification so the bias check is meaningful",
+          "Traceability means: the calibration certificate refers back to a recognised standard (PTB, NIST, etc.)"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "For Gage R&R (MSA Type 2), calibrated reference parts are not required — part values are estimated statistically from the study. Still, a reference part enhances the study by enabling an additional bias check."
+      }
+    ]
+  },
+  "aliases": {
+    "de": [
+      "Normal",
+      "Master",
+      "Kalibrierteil",
+      "Referenznormal"
+    ],
+    "en": [
+      "master",
+      "calibration master",
+      "reference standard"
+    ]
+  },
+  "seeAlso": [
+    "bias",
+    "cg",
+    "cgk",
+    "richtigkeit"
+  ],
+  "modules": [
+    "msa-typ1",
+    "msa-typ2"
+  ],
+  "algoLab": [
+    "msa/cg",
+    "msa/cgk"
+  ],
+  "sources": [
+    {
+      "label": "VDA Band 5 — Prüfprozesseignung, 3. Auflage",
+      "url": null
+    },
+    {
+      "label": "AIAG — Measurement Systems Analysis Reference Manual, 4th Edition (MSA-4)",
+      "url": null
+    },
+    {
+      "label": "DIN EN ISO/IEC 17025: Allgemeine Anforderungen an die Kompetenz von Prüf- und Kalibrierlaboratorien",
+      "url": null
+    }
+  ]
+}

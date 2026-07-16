@@ -83,3 +83,30 @@ suite('MSA Typ 2 — GRR (fixture validation)', () => {
     }
   }
 });
+
+// ─── MSA Typ 3 (GRR without operator) ─────────────────────────
+
+const grrTyp3Data = await loadFixture('../fixtures/msa/grr-typ3.fixtures.json');
+
+suite('MSA Typ 3 — GRR without operator (fixture validation)', () => {
+  for (const tc of grrTyp3Data.test_cases) {
+    if (tc.expected && Object.keys(tc.expected).length > 0) {
+      test(`${tc.id}: ${tc.description}`, () => {
+        const result = analyzeTyp2(tc.inputs.data, tc.inputs.options);
+        const tol = getTol(tc, grrTyp3Data.tolerances);
+
+        for (const [key, val] of Object.entries(tc.expected)) {
+          const actual = getNestedValue(result, key);
+          if (typeof val === 'number') {
+            assertAlmostEqual(actual, val, tol,
+              `${tc.id}: ${key} = ${actual}, expected ${val}`);
+          } else if (typeof val === 'boolean') {
+            assertEqual(actual, val, `${tc.id}: ${key} = ${actual}, expected ${val}`);
+          } else if (typeof val === 'string') {
+            assertEqual(actual, val, `${tc.id}: ${key} = ${actual}, expected ${val}`);
+          }
+        }
+      });
+    }
+  }
+});

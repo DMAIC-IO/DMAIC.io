@@ -1,0 +1,203 @@
+<section class="module-container doe-advisor" x-data="doeAdvisor">
+  <div class="module-container__header">
+    <h2 class="module-container__title" x-text="t('name')"></h2>
+    <div class="doe-advisor__tabs" role="tablist">
+      <button class="doe-advisor__tab" :class="{ 'doe-advisor__tab--active': model.tab === 'overview' }"
+        data-tab="overview" type="button" @click="switchTab('overview')" x-text="t('tabOverview')"></button>
+      <button class="doe-advisor__tab" :class="{ 'doe-advisor__tab--active': model.tab === 'wizard' }"
+        data-tab="wizard" type="button" @click="switchTab('wizard')" x-text="t('tabWizard')"></button>
+      <button class="doe-advisor__tab" :class="{ 'doe-advisor__tab--active': model.tab === 'ccd' }"
+        data-tab="ccd" type="button" @click="switchTab('ccd')" x-text="t('tabCcd')"></button>
+    </div>
+  </div>
+
+  <div class="module-container__body">
+    <!-- ── Overview tab ── -->
+    <div x-show="model.tab === 'overview'">
+      <section class="doe-advisor__section">
+        <h3 class="doe-advisor__section-title" x-text="t('overviewTitle')"></h3>
+        <p class="doe-advisor__section-lead" x-text="t('overviewLead')"></p>
+
+        <div class="doe-advisor__table-wrap">
+          <table class="doe-advisor__table">
+            <thead>
+              <tr>
+                <th scope="col" x-text="t('col.design')"></th>
+                <th scope="col" x-text="t('col.factors')"></th>
+                <th scope="col" x-text="t('col.levels')"></th>
+                <th scope="col" x-text="t('col.effort')"></th>
+                <th scope="col" x-text="t('col.note')"></th>
+              </tr>
+            </thead>
+            <tbody>
+              <template x-for="id in designIds">
+                <tr class="doe-advisor__row" :key="id" :data-design-id="id">
+                  <th scope="row" class="doe-advisor__row-name">
+                    <div class="doe-advisor__design-name" x-text="designName(id)"></div>
+                    <div class="doe-advisor__design-tip" x-text="designTip(id)"></div>
+                  </th>
+                  <td class="doe-advisor__cell-num" x-text="designFactors(id)"></td>
+                  <td class="doe-advisor__cell-num" x-text="designLevels(id)"></td>
+                  <td x-text="designEffort(id)"></td>
+                  <td x-text="designNote(id)"></td>
+                </tr>
+              </template>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="doe-advisor__section">
+        <h3 class="doe-advisor__section-title" x-text="t('phaseGuideTitle')"></h3>
+        <div class="doe-advisor__table-wrap">
+          <table class="doe-advisor__table doe-advisor__table--phase">
+            <thead>
+              <tr>
+                <th scope="col" x-text="t('col.dmaicPhase')"></th>
+                <th scope="col" x-text="t('col.target')"></th>
+                <th scope="col" x-text="t('col.recommended')"></th>
+              </tr>
+            </thead>
+            <tbody>
+              <template x-for="id in phaseGuideIds">
+                <tr :key="id">
+                  <th scope="row" x-text="phasePhase(id)"></th>
+                  <td x-text="phaseGoal(id)"></td>
+                  <td x-text="phaseDesigns(id)"></td>
+                </tr>
+              </template>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+
+    <!-- ── Wizard tab ── -->
+    <div x-show="model.tab === 'wizard'">
+      <section class="doe-advisor__section">
+        <div class="doe-advisor__wizard-header">
+          <h3 class="doe-advisor__section-title" x-text="t('wizardTitle')"></h3>
+          <div class="doe-advisor__wizard-progress">
+            <span class="doe-advisor__wizard-step-label" x-text="stepLabel()"></span>
+            <button class="btn btn--sm doe-advisor__wizard-restart" type="button"
+              @click="restart()" x-text="t('wizardRestart')"></button>
+          </div>
+        </div>
+
+        <!-- Question view -->
+        <template x-if="!model.isResult">
+          <div>
+            <div class="doe-advisor__wizard-question">
+              <div class="doe-advisor__wizard-question-text" x-text="stepQuestion()"></div>
+              <template x-if="model.history.length > 0">
+                <div class="doe-advisor__wizard-trail">
+                  <template x-for="stepId in model.history">
+                    <span class="doe-advisor__wizard-trail-item" :key="stepId"><span
+                        x-text="trailShort(stepId)"></span>: <strong x-text="trailAnswer(stepId)"></strong></span>
+                  </template>
+                </div>
+              </template>
+            </div>
+
+            <div class="doe-advisor__options">
+              <template x-for="opt in model.currentOptions">
+                <button class="doe-advisor__option" type="button" :key="opt" :data-option="opt" @click="answer(opt)">
+                  <span class="doe-advisor__option-label" x-text="optionLabel(opt)"></span>
+                  <span class="doe-advisor__option-help" x-text="optionHelp(opt)"></span>
+                </button>
+              </template>
+            </div>
+          </div>
+        </template>
+
+        <!-- Result view -->
+        <template x-if="model.isResult">
+          <div>
+            <template x-if="model.resultDesignId === null">
+              <div class="doe-advisor__result doe-advisor__result--none">
+                <div class="doe-advisor__result-tag" x-text="t('wizardResultLabel')"></div>
+                <h4 class="doe-advisor__result-title" x-text="t('resultNoneTitle')"></h4>
+                <p class="doe-advisor__result-body" x-text="t('resultNoneBody')"></p>
+              </div>
+            </template>
+
+            <template x-if="model.resultDesignId !== null">
+              <div class="doe-advisor__result" :data-design-id="model.resultDesignId">
+                <div class="doe-advisor__result-tag" x-text="t('wizardResultLabel')"></div>
+                <h4 class="doe-advisor__result-title" x-text="resultName()"></h4>
+                <p class="doe-advisor__result-reasoning" x-text="resultReasoning()"></p>
+
+                <div class="doe-advisor__result-meta">
+                  <div class="doe-advisor__result-meta-item">
+                    <span class="doe-advisor__result-meta-label" x-text="t('col.factors')"></span>
+                    <span class="doe-advisor__result-meta-value" x-text="resultFactors()"></span>
+                  </div>
+                  <div class="doe-advisor__result-meta-item">
+                    <span class="doe-advisor__result-meta-label" x-text="t('col.levels')"></span>
+                    <span class="doe-advisor__result-meta-value" x-text="resultLevels()"></span>
+                  </div>
+                  <div class="doe-advisor__result-meta-item">
+                    <span class="doe-advisor__result-meta-label" x-text="t('col.effort')"></span>
+                    <span class="doe-advisor__result-meta-value" x-text="resultEffort()"></span>
+                  </div>
+                </div>
+
+                <div class="doe-advisor__result-section">
+                  <h5 class="doe-advisor__result-subtitle" x-text="t('resultUseCase')"></h5>
+                  <p class="doe-advisor__result-body" x-text="resultTip()"></p>
+                </div>
+
+                <div class="doe-advisor__result-section">
+                  <h5 class="doe-advisor__result-subtitle" x-text="t('resultStrengthLimit')"></h5>
+                  <p class="doe-advisor__result-body" x-text="resultNote()"></p>
+                </div>
+              </div>
+            </template>
+          </div>
+        </template>
+
+        <!-- Navigation -->
+        <template x-if="model.history.length > 0 || model.isResult">
+          <div class="doe-advisor__wizard-nav">
+            <button class="btn btn--sm doe-advisor__wizard-back" type="button"
+              @click="back()" x-text="t('wizardBack')"></button>
+          </div>
+        </template>
+      </section>
+    </div>
+
+    <!-- ── CCD tab ── -->
+    <div x-show="model.tab === 'ccd'">
+      <section class="doe-advisor__section">
+        <h3 class="doe-advisor__section-title" x-text="t('ccdTitle')"></h3>
+        <p class="doe-advisor__section-lead" x-text="t('ccdLead')"></p>
+
+        <div class="doe-advisor__table-wrap">
+          <table class="doe-advisor__table doe-advisor__table--ccd">
+            <thead>
+              <tr>
+                <th scope="col" x-text="t('ccd.col.property')"></th>
+                <th scope="col" x-text="t('ccd.col.rotatable')"></th>
+                <th scope="col" x-text="t('ccd.col.face')"></th>
+              </tr>
+            </thead>
+            <tbody>
+              <template x-for="id in ccdRowIds">
+                <tr :key="id">
+                  <th scope="row" x-text="ccdLabel(id)"></th>
+                  <td x-text="ccdRotatable(id)"></td>
+                  <td x-text="ccdFace(id)"></td>
+                </tr>
+              </template>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="doe-advisor__rule">
+          <div class="doe-advisor__rule-label" x-text="t('ccd.ruleLabel')"></div>
+          <p class="doe-advisor__rule-body" x-text="t('ccd.ruleBody')"></p>
+        </div>
+      </section>
+    </div>
+  </div>
+</section>

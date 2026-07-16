@@ -11,7 +11,7 @@ import {
 
 import { createModebar } from './modebar.js';
 import {
-  edSection, edCheckboxRow, edInputRow, edRangeRow, edSelectRow,
+  edSection, edCheckboxRow, edRangeRow, edSelectRow,
   edTitleSection, edFontSizeSection, edAxisLabelSection,
   edAxisTickSection, edRefLinesSection, edRefAreasSection,
   openColorPicker, edBgColorSection,
@@ -19,6 +19,8 @@ import {
   MARKER_SYMBOLS,
 } from './chart-editor.js';
 import { ensureXLSX as _ensureXLSX } from '../export-utils.js';
+import { icon } from '../icon.js';
+import { h } from '../dom.js';
 
 /** Font families embedded in SVG for export fidelity */
 const FONT_MAIN = "'Segoe UI', 'Helvetica Neue', Arial, sans-serif";
@@ -240,7 +242,7 @@ export default class ChartBase {
    */
   _buildEditor() {
     const inner = this._editorInner;
-    inner.innerHTML = '';
+    inner.replaceChildren();
 
     const cfg = this.config;
     const t = (key) => {
@@ -435,25 +437,25 @@ export default class ChartBase {
       const inPlot = mx >= pa.x && mx <= pa.x + pa.w && my >= pa.y && my <= pa.y + pa.h;
       if (inPlot) {
         this._crosshair.style.display = '';
-        this._crosshairH.style.top = my + 'px';
-        this._crosshairH.style.left = pa.x + 'px';
-        this._crosshairH.style.width = pa.w + 'px';
-        this._crosshairV.style.left = mx + 'px';
-        this._crosshairV.style.top = pa.y + 'px';
-        this._crosshairV.style.height = pa.h + 'px';
+        this._crosshairH.style.top = `${my  }px`;
+        this._crosshairH.style.left = `${pa.x  }px`;
+        this._crosshairH.style.width = `${pa.w  }px`;
+        this._crosshairV.style.left = `${mx  }px`;
+        this._crosshairV.style.top = `${pa.y  }px`;
+        this._crosshairV.style.height = `${pa.h  }px`;
         const dataX = this._xScaleInv(mx);
         const dataY = this._yScaleInv(my);
         const xDec = this.config.xDec !== null ? this.config.xDec : 2;
         const yDec = this.config.yDec !== null ? this.config.yDec : 2;
         const xStr = typeof this.config.xTickFormat === 'function'
           ? this.config.xTickFormat(dataX) : formatNum(dataX, xDec, this.locale);
-        this._crosshairLabel.textContent = xStr + '  |  ' + formatNum(dataY, yDec, this.locale);
+        this._crosshairLabel.textContent = `${xStr  }  |  ${  formatNum(dataY, yDec, this.locale)}`;
         let lblLeft = mx + 8;
         let lblTop = my + 8;
         if (lblLeft + 120 > pa.x + pa.w) lblLeft = mx - 128;
         if (lblTop + 20 > pa.y + pa.h) lblTop = my - 22;
-        this._crosshairLabel.style.left = lblLeft + 'px';
-        this._crosshairLabel.style.top = lblTop + 'px';
+        this._crosshairLabel.style.left = `${lblLeft  }px`;
+        this._crosshairLabel.style.top = `${lblTop  }px`;
       } else {
         this._crosshair.style.display = 'none';
       }
@@ -462,7 +464,7 @@ export default class ChartBase {
     }
 
     // Clear highlights
-    if (this._highlightGroup) this._highlightGroup.innerHTML = '';
+    if (this._highlightGroup) this._highlightGroup.replaceChildren();
 
     // Tooltip: ask subclass for nearby points
     if (this._xScale && this._yScale && pa) {
@@ -471,11 +473,14 @@ export default class ChartBase {
       const nearby = this._findNearby(dataX, dataY, PROXIMITY_PX);
 
       if (nearby && nearby.length > 0) {
-        const html = nearby.map((p) => p.html).join('<div style="border-top:1px solid rgba(255,255,255,.2);margin:4px 0"></div>');
-        this._tooltip.innerHTML = html;
+        this._tooltip.replaceChildren();
+        nearby.forEach((p, i) => {
+          if (i > 0) this._tooltip.append(h('div', { class: 'dmike-chart-tip-sep' }));
+          this._tooltip.append(p.node);
+        });
         this._tooltip.classList.add('visible');
-        this._tooltip.style.left = (mx + 12) + 'px';
-        this._tooltip.style.top = (my - 10) + 'px';
+        this._tooltip.style.left = `${mx + 12  }px`;
+        this._tooltip.style.top = `${my - 10  }px`;
 
         // Highlight rings
         if (this._highlightGroup) {
@@ -495,10 +500,14 @@ export default class ChartBase {
         if (target.hasAttribute && target.hasAttribute('data-ref')) {
           const refLabel = target.getAttribute('data-ref-label');
           const refValue = target.getAttribute('data-ref-value');
-          this._tooltip.innerHTML = `<b>${refLabel}</b><br>${refValue}`;
+          this._tooltip.replaceChildren(
+            h('b', null, refLabel || ''),
+            h('br'),
+            document.createTextNode(refValue || ''),
+          );
           this._tooltip.classList.add('visible');
-          this._tooltip.style.left = (mx + 12) + 'px';
-          this._tooltip.style.top = (my - 10) + 'px';
+          this._tooltip.style.left = `${mx + 12  }px`;
+          this._tooltip.style.top = `${my - 10  }px`;
         } else {
           this._tooltip.classList.remove('visible');
         }
@@ -510,7 +519,7 @@ export default class ChartBase {
   _onMouseLeave() {
     this._tooltip.classList.remove('visible');
     this._crosshair.style.display = 'none';
-    if (this._highlightGroup) this._highlightGroup.innerHTML = '';
+    if (this._highlightGroup) this._highlightGroup.replaceChildren();
   }
 
   /** @private */
@@ -602,15 +611,15 @@ export default class ChartBase {
       const left = Math.min(sx, mx);
       const top = Math.min(sy, my);
       const w = Math.abs(mx - sx);
-      const h = Math.abs(my - sy);
+      const rh = Math.abs(my - sy);
 
-      if (w > 4 || h > 4) {
+      if (w > 4 || rh > 4) {
         const zr = this._zoomRect;
         zr.style.display = 'block';
-        zr.style.left = left + 'px';
-        zr.style.top = top + 'px';
-        zr.style.width = w + 'px';
-        zr.style.height = h + 'px';
+        zr.style.left = `${left  }px`;
+        zr.style.top = `${top  }px`;
+        zr.style.width = `${w  }px`;
+        zr.style.height = `${rh  }px`;
       }
     }
   }
@@ -627,10 +636,10 @@ export default class ChartBase {
         const my = Math.max(pa.y, Math.min(pa.y + pa.h, e.clientY - rect.top));
         const sx = this._zoomStart.x;
         const w = Math.abs(mx - sx);
-        const h = Math.abs(my - this._zoomStart.y);
+        const dh = Math.abs(my - this._zoomStart.y);
         const draggedRight = mx > sx;
 
-        if (w > 8 || h > 8) {
+        if (w > 8 || dh > 8) {
           if (draggedRight) {
             // Left → right: zoom into selected area
             const x0 = Math.min(sx, mx);
@@ -738,7 +747,7 @@ export default class ChartBase {
     svg.setAttribute('viewBox', `0 0 ${size.w} ${size.h}`);
     svg.setAttribute('width', size.w);
     svg.setAttribute('height', size.h);
-    svg.innerHTML = '';
+    svg.replaceChildren();
 
     // Background color
     svg.style.background = this.config.bgColor || '';
@@ -792,7 +801,7 @@ export default class ChartBase {
 
     // Defs (clip path)
     const defs = svgEl('defs', {}, svg);
-    const clipId = 'plot-clip-' + this._uid;
+    const clipId = `plot-clip-${  this._uid}`;
     const clip = svgEl('clipPath', { id: clipId }, defs);
     svgEl('rect', { x: pa.x, y: pa.y, width: pa.w, height: pa.h }, clip);
 
@@ -857,7 +866,7 @@ export default class ChartBase {
           ? this.config.xTickFormat(v) : formatNum(v, this.config.xDec, this.locale);
         svgText(label, {
           x, y: pa.y + pa.h + 18,
-          'text-anchor': 'middle', 'font-size': this.config.tickSize + 'px', fill: tickColor,
+          'text-anchor': 'middle', 'font-size': `${this.config.tickSize  }px`, fill: tickColor,
           'font-family': FONT_MONO, class: 'tick-label'
         }, svg);
       });
@@ -870,7 +879,7 @@ export default class ChartBase {
         svgEl('line', { x1: pa.x - 5, y1: y, x2: pa.x, y2: y, stroke: tickColor, 'stroke-width': 1 }, svg);
         svgText(formatNum(v, this.config.yDec, this.locale), {
           x: pa.x - 10, y: y + 4,
-          'text-anchor': 'end', 'font-size': this.config.tickSize + 'px', fill: tickColor,
+          'text-anchor': 'end', 'font-size': `${this.config.tickSize  }px`, fill: tickColor,
           'font-family': FONT_MONO, class: 'tick-label'
         }, svg);
       });
@@ -880,7 +889,7 @@ export default class ChartBase {
     if (this.config.showTitle !== false && this.config.title) {
       svgText(this.config.title, {
         x: pa.x + pa.w / 2, y: 26,
-        'text-anchor': 'middle', 'font-size': this.config.titleSize + 'px', 'font-weight': '700', fill: textPrimary,
+        'text-anchor': 'middle', 'font-size': `${this.config.titleSize  }px`, 'font-weight': '700', fill: textPrimary,
         'font-family': FONT_MAIN
       }, svg);
     }
@@ -889,7 +898,7 @@ export default class ChartBase {
     if (this.config.showXLabel !== false && this.config.xLabel) {
       svgText(this.config.xLabel, {
         x: pa.x + pa.w / 2, y: pa.y + pa.h + 46,
-        'text-anchor': 'middle', 'font-size': this.config.labelSize + 'px', 'font-weight': '600', fill: textPrimary,
+        'text-anchor': 'middle', 'font-size': `${this.config.labelSize  }px`, 'font-weight': '600', fill: textPrimary,
         'font-family': FONT_MAIN
       }, svg);
     }
@@ -898,7 +907,7 @@ export default class ChartBase {
     if (this.config.showYLabel !== false && this.config.yLabel) {
       svgText(this.config.yLabel, {
         x: 18, y: pa.y + pa.h / 2,
-        'text-anchor': 'middle', 'font-size': this.config.labelSize + 'px', 'font-weight': '600', fill: textPrimary,
+        'text-anchor': 'middle', 'font-size': `${this.config.labelSize  }px`, 'font-weight': '600', fill: textPrimary,
         'font-family': FONT_MAIN,
         transform: `rotate(-90, 18, ${pa.y + pa.h / 2})`
       }, svg);
@@ -926,8 +935,8 @@ export default class ChartBase {
     svgEl('line', {
       ...attrs, stroke: 'transparent', 'stroke-width': Math.max(12, (line.width || 1.5) + 10),
       'data-ref': 'line',
-      'data-ref-label': line.label || ((line.dir === 'h' ? 'Y' : 'X') + ' = ' + line.value),
-      'data-ref-value': (line.dir === 'h' ? 'Y' : 'X') + ' = ' + line.value,
+      'data-ref-label': line.label || (`${line.dir === 'h' ? 'Y' : 'X'  } = ${  line.value}`),
+      'data-ref-value': `${line.dir === 'h' ? 'Y' : 'X'  } = ${  line.value}`,
       style: 'cursor:pointer'
     }, parent);
 
@@ -961,28 +970,28 @@ export default class ChartBase {
 
   /** @private */
   _drawRefArea(parent, area, idx, xScale, yScale, pa) {
-    let x, y, w, h;
+    let x, y, w, rh;
     if (area.dir === 'y') {
       x = pa.x; w = pa.w;
       y = yScale(area.max);
-      h = yScale(area.min) - y;
+      rh = yScale(area.min) - y;
     } else {
-      y = pa.y; h = pa.h;
+      y = pa.y; rh = pa.h;
       x = xScale(area.min);
       w = xScale(area.max) - x;
     }
     // Background fill
-    svgEl('rect', { x, y, width: w, height: h, fill: resolveColor(area.color) }, parent);
+    svgEl('rect', { x, y, width: w, height: rh, fill: resolveColor(area.color) }, parent);
     // Pattern overlay
     if (area.pattern) {
-      svgEl('rect', { x, y, width: w, height: h, fill: `url(#area-pat-${this._uid}-${idx})` }, parent);
+      svgEl('rect', { x, y, width: w, height: rh, fill: `url(#area-pat-${this._uid}-${idx})` }, parent);
     }
     // Hit area
     svgEl('rect', {
-      x, y, width: w, height: h, fill: 'transparent',
+      x, y, width: w, height: rh, fill: 'transparent',
       'data-ref': 'area',
       'data-ref-label': area.label || 'Bereich',
-      'data-ref-value': (area.dir === 'y' ? 'Y' : 'X') + ': ' + area.min + ' – ' + area.max,
+      'data-ref-value': `${area.dir === 'y' ? 'Y' : 'X'  }: ${  area.min  } – ${  area.max}`,
       style: 'cursor:pointer'
     }, parent);
   }
@@ -1121,12 +1130,12 @@ export default class ChartBase {
       img.onload = () => {
         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
         const a = document.createElement('a');
-        a.download = this._getFileName() + '.png';
+        a.download = `${this._getFileName()  }.png`;
         a.href = canvas.toDataURL('image/png');
         a.click();
         resolve();
       };
-      img.src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgData)));
+      img.src = `data:image/svg+xml;base64,${  btoa(unescape(encodeURIComponent(svgData)))}`;
     });
   }
 
@@ -1153,7 +1162,7 @@ export default class ChartBase {
     const svgData = new XMLSerializer().serializeToString(clone);
     const blob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
     const a = document.createElement('a');
-    a.download = this._getFileName() + '.svg';
+    a.download = `${this._getFileName()  }.svg`;
     a.href = URL.createObjectURL(blob);
     a.click();
     URL.revokeObjectURL(a.href);
@@ -1177,7 +1186,7 @@ export default class ChartBase {
       const headers = [];
       series.forEach(s => {
         const name = s.name || 'Series';
-        headers.push(name + ' X', name + ' Y');
+        headers.push(`${name  } X`, `${name  } Y`);
       });
       const maxLen = Math.max(0, ...series.map(s => Math.max(s.x?.length || 0, s.y?.length || 0)));
       const rows = [];
@@ -1222,7 +1231,7 @@ export default class ChartBase {
       if (v == null) return '';
       const s = String(v);
       if (s.includes(';') || s.includes('"') || s.includes('\n')) {
-        return '"' + s.replace(/"/g, '""') + '"';
+        return `"${  s.replace(/"/g, '""')  }"`;
       }
       return s;
     };
@@ -1231,9 +1240,9 @@ export default class ChartBase {
     for (const row of rows) {
       lines.push(row.map(escapeCSV).join(';'));
     }
-    const blob = new Blob(['\ufeff' + lines.join('\n')], { type: 'text/csv;charset=utf-8' });
+    const blob = new Blob([`\ufeff${  lines.join('\n')}`], { type: 'text/csv;charset=utf-8' });
     const a = document.createElement('a');
-    a.download = this._getFileName() + '.csv';
+    a.download = `${this._getFileName()  }.csv`;
     a.href = URL.createObjectURL(blob);
     a.click();
     URL.revokeObjectURL(a.href);
@@ -1252,7 +1261,7 @@ export default class ChartBase {
     const aoa = [headers, ...rows];
     const ws = XLSX.utils.aoa_to_sheet(aoa);
     XLSX.utils.book_append_sheet(wb, ws, 'Data');
-    XLSX.writeFile(wb, this._getFileName() + '.xlsx');
+    XLSX.writeFile(wb, `${this._getFileName()  }.xlsx`);
   }
 
   // ── Popout ──────────────────────────────────────────────────────
@@ -1286,7 +1295,7 @@ export default class ChartBase {
     titleText.textContent = this.config.title || 'Chart';
     const closeBtn = document.createElement('button');
     closeBtn.className = 'dmike-chart-popout-close';
-    closeBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>';
+    closeBtn.replaceChildren(icon('close'));
     titleBar.appendChild(titleText);
     titleBar.appendChild(closeBtn);
     win.appendChild(titleBar);
@@ -1358,7 +1367,7 @@ export default class ChartBase {
     origWrap.removeEventListener('mousedown', this._mouseDownHandler);
 
     // ── Swap rendering target ──
-    this.__uid = origUid + '-pop';
+    this.__uid = `${origUid  }-pop`;
     this._svg = popSvg;
     this._svgWrap = svgWrap;
 
@@ -1386,8 +1395,8 @@ export default class ChartBase {
     };
     const onDragMove = (e) => {
       if (!isDragging) return;
-      win.style.left = (e.clientX - dragX) + 'px';
-      win.style.top = (e.clientY - dragY) + 'px';
+      win.style.left = `${e.clientX - dragX  }px`;
+      win.style.top = `${e.clientY - dragY  }px`;
     };
     const onDragEnd = () => { isDragging = false; win.style.transition = ''; };
     titleBar.addEventListener('mousedown', onDragStart);

@@ -1,0 +1,71 @@
+{
+  "id": "residuen",
+  "category": "regression",
+  "title": {
+    "de": "Residuen (Residuals)",
+    "en": "Residuals"
+  },
+  "short": {
+    "de": "Differenz zwischen beobachtetem und vorhergesagtem Y — das, was das {{term:regression|Modell}} nicht erklärt.",
+    "en": "Difference between observed and predicted Y — what the {{term:regression|model}} does not explain."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "Ein **Residuum** ist der Rest, den die Regression nicht erklären kann: der Abstand des tatsächlichen Y-Werts von der Vorhersage $\\hat{y}$."
+      },
+      {
+        "type": "formula",
+        "latex": "e_i = y_i - \\hat{y}_i"
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Residuenplot** (e_i über $\\hat{y}$) — sollte eine zufällige Wolke um 0 zeigen",
+          "**Muster/Krümmung** → nichtlineare Effekte im Modell fehlen",
+          "**Trichterform** → {{term:heteroskedastizitaet|Heteroskedastizität}}, Standardfehler unzuverlässig",
+          "**Q-Q-Plot der Residuen** — Prüfung auf Normalverteilung"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "Residuen sind die **wichtigste Diagnose-Größe** einer Regression. Ein Modell mit hohem {{term:r-quadrat|R²}}, aber systematischen Residuen ist weniger vertrauenswürdig als eines mit niedrigerem R² und sauberen Residuen — R² beschreibt Erklärungsanteil, Residuen zeigen, ob die Modellstruktur überhaupt stimmt."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "A **residual** is the leftover the regression cannot explain: the distance from the observed Y to the prediction $\\hat{y}$."
+      },
+      {
+        "type": "formula",
+        "latex": "e_i = y_i - \\hat{y}_i"
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Residual plot** (e_i vs. $\\hat{y}$) — should show a random cloud around 0",
+          "**Pattern / curvature** → non-linear effects missing in the model",
+          "**Funnel shape** → {{term:heteroskedastizitaet|heteroscedasticity}}, standard errors unreliable",
+          "**Q-Q plot of residuals** — check for normality"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "Residuals are the **primary diagnostic tool** of a regression. A model with high {{term:r-quadrat|R²}} but systematic residuals is less trustworthy than one with lower R² and clean residuals — R² measures share of explanation, residuals show whether the model form is right at all."
+      }
+    ]
+  },
+  "aliases": {
+    "de": ["Residuum", "Residuals", "Restfehler", "Reststreuung"],
+    "en": ["residual", "prediction error"]
+  },
+  "seeAlso": ["regression", "lineare-regression", "heteroskedastizitaet", "r-quadrat"],
+  "modules": ["regression", "glm-regression", "doe-planner"],
+  "algoLab": ["regression/regression-coefficients", "regression/regression-anova"],
+  "sources": [
+    { "label": "Montgomery, D. C., Peck, E. A. & Vining, G. G. — Introduction to Linear Regression Analysis, 6th Edition, Chapter 4", "url": null },
+    { "label": "Cook, R. D. & Weisberg, S. — Residuals and Influence in Regression, Chapman & Hall", "url": null }
+  ]
+}

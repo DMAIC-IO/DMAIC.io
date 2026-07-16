@@ -12,22 +12,22 @@ export default {
         blocks: [
           {
             type: 'paragraph',
-            content: 'Die Stichprobenumfangsplanung bestimmt, wie viele Beobachtungen nötig sind, damit ein Test oder eine Schätzung die gewünschte Aussagekraft hat. Zu kleine Stichproben verpassen echte Effekte, zu große verschwenden Ressourcen. Vor jedem ernsthaften Experiment oder Vergleich sollte der Umfang geplant werden — nicht im Nachhinein.',
+            content: 'Die Stichprobenumfangsplanung — angebunden an {{term:power|Power}} und {{term:effektstaerke|Effektstärke}} — bestimmt, wie viele Beobachtungen nötig sind, damit ein Test oder eine Schätzung die gewünschte Aussagekraft hat. Zu kleine Stichproben verpassen echte Effekte, zu große verschwenden Ressourcen. Vor jedem ernsthaften Experiment oder Vergleich sollte der Umfang geplant werden — nicht im Nachhinein.',
           },
           {
             type: 'definition',
             term: 'Signifikanzniveau (α)',
-            content: 'Das Risiko, einen Effekt zu sehen, der gar nicht existiert (Fehler 1. Art). Meist α = 0,05.',
+            content: 'Das Risiko, einen Effekt zu sehen, der gar nicht existiert ({{term:fehler-erster-art|Fehler 1. Art}}). Meist {{term:signifikanzniveau|α}} = 0,05.',
           },
           {
             type: 'definition',
             term: 'Power (1 − β)',
-            content: 'Die Wahrscheinlichkeit, einen tatsächlich vorhandenen Effekt mit dem Test auch zu entdecken. Üblich: Power = 0,80 oder 0,90. Niedrige Power heißt: selbst ein echter Effekt wird oft übersehen.',
+            content: 'Die {{term:power|Power}} — Wahrscheinlichkeit, einen tatsächlich vorhandenen Effekt mit dem Test auch zu entdecken. Üblich: Power = 0,80 oder 0,90. Niedrige Power heißt: selbst ein echter Effekt wird oft übersehen.',
           },
           {
             type: 'definition',
             term: 'Effektgröße (δ)',
-            content: 'Die kleinste Differenz, die noch als praktisch relevant gilt. „Ab welchem Unterschied würden wir handeln?". Kleinere Effekte brauchen größere Stichproben.',
+            content: 'Die {{term:effektstaerke|Effektstärke}} — die kleinste Differenz, die noch als praktisch relevant gilt. „Ab welchem Unterschied würden wir handeln?". Kleinere Effekte brauchen größere Stichproben.',
           },
           {
             type: 'definition',
@@ -50,22 +50,22 @@ export default {
         blocks: [
           {
             type: 'paragraph',
-            content: 'Sample size planning determines how many observations are needed for a test or estimate to have the desired statistical power. Too few samples miss real effects; too many waste resources. Before any serious experiment or comparison, plan the sample size — not after.',
+            content: 'Sample size planning — tied to {{term:power|power}} and {{term:effektstaerke|effect size}} — determines how many observations are needed for a test or estimate to have the desired statistical power. Too few samples miss real effects; too many waste resources. Before any serious experiment or comparison, plan the sample size — not after.',
           },
           {
             type: 'definition',
             term: 'Significance level (α)',
-            content: 'The risk of seeing an effect that does not exist (Type I error). Usually α = 0.05.',
+            content: 'The risk of seeing an effect that does not exist ({{term:fehler-erster-art|Type I error}}). Usually {{term:signifikanzniveau|α}} = 0.05.',
           },
           {
             type: 'definition',
             term: 'Power (1 − β)',
-            content: 'The probability of detecting an effect that really exists. Common: power = 0.80 or 0.90. Low power {{term:mittelwert|means}}: even a real effect is often missed.',
+            content: 'The {{term:power|power}} — probability of detecting an effect that really exists. Common: power = 0.80 or 0.90. Low power means: even a real effect is often missed.',
           },
           {
             type: 'definition',
             term: 'Effect size (δ)',
-            content: 'The smallest difference still considered practically relevant. "From which difference on would we act?". Smaller effects need larger samples.',
+            content: 'The {{term:effektstaerke|effect size}} — the smallest difference still considered practically relevant. "From which difference on would we act?". Smaller effects need larger samples.',
           },
           {
             type: 'definition',

@@ -1,0 +1,4 @@
+{
+  "channel": "dev",
+  "_comment": "Dev/nightly placeholder so footer's fetch('./release.json') resolves 200 instead of logging a 404 console error. Intentionally carries NO 'version' field: the footer keeps the live VERSION from js/core/version.js when this is absent, so the dev build never shows a stale release number. Per-tag release deploys write their own release.json (with version/date/title) into /app/<tag>/, a different path — this file is not consumed there."
+}

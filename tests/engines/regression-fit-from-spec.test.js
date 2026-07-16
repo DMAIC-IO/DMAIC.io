@@ -16,7 +16,7 @@
 
 import { suite, test, assertAlmostEqual, assertEqual } from '../test-utils.js';
 import {
-  generatePolynomialTerms, fitFromSpec, compileModelSpec, olsRegression,
+  generatePolynomialTerms, fitFromSpec,
   runMultiRegression,
 } from '../../js/engines/regression-engine.js';
 
@@ -152,10 +152,6 @@ suite('fitFromSpec — continuous-only parity', () => {
 
   test('predict closure recovers a fitted value', () => {
     const yHat0 = fit.predict({ X1: xs1[0], X2: xs2[0] });
-    const expected = ref.coefDetails.reduce((acc, cd, j) => {
-      // Build the row exactly the way runMultiRegression would.
-      return acc;   // we only care about the closure being self-consistent vs. ols.predicted
-    }, 0);
     assertAlmostEqual(yHat0, fit.ols.predicted[0], 1e-9);
   });
 });

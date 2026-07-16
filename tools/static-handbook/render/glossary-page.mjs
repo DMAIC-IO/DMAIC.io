@@ -103,7 +103,7 @@ export async function renderGlossaryTermPage({ term, glossary, modules, lang, i1
 
 // ─── Index page ─────────────────────────────────────────────────
 
-export function renderGlossaryIndex({ glossary, modules, lang, i18n }) {
+export function renderGlossaryIndex({ glossary, modules: _modules, lang, i18n: _i18n }) {
   const s = getStrings(lang);
   const pathFromRoot = `/${lang}/glossar/index.html`;
   const altLang = lang === 'de' ? 'en' : 'de';
@@ -202,12 +202,13 @@ async function renderGlossaryBlock(block, opts) {
       return `<p>${await escAndLinkAndMath(block.text || '', opts)}</p>`;
     case 'note':
       return `<aside class="handbook-callout">${await escAndLinkAndMath(block.text || '', opts)}</aside>`;
-    case 'list':
+    case 'list': {
       const items = [];
       for (const it of block.items || []) {
         items.push(`<li>${await escAndLinkAndMath(it || '', opts)}</li>`);
       }
       return `<ul class="handbook-block__list">${items.join('')}</ul>`;
+    }
     case 'formula': {
       const html = await renderLatex(block.latex || '', { displayMode: true });
       return `<figure class="handbook-glossary__formula">${html}</figure>`;

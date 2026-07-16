@@ -1,0 +1,84 @@
+{
+  "id": "auftreten",
+  "category": "risk",
+  "title": {
+    "de": "Auftreten / Occurrence (A, O) — FMEA-Bewertungszahl",
+    "en": "Occurrence (O, A) — FMEA Rating"
+  },
+  "short": {
+    "de": "1–10-Skala für die Häufigkeit der Ursache — ein Faktor der {{term:rpz|RPZ}}.",
+    "en": "1–10 scale rating how often the cause occurs — one factor of the {{term:rpz|RPN}}."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "Das **Auftreten** (englisch *Occurrence*, Kürzel **A** oder **O**) schätzt, wie häufig die Ursache einer {{term:fehlermoeglichkeit|Fehlermöglichkeit}} erfahrungsgemäß eintritt — auf einer Skala von **1 = sehr selten** (< 1 ppm) bis **10 = quasi permanent** (> 100 000 ppm)."
+      },
+      {
+        "type": "list",
+        "items": [
+          "Ideal mit **Daten belegt** (z. B. Fehlerstatistik, Prozessfähigkeit)",
+          "Bei fehlenden Daten wird geschätzt — dann alle Schätzer im Team abgleichen",
+          "Ein sehr niedriger Wert (A = 1) sollte hinterfragt werden: „Wissen wir das, oder glauben wir das?“"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "Das Auftreten lässt sich durch **Poka-Yoke**, robustere Prozesse, verbesserte Werkstoffauswahl oder engere Regelgrenzen senken — es ist der Hebel, den die Fertigung meist am ehesten selbst bewegen kann. Für die {{term:rpz|RPZ}} zählt es multiplikativ neben {{term:bedeutung|Bedeutung}} und {{term:entdeckung|Entdeckung}}."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "**Occurrence** (short **O** in English, **A** in German-language FMEAs) estimates how often the cause of a {{term:fehlermoeglichkeit|failure mode}} occurs in practice — on a scale from **1 = very rare** (< 1 ppm) to **10 = nearly permanent** (> 100 000 ppm)."
+      },
+      {
+        "type": "list",
+        "items": [
+          "Ideally **data-backed** (defect statistics, process capability)",
+          "Estimated when data is missing — reconcile estimates across the team",
+          "A very low rating (O = 1) deserves a challenge: \"do we know this, or do we believe this?\""
+        ]
+      },
+      {
+        "type": "note",
+        "text": "Occurrence can be reduced by **mistake-proofing (poka-yoke)**, more robust processes, better material choice, or tighter control limits — usually the lever manufacturing can pull most directly. It enters the {{term:rpz|RPN}} multiplicatively alongside {{term:bedeutung|severity}} and {{term:entdeckung|detection}}."
+      }
+    ]
+  },
+  "aliases": {
+    "de": [
+      "Occurrence",
+      "A",
+      "O",
+      "Häufigkeit",
+      "Auftretenswahrscheinlichkeit"
+    ],
+    "en": [
+      "occurrence",
+      "O",
+      "A"
+    ]
+  },
+  "seeAlso": [
+    "fmea",
+    "bedeutung",
+    "entdeckung",
+    "rpz"
+  ],
+  "modules": [
+    "fmea"
+  ],
+  "algoLab": [],
+  "sources": [
+    {
+      "label": "AIAG-VDA FMEA Handbook, 1st Edition, 2019 — Occurrence table",
+      "url": null
+    },
+    {
+      "label": "DIN EN IEC 60812",
+      "url": null
+    }
+  ]
+}

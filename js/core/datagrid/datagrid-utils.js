@@ -7,7 +7,7 @@
 
 /** Generate a unique column id. */
 export function uid() {
-  return 'col_' + Math.random().toString(36).substring(2, 10);
+  return `col_${  Math.random().toString(36).substring(2, 10)}`;
 }
 
 /** Clamp a value between min and max. */
@@ -44,7 +44,7 @@ export function parseNumeric(str) {
 export function formatNumber(val, decimals = null) {
   if (val == null) return '';
   if (decimals != null) return val.toFixed(decimals);
-  let s = String(val);
+  const s = String(val);
   if (s.includes('e') || s.includes('E')) return val.toPrecision(6);
   return s;
 }
@@ -132,13 +132,13 @@ export function formatCellValue(col, val) {
       if (typeof val === 'number') {
         const d = col.format.decimals ?? 2;
         const sym = col.format.currencySymbol || '\u20AC';
-        return formatNumber(val, d) + ' ' + sym;
+        return `${formatNumber(val, d)  } ${  sym}`;
       }
       return String(val);
     case 'percent':
       if (typeof val === 'number') {
         const d = col.format.decimals ?? 1;
-        return formatNumber(val, d) + ' %';
+        return `${formatNumber(val, d)  } %`;
       }
       return String(val);
     case 'binary':
@@ -191,7 +191,7 @@ export function parseCellInput(col, raw) {
     case 'numeric':
     case 'currency':
     case 'percent': {
-      let cleaned = String(raw).trim()
+      const cleaned = String(raw).trim()
         .replace(/[€$£¥]/g, '')
         .replace(/%/g, '')
         .trim();
@@ -208,7 +208,7 @@ export function parseCellInput(col, raw) {
       const s = String(raw).trim();
       const deMatch = s.match(/^(\d{1,2})\.(\d{1,2})\.(\d{2,4})$/);
       if (deMatch) {
-        const y = deMatch[3].length === 2 ? '20' + deMatch[3] : deMatch[3];
+        const y = deMatch[3].length === 2 ? `20${  deMatch[3]}` : deMatch[3];
         return `${y}-${deMatch[2].padStart(2, '0')}-${deMatch[1].padStart(2, '0')}`;
       }
       const dt = new Date(s);
@@ -270,7 +270,7 @@ export function detectInputType(raw) {
   if (deDate) {
     const day = parseInt(deDate[1]), month = parseInt(deDate[2]);
     if (day >= 1 && day <= 31 && month >= 1 && month <= 12) {
-      const y = deDate[3].length === 2 ? '20' + deDate[3] : deDate[3];
+      const y = deDate[3].length === 2 ? `20${  deDate[3]}` : deDate[3];
       return { type: 'date', value: `${y}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}` };
     }
   }
@@ -279,7 +279,7 @@ export function detectInputType(raw) {
   if (slashDate) {
     const day = parseInt(slashDate[1]), month = parseInt(slashDate[2]);
     if (day >= 1 && day <= 31 && month >= 1 && month <= 12) {
-      const y = slashDate[3].length === 2 ? '20' + slashDate[3] : slashDate[3];
+      const y = slashDate[3].length === 2 ? `20${  slashDate[3]}` : slashDate[3];
       return { type: 'date', value: `${y}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}` };
     }
   }
@@ -477,7 +477,7 @@ export function analyzeColumn(col, rowCount) {
   });
   const G = groupKeys.length;
   const parent = groupKeys.map((_, i) => i);
-  const find = (i) => { while (parent[i] !== i) { parent[i] = parent[parent[i]]; i = parent[i]; } return i; };
+  const find = (i) => { let cur = i; while (parent[cur] !== cur) { parent[cur] = parent[parent[cur]]; cur = parent[cur]; } return cur; };
   const union = (a, b) => { const ra = find(a), rb = find(b); if (ra !== rb) parent[ra] = rb; };
 
   // Phase 2: fuzzy merge. Skip for very large columns to keep diagnose

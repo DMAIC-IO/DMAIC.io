@@ -1,0 +1,88 @@
+{
+  "id": "subgruppe",
+  "category": "spc",
+  "title": {
+    "de": "Subgruppe (Rational Subgrouping)",
+    "en": "Subgroup (Rational Subgrouping)"
+  },
+  "short": {
+    "de": "Kleine Gruppe von Beobachtungen, die möglichst gleichen Bedingungen unterliegen — Grundeinheit von {{term:xbar-r-chart|X̄-R}}- und X̄-S-Karten.",
+    "en": "Small group of observations collected under conditions as similar as possible — the base unit of {{term:xbar-r-chart|X̄-R}} and X̄-S charts."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "Eine **Subgruppe** (Rational Subgroup) fasst mehrere Beobachtungen zusammen, die *innerhalb* der Gruppe möglichst wenig systematische Unterschiede haben. Die Streuung *innerhalb* der Subgruppen liefert die Schätzung für σ (die für {{term:regelgrenze|Regelgrenzen}} verwendet wird); die Streuung *zwischen* Subgruppen wird als potenzielle {{term:sonderursache|Sonderursache}} interpretiert."
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Typische Subgruppengröße** n = 4 oder 5 (X̄-R für n ≤ 10, X̄-S für n > 10)",
+          "**Beispiele:** 5 aufeinanderfolgende Teile aus einer Kavität; 4 Messwerte innerhalb einer Minute; 5 Parallelmessungen desselben Merkmals",
+          "**Kein-Grouping-Fall** (n = 1) → {{term:i-mr-chart|I-MR-Karte}} verwenden"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "**Rational Subgrouping** heißt: die Wahl der Subgruppe soll die vermutete Sonderursache **zwischen** die Gruppen legen, nicht *innerhalb*. Beispiel: 5 Teile derselben Kavität (nicht 5 aus 5 verschiedenen Kavitäten) — dann zeigt die X̄-Karte Unterschiede zwischen Kavitäten, während die R-Karte die Innerhalb-Kavitäten-Streuung isoliert."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "A **subgroup** (rational subgroup) collects several observations that share, as much as possible, the same conditions. The *within*-subgroup variation supplies the σ estimate used for {{term:regelgrenze|control limits}}; the *between*-subgroup variation is interpreted as a potential {{term:sonderursache|special cause}}."
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Typical subgroup size** n = 4 or 5 (X̄-R for n ≤ 10, X̄-S for n > 10)",
+          "**Examples:** 5 consecutive parts from one cavity; 4 measurements within one minute; 5 parallel readings of the same feature",
+          "**No-grouping case** (n = 1) → use an {{term:i-mr-chart|I-MR chart}}"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "**Rational subgrouping** means: choose subgroups so that the suspected special cause acts *between* groups, not *within*. Example: 5 parts from the same cavity (not 5 from 5 different cavities) — the X̄ chart then reveals cavity-to-cavity differences while the R chart isolates within-cavity variation."
+      }
+    ]
+  },
+  "aliases": {
+    "de": [
+      "Rational Subgroup",
+      "Teilgruppe",
+      "Untergruppe"
+    ],
+    "en": [
+      "rational subgroup",
+      "subgroup"
+    ]
+  },
+  "seeAlso": [
+    "regelkarte",
+    "xbar-r-chart",
+    "i-mr-chart",
+    "regelgrenze"
+  ],
+  "modules": [
+    "control-chart",
+    "msa-typ2"
+  ],
+  "algoLab": [
+    "control-charts/control-chart"
+  ],
+  "sources": [
+    {
+      "label": "Shewhart, W. A. — Economic Control of Quality of Manufactured Product, 1931",
+      "url": null
+    },
+    {
+      "label": "Montgomery, D. C. — Introduction to Statistical Quality Control, 8th Edition, Chapter 5",
+      "url": null
+    },
+    {
+      "label": "Wheeler, D. J. — Advanced Topics in Statistical Process Control, 2nd Edition, SPC Press",
+      "url": null
+    }
+  ]
+}

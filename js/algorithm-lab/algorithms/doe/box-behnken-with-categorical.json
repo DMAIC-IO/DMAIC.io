@@ -11,8 +11,8 @@
 
   "description": {
     "short": {
-      "de": "Erweitert das Box-Behnken-Design auf gemischte Faktoren — kontinuierliche bekommen den klassischen 3-Level-RSM-Plan, kategoriale werden kartesisch dazugekreuzt.",
-      "en": "Extends the Box-Behnken design to mixed factors — continuous get the classical 3-level RSM plan, categorical are Cartesian-crossed alongside."
+      "de": "Erweitert das {{term:box-behnken|Box-Behnken}}-Design auf gemischte Faktoren — kontinuierliche bekommen den klassischen 3-Level-{{term:response-surface|RSM}}-Plan, kategoriale werden kartesisch dazugekreuzt.",
+      "en": "Extends the {{term:box-behnken|Box-Behnken}} design to mixed factors — continuous get the classical 3-level {{term:response-surface|RSM}} plan, categorical are Cartesian-crossed alongside."
     },
     "long": {
       "de": "Box-Behnken hat den Vorteil, dass keine Eckpunkte des Designwürfels eingebettet werden — alle Runs liegen auf den Mittelpunkten der Würfelkanten. Das ist nützlich, wenn extreme Faktor-Kombinationen physisch unmöglich oder unsicher sind. Mit kategorialen Faktoren würde das klassische Box-Behnken die Kategorie an einer ‚Mittelpunkt‘-Stelle (z.B. zwischen Stahl und Carbide) anlegen wollen, was sinnlos ist. Die Mixed-Variante schneidet das Problem analog zum CCD: Box-Behnken nur über die kontinuierlichen Faktoren, dann kartesisch mit kategorialen kreuzen. Mindestens 3 kontinuierliche Faktoren erforderlich (Box-Behnken nicht für k < 3 definiert).",

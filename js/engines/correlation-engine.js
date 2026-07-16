@@ -77,7 +77,7 @@ export function kendallTau(x, y) {
 // ─── Statistical distributions (from math-utils.js) ────────
 
 import {
-  normalCDF, normalQuantile as normInv, tCDF, tPValue,
+  normalCDF, normalQuantile as normInv, tPValue,
 } from './math-utils.js';
 
 // Re-export for backward compatibility

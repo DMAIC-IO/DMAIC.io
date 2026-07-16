@@ -1,0 +1,88 @@
+<div class="contour dmike-split" x-data="contourPlot">
+  <aside class="contour__input dmike-split__input">
+
+    <div class="dmike-split__section-title" x-text="t('sectionModel')"></div>
+    <div class="field-group">
+      <label x-text="t('modelType')"></label>
+      <select data-ref="modelType" class="field" x-model="model.modelType" @change="onModelTypeChange()">
+        <option value="quadratic" x-text="t('modelQuadratic')"></option>
+        <option value="interaction" x-text="t('modelInteraction')"></option>
+        <option value="custom" x-text="t('modelCustom')"></option>
+      </select>
+    </div>
+
+    <div data-ref="coeffSection" x-show="model.modelType !== 'custom'">
+      <label class="contour__coeff-label" x-text="t('coeffLabel')"></label>
+      <div class="contour__coeff-grid">
+        <div class="field-group contour__field-sm"><label x-text="betaLabel(0)"></label><input type="number" class="field field--num" data-ref="b0" x-model.number="model.b[0]" @change="autoPlot()"></div>
+        <div class="field-group contour__field-sm"><label x-text="betaLabel(1)"></label><input type="number" class="field field--num" data-ref="b1" x-model.number="model.b[1]" @change="autoPlot()"></div>
+        <div class="field-group contour__field-sm"><label x-text="betaLabel(2)"></label><input type="number" class="field field--num" data-ref="b2" x-model.number="model.b[2]" @change="autoPlot()"></div>
+        <div class="field-group contour__field-sm"><label x-text="betaLabel(3)"></label><input type="number" class="field field--num" data-ref="b3" x-model.number="model.b[3]" @change="autoPlot()"></div>
+        <div class="field-group contour__field-sm"><label x-text="betaLabel(4)"></label><input type="number" class="field field--num" data-ref="b4" x-model.number="model.b[4]" @change="autoPlot()"></div>
+        <div class="field-group contour__field-sm"><label x-text="betaLabel(5)"></label><input type="number" class="field field--num" data-ref="b5" x-model.number="model.b[5]" @change="autoPlot()"></div>
+      </div>
+    </div>
+
+    <div data-ref="customSection" x-show="model.modelType === 'custom'">
+      <div class="field-group">
+        <label x-text="t('customFormula')"></label>
+        <textarea data-ref="customFormula" class="field contour__textarea" rows="2" x-model="model.customFormula" @input="onFormulaInput()"></textarea>
+        <p class="contour__formula-hint" x-text="t('formulaHint')"></p>
+        <p class="contour__formula-error" role="alert" x-show="formulaError" x-text="formulaErrorText()"></p>
+      </div>
+    </div>
+
+    <input type="hidden" data-ref="xLabel" x-model="model.xLabel">
+    <input type="hidden" data-ref="yLabel" x-model="model.yLabel">
+    <div class="dmike-split__section-title" x-text="t('sectionAxes')"></div>
+    <div class="contour__row-2">
+      <div class="field-group contour__field-sm"><label>X min</label><input type="number" class="field field--num" data-ref="xMin" x-model.number="model.xMin" @change="autoPlot()"></div>
+      <div class="field-group contour__field-sm"><label>X max</label><input type="number" class="field field--num" data-ref="xMax" x-model.number="model.xMax" @change="autoPlot()"></div>
+    </div>
+    <div class="contour__row-2">
+      <div class="field-group contour__field-sm"><label>Y min</label><input type="number" class="field field--num" data-ref="yMin" x-model.number="model.yMin" @change="autoPlot()"></div>
+      <div class="field-group contour__field-sm"><label>Y max</label><input type="number" class="field field--num" data-ref="yMax" x-model.number="model.yMax" @change="autoPlot()"></div>
+    </div>
+    <div class="field-group"><label x-text="t('zName')"></label><input type="text" class="field" data-ref="zLabel" x-model="model.zLabel" @change="autoPlot()"></div>
+
+    <div class="dmike-split__section-title" x-text="t('sectionDataSource')"></div>
+    <div data-ref="picker-wrap"></div>
+  </aside>
+
+  <main class="contour__output dmike-split__output">
+    <div class="contour__info-row" data-ref="infoRow" style="display:none">
+      <div class="contour__info-card"><div class="contour__info-label">Z Min</div><div class="contour__info-value" data-ref="infoZmin">–</div><div class="contour__info-sub" data-ref="infoZminPos"></div></div>
+      <div class="contour__info-card"><div class="contour__info-label">Z Max</div><div class="contour__info-value" data-ref="infoZmax">–</div><div class="contour__info-sub" data-ref="infoZmaxPos"></div></div>
+      <div class="contour__info-card"><div class="contour__info-label" x-text="t('range')"></div><div class="contour__info-value" data-ref="infoRange">–</div><div class="contour__info-sub" data-ref="infoRangeSub"></div></div>
+      <div class="contour__info-card"><div class="contour__info-label" x-text="t('optimum')"></div><div class="contour__info-value contour__info-value--opt" data-ref="infoOpt">–</div><div class="contour__info-sub" data-ref="infoOptPos"></div></div>
+    </div>
+
+    <div class="contour__placeholder" data-ref="placeholder"></div>
+
+    <div class="contour__chart-area" data-ref="chart-area" style="display:none">
+      <div class="contour__chart-card" data-ref="chart-card">
+        <div class="contour__chart-main">
+          <div class="contour__chart-wrap" data-ref="chart-wrap">
+            <canvas data-ref="canvas"></canvas>
+            <div class="dmike-chart-tooltip" data-ref="tooltip"
+                 :class="tip.visible ? 'visible' : ''"
+                 :style="'left:' + tip.left + 'px;top:' + tip.top + 'px'">
+              <b x-text="xLabelText + ':'"></b> <span x-text="tip.x"></span><br>
+              <b x-text="yLabelText + ':'"></b> <span x-text="tip.y"></span><br>
+              <b x-text="zLabelText + ':'"></b> <span x-text="tip.z"></span>
+            </div>
+          </div>
+          <div class="contour__legend" data-ref="legend" x-show="legendShow">
+            <span class="contour__legend-title" x-text="legend.title"></span>
+            <template x-for="(it, i) in legend.items" :key="i">
+              <span class="contour__legend-item"><span class="contour__legend-swatch" :style="'background:' + it.color"></span><span x-text="it.value"></span></span>
+            </template>
+          </div>
+        </div>
+        <div class="contour__editor" data-ref="editor-panel">
+          <div class="contour__editor-inner" data-ref="editor-inner"></div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>

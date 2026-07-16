@@ -8,7 +8,7 @@ export default {
   sections: {
     overview: {
       de: {
-        title: 'Aufbau eines SIPOC',
+        title: 'Aufbau eines {{term:sipoc|SIPOC}}',
         blocks: [
           {
             type: 'paragraph',

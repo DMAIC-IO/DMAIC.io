@@ -1,0 +1,84 @@
+<div class="timr dmike-split" x-data="transformedImrChart">
+  <div class="timr__input dmike-split__input">
+
+    <div class="dmike-split__section-title" x-text="t('sectionData')"></div>
+    <div class="field-group">
+      <label x-text="t('dataColumn')"></label>
+      <div data-ref="col-picker"></div>
+      <span class="timr__hint" x-text="t('positiveHint')"></span>
+    </div>
+
+    <div class="dmike-split__section-title" x-text="t('sectionLambda')"></div>
+    <div class="timr__lambda-row">
+      <div class="field-group">
+        <label x-text="t('lambdaMode')"></label>
+        <select class="field" data-ref="lambda-mode" x-model="model.lambdaMode" @change="onLambdaModeChange()">
+          <option value="auto" x-text="t('lambdaAuto')"></option>
+          <option value="manual" x-text="t('lambdaManual')"></option>
+        </select>
+      </div>
+      <div class="field-group">
+        <label>λ</label>
+        <input type="number" class="field field--num" data-ref="lambda-manual"
+          x-model.number="model.lambdaManual"
+          step="0.05" min="-3" max="3"
+          :disabled="model.lambdaMode === 'auto'"
+          @change="onLambdaManualChange()">
+      </div>
+    </div>
+    <span class="timr__hint" x-text="t('lambdaHint')"></span>
+
+  </div>
+
+  <div class="timr__output dmike-split__output">
+    <div data-ref="error-area">
+      <template x-if="errorMsg">
+        <div class="timr__error" x-text="errorMsg"></div>
+      </template>
+    </div>
+    <div data-ref="stats-bar">
+      <template x-if="kpiCells.length">
+        <div class="dmike-kpi-strip">
+          <template x-for="(c, i) in kpiCells" :key="i">
+            <div class="dmike-kpi" :class="c.mod">
+              <div class="dmike-kpi-value" x-text="c.value"></div>
+              <div class="dmike-kpi-label"><span x-text="c.label"></span><template x-if="c.labelHint"><span class="timr__hint" x-text="' (' + c.labelHint + ')'"></span></template></div>
+              <div class="dmike-kpi-sub" x-text="c.sub"></div>
+            </div>
+          </template>
+        </div>
+      </template>
+    </div>
+    <div data-ref="charts-wrap">
+      <template x-for="(cv, i) in chartViews" :key="cv.id">
+        <div class="timr__chart-section">
+          <div class="timr__chart-header">
+            <span class="timr__chart-title" x-text="cv.title"></span>
+            <span class="timr__badge" :class="cv.badgeClass" x-text="cv.badgeText"></span>
+          </div>
+          <div class="timr__plot-wrap" :data-chart-host="cv.id"></div>
+        </div>
+      </template>
+    </div>
+    <div data-ref="limits-wrap">
+      <template x-if="limitRows.length">
+        <table class="timr__limits-table">
+          <thead><tr>
+            <th x-text="t('thLimit')"></th>
+            <th x-text="t('thTransformed')"></th>
+            <th x-text="t('thOriginal')"></th>
+          </tr></thead>
+          <tbody>
+            <template x-for="(r, i) in limitRows" :key="i">
+              <tr>
+                <td x-text="r.label"></td>
+                <td x-text="r.transformed"></td>
+                <td x-text="r.original"></td>
+              </tr>
+            </template>
+          </tbody>
+        </table>
+      </template>
+    </div>
+  </div>
+</div>

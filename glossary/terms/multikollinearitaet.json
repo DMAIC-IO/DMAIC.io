@@ -1,0 +1,77 @@
+{
+  "id": "multikollinearitaet",
+  "category": "regression",
+  "title": {
+    "de": "Multikollinearität (VIF)",
+    "en": "Multicollinearity (VIF)"
+  },
+  "short": {
+    "de": "Zwei oder mehr Prädiktoren sind stark {{term:korrelation|korreliert}} — die {{term:regression|Regression}} kann ihre Einzelbeiträge nicht mehr sauber trennen.",
+    "en": "Two or more predictors are strongly {{term:korrelation|correlated}} — the {{term:regression|regression}} can no longer cleanly separate their individual contributions."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "**Multikollinearität** entsteht, wenn Prädiktoren im Modell mit anderen Prädiktoren linear zusammenhängen. Die Koeffizientenschätzer werden dann instabil, die Standardfehler blähen sich auf, und die Interpretation „Effekt von $X_i$ bei Konstanthalten der anderen“ verliert ihren Sinn."
+      },
+      {
+        "type": "formula",
+        "latex": "\\text{VIF}_j = \\frac{1}{1 - R^2_j}"
+      },
+      {
+        "type": "paragraph",
+        "text": "wobei $R^2_j$ das Bestimmtheitsmaß der Regression von $X_j$ auf alle anderen Prädiktoren ist. Faustregel für den **Variance Inflation Factor**:"
+      },
+      {
+        "type": "list",
+        "items": [
+          "**VIF < 5** — unkritisch",
+          "**VIF 5–10** — Warnsignal, prüfen",
+          "**VIF > 10** — Multikollinearität ernst; einen der beteiligten Prädiktoren entfernen, kombinieren (z. B. zu einem Index) oder eine kollinearitätsrobuste Methode (Ridge, PCR) einsetzen"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "In {{term:doe|DoE}}-Plänen ist Multikollinearität durch die Orthogonalität des Designs meistens **kein** Problem. Sie tritt v. a. bei Beobachtungsdaten und bei nachträglichen Interaktions- oder Polynomtermen auf."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "**Multicollinearity** appears when predictors in the model are linearly related to other predictors. Coefficient estimates then become unstable, standard errors inflate, and the interpretation \"effect of $X_i$ while holding the others constant\" loses meaning."
+      },
+      {
+        "type": "formula",
+        "latex": "\\text{VIF}_j = \\frac{1}{1 - R^2_j}"
+      },
+      {
+        "type": "paragraph",
+        "text": "where $R^2_j$ is the coefficient of determination from regressing $X_j$ on all other predictors. Rule of thumb for the **Variance Inflation Factor**:"
+      },
+      {
+        "type": "list",
+        "items": [
+          "**VIF < 5** — no issue",
+          "**VIF 5–10** — warning, review",
+          "**VIF > 10** — serious multicollinearity; drop one of the involved predictors, combine them (e.g. into an index), or use a collinearity-robust method (Ridge, PCR)"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "In {{term:doe|DoE}} plans, multicollinearity is usually **not** a problem thanks to the design's orthogonality. It appears mainly with observational data and with retrofit interaction or polynomial terms."
+      }
+    ]
+  },
+  "aliases": {
+    "de": ["Kollinearität", "VIF", "Variance Inflation Factor"],
+    "en": ["multicollinearity", "collinearity", "VIF"]
+  },
+  "seeAlso": ["regression", "lineare-regression", "korrelation", "overfitting"],
+  "modules": ["regression", "glm-regression", "doe-planner"],
+  "algoLab": ["doe/vif", "regression/regression-coefficients"],
+  "sources": [
+    { "label": "Montgomery, D. C., Peck, E. A. & Vining, G. G. — Introduction to Linear Regression Analysis, 6th Edition, Chapter 9", "url": null },
+    { "label": "Belsley, D. A., Kuh, E. & Welsch, R. E. — Regression Diagnostics: Identifying Influential Data and Sources of Collinearity, Wiley", "url": null }
+  ]
+}

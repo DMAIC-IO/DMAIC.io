@@ -12,47 +12,47 @@ export default {
         blocks: [
           {
             type: 'paragraph',
-            content: 'Design of Experiments (DoE, Statistische Versuchsplanung) plant Experimente so, dass mit möglichst wenigen Versuchen maximale Erkenntnis über den Einfluss mehrerer Faktoren entsteht. Während man bei der klassischen „ein Faktor nach dem anderen"-Methode viele Versuche braucht und Wechselwirkungen verpasst, liefert DoE strukturierte Designs, die Haupt- und Wechselwirkungen effizient trennen.',
+            content: '{{term:doe|Design of Experiments}} (DoE, Statistische Versuchsplanung) plant Experimente so, dass mit möglichst wenigen Versuchen maximale Erkenntnis über den Einfluss mehrerer Faktoren entsteht. Während man bei der klassischen „ein Faktor nach dem anderen"-Methode viele Versuche braucht und Wechselwirkungen verpasst, liefert DoE strukturierte Designs, die {{term:haupteffekt|Haupt-}} und {{term:wechselwirkung|Wechselwirkungen}} effizient trennen.',
           },
           {
             type: 'definition',
             term: 'Faktor',
-            content: 'Eine Einflussgröße, die bewusst variiert wird — z. B. Temperatur, Druck, Zeit, Materialtyp. Faktoren können stetig (Temperatur in °C) oder kategorial (Lieferant A/B) sein.',
+            content: 'Ein {{term:faktor|Faktor}} ist eine Einflussgröße, die bewusst variiert wird — z. B. Temperatur, Druck, Zeit, Materialtyp. Faktoren können stetig (Temperatur in °C) oder kategorial (Lieferant A/B) sein.',
           },
           {
             type: 'definition',
             term: 'Stufe (Level)',
-            content: 'Die konkreten Werte, auf die ein Faktor im Experiment gesetzt wird. 2 Stufen (−1 / +1) sind Standard für Screening, 3+ Stufen für Optimierung (z. B. Response Surface).',
+            content: 'Die {{term:stufe|Stufen}} sind die konkreten Werte, auf die ein Faktor im Experiment gesetzt wird. 2 Stufen (−1 / +1) sind Standard für {{term:screening-design|Screening}}, 3+ Stufen für Optimierung (z. B. Response Surface).',
           },
           {
             type: 'definition',
             term: 'Zielgröße (Response)',
-            content: 'Die zu optimierende oder zu verstehende Ausgangsgröße — z. B. Ausbeute, Festigkeit, Zykluszeit. Pro Versuch wird sie gemessen.',
+            content: 'Die {{term:zielgroesse|Zielgröße}} ist die zu optimierende oder zu verstehende Ausgangsgröße — z. B. Ausbeute, Festigkeit, Zykluszeit. Pro Versuch wird sie gemessen.',
           },
           {
             type: 'definition',
             term: 'Vollfaktoriell',
-            content: 'Alle Kombinationen aller Stufen werden untersucht. Bei k Faktoren mit 2 Stufen: 2ᵏ Versuche. Genau, aber schnell teuer (6 Faktoren = 64 Versuche).',
+            content: 'Im {{term:vollfaktoriell|Vollplan}} werden alle Kombinationen aller Stufen untersucht. Bei k Faktoren mit 2 Stufen: 2ᵏ Versuche. Genau, aber schnell teuer (6 Faktoren = 64 Versuche).',
           },
           {
             type: 'definition',
             term: 'Teilfaktoriell (Fractional)',
-            content: 'Ein bewusst gewählter Anteil des vollfaktoriellen Plans — z. B. ein Halber (2ᵏ⁻¹) oder Viertel. Effizient fürs Screening vieler Faktoren, aber bestimmte Wechselwirkungen werden verwechselt (Konfundierung).',
+            content: 'Ein {{term:teilfaktoriell|teilfaktorieller Plan}} ist ein bewusst gewählter Anteil des vollfaktoriellen Plans — z. B. ein Halber (2ᵏ⁻¹) oder Viertel. Effizient fürs Screening vieler Faktoren, aber bestimmte Wechselwirkungen werden verwechselt ({{term:konfundierung|Konfundierung}}).',
           },
           {
             type: 'definition',
             term: 'Wechselwirkung',
-            content: 'Zwei Faktoren wirken nicht unabhängig — der Effekt von A hängt vom Stand von B ab. Wechselwirkungen zu erkennen ist einer der Hauptnutzen von DoE; sie werden in der „ein Faktor nach dem anderen"-Welt komplett übersehen.',
+            content: 'Bei einer {{term:wechselwirkung|Wechselwirkung}} wirken zwei Faktoren nicht unabhängig — der Effekt von A hängt vom Stand von B ab. Wechselwirkungen zu erkennen ist einer der Hauptnutzen von DoE; sie werden in der „ein Faktor nach dem anderen"-Welt komplett übersehen.',
           },
           {
             type: 'definition',
             term: 'Zentralpunkt',
-            content: 'Versuch(e) in der Mitte des Designbereichs (alle Faktoren auf 0). Dient zur Prüfung von Krümmung und zur Schätzung der reinen Streuung.',
+            content: '{{term:zentralpunkt|Zentralpunkte}} sind Versuch(e) in der Mitte des Designbereichs (alle Faktoren auf 0). Dient zur Prüfung von Krümmung und zur Schätzung der reinen Streuung.',
           },
           {
             type: 'definition',
             term: 'Streuungs-DoE (Dual Response)',
-            content: 'Bei Designs mit mindestens zwei Replikaten pro Versuchspunkt schätzt der Planner zusätzlich ein Modell für ln(s²). Damit lassen sich Faktoreinstellungen identifizieren, die die Prozessstreuung unabhängig vom {{term:mittelwert|Mittelwert}} reduzieren — sichtbar im Auswertebereich unterhalb der Designqualität.',
+            content: 'Beim {{term:streuungs-doe|Streuungs-DoE}} — Designs mit mindestens zwei Replikaten pro Versuchspunkt — schätzt der Planner zusätzlich ein Modell für ln(s²). Damit lassen sich Faktoreinstellungen identifizieren, die die Prozessstreuung unabhängig vom {{term:mittelwert|Mittelwert}} reduzieren — sichtbar im Auswertebereich unterhalb der Designqualität.',
           },
           {
             type: 'paragraph',
@@ -65,47 +65,47 @@ export default {
         blocks: [
           {
             type: 'paragraph',
-            content: 'Design of Experiments (DoE) plans experiments so that maximum insight about several factors is gained from as few runs as possible. While the classical "one factor at a time" approach needs many runs and misses interactions, DoE delivers structured designs that efficiently separate main effects and interactions.',
+            content: '{{term:doe|Design of Experiments}} (DoE) plans experiments so that maximum insight about several factors is gained from as few runs as possible. While the classical "one factor at a time" approach needs many runs and misses interactions, DoE delivers structured designs that efficiently separate {{term:haupteffekt|main effects}} and {{term:wechselwirkung|interactions}}.',
           },
           {
             type: 'definition',
             term: 'Factor',
-            content: 'An input deliberately varied — e.g. temperature, pressure, time, material type. Factors can be continuous (temperature in °C) or categorical (supplier A/B).',
+            content: 'A {{term:faktor|factor}} is an input deliberately varied — e.g. temperature, pressure, time, material type. Factors can be continuous (temperature in °C) or categorical (supplier A/B).',
           },
           {
             type: 'definition',
             term: 'Level',
-            content: 'The concrete values a factor is set to in the experiment. 2 levels (−1 / +1) are standard for screening, 3+ levels for optimization (e.g. response surface).',
+            content: '{{term:stufe|Levels}} are the concrete values a factor is set to in the experiment. 2 levels (−1 / +1) are standard for {{term:screening-design|screening}}, 3+ levels for optimization (e.g. response surface).',
           },
           {
             type: 'definition',
             term: 'Response',
-            content: 'The output to optimize or understand — e.g. yield, strength, cycle time. Measured once per run.',
+            content: 'The {{term:zielgroesse|response}} is the output to optimize or understand — e.g. yield, strength, cycle time. Measured once per run.',
           },
           {
             type: 'definition',
             term: 'Full factorial',
-            content: 'All combinations of all levels are tested. With k factors at 2 levels: 2ᵏ runs. Exact but quickly expensive (6 factors = 64 runs).',
+            content: 'A {{term:vollfaktoriell|full factorial}} tests all combinations of all levels. With k factors at 2 levels: 2ᵏ runs. Exact but quickly expensive (6 factors = 64 runs).',
           },
           {
             type: 'definition',
             term: 'Fractional factorial',
-            content: 'A deliberately chosen fraction of the full design — e.g. a half (2ᵏ⁻¹) or quarter. Efficient for screening many factors, but specific interactions become confounded (aliased).',
+            content: 'A {{term:teilfaktoriell|fractional factorial}} is a deliberately chosen fraction of the full design — e.g. a half (2ᵏ⁻¹) or quarter. Efficient for screening many factors, but specific interactions become {{term:konfundierung|confounded (aliased)}}.',
           },
           {
             type: 'definition',
             term: 'Interaction',
-            content: 'Two factors do not act independently — the effect of A depends on the level of B. Detecting interactions is one of DoE\'s main benefits; they are entirely missed in the "one factor at a time" world.',
+            content: 'In an {{term:wechselwirkung|interaction}}, two factors do not act independently — the effect of A depends on the level of B. Detecting interactions is one of DoE\'s main benefits; they are entirely missed in the "one factor at a time" world.',
           },
           {
             type: 'definition',
             term: 'Center point',
-            content: 'Run(s) at the center of the design region (all factors at 0). Checks for curvature and estimates pure variation.',
+            content: '{{term:zentralpunkt|Center points}} are run(s) at the center of the design region (all factors at 0). Checks for curvature and estimates pure variation.',
           },
           {
             type: 'definition',
             term: 'Dispersion DoE (dual response)',
-            content: 'For designs with at least two replicates per point, the planner additionally fits a model for ln(s²). This identifies factor settings that reduce process variability independently of the {{term:mittelwert|mean}} — shown in the analysis section below the design quality summary.',
+            content: 'In {{term:streuungs-doe|dispersion DoE}} — designs with at least two replicates per point — the planner additionally fits a model for ln(s²). This identifies factor settings that reduce process variability independently of the {{term:mittelwert|mean}} — shown in the analysis section below the design quality summary.',
           },
           {
             type: 'paragraph',
@@ -161,7 +161,7 @@ export default {
           {
             type: 'definition',
             term: 'Ohne Randomisierung',
-            content: 'Wer die Versuche in der Reihenfolge der Standardtabelle fährt, vermischt Faktoreffekte mit Drift über die Zeit (Werkzeugverschleiß, Temperaturänderung). Randomisierung ist Pflicht, nicht optional.',
+            content: 'Wer die Versuche in der Reihenfolge der Standardtabelle fährt, vermischt Faktoreffekte mit Drift über die Zeit (Werkzeugverschleiß, Temperaturänderung). {{term:randomisierung|Randomisierung}} ist Pflicht, nicht optional.',
           },
           {
             type: 'definition',
@@ -176,12 +176,12 @@ export default {
           {
             type: 'definition',
             term: 'Wechselwirkungen ignoriert',
-            content: 'Ein Halbfaktorieller Plan verwechselt bestimmte Hauptwirkungen mit Wechselwirkungen. Vor der Auswertung die Konfundierungsstruktur anschauen, sonst werden falsche Schlüsse gezogen.',
+            content: 'Ein Halbfaktorieller Plan verwechselt bestimmte Hauptwirkungen mit Wechselwirkungen. Vor der Auswertung die {{term:konfundierung|Konfundierungsstruktur}} und {{term:aufloesung|Auflösung}} anschauen, sonst werden falsche Schlüsse gezogen.',
           },
           {
             type: 'definition',
             term: 'Ein Datenpunkt statt mehrerer',
-            content: 'Ein einzelner Wert pro Versuchsbedingung liefert keinen Rausch-Schätzer. Entweder mindestens zwei Replikate oder Zentralpunkte, sonst bleibt die reine Streuung unbekannt.',
+            content: 'Ein einzelner Wert pro Versuchsbedingung liefert keinen Rausch-Schätzer. Entweder mindestens zwei {{term:replikat|Replikate}} oder Zentralpunkte, sonst bleibt die reine Streuung unbekannt.',
           },
           {
             type: 'definition',
@@ -201,7 +201,7 @@ export default {
           {
             type: 'definition',
             term: 'No randomization',
-            content: 'Running experiments in the standard-table order confounds factor effects with drift over time (tool wear, temperature change). Randomization is mandatory, not optional.',
+            content: 'Running experiments in the standard-table order confounds factor effects with drift over time (tool wear, temperature change). {{term:randomisierung|Randomization}} is mandatory, not optional.',
           },
           {
             type: 'definition',
@@ -216,12 +216,12 @@ export default {
           {
             type: 'definition',
             term: 'Interactions ignored',
-            content: 'A half-fractional design confounds certain main effects with interactions. Before analyzing, inspect the alias structure, otherwise conclusions will be wrong.',
+            content: 'A half-fractional design confounds certain main effects with interactions. Before analyzing, inspect the {{term:konfundierung|alias structure}} and {{term:aufloesung|resolution}}, otherwise conclusions will be wrong.',
           },
           {
             type: 'definition',
             term: 'One data point per run',
-            content: 'A single value per condition provides no noise estimate. Use at least two replicates or center points, otherwise pure variation remains unknown.',
+            content: 'A single value per condition provides no noise estimate. Use at least two {{term:replikat|replicates}} or center points, otherwise pure variation remains unknown.',
           },
           {
             type: 'definition',

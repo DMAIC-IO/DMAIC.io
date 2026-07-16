@@ -1,0 +1,84 @@
+{
+  "id": "randomisierung",
+  "category": "doe",
+  "title": {
+    "de": "Randomisierung (Randomization)",
+    "en": "Randomization"
+  },
+  "short": {
+    "de": "Zufällige Reihenfolge der Versuchsläufe — verhindert, dass zeitliche Drift mit Faktoreffekten verwechselt wird.",
+    "en": "Random run order — prevents time-related drift from being confounded with factor effects."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "**Randomisierung** verlangt, dass die Reihenfolge der Versuchsläufe zufällig festgelegt wird — nicht in der Standardtabelle des Designs, nicht sortiert nach {{term:faktor|Faktor}}-Werten. Nur so lässt sich der Einfluss von unbeobachteten zeitlich veränderlichen Störgrößen (Werkzeugverschleiß, Temperaturdrift, Bediener-Rotation) von den echten Faktoreffekten trennen."
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Vollrandomisierung** — jede Versuchsnummer zufällig zugeordnet; Ideal, wenn Umbauzeiten unkritisch sind",
+          "**Blockrandomisierung** — Randomisierung innerhalb homogener Blöcke (Schicht, Charge, Tag)",
+          "**Split-Plot** — wenn ein Faktor nur schwer geändert werden kann (Ofentemperatur), wird er in „ganzen Plots“ blockweise randomisiert; die schnell änderbaren Faktoren dann innerhalb"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "Randomisierung ist **Pflicht, nicht optional**. Wer die Versuchsreihenfolge nach Bequemlichkeit sortiert (z. B. „erst alle mit niedriger Temperatur, dann alle mit hoher“), riskiert, dass eine Zeitdrift den vermeintlichen Effekt vollständig erklärt — mit fatal falschen Schlüssen."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "**Randomization** requires the run order to be assigned at random — not in the design's standard-table order, not sorted by {{term:faktor|factor}} values. Only then can the influence of unobserved time-varying disturbances (tool wear, temperature drift, operator rotation) be separated from true factor effects."
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Complete randomization** — every run number randomly assigned; ideal when setup times are non-critical",
+          "**Blocked randomization** — randomize within homogeneous blocks (shift, batch, day)",
+          "**Split-plot** — when a factor is hard to change (oven temperature), it is randomized in whole plots; the fast-changing factors are randomized within"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "Randomization is **mandatory, not optional**. Ordering runs for convenience (e.g. \"all low-temperature runs first, then all high\") risks having a time drift fully explain the apparent effect — with fatally wrong conclusions."
+      }
+    ]
+  },
+  "aliases": {
+    "de": [
+      "Randomization",
+      "Zufallsanordnung",
+      "Run-Order-Randomisierung"
+    ],
+    "en": [
+      "run-order randomization",
+      "randomised order"
+    ]
+  },
+  "seeAlso": [
+    "replikat",
+    "doe",
+    "gage-rr"
+  ],
+  "modules": [
+    "doe-planner",
+    "doe-advisor",
+    "msa-typ2"
+  ],
+  "algoLab": [
+    "doe/doe-planner"
+  ],
+  "sources": [
+    {
+      "label": "Montgomery, D. C. — Design and Analysis of Experiments, 10th Edition, Chapter 1",
+      "url": null
+    },
+    {
+      "label": "Kleppmann, W. — Versuchsplanung, 10. Auflage, Hanser",
+      "url": null
+    }
+  ]
+}

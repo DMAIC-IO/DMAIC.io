@@ -35,6 +35,13 @@
   align-items: stretch;
 }
 
+/* Alpine's <template x-for> needs exactly one child element, so each category row
+   is wrapped in a div. display:contents lets the row-head + cells participate
+   directly in the parent grid instead of collapsing into a single grid cell. */
+.triz-res__row {
+  display: contents;
+}
+
 .triz-res__corner,
 .triz-res__col-head {
   padding: var(--spacing-xs) var(--spacing-sm);

@@ -3,749 +3,475 @@
  * Measure phase: Process Capability Analysis (Cp, Cpk, Pp, Ppk).
  * Supports two-sided (LSL + USL) and one-sided specifications.
  *
- * Data source: column from a Worksheet module (referenced by column ID).
+ * Data source: column from a Worksheet module (referenced by column ID), or
+ * values embedded directly from a catalog example.
+ *
+ * Migrated to createModule + Alpine CSP. The Model (process-capability-model.js)
+ * holds only the raw inputs / column reference / embedded values; the analysis
+ * RESULT is derived transiently in the view from those inputs plus the live
+ * worksheet data via the (unchanged) capability engine.
+ *
+ * Imperative widgets (mounted in init(), disposed in destroy()):
+ *   - the shared ColumnPicker in 'select' mode (worksheet-column <select>);
+ *     the embedded-example "remove" pill is rendered declaratively in the
+ *     Alpine template (x-if model.embeddedValues)
+ *   - the capability histogram (chartManager)
  */
 
+import { createModule } from '../../core/template-module.js';
+import { State } from './process-capability-model.js';
 import { validate, analyze } from '../../engines/process-capability-engine.js';
-import { isPickerFocused } from '../../ui/column-picker.js';
+import { ColumnPicker, getColumnValues, discoverColumns } from '../../ui/column-picker.js';
+
+/** Auto-run debounce (ms) — matches the legacy behaviour. */
+const AUTORUN_DELAY = 600;
 
 /** @param {number} v @param {number} d @returns {string} */
 function fmt(v, d = 4) {
-  if (v == null || isNaN(v)) return '\u2013';
+  if (v == null || isNaN(v)) return '–';
   return v.toFixed(d);
 }
 
-export default {
-  id: 'process-capability',
-  phase: 'measure',
-  icon: 'bar-chart',
-  i18nKey: 'modules.process-capability',
-  version: '1.0.0',
-
-  _container: null,
-  _context: null,
-  _t: null,
-  _result: null,
-  /** @type {{ instanceId: string, sheetId: string, columnId: string }|null} */
-  _columnRef: null,
-  /** @type {number[]|null} values loaded directly from an example (bypasses worksheet) */
-  _embeddedValues: null,
-  /** @type {string} display label for embedded example data */
-  _embeddedLabel: '',
-  _params: { name: '', lsl: NaN, usl: NaN, target: NaN, unit: 'mm', confidence: null },
-  _charts: [],
-  _renderGen: 0,
-  _eventUnsubs: [],
-
-  help: () => import('./process-capability-help.js'),
-
-  // ─── Lifecycle ──────────────────────────────────────────────
-
-  async init(container, context) {
-    this._container = container;
-    this._context = context;
-    this._t = (key, vars) => context.i18n.t(key, vars);
-
-    if (!document.getElementById('process-capability-css')) {
-      const link = document.createElement('link');
-      link.id = 'process-capability-css';
-      link.rel = 'stylesheet';
-      link.href = './js/modules/process-capability/process-capability.css';
-      document.head.appendChild(link);
-    }
-
-    const onStateSaved = () => this._refreshColumnSelector();
-    context.eventBus.on('state:saved', onStateSaved);
-    context.eventBus.on('worksheet:dataChanged', onStateSaved);
-    this._eventUnsubs.push(
-      () => context.eventBus.off('state:saved', onStateSaved),
-      () => context.eventBus.off('worksheet:dataChanged', onStateSaved),
-    );
-
-    const onModuleAdded = ({ moduleId }) => {
-      if (moduleId === 'worksheet') this._refreshColumnSelector();
-    };
-    context.eventBus.on('module:added', onModuleAdded);
-    this._eventUnsubs.push(() => context.eventBus.off('module:added', onModuleAdded));
-
-    const onModuleRemoved = ({ moduleId }) => {
-      if (moduleId === 'worksheet') this._refreshColumnSelector();
-    };
-    context.eventBus.on('module:removed', onModuleRemoved);
-    this._eventUnsubs.push(() => context.eventBus.off('module:removed', onModuleRemoved));
-
-    const onModuleActivated = ({ instanceId }) => {
-      if (instanceId === context.instanceId) this._refreshColumnSelector();
-    };
-    context.eventBus.on('module:activated', onModuleActivated);
-    this._eventUnsubs.push(() => context.eventBus.off('module:activated', onModuleActivated));
-
-    this._params = { name: '', lsl: NaN, usl: NaN, target: NaN, unit: 'mm',
-      confidence: (context.stateManager.get('settings.confidenceLevel') ?? 95) / 100 };
-    this._columnRef = null;
-    this._result = null;
-
-    container.innerHTML = '';
-    this._render();
+const mod = createModule({
+  config: {
+    id: 'process-capability',
+    engine: 'alpine',
+    phase: 'measure',
+    icon: 'bar-chart',
+    version: '1.1.0',
+    meta: import.meta,
   },
+  Model: State,
 
-  async destroy() {
-    for (const unsub of this._eventUnsubs) unsub();
-    this._eventUnsubs = [];
-    this._destroyCharts();
-    this._container.innerHTML = '';
-  },
-
-  onLanguageChange() {
-    this._render();
-    if (this._result) {
-      this._renderResults(this._result);
-    }
-  },
-
-  onThemeChange() {
-    if (this._result) {
-      this._destroyCharts();
-      this._renderCharts(this._result, ++this._renderGen);
-    }
-  },
-
-  // ─── Data hooks ─────────────────────────────────────────────
-
-  getState() {
-    this._readInputs();
+  data(module, _t) {
     return {
-      params: { ...this._params },
-      columnRef: this._columnRef ? { ...this._columnRef } : null,
-      embeddedValues: this._embeddedValues ? [...this._embeddedValues] : null,
-      embeddedLabel: this._embeddedLabel || '',
-      lastResult: this._result,
-    };
-  },
+      // ── Transient view state (not persisted) ──────────────────
+      result: null,
+      _charts: [],
+      _unsubs: [],
+      _debTimer: null,
+      _renderGen: 0,
+      _picker: null,
+      /** Empty-state decision for the column area: 'ok' | 'noWorksheet' | 'noNumericColumns'. */
+      _colState: 'ok',
 
-  setState(data) {
-    if (!data) return;
-    if (data.params) this._params = { ...this._params, ...data.params };
-    if (data.columnRef !== undefined) this._columnRef = data.columnRef ? { ...data.columnRef } : null;
-    if (data.embeddedValues !== undefined) this._embeddedValues = Array.isArray(data.embeddedValues) ? [...data.embeddedValues] : null;
-    if (data.embeddedLabel !== undefined) this._embeddedLabel = data.embeddedLabel || '';
-    this._result = data.lastResult || null;
-    this._render();
-    if (this._result) {
-      this._renderResults(this._result);
-    }
-    this._tryAutoAnalysis();
-  },
+      fmt,
 
-  // ─── Example Data ───────────────────────────────────────────
+      /** Title for the embedded-data "remove" button (global i18n key). */
+      removeTitle() { return module._context.i18n.t('common.remove'); },
 
-  /**
-   * Load a catalog example into the module. Activates "embedded data" mode:
-   * values come directly from the example, bypassing the worksheet column
-   * selector. Switching the column selector clears the embedded data.
-   *
-   * @param {{ meta: object, data: any }} payload
-   */
-  async loadExample(payload) {
-    if (!payload || !payload.data) return;
-    const t = this._t;
+      /** Drop embedded example data, re-show the column picker, re-run. */
+      clearEmbedded() {
+        this.model.clearEmbedded();
+        this.$nextTick(() => this._mountPicker());
+        this.runAnalysis();
+      },
 
-    // Warn before overwriting existing data.
-    const hasData = this._embeddedValues || this._columnRef;
-    if (hasData && this._context?.confirmPopout) {
-      const ok = await this._context.confirmPopout(t('moduleHelp.confirmOverwrite'), { danger: true });
-      if (!ok) return;
-    }
+      // ── View transformations ──────────────────────────────────
 
-    const col = payload.data.columns?.[0];
-    if (!col || !Array.isArray(col.values)) {
-      this._notify(t('moduleHelp.exampleLoadError'), 'error');
-      return;
-    }
-    const values = col.values.filter(v => typeof v === 'number' && !isNaN(v));
-    if (values.length === 0) {
-      this._notify(t('moduleHelp.exampleLoadError'), 'error');
-      return;
-    }
+      statusLabel: (s) => _t({ pass: 'statusPass', fail: 'statusFail', warn: 'statusWarn' }[s] || 'statusWarn'),
+      badgeLabel: (s) => _t({ pass: 'capable', fail: 'notCapable', warn: 'condCapable' }[s] || 'condCapable'),
+      kpiModClass: (s) => ({ pass: 'dmike-kpi--good', warn: 'dmike-kpi--warn', fail: 'dmike-kpi--bad' }[s] || ''),
 
-    this._embeddedValues = values;
-    const lang = this._context.i18n.getLanguage();
-    this._embeddedLabel = payload.meta?.title?.[lang] || payload.meta?.title?.en || payload.meta?.id || '';
-    this._columnRef = null;
+      featureName() { return this.model.params.name || '–'; },
 
-    // Apply spec from meta if present.
-    const spec = payload.meta?.spec || {};
-    if (typeof spec.lsl    === 'number') this._params.lsl    = spec.lsl;
-    if (typeof spec.usl    === 'number') this._params.usl    = spec.usl;
-    if (typeof spec.target === 'number') this._params.target = spec.target;
+      ciLabel(ci) {
+        const r = this.result;
+        if (!ci || !r) return '';
+        const ciPct = Math.round(r.confidence * 100);
+        return `${_t('ci')} ${ciPct}%: [${fmt(ci[0])}; ${fmt(ci[1])}]`;
+      },
 
-    // Use feature name from meta and unit from first column.
-    if (payload.meta?.title) this._params.name = this._embeddedLabel;
-    if (col.unit) this._params.unit = col.unit;
-    else if (payload.meta?.columns?.[0]?.unit) this._params.unit = payload.meta.columns[0].unit;
-
-    this._render();
-    this._tryAutoAnalysis();
-    this._save();
-    this._notify(t('moduleHelp.exampleLoaded', { title: this._embeddedLabel }), 'success');
-  },
-
-  _clearEmbedded() {
-    this._embeddedValues = null;
-    this._embeddedLabel = '';
-  },
-
-  // ─── Worksheet Column Discovery ─────────────────────────────
-
-  _getWorksheetColumns() {
-    const sm = this._context?.stateManager;
-    if (!sm) return [];
-
-    const columns = [];
-    const allPhases = Object.keys(sm.get('phases') || {});
-    for (const phase of allPhases) {
-      const instances = sm.get(`phases.${phase}`) ?? [];
-      for (const inst of instances) {
-        if (inst.moduleId !== 'worksheet') continue;
-        const ws = sm.getModuleState(inst.instanceId);
-        if (!ws?.sheets) continue;
-        for (const sheet of ws.sheets) {
-          const state = sheet.state;
-          if (!state?.columns) continue;
-          for (const col of state.columns) {
-            if (col.type !== 'numeric') continue;
-            const nonNull = (col.values || []).filter(v => v != null).length;
-            columns.push({
-              instanceId: inst.instanceId,
-              sheetId: sheet.id,
-              sheetName: sheet.name,
-              columnId: col.id,
-              columnName: col.name || '',
-              shortName: col.shortName || '?',
-              valueCount: nonNull,
-            });
-          }
+      /** Main short-term KPI cells (Cp / Cpk / CPL / CPU). */
+      mainKpis() {
+        const r = this.result;
+        if (!r) return [];
+        const cells = [];
+        if (r.Cp != null) {
+          cells.push({
+            key: 'cp',
+            mod: this.kpiModClass(r.cpStatus),
+            label: `Cp (${_t('potential')})`,
+            value: fmt(r.Cp),
+            sub: `${_t('threshold')}: ≥ 1.33 · ${this.badgeLabel(r.cpStatus)}${r.CpCI ? ` · ${this.ciLabel(r.CpCI)}` : ''}`,
+          });
         }
-      }
-    }
-    return columns;
-  },
-
-  _getColumnValues() {
-    // Embedded example data takes precedence over any worksheet column.
-    if (this._embeddedValues) {
-      return this._embeddedValues.filter(v => typeof v === 'number' && !isNaN(v));
-    }
-
-    if (!this._columnRef) return [];
-    const sm = this._context?.stateManager;
-    if (!sm) return [];
-
-    const ws = sm.getModuleState(this._columnRef.instanceId);
-    if (!ws?.sheets) return [];
-
-    const sheet = ws.sheets.find(s => s.id === this._columnRef.sheetId);
-    if (!sheet?.state?.columns) return [];
-
-    const col = sheet.state.columns.find(c => c.id === this._columnRef.columnId);
-    if (!col) return [];
-
-    return (col.values || []).filter(v => v != null && typeof v === 'number' && !isNaN(v));
-  },
-
-  _hasWorksheet() {
-    const sm = this._context?.stateManager;
-    if (!sm) return false;
-    const allPhases = Object.keys(sm.get('phases') || {});
-    for (const phase of allPhases) {
-      const instances = sm.get(`phases.${phase}`) ?? [];
-      if (instances.some(i => i.moduleId === 'worksheet')) return true;
-    }
-    return false;
-  },
-
-  // ─── Render ─────────────────────────────────────────────────
-
-  _render() {
-    const t = this._t;
-    const p = this._params;
-
-    this._container.innerHTML = `
-      <div class="module-process-capability dmike-split">
-        <div class="module-process-capability__input dmike-split__input">
-          <div class="dmike-split__section-title">${t('modules.process-capability.sectionParams')}</div>
-
-          <div class="field-group">
-            <label>${t('modules.process-capability.featureName')}</label>
-            <input type="text" class="field" data-ref="inp-name" placeholder="${t('modules.process-capability.featureNamePh')}" value="${this._esc(p.name)}">
-          </div>
-
-          <div class="pc__row-3">
-            <div class="field-group">
-              <label>${t('modules.process-capability.lsl')}</label>
-              <input type="text" class="field field--num" data-ref="inp-lsl" placeholder="49.800" inputmode="decimal" value="${isNaN(p.lsl) ? '' : p.lsl}">
-            </div>
-            <div class="field-group">
-              <label>${t('modules.process-capability.target')}</label>
-              <input type="text" class="field field--num" data-ref="inp-target" placeholder="50.000" inputmode="decimal" value="${isNaN(p.target) ? '' : p.target}">
-            </div>
-            <div class="field-group">
-              <label>${t('modules.process-capability.usl')}</label>
-              <input type="text" class="field field--num" data-ref="inp-usl" placeholder="50.200" inputmode="decimal" value="${isNaN(p.usl) ? '' : p.usl}">
-            </div>
-          </div>
-
-          <div class="pc__hint">${t('modules.process-capability.specHint')}</div>
-
-          <div class="pc__row">
-            <div class="field-group">
-              <label>${t('modules.process-capability.unit')}</label>
-              <input type="text" class="field" data-ref="inp-unit" value="${this._esc(p.unit)}" placeholder="mm">
-            </div>
-            <div class="field-group">
-              <label>${t('modules.process-capability.confidenceLabel')} (%)</label>
-              <input type="text" class="field field--num" data-ref="inp-confidence" placeholder="95" inputmode="decimal" value="${isNaN(p.confidence) ? '95' : +(p.confidence * 100).toFixed(2)}">
-            </div>
-          </div>
-
-          <div class="dmike-split__section-title">${t('modules.process-capability.sectionData')}</div>
-
-          <div class="field-group">
-            <label>${t('modules.process-capability.columnSelectLabel')}</label>
-            <div class="pc__col-select-wrap" data-ref="col-select-wrap">
-              ${this._buildColumnSelectorHTML()}
-            </div>
-          </div>
-
-          <div class="pc__error" data-ref="error-box"></div>
-        </div>
-
-        <div class="module-process-capability__output dmike-split__output">
-          <div data-ref="results"></div>
-        </div>
-      </div>
-    `;
-
-    this._bindEvents();
-  },
-
-  _buildColumnSelectorHTML() {
-    const t = this._t;
-
-    // Embedded example data — show a "remove" pill instead of the selector.
-    if (this._embeddedValues) {
-      const n = this._embeddedValues.length;
-      const label = this._embeddedLabel || t('modules.process-capability.exampleData');
-      return `<div class="pc__embedded">
-        <span class="pc__embedded-label">${this._esc(label)} (n=${n})</span>
-        <button class="btn btn--sm btn--ghost" data-ref="btn-clear-embedded" type="button" title="${t('common.remove')}">✕</button>
-      </div>`;
-    }
-
-    const hasWs = this._hasWorksheet();
-
-    if (!hasWs) {
-      return `<div class="pc__no-worksheet">
-        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-        <span>${t('modules.process-capability.noWorksheet')}</span>
-      </div>`;
-    }
-
-    const columns = this._getWorksheetColumns();
-
-    if (columns.length === 0) {
-      return `<div class="pc__no-worksheet pc__no-worksheet--empty">
-        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-        <span>${t('modules.process-capability.noNumericColumns')}</span>
-      </div>`;
-    }
-
-    let options = `<option value="">${t('modules.process-capability.selectColumn')}</option>`;
-    let currentGroup = '';
-    for (const col of columns) {
-      const groupLabel = col.sheetName;
-      if (groupLabel !== currentGroup) {
-        if (currentGroup) options += '</optgroup>';
-        options += `<optgroup label="${this._esc(groupLabel)}">`;
-        currentGroup = groupLabel;
-      }
-      const refKey = `${col.instanceId}|${col.sheetId}|${col.columnId}`;
-      const selected = this._columnRef
-        && this._columnRef.instanceId === col.instanceId
-        && this._columnRef.sheetId === col.sheetId
-        && this._columnRef.columnId === col.columnId
-        ? ' selected' : '';
-      const displayName = col.columnName
-        ? `${col.shortName} \u2013 ${col.columnName}`
-        : col.shortName;
-      options += `<option value="${refKey}"${selected}>${displayName} (n=${col.valueCount})</option>`;
-    }
-    if (currentGroup) options += '</optgroup>';
-
-    return `<select data-ref="inp-column" class="pc__col-select">${options}</select>`;
-  },
-
-  _refreshColumnSelector() {
-    if (isPickerFocused(this._container)) return;
-
-    const wrap = this._container?.querySelector('[data-ref="col-select-wrap"]');
-    if (!wrap) return;
-    wrap.innerHTML = this._buildColumnSelectorHTML();
-    this._bindColumnSelector();
-    this._tryAutoAnalysis();
-  },
-
-  _bindEvents() {
-    const c = this._container;
-
-    this._bindColumnSelector();
-
-    // Auto-save and auto-analyze on input change
-    const autoRun = this._debounce(() => { this._save(); this._tryAutoAnalysis(); }, 600);
-    c.querySelectorAll('input, select:not([data-ref="inp-column"])').forEach(el => {
-      el.addEventListener('input', autoRun);
-      el.addEventListener('change', autoRun);
-    });
-  },
-
-  _bindColumnSelector() {
-    const c = this._container;
-    const colSelect = c.querySelector('[data-ref="inp-column"]');
-    if (colSelect) {
-      colSelect.addEventListener('change', (e) => {
-        const val = e.target.value;
-        if (!val) {
-          this._columnRef = null;
-        } else {
-          const [instanceId, sheetId, columnId] = val.split('|');
-          this._columnRef = { instanceId, sheetId, columnId };
-          // Picking a worksheet column clears any embedded example data.
-          this._clearEmbedded();
+        cells.push({
+          key: 'cpk',
+          mod: this.kpiModClass(r.cpkStatus),
+          label: `Cpk (${_t('actual')})`,
+          value: fmt(r.Cpk),
+          sub: `${_t('threshold')}: ≥ 1.33 · ${this.badgeLabel(r.cpkStatus)}${r.CpkCI ? ` · ${this.ciLabel(r.CpkCI)}` : ''}`,
+        });
+        if (r.CPL != null) {
+          cells.push({
+            key: 'cpl',
+            mod: '',
+            label: `CPL (${_t('lower')})`,
+            value: fmt(r.CPL),
+            sub: '(x̄ − LSL) / 3s',
+          });
         }
-        this._refreshColumnSelector();
-        this._save();
-        this._tryAutoAnalysis();
-      });
-    }
+        if (r.CPU != null) {
+          cells.push({
+            key: 'cpu',
+            mod: '',
+            label: `CPU (${_t('upper')})`,
+            value: fmt(r.CPU),
+            sub: '(USL − x̄) / 3s',
+          });
+        }
+        return cells;
+      },
 
-    const clearBtn = c.querySelector('[data-ref="btn-clear-embedded"]');
-    if (clearBtn) {
-      clearBtn.addEventListener('click', () => {
-        this._clearEmbedded();
-        this._refreshColumnSelector();
-        this._save();
-        this._tryAutoAnalysis();
-      });
-    }
-  },
+      /** Long-term performance KPI cells (Pp / Ppk / PPM / Sigma). */
+      perfKpis() {
+        const r = this.result;
+        if (!r) return [];
+        const cells = [];
+        if (r.Pp != null) {
+          cells.push({
+            key: 'pp',
+            label: `Pp (${_t('overallPotential')})`,
+            value: fmt(r.Pp),
+            sub: `${_t('longTerm')}${r.PpCI ? ` · ${this.ciLabel(r.PpCI)}` : ''}`,
+          });
+        }
+        if (r.Ppk != null) {
+          cells.push({
+            key: 'ppk',
+            label: `Ppk (${_t('overallActual')})`,
+            value: fmt(r.Ppk),
+            sub: `${_t('longTerm')}${r.PpkCI ? ` · ${this.ciLabel(r.PpkCI)}` : ''}`,
+          });
+        }
+        cells.push({
+          key: 'ppm',
+          label: `PPM (${_t('defective')})`,
+          value: fmt(r.ppmTotal),
+          sub: _t('perMillion'),
+        });
+        cells.push({
+          key: 'sigma',
+          label: _t('sigmaLevel'),
+          value: `${fmt(r.sigmaLevel)}σ`,
+          sub: 'Z = 3 · Cpk',
+        });
+        return cells;
+      },
 
-  // ─── Actions ────────────────────────────────────────────────
+      /** Horizontal stats table columns (label/value pairs). */
+      statCols() {
+        const r = this.result;
+        if (!r) return [];
+        const unit = this.model.params.unit || '';
+        return [
+          { label: _t('statN'), value: String(r.n) },
+          { label: _t('statMean'), value: `${fmt(r.xbar)} ${unit}` },
+          { label: _t('statStddevS'), value: `${fmt(r.s)} ${unit}` },
+          { label: _t('statStddevSigma'), value: `${fmt(r.sigma)} ${unit}` },
+          { label: _t('statMin'), value: `${fmt(r.xmin)} ${unit}` },
+          { label: _t('statMax'), value: `${fmt(r.xmax)} ${unit}` },
+          r.hasLsl ? { label: 'LSL', value: `${fmt(r.lsl)} ${unit}` } : null,
+          r.hasUsl ? { label: 'USL', value: `${fmt(r.usl)} ${unit}` } : null,
+          r.T != null ? { label: _t('statTol'), value: `${fmt(r.T)} ${unit}` } : null,
+          r.targetVal != null ? { label: _t('statTarget'), value: `${fmt(r.targetVal)} ${unit}` } : null,
+          r.ppmBelowLsl != null ? { label: 'PPM < LSL', value: fmt(r.ppmBelowLsl) } : null,
+          r.ppmAboveUsl != null ? { label: 'PPM > USL', value: fmt(r.ppmAboveUsl) } : null,
+        ].filter(Boolean);
+      },
 
-  /**
-   * Automatically run analysis if all required inputs are present and valid.
-   * Silently clears results when data is incomplete.
-   */
-  _tryAutoAnalysis() {
-    this._readInputs();
+      // ── Analysis (controller — needs context + live worksheet data) ──
 
-    // Data must come from either an embedded example or a worksheet column.
-    if (!this._columnRef && !this._embeddedValues) return this._clearResults();
+      parseNum(s) {
+        if (s == null || s === '') return NaN;
+        return parseFloat(String(s).replace(',', '.').trim());
+      },
 
-    const values = this._getColumnValues();
-    if (values.length === 0) return this._clearResults();
+      /** Resolved confidence as a fraction (0 < c < 1), from the percent input. */
+      confidenceFraction() {
+        const raw = this.parseNum(this.model.params.confidence);
+        if (!isNaN(raw) && raw > 0) {
+          return Math.max(50, Math.min(99.99, raw)) / 100;
+        }
+        return (module._context.stateManager.get('settings.confidenceLevel') ?? 95) / 100;
+      },
 
-    const p = this._params;
-    const lsl = this._parseNum(p.lsl);
-    const usl = this._parseNum(p.usl);
-    const target = this._parseNum(p.target);
+      /** Live measurement values — embedded example data takes precedence. */
+      columnValues() {
+        if (this.model.embeddedValues) {
+          return this.model.embeddedValues.filter(v => typeof v === 'number' && !isNaN(v));
+        }
+        if (!this.model.columnRef) return [];
+        return getColumnValues(module._context.stateManager, this.model.columnRef)
+          .filter(v => v != null && typeof v === 'number' && !isNaN(v));
+      },
 
-    const confidence = this._params.confidence || 0.95;
-    const params = {
-      lsl: isNaN(lsl) ? null : lsl,
-      usl: isNaN(usl) ? null : usl,
-      target: isNaN(target) ? null : target,
-      confidence,
+      /**
+       * Run analysis if all inputs are valid; otherwise silently clear results
+       * (no error shown — matches the legacy auto-analysis behaviour).
+       */
+      runAnalysis() {
+        if (!this.model.columnRef && !this.model.embeddedValues) return this.clearResults();
+        const values = this.columnValues();
+        if (values.length === 0) return this.clearResults();
+
+        const p = this.model.params;
+        const lsl = this.parseNum(p.lsl);
+        const usl = this.parseNum(p.usl);
+        const target = this.parseNum(p.target);
+        const params = {
+          lsl: isNaN(lsl) ? null : lsl,
+          usl: isNaN(usl) ? null : usl,
+          target: isNaN(target) ? null : target,
+          confidence: this.confidenceFraction(),
+        };
+
+        const validation = validate(params, values);
+        if (!validation.valid) return this.clearResults();
+
+        this.result = analyze(params, values);
+        const gen = ++this._renderGen;
+        this.$nextTick(() => this._renderHistogram(this.result, gen));
+      },
+
+      scheduleAnalysis() {
+        clearTimeout(this._debTimer);
+        this._debTimer = setTimeout(() => this.runAnalysis(), AUTORUN_DELAY);
+      },
+
+      clearResults() {
+        this.result = null;
+        this._destroyCharts();
+      },
+
+      // ── SVG chart (imperative via chartManager) ───────────────
+
+      async _renderHistogram(r, gen) {
+        this._destroyCharts();
+        const el = module._container.querySelector('[data-ref="chart-hist"]');
+        if (!el) return;
+        const values = this.columnValues();
+        if (values.length === 0) return;
+
+        const refLines = [];
+        if (r.hasLsl) refLines.push({ dir: 'v', value: r.lsl, label: 'LSL', color: 'var(--color-error)', dash: 'dash', width: 1.5, showLabel: true });
+        if (r.hasUsl) refLines.push({ dir: 'v', value: r.usl, label: 'USL', color: 'var(--color-error)', dash: 'dash', width: 1.5, showLabel: true });
+        if (r.targetVal != null) refLines.push({ dir: 'v', value: r.targetVal, label: 'Target', color: 'var(--color-success)', dash: 'dash', width: 1.5, showLabel: true });
+
+        const chart = await module._context.chartManager.create(el, 'histogram', {
+          data: values,
+          binMethod: 'sturges',
+          showNormalCurve: true,
+          barColor: 'var(--color-accent)',
+          normalCurveColor: 'var(--color-info)',
+          showLegend: true,
+          refLines,
+        });
+        // Stale-render guard: a newer render started while we awaited.
+        if (gen !== this._renderGen) {
+          module._context.chartManager.destroy(chart);
+          return;
+        }
+        this._charts.push(chart);
+      },
+
+      _destroyCharts() {
+        for (const c of this._charts) {
+          try { module._context.chartManager.destroy(c); } catch { /* ignore */ }
+        }
+        this._charts = [];
+      },
+
+      // ── Worksheet column picker (shared ColumnPicker, 'select' mode) ──
+
+      /** Option label: "C1 – Name (n=30)" / "C1 (n=30)" (matches legacy). */
+      _optionLabel(c) {
+        return c.columnName
+          ? `${c.shortName} – ${c.columnName} (n=${c.valueCount})`
+          : `${c.shortName} (n=${c.valueCount})`;
+      },
+
+      /** True if at least one Worksheet module instance exists in any phase. */
+      _hasWorksheet() {
+        const sm = module._context.stateManager;
+        for (const phase of Object.keys(sm.get('phases') || {})) {
+          const instances = sm.get(`phases.${phase}`) ?? [];
+          if (instances.some(i => i.moduleId === 'worksheet')) return true;
+        }
+        return false;
+      },
+
+      /**
+       * Decide which column-area state to show (drives the declarative empty
+       * states vs. the picker in the template). External worksheet state is not
+       * auto-tracked by Alpine, so this is recomputed explicitly whenever the
+       * worksheet/data may have changed. Mutating `_colState` triggers the
+       * x-if/x-show re-render.
+       */
+      _computeColState() {
+        if (this.model.embeddedValues) { this._colState = 'ok'; return; }
+        const cols = discoverColumns(module._context.stateManager, { types: ['numeric'] });
+        if (cols.length > 0) { this._colState = 'ok'; return; }
+        this._colState = this._hasWorksheet() ? 'noNumericColumns' : 'noWorksheet';
+      },
+
+      /**
+       * (Re)mount the shared ColumnPicker into its anchor. Skipped while
+       * embedded-example data is active (the template shows the pill instead).
+       * The picker owns worksheet-column discovery + its own focus-guarded
+       * refresh, so the module no longer needs bespoke event wiring for that.
+       */
+      _mountPicker() {
+        this._computeColState();
+        if (this.model.embeddedValues) return;
+        // No selectable numeric columns: the template shows a dedicated empty
+        // state instead of the picker, so don't mount it (cleaner DOM).
+        if (this._colState !== 'ok') {
+          if (this._picker) { this._picker.destroy(); this._picker = null; }
+          return;
+        }
+        const wrap = module._container.querySelector('[data-ref="col-select-wrap"]');
+        if (!wrap) return;
+        if (this._picker) { this._picker.destroy(); this._picker = null; }
+        this._picker = new ColumnPicker(wrap, module._context, {
+          mode: 'select',
+          types: ['numeric'],
+          optionFormat: (c) => this._optionLabel(c),
+          onChange: (ref) => {
+            this.model.columnRef = ref || null;
+            if (ref) this.model.clearEmbedded();
+            this.runAnalysis();
+          },
+        });
+        if (this.model.columnRef) this._picker.value = this.model.columnRef;
+      },
+
+      /**
+       * Worksheet structure/data may have changed externally: re-decide the
+       * empty-state vs. picker, re-mount the picker when needed, and re-run.
+       * Skipped while the user is interacting with the mounted picker (the
+       * picker self-refreshes its options in that case).
+       */
+      _refreshColArea() {
+        const wrap = module._container.querySelector('[data-ref="col-select-wrap"]');
+        const active = document.activeElement;
+        const focused = Boolean(active && wrap && wrap.contains(active));
+        if (!focused) {
+          const prev = this._colState;
+          this._computeColState();
+          // Re-mount only when the state crossed the empty/ok boundary (i.e.
+          // the picker needs to appear or disappear). When it stays 'ok', the
+          // mounted picker refreshes its own option list — no churn needed.
+          const wasOk = prev === 'ok' && !this.model.embeddedValues;
+          const nowOk = this._colState === 'ok' && !this.model.embeddedValues;
+          if (wasOk !== nowOk) this.$nextTick(() => this._mountPicker());
+        }
+        this.runAnalysis();
+      },
+
+      // ── Lifecycle (per Alpine component) ──────────────────────
+
+      init() {
+        // Fresh per-instance collections (the data() object is shared by Alpine.data).
+        this._charts = [];
+        this._unsubs = [];
+
+        this._mountPicker();
+
+        const eb = module._context.eventBus;
+
+        // Worksheet data/structure may change externally (Alpine cannot track
+        // it): re-decide empty-state vs. picker, re-mount across the boundary,
+        // and re-derive the analysis result.
+        const onData = () => this._refreshColArea();
+        eb.on('state:saved', onData);
+        eb.on('worksheet:dataChanged', onData);
+        this._unsubs.push(() => eb.off('state:saved', onData));
+        this._unsubs.push(() => eb.off('worksheet:dataChanged', onData));
+
+        const onMod = ({ moduleId }) => { if (moduleId === 'worksheet') this._refreshColArea(); };
+        eb.on('module:added', onMod);
+        eb.on('module:removed', onMod);
+        this._unsubs.push(() => eb.off('module:added', onMod));
+        this._unsubs.push(() => eb.off('module:removed', onMod));
+
+        const onTheme = () => {
+          if (this.result) this._renderHistogram(this.result, ++this._renderGen);
+        };
+        eb.on('theme:changed', onTheme);
+        this._unsubs.push(() => eb.off('theme:changed', onTheme));
+
+        // Recompute results from restored state.
+        this.runAnalysis();
+      },
+
+      destroy() {
+        for (const unsub of this._unsubs) unsub();
+        this._unsubs = [];
+        if (this._picker) { this._picker.destroy(); this._picker = null; }
+        clearTimeout(this._debTimer);
+        this._destroyCharts();
+      },
     };
-
-    const validation = validate(params, values);
-    if (!validation.valid) return this._clearResults();
-
-    this._hideError();
-
-    const result = analyze(params, values);
-    this._result = result;
-    this._renderResults(result);
-    this._save();
   },
+});
 
-  /**
-   * Clear results when data is incomplete.
-   */
-  _clearResults() {
-    this._result = null;
-    const resultsEl = this._container?.querySelector('[data-ref="results"]');
-    if (resultsEl) resultsEl.innerHTML = '';
-    this._destroyCharts();
-  },
+/**
+ * Custom loadExample: process-capability examples ship a CSV-shaped payload
+ * (`data.columns[0].values`) plus a `meta.spec`. We embed the values directly
+ * (bypassing the worksheet), apply the spec, and re-run the analysis. This
+ * replaces the generic createModule loadExample, which would feed the raw
+ * example payload through Model.fromJSON (the shapes do not match).
+ *
+ * @param {{ meta: object, data: object }} payload
+ */
+mod.loadExample = async function loadExample(payload) {
+  if (!payload || !payload.data) return;
+  const ctx = this._context;
+  const t = (key, vars) => ctx.i18n.t(key, vars);
 
-  // ─── Render Results ─────────────────────────────────────────
+  // Warn before overwriting existing data.
+  const current = this.getState();
+  const model = current ? State.fromJSON(current) : null;
+  if (model?.hasContent() && ctx?.confirmPopout) {
+    const ok = await ctx.confirmPopout(t('moduleHelp.confirmOverwrite'), { danger: true });
+    if (!ok) return;
+  }
 
-  async _renderResults(r) {
-    this._destroyCharts();
-    const gen = ++this._renderGen;
+  const col = payload.data.columns?.[0];
+  if (!col || !Array.isArray(col.values)) {
+    ctx.notify?.(t('moduleHelp.exampleLoadError'), 'error');
+    return;
+  }
+  const values = col.values.filter(v => typeof v === 'number' && !isNaN(v));
+  if (values.length === 0) {
+    ctx.notify?.(t('moduleHelp.exampleLoadError'), 'error');
+    return;
+  }
 
-    const t = this._t;
-    const unit = this._params.unit || '';
-    const name = this._params.name || '\u2013';
+  const next = State.fromJSON(current);
+  next.embeddedValues = values;
+  const lang = ctx.i18n.getLanguage();
+  const label = payload.meta?.title?.[lang] || payload.meta?.title?.en || payload.meta?.id || '';
+  next.embeddedLabel = label;
+  next.columnRef = null;
 
-    const resultsEl = this._container.querySelector('[data-ref="results"]');
-    if (!resultsEl) return;
+  // Apply spec from meta if present.
+  const spec = payload.meta?.spec || {};
+  if (typeof spec.lsl === 'number') next.params.lsl = String(spec.lsl);
+  if (typeof spec.usl === 'number') next.params.usl = String(spec.usl);
+  if (typeof spec.target === 'number') next.params.target = String(spec.target);
 
-    const statusLabel = {
-      pass: t('modules.process-capability.statusPass'),
-      fail: t('modules.process-capability.statusFail'),
-      warn: t('modules.process-capability.statusWarn'),
-    };
+  // Use feature name from meta and unit from first column.
+  if (payload.meta?.title) next.params.name = label;
+  if (col.unit) next.params.unit = col.unit;
+  else if (payload.meta?.columns?.[0]?.unit) next.params.unit = payload.meta.columns[0].unit;
 
-    const badgeLabel = {
-      pass: t('modules.process-capability.capable'),
-      fail: t('modules.process-capability.notCapable'),
-      warn: t('modules.process-capability.condCapable'),
-    };
+  this.setState(next.toJSON());
+  ctx.stateManager.setModuleState(ctx.instanceId, this.getState());
 
-    const kpiMod = { pass: 'dmike-kpi--good', warn: 'dmike-kpi--warn', fail: 'dmike-kpi--bad' };
-
-    const ciPct = Math.round(r.confidence * 100);
-    const ciLabel = (ci) => ci ? `${t('modules.process-capability.ci')} ${ciPct}%: [${fmt(ci[0])}; ${fmt(ci[1])}]` : '';
-
-    let html = '';
-
-    // Status bar
-    html += `<div class="pc__status-bar pc__status-bar--${r.overall}">
-      <span class="pc__status-label">${statusLabel[r.overall]}</span>
-      <span class="pc__status-detail">\u2014 ${this._esc(name)} \u2014 n = ${r.n}</span>
-    </div>`;
-
-    // KPI strip — main indices
-    html += `<div class="dmike-kpi-strip">`;
-
-    if (r.Cp != null) {
-      const cpSt = r.cpStatus;
-      html += `<div class="dmike-kpi ${kpiMod[cpSt] || ''}">
-        <div class="dmike-kpi-label">Cp (${t('modules.process-capability.potential')})</div>
-        <div class="dmike-kpi-value">${fmt(r.Cp)}</div>
-        <div class="dmike-kpi-sub">${t('modules.process-capability.threshold')}: \u2265 1.33 \u00B7 ${badgeLabel[cpSt]}${r.CpCI ? ` \u00B7 ${ciLabel(r.CpCI)}` : ''}</div>
-      </div>`;
-    }
-
-    html += `<div class="dmike-kpi ${kpiMod[r.cpkStatus] || ''}">
-      <div class="dmike-kpi-label">Cpk (${t('modules.process-capability.actual')})</div>
-      <div class="dmike-kpi-value">${fmt(r.Cpk)}</div>
-      <div class="dmike-kpi-sub">${t('modules.process-capability.threshold')}: \u2265 1.33 \u00B7 ${badgeLabel[r.cpkStatus]}${r.CpkCI ? ` \u00B7 ${ciLabel(r.CpkCI)}` : ''}</div>
-    </div>`;
-
-    if (r.CPL != null) {
-      html += `<div class="dmike-kpi">
-        <div class="dmike-kpi-label">CPL (${t('modules.process-capability.lower')})</div>
-        <div class="dmike-kpi-value">${fmt(r.CPL)}</div>
-        <div class="dmike-kpi-sub">(x\u0304 \u2212 LSL) / 3s</div>
-      </div>`;
-    }
-
-    if (r.CPU != null) {
-      html += `<div class="dmike-kpi">
-        <div class="dmike-kpi-label">CPU (${t('modules.process-capability.upper')})</div>
-        <div class="dmike-kpi-value">${fmt(r.CPU)}</div>
-        <div class="dmike-kpi-sub">(USL \u2212 x\u0304) / 3s</div>
-      </div>`;
-    }
-
-    html += `</div>`;
-
-    // Long-term (Pp/Ppk) + PPM + Sigma strip
-    html += `<div class="dmike-kpi-strip">`;
-    if (r.Pp != null) {
-      html += `<div class="dmike-kpi">
-        <div class="dmike-kpi-label">Pp (${t('modules.process-capability.overallPotential')})</div>
-        <div class="dmike-kpi-value">${fmt(r.Pp)}</div>
-        <div class="dmike-kpi-sub">${t('modules.process-capability.longTerm')}${r.PpCI ? ` \u00B7 ${ciLabel(r.PpCI)}` : ''}</div>
-      </div>`;
-    }
-    if (r.Ppk != null) {
-      html += `<div class="dmike-kpi">
-        <div class="dmike-kpi-label">Ppk (${t('modules.process-capability.overallActual')})</div>
-        <div class="dmike-kpi-value">${fmt(r.Ppk)}</div>
-        <div class="dmike-kpi-sub">${t('modules.process-capability.longTerm')}${r.PpkCI ? ` \u00B7 ${ciLabel(r.PpkCI)}` : ''}</div>
-      </div>`;
-    }
-
-    html += `<div class="dmike-kpi">
-      <div class="dmike-kpi-label">PPM (${t('modules.process-capability.defective')})</div>
-      <div class="dmike-kpi-value">${fmt(r.ppmTotal)}</div>
-      <div class="dmike-kpi-sub">${t('modules.process-capability.perMillion')}</div>
-    </div>`;
-
-    html += `<div class="dmike-kpi">
-      <div class="dmike-kpi-label">${t('modules.process-capability.sigmaLevel')}</div>
-      <div class="dmike-kpi-value">${fmt(r.sigmaLevel)}\u03C3</div>
-      <div class="dmike-kpi-sub">Z = 3 \u00B7 Cpk</div>
-    </div>`;
-
-    html += `</div>`;
-
-    // Stats panel
-    const statCols = [
-      { label: t('modules.process-capability.statN'), value: r.n },
-      { label: t('modules.process-capability.statMean'), value: `${fmt(r.xbar)} ${unit}` },
-      { label: t('modules.process-capability.statStddevS'), value: `${fmt(r.s)} ${unit}` },
-      { label: t('modules.process-capability.statStddevSigma'), value: `${fmt(r.sigma)} ${unit}` },
-      { label: t('modules.process-capability.statMin'), value: `${fmt(r.xmin)} ${unit}` },
-      { label: t('modules.process-capability.statMax'), value: `${fmt(r.xmax)} ${unit}` },
-      r.hasLsl ? { label: 'LSL', value: `${fmt(r.lsl)} ${unit}` } : null,
-      r.hasUsl ? { label: 'USL', value: `${fmt(r.usl)} ${unit}` } : null,
-      r.T != null ? { label: t('modules.process-capability.statTol'), value: `${fmt(r.T)} ${unit}` } : null,
-      r.targetVal != null ? { label: t('modules.process-capability.statTarget'), value: `${fmt(r.targetVal)} ${unit}` } : null,
-      r.ppmBelowLsl != null ? { label: 'PPM < LSL', value: fmt(r.ppmBelowLsl) } : null,
-      r.ppmAboveUsl != null ? { label: 'PPM > USL', value: fmt(r.ppmAboveUsl) } : null,
-    ].filter(Boolean);
-    html += `<div class="dmike-split__output-section">${t('modules.process-capability.statsTitle')}</div>
-    <div class="pc__stats-panel">
-      <table class="dmike-table pc__stats-table">
-        <thead><tr>${statCols.map(c => `<th>${c.label}</th>`).join('')}</tr></thead>
-        <tbody><tr>${statCols.map(c => `<td>${c.value}</td>`).join('')}</tr></tbody>
-      </table>
-    </div>`;
-
-    // Chart
-    html += `<div class="dmike-split__output-section">${t('modules.process-capability.histTitle')}</div>
-    <div class="pc__chart-plot" data-ref="chart-hist"></div>`;
-
-    // Interpretation
-    html += `<div class="dmike-split__output-section">${t('modules.process-capability.formulasTitle')}</div>
-    <div class="pc__interpretation">`;
-
-    if (r.twoSided) {
-      html += `<p><strong>Cp</strong> = (USL \u2212 LSL) / (6 \u00B7 s) = ${fmt(r.T)} / (6 \u00B7 ${fmt(r.s)}) = <strong>${fmt(r.Cp)}</strong></p>`;
-      html += `<p><strong>Cpk</strong> = min(CPU, CPL) = min(${fmt(r.CPU)}, ${fmt(r.CPL)}) = <strong>${fmt(r.Cpk)}</strong></p>`;
-    } else if (r.hasUsl) {
-      html += `<p><strong>CPU</strong> = (USL \u2212 x\u0304) / (3 \u00B7 s) = (${fmt(r.usl)} \u2212 ${fmt(r.xbar)}) / (3 \u00B7 ${fmt(r.s)}) = <strong>${fmt(r.CPU)}</strong></p>`;
-    } else {
-      html += `<p><strong>CPL</strong> = (x\u0304 \u2212 LSL) / (3 \u00B7 s) = (${fmt(r.xbar)} \u2212 ${fmt(r.lsl)}) / (3 \u00B7 ${fmt(r.s)}) = <strong>${fmt(r.CPL)}</strong></p>`;
-    }
-
-    html += `<div style="height:12px"></div>
-      <p><span class="pc__tag pc__tag--pass">Cpk \u2265 1.33</span> ${t('modules.process-capability.interpPass')}</p>
-      <p><span class="pc__tag pc__tag--warn">1.00 \u2264 Cpk &lt; 1.33</span> ${t('modules.process-capability.interpWarn')}</p>
-      <p><span class="pc__tag pc__tag--fail">Cpk &lt; 1.00</span> ${t('modules.process-capability.interpFail')}</p>
-    </div>`;
-
-    resultsEl.innerHTML = html;
-    await this._renderCharts(r, gen);
-  },
-
-  // ─── SVG Charts ────────────────────────────────────────────
-
-  async _renderCharts(r, gen) {
-    await this._renderHistogram(r);
-  },
-
-  async _renderHistogram(r) {
-    const el = this._container.querySelector('[data-ref="chart-hist"]');
-    if (!el) return;
-
-    const values = this._getColumnValues();
-    if (values.length === 0) return;
-
-    const refLines = [];
-    if (r.hasLsl)            refLines.push({ dir: 'v', value: r.lsl,       label: 'LSL',    color: 'var(--color-error)',   dash: 'dash', width: 1.5, showLabel: true });
-    if (r.hasUsl)            refLines.push({ dir: 'v', value: r.usl,       label: 'USL',    color: 'var(--color-error)',   dash: 'dash', width: 1.5, showLabel: true });
-    if (r.targetVal != null) refLines.push({ dir: 'v', value: r.targetVal, label: 'Target', color: 'var(--color-success)', dash: 'dash', width: 1.5, showLabel: true });
-
-    const chart = await this._context.chartManager.create(el, 'histogram', {
-      data: values,
-      binMethod: 'sturges',
-      showNormalCurve: true,
-      barColor: 'var(--color-accent)',
-      normalCurveColor: 'var(--color-info)',
-      showLegend: true,
-      refLines,
-    });
-    this._charts.push(chart);
-  },
-
-  _destroyCharts() {
-    if (this._charts) {
-      for (const c of this._charts) {
-        this._context.chartManager.destroy(c);
-      }
-    }
-    this._charts = [];
-  },
-
-  // ─── Helpers ────────────────────────────────────────────────
-
-  _readInputs() {
-    const c = this._container;
-    if (!c) return;
-    const q = (ref) => c.querySelector(`[data-ref="${ref}"]`);
-    const v = (ref) => q(ref)?.value ?? '';
-
-    this._params.name = v('inp-name');
-    this._params.lsl = this._parseNum(v('inp-lsl'));
-    this._params.usl = this._parseNum(v('inp-usl'));
-    this._params.target = this._parseNum(v('inp-target'));
-    this._params.unit = v('inp-unit') || 'mm';
-    const rawConf = this._parseNum(v('inp-confidence'));
-    // Input is in percent (e.g. 95), clamp to valid range
-    if (!isNaN(rawConf) && rawConf > 0) {
-      const pct = Math.max(50, Math.min(99.99, rawConf));
-      this._params.confidence = pct / 100;
-    } else {
-      this._params.confidence = (this._context.stateManager.get('settings.confidenceLevel') ?? 95) / 100;
-    }
-  },
-
-  _parseNum(s) {
-    if (s == null || s === '') return NaN;
-    return parseFloat(String(s).replace(',', '.').trim());
-  },
-
-  _showError(msg) {
-    const el = this._container.querySelector('[data-ref="error-box"]');
-    if (!el) return;
-    el.textContent = msg;
-    el.classList.add('visible');
-    clearTimeout(this._errorTimer);
-    this._errorTimer = setTimeout(() => this._hideError(), 6000);
-  },
-
-  _hideError() {
-    const el = this._container?.querySelector('[data-ref="error-box"]');
-    if (el) el.classList.remove('visible');
-  },
-
-  _save() {
-    this._readInputs();
-    if (this._context?.stateManager && this._context?.instanceId) {
-      this._context.stateManager.setModuleState(this._context.instanceId, this.getState());
-    }
-  },
-
-  _notify(msg, type) {
-    if (this._context?.notify) {
-      this._context.notify(msg, type);
-    }
-  },
-
-  _esc(s) {
-    if (!s) return '';
-    const el = document.createElement('span');
-    el.textContent = s;
-    return el.innerHTML;
-  },
-
-  _debounce(fn, ms) {
-    let timer;
-    return (...args) => { clearTimeout(timer); timer = setTimeout(() => fn(...args), ms); };
-  },
+  ctx.notify?.(t('moduleHelp.exampleLoaded', { title: label }), 'success');
 };
+
+export default mod;

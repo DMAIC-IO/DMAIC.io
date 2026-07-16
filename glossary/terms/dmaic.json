@@ -1,0 +1,92 @@
+{
+  "id": "dmaic",
+  "category": "methodology",
+  "title": {
+    "de": "DMAIC-Zyklus",
+    "en": "DMAIC Cycle"
+  },
+  "short": {
+    "de": "Fünf-Phasen-Rahmen der {{term:six-sigma|Six-Sigma}}-Verbesserung: Define — Measure — Analyze — Improve — Control.",
+    "en": "Five-phase framework of {{term:six-sigma|Six Sigma}} improvement: Define — Measure — Analyze — Improve — Control."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "**DMAIC** ist der Standard-Verbesserungszyklus für **bestehende** Prozesse. Jede Phase endet mit einem **Tollgate** — einem Entscheidungspunkt, an dem der Sponsor die Weiterführung oder Kurskorrektur freigibt."
+      },
+      {
+        "type": "list",
+        "items": [
+          "**D — Define** — Problem, Umfang, {{term:voc|Voice of Customer}}, {{term:ctq|CTQ}}s; Ergebnis: {{term:project-charter|Projektcharter}} und {{term:sipoc|SIPOC}}",
+          "**M — Measure** — Messsystem prüfen ({{term:gage-rr|Gage R&R}}), Baseline erheben, {{term:prozessfaehigkeit|Prozessfähigkeit}} messen",
+          "**A — Analyze** — Ursachen suchen: {{term:pareto|Pareto}}, {{term:ishikawa|Ishikawa}}, {{term:five-why|5-Why}}, {{term:hypothesentest|Hypothesentests}}, {{term:regression|Regression}}",
+          "**I — Improve** — Lösungen entwickeln und testen: {{term:doe|DoE}}, Piloten, Response-Optimierung",
+          "**C — Control** — Ergebnis absichern: {{term:regelkarte|Regelkarten}}, Standardarbeit, Reaktionsprozeduren, Übergabe an den Prozessverantwortlichen"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "Für **Neu**entwicklungen wird stattdessen **DMADV** verwendet (Define — Measure — Analyze — Design — Verify) oder allgemeiner **DFSS**. DMAIC ist iterativ: erkannt man in Analyze, dass die Problemdefinition falsch war, geht es zurück nach Define — kein Verlust, sondern Lernen."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "**DMAIC** is the standard improvement cycle for **existing** processes. Every phase closes with a **tollgate** — a decision checkpoint where the sponsor either endorses continuation or a course correction."
+      },
+      {
+        "type": "list",
+        "items": [
+          "**D — Define** — problem, scope, {{term:voc|Voice of Customer}}, {{term:ctq|CTQs}}; deliverables: {{term:project-charter|project charter}} and {{term:sipoc|SIPOC}}",
+          "**M — Measure** — validate the measurement system ({{term:gage-rr|Gage R&R}}), collect baseline data, measure {{term:prozessfaehigkeit|process capability}}",
+          "**A — Analyze** — hunt for causes: {{term:pareto|Pareto}}, {{term:ishikawa|Ishikawa}}, {{term:five-why|5-Why}}, {{term:hypothesentest|hypothesis tests}}, {{term:regression|regression}}",
+          "**I — Improve** — devise and test solutions: {{term:doe|DoE}}, pilots, response optimisation",
+          "**C — Control** — lock in the result: {{term:regelkarte|control charts}}, standard work, reaction procedures, hand-off to the process owner"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "For **new** development, **DMADV** (Define — Measure — Analyze — Design — Verify) or more broadly **DFSS** is used instead. DMAIC is iterative: if you discover in Analyze that the problem definition was wrong, go back to Define — that is learning, not loss."
+      }
+    ]
+  },
+  "aliases": {
+    "de": [
+      "DMAIC",
+      "DMAIC-Modell",
+      "Verbesserungszyklus"
+    ],
+    "en": [
+      "DMAIC",
+      "improvement cycle"
+    ]
+  },
+  "seeAlso": [
+    "six-sigma",
+    "sipoc",
+    "project-charter",
+    "voc",
+    "ctq",
+    "pareto",
+    "ishikawa",
+    "five-why",
+    "doe",
+    "regelkarte"
+  ],
+  "modules": [
+    "dmaic-calendar",
+    "project-charter"
+  ],
+  "algoLab": [],
+  "sources": [
+    {
+      "label": "Pyzdek, T. & Keller, P. — The Six Sigma Handbook, 5th Edition, McGraw-Hill",
+      "url": null
+    },
+    {
+      "label": "George, M. L. — Lean Six Sigma: Combining Six Sigma with Lean Speed, McGraw-Hill",
+      "url": null
+    }
+  ]
+}

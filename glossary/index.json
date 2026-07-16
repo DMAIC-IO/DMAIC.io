@@ -3,56 +3,683 @@
   "categories": [
     {
       "id": "descriptive",
-      "label": { "de": "Deskriptive Statistik", "en": "Descriptive Statistics" }
+      "label": {
+        "de": "Deskriptive Statistik",
+        "en": "Descriptive Statistics"
+      }
     },
     {
       "id": "capability",
-      "label": { "de": "Prozessfähigkeit", "en": "Process Capability" }
+      "label": {
+        "de": "Prozessfähigkeit",
+        "en": "Process Capability"
+      }
     },
     {
       "id": "hypothesis",
-      "label": { "de": "Hypothesentests", "en": "Hypothesis Tests" }
+      "label": {
+        "de": "Hypothesentests",
+        "en": "Hypothesis Tests"
+      }
     },
     {
       "id": "msa",
-      "label": { "de": "Messsystemanalyse", "en": "Measurement System Analysis" }
+      "label": {
+        "de": "Messsystemanalyse",
+        "en": "Measurement System Analysis"
+      }
     },
     {
       "id": "doe",
-      "label": { "de": "Versuchsplanung", "en": "Design of Experiments" }
+      "label": {
+        "de": "Versuchsplanung",
+        "en": "Design of Experiments"
+      }
     },
     {
       "id": "spc",
-      "label": { "de": "Statistische Prozesslenkung", "en": "Statistical Process Control" }
+      "label": {
+        "de": "Statistische Prozesslenkung",
+        "en": "Statistical Process Control"
+      }
     },
     {
       "id": "regression",
-      "label": { "de": "Regression", "en": "Regression" }
+      "label": {
+        "de": "Regression",
+        "en": "Regression"
+      }
+    },
+    {
+      "id": "risk",
+      "label": {
+        "de": "Risikoanalyse",
+        "en": "Risk Analysis"
+      }
     },
     {
       "id": "methodology",
-      "label": { "de": "Methodik", "en": "Methodology" }
+      "label": {
+        "de": "Methodik",
+        "en": "Methodology"
+      }
     }
   ],
   "terms": [
-    { "id": "mittelwert",               "category": "descriptive", "file": "terms/mittelwert.json" },
-    { "id": "standardabweichung",       "category": "descriptive", "file": "terms/standardabweichung.json" },
-    { "id": "varianz",                  "category": "descriptive", "file": "terms/varianz.json" },
-    { "id": "median",                   "category": "descriptive", "file": "terms/median.json" },
-    { "id": "spannweite",               "category": "descriptive", "file": "terms/spannweite.json" },
-    { "id": "schiefe",                  "category": "descriptive", "file": "terms/schiefe.json" },
-    { "id": "kurtosis",                 "category": "descriptive", "file": "terms/kurtosis.json" },
-    { "id": "kappa",                    "category": "msa",         "file": "terms/kappa.json" },
-    { "id": "cohen-kappa",              "category": "msa",         "file": "terms/cohen-kappa.json" },
-    { "id": "fleiss-kappa",             "category": "msa",         "file": "terms/fleiss-kappa.json" },
-    { "id": "weighted-kappa",           "category": "msa",         "file": "terms/weighted-kappa.json" },
-    { "id": "effektivitaet",            "category": "msa",         "file": "terms/effektivitaet.json" },
-    { "id": "miss-rate",                "category": "msa",         "file": "terms/miss-rate.json" },
-    { "id": "false-alarm-rate",         "category": "msa",         "file": "terms/false-alarm-rate.json" },
-    { "id": "signal-detection",         "category": "msa",         "file": "terms/signal-detection.json" },
-    { "id": "d-prime",                  "category": "msa",         "file": "terms/d-prime.json" },
-    { "id": "criterion-c",              "category": "msa",         "file": "terms/criterion-c.json" },
-    { "id": "konsens-fallback",         "category": "msa",         "file": "terms/konsens-fallback.json" },
-    { "id": "wilson-konfidenzintervall","category": "msa",         "file": "terms/wilson-konfidenzintervall.json" }
+    {
+      "id": "mittelwert",
+      "category": "descriptive",
+      "file": "terms/mittelwert.json"
+    },
+    {
+      "id": "standardabweichung",
+      "category": "descriptive",
+      "file": "terms/standardabweichung.json"
+    },
+    {
+      "id": "varianz",
+      "category": "descriptive",
+      "file": "terms/varianz.json"
+    },
+    {
+      "id": "median",
+      "category": "descriptive",
+      "file": "terms/median.json"
+    },
+    {
+      "id": "spannweite",
+      "category": "descriptive",
+      "file": "terms/spannweite.json"
+    },
+    {
+      "id": "schiefe",
+      "category": "descriptive",
+      "file": "terms/schiefe.json"
+    },
+    {
+      "id": "kurtosis",
+      "category": "descriptive",
+      "file": "terms/kurtosis.json"
+    },
+    {
+      "id": "genauigkeit",
+      "category": "msa",
+      "file": "terms/genauigkeit.json"
+    },
+    {
+      "id": "richtigkeit",
+      "category": "msa",
+      "file": "terms/richtigkeit.json"
+    },
+    {
+      "id": "praezision",
+      "category": "msa",
+      "file": "terms/praezision.json"
+    },
+    {
+      "id": "wiederholbarkeit",
+      "category": "msa",
+      "file": "terms/wiederholbarkeit.json"
+    },
+    {
+      "id": "reproduzierbarkeit",
+      "category": "msa",
+      "file": "terms/reproduzierbarkeit.json"
+    },
+    {
+      "id": "bias",
+      "category": "msa",
+      "file": "terms/bias.json"
+    },
+    {
+      "id": "cg",
+      "category": "msa",
+      "file": "terms/cg.json"
+    },
+    {
+      "id": "cgk",
+      "category": "msa",
+      "file": "terms/cgk.json"
+    },
+    {
+      "id": "gage-rr",
+      "category": "msa",
+      "file": "terms/gage-rr.json"
+    },
+    {
+      "id": "ndc",
+      "category": "msa",
+      "file": "terms/ndc.json"
+    },
+    {
+      "id": "referenzteil",
+      "category": "msa",
+      "file": "terms/referenzteil.json"
+    },
+    {
+      "id": "teile-variation",
+      "category": "msa",
+      "file": "terms/teile-variation.json"
+    },
+    {
+      "id": "fmea",
+      "category": "risk",
+      "file": "terms/fmea.json"
+    },
+    {
+      "id": "fehlermoeglichkeit",
+      "category": "risk",
+      "file": "terms/fehlermoeglichkeit.json"
+    },
+    {
+      "id": "bedeutung",
+      "category": "risk",
+      "file": "terms/bedeutung.json"
+    },
+    {
+      "id": "auftreten",
+      "category": "risk",
+      "file": "terms/auftreten.json"
+    },
+    {
+      "id": "entdeckung",
+      "category": "risk",
+      "file": "terms/entdeckung.json"
+    },
+    {
+      "id": "rpz",
+      "category": "risk",
+      "file": "terms/rpz.json"
+    },
+    {
+      "id": "doe",
+      "category": "doe",
+      "file": "terms/doe.json"
+    },
+    {
+      "id": "faktor",
+      "category": "doe",
+      "file": "terms/faktor.json"
+    },
+    {
+      "id": "stufe",
+      "category": "doe",
+      "file": "terms/stufe.json"
+    },
+    {
+      "id": "zielgroesse",
+      "category": "doe",
+      "file": "terms/zielgroesse.json"
+    },
+    {
+      "id": "haupteffekt",
+      "category": "doe",
+      "file": "terms/haupteffekt.json"
+    },
+    {
+      "id": "wechselwirkung",
+      "category": "doe",
+      "file": "terms/wechselwirkung.json"
+    },
+    {
+      "id": "zentralpunkt",
+      "category": "doe",
+      "file": "terms/zentralpunkt.json"
+    },
+    {
+      "id": "randomisierung",
+      "category": "doe",
+      "file": "terms/randomisierung.json"
+    },
+    {
+      "id": "replikat",
+      "category": "doe",
+      "file": "terms/replikat.json"
+    },
+    {
+      "id": "konfundierung",
+      "category": "doe",
+      "file": "terms/konfundierung.json"
+    },
+    {
+      "id": "aufloesung",
+      "category": "doe",
+      "file": "terms/aufloesung.json"
+    },
+    {
+      "id": "screening-design",
+      "category": "doe",
+      "file": "terms/screening-design.json"
+    },
+    {
+      "id": "vollfaktoriell",
+      "category": "doe",
+      "file": "terms/vollfaktoriell.json"
+    },
+    {
+      "id": "teilfaktoriell",
+      "category": "doe",
+      "file": "terms/teilfaktoriell.json"
+    },
+    {
+      "id": "plackett-burman",
+      "category": "doe",
+      "file": "terms/plackett-burman.json"
+    },
+    {
+      "id": "dsd",
+      "category": "doe",
+      "file": "terms/dsd.json"
+    },
+    {
+      "id": "ccd",
+      "category": "doe",
+      "file": "terms/ccd.json"
+    },
+    {
+      "id": "box-behnken",
+      "category": "doe",
+      "file": "terms/box-behnken.json"
+    },
+    {
+      "id": "taguchi",
+      "category": "doe",
+      "file": "terms/taguchi.json"
+    },
+    {
+      "id": "d-optimal",
+      "category": "doe",
+      "file": "terms/d-optimal.json"
+    },
+    {
+      "id": "evop",
+      "category": "doe",
+      "file": "terms/evop.json"
+    },
+    {
+      "id": "response-surface",
+      "category": "doe",
+      "file": "terms/response-surface.json"
+    },
+    {
+      "id": "mischungsplan",
+      "category": "doe",
+      "file": "terms/mischungsplan.json"
+    },
+    {
+      "id": "streuungs-doe",
+      "category": "doe",
+      "file": "terms/streuungs-doe.json"
+    },
+    {
+      "id": "regression",
+      "category": "regression",
+      "file": "terms/regression.json"
+    },
+    {
+      "id": "lineare-regression",
+      "category": "regression",
+      "file": "terms/lineare-regression.json"
+    },
+    {
+      "id": "r-quadrat",
+      "category": "regression",
+      "file": "terms/r-quadrat.json"
+    },
+    {
+      "id": "adjustiertes-r-quadrat",
+      "category": "regression",
+      "file": "terms/adjustiertes-r-quadrat.json"
+    },
+    {
+      "id": "residuen",
+      "category": "regression",
+      "file": "terms/residuen.json"
+    },
+    {
+      "id": "multikollinearitaet",
+      "category": "regression",
+      "file": "terms/multikollinearitaet.json"
+    },
+    {
+      "id": "heteroskedastizitaet",
+      "category": "regression",
+      "file": "terms/heteroskedastizitaet.json"
+    },
+    {
+      "id": "overfitting",
+      "category": "regression",
+      "file": "terms/overfitting.json"
+    },
+    {
+      "id": "korrelation",
+      "category": "regression",
+      "file": "terms/korrelation.json"
+    },
+    {
+      "id": "glm",
+      "category": "regression",
+      "file": "terms/glm.json"
+    },
+    {
+      "id": "logistische-regression",
+      "category": "regression",
+      "file": "terms/logistische-regression.json"
+    },
+    {
+      "id": "poisson-regression",
+      "category": "regression",
+      "file": "terms/poisson-regression.json"
+    },
+    {
+      "id": "negbin-regression",
+      "category": "regression",
+      "file": "terms/negbin-regression.json"
+    },
+    {
+      "id": "odds-ratio",
+      "category": "regression",
+      "file": "terms/odds-ratio.json"
+    },
+    {
+      "id": "rate-ratio",
+      "category": "regression",
+      "file": "terms/rate-ratio.json"
+    },
+    {
+      "id": "pseudo-r-quadrat",
+      "category": "regression",
+      "file": "terms/pseudo-r-quadrat.json"
+    },
+    {
+      "id": "ueberdispersion",
+      "category": "regression",
+      "file": "terms/ueberdispersion.json"
+    },
+    {
+      "id": "prozessfaehigkeit",
+      "category": "capability",
+      "file": "terms/prozessfaehigkeit.json"
+    },
+    {
+      "id": "cp",
+      "category": "capability",
+      "file": "terms/cp.json"
+    },
+    {
+      "id": "cpk",
+      "category": "capability",
+      "file": "terms/cpk.json"
+    },
+    {
+      "id": "pp",
+      "category": "capability",
+      "file": "terms/pp.json"
+    },
+    {
+      "id": "ppk",
+      "category": "capability",
+      "file": "terms/ppk.json"
+    },
+    {
+      "id": "spezifikationsgrenzen",
+      "category": "capability",
+      "file": "terms/spezifikationsgrenzen.json"
+    },
+    {
+      "id": "sigma-niveau",
+      "category": "capability",
+      "file": "terms/sigma-niveau.json"
+    },
+    {
+      "id": "hypothesentest",
+      "category": "hypothesis",
+      "file": "terms/hypothesentest.json"
+    },
+    {
+      "id": "nullhypothese",
+      "category": "hypothesis",
+      "file": "terms/nullhypothese.json"
+    },
+    {
+      "id": "alternativhypothese",
+      "category": "hypothesis",
+      "file": "terms/alternativhypothese.json"
+    },
+    {
+      "id": "p-wert",
+      "category": "hypothesis",
+      "file": "terms/p-wert.json"
+    },
+    {
+      "id": "signifikanzniveau",
+      "category": "hypothesis",
+      "file": "terms/signifikanzniveau.json"
+    },
+    {
+      "id": "fehler-erster-art",
+      "category": "hypothesis",
+      "file": "terms/fehler-erster-art.json"
+    },
+    {
+      "id": "fehler-zweiter-art",
+      "category": "hypothesis",
+      "file": "terms/fehler-zweiter-art.json"
+    },
+    {
+      "id": "power",
+      "category": "hypothesis",
+      "file": "terms/power.json"
+    },
+    {
+      "id": "teststatistik",
+      "category": "hypothesis",
+      "file": "terms/teststatistik.json"
+    },
+    {
+      "id": "t-test",
+      "category": "hypothesis",
+      "file": "terms/t-test.json"
+    },
+    {
+      "id": "anova",
+      "category": "hypothesis",
+      "file": "terms/anova.json"
+    },
+    {
+      "id": "effektstaerke",
+      "category": "hypothesis",
+      "file": "terms/effektstaerke.json"
+    },
+    {
+      "id": "normalitaetstest",
+      "category": "hypothesis",
+      "file": "terms/normalitaetstest.json"
+    },
+    {
+      "id": "varianzhomogenitaet",
+      "category": "hypothesis",
+      "file": "terms/varianzhomogenitaet.json"
+    },
+    {
+      "id": "regelkarte",
+      "category": "spc",
+      "file": "terms/regelkarte.json"
+    },
+    {
+      "id": "regelgrenze",
+      "category": "spc",
+      "file": "terms/regelgrenze.json"
+    },
+    {
+      "id": "mittellinie",
+      "category": "spc",
+      "file": "terms/mittellinie.json"
+    },
+    {
+      "id": "sonderursache",
+      "category": "spc",
+      "file": "terms/sonderursache.json"
+    },
+    {
+      "id": "zufallsursache",
+      "category": "spc",
+      "file": "terms/zufallsursache.json"
+    },
+    {
+      "id": "nelson-regeln",
+      "category": "spc",
+      "file": "terms/nelson-regeln.json"
+    },
+    {
+      "id": "subgruppe",
+      "category": "spc",
+      "file": "terms/subgruppe.json"
+    },
+    {
+      "id": "xbar-r-chart",
+      "category": "spc",
+      "file": "terms/xbar-r-chart.json"
+    },
+    {
+      "id": "i-mr-chart",
+      "category": "spc",
+      "file": "terms/i-mr-chart.json"
+    },
+    {
+      "id": "p-chart",
+      "category": "spc",
+      "file": "terms/p-chart.json"
+    },
+    {
+      "id": "c-chart",
+      "category": "spc",
+      "file": "terms/c-chart.json"
+    },
+    {
+      "id": "ewma-chart",
+      "category": "spc",
+      "file": "terms/ewma-chart.json"
+    },
+    {
+      "id": "cusum-chart",
+      "category": "spc",
+      "file": "terms/cusum-chart.json"
+    },
+    {
+      "id": "run-chart",
+      "category": "spc",
+      "file": "terms/run-chart.json"
+    },
+    {
+      "id": "six-sigma",
+      "category": "methodology",
+      "file": "terms/six-sigma.json"
+    },
+    {
+      "id": "dmaic",
+      "category": "methodology",
+      "file": "terms/dmaic.json"
+    },
+    {
+      "id": "sipoc",
+      "category": "methodology",
+      "file": "terms/sipoc.json"
+    },
+    {
+      "id": "voc",
+      "category": "methodology",
+      "file": "terms/voc.json"
+    },
+    {
+      "id": "ctq",
+      "category": "methodology",
+      "file": "terms/ctq.json"
+    },
+    {
+      "id": "project-charter",
+      "category": "methodology",
+      "file": "terms/project-charter.json"
+    },
+    {
+      "id": "five-why",
+      "category": "methodology",
+      "file": "terms/five-why.json"
+    },
+    {
+      "id": "ishikawa",
+      "category": "methodology",
+      "file": "terms/ishikawa.json"
+    },
+    {
+      "id": "pareto",
+      "category": "methodology",
+      "file": "terms/pareto.json"
+    },
+    {
+      "id": "process-map",
+      "category": "methodology",
+      "file": "terms/process-map.json"
+    },
+    {
+      "id": "kappa",
+      "category": "msa",
+      "file": "terms/kappa.json"
+    },
+    {
+      "id": "cohen-kappa",
+      "category": "msa",
+      "file": "terms/cohen-kappa.json"
+    },
+    {
+      "id": "fleiss-kappa",
+      "category": "msa",
+      "file": "terms/fleiss-kappa.json"
+    },
+    {
+      "id": "weighted-kappa",
+      "category": "msa",
+      "file": "terms/weighted-kappa.json"
+    },
+    {
+      "id": "effektivitaet",
+      "category": "msa",
+      "file": "terms/effektivitaet.json"
+    },
+    {
+      "id": "miss-rate",
+      "category": "msa",
+      "file": "terms/miss-rate.json"
+    },
+    {
+      "id": "false-alarm-rate",
+      "category": "msa",
+      "file": "terms/false-alarm-rate.json"
+    },
+    {
+      "id": "signal-detection",
+      "category": "msa",
+      "file": "terms/signal-detection.json"
+    },
+    {
+      "id": "d-prime",
+      "category": "msa",
+      "file": "terms/d-prime.json"
+    },
+    {
+      "id": "criterion-c",
+      "category": "msa",
+      "file": "terms/criterion-c.json"
+    },
+    {
+      "id": "konsens-fallback",
+      "category": "msa",
+      "file": "terms/konsens-fallback.json"
+    },
+    {
+      "id": "wilson-konfidenzintervall",
+      "category": "msa",
+      "file": "terms/wilson-konfidenzintervall.json"
+    }
   ]
 }

@@ -17,7 +17,7 @@
  *      use fullFactorialGeneral); regression test confirms unchanged output.
  */
 
-import { suite, test, assertAlmostEqual, assertEqual } from '../test-utils.js';
+import { suite, test, assertEqual } from '../test-utils.js';
 import { generateDesign, dOptimalDesign } from '../../js/engines/doe-planner-engine.js';
 
 // ─── Mixed quadratic D-optimal: categorical column stays discrete ──

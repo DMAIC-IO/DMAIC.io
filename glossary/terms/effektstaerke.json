@@ -1,0 +1,92 @@
+{
+  "id": "effektstaerke",
+  "category": "hypothesis",
+  "title": {
+    "de": "Effektstärke (Effect Size)",
+    "en": "Effect Size"
+  },
+  "short": {
+    "de": "Größe eines Effekts unabhängig von der Stichprobengröße — Ergänzung zum {{term:p-wert|p-Wert}}, der nur Signifikanz zeigt.",
+    "en": "Magnitude of an effect independent of sample size — complements the {{term:p-wert|p-value}}, which only shows significance."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "Die **Effektstärke** quantifiziert, *wie groß* ein beobachteter oder erwarteter Effekt ist. Sie ist der praktische Gegenspieler des p-Werts: ein winziger Effekt kann bei riesigem n hochsignifikant sein, ein großer Effekt bei kleinem n insignifikant. Ohne Effektstärke bleibt das Bild unvollständig."
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Cohen's d** (Mittelwert-Vergleiche): $d = (\\bar{x}_1 - \\bar{x}_2) / s_{\\text{pooled}}$; Klein 0,2 / Mittel 0,5 / Groß 0,8",
+          "**Pearson r** (Zusammenhänge): Klein 0,1 / Mittel 0,3 / Groß 0,5 — siehe {{term:korrelation|Korrelation}}",
+          "**η² / partielles η²** (ANOVA): Anteil erklärter Varianz",
+          "**Odds Ratio / Rate Ratio** — siehe {{term:odds-ratio|OR}} / {{term:rate-ratio|RR}}"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "**Effektstärke gehört in jedes Report.** Ein signifikanter Test ohne Effektstärke sagt „Effekt vorhanden“, aber nicht „relevant“. In der {{term:power|Power-Planung}} ist die *kleinste noch praktisch relevante* Effektstärke (δ) der wichtigste Input — sie bestimmt, wie viele Beobachtungen der Test braucht."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "**Effect size** quantifies *how big* an observed or expected effect is. It is the practical counterpart to the p-value: a tiny effect can be highly significant with huge n, a large effect can be non-significant with small n. Without effect size the picture stays incomplete."
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Cohen's d** (mean comparisons): $d = (\\bar{x}_1 - \\bar{x}_2) / s_{\\text{pooled}}$; small 0.2 / medium 0.5 / large 0.8",
+          "**Pearson r** (associations): small 0.1 / medium 0.3 / large 0.5 — see {{term:korrelation|correlation}}",
+          "**η² / partial η²** (ANOVA): share of explained variance",
+          "**Odds Ratio / Rate Ratio** — see {{term:odds-ratio|OR}} / {{term:rate-ratio|RR}}"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "**Effect size belongs in every report.** A significant test without effect size says \"effect present\" but not \"relevant\". In {{term:power|power planning}} the *smallest still practically relevant* effect size (δ) is the key input — it drives how many observations the test needs."
+      }
+    ]
+  },
+  "aliases": {
+    "de": [
+      "Effektgröße",
+      "Cohen's d",
+      "δ"
+    ],
+    "en": [
+      "effect size",
+      "Cohen's d",
+      "delta"
+    ]
+  },
+  "seeAlso": [
+    "p-wert",
+    "power",
+    "hypothesentest",
+    "korrelation"
+  ],
+  "modules": [
+    "hypothesis-test",
+    "sample-size"
+  ],
+  "algoLab": [
+    "hypothesis/two-sample-t-test",
+    "hypothesis/one-way-anova"
+  ],
+  "sources": [
+    {
+      "label": "Cohen, J. — Statistical Power Analysis for the Behavioral Sciences, 2nd Edition, Erlbaum",
+      "url": null
+    },
+    {
+      "label": "Cumming, G. — The New Statistics: Why and How, Psychological Science, 25(1), 2014",
+      "url": null
+    },
+    {
+      "label": "Wasserstein, R. L. & Lazar, N. A. — The ASA Statement on p-Values, 2016",
+      "url": null
+    }
+  ]
+}

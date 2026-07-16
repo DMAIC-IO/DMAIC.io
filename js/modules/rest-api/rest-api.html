@@ -1,0 +1,177 @@
+<div class="module-container rest-api" x-data="restApi">
+  <div class="dmike-split">
+    <!-- Left: endpoint list -->
+    <div class="rest-api__sidebar dmike-split__input">
+      <div class="rest-api__sidebar-header">
+        <span class="rest-api__sidebar-title" x-text="t('name')"></span>
+        <span class="rest-api__count" x-text="model.endpoints.length"></span>
+        <button class="rest-api__add-btn" type="button" :title="t('addEndpoint')" @click="addEndpoint()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        </button>
+      </div>
+      <div class="rest-api__list">
+        <template x-for="ep in model.endpoints">
+          <div :key="ep.id"
+            class="rest-api__list-item"
+            :class="ep.id === model.activeId ? 'rest-api__list-item--active' : ''"
+            :data-id="ep.id"
+            @click="selectEndpoint(ep, $event)">
+            <template x-if="isScheduleRunning(ep)">
+              <span class="rest-api__schedule-dot" :title="t('scheduleActive')"></span>
+            </template>
+            <input class="rest-api__ep-name-input" :data-name-id="ep.id"
+              x-model="ep.name" :placeholder="t('namePlaceholder')"
+              @focus="focusEndpoint(ep)">
+            <button class="rest-api__item-del" :data-del="ep.id" :title="t('delete')" @click="deleteEndpoint(ep, $event)">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>
+            </button>
+          </div>
+        </template>
+      </div>
+    </div>
+
+    <!-- Right: endpoint detail / response -->
+    <div class="rest-api__detail dmike-split__output">
+      <template x-if="model.activeEndpoint()">
+        <div class="rest-api__detail-inner">
+          <!-- URL bar -->
+          <div class="rest-api__url-bar">
+            <span class="rest-api__method-label">GET</span>
+            <input class="field rest-api__url-input" data-field="url"
+              x-model="model.activeEndpoint().url" placeholder="https://api.example.com/data">
+            <button class="rest-api__send-btn dmike-btn-run" data-action="send" @click="sendRequest()">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+              <span x-text="t('send')"></span>
+            </button>
+          </div>
+
+          <!-- Headers -->
+          <div class="rest-api__section">
+            <div class="rest-api__section-header">
+              <span class="rest-api__section-label" x-text="t('headers')"></span>
+              <button class="rest-api__add-header-btn" type="button" @click="addHeader()">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                <span x-text="t('addHeader')"></span>
+              </button>
+            </div>
+            <div class="rest-api__headers-list" data-ref="headers">
+              <template x-for="(h, i) in model.activeEndpoint().headers">
+                <div class="rest-api__header-row" :key="i" :data-idx="i">
+                  <input class="field rest-api__header-key" x-model="h.key" placeholder="Key">
+                  <input class="field rest-api__header-val" x-model="h.value" placeholder="Value">
+                  <button class="rest-api__header-del" :data-hdr-del="i" :title="t('delete')" @click="deleteHeader(i)">&times;</button>
+                </div>
+              </template>
+            </div>
+          </div>
+
+          <!-- Column Mappings -->
+          <div class="rest-api__section">
+            <div class="rest-api__section-header">
+              <span class="rest-api__section-label" x-text="t('columnMappings')"></span>
+              <button class="rest-api__add-mapping-btn" type="button" @click="addMapping()">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                <span x-text="t('addMapping')"></span>
+              </button>
+            </div>
+            <div class="rest-api__write-mode">
+              <label class="rest-api__write-mode-option">
+                <input type="radio" :name="'writeMode-' + model.activeEndpoint().id" value="replace" x-model="model.activeEndpoint().writeMode">
+                <span x-text="t('modeReplace')"></span>
+              </label>
+              <label class="rest-api__write-mode-option">
+                <input type="radio" :name="'writeMode-' + model.activeEndpoint().id" value="append" x-model="model.activeEndpoint().writeMode">
+                <span x-text="t('modeAppend')"></span>
+              </label>
+              <label class="rest-api__write-mode-option">
+                <input type="radio" :name="'writeMode-' + model.activeEndpoint().id" value="prepend" x-model="model.activeEndpoint().writeMode">
+                <span x-text="t('modePrepend')"></span>
+              </label>
+            </div>
+            <div class="rest-api__mappings-list" data-ref="mappings">
+              <template x-for="(m, i) in model.activeEndpoint().mappings">
+                <div class="rest-api__mapping-row" :key="i" :data-midx="i">
+                  <input class="field rest-api__mapping-path" x-model="m.jsonPath"
+                    :placeholder="t('jsonPathPlaceholder')">
+                  <span class="rest-api__mapping-arrow">&rarr;</span>
+                  <div class="rest-api__mapping-picker" :data-picker-idx="i"></div>
+                  <button class="rest-api__mapping-del" :data-map-del="i" :title="t('delete')" @click="deleteMapping(i)">&times;</button>
+                </div>
+              </template>
+            </div>
+          </div>
+
+          <!-- Schedule -->
+          <div class="rest-api__section rest-api__schedule">
+            <div class="rest-api__section-header">
+              <span class="rest-api__section-label">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                <span x-text="t('schedule')"></span>
+              </span>
+              <span class="rest-api__schedule-badge"
+                :class="'rest-api__schedule-badge--' + (isScheduleRunning(model.activeEndpoint()) ? 'on' : 'off')"
+                x-text="scheduleBadgeText(isScheduleRunning(model.activeEndpoint()))"></span>
+            </div>
+            <div class="rest-api__schedule-controls">
+              <label class="rest-api__schedule-toggle">
+                <input type="checkbox" data-action="schedule-toggle"
+                  :checked="model.activeEndpoint().schedule.enabled" @change="toggleSchedule($event)">
+                <span x-text="t('scheduleEnabled')"></span>
+              </label>
+              <div class="rest-api__schedule-interval-group">
+                <span class="rest-api__schedule-interval-label" x-text="t('scheduleInterval') + ':'"></span>
+                <input type="number" class="field rest-api__schedule-interval-value"
+                  data-action="schedule-value" min="1" max="999"
+                  :value="model.activeEndpoint().schedule.intervalValue || 5"
+                  :disabled="!model.activeEndpoint().schedule.enabled"
+                  @change="changeScheduleValue($event)">
+                <select class="field rest-api__schedule-interval-unit"
+                  data-action="schedule-unit"
+                  :disabled="!model.activeEndpoint().schedule.enabled"
+                  @change="changeScheduleUnit($event)">
+                  <template x-for="u in scheduleUnits" :key="u">
+                    <option :value="u" :selected="model.activeEndpoint().schedule.intervalUnit === u" x-text="unitLabel(u)"></option>
+                  </template>
+                </select>
+              </div>
+            </div>
+            <template x-if="isScheduleRunning(model.activeEndpoint())">
+              <div class="rest-api__schedule-status">
+                <span class="rest-api__schedule-status-item">
+                  <span x-text="t('scheduleLastRun') + ': '"></span><strong data-ref="schedule-last" x-text="lastRunText(model.activeEndpoint())"></strong>
+                </span>
+                <span class="rest-api__schedule-status-item">
+                  <span x-text="t('scheduleNextRun') + ': '"></span><strong data-ref="schedule-next" x-text="nextRunText(model.activeEndpoint())"></strong>
+                </span>
+              </div>
+            </template>
+          </div>
+
+          <!-- Response -->
+          <div class="rest-api__section">
+            <div class="rest-api__section-header">
+              <span class="rest-api__section-label" x-text="t('response')"></span>
+              <template x-if="lastResponse">
+                <span class="rest-api__status" :class="'rest-api__status--' + (lastResponse.ok ? 'ok' : 'err')"
+                  x-text="lastResponse.status + ' ' + lastResponse.statusText"></span>
+              </template>
+              <template x-if="lastResponse">
+                <button class="rest-api__copy-btn" data-action="copy-response" :title="t('copyResponse')" @click="copyResponse()">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                </button>
+              </template>
+            </div>
+            <div class="rest-api__response" data-ref="response">
+              <template x-if="loading">
+                <div class="rest-api__loading" x-text="t('loading')"></div>
+              </template>
+              <template x-if="lastResponse && !loading">
+                <pre class="rest-api__response-body" x-text="lastResponse.body"></pre>
+              </template>
+            </div>
+          </div>
+        </div>
+      </template>
+    </div>
+  </div>
+</div>

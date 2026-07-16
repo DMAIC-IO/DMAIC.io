@@ -329,7 +329,6 @@ export function renderPage(opts) {
     jsonLdOverride = null,
   } = opts;
 
-  const s = getStrings(lang);
   const canonical = SITE_ORIGIN + pathFromRoot;
   const altHref = altPathFromRoot ? SITE_ORIGIN + altPathFromRoot : null;
   const otherLang = lang === 'de' ? 'en' : 'de';
@@ -352,7 +351,7 @@ export function renderPage(opts) {
     },
   };
 
-  return `<!DOCTYPE html>
+  const html = `<!DOCTYPE html>
 <html lang="${lang}">
 <head>
 <meta charset="UTF-8">
@@ -386,6 +385,13 @@ ${renderFooter(lang)}
 </body>
 </html>
 `;
+  // Rewrite every root-absolute internal link (href="/…") to a relative URL so the
+  // handbook works under any deploy subpath (e.g. /app/latest/docs/) and file://.
+  // Content/card/breadcrumb/footer links are built as absolute site paths; nav +
+  // assets already use relativeTo(). http(s):// and ./ ../ links start with a
+  // different char and are left untouched.
+  return html.replace(/href="(\/[^"]*)"/g, (_m, target) =>
+    `href="${escapeAttr(relativeTo(pathFromRoot, target))}"`);
 }
 
 function renderNav(lang, currentPath, altPath) {

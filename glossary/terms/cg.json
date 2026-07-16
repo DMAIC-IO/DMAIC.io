@@ -1,0 +1,87 @@
+{
+  "id": "cg",
+  "category": "msa",
+  "title": {
+    "de": "Cg (Wiederholbarkeitsindex)",
+    "en": "Cg (Repeatability Index)"
+  },
+  "short": {
+    "de": "MSA-Typ-1-Kennzahl für {{term:wiederholbarkeit|Wiederholbarkeit}} — vergleicht die Messstreuung mit einem definierten Anteil der Toleranz.",
+    "en": "MSA Type 1 metric for {{term:wiederholbarkeit|repeatability}} — compares measurement spread with a defined fraction of the tolerance."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "Der **Cg-Index** bewertet, wie klein die Streuung eines Messmittels im Verhältnis zur Toleranz ist. Er wird aus mindestens 25 Wiederholmessungen an einem kalibrierten {{term:referenzteil|Referenzteil}} berechnet."
+      },
+      {
+        "type": "formula",
+        "latex": "C_g = \\frac{k_1 \\cdot T}{2 \\cdot k_2 \\cdot s_g}"
+      },
+      {
+        "type": "paragraph",
+        "text": "$T = USL - LSL$ ist die Toleranzbreite, $s_g$ die {{term:standardabweichung|Standardabweichung}} der Wiederholmessungen. Nach VDA 5 sind $k_1 = 0{,}20$ (Messmittel darf 20 % der Toleranz verbrauchen) und $k_2 = 4$ (99,99 %-Streuungsabdeckung) üblich."
+      },
+      {
+        "type": "note",
+        "text": "Akzeptanz üblich Cg ≥ 1,33. Achtung: Cg misst nur die {{term:praezision|Präzision}} — nicht die {{term:richtigkeit|Richtigkeit}}. Ein Messsystem kann hohe Cg zeigen und trotzdem systematisch verschoben sein. Dafür gibt es {{term:cgk|Cgk}}."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "The **Cg index** rates how small an instrument's spread is relative to tolerance. It is computed from at least 25 repeated measurements on a calibrated {{term:referenzteil|reference part}}."
+      },
+      {
+        "type": "formula",
+        "latex": "C_g = \\frac{k_1 \\cdot T}{2 \\cdot k_2 \\cdot s_g}"
+      },
+      {
+        "type": "paragraph",
+        "text": "$T = USL - LSL$ is the tolerance width, $s_g$ the {{term:standardabweichung|standard deviation}} of the repeats. Per VDA 5, $k_1 = 0.20$ (instrument may consume 20% of tolerance) and $k_2 = 4$ (99.99% spread coverage) are the defaults."
+      },
+      {
+        "type": "note",
+        "text": "Accepted when Cg ≥ 1.33. Note: Cg captures {{term:praezision|precision}} only — not {{term:richtigkeit|trueness}}. A system can score a high Cg and still be systematically shifted. That is what {{term:cgk|Cgk}} is for."
+      }
+    ]
+  },
+  "aliases": {
+    "de": [
+      "Wiederholbarkeitsindex",
+      "Cg-Wert"
+    ],
+    "en": [
+      "repeatability index",
+      "Cg value"
+    ]
+  },
+  "seeAlso": [
+    "cgk",
+    "wiederholbarkeit",
+    "praezision",
+    "referenzteil"
+  ],
+  "modules": [
+    "msa-typ1"
+  ],
+  "algoLab": [
+    "msa/cg",
+    "msa/cgk"
+  ],
+  "sources": [
+    {
+      "label": "VDA Band 5 — Prüfprozesseignung, 3. Auflage",
+      "url": null
+    },
+    {
+      "label": "AIAG — Measurement Systems Analysis Reference Manual, 4th Edition (MSA-4)",
+      "url": null
+    },
+    {
+      "label": "Dietrich, E. & Schulze, A. — Statistische Verfahren zur Maschinen- und Prozessqualifikation, 7. Auflage, Hanser",
+      "url": null
+    }
+  ]
+}

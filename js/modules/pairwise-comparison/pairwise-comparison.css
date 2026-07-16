@@ -518,6 +518,7 @@
 }
 
 .pairwise__matrix-wrap::-webkit-scrollbar { height: 6px; width: 6px; }
+
 .pairwise__matrix-wrap::-webkit-scrollbar-thumb {
   background: var(--color-border-secondary);
   border-radius: 3px;

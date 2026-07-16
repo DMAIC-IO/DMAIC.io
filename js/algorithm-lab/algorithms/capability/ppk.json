@@ -1,7 +1,7 @@
 {
   "id": "ppk",
   "name": {
-    "de": "Langzeit-Prozessfähigkeit Ppk",
+    "de": "Langzeit-Prozessfähigkeit {{term:ppk|Ppk}}",
     "en": "Overall Process Capability Ppk"
   },
   "category": "capability",

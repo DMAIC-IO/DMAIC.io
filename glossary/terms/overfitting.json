@@ -1,0 +1,63 @@
+{
+  "id": "overfitting",
+  "category": "regression",
+  "title": {
+    "de": "Overfitting (Überanpassung)",
+    "en": "Overfitting"
+  },
+  "short": {
+    "de": "Das Modell passt sich an Zufallsrauschen der Trainingsdaten an — {{term:r-quadrat|R²}} sieht großartig aus, neue Daten enttäuschen.",
+    "en": "The model fits noise in the training data — {{term:r-quadrat|R²}} looks great, new data disappoints."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "**Overfitting** entsteht, wenn ein Modell zu viele Freiheitsgrade für die verfügbaren Daten hat: es beschreibt nicht mehr nur den systematischen Zusammenhang, sondern lernt zusätzlich das Rauschen der Trainingsstichprobe. Die In-Sample-Anpassung wirkt perfekt, doch die Vorhersage für neue Beobachtungen ist schlecht."
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Symptom 1:** großer Abstand zwischen {{term:r-quadrat|R²}} und {{term:adjustiertes-r-quadrat|adjustiertem R²}}",
+          "**Symptom 2:** hohe In-Sample-Genauigkeit, schwacher Out-of-Sample-Vorhersagewert (Cross-Validation)",
+          "**Symptom 3:** instabile Koeffizienten — kleine Datenänderungen ergeben stark andere Schätzer",
+          "**Faustregel:** mindestens 10 Beobachtungen pro Prädiktor, in Screening-Studien lieber 20"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "Gegenmittel: Prädiktoren reduzieren (Stepwise, LASSO), Modell einfacher wählen, Cross-Validation zur Modellauswahl statt reiner In-Sample-Kennzahlen. Bei {{term:glm|GLM}} und quadratischen {{term:response-surface|Response-Surface-Modellen}} ist Overfitting durch Interaktions- und Polynomterme besonders leicht möglich."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "**Overfitting** occurs when a model has too many degrees of freedom for the available data: it no longer describes only the systematic relation but also learns the training sample's noise. In-sample fit looks perfect, yet prediction on new observations is poor."
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Symptom 1:** large gap between {{term:r-quadrat|R²}} and {{term:adjustiertes-r-quadrat|adjusted R²}}",
+          "**Symptom 2:** high in-sample accuracy, weak out-of-sample prediction (cross-validation)",
+          "**Symptom 3:** unstable coefficients — small data changes swing the estimates strongly",
+          "**Rule of thumb:** at least 10 observations per predictor, ideally 20 in screening studies"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "Remedies: reduce predictors (stepwise, LASSO), pick a simpler model, use cross-validation for model selection rather than in-sample metrics alone. In {{term:glm|GLM}} and quadratic {{term:response-surface|response-surface models}}, overfitting through interaction and polynomial terms is especially easy."
+      }
+    ]
+  },
+  "aliases": {
+    "de": ["Überanpassung", "Overfit"],
+    "en": ["overfit", "over-fitting"]
+  },
+  "seeAlso": ["r-quadrat", "adjustiertes-r-quadrat", "multikollinearitaet", "regression"],
+  "modules": ["regression", "glm-regression", "doe-planner"],
+  "algoLab": ["regression/regression-coefficients"],
+  "sources": [
+    { "label": "Hastie, T., Tibshirani, R. & Friedman, J. — The Elements of Statistical Learning, 2nd Edition, Springer", "url": null },
+    { "label": "James, G., Witten, D., Hastie, T. & Tibshirani, R. — An Introduction to Statistical Learning, 2nd Edition, Springer", "url": null }
+  ]
+}

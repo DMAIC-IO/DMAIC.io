@@ -1,0 +1,101 @@
+{
+  "id": "doe",
+  "category": "doe",
+  "title": {
+    "de": "DoE (Statistische Versuchsplanung)",
+    "en": "DoE (Design of Experiments)"
+  },
+  "short": {
+    "de": "Systematische Planung von Experimenten, damit aus möglichst wenigen Versuchen maximale Erkenntnis über {{term:faktor|Faktoren}}, {{term:haupteffekt|Haupteffekte}} und {{term:wechselwirkung|Wechselwirkungen}} entsteht.",
+    "en": "Systematic experiment planning so that a minimum number of runs yields maximum insight into {{term:faktor|factors}}, {{term:haupteffekt|main effects}}, and {{term:wechselwirkung|interactions}}."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "**Design of Experiments** (DoE, dt. Statistische Versuchsplanung) untersucht mehrere Einflussgrößen gleichzeitig nach einem festgelegten Versuchsplan. Der Vorteil gegenüber der klassischen „ein Faktor nach dem anderen“-Methode: weniger Versuche, statistisch abgesicherte Effekte, und {{term:wechselwirkung|Wechselwirkungen}} werden erkannt, statt übersehen zu werden."
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Screening** — welche der vielen möglichen Faktoren sind überhaupt relevant?",
+          "**Optimierung** — für die wenigen wichtigen Faktoren die beste Einstellung finden (Response Surface, CCD, Box-Behnken)",
+          "**Robustheit** — Einstellungen, bei denen die Zielgröße unempfindlich gegen Störgrößen bleibt (Taguchi, Streuungs-DoE)",
+          "**Mischungen** — Rezepturen, deren Anteile sich zu 100 % summieren (Simplex-Lattice, Simplex-Centroid)"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "DoE ist das stärkste Werkzeug der Improve-Phase im DMAIC-Zyklus. Voraussetzung ist ein fähiges Messsystem — ohne bestandene {{term:gage-rr|Gage R&R}} misst DoE eher das Rauschen des Messmittels als den Prozess."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "**Design of Experiments** (DoE) studies several inputs simultaneously under a fixed experimental plan. Compared to the classical \"one factor at a time\" approach: fewer runs, statistically anchored effects, and {{term:wechselwirkung|interactions}} are detected instead of missed."
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Screening** — which of the many candidate factors matter at all?",
+          "**Optimisation** — for the few important factors, find the best setting (Response Surface, CCD, Box-Behnken)",
+          "**Robustness** — settings where the response stays insensitive to noise factors (Taguchi, dispersion DoE)",
+          "**Mixtures** — recipes whose proportions sum to 100 % (Simplex-Lattice, Simplex-Centroid)"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "DoE is the strongest tool of the Improve phase in DMAIC. Prerequisite is a capable measurement system — without a passing {{term:gage-rr|Gage R&R}}, DoE measures the gauge's noise more than the process."
+      }
+    ]
+  },
+  "aliases": {
+    "de": [
+      "Design of Experiments",
+      "Statistische Versuchsplanung",
+      "Versuchsplanung"
+    ],
+    "en": [
+      "experimental design",
+      "designed experiment",
+      "DoE"
+    ]
+  },
+  "seeAlso": [
+    "faktor",
+    "stufe",
+    "zielgroesse",
+    "haupteffekt",
+    "wechselwirkung",
+    "randomisierung",
+    "screening-design"
+  ],
+  "modules": [
+    "doe-planner",
+    "doe-advisor"
+  ],
+  "algoLab": [
+    "doe/doe-planner",
+    "doe/mixed-level-full-factorial",
+    "doe/d-optimal-mixed-level",
+    "doe/ccd-with-categorical",
+    "doe/box-behnken-with-categorical",
+    "doe/taguchi-l18-mixed",
+    "doe/d-efficiency",
+    "doe/vif"
+  ],
+  "sources": [
+    {
+      "label": "Montgomery, D. C. — Design and Analysis of Experiments, 10th Edition, Wiley",
+      "url": null
+    },
+    {
+      "label": "Box, G. E. P., Hunter, W. G., Hunter, J. S. — Statistics for Experimenters, 2nd Edition, Wiley",
+      "url": null
+    },
+    {
+      "label": "Kleppmann, W. — Versuchsplanung, 10. Auflage, Hanser",
+      "url": null
+    }
+  ]
+}

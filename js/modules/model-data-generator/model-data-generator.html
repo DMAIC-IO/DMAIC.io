@@ -1,0 +1,140 @@
+<div class="module-mdg" x-data="modelDataGenerator">
+  <div class="mdg-content" id="mdg-content">
+    <div class="module-mdg-split dmike-split">
+
+      <aside class="dmike-split__input mdg-input">
+        <div class="dmike-split__section-title" x-text="t('factorsTitle')"></div>
+        <div class="mdg-factor-grid mdg-factor-grid--header">
+          <span class="mdg-label" x-text="t('factorName')"></span>
+          <span class="mdg-label">Min</span>
+          <span class="mdg-label">Max</span>
+          <span></span>
+        </div>
+
+        <div id="mdg-factor-list" data-role="factor-list">
+          <template x-for="(factor, i) in model.factors">
+            <div class="mdg-factor-grid mdg-factor-grid--row" :key="i">
+              <input class="field mdg-inp" type="text"
+                data-field="name" :data-idx="i" x-model="factor.name">
+              <input class="field mdg-inp mdg-inp--center" type="number"
+                data-field="min" :data-idx="i" x-model.number="factor.min">
+              <input class="field mdg-inp mdg-inp--center" type="number"
+                data-field="max" :data-idx="i" x-model.number="factor.max">
+              <span class="mdg-factor-action">
+                <template x-if="model.factors.length > 1">
+                  <button class="btn btn--icon-sm btn--danger mdg-btn-remove" type="button"
+                    :data-idx="i" :title="t('remove')" @click="removeFactor(i)">×</button>
+                </template>
+              </span>
+            </div>
+          </template>
+        </div>
+
+        <button class="btn btn--secondary mdg-btn-add" id="mdg-btn-add-factor"
+          type="button" @click="addFactor()">
+          <span x-text="'+ ' + t('addFactor')"></span>
+        </button>
+
+        <div class="dmike-split__section-title" x-text="t('outputTitle')"></div>
+        <input class="field mdg-inp" type="text" id="mdg-y-name"
+          x-model="model.yName" placeholder="Y">
+
+        <div class="dmike-split__section-title" x-text="t('generateTitle')"></div>
+        <div class="mdg-control-group">
+          <label class="mdg-label" x-text="t('samplingMethod')"></label>
+          <select class="field mdg-inp mdg-select" id="mdg-sampling" x-model="model.samplingMethod">
+            <option value="random" x-text="t('methodRandom')"></option>
+            <option value="lhs" x-text="t('methodLHS')"></option>
+            <option value="fullfactorial" x-text="t('methodFullFactorial')"></option>
+          </select>
+        </div>
+        <div class="mdg-triple-grid">
+          <div class="mdg-control-group">
+            <label class="mdg-label" x-text="t('sampleSize')"></label>
+            <input class="field mdg-inp mdg-inp--center" type="number" id="mdg-sample-size"
+              x-model.number="model.sampleSize" min="10" max="100000">
+          </div>
+          <div class="mdg-control-group">
+            <label class="mdg-label" x-text="t('noise') + ' (σε)'"></label>
+            <input class="field mdg-inp mdg-inp--center" type="number" id="mdg-noise"
+              x-model.number="model.noiseStd" min="0">
+          </div>
+          <div class="mdg-control-group">
+            <label class="mdg-label">Seed</label>
+            <input class="field mdg-inp mdg-inp--center" type="number" id="mdg-seed"
+              x-model.number="model.seed">
+          </div>
+        </div>
+
+        <button class="dmike-btn-run" id="mdg-btn-generate-inline" type="button" @click="generate()">
+          <span x-text="'▶ ' + t('generate')"></span>
+        </button>
+      </aside>
+
+      <main class="dmike-split__output mdg-output">
+        <div class="dmike-split__output-section" x-text="t('modelTitle')"></div>
+        <p class="mdg-section__desc" x-text="t('modelDesc')"></p>
+
+        <div class="mdg-equation" id="mdg-equation" data-role="equation">
+          <span class="mdg-eq-y" x-text="model.yName"></span>
+          <span class="mdg-eq-op"> = </span>
+          <span class="mdg-eq-intercept" x-text="model.intercept"></span>
+          <template x-for="(part, i) in equationParts()">
+            <span :key="i" x-text="part"></span>
+          </template>
+          <span class="mdg-eq-eps"> + ε</span>
+        </div>
+
+        <div class="dmike-split__output-section" x-text="t('coefficients')"></div>
+
+        <div class="mdg-group-label" x-text="t('intercept')"></div>
+        <div class="mdg-beta-grid">
+          <div class="mdg-beta-item">
+            <span class="mdg-beta-name" x-text="t('intercept')"></span>
+            <span class="mdg-beta-eq">β₀=</span>
+            <input class="field mdg-inp mdg-beta-inp" type="number" id="mdg-intercept"
+              x-model.number="model.intercept">
+          </div>
+        </div>
+
+        <div id="mdg-beta-editor" data-role="beta-editor">
+          <template x-for="group in betaGroups()">
+            <div :key="group.label">
+              <div class="mdg-group-label" x-text="group.label"></div>
+              <div class="mdg-beta-grid">
+                <template x-for="item in group.items">
+                  <div class="mdg-beta-item" :key="item.idx">
+                    <span class="mdg-beta-name" :title="item.label" x-text="item.label"></span>
+                    <span class="mdg-beta-eq">β=</span>
+                    <input class="field mdg-inp mdg-beta-inp" type="number"
+                      x-model.number="item.term.beta">
+                  </div>
+                </template>
+              </div>
+            </div>
+          </template>
+        </div>
+
+        <div id="mdg-results-section" :style="resultsVisible ? 'display:block' : 'display:none'">
+          <div class="dmike-split__output-section" x-text="t('statsTitle')"></div>
+          <div class="dmike-kpi-strip" id="mdg-stats-grid">
+            <template x-for="kpi in statKpis">
+              <div class="dmike-kpi" :key="kpi.label">
+                <div class="dmike-kpi-value" x-text="kpi.value"></div>
+                <div class="dmike-kpi-label" x-text="kpi.label"></div>
+              </div>
+            </template>
+          </div>
+
+          <div class="dmike-split__output-section">
+            <span x-text="t('previewTitle')"></span>
+            <span id="mdg-row-count" class="mdg-row-count" x-text="rowCountText"></span>
+          </div>
+          <div class="dmike-embedded-grid dmike-embedded-grid--md" id="mdg-data-table"
+            data-role="data-table"></div>
+        </div>
+      </main>
+
+    </div>
+  </div>
+</div>

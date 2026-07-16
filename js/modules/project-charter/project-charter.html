@@ -1,0 +1,238 @@
+<section class="module-container pc" x-data="projectCharter">
+  <div class="module-container__header">
+    <h2 class="module-container__title" x-text="t('name')"></h2>
+  </div>
+
+  <div class="module-container__body">
+
+    <!-- Problem Statement -->
+    <section class="pc__section">
+      <div class="dmike-split__output-section" x-text="t('problemStatement')"></div>
+      <div class="pc__problem-wrap">
+        <div class="pc__problem-toolbar">
+          <button class="pc__fmt-btn" data-cmd="bold" :title="t('fmtBold')" :aria-label="t('fmtBold')"
+            @mousedown="fmtMouseDown('bold', $event)"><strong>B</strong></button>
+          <button class="pc__fmt-btn" data-cmd="italic" :title="t('fmtItalic')" :aria-label="t('fmtItalic')"
+            @mousedown="fmtMouseDown('italic', $event)"><em>I</em></button>
+        </div>
+        <div
+          class="field pc__problem-editor"
+          data-ref="problemEditor"
+          contenteditable="true"
+          role="textbox"
+          aria-multiline="true"
+          :data-placeholder="t('problemPlaceholder')"
+          :aria-label="t('problemStatement')"
+          @focus="problemFocus()"
+          @input="problemInput($event)"
+          @paste="problemPaste($event)"
+        ></div>
+        <div class="pc__char-count" data-ref="charCount" x-text="charCountText()"></div>
+      </div>
+    </section>
+
+    <!-- Goals -->
+    <section class="pc__section">
+      <div class="dmike-split__output-section" x-text="t('goals')"></div>
+
+      <template x-if="model.goals.length === 0">
+        <p class="pc__no-goals" x-text="t('noGoals')"></p>
+      </template>
+
+      <template x-if="model.goals.length > 0">
+        <div class="pc__goals-table-wrap" @focusin="goalFieldFocus()">
+          <table class="pc__goals-table">
+            <thead>
+              <tr>
+                <th class="pc__col-nr" aria-label="Reihenfolge">#</th>
+                <th class="pc__col-description" x-text="t('goalDescription')"></th>
+                <th class="pc__col-date" x-text="t('goalTargetDate')"></th>
+                <th class="pc__col-metric" x-text="t('goalMetric')"></th>
+                <th class="pc__col-target" x-text="t('goalTargetValue')"></th>
+                <th class="pc__col-zeg" :title="t('goalAchievementFull')" x-text="t('goalAchievement')"></th>
+                <th class="pc__col-del" :aria-label="t('deleteGoal')"></th>
+              </tr>
+            </thead>
+            <tbody>
+              <template x-for="(goal, gi) in model.goals">
+                <tr class="pc__goal-row" :key="goal.id" :data-id="goal.id"
+                  @dragover="goalDragOver(goal.id, $event)"
+                  @dragleave="goalDragLeave(goal.id, $event)"
+                  @drop="goalDrop(goal.id, $event)">
+                  <td class="pc__col-nr" draggable="true"
+                    @dragstart="goalDragStart(goal.id, $event)"
+                    @dragend="goalDragEnd($event)"
+                    x-text="gi + 1"></td>
+                  <td class="pc__col-description">
+                    <textarea
+                      class="field field--sm field--ghost pc__cell-input pc__cell-textarea"
+                      rows="1"
+                      data-field="description"
+                      :placeholder="t('goalDescription')"
+                      :aria-label="t('goalDescription')"
+                      x-model="goal.description"
+                      @input="autoGrow($event)"
+                      @change="goalChanged(goal.id, 'description', $event)"
+                    ></textarea>
+                  </td>
+                  <td class="pc__col-date">
+                    <input
+                      class="field field--sm field--ghost pc__cell-input"
+                      :class="isDateInPast(goal.targetDate) ? 'pc__date--past' : ''"
+                      type="date"
+                      data-field="targetDate"
+                      :aria-label="t('goalTargetDate')"
+                      :title="isDateInPast(goal.targetDate) ? t('dateInPast') : ''"
+                      x-model="goal.targetDate"
+                      @change="goalChanged(goal.id, 'targetDate', $event)"
+                    >
+                  </td>
+                  <td class="pc__col-metric">
+                    <input
+                      class="field field--sm field--ghost pc__cell-input"
+                      type="text"
+                      data-field="metric"
+                      :placeholder="t('goalMetric')"
+                      :aria-label="t('goalMetric')"
+                      x-model="goal.metric"
+                      @change="goalChanged(goal.id, 'metric', $event)"
+                    >
+                  </td>
+                  <td class="pc__col-target">
+                    <input
+                      class="field field--sm field--ghost pc__cell-input"
+                      type="text"
+                      data-field="targetValue"
+                      :placeholder="t('goalTargetValue')"
+                      :aria-label="t('goalTargetValue')"
+                      x-model="goal.targetValue"
+                      @change="goalChanged(goal.id, 'targetValue', $event)"
+                    >
+                  </td>
+                  <td class="pc__col-zeg">
+                    <div class="pc__zeg-wrap">
+                      <input
+                        class="field field--sm field--ghost pc__zeg-input"
+                        type="number"
+                        min="0"
+                        max="100"
+                        data-field="achievementLevel"
+                        :aria-label="t('goalAchievementFull')"
+                        :title="t('goalAchievementTooltip')"
+                        x-model="goal.achievementLevel"
+                        @change="goalChanged(goal.id, 'achievementLevel', $event)"
+                      >
+                      <div class="pc__zeg-bar-track">
+                        <div class="pc__zeg-bar-fill" :style="zegBarStyle(goal.achievementLevel)"></div>
+                      </div>
+                      <template x-if="zegClamped(goal.achievementLevel) === 100">
+                        <span class="pc__zeg-done" aria-label="Erreicht">✓</span>
+                      </template>
+                    </div>
+                  </td>
+                  <td class="pc__col-del">
+                    <button
+                      class="btn btn--icon btn--ghost pc__del-btn"
+                      type="button"
+                      :title="t('deleteGoal')"
+                      :aria-label="t('deleteGoal')"
+                      x-text="delBtnLabel(goal.id)"
+                      :class="isConfirmingDelete(goal.id) ? 'btn--danger' : 'btn--ghost'"
+                      @click="goalDeleteClick(goal.id, $event)"
+                    ></button>
+                  </td>
+                </tr>
+              </template>
+            </tbody>
+          </table>
+        </div>
+      </template>
+
+      <button class="btn btn--secondary btn--sm pc__add-btn" type="button" @click="addGoal($event)"
+        x-text="'+ ' + t('addGoal')"></button>
+    </section>
+
+    <!-- Org Chart -->
+    <section class="pc__section pc__org-section">
+      <div class="dmike-split__output-section" x-text="t('orgChart')"></div>
+      <div class="pc__org-toolbar">
+        <button class="btn btn--primary btn--sm pc__org-add-btn" type="button"
+          @click="orgAddRoot()" x-text="'+ ' + t('orgNew')"></button>
+        <button class="btn btn--sm pc__org-layout-btn" type="button"
+          @click="orgLayoutBtn()" x-text="t('orgLayout')"></button>
+        <button class="btn btn--sm pc__org-undo-btn" type="button"
+          :disabled="!canUndo()" :title="t('orgUndo')"
+          @click="orgUndo()" x-text="'↩ ' + t('orgUndo')"></button>
+      </div>
+      <div class="pc__org-card" data-ref="orgCard">
+        <div class="pc__org-wrap" data-ref="orgWrap">
+          <div class="pc__org-canvas" data-ref="orgCanvas">
+            <svg class="pc__org-lines" data-ref="orgLines"></svg>
+          </div>
+          <div class="pc__org-empty" data-ref="orgEmpty" :class="model.orgNodes.length ? 'pc__org-empty--hidden' : ''">
+            <p x-text="t('noOrgChart')"></p>
+          </div>
+        </div>
+        <div class="pc__org-editor" data-ref="orgEditor">
+          <div class="pc__org-editor-inner" data-ref="orgEditorInner"></div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- Modal forms: live here hidden; borrowed into the shared modal, restored on close -->
+  <div class="pc__modal-forms" hidden>
+
+    <!-- Org-chart node add/edit -->
+    <div x-ref="nodeForm">
+      <div class="field-group">
+        <label x-text="t('nodeTitle') + ' *'"></label>
+        <input type="text" class="field" data-field="title" :placeholder="t('nodeTitle')"
+          maxlength="100" x-model="nodeDraft.title">
+      </div>
+      <div class="field-group">
+        <label x-text="t('nodeDescription')"></label>
+        <textarea class="field" data-field="desc" :placeholder="t('nodeDescription')"
+          maxlength="300" x-model="nodeDraft.desc"></textarea>
+      </div>
+    </div>
+
+    <!-- Org-chart node style (edit) -->
+    <div x-ref="nodeStyleForm">
+      <div class="field-group">
+        <label x-text="t('nodeTitle') + ' *'"></label>
+        <input type="text" class="field" data-field="title" maxlength="100" x-model="nodeStyleDraft.title">
+      </div>
+      <div class="field-group">
+        <label x-text="t('nodeDescription')"></label>
+        <textarea class="field" data-field="desc" maxlength="300" x-model="nodeStyleDraft.desc"></textarea>
+      </div>
+      <hr class="pc__org-form-sep">
+      <div class="field-group field-group--inline">
+        <label x-text="t('editor.bgColor')"></label>
+        <div class="dmike-chart-ed-color-swatch" data-field="bg-swatch"
+          :style="'background:' + nodeStyleDraft.bgDisplay" @click="nodeStylePickColor('bg', $event)"></div>
+      </div>
+      <div class="field-group field-group--inline">
+        <label x-text="t('editor.borderColor')"></label>
+        <div class="dmike-chart-ed-color-swatch" data-field="borderColor-swatch"
+          :style="'background:' + nodeStyleDraft.borderColorDisplay" @click="nodeStylePickColor('borderColor', $event)"></div>
+      </div>
+      <div class="field-group field-group--inline">
+        <label x-text="t('editor.borderStyle')"></label>
+        <select class="field" data-field="borderStyle" x-model="nodeStyleDraft.borderStyle">
+          <option value="" x-text="t('editor.solid')"></option>
+          <option value="dashed" x-text="t('editor.dashed')"></option>
+          <option value="dotted" x-text="t('editor.dotted')"></option>
+        </select>
+      </div>
+      <div class="field-group field-group--inline">
+        <label x-text="t('editor.borderWidth')"></label>
+        <input type="number" class="field field--num" data-field="borderWidth"
+          min="1" max="8" x-model.number="nodeStyleDraft.borderWidth">
+      </div>
+    </div>
+
+  </div>
+</section>

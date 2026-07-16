@@ -15,8 +15,8 @@
       "en": "Compares the means of k independent, normally distributed samples."
     },
     "long": {
-      "de": "Die einfaktorielle Varianzanalyse (One-Way ANOVA) prüft, ob die Mittelwerte von k ≥ 2 unabhängigen Gruppen alle gleich sind. Die Gesamtstreuung SST wird in die durch die Gruppen erklärte Streuung SSB (Between) und die Reststreuung SSW (Within) zerlegt. Die F-Statistik vergleicht das mittlere Quadrat zwischen den Gruppen mit dem mittleren Quadrat innerhalb der Gruppen. Ein signifikanter F-Test (p < α) zeigt, dass mindestens ein Gruppenmittelwert vom Rest abweicht — er sagt aber nicht, welcher.",
-      "en": "One-way analysis of variance (One-Way ANOVA) tests whether the means of k ≥ 2 independent groups are all equal. The total variation SST is decomposed into the between-group variation SSB and the within-group variation SSW. The F-statistic compares the mean square between groups to the mean square within groups. A significant F-test (p < α) indicates that at least one group mean differs from the others — but does not say which."
+      "de": "Die einfaktorielle {{term:anova|Varianzanalyse}} (One-Way ANOVA) prüft, ob die Mittelwerte von k ≥ 2 unabhängigen Gruppen alle gleich sind. Die Gesamtstreuung SST wird in die durch die Gruppen erklärte Streuung SSB (Between) und die Reststreuung SSW (Within) zerlegt. Die F-Statistik vergleicht das mittlere Quadrat zwischen den Gruppen mit dem mittleren Quadrat innerhalb der Gruppen. Ein signifikanter F-Test (p < α) zeigt, dass mindestens ein Gruppenmittelwert vom Rest abweicht — er sagt aber nicht, welcher.",
+      "en": "One-way {{term:anova|analysis of variance}} (One-Way ANOVA) tests whether the means of k ≥ 2 independent groups are all equal. The total variation SST is decomposed into the between-group variation SSB and the within-group variation SSW. The F-statistic compares the mean square between groups to the mean square within groups. A significant F-test (p < α) indicates that at least one group mean differs from the others — but does not say which."
     }
   },
 

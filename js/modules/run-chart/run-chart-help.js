@@ -12,7 +12,7 @@ export default {
         blocks: [
           {
             type: 'paragraph',
-            content: 'Ein Run Chart zeigt eine Datenreihe in zeitlicher Reihenfolge und prüft, ob die Reihenfolge zufällig ist. Anders als bei einer Regelkarte werden keine Eingriffsgrenzen berechnet — nur eine Medianlinie. Dafür laufen vier formale Lauftests, die typische Nicht-Zufalls-Muster aufdecken.',
+            content: 'Ein {{term:run-chart|Run Chart}} zeigt eine Datenreihe in zeitlicher Reihenfolge und prüft, ob die Reihenfolge zufällig ist. Anders als bei einer {{term:regelkarte|Regelkarte}} werden keine {{term:regelgrenze|Eingriffsgrenzen}} berechnet — nur eine Medianlinie. Dafür laufen vier formale Lauftests, die typische Nicht-Zufalls-Muster aufdecken.',
           },
           {
             type: 'definition',
@@ -40,7 +40,7 @@ export default {
         blocks: [
           {
             type: 'paragraph',
-            content: 'A run chart shows a data series in time order and tests whether that order looks random. Unlike a control chart it has no control limits — only a {{term:median|median}} line. Four formal runs tests detect typical non-random patterns.',
+            content: 'A {{term:run-chart|run chart}} shows a data series in time order and tests whether that order looks random. Unlike a {{term:regelkarte|control chart}} it has no {{term:regelgrenze|control limits}} — only a {{term:median|median}} line. Four formal runs tests detect typical non-random patterns.',
           },
           {
             type: 'definition',
@@ -113,8 +113,8 @@ export default {
             items: [
               'Zuerst die Form des Charts ansehen — Trends, Zyklen, Sprünge sind oft mit bloßem Auge erkennbar.',
               'Dann die p-Werte prüfen. Ein einzelner kleiner p-Wert kann Zufall sein (multiple Vergleiche!), zwei oder mehr deuten klar auf Struktur hin.',
-              'Bei signifikanten Mustern: Ursache suchen, bevor eine Regelkarte aufgebaut wird. Sonderursachen verzerren die Baseline.',
-              'Wenn alle Tests grün sind und das Bild zufällig aussieht: Daten eignen sich für eine Regelkarte (I-MR, X̄-R, …).',
+              'Bei signifikanten Mustern: Ursache suchen, bevor eine Regelkarte aufgebaut wird. {{term:sonderursache|Sonderursachen}} verzerren die Baseline.',
+              'Wenn alle Tests grün sind und das Bild zufällig aussieht: Daten eignen sich für eine {{term:regelkarte|Regelkarte}} ({{term:i-mr-chart|I-MR}}, {{term:xbar-r-chart|X̄-R}}, …).',
             ],
           },
         ],
@@ -127,8 +127,8 @@ export default {
             items: [
               'First inspect the shape — trends, cycles, jumps are often visible by eye.',
               'Then check the p-values. A single small p can be chance (multiple comparisons!), two or more clearly indicate structure.',
-              'If patterns are significant: investigate the cause before setting up a control chart. Special causes will bias the baseline.',
-              'If all tests pass and the picture looks random: data is ready for a control chart (I-MR, X̄-R, …).',
+              'If patterns are significant: investigate the cause before setting up a control chart. {{term:sonderursache|Special causes}} will bias the baseline.',
+              'If all tests pass and the picture looks random: data is ready for a {{term:regelkarte|control chart}} ({{term:i-mr-chart|I-MR}}, {{term:xbar-r-chart|X̄-R}}, …).',
             ],
           },
         ],

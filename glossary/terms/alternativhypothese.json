@@ -1,0 +1,80 @@
+{
+  "id": "alternativhypothese",
+  "category": "hypothesis",
+  "title": {
+    "de": "Alternativhypothese (H₁)",
+    "en": "Alternative Hypothesis (H₁)"
+  },
+  "short": {
+    "de": "Die interessante Gegenannahme zur {{term:nullhypothese|Nullhypothese}} — z. B. „die Mittelwerte unterscheiden sich“.",
+    "en": "The interesting counter-assumption to the {{term:nullhypothese|null hypothesis}} — e.g. \"the means differ\"."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "Die **Alternativhypothese** H₁ (auch H_a) formuliert genau das, was man mit dem Test *nachweisen* möchte. Wird H₀ verworfen, dann gilt H₁ als *gestützt* — aber nie als endgültig bewiesen."
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Zweiseitig** (H₁: μ ≠ μ₀) — Abweichung in beide Richtungen ist interessant; Standardwahl bei Explorations-Analysen",
+          "**Einseitig oben** (H₁: μ > μ₀) — nur eine Verbesserung/Erhöhung zählt (z. B. „das neue Verfahren erhöht die Ausbeute“)",
+          "**Einseitig unten** (H₁: μ < μ₀) — nur eine Reduktion zählt"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "Einseitige Tests haben mehr {{term:power|Power}} bei gleichem Signifikanzniveau, sind aber **vor** dem Blick auf die Daten festzulegen — nachträgliches Wechseln der Richtung, weil die Daten „zufällig“ in die andere Richtung zeigen, ist eine der klassischen Formen von p-Hacking."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "The **alternative hypothesis** H₁ (also H_a) states exactly what the test is meant to *demonstrate*. Rejecting H₀ *supports* H₁ — but never proves it definitively."
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Two-sided** (H₁: μ ≠ μ₀) — deviations in either direction are interesting; default in exploratory work",
+          "**One-sided upper** (H₁: μ > μ₀) — only an increase/improvement counts (e.g. \"the new process raises yield\")",
+          "**One-sided lower** (H₁: μ < μ₀) — only a decrease counts"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "One-sided tests have more {{term:power|power}} at the same significance level, but the side must be picked **before** looking at the data — switching sides after seeing which way the data lean is one of the classical forms of p-hacking."
+      }
+    ]
+  },
+  "aliases": {
+    "de": [
+      "H₁",
+      "H_a",
+      "Alternativ-Hypothese"
+    ],
+    "en": [
+      "H₁",
+      "Ha",
+      "alternative hypothesis"
+    ]
+  },
+  "seeAlso": [
+    "nullhypothese",
+    "hypothesentest",
+    "power"
+  ],
+  "modules": [
+    "hypothesis-test"
+  ],
+  "algoLab": [
+    "hypothesis/one-sample-t-test",
+    "hypothesis/two-sample-t-test"
+  ],
+  "sources": [
+    {
+      "label": "Neyman, J. & Pearson, E. S. — On the Problem of the Most Efficient Tests, 1933",
+      "url": null
+    }
+  ]
+}

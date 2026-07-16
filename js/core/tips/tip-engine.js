@@ -72,6 +72,15 @@ export class TipEngine {
       this.eventBus.on(tip.event, payload => this._maybeShow(tip, payload));
     });
 
+    // Support synthetic tip:fire events (used in testing / manual trigger)
+    this.eventBus.on('tip:fire', (payload) => {
+      if (!this._isEnabled() || !payload?.text) return;
+      if (!this._slotEl || !this._textEl) return;
+      this._currentTip = { id: '__manual__' };
+      this._textEl.textContent = payload.text;
+      this._show();
+    });
+
     // Re-render visible tip on language switch
     this.eventBus.on('language:changed', () => {
       if (this._currentTip) this._renderText(this._currentTip);

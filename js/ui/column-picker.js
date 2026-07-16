@@ -2,7 +2,14 @@
  * D.Mike — Column Picker Component (column-picker.js)
  *
  * Shared UI widget for selecting worksheet columns.
- * Two modes: single-select (<select> dropdown) and multi-select (checkbox list).
+ * Modes:
+ *   - 'single' — <select> dropdown (default option-label format)
+ *   - 'select' — <select> dropdown, identical to 'single' but accepts an
+ *                optional `optionFormat` callback so callers can customise the
+ *                visible option text (e.g. a dashed "C1 – Name (n=30)" label).
+ *                Strictly additive: when `optionFormat` is omitted it renders
+ *                exactly like 'single'.
+ *   - 'multi'  — checkbox list
  * Filters by column type and minimum non-null value count.
  *
  * Usage:
@@ -13,6 +20,16 @@
  *     mode: 'single',
  *     types: ['numeric'],
  *     minCount: 2,
+ *     onChange: (ref) => { ... },
+ *   });
+ *
+ *   // Select-mode with a custom option label (e.g. "C1 – Name (n=30)")
+ *   const picker = new ColumnPicker(wrapEl, context, {
+ *     mode: 'select',
+ *     types: ['numeric'],
+ *     optionFormat: (c) => c.columnName
+ *       ? `${c.shortName} – ${c.columnName} (n=${c.valueCount})`
+ *       : `${c.shortName} (n=${c.valueCount})`,
  *     onChange: (ref) => { ... },
  *   });
  *
@@ -35,6 +52,8 @@
 function _allPhaseKeys(stateManager) {
   return Object.keys(stateManager.get('phases') || {});
 }
+
+import { resolveColumnRef, getColumnRawValues } from '../core/worksheet-columns.js';
 
 // ── Pure utility functions (exported for use without widget) ──────────
 
@@ -164,13 +183,7 @@ export function buildInitialWorksheetState(sheetName) {
  * @returns {any[]}
  */
 export function getColumnValues(stateManager, ref) {
-  if (!ref) return [];
-  const ws = stateManager.getModuleState(ref.instanceId);
-  if (!ws?.sheets) return [];
-  const sheet = ws.sheets.find(s => s.id === ref.sheetId);
-  if (!sheet?.state?.columns) return [];
-  const col = sheet.state.columns.find(c => c.id === ref.columnId);
-  return col ? (col.values || []) : [];
+  return getColumnRawValues(stateManager, ref);
 }
 
 /**
@@ -180,12 +193,7 @@ export function getColumnValues(stateManager, ref) {
  * @returns {string}
  */
 export function getColumnName(stateManager, ref) {
-  if (!ref) return '?';
-  const ws = stateManager.getModuleState(ref.instanceId);
-  if (!ws?.sheets) return '?';
-  const sheet = ws.sheets.find(s => s.id === ref.sheetId);
-  if (!sheet?.state?.columns) return '?';
-  const col = sheet.state.columns.find(c => c.id === ref.columnId);
+  const col = resolveColumnRef(stateManager, ref);
   return col ? (col.name || col.shortName || '?') : '?';
 }
 
@@ -199,11 +207,11 @@ export function getColumnName(stateManager, ref) {
  */
 export function isPickerFocused(container) {
   const active = document.activeElement;
-  return !!(active && container?.contains(active) &&
+  return Boolean(active && container?.contains(active) &&
     (active.tagName === 'SELECT' || active.tagName === 'INPUT'));
 }
 
-import { esc } from '../core/html-utils.js';
+import { h } from '../core/dom.js';
 
 // ── ColumnPicker class ───────────────────────────────────────────────
 
@@ -212,24 +220,27 @@ export class ColumnPicker {
    * @param {HTMLElement} container — DOM element to render into
    * @param {Object} context — { eventBus, stateManager, i18n }
    * @param {Object} options
-   * @param {'single'|'multi'} options.mode
+   * @param {'single'|'select'|'multi'} options.mode
    * @param {string[]|Set<string>} [options.types] — Allowed column types
    * @param {number} [options.minCount=0] — Minimum non-null values
    * @param {number} [options.maxCount=Infinity] — Maximum non-null values (0 = empty columns only)
-   * @param {function} [options.onChange] — Callback: single → (ref|null), multi → (refs[])
+   * @param {function} [options.onChange] — Callback: single/select → (ref|null), multi → (refs[])
    * @param {boolean} [options.allowCreateWorksheet=false] — Show "New worksheet…" option in single mode
+   * @param {function} [options.optionFormat] — ('select' mode only) Custom option-label
+   *        builder: (ColumnInfo) => string. Omit for the default format.
    */
   constructor(container, context, options) {
     this._container = container;
     this._ctx = context;
     this._mode = options.mode || 'single';
+    this._optionFormat = typeof options.optionFormat === 'function' ? options.optionFormat : null;
     this._types = options.types
       ? (options.types instanceof Set ? options.types : new Set(options.types))
       : null;
     this._minCount = options.minCount || 0;
     this._maxCount = options.maxCount ?? Infinity;
     this._onChange = options.onChange || null;
-    this._allowCreateWorksheet = !!options.allowCreateWorksheet;
+    this._allowCreateWorksheet = Boolean(options.allowCreateWorksheet);
 
     // Selection state
     this._selectedKey = null;            // single mode
@@ -258,9 +269,19 @@ export class ColumnPicker {
   /** Column ID used for "new column in existing sheet" entries. */
   static NEW_COLUMN = '__new__';
 
+  /**
+   * Whether this picker uses single-selection semantics (one <select>).
+   * Both 'single' and the additive 'select' mode are single-selection; only
+   * 'multi' uses the checkbox-set path. Keeps existing modes byte-unchanged.
+   * @returns {boolean}
+   */
+  _isSingle() {
+    return this._mode === 'single' || this._mode === 'select';
+  }
+
   /** Current selection — returns a ref, NEW_WORKSHEET sentinel, or null. */
   get value() {
-    if (this._mode === 'single') {
+    if (this._isSingle()) {
       if (this._selectedKey === ColumnPicker.NEW_WORKSHEET) return ColumnPicker.NEW_WORKSHEET;
       return this._selectedKey ? keyToRef(this._selectedKey) : null;
     }
@@ -269,9 +290,9 @@ export class ColumnPicker {
 
   /** Programmatically set selection. */
   set value(refs) {
-    if (this._mode === 'single') {
-      if (refs && !refs.instanceId && Array.isArray(refs)) refs = refs[0] || null;
-      this._selectedKey = refs ? refToKey(refs) : null;
+    if (this._isSingle()) {
+      const ref = (refs && !refs.instanceId && Array.isArray(refs)) ? (refs[0] || null) : refs;
+      this._selectedKey = ref ? refToKey(ref) : null;
     } else {
       this._selectedKeys = new Set(
         (Array.isArray(refs) ? refs : (refs ? [refs] : [])).map(r => refToKey(r))
@@ -288,7 +309,7 @@ export class ColumnPicker {
     const validKeys = new Set(cols.map(c => refToKey(c)));
 
     let changed = false;
-    if (this._mode === 'single') {
+    if (this._isSingle()) {
       if (this._selectedKey && this._selectedKey !== ColumnPicker.NEW_WORKSHEET
           && !validKeys.has(this._selectedKey)) {
         // Preserve "new column" keys if the sheet still exists
@@ -317,7 +338,7 @@ export class ColumnPicker {
   destroy() {
     for (const fn of this._unsubs) fn();
     this._unsubs = [];
-    this._container.innerHTML = '';
+    this._container.replaceChildren();
   }
 
   // ── Private ────────────────────────────────────────────────────
@@ -336,7 +357,7 @@ export class ColumnPicker {
 
   _render() {
     const cols = this._discover();
-    if (this._mode === 'single') {
+    if (this._mode === 'single' || this._mode === 'select') {
       this._renderSingle(cols);
     } else {
       this._renderMulti(cols);
@@ -347,11 +368,13 @@ export class ColumnPicker {
 
   _renderSingle(cols) {
     if (cols.length === 0 && !this._allowCreateWorksheet) {
-      this._container.innerHTML = `<div class="col-picker col-picker--single">
-        <select class="field col-picker__select" disabled>
-          <option>${esc(this._t('noColumns'))}</option>
-        </select>
-      </div>`;
+      this._container.replaceChildren(
+        h('div', { class: 'col-picker col-picker--single' },
+          h('select', { class: 'field col-picker__select', disabled: true },
+            h('option', null, this._t('noColumns')),
+          ),
+        ),
+      );
       return;
     }
 
@@ -367,38 +390,51 @@ export class ColumnPicker {
       grouped[gk].push(c);
     }
 
-    let opts = `<option value="">${esc(this._t('placeholder'))}</option>`;
+    const opts = [
+      h('option', { value: '' }, this._t('placeholder')),
+    ];
 
     // "New worksheet…" option
     if (this._allowCreateWorksheet) {
-      const nwSel = this._selectedKey === ColumnPicker.NEW_WORKSHEET ? ' selected' : '';
-      opts += `<option value="__create_worksheet__"${nwSel}>+ ${esc(this._t('newWorksheet'))}</option>`;
+      opts.push(h('option', {
+        value: '__create_worksheet__',
+        selected: this._selectedKey === ColumnPicker.NEW_WORKSHEET,
+      }, `+ ${this._t('newWorksheet')}`));
     }
 
     for (const gk of groupOrder) {
       const items = grouped[gk];
       const group = items[0].sheetName;
-      opts += `<optgroup label="${esc(group)}">`;
+      const optgroup = h('optgroup', { label: group });
       for (const c of items) {
         const key = refToKey(c);
-        const sel = key === this._selectedKey ? ' selected' : '';
-        opts += `<option value="${key}"${sel}>${esc(c.shortName)} ${esc(c.columnName)} (n=${c.valueCount})</option>`;
+        // 'select' mode may supply a custom label builder; the default
+        // (and all of 'single' mode) is byte-unchanged.
+        const label = this._optionFormat
+          ? this._optionFormat(c)
+          : `${c.shortName} ${c.columnName} (n=${c.valueCount})`;
+        optgroup.append(h('option', {
+          value: key,
+          selected: key === this._selectedKey,
+        }, label));
       }
       // "+ new column" at end of each sheet group
       if (this._allowCreateWorksheet) {
         const first = items[0];
         const ncKey = `${first.instanceId}|${first.sheetId}|${ColumnPicker.NEW_COLUMN}`;
-        const ncSel = ncKey === this._selectedKey ? ' selected' : '';
-        opts += `<option value="${ncKey}"${ncSel}>+ ${esc(this._t('newColumn'))}</option>`;
+        optgroup.append(h('option', {
+          value: ncKey,
+          selected: ncKey === this._selectedKey,
+        }, `+ ${this._t('newColumn')}`));
       }
-      opts += '</optgroup>';
+      opts.push(optgroup);
     }
 
-    this._container.innerHTML = `<div class="col-picker col-picker--single">
-      <select class="field col-picker__select">${opts}</select>
-    </div>`;
+    const sel = h('select', { class: 'field col-picker__select' }, opts);
+    this._container.replaceChildren(
+      h('div', { class: 'col-picker col-picker--single' }, sel),
+    );
 
-    const sel = this._container.querySelector('.col-picker__select');
     sel.addEventListener('change', () => {
       this._selectedKey = sel.value || null;
       if (this._onChange) this._onChange(this.value);
@@ -409,9 +445,11 @@ export class ColumnPicker {
 
   _renderMulti(cols) {
     if (cols.length === 0) {
-      this._container.innerHTML = `<div class="col-picker col-picker--multi">
-        <div class="col-picker__hint">${esc(this._t('noColumns'))}</div>
-      </div>`;
+      this._container.replaceChildren(
+        h('div', { class: 'col-picker col-picker--multi' },
+          h('div', { class: 'col-picker__hint' }, this._t('noColumns')),
+        ),
+      );
       return;
     }
 
@@ -427,26 +465,31 @@ export class ColumnPicker {
       grouped[gk].push(c);
     }
 
-    let html = '<div class="col-picker col-picker--multi">';
+    const root = h('div', { class: 'col-picker col-picker--multi' });
     for (const gk of groupOrder) {
       const items = grouped[gk];
       const group = items[0].sheetName;
-      html += `<div class="col-picker__group">`;
-      html += `<div class="col-picker__group-label">${esc(group)}</div>`;
+      const groupEl = h('div', { class: 'col-picker__group' },
+        h('div', { class: 'col-picker__group-label' }, group),
+      );
       for (const c of items) {
         const key = refToKey(c);
-        const chk = this._selectedKeys.has(key) ? ' checked' : '';
-        html += `<label class="col-picker__item">
-          <input type="checkbox" data-col-key="${key}"${chk}>
-          <span class="col-picker__name">${esc(c.shortName)} – ${esc(c.columnName)}</span>
-          <span class="col-picker__count">n=${c.valueCount}</span>
-        </label>`;
+        groupEl.append(
+          h('label', { class: 'col-picker__item' },
+            h('input', {
+              type: 'checkbox',
+              'data-col-key': key,
+              checked: this._selectedKeys.has(key),
+            }),
+            h('span', { class: 'col-picker__name' }, `${c.shortName} – ${c.columnName}`),
+            h('span', { class: 'col-picker__count' }, `n=${c.valueCount}`),
+          ),
+        );
       }
-      html += '</div>';
+      root.append(groupEl);
     }
-    html += '</div>';
 
-    this._container.innerHTML = html;
+    this._container.replaceChildren(root);
 
     this._container.querySelectorAll('input[type="checkbox"]').forEach(cb => {
       cb.addEventListener('change', () => {

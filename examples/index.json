@@ -875,160 +875,29 @@
       ]
     },
     {
-      "id": "msa-typ4-linear",
+      "id": "msa-typ3-akzeptabel",
       "type": "project",
       "title": {
-        "de": "MSA Typ 4: linearer Messprozess (grün)",
-        "en": "MSA Type 4: linear gage (green)"
+        "de": "MSA Typ 3: automatisiertes Messsystem (ohne Prüfer)",
+        "en": "MSA Type 3: automated measurement system (no operator)"
       },
       "description": {
-        "de": "Fünf Referenzen (2/4/6/8/10) über den Messbereich (LSL 0 / USL 12, T = 12) mit je 10 Wiederholungen. Vernachlässigbarer Bias und keine Steigung — %Linearität ≈ 0,07 %, Q_MS,BI ≈ 0,15 %. Lehrbuch-Fall eines linearen Messmittels über den gesamten Bereich.",
-        "en": "Five references (2/4/6/8/10) spanning the measurement range (LSL 0 / USL 12, T = 12) with 10 repeats each. Negligible bias and no slope — %Linearity ≈ 0.07 %, Q_MS,BI ≈ 0.15 %. Textbook linear-gage case across the full range."
+        "de": "One-Way-ANOVA-Studie ohne Prüfereinfluss (25 Teile × 2 Wiederholungen, Bosch-Konvention). Automatisiertes CMM misst Wellendurchmesser, Wiederholstreuung ≈ 1,5 µm gegenüber Teil-zu-Teil-Streuung ≈ 22 µm → %GRR ≈ 8 %, ndc = 16. Lehrbuch-Fall eines akzeptablen automatisierten Messsystems.",
+        "en": "One-way random-effects ANOVA study without operator influence (25 parts × 2 replicates, Bosch convention). Automated CMM measures shaft diameter, within-part variation ≈ 1.5 µm vs. part-to-part variation ≈ 22 µm → %GRR ≈ 8 %, ndc = 16. Textbook acceptable automated measurement system."
       },
-      "source": "DMAIC.io synthetisch, NumPy default_rng, Seed=621",
+      "source": "DMAIC.io synthetisch, Python random, Seed=2603",
       "license": "public-domain",
-      "file": "projects/msa-typ4-linear.json",
+      "file": "projects/msa-typ3-akzeptabel.json",
       "format": "json",
       "modules": [
-        "msa-typ4"
+        "msa-typ2"
       ],
       "tags": [
         "msa",
-        "linearity",
-        "bias",
-        "linear",
-        "capable"
-      ]
-    },
-    {
-      "id": "msa-typ4-drift",
-      "type": "project",
-      "title": {
-        "de": "MSA Typ 4: Bias-Drift über den Messbereich (rot)",
-        "en": "MSA Type 4: bias drift across the range (red)"
-      },
-      "description": {
-        "de": "Fünf Referenzen (2/4/6/8/10) mit je 10 Wiederholungen; Bias steigt von 0 (Ref 2) auf +1,6 (Ref 10). Deutlicher Linearitätsfehler — %Linearität ≈ 13 %, Q_MS,BI ≈ 27 %, Steigung hochsignifikant. AIAG und VDA 5 schlagen beide rot an. Lehrbuch-Fall eines abzulehnenden Messsystems.",
-        "en": "Five references (2/4/6/8/10) with 10 repeats each; bias grows from 0 (ref 2) to +1.6 (ref 10). Clear linearity error — %Linearity ≈ 13 %, Q_MS,BI ≈ 27 %, slope highly significant. Both AIAG and VDA 5 turn red. Textbook case for rejecting a measurement system."
-      },
-      "source": "DMAIC.io synthetisch, NumPy default_rng, Seed=622",
-      "license": "public-domain",
-      "file": "projects/msa-typ4-drift.json",
-      "format": "json",
-      "modules": [
-        "msa-typ4"
-      ],
-      "tags": [
-        "msa",
-        "linearity",
-        "bias",
-        "drift",
-        "incapable"
-      ]
-    },
-    {
-      "id": "msa-typ5-binary-good",
-      "type": "project",
-      "title": {
-        "de": "MSA Typ 5: binär, guter Prüfprozess (grün)",
-        "en": "MSA Type 5: binary, good gage (green)"
-      },
-      "description": {
-        "de": "3 Prüfer × 30 Teile × 3 Wiederholungen (binär i.O./n.i.O.). Fleiss κ ≈ 0,92, Effektivität ≈ 97,8 % je Prüfer. Lehrbuch-Fall eines akzeptablen attributiven Prüfprozesses.",
-        "en": "3 appraisers × 30 parts × 3 replicates (binary OK/NOK). Fleiss κ ≈ 0.92, effectiveness ≈ 97.8 % per appraiser. Textbook acceptable attribute gage."
-      },
-      "source": "DMAIC.io synthetisch",
-      "license": "public-domain",
-      "file": "projects/msa-typ5-binary-good.json",
-      "format": "json",
-      "modules": [
-        "msa-typ5"
-      ],
-      "tags": [
-        "msa",
-        "attribute",
-        "kappa",
-        "binary",
-        "capable"
-      ]
-    },
-    {
-      "id": "msa-typ5-binary-marginal",
-      "type": "project",
-      "title": {
-        "de": "MSA Typ 5: binär, grenzwertig (gelb)",
-        "en": "MSA Type 5: binary, marginal (yellow)"
-      },
-      "description": {
-        "de": "3 Prüfer × 30 Teile × 3 Wdh (binär i.O./n.i.O.). Fleiss κ ≈ 0,58, Effektivität 83–88 % — Prüfprozess grenzwertig. Fünf Teile mit unausgewogenen Wiederholungen; beim Entfernen der Referenz-Spalte fallen sie in einen ambigen Konsens (Warnung W_AMBIGUOUS_CONSENSUS).",
-        "en": "3 appraisers × 30 parts × 3 replicates (binary OK/NOK). Fleiss κ ≈ 0.58, effectiveness 83–88 % — marginal gage. Five parts with unbalanced replicates; removing the reference column triggers ambiguous consensus (W_AMBIGUOUS_CONSENSUS)."
-      },
-      "source": "DMAIC.io synthetisch",
-      "license": "public-domain",
-      "file": "projects/msa-typ5-binary-marginal.json",
-      "format": "json",
-      "modules": [
-        "msa-typ5"
-      ],
-      "tags": [
-        "msa",
-        "attribute",
-        "kappa",
-        "binary",
-        "marginal"
-      ]
-    },
-    {
-      "id": "msa-typ5-nominal-3classes",
-      "type": "project",
-      "title": {
-        "de": "MSA Typ 5: nominal, drei Fehlerklassen (grün)",
-        "en": "MSA Type 5: nominal, three defect classes (green)"
-      },
-      "description": {
-        "de": "3 Prüfer × 25 Teile × 2 Wdh (nominal A/B/C). Fleiss κ ≈ 0,84, Effektivität 94–96 % je Prüfer. Zeigt Cohen κ paarweise, Fleiss κ und Confusion-Heatmaps für nicht-geordnete Kategorien.",
-        "en": "3 appraisers × 25 parts × 2 replicates (nominal A/B/C). Fleiss κ ≈ 0.84, effectiveness 94–96 % per appraiser. Illustrates pairwise Cohen κ, Fleiss κ and confusion heatmaps for unordered categories."
-      },
-      "source": "DMAIC.io synthetisch",
-      "license": "public-domain",
-      "file": "projects/msa-typ5-nominal-3classes.json",
-      "format": "json",
-      "modules": [
-        "msa-typ5"
-      ],
-      "tags": [
-        "msa",
-        "attribute",
-        "kappa",
-        "nominal",
-        "capable"
-      ]
-    },
-    {
-      "id": "msa-typ5-ordinal-scale5",
-      "type": "project",
-      "title": {
-        "de": "MSA Typ 5: ordinal, Skala 1–5 (grün)",
-        "en": "MSA Type 5: ordinal, scale 1–5 (green)"
-      },
-      "description": {
-        "de": "3 Prüfer × 20 Teile × 2 Wdh (ordinal 1–5). Fleiss κ ≈ 0,77, weighted Cohen κ (quadratisch) ≈ 0,95 pro Paar, Effektivität ≈ 90 % je Prüfer. Gelegentliche Nachbar-Bewertungen (±1) — Modul zeigt weighted κ als tragende Kennzahl.",
-        "en": "3 appraisers × 20 parts × 2 replicates (ordinal 1–5). Fleiss κ ≈ 0.77, weighted Cohen κ (quadratic) ≈ 0.95 per pair, effectiveness ≈ 90 % per appraiser. Occasional neighbour ratings (±1) — module reports weighted κ as the leading KPI."
-      },
-      "source": "DMAIC.io synthetisch",
-      "license": "public-domain",
-      "file": "projects/msa-typ5-ordinal-scale5.json",
-      "format": "json",
-      "modules": [
-        "msa-typ5"
-      ],
-      "tags": [
-        "msa",
-        "attribute",
-        "kappa",
-        "ordinal",
-        "weighted",
-        "capable"
+        "typ3",
+        "anova",
+        "automated",
+        "acceptable"
       ]
     },
     {
@@ -2418,6 +2287,163 @@
         "define",
         "project-plan",
         "pizza"
+      ]
+    },
+    {
+      "id": "msa-typ4-linear",
+      "type": "project",
+      "title": {
+        "de": "MSA Typ 4: linearer Messprozess (grün)",
+        "en": "MSA Type 4: linear gage (green)"
+      },
+      "description": {
+        "de": "Fünf Referenzen (2/4/6/8/10) über den Messbereich (LSL 0 / USL 12, T = 12) mit je 10 Wiederholungen. Vernachlässigbarer Bias und keine Steigung — %Linearität ≈ 0,07 %, Q_MS,BI ≈ 0,15 %. Lehrbuch-Fall eines linearen Messmittels über den gesamten Bereich.",
+        "en": "Five references (2/4/6/8/10) spanning the measurement range (LSL 0 / USL 12, T = 12) with 10 repeats each. Negligible bias and no slope — %Linearity ≈ 0.07 %, Q_MS,BI ≈ 0.15 %. Textbook linear-gage case across the full range."
+      },
+      "source": "DMAIC.io synthetisch, NumPy default_rng, Seed=621",
+      "license": "public-domain",
+      "file": "projects/msa-typ4-linear.json",
+      "format": "json",
+      "modules": [
+        "msa-typ4"
+      ],
+      "tags": [
+        "msa",
+        "linearity",
+        "bias",
+        "linear",
+        "capable"
+      ]
+    },
+    {
+      "id": "msa-typ4-drift",
+      "type": "project",
+      "title": {
+        "de": "MSA Typ 4: Bias-Drift über den Messbereich (rot)",
+        "en": "MSA Type 4: bias drift across the range (red)"
+      },
+      "description": {
+        "de": "Fünf Referenzen (2/4/6/8/10) mit je 10 Wiederholungen; Bias steigt von 0 (Ref 2) auf +1,6 (Ref 10). Deutlicher Linearitätsfehler — %Linearität ≈ 13 %, Q_MS,BI ≈ 27 %, Steigung hochsignifikant. AIAG und VDA 5 schlagen beide rot an. Lehrbuch-Fall eines abzulehnenden Messsystems.",
+        "en": "Five references (2/4/6/8/10) with 10 repeats each; bias grows from 0 (ref 2) to +1.6 (ref 10). Clear linearity error — %Linearity ≈ 13 %, Q_MS,BI ≈ 27 %, slope highly significant. Both AIAG and VDA 5 turn red. Textbook case for rejecting a measurement system."
+      },
+      "source": "DMAIC.io synthetisch, NumPy default_rng, Seed=622",
+      "license": "public-domain",
+      "file": "projects/msa-typ4-drift.json",
+      "format": "json",
+      "modules": [
+        "msa-typ4"
+      ],
+      "tags": [
+        "msa",
+        "linearity",
+        "bias",
+        "drift",
+        "incapable"
+      ]
+    },
+    {
+      "id": "msa-typ5-binary-good",
+      "type": "project",
+      "title": {
+        "de": "MSA Typ 5: binär, guter Prüfprozess (grün)",
+        "en": "MSA Type 5: binary, good gage (green)"
+      },
+      "description": {
+        "de": "3 Prüfer × 30 Teile × 3 Wiederholungen (binär i.O./n.i.O.). Fleiss κ ≈ 0,92, Effektivität ≈ 97,8 % je Prüfer. Lehrbuch-Fall eines akzeptablen attributiven Prüfprozesses.",
+        "en": "3 appraisers × 30 parts × 3 replicates (binary OK/NOK). Fleiss κ ≈ 0.92, effectiveness ≈ 97.8 % per appraiser. Textbook acceptable attribute gage."
+      },
+      "source": "DMAIC.io synthetisch",
+      "license": "public-domain",
+      "file": "projects/msa-typ5-binary-good.json",
+      "format": "json",
+      "modules": [
+        "msa-typ5"
+      ],
+      "tags": [
+        "msa",
+        "attribute",
+        "kappa",
+        "binary",
+        "capable"
+      ]
+    },
+    {
+      "id": "msa-typ5-binary-marginal",
+      "type": "project",
+      "title": {
+        "de": "MSA Typ 5: binär, grenzwertig (gelb)",
+        "en": "MSA Type 5: binary, marginal (yellow)"
+      },
+      "description": {
+        "de": "3 Prüfer × 30 Teile × 3 Wdh (binär i.O./n.i.O.). Fleiss κ ≈ 0,58, Effektivität 83–88 % — Prüfprozess grenzwertig. Fünf Teile mit unausgewogenen Wiederholungen; beim Entfernen der Referenz-Spalte fallen sie in einen ambigen Konsens (Warnung W_AMBIGUOUS_CONSENSUS).",
+        "en": "3 appraisers × 30 parts × 3 replicates (binary OK/NOK). Fleiss κ ≈ 0.58, effectiveness 83–88 % — marginal gage. Five parts with unbalanced replicates; removing the reference column triggers ambiguous consensus (W_AMBIGUOUS_CONSENSUS)."
+      },
+      "source": "DMAIC.io synthetisch",
+      "license": "public-domain",
+      "file": "projects/msa-typ5-binary-marginal.json",
+      "format": "json",
+      "modules": [
+        "msa-typ5"
+      ],
+      "tags": [
+        "msa",
+        "attribute",
+        "kappa",
+        "binary",
+        "marginal"
+      ]
+    },
+    {
+      "id": "msa-typ5-nominal-3classes",
+      "type": "project",
+      "title": {
+        "de": "MSA Typ 5: nominal, drei Fehlerklassen (grün)",
+        "en": "MSA Type 5: nominal, three defect classes (green)"
+      },
+      "description": {
+        "de": "3 Prüfer × 25 Teile × 2 Wdh (nominal A/B/C). Fleiss κ ≈ 0,84, Effektivität 94–96 % je Prüfer. Zeigt Cohen κ paarweise, Fleiss κ und Confusion-Heatmaps für nicht-geordnete Kategorien.",
+        "en": "3 appraisers × 25 parts × 2 replicates (nominal A/B/C). Fleiss κ ≈ 0.84, effectiveness 94–96 % per appraiser. Illustrates pairwise Cohen κ, Fleiss κ and confusion heatmaps for unordered categories."
+      },
+      "source": "DMAIC.io synthetisch",
+      "license": "public-domain",
+      "file": "projects/msa-typ5-nominal-3classes.json",
+      "format": "json",
+      "modules": [
+        "msa-typ5"
+      ],
+      "tags": [
+        "msa",
+        "attribute",
+        "kappa",
+        "nominal",
+        "capable"
+      ]
+    },
+    {
+      "id": "msa-typ5-ordinal-scale5",
+      "type": "project",
+      "title": {
+        "de": "MSA Typ 5: ordinal, Skala 1–5 (grün)",
+        "en": "MSA Type 5: ordinal, scale 1–5 (green)"
+      },
+      "description": {
+        "de": "3 Prüfer × 20 Teile × 2 Wdh (ordinal 1–5). Fleiss κ ≈ 0,77, weighted Cohen κ (quadratisch) ≈ 0,95 pro Paar, Effektivität ≈ 90 % je Prüfer. Gelegentliche Nachbar-Bewertungen (±1) — Modul zeigt weighted κ als tragende Kennzahl.",
+        "en": "3 appraisers × 20 parts × 2 replicates (ordinal 1–5). Fleiss κ ≈ 0.77, weighted Cohen κ (quadratic) ≈ 0.95 per pair, effectiveness ≈ 90 % per appraiser. Occasional neighbour ratings (±1) — module reports weighted κ as the leading KPI."
+      },
+      "source": "DMAIC.io synthetisch",
+      "license": "public-domain",
+      "file": "projects/msa-typ5-ordinal-scale5.json",
+      "format": "json",
+      "modules": [
+        "msa-typ5"
+      ],
+      "tags": [
+        "msa",
+        "attribute",
+        "kappa",
+        "ordinal",
+        "weighted",
+        "capable"
       ]
     }
   ]

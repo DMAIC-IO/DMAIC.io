@@ -42,6 +42,21 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Verify license artifacts are up to date
+        run: |
+          git diff --exit-code -- THIRD-PARTY-LICENSES.txt js/pages/licenses/licenses-data.generated.js \
+            || { echo "::error::License artifacts are stale. Run 'npm install' (or 'npm run licenses') and commit THIRD-PARTY-LICENSES.txt + js/pages/licenses/licenses-data.generated.js."; exit 1; }
+
+      - name: Build app (generate index.html + bundle)
+        run: npm run build
+
       - name: Configure SSH (deploy key, known_hosts)
         run: |
           set -euo pipefail
@@ -66,6 +81,8 @@ jobs:
             --exclude='package-lock.json' \
             --exclude='.gitignore' \
             --exclude='README.md' \
+            --exclude='index.dist.html' \
+            --exclude='tools' \
             -e "ssh -i ~/.ssh/id_deploy -p $NIGHTLY_PORT" \
             ./ \
             "$NIGHTLY_USER@$NIGHTLY_HOST:${NIGHTLY_ROOT}"

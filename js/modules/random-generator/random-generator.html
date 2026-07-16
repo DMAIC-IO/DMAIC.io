@@ -1,0 +1,230 @@
+<div class="module-random-generator dmike-split" x-data="randomGenerator">
+  <aside class="rg-sidebar dmike-split__input" id="rg-sidebar">
+    <template x-for="cat in categories()" :key="cat.key">
+      <div class="rg-sidebar__section">
+        <div class="rg-sidebar__title" x-text="t(cat.key)"></div>
+        <template x-for="distKey in cat.dists" :key="distKey">
+          <button class="rg-sidebar__btn"
+                  :class="distKey === model.currentDist ? 'rg-sidebar__btn--active' : ''"
+                  :data-dist="distKey"
+                  x-text="distName(distKey)"
+                  @click="selectDistribution(distKey)"></button>
+        </template>
+      </div>
+    </template>
+    <div class="rg-sidebar__section">
+      <div class="rg-sidebar__title" x-text="t('catAttributive')"></div>
+      <button class="rg-sidebar__btn"
+              :class="isAttributive() ? 'rg-sidebar__btn--active' : ''"
+              :data-dist="attrKey"
+              x-text="t('distAttributive')"
+              @click="selectDistribution(attrKey)"></button>
+    </div>
+  </aside>
+
+  <main class="rg-main dmike-split__output" id="rg-main">
+
+    <!-- Empty state (no distribution selected) -->
+    <template x-if="!model.currentDist">
+      <div class="rg-main__empty"></div>
+    </template>
+
+    <!-- ── Numeric distribution view ────────────────────────── -->
+    <template x-if="isNumeric()">
+      <div>
+        <div class="rg-dist-title" x-text="distName(model.currentDist)"></div>
+        <div class="rg-dist-formula" x-text="distFormula(model.currentDist)"></div>
+        <div class="rg-controls">
+          <template x-for="p in distParams()" :key="p.id">
+            <div class="field-group rg-control-group">
+              <label x-text="paramLabel(p)"></label>
+              <input type="number" class="field field--num"
+                     :id="'rg_param_' + p.id"
+                     :min="paramMin(p)" :max="paramMax(p)"
+                     x-model="paramInputs[p.id]"
+                     @input="autoGenerate()">
+              <template x-if="paramHint(p)">
+                <div class="rg-param-hint" x-text="paramHint(p)"></div>
+              </template>
+            </div>
+          </template>
+          <div class="field-group rg-control-group">
+            <label x-text="t('count')"></label>
+            <input type="number" class="field field--num" id="rg_param_count"
+                   min="1" max="100000" x-model="countInput" @input="autoGenerate()">
+          </div>
+          <div class="field-group rg-control-group">
+            <label>Seed</label>
+            <input type="number" class="field field--num" id="rg_seed"
+                   x-model="seedInput" @input="autoGenerate()">
+          </div>
+        </div>
+
+        <div class="rg-action-bar">
+          <span class="rg-export-group" id="rg-export-group" x-show="hasResults()">
+            <button class="btn btn--secondary" id="rg-btn-csv" x-text="t('exportCSV')" @click="exportCSV()"></button>
+            <span class="rg-target-wrap" id="rg-target-wrap" data-ref="rg-target-wrap"></span>
+            <button class="btn btn--secondary" id="rg-btn-worksheet" x-text="t('toWorksheet')" @click="toWorksheet()"></button>
+          </span>
+        </div>
+
+        <div id="rg-stats">
+          <template x-if="statKpis().length">
+            <div class="dmike-kpi-strip">
+              <template x-for="kpi in statKpis()" :key="kpi.label">
+                <div class="dmike-kpi">
+                  <div class="dmike-kpi-value" x-text="kpi.value"></div>
+                  <div class="dmike-kpi-label" x-text="kpi.label"></div>
+                </div>
+              </template>
+            </div>
+          </template>
+        </div>
+
+        <div class="rg-histogram" id="rg-hist" data-ref="rg-hist" x-show="hasResults()"></div>
+
+        <div id="rg-data">
+          <template x-if="hasResults()">
+            <div class="rg-data">
+              <div class="rg-data__header">
+                <div class="rg-data__title" x-text="t('generatedData')"></div>
+                <div class="rg-data__count" x-text="dataCountLabel()"></div>
+              </div>
+              <div class="rg-data__grid">
+                <div class="rg-data__values">
+                  <template x-for="(v, i) in dataValues()" :key="i">
+                    <span x-text="fmtValue(v)"></span>
+                  </template>
+                </div>
+              </div>
+            </div>
+          </template>
+        </div>
+      </div>
+    </template>
+
+    <!-- ── Attributive view ─────────────────────────────────── -->
+    <template x-if="isAttributive()">
+      <div>
+        <div class="rg-dist-title" x-text="t('distAttributive')"></div>
+        <div class="rg-dist-formula" x-text="attrFormula()"></div>
+
+        <div class="rg-attr-wrap">
+          <div class="rg-attr-section">
+            <div class="rg-attr-head">
+              <div class="rg-attr-head__label" x-text="t('attrName')"></div>
+              <div class="rg-attr-head__label" x-text="t('attrWeight')"></div>
+              <div></div>
+            </div>
+            <div class="rg-attr-list" id="rg-attr-list">
+              <template x-for="(a, i) in model.attributes" :key="a.id">
+                <div class="rg-attr-row" :style="'--rg-attr-color: ' + attrColor(i)">
+                  <input type="text" class="field rg-attr-row__name"
+                         :data-i="i" data-f="name" :placeholder="t('attrName')"
+                         x-model="a.name" @input="autoGenerate()">
+                  <input type="number" class="field field--num rg-attr-row__weight"
+                         min="0" :data-i="i" data-f="weight"
+                         x-model.number="a.weight" @input="autoGenerate()">
+                  <button class="rg-attr-row__remove" :data-i="i"
+                          :title="t('removeAttribute')" :aria-label="t('removeAttribute')"
+                          x-text="removeGlyph()" @click="removeAttribute(i)"></button>
+                </div>
+              </template>
+            </div>
+            <button class="rg-attr-add" id="rg-attr-add" @click="addAttribute()">
+              <span x-text="'+ ' + t('addAttribute')"></span>
+            </button>
+          </div>
+          <div class="rg-attr-section rg-attr-section--prob">
+            <div class="rg-attr-head">
+              <div class="rg-attr-head__label" x-text="t('probability')"></div>
+            </div>
+            <div class="rg-attr-prob__bars" id="rg-attr-prob">
+              <template x-for="(bar, i) in probBars()" :key="i">
+                <div class="rg-attr-prob__bar" :title="bar.title">
+                  <div class="rg-attr-prob__bar-fill" :style="'width:' + bar.pct + '%;background:' + bar.color"></div>
+                  <div class="rg-attr-prob__bar-label" x-text="bar.label"></div>
+                </div>
+              </template>
+            </div>
+          </div>
+        </div>
+
+        <div class="rg-controls rg-controls--attr">
+          <div class="field-group rg-control-group">
+            <label x-text="t('count')"></label>
+            <input type="number" id="rg_param_count" min="1" max="100000"
+                   x-model="attrCountInput" @input="autoGenerate()">
+          </div>
+          <div class="field-group rg-control-group">
+            <label>Seed</label>
+            <input type="number" id="rg_seed" x-model="attrSeedInput" @input="autoGenerate()">
+          </div>
+        </div>
+
+        <div class="rg-action-bar">
+          <span class="rg-export-group" id="rg-export-group" x-show="hasResults()">
+            <button class="btn btn--secondary" id="rg-btn-csv" x-text="t('exportCSV')" @click="exportCSV()"></button>
+            <span class="rg-target-wrap" id="rg-target-wrap" data-ref="rg-target-wrap"></span>
+            <button class="btn btn--secondary" id="rg-btn-worksheet" x-text="t('toWorksheet')" @click="toWorksheet()"></button>
+          </span>
+        </div>
+
+        <div id="rg-stats">
+          <template x-if="attrKpis().length">
+            <div class="dmike-kpi-strip">
+              <template x-for="kpi in attrKpis()" :key="kpi.label">
+                <div class="dmike-kpi">
+                  <div class="dmike-kpi-value" x-text="kpi.value"></div>
+                  <div class="dmike-kpi-label" x-text="kpi.label"></div>
+                </div>
+              </template>
+            </div>
+          </template>
+        </div>
+
+        <div class="rg-histogram" id="rg-hist" data-ref="rg-hist" x-show="hasResults()"></div>
+
+        <div class="rg-attr-freq" id="rg-attr-freq">
+          <template x-if="freqRows().length">
+            <div>
+              <div class="rg-freq-header" x-text="t('frequency')"></div>
+              <div class="rg-freq-list">
+                <template x-for="row in freqRows()" :key="row.name">
+                  <div class="rg-freq-row">
+                    <div class="rg-freq-row__swatch" :style="'background:' + row.color"></div>
+                    <div class="rg-freq-row__name" x-text="row.name"></div>
+                    <div class="rg-freq-row__count" x-text="row.count"></div>
+                    <div class="rg-freq-row__pct" x-text="row.pct + '%'"></div>
+                    <div class="rg-freq-row__bar">
+                      <div class="rg-freq-row__bar-fill" :style="'width:' + row.barW + '%;background:' + row.color"></div>
+                    </div>
+                  </div>
+                </template>
+              </div>
+            </div>
+          </template>
+        </div>
+
+        <div id="rg-data">
+          <template x-if="hasResults()">
+            <div class="rg-data">
+              <div class="rg-data__header">
+                <div class="rg-data__title" x-text="t('generatedData')"></div>
+                <div class="rg-data__count" x-text="dataCountLabel()"></div>
+              </div>
+              <div class="rg-data__grid">
+                <div class="rg-attr-chips">
+                  <template x-for="(chip, i) in dataChips()" :key="i">
+                    <span class="rg-attr-chip" :style="'--rg-attr-color:' + chip.color" x-text="chip.value"></span>
+                  </template>
+                </div>
+              </div>
+            </div>
+          </template>
+        </div>
+      </div>
+    </template>
+
+  </main>
+</div>

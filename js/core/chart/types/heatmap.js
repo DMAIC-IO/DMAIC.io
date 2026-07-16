@@ -20,6 +20,7 @@
  */
 
 import ChartBase from '../chart-base.js';
+import { h } from '../../dom.js';
 import { svgEl, svgText, resolveColor, formatNum } from '../chart-core.js';
 import { edSection, edCheckboxRow, edRangeRow, edInlineNum, edSelectRow } from '../chart-editor.js';
 import { getColor, rgbLuminance } from '../color-schemes.js';
@@ -58,7 +59,7 @@ export default class HeatmapChart extends ChartBase {
   }
 
   /** @override */
-  _renderData(svg, plotGroup, xScale, yScale, xTick, yTick, plotArea, defs) {
+  _renderData(svg, plotGroup, xScale, yScale, xTick, yTick, plotArea, _defs) {
     const xCats = this.config.xCategories || [];
     const yCats = this.config.yCategories || [];
     const cells = this.config.cells || [];
@@ -215,7 +216,7 @@ export default class HeatmapChart extends ChartBase {
   _updateColorPreview(el) {
     if (!el) return;
     const scheme = this.config.colorScheme || 'viridis';
-    el.innerHTML = '';
+    el.replaceChildren();
     for (let i = 0; i < 12; i++) {
       const c = getColor(i / 11, scheme);
       const d = document.createElement('div');
@@ -225,7 +226,7 @@ export default class HeatmapChart extends ChartBase {
   }
 
   /** @override */
-  _findNearby(dataX, dataY, proximityPx) {
+  _findNearby(dataX, dataY, _proximityPx) {
     const cells = this._cellRects;
     if (!cells || !cells.length) return [];
     const px = this._xScale(dataX);
@@ -236,7 +237,11 @@ export default class HeatmapChart extends ChartBase {
     const yCats = this.config.yCategories || [];
     const valPrefix = this.config.valueLabel ? `${this.config.valueLabel}: ` : '';
     return [{
-      html: `<b>${yCats[hit.yi]} · ${xCats[hit.xi]}</b><br>${valPrefix}${formatNum(hit.val, this.config.valueDecimals, this.locale)}`,
+      node: h('div', null,
+        h('b', null, `${yCats[hit.yi]} · ${xCats[hit.xi]}`),
+        h('br'),
+        `${valPrefix}${formatNum(hit.val, this.config.valueDecimals, this.locale)}`,
+      ),
       px: hit.x + hit.w / 2,
       py: hit.y + hit.h / 2,
     }];

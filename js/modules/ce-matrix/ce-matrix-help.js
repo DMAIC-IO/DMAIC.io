@@ -12,7 +12,7 @@ export default {
         blocks: [
           {
             type: 'paragraph',
-            content: 'Die C&E-Matrix (Cause-and-Effect-Matrix, auch X-Y-Matrix oder Prioritätenmatrix) verbindet Prozess-Eingaben (X, Inputs) mit Kunden-Outputs (Y) und zeigt, welche X auf welche Y am stärksten wirken. Sie ist die strukturierte Brücke zwischen SIPOC und tieferen Analysen wie FMEA, DOE oder Regression.',
+            content: 'Die C&E-Matrix (Cause-and-Effect-Matrix, auch X-Y-Matrix oder Prioritätenmatrix) verbindet Prozess-Eingaben (X, Inputs) mit Kunden-Outputs (Y) und zeigt, welche X auf welche Y am stärksten wirken. Sie ist die strukturierte Brücke zwischen SIPOC und tieferen Analysen wie {{term:fmea|FMEA}}, DOE oder Regression.',
           },
           {
             type: 'definition',
@@ -46,7 +46,7 @@ export default {
         blocks: [
           {
             type: 'paragraph',
-            content: 'The C&E Matrix (Cause-and-Effect Matrix, also called X-Y Matrix or priority matrix) links process inputs (X) to customer outputs (Y) and shows which X affect which Y most strongly. It is the structured bridge between SIPOC and deeper analyses like FMEA, DOE, or regression.',
+            content: 'The C&E Matrix (Cause-and-Effect Matrix, also called X-Y Matrix or priority matrix) links process inputs (X) to customer outputs (Y) and shows which X affect which Y most strongly. It is the structured bridge between SIPOC and deeper analyses like {{term:fmea|FMEA}}, DOE, or regression.',
           },
           {
             type: 'definition',

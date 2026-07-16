@@ -1,0 +1,91 @@
+{
+  "id": "prozessfaehigkeit",
+  "category": "capability",
+  "title": {
+    "de": "Prozessfähigkeitsanalyse",
+    "en": "Process Capability Analysis"
+  },
+  "short": {
+    "de": "Vergleicht die natürliche Streuung eines Prozesses mit den {{term:spezifikationsgrenzen|Spezifikationsgrenzen}} — verdichtet in Kennzahlen wie {{term:cp|Cp}}, {{term:cpk|Cpk}}, {{term:pp|Pp}}, {{term:ppk|Ppk}}.",
+    "en": "Compares a process's natural variation to its {{term:spezifikationsgrenzen|specification limits}} — condensed into indices such as {{term:cp|Cp}}, {{term:cpk|Cpk}}, {{term:pp|Pp}}, {{term:ppk|Ppk}}."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "Die **Prozessfähigkeitsanalyse** ist das zentrale Vorher/Nachher-Werkzeug der Measure- und Control-Phase im DMAIC-Zyklus. Sie beantwortet die Frage: „Ist unser Prozess in der Lage, die vom Kunden geforderten Toleranzen dauerhaft einzuhalten?“."
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Kurzzeit-Fähigkeit** ({{term:cp|Cp}}/{{term:cpk|Cpk}}) — Streuung innerhalb von Subgruppen, „Was kann der Prozess an einem guten Tag?“",
+          "**Langzeit-Fähigkeit** ({{term:pp|Pp}}/{{term:ppk|Ppk}}) — Gesamtstreuung einschließlich Drift und Sonderursachen, „Was liefert der Prozess in der Realität?“",
+          "**Sigma-Niveau** — alternative Kennzahl derselben Idee (siehe {{term:sigma-niveau|Sigma-Niveau}})"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "Voraussetzungen: **stabiler** Prozess (per Regelkarte gesichert), **normalverteilte** Daten (oder Transformation) und **mindestens 30**, besser 100+ Beobachtungen. Kennzahlen aus einem instabilen Prozess sind eine Momentaufnahme, kein Fähigkeitsmaß. Ohne {{term:spezifikationsgrenzen|Spezifikationsgrenzen}} keine Fähigkeit — sie ist immer ein Verhältnis."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "**Process capability analysis** is the central before/after tool of the Measure and Control phases in DMAIC. It answers the question: \"Can our process reliably meet the tolerances the customer requires?\""
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Short-term capability** ({{term:cp|Cp}}/{{term:cpk|Cpk}}) — within-subgroup variation, \"what can the process do on a good day?\"",
+          "**Long-term capability** ({{term:pp|Pp}}/{{term:ppk|Ppk}}) — overall variation including drift and special causes, \"what does the process actually deliver?\"",
+          "**Sigma level** — alternative metric of the same idea (see {{term:sigma-niveau|sigma level}})"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "Prerequisites: **stable** process (verified by a control chart), **normally distributed** data (or a transformation), and **at least 30**, preferably 100+ observations. Indices from an unstable process are a snapshot, not a capability figure. Without {{term:spezifikationsgrenzen|specification limits}} there is no capability — it is always a ratio."
+      }
+    ]
+  },
+  "aliases": {
+    "de": [
+      "Prozessfähigkeit",
+      "Fähigkeitsanalyse",
+      "Capability Analysis"
+    ],
+    "en": [
+      "process capability",
+      "capability study"
+    ]
+  },
+  "seeAlso": [
+    "cp",
+    "cpk",
+    "pp",
+    "ppk",
+    "spezifikationsgrenzen",
+    "sigma-niveau"
+  ],
+  "modules": [
+    "process-capability"
+  ],
+  "algoLab": [
+    "capability/cp",
+    "capability/cpk",
+    "capability/ppk"
+  ],
+  "sources": [
+    {
+      "label": "Montgomery, D. C. — Introduction to Statistical Quality Control, 8th Edition, Wiley",
+      "url": null
+    },
+    {
+      "label": "AIAG — Statistical Process Control (SPC) Reference Manual, 2nd Edition",
+      "url": null
+    },
+    {
+      "label": "Dietrich, E. & Schulze, A. — Statistische Verfahren zur Maschinen- und Prozessqualifikation, Hanser",
+      "url": null
+    }
+  ]
+}

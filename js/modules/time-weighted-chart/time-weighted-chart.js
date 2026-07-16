@@ -3,618 +3,348 @@
  *
  * EWMA and CUSUM charts. Both detect small persistent shifts much earlier
  * than Shewhart charts (I-MR, X̄-R) by integrating information across points.
+ *
+ * Migrated to createModule + Alpine CSP.
+ *
+ * Architecture:
+ *   - Static structure (input panel, ColumnPicker anchor, parameter inputs,
+ *     output placeholders) lives in the Alpine template (time-weighted-chart.html).
+ *     The chart-type and sigma-method <select>s are closed enums with STATIC
+ *     <option>s (alpine.md §3). The EWMA (λ/L) and CUSUM (k/h) parameter blocks
+ *     use <template x-if> so the inactive block's inputs are removed from the DOM
+ *     — the POM's isParamVisible() checks element count.
+ *   - Dynamic output (stats KPI strip, chart sections with header + badge) is
+ *     rendered imperatively into the data-ref anchors because the POM relies on
+ *     the exact CSS selectors — POM-Byte-Parität.
+ *   - One ColumnPicker is an imperative widget mounted in init(), disposed in destroy().
+ *   - chartManager control-charts use a _renderGen stale-guard.
+ *   - _unsubs collects event-bus subscriptions for cleanup.
+ *   - EWMA / CUSUM math stays in the engine (time-weighted-chart-engine.js).
  */
 
+import { createModule } from '../../core/template-module.js';
+import { State, DEFAULTS } from './time-weighted-chart-model.js';
 import {
   ColumnPicker, getColumnValues, getColumnName,
 } from '../../ui/column-picker.js';
-
 import {
   computeEWMA, computeCUSUM, estimateSigma,
 } from '../../engines/time-weighted-chart-engine.js';
+import { loadWorksheetExample, rewriteRefFields } from '../../core/examples-registry.js';
+import { chartModuleLifecycle } from '../../core/chart/chart-module-base.js';
 
-import { esc } from '../../core/html-utils.js';
-import { provisionWorksheet, removeProvisionedWorksheet } from '../../core/examples-registry.js';
+/** parseFloat → finite number or null. */
+function numOrNull(v) {
+  const f = parseFloat(v);
+  return Number.isFinite(f) ? f : null;
+}
+/** parseInt → finite int or null. */
+function intOrNull(v) {
+  const i = parseInt(v, 10);
+  return Number.isFinite(i) ? i : null;
+}
 
-const DEFAULTS = {
-  chartTypeId: 'ewma',
-  sigmaMethod: 'mr',     // 'mr' | 'sd'
-  baselineCount: null,   // null = full series
-  targetOverride: null,  // null = use baseline mean
-  sigmaOverride:  null,  // null = use estimateSigma
-  // EWMA
-  lambda: 0.2,
-  L: 3,
-  // CUSUM
-  kSigma: 0.5,
-  hSigma: 4,
-};
-
-export default {
-  id: 'time-weighted-chart',
-  phase: 'control',
-  icon: 'activity',
-  i18nKey: 'modules.time-weighted-chart',
-  version: '1.0.0',
-
-  _container: null,
-  _context: null,
-  _chartTypeId: DEFAULTS.chartTypeId,
-  _columnRef: null,
-  _sigmaMethod: DEFAULTS.sigmaMethod,
-  _baselineCount: DEFAULTS.baselineCount,
-  _targetOverride: DEFAULTS.targetOverride,
-  _sigmaOverride: DEFAULTS.sigmaOverride,
-  _lambda: DEFAULTS.lambda,
-  _L: DEFAULTS.L,
-  _kSigma: DEFAULTS.kSigma,
-  _hSigma: DEFAULTS.hSigma,
-  _picker: null,
-  _charts: [],
-  _autoRunTimer: null,
-  /** Worksheet provisioned by loadExample; replaced on each subsequent load. */
-  _exampleWorksheetId: null,
-
-  // ─── Lifecycle ──────────────────────────────────────────────
-
-  async init(container, context) {
-    this._container = container;
-    this._context = context;
-
-    if (!document.getElementById('time-weighted-chart-css')) {
-      const link = document.createElement('link');
-      link.id = 'time-weighted-chart-css';
-      link.rel = 'stylesheet';
-      link.href = './js/modules/time-weighted-chart/time-weighted-chart.css';
-      document.head.appendChild(link);
-    }
-
-    const saved = context.stateManager.getModuleState(context.instanceId);
-    if (saved) this._loadState(saved);
-
-    this._render();
-    this._initPicker();
-    this._bindEvents();
-    this._runAnalysis();
+const mod = createModule({
+  config: {
+    id: 'time-weighted-chart',
+    engine: 'alpine',
+    phase: 'control',
+    icon: 'activity',
+    version: '1.0.0',
+    meta: import.meta,
   },
+  Model: State,
 
-  async destroy() {
-    clearTimeout(this._autoRunTimer);
-    this._destroyPicker();
-    this._destroyCharts();
-    this._container.innerHTML = '';
-  },
-
-  onLanguageChange() {
-    this._destroyCharts();
-    this._destroyPicker();
-    this._render();
-    this._initPicker();
-    this._bindEvents();
-    this._runAnalysis();
-  },
-
-  onThemeChange() {},
-
-  getState() {
+  data(module, _t) {
     return {
-      chartTypeId: this._chartTypeId,
-      columnRef: this._columnRef,
-      sigmaMethod: this._sigmaMethod,
-      baselineCount: this._baselineCount,
-      targetOverride: this._targetOverride,
-      sigmaOverride: this._sigmaOverride,
-      lambda: this._lambda,
-      L: this._L,
-      kSigma: this._kSigma,
-      hSigma: this._hSigma,
-    };
-  },
+      ...chartModuleLifecycle(module, {
+        mountPicker() {
+          const wrap = module._container.querySelector('[data-ref="col-picker-wrap"]');
+          if (!wrap) return;
+          this._picker = new ColumnPicker(wrap, module._context, {
+            mode: 'single',
+            types: ['numeric'],
+            minCount: 3,
+            onChange: (ref) => {
+              this.model.columnRef = ref;
+              this._scheduleAutoRun();
+            },
+          });
+          if (this.model.columnRef) this._picker.value = this.model.columnRef;
+        },
+        themeMode: 'rerun',
+        autorun: true,
+      }),
 
-  setState(data) {
-    if (data) this._loadState(data);
-    if (this._container) {
-      this._destroyPicker();
-      this._render();
-      this._initPicker();
-      this._bindEvents();
-      this._runAnalysis();
-    }
-  },
+      // ── Transient view state (not persisted) ──────────────────
+      /** KPI strip (declarative — structured cells, see _renderStats*) */
+      kpiCells: [],
+      /** Chart sections (declarative — header markup; chart mounted imperatively
+       * into the templated host via _whenAnchor). One mode renders at a time
+       * (EWMA → 1 entry; CUSUM → 2 entries). See _renderChart*. */
+      /** @type {Array<{id:string, title:string, badgeText:string, badgeClass:string}>} */
+      chartViews: [],
 
-  help: () => import('./time-weighted-chart-help.js'),
+      // ── View transforms (i18n) ────────────────────────────────
 
-  /**
-   * Load a catalog example. Provision the inlined worksheet and rewrite
-   * the `__source__` placeholder in columnRef.
-   *
-   * @param {{ meta: object, data: object }} payload
-   */
-  async loadExample(payload) {
-    if (!payload || !payload.data) return;
-    const t = (k) => this._context.i18n.t(k);
+      typeHint() {
+        return _t(`typeHint_${  this.model.chartTypeId}`);
+      },
+      sectionParamsLabel() {
+        return _t(`sectionParams_${  this.model.chartTypeId}`);
+      },
 
-    const hasContent = !!this._columnRef;
-    if (hasContent && this._context?.confirmPopout) {
-      const ok = await this._context.confirmPopout(t('moduleHelp.confirmOverwrite'), { danger: true });
-      if (!ok) return;
-    }
+      // ── Nullable input display values ─────────────────────────
+      // Legacy stored null for empty; the input shows '' for null.
 
-    const data = { ...payload.data };
+      baselineCountValue() {
+        return this.model.baselineCount == null ? '' : String(this.model.baselineCount);
+      },
+      targetOverrideValue() {
+        return this.model.targetOverride == null ? '' : String(this.model.targetOverride);
+      },
+      sigmaOverrideValue() {
+        return this.model.sigmaOverride == null ? '' : String(this.model.sigmaOverride);
+      },
 
-    if (data.sourceWorksheetData) {
-      const wsState = data.sourceWorksheetData;
-      delete data.sourceWorksheetData;
-      if (this._exampleWorksheetId) {
-        removeProvisionedWorksheet(this._context, this._exampleWorksheetId);
-        this._exampleWorksheetId = null;
-      }
-      const ref = provisionWorksheet(this._context, wsState);
-      if (ref) {
-        this._exampleWorksheetId = ref.instanceId;
-        if (data.columnRef?.instanceId === '__source__') {
-          data.columnRef = { ...data.columnRef, instanceId: ref.instanceId };
-        }
-      }
-    }
+      // ── Change handlers ───────────────────────────────────────
 
-    this.setState(data);
-    this._save();
-
-    const lang = this._context.i18n.getLanguage();
-    const title = payload.meta?.title?.[lang] || payload.meta?.title?.en || payload.meta?.id || '';
-    this._context.notify?.(t('moduleHelp.exampleLoaded').replace('{title}', title), 'success');
-  },
-
-  // ─── State ──────────────────────────────────────────────────
-
-  /** @private */
-  _loadState(s) {
-    this._chartTypeId = s.chartTypeId || DEFAULTS.chartTypeId;
-    this._columnRef = s.columnRef || null;
-    this._sigmaMethod = s.sigmaMethod || DEFAULTS.sigmaMethod;
-    this._baselineCount = s.baselineCount ?? DEFAULTS.baselineCount;
-    this._targetOverride = s.targetOverride ?? DEFAULTS.targetOverride;
-    this._sigmaOverride  = s.sigmaOverride  ?? DEFAULTS.sigmaOverride;
-    this._lambda = Number.isFinite(s.lambda) ? s.lambda : DEFAULTS.lambda;
-    this._L      = Number.isFinite(s.L)      ? s.L      : DEFAULTS.L;
-    this._kSigma = Number.isFinite(s.kSigma) ? s.kSigma : DEFAULTS.kSigma;
-    this._hSigma = Number.isFinite(s.hSigma) ? s.hSigma : DEFAULTS.hSigma;
-  },
-
-  /** @private */
-  _save() {
-    this._context.stateManager.setModuleState(this._context.instanceId, this.getState());
-  },
-
-  // ─── Render ─────────────────────────────────────────────────
-
-  /** @private */
-  _t(key, vars) {
-    return this._context.i18n.t(`modules.time-weighted-chart.${key}`, vars);
-  },
-
-  /** @private */
-  _render() {
-    const isEWMA = this._chartTypeId === 'ewma';
-
-    this._container.innerHTML = `
-      <div class="twc dmike-split">
-        <div class="twc__input dmike-split__input">
-
-          <div class="dmike-split__section-title">${this._t('sectionChartType')}</div>
-          <div class="field-group">
-            <label>${this._t('chartType')}</label>
-            <select class="field" data-ref="chart-type">
-              <option value="ewma"${isEWMA ? ' selected' : ''}>${this._t('type_ewma')}</option>
-              <option value="cusum"${!isEWMA ? ' selected' : ''}>${this._t('type_cusum')}</option>
-            </select>
-            <span class="twc__hint">${this._t('typeHint_' + this._chartTypeId)}</span>
-          </div>
-
-          <div class="dmike-split__section-title">${this._t('sectionData')}</div>
-          <div class="field-group">
-            <label>${this._t('dataColumn')}</label>
-            <div data-ref="col-picker-wrap"></div>
-          </div>
-
-          <div class="field-group">
-            <label>${this._t('baselineCount')}</label>
-            <input type="number" class="field field--num" data-ref="baseline-count"
-              value="${this._baselineCount ?? ''}" min="2" placeholder="${this._t('baselineAll')}">
-            <span class="twc__hint">${this._t('baselineHint')}</span>
-          </div>
-
-          <div class="dmike-split__section-title">${this._t('sectionEstimation')}</div>
-          <div class="twc__row-2">
-            <div class="field-group">
-              <label>${this._t('targetOverride')}</label>
-              <input type="number" class="field field--num" data-ref="target-override"
-                value="${this._targetOverride ?? ''}" placeholder="${this._t('targetAuto')}" step="any">
-            </div>
-            <div class="field-group">
-              <label>${this._t('sigmaOverride')}</label>
-              <input type="number" class="field field--num" data-ref="sigma-override"
-                value="${this._sigmaOverride ?? ''}" placeholder="${this._t('sigmaAuto')}" step="any" min="0">
-            </div>
-          </div>
-          <div class="field-group">
-            <label>${this._t('sigmaMethod')}</label>
-            <select class="field" data-ref="sigma-method">
-              <option value="mr"${this._sigmaMethod === 'mr' ? ' selected' : ''}>${this._t('sigma_mr')}</option>
-              <option value="sd"${this._sigmaMethod === 'sd' ? ' selected' : ''}>${this._t('sigma_sd')}</option>
-            </select>
-            <span class="twc__hint">${this._t('sigmaMethodHint')}</span>
-          </div>
-
-          <div class="dmike-split__section-title">${this._t('sectionParams_' + this._chartTypeId)}</div>
-          ${isEWMA ? `
-            <div class="twc__param-note">${this._t('paramNote_ewma')}</div>
-            <div class="twc__row-2">
-              <div class="field-group">
-                <label>${this._t('lambda')}</label>
-                <input type="number" class="field field--num" data-ref="lambda"
-                  value="${this._lambda}" step="0.05" min="0.05" max="1">
-              </div>
-              <div class="field-group">
-                <label>${this._t('L')}</label>
-                <input type="number" class="field field--num" data-ref="L"
-                  value="${this._L}" step="0.1" min="1" max="5">
-              </div>
-            </div>
-          ` : `
-            <div class="twc__param-note">${this._t('paramNote_cusum')}</div>
-            <div class="twc__row-2">
-              <div class="field-group">
-                <label>${this._t('kSigma')}</label>
-                <input type="number" class="field field--num" data-ref="kSigma"
-                  value="${this._kSigma}" step="0.1" min="0.1" max="2">
-              </div>
-              <div class="field-group">
-                <label>${this._t('hSigma')}</label>
-                <input type="number" class="field field--num" data-ref="hSigma"
-                  value="${this._hSigma}" step="0.5" min="2" max="10">
-              </div>
-            </div>
-          `}
-
-        </div>
-
-        <div class="twc__output dmike-split__output">
-          <div data-ref="stats-bar"></div>
-          <div data-ref="charts-wrap"></div>
-        </div>
-      </div>
-    `;
-  },
-
-  /** @private */
-  _initPicker() {
-    const wrap = this._container.querySelector('[data-ref="col-picker-wrap"]');
-    if (!wrap) return;
-    this._picker = new ColumnPicker(wrap, this._context, {
-      mode: 'single',
-      types: ['numeric'],
-      minCount: 3,
-      onChange: (ref) => {
-        this._columnRef = ref;
-        this._save();
+      onChartTypeChange() {
+        // model.chartTypeId already updated by x-model. The <template x-if>
+        // swaps the param block automatically; just re-run the analysis
+        // (EWMA → 1 chart, CUSUM → 2 charts).
         this._scheduleAutoRun();
       },
-    });
-    if (this._columnRef) this._picker.value = this._columnRef;
-  },
+      onSigmaMethodChange() {
+        // model.sigmaMethod already updated by x-model
+        this._scheduleAutoRun();
+      },
+      onBaselineCountChange(ev) {
+        this.model.baselineCount = intOrNull(ev.target.value);
+        this._scheduleAutoRun();
+      },
+      onTargetOverrideChange(ev) {
+        this.model.targetOverride = numOrNull(ev.target.value);
+        this._scheduleAutoRun();
+      },
+      onSigmaOverrideChange(ev) {
+        const v = numOrNull(ev.target.value);
+        this.model.sigmaOverride = (v != null && v >= 0) ? v : null;
+        this._scheduleAutoRun();
+      },
+      onLambdaChange(ev) {
+        const v = numOrNull(ev.target.value);
+        this.model.lambda = (v != null && v > 0 && v <= 1) ? v : DEFAULTS.lambda;
+        this._scheduleAutoRun();
+      },
+      onLChange(ev) {
+        const v = numOrNull(ev.target.value);
+        this.model.L = (v != null && v > 0) ? v : DEFAULTS.L;
+        this._scheduleAutoRun();
+      },
+      onKSigmaChange(ev) {
+        const v = numOrNull(ev.target.value);
+        this.model.kSigma = (v != null && v > 0) ? v : DEFAULTS.kSigma;
+        this._scheduleAutoRun();
+      },
+      onHSigmaChange(ev) {
+        const v = numOrNull(ev.target.value);
+        this.model.hSigma = (v != null && v > 0) ? v : DEFAULTS.hSigma;
+        this._scheduleAutoRun();
+      },
 
-  /** @private */
-  _destroyPicker() {
-    if (this._picker) { this._picker.destroy(); this._picker = null; }
-  },
+      // ── Analysis ─────────────────────────────────────────────
 
-  /** @private */
-  _bindEvents() {
-    this._container.addEventListener('change', (e) => {
-      const ref = e.target.dataset?.ref;
-      if (!ref) return;
+      async _runAnalysis() {
+        const clear = () => {
+          this._renderGen++;
+          this._destroyCharts();
+          this.chartViews = [];
+          this.kpiCells = [];
+        };
 
-      const num = (v) => { const f = parseFloat(v); return Number.isFinite(f) ? f : null; };
-      const int = (v) => { const i = parseInt(v); return Number.isFinite(i) ? i : null; };
+        if (!this.model.columnRef) { clear(); return; }
 
-      let needsRerender = false;
-      switch (ref) {
-        case 'chart-type':
-          this._chartTypeId = e.target.value;
-          needsRerender = true;
-          break;
-        case 'sigma-method':
-          this._sigmaMethod = e.target.value;
-          break;
-        case 'baseline-count':
-          this._baselineCount = int(e.target.value);
-          break;
-        case 'target-override':
-          this._targetOverride = num(e.target.value);
-          break;
-        case 'sigma-override': {
-          const v = num(e.target.value);
-          this._sigmaOverride = (v != null && v >= 0) ? v : null;
-          break;
+        const sm = module._context.stateManager;
+        const raw = getColumnValues(sm, this.model.columnRef);
+        const values = raw.filter(v => typeof v === 'number' && !isNaN(v));
+        if (values.length < 3) { clear(); return; }
+
+        const blEnd = (this.model.baselineCount && this.model.baselineCount > 0)
+          ? Math.min(this.model.baselineCount, values.length)
+          : values.length;
+        const baseline = values.slice(0, blEnd);
+
+        // Resolve target & sigma
+        const targetAuto = baseline.reduce((s, x) => s + x, 0) / baseline.length;
+        const target = this.model.targetOverride != null ? this.model.targetOverride : targetAuto;
+
+        const sigmaAuto = estimateSigma(baseline, this.model.sigmaMethod);
+        const sigma = (this.model.sigmaOverride != null && this.model.sigmaOverride > 0)
+          ? this.model.sigmaOverride
+          : sigmaAuto;
+
+        if (!(sigma > 0)) { clear(); return; }
+
+        if (this.model.chartTypeId === 'ewma') {
+          const r = computeEWMA(values, target, sigma, this.model.lambda, this.model.L);
+          this._renderStatsEWMA(r, target, sigma, values.length);
+          await this._renderChartEWMA(r);
+        } else {
+          const r = computeCUSUM(values, target, sigma, this.model.kSigma, this.model.hSigma);
+          this._renderStatsCUSUM(r, target, sigma, values.length);
+          await this._renderChartCUSUM(r, values.length);
         }
-        case 'lambda': {
-          const v = num(e.target.value);
-          this._lambda = (v != null && v > 0 && v <= 1) ? v : DEFAULTS.lambda;
-          break;
-        }
-        case 'L': {
-          const v = num(e.target.value);
-          this._L = (v != null && v > 0) ? v : DEFAULTS.L;
-          break;
-        }
-        case 'kSigma': {
-          const v = num(e.target.value);
-          this._kSigma = (v != null && v > 0) ? v : DEFAULTS.kSigma;
-          break;
-        }
-        case 'hSigma': {
-          const v = num(e.target.value);
-          this._hSigma = (v != null && v > 0) ? v : DEFAULTS.hSigma;
-          break;
-        }
-      }
-      this._save();
-      if (needsRerender) {
-        this._destroyPicker();
-        this._render();
-        this._initPicker();
-      }
-      this._scheduleAutoRun();
-    });
-  },
+      },
 
-  /** @private */
-  _scheduleAutoRun() {
-    clearTimeout(this._autoRunTimer);
-    this._autoRunTimer = setTimeout(() => this._runAnalysis(), 120);
-  },
+      // ── KPI strip (declarative — structured cells, RAW text; x-text escapes) ──
 
-  // ─── Analysis ───────────────────────────────────────────────
+      _renderStatsEWMA(r, target, sigma, total) {
+        const fmt = (v) => Number.isFinite(v) ? v.toFixed(4) : '–';
+        const sigCount = r.signals.length;
+        const cls = sigCount === 0 ? 'dmike-kpi--good' : 'dmike-kpi--bad';
 
-  /** @private */
-  async _runAnalysis() {
-    const statsBar  = this._container.querySelector('[data-ref="stats-bar"]');
-    const chartsWrap = this._container.querySelector('[data-ref="charts-wrap"]');
+        this.kpiCells = [
+          { value: fmt(target), label: _t('statTarget'), labelHint: '', sub: `σ̂ = ${fmt(sigma)}`, mod: '' },
+          { value: fmt(r.sigmaSteady), label: _t('statSigmaSteady'), labelHint: '', sub: `λ = ${this.model.lambda}`, mod: '' },
+          { value: sigCount, label: _t('statSignals'), labelHint: '', sub: _t('statOf', { total }), mod: cls },
+        ];
+      },
 
-    const clear = () => {
-      this._destroyCharts();
-      if (statsBar) statsBar.innerHTML = '';
-      if (chartsWrap) chartsWrap.innerHTML = '';
+      _renderStatsCUSUM(r, target, sigma, total) {
+        const fmt = (v) => Number.isFinite(v) ? v.toFixed(4) : '–';
+        const sigCount = r.signalsHi.length + r.signalsLo.length;
+        const cls = sigCount === 0 ? 'dmike-kpi--good' : 'dmike-kpi--bad';
+
+        this.kpiCells = [
+          { value: fmt(target), label: _t('statTarget'), labelHint: '', sub: `σ̂ = ${fmt(sigma)}`, mod: '' },
+          { value: fmt(r.h), label: _t('statHLimit'), labelHint: '', sub: `k = ${fmt(r.k)}`, mod: '' },
+          { value: sigCount, label: _t('statSignals'), labelHint: '', sub: _t('statOf', { total }), mod: cls },
+        ];
+      },
+
+      // ── Chart rendering (headers declarative; charts mount into templated hosts) ──
+
+      async _renderChartEWMA(r) {
+        this._destroyCharts();
+
+        const sm = module._context.stateManager;
+        const colName = getColumnName(sm, this.model.columnRef);
+        const sigCount = r.signals.length;
+        const isStable = sigCount === 0;
+
+        const gen = ++this._renderGen;
+
+        // Declarative header markup (RAW text — x-text escapes).
+        this.chartViews = [{
+          id: 'ewma',
+          title: _t('chartTitle_ewma', { col: colName }),
+          badgeText: isStable ? _t('stable') : _t('unstable', { count: sigCount }),
+          badgeClass: isStable ? 'twc__badge--stable' : 'twc__badge--unstable',
+        }];
+
+        const host = await this.whenAnchor('[data-chart-host="ewma"]', gen);
+        if (!host) return;
+
+        const chart = await module._context.chartManager.create(host, 'control-chart', {
+          title: '',
+          xLabel: _t('xLabelSample'),
+          yLabel: _t('yLabel_ewma'),
+          showLegend: false,
+          showTitle: false,
+          values: r.values,
+          cl: r.cl,
+          ucl: r.ucl,      // array → stepped limits
+          lcl: r.lcl,      // array → stepped limits
+          sigma: r.sigma,  // array → no zones (correct: σ_zi varies by point)
+          violationIndices: new Set(r.signals),
+          usl: null, lsl: null,
+          showZones: false,
+        });
+
+        if (gen !== this._renderGen) {
+          try { module._context.chartManager.destroy(chart); } catch { /* ignore */ }
+          return;
+        }
+        this._charts.push(chart);
+      },
+
+      async _renderChartCUSUM(r, _n) {
+        this._destroyCharts();
+
+        const sm = module._context.stateManager;
+        const colName = getColumnName(sm, this.model.columnRef);
+
+        const gen = ++this._renderGen;
+
+        const subcharts = [
+          {
+            id: 'cusum_plus', titleKey: 'chartTitle_cusum_plus', yLabel: 'C⁺',
+            values: r.cPlus, violations: r.signalsHi,
+          },
+          {
+            id: 'cusum_minus', titleKey: 'chartTitle_cusum_minus', yLabel: 'C⁻',
+            values: r.cMinus, violations: r.signalsLo,
+          },
+        ];
+
+        // Declarative header markup (RAW text — x-text escapes).
+        this.chartViews = subcharts.map(sc => {
+          const sigCount = sc.violations.length;
+          const isStable = sigCount === 0;
+          return {
+            id: sc.id,
+            title: _t(sc.titleKey, { col: colName }),
+            badgeText: isStable ? _t('stable') : _t('unstable', { count: sigCount }),
+            badgeClass: isStable ? 'twc__badge--stable' : 'twc__badge--unstable',
+          };
+        });
+
+        for (const sc of subcharts) {
+          const host = await this.whenAnchor(`[data-chart-host="${  sc.id  }"]`, gen);
+          if (!host) return;
+
+          const chart = await module._context.chartManager.create(host, 'control-chart', {
+            title: '',
+            xLabel: _t('xLabelSample'),
+            yLabel: sc.yLabel,
+            showLegend: false,
+            showTitle: false,
+            values: sc.values,
+            cl: 0,
+            ucl: r.h,
+            lcl: 0,
+            sigma: 0,            // suppress σ zones
+            violationIndices: new Set(sc.violations),
+            usl: null, lsl: null,
+            showZones: false,
+          });
+
+          if (gen !== this._renderGen) {
+            try { module._context.chartManager.destroy(chart); } catch { /* ignore */ }
+            return;
+          }
+          this._charts.push(chart);
+        }
+      },
+
     };
-
-    if (!this._columnRef) { clear(); return; }
-    const raw = getColumnValues(this._context.stateManager, this._columnRef);
-    const values = raw.filter(v => typeof v === 'number' && !isNaN(v));
-    if (values.length < 3) { clear(); return; }
-
-    const blEnd = (this._baselineCount && this._baselineCount > 0)
-      ? Math.min(this._baselineCount, values.length)
-      : values.length;
-    const baseline = values.slice(0, blEnd);
-
-    // Resolve target & sigma
-    const targetAuto = baseline.reduce((s, x) => s + x, 0) / baseline.length;
-    const target = this._targetOverride != null ? this._targetOverride : targetAuto;
-
-    const sigmaAuto = estimateSigma(baseline, this._sigmaMethod);
-    const sigma = (this._sigmaOverride != null && this._sigmaOverride > 0)
-      ? this._sigmaOverride
-      : sigmaAuto;
-
-    if (!(sigma > 0)) { clear(); return; }
-
-    if (this._chartTypeId === 'ewma') {
-      const r = computeEWMA(values, target, sigma, this._lambda, this._L);
-      this._renderStatsEWMA(r, target, sigma, values.length);
-      await this._renderChartEWMA(r);
-    } else {
-      const r = computeCUSUM(values, target, sigma, this._kSigma, this._hSigma);
-      this._renderStatsCUSUM(r, target, sigma, values.length);
-      await this._renderChartCUSUM(r, values.length);
-    }
   },
+});
 
-  /** @private */
-  _renderStatsEWMA(r, target, sigma, total) {
-    const statsBar = this._container.querySelector('[data-ref="stats-bar"]');
-    if (!statsBar) return;
-
-    const fmt = (v) => Number.isFinite(v) ? v.toFixed(4) : '–';
-    const sigCount = r.signals.length;
-    const cls = sigCount === 0 ? 'dmike-kpi--good' : 'dmike-kpi--bad';
-
-    statsBar.innerHTML = `<div class="dmike-kpi-strip">
-      <div class="dmike-kpi">
-        <div class="dmike-kpi-value">${fmt(target)}</div>
-        <div class="dmike-kpi-label">${this._t('statTarget')}</div>
-        <div class="dmike-kpi-sub">σ̂ = ${fmt(sigma)}</div>
-      </div>
-      <div class="dmike-kpi">
-        <div class="dmike-kpi-value">${fmt(r.sigmaSteady)}</div>
-        <div class="dmike-kpi-label">${this._t('statSigmaSteady')}</div>
-        <div class="dmike-kpi-sub">λ = ${this._lambda}</div>
-      </div>
-      <div class="dmike-kpi ${cls}">
-        <div class="dmike-kpi-value">${sigCount}</div>
-        <div class="dmike-kpi-label">${this._t('statSignals')}</div>
-        <div class="dmike-kpi-sub">${this._t('statOf', { total })}</div>
-      </div>
-    </div>`;
-  },
-
-  /** @private */
-  _renderStatsCUSUM(r, target, sigma, total) {
-    const statsBar = this._container.querySelector('[data-ref="stats-bar"]');
-    if (!statsBar) return;
-
-    const fmt = (v) => Number.isFinite(v) ? v.toFixed(4) : '–';
-    const sigCount = r.signalsHi.length + r.signalsLo.length;
-    const cls = sigCount === 0 ? 'dmike-kpi--good' : 'dmike-kpi--bad';
-
-    statsBar.innerHTML = `<div class="dmike-kpi-strip">
-      <div class="dmike-kpi">
-        <div class="dmike-kpi-value">${fmt(target)}</div>
-        <div class="dmike-kpi-label">${this._t('statTarget')}</div>
-        <div class="dmike-kpi-sub">σ̂ = ${fmt(sigma)}</div>
-      </div>
-      <div class="dmike-kpi">
-        <div class="dmike-kpi-value">${fmt(r.h)}</div>
-        <div class="dmike-kpi-label">${this._t('statHLimit')}</div>
-        <div class="dmike-kpi-sub">k = ${fmt(r.k)}</div>
-      </div>
-      <div class="dmike-kpi ${cls}">
-        <div class="dmike-kpi-value">${sigCount}</div>
-        <div class="dmike-kpi-label">${this._t('statSignals')}</div>
-        <div class="dmike-kpi-sub">${this._t('statOf', { total })}</div>
-      </div>
-    </div>`;
-  },
-
-  /** @private */
-  async _renderChartEWMA(r) {
-    this._destroyCharts();
-    const chartsWrap = this._container.querySelector('[data-ref="charts-wrap"]');
-    if (!chartsWrap) return;
-    chartsWrap.innerHTML = '';
-
-    const colName = getColumnName(this._context.stateManager, this._columnRef);
-    const sigCount = r.signals.length;
-    const isStable = sigCount === 0;
-
-    const wrapper = document.createElement('div');
-    wrapper.className = 'twc__chart-section';
-    const header = document.createElement('div');
-    header.className = 'twc__chart-header';
-    header.innerHTML = `
-      <span class="twc__chart-title">${esc(this._t('chartTitle_ewma', { col: colName }))}</span>
-      <span class="twc__badge ${isStable ? 'twc__badge--stable' : 'twc__badge--unstable'}">
-        ${isStable ? this._t('stable') : this._t('unstable', { count: sigCount })}
-      </span>
-    `;
-    wrapper.appendChild(header);
-    const plotEl = document.createElement('div');
-    plotEl.className = 'twc__plot-wrap';
-    wrapper.appendChild(plotEl);
-    chartsWrap.appendChild(wrapper);
-
-    const chart = await this._context.chartManager.create(plotEl, 'control-chart', {
-      title: '',
-      xLabel: this._t('xLabelSample'),
-      yLabel: this._t('yLabel_ewma'),
-      showLegend: false,
-      showTitle: false,
-      values: r.values,
-      cl: r.cl,
-      ucl: r.ucl,      // array → stepped limits
-      lcl: r.lcl,      // array → stepped limits
-      sigma: r.sigma,  // array → no zones (correct: σ_zi varies by point)
-      violationIndices: new Set(r.signals),
-      usl: null, lsl: null,
-      showZones: false,
-    });
-    this._charts.push(chart);
-  },
-
-  /** @private */
-  async _renderChartCUSUM(r, n) {
-    this._destroyCharts();
-    const chartsWrap = this._container.querySelector('[data-ref="charts-wrap"]');
-    if (!chartsWrap) return;
-    chartsWrap.innerHTML = '';
-
-    const colName = getColumnName(this._context.stateManager, this._columnRef);
-
-    // C⁺ chart
-    {
-      const wrapper = document.createElement('div');
-      wrapper.className = 'twc__chart-section';
-      const header = document.createElement('div');
-      header.className = 'twc__chart-header';
-      const sigCount = r.signalsHi.length;
-      const isStable = sigCount === 0;
-      header.innerHTML = `
-        <span class="twc__chart-title">${esc(this._t('chartTitle_cusum_plus', { col: colName }))}</span>
-        <span class="twc__badge ${isStable ? 'twc__badge--stable' : 'twc__badge--unstable'}">
-          ${isStable ? this._t('stable') : this._t('unstable', { count: sigCount })}
-        </span>
-      `;
-      wrapper.appendChild(header);
-      const plotEl = document.createElement('div');
-      plotEl.className = 'twc__plot-wrap';
-      wrapper.appendChild(plotEl);
-      chartsWrap.appendChild(wrapper);
-
-      const chart = await this._context.chartManager.create(plotEl, 'control-chart', {
-        title: '',
-        xLabel: this._t('xLabelSample'),
-        yLabel: 'C⁺',
-        showLegend: false,
-        showTitle: false,
-        values: r.cPlus,
-        cl: 0,
-        ucl: r.h,
-        lcl: 0,
-        sigma: 0,            // suppress σ zones
-        violationIndices: new Set(r.signalsHi),
-        usl: null, lsl: null,
-        showZones: false,
-      });
-      this._charts.push(chart);
-    }
-
-    // C⁻ chart
-    {
-      const wrapper = document.createElement('div');
-      wrapper.className = 'twc__chart-section';
-      const header = document.createElement('div');
-      header.className = 'twc__chart-header';
-      const sigCount = r.signalsLo.length;
-      const isStable = sigCount === 0;
-      header.innerHTML = `
-        <span class="twc__chart-title">${esc(this._t('chartTitle_cusum_minus', { col: colName }))}</span>
-        <span class="twc__badge ${isStable ? 'twc__badge--stable' : 'twc__badge--unstable'}">
-          ${isStable ? this._t('stable') : this._t('unstable', { count: sigCount })}
-        </span>
-      `;
-      wrapper.appendChild(header);
-      const plotEl = document.createElement('div');
-      plotEl.className = 'twc__plot-wrap';
-      wrapper.appendChild(plotEl);
-      chartsWrap.appendChild(wrapper);
-
-      const chart = await this._context.chartManager.create(plotEl, 'control-chart', {
-        title: '',
-        xLabel: this._t('xLabelSample'),
-        yLabel: 'C⁻',
-        showLegend: false,
-        showTitle: false,
-        values: r.cMinus,
-        cl: 0,
-        ucl: r.h,
-        lcl: 0,
-        sigma: 0,
-        violationIndices: new Set(r.signalsLo),
-        usl: null, lsl: null,
-        showZones: false,
-      });
-      this._charts.push(chart);
-    }
-  },
-
-  // ─── Helpers ────────────────────────────────────────────────
-
-  /** @private */
-  _destroyCharts() {
-    for (const c of this._charts) {
-      this._context.chartManager.destroy(c);
-    }
-    this._charts = [];
-  },
+/**
+ * Custom loadExample: time-weighted-chart examples ship a full worksheet
+ * (`sourceWorksheetData`) and use the literal placeholder `__source__` as the
+ * `columnRef.instanceId`. Delegates to the shared worksheet-backed loader,
+ * rewriting the single `columnRef` placeholder.
+ *
+ * @param {{ meta: object, data: object }} payload
+ */
+mod.loadExample = function loadExample(payload) {
+  return loadWorksheetExample(this, payload, {
+    Model: State,
+    rewriteRefs: rewriteRefFields(['columnRef']),
+  });
 };
+
+export default mod;

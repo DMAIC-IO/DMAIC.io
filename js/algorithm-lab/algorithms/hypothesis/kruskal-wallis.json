@@ -11,7 +11,7 @@
 
   "description": {
     "short": {
-      "de": "Nichtparametrische Alternative zur One-Way ANOVA für k Stichproben.",
+      "de": "Nichtparametrische Alternative zur One-Way {{term:anova|ANOVA}} für k Stichproben.",
       "en": "Nonparametric alternative to one-way ANOVA for k samples."
     },
     "long": {

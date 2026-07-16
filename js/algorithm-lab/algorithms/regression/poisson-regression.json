@@ -1,7 +1,7 @@
 {
   "id": "poisson-regression",
   "name": {
-    "de": "Poisson-Regression",
+    "de": "{{term:poisson-regression|Poisson-Regression}}",
     "en": "Poisson Regression"
   },
   "category": "regression",
@@ -16,7 +16,7 @@
     },
     "long": {
       "de": "Poisson-Regression modelliert Zähldaten (nicht-negative ganzzahlige Antwort) über ein generalisiertes lineares Modell mit kanonischer Log-Link-Funktion. Die Koeffizienten werden per Iteratively Reweighted Least Squares (IRLS) geschätzt. Die Ausgabe umfasst Koeffizienten, Standardfehler, z-Werte, p-Werte, Rate Ratios mit Konfidenzintervallen, Deviance, Null-Deviance, AIC, BIC, Log-Likelihood und Pseudo-R²-Maße (McFadden, Cox-Snell, Nagelkerke). Eine Überdispersionsprüfung über Pearson-χ²/df wird mitgeliefert.",
-      "en": "Poisson regression models count data (non-negative integer response) via a generalized linear model with canonical log link function. Coefficients are estimated using Iteratively Reweighted Least Squares (IRLS). Output includes coefficients, standard errors, z-values, p-values, rate ratios with confidence intervals, deviance, null deviance, AIC, BIC, log-likelihood and pseudo-R² measures (McFadden, Cox-Snell, Nagelkerke). An overdispersion check via Pearson χ²/df is provided."
+      "en": "{{term:poisson-regression|Poisson regression}} models count data (non-negative integer response) via a generalized linear model with canonical log link function. Coefficients are estimated using Iteratively Reweighted Least Squares (IRLS). Output includes coefficients, standard errors, z-values, p-values, rate ratios with confidence intervals, deviance, null deviance, AIC, BIC, log-likelihood and pseudo-R² measures (McFadden, Cox-Snell, Nagelkerke). An overdispersion check via Pearson χ²/df is provided."
     }
   },
 

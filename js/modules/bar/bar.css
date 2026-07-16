@@ -10,8 +10,8 @@
   display: none;
   font-size: var(--font-size-sm);
   color: var(--color-error, #ef4444);
-  background: rgba(239, 68, 68, 0.08);
-  border: var(--border-width) solid rgba(239, 68, 68, 0.2);
+  background: rgb(239 68 68 / 8%);
+  border: var(--border-width) solid rgb(239 68 68 / 20%);
   border-radius: var(--border-radius);
   padding: var(--spacing-sm);
 }

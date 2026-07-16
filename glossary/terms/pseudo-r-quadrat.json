@@ -1,0 +1,63 @@
+{
+  "id": "pseudo-r-quadrat",
+  "category": "regression",
+  "title": {
+    "de": "Pseudo-R² (McFadden, Nagelkerke, Cox-Snell)",
+    "en": "Pseudo-R² (McFadden, Nagelkerke, Cox-Snell)"
+  },
+  "short": {
+    "de": "Ersatzmaße für {{term:r-quadrat|R²}} in {{term:glm|GLM}} — quantifizieren die Modellverbesserung gegenüber dem Nullmodell.",
+    "en": "Substitute measures for {{term:r-quadrat|R²}} in {{term:glm|GLM}} — quantify improvement of the model over the null model."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "GLM haben kein echtes $R^2$, weil sie nicht per kleinster Quadrate, sondern per Maximum Likelihood geschätzt werden. Stattdessen gibt es mehrere **Pseudo-$R^2$**-Kennzahlen, die auf der Log-Likelihood beruhen und die Verbesserung des angepassten Modells gegenüber dem Nullmodell (Modell ohne Prädiktoren) beziffern."
+      },
+      {
+        "type": "list",
+        "items": [
+          "**McFadden $R^2$**: $1 - L_M / L_0$ (Verhältnis der Log-Likelihoods)",
+          "**Cox-Snell $R^2$**: berücksichtigt die Stichprobengröße; hat aber einen maximalen Wert $< 1$",
+          "**Nagelkerke $R^2$**: normalisiert Cox-Snell auf den Bereich $[0, 1]$",
+          "**Efron $R^2$**: einfach $1 - \\text{RSS}/\\text{TSS}$ auf $(y - \\hat{p})$ — wie das klassische $R^2$"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "**Nicht wie klassisches $R^2$ interpretieren.** Werte nahe 1 sind bei attributiven Daten unrealistisch. Faustregel für McFadden: **$0{,}2$ bis $0{,}4$ = gute Anpassung**, $> 0{,}4$ = sehr gute Anpassung. Für Modellvergleiche innerhalb desselben Datensatzes ist die Rangfolge der Pseudo-$R^2$ meist konsistent, absolute Werte je nach Definition aber unterschiedlich."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "GLMs have no true $R^2$ because they are fit by maximum likelihood, not least squares. Instead there are several **pseudo-$R^2$** measures based on the log-likelihood that quantify the improvement of the fitted model over the null model (predictor-free model)."
+      },
+      {
+        "type": "list",
+        "items": [
+          "**McFadden $R^2$**: $1 - L_M / L_0$ (ratio of log-likelihoods)",
+          "**Cox-Snell $R^2$**: accounts for sample size; has a maximum below $1$",
+          "**Nagelkerke $R^2$**: normalises Cox-Snell to the range $[0, 1]$",
+          "**Efron $R^2$**: simply $1 - \\text{RSS}/\\text{TSS}$ on $(y - \\hat{p})$ — akin to the classical $R^2$"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "**Do not read like classical $R^2$.** Values near 1 are unrealistic for attributive data. Rule of thumb for McFadden: **$0.2$–$0.4$ = good fit**, $> 0.4$ = very good fit. Within one dataset, model rankings are usually consistent across pseudo-$R^2$ definitions, but absolute values differ by definition."
+      }
+    ]
+  },
+  "aliases": {
+    "de": ["Pseudo-R-Quadrat", "McFadden R²", "Nagelkerke R²"],
+    "en": ["pseudo-R²", "pseudo R-squared", "McFadden's R²", "Nagelkerke's R²"]
+  },
+  "seeAlso": ["r-quadrat", "glm", "logistische-regression", "poisson-regression"],
+  "modules": ["glm-regression"],
+  "algoLab": ["regression/logistic-regression", "regression/poisson-regression"],
+  "sources": [
+    { "label": "McFadden, D. — Conditional Logit Analysis of Qualitative Choice Behavior, in Frontiers in Econometrics, Academic Press, 1974", "url": null },
+    { "label": "Nagelkerke, N. J. D. — A Note on a General Definition of the Coefficient of Determination, Biometrika, 78(3), 1991", "url": null }
+  ]
+}

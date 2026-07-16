@@ -1,0 +1,85 @@
+{
+  "id": "logistische-regression",
+  "category": "regression",
+  "title": {
+    "de": "Logistische Regression (binär)",
+    "en": "Logistic Regression (Binary)"
+  },
+  "short": {
+    "de": "{{term:glm|GLM}} für binäre Antworten (0/1, OK/NOK) — modelliert die Wahrscheinlichkeit $P(Y=1|X)$ über die Logit-Link-Funktion.",
+    "en": "{{term:glm|GLM}} for binary responses (0/1, pass/fail) — models the probability $P(Y=1|X)$ via the logit link."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "Die **binäre logistische Regression** ist das GLM für 0/1-Antworten. Statt Y direkt zu modellieren, wird die **Logit-Transformation** der Erfolgswahrscheinlichkeit linear an X gebunden."
+      },
+      {
+        "type": "formula",
+        "latex": "\\text{logit}(p) = \\ln\\left(\\frac{p}{1-p}\\right) = \\beta_0 + \\beta_1 X_1 + \\ldots + \\beta_p X_p"
+      },
+      {
+        "type": "paragraph",
+        "text": "Rücktransformiert ergibt sich die sigmoide **Antwortkurve**:"
+      },
+      {
+        "type": "formula",
+        "latex": "P(Y = 1 \\mid X) = \\frac{1}{1 + e^{-(\\beta_0 + \\beta_1 X_1 + \\ldots)}}"
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Koeffizienten** werden als {{term:odds-ratio|Odds Ratios}} interpretiert: $\\exp(\\beta_j)$ = OR pro Einheit $X_j$",
+          "**Modellgüte** über {{term:pseudo-r-quadrat|Pseudo-$R^2$}} (McFadden, Nagelkerke), AUC/ROC, Hosmer-Lemeshow-Test",
+          "**Vorsicht bei Separation** — perfekt trennende Prädiktoren machen die Koeffizienten unendlich groß"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "OLS auf binäre Y ist ein Anfängerfehler: es liefert Wahrscheinlichkeiten außerhalb $[0,1]$, verletzt die Fehlerannahmen und produziert falsche p-Werte. Die logistische Regression ist die richtige Wahl — und ist gleichzeitig auch für Anteilsdaten (Trials-Spalte, gruppierte Binomial-Regression) einsetzbar."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "**Binary logistic regression** is the GLM for 0/1 responses. Instead of modelling Y directly, the **logit** of the success probability is tied linearly to X."
+      },
+      {
+        "type": "formula",
+        "latex": "\\text{logit}(p) = \\ln\\left(\\frac{p}{1-p}\\right) = \\beta_0 + \\beta_1 X_1 + \\ldots + \\beta_p X_p"
+      },
+      {
+        "type": "paragraph",
+        "text": "Back-transformed this gives the sigmoid **response curve**:"
+      },
+      {
+        "type": "formula",
+        "latex": "P(Y = 1 \\mid X) = \\frac{1}{1 + e^{-(\\beta_0 + \\beta_1 X_1 + \\ldots)}}"
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Coefficients** are read as {{term:odds-ratio|odds ratios}}: $\\exp(\\beta_j)$ = OR per unit of $X_j$",
+          "**Model fit** via {{term:pseudo-r-quadrat|pseudo-$R^2$}} (McFadden, Nagelkerke), AUC/ROC, Hosmer-Lemeshow test",
+          "**Watch for separation** — a perfectly separating predictor drives coefficients to infinity"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "Applying OLS to binary Y is a rookie mistake: it produces probabilities outside $[0,1]$, breaks the error assumptions, and yields wrong p-values. Logistic regression is the right choice — and also handles proportion data (trials column, grouped binomial regression)."
+      }
+    ]
+  },
+  "aliases": {
+    "de": ["binäre logistische Regression", "Logit-Regression", "logistische Regression"],
+    "en": ["logistic regression", "logit regression", "binary logistic regression"]
+  },
+  "seeAlso": ["glm", "odds-ratio", "pseudo-r-quadrat", "regression"],
+  "modules": ["glm-regression"],
+  "algoLab": ["regression/logistic-regression", "regression/hosmer-lemeshow", "regression/roc-auc"],
+  "sources": [
+    { "label": "Hosmer, D. W., Lemeshow, S. & Sturdivant, R. X. — Applied Logistic Regression, 3rd Edition, Wiley", "url": null },
+    { "label": "Agresti, A. — Categorical Data Analysis, 3rd Edition, Wiley", "url": null }
+  ]
+}

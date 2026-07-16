@@ -161,7 +161,7 @@
   background: var(--color-bg-secondary);
   border: 1px solid var(--color-border-primary);
   border-radius: var(--border-radius-sm);
-  box-shadow: -2px 0 6px rgba(0, 0, 0, 0.08);
+  box-shadow: -2px 0 6px rgb(0 0 0 / 8%);
 }
 
 .contour__editor-inner {
@@ -173,6 +173,7 @@
 }
 
 .contour__editor-inner::-webkit-scrollbar { width: 5px; }
+
 .contour__editor-inner::-webkit-scrollbar-thumb {
   background: var(--color-border-secondary);
   border-radius: 3px;
@@ -215,7 +216,7 @@
   width: 16px;
   height: 10px;
   border-radius: 2px;
-  border: 1px solid rgba(128, 128, 128, 0.2);
+  border: 1px solid rgb(128 128 128 / 20%);
 }
 
 /* ── Color Preview (inside editor) ── */
@@ -229,3 +230,17 @@
 }
 
 .contour__color-preview div { flex: 1; }
+
+.contour__formula-hint {
+  margin: 4px 0 0;
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--color-text-secondary);
+}
+
+.contour__formula-error {
+  margin: 4px 0 0;
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--color-error);
+}

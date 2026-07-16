@@ -1,0 +1,75 @@
+<div class="run-chart dmike-split" x-data="runChart">
+  <div class="run-chart__input dmike-split__input">
+
+    <div class="dmike-split__section-title" x-text="t('sectionData')"></div>
+    <div class="field-group">
+      <label x-text="t('dataColumn')"></label>
+      <div data-ref="col-picker-wrap"></div>
+    </div>
+
+    <div class="dmike-split__section-title" x-text="t('sectionSettings')"></div>
+    <div class="field-group">
+      <label x-text="t('alpha')"></label>
+      <input type="number" class="field field--num" data-ref="alpha"
+        x-model="model.alpha" @change="alphaChanged($event)"
+        step="0.01" min="0.001" max="0.5">
+      <span class="run-chart__hint" x-text="t('alphaHint')"></span>
+    </div>
+
+  </div>
+
+  <div class="run-chart__output dmike-split__output">
+    <div data-ref="stats-bar">
+      <template x-if="result">
+        <div class="dmike-kpi-strip">
+          <div class="dmike-kpi">
+            <div class="dmike-kpi-value" x-text="fmt(result.median)"></div>
+            <div class="dmike-kpi-label" x-text="t('statMedian')"></div>
+            <div class="dmike-kpi-sub" x-text="t('statN', { n: result.n })"></div>
+          </div>
+          <div class="dmike-kpi">
+            <div class="dmike-kpi-value" x-text="result.runsAboutMedian"></div>
+            <div class="dmike-kpi-label" x-text="t('statRunsAbout')"></div>
+            <div class="dmike-kpi-sub" x-text="t('statRunsUpDown', { count: result.runsUpDown })"></div>
+          </div>
+          <div class="dmike-kpi" :class="flaggedKpiClass()">
+            <div class="dmike-kpi-value" x-text="result.flagged"></div>
+            <div class="dmike-kpi-label" x-text="t('statFlagged')"></div>
+            <div class="dmike-kpi-sub" x-text="t('statAlpha', { a: model.alpha })"></div>
+          </div>
+        </div>
+      </template>
+    </div>
+
+    <div data-ref="chart-wrap">
+      <template x-if="result">
+        <div class="run-chart__chart-section">
+          <div class="run-chart__chart-header">
+            <span class="run-chart__chart-title" x-text="chartTitle()"></span>
+          </div>
+          <div class="run-chart__plot-wrap" data-ref="plot"></div>
+        </div>
+      </template>
+    </div>
+
+    <div data-ref="tests-wrap">
+      <template x-if="result">
+        <div class="run-chart__tests-panel">
+          <div class="run-chart__tests-header" x-text="t('testsTitle')"></div>
+          <div class="run-chart__tests-grid">
+            <template x-for="row in result.tests">
+              <div class="run-chart__test-row" :key="row.id">
+                <div class="run-chart__test-name">
+                  <strong x-text="testName(row.id)"></strong>
+                  <span class="run-chart__test-desc" x-text="testDesc(row.id)"></span>
+                </div>
+                <div class="run-chart__test-pvalue" x-text="fmtP(row.p)"></div>
+                <div class="run-chart__test-status" :class="testStatusClass(row.p)" x-text="testStatusText(row.p)"></div>
+              </div>
+            </template>
+          </div>
+        </div>
+      </template>
+    </div>
+  </div>
+</div>

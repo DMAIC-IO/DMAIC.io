@@ -12,7 +12,7 @@ export default {
         blocks: [
           {
             type: 'paragraph',
-            content: 'Eine Prozesskarte (Process Map, Flowchart) bildet einen Ablauf grafisch ab — Schritte, Entscheidungen, Inputs und Outputs werden in einer logischen Reihenfolge dargestellt. Während ein SIPOC nur den Rahmen zeigt, beschreibt die Prozesskarte die tatsächliche Reihenfolge und die Verzweigungen.',
+            content: 'Eine {{term:process-map|Prozesskarte}} (Process Map, Flowchart) bildet einen Ablauf grafisch ab — Schritte, Entscheidungen, Inputs und Outputs werden in einer logischen Reihenfolge dargestellt. Während ein SIPOC nur den Rahmen zeigt, beschreibt die Prozesskarte die tatsächliche Reihenfolge und die Verzweigungen.',
           },
           {
             type: 'definition',
@@ -65,7 +65,7 @@ export default {
         blocks: [
           {
             type: 'paragraph',
-            content: 'A process map (flowchart) graphically depicts a workflow — steps, decisions, inputs, and outputs are arranged in logical order. While a SIPOC only shows the frame, the process map describes the actual sequence and branches.',
+            content: 'A {{term:process-map|process map}} (flowchart) graphically depicts a workflow — steps, decisions, inputs, and outputs are arranged in logical order. While a SIPOC only shows the frame, the process map describes the actual sequence and branches.',
           },
           {
             type: 'definition',

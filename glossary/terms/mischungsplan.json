@@ -1,0 +1,96 @@
+{
+  "id": "mischungsplan",
+  "category": "doe",
+  "title": {
+    "de": "Mischungsplan (Mixture Design)",
+    "en": "Mixture Design"
+  },
+  "short": {
+    "de": "Versuchsplan für Rezepturen, deren Komponenten sich zu 100 % summieren — die Anteile sind nicht unabhängig variierbar.",
+    "en": "Design for recipes whose components sum to 100 % — proportions cannot vary independently."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "Ein **Mischungsplan** wird verwendet, wenn die {{term:faktor|Faktoren}} Komponentenanteile einer Rezeptur sind (Gew.-%, Vol.-%, Molanteile), die sich per Definition zu 100 % ergänzen. Das übliche {{term:vollfaktoriell|vollfaktorielle}} oder {{term:ccd|CCD}}-Denken versagt hier, weil die Komponenten nicht unabhängig variiert werden können."
+      },
+      {
+        "type": "formula",
+        "latex": "\\sum_{i=1}^{q} x_i = 1, \\quad 0 \\leq x_i \\leq 1"
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Simplex-Lattice-Plan** — Gitter auf dem Simplex; Kombinationen wie (1, 0, 0), (½, ½, 0), (⅓, ⅓, ⅓)",
+          "**Simplex-Centroid-Plan** — reine Komponenten, alle Zweier-, Dreier-, …, alle Kombinationen zu gleichen Anteilen",
+          "**Extreme-Vertices-Plan** — mit unteren/oberen Schranken pro Komponente, für eingeschränkte Rezepturen"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "Auswertung erfolgt mit dem **Scheffé-Modell** — kein Interzept-Term, weil $\\sum x_i = 1$ ihn absorbiert. Anwendungen: Chemie, Pharmazie, Lebensmittel, Beton, Legierungen. Kombinationen aus Mischung + Prozessvariablen (z. B. Rezeptur + Temperatur) heißen Mixture-Process-Designs."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "A **mixture design** is used when the {{term:faktor|factors}} are component proportions of a recipe (wt %, vol %, mole fractions) which by definition sum to 100 %. The usual {{term:vollfaktoriell|full factorial}} or {{term:ccd|CCD}} thinking fails here because the components cannot vary independently."
+      },
+      {
+        "type": "formula",
+        "latex": "\\sum_{i=1}^{q} x_i = 1, \\quad 0 \\leq x_i \\leq 1"
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Simplex-Lattice design** — grid on the simplex; combinations like (1, 0, 0), (½, ½, 0), (⅓, ⅓, ⅓)",
+          "**Simplex-Centroid design** — pure components plus all binary, ternary, …, blends at equal share",
+          "**Extreme-Vertices design** — with lower/upper limits per component, for constrained recipes"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "Analysis uses the **Scheffé model** — no intercept term, because $\\sum x_i = 1$ absorbs it. Applications: chemistry, pharma, food, concrete, alloys. Combinations of mixture + process variables (e.g. recipe + temperature) are called mixture-process designs."
+      }
+    ]
+  },
+  "aliases": {
+    "de": [
+      "Mixture Design",
+      "Mischungsplan",
+      "Simplex-Lattice",
+      "Simplex-Centroid",
+      "Rezepturplan"
+    ],
+    "en": [
+      "mixture design",
+      "Simplex-Lattice",
+      "Simplex-Centroid"
+    ]
+  },
+  "seeAlso": [
+    "doe",
+    "faktor",
+    "vollfaktoriell",
+    "d-optimal"
+  ],
+  "modules": [
+    "doe-advisor"
+  ],
+  "algoLab": [],
+  "sources": [
+    {
+      "label": "Cornell, J. A. — Experiments with Mixtures: Designs, Models, and the Analysis of Mixture Data, 3rd Edition, Wiley",
+      "url": null
+    },
+    {
+      "label": "Scheffé, H. — Experiments with Mixtures, Journal of the Royal Statistical Society B, 20(2), 1958",
+      "url": null
+    },
+    {
+      "label": "Montgomery, D. C. — Design and Analysis of Experiments, 10th Edition, Chapter 11",
+      "url": null
+    }
+  ]
+}

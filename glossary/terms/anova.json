@@ -1,0 +1,99 @@
+{
+  "id": "anova",
+  "category": "hypothesis",
+  "title": {
+    "de": "ANOVA (Varianzanalyse)",
+    "en": "ANOVA (Analysis of Variance)"
+  },
+  "short": {
+    "de": "{{term:hypothesentest|Omnibus-Test}} für {{term:mittelwert|Mittelwerte}} über *drei oder mehr* Gruppen — F-Statistik aus Zwischen-Gruppen- vs. Innerhalb-Gruppen-{{term:varianz|Varianz}}.",
+    "en": "{{term:hypothesentest|Omnibus test}} for {{term:mittelwert|means}} across *three or more* groups — F statistic from between-group vs. within-group {{term:varianz|variance}}."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "Die **Varianzanalyse** (Analysis of Variance, ANOVA) prüft, ob sich die Mittelwerte mehrerer Gruppen unterscheiden. Sie ist ein **Omnibus-Test**: bei signifikantem Ergebnis weiß man, dass *mindestens einer* der Mittelwerte abweicht — nicht welcher. Die Antwort auf „welcher“ liefern **Post-Hoc-Tests** (Tukey HSD, Bonferroni, Scheffé)."
+      },
+      {
+        "type": "formula",
+        "latex": "F = \\frac{MS_{\\text{between}}}{MS_{\\text{within}}}"
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Einfaktorielle ANOVA (One-Way)** — ein Faktor mit k Stufen; H₀: μ₁ = μ₂ = ... = μ_k",
+          "**Mehrfaktorielle ANOVA** — zwei oder mehr Faktoren; auch {{term:wechselwirkung|Wechselwirkungen}} schätzbar",
+          "**Blockdesigns / Repeated Measures** — mit strukturierter Fehlerkomponente"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "**Voraussetzungen:** unabhängige Beobachtungen, annähernd normalverteilte Residuen, homogene {{term:varianzhomogenitaet|Varianzen}}. Bei Varianzheterogenität → Welch-ANOVA; bei Nicht-Normalität → **Kruskal-Wallis-Test** als nichtparametrisches Pendant. Diese Auswahl macht das Modul automatisch anhand vorgeschalteter Normalitäts- und Varianzhomogenitäts-Tests."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "**Analysis of Variance** (ANOVA) tests whether the means of several groups differ. It is an **omnibus test**: a significant result tells you *at least one* mean differs — not which one. That is what **post-hoc tests** (Tukey HSD, Bonferroni, Scheffé) are for."
+      },
+      {
+        "type": "formula",
+        "latex": "F = \\frac{MS_{\\text{between}}}{MS_{\\text{within}}}"
+      },
+      {
+        "type": "list",
+        "items": [
+          "**One-way ANOVA** — one factor with k levels; H₀: μ₁ = μ₂ = ... = μ_k",
+          "**Multi-way ANOVA** — two or more factors; also estimates {{term:wechselwirkung|interactions}}",
+          "**Block designs / repeated measures** — with a structured error component"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "**Assumptions:** independent observations, approximately normal residuals, homogeneous {{term:varianzhomogenitaet|variances}}. Under heterogeneous variances use Welch ANOVA; under non-normality use the **Kruskal-Wallis test** as the nonparametric counterpart. The module picks automatically based on preceding normality and variance-homogeneity checks."
+      }
+    ]
+  },
+  "aliases": {
+    "de": [
+      "Varianzanalyse",
+      "One-Way ANOVA",
+      "F-Test (ANOVA)"
+    ],
+    "en": [
+      "analysis of variance",
+      "one-way ANOVA",
+      "F-test (ANOVA)"
+    ]
+  },
+  "seeAlso": [
+    "hypothesentest",
+    "t-test",
+    "wechselwirkung",
+    "varianzhomogenitaet",
+    "teststatistik"
+  ],
+  "modules": [
+    "hypothesis-test",
+    "doe-planner"
+  ],
+  "algoLab": [
+    "hypothesis/one-way-anova",
+    "hypothesis/kruskal-wallis"
+  ],
+  "sources": [
+    {
+      "label": "Fisher, R. A. — Statistical Methods for Research Workers, 1925",
+      "url": null
+    },
+    {
+      "label": "Montgomery, D. C. — Design and Analysis of Experiments, 10th Edition, Chapter 3",
+      "url": null
+    },
+    {
+      "label": "Kutner, M., Nachtsheim, C., Neter, J. & Li, W. — Applied Linear Statistical Models, 5th Edition",
+      "url": null
+    }
+  ]
+}

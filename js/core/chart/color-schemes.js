@@ -33,8 +33,8 @@ function lerpColor(c1, c2, t) {
  */
 export function getColor(t, scheme) {
   const colors = COLOR_SCHEMES[scheme] || COLOR_SCHEMES.viridis;
-  t = Math.max(0, Math.min(1, t));
-  const idx = t * (colors.length - 1);
+  const tt = Math.max(0, Math.min(1, t));
+  const idx = tt * (colors.length - 1);
   const lo = Math.floor(idx);
   const hi = Math.min(lo + 1, colors.length - 1);
   return lerpColor(colors[lo], colors[hi], idx - lo);

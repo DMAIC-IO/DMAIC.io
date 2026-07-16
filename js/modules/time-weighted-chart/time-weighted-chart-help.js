@@ -12,16 +12,16 @@ export default {
         blocks: [
           {
             type: 'paragraph',
-            content: 'Klassische Shewhart-Karten (I-MR, X̄-R) sind unempfindlich gegenüber kleinen, anhaltenden Verschiebungen — ein Drift von 1σ wird oft erst nach 40–50 Punkten erkannt. Zeitgewichtete Karten integrieren Information über mehrere Beobachtungen hinweg und erkennen genau diese Muster sehr viel schneller.',
+            content: 'Klassische Shewhart-{{term:regelkarte|Regelkarten}} ({{term:i-mr-chart|I-MR}}, {{term:xbar-r-chart|X̄-R}}) sind unempfindlich gegenüber kleinen, anhaltenden Verschiebungen — ein Drift von 1σ wird oft erst nach 40–50 Punkten erkannt. Zeitgewichtete Karten integrieren Information über mehrere Beobachtungen hinweg und erkennen genau diese Muster sehr viel schneller.',
           },
           {
             type: 'definition',
             term: 'EWMA — Exponentially Weighted Moving Average',
-            content: 'Jeder Wert ist ein gewichteter Durchschnitt aus aktueller Beobachtung und vorherigem EWMA: zᵢ = λ·xᵢ + (1−λ)·zᵢ₋₁. Der Glättungsparameter λ steuert das „Gedächtnis": kleines λ (0,05–0,1) reagiert auf sehr kleine Verschiebungen, größeres λ (0,3–0,4) verhält sich Shewhart-ähnlich.',
+            content: 'Bei der {{term:ewma-chart|EWMA-Karte}} ist jeder Wert ist ein gewichteter Durchschnitt aus aktueller Beobachtung und vorherigem EWMA: zᵢ = λ·xᵢ + (1−λ)·zᵢ₋₁. Der Glättungsparameter λ steuert das „Gedächtnis": kleines λ (0,05–0,1) reagiert auf sehr kleine Verschiebungen, größeres λ (0,3–0,4) verhält sich Shewhart-ähnlich.',
           },
           {
             type: 'definition',
-            term: 'CUSUM — Cumulative Sum',
+            term: 'CUSUM — Cumulative Sum — siehe {{term:cusum-chart|CUSUM}}',
             content: 'Summiert die Abweichungen vom Sollwert auf, beginnt aber erst zu „zählen", wenn die Abweichung größer als ein Schlupf k ist. Zwei einseitige Summen C⁺ und C⁻ erkennen Aufwärts- bzw. Abwärtsverschiebungen. Signal, sobald eine der beiden Summen die Grenze h überschreitet.',
           },
           {
@@ -35,12 +35,12 @@ export default {
         blocks: [
           {
             type: 'paragraph',
-            content: 'Classic Shewhart charts (I-MR, X̄-R) are insensitive to small persistent shifts — a 1σ drift is often only detected after 40–50 points. Time-weighted charts integrate information across multiple observations and pick up exactly those patterns much faster.',
+            content: 'Classic Shewhart {{term:regelkarte|charts}} ({{term:i-mr-chart|I-MR}}, {{term:xbar-r-chart|X̄-R}}) are insensitive to small persistent shifts — a 1σ drift is often only detected after 40–50 points. Time-weighted charts integrate information across multiple observations and pick up exactly those patterns much faster.',
           },
           {
             type: 'definition',
             term: 'EWMA — Exponentially Weighted Moving Average',
-            content: 'Each value is a weighted average of the current observation and the previous EWMA: zᵢ = λ·xᵢ + (1−λ)·zᵢ₋₁. The smoothing parameter λ controls memory: small λ (0.05–0.1) detects very small shifts, larger λ (0.3–0.4) behaves more like a Shewhart chart.',
+            content: 'On the {{term:ewma-chart|EWMA chart}} each value is a weighted average of the current observation and the previous EWMA: zᵢ = λ·xᵢ + (1−λ)·zᵢ₋₁. The smoothing parameter λ controls memory: small λ (0.05–0.1) detects very small shifts, larger λ (0.3–0.4) behaves more like a Shewhart chart.',
           },
           {
             type: 'definition',

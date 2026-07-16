@@ -2,30 +2,22 @@
  * D.Mike — CSV / TSV Parser (csv-parser.js)
  *
  * Reads delimited text files (CSV, TSV, semicolon-, pipe-separated) using
- * papaparse from vendor/. Encoding can be chosen because Excel-exported
- * CSVs are commonly Windows-1252 / Latin-1 rather than UTF-8. The delimiter
- * is auto-detected by default but can be overridden.
+ * PapaParse (bundled from node_modules). Encoding can be chosen because
+ * Excel-exported CSVs are commonly Windows-1252 / Latin-1 rather than UTF-8.
+ * The delimiter is auto-detected by default but can be overridden.
  *
  * Output schema matches mpx-parser.js — see data-import.js for the contract.
  */
 
-let _papaPromise = null;
+import { Papa } from '../../core/vendor/papaparse.js';
 
-/** Lazy-load papaparse from vendor/. */
+/**
+ * Resolve with the bundled PapaParse. Kept async for existing
+ * `await loadPapa()` call sites.
+ * @returns {Promise<object>}
+ */
 function loadPapa() {
-  if (typeof window !== 'undefined' && window.Papa) return Promise.resolve(window.Papa);
-  if (_papaPromise) return _papaPromise;
-  _papaPromise = new Promise((resolve, reject) => {
-    const s = document.createElement('script');
-    s.src = 'vendor/papaparse/papaparse.min.js';
-    s.onload = () => resolve(window.Papa);
-    s.onerror = () => {
-      _papaPromise = null;
-      reject(new Error('Failed to load papaparse'));
-    };
-    document.head.appendChild(s);
-  });
-  return _papaPromise;
+  return Promise.resolve(Papa);
 }
 
 /** Decode a buffer with the given encoding, replacing invalid bytes. */

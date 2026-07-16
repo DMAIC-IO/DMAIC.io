@@ -6,6 +6,7 @@
     "projectSwitcher": "Switch project",
     "projectName": "Project name",
     "phaseNav": "Cycle phases",
+    "loading": "Loading application …",
     "desktopOnly": "DMAIC.io is designed for desktop monitors. Please use a screen at least 1280 px wide.",
     "export": "Export",
     "import": "Import",
@@ -26,7 +27,15 @@
     "importMigrated": "File migrated from v{from} to v{to}"
   },
   "footer": {
-    "versionsLink": "Show all versions"
+    "versionsLink": "Show all versions",
+    "licenses": "Licenses"
+  },
+  "licenses": {
+    "title": "Open-Source Licenses",
+    "subtitle": "This application uses open-source libraries.",
+    "view": "Project page",
+    "fullText": "Full license texts",
+    "close": "Close"
   },
   "tips": {
     "dismissTitle": "Don’t show this tip again",
@@ -196,6 +205,8 @@
     "confirmOverwrite": "The module already contains data. Replace it with the example?",
     "glossarySearchPlaceholder": "Search term …",
     "glossaryNoMatch": "No matching terms.",
+    "glossaryOtherTerms": "Other terms",
+    "glossarySearchHint": "Search to browse all terms.",
     "glossaryBack": "Back to list",
     "glossaryAliases": "Also known as",
     "glossarySeeAlso": "See also",
@@ -1325,12 +1336,16 @@
       "chartIndex": "Measurement #"
     },
     "msa-typ2": {
-      "name": "MSA Type 2",
-      "description": "Measurement System Analysis Type 2 — Gage R&R (Repeatability & Reproducibility)",
+      "name": "MSA Type 2/3",
+      "description": "Measurement System Analysis Type 2 (with operator, Gage R&R) and Type 3 (no operator, automated measurement systems)",
+      "typeLabelTyp2": "Type 2",
+      "typeLabelTyp3": "Type 3",
+      "operatorHint": "Leave operator column empty for Type 3 (no operator influence)",
+      "warnFewReplicatesTyp3": "Only 2 replicates per part — Bosch/VDA recommend at least 3 for Type 3 (e.g. 25×2 or 10×3).",
       "sectionColumns": "Data Columns",
       "sectionParams": "Parameters",
       "partColumn": "Part column",
-      "operatorColumn": "Operator column",
+      "operatorColumn": "Operator column (optional)",
       "measurementColumn": "Measurement column",
       "lsl": "Lower spec limit (LSL)",
       "usl": "Upper spec limit (USL)",
@@ -3371,7 +3386,11 @@
       "moreRows": "more rows (included in export)",
       "csvExported": "CSV exported",
       "sentToWorksheet": "Data sent to worksheet",
-      "noWorksheet": "No worksheet available"
+      "noWorksheet": "No worksheet available",
+      "min": "Min",
+      "max": "Max",
+      "seed": "Seed",
+      "remove": "Remove"
     },
     "distribution-fit": {
       "name": "Distribution Fit",
@@ -3511,6 +3530,13 @@
       "modelCustom": "Custom formula (JS)",
       "coeffLabel": "Coefficients: β₀ + β₁x + β₂y + β₃x² + β₄y² + β₅xy",
       "customFormula": "JavaScript formula (variables: x, y)",
+      "formulaHint": "Variables: x, y · operators: + − * / ^ ** · functions e.g. sin, cos, exp, sqrt, log, ln, min, max, pow · Math. prefix optional, angles in radians.",
+      "formulaErrFn": "Function '{name}' is not allowed.",
+      "formulaErrVar": "Unknown variable '{name}' — only x and y are allowed.",
+      "formulaErrChar": "Invalid character '{name}' in the formula.",
+      "formulaErrNum": "Invalid number '{name}' in the formula.",
+      "formulaErrEmpty": "The formula is empty.",
+      "formulaErrSyntax": "Syntax error in the formula.",
       "sectionAxes": "Axes / Factors",
       "xFactorName": "X Factor Name",
       "yFactorName": "Y Factor Name",
@@ -3934,6 +3960,7 @@
       "ciLow": "CI Lower",
       "ciHigh": "CI Upper",
       "sortByPValue": "Sort by p-value (highest first)",
+      "algoLabTitle": "Algorithm Lab",
       "errSelectBoth": "Please select both X and Y columns.",
       "errMinData": "At least 3 valid data pairs required (currently: {n}).",
       "errInsufficientDf": "Too few data points for the chosen model complexity.",
@@ -4451,7 +4478,8 @@
       "showMatrix": "Show full matrix",
       "hideMatrix": "Hide matrix",
       "matrixLegend": "Row = improving (↑), column = worsening (↓). Cell number = count of recommended principles. Click a cell to apply the selection.",
-      "matrixCornerTip": "Row = improving, column = worsening"
+      "matrixCornerTip": "Row = improving, column = worsening",
+      "loadError": "Could not load data"
     },
     "triz-9-windows": {
       "name": "9 Windows (TRIZ System Operator)",
@@ -4483,6 +4511,7 @@
       "close": "Close",
       "imageTooLarge": "Image too large (max. 2 MB).",
       "imageReadError": "Could not read image.",
+      "imageTypeError": "Selected file is not an image.",
       "example": {
         "systemTitle": "Passenger car with combustion engine",
         "cells": [
@@ -4871,6 +4900,7 @@
       "problemNotePlaceholder": "Optional: context, boundary conditions, cross-reference to 9-Windows / IFR / matrix …",
       "filterAuto": "Suggested classes only",
       "filterAll":  "Show all",
+      "loading": "Loading standard solutions…",
       "loadExample": "Load example",
       "reset": "Reset",
       "resetTitle": "Reset Substance-Field analysis?",

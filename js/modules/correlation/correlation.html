@@ -1,0 +1,238 @@
+<div class="corr dmike-split" x-data="correlation">
+    <div class="corr__input dmike-split__input">
+      <div class="dmike-split__section-title" x-text="t('sectionData')"></div>
+
+      <div class="field-group">
+        <label x-text="t('selectColumns')"></label>
+        <div class="corr__col-list-wrap" data-ref="col-list">
+
+          <template x-if="!model.hasWorksheet(sm())">
+            <div class="corr__hint" x-text="t('noWorksheet')"></div>
+          </template>
+
+          <template x-if="model.hasWorksheet(sm()) && colGroups().length === 0">
+            <div class="corr__hint" x-text="t('noNumericColumns')"></div>
+          </template>
+
+          <template x-for="group in colGroups()">
+            <div class="corr__col-group" :key="group.sheetName">
+              <div class="corr__col-group-label" x-text="group.sheetName"></div>
+              <template x-for="col in group.columns">
+                <label class="corr__col-item" :key="colKey(col)">
+                  <input type="checkbox" :data-col-key="colKey(col)"
+                    :checked="model.isSelected(col)"
+                    @change="toggleColumn(col)">
+                  <span class="corr__col-name" x-text="colDisplayName(col)"></span>
+                  <span class="corr__col-count" x-text="'n=' + col.valueCount"></span>
+                </label>
+              </template>
+            </div>
+          </template>
+
+        </div>
+      </div>
+
+      <div class="corr__selected-info" data-ref="selected-info">
+        <span :class="selectedInfoClass()" x-text="selectedInfoText()"></span>
+      </div>
+
+      <div class="field-group">
+        <label x-text="t('confidenceLevel') + ' (%)'"></label>
+        <input type="text" class="field field--num" data-ref="conf-input" inputmode="decimal"
+          :value="confDisplay()" placeholder="95"
+          @change="commitConf($event)" @keydown="confKeydown($event)">
+      </div>
+
+      <div class="corr__error" data-ref="error-box" :style="errorDisplay()"
+        x-text="errorText()"></div>
+    </div>
+
+    <div class="corr__output dmike-split__output">
+      <div data-ref="results">
+
+        <!-- ── Pairwise mode (2 columns) ────────────────────────── -->
+        <template x-if="mode() === 'pairwise'">
+          <div>
+            <div class="corr__cards">
+              <template x-for="card in cards">
+                <div class="corr__card" :class="card.recClass" :key="card.method">
+                  <span class="result-card__badge" x-text="t('recommended')">
+                    <span class="result-card__tooltip">
+                      <template x-for="(line, li) in recTooltipLines">
+                        <span :key="li" style="display:block" x-text="line"></span>
+                      </template>
+                    </span>
+                  </span>
+                  <div class="corr__card-header" :style="'color:' + card.color" x-text="card.label"></div>
+                  <div class="corr__card-body">
+                    <div class="corr__big-r" :style="'color:' + card.color" x-text="card.rText"></div>
+                    <div class="corr__interpret-tag"
+                      :style="'background:' + card.color + '15;color:' + card.color"
+                      x-text="card.interp"></div>
+                    <template x-for="(srow, si) in card.stats">
+                      <div class="corr__card-row" :key="si">
+                        <span x-text="srow.label"></span><span x-text="srow.value"></span>
+                      </div>
+                    </template>
+                    <div class="corr__ci-wrap">
+                      <div class="corr__ci-label" x-text="t('confidenceInterval') + ' ' + confPctText() + ' %'"></div>
+                      <div class="corr__ci-track">
+                        <div class="corr__ci-zero"></div>
+                        <div class="corr__ci-fill" :style="card.ciFillStyle"></div>
+                        <div class="corr__ci-point" :style="card.ciPointStyle"></div>
+                      </div>
+                      <div class="corr__ci-labels">
+                        <span x-text="card.ciLow"></span><span x-text="card.ciHigh"></span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </template>
+            </div>
+
+            <div class="dmike-split__output-section" x-text="t('sectionScatter')"></div>
+            <div class="corr__plot-wrap" data-ref="scatter-plot"></div>
+
+            <div class="dmike-split__output-section" x-text="t('sectionStats')"></div>
+            <div class="corr__stats-grid">
+              <template x-for="grp in statGroups">
+                <div class="corr__stats-card" :key="grp.title">
+                  <div class="corr__stats-title" x-text="grp.title"></div>
+                  <template x-for="(row, ri) in grp.rows">
+                    <div class="corr__stat-row" :key="ri">
+                      <span x-text="row.label"></span>
+                      <span :style="row.style" x-text="row.value"></span>
+                    </div>
+                  </template>
+                </div>
+              </template>
+            </div>
+          </div>
+        </template>
+
+        <!-- ── Matrix mode (3+ columns) ─────────────────────────── -->
+        <template x-if="mode() === 'matrix'">
+          <div>
+            <div class="dmike-split__output-section" x-text="t('sectionMatrix')"></div>
+            <div class="corr__matrix-toolbar">
+              <div class="btn-group corr__matrix-toggle">
+                <button class="btn--segment corr__toggle-btn" data-method="pearson"
+                  :class="model.matrixMethod === 'pearson' ? 'btn--active' : ''"
+                  @click="setMethod('pearson')">Pearson r</button>
+                <button class="btn--segment corr__toggle-btn" data-method="spearman"
+                  :class="model.matrixMethod === 'spearman' ? 'btn--active' : ''"
+                  @click="setMethod('spearman')" x-text="'Spearman ' + GLYPH_RHO"></button>
+                <button class="btn--segment corr__toggle-btn" data-method="kendall"
+                  :class="model.matrixMethod === 'kendall' ? 'btn--active' : ''"
+                  @click="setMethod('kendall')" x-text="'Kendall ' + GLYPH_TAU"></button>
+              </div>
+              <div class="corr__filter-bar">
+                <span class="corr__filter-label" x-text="t('filter')"></span>
+                <label class="corr__filter-field">
+                  <span x-text="GLYPH_GE_R"></span>
+                  <input type="number" class="corr__filter-input" data-ref="filter-min-r"
+                    min="0" max="1" placeholder="–" :value="filterMinRDisplay()"
+                    @change="applyFilterMinR($event)">
+                </label>
+                <label class="corr__filter-field">
+                  <span x-text="GLYPH_LE_P"></span>
+                  <input type="number" class="corr__filter-input" data-ref="filter-max-p"
+                    min="0" max="1" placeholder="–" :value="filterMaxPDisplay()"
+                    @change="applyFilterMaxP($event)">
+                </label>
+              </div>
+            </div>
+
+            <div class="corr__matrix-wrap">
+              <table class="corr__matrix-table"
+                @mouseover="matrixHover($event)" @mouseleave="matrixHoverClear()"
+                @click="matrixClick($event)">
+                <thead>
+                  <tr>
+                    <th></th>
+                    <template x-for="(name, j) in matrixView.names">
+                      <th class="corr__matrix-header" :data-col="j" :key="j"
+                        :class="hoverClass(-1, j)" x-text="name"></th>
+                    </template>
+                  </tr>
+                </thead>
+                <tbody>
+                  <template x-for="(row, i) in matrixView.rows">
+                    <tr :data-row="i" :key="i">
+                      <th class="corr__matrix-row-header" :data-row="i"
+                        :class="hoverClass(i, -1)" x-text="matrixView.names[i]"></th>
+                      <template x-for="(cell, j) in row">
+                        <td :class="cell.cls + hoverClass(i, j) + selectClass(i, j)"
+                          :style="cell.style" :title="cell.title"
+                          :data-row="i" :data-col="j" :key="j">
+                          <template x-if="cell.kind === 'value'">
+                            <span class="corr__matrix-cell-inner" style="display:contents">
+                              <span class="corr__matrix-r" x-text="cell.val"></span>
+                              <template x-if="cell.pStr">
+                                <span class="corr__matrix-p" x-text="'p = ' + cell.pStr"></span>
+                              </template>
+                              <template x-if="cell.ciStr">
+                                <span class="corr__matrix-ci" x-text="cell.ciStr"></span>
+                              </template>
+                            </span>
+                          </template>
+                          <template x-if="cell.kind === 'diag'">
+                            <span x-text="'1'"></span>
+                          </template>
+                        </td>
+                      </template>
+                    </tr>
+                  </template>
+                </tbody>
+              </table>
+            </div>
+
+            <div class="corr__matrix-legend">
+              <span class="corr__matrix-legend-item" style="color:var(--color-success)"
+                x-text="BULLET + ' ' + t('strongPositive')"></span>
+              <span class="corr__matrix-legend-item" style="color:var(--color-warning)"
+                x-text="BULLET + ' ' + t('moderate')"></span>
+              <span class="corr__matrix-legend-item" style="color:var(--color-text-tertiary)"
+                x-text="BULLET + ' ' + t('weak')"></span>
+              <span class="corr__matrix-legend-item" style="color:var(--color-error)"
+                x-text="BULLET + ' ' + t('strongNegative')"></span>
+            </div>
+
+            <template x-if="filteredPairs.length > 0">
+              <div class="corr__matrix-scatter-block">
+                <div class="dmike-split__output-section-header">
+                  <div class="dmike-split__output-section" x-text="t('sectionScatterMatrix')"></div>
+                  <button class="corr__collapse-all-btn" data-action="toggle-all-plots"
+                    @click="toggleAllPlots()" x-text="collapseAllLabel()"></button>
+                </div>
+                <div class="corr__matrix-plots">
+                  <template x-for="pair in filteredPairs">
+                    <div class="corr__matrix-plot-card" :data-pair="pair.key"
+                      :class="plotCardClass(pair)" :style="plotCardDisplay(pair)" :key="pair.key">
+                      <div class="corr__matrix-plot-header" data-action="toggle-plot"
+                        @click="togglePlot(pair.key)">
+                        <span x-text="pair.titleText"></span>
+                        <span class="corr__matrix-plot-header-right">
+                          <span class="corr__matrix-plot-r" :style="'color:' + pair.color"
+                            x-text="'r = ' + pair.rLabel"></span>
+                          <template x-if="pair.ciLabel">
+                            <span class="corr__matrix-plot-meta"
+                              x-text="confPctText() + '% ' + t('ciShort') + ' ' + pair.ciLabel"></span>
+                          </template>
+                          <span class="corr__matrix-plot-meta" x-text="'| p = ' + pair.pLabel"></span>
+                          <span class="corr__matrix-plot-chevron" x-text="CHEVRON"></span>
+                        </span>
+                      </div>
+                      <div class="corr__matrix-plot-area" :data-ref="'matrix-plot-' + pair.key"></div>
+                    </div>
+                  </template>
+                </div>
+              </div>
+            </template>
+          </div>
+        </template>
+
+      </div>
+    </div>
+  </div>
+</div>

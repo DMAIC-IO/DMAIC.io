@@ -18,7 +18,7 @@
  * @returns {string} The new worksheet instance ID
  */
 export function openGridInWorksheet(grid, context, options = {}) {
-  const { stateManager: sm, eventBus, i18n, notify } = context;
+  const { stateManager: sm, eventBus, i18n } = context;
 
   // Resolve target phase. If `options.phase` is set, use it. Otherwise place
   // the worksheet in the same phase as the calling module (context.instanceId)
@@ -33,7 +33,7 @@ export function openGridInWorksheet(grid, context, options = {}) {
     }
     if (!phase) phase = 'data';
   }
-  const sheetName = options.sheetName || (i18n?.t?.('modules.worksheet.defaultSheetName') || 'Sheet') + ' 1';
+  const sheetName = options.sheetName || `${i18n?.t?.('modules.worksheet.defaultSheetName') || 'Sheet'  } 1`;
 
   // Snapshot the grid state (strip runtime-only fields)
   const raw = grid.getState();

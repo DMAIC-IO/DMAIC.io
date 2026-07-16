@@ -1,0 +1,162 @@
+<div class="module-process-capability dmike-split" x-data="processCapability">
+  <div class="module-process-capability__input dmike-split__input">
+    <div class="dmike-split__section-title" x-text="t('sectionParams')"></div>
+
+    <div class="field-group">
+      <label x-text="t('featureName')"></label>
+      <input type="text" class="field" data-ref="inp-name"
+             :placeholder="t('featureNamePh')"
+             x-model="model.params.name" @input="scheduleAnalysis()">
+    </div>
+
+    <div class="pc__row-3">
+      <div class="field-group">
+        <label x-text="t('lsl')"></label>
+        <input type="text" class="field field--num" data-ref="inp-lsl"
+               placeholder="49.800" inputmode="decimal"
+               x-model="model.params.lsl" @input="scheduleAnalysis()" @change="runAnalysis()">
+      </div>
+      <div class="field-group">
+        <label x-text="t('target')"></label>
+        <input type="text" class="field field--num" data-ref="inp-target"
+               placeholder="50.000" inputmode="decimal"
+               x-model="model.params.target" @input="scheduleAnalysis()" @change="runAnalysis()">
+      </div>
+      <div class="field-group">
+        <label x-text="t('usl')"></label>
+        <input type="text" class="field field--num" data-ref="inp-usl"
+               placeholder="50.200" inputmode="decimal"
+               x-model="model.params.usl" @input="scheduleAnalysis()" @change="runAnalysis()">
+      </div>
+    </div>
+
+    <div class="pc__hint" x-text="t('specHint')"></div>
+
+    <div class="pc__row">
+      <div class="field-group">
+        <label x-text="t('unit')"></label>
+        <input type="text" class="field" data-ref="inp-unit"
+               placeholder="mm"
+               x-model="model.params.unit" @input="scheduleAnalysis()">
+      </div>
+      <div class="field-group">
+        <label><span x-text="t('confidenceLabel')"></span> (%)</label>
+        <input type="text" class="field field--num" data-ref="inp-confidence"
+               placeholder="95" inputmode="decimal"
+               x-model="model.params.confidence" @input="scheduleAnalysis()" @change="runAnalysis()">
+      </div>
+    </div>
+
+    <div class="dmike-split__section-title" x-text="t('sectionData')"></div>
+
+    <div class="field-group">
+      <label x-text="t('columnSelectLabel')"></label>
+
+      <!-- Embedded example data: a "remove" pill instead of the column picker. -->
+      <template x-if="model.embeddedValues">
+        <div class="pc__embedded">
+          <span class="pc__embedded-label" x-text="(model.embeddedLabel || t('exampleData')) + ' (n=' + model.embeddedValues.length + ')'"></span>
+          <button class="btn btn--sm btn--ghost" data-ref="btn-clear-embedded" type="button"
+                  :title="removeTitle()" @click="clearEmbedded()">✕</button>
+        </div>
+      </template>
+
+      <!-- No worksheet at all: actionable orange warning info-box. -->
+      <template x-if="!model.embeddedValues && _colState === 'noWorksheet'">
+        <div class="pc__no-worksheet">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          <span x-text="t('noWorksheet')"></span>
+        </div>
+      </template>
+
+      <!-- Worksheet exists but has no numeric columns: muted info-box. -->
+      <template x-if="!model.embeddedValues && _colState === 'noNumericColumns'">
+        <div class="pc__no-worksheet pc__no-worksheet--empty">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          <span x-text="t('noNumericColumns')"></span>
+        </div>
+      </template>
+
+      <!-- Worksheet column picker (shared ColumnPicker, select-mode). -->
+      <div class="pc__col-select-wrap" data-ref="col-select-wrap"
+           x-show="!model.embeddedValues && _colState === 'ok'"></div>
+    </div>
+
+    <div class="pc__error" data-ref="error-box"></div>
+  </div>
+
+  <div class="module-process-capability__output dmike-split__output">
+    <div data-ref="results">
+      <template x-if="result">
+        <div>
+          <!-- Status bar -->
+          <div class="pc__status-bar" :class="'pc__status-bar--' + result.overall">
+            <span class="pc__status-label" x-text="statusLabel(result.overall)"></span>
+            <span class="pc__status-detail">— <span x-text="featureName()"></span> — n = <span x-text="result.n"></span></span>
+          </div>
+
+          <!-- KPI strip — main indices -->
+          <div class="dmike-kpi-strip">
+            <template x-for="kpi in mainKpis()">
+              <div class="dmike-kpi" :key="kpi.key" :class="kpi.mod">
+                <div class="dmike-kpi-label" x-text="kpi.label"></div>
+                <div class="dmike-kpi-value" x-text="kpi.value"></div>
+                <div class="dmike-kpi-sub" x-text="kpi.sub"></div>
+              </div>
+            </template>
+          </div>
+
+          <!-- Long-term (Pp/Ppk) + PPM + Sigma strip -->
+          <div class="dmike-kpi-strip">
+            <template x-for="kpi in perfKpis()">
+              <div class="dmike-kpi" :key="kpi.key">
+                <div class="dmike-kpi-label" x-text="kpi.label"></div>
+                <div class="dmike-kpi-value" x-text="kpi.value"></div>
+                <div class="dmike-kpi-sub" x-text="kpi.sub"></div>
+              </div>
+            </template>
+          </div>
+
+          <!-- Stats panel -->
+          <div class="dmike-split__output-section" x-text="t('statsTitle')"></div>
+          <div class="pc__stats-panel">
+            <table class="dmike-table pc__stats-table">
+              <thead><tr>
+                <template x-for="col in statCols()"><th :key="col.label" x-text="col.label"></th></template>
+              </tr></thead>
+              <tbody><tr>
+                <template x-for="col in statCols()"><td :key="col.label" x-text="col.value"></td></template>
+              </tr></tbody>
+            </table>
+          </div>
+
+          <!-- Chart -->
+          <div class="dmike-split__output-section" x-text="t('histTitle')"></div>
+          <div class="pc__chart-plot" data-ref="chart-hist"></div>
+
+          <!-- Interpretation -->
+          <div class="dmike-split__output-section" x-text="t('formulasTitle')"></div>
+          <div class="pc__interpretation">
+            <template x-if="result.twoSided">
+              <div>
+                <p><strong>Cp</strong> = (USL − LSL) / (6 · s) = <span x-text="fmt(result.T)"></span> / (6 · <span x-text="fmt(result.s)"></span>) = <strong x-text="fmt(result.Cp)"></strong></p>
+                <p><strong>Cpk</strong> = min(CPU, CPL) = min(<span x-text="fmt(result.CPU)"></span>, <span x-text="fmt(result.CPL)"></span>) = <strong x-text="fmt(result.Cpk)"></strong></p>
+              </div>
+            </template>
+            <template x-if="!result.twoSided && result.hasUsl">
+              <p><strong>CPU</strong> = (USL − x̄) / (3 · s) = (<span x-text="fmt(result.usl)"></span> − <span x-text="fmt(result.xbar)"></span>) / (3 · <span x-text="fmt(result.s)"></span>) = <strong x-text="fmt(result.CPU)"></strong></p>
+            </template>
+            <template x-if="!result.twoSided && !result.hasUsl">
+              <p><strong>CPL</strong> = (x̄ − LSL) / (3 · s) = (<span x-text="fmt(result.xbar)"></span> − <span x-text="fmt(result.lsl)"></span>) / (3 · <span x-text="fmt(result.s)"></span>) = <strong x-text="fmt(result.CPL)"></strong></p>
+            </template>
+
+            <div style="height:12px"></div>
+            <p><span class="pc__tag pc__tag--pass">Cpk ≥ 1.33</span> <span x-text="t('interpPass')"></span></p>
+            <p><span class="pc__tag pc__tag--warn">1.00 ≤ Cpk &lt; 1.33</span> <span x-text="t('interpWarn')"></span></p>
+            <p><span class="pc__tag pc__tag--fail">Cpk &lt; 1.00</span> <span x-text="t('interpFail')"></span></p>
+          </div>
+        </div>
+      </template>
+    </div>
+  </div>
+</div>

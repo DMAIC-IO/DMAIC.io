@@ -1,0 +1,102 @@
+{
+  "id": "regelgrenze",
+  "category": "spc",
+  "title": {
+    "de": "Regelgrenze (UCL / LCL)",
+    "en": "Control Limit (UCL / LCL)"
+  },
+  "short": {
+    "de": "Eingriffsgrenzen einer {{term:regelkarte|Regelkarte}}, meist bei ±3σ um die {{term:mittellinie|Mittellinie}} — NICHT identisch mit {{term:spezifikationsgrenzen|Spezifikationsgrenzen}}.",
+    "en": "Action limits on a {{term:regelkarte|control chart}}, usually at ±3σ from the {{term:mittellinie|centre line}} — NOT the same as {{term:spezifikationsgrenzen|specification limits}}."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "**Regelgrenzen** (Upper/Lower Control Limit) markieren, was ein stabiler Prozess an natürlicher Streuung „normal“ produziert. Sie werden aus den beobachteten Prozessdaten selbst berechnet — nicht vom Kunden vorgegeben."
+      },
+      {
+        "type": "formula",
+        "latex": "\\text{UCL} = \\bar{x} + 3 \\hat{\\sigma}, \\quad \\text{LCL} = \\bar{x} - 3 \\hat{\\sigma}"
+      },
+      {
+        "type": "list",
+        "items": [
+          "**±3σ-Standard** — Wahrscheinlichkeit eines Fehlalarms je Punkt: ca. 0,27 % (bei Normalverteilung)",
+          "**Kartentyp-spezifisch** — für X̄-R: $A_2 \\bar{R}$; für I-MR: $E_2 \\bar{MR}$; für p-Karte: $\\bar{p} \\pm 3\\sqrt{\\bar{p}(1-\\bar{p})/n}$",
+          "**Berechnung aus mindestens 20–25 Untergruppen** oder 100+ Einzelwerten"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "**Kritische Abgrenzung:** Regelgrenzen ≠ {{term:spezifikationsgrenzen|Spezifikationsgrenzen}}. USL/LSL kommen vom **Kunden** und sagen „akzeptabel“; UCL/LCL kommen aus den **Prozessdaten** und sagen „üblich“. Beide Grenzarten in einer Karte zu mischen (Spezgrenzen als Regelgrenzen zeichnen) ist einer der häufigsten SPC-Fehler."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "**Control limits** (Upper/Lower Control Limit) mark the natural spread a stable process \"normally\" produces. They are derived from the observed process data itself — not set by the customer."
+      },
+      {
+        "type": "formula",
+        "latex": "\\text{UCL} = \\bar{x} + 3 \\hat{\\sigma}, \\quad \\text{LCL} = \\bar{x} - 3 \\hat{\\sigma}"
+      },
+      {
+        "type": "list",
+        "items": [
+          "**±3σ standard** — per-point false-alarm probability approx. 0.27 % (under normality)",
+          "**Chart-specific** — X̄-R: $A_2 \\bar{R}$; I-MR: $E_2 \\bar{MR}$; p chart: $\\bar{p} \\pm 3\\sqrt{\\bar{p}(1-\\bar{p})/n}$",
+          "**Compute from at least 20–25 subgroups** or 100+ individuals"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "**Critical distinction:** control limits ≠ {{term:spezifikationsgrenzen|specification limits}}. USL/LSL come from the **customer** and mean \"acceptable\"; UCL/LCL come from **process data** and mean \"usual\". Mixing the two in one chart (drawing spec limits as control limits) is one of the most common SPC mistakes."
+      }
+    ]
+  },
+  "aliases": {
+    "de": [
+      "UCL",
+      "LCL",
+      "Eingriffsgrenze",
+      "Kontrollgrenze",
+      "Control Limit"
+    ],
+    "en": [
+      "UCL",
+      "LCL",
+      "control limit",
+      "action limit"
+    ]
+  },
+  "seeAlso": [
+    "regelkarte",
+    "mittellinie",
+    "spezifikationsgrenzen",
+    "sonderursache"
+  ],
+  "modules": [
+    "control-chart",
+    "attribute-control-chart",
+    "time-weighted-chart",
+    "short-run-chart"
+  ],
+  "algoLab": [
+    "control-charts/control-chart"
+  ],
+  "sources": [
+    {
+      "label": "Shewhart, W. A. — Economic Control of Quality of Manufactured Product, 1931",
+      "url": null
+    },
+    {
+      "label": "Montgomery, D. C. — Introduction to Statistical Quality Control, 8th Edition, Chapter 5",
+      "url": null
+    },
+    {
+      "label": "AIAG — SPC Reference Manual, 2nd Edition",
+      "url": null
+    }
+  ]
+}

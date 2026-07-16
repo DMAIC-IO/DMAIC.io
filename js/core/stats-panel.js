@@ -19,7 +19,7 @@
 import { descriptiveStats } from '../engines/normality-test-engine.js';
 import { tInv } from '../engines/math-utils.js';
 import { chiSquaredInv } from '../engines/process-capability-engine.js';
-import { esc, escAttr } from './html-utils.js';
+import { h } from './dom.js';
 
 // ─── Helpers ────────────────────────────────────────────────
 
@@ -154,7 +154,7 @@ const _config = {
  */
 export function configureStatsPanel({ glossaryIds, glossaryEnabled } = {}) {
   if (glossaryIds !== undefined) _config.glossaryIds = new Set(glossaryIds);
-  if (glossaryEnabled !== undefined) _config.glossaryEnabled = !!glossaryEnabled;
+  if (glossaryEnabled !== undefined) _config.glossaryEnabled = Boolean(glossaryEnabled);
 }
 
 const DEFAULT_COLUMNS = [
@@ -188,7 +188,7 @@ export function renderStatsTable(container, seriesStats, options = {}) {
 
   if (!seriesStats || seriesStats.length === 0) {
     container.style.display = 'none';
-    container.innerHTML = '';
+    container.replaceChildren();
     return;
   }
 
@@ -199,7 +199,7 @@ export function renderStatsTable(container, seriesStats, options = {}) {
   const cols = options.columns || DEFAULT_COLUMNS;
   const prefix = options.cssPrefix || 'dmike';
 
-  const ciTitle = escAttr(t('ciTitle', { n: confPct }));
+  const ciTitle = t('ciTitle', { n: confPct });
 
   // Glossary inline-link policy:
   //   - Skip wrapping if a known set is provided and the term isn't in it,
@@ -212,47 +212,56 @@ export function renderStatsTable(container, seriesStats, options = {}) {
   // in core/glossary-inline.js. Keeps source-of-truth for presentation
   // in one place, so visual tweaks don't need to touch every emitter.
   const glossaryIds = options.glossaryIds instanceof Set ? options.glossaryIds : _config.glossaryIds;
-  const glossaryEnabled = options.glossaryEnabled !== undefined ? !!options.glossaryEnabled : _config.glossaryEnabled;
+  const glossaryEnabled = options.glossaryEnabled !== undefined ? Boolean(options.glossaryEnabled) : _config.glossaryEnabled;
+  /** @returns {Node} a text node, or a `.glossary-term` marker span. */
   const wrapHeader = (label, termId) => {
-    if (!termId || !glossaryEnabled) return esc(label);
-    if (glossaryIds && !glossaryIds.has(termId)) return esc(label);
-    return `<span class="glossary-term" data-glossary-term="${escAttr(termId)}">${esc(label)}</span>`;
+    if (!termId || !glossaryEnabled) return document.createTextNode(label);
+    if (glossaryIds && !glossaryIds.has(termId)) return document.createTextNode(label);
+    return h('span', { class: 'glossary-term', 'data-glossary-term': termId }, label);
   };
 
-  let html = `<table class="dmike-table ${prefix}-stats-table"><thead><tr>`;
-  html += `<th>${t('series')}</th>`;
+  const headRow = h('tr', null, h('th', null, t('series')));
   cols.forEach(c => {
-    const label = t(c.i18nKey);
-    html += `<th>${wrapHeader(label, c.glossaryTerm)}</th>`;
+    headRow.append(h('th', null, wrapHeader(t(c.i18nKey), c.glossaryTerm)));
   });
-  html += '</tr></thead><tbody>';
 
+  const body = h('tbody');
   seriesStats.forEach(s => {
-    html += '<tr>';
-    html += `<td><span class="${prefix}-stats-color" style="background:${s.color}"></span>${esc(s.name)}</td>`;
+    const row = h('tr', null,
+      h('td', null,
+        h('span', { class: `${prefix}-stats-color`, style: `background:${s.color}` }),
+        s.name,
+      ),
+    );
 
     if (s.stats) {
       cols.forEach(c => {
         const val = s.stats[c.key];
-        const valStr = c.key === 'n' ? val : (val != null ? val.toFixed(4) : '–');
-        let cell = `${valStr}`;
+        const valStr = c.key === 'n' ? String(val) : (val != null ? val.toFixed(4) : '–');
+        const cell = h('td', null, valStr);
         if (c.ci) {
           const bounds = s.ci[c.key];
           if (bounds && isFinite(bounds[0]) && isFinite(bounds[1])) {
-            cell += ` <span class="${prefix}-stats-ci" title="${ciTitle}">[${fmtCI(bounds[0])};&nbsp;${fmtCI(bounds[1])}]</span>`;
+            // U+00A0 (non-breaking space) matches the legacy `&nbsp;` byte-for-byte.
+            cell.append(
+              ' ',
+              h('span', { class: `${prefix}-stats-ci`, title: ciTitle },
+                `[${fmtCI(bounds[0])}; ${fmtCI(bounds[1])}]`),
+            );
           }
         }
-        html += `<td>${cell}</td>`;
+        row.append(cell);
       });
     } else {
-      cols.forEach(() => {
-        html += '<td>–</td>';
-      });
+      cols.forEach(() => row.append(h('td', null, '–')));
     }
-    html += '</tr>';
+    body.append(row);
   });
 
-  html += '</tbody></table>';
+  const table = h('table', { class: `dmike-table ${prefix}-stats-table` },
+    h('thead', null, headRow),
+    body,
+  );
 
-  container.innerHTML = html;
+  container.replaceChildren(table);
 }

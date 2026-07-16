@@ -1,0 +1,97 @@
+<section class="worksheet worksheet-module" x-data="worksheet">
+
+  <!-- ═══ Toolbar ═══ -->
+  <div class="worksheet-toolbar">
+    <button class="toolbar__btn" data-action="undo" :title="t('undo')" :disabled="!canUndo" @click="undo()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 10h10a5 5 0 0 1 0 10H9"/><path d="M3 10l4-4"/><path d="M3 10l4 4"/></svg>
+    </button>
+    <button class="toolbar__btn" data-action="redo" :title="t('redo')" :disabled="!canRedo" @click="redo()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 10H11a5 5 0 0 0 0 10h4"/><path d="M21 10l-4-4"/><path d="M21 10l-4 4"/></svg>
+    </button>
+    <div class="toolbar__sep"></div>
+    <button class="toolbar__btn" data-action="add-col" :title="t('addColumn')" @click="addColumn()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+      <span x-text="t('column')"></span>
+    </button>
+    <button class="toolbar__btn" data-action="add-rows" :title="t('addRows')" @click="addRows()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+      <span x-text="t('rows')"></span>
+    </button>
+    <div class="toolbar__sep"></div>
+    <button class="toolbar__btn toolbar__btn--accent" data-action="import" :title="t('importFile')" @click="triggerImport()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      Import
+    </button>
+    <div class="toolbar__dropdown" data-action="export-dropdown">
+      <button class="toolbar__btn" :title="t('export')" @click="toggleExport($event)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        <span x-text="t('export')"></span>
+        <svg class="toolbar__chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+      </button>
+      <div class="toolbar__dropdown-menu" :class="exportOpen ? 'open' : ''">
+        <button class="toolbar__dropdown-item" data-action="export-xlsx" @click="exportAs('xlsx')">Excel (.xlsx)</button>
+        <button class="toolbar__dropdown-item" data-action="export-csv" @click="exportAs('csv')">CSV (.csv)</button>
+        <button class="toolbar__dropdown-item" data-action="export-json" @click="exportAs('json')">JSON (.json)</button>
+      </div>
+    </div>
+    <div class="toolbar__sep"></div>
+    <button class="toolbar__btn" data-action="delete" :title="t('deleteSelection')" @click="deleteSelection()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+    </button>
+    <div class="toolbar__sep"></div>
+    <button class="toolbar__btn toolbar__btn--accent" data-action="formula-editor" :title="formulaBtnTitle()" @click="openFormulaEditor()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 7c0-1.1.9-2 2-2h3l2 4-2 4H6a2 2 0 0 1-2-2V7z"/><path d="M20 7c0-1.1-.9-2-2-2h-3l-2 4 2 4h3a2 2 0 0 0 2-2V7z"/></svg>
+      <span x-text="t('formula')"></span>
+    </button>
+    <div class="toolbar__sep"></div>
+    <button class="toolbar__btn" data-action="suggest-chart" :title="suggestBtnTitle()" :disabled="!canSuggest" @click="suggestChart()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M5 12l3 3 8-8"/><circle cx="18" cy="6" r="1.5" fill="currentColor"/><circle cx="6" cy="18" r="1.5" fill="currentColor"/><path d="M20 12l-1.5 1.5L17 12l1.5-1.5L20 12z" fill="currentColor"/></svg>
+      <span x-text="t('suggestChart')"></span>
+    </button>
+    <div class="toolbar__spacer"></div>
+  </div>
+
+  <!-- ═══ DataGrid (imperative) — mounted into this anchor ═══ -->
+  <div class="datagrid dmike-embedded-grid dmike-embedded-grid--fill" data-ref="grid-wrap">
+    <div class="datagrid__dropzone" data-ref="dropzone">
+      <div class="datagrid__dropzone-text" x-text="t('dropzoneText')"></div>
+    </div>
+  </div>
+
+  <!-- ═══ Sheet tabs + status bar ═══ -->
+  <div class="sheet-tabs" data-ref="sheet-tabs"
+       @contextmenu="onTabContextMenu($event)"
+       @dblclick="onTabDblClick($event)">
+    <template x-for="sheet in model.sheets" :key="sheet.id">
+      <button class="sheet-tab" :class="sheet.id === model.activeSheetId ? 'active' : ''"
+              :data-sheet-id="sheet.id" @click="switchSheet(sheet.id)">
+        <template x-if="renamingId === sheet.id">
+          <input class="sheet-tab__editor" :value="renameValue"
+                 @input="renameValue = $event.target.value"
+                 @blur="commitRename()"
+                 @keydown="onRenameKeydown($event)">
+        </template>
+        <template x-if="renamingId !== sheet.id">
+          <span class="sheet-tab__name" x-text="sheet.name"></span>
+        </template>
+      </button>
+    </template>
+    <button class="sheet-tab-add" :title="t('addSheet')" @click="addSheet()">+</button>
+    <span class="sheet-tabs__spacer"></span>
+    <span class="sheet-tabs__status" data-ref="status-selection" x-text="statusSelection()"></span>
+    <span class="sheet-tabs__status" data-ref="status-dims" x-text="statusDims()"></span>
+  </div>
+
+  <!-- ═══ Formula editor overlay shell (declarative x-show) ═══
+       The body is built and wired imperatively by the FormulaEditor class
+       (formula parsing/preview/cell-commit + drag stay imperative); it is
+       injected into the [data-ref="fe-body"] anchor on init. -->
+  <div class="dmike-chart-popout-overlay" data-ref="fe-overlay" role="dialog" aria-modal="true"
+       x-show="feOpen" style="display:none">
+    <div data-ref="fe-body"></div>
+  </div>
+
+  <!-- Hidden file input -->
+  <input type="file" accept=".csv,.tsv,.xlsx,.xls" style="display:none" data-ref="file-input" @change="onFileChange($event)">
+
+</section>

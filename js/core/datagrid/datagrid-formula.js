@@ -47,8 +47,8 @@ export function recalcAllFormulas(grid) {
 
 // ─── Expression Evaluator (recursive) ──────────────────────
 
-function _evalExpr(expr, grid) {
-  expr = expr.trim();
+function _evalExpr(rawExpr, grid) {
+  const expr = rawExpr.trim();
 
   // ── Infix arithmetic: + - (lowest precedence) ──────────
   // Find rightmost top-level + or - (skip unary minus at pos 0)
@@ -575,8 +575,8 @@ function _resolveScalar(r) {
 
 // ─── Condition Evaluator ───────────────────────────────────
 
-function _evalCondition(expr, grid) {
-  expr = expr.trim();
+function _evalCondition(rawExpr, grid) {
+  const expr = rawExpr.trim();
   const ops = ['>=', '<=', '<>', '!=', '>', '<', '='];
   for (const op of ops) {
     const idx = _findTopLevelOp(expr, op);
@@ -593,9 +593,12 @@ function _evalCondition(expr, grid) {
         case '<':  res = l < r; break;
         case '>=': res = l >= r; break;
         case '<=': res = l <= r; break;
-        case '=':  res = l == r; break;
+        // Intentional loose equality below: formula scalars may be number or
+        // string (e.g. comparing a string cell value against a numeric literal).
+        // Strict comparison would change spreadsheet semantics.
+        case '=':  res = l == r; break; // eslint-disable-line eqeqeq
         case '<>':
-        case '!=': res = l != r; break;
+        case '!=': res = l != r; break; // eslint-disable-line eqeqeq
       }
       return { result: res ? 1 : 0, error: null };
     }
@@ -623,8 +626,8 @@ function _findTopLevelOp(expr, op) {
 
 // ─── Argument Resolution ───────────────────────────────────
 
-function _resolveArgToValues(token, grid) {
-  token = token.trim();
+function _resolveArgToValues(rawToken, grid) {
+  const token = rawToken.trim();
   const nums = [];
   const namedCol = token.match(/^'(.+)'$/);
   if (namedCol) {
@@ -636,8 +639,8 @@ function _resolveArgToValues(token, grid) {
 }
 
 /** Resolve a token to a column object (for COUNTA etc.). */
-function _resolveArgToCol(token, grid) {
-  token = token.trim();
+function _resolveArgToCol(rawToken, grid) {
+  const token = rawToken.trim();
   const namedCol = token.match(/^'(.+)'$/);
   if (namedCol) return grid.columns.find(c => c.name === namedCol[1]) || null;
   const colMatch = token.match(/^C(\d+)$/i);
@@ -654,14 +657,29 @@ function _resolveArgToCol(token, grid) {
  *   - numeric and text thresholds
  */
 function _parseConditionArg(token, grid) {
+  let op = '=';
+  let valueToken = token;
+
   const m = token.match(/^(>=|<=|<>|!=|>|<|=)\s*(.+)$/);
-  const op = m ? m[1] : '=';
-  const valueToken = (m ? m[2] : token).trim();
+  if (m) {
+    op = m[1];
+    valueToken = m[2].trim();
+  }
+
   if (!valueToken) return { op: null, threshold: null };
 
-  // String literal "..." → use as-is (text comparison)
+  // String literal "..."
   if (valueToken.startsWith('"') && valueToken.endsWith('"') && valueToken.length >= 2) {
-    return { op, threshold: valueToken.slice(1, -1) };
+    const inner = valueToken.slice(1, -1).trim();
+    // Check if operator is INSIDE the string literal (e.g. ">10")
+    const innerMatch = inner.match(/^(>=|<=|<>|!=|>|<|=)\s*(.+)$/);
+    if (innerMatch) {
+      const innerOp = innerMatch[1];
+      const innerValToken = innerMatch[2].trim();
+      const numVal = parseNumeric(innerValToken);
+      return { op: innerOp, threshold: numVal !== null ? numVal : innerValToken };
+    }
+    return { op, threshold: inner };
   }
   // Numeric literal
   const numVal = parseNumeric(valueToken);
@@ -680,8 +698,8 @@ function _compareOp(val, op, threshold) {
     case '<':  return val <  threshold;
     case '>=': return val >= threshold;
     case '<=': return val <= threshold;
-    case '=':  return val == threshold;   // loose equality so 1 == "1" matches Excel-style
-    case '<>': case '!=': return val != threshold;
+    case '=':  return val == threshold;   // eslint-disable-line eqeqeq -- loose equality so 1 == "1" matches Excel-style
+    case '<>': case '!=': return val != threshold; // eslint-disable-line eqeqeq -- loose equality, Excel-style
     default: return false;
   }
 }
@@ -766,6 +784,32 @@ export function resolveFormulaArgs(argsStr, grid) {
           const col = grid.getColumnByIndex(c);
           if (col) _pushNumericValuesRange(col, loR, hiR, nums);
         }
+      }
+      continue;
+    }
+
+    // Single cell: C1[2]
+    const singleCell = part.match(/^C(\d+)\[(\d+)\]$/i);
+    if (singleCell) {
+      const col = grid.getColumnByIndex(parseInt(singleCell[1]) - 1);
+      const row = parseInt(singleCell[2]) - 1;
+      if (col && row >= 0 && row < col.values.length) {
+        const v = col.values[row];
+        const n = (typeof v === 'number' && !isNaN(v)) ? v : parseNumeric(v);
+        if (n !== null) nums.push(n);
+      }
+      continue;
+    }
+
+    // Single cell by name: 'A'[2]
+    const namedSingleCell = part.match(/^'(.+)'\[(\d+)\]$/);
+    if (namedSingleCell) {
+      const col = grid.columns.find(c => c.name === namedSingleCell[1]);
+      const row = parseInt(namedSingleCell[2]) - 1;
+      if (col && row >= 0 && row < col.values.length) {
+        const v = col.values[row];
+        const n = (typeof v === 'number' && !isNaN(v)) ? v : parseNumeric(v);
+        if (n !== null) nums.push(n);
       }
       continue;
     }

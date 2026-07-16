@@ -20,7 +20,7 @@
   --spacing-xl: 32px;
 
   /* Typography */
-  --font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  --font-family: -apple-system, blinkmacsystemfont, 'Segoe UI', system-ui, sans-serif;
   --font-family-mono: 'SF Mono', 'Cascadia Code', 'Fira Code', monospace;
   --font-size-xs: 11px;
   --font-size-sm: 12px;
@@ -39,24 +39,24 @@
   --transition-speed: 200ms;
 
   /* Backgrounds */
-  --color-bg-primary: #ffffff;
+  --color-bg-primary: #fff;
   --color-bg-secondary: #f5f5f7;
   --color-bg-tertiary: #e8e8ec;
-  --color-bg-elevated: #ffffff;
+  --color-bg-elevated: #fff;
 
   /* Text */
   --color-text-primary: #1d1d1f;
   --color-text-secondary: #515154;
   --color-text-tertiary: #86868b;
-  --color-text-inverse: #ffffff;
+  --color-text-inverse: #fff;
 
   /* Borders */
   --color-border-primary: #d2d2d7;
   --color-border-secondary: #e8e8ec;
 
   /* Interactive */
-  --color-accent: #0066cc;
-  --color-accent-hover: #0055aa;
+  --color-accent: #06c;
+  --color-accent-hover: #05a;
   --color-accent-light: #e5f0ff;
 
   /* Phase Colors
@@ -108,9 +108,9 @@
   --color-role-freeText-bg:    #fce7ef;  /* rose-100               */
 
   /* Shadows */
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.1);
-  --shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.15);
+  --shadow-sm: 0 1px 2px rgb(0 0 0 / 5%);
+  --shadow-md: 0 2px 8px rgb(0 0 0 / 10%);
+  --shadow-lg: 0 4px 16px rgb(0 0 0 / 15%);
 
   /* Component-specific */
   --color-sidebar-bg: var(--color-bg-secondary);
@@ -121,7 +121,7 @@
   --color-footer-bg: var(--color-bg-secondary);
   --color-input-bg: var(--color-bg-primary);
   --color-input-border: var(--color-border-primary);
-  --color-modal-overlay: rgba(0, 0, 0, 0.4);
+  --color-modal-overlay: rgb(0 0 0 / 40%);
   --color-tab-active-bg: var(--color-bg-primary);
   --color-tab-inactive-bg: var(--color-bg-tertiary);
 
@@ -131,64 +131,64 @@
   --color-sipoc-p: #10b981;
   --color-sipoc-o: #a855f7;
   --color-sipoc-c: #ef4444;
-  --color-sipoc-s-bg: rgba(245, 158, 11, 0.08);
-  --color-sipoc-i-bg: rgba(59, 130, 246, 0.08);
-  --color-sipoc-p-bg: rgba(16, 185, 129, 0.08);
-  --color-sipoc-o-bg: rgba(168, 85, 247, 0.08);
-  --color-sipoc-c-bg: rgba(239, 68, 68, 0.08);
+  --color-sipoc-s-bg: rgb(245 158 11 / 8%);
+  --color-sipoc-i-bg: rgb(59 130 246 / 8%);
+  --color-sipoc-p-bg: rgb(16 185 129 / 8%);
+  --color-sipoc-o-bg: rgb(168 85 247 / 8%);
+  --color-sipoc-c-bg: rgb(239 68 68 / 8%);
 
   /* Process Map colors */
   --color-pmap-input: #34c759;
-  --color-pmap-input-bg: rgba(52, 199, 89, 0.10);
+  --color-pmap-input-bg: rgb(52 199 89 / 10%);
   --color-pmap-output: #ff9500;
-  --color-pmap-output-bg: rgba(255, 149, 0, 0.10);
+  --color-pmap-output-bg: rgb(255 149 0 / 10%);
   --color-pmap-step-accent: var(--color-accent);
-  --color-pmap-step-accent-bg: rgba(0, 102, 204, 0.10);
+  --color-pmap-step-accent-bg: rgb(0 102 204 / 10%);
   --color-pmap-connector: var(--color-border-secondary);
   --color-pmap-va: #34c759;
-  --color-pmap-va-bg: rgba(52, 199, 89, 0.12);
+  --color-pmap-va-bg: rgb(52 199 89 / 12%);
   --color-pmap-bnva: #ff9f0a;
-  --color-pmap-bnva-bg: rgba(255, 159, 10, 0.12);
+  --color-pmap-bnva-bg: rgb(255 159 10 / 12%);
   --color-pmap-nva: #ff3b30;
-  --color-pmap-nva-bg: rgba(255, 59, 48, 0.12);
+  --color-pmap-nva-bg: rgb(255 59 48 / 12%);
   --color-pmap-param: #007aff;
-  --color-pmap-param-bg: rgba(0, 122, 255, 0.12);
+  --color-pmap-param-bg: rgb(0 122 255 / 12%);
   --color-pmap-noise: #af52de;
-  --color-pmap-noise-bg: rgba(175, 82, 222, 0.12);
+  --color-pmap-noise-bg: rgb(175 82 222 / 12%);
   --color-pmap-loop: #e67e22;
-  --color-pmap-loop-bg: rgba(230, 126, 34, 0.08);
-  --color-pmap-loop-border: rgba(230, 126, 34, 0.30);
+  --color-pmap-loop-bg: rgb(230 126 34 / 8%);
+  --color-pmap-loop-border: rgb(230 126 34 / 30%);
 
   /* VoC → CTx Tree colors */
   --color-vct-voc: #e67e22;
-  --color-vct-voc-bg: rgba(230, 126, 34, 0.06);
-  --color-vct-voc-border: rgba(230, 126, 34, 0.20);
-  --color-vct-voc-badge-bg: rgba(230, 126, 34, 0.12);
-  --color-vct-voc-line: rgba(230, 126, 34, 0.25);
+  --color-vct-voc-bg: rgb(230 126 34 / 6%);
+  --color-vct-voc-border: rgb(230 126 34 / 20%);
+  --color-vct-voc-badge-bg: rgb(230 126 34 / 12%);
+  --color-vct-voc-line: rgb(230 126 34 / 25%);
   --color-vct-need: #9b59b6;
-  --color-vct-need-bg: rgba(155, 89, 182, 0.06);
-  --color-vct-need-border: rgba(155, 89, 182, 0.20);
-  --color-vct-need-badge-bg: rgba(155, 89, 182, 0.12);
-  --color-vct-need-line: rgba(155, 89, 182, 0.25);
+  --color-vct-need-bg: rgb(155 89 182 / 6%);
+  --color-vct-need-border: rgb(155 89 182 / 20%);
+  --color-vct-need-badge-bg: rgb(155 89 182 / 12%);
+  --color-vct-need-line: rgb(155 89 182 / 25%);
   --color-vct-ctq: #27ae60;
-  --color-vct-ctq-bg: rgba(39, 174, 96, 0.06);
-  --color-vct-ctq-border: rgba(39, 174, 96, 0.20);
-  --color-vct-ctq-badge-bg: rgba(39, 174, 96, 0.12);
-  --color-vct-ctq-line: rgba(39, 174, 96, 0.25);
+  --color-vct-ctq-bg: rgb(39 174 96 / 6%);
+  --color-vct-ctq-border: rgb(39 174 96 / 20%);
+  --color-vct-ctq-badge-bg: rgb(39 174 96 / 12%);
+  --color-vct-ctq-line: rgb(39 174 96 / 25%);
   --color-vct-ctd: #2980b9;
-  --color-vct-ctd-bg: rgba(41, 128, 185, 0.06);
-  --color-vct-ctd-border: rgba(41, 128, 185, 0.20);
-  --color-vct-ctd-badge-bg: rgba(41, 128, 185, 0.12);
-  --color-vct-ctd-line: rgba(41, 128, 185, 0.25);
+  --color-vct-ctd-bg: rgb(41 128 185 / 6%);
+  --color-vct-ctd-border: rgb(41 128 185 / 20%);
+  --color-vct-ctd-badge-bg: rgb(41 128 185 / 12%);
+  --color-vct-ctd-line: rgb(41 128 185 / 25%);
   --color-vct-ctc: #e74c8b;
-  --color-vct-ctc-bg: rgba(231, 76, 139, 0.06);
-  --color-vct-ctc-border: rgba(231, 76, 139, 0.20);
-  --color-vct-ctc-badge-bg: rgba(231, 76, 139, 0.12);
-  --color-vct-ctc-line: rgba(231, 76, 139, 0.25);
+  --color-vct-ctc-bg: rgb(231 76 139 / 6%);
+  --color-vct-ctc-border: rgb(231 76 139 / 20%);
+  --color-vct-ctc-badge-bg: rgb(231 76 139 / 12%);
+  --color-vct-ctc-line: rgb(231 76 139 / 25%);
   --color-vct-req: #3498db;
-  --color-vct-req-bg: rgba(52, 152, 219, 0.06);
-  --color-vct-req-border: rgba(52, 152, 219, 0.20);
-  --color-vct-req-badge-bg: rgba(52, 152, 219, 0.12);
+  --color-vct-req-bg: rgb(52 152 219 / 6%);
+  --color-vct-req-border: rgb(52 152 219 / 20%);
+  --color-vct-req-badge-bg: rgb(52 152 219 / 12%);
 
   /* DataGrid tokens */
   --datagrid-cell-height: 30px;
@@ -205,8 +205,8 @@
   --datagrid-header-text: var(--color-text-secondary);
   --datagrid-cell-text: var(--color-text-primary);
   --datagrid-row-header-bg: var(--color-bg-secondary);
-  --datagrid-row-hover-bg: rgba(59, 130, 246, 0.06);
-  --datagrid-shadow-popup: 0 8px 30px rgba(0,0,0,.2), 0 0 0 1px var(--color-border-primary);
+  --datagrid-row-hover-bg: rgb(59 130 246 / 6%);
+  --datagrid-shadow-popup: 0 8px 30px rgb(0 0 0 / 20%), 0 0 0 1px var(--color-border-primary);
 
   /* Ranking medal colors (used by pairwise comparison) */
   --color-rank-gold: #d4a843;
@@ -215,8 +215,8 @@
 
   /* ===== Glossary inline-link tokens (used by .glossary-term) =====
      Theme-aware; never overridden per module — see .claude/GLOSSAR-KONZEPT.md. */
-  --glossary-term-bg-hover:        rgba(0, 0, 0, 0.04);
-  --glossary-term-bg-focus:        rgba(0, 0, 0, 0.06);
+  --glossary-term-bg-hover:        rgb(0 0 0 / 4%);
+  --glossary-term-bg-focus:        rgb(0 0 0 / 6%);
   --glossary-term-outline-focus:   var(--color-accent);
   --glossary-term-radius:          3px;
   --glossary-term-padding-x:       2px;
@@ -245,15 +245,12 @@
   --color-bg-secondary: #2c2c2e;
   --color-bg-tertiary: #3a3a3c;
   --color-bg-elevated: #2c2c2e;
-
   --color-text-primary: #f5f5f7;
   --color-text-secondary: #b0b0b5;
   --color-text-tertiary: #8e8e93;
   --color-text-inverse: #1d1d1f;
-
   --color-border-primary: #48484a;
   --color-border-secondary: #3a3a3c;
-
   --color-accent: #4da3ff;
   --color-accent-hover: #6db5ff;
   --color-accent-light: #1a3a5c;
@@ -293,11 +290,9 @@
   --color-phase-prevent:        #4dd0e1;
   --color-phase-recognize:      #ba68c8;
   --color-phase-extras:         #9e9e9e;
-
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
-  --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.4);
-  --shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.5);
-
+  --shadow-sm: 0 1px 2px rgb(0 0 0 / 30%);
+  --shadow-md: 0 2px 8px rgb(0 0 0 / 40%);
+  --shadow-lg: 0 4px 16px rgb(0 0 0 / 50%);
   --color-sidebar-bg: var(--color-bg-secondary);
   --color-tile-bg: var(--color-bg-elevated);
   --color-tile-bg-active: var(--color-accent-light);
@@ -306,47 +301,47 @@
   --color-footer-bg: var(--color-bg-secondary);
   --color-input-bg: var(--color-bg-tertiary);
   --color-input-border: var(--color-border-primary);
-  --color-modal-overlay: rgba(0, 0, 0, 0.7);
+  --color-modal-overlay: rgb(0 0 0 / 70%);
   --color-tab-active-bg: var(--color-bg-primary);
   --color-tab-inactive-bg: var(--color-bg-tertiary);
 
   /* DataGrid dark overrides */
   --datagrid-cell-bg-alt: #242426;
-  --datagrid-row-hover-bg: rgba(59, 130, 246, 0.10);
-  --datagrid-shadow-popup: 0 8px 30px rgba(0,0,0,.45), 0 0 0 1px var(--color-border-primary);
+  --datagrid-row-hover-bg: rgb(59 130 246 / 10%);
+  --datagrid-shadow-popup: 0 8px 30px rgb(0 0 0 / 45%), 0 0 0 1px var(--color-border-primary);
 
   /* VoC → CTx Tree (brighter for dark bg) */
   --color-vct-voc: #f0983e;
-  --color-vct-voc-bg: rgba(240, 152, 62, 0.08);
-  --color-vct-voc-border: rgba(240, 152, 62, 0.25);
-  --color-vct-voc-badge-bg: rgba(240, 152, 62, 0.15);
-  --color-vct-voc-line: rgba(240, 152, 62, 0.30);
+  --color-vct-voc-bg: rgb(240 152 62 / 8%);
+  --color-vct-voc-border: rgb(240 152 62 / 25%);
+  --color-vct-voc-badge-bg: rgb(240 152 62 / 15%);
+  --color-vct-voc-line: rgb(240 152 62 / 30%);
   --color-vct-need: #c59eff;
-  --color-vct-need-bg: rgba(197, 158, 255, 0.08);
-  --color-vct-need-border: rgba(197, 158, 255, 0.25);
-  --color-vct-need-badge-bg: rgba(197, 158, 255, 0.15);
-  --color-vct-need-line: rgba(197, 158, 255, 0.30);
+  --color-vct-need-bg: rgb(197 158 255 / 8%);
+  --color-vct-need-border: rgb(197 158 255 / 25%);
+  --color-vct-need-badge-bg: rgb(197 158 255 / 15%);
+  --color-vct-need-line: rgb(197 158 255 / 30%);
   --color-vct-ctq: #3fb950;
-  --color-vct-ctq-bg: rgba(63, 185, 80, 0.08);
-  --color-vct-ctq-border: rgba(63, 185, 80, 0.25);
-  --color-vct-ctq-badge-bg: rgba(63, 185, 80, 0.15);
-  --color-vct-ctq-line: rgba(63, 185, 80, 0.30);
+  --color-vct-ctq-bg: rgb(63 185 80 / 8%);
+  --color-vct-ctq-border: rgb(63 185 80 / 25%);
+  --color-vct-ctq-badge-bg: rgb(63 185 80 / 15%);
+  --color-vct-ctq-line: rgb(63 185 80 / 30%);
   --color-vct-ctd: #58a6ff;
-  --color-vct-ctd-bg: rgba(88, 166, 255, 0.08);
-  --color-vct-ctd-border: rgba(88, 166, 255, 0.25);
-  --color-vct-ctd-badge-bg: rgba(88, 166, 255, 0.15);
-  --color-vct-ctd-line: rgba(88, 166, 255, 0.30);
+  --color-vct-ctd-bg: rgb(88 166 255 / 8%);
+  --color-vct-ctd-border: rgb(88 166 255 / 25%);
+  --color-vct-ctd-badge-bg: rgb(88 166 255 / 15%);
+  --color-vct-ctd-line: rgb(88 166 255 / 30%);
   --color-vct-ctc: #f778ba;
-  --color-vct-ctc-bg: rgba(247, 120, 186, 0.08);
-  --color-vct-ctc-border: rgba(247, 120, 186, 0.25);
-  --color-vct-ctc-badge-bg: rgba(247, 120, 186, 0.15);
-  --color-vct-ctc-line: rgba(247, 120, 186, 0.30);
+  --color-vct-ctc-bg: rgb(247 120 186 / 8%);
+  --color-vct-ctc-border: rgb(247 120 186 / 25%);
+  --color-vct-ctc-badge-bg: rgb(247 120 186 / 15%);
+  --color-vct-ctc-line: rgb(247 120 186 / 30%);
   --color-vct-req: #79c0ff;
-  --color-vct-req-bg: rgba(121, 192, 255, 0.08);
-  --color-vct-req-border: rgba(121, 192, 255, 0.25);
-  --color-vct-req-badge-bg: rgba(121, 192, 255, 0.15);
+  --color-vct-req-bg: rgb(121 192 255 / 8%);
+  --color-vct-req-border: rgb(121 192 255 / 25%);
+  --color-vct-req-badge-bg: rgb(121 192 255 / 15%);
 
   /* Glossary inline-link tokens — dark variants */
-  --glossary-term-bg-hover: rgba(255, 255, 255, 0.05);
-  --glossary-term-bg-focus: rgba(255, 255, 255, 0.08);
+  --glossary-term-bg-hover: rgb(255 255 255 / 5%);
+  --glossary-term-bg-focus: rgb(255 255 255 / 8%);
 }

@@ -665,7 +665,7 @@ function pointExchange(k, nRuns, criterion, opts = {}) {
     }
     const designIdx = allIdx.slice(0, nRuns);
     const inDesign = new Set(designIdx);
-    let design = designIdx.map(i => [...candidates[i]]);
+    const design = designIdx.map(i => [...candidates[i]]);
     let val = criterion(design);
 
     for (let iter = 0; iter < maxIter; iter++) {
@@ -777,7 +777,7 @@ function coordinateExchange(k, nRuns, criterion, opts = {}) {
 
   for (let start = 0; start < nStarts; start++) {
     const rng = lcgRng(baseSeed + start * 7919);
-    let design = randomStartDesign(nRuns, k, levelsPerFactor, rng);
+    const design = randomStartDesign(nRuns, k, levelsPerFactor, rng);
     // Pin the prefix to the existing runs; the optimizer only mutates the suffix.
     for (let i = 0; i < fixedPrefix; i++) {
       design[i] = [...fixedRows[i]];
@@ -869,11 +869,11 @@ function optimalDesign(k, nRuns, criterion, opts = {}) {
   // for the quadratic terms). Categorical factors are restricted to their
   // discrete level set — fractional values would be meaningless.
   const buildLevelsPerFactor = () => Array.from({ length: k }, (_, j) => {
-    const isCategorical = !!categoricalFlags?.[j];
+    const isCategorical = Boolean(categoricalFlags?.[j]);
     if (isCategorical) {
       const n = levelCounts?.[j] ?? 2;
       if (n <= 1) return [0];
-      return Array.from({ length: n }, (_, i) => -1 + (2 * i) / (n - 1));
+      return Array.from({ length: n }, (_v, i) => -1 + (2 * i) / (n - 1));
     }
     return candidateLevels(quadratic);
   });
@@ -987,11 +987,11 @@ export function augmentOptimalDesign(existingCoded, k, addRuns, criterionType, o
   const categoricalFlags = opts.categoricalFlags;
 
   const levelsPerFactor = Array.from({ length: k }, (_, j) => {
-    const isCategorical = !!categoricalFlags?.[j];
+    const isCategorical = Boolean(categoricalFlags?.[j]);
     if (isCategorical) {
       const n = levelCounts?.[j] ?? 2;
       if (n <= 1) return [0];
-      return Array.from({ length: n }, (_, i) => -1 + (2 * i) / (n - 1));
+      return Array.from({ length: n }, (_v, i) => -1 + (2 * i) / (n - 1));
     }
     return candidateLevels(quadratic);
   });
@@ -1043,7 +1043,7 @@ export function minRunsForModel(k, quadratic = false, excludedInteractions) {
       const a = Math.min(pair[0], pair[1]);
       const b = Math.max(pair[0], pair[1]);
       if (a === b || a < 0 || b >= k) continue;
-      const key = a + '_' + b;
+      const key = `${a  }_${  b}`;
       if (!seen.has(key)) { seen.add(key); excludedCount++; }
     }
   }
@@ -1211,7 +1211,7 @@ export function formatValue(value, decimals = 2) {
 export function generateDesign(factors, opts) {
   const k = factors.length;
   let coded;
-  let resLabel = '';
+  let resLabel;
   let p = 0;
 
   // Deterministic seed derived from design parameters so identical inputs
@@ -1382,7 +1382,7 @@ export function generateDesign(factors, opts) {
   if (opts.randomize) {
     const paired = coded.map((row, i) => ({ row, std: stdOrder[i], rep: replicateIds[i] }));
     const shuffled = randomizeDesign(
-      paired.map(p => [...p.row, p.std, p.rep]),
+      paired.map(pr => [...pr.row, pr.std, pr.rep]),
       seed
     );
     coded = shuffled.map(r => r.slice(0, k));
@@ -1462,7 +1462,7 @@ export function analyze(inputs) {
 
   let matrix;
   let alpha = null;
-  let resolution = '';
+  let resolution;
 
   if (designType === 'full2k') {
     matrix = fullFactorial2k(k);

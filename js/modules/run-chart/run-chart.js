@@ -6,360 +6,205 @@
  *
  * Use case: quick first look at process behavior before building control
  * limits — answers "is there obvious non-randomness?"
+ *
+ * Migrated to createModule + Alpine CSP. The Model holds only the persisted
+ * inputs (the referenced column, alpha, the example-worksheet id); the analysis
+ * result (median, runs counts, the four p-values) is derived transiently in the
+ * view from those inputs plus the live worksheet column values. The runs-test
+ * math lives in `js/engines/run-chart-engine.js` and is reused unchanged. The
+ * ColumnPicker and the SVG run chart are mounted imperatively (they are not
+ * pure-template concerns).
  */
+
+import { createModule } from '../../core/template-module.js';
+import { State } from './run-chart-model.js';
 
 import { ColumnPicker, getColumnValues, getColumnName } from '../../ui/column-picker.js';
 import { computeRunChart } from '../../engines/run-chart-engine.js';
-import { esc } from '../../core/html-utils.js';
-import { provisionWorksheet, removeProvisionedWorksheet } from '../../core/examples-registry.js';
+import { loadWorksheetExample, rewriteRefFields } from '../../core/examples-registry.js';
+import { chartModuleLifecycle } from '../../core/chart/chart-module-base.js';
 
+/** Default significance level (mirrors the legacy module). */
 const DEFAULT_ALPHA = 0.05;
 
-export default {
-  id: 'run-chart',
-  phase: 'data',
-  group: 'visualize',
-  icon: 'activity',
-  i18nKey: 'modules.run-chart',
-  version: '1.0.0',
-
-  _container: null,
-  _context: null,
-  _columnRef: null,
-  _alpha: DEFAULT_ALPHA,
-  _picker: null,
-  _chart: null,
-  _autoRunTimer: null,
-  /** Worksheet provisioned by loadExample; replaced on each subsequent load. */
-  _exampleWorksheetId: null,
-
-  // ─── Lifecycle ──────────────────────────────────────────────
-
-  async init(container, context) {
-    this._container = container;
-    this._context = context;
-
-    if (!document.getElementById('run-chart-css')) {
-      const link = document.createElement('link');
-      link.id = 'run-chart-css';
-      link.rel = 'stylesheet';
-      link.href = './js/modules/run-chart/run-chart.css';
-      document.head.appendChild(link);
-    }
-
-    const saved = context.stateManager.getModuleState(context.instanceId);
-    if (saved) this._loadState(saved);
-
-    this._render();
-    this._initPicker();
-    this._bindEvents();
-    this._runAnalysis();
+const mod = createModule({
+  config: {
+    id: 'run-chart',
+    engine: 'alpine',
+    phase: 'data',
+    group: 'visualize',
+    icon: 'activity',
+    version: '1.0.0',
+    meta: import.meta,
   },
+  Model: State,
 
-  async destroy() {
-    clearTimeout(this._autoRunTimer);
-    this._destroyPicker();
-    this._destroyChart();
-    this._container.innerHTML = '';
-  },
-
-  onLanguageChange() {
-    this._destroyChart();
-    this._destroyPicker();
-    this._render();
-    this._initPicker();
-    this._bindEvents();
-    this._runAnalysis();
-  },
-
-  onThemeChange() {},
-
-  getState() {
+  data(module, _t) {
     return {
-      columnRef: this._columnRef,
-      alpha: this._alpha,
-    };
-  },
+      ...chartModuleLifecycle(module, {
+        mountPicker() {
+          const wrap = module._container.querySelector('[data-ref="col-picker-wrap"]');
+          if (!wrap) return;
+          this._picker?.destroy();
+          this._picker = new ColumnPicker(wrap, module._context, {
+            mode: 'single',
+            types: ['numeric'],
+            minCount: 2,
+            onChange: (ref) => {
+              this.model.columnRef = ref;
+              this._scheduleAutoRun();
+            },
+          });
+          if (this.model.columnRef) this._picker.value = this.model.columnRef;
+        },
+        themeMode: 'rerun',
+        autorun: true,
+        onTheme() {
+          if (this.result) {
+            const r = this.result;
+            this.$nextTick(() => this._renderChart(
+              { values: r.values, median: r.median },
+              ++this._renderGen,
+            ));
+          }
+        },
+      }),
 
-  setState(data) {
-    if (data) this._loadState(data);
-    if (this._container) {
-      this._destroyPicker();
-      this._render();
-      this._initPicker();
-      this._bindEvents();
-      this._runAnalysis();
-    }
-  },
+      // ── Transient view state (not persisted) ──────────────────
+      /**
+       * Derived analysis result for the template, or null. Shape:
+       *   { median, n, runsAboutMedian, runsUpDown, flagged,
+       *     values, tests: [{ id, p, obs }] }
+       */
+      result: null,
 
-  help: () => import('./run-chart-help.js'),
+      // ── View transformations ──────────────────────────────────
 
-  /**
-   * Load a catalog example. Provision the inlined worksheet, rewrite the
-   * `__source__` placeholder in columnRef, then apply the state.
-   *
-   * @param {{ meta: object, data: object }} payload
-   */
-  async loadExample(payload) {
-    if (!payload || !payload.data) return;
-    const t = (k) => this._context.i18n.t(k);
+      fmt(v) {
+        return Number.isFinite(v) ? v.toFixed(4) : '–';
+      },
 
-    const hasContent = !!this._columnRef;
-    if (hasContent && this._context?.confirmPopout) {
-      const ok = await this._context.confirmPopout(t('moduleHelp.confirmOverwrite'), { danger: true });
-      if (!ok) return;
-    }
+      fmtP(p) {
+        return p < 0.0001 ? '< 0.0001' : p.toFixed(4);
+      },
 
-    const data = { ...payload.data };
+      flaggedKpiClass() {
+        const r = this.result;
+        return r && r.flagged === 0 ? 'dmike-kpi--good' : 'dmike-kpi--bad';
+      },
 
-    if (data.sourceWorksheetData) {
-      const wsState = data.sourceWorksheetData;
-      delete data.sourceWorksheetData;
-      if (this._exampleWorksheetId) {
-        removeProvisionedWorksheet(this._context, this._exampleWorksheetId);
-        this._exampleWorksheetId = null;
-      }
-      const ref = provisionWorksheet(this._context, wsState);
-      if (ref) {
-        this._exampleWorksheetId = ref.instanceId;
-        if (data.columnRef?.instanceId === '__source__') {
-          data.columnRef = { ...data.columnRef, instanceId: ref.instanceId };
-        }
-      }
-    }
+      testName(id) {
+        return _t(`test_${  id}`);
+      },
 
-    this.setState(data);
-    this._save();
+      testDesc(id) {
+        return _t(`testDesc_${  id}`);
+      },
 
-    const lang = this._context.i18n.getLanguage();
-    const title = payload.meta?.title?.[lang] || payload.meta?.title?.en || payload.meta?.id || '';
-    this._context.notify?.(t('moduleHelp.exampleLoaded').replace('{title}', title), 'success');
-  },
+      testStatusClass(p) {
+        return p < this.model.alpha
+          ? 'run-chart__test-status--bad'
+          : 'run-chart__test-status--ok';
+      },
 
-  // ─── State ──────────────────────────────────────────────────
+      testStatusText(p) {
+        return p < this.model.alpha ? _t('flagFail') : _t('flagPass');
+      },
 
-  /** @private */
-  _loadState(saved) {
-    this._columnRef = saved.columnRef || null;
-    this._alpha = Number.isFinite(saved.alpha) ? saved.alpha : DEFAULT_ALPHA;
-  },
+      chartTitle() {
+        const colName = getColumnName(module._context.stateManager, this.model.columnRef);
+        return _t('chartTitle', { col: colName });
+      },
 
-  /** @private */
-  _save() {
-    this._context.stateManager.setModuleState(this._context.instanceId, this.getState());
-  },
+      // ── Event handlers ─────────────────────────────────────────
 
-  // ─── Render ─────────────────────────────────────────────────
-
-  /** @private */
-  _t(key, vars) {
-    return this._context.i18n.t(`modules.run-chart.${key}`, vars);
-  },
-
-  /** @private */
-  _render() {
-    this._container.innerHTML = `
-      <div class="run-chart dmike-split">
-        <div class="run-chart__input dmike-split__input">
-
-          <div class="dmike-split__section-title">${this._t('sectionData')}</div>
-          <div class="field-group">
-            <label>${this._t('dataColumn')}</label>
-            <div data-ref="col-picker-wrap"></div>
-          </div>
-
-          <div class="dmike-split__section-title">${this._t('sectionSettings')}</div>
-          <div class="field-group">
-            <label>${this._t('alpha')}</label>
-            <input type="number" class="field field--num" data-ref="alpha"
-              value="${this._alpha}" step="0.01" min="0.001" max="0.5">
-            <span class="run-chart__hint">${this._t('alphaHint')}</span>
-          </div>
-
-        </div>
-
-        <div class="run-chart__output dmike-split__output">
-          <div data-ref="stats-bar"></div>
-          <div data-ref="chart-wrap"></div>
-          <div data-ref="tests-wrap"></div>
-        </div>
-      </div>
-    `;
-  },
-
-  /** @private */
-  _initPicker() {
-    const wrap = this._container.querySelector('[data-ref="col-picker-wrap"]');
-    if (!wrap) return;
-    this._picker = new ColumnPicker(wrap, this._context, {
-      mode: 'single',
-      types: ['numeric'],
-      minCount: 2,
-      onChange: (ref) => {
-        this._columnRef = ref;
-        this._save();
+      alphaChanged(event) {
+        const v = parseFloat(event.target.value);
+        this.model.alpha = (Number.isFinite(v) && v > 0 && v < 1) ? v : DEFAULT_ALPHA;
         this._scheduleAutoRun();
       },
-    });
-    if (this._columnRef) this._picker.value = this._columnRef;
-  },
 
-  /** @private */
-  _destroyPicker() {
-    if (this._picker) { this._picker.destroy(); this._picker = null; }
-  },
+      // ── Analysis (controller — needs context + live worksheet data) ──
 
-  /** @private */
-  _bindEvents() {
-    this._container.addEventListener('change', (e) => {
-      if (e.target.dataset?.ref === 'alpha') {
-        const v = parseFloat(e.target.value);
-        this._alpha = (Number.isFinite(v) && v > 0 && v < 1) ? v : DEFAULT_ALPHA;
-        this._save();
-        this._scheduleAutoRun();
-      }
-    });
-  },
+      _runAnalysis() {
+        const clear = () => {
+          this._destroyChart();
+          this.result = null;
+        };
 
-  /** @private */
-  _scheduleAutoRun() {
-    clearTimeout(this._autoRunTimer);
-    this._autoRunTimer = setTimeout(() => this._runAnalysis(), 120);
-  },
+        if (!this.model.columnRef) return clear();
 
-  // ─── Analysis ───────────────────────────────────────────────
+        const raw = getColumnValues(module._context.stateManager, this.model.columnRef);
+        const values = raw.filter(v => typeof v === 'number' && !isNaN(v));
+        if (values.length < 3) return clear();
 
-  /** @private */
-  async _runAnalysis() {
-    const statsBar  = this._container.querySelector('[data-ref="stats-bar"]');
-    const chartWrap = this._container.querySelector('[data-ref="chart-wrap"]');
-    const testsWrap = this._container.querySelector('[data-ref="tests-wrap"]');
+        const r = computeRunChart(values);
+        const flagged = this.model.flaggedCount(r, this.model.alpha);
 
-    const clear = () => {
-      this._destroyChart();
-      if (statsBar)  statsBar.innerHTML  = '';
-      if (chartWrap) chartWrap.innerHTML = '';
-      if (testsWrap) testsWrap.innerHTML = '';
+        this.result = {
+          median: r.median,
+          n: r.values.length,
+          runsAboutMedian: r.runsAboutMedian,
+          runsUpDown: r.runsUpDown,
+          flagged,
+          values: r.values,
+          tests: [
+            { id: 'clustering',  p: r.pClustering,  obs: r.runsAboutMedian },
+            { id: 'mixtures',    p: r.pMixtures,    obs: r.runsAboutMedian },
+            { id: 'trends',      p: r.pTrends,      obs: r.runsUpDown },
+            { id: 'oscillation', p: r.pOscillation, obs: r.runsUpDown },
+          ],
+        };
+
+        const gen = ++this._renderGen;
+        this.$nextTick(() => this._renderChart(r, gen));
+      },
+
+      // ── SVG run chart (imperative via chartManager) ───────────
+
+      async _renderChart(r, gen) {
+        this._destroyChart();
+        const plotEl = module._container.querySelector('[data-ref="plot"]');
+        if (!plotEl) return;
+        plotEl.replaceChildren();
+
+        const colName = getColumnName(module._context.stateManager, this.model.columnRef);
+
+        const chart = await module._context.chartManager.create(plotEl, 'run-chart', {
+          title: '',
+          xLabel: _t('xLabelSample'),
+          yLabel: colName,
+          showLegend: false,
+          showTitle: false,
+          values: r.values,
+          median: r.median,
+          colorBySide: true,
+        });
+        if (gen !== this._renderGen) {
+          try { module._context.chartManager.destroy(chart); } catch { /* ignore */ }
+          return;
+        }
+        this._chart = chart;
+      },
     };
-
-    if (!this._columnRef) { clear(); return; }
-    const raw = getColumnValues(this._context.stateManager, this._columnRef);
-    const values = raw.filter(v => typeof v === 'number' && !isNaN(v));
-    if (values.length < 3) { clear(); return; }
-
-    const r = computeRunChart(values);
-
-    this._renderStats(r);
-    await this._renderChart(r);
-    this._renderTests(r);
   },
+});
 
-  /** @private */
-  _renderStats(r) {
-    const statsBar = this._container.querySelector('[data-ref="stats-bar"]');
-    if (!statsBar) return;
-    const fmt = (v) => Number.isFinite(v) ? v.toFixed(4) : '–';
-
-    const flagged = [
-      r.pClustering, r.pMixtures, r.pTrends, r.pOscillation,
-    ].filter(p => p < this._alpha).length;
-
-    statsBar.innerHTML = `<div class="dmike-kpi-strip">
-      <div class="dmike-kpi">
-        <div class="dmike-kpi-value">${fmt(r.median)}</div>
-        <div class="dmike-kpi-label">${this._t('statMedian')}</div>
-        <div class="dmike-kpi-sub">${this._t('statN', { n: r.values.length })}</div>
-      </div>
-      <div class="dmike-kpi">
-        <div class="dmike-kpi-value">${r.runsAboutMedian}</div>
-        <div class="dmike-kpi-label">${this._t('statRunsAbout')}</div>
-        <div class="dmike-kpi-sub">${this._t('statRunsUpDown', { count: r.runsUpDown })}</div>
-      </div>
-      <div class="dmike-kpi ${flagged === 0 ? 'dmike-kpi--good' : 'dmike-kpi--bad'}">
-        <div class="dmike-kpi-value">${flagged}</div>
-        <div class="dmike-kpi-label">${this._t('statFlagged')}</div>
-        <div class="dmike-kpi-sub">${this._t('statAlpha', { a: this._alpha })}</div>
-      </div>
-    </div>`;
-  },
-
-  /** @private */
-  async _renderChart(r) {
-    this._destroyChart();
-    const chartWrap = this._container.querySelector('[data-ref="chart-wrap"]');
-    if (!chartWrap) return;
-    chartWrap.innerHTML = '';
-
-    const colName = getColumnName(this._context.stateManager, this._columnRef);
-
-    const wrapper = document.createElement('div');
-    wrapper.className = 'run-chart__chart-section';
-    const header = document.createElement('div');
-    header.className = 'run-chart__chart-header';
-    header.innerHTML = `<span class="run-chart__chart-title">${esc(this._t('chartTitle', { col: colName }))}</span>`;
-    wrapper.appendChild(header);
-
-    const plotEl = document.createElement('div');
-    plotEl.className = 'run-chart__plot-wrap';
-    wrapper.appendChild(plotEl);
-    chartWrap.appendChild(wrapper);
-
-    this._chart = await this._context.chartManager.create(plotEl, 'run-chart', {
-      title: '',
-      xLabel: this._t('xLabelSample'),
-      yLabel: colName,
-      showLegend: false,
-      showTitle: false,
-      values: r.values,
-      median: r.median,
-      colorBySide: true,
-    });
-  },
-
-  /** @private */
-  _renderTests(r) {
-    const wrap = this._container.querySelector('[data-ref="tests-wrap"]');
-    if (!wrap) return;
-
-    const a = this._alpha;
-    const tests = [
-      { id: 'clustering',  p: r.pClustering,  obs: r.runsAboutMedian },
-      { id: 'mixtures',    p: r.pMixtures,    obs: r.runsAboutMedian },
-      { id: 'trends',      p: r.pTrends,      obs: r.runsUpDown },
-      { id: 'oscillation', p: r.pOscillation, obs: r.runsUpDown },
-    ];
-
-    const fmtP = (p) => p < 0.0001 ? '< 0.0001' : p.toFixed(4);
-
-    const rows = tests.map(t => {
-      const flagged = t.p < a;
-      const cls = flagged ? 'run-chart__test-status--bad' : 'run-chart__test-status--ok';
-      const status = flagged ? this._t('flagFail') : this._t('flagPass');
-      return `<div class="run-chart__test-row">
-        <div class="run-chart__test-name">
-          <strong>${esc(this._t('test_' + t.id))}</strong>
-          <span class="run-chart__test-desc">${esc(this._t('testDesc_' + t.id))}</span>
-        </div>
-        <div class="run-chart__test-pvalue">${fmtP(t.p)}</div>
-        <div class="run-chart__test-status ${cls}">${status}</div>
-      </div>`;
-    }).join('');
-
-    wrap.innerHTML = `
-      <div class="run-chart__tests-panel">
-        <div class="run-chart__tests-header">${this._t('testsTitle')}</div>
-        <div class="run-chart__tests-grid">${rows}</div>
-      </div>
-    `;
-  },
-
-  // ─── Helpers ────────────────────────────────────────────────
-
-  /** @private */
-  _destroyChart() {
-    if (this._chart) {
-      this._context.chartManager.destroy(this._chart);
-      this._chart = null;
-    }
-  },
+/**
+ * Custom loadExample: run-chart catalog examples ship a full worksheet
+ * (`sourceWorksheetData`) and use the literal placeholder `__source__` as the
+ * `columnRef` instanceId. On load we provision a fresh worksheet, rewrite the
+ * placeholder, then apply state (which re-runs the analysis on the new data).
+ * This replaces the generic createModule loadExample because of the worksheet
+ * provisioning the generic helper cannot perform.
+ *
+ * @param {{ meta: object, data: object }} payload
+ */
+mod.loadExample = function loadExample(payload) {
+  return loadWorksheetExample(this, payload, {
+    Model: State,
+    rewriteRefs: rewriteRefFields(['columnRef']),
+  });
 };
+
+export default mod;

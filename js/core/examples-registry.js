@@ -236,6 +236,198 @@ export function csvPayloadToWorksheetState(csvData, meta = {}) {
   };
 }
 
+/**
+ * Shared example-load flow for modules whose example data is backed by a
+ * provisioned Worksheet (Datensammlung). Captures the common sequence used by
+ * the chart modules (control-chart, run-chart, xy-plot, boxplot, …):
+ *
+ *   1. guard the payload,
+ *   2. confirm before overwriting existing module content,
+ *   3. optionally synthesize a worksheet from a CSV-shape payload,
+ *   4. provision a fresh worksheet (cleaning up a prior example-provisioned
+ *      one via the model's `exampleWorksheetId`), record the new id, and
+ *      rewrite the module's `__source__` column reference(s) to the real
+ *      instance id,
+ *   5. apply the resulting state via the module's own `setState`, persist it,
+ *      and emit the success toast.
+ *
+ * Per-module differences are parameterized through `options`:
+ *   - `State`        — the module's model class (for the `hasContent` overwrite
+ *                      gate and for reading the previous `exampleWorksheetId`).
+ *   - `synthesizeFromCsv(data, meta)` — optional. For modules that also accept
+ *                      a CSV-shape (`{ columns }`) dataset: return
+ *                      `{ sourceWorksheetData, columnRef }` (or a falsy value to
+ *                      skip). Called only when `data` has no `sourceWorksheetData`
+ *                      and no `columnRef`.
+ *   - `rewriteRefs(data, instanceId)` — rewrite every `__source__` placeholder
+ *                      reference in `data` to the provisioned `instanceId`.
+ *                      Receives the (shallow-cloned) data object and the new
+ *                      instance id; mutate/return it as needed.
+ *
+ * The helper performs NO worksheet provisioning when the payload carries no
+ * `sourceWorksheetData` (after optional synthesis) — it still applies the
+ * remaining state, matching the prior per-module behaviour.
+ *
+ * @param {object} module — the module instance (provides `_context`, `getState`,
+ *   `setState`). `module._context` must expose `i18n`, `stateManager`,
+ *   `instanceId`, and may expose `confirmPopout`/`notify`.
+ * @param {{ meta: object, data: object }} payload
+ * @param {{
+ *   State: { fromJSON: (json: object) => any },
+ *   synthesizeFromCsv?: (data: object, meta: object) => (object | null),
+ *   rewriteRefs: (data: object, instanceId: string) => object,
+ * }} options
+ * @returns {Promise<void>}
+ */
+export async function loadExampleViaWorksheet(module, payload, options) {
+  if (!payload || !payload.data) return;
+  const { State, synthesizeFromCsv, rewriteRefs } = options;
+  const ctx = module._context;
+  const t = (key) => ctx.i18n.t(key);
+
+  const current = module.getState();
+  const currentModel = current ? State.fromJSON(current) : null;
+  if (currentModel?.hasContent?.() && ctx?.confirmPopout) {
+    const ok = await ctx.confirmPopout(t('moduleHelp.confirmOverwrite'), { danger: true });
+    if (!ok) return;
+  }
+
+  let data = { ...payload.data };
+
+  // Optional CSV-shape → worksheet synthesis (e.g. control-chart datasets).
+  if (typeof synthesizeFromCsv === 'function'
+      && !data.sourceWorksheetData && !data.columnRef && Array.isArray(data.columns)) {
+    const synth = synthesizeFromCsv(data, payload.meta);
+    if (synth) data = synth;
+  }
+
+  if (data.sourceWorksheetData) {
+    const wsState = data.sourceWorksheetData;
+    delete data.sourceWorksheetData;
+
+    const prevId = currentModel?.exampleWorksheetId;
+    if (prevId) removeProvisionedWorksheet(ctx, prevId);
+
+    const ref = provisionWorksheet(ctx, wsState);
+    if (ref) {
+      data.exampleWorksheetId = ref.instanceId;
+      data = rewriteRefs(data, ref.instanceId);
+    }
+  }
+
+  module.setState(data);
+  ctx.stateManager.setModuleState(ctx.instanceId, module.getState());
+
+  const lang = ctx.i18n.getLanguage();
+  const title = payload.meta?.title?.[lang] || payload.meta?.title?.en || payload.meta?.id || '';
+  ctx.notify?.(t('moduleHelp.exampleLoaded').replace('{title}', title), 'success');
+}
+
+/**
+ * Build a placeholder-rewrite function that swaps the `instanceId` on a fixed
+ * set of single-ref fields. Each named field on `data` whose ref has the
+ * `oldId` placeholder is replaced immutably with `{ ...ref, instanceId: newId }`.
+ *
+ * Returned function signature: `(data, oldId, newId) => data` (mutates and
+ * returns the same `data` object, matching prior per-module behaviour).
+ *
+ * @param {string[]} fields — ref field names to rewrite (e.g. ['xRef','yRef','gRef'])
+ * @returns {(data: object, oldId: string, newId: string) => object}
+ */
+export function rewriteRefFields(fields) {
+  return (data, oldId, newId) => {
+    for (const field of fields) {
+      const r = data[field];
+      if (r && r.instanceId === oldId) {
+        data[field] = { ...r, instanceId: newId };
+      }
+    }
+    return data;
+  };
+}
+
+/**
+ * Build a placeholder-rewrite function for a single array-valued ref field.
+ * Maps over the array, replacing the `instanceId` on every element whose ref
+ * carries the `oldId` placeholder (immutably per element via `{ ...r, … }`).
+ *
+ * Returned function signature: `(data, oldId, newId) => data`.
+ *
+ * @param {string} field — array ref field name (e.g. 'colRefs')
+ * @returns {(data: object, oldId: string, newId: string) => object}
+ */
+export function rewriteRefArray(field) {
+  return (data, oldId, newId) => {
+    const arr = data[field];
+    if (Array.isArray(arr)) {
+      data[field] = arr.map((r) => (r && r.instanceId === oldId)
+        ? { ...r, instanceId: newId }
+        : r);
+    }
+    return data;
+  };
+}
+
+/**
+ * Shared worksheet-backed example loader for chart modules.
+ *
+ * Captures the verbatim per-module `loadExample` flow used by the chart
+ * cluster (bar, time-weighted-chart, run-chart, boxplot, …): examples ship a
+ * full worksheet in `sourceWorksheetData` and use the literal placeholder
+ * `__source__` as the column-ref instanceId. On load we provision a fresh
+ * worksheet, rewrite the placeholder across the module's ref fields, then apply
+ * state. If the payload carries no `sourceWorksheetData`, state is applied
+ * directly without provisioning — matching prior behaviour.
+ *
+ * The only per-module variation is which ref fields carry `__source__`; that is
+ * supplied via `rewriteRefs` (see {@link rewriteRefFields} / {@link rewriteRefArray}).
+ *
+ * @param {object} mod — module instance (provides `_context`, `getState`, `setState`).
+ *   `mod._context` must expose `i18n`, `stateManager`, `instanceId`; may expose
+ *   `confirmPopout` and `notify`.
+ * @param {{ meta: object, data: object }} payload
+ * @param {{
+ *   Model: { fromJSON: (json: object) => { hasContent: () => boolean, exampleWorksheetId?: string } },
+ *   rewriteRefs: (data: object, oldId: string, newId: string) => object,
+ * }} options
+ * @returns {Promise<void>}
+ */
+export async function loadWorksheetExample(mod, payload, { Model, rewriteRefs }) {
+  if (!payload || !payload.data) return;
+  const ctx = mod._context;
+  const t = (key) => ctx.i18n.t(key);
+
+  const current = mod.getState();
+  const currentModel = current ? Model.fromJSON(current) : null;
+  if (currentModel?.hasContent() && ctx?.confirmPopout) {
+    const ok = await ctx.confirmPopout(t('moduleHelp.confirmOverwrite'), { danger: true });
+    if (!ok) return;
+  }
+
+  const data = { ...payload.data };
+
+  if (data.sourceWorksheetData) {
+    const wsState = data.sourceWorksheetData;
+    delete data.sourceWorksheetData;
+
+    const prevId = currentModel?.exampleWorksheetId;
+    if (prevId) removeProvisionedWorksheet(ctx, prevId);
+
+    const ref = provisionWorksheet(ctx, wsState);
+    if (ref) {
+      data.exampleWorksheetId = ref.instanceId;
+      rewriteRefs(data, '__source__', ref.instanceId);
+    }
+  }
+
+  mod.setState(data);
+  ctx.stateManager.setModuleState(ctx.instanceId, mod.getState());
+
+  const lang = ctx.i18n.getLanguage();
+  const title = payload.meta?.title?.[lang] || payload.meta?.title?.en || payload.meta?.id || '';
+  ctx.notify?.(t('moduleHelp.exampleLoaded').replace('{title}', title), 'success');
+}
+
 // ─── CSV parsing ───────────────────────────────────────────────
 
 /**

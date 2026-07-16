@@ -1,0 +1,227 @@
+<section class="module-container ro" x-data="responseOptimization">
+  <div class="module-container__header">
+    <h2 class="module-container__title" x-text="t('name')"></h2>
+  </div>
+  <div class="module-container__body">
+
+    <!-- Empty state: no models in store -->
+    <template x-if="modelList.length === 0">
+      <div class="dmike-split">
+        <div class="ro__empty">
+          <p x-text="t('emptyState')"></p>
+        </div>
+      </div>
+    </template>
+
+    <!-- Main layout: models present -->
+    <template x-if="modelList.length > 0">
+      <div class="dmike-split">
+
+        <!-- Input panel -->
+        <div class="ro__input dmike-split__input">
+          <div class="dmike-split__section-title" x-text="t('sectionModels')"></div>
+
+          <div class="ro__model-list">
+            <template x-for="m in modelList">
+              <div class="ro__model-row" :key="m.id" :data-model-id="m.id">
+                <label class="ro__model-head">
+                  <input type="checkbox"
+                         data-action="toggle-model"
+                         :checked="isSelected(m.id)"
+                         @change="toggleModel(m.id, $event)">
+                  <span class="ro__model-name" x-text="m.name"></span>
+                  <span :class="r2Class(m)" :title="t('adjR2')" x-text="r2Text(m)"></span>
+                </label>
+
+                <!-- Spec editor: only visible when selected -->
+                <div class="ro__spec" x-show="isSelected(m.id)">
+                  <select class="field ro__spec-kind"
+                          data-action="kind"
+                          @change="setSpecKind(m.id, $event)">
+                    <option value="max" :selected="isKind(m.id, 'max')" x-text="t('goalMax')"></option>
+                    <option value="min" :selected="isKind(m.id, 'min')" x-text="t('goalMin')"></option>
+                    <option value="target" :selected="isKind(m.id, 'target')" x-text="t('goalTarget')"></option>
+                  </select>
+
+                  <label>
+                    <span x-text="t('lower')"></span>
+                    <input class="field field--num" type="number" step="any"
+                           data-action="lower"
+                           :value="specVal(m.id, 'lower')"
+                           @change="setSpecNum(m.id, 'lower', $event)">
+                  </label>
+
+                  <label x-show="isKind(m.id, 'target')">
+                    <span x-text="t('target')"></span>
+                    <input class="field field--num" type="number" step="any"
+                           data-action="target"
+                           :value="specVal(m.id, 'target')"
+                           @change="setSpecNum(m.id, 'target', $event)">
+                  </label>
+
+                  <label>
+                    <span x-text="t('upper')"></span>
+                    <input class="field field--num" type="number" step="any"
+                           data-action="upper"
+                           :value="specVal(m.id, 'upper')"
+                           @change="setSpecNum(m.id, 'upper', $event)">
+                  </label>
+
+                  <label>
+                    <span x-text="t('weight')"></span>
+                    <input class="field field--num" type="number" step="any"
+                           data-action="weight"
+                           :value="specVal(m.id, 'weight')"
+                           @change="setSpecNum(m.id, 'weight', $event)">
+                  </label>
+                </div>
+              </div>
+            </template>
+          </div>
+
+          <!-- Diagnostic block -->
+          <template x-if="diagnosticReasons.length > 0">
+            <div class="ro__diagnostic">
+              <strong x-text="diagnosticBlockedLabel()"></strong>
+              <ul>
+                <template x-for="reason in diagnosticReasons">
+                  <li :key="reason.key" x-text="reason.text"></li>
+                </template>
+              </ul>
+            </div>
+          </template>
+
+          <button class="btn btn--primary ro__optimize-btn"
+                  data-action="optimize"
+                  type="button"
+                  :disabled="!canOptimize"
+                  @click="runOptimize()">
+            <span x-text="t('optimizeButton')"></span>
+          </button>
+        </div>
+
+        <!-- Output panel -->
+        <div class="ro__output dmike-split__output">
+
+          <!-- Placeholder before first optimisation -->
+          <div class="ro__placeholder" x-show="!currentOpt" x-text="t('placeholderResult')"></div>
+
+          <!-- Results after optimisation -->
+          <template x-if="currentOpt">
+            <div>
+              <div class="dmike-split__output-section" x-text="t('resultTitle')"></div>
+
+              <!-- Composite desirability KPI -->
+              <div class="dmike-kpi-strip">
+                <div :class="dClass()" :title="t('tipD')">
+                  <div class="dmike-kpi-value" x-text="dValue()"></div>
+                  <div class="dmike-kpi-label">D</div>
+                </div>
+              </div>
+
+              <!-- Optimum factor point -->
+              <div class="dmike-split__output-section" x-text="t('optimumPoint')"></div>
+              <table class="dmike-table">
+                <thead>
+                  <tr>
+                    <th x-text="t('factor')"></th>
+                    <th x-text="t('value')"></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <template x-for="row in optimumRows()">
+                    <tr :key="row.name">
+                      <td x-text="row.name"></td>
+                      <td class="num" x-text="row.value"></td>
+                    </tr>
+                  </template>
+                </tbody>
+              </table>
+
+              <!-- Predictions -->
+              <div class="dmike-split__output-section" x-text="t('predictions')"></div>
+              <table class="dmike-table">
+                <thead>
+                  <tr>
+                    <th x-text="t('model')"></th>
+                    <th x-text="t('prediction')"></th>
+                    <th>d</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <template x-for="row in predictionRows()">
+                    <tr :key="row.model">
+                      <td x-text="row.model"></td>
+                      <td class="num" x-text="row.prediction"></td>
+                      <td class="num" x-text="row.d"></td>
+                    </tr>
+                  </template>
+                </tbody>
+              </table>
+
+              <!-- Contour plot section (only if contourData is available) -->
+              <template x-if="contourData !== null">
+                <div>
+                  <div class="dmike-split__output-section" x-text="t('contourTitle')"></div>
+
+                  <!-- Axis + categorical fixing controls -->
+                  <div class="ro__contour-controls">
+
+                    <!-- Axis controls for >2 continuous factors -->
+                    <template x-if="contourData.showAxisControls">
+                      <div style="display:contents">
+                        <label class="ro__contour-fix">
+                          <span>X</span>
+                          <select class="field" data-action="contour-axis" data-axis="x"
+                                  @change="setContourAxis('x', $event)">
+                            <template x-for="p in contourData.continuousFactors">
+                              <option :key="p.id" :value="p.id" :selected="p.id === contourXId" x-text="p.id"></option>
+                            </template>
+                          </select>
+                        </label>
+                        <label class="ro__contour-fix">
+                          <span>Y</span>
+                          <select class="field" data-action="contour-axis" data-axis="y"
+                                  @change="setContourAxis('y', $event)">
+                            <template x-for="p in contourData.continuousFactors">
+                              <option :key="p.id" :value="p.id" :selected="p.id === contourYId" x-text="p.id"></option>
+                            </template>
+                          </select>
+                        </label>
+                      </div>
+                    </template>
+
+                    <!-- Categorical fixing dropdowns -->
+                    <template x-for="fix in contourData.categoricalFixings">
+                      <label :key="fix.id" class="ro__contour-fix">
+                        <span x-text="fix.id"></span>
+                        <select class="field"
+                                data-action="contour-fix"
+                                :data-predictor="fix.id"
+                                @change="setContourFix(fix.id, $event)">
+                          <template x-for="lv in fix.levels">
+                            <option :key="lv" :value="lv" :selected="lv === fix.value" x-text="lv"></option>
+                          </template>
+                        </select>
+                      </label>
+                    </template>
+                  </div>
+
+                  <!-- SVG contour heatmap — mounted imperatively (createElementNS)
+                       into this anchor by _mountContour(). Alpine x-for clones
+                       <template> content in the HTML namespace, which produces
+                       non-rendering SVG nodes, so the chart must be built in JS. -->
+                  <div class="ro__contour-host" data-ref="contour-host"
+                       x-init="_scheduleContourMount()"></div>
+                </div>
+              </template>
+
+            </div>
+          </template>
+
+        </div>
+      </div>
+    </template>
+
+  </div>
+</section>

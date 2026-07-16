@@ -1,0 +1,85 @@
+{
+  "id": "plackett-burman",
+  "category": "doe",
+  "title": {
+    "de": "Plackett-Burman-Design",
+    "en": "Plackett-Burman Design"
+  },
+  "short": {
+    "de": "Hoch effizientes {{term:screening-design|Screening-Design}} für viele Faktoren in Vielfachen von 4 Versuchen — nur {{term:haupteffekt|Haupteffekte}} identifizierbar.",
+    "en": "Highly efficient {{term:screening-design|screening design}} for many factors in multiples of 4 runs — only {{term:haupteffekt|main effects}} identifiable."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "**Plackett-Burman-Designs** (1946) sind zweistufige Screening-Pläne mit einer Anzahl von Versuchen, die ein Vielfaches von 4 ist — z. B. 12, 20, 24, 28 Versuche. Mit $N$ Versuchen können bis zu $N-1$ Faktoren gescreent werden. Sie sind besonders geeignet, wenn viele Faktoren (10–20) mit möglichst wenig Aufwand auf Signifikanz geprüft werden sollen."
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Effizienz:** $N-1$ Faktoren in $N$ Versuchen, wo $N \\in \\{12, 20, 24, 28, \\ldots\\}$",
+          "**Auflösung III** — {{term:haupteffekt|Haupteffekte}} sind mit vielen {{term:wechselwirkung|Zweifach-Wechselwirkungen}} teilweise vermischt",
+          "**Alias-Struktur ist komplex** — jede Wechselwirkung ist teilweise auf viele Haupteffekte verteilt (nicht einfach 1:1 wie in klassischen 2ᴵᴵᴵ-Designs)"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "Plackett-Burman eignet sich **nur fürs reine Screening** — nicht, um Wechselwirkungen zu verstehen. Für Faktoren, die im Screening als wirksam übrig bleiben, folgt ein zweites Experiment mit höherer {{term:aufloesung|Auflösung}} (2ᵥ⁻ᴰ, {{term:ccd|CCD}} oder {{term:box-behnken|Box-Behnken}})."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "**Plackett-Burman designs** (1946) are two-level screening plans whose run count is a multiple of 4 — e.g. 12, 20, 24, 28 runs. With $N$ runs one can screen up to $N-1$ factors. They shine when many factors (10–20) must be checked for significance with minimum effort."
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Efficiency:** $N-1$ factors in $N$ runs, where $N \\in \\{12, 20, 24, 28, \\ldots\\}$",
+          "**Resolution III** — {{term:haupteffekt|main effects}} are partially aliased with many {{term:wechselwirkung|two-factor interactions}}",
+          "**Complex alias structure** — each interaction is spread across many main effects rather than 1:1 as in classical 2ᴵᴵᴵ designs"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "Plackett-Burman is suitable **for pure screening only** — not for understanding interactions. For factors surviving screening, a second experiment at higher {{term:aufloesung|resolution}} follows (2ᵥ⁻ᴰ, {{term:ccd|CCD}}, or {{term:box-behnken|Box-Behnken}})."
+      }
+    ]
+  },
+  "aliases": {
+    "de": [
+      "Plackett-Burman-Plan",
+      "PB-Design",
+      "PB-Screening"
+    ],
+    "en": [
+      "Plackett-Burman",
+      "PB design"
+    ]
+  },
+  "seeAlso": [
+    "screening-design",
+    "teilfaktoriell",
+    "aufloesung",
+    "dsd",
+    "doe"
+  ],
+  "modules": [
+    "doe-planner",
+    "doe-advisor"
+  ],
+  "algoLab": [
+    "doe/doe-planner"
+  ],
+  "sources": [
+    {
+      "label": "Plackett, R. L. & Burman, J. P. — The Design of Optimum Multifactorial Experiments, Biometrika, 1946",
+      "url": null
+    },
+    {
+      "label": "Montgomery, D. C. — Design and Analysis of Experiments, 10th Edition, Chapter 8",
+      "url": null
+    }
+  ]
+}

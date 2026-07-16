@@ -1,0 +1,87 @@
+{
+  "id": "rpz",
+  "category": "risk",
+  "title": {
+    "de": "RPZ (Risikoprioritätszahl)",
+    "en": "RPN (Risk Priority Number)"
+  },
+  "short": {
+    "de": "Produkt aus {{term:bedeutung|B}} × {{term:auftreten|A}} × {{term:entdeckung|E}} in der {{term:fmea|FMEA}} — grobe Priorisierung, keine absolute Risikomessung.",
+    "en": "Product of {{term:bedeutung|S}} × {{term:auftreten|O}} × {{term:entdeckung|D}} in the {{term:fmea|FMEA}} — a rough prioritisation, not an absolute risk measure."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "Die **Risikoprioritätszahl** RPZ (englisch Risk Priority Number, RPN) fasst die drei Einzelbewertungen einer {{term:fmea|FMEA}}-Zeile zu einer Kennzahl zusammen."
+      },
+      {
+        "type": "formula",
+        "latex": "\\text{RPZ} = B \\cdot A \\cdot E"
+      },
+      {
+        "type": "paragraph",
+        "text": "Werte liegen zwischen 1 und 1000. Zeilen mit hohem RPZ-Wert werden vorrangig mit Maßnahmen adressiert; nach deren Umsetzung wird neu bewertet und die RPZ neu berechnet."
+      },
+      {
+        "type": "note",
+        "text": "**Kritik / Grenzen:** RPZ ist keine metrische Größe — RPZ = 100 kann aus vielen Kombinationen entstehen (10·10·1, 5·5·4, …), die sich in ihrem Charakter stark unterscheiden. Ein reiner Schwellwert („alles > 100 wird bearbeitet“) übersieht den Fall {{term:bedeutung|B}} = 10, A = 1, E = 1 (RPZ 10, aber sicherheitskritisch). Die neue AIAG-VDA-FMEA (2019) ersetzt die RPZ deshalb durch die **Aufgabenpriorität AP** (Action Priority)."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "The **Risk Priority Number** RPN condenses the three ratings of an {{term:fmea|FMEA}} row into a single figure."
+      },
+      {
+        "type": "formula",
+        "latex": "\\text{RPN} = S \\cdot O \\cdot D"
+      },
+      {
+        "type": "paragraph",
+        "text": "Values range from 1 to 1000. Rows with a high RPN are addressed with actions first; after implementation the row is re-rated and the RPN recomputed."
+      },
+      {
+        "type": "note",
+        "text": "**Criticism / limits:** RPN is not a metric quantity — RPN = 100 can arise from many combinations (10·10·1, 5·5·4, …) that differ substantially in nature. A pure threshold (\"everything above 100 gets addressed\") misses the case {{term:bedeutung|S}} = 10, O = 1, D = 1 (RPN 10, but safety-critical). The new AIAG-VDA FMEA (2019) therefore replaces the RPN with the **Action Priority (AP)**."
+      }
+    ]
+  },
+  "aliases": {
+    "de": [
+      "Risikoprioritätszahl",
+      "RPN",
+      "Risk Priority Number"
+    ],
+    "en": [
+      "Risk Priority Number",
+      "RPN",
+      "risk score"
+    ]
+  },
+  "seeAlso": [
+    "fmea",
+    "bedeutung",
+    "auftreten",
+    "entdeckung",
+    "fehlermoeglichkeit"
+  ],
+  "modules": [
+    "fmea"
+  ],
+  "algoLab": [],
+  "sources": [
+    {
+      "label": "AIAG & VDA — FMEA Handbook, 1st Edition, 2019",
+      "url": null
+    },
+    {
+      "label": "VDA Band 4 — Sicherung der Qualität in der Prozesslandschaft",
+      "url": null
+    },
+    {
+      "label": "DIN EN 60812: Verfahren für die Fehlzustandsart- und -auswirkungsanalyse (FMEA)",
+      "url": null
+    }
+  ]
+}

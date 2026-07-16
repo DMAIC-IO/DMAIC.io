@@ -19,9 +19,9 @@ import {
   runMultiRegression, lackOfFitTest,
 } from '../../js/engines/regression-engine.js';
 import {
-  saveModel, computeDataHash, buildDataSnapshot,
+  saveModel, computeDataHash, buildDataSnapshot, listModels,
 } from '../../js/core/models-store.js';
-import responseOptimization from '../../js/modules/response-optimization/response-optimization.js';
+import { State } from '../../js/modules/response-optimization/response-optimization-model.js';
 
 function makeStateManager() {
   const state = {};
@@ -87,37 +87,22 @@ suite('Pipeline — LoF gates the optimiser', () => {
     }
   });
 
-  test('_diagnose() returns a blocking reason naming the LoF model', () => {
-    // Stubbed context: just enough for _diagnose() to look up the model and
-    // build a translated reason string. We don't care about the exact wording,
-    // only that some reason is emitted and that it includes the model name.
-    const ctx = {
-      stateManager: sm,
-      i18n: {
-        t: (key, vars = {}) => {
-          if (key === 'modules.response-optimization.lackOfFit') {
-            return `LoF block: ${vars.name} (p=${vars.value})`;
-          }
-          if (key === 'modules.response-optimization.lowR2') {
-            return `R² block: ${vars.name}`;
-          }
-          if (key === 'modules.response-optimization.factorMismatch') {
-            return `Factor mismatch: ${vars.name}`;
-          }
-          return key;
-        },
-      },
-    };
-    const reasons = responseOptimization._diagnose.call({ _context: ctx }, [modelId]);
+  test('diagnose() returns a blocking reason naming the LoF model', () => {
+    // Use State.diagnose() directly — it returns structured { type, name, value }
+    // objects; the data-Fn formats them with i18n. The test only needs to verify
+    // that a lackOfFit reason is emitted for the right model.
+    const allModels = listModels(sm);
+    const state = new State();
+    const reasons = state.diagnose([modelId], allModels);
     if (!Array.isArray(reasons) || reasons.length === 0) {
       throw new Error(`expected at least one blocking reason, got ${JSON.stringify(reasons)}`);
     }
-    const lofReason = reasons.find(r => r.startsWith('LoF block'));
+    const lofReason = reasons.find(r => r.type === 'lackOfFit');
     if (!lofReason) {
-      throw new Error(`expected a LoF reason, got ${JSON.stringify(reasons)}`);
+      throw new Error(`expected a lackOfFit reason, got ${JSON.stringify(reasons)}`);
     }
-    if (!lofReason.includes('Bad Linear Fit')) {
-      throw new Error(`reason should name the model, got: ${lofReason}`);
+    if (lofReason.name !== 'Bad Linear Fit') {
+      throw new Error(`reason should name the model, got: ${lofReason.name}`);
     }
   });
 
@@ -136,11 +121,9 @@ suite('Pipeline — LoF gates the optimiser', () => {
       }),
       dataHash: computeDataHash(xs.map(v => [v]), y),
     });
-    const ctx = {
-      stateManager: sm,
-      i18n: { t: (k, v = {}) => `${k}:${v.name ?? ''}` },
-    };
-    const reasons = responseOptimization._diagnose.call({ _context: ctx }, [cleanId]);
+    const allModels = listModels(sm);
+    const state = new State();
+    const reasons = state.diagnose([cleanId], allModels);
     assertEqual(reasons.length, 0, `expected no blocking reasons, got ${JSON.stringify(reasons)}`);
   });
 });

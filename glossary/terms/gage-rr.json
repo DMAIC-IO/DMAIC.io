@@ -1,0 +1,112 @@
+{
+  "id": "gage-rr",
+  "category": "msa",
+  "title": {
+    "de": "Gage R&R (MSA Typ 2)",
+    "en": "Gage R&R (MSA Type 2)"
+  },
+  "short": {
+    "de": "Studie, die die Messstreuung in {{term:wiederholbarkeit|Wiederholbarkeit}} (EV), {{term:reproduzierbarkeit|Reproduzierbarkeit}} (AV) und {{term:teile-variation|Teile-Streuung}} (PV) zerlegt.",
+    "en": "Study that decomposes measurement variation into {{term:wiederholbarkeit|repeatability}} (EV), {{term:reproduzierbarkeit|reproducibility}} (AV), and {{term:teile-variation|part variation}} (PV)."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "Die **Gage R&R-Studie** (Gage Repeatability & Reproducibility) ist die MSA-Typ-2-Standardprüfung. Sie lässt mehrere Prüfer mehrere Teile mit Wiederholungen messen und zerlegt per zweifaktorieller ANOVA (Teile × Prüfer) mit Wechselwirkung die Gesamtstreuung in ihre Komponenten."
+      },
+      {
+        "type": "formula",
+        "latex": "\\sigma^2_{\\text{GRR}} = \\sigma^2_{\\text{EV}} + \\sigma^2_{\\text{AV}}"
+      },
+      {
+        "type": "list",
+        "items": [
+          "**EV** — Equipment Variation ({{term:wiederholbarkeit|Wiederholbarkeit}}, Streuung des Geräts)",
+          "**AV** — Appraiser Variation ({{term:reproduzierbarkeit|Reproduzierbarkeit}}, Streuung zwischen Prüfern)",
+          "**PV** — {{term:teile-variation|Part Variation}} (Streuung zwischen Teilen — sollte dominieren)"
+        ]
+      },
+      {
+        "type": "paragraph",
+        "text": "**%GRR** setzt σ_GRR ins Verhältnis zur Gesamtstreuung oder zur Toleranz. Bewertung nach AIAG MSA-4: < 10 % fähig, 10–30 % bedingt fähig, > 30 % nicht fähig. Zusätzlich prüft {{term:ndc|ndc}} die Auflösung des Messsystems."
+      },
+      {
+        "type": "note",
+        "text": "Typischer Aufbau: 10 Teile × 3 Prüfer × 2–3 Wiederholungen = 60–90 Messungen. Reihenfolge randomisiert, Prüfer blind gegenüber dem wahren Teil. Ohne bestandene MSA Typ 1 ({{term:cg|Cg}}/{{term:cgk|Cgk}}) lohnt keine Gage R&R."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "The **Gage R&R study** (Gage Repeatability & Reproducibility) is the standard MSA Type 2 check. Multiple operators measure multiple parts with replicates, and a two-factor crossed ANOVA (Parts × Operators) with interaction decomposes total variation into components."
+      },
+      {
+        "type": "formula",
+        "latex": "\\sigma^2_{\\text{GRR}} = \\sigma^2_{\\text{EV}} + \\sigma^2_{\\text{AV}}"
+      },
+      {
+        "type": "list",
+        "items": [
+          "**EV** — Equipment Variation ({{term:wiederholbarkeit|repeatability}}, instrument spread)",
+          "**AV** — Appraiser Variation ({{term:reproduzierbarkeit|reproducibility}}, operator-to-operator spread)",
+          "**PV** — {{term:teile-variation|Part Variation}} (part-to-part spread — should dominate)"
+        ]
+      },
+      {
+        "type": "paragraph",
+        "text": "**%GRR** relates σ_GRR to total variation or tolerance. AIAG MSA-4 rating: < 10% capable, 10–30% conditionally acceptable, > 30% not acceptable. In addition, {{term:ndc|ndc}} checks the resolution of the system."
+      },
+      {
+        "type": "note",
+        "text": "Typical setup: 10 parts × 3 operators × 2–3 replicates = 60–90 measurements. Random order, operators blind to the true part. Without passing MSA Type 1 ({{term:cg|Cg}}/{{term:cgk|Cgk}}), Gage R&R is not worth running."
+      }
+    ]
+  },
+  "aliases": {
+    "de": [
+      "GRR",
+      "Gage Repeatability & Reproducibility",
+      "MSA Typ 2",
+      "R&R-Studie"
+    ],
+    "en": [
+      "GRR",
+      "Gage Repeatability and Reproducibility",
+      "MSA Type 2",
+      "R&R study"
+    ]
+  },
+  "seeAlso": [
+    "wiederholbarkeit",
+    "reproduzierbarkeit",
+    "teile-variation",
+    "ndc",
+    "cg",
+    "cgk"
+  ],
+  "modules": [
+    "msa-typ2"
+  ],
+  "algoLab": [
+    "msa/grr"
+  ],
+  "sources": [
+    {
+      "label": "AIAG — Measurement Systems Analysis Reference Manual, 4th Edition (MSA-4), Chapter 4",
+      "url": null
+    },
+    {
+      "label": "VDA Band 5 — Prüfprozesseignung, 3. Auflage",
+      "url": null
+    },
+    {
+      "label": "Montgomery, D. C. — Design and Analysis of Experiments, 10th Edition, Chapter 14",
+      "url": null
+    },
+    {
+      "label": "Wheeler, D. J. — EMP III: Evaluating the Measurement Process, SPC Press",
+      "url": null
+    }
+  ]
+}

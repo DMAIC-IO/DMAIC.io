@@ -1,0 +1,88 @@
+{
+  "id": "richtigkeit",
+  "category": "msa",
+  "title": {
+    "de": "Richtigkeit (Trueness)",
+    "en": "Trueness"
+  },
+  "short": {
+    "de": "Nähe des Erwartungswerts der Messungen zum Referenzwert — Abwesenheit von systematischem {{term:bias|Bias}}.",
+    "en": "Closeness of the expected measurement value to the reference value — absence of systematic {{term:bias|bias}}."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "Die **Richtigkeit** beschreibt, wie nah der {{term:mittelwert|Mittelwert}} einer großen Zahl von Wiederholmessungen am wahren (Referenz-)Wert liegt. Sie ist die eine Hälfte der {{term:genauigkeit|Genauigkeit}}; die andere ist die {{term:praezision|Präzision}}."
+      },
+      {
+        "type": "formula",
+        "latex": "\\text{Bias} = \\bar{x} - x_{\\text{ref}}"
+      },
+      {
+        "type": "paragraph",
+        "text": "Ein Messsystem ist **richtig**, wenn dieser Bias vernachlässigbar klein ist. Ein systematischer Bias deutet auf eine Kalibrierabweichung, ein falsches Nullpunkt-Setup oder einen konstruktiven Offset hin — nichts, was durch mehr Messungen verschwindet."
+      },
+      {
+        "type": "note",
+        "text": "„Richtig, aber unpräzise“ ist der klassische Fall des zittrigen Bogenschützen, der im Mittel die Zielmitte trifft. Umgekehrt zeigt „präzise, aber unrichtig“ eine enge Trefferwolke neben dem Zentrum — reproduzierbar falsch. In der MSA Typ 1 misst der Cgk beide Anteile zusammen; Cg allein prüft nur die Präzision."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "**Trueness** describes how close the {{term:mittelwert|mean}} of many repeated measurements is to the true (reference) value. It is one half of {{term:genauigkeit|accuracy}}; the other half is {{term:praezision|precision}}."
+      },
+      {
+        "type": "formula",
+        "latex": "\\text{Bias} = \\bar{x} - x_{\\text{ref}}"
+      },
+      {
+        "type": "paragraph",
+        "text": "A measurement system is **true** when this bias is negligibly small. A systematic bias points to a calibration offset, wrong zero setup, or a design shift — none of which disappear with more measurements."
+      },
+      {
+        "type": "note",
+        "text": "\"True but imprecise\" is the classic wobbly-archer case: on average hits the bull's-eye. Conversely, \"precise but untrue\" produces a tight cluster next to the centre — reproducibly wrong. In MSA Type 1 the Cgk covers both parts; Cg alone only reflects precision."
+      }
+    ]
+  },
+  "aliases": {
+    "de": [
+      "Trueness",
+      "systematische Genauigkeit"
+    ],
+    "en": [
+      "systematic accuracy",
+      "unbiasedness"
+    ]
+  },
+  "seeAlso": [
+    "genauigkeit",
+    "praezision",
+    "bias",
+    "mittelwert"
+  ],
+  "modules": [
+    "msa-typ1",
+    "msa-typ2"
+  ],
+  "algoLab": [
+    "msa/cgk",
+    "msa/cg"
+  ],
+  "sources": [
+    {
+      "label": "DIN ISO 5725-1: Genauigkeit (Richtigkeit und Präzision) von Messverfahren und Messergebnissen — Teil 1",
+      "url": null
+    },
+    {
+      "label": "VDA Band 5 — Prüfprozesseignung, 3. Auflage",
+      "url": null
+    },
+    {
+      "label": "AIAG — Measurement Systems Analysis Reference Manual, 4th Edition (MSA-4)",
+      "url": null
+    }
+  ]
+}

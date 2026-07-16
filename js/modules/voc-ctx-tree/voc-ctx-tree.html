@@ -1,0 +1,263 @@
+<div class="module-container vct" x-data="vocCtxTree" data-ref="root">
+ <div class="dmike-split" style="flex:1;min-height:0">
+  <!-- Left: VoC list -->
+  <div class="vct__sidebar dmike-split__input">
+   <div class="vct__sidebar-header">
+    <span class="vct__sidebar-title" x-text="t('name')"></span>
+    <div class="vct__sidebar-header-right">
+     <span class="vct__counter" x-text="model.vocs.length"></span>
+     <div class="dmike-chart-dropdown vct__export-wrap" x-show="model.vocs.length > 0"
+          @click.outside="exportMenuOpen = false">
+      <button class="vct__add-btn vct__export-btn" type="button" title="Export"
+              @click="toggleExportMenu($event)">
+       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      </button>
+      <div class="dmike-chart-dropdown-menu" data-ref="exportMenu" :class="exportMenuOpen ? 'open' : ''">
+       <button class="dmike-chart-dropdown-item" data-export="png" @click="onExport('png')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg> PNG
+       </button>
+       <button class="dmike-chart-dropdown-item" data-export="svg" @click="onExport('svg')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 3v4a1 1 0 0 0 1 1h4"/><path d="M17 21H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2z"/><path d="M9 15l2 2 4-4"/></svg> SVG
+       </button>
+       <button class="dmike-chart-dropdown-item" data-export="csv" @click="onExport('csv')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 3v4a1 1 0 0 0 1 1h4"/><path d="M17 21H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2z"/><path d="M8 15h2M11 15h2M14 15h2"/></svg> CSV
+       </button>
+       <button class="dmike-chart-dropdown-item" data-export="xlsx" @click="onExport('xlsx')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 3v4a1 1 0 0 0 1 1h4"/><path d="M17 21H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2z"/><path d="M9 13l6 6M15 13l-6 6"/></svg> Excel
+       </button>
+      </div>
+     </div>
+     <button class="vct__add-btn vct__add-voc-btn" type="button" :title="t('addVoc')"
+             @click="openVocModal()">+</button>
+    </div>
+   </div>
+   <div class="vct__sidebar-body">
+    <template x-if="model.vocs.length === 0">
+     <div class="vct__empty"><p class="vct__empty-text" x-text="t('noVocs')"></p></div>
+    </template>
+    <template x-for="voc in model.vocs">
+     <div class="vct__card" :class="cardClass(voc)" :data-voc-id="voc.id" :key="voc.id"
+          @click="selectVoc(voc.id, $event)">
+      <div class="vct__card-text" x-text="voc.text"></div>
+      <div class="vct__card-meta">
+       <span class="vct__card-count" x-text="cardCountText(voc)"></span>
+       <div class="vct__card-actions">
+        <button class="btn btn--icon-sm vct__card-action-btn vct__edit-voc-btn" :data-voc-id="voc.id"
+                :title="t('common.edit')" @click="editVoc(voc, $event)">✎</button>
+        <button class="btn btn--icon-sm vct__card-action-btn vct__card-action-btn--del vct__del-voc-btn"
+                :data-voc-id="voc.id" :title="t('common.delete')" @click="deleteVoc(voc, $event)">🗑</button>
+       </div>
+      </div>
+     </div>
+    </template>
+   </div>
+   <div class="vct__settings-panel" data-ref="settingsPanel"></div>
+  </div>
+
+  <!-- Right: Tree -->
+  <div class="vct__main dmike-split__output">
+   <div class="vct__tree-area" data-ref="treeArea"
+        @dragover="dragOver($event)" @drop="drop($event)" @dragend="dragEnd($event)">
+    <template x-if="model.activeVoc">
+     <div class="vct__tree">
+      <!-- VoC root node -->
+      <div class="vct__node vct__node--voc" style="max-width:320px;">
+       <div class="vct__node-text">
+        <div class="vct__node-badge">VOC</div>
+        <div x-text="quoted(model.activeVoc.text)"></div>
+        <template x-if="model.activeVoc.source">
+         <div class="vct__node-source" x-text="sourceLine(model.activeVoc.source)"></div>
+        </template>
+       </div>
+       <div class="vct__node-actions">
+        <button class="btn btn--icon-sm vct__node-btn vct__add-need-btn" :data-voc-id="model.activeVoc.id"
+                :title="t('addNeed')" @click="openNeedModal(model.activeVoc.id)">+</button>
+       </div>
+      </div>
+
+      <!-- Needs -->
+      <template x-if="model.activeVoc.needs.length > 0">
+       <div class="vct__children vct__children--voc">
+        <!--
+          ╔════════════════════════════════════════════════════════════════════╗
+          ║  INTENTIONALLY UNROLLED — DO NOT "DRY" THIS STRUCTURE             ║
+          ║  Alpine CSP cannot self-recurse. The 3 nested levels below         ║
+          ║  (Need → Driver → Requirement) are bounded by the depth-4 tree    ║
+          ║  and MUST be kept in sync when any node markup changes.            ║
+          ╚════════════════════════════════════════════════════════════════════╝
+        -->
+        <template x-for="need in model.activeVoc.needs">
+         <div :key="need.id">
+          <div class="vct__node vct__node--need" data-drag-type="need"
+               :data-voc-id="model.activeVoc.id" :data-need-id="need.id">
+           <div class="vct__node-text">
+            <div class="vct__node-badge" x-text="t('badgeNeed')"
+                 @mousedown="startDrag($event)"></div>
+            <div x-text="need.text"></div>
+           </div>
+           <div class="vct__node-actions">
+            <button class="btn btn--icon-sm vct__node-btn vct__add-ctx-btn"
+                    :data-voc-id="model.activeVoc.id" :data-need-id="need.id"
+                    :title="t('addDriver')" @click="openDriverModal(model.activeVoc.id, need.id)">+</button>
+            <button class="btn btn--icon-sm vct__node-btn vct__edit-need-btn"
+                    :data-voc-id="model.activeVoc.id" :data-need-id="need.id"
+                    :title="t('common.edit')" @click="editNeed(model.activeVoc.id, need)">✎</button>
+            <button class="btn btn--icon-sm vct__node-btn vct__node-btn--del vct__del-need-btn"
+                    :data-voc-id="model.activeVoc.id" :data-need-id="need.id"
+                    :title="t('common.delete')" @click="deleteNeed(model.activeVoc.id, need.id)">×</button>
+           </div>
+          </div>
+
+          <!-- Drivers -->
+          <template x-if="need.drivers.length > 0">
+           <div class="vct__children vct__children--need">
+            <template x-for="drv in need.drivers">
+             <div :key="drv.id">
+              <div class="vct__node" :class="driverNodeClass(drv)" data-drag-type="driver"
+                   :data-voc-id="model.activeVoc.id" :data-need-id="need.id" :data-drv-id="drv.id">
+               <div class="vct__node-text">
+                <div class="vct__node-badge" x-text="driverBadge(drv.type)"
+                     @mousedown="startDrag($event)"></div>
+                <div x-text="drv.text"></div>
+               </div>
+               <div class="vct__node-actions">
+                <button class="btn btn--icon-sm vct__node-btn vct__add-req-btn"
+                        :data-voc-id="model.activeVoc.id" :data-need-id="need.id" :data-drv-id="drv.id"
+                        :title="t('addReq')" @click="openReqModal(model.activeVoc.id, need.id, drv.id)">+</button>
+                <button class="btn btn--icon-sm vct__node-btn vct__edit-ctx-btn"
+                        :data-voc-id="model.activeVoc.id" :data-need-id="need.id" :data-drv-id="drv.id"
+                        :title="t('common.edit')" @click="editDriver(model.activeVoc.id, need.id, drv)">✎</button>
+                <button class="btn btn--icon-sm vct__node-btn vct__node-btn--del vct__del-ctx-btn"
+                        :data-voc-id="model.activeVoc.id" :data-need-id="need.id" :data-drv-id="drv.id"
+                        :title="t('common.delete')" @click="deleteDriver(model.activeVoc.id, need.id, drv.id)">×</button>
+               </div>
+              </div>
+
+              <!-- Requirements -->
+              <template x-if="drv.requirements.length > 0">
+               <div class="vct__children" :class="driverChildrenClass(drv)">
+                <template x-for="req in drv.requirements">
+                 <div class="vct__node vct__node--req" data-drag-type="req"
+                      :data-voc-id="model.activeVoc.id" :data-need-id="need.id"
+                      :data-drv-id="drv.id" :data-req-id="req.id" :key="req.id">
+                  <div class="vct__node-text">
+                   <div class="vct__node-badge" x-text="t('badgeReq')"
+                        @mousedown="startDrag($event)"></div>
+                   <div x-text="req.text"></div>
+                   <template x-if="req.target">
+                    <div class="vct__req-target" x-text="targetLine(req.target)"></div>
+                   </template>
+                   <template x-if="req.measure">
+                    <div class="vct__req-measure" x-text="measureLine(req.measure)"></div>
+                   </template>
+                  </div>
+                  <div class="vct__node-actions">
+                   <button class="btn btn--icon-sm vct__node-btn vct__edit-req-btn"
+                           :data-voc-id="model.activeVoc.id" :data-need-id="need.id"
+                           :data-drv-id="drv.id" :data-req-id="req.id"
+                           :title="t('common.edit')" @click="editReq(model.activeVoc.id, need.id, drv.id, req)">✎</button>
+                   <button class="btn btn--icon-sm vct__node-btn vct__node-btn--del vct__del-req-btn"
+                           :data-voc-id="model.activeVoc.id" :data-need-id="need.id"
+                           :data-drv-id="drv.id" :data-req-id="req.id"
+                           :title="t('common.delete')" @click="deleteReq(model.activeVoc.id, need.id, drv.id, req.id)">×</button>
+                  </div>
+                 </div>
+                </template>
+               </div>
+              </template>
+             </div>
+            </template>
+           </div>
+          </template>
+         </div>
+        </template>
+       </div>
+      </template>
+     </div>
+    </template>
+   </div>
+  </div>
+ </div>
+
+ <!-- Add / Edit form popout (VoC / Need / Driver / Requirement) -->
+ <template x-if="modalKind">
+  <div class="dmike-chart-popout-overlay"
+       @click.self="closeModal()"
+       @keydown.escape.window="closeModal()"
+       @keydown.window="commitKey($event)"
+       @mousemove.window="popoutDragMove($event)"
+       @mouseup.window="popoutDragEnd()">
+   <div class="dmike-chart-popout dmike-chart-popout--form" :style="popoutStyle()">
+    <div class="dmike-chart-popout-titlebar" @mousedown="popoutDragStart($event)">
+     <span x-text="modalTitle()"></span>
+     <button class="dmike-chart-popout-close" type="button" :aria-label="t('common.close')" @click="closeModal()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+     </button>
+    </div>
+    <div class="dmike-chart-popout-body vct__popout-body">
+     <div>
+      <!-- Driver type selector (driver only) -->
+      <template x-if="modalKind === 'driver'">
+       <div class="vct__form-group">
+        <label x-text="t('driverType')"></label>
+        <div class="vct__type-selector" data-ref="typeSel">
+         <button type="button" class="vct__type-option" :class="typeOptClass('ctq')" data-type="ctq"
+                 @click="modalData.type = 'ctq'">
+          <span class="vct__type-label">CTQ</span>
+          <span class="vct__type-desc">Quality</span>
+         </button>
+         <button type="button" class="vct__type-option" :class="typeOptClass('ctd')" data-type="ctd"
+                 @click="modalData.type = 'ctd'">
+          <span class="vct__type-label">CTD</span>
+          <span class="vct__type-desc">Delivery</span>
+         </button>
+         <button type="button" class="vct__type-option" :class="typeOptClass('ctc')" data-type="ctc"
+                 @click="modalData.type = 'ctc'">
+          <span class="vct__type-label">CTC</span>
+          <span class="vct__type-desc">Cost</span>
+         </button>
+        </div>
+       </div>
+      </template>
+
+      <!-- Main text field (all kinds) -->
+      <div class="vct__form-group">
+       <label x-text="textLabel()"></label>
+       <textarea class="field" data-field="text" data-ref="modalText" :placeholder="textPlaceholder()"
+                 :maxlength="textMaxLength()" x-model="modalData.text"></textarea>
+      </div>
+
+      <!-- Source (VoC only) -->
+      <template x-if="modalKind === 'voc'">
+       <div class="vct__form-group">
+        <label x-text="t('vocSource')"></label>
+        <input type="text" class="field" data-field="source" :placeholder="t('vocSourcePlaceholder')"
+               maxlength="200" x-model="modalData.source">
+       </div>
+      </template>
+
+      <!-- Target + Measure (Requirement only) -->
+      <template x-if="modalKind === 'req'">
+       <div class="vct__form-group">
+        <label x-text="t('reqTarget')"></label>
+        <input type="text" class="field" data-field="target" :placeholder="t('reqTargetPlaceholder')"
+               maxlength="200" x-model="modalData.target">
+       </div>
+      </template>
+      <template x-if="modalKind === 'req'">
+       <div class="vct__form-group">
+        <label x-text="t('reqMeasure')"></label>
+        <input type="text" class="field" data-field="measure" :placeholder="t('reqMeasurePlaceholder')"
+               maxlength="200" x-model="modalData.measure">
+       </div>
+      </template>
+     </div>
+    </div>
+    <div class="vct__popout-footer">
+     <button class="btn btn--secondary" type="button" @click="closeModal()" x-text="t('common.cancel')"></button>
+     <button class="btn btn--primary" type="button" @click="saveModal()" x-text="t('common.save')"></button>
+    </div>
+   </div>
+  </div>
+ </template>
+</div>

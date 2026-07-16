@@ -23,6 +23,7 @@
  */
 
 import ChartBase from '../chart-base.js';
+import { h } from '../../dom.js';
 import {
   svgEl, svgText, resolveColor, formatNum, getChartColors, drawMarker,
 } from '../chart-core.js';
@@ -317,13 +318,16 @@ export default class IndividualValuePlotChart extends ChartBase {
     };
 
     return [{
-      html: `<b style="color:${color}">${g.name || `Group ${origIdx + 1}`}</b><br>`
-        + `n = ${stats.n}<br>`
-        + `${t('mean')}: ${formatNum(stats.mean, dec, loc)}<br>`
-        + `${t('median')}: ${formatNum(stats.median, dec, loc)}<br>`
-        + `${t('sd')}: ${formatNum(stats.sd, dec, loc)}<br>`
-        + `${t('min')}: ${formatNum(stats.min, dec, loc)}<br>`
-        + `${t('max')}: ${formatNum(stats.max, dec, loc)}`,
+      node: h('div', null,
+        h('b', { style: `color:${color}` }, g.name || `Group ${origIdx + 1}`),
+        h('br'),
+        `n = ${stats.n}`, h('br'),
+        `${t('mean')}: ${formatNum(stats.mean, dec, loc)}`, h('br'),
+        `${t('median')}: ${formatNum(stats.median, dec, loc)}`, h('br'),
+        `${t('sd')}: ${formatNum(stats.sd, dec, loc)}`, h('br'),
+        `${t('min')}: ${formatNum(stats.min, dec, loc)}`, h('br'),
+        `${t('max')}: ${formatNum(stats.max, dec, loc)}`,
+      ),
       px,
       py,
       color,

@@ -8,6 +8,7 @@
 
 export { getColor } from '../../core/chart/color-schemes.js';
 import { getColor } from '../../core/chart/color-schemes.js';
+import { legendModel } from './contour-plot-legend.js';
 
 // ═══════════════════════════════════════════════════════════════
 // Axis tick generation
@@ -137,8 +138,8 @@ export const renderMethods = {
     const dpr = window.devicePixelRatio || 1;
     canvas.width = W * dpr;
     canvas.height = H * dpr;
-    canvas.style.width = W + 'px';
-    canvas.style.height = H + 'px';
+    canvas.style.width = `${W  }px`;
+    canvas.style.height = `${H  }px`;
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
     const titleSize = cc.titleSize ?? 15;
@@ -396,6 +397,9 @@ export const renderMethods = {
       ctx.restore();
     }
 
+    // Keep reactive tooltip labels in sync with the (possibly edited) Model.
+    this._syncLabels();
+
     // Legend
     this._buildLegend(zMinG, zMaxG, nLevels, scheme);
 
@@ -421,17 +425,8 @@ export const renderMethods = {
   },
 
   _buildLegend(zMin, zMax, n, scheme) {
-    const bar = this._container.querySelector('[data-ref="legend"]');
-    bar.style.display = '';
-    const steps = Math.min(n, 10);
-    let html = `<span class="contour__legend-title">${this._t('legend')}</span>`;
-    for (let k = 0; k < steps; k++) {
-      const t = k / (steps - 1);
-      const v = zMin + t * (zMax - zMin);
-      const c = getColor(t, scheme);
-      html += `<span class="contour__legend-item"><span class="contour__legend-swatch" style="background:rgb(${c[0]},${c[1]},${c[2]})"></span>${v.toFixed(1)}</span>`;
-    }
-    bar.innerHTML = html;
+    this.legend = legendModel(zMin, zMax, n, scheme, getColor, this._t('legend'));
+    this.legendShow = true;
   },
 
   // ─── Tooltip ────────────────────────────────────────────────
@@ -448,7 +443,6 @@ export const renderMethods = {
     const g = this._lastGrid;
     if (!g) return;
     const { xMin, xMax, yMin, yMax, margin, plotW, plotH, W, H } = g;
-    const tip = this._tooltip;
     const chartWrap = this._container.querySelector('[data-ref="chart-wrap"]');
 
     this._tooltipMove = (e) => {
@@ -456,17 +450,22 @@ export const renderMethods = {
       const sx = (e.clientX - rect.left) * (W / rect.width);
       const sy = (e.clientY - rect.top) * (H / rect.height);
       const px = sx - margin.left, py = sy - margin.top;
-      if (px < 0 || px > plotW || py < 0 || py > plotH) { tip.classList.remove('visible'); return; }
+      if (px < 0 || px > plotW || py < 0 || py > plotH) { this.tip = { ...this.tip, visible: false }; return; }
       const x = xMin + px / plotW * (xMax - xMin);
       const y = yMax - py / plotH * (yMax - yMin);
       const z = this._evalModel(x, y);
-      tip.innerHTML = `<b>${this._val('xLabel')}:</b> ${x.toFixed(3)}<br><b>${this._val('yLabel')}:</b> ${y.toFixed(3)}<br><b>${this._val('zLabel')}:</b> ${z.toFixed(3)}`;
+      // Read the current axis labels live (mirrors the old _val() read), so a
+      // label edited after the last redraw still shows in the tooltip.
+      this._syncLabels();
       const wrapRect = chartWrap.getBoundingClientRect();
-      tip.style.left = (e.clientX - wrapRect.left + 14) + 'px';
-      tip.style.top = (e.clientY - wrapRect.top - 10) + 'px';
-      tip.classList.add('visible');
+      this.tip = {
+        visible: true,
+        left: e.clientX - wrapRect.left + 14,
+        top: e.clientY - wrapRect.top - 10,
+        x: x.toFixed(3), y: y.toFixed(3), z: z.toFixed(3),
+      };
     };
-    this._tooltipLeave = () => tip.classList.remove('visible');
+    this._tooltipLeave = () => { this.tip = { ...this.tip, visible: false }; };
 
     this._canvas.addEventListener('mousemove', this._tooltipMove);
     this._canvas.addEventListener('mouseleave', this._tooltipLeave);

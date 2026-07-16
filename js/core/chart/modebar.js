@@ -14,18 +14,21 @@
  * @module modebar
  */
 
-/** SVG icon markup for all modebar buttons */
+import { svgStringToPngBlob } from '../export-utils.js';
+import { icon } from '../icon.js';
+
+/** Maps each modebar button to its sprite icon name. */
 const ICONS = {
-  zoom: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/><path d="M8 11h6M11 8v6"/></svg>',
-  pan: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 9l-3 3 3 3M9 5l3-3 3 3M15 19l-3 3-3-3M19 9l3 3-3 3M2 12h20M12 2v20"/></svg>',
-  reset: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 3-6.36L3 3"/><path d="M3 3v5h5"/></svg>',
-  download: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>',
-  png: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>',
-  svg: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 3v4a1 1 0 0 0 1 1h4"/><path d="M17 21H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2z"/><path d="M9 15l2 2 4-4"/></svg>',
-  csv: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 3v4a1 1 0 0 0 1 1h4"/><path d="M17 21H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2z"/><path d="M8 15h2M11 15h2M14 15h2"/></svg>',
-  xlsx: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 3v4a1 1 0 0 0 1 1h4"/><path d="M17 21H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2z"/><path d="M9 13l6 6M15 13l-6 6"/></svg>',
-  editor: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>',
-  popout: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="15" height="15" rx="2"/><path d="M14 2h8v8"/><path d="M22 2L12 12"/></svg>',
+  zoom: 'zoom-in',
+  pan: 'pan',
+  reset: 'reset',
+  download: 'download',
+  png: 'export-png',
+  svg: 'export-svg',
+  csv: 'export-csv',
+  xlsx: 'export-xlsx',
+  editor: 'edit',
+  popout: 'popout',
 };
 
 /**
@@ -52,12 +55,12 @@ export function createModebar(callbacks = {}) {
   let editorOpen = false;
 
   // ── Helper: create a button ──
-  const makeBtn = (id, icon, title) => {
+  const makeBtn = (id, iconName, title) => {
     const btn = document.createElement('button');
     btn.className = 'dmike-chart-modebar-btn';
     btn.dataset.action = id;
     btn.title = title;
-    btn.innerHTML = icon;
+    btn.replaceChildren(icon(iconName));
     return btn;
   };
 
@@ -89,10 +92,10 @@ export function createModebar(callbacks = {}) {
   const dlMenu = document.createElement('div');
   dlMenu.className = 'dmike-chart-dropdown-menu';
 
-  const makeDlItem = (icon, label, action) => {
+  const makeDlItem = (iconName, label, action) => {
     const item = document.createElement('button');
     item.className = 'dmike-chart-dropdown-item';
-    item.innerHTML = icon + ' ' + label;
+    item.replaceChildren(icon(iconName), document.createTextNode(` ${  label}`));
     item.dataset.action = action;
     return item;
   };
@@ -201,28 +204,17 @@ export async function exportSvgAsPNG(svgElement, filename = 'chart.png') {
   if (!svgElement) return;
   const svgData = new XMLSerializer().serializeToString(svgElement);
   const vb = svgElement.getAttribute('viewBox')?.split(' ').map(Number) || [0, 0, 800, 420];
-  const w = vb[2] * 2, h = vb[3] * 2;
-  const canvas = document.createElement('canvas');
-  canvas.width = w;
-  canvas.height = h;
-  const ctx = canvas.getContext('2d');
-  ctx.fillStyle = '#fff';
-  ctx.fillRect(0, 0, w, h);
-  const img = new Image();
-  const blob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
-  const url = URL.createObjectURL(blob);
-  return new Promise((resolve) => {
-    img.onload = () => {
-      ctx.drawImage(img, 0, 0, w, h);
-      URL.revokeObjectURL(url);
-      const a = document.createElement('a');
-      a.download = filename;
-      a.href = canvas.toDataURL('image/png');
-      a.click();
-      resolve();
-    };
-    img.src = url;
+  // 2× HiDPI raster on a white background — pixel-identical to the previous
+  // inline canvas pipeline.
+  const png = await svgStringToPngBlob(svgData, {
+    width: vb[2], height: vb[3], scale: 2, background: '#fff',
   });
+  const url = URL.createObjectURL(png);
+  const a = document.createElement('a');
+  a.download = filename;
+  a.href = url;
+  a.click();
+  URL.revokeObjectURL(url);
 }
 
 /**

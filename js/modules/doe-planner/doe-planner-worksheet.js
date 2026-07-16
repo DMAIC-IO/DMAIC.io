@@ -218,7 +218,6 @@ export function createDesignWorksheet(context, design, factors, responses, doeNa
     const lnVarSuffix = i18n.t('modules.doe-planner.colLnVarSuffix');
     responses.forEach((r, ri) => {
       const respName = r.name || `Y${ri + 1}`;
-      const respId = responseColumnIds[ri];
       // The formula references columns by name; quote them with single quotes.
       const buildFormulas = (template) => {
         const out = new Array(nRuns).fill(null);
@@ -393,8 +392,8 @@ export function createExperimentRecord(context, experimentId, design, factors, r
     }),
     plannedTerms: {
       linear:    true,
-      twoFactor: !!design.twoFactor    ?? false,
-      quadratic: !!design.quadratic    ?? false,
+      twoFactor: Boolean(design.twoFactor),
+      quadratic: Boolean(design.quadratic),
       blockColumn: false,
     },
     aliasing: design.aliases ?? null,

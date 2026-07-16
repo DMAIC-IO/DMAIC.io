@@ -1,0 +1,87 @@
+{
+  "id": "haupteffekt",
+  "category": "doe",
+  "title": {
+    "de": "Haupteffekt (Main Effect)",
+    "en": "Main Effect"
+  },
+  "short": {
+    "de": "Der mittlere Einfluss eines einzelnen {{term:faktor|Faktors}} auf die {{term:zielgroesse|Zielgröße}}, gemittelt über die Stufen aller anderen Faktoren.",
+    "en": "The average influence of a single {{term:faktor|factor}} on the {{term:zielgroesse|response}}, averaged over all other factor levels."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "Der **Haupteffekt** eines Faktors ist die Änderung der Zielgröße, wenn dieser Faktor von der niedrigen zur hohen {{term:stufe|Stufe}} wechselt — gemittelt über alle Einstellungen der anderen Faktoren."
+      },
+      {
+        "type": "formula",
+        "latex": "\\text{Effekt}(A) = \\bar{y}_{A+} - \\bar{y}_{A-}"
+      },
+      {
+        "type": "paragraph",
+        "text": "In der Regressionsdarstellung ist der Haupteffekt in kodierten Einheiten (±1) doppelt so groß wie der zugehörige Regressionskoeffizient. Ein signifikanter Haupteffekt heißt: der Faktor beeinflusst die Zielgröße im getesteten Bereich."
+      },
+      {
+        "type": "note",
+        "text": "Haupteffekte werden immer im Kontext möglicher {{term:wechselwirkung|Wechselwirkungen}} interpretiert. Existiert eine starke A×B-Wechselwirkung, ist der Haupteffekt von A allein irreführend — der Effekt hängt dann davon ab, auf welcher Stufe B steht."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "The **main effect** of a factor is the change in the response when the factor moves from the low to the high {{term:stufe|level}} — averaged over all settings of the other factors."
+      },
+      {
+        "type": "formula",
+        "latex": "\\text{Effect}(A) = \\bar{y}_{A+} - \\bar{y}_{A-}"
+      },
+      {
+        "type": "paragraph",
+        "text": "In regression form and coded units (±1), the main effect equals twice the associated regression coefficient. A significant main effect means the factor influences the response within the tested range."
+      },
+      {
+        "type": "note",
+        "text": "Main effects must always be read in the context of possible {{term:wechselwirkung|interactions}}. When a strong A×B interaction exists, the main effect of A alone is misleading — the effect then depends on the level of B."
+      }
+    ]
+  },
+  "aliases": {
+    "de": [
+      "Main Effect",
+      "Hauptwirkung",
+      "Faktoreffekt"
+    ],
+    "en": [
+      "main effect",
+      "factor effect"
+    ]
+  },
+  "seeAlso": [
+    "faktor",
+    "stufe",
+    "wechselwirkung",
+    "doe",
+    "aufloesung"
+  ],
+  "modules": [
+    "doe-planner",
+    "doe-advisor",
+    "regression"
+  ],
+  "algoLab": [
+    "doe/doe-planner",
+    "regression/regression-coefficients"
+  ],
+  "sources": [
+    {
+      "label": "Montgomery, D. C. — Design and Analysis of Experiments, 10th Edition, Chapter 6",
+      "url": null
+    },
+    {
+      "label": "Box, Hunter & Hunter — Statistics for Experimenters, 2nd Edition",
+      "url": null
+    }
+  ]
+}

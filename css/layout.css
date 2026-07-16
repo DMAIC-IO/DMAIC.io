@@ -23,18 +23,13 @@ body {
   background: var(--color-bg-primary);
   line-height: 1.4;
   -webkit-font-smoothing: antialiased;
-
   display: grid;
-  grid-template-rows: var(--header-height) 1fr var(--footer-height);
-  grid-template-columns: 1fr;
-  grid-template-areas:
-    "header"
-    "workspace"
-    "footer";
+  grid-template: "header" var(--header-height) "workspace" 1fr "footer" var(--footer-height) / 1fr;
   height: 100vh;
 }
 
 /* ===== Nightly-Mode Banner ===== */
+
 /* Only rendered when running on nightly.* hostname; element is prepended
    to <body> by js/core/nightly-mode.js and joins the layout grid. */
 .nightly-banner {
@@ -48,13 +43,13 @@ body {
   color: #fff;
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-medium);
-  border-bottom: 1px solid rgba(0, 0, 0, 0.2);
+  border-bottom: 1px solid rgb(0 0 0 / 20%);
   user-select: none;
   z-index: 101;
 }
 
 .nightly-banner__badge {
-  background: rgba(0, 0, 0, 0.28);
+  background: rgb(0 0 0 / 28%);
   color: #fff;
   font-size: var(--font-size-xs);
   font-weight: var(--font-weight-bold);
@@ -102,6 +97,7 @@ html.is-nightly body {
 }
 
 .app-header__logo {
+  margin: 0;
   font-size: var(--font-size-lg);
   font-weight: var(--font-weight-semibold);
   color: var(--color-accent);
@@ -299,6 +295,7 @@ html.is-nightly body {
   padding: 0;
   border: none;
 }
+
 .cycle-picker__option {
   display: flex;
   align-items: flex-start;
@@ -309,33 +306,40 @@ html.is-nightly body {
   cursor: pointer;
   transition: border-color 0.1s, background 0.1s;
 }
+
 .cycle-picker__option:hover {
   background: var(--color-bg-tertiary);
 }
+
 .cycle-picker__option:has(input:checked) {
   border-color: var(--color-accent);
   background: var(--color-accent-light);
 }
+
 .cycle-picker__option input[type="radio"] {
   margin-top: 3px;
   flex-shrink: 0;
 }
+
 .cycle-picker__body {
   display: flex;
   flex-direction: column;
   gap: 2px;
   flex: 1;
 }
+
 .cycle-picker__name {
   font-weight: 600;
   font-size: 14px;
   color: var(--color-text-primary);
 }
+
 .cycle-picker__short {
   font-size: 11px;
   color: var(--color-text-secondary);
   font-family: var(--font-mono, monospace);
 }
+
 .cycle-picker__desc {
   font-size: 12px;
   color: var(--color-text-secondary);
@@ -447,6 +451,28 @@ html.is-nightly body {
   background: var(--color-tile-bg-active);
 }
 
+/* Phase-select button — fills the tile body; visual chrome lives on the
+   parent .dmaic-tile, so this is a transparent, borderless button. */
+.dmaic-tile__body {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0;
+  margin: 0;
+  border: none;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.dmaic-tile__body:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+  border-radius: var(--border-radius-sm);
+}
+
 .dmaic-tile__letter {
   font-size: var(--font-size-md);
   font-weight: var(--font-weight-semibold);
@@ -471,7 +497,7 @@ html.is-nightly body {
 .dmaic-tile__zeg {
   font-size: 10px;
   font-weight: var(--font-weight-semibold);
-  color: var(--color-text-tertiary);
+  color: var(--color-text-secondary);
   margin-left: 2px;
   white-space: nowrap;
 }
@@ -596,6 +622,11 @@ html.is-nightly body {
   flex-shrink: 0;
 }
 
+.dmaic-tile__menu-btn .icon {
+  width: 14px;
+  height: 14px;
+}
+
 .dmaic-tile__menu-btn:hover {
   color: var(--color-text-primary);
   background: var(--color-bg-tertiary);
@@ -666,8 +697,7 @@ html.is-nightly body {
 
 /* ===== Dev Area ===== */
 .dev-area {
-  grid-column: 1 / -1;
-  grid-row: 2 / 3;
+  grid-area: workspace;
   z-index: 50;
   display: flex;
   flex-direction: column;
@@ -688,8 +718,7 @@ body.dev-area-open .dmaic-tiles {
 
 /* ===== Dashboard Area ===== */
 .dashboard-area {
-  grid-column: 1 / -1;
-  grid-row: 2 / 3;
+  grid-area: workspace;
   z-index: 50;
   display: flex;
   flex-direction: column;
@@ -730,7 +759,7 @@ body.dev-area-open .dmaic-tiles {
   background: var(--color-bg-primary);
   border: 1px solid var(--color-border-primary);
   border-radius: var(--border-radius);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 4px 16px rgb(0 0 0 / 12%);
   padding: var(--spacing-xs);
   z-index: 10;
   display: flex;
@@ -785,7 +814,7 @@ body.dev-area-open .dmaic-tiles {
 
 .dashboard-grid__tile--moving,
 .dashboard-grid__tile--resizing {
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.18);
+  box-shadow: 0 4px 20px rgb(0 0 0 / 18%);
   z-index: 5;
 }
 
@@ -828,8 +857,15 @@ body.dev-area-open .dmaic-tiles {
   align-items: center;
   justify-content: center;
   color: var(--color-text-tertiary);
-  opacity: 0.5;
-  transition: opacity 0.15s, color 0.15s;
+  transition: color 0.15s;
+}
+
+.dashboard-grid__tile-move .icon,
+.dashboard-grid__tile-resize .icon {
+  width: 12px;
+  height: 12px;
+  opacity: 0.55;
+  transition: opacity 0.15s;
 }
 
 .dashboard-grid__tile-move {
@@ -850,8 +886,14 @@ body.dev-area-open .dmaic-tiles {
 .dashboard-grid__tile:hover .dashboard-grid__tile-resize,
 .dashboard-grid__tile--moving .dashboard-grid__tile-move,
 .dashboard-grid__tile--resizing .dashboard-grid__tile-resize {
-  opacity: 1;
   color: var(--color-text-secondary);
+}
+
+.dashboard-grid__tile:hover .dashboard-grid__tile-move .icon,
+.dashboard-grid__tile:hover .dashboard-grid__tile-resize .icon,
+.dashboard-grid__tile--moving .dashboard-grid__tile-move .icon,
+.dashboard-grid__tile--resizing .dashboard-grid__tile-resize .icon {
+  opacity: 1;
 }
 
 .dashboard-grid__tile-remove {
@@ -871,6 +913,11 @@ body.dev-area-open .dmaic-tiles {
   opacity: 0;
   transition: opacity 0.15s, color 0.15s;
   border-radius: 3px;
+}
+
+.dashboard-grid__tile-remove .icon {
+  width: 12px;
+  height: 12px;
 }
 
 .dashboard-grid__tile:hover .dashboard-grid__tile-remove {
@@ -911,6 +958,11 @@ body.dev-area-open .dmaic-tiles {
   border-radius: 3px;
 }
 
+.dashboard-grid__tile-export-btn .icon {
+  width: 14px;
+  height: 14px;
+}
+
 .dashboard-grid__tile-export-btn:hover {
   opacity: 1 !important;
   color: var(--color-accent);
@@ -948,7 +1000,7 @@ body.dev-area-open .dmaic-tiles {
   color: var(--color-text-primary);
   line-height: 1.45;
   white-space: pre-wrap;
-  word-break: break-word;
+  overflow-wrap: break-word;
   flex: 1;
   min-height: 0;
   overflow-y: auto;
@@ -980,7 +1032,7 @@ body.dev-area-open .dmaic-tiles {
   color: var(--color-text-primary);
   flex: 1;
   min-width: 0;
-  word-break: break-word;
+  overflow-wrap: break-word;
 }
 
 .dashboard-charter__goal-zeg {
@@ -1316,6 +1368,7 @@ body.dev-area-open .dmaic-tiles {
 .dashboard-spc__metric--ok {
   border-color: var(--color-success);
 }
+
 .dashboard-spc__metric--bad {
   border-color: var(--color-error);
 }
@@ -1428,8 +1481,7 @@ body.dashboard-area-open .dmaic-tiles {
 
 /* ===== Training Area ===== */
 .training-area {
-  grid-column: 1 / -1;
-  grid-row: 2 / 3;
+  grid-area: workspace;
   z-index: 50;
   display: flex;
   flex-direction: column;
@@ -1594,6 +1646,12 @@ body.training-area-open .dmaic-tiles {
   overflow: hidden;
   min-height: 0;
   background: var(--color-workspace-bg);
+
+  /* Paint/layout boundary: the workspace re-renders heavily on navigation;
+     containment keeps those repaints + reflows from invalidating the header
+     region (which otherwise visibly flickers though its DOM never changes).
+     overflow is already hidden, so paint containment adds no new clipping. */
+  contain: layout paint;
 }
 
 .workspace__content {
@@ -1653,6 +1711,11 @@ body.training-area-open .dmaic-tiles {
 .workspace__tab-close:hover {
   background: var(--color-bg-tertiary);
   color: var(--color-error);
+}
+
+.workspace__tab-close .icon {
+  width: 12px;
+  height: 12px;
 }
 
 .workspace__tab-name-input {
@@ -1727,6 +1790,7 @@ body.training-area-open .dmaic-tiles {
   display: flex;
   align-items: center;
   justify-content: space-between;
+
   /* Match workspace__tabs row exactly so the two header strips form
      one continuous horizontal line at the top of the workspace. */
   padding: var(--spacing-sm) var(--spacing-md);
@@ -1847,6 +1911,17 @@ body.training-area-open .dmaic-tiles {
   color: var(--color-text-secondary);
   font-size: var(--font-size-sm);
   margin: var(--spacing-md) 0;
+}
+
+/* Separator between module-specific and other (full-catalog) search results. */
+.help-panel__glossary-separator {
+  margin: var(--spacing-md) 0 var(--spacing-xs);
+  padding-top: var(--spacing-sm);
+  border-top: var(--border-width) solid var(--color-border-primary);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
 .help-panel__glossary-error {
@@ -2065,7 +2140,7 @@ body.training-area-open .dmaic-tiles {
   background: var(--color-footer-bg);
   border-top: var(--border-width) solid var(--color-border-primary);
   font-size: var(--font-size-xs);
-  color: var(--color-text-tertiary);
+  color: var(--color-text-secondary);
 }
 
 .app-footer__spacer {
@@ -2090,6 +2165,21 @@ body.training-area-open .dmaic-tiles {
 
 .app-footer__version:hover::after {
   opacity: 1;
+}
+
+.app-footer__licenses {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  font-size: var(--font-size-xs);
+  font-family: inherit;
+  color: var(--color-text-tertiary);
+  text-decoration: none;
+}
+
+.app-footer__licenses:hover {
+  color: var(--color-accent);
 }
 
 /* ===== Scrollbars ===== */

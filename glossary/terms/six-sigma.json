@@ -1,0 +1,90 @@
+{
+  "id": "six-sigma",
+  "category": "methodology",
+  "title": {
+    "de": "Six Sigma",
+    "en": "Six Sigma"
+  },
+  "short": {
+    "de": "Daten- und methodengetriebene Verbesserungsphilosophie — Ziel: {{term:prozessfaehigkeit|Prozessfähigkeit}} auf Niveau {{term:sigma-niveau|6σ}} (≈ 3,4 defekte Teile pro Million).",
+    "en": "Data- and method-driven improvement philosophy — target: {{term:prozessfaehigkeit|process capability}} at {{term:sigma-niveau|6σ}} level (≈ 3.4 defects per million opportunities)."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "**Six Sigma** ist ein Managementansatz zur systematischen Prozess- und Produktverbesserung, der auf statistischen Methoden fußt. Die namensgebende Kennzahl **6σ** entspricht einer {{term:prozessfaehigkeit|Prozessfähigkeit}} von {{term:cpk|Cpk}} ≈ 2,0 und einer Fehlerrate von rund 3,4 ppm bei angenommenem 1,5σ-Langzeit-Shift."
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Ursprung** — Motorola, Mitte der 1980er (Bill Smith); GE (Jack Welch) machte es weltweit bekannt",
+          "**Rahmenwerk** — {{term:dmaic|DMAIC}} (Verbesserung bestehender Prozesse), DMADV (Neuentwicklung)",
+          "**Rollen** — Yellow / Green / Black / Master Black Belts, Champions, Sponsors",
+          "**Werkzeuge** — statistische ({{term:hypothesentest|Tests}}, {{term:regression|Regression}}, {{term:doe|DoE}}, {{term:regelkarte|SPC}}) *und* qualitative ({{term:sipoc|SIPOC}}, {{term:ishikawa|Ishikawa}}, {{term:five-why|5-Why}}, {{term:pareto|Pareto}})"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "Six Sigma unterscheidet sich von reinem TQM durch die konsequente Datenorientierung und den Rollen-/Zertifizierungsrahmen. Modernere Kombinationen sind **Lean Six Sigma** (mit Toyota-Produktionssystem-Prinzipien für Verschwendung und Fluss) und **Design for Six Sigma / DFSS** für Neuentwicklungen. Die Sigma-Metrik selbst ist umstritten (1,5σ-Shift-Konvention), das methodische Rüstzeug hat sich aber industrieübergreifend etabliert."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "**Six Sigma** is a management approach for systematic process and product improvement grounded in statistical methods. The eponymous **6σ** figure corresponds to a {{term:prozessfaehigkeit|process capability}} of {{term:cpk|Cpk}} ≈ 2.0 and a defect rate of about 3.4 ppm assuming the customary 1.5σ long-term shift."
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Origin** — Motorola, mid-1980s (Bill Smith); GE (Jack Welch) took it worldwide",
+          "**Framework** — {{term:dmaic|DMAIC}} (improving existing processes), DMADV (new development)",
+          "**Roles** — Yellow / Green / Black / Master Black Belts, Champions, Sponsors",
+          "**Toolkit** — statistical ({{term:hypothesentest|tests}}, {{term:regression|regression}}, {{term:doe|DoE}}, {{term:regelkarte|SPC}}) *and* qualitative ({{term:sipoc|SIPOC}}, {{term:ishikawa|Ishikawa}}, {{term:five-why|5-Why}}, {{term:pareto|Pareto}})"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "Six Sigma differs from plain TQM by its strict data orientation and its role/certification framework. Modern combinations are **Lean Six Sigma** (with Toyota Production System principles of waste and flow) and **Design for Six Sigma / DFSS** for new development. The sigma metric itself is disputed (1.5σ-shift convention), but the methodological toolkit is established across industries."
+      }
+    ]
+  },
+  "aliases": {
+    "de": [
+      "6σ",
+      "Six-Sigma-Methodik",
+      "Six Sigma Management"
+    ],
+    "en": [
+      "Six Sigma",
+      "6-sigma"
+    ]
+  },
+  "seeAlso": [
+    "dmaic",
+    "sigma-niveau",
+    "cpk",
+    "prozessfaehigkeit",
+    "doe",
+    "regelkarte"
+  ],
+  "modules": [
+    "dmaic-calendar",
+    "project-charter"
+  ],
+  "algoLab": [],
+  "sources": [
+    {
+      "label": "Pyzdek, T. & Keller, P. — The Six Sigma Handbook, 5th Edition, McGraw-Hill",
+      "url": null
+    },
+    {
+      "label": "Harry, M. & Schroeder, R. — Six Sigma: The Breakthrough Management Strategy, Currency/Doubleday, 2000",
+      "url": null
+    },
+    {
+      "label": "Montgomery, D. C. — Introduction to Statistical Quality Control, 8th Edition, Wiley",
+      "url": null
+    }
+  ]
+}

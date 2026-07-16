@@ -12,27 +12,27 @@ export default {
         blocks: [
           {
             type: 'paragraph',
-            content: 'Die Prozessfähigkeitsanalyse misst, wie gut ein Prozess die Anforderungen des Kunden einhält. Sie vergleicht die natürliche Streuung des Prozesses mit den Spezifikationsgrenzen und drückt das Ergebnis in einer Handvoll Kennzahlen aus. Sie ist ein Kernwerkzeug der Measure- und Control-Phase, um ein objektives Vorher/Nachher-Bild zu liefern.',
+            content: 'Die {{term:prozessfaehigkeit|Prozessfähigkeitsanalyse}} misst, wie gut ein Prozess die Anforderungen des Kunden einhält. Sie vergleicht die natürliche Streuung des Prozesses mit den Spezifikationsgrenzen und drückt das Ergebnis in einer Handvoll Kennzahlen aus. Sie ist ein Kernwerkzeug der Measure- und Control-Phase, um ein objektives Vorher/Nachher-Bild zu liefern.',
           },
           {
             type: 'definition',
             term: 'Cp',
-            content: 'Potenzielle Fähigkeit — vergleicht die Breite der Spezifikation (USL − LSL) mit der natürlichen Streuung (6σ). Cp ignoriert die Lage des {{term:mittelwert|Mittelwerts}}; er sagt nur, ob der Prozess theoretisch schmal genug ist.',
+            content: '{{term:cp|Cp}} — potenzielle Fähigkeit — vergleicht die Breite der Spezifikation (USL − LSL) mit der natürlichen Streuung (6σ). Cp ignoriert die Lage des {{term:mittelwert|Mittelwerts}}; er sagt nur, ob der Prozess theoretisch schmal genug ist.',
           },
           {
             type: 'definition',
             term: 'Cpk',
-            content: 'Tatsächliche Fähigkeit — berücksichtigt zusätzlich, wie weit der Mittelwert zur näheren Spezifikationsgrenze steht. Cpk ist immer ≤ Cp. Ein niedriger Cpk bei hohem Cp deutet auf eine Dezentrierung hin.',
+            content: '{{term:cpk|Cpk}} — tatsächliche Fähigkeit — berücksichtigt zusätzlich, wie weit der Mittelwert zur näheren Spezifikationsgrenze steht. Cpk ist immer ≤ Cp. Ein niedriger Cpk bei hohem Cp deutet auf eine Dezentrierung hin.',
           },
           {
             type: 'definition',
             term: 'Pp und Ppk',
-            content: 'Long-term-Versionen von Cp und Cpk: Sie verwenden die gesamte Stichprobenstreuung statt der Within-Streuung. Pp/Ppk ist in der Regel schlechter als Cp/Cpk, weil auch Drift und Sonderursachen enthalten sind.',
+            content: '{{term:pp|Pp}} und {{term:ppk|Ppk}} — Long-term-Versionen von Cp und Cpk: Sie verwenden die gesamte Stichprobenstreuung statt der Within-Streuung. Pp/Ppk ist in der Regel schlechter als Cp/Cpk, weil auch Drift und Sonderursachen enthalten sind.',
           },
           {
             type: 'definition',
             term: 'Spezifikationsgrenzen (USL, LSL)',
-            content: 'Die vom Kunden oder Konstrukteur vorgegebenen Toleranzgrenzen. Die Prozessfähigkeit ist ein Verhältnis zwischen Prozessverhalten und diesen Grenzen — ohne Spezifikation keine Fähigkeit.',
+            content: '{{term:spezifikationsgrenzen|Spezifikationsgrenzen (USL, LSL)}} — die vom Kunden oder Konstrukteur vorgegebenen Toleranzgrenzen. Die Prozessfähigkeit ist ein Verhältnis zwischen Prozessverhalten und diesen Grenzen — ohne Spezifikation keine Fähigkeit.',
           },
           {
             type: 'definition',
@@ -50,27 +50,27 @@ export default {
         blocks: [
           {
             type: 'paragraph',
-            content: 'Process capability analysis measures how well a process meets the customer\'s requirements. It compares the natural variation of the process to specification limits and expresses the result in a handful of indices. It is a core Measure and Control tool to produce an objective before/after picture.',
+            content: '{{term:prozessfaehigkeit|Process capability analysis}} measures how well a process meets the customer\'s requirements. It compares the natural variation of the process to specification limits and expresses the result in a handful of indices. It is a core Measure and Control tool to produce an objective before/after picture.',
           },
           {
             type: 'definition',
             term: 'Cp',
-            content: 'Potential capability — compares the specification width (USL − LSL) with natural variation (6σ). Cp ignores the {{term:mittelwert|mean}}\'s location; it only says whether the process is theoretically narrow enough.',
+            content: '{{term:cp|Cp}} — potential capability — compares the specification width (USL − LSL) with natural variation (6σ). Cp ignores the {{term:mittelwert|mean}}\'s location; it only says whether the process is theoretically narrow enough.',
           },
           {
             type: 'definition',
             term: 'Cpk',
-            content: 'Actual capability — additionally accounts for how far the mean sits from the nearer spec limit. Cpk is always ≤ Cp. Low Cpk with high Cp signals off-centering.',
+            content: '{{term:cpk|Cpk}} — actual capability — additionally accounts for how far the mean sits from the nearer spec limit. Cpk is always ≤ Cp. Low Cpk with high Cp signals off-centering.',
           },
           {
             type: 'definition',
             term: 'Pp and Ppk',
-            content: 'Long-term versions of Cp and Cpk using overall sample variation instead of within-subgroup variation. Pp/Ppk is usually worse because it includes drift and special causes.',
+            content: '{{term:pp|Pp}} and {{term:ppk|Ppk}} — long-term versions of Cp and Cpk using overall sample variation instead of within-subgroup variation. Pp/Ppk is usually worse because it includes drift and special causes.',
           },
           {
             type: 'definition',
             term: 'Specification limits (USL, LSL)',
-            content: 'Tolerance limits set by the customer or designer. Capability is a ratio between process behavior and these limits — no spec, no capability.',
+            content: '{{term:spezifikationsgrenzen|Specification limits (USL, LSL)}} — tolerance limits set by the customer or designer. Capability is a ratio between process behavior and these limits — no spec, no capability.',
           },
           {
             type: 'definition',

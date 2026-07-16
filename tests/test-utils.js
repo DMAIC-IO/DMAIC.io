@@ -77,7 +77,7 @@ export async function runAll() {
  */
 export async function runSuite(suite) {
   const result = { name: suite.name, tests: [], passed: 0, failed: 0, skipped: 0, todo: 0 };
-  try { await suite.beforeAll?.(); } catch {}
+  try { await suite.beforeAll?.(); } catch { /* no-op: beforeAll hook errors must not abort the suite run */ }
 
   for (const t of suite.tests) {
     const tr = await runTest(t, suite);
@@ -88,7 +88,7 @@ export async function runSuite(suite) {
     if (tr.status === 'todo')    result.todo++;
   }
 
-  try { await suite.afterAll?.(); } catch {}
+  try { await suite.afterAll?.(); } catch { /* no-op: afterAll hook errors must not affect the suite result */ }
   return result;
 }
 
@@ -108,7 +108,7 @@ export async function runTest(t, suite) {
     await suite.afterEach?.();
     return { name: t.name, status: 'passed', error: null };
   } catch (err) {
-    try { await suite.afterEach?.(); } catch {}
+    try { await suite.afterEach?.(); } catch { /* no-op: afterEach cleanup failure must not mask the original test error */ }
     return { name: t.name, status: 'failed', error: err.message ?? String(err) };
   }
 }
@@ -145,6 +145,58 @@ export function assertClose(actual, expected, eps = EPSILON, message) {
 export function assertEqual(actual, expected, message) {
   if (actual !== expected) {
     fail(message ?? `Expected ${JSON.stringify(expected)}, got ${JSON.stringify(actual)}`);
+  }
+}
+
+/**
+ * Assert deep equality (recursive check for objects and arrays).
+ * Handles nested objects/arrays, primitives, and treats key order as irrelevant.
+ * @param {*} actual
+ * @param {*} expected
+ * @param {string} [message]
+ */
+export function assertDeepEqual(actual, expected, message) {
+  function isDeepEqual(a, e) {
+    // Use Object.is for primitive comparison (handles NaN, -0, etc.)
+    if (Object.is(a, e)) return true;
+
+    // Both must be objects (not null, not primitives)
+    if (typeof a !== 'object' || a === null || typeof e !== 'object' || e === null) {
+      return false;
+    }
+
+    // Check if both are arrays
+    const aIsArray = Array.isArray(a);
+    const eIsArray = Array.isArray(e);
+    if (aIsArray !== eIsArray) return false;
+
+    // For arrays: check length and elements
+    if (aIsArray) {
+      if (a.length !== e.length) return false;
+      return a.every((val, i) => isDeepEqual(val, e[i]));
+    }
+
+    // For objects: check keys (ignoring order) and values
+    const aKeys = Object.keys(a).sort();
+    const eKeys = Object.keys(e).sort();
+    if (aKeys.length !== eKeys.length) return false;
+    if (!aKeys.every((k, i) => k === eKeys[i])) return false;
+    return aKeys.every(k => isDeepEqual(a[k], e[k]));
+  }
+
+  if (!isDeepEqual(actual, expected)) {
+    fail(message ?? `Expected ${JSON.stringify(expected)}, got ${JSON.stringify(actual)}`);
+  }
+}
+
+/**
+ * Assert that a condition is truthy.
+ * @param {*} condition
+ * @param {string} [message]
+ */
+export function assertTrue(condition, message) {
+  if (!condition) {
+    fail(message ?? `Expected truthy value, got ${JSON.stringify(condition)}`);
   }
 }
 

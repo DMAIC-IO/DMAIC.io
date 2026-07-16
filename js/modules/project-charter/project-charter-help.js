@@ -37,7 +37,7 @@ export default {
           {
             type: 'definition',
             term: 'Zeit- und Meilensteinplan',
-            content: 'Übersicht über die wichtigsten Termine, mindestens die DMAIC-Tollgates. Ein realistischer Plan ist wichtiger als ein ehrgeiziger.',
+            content: 'Übersicht über die wichtigsten Termine, mindestens die {{term:dmaic|DMAIC}}-Tollgates. Ein realistischer Plan ist wichtiger als ein ehrgeiziger.',
           },
           {
             type: 'definition',

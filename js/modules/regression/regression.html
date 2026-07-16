@@ -1,0 +1,314 @@
+<div class="reg dmike-split" x-data="regression">
+  <!-- ─── Input (left) ─────────────────────────────────────────── -->
+  <div class="reg__input dmike-split__input">
+    <div class="dmike-split__section-title" x-text="t('sectionData')"></div>
+
+    <template x-if="importOptions().length > 0">
+      <div class="field-group">
+        <label x-text="t('importFromExperiment')"></label>
+        <select class="field" data-ref="doe-import" @change="onImportChange($event)">
+          <option value="" x-text="t('importPlaceholder')"></option>
+          <template x-for="o in importOptions()" :key="o.key">
+            <option :value="o.key" x-text="o.label"></option>
+          </template>
+        </select>
+      </div>
+    </template>
+
+    <div class="field-group">
+      <label x-text="t('selectColumns')"></label>
+      <div data-ref="picker-cols"></div>
+    </div>
+
+    <div class="field-group">
+      <label x-text="t('columnY')"></label>
+      <select class="field" data-ref="y-select" @change="onYChange($event)">
+        <option value="" :selected="!model.yKey" x-text="t('selectYHint')"></option>
+        <template x-for="opt in yOptions()" :key="opt.key">
+          <option :value="opt.key" :selected="opt.key === model.yKey" x-text="opt.name"></option>
+        </template>
+      </select>
+    </div>
+
+    <div class="reg__selected-info" data-ref="selected-info">
+      <span :class="selectedInfoClass()" x-text="selectedInfoText()"></span>
+    </div>
+
+    <div class="dmike-split__section-title" x-text="t('sectionSettings')"></div>
+
+    <div class="field-group">
+      <label x-text="t('regType')"></label>
+      <select class="field" data-ref="reg-type" x-model="model.regType" @change="onRegTypeChange()">
+        <option value="polynomial" x-text="t('typePolynomial')"></option>
+        <option value="exponential" x-text="t('typeExponential')"></option>
+        <option value="logarithmic" x-text="t('typeLogarithmic')"></option>
+        <option value="power" x-text="t('typePower')"></option>
+      </select>
+    </div>
+
+    <div class="field-group" data-ref="degree-field" x-show="model.isPolynomial">
+      <label x-text="t('polyDegree')"></label>
+      <select class="field" data-ref="poly-degree" x-model.number="model.polyDegree" @change="onDegreeChange()">
+        <option :value="1" :disabled="degreeDisabled(1)" :title="degreeOptionTitle(1)" x-text="t('degree1')"></option>
+        <option :value="2" :disabled="degreeDisabled(2)" :title="degreeOptionTitle(2)" x-text="t('degree2')"></option>
+        <option :value="3" :disabled="degreeDisabled(3)" :title="degreeOptionTitle(3)" x-text="t('degree3')"></option>
+      </select>
+      <div class="reg__degree-hint" data-ref="degree-hint" :style="degreeHint() ? '' : 'display:none'" x-text="degreeHint()"></div>
+    </div>
+
+    <div class="reg__level-row">
+      <div class="field-group">
+        <label><span x-text="t('confLevel')"></span> (%)</label>
+        <input type="text" class="field field--num" data-ref="conf-level" inputmode="decimal"
+          :value="confDisplay()" placeholder="95" @change="onConfChange($event)">
+      </div>
+      <div class="field-group">
+        <label><span x-text="t('alphaRisk')"></span> (%)</label>
+        <input type="text" class="field field--num" data-ref="alpha-level" inputmode="decimal"
+          :value="alphaDisplay()" placeholder="5" @change="onAlphaChange($event)">
+      </div>
+    </div>
+
+    <div class="reg__toggle-row">
+      <label x-text="t('showCI')"></label>
+      <button class="reg__toggle" :class="model.showCI ? 'reg__toggle--active' : ''"
+        data-action="toggle-ci" type="button" @click="toggleCI()"></button>
+    </div>
+
+    <div class="reg__toggle-row">
+      <label x-text="t('showPI')"></label>
+      <button class="reg__toggle" :class="model.showPI ? 'reg__toggle--active' : ''"
+        data-action="toggle-pi" type="button" @click="togglePI()"></button>
+    </div>
+
+    <div class="reg__error" data-ref="error-box" :style="errorText() ? 'display:block' : 'display:none'" x-text="errorText()"></div>
+
+    <div class="dmike-split__section-title reg__predict-title" data-ref="predict-title"
+      :style="result ? '' : 'display:none'" x-text="t('prediction')"></div>
+    <div class="reg__predict" data-ref="predict-section" :style="result ? '' : 'display:none'">
+      <div data-ref="predict-inputs">
+        <template x-for="field in predictForm()" :key="field.id">
+          <div class="field-group">
+            <label x-text="field.label"></label>
+            <template x-if="field.kind === 'categorical'">
+              <select class="field" :data-predict-id="field.id" @change="onPredictInput()" x-model="field.value">
+                <template x-for="lv in field.levels" :key="lv">
+                  <option :value="lv" x-text="lv"></option>
+                </template>
+              </select>
+            </template>
+            <template x-if="field.kind === 'numeric'">
+              <input type="number" class="field field--num" :data-predict-id="field.id"
+                x-model="field.value" @input="onPredictInput()" @change="onPredictInput()">
+            </template>
+            <template x-if="field.kind === 'single'">
+              <input type="number" class="field field--num" data-ref="predict-x"
+                x-model="field.value" @input="onPredictInput()" @change="onPredictInput()">
+            </template>
+          </div>
+        </template>
+      </div>
+      <div class="reg__predict-result" data-ref="predict-result"
+        :style="predictText() ? 'display:block' : 'display:none'">
+        <span x-text="predictText()"></span>
+        <template x-if="predictInterval()">
+          <span><br><span class="reg__predict-ci" x-text="predictInterval()"></span></span>
+        </template>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── Output (right) ───────────────────────────────────────── -->
+  <div class="reg__output dmike-split__output">
+    <div data-ref="results" :style="result ? 'display:block' : 'display:none'">
+      <template x-if="result">
+        <div>
+          <!-- X-column selector (per-X single models only) -->
+          <template x-if="xSelectorButtons().length > 0">
+            <div class="reg__x-selector" data-ref="x-selector">
+              <template x-for="b in xSelectorButtons()" :key="b.key">
+                <button class="reg__x-btn" :class="b.active ? 'reg__x-btn--active' : ''"
+                  :data-x-key="b.key" @click="setActiveX(b.key)" x-text="b.label"></button>
+              </template>
+            </div>
+          </template>
+
+          <!-- KPI strip -->
+          <div class="dmike-kpi-strip">
+            <template x-for="kpi in result.kpis" :key="kpi.label">
+              <div class="dmike-kpi" :class="kpi.mod" :title="kpi.tip">
+                <div class="dmike-kpi-value" x-text="kpi.value"></div>
+                <div class="dmike-kpi-label" x-text="kpi.label"></div>
+              </div>
+            </template>
+          </div>
+
+          <div class="reg__equation" x-text="result.equation"></div>
+
+          <template x-if="result.canSaveModel">
+            <div class="reg__model-actions">
+              <button class="btn btn--primary" data-action="save-as-model" type="button"
+                @click="saveAsModel()"
+                x-text="model.savedModelId ? t('updateModel') : t('saveAsModel')"></button>
+              <span class="reg__model-status" data-ref="model-status"
+                x-text="model.savedModelId ? t('modelSaved') : ''"></span>
+            </div>
+          </template>
+
+          <!-- Tabs (declarative sub-router): @click="changeRoute(tb.id)" pushes the
+               tab id into the route store via the generic createModule helper →
+               createModule's onRouteChanged wiring calls onRouteChanged(sub) →
+               model.activeTab → each panel's x-show="tb.id === model.activeTab" reacts.
+               An empty sub-path falls back to the persisted/default activeTab. -->
+          <div class="dmike-tabs" data-ref="tabs">
+            <template x-for="tb in result.tabs" :key="tb.id">
+              <button class="dmike-tab" :class="tb.id === model.activeTab ? 'dmike-tab--active' : ''"
+                :data-tab="tb.id" @click="changeRoute(tb.id)" x-text="tb.label"></button>
+            </template>
+          </div>
+
+          <template x-for="tb in result.tabs" :key="'content-' + tb.id">
+            <div class="dmike-tab-content" :class="tb.id === model.activeTab ? 'dmike-tab-content--active' : ''"
+              :data-tab-content="tb.id" x-show="tb.id === model.activeTab">
+              <template x-if="tb.id === 'ss-pie'">
+                <div class="reg__chart-wrap" :data-ref="'chart-' + tb.id">
+                  <div class="reg__ss-pie-wrap">
+                    <div class="reg__ss-pie-list">
+                      <template x-for="(item, i) in ssPieItems" :key="i">
+                        <label class="reg__ss-pie-item">
+                          <input type="checkbox" :checked="item.checked" :data-ss-idx="i" @change="toggleSSPie(i, $event)">
+                          <span class="reg__ss-pie-swatch" :style="'background:' + item.color"></span>
+                          <span class="reg__ss-pie-label" x-text="item.label"></span>
+                          <span class="reg__ss-pie-val" x-text="item.val"></span>
+                        </label>
+                      </template>
+                    </div>
+                    <div class="reg__ss-pie-chart" data-ref="ss-pie-chart"></div>
+                    <div class="reg__ss-pie-bars" data-ref="ss-pie-bars"></div>
+                  </div>
+                </div>
+              </template>
+              <template x-if="tb.id !== 'ss-pie'">
+                <div class="reg__chart-wrap" :data-ref="'chart-' + tb.id"></div>
+              </template>
+            </div>
+          </template>
+
+          <!-- ANOVA table -->
+          <div class="dmike-split__output-section" x-text="t('anovaTable')"></div>
+          <div class="reg__table-wrap">
+            <table class="reg__table">
+              <thead><tr>
+                <th x-text="t('source')"></th>
+                <th>SS <button class="reg__algo-link" :title="t('algoLabTitle')" @click="algoNavigate('regression-anova')"><svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg></button></th>
+                <th>DF <button class="reg__algo-link" :title="t('algoLabTitle')" @click="algoNavigate('regression-anova')"><svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg></button></th>
+                <th>MS <button class="reg__algo-link" :title="t('algoLabTitle')" @click="algoNavigate('regression-anova')"><svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg></button></th>
+                <th>F <button class="reg__algo-link" :title="t('algoLabTitle')" @click="algoNavigate('regression-anova')"><svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg></button></th>
+                <th><span x-text="t('pValue')"></span> <button class="reg__algo-link" :title="t('algoLabTitle')" @click="algoNavigate('regression-anova')"><svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg></button></th>
+              </tr></thead>
+              <tbody>
+                <tr :class="anova().regRowClass">
+                  <td x-text="t('sourceRegression')"></td>
+                  <td x-text="anova().ssr"></td><td x-text="anova().dfReg"></td><td x-text="anova().msr"></td>
+                  <td x-text="anova().fstat"></td><td :class="anova().pSig" x-text="anova().fp"></td>
+                </tr>
+                <template x-for="row in anova().termRows" :key="row.id">
+                  <tr :class="row.trClass + ' reg__tr--term'">
+                    <td class="reg__td--term-indent" x-text="row.label"></td>
+                    <td x-text="row.ss"></td><td x-text="row.df"></td><td x-text="row.ms"></td>
+                    <td x-text="row.f"></td><td :class="row.pSig" x-text="row.p"></td>
+                  </tr>
+                </template>
+                <tr class="reg__tr--error">
+                  <td x-text="t('sourceResiduals')"></td>
+                  <td x-text="anova().sse"></td><td x-text="anova().dfRes"></td><td x-text="anova().mse"></td>
+                  <td></td><td></td>
+                </tr>
+                <tr class="reg__tr--total">
+                  <td x-text="t('sourceTotal')"></td>
+                  <td x-text="anova().sst"></td><td x-text="anova().dfTot"></td><td></td><td></td><td></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Coefficient table -->
+          <div class="dmike-split__output-section" x-text="t('coefTable')"></div>
+          <div class="reg__table-wrap">
+            <table class="reg__table" data-ref="coef-table">
+              <thead><tr>
+                <template x-if="coefView().canExclude">
+                  <th class="reg__th--cb"></th>
+                </template>
+                <th class="reg__th--term" x-text="t('term')"></th>
+                <th x-text="t('coefficient')"></th>
+                <template x-if="coefView().hasDetails">
+                  <th x-text="t('stdErrorCoef')"></th>
+                </template>
+                <template x-if="coefView().hasDetails">
+                  <th><span x-text="t('tValue')"></span> <button class="reg__algo-link" :title="t('algoLabTitle')" @click="algoNavigate('regression-coefficients')"><svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg></button></th>
+                </template>
+                <template x-if="coefView().hasDetails">
+                  <th>
+                    <span x-text="t('pValue')"></span>
+                    <button class="reg__algo-link" :title="t('algoLabTitle')" @click="algoNavigate('regression-coefficients')"><svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg></button>
+                    <button class="reg__sort-btn" :class="model.coefSortByP ? 'reg__sort-btn--active' : ''"
+                      data-action="sort-coef-p" :title="t('sortByPValue')" @click="toggleSort()"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M7 15l5 5 5-5M7 9l5-5 5 5"/></svg></button>
+                  </th>
+                </template>
+                <template x-if="coefView().hasVIF">
+                  <th>VIF <button class="reg__algo-link" :title="t('algoLabTitle')" @click="algoNavigate('vif')"><svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg></button></th>
+                </template>
+              </tr></thead>
+              <tbody>
+                <template x-for="row in coefView().rows" :key="row.key">
+                  <tr :class="row.trClass">
+                    <template x-if="coefView().canExclude">
+                      <td class="reg__td--cb">
+                        <template x-if="!row.noCheckbox">
+                          <input type="checkbox" class="reg__term-cb" :checked="row.checked"
+                            :disabled="row.cbDisabled" :data-term="row.dataTerm" @change="toggleTerm(row.dataTerm, $event)">
+                        </template>
+                      </td>
+                    </template>
+                    <td class="reg__td--term" :class="row.termClass">
+                      <template x-if="row.blockHeader">
+                        <span><strong x-text="row.label"></strong> <span class="reg__block-df" x-text="row.blockDf"></span></span>
+                      </template>
+                      <template x-if="!row.blockHeader">
+                        <span x-text="row.label"></span>
+                      </template>
+                    </td>
+                    <td>
+                      <span x-text="row.coef"></span>
+                      <template x-if="row.ci">
+                        <span class="reg__ci-inline" x-text="row.ci"></span>
+                      </template>
+                    </td>
+                    <template x-if="coefView().hasDetails">
+                      <td x-text="row.se"></td>
+                    </template>
+                    <template x-if="coefView().hasDetails">
+                      <td x-text="row.t"></td>
+                    </template>
+                    <template x-if="coefView().hasDetails">
+                      <td :class="row.pSig" x-text="row.p"></td>
+                    </template>
+                    <template x-if="coefView().hasVIF">
+                      <td :class="row.vifClass">
+                        <span x-text="row.vif"></span>
+                        <template x-if="row.vifFull">
+                          <span class="reg__vif-full" x-text="row.vifFull"></span>
+                        </template>
+                      </td>
+                    </template>
+                  </tr>
+                </template>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </template>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,108 @@
+{
+  "id": "bias",
+  "category": "msa",
+  "title": {
+    "de": "Bias (systematische Abweichung)",
+    "en": "Bias (Systematic Deviation)"
+  },
+  "short": {
+    "de": "Differenz zwischen dem {{term:mittelwert|Mittelwert}} der Wiederholmessungen und dem bekannten Referenzwert.",
+    "en": "Difference between the {{term:mittelwert|mean}} of repeated measurements and the known reference value."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "Der **Bias** eines Messsystems ist die systematische Abweichung seines Mittelwerts vom wahren (Referenz-)Wert. Er ist das Gegenstück zur zufälligen Streuung: ein Bias bleibt, egal wie oft man misst, und lässt sich nur durch Kalibrierung oder konstruktive Änderung beseitigen."
+      },
+      {
+        "type": "formula",
+        "latex": "\\text{Bias} = \\bar{x} - x_{\\text{ref}}"
+      },
+      {
+        "type": "paragraph",
+        "text": "Ein Bias ≠ 0 verletzt die {{term:richtigkeit|Richtigkeit}} des Messsystems. In der MSA Typ 1 fließt der Bias über den Cgk-Index in die Bewertung ein: Cg misst nur die {{term:praezision|Präzision}}, Cgk zusätzlich, wie viel Toleranz der Bias verbraucht."
+      },
+      {
+        "type": "list",
+        "items": [
+          "Bias ≈ 0 und Cg hoch → System richtig **und** präzise (fähig)",
+          "Bias groß, Cg hoch → präzise, aber verschoben — Kalibrierung fällig",
+          "Bias klein, Cg niedrig → richtig im Mittel, aber zu streuend",
+          "Bias groß und Cg niedrig → weder richtig noch präzise (nicht fähig)"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "Als Prozent-Größe wird der Bias oft auf die Toleranz normiert: Bias% = (x̄ − x_ref) / T · 100. Ohne kalibriertes Referenzteil kann kein Bias bestimmt werden — die MSA Typ 1 reduziert sich dann auf einen reinen Wiederholbarkeitstest."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "The **bias** of a measurement system is the systematic deviation of its mean from the true (reference) value. It is the counterpart to random dispersion: bias stays no matter how many times you measure, and only calibration or a design change can remove it."
+      },
+      {
+        "type": "formula",
+        "latex": "\\text{Bias} = \\bar{x} - x_{\\text{ref}}"
+      },
+      {
+        "type": "paragraph",
+        "text": "A non-zero bias violates the {{term:richtigkeit|trueness}} of the system. In MSA Type 1, bias enters the Cgk index: Cg captures {{term:praezision|precision}} only, Cgk additionally accounts for how much tolerance the bias consumes."
+      },
+      {
+        "type": "list",
+        "items": [
+          "Bias ≈ 0 and high Cg → true **and** precise (capable)",
+          "Large bias, high Cg → precise but shifted — recalibrate",
+          "Small bias, low Cg → correct on average but too spread out",
+          "Large bias and low Cg → neither true nor precise (not capable)"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "As a percentage figure, bias is often normalised against tolerance: Bias% = (x̄ − x_ref) / T · 100. Without a calibrated reference part, no bias can be determined — MSA Type 1 then collapses to a pure repeatability check."
+      }
+    ]
+  },
+  "aliases": {
+    "de": [
+      "systematische Abweichung",
+      "systematischer Fehler",
+      "Messabweichung"
+    ],
+    "en": [
+      "systematic deviation",
+      "systematic error",
+      "measurement bias"
+    ]
+  },
+  "seeAlso": [
+    "richtigkeit",
+    "genauigkeit",
+    "cgk",
+    "referenzteil"
+  ],
+  "modules": [
+    "msa-typ1",
+    "msa-typ2"
+  ],
+  "algoLab": [
+    "msa/cgk",
+    "msa/cg"
+  ],
+  "sources": [
+    {
+      "label": "DIN ISO 5725-1: Genauigkeit (Richtigkeit und Präzision) von Messverfahren und Messergebnissen — Teil 1",
+      "url": null
+    },
+    {
+      "label": "VDA Band 5 — Prüfprozesseignung, 3. Auflage",
+      "url": null
+    },
+    {
+      "label": "AIAG — Measurement Systems Analysis Reference Manual, 4th Edition (MSA-4)",
+      "url": null
+    }
+  ]
+}

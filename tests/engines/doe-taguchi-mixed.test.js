@@ -16,7 +16,7 @@
  *   6. Pure 2-level factor sets keep using L4 / L8 / L12 / L16 unchanged.
  */
 
-import { suite, test, assertAlmostEqual, assertEqual } from '../test-utils.js';
+import { suite, test, assertEqual } from '../test-utils.js';
 import {
   generateDesign, taguchiDesign, selectTaguchiArray, taguchiCandidates,
 } from '../../js/engines/doe-planner-engine.js';

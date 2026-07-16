@@ -1,0 +1,71 @@
+{
+  "id": "korrelation",
+  "category": "regression",
+  "title": {
+    "de": "Korrelation (Pearson r)",
+    "en": "Correlation (Pearson r)"
+  },
+  "short": {
+    "de": "Kennzahl für den linearen Zusammenhang zweier Variablen — Wert zwischen −1 (perfekt gegenläufig) und +1 (perfekt gleichläufig).",
+    "en": "Measure of the linear relation between two variables — value between −1 (perfectly opposed) and +1 (perfectly aligned)."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "Der **Pearson-Korrelationskoeffizient** $r$ misst, wie stark und in welche Richtung sich zwei stetige Variablen gemeinsam bewegen. Im Gegensatz zur {{term:regression|Regression}} liefert er nur eine Kennzahl, keine Vorhersagegleichung — und macht keine Unterscheidung zwischen unabhängiger und abhängiger Variable."
+      },
+      {
+        "type": "formula",
+        "latex": "r = \\frac{\\sum_{i} (x_i - \\bar{x})(y_i - \\bar{y})}{\\sqrt{\\sum_{i} (x_i - \\bar{x})^2 \\cdot \\sum_{i} (y_i - \\bar{y})^2}}"
+      },
+      {
+        "type": "list",
+        "items": [
+          "**|r| < 0{,}3** — schwacher Zusammenhang",
+          "**0{,}3 ≤ |r| < 0{,}7** — mäßiger Zusammenhang",
+          "**|r| ≥ 0{,}7** — starker Zusammenhang",
+          "**$r^2$** — Anteil gemeinsamer Varianz; entspricht dem {{term:r-quadrat|R²}} der einfachen linearen Regression"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "**Wichtige Grenzen:** Pearson misst nur **lineare** Zusammenhänge — eine perfekte Parabel $Y = X^2$ kann $r \\approx 0$ haben. Für monotone, aber nichtlineare Zusammenhänge existieren Spearman-Rangkorrelation ($\\rho$) und Kendall's $\\tau$. Und: **Korrelation ist keine Kausation** — der klassische Merksatz gilt hier besonders."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "The **Pearson correlation coefficient** $r$ measures how strongly and in which direction two continuous variables move together. Unlike {{term:regression|regression}}, it delivers only a single number, no prediction equation — and makes no distinction between independent and dependent variable."
+      },
+      {
+        "type": "formula",
+        "latex": "r = \\frac{\\sum_{i} (x_i - \\bar{x})(y_i - \\bar{y})}{\\sqrt{\\sum_{i} (x_i - \\bar{x})^2 \\cdot \\sum_{i} (y_i - \\bar{y})^2}}"
+      },
+      {
+        "type": "list",
+        "items": [
+          "**|r| < 0.3** — weak association",
+          "**0.3 ≤ |r| < 0.7** — moderate association",
+          "**|r| ≥ 0.7** — strong association",
+          "**$r^2$** — share of shared variance; equal to the {{term:r-quadrat|R²}} of the simple linear regression"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "**Important limits:** Pearson only measures **linear** relations — a perfect parabola $Y = X^2$ can have $r \\approx 0$. For monotonic but non-linear relations, Spearman rank correlation ($\\rho$) and Kendall's $\\tau$ exist. And: **correlation is not causation** — the classical caveat applies especially here."
+      }
+    ]
+  },
+  "aliases": {
+    "de": ["Pearson-Korrelation", "Korrelationskoeffizient", "Pearson r"],
+    "en": ["Pearson correlation", "correlation coefficient", "Pearson r"]
+  },
+  "seeAlso": ["regression", "lineare-regression", "r-quadrat", "multikollinearitaet"],
+  "modules": ["correlation", "regression", "glm-regression"],
+  "algoLab": ["regression/correlation-analysis"],
+  "sources": [
+    { "label": "Fahrmeir, L., Künstler, R., Pigeot, I. & Tutz, G. — Statistik: Der Weg zur Datenanalyse, Springer", "url": null },
+    { "label": "Rodgers, J. L. & Nicewander, W. A. — Thirteen Ways to Look at the Correlation Coefficient, The American Statistician, 42(1), 1988", "url": null }
+  ]
+}

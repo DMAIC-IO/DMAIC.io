@@ -12,27 +12,27 @@ export default {
         blocks: [
           {
             type: 'paragraph',
-            content: 'Die Regression beschreibt den Zusammenhang zwischen einer abhängigen Variable (Y, Zielgröße) und einer oder mehreren unabhängigen Variablen (X, Einflussgrößen) durch ein mathematisches Modell. Während die Korrelation nur fragt „bewegen sie sich gemeinsam?", liefert die Regression eine Gleichung, mit der Y vorhergesagt oder verstanden werden kann.',
+            content: 'Die {{term:regression|Regression}} beschreibt den Zusammenhang zwischen einer abhängigen Variable (Y, {{term:zielgroesse|Zielgröße}}) und einer oder mehreren unabhängigen Variablen (X, Einflussgrößen) durch ein mathematisches Modell. Während die {{term:korrelation|Korrelation}} nur fragt „bewegen sie sich gemeinsam?", liefert die Regression eine Gleichung, mit der Y vorhergesagt oder verstanden werden kann.',
           },
           {
             type: 'definition',
             term: 'Einfache lineare Regression',
-            content: 'Eine X-Variable, ein Y. Modell: Y = β₀ + β₁·X + ε. β₀ ist der Achsenabschnitt, β₁ die Steigung, ε der Restfehler. Der häufigste Einstieg.',
+            content: '{{term:lineare-regression|Einfache lineare Regression}} — eine X-Variable, ein Y. Modell: Y = β₀ + β₁·X + ε. β₀ ist der Achsenabschnitt, β₁ die Steigung, ε der Restfehler. Der häufigste Einstieg.',
           },
           {
             type: 'definition',
             term: 'Multiple Regression',
-            content: 'Mehrere X-Variablen: Y = β₀ + β₁·X₁ + β₂·X₂ + … + ε. Erlaubt es, den Effekt jeder Variable bei Konstanthalten der anderen zu schätzen.',
+            content: 'Bei der multiplen {{term:lineare-regression|linearen Regression}} kommen mehrere X-Variablen hinzu: Y = β₀ + β₁·X₁ + β₂·X₂ + … + ε. Erlaubt es, den Effekt jeder Variable bei Konstanthalten der anderen zu schätzen.',
           },
           {
             type: 'definition',
             term: 'R² (Bestimmtheitsmaß)',
-            content: 'Anteil der Streuung in Y, der durch das Modell erklärt wird. 0 = Modell erklärt nichts, 1 = perfekte Erklärung. R² = 0,85 heißt: 85 % der Y-Variation lässt sich auf die X erklären.',
+            content: '{{term:r-quadrat|R²}} ist der Anteil der Streuung in Y, der durch das Modell erklärt wird. 0 = Modell erklärt nichts, 1 = perfekte Erklärung. R² = 0,85 heißt: 85 % der Y-Variation lässt sich auf die X erklären.',
           },
           {
             type: 'definition',
             term: 'Adjustiertes R²',
-            content: 'Korrigiert R² für die Anzahl der Variablen. Wichtig bei multipler Regression: zusätzliche X erhöhen R² immer, das adjustierte R² nur, wenn sie wirklich beitragen.',
+            content: '{{term:adjustiertes-r-quadrat|Adjustiertes R²}} korrigiert R² für die Anzahl der Variablen. Wichtig bei multipler Regression: zusätzliche X erhöhen R² immer, das adjustierte R² nur, wenn sie wirklich beitragen.',
           },
           {
             type: 'definition',
@@ -42,7 +42,7 @@ export default {
           {
             type: 'definition',
             term: 'Residuen',
-            content: 'Differenz zwischen tatsächlichem Y und vorhergesagtem Y. Eine gute Regression hat zufällig verteilte Residuen ohne Muster — Muster deuten auf nicht erfasste Effekte hin.',
+            content: '{{term:residuen|Residuen}} sind die Differenz zwischen tatsächlichem Y und vorhergesagtem Y. Eine gute Regression hat zufällig verteilte Residuen ohne Muster — Muster deuten auf nicht erfasste Effekte hin.',
           },
         ],
       },
@@ -51,27 +51,27 @@ export default {
         blocks: [
           {
             type: 'paragraph',
-            content: 'Regression describes the relation between a dependent variable (Y, response) and one or more independent variables (X, predictors) through a mathematical model. Where correlation only asks "do they move together?", regression delivers an equation that lets Y be predicted or understood.',
+            content: '{{term:regression|Regression}} describes the relation between a dependent variable (Y, {{term:zielgroesse|response}}) and one or more independent variables (X, predictors) through a mathematical model. Where {{term:korrelation|correlation}} only asks "do they move together?", regression delivers an equation that lets Y be predicted or understood.',
           },
           {
             type: 'definition',
             term: 'Simple linear regression',
-            content: 'One X, one Y. Model: Y = β₀ + β₁·X + ε. β₀ is the intercept, β₁ the slope, ε the residual error. The most common entry point.',
+            content: '{{term:lineare-regression|Simple linear regression}} — one X, one Y. Model: Y = β₀ + β₁·X + ε. β₀ is the intercept, β₁ the slope, ε the residual error. The most common entry point.',
           },
           {
             type: 'definition',
             term: 'Multiple regression',
-            content: 'Several X variables: Y = β₀ + β₁·X₁ + β₂·X₂ + … + ε. Allows estimating the effect of each variable while holding the others constant.',
+            content: 'Multiple {{term:lineare-regression|linear regression}} adds several X variables: Y = β₀ + β₁·X₁ + β₂·X₂ + … + ε. Allows estimating the effect of each variable while holding the others constant.',
           },
           {
             type: 'definition',
             term: 'R² (coefficient of determination)',
-            content: 'Share of Y variation explained by the model. 0 = model explains nothing, 1 = perfect explanation. R² = 0.85 {{term:mittelwert|means}}: 85% of Y variation is explained by the X.',
+            content: '{{term:r-quadrat|R²}} — share of Y variation explained by the model. 0 = model explains nothing, 1 = perfect explanation. R² = 0.85 means: 85% of Y variation is explained by the X.',
           },
           {
             type: 'definition',
             term: 'Adjusted R²',
-            content: 'Corrects R² for the number of variables. Important in multiple regression: adding X always raises R², but adjusted R² only rises if they truly contribute.',
+            content: '{{term:adjustiertes-r-quadrat|Adjusted R²}} corrects R² for the number of variables. Important in multiple regression: adding X always raises R², but adjusted R² only rises if they truly contribute.',
           },
           {
             type: 'definition',
@@ -81,7 +81,7 @@ export default {
           {
             type: 'definition',
             term: 'Residuals',
-            content: 'Difference between observed Y and predicted Y. A good regression has randomly scattered residuals without pattern — patterns indicate missed effects.',
+            content: '{{term:residuen|Residuals}} — difference between observed Y and predicted Y. A good regression has randomly scattered residuals without pattern — patterns indicate missed effects.',
           },
         ],
       },
@@ -99,7 +99,7 @@ export default {
               'R² und p-Werte prüfen — ist das Modell überhaupt sinnvoll?',
               'Residuen prüfen: zufällige Streuung um null, keine Muster, keine Trichter.',
               'Modell auf neue Daten anwenden — sagt es wirklich vorher, was es soll?',
-              'Bei multipler Regression auf Multikollinearität prüfen (VIF) und überflüssige X entfernen.',
+              'Bei multipler Regression auf {{term:multikollinearitaet|Multikollinearität}} prüfen (VIF) und überflüssige X entfernen.',
             ],
           },
         ],
@@ -115,7 +115,7 @@ export default {
               'Check R² and p-values — does the model make sense at all?',
               'Inspect residuals: random scatter around zero, no patterns, no funnels.',
               'Apply the model to new data — does it actually predict what it should?',
-              'For multiple regression, check multicollinearity (VIF) and drop redundant X.',
+              'For multiple regression, check {{term:multikollinearitaet|multicollinearity}} (VIF) and drop redundant X.',
             ],
           },
         ],
@@ -163,17 +163,17 @@ export default {
           {
             type: 'definition',
             term: 'Multikollinearität',
-            content: 'Wenn zwei X stark korreliert sind, kann das Modell ihre Einzelbeiträge nicht trennen — die Koeffizienten werden instabil und schwer interpretierbar. VIF-Werte > 5 sind ein Warnsignal.',
+            content: 'Bei {{term:multikollinearitaet|Multikollinearität}} sind zwei X stark korreliert und das Modell kann ihre Einzelbeiträge nicht trennen — die Koeffizienten werden instabil und schwer interpretierbar. VIF-Werte > 5 sind ein Warnsignal.',
           },
           {
             type: 'definition',
             term: 'Overfitting',
-            content: 'Ein Modell mit zu vielen X für zu wenige Beobachtungen passt sich an Zufallsrauschen an. R² wirkt großartig, neue Daten enttäuschen. Faustregel: mindestens 10 Beobachtungen pro Koeffizient.',
+            content: '{{term:overfitting|Overfitting}} — ein Modell mit zu vielen X für zu wenige Beobachtungen passt sich an Zufallsrauschen an. R² wirkt großartig, neue Daten enttäuschen. Faustregel: mindestens 10 Beobachtungen pro Koeffizient.',
           },
           {
             type: 'definition',
             term: 'Heteroskedastizität ignoriert',
-            content: 'Wenn die Streuung der Residuen mit X wächst (Trichter), sind die Standardfehler verzerrt — p-Werte und Konfidenzintervalle stimmen nicht mehr. Transformation oder gewichtete Regression hilft.',
+            content: 'Bei {{term:heteroskedastizitaet|Heteroskedastizität}} wächst die Streuung der Residuen mit X (Trichter), die Standardfehler sind verzerrt — p-Werte und Konfidenzintervalle stimmen nicht mehr. Transformation oder gewichtete Regression hilft.',
           },
           {
             type: 'definition',
@@ -183,7 +183,7 @@ export default {
           {
             type: 'definition',
             term: 'Kausale Sprache bei beobachteten Daten',
-            content: 'Eine Regression auf Beobachtungsdaten beschreibt Zusammenhänge, beweist aber keine Ursache. Kausale Aussagen brauchen ein Experiment (DOE) oder sehr starke Argumente.',
+            content: 'Eine Regression auf Beobachtungsdaten beschreibt Zusammenhänge, beweist aber keine Ursache. Kausale Aussagen brauchen ein Experiment ({{term:doe|DoE}}) oder sehr starke Argumente.',
           },
         ],
       },
@@ -198,17 +198,17 @@ export default {
           {
             type: 'definition',
             term: 'Multicollinearity',
-            content: 'When two X are strongly correlated, the model cannot separate their individual effects — coefficients become unstable and hard to interpret. VIF > 5 is a warning sign.',
+            content: 'With {{term:multikollinearitaet|multicollinearity}} — when two X are strongly correlated — the model cannot separate their individual effects; coefficients become unstable and hard to interpret. VIF > 5 is a warning sign.',
           },
           {
             type: 'definition',
             term: 'Overfitting',
-            content: 'A model with too many X for too few observations fits random noise. R² looks great, new data disappoints. Rule of thumb: at least 10 observations per coefficient.',
+            content: '{{term:overfitting|Overfitting}} — a model with too many X for too few observations fits random noise. R² looks great, new data disappoints. Rule of thumb: at least 10 observations per coefficient.',
           },
           {
             type: 'definition',
             term: 'Heteroscedasticity ignored',
-            content: 'When residual scatter grows with X (funnel shape), standard errors are biased — p-values and confidence intervals lie. Transformation or weighted regression helps.',
+            content: 'With {{term:heteroskedastizitaet|heteroscedasticity}} — residual scatter grows with X (funnel shape) — standard errors are biased and p-values and confidence intervals lie. Transformation or weighted regression helps.',
           },
           {
             type: 'definition',
@@ -218,7 +218,7 @@ export default {
           {
             type: 'definition',
             term: 'Causal language on observational data',
-            content: 'A regression on observational data describes relations but does not prove causation. Causal claims need an experiment (DOE) or very strong arguments.',
+            content: 'A regression on observational data describes relations but does not prove causation. Causal claims need an experiment ({{term:doe|DoE}}) or very strong arguments.',
           },
         ],
       },

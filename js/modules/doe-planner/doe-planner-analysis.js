@@ -19,9 +19,8 @@
 
 import {
   buildModelMatrix,
-  fDistQuantile, fDistCDF, normalCDF,
+  fDistQuantile, fDistCDF,
   olsRegression, typeIIISS,
-  normalInv as inverseNormalCDF,
   normalOrderStatistics,
 } from '../../engines/regression-engine.js';
 
@@ -475,7 +474,7 @@ export function interactionMeans(codedMatrix, y, fa, fb) {
     .map(({ a, b, sum, count }) => ({
       levelA: a, levelB: b, mean: sum / count, count,
     }))
-    .sort((x, y) => x.levelA - y.levelA || x.levelB - y.levelB);
+    .sort((m1, m2) => m1.levelA - m2.levelA || m1.levelB - m2.levelB);
 }
 
 // ─── Normal Order Statistics ──────────────────────────────────────────

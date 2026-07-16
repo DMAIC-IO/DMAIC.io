@@ -12,7 +12,7 @@ export default {
         blocks: [
           {
             type: 'paragraph',
-            content: 'Der DMAIC-Kalender ist ein Projektkalender mit eingebauter Phasen-Logik. Jeder Termin lässt sich einer DMAIC-Phase (Define, Measure, Analyze, Improve, Control) zuordnen und wird in der jeweiligen Phasenfarbe dargestellt — so sieht man auf einen Blick, in welcher Projektphase der meiste Aufwand liegt.',
+            content: 'Der {{term:dmaic|DMAIC}}-Kalender ist ein Projektkalender mit eingebauter Phasen-Logik. Jeder Termin lässt sich einer DMAIC-Phase (Define, Measure, Analyze, Improve, Control) zuordnen und wird in der jeweiligen Phasenfarbe dargestellt — so sieht man auf einen Blick, in welcher Projektphase der meiste Aufwand liegt.',
           },
           {
             type: 'definition',

@@ -107,9 +107,9 @@ export function normalizeCombo(event) {
   const k = event.key;
   if (!k || k === 'Control' || k === 'Shift' || k === 'Alt' || k === 'Meta') return null;
   return {
-    ctrl: !!(event.ctrlKey || event.metaKey),
-    shift: !!event.shiftKey,
-    alt: !!event.altKey,
+    ctrl: Boolean(event.ctrlKey || event.metaKey),
+    shift: Boolean(event.shiftKey),
+    alt: Boolean(event.altKey),
     key: normalizeKeyToken(k),
   };
 }
@@ -210,7 +210,7 @@ class ShortcutRegistry {
       defaultCombo: def.defaultCombo,
       aliasCombos: def.aliasCombos || [],
       currentCombo: this._readBinding(def.id),
-      isCustom: !!(this._initialized && this._stateManager.get(`settings.shortcuts.${def.id}`)),
+      isCustom: Boolean(this._initialized && this._stateManager.get(`settings.shortcuts.${def.id}`)),
     }));
   }
 

@@ -1,0 +1,55 @@
+<div class="pareto-module dmike-split" x-data="pareto">
+  <div class="pareto-module__input dmike-split__input">
+    <div class="dmike-split__section-title" x-text="t('sectionData')"></div>
+    <div data-ref="picker-wrap"></div>
+
+    <div class="pareto-module__options" data-ref="options-wrap">
+      <template x-if="hasYRef">
+        <label class="pareto-module__opt-row">
+          <span x-text="t('aggregation')"></span>
+          <select data-action="set-agg" x-model="model.chartConfig.aggregation" @change="onAggregationChange()">
+            <option value="sum" x-text="t('aggSum')"></option>
+            <option value="mean" x-text="t('aggMean')"></option>
+          </select>
+        </label>
+      </template>
+    </div>
+
+    <div class="pareto-module__error" data-ref="error-box"></div>
+  </div>
+
+  <div class="pareto-module__output dmike-split__output">
+    <div data-ref="placeholder" class="pareto-module__placeholder" x-text="t('placeholderPickX')"></div>
+    <div class="pareto-module__chart-area" data-ref="chart-area" style="display:none">
+      <div class="pareto-module__chart-wrap" data-ref="chart-wrap"></div>
+      <div class="pareto-module__stats-panel" data-ref="stats-panel">
+        <template x-if="statsShow">
+          <div>
+            <div class="dmike-split__output-section" x-text="t('statsTitle')"></div>
+            <table class="dmike-table pareto-module__stats-table">
+              <thead><tr>
+                <th x-text="t('statCategory')"></th>
+                <th x-text="statsValueHeader"></th>
+                <th x-text="t('statCumPct')"></th>
+              </tr></thead>
+              <tbody>
+                <template x-for="(r, i) in statsRows" :key="i">
+                  <tr>
+                    <td><span class="pareto-module__stats-color" :style="'background:' + r.color"></span><span x-text="' ' + r.name"></span></td>
+                    <td x-text="r.value"></td>
+                    <td x-text="r.cumPct"></td>
+                  </tr>
+                </template>
+                <tr style="font-weight:600;border-top:2px solid var(--color-border-primary)">
+                  <td x-text="t('statTotal')"></td>
+                  <td x-text="statsTotal"></td>
+                  <td>100.0%</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </template>
+      </div>
+    </div>
+  </div>
+</div>

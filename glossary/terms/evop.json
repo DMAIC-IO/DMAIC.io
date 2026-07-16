@@ -1,0 +1,80 @@
+{
+  "id": "evop",
+  "category": "doe",
+  "title": {
+    "de": "EVOP (Evolutionary Operation)",
+    "en": "EVOP (Evolutionary Operation)"
+  },
+  "short": {
+    "de": "Klein-DoE im laufenden Prozess — vorsichtige, wiederholte Faktorvariation zur kontinuierlichen Prozessverbesserung.",
+    "en": "Small-scale DoE on the running process — cautious, repeated factor variation for continuous improvement."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "**EVOP** (Evolutionary Operation, Box, 1957) ist eine Methode, um in der laufenden Produktion — ohne Produktionsstillstand — kleine, systematische Änderungen der Prozessparameter zu fahren und aus dem Ergebnis auf die beste Einstellung zu schließen. Charakteristisch: sehr kleine {{term:stufe|Stufenweiten}}, hohe {{term:replikat|Replikation}}, keine Ausschussgefahr."
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Klein-Faktoriell** — meist 2² oder 2³ um die aktuelle Prozesseinstellung",
+          "**Enge Stufen** — Änderungen bleiben innerhalb der Spezifikationsgrenzen; Produktqualität bleibt erhalten",
+          "**Wiederholte Zyklen** — nach jedem Zyklus wird der Mittelpunkt zum vermuteten Optimum verschoben, ein neuer Zyklus startet"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "EVOP ist das DoE-Werkzeug der **Control-Phase**: langsame, dauerhafte Optimierung ohne die Risiken eines Groß-Versuchs. Der Preis ist Geschwindigkeit — Erkenntnisse entstehen über Wochen und Monate, nicht in einer Schicht. Moderne Varianten (Simplex-EVOP, Response-Surface-EVOP) automatisieren die Zyklen und passen den Suchpfad adaptiv an."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "**EVOP** (Evolutionary Operation, Box, 1957) is a method for running small, systematic changes to process parameters on the live process — without any production stop — and inferring the best setting from the outcome. Characteristic: very small {{term:stufe|step sizes}}, high {{term:replikat|replication}}, no scrap risk."
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Small factorial** — typically 2² or 2³ around the current process setting",
+          "**Tight levels** — changes stay inside the specification limits; product quality is preserved",
+          "**Repeated cycles** — after each cycle the centre is moved toward the suspected optimum and a new cycle begins"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "EVOP is the DoE tool of the **Control phase**: slow, permanent optimisation without the risks of a big designed experiment. The price is speed — insight builds over weeks and months, not one shift. Modern variants (simplex EVOP, response-surface EVOP) automate the cycles and adapt the search path."
+      }
+    ]
+  },
+  "aliases": {
+    "de": [
+      "Evolutionary Operation",
+      "Evolutionäre Operation"
+    ],
+    "en": [
+      "Evolutionary Operation",
+      "process EVOP"
+    ]
+  },
+  "seeAlso": [
+    "doe",
+    "response-surface",
+    "vollfaktoriell",
+    "zentralpunkt"
+  ],
+  "modules": [
+    "doe-advisor"
+  ],
+  "algoLab": [],
+  "sources": [
+    {
+      "label": "Box, G. E. P. — Evolutionary Operation: A Method for Increasing Industrial Productivity, Applied Statistics, 6(2), 1957",
+      "url": null
+    },
+    {
+      "label": "Box, G. E. P. & Draper, N. R. — Evolutionary Operation: A Statistical Method for Process Improvement, Wiley, 1969",
+      "url": null
+    }
+  ]
+}

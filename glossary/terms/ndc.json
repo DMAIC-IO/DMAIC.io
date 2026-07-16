@@ -1,0 +1,83 @@
+{
+  "id": "ndc",
+  "category": "msa",
+  "title": {
+    "de": "ndc (Anzahl unterscheidbarer Kategorien)",
+    "en": "ndc (Number of Distinct Categories)"
+  },
+  "short": {
+    "de": "Auflösungskennzahl aus {{term:gage-rr|Gage R&R}}: Wie viele Stufen unterscheidet das Messsystem in der Teilespanne?",
+    "en": "Resolution metric from {{term:gage-rr|Gage R&R}}: how many levels the system can tell apart within the part range?"
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "**ndc** (Number of Distinct Categories) misst, wie fein ein Messsystem den Prozess innerhalb der beobachteten Teilespanne auflöst. Der Wert wird direkt aus dem Verhältnis der Teilestreuung zur gesamten Messsystem-Streuung berechnet."
+      },
+      {
+        "type": "formula",
+        "latex": "\\text{ndc} = \\left\\lfloor 1{,}41 \\cdot \\frac{\\sigma_{\\text{Part}}}{\\sigma_{\\text{GRR}}} \\right\\rfloor"
+      },
+      {
+        "type": "paragraph",
+        "text": "Faustregel: **ndc ≥ 5** gilt als akzeptabel. Ein ndc von 3 oder darunter bedeutet: das Messsystem „sieht“ den Prozess nur in drei Stufen — Regelkarten und {{term:teile-variation|Prozessfähigkeitsanalysen}} werden dann grob und unzuverlässig."
+      },
+      {
+        "type": "note",
+        "text": "ndc ist zusammen mit **%GRR** zu lesen: ein System kann 20 % GR&R zeigen und trotzdem ndc = 3 haben, wenn die Teilespanne klein ist. Beide Kennzahlen prüfen unterschiedliche Aspekte — Anteil bzw. Auflösung."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "**ndc** (Number of Distinct Categories) measures how finely a measurement system resolves the process within the observed part range. It is derived directly from the ratio of part variation to total measurement-system variation."
+      },
+      {
+        "type": "formula",
+        "latex": "\\text{ndc} = \\left\\lfloor 1.41 \\cdot \\frac{\\sigma_{\\text{Part}}}{\\sigma_{\\text{GRR}}} \\right\\rfloor"
+      },
+      {
+        "type": "paragraph",
+        "text": "Rule of thumb: **ndc ≥ 5** is considered acceptable. An ndc of 3 or less means the system \"sees\" the process in only three levels — control charts and {{term:teile-variation|capability analyses}} then become coarse and unreliable."
+      },
+      {
+        "type": "note",
+        "text": "ndc must be read together with **%GRR**: a system may report 20% GR&R and still show ndc = 3 when the part range is narrow. The two metrics check different aspects — share vs. resolution."
+      }
+    ]
+  },
+  "aliases": {
+    "de": [
+      "Number of Distinct Categories",
+      "Anzahl unterscheidbarer Kategorien",
+      "Auflösungskennzahl"
+    ],
+    "en": [
+      "distinct categories",
+      "resolution index"
+    ]
+  },
+  "seeAlso": [
+    "gage-rr",
+    "reproduzierbarkeit",
+    "wiederholbarkeit",
+    "teile-variation"
+  ],
+  "modules": [
+    "msa-typ2"
+  ],
+  "algoLab": [
+    "msa/grr"
+  ],
+  "sources": [
+    {
+      "label": "AIAG — Measurement Systems Analysis Reference Manual, 4th Edition (MSA-4), Chapter 4",
+      "url": null
+    },
+    {
+      "label": "Wheeler, D. J. — EMP III: Evaluating the Measurement Process, SPC Press",
+      "url": null
+    }
+  ]
+}
