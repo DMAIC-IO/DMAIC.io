@@ -1,0 +1,248 @@
+{
+  "algorithm_id": "consensus-fallback",
+  "generated_with": {
+    "python": "3.10.12",
+    "scipy": "1.15.3",
+    "numpy": "2.2.6"
+  },
+  "generated_at": "2026-07-16T04:59:30.329505+00:00",
+  "generator_script": "tools/fixture-generator/generate_fixtures.py",
+  "generator_version": "1.0.0",
+  "tolerances": {
+    "default": {
+      "relative": 1e-09,
+      "absolute": 1e-11
+    }
+  },
+  "test_cases": [
+    {
+      "id": "binary-majority",
+      "tier": "standard",
+      "description": "Binary consensus by majority (3 raters per part, no ties)",
+      "inputs": {
+        "variant": "consensus",
+        "type": "binary",
+        "ratings": [
+          {
+            "part": "P1",
+            "value": "ok"
+          },
+          {
+            "part": "P1",
+            "value": "ok"
+          },
+          {
+            "part": "P1",
+            "value": "nok"
+          },
+          {
+            "part": "P2",
+            "value": "nok"
+          },
+          {
+            "part": "P2",
+            "value": "nok"
+          },
+          {
+            "part": "P2",
+            "value": "ok"
+          },
+          {
+            "part": "P3",
+            "value": "ok"
+          },
+          {
+            "part": "P3",
+            "value": "ok"
+          },
+          {
+            "part": "P3",
+            "value": "ok"
+          }
+        ]
+      },
+      "expected": {
+        "consensus": {
+          "P1": "ok",
+          "P2": "nok",
+          "P3": "ok"
+        },
+        "ambiguousParts": []
+      }
+    },
+    {
+      "id": "nominal-majority",
+      "tier": "standard",
+      "description": "3-class nominal consensus by majority",
+      "inputs": {
+        "variant": "consensus",
+        "type": "nominal",
+        "ratings": [
+          {
+            "part": "P1",
+            "value": "A"
+          },
+          {
+            "part": "P1",
+            "value": "A"
+          },
+          {
+            "part": "P1",
+            "value": "B"
+          },
+          {
+            "part": "P2",
+            "value": "B"
+          },
+          {
+            "part": "P2",
+            "value": "C"
+          },
+          {
+            "part": "P2",
+            "value": "C"
+          },
+          {
+            "part": "P3",
+            "value": "A"
+          },
+          {
+            "part": "P3",
+            "value": "B"
+          },
+          {
+            "part": "P3",
+            "value": "C"
+          }
+        ]
+      },
+      "expected": {
+        "consensus": {
+          "P1": "A",
+          "P2": "C"
+        },
+        "ambiguousParts": [
+          "P3"
+        ]
+      }
+    },
+    {
+      "id": "ordinal-median",
+      "tier": "standard",
+      "description": "Ordinal consensus by median (odd count -> unambiguous mid value)",
+      "inputs": {
+        "variant": "consensus",
+        "type": "ordinal",
+        "levels": [
+          "1",
+          "2",
+          "3",
+          "4",
+          "5"
+        ],
+        "ratings": [
+          {
+            "part": "P1",
+            "value": "2"
+          },
+          {
+            "part": "P1",
+            "value": "3"
+          },
+          {
+            "part": "P1",
+            "value": "4"
+          },
+          {
+            "part": "P2",
+            "value": "1"
+          },
+          {
+            "part": "P2",
+            "value": "1"
+          },
+          {
+            "part": "P2",
+            "value": "2"
+          },
+          {
+            "part": "P3",
+            "value": "5"
+          },
+          {
+            "part": "P3",
+            "value": "4"
+          },
+          {
+            "part": "P3",
+            "value": "5"
+          }
+        ]
+      },
+      "expected": {
+        "consensus": {
+          "P1": "3",
+          "P2": "1",
+          "P3": "5"
+        },
+        "ambiguousParts": []
+      }
+    },
+    {
+      "id": "ambiguous-tie",
+      "tier": "edge",
+      "description": "Binary + nominal tie -> part goes to ambiguousParts",
+      "inputs": {
+        "variant": "consensus",
+        "type": "binary",
+        "ratings": [
+          {
+            "part": "P1",
+            "value": "ok"
+          },
+          {
+            "part": "P1",
+            "value": "nok"
+          },
+          {
+            "part": "P2",
+            "value": "ok"
+          },
+          {
+            "part": "P2",
+            "value": "ok"
+          },
+          {
+            "part": "P2",
+            "value": "nok"
+          },
+          {
+            "part": "P2",
+            "value": "nok"
+          },
+          {
+            "part": "P3",
+            "value": "ok"
+          },
+          {
+            "part": "P3",
+            "value": "ok"
+          },
+          {
+            "part": "P3",
+            "value": "nok"
+          }
+        ]
+      },
+      "expected": {
+        "consensus": {
+          "P3": "ok"
+        },
+        "ambiguousParts": [
+          "P1",
+          "P2"
+        ]
+      }
+    }
+  ]
+}

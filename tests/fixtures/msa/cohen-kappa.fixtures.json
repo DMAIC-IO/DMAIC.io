@@ -1,0 +1,209 @@
+{
+  "algorithm_id": "cohen-kappa",
+  "generated_with": {
+    "python": "3.10.12",
+    "scipy": "1.15.3",
+    "numpy": "2.2.6"
+  },
+  "generated_at": "2026-07-16T04:59:26.959472+00:00",
+  "generator_script": "tools/fixture-generator/generate_fixtures.py",
+  "generator_version": "1.0.0",
+  "tolerances": {
+    "default": {
+      "relative": 1e-09,
+      "absolute": 1e-11
+    }
+  },
+  "test_cases": [
+    {
+      "id": "binary-2rater",
+      "tier": "standard",
+      "description": "Cohen kappa, binary attribute (ok/nok), two raters, 30 subjects",
+      "inputs": {
+        "variant": "cohen",
+        "raterA": [
+          "ok",
+          "ok",
+          "nok",
+          "ok",
+          "ok",
+          "nok",
+          "ok",
+          "nok",
+          "ok",
+          "ok",
+          "ok",
+          "ok",
+          "nok",
+          "nok",
+          "ok",
+          "ok",
+          "nok",
+          "ok",
+          "ok",
+          "nok",
+          "ok",
+          "ok",
+          "ok",
+          "nok",
+          "ok",
+          "ok",
+          "ok",
+          "nok",
+          "ok",
+          "ok"
+        ],
+        "raterB": [
+          "ok",
+          "ok",
+          "nok",
+          "ok",
+          "nok",
+          "nok",
+          "ok",
+          "nok",
+          "ok",
+          "ok",
+          "ok",
+          "ok",
+          "nok",
+          "nok",
+          "ok",
+          "ok",
+          "ok",
+          "ok",
+          "ok",
+          "nok",
+          "ok",
+          "ok",
+          "ok",
+          "nok",
+          "nok",
+          "ok",
+          "ok",
+          "nok",
+          "ok",
+          "ok"
+        ],
+        "alpha": 0.05
+      },
+      "expected": {
+        "kappa": 0.7692307692307692,
+        "se": 0.12639751327042292,
+        "ci95": [
+          0.5214961954853167,
+          1.0169653429762215
+        ],
+        "method": "cohen",
+        "confusion": [
+          [
+            8,
+            1
+          ],
+          [
+            2,
+            19
+          ]
+        ],
+        "levels": [
+          "nok",
+          "ok"
+        ]
+      }
+    },
+    {
+      "id": "nominal-3class-2rater",
+      "tier": "standard",
+      "description": "Cohen kappa, 3-class nominal (A/B/C), two raters, 25 subjects",
+      "inputs": {
+        "variant": "cohen",
+        "raterA": [
+          "A",
+          "B",
+          "A",
+          "C",
+          "B",
+          "A",
+          "A",
+          "B",
+          "C",
+          "A",
+          "B",
+          "B",
+          "A",
+          "C",
+          "A",
+          "B",
+          "A",
+          "C",
+          "B",
+          "A",
+          "A",
+          "B",
+          "C",
+          "A",
+          "B"
+        ],
+        "raterB": [
+          "A",
+          "B",
+          "A",
+          "C",
+          "B",
+          "A",
+          "B",
+          "B",
+          "C",
+          "A",
+          "A",
+          "B",
+          "A",
+          "C",
+          "A",
+          "B",
+          "A",
+          "C",
+          "B",
+          "A",
+          "A",
+          "B",
+          "C",
+          "B",
+          "B"
+        ],
+        "alpha": 0.05
+      },
+      "expected": {
+        "kappa": 0.8125,
+        "se": 0.1015504800579495,
+        "ci95": [
+          0.613464716473666,
+          1.011535283526334
+        ],
+        "method": "cohen",
+        "confusion": [
+          [
+            9,
+            2,
+            0
+          ],
+          [
+            1,
+            8,
+            0
+          ],
+          [
+            0,
+            0,
+            5
+          ]
+        ],
+        "levels": [
+          "A",
+          "B",
+          "C"
+        ]
+      }
+    }
+  ]
+}

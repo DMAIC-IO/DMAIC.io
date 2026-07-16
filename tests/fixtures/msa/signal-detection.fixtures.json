@@ -1,0 +1,73 @@
+{
+  "algorithm_id": "signal-detection",
+  "generated_with": {
+    "python": "3.10.12",
+    "scipy": "1.15.3",
+    "numpy": "2.2.6"
+  },
+  "generated_at": "2026-07-16T04:59:29.650744+00:00",
+  "generator_script": "tools/fixture-generator/generate_fixtures.py",
+  "generator_version": "1.0.0",
+  "tolerances": {
+    "default": {
+      "relative": 1e-09,
+      "absolute": 1e-11
+    }
+  },
+  "test_cases": [
+    {
+      "id": "hautus-log-linear",
+      "tier": "standard",
+      "description": "SDT baseline (hits=25/30, fas=3/30) - no edge, no correction",
+      "inputs": {
+        "variant": "sdt",
+        "hits": 25,
+        "fas": 3,
+        "nPos": 30,
+        "nNeg": 30
+      },
+      "expected": {
+        "dPrime": 2.2489731316463013,
+        "criterion": 0.15706499972144966,
+        "hitRate": 0.8333333333333334,
+        "falseAlarmRate": 0.1
+      }
+    },
+    {
+      "id": "edge-hit1",
+      "tier": "edge",
+      "description": "SDT edge case hits = nPos (Hautus log-linear correction applies)",
+      "inputs": {
+        "variant": "sdt",
+        "hits": 30,
+        "fas": 2,
+        "nPos": 30,
+        "nNeg": 30
+      },
+      "expected": {
+        "dPrime": 3.6422840670160435,
+        "criterion": -0.32005608746399694,
+        "hitRate": 0.9838709677419355,
+        "falseAlarmRate": 0.06666666666666667
+      }
+    },
+    {
+      "id": "edge-fa0",
+      "tier": "edge",
+      "description": "SDT edge case fas = 0 (Hautus log-linear correction applies)",
+      "inputs": {
+        "variant": "sdt",
+        "hits": 25,
+        "fas": 0,
+        "nPos": 30,
+        "nNeg": 30
+      },
+      "expected": {
+        "dPrime": 3.1086196870737193,
+        "criterion": 0.5868882774351587,
+        "hitRate": 0.8333333333333334,
+        "falseAlarmRate": 0.016129032258064516
+      }
+    }
+  ]
+}

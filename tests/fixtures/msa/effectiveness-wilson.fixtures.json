@@ -1,0 +1,79 @@
+{
+  "algorithm_id": "effectiveness-wilson",
+  "generated_with": {
+    "python": "3.10.12",
+    "scipy": "1.15.3",
+    "numpy": "2.2.6"
+  },
+  "generated_at": "2026-07-16T04:59:29.007550+00:00",
+  "generator_script": "tools/fixture-generator/generate_fixtures.py",
+  "generator_version": "1.0.0",
+  "tolerances": {
+    "default": {
+      "relative": 1e-09,
+      "absolute": 1e-11
+    }
+  },
+  "test_cases": [
+    {
+      "id": "standard",
+      "tier": "standard",
+      "description": "Effectiveness with Wilson score CI (27 / 30 agreements)",
+      "inputs": {
+        "variant": "effectiveness",
+        "agree": 27,
+        "total": 30,
+        "alpha": 0.05
+      },
+      "expected": {
+        "agree": 27,
+        "total": 30,
+        "rate": 0.9,
+        "ci95": [
+          0.7437891742081593,
+          0.9654001112526658
+        ]
+      }
+    },
+    {
+      "id": "edge-0",
+      "tier": "edge",
+      "description": "Wilson CI at rate = 0 (0 / 30 agreements)",
+      "inputs": {
+        "variant": "effectiveness",
+        "agree": 0,
+        "total": 30,
+        "alpha": 0.05
+      },
+      "expected": {
+        "agree": 0,
+        "total": 30,
+        "rate": 0.0,
+        "ci95": [
+          0.0,
+          0.11351339317396876
+        ]
+      }
+    },
+    {
+      "id": "edge-N",
+      "tier": "edge",
+      "description": "Wilson CI at rate = 1 (30 / 30 agreements)",
+      "inputs": {
+        "variant": "effectiveness",
+        "agree": 30,
+        "total": 30,
+        "alpha": 0.05
+      },
+      "expected": {
+        "agree": 30,
+        "total": 30,
+        "rate": 1.0,
+        "ci95": [
+          0.8864866068260312,
+          0.9999999999999999
+        ]
+      }
+    }
+  ]
+}

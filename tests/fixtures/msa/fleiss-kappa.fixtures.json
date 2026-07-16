@@ -1,0 +1,278 @@
+{
+  "algorithm_id": "fleiss-kappa",
+  "generated_with": {
+    "python": "3.10.12",
+    "scipy": "1.15.3",
+    "numpy": "2.2.6"
+  },
+  "generated_at": "2026-07-16T05:00:01.654194+00:00",
+  "generator_script": "tools/fixture-generator/generate_fixtures.py",
+  "generator_version": "1.0.0",
+  "tolerances": {
+    "default": {
+      "relative": 1e-09,
+      "absolute": 1e-11
+    }
+  },
+  "test_cases": [
+    {
+      "id": "3rater-balanced",
+      "tier": "standard",
+      "description": "Fleiss kappa, 25 subjects x 3 raters, binary ok/nok (balanced -> fleiss-1971)",
+      "inputs": {
+        "variant": "fleiss",
+        "ratings": [
+          [
+            "ok",
+            "ok",
+            "ok"
+          ],
+          [
+            "ok",
+            "ok",
+            "nok"
+          ],
+          [
+            "nok",
+            "nok",
+            "nok"
+          ],
+          [
+            "ok",
+            "ok",
+            "ok"
+          ],
+          [
+            "ok",
+            "nok",
+            "ok"
+          ],
+          [
+            "nok",
+            "nok",
+            "nok"
+          ],
+          [
+            "ok",
+            "ok",
+            "ok"
+          ],
+          [
+            "nok",
+            "nok",
+            "nok"
+          ],
+          [
+            "ok",
+            "ok",
+            "ok"
+          ],
+          [
+            "ok",
+            "ok",
+            "ok"
+          ],
+          [
+            "ok",
+            "ok",
+            "ok"
+          ],
+          [
+            "ok",
+            "ok",
+            "ok"
+          ],
+          [
+            "nok",
+            "nok",
+            "ok"
+          ],
+          [
+            "nok",
+            "nok",
+            "nok"
+          ],
+          [
+            "ok",
+            "ok",
+            "ok"
+          ],
+          [
+            "ok",
+            "ok",
+            "ok"
+          ],
+          [
+            "nok",
+            "ok",
+            "ok"
+          ],
+          [
+            "ok",
+            "ok",
+            "ok"
+          ],
+          [
+            "ok",
+            "ok",
+            "ok"
+          ],
+          [
+            "nok",
+            "nok",
+            "nok"
+          ],
+          [
+            "ok",
+            "ok",
+            "ok"
+          ],
+          [
+            "ok",
+            "ok",
+            "ok"
+          ],
+          [
+            "ok",
+            "ok",
+            "ok"
+          ],
+          [
+            "nok",
+            "nok",
+            "nok"
+          ],
+          [
+            "ok",
+            "ok",
+            "nok"
+          ]
+        ],
+        "alpha": 0.05
+      },
+      "expected": {
+        "kappa": 0.6936274509803919,
+        "se": 0.1458578410779536,
+        "ci95": [
+          0.407751335604836,
+          0.9795035663559478
+        ],
+        "method": "fleiss-1971"
+      }
+    },
+    {
+      "id": "3rater-unbalanced-randolph",
+      "tier": "standard",
+      "description": "Fleiss kappa, unbalanced (2-3 raters per subject) -> Randolph",
+      "inputs": {
+        "variant": "fleiss",
+        "ratings": [
+          [
+            "ok",
+            "ok",
+            "ok"
+          ],
+          [
+            "ok",
+            "nok"
+          ],
+          [
+            "nok",
+            "nok",
+            "nok"
+          ],
+          [
+            "ok",
+            "ok"
+          ],
+          [
+            "ok",
+            "nok",
+            "ok"
+          ],
+          [
+            "nok",
+            "nok",
+            "nok"
+          ],
+          [
+            "ok",
+            "ok"
+          ],
+          [
+            "nok",
+            "nok",
+            "nok"
+          ],
+          [
+            "ok",
+            "ok",
+            "ok"
+          ],
+          [
+            "ok",
+            "ok",
+            "ok"
+          ],
+          [
+            "ok",
+            "ok",
+            "ok"
+          ],
+          [
+            "ok",
+            "ok"
+          ],
+          [
+            "nok",
+            "ok",
+            "ok"
+          ],
+          [
+            "nok",
+            "nok",
+            "nok"
+          ],
+          [
+            "ok",
+            "ok",
+            "ok"
+          ],
+          [
+            "ok",
+            "ok"
+          ],
+          [
+            "nok",
+            "ok",
+            "ok"
+          ],
+          [
+            "ok",
+            "ok",
+            "ok"
+          ],
+          [
+            "ok",
+            "ok"
+          ],
+          [
+            "nok",
+            "nok",
+            "nok"
+          ]
+        ],
+        "alpha": 0.05
+      },
+      "expected": {
+        "kappa": 0.7,
+        "se": "NaN",
+        "ci95": [
+          "NaN",
+          "NaN"
+        ],
+        "method": "randolph"
+      }
+    }
+  ]
+}
