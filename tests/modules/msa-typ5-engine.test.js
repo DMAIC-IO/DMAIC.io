@@ -5,7 +5,7 @@
  */
 
 import { suite, test, assert, assertClose } from '../test-utils.js';
-import { validate, ERR, WARN, cohenKappa, fleissKappa } from '../../js/engines/msa-typ5-engine.js';
+import { validate, ERR, WARN, cohenKappa, fleissKappa, wilsonCI, effectiveness, missAndFA } from '../../js/engines/msa-typ5-engine.js';
 
 // Fixture-Loader — löst relativ zur eigenen JS-URL auf, damit
 // runner.html-Pfad (../fixtures/...) das richtige Verzeichnis erreicht.
@@ -161,5 +161,85 @@ suite('msa-typ5-engine — fleissKappa', () => {
     assertClose(r.se, c.expected.se, 1e-9);
     assertClose(r.ci95[0], c.expected.ci95[0], 1e-9);
     assertClose(r.ci95[1], c.expected.ci95[1], 1e-9);
+  });
+});
+
+// ─── wilsonCI ────────────────────────────────────────────────
+
+suite('msa-typ5-engine — wilsonCI', () => {
+  test('standard matcht statsmodels', async () => {
+    const fx = await loadFixture('effectiveness-wilson');
+    const c = fx.test_cases.find(x => x.id === 'standard');
+    const r = wilsonCI(c.inputs.agree, c.inputs.total, 0.05);
+    assertClose(r.rate, c.expected.rate, 1e-9);
+    assertClose(r.ci95[0], c.expected.ci95[0], 1e-6);
+    assertClose(r.ci95[1], c.expected.ci95[1], 1e-6);
+  });
+
+  test('edge-0 → lo = 0, hi ∈ (0, 1), keine NaN', async () => {
+    const fx = await loadFixture('effectiveness-wilson');
+    const c = fx.test_cases.find(x => x.id === 'edge-0');
+    const r = wilsonCI(c.inputs.agree, c.inputs.total, 0.05);
+    assert(r.rate === 0);
+    assert(r.ci95[0] >= 0 && r.ci95[1] <= 1);
+    assert(Number.isFinite(r.ci95[0]) && Number.isFinite(r.ci95[1]));
+    assertClose(r.ci95[1], c.expected.ci95[1], 1e-6);
+  });
+
+  test('edge-N → hi = 1', async () => {
+    const fx = await loadFixture('effectiveness-wilson');
+    const c = fx.test_cases.find(x => x.id === 'edge-N');
+    const r = wilsonCI(c.inputs.agree, c.inputs.total, 0.05);
+    assertClose(r.ci95[0], c.expected.ci95[0], 1e-6);
+    // Wilson clamped auf 1
+    assert(r.ci95[1] <= 1);
+    assert(r.ci95[1] > 0.99);
+  });
+});
+
+// ─── effectiveness / missAndFA ───────────────────────────────
+
+suite('msa-typ5-engine — effectiveness', () => {
+  test('perfekter Prüfer → rate = 1', () => {
+    const ratings = [
+      { part: 1, appraiser: 'A', rep: 1, value: 'ok' },
+      { part: 2, appraiser: 'A', rep: 1, value: 'nok' },
+      { part: 3, appraiser: 'A', rep: 1, value: 'ok' },
+    ];
+    const refs = { 1: 'ok', 2: 'nok', 3: 'ok' };
+    const r = effectiveness(ratings, refs, { alpha: 0.05 });
+    assertClose(r.perAppraiser.A.rate, 1.0, 1e-12);
+    assert(r.perAppraiser.A.agree === 3 && r.perAppraiser.A.total === 3);
+  });
+
+  test('ambiguousParts wird ausgeschlossen', () => {
+    const ratings = [
+      { part: 1, appraiser: 'A', rep: 1, value: 'ok' },   // ambig
+      { part: 1, appraiser: 'A', rep: 2, value: 'nok' },  // ambig
+      { part: 2, appraiser: 'A', rep: 1, value: 'nok' },
+    ];
+    const refs = { 2: 'nok' };
+    const r = effectiveness(ratings, refs, { alpha: 0.05, ambiguousParts: [1] });
+    assert(r.perAppraiser.A.total === 1);
+    assert(r.perAppraiser.A.agree === 1);
+  });
+});
+
+suite('msa-typ5-engine — missAndFA', () => {
+  test('miss/fa/bias korrekt (Konvention pos=levels[0])', () => {
+    // ref=ok (pos): Bewertung nok → FA
+    // ref=nok (neg): Bewertung ok → Miss
+    const ratings = [
+      { part: 1, appraiser: 'A', rep: 1, value: 'ok' },   // ref=ok  → TP
+      { part: 2, appraiser: 'A', rep: 1, value: 'nok' },  // ref=ok  → FA
+      { part: 3, appraiser: 'A', rep: 1, value: 'ok' },   // ref=nok → Miss
+      { part: 4, appraiser: 'A', rep: 1, value: 'nok' },  // ref=nok → TN
+    ];
+    const refs = { 1: 'ok', 2: 'ok', 3: 'nok', 4: 'nok' };
+    const r = missAndFA(ratings, refs, { positive: 'ok', alpha: 0.05 });
+    // Miss = 1/2 (bei ref=nok gab es 1 mal ok)
+    assertClose(r.perAppraiser.A.missRate.rate,       0.5, 1e-12);
+    assertClose(r.perAppraiser.A.falseAlarmRate.rate, 0.5, 1e-12);
+    assertClose(r.perAppraiser.A.biasRate.value,      0.0, 1e-12);
   });
 });

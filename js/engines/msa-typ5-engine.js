@@ -228,3 +228,84 @@ export function fleissKappa(byPart, opts) {
   }
   return { kappa, se, ci95, method };
 }
+
+/**
+ * Wilson-Score-Konfidenzintervall für einen Anteil.
+ * Randfall-sicher: k=0 → [0, obere Grenze], k=N → [untere Grenze, 1], n=0 → [0, 0].
+ * @param {number} k Erfolge.
+ * @param {number} n Versuche.
+ * @param {number} alpha Signifikanzniveau (Default 0.05).
+ * @returns {{rate: number, ci95: [number, number]}}
+ */
+export function wilsonCI(k, n, alpha = 0.05) {
+  if (n === 0) return { rate: 0, ci95: [0, 0] };
+  const z = zQuantile(1 - alpha / 2);
+  const p = k / n;
+  const denom = 1 + (z * z) / n;
+  const centre = (p + (z * z) / (2 * n)) / denom;
+  const half = z * Math.sqrt(p * (1 - p) / n + (z * z) / (4 * n * n)) / denom;
+  return { rate: p, ci95: [Math.max(0, centre - half), Math.min(1, centre + half)] };
+}
+
+/**
+ * Effektivität je Prüfer: Anteil Bewertungen, die mit der Referenz übereinstimmen.
+ * Teile in `opts.ambiguousParts` werden übersprungen.
+ * @param {Array<{part, appraiser, rep, value}>} ratings
+ * @param {Object<any, any>} references {[part]: value}
+ * @param {object} opts {alpha, ambiguousParts?}
+ * @returns {{perAppraiser: Object<string, {agree:number, total:number, rate:number, ci95:[number,number]}>}}
+ */
+export function effectiveness(ratings, references, opts) {
+  const ambig = new Set(opts.ambiguousParts || []);
+  const per = {};
+  for (const r of ratings) {
+    if (ambig.has(r.part) || references[r.part] === undefined) continue;
+    if (!per[r.appraiser]) per[r.appraiser] = { agree: 0, total: 0 };
+    per[r.appraiser].total++;
+    if (r.value === references[r.part]) per[r.appraiser].agree++;
+  }
+  const out = {};
+  for (const [a, { agree, total }] of Object.entries(per)) {
+    const w = wilsonCI(agree, total, opts.alpha);
+    out[a] = { agree, total, rate: w.rate, ci95: w.ci95 };
+  }
+  return { perAppraiser: out };
+}
+
+/**
+ * Miss-Rate, False-Alarm-Rate und Bias je Prüfer — nur binär mit Referenz.
+ * Konvention (Spec §4): positiv = levels[0].
+ *   miss = P(rating = pos | ref = neg)   — n.i.O. als i.O. eingestuft.
+ *   fa   = P(rating = neg | ref = pos)   — i.O. als n.i.O. eingestuft.
+ *   bias = miss − fa                     — > 0: zu tolerant.
+ * Teile in `opts.ambiguousParts` werden übersprungen.
+ * @param {Array} ratings
+ * @param {Object} references
+ * @param {object} opts {positive, alpha, ambiguousParts?}
+ * @returns {{perAppraiser: Object<string, {missRate, falseAlarmRate, biasRate}>}}
+ */
+export function missAndFA(ratings, references, opts) {
+  const { positive, alpha } = opts;
+  const ambig = new Set(opts.ambiguousParts || []);
+  const per = {};
+  for (const r of ratings) {
+    if (ambig.has(r.part) || references[r.part] === undefined) continue;
+    const key = r.appraiser;
+    if (!per[key]) per[key] = { missNum: 0, missDen: 0, faNum: 0, faDen: 0 };
+    const refPos = references[r.part] === positive;
+    const ratPos = r.value === positive;
+    if (!refPos) { per[key].missDen++; if (ratPos)  per[key].missNum++; }
+    if (refPos)  { per[key].faDen++;   if (!ratPos) per[key].faNum++;   }
+  }
+  const out = {};
+  for (const [a, v] of Object.entries(per)) {
+    const miss = wilsonCI(v.missNum, v.missDen, alpha);
+    const fa   = wilsonCI(v.faNum,   v.faDen,   alpha);
+    out[a] = {
+      missRate:       { rate: miss.rate, ci95: miss.ci95 },
+      falseAlarmRate: { rate: fa.rate,   ci95: fa.ci95   },
+      biasRate:       { value: miss.rate - fa.rate },
+    };
+  }
+  return { perAppraiser: out };
+}
