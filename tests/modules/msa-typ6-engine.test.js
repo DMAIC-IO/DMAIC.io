@@ -142,3 +142,18 @@ suite('msa-typ6-engine — analyze (Nelson-Regel-Aggregation)', () => {
     assert(bothRules, 'expected at least one point with both rule 5 and rule 6 triggered');
   });
 });
+
+suite('msa-typ6-engine — analyze (Drift-Test)', () => {
+  test('imr-drift: slope and pValue match fixture', () => {
+    const c = CASE('imr-drift');
+    const r = analyze(c.inputs);
+    assertClose(r.drift.slope, c.expected.drift.slope, 1e-6, `slope: ${r.drift.slope} vs ${c.expected.drift.slope}`);
+    assertClose(r.drift.pValue, c.expected.drift.pValue, 1e-6, `pValue: ${r.drift.pValue} vs ${c.expected.drift.pValue}`);
+  });
+
+  test('imr-stable: drift pValue >= alpha', () => {
+    const c = CASE('imr-stable');
+    const r = analyze(c.inputs);
+    assert(r.drift.pValue >= c.inputs.alpha, `stable case should not detect drift: pValue=${r.drift.pValue}`);
+  });
+});

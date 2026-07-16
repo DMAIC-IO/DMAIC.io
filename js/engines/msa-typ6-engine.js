@@ -14,6 +14,7 @@ import {
   SPC_CONSTANTS, computeIMR, computeXbarR, evaluateNelsonRules,
   DEFAULT_ENABLED_RULES, NELSON_RULES,
 } from './control-chart-engine.js';
+import { tPValue, tInv } from './math-utils.js';
 
 const VALID_ALPHAS = new Set([0.01, 0.05, 0.10]);
 const VALID_CHART_TYPES = new Set(['i-mr', 'xbar-r']);
@@ -201,9 +202,50 @@ function _timeAxis(inputs, limits) {
 }
 
 /**
+ * Drift-Test: einfache lineare Regression des Primär-Kennwerts über die
+ * Zeitachse `t`, gefolgt von einem zweiseitigen t-Test auf β₁ = 0
+ * (Spec § 4). Formeln decken sich mit `scipy.stats.linregress` — Referenz
+ * für den Fixture-Generator.
+ * @param {number[]} y — Primär-Serie (i-Werte bzw. x̄-Werte)
+ * @param {number[]} t — Zeitachse, siehe {@link _timeAxis}
+ * @param {number} alpha — Signifikanzniveau (0.01 | 0.05 | 0.10)
+ * @param {string} tScale — 'timestamp', falls die Zeitachse aus echten
+ *   Timestamps stammt, sonst 'index' (1..N Punkt-Reihenfolge)
+ * @returns {{slope:number, se:number, tStat:number, df:number, pValue:number,
+ *   ciSlope:[number,number], intercept:number, slopeUnit:string, tScale:string}}
+ */
+function _driftTest(y, t, alpha, tScale) {
+  const N = y.length;
+  const tBar = t.reduce((a, b) => a + b, 0) / N;
+  const yBar = y.reduce((a, b) => a + b, 0) / N;
+  let Stt = 0, Sty = 0;
+  for (let i = 0; i < N; i++) {
+    Stt += (t[i] - tBar) ** 2;
+    Sty += (t[i] - tBar) * (y[i] - yBar);
+  }
+  const slope = Stt > 0 ? Sty / Stt : 0;
+  const intercept = yBar - slope * tBar;
+  let rss = 0;
+  for (let i = 0; i < N; i++) rss += (y[i] - intercept - slope * t[i]) ** 2;
+  const df = N - 2;
+  const s2 = df > 0 ? rss / df : 0;
+  const se = Stt > 0 ? Math.sqrt(s2 / Stt) : 0;
+  const tStat = se > 0 ? slope / se : 0;
+  const pValue = df > 0 ? tPValue(tStat, df) : 1;
+  const tCrit = df > 0 ? tInv(1 - alpha / 2, df) : 0;
+  return {
+    slope, se, tStat, df, pValue,
+    ciSlope: [slope - tCrit * se, slope + tCrit * se],
+    intercept,
+    slopeUnit: 'unit/point', // v1.1: unit/day|week|month, falls Zeitachse aus echten Timestamps skaliert wird
+    tScale,
+  };
+}
+
+/**
  * Analyze stability data (I-MR or Xbar-R) for MSA Typ 6.
  * Grenzen-Berechnung (from-study + given) und Nelson-Regel-Aggregation
- * landen hier; Drift-Test und Verdict/Ampel folgen in Tasks 5–6.
+ * landen hier, ebenso der Drift-Test; Verdict/Ampel folgen in Task 6.
  * @param {object} inputs see validate()
  * @returns {object} throws Error(code) on invalid input
  */
@@ -229,6 +271,8 @@ export function analyze(inputs) {
       primaryIndex: i, time: timestamps[i], value: limits.primary.series[i],
       ruleIds: [...rules].sort((a, b) => a - b),
     }));
+  const tScale = Array.isArray(inputs.timestamps) ? 'timestamp' : 'index';
+  const drift = _driftTest(limits.primary.series, timestamps, inputs.alpha, tScale);
 
   return {
     meta: {
@@ -238,7 +282,7 @@ export function analyze(inputs) {
     },
     primary:   { ...limits.primary, label: inputs.chartType === 'i-mr' ? 'i' : 'xbar', violations: primaryViolations },
     secondary: { ...limits.secondary, label: inputs.chartType === 'i-mr' ? 'MR' : 'R' },
-    drift: null,           // Task 5
+    drift,
     ruleViolations,
     verdict: null,         // Task 6
     interpretation: null,  // Task 6
