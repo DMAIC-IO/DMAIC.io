@@ -1,0 +1,248 @@
+<div class="module-msa-typ5 dmike-split" x-data="msaTyp5">
+  <div class="dmike-split__input">
+    <div class="dmike-split__section-title" x-text="t('sections.feature')"></div>
+
+    <fieldset class="msa-typ5__radios">
+      <legend x-text="t('labels.type')"></legend>
+      <label>
+        <input type="radio" name="msa5-type" value="binary"
+               x-model="model.params.type" @change="onTypeChanged()">
+        <span x-text="t('labels.typeBinary')"></span>
+      </label>
+      <label>
+        <input type="radio" name="msa5-type" value="nominal"
+               x-model="model.params.type" @change="onTypeChanged()">
+        <span x-text="t('labels.typeNominal')"></span>
+      </label>
+      <label>
+        <input type="radio" name="msa5-type" value="ordinal"
+               x-model="model.params.type" @change="onTypeChanged()">
+        <span x-text="t('labels.typeOrdinal')"></span>
+      </label>
+    </fieldset>
+
+    <fieldset class="msa-typ5__radios" :class="weightsHiddenClass()">
+      <legend x-text="t('labels.weights')"></legend>
+      <label>
+        <input type="radio" name="msa5-weights" value="linear"
+               x-model="model.params.weights" @change="runAnalysis()">
+        <span x-text="t('labels.weightsLinear')"></span>
+      </label>
+      <label>
+        <input type="radio" name="msa5-weights" value="quadratic"
+               x-model="model.params.weights" @change="runAnalysis()">
+        <span x-text="t('labels.weightsQuadratic')"></span>
+      </label>
+    </fieldset>
+
+    <div class="dmike-split__section-title" x-text="t('sections.dataSource')"></div>
+
+    <div class="field-group">
+      <label x-text="t('labels.partColumn')"></label>
+      <div data-ref="col-part-wrap"></div>
+    </div>
+    <div class="field-group">
+      <label x-text="t('labels.appraiserColumn')"></label>
+      <div data-ref="col-appraiser-wrap"></div>
+    </div>
+    <div class="field-group">
+      <label x-text="t('labels.ratingColumn')"></label>
+      <div data-ref="col-rating-wrap"></div>
+    </div>
+    <div class="field-group">
+      <label x-text="t('labels.referenceColumn')"></label>
+      <div data-ref="col-reference-wrap"></div>
+    </div>
+    <div class="field-group">
+      <label x-text="t('labels.replicateColumn')"></label>
+      <div data-ref="col-replicate-wrap"></div>
+    </div>
+
+    <div class="dmike-split__section-title" x-text="t('labels.detectedLevels')"></div>
+    <div class="msa-typ5__levels" data-ref="levels-panel">
+      <template x-if="!detectedLevels().length">
+        <span class="msa-typ5__levels-hint">—</span>
+      </template>
+      <template x-if="model.params.type === 'binary' && detectedLevels().length">
+        <span class="msa-typ5__level msa-typ5__level--pos" title="i.O.">i.O. = <span x-text="binaryPositive()"></span></span>
+      </template>
+      <template x-if="model.params.type === 'binary' && detectedLevels().length">
+        <span class="msa-typ5__level msa-typ5__level--neg" title="n.i.O.">n.i.O. = <span x-text="binaryNegative()"></span></span>
+      </template>
+      <template x-if="model.params.type === 'binary' && detectedLevels().length">
+        <button type="button" class="dmike-btn dmike-btn--secondary msa-typ5__swap"
+                data-ref="btn-swap" @click="swapPositive()"
+                x-text="t('labels.positiveSwap')"></button>
+      </template>
+      <template x-if="model.params.type !== 'binary' && detectedLevels().length">
+        <template x-for="lvl in detectedLevels()">
+          <span class="msa-typ5__level" :key="lvl" x-text="lvl"></span>
+        </template>
+      </template>
+      <template x-if="model.params.type === 'ordinal' && detectedLevels().length">
+        <div class="msa-typ5__levels-hint" x-text="t('ordinalHint')"></div>
+      </template>
+    </div>
+
+    <div class="dmike-split__section-title" x-text="t('sections.evaluation')"></div>
+
+    <div class="field-group">
+      <label x-text="t('labels.alpha')"></label>
+      <select class="field" data-ref="sel-alpha"
+              x-model="model.params.alpha" @change="runAnalysis()">
+        <option value="0.01">0.01</option>
+        <option value="0.05">0.05</option>
+        <option value="0.10">0.10</option>
+      </select>
+    </div>
+
+    <div class="field-group">
+      <label x-text="t('labels.referenceSource')"></label>
+      <output class="msa-typ5__ref-source" data-ref="ref-source" x-text="referenceSourceLabel()"></output>
+    </div>
+  </div>
+
+  <main class="dmike-split__output" data-ref="output">
+    <template x-if="!result || !result.verdict">
+      <div class="module-msa-typ5__empty" x-text="emptyStateText()"></div>
+    </template>
+
+    <template x-if="result && result.verdict">
+      <div>
+        <!-- Verdikt-Header -->
+        <div class="msa-typ5__verdict-header" :class="verdictClass(result.verdict.level)">
+          <div class="msa-typ5__verdict-dot"></div>
+          <div class="msa-typ5__verdict-text">
+            <strong x-text="verdictLabel(result.verdict.level)"></strong>
+            <span x-text="verdictSubline()"></span>
+          </div>
+        </div>
+
+        <!-- Warnungen -->
+        <template x-for="(w, wi) in warningEntries()">
+          <div class="msa-typ5__warn" :key="wi" x-text="w"></div>
+        </template>
+
+        <!-- KPI-Strip -->
+        <div class="dmike-kpi-strip">
+          <div class="dmike-kpi" :class="verdictClass(result.verdict.level)">
+            <div class="dmike-kpi-label" x-text="t('kpi.fleissKappa')"></div>
+            <div class="dmike-kpi-value" x-text="fmt(fleissKappa(), 3)"></div>
+            <div class="dmike-kpi-sub" x-text="fleissMethod()"></div>
+          </div>
+          <div class="dmike-kpi">
+            <div class="dmike-kpi-label" x-text="t('kpi.repeatability')"></div>
+            <div class="dmike-kpi-value" x-text="fmtPct(meanRepeatability())"></div>
+          </div>
+          <div class="dmike-kpi">
+            <div class="dmike-kpi-label" x-text="t('kpi.effectiveness')"></div>
+            <div class="dmike-kpi-value" x-text="fmtPct(meanEffectiveness())"></div>
+          </div>
+          <div class="dmike-kpi">
+            <div class="dmike-kpi-label" x-text="t('kpi.kappaVsRef')"></div>
+            <div class="dmike-kpi-value" x-text="fmt(meanKappaVsRef(), 3)"></div>
+          </div>
+        </div>
+
+        <!-- Interpretation -->
+        <div class="msa-typ5__interp" :class="verdictClass(result.verdict.level)"
+             x-text="interpretationText()"></div>
+
+        <!-- Prüfer-Tabelle -->
+        <div class="dmike-split__output-section" x-text="t('table.appraiser')"></div>
+        <table class="dmike-table msa-typ5__table">
+          <thead><tr>
+            <th x-text="t('table.appraiser')"></th>
+            <th x-text="t('table.repeatability')"></th>
+            <th x-text="t('table.effectiveness')"></th>
+            <th x-text="t('table.missRate')"></th>
+            <th x-text="t('table.falseAlarmRate')"></th>
+            <th x-text="t('table.biasRate')"></th>
+          </tr></thead>
+          <tbody>
+            <template x-for="row in perAppraiserRows()">
+              <tr :key="row.id">
+                <td x-text="row.id"></td>
+                <td x-text="row.repeatability"></td>
+                <td x-text="row.effectiveness"></td>
+                <td x-text="row.missRate"></td>
+                <td x-text="row.falseAlarmRate"></td>
+                <td x-text="row.biasRate"></td>
+              </tr>
+            </template>
+          </tbody>
+        </table>
+
+        <!-- Prüferpaar-Tabelle -->
+        <div class="dmike-split__output-section" x-text="pairTableTitle()"></div>
+        <table class="dmike-table msa-typ5__table">
+          <thead><tr>
+            <th x-text="t('table.pair')"></th>
+            <th x-text="t('table.cohenKappa')"></th>
+            <th x-text="t('table.ci95')"></th>
+            <th x-text="t('table.verdict')"></th>
+          </tr></thead>
+          <tbody>
+            <template x-for="row in pairRows()">
+              <tr :key="row.pair">
+                <td x-text="row.pairLabel"></td>
+                <td x-text="row.kappa"></td>
+                <td x-text="row.ci95"></td>
+                <td><span class="msa-typ5__ampel" :class="row.ampelClass"></span></td>
+              </tr>
+            </template>
+          </tbody>
+        </table>
+
+        <!-- κ vs. Referenz (nur wenn Referenz vorhanden) -->
+        <template x-if="vsRefRows().length">
+          <div>
+            <div class="dmike-split__output-section" x-text="t('table.vsReference')"></div>
+            <table class="dmike-table msa-typ5__table">
+              <thead><tr>
+                <th x-text="t('table.appraiser')"></th>
+                <th>κ</th>
+                <th x-text="t('table.ci95')"></th>
+                <th x-text="t('table.verdict')"></th>
+              </tr></thead>
+              <tbody>
+                <template x-for="row in vsRefRows()">
+                  <tr :key="row.id">
+                    <td x-text="row.id"></td>
+                    <td x-text="row.kappa"></td>
+                    <td x-text="row.ci95"></td>
+                    <td><span class="msa-typ5__ampel" :class="row.ampelClass"></span></td>
+                  </tr>
+                </template>
+              </tbody>
+            </table>
+          </div>
+        </template>
+
+        <!-- κ-Bar Chart -->
+        <div class="dmike-split__output-section" x-text="t('charts.kappaBar')"></div>
+        <div class="msa-typ5__chart" data-ref="chart-kappa-bar"></div>
+
+        <!-- Effektivitäts-Bar -->
+        <template x-if="hasEffectivenessChart()">
+          <div>
+            <div class="dmike-split__output-section" x-text="t('charts.effectivenessBar')"></div>
+            <div class="msa-typ5__chart" data-ref="chart-eff-bar"></div>
+          </div>
+        </template>
+
+        <!-- SDT-Scatter (nur binär mit Referenz) -->
+        <template x-if="hasSdtChart()">
+          <div>
+            <div class="dmike-split__output-section" x-text="t('charts.sdtScatter')"></div>
+            <div class="msa-typ5__chart" data-ref="chart-sdt"></div>
+          </div>
+        </template>
+
+        <!-- Confusion-Heatmap-Grid (Zellen + Charts imperativ befüllt) -->
+        <div class="dmike-split__output-section" x-text="t('charts.confusion')"></div>
+        <div class="msa-typ5__heatmap-grid" data-ref="chart-heatmaps"></div>
+      </div>
+    </template>
+  </main>
+</div>
