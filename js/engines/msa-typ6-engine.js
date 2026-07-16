@@ -1,5 +1,5 @@
 /**
- * DMAIC.io — MSA Typ 6 Engine (msa-typ6-engine.js)
+ * D.Mike — MSA Typ 6 Engine (msa-typ6-engine.js)
  * Measure phase: Stabilität / Langzeitverhalten.
  *
  * Dünner Wrapper um control-chart-engine.js: nutzt SPC_CONSTANTS,
@@ -129,7 +129,9 @@ function _computeLimits(inputs) {
     if (limitsMode === 'given') {
       const cl = mu0, sigma = sigma0;
       const ucl = cl + 3 * sigma, lcl = cl - 3 * sigma;
-      const mrCl = 1.128 * sigma, mrUcl = 3.267 * mrCl, mrLcl = 0;
+      const mrCl = SPC_CONSTANTS.d2[2] * sigma;
+      const mrUcl = SPC_CONSTANTS.D4[2] * mrCl;
+      const mrLcl = SPC_CONSTANTS.D3[2] * mrCl; // 0.000 for n=2 but consistent
       const secondary = values.map((v, i) => (i === 0 ? null : Math.abs(v - values[i - 1])));
       return {
         chartType, n: 1,

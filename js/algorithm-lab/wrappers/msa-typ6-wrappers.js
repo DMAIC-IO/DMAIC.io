@@ -1,5 +1,5 @@
 /**
- * DMAIC.io — MSA Typ 6 Algorithm-Lab-Wrapper (msa-typ6-wrappers.js)
+ * D.Mike — MSA Typ 6 Algorithm-Lab-Wrapper (msa-typ6-wrappers.js)
  *
  * Dünner Adapter zwischen der Fixture-/Try-It-Input-Shape (identisch mit
  * der `analyze()`-Signatur in `js/engines/msa-typ6-engine.js`) und dem
