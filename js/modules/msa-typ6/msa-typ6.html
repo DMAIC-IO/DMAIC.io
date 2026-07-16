@@ -2,7 +2,156 @@
   <div class="dmike-split__input">
     <div class="dmike-split__section-title" x-text="t('name')"></div>
     <p class="module-msa-typ6__hint" x-text="t('emptyHint')"></p>
-    <!-- Task 8: Input-Controls (Merkmalsname/Einheit, Kartentyp, Column-Picker, Grenzen-Modus, Nelson-Regeln, α) -->
+
+    <!-- Merkmal -->
+    <div class="field-row">
+      <div class="field-group field-group--major">
+        <label x-text="t('input.measurementName')"></label>
+        <input type="text" class="field" data-ref="inp-measurement-name"
+               placeholder="z. B. Wellendurchmesser"
+               x-model="model.params.measurementName" @input="_analyzeNow()">
+      </div>
+      <div class="field-group field-group--minor">
+        <label x-text="t('input.unit')"></label>
+        <input type="text" class="field" data-ref="inp-unit"
+               placeholder="mm"
+               x-model="model.params.unit" @input="_analyzeNow()">
+      </div>
+    </div>
+
+    <!-- Kartentyp -->
+    <fieldset class="module-msa-typ6__radios">
+      <legend x-text="t('input.chartType')"></legend>
+      <label>
+        <input type="radio" name="msa-typ6-chartType" value="i-mr"
+               x-model="model.params.chartType" @change="_analyzeNow()">
+        <span x-text="t('input.chartTypeImr')"></span>
+      </label>
+      <label>
+        <input type="radio" name="msa-typ6-chartType" value="xbar-r"
+               x-model="model.params.chartType" @change="_analyzeNow()">
+        <span x-text="t('input.chartTypeXbarR')"></span>
+      </label>
+    </fieldset>
+
+    <!-- Datenquelle -->
+    <div class="dmike-split__section-title" x-text="t('sections.dataSource')"></div>
+
+    <div class="field-group">
+      <label x-text="t('input.timestampColumn')"></label>
+      <div data-ref="col-picker-timestamp"></div>
+    </div>
+    <div class="field-group">
+      <label x-text="t('input.valueColumn')"></label>
+      <div data-ref="col-picker-value"></div>
+    </div>
+    <div class="field-group" data-ref="group-subgroup-picker"
+         x-show="model.params.chartType === 'xbar-r'">
+      <label x-text="t('input.subgroupColumn')"></label>
+      <div data-ref="col-picker-subgroup"></div>
+    </div>
+
+    <!-- Grenzen-Modus -->
+    <div class="dmike-split__section-title" x-text="t('sections.limits')"></div>
+
+    <fieldset class="module-msa-typ6__radios">
+      <legend x-text="t('input.limitsMode')"></legend>
+      <label>
+        <input type="radio" name="msa-typ6-limitsMode" value="from-study"
+               x-model="model.params.limitsMode" @change="_analyzeNow()">
+        <span x-text="t('input.limitsModeFromStudy')"></span>
+      </label>
+      <label>
+        <input type="radio" name="msa-typ6-limitsMode" value="given"
+               x-model="model.params.limitsMode" @change="_analyzeNow()">
+        <span x-text="t('input.limitsModeGiven')"></span>
+      </label>
+    </fieldset>
+
+    <div class="field-group" data-ref="group-baseline-k"
+         x-show="model.params.limitsMode === 'from-study'">
+      <label x-text="t('input.baselineK')"></label>
+      <input type="number" class="field field--num" data-ref="inp-baseline-k"
+             min="5" step="1"
+             x-model.number="model.params.baselineK" @change="_analyzeNow()">
+    </div>
+
+    <div data-ref="group-given-limits"
+         x-show="model.params.limitsMode === 'given'">
+      <div class="field-row">
+        <div class="field-group">
+          <label x-text="t('input.mu0')"></label>
+          <input type="number" class="field field--num" data-ref="inp-mu0"
+                 step="any"
+                 x-model.number="model.params.mu0" @change="_analyzeNow()">
+        </div>
+        <div class="field-group">
+          <label x-text="t('input.sigma0')"></label>
+          <input type="number" class="field field--num" data-ref="inp-sigma0"
+                 min="0" step="any"
+                 x-model.number="model.params.sigma0" @change="_analyzeNow()">
+        </div>
+      </div>
+      <div class="field-group">
+        <label x-text="t('input.sourceTyp1')"></label>
+        <!-- Task 14 füllt diese Liste aus _typ1Instances (msa-typ1-Instanzen im
+             Projekt). Bewusst ohne x-for/x-model-Kombination über eine
+             datengetriebene Liste (Alpine-CSP-Stolperstein #3, siehe
+             .claude/alpine.md) — bis dahin nur der statische Platzhalter. -->
+        <select class="field" data-ref="sel-source-typ1"
+                x-model="model.params.sourceTyp1InstanceId" @change="_analyzeNow()">
+          <option value="" x-text="t('input.sourceTyp1Placeholder')"></option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Nelson-Regeln -->
+    <div class="dmike-split__section-title" x-text="t('input.nelsonRules')"></div>
+    <div class="module-msa-typ6__nelson-list" data-ref="nelson-list">
+      <label class="module-msa-typ6__nelson-rule">
+        <input type="checkbox" value="1" x-model="model.params.enabledRules" @change="_analyzeNow()">
+        <span><strong x-text="_ruleShort(1)"></strong><br><span class="module-msa-typ6__nelson-desc" x-text="_ruleDesc(1)"></span></span>
+      </label>
+      <label class="module-msa-typ6__nelson-rule">
+        <input type="checkbox" value="2" x-model="model.params.enabledRules" @change="_analyzeNow()">
+        <span><strong x-text="_ruleShort(2)"></strong><br><span class="module-msa-typ6__nelson-desc" x-text="_ruleDesc(2)"></span></span>
+      </label>
+      <label class="module-msa-typ6__nelson-rule">
+        <input type="checkbox" value="3" x-model="model.params.enabledRules" @change="_analyzeNow()">
+        <span><strong x-text="_ruleShort(3)"></strong><br><span class="module-msa-typ6__nelson-desc" x-text="_ruleDesc(3)"></span></span>
+      </label>
+      <label class="module-msa-typ6__nelson-rule">
+        <input type="checkbox" value="4" x-model="model.params.enabledRules" @change="_analyzeNow()">
+        <span><strong x-text="_ruleShort(4)"></strong><br><span class="module-msa-typ6__nelson-desc" x-text="_ruleDesc(4)"></span></span>
+      </label>
+      <label class="module-msa-typ6__nelson-rule">
+        <input type="checkbox" value="5" x-model="model.params.enabledRules" @change="_analyzeNow()">
+        <span><strong x-text="_ruleShort(5)"></strong><br><span class="module-msa-typ6__nelson-desc" x-text="_ruleDesc(5)"></span></span>
+      </label>
+      <label class="module-msa-typ6__nelson-rule">
+        <input type="checkbox" value="6" x-model="model.params.enabledRules" @change="_analyzeNow()">
+        <span><strong x-text="_ruleShort(6)"></strong><br><span class="module-msa-typ6__nelson-desc" x-text="_ruleDesc(6)"></span></span>
+      </label>
+      <label class="module-msa-typ6__nelson-rule">
+        <input type="checkbox" value="7" x-model="model.params.enabledRules" @change="_analyzeNow()">
+        <span><strong x-text="_ruleShort(7)"></strong><br><span class="module-msa-typ6__nelson-desc" x-text="_ruleDesc(7)"></span></span>
+      </label>
+      <label class="module-msa-typ6__nelson-rule">
+        <input type="checkbox" value="8" x-model="model.params.enabledRules" @change="_analyzeNow()">
+        <span><strong x-text="_ruleShort(8)"></strong><br><span class="module-msa-typ6__nelson-desc" x-text="_ruleDesc(8)"></span></span>
+      </label>
+    </div>
+
+    <!-- α für Drift-Test -->
+    <div class="field-group">
+      <label x-text="t('input.alpha')"></label>
+      <select class="field" data-ref="sel-alpha"
+              x-model="model.params.alpha" @change="_analyzeNow()">
+        <option value="0.01">0.01</option>
+        <option value="0.05">0.05</option>
+        <option value="0.10">0.10</option>
+      </select>
+    </div>
   </div>
 
   <main class="dmike-split__output" data-ref="output">

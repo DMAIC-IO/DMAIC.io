@@ -5,7 +5,7 @@
    .dmike-table / .dmike-kpi-strip components from css/modules.css
    and css/components.css.
 
-   Minimal skeleton (Task 7) — Task 8 adds input-control styles,
+   Task 8 adds input-control styles (radios, Nelson-Regel-Liste).
    Task 9–13 add verdict/KPI/chart/table output styles.
    ============================================================ */
 
@@ -21,6 +21,49 @@
 }
 
 .module-msa-typ6__hint {
+  font-size: 0.85em;
+  color: var(--color-text-secondary);
+}
+
+/* ─── Radio groups (Kartentyp, Grenzen-Modus) ───────────────── */
+.module-msa-typ6__radios {
+  display: flex;
+  gap: var(--spacing-md);
+  flex-wrap: wrap;
+  border: none;
+  padding: 0;
+  margin: 0;
+}
+.module-msa-typ6__radios legend {
+  font-size: 0.85em;
+  color: var(--color-text-secondary);
+  margin-bottom: var(--spacing-xs);
+  padding: 0;
+}
+.module-msa-typ6__radios label {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  cursor: pointer;
+}
+
+/* ─── Nelson-Regel-Checkbox-Liste ────────────────────────────── */
+.module-msa-typ6__nelson-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+.module-msa-typ6__nelson-rule {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-xs);
+  cursor: pointer;
+  font-size: 0.9em;
+}
+.module-msa-typ6__nelson-rule input[type="checkbox"] {
+  margin-top: 2px;
+}
+.module-msa-typ6__nelson-desc {
   font-size: 0.85em;
   color: var(--color-text-secondary);
 }
