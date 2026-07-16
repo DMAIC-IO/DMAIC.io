@@ -6,3 +6,73 @@
   text-align: center;
   color: var(--color-text-secondary);
 }
+
+/* Split panel geometry — 360 px input / rest output. */
+.module-msa-typ5.dmike-split {
+  display: grid;
+  grid-template-columns: 360px 1fr;
+  gap: var(--spacing-lg);
+  align-items: start;
+}
+
+/* Radios group */
+.msa-typ5__radios {
+  display: flex;
+  gap: var(--spacing-md);
+  flex-wrap: wrap;
+  border: none;
+  padding: 0;
+  margin: 0;
+}
+.msa-typ5__radios legend {
+  font-size: 0.85em;
+  color: var(--color-text-secondary);
+  margin-bottom: var(--spacing-xs);
+  padding: 0;
+}
+.msa-typ5__radios label {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  cursor: pointer;
+}
+.msa-typ5__hidden { display: none; }
+
+/* Level-Detection chips */
+.msa-typ5__levels {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-xs);
+  align-items: center;
+}
+.msa-typ5__level {
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: var(--color-background-secondary);
+  font-size: 0.9em;
+  color: var(--color-text-primary);
+}
+.msa-typ5__level--pos {
+  background: var(--color-success-bg, rgba(46, 160, 67, 0.12));
+  color: var(--color-success, #2ea043);
+}
+.msa-typ5__level--neg {
+  background: var(--color-error-bg, rgba(218, 54, 51, 0.12));
+  color: var(--color-error, #da3633);
+}
+.msa-typ5__levels-hint {
+  flex-basis: 100%;
+  font-size: 0.8em;
+  color: var(--color-text-secondary);
+  margin-top: var(--spacing-xs);
+}
+.msa-typ5__swap {
+  margin-left: auto;
+  font-size: 0.85em;
+}
+.msa-typ5__ref-source {
+  padding: 4px 8px;
+  background: var(--color-background-secondary);
+  border-radius: 4px;
+  font-size: 0.9em;
+}
