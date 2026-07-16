@@ -5,7 +5,7 @@
  * See docs/superpowers/specs/2026-07-16-msa-typ6-design.md for the module spec.
  */
 
-import { suite, test, assert, assertClose, assertDeepEqual } from '../test-utils.js';
+import { suite, test, assert, assertClose, assertDeepEqual, assertEqual } from '../test-utils.js';
 import { validate, analyze } from '../../js/engines/msa-typ6-engine.js';
 import fixtures from '../fixtures/msa/msa-typ6-stability.fixtures.json' with { type: 'json' };
 
@@ -193,5 +193,15 @@ suite('msa-typ6-engine — analyze (Ampel-Verdikt + Warnungen)', () => {
     const r = analyze(inputs);
     const warn = r.meta.warnings.find(w => w.code === 'W_BASELINE_LT_20');
     assert(warn, 'W_BASELINE_LT_20 missing');
+  });
+
+  test('all fixtures: meta.warnings codes match expected.warnings', () => {
+    for (const c of fixtures.test_cases) {
+      const result = analyze(c.inputs);
+      const actualCodes = result.meta.warnings.map(w => w.code).sort();
+      const expectedCodes = (c.expected.warnings || []).map(w => (typeof w === 'string' ? w : w.code)).sort();
+      assertEqual(JSON.stringify(actualCodes), JSON.stringify(expectedCodes),
+        `case '${c.id}': warnings ${JSON.stringify(actualCodes)} !== expected ${JSON.stringify(expectedCodes)}`);
+    }
   });
 });

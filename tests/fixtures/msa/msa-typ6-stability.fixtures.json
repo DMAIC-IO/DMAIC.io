@@ -5,7 +5,7 @@
     "scipy": "1.15.3",
     "numpy": "2.2.6"
   },
-  "generated_at": "2026-07-16T08:49:20.635958+00:00",
+  "generated_at": "2026-07-16T09:33:06.603239+00:00",
   "generator_script": "tools/fixture-generator/generate_fixtures.py",
   "generator_version": "1.0.0",
   "tolerances": {
@@ -1392,7 +1392,9 @@
           "nelsonCount": 7,
           "driftP": 0.01199267447542729
         },
-        "warnings": []
+        "warnings": [
+          "W_BASELINE_LT_20"
+        ]
       }
     },
     {
