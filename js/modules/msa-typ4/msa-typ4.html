@@ -1,0 +1,170 @@
+<div class="module-msa-typ4 dmike-split" x-data="msaTyp4">
+  <div class="dmike-split__input">
+    <div class="dmike-split__section-title" x-text="t('sections.feature')"></div>
+
+    <div class="field-row">
+      <div class="field-group field-group--major">
+        <label x-text="t('labels.name')"></label>
+        <input type="text" class="field" data-ref="inp-name"
+               x-model="model.params.name" @input="scheduleAnalysis()">
+      </div>
+      <div class="field-group field-group--minor">
+        <label x-text="t('labels.unit')"></label>
+        <input type="text" class="field" data-ref="inp-unit"
+               placeholder="mm"
+               x-model="model.params.unit" @input="scheduleAnalysis()">
+      </div>
+    </div>
+
+    <div class="dmike-split__section-title" x-text="t('sections.dataSource')"></div>
+
+    <div class="field-group">
+      <label x-text="t('labels.referenceColumn')"></label>
+      <div data-ref="picker-ref"></div>
+    </div>
+    <div class="field-group">
+      <label x-text="t('labels.measuredColumn')"></label>
+      <div data-ref="picker-meas"></div>
+    </div>
+
+    <div class="dmike-split__section-title" x-text="t('sections.evaluation')"></div>
+
+    <fieldset class="msa-typ4__radios">
+      <legend x-text="t('labels.norm')"></legend>
+      <label>
+        <input type="radio" name="msa4-norm" value="AIAG"
+               x-model="model.params.norm" @change="runAnalysis()">
+        <span x-text="t('labels.normAiag')"></span>
+      </label>
+      <label>
+        <input type="radio" name="msa4-norm" value="VDA5"
+               x-model="model.params.norm" @change="runAnalysis()">
+        <span x-text="t('labels.normVda')"></span>
+      </label>
+    </fieldset>
+
+    <fieldset class="msa-typ4__radios">
+      <legend x-text="t('labels.pvMode')"></legend>
+      <label>
+        <input type="radio" name="msa4-pv" value="tolerance"
+               x-model="model.params.pvMode" @change="runAnalysis()">
+        <span x-text="t('labels.pvModeTolerance')"></span>
+      </label>
+      <label>
+        <input type="radio" name="msa4-pv" value="sixSigma"
+               x-model="model.params.pvMode" @change="runAnalysis()">
+        <span x-text="t('labels.pvModeSixSigma')"></span>
+      </label>
+    </fieldset>
+
+    <div class="field-row">
+      <div class="field-group">
+        <label x-text="t('labels.lsl')"></label>
+        <input type="text" class="field field--num" data-ref="inp-lsl" inputmode="decimal"
+               placeholder="0.000"
+               x-model="model.params.tolerance.LSL"
+               @input="scheduleAnalysis()" @change="runAnalysis()">
+      </div>
+      <div class="field-group">
+        <label x-text="t('labels.usl')"></label>
+        <input type="text" class="field field--num" data-ref="inp-usl" inputmode="decimal"
+               placeholder="0.000"
+               x-model="model.params.tolerance.USL"
+               @input="scheduleAnalysis()" @change="runAnalysis()">
+      </div>
+    </div>
+
+    <div class="field-group" data-ref="group-sigma"
+         :class="{ 'msa-typ4__field--hidden': isTolerance() }">
+      <label x-text="t('labels.sigmaP')"></label>
+      <input type="text" class="field field--num" data-ref="inp-sigma" inputmode="decimal"
+             x-model="model.params.sigmaP"
+             @input="scheduleAnalysis()" @change="runAnalysis()">
+    </div>
+
+    <div class="field-group">
+      <label x-text="t('labels.alpha')"></label>
+      <select class="field" data-ref="sel-alpha"
+              x-model="model.params.alpha" @change="runAnalysis()">
+        <option value="0.01">0.01</option>
+        <option value="0.05">0.05</option>
+        <option value="0.10">0.10</option>
+      </select>
+    </div>
+
+    <div class="msa-typ4__error" data-ref="error-box"
+         :class="{ visible: errorMsg }" x-text="errorMsg"></div>
+  </div>
+
+  <div class="dmike-split__output">
+    <div data-ref="results">
+      <template x-if="!result">
+        <div class="module-msa-typ4__empty" x-text="t('emptyState')"></div>
+      </template>
+
+      <template x-if="result">
+        <div>
+          <!-- KPI strip (norm-dependent) -->
+          <div class="dmike-kpi-strip">
+            <template x-for="tile in kpiTiles()">
+              <div class="dmike-kpi" :key="tile.key" :class="tile.mod">
+                <div class="dmike-kpi-label" x-text="tile.label"></div>
+                <div class="dmike-kpi-value" x-text="tile.value"></div>
+                <template x-if="tile.sub">
+                  <div class="dmike-kpi-sub" x-text="tile.sub"></div>
+                </template>
+              </div>
+            </template>
+          </div>
+
+          <!-- Interpretation -->
+          <div :class="interpretationClass()" x-text="interpretationText()"></div>
+
+          <!-- Charts -->
+          <div class="dmike-split__output-section" x-text="t('charts.linearity')"></div>
+          <div class="msa-typ4__chart" data-ref="chart-linearity"></div>
+
+          <div class="dmike-split__output-section" x-text="t('charts.percentBias')"></div>
+          <div class="msa-typ4__chart" data-ref="chart-pctbias"></div>
+
+          <div class="dmike-split__output-section" x-text="t('charts.perReference')"></div>
+          <div class="msa-typ4__chart" data-ref="chart-per-ref"></div>
+
+          <details class="msa-typ4__residuals" data-ref="residuals-details">
+            <summary x-text="t('charts.residuals')"></summary>
+            <div class="msa-typ4__chart" data-ref="chart-residuals"></div>
+          </details>
+
+          <!-- Per-reference table -->
+          <div class="dmike-split__output-section" x-text="t('sections.results')"></div>
+          <table class="dmike-table msa-typ4__table">
+            <thead>
+              <tr>
+                <th x-text="t('table.reference')"></th>
+                <th x-text="t('table.n')"></th>
+                <th x-text="t('table.mean')"></th>
+                <th x-text="t('table.bias')"></th>
+                <th x-text="t('table.percentBias')"></th>
+                <th x-text="t('table.tStat')"></th>
+                <th x-text="t('table.pValue')"></th>
+              </tr>
+            </thead>
+            <tbody>
+              <template x-for="row in tableRows()">
+                <tr :key="row.key" :class="row.rowClass">
+                  <td x-text="row.xRef"></td>
+                  <td x-text="row.n"></td>
+                  <td x-text="row.mean"></td>
+                  <td x-text="row.bias"></td>
+                  <td x-text="row.percentBias"></td>
+                  <td x-text="row.tStat"></td>
+                  <td x-text="row.pValue"></td>
+                </tr>
+              </template>
+            </tbody>
+          </table>
+        </div>
+      </template>
+    </div>
+  </div>
+</div>

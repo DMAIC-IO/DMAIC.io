@@ -1,12 +1,15 @@
 /* ============================================================
-   D.Mike — MSA Typ 4 Module Styles (msa-typ4.css)
+   DMAIC.io — MSA Typ 4 Module Styles (msa-typ4.css)
    Theme-aware using CSS custom properties from variables.css.
    Layout/fields/table/kpi reuse global .dmike-split / .field /
    .dmike-table / .dmike-kpi-strip components from css/modules.css
    and css/components.css.
    ============================================================ */
 
-.module-msa-typ4 { display: grid; gap: var(--spacing-md); }
+/* ─── Layout (extends global dmike-split from css/modules.css) ── */
+.module-msa-typ4 .dmike-split__input {
+  width: 380px;
+}
 
 .module-msa-typ4__empty {
   padding: var(--spacing-xl);
@@ -45,8 +48,8 @@
   display: none;
   margin-top: var(--spacing-sm);
   padding: var(--spacing-sm) 12px;
-  background: rgba(255, 59, 48, 0.08);
-  border: 1px solid rgba(255, 59, 48, 0.25);
+  background: rgb(255 59 48 / 8%);
+  border: 1px solid rgb(255 59 48 / 25%);
   border-radius: var(--border-radius);
   font-size: var(--font-size-sm);
   color: var(--color-error);
@@ -64,18 +67,18 @@
 }
 
 .msa-typ4__interp--green {
-  background: rgba(52, 199, 89, 0.08);
-  border: 1px solid rgba(52, 199, 89, 0.3);
+  background: rgb(52 199 89 / 8%);
+  border: 1px solid rgb(52 199 89 / 30%);
 }
 
 .msa-typ4__interp--yellow {
-  background: rgba(255, 149, 0, 0.08);
-  border: 1px solid rgba(255, 149, 0, 0.3);
+  background: rgb(255 149 0 / 8%);
+  border: 1px solid rgb(255 149 0 / 30%);
 }
 
 .msa-typ4__interp--red {
-  background: rgba(255, 59, 48, 0.08);
-  border: 1px solid rgba(255, 59, 48, 0.3);
+  background: rgb(255 59 48 / 8%);
+  border: 1px solid rgb(255 59 48 / 30%);
 }
 
 /* ─── Per-Reference Table row tints ──────────────────────────── */
