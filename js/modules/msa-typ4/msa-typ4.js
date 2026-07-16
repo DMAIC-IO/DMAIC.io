@@ -6,6 +6,10 @@
 
 import { analyze } from '../../engines/msa-typ4-engine.js';
 import { ColumnPicker, getColumnValues } from '../../ui/column-picker.js';
+import {
+  provisionWorksheet as _provisionWorksheet,
+  removeProvisionedWorksheet as _removeProvisionedWorksheet,
+} from '../../core/examples-registry.js';
 
 export default {
   id: 'msa-typ4',
@@ -112,6 +116,47 @@ export default {
     this._measColumn = data.measColumn ?? null;
     this._exampleWorksheetId = data.exampleWorksheetId ?? null;
     if (this._container) this._render();
+  },
+
+  async loadExample(payload) {
+    if (!payload || !payload.data) return;
+    const t = this._t;
+
+    const hasContent = !!(this._refColumn || this._measColumn || this._result);
+    if (hasContent && this._context?.confirmPopout) {
+      const ok = await this._context.confirmPopout(t('moduleHelp.confirmOverwrite'), { danger: true });
+      if (!ok) return;
+    }
+
+    const data = { ...payload.data };
+
+    if (data.sourceWorksheetData) {
+      const wsState = data.sourceWorksheetData;
+      delete data.sourceWorksheetData;
+      if (this._exampleWorksheetId) {
+        _removeProvisionedWorksheet(this._context, this._exampleWorksheetId);
+        this._exampleWorksheetId = null;
+      }
+      const ref = _provisionWorksheet(this._context, wsState);
+      if (ref) {
+        this._exampleWorksheetId = ref.instanceId;
+        data.exampleWorksheetId = ref.instanceId;
+        for (const key of ['refColumn', 'measColumn']) {
+          const r = data[key];
+          if (r && r.instanceId === '__source__') {
+            data[key] = { ...r, instanceId: ref.instanceId };
+          }
+        }
+      }
+    }
+
+    this.setState(data);
+    this._save();
+    await this._tryAutoAnalysis();
+
+    const lang = this._context.i18n.getLanguage();
+    const title = payload.meta?.title?.[lang] || payload.meta?.title?.en || payload.meta?.id || '';
+    this._context.notify?.(t('moduleHelp.exampleLoaded', { title }), 'success');
   },
 
   // ─── Render ─────────────────────────────────────────────────
