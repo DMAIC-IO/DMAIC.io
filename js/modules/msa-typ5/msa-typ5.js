@@ -59,8 +59,52 @@ export default {
       document.head.appendChild(link);
     }
 
+    // ─── Event subscriptions ─────────────────────────────────
+    const refreshPickers = ({ instanceId } = {}) => {
+      if (!instanceId || instanceId === context.instanceId) {
+        for (const p of Object.values(this._pickers)) p?.refresh?.();
+      }
+    };
+    // Worksheet-Zellen-Edits ändern die Spaltenauswahl nicht, aber die Daten:
+    // ColumnPicker.refresh() greift dann nicht — Analyse muss selbst neu laufen.
+    const rerunOnData = () => this._tryAutoAnalysis();
+    const nullOnColumnRemoved = ({ instanceId, columnId } = {}) => {
+      let touched = false;
+      for (const role of Object.keys(this._columnRefs)) {
+        const r = this._columnRefs[role];
+        if (r && r.instanceId === instanceId && r.columnId === columnId) {
+          this._columnRefs[role] = null;
+          touched = true;
+        }
+      }
+      if (touched) { this._save(); this._render(); this._tryAutoAnalysis(); }
+    };
+    const nullOnWorksheetRemoved = ({ instanceId } = {}) => {
+      let touched = false;
+      for (const role of Object.keys(this._columnRefs)) {
+        if (this._columnRefs[role]?.instanceId === instanceId) {
+          this._columnRefs[role] = null;
+          touched = true;
+        }
+      }
+      if (touched) { this._save(); this._render(); this._tryAutoAnalysis(); }
+    };
+    context.eventBus.on('module:activated', refreshPickers);
+    context.eventBus.on('state:saved', rerunOnData);
+    context.eventBus.on('worksheet:dataChanged', rerunOnData);
+    context.eventBus.on('worksheet:column-removed', nullOnColumnRemoved);
+    context.eventBus.on('worksheet:removed', nullOnWorksheetRemoved);
+    this._eventUnsubs.push(
+      () => context.eventBus.off('module:activated', refreshPickers),
+      () => context.eventBus.off('state:saved', rerunOnData),
+      () => context.eventBus.off('worksheet:dataChanged', rerunOnData),
+      () => context.eventBus.off('worksheet:column-removed', nullOnColumnRemoved),
+      () => context.eventBus.off('worksheet:removed', nullOnWorksheetRemoved),
+    );
+
     container.innerHTML = '';
     this._render();
+    this._tryAutoAnalysis();
   },
 
   async destroy() {
@@ -300,18 +344,154 @@ export default {
     return [sorted[0] ?? values[0], sorted[1] ?? values[1]];
   },
 
-  // ─── Actions (stub — Task 11 completes) ─────────────────────
+  // ─── Actions ────────────────────────────────────────────────
 
+  /**
+   * Baut das Long-Format-Ratings-Array aus den 5 Spalten und ruft die Engine.
+   * Aktualisiert `this._result`, füllt die Referenz-Quelle-Anzeige und
+   * delegiert die Ergebnis-Darstellung an `_renderOutput()`.
+   */
   _tryAutoAnalysis() {
     const out = this._container?.querySelector('[data-ref="output"]');
     if (!out) return;
+
     if (!this._columnRefs.part || !this._columnRefs.appraiser || !this._columnRefs.rating) {
       this._result = null;
+      this._destroyCharts();
+      this._updateReferenceSourceLabel(null);
+      this._renderOutput();
+      return;
+    }
+
+    const sm = this._context.stateManager;
+    const parts   = getColumnValues(sm, this._columnRefs.part)      || [];
+    const apprs   = getColumnValues(sm, this._columnRefs.appraiser) || [];
+    const ratings = getColumnValues(sm, this._columnRefs.rating)    || [];
+    const refs    = this._columnRefs.reference ? (getColumnValues(sm, this._columnRefs.reference) || []) : null;
+    const reps    = this._columnRefs.replicate ? (getColumnValues(sm, this._columnRefs.replicate) || []) : null;
+
+    const N = Math.min(parts.length, apprs.length, ratings.length);
+    if (N === 0) {
+      this._result = null;
+      this._updateReferenceSourceLabel(null);
+      this._renderOutput();
+      return;
+    }
+
+    const rows = [];
+    const referenceMap = {};
+    for (let i = 0; i < N; i++) {
+      if (parts[i] === null || parts[i] === undefined || parts[i] === '') continue;
+      if (apprs[i] === null || apprs[i] === undefined || apprs[i] === '') continue;
+      if (ratings[i] === null || ratings[i] === undefined || ratings[i] === '') continue;
+      const row = {
+        part: String(parts[i]),
+        appraiser: String(apprs[i]),
+        value: String(ratings[i]),
+      };
+      if (reps && reps[i] !== null && reps[i] !== undefined && reps[i] !== '') {
+        const r = Number(reps[i]);
+        row.rep = Number.isFinite(r) ? r : (i + 1);
+      } else {
+        row.rep = null;
+      }
+      rows.push(row);
+      if (refs && refs[i] !== null && refs[i] !== undefined && refs[i] !== '') {
+        referenceMap[String(parts[i])] = String(refs[i]);
+      }
+    }
+
+    if (rows.length === 0) {
+      this._result = null;
+      this._updateReferenceSourceLabel(null);
+      this._renderOutput();
+      return;
+    }
+
+    // Klassen aus den vorkommenden Bewertungs-Werten ableiten. Für binär
+    // wird die als "positiv" markierte Klasse an Position 0 geschoben
+    // (Konvention der Engine für Miss/False-Alarm/SDT).
+    const values = [...new Set(rows.map((r) => r.value))];
+    let levels;
+    if (this._params.type === 'ordinal') {
+      if (values.every((v) => Number.isFinite(Number(v)))) {
+        levels = values.sort((a, b) => Number(a) - Number(b));
+      } else {
+        levels = values.sort();
+      }
+    } else {
+      levels = values.sort();
+      if (this._params.type === 'binary' && this._params.positiveLevel && levels.includes(this._params.positiveLevel)) {
+        levels = [this._params.positiveLevel, ...levels.filter((v) => v !== this._params.positiveLevel)];
+      } else if (this._params.type === 'binary') {
+        // Falls kein positiveLevel gesetzt, häufigsten Wert auf Position 0.
+        const [pos] = this._twoMostFrequent(values);
+        if (pos && levels.includes(pos)) {
+          levels = [pos, ...levels.filter((v) => v !== pos)];
+        }
+      }
+    }
+
+    const referencesArg = this._columnRefs.reference
+      ? (Object.keys(referenceMap).length > 0 ? referenceMap : {})
+      : null;
+
+    let result;
+    try {
+      result = analyze({
+        type: this._params.type,
+        levels,
+        ratings: rows,
+        references: referencesArg,
+        params: { alpha: this._params.alpha, weights: this._params.weights },
+      });
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.error('[msa-typ5] analyze() threw:', err);
+      this._result = null;
+      this._updateReferenceSourceLabel(null);
+      this._renderOutput();
+      return;
+    }
+
+    this._result = result;
+    this._updateReferenceSourceLabel(result?.meta?.referenceSource ?? null);
+    this._renderOutput();
+  },
+
+  _updateReferenceSourceLabel(src) {
+    const el = this._container?.querySelector('[data-ref="ref-source"]');
+    if (!el) return;
+    if (!src) { el.textContent = '—'; return; }
+    // src ∈ { 'given', 'consensus', 'none' } → labels.referenceSourceGiven/…
+    const key = `modules.msa-typ5.labels.referenceSource${src.charAt(0).toUpperCase() + src.slice(1)}`;
+    el.textContent = this._t(key);
+  },
+
+  /** Platzhalter — Task 12 füllt Verdikt/KPI/Tabellen, Task 13 + 14 die Charts. */
+  _renderOutput() {
+    const out = this._container?.querySelector('[data-ref="output"]');
+    if (!out) return;
+    if (!this._result || !this._result.verdict) {
+      const err = this._result?.meta?.errors?.[0];
+      if (err) {
+        out.innerHTML = `<div class="module-msa-typ5__empty">${this._translateCode(err, 'err')}</div>`;
+        return;
+      }
       out.innerHTML = `<div class="module-msa-typ5__empty">${this._t('modules.msa-typ5.emptyState')}</div>`;
       return;
     }
-    // Vollständige Pipeline landet in Task 11.
     out.innerHTML = `<div class="module-msa-typ5__empty">…</div>`;
+  },
+
+  /**
+   * Engine-Codes E_TOO_FEW_PARTS / W_UNBALANCED_REPS → i18n-Keys
+   * modules.msa-typ5.errTooFewParts / warnUnbalancedReps.
+   */
+  _translateCode({ code, params }, prefix) {
+    const stripped = code.replace(/^E_|^W_/, '');
+    const camel = stripped.split('_').map((w) => w[0] + w.slice(1).toLowerCase()).join('');
+    return this._t(`modules.msa-typ5.${prefix}${camel}`, params ?? {});
   },
 
   // ─── Persistenz ─────────────────────────────────────────────
