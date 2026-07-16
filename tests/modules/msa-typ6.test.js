@@ -448,3 +448,143 @@ suite('msa-typ6 module — Interpretations-Text (Task 13)', () => {
       '.module-msa-typ6__interpretation must not render in the Empty-State (!_lastResult) branch');
   });
 });
+
+/**
+ * Task 14: Events + Typ-1-Cross-Modul-Anbindung.
+ *
+ * Fills the Task 8 dropdown placeholder ("aus Typ-1-Instanz übernehmen") and
+ * wires a `msa-typ1:result-updated` subscription in msa-typ6.js.
+ *
+ * Same constraint as every suite above: importing msa-typ6.js pulls in
+ * `@alpinejs/csp` via `core/template-module.js`, which the headless test
+ * runner cannot resolve — so there is no live Alpine mount / fake eventBus
+ * here either. The template test below parses the real shipped
+ * msa-typ6.html the same way as Task 7–13. The JS behaviour test follows the
+ * brief's own documented fallback for this exact situation ("verdrahte den
+ * Test als reine Struktur-Assertion … via Code-Grep im Modul-JS-File") and
+ * asserts against the real shipped msa-typ6.js source text (fetched, not
+ * imported) that:
+ *   (a) the module subscribes to `msa-typ1:result-updated` on the shared
+ *       event bus, and
+ *   (b) its handler body gates on `sourceTyp1InstanceId` before writing
+ *       `params.mu0`/`params.sigma0` and re-running the analysis — i.e. an
+ *       update from an instance the user did *not* import from must not
+ *       touch this instance's state.
+ * Live-mount coverage (both the dropdown's live selection behaviour and a
+ * fired `msa-typ1:result-updated` event) belongs to the Playwright E2E
+ * suite (test/playwright/tests/modules/msa-typ6.spec.js, Task 19 per
+ * docs/superpowers/specs/2026-07-16-msa-typ6-design.md § 9) — see this
+ * task's report for the finding that msa-typ1 does not currently emit that
+ * event, so the handler is presently dormant/forward-compatible.
+ */
+suite('msa-typ6 module — Events + Typ-1-Cross-Modul-Anbindung (Task 14)', () => {
+  /** Fetch + parse the real shipped template once per test. */
+  async function loadTemplateDoc() {
+    const url = new URL('../../js/modules/msa-typ6/msa-typ6.html', import.meta.url);
+    const html = await (await fetch(url)).text();
+    return new DOMParser().parseFromString(html, 'text/html');
+  }
+
+  /** Fetch the real shipped module source once per test. */
+  async function loadModuleSource() {
+    const url = new URL('../../js/modules/msa-typ6/msa-typ6.js', import.meta.url);
+    return (await fetch(url)).text();
+  }
+
+  test('Typ-1-dropdown: <select> has NO x-model (Stolperstein #3) and a <template x-for="inst in _typ1Instances"> option list', async () => {
+    const doc = await loadTemplateDoc();
+    const select = doc.querySelector('[data-ref="sel-source-typ1"]');
+    assertTrue(select !== null, 'missing [data-ref="sel-source-typ1"] <select>');
+    assertTrue(select.getAttribute('x-model') === null,
+      '<select> must NOT bind x-model directly (Alpine-CSP-Stolperstein #3 — ' +
+      'x-for-generated <option>s collide with the initial x-model reflection)');
+    assertTrue((select.getAttribute('@change') || '').includes('_onTyp1Selected'),
+      '<select> must call _onTyp1Selected($event.target.value) on change');
+
+    const placeholder = select.querySelector('option[value=""]');
+    assertTrue(placeholder !== null, 'missing placeholder <option value="">');
+    assertEqual(placeholder.getAttribute(':selected'), '!model.params.sourceTyp1InstanceId');
+
+    const tpl = select.querySelector('template[x-for="inst in _typ1Instances"]');
+    assertTrue(tpl !== null, 'missing <template x-for="inst in _typ1Instances"> inside the select');
+    const opt = tpl.content.querySelector('option');
+    assertTrue(opt !== null, 'x-for template must contain an <option>');
+    assertEqual(opt.getAttribute(':value'), 'inst.instanceId');
+    assertEqual(opt.getAttribute(':selected'), 'inst.instanceId === model.params.sourceTyp1InstanceId');
+    const xtext = opt.getAttribute('x-text') || '';
+    assertTrue(xtext.includes('inst.name'), 'option x-text must include inst.name');
+    assertTrue(xtext.includes('inst.mean'), 'option x-text must include inst.mean');
+    assertTrue(xtext.includes('inst.stdDev'), 'option x-text must include inst.stdDev');
+  });
+
+  test('msa-typ1:result-updated handler gates on sourceTyp1InstanceId before writing mu0/sigma0 (source assertion)', async () => {
+    const src = await loadModuleSource();
+
+    assertTrue(src.includes("eb.on('msa-typ1:result-updated'"),
+      'module must subscribe to msa-typ1:result-updated on the shared event bus');
+    assertTrue(src.includes("eb.off('msa-typ1:result-updated'"),
+      'subscription must be torn down (pushed to _unsubs) so re-init/destroy does not leak listeners');
+
+    // Slice out the handler body (from its `on(...)` registration up to the
+    // next `eb.on(` or the end of the surrounding _unsubs.push block) and
+    // assert the gate + writes are present, in that order (gate first).
+    const start = src.indexOf('const onTyp1ResultUpdated');
+    assertTrue(start !== -1, 'expected a named onTyp1ResultUpdated handler (readable in the source)');
+    const body = src.slice(start, src.indexOf('eb.on(', start));
+
+    const gateIdx = body.indexOf('sourceTyp1InstanceId');
+    assertTrue(gateIdx !== -1, 'handler must compare evt.instanceId against model.params.sourceTyp1InstanceId');
+    const mu0Idx = body.indexOf('.mu0 = evt.mean');
+    assertTrue(mu0Idx !== -1, 'handler must write params.mu0 = evt.mean');
+    const sigma0Idx = body.indexOf('.sigma0 = evt.stdDev');
+    assertTrue(sigma0Idx !== -1, 'handler must write params.sigma0 = evt.stdDev');
+    assertTrue(gateIdx < mu0Idx && gateIdx < sigma0Idx,
+      'the sourceTyp1InstanceId gate must be checked BEFORE mu0/sigma0 are written ' +
+      '(so an update from a non-matching instance leaves this instance untouched)');
+    assertTrue(body.includes('_analyzeNow()'),
+      'handler must trigger _analyzeNow() after updating mu0/sigma0');
+  });
+
+  test('_onTyp1Selected writes mu0/sigma0/sourceTyp1InstanceId from the picked instance and re-analyzes (source assertion)', async () => {
+    const src = await loadModuleSource();
+    const start = src.indexOf('_onTyp1Selected(instanceId)');
+    assertTrue(start !== -1, 'expected a _onTyp1Selected(instanceId) method');
+    const body = src.slice(start, start + 500);
+
+    assertTrue(body.includes('model.params.sourceTyp1InstanceId = instanceId'),
+      'must write params.sourceTyp1InstanceId from the selected instanceId');
+    assertTrue(body.includes('_typ1Instances.find'),
+      'must look up the picked instance in _typ1Instances');
+    assertTrue(body.includes('model.params.mu0 = inst.mean'),
+      'must write params.mu0 from the picked instance\'s mean');
+    assertTrue(body.includes('model.params.sigma0 = inst.stdDev'),
+      'must write params.sigma0 from the picked instance\'s stdDev');
+    assertTrue(body.includes('_analyzeNow()'),
+      '_onTyp1Selected must trigger _analyzeNow() after updating params');
+  });
+
+  test('_loadTyp1Instances enumerates msa-typ1 instances across all phases via stateManager (source assertion)', async () => {
+    const src = await loadModuleSource();
+    const start = src.indexOf('_loadTyp1Instances(module)');
+    assertTrue(start !== -1, 'expected a _loadTyp1Instances(module) method');
+    const body = src.slice(start, src.indexOf('_onTyp1Selected', start));
+
+    assertTrue(body.includes("sm.get('phases')"),
+      'must enumerate instances via stateManager.get(\'phases\') (all-phases cross-module lookup, ' +
+      'same pattern as doe-planner-worksheet.js listProjectWorksheets())');
+    assertTrue(body.includes("inst.moduleId !== 'msa-typ1'"),
+      'must filter phase entries down to moduleId === \'msa-typ1\'');
+    assertTrue(body.includes('sm.getModuleState(inst.instanceId)'),
+      'must read each msa-typ1 instance\'s persisted state via getModuleState()');
+    assertTrue(body.includes('this._typ1Instances = out'),
+      'must assign the resulting list to _typ1Instances');
+  });
+
+  test('theme:changed now triggers _renderCharts() (Task 10 gap closed)', async () => {
+    const src = await loadModuleSource();
+    assertTrue(src.includes("eb.on('theme:changed'"),
+      'module must subscribe to theme:changed (was missing before Task 14, unlike msa-typ1/msa-typ4)');
+    assertTrue(src.includes("eb.off('theme:changed'"),
+      'theme:changed subscription must be torn down via _unsubs');
+  });
+});

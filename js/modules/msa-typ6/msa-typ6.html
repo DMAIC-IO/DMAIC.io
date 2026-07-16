@@ -94,13 +94,21 @@
       </div>
       <div class="field-group">
         <label x-text="t('input.sourceTyp1')"></label>
-        <!-- Task 14 füllt diese Liste aus _typ1Instances (msa-typ1-Instanzen im
-             Projekt). Bewusst ohne x-for/x-model-Kombination über eine
-             datengetriebene Liste (Alpine-CSP-Stolperstein #3, siehe
-             .claude/alpine.md) — bis dahin nur der statische Platzhalter. -->
+        <!-- Task 14: Liste aus _typ1Instances (msa-typ1-Instanzen im Projekt,
+             siehe _loadTyp1Instances() in msa-typ6.js). Bewusst OHNE x-model
+             auf dem <select> selbst (Alpine-CSP-Stolperstein #3, siehe
+             .claude/alpine.md: x-for-generierte <option>s kollidieren mit der
+             initialen x-model-Reflexion) — stattdessen @change + :selected je
+             Option, analog zu doe-planner.html sourceWorksheetChanged(). -->
         <select class="field" data-ref="sel-source-typ1"
-                x-model="model.params.sourceTyp1InstanceId" @change="_analyzeNow()">
-          <option value="" x-text="t('input.sourceTyp1Placeholder')"></option>
+                @change="_onTyp1Selected($event.target.value)">
+          <option value="" :selected="!model.params.sourceTyp1InstanceId"
+                  x-text="t('input.sourceTyp1Placeholder')"></option>
+          <template x-for="inst in _typ1Instances">
+            <option :key="inst.instanceId" :value="inst.instanceId"
+                    :selected="inst.instanceId === model.params.sourceTyp1InstanceId"
+                    x-text="inst.name + ' (μ=' + _fmt(inst.mean, 3) + ', σ=' + _fmt(inst.stdDev, 3) + ')'"></option>
+          </template>
         </select>
       </div>
     </div>

@@ -30,18 +30,42 @@
  * ({dir:'h'|'v', value}), keine diagonale from/to-Form — die Regressions-
  * gerade wird daher (wie msa-typ4s "Fit"-Serie in `_renderRegressionChart`)
  * als zweite Scatter-Serie mit zwei Endpunkten + `connectLine` gerendert.
- * Task 13 (dieser Stand): Interpretations-Text-Absatz unterhalb der
- * Drift-Sektion (msa-typ6.html), gerendert aus `_lastResult.interpretation.
- * textKey`+`params` über den prefix-aware `t()`-Helfer (kein eigener
- * `_ip`-Wrapper nötig — der volle, bereits qualifizierte textKey aus der
- * Engine löst über `t()`s Bare-Key-Fallback korrekt auf, siehe msa-typ6.html
- * Kommentar). Kein expliziter `language:changed`-Handler nötig: die generische
+ * Task 13: Interpretations-Text-Absatz unterhalb der Drift-Sektion
+ * (msa-typ6.html), gerendert aus `_lastResult.interpretation.textKey`+
+ * `params` über den prefix-aware `t()`-Helfer (kein eigener `_ip`-Wrapper
+ * nötig — der volle, bereits qualifizierte textKey aus der Engine löst über
+ * `t()`s Bare-Key-Fallback korrekt auf, siehe msa-typ6.html Kommentar). Kein
+ * expliziter `language:changed`-Handler nötig: die generische
  * `onLanguageChange()` aus createModule (template-module.js) zerstört + baut
  * den Alpine-Baum der Instanz bei Sprachumschaltung komplett neu auf (wie bei
  * msa-typ5/msa-typ4), wodurch Tabelle, KPI-Strip und dieser Absatz ohnehin
  * neu gerendert werden. Charts überleben das nicht automatisch, sind aber
  * reine Zahlen-Renderings ohne Sprachbezug — `init()` ruft `_analyzeNow()`
  * ohnehin erneut auf, was `_renderCharts()` nach dem Re-Mount neu anstößt.
+ * Task 14 (dieser Stand): `theme:changed`-Subscription (Charts neu rendern —
+ * bislang fehlte sie hier, anders als msa-typ1/msa-typ4) + Typ-1-Cross-Modul-
+ * Anbindung: `_loadTyp1Instances()` befüllt `_typ1Instances` aus allen
+ * `msa-typ1`-Instanzen im Projekt-State, `_onTyp1Selected()` übernimmt deren
+ * µ/σ nach `params.mu0`/`sigma0`, und eine `msa-typ1:result-updated`-
+ * Subscription hält eine bereits übernommene Instanz synchron. msa-typ1
+ * persistiert sein Analyse-Ergebnis (`result.xbar`/`result.sg`) jedoch nur
+ * transient in seiner Alpine-`data()` (siehe msa-typ1-model.js Kommentar:
+ * "intentionally NOT persisted") und emittiert (Stand v1.0) kein
+ * `msa-typ1:result-updated`-Event (verifiziert: kein `eventBus.emit` dafür in
+ * msa-typ1.js) — die Subscription unten ist daher aktuell dormant/vorbereitet
+ * für eine künftige msa-typ1-Änderung, schadet aber nicht. Damit der Dropdown
+ * trotzdem echte Werte zeigt, rechnet `_loadTyp1Instances()` µ/σ direkt aus
+ * der von msa-typ1 persistierten `columnRef` + der Live-Worksheet-Spalte neu
+ * — mit denselben reinen `mean()`/`stddev()`-Funktionen, die
+ * msa-typ1-engine.js für sein eigenes Ergebnis nutzt (kein Logik-Duplikat,
+ * derselbe Code, nur erneut aufgerufen). Cross-Modul-Zugriffsmuster
+ * (`stateManager.get('phases')` + `getModuleState(instanceId)`) folgt dem
+ * bereits etablierten Vorbild in `doe-planner-worksheet.js`
+ * (`listProjectWorksheets()`). Das `<select>` bindet bewusst NICHT über
+ * `x-model` an `_typ1Instances` (Alpine-CSP-Stolperstein #3, siehe
+ * .claude/alpine.md: `x-for`-generierte `<option>`s kollidieren mit der
+ * initialen `x-model`-Reflexion) — stattdessen `@change` + `:selected` je
+ * Option, analog zu `doe-planner.html`s `sourceWorksheetChanged()`-Muster.
  *
  * Spec: docs/superpowers/specs/2026-07-16-msa-typ6-design.md § 6
  */
@@ -50,6 +74,7 @@ import { createModule } from '../../core/template-module.js';
 import { State } from './msa-typ6-model.js';
 import { analyze, NELSON_RULES } from '../../engines/msa-typ6-engine.js';
 import { ColumnPicker, getColumnValues } from '../../ui/column-picker.js';
+import { mean as typ1Mean, stddev as typ1Stddev } from '../../engines/msa-typ1-engine.js';
 
 /** Roles mounted as ColumnPicker instances, matching `model.columns` keys. */
 const PICKER_ROLES = ['timestamp', 'value', 'subgroup'];
@@ -83,8 +108,9 @@ const mod = createModule({
       _highlightTimer: null,
 
       // Typ-1-Instanzen für den "aus Typ-1-Instanz übernehmen"-Dropdown im
-      // `given`-Grenzen-Modus. Bleibt leer (nur Platzhalter-Option im Select)
-      // bis Task 14 sie aus dem Projekt-State befüllt.
+      // `given`-Grenzen-Modus. Befüllt von `_loadTyp1Instances()` (Task 14) —
+      // bei init() und jedem `module:activated` der eigenen Instanz neu
+      // geladen (siehe Spec § 6 Events-Tabelle).
       _typ1Instances: [],
 
       // ── Nelson-Regel-Kurztexte (View-Helfer) ──────────────────
@@ -419,6 +445,79 @@ const mod = createModule({
         }
       },
 
+      // ── Typ-1-Cross-Modul-Anbindung (Task 14) ─────────────────
+
+      /**
+       * Lädt alle `msa-typ1`-Instanzen im aktuellen Projekt (über alle
+       * Phasen hinweg) und berechnet für jede mit einer gewählten Werte-
+       * Spalte Mittelwert + Standardabweichung, damit der "aus Typ-1-
+       * Instanz übernehmen"-Dropdown im `given`-Grenzen-Modus reale Werte
+       * zeigt. Instanzen ohne Werte-Spalte oder mit < 2 numerischen Werten
+       * (Standardabweichung braucht n ≥ 2) werden übersprungen.
+       *
+       * msa-typ1 persistiert sein Analyse-Ergebnis nicht (msa-typ1-model.js:
+       * "intentionally NOT persisted", das `result` lebt nur transient in
+       * der Alpine-`data()` der jeweiligen Instanz) — ein gecachtes Ergebnis
+       * über `stateManager.getModuleState()` zu lesen wäre daher immer leer.
+       * Stattdessen wird hier direkt aus der von msa-typ1 persistierten
+       * `columnRef` + der live gelesenen Worksheet-Spalte neu gerechnet, mit
+       * denselben reinen `mean()`/`stddev()`-Funktionen, die
+       * msa-typ1-engine.js für sein eigenes `xbar`/`sg` nutzt (kein
+       * Logik-Duplikat).
+       *
+       * Cross-Modul-Enumeration folgt dem in `doe-planner-worksheet.js`
+       * (`listProjectWorksheets()`) etablierten Muster:
+       * `stateManager.get('phases')` (Map phaseId → Instanz-Liste) + je
+       * Instanz `stateManager.getModuleState(instanceId)` für den
+       * persistierten Modul-State.
+       * @param {object} module
+       */
+      _loadTyp1Instances(module) {
+        const sm = module._context.stateManager;
+        const phases = sm.get('phases') || {};
+        const out = [];
+        for (const instances of Object.values(phases)) {
+          if (!Array.isArray(instances)) continue;
+          for (const inst of instances) {
+            if (inst.moduleId !== 'msa-typ1') continue;
+            const state = sm.getModuleState(inst.instanceId);
+            const columnRef = state && state.columnRef;
+            if (!columnRef) continue;
+            const values = (getColumnValues(sm, columnRef) || [])
+              .filter((v) => v != null && typeof v === 'number' && !isNaN(v));
+            if (values.length < 2) continue;
+            out.push({
+              instanceId: inst.instanceId,
+              name: (state.params && state.params.name) || inst.instanceId,
+              mean: typ1Mean(values),
+              stdDev: typ1Stddev(values),
+            });
+          }
+        }
+        this._typ1Instances = out;
+      },
+
+      /**
+       * Handler für die Auswahl im "aus Typ-1-Instanz übernehmen"-Dropdown.
+       * Bewusst kein `x-model` auf dem `<select>` (Alpine-CSP-Stolperstein #3,
+       * siehe .claude/alpine.md) — der Aufruf kommt über `@change` mit dem
+       * rohen `<option value>`-String; ein leerer String (Platzhalter-Option)
+       * setzt `sourceTyp1InstanceId` zurück auf `null`, ohne `mu0`/`sigma0`
+       * anzurühren.
+       * @param {string} instanceId
+       */
+      _onTyp1Selected(instanceId) {
+        this.model.params.sourceTyp1InstanceId = instanceId || null;
+        if (instanceId) {
+          const inst = this._typ1Instances.find((i) => i.instanceId === instanceId);
+          if (inst) {
+            this.model.params.mu0 = inst.mean;
+            this.model.params.sigma0 = inst.stdDev;
+          }
+        }
+        this._analyzeNow();
+      },
+
       // ── Lifecycle (per Alpine component) ──────────────────────
 
       init() {
@@ -433,11 +532,13 @@ const mod = createModule({
         this._highlightTimer = null;
 
         this._mountPickers();
+        this._loadTyp1Instances(module);
 
         const eb = module._context.eventBus;
         const onActivated = ({ instanceId } = {}) => {
           if (!instanceId || instanceId === module._context.instanceId) {
             for (const p of Object.values(this._pickers)) p?.refresh?.();
+            this._loadTyp1Instances(module);
           }
         };
         const rerun = () => this._analyzeNow();
@@ -462,15 +563,32 @@ const mod = createModule({
           }
           if (touched) this._analyzeNow();
         };
+        const onTheme = () => this._renderCharts();
+        // Dormant bis msa-typ1 dieses Event tatsächlich emittiert (Stand
+        // v1.0: kein `eventBus.emit('msa-typ1:result-updated', …)` in
+        // msa-typ1.js) — vorbereitet für die künftige Live-Sync einer
+        // bereits per Dropdown übernommenen Instanz (siehe Modul-Kopf-
+        // Kommentar Task 14 + Spec § 6 Events-Tabelle).
+        const onTyp1ResultUpdated = (evt = {}) => {
+          if (evt.instanceId && evt.instanceId === this.model.params.sourceTyp1InstanceId) {
+            if (Number.isFinite(evt.mean)) this.model.params.mu0 = evt.mean;
+            if (Number.isFinite(evt.stdDev)) this.model.params.sigma0 = evt.stdDev;
+            this._analyzeNow();
+          }
+        };
         eb.on('module:activated',         onActivated);
         eb.on('worksheet:dataChanged',    rerun);
         eb.on('worksheet:column-removed', nullOnColumnRemoved);
         eb.on('worksheet:removed',        nullOnWorksheetRemoved);
+        eb.on('theme:changed',            onTheme);
+        eb.on('msa-typ1:result-updated',  onTyp1ResultUpdated);
         this._unsubs.push(
           () => eb.off('module:activated',         onActivated),
           () => eb.off('worksheet:dataChanged',    rerun),
           () => eb.off('worksheet:column-removed', nullOnColumnRemoved),
           () => eb.off('worksheet:removed',        nullOnWorksheetRemoved),
+          () => eb.off('theme:changed',            onTheme),
+          () => eb.off('msa-typ1:result-updated',  onTyp1ResultUpdated),
         );
 
         // Ergebnis aus wiederhergestelltem State neu berechnen.
