@@ -243,6 +243,68 @@ function _driftTest(y, t, alpha, tScale) {
 }
 
 /**
+ * Ampel-Bewertung (Verdikt) aus Nelson-Verletzungen und Drift-Test (Spec § 4
+ * „Verdikt-Ampel"). `stable` nur bei 0 Verletzungen und ohne signifikanten
+ * Drift; `unstable` bei ≥ 3 Verletzungen oder starkem Trend (p < α/10);
+ * alles dazwischen ist `marginal`. `driver` benennt den Ausschlag-Grund für
+ * UI-Text (Interpretation-Textbaustein).
+ * @param {Array} ruleViolations — aufbereitete Verletzungen aus analyze()
+ * @param {object} drift — Rückgabe von _driftTest()
+ * @param {number} alpha — Signifikanzniveau
+ * @returns {{level:string, driver:string, nelsonCount:number, driftP:number,
+ *   thresholds:{nelsonUnstable:number, driftStrong:number, alpha:number}}}
+ */
+function _verdict(ruleViolations, drift, alpha) {
+  const nelsonCount = ruleViolations.length;
+  const strong = alpha / 10;
+  const nelsonBad = nelsonCount >= 3;
+  const driftStrong = drift.pValue < strong;
+  const driftAny = drift.pValue < alpha;
+  const thresholds = { nelsonUnstable: 3, driftStrong: strong, alpha };
+
+  if (nelsonCount === 0 && !driftAny) {
+    return { level: 'stable', driver: 'none', nelsonCount, driftP: drift.pValue, thresholds };
+  }
+  if (nelsonBad || driftStrong) {
+    let driver = 'both';
+    if (nelsonBad && !driftStrong) driver = 'nelson';
+    else if (!nelsonBad && driftStrong) driver = 'drift';
+    return { level: 'unstable', driver, nelsonCount, driftP: drift.pValue, thresholds };
+  }
+  const driver = nelsonCount > 0 ? 'nelson' : 'drift';
+  return { level: 'marginal', driver, nelsonCount, driftP: drift.pValue, thresholds };
+}
+
+/**
+ * Aggregate `meta.warnings` (Spec § 4 „Warnungen"): Basis zu klein
+ * (`W_BASELINE_LT_20`), nicht-monotone Zeitstempel
+ * (`W_TIMESTAMPS_NON_MONOTONIC`), oder Nelson-Verletzung innerhalb der
+ * Basis-Untergruppen (`W_LIMITS_FROM_UNSTABLE_BASELINE`, Grenzen ggf.
+ * kontaminiert).
+ * @param {object} inputs see validate()
+ * @param {object} limits Rückgabe von _computeLimits(inputs) (derzeit ungenutzt,
+ *   für künftige limits-abhängige Warnungen im Signature behalten)
+ * @param {Array} ruleViolations — aufbereitete Verletzungen aus analyze()
+ * @returns {Array<{code:string, params?:object}>}
+ */
+function _warnings(inputs, limits, ruleViolations) {
+  const w = [];
+  if (inputs.limitsMode === 'from-study' && inputs.baselineK < 20) {
+    w.push({ code: 'W_BASELINE_LT_20', params: { k: inputs.baselineK } });
+  }
+  if (Array.isArray(inputs.timestamps)) {
+    const ts = inputs.timestamps.map(t => (typeof t === 'string' ? Date.parse(t) : Number(t)));
+    const monotonic = ts.every((v, i) => i === 0 || v >= ts[i - 1]);
+    if (!monotonic) w.push({ code: 'W_TIMESTAMPS_NON_MONOTONIC' });
+  }
+  if (inputs.limitsMode === 'from-study') {
+    const inBase = ruleViolations.some(v => v.primaryIndex < inputs.baselineK);
+    if (inBase) w.push({ code: 'W_LIMITS_FROM_UNSTABLE_BASELINE' });
+  }
+  return w;
+}
+
+/**
  * Analyze stability data (I-MR or Xbar-R) for MSA Typ 6.
  * Grenzen-Berechnung (from-study + given) und Nelson-Regel-Aggregation
  * landen hier, ebenso der Drift-Test; Verdict/Ampel folgen in Task 6.
@@ -274,18 +336,29 @@ export function analyze(inputs) {
   const tScale = Array.isArray(inputs.timestamps) ? 'timestamp' : 'index';
   const drift = _driftTest(limits.primary.series, timestamps, inputs.alpha, tScale);
 
+  const verdict = _verdict(ruleViolations, drift, inputs.alpha);
+  const warnings = _warnings(inputs, limits, ruleViolations);
+  const interpretation = {
+    textKey: `modules.msa-typ6.interpretation.${verdict.level}.${verdict.driver}`,
+    params: {
+      nelsonCount: verdict.nelsonCount,
+      driftP: verdict.driftP.toFixed(4),
+      slope: drift.slope.toFixed(4),
+    },
+  };
+
   return {
     meta: {
       chartType: limits.chartType, limitsMode: inputs.limitsMode, n: limits.n,
       subgroupCount: limits.primary.series.length, pointCount: inputs.values.length,
-      baselineK: inputs.baselineK, warnings: [],
+      baselineK: inputs.baselineK, warnings,
     },
     primary:   { ...limits.primary, label: inputs.chartType === 'i-mr' ? 'i' : 'xbar', violations: primaryViolations },
     secondary: { ...limits.secondary, label: inputs.chartType === 'i-mr' ? 'MR' : 'R' },
     drift,
     ruleViolations,
-    verdict: null,         // Task 6
-    interpretation: null,  // Task 6
+    verdict,
+    interpretation,
   };
 }
 

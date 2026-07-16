@@ -157,3 +157,41 @@ suite('msa-typ6-engine — analyze (Drift-Test)', () => {
     assert(r.drift.pValue >= c.inputs.alpha, `stable case should not detect drift: pValue=${r.drift.pValue}`);
   });
 });
+
+suite('msa-typ6-engine — analyze (Ampel-Verdikt + Warnungen)', () => {
+  test('imr-stable: verdict stable, driver none', () => {
+    const r = analyze(CASE('imr-stable').inputs);
+    assert(r.verdict.level === 'stable', `level: ${r.verdict.level}`);
+    assert(r.verdict.driver === 'none', `driver: ${r.verdict.driver}`);
+  });
+
+  test('imr-drift: verdict unstable, driver drift', () => {
+    const r = analyze(CASE('imr-drift').inputs);
+    assert(r.verdict.level === 'unstable', r.verdict.level);
+    assert(r.verdict.driver === 'drift', r.verdict.driver);
+  });
+
+  test('xbar-r-shift: verdict unstable, driver nelson', () => {
+    const r = analyze(CASE('xbar-r-shift').inputs);
+    assert(r.verdict.level === 'unstable', r.verdict.level);
+    assert(r.verdict.driver === 'nelson', r.verdict.driver);
+  });
+
+  test('imr-outlier-rule1: verdict marginal (1 violation, no drift)', () => {
+    const r = analyze(CASE('imr-outlier-rule1').inputs);
+    assert(r.verdict.level === 'marginal', r.verdict.level);
+  });
+
+  test('baseline-warnings: W_LIMITS_FROM_UNSTABLE_BASELINE emitted', () => {
+    const r = analyze(CASE('baseline-warnings').inputs);
+    const warn = r.meta.warnings.find(w => w.code === 'W_LIMITS_FROM_UNSTABLE_BASELINE');
+    assert(warn, 'warning missing');
+  });
+
+  test('W_BASELINE_LT_20 when baselineK < 20', () => {
+    const inputs = { ...CASE('imr-stable').inputs, baselineK: 15 };
+    const r = analyze(inputs);
+    const warn = r.meta.warnings.find(w => w.code === 'W_BASELINE_LT_20');
+    assert(warn, 'W_BASELINE_LT_20 missing');
+  });
+});
