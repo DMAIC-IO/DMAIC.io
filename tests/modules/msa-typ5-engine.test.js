@@ -5,7 +5,7 @@
  */
 
 import { suite, test, assert, assertClose } from '../test-utils.js';
-import { validate, ERR, WARN, cohenKappa } from '../../js/engines/msa-typ5-engine.js';
+import { validate, ERR, WARN, cohenKappa, fleissKappa } from '../../js/engines/msa-typ5-engine.js';
 
 // Fixture-Loader — löst relativ zur eigenen JS-URL auf, damit
 // runner.html-Pfad (../fixtures/...) das richtige Verzeichnis erreicht.
@@ -130,5 +130,36 @@ suite('msa-typ5-engine — cohenKappa (weighted)', () => {
       { levels: [1, 2, 3, 4, 5], weights: 'quadratic', alpha: 0.05 });
     assertClose(r.kappa, c.expected.kappa, 1e-9);
     assert(r.method === 'weighted-quadratic');
+  });
+});
+
+// ─── fleissKappa ─────────────────────────────────────────────
+
+suite('msa-typ5-engine — fleissKappa', () => {
+  test('3rater-balanced matcht statsmodels + method fleiss-1971', async () => {
+    const fx = await loadFixture('fleiss-kappa');
+    const c = fx.test_cases.find(x => x.id === '3rater-balanced');
+    const byPart = new Map();
+    c.inputs.ratings.forEach((row, i) => byPart.set(i + 1, row));
+    const r = fleissKappa(byPart, { levels: ['ok', 'nok'], alpha: 0.05 });
+    assertClose(r.kappa, c.expected.kappa, 1e-9);
+    assert(r.method === 'fleiss-1971');
+    assertClose(r.se, c.expected.se, 1e-9);
+    assertClose(r.ci95[0], c.expected.ci95[0], 1e-9);
+    assertClose(r.ci95[1], c.expected.ci95[1], 1e-9);
+  });
+
+  test('3rater-unbalanced → Randolph, method vermerkt, SE = NaN', async () => {
+    const fx = await loadFixture('fleiss-kappa');
+    const c = fx.test_cases.find(x => x.id === '3rater-unbalanced-randolph');
+    const byPart = new Map();
+    c.inputs.ratings.forEach((row, i) => byPart.set(i + 1, row));
+    const r = fleissKappa(byPart, { levels: ['ok', 'nok'], alpha: 0.05 });
+    assertClose(r.kappa, c.expected.kappa, 1e-9);
+    assert(r.method === 'randolph');
+    // Fixture serialisiert NaN als String "NaN" — assertClose kann das.
+    assertClose(r.se, c.expected.se, 1e-9);
+    assertClose(r.ci95[0], c.expected.ci95[0], 1e-9);
+    assertClose(r.ci95[1], c.expected.ci95[1], 1e-9);
   });
 });

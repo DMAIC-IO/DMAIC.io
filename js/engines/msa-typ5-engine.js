@@ -155,3 +155,76 @@ function zQuantile(p) {
     return -(((((c[0]*q+c[1])*q+c[2])*q+c[3])*q+c[4])*q+c[5]) / ((((d[0]*q+d[1])*q+d[2])*q+d[3])*q+1);
   }
 }
+
+/**
+ * Fleiss kappa (≥ 2 rater, N categories). Auto-switches to Randolph's
+ * free-marginal formulation when rater-count per subject varies.
+ *
+ * Balanced (constant n_i·):
+ *   P_i = (Σ_j n_ij² − n_i·) / (n_i· (n_i· − 1))
+ *   P̄ = mean(P_i);  p̄_j = Σ_i n_ij / (N · n̄);  P_e = Σ_j p̄_j²
+ *   κ = (P̄ − P_e) / (1 − P_e)   — Fleiss 1971 SE geschlossen.
+ *
+ * Unbalanced:
+ *   Randolph free-marginal: P_e = 1/k → κ = (K·P̄ − 1) / (K − 1),
+ *   angewandt via allgemeiner Form (P̄ − 1/k) / (1 − 1/k). Kein
+ *   geschlossener SE-Ausdruck → se/ci95 = NaN. Matches the same
+ *   convention the fixture generator uses (`randolph` method).
+ *
+ * @param {Map<any, Array>} byPart Bewertungen je Teil (Rater-Dimension flach).
+ * @param {object} opts {levels, alpha}
+ * @returns {{kappa: number, se: number, ci95: [number, number], method: string}}
+ */
+export function fleissKappa(byPart, opts) {
+  const { levels, alpha } = opts;
+  const k = levels.length;
+  const idx = new Map(levels.map((v, i) => [v, i]));
+  const parts = [...byPart.keys()];
+  const N = parts.length;
+  const table = parts.map(p => {
+    const row = new Array(k).fill(0);
+    for (const v of byPart.get(p)) row[idx.get(v)]++;
+    return row;
+  });
+  const rowSums = table.map(r => r.reduce((s, v) => s + v, 0));
+  const balanced = rowSums.every(s => s === rowSums[0]);
+  const method = balanced ? 'fleiss-1971' : 'randolph';
+
+  let kappa, se = NaN, ci95 = [NaN, NaN];
+  if (balanced) {
+    const n = rowSums[0];
+    const P_i = table.map(row => {
+      const sq = row.reduce((s, v) => s + v * v, 0);
+      return (sq - n) / (n * (n - 1));
+    });
+    const P_bar = P_i.reduce((s, v) => s + v, 0) / N;
+    const p_j = new Array(k).fill(0);
+    for (let i = 0; i < N; i++) for (let j = 0; j < k; j++) p_j[j] += table[i][j] / (N * n);
+    const P_e = p_j.reduce((s, v) => s + v * v, 0);
+    kappa = P_e < 1 ? (P_bar - P_e) / (1 - P_e) : 1;
+
+    // Fleiss 1971 SE (approximate, unter H0 κ=0).
+    // Referenz: Fleiss, Levin & Paik (2003) "Statistical Methods for Rates
+    // and Proportions", 3rd ed., §18.2 — Formel (18.8).
+    const sq2 = p_j.reduce((s, v) => s + v * v, 0);
+    const sq3 = p_j.reduce((s, v) => s + v * v * v, 0);
+    const varK = (2 / (N * n * (n - 1))) *
+                 (sq2 - (2 * n - 3) * sq2 * sq2 + 2 * (n - 2) * sq3) /
+                 ((1 - sq2) ** 2);
+    se = Math.sqrt(varK);
+    const z = zQuantile(1 - alpha / 2);
+    ci95 = [kappa - z * se, kappa + z * se];
+  } else {
+    // Randolph: uniform marginal → P_e = 1/k
+    const P_i = table.map((row, i) => {
+      const n = rowSums[i];
+      if (n < 2) return NaN;
+      const sq = row.reduce((s, v) => s + v * v, 0);
+      return (sq - n) / (n * (n - 1));
+    }).filter(Number.isFinite);
+    const P_bar = P_i.reduce((s, v) => s + v, 0) / P_i.length;
+    const P_e = 1 / k;
+    kappa = (P_bar - P_e) / (1 - P_e);
+  }
+  return { kappa, se, ci95, method };
+}
