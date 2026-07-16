@@ -5,13 +5,20 @@
     "scipy": "1.15.3",
     "numpy": "2.2.6"
   },
-  "generated_at": "2026-07-16T08:38:44.235852+00:00",
+  "generated_at": "2026-07-16T08:49:20.635958+00:00",
   "generator_script": "tools/fixture-generator/generate_fixtures.py",
   "generator_version": "1.0.0",
   "tolerances": {
     "default": {
       "relative": 1e-09,
       "absolute": 1e-11
+    },
+    "overrides": {
+      "small_pvalue": {
+        "relative": 1e-06,
+        "absolute": 1e-10,
+        "reason": "Small/borderline p-values are sensitive to t-distribution tail accuracy; JS t-CDF uses a different numerical approximation than SciPy"
+      }
     }
   },
   "test_cases": [
@@ -286,6 +293,7 @@
         ],
         "alpha": 0.05
       },
+      "tolerance_override": "small_pvalue",
       "expected": {
         "cl": 10.16515,
         "ucl": 11.574668477043675,
@@ -1265,6 +1273,7 @@
         ],
         "alpha": 0.05
       },
+      "tolerance_override": "small_pvalue",
       "expected": {
         "cl": 19.886952,
         "ucl": 22.18494540950264,
