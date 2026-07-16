@@ -1,0 +1,18 @@
+<div class="module-msa-typ6 dmike-split" x-data="msaTyp6">
+  <div class="dmike-split__input">
+    <div class="dmike-split__section-title" x-text="t('name')"></div>
+    <p class="module-msa-typ6__hint" x-text="t('emptyHint')"></p>
+    <!-- Task 8: Input-Controls (Merkmalsname/Einheit, Kartentyp, Column-Picker, Grenzen-Modus, Nelson-Regeln, α) -->
+  </div>
+
+  <main class="dmike-split__output" data-ref="output">
+    <template x-if="_lastResult">
+      <div>
+        <!-- Task 9–13: Output-Sektionen (Verdikt, KPI-Kacheln, Regelkarte, Verletzungs-Tabelle, Drift-Analyse, Interpretation) -->
+      </div>
+    </template>
+    <template x-if="!_lastResult">
+      <div class="module-msa-typ6__empty" x-text="t('empty')"></div>
+    </template>
+  </main>
+</div>

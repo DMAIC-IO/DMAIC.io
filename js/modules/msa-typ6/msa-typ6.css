@@ -1,0 +1,26 @@
+/* ============================================================
+   DMAIC.io — MSA Typ 6 Module Styles (msa-typ6.css)
+   Theme-aware using CSS custom properties from variables.css.
+   Layout/fields/table/kpi reuse global .dmike-split / .field /
+   .dmike-table / .dmike-kpi-strip components from css/modules.css
+   and css/components.css.
+
+   Minimal skeleton (Task 7) — Task 8 adds input-control styles,
+   Task 9–13 add verdict/KPI/chart/table output styles.
+   ============================================================ */
+
+/* ─── Layout (extends global dmike-split from css/modules.css) ── */
+.module-msa-typ6 .dmike-split__input {
+  width: 380px;
+}
+
+.module-msa-typ6__empty {
+  padding: var(--spacing-xl);
+  text-align: center;
+  color: var(--color-text-secondary);
+}
+
+.module-msa-typ6__hint {
+  font-size: 0.85em;
+  color: var(--color-text-secondary);
+}
