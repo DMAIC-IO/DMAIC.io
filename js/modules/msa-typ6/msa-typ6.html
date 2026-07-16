@@ -157,7 +157,44 @@
   <main class="dmike-split__output" data-ref="output">
     <template x-if="_lastResult">
       <div>
-        <!-- Task 9–13: Output-Sektionen (Verdikt, KPI-Kacheln, Regelkarte, Verletzungs-Tabelle, Drift-Analyse, Interpretation) -->
+        <!-- Verdikt-Header (Task 9) -->
+        <div class="module-msa-typ6__verdict">
+          <span class="module-msa-typ6__verdict-dot"
+                :class="`module-msa-typ6__verdict-dot--${_lastResult.verdict.level === 'stable' ? 'good' : (_lastResult.verdict.level === 'marginal' ? 'warn' : 'bad')}`"></span>
+          <span class="module-msa-typ6__verdict-label" x-text="t('verdict.' + _lastResult.verdict.level)"></span>
+          <span class="module-msa-typ6__verdict-driver" x-text="t('driver.' + _lastResult.verdict.driver)"></span>
+        </div>
+
+        <!-- KPI-Strip (Task 9) -->
+        <div class="dmike-kpi-strip">
+          <div class="dmike-kpi">
+            <div class="dmike-kpi-label" x-text="t('kpi.points')"></div>
+            <div class="dmike-kpi-value" x-text="_lastResult.meta.pointCount"></div>
+          </div>
+          <div class="dmike-kpi">
+            <div class="dmike-kpi-label" x-text="t('kpi.mean')"></div>
+            <div class="dmike-kpi-value" x-text="_fmt(_mean(_lastResult.primary.series), 3)"></div>
+          </div>
+          <div class="dmike-kpi">
+            <div class="dmike-kpi-label" x-text="t('kpi.sigma')"></div>
+            <div class="dmike-kpi-value" x-text="_fmt(_lastResult.primary.sigma, 3)"></div>
+          </div>
+          <div class="dmike-kpi"
+               :class="_lastResult.verdict.nelsonCount >= 3 ? 'dmike-kpi--bad' : (_lastResult.verdict.nelsonCount > 0 ? 'dmike-kpi--warn' : 'dmike-kpi--good')">
+            <div class="dmike-kpi-label" x-text="t('kpi.violations')"></div>
+            <div class="dmike-kpi-value" x-text="_lastResult.verdict.nelsonCount"></div>
+          </div>
+          <div class="dmike-kpi">
+            <div class="dmike-kpi-label" x-text="t('kpi.driftSlope')"></div>
+            <div class="dmike-kpi-value" x-text="_fmt(_lastResult.drift.slope, 4)"></div>
+          </div>
+          <div class="dmike-kpi">
+            <div class="dmike-kpi-label" x-text="t('kpi.driftP')"></div>
+            <div class="dmike-kpi-value" x-text="_fmt(_lastResult.drift.pValue, 4)"></div>
+          </div>
+        </div>
+
+        <!-- Task 10–13: weitere Output-Sektionen (Regelkarte, Verletzungs-Tabelle, Drift-Analyse, Interpretation) -->
       </div>
     </template>
     <template x-if="!_lastResult">

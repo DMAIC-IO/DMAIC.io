@@ -6,7 +6,9 @@
    and css/components.css.
 
    Task 8 adds input-control styles (radios, Nelson-Regel-Liste).
-   Task 9–13 add verdict/KPI/chart/table output styles.
+   Task 9 adds the verdict-dot styles (KPI-strip layout itself is the
+   shared global .dmike-kpi-strip/.dmike-kpi from css/components.css).
+   Task 10–13 add chart/table/interpretation output styles.
    ============================================================ */
 
 /* ─── Layout (extends global dmike-split from css/modules.css) ── */
@@ -66,4 +68,27 @@
 .module-msa-typ6__nelson-desc {
   font-size: 0.85em;
   color: var(--color-text-secondary);
+}
+
+/* ─── Verdikt-Header (Task 9) ────────────────────────────────── */
+.module-msa-typ6__verdict {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  margin-bottom: var(--spacing-md);
+  font-weight: var(--font-weight-medium);
+}
+.module-msa-typ6__verdict-dot {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.module-msa-typ6__verdict-dot--good { background: var(--color-success); }
+.module-msa-typ6__verdict-dot--warn { background: var(--color-warning); }
+.module-msa-typ6__verdict-dot--bad  { background: var(--color-error); }
+.module-msa-typ6__verdict-driver {
+  color: var(--color-text-secondary);
+  font-weight: var(--font-weight-normal);
 }

@@ -135,3 +135,73 @@ suite('msa-typ6 module — Input-Panel Controls (Task 8)', () => {
       'given block must contain the sigma0 input');
   });
 });
+
+/**
+ * Task 9: Output-Panel Verdikt-Header + KPI-Strip.
+ *
+ * Same DOMParser-only constraint as Task 7/8 (see rationale above) — these
+ * tests assert against the real, shipped template that the markup Task 9
+ * ships is structurally present inside the `<template x-if="_lastResult">`
+ * branch, without a live Alpine mount.
+ */
+suite('msa-typ6 module — Output-Panel Verdikt-Header + KPI-Strip (Task 9)', () => {
+  /** Fetch + parse the real shipped template once per test. */
+  async function loadTemplateDoc() {
+    const url = new URL('../../js/modules/msa-typ6/msa-typ6.html', import.meta.url);
+    const html = await (await fetch(url)).text();
+    return new DOMParser().parseFromString(html, 'text/html');
+  }
+
+  /** @param {Document} doc @returns {DocumentFragment} the `_lastResult` result branch's content. */
+  function resultFragment(doc) {
+    const tpl = [...doc.querySelectorAll('template[x-if]')]
+      .find((t) => t.getAttribute('x-if') === '_lastResult');
+    assertTrue(tpl !== null, 'template must have a <template x-if="_lastResult"> branch');
+    return tpl.content;
+  }
+
+  test('result branch has a verdict-dot element', async () => {
+    const doc = await loadTemplateDoc();
+    const frag = resultFragment(doc);
+    const dot = frag.querySelector('.module-msa-typ6__verdict-dot');
+    assertTrue(dot !== null, 'missing .module-msa-typ6__verdict-dot element');
+    // Colour is driven dynamically via :class from verdict.level — assert the
+    // binding is wired to the expected good/warn/bad ternary, not a literal.
+    const binding = dot.getAttribute(':class') || '';
+    assertTrue(binding.includes('module-msa-typ6__verdict-dot--'),
+      'verdict-dot :class binding must reference the --good/--warn/--bad modifiers');
+    assertTrue(binding.includes("_lastResult.verdict.level === 'stable'"),
+      'verdict-dot :class binding must branch on verdict.level');
+  });
+
+  test('result branch has a KPI strip with at least six KPI tiles', async () => {
+    const doc = await loadTemplateDoc();
+    const frag = resultFragment(doc);
+    const strip = frag.querySelector('.dmike-kpi-strip');
+    assertTrue(strip !== null, 'missing .dmike-kpi-strip container');
+    const kpis = strip.querySelectorAll('.dmike-kpi');
+    assertTrue(kpis.length >= 6, `expected at least 6 .dmike-kpi tiles, got ${kpis.length}`);
+  });
+
+  test('result branch renders _lastResult.verdict.level and KPI value bindings', async () => {
+    const doc = await loadTemplateDoc();
+    const frag = resultFragment(doc);
+
+    // verdict.level is referenced (dot colour + verdict label text). Walk all
+    // elements and inspect their attributes directly instead of a CSS
+    // attribute-selector for ":class" (the colon needs escaping there and
+    // isn't worth the fragility for a plain existence check).
+    const levelRefs = [...frag.querySelectorAll('*')].filter((el) =>
+      [...el.attributes].some((a) => a.value.includes('_lastResult.verdict.level')));
+    assertTrue(levelRefs.length > 0, '_lastResult.verdict.level must be referenced in the result branch');
+
+    // KPI value bindings for the six required metrics.
+    const values = [...frag.querySelectorAll('.dmike-kpi-value[x-text]')].map((el) => el.getAttribute('x-text'));
+    assertTrue(values.some((v) => v.includes('_lastResult.meta.pointCount')), 'missing pointCount KPI binding');
+    assertTrue(values.some((v) => v.includes('_mean(_lastResult.primary.series)')), 'missing mean KPI binding');
+    assertTrue(values.some((v) => v.includes('_lastResult.primary.sigma')), 'missing sigma KPI binding');
+    assertTrue(values.some((v) => v.includes('_lastResult.verdict.nelsonCount')), 'missing nelsonCount KPI binding');
+    assertTrue(values.some((v) => v.includes('_lastResult.drift.slope')), 'missing drift.slope KPI binding');
+    assertTrue(values.some((v) => v.includes('_lastResult.drift.pValue')), 'missing drift.pValue KPI binding');
+  });
+});

@@ -11,10 +11,11 @@
  * via `js/engines/msa-typ6-engine.js` abgeleitet. ColumnPicker und Charts
  * werden imperativ gemountet (keine reinen Template-Belange).
  *
- * Task 8 (dieser Stand): Input-Panel Controls (Kartentyp, drei ColumnPicker,
- * Grenzen-Modus, Nelson-Regeln, α) + debounced Auto-Run (`_analyzeNow()`).
- * Output-Rendering (Verdikt, KPI-Kacheln, Regelkarte, Charts) folgt in
- * Task 9–13.
+ * Task 8: Input-Panel Controls (Kartentyp, drei ColumnPicker, Grenzen-Modus,
+ * Nelson-Regeln, α) + debounced Auto-Run (`_analyzeNow()`).
+ * Task 9 (dieser Stand): Output-Panel Verdikt-Header + KPI-Strip
+ * (`_fmt`/`_mean`-Formatierungs-Helfer). Regelkarte, Verletzungs-Tabelle,
+ * Drift-Analyse-Chart und Interpretation folgen in Task 10–13.
  *
  * Spec: docs/superpowers/specs/2026-07-16-msa-typ6-design.md § 6
  */
@@ -67,6 +68,32 @@ const mod = createModule({
         const lang = module._context.language || 'de';
         const rule = NELSON_RULES.find((r) => r.id === id);
         return rule ? (rule.desc[lang] || rule.desc.de) : '';
+      },
+
+      // ── Formatierungs-Helfer (Output-Panel, Task 9) ───────────
+
+      /**
+       * Formatiert eine Zahl mit fester Nachkommastellenzahl; nicht-endliche
+       * Werte (NaN/Infinity) werden als Em-Dash dargestellt statt "NaN".
+       * @param {number} v
+       * @param {number} [digits=3]
+       * @returns {string}
+       */
+      _fmt(v, digits = 3) {
+        return Number.isFinite(v) ? v.toFixed(digits) : '—';
+      },
+
+      /**
+       * Arithmetisches Mittel eines Zahlen-Arrays; ignoriert nicht-endliche
+       * Einträge (NaN/Infinity/undefined). Liefert NaN bei leerem/ungültigem
+       * Input (von {@link _fmt} als '—' dargestellt).
+       * @param {number[]} arr
+       * @returns {number}
+       */
+      _mean(arr) {
+        if (!Array.isArray(arr)) return NaN;
+        const valid = arr.filter((v) => Number.isFinite(v));
+        return valid.length ? valid.reduce((a, b) => a + b, 0) / valid.length : NaN;
       },
 
       // ── Analyse ──────────────────────────────────────────────
