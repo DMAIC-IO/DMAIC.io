@@ -17,14 +17,20 @@
  * Task 10: Regelkarten-Charts primary (I bzw. x̄) + secondary (MR bzw. R) via
  * `_renderCharts()`/`_destroyCharts()`/`_whenAnchor()` (chartManager
  * 'control-chart', bounded rAF-Poll für den verschachtelten `x-if`-Anker).
- * Task 11 (dieser Stand): Verletzungs-Tabelle unterhalb der Charts +
- * `_highlight(primaryIndex)` (Klick auf eine Zeile scrollt zur Primärkarte
- * + kurzzeitige Row-Highlight-Klasse). control-chart.js setzt keine
- * Pro-Punkt-DOM-Hooks (kein `data-chart-index` o. Ä.) — ein Klick-zu-Punkt-
- * Highlight auf dem SVG selbst würde eine Erweiterung des geteilten
- * Chart-Typs voraussetzen, was außerhalb dieses Tasks liegt (siehe Plan
- * Task 11, Variante c). Drift-Analyse-Chart und Interpretation folgen in
- * Task 12–13.
+ * Task 11: Verletzungs-Tabelle unterhalb der Charts + `_highlight(primaryIndex)`
+ * (Klick auf eine Zeile scrollt zur Primärkarte + kurzzeitige Row-Highlight-
+ * Klasse). control-chart.js setzt keine Pro-Punkt-DOM-Hooks (kein
+ * `data-chart-index` o. Ä.) — ein Klick-zu-Punkt-Highlight auf dem SVG
+ * selbst würde eine Erweiterung des geteilten Chart-Typs voraussetzen, was
+ * außerhalb dieses Tasks liegt (siehe Plan Task 11, Variante c).
+ * Task 12 (dieser Stand): Drift-Analyse-Chart (dritter Scatter-Chart) via
+ * `_renderDriftChart()` — Primär-Serie über einer Zeit-/Index-Achse plus
+ * Regressionsgerade aus `_lastResult.drift`. Reale `refLines`-API
+ * (chart-base.js `_drawRefLine`) kennt nur horizontale/vertikale Linien
+ * ({dir:'h'|'v', value}), keine diagonale from/to-Form — die Regressions-
+ * gerade wird daher (wie msa-typ4s "Fit"-Serie in `_renderRegressionChart`)
+ * als zweite Scatter-Serie mit zwei Endpunkten + `connectLine` gerendert.
+ * Interpretation folgt in Task 13.
  *
  * Spec: docs/superpowers/specs/2026-07-16-msa-typ6-design.md § 6
  */
@@ -255,6 +261,71 @@ const mod = createModule({
         });
         if (gen !== this._renderGen) { cm.destroy(c1); cm.destroy(c2); this._charts = []; return; }
         this._charts.push(c2);
+
+        await this._renderDriftChart(gen);
+      },
+
+      /**
+       * Rendert den Drift-Analyse-Chart (Task 12): Scatter der Primär-Serie
+       * über einer Zeit-/Index-Achse `t`, plus die Regressionsgerade aus
+       * `_lastResult.drift` (`y = intercept + slope · t`).
+       *
+       * `t` stammt aus den live gelesenen Roh-Timestamps, sofern eine
+       * Zeitstempel-Spalte gewählt ist UND deren (Wert-synchron gefilterte)
+       * Länge exakt zur Primär-Serie passt — das ist nur beim I-MR-Kartentyp
+       * der Fall (dort ist primary.series === values 1:1). Bei X̄-R hat die
+       * Primär-Serie eine Zeile pro Untergruppe statt pro Rohwert (siehe
+       * `_timeAxis()` in msa-typ6-engine.js, die dafür intern die
+       * Timestamps pro Untergruppe mittelt); dieses Gruppieren hier zu
+       * duplizieren liegt außerhalb dieses Tasks, daher der 1-basierte
+       * Punktindex-Fallback für X̄-R (und für "keine Zeitstempel-Spalte").
+       *
+       * Reale `refLines`-API (chart-base.js `_drawRefLine`) rendert nur
+       * horizontale/vertikale Linien ({dir:'h'|'v', value}) — keine
+       * diagonale from/to-Form für eine Regressionsgerade durch zwei
+       * beliebige Punkte. Die Gerade wird daher (Muster aus msa-typ4s
+       * `_renderRegressionChart` "Fit"-Serie) als zweite Scatter-Serie mit
+       * zwei Endpunkten + `connectLine` gerendert, nicht als `refLines`.
+       * @param {number} gen
+       */
+      async _renderDriftChart(gen) {
+        const host = await this._whenAnchor('[data-chart-host="drift"]', gen);
+        if (!host) return;
+        const cm = module._context.chartManager;
+
+        const { primary, drift } = this._lastResult;
+        const n = primary.series.length;
+        const inputs = this._buildInputs();
+        const t = (inputs && Array.isArray(inputs.timestamps) && inputs.timestamps.length === n)
+          ? inputs.timestamps.map((v) => (typeof v === 'string' ? Date.parse(v) : Number(v)))
+          : primary.series.map((_, i) => i + 1);
+
+        const tMin = Math.min(...t);
+        const tMax = Math.max(...t);
+
+        const c3 = await cm.create(host, 'scatter', {
+          showLegend: true,
+          xLabel: this.t('drift.xLabel'),
+          yLabel: this.t('drift.yLabel'),
+          series: [
+            {
+              name: this.t('drift.seriesLabel'),
+              color: 'var(--color-text-primary)',
+              x: t, y: primary.series,
+              symbol: 'circle', strokeWidth: 1.5,
+            },
+            {
+              name: this.t('drift.regressionLabel'),
+              color: 'var(--color-accent)',
+              x: [tMin, tMax],
+              y: [drift.intercept + drift.slope * tMin, drift.intercept + drift.slope * tMax],
+              markerSize: 0,
+              connectLine: { show: true, width: 1.5, dash: 'solid', color: 'var(--color-accent)' },
+            },
+          ],
+        });
+        if (gen !== this._renderGen) { cm.destroy(c3); return; }
+        this._charts.push(c3);
       },
 
       /** Zerstört alle aktuell gemounteten Regelkarten-Charts (idempotent). */

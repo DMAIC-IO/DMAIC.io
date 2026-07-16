@@ -316,3 +316,84 @@ suite('msa-typ6 module — Verletzungs-Tabelle + Chart-Verlinkung (Task 11)', ()
       'violation row must call _highlight(v.primaryIndex) on click');
   });
 });
+
+/**
+ * Task 12: Output-Panel Drift-Analyse-Chart (Scatter + Regressionsgerade)
+ * + Formel-Info-Block.
+ *
+ * Same DOMParser-only constraint as Task 7–11 (see rationale above): the
+ * chart itself is mounted imperatively via `chartManager.create(host,
+ * 'scatter', …)` from `_renderDriftChart()`, which needs a live Alpine
+ * mount + a real `chartManager` (SVG DOM) — neither is available in the
+ * headless DOMParser-based runner used here. So this suite asserts the
+ * templated chart-host anchor + formula bindings Task 12 ships are
+ * structurally present inside the `<template x-if="_lastResult">` branch,
+ * gated the same way as the primary/secondary chart hosts and only visible
+ * once an analysis has run (never in the Empty-State branch). Live
+ * chart-render coverage belongs to the Playwright E2E suite
+ * (test/playwright/tests/modules/msa-typ6.spec.js, a later task per
+ * docs/superpowers/specs/2026-07-16-msa-typ6-design.md § 9).
+ */
+suite('msa-typ6 module — Drift-Analyse-Chart (Task 12)', () => {
+  /** Fetch + parse the real shipped template once per test. */
+  async function loadTemplateDoc() {
+    const url = new URL('../../js/modules/msa-typ6/msa-typ6.html', import.meta.url);
+    const html = await (await fetch(url)).text();
+    return new DOMParser().parseFromString(html, 'text/html');
+  }
+
+  /** @param {Document} doc @returns {DocumentFragment} the `_lastResult` result branch's content. */
+  function resultFragment(doc) {
+    const tpl = [...doc.querySelectorAll('template[x-if]')]
+      .find((t) => t.getAttribute('x-if') === '_lastResult');
+    assertTrue(tpl !== null, 'template must have a <template x-if="_lastResult"> branch');
+    return tpl.content;
+  }
+
+  test('result branch has a .module-msa-typ6__drift container', async () => {
+    const doc = await loadTemplateDoc();
+    const frag = resultFragment(doc);
+    const drift = frag.querySelector('.module-msa-typ6__drift');
+    assertTrue(drift !== null, 'missing .module-msa-typ6__drift container');
+
+    // Must not appear in the Empty-State (!_lastResult) branch — the two
+    // branches are mutually exclusive templates, so this also guards
+    // against an accidental duplicate placed outside the result branch.
+    const noResultTpl = [...doc.querySelectorAll('template[x-if]')]
+      .find((t) => t.getAttribute('x-if') === '!_lastResult');
+    assertTrue(noResultTpl !== null, 'template must have a <template x-if="!_lastResult"> branch');
+    assertTrue(noResultTpl.content.querySelector('.module-msa-typ6__drift') === null,
+      '.module-msa-typ6__drift must not render in the Empty-State (!_lastResult) branch');
+  });
+
+  test('drift container has a chart host (x-ref="chartDrift", data-chart-host="drift")', async () => {
+    const doc = await loadTemplateDoc();
+    const frag = resultFragment(doc);
+    const drift = frag.querySelector('.module-msa-typ6__drift');
+    assertTrue(drift !== null, 'missing .module-msa-typ6__drift container');
+    const host = drift.querySelector('[x-ref="chartDrift"]');
+    assertTrue(host !== null, 'missing [x-ref="chartDrift"] chart host');
+    assertTrue(host.classList.contains('module-msa-typ6__chart-host'),
+      'chartDrift host must carry the shared .module-msa-typ6__chart-host class');
+    assertEqual(host.getAttribute('data-chart-host'), 'drift',
+      'chartDrift host must carry data-chart-host="drift" (the selector _renderDriftChart() queries for)');
+  });
+
+  test('drift container has the regression-formula bindings (intercept, slope)', async () => {
+    const doc = await loadTemplateDoc();
+    const frag = resultFragment(doc);
+    const drift = frag.querySelector('.module-msa-typ6__drift');
+    assertTrue(drift !== null, 'missing .module-msa-typ6__drift container');
+
+    const texts = [...drift.querySelectorAll('[x-text]')].map((el) => el.getAttribute('x-text'));
+    assertTrue(texts.some((v) => v === '_fmt(_lastResult.drift.intercept, 3)'),
+      'missing _fmt(_lastResult.drift.intercept, 3) binding');
+    assertTrue(texts.some((v) => v === '_fmt(_lastResult.drift.slope, 4)'),
+      'missing _fmt(_lastResult.drift.slope, 4) binding');
+    // The formula line also needs both bindings together with slope
+    // appearing a second time in the β₁ ± SE stats line — assert the
+    // overall count so a future edit can't silently drop one occurrence.
+    assertEqual(texts.filter((v) => v === '_fmt(_lastResult.drift.slope, 4)').length, 2,
+      'expected drift.slope to be bound twice (equation + β₁ ± SE stats line)');
+  });
+});

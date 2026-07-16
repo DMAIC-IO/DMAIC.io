@@ -227,7 +227,26 @@
           </tbody>
         </table>
 
-        <!-- Task 12–13: weitere Output-Sektionen (Drift-Analyse, Interpretation) -->
+        <!-- Drift-Analyse-Chart (Task 12): Scatter der Primär-Serie über der
+             Zeit-/Index-Achse + Regressionsgerade (als zweite Scatter-Serie
+             mit zwei Punkten + connectLine gerendert — siehe msa-typ6.js
+             _renderDriftChart() für die Begründung: die reale refLines-API
+             kennt keine diagonale from/to-Form) + Formel-Info-Block. -->
+        <div class="module-msa-typ6__drift">
+          <div class="module-msa-typ6__chart-host" x-ref="chartDrift" data-chart-host="drift"></div>
+          <div class="module-msa-typ6__drift-info">
+            <div class="module-msa-typ6__drift-eq">
+              <span>y = </span><span x-text="_fmt(_lastResult.drift.intercept, 3)"></span>
+              <span> + </span><span x-text="_fmt(_lastResult.drift.slope, 4)"></span><span> · t</span>
+            </div>
+            <div class="module-msa-typ6__drift-stats">
+              <span>β₁ ± SE = <span x-text="_fmt(_lastResult.drift.slope, 4)"></span> ± <span x-text="_fmt(_lastResult.drift.se, 4)"></span></span>
+              <span>t = <span x-text="_fmt(_lastResult.drift.tStat, 3)"></span>, df = <span x-text="_lastResult.drift.df"></span>, p = <span x-text="_fmt(_lastResult.drift.pValue, 4)"></span></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Task 13: Interpretation folgt. -->
       </div>
     </template>
     <template x-if="!_lastResult">
