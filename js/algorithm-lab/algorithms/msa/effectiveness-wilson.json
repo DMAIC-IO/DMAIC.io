@@ -1,0 +1,172 @@
+{
+  "id": "effectiveness-wilson",
+  "name": {
+    "de": "Effektivität mit Wilson-Score-KI",
+    "en": "Effectiveness with Wilson score CI"
+  },
+  "category": "msa",
+  "subcategory": "typ5",
+  "status": "validated",
+  "version": "1.0.0",
+
+  "description": {
+    "short": {
+      "de": "{{term:effektivitaet}} — Anteil korrekter Klassifikationen mit {{term:wilson-konfidenzintervall}}.",
+      "en": "{{term:effektivitaet}} — proportion of correct classifications with a {{term:wilson-konfidenzintervall}}."
+    },
+    "long": {
+      "de": "Die Effektivität eines Prüfers in MSA Typ 5 ist der Anteil seiner Einzel-Bewertungen, die mit der Referenz (Kunde oder {{term:konsens-fallback}}) übereinstimmen. Für die Konfidenzintervall-Berechnung nutzt DMAIC.io das Wilson-Score-Intervall statt der klassischen Wald-Näherung: bei Anteilen nahe 0 % oder 100 % (also genau dort, wo attributive Prüfergebnisse üblicherweise liegen) liefert Wilson eine deutlich bessere Abdeckungswahrscheinlichkeit — und ohne die Wald-typische Situation, dass Intervall-Ränder ins Unphysikalische (< 0 oder > 1) rutschen. Anwendbar auf jede Rate: {{term:effektivitaet}}, {{term:miss-rate}}, {{term:false-alarm-rate}}, Wiederholbarkeit.",
+      "en": "In MSA Type 5 the effectiveness of a rater is the proportion of individual ratings that agree with the reference (customer or {{term:konsens-fallback}}). For the confidence interval DMAIC.io uses the Wilson score interval instead of the classical Wald approximation: at proportions near 0 % or 100 % (exactly where attribute inspection outcomes usually sit) Wilson has markedly better coverage — and it never produces the Wald pathology of interval edges leaking below 0 or above 1. Applicable to any rate: {{term:effektivitaet}}, {{term:miss-rate}}, {{term:false-alarm-rate}}, repeatability."
+    }
+  },
+
+  "documentation": {
+    "formulas": [
+      {
+        "label": "Rate",
+        "latex": "\\hat p = \\frac{k}{n}",
+        "description": {
+          "de": "Punktschätzer: Anzahl Erfolge k geteilt durch Anzahl Versuche n",
+          "en": "Point estimate: number of successes k divided by number of trials n"
+        }
+      },
+      {
+        "label": "Zentrum",
+        "latex": "\\tilde p = \\frac{\\hat p + \\tfrac{z^2}{2n}}{1 + \\tfrac{z^2}{n}}",
+        "description": {
+          "de": "Verschobenes Zentrum des Wilson-Intervalls (z = z_{1−α/2})",
+          "en": "Shifted centre of the Wilson interval (z = z_{1−α/2})"
+        }
+      },
+      {
+        "label": "Halbweite",
+        "latex": "\\Delta = \\frac{z \\, \\sqrt{ \\tfrac{\\hat p (1 - \\hat p)}{n} + \\tfrac{z^2}{4 n^2} }}{1 + \\tfrac{z^2}{n}}",
+        "description": {
+          "de": "Halbe Breite des Wilson-KIs",
+          "en": "Half-width of the Wilson CI"
+        }
+      },
+      {
+        "label": "95 %-KI",
+        "latex": "[\\, \\max(0, \\tilde p - \\Delta), \\; \\min(1, \\tilde p + \\Delta) \\,]",
+        "description": {
+          "de": "Konfidenzintervall, geklemmt auf [0, 1]",
+          "en": "Confidence interval, clamped to [0, 1]"
+        }
+      }
+    ],
+    "assumptions": [
+      {
+        "de": "Bernoulli-Versuche: jede Bewertung ist unabhängig entweder korrekt oder falsch",
+        "en": "Bernoulli trials: each rating is independently either correct or incorrect"
+      },
+      {
+        "de": "Konstante Rate p über alle Bewertungen desselben Prüfers",
+        "en": "Constant rate p across all ratings of the same rater"
+      }
+    ],
+    "limitations": [
+      {
+        "de": "Bei n < 5 ist auch das Wilson-Intervall grob — dann exaktes Clopper-Pearson-KI in Betracht ziehen",
+        "en": "For n < 5 even the Wilson interval is coarse — consider an exact Clopper-Pearson interval instead"
+      },
+      {
+        "de": "Symmetrische Rundung im UI kann bei p = 0 bzw. 1 den Eindruck erwecken, das KI sei ein Punkt",
+        "en": "Symmetric UI rounding may make p = 0 or p = 1 look like the CI is a point"
+      }
+    ],
+    "references": [
+      {
+        "source": "Wilson, E. B. (1927) — Probable inference, the law of succession, and statistical inference, JASA 22(158)"
+      },
+      {
+        "source": "Agresti, A. & Coull, B. A. (1998) — Approximate is better than \"exact\" for interval estimation of binomial proportions, The American Statistician 52(2)"
+      },
+      {
+        "source": "Brown, L. D., Cai, T. T. & DasGupta, A. (2001) — Interval estimation for a binomial proportion, Statistical Science 16(2)"
+      }
+    ],
+    "minitab_equivalent": "Stat > Basic Statistics > 1 Proportion (Wilson-score interval option)"
+  },
+
+  "source": {
+    "function_name": "wilsonCILab",
+    "file_path": "js/algorithm-lab/wrappers/msa-typ5-wrappers.js",
+    "signature": {
+      "parameters": [
+        {
+          "name": "inputs",
+          "type": "object",
+          "required": true,
+          "description": {
+            "de": "Objekt mit agree (Erfolge), total (Versuche) und alpha",
+            "en": "Object with agree (successes), total (trials) and alpha"
+          }
+        }
+      ],
+      "returns": {
+        "type": "object",
+        "properties": {
+          "agree": { "type": "number", "description": { "de": "Anzahl Erfolge", "en": "Number of successes" } },
+          "total": { "type": "number", "description": { "de": "Anzahl Versuche", "en": "Number of trials" } },
+          "rate":  { "type": "number", "description": { "de": "Punktschätzer p = k/n", "en": "Point estimate p = k/n" } },
+          "ci95":  { "type": "array",  "description": { "de": "95 %-Wilson-KI [lo, hi]", "en": "95 % Wilson CI [lo, hi]" } }
+        }
+      }
+    },
+    "code_snippet": null
+  },
+
+  "try_it": {
+    "input_schema": {
+      "fields": [
+        {
+          "name": "agree",
+          "label": { "de": "Übereinstimmungen (k)", "en": "Agreements (k)" },
+          "type": "number",
+          "placeholder": { "de": "z. B. 27", "en": "e.g. 27" },
+          "parse_as": "number",
+          "required": true
+        },
+        {
+          "name": "total",
+          "label": { "de": "Gesamt-Bewertungen (n)", "en": "Total ratings (n)" },
+          "type": "number",
+          "placeholder": { "de": "z. B. 30", "en": "e.g. 30" },
+          "parse_as": "number",
+          "required": true
+        },
+        {
+          "name": "alpha",
+          "label": { "de": "Signifikanzniveau α", "en": "Significance level α" },
+          "type": "number",
+          "placeholder": { "de": "Standard: 0.05", "en": "Default: 0.05" },
+          "parse_as": "number",
+          "required": false,
+          "default": 0.05
+        }
+      ]
+    },
+    "output_schema": {
+      "display_fields": ["rate", "ci95"],
+      "primary_field": "rate",
+      "format": {
+        "rate": { "decimals": 6, "label": { "de": "Rate", "en": "Rate" } },
+        "ci95": { "decimals": 6, "label": { "de": "95 %-KI", "en": "95 % CI" } }
+      }
+    }
+  },
+
+  "changelog": [
+    {
+      "version": "1.0.0",
+      "date": "2026-07-16",
+      "type": "initial",
+      "description": {
+        "de": "Erstimplementierung: Wilson-Score-KI für Effektivität, Miss-Rate, False-Alarm-Rate und Wiederholbarkeit in MSA Typ 5",
+        "en": "Initial implementation: Wilson score CI for effectiveness, miss rate, false alarm rate and repeatability in MSA Type 5"
+      },
+      "breaking": false
+    }
+  ]
+}

@@ -1,0 +1,194 @@
+{
+  "id": "weighted-kappa",
+  "name": {
+    "de": "Weighted κ (ordinal, linear/quadratisch)",
+    "en": "Weighted κ (ordinal, linear/quadratic)"
+  },
+  "category": "msa",
+  "subcategory": "typ5",
+  "status": "validated",
+  "version": "1.0.0",
+
+  "description": {
+    "short": {
+      "de": "{{term:weighted-kappa}} — Übereinstimmung mit distanzabhängiger Gewichtung, für ordinale Skalen (z. B. Noten 1–5).",
+      "en": "{{term:weighted-kappa}} — agreement with distance-weighted disagreements, for ordinal scales (e.g. grades 1–5)."
+    },
+    "long": {
+      "de": "Weighted κ verallgemeinert Cohen κ, indem Fehlklassifikationen nicht mehr binär (0/1), sondern nach ihrer Distanz auf der ordinalen Skala gewichtet werden. Kleine Abweichungen (Note 3 vs. 4) zählen weniger als große (Note 1 vs. 5). Zwei Standardvarianten: **linear** (w_ij = 1 − |i−j|/(k−1)) und **quadratisch** (w_ij = 1 − ((i−j)/(k−1))²). Die quadratische Variante nach Cicchetti & Allison (1971) ist der De-facto-Standard und Minitab-kompatibel. Ohne Gewichtung reduziert sich weighted κ auf {{term:cohen-kappa}}.",
+      "en": "Weighted κ generalises Cohen κ by scoring disagreements not binary (0/1) but by their distance on the ordinal scale. Small discrepancies (grade 3 vs. 4) count less than large ones (grade 1 vs. 5). Two standard variants: **linear** (w_ij = 1 − |i−j|/(k−1)) and **quadratic** (w_ij = 1 − ((i−j)/(k−1))²). The quadratic form per Cicchetti & Allison (1971) is the de-facto standard and matches Minitab. Without weighting weighted κ collapses to {{term:cohen-kappa}}."
+    }
+  },
+
+  "documentation": {
+    "formulas": [
+      {
+        "label": "W (linear)",
+        "latex": "w_{ij} = 1 - \\frac{|i - j|}{k - 1}",
+        "description": {
+          "de": "Lineare Gewichts-Matrix; k = Anzahl ordinaler Stufen",
+          "en": "Linear weight matrix; k = number of ordinal levels"
+        }
+      },
+      {
+        "label": "W (quadratisch)",
+        "latex": "w_{ij} = 1 - \\left(\\frac{i - j}{k - 1}\\right)^{2}",
+        "description": {
+          "de": "Quadratische Gewichts-Matrix (Cicchetti-Allison-Standard)",
+          "en": "Quadratic weight matrix (Cicchetti-Allison standard)"
+        }
+      },
+      {
+        "label": "p_o (weighted)",
+        "latex": "p_o = \\sum_{i,j} w_{ij} \\cdot p_{ij}",
+        "description": {
+          "de": "Gewichtete beobachtete Übereinstimmung (p_ij = relative Zellhäufigkeit)",
+          "en": "Weighted observed agreement (p_ij = relative cell frequency)"
+        }
+      },
+      {
+        "label": "p_e (weighted)",
+        "latex": "p_e = \\sum_{i,j} w_{ij} \\cdot p_{i\\cdot} \\, p_{\\cdot j}",
+        "description": {
+          "de": "Gewichtete erwartete Zufallsübereinstimmung",
+          "en": "Weighted chance agreement"
+        }
+      },
+      {
+        "label": "κ_w",
+        "latex": "\\kappa_w = \\frac{p_o - p_e}{1 - p_e}",
+        "description": {
+          "de": "Weighted-Kappa-Koeffizient",
+          "en": "Weighted kappa coefficient"
+        }
+      }
+    ],
+    "assumptions": [
+      {
+        "de": "Ordinale Skala mit definierter Reihenfolge der Stufen",
+        "en": "Ordinal scale with a defined ordering of the levels"
+      },
+      {
+        "de": "Zwei Prüfer bewerten dieselben Teile",
+        "en": "Two raters classify the same subjects"
+      },
+      {
+        "de": "Gewichtungsschema bewusst gewählt (linear = milde, quadratisch = strenge Bestrafung großer Abweichungen)",
+        "en": "Weighting scheme is a deliberate choice (linear = mild, quadratic = strict penalty for large disagreements)"
+      }
+    ],
+    "limitations": [
+      {
+        "de": "Nicht sinnvoll für rein nominale Skalen — dort {{term:cohen-kappa}} oder {{term:fleiss-kappa}} verwenden",
+        "en": "Not meaningful for purely nominal scales — use {{term:cohen-kappa}} or {{term:fleiss-kappa}} instead"
+      },
+      {
+        "de": "Wahl von linear vs. quadratisch verändert κ deutlich; für Vergleichbarkeit dieselbe Variante wählen",
+        "en": "The choice of linear vs. quadratic changes κ noticeably; use the same variant for comparability"
+      }
+    ],
+    "references": [
+      {
+        "source": "Cohen, J. (1968) — Weighted kappa: Nominal scale agreement with provision for scaled disagreement, Psychological Bulletin 70(4)"
+      },
+      {
+        "source": "Cicchetti, D. V. & Allison, T. (1971) — A new procedure for assessing reliability of scoring EEG sleep recordings, American Journal of EEG Technology 11(3)"
+      },
+      {
+        "source": "Fleiss, J. L., Cohen, J. & Everitt, B. S. (1969) — Large sample standard errors of kappa and weighted kappa, Psychological Bulletin 72(5)"
+      }
+    ],
+    "minitab_equivalent": "Stat > Quality Tools > Attribute Agreement Analysis (ordinal, weighted kappa)"
+  },
+
+  "source": {
+    "function_name": "weightedKappaLab",
+    "file_path": "js/algorithm-lab/wrappers/msa-typ5-wrappers.js",
+    "signature": {
+      "parameters": [
+        {
+          "name": "inputs",
+          "type": "object",
+          "required": true,
+          "description": {
+            "de": "Objekt mit raterA, raterB, weights ('linear'|'quadratic'), alpha",
+            "en": "Object with raterA, raterB, weights ('linear'|'quadratic'), alpha"
+          }
+        }
+      ],
+      "returns": {
+        "type": "object",
+        "properties": {
+          "kappa":  { "type": "number", "description": { "de": "Weighted-Kappa-Koeffizient", "en": "Weighted kappa coefficient" } },
+          "method": { "type": "string", "description": { "de": "\"weighted-linear\" oder \"weighted-quadratic\"", "en": "\"weighted-linear\" or \"weighted-quadratic\"" } },
+          "se":     { "type": "number", "description": { "de": "Standardfehler von κ_w", "en": "Standard error of κ_w" } },
+          "ci95":   { "type": "array",  "description": { "de": "95 %-Konfidenzintervall", "en": "95 % confidence interval" } }
+        }
+      }
+    },
+    "code_snippet": null
+  },
+
+  "try_it": {
+    "input_schema": {
+      "fields": [
+        {
+          "name": "raterA",
+          "label": { "de": "Bewertungen Prüfer A", "en": "Ratings rater A" },
+          "type": "textarea",
+          "placeholder": { "de": "z. B. 1;2;3;4;5;1;2;…", "en": "e.g. 1, 2, 3, 4, 5, 1, 2, …" },
+          "parse_as": "number_array",
+          "required": true
+        },
+        {
+          "name": "raterB",
+          "label": { "de": "Bewertungen Prüfer B", "en": "Ratings rater B" },
+          "type": "textarea",
+          "placeholder": { "de": "Gleiche Länge und Reihenfolge wie Prüfer A", "en": "Same length and order as rater A" },
+          "parse_as": "number_array",
+          "required": true
+        },
+        {
+          "name": "weights",
+          "label": { "de": "Gewichtung", "en": "Weighting" },
+          "type": "select",
+          "options": [
+            { "value": "linear",    "label": { "de": "Linear", "en": "Linear" } },
+            { "value": "quadratic", "label": { "de": "Quadratisch (Cicchetti-Allison)", "en": "Quadratic (Cicchetti-Allison)" } }
+          ],
+          "default": "quadratic",
+          "required": true
+        },
+        {
+          "name": "alpha",
+          "label": { "de": "Signifikanzniveau α", "en": "Significance level α" },
+          "type": "number",
+          "parse_as": "number",
+          "required": false,
+          "default": 0.05
+        }
+      ]
+    },
+    "output_schema": {
+      "display_fields": ["kappa", "method"],
+      "primary_field": "kappa",
+      "format": {
+        "kappa":  { "decimals": 6, "label": "κ_w" },
+        "method": { "label": { "de": "Methode", "en": "Method" } }
+      }
+    }
+  },
+
+  "changelog": [
+    {
+      "version": "1.0.0",
+      "date": "2026-07-16",
+      "type": "initial",
+      "description": {
+        "de": "Erstimplementierung: Weighted κ (linear + quadratisch) für ordinale Skalen in MSA Typ 5",
+        "en": "Initial implementation: Weighted κ (linear + quadratic) for ordinal scales in MSA Type 5"
+      },
+      "breaking": false
+    }
+  ]
+}

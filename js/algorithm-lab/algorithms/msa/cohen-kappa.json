@@ -1,0 +1,194 @@
+{
+  "id": "cohen-kappa",
+  "name": {
+    "de": "Cohen κ (zwei Prüfer)",
+    "en": "Cohen κ (two raters)"
+  },
+  "category": "msa",
+  "subcategory": "typ5",
+  "status": "validated",
+  "version": "1.0.0",
+
+  "description": {
+    "short": {
+      "de": "{{term:cohen-kappa}} — Übereinstimmung zwischen zwei Prüfern für kategoriale Daten, korrigiert um Zufallsübereinstimmung.",
+      "en": "{{term:cohen-kappa}} — agreement between two raters for categorical data, corrected for chance."
+    },
+    "long": {
+      "de": "Cohen κ vergleicht die beobachtete Übereinstimmung p_o mit der aus den Randverteilungen erwarteten Zufallsübereinstimmung p_e. κ = 1 → perfekte Übereinstimmung, κ = 0 → nur Zufall, κ < 0 → schlechter als Zufall. Grundbaustein aller {{term:kappa}}-Kennzahlen in DMAIC.io; wird in MSA Typ 5 paarweise für alle Prüferpaare berechnet und liefert das Fundament für {{term:fleiss-kappa}} und {{term:weighted-kappa}}. Die Standardfehler-Näherung nach Fleiss/Cohen/Everitt (1969) speist ein symmetrisches Wald-Konfidenzintervall.",
+      "en": "Cohen κ compares the observed agreement p_o with the chance agreement p_e derived from the marginal distributions. κ = 1 → perfect agreement, κ = 0 → chance, κ < 0 → worse than chance. Cornerstone of all {{term:kappa}} KPIs in DMAIC.io; MSA Type 5 computes it pairwise for every rater pair and it is the base for {{term:fleiss-kappa}} and {{term:weighted-kappa}}. The Fleiss/Cohen/Everitt (1969) SE approximation feeds a symmetric Wald confidence interval."
+    }
+  },
+
+  "documentation": {
+    "formulas": [
+      {
+        "label": "p_o",
+        "latex": "p_o = \\frac{1}{N} \\sum_{i} n_{ii}",
+        "description": {
+          "de": "Beobachtete Übereinstimmung: Anteil der Fälle auf der Diagonale der Kreuztabelle",
+          "en": "Observed agreement: proportion of cases on the cross-tabulation diagonal"
+        }
+      },
+      {
+        "label": "p_e",
+        "latex": "p_e = \\sum_{i} \\frac{n_{i\\cdot} \\, n_{\\cdot i}}{N^2}",
+        "description": {
+          "de": "Erwartete Zufallsübereinstimmung nach beobachteten Randverteilungen",
+          "en": "Chance agreement derived from the observed marginal distributions"
+        }
+      },
+      {
+        "label": "κ",
+        "latex": "\\kappa = \\frac{p_o - p_e}{1 - p_e}",
+        "description": {
+          "de": "Cohen-Kappa-Koeffizient",
+          "en": "Cohen kappa coefficient"
+        }
+      },
+      {
+        "label": "SE(κ)",
+        "latex": "\\mathrm{SE}(\\kappa) = \\sqrt{\\frac{p_o \\, (1 - p_o)}{N \\, (1 - p_e)^2}}",
+        "description": {
+          "de": "Standardfehler nach Fleiss/Cohen/Everitt (1969)",
+          "en": "Standard error per Fleiss/Cohen/Everitt (1969)"
+        }
+      },
+      {
+        "label": "95 %-KI",
+        "latex": "\\kappa \\pm z_{1-\\alpha/2} \\cdot \\mathrm{SE}(\\kappa)",
+        "description": {
+          "de": "Symmetrisches Wald-Konfidenzintervall",
+          "en": "Symmetric Wald confidence interval"
+        }
+      }
+    ],
+    "assumptions": [
+      {
+        "de": "Zwei Prüfer bewerten dieselbe Menge Teile mit derselben Skala",
+        "en": "Two raters classify the same set of subjects on the same scale"
+      },
+      {
+        "de": "Kategoriale Bewertungen (binär oder nominal); für ordinale Skalen ist {{term:weighted-kappa}} passender",
+        "en": "Categorical ratings (binary or nominal); for ordinal scales {{term:weighted-kappa}} is more appropriate"
+      },
+      {
+        "de": "Unabhängige Bewertungen (Prüfer beeinflussen sich nicht gegenseitig)",
+        "en": "Independent ratings (raters do not influence each other)"
+      }
+    ],
+    "limitations": [
+      {
+        "de": "κ ist niedrig, wenn eine Klasse selten ist, auch bei fast perfekter Übereinstimmung (Kappa-Paradox)",
+        "en": "κ is low when one class is rare, even under near-perfect agreement (kappa paradox)"
+      },
+      {
+        "de": "Der Wald-SE ist unter H₀ κ=0 hergeleitet — bei sehr kleinen N sind KI-Ränder ungenau",
+        "en": "The Wald SE is derived under H₀ κ=0 — CI edges are imprecise for very small N"
+      }
+    ],
+    "references": [
+      {
+        "source": "Cohen, J. (1960) — A coefficient of agreement for nominal scales, Educational and Psychological Measurement 20(1)"
+      },
+      {
+        "source": "Fleiss, J. L., Cohen, J. & Everitt, B. S. (1969) — Large sample standard errors of kappa and weighted kappa, Psychological Bulletin 72(5)"
+      },
+      {
+        "source": "AIAG — Measurement Systems Analysis Reference Manual, 4th Edition (MSA-4), Kapitel III-B: Attribute Measurement Systems"
+      }
+    ],
+    "minitab_equivalent": "Stat > Quality Tools > Attribute Agreement Analysis (paired appraisers)"
+  },
+
+  "source": {
+    "function_name": "cohenKappaLab",
+    "file_path": "js/algorithm-lab/wrappers/msa-typ5-wrappers.js",
+    "signature": {
+      "parameters": [
+        {
+          "name": "inputs",
+          "type": "object",
+          "required": true,
+          "description": {
+            "de": "Objekt mit raterA (Array), raterB (Array) und alpha (Zahl, Default 0.05)",
+            "en": "Object with raterA (array), raterB (array) and alpha (number, default 0.05)"
+          }
+        }
+      ],
+      "returns": {
+        "type": "object",
+        "properties": {
+          "kappa":  { "type": "number", "description": { "de": "Cohen-Kappa-Koeffizient", "en": "Cohen kappa coefficient" } },
+          "se":     { "type": "number", "description": { "de": "Standardfehler von κ", "en": "Standard error of κ" } },
+          "ci95":   { "type": "array",  "description": { "de": "95 %-Konfidenzintervall [lo, hi]", "en": "95 % confidence interval [lo, hi]" } },
+          "method": { "type": "string", "description": { "de": "\"cohen\" bei unweighted", "en": "\"cohen\" for unweighted" } },
+          "confusion": { "type": "array", "description": { "de": "Kreuztabelle raterA × raterB", "en": "Cross-tabulation raterA × raterB" } },
+          "levels": { "type": "array", "description": { "de": "Verwendete Klassen (sortiert)", "en": "Levels used (sorted)" } }
+        }
+      }
+    },
+    "code_snippet": null
+  },
+
+  "try_it": {
+    "input_schema": {
+      "fields": [
+        {
+          "name": "raterA",
+          "label": { "de": "Bewertungen Prüfer A", "en": "Ratings rater A" },
+          "type": "textarea",
+          "placeholder": {
+            "de": "z. B. ok; ok; nok; ok; nok; …",
+            "en": "e.g. ok, ok, nok, ok, nok, …"
+          },
+          "parse_as": "string_array",
+          "required": true
+        },
+        {
+          "name": "raterB",
+          "label": { "de": "Bewertungen Prüfer B", "en": "Ratings rater B" },
+          "type": "textarea",
+          "placeholder": {
+            "de": "Gleiche Länge und Reihenfolge wie Prüfer A",
+            "en": "Same length and order as rater A"
+          },
+          "parse_as": "string_array",
+          "required": true
+        },
+        {
+          "name": "alpha",
+          "label": { "de": "Signifikanzniveau α", "en": "Significance level α" },
+          "type": "number",
+          "placeholder": { "de": "Standard: 0.05", "en": "Default: 0.05" },
+          "parse_as": "number",
+          "required": false,
+          "default": 0.05
+        }
+      ]
+    },
+    "output_schema": {
+      "display_fields": ["kappa", "se", "ci95", "method"],
+      "primary_field": "kappa",
+      "format": {
+        "kappa":  { "decimals": 6, "label": "κ" },
+        "se":     { "decimals": 6, "label": "SE(κ)" },
+        "ci95":   { "decimals": 6, "label": { "de": "95 %-KI", "en": "95 % CI" } },
+        "method": { "label": { "de": "Methode", "en": "Method" } }
+      }
+    }
+  },
+
+  "changelog": [
+    {
+      "version": "1.0.0",
+      "date": "2026-07-16",
+      "type": "initial",
+      "description": {
+        "de": "Erstimplementierung: Cohen κ als Grundbaustein für MSA Typ 5 (attributive Prüfmittel-Fähigkeit)",
+        "en": "Initial implementation: Cohen κ as the base of MSA Type 5 (attribute measurement system analysis)"
+      },
+      "breaking": false
+    }
+  ]
+}

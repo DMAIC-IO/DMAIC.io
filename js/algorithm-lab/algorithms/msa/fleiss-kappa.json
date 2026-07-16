@@ -1,0 +1,181 @@
+{
+  "id": "fleiss-kappa",
+  "name": {
+    "de": "Fleiss κ (≥ 2 Prüfer)",
+    "en": "Fleiss κ (≥ 2 raters)"
+  },
+  "category": "msa",
+  "subcategory": "typ5",
+  "status": "validated",
+  "version": "1.0.0",
+
+  "description": {
+    "short": {
+      "de": "{{term:fleiss-kappa}} — Gesamt-Übereinstimmung von zwei oder mehr Prüfern für kategoriale Daten.",
+      "en": "{{term:fleiss-kappa}} — overall agreement of two or more raters for categorical data."
+    },
+    "long": {
+      "de": "Fleiss κ verallgemeinert Cohens Idee auf mehr als zwei Prüfer und beliebige Kategorien. Grundlage ist die pro Teil beobachtete Paar-Übereinstimmung P_i, die über alle Teile gemittelt und ins Verhältnis zur erwarteten Zufallsübereinstimmung P_e (aus den Klassen-Randanteilen) gesetzt wird. Die klassische Formel setzt gleich viele Bewertungen pro Teil voraus (`fleiss-1971`); bei ungleichen Prüfer-Zahlen pro Teil wechselt DMAIC.io auf die {{term:kappa}}-Variante nach Randolph (free-marginal), für die es keinen geschlossenen SE-Ausdruck gibt — Standardfehler und Konfidenzintervall sind dann NaN.",
+      "en": "Fleiss κ extends Cohen's idea to more than two raters and any number of categories. It averages the per-subject pairwise agreement P_i and normalises it against the chance agreement P_e derived from the class marginals. The classical formula (`fleiss-1971`) requires an equal number of ratings per subject; when rater counts differ across subjects DMAIC.io switches to the {{term:kappa}} variant per Randolph (free-marginal), for which no closed-form SE exists — SE and CI are then NaN."
+    }
+  },
+
+  "documentation": {
+    "formulas": [
+      {
+        "label": "P_i",
+        "latex": "P_i = \\frac{\\sum_{j} n_{ij}^{2} - n_{i\\cdot}}{n_{i\\cdot} (n_{i\\cdot} - 1)}",
+        "description": {
+          "de": "Beobachtete Paar-Übereinstimmung an Teil i (n_ij = Anzahl Bewertungen der Klasse j)",
+          "en": "Observed pairwise agreement at subject i (n_ij = number of ratings in class j)"
+        }
+      },
+      {
+        "label": "P̄",
+        "latex": "\\bar P = \\frac{1}{N} \\sum_{i=1}^{N} P_i",
+        "description": {
+          "de": "Mittelwert der Paar-Übereinstimmung über alle Teile",
+          "en": "Mean pairwise agreement across all subjects"
+        }
+      },
+      {
+        "label": "P_e",
+        "latex": "P_e = \\sum_{j} \\bar p_j^{\\,2}, \\quad \\bar p_j = \\frac{\\sum_i n_{ij}}{N \\cdot \\bar n}",
+        "description": {
+          "de": "Erwartete Zufallsübereinstimmung aus den Klassen-Randanteilen",
+          "en": "Chance agreement derived from the class marginals"
+        }
+      },
+      {
+        "label": "κ",
+        "latex": "\\kappa = \\frac{\\bar P - P_e}{1 - P_e}",
+        "description": {
+          "de": "Fleiss-Kappa-Koeffizient",
+          "en": "Fleiss kappa coefficient"
+        }
+      },
+      {
+        "label": "Randolph (unbalanced)",
+        "latex": "\\kappa_{\\mathrm{R}} = \\frac{K \\, \\bar P - 1}{K - 1}",
+        "description": {
+          "de": "Free-marginal-Variante bei ungleichen n_i·; K = Anzahl Klassen",
+          "en": "Free-marginal variant for unequal n_i·; K = number of classes"
+        }
+      }
+    ],
+    "assumptions": [
+      {
+        "de": "Mindestens zwei unabhängige Prüfer bewerten dieselben Teile",
+        "en": "At least two independent raters classify the same subjects"
+      },
+      {
+        "de": "Kategoriale Bewertungen (binär oder nominal); für ordinale Skalen ist paarweise {{term:weighted-kappa}} aussagekräftiger",
+        "en": "Categorical ratings (binary or nominal); pairwise {{term:weighted-kappa}} is more informative for ordinal scales"
+      },
+      {
+        "de": "Für die klassische SE nach Fleiss (1971): gleiche Bewertungszahl pro Teil",
+        "en": "For the classical Fleiss (1971) SE: equal rater count per subject"
+      }
+    ],
+    "limitations": [
+      {
+        "de": "Bei stark ungleichen n_i· (Randolph-Fallback) sind SE und KI nicht definiert — nur der Punktschätzer κ ist verfügbar",
+        "en": "For strongly unequal n_i· (Randolph fallback) SE and CI are undefined — only the point estimate κ is available"
+      },
+      {
+        "de": "Fleiss κ ist definitionsgemäß unweighted — bei ordinalen Skalen kaschiert es kleine Fehlklassifikationen",
+        "en": "Fleiss κ is unweighted by definition — for ordinal scales it masks small misclassifications"
+      }
+    ],
+    "references": [
+      {
+        "source": "Fleiss, J. L. (1971) — Measuring nominal scale agreement among many raters, Psychological Bulletin 76(5)"
+      },
+      {
+        "source": "Randolph, J. J. (2005) — Free-marginal multirater kappa, Joensuu Learning and Instruction Symposium"
+      },
+      {
+        "source": "Fleiss, J. L., Levin, B. & Paik, M. C. (2003) — Statistical Methods for Rates and Proportions, 3rd Edition, Wiley (§18)"
+      }
+    ],
+    "minitab_equivalent": "Stat > Quality Tools > Attribute Agreement Analysis (multiple appraisers, kappa summary)"
+  },
+
+  "source": {
+    "function_name": "fleissKappaLab",
+    "file_path": "js/algorithm-lab/wrappers/msa-typ5-wrappers.js",
+    "signature": {
+      "parameters": [
+        {
+          "name": "inputs",
+          "type": "object",
+          "required": true,
+          "description": {
+            "de": "Objekt mit ratings (Array-of-Arrays, ein Eintrag pro Teil × Prüfer) und alpha",
+            "en": "Object with ratings (array-of-arrays, one row per subject × rater) and alpha"
+          }
+        }
+      ],
+      "returns": {
+        "type": "object",
+        "properties": {
+          "kappa":  { "type": "number", "description": { "de": "Fleiss-Kappa-Koeffizient", "en": "Fleiss kappa coefficient" } },
+          "se":     { "type": "number", "description": { "de": "Standardfehler (NaN bei Randolph)", "en": "Standard error (NaN for Randolph)" } },
+          "ci95":   { "type": "array",  "description": { "de": "95 %-KI (NaN bei Randolph)", "en": "95 % CI (NaN for Randolph)" } },
+          "method": { "type": "string", "description": { "de": "\"fleiss-1971\" oder \"randolph\"", "en": "\"fleiss-1971\" or \"randolph\"" } }
+        }
+      }
+    },
+    "code_snippet": null
+  },
+
+  "try_it": {
+    "input_schema": {
+      "fields": [
+        {
+          "name": "ratings",
+          "label": { "de": "Bewertungen (JSON-Array pro Teil)", "en": "Ratings (JSON array per subject)" },
+          "type": "textarea",
+          "placeholder": {
+            "de": "z. B. [[\"ok\",\"ok\",\"nok\"],[\"nok\",\"nok\",\"nok\"], …]",
+            "en": "e.g. [[\"ok\",\"ok\",\"nok\"],[\"nok\",\"nok\",\"nok\"], …]"
+          },
+          "parse_as": "json",
+          "required": true
+        },
+        {
+          "name": "alpha",
+          "label": { "de": "Signifikanzniveau α", "en": "Significance level α" },
+          "type": "number",
+          "placeholder": { "de": "Standard: 0.05", "en": "Default: 0.05" },
+          "parse_as": "number",
+          "required": false,
+          "default": 0.05
+        }
+      ]
+    },
+    "output_schema": {
+      "display_fields": ["kappa", "se", "ci95", "method"],
+      "primary_field": "kappa",
+      "format": {
+        "kappa":  { "decimals": 6, "label": "κ" },
+        "se":     { "decimals": 6, "label": "SE(κ)" },
+        "ci95":   { "decimals": 6, "label": { "de": "95 %-KI", "en": "95 % CI" } },
+        "method": { "label": { "de": "Methode", "en": "Method" } }
+      }
+    }
+  },
+
+  "changelog": [
+    {
+      "version": "1.0.0",
+      "date": "2026-07-16",
+      "type": "initial",
+      "description": {
+        "de": "Erstimplementierung: Fleiss κ mit automatischem Randolph-Fallback für unausgeglichene Prüfer-Zahlen",
+        "en": "Initial implementation: Fleiss κ with automatic Randolph fallback for unbalanced rater counts"
+      },
+      "breaking": false
+    }
+  ]
+}

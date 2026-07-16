@@ -1,0 +1,193 @@
+{
+  "id": "signal-detection",
+  "name": {
+    "de": "Signal Detection (d′ und Kriterium c)",
+    "en": "Signal Detection (d′ and criterion c)"
+  },
+  "category": "msa",
+  "subcategory": "typ5",
+  "status": "validated",
+  "version": "1.0.0",
+
+  "description": {
+    "short": {
+      "de": "{{term:signal-detection}} — trennt bei binären Prüfentscheidungen die reine Sensitivität ({{term:d-prime}}) von der Entscheidungsschwelle ({{term:criterion-c}}).",
+      "en": "{{term:signal-detection}} — for binary inspection decisions separates pure sensitivity ({{term:d-prime}}) from the decision threshold ({{term:criterion-c}})."
+    },
+    "long": {
+      "de": "Signal Detection Theory (SDT) nach Green & Swets (1966) modelliert eine binäre Prüfentscheidung als Vergleich einer verrauschten internen Evidenz mit einer Schwelle. {{term:d-prime}} misst, wie gut ein Prüfer echte Fehler von Gut-Teilen unterscheiden kann — unabhängig davon, wie streng oder tolerant er tendenziell entscheidet. {{term:criterion-c}} misst genau diese Neigung: c > 0 bedeutet konservativ (viele False-Alarms werden vermieden, dafür mehr Miss), c < 0 tolerant. So kann DMAIC.io zwei Prüfer mit identischer {{term:effektivitaet}} sauber auseinanderhalten, wenn sie sich in ihrem Bias unterscheiden. Bei Randfällen (hit = 0/N⁺ oder fa = 0/N⁻) greift die Log-Linear-Korrektur nach Hautus (1995), damit d′ und c endlich bleiben.",
+      "en": "Signal Detection Theory (SDT) after Green & Swets (1966) models a binary inspection decision as comparing noisy internal evidence to a threshold. {{term:d-prime}} measures how well a rater discriminates real defects from good parts — regardless of how strict or lenient they tend to be. {{term:criterion-c}} captures that tendency: c > 0 means conservative (few false alarms, more misses), c < 0 lenient. This lets DMAIC.io tell apart two raters with identical {{term:effektivitaet}} who differ in bias. For edge cases (hit = 0/N⁺ or fa = 0/N⁻) the Hautus (1995) log-linear correction keeps d′ and c finite."
+    }
+  },
+
+  "documentation": {
+    "formulas": [
+      {
+        "label": "Hit-Rate",
+        "latex": "\\mathrm{hit} = P(\\text{rating} = \\text{pos} \\mid \\text{ref} = \\text{pos})",
+        "description": {
+          "de": "Anteil richtig als \"positiv\" erkannter positiver Referenzteile",
+          "en": "Fraction of positive reference parts correctly rated \"positive\""
+        }
+      },
+      {
+        "label": "False-Alarm-Rate",
+        "latex": "\\mathrm{fa} = P(\\text{rating} = \\text{pos} \\mid \\text{ref} = \\text{neg})",
+        "description": {
+          "de": "Anteil fälschlich als \"positiv\" bewerteter negativer Referenzteile ({{term:false-alarm-rate}})",
+          "en": "Fraction of negative reference parts wrongly rated \"positive\" ({{term:false-alarm-rate}})"
+        }
+      },
+      {
+        "label": "d′",
+        "latex": "d' = \\Phi^{-1}(\\mathrm{hit}) - \\Phi^{-1}(\\mathrm{fa})",
+        "description": {
+          "de": "Sensitivität: Distanz der Signal- und Rausch-Verteilung in Einheiten der Standardabweichung",
+          "en": "Sensitivity: distance between signal and noise distributions in units of standard deviation"
+        }
+      },
+      {
+        "label": "c",
+        "latex": "c = -\\tfrac{1}{2} \\left( \\Phi^{-1}(\\mathrm{hit}) + \\Phi^{-1}(\\mathrm{fa}) \\right)",
+        "description": {
+          "de": "Entscheidungs-Kriterium: c > 0 konservativ, c < 0 tolerant",
+          "en": "Decision criterion: c > 0 conservative, c < 0 lenient"
+        }
+      },
+      {
+        "label": "Hautus-Korrektur",
+        "latex": "\\mathrm{hit}^{*} = \\frac{\\mathrm{hits} + 0.5}{N^{+} + 1}, \\quad \\mathrm{fa}^{*} = \\frac{\\mathrm{fas} + 0.5}{N^{-} + 1}",
+        "description": {
+          "de": "Log-Linear-Adjustierung bei hit ∈ {0, N⁺} oder fa ∈ {0, N⁻}, damit d′ und c endlich bleiben",
+          "en": "Log-linear adjustment when hit ∈ {0, N⁺} or fa ∈ {0, N⁻} so d′ and c stay finite"
+        }
+      }
+    ],
+    "assumptions": [
+      {
+        "de": "Binäre Entscheidung mit bekannter Referenz je Teil",
+        "en": "Binary decision with a known reference per part"
+      },
+      {
+        "de": "Signal- und Rausch-Verteilung normal mit gleicher Varianz (klassisches SDT)",
+        "en": "Signal and noise distributions normal with equal variance (classical SDT)"
+      },
+      {
+        "de": "Ausreichend viele positive und negative Referenzteile für stabile Randraten (Faustregel: je ≥ 10)",
+        "en": "Enough positive and negative reference parts for stable marginal rates (rule of thumb: ≥ 10 each)"
+      }
+    ],
+    "limitations": [
+      {
+        "de": "SDT gilt nur für binäre Entscheidungen — bei mehr als zwei Klassen sind {{term:kappa}}-Kennzahlen aussagekräftiger",
+        "en": "SDT is only defined for binary decisions — for more than two classes {{term:kappa}} KPIs are more informative"
+      },
+      {
+        "de": "Die Log-Linear-Korrektur verschiebt d′/c leicht — bei allen Prüfern konsistent anwenden",
+        "en": "The log-linear correction shifts d′/c slightly — apply it consistently across all raters"
+      }
+    ],
+    "references": [
+      {
+        "source": "Green, D. M. & Swets, J. A. (1966) — Signal Detection Theory and Psychophysics, Wiley"
+      },
+      {
+        "source": "Macmillan, N. A. & Creelman, C. D. (2005) — Detection Theory: A User's Guide, 2nd Edition, Erlbaum"
+      },
+      {
+        "source": "Hautus, M. J. (1995) — Corrections for extreme proportions and their biasing effects on estimated values of d′, Behavior Research Methods 27(1)"
+      }
+    ],
+    "minitab_equivalent": "— (kein direktes Äquivalent; in Minitab werden lediglich Miss/False-Alarm-Rates ausgegeben)"
+  },
+
+  "source": {
+    "function_name": "signalDetectionLab",
+    "file_path": "js/algorithm-lab/wrappers/msa-typ5-wrappers.js",
+    "signature": {
+      "parameters": [
+        {
+          "name": "inputs",
+          "type": "object",
+          "required": true,
+          "description": {
+            "de": "Objekt mit hits, fas, nPos, nNeg",
+            "en": "Object with hits, fas, nPos, nNeg"
+          }
+        }
+      ],
+      "returns": {
+        "type": "object",
+        "properties": {
+          "dPrime":         { "type": "number", "description": { "de": "Sensitivität d′", "en": "Sensitivity d′" } },
+          "criterion":      { "type": "number", "description": { "de": "Entscheidungs-Kriterium c", "en": "Decision criterion c" } },
+          "hitRate":        { "type": "number", "description": { "de": "Hit-Rate (ggf. Hautus-korrigiert)", "en": "Hit rate (Hautus-corrected if needed)" } },
+          "falseAlarmRate": { "type": "number", "description": { "de": "False-Alarm-Rate (ggf. Hautus-korrigiert)", "en": "False-alarm rate (Hautus-corrected if needed)" } }
+        }
+      }
+    },
+    "code_snippet": null
+  },
+
+  "try_it": {
+    "input_schema": {
+      "fields": [
+        {
+          "name": "hits",
+          "label": { "de": "Treffer (hits)", "en": "Hits" },
+          "type": "number",
+          "placeholder": { "de": "z. B. 25", "en": "e.g. 25" },
+          "parse_as": "number",
+          "required": true
+        },
+        {
+          "name": "nPos",
+          "label": { "de": "Anzahl positiver Referenzteile (N⁺)", "en": "Positive reference parts (N⁺)" },
+          "type": "number",
+          "placeholder": { "de": "z. B. 30", "en": "e.g. 30" },
+          "parse_as": "number",
+          "required": true
+        },
+        {
+          "name": "fas",
+          "label": { "de": "Falscher Alarm (fas)", "en": "False alarms (fas)" },
+          "type": "number",
+          "placeholder": { "de": "z. B. 3", "en": "e.g. 3" },
+          "parse_as": "number",
+          "required": true
+        },
+        {
+          "name": "nNeg",
+          "label": { "de": "Anzahl negativer Referenzteile (N⁻)", "en": "Negative reference parts (N⁻)" },
+          "type": "number",
+          "placeholder": { "de": "z. B. 30", "en": "e.g. 30" },
+          "parse_as": "number",
+          "required": true
+        }
+      ]
+    },
+    "output_schema": {
+      "display_fields": ["dPrime", "criterion", "hitRate", "falseAlarmRate"],
+      "primary_field": "dPrime",
+      "format": {
+        "dPrime":         { "decimals": 6, "label": "d′" },
+        "criterion":      { "decimals": 6, "label": "c" },
+        "hitRate":        { "decimals": 6, "label": { "de": "Hit-Rate", "en": "Hit rate" } },
+        "falseAlarmRate": { "decimals": 6, "label": { "de": "False-Alarm-Rate", "en": "False-alarm rate" } }
+      }
+    }
+  },
+
+  "changelog": [
+    {
+      "version": "1.0.0",
+      "date": "2026-07-16",
+      "type": "initial",
+      "description": {
+        "de": "Erstimplementierung: d′ und c mit Hautus-Log-Linear-Korrektur für binäre Prüfentscheidungen in MSA Typ 5",
+        "en": "Initial implementation: d′ and c with Hautus log-linear correction for binary inspection decisions in MSA Type 5"
+      },
+      "breaking": false
+    }
+  ]
+}
