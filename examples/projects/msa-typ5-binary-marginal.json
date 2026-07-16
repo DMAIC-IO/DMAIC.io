@@ -1,0 +1,37 @@
+{
+  "params": {
+    "type": "binary",
+    "positiveLevel": "ok",
+    "weights": "quadratic",
+    "alpha": 0.05,
+    "ordinalOrder": null
+  },
+  "columns": {
+    "part": {
+      "instanceId": "__source__",
+      "sheetId": "sheet-msa-typ5-binary-marginal",
+      "columnId": "c-part"
+    },
+    "appraiser": {
+      "instanceId": "__source__",
+      "sheetId": "sheet-msa-typ5-binary-marginal",
+      "columnId": "c-appraiser"
+    },
+    "rating": {
+      "instanceId": "__source__",
+      "sheetId": "sheet-msa-typ5-binary-marginal",
+      "columnId": "c-rating"
+    },
+    "reference": {
+      "instanceId": "__source__",
+      "sheetId": "sheet-msa-typ5-binary-marginal",
+      "columnId": "c-ref"
+    },
+    "replicate": {
+      "instanceId": "__source__",
+      "sheetId": "sheet-msa-typ5-binary-marginal",
+      "columnId": "c-rep"
+    }
+  },
+  "sourceWorksheetFile": "worksheets/msa-typ5-binary-marginal.json"
+}

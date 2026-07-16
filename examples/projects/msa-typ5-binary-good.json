@@ -1,0 +1,37 @@
+{
+  "params": {
+    "type": "binary",
+    "positiveLevel": "ok",
+    "weights": "quadratic",
+    "alpha": 0.05,
+    "ordinalOrder": null
+  },
+  "columns": {
+    "part": {
+      "instanceId": "__source__",
+      "sheetId": "sheet-msa-typ5-binary-good",
+      "columnId": "c-part"
+    },
+    "appraiser": {
+      "instanceId": "__source__",
+      "sheetId": "sheet-msa-typ5-binary-good",
+      "columnId": "c-appraiser"
+    },
+    "rating": {
+      "instanceId": "__source__",
+      "sheetId": "sheet-msa-typ5-binary-good",
+      "columnId": "c-rating"
+    },
+    "reference": {
+      "instanceId": "__source__",
+      "sheetId": "sheet-msa-typ5-binary-good",
+      "columnId": "c-ref"
+    },
+    "replicate": {
+      "instanceId": "__source__",
+      "sheetId": "sheet-msa-typ5-binary-good",
+      "columnId": "c-rep"
+    }
+  },
+  "sourceWorksheetFile": "worksheets/msa-typ5-binary-good.json"
+}
