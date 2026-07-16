@@ -75,6 +75,7 @@ import { State } from './msa-typ6-model.js';
 import { analyze, NELSON_RULES } from '../../engines/msa-typ6-engine.js';
 import { ColumnPicker, getColumnValues } from '../../ui/column-picker.js';
 import { mean as typ1Mean, stddev as typ1Stddev } from '../../engines/msa-typ1-engine.js';
+import { loadExampleViaWorksheet } from '../../core/examples-registry.js';
 
 /** Roles mounted as ColumnPicker instances, matching `model.columns` keys. */
 const PICKER_ROLES = ['timestamp', 'value', 'subgroup'];
@@ -607,5 +608,31 @@ const mod = createModule({
     };
   },
 });
+
+/**
+ * Custom loadExample: MSA-Typ6-Beispiele liefern ein komplettes Worksheet
+ * (`sourceWorksheetData`) und benutzen den Platzhalter `__source__` als
+ * `columns.<role>.instanceId`. loadExampleViaWorksheet provisioniert eine
+ * frische Worksheet-Instanz, wir mappen die Platzhalter auf deren instanceId
+ * und wenden dann den State an (der die Analyse auf den neuen Daten anstößt).
+ *
+ * @param {{ meta: object, data: object }} payload
+ */
+mod.loadExample = function loadExample(payload) {
+  return loadExampleViaWorksheet(this, payload, {
+    State,
+    rewriteRefs(data, instanceId) {
+      if (!data.columns) return data;
+      const next = { ...data.columns };
+      for (const role of ['timestamp', 'value', 'subgroup']) {
+        const r = next[role];
+        if (r && r.instanceId === '__source__') {
+          next[role] = { ...r, instanceId };
+        }
+      }
+      return { ...data, columns: next };
+    },
+  });
+};
 
 export default mod;

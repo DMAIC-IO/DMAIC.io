@@ -291,6 +291,16 @@ export default [
     },
   },
   {
+    id: 'msa-typ6',
+    phase: 'measure',
+    load: () => import('./msa-typ6/msa-typ6.js'),
+    cycles: {
+      dmaic:  { phase: 'measure' },
+      dmadv:  { phase: 'measure' },
+      eightd: { phase: 'problem' },
+    },
+  },
+  {
     id: 'process-capability',
     phase: 'measure',
     load: () => import('./process-capability/process-capability.js'),
