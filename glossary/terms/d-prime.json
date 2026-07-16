@@ -13,7 +13,7 @@
     "de": [
       {
         "type": "paragraph",
-        "text": "$d'$ (gesprochen „d-Strich") misst die reine **Trennschärfe** eines binären Prüfers. Aus Hit-Rate $h$ und False-Alarm-Rate $f$:"
+        "text": "$d'$ (gesprochen „d-Strich“) misst die reine **Trennschärfe** eines binären Prüfers. Aus Hit-Rate $h$ und False-Alarm-Rate $f$:"
       },
       {
         "type": "formula",

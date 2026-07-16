@@ -6,7 +6,7 @@
     "en": "Criterion c (Decision Threshold)"
   },
   "short": {
-    "de": "SDT-Entscheidungsschwelle eines binären Prüfers — zeigt, ob er zu „i.O.\" oder „n.i.O.\" neigt, unabhängig von seiner Trennschärfe.",
+    "de": "SDT-Entscheidungsschwelle eines binären Prüfers — zeigt, ob er zu „i.O.“ oder „n.i.O.“ neigt, unabhängig von seiner Trennschärfe.",
     "en": "SDT decision threshold of a binary appraiser — reveals whether they lean towards \"OK\" or \"NOK\", independent of their discriminability."
   },
   "definition": {
@@ -21,7 +21,7 @@
       },
       {
         "type": "paragraph",
-        "text": "$c > 0$: konservative Schwelle — der Prüfer neigt zu „n.i.O." (mehr False Alarms, weniger Misses). $c < 0$: liberale Schwelle — er neigt zu „i.O." (weniger False Alarms, mehr Misses). $c \\approx 0$: neutrale Schwelle."
+        "text": "$c > 0$: konservative Schwelle — der Prüfer neigt zu „n.i.O.“ (mehr False Alarms, weniger Misses). $c < 0$: liberale Schwelle — er neigt zu „i.O.“ (weniger False Alarms, mehr Misses). $c \\approx 0$: neutrale Schwelle."
       },
       {
         "type": "note",
