@@ -468,12 +468,17 @@ export default {
     el.textContent = this._t(key);
   },
 
-  /** Platzhalter — Task 12 füllt Verdikt/KPI/Tabellen, Task 13 + 14 die Charts. */
+  /**
+   * Rendert Verdikt-Header, KPI-Strip, Interpretationstext, drei Tabellen
+   * (Prüfer / Prüferpaare / κ vs. Referenz) und die Chart-Container.
+   * Charts selbst rendert `_renderCharts()` (Task 13/14).
+   */
   _renderOutput() {
     const out = this._container?.querySelector('[data-ref="output"]');
     if (!out) return;
-    if (!this._result || !this._result.verdict) {
-      const err = this._result?.meta?.errors?.[0];
+    const res = this._result;
+    if (!res || !res.verdict) {
+      const err = res?.meta?.errors?.[0];
       if (err) {
         out.innerHTML = `<div class="module-msa-typ5__empty">${this._translateCode(err, 'err')}</div>`;
         return;
@@ -481,7 +486,197 @@ export default {
       out.innerHTML = `<div class="module-msa-typ5__empty">${this._t('modules.msa-typ5.emptyState')}</div>`;
       return;
     }
-    out.innerHTML = `<div class="module-msa-typ5__empty">…</div>`;
+
+    const t = this._t;
+    const f = this._fmt.bind(this);
+    const pct = this._fmtPct.bind(this);
+    const verdictMod = _verdictClass(res.verdict.level);
+    const verdictLabel = t(`modules.msa-typ5.verdict${res.verdict.level.charAt(0).toUpperCase() + res.verdict.level.slice(1)}`);
+
+    // Aggregierte KPIs.
+    const effRates = Object.values(res.perAppraiser)
+      .map((x) => x.vsReference?.effectiveness?.rate)
+      .filter(Number.isFinite);
+    const repRates = Object.values(res.perAppraiser)
+      .map((x) => x.repeatability?.rate)
+      .filter(Number.isFinite);
+    const kappaVsRefs = Object.values(res.perAppraiser)
+      .map((x) => x.vsReference?.kappa?.kappa)
+      .filter(Number.isFinite);
+    const meanEff  = _mean(effRates);
+    const meanRep  = _mean(repRates);
+    const meanKvR  = _mean(kappaVsRefs);
+
+    // Warnungen aus meta.warnings zu Bannern.
+    const warnings = (res.meta?.warnings || []).map((w) => {
+      const params = { ...(w.params || {}) };
+      if (Array.isArray(params.appraisers)) params.appraisers = params.appraisers.join(', ');
+      return `<div class="msa-typ5__warn">${this._translateCode({ code: w.code, params }, 'warn')}</div>`;
+    }).join('');
+
+    // Prüfer-Tabelle.
+    const perApprRows = Object.entries(res.perAppraiser).map(([id, v]) => {
+      const rep  = v.repeatability;
+      const eff  = v.vsReference?.effectiveness;
+      const miss = v.vsReference?.missRate;
+      const fa   = v.vsReference?.falseAlarmRate;
+      const bias = v.vsReference?.biasRate;
+      return `<tr>
+        <td>${this._esc(id)}</td>
+        <td>${rep  ? pct(rep.rate) : '—'}</td>
+        <td>${eff  ? pct(eff.rate) : '—'}</td>
+        <td>${miss ? pct(miss.rate) : '—'}</td>
+        <td>${fa   ? pct(fa.rate)   : '—'}</td>
+        <td>${bias ? f(bias.value, 3) : '—'}</td>
+      </tr>`;
+    }).join('');
+
+    // Prüferpaar-Tabelle mit Ampel-Kreisen.
+    const pairRows = Object.entries(res.betweenAppraisers.pairwiseCohenKappa || {}).map(([pair, k]) => {
+      const cls = _kappaClass(k.kappa);
+      const ci = k.ci95 && Number.isFinite(k.ci95[0]) && Number.isFinite(k.ci95[1])
+        ? `[${f(k.ci95[0], 3)}, ${f(k.ci95[1], 3)}]`
+        : '—';
+      return `<tr>
+        <td>${this._esc(pair.replace('|', ' | '))}</td>
+        <td>${f(k.kappa, 3)}</td>
+        <td>${ci}</td>
+        <td><span class="msa-typ5__ampel ${cls}"></span></td>
+      </tr>`;
+    }).join('');
+
+    // κ vs. Referenz (nur wenn Referenz vorhanden).
+    const vsRefEntries = Object.entries(res.perAppraiser).filter(([, v]) => v.vsReference?.kappa);
+    const vsRefRows = vsRefEntries.map(([id, v]) => {
+      const k = v.vsReference.kappa;
+      const cls = _kappaClass(k.kappa);
+      const ci = k.ci95 && Number.isFinite(k.ci95[0]) && Number.isFinite(k.ci95[1])
+        ? `[${f(k.ci95[0], 3)}, ${f(k.ci95[1], 3)}]`
+        : '—';
+      return `<tr>
+        <td>${this._esc(id)}</td>
+        <td>${f(k.kappa, 3)}</td>
+        <td>${ci}</td>
+        <td><span class="msa-typ5__ampel ${cls}"></span></td>
+      </tr>`;
+    }).join('');
+
+    const fleiss = res.betweenAppraisers.fleissKappa || {};
+    const fleissCi = fleiss.ci95 && Number.isFinite(fleiss.ci95[0]) && Number.isFinite(fleiss.ci95[1])
+      ? ` (KI [${f(fleiss.ci95[0], 3)}, ${f(fleiss.ci95[1], 3)}])`
+      : '';
+    const refSrc = t(`modules.msa-typ5.labels.referenceSource${(res.meta.referenceSource || 'none').charAt(0).toUpperCase() + (res.meta.referenceSource || 'none').slice(1)}`);
+
+    const hasEff = effRates.length > 0;
+    const hasSdt = !!res.signalDetection;
+
+    out.innerHTML = `
+      <div class="msa-typ5__verdict-header ${verdictMod}">
+        <div class="msa-typ5__verdict-dot"></div>
+        <div class="msa-typ5__verdict-text">
+          <strong>${verdictLabel}</strong>
+          <span>Fleiss κ = ${f(fleiss.kappa, 3)}${fleissCi} · ${t('modules.msa-typ5.labels.referenceSource')}: ${refSrc}</span>
+        </div>
+      </div>
+      ${warnings}
+
+      <div class="dmike-kpi-strip">
+        <div class="dmike-kpi ${verdictMod}">
+          <div class="dmike-kpi-label">${t('modules.msa-typ5.kpi.fleissKappa')}</div>
+          <div class="dmike-kpi-value">${f(fleiss.kappa, 3)}</div>
+          <div class="dmike-kpi-sub">${this._esc(fleiss.method || '')}</div>
+        </div>
+        <div class="dmike-kpi">
+          <div class="dmike-kpi-label">${t('modules.msa-typ5.kpi.repeatability')}</div>
+          <div class="dmike-kpi-value">${meanRep !== null ? pct(meanRep) : '—'}</div>
+        </div>
+        <div class="dmike-kpi">
+          <div class="dmike-kpi-label">${t('modules.msa-typ5.kpi.effectiveness')}</div>
+          <div class="dmike-kpi-value">${meanEff !== null ? pct(meanEff) : '—'}</div>
+        </div>
+        <div class="dmike-kpi">
+          <div class="dmike-kpi-label">${t('modules.msa-typ5.kpi.kappaVsRef')}</div>
+          <div class="dmike-kpi-value">${meanKvR !== null ? f(meanKvR, 3) : '—'}</div>
+        </div>
+      </div>
+
+      <div class="msa-typ5__interp ${verdictMod}">
+        ${t(res.interpretation.textKey, res.interpretation.params || {})}
+      </div>
+
+      <div class="dmike-split__output-section">${t('modules.msa-typ5.table.appraiser')}</div>
+      <table class="dmike-table msa-typ5__table">
+        <thead><tr>
+          <th>${t('modules.msa-typ5.table.appraiser')}</th>
+          <th>${t('modules.msa-typ5.table.repeatability')}</th>
+          <th>${t('modules.msa-typ5.table.effectiveness')}</th>
+          <th>${t('modules.msa-typ5.table.missRate')}</th>
+          <th>${t('modules.msa-typ5.table.falseAlarmRate')}</th>
+          <th>${t('modules.msa-typ5.table.biasRate')}</th>
+        </tr></thead>
+        <tbody>${perApprRows}</tbody>
+      </table>
+
+      <div class="dmike-split__output-section">${t('modules.msa-typ5.table.pair')} — ${t('modules.msa-typ5.table.cohenKappa')}</div>
+      <table class="dmike-table msa-typ5__table">
+        <thead><tr>
+          <th>${t('modules.msa-typ5.table.pair')}</th>
+          <th>${t('modules.msa-typ5.table.cohenKappa')}</th>
+          <th>${t('modules.msa-typ5.table.ci95')}</th>
+          <th>${t('modules.msa-typ5.table.verdict')}</th>
+        </tr></thead>
+        <tbody>${pairRows}</tbody>
+      </table>
+
+      ${vsRefRows ? `
+        <div class="dmike-split__output-section">${t('modules.msa-typ5.table.vsReference')}</div>
+        <table class="dmike-table msa-typ5__table">
+          <thead><tr>
+            <th>${t('modules.msa-typ5.table.appraiser')}</th>
+            <th>κ</th>
+            <th>${t('modules.msa-typ5.table.ci95')}</th>
+            <th>${t('modules.msa-typ5.table.verdict')}</th>
+          </tr></thead>
+          <tbody>${vsRefRows}</tbody>
+        </table>
+      ` : ''}
+
+      <div class="dmike-split__output-section">${t('modules.msa-typ5.charts.kappaBar')}</div>
+      <div class="msa-typ5__chart" data-ref="chart-kappa-bar"></div>
+
+      ${hasEff ? `
+        <div class="dmike-split__output-section">${t('modules.msa-typ5.charts.effectivenessBar')}</div>
+        <div class="msa-typ5__chart" data-ref="chart-eff-bar"></div>
+      ` : ''}
+
+      ${hasSdt ? `
+        <div class="dmike-split__output-section">${t('modules.msa-typ5.charts.sdtScatter')}</div>
+        <div class="msa-typ5__chart" data-ref="chart-sdt"></div>
+      ` : ''}
+
+      <div class="dmike-split__output-section">${t('modules.msa-typ5.charts.confusion')}</div>
+      <div class="msa-typ5__heatmap-grid" data-ref="chart-heatmaps"></div>
+    `;
+
+    // Charts asynchron nachladen (Task 13/14).
+    this._renderCharts(res);
+  },
+
+  /**
+   * Chart-Rendering — asynchron nach dem HTML-Ausbau des Output-Panels.
+   * Vollständige Implementierung landet in Task 13/14; hier Stub, den
+   * die Task-13/14-Änderungen ausbauen.
+   */
+  async _renderCharts(_res) {
+    this._destroyCharts();
+  },
+
+  _fmt(v, d = 3) {
+    return Number.isFinite(v) ? v.toFixed(d) : '—';
+  },
+
+  _fmtPct(rate) {
+    return Number.isFinite(rate) ? `${(rate * 100).toFixed(1)} %` : '—';
   },
 
   /**
@@ -517,3 +712,38 @@ export default {
     this._charts = [];
   },
 };
+
+// ─── Modul-lokale Helfer (außerhalb des Modul-Objekts) ────────
+
+/**
+ * Mittelwert einer Zahlenliste unter Ignorieren von NaN/Infinity.
+ * @param {number[]} arr
+ * @returns {number|null}
+ */
+function _mean(arr) {
+  const clean = (arr || []).filter(Number.isFinite);
+  return clean.length ? clean.reduce((s, v) => s + v, 0) / clean.length : null;
+}
+
+/**
+ * Modifier-Klasse für Ampel je Verdikt-Level (dmike-kpi-Konvention).
+ * @param {'good'|'marginal'|'unacceptable'} level
+ * @returns {string}
+ */
+function _verdictClass(level) {
+  if (level === 'good') return 'dmike-kpi--good';
+  if (level === 'marginal') return 'dmike-kpi--warn';
+  return 'dmike-kpi--bad';
+}
+
+/**
+ * κ-Wert → Ampel-Klasse (AIAG-Schwellen 0.75 / 0.40).
+ * @param {number} k
+ * @returns {string}
+ */
+function _kappaClass(k) {
+  if (!Number.isFinite(k)) return '';
+  if (k >= 0.75) return 'dmike-kpi--good';
+  if (k >= 0.40) return 'dmike-kpi--warn';
+  return 'dmike-kpi--bad';
+}
