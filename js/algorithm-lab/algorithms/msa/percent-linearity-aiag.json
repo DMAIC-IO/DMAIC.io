@@ -1,0 +1,195 @@
+{
+  "id": "percent-linearity-aiag",
+  "name": {
+    "de": "%Linearität nach AIAG (MSA Typ 4)",
+    "en": "%Linearity per AIAG (MSA Type 4)"
+  },
+  "category": "msa",
+  "subcategory": "typ4",
+  "status": "validated",
+  "version": "1.0.0",
+
+  "description": {
+    "short": {
+      "de": "AIAG-Kennzahl für Linearität eines Messsystems über den gesamten Messbereich.",
+      "en": "AIAG KPI for the linearity of a measurement system across its entire range."
+    },
+    "long": {
+      "de": "Aus der Linearitäts-Regression (Steigung a) und dem Range der Referenzwerte wird %Lin = 100 · |a| · Range / PV berechnet. PV ist die Toleranz T = USL − LSL (oder 6·σ_P). Zusätzlich wird %Bias_max = 100 · max|b_i| / PV als zweite Kennzahl geliefert. Ampel: grün < 5 %, gelb 5–10 %, rot > 10 % oder signifikante Steigung/Achsenabschnitt.",
+      "en": "From the linearity regression (slope a) and the range of reference values, %Lin = 100 · |a| · Range / PV is computed. PV is the tolerance T = USL − LSL (or 6·σ_P). Additionally %Bias_max = 100 · max|b_i| / PV is reported. Traffic light: green < 5 %, yellow 5–10 %, red > 10 % or a significant slope/intercept."
+    }
+  },
+
+  "documentation": {
+    "formulas": [
+      {
+        "label": "%Linearität",
+        "latex": "\\%\\text{Lin} = 100 \\cdot \\frac{|a| \\cdot \\text{Range}(x_{\\text{ref}})}{\\text{PV}}",
+        "description": {
+          "de": "AIAG-Definition: absoluter Steigungsbetrag mal Messbereich, normiert auf die Prozessvarianz",
+          "en": "AIAG definition: absolute slope times reference range, normalized by the process variation"
+        }
+      },
+      {
+        "label": "%Bias-Peak",
+        "latex": "\\%\\text{Bias}_{\\max} = 100 \\cdot \\frac{ \\max_i |b_i| }{\\text{PV}}",
+        "description": {
+          "de": "Größter Einzel-Bias-Betrag über alle Referenzpunkte, normiert auf PV",
+          "en": "Largest single-point bias across all references, normalized by PV"
+        }
+      },
+      {
+        "label": "Range",
+        "latex": "\\text{Range}(x_{\\text{ref}}) = \\max_i x_{\\text{ref},i} - \\min_i x_{\\text{ref},i}",
+        "description": {
+          "de": "Spannweite der Referenzwerte in der Studie",
+          "en": "Range of the reference values used in the study"
+        }
+      },
+      {
+        "label": "PV",
+        "latex": "\\text{PV} = \\begin{cases} \\text{USL} - \\text{LSL} & \\text{(Toleranz)} \\\\ 6\\sigma_P & \\text{(6}\\sigma\\text{-Modus)} \\end{cases}",
+        "description": {
+          "de": "Bezugsgröße für die Normierung — Toleranz oder 6·σ_P je nach pvMode",
+          "en": "Reference figure for the normalization — tolerance or 6·σ_P depending on pvMode"
+        }
+      }
+    ],
+    "assumptions": [
+      {
+        "de": "Die Regressionsannahmen (Normalität der Bias-Werte, Homoskedastizität) sind erfüllt",
+        "en": "The regression assumptions (bias normality, homoscedasticity) are satisfied"
+      },
+      {
+        "de": "Referenzwerte decken den relevanten Messbereich zwischen LSL und USL sinnvoll ab",
+        "en": "Reference values cover the relevant measurement range between LSL and USL"
+      }
+    ],
+    "limitations": [
+      {
+        "de": "Bei sehr kleinem Range wird %Lin unterschätzt — der Test verliert an Aussagekraft",
+        "en": "For very small ranges %Lin is underestimated — the test loses discriminative power"
+      },
+      {
+        "de": "AIAG-Ampelgrenzen 5/10 % sind Konvention — Kunden können strengere Grenzen fordern",
+        "en": "AIAG thresholds 5/10 % are conventions — customers may require stricter limits"
+      }
+    ],
+    "references": [
+      {
+        "source": "AIAG — Measurement Systems Analysis Reference Manual, 4th Edition (MSA-4), Kapitel III-B: Linearity"
+      },
+      {
+        "source": "Dietrich, E. & Schulze, A. — Statistische Verfahren zur Maschinen- und Prozessqualifikation, 7. Auflage, Hanser"
+      }
+    ],
+    "minitab_equivalent": "Stat > Quality Tools > Gage Study > Gage Linearity and Bias Study → %Linearity"
+  },
+
+  "source": {
+    "function_name": "analyze",
+    "file_path": "js/engines/msa-typ4-engine.js",
+    "signature": {
+      "parameters": [
+        {
+          "name": "reference",
+          "type": "number[]",
+          "required": true,
+          "description": {
+            "de": "Long/tidy-Array der Referenzwerte",
+            "en": "Long/tidy array of reference values"
+          }
+        },
+        {
+          "name": "measured",
+          "type": "number[]",
+          "required": true,
+          "description": {
+            "de": "Long/tidy-Array der Messwerte",
+            "en": "Long/tidy array of measured values"
+          }
+        },
+        {
+          "name": "params",
+          "type": "object",
+          "required": true,
+          "description": {
+            "de": "Objekt mit pvMode, LSL, USL (oder sigmaP) und alpha",
+            "en": "Object with pvMode, LSL, USL (or sigmaP) and alpha"
+          }
+        }
+      ],
+      "returns": {
+        "type": "object",
+        "properties": {
+          "kpi.aiag.percentLinearity": {
+            "type": "number",
+            "description": { "de": "%Linearität nach AIAG", "en": "%Linearity per AIAG" }
+          },
+          "kpi.aiag.maxPercentBias": {
+            "type": "number",
+            "description": { "de": "Größter Bias-Betrag als Prozent von PV", "en": "Largest bias as percentage of PV" }
+          }
+        }
+      }
+    },
+    "code_snippet": null
+  },
+
+  "try_it": {
+    "input_schema": {
+      "fields": [
+        {
+          "name": "reference",
+          "label": { "de": "Referenzwerte", "en": "Reference values" },
+          "type": "textarea",
+          "parse_as": "number_array",
+          "required": true
+        },
+        {
+          "name": "measured",
+          "label": { "de": "Messwerte", "en": "Measured values" },
+          "type": "textarea",
+          "parse_as": "number_array",
+          "required": true
+        },
+        {
+          "name": "params.pvMode",
+          "label": { "de": "PV-Modus", "en": "PV mode" },
+          "type": "select",
+          "options": [
+            { "value": "tolerance", "label": { "de": "Toleranz", "en": "Tolerance" } },
+            { "value": "sixSigma",  "label": { "de": "6·σ_P", "en": "6·σ_P" } }
+          ],
+          "default": "tolerance",
+          "required": true
+        },
+        { "name": "params.LSL", "label": { "de": "LSL", "en": "LSL" }, "type": "number", "parse_as": "number", "required": false },
+        { "name": "params.USL", "label": { "de": "USL", "en": "USL" }, "type": "number", "parse_as": "number", "required": false },
+        { "name": "params.sigmaP", "label": { "de": "σ_P (nur 6σ-Modus)", "en": "σ_P (six-sigma mode only)" }, "type": "number", "parse_as": "number", "required": false },
+        { "name": "params.alpha", "label": { "de": "α", "en": "α" }, "type": "number", "parse_as": "number", "required": false, "default": 0.05 }
+      ]
+    },
+    "output_schema": {
+      "display_fields": ["kpi.aiag.percentLinearity", "kpi.aiag.maxPercentBias"],
+      "primary_field": "kpi.aiag.percentLinearity",
+      "format": {
+        "kpi.aiag.percentLinearity": { "decimals": 2, "label": { "de": "%Linearität", "en": "%Linearity" } },
+        "kpi.aiag.maxPercentBias":   { "decimals": 2, "label": { "de": "%Bias-Peak", "en": "peak %Bias" } }
+      }
+    }
+  },
+
+  "changelog": [
+    {
+      "version": "1.0.0",
+      "date": "2026-07-16",
+      "type": "initial",
+      "description": {
+        "de": "Erstimplementierung: AIAG-Kennzahlen %Linearität und %Bias-Peak",
+        "en": "Initial implementation: AIAG KPIs %Linearity and peak %Bias"
+      },
+      "breaking": false
+    }
+  ]
+}

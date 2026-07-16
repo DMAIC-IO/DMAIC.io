@@ -1,0 +1,197 @@
+{
+  "id": "q-ms-bi-vda5",
+  "name": {
+    "de": "Q_MS,BI nach VDA 5 (Bias-/Linearitätsbeitrag)",
+    "en": "Q_MS,BI per VDA 5 (bias/linearity contribution)"
+  },
+  "category": "msa",
+  "subcategory": "typ4",
+  "status": "validated",
+  "version": "1.0.0",
+
+  "description": {
+    "short": {
+      "de": "VDA-5-Kennzahl: Anteil der Toleranz, den der Linearitäts- und Bias-Beitrag aufbraucht.",
+      "en": "VDA 5 KPI: share of the tolerance consumed by the linearity/bias contribution."
+    },
+    "long": {
+      "de": "Kombiniert den größten beobachteten Einzel-Bias-Betrag mit der Unsicherheit der Regressionssteigung: u_BI = √(max|b_i|² + (SE(a)·Range)²). Die erweiterte Unsicherheit U = 2·u_BI (Erweiterungsfaktor k = 2 für ≈ 95 %) wird direkt gegen die Toleranz T = USL − LSL bewertet: Q_MS,BI = U / T · 100 %. Ampel: grün ≤ 15 %, gelb 15–30 %, rot > 30 %.",
+      "en": "Combines the largest observed single-point bias with the slope uncertainty of the regression: u_BI = √(max|b_i|² + (SE(a)·Range)²). The expanded uncertainty U = 2·u_BI (coverage factor k = 2 for ≈ 95 %) is compared directly to the tolerance T = USL − LSL: Q_MS,BI = U / T · 100 %. Traffic light: green ≤ 15 %, yellow 15–30 %, red > 30 %."
+    }
+  },
+
+  "documentation": {
+    "formulas": [
+      {
+        "label": "u_BI",
+        "latex": "u_{BI} = \\sqrt{ \\max_i |b_i|^2 + (SE(a) \\cdot \\text{Range})^2 }",
+        "description": {
+          "de": "Bias-/Linearitätsbeitrag zur Standardunsicherheit — quadratisch kombiniert aus schlimmstem Bias-Punkt und Steigungsunsicherheit über den Messbereich",
+          "en": "Bias/linearity contribution to the standard uncertainty — RSS of the worst bias point and the slope uncertainty extrapolated across the range"
+        }
+      },
+      {
+        "label": "U",
+        "latex": "U = 2 \\cdot u_{BI}",
+        "description": {
+          "de": "Erweiterte Messunsicherheit (Erweiterungsfaktor k = 2, ≈ 95 % Überdeckung)",
+          "en": "Expanded measurement uncertainty (coverage factor k = 2, ≈ 95 % coverage)"
+        }
+      },
+      {
+        "label": "Q_MS,BI",
+        "latex": "Q_{MS,BI} = \\frac{U}{T} \\cdot 100 \\, \\%",
+        "description": {
+          "de": "Anteil der Toleranz T = USL − LSL, den der Bias-/Linearitätsbeitrag aufbraucht",
+          "en": "Share of the tolerance T = USL − LSL consumed by the bias/linearity contribution"
+        }
+      },
+      {
+        "label": "Ampel",
+        "latex": "\\begin{cases} \\text{grün}  & Q_{MS,BI} \\le 15\\,\\% \\\\ \\text{gelb}  & 15\\,\\% < Q_{MS,BI} \\le 30\\,\\% \\\\ \\text{rot}   & Q_{MS,BI} > 30\\,\\% \\end{cases}",
+        "description": {
+          "de": "VDA-5-Bewertungsschwellen für den Bias-Beitrag",
+          "en": "VDA 5 evaluation thresholds for the bias contribution"
+        }
+      }
+    ],
+    "assumptions": [
+      {
+        "de": "Toleranz T = USL − LSL ist bekannt und > 0 (auch im 6σ-PV-Modus notwendig)",
+        "en": "Tolerance T = USL − LSL is known and > 0 (also required in six-sigma PV mode)"
+      },
+      {
+        "de": "Steigungsunsicherheit SE(a) stammt aus derselben Linearitäts-Regression",
+        "en": "Slope uncertainty SE(a) comes from the same linearity regression"
+      },
+      {
+        "de": "Erweiterungsfaktor k = 2 entspricht dem VDA-5-Standard (kein Freiheitsgrad-Korrekturfaktor)",
+        "en": "Coverage factor k = 2 matches the VDA 5 default (no small-df correction applied)"
+      }
+    ],
+    "limitations": [
+      {
+        "de": "Q_MS,BI ist nur ein Q-Anteil — die Gesamtbewertung Q_MS berücksichtigt auch Wiederholbarkeit, Vergleich und Auflösung",
+        "en": "Q_MS,BI is only one Q-share — the overall Q_MS also considers repeatability, reproducibility and resolution"
+      },
+      {
+        "de": "Bei sehr kleiner Toleranz explodiert Q_MS,BI numerisch, obwohl die absolute Unsicherheit klein sein kann",
+        "en": "For very small tolerances Q_MS,BI blows up numerically even though the absolute uncertainty may be tiny"
+      }
+    ],
+    "references": [
+      {
+        "source": "VDA Band 5 — Prüfprozesseignung: Eignung von Messsystemen, Mess- und Prüfprozessen, Erweiterte Messunsicherheit, 3. Auflage"
+      },
+      {
+        "source": "ISO/IEC Guide 98-3 (GUM) — Evaluation of measurement data"
+      },
+      {
+        "source": "Dietrich, E. & Schulze, A. — Statistische Verfahren zur Maschinen- und Prozessqualifikation, 7. Auflage, Hanser"
+      }
+    ],
+    "minitab_equivalent": "kein direktes Minitab-Äquivalent (VDA-5-spezifisch); Q-Analyse via Q-DAS/Solara"
+  },
+
+  "source": {
+    "function_name": "analyze",
+    "file_path": "js/engines/msa-typ4-engine.js",
+    "signature": {
+      "parameters": [
+        {
+          "name": "reference",
+          "type": "number[]",
+          "required": true,
+          "description": {
+            "de": "Long/tidy-Array der Referenzwerte",
+            "en": "Long/tidy array of reference values"
+          }
+        },
+        {
+          "name": "measured",
+          "type": "number[]",
+          "required": true,
+          "description": {
+            "de": "Long/tidy-Array der Messwerte",
+            "en": "Long/tidy array of measured values"
+          }
+        },
+        {
+          "name": "params",
+          "type": "object",
+          "required": true,
+          "description": {
+            "de": "Objekt mit pvMode, LSL, USL (oder sigmaP) und alpha — LSL/USL sind für Q_MS,BI zwingend",
+            "en": "Object with pvMode, LSL, USL (or sigmaP) and alpha — LSL/USL are mandatory for Q_MS,BI"
+          }
+        }
+      ],
+      "returns": {
+        "type": "object",
+        "properties": {
+          "kpi.vda5.u_BI":    { "type": "number", "description": { "de": "Bias-/Linearitätsbeitrag u_BI", "en": "Bias/linearity contribution u_BI" } },
+          "kpi.vda5.U":       { "type": "number", "description": { "de": "Erweiterte Unsicherheit U = 2·u_BI", "en": "Expanded uncertainty U = 2·u_BI" } },
+          "kpi.vda5.Q_MS_BI": { "type": "number", "description": { "de": "Anteil an der Toleranz in Prozent", "en": "Share of the tolerance in percent" } }
+        }
+      }
+    },
+    "code_snippet": null
+  },
+
+  "try_it": {
+    "input_schema": {
+      "fields": [
+        {
+          "name": "reference",
+          "label": { "de": "Referenzwerte", "en": "Reference values" },
+          "type": "textarea",
+          "parse_as": "number_array",
+          "required": true
+        },
+        {
+          "name": "measured",
+          "label": { "de": "Messwerte", "en": "Measured values" },
+          "type": "textarea",
+          "parse_as": "number_array",
+          "required": true
+        },
+        {
+          "name": "params.pvMode",
+          "label": { "de": "PV-Modus", "en": "PV mode" },
+          "type": "select",
+          "options": [
+            { "value": "tolerance", "label": { "de": "Toleranz", "en": "Tolerance" } },
+            { "value": "sixSigma",  "label": { "de": "6·σ_P", "en": "6·σ_P" } }
+          ],
+          "default": "tolerance",
+          "required": true
+        },
+        { "name": "params.LSL", "label": { "de": "LSL", "en": "LSL" }, "type": "number", "parse_as": "number", "required": true },
+        { "name": "params.USL", "label": { "de": "USL", "en": "USL" }, "type": "number", "parse_as": "number", "required": true },
+        { "name": "params.alpha", "label": { "de": "α", "en": "α" }, "type": "number", "parse_as": "number", "required": false, "default": 0.05 }
+      ]
+    },
+    "output_schema": {
+      "display_fields": ["kpi.vda5.u_BI", "kpi.vda5.U", "kpi.vda5.Q_MS_BI"],
+      "primary_field": "kpi.vda5.Q_MS_BI",
+      "format": {
+        "kpi.vda5.u_BI":    { "decimals": 4, "label": "u_BI" },
+        "kpi.vda5.U":       { "decimals": 4, "label": "U" },
+        "kpi.vda5.Q_MS_BI": { "decimals": 2, "label": "Q_MS,BI" }
+      }
+    }
+  },
+
+  "changelog": [
+    {
+      "version": "1.0.0",
+      "date": "2026-07-16",
+      "type": "initial",
+      "description": {
+        "de": "Erstimplementierung: VDA-5-Bias-Beitrag u_BI, U = 2·u_BI, Q_MS,BI = U/T·100 %",
+        "en": "Initial implementation: VDA 5 bias contribution u_BI, U = 2·u_BI, Q_MS,BI = U/T·100 %"
+      },
+      "breaking": false
+    }
+  ]
+}

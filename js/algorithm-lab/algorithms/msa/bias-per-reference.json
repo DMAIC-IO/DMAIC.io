@@ -1,0 +1,220 @@
+{
+  "id": "bias-per-reference",
+  "name": {
+    "de": "Bias pro Referenzpunkt (Einstichproben-t-Test)",
+    "en": "Bias per Reference Point (one-sample t-test)"
+  },
+  "category": "msa",
+  "subcategory": "typ4",
+  "status": "validated",
+  "version": "1.0.0",
+
+  "description": {
+    "short": {
+      "de": "Prüft für jeden Referenzpunkt getrennt, ob der Bias signifikant von null abweicht.",
+      "en": "For each reference point, tests whether the bias differs significantly from zero."
+    },
+    "long": {
+      "de": "Gruppiert die long/tidy-Messwerte nach Referenzwert x_ref,i und berechnet pro Gruppe: Mittelwert ȳ_i, Standardabweichung s_i (Bessel-korrigiert), Bias b_i = ȳ_i − x_ref,i, t-Statistik t_i = b_i · √n_i / s_i und den zweiseitigen p-Wert bei df = n_i − 1. So sieht man auf einen Blick, an welchem konkreten Referenzpunkt der Bias die AIAG/VDA-5-Ampel kippt.",
+      "en": "Groups the long/tidy measurements by reference value x_ref,i and computes per group: mean ȳ_i, standard deviation s_i (Bessel-corrected), bias b_i = ȳ_i − x_ref,i, t-statistic t_i = b_i · √n_i / s_i, and the two-sided p-value at df = n_i − 1. Lets you pinpoint which reference tips the AIAG/VDA 5 traffic light."
+    }
+  },
+
+  "documentation": {
+    "formulas": [
+      {
+        "label": "Bias",
+        "latex": "b_i = \\bar y_i - x_{\\text{ref},i}",
+        "description": {
+          "de": "Mittelwert der Wiederholungen minus Referenzwert",
+          "en": "Mean of the repeats minus the reference value"
+        }
+      },
+      {
+        "label": "Standardabweichung",
+        "latex": "s_i = \\sqrt{ \\tfrac{1}{n_i - 1} \\sum_{j=1}^{n_i} (y_{ij} - \\bar y_i)^2 }",
+        "description": {
+          "de": "Bessel-korrigierte Streuung der Wiederholungen an Referenz i",
+          "en": "Bessel-corrected spread of the repeats at reference i"
+        }
+      },
+      {
+        "label": "t-Statistik",
+        "latex": "t_i = \\frac{b_i}{ s_i / \\sqrt{n_i} }",
+        "description": {
+          "de": "Einstichproben-t-Test H₀: b_i = 0",
+          "en": "One-sample t-test H₀: b_i = 0"
+        }
+      },
+      {
+        "label": "p-Wert",
+        "latex": "p_i = 2 \\cdot P(|T_{n_i-1}| > |t_i|)",
+        "description": {
+          "de": "Zweiseitiger p-Wert bei df = n_i − 1",
+          "en": "Two-sided p-value at df = n_i − 1"
+        }
+      }
+    ],
+    "assumptions": [
+      {
+        "de": "Wiederholungen sind (näherungsweise) normalverteilt",
+        "en": "Repeat measurements are approximately normally distributed"
+      },
+      {
+        "de": "≥ 3 Wiederholungen pro Referenz (mehr Wiederholungen erhöhen die Testschärfe)",
+        "en": "≥ 3 repetitions per reference (more repeats increase test power)"
+      },
+      {
+        "de": "Wiederholbedingungen — kein Prüfer-, Zeit- oder Gerätewechsel während der Serie",
+        "en": "Repeatability conditions — no change of operator, time or instrument during the series"
+      }
+    ],
+    "limitations": [
+      {
+        "de": "Bei sehr kleinen n_i (3–5) ist der t-Test nur schwach — kleine Bias-Werte werden übersehen",
+        "en": "For very small n_i (3–5) the t-test has low power — small biases go undetected"
+      },
+      {
+        "de": "Mehrere gleichzeitige Tests: p-Werte nicht ohne Bonferroni/FDR-Korrektur interpretieren",
+        "en": "Multiple simultaneous tests: interpret p-values with a Bonferroni or FDR correction"
+      }
+    ],
+    "references": [
+      {
+        "source": "AIAG — Measurement Systems Analysis Reference Manual, 4th Edition (MSA-4)"
+      },
+      {
+        "source": "VDA Band 5 — Prüfprozesseignung, 3. Auflage"
+      }
+    ],
+    "minitab_equivalent": "Stat > Quality Tools > Gage Study > Gage Linearity and Bias Study (per-reference bias)"
+  },
+
+  "source": {
+    "function_name": "analyze",
+    "file_path": "js/engines/msa-typ4-engine.js",
+    "signature": {
+      "parameters": [
+        {
+          "name": "reference",
+          "type": "number[]",
+          "required": true,
+          "description": {
+            "de": "Long/tidy-Array der Referenzwerte",
+            "en": "Long/tidy array of reference values"
+          }
+        },
+        {
+          "name": "measured",
+          "type": "number[]",
+          "required": true,
+          "description": {
+            "de": "Long/tidy-Array der Messwerte",
+            "en": "Long/tidy array of measured values"
+          }
+        },
+        {
+          "name": "params",
+          "type": "object",
+          "required": true,
+          "description": {
+            "de": "Objekt mit pvMode, LSL, USL (oder sigmaP) und alpha",
+            "en": "Object with pvMode, LSL, USL (or sigmaP) and alpha"
+          }
+        }
+      ],
+      "returns": {
+        "type": "object",
+        "properties": {
+          "perReference": {
+            "type": "array",
+            "description": {
+              "de": "Ein Eintrag je Referenzpunkt: { xRef, n, mean, bias, sd, tStat, pValue }",
+              "en": "One entry per reference: { xRef, n, mean, bias, sd, tStat, pValue }"
+            }
+          }
+        }
+      }
+    },
+    "code_snippet": null
+  },
+
+  "try_it": {
+    "input_schema": {
+      "fields": [
+        {
+          "name": "reference",
+          "label": { "de": "Referenzwerte", "en": "Reference values" },
+          "type": "textarea",
+          "placeholder": {
+            "de": "Long/tidy, z. B. 2;2;2;4;4;4;6;6;6;8;8;8;10;10;10",
+            "en": "Long/tidy, e.g. 2,2,2,4,4,4,6,6,6,8,8,8,10,10,10"
+          },
+          "parse_as": "number_array",
+          "required": true
+        },
+        {
+          "name": "measured",
+          "label": { "de": "Messwerte", "en": "Measured values" },
+          "type": "textarea",
+          "placeholder": { "de": "Gleiche Länge wie Referenz", "en": "Same length as reference" },
+          "parse_as": "number_array",
+          "required": true
+        },
+        {
+          "name": "params.pvMode",
+          "label": { "de": "PV-Modus", "en": "PV mode" },
+          "type": "select",
+          "options": [
+            { "value": "tolerance", "label": { "de": "Toleranz", "en": "Tolerance" } },
+            { "value": "sixSigma",  "label": { "de": "6·σ_P", "en": "6·σ_P" } }
+          ],
+          "default": "tolerance",
+          "required": true
+        },
+        {
+          "name": "params.LSL",
+          "label": { "de": "LSL", "en": "LSL" },
+          "type": "number",
+          "parse_as": "number",
+          "required": false
+        },
+        {
+          "name": "params.USL",
+          "label": { "de": "USL", "en": "USL" },
+          "type": "number",
+          "parse_as": "number",
+          "required": false
+        },
+        {
+          "name": "params.alpha",
+          "label": { "de": "α", "en": "α" },
+          "type": "number",
+          "parse_as": "number",
+          "required": false,
+          "default": 0.05
+        }
+      ]
+    },
+    "output_schema": {
+      "display_fields": ["perReference"],
+      "primary_field": "perReference",
+      "format": {
+        "perReference": { "label": { "de": "Bias je Referenz", "en": "Bias per reference" } }
+      }
+    }
+  },
+
+  "changelog": [
+    {
+      "version": "1.0.0",
+      "date": "2026-07-16",
+      "type": "initial",
+      "description": {
+        "de": "Erstimplementierung: t-Test je Referenzpunkt (Sub-Ergebnis der MSA-Typ-4-Analyse)",
+        "en": "Initial implementation: t-test per reference point (sub-result of the MSA Type 4 analysis)"
+      },
+      "breaking": false
+    }
+  ]
+}

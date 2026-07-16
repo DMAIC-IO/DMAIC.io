@@ -1,0 +1,253 @@
+{
+  "id": "linearity-regression",
+  "name": {
+    "de": "Linearitäts-Regression (Bias vs. Referenz)",
+    "en": "Linearity Regression (Bias vs. Reference)"
+  },
+  "category": "msa",
+  "subcategory": "typ4",
+  "status": "validated",
+  "version": "1.0.0",
+
+  "description": {
+    "short": {
+      "de": "Kernrechnung von MSA Typ 4: Regression aller Einzel-Bias-Werte gegen den Referenzwert.",
+      "en": "Core computation for MSA Type 4: regression of individual bias values against the reference value."
+    },
+    "long": {
+      "de": "Für N Einzelmessungen mit Referenzwerten x_ref,i und Messwerten y_ij wird das lineare Modell b_ij = a · x_ref,i + b̂ + ε per OLS gefittet. Ausgabe: Steigung a, Achsenabschnitt b̂, Standardfehler SE(a) und SE(b̂), t-Statistiken, zweiseitige p-Werte, 95 %-Konfidenzintervalle für beide Parameter und ein pointweises 95 %-Konfidenzband um die Regressionsgerade. Grundlage für die AIAG-Kennzahl %Linearität und den VDA-5-Beitrag u_BI.",
+      "en": "For N individual measurements with references x_ref,i and readings y_ij, OLS fits b_ij = a · x_ref,i + b̂ + ε. Returns slope, intercept, standard errors SE(a) and SE(b̂), t-statistics, two-sided p-values, 95 % confidence intervals for both parameters and a point-wise 95 % confidence band around the fitted line. Feeds both the AIAG %Linearity KPI and the VDA 5 u_BI contribution."
+    }
+  },
+
+  "documentation": {
+    "formulas": [
+      {
+        "label": "Steigung",
+        "latex": "a = \\frac{\\sum_i (x_i - \\bar x)(b_{ij} - \\bar b)}{\\sum_i (x_i - \\bar x)^2}",
+        "description": {
+          "de": "OLS-Schätzer der Steigung des Bias über den Referenzwert",
+          "en": "OLS estimator of the bias slope across the reference value"
+        }
+      },
+      {
+        "label": "Achsenabschnitt",
+        "latex": "\\hat b = \\bar b - a \\cdot \\bar x",
+        "description": {
+          "de": "OLS-Schätzer des konstanten Offsets",
+          "en": "OLS estimator of the constant offset"
+        }
+      },
+      {
+        "label": "SE(a)",
+        "latex": "SE(a) = \\sqrt{ \\text{MSE} \\; / \\; \\sum_i (x_i - \\bar x)^2 }",
+        "description": {
+          "de": "Standardfehler der Steigung",
+          "en": "Standard error of the slope"
+        }
+      },
+      {
+        "label": "SE(b̂)",
+        "latex": "SE(\\hat b) = \\sqrt{ \\text{MSE} \\left( \\tfrac{1}{N} + \\tfrac{\\bar x^2}{\\sum_i (x_i - \\bar x)^2} \\right) }",
+        "description": {
+          "de": "Standardfehler des Achsenabschnitts",
+          "en": "Standard error of the intercept"
+        }
+      },
+      {
+        "label": "95 %-KI-Band",
+        "latex": "\\hat y \\pm t_{1-\\alpha/2,\\,N-2} \\cdot \\sqrt{ \\text{MSE} \\left( \\tfrac{1}{N} + \\tfrac{(x-\\bar x)^2}{\\sum_i (x_i - \\bar x)^2} \\right) }",
+        "description": {
+          "de": "Punktweises Konfidenzband um die Regressionsgerade (nicht für Vorhersagen)",
+          "en": "Point-wise confidence band around the fitted line (mean, not prediction)"
+        }
+      }
+    ],
+    "assumptions": [
+      {
+        "de": "Bias-Werte sind (bedingt auf x_ref) normalverteilt",
+        "en": "Bias values are normally distributed conditional on x_ref"
+      },
+      {
+        "de": "Homoskedastizität: gleiche Streuung über den gesamten Messbereich",
+        "en": "Homoscedasticity: constant variance across the measurement range"
+      },
+      {
+        "de": "≥ 5 unterschiedliche Referenzen und ≥ 3 Wiederholungen pro Referenz",
+        "en": "≥ 5 distinct references and ≥ 3 repetitions per reference"
+      },
+      {
+        "de": "Wiederholbedingungen (ein Prüfer, ein Messmittel, kurze Zeitspanne)",
+        "en": "Repeatability conditions (one operator, one instrument, short time frame)"
+      }
+    ],
+    "limitations": [
+      {
+        "de": "Die Regression prüft nur lineare Drift — quadratische oder stufenweise Nichtlinearität wird schlecht abgebildet",
+        "en": "The regression only detects linear drift — quadratic or step-wise non-linearity is poorly captured"
+      },
+      {
+        "de": "Bei Verstößen gegen Homoskedastizität sind SE, p-Werte und Konfidenzband verzerrt",
+        "en": "Under heteroscedasticity the SE, p-values and confidence band become biased"
+      }
+    ],
+    "references": [
+      {
+        "source": "AIAG — Measurement Systems Analysis Reference Manual, 4th Edition (MSA-4), Kapitel III-B: Linearity"
+      },
+      {
+        "source": "VDA Band 5 — Prüfprozesseignung, 3. Auflage, Anhang zur Linearitäts-Bias-Studie"
+      },
+      {
+        "source": "Draper, N. R. & Smith, H. — Applied Regression Analysis, 3rd Edition, Wiley"
+      }
+    ],
+    "minitab_equivalent": "Stat > Quality Tools > Gage Study > Gage Linearity and Bias Study"
+  },
+
+  "source": {
+    "function_name": "analyze",
+    "file_path": "js/engines/msa-typ4-engine.js",
+    "signature": {
+      "parameters": [
+        {
+          "name": "reference",
+          "type": "number[]",
+          "required": true,
+          "description": {
+            "de": "Long/tidy-Array der Referenzwerte (eine Zeile je Einzelmessung)",
+            "en": "Long/tidy array of reference values (one row per individual measurement)"
+          }
+        },
+        {
+          "name": "measured",
+          "type": "number[]",
+          "required": true,
+          "description": {
+            "de": "Long/tidy-Array der zugehörigen Messwerte",
+            "en": "Long/tidy array of the corresponding measurements"
+          }
+        },
+        {
+          "name": "params",
+          "type": "object",
+          "required": true,
+          "description": {
+            "de": "Objekt mit pvMode, LSL, USL (oder sigmaP) und alpha",
+            "en": "Object with pvMode, LSL, USL (or sigmaP) and alpha"
+          }
+        }
+      ],
+      "returns": {
+        "type": "object",
+        "properties": {
+          "regression": {
+            "type": "object",
+            "description": {
+              "de": "OLS-Ergebnisse: slope, intercept, seSlope, seIntercept, pSlope, pIntercept, ciBand, N, dfResid",
+              "en": "OLS results: slope, intercept, seSlope, seIntercept, pSlope, pIntercept, ciBand, N, dfResid"
+            }
+          }
+        }
+      }
+    },
+    "code_snippet": null
+  },
+
+  "try_it": {
+    "input_schema": {
+      "fields": [
+        {
+          "name": "reference",
+          "label": { "de": "Referenzwerte", "en": "Reference values" },
+          "type": "textarea",
+          "placeholder": {
+            "de": "Long/tidy: eine Zeile je Einzelmessung, z. B. 2;2;2;4;4;4;6;6;6;8;8;8;10;10;10",
+            "en": "Long/tidy: one row per measurement, e.g. 2,2,2,4,4,4,6,6,6,8,8,8,10,10,10"
+          },
+          "parse_as": "number_array",
+          "required": true
+        },
+        {
+          "name": "measured",
+          "label": { "de": "Messwerte", "en": "Measured values" },
+          "type": "textarea",
+          "placeholder": {
+            "de": "Passend zu Referenzwerten (gleiche Reihenfolge und Länge)",
+            "en": "Aligned with reference values (same order and length)"
+          },
+          "parse_as": "number_array",
+          "required": true
+        },
+        {
+          "name": "params.pvMode",
+          "label": { "de": "PV-Modus", "en": "PV mode" },
+          "type": "select",
+          "options": [
+            { "value": "tolerance", "label": { "de": "Toleranz (USL − LSL)", "en": "Tolerance (USL − LSL)" } },
+            { "value": "sixSigma",  "label": { "de": "6·σ_P (Prozessstreuung)", "en": "6·σ_P (process spread)" } }
+          ],
+          "default": "tolerance",
+          "required": true
+        },
+        {
+          "name": "params.LSL",
+          "label": { "de": "Untere Spez. (LSL)", "en": "Lower Spec. (LSL)" },
+          "type": "number",
+          "placeholder": { "de": "z. B. 0", "en": "e.g. 0" },
+          "parse_as": "number",
+          "required": false
+        },
+        {
+          "name": "params.USL",
+          "label": { "de": "Obere Spez. (USL)", "en": "Upper Spec. (USL)" },
+          "type": "number",
+          "placeholder": { "de": "z. B. 12", "en": "e.g. 12" },
+          "parse_as": "number",
+          "required": false
+        },
+        {
+          "name": "params.alpha",
+          "label": { "de": "Signifikanzniveau α", "en": "Significance level α" },
+          "type": "number",
+          "placeholder": { "de": "Standard: 0.05", "en": "Default: 0.05" },
+          "parse_as": "number",
+          "required": false,
+          "default": 0.05
+        }
+      ]
+    },
+    "output_schema": {
+      "display_fields": [
+        "regression.slope",
+        "regression.intercept",
+        "regression.seSlope",
+        "regression.seIntercept",
+        "regression.pSlope",
+        "regression.pIntercept"
+      ],
+      "primary_field": "regression.slope",
+      "format": {
+        "regression.slope":       { "decimals": 6, "label": { "de": "Steigung a", "en": "Slope a" } },
+        "regression.intercept":   { "decimals": 6, "label": { "de": "Achsenabschnitt b̂", "en": "Intercept b̂" } },
+        "regression.seSlope":     { "decimals": 6, "label": "SE(a)" },
+        "regression.seIntercept": { "decimals": 6, "label": "SE(b̂)" },
+        "regression.pSlope":      { "decimals": 4, "label": { "de": "p-Wert (Steigung)", "en": "p-value (slope)" } },
+        "regression.pIntercept":  { "decimals": 4, "label": { "de": "p-Wert (Offset)", "en": "p-value (intercept)" } }
+      }
+    }
+  },
+
+  "changelog": [
+    {
+      "version": "1.0.0",
+      "date": "2026-07-16",
+      "type": "initial",
+      "description": {
+        "de": "Erstimplementierung: OLS-Regression des Bias über den Referenzwert (Kern von MSA Typ 4)",
+        "en": "Initial implementation: OLS regression of bias against reference (core of MSA Type 4)"
+      },
+      "breaking": false
+    }
+  ]
+}
