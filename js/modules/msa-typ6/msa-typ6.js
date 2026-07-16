@@ -30,7 +30,18 @@
  * ({dir:'h'|'v', value}), keine diagonale from/to-Form — die Regressions-
  * gerade wird daher (wie msa-typ4s "Fit"-Serie in `_renderRegressionChart`)
  * als zweite Scatter-Serie mit zwei Endpunkten + `connectLine` gerendert.
- * Interpretation folgt in Task 13.
+ * Task 13 (dieser Stand): Interpretations-Text-Absatz unterhalb der
+ * Drift-Sektion (msa-typ6.html), gerendert aus `_lastResult.interpretation.
+ * textKey`+`params` über den prefix-aware `t()`-Helfer (kein eigener
+ * `_ip`-Wrapper nötig — der volle, bereits qualifizierte textKey aus der
+ * Engine löst über `t()`s Bare-Key-Fallback korrekt auf, siehe msa-typ6.html
+ * Kommentar). Kein expliziter `language:changed`-Handler nötig: die generische
+ * `onLanguageChange()` aus createModule (template-module.js) zerstört + baut
+ * den Alpine-Baum der Instanz bei Sprachumschaltung komplett neu auf (wie bei
+ * msa-typ5/msa-typ4), wodurch Tabelle, KPI-Strip und dieser Absatz ohnehin
+ * neu gerendert werden. Charts überleben das nicht automatisch, sind aber
+ * reine Zahlen-Renderings ohne Sprachbezug — `init()` ruft `_analyzeNow()`
+ * ohnehin erneut auf, was `_renderCharts()` nach dem Re-Mount neu anstößt.
  *
  * Spec: docs/superpowers/specs/2026-07-16-msa-typ6-design.md § 6
  */

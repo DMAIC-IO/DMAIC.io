@@ -246,7 +246,20 @@
           </div>
         </div>
 
-        <!-- Task 13: Interpretation folgt. -->
+        <!-- Interpretation (Task 13): `interpretation.textKey` kommt aus der
+             Engine bereits voll qualifiziert (`modules.msa-typ6.interpretation.
+             ${level}.${driver}`, siehe msa-typ6-engine.js). Der `t()`-Helfer
+             ist prefix-aware (i18n.tf(), siehe template-module.js): er
+             versucht zuerst `modules.msa-typ6.<key>` und fällt bei Miss auf
+             den bloßen `<key>` zurück — ein bereits voll qualifizierter Key
+             löst also über den Fallback-Zweig korrekt auf, kein
+             `.replace()`-Strippen des Prefixes nötig. Sprachumschaltung
+             braucht keinen eigenen Handler: `onLanguageChange()` in
+             template-module.js zerstört + re-initialisiert den Alpine-Baum
+             der Instanz komplett (siehe msa-typ6.js Kommentar), wodurch auch
+             dieser Absatz mit der neuen Sprache neu gerendert wird. -->
+        <p class="module-msa-typ6__interpretation"
+           x-text="t(_lastResult.interpretation.textKey, _lastResult.interpretation.params)"></p>
       </div>
     </template>
     <template x-if="!_lastResult">

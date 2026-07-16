@@ -153,3 +153,15 @@
   gap: var(--spacing-lg);
   flex-wrap: wrap;
 }
+
+/* ─── Interpretation (Task 13) ───────────────────────────────── */
+.module-msa-typ6__interpretation {
+  max-width: 70ch;
+  padding: var(--spacing-sm) var(--spacing-md);
+  margin: 0 0 var(--spacing-md);
+  line-height: 1.5;
+  color: var(--color-text-primary);
+  background: var(--color-bg-secondary);
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius);
+}

@@ -397,3 +397,54 @@ suite('msa-typ6 module — Drift-Analyse-Chart (Task 12)', () => {
       'expected drift.slope to be bound twice (equation + β₁ ± SE stats line)');
   });
 });
+
+/**
+ * Task 13: Output-Panel Interpretations-Text.
+ *
+ * Same DOMParser-only constraint as Task 7–12 (see rationale above): the
+ * actual translated text depends on a live `t()`/`i18n` call, which needs a
+ * mounted Alpine component — not available in the headless DOMParser-based
+ * runner used here (and i18n keys under `modules.msa-typ6.interpretation.*`
+ * are added later by Task 17, so there's nothing to translate yet). This
+ * suite asserts the templated interpretation paragraph is structurally
+ * present inside the `<template x-if="_lastResult">` branch and correctly
+ * wired to `_lastResult.interpretation`. Live-render (and language-switch)
+ * coverage belongs to the Playwright E2E suite
+ * (test/playwright/tests/modules/msa-typ6.spec.js, Task 19 per
+ * docs/superpowers/specs/2026-07-16-msa-typ6-design.md § 9).
+ */
+suite('msa-typ6 module — Interpretations-Text (Task 13)', () => {
+  /** Fetch + parse the real shipped template once per test. */
+  async function loadTemplateDoc() {
+    const url = new URL('../../js/modules/msa-typ6/msa-typ6.html', import.meta.url);
+    const html = await (await fetch(url)).text();
+    return new DOMParser().parseFromString(html, 'text/html');
+  }
+
+  /** @param {Document} doc @returns {DocumentFragment} the `_lastResult` result branch's content. */
+  function resultFragment(doc) {
+    const tpl = [...doc.querySelectorAll('template[x-if]')]
+      .find((t) => t.getAttribute('x-if') === '_lastResult');
+    assertTrue(tpl !== null, 'template must have a <template x-if="_lastResult"> branch');
+    return tpl.content;
+  }
+
+  test('result branch has a .module-msa-typ6__interpretation paragraph bound to _lastResult.interpretation', async () => {
+    const doc = await loadTemplateDoc();
+    const frag = resultFragment(doc);
+    const p = frag.querySelector('p.module-msa-typ6__interpretation');
+    assertTrue(p !== null, 'missing p.module-msa-typ6__interpretation element');
+    const xtext = p.getAttribute('x-text') || '';
+    assertTrue(xtext.includes('_lastResult.interpretation.textKey'),
+      'interpretation paragraph must reference _lastResult.interpretation.textKey');
+    assertTrue(xtext.includes('_lastResult.interpretation.params'),
+      'interpretation paragraph must reference _lastResult.interpretation.params');
+
+    // Must not appear in the Empty-State (!_lastResult) branch.
+    const noResultTpl = [...doc.querySelectorAll('template[x-if]')]
+      .find((t) => t.getAttribute('x-if') === '!_lastResult');
+    assertTrue(noResultTpl !== null, 'template must have a <template x-if="!_lastResult"> branch');
+    assertTrue(noResultTpl.content.querySelector('.module-msa-typ6__interpretation') === null,
+      '.module-msa-typ6__interpretation must not render in the Empty-State (!_lastResult) branch');
+  });
+});
