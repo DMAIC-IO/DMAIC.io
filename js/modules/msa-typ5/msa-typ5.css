@@ -164,3 +164,20 @@
   gap: var(--spacing-md);
   margin-bottom: var(--spacing-md);
 }
+.msa-typ5__heatmap-cell {
+  background: var(--color-background-primary);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md, 6px);
+  padding: var(--spacing-sm);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+.msa-typ5__heatmap-title {
+  font-size: 0.9em;
+  color: var(--color-text-secondary);
+  text-align: center;
+}
+.msa-typ5__heatmap-body {
+  min-height: 220px;
+}

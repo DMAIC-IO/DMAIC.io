@@ -813,9 +813,66 @@ export default {
     this._charts.push(chart);
   },
 
-  /** Placeholder — Task 14 populates confusion-heatmap grid. */
-  async _renderConfusionHeatmaps(_res) {
-    /* implemented in Task 14 */
+  /**
+   * Grid aus Confusion-Heatmaps: eine je Prüfer-vs-Referenz-Kombination
+   * (falls Referenz vorhanden) sowie eine je Prüferpaar. Nutzt das
+   * bestehende chart/types/heatmap.js (viridis-Skala, showCellLabels).
+   */
+  async _renderConfusionHeatmaps(res) {
+    const host = this._container?.querySelector('[data-ref="chart-heatmaps"]');
+    if (!host) return;
+
+    const items = [];
+    // Prüfer vs. Referenz (Kreuztabelle aus perAppraiser[].confusionMatrix).
+    for (const [id, v] of Object.entries(res.perAppraiser || {})) {
+      if (v.confusionMatrix && Array.isArray(v.confusionMatrix.counts)) {
+        items.push({
+          title: `${id} vs. ${this._t('modules.msa-typ5.labels.referenceSource')}`,
+          rows: v.confusionMatrix.rows,
+          cols: v.confusionMatrix.cols,
+          counts: v.confusionMatrix.counts,
+        });
+      }
+    }
+    // Prüfer vs. Prüfer aus den Paar-Confusionen.
+    for (const [pair, k] of Object.entries(res.betweenAppraisers?.pairwiseCohenKappa || {})) {
+      if (!k.confusion || !Array.isArray(k.confusion.counts)) continue;
+      const [a, b] = pair.split('|');
+      items.push({
+        title: `${a} vs. ${b}`,
+        rows: k.confusion.rows,
+        cols: k.confusion.cols,
+        counts: k.confusion.counts,
+      });
+    }
+    if (!items.length) { host.innerHTML = ''; return; }
+
+    host.innerHTML = items.map((_, i) => `
+      <div class="msa-typ5__heatmap-cell">
+        <div class="msa-typ5__heatmap-title"></div>
+        <div class="msa-typ5__heatmap-body" data-ref="heatmap-${i}"></div>
+      </div>
+    `).join('');
+
+    for (let i = 0; i < items.length; i++) {
+      const cell = host.children[i];
+      if (!cell) continue;
+      const titleEl = cell.querySelector('.msa-typ5__heatmap-title');
+      if (titleEl) titleEl.textContent = items[i].title;
+      const target = cell.querySelector(`[data-ref="heatmap-${i}"]`);
+      if (!target) continue;
+      const chart = await this._context.chartManager.create(target, 'heatmap', {
+        xCategories: items[i].cols,
+        yCategories: items[i].rows,
+        cells: items[i].counts,
+        cellGap: 1,
+        valueDecimals: 0,
+        valueLabel: 'n',
+        showCellLabels: true,
+        colorScheme: 'viridis',
+      });
+      this._charts.push(chart);
+    }
   },
 
   _fmt(v, d = 3) {
