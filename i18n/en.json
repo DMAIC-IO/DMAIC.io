@@ -1405,9 +1405,10 @@
       "errUslLeqLsl": "USL must be greater than LSL."
     },
     "msa-typ4": {
+      "name": "MSA Type 4",
+      "description": "Measurement System Analysis Type 4 — linearity and bias across the measurement range (AIAG %Lin, VDA 5 Q_MS,BI)",
       "title": "MSA Type 4",
       "titleLong": "Linearity & Bias Across the Measurement Range",
-      "description": "Evaluates whether the measurement system measures consistently across the entire operating range.",
       "sections": {
         "feature": "Characteristic",
         "dataSource": "Data Source",
@@ -1474,9 +1475,10 @@
       "interpVDA5_red": "Q_MS,BI = {qMsBi} % > 30 %. Not suitable — rework the measurement system."
     },
     "msa-typ5": {
+      "name": "MSA Type 5",
+      "description": "Attribute Measurement System Analysis — multiple appraisers, kappa-based agreement (Cohen, Fleiss, weighted)",
       "title": "MSA Type 5",
       "titleLong": "Attribute Measurement System Analysis",
-      "description": "Evaluates how reliably multiple appraisers assign parts to the same category (binary / nominal / ordinal).",
       "sections": {
         "feature": "Characteristic",
         "dataSource": "Data sources",
@@ -4701,34 +4703,88 @@
         "system": "Belt conveyor for bulk solids",
         "cells": {
           "substance": {
-            "sub":   { "notes": "Belt (rubber), drive pulley, bearing housings, intake chute.", "status": "full" },
-            "sys":   { "notes": "Bulk material itself, dust as by-product, bearing grease.", "status": "partial" },
-            "super": { "notes": "Plant floor, hall air (humidity + dust), collection bin.", "status": "unused" }
+            "sub": {
+              "notes": "Belt (rubber), drive pulley, bearing housings, intake chute.",
+              "status": "full"
+            },
+            "sys": {
+              "notes": "Bulk material itself, dust as by-product, bearing grease.",
+              "status": "partial"
+            },
+            "super": {
+              "notes": "Plant floor, hall air (humidity + dust), collection bin.",
+              "status": "unused"
+            }
           },
           "field": {
-            "sub":   { "notes": "Belt/pulley friction, drive torque.", "status": "full" },
-            "sys":   { "notes": "Gravity on the bulk material, weight of formed bridges, roller vibration.", "status": "partial" },
-            "super": { "notes": "Plant temperature (seasonal swing), electromagnetic field of the drives.", "status": "unknown" }
+            "sub": {
+              "notes": "Belt/pulley friction, drive torque.",
+              "status": "full"
+            },
+            "sys": {
+              "notes": "Gravity on the bulk material, weight of formed bridges, roller vibration.",
+              "status": "partial"
+            },
+            "super": {
+              "notes": "Plant temperature (seasonal swing), electromagnetic field of the drives.",
+              "status": "unknown"
+            }
           },
           "space": {
-            "sub":   { "notes": "Belt cross-section — material sits only in the middle.", "status": "partial" },
-            "sys":   { "notes": "Cavity under the belt, transition chute (main jam location).", "status": "unused" },
-            "super": { "notes": "Free space above the conveyor, wall of the transition area.", "status": "unused" }
+            "sub": {
+              "notes": "Belt cross-section — material sits only in the middle.",
+              "status": "partial"
+            },
+            "sys": {
+              "notes": "Cavity under the belt, transition chute (main jam location).",
+              "status": "unused"
+            },
+            "super": {
+              "notes": "Free space above the conveyor, wall of the transition area.",
+              "status": "unused"
+            }
           },
           "time": {
-            "sub":   { "notes": "Idle time between batches ~ 30 s.", "status": "unused" },
-            "sys":   { "notes": "Spool-up time at start — material initially at rest.", "status": "unknown" },
-            "super": { "notes": "Shift change — no load for ~ 10 min.", "status": "unused" }
+            "sub": {
+              "notes": "Idle time between batches ~ 30 s.",
+              "status": "unused"
+            },
+            "sys": {
+              "notes": "Spool-up time at start — material initially at rest.",
+              "status": "unknown"
+            },
+            "super": {
+              "notes": "Shift change — no load for ~ 10 min.",
+              "status": "unused"
+            }
           },
           "info": {
-            "sub":   { "notes": "Motor current (rises with clogging), bearing temperature.", "status": "partial" },
-            "sys":   { "notes": "Belt sound changes before a jam (operators hear it).", "status": "unused" },
-            "super": { "notes": "No fill-level sensor on the transfer chute.", "status": "unknown" }
+            "sub": {
+              "notes": "Motor current (rises with clogging), bearing temperature.",
+              "status": "partial"
+            },
+            "sys": {
+              "notes": "Belt sound changes before a jam (operators hear it).",
+              "status": "unused"
+            },
+            "super": {
+              "notes": "No fill-level sensor on the transfer chute.",
+              "status": "unknown"
+            }
           },
           "function": {
-            "sub":   { "notes": "Drive rotates pulleys — could additionally generate vibration.", "status": "unused" },
-            "sys":   { "notes": "Kinetic energy of the flowing material — could break bridges on its own.", "status": "unused" },
-            "super": { "notes": "Existing compressed-air ring for cleaning — could double as a rapper.", "status": "unknown" }
+            "sub": {
+              "notes": "Drive rotates pulleys — could additionally generate vibration.",
+              "status": "unused"
+            },
+            "sys": {
+              "notes": "Kinetic energy of the flowing material — could break bridges on its own.",
+              "status": "unused"
+            },
+            "super": {
+              "notes": "Existing compressed-air ring for cleaning — could double as a rapper.",
+              "status": "unknown"
+            }
           }
         }
       }
@@ -4872,45 +4928,60 @@
       "selectPlaceholder": "— please select —",
       "fieldEmpty": "— no field —",
       "field": {
-        "M":  "Mechanical",
-        "A":  "Acoustic",
-        "T":  "Thermal",
-        "C":  "Chemical",
-        "E":  "Electric",
+        "M": "Mechanical",
+        "A": "Acoustic",
+        "T": "Thermal",
+        "C": "Chemical",
+        "E": "Electric",
         "Mg": "Magnetic"
       },
       "link": {
-        "useful":       "useful (works fine)",
+        "useful": "useful (works fine)",
         "insufficient": "insufficient (too weak)",
-        "excessive":    "excessive (too strong)",
-        "harmful":      "harmful (side effect)",
-        "missing":      "missing (should act)"
+        "excessive": "excessive (too strong)",
+        "harmful": "harmful (side effect)",
+        "missing": "missing (should act)"
       },
       "diagramAria": "Su-Field model: substance-substance-field triangle",
       "diagnosisLabel": "Diagnosis",
       "suggestedClasses": "Suggested classes",
       "situation": {
-        "partial":               "S1 or S2 missing — please name both substances.",
-        "incomplete":            "Incomplete model (no field) — a new interaction must be built.",
-        "complete-useful":       "Complete, useful — improvement & next-generation jump possible.",
+        "partial": "S1 or S2 missing — please name both substances.",
+        "incomplete": "Incomplete model (no field) — a new interaction must be built.",
+        "complete-useful": "Complete, useful — improvement & next-generation jump possible.",
         "complete-insufficient": "Complete but insufficient — strengthen or dynamise the field.",
-        "complete-excessive":    "Complete but excessive — damp the action / self-limit.",
-        "complete-harmful":      "Complete but harmful — destroy or neutralise the Su-Field."
+        "complete-excessive": "Complete but excessive — damp the action / self-limit.",
+        "complete-harmful": "Complete but harmful — destroy or neutralise the Su-Field."
       },
       "problemNotePlaceholder": "Optional: context, boundary conditions, cross-reference to 9-Windows / IFR / matrix …",
       "filterAuto": "Suggested classes only",
-      "filterAll":  "Show all",
+      "filterAll": "Show all",
       "loading": "Loading standard solutions…",
       "loadExample": "Load example",
       "reset": "Reset",
       "resetTitle": "Reset Substance-Field analysis?",
       "resetMessage": "All inputs, notes and selections will be cleared. This cannot be undone.",
       "class": {
-        "1": { "name": "Building / destroying Su-Field models", "description": "For incomplete models (1.1 synthesis) or harmful interactions (1.2 destruction)." },
-        "2": { "name": "Developing Su-Field models", "description": "For complete models with insufficient or improvable action — transition to complex, dynamic or ferromagnetic Su-Fields." },
-        "3": { "name": "Transition to supersystem / microlevel", "description": "When the system reaches its limits — bi-/poly-system or jump to the microlevel." },
-        "4": { "name": "Detection & measurement", "description": "Measurement / control problems — avoid measurement, measure indirectly, ferromagnetic detection." },
-        "5": { "name": "Helper standards", "description": "Simplification and ideality — use existing substances / fields, phase changes, self-controlled transitions." }
+        "1": {
+          "name": "Building / destroying Su-Field models",
+          "description": "For incomplete models (1.1 synthesis) or harmful interactions (1.2 destruction)."
+        },
+        "2": {
+          "name": "Developing Su-Field models",
+          "description": "For complete models with insufficient or improvable action — transition to complex, dynamic or ferromagnetic Su-Fields."
+        },
+        "3": {
+          "name": "Transition to supersystem / microlevel",
+          "description": "When the system reaches its limits — bi-/poly-system or jump to the microlevel."
+        },
+        "4": {
+          "name": "Detection & measurement",
+          "description": "Measurement / control problems — avoid measurement, measure indirectly, ferromagnetic detection."
+        },
+        "5": {
+          "name": "Helper standards",
+          "description": "Simplification and ideality — use existing substances / fields, phase changes, self-controlled transitions."
+        }
       },
       "triggerLead": "Apply when",
       "exampleLead": "Example",

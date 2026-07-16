@@ -305,7 +305,7 @@
       "pitfall1": "D3 als endgültige Lösung behandeln. Sortierung und 100%-Prüfung sind Sofortmaßnahmen, keine Abstellmaßnahmen — wer hier stehenbleibt, hat das eigentliche Problem nicht gelöst, nur kaschiert.",
       "pitfall2": "Die Ursachenanalyse mit der erstbesten plausiblen Erklärung beenden. Echte 5-Why-Ketten gehen mindestens bis zur Systemursache („warum erlaubt unser Prozess diesen Fehler überhaupt?\") — alles darüber bleibt Symptombekämpfung.",
       "pitfall3": "D7 vergessen. Wer Abstellmaßnahmen nur am betroffenen Produkt umsetzt und nicht an ähnlichen Produkten / Prozessen / FMEAs / Arbeitsanweisungen pflegt, sieht denselben Fehler in sechs Monaten an einer Schwesterlinie wieder.",
-      "pitfall4": "D8 als Pflichtübung abhaken. Kein „Danke\", keine Lessons-Learned-Kommunikation, kein erkennbarer Wert für das Team — und beim nächsten 8D-Aufruf melden sich die wichtigsten Köpfe plötzlich ab."  ,
+      "pitfall4": "D8 als Pflichtübung abhaken. Kein „Danke\", keine Lessons-Learned-Kommunikation, kein erkennbarer Wert für das Team — und beim nächsten 8D-Aufruf melden sich die wichtigsten Köpfe plötzlich ab.",
       "appTitle": "8D in dieser App",
       "appBody": "Wenn Sie ein Projekt mit dem Zyklus „8D\" anlegen, zeigt die Kopfleiste elf Kacheln (Daten, D0…D8, Weitere). Project Charter, SIPOC und VOC liegen in D2, Five-Why und Ishikawa in D4, DOE und Regression in D5, Regelkarten in D6, FMEA in D7 und Lessons Learned in D8. Vorbereitung (D0) und Sofortmaßnahmen (D3) sind aktuell noch ohne dediziertes Modul — bis dort eigene Werkzeuge entstehen, können Sie die Todo-Liste in D1/D3 einsetzen, um Eintrittsprüfung und Containment-Maßnahmen zu dokumentieren."
     },
@@ -1405,9 +1405,10 @@
       "errUslLeqLsl": "OSG muss größer als USG sein."
     },
     "msa-typ4": {
+      "name": "MSA Typ 4",
+      "description": "Messmittelanalyse Typ 4 — Linearität und Bias über den Messbereich (AIAG %Lin, VDA 5 Q_MS,BI)",
       "title": "MSA Typ 4",
       "titleLong": "Linearität & Bias über den Messbereich",
-      "description": "Bewertet, ob das Messsystem über den gesamten Arbeitsbereich gleichmäßig misst.",
       "sections": {
         "feature": "Merkmal",
         "dataSource": "Datenquelle",
@@ -1474,9 +1475,10 @@
       "interpVDA5_red": "Q_MS,BI = {qMsBi} % > 30 %. Nicht geeignet — Messsystem überarbeiten."
     },
     "msa-typ5": {
+      "name": "MSA Typ 5",
+      "description": "Attributive Prüfmittel-Fähigkeit — mehrere Prüfer, Kappa-basierte Übereinstimmung (Cohen, Fleiss, weighted)",
       "title": "MSA Typ 5",
       "titleLong": "Attributive Prüfmittel-Fähigkeit",
-      "description": "Bewertet, wie zuverlässig mehrere Prüfer Teile derselben Kategorie zuordnen (binär / nominal / ordinal).",
       "sections": {
         "feature": "Merkmal",
         "dataSource": "Datenquellen",
@@ -4701,34 +4703,88 @@
         "system": "Bandförderer für lose Schüttgut",
         "cells": {
           "substance": {
-            "sub":   { "notes": "Förderband (Gummi), Antriebsrolle, Lagerschilde, Aufnahmetrichter.", "status": "full" },
-            "sys":   { "notes": "Schüttgut selbst, Staub als Nebenprodukt, Schmierfett der Lager.", "status": "partial" },
-            "super": { "notes": "Hallenboden, Hallenluft mit Feuchte und Staub, Sammelbehälter.", "status": "unused" }
+            "sub": {
+              "notes": "Förderband (Gummi), Antriebsrolle, Lagerschilde, Aufnahmetrichter.",
+              "status": "full"
+            },
+            "sys": {
+              "notes": "Schüttgut selbst, Staub als Nebenprodukt, Schmierfett der Lager.",
+              "status": "partial"
+            },
+            "super": {
+              "notes": "Hallenboden, Hallenluft mit Feuchte und Staub, Sammelbehälter.",
+              "status": "unused"
+            }
           },
           "field": {
-            "sub":   { "notes": "Reibung Band/Rolle, Antriebsdrehmoment.", "status": "full" },
-            "sys":   { "notes": "Schwerkraft auf das Schüttgut, Eigengewicht der Brücken, Vibration der Rollen.", "status": "partial" },
-            "super": { "notes": "Hallentemperatur (saisonale Schwankung), elektromagnetisches Feld der Antriebe.", "status": "unknown" }
+            "sub": {
+              "notes": "Reibung Band/Rolle, Antriebsdrehmoment.",
+              "status": "full"
+            },
+            "sys": {
+              "notes": "Schwerkraft auf das Schüttgut, Eigengewicht der Brücken, Vibration der Rollen.",
+              "status": "partial"
+            },
+            "super": {
+              "notes": "Hallentemperatur (saisonale Schwankung), elektromagnetisches Feld der Antriebe.",
+              "status": "unknown"
+            }
           },
           "space": {
-            "sub":   { "notes": "Bandquerschnitt — Material liegt nur in der Mitte.", "status": "partial" },
-            "sys":   { "notes": "Hohlraum unter dem Band, Übergangstrichter (Hauptklemmstelle).", "status": "unused" },
-            "super": { "notes": "Freier Raum oberhalb des Förderers, Wand des Übergangsbereichs.", "status": "unused" }
+            "sub": {
+              "notes": "Bandquerschnitt — Material liegt nur in der Mitte.",
+              "status": "partial"
+            },
+            "sys": {
+              "notes": "Hohlraum unter dem Band, Übergangstrichter (Hauptklemmstelle).",
+              "status": "unused"
+            },
+            "super": {
+              "notes": "Freier Raum oberhalb des Förderers, Wand des Übergangsbereichs.",
+              "status": "unused"
+            }
           },
           "time": {
-            "sub":   { "notes": "Stillstandszeit zwischen Förder-Chargen ~ 30 s.", "status": "unused" },
-            "sys":   { "notes": "Vorlaufzeit beim Anfahren — Material liegt zunächst still.", "status": "unknown" },
-            "super": { "notes": "Schichtwechsel — keine Förderlast für ~ 10 min.", "status": "unused" }
+            "sub": {
+              "notes": "Stillstandszeit zwischen Förder-Chargen ~ 30 s.",
+              "status": "unused"
+            },
+            "sys": {
+              "notes": "Vorlaufzeit beim Anfahren — Material liegt zunächst still.",
+              "status": "unknown"
+            },
+            "super": {
+              "notes": "Schichtwechsel — keine Förderlast für ~ 10 min.",
+              "status": "unused"
+            }
           },
           "info": {
-            "sub":   { "notes": "Motorstrom (steigt bei Verstopfung), Lagertemperatur.", "status": "partial" },
-            "sys":   { "notes": "Geräusch des Förderbands ändert sich vor Stau (Operator hört es).", "status": "unused" },
-            "super": { "notes": "Kein Schüttgut-Füllstandsensor im Übergabe-Trichter.", "status": "unknown" }
+            "sub": {
+              "notes": "Motorstrom (steigt bei Verstopfung), Lagertemperatur.",
+              "status": "partial"
+            },
+            "sys": {
+              "notes": "Geräusch des Förderbands ändert sich vor Stau (Operator hört es).",
+              "status": "unused"
+            },
+            "super": {
+              "notes": "Kein Schüttgut-Füllstandsensor im Übergabe-Trichter.",
+              "status": "unknown"
+            }
           },
           "function": {
-            "sub":   { "notes": "Antrieb dreht Rollen — könnte zusätzlich Vibration erzeugen.", "status": "unused" },
-            "sys":   { "notes": "Kinetische Energie des fließenden Materials — könnte Brückenbildung selbst stören.", "status": "unused" },
-            "super": { "notes": "Bestehender Druckluftring zur Reinigung — könnte als Klopfer dienen.", "status": "unknown" }
+            "sub": {
+              "notes": "Antrieb dreht Rollen — könnte zusätzlich Vibration erzeugen.",
+              "status": "unused"
+            },
+            "sys": {
+              "notes": "Kinetische Energie des fließenden Materials — könnte Brückenbildung selbst stören.",
+              "status": "unused"
+            },
+            "super": {
+              "notes": "Bestehender Druckluftring zur Reinigung — könnte als Klopfer dienen.",
+              "status": "unknown"
+            }
           }
         }
       }
@@ -4872,45 +4928,60 @@
       "selectPlaceholder": "— bitte wählen —",
       "fieldEmpty": "— kein Feld —",
       "field": {
-        "M":  "Mechanisch",
-        "A":  "Akustisch",
-        "T":  "Thermisch",
-        "C":  "Chemisch",
-        "E":  "Elektrisch",
+        "M": "Mechanisch",
+        "A": "Akustisch",
+        "T": "Thermisch",
+        "C": "Chemisch",
+        "E": "Elektrisch",
         "Mg": "Magnetisch"
       },
       "link": {
-        "useful":       "nützlich (Wirkung okay)",
+        "useful": "nützlich (Wirkung okay)",
         "insufficient": "unzureichend (zu schwach)",
-        "excessive":    "exzessiv (zu stark)",
-        "harmful":      "schädlich (Nebeneffekt)",
-        "missing":      "fehlend (sollte wirken)"
+        "excessive": "exzessiv (zu stark)",
+        "harmful": "schädlich (Nebeneffekt)",
+        "missing": "fehlend (sollte wirken)"
       },
       "diagramAria": "Su-Field-Modell: Substanz-Substanz-Feld-Dreieck",
       "diagnosisLabel": "Diagnose",
       "suggestedClasses": "Empfohlene Klassen",
       "situation": {
-        "partial":               "S1 oder S2 fehlt — bitte beide Substanzen benennen.",
-        "incomplete":            "Unvollständiges Modell (kein Feld) — neue Wechselwirkung muss aufgebaut werden.",
-        "complete-useful":       "Vollständig, Wirkung nützlich — Verbesserung & nächster Generationssprung möglich.",
+        "partial": "S1 oder S2 fehlt — bitte beide Substanzen benennen.",
+        "incomplete": "Unvollständiges Modell (kein Feld) — neue Wechselwirkung muss aufgebaut werden.",
+        "complete-useful": "Vollständig, Wirkung nützlich — Verbesserung & nächster Generationssprung möglich.",
         "complete-insufficient": "Vollständig, aber Wirkung unzureichend — Feld verstärken oder dynamisieren.",
-        "complete-excessive":    "Vollständig, aber Wirkung exzessiv — Wirkung dämpfen / selbsttätig begrenzen.",
-        "complete-harmful":      "Vollständig, aber Wirkung schädlich — Su-Field zerstören oder neutralisieren."
+        "complete-excessive": "Vollständig, aber Wirkung exzessiv — Wirkung dämpfen / selbsttätig begrenzen.",
+        "complete-harmful": "Vollständig, aber Wirkung schädlich — Su-Field zerstören oder neutralisieren."
       },
       "problemNotePlaceholder": "Optional: Kontext, Randbedingungen, Verweis auf 9-Fenster / IFR / Widerspruchsmatrix …",
       "filterAuto": "Nur empfohlene Klassen",
-      "filterAll":  "Alle anzeigen",
+      "filterAll": "Alle anzeigen",
       "loading": "Lade Standardlösungen…",
       "loadExample": "Beispiel laden",
       "reset": "Zurücksetzen",
       "resetTitle": "Substanz-Feld-Analyse zurücksetzen?",
       "resetMessage": "Alle Eingaben, Notizen und Auswahlmarkierungen werden gelöscht. Diese Aktion lässt sich nicht rückgängig machen.",
       "class": {
-        "1": { "name": "Aufbau / Zerstörung von Su-Field-Modellen", "description": "Für unvollständige Modelle (1.1 Synthese) oder schädliche Wechselwirkungen (1.2 Zerstörung)." },
-        "2": { "name": "Entwicklung von Su-Field-Modellen", "description": "Für vollständige Modelle mit unzureichender oder ausbaufähiger Wirkung — Übergang zu komplexen, dynamischen oder ferromagnetischen Su-Fields." },
-        "3": { "name": "Übergang zu Supersystem / Mikroebene", "description": "Wenn das System an seine Grenzen stößt — Bi-/Poly-System oder Sprung in die Mikroebene." },
-        "4": { "name": "Messung & Detektion", "description": "Mess- und Steuerungsprobleme — Messung umgehen, indirekt messen, ferromagnetische Detektion." },
-        "5": { "name": "Hilfsstandards", "description": "Vereinfachung und Idealität — bestehende Substanzen / Felder nutzen, Phasenwechsel, selbstgesteuerte Übergänge." }
+        "1": {
+          "name": "Aufbau / Zerstörung von Su-Field-Modellen",
+          "description": "Für unvollständige Modelle (1.1 Synthese) oder schädliche Wechselwirkungen (1.2 Zerstörung)."
+        },
+        "2": {
+          "name": "Entwicklung von Su-Field-Modellen",
+          "description": "Für vollständige Modelle mit unzureichender oder ausbaufähiger Wirkung — Übergang zu komplexen, dynamischen oder ferromagnetischen Su-Fields."
+        },
+        "3": {
+          "name": "Übergang zu Supersystem / Mikroebene",
+          "description": "Wenn das System an seine Grenzen stößt — Bi-/Poly-System oder Sprung in die Mikroebene."
+        },
+        "4": {
+          "name": "Messung & Detektion",
+          "description": "Mess- und Steuerungsprobleme — Messung umgehen, indirekt messen, ferromagnetische Detektion."
+        },
+        "5": {
+          "name": "Hilfsstandards",
+          "description": "Vereinfachung und Idealität — bestehende Substanzen / Felder nutzen, Phasenwechsel, selbstgesteuerte Übergänge."
+        }
       },
       "triggerLead": "Anwenden, wenn",
       "exampleLead": "Beispiel",
