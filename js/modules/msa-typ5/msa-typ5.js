@@ -144,6 +144,64 @@ export default {
     if (this._container) this._render();
   },
 
+  /**
+   * Beispieldaten aus dem HelpPanel-Katalog laden. Payload folgt der
+   * examples-registry-Konvention: `data.sourceWorksheetData` enthält den
+   * kompletten Worksheet-State, `data.columns.<role>.instanceId ===
+   * '__source__'` wird nach dem Provisionieren durch die frische
+   * Worksheet-Instanz ersetzt.
+   *
+   * @param {{ meta: object, data: object }} payload
+   */
+  async loadExample(payload) {
+    if (!payload || !payload.data) return;
+    const t = this._t;
+
+    const hasContent = !!(
+      this._columnRefs.part || this._columnRefs.appraiser ||
+      this._columnRefs.rating || this._columnRefs.reference ||
+      this._columnRefs.replicate || this._result
+    );
+    if (hasContent && this._context?.confirmPopout) {
+      const ok = await this._context.confirmPopout(t('moduleHelp.confirmOverwrite'), { danger: true });
+      if (!ok) return;
+    }
+
+    const data = { ...payload.data };
+
+    if (data.sourceWorksheetData) {
+      const wsState = data.sourceWorksheetData;
+      delete data.sourceWorksheetData;
+      if (this._exampleWorksheetId) {
+        _removeProvisionedWorksheet(this._context, this._exampleWorksheetId);
+        this._exampleWorksheetId = null;
+      }
+      const ref = _provisionWorksheet(this._context, wsState);
+      if (ref) {
+        this._exampleWorksheetId = ref.instanceId;
+        data.exampleWorksheetId = ref.instanceId;
+        if (data.columns) {
+          const next = { ...data.columns };
+          for (const role of ['part', 'appraiser', 'rating', 'reference', 'replicate']) {
+            const r = next[role];
+            if (r && r.instanceId === '__source__') {
+              next[role] = { ...r, instanceId: ref.instanceId };
+            }
+          }
+          data.columns = next;
+        }
+      }
+    }
+
+    this.setState(data);
+    this._save();
+    this._tryAutoAnalysis();
+
+    const lang = this._context.i18n.getLanguage();
+    const title = payload.meta?.title?.[lang] || payload.meta?.title?.en || payload.meta?.id || '';
+    this._context.notify?.(t('moduleHelp.exampleLoaded', { title }), 'success');
+  },
+
   // ─── Render ─────────────────────────────────────────────────
 
   _render() {
