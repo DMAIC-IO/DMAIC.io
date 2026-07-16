@@ -178,9 +178,32 @@ function _computeLimits(inputs) {
 }
 
 /**
+ * Compute a time axis aligned with the primary chart's series (one entry
+ * per primary point). Falls back to 1-based point indices when the caller
+ * supplies no timestamps. For X̄-R, timestamps are grouped per subgroup
+ * (same order as `_computeLimits`) and averaged, since the primary series
+ * is one point per subgroup, not per raw value.
+ * @param {object} inputs see validate()
+ * @param {object} limits return value of _computeLimits(inputs)
+ * @returns {Array<number>}
+ */
+function _timeAxis(inputs, limits) {
+  if (!Array.isArray(inputs.timestamps)) {
+    return limits.primary.series.map((_, i) => i + 1);
+  }
+  if (inputs.chartType === 'i-mr') return inputs.timestamps.slice();
+  // xbar-r: group timestamps in subgroup order, average each group.
+  const groups = _groupInOrder(inputs.timestamps.map(t => {
+    const ms = typeof t === 'string' ? Date.parse(t) : Number(t);
+    return Number.isFinite(ms) ? ms : NaN;
+  }), inputs.subgroups);
+  return groups.map(g => g.reduce((a, b) => a + b, 0) / g.length);
+}
+
+/**
  * Analyze stability data (I-MR or Xbar-R) for MSA Typ 6.
- * Grenzen-Berechnung (from-study + given) lands here; Nelson-Regeln,
- * Drift-Test und Verdict/Ampel folgen in Tasks 4–6.
+ * Grenzen-Berechnung (from-study + given) und Nelson-Regel-Aggregation
+ * landen hier; Drift-Test und Verdict/Ampel folgen in Tasks 5–6.
  * @param {object} inputs see validate()
  * @returns {object} throws Error(code) on invalid input
  */
@@ -188,16 +211,35 @@ export function analyze(inputs) {
   const v = validate(inputs);
   if (!v.ok) { const e = new Error(v.code); e.code = v.code; e.params = v.params; throw e; }
   const limits = _computeLimits(inputs);
+
+  const enabled = Array.isArray(inputs.enabledRules) && inputs.enabledRules.length
+    ? inputs.enabledRules : DEFAULT_ENABLED_RULES;
+  const primaryViolations = evaluateNelsonRules(
+    limits.primary.series, limits.primary.cl, limits.primary.sigma, enabled,
+  );
+  const byIndex = new Map();
+  for (const viol of primaryViolations) {
+    if (!byIndex.has(viol.index)) byIndex.set(viol.index, new Set());
+    byIndex.get(viol.index).add(viol.ruleId);
+  }
+  const timestamps = _timeAxis(inputs, limits);
+  const ruleViolations = [...byIndex.entries()]
+    .sort((a, b) => a[0] - b[0])
+    .map(([i, rules]) => ({
+      primaryIndex: i, time: timestamps[i], value: limits.primary.series[i],
+      ruleIds: [...rules].sort((a, b) => a - b),
+    }));
+
   return {
     meta: {
       chartType: limits.chartType, limitsMode: inputs.limitsMode, n: limits.n,
       subgroupCount: limits.primary.series.length, pointCount: inputs.values.length,
       baselineK: inputs.baselineK, warnings: [],
     },
-    primary:   { ...limits.primary, label: inputs.chartType === 'i-mr' ? 'i' : 'xbar', violations: [] },
+    primary:   { ...limits.primary, label: inputs.chartType === 'i-mr' ? 'i' : 'xbar', violations: primaryViolations },
     secondary: { ...limits.secondary, label: inputs.chartType === 'i-mr' ? 'MR' : 'R' },
     drift: null,           // Task 5
-    ruleViolations: [],    // Task 4
+    ruleViolations,
     verdict: null,         // Task 6
     interpretation: null,  // Task 6
   };

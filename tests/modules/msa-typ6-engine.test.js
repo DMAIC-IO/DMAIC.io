@@ -5,7 +5,7 @@
  * See docs/superpowers/specs/2026-07-16-msa-typ6-design.md for the module spec.
  */
 
-import { suite, test, assert, assertClose } from '../test-utils.js';
+import { suite, test, assert, assertClose, assertDeepEqual } from '../test-utils.js';
 import { validate, analyze } from '../../js/engines/msa-typ6-engine.js';
 import fixtures from '../fixtures/msa/msa-typ6-stability.fixtures.json' with { type: 'json' };
 
@@ -117,5 +117,28 @@ suite('msa-typ6-engine — analyze (Grenzen-Berechnung)', () => {
     const c = CASE('given-limits');
     const r = analyze(c.inputs);
     assertClose(r.primary.cl, c.inputs.mu0, 1e-9, `cl: ${r.primary.cl} vs mu0=${c.inputs.mu0}`);
+  });
+});
+
+suite('msa-typ6-engine — analyze (Nelson-Regel-Aggregation)', () => {
+  test('imr-outlier-rule1: single violation at expected index', () => {
+    const c = CASE('imr-outlier-rule1');
+    const r = analyze(c.inputs);
+    const rule1 = r.primary.violations.filter(v => v.ruleId === 1);
+    assert(rule1.length === 1, `rule 1 count: ${rule1.length}`);
+    assert(rule1[0].index === 25, `rule 1 index: ${rule1[0].index}`);
+    assert(r.ruleViolations.length === 1, `ruleViolations length: ${r.ruleViolations.length}`);
+    assert(r.ruleViolations[0].primaryIndex === 25, `primaryIndex: ${r.ruleViolations[0].primaryIndex}`);
+    assertDeepEqual(r.ruleViolations[0].ruleIds, [1], `ruleIds: ${JSON.stringify(r.ruleViolations[0].ruleIds)}`);
+  });
+
+  test('xbar-r-shift: ruleViolations aggregates multiple ruleIds per point', () => {
+    const c = CASE('xbar-r-shift');
+    const r = analyze(c.inputs);
+    assert(r.ruleViolations.length >= 1, 'no violations aggregated');
+    const multi = r.ruleViolations.find(v => Array.isArray(v.ruleIds) && v.ruleIds.length >= 1);
+    assert(multi, 'ruleIds field missing');
+    const bothRules = r.ruleViolations.find(v => Array.isArray(v.ruleIds) && v.ruleIds.length >= 2);
+    assert(bothRules, 'expected at least one point with both rule 5 and rule 6 triggered');
   });
 });
