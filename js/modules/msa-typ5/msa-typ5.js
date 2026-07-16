@@ -664,11 +664,158 @@ export default {
 
   /**
    * Chart-Rendering — asynchron nach dem HTML-Ausbau des Output-Panels.
-   * Vollständige Implementierung landet in Task 13/14; hier Stub, den
-   * die Task-13/14-Änderungen ausbauen.
+   * Orchestriert:
+   *   1. Kappa-Bar (paarweises Cohen κ mit KI-Whiskern)
+   *   2. Effektivitäts-Bar (nur mit Referenz)
+   *   3. Signal-Detection-Scatter (nur binär + Referenz)
+   *   4. Confusion-Heatmaps-Grid (Task 14)
    */
-  async _renderCharts(_res) {
+  async _renderCharts(res) {
     this._destroyCharts();
+    await this._renderKappaBar(res);
+    if (Object.values(res.perAppraiser).some((x) => x.vsReference?.effectiveness)) {
+      await this._renderEffectivenessBar(res);
+    }
+    if (res.signalDetection) {
+      await this._renderSdtScatter(res);
+    }
+    await this._renderConfusionHeatmaps(res);
+  },
+
+  /**
+   * Cohen κ je Prüferpaar als Dot-and-Whisker-Plot (scatter mit
+   * Error-Bars). `bar.js` unterstützt kein `series[].errorBars`, deshalb
+   * bewusst der scatter-Weg mit categoricalen Tick-Labels über xTickFormat.
+   * Referenzlinien: κ = 0.40 (gelb) / κ = 0.75 (grün) / Fleiss κ (info).
+   */
+  async _renderKappaBar(res) {
+    const host = this._container?.querySelector('[data-ref="chart-kappa-bar"]');
+    if (!host) return;
+    const entries = Object.entries(res.betweenAppraisers?.pairwiseCohenKappa || {});
+    if (!entries.length) return;
+
+    const labels = entries.map(([pair]) => pair.replace('|', ' | '));
+    const x = entries.map((_, i) => i);
+    const y = entries.map(([, k]) => k.kappa);
+    const yPlus  = entries.map(([, k]) => (Number.isFinite(k.ci95?.[1]) ? Math.max(0, k.ci95[1] - k.kappa) : 0));
+    const yMinus = entries.map(([, k]) => (Number.isFinite(k.ci95?.[0]) ? Math.max(0, k.kappa - k.ci95[0]) : 0));
+
+    const refLines = [
+      { dir: 'h', value: 0.75, label: 'κ = 0.75', dash: 'dash', width: 1, color: 'var(--color-success, #2ea043)' },
+      { dir: 'h', value: 0.40, label: 'κ = 0.40', dash: 'dash', width: 1, color: 'var(--color-warning, #d29922)' },
+    ];
+    const fleiss = res.betweenAppraisers?.fleissKappa?.kappa;
+    if (Number.isFinite(fleiss)) {
+      refLines.push({ dir: 'h', value: fleiss, label: `Fleiss κ = ${fleiss.toFixed(3)}`, dash: 'solid', width: 1, color: 'var(--color-info, #58a6ff)' });
+    }
+
+    const chart = await this._context.chartManager.create(host, 'scatter', {
+      xLabel: this._t('modules.msa-typ5.table.pair'),
+      yLabel: 'Cohen κ',
+      showLegend: false,
+      xTicks: x,
+      xTickFormat: (v) => labels[Math.round(v)] ?? '',
+      xMin: -0.5,
+      xMax: x.length - 0.5,
+      yMin: Math.min(-0.1, ...y, ...entries.map(([, k]) => k.ci95?.[0] ?? 0)),
+      yMax: Math.max(1.05, ...y, ...entries.map(([, k]) => k.ci95?.[1] ?? 0)),
+      series: [{
+        name: 'κ',
+        color: 'var(--color-accent, #58a6ff)',
+        x, y,
+        symbol: 'circle',
+        markerSize: 10,
+        strokeWidth: 1.5,
+        errorBars: { show: true, yMode: 'absolute', yPlus, yMinus },
+      }],
+      refLines,
+    });
+    this._charts.push(chart);
+  },
+
+  /**
+   * Effektivität je Prüfer als Dot-and-Whisker-Plot (Wilson-Score-KI).
+   * Referenzlinien: 80 % (gelb) / 90 % (grün) — AIAG-Schwellen.
+   */
+  async _renderEffectivenessBar(res) {
+    const host = this._container?.querySelector('[data-ref="chart-eff-bar"]');
+    if (!host) return;
+    const entries = Object.entries(res.perAppraiser).filter(([, v]) => v.vsReference?.effectiveness);
+    if (!entries.length) return;
+
+    const labels = entries.map(([id]) => id);
+    const x = entries.map((_, i) => i);
+    const y = entries.map(([, v]) => v.vsReference.effectiveness.rate);
+    const yPlus  = entries.map(([, v]) => Math.max(0, (v.vsReference.effectiveness.ci95?.[1] ?? y[0]) - v.vsReference.effectiveness.rate));
+    const yMinus = entries.map(([, v]) => Math.max(0, v.vsReference.effectiveness.rate - (v.vsReference.effectiveness.ci95?.[0] ?? y[0])));
+
+    const chart = await this._context.chartManager.create(host, 'scatter', {
+      xLabel: this._t('modules.msa-typ5.table.appraiser'),
+      yLabel: this._t('modules.msa-typ5.kpi.effectiveness'),
+      showLegend: false,
+      xTicks: x,
+      xTickFormat: (v) => labels[Math.round(v)] ?? '',
+      xMin: -0.5,
+      xMax: x.length - 0.5,
+      yMin: 0,
+      yMax: 1.05,
+      series: [{
+        name: this._t('modules.msa-typ5.kpi.effectiveness'),
+        color: 'var(--color-accent, #58a6ff)',
+        x, y,
+        symbol: 'circle',
+        markerSize: 10,
+        strokeWidth: 1.5,
+        errorBars: { show: true, yMode: 'absolute', yPlus, yMinus },
+      }],
+      refLines: [
+        { dir: 'h', value: 0.90, label: '90 %', dash: 'dash', width: 1, color: 'var(--color-success, #2ea043)' },
+        { dir: 'h', value: 0.80, label: '80 %', dash: 'dash', width: 1, color: 'var(--color-warning, #d29922)' },
+      ],
+    });
+    this._charts.push(chart);
+  },
+
+  /**
+   * Signal-Detection-Scatter: d′ (y) vs. Kriterium c (x) je Prüfer.
+   * Ein Punkt pro Prüfer, benannte Serien liefern die Legende.
+   */
+  async _renderSdtScatter(res) {
+    const host = this._container?.querySelector('[data-ref="chart-sdt"]');
+    if (!host) return;
+    const per = res.signalDetection?.perAppraiser || {};
+    const ids = Object.keys(per);
+    if (!ids.length) return;
+    const palette = [
+      'var(--color-chart-1)', 'var(--color-chart-3)', 'var(--color-chart-5)',
+      'var(--color-chart-2)', 'var(--color-chart-7)', 'var(--color-chart-4)',
+    ];
+    const series = ids.map((id, i) => ({
+      name: id,
+      color: palette[i % palette.length],
+      x: [per[id].criterion],
+      y: [per[id].dPrime],
+      symbol: 'circle',
+      markerSize: 12,
+      strokeWidth: 1.5,
+    }));
+
+    const chart = await this._context.chartManager.create(host, 'scatter', {
+      xLabel: 'Kriterium c',
+      yLabel: "d'",
+      showLegend: true,
+      series,
+      refLines: [
+        { dir: 'v', value: 0, label: 'c = 0', dash: 'dash', width: 1, color: 'var(--color-text-secondary)' },
+        { dir: 'h', value: 0, label: "d' = 0", dash: 'dash', width: 1, color: 'var(--color-text-secondary)' },
+      ],
+    });
+    this._charts.push(chart);
+  },
+
+  /** Placeholder — Task 14 populates confusion-heatmap grid. */
+  async _renderConfusionHeatmaps(_res) {
+    /* implemented in Task 14 */
   },
 
   _fmt(v, d = 3) {
