@@ -1,0 +1,92 @@
+{
+  "id": "drift-test",
+  "category": "msa",
+  "title": {
+    "de": "Drift-Test (linearer Trend-Test)",
+    "en": "Drift Test (linear trend test)"
+  },
+  "short": {
+    "de": "Lineare Regression des Kennwerts über die Zeit, gefolgt von einem zweiseitigen t-Test auf die Steigung β₁ — erkennt schleichenden Trend in einer {{term:stabilitaets-studie|Stabilitäts-Studie}}.",
+    "en": "Linear regression of the metric over time, followed by a two-sided t-test on the slope β₁ — detects a creeping trend in a {{term:stabilitaets-studie|stability study}}."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "Der **Drift-Test** prüft, ob ein Prozess- oder Messkennwert über die Zeit systematisch steigt oder fällt — ein Muster, das die {{term:nelson-regeln|Nelson-Regeln}} 3 (6 Punkte in Folge) manchmal erst spät erkennen, weil sie lokal auf kurze Läufe reagieren. Der Test führt eine einfache lineare Regression y_i über t_i (Zeitstempel oder Punkt-Index) durch und prüft die Steigung β₁ per zweiseitigem t-Test auf β₁ = 0."
+      },
+      {
+        "type": "formula",
+        "latex": "\\beta_1 = \\frac{\\sum_i (t_i - \\bar t)(y_i - \\bar y)}{\\sum_i (t_i - \\bar t)^2}, \\qquad t = \\frac{\\beta_1}{\\mathrm{SE}(\\beta_1)}, \\qquad p = 2\\left(1 - F_t(|t|,\\, N-2)\\right)"
+      },
+      {
+        "type": "list",
+        "items": [
+          "**H₀:** β₁ = 0 (kein Trend) — verworfen, wenn p < α",
+          "**„Starker“ Trend:** p < α/10 — strenger als das reguläre Signifikanzniveau, weil ein Drift-Alarm in der Ampel-Bewertung allein für `unstable` reicht",
+          "**Zeitachse:** echte Zeitstempel, falls vorhanden, sonst 1..N-Punktindex"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "Der Drift-Test erkennt nur **lineare** Trends zuverlässig. Zyklische Muster (z. B. Tagestemperatur-Schwankungen) oder abrupte Stufen fallen eher unter die {{term:nelson-regeln|Nelson-Regeln}} als unter den Drift-Test."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "The **drift test** checks whether a process or measurement metric systematically rises or falls over time — a pattern that {{term:nelson-regeln|Nelson rule}} 3 (6 points in a row) sometimes catches only late, since it reacts to short local runs. The test runs a simple linear regression of y_i on t_i (timestamp or point index) and tests the slope β₁ with a two-sided t-test on β₁ = 0."
+      },
+      {
+        "type": "formula",
+        "latex": "\\beta_1 = \\frac{\\sum_i (t_i - \\bar t)(y_i - \\bar y)}{\\sum_i (t_i - \\bar t)^2}, \\qquad t = \\frac{\\beta_1}{\\mathrm{SE}(\\beta_1)}, \\qquad p = 2\\left(1 - F_t(|t|,\\, N-2)\\right)"
+      },
+      {
+        "type": "list",
+        "items": [
+          "**H₀:** β₁ = 0 (no trend) — rejected when p < α",
+          "**\"Strong\" trend:** p < α/10 — stricter than the regular significance level, because a drift alarm alone is enough to push the verdict to `unstable`",
+          "**Time axis:** real timestamps if available, otherwise a 1..N point index"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "The drift test reliably detects only **linear** trends. Cyclical patterns (e.g. daily temperature swings) or abrupt steps are better caught by the {{term:nelson-regeln|Nelson rules}} than by the drift test."
+      }
+    ]
+  },
+  "aliases": {
+    "de": [
+      "Trend-Test",
+      "linearer Trend-Test",
+      "Steigungstest"
+    ],
+    "en": [
+      "trend test",
+      "linear trend test",
+      "slope test"
+    ]
+  },
+  "seeAlso": [
+    "stabilitaets-studie",
+    "nelson-regeln",
+    "regelkarte",
+    "sigma-zonen"
+  ],
+  "modules": [
+    "msa-typ6"
+  ],
+  "algoLab": [
+    "msa/msa-typ6-stability"
+  ],
+  "sources": [
+    {
+      "label": "Montgomery, D. C. — Introduction to Statistical Quality Control, 8th Edition, Chapter 5",
+      "url": null
+    },
+    {
+      "label": "AIAG — Measurement Systems Analysis Reference Manual, 4th Edition (MSA-4)",
+      "url": null
+    }
+  ]
+}

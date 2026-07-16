@@ -1,0 +1,90 @@
+{
+  "id": "sigma-zonen",
+  "category": "spc",
+  "title": {
+    "de": "±1σ-/±2σ-Zonen (Regelkarten-Zonen A/B/C)",
+    "en": "±1σ/±2σ Zones (Control Chart Zones A/B/C)"
+  },
+  "short": {
+    "de": "Drei je 1σ breite Bänder zwischen {{term:mittellinie|Mittellinie}} und {{term:regelgrenze|Regelgrenzen}} — Grundlage der {{term:nelson-regeln|Nelson-Regeln}} 5–8.",
+    "en": "Three 1σ-wide bands between the {{term:mittellinie|centre line}} and the {{term:regelgrenze|control limits}} — the basis of {{term:nelson-regeln|Nelson rules}} 5–8."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "Eine {{term:regelkarte|Regelkarte}} teilt den Bereich zwischen {{term:mittellinie|Mittellinie}} und den ±3σ-{{term:regelgrenze|Regelgrenzen}} in drei Zonen zu je 1σ Breite: **Zone C** (Mittellinie bis ±1σ), **Zone B** (±1σ bis ±2σ) und **Zone A** (±2σ bis ±3σ). Diese Zonen sind rein visuelle Hilfslinien (dezente Hintergrundbänder), aber sie sind die Grundlage mehrerer {{term:nelson-regeln|Nelson-Regeln}}, die feinere Muster erkennen als der reine ±3σ-Ausreißertest."
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Regel 5** — 2 von 3 aufeinanderfolgenden Punkten in Zone A oder weiter außen, gleiche Seite",
+          "**Regel 6** — 4 von 5 aufeinanderfolgenden Punkten in Zone B oder weiter außen, gleiche Seite",
+          "**Regel 7** — 15 Punkte in Folge innerhalb Zone C (Streuung verdächtig klein)",
+          "**Regel 8** — 8 Punkte in Folge außerhalb Zone C, auf beiden Seiten (kein Punkt nah an der Mittellinie)"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "Die Zonengrenzen setzen dieselbe σ-Schätzung voraus wie die Regelgrenzen selbst (aus der Basis-Untergruppe oder vorgegeben) — bei kontaminierter Basis sind auch die Zonen verzerrt."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "A {{term:regelkarte|control chart}} splits the area between the {{term:mittellinie|centre line}} and the ±3σ {{term:regelgrenze|control limits}} into three 1σ-wide zones: **zone C** (centre line to ±1σ), **zone B** (±1σ to ±2σ), and **zone A** (±2σ to ±3σ). These zones are purely a visual aid (subtle background bands), but they underpin several {{term:nelson-regeln|Nelson rules}} that detect finer patterns than the plain ±3σ outlier test."
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Rule 5** — 2 of 3 consecutive points in zone A or beyond, same side",
+          "**Rule 6** — 4 of 5 consecutive points in zone B or beyond, same side",
+          "**Rule 7** — 15 points in a row within zone C (variance suspiciously small)",
+          "**Rule 8** — 8 points in a row outside zone C, on both sides (no point near the centre line)"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "The zone boundaries rely on the same σ estimate as the control limits themselves (from the baseline subgroup, or supplied) — if the baseline is contaminated, the zones are skewed too."
+      }
+    ]
+  },
+  "aliases": {
+    "de": [
+      "Zonen A/B/C",
+      "Sigma-Zonen",
+      "Regelkarten-Zonen"
+    ],
+    "en": [
+      "zones A/B/C",
+      "sigma zones",
+      "control chart zones"
+    ]
+  },
+  "seeAlso": [
+    "regelkarte",
+    "nelson-regeln",
+    "regelgrenze",
+    "mittellinie",
+    "stabilitaets-studie"
+  ],
+  "modules": [
+    "control-chart",
+    "attribute-control-chart",
+    "msa-typ6"
+  ],
+  "algoLab": [
+    "control-charts/control-chart",
+    "msa/msa-typ6-stability"
+  ],
+  "sources": [
+    {
+      "label": "Nelson, L. S. — Technical Aids: The Shewhart Control Chart — Tests for Special Causes, Journal of Quality Technology, 16(4), 1984",
+      "url": null
+    },
+    {
+      "label": "Montgomery, D. C. — Introduction to Statistical Quality Control, 8th Edition, Chapter 5",
+      "url": null
+    }
+  ]
+}

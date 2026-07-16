@@ -157,6 +157,16 @@
       "file": "terms/referenzteil.json"
     },
     {
+      "id": "stabilitaets-studie",
+      "category": "msa",
+      "file": "terms/stabilitaets-studie.json"
+    },
+    {
+      "id": "drift-test",
+      "category": "msa",
+      "file": "terms/drift-test.json"
+    },
+    {
       "id": "teile-variation",
       "category": "msa",
       "file": "terms/teile-variation.json"
@@ -570,6 +580,11 @@
       "id": "run-chart",
       "category": "spc",
       "file": "terms/run-chart.json"
+    },
+    {
+      "id": "sigma-zonen",
+      "category": "spc",
+      "file": "terms/sigma-zonen.json"
     },
     {
       "id": "six-sigma",

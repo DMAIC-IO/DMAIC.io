@@ -20,7 +20,8 @@
         "items": [
           "Ohne bekannten Referenzwert kann kein {{term:bias|Bias}} bestimmt werden — die MSA Typ 1 reduziert sich auf reine {{term:wiederholbarkeit|Wiederholbarkeit}}",
           "Der Referenzwert sollte im Bereich der mittleren Spezifikation liegen, damit der Bias-Test aussagekräftig ist",
-          "Rückführbarkeit heißt: das Kalibrierzertifikat verweist auf ein anerkanntes Normal (PTB, NIST o. ä.)"
+          "Rückführbarkeit heißt: das Kalibrierzertifikat verweist auf ein anerkanntes Normal (PTB, NIST o. ä.)",
+          "In der {{term:stabilitaets-studie|Stabilitäts-Studie}} (MSA Typ 6) übernimmt dasselbe Referenzteil eine andere Rolle: nicht der Bias an einem Zeitpunkt zählt, sondern die wiederholte Messung desselben Teils über Wochen oder Monate"
         ]
       },
       {
@@ -38,7 +39,8 @@
         "items": [
           "Without a known reference value, no {{term:bias|bias}} can be determined — MSA Type 1 then collapses to pure {{term:wiederholbarkeit|repeatability}}",
           "The reference value should sit near the middle of the specification so the bias check is meaningful",
-          "Traceability means: the calibration certificate refers back to a recognised standard (PTB, NIST, etc.)"
+          "Traceability means: the calibration certificate refers back to a recognised standard (PTB, NIST, etc.)",
+          "In a {{term:stabilitaets-studie|stability study}} (MSA Type 6) the same reference part plays a different role: not the bias at one point in time, but repeated measurement of the same part over weeks or months"
         ]
       },
       {
@@ -64,15 +66,18 @@
     "bias",
     "cg",
     "cgk",
-    "richtigkeit"
+    "richtigkeit",
+    "stabilitaets-studie"
   ],
   "modules": [
     "msa-typ1",
-    "msa-typ2"
+    "msa-typ2",
+    "msa-typ6"
   ],
   "algoLab": [
     "msa/cg",
-    "msa/cgk"
+    "msa/cgk",
+    "msa/msa-typ6-stability"
   ],
   "sources": [
     {

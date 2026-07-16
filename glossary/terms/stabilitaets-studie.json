@@ -1,0 +1,91 @@
+{
+  "id": "stabilitaets-studie",
+  "category": "msa",
+  "title": {
+    "de": "Stabilitäts-Studie (MSA Typ 6)",
+    "en": "Stability Study (MSA Type 6)"
+  },
+  "short": {
+    "de": "Prüft, ob ein Messsystem über Wochen oder Monate konstant bleibt — {{term:referenzteil|Referenzteil}} wiederholt auf einer {{term:regelkarte|Regelkarte}} gemessen, ergänzt um einen {{term:drift-test|Drift-Test}}.",
+    "en": "Checks whether a measurement system stays constant over weeks or months — a {{term:referenzteil|reference part}} measured repeatedly on a {{term:regelkarte|control chart}}, complemented by a {{term:drift-test|drift test}}."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "Die **Stabilitäts-Studie** (MSA Typ 6) ist die zeitliche Ergänzung zu den querschnittlichen MSA-Typen (Bias, Linearität, Gage R&R): ein einzelnes {{term:referenzteil|Referenzteil}} wird über einen längeren Zeitraum immer wieder mit demselben Messsystem gemessen. Die Messreihe wird als I-MR- oder x̄-R-{{term:regelkarte|Regelkarte}} dargestellt und auf zwei Arten geprüft — punktuelle Sonderursachen über die {{term:nelson-regeln|Nelson-Regeln}} und ein systematischer, schleichender Trend über einen linearen {{term:drift-test|Drift-Test}}."
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Kontrollgrenzen** entweder aus einer Basis-Untergruppe der Studie selbst geschätzt (`from-study`) oder extern vorgegeben (`given`, z. B. aus einer vorherigen Kalibrierung)",
+          "**Ampel-Verdikt** — `stable` (keine Auffälligkeiten), `marginal` (vereinzelte Hinweise), `unstable` (≥ 3 Nelson-Verletzungen oder starker Trend)",
+          "**Ein Referenzteil pro Studie** — mehrere Referenzteile werden über mehrere Typ-6-Instanzen nebeneinander abgebildet, nicht in einer Studie gemischt"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "Eine Stabilitäts-Studie ersetzt keine Kalibrierung, sondern ergänzt sie: sie zeigt an, **wann** ein Messsystem instabil zu werden beginnt, oft lange bevor eine reguläre Kalibrierung fällig wäre."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "The **stability study** (MSA Type 6) is the time-based complement to the cross-sectional MSA types (bias, linearity, Gage R&R): a single {{term:referenzteil|reference part}} is measured repeatedly with the same measurement system over an extended period. The measurement series is plotted as an I-MR or x̄-R {{term:regelkarte|control chart}} and checked in two ways — point-wise special causes via the {{term:nelson-regeln|Nelson rules}} and a systematic, creeping trend via a linear {{term:drift-test|drift test}}."
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Control limits** are either estimated from a baseline subgroup of the study itself (`from-study`) or supplied externally (`given`, e.g. from a prior calibration)",
+          "**Verdict** — `stable` (nothing notable), `marginal` (isolated hints), `unstable` (≥ 3 Nelson violations or a strong trend)",
+          "**One reference part per study** — multiple reference parts are represented as multiple Type 6 instances side by side, not mixed into one study"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "A stability study does not replace calibration — it complements it: it flags **when** a measurement system starts drifting, often long before a scheduled calibration is due."
+      }
+    ]
+  },
+  "aliases": {
+    "de": [
+      "Langzeit-Stabilität",
+      "MSA Typ 6",
+      "Stabilitätsanalyse"
+    ],
+    "en": [
+      "stability analysis",
+      "MSA Type 6",
+      "long-term stability"
+    ]
+  },
+  "seeAlso": [
+    "referenzteil",
+    "regelkarte",
+    "nelson-regeln",
+    "xbar-r-chart",
+    "i-mr-chart",
+    "drift-test",
+    "sigma-zonen"
+  ],
+  "modules": [
+    "msa-typ6"
+  ],
+  "algoLab": [
+    "msa/msa-typ6-stability"
+  ],
+  "sources": [
+    {
+      "label": "AIAG — Measurement Systems Analysis Reference Manual, 4th Edition (MSA-4)",
+      "url": null
+    },
+    {
+      "label": "Robert Bosch GmbH — Qualitätsmanagement in der Bosch-Gruppe, Heft 10: Fähigkeitsuntersuchung von Messsystemen",
+      "url": null
+    },
+    {
+      "label": "Nelson, L. S. — Technical Aids: The Shewhart Control Chart — Tests for Special Causes, Journal of Quality Technology, 16(4), 1984",
+      "url": null
+    }
+  ]
+}

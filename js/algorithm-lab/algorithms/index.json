@@ -52,6 +52,7 @@
     { "id": "weighted-kappa", "path": "js/algorithm-lab/algorithms/msa/weighted-kappa.json" },
     { "id": "effectiveness-wilson", "path": "js/algorithm-lab/algorithms/msa/effectiveness-wilson.json" },
     { "id": "signal-detection", "path": "js/algorithm-lab/algorithms/msa/signal-detection.json" },
+    { "id": "msa-typ6-stability", "path": "js/algorithm-lab/algorithms/msa/msa-typ6-stability.json" },
     { "id": "regression-anova", "path": "js/algorithm-lab/algorithms/regression/regression-anova.json" },
     { "id": "regression-coefficients", "path": "js/algorithm-lab/algorithms/regression/regression-coefficients.json" },
     { "id": "correlation-analysis", "path": "js/algorithm-lab/algorithms/regression/correlation-analysis.json" },

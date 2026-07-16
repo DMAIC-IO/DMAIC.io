@@ -1,0 +1,271 @@
+{
+  "id": "msa-typ6-stability",
+  "name": {
+    "de": "MSA Typ 6 — Stabilität / Langzeitverhalten",
+    "en": "MSA Type 6 — Stability / Long-term Behavior"
+  },
+  "category": "msa",
+  "subcategory": "typ6",
+  "status": "validated",
+  "version": "1.0.0",
+
+  "description": {
+    "short": {
+      "de": "{{term:stabilitaets-studie}} eines Messsystems: {{term:referenzteil}} über Zeit auf einer I-MR- oder x̄-R-{{term:regelkarte|Regelkarte}}, plus linearer {{term:drift-test|Drift-Test}}.",
+      "en": "{{term:stabilitaets-studie|Stability study}} of a measurement system: {{term:referenzteil|reference part}} over time on an I-MR or x̄-R {{term:regelkarte|control chart}}, plus a linear {{term:drift-test}}."
+    },
+    "long": {
+      "de": "MSA Typ 6 misst ein {{term:referenzteil}} (Normal/Master) über Wochen oder Monate wiederholt mit demselben Messsystem und prüft, ob es über die Zeit stabil bleibt. Die Engine ist ein dünner Wrapper um die SPC-Regelkarten-Engine: Kontrollgrenzen (aus Basis-Untergruppen oder vorgegeben über µ₀/σ₀) und die Nelson-Regel-Auswertung (inkl. {{term:sigma-zonen|±1σ-/±2σ-Zonen}}) werden 1:1 aus dem `control-chart`-Algorithm-Lab-Eintrag wiederverwendet — keine Duplizierung. MSA-spezifisch ist ausschließlich der {{term:drift-test|lineare Drift-Test}} (einfache Regression des Primär-Kennwerts über die Zeitachse, gefolgt von einem zweiseitigen t-Test auf β₁ = 0) und die kombinierte Ampel-Bewertung aus Nelson-Verletzungen und Drift-p-Wert.",
+      "en": "MSA Type 6 repeatedly measures a {{term:referenzteil|reference part}} (master/standard) with the same measurement system over weeks or months and checks whether it remains stable over time. The engine is a thin wrapper around the SPC control-chart engine: control limits (from baseline subgroups, or supplied via µ₀/σ₀) and the Nelson rule evaluation (incl. {{term:sigma-zonen|±1σ/±2σ zones}}) are reused 1:1 from the `control-chart` Algorithm Lab entry — no duplication. The only MSA-specific piece is the {{term:drift-test|linear drift test}} (simple regression of the primary metric over the time axis, followed by a two-sided t-test on β₁ = 0) and the combined verdict from Nelson violations and the drift p-value."
+    }
+  },
+
+  "documentation": {
+    "formulas": [
+      {
+        "label": "β₁ (Steigung)",
+        "latex": "\\beta_1 = \\frac{\\sum_i (t_i - \\bar t)(y_i - \\bar y)}{\\sum_i (t_i - \\bar t)^2}",
+        "description": {
+          "de": "Steigungskoeffizient der linearen Regression des Primär-Kennwerts y_i über die Zeitachse t_i (Zeitstempel oder 1..N-Index)",
+          "en": "Slope coefficient of the linear regression of the primary metric y_i over the time axis t_i (timestamps or 1..N index)"
+        }
+      },
+      {
+        "label": "SE(β₁)",
+        "latex": "\\mathrm{SE}(\\beta_1) = \\sqrt{\\dfrac{s^2}{\\sum_i (t_i - \\bar t)^2}}, \\quad s^2 = \\dfrac{\\sum_i (y_i - \\beta_0 - \\beta_1 t_i)^2}{N - 2}",
+        "description": {
+          "de": "Standardfehler der Steigung aus der Residualvarianz s²",
+          "en": "Standard error of the slope, from the residual variance s²"
+        }
+      },
+      {
+        "label": "t, p",
+        "latex": "t = \\frac{\\beta_1}{\\mathrm{SE}(\\beta_1)}, \\qquad p = 2\\left(1 - F_t(|t|,\\, N-2)\\right)",
+        "description": {
+          "de": "Zweiseitiger t-Test auf β₁ = 0 (kein Drift) mit df = N − 2",
+          "en": "Two-sided t-test on β₁ = 0 (no drift) with df = N − 2"
+        }
+      },
+      {
+        "label": "KI(β₁)",
+        "latex": "\\beta_1 \\pm t_{1-\\alpha/2,\\, N-2} \\cdot \\mathrm{SE}(\\beta_1)",
+        "description": {
+          "de": "Zweiseitiges Konfidenzintervall der Steigung zum gewählten α",
+          "en": "Two-sided confidence interval for the slope at the chosen α"
+        }
+      },
+      {
+        "label": "Verdikt-Ampel",
+        "latex": "\\begin{cases} \\text{stable} & 0 \\text{ Nelson-Verletzungen} \\ \\wedge\\ p \\ge \\alpha \\\\ \\text{unstable} & \\ge 3 \\text{ Nelson-Verletzungen} \\ \\vee\\ p < \\alpha/10 \\\\ \\text{marginal} & \\text{sonst} \\end{cases}",
+        "description": {
+          "de": "Kombinierte Ampel-Bewertung aus Nelson-Regel-Verletzungen und Drift-Test-p-Wert. `unstable` bei ≥ 3 Verletzungen ODER starkem Trend (p < α/10, ein Zehntel des Signifikanzniveaus); `stable` nur bei 0 Verletzungen UND p ≥ α; alles dazwischen `marginal`.",
+          "en": "Combined verdict from Nelson rule violations and the drift-test p-value. `unstable` at ≥ 3 violations OR a strong trend (p < α/10, one tenth of the significance level); `stable` only at 0 violations AND p ≥ α; anything in between is `marginal`."
+        }
+      }
+    ],
+    "assumptions": [
+      {
+        "de": "Ein einzelnes {{term:referenzteil}} wird über die gesamte Studiendauer mit demselben Messsystem wiederholt gemessen (mehrere Referenzteile → mehrere Typ-6-Instanzen nebeneinander)",
+        "en": "A single {{term:referenzteil|reference part}} is measured repeatedly with the same measurement system over the whole study duration (multiple reference parts → multiple Type 6 instances side by side)"
+      },
+      {
+        "de": "Messreihenfolge ist zeitlich geordnet; bei echten Zeitstempeln sollten diese monoton steigen (sonst Warnung, Engine sortiert automatisch)",
+        "en": "The measurement order is time-ordered; real timestamps should be monotonically increasing (otherwise a warning fires; the engine sorts automatically)"
+      },
+      {
+        "de": "Für den Drift-Test wird ein linearer Trend unterstellt — zyklische oder stufenförmige Drifts werden vom t-Test nicht zuverlässig erkannt, wohl aber von den Nelson-Regeln",
+        "en": "The drift test assumes a linear trend — cyclical or step-shaped drifts are not reliably detected by the t-test, though the Nelson rules do catch many of them"
+      }
+    ],
+    "limitations": [
+      {
+        "de": "Basis-Untergruppen < 20 liefern instabile Kontrollgrenzen (Warnung `W_BASELINE_LT_20`); Nelson-Verletzungen innerhalb der Basis können die Grenzen kontaminieren (`W_LIMITS_FROM_UNSTABLE_BASELINE`)",
+        "en": "Baseline subgroups < 20 yield unstable control limits (warning `W_BASELINE_LT_20`); Nelson violations within the baseline may contaminate the limits (`W_LIMITS_FROM_UNSTABLE_BASELINE`)"
+      },
+      {
+        "de": "Cp/Cpk aus einem stabilen Fenster, EWMA/CUSUM und mehrere Referenzteile pro Studie sind bewusst außerhalb des Scopes (siehe Modul-Spec § 12)",
+        "en": "Cp/Cpk from a stable window, EWMA/CUSUM, and multiple reference parts per study are deliberately out of scope (see module spec § 12)"
+      },
+      {
+        "de": "Nelson-Regeln 7 & 8 sind standardmäßig deaktiviert (siehe `control-chart`-Eintrag) — Aktivierung erhöht die False-Alarm-Rate",
+        "en": "Nelson rules 7 and 8 are disabled by default (see the `control-chart` entry) — enabling them raises the false-alarm rate"
+      }
+    ],
+    "references": [
+      {
+        "source": "Nelson, L. S. (1984) — The Shewhart Control Chart — Tests for Special Causes, Journal of Quality Technology, 16(4), 237–239"
+      },
+      {
+        "source": "Robert Bosch GmbH — Qualitätsmanagement in der Bosch-Gruppe, Heft 10: Fähigkeitsuntersuchung von Messsystemen"
+      },
+      {
+        "source": "AIAG — Measurement Systems Analysis Reference Manual, 4th Edition (MSA-4)"
+      }
+    ],
+    "minitab_equivalent": "Stat > Quality Tools > Gage Study > Gage Run Chart / Stability Study (I-MR chart of a reference/master part over time)"
+  },
+
+  "source": {
+    "function_name": "msaTyp6StabilityLab",
+    "file_path": "js/algorithm-lab/wrappers/msa-typ6-wrappers.js",
+    "signature": {
+      "parameters": [
+        {
+          "name": "inputs",
+          "type": "object",
+          "required": true,
+          "description": {
+            "de": "Objekt mit chartType, values, subgroups?, timestamps?, limitsMode, baselineK?, mu0?, sigma0?, enabledRules?, alpha",
+            "en": "Object with chartType, values, subgroups?, timestamps?, limitsMode, baselineK?, mu0?, sigma0?, enabledRules?, alpha"
+          }
+        }
+      ],
+      "returns": {
+        "type": "object",
+        "properties": {
+          "cl": { "type": "number", "description": { "de": "Mittellinie der Primärkarte (I bzw. x̄)", "en": "Center line of the primary chart (I or x̄)" } },
+          "ucl": { "type": "number", "description": { "de": "Obere Regelgrenze der Primärkarte", "en": "Upper control limit of the primary chart" } },
+          "lcl": { "type": "number", "description": { "de": "Untere Regelgrenze der Primärkarte", "en": "Lower control limit of the primary chart" } },
+          "sigma": { "type": "number", "description": { "de": "σ̂-Schätzung, Basis der Nelson-Zonen", "en": "σ̂ estimate, basis of the Nelson zones" } },
+          "secondary_cl": { "type": "number", "description": { "de": "Mittellinie der Sekundärkarte (MR bzw. R)", "en": "Center line of the secondary chart (MR or R)" } },
+          "secondary_ucl": { "type": "number", "description": { "de": "Obere Regelgrenze der Sekundärkarte", "en": "Upper control limit of the secondary chart" } },
+          "secondary_lcl": { "type": "number", "description": { "de": "Untere Regelgrenze der Sekundärkarte", "en": "Lower control limit of the secondary chart" } },
+          "primary_series": { "type": "number[]", "description": { "de": "Primär-Kennwertreihe (Einzelwerte bzw. Untergruppen-Mittelwerte)", "en": "Primary metric series (individuals or subgroup means)" } },
+          "secondary_series": { "type": "number[]", "description": { "de": "Sekundär-Kennwertreihe (Moving Range bzw. Range)", "en": "Secondary metric series (moving range or range)" } },
+          "violations": { "type": "array", "description": { "de": "Rohe Nelson-Regel-Verletzungen [{index, ruleId}]", "en": "Raw Nelson rule violations [{index, ruleId}]" } },
+          "drift": { "type": "object", "description": { "de": "Drift-Test-Ergebnis {slope, se, tStat, df, pValue, ciSlope, intercept, slopeUnit, tScale}", "en": "Drift test result {slope, se, tStat, df, pValue, ciSlope, intercept, slopeUnit, tScale}" } },
+          "verdict": { "type": "object", "description": { "de": "Ampel-Verdikt {level, driver, nelsonCount, driftP, thresholds}", "en": "Verdict {level, driver, nelsonCount, driftP, thresholds}" } },
+          "warnings": { "type": "string[]", "description": { "de": "Warnungs-Codes (z. B. W_BASELINE_LT_20)", "en": "Warning codes (e.g. W_BASELINE_LT_20)" } }
+        }
+      }
+    },
+    "code_snippet": null
+  },
+
+  "try_it": {
+    "input_schema": {
+      "fields": [
+        {
+          "name": "inputs.chartType",
+          "label": { "de": "Kartentyp", "en": "Chart type" },
+          "type": "text",
+          "placeholder": { "de": "i-mr | xbar-r", "en": "i-mr | xbar-r" },
+          "parse_as": "string",
+          "required": true,
+          "default": "i-mr"
+        },
+        {
+          "name": "inputs.values",
+          "label": { "de": "Messwerte", "en": "Values" },
+          "type": "textarea",
+          "placeholder": {
+            "de": "Werte, getrennt durch Komma, Leerzeichen oder Zeilenumbruch",
+            "en": "Values separated by commas, spaces, or newlines"
+          },
+          "parse_as": "number_array",
+          "required": true
+        },
+        {
+          "name": "inputs.subgroups",
+          "label": { "de": "Untergruppen-IDs", "en": "Subgroup IDs" },
+          "type": "textarea",
+          "placeholder": { "de": "nur xbar-r — eine ID pro Wert, gleiche Länge wie Messwerte", "en": "xbar-r only — one ID per value, same length as values" },
+          "parse_as": "json",
+          "required": false
+        },
+        {
+          "name": "inputs.timestamps",
+          "label": { "de": "Zeitstempel", "en": "Timestamps" },
+          "type": "textarea",
+          "placeholder": { "de": "optional — Date-parsebare Strings oder Zahlen; leer = 1..N-Index", "en": "optional — date-parseable strings or numbers; blank = 1..N index" },
+          "parse_as": "json",
+          "required": false
+        },
+        {
+          "name": "inputs.limitsMode",
+          "label": { "de": "Grenzen-Modus", "en": "Limits mode" },
+          "type": "text",
+          "placeholder": { "de": "from-study | given", "en": "from-study | given" },
+          "parse_as": "string",
+          "required": true,
+          "default": "from-study"
+        },
+        {
+          "name": "inputs.baselineK",
+          "label": { "de": "Basis-Umfang k", "en": "Baseline size k" },
+          "type": "number",
+          "placeholder": { "de": "nur from-study — Anzahl Basis-Punkte/-Untergruppen (≥ 5)", "en": "from-study only — number of baseline points/subgroups (≥ 5)" },
+          "parse_as": "number",
+          "required": false
+        },
+        {
+          "name": "inputs.mu0",
+          "label": "µ₀",
+          "type": "number",
+          "placeholder": { "de": "nur given — vorgegebene Mittellinie", "en": "given only — supplied center line" },
+          "parse_as": "number",
+          "required": false
+        },
+        {
+          "name": "inputs.sigma0",
+          "label": "σ₀",
+          "type": "number",
+          "placeholder": { "de": "nur given — vorgegebene Prozessstreuung", "en": "given only — supplied process spread" },
+          "parse_as": "number",
+          "required": false
+        },
+        {
+          "name": "inputs.enabledRules",
+          "label": { "de": "Aktive Nelson-Regeln", "en": "Enabled Nelson rules" },
+          "type": "text",
+          "placeholder": { "de": "z. B. [1,2,3,4,5,6] (leer = Standard 1–6)", "en": "e.g. [1,2,3,4,5,6] (blank = default 1–6)" },
+          "parse_as": "json",
+          "required": false
+        },
+        {
+          "name": "inputs.alpha",
+          "label": { "de": "Signifikanzniveau α (Drift-Test)", "en": "Significance level α (drift test)" },
+          "type": "number",
+          "placeholder": { "de": "0.01 | 0.05 | 0.10", "en": "0.01 | 0.05 | 0.10" },
+          "parse_as": "number",
+          "required": true,
+          "default": 0.05
+        }
+      ]
+    },
+    "output_schema": {
+      "display_fields": [
+        "cl", "ucl", "lcl", "sigma",
+        "secondary_cl", "secondary_ucl", "secondary_lcl",
+        "violations", "drift", "verdict", "warnings"
+      ],
+      "primary_field": "verdict",
+      "format": {
+        "cl":  { "decimals": 6, "label": "CL" },
+        "ucl": { "decimals": 6, "label": "UCL" },
+        "lcl": { "decimals": 6, "label": "LCL" },
+        "sigma": { "decimals": 6, "label": "σ̂" },
+        "secondary_cl":  { "decimals": 6, "label": { "de": "CL (sekundär)", "en": "CL (secondary)" } },
+        "secondary_ucl": { "decimals": 6, "label": { "de": "UCL (sekundär)", "en": "UCL (secondary)" } },
+        "secondary_lcl": { "decimals": 6, "label": { "de": "LCL (sekundär)", "en": "LCL (secondary)" } },
+        "violations": { "label": { "de": "Nelson-Verletzungen", "en": "Nelson violations" } },
+        "drift":      { "label": { "de": "Drift-Test", "en": "Drift test" } },
+        "verdict":    { "label": { "de": "Ampel-Verdikt", "en": "Verdict" } },
+        "warnings":   { "label": { "de": "Warnungen", "en": "Warnings" } }
+      }
+    }
+  },
+
+  "changelog": [
+    {
+      "version": "1.0.0",
+      "date": "2026-07-16",
+      "type": "initial",
+      "description": {
+        "de": "Erstimplementierung: Studien-Aufbau, Drift-Test-Formeln und Ampel-Bewertung für MSA Typ 6 (Stabilität/Langzeitverhalten). Nelson-Regeln und SPC-Kontrollgrenzen werden vom `control-chart`-Eintrag wiederverwendet.",
+        "en": "Initial implementation: study setup, drift-test formulas and verdict rules for MSA Type 6 (stability/long-term behavior). Nelson rules and SPC control limits are reused from the `control-chart` entry."
+      },
+      "breaking": false
+    }
+  ]
+}
