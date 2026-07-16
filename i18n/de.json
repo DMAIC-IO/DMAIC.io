@@ -1550,6 +1550,99 @@
       "interp_marginal": "Fleiss κ = {kappa}, minimale Effektivität {minEff} %. Grenzwertig — Prüfer schulen oder Bewertungskriterien schärfen.",
       "interp_unacceptable": "Fleiss κ = {kappa}, minimale Effektivität {minEff} %. Nicht akzeptabel — Prüfprozess muss überarbeitet werden."
     },
+    "msa-typ6": {
+      "name": "MSA Typ 6",
+      "description": "Stabilität / Langzeitverhalten — Regelkarte (I-MR/x̄-R) über ein wiederholt gemessenes Referenzteil, Nelson-Regeln 1–8 und linearer Drift-Test",
+      "emptyHint": "Zeitstempel/Reihenfolge- und Messwert-Spalte wählen, um die Analyse zu starten.",
+      "empty": "Zeitstempel/Reihenfolge- und Messwert-Spalte wählen, um die Analyse zu starten.",
+      "sections": {
+        "dataSource": "Datenquelle",
+        "limits": "Grenzen-Modus"
+      },
+      "input": {
+        "measurementName": "Merkmalsname",
+        "unit": "Einheit",
+        "chartType": "Kartentyp",
+        "chartTypeImr": "I-MR",
+        "chartTypeXbarR": "x̄-R",
+        "timestampColumn": "Zeitstempel / Reihenfolge",
+        "valueColumn": "Messwert",
+        "subgroupColumn": "Untergruppe",
+        "limitsMode": "Grenzen-Modus",
+        "limitsModeFromStudy": "Aus Studien-Daten",
+        "limitsModeGiven": "Manuell / aus Typ 1",
+        "baselineK": "Basis-Untergruppen k",
+        "mu0": "µ₀ (Sollmittelwert)",
+        "sigma0": "σ₀ (Sollstreuung)",
+        "sourceTyp1": "Aus Typ-1-Instanz übernehmen",
+        "sourceTyp1Placeholder": "— keine Übernahme —",
+        "nelsonRules": "Nelson-Regeln",
+        "alpha": "Signifikanzniveau α (Drift-Test)"
+      },
+      "kpi": {
+        "points": "Datenpunkte",
+        "mean": "Ø (Gesamtmittelwert)",
+        "sigma": "σ (geschätzt)",
+        "violations": "Regel-Verletzungen",
+        "driftSlope": "Drift-Steigung",
+        "driftP": "p-Wert Drift-Test"
+      },
+      "verdict": {
+        "stable": "Stabil",
+        "marginal": "Grenzwertig",
+        "unstable": "Instabil"
+      },
+      "driver": {
+        "none": "keine Auffälligkeit",
+        "nelson": "Nelson-Verletzungen",
+        "drift": "signifikanter Drift",
+        "both": "Nelson-Verletzungen und Drift"
+      },
+      "violations": {
+        "time": "Zeitpunkt",
+        "value": "Messwert",
+        "rules": "Regel(n)",
+        "description": "Beschreibung"
+      },
+      "drift": {
+        "xLabel": "Zeit / Punktindex",
+        "yLabel": "Messwert",
+        "seriesLabel": "Regelkarten-Reihe",
+        "regressionLabel": "Regressionsgerade"
+      },
+      "interpretation": {
+        "stable": {
+          "none": "Keine Nelson-Verletzungen und kein signifikanter Drift (p = {driftP}). Das Messsystem verhält sich über die Zeit stabil."
+        },
+        "marginal": {
+          "nelson": "{nelsonCount} Nelson-Verletzung(en), aber kein signifikanter Drift (p = {driftP}). Grenzwertig — Ursache der Verletzung(en) prüfen.",
+          "drift": "Kein Muster in den Nelson-Regeln, aber ein schwacher Trend zeichnet sich ab (Steigung {slope}, p = {driftP}). Grenzwertig — Entwicklung weiter beobachten."
+        },
+        "unstable": {
+          "nelson": "{nelsonCount} Nelson-Verletzungen — das Messsystem zeigt ein instabiles Muster über die Zeit. Ursache untersuchen (Kalibrierung, Referenzteil, Bediener).",
+          "drift": "Signifikanter linearer Trend (Steigung {slope}, p = {driftP}) — das Messsystem driftet systematisch. Kalibrierung/Justage prüfen.",
+          "both": "{nelsonCount} Nelson-Verletzungen UND signifikanter Drift (Steigung {slope}, p = {driftP}) — das Messsystem ist instabil und driftet systematisch. Sofortige Überprüfung erforderlich."
+        }
+      },
+      "warnings": {
+        "W_BASELINE_LT_20": "Basis-Untergruppen k = {k} < 20 — die berechneten Regelgrenzen sind statistisch weniger belastbar.",
+        "W_TIMESTAMPS_NON_MONOTONIC": "Zeitstempel sind nicht monoton steigend; die Reihe wurde automatisch nach Zeit sortiert.",
+        "W_LIMITS_FROM_UNSTABLE_BASELINE": "Eine Nelson-Verletzung liegt innerhalb der Basis-Untergruppen — die daraus berechneten Regelgrenzen können kontaminiert sein."
+      },
+      "errors": {
+        "E_NO_VALUES": "Keine Messwerte vorhanden.",
+        "E_TOO_FEW_POINTS": "Zu wenige Datenpunkte (Minimum {min}).",
+        "E_INVALID_CHART_TYPE": "Unbekannter Kartentyp.",
+        "E_SUBGROUP_MISMATCH": "Untergruppen-Spalte und Messwert-Spalte müssen dieselbe Länge haben.",
+        "E_UNEQUAL_SUBGROUP_SIZES": "Untergruppen haben unterschiedliche Größen.",
+        "E_SUBGROUP_SIZE_OUT_OF_RANGE": "Untergruppengröße n = {n} außerhalb des zulässigen Bereichs ({min}–{max}).",
+        "E_GIVEN_LIMITS_INVALID": "µ₀/σ₀ ungültig. σ₀ muss > 0 sein.",
+        "E_BASELINE_TOO_SMALL": "Basis-Untergruppen zu klein (Minimum {min}).",
+        "E_BASELINE_EXCEEDS_DATA": "Basis-Untergruppen k = {k} übersteigt die verfügbaren Daten ({available}).",
+        "E_INVALID_ALPHA": "Signifikanzniveau α ungültig — erlaubt sind 0.01, 0.05, 0.10.",
+        "E_INVALID_LIMITS_MODE": "Unbekannter Grenzen-Modus."
+      }
+    },
     "process-capability": {
       "name": "Prozessfähigkeit",
       "description": "Prozessfähigkeitsanalyse — Cp, Cpk, Pp, Ppk, PPM, Sigma-Level",
