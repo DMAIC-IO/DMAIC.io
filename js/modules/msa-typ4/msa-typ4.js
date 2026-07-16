@@ -266,6 +266,11 @@ export default {
       return;
     }
 
+    // Cache aligned columns so chart renderers can reuse them without
+    // re-parsing the worksheet (mirrors msa-typ2's cell-data caching).
+    this._lastRef = data.reference;
+    this._lastMeas = data.measured;
+
     const p = this._params;
     const flatParams = {
       pvMode: p.pvMode, LSL: p.tolerance.LSL, USL: p.tolerance.USL,
@@ -312,7 +317,7 @@ export default {
    * chart containers that Task 12+13 populate.
    * @param {object} res  Output of engines/msa-typ4-engine.js analyze().
    */
-  _renderResults(res) {
+  async _renderResults(res) {
     const out = this._container.querySelector('[data-ref="results"]');
     if (!out) return;
 
@@ -415,10 +420,87 @@ export default {
       </table>
     `;
 
-    // Task 12+13 populate the chart-* containers created above.
+    await this._renderCharts(res);
   },
 
   // ─── Charts ─────────────────────────────────────────────────
+
+  /**
+   * Orchestrate all charts. Task 13 hangs the remaining charts below the
+   * linearity plot and lazy-renders the residual chart via <details>.
+   * @param {object} res  Engine result.
+   */
+  async _renderCharts(res) {
+    this._destroyCharts();
+    await this._renderLinearityChart(res);
+  },
+
+  /**
+   * Linearitäts-Plot: Bias-Punkte, Regressionsgerade und 95 %-KI-Band
+   * über den Messbereich. KI-Band wird über errorBars.bandShow der
+   * Fit-Serie realisiert (deltas relativ zu ŷ).
+   * @param {object} res  Engine result with regression.ciBand.
+   */
+  async _renderLinearityChart(res) {
+    const host = this._container.querySelector('[data-ref="chart-linearity"]');
+    if (!host) return;
+    const ref = this._lastRef, meas = this._lastMeas;
+    if (!ref || !meas || ref.length === 0) return;
+
+    // Einzel-Bias-Punkte
+    const biasX = ref.slice();
+    const biasY = ref.map((x, i) => meas[i] - x);
+
+    // Regressionsgerade + KI-Band als Deltas relativ zum Fit
+    const xMin = Math.min(...ref);
+    const xMax = Math.max(...ref);
+    const steps = 40;
+    const fitX = new Array(steps + 1);
+    const fitY = new Array(steps + 1);
+    const yPlus = new Array(steps + 1);
+    const yMinus = new Array(steps + 1);
+    for (let i = 0; i <= steps; i++) {
+      const x = xMin + (xMax - xMin) * (i / steps);
+      const yhat = res.regression.slope * x + res.regression.intercept;
+      const [lo, hi] = res.regression.ciBand(x);
+      fitX[i] = x;
+      fitY[i] = yhat;
+      yPlus[i] = Math.max(0, hi - yhat);
+      yMinus[i] = Math.max(0, yhat - lo);
+    }
+
+    const chart = await this._context.chartManager.create(host, 'scatter', {
+      showLegend: true,
+      xLabel: this._t('modules.msa-typ4.labels.referenceColumn'),
+      yLabel: this._t('modules.msa-typ4.table.bias'),
+      series: [
+        {
+          name: this._t('modules.msa-typ4.table.bias'),
+          color: 'var(--color-accent)',
+          x: biasX, y: biasY,
+          symbol: 'circle', strokeWidth: 1.5,
+        },
+        {
+          name: 'Fit',
+          color: 'var(--color-info)',
+          x: fitX, y: fitY,
+          markerSize: 0,
+          connectLine: { show: true, width: 1.5, dash: 'solid', color: 'var(--color-info)' },
+          errorBars: {
+            show: true, bandShow: true, yMode: 'absolute',
+            yPlus, yMinus,
+            // Helles CSS-Variable statt rgba() → per Memory feedback_svg_rgba
+            // wird das SVG-fill-Attribut ohne fill-opacity befüllt.
+            bandColor: 'var(--color-accent-light)',
+          },
+        },
+      ],
+      refLines: [
+        { dir: 'h', value: 0, label: '0', dash: 'dash', width: 1, color: 'var(--color-text-secondary)' },
+      ],
+    });
+    this._charts.push(chart);
+  },
 
   _destroyCharts() {
     const cm = this._context?.chartManager;
