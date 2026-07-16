@@ -13,9 +13,12 @@
  *
  * Task 8: Input-Panel Controls (Kartentyp, drei ColumnPicker, Grenzen-Modus,
  * Nelson-Regeln, α) + debounced Auto-Run (`_analyzeNow()`).
- * Task 9 (dieser Stand): Output-Panel Verdikt-Header + KPI-Strip
- * (`_fmt`/`_mean`-Formatierungs-Helfer). Regelkarte, Verletzungs-Tabelle,
- * Drift-Analyse-Chart und Interpretation folgen in Task 10–13.
+ * Task 9: Output-Panel Verdikt-Header + KPI-Strip (`_fmt`/`_mean`-Helfer).
+ * Task 10 (dieser Stand): Regelkarten-Charts primary (I bzw. x̄) + secondary
+ * (MR bzw. R) via `_renderCharts()`/`_destroyCharts()`/`_whenAnchor()`
+ * (chartManager 'control-chart', bounded rAF-Poll für den verschachtelten
+ * `x-if`-Anker). Verletzungs-Tabelle, Drift-Analyse-Chart und Interpretation
+ * folgen in Task 11–13.
  *
  * Spec: docs/superpowers/specs/2026-07-16-msa-typ6-design.md § 6
  */
@@ -45,6 +48,7 @@ const mod = createModule({
       _lastResult: null,
       _lastError: null,
       _charts: [],
+      _renderGen: 0,
       _unsubs: [],
       _pickers: { timestamp: null, value: null, subgroup: null },
       _debTimer: null,
@@ -165,17 +169,110 @@ const mod = createModule({
           if (!inputs) {
             this._lastResult = null;
             this._lastError = null;
-            return;
+          } else {
+            try {
+              this._lastResult = analyze(inputs);
+              this._lastError = null;
+            } catch (e) {
+              this._lastResult = null;
+              this._lastError = e.code;
+            }
           }
-          try {
-            this._lastResult = analyze(inputs);
-            this._lastError = null;
-          } catch (e) {
-            this._lastResult = null;
-            this._lastError = e.code;
-          }
-          this._renderCharts?.(); // Task 10
+          // Immer aufrufen (auch im !inputs/Fehler-Zweig) — sonst blieben
+          // Charts einer vorherigen erfolgreichen Analyse stehen, wenn der
+          // Nutzer z. B. die Werte-Spalte wieder abwählt.
+          this._renderCharts();
         }, 120);
+      },
+
+      // ── Regelkarten-Charts (imperative widgets, Task 10) ──────
+
+      /**
+       * Rendert die zwei Regelkarten (primary: I bzw. x̄; secondary: MR bzw.
+       * R) über `chartManager.create(host, 'control-chart', …)` in die
+       * templated `[data-chart-host]`-Anker (siehe msa-typ6.html). Nelson-
+       * Regel-Markierungen und Zonenbänder laufen ausschließlich auf der
+       * Primärkarte; die Sekundärkarte (Spannweite) zeigt nur Datenlinie +
+       * CL/UCL/LCL ohne Zonen/Verletzungen.
+       *
+       * Die Chart-Hosts liegen innerhalb eines `<template x-if="_lastResult">`
+       * — Alpine materialisiert solche verschachtelten Anker über mehrere
+       * Reactivity-Flush-Zyklen, daher ein bounded rAF-Poll (`_whenAnchor`,
+       * Konvention aus control-chart.js) statt eines einzelnen `$nextTick`.
+       */
+      async _renderCharts() {
+        const gen = ++this._renderGen;
+        this._destroyCharts();
+        if (!this._lastResult) return;
+
+        const { primary, secondary, ruleViolations } = this._lastResult;
+        const violationIndices = new Set(ruleViolations.map((v) => v.primaryIndex));
+        const cm = module._context.chartManager;
+
+        const hostPrimary = await this._whenAnchor('[data-chart-host="primary"]', gen);
+        if (!hostPrimary) return;
+        const c1 = await cm.create(hostPrimary, 'control-chart', {
+          values: primary.series,
+          cl: primary.cl,
+          ucl: primary.ucl,
+          lcl: primary.lcl,
+          sigma: primary.sigma,
+          violationIndices,
+          showZones: true,
+          labels: primary.series.map((_, i) => String(i + 1)),
+        });
+        if (gen !== this._renderGen) { cm.destroy(c1); return; }
+        this._charts.push(c1);
+
+        const hostSecondary = await this._whenAnchor('[data-chart-host="secondary"]', gen);
+        if (!hostSecondary) { cm.destroy(c1); this._charts = []; return; }
+        // MR-Serie hat `null` an Index 0 (erste Differenz ist undefiniert).
+        // Der control-chart-Typ überspringt `null`-Werte in Linie und
+        // Punkten von sich aus (chart/types/control-chart.js _renderData)
+        // — unverändert durchreichen statt auf 0 zu erzwingen, sonst würde
+        // ein irreführender Datenpunkt bei y=0 gezeichnet.
+        const c2 = await cm.create(hostSecondary, 'control-chart', {
+          values: secondary.series,
+          cl: secondary.cl,
+          ucl: secondary.ucl,
+          lcl: secondary.lcl,
+          sigma: 0, // keine Nelson-Zonenbänder auf R/MR — showZones:false ohnehin
+          violationIndices: new Set(),
+          showZones: false,
+          labels: secondary.series.map((_, i) => String(i + 1)),
+        });
+        if (gen !== this._renderGen) { cm.destroy(c1); cm.destroy(c2); this._charts = []; return; }
+        this._charts.push(c2);
+      },
+
+      /** Zerstört alle aktuell gemounteten Regelkarten-Charts (idempotent). */
+      _destroyCharts() {
+        const cm = module._context?.chartManager;
+        for (const c of this._charts) { try { cm && cm.destroy(c); } catch { /* ignore */ } }
+        this._charts = [];
+      },
+
+      /**
+       * Bounded rAF-Poll für einen templated Chart-Host innerhalb eines
+       * verschachtelten `x-if`-Anker (siehe .claude/alpine.md § 6 / Konvention
+       * aus control-chart.js `_whenAnchor`). Bricht ab, sobald ein neuerer
+       * Render gestartet wurde (`gen !== this._renderGen`).
+       * @param {string} selector
+       * @param {number} gen
+       * @param {number} [maxFrames]
+       * @returns {Promise<Element|null>}
+       */
+      _whenAnchor(selector, gen, maxFrames = 30) {
+        return new Promise((resolve) => {
+          const tick = (left) => {
+            if (gen !== this._renderGen) { resolve(null); return; }
+            const el = module._container ? module._container.querySelector(selector) : null;
+            if (el) { resolve(el); return; }
+            if (left <= 0) { resolve(null); return; }
+            requestAnimationFrame(() => tick(left - 1));
+          };
+          tick(maxFrames);
+        });
       },
 
       // ── ColumnPickers (imperative widgets) ────────────────────
@@ -209,6 +306,7 @@ const mod = createModule({
       init() {
         // Fresh per-instance collections (das data()-Objekt wird per Alpine.data geteilt).
         this._charts = [];
+        this._renderGen = 0;
         this._unsubs = [];
         this._pickers = { timestamp: null, value: null, subgroup: null };
         this._debTimer = null;
@@ -265,9 +363,7 @@ const mod = createModule({
         this._unsubs = [];
         for (const p of Object.values(this._pickers)) { try { p?.destroy?.(); } catch { /* ignore */ } }
         this._pickers = { timestamp: null, value: null, subgroup: null };
-        const cm = module._context?.chartManager;
-        for (const c of this._charts) { try { cm && cm.destroy(c); } catch { /* ignore */ } }
-        this._charts = [];
+        this._destroyCharts();
       },
     };
   },

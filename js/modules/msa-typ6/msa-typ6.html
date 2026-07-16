@@ -194,7 +194,13 @@
           </div>
         </div>
 
-        <!-- Task 10–13: weitere Output-Sektionen (Regelkarte, Verletzungs-Tabelle, Drift-Analyse, Interpretation) -->
+        <!-- Regelkarten-Charts: primary (I bzw. x̄) + secondary (MR bzw. R) (Task 10) -->
+        <div class="module-msa-typ6__charts">
+          <div class="module-msa-typ6__chart-host" x-ref="chartPrimary" data-chart-host="primary"></div>
+          <div class="module-msa-typ6__chart-host" x-ref="chartSecondary" data-chart-host="secondary"></div>
+        </div>
+
+        <!-- Task 11–13: weitere Output-Sektionen (Verletzungs-Tabelle, Drift-Analyse, Interpretation) -->
       </div>
     </template>
     <template x-if="!_lastResult">

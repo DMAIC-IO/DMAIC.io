@@ -205,3 +205,53 @@ suite('msa-typ6 module — Output-Panel Verdikt-Header + KPI-Strip (Task 9)', ()
     assertTrue(values.some((v) => v.includes('_lastResult.drift.pValue')), 'missing drift.pValue KPI binding');
   });
 });
+
+/**
+ * Task 10: Output-Panel Regelkarten-Charts (primary + secondary).
+ *
+ * Same DOMParser-only constraint as Task 7–9 (see rationale above): the
+ * chart hosts are mounted imperatively via `chartManager.create(host,
+ * 'control-chart', …)` from `_renderCharts()`, which needs a live Alpine
+ * mount + a real `chartManager` (SVG DOM) — neither is available in the
+ * headless DOMParser-based runner used here. So this suite only asserts
+ * the two templated chart-host anchors Task 10 ships are structurally
+ * present inside the `<template x-if="_lastResult">` branch, wired to the
+ * `data-chart-host` selectors `_renderCharts()`/`_whenAnchor()` query for.
+ * Live chart-render coverage (two `<svg>` per fixture) belongs to the
+ * Playwright E2E suite (test/playwright/tests/modules/msa-typ6.spec.js,
+ * Task 19 per docs/superpowers/specs/2026-07-16-msa-typ6-design.md § 9).
+ */
+suite('msa-typ6 module — Regelkarten-Charts (Task 10)', () => {
+  /** Fetch + parse the real shipped template once per test. */
+  async function loadTemplateDoc() {
+    const url = new URL('../../js/modules/msa-typ6/msa-typ6.html', import.meta.url);
+    const html = await (await fetch(url)).text();
+    return new DOMParser().parseFromString(html, 'text/html');
+  }
+
+  /** @param {Document} doc @returns {DocumentFragment} the `_lastResult` result branch's content. */
+  function resultFragment(doc) {
+    const tpl = [...doc.querySelectorAll('template[x-if]')]
+      .find((t) => t.getAttribute('x-if') === '_lastResult');
+    assertTrue(tpl !== null, 'template must have a <template x-if="_lastResult"> branch');
+    return tpl.content;
+  }
+
+  test('result branch has a primary chart host (.module-msa-typ6__chart-host, x-ref="chartPrimary")', async () => {
+    const doc = await loadTemplateDoc();
+    const frag = resultFragment(doc);
+    const host = frag.querySelector('.module-msa-typ6__chart-host[x-ref="chartPrimary"]');
+    assertTrue(host !== null, 'missing .module-msa-typ6__chart-host[x-ref="chartPrimary"] element');
+    assertEqual(host.getAttribute('data-chart-host'), 'primary',
+      'primary chart host must carry data-chart-host="primary" (the selector _renderCharts() queries for)');
+  });
+
+  test('result branch has a secondary chart host (.module-msa-typ6__chart-host, x-ref="chartSecondary")', async () => {
+    const doc = await loadTemplateDoc();
+    const frag = resultFragment(doc);
+    const host = frag.querySelector('.module-msa-typ6__chart-host[x-ref="chartSecondary"]');
+    assertTrue(host !== null, 'missing .module-msa-typ6__chart-host[x-ref="chartSecondary"] element');
+    assertEqual(host.getAttribute('data-chart-host'), 'secondary',
+      'secondary chart host must carry data-chart-host="secondary" (the selector _renderCharts() queries for)');
+  });
+});
