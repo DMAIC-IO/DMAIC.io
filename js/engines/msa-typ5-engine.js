@@ -414,3 +414,231 @@ function _mode(values) {
   }
   return { value: winner, tied };
 }
+
+/**
+ * Vollständige Analyse-Orchestrierung gemäß Spec §4.
+ * Kombiniert Validierung → Referenz-Ableitung → Wiederholbarkeit, Effektivität,
+ * Miss/FA, paarweise Cohen κ, Fleiss κ, Signal Detection und AIAG-Ampel.
+ *
+ * @param {object} input {type, levels, ratings, references?, params?}
+ * @returns {object} Analyse-Objekt (Return-Shape siehe Spec §4).
+ */
+export function analyze(input) {
+  const val = validate(input);
+  if (!val.valid) {
+    return { meta: { errors: val.errors, warnings: val.warnings } };
+  }
+  const { type, levels, ratings } = input;
+  const params = input.params || {};
+  const alpha = params.alpha ?? 0.05;
+  const weights = params.weights ?? 'quadratic';
+  const warnings = [...val.warnings];
+
+  // ─── Referenz-Ableitung ───
+  let references = input.references;
+  let referenceSource;
+  let ambiguousParts = [];
+  if (references && typeof references === 'object' && Object.keys(references).length > 0) {
+    referenceSource = 'given';
+  } else if (references === null || references === undefined) {
+    const c = deriveConsensus(ratings, { type, levels });
+    references = c.consensus;
+    ambiguousParts = c.ambiguousParts;
+    referenceSource = 'consensus';
+    if (ambiguousParts.length > 0) {
+      warnings.push({ code: WARN.AMBIGUOUS_CONSENSUS, params: { count: ambiguousParts.length, parts: ambiguousParts } });
+    }
+  } else {
+    referenceSource = 'none';
+  }
+
+  const appraisers = [...new Set(ratings.map(r => r.appraiser))].sort();
+  const parts = [...new Set(ratings.map(r => r.part))];
+  const hasReference = references && Object.keys(references).length > 0;
+
+  // ─── Wiederholbarkeit je Prüfer ───
+  const perAppr = {};
+  for (const a of appraisers) {
+    const rep = _repeatabilityFor(ratings, a, alpha);
+    perAppr[a] = { ...rep };
+  }
+
+  // ─── Effektivität, Miss/FA, κ vs. Referenz ───
+  if (hasReference) {
+    const eff = effectiveness(ratings, references, { alpha, ambiguousParts });
+    for (const a of appraisers) {
+      if (!perAppr[a].vsReference) perAppr[a].vsReference = {};
+      if (eff.perAppraiser[a]) perAppr[a].vsReference.effectiveness = eff.perAppraiser[a];
+    }
+    if (type === 'binary') {
+      const mf = missAndFA(ratings, references, { positive: levels[0], alpha, ambiguousParts });
+      for (const a of appraisers) {
+        if (mf.perAppraiser[a]) Object.assign(perAppr[a].vsReference, mf.perAppraiser[a]);
+      }
+    }
+    // κ je Prüfer vs. Referenz
+    for (const a of appraisers) {
+      const aVals = [], rVals = [];
+      for (const r of ratings) {
+        if (r.appraiser !== a) continue;
+        if (ambiguousParts.includes(r.part)) continue;
+        if (references[r.part] === undefined) continue;
+        aVals.push(r.value); rVals.push(references[r.part]);
+      }
+      if (aVals.length > 0) {
+        const kOpts = type === 'ordinal'
+          ? { levels, weights, alpha }
+          : { levels, weights: null, alpha };
+        const kappaObj = cohenKappa(aVals, rVals, kOpts);
+        perAppr[a].vsReference.kappa = {
+          kappa: kappaObj.kappa,
+          se: kappaObj.se,
+          ci95: kappaObj.ci95,
+          method: kappaObj.method,
+        };
+        perAppr[a].confusionMatrix = {
+          rows: levels.slice(),
+          cols: levels.slice(),
+          counts: kappaObj.confusion,
+        };
+      }
+    }
+  }
+
+  // ─── Zwischen Prüfern: paarweise Cohen κ + Fleiss κ ───
+  const pairwise = {};
+  for (let i = 0; i < appraisers.length; i++) {
+    for (let j = i + 1; j < appraisers.length; j++) {
+      const A = appraisers[i], B = appraisers[j];
+      const { aVals, bVals } = _pairAligned(ratings, A, B, parts);
+      if (aVals.length === 0) continue;
+      const kOpts = type === 'ordinal'
+        ? { levels, weights, alpha }
+        : { levels, weights: null, alpha };
+      const kappaObj = cohenKappa(aVals, bVals, kOpts);
+      pairwise[`${A}|${B}`] = {
+        kappa: kappaObj.kappa,
+        se: kappaObj.se,
+        ci95: kappaObj.ci95,
+        method: kappaObj.method,
+        confusion: { rows: levels.slice(), cols: levels.slice(), counts: kappaObj.confusion },
+      };
+    }
+  }
+
+  // Fleiss κ (alle Prüfer × Wiederholungen)
+  const byPart = new Map();
+  for (const p of parts) byPart.set(p, ratings.filter(r => r.part === p).map(r => r.value));
+  const fleiss = fleissKappa(byPart, { levels, alpha });
+
+  // Signal Detection (nur binär mit Referenz)
+  let sd = null;
+  if (type === 'binary' && hasReference) {
+    sd = signalDetection(ratings, references, { positive: levels[0] });
+  }
+
+  // ─── Verdikt-Ampel (AIAG MSA 4th Ed., Kap. III-B) ───
+  const effRates = Object.values(perAppr)
+    .map(x => x.vsReference?.effectiveness?.rate)
+    .filter(Number.isFinite);
+  const minEff = effRates.length ? Math.min(...effRates) : null;
+  const kappaVal = Number.isFinite(fleiss.kappa) ? fleiss.kappa : null;
+
+  let level, driver;
+  if (kappaVal !== null && kappaVal >= 0.75 && (minEff === null || minEff >= 0.90)) {
+    level = 'good';
+    driver = 'fleissKappa';
+  } else if ((kappaVal !== null && kappaVal < 0.40) || (minEff !== null && minEff < 0.80)) {
+    level = 'unacceptable';
+    driver = (kappaVal !== null && kappaVal < 0.40) ? 'fleissKappa' : 'effectiveness';
+  } else {
+    level = 'marginal';
+    driver = (minEff !== null && minEff < 0.90) ? 'effectiveness' : 'fleissKappa';
+  }
+
+  // ─── reps: höchste (part×appraiser)-Wiederholungszahl im Datensatz ───
+  const repMap = new Map();
+  for (const r of ratings) {
+    const key = `${r.part}|${r.appraiser}`;
+    repMap.set(key, (repMap.get(key) || 0) + 1);
+  }
+  const reps = repMap.size > 0 ? Math.max(...repMap.values()) : 0;
+
+  return {
+    meta: {
+      type,
+      levels: levels.slice(),
+      parts: parts.length,
+      appraisers: appraisers.length,
+      reps,
+      referenceSource,
+      ambiguousParts,
+      warnings,
+    },
+    perAppraiser: perAppr,
+    betweenAppraisers: {
+      pairwiseCohenKappa: pairwise,
+      fleissKappa: fleiss,
+    },
+    signalDetection: sd,
+    verdict: {
+      level,
+      driver,
+      thresholds: { kappaGood: 0.75, kappaMarginal: 0.40, effectivenessGood: 0.90, effectivenessMarginal: 0.80 },
+    },
+    interpretation: {
+      textKey: `modules.msa-typ5.interp_${level}`,
+      params: {
+        kappa: kappaVal !== null ? kappaVal.toFixed(3) : '—',
+        minEff: minEff !== null ? (minEff * 100).toFixed(1) : '—',
+      },
+    },
+  };
+}
+
+/**
+ * Wiederholbarkeit für einen Prüfer: Anteil (Teil, Prüfer)-Kombinationen mit ≥ 2
+ * Wiederholungen, an denen alle Wiederholungen gleich bewertet wurden. Wilson-KI 95 %.
+ * @param {Array} ratings
+ * @param {string} appraiser
+ * @param {number} alpha
+ * @returns {object} {repeatability?: {agree, total, rate, ci95}}
+ * @internal
+ */
+function _repeatabilityFor(ratings, appraiser, alpha) {
+  const byPart = new Map();
+  for (const r of ratings) {
+    if (r.appraiser !== appraiser) continue;
+    if (!byPart.has(r.part)) byPart.set(r.part, []);
+    byPart.get(r.part).push(r.value);
+  }
+  let agree = 0, total = 0;
+  for (const [, vals] of byPart) {
+    if (vals.length < 2) continue;
+    total++;
+    if (vals.every(v => v === vals[0])) agree++;
+  }
+  if (total === 0) return {};    // Prüfer hat nur single-reps → W_LOW_REP_COUNT deckt es ab
+  const w = wilsonCI(agree, total, alpha);
+  return { repeatability: { agree, total, rate: w.rate, ci95: w.ci95 } };
+}
+
+/**
+ * Zwei-Prüfer-Ausrichtung: kürzt je Teil auf die minimale gemeinsame Wiederholungszahl.
+ * @param {Array} ratings
+ * @param {string} A
+ * @param {string} B
+ * @param {Array} parts
+ * @returns {{aVals: Array, bVals: Array}}
+ * @internal
+ */
+function _pairAligned(ratings, A, B, parts) {
+  const aVals = [], bVals = [];
+  for (const p of parts) {
+    const ar = ratings.filter(r => r.part === p && r.appraiser === A).map(r => r.value);
+    const br = ratings.filter(r => r.part === p && r.appraiser === B).map(r => r.value);
+    const n = Math.min(ar.length, br.length);
+    for (let i = 0; i < n; i++) { aVals.push(ar[i]); bVals.push(br[i]); }
+  }
+  return { aVals, bVals };
+}

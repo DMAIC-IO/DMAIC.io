@@ -5,7 +5,7 @@
  */
 
 import { suite, test, assert, assertClose } from '../test-utils.js';
-import { validate, ERR, WARN, cohenKappa, fleissKappa, wilsonCI, effectiveness, missAndFA, signalDetection, deriveConsensus } from '../../js/engines/msa-typ5-engine.js';
+import { validate, ERR, WARN, cohenKappa, fleissKappa, wilsonCI, effectiveness, missAndFA, signalDetection, deriveConsensus, analyze } from '../../js/engines/msa-typ5-engine.js';
 
 // Fixture-Loader — löst relativ zur eigenen JS-URL auf, damit
 // runner.html-Pfad (../fixtures/...) das richtige Verzeichnis erreicht.
@@ -345,5 +345,104 @@ suite('msa-typ5-engine — deriveConsensus', () => {
     for (const p of Object.keys(c.expected.consensus)) {
       assert(r.consensus[p] === c.expected.consensus[p]);
     }
+  });
+});
+
+// ─── analyze() Orchestrator ──────────────────────────────────
+
+function buildBinaryScenario(kind) {
+  // Baut kleine Long-Format-Eingaben mit deterministischer Struktur.
+  // kind ∈ 'good' | 'unacceptable' — steuert die Ampel-Response.
+  const ratings = [], references = {};
+  const parts = 10, appraisers = ['A', 'B', 'C'], reps = 2;
+  for (let p = 1; p <= parts; p++) {
+    const trueVal = p <= 5 ? 'ok' : 'nok';
+    references[p] = trueVal;
+    for (const a of appraisers) {
+      for (let r = 1; r <= reps; r++) {
+        let v = trueVal;
+        if (kind === 'unacceptable') {
+          // Sehr niedrige Übereinstimmung: alle A immer 'ok', alle C immer 'nok'
+          if (a === 'A') v = 'ok';
+          else if (a === 'C') v = 'nok';
+        }
+        ratings.push({ part: p, appraiser: a, rep: r, value: v });
+      }
+    }
+  }
+  return { type: 'binary', levels: ['ok', 'nok'], ratings, references,
+           params: { alpha: 0.05, weights: 'quadratic' } };
+}
+
+suite('msa-typ5-engine — analyze (Return-Shape)', () => {
+  test('good scenario → verdict.level === good, alle Kernfelder vorhanden', () => {
+    const r = analyze(buildBinaryScenario('good'));
+    assert(r.meta.referenceSource === 'given');
+    assert(r.meta.parts === 10);
+    assert(r.meta.appraisers === 3);
+    assert(r.meta.reps === 2);
+    assert(r.perAppraiser.A && r.perAppraiser.B && r.perAppraiser.C);
+    assert(r.perAppraiser.A.repeatability.rate === 1.0);
+    assert(r.perAppraiser.A.vsReference.effectiveness.rate === 1.0);
+    assert(r.perAppraiser.A.vsReference.kappa);
+    assert(r.perAppraiser.A.confusionMatrix);
+    assert(r.betweenAppraisers.pairwiseCohenKappa['A|B']);
+    assert(r.betweenAppraisers.pairwiseCohenKappa['A|C']);
+    assert(r.betweenAppraisers.pairwiseCohenKappa['B|C']);
+    assert(r.betweenAppraisers.fleissKappa.kappa === 1.0);
+    assert(r.signalDetection.perAppraiser.A);
+    assert(r.verdict.level === 'good');
+    assert(r.verdict.driver === 'fleissKappa');
+    assert(r.interpretation.textKey === 'modules.msa-typ5.interp_good');
+  });
+
+  test('unacceptable scenario → verdict.level === unacceptable, driver benannt', () => {
+    const r = analyze(buildBinaryScenario('unacceptable'));
+    assert(r.verdict.level === 'unacceptable',
+      `got ${r.verdict.level}, kappa=${r.betweenAppraisers.fleissKappa.kappa}, ` +
+      `minEff=${Math.min(...Object.values(r.perAppraiser).map(x => x.vsReference?.effectiveness?.rate).filter(Number.isFinite))}`);
+    assert(['fleissKappa', 'effectiveness'].includes(r.verdict.driver));
+  });
+
+  test('Konsens-Fallback aktiviert wenn references === null', () => {
+    // Nutze binary-good-Fixture, aber ohne references
+    const s = buildBinaryScenario('good');
+    delete s.references;
+    s.references = null;
+    const r = analyze(s);
+    assert(r.meta.referenceSource === 'consensus');
+    // Alle guten Bewertungen → kein ambig
+    assert(r.meta.ambiguousParts.length === 0);
+  });
+
+  test('ambiguous-tie-Fixture (references=null) → W_AMBIGUOUS_CONSENSUS, ambig-Teile in meta', async () => {
+    const fx = await loadFixture('consensus-fallback');
+    const c = fx.test_cases.find(x => x.id === 'ambiguous-tie');
+    // Fixture-ratings haben nur part+value; für validate() brauchen wir appraiser+rep.
+    // Wir setzen künstlich 3 Prüfer × 1 rep pro Teil, damit validate durchläuft.
+    // Reihenfolge im Fixture ist already alle Bewertungen pro Teil sequentiell.
+    const byPart = new Map();
+    for (const r of c.inputs.ratings) {
+      if (!byPart.has(r.part)) byPart.set(r.part, []);
+      byPart.get(r.part).push(r.value);
+    }
+    const ratings = [];
+    for (const [part, vals] of byPart) {
+      vals.forEach((v, i) => ratings.push({ part, appraiser: `A${i}`, rep: 1, value: v }));
+    }
+    const r = analyze({
+      type: 'binary', levels: ['ok', 'nok'],
+      ratings, references: null,
+      params: { alpha: 0.05, weights: 'quadratic' },
+    });
+    assert(r.meta.referenceSource === 'consensus');
+    assert(r.meta.ambiguousParts.length > 0);
+    assert(r.meta.warnings.some(w => w.code === WARN.AMBIGUOUS_CONSENSUS));
+  });
+
+  test('invalider Input → meta.errors, kein perAppraiser', () => {
+    const r = analyze({ type: 'binary', levels: ['ok','nok'], ratings: [] });
+    assert(r.meta.errors && r.meta.errors.some(e => e.code === ERR.NO_RATINGS));
+    assert(!r.perAppraiser);
   });
 });
