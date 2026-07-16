@@ -309,3 +309,47 @@ export function missAndFA(ratings, references, opts) {
   }
   return { perAppraiser: out };
 }
+
+/**
+ * Signal Detection Theory: d' (Sensitivität) und Kriterium c (Bias) je Prüfer.
+ * Log-Linear-Korrektur nach Hautus (1995) bei hit ∈ {0, N⁺} oder fa ∈ {0, N⁻}
+ * (+0.5/N-Adjustierung), damit d' und c bei Randfällen endlich bleiben.
+ *
+ *   hit = P(rating = pos | ref = pos)
+ *   fa  = P(rating = pos | ref = neg)
+ *   d′  = Φ⁻¹(hit) − Φ⁻¹(fa)
+ *   c   = −½ · (Φ⁻¹(hit) + Φ⁻¹(fa))
+ *
+ * @param {Array} ratings Long-Format.
+ * @param {Object} references {[part]: value}
+ * @param {object} opts {positive}
+ * @returns {{perAppraiser: Object<string, {dPrime:number, criterion:number, hitRate:number, falseAlarmRate:number}>}}
+ */
+export function signalDetection(ratings, references, opts) {
+  const { positive } = opts;
+  const per = {};
+  for (const r of ratings) {
+    if (references[r.part] === undefined) continue;
+    if (!per[r.appraiser]) per[r.appraiser] = { hits: 0, nPos: 0, fas: 0, nNeg: 0 };
+    const refPos = references[r.part] === positive;
+    const ratPos = r.value === positive;
+    if (refPos)  { per[r.appraiser].nPos++; if (ratPos) per[r.appraiser].hits++; }
+    else         { per[r.appraiser].nNeg++; if (ratPos) per[r.appraiser].fas++;  }
+  }
+  const out = {};
+  for (const [a, v] of Object.entries(per)) {
+    // Hautus (1995) Log-Linear-Korrektur — nur bei Randfällen anwenden.
+    const h = (v.hits === 0 || v.hits === v.nPos)
+      ? (v.hits + 0.5) / (v.nPos + 1)
+      : v.hits / v.nPos;
+    const f = (v.fas === 0 || v.fas === v.nNeg)
+      ? (v.fas + 0.5) / (v.nNeg + 1)
+      : v.fas / v.nNeg;
+    const zh = zQuantile(h);
+    const zf = zQuantile(f);
+    const dPrime    = zh - zf;
+    const criterion = -0.5 * (zh + zf);
+    out[a] = { dPrime, criterion, hitRate: h, falseAlarmRate: f };
+  }
+  return { perAppraiser: out };
+}

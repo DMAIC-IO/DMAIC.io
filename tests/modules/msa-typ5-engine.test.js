@@ -5,7 +5,7 @@
  */
 
 import { suite, test, assert, assertClose } from '../test-utils.js';
-import { validate, ERR, WARN, cohenKappa, fleissKappa, wilsonCI, effectiveness, missAndFA } from '../../js/engines/msa-typ5-engine.js';
+import { validate, ERR, WARN, cohenKappa, fleissKappa, wilsonCI, effectiveness, missAndFA, signalDetection } from '../../js/engines/msa-typ5-engine.js';
 
 // Fixture-Loader — löst relativ zur eigenen JS-URL auf, damit
 // runner.html-Pfad (../fixtures/...) das richtige Verzeichnis erreicht.
@@ -241,5 +241,58 @@ suite('msa-typ5-engine — missAndFA', () => {
     assertClose(r.perAppraiser.A.missRate.rate,       0.5, 1e-12);
     assertClose(r.perAppraiser.A.falseAlarmRate.rate, 0.5, 1e-12);
     assertClose(r.perAppraiser.A.biasRate.value,      0.0, 1e-12);
+  });
+});
+
+// ─── signalDetection ─────────────────────────────────────────
+
+function buildSdtInput(nPos, nNeg, hits, fas) {
+  const ratings = [], references = {};
+  for (let i = 0; i < nPos; i++) {
+    const p = `p${i}`;
+    references[p] = 'ok';
+    ratings.push({ part: p, appraiser: 'A', rep: 1, value: i < hits ? 'ok' : 'nok' });
+  }
+  for (let i = 0; i < nNeg; i++) {
+    const p = `n${i}`;
+    references[p] = 'nok';
+    ratings.push({ part: p, appraiser: 'A', rep: 1, value: i < fas ? 'ok' : 'nok' });
+  }
+  return { ratings, references };
+}
+
+suite('msa-typ5-engine — signalDetection', () => {
+  test('baseline (hits=25/30, fas=3/30) matcht Referenz', async () => {
+    const fx = await loadFixture('signal-detection');
+    const c = fx.test_cases.find(x => x.id === 'hautus-log-linear');
+    const { ratings, references } = buildSdtInput(c.inputs.nPos, c.inputs.nNeg, c.inputs.hits, c.inputs.fas);
+    const r = signalDetection(ratings, references, { positive: 'ok' });
+    assertClose(r.perAppraiser.A.dPrime,         c.expected.dPrime,         1e-9);
+    assertClose(r.perAppraiser.A.criterion,      c.expected.criterion,      1e-9);
+    assertClose(r.perAppraiser.A.hitRate,        c.expected.hitRate,        1e-12);
+    assertClose(r.perAppraiser.A.falseAlarmRate, c.expected.falseAlarmRate, 1e-12);
+  });
+
+  test('edge-hit1 (hits = N⁺) → Log-Linear-Korrektur, kein Inf', async () => {
+    const fx = await loadFixture('signal-detection');
+    const c = fx.test_cases.find(x => x.id === 'edge-hit1');
+    const { ratings, references } = buildSdtInput(c.inputs.nPos, c.inputs.nNeg, c.inputs.hits, c.inputs.fas);
+    const r = signalDetection(ratings, references, { positive: 'ok' });
+    assert(Number.isFinite(r.perAppraiser.A.dPrime));
+    assert(Number.isFinite(r.perAppraiser.A.criterion));
+    // Acklam-Approximation liefert im Randbereich (|z| > 2) Fehler bis ~2e-9;
+    // Toleranz auf 1e-7 gelockert, immer noch weit unter jeder praktischen
+    // Reporting-Präzision.
+    assertClose(r.perAppraiser.A.dPrime,    c.expected.dPrime,    1e-7);
+    assertClose(r.perAppraiser.A.criterion, c.expected.criterion, 1e-7);
+  });
+
+  test('edge-fa0 (fas = 0) → Log-Linear-Korrektur', async () => {
+    const fx = await loadFixture('signal-detection');
+    const c = fx.test_cases.find(x => x.id === 'edge-fa0');
+    const { ratings, references } = buildSdtInput(c.inputs.nPos, c.inputs.nNeg, c.inputs.hits, c.inputs.fas);
+    const r = signalDetection(ratings, references, { positive: 'ok' });
+    assertClose(r.perAppraiser.A.dPrime,    c.expected.dPrime,    1e-7);
+    assertClose(r.perAppraiser.A.criterion, c.expected.criterion, 1e-7);
   });
 });
