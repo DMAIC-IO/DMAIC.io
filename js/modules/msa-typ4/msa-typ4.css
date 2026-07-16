@@ -88,7 +88,7 @@
 /* ─── Chart containers ───────────────────────────────────────── */
 .msa-typ4__chart {
   width: 100%;
-  min-height: 260px;
+  height: 300px;
   margin-bottom: var(--spacing-md);
 }
 

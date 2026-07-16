@@ -152,7 +152,7 @@
 /* Chart-Container */
 .msa-typ5__chart {
   width: 100%;
-  min-height: 260px;
+  height: 300px;
   margin-bottom: var(--spacing-md);
   background: var(--color-background-primary);
   border: 1px solid var(--color-border);
@@ -179,5 +179,5 @@
   text-align: center;
 }
 .msa-typ5__heatmap-body {
-  min-height: 220px;
+  height: 220px;
 }
