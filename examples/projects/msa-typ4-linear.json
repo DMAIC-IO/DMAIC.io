@@ -1,0 +1,25 @@
+{
+  "params": {
+    "name": "Bolzendurchmesser",
+    "unit": "mm",
+    "norm": "AIAG",
+    "pvMode": "tolerance",
+    "tolerance": {
+      "LSL": 0,
+      "USL": 12
+    },
+    "sigmaP": null,
+    "alpha": 0.05
+  },
+  "refColumn": {
+    "instanceId": "__source__",
+    "sheetId": "sheet-msa-typ4-linear",
+    "columnId": "c-ref"
+  },
+  "measColumn": {
+    "instanceId": "__source__",
+    "sheetId": "sheet-msa-typ4-linear",
+    "columnId": "c-meas"
+  },
+  "sourceWorksheetFile": "worksheets/msa-typ4-linear.json"
+}
