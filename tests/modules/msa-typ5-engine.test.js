@@ -5,7 +5,7 @@
  */
 
 import { suite, test, assert, assertClose } from '../test-utils.js';
-import { validate, ERR, WARN, cohenKappa, fleissKappa, wilsonCI, effectiveness, missAndFA, signalDetection } from '../../js/engines/msa-typ5-engine.js';
+import { validate, ERR, WARN, cohenKappa, fleissKappa, wilsonCI, effectiveness, missAndFA, signalDetection, deriveConsensus } from '../../js/engines/msa-typ5-engine.js';
 
 // Fixture-Loader — löst relativ zur eigenen JS-URL auf, damit
 // runner.html-Pfad (../fixtures/...) das richtige Verzeichnis erreicht.
@@ -294,5 +294,56 @@ suite('msa-typ5-engine — signalDetection', () => {
     const r = signalDetection(ratings, references, { positive: 'ok' });
     assertClose(r.perAppraiser.A.dPrime,    c.expected.dPrime,    1e-7);
     assertClose(r.perAppraiser.A.criterion, c.expected.criterion, 1e-7);
+  });
+});
+
+// ─── deriveConsensus ─────────────────────────────────────────
+
+suite('msa-typ5-engine — deriveConsensus', () => {
+  test('binary-majority matcht Referenz', async () => {
+    const fx = await loadFixture('consensus-fallback');
+    const c = fx.test_cases.find(x => x.id === 'binary-majority');
+    const r = deriveConsensus(c.inputs.ratings, { type: 'binary', levels: ['ok', 'nok'] });
+    for (const p of Object.keys(c.expected.consensus)) {
+      assert(r.consensus[p] === c.expected.consensus[p],
+        `part ${p}: got ${r.consensus[p]}, expected ${c.expected.consensus[p]}`);
+    }
+    assert(r.ambiguousParts.length === c.expected.ambiguousParts.length);
+  });
+
+  test('nominal-majority matcht Referenz (P3 = ambig)', async () => {
+    const fx = await loadFixture('consensus-fallback');
+    const c = fx.test_cases.find(x => x.id === 'nominal-majority');
+    const r = deriveConsensus(c.inputs.ratings, { type: 'nominal', levels: ['A', 'B', 'C'] });
+    for (const p of Object.keys(c.expected.consensus)) {
+      assert(r.consensus[p] === c.expected.consensus[p]);
+    }
+    for (const p of c.expected.ambiguousParts) {
+      assert(r.ambiguousParts.includes(p), `${p} nicht in ambiguousParts`);
+    }
+  });
+
+  test('ordinal-median matcht Referenz', async () => {
+    const fx = await loadFixture('consensus-fallback');
+    const c = fx.test_cases.find(x => x.id === 'ordinal-median');
+    const r = deriveConsensus(c.inputs.ratings, { type: 'ordinal', levels: c.inputs.levels });
+    for (const p of Object.keys(c.expected.consensus)) {
+      assert(r.consensus[p] === c.expected.consensus[p]);
+    }
+  });
+
+  test('ambiguous-tie → Teile in ambiguousParts', async () => {
+    const fx = await loadFixture('consensus-fallback');
+    const c = fx.test_cases.find(x => x.id === 'ambiguous-tie');
+    const r = deriveConsensus(c.inputs.ratings, { type: 'binary', levels: ['ok', 'nok'] });
+    assert(r.ambiguousParts.length === c.expected.ambiguousParts.length,
+      `got ambig=${JSON.stringify(r.ambiguousParts)}, expected=${JSON.stringify(c.expected.ambiguousParts)}`);
+    for (const p of c.expected.ambiguousParts) {
+      assert(r.ambiguousParts.includes(p), `${p} nicht in ambig`);
+    }
+    // Nicht-ambige Teile müssen richtigen Konsens haben
+    for (const p of Object.keys(c.expected.consensus)) {
+      assert(r.consensus[p] === c.expected.consensus[p]);
+    }
   });
 });

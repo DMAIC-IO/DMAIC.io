@@ -353,3 +353,64 @@ export function signalDetection(ratings, references, opts) {
   }
   return { perAppraiser: out };
 }
+
+/**
+ * Konsens-Referenz je Teil aus allen Bewertungen aller Prüfer × Wiederholungen ableiten.
+ * - Binär/Nominal: Mehrheitsvotum (Mode); Gleichstand → Teil landet in ambiguousParts.
+ * - Ordinal: Median (ordinal-Skala). Bei gerader Anzahl mit ungleichen Mittelwerten
+ *   entscheidet der Mode als Tie-Breaker; ist auch der ambig → Teil in ambiguousParts.
+ *
+ * @param {Array<{part, value, ...}>} ratings Long-Format.
+ * @param {object} opts {type: 'binary'|'nominal'|'ordinal', levels}
+ * @returns {{consensus: Object<any, any>, ambiguousParts: Array}}
+ */
+export function deriveConsensus(ratings, opts) {
+  const { type, levels } = opts;
+  const byPart = new Map();
+  for (const r of ratings) {
+    if (!byPart.has(r.part)) byPart.set(r.part, []);
+    byPart.get(r.part).push(r.value);
+  }
+  const consensus = {};
+  const ambig = [];
+  for (const [part, vals] of byPart) {
+    if (type === 'ordinal') {
+      const srt = vals.slice().sort((x, y) => levels.indexOf(x) - levels.indexOf(y));
+      const mid = Math.floor(srt.length / 2);
+      if (srt.length % 2 === 1) {
+        consensus[part] = srt[mid];
+      } else {
+        const lo = srt[mid - 1], hi = srt[mid];
+        if (lo === hi) {
+          consensus[part] = lo;
+        } else {
+          const modeRes = _mode(vals);
+          if (modeRes.tied) ambig.push(part);
+          else consensus[part] = modeRes.value;
+        }
+      }
+    } else {
+      const modeRes = _mode(vals);
+      if (modeRes.tied) ambig.push(part);
+      else consensus[part] = modeRes.value;
+    }
+  }
+  return { consensus, ambiguousParts: ambig.sort() };
+}
+
+/**
+ * Mode einer Werteliste. Bei Gleichstand mehrerer Kandidaten → tied = true.
+ * @param {Array} values
+ * @returns {{value: any, tied: boolean}}
+ * @internal
+ */
+function _mode(values) {
+  const c = new Map();
+  for (const v of values) c.set(v, (c.get(v) || 0) + 1);
+  let best = -1, winner = null, tied = false;
+  for (const [v, n] of c) {
+    if (n > best)      { best = n; winner = v; tied = false; }
+    else if (n === best) tied = true;
+  }
+  return { value: winner, tied };
+}
