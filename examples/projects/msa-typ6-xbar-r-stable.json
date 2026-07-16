@@ -1,0 +1,27 @@
+{
+  "params": {
+    "measurementName": "Messwert",
+    "unit": "mm",
+    "chartType": "xbar-r",
+    "limitsMode": "from-study",
+    "baselineK": 20
+  },
+  "columns": {
+    "timestamp": {
+      "instanceId": "__source__",
+      "sheetId": "sheet-msa-typ6-xbar-r-stable",
+      "columnId": "c-time"
+    },
+    "value": {
+      "instanceId": "__source__",
+      "sheetId": "sheet-msa-typ6-xbar-r-stable",
+      "columnId": "c-value"
+    },
+    "subgroup": {
+      "instanceId": "__source__",
+      "sheetId": "sheet-msa-typ6-xbar-r-stable",
+      "columnId": "c-subgroup"
+    }
+  },
+  "sourceWorksheetFile": "worksheets/msa-typ6-xbar-r-stable.json"
+}

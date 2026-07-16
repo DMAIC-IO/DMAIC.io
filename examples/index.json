@@ -2445,6 +2445,110 @@
         "weighted",
         "capable"
       ]
+    },
+    {
+      "id": "msa-typ6-imr-stable",
+      "type": "project",
+      "title": {
+        "de": "MSA Typ 6: I-MR, stabiler Prozess (grün)",
+        "en": "MSA Type 6: I-MR, stable process (green)"
+      },
+      "description": {
+        "de": "50 Einzelmessungen ohne Untergruppen. Regelkarte und Drift-Test unauffällig (p ≈ 0,84) — Lehrbuch-Fall eines stabilen Prozesses ohne Sonderursachen.",
+        "en": "50 individual measurements without subgroups. Control chart and drift test unremarkable (p ≈ 0.84) — textbook case of a stable process with no special causes."
+      },
+      "source": "DMAIC.io synthetisch",
+      "license": "public-domain",
+      "file": "projects/msa-typ6-imr-stable.json",
+      "format": "json",
+      "modules": [
+        "msa-typ6"
+      ],
+      "tags": [
+        "msa",
+        "stability",
+        "i-mr",
+        "control-chart",
+        "stable"
+      ]
+    },
+    {
+      "id": "msa-typ6-imr-drift",
+      "type": "project",
+      "title": {
+        "de": "MSA Typ 6: I-MR, driftender Prozess (rot)",
+        "en": "MSA Type 6: I-MR, drifting process (red)"
+      },
+      "description": {
+        "de": "50 Einzelmessungen mit linearem Trend (+0,02 je Punkt). Der Drift-Test schlägt hochsignifikant an (p ≈ 0,00009) — Prüfmittel oder Prozess driftet über die Zeit.",
+        "en": "50 individual measurements with a linear trend (+0.02 per point). The drift test fires highly significant (p ≈ 0.00009) — the gage or process drifts over time."
+      },
+      "source": "DMAIC.io synthetisch",
+      "license": "public-domain",
+      "file": "projects/msa-typ6-imr-drift.json",
+      "format": "json",
+      "modules": [
+        "msa-typ6"
+      ],
+      "tags": [
+        "msa",
+        "stability",
+        "i-mr",
+        "control-chart",
+        "drift"
+      ]
+    },
+    {
+      "id": "msa-typ6-xbar-r-stable",
+      "type": "project",
+      "title": {
+        "de": "MSA Typ 6: x̄-R, stabiler Prozess (grün)",
+        "en": "MSA Type 6: x̄-R, stable process (green)"
+      },
+      "description": {
+        "de": "25 Untergruppen à n = 5. x̄-Karte und R-Karte unauffällig, Drift-Test nicht signifikant (p ≈ 0,41) — Lehrbuch-Fall eines stabilen Prozesses mit Untergruppen.",
+        "en": "25 subgroups of n = 5. X̄ chart and R chart unremarkable, drift test not significant (p ≈ 0.41) — textbook case of a stable subgrouped process."
+      },
+      "source": "DMAIC.io synthetisch",
+      "license": "public-domain",
+      "file": "projects/msa-typ6-xbar-r-stable.json",
+      "format": "json",
+      "modules": [
+        "msa-typ6"
+      ],
+      "tags": [
+        "msa",
+        "stability",
+        "xbar-r",
+        "control-chart",
+        "stable"
+      ]
+    },
+    {
+      "id": "msa-typ6-xbar-r-shift",
+      "type": "project",
+      "title": {
+        "de": "MSA Typ 6: x̄-R, Mittelwert-Shift (rot)",
+        "en": "MSA Type 6: x̄-R, mean shift (red)"
+      },
+      "description": {
+        "de": "25 Untergruppen à n = 5, Basisgrenzen nur aus den ersten 15 Untergruppen. Ab Untergruppe 16 verschiebt sich der Mittelwert um +1,2·σ_x̄ — Nelson-Regeln 5/6 schlagen an, Verdikt „instabil“ (Treiber: Nelson). Warnung wegen Basis < 20 Untergruppen.",
+        "en": "25 subgroups of n = 5, baseline limits from only the first 15 subgroups. From subgroup 16 onward the mean shifts by +1.2·σ_x̄ — Nelson rules 5/6 fire, verdict “unstable” (driver: Nelson). Warns because the baseline has fewer than 20 subgroups."
+      },
+      "source": "DMAIC.io synthetisch",
+      "license": "public-domain",
+      "file": "projects/msa-typ6-xbar-r-shift.json",
+      "format": "json",
+      "modules": [
+        "msa-typ6"
+      ],
+      "tags": [
+        "msa",
+        "stability",
+        "xbar-r",
+        "control-chart",
+        "shift"
+      ]
     }
   ]
 }
