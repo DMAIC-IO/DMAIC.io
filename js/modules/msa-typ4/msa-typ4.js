@@ -433,6 +433,21 @@ export default {
   async _renderCharts(res) {
     this._destroyCharts();
     await this._renderLinearityChart(res);
+    await this._renderPctBiasChart(res);
+    await this._renderPerRefDotChart(res);
+    // Residuen-Chart erst rendern, wenn der Anwender <details> öffnet.
+    const det = this._container.querySelector('[data-ref="residuals-details"]');
+    if (!det) return;
+    if (det.open) {
+      await this._renderResidualChart(res);
+    } else {
+      det.addEventListener('toggle', () => {
+        if (det.open && !det.__msa4Rendered) {
+          det.__msa4Rendered = true;
+          this._renderResidualChart(res);
+        }
+      }, { once: true });
+    }
   },
 
   /**
@@ -493,6 +508,116 @@ export default {
             // wird das SVG-fill-Attribut ohne fill-opacity befüllt.
             bandColor: 'var(--color-accent-light)',
           },
+        },
+      ],
+      refLines: [
+        { dir: 'h', value: 0, label: '0', dash: 'dash', width: 1, color: 'var(--color-text-secondary)' },
+      ],
+    });
+    this._charts.push(chart);
+  },
+
+  /**
+   * %Bias-Plot mit ±5 %-Toleranzband. Vorzeichenbehafteter %Bias =
+   * percentBias * sign(bias) (percentBias speichert |bias| relativ zu PV).
+   * @param {object} res  Engine result with perReference.
+   */
+  async _renderPctBiasChart(res) {
+    const host = this._container.querySelector('[data-ref="chart-pctbias"]');
+    if (!host) return;
+    if (!res.perReference || res.perReference.length === 0) return;
+
+    const xs = res.perReference.map(p => p.xRef);
+    const ys = res.perReference.map(p => (Number.isFinite(p.percentBias) ? p.percentBias * Math.sign(p.bias) : 0));
+
+    const chart = await this._context.chartManager.create(host, 'scatter', {
+      showLegend: true,
+      xLabel: this._t('modules.msa-typ4.labels.referenceColumn'),
+      yLabel: this._t('modules.msa-typ4.table.percentBias'),
+      series: [
+        {
+          name: this._t('modules.msa-typ4.table.percentBias'),
+          color: 'var(--color-warning)',
+          x: xs, y: ys,
+          symbol: 'circle', strokeWidth: 1.5,
+        },
+      ],
+      refLines: [
+        { dir: 'h', value: 0,  label: '0',    dash: 'dash', width: 1,   color: 'var(--color-text-secondary)' },
+        { dir: 'h', value: 5,  label: '+5 %', dash: 'dot',  width: 1.2, color: 'var(--color-success)' },
+        { dir: 'h', value: -5, label: '−5 %', dash: 'dot',  width: 1.2, color: 'var(--color-success)' },
+      ],
+    });
+    this._charts.push(chart);
+  },
+
+  /**
+   * Dot-Plot: Messwerte je Referenzpunkt sowie Zellenmittelwert
+   * (Diamond-Marker). Zeigt visuell, wo Bias und Streuung sitzen.
+   * @param {object} res  Engine result with perReference.
+   */
+  async _renderPerRefDotChart(res) {
+    const host = this._container.querySelector('[data-ref="chart-per-ref"]');
+    if (!host) return;
+    const ref = this._lastRef, meas = this._lastMeas;
+    if (!ref || !meas || ref.length === 0) return;
+
+    const meanX = res.perReference.map(p => p.xRef);
+    const meanY = res.perReference.map(p => p.mean);
+
+    const chart = await this._context.chartManager.create(host, 'scatter', {
+      showLegend: true,
+      xLabel: this._t('modules.msa-typ4.labels.referenceColumn'),
+      yLabel: this._t('modules.msa-typ4.labels.measuredColumn'),
+      series: [
+        {
+          name: this._t('modules.msa-typ4.labels.measuredColumn'),
+          color: 'var(--color-accent)',
+          x: ref.slice(), y: meas.slice(),
+          symbol: 'circle', strokeWidth: 1.5,
+        },
+        {
+          name: this._t('modules.msa-typ4.table.mean'),
+          color: 'var(--color-text-primary)',
+          x: meanX, y: meanY,
+          symbol: 'diamond', strokeWidth: 1.5, markerSize: 10,
+        },
+      ],
+    });
+    this._charts.push(chart);
+  },
+
+  /**
+   * Residuen-Chart: Residuum = bias(i) − ŷ(x_i) über ŷ. Erlaubt
+   * visuelle Prüfung der Modell-Restfehler (Muster ⇒ Nicht-Linearität).
+   * Wird nur bei geöffnetem <details> gerendert.
+   * @param {object} res  Engine result with regression coefficients.
+   */
+  async _renderResidualChart(res) {
+    const host = this._container.querySelector('[data-ref="chart-residuals"]');
+    if (!host) return;
+    const ref = this._lastRef, meas = this._lastMeas;
+    if (!ref || !meas || ref.length === 0) return;
+
+    const xs = new Array(ref.length);
+    const ys = new Array(ref.length);
+    for (let i = 0; i < ref.length; i++) {
+      const b = meas[i] - ref[i];
+      const yhat = res.regression.slope * ref[i] + res.regression.intercept;
+      xs[i] = yhat;
+      ys[i] = b - yhat;
+    }
+
+    const chart = await this._context.chartManager.create(host, 'scatter', {
+      showLegend: true,
+      xLabel: 'ŷ',
+      yLabel: this._t('modules.msa-typ4.charts.residuals'),
+      series: [
+        {
+          name: this._t('modules.msa-typ4.charts.residuals'),
+          color: 'var(--color-accent)',
+          x: xs, y: ys,
+          symbol: 'circle', strokeWidth: 1.5,
         },
       ],
       refLines: [
