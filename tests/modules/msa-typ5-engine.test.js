@@ -5,7 +5,7 @@
  */
 
 import { suite, test, assert, assertClose } from '../test-utils.js';
-import { validate, ERR, WARN } from '../../js/engines/msa-typ5-engine.js';
+import { validate, ERR, WARN, cohenKappa } from '../../js/engines/msa-typ5-engine.js';
 
 // Fixture-Loader — löst relativ zur eigenen JS-URL auf, damit
 // runner.html-Pfad (../fixtures/...) das richtige Verzeichnis erreicht.
@@ -75,5 +75,60 @@ suite('msa-typ5-engine — validate', () => {
     const r = validate({ ...base, ratings: rs });
     assert(r.valid);
     assert(r.warnings.some(w => w.code === WARN.UNBALANCED_REPS));
+  });
+});
+
+// ─── cohenKappa (unweighted) ─────────────────────────────────
+
+suite('msa-typ5-engine — cohenKappa (unweighted)', () => {
+  test('binary-2rater matcht sklearn-Referenz', async () => {
+    const fx = await loadFixture('cohen-kappa');
+    const c = fx.test_cases.find(x => x.id === 'binary-2rater');
+    // Fixture-Generator sortiert Levels alphabetisch; um Konfusionsmatrix
+    // 1:1 zu treffen, denselben Level-Order übergeben.
+    const r = cohenKappa(c.inputs.raterA, c.inputs.raterB,
+      { levels: ['nok', 'ok'], weights: null, alpha: 0.05 });
+    assertClose(r.kappa,     c.expected.kappa,      1e-9);
+    assertClose(r.se,        c.expected.se,         1e-9);
+    assertClose(r.ci95[0],   c.expected.ci95[0],    1e-9);
+    assertClose(r.ci95[1],   c.expected.ci95[1],    1e-9);
+    assert(r.method === 'cohen');
+    // Konfusions-Matrix elementweise
+    for (let i = 0; i < r.confusion.length; i++)
+      for (let j = 0; j < r.confusion[i].length; j++)
+        assert(r.confusion[i][j] === c.expected.confusion[i][j],
+          `confusion[${i}][${j}] = ${r.confusion[i][j]}, expected ${c.expected.confusion[i][j]}`);
+  });
+
+  test('nominal-3class-2rater matcht sklearn-Referenz', async () => {
+    const fx = await loadFixture('cohen-kappa');
+    const c = fx.test_cases.find(x => x.id === 'nominal-3class-2rater');
+    const r = cohenKappa(c.inputs.raterA, c.inputs.raterB,
+      { levels: ['A', 'B', 'C'], weights: null, alpha: 0.05 });
+    assertClose(r.kappa, c.expected.kappa, 1e-9);
+    assertClose(r.se,    c.expected.se,    1e-9);
+    assert(r.method === 'cohen');
+  });
+});
+
+// ─── cohenKappa (weighted) ───────────────────────────────────
+
+suite('msa-typ5-engine — cohenKappa (weighted)', () => {
+  test('weighted-linear matcht sklearn', async () => {
+    const fx = await loadFixture('weighted-kappa');
+    const c = fx.test_cases.find(x => x.id === 'ordinal-linear');
+    const r = cohenKappa(c.inputs.raterA, c.inputs.raterB,
+      { levels: [1, 2, 3, 4, 5], weights: 'linear', alpha: 0.05 });
+    assertClose(r.kappa, c.expected.kappa, 1e-9);
+    assert(r.method === 'weighted-linear');
+  });
+
+  test('weighted-quadratic matcht sklearn', async () => {
+    const fx = await loadFixture('weighted-kappa');
+    const c = fx.test_cases.find(x => x.id === 'ordinal-quadratic');
+    const r = cohenKappa(c.inputs.raterA, c.inputs.raterB,
+      { levels: [1, 2, 3, 4, 5], weights: 'quadratic', alpha: 0.05 });
+    assertClose(r.kappa, c.expected.kappa, 1e-9);
+    assert(r.method === 'weighted-quadratic');
   });
 });
