@@ -5,8 +5,11 @@
  * See docs/superpowers/specs/2026-07-16-msa-typ6-design.md for the module spec.
  */
 
-import { suite, test, assert } from '../test-utils.js';
-import { validate } from '../../js/engines/msa-typ6-engine.js';
+import { suite, test, assert, assertClose } from '../test-utils.js';
+import { validate, analyze } from '../../js/engines/msa-typ6-engine.js';
+import fixtures from '../fixtures/msa/msa-typ6-stability.fixtures.json' with { type: 'json' };
+
+const CASE = (id) => fixtures.test_cases.find(c => c.id === id);
 
 const OK = {
   chartType: 'i-mr',
@@ -86,5 +89,33 @@ suite('msa-typ6-engine — validate', () => {
   test('E_INVALID_ALPHA', () => {
     const r = validate({ ...OK, alpha: 0.03 });
     assert(r.code === 'E_INVALID_ALPHA', r.code);
+  });
+});
+
+suite('msa-typ6-engine — analyze (Grenzen-Berechnung)', () => {
+  test('imr-stable: cl matches fixture', () => {
+    const c = CASE('imr-stable');
+    const r = analyze(c.inputs);
+    assertClose(r.primary.cl, c.expected.cl, 1e-9, `cl: ${r.primary.cl} vs ${c.expected.cl}`);
+  });
+
+  test('imr-stable: ucl and lcl match fixture', () => {
+    const c = CASE('imr-stable');
+    const r = analyze(c.inputs);
+    assertClose(r.primary.ucl, c.expected.ucl, 1e-9, `ucl: ${r.primary.ucl} vs ${c.expected.ucl}`);
+    assertClose(r.primary.lcl, c.expected.lcl, 1e-9, `lcl: ${r.primary.lcl} vs ${c.expected.lcl}`);
+  });
+
+  test('xbar-r-stable: cl and sigma match fixture', () => {
+    const c = CASE('xbar-r-stable');
+    const r = analyze(c.inputs);
+    assertClose(r.primary.cl, c.expected.cl, 1e-9, `cl: ${r.primary.cl} vs ${c.expected.cl}`);
+    assertClose(r.primary.sigma, c.expected.sigma, 1e-9, `sigma: ${r.primary.sigma} vs ${c.expected.sigma}`);
+  });
+
+  test('given-limits: cl equals mu0', () => {
+    const c = CASE('given-limits');
+    const r = analyze(c.inputs);
+    assertClose(r.primary.cl, c.inputs.mu0, 1e-9, `cl: ${r.primary.cl} vs mu0=${c.inputs.mu0}`);
   });
 });

@@ -84,15 +84,123 @@ export function validate(inputs) {
 }
 
 /**
+ * Group a flat values array by subgroup id, preserving first-seen order of
+ * the ids (not a numeric/lexical sort — the id sequence in `subgroups`
+ * defines group order).
+ * @param {number[]} values
+ * @param {Array} subgroups — subgroup id per value, same length as values
+ * @returns {number[][]}
+ */
+function _groupInOrder(values, subgroups) {
+  const groups = [];
+  const seen = [];
+  for (let i = 0; i < values.length; i++) {
+    const sg = subgroups[i];
+    let idx = seen.indexOf(sg);
+    if (idx === -1) { seen.push(sg); groups.push([]); idx = seen.length - 1; }
+    groups[idx].push(values[i]);
+  }
+  return groups;
+}
+
+/**
+ * Compute control limits for the primary/secondary chart pair, for both
+ * chart types (I-MR, X̄-R) and both limits modes (from-study, given).
+ *
+ * `given` mode formulas (Spec § 4) are computed directly from µ₀/σ₀ — no
+ * delegation. `from-study` mode delegates the baseline aggregation to
+ * {@link computeIMR}/{@link computeXbarR} in control-chart-engine.js.
+ *
+ * Note on X̄-R from-study UCL/LCL: computeXbarR's own subchart limits use
+ * the tabulated A2 constant (rounded to 3 decimals), which is precise
+ * enough for shop-floor SPC but not for the fixture's 1e-9 tolerance. Since
+ * computeXbarR's `sigma` field is already the exact d2-derived σ_x̄, we
+ * recompute UCL/LCL here as cl ± 3·σ_x̄ instead of trusting the A2-based
+ * limits — mathematically equivalent, just not rounded through A2.
+ *
+ * @param {object} inputs see validate()
+ * @returns {{chartType: string, n: number, primary: object, secondary: object}}
+ */
+function _computeLimits(inputs) {
+  const { chartType, values, subgroups, limitsMode, mu0, sigma0 } = inputs;
+
+  if (chartType === 'i-mr') {
+    if (limitsMode === 'given') {
+      const cl = mu0, sigma = sigma0;
+      const ucl = cl + 3 * sigma, lcl = cl - 3 * sigma;
+      const mrCl = 1.128 * sigma, mrUcl = 3.267 * mrCl, mrLcl = 0;
+      const secondary = values.map((v, i) => (i === 0 ? null : Math.abs(v - values[i - 1])));
+      return {
+        chartType, n: 1,
+        primary:   { series: values.slice(), cl, ucl, lcl, sigma },
+        secondary: { series: secondary,      cl: mrCl, ucl: mrUcl, lcl: mrLcl },
+      };
+    }
+    // from-study — baselineK is a count of baseline units, which is exactly
+    // what computeIMR's `baselineEnd` expects for I-MR (index == count here).
+    const imr = computeIMR(values, undefined, inputs.baselineK, null, undefined);
+    return {
+      chartType, n: 1,
+      primary:   { series: values.slice(), cl: imr.subcharts.i.cl, ucl: imr.subcharts.i.ucl, lcl: imr.subcharts.i.lcl, sigma: imr.subcharts.i.sigma },
+      secondary: { series: imr.subcharts.mr.values, cl: imr.subcharts.mr.cl, ucl: imr.subcharts.mr.ucl, lcl: imr.subcharts.mr.lcl },
+    };
+  }
+
+  // xbar-r — validate() already guarantees equal subgroup sizes.
+  const groupSize = subgroups.filter(s => s === subgroups[0]).length;
+
+  if (limitsMode === 'given') {
+    const cl = mu0;
+    const sigmaXbar = sigma0 / Math.sqrt(groupSize);
+    const ucl = cl + 3 * sigmaXbar, lcl = cl - 3 * sigmaXbar;
+    const rCl = SPC_CONSTANTS.d2[groupSize] * sigma0;
+    const rUcl = SPC_CONSTANTS.D4[groupSize] * rCl, rLcl = SPC_CONSTANTS.D3[groupSize] * rCl;
+    const groups = _groupInOrder(values, subgroups);
+    const xbars = groups.map(g => g.reduce((a, b) => a + b, 0) / g.length);
+    const rs    = groups.map(g => Math.max(...g) - Math.min(...g));
+    return {
+      chartType, n: groupSize,
+      primary:   { series: xbars, cl, ucl, lcl, sigma: sigmaXbar },
+      secondary: { series: rs,    cl: rCl, ucl: rUcl, lcl: rLcl },
+    };
+  }
+
+  // from-study — baselineK counts baseline subgroups; computeXbarR's
+  // baselineEnd is a flat raw-value index, so multiply by groupSize.
+  const xbarR = computeXbarR(values, groupSize, inputs.baselineK * groupSize, null, undefined);
+  const cl = xbarR.subcharts.xbar.cl;
+  const sigma = xbarR.subcharts.xbar.sigma; // already σ_x̄ = R̄/(d2·√n) — no further division
+  return {
+    chartType, n: groupSize,
+    primary:   { series: xbarR.subcharts.xbar.values, cl, ucl: cl + 3 * sigma, lcl: cl - 3 * sigma, sigma },
+    secondary: { series: xbarR.subcharts.r.values, cl: xbarR.subcharts.r.cl, ucl: xbarR.subcharts.r.ucl, lcl: xbarR.subcharts.r.lcl },
+  };
+}
+
+/**
  * Analyze stability data (I-MR or Xbar-R) for MSA Typ 6.
- * Full computation lands in Tasks 3–6; this task only wires validate().
+ * Grenzen-Berechnung (from-study + given) lands here; Nelson-Regeln,
+ * Drift-Test und Verdict/Ampel folgen in Tasks 4–6.
  * @param {object} inputs see validate()
  * @returns {object} throws Error(code) on invalid input
  */
 export function analyze(inputs) {
   const v = validate(inputs);
   if (!v.ok) { const e = new Error(v.code); e.code = v.code; e.params = v.params; throw e; }
-  throw new Error('NOT_IMPLEMENTED');  // filled in Tasks 3–6
+  const limits = _computeLimits(inputs);
+  return {
+    meta: {
+      chartType: limits.chartType, limitsMode: inputs.limitsMode, n: limits.n,
+      subgroupCount: limits.primary.series.length, pointCount: inputs.values.length,
+      baselineK: inputs.baselineK, warnings: [],
+    },
+    primary:   { ...limits.primary, label: inputs.chartType === 'i-mr' ? 'i' : 'xbar', violations: [] },
+    secondary: { ...limits.secondary, label: inputs.chartType === 'i-mr' ? 'MR' : 'R' },
+    drift: null,           // Task 5
+    ruleViolations: [],    // Task 4
+    verdict: null,         // Task 6
+    interpretation: null,  // Task 6
+  };
 }
 
 export { NELSON_RULES, DEFAULT_ENABLED_RULES };
