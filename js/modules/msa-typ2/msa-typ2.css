@@ -141,9 +141,11 @@
 
 /* ═══ CHARTS ═══ */
 
+/* overflow:hidden verhindert Growing-Loop (siehe msa-typ1 CSS). */
 .msa-typ2__chart-plot {
   width: 100%;
   height: 300px;
+  overflow: hidden;
 }
 
 /* ═══ INTERPRETATION ═══ */

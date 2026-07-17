@@ -80,9 +80,15 @@
 }
 
 /* ─── Charts ─────────────────────────────────────────────── */
+/* overflow:hidden verhindert Growing-Loop des SVGs. Kontext:
+   `.dmike-split__output` ist ein flex-column-Container, dessen Kinder
+   `min-height:auto` haben — `height:300px` allein reicht nicht als Cap,
+   das SVG wächst intrinsisch und ragt in die nächste Sektion.
+   Analog msa-typ6, control-chart. */
 .msa-typ1__chart-plot {
   width: 100%;
   height: 300px;
+  overflow: hidden;
 }
 
 /* ─── Interpretation ─────────────────────────────────────── */

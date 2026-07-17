@@ -127,7 +127,8 @@
 .msa-typ5__ampel.dmike-kpi--warn { background: var(--color-warning, #d29922); }
 .msa-typ5__ampel.dmike-kpi--bad  { background: var(--color-error,   #da3633); }
 
-/* Chart-Container */
+/* Chart-Container.
+   overflow:hidden verhindert Growing-Loop (siehe msa-typ1 CSS). */
 .msa-typ5__chart {
   width: 100%;
   height: 300px;
@@ -135,6 +136,7 @@
   background: var(--color-background-primary);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md, 6px);
+  overflow: hidden;
 }
 .msa-typ5__heatmap-grid {
   display: grid;

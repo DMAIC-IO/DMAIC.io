@@ -90,10 +90,12 @@
 .msa-typ4__table tr.msa-typ4__row--red    td { color: var(--color-error); }
 
 /* ─── Chart containers ───────────────────────────────────────── */
+/* overflow:hidden verhindert Growing-Loop (siehe msa-typ1 CSS). */
 .msa-typ4__chart {
   width: 100%;
   height: 300px;
   margin-bottom: var(--spacing-md);
+  overflow: hidden;
 }
 
 .msa-typ4__residuals summary {
