@@ -433,7 +433,7 @@ const mod = createModule({
             symbol: 'circle',
             markerSize: 10,
             strokeWidth: 1.5,
-            errorBars: { show: true, yMode: 'absolute', yPlus, yMinus },
+            errorBars: { show: true, yMode: 'relative', yPlus, yMinus },
           }],
           refLines,
         });
@@ -470,7 +470,7 @@ const mod = createModule({
             symbol: 'circle',
             markerSize: 10,
             strokeWidth: 1.5,
-            errorBars: { show: true, yMode: 'absolute', yPlus, yMinus },
+            errorBars: { show: true, yMode: 'relative', yPlus, yMinus },
           }],
           refLines: [
             { dir: 'h', value: 0.90, label: '90 %', dash: 'dash', width: 1, color: 'var(--color-success, #2ea043)' },
