@@ -649,26 +649,36 @@ select.input {
 .dmike-kpi--warn .dmike-kpi-value { color: var(--color-warning); }
 .dmike-kpi--bad  .dmike-kpi-value { color: var(--color-error); }
 
-/* ===== Infobox — generic tinted status/info banner =============
-   Horizontales Banner mit optionalem Punkt + Label + Detail. Farbige
-   Tint-Backgrounds für gute/warnende/fehlerhafte Zustände oder neutraler
-   Info-Look. Ursprünglich aus msa-typ1's status-bar extrahiert
-   (Nutzer-Wunsch 2026-07-17). Modul-typische Verwendung:
+/* ===== Infobox — generisches, ampel-getöntes Status-Banner ============
+   Horizontales Card-Banner mit Label + optionaler Detail-Zeile. Extrahiert
+   aus msa-typ1's status-bar-Muster; ist das PROJEKT-WEITE Design für
+   Verdikt-/Status-Anzeigen — MSA Typ 1/5/6, Prozessfähigkeit, künftige
+   Analyse-Module sollen dieses Element wiederverwenden statt eigener
+   Verdikt-Cards.
 
+   ── Design-Regeln (verbindlich) ─────────────────────────────────
+   1. KEIN Punkt vorne. Farbcodierung erfolgt allein über Border+Background
+      des Banners und die farbige Label-Schrift. Kein `__dot`-Slot.
+   2. LABEL immer in Großbuchstaben (via CSS `text-transform: uppercase`) —
+      unabhängig davon, wie die i18n-Werte geschrieben sind. Kurze
+      status-artige Kennzeichnung (max. 3 Wörter empfohlen).
+   3. DETAIL in normalem Satzbild und sekundärer Farbe. Beliebig lange
+      erklärende Zusatzinformation (Kennzahl mit KI, Kontext, Zeitraum).
+   4. Ampel-Modifier via `dmike-infobox--{good,warn,bad,info}` ODER die
+      bestehenden `dmike-kpi--{good,warn,bad}`-Modifier (Bindestrich-
+      Kompatibilität für `verdictClass`/`kpiModClass`-Helfer).
+
+   ── Verwendung ──────────────────────────────────────────────────
      <div class="dmike-infobox dmike-infobox--good">
        <span class="dmike-infobox__label">MESSMITTEL FÄHIG</span>
        <span class="dmike-infobox__detail">— Bolzendurchmesser · n = 25</span>
      </div>
 
-   Modifiers `dmike-infobox--{good,warn,bad,info}` steuern Farbe.
-   Für Rückwärts-Kompatibilität matched das CSS auch die bestehenden
-   `dmike-kpi--{good,warn,bad}`-Klassen (siehe verdictClass-Helfer in
-   msa-typ5/6). Optionale Slots:
-     .dmike-infobox__dot        — 12px-Kreis in Ampelfarbe (currentColor)
-     .dmike-infobox__label      — Mono, letter-spaced, Ampel-farbig
-     .dmike-infobox__detail     — normale Schrift, sekundäre Farbe
-     .dmike-infobox__trailing   — rechts ausgerichteter Zusatz
-================================================================= */
+   Slots:
+     .dmike-infobox__label      — Label (auto-uppercase, mono, Ampelfarbe)
+     .dmike-infobox__detail     — freie Zusatz-Zeile (secondary color)
+     .dmike-infobox__trailing   — rechts ausgerichteter Zusatz (optional)
+======================================================================= */
 .dmike-infobox {
   display: flex;
   align-items: center;
@@ -703,6 +713,7 @@ select.input {
   font-size: var(--font-size-xs);
   font-weight: var(--font-weight-medium);
   letter-spacing: 0.08em;
+  text-transform: uppercase;
   color: var(--color-text-primary);
 }
 .dmike-infobox--good .dmike-infobox__label,
@@ -722,20 +733,6 @@ select.input {
   font-size: var(--font-size-sm);
   color: var(--color-text-secondary);
 }
-
-.dmike-infobox__dot {
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  flex-shrink: 0;
-  background: currentColor;
-}
-.dmike-infobox--good .dmike-infobox__dot,
-.dmike-infobox.dmike-kpi--good .dmike-infobox__dot { background: var(--color-success); }
-.dmike-infobox--warn .dmike-infobox__dot,
-.dmike-infobox.dmike-kpi--warn .dmike-infobox__dot { background: var(--color-warning); }
-.dmike-infobox--bad .dmike-infobox__dot,
-.dmike-infobox.dmike-kpi--bad .dmike-infobox__dot  { background: var(--color-error); }
 
 /* ===== Result Card — recommended badge with hover tooltip ===== */
 .result-card--recommended {

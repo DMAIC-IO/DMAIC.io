@@ -117,8 +117,10 @@
             </template>
           </div>
 
-          <!-- Interpretation -->
-          <div :class="interpretationClass()" x-text="interpretationText()"></div>
+          <!-- Interpretation (generisches .dmike-infobox aus css/components.css) -->
+          <div class="dmike-infobox" :class="kpiModClass(currentVerdictColor())">
+            <span class="dmike-infobox__detail" x-text="interpretationText()"></span>
+          </div>
 
           <!-- Charts -->
           <div class="dmike-split__output-section" x-text="t('charts.linearity')"></div>

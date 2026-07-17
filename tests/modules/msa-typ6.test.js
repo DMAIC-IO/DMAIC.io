@@ -160,16 +160,17 @@ suite('msa-typ6 module — Output-Panel Verdikt-Header + KPI-Strip (Task 9)', ()
     return tpl.content;
   }
 
-  test('result branch has a dmike-infobox verdict-header with dot', async () => {
+  test('result branch has a dmike-infobox verdict-header', async () => {
     const doc = await loadTemplateDoc();
     const frag = resultFragment(doc);
-    // Migrated to generic .dmike-infobox (css/components.css). Colour comes
-    // from the parent's dmike-kpi--{good,warn,bad} modifier via
-    // _verdictKpiClass(); the dot inherits it through the shared CSS.
+    // Uses the generic .dmike-infobox (css/components.css). Per design
+    // rule (see infobox JSDoc): no dot slot; colour comes from
+    // dmike-kpi--{good,warn,bad} on the .dmike-infobox itself via
+    // _verdictKpiClass(); label is auto-uppercase via CSS.
     const infobox = frag.querySelector('.dmike-infobox');
     assertTrue(infobox !== null, 'missing .dmike-infobox verdict-header element');
-    const dot = infobox.querySelector('.dmike-infobox__dot');
-    assertTrue(dot !== null, 'missing .dmike-infobox__dot inside verdict-header');
+    const label = infobox.querySelector('.dmike-infobox__label');
+    assertTrue(label !== null, 'missing .dmike-infobox__label inside verdict-header');
     const binding = infobox.getAttribute(':class') || '';
     assertTrue(binding.includes('_verdictKpiClass(_lastResult.verdict.level)'),
       'verdict-header :class binding must call _verdictKpiClass(_lastResult.verdict.level)');

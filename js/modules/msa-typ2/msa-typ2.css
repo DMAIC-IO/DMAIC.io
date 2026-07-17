@@ -44,47 +44,8 @@
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* ═══ STATUS BAR ═══ */
-
-.msa-typ2__status-bar {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-md);
-  padding: 14px 18px;
-  border-radius: var(--border-radius);
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-semibold);
-  margin-bottom: var(--spacing-lg);
-}
-
-.msa-typ2__status-bar--pass {
-  background: rgba(var(--color-success-rgb, 64,192,87), 0.1);
-  border: 1px solid var(--color-success);
-  color: var(--color-success);
-}
-
-.msa-typ2__status-bar--warn {
-  background: rgba(var(--color-warning-rgb, 250,176,5), 0.1);
-  border: 1px solid var(--color-warning);
-  color: var(--color-warning);
-}
-
-.msa-typ2__status-bar--fail {
-  background: rgba(var(--color-error-rgb, 250,82,82), 0.1);
-  border: 1px solid var(--color-error);
-  color: var(--color-error);
-}
-
-.msa-typ2__status-label {
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  font-family: var(--font-family-mono);
-}
-
-.msa-typ2__status-detail {
-  font-weight: var(--font-weight-normal);
-  opacity: 0.8;
-}
+/* ═══ STATUS BAR migriert → generisches .dmike-infobox (css/components.css).
+       __type-badge unten bleibt lokal (Modus-Pill Typ 2 vs. Typ 3). ═══ */
 
 .msa-typ2__type-badge {
   display: inline-block;

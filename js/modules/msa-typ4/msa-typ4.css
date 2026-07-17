@@ -57,7 +57,11 @@
 
 .msa-typ4__error.visible { display: block; }
 
-/* ─── Interpretation Box ─────────────────────────────────────── */
+/* ─── Interpretation Box migriert → generisches .dmike-infobox
+       (css/components.css). Alte __interp/__interp--{green,yellow,red}-
+       Regeln werden nicht mehr benötigt; unten stehen sie zur
+       Rückwärts-Sicherheit noch (falls extern verlinkt), können bei
+       einem Cleanup entfernt werden. ─────────────────────────────── */
 .msa-typ4__interp {
   border-radius: var(--border-radius);
   padding: var(--spacing-md);

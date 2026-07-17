@@ -109,9 +109,10 @@
 
     <template x-if="result && result.verdict">
       <div>
-        <!-- Verdikt-Header (generisches .dmike-infobox aus css/components.css) -->
+        <!-- Verdikt-Header (generisches .dmike-infobox aus css/components.css;
+             KEIN Punkt vorne per Design-Regel — Farbe alleine über Card-
+             Border + Label-Schrift, siehe Kommentar in components.css). -->
         <div class="dmike-infobox" :class="verdictClass(result.verdict.level)">
-          <span class="dmike-infobox__dot"></span>
           <span class="dmike-infobox__label" x-text="verdictLabel(result.verdict.level)"></span>
           <span class="dmike-infobox__detail" x-text="verdictSubline()"></span>
         </div>

@@ -62,11 +62,13 @@
             <div class="msa-typ2__warning" :data-warning="w" x-text="t(w)"></div>
           </template>
 
-          <!-- Status bar -->
-          <div class="msa-typ2__status-bar" :class="'msa-typ2__status-bar--' + result.grrStatus">
+          <!-- Status bar (generisches .dmike-infobox aus css/components.css).
+               Der lokale __type-badge bleibt als Prä-Label-Element im
+               Infobox-Container erhalten (Modus-Pill Typ 2 vs. Typ 3). -->
+          <div class="dmike-infobox" :class="kpiModClass(result.grrStatus)">
             <span class="msa-typ2__type-badge" :data-mode="result.mode" x-text="typeLabel(result.mode)"></span>
-            <span class="msa-typ2__status-label" x-text="statusLabel(result.grrStatus)"></span>
-            <span class="msa-typ2__status-detail" x-text="statusDetail(result)"></span>
+            <span class="dmike-infobox__label" x-text="statusLabel(result.grrStatus)"></span>
+            <span class="dmike-infobox__detail" x-text="statusDetail(result)"></span>
           </div>
 
           <!-- KPI strip -->
