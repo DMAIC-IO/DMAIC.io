@@ -65,58 +65,9 @@
   color: var(--color-text-secondary);
 }
 
-/* ─── Verdikt-Header (Card-Look mit farbigem left-border) ───── */
-.module-msa-typ6__verdict {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-md);
-  padding: var(--spacing-md);
-  border-radius: var(--border-radius);
-  background: var(--color-bg-secondary);
-  border-left: 4px solid transparent;
-  margin-bottom: var(--spacing-md);
-  font-weight: var(--font-weight-medium);
-}
-.module-msa-typ6__verdict.dmike-kpi--good { border-left-color: var(--color-success, #2ea043); }
-.module-msa-typ6__verdict.dmike-kpi--warn { border-left-color: var(--color-warning, #d29922); }
-.module-msa-typ6__verdict.dmike-kpi--bad  { border-left-color: var(--color-error,   #da3633); }
-
-.module-msa-typ6__verdict-dot {
-  display: inline-block;
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-  flex-shrink: 0;
-  background: var(--color-text-secondary);
-}
-.module-msa-typ6__verdict-dot--good { background: var(--color-success, #2ea043); }
-.module-msa-typ6__verdict-dot--warn { background: var(--color-warning, #d29922); }
-.module-msa-typ6__verdict-dot--bad  { background: var(--color-error,   #da3633); }
-
-.module-msa-typ6__verdict-label {
-  font-size: 1.05em;
-}
-.module-msa-typ6__verdict-driver {
-  color: var(--color-text-secondary);
-  font-weight: var(--font-weight-normal);
-  font-size: 0.9em;
-  margin-left: auto;
-}
-
-/* ─── Warnungen (Meta-Warnings-Rendering) ────────────────────── */
-.module-msa-typ6__warnings {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-xs);
-  margin-bottom: var(--spacing-md);
-}
-.module-msa-typ6__warn {
-  padding: var(--spacing-sm) var(--spacing-md);
-  background: var(--color-warning-bg, rgba(210, 153, 34, 0.12));
-  color: var(--color-warning, #d29922);
-  border-radius: var(--border-radius-sm);
-  font-size: 0.9em;
-}
+/* ─── Verdikt-Header + Warnungen migriert → generisches .dmike-infobox
+       (css/components.css). Alle __verdict- und __warn-Regeln entfernt
+       (Nutzer-Wunsch 2026-07-17). */
 
 /* ─── Regelkarten-Charts ──────────────────────────────────────
    overflow: hidden + fixed height ist der Fix aus edc908d

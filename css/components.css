@@ -649,6 +649,94 @@ select.input {
 .dmike-kpi--warn .dmike-kpi-value { color: var(--color-warning); }
 .dmike-kpi--bad  .dmike-kpi-value { color: var(--color-error); }
 
+/* ===== Infobox — generic tinted status/info banner =============
+   Horizontales Banner mit optionalem Punkt + Label + Detail. Farbige
+   Tint-Backgrounds für gute/warnende/fehlerhafte Zustände oder neutraler
+   Info-Look. Ursprünglich aus msa-typ1's status-bar extrahiert
+   (Nutzer-Wunsch 2026-07-17). Modul-typische Verwendung:
+
+     <div class="dmike-infobox dmike-infobox--good">
+       <span class="dmike-infobox__label">MESSMITTEL FÄHIG</span>
+       <span class="dmike-infobox__detail">— Bolzendurchmesser · n = 25</span>
+     </div>
+
+   Modifiers `dmike-infobox--{good,warn,bad,info}` steuern Farbe.
+   Für Rückwärts-Kompatibilität matched das CSS auch die bestehenden
+   `dmike-kpi--{good,warn,bad}`-Klassen (siehe verdictClass-Helfer in
+   msa-typ5/6). Optionale Slots:
+     .dmike-infobox__dot        — 12px-Kreis in Ampelfarbe (currentColor)
+     .dmike-infobox__label      — Mono, letter-spaced, Ampel-farbig
+     .dmike-infobox__detail     — normale Schrift, sekundäre Farbe
+     .dmike-infobox__trailing   — rechts ausgerichteter Zusatz
+================================================================= */
+.dmike-infobox {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px var(--spacing-md);
+  margin-bottom: var(--spacing-md);
+  border-radius: var(--border-radius);
+  border: 1px solid transparent;
+  background: var(--color-bg-secondary);
+  flex-wrap: wrap;
+}
+
+.dmike-infobox--good, .dmike-infobox.dmike-kpi--good {
+  background: rgb(52 199 89 / 8%);
+  border-color: rgb(52 199 89 / 30%);
+}
+.dmike-infobox--warn, .dmike-infobox.dmike-kpi--warn {
+  background: rgb(255 149 0 / 8%);
+  border-color: rgb(255 149 0 / 30%);
+}
+.dmike-infobox--bad, .dmike-infobox.dmike-kpi--bad {
+  background: rgb(255 59 48 / 8%);
+  border-color: rgb(255 59 48 / 30%);
+}
+.dmike-infobox--info {
+  background: var(--color-bg-secondary);
+  border-color: var(--color-border-primary);
+}
+
+.dmike-infobox__label {
+  font-family: var(--font-family-mono, monospace);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  letter-spacing: 0.08em;
+  color: var(--color-text-primary);
+}
+.dmike-infobox--good .dmike-infobox__label,
+.dmike-infobox.dmike-kpi--good .dmike-infobox__label { color: var(--color-success); }
+.dmike-infobox--warn .dmike-infobox__label,
+.dmike-infobox.dmike-kpi--warn .dmike-infobox__label { color: var(--color-warning); }
+.dmike-infobox--bad  .dmike-infobox__label,
+.dmike-infobox.dmike-kpi--bad  .dmike-infobox__label { color: var(--color-error); }
+
+.dmike-infobox__detail {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+.dmike-infobox__trailing {
+  margin-left: auto;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+.dmike-infobox__dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: currentColor;
+}
+.dmike-infobox--good .dmike-infobox__dot,
+.dmike-infobox.dmike-kpi--good .dmike-infobox__dot { background: var(--color-success); }
+.dmike-infobox--warn .dmike-infobox__dot,
+.dmike-infobox.dmike-kpi--warn .dmike-infobox__dot { background: var(--color-warning); }
+.dmike-infobox--bad .dmike-infobox__dot,
+.dmike-infobox.dmike-kpi--bad .dmike-infobox__dot  { background: var(--color-error); }
+
 /* ===== Result Card — recommended badge with hover tooltip ===== */
 .result-card--recommended {
   border-color: var(--color-success);

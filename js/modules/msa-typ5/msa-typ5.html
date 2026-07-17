@@ -109,13 +109,11 @@
 
     <template x-if="result && result.verdict">
       <div>
-        <!-- Verdikt-Header -->
-        <div class="msa-typ5__verdict-header" :class="verdictClass(result.verdict.level)">
-          <div class="msa-typ5__verdict-dot"></div>
-          <div class="msa-typ5__verdict-text">
-            <strong x-text="verdictLabel(result.verdict.level)"></strong>
-            <span x-text="verdictSubline()"></span>
-          </div>
+        <!-- Verdikt-Header (generisches .dmike-infobox aus css/components.css) -->
+        <div class="dmike-infobox" :class="verdictClass(result.verdict.level)">
+          <span class="dmike-infobox__dot"></span>
+          <span class="dmike-infobox__label" x-text="verdictLabel(result.verdict.level)"></span>
+          <span class="dmike-infobox__detail" x-text="verdictSubline()"></span>
         </div>
 
         <!-- Warnungen -->

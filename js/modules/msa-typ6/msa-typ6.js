@@ -131,24 +131,6 @@ const mod = createModule({
       },
 
       /**
-       * CSS-Modifier-Klasse für den Verdikt-Punkt aus dem Engine-Level.
-       * Ausgelagert aus dem Template (statt eines Backtick-Template-Literals
-       * in `:class`) — Alpine CSPs Ausdrucks-Parser wertet Template-Literale
-       * mit `${…}`-Interpolation still NICHT aus: die Direktive bleibt im DOM
-       * stehen, der `class`-Wert aktualisiert sich nie (kein sichtbarer
-       * Fehler in der Konsole). Siehe .claude/alpine.md „Kritische
-       * Stolpersteine" — nur Terme (Konkatenation, Vergleiche, Ternäre) sind
-       * im Template selbst erlaubt, komplexere Ausdrücke gehören in die
-       * data-Fn.
-       * @param {string} level 'stable' | 'marginal' | 'unstable'
-       * @returns {string}
-       */
-      _verdictDotClass(level) {
-        const suffix = level === 'stable' ? 'good' : (level === 'marginal' ? 'warn' : 'bad');
-        return `module-msa-typ6__verdict-dot--${suffix}`;
-      },
-
-      /**
        * Verdikt-Ampel-Modifier für Verdict-Header + Interpretation:
        * liefert die globale `dmike-kpi--good/warn/bad`-Klasse (aus
        * css/components.css), die msa-typ6.css für border-left-color

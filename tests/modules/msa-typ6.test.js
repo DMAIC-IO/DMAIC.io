@@ -160,22 +160,19 @@ suite('msa-typ6 module — Output-Panel Verdikt-Header + KPI-Strip (Task 9)', ()
     return tpl.content;
   }
 
-  test('result branch has a verdict-dot element', async () => {
+  test('result branch has a dmike-infobox verdict-header with dot', async () => {
     const doc = await loadTemplateDoc();
     const frag = resultFragment(doc);
-    const dot = frag.querySelector('.module-msa-typ6__verdict-dot');
-    assertTrue(dot !== null, 'missing .module-msa-typ6__verdict-dot element');
-    // Colour is driven dynamically via :class from verdict.level — the
-    // good/warn/bad mapping lives in the `_verdictDotClass()` data-fn helper,
-    // NOT inline as a template literal in the template: Alpine's CSP
-    // expression parser does not evaluate ES6 template literals
-    // (`` `...${cond ? a : b}` ``) — the directive stays in the DOM but the
-    // `class` attribute never updates (no visible error). Found via the
-    // msa-typ6 E2E suite (Task 19); see .claude/alpine.md "Kritische
-    // Stolpersteine" — complex expressions belong in the data-fn.
-    const binding = dot.getAttribute(':class') || '';
-    assertTrue(binding.includes('_verdictDotClass(_lastResult.verdict.level)'),
-      'verdict-dot :class binding must call _verdictDotClass(_lastResult.verdict.level)');
+    // Migrated to generic .dmike-infobox (css/components.css). Colour comes
+    // from the parent's dmike-kpi--{good,warn,bad} modifier via
+    // _verdictKpiClass(); the dot inherits it through the shared CSS.
+    const infobox = frag.querySelector('.dmike-infobox');
+    assertTrue(infobox !== null, 'missing .dmike-infobox verdict-header element');
+    const dot = infobox.querySelector('.dmike-infobox__dot');
+    assertTrue(dot !== null, 'missing .dmike-infobox__dot inside verdict-header');
+    const binding = infobox.getAttribute(':class') || '';
+    assertTrue(binding.includes('_verdictKpiClass(_lastResult.verdict.level)'),
+      'verdict-header :class binding must call _verdictKpiClass(_lastResult.verdict.level)');
   });
 
   test('result branch has a KPI strip with at least six KPI tiles', async () => {

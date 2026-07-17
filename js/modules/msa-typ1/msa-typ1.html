@@ -72,10 +72,10 @@
     <div data-ref="results">
       <template x-if="result">
         <div>
-          <!-- Status bar -->
-          <div class="msa-typ1__status-bar" :class="'msa-typ1__status-bar--' + result.overall">
-            <span class="msa-typ1__status-label" x-text="statusLabel(result.overall)"></span>
-            <span class="msa-typ1__status-detail">— <span x-text="featureName()"></span> — n = <span x-text="result.n"></span></span>
+          <!-- Status bar (generisches dmike-infobox aus css/components.css). -->
+          <div class="dmike-infobox" :class="kpiModClass(result.overall)">
+            <span class="dmike-infobox__label" x-text="statusLabel(result.overall)"></span>
+            <span class="dmike-infobox__detail">— <span x-text="featureName()"></span> — n = <span x-text="result.n"></span></span>
           </div>
 
           <!-- KPI strip -->

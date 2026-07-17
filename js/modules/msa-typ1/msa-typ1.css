@@ -36,46 +36,8 @@
   display: block;
 }
 
-/* ─── Status Bar ─────────────────────────────────────────── */
-.msa-typ1__status-bar {
-  border-radius: var(--border-radius);
-  padding: 12px var(--spacing-md);
-  margin-bottom: var(--spacing-lg);
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.msa-typ1__status-bar--pass {
-  background: rgb(52 199 89 / 8%);
-  border: 1px solid rgb(52 199 89 / 30%);
-}
-
-.msa-typ1__status-bar--fail {
-  background: rgb(255 59 48 / 8%);
-  border: 1px solid rgb(255 59 48 / 30%);
-}
-
-.msa-typ1__status-bar--warn {
-  background: rgb(255 149 0 / 8%);
-  border: 1px solid rgb(255 149 0 / 30%);
-}
-
-.msa-typ1__status-label {
-  font-family: var(--font-family-mono);
-  font-size: var(--font-size-xs);
-  font-weight: var(--font-weight-medium);
-  letter-spacing: 0.1em;
-}
-
-.msa-typ1__status-bar--pass .msa-typ1__status-label { color: var(--color-success); }
-.msa-typ1__status-bar--fail .msa-typ1__status-label { color: var(--color-error); }
-.msa-typ1__status-bar--warn .msa-typ1__status-label { color: var(--color-warning); }
-
-.msa-typ1__status-detail {
-  font-size: var(--font-size-sm);
-  color: var(--color-text-secondary);
-}
+/* ─── Status Bar migriert → generisches .dmike-infobox (css/components.css).
+       Alle lokalen __status-bar-Regeln entfernt (Nutzer-Wunsch 2026-07-17). */
 
 /* ─── Algorithm Lab Link (inside KPI cards) ─────────────── */
 .msa-typ1__algo-link {
