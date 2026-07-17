@@ -1,17 +1,9 @@
 /* ============================================================
-   DMAIC.io — MSA Typ 6 Module Styles (msa-typ6.css)
+   D.Mike — MSA Typ 6 Module Styles (msa-typ6.css)
    Theme-aware using CSS custom properties from variables.css.
    Layout/fields/table/kpi reuse global .dmike-split / .field /
    .dmike-table / .dmike-kpi-strip components from css/modules.css
    and css/components.css.
-
-   Task 8 adds input-control styles (radios, Nelson-Regel-Liste).
-   Task 9 adds the verdict-dot styles (KPI-strip layout itself is the
-   shared global .dmike-kpi-strip/.dmike-kpi from css/components.css).
-   Task 10 adds the chart-host layout. Task 11 adds the violations-table
-   row styles (base table layout/hover/borders come from the shared
-   `.dmike-split table:not(...)` rule in css/components.css). Task 12–13
-   add drift-analysis/interpretation output styles.
    ============================================================ */
 
 /* ─── Layout (extends global dmike-split from css/modules.css) ── */
@@ -73,30 +65,64 @@
   color: var(--color-text-secondary);
 }
 
-/* ─── Verdikt-Header (Task 9) ────────────────────────────────── */
+/* ─── Verdikt-Header (Card-Look mit farbigem left-border) ───── */
 .module-msa-typ6__verdict {
   display: flex;
   align-items: center;
-  gap: var(--spacing-xs);
+  gap: var(--spacing-md);
+  padding: var(--spacing-md);
+  border-radius: var(--border-radius);
+  background: var(--color-bg-secondary);
+  border-left: 4px solid transparent;
   margin-bottom: var(--spacing-md);
   font-weight: var(--font-weight-medium);
 }
+.module-msa-typ6__verdict.dmike-kpi--good { border-left-color: var(--color-success, #2ea043); }
+.module-msa-typ6__verdict.dmike-kpi--warn { border-left-color: var(--color-warning, #d29922); }
+.module-msa-typ6__verdict.dmike-kpi--bad  { border-left-color: var(--color-error,   #da3633); }
+
 .module-msa-typ6__verdict-dot {
   display: inline-block;
-  width: 14px;
-  height: 14px;
+  width: 16px;
+  height: 16px;
   border-radius: 50%;
   flex-shrink: 0;
+  background: var(--color-text-secondary);
 }
-.module-msa-typ6__verdict-dot--good { background: var(--color-success); }
-.module-msa-typ6__verdict-dot--warn { background: var(--color-warning); }
-.module-msa-typ6__verdict-dot--bad  { background: var(--color-error); }
+.module-msa-typ6__verdict-dot--good { background: var(--color-success, #2ea043); }
+.module-msa-typ6__verdict-dot--warn { background: var(--color-warning, #d29922); }
+.module-msa-typ6__verdict-dot--bad  { background: var(--color-error,   #da3633); }
+
+.module-msa-typ6__verdict-label {
+  font-size: 1.05em;
+}
 .module-msa-typ6__verdict-driver {
   color: var(--color-text-secondary);
   font-weight: var(--font-weight-normal);
+  font-size: 0.9em;
+  margin-left: auto;
 }
 
-/* ─── Regelkarten-Charts (Task 10) ───────────────────────────── */
+/* ─── Warnungen (Meta-Warnings-Rendering) ────────────────────── */
+.module-msa-typ6__warnings {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  margin-bottom: var(--spacing-md);
+}
+.module-msa-typ6__warn {
+  padding: var(--spacing-sm) var(--spacing-md);
+  background: var(--color-warning-bg, rgba(210, 153, 34, 0.12));
+  color: var(--color-warning, #d29922);
+  border-radius: var(--border-radius-sm);
+  font-size: 0.9em;
+}
+
+/* ─── Regelkarten-Charts ──────────────────────────────────────
+   overflow: hidden + fixed height ist der Fix aus edc908d
+   (Growing-Loop): ohne clip driftet das SVG unter dem
+   ResizeObserver dauerhaft in die Höhe. Analog control-chart-Modul
+   `.control-chart__plot-wrap { height:420px; overflow:hidden }`. */
 .module-msa-typ6__charts {
   display: flex;
   flex-direction: column;
@@ -105,17 +131,14 @@
 }
 .module-msa-typ6__chart-host {
   width: 100%;
-  height: 260px;
-  background: var(--color-background-primary);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md, 6px);
+  height: 300px;
+  overflow: hidden;
+  background: var(--color-bg-primary);
+  border: 1px solid var(--color-border-primary);
+  border-radius: var(--border-radius);
 }
 
-/* ─── Verletzungs-Tabelle (Task 11) ──────────────────────────── */
-/* Base layout (width/borders/hover) comes from the shared
-   `.dmike-split table:not(.datagrid__table, …)` rule in
-   css/components.css — this module only adds click affordance +
-   the transient row-highlight from `_highlight()`. */
+/* ─── Verletzungs-Tabelle ────────────────────────────────────── */
 .module-msa-typ6__violations {
   margin-bottom: var(--spacing-md);
 }
@@ -123,10 +146,10 @@
   cursor: pointer;
 }
 .module-msa-typ6__violation-row--active td {
-  background: var(--color-accent-light);
+  background: var(--color-accent-light, rgba(0, 122, 255, 0.12));
 }
 
-/* ─── Drift-Analyse-Chart (Task 12) ──────────────────────────── */
+/* ─── Drift-Analyse-Chart ────────────────────────────────────── */
 .module-msa-typ6__drift {
   display: flex;
   flex-direction: column;
@@ -139,7 +162,7 @@
   gap: var(--spacing-xs);
   padding: var(--spacing-sm) var(--spacing-md);
   background: var(--color-bg-secondary);
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--color-border-primary);
   border-radius: var(--border-radius);
   font-size: 0.85em;
   color: var(--color-text-secondary);
@@ -154,14 +177,17 @@
   flex-wrap: wrap;
 }
 
-/* ─── Interpretation (Task 13) ───────────────────────────────── */
+/* ─── Interpretation (Card-Look mit farbigem left-border) ───── */
 .module-msa-typ6__interpretation {
   max-width: 70ch;
-  padding: var(--spacing-sm) var(--spacing-md);
+  padding: var(--spacing-md);
   margin: 0 0 var(--spacing-md);
   line-height: 1.5;
   color: var(--color-text-primary);
   background: var(--color-bg-secondary);
-  border: 1px solid var(--color-border);
   border-radius: var(--border-radius);
+  border-left: 4px solid transparent;
 }
+.module-msa-typ6__interpretation.dmike-kpi--good { border-left-color: var(--color-success, #2ea043); }
+.module-msa-typ6__interpretation.dmike-kpi--warn { border-left-color: var(--color-warning, #d29922); }
+.module-msa-typ6__interpretation.dmike-kpi--bad  { border-left-color: var(--color-error,   #da3633); }

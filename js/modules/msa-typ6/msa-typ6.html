@@ -165,12 +165,27 @@
   <main class="dmike-split__output" data-ref="output">
     <template x-if="_lastResult">
       <div>
-        <!-- Verdikt-Header (Task 9) -->
-        <div class="module-msa-typ6__verdict">
+        <!-- Verdikt-Header: Card-Look mit farbigem left-border, analog
+             msa-typ5. `_verdictKpiClass` liefert `dmike-kpi--good/warn/bad`
+             (globale Ampel-Modifier aus css/components.css); die _-CSS
+             matched auf dieser Kombination. -->
+        <div class="module-msa-typ6__verdict"
+             :class="_verdictKpiClass(_lastResult.verdict.level)">
           <span class="module-msa-typ6__verdict-dot"
                 :class="_verdictDotClass(_lastResult.verdict.level)"></span>
           <span class="module-msa-typ6__verdict-label" x-text="t('verdict.' + _lastResult.verdict.level)"></span>
           <span class="module-msa-typ6__verdict-driver" x-text="t('driver.' + _lastResult.verdict.driver)"></span>
+        </div>
+
+        <!-- Warnungen aus meta.warnings (engine emittiert
+             W_BASELINE_LT_20 / W_TIMESTAMPS_NON_MONOTONIC /
+             W_LIMITS_FROM_UNSTABLE_BASELINE). i18n-Keys wurden in Task 17
+             als defensive Keys bereits angelegt. -->
+        <div class="module-msa-typ6__warnings"
+             x-show="_lastResult.meta.warnings && _lastResult.meta.warnings.length > 0">
+          <template x-for="w in _lastResult.meta.warnings" :key="w.code">
+            <div class="module-msa-typ6__warn" x-text="t('warnings.' + w.code)"></div>
+          </template>
         </div>
 
         <!-- KPI-Strip (Task 9) -->
@@ -267,6 +282,7 @@
              der Instanz komplett (siehe msa-typ6.js Kommentar), wodurch auch
              dieser Absatz mit der neuen Sprache neu gerendert wird. -->
         <p class="module-msa-typ6__interpretation"
+           :class="_verdictKpiClass(_lastResult.verdict.level)"
            x-text="t(_lastResult.interpretation.textKey, _lastResult.interpretation.params)"></p>
       </div>
     </template>

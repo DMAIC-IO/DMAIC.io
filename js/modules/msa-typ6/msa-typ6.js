@@ -148,6 +148,21 @@ const mod = createModule({
         return `module-msa-typ6__verdict-dot--${suffix}`;
       },
 
+      /**
+       * Verdikt-Ampel-Modifier für Verdict-Header + Interpretation:
+       * liefert die globale `dmike-kpi--good/warn/bad`-Klasse (aus
+       * css/components.css), die msa-typ6.css für border-left-color
+       * konsumiert (analog msa-typ5). Reuse der KPI-Ampel-Konvention
+       * statt eigener Modifier-Klasse.
+       * @param {'stable'|'marginal'|'unstable'} level
+       * @returns {string}
+       */
+      _verdictKpiClass(level) {
+        if (level === 'stable') return 'dmike-kpi--good';
+        if (level === 'marginal') return 'dmike-kpi--warn';
+        return 'dmike-kpi--bad';
+      },
+
       // ── Formatierungs-Helfer (Output-Panel, Task 9) ───────────
 
       /**
