@@ -1610,6 +1610,13 @@
         "seriesLabel": "Control chart series",
         "regressionLabel": "Regression line"
       },
+      "charts": {
+        "primaryImr": "Control chart — Individuals (I)",
+        "primaryXbar": "Control chart — Means (x̄)",
+        "secondaryImr": "Control chart — Moving range (MR)",
+        "secondaryXbar": "Control chart — Range (R)",
+        "drift": "Drift analysis"
+      },
       "interpretation": {
         "stable": {
           "none": "No Nelson violations and no significant drift (p = {driftP}). The measurement system behaves stably over time."

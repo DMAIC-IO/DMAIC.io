@@ -209,11 +209,16 @@
           </div>
         </div>
 
-        <!-- Regelkarten-Charts: primary (I bzw. x̄) + secondary (MR bzw. R) (Task 10) -->
-        <div class="module-msa-typ6__charts">
-          <div class="module-msa-typ6__chart-host" x-ref="chartPrimary" data-chart-host="primary"></div>
-          <div class="module-msa-typ6__chart-host" x-ref="chartSecondary" data-chart-host="secondary"></div>
-        </div>
+        <!-- Regelkarten-Charts: primary (I bzw. x̄) + secondary (MR bzw. R) (Task 10).
+             Pro Plot eine .dmike-split__output-section (Konsistenz mit Typ 1/2/4/5,
+             Nutzer-Wunsch 2026-07-17). Titel wechseln je nach chartType. -->
+        <div class="dmike-split__output-section"
+             x-text="t(model.params.chartType === 'i-mr' ? 'charts.primaryImr' : 'charts.primaryXbar')"></div>
+        <div class="module-msa-typ6__chart-host" x-ref="chartPrimary" data-chart-host="primary"></div>
+
+        <div class="dmike-split__output-section"
+             x-text="t(model.params.chartType === 'i-mr' ? 'charts.secondaryImr' : 'charts.secondaryXbar')"></div>
+        <div class="module-msa-typ6__chart-host" x-ref="chartSecondary" data-chart-host="secondary"></div>
 
         <!-- Verletzungs-Tabelle (Task 11): Klick auf eine Zeile scrollt zur
              Primär-Regelkarte und hebt die Zeile kurzzeitig hervor
@@ -247,6 +252,7 @@
              mit zwei Punkten + connectLine gerendert — siehe msa-typ6.js
              _renderDriftChart() für die Begründung: die reale refLines-API
              kennt keine diagonale from/to-Form) + Formel-Info-Block. -->
+        <div class="dmike-split__output-section" x-text="t('charts.drift')"></div>
         <div class="module-msa-typ6__drift">
           <div class="module-msa-typ6__chart-host" x-ref="chartDrift" data-chart-host="drift"></div>
           <div class="module-msa-typ6__drift-info">

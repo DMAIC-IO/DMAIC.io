@@ -1610,6 +1610,13 @@
         "seriesLabel": "Regelkarten-Reihe",
         "regressionLabel": "Regressionsgerade"
       },
+      "charts": {
+        "primaryImr": "Regelkarte — Einzelwerte (I)",
+        "primaryXbar": "Regelkarte — Mittelwerte (x̄)",
+        "secondaryImr": "Regelkarte — Gleitende Spannweite (MR)",
+        "secondaryXbar": "Regelkarte — Spannweite (R)",
+        "drift": "Drift-Analyse"
+      },
       "interpretation": {
         "stable": {
           "none": "Keine Nelson-Verletzungen und kein signifikanter Drift (p = {driftP}). Das Messsystem verhält sich über die Zeit stabil."

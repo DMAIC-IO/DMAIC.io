@@ -73,13 +73,10 @@
    overflow: hidden + fixed height ist der Fix aus edc908d
    (Growing-Loop): ohne clip driftet das SVG unter dem
    ResizeObserver dauerhaft in die Höhe. Analog control-chart-Modul
-   `.control-chart__plot-wrap { height:420px; overflow:hidden }`. */
-.module-msa-typ6__charts {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-md);
-  margin-bottom: var(--spacing-md);
-}
+   `.control-chart__plot-wrap { height:420px; overflow:hidden }`.
+   Der frühere `.module-msa-typ6__charts`-Wrapper (flex-column) ist
+   entfallen, weil primary/secondary jetzt je eine eigene
+   .dmike-split__output-section haben (Nutzer-Wunsch 2026-07-17). */
 .module-msa-typ6__chart-host {
   width: 100%;
   height: 300px;
