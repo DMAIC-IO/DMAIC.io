@@ -173,6 +173,10 @@
                                           </div>
                                         </div>
                                       </template>
+                                      <template x-if="n4.level < maxLevel">
+                                        <button class="five-why__add-child-btn" type="button" :data-parent="n4.id"
+                                                @click="addChild(n4.id)" x-text="addChildLabel(n4)"></button>
+                                      </template>
                                     </div>
                                   </template>
                                 </div>

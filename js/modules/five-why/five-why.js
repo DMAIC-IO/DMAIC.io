@@ -57,9 +57,14 @@ export default createModule({
       },
       /** Level clamped to 1..maxLevel for the data-level attribute. */
       clampLevel(node) { return Math.min(node.level, MAX_LEVEL); },
-      /** Tag label: "◆ Root Cause" at max level, else "W{level}.{numbering}". */
+      /**
+       * Tag label: hierarchical Why number "W{level}.{numbering}" for every
+       * level 1..MAX_LEVEL. The deepest level stays a real, numbered Why (W5)
+       * and keeps its root-cause emphasis via `cardClass` / `answerPlaceholder`
+       * — it is no longer swallowed by a bare "Root Cause" tag.
+       */
       nodeTag(node, numbering) {
-        return node.level >= MAX_LEVEL ? _t('modules.five-why.rootCause') : `W${  node.level  }.${  numbering}`;
+        return `W${  node.level  }.${  numbering}`;
       },
       /** Placeholder for the answer textarea (root-cause variant at max level). */
       answerPlaceholder(node) {
