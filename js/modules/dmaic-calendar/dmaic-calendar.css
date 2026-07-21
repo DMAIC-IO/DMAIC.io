@@ -437,10 +437,26 @@
 }
 
 .module-calendar__week-slot {
+  position: relative;
   height: 60px;
   border-bottom: var(--border-width) solid var(--color-border-secondary);
   cursor: pointer;
   transition: background 120ms;
+}
+
+/* Dekorative gestrichelte Trennlinie für die halbe Stunde (Slot-Mitte,
+   Outlook-Stil). Rein visuell — pointer-events: none, damit mousedown/
+   mouseenter/dblclick auf dem Slot (Anlegen & Aufziehen) nicht behindert
+   werden. Volle Stunden bleiben durchgezogen (border-bottom oben). */
+.module-calendar__week-slot::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  border-top: var(--border-width) dashed var(--color-border-secondary);
+  opacity: 0.6;
+  pointer-events: none;
 }
 
 .module-calendar__week-slot:hover {
