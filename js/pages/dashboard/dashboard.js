@@ -39,7 +39,7 @@ const page = createPage({
     const { eventBus, stateManager, i18n, chartManager, themeManager, moduleRegistry } = ctx;
     const gridAnchor = containerEl.querySelector('[data-ref="grid"]');
 
-    const handle = { grid: null, chart: null, addMenuEl: null, _onDocClick: null, _unsubs: [], render: null, _renderGen: 0 };
+    const handle = { grid: null, chart: null, addMenuEl: null, _onDocClick: null, _unsubs: [], render: null, _renderGen: 0, _toolbarWired: false };
 
     const allPhaseKeys = () => Object.keys(stateManager.get('phases') || {});
     const methodPhaseKeys = () => getPhaseIds(stateManager.getProjectCycle());
@@ -792,7 +792,15 @@ const page = createPage({
     };
 
     // ── Toolbar wiring ───────────────────────────────────────────────────
+    // The header (add / export buttons) is rendered once by createPage and
+    // persists across every render() rebuild of the grid. Wire its listeners
+    // exactly once — re-wiring on each render() would stack duplicate click
+    // handlers on the same button, so the add-button would toggle the menu
+    // open then immediately shut again ("Kachel hinzufügen" without effect).
+    // Handlers read handle.grid / projectMeta lazily so they stay current.
     const wireToolbar = () => {
+      if (handle._toolbarWired) return;
+      handle._toolbarWired = true;
       const addBtn = containerEl.querySelector('[data-ref="add-btn"]');
       const toolbar = containerEl.querySelector('.dashboard-area__toolbar');
       addBtn?.addEventListener('click', (e) => {
@@ -800,9 +808,9 @@ const page = createPage({
         if (handle.addMenuEl) closeAddMenu();
         else openAddMenu(toolbar);
       });
-      const slug = (stateManager.get('projectMeta.name') || 'dashboard').replace(/[^a-zA-Z0-9äöüÄÖÜß-]/g, '_');
-      containerEl.querySelector('[data-ref="export-png-btn"]')?.addEventListener('click', () => handle.grid?.exportAllAsPng(`${slug}.png`));
-      containerEl.querySelector('[data-ref="export-svg-btn"]')?.addEventListener('click', () => handle.grid?.exportAllAsSvg(`${slug}.svg`));
+      const slug = () => (stateManager.get('projectMeta.name') || 'dashboard').replace(/[^a-zA-Z0-9äöüÄÖÜß-]/g, '_');
+      containerEl.querySelector('[data-ref="export-png-btn"]')?.addEventListener('click', () => handle.grid?.exportAllAsPng(`${slug()}.png`));
+      containerEl.querySelector('[data-ref="export-svg-btn"]')?.addEventListener('click', () => handle.grid?.exportAllAsSvg(`${slug()}.svg`));
     };
 
     // ── Full render ──────────────────────────────────────────────────────
