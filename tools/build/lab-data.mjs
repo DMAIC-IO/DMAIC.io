@@ -4,16 +4,23 @@
  * Inlines, from the SAME files the Lab uses at runtime:
  *  - INDEX   : algorithms/index.json
  *  - ALGOS   : {id: parsed algorithm JSON}        (docs / try-it metadata)
- *  - SOURCES : {file_path: raw engine file text}  (the "source" tab — displayed)
- *  - ENGINES : {file_path: () => import(file)}     (executed; bundled by esbuild)
+ *  - SOURCES  : {file_path: raw engine file text}  (the "source" tab — displayed)
+ *  - ENGINES  : {file_path: () => import(file)}     (executed; bundled by esbuild)
+ *  - FIXTURES : {id: parsed fixture JSON}           (the "validation" tab — reference values)
  *
  * SOURCES (displayed) and ENGINES (executed) come from one file in one build,
  * so displayed source == executed source by construction.
+ *
+ * FIXTURES is inlined for the same reason as INDEX/ALGOS: the tests/ directory
+ * is NOT shipped in frozen releases (see tools/freeze-version/freeze.mjs), so a
+ * runtime fetch('tests/fixtures/…') would 404 and leave the validation tab empty
+ * in deployed builds. Inlining keeps the Lab self-contained.
  */
-import { readFileSync, readdirSync, statSync } from 'node:fs';
+import { readFileSync, readdirSync, statSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 
 const ALGO_DIR = 'js/algorithm-lab/algorithms';
+const FIXTURE_DIR = 'tests/fixtures';
 
 function listJson(dir) {
   const out = [];
@@ -30,6 +37,7 @@ export async function collectLabData(appDir) {
   const index = JSON.parse(readFileSync(join(algoRoot, 'index.json'), 'utf8'));
   const algos = {};
   const sources = {};
+  const fixtures = {};
   for (const file of listJson(algoRoot)) {
     const algo = JSON.parse(readFileSync(file, 'utf8'));
     if (!algo.id) continue;
@@ -38,11 +46,19 @@ export async function collectLabData(appDir) {
     if (fp && !(fp in sources)) {
       sources[fp] = readFileSync(join(appDir, fp), 'utf8');
     }
+    // Fixtures mirror the runtime path used by LabRegistry.getFixtures:
+    // tests/fixtures/{category}/{id}.fixtures.json. Not every algo has one.
+    if (algo.category) {
+      const fxPath = join(appDir, FIXTURE_DIR, algo.category, `${algo.id}.fixtures.json`);
+      if (existsSync(fxPath)) {
+        fixtures[algo.id] = JSON.parse(readFileSync(fxPath, 'utf8'));
+      }
+    }
   }
-  return { index, algos, sources };
+  return { index, algos, sources, fixtures };
 }
 
-export function renderLabDataModule({ index, algos, sources }) {
+export function renderLabDataModule({ index, algos, sources, fixtures = {} }) {
   const enginesEntries = Object.keys(sources)
     .map((fp) => {
       // file_path is "js/engines/x.js"; relative to this generated file (js/algorithm-lab/).
@@ -57,5 +73,6 @@ export const SOURCES = ${JSON.stringify(sources)};
 export const ENGINES = {
 ${enginesEntries}
 };
+export const FIXTURES = ${JSON.stringify(fixtures)};
 `;
 }

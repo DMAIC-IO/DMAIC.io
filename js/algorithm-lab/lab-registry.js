@@ -2,7 +2,7 @@
  * Algorithm Lab — Registry
  * Loads and caches algorithm index, algorithm JSONs, and fixture files.
  */
-import { INDEX, ALGOS } from './lab-data.generated.js';
+import { INDEX, ALGOS, FIXTURES } from './lab-data.generated.js';
 
 export class LabRegistry {
   constructor() {
@@ -94,6 +94,13 @@ export class LabRegistry {
    */
   async getFixtures(algoId) {
     if (this._fixtures.has(algoId)) return this._fixtures.get(algoId);
+
+    // Prefer inlined fixtures; the tests/ directory is not shipped in frozen
+    // releases, so a fetch would 404 and leave the validation tab empty.
+    if (FIXTURES && FIXTURES[algoId]) {
+      this._fixtures.set(algoId, FIXTURES[algoId]);
+      return FIXTURES[algoId];
+    }
 
     const algo = await this.getAlgorithm(algoId);
     const path = `tests/fixtures/${algo.category}/${algoId}.fixtures.json`;

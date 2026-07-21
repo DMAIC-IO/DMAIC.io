@@ -16,9 +16,18 @@ test('collectLabData: SOURCES text equals the engine file on disk (identity)', a
   assert.equal(sources[fp], onDisk, 'SOURCES text is the exact engine file');
 });
 
-test('renderLabDataModule emits INDEX/ALGOS/SOURCES/ENGINES exports', () => {
-  const text = renderLabDataModule({ index: { categories: [] }, algos: {}, sources: {} });
-  for (const name of ['INDEX', 'ALGOS', 'SOURCES', 'ENGINES']) {
+test('renderLabDataModule emits INDEX/ALGOS/SOURCES/ENGINES/FIXTURES exports', () => {
+  const text = renderLabDataModule({ index: { categories: [] }, algos: {}, sources: {}, fixtures: {} });
+  for (const name of ['INDEX', 'ALGOS', 'SOURCES', 'ENGINES', 'FIXTURES']) {
     assert.match(text, new RegExp(`export const ${name}`));
   }
+});
+
+test('collectLabData inlines validation fixtures so the Lab needs no tests/ fetch', async () => {
+  const { fixtures } = await collectLabData(APP_DIR);
+  // The tests/ directory is not shipped in frozen releases; fixtures must be inline.
+  assert.ok(Object.keys(fixtures).length > 0, 'at least one algorithm has inlined fixtures');
+  const cpk = fixtures.cpk;
+  assert.ok(cpk && Array.isArray(cpk.test_cases) && cpk.test_cases.length > 0,
+    'cpk fixtures inlined with test_cases');
 });
