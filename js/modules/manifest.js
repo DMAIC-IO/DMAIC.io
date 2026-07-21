@@ -165,6 +165,7 @@ export default [
   {
     id: 'dmaic-calendar',
     phase: 'define',
+    singleton: true,
     allowedPhases: ['define'],
     load: () => import('./dmaic-calendar/dmaic-calendar.js'),
     cycles: {
