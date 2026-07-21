@@ -278,8 +278,10 @@ export function exportPmapPNG(steps, t, notify) {
         let nameX = inX + 20;
         if (io.inputType) {
           const itLabel = io.inputType === 'param' ? t('inputTypeParam') : t('inputTypeNoise');
-          const itFg = io.inputType === 'param' ? c.param : c.noise;
-          const itBg = io.inputType === 'param' ? c.paramBg : c.noiseBg;
+          // Classified inputs stay in the input identity color; the x/n
+          // letter carries the type, not a competing hue (Bug 015).
+          const itFg = c.inputColor;
+          const itBg = c.inputBg;
           ctx.font = FONT_LABEL;
           const itW = ctx.measureText(itLabel).width + 6;
           roundRect(ctx, inX + 18, iy + 4, itW, IO_IH - 8, 3);

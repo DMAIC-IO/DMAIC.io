@@ -182,20 +182,16 @@
   opacity: 1;
 }
 
-.pmap__input-type--param {
-  background: var(--color-pmap-param-bg);
-  color: var(--color-pmap-param);
-}
-
-.pmap__input-type--param:hover {
-  opacity: 0.8;
-}
-
+/* A classified input (parameter x / noise n) stays in the input
+   identity color — the x/n letter, not a competing hue, carries the
+   type. This keeps every input consistently green (Bug 015). */
+.pmap__input-type--param,
 .pmap__input-type--noise {
-  background: var(--color-pmap-noise-bg);
-  color: var(--color-pmap-noise);
+  background: var(--color-pmap-input-bg);
+  color: var(--color-pmap-input);
 }
 
+.pmap__input-type--param:hover,
 .pmap__input-type--noise:hover {
   opacity: 0.8;
 }
