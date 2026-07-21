@@ -31,6 +31,14 @@ export class StorageAdapter {
   /** Merge a partial update into a project's registry entry and persist. */
   updateProjectEntry(_id, _patch) { return NI('updateProjectEntry'); }
   async flush() { return NI('flush'); }
+  /**
+   * Optional synchronous best-effort flush for page-unload handlers. Adapters
+   * that back module state with an async store (e.g. IndexedDB) should commit
+   * pending writes synchronously here so data survives an immediate
+   * reload/restart. Default: no-op (callers fall back to {@link flush}).
+   * @returns {void}
+   */
+  flushSync() {}
 
   /**
    * Register a callback fired when the backing store changes remotely

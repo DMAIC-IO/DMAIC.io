@@ -24,6 +24,15 @@ const STORE = 'moduleStates';
 const KEY_SEP = '::';
 
 let _dbPromise = null;
+/**
+ * Synchronously-accessible handle to the opened database, or null until the
+ * open completes. Kept so that unload handlers can start a write transaction
+ * *synchronously* (see {@link idbBatchSync}); awaiting openDB() there would
+ * defer the transaction to a microtask that the browser may discard while the
+ * page is being torn down, silently dropping the write.
+ * @type {IDBDatabase | null}
+ */
+let _db = null;
 
 /**
  * Open (and lazily create) the D.Mike IndexedDB database.
@@ -39,7 +48,7 @@ export function openDB() {
         db.createObjectStore(STORE);
       }
     };
-    req.onsuccess = () => resolve(req.result);
+    req.onsuccess = () => { _db = req.result; resolve(req.result); };
     req.onerror = () => reject(req.error);
     req.onblocked = () => reject(new Error('IndexedDB open blocked'));
   });
@@ -156,6 +165,47 @@ export async function idbBatch(projectId, batch) {
     tx.onerror = () => reject(tx.error);
     tx.onabort = () => reject(tx.error);
   });
+}
+
+/**
+ * Best-effort SYNCHRONOUS variant of {@link idbBatch} for use inside page
+ * unload handlers (beforeunload / pagehide / visibilitychange→hidden).
+ *
+ * When the database is already open, the write transaction is created and its
+ * puts/deletes are issued *synchronously* within the caller's stack frame, so
+ * the browser schedules the commit as part of the unload rather than dropping
+ * a not-yet-created transaction. This is what makes freshly-entered data
+ * survive an immediate reload/restart that happens before the debounced async
+ * flush fires (Bug 012). If the connection is not open yet, this returns
+ * `false` so the caller can fall back to the async {@link idbBatch}.
+ *
+ * @param {string} projectId
+ * @param {{ puts?: Map<string, object> | Array<[string, object]>, deletes?: Iterable<string> }} batch
+ * @returns {boolean} true if the write was issued synchronously, false if the
+ *   DB was not open (nothing was written — fall back to idbBatch).
+ */
+export function idbBatchSync(projectId, batch) {
+  const puts = batch.puts instanceof Map
+    ? Array.from(batch.puts.entries())
+    : (Array.isArray(batch.puts) ? batch.puts : []);
+  const deletes = batch.deletes ? Array.from(batch.deletes) : [];
+
+  if (puts.length === 0 && deletes.length === 0) return true;
+  if (!_db) return false; // connection not ready — caller falls back to async
+
+  try {
+    const tx = _db.transaction(STORE, 'readwrite');
+    const store = tx.objectStore(STORE);
+    for (const [instanceId, state] of puts) {
+      store.put(state, _key(projectId, instanceId));
+    }
+    for (const instanceId of deletes) {
+      store.delete(_key(projectId, instanceId));
+    }
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 /**

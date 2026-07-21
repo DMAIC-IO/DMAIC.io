@@ -181,4 +181,33 @@ suite('LocalAdapter', () => {
     assertEqual(localStorage.getItem(`${projectPrefix}phases`) !== null, true); // migrated to namespace
     assertEqual(localStorage.getItem(`${projectPrefix}module_inst1`), JSON.stringify({ v: 1 })); // module_* swept
   });
+
+  // ─── Bug 012: synchronous unload flush ────────────────────────
+
+  test('flushSync persists pending module writes without the async flush (Bug 012)', async () => {
+    localStorage.removeItem(`${PREFIX}projects`);
+    const a = new LocalAdapter();
+    const id = a.createProject('SyncFlush', 'dmaic');
+    // Ensure the IDB connection is open, as it always is at runtime after load().
+    await a.loadProjectDoc(id);
+    a.putModule(id, 'inst-sync', { value: 99 });
+    // Simulate the page-unload path: SYNCHRONOUS flush only — no async flush().
+    a.flushSync();
+    // The queue must have been drained (the write was issued synchronously).
+    assertEqual(a._pending.get(id), undefined, 'flushSync should drain the pending queue');
+    const doc = await a.loadProjectDoc(id);
+    assertDeepEqual(doc.moduleStates['inst-sync'], { value: 99 });
+  });
+
+  test('flushSync also commits deletes (Bug 012)', async () => {
+    localStorage.removeItem(`${PREFIX}projects`);
+    const a = new LocalAdapter();
+    const id = a.createProject('SyncDel', 'dmaic');
+    a.putModule(id, 'gone', { keep: false });
+    await a.flush();
+    a.removeModule(id, 'gone');
+    a.flushSync();
+    const doc = await a.loadProjectDoc(id);
+    assertEqual(doc.moduleStates['gone'], undefined);
+  });
 });

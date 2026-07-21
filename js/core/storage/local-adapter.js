@@ -2,7 +2,7 @@ import { StorageAdapter } from './storage-adapter.js';
 import { VERSION } from '../version.js';
 import { stripPatch } from '../version-utils.js';
 import { DEFAULT_CYCLE, getCycle } from '../cycles/cycles.js';
-import { idbGetAllForProject, idbBatch, idbDeleteAllForProject } from '../idb-store.js';
+import { idbGetAllForProject, idbBatch, idbBatchSync, idbDeleteAllForProject } from '../idb-store.js';
 
 const genId = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
 
@@ -163,6 +163,36 @@ export class LocalAdapter extends StorageAdapter {
         const rd = this._pendingDel.get(id);
         for (const k of deletes) if (!rp.has(k)) rd.add(k);
       }
+    }
+  }
+
+  /**
+   * Synchronous best-effort flush for page-unload handlers. Drains the pending
+   * queues by issuing their IDB writes *synchronously* (see idbBatchSync) so a
+   * reload/restart that fires beforeunload but tears the page down before an
+   * awaited/debounced flush can run still commits the data (Bug 012). Any queue
+   * whose write could not be issued synchronously (DB not open yet) is left
+   * intact so the normal async flush path can still pick it up.
+   * @returns {void}
+   */
+  flushSync() {
+    const ids = new Set([...this._pending.keys(), ...this._pendingDel.keys()]);
+    for (const id of ids) {
+      const puts = this._pending.get(id) || new Map();
+      const deletes = this._pendingDel.get(id) || new Set();
+      if (puts.size === 0 && deletes.size === 0) {
+        this._pending.delete(id);
+        this._pendingDel.delete(id);
+        continue;
+      }
+      let issued = false;
+      try { issued = idbBatchSync(id, { puts, deletes }); }
+      catch (err) { console.error('[LocalAdapter] IDB sync flush failed', id, err); issued = false; }
+      if (issued) {
+        this._pending.delete(id);
+        this._pendingDel.delete(id);
+      }
+      // else: keep the queue so the async flush() can retry.
     }
   }
 

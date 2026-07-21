@@ -833,8 +833,17 @@ export class StateManager {
    */
   _installUnloadFlush() {
     if (typeof window === 'undefined') return;
-    // Fire-and-forget. The adapter queues its transaction synchronously.
-    const flush = () => { this._adapter.flush(); };
+    // On unload we must commit pending module-state writes *synchronously*.
+    // The async flush() defers its IDB transaction to a microtask (it awaits
+    // openDB()), which the browser can discard while tearing the page down —
+    // so data entered right before an immediate reload/restart is silently
+    // lost (Bug 012). flushSync() issues the transaction in this stack frame
+    // using the already-open connection; we fall back to the async flush when
+    // the adapter has no sync path or the connection was not yet open.
+    const flush = () => {
+      if (typeof this._adapter.flushSync === 'function') this._adapter.flushSync();
+      else this._adapter.flush();
+    };
     window.addEventListener('visibilitychange', () => {
       if (document.visibilityState === 'hidden') flush();
     });

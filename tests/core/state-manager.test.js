@@ -5,6 +5,7 @@ import { suite, test, assertEqual, assertDeepEqual, assertTrue } from '../test-u
 import { EventBus } from '../../js/core/event-bus.js';
 import { StateManager } from '../../js/core/state-manager.js';
 import { StorageAdapter } from '../../js/core/storage/storage-adapter.js';
+import { LocalAdapter } from '../../js/core/storage/local-adapter.js';
 import { ModuleRegistry } from '../../js/core/module-registry.js';
 import { VERSION } from '../../js/core/version.js';
 import { stripPatch } from '../../js/core/version-utils.js';
@@ -386,5 +387,21 @@ suite('StateManager remote sync', () => {
     await Promise.resolve(); await Promise.resolve();
 
     assertEqual(event.metaChanged, true);
+  });
+
+  // ─── Bug 012: module data survives immediate reload ───────────
+
+  test('module state survives an unload flush before the async debounce (Bug 012)', async () => {
+    localStorage.removeItem(`${LS_PREFIX}projects`);
+    const adapter = new LocalAdapter();
+    const sm = new StateManager(new EventBus(), adapter);
+    await sm.load();                              // opens IDB, activates a project
+    sm.setModuleState('inst-x', { hello: 'world' }); // queued; 500ms debounce NOT fired
+    // Model the page unload: the synchronous flush the unload handlers now use.
+    adapter.flushSync();
+    // Model the reload/restart: a fresh manager reading the same storage.
+    const sm2 = new StateManager(new EventBus(), new LocalAdapter());
+    await sm2.load();
+    assertDeepEqual(sm2.getModuleState('inst-x'), { hello: 'world' });
   });
 });
