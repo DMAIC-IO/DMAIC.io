@@ -418,7 +418,10 @@ export default createModule({
           if (n.borderStyle) div.style.borderStyle = n.borderStyle;
           if (n.borderWidth) div.style.borderWidth = `${n.borderWidth  }px`;
 
-          div.append(
+          // Native ParentNode.append() coerces a bare null child into a "null"
+          // text node — so an empty subtitle (n.desc) must be filtered out here,
+          // not passed as null. filter(Boolean) drops the absent-subtitle slot.
+          div.append(...[
             h('div', { class: 'pc__org-dot-t' }),
             h('div', { class: 'pc__org-node-title' }, n.title),
             n.desc ? h('div', { class: 'pc__org-node-desc' }, n.desc) : null,
@@ -436,7 +439,7 @@ export default createModule({
                 icon('trash', { cls: 'pc__org-node-ico' })),
             ),
             h('div', { class: 'pc__org-dot-b' }),
-          );
+          ].filter(Boolean));
 
           div.addEventListener('pointerdown', (e) => {
             if (e.target.closest('.pc__org-node-btn')) return;
