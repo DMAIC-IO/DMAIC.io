@@ -221,6 +221,36 @@ export default createModule({
         this._scheduleBrackets();
       },
 
+      // ── Drag markers ──────────────────────────────────────────
+      /**
+       * Strip every transient drag marker (--dragging / --drag-over) after a
+       * reorder or drag-end. Two reasons the per-handler `dragEnd` clears are
+       * not enough:
+       *   1. They query `this.$el`, which is NOT the live rendered `.pmap` root
+       *      for this createModule/Alpine instance — so `this.$el.querySelectorAll`
+       *      finds none of the marked nodes and removes nothing.
+       *   2. A drag-end that reorders leaves markers stuck because they were set
+       *      imperatively on keyed nodes that Alpine then moves, and each dragEnd
+       *      only clears its own marker type (a step-row marker picked up while
+       *      dragging an IO item is never swept).
+       * A single document-scoped sweep is correct: only one HTML5 drag can be
+       * active at a time (one pointer), so exactly the dragged instance's
+       * transient markers exist. The double rAF lets the DnD sequence and Alpine's
+       * keyed reorder settle first; a microtask ($nextTick) fires too early.
+       */
+      _clearDragMarkers() {
+        const sel = '.pmap__step-row--dragging, .pmap__step-row--drag-over, '
+          + '.pmap__io-item--dragging, .pmap__io-item--drag-over, '
+          + '.pmap__substep-item--dragging, .pmap__substep-item--drag-over';
+        requestAnimationFrame(() => requestAnimationFrame(() => {
+          document.querySelectorAll(sel).forEach((el) => el.classList.remove(
+            'pmap__step-row--dragging', 'pmap__step-row--drag-over',
+            'pmap__io-item--dragging', 'pmap__io-item--drag-over',
+            'pmap__substep-item--dragging', 'pmap__substep-item--drag-over',
+          ));
+        }));
+      },
+
       // ── Step drag (handle = step number) ──────────────────────
       armStepDrag(stepId, event) {
         const row = event.target.closest('.pmap__step-row');
@@ -235,8 +265,7 @@ export default createModule({
       stepDragEnd(event) {
         const row = event.target.closest('.pmap__step-row');
         row?.removeAttribute('draggable');
-        this.$el.querySelectorAll('.pmap__step-row').forEach((r) =>
-          r.classList.remove('pmap__step-row--dragging', 'pmap__step-row--drag-over'));
+        this._clearDragMarkers();
         this._draggedId = null;
       },
       stepDragOver(stepId, event) {
@@ -257,6 +286,7 @@ export default createModule({
         if (!this._draggedId || this._draggedId === stepId) return;
         this.model.moveStep(this._draggedId, stepId);
         this._draggedId = null;
+        this._clearDragMarkers();
         this._scheduleBrackets();
       },
 
@@ -277,8 +307,7 @@ export default createModule({
       ioDragEnd(event) {
         const item = event.target.closest('.pmap__io-item');
         item?.removeAttribute('draggable');
-        this.$el.querySelectorAll('.pmap__io-item').forEach((i) =>
-          i.classList.remove('pmap__io-item--dragging', 'pmap__io-item--drag-over'));
+        this._clearDragMarkers();
         this._draggedIOId = null;
         this._draggedIOStepId = null;
         this._draggedIOType = null;
@@ -308,6 +337,7 @@ export default createModule({
         this._draggedIOId = null;
         this._draggedIOStepId = null;
         this._draggedIOType = null;
+        this._clearDragMarkers();
         this._scheduleBrackets();
       },
 
@@ -327,8 +357,7 @@ export default createModule({
       subDragEnd(event) {
         const item = event.target.closest('.pmap__substep-item');
         item?.removeAttribute('draggable');
-        this.$el.querySelectorAll('.pmap__substep-item').forEach((i) =>
-          i.classList.remove('pmap__substep-item--dragging', 'pmap__substep-item--drag-over'));
+        this._clearDragMarkers();
         this._draggedSubId = null;
         this._draggedParentId = null;
       },
@@ -354,6 +383,7 @@ export default createModule({
         this.model.moveSubstep(parentId, this._draggedSubId, subId);
         this._draggedSubId = null;
         this._draggedParentId = null;
+        this._clearDragMarkers();
         this._scheduleBrackets();
       },
 
