@@ -447,6 +447,12 @@
   background: var(--color-bg-secondary);
 }
 
+/* Preview highlight while aufziehen (drag-to-create) a multi-slot span */
+.module-calendar__week-slot--selecting,
+.module-calendar__week-slot--selecting:hover {
+  background: var(--color-accent-light);
+}
+
 /* Now line */
 .module-calendar__now-line {
   position: absolute;

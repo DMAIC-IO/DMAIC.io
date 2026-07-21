@@ -133,7 +133,10 @@
             <template x-for="(d, ci) in weekDates()" :key="'col' + dkd(d)">
               <div class="module-calendar__week-day-col" :data-col-idx="ci">
                 <template x-for="h in hoursList()" :key="'sl' + h">
-                  <div class="module-calendar__week-slot" @dblclick="onSlotClick(d, h)"></div>
+                  <div class="module-calendar__week-slot" :class="slotSelClass(d, h)"
+                    @mousedown="slotDragStart(d, h, $event)"
+                    @mouseenter="slotDragEnter(d, h)"
+                    @dblclick="onSlotClick(d, h)"></div>
                 </template>
                 <template x-if="showNowLine(d)">
                   <div class="module-calendar__now-line" :style="nowLineStyle()">

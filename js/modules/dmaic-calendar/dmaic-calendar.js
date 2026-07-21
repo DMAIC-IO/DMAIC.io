@@ -299,6 +299,49 @@ export default createModule({
         this.openNew(dkd(d), `${fmt2(h)}:00`);
       },
 
+      // ─── Week slot drag-to-create (Outlook-Stil) ──────────
+      // Transient selection while the user drags across hour slots to draw a
+      // new event span. `null` → not dragging. Never persisted (UI-only state).
+      slotSel: null,
+      // True once the drag has crossed to a different hour slot, so a plain
+      // (non-moving) mousedown/mouseup stays a click and leaves the double-click
+      // "single-slot" path (Bug 003) untouched.
+      _slotSpanMoved: false,
+      slotSelClass(d, h) {
+        const sel = this.slotSel;
+        if (!sel || dkd(d) !== sel.day) return '';
+        const lo = Math.min(sel.startH, sel.endH);
+        const hi = Math.max(sel.startH, sel.endH);
+        return (h >= lo && h <= hi) ? 'module-calendar__week-slot--selecting' : '';
+      },
+      slotDragStart(d, h, e) {
+        // Ignore anything but the primary button; never start a span from a
+        // click that lands on an existing event block.
+        if (e.button !== 0) return;
+        e.preventDefault();
+        const day = dkd(d);
+        this.slotSel = { day, startH: h, endH: h };
+        this._slotSpanMoved = false;
+        const onUp = () => {
+          document.removeEventListener('mouseup', onUp);
+          const sel = this.slotSel;
+          this.slotSel = null;
+          // Plain click (no drag across slots) → leave it to @dblclick.
+          if (!sel || !this._slotSpanMoved) return;
+          const lo = Math.min(sel.startH, sel.endH);
+          const hi = Math.max(sel.startH, sel.endH);
+          // Span is inclusive of the last slot → end at (hi + 1):00.
+          this.openNew(sel.day, `${fmt2(lo)}:00`, `${fmt2(hi + 1)}:00`);
+        };
+        document.addEventListener('mouseup', onUp);
+      },
+      slotDragEnter(d, h) {
+        const sel = this.slotSel;
+        if (!sel || dkd(d) !== sel.day) return;
+        if (h !== sel.endH) this._slotSpanMoved = true;
+        sel.endH = h;
+      },
+
       // ─── Week drag & resize ───────────────────────────────
       _didDrag: false,
       // Transient live-duration label shown on the event block while it is being
@@ -429,9 +472,16 @@ export default createModule({
         this.modalOpen = false;
         this.editingId = null;
       },
-      openNew(ds, t) {
+      openNew(ds, t, endT) {
         this.editingId = null;
-        this.form = { title: '', date: ds || '', time: t || '09:00', duration: 60, desc: '', phase: 'define' };
+        // When a drag span supplies an end time, derive the duration from it;
+        // otherwise fall back to the default 60-minute slot.
+        let duration = 60;
+        if (t && endT) {
+          const span = ttm(endT) - ttm(t);
+          if (span >= MIN_DUR) duration = span;
+        }
+        this.form = { title: '', date: ds || '', time: t || '09:00', duration, desc: '', phase: 'define' };
         this.openModal();
       },
       openEdit(id) {
