@@ -95,7 +95,7 @@
         <div :class="headClass(i)" x-text="d"></div>
       </template>
       <template x-for="(cell, ci) in monthCells()" :key="'c' + ci">
-        <div :class="dayClass(cell)" @click="onDayClick(cell)">
+        <div :class="dayClass(cell)" @dblclick="onDayClick(cell)">
           <div class="module-calendar__day-num" x-text="cell.num"></div>
           <template x-if="cell.events.length > 0">
             <div class="module-calendar__day-events">
@@ -133,7 +133,7 @@
             <template x-for="(d, ci) in weekDates()" :key="'col' + dkd(d)">
               <div class="module-calendar__week-day-col" :data-col-idx="ci">
                 <template x-for="h in hoursList()" :key="'sl' + h">
-                  <div class="module-calendar__week-slot" @click="onSlotClick(d, h)"></div>
+                  <div class="module-calendar__week-slot" @dblclick="onSlotClick(d, h)"></div>
                 </template>
                 <template x-if="showNowLine(d)">
                   <div class="module-calendar__now-line" :style="nowLineStyle()">
