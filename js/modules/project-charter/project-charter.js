@@ -27,6 +27,8 @@ import { resolveDateOffset } from '../../core/date-offset.js';
 const NW = 220;   // node width (px)
 const HG = 44;    // horizontal gap between sibling subtrees
 const VG = 36;    // vertical gap between parent and children
+const ORG_PAD = 40;   // padding around content inside the org window (px)
+const ORG_MIN_H = 420; // minimum / base height of the org window (px)
 const UNDO_MAX = 50;
 
 /** Map line style names to SVG stroke-dasharray values */
@@ -529,7 +531,7 @@ export default createModule({
         this._orgLayoutAll();
         this._orgPosDom();
         this._orgDrawLines();
-        this._orgApplyTransform();
+        this._orgUpdateWrapHeight();
         this._orgApplyStyle();
         if (!this._panZoomBound) { this._orgBindPanZoom(); this._panZoomBound = true; }
       },
@@ -542,6 +544,7 @@ export default createModule({
           this._orgLayoutAll();
           this._orgPosDom();
           this._orgDrawLines();
+          this._orgUpdateWrapHeight();
         });
       },
 
@@ -578,7 +581,7 @@ export default createModule({
           this._orgZoom = Math.min(3, Math.max(0.1, this._orgZoom * (e.deltaY > 0 ? 0.92 : 1.08)));
           this._orgPan.x = mx - (mx - this._orgPan.x) * (this._orgZoom / oz);
           this._orgPan.y = my - (my - this._orgPan.y) * (this._orgZoom / oz);
-          this._orgApplyTransform();
+          this._orgUpdateWrapHeight();
         }, { passive: false });
       },
 
@@ -590,7 +593,7 @@ export default createModule({
         this._orgZoom = Math.min(3, this._orgZoom * 1.2);
         this._orgPan.x = cx - (cx - this._orgPan.x) * (this._orgZoom / oz);
         this._orgPan.y = cy - (cy - this._orgPan.y) * (this._orgZoom / oz);
-        this._orgApplyTransform();
+        this._orgUpdateWrapHeight();
       },
 
       _orgFit() {
@@ -599,22 +602,47 @@ export default createModule({
         const visible = this.model.orgNodes.filter(n => !n._h);
         if (!visible.length) return;
 
-        let x1 = Infinity, y1 = Infinity, x2 = -Infinity, y2 = -Infinity;
+        let x1 = Infinity, x2 = -Infinity;
+        visible.forEach(n => {
+          x1 = Math.min(x1, n._x);
+          x2 = Math.max(x2, n._x + NW);
+        });
+        const tw = x2 - x1;
+        const aw = wrap.clientWidth - ORG_PAD * 2;
+        // Fit horizontally only — never scale down to squeeze the height into a
+        // fixed box. The window grows vertically to fit the content instead
+        // (see _orgUpdateWrapHeight), so the vertical axis is never a
+        // constraint and nothing is clipped. Cap at 1 to keep natural size.
+        this._orgZoom = Math.max(0.1, Math.min(1, aw / tw));
+        this._orgPan.x = (wrap.clientWidth - tw * this._orgZoom) / 2 - x1 * this._orgZoom;
+        this._orgUpdateWrapHeight();
+      },
+
+      /**
+       * Size the org-chart window to its laid-out content so it grows
+       * vertically instead of clipping at a fixed height. The vertical offset
+       * is pinned to the top padding (content is always fully visible on the
+       * vertical axis); horizontal pan/zoom stay user-controlled. Called after
+       * every layout change (add / remove / collapse / zoom / fit).
+       */
+      _orgUpdateWrapHeight() {
+        const wrap = this.$root.querySelector('[data-ref="orgWrap"]');
+        if (!wrap) return;
+        const visible = this.model.orgNodes.filter(n => !n._h);
+        if (!visible.length) {
+          wrap.style.height = '';   // empty → fall back to CSS min-height
+          this._orgApplyTransform();
+          return;
+        }
+        let y1 = Infinity, y2 = -Infinity;
         visible.forEach(n => {
           const nodeH = this._orgNodeHeight(n.id);
-          x1 = Math.min(x1, n._x);
           y1 = Math.min(y1, n._y);
-          x2 = Math.max(x2, n._x + NW);
           y2 = Math.max(y2, n._y + nodeH);
         });
-        const tw = x2 - x1, th = y2 - y1;
-        const pad = 40;
-        const aw = wrap.clientWidth - pad * 2;
-        const ah = wrap.clientHeight - pad * 2;
-        this._orgZoom = Math.min(1.5, Math.min(aw / tw, ah / th)) * 0.8;
-        this._orgZoom = Math.max(0.1, this._orgZoom);
-        this._orgPan.x = (wrap.clientWidth - tw * this._orgZoom) / 2 - x1 * this._orgZoom;
-        this._orgPan.y = (wrap.clientHeight - th * this._orgZoom) / 2 - y1 * this._orgZoom;
+        const contentH = (y2 - y1) * this._orgZoom;
+        wrap.style.height = `${Math.max(ORG_MIN_H, contentH + ORG_PAD * 2)}px`;
+        this._orgPan.y = ORG_PAD - y1 * this._orgZoom;
         this._orgApplyTransform();
       },
 

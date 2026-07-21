@@ -239,8 +239,9 @@ tbody .pc__col-nr:active { cursor: grabbing; }
   position: relative;
   flex: 1;
   min-width: 0;
-  height: 420px;
-  min-height: 300px;
+  /* Base height; JS grows this to fit the org-chart content (see
+     _orgUpdateWrapHeight) so deep charts are not clipped. */
+  min-height: 420px;
   overflow: hidden;
   cursor: grab;
   border: var(--border-width) solid var(--color-border-secondary);
