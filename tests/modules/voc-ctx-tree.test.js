@@ -8,7 +8,7 @@
  * and hasContent().
  */
 
-import { suite, test, assertEqual } from '../test-utils.js';
+import { suite, test, assertEqual, assert } from '../test-utils.js';
 import { State, DEFAULT_COLORS } from '../../js/modules/voc-ctx-tree/voc-ctx-tree-model.js';
 
 suite('VoC-CTx Model — defaults & serialization', () => {
@@ -369,5 +369,58 @@ suite('VoC-CTx Model — hasContent & active', () => {
     s.addVoc('B');
     s.setActiveVoc(a);
     assertEqual(s.activeVoc.text, 'A');
+  });
+});
+
+suite('VoC-CTx Model — default node colours are distinguishable', () => {
+  // Parse "rgba(r,g,b,a)" → [r, g, b]
+  const rgb = (str) => str.match(/[\d.]+/g).slice(0, 3).map(Number);
+  // HSL hue in degrees (0..360) for an [r, g, b] triple (0..255)
+  const hue = ([r, g, b]) => {
+    r /= 255; g /= 255; b /= 255;
+    const mx = Math.max(r, g, b);
+    const mn = Math.min(r, g, b);
+    const d = mx - mn;
+    if (d === 0) return 0;
+    let h;
+    if (mx === r) h = 60 * (((g - b) / d) % 6);
+    else if (mx === g) h = 60 * ((b - r) / d + 2);
+    else h = 60 * ((r - g) / d + 4);
+    return h < 0 ? h + 360 : h;
+  };
+  // Shortest angular distance between two hues (0..180)
+  const hueDist = (a, b) => {
+    const raw = Math.abs(a - b) % 360;
+    return Math.min(raw, 360 - raw);
+  };
+
+  test('CTD and Requirement defaults differ clearly in hue (≥ 30°)', () => {
+    assert(
+      DEFAULT_COLORS.ctd !== DEFAULT_COLORS.req,
+      'CTD and requirement default colours must not be identical'
+    );
+    const dist = hueDist(hue(rgb(DEFAULT_COLORS.ctd)), hue(rgb(DEFAULT_COLORS.req)));
+    assert(
+      dist >= 30,
+      `CTD (${DEFAULT_COLORS.ctd}) and Requirement (${DEFAULT_COLORS.req}) hues `
+        + `only ${dist.toFixed(1)}° apart — must be ≥ 30° to be distinguishable`
+    );
+  });
+
+  test('all default node colours are pairwise distinguishable (≥ 25° hue)', () => {
+    const keys = Object.keys(DEFAULT_COLORS);
+    const hues = Object.fromEntries(keys.map((k) => [k, hue(rgb(DEFAULT_COLORS[k]))]));
+    for (let i = 0; i < keys.length; i++) {
+      for (let j = i + 1; j < keys.length; j++) {
+        const a = keys[i];
+        const b = keys[j];
+        const dist = hueDist(hues[a], hues[b]);
+        assert(
+          dist >= 25,
+          `${a} (${DEFAULT_COLORS[a]}) and ${b} (${DEFAULT_COLORS[b]}) hues `
+            + `only ${dist.toFixed(1)}° apart — must be ≥ 25°`
+        );
+      }
+    }
   });
 });

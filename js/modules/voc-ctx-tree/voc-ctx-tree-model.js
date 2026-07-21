@@ -23,7 +23,7 @@ export const DEFAULT_COLORS = {
   ctq:  'rgba(39,174,96,1)',
   ctd:  'rgba(41,128,185,1)',
   ctc:  'rgba(231,76,139,1)',
-  req:  'rgba(52,152,219,1)',
+  req:  'rgba(94,88,216,1)',
 };
 
 /** Build a fresh default styles object. */
