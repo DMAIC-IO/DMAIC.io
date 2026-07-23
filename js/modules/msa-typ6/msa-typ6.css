@@ -125,17 +125,12 @@
   flex-wrap: wrap;
 }
 
-/* ─── Interpretation (Card-Look mit farbigem left-border) ───── */
-.module-msa-typ6__interpretation {
-  max-width: 70ch;
-  padding: var(--spacing-md);
-  margin: 0 0 var(--spacing-md);
+/* Interpretations-Slot innerhalb .dmike-infobox — bricht als volle Zeile
+   um; Farbcodierung + Rahmen kommen bereits vom umschließenden Infobox
+   (verdictClass am Elternknoten, siehe msa-typ6.html). */
+.dmike-infobox .module-msa-typ6__interpretation {
+  flex-basis: 100%;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
   line-height: 1.5;
-  color: var(--color-text-primary);
-  background: var(--color-bg-secondary);
-  border-radius: var(--border-radius);
-  border-left: 4px solid transparent;
 }
-.module-msa-typ6__interpretation.dmike-kpi--good { border-left-color: var(--color-success, #2ea043); }
-.module-msa-typ6__interpretation.dmike-kpi--warn { border-left-color: var(--color-warning, #d29922); }
-.module-msa-typ6__interpretation.dmike-kpi--bad  { border-left-color: var(--color-error,   #da3633); }

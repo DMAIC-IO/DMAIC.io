@@ -166,10 +166,20 @@
     <template x-if="_lastResult">
       <div>
         <!-- Verdikt-Header: generisches .dmike-infobox aus css/components.css.
-             KEIN Punkt vorne per Design-Regel (siehe components.css). -->
+             KEIN Punkt vorne per Design-Regel (siehe components.css).
+             Der `.module-msa-typ6__interpretation`-Slot ist typ6-spezifisch
+             (volle Zeile, flex-basis: 100 %) und trägt den narrativen
+             Interpretationstext. `interpretation.textKey` kommt aus der
+             Engine bereits voll qualifiziert; der prefix-aware `t()`-Helfer
+             löst über den Fallback-Zweig korrekt auf. Sprachumschaltung
+             braucht keinen eigenen Handler: `onLanguageChange()` in
+             template-module.js zerstört + re-initialisiert den Alpine-Baum
+             der Instanz komplett. -->
         <div class="dmike-infobox" :class="_verdictKpiClass(_lastResult.verdict.level)">
           <span class="dmike-infobox__label" x-text="t('verdict.' + _lastResult.verdict.level)"></span>
           <span class="dmike-infobox__detail" x-text="t('driver.' + _lastResult.verdict.driver)"></span>
+          <span class="module-msa-typ6__interpretation"
+                x-text="t(_lastResult.interpretation.textKey, _lastResult.interpretation.params)"></span>
         </div>
 
         <!-- Warnungen aus meta.warnings — je Warnung ein .dmike-infobox--warn. -->
@@ -267,21 +277,6 @@
           </div>
         </div>
 
-        <!-- Interpretation (Task 13): `interpretation.textKey` kommt aus der
-             Engine bereits voll qualifiziert (`modules.msa-typ6.interpretation.
-             ${level}.${driver}`, siehe msa-typ6-engine.js). Der `t()`-Helfer
-             ist prefix-aware (i18n.tf(), siehe template-module.js): er
-             versucht zuerst `modules.msa-typ6.<key>` und fällt bei Miss auf
-             den bloßen `<key>` zurück — ein bereits voll qualifizierter Key
-             löst also über den Fallback-Zweig korrekt auf, kein
-             `.replace()`-Strippen des Prefixes nötig. Sprachumschaltung
-             braucht keinen eigenen Handler: `onLanguageChange()` in
-             template-module.js zerstört + re-initialisiert den Alpine-Baum
-             der Instanz komplett (siehe msa-typ6.js Kommentar), wodurch auch
-             dieser Absatz mit der neuen Sprache neu gerendert wird. -->
-        <p class="module-msa-typ6__interpretation"
-           :class="_verdictKpiClass(_lastResult.verdict.level)"
-           x-text="t(_lastResult.interpretation.textKey, _lastResult.interpretation.params)"></p>
       </div>
     </template>
     <template x-if="!_lastResult">
