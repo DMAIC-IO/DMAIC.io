@@ -563,6 +563,10 @@ const mod = createModule({
           if (gen !== this._renderGen) return;
           const target = host.querySelector(`[data-ref="heatmap-${i}"]`);
           if (!target) continue;
+          // Belt-and-braces: kill any residual chart cards inside the body
+          // (defensive against races between concurrent runAnalysis() calls
+          // where a stale generation slipped a card in before the guard fired).
+          target.replaceChildren();
           const chart = await module._context.chartManager.create(target, 'heatmap', {
             xCategories: items[i].cols,
             yCategories: items[i].rows,
@@ -571,6 +575,8 @@ const mod = createModule({
             valueDecimals: 0,
             valueLabel: 'n',
             showCellLabels: true,
+            squareCells: true,
+            plotMargins: { top: 6, right: 10, bottom: 22, left: 42 },
             colorScheme: 'viridis',
           });
           if (gen !== this._renderGen) { module._context.chartManager.destroy(chart); return; }

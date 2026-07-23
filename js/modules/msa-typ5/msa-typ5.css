@@ -137,24 +137,31 @@
 }
 .msa-typ5__heatmap-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-  gap: var(--spacing-md);
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: var(--spacing-sm);
   margin-bottom: var(--spacing-md);
 }
 .msa-typ5__heatmap-cell {
   background: var(--color-background-primary);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md, 6px);
-  padding: var(--spacing-sm);
+  padding: var(--spacing-xs);
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-xs);
+  gap: 2px;
 }
 .msa-typ5__heatmap-title {
-  font-size: 0.9em;
+  font-size: 0.85em;
   color: var(--color-text-secondary);
   text-align: center;
 }
 .msa-typ5__heatmap-body {
-  height: 220px;
+  /* Compact fixed height — squareCells:true inside the plot centers a
+     square grid in whatever width the grid column gives us; the cell
+     stays a predictable size regardless of viewport width so wide viewports
+     just pack more heatmaps per row instead of stretching each one.
+     overflow:hidden clips any residual chart card that a stale render
+     might slip in — grid rows below the cell stay clean. */
+  height: 140px;
+  overflow: hidden;
 }
