@@ -279,8 +279,13 @@ export async function runBuild(appDir = APP_DIR, { check = false } = {}) {
   //    index.html is NOT a committed artifact; it is never added to changed[].
   const jsHref  = `js/app.min.js?v=${hash8(jsCodeForHash)}`;
   const cssHref = `css/app.min.css?v=${hash8(cssCodeForHash)}`;
+  const deJson  = readFileSync(join(appDir, 'i18n', 'de.json'), 'utf8');
+  const enJson  = readFileSync(join(appDir, 'i18n', 'en.json'), 'utf8');
+  const i18nHash = hash8(deJson + enJson);
   html = rewriteBlock(html, 'STYLES',  buildStylesBlock(cssHref));
   html = rewriteBlock(html, 'SCRIPTS', buildScriptsBlock(jsHref));
+  html = rewriteBlock(html, 'I18N_VERSION',
+    `  <meta name="i18n-version" content="${i18nHash}">`);
   writeFileSync(indexPath, html);
 
   return { changed };
