@@ -2002,7 +2002,9 @@
       "legendLow": "Low",
       "legendHigh": "High",
       "weight": "Customer Importance",
-      "legendInfo": "Σ = weighted sum of row / column"
+      "legendInfo": "Σ = weighted sum of row / column",
+      "paretoTitle": "Input Prioritization",
+      "paretoYLabel": "Σ Row"
     },
     "correlation": {
       "name": "Correlation Analysis",

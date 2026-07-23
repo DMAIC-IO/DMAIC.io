@@ -18,7 +18,24 @@
 /* ===== Body override — don't stretch to fill viewport ===== */
 .ce-matrix .module-container__body {
   flex: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-lg);
+  align-items: flex-start;
 }
+
+/* Matrix stays at intrinsic width, Pareto grows into remaining space. */
+.ce-matrix__wrap { flex: 0 0 auto; }
+
+.ce-matrix__pareto {
+  flex: 1 1 380px;
+  min-width: 340px;
+  height: 360px;
+  align-self: stretch;
+}
+
+/* Legend spans full row underneath both panels. */
+.ce-matrix__legend { flex-basis: 100%; }
 
 /* ===== Matrix Wrapper ===== */
 .ce-matrix__wrap {
@@ -111,12 +128,11 @@
 }
 
 /* ===== Output headers (vertical) =====
-   height acts as min-height on table cells — long output names grow the
-   header row instead of being clipped. The content wrapper has no fixed
-   height so it uses its intrinsic (rotated) size. */
+   No fixed height — cell grows with its (rotated) content, so short output
+   names show a compact row and long ones expand it. padding-bottom reserves
+   space for the delete button anchored at the cell's bottom. */
 .ce-matrix__output-header {
   white-space: nowrap;
-  height: 140px;
   vertical-align: bottom;
   position: relative;
   padding-bottom: 28px !important;
@@ -134,11 +150,12 @@
 .ce-matrix__output-name {
   border: none;
   background: transparent;
-  color: var(--color-text-secondary);
+  color: var(--color-text-primary);
   font-family: var(--font-family);
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-medium);
   width: auto;
+  field-sizing: content;
   box-sizing: border-box;
   outline: none;
   padding: 2px 4px;
@@ -254,7 +271,6 @@
 
 /* ===== Vertical total label (Σ Zeile in header) ===== */
 .ce-matrix__total-label--vertical {
-  height: 140px;
   vertical-align: bottom;
   padding-bottom: 28px !important;
 }

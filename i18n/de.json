@@ -2002,7 +2002,9 @@
       "legendLow": "Niedrig",
       "legendHigh": "Hoch",
       "weight": "Wichtigkeit für Kunden",
-      "legendInfo": "Σ = gewichtete Summe der Zeile / Spalte"
+      "legendInfo": "Σ = gewichtete Summe der Zeile / Spalte",
+      "paretoTitle": "Priorisierung der Inputs",
+      "paretoYLabel": "Σ Zeile"
     },
     "correlation": {
       "name": "Korrelationsanalyse",
