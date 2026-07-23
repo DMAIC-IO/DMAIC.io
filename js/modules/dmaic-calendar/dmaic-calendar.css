@@ -436,27 +436,20 @@
   border-left: var(--border-width) solid var(--color-border-primary);
 }
 
+/* Halbstunden-Slot (30-min-Ziehraster). Zwei Slots ergeben eine Stunde und
+   bleiben damit bündig zur stündlichen Zeitachse (56px-Spalte, 60px/Stunde).
+   Standard-Trennlinie ist gestrichelt (halbe Stunde); volle Stunden bekommen
+   über --hour eine durchgezogene Linie. */
 .module-calendar__week-slot {
   position: relative;
-  height: 60px;
-  border-bottom: var(--border-width) solid var(--color-border-secondary);
+  height: 30px;
+  border-bottom: var(--border-width) dashed var(--color-border-secondary);
   cursor: pointer;
   transition: background 120ms;
 }
 
-/* Dekorative gestrichelte Trennlinie für die halbe Stunde (Slot-Mitte,
-   Outlook-Stil). Rein visuell — pointer-events: none, damit mousedown/
-   mouseenter/dblclick auf dem Slot (Anlegen & Aufziehen) nicht behindert
-   werden. Volle Stunden bleiben durchgezogen (border-bottom oben). */
-.module-calendar__week-slot::after {
-  content: '';
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 50%;
-  border-top: var(--border-width) dashed var(--color-border-secondary);
-  opacity: 0.6;
-  pointer-events: none;
+.module-calendar__week-slot--hour {
+  border-bottom-style: solid;
 }
 
 .module-calendar__week-slot:hover {
@@ -620,79 +613,9 @@
   white-space: nowrap;
 }
 
-/* ─── Modal (inline, scoped to module) ──────────────────── */
-
-.module-calendar__overlay {
-  position: fixed;
-  inset: 0;
-  background: var(--color-modal-overlay);
-  backdrop-filter: blur(6px);
-  z-index: 100;
-  display: none;
-  align-items: center;
-  justify-content: center;
-}
-
-.module-calendar__overlay--show {
-  display: flex;
-}
-
-@keyframes calSlideUp {
-  from { transform: translateY(20px); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
-}
-
-.module-calendar__modal {
-  background: var(--color-bg-elevated);
-  border: var(--border-width) solid var(--color-border-primary);
-  border-radius: var(--border-radius-lg);
-  width: 440px;
-  max-width: 95vw;
-  max-height: 90vh;
-  overflow-y: auto;
-  box-shadow: var(--shadow-lg);
-  animation: calSlideUp 0.25s ease;
-}
-
-.module-calendar__modal-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: var(--spacing-md) var(--spacing-lg);
-  border-bottom: var(--border-width) solid var(--color-border-primary);
-}
-
-.module-calendar__modal-header h2 {
-  font-size: var(--font-size-lg);
-  font-weight: var(--font-weight-semibold);
-  color: var(--color-text-primary);
-}
-
-.module-calendar__modal-close {
-  background: none;
-  border: none;
-  color: var(--color-text-secondary);
-  font-size: 1.4rem;
-  cursor: pointer;
-  width: 32px;
-  height: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: var(--border-radius);
-  transition: background var(--transition-speed);
-}
-
-.module-calendar__modal-close:hover {
-  background: var(--color-bg-tertiary);
-  color: var(--color-text-primary);
-}
-
-.module-calendar__modal-body {
-  padding: var(--spacing-lg);
-}
-
-/* Fields use global .field / .field-group (components.css) */
+/* ─── Event form (borrowed into the shared ui/modal) ─────── */
+/* Overlay, modal shell + footer buttons come from ui/modal + components.css.
+   Fields use global .field / .field-group. */
 
 .module-calendar__row-3 {
   display: grid;
@@ -725,57 +648,4 @@
 .module-calendar__phase-chip--selected {
   opacity: 1;
   border-color: currentcolor;
-}
-
-.module-calendar__modal-actions {
-  display: flex;
-  gap: var(--spacing-sm);
-  margin-top: var(--spacing-lg);
-}
-
-.module-calendar__modal-actions button {
-  flex: 1;
-  padding: 10px;
-  border-radius: var(--border-radius);
-  font-family: var(--font-family);
-  font-weight: var(--font-weight-semibold);
-  font-size: var(--font-size-md);
-  cursor: pointer;
-  transition: all 150ms;
-  border: none;
-}
-
-.module-calendar__btn-save {
-  background: var(--color-accent);
-  color: var(--color-text-inverse);
-}
-
-.module-calendar__btn-save:hover {
-  box-shadow: var(--shadow-md);
-}
-
-.module-calendar__btn-cancel {
-  background: var(--color-bg-tertiary);
-  color: var(--color-text-secondary);
-}
-
-.module-calendar__btn-cancel:hover {
-  background: var(--color-border-primary);
-}
-
-.module-calendar__btn-delete {
-  background: rgb(255 59 48 / 10%);
-  color: var(--color-error);
-  font-size: var(--font-size-sm);
-  padding: var(--spacing-xs) 12px;
-  border: none;
-  border-radius: var(--border-radius);
-  cursor: pointer;
-  font-family: var(--font-family);
-  font-weight: var(--font-weight-semibold);
-  display: none;
-}
-
-.module-calendar__btn-delete:hover {
-  background: rgb(255 59 48 / 20%);
 }

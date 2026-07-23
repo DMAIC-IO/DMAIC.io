@@ -90,7 +90,7 @@
       </div>
     </div>
 
-    <div class="module-calendar__grid" data-ref="calGrid" :style="monthGridStyle()" x-show="viewMode === 'month'">
+    <div class="module-calendar__grid" data-ref="calGrid" :style="monthGridStyle()" x-show="model.viewMode === 'month'">
       <template x-for="(d, i) in dayHeads()" :key="'h' + i">
         <div :class="headClass(i)" x-text="d"></div>
       </template>
@@ -113,7 +113,7 @@
     </div>
 
     <div class="module-calendar__week" data-ref="weekView" :class="weekShowClass()">
-      <template x-if="viewMode === 'week'">
+      <template x-if="model.viewMode === 'week'">
         <div class="module-calendar__week-inner">
           <div class="module-calendar__week-header" :style="weekColStyle()">
             <div class="module-calendar__week-hcorner"></div>
@@ -132,11 +132,11 @@
             </div>
             <template x-for="(d, ci) in weekDates()" :key="'col' + dkd(d)">
               <div class="module-calendar__week-day-col" :data-col-idx="ci">
-                <template x-for="h in hoursList()" :key="'sl' + h">
-                  <div class="module-calendar__week-slot" :class="slotSelClass(d, h)"
-                    @mousedown="slotDragStart(d, h, $event)"
-                    @mouseenter="slotDragEnter(d, h)"
-                    @dblclick="onSlotClick(d, h)"></div>
+                <template x-for="m in slotsList()" :key="'sl' + m">
+                  <div class="module-calendar__week-slot" :class="slotSelClass(d, m)"
+                    @mousedown="slotDragStart(d, m, $event)"
+                    @mouseenter="slotDragEnter(d, m)"
+                    @dblclick="onSlotClick(d, m)"></div>
                 </template>
                 <template x-if="showNowLine(d)">
                   <div class="module-calendar__now-line" :style="nowLineStyle()">
@@ -168,52 +168,45 @@
     </div>
   </div>
 
-  <div class="module-calendar__overlay" data-ref="overlay" :class="overlayClass()"
-    @click.self="closeModal()" @keydown.escape.window="closeModal()">
-    <div class="module-calendar__modal">
-      <div class="module-calendar__modal-header">
-        <h2 data-ref="modalTitle" x-text="modalTitle()"></h2>
-        <button class="module-calendar__modal-close" data-ref="modalClose" @click="closeModal()">&times;</button>
+  <!-- Event form: lives hidden here; borrowed into the shared modal (ui/modal)
+       on open, restored on close. Title + footer buttons are owned by the modal. -->
+  <div class="module-calendar__modal-forms" hidden>
+    <div class="module-calendar__event-form" x-ref="eventForm">
+      <div class="field-group">
+        <label x-text="t('title')"></label>
+        <input type="text" class="field" data-ref="evTitle" x-model="form.title" :placeholder="t('titlePlaceholder')">
       </div>
-      <div class="module-calendar__modal-body">
+      <div class="module-calendar__row-3">
         <div class="field-group">
-          <label x-text="t('title')"></label>
-          <input type="text" class="field" data-ref="evTitle" x-model="form.title" :placeholder="t('titlePlaceholder')">
-        </div>
-        <div class="module-calendar__row-3">
-          <div class="field-group">
-            <label x-text="t('date')"></label>
-            <input type="date" class="field" data-ref="evDate" x-model="form.date">
-          </div>
-          <div class="field-group">
-            <label x-text="t('time')"></label>
-            <input type="time" class="field" data-ref="evTime" x-model="form.time" value="09:00" step="300">
-          </div>
-          <div class="field-group">
-            <label x-text="t('duration')"></label>
-            <input type="number" class="field field--num" data-ref="evDuration" x-model="form.duration" value="60" min="5">
-          </div>
+          <label x-text="t('date')"></label>
+          <input type="date" class="field" data-ref="evDate" x-model="form.date">
         </div>
         <div class="field-group">
-          <label x-text="t('phase')"></label>
-          <div class="module-calendar__phase-select" data-ref="phaseSelect">
-            <template x-for="p in phaseIds" :key="p">
-              <span class="module-calendar__phase-chip" :data-phase="p"
-                :class="phaseChipClass(p)" :style="phaseChipStyle(p)"
-                @click="form.phase = p" x-text="phaseName(p)"></span>
-            </template>
-          </div>
+          <label x-text="t('startTime')"></label>
+          <input type="time" class="field" data-ref="evTime" x-model="form.time" value="09:00" step="300">
         </div>
         <div class="field-group">
-          <label x-text="t('description')"></label>
-          <textarea class="field" data-ref="evDesc" x-model="form.desc" :placeholder="t('descPlaceholder')"></textarea>
+          <label x-text="t('endTime')"></label>
+          <input type="time" class="field" data-ref="evEnd" x-model="form.end" value="10:00" step="300">
         </div>
-        <button class="module-calendar__btn-delete" data-ref="btnDelete" :style="deleteBtnStyle()"
-          @click="handleDelete()" x-text="t('deleteEvent')"></button>
-        <div class="module-calendar__modal-actions">
-          <button class="module-calendar__btn-cancel" data-ref="btnCancel" @click="closeModal()" x-text="t('cancel')"></button>
-          <button class="module-calendar__btn-save" data-ref="btnSave" @click="handleSave()" x-text="t('save')"></button>
+      </div>
+      <div class="field-group">
+        <label x-text="t('duration')"></label>
+        <input type="text" class="field field--inline" data-ref="evDurationInfo" :value="durationLabel()" disabled>
+      </div>
+      <div class="field-group">
+        <label x-text="t('phase')"></label>
+        <div class="module-calendar__phase-select" data-ref="phaseSelect">
+          <template x-for="p in phaseIds" :key="p">
+            <span class="module-calendar__phase-chip" :data-phase="p"
+              :class="phaseChipClass(p)" :style="phaseChipStyle(p)"
+              @click="form.phase = p" x-text="phaseName(p)"></span>
+          </template>
         </div>
+      </div>
+      <div class="field-group">
+        <label x-text="t('description')"></label>
+        <textarea class="field" data-ref="evDesc" x-model="form.desc" :placeholder="t('descPlaceholder')"></textarea>
       </div>
     </div>
   </div>

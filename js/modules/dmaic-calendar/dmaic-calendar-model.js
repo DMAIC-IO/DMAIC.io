@@ -76,6 +76,9 @@ export class State {
   axisTo = DEFAULTS.axisTo;
   dayFrom = DEFAULTS.dayFrom;
   dayTo = DEFAULTS.dayTo;
+  // Active calendar view ('month' | 'week'). Persisted so a chosen view
+  // survives a reload instead of snapping back to the month default.
+  viewMode = 'month';
 
   // ─── Persistence ───────────────────────────────────────
 
@@ -93,6 +96,7 @@ export class State {
       axisTo: this.axisTo,
       dayFrom: this.dayFrom,
       dayTo: this.dayTo,
+      viewMode: this.viewMode,
     };
   }
 
@@ -104,6 +108,7 @@ export class State {
     if (typeof d.axisTo === 'number') s.axisTo = d.axisTo;
     if (typeof d.dayFrom === 'number') s.dayFrom = d.dayFrom;
     if (typeof d.dayTo === 'number') s.dayTo = d.dayTo;
+    if (d.viewMode === 'month' || d.viewMode === 'week') s.viewMode = d.viewMode;
     return s;
   }
 
@@ -220,6 +225,18 @@ export class State {
   hoursArr() {
     const a = [];
     for (let h = this.axisFrom; h < this.axisTo; h++) a.push(h);
+    return a;
+  }
+
+  /**
+   * Visible half-hour slot start minutes (axisFrom..axisTo, step 30).
+   * Drives the drag-to-create grid: each slot is a 30-minute block, so a
+   * drawn span can start/end on the half hour. Full hours are the even
+   * entries (m % 60 === 0), half hours the odd ones (m % 60 === 30).
+   */
+  halfSlotsArr() {
+    const a = [];
+    for (let m = this.axisFrom * 60; m < this.axisTo * 60; m += 30) a.push(m);
     return a;
   }
 

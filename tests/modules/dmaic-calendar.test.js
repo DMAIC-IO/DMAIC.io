@@ -98,13 +98,22 @@ suite('DMAIC Calendar Model — serialization', () => {
     s.events.push({ id: 'a', title: 'T', date: '2026-06-15', time: '09:00', duration: 60, desc: 'd', phase: 'analyze' });
     s.axisFrom = 8; s.axisTo = 18; s.dayFrom = 0; s.dayTo = 4;
     const j = s.toJSON();
-    assertEqual(Object.keys(j).sort().join(','), 'axisFrom,axisTo,dayFrom,dayTo,events');
+    assertEqual(Object.keys(j).sort().join(','), 'axisFrom,axisTo,dayFrom,dayTo,events,viewMode');
     assertEqual(j.axisFrom, 8);
     assertEqual(j.axisTo, 18);
     assertEqual(j.dayFrom, 0);
     assertEqual(j.dayTo, 4);
     assertEqual(j.events.length, 1);
     assertEqual(j.events[0].phase, 'analyze');
+  });
+
+  test('viewMode round-trips (default month, persists week)', () => {
+    assertEqual(new State().toJSON().viewMode, 'month');
+    const s = new State();
+    s.viewMode = 'week';
+    assertEqual(State.fromJSON(s.toJSON()).viewMode, 'week');
+    // Invalid values fall back to the default.
+    assertEqual(State.fromJSON({ viewMode: 'nonsense' }).viewMode, 'month');
   });
 
   test('toJSON preserves todo source tag', () => {

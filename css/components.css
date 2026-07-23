@@ -444,6 +444,12 @@ select.input {
   border-top: var(--border-width) solid var(--color-border-secondary);
 }
 
+/* Optional destructive action (Modal.form({ onDelete })): pushed to the far
+   left while confirm/cancel stay right-aligned. */
+.modal__footer-delete {
+  margin-right: auto;
+}
+
 /* ===== Toast Notifications ===== */
 .toast-container {
   position: fixed;

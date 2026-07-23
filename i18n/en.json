@@ -1236,6 +1236,8 @@
       "phases": "Phases",
       "timeAxis": "Time Axis",
       "time": "Time",
+      "startTime": "Start",
+      "endTime": "End",
       "from": "From",
       "to": "To",
       "weekdays": "Weekdays",
@@ -1246,7 +1248,7 @@
       "title": "Title",
       "titlePlaceholder": "e.g. Tollgate Review Define",
       "date": "Date",
-      "duration": "Duration (min)",
+      "duration": "Duration",
       "phase": "Phase",
       "descPlaceholder": "Agenda, participants, objectives …",
       "deleteEvent": "Delete event",
@@ -1255,6 +1257,7 @@
       "month": "Month",
       "week": "Week",
       "today": "Today",
+      "invalidTimeRange": "The end time must be after the start time.",
       "requiredFields": "Title and date are required fields."
     },
     "todo": {
