@@ -157,6 +157,44 @@ suite('kano-link — diff', () => {
     const d = diff(items, [{ nodeId: 'n1', label: 'A', path: '' }]);
     assertEqual(d.missing.length, 0);
   });
+
+  test('presentNodeIds enthält alle nodeIds der Kandidaten', () => {
+    const d = diff(ITEMS, CANDIDATES);
+    assertEqual(d.presentNodeIds.has('n1'), true);
+    assertEqual(d.presentNodeIds.has('n2'), true);
+    assertEqual(d.presentNodeIds.has('n3'), true);
+    assertEqual(d.presentNodeIds.has('n9'), false);
+  });
+
+  test('zwei aufeinanderfolgende Zyklen: dauerhaft fehlendes Item bleibt missing, wird nicht erneut gemeldet', () => {
+    // Zyklus 1: n9 verschwindet
+    const items1 = [{ id: 'k9', nodeId: 'n9', label: 'X', path: '', missing: false }];
+    const cands1 = [];
+    const d1 = diff(items1, cands1);
+    assertDeepEqual(d1.missing.map(i => i.id), ['k9']);
+
+    // Zyklus 2: n9 ist immer noch weg
+    const items2 = applyDiff(items1, d1, () => 'x');
+    assertEqual(items2[0].missing, true, 'Nach Zyklus 1 ist Item als missing markiert');
+
+    const cands2 = [];
+    const d2 = diff(items2, cands2);
+    assertEqual(d2.missing.length, 0, 'In Zyklus 2 wird der dauerhafte Verlust nicht erneut gemeldet');
+  });
+
+  test('verwaistes Item, dessen Knoten zurückkehrt, wird entmarkiert', () => {
+    const items = [{ id: 'k1', nodeId: 'n1', label: 'A', path: '', missing: true }];
+    const cands = [{ nodeId: 'n1', label: 'A', path: '' }];
+    const result = applyDiff(items, diff(items, cands), () => 'x');
+    assertEqual(result[0].missing, false);
+  });
+
+  test('losgelöstes Item behält sein Flag unverändert', () => {
+    const items = [{ id: 'k1', nodeId: null, label: 'Losgelöst', path: '', missing: true }];
+    const cands = [];
+    const result = applyDiff(items, diff(items, cands), () => 'x');
+    assertEqual(result[0].missing, true, 'Losgelöstes Item behält missing: true');
+  });
 });
 
 suite('kano-link — applyDiff', () => {
@@ -190,5 +228,13 @@ suite('kano-link — applyDiff', () => {
     const snapshot = JSON.stringify(ITEMS);
     applyDiff(ITEMS, diff(ITEMS, CANDIDATES), () => 'x');
     assertEqual(JSON.stringify(ITEMS), snapshot);
+  });
+
+  test('robust gegen fehlende presentNodeIds: Flag bleibt unverändert', () => {
+    const items = [{ id: 'k1', nodeId: 'n1', label: 'A', path: '', missing: true }];
+    // diffResult von Hand gebaut, ohne presentNodeIds
+    const manualDiffResult = { added: [], renamed: [], missing: [] };
+    const result = applyDiff(items, manualDiffResult, () => 'x');
+    assertEqual(result[0].missing, true, 'missing bleibt true wenn presentNodeIds fehlt');
   });
 });
