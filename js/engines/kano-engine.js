@@ -106,7 +106,8 @@ const CATEGORY_RANK = Object.fromEntries(CATEGORIES.map((c, i) => [c, i]));
  *
  * Sortierung der Zeilen: Kategorierang (M > O > A > I > R > Q, ohne Kategorie
  * zuletzt), dann mittlere Wichtigkeit absteigend, dann CS absteigend. Damit ist
- * die Reihenfolge deterministisch und unabhängig von der Eingabereihenfolge.
+ * die Reihenfolge deterministisch; bei vollständigem Gleichstand bleibt die
+ * Eingabereihenfolge erhalten (Array.sort ist stabil).
  *
  * @param {Array<{id: string, label: string, path: string, missing: boolean}>} items
  * @param {Array<{id: string, name: string}>} respondents

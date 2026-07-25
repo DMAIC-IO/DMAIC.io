@@ -96,9 +96,35 @@ const RESP = [{ id: 'r1', name: 'Kunde A' }, { id: 'r2', name: 'Kunde B' }];
 
 suite('kano-engine — evaluate', () => {
   test('eine Zeile je Item, Labels durchgereicht', () => {
-    const res = evaluate(ITEMS, RESP, {}, OPTS);
-    assertEqual(res.rows.length, 3);
-    assertEqual(res.rows.every(r => r.category === null), true);
+    // Ohne Antworten: keine Sortierung, Labels sollten durchkommen
+    const res1 = evaluate(ITEMS, RESP, {}, OPTS);
+    assertEqual(res1.rows.length, 3);
+    assertEqual(res1.rows.every(r => r.category === null), true);
+    for (const item of ITEMS) {
+      const row = res1.rows.find(r => r.itemId === item.id);
+      assertEqual(row.label, item.label, `label für ${item.id}`);
+      assertEqual(row.path, item.path, `path für ${item.id}`);
+    }
+
+    // Mit gefüllten Antworten, die Sortierung auslösen: Labels müssen nach Umordnung noch korrekt sein
+    const answers = {
+      r1: {
+        i1: { f: 3, d: 3, w: 5 },   // I
+        i2: { f: 2, d: 5, w: 5 },   // M
+        i3: { f: 1, d: 3, w: 5 },   // A
+      },
+      r2: {
+        i1: { f: 3, d: 3, w: 5 },
+        i2: { f: 2, d: 5, w: 5 },
+        i3: { f: 1, d: 3, w: 5 },
+      },
+    };
+    const res2 = evaluate(ITEMS, RESP, answers, OPTS);
+    for (const item of ITEMS) {
+      const row = res2.rows.find(r => r.itemId === item.id);
+      assertEqual(row.label, item.label, `label nach Sortierung für ${item.id}`);
+      assertEqual(row.path, item.path, `path nach Sortierung für ${item.id}`);
+    }
   });
 
   test('Sortierung: Kategorierang, dann Wichtigkeit, dann CS', () => {
