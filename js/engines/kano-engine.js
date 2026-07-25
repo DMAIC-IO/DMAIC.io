@@ -33,6 +33,11 @@ function onScale5(v) {
   return Number.isInteger(v) && v >= 1 && v <= 5;
 }
 
+/** @returns {boolean} true, wenn v eine ganze Zahl im Bereich 1..9 ist */
+function onScale9(v) {
+  return Number.isInteger(v) && v >= 1 && v <= 9;
+}
+
 /**
  * Klassifiziert ein Antwortpaar nach der Kano-Tabelle.
  * @param {number|null} f funktionale Antwort (1..5)
@@ -42,4 +47,53 @@ function onScale5(v) {
 export function classify(f, d) {
   if (!onScale5(f) || !onScale5(d)) return null;
   return TABLE[f - 1][d - 1];
+}
+
+/**
+ * Aggregiert die Antworten aller Befragten zu einem Item.
+ *
+ * Gesamtkategorie ist der Modalwert; bei Gleichstand gewinnt die stärkere
+ * Kategorie in der Reihenfolge M > O > A > I > R > Q, und `tie` wird gesetzt.
+ * CS = (A+O)/(A+O+M+I), DS = -(O+M)/(A+O+M+I) — R und Q stehen bewusst nicht
+ * im Nenner, sie sind keine Präferenz. Nenner 0 ⇒ cs/ds sind null, nie NaN.
+ *
+ * @param {Array<{f: number|null, d: number|null, w: number|null}>} itemAnswers
+ * @param {{ importance: boolean }} options
+ * @returns {{counts: object, n: number, unanswered: number,
+ *            category: string|null, tie: boolean,
+ *            cs: number|null, ds: number|null,
+ *            importanceMean: number|null, importanceN: number}}
+ */
+export function aggregate(itemAnswers, options) {
+  const counts = { M: 0, O: 0, A: 0, I: 0, R: 0, Q: 0 };
+  let n = 0;
+  let unanswered = 0;
+  let wSum = 0;
+  let importanceN = 0;
+  const useImportance = Boolean(options?.importance);
+
+  for (const a of itemAnswers || []) {
+    const cat = classify(a?.f ?? null, a?.d ?? null);
+    if (cat) { counts[cat]++; n++; } else { unanswered++; }
+    if (useImportance && onScale9(a?.w ?? null)) { wSum += a.w; importanceN++; }
+  }
+
+  let category = null;
+  let tie = false;
+  if (n > 0) {
+    const max = Math.max(...CATEGORIES.map((c) => counts[c]));
+    const leaders = CATEGORIES.filter((c) => counts[c] === max);
+    category = leaders[0];          // CATEGORIES ist bereits nach Stärke sortiert
+    tie = leaders.length > 1;
+  }
+
+  const denom = counts.A + counts.O + counts.M + counts.I;
+  const cs = denom > 0 ? (counts.A + counts.O) / denom : null;
+  const ds = denom > 0 ? -(counts.O + counts.M) / denom : null;
+
+  return {
+    counts, n, unanswered, category, tie, cs, ds,
+    importanceMean: importanceN > 0 ? wSum / importanceN : null,
+    importanceN,
+  };
 }

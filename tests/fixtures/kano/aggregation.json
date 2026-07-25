@@ -1,0 +1,89 @@
+{
+  "algorithm_id": "kano-aggregation",
+  "generated_with": {
+    "source": "Berger, C. et al. (1993): Kano's Methods for Understanding Customer-defined Quality. Center for Quality Management Journal 2(4), 3–36 — CS/DS-Koeffizienten",
+    "method": "Manuelle Berechnung, Herleitung je Testfall im description-Feld"
+  },
+  "test_cases": [
+    {
+      "id": "klar-basis",
+      "tier": "standard",
+      "description": "4x M (f=2,d=5), 1x I (f=3,d=3). counts M=4,I=1 → Modus M. CS=(0+0)/(0+0+4+1)=0. DS=-(0+4)/5=-0.8",
+      "inputs": {
+        "answers": [
+          { "f": 2, "d": 5, "w": null }, { "f": 2, "d": 5, "w": null },
+          { "f": 2, "d": 5, "w": null }, { "f": 2, "d": 5, "w": null },
+          { "f": 3, "d": 3, "w": null }
+        ]
+      },
+      "expected": { "category": "M", "tie": false, "n": 5, "cs": 0, "ds": -0.8 }
+    },
+    {
+      "id": "klar-begeisterung",
+      "tier": "standard",
+      "description": "3x A (f=1,d=3), 1x I. counts A=3,I=1 → Modus A. CS=(3+0)/(3+0+0+1)=0.75. DS=-(0+0)/4=0",
+      "inputs": {
+        "answers": [
+          { "f": 1, "d": 3, "w": null }, { "f": 1, "d": 3, "w": null },
+          { "f": 1, "d": 3, "w": null }, { "f": 3, "d": 3, "w": null }
+        ]
+      },
+      "expected": { "category": "A", "tie": false, "n": 4, "cs": 0.75, "ds": 0 }
+    },
+    {
+      "id": "leistung",
+      "tier": "standard",
+      "description": "4x O (f=1,d=5). CS=(0+4)/4=1. DS=-(4+0)/4=-1",
+      "inputs": {
+        "answers": [
+          { "f": 1, "d": 5, "w": null }, { "f": 1, "d": 5, "w": null },
+          { "f": 1, "d": 5, "w": null }, { "f": 1, "d": 5, "w": null }
+        ]
+      },
+      "expected": { "category": "O", "tie": false, "n": 4, "cs": 1, "ds": -1 }
+    },
+    {
+      "id": "gleichstand-m-vor-o",
+      "tier": "edge",
+      "description": "2x M, 2x O → Gleichstand. Tie-Break M > O ⇒ M, tie=true. CS=(0+2)/(0+2+2+0)=0.5, DS=-(2+2)/4=-1",
+      "inputs": {
+        "answers": [
+          { "f": 2, "d": 5, "w": null }, { "f": 2, "d": 5, "w": null },
+          { "f": 1, "d": 5, "w": null }, { "f": 1, "d": 5, "w": null }
+        ]
+      },
+      "expected": { "category": "M", "tie": true, "n": 4, "cs": 0.5, "ds": -1 }
+    },
+    {
+      "id": "nur-r-und-q",
+      "tier": "robustness",
+      "description": "2x R (f=5,d=1), 1x Q (f=1,d=1). Nenner A+O+M+I = 0 ⇒ cs/ds null. Modus R (R vor Q).",
+      "inputs": {
+        "answers": [
+          { "f": 5, "d": 1, "w": null }, { "f": 5, "d": 1, "w": null },
+          { "f": 1, "d": 1, "w": null }
+        ]
+      },
+      "expected": { "category": "R", "tie": false, "n": 3, "cs": null, "ds": null }
+    },
+    {
+      "id": "unvollstaendige-paare",
+      "tier": "edge",
+      "description": "1x O vollständig, 2x nur f gesetzt. n=1, unanswered=2. CS=1, DS=-1",
+      "inputs": {
+        "answers": [
+          { "f": 1, "d": 5, "w": null }, { "f": 1, "d": null, "w": null },
+          { "f": null, "d": 5, "w": null }
+        ]
+      },
+      "expected": { "category": "O", "tie": false, "n": 1, "unanswered": 2, "cs": 1, "ds": -1 }
+    },
+    {
+      "id": "gar-keine-antwort",
+      "tier": "robustness",
+      "description": "Keine Antwort gesetzt. n=0, category null, cs/ds null.",
+      "inputs": { "answers": [{ "f": null, "d": null, "w": null }] },
+      "expected": { "category": null, "tie": false, "n": 0, "unanswered": 1, "cs": null, "ds": null }
+    }
+  ]
+}
