@@ -37,7 +37,7 @@ function onScale5(v) {
  * Klassifiziert ein Antwortpaar nach der Kano-Tabelle.
  * @param {number|null} f funktionale Antwort (1..5)
  * @param {number|null} d dysfunktionale Antwort (1..5)
- * @returns {'M'|'O'|'A'|'I'|'R'|'Q'|null} null, wenn eine Antwort fehlt oder ausserhalb der Skala liegt
+ * @returns {'M'|'O'|'A'|'I'|'R'|'Q'|null} null, wenn eine Antwort fehlt oder außerhalb der Skala liegt
  */
 export function classify(f, d) {
   if (!onScale5(f) || !onScale5(d)) return null;

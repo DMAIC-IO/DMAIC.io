@@ -1,6 +1,6 @@
 /**
  * D.Mike — Kano Engine Tests (kano-engine.test.js)
- * Unit-Tests für classify/aggregate/evaluate.
+ * Unit-Tests für classify.
  * Spec: docs/superpowers/specs/2026-07-25-kano-modul-design.md
  */
 
@@ -23,7 +23,7 @@ suite('kano-engine — classify', () => {
     assertEqual(classify(1, null), null);
   });
 
-  test('Wert ausserhalb der Skala → null', () => {
+  test('Wert außerhalb der Skala → null', () => {
     assertEqual(classify(0, 3), null);
     assertEqual(classify(3, 6), null);
   });
