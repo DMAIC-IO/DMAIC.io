@@ -45,12 +45,22 @@ suite('kano-link — listTrees', () => {
         measure: [{ instanceId: 'c', moduleId: 'voc-ctx-tree' }] },
       { b: TREE, c: null },
     );
-    assertDeepEqual(listTrees(sm).map(t => t.instanceId), ['b', 'c']);
+    const result = listTrees(sm);
+    assertDeepEqual(result.map(t => t.instanceId), ['b', 'c']);
+    // Important 1: Prüfe, dass state-Feld tatsächlich durchgereicht wird
+    assertEqual(result[0].state, TREE);
+    assertEqual(result[1].state, null);
   });
 
   test('ohne Phasen oder ohne Baum: leeres Array', () => {
     assertDeepEqual(listTrees(fakeSM({})), []);
     assertDeepEqual(listTrees(null), []);
+  });
+
+  test('fehlende phases (undefined) liefert leeres Array', () => {
+    // Important 2: Prüfe, dass || {}-Fallback greift, wenn get('phases') wirklich undefined ist
+    const smUndef = { get: () => undefined, getModuleState: () => null };
+    assertDeepEqual(listTrees(smUndef), []);
   });
 });
 
@@ -78,5 +88,32 @@ suite('kano-link — flatten', () => {
     assertDeepEqual(flatten({ vocs: [{ id: 'v', text: 'x', needs: [] }] }, 'req'), []);
     assertDeepEqual(flatten(null, 'need'), []);
     assertDeepEqual(flatten(TREE, 'unbekannt'), []);
+  });
+
+  test('flatten mutiert die Eingabe nicht', () => {
+    // Important 3: Prüfe, dass Eingaben nicht mutiert werden
+    const input = {
+      vocs: [{
+        id: 'v', text: 'x',
+        needs: [{ id: 'n', text: 'y', drivers: [{ id: 'd', text: 'z', requirements: [] }] }],
+      }],
+    };
+    const before = JSON.stringify(input);
+    flatten(input, 'driver');
+    const after = JSON.stringify(input);
+    assertEqual(before, after);
+  });
+
+  test('listTrees mutiert den stateManager nicht', () => {
+    // Important 3: Prüfe, dass listTrees den stateManager nicht ändert
+    const phases = {
+      define: [{ instanceId: 'a', moduleId: 'voc-ctx-tree' }],
+    };
+    const states = { a: TREE };
+    const sm = fakeSM(phases, states);
+    const before = JSON.stringify({ phases, states });
+    listTrees(sm);
+    const after = JSON.stringify({ phases, states });
+    assertEqual(before, after);
   });
 });
