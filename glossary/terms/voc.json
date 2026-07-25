@@ -21,7 +21,7 @@
           "**Quellen** — Interviews, Befragungen, Beschwerden, Reklamationen, Support-Tickets, Beobachtungen im Einsatz",
           "**Wörtlich zitieren** — „Die Lieferung war zu spät“ bleibt Zitat; die Übersetzung in „Liefertreue < 95 %“ ist eine spätere {{term:ctq|CTQ}}",
           "**Interne und externe Kunden** unterscheiden — beide haben legitimen Bedarf",
-          "**Kano-Modell** — trennt Basis-, Leistungs- und Begeisterungsmerkmale"
+          "**{{term:kano|Kano-Modell}}** — priorisiert die erhobenen Bedürfnisse, indem es Basis-, Leistungs- und Begeisterungsmerkmale trennt"
         ]
       },
       {
@@ -40,7 +40,7 @@
           "**Sources** — interviews, surveys, complaints, returns, support tickets, in-use observation",
           "**Quote verbatim** — \"the delivery was late\" stays a quote; translation into \"on-time-delivery < 95 %\" becomes a later {{term:ctq|CTQ}}",
           "**Distinguish internal and external customers** — both have legitimate needs",
-          "**Kano model** — separates basic, performance and excitement features"
+          "**{{term:kano|Kano model}}** — prioritizes the collected needs by separating must-be, performance and attractive features"
         ]
       },
       {
@@ -63,6 +63,7 @@
   },
   "seeAlso": [
     "ctq",
+    "kano",
     "sipoc",
     "dmaic",
     "project-charter"

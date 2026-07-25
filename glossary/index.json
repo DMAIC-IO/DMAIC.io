@@ -612,6 +612,11 @@
       "file": "terms/ctq.json"
     },
     {
+      "id": "kano",
+      "category": "methodology",
+      "file": "terms/kano.json"
+    },
+    {
       "id": "project-charter",
       "category": "methodology",
       "file": "terms/project-charter.json"
