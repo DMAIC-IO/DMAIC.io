@@ -68,6 +68,14 @@ export default class HeatmapChart extends ChartBase {
     return { xMin: 0, xMax: 1, yMin: 0, yMax: 1 };
   }
 
+  /**
+   * @override — the y axis is categorical: the row labels sit in the left
+   * gutter, so they decide its width rather than numeric ticks.
+   */
+  _getYAxisLabels() {
+    return { labels: this.config.yCategories || [], mono: false };
+  }
+
   /** @override */
   _getPlotArea() {
     const m = this.config.plotMargins;
