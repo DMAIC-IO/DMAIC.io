@@ -96,9 +96,14 @@ export class State {
     this.answers[respondentId][itemId][field] = value === null ? null : Number(value);
   }
 
-  /** @returns {{f: number|null, d: number|null, w: number|null}} nie undefined */
+  /**
+   * Liefert immer eine losgelöste Kopie — nie die Live-Referenz aus `answers`
+   * und nie `undefined`. Schreibender Zugriff läuft ausschließlich über `setAnswer`.
+   * @returns {{f: number|null, d: number|null, w: number|null}}
+   */
   answerOf(respondentId, itemId) {
-    return this.answers[respondentId]?.[itemId] || emptyAnswer();
+    const a = this.answers[respondentId]?.[itemId];
+    return a ? { ...a } : emptyAnswer();
   }
 
   /** @returns {boolean} true, sobald ein Item oder ein:e Befragte:r existiert */

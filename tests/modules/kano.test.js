@@ -46,10 +46,11 @@ suite('kano-model — Befragte', () => {
 
   test('deleteRespondent wählt einen verbleibenden aktiv', () => {
     const s = new State();
-    const a = s.addRespondent('A');
-    s.addRespondent('B');
-    s.deleteRespondent(s.activeRespondentId === a ? a : s.respondents[1].id);
-    assertEqual(s.respondents.some(r => r.id === s.activeRespondentId), true);
+    s.addRespondent('A');
+    const b = s.addRespondent('B');
+    s.deleteRespondent(s.activeRespondentId);
+    assertEqual(s.respondents.length, 1);
+    assertEqual(s.activeRespondentId, b);
   });
 });
 
@@ -77,6 +78,20 @@ suite('kano-model — Items und Antworten', () => {
 
   test('answerOf liefert immer ein Objekt, nie undefined', () => {
     assertDeepEqual(new State().answerOf('x', 'y'), { f: null, d: null, w: null });
+  });
+
+  test('answerOf liefert eine Kopie, nicht die Live-Referenz', () => {
+    const s = filled();
+    const r = s.respondents[0].id;
+    const a = s.answerOf(r, 'i1');
+    a.f = 99;
+    assertEqual(s.answerOf(r, 'i1').f, 1);
+  });
+
+  test('hasContent ist true bei Item ohne Befragte:n', () => {
+    const s = new State();
+    s.setItems([{ id: 'i1', nodeId: 'n1', label: 'A', path: 'p', missing: false }]);
+    assertEqual(s.hasContent(), true);
   });
 });
 
@@ -109,5 +124,38 @@ suite('kano-model — Serialisierung', () => {
   test('fromJSON hält activeRespondentId gültig', () => {
     const s = State.fromJSON({ respondents: [{ id: 'r1', name: 'A' }], activeRespondentId: 'weg' });
     assertEqual(s.activeRespondentId, 'r1');
+  });
+
+  test('fromJSON verwirft Fremdtypen bei source/options/items/answers ohne Wurf', () => {
+    const s = State.fromJSON({
+      source: 'quatsch',
+      options: 42,
+      items: 'kaputt',
+      answers: [1, 2, 3],
+    });
+    assertEqual(s.source.level, 'need');
+    assertEqual(s.source.instanceId, null);
+    assertEqual(s.options.importance, true);
+    assertEqual(s.items.length, 0);
+    assertDeepEqual(s.answers, {});
+  });
+
+  test('fromJSON normalisiert Nicht-Ganzzahl-Antwortwerte auf null', () => {
+    const s = State.fromJSON({
+      items: [{ id: 'i1', nodeId: null, label: 'A', path: '', missing: false }],
+      respondents: [{ id: 'r1', name: 'A' }],
+      answers: { r1: { i1: { f: '5', d: '3', w: '7' } } },
+    });
+    assertDeepEqual(s.answers.r1.i1, { f: null, d: null, w: null });
+  });
+
+  test('toJSON liefert eine tiefe Kopie', () => {
+    const s = filled();
+    const r = s.respondents[0].id;
+    const snapshot = s.toJSON();
+    s.setAnswer(r, 'i1', 'f', 999);
+    s.items[0].label = 'geändert';
+    assertEqual(snapshot.answers[r].i1.f, 1);
+    assertEqual(snapshot.items[0].label, 'A');
   });
 });
