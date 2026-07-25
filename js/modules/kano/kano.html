@@ -11,9 +11,10 @@
 
       <label class="kano__label" x-text="t('sourceTree')"></label>
       <select class="field kano__tree-select" data-ref="treeSelect"
-              :value="model.source.instanceId" @change="changeTree($event)">
+              @change="changeTree($event)">
         <template x-for="tr in treeList">
-          <option :value="tr.instanceId" x-text="tr.instanceId"></option>
+          <option :value="tr.instanceId" :selected="tr.instanceId === model.source.instanceId"
+                  x-text="tr.instanceId"></option>
         </template>
       </select>
 

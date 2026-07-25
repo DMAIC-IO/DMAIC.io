@@ -16,7 +16,7 @@
 
 import { createModule } from '../../core/template-module.js';
 import { State } from './kano-model.js';
-import { listTrees, flatten, diff, applyDiff, LEVELS } from './kano-link.js';
+import { listTrees, flatten, diff, applyDiff } from './kano-link.js';
 
 export default createModule({
   config: {
@@ -31,13 +31,12 @@ export default createModule({
 
   data(module, _t) {
     return {
-      /** Ebenen für das Select (statische Optionen im Template, siehe alpine.md #3). */
-      levels: LEVELS,
       /** @type {Array<{instanceId: string, state: object|null}>} */
       treeList: [],
       /** @type {{added: number, renamed: number, missing: number}} */
       pending: { added: 0, renamed: 0, missing: 0 },
 
+      /** Alpine-Lifecycle-Hook: lädt die Baumliste und abonniert Änderungen am Projekt-State. */
       init() {
         this.refreshTrees();
         const eb = module._context.eventBus;
@@ -49,6 +48,7 @@ export default createModule({
         }
       },
 
+      /** Alpine-Lifecycle-Hook: meldet alle Event-Bus-Subscriptions wieder ab. */
       destroy() {
         (this._unsubs || []).forEach((off) => off());
         this._unsubs = [];
@@ -79,6 +79,7 @@ export default createModule({
         return !this.model.source.instanceId && this.model.items.length > 0;
       },
 
+      /** Übernimmt die Baumwahl aus dem Select (`@change`) und aktualisiert den Sync-Status. */
       changeTree(ev) {
         this.model.source.instanceId = ev.target.value || null;
         this.refreshPending();
@@ -86,6 +87,12 @@ export default createModule({
 
       // ── Ebene ─────────────────────────────────────────────────
 
+      /**
+       * Übernimmt die Ebenenwahl aus dem Select (`@change`). Fragt bei bereits
+       * erfassten Antworten nach, da die Item-Liste komplett neu aufgebaut wird
+       * und alle Antworten verloren gehen.
+       * @param {Event} ev
+       */
       async changeLevel(ev) {
         const next = ev.target.value;
         const hasAnswers = Object.values(this.model.answers)
@@ -101,6 +108,7 @@ export default createModule({
         this.refreshPending();
       },
 
+      /** Schaltet die dritte Frage (Wichtigkeit) für die Erfassung ein/aus. */
       toggleImportance() {
         this.model.options.importance = !this.model.options.importance;
       },
@@ -126,10 +134,11 @@ export default createModule({
         if (this.isDetached()) return _t('syncDetached');
         if (!this.activeTreeState()) return '';
         if (!this.hasPending()) return _t('syncClean');
-        return _t('syncPending')
-          .replace('{added}', String(this.pending.added))
-          .replace('{renamed}', String(this.pending.renamed))
-          .replace('{missing}', String(this.pending.missing));
+        return _t('syncPending', {
+          added: this.pending.added,
+          renamed: this.pending.renamed,
+          missing: this.pending.missing,
+        });
       },
 
       /** Übernimmt das Diff in die Item-Liste. */
