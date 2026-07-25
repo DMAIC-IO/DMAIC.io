@@ -1,0 +1,34 @@
+{
+  "algorithm_id": "kano-classification",
+  "generated_with": {
+    "source": "Kano, N.; Seraku, N.; Takahashi, F.; Tsuji, S. (1984): Attractive Quality and Must-Be Quality. Journal of the Japanese Society for Quality Control 14(2), 39–48 — Auswertungstabelle",
+    "method": "Manuelle Übertragung der Original-Auswertungstabelle, Zelle für Zelle"
+  },
+  "test_cases": [
+    { "id": "f1-d1", "tier": "edge",     "inputs": { "f": 1, "d": 1 }, "expected": "Q" },
+    { "id": "f1-d2", "tier": "standard", "inputs": { "f": 1, "d": 2 }, "expected": "A" },
+    { "id": "f1-d3", "tier": "standard", "inputs": { "f": 1, "d": 3 }, "expected": "A" },
+    { "id": "f1-d4", "tier": "standard", "inputs": { "f": 1, "d": 4 }, "expected": "A" },
+    { "id": "f1-d5", "tier": "standard", "inputs": { "f": 1, "d": 5 }, "expected": "O" },
+    { "id": "f2-d1", "tier": "edge",     "inputs": { "f": 2, "d": 1 }, "expected": "R" },
+    { "id": "f2-d2", "tier": "standard", "inputs": { "f": 2, "d": 2 }, "expected": "I" },
+    { "id": "f2-d3", "tier": "standard", "inputs": { "f": 2, "d": 3 }, "expected": "I" },
+    { "id": "f2-d4", "tier": "standard", "inputs": { "f": 2, "d": 4 }, "expected": "I" },
+    { "id": "f2-d5", "tier": "standard", "inputs": { "f": 2, "d": 5 }, "expected": "M" },
+    { "id": "f3-d1", "tier": "edge",     "inputs": { "f": 3, "d": 1 }, "expected": "R" },
+    { "id": "f3-d2", "tier": "standard", "inputs": { "f": 3, "d": 2 }, "expected": "I" },
+    { "id": "f3-d3", "tier": "standard", "inputs": { "f": 3, "d": 3 }, "expected": "I" },
+    { "id": "f3-d4", "tier": "standard", "inputs": { "f": 3, "d": 4 }, "expected": "I" },
+    { "id": "f3-d5", "tier": "standard", "inputs": { "f": 3, "d": 5 }, "expected": "M" },
+    { "id": "f4-d1", "tier": "edge",     "inputs": { "f": 4, "d": 1 }, "expected": "R" },
+    { "id": "f4-d2", "tier": "standard", "inputs": { "f": 4, "d": 2 }, "expected": "I" },
+    { "id": "f4-d3", "tier": "standard", "inputs": { "f": 4, "d": 3 }, "expected": "I" },
+    { "id": "f4-d4", "tier": "standard", "inputs": { "f": 4, "d": 4 }, "expected": "I" },
+    { "id": "f4-d5", "tier": "standard", "inputs": { "f": 4, "d": 5 }, "expected": "M" },
+    { "id": "f5-d1", "tier": "edge",     "inputs": { "f": 5, "d": 1 }, "expected": "R" },
+    { "id": "f5-d2", "tier": "edge",     "inputs": { "f": 5, "d": 2 }, "expected": "R" },
+    { "id": "f5-d3", "tier": "edge",     "inputs": { "f": 5, "d": 3 }, "expected": "R" },
+    { "id": "f5-d4", "tier": "edge",     "inputs": { "f": 5, "d": 4 }, "expected": "R" },
+    { "id": "f5-d5", "tier": "edge",     "inputs": { "f": 5, "d": 5 }, "expected": "Q" }
+  ]
+}
