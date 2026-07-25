@@ -77,3 +77,10 @@
   font-size: var(--font-size-xs);
   color: var(--color-text-tertiary);
 }
+
+/* ── Better/Worse-Diagramm ────────────────────────────────────── */
+
+.kano__chart {
+  min-height: 360px; /* definite Höhe: sonst driftet die SVG-Höhe des Charts */
+  margin-bottom: var(--spacing-lg);
+}

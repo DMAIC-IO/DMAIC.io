@@ -36,6 +36,10 @@ export default createModule({
       treeList: [],
       /** @type {{added: number, renamed: number, missing: number}} */
       pending: { added: 0, renamed: 0, missing: 0 },
+      /** @type {object[]} gemountete Chart-Instanzen */
+      _charts: [],
+      /** Render-Generation — verhindert Mounts aus überholten Durchläufen. */
+      _renderGen: 0,
 
       /** Alpine-Lifecycle-Hook: lädt die Baumliste und abonniert Änderungen am Projekt-State. */
       init() {
@@ -47,12 +51,18 @@ export default createModule({
           eb.on(evt, onChange);
           this._unsubs.push(() => eb.off(evt, onChange));
         }
+
+        this.$nextTick(() => this.mountChart());
+        const onTheme = () => this.mountChart();
+        eb.on('theme:changed', onTheme);
+        this._unsubs.push(() => eb.off('theme:changed', onTheme));
       },
 
       /** Alpine-Lifecycle-Hook: meldet alle Event-Bus-Subscriptions wieder ab. */
       destroy() {
         (this._unsubs || []).forEach((off) => off());
         this._unsubs = [];
+        this.destroyCharts();
       },
 
       // ── Quelle ────────────────────────────────────────────────
@@ -107,11 +117,13 @@ export default createModule({
         this.model.setItems([]);
         this.model.answers = {};
         this.refreshPending();
+        this.$nextTick(() => this.mountChart());
       },
 
       /** Schaltet die dritte Frage (Wichtigkeit) für die Erfassung ein/aus. */
       toggleImportance() {
         this.model.options.importance = !this.model.options.importance;
+        this.$nextTick(() => this.mountChart());
       },
 
       // ── Sync ──────────────────────────────────────────────────
@@ -149,6 +161,7 @@ export default createModule({
         const d = diff(this.model.items, flatten(tree, this.model.source.level));
         this.model.setItems(applyDiff(this.model.items, d, () => crypto.randomUUID()));
         this.refreshPending();
+        this.$nextTick(() => this.mountChart());
       },
 
       // ── Befragte ──────────────────────────────────────────────
@@ -165,7 +178,10 @@ export default createModule({
        */
       async removeRespondent(id) {
         const ok = await module._context.confirmPopout(_t('respondentDeleteConfirm'), { danger: true });
-        if (ok) this.model.deleteRespondent(id);
+        if (ok) {
+          this.model.deleteRespondent(id);
+          this.$nextTick(() => this.mountChart());
+        }
       },
 
       /** Aktiviert einen Reiter — ändert nie Antwortdaten. */
@@ -195,12 +211,16 @@ export default createModule({
         this.model.setAnswer(
           this.model.activeRespondentId, itemId, field, raw === '' ? null : Number(raw)
         );
+        this.$nextTick(() => this.mountChart());
       },
 
       // ── Items ─────────────────────────────────────────────────
 
       /** Löscht ein Item samt aller Antworten dazu. */
-      removeItem(id) { this.model.deleteItem(id); },
+      removeItem(id) {
+        this.model.deleteItem(id);
+        this.$nextTick(() => this.mountChart());
+      },
 
       /** Zeilenklasse: verwaiste Items werden markiert. */
       itemRowClass(item) { return item.missing ? 'kano__row--missing' : ''; },
@@ -247,6 +267,76 @@ export default createModule({
 
       /** Zeilenklasse der Ergebnistabelle. */
       resultRowClass(row) { return this.rowQWarn(row) ? 'kano__row--warn' : ''; },
+
+      // ── Chart ─────────────────────────────────────────────────
+
+      /**
+       * Blasendurchmesser aus der mittleren Wichtigkeit: 10 px (w̄ = 1) bis
+       * 26 px (w̄ = 9). Items ohne Wichtigkeitsangabe bekommen 10 px — nie 0,
+       * denn sizes[i] <= 0 rendert der Scatter-Typ unsichtbar.
+       * @param {object[]} rows
+       * @returns {number[]}
+       */
+      bubbleSizes(rows) {
+        return rows.map((r) => {
+          if (r.importanceMean === null) return 10;
+          return 10 + ((r.importanceMean - 1) / 8) * 16;
+        });
+      },
+
+      /** Räumt alle gemounteten Chart-Instanzen ab. */
+      destroyCharts() {
+        for (const c of this._charts) {
+          try { module._context.chartManager.destroy(c); } catch { /* ignore */ }
+        }
+        this._charts = [];
+      },
+
+      /** Mountet das Better/Worse-Diagramm neu. */
+      async mountChart() {
+        this._renderGen++;
+        const gen = this._renderGen;
+        this.destroyCharts();
+
+        const host = module._container.querySelector('[data-ref="chart"]');
+        if (!host) return;
+
+        const rows = this.result().rows.filter((r) => r.cs !== null && r.ds !== null);
+        if (rows.length === 0) return;
+
+        const useImportance = this.model.options.importance;
+        const series = {
+          name: _t('chartTitle'),
+          color: 'var(--color-chart-1)',
+          symbol: 'circle',
+          markerSize: 8,
+          strokeWidth: 1,
+          x: rows.map((r) => Math.abs(r.ds)),
+          y: rows.map((r) => r.cs),
+          labels: rows.map((r) => r.label),
+        };
+        if (useImportance) {
+          series.sizes = this.bubbleSizes(rows);
+          series.sizeValues = rows.map((r) => r.importanceMean);
+          series.sizeLabel = _t('colImportanceMean');
+        }
+
+        const chart = await module._context.chartManager.create(host, 'scatter', {
+          xLabel: _t('chartX'),
+          yLabel: _t('chartY'),
+          showLegend: false,
+          series: [series],
+          refLines: [
+            { dir: 'h', value: 0.5, dash: 'dash', width: 1, color: 'var(--color-text-tertiary)' },
+            { dir: 'v', value: 0.5, dash: 'dash', width: 1, color: 'var(--color-text-tertiary)' },
+          ],
+        });
+        if (gen !== this._renderGen) {
+          try { module._context.chartManager.destroy(chart); } catch { /* ignore */ }
+          return;
+        }
+        this._charts.push(chart);
+      },
     };
   },
 });
