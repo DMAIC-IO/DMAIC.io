@@ -3,6 +3,13 @@
    BEM: .ishikawa__ prefix
    ============================================================ */
 
+/* Keep tab content (esp. the bordered blocks in the Experiments tab) from
+   butting against the module's own vertical scrollbar, which lives on
+   .module-container__body. */
+.ishikawa .module-container__body {
+  padding-right: var(--spacing-sm);
+}
+
 /* ===== Toolbar ===== */
 .ishikawa__toolbar {
   display: flex;
