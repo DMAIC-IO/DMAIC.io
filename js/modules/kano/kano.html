@@ -1,6 +1,17 @@
 <div class="module-container kano" x-data="kano">
   <div class="module-container__header">
     <h2 class="module-container__title" x-text="t('name')"></h2>
+    <div class="kano__toolbar">
+      <div class="kano__toolbar-spacer"></div>
+      <button class="btn btn--sm" type="button" data-ref="exportCsv"
+              x-text="t('exportCsv')" @click="exportCSV()"></button>
+      <button class="btn btn--sm" type="button" data-ref="exportXlsx"
+              x-text="t('exportXlsx')" @click="exportXLSX()"></button>
+      <button class="btn btn--sm" type="button" data-ref="exportPng"
+              x-text="t('exportPng')" @click="exportPNG()"></button>
+      <button class="btn btn--sm" type="button" data-ref="exportSvg"
+              x-text="t('exportSvg')" @click="exportSVG()"></button>
+    </div>
   </div>
 
   <div class="module-container__body dmike-split">

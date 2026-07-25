@@ -18,6 +18,8 @@ import { createModule } from '../../core/template-module.js';
 import { State } from './kano-model.js';
 import { listTrees, flatten, diff, applyDiff } from './kano-link.js';
 import { evaluate } from '../../engines/kano-engine.js';
+import { ensureXLSX, XLSX, downloadBlob } from '../../core/export-utils.js';
+import { exportSvgAsPNG, exportSvgAsFile } from '../../core/chart/modebar.js';
 
 export default createModule({
   config: {
@@ -248,11 +250,20 @@ export default createModule({
       /** Kategoriename aus i18n; '—' wenn nicht klassifiziert. */
       catLabel(cat) { return cat ? _t(`cat${cat}`) : '—'; },
 
-      /** Zahl mit fester Nachkommastelle; '—' für null. */
-      fmt(v, dec) { return v === null || v === undefined ? '—' : Number(v).toFixed(dec); },
+      /** Aktuelle Locale für Zahlenformate ('de-DE' | 'en-US'), aus dem Modul-Kontext. */
+      _locale() { return module._context.i18n.getLanguage() === 'de' ? 'de-DE' : 'en-US'; },
 
-      /** Anteil als Prozenttext. */
-      pct(v) { return `${Math.round((v || 0) * 100)} %`; },
+      /** Zahl mit fester Nachkommastelle, lokalisiert (Komma im Deutschen); '—' für null. */
+      fmt(v, dec) {
+        return v === null || v === undefined ? '—'
+          : Number(v).toLocaleString(this._locale(), { minimumFractionDigits: dec, maximumFractionDigits: dec });
+      },
+
+      /** Anteil als lokalisierter Prozenttext. */
+      pct(v) {
+        const p = Math.round((v || 0) * 100) || 0; // `|| 0` glättet ein mögliches -0
+        return `${p.toLocaleString(this._locale())} %`;
+      },
 
       /** @returns {boolean} true, wenn der Q-Anteil insgesamt zu hoch ist */
       qWarn() { return this.result().totals.qShare > this.Q_WARN; },
@@ -267,6 +278,88 @@ export default createModule({
 
       /** Zeilenklasse der Ergebnistabelle. */
       resultRowClass(row) { return this.rowQWarn(row) ? 'kano__row--warn' : ''; },
+
+      // ── Export ────────────────────────────────────────────────
+
+      /** Kopfzeile des Exports; die Wichtigkeitsspalte nur wenn aktiv. */
+      exportHeaders() {
+        const h = [_t('colItem'), 'M', 'O', 'A', 'I', 'R', 'Q',
+          _t('colCategory'), _t('colCs'), _t('colDs')];
+        if (this.model.options.importance) h.push(_t('colImportanceMean'));
+        return h;
+      },
+
+      /**
+       * Reine Zahlenformatierung für den CSV-Export: fester Punkt als
+       * Dezimaltrennzeichen, '—' für null. Bewusst NICHT lokalisiert wie
+       * `fmt()` — das Projekt trennt CSV-Spalten mit Semikolon, aber schreibt
+       * Dezimalwerte trotzdem mit Punkt (siehe pairwise-comparison.js
+       * exportCSV: `scores[i].toFixed(1)` in einer `;`-getrennten Datei). Ein
+       * lokalisiertes Komma neben dem Semikolon wäre zwar Excel-kompatibel,
+       * würde aber vom projektweiten Muster abweichen.
+       */
+      _csvNum(v, dec) { return v === null || v === undefined ? '—' : Number(v).toFixed(dec); },
+
+      /** Ergebniszeilen für den CSV-Export, gleiche Reihenfolge wie die Tabelle. */
+      exportRows() {
+        return this.result().rows.map((r) => {
+          const row = [r.label, r.counts.M, r.counts.O, r.counts.A, r.counts.I, r.counts.R,
+            r.counts.Q, this.catLabel(r.category), this._csvNum(r.cs, 2), this._csvNum(r.ds, 2)];
+          if (this.model.options.importance) row.push(this._csvNum(r.importanceMean, 1));
+          return row;
+        });
+      },
+
+      /**
+       * Ergebniszeilen für den XLSX-Export: Zähl- und Kennzahlspalten bleiben
+       * echte Zahlen (nicht als Text formatiert), damit in Excel damit
+       * gerechnet werden kann. Fehlende Werte werden als leere Zelle (null)
+       * geschrieben, nicht als '—'-Text.
+       */
+      _exportRowsXLSX() {
+        return this.result().rows.map((r) => {
+          const row = [r.label, r.counts.M, r.counts.O, r.counts.A, r.counts.I, r.counts.R,
+            r.counts.Q, this.catLabel(r.category), r.cs, r.ds];
+          if (this.model.options.importance) row.push(r.importanceMean);
+          return row;
+        });
+      },
+
+      /** Exportiert die Ergebnistabelle als CSV; tut nichts ohne Zeilen. */
+      exportCSV() {
+        const rows = this.exportRows();
+        if (rows.length === 0) return;
+        const esc = (v) => {
+          const s = String(v ?? '');
+          return /[";\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+        };
+        const lines = [this.exportHeaders().map(esc).join(';')];
+        for (const row of rows) lines.push(row.map(esc).join(';'));
+        const blob = new Blob([`\uFEFF${lines.join('\n')}`], { type: 'text/csv;charset=utf-8' });
+        downloadBlob(blob, 'kano.csv');
+      },
+
+      /** Exportiert die Ergebnistabelle als XLSX; tut nichts ohne Zeilen. */
+      async exportXLSX() {
+        const rows = this._exportRowsXLSX();
+        if (rows.length === 0) return;
+        await ensureXLSX();
+        const ws = XLSX.utils.aoa_to_sheet([this.exportHeaders(), ...rows]);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, 'Kano');
+        XLSX.writeFile(wb, 'kano.xlsx');
+      },
+
+      /** @returns {SVGElement|null} das gemountete Better/Worse-Diagramm, falls vorhanden */
+      _chartSvg() {
+        return module._container.querySelector('[data-ref="chart"] svg');
+      },
+
+      /** Exportiert das Diagramm als PNG; tut nichts ohne gemountetes Diagramm. */
+      exportPNG() { const svg = this._chartSvg(); if (svg) exportSvgAsPNG(svg, 'kano.png'); },
+
+      /** Exportiert das Diagramm als SVG; tut nichts ohne gemountetes Diagramm. */
+      exportSVG() { const svg = this._chartSvg(); if (svg) exportSvgAsFile(svg, 'kano.svg'); },
 
       // ── Chart ─────────────────────────────────────────────────
 

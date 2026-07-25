@@ -5,6 +5,19 @@
 
 .kano .dmike-split__input { width: 380px; }
 
+/* ── Toolbar (Export) ─────────────────────────────────────────── */
+
+.kano__toolbar {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  flex: 1;
+}
+
+.kano__toolbar-spacer {
+  flex: 1;
+}
+
 .kano__label {
   display: block;
   margin: var(--spacing-sm) 0 var(--spacing-xs);
