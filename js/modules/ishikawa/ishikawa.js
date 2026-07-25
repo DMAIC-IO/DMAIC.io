@@ -1348,9 +1348,15 @@ const mod = createModule({
           now: Date.now(),
           lang,
         });
-        if (config.isEmpty) { host.replaceChildren(); this.ganttEmptyMsg = _t('ganttNoData'); return; }
+        if (config.isEmpty) { host.style.height = ''; host.replaceChildren(); this.ganttEmptyMsg = _t('ganttNoData'); return; }
         this.ganttEmptyMsg = '';
         host.replaceChildren();
+        // The chart framework sizes its SVG to the host via a height:100% chain +
+        // ResizeObserver — the host MUST carry a definite height or the measured
+        // height has no stable basis and drifts on every re-render. Pin it to the
+        // gantt's content height (padT + rows·rowH + padB).
+        const gl = config.layout;
+        host.style.height = `${gl.padT + config.tasks.length * gl.rowH + gl.padB}px`;
         const gen = ++this._renderGen;
         const chart = await module._context.chartManager.create(host, 'gantt', {
           ...config,
@@ -1383,9 +1389,13 @@ const mod = createModule({
         }
         const lang = module._context.language || 'de';
         const config = computeCostConfig(this.model.experiments, mode, { now: Date.now(), lang });
-        if (config.isEmpty) { host.replaceChildren(); this[emptyField] = _t('costChartNoData'); return; }
+        if (config.isEmpty) { host.style.height = ''; host.replaceChildren(); this[emptyField] = _t('costChartNoData'); return; }
         this[emptyField] = '';
         host.replaceChildren();
+        // Pin a definite host height (padT + innerH + padB) — see renderGantt for
+        // why the framework's height:100% chain needs a definite basis.
+        const cl = config.layout;
+        host.style.height = `${cl.padT + cl.innerH + cl.padB}px`;
         const genKey = mode === 'rate' ? 'rate' : 'cumulative';
         const gen = ++this._costGen[genKey];
         const chart = await module._context.chartManager.create(host, 'cumulative-cost', {
