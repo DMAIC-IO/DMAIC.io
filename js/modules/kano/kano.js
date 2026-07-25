@@ -304,28 +304,37 @@ export default createModule({
         const rows = this.result().rows.filter((r) => r.cs !== null && r.ds !== null);
         if (rows.length === 0) return;
 
+        // Eine Serie je Item (statt einer Serie mit vielen Punkten): der
+        // Scatter-Typ nimmt den Serien-Namen als Tooltip-Kopf (scatter.js:301),
+        // ein gemeinsames `labels`-Feld an der Serie wird dort nirgends
+        // gelesen. showLegend bleibt aus, sonst würde aus der Legende eine
+        // Itemliste — Achsenbereich (dataExtent) und Tooltip-Trefferauswahl
+        // (_findNearby) arbeiten unverändert über alle Serien hinweg.
         const useImportance = this.model.options.importance;
-        const series = {
-          name: _t('chartTitle'),
-          color: 'var(--color-chart-1)',
-          symbol: 'circle',
-          markerSize: 8,
-          strokeWidth: 1,
-          x: rows.map((r) => Math.abs(r.ds)),
-          y: rows.map((r) => r.cs),
-          labels: rows.map((r) => r.label),
-        };
-        if (useImportance) {
-          series.sizes = this.bubbleSizes(rows);
-          series.sizeValues = rows.map((r) => r.importanceMean);
-          series.sizeLabel = _t('colImportanceMean');
-        }
+        const sizes = useImportance ? this.bubbleSizes(rows) : null;
+        const series = rows.map((r, i) => {
+          const s = {
+            name: r.label,
+            color: 'var(--color-chart-1)',
+            symbol: 'circle',
+            markerSize: 8,
+            strokeWidth: 1,
+            x: [Math.abs(r.ds)],
+            y: [r.cs],
+          };
+          if (useImportance) {
+            s.sizes = [sizes[i]];
+            s.sizeValues = [r.importanceMean];
+            s.sizeLabel = _t('colImportanceMean');
+          }
+          return s;
+        });
 
         const chart = await module._context.chartManager.create(host, 'scatter', {
           xLabel: _t('chartX'),
           yLabel: _t('chartY'),
           showLegend: false,
-          series: [series],
+          series,
           refLines: [
             { dir: 'h', value: 0.5, dash: 'dash', width: 1, color: 'var(--color-text-tertiary)' },
             { dir: 'v', value: 0.5, dash: 'dash', width: 1, color: 'var(--color-text-tertiary)' },
