@@ -69,3 +69,63 @@ export function flatten(treeState, level) {
   }
   return out;
 }
+
+/**
+ * Vergleicht die Item-Liste mit den aktuellen Baum-Kandidaten.
+ * Losgelöste Items (nodeId === null) bleiben unberührt.
+ *
+ * @param {Array<object>} items aktuelle Kano-Items
+ * @param {Array<{nodeId: string, label: string, path: string}>} candidates
+ * @returns {{ added: object[], renamed: Array<{item: object, candidate: object}>, missing: object[] }}
+ */
+export function diff(items, candidates) {
+  const itemList = items || [];
+  const candList = candidates || [];
+  const byNode = new Map(itemList.filter((i) => i.nodeId).map((i) => [i.nodeId, i]));
+  const candIds = new Set(candList.map((c) => c.nodeId));
+
+  const added = candList.filter((c) => !byNode.has(c.nodeId));
+  const renamed = [];
+  for (const c of candList) {
+    const item = byNode.get(c.nodeId);
+    if (item && (item.label !== c.label || item.path !== c.path)) renamed.push({ item, candidate: c });
+  }
+  const missing = itemList.filter((i) => i.nodeId && !candIds.has(i.nodeId) && !i.missing);
+
+  return { added, renamed, missing };
+}
+
+/**
+ * Wendet ein Diff an: neue Items anhängen, umbenannte aktualisieren,
+ * verschwundene als `missing` markieren, zurückgekehrte entmarkieren.
+ * Löscht nie ein Item — das bleibt eine bewusste Nutzeraktion.
+ *
+ * @param {Array<object>} items
+ * @param {{ added: object[], renamed: object[], missing: object[] }} diffResult
+ * @param {() => string} makeId liefert eine neue, eindeutige Item-ID
+ * @returns {Array<object>} neue Liste; die Eingabe wird nicht mutiert
+ */
+export function applyDiff(items, diffResult, makeId) {
+  const renamedByNode = new Map((diffResult?.renamed || []).map((r) => [r.item.nodeId, r.candidate]));
+  const missingIds = new Set((diffResult?.missing || []).map((i) => i.id));
+  const returnedIds = new Set(
+    (items || [])
+      .filter((i) => i.missing && !missingIds.has(i.id) && i.nodeId && !(diffResult?.added || []).some((c) => c.nodeId === i.nodeId))
+      .map((i) => i.id)
+  );
+
+  const next = (items || []).map((item) => {
+    const cand = item.nodeId ? renamedByNode.get(item.nodeId) : null;
+    return {
+      ...item,
+      label: cand ? cand.label : item.label,
+      path: cand ? cand.path : item.path,
+      missing: missingIds.has(item.id) ? true : (returnedIds.has(item.id) ? false : item.missing),
+    };
+  });
+
+  for (const c of diffResult?.added || []) {
+    next.push({ id: makeId(), nodeId: c.nodeId, label: c.label, path: c.path, missing: false });
+  }
+  return next;
+}

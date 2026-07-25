@@ -6,7 +6,7 @@
  */
 
 import { suite, test, assertEqual, assertDeepEqual } from '../test-utils.js';
-import { listTrees, flatten } from '../../js/modules/kano/kano-link.js';
+import { listTrees, flatten, diff, applyDiff } from '../../js/modules/kano/kano-link.js';
 
 /** Minimaler stateManager-Doppelgänger. */
 function fakeSM(phases, states = {}) {
@@ -115,5 +115,80 @@ suite('kano-link — flatten', () => {
     listTrees(sm);
     const after = JSON.stringify({ phases, states });
     assertEqual(before, after);
+  });
+});
+
+const ITEMS = [
+  { id: 'k1', nodeId: 'n1', label: 'Schnelle Lieferung', path: 'VoC', missing: false },
+  { id: 'k2', nodeId: 'n2', label: 'Alter Text',        path: 'VoC', missing: false },
+  { id: 'k3', nodeId: 'n9', label: 'Weg aus dem Baum',  path: 'VoC', missing: false },
+  { id: 'k4', nodeId: null, label: 'Losgelöst',         path: '',    missing: false },
+];
+const CANDIDATES = [
+  { nodeId: 'n1', label: 'Schnelle Lieferung', path: 'VoC' },
+  { nodeId: 'n2', label: 'Neuer Text',         path: 'VoC' },
+  { nodeId: 'n3', label: 'Ganz neu',           path: 'VoC' },
+];
+
+suite('kano-link — diff', () => {
+  test('added: Kandidat ohne Item', () => {
+    assertDeepEqual(diff(ITEMS, CANDIDATES).added.map(c => c.nodeId), ['n3']);
+  });
+
+  test('renamed: gleiche nodeId, anderer Text', () => {
+    const r = diff(ITEMS, CANDIDATES).renamed;
+    assertEqual(r.length, 1);
+    assertEqual(r[0].item.id, 'k2');
+    assertEqual(r[0].candidate.label, 'Neuer Text');
+  });
+
+  test('missing: Item mit nodeId ohne Kandidat', () => {
+    assertDeepEqual(diff(ITEMS, CANDIDATES).missing.map(i => i.id), ['k3']);
+  });
+
+  test('losgelöste Items tauchen in keiner Kategorie auf', () => {
+    const d = diff(ITEMS, CANDIDATES);
+    const all = [...d.added, ...d.renamed.map(r => r.item), ...d.missing];
+    assertEqual(all.some(x => x.id === 'k4'), false);
+  });
+
+  test('bereits verwaistes Item, das zurückkehrt, gilt nicht mehr als missing', () => {
+    const items = [{ id: 'k1', nodeId: 'n1', label: 'A', path: '', missing: true }];
+    const d = diff(items, [{ nodeId: 'n1', label: 'A', path: '' }]);
+    assertEqual(d.missing.length, 0);
+  });
+});
+
+suite('kano-link — applyDiff', () => {
+  test('hängt neue Items an und vergibt frische IDs', () => {
+    let i = 0;
+    const next = applyDiff(ITEMS, diff(ITEMS, CANDIDATES), () => `new-${++i}`);
+    assertEqual(next.length, 5);
+    assertEqual(next[4].id, 'new-1');
+    assertEqual(next[4].nodeId, 'n3');
+  });
+
+  test('aktualisiert Label und Pfad umbenannter Items, ID bleibt', () => {
+    const next = applyDiff(ITEMS, diff(ITEMS, CANDIDATES), () => 'x');
+    const k2 = next.find(i => i.id === 'k2');
+    assertEqual(k2.label, 'Neuer Text');
+  });
+
+  test('setzt missing statt zu löschen', () => {
+    const next = applyDiff(ITEMS, diff(ITEMS, CANDIDATES), () => 'x');
+    assertEqual(next.find(i => i.id === 'k3').missing, true);
+    assertEqual(next.find(i => i.id === 'k1').missing, false);
+  });
+
+  test('nimmt missing zurück, wenn der Knoten wieder da ist', () => {
+    const items = [{ id: 'k1', nodeId: 'n1', label: 'A', path: '', missing: true }];
+    const cands = [{ nodeId: 'n1', label: 'A', path: '' }];
+    assertEqual(applyDiff(items, diff(items, cands), () => 'x')[0].missing, false);
+  });
+
+  test('mutiert die Eingabeliste nicht', () => {
+    const snapshot = JSON.stringify(ITEMS);
+    applyDiff(ITEMS, diff(ITEMS, CANDIDATES), () => 'x');
+    assertEqual(JSON.stringify(ITEMS), snapshot);
   });
 });
