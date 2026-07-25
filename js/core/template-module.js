@@ -261,7 +261,7 @@ export function createModule(base) {
       }
       let exampleData = payload.data;
       if (typeof beforeLoadExample === 'function') {
-        exampleData = beforeLoadExample(payload.data);
+        exampleData = beforeLoadExample.call(this, payload.data);
       }
       this.setState(exampleData);
       this._context.stateManager.setModuleState(this._context.instanceId, this.getState());

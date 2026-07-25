@@ -21,24 +21,33 @@ import { evaluate } from '../../engines/kano-engine.js';
 import { ensureXLSX, XLSX, downloadBlob } from '../../core/export-utils.js';
 import { exportSvgAsPNG, exportSvgAsFile } from '../../core/chart/modebar.js';
 import { provisionInstance } from '../../core/examples-registry.js';
+import manifest from '../manifest.js';
+import { DEFAULT_CYCLE } from '../../core/cycles/cycles.js';
 
 /**
- * Modul-Kontext der zuletzt initialisierten Kano-Instanz.
+ * Ermittelt die Phase, in der eine frisch provisionierte `voc-ctx-tree`-
+ * Instanz im aktiven Zyklus landen muss.
  *
- * `beforeLoadExample(data)` wird von `template-module.js` synchron und OHNE
- * `this`-Bindung aufgerufen (`beforeLoadExample(payload.data)` — ein reiner
- * Funktionsaufruf, kein Methodenaufruf), bekommt also weder `this._context`
- * noch ein `module`-Argument. Die anderen bestehenden `beforeLoadExample`-
- * Hooks im Projekt (fmea, ishikawa, …) brauchen deshalb bewusst nur `data`.
- * Task 12 braucht hier aber `stateManager`/`eventBus`, um bei Bedarf einen
- * Baum zu provisionieren — deshalb wird der zuletzt gesehene Kontext hier
- * zwischengespeichert. Das ist unproblematisch, weil `stateManager` und
- * `eventBus` echte Singletons über den ganzen Workspace sind (siehe
- * `js/ui/workspace.js` `_buildContext`) — welche Kano-Instanz sie zuletzt
- * gesetzt hat, spielt keine Rolle, die Referenz ist immer dieselbe.
- * @type {object|null}
+ * `voc-ctx-tree` ist zyklusabhängig verortet (`js/modules/manifest.js`):
+ * unter DMAIC/DMADV in `define`, unter 8D aber in `problem` — der 8D-Zyklus
+ * kennt gar keine `define`-Phase. Ein fest verdrahtetes `'define'` hätte die
+ * neue Instanz unter 8D in eine nicht existierende Phase geschrieben
+ * (unsichtbar, und bei einem Zyklenwechsel potenziell als zweiter Baum, was
+ * die Singleton-Annahme der Lage-3-Schutzlogik in `beforeLoadExample`
+ * untergräbt).
+ *
+ * Der Modul-Kontext (`js/ui/workspace.js` `_buildContext`) reicht keine
+ * `moduleRegistry` durch, daher direkt aus dem statischen Manifest gelesen
+ * (reine Daten, keine Bootstrap-Seiteneffekte) statt über die zur Laufzeit
+ * gepflegte Registry.
+ *
+ * @param {string} cycleId
+ * @returns {string}
  */
-let _lastContext = null;
+function treePhaseForCycle(cycleId) {
+  const def = manifest.find((m) => m.id === 'voc-ctx-tree');
+  return def?.cycles?.[cycleId]?.phase || def?.phase || 'define';
+}
 
 export default createModule({
   config: {
@@ -63,24 +72,29 @@ export default createModule({
    *      laden (nodeId null). voc-ctx-tree ist Singleton, ein zweiter Baum ist
    *      gar nicht möglich, und fremde Daten zu überschreiben ist keine Option.
    *
-   * `voc-ctx-tree` trägt keine `cycles`-Map (`js/modules/voc-ctx-tree/voc-ctx-tree.js`)
-   * — die Phase ist immer `'define'`, unabhängig vom aktiven Zyklus. Ein
-   * Umweg über `ctx.moduleRegistry`/`activeCycle` entfällt deshalb: Der
-   * Modul-Kontext (`js/ui/workspace.js` `_buildContext`) reicht ohnehin keine
-   * `moduleRegistry` durch, und `activeCycle` ist nicht der reale State-Key
-   * (der heißt `projectMeta.cycle`).
+   * Die Phase der neu provisionierten `voc-ctx-tree`-Instanz (Lage 1) hängt
+   * vom aktiven Zyklus ab (`treePhaseForCycle`, s. o.) — `ctx.moduleRegistry`
+   * gibt es im Modul-Kontext nicht (`js/ui/workspace.js` `_buildContext`),
+   * der reale State-Key für den aktiven Zyklus heißt `projectMeta.cycle`
+   * (nicht `activeCycle`).
+   *
+   * `template-module.js` ruft diesen Hook als `beforeLoadExample.call(this,
+   * payload.data)` auf — `this` ist hier also die Modul-Instanz, `this._context`
+   * folglich der echte Kontext der gerade ladenden Instanz (kein modulweiter
+   * Zustand, keine Verwechslungsgefahr bei mehreren offenen Kano-Instanzen).
    *
    * @param {{ tree: object, kano: object }} data
    * @returns {object} der zu setzende Kano-State
    */
   beforeLoadExample(data) {
-    const ctx = _lastContext;
+    const ctx = this._context;
     const kano = JSON.parse(JSON.stringify(data.kano));
     const trees = listTrees(ctx?.stateManager);
 
     if (trees.length === 0) {
+      const cycleId = ctx?.stateManager?.get('projectMeta.cycle') || DEFAULT_CYCLE;
       const instanceId = provisionInstance(ctx, {
-        moduleId: 'voc-ctx-tree', phase: 'define', state: data.tree,
+        moduleId: 'voc-ctx-tree', phase: treePhaseForCycle(cycleId), state: data.tree,
       });
       kano.source.instanceId = instanceId;
       return kano;
@@ -108,7 +122,6 @@ export default createModule({
   },
 
   data(module, _t) {
-    _lastContext = module._context;
     return {
       /** @type {Array<{instanceId: string, state: object|null}>} */
       treeList: [],
