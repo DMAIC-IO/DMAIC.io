@@ -87,9 +87,9 @@
           <template x-for="item in model.items">
             <tr :key="item.id" :data-item-id="item.id" :class="itemRowClass(item)">
               <td>
-                <span class="kano__item-label" x-text="item.label"></span>
+                <span class="kano__item-label" data-ref="itemLabel" x-text="item.label"></span>
                 <span class="kano__item-path" x-text="item.path"></span>
-                <span class="kano__badge-missing" x-show="item.missing" x-text="t('itemMissing')"></span>
+                <span class="kano__badge-missing" data-ref="itemMissing" x-show="item.missing" x-text="t('itemMissing')"></span>
               </td>
               <td>
                 <select class="field kano__answer" data-field="f"
