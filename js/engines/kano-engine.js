@@ -97,3 +97,63 @@ export function aggregate(itemAnswers, options) {
     importanceN,
   };
 }
+
+/** Rang je Kategorie für die Sortierung; null (keine Kategorie) landet zuletzt. */
+const CATEGORY_RANK = Object.fromEntries(CATEGORIES.map((c, i) => [c, i]));
+
+/**
+ * Wertet alle Items über alle Befragten aus.
+ *
+ * Sortierung der Zeilen: Kategorierang (M > O > A > I > R > Q, ohne Kategorie
+ * zuletzt), dann mittlere Wichtigkeit absteigend, dann CS absteigend. Damit ist
+ * die Reihenfolge deterministisch und unabhängig von der Eingabereihenfolge.
+ *
+ * @param {Array<{id: string, label: string, path: string, missing: boolean}>} items
+ * @param {Array<{id: string, name: string}>} respondents
+ * @param {object} answers { [respondentId]: { [itemId]: { f, d, w } } }
+ * @param {{ importance: boolean }} options
+ * @returns {{ rows: object[], totals: { items: number, respondents: number,
+ *             completeness: number, qShare: number } }}
+ */
+export function evaluate(items, respondents, answers, options) {
+  const itemList = items || [];
+  const respList = respondents || [];
+
+  const rows = itemList.map((item) => {
+    const itemAnswers = respList.map((r) => {
+      const byItem = answers && answers[r.id] ? answers[r.id] : {};
+      return byItem[item.id] || { f: null, d: null, w: null };
+    });
+    return {
+      itemId: item.id,
+      label: item.label,
+      path: item.path,
+      missing: Boolean(item.missing),
+      ...aggregate(itemAnswers, options),
+    };
+  });
+
+  rows.sort((a, b) => {
+    const ra = a.category ? CATEGORY_RANK[a.category] : CATEGORIES.length;
+    const rb = b.category ? CATEGORY_RANK[b.category] : CATEGORIES.length;
+    if (ra !== rb) return ra - rb;
+    const wa = a.importanceMean ?? -Infinity;
+    const wb = b.importanceMean ?? -Infinity;
+    if (wa !== wb) return wb - wa;
+    return (b.cs ?? -Infinity) - (a.cs ?? -Infinity);
+  });
+
+  const classified = rows.reduce((s, r) => s + r.n, 0);
+  const qTotal = rows.reduce((s, r) => s + r.counts.Q, 0);
+  const cells = itemList.length * respList.length;
+
+  return {
+    rows,
+    totals: {
+      items: itemList.length,
+      respondents: respList.length,
+      completeness: cells > 0 ? classified / cells : 0,
+      qShare: classified > 0 ? qTotal / classified : 0,
+    },
+  };
+}

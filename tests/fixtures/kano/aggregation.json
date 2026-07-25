@@ -67,7 +67,7 @@
       "expected": { "category": "R", "tie": false, "n": 3, "cs": null, "ds": null }
     },
     {
-      "id": "unvollstaendige-paare",
+      "id": "unvollständige-paare",
       "tier": "edge",
       "description": "1x O vollständig, 2x nur f gesetzt. n=1, unanswered=2. CS=1, DS=-1",
       "inputs": {
