@@ -40,7 +40,94 @@
     </div>
 
     <div class="dmike-split__output" data-ref="output">
-      <!-- Erfassung folgt in Task 8, Auswertung in Task 9/10 -->
+      <div class="dmike-split__output-section-header">
+        <div class="dmike-split__output-section" x-text="t('captureTitle')"></div>
+        <button class="btn btn--sm" type="button" data-ref="addRespondent"
+                x-text="t('respondentAdd')" @click="addRespondent()"></button>
+      </div>
+
+      <div class="dmike-tabs" data-ref="respondentTabs">
+        <template x-for="r in model.respondents">
+          <span class="kano__tab-wrap dmike-del-btn-host" :key="r.id">
+            <button class="dmike-tab" type="button" :data-respondent-id="r.id"
+                    :class="tabClass(r.id)" x-text="r.name"
+                    @click="selectRespondent(r.id)"></button>
+            <button class="dmike-del-btn kano__tab-del-btn" type="button"
+                    :title="t('respondentDelete')" @click="removeRespondent(r.id)"></button>
+          </span>
+        </template>
+      </div>
+
+      <p class="kano__hint" x-show="model.items.length === 0" x-text="t('captureEmpty')"></p>
+      <p class="kano__hint" x-show="model.items.length > 0 && !model.activeRespondentId"
+         x-text="t('captureNoRespondent')"></p>
+
+      <table class="dmike-table kano__capture" data-ref="captureTable" x-show="canCapture()">
+        <thead>
+          <tr>
+            <th x-text="t('colItem')"></th>
+            <th x-text="t('colFunctional')"></th>
+            <th x-text="t('colDysfunctional')"></th>
+            <th x-show="model.options.importance" x-text="t('colImportance')"></th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <template x-for="item in model.items">
+            <tr :key="item.id" :data-item-id="item.id" :class="itemRowClass(item)">
+              <td>
+                <span class="kano__item-label" x-text="item.label"></span>
+                <span class="kano__item-path" x-text="item.path"></span>
+                <span class="kano__badge-missing" x-show="item.missing" x-text="t('itemMissing')"></span>
+              </td>
+              <td>
+                <select class="field kano__answer" data-field="f"
+                        :value="answerValue(item.id, 'f')"
+                        @change="setAnswerFromEvent(item.id, 'f', $event)">
+                  <option value="" x-text="t('scaleEmpty')"></option>
+                  <option value="1" x-text="t('scaleF1')"></option>
+                  <option value="2" x-text="t('scaleF2')"></option>
+                  <option value="3" x-text="t('scaleF3')"></option>
+                  <option value="4" x-text="t('scaleF4')"></option>
+                  <option value="5" x-text="t('scaleF5')"></option>
+                </select>
+              </td>
+              <td>
+                <select class="field kano__answer" data-field="d"
+                        :value="answerValue(item.id, 'd')"
+                        @change="setAnswerFromEvent(item.id, 'd', $event)">
+                  <option value="" x-text="t('scaleEmpty')"></option>
+                  <option value="1" x-text="t('scaleD1')"></option>
+                  <option value="2" x-text="t('scaleD2')"></option>
+                  <option value="3" x-text="t('scaleD3')"></option>
+                  <option value="4" x-text="t('scaleD4')"></option>
+                  <option value="5" x-text="t('scaleD5')"></option>
+                </select>
+              </td>
+              <td x-show="model.options.importance">
+                <select class="field kano__answer" data-field="w"
+                        :value="answerValue(item.id, 'w')"
+                        @change="setAnswerFromEvent(item.id, 'w', $event)">
+                  <option value="" x-text="t('scaleEmpty')"></option>
+                  <option value="1">1</option>
+                  <option value="2">2</option>
+                  <option value="3">3</option>
+                  <option value="4">4</option>
+                  <option value="5">5</option>
+                  <option value="6">6</option>
+                  <option value="7">7</option>
+                  <option value="8">8</option>
+                  <option value="9">9</option>
+                </select>
+              </td>
+              <td class="dmike-del-btn-host">
+                <button class="dmike-del-btn" type="button" :title="t('itemDelete')"
+                        @click="removeItem(item.id)"></button>
+              </td>
+            </tr>
+          </template>
+        </tbody>
+      </table>
     </div>
   </div>
 </div>

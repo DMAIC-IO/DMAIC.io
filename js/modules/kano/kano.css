@@ -24,3 +24,46 @@
   font-size: var(--font-size-sm);
   color: var(--color-text-tertiary);
 }
+
+/* ── Reiter je Befragte:r ─────────────────────────────────────── */
+
+.kano__tab-wrap {
+  position: relative;
+  display: flex;
+  flex: 1;
+}
+
+.kano__tab-wrap .dmike-tab { flex: 1; padding-right: 20px; }
+
+.kano__tab-del-btn {
+  position: absolute;
+  right: 2px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+/* ── Erfassungsraster ─────────────────────────────────────────── */
+
+.kano__item-label { display: block; }
+
+.kano__item-path {
+  display: block;
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+}
+
+.kano__row--missing { opacity: 0.75; }
+
+.kano__badge-missing {
+  margin-left: var(--spacing-xs);
+  padding: 0 var(--spacing-xs);
+  border-radius: var(--border-radius-sm);
+  background: var(--color-warning-bg, var(--color-bg-secondary));
+  color: var(--color-warning);
+  font-size: var(--font-size-xs);
+}
+
+.kano__hint {
+  margin: var(--spacing-md) 0;
+  color: var(--color-text-tertiary);
+}

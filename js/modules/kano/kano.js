@@ -149,6 +149,65 @@ export default createModule({
         this.model.setItems(applyDiff(this.model.items, d, () => crypto.randomUUID()));
         this.refreshPending();
       },
+
+      // ── Befragte ──────────────────────────────────────────────
+
+      /** Legt eine:n neue:n Befragte:n mit Default-Namen an und aktiviert sie/ihn ggf. */
+      addRespondent() {
+        const n = this.model.respondents.length + 1;
+        this.model.addRespondent(_t('respondentDefault', { n }));
+      },
+
+      /**
+       * Fragt nach und löscht danach eine:n Befragte:n samt aller Antworten.
+       * @param {string} id
+       */
+      async removeRespondent(id) {
+        const ok = await module._context.confirmPopout(_t('respondentDeleteConfirm'), { danger: true });
+        if (ok) this.model.deleteRespondent(id);
+      },
+
+      /** Aktiviert einen Reiter — ändert nie Antwortdaten. */
+      selectRespondent(id) { this.model.activeRespondentId = id; },
+
+      /** Klassen des Reiters — aktiver Reiter bekommt den Modifier. */
+      tabClass(id) {
+        return id === this.model.activeRespondentId ? 'dmike-tab--active' : '';
+      },
+
+      // ── Antworten ─────────────────────────────────────────────
+
+      /** @returns {string} Wert für das Select ('' wenn nicht gesetzt) */
+      answerValue(itemId, field) {
+        const v = this.model.answerOf(this.model.activeRespondentId, itemId)[field];
+        return v === null ? '' : String(v);
+      },
+
+      /**
+       * Übernimmt den Select-Wert aus dem `@change`-Event in die aktive Antwort.
+       * @param {string} itemId
+       * @param {'f'|'d'|'w'} field
+       * @param {Event} ev
+       */
+      setAnswerFromEvent(itemId, field, ev) {
+        const raw = ev.target.value;
+        this.model.setAnswer(
+          this.model.activeRespondentId, itemId, field, raw === '' ? null : Number(raw)
+        );
+      },
+
+      // ── Items ─────────────────────────────────────────────────
+
+      /** Löscht ein Item samt aller Antworten dazu. */
+      removeItem(id) { this.model.deleteItem(id); },
+
+      /** Zeilenklasse: verwaiste Items werden markiert. */
+      itemRowClass(item) { return item.missing ? 'kano__row--missing' : ''; },
+
+      /** @returns {boolean} true, wenn Erfassung möglich ist */
+      canCapture() {
+        return this.model.items.length > 0 && Boolean(this.model.activeRespondentId);
+      },
     };
   },
 });
