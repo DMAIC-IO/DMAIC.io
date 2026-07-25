@@ -160,6 +160,31 @@ export function removeProvisionedWorksheet(context, instanceId) {
 }
 
 /**
+ * Legt eine neue Modul-Instanz in der angegebenen Phase an und setzt ihren
+ * Modul-State. Emittiert `module:added` mit `silent: true`, damit der Workspace
+ * den Reiter ergänzt, ohne den Fokus vom aktiven Modul zu nehmen.
+ *
+ * Generisches Gegenstück zu `provisionWorksheet` (die feste `moduleId:
+ * 'worksheet'`/`phase: 'data'`-Variante), herausgezogen für Aufrufer, die
+ * eine andere Modul-Instanz (z. B. `voc-ctx-tree`) provisionieren müssen.
+ *
+ * @param {object} context Modul-Kontext (braucht stateManager + eventBus)
+ * @param {{ moduleId: string, phase: string, state: object }} spec
+ * @returns {string|null} Instanz-ID der neuen Instanz, null bei fehlenden Angaben
+ */
+export function provisionInstance(context, { moduleId, phase, state }) {
+  if (!context?.stateManager || !moduleId || !phase) return null;
+  const sm = context.stateManager;
+  const instanceId = crypto.randomUUID();
+  const list = sm.get(`phases.${phase}`) ?? [];
+  list.push({ instanceId, moduleId, order: list.length, state: {} });
+  sm.set(`phases.${phase}`, list);
+  sm.setModuleState(instanceId, state);
+  context.eventBus?.emit?.('module:added', { moduleId, phase, instanceId, silent: true });
+  return instanceId;
+}
+
+/**
  * Provision a new Worksheet instance in the data phase, seeded with the
  * supplied module-state. Used by example-loading code paths that need a
  * fresh Datensammlung to back column references in the loaded module
@@ -167,6 +192,10 @@ export function removeProvisionedWorksheet(context, instanceId) {
  *
  * Emits `module:added` with `silent: true` so the workspace tab list
  * updates without stealing focus from the currently active module.
+ *
+ * Thin wrapper around `provisionInstance` — signature and return value
+ * unchanged so existing callers (boxplot, histogram, regression, …) keep
+ * working without modification.
  *
  * @param {object} context — module context (must expose stateManager + eventBus)
  * @param {object} wsState — { sheets:[{id,name,state}], activeSheetId, sheetCounter }
@@ -177,18 +206,11 @@ export function provisionWorksheet(context, wsState) {
   const sheetId = wsState.activeSheetId || wsState.sheets[0]?.id;
   if (!sheetId) return null;
 
-  const sm = context.stateManager;
-  const instanceId = crypto.randomUUID();
-  const dataPhase = sm.get('phases.data') ?? [];
-  dataPhase.push({ instanceId, moduleId: 'worksheet', order: dataPhase.length, state: {} });
-  sm.set('phases.data', dataPhase);
-  sm.setModuleState(instanceId, wsState);
-
-  context.eventBus?.emit?.('module:added', {
-    moduleId: 'worksheet', phase: 'data', instanceId, silent: true,
+  const instanceId = provisionInstance(context, {
+    moduleId: 'worksheet', phase: 'data', state: wsState,
   });
 
-  return { instanceId, sheetId };
+  return instanceId ? { instanceId, sheetId } : null;
 }
 
 /**

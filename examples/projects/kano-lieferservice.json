@@ -1,0 +1,63 @@
+{
+  "tree": {
+    "vocs": [{
+      "id": "voc-lief",
+      "text": "Die Bestellung dauert zu lange und ich weiß nie, wo sie bleibt.",
+      "source": "Kundeninterview 03/2026",
+      "needs": [
+        { "id": "need-schnell", "text": "Schnelle Lieferung", "drivers": [] },
+        { "id": "need-transparenz", "text": "Nachvollziehbarer Lieferstatus", "drivers": [] },
+        { "id": "need-preis", "text": "Transparente Versandkosten", "drivers": [] },
+        { "id": "need-kontakt", "text": "Persönlicher Ansprechpartner", "drivers": [] },
+        { "id": "need-verpackung", "text": "Nachhaltige Verpackung", "drivers": [] },
+        { "id": "need-retoure", "text": "Unkomplizierte Retoure", "drivers": [] }
+      ]
+    }],
+    "activeVocId": "voc-lief",
+    "styles": { "borderWidth": 1, "colors": {} }
+  },
+  "kano": {
+    "source": { "instanceId": null, "level": "need" },
+    "options": { "importance": true },
+    "items": [
+      { "id": "k1", "nodeId": "need-schnell",     "label": "Schnelle Lieferung",            "path": "Die Bestellung dauert zu lange und ich weiß nie, wo sie bleibt.", "missing": false },
+      { "id": "k2", "nodeId": "need-transparenz", "label": "Nachvollziehbarer Lieferstatus", "path": "Die Bestellung dauert zu lange und ich weiß nie, wo sie bleibt.", "missing": false },
+      { "id": "k3", "nodeId": "need-preis",       "label": "Transparente Versandkosten",     "path": "Die Bestellung dauert zu lange und ich weiß nie, wo sie bleibt.", "missing": false },
+      { "id": "k4", "nodeId": "need-kontakt",     "label": "Persönlicher Ansprechpartner",   "path": "Die Bestellung dauert zu lange und ich weiß nie, wo sie bleibt.", "missing": false },
+      { "id": "k5", "nodeId": "need-verpackung",  "label": "Nachhaltige Verpackung",         "path": "Die Bestellung dauert zu lange und ich weiß nie, wo sie bleibt.", "missing": false },
+      { "id": "k6", "nodeId": "need-retoure",     "label": "Unkomplizierte Retoure",         "path": "Die Bestellung dauert zu lange und ich weiß nie, wo sie bleibt.", "missing": false }
+    ],
+    "respondents": [
+      { "id": "r1", "name": "Kunde A" },
+      { "id": "r2", "name": "Kunde B" },
+      { "id": "r3", "name": "Kunde C" }
+    ],
+    "answers": {
+      "r1": {
+        "k1": { "f": 1, "d": 5, "w": 8 },
+        "k2": { "f": 2, "d": 5, "w": 7 },
+        "k3": { "f": 2, "d": 5, "w": 6 },
+        "k4": { "f": 1, "d": 3, "w": 4 },
+        "k5": { "f": 1, "d": 3, "w": 5 },
+        "k6": { "f": 3, "d": 3, "w": 3 }
+      },
+      "r2": {
+        "k1": { "f": 1, "d": 5, "w": 9 },
+        "k2": { "f": 2, "d": 5, "w": 6 },
+        "k3": { "f": 1, "d": 5, "w": 5 },
+        "k4": { "f": 1, "d": 3, "w": 3 },
+        "k5": { "f": 3, "d": 3, "w": 4 },
+        "k6": { "f": 3, "d": 3, "w": 2 }
+      },
+      "r3": {
+        "k1": { "f": 2, "d": 5, "w": 8 },
+        "k2": { "f": 2, "d": 5, "w": 7 },
+        "k3": { "f": 1, "d": 5, "w": 6 },
+        "k4": { "f": 1, "d": 3, "w": 5 },
+        "k5": { "f": 1, "d": 3, "w": 6 },
+        "k6": { "f": 3, "d": 3, "w": 2 }
+      }
+    },
+    "activeRespondentId": "r1"
+  }
+}

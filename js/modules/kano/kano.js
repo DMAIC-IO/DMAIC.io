@@ -20,6 +20,25 @@ import { listTrees, flatten, diff, applyDiff } from './kano-link.js';
 import { evaluate } from '../../engines/kano-engine.js';
 import { ensureXLSX, XLSX, downloadBlob } from '../../core/export-utils.js';
 import { exportSvgAsPNG, exportSvgAsFile } from '../../core/chart/modebar.js';
+import { provisionInstance } from '../../core/examples-registry.js';
+
+/**
+ * Modul-Kontext der zuletzt initialisierten Kano-Instanz.
+ *
+ * `beforeLoadExample(data)` wird von `template-module.js` synchron und OHNE
+ * `this`-Bindung aufgerufen (`beforeLoadExample(payload.data)` — ein reiner
+ * Funktionsaufruf, kein Methodenaufruf), bekommt also weder `this._context`
+ * noch ein `module`-Argument. Die anderen bestehenden `beforeLoadExample`-
+ * Hooks im Projekt (fmea, ishikawa, …) brauchen deshalb bewusst nur `data`.
+ * Task 12 braucht hier aber `stateManager`/`eventBus`, um bei Bedarf einen
+ * Baum zu provisionieren — deshalb wird der zuletzt gesehene Kontext hier
+ * zwischengespeichert. Das ist unproblematisch, weil `stateManager` und
+ * `eventBus` echte Singletons über den ganzen Workspace sind (siehe
+ * `js/ui/workspace.js` `_buildContext`) — welche Kano-Instanz sie zuletzt
+ * gesetzt hat, spielt keine Rolle, die Referenz ist immer dieselbe.
+ * @type {object|null}
+ */
+let _lastContext = null;
 
 export default createModule({
   config: {
@@ -32,7 +51,64 @@ export default createModule({
   },
   Model: State,
 
+  /**
+   * Bereitet das Beispiel vor, bevor es in den State geht. Der Hook läuft
+   * synchron (template-module.js), deshalb sind hier nur synchrone
+   * Seiteneffekte erlaubt.
+   *
+   * Drei Lagen:
+   *   1. Kein Baum im Projekt      → Baum-Instanz anlegen und verknüpfen.
+   *   2. Baum vorhanden, aber leer → Beispielbaum hineinschreiben, verknüpfen.
+   *   3. Baum vorhanden mit Inhalt → Baum unangetastet lassen, Items losgelöst
+   *      laden (nodeId null). voc-ctx-tree ist Singleton, ein zweiter Baum ist
+   *      gar nicht möglich, und fremde Daten zu überschreiben ist keine Option.
+   *
+   * `voc-ctx-tree` trägt keine `cycles`-Map (`js/modules/voc-ctx-tree/voc-ctx-tree.js`)
+   * — die Phase ist immer `'define'`, unabhängig vom aktiven Zyklus. Ein
+   * Umweg über `ctx.moduleRegistry`/`activeCycle` entfällt deshalb: Der
+   * Modul-Kontext (`js/ui/workspace.js` `_buildContext`) reicht ohnehin keine
+   * `moduleRegistry` durch, und `activeCycle` ist nicht der reale State-Key
+   * (der heißt `projectMeta.cycle`).
+   *
+   * @param {{ tree: object, kano: object }} data
+   * @returns {object} der zu setzende Kano-State
+   */
+  beforeLoadExample(data) {
+    const ctx = _lastContext;
+    const kano = JSON.parse(JSON.stringify(data.kano));
+    const trees = listTrees(ctx?.stateManager);
+
+    if (trees.length === 0) {
+      const instanceId = provisionInstance(ctx, {
+        moduleId: 'voc-ctx-tree', phase: 'define', state: data.tree,
+      });
+      kano.source.instanceId = instanceId;
+      return kano;
+    }
+
+    const target = trees.find((t) => !(t.state?.vocs?.length));
+    if (target) {
+      ctx.stateManager.setModuleState(target.instanceId, data.tree);
+      // `setModuleState` schreibt nur den persistierten Snapshot — eine
+      // bereits gemountete (z. B. sichtbare/leere) voc-ctx-tree-Instanz liest
+      // ihren reaktiven Alpine-State nicht automatisch neu ein. Denselben Weg
+      // wie der Cross-Tab-Sync nehmen (state-manager.js emittiert dasselbe
+      // Event bei Remote-Änderungen; workspace.js hört bereits darauf und
+      // ruft `applyRemoteState` auf der passenden Instanz auf).
+      ctx.eventBus?.emit?.('state:remote-changed', {
+        instanceIds: [target.instanceId], metaChanged: false,
+      });
+      kano.source.instanceId = target.instanceId;
+      return kano;
+    }
+
+    kano.source.instanceId = null;
+    kano.items = kano.items.map((i) => ({ ...i, nodeId: null }));
+    return kano;
+  },
+
   data(module, _t) {
+    _lastContext = module._context;
     return {
       /** @type {Array<{instanceId: string, state: object|null}>} */
       treeList: [],
@@ -72,7 +148,15 @@ export default createModule({
       /** Liest die Baumliste neu und aktualisiert den Sync-Status. */
       refreshTrees() {
         this.treeList = listTrees(module._context.stateManager);
-        if (!this.model.source.instanceId && this.treeList.length === 1) {
+        // Auto-Verknüpfung nur für ein frisches, leeres Kano (Komfort: einziger
+        // Baum im Projekt → keine manuelle Auswahl nötig). Ohne die
+        // `items.length === 0`-Bedingung würde dieselbe Zeile einen bewusst
+        // losgelöst geladenen Beispielzustand (Lage 3 in beforeLoadExample,
+        // source.instanceId: null trotz vorhandener Items) beim nächsten
+        // `state:saved`/`module:added`/`module:removed` sofort wieder an den
+        // fremden Baum hängen — und genau das darf nicht passieren.
+        if (!this.model.source.instanceId && this.treeList.length === 1
+            && this.model.items.length === 0) {
           this.model.source.instanceId = this.treeList[0].instanceId;
         }
         this.refreshPending();
