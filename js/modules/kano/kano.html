@@ -23,9 +23,10 @@
       <label class="kano__label" x-text="t('sourceTree')"></label>
       <select class="field kano__tree-select" data-ref="treeSelect"
               @change="changeTree($event)">
+        <option value="" :selected="!model.source.instanceId" x-text="t('sourceNoneOption')"></option>
         <template x-for="tr in treeList">
           <option :value="tr.instanceId" :selected="tr.instanceId === model.source.instanceId"
-                  x-text="tr.instanceId"></option>
+                  x-text="treeLabel(tr)"></option>
         </template>
       </select>
 
@@ -48,6 +49,8 @@
       <button class="btn btn--sm kano__sync-btn" type="button" data-ref="syncBtn"
               :disabled="!hasPending()" x-text="t('syncButton')" @click="applySync()"></button>
       <p class="kano__sync-status" data-ref="syncStatus" x-text="syncStatus()"></p>
+      <div class="dmike-infobox dmike-infobox--info" data-ref="detachedInfo"
+           x-show="isDetached()" x-text="t('sourceDetachedInfo')"></div>
     </div>
 
     <div class="dmike-split__output" data-ref="output">
@@ -61,8 +64,16 @@
         <template x-for="r in model.respondents">
           <span class="kano__tab-wrap dmike-del-btn-host" :key="r.id">
             <button class="dmike-tab" type="button" :data-respondent-id="r.id"
-                    :class="tabClass(r.id)" x-text="r.name"
-                    @click="selectRespondent(r.id)"></button>
+                    :class="tabClass(r.id)" x-text="r.name" x-show="!isRenaming(r.id)"
+                    :title="respondentRenameTitle(r.name)"
+                    @click="selectRespondent(r.id)" @dblclick="startRename(r.id)"></button>
+            <template x-if="isRenaming(r.id)">
+              <input class="field kano__tab-rename-input" data-ref="tabRenameInput"
+                     x-model="renameValue"
+                     @keydown.enter.prevent="commitRename()"
+                     @keydown.escape="cancelRename()"
+                     @blur="commitRename()">
+            </template>
             <button class="dmike-del-btn kano__tab-del-btn" type="button"
                     :title="t('respondentDelete')" @click="removeRespondent(r.id)"></button>
           </span>
@@ -120,7 +131,7 @@
                         :value="answerValue(item.id, 'w')"
                         @change="setAnswerFromEvent(item.id, 'w', $event)">
                   <option value="" x-text="t('scaleEmpty')"></option>
-                  <option value="1">1</option>
+                  <option value="1" x-text="t('importanceLow')"></option>
                   <option value="2">2</option>
                   <option value="3">3</option>
                   <option value="4">4</option>
@@ -128,7 +139,7 @@
                   <option value="6">6</option>
                   <option value="7">7</option>
                   <option value="8">8</option>
-                  <option value="9">9</option>
+                  <option value="9" x-text="t('importanceHigh')"></option>
                 </select>
               </td>
               <td class="dmike-del-btn-host">

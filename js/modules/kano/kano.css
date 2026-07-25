@@ -3,7 +3,9 @@
  * Nur Ergänzungen zu den geteilten Klassen (.dmike-split, .dmike-table, …).
  */
 
-.kano .dmike-split__input { width: 380px; }
+.kano {
+  --dmike-split-input-width: 380px;
+}
 
 /* ── Toolbar (Export) ─────────────────────────────────────────── */
 
@@ -55,6 +57,13 @@
   transform: translateY(-50%);
 }
 
+.kano__tab-rename-input {
+  width: 100%;
+  font-size: var(--font-size-sm);
+  padding: 1px var(--spacing-xs);
+  box-sizing: border-box;
+}
+
 /* ── Erfassungsraster ─────────────────────────────────────────── */
 
 .kano__item-label { display: block; }
@@ -71,7 +80,7 @@
   margin-left: var(--spacing-xs);
   padding: 0 var(--spacing-xs);
   border-radius: var(--border-radius-sm);
-  background: var(--color-warning-bg, var(--color-bg-secondary));
+  background: color-mix(in srgb, var(--color-warning) 18%, transparent);
   color: var(--color-warning);
   font-size: var(--font-size-xs);
 }
@@ -83,7 +92,7 @@
 
 /* ── Ergebnistabelle ──────────────────────────────────────────── */
 
-.kano__row--warn { background: var(--color-warning-bg, transparent); }
+.kano__row--warn { background: color-mix(in srgb, var(--color-warning) 12%, transparent); }
 
 .kano__tie {
   margin-left: var(--spacing-xs);

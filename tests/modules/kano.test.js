@@ -35,6 +35,20 @@ suite('kano-model — Befragte', () => {
     assertEqual(s.hasContent(), true);
   });
 
+  test('renameRespondent ändert den Namen, lässt Antworten unberührt', () => {
+    const s = filled();
+    const id = s.respondents[0].id;
+    s.renameRespondent(id, 'Kunde A (umbenannt)');
+    assertEqual(s.respondents[0].name, 'Kunde A (umbenannt)');
+    assertEqual(s.answerOf(id, 'i1').f, 1);
+  });
+
+  test('renameRespondent ohne Treffer tut nichts', () => {
+    const s = filled();
+    s.renameRespondent('unbekannt', 'X');
+    assertEqual(s.respondents[0].name, 'Kunde A');
+  });
+
   test('deleteRespondent entfernt auch dessen Antworten', () => {
     const s = filled();
     const id = s.respondents[0].id;

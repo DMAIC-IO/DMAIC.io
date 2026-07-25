@@ -127,6 +127,10 @@ export default createModule({
       treeList: [],
       /** @type {{added: number, renamed: number, missing: number}} */
       pending: { added: 0, renamed: 0, missing: 0 },
+      /** @type {string|null} id der:s Befragten, deren Reitername gerade bearbeitet wird */
+      renamingRespondentId: null,
+      /** @type {string} Eingabewert während des Umbenennens */
+      renameValue: '',
       /** @type {object[]} gemountete Chart-Instanzen */
       _charts: [],
       /** Render-Generation — verhindert Mounts aus überholten Durchläufen. */
@@ -142,6 +146,29 @@ export default createModule({
           eb.on(evt, onChange);
           this._unsubs.push(() => eb.off(evt, onChange));
         }
+
+        // Eine reine Inhaltsänderung im Baum (Knoten umbenannt/gelöscht/neu)
+        // läuft über setModuleState() — die emittiert NICHT 'state:saved' (das
+        // feuert nur aus save(), also bei Phasen-/Metaänderungen), sondern
+        // 'data:changed' mit der Nutzlast `module:${instanceId}` bzw.
+        // `module:${instanceId}:removed` (state-manager.js). Ohne dieses Abo
+        // blieb der Sync-Status in einer laufenden Sitzung stehen, bis ein
+        // Reload den Baum neu einlas.
+        const onDataChanged = (payload) => {
+          if (typeof payload !== 'string' || !payload.startsWith('module:')) return;
+          const changedId = payload.slice('module:'.length).replace(/:removed$/, '');
+          if (this.treeList.some((t) => t.instanceId === changedId)) this.refreshTrees();
+        };
+        eb.on('data:changed', onDataChanged);
+        this._unsubs.push(() => eb.off('data:changed', onDataChanged));
+
+        // Sicherheitsnetz beim Zurückwechseln auf die eigene Instanz (Muster
+        // correlation.js:597) — falls beim Wegnavigieren etwas verpasst wurde.
+        const onActivated = ({ instanceId }) => {
+          if (instanceId === module._context.instanceId) this.refreshTrees();
+        };
+        eb.on('module:activated', onActivated);
+        this._unsubs.push(() => eb.off('module:activated', onActivated));
 
         this.$nextTick(() => this.mountChart());
         const onTheme = () => this.mountChart();
@@ -191,6 +218,16 @@ export default createModule({
           this.model.source.instanceId = this.treeList[0].instanceId;
         }
         this.refreshPending();
+      },
+
+      /**
+       * Lesbarer Name einer Baum-Instanz für das Auswahlfeld: Text der ersten
+       * VoC, sonst die instanceId als Rückfall (Muster msa-typ6.js:507).
+       * @param {{instanceId: string, state: object|null}} tr
+       * @returns {string}
+       */
+      treeLabel(tr) {
+        return tr?.state?.vocs?.[0]?.text || tr?.instanceId || '';
       },
 
       /** @returns {object|null} State des verknüpften Baums */
@@ -309,6 +346,39 @@ export default createModule({
         return id === this.model.activeRespondentId ? 'dmike-tab--active' : '';
       },
 
+      /** @returns {boolean} true, wenn der Reitername dieser:s Befragten gerade bearbeitet wird */
+      isRenaming(id) { return this.renamingRespondentId === id; },
+
+      /** Tooltip auf dem Reiter: Name + Rename-Hinweis (Muster raci-matrix.js). */
+      respondentRenameTitle(name) { return `${name} — ${_t('respondentRenameHint')}`; },
+
+      /** Öffnet das Inline-Eingabefeld für den Reiter-Namen. */
+      startRename(id) {
+        const r = this.model.respondents.find((x) => x.id === id);
+        if (!r) return;
+        this.renamingRespondentId = id;
+        this.renameValue = r.name;
+        this.$nextTick(() => {
+          const input = module._container.querySelector('.kano__tab-rename-input');
+          if (input) { input.focus(); input.select(); }
+        });
+      },
+
+      /** Übernimmt den bearbeiteten Namen; ein leerer Name wird verworfen (alter Name bleibt). */
+      commitRename() {
+        if (!this.renamingRespondentId) return;
+        const name = this.renameValue.trim();
+        if (name) this.model.renameRespondent(this.renamingRespondentId, name);
+        this.renamingRespondentId = null;
+        this.renameValue = '';
+      },
+
+      /** Bricht das Umbenennen ohne Übernahme ab. */
+      cancelRename() {
+        this.renamingRespondentId = null;
+        this.renameValue = '';
+      },
+
       // ── Antworten ─────────────────────────────────────────────
 
       /** @returns {string} Wert für das Select ('' wenn nicht gesetzt) */
@@ -336,6 +406,7 @@ export default createModule({
       /** Löscht ein Item samt aller Antworten dazu. */
       removeItem(id) {
         this.model.deleteItem(id);
+        this.refreshPending();
         this.$nextTick(() => this.mountChart());
       },
 
