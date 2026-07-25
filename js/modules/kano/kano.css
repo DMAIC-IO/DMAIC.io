@@ -1,0 +1,26 @@
+/**
+ * D.Mike — Kano Module Styles (kano.css)
+ * Nur Ergänzungen zu den geteilten Klassen (.dmike-split, .dmike-table, …).
+ */
+
+.kano .dmike-split__input { width: 380px; }
+
+.kano__label {
+  display: block;
+  margin: var(--spacing-sm) 0 var(--spacing-xs);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+.kano__check {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  font-size: var(--font-size-sm);
+}
+
+.kano__sync-status {
+  margin-top: var(--spacing-xs);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-tertiary);
+}

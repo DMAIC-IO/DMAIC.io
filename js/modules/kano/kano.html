@@ -1,0 +1,45 @@
+<div class="module-container kano" x-data="kano">
+  <div class="module-container__header">
+    <h2 class="module-container__title" x-text="t('name')"></h2>
+  </div>
+
+  <div class="module-container__body dmike-split">
+    <div class="dmike-split__input">
+      <div class="dmike-split__section-title" x-text="t('sourceTitle')"></div>
+
+      <div class="dmike-infobox" x-show="hasNoTree()" x-text="t('sourceNone')"></div>
+
+      <label class="kano__label" x-text="t('sourceTree')"></label>
+      <select class="field kano__tree-select" data-ref="treeSelect"
+              :value="model.source.instanceId" @change="changeTree($event)">
+        <template x-for="tr in treeList">
+          <option :value="tr.instanceId" x-text="tr.instanceId"></option>
+        </template>
+      </select>
+
+      <label class="kano__label" x-text="t('level')"></label>
+      <select class="field kano__level-select" data-ref="levelSelect"
+              :value="model.source.level" @change="changeLevel($event)">
+        <option value="need" x-text="t('levelNeed')"></option>
+        <option value="driver" x-text="t('levelDriver')"></option>
+        <option value="req" x-text="t('levelReq')"></option>
+      </select>
+
+      <div class="dmike-split__section-title" x-text="t('optionsTitle')"></div>
+      <label class="kano__check">
+        <input type="checkbox" data-ref="importanceToggle"
+               :checked="model.options.importance" @change="toggleImportance()" />
+        <span x-text="t('optionImportance')"></span>
+      </label>
+
+      <div class="dmike-split__section-title" x-text="t('syncTitle')"></div>
+      <button class="btn btn--sm kano__sync-btn" type="button" data-ref="syncBtn"
+              :disabled="!hasPending()" x-text="t('syncButton')" @click="applySync()"></button>
+      <p class="kano__sync-status" data-ref="syncStatus" x-text="syncStatus()"></p>
+    </div>
+
+    <div class="dmike-split__output" data-ref="output">
+      <!-- Erfassung folgt in Task 8, Auswertung in Task 9/10 -->
+    </div>
+  </div>
+</div>
