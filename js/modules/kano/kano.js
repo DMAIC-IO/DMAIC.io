@@ -17,6 +17,7 @@
 import { createModule } from '../../core/template-module.js';
 import { State } from './kano-model.js';
 import { listTrees, flatten, diff, applyDiff } from './kano-link.js';
+import { evaluate } from '../../engines/kano-engine.js';
 
 export default createModule({
   config: {
@@ -208,6 +209,44 @@ export default createModule({
       canCapture() {
         return this.model.items.length > 0 && Boolean(this.model.activeRespondentId);
       },
+
+      // ── Auswertung ────────────────────────────────────────────
+
+      /** Schwelle, ab der ein Q-Anteil als Datenqualitätsproblem gilt. */
+      Q_WARN: 0.10,
+
+      /**
+       * Live-Auswertung. Bewusst ohne Cache: die Rechenlast ist trivial und ein
+       * Cache müsste an Items, Befragten, Antworten und Optionen hängen.
+       */
+      result() {
+        return evaluate(
+          this.model.items, this.model.respondents, this.model.answers, this.model.options
+        );
+      },
+
+      /** Kategoriename aus i18n; '—' wenn nicht klassifiziert. */
+      catLabel(cat) { return cat ? _t(`cat${cat}`) : '—'; },
+
+      /** Zahl mit fester Nachkommastelle; '—' für null. */
+      fmt(v, dec) { return v === null || v === undefined ? '—' : Number(v).toFixed(dec); },
+
+      /** Anteil als Prozenttext. */
+      pct(v) { return `${Math.round((v || 0) * 100)} %`; },
+
+      /** @returns {boolean} true, wenn der Q-Anteil insgesamt zu hoch ist */
+      qWarn() { return this.result().totals.qShare > this.Q_WARN; },
+
+      /** Warntext mit eingesetztem Anteil. */
+      qWarnText() {
+        return _t('warnQShare', { share: this.pct(this.result().totals.qShare) });
+      },
+
+      /** @returns {boolean} true, wenn ein einzelnes Item zu viele Q-Antworten hat */
+      rowQWarn(row) { return row.n > 0 && row.counts.Q / row.n > this.Q_WARN; },
+
+      /** Zeilenklasse der Ergebnistabelle. */
+      resultRowClass(row) { return this.rowQWarn(row) ? 'kano__row--warn' : ''; },
     };
   },
 });

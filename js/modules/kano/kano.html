@@ -128,6 +128,64 @@
           </template>
         </tbody>
       </table>
+
+      <div class="dmike-split__output-section" x-text="t('resultTitle')"></div>
+
+      <div class="dmike-kpi-strip" data-ref="kpis">
+        <div class="dmike-kpi">
+          <div class="dmike-kpi-value" x-text="result().totals.items"></div>
+          <div class="dmike-kpi-label" x-text="t('kpiItems')"></div>
+        </div>
+        <div class="dmike-kpi">
+          <div class="dmike-kpi-value" x-text="result().totals.respondents"></div>
+          <div class="dmike-kpi-label" x-text="t('kpiRespondents')"></div>
+        </div>
+        <div class="dmike-kpi">
+          <div class="dmike-kpi-value" x-text="pct(result().totals.completeness)"></div>
+          <div class="dmike-kpi-label" x-text="t('kpiCompleteness')"></div>
+        </div>
+        <div class="dmike-kpi">
+          <div class="dmike-kpi-value" x-text="pct(result().totals.qShare)"></div>
+          <div class="dmike-kpi-label" x-text="t('kpiQShare')"></div>
+        </div>
+      </div>
+
+      <div class="dmike-infobox dmike-infobox--warn" data-ref="qWarn"
+           x-show="qWarn()" x-text="qWarnText()"></div>
+
+      <table class="dmike-table kano__result" data-ref="resultTable">
+        <thead>
+          <tr>
+            <th x-text="t('colItem')"></th>
+            <th>M</th><th>O</th><th>A</th><th>I</th><th>R</th><th>Q</th>
+            <th x-text="t('colCategory')"></th>
+            <th x-text="t('colCs')"></th>
+            <th x-text="t('colDs')"></th>
+            <th x-show="model.options.importance" x-text="t('colImportanceMean')"></th>
+          </tr>
+        </thead>
+        <tbody>
+          <template x-for="row in result().rows">
+            <tr :key="row.itemId" :data-item-id="row.itemId" :class="resultRowClass(row)">
+              <td x-text="row.label"></td>
+              <td x-text="row.counts.M"></td>
+              <td x-text="row.counts.O"></td>
+              <td x-text="row.counts.A"></td>
+              <td x-text="row.counts.I"></td>
+              <td x-text="row.counts.R"></td>
+              <td x-text="row.counts.Q"></td>
+              <td>
+                <span data-ref="category" x-text="catLabel(row.category)"></span>
+                <span class="kano__tie" x-show="row.tie" :title="t('tieTitle')"
+                      x-text="t('tieMark')"></span>
+              </td>
+              <td x-text="fmt(row.cs, 2)"></td>
+              <td x-text="fmt(row.ds, 2)"></td>
+              <td x-show="model.options.importance" x-text="fmt(row.importanceMean, 1)"></td>
+            </tr>
+          </template>
+        </tbody>
+      </table>
     </div>
   </div>
 </div>

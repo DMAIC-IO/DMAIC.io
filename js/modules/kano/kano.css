@@ -67,3 +67,13 @@
   margin: var(--spacing-md) 0;
   color: var(--color-text-tertiary);
 }
+
+/* ── Ergebnistabelle ──────────────────────────────────────────── */
+
+.kano__row--warn { background: var(--color-warning-bg, transparent); }
+
+.kano__tie {
+  margin-left: var(--spacing-xs);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+}
