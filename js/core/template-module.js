@@ -260,11 +260,28 @@ export function createModule(base) {
         if (!ok) return;
       }
       let exampleData = payload.data;
-      if (typeof beforeLoadExample === 'function') {
-        exampleData = beforeLoadExample.call(this, payload.data);
+      // `_loadingExample` marks the synchronous window in which a hook-driven
+      // side effect (e.g. examples-registry.js `provisionInstance`) may emit a
+      // global event (`module:added`) BEFORE `setState()` below has replaced
+      // this instance's own (about-to-be-destroyed) Alpine component. Modules
+      // that react to such events reactively (kano.js `refreshTrees`) can read
+      // this flag on `this`/`module` — the wrapper object is stable across the
+      // `setState()` destroy/rebuild — to skip a self-mutation that would
+      // otherwise flow through this OLD component's still-active persist
+      // $watch and silently overwrite the example's correct state once Alpine
+      // flushes its reactivity queue (a later microtask, after this function
+      // returns). Unused by modules without `beforeLoadExample` side effects —
+      // no behaviour change for them.
+      this._loadingExample = true;
+      try {
+        if (typeof beforeLoadExample === 'function') {
+          exampleData = beforeLoadExample.call(this, payload.data);
+        }
+        this.setState(exampleData);
+        this._context.stateManager.setModuleState(this._context.instanceId, this.getState());
+      } finally {
+        this._loadingExample = false;
       }
-      this.setState(exampleData);
-      this._context.stateManager.setModuleState(this._context.instanceId, this.getState());
       const lang = this._context.i18n.getLanguage();
       const title = payload.meta?.title?.[lang] || payload.meta?.title?.en || payload.meta?.id || '';
       this._context.notify?.(

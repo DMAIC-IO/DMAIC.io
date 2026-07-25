@@ -168,8 +168,26 @@ export default createModule({
         // source.instanceId: null trotz vorhandener Items) beim nächsten
         // `state:saved`/`module:added`/`module:removed` sofort wieder an den
         // fremden Baum hängen — und genau das darf nicht passieren.
-        if (!this.model.source.instanceId && this.treeList.length === 1
-            && this.model.items.length === 0) {
+        //
+        // `!module._loadingExample`: Lage 1 in `beforeLoadExample` provisioniert
+        // synchron eine neue voc-ctx-tree-Instanz (`provisionInstance`) und
+        // emittiert dabei synchron `module:added` — noch BEVOR `setState()`
+        // (template-module.js `loadExample`) diese (also die EIGENE, gerade
+        // ladende) Kano-Instanz neu aufbaut. Die ALTE, gleich zu ersetzende
+        // Alpine-Komponente hört dieses Ereignis über genau diesen Handler und
+        // würde hier `this.model.source.instanceId` mutieren — eine Mutation an
+        // einem Objekt, dessen persist-$watch beim nächsten Reactivity-Flush
+        // (ein späterer Microtask, nach dem synchronen `loadExample`-Ablauf)
+        // noch feuert, selbst wenn die Komponente inzwischen per
+        // `Alpine.destroyTree()` "zerstört" wurde (Alpine stoppt zwar künftiges
+        // Tracking, lässt aber einen bereits eingereihten Job noch einmal
+        // laufen). Das persistiert dann das VERALTETE, leere Modell — NACH dem
+        // korrekten Sechs-Item-Zustand aus `loadExample`, und überschreibt ihn
+        // damit still (sichtbar erst bei Reload/Sprachwechsel). `module`
+        // (== `this` in `loadExample`) bleibt über den Alpine-Rebuild hinweg
+        // dieselbe Objektreferenz, das Flag ist also zuverlässig sichtbar.
+        if (!module._loadingExample && !this.model.source.instanceId
+            && this.treeList.length === 1 && this.model.items.length === 0) {
           this.model.source.instanceId = this.treeList[0].instanceId;
         }
         this.refreshPending();
