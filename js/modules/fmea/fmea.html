@@ -20,7 +20,7 @@
       </div>
 
       <h3 x-text="t('scaleSeverity')"></h3>
-      <table>
+      <table class="dmike-table dmike-table--head-mono">
         <thead><tr>
           <th x-text="t('scaleValue')"></th>
           <th x-text="t('scaleMeaning')"></th>
@@ -36,7 +36,7 @@
       </table>
 
       <h3 x-text="t('scaleOccurrence')"></h3>
-      <table>
+      <table class="dmike-table dmike-table--head-mono">
         <thead><tr>
           <th x-text="t('scaleValue')"></th>
           <th x-text="t('scaleProbability')"></th>
@@ -52,7 +52,7 @@
       </table>
 
       <h3 x-text="t('scaleDetection')"></h3>
-      <table>
+      <table class="dmike-table dmike-table--head-mono">
         <thead><tr>
           <th x-text="t('scaleValue')"></th>
           <th x-text="t('scaleDetect')"></th>
@@ -148,7 +148,7 @@
                 <label x-text="t('rating')"></label>
                 <div class="fmea__sod-row">
                   <div class="fmea__sod-group"><label :title="t('tipS')">S</label>
-                    <select name="sev" x-model="risk.sev">
+                    <select class="field" name="sev" x-model="risk.sev">
                       <option value="">—</option>
                       <option value="1" :title="sevTitle(1)">1</option>
                       <option value="2" :title="sevTitle(2)">2</option>
@@ -163,7 +163,7 @@
                     </select>
                   </div>
                   <div class="fmea__sod-group"><label :title="t('tipO')">O</label>
-                    <select name="occ" x-model="risk.occ">
+                    <select class="field" name="occ" x-model="risk.occ">
                       <option value="">—</option>
                       <option value="1" :title="occTitle(1)">1</option>
                       <option value="2" :title="occTitle(2)">2</option>
@@ -178,7 +178,7 @@
                     </select>
                   </div>
                   <div class="fmea__sod-group"><label :title="t('tipD')">D</label>
-                    <select name="det" x-model="risk.det">
+                    <select class="field" name="det" x-model="risk.det">
                       <option value="">—</option>
                       <option value="1" :title="detTitle(1)">1</option>
                       <option value="2" :title="detTitle(2)">2</option>
@@ -199,7 +199,7 @@
             <hr class="fmea__section-sep">
             <div class="fmea__section-title" x-text="t('actionsSection')"></div>
             <div class="fmea__actions-section">
-              <table class="fmea__action-table">
+              <table class="dmike-table fmea__action-table">
                 <thead><tr>
                   <th style="width:28px">✓</th>
                   <th x-text="t('action')"></th>
@@ -214,10 +214,10 @@
                   <template x-for="(act, ai) in risk.actions">
                     <tr :key="act.id" :data-action-idx="ai">
                       <td style="text-align:center"><input type="checkbox" class="fmea__done-check" x-model="act.done"></td>
-                      <td><textarea name="actionText" :placeholder="t('actionPlaceholder')" x-model="act.text"></textarea></td>
-                      <td><input type="text" name="actionResp" :placeholder="t('actionResp')" x-model="act.resp"></td>
-                      <td><input type="date" name="actionDate" x-model="act.date"></td>
-                      <td class="fmea__delta-cell"><select name="deltaS" title="ΔS" x-model="act.deltaS">
+                      <td><textarea class="field field--sm" name="actionText" :placeholder="t('actionPlaceholder')" x-model="act.text"></textarea></td>
+                      <td><input class="field field--sm" type="text" name="actionResp" :placeholder="t('actionResp')" x-model="act.resp"></td>
+                      <td><input class="field field--sm" type="date" name="actionDate" x-model="act.date"></td>
+                      <td class="fmea__delta-cell"><select class="field field--sm" name="deltaS" title="ΔS" x-model="act.deltaS">
                         <option value="0">0</option>
                         <option value="1">−1</option>
                         <option value="2">−2</option>
@@ -229,7 +229,7 @@
                         <option value="8">−8</option>
                         <option value="9">−9</option>
                       </select></td>
-                      <td class="fmea__delta-cell"><select name="deltaO" title="ΔO" x-model="act.deltaO">
+                      <td class="fmea__delta-cell"><select class="field field--sm" name="deltaO" title="ΔO" x-model="act.deltaO">
                         <option value="0">0</option>
                         <option value="1">−1</option>
                         <option value="2">−2</option>
@@ -241,7 +241,7 @@
                         <option value="8">−8</option>
                         <option value="9">−9</option>
                       </select></td>
-                      <td class="fmea__delta-cell"><select name="deltaD" title="ΔD" x-model="act.deltaD">
+                      <td class="fmea__delta-cell"><select class="field field--sm" name="deltaD" title="ΔD" x-model="act.deltaD">
                         <option value="0">0</option>
                         <option value="1">−1</option>
                         <option value="2">−2</option>

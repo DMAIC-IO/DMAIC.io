@@ -50,29 +50,15 @@
 
 /* ─── Table ───────────────────────────────────────────── */
 
+/* Panel, borders, sticky headers and cell padding come from .dmike-table-wrap
+   / .dmike-table / .dmike-table--sticky. Only the sortable-header affordance
+   is specific to this module. */
 .todo__table-wrap {
   flex: 1;
   overflow: auto;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm);
-}
-
-.todo__table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: var(--font-size-sm);
 }
 
 .todo__table th {
-  position: sticky;
-  top: 0;
-  z-index: 1;
-  background: var(--color-bg-secondary);
-  text-align: left;
-  padding: var(--spacing-xs) var(--spacing-sm);
-  font-weight: 600;
-  border-bottom: 2px solid var(--color-border);
-  white-space: nowrap;
   cursor: pointer;
   user-select: none;
 }
@@ -92,57 +78,22 @@
   color: var(--color-accent);
 }
 
-.todo__table td {
-  padding: var(--spacing-xs) var(--spacing-sm);
-  border-bottom: 1px solid var(--color-border);
-  vertical-align: middle;
-}
-
-.todo__table tr:hover td {
-  background: var(--color-bg-tertiary);
-}
-
 .todo__col-check { width: 32px; text-align: center; }
 .todo__col-text  { min-width: 200px; }
 .todo__col-owner { width: 140px; }
 .todo__col-due   { width: 120px; }
-.todo__col-status { width: 120px; }
+/* Wide enough for the longest status label plus the select's arrow — the
+   shared .field padding needs more room than the old borderless select. */
+.todo__col-status { width: 150px; }
 .todo__col-cal    { width: 36px; text-align: center; }
 .todo__col-actions { width: 56px; text-align: center; }
 
 /* ─── Inline editing ──────────────────────────────────── */
 
-.todo__inline-input {
-  width: 100%;
-  border: none;
-  background: transparent;
-  font: inherit;
-  color: inherit;
-  padding: 2px 4px;
-  border-bottom: 1px dashed var(--color-border);
-  outline: none;
-}
-
-.todo__inline-input:focus {
-  border-bottom-color: var(--color-accent);
-}
-
+/* Cell editors are .field .field--sm .field--ghost — nothing left to style
+   here beyond the date cell keeping its natural width. */
 .todo__inline-date {
-  border: none;
-  background: transparent;
-  font: inherit;
-  color: inherit;
-  padding: 2px;
-  cursor: pointer;
-}
-
-.todo__inline-select {
-  border: none;
-  background: transparent;
-  font: inherit;
-  color: inherit;
-  padding: 2px;
-  cursor: pointer;
+  width: auto;
 }
 
 /* ─── Status badges ───────────────────────────────────── */
@@ -229,27 +180,7 @@
 
 /* ─── Delete button ───────────────────────────────────── */
 
-.todo__delete-btn {
-  background: none;
-  border: none;
-  color: var(--color-text-secondary);
-  cursor: pointer;
-  font-size: 14px;
-  padding: 2px 6px;
-  border-radius: var(--radius-sm);
-  opacity: 0;
-  transition: opacity 0.15s;
-}
-
-.todo__table tr:hover .todo__delete-btn {
-  opacity: 0.6;
-}
-
-.todo__delete-btn:hover {
-  opacity: 1 !important;
-  color: var(--color-danger, #e74c3c);
-  background: var(--color-bg-tertiary);
-}
+/* Delete uses .btn--icon-sm.btn--danger — no local styling needed. */
 
 /* ─── Empty state ─────────────────────────────────────── */
 

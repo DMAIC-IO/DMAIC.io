@@ -228,25 +228,12 @@
   color: var(--color-text-tertiary);
 }
 
+/* .field base; mono digits and a floor width keep the rating selects even. */
 .fmea__sod-group select,
 .fmea__action-table select {
   font-family: var(--font-family-mono);
-  font-size: var(--font-size-sm);
   font-weight: var(--font-weight-medium);
-  background: var(--color-bg-primary);
-  border: var(--border-width) solid var(--color-border-secondary);
-  border-radius: var(--border-radius);
-  color: var(--color-text-primary);
-  padding: var(--spacing-sm) var(--spacing-md);
   min-width: 60px;
-  cursor: pointer;
-  transition: border-color 0.15s;
-  outline: none;
-}
-
-.fmea__sod-group select:focus,
-.fmea__action-table select:focus {
-  border-color: var(--color-accent);
 }
 
 
@@ -277,63 +264,14 @@
 }
 
 /* ── Actions Table ── */
-.fmea__action-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: var(--font-size-sm);
-}
-
+/* Base table and cell editors come from .dmike-table and .field --sm.
+   Only the compact textarea height is specific to an action row. */
 .fmea__action-table th {
-  text-align: left;
-  padding: 6px var(--spacing-sm);
-  font-size: var(--font-size-xs);
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.6px;
-  color: var(--color-text-tertiary);
-  border-bottom: var(--border-width) solid var(--color-border-secondary);
   white-space: nowrap;
 }
 
-.fmea__action-table td {
-  padding: 4px 6px;
-  vertical-align: middle;
-  border-bottom: var(--border-width) solid var(--color-border-secondary);
-}
-
-.fmea__action-table tr:last-child td {
-  border-bottom: none;
-}
-
-.fmea__action-table input[type="text"],
-.fmea__action-table input[type="date"],
-.fmea__action-table textarea {
-  font-family: var(--font-family);
-  font-size: var(--font-size-sm);
-  background: var(--color-bg-primary);
-  border: var(--border-width) solid var(--color-border-secondary);
-  border-radius: var(--border-radius-sm);
-  color: var(--color-text-primary);
-  padding: 5px 7px;
-  width: 100%;
-  transition: border-color 0.15s;
-  outline: none;
-}
-
-.fmea__action-table textarea {
-  resize: vertical;
+.fmea__action-table textarea.field {
   min-height: 32px;
-}
-
-.fmea__action-table input:focus,
-.fmea__action-table textarea:focus {
-  border-color: var(--color-accent);
-}
-
-.fmea__action-table select {
-  font-size: var(--font-size-sm);
-  padding: 5px 8px 5px 6px;
-  min-width: 56px;
 }
 
 .fmea__delta-cell {
@@ -446,26 +384,10 @@
   margin-top: 0;
 }
 
+/* Scale tables are plain .dmike-table --head-mono; only the spacing between
+   the three stacked tables is local. */
 .fmea__scale-ref table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: var(--font-size-sm);
   margin-bottom: var(--spacing-sm);
-}
-
-.fmea__scale-ref th,
-.fmea__scale-ref td {
-  padding: 5px var(--spacing-sm);
-  text-align: left;
-  border-bottom: var(--border-width) solid var(--color-border-secondary);
-}
-
-.fmea__scale-ref th {
-  font-weight: 700;
-  font-size: var(--font-size-xs);
-  text-transform: uppercase;
-  letter-spacing: 0.6px;
-  color: var(--color-text-tertiary);
 }
 
 .fmea__scale-toolbar {

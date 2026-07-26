@@ -382,33 +382,9 @@
   padding: var(--spacing-sm) var(--spacing-md);
 }
 
+/* .field .field--ghost base — only the compact height is local. */
 .pmap__step-description {
-  width: 100%;
-  background: transparent;
-  border: var(--border-width) solid transparent;
-  border-radius: var(--border-radius);
-  color: var(--color-text-primary);
-  font-family: var(--font-family);
-  font-size: var(--font-size-sm);
-  padding: var(--spacing-sm) var(--spacing-sm);
-  resize: vertical;
   min-height: 44px;
-  outline: none;
-  transition: border-color var(--transition-speed), background var(--transition-speed);
-  line-height: 1.5;
-}
-
-.pmap__step-description:hover {
-  border-color: var(--color-border-secondary);
-}
-
-.pmap__step-description:focus {
-  background: var(--color-bg-primary);
-  border-color: var(--color-accent);
-}
-
-.pmap__step-description::placeholder {
-  color: var(--color-text-tertiary);
 }
 
 /* ===== Vertical Connector ===== */
@@ -738,27 +714,11 @@
   color: var(--color-pmap-loop);
 }
 
-.pmap__loop-condition,
-.pmap__loop-target-select {
-  width: 100%;
-  background: var(--color-bg-primary);
-  border: var(--border-width) solid var(--color-border-secondary);
-  border-radius: var(--border-radius-sm);
-  color: var(--color-text-primary);
-  font-family: var(--font-family);
-  font-size: var(--font-size-sm);
-  padding: var(--spacing-xs) var(--spacing-sm);
-  outline: none;
-  transition: border-color var(--transition-speed);
-}
-
+/* .field .field--sm base; the loop accent on focus is what makes these
+   visually part of the loop panel. */
 .pmap__loop-condition:focus,
 .pmap__loop-target-select:focus {
   border-color: var(--color-pmap-loop);
-}
-
-.pmap__loop-condition::placeholder {
-  color: var(--color-text-tertiary);
 }
 
 /* ===== Loop Steps List ===== */

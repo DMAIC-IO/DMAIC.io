@@ -20,7 +20,7 @@
             <th class="ce-matrix__weight-label" x-text="t('weight')"></th>
             <template x-for="(out, c) in model.outputs">
               <th class="ce-matrix__weight-cell" :key="'w-' + c">
-                <select class="ce-matrix__weight-select" :data-col="c"
+                <select class="field field--xs ce-matrix__weight-select" :data-col="c"
                         @change="weightChanged(c, $event)">
                   <template x-for="w in weightOptions" >
                     <option :key="w" :value="w" :selected="w === model.getWeight(c)" x-text="w"></option>
@@ -58,7 +58,7 @@
           <template x-for="(inp, r) in model.inputs">
             <tr :key="'r-' + r">
               <td class="ce-matrix__name-cell dmike-del-btn-host">
-                <input type="text" class="ce-matrix__input-name"
+                <input type="text" class="field field--ghost ce-matrix__input-name"
                        :value="model.inputs[r]"
                        :placeholder="t('inputPlaceholder')"
                        :data-row="r"

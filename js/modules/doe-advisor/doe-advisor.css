@@ -58,47 +58,16 @@
 }
 
 /* ── Tables ── */
+/* Panel, borders, header styling and row hover come from .dmike-table-wrap /
+   .dmike-table / --head-mono. The wrap keeps only its horizontal scrolling;
+   the top-aligned cells are specific here because these rows carry
+   multi-line explanatory text. */
 .doe-advisor__table-wrap {
   overflow-x: auto;
-  border: var(--border-width) solid var(--color-border-primary);
-  border-radius: var(--border-radius);
-  background: var(--color-bg-secondary);
 }
-
-.doe-advisor__table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: var(--font-size-sm);
-}
-
-.doe-advisor__table thead th {
-  font-family: var(--font-family-mono);
-  font-size: var(--font-size-xs);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--color-text-tertiary);
-  text-align: left;
-  padding: var(--spacing-sm) var(--spacing-md);
-  border-bottom: var(--border-width) solid var(--color-border-primary);
-  background: var(--color-bg-primary);
-  font-weight: 600;
-}
-
 .doe-advisor__table tbody th,
 .doe-advisor__table tbody td {
-  padding: var(--spacing-sm) var(--spacing-md);
-  border-bottom: 1px solid var(--color-border-primary);
   vertical-align: top;
-  color: var(--color-text-primary);
-}
-
-.doe-advisor__table tbody tr:last-child th,
-.doe-advisor__table tbody tr:last-child td {
-  border-bottom: none;
-}
-
-.doe-advisor__table tbody tr:hover {
-  background: rgb(var(--color-accent-rgb, 59, 130, 246), 0.04);
 }
 
 .doe-advisor__row-name {
