@@ -59,6 +59,16 @@
   padding: var(--spacing-md);
 }
 
+/* Liegt `.dmike-split` direkt auf `.module-container__body` (dem Scroll-
+   Container), darf `min-height: 100%` nicht greifen: 100 % meint die volle
+   Höhe von `.module-container` und ignoriert damit den Header darüber. Der
+   Body würde um Header-Höhe + Abstand überlaufen und `.workspace__module-area`
+   eine zweite Scrollbar neben der eigenen geben. Als Flex-Kind (`flex: 1`)
+   füllt der Body die Restfläche ohnehin von allein. */
+.module-container__body.dmike-split {
+  min-height: 0;
+}
+
 .dmike-split__input {
   width: var(--dmike-split-input-width, 320px);
   flex-shrink: 0;
