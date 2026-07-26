@@ -21,7 +21,8 @@
           "**CTQ (Critical to Quality)** — funktionale/qualitative Merkmale („Passform“, „Genauigkeit“, „Wartefreiheit“)",
           "**CTC (Critical to Cost)** — Kostenrelevante Größen (Materialpreis, Verarbeitungskosten)",
           "**CTD (Critical to Delivery)** — Liefertreue, Durchlaufzeit",
-          "**CTS (Critical to Safety)** — sicherheitskritische Merkmale, oft mit gesetzlichen Grenzen"
+          "**CTS (Critical to Safety)** — sicherheitskritische Merkmale, oft mit gesetzlichen Grenzen",
+          "**{{term:kano|Kano-Modell}}** — priorisiert CTQs auf gewählter Baumebene nach Basis-, Leistungs- und Begeisterungsmerkmal, statt sie alle gleich zu gewichten"
         ]
       },
       {
@@ -40,7 +41,8 @@
           "**CTQ (Critical to Quality)** — functional/quality characteristics (\"fit\", \"accuracy\", \"no wait time\")",
           "**CTC (Critical to Cost)** — cost-relevant quantities (material price, processing cost)",
           "**CTD (Critical to Delivery)** — on-time delivery, lead time",
-          "**CTS (Critical to Safety)** — safety-critical features, often with regulatory limits"
+          "**CTS (Critical to Safety)** — safety-critical features, often with regulatory limits",
+          "**{{term:kano|Kano model}}** — prioritizes CTQs at the chosen tree level into must-be, performance and attractive features, instead of weighting them all equally"
         ]
       },
       {
@@ -64,6 +66,7 @@
   },
   "seeAlso": [
     "voc",
+    "kano",
     "sipoc",
     "spezifikationsgrenzen",
     "prozessfaehigkeit",

@@ -146,7 +146,7 @@
                       </div>
                     </div>
                     <div class="pmap__step-body">
-                      <textarea class="pmap__step-description" :placeholder="t('descriptionPlaceholder')"
+                      <textarea class="field field--ghost pmap__step-description" :placeholder="t('descriptionPlaceholder')"
                                 data-field="description" :data-step-id="step.id"
                                 x-model="step.description"></textarea>
                     </div>
@@ -272,13 +272,13 @@
             <div class="pmap__loop-body">
               <div class="pmap__loop-field">
                 <label class="pmap__loop-field-label"><svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12 2l10 10-10 10L2 12z"/></svg> <span x-text="t('loopCondition')"></span></label>
-                <input class="pmap__loop-condition" type="text" :value="loopConditionOf(p.stepId)"
+                <input class="field field--sm pmap__loop-condition" type="text" :value="loopConditionOf(p.stepId)"
                   :placeholder="t('loopConditionPlaceholder')"
                   :data-step-id="p.stepId" @input="loopConditionInput(p.stepId, $event)">
               </div>
               <div class="pmap__loop-field">
                 <label class="pmap__loop-field-label" x-text="t('loopTarget')"></label>
-                <select class="pmap__loop-target-select" :data-step-id="p.stepId"
+                <select class="field field--sm pmap__loop-target-select" :data-step-id="p.stepId"
                   @change="loopTargetChange(p.stepId, $event)">
                   <option value="" x-text="t('loopSelectTarget')"></option>
                   <template x-for="(opt, oi) in p.targetOptions" :key="opt.id">

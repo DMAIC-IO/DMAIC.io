@@ -94,10 +94,6 @@ export default createModule({
         return 'todo__sort-arrow--active';
       },
 
-      deleteIcon() {
-        return '\u2715';
-      },
-
       addBtnText() {
         return `+ ${  _t('addTodo')}`;
       },

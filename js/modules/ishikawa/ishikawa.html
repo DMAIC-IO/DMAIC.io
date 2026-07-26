@@ -71,13 +71,14 @@
         <div class="ishikawa__exp-empty" x-text="t('noFacts')"></div>
       </template>
       <template x-if="model.facts.length > 0">
-        <div class="ishikawa__table-wrap">
+        <div class="dmike-table-wrap">
           <datalist id="ishikawa-fact-owner-list">
             <template x-for="n in ownerNames()" :key="n"><option :value="n"></option></template>
           </datalist>
-          <table class="ishikawa__table ishikawa__exp-table">
+          <table class="dmike-table dmike-table--sticky dmike-table--head-mono dmike-table--draggable ishikawa__table ishikawa__exp-table">
             <thead>
               <tr>
+                <th class="dmike-table__grip-col"></th>
                 <th class="ishikawa__col-nr">#</th>
                 <th class="ishikawa__col-fact-name" x-text="t('factName')"></th>
                 <th class="ishikawa__col-desc" x-text="t('factDescription')"></th>
@@ -88,14 +89,21 @@
             </thead>
             <tbody>
               <template x-for="(f, idx) in model.facts" :key="f.id">
-                <tr :data-fid="f.id">
+                <tr :data-fid="f.id"
+                    @dragstart="dragStart('facts', f.id, $event)" @dragend="dragEnd($event)"
+                    @dragover="dragOver('facts', f.id, $event)" @drop="dragDrop('facts', f.id, $event)">
+                  <td class="dmike-table__grip-col">
+                    <button class="dmike-table__grip" type="button" :data-grip="f.id"
+                            :aria-label="t('common.reorder')"
+                            @mousedown="dragArm($event)" @keydown="dragKey('facts', f.id, $event)"></button>
+                  </td>
                   <td class="ishikawa__col-nr"><span class="ishikawa__nr-text" x-text="idx + 1"></span></td>
-                  <td><input class="ishikawa__exp-title-input" type="text" :placeholder="t('factNamePlaceholder')" :data-fact-name="f.id" x-model="f.name" /></td>
-                  <td><textarea class="ishikawa__exp-desc-input" rows="1" :placeholder="t('factDescPlaceholder')" :data-fact-desc="f.id" x-model="f.description"></textarea></td>
-                  <td><input class="ishikawa__exp-date-input" type="date" :data-fact-date="f.id" x-model="f.date" /></td>
-                  <td><input class="ishikawa__exp-resp-input" type="text" :placeholder="t('factOwnerPlaceholder')" list="ishikawa-fact-owner-list" :data-fact-owner="f.id" x-model="f.owner" /></td>
+                  <td><input class="field field--sm field--ghost ishikawa__exp-title-input" type="text" :placeholder="t('factNamePlaceholder')" :data-fact-name="f.id" x-model="f.name" /></td>
+                  <td><textarea class="field field--sm field--ghost ishikawa__exp-desc-input" rows="1" :placeholder="t('factDescPlaceholder')" :data-fact-desc="f.id" x-model="f.description"></textarea></td>
+                  <td><input class="field field--sm field--ghost ishikawa__exp-date-input" type="date" :data-fact-date="f.id" x-model="f.date" /></td>
+                  <td><input class="field field--sm field--ghost ishikawa__exp-resp-input" type="text" :placeholder="t('factOwnerPlaceholder')" list="ishikawa-fact-owner-list" :data-fact-owner="f.id" x-model="f.owner" /></td>
                   <td><div class="ishikawa__row-actions">
-                    <button class="ishikawa__icon-btn" :title="t('common.delete')" :data-fact-del="f.id" @click="deleteFact(f.id)" x-text="glyphClose()"></button>
+                    <button class="btn btn--icon-sm btn--danger" :title="t('common.delete')" :data-fact-del="f.id" @click="deleteFact(f.id)" x-text="glyphClose()"></button>
                   </div></td>
                 </tr>
               </template>
@@ -182,10 +190,11 @@
       </div>
 
       <!-- Table -->
-      <div class="ishikawa__table-wrap">
-        <table class="ishikawa__table">
+      <div class="dmike-table-wrap">
+        <table class="dmike-table dmike-table--sticky dmike-table--head-mono dmike-table--draggable ishikawa__table ishikawa__table--tree">
           <thead>
             <tr>
+              <th class="dmike-table__grip-col"></th>
               <th class="ishikawa__col-nr">#</th>
               <th class="ishikawa__col-cat" x-text="t('category')"></th>
               <th class="ishikawa__col-name" x-text="t('colName')"></th>
@@ -208,16 +217,18 @@
               <tr class="ishikawa__empty-row"><td :colspan="emptyColspan()" x-text="emptyMessage()"></td></tr>
             </template>
             <template x-for="vr in visibleRows()" :key="vr.row.id">
-              <tr :data-id="vr.row.id" :class="rowClass(vr)" draggable="true"
-                  @dragstart="dragStart(vr.row.id, $event)" @dragend="dragEnd($event)"
-                  @dragover="dragOver(vr.row.id, $event)" @drop="dragDrop(vr.row.id, $event)">
-                <td class="ishikawa__col-nr" :style="'padding-left:' + (12 + vr.depth * 16) + 'px'">
+              <tr :data-id="vr.row.id" :class="rowClass(vr)"
+                  @dragstart="dragStart('causes', vr.row.id, $event)" @dragend="dragEnd($event)"
+                  @dragover="dragOver('causes', vr.row.id, $event)" @drop="dragDrop('causes', vr.row.id, $event)">
+                <td class="dmike-table__grip-col">
+                  <button class="dmike-table__grip" type="button" :data-grip="vr.row.id"
+                          :aria-label="t('common.reorder')"
+                          @mousedown="dragArm($event)" @keydown="dragKey('causes', vr.row.id, $event)"></button>
+                </td>
+                <td class="ishikawa__col-nr" :style="'--ishikawa-depth:' + vr.depth">
                   <div class="ishikawa__nr-cell">
                     <template x-if="vr.hasKids">
-                      <button class="ishikawa__toggle-btn" :class="vr.collapsed ? 'ishikawa__toggle-btn--collapsed' : ''" :data-toggle="vr.row.id" @click="toggleRow(vr.row.id)" x-text="glyphTriangle()"></button>
-                    </template>
-                    <template x-if="!vr.hasKids">
-                      <div class="ishikawa__toggle-placeholder"></div>
+                      <button class="btn btn--icon-sm ishikawa__toggle-btn" :class="vr.collapsed ? 'ishikawa__toggle-btn--collapsed' : ''" :data-toggle="vr.row.id" @click="toggleRow(vr.row.id)" x-text="glyphTriangle()"></button>
                     </template>
                     <span class="ishikawa__nr-text" x-text="vr.num"></span>
                   </div>
@@ -230,20 +241,20 @@
                 </template>
                 <template x-if="vr.depth === 0">
                   <td>
-                    <select class="ishikawa__cat-select" :data-row-cat="vr.row.id" :style="'border-left:3px solid ' + vr.borderColor" x-model="vr.row.category">
+                    <select class="field field--sm ishikawa__cat-select" :data-row-cat="vr.row.id" :style="'border-left:3px solid ' + vr.borderColor" x-model="vr.row.category">
                       <option value="" x-text="vr.defOpt"></option>
                       <template x-for="c in cats" :key="c.key"><option :value="c.key" x-text="catLabel(c.key)"></option></template>
                     </select>
                   </td>
                 </template>
-                <td><input class="ishikawa__name-input" :class="isNameDup(vr.row) ? 'ishikawa__name-input--dup' : ''" type="text"
+                <td><input class="field field--sm field--ghost ishikawa__name-input" :class="isNameDup(vr.row) ? 'ishikawa__name-input--dup' : ''" type="text"
                            :placeholder="t('namePlaceholder')" :data-row-name="vr.row.id" x-model="vr.row.name" /></td>
                 <td><div class="ishikawa__hypo-cell">
-                  <input class="ishikawa__desc-input" type="text" :placeholder="vr.depth ? t('subCausePlaceholder') : t('causePlaceholder')" :data-row-desc="vr.row.id" x-model="vr.row.description" />
+                  <input class="field field--sm field--ghost ishikawa__desc-input" type="text" :placeholder="vr.depth ? t('subCausePlaceholder') : t('causePlaceholder')" :data-row-desc="vr.row.id" x-model="vr.row.description" />
                 </div></td>
                 <template x-for="e in model.experts" :key="e.id">
                   <td class="ishikawa__col-expert">
-                    <input type="number" class="ishikawa__rating-input" min="0" max="9"
+                    <input type="number" class="field field--sm ishikawa__rating-input" min="0" max="9"
                            :value="ratingVal(vr.row, e.id)" :placeholder="glyphNdash()" :style="ratingStyle(vr.row, e.id)"
                            :data-rating-row="vr.row.id" :data-rating-exp="e.id"
                            @focus="$event.target.select()" @keydown="ratingKeydown($event)" @change="ratingChanged(vr.row.id, e.id, $event)" />
@@ -263,16 +274,16 @@
                     </div>
                   </template>
                 </td>
-                <td><select class="ishikawa__status-select" :class="statusCss(vr.row.status)" :data-row-status="vr.row.id" x-model="vr.row.status">
+                <td><select class="field field--sm ishikawa__status-select" :class="statusCss(vr.row.status)" :data-row-status="vr.row.id" x-model="vr.row.status">
                   <option value="open" x-text="t('status.open')"></option>
                   <option value="testing" x-text="t('status.testing')"></option>
                   <option value="confirmed" x-text="t('status.confirmed')"></option>
                   <option value="rejected" x-text="t('status.rejected')"></option>
                 </select></td>
                 <td><div class="ishikawa__row-actions">
-                  <button class="ishikawa__icon-btn" :title="t('addSub')" :data-add-sub="vr.row.id" @click="addSub(vr.row.id)">+</button>
-                  <button class="ishikawa__icon-btn" :title="t('duplicate')" :data-dupe="vr.row.id" @click="dupeRow(vr.row.id)" x-text="glyphDupe()"></button>
-                  <button class="ishikawa__icon-btn" :class="linkedExpCount(vr.row) > 0 ? 'ishikawa__icon-btn--exp ishikawa__icon-btn--linked' : 'ishikawa__icon-btn--exp'"
+                  <button class="btn btn--icon-sm" :title="t('addSub')" :data-add-sub="vr.row.id" @click="addSub(vr.row.id)">+</button>
+                  <button class="btn btn--icon-sm" :title="t('duplicate')" :data-dupe="vr.row.id" @click="dupeRow(vr.row.id)" x-text="glyphDupe()"></button>
+                  <button class="btn btn--icon-sm" :class="linkedExpCount(vr.row) > 0 ? 'ishikawa__icon-btn--exp ishikawa__icon-btn--linked' : 'ishikawa__icon-btn--exp'"
                           :title="linkExpTitle(vr.row)" :aria-label="linkExpTitle(vr.row)" :data-link-exp="vr.row.id" @click="openExpLink(vr.row.id)">
                     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                          stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -284,7 +295,7 @@
                       <span class="ishikawa__exp-link-badge" x-text="linkedExpCount(vr.row)"></span>
                     </template>
                   </button>
-                  <button class="ishikawa__icon-btn" :title="t('common.delete')" :data-del-row="vr.row.id" @click="deleteRow(vr.row.id)" x-text="glyphX()"></button>
+                  <button class="btn btn--icon-sm btn--danger" :title="t('common.delete')" :data-del-row="vr.row.id" @click="deleteRow(vr.row.id)" x-text="glyphX()"></button>
                 </div></td>
               </tr>
             </template>
@@ -382,13 +393,14 @@
         <div class="ishikawa__exp-empty" x-text="t('noExperiments')"></div>
       </template>
       <template x-if="model.experiments.length > 0">
-        <div class="ishikawa__table-wrap">
+        <div class="dmike-table-wrap">
           <datalist id="ishikawa-resp-list">
             <template x-for="n in ownerNames()" :key="n"><option :value="n"></option></template>
           </datalist>
-          <table class="ishikawa__table ishikawa__exp-table">
+          <table class="dmike-table dmike-table--sticky dmike-table--head-mono dmike-table--draggable ishikawa__table ishikawa__exp-table">
             <thead>
               <tr>
+                <th class="dmike-table__grip-col"></th>
                 <th class="ishikawa__col-nr">#</th>
                 <th class="ishikawa__col-exp-title" x-text="t('experimentTitle')"></th>
                 <th class="ishikawa__col-desc" x-text="t('experimentDescription')"></th>
@@ -404,24 +416,31 @@
             </thead>
             <tbody>
               <template x-for="(x, idx) in model.experiments" :key="x.id">
-                <tr :data-xid="x.id">
+                <tr :data-xid="x.id"
+                    @dragstart="dragStart('experiments', x.id, $event)" @dragend="dragEnd($event)"
+                    @dragover="dragOver('experiments', x.id, $event)" @drop="dragDrop('experiments', x.id, $event)">
+                  <td class="dmike-table__grip-col">
+                    <button class="dmike-table__grip" type="button" :data-grip="x.id"
+                            :aria-label="t('common.reorder')"
+                            @mousedown="dragArm($event)" @keydown="dragKey('experiments', x.id, $event)"></button>
+                  </td>
                   <td class="ishikawa__col-nr"><span class="ishikawa__nr-text" x-text="idx + 1"></span></td>
-                  <td><input class="ishikawa__exp-title-input" type="text" :placeholder="t('experimentTitlePlaceholder')" :data-xp-title="x.id" x-model="x.title" /></td>
-                  <td><textarea class="ishikawa__exp-desc-input" rows="1" :placeholder="t('experimentDescPlaceholder')" :data-xp-desc="x.id" x-model="x.description"></textarea></td>
-                  <td><input class="ishikawa__exp-resp-input" type="text" :placeholder="t('responsiblePlaceholder')" list="ishikawa-resp-list" :data-xp-resp="x.id" x-model="x.responsible" /></td>
-                  <td><select class="ishikawa__exp-status-select" :class="'ishikawa__expstatus-' + (x.status || 'planned')" :data-xp-status="x.id" x-model="x.status" @change="expStatusChanged()">
+                  <td><input class="field field--sm field--ghost ishikawa__exp-title-input" type="text" :placeholder="t('experimentTitlePlaceholder')" :data-xp-title="x.id" x-model="x.title" /></td>
+                  <td><textarea class="field field--sm field--ghost ishikawa__exp-desc-input" rows="1" :placeholder="t('experimentDescPlaceholder')" :data-xp-desc="x.id" x-model="x.description"></textarea></td>
+                  <td><input class="field field--sm field--ghost ishikawa__exp-resp-input" type="text" :placeholder="t('responsiblePlaceholder')" list="ishikawa-resp-list" :data-xp-resp="x.id" x-model="x.responsible" /></td>
+                  <td><select class="field field--sm ishikawa__exp-status-select" :class="'ishikawa__expstatus-' + (x.status || 'planned')" :data-xp-status="x.id" x-model="x.status" @change="expStatusChanged()">
                     <option value="planned" x-text="t('expStatus.planned')"></option>
                     <option value="running" x-text="t('expStatus.running')"></option>
                     <option value="done" x-text="t('expStatus.done')"></option>
                     <option value="cancelled" x-text="t('expStatus.cancelled')"></option>
                   </select></td>
-                  <td><input class="ishikawa__exp-date-input" type="date" :data-xp-start="x.id" x-model="x.startDate" @change="expDatesChanged()" /></td>
-                  <td><input class="ishikawa__exp-date-input" type="date" :data-xp-end="x.id" x-model="x.endDate" @change="expDatesChanged()" /></td>
-                  <td><input class="ishikawa__exp-num-input" type="number" min="0" step="0.01" placeholder="0" :data-xp-money="x.id" x-model="x.costMoney" @input="expCostChanged()" /></td>
-                  <td><input class="ishikawa__exp-num-input" type="number" min="0" step="0.5" placeholder="0" :data-xp-hours="x.id" x-model="x.costHours" @input="expCostChanged()" /></td>
+                  <td><input class="field field--sm field--ghost ishikawa__exp-date-input" type="date" :data-xp-start="x.id" x-model="x.startDate" @change="expDatesChanged()" /></td>
+                  <td><input class="field field--sm field--ghost ishikawa__exp-date-input" type="date" :data-xp-end="x.id" x-model="x.endDate" @change="expDatesChanged()" /></td>
+                  <td><input class="field field--sm field--ghost field--num ishikawa__exp-num-input" type="number" min="0" step="0.01" placeholder="0" :data-xp-money="x.id" x-model="x.costMoney" @input="expCostChanged()" /></td>
+                  <td><input class="field field--sm field--ghost field--num ishikawa__exp-num-input" type="number" min="0" step="0.5" placeholder="0" :data-xp-hours="x.id" x-model="x.costHours" @input="expCostChanged()" /></td>
                   <td><button class="btn btn--sm ishikawa__exp-link-btn" :data-xp-link="x.id" @click="openHypLink(x.id)" x-text="expLinkText(x)"></button></td>
                   <td><div class="ishikawa__row-actions">
-                    <button class="ishikawa__icon-btn" :title="t('common.delete')" :data-xp-del="x.id" @click="deleteExperiment(x.id)" x-text="glyphX()"></button>
+                    <button class="btn btn--icon-sm btn--danger" :title="t('common.delete')" :data-xp-del="x.id" @click="deleteExperiment(x.id)" x-text="glyphX()"></button>
                   </div></td>
                 </tr>
               </template>

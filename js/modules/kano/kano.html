@@ -1,0 +1,234 @@
+<div class="module-container kano" x-data="kano">
+  <div class="module-container__header">
+    <h2 class="module-container__title" x-text="t('name')"></h2>
+    <div class="kano__toolbar">
+      <div class="kano__toolbar-spacer"></div>
+      <button class="btn btn--sm" type="button" data-ref="exportCsv"
+              x-text="t('exportCsv')" @click="exportCSV()"></button>
+      <button class="btn btn--sm" type="button" data-ref="exportXlsx"
+              x-text="t('exportXlsx')" @click="exportXLSX()"></button>
+      <button class="btn btn--sm" type="button" data-ref="exportPng"
+              x-text="t('exportPng')" @click="exportPNG()"></button>
+      <button class="btn btn--sm" type="button" data-ref="exportSvg"
+              x-text="t('exportSvg')" @click="exportSVG()"></button>
+    </div>
+  </div>
+
+  <div class="module-container__body dmike-split">
+    <div class="dmike-split__input">
+      <div class="dmike-split__section-title" x-text="t('sourceTitle')"></div>
+
+      <div class="dmike-infobox" x-show="hasNoTree()" x-text="t('sourceNone')"></div>
+
+      <label class="kano__label" x-text="t('sourceTree')"></label>
+      <select class="field kano__tree-select" data-ref="treeSelect"
+              @change="changeTree($event)">
+        <option value="" :selected="!model.source.instanceId" x-text="t('sourceNoneOption')"></option>
+        <template x-for="tr in treeList">
+          <option :value="tr.instanceId" :selected="tr.instanceId === model.source.instanceId"
+                  x-text="treeLabel(tr)"></option>
+        </template>
+      </select>
+
+      <label class="kano__label" x-text="t('level')"></label>
+      <select class="field kano__level-select" data-ref="levelSelect"
+              :value="model.source.level" @change="changeLevel($event)">
+        <option value="need" x-text="t('levelNeed')"></option>
+        <option value="driver" x-text="t('levelDriver')"></option>
+        <option value="req" x-text="t('levelReq')"></option>
+      </select>
+
+      <div class="dmike-split__section-title" x-text="t('optionsTitle')"></div>
+      <label class="kano__check">
+        <input type="checkbox" data-ref="importanceToggle"
+               :checked="model.options.importance" @change="toggleImportance()" />
+        <span x-text="t('optionImportance')"></span>
+      </label>
+
+      <div class="dmike-split__section-title" x-text="t('syncTitle')"></div>
+      <button class="btn btn--sm kano__sync-btn" type="button" data-ref="syncBtn"
+              :disabled="!hasPending()" x-text="t('syncButton')" @click="applySync()"></button>
+      <p class="kano__sync-status" data-ref="syncStatus" x-text="syncStatus()"></p>
+      <div class="dmike-infobox dmike-infobox--info" data-ref="detachedInfo"
+           x-show="isDetached()" x-text="t('sourceDetachedInfo')"></div>
+    </div>
+
+    <div class="dmike-split__output" data-ref="output">
+      <div class="dmike-split__output-section-header">
+        <div class="dmike-split__output-section" x-text="t('captureTitle')"></div>
+        <button class="btn btn--sm" type="button" data-ref="addRespondent"
+                x-text="t('respondentAdd')" @click="addRespondent()"></button>
+      </div>
+
+      <div class="dmike-tabs" data-ref="respondentTabs">
+        <template x-for="r in model.respondents">
+          <span class="kano__tab-wrap dmike-del-btn-host" :key="r.id">
+            <button class="dmike-tab" type="button" :data-respondent-id="r.id"
+                    :class="tabClass(r.id)" x-text="r.name" x-show="!isRenaming(r.id)"
+                    :title="respondentRenameTitle(r.name)"
+                    @click="selectRespondent(r.id)" @dblclick="startRename(r.id)"></button>
+            <template x-if="isRenaming(r.id)">
+              <input class="field kano__tab-rename-input" data-ref="tabRenameInput"
+                     x-model="renameValue"
+                     @keydown.enter.prevent="commitRename()"
+                     @keydown.escape="cancelRename()"
+                     @blur="commitRename()">
+            </template>
+            <button class="dmike-del-btn kano__tab-del-btn" type="button"
+                    :title="t('respondentDelete')" @click="removeRespondent(r.id)"></button>
+          </span>
+        </template>
+      </div>
+
+      <p class="kano__hint" x-show="model.items.length === 0" x-text="t('captureEmpty')"></p>
+      <p class="kano__hint" x-show="model.items.length > 0 && !model.activeRespondentId"
+         x-text="t('captureNoRespondent')"></p>
+
+      <table class="dmike-table kano__capture" data-ref="captureTable" x-show="canCapture()">
+        <thead>
+          <tr>
+            <th x-text="t('colItem')"></th>
+            <th x-text="t('colFunctional')"></th>
+            <th x-text="t('colDysfunctional')"></th>
+            <th x-show="model.options.importance" x-text="t('colImportance')"></th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <template x-for="item in model.items">
+            <tr :key="item.id" :data-item-id="item.id" :class="itemRowClass(item)">
+              <td>
+                <span class="kano__item-label" data-ref="itemLabel" x-text="item.label"></span>
+                <span class="kano__item-path" x-text="item.path"></span>
+                <span class="kano__badge-missing" data-ref="itemMissing" x-show="item.missing" x-text="t('itemMissing')"></span>
+              </td>
+              <td>
+                <select class="field kano__answer" data-field="f"
+                        :value="answerValue(item.id, 'f')"
+                        @change="setAnswerFromEvent(item.id, 'f', $event)">
+                  <option value="" x-text="t('scaleEmpty')"></option>
+                  <option value="1" x-text="t('scaleF1')"></option>
+                  <option value="2" x-text="t('scaleF2')"></option>
+                  <option value="3" x-text="t('scaleF3')"></option>
+                  <option value="4" x-text="t('scaleF4')"></option>
+                  <option value="5" x-text="t('scaleF5')"></option>
+                </select>
+              </td>
+              <td>
+                <select class="field kano__answer" data-field="d"
+                        :value="answerValue(item.id, 'd')"
+                        @change="setAnswerFromEvent(item.id, 'd', $event)">
+                  <option value="" x-text="t('scaleEmpty')"></option>
+                  <option value="1" x-text="t('scaleD1')"></option>
+                  <option value="2" x-text="t('scaleD2')"></option>
+                  <option value="3" x-text="t('scaleD3')"></option>
+                  <option value="4" x-text="t('scaleD4')"></option>
+                  <option value="5" x-text="t('scaleD5')"></option>
+                </select>
+              </td>
+              <td x-show="model.options.importance">
+                <select class="field kano__answer" data-field="w"
+                        :value="answerValue(item.id, 'w')"
+                        @change="setAnswerFromEvent(item.id, 'w', $event)">
+                  <option value="" x-text="t('scaleEmpty')"></option>
+                  <option value="1" x-text="t('importanceLow')"></option>
+                  <option value="2">2</option>
+                  <option value="3">3</option>
+                  <option value="4">4</option>
+                  <option value="5">5</option>
+                  <option value="6">6</option>
+                  <option value="7">7</option>
+                  <option value="8">8</option>
+                  <option value="9" x-text="t('importanceHigh')"></option>
+                </select>
+              </td>
+              <td class="dmike-del-btn-host">
+                <button class="dmike-del-btn" type="button" :title="t('itemDelete')"
+                        @click="removeItem(item.id)"></button>
+              </td>
+            </tr>
+          </template>
+        </tbody>
+      </table>
+
+      <div class="dmike-split__output-section" x-text="t('resultTitle')"></div>
+
+      <div class="dmike-kpi-strip" data-ref="kpis">
+        <div class="dmike-kpi">
+          <div class="dmike-kpi-value" x-text="result().totals.items"></div>
+          <div class="dmike-kpi-label" x-text="t('kpiItems')"></div>
+        </div>
+        <div class="dmike-kpi">
+          <div class="dmike-kpi-value" x-text="result().totals.respondents"></div>
+          <div class="dmike-kpi-label" x-text="t('kpiRespondents')"></div>
+        </div>
+        <div class="dmike-kpi">
+          <div class="dmike-kpi-value" x-text="pct(result().totals.completeness)"></div>
+          <div class="dmike-kpi-label" x-text="t('kpiCompleteness')"></div>
+        </div>
+        <div class="dmike-kpi">
+          <div class="dmike-kpi-value" x-text="pct(result().totals.qShare)"></div>
+          <div class="dmike-kpi-label" x-text="t('kpiQShare')"></div>
+        </div>
+      </div>
+
+      <div class="dmike-infobox dmike-infobox--warn" data-ref="qWarn"
+           x-show="qWarn()" x-text="qWarnText()"></div>
+
+      <table class="dmike-table kano__result" data-ref="resultTable">
+        <thead>
+          <tr>
+            <th x-text="t('colItem')"></th>
+            <th>M</th><th>O</th><th>A</th><th>I</th><th>R</th><th>Q</th>
+            <th x-text="t('colCategory')"></th>
+            <th x-text="t('colCs')"></th>
+            <th x-text="t('colDs')"></th>
+            <th x-show="model.options.importance" x-text="t('colImportanceMean')"></th>
+          </tr>
+        </thead>
+        <tbody>
+          <template x-for="row in result().rows">
+            <tr :key="row.itemId" :data-item-id="row.itemId" :class="resultRowClass(row)">
+              <td x-text="row.label"></td>
+              <td x-text="row.counts.M"></td>
+              <td x-text="row.counts.O"></td>
+              <td x-text="row.counts.A"></td>
+              <td x-text="row.counts.I"></td>
+              <td x-text="row.counts.R"></td>
+              <td x-text="row.counts.Q"></td>
+              <td>
+                <span data-ref="category" x-text="catLabel(row.category)"></span>
+                <span class="kano__tie" x-show="row.tie" :title="t('tieTitle')"
+                      x-text="t('tieMark')"></span>
+              </td>
+              <td x-text="fmt(row.cs, 2)"></td>
+              <td x-text="fmt(row.ds, 2)"></td>
+              <td x-show="model.options.importance" x-text="fmt(row.importanceMean, 1)"></td>
+            </tr>
+          </template>
+        </tbody>
+      </table>
+
+      <div class="dmike-split__output-section" x-text="t('chartTitle')"></div>
+      <div class="kano__chart" data-ref="chart"></div>
+      <div class="kano__chart-legend" data-ref="chartLegend">
+        <div class="kano__chart-legend-item">
+          <span class="kano__chart-legend-pos" x-text="t('chartPosTopLeft')"></span>
+          <span class="kano__chart-legend-cat" x-text="t('quadrantA')"></span>
+        </div>
+        <div class="kano__chart-legend-item">
+          <span class="kano__chart-legend-pos" x-text="t('chartPosTopRight')"></span>
+          <span class="kano__chart-legend-cat" x-text="t('quadrantO')"></span>
+        </div>
+        <div class="kano__chart-legend-item">
+          <span class="kano__chart-legend-pos" x-text="t('chartPosBottomLeft')"></span>
+          <span class="kano__chart-legend-cat" x-text="t('quadrantI')"></span>
+        </div>
+        <div class="kano__chart-legend-item">
+          <span class="kano__chart-legend-pos" x-text="t('chartPosBottomRight')"></span>
+          <span class="kano__chart-legend-cat" x-text="t('quadrantM')"></span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

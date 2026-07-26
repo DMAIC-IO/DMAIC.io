@@ -228,6 +228,21 @@
       ]
     },
     {
+      "id": "kano-lieferservice",
+      "type": "project",
+      "title": { "de": "Kano: Lieferservice", "en": "Kano: delivery service" },
+      "description": {
+        "de": "Sechs Kundenbedürfnisse eines Lieferservice, von drei Kunden nach Kano bewertet — inklusive Wichtigkeitsfrage und einem Gleichstand.",
+        "en": "Six customer needs of a delivery service, rated by three customers using Kano — including the importance question and one tie."
+      },
+      "source": "DMAIC.io Lehrkonfiguration",
+      "license": "public-domain",
+      "file": "projects/kano-lieferservice.json",
+      "format": "json",
+      "modules": ["kano"],
+      "tags": ["kano", "voc", "define", "priorisierung"]
+    },
+    {
       "id": "regression-collinear",
       "type": "project",
       "title": {

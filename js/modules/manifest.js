@@ -209,6 +209,16 @@ export default [
     },
   },
   {
+    id: 'kano',
+    phase: 'define',
+    allowedPhases: ['define'],
+    load: () => import('./kano/kano.js'),
+    cycles: {
+      dmaic: { phase: 'define', allowedPhases: ['define'] },
+      dmadv: { phase: 'define', allowedPhases: ['define'] },
+    },
+  },
+  {
     id: 'raci-matrix',
     phase: 'define',
     allowedPhases: ['define'],

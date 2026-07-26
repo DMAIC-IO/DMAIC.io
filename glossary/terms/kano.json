@@ -1,0 +1,101 @@
+{
+  "id": "kano",
+  "category": "methodology",
+  "title": {
+    "de": "Kano-Modell",
+    "en": "Kano Model"
+  },
+  "short": {
+    "de": "Klassifiziert Anforderungen aus dem {{term:voc|VoC}}→{{term:ctq|CTQ}}-Baum danach, wie ihre Erfüllung bzw. Nichterfüllung die Kundenzufriedenheit beeinflusst.",
+    "en": "Classifies requirements from the {{term:voc|VoC}}→{{term:ctq|CTQ}} tree by how their fulfillment or absence affects customer satisfaction."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "Das **Kano-Modell** (Kano, 1984) prüft, ob eine Anforderung symmetrisch auf Zufriedenheit wirkt — oder ob Erfüllung und Nichterfüllung unterschiedlich stark ausschlagen. Je Item werden zwei Fragen auf derselben fünfstufigen Skala gestellt: die **funktionale Frage** (Reaktion bei Erfüllung) und die **dysfunktionale Frage** (Reaktion bei Nichterfüllung). Das Antwortpaar wird über eine feste Auswertungstabelle einer von sechs Kategorien zugeordnet."
+      },
+      {
+        "type": "list",
+        "items": [
+          "**M — Basismerkmal:** wird vorausgesetzt, Fehlen verärgert, Erfüllung fällt kaum auf",
+          "**O — Leistungsmerkmal:** Zufriedenheit steigt proportional zum Erfüllungsgrad",
+          "**A — Begeisterungsmerkmal:** unerwartet, Fehlen stört nicht, Vorhandensein begeistert",
+          "**I — Indifferent:** keine spürbare Wirkung auf die Zufriedenheit",
+          "**R — Umgekehrt:** Reaktion widerspricht der Erwartung, meist ein Formulierungsfehler",
+          "**Q — Widersprüchlich:** die beiden Antworten widersprechen sich logisch"
+        ]
+      },
+      {
+        "type": "formula",
+        "latex": "CS = \\frac{A+O}{A+O+M+I}, \\quad DS = -\\frac{O+M}{A+O+M+I}"
+      },
+      {
+        "type": "note",
+        "text": "**R und Q stehen bewusst nicht im Nenner** von CS und DS: Beide drücken keine Präferenz aus — R eine Umkehrung der erwarteten Reaktion, Q einen Widerspruch in den Antworten — und würden die Kennzahl verwässern statt schärfen. Ein hoher Q-Anteil ist fast immer ein Zeichen für eine missverständliche oder verdreht beantwortete Frage, nicht für ein echtes Q-Merkmal. Kano setzt im DMAIC-Ablauf nach der {{term:voc|VoC}}-Erhebung und vor der Priorisierung an — es sortiert, woran zuerst gearbeitet wird."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "The **Kano model** (Kano, 1984) tests whether a requirement affects satisfaction symmetrically — or whether fulfillment and absence pull in different strengths. Each item is asked twice on the same five-point scale: the **functional question** (reaction if fulfilled) and the **dysfunctional question** (reaction if not fulfilled). The answer pair is mapped to one of six categories via a fixed evaluation table."
+      },
+      {
+        "type": "list",
+        "items": [
+          "**M — Must-be** (basic quality): taken for granted, absence causes anger, fulfillment barely registers",
+          "**O — Performance:** satisfaction rises with the degree of fulfillment",
+          "**A — Attractive** (excitement quality): unexpected, absence does not bother, presence delights",
+          "**I — Indifferent:** no noticeable effect on satisfaction",
+          "**R — Reverse:** reaction contradicts expectation, usually a wording problem",
+          "**Q — Questionable:** the two answers logically contradict each other"
+        ]
+      },
+      {
+        "type": "formula",
+        "latex": "CS = \\frac{A+O}{A+O+M+I}, \\quad DS = -\\frac{O+M}{A+O+M+I}"
+      },
+      {
+        "type": "note",
+        "text": "**R and Q are deliberately excluded from the denominator** of CS and DS: neither expresses a preference — R is a reversal of the expected reaction, Q a contradiction between the answers — and including them would dilute the metric rather than sharpen it. A high Q share is almost always a sign of a misunderstood or reverse-scored question, not a genuine Q feature. In the DMAIC flow, Kano comes in after {{term:voc|VoC}} collection and before prioritization — it sorts out what gets worked on first."
+      }
+    ]
+  },
+  "aliases": {
+    "de": [
+      "Kano",
+      "Kano-Analyse",
+      "Kano-Modell",
+      "Better/Worse-Analyse"
+    ],
+    "en": [
+      "Kano",
+      "Kano analysis",
+      "Kano model",
+      "Better/Worse analysis"
+    ]
+  },
+  "seeAlso": [
+    "voc",
+    "ctq"
+  ],
+  "modules": [
+    "kano",
+    "voc-ctx-tree"
+  ],
+  "algoLab": [],
+  "sources": [
+    {
+      "label": "Kano, N. — Attractive Quality and Must-Be Quality, Journal of the Japanese Society for Quality Control, 14(2), 1984",
+      "url": null
+    },
+    {
+      "label": "Berger, C. et al. — Kano's Methods for Understanding Customer-defined Quality, Center for Quality Management Journal, 2(4), 1993",
+      "url": null
+    },
+    {
+      "label": "Pyzdek, T. & Keller, P. — The Six Sigma Handbook, 5th Edition",
+      "url": null
+    }
+  ]
+}
