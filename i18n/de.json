@@ -573,6 +573,8 @@
     }
   },
   "common": {
+    "reorder": "Zeile verschieben",
+    "rowMoved": "Zeile verschoben, Position {pos} von {total}",
     "confirm": "Bestätigen",
     "cancel": "Abbrechen",
     "save": "Speichern",

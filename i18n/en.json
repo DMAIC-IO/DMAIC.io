@@ -573,6 +573,8 @@
     }
   },
   "common": {
+    "reorder": "Reorder row",
+    "rowMoved": "Row moved, position {pos} of {total}",
     "confirm": "Confirm",
     "cancel": "Cancel",
     "save": "Save",
