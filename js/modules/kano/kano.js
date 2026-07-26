@@ -135,6 +135,8 @@ export default createModule({
       _charts: [],
       /** Render-Generation — verhindert Mounts aus überholten Durchläufen. */
       _renderGen: 0,
+      /** true, sobald destroy() lief — sperrt Mounts, die danach zurückkommen. */
+      _destroyed: false,
 
       /** Alpine-Lifecycle-Hook: lädt die Baumliste und abonniert Änderungen am Projekt-State. */
       init() {
@@ -178,6 +180,7 @@ export default createModule({
 
       /** Alpine-Lifecycle-Hook: meldet alle Event-Bus-Subscriptions wieder ab. */
       destroy() {
+        this._destroyed = true;
         (this._unsubs || []).forEach((off) => off());
         this._unsubs = [];
         this.destroyCharts();
@@ -573,6 +576,7 @@ export default createModule({
 
       /** Mountet das Better/Worse-Diagramm neu. */
       async mountChart() {
+        if (this._destroyed) return;
         this._renderGen++;
         const gen = this._renderGen;
         this.destroyCharts();
@@ -619,7 +623,12 @@ export default createModule({
             { dir: 'v', value: 0.5, dash: 'dash', width: 1, color: 'var(--color-text-tertiary)' },
           ],
         });
-        if (gen !== this._renderGen) {
+        // `_destroyed` mitprüfen, nicht nur die Generation: läuft destroy()
+        // während `create()` noch im await hängt, ist `_charts` beim
+        // destroyCharts() leer und `_renderGen` unverändert — der Chart käme
+        // sonst in die Liste einer toten Komponente und bliebe als zweites
+        // SVG im Host stehen (sichtbar nach einem Reload).
+        if (this._destroyed || gen !== this._renderGen) {
           try { module._context.chartManager.destroy(chart); } catch { /* ignore */ }
           return;
         }
