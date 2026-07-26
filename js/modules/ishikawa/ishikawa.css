@@ -637,35 +637,16 @@
   font-size: var(--font-size-sm);
 }
 
-/* ===== Table ===== */
-.ishikawa__table-wrap {
-  background: var(--color-bg-secondary);
-  border: var(--border-width) solid var(--color-border-secondary);
-  border-radius: var(--border-radius);
-  overflow-x: auto;
-}
+/* ===== Table =====
+   Base look comes from the shared .dmike-table-wrap / .dmike-table /
+   .dmike-table--sticky in css/components.css. Only the column geometry and
+   the Ishikawa-specific cell content are styled here. */
 
-.ishikawa__table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-.ishikawa__table thead th {
-  font-family: var(--font-family-mono);
-  font-size: 10px;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--color-text-tertiary);
+.ishikawa__table thead th.ishikawa__col-nr {
+  width: 4.5rem;
   text-align: left;
-  padding: var(--spacing-sm) 10px;
-  border-bottom: 2px solid var(--color-border-secondary);
-  background: var(--color-bg-tertiary);
-  position: sticky;
-  top: 0;
-  white-space: nowrap;
+  padding-left: calc(var(--ishikawa-nr-indent) + var(--ishikawa-toggle-slot));
 }
-
-.ishikawa__table thead th.ishikawa__col-nr { width: 4.5rem; text-align: left; padding-left: 12px; }
 .ishikawa__table thead th.ishikawa__col-cat { width: 8.5rem; }
 .ishikawa__table thead th.ishikawa__col-name { width: 11rem; }
 .ishikawa__table thead th.ishikawa__col-status { width: 7rem; }
@@ -699,35 +680,47 @@
   text-overflow: ellipsis;
 }
 
-.ishikawa__table tbody tr {
-  border-bottom: var(--border-width) solid var(--color-border-secondary);
-  transition: background var(--transition-speed);
+
+/* Geometry of the number column, in one place: header, body cells and tree
+   indent all derive from these. --ishikawa-depth is set per row by the
+   template.
+
+   --ishikawa-toggle-slot is the width the collapse toggle occupies in front
+   of the number, gap included. It is 0 by default — only the cause tree has
+   toggles. Header and body both add it, so they cannot drift apart, and a
+   future flat table cannot inherit an offset it has no toggle for. */
+.ishikawa__table {
+  --ishikawa-nr-indent: 12px;
+  --ishikawa-nr-step: 16px;
+  --ishikawa-nr-gap: var(--spacing-xs);
+  --ishikawa-toggle-size: 22px;   /* matches .btn--icon-sm */
+  --ishikawa-toggle-slot: 0px;
 }
 
-.ishikawa__table tbody tr:hover { background: var(--color-bg-primary); }
-.ishikawa__table tbody tr.ishikawa__dragging { opacity: 0.4; }
-
-.ishikawa__table td {
-  padding: 7px 10px;
-  vertical-align: middle;
+.ishikawa__table--tree {
+  --ishikawa-toggle-slot: calc(var(--ishikawa-toggle-size) + var(--ishikawa-nr-gap));
 }
 
 .ishikawa__table td.ishikawa__col-nr {
   text-align: left;
-  padding-left: 12px;
+  padding-left: calc(var(--ishikawa-nr-indent) + var(--ishikawa-depth, 0) * var(--ishikawa-nr-step));
   font-family: var(--font-family-mono);
   font-size: var(--font-size-xs);
   color: var(--color-text-tertiary);
   white-space: nowrap;
 }
 
+/* Grid, not flex: the first track reserves the toggle slot whether or not a
+   toggle is rendered, so childless rows line up with their siblings without
+   needing a spacer element in the markup. */
 .ishikawa__nr-cell {
-  display: flex;
+  display: grid;
+  grid-template-columns: var(--ishikawa-toggle-size) auto;
   align-items: center;
-  gap: 4px;
+  gap: var(--ishikawa-nr-gap);
 }
 
-.ishikawa__nr-text { flex-shrink: 0; }
+.ishikawa__nr-text { grid-column: 2; }
 
 /* Depth indentation backgrounds */
 .ishikawa__depth-1 { background: var(--color-bg-primary); }
@@ -747,52 +740,17 @@
   gap: 4px;
 }
 
-.ishikawa__toggle-btn {
-  width: 20px;
-  height: 20px;
-  border-radius: var(--border-radius-sm);
-  border: none;
-  background: transparent;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--color-text-tertiary);
-  flex-shrink: 0;
-  transition: all var(--transition-speed);
-  font-size: 12px;
-}
-
-.ishikawa__toggle-btn:hover {
-  background: var(--color-bg-tertiary);
-  color: var(--color-accent);
-}
-
+/* Tree toggle — .btn--icon-sm base, only the flex/rotation bits are local. */
 .ishikawa__toggle-btn--collapsed {
   transform: rotate(-90deg);
 }
 
-.ishikawa__toggle-placeholder {
-  width: 20px;
-  height: 20px;
-  flex-shrink: 0;
-}
-
-/* Category select */
+/* Category select — .field base; mono label plus the inline category colour
+   stripe set per row via :style. */
 .ishikawa__cat-select {
   font-family: var(--font-family-mono);
   font-size: var(--font-size-xs);
-  padding: 5px 8px;
-  border-radius: var(--border-radius);
-  border: var(--border-width) solid var(--color-border-secondary);
-  background: var(--color-bg-primary);
-  cursor: pointer;
-  color: var(--color-text-primary);
-  width: 100%;
-  outline: none;
 }
-
-.ishikawa__cat-select:focus { border-color: var(--color-accent); }
 
 .ishikawa__cat-inherited {
   font-family: var(--font-family-mono);
@@ -806,57 +764,32 @@
   text-overflow: ellipsis;
 }
 
-/* Name input */
+/* Name input — .field--ghost base, mono + bold to read as the row's title. */
 .ishikawa__name-input {
-  width: 100%;
-  border: none;
-  outline: none;
   font-family: var(--font-family-mono);
-  font-size: var(--font-size-sm);
   font-weight: var(--font-weight-semibold);
-  color: var(--color-text-primary);
-  background: transparent;
-  padding: 3px 0;
 }
 
 .ishikawa__name-input::placeholder {
-  color: var(--color-text-tertiary);
   font-weight: var(--font-weight-normal);
 }
 
 .ishikawa__name-input--dup {
-  color: var(--color-error, #ef4444);
+  color: var(--color-error);
 }
 
-/* Description input */
+/* Description input — .field--ghost base; fills the rest of .ishikawa__hypo-cell. */
 .ishikawa__desc-input {
   flex: 1;
   min-width: 0;
-  border: none;
-  outline: none;
-  font-family: var(--font-family);
-  font-size: var(--font-size-sm);
-  color: var(--color-text-primary);
-  background: transparent;
-  padding: 3px 0;
 }
 
-.ishikawa__desc-input::placeholder { color: var(--color-text-tertiary); }
-
-/* Rating input */
+/* Rating input — .field base, narrowed to a single digit and centred. */
 .ishikawa__rating-input {
   width: 38px;
   font-family: var(--font-family-mono);
-  font-size: var(--font-size-sm);
   font-weight: var(--font-weight-semibold);
   text-align: center;
-  padding: 4px 3px;
-  border: 1.5px solid var(--color-border-secondary);
-  border-radius: var(--border-radius);
-  outline: none;
-  background: var(--color-bg-primary);
-  color: var(--color-text-primary);
-  transition: all var(--transition-speed);
   appearance: textfield;
 }
 
@@ -864,10 +797,6 @@
 .ishikawa__rating-input::-webkit-outer-spin-button {
   appearance: none;
   margin: 0;
-}
-
-.ishikawa__rating-input:focus {
-  border-color: var(--color-accent);
 }
 
 .ishikawa__table td.ishikawa__col-expert { text-align: center; }
@@ -923,17 +852,13 @@
 .ishikawa__delta-up { color: #dc2626; }
 .ishikawa__delta-down { color: #16a34a; }
 
-/* Status select */
+/* Status select — .field base, reshaped into a pill; the per-status classes
+   below override background/color/border-color. */
 .ishikawa__status-select {
   font-family: var(--font-family-mono);
   font-size: var(--font-size-xs);
-  padding: 4px 8px;
   border-radius: 99px;
-  border: var(--border-width) solid var(--color-border-secondary);
-  background: var(--color-bg-primary);
-  cursor: pointer;
   color: var(--color-text-tertiary);
-  outline: none;
 }
 
 .ishikawa__status-open { background: rgb(234 179 8 / 15%); color: #b45309; border-color: rgb(234 179 8 / 30%); }
@@ -948,26 +873,8 @@
   gap: 2px;
 }
 
-.ishikawa__icon-btn {
-  width: 26px;
-  height: 26px;
-  border-radius: var(--border-radius);
-  border: none;
-  background: transparent;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--color-text-tertiary);
-  transition: all var(--transition-speed);
-  font-size: 13px;
-}
-
-.ishikawa__icon-btn:hover {
-  background: var(--color-bg-tertiary);
-  color: var(--color-accent);
-}
-
+/* Row action buttons use .btn--icon-sm; only the experiment-link badge
+   anchor and its "linked" tint are Ishikawa-specific. */
 .ishikawa__icon-btn--exp {
   position: relative;
 }
@@ -1210,19 +1117,9 @@
   min-width: 16rem;
 }
 
-.ishikawa__exp-title-input,
-.ishikawa__exp-desc-input,
-.ishikawa__exp-resp-input {
-  padding: 4px 6px;
-  background: transparent;
-  border: 1px solid transparent;
-  border-radius: var(--radius-sm);
-  color: var(--color-text-primary);
-  font-size: var(--font-size-sm);
-  font-family: inherit;
-}
-
-/* Title + Owner: hug their content. */
+/* Cell editors below are .field .field--sm .field--ghost — only the sizing
+   behaviour that the column layout above depends on is set here.
+   Title + Owner: hug their content. */
 .ishikawa__exp-title-input,
 .ishikawa__exp-resp-input {
   width: auto;
@@ -1230,82 +1127,26 @@
   field-sizing: content;
 }
 
+.ishikawa__exp-title-input { font-weight: var(--font-weight-medium); }
+
 /* Description: textarea that fills the remaining column space, wraps text
-   and auto-grows in height with content. */
+   and auto-grows in height with content (overriding the 56px min-height
+   that textarea.field carries for standalone form use). */
 .ishikawa__exp-desc-input {
   display: block;
-  width: 100%;
   min-height: calc(var(--font-size-sm) + 12px);
-  resize: vertical;
   white-space: pre-wrap;
   overflow-wrap: anywhere;
   field-sizing: content;
-  line-height: 1.4;
 }
 
-.ishikawa__exp-title-input:hover,
-.ishikawa__exp-desc-input:hover,
-.ishikawa__exp-resp-input:hover {
-  border-color: var(--color-border-secondary);
-}
+.ishikawa__exp-date-input { font-family: var(--font-family-mono); }
 
-.ishikawa__exp-title-input:focus,
-.ishikawa__exp-desc-input:focus,
-.ishikawa__exp-resp-input:focus {
-  background: var(--color-bg-primary);
-  border-color: var(--color-accent);
-  outline: none;
-}
-
-.ishikawa__exp-title-input { font-weight: 500; }
-
-.ishikawa__exp-status-select {
-  width: 100%;
-  padding: 4px 6px;
-  background: var(--color-bg-secondary);
-  border: 1px solid var(--color-border-secondary);
-  border-radius: var(--radius-sm);
-  color: var(--color-text-primary);
-  font-size: var(--font-size-sm);
-  font-family: inherit;
-  cursor: pointer;
-}
-
-.ishikawa__exp-status-select:focus {
-  border-color: var(--color-accent);
-  outline: none;
-}
-
-.ishikawa__expstatus-planned   { border-left: 3px solid #94a3b8; }
-.ishikawa__expstatus-running   { border-left: 3px solid #2563eb; }
-.ishikawa__expstatus-done      { border-left: 3px solid #16a34a; }
-.ishikawa__expstatus-cancelled { border-left: 3px solid #dc2626; }
-
-.ishikawa__exp-date-input,
-.ishikawa__exp-num-input {
-  width: 100%;
-  padding: 4px 6px;
-  background: transparent;
-  border: 1px solid transparent;
-  border-radius: var(--radius-sm);
-  color: var(--color-text-primary);
-  font-size: var(--font-size-sm);
-  font-family: var(--font-family-mono);
-}
-
-.ishikawa__exp-date-input:hover,
-.ishikawa__exp-num-input:hover {
-  border-color: var(--color-border-secondary);
-}
-
-.ishikawa__exp-date-input:focus,
-.ishikawa__exp-num-input:focus {
-  background: var(--color-bg-primary);
-  border-color: var(--color-accent);
-  outline: none;
-}
-
-.ishikawa__exp-num-input { text-align: right; }
+/* Coloured left edge per experiment status. */
+.ishikawa__expstatus-planned   { border-left: 3px solid var(--color-text-tertiary); }
+.ishikawa__expstatus-running   { border-left: 3px solid var(--color-accent); }
+.ishikawa__expstatus-done      { border-left: 3px solid var(--color-success); }
+.ishikawa__expstatus-cancelled { border-left: 3px solid var(--color-error); }
 
 .ishikawa__exp-link-btn {
   width: 100%;
