@@ -1,0 +1,27 @@
+# Line endings — LF everywhere, in the repo and in the working tree.
+#
+# Without this, tools running under WSL/Windows can rewrite a file to CRLF,
+# which turns a one-line change into a whole-file diff. It happened twice in a
+# single session: a one-line addition to chart-manager.js showed up as 174
+# changed lines, and a one-line id fix in five algorithm JSONs as ~354 lines
+# each. `text=auto` still lets Git detect binary content and leave it alone.
+* text=auto eol=lf
+
+# Shell scripts must keep LF regardless of detection — CRLF breaks the shebang.
+*.sh text eol=lf
+
+# Binary assets — never convert, never diff as text.
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.eot binary
+*.otf binary
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary
+*.ico binary
+*.pdf binary
+*.zip binary
+*.xlsx binary
