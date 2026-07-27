@@ -36,6 +36,19 @@ const ITALIC = /\*([^*]+)\*/;
 const TERM = /\{\{term:([a-z0-9-]+)(?:\|([^}]+))?\}\}/i;
 
 /**
+ * Flatten `{{term:id|label}}` / `{{term:id}}` tokens to plain text — the
+ * explicit label when present, otherwise the bare id. For plain-text contexts
+ * (button labels, search keys, `title` attributes) where the interactive
+ * glossary link {@link parseInline} produces would be wrong or impossible.
+ * @param {string} text
+ * @returns {string}
+ */
+export function stripTermTokens(text) {
+  if (typeof text !== 'string') return text;
+  return text.replace(/\{\{term:([a-z0-9-]+)(?:\|([^}]+))?\}\}/gi, (_m, id, label) => label || id);
+}
+
+/**
  * Find the earliest-matching token in `text`.
  * @param {string} text
  * @returns {{ index:number, length:number, build:() => Node } | null}

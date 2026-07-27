@@ -1,5 +1,5 @@
 {
-  "id": "welch-{{term:t-test|t-test}}",
+  "id": "welch-t-test",
   "name": {
     "de": "Welch-{{term:t-test|t-Test}}",
     "en": "Welch t-Test"

@@ -25,7 +25,7 @@
                       x-show="algoMatches(algo)"
                       @click="navigate(algo.id)">
                 <span class="lab__status-dot" :class="'lab__status-dot--' + algo.status"></span>
-                <span x-text="loc(algo.name)"></span>
+                <span x-text="algoName(algo)"></span>
               </button>
             </template>
           </div>
@@ -71,7 +71,7 @@
       <div class="lab__algo-view">
         <div class="lab__algo-header-slot">
           <div class="lab__algo-header">
-            <span class="lab__algo-name" x-text="loc(selectedAlgo.name)"></span>
+            <span class="lab__algo-name" x-text="algoName(selectedAlgo)"></span>
             <span class="lab__algo-version" x-text="'v' + selectedAlgo.version"></span>
             <span class="lab__status-badge" :class="'lab__status-badge--' + selectedAlgo.status"
                   x-text="t('lab.status.' + selectedAlgo.status)"></span>

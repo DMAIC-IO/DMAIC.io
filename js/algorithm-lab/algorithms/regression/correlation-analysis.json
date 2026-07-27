@@ -1,5 +1,5 @@
 {
-  "id": "{{term:korrelation|correlation}}-analysis",
+  "id": "correlation-analysis",
   "name": {
     "de": "{{term:korrelation|Korrelation}}sanalyse (Pearson, Spearman, Kendall)",
     "en": "Correlation Analysis (Pearson, Spearman, Kendall)"
