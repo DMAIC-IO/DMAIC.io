@@ -162,6 +162,11 @@
           <div class="dmike-split__output-section" x-text="t('chartByPartTitle')"></div>
           <div class="msa-typ2__chart-plot" data-ref="chart-by-part"></div>
 
+          <!-- Messverlaufsdiagramm: Zeilen-Hosts werden imperativ erzeugt,
+               weil ihre Anzahl von der Prüfeinheiten-Zahl abhängt. -->
+          <div class="dmike-split__output-section" x-text="t('chartGageRunTitle')"></div>
+          <div class="msa-typ2__gage-run" data-ref="chart-gage-run"></div>
+
           <template x-if="result.mode !== 'typ3'">
             <div>
               <div class="dmike-split__output-section" x-text="t('chartByOperatorTitle')"></div>

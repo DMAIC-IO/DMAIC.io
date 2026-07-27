@@ -1503,6 +1503,8 @@
       "varCompTitle": "Variance Components",
       "chartComponentsTitle": "Components of Variation",
       "chartByPartTitle": "Measurements by Part",
+      "chartGageRunTitle": "Gage run chart (raw values by part and operator)",
+      "chartGageRunMean": "Mean",
       "chartByOperatorTitle": "Measurements by Operator",
       "chartInteractionTitle": "Part × Operator Interaction",
       "chartXbarTitle": "X-bar Chart by Operator",
@@ -1649,6 +1651,9 @@
         "kappaBar": "Cohen κ per appraiser pair",
         "effectivenessBar": "Effectiveness per appraiser",
         "sdtScatter": "Signal detection (d′ vs. c)",
+        "gageRun": "Gage run chart (ratings by part and appraiser)",
+        "gageRunMean": "Mean",
+        "gageRunBinaryAxis": "Rating (0 = {neg}, 1 = {pos})",
         "confusion": "Confusion matrix"
       },
       "emptyState": "Select part, appraiser and rating columns to start the analysis.",

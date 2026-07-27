@@ -237,6 +237,16 @@
           </div>
         </template>
 
+        <!-- Messverlaufsdiagramm — nur bei numerisch kodierten Bewertungen
+             sinnvoll; bei nominalen Klassen wäre die Y-Achse irreführend.
+             Zeilen-Hosts werden imperativ erzeugt (Anzahl datenabhängig). -->
+        <template x-if="hasGageRunChart()">
+          <div>
+            <div class="dmike-split__output-section" x-text="t('charts.gageRun')"></div>
+            <div class="msa-typ5__gage-run" data-ref="chart-gage-run"></div>
+          </div>
+        </template>
+
         <!-- Confusion-Heatmap-Grid (Zellen + Charts imperativ befüllt) -->
         <div class="dmike-split__output-section" x-text="t('charts.confusion')"></div>
         <div class="msa-typ5__heatmap-grid" data-ref="chart-heatmaps"></div>

@@ -19,6 +19,8 @@ import { State } from './msa-typ5-model.js';
 import { analyze } from '../../engines/msa-typ5-engine.js';
 import { ColumnPicker, getColumnValues } from '../../ui/column-picker.js';
 import { loadExampleViaWorksheet } from '../../core/examples-registry.js';
+import { computeGageRunChart } from '../../engines/gage-run-chart-engine.js';
+import { renderGageRunStrips } from '../../core/chart/gage-run-strips.js';
 
 /** @param {number} v @param {number} d @returns {string} */
 function fmt(v, d = 3) { return Number.isFinite(v) ? v.toFixed(d) : '—'; }
@@ -280,6 +282,46 @@ const mod = createModule({
         return !!this.result?.signalDetection;
       },
 
+      /**
+       * Wie die Bewertungen auf die Zahlenachse des Messverlaufsdiagramms
+       * kommen — oder null, wenn das keine ehrliche Darstellung ergibt.
+       *
+       * Eine Zahlenachse setzt eine Reihenfolge voraus. Ordinale Skalen und
+       * numerisch kodierte Bewertungen bringen sie mit. Bei binären Studien
+       * gibt die Studienart sie vor (negativ < positiv), auch wenn die Marken
+       * Text sind ("ok"/"nok") — das ist der klassische Fall der attributiven
+       * Prüfung. Nominale Klassen ("Kratzer"/"Delle"/"Riss") haben keine
+       * Reihenfolge; eine Achse würde eine erfinden, also kein Diagramm.
+       *
+       * @returns {{map: (v: string) => number, label: string}|null}
+       */
+      _gageRunEncoding() {
+        const rows = this._ratingRows;
+        if (!this.result || !Array.isArray(rows) || rows.length === 0) return null;
+
+        if (rows.every(r => Number.isFinite(Number(r.value)))) {
+          return { map: (v) => Number(v), label: _t('labels.ratingColumn') };
+        }
+
+        if (this.model.params.type === 'binary') {
+          const pos = this.binaryPositive();
+          const neg = this.binaryNegative();
+          const known = pos !== '—' && neg !== '—';
+          if (known && rows.every(r => r.value === pos || r.value === neg)) {
+            return {
+              map: (v) => (v === pos ? 1 : 0),
+              label: _t('charts.gageRunBinaryAxis', { neg, pos }),
+            };
+          }
+        }
+
+        return null;
+      },
+
+      hasGageRunChart() {
+        return this._gageRunEncoding() !== null;
+      },
+
       // ── Analyse ──────────────────────────────────────────────
 
       /**
@@ -369,6 +411,9 @@ const mod = createModule({
         }
 
         this.result = result;
+        // Für das Messverlaufsdiagramm: genau die Zeilen, die in die Analyse
+        // eingegangen sind.
+        this._ratingRows = rows;
         const gen = ++this._renderGen;
         this.$nextTick(() => this._renderCharts(result, gen));
       },
@@ -392,7 +437,46 @@ const mod = createModule({
           await this._renderSdtScatter(res, gen);
           if (gen !== this._renderGen) return;
         }
+        if (this.hasGageRunChart()) {
+          await this._renderGageRunChart(res, gen);
+          if (gen !== this._renderGen) return;
+        }
         await this._renderConfusionHeatmaps(res, gen);
+      },
+
+      /**
+       * Messverlaufsdiagramm über die Rohbewertungen: ein Feld je Prüfeinheit,
+       * Farbe je Prüfer. Macht sichtbar, WO die Übereinstimmung bricht — welcher
+       * Prüfer bei welchem Teil abweicht — was Kappa nur als Zahl verdichtet.
+       */
+      async _renderGageRunChart(res, gen) {
+        const el = module._container.querySelector('[data-ref="chart-gage-run"]');
+        if (!el) return;
+
+        const enc = this._gageRunEncoding();
+        if (!enc) { el.replaceChildren(); return; }
+        const rows = this._ratingRows || [];
+        const g = computeGageRunChart({
+          parts: rows.map(r => r.part),
+          operators: rows.map(r => r.appraiser),
+          measurements: rows.map(r => enc.map(r.value)),
+        });
+        if (!g.n) { el.replaceChildren(); return; }
+
+        const charts = await renderGageRunStrips(module._context, el, {
+          panels: g.panels,
+          operators: g.operators,
+          refValue: g.grandMean,
+          refLabel: _t('charts.gageRunMean'),
+          yMin: g.yMin,
+          yMax: g.yMax,
+          perRow: 10,
+          xLabel: _t('labels.partColumn'),
+          yLabel: enc.label,
+          rowClass: 'msa-typ5__gage-run-row',
+          isStale: () => gen !== this._renderGen,
+        });
+        this._charts.push(...charts);
       },
 
       async _renderKappaBar(res, gen) {

@@ -197,6 +197,63 @@ export function computeGageRunChart({ parts, operators = null, measurements }) {
 }
 
 /**
+ * Build the panel structure from an already-grouped cell matrix, as the MSA
+ * modules hold it (`cellData[part][operator] = number[]`).
+ *
+ * `computeGageRunChart` groups raw columns; this is its counterpart for
+ * callers that grouped and validated the data themselves. Embedding the chart
+ * in msa-typ2 / msa-typ5 must show exactly the rows their analysis used — a
+ * second pass over the raw columns could include rows their own validation
+ * dropped, and the picture would silently disagree with the numbers next to it.
+ *
+ * Empty cells are omitted (they carry no point), so an unbalanced design
+ * renders as a panel with fewer series rather than an empty gap.
+ *
+ * @param {string[]} partLabels — panel order, taken as given
+ * @param {string[]} operatorLabels — series order, taken as given
+ * @param {Object<string, Object<string, number[]>>} cellData
+ * @returns {{panels: GageRunChartPanel[], operators: string[], grandMean: number,
+ *            n: number, yMin: number, yMax: number}}
+ */
+export function panelsFromCells(partLabels, operatorLabels, cellData) {
+  const panels = [];
+  let sum = 0;
+  let n = 0;
+  let yMin = Infinity;
+  let yMax = -Infinity;
+
+  for (const part of partLabels) {
+    const byOp = cellData?.[part] || {};
+    const series = [];
+    for (const op of operatorLabels) {
+      const raw = byOp[op];
+      if (!Array.isArray(raw)) continue;
+      const values = raw.filter(v => typeof v === 'number' && Number.isFinite(v));
+      if (!values.length) continue;
+      for (const v of values) {
+        sum += v; n++;
+        if (v < yMin) yMin = v;
+        if (v > yMax) yMax = v;
+      }
+      series.push({ operator: op, values, mean: mean(values) });
+    }
+    if (series.length) panels.push({ part, series });
+  }
+
+  if (n === 0) {
+    return { panels: [], operators: [], grandMean: NaN, n: 0, yMin: 0, yMax: 1 };
+  }
+  return {
+    panels,
+    operators: operatorLabels.slice(),
+    grandMean: sum / n,
+    n,
+    yMin,
+    yMax,
+  };
+}
+
+/**
  * Split panels into rows of at most `perRow` panels. The module renders one
  * chart instance per row; a shared y-domain keeps the rows comparable.
  * @param {GageRunChartPanel[]} panels
