@@ -1,0 +1,142 @@
+<div class="gage-run-chart dmike-split" x-data="gageRunChart">
+  <div class="gage-run-chart__input dmike-split__input">
+
+    <div class="dmike-split__section-title" x-text="t('sectionColumns')"></div>
+
+    <div class="field-group">
+      <label x-text="t('partColumn')"></label>
+      <div data-ref="col-part-wrap"></div>
+    </div>
+
+    <div class="field-group">
+      <label x-text="t('operatorColumn')"></label>
+      <div data-ref="col-operator-wrap"></div>
+      <span class="gage-run-chart__hint" x-text="t('operatorHint')"></span>
+    </div>
+
+    <div class="field-group">
+      <label x-text="t('measurementColumn')"></label>
+      <div data-ref="col-measurement-wrap"></div>
+    </div>
+
+    <div class="dmike-split__section-title" x-text="t('sectionSettings')"></div>
+
+    <div class="field-group">
+      <label x-text="t('refValue')"></label>
+      <input type="text" class="field field--num" data-ref="inp-ref-value"
+        inputmode="decimal" :value="model.refValue" @change="refValueChanged($event)">
+      <span class="gage-run-chart__hint" x-text="t('refValueHint')"></span>
+    </div>
+
+    <div class="field-group">
+      <label x-text="t('partsPerRow')"></label>
+      <input type="number" class="field field--num" data-ref="inp-parts-per-row"
+        min="1" max="20" :value="model.partsPerRow" @change="partsPerRowChanged($event)">
+    </div>
+
+    <div class="field-group">
+      <label class="gage-run-chart__check">
+        <input type="checkbox" data-ref="chk-connect"
+          x-model="model.connectWithin" @change="optionToggled()">
+        <span x-text="t('connectWithin')"></span>
+      </label>
+      <label class="gage-run-chart__check">
+        <input type="checkbox" data-ref="chk-operator-mean"
+          x-model="model.showOperatorMean" @change="optionToggled()">
+        <span x-text="t('showOperatorMean')"></span>
+      </label>
+    </div>
+
+    <div class="dmike-split__section-title" x-text="t('sectionGageInfo')"></div>
+
+    <div class="field-group">
+      <label x-text="t('gageInfo_name')"></label>
+      <input type="text" class="field" data-ref="inp-gage-name" x-model="model.gageInfo.name">
+    </div>
+    <div class="field-group">
+      <label x-text="t('gageInfo_date')"></label>
+      <input type="text" class="field" data-ref="inp-gage-date" x-model="model.gageInfo.date">
+    </div>
+    <div class="field-group">
+      <label x-text="t('gageInfo_reporter')"></label>
+      <input type="text" class="field" data-ref="inp-gage-reporter" x-model="model.gageInfo.reporter">
+    </div>
+    <div class="field-group">
+      <label x-text="t('gageInfo_tolerance')"></label>
+      <input type="text" class="field" data-ref="inp-gage-tolerance" x-model="model.gageInfo.tolerance">
+    </div>
+    <div class="field-group">
+      <label x-text="t('gageInfo_misc')"></label>
+      <input type="text" class="field" data-ref="inp-gage-misc" x-model="model.gageInfo.misc">
+    </div>
+
+    <div class="gage-run-chart__error" data-ref="error-box"
+      :class="{ visible: errorMsg }" x-text="errorMsg"></div>
+  </div>
+
+  <div class="gage-run-chart__output dmike-split__output">
+    <template x-if="result">
+      <div class="gage-run-chart__result">
+
+        <div class="gage-run-chart__gage-info" data-ref="gage-info"
+          x-show="model.hasGageInfo()">
+          <div class="gage-run-chart__gage-row" x-show="gageInfoValue('name')">
+            <span class="gage-run-chart__gage-label" x-text="gageInfoLabel('name')"></span>
+            <span class="gage-run-chart__gage-value" x-text="gageInfoValue('name')"></span>
+          </div>
+          <div class="gage-run-chart__gage-row" x-show="gageInfoValue('date')">
+            <span class="gage-run-chart__gage-label" x-text="gageInfoLabel('date')"></span>
+            <span class="gage-run-chart__gage-value" x-text="gageInfoValue('date')"></span>
+          </div>
+          <div class="gage-run-chart__gage-row" x-show="gageInfoValue('reporter')">
+            <span class="gage-run-chart__gage-label" x-text="gageInfoLabel('reporter')"></span>
+            <span class="gage-run-chart__gage-value" x-text="gageInfoValue('reporter')"></span>
+          </div>
+          <div class="gage-run-chart__gage-row" x-show="gageInfoValue('tolerance')">
+            <span class="gage-run-chart__gage-label" x-text="gageInfoLabel('tolerance')"></span>
+            <span class="gage-run-chart__gage-value" x-text="gageInfoValue('tolerance')"></span>
+          </div>
+          <div class="gage-run-chart__gage-row" x-show="gageInfoValue('misc')">
+            <span class="gage-run-chart__gage-label" x-text="gageInfoLabel('misc')"></span>
+            <span class="gage-run-chart__gage-value" x-text="gageInfoValue('misc')"></span>
+          </div>
+        </div>
+
+        <div class="dmike-kpi-strip" data-ref="stats-bar">
+          <div class="dmike-kpi">
+            <div class="dmike-kpi-value" x-text="result.n"></div>
+            <div class="dmike-kpi-label" x-text="t('statMeasurements')"></div>
+            <div class="dmike-kpi-sub" x-text="t('statParts', { count: result.partCount })"></div>
+          </div>
+          <div class="dmike-kpi">
+            <div class="dmike-kpi-value" x-text="result.operatorCount"></div>
+            <div class="dmike-kpi-label" x-text="t('statOperators')"></div>
+            <div class="dmike-kpi-sub" x-text="t('statRows', { count: result.rows.length })"></div>
+          </div>
+          <div class="dmike-kpi">
+            <div class="dmike-kpi-value" x-text="fmt(result.refValue)"></div>
+            <div class="dmike-kpi-label" x-text="refLabel()"></div>
+            <div class="dmike-kpi-sub" x-text="refSubText()"></div>
+          </div>
+        </div>
+
+        <div class="gage-run-chart__warnings" data-ref="warnings" x-show="hasWarnings()">
+          <template x-for="code in result.warnings">
+            <div class="gage-run-chart__warning" :key="code" x-text="warningText(code)"></div>
+          </template>
+        </div>
+
+        <div class="gage-run-chart__chart-header">
+          <span class="gage-run-chart__chart-title" x-text="chartTitle()"></span>
+        </div>
+
+        <div class="gage-run-chart__strips" data-ref="strips">
+          <template x-for="row in result.rows">
+            <div class="gage-run-chart__strip" :key="row.idx" :data-strip="row.idx"></div>
+          </template>
+        </div>
+
+      </div>
+    </template>
+  </div>
+</div>

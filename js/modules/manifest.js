@@ -262,6 +262,16 @@ export default [
     },
   },
   {
+    id: 'gage-run-chart',
+    phase: 'measure',
+    load: () => import('./gage-run-chart/gage-run-chart.js'),
+    cycles: {
+      dmaic:  { phase: 'measure' },
+      dmadv:  { phase: 'measure' },
+      eightd: { phase: 'problem' },
+    },
+  },
+  {
     id: 'msa-typ1',
     phase: 'measure',
     load: () => import('./msa-typ1/msa-typ1.js'),

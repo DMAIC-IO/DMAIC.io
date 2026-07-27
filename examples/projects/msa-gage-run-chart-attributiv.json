@@ -1,0 +1,31 @@
+{
+  "columnRefs": {
+    "part": {
+      "instanceId": "__source__",
+      "sheetId": "sheet-gage-run-attrib",
+      "columnId": "c-part"
+    },
+    "operator": {
+      "instanceId": "__source__",
+      "sheetId": "sheet-gage-run-attrib",
+      "columnId": "c-op"
+    },
+    "measurement": {
+      "instanceId": "__source__",
+      "sheetId": "sheet-gage-run-attrib",
+      "columnId": "c-result"
+    }
+  },
+  "refValue": "",
+  "partsPerRow": 7,
+  "showOperatorMean": false,
+  "connectWithin": true,
+  "gageInfo": {
+    "name": "Sichtprüfplatz A",
+    "date": "2026-07-20",
+    "reporter": "QS",
+    "tolerance": "i.O. / n.i.O.",
+    "misc": "Attributive Prüfung, 2 Wiederholungen je Prüfer"
+  },
+  "sourceWorksheetFile": "worksheets/msa-gage-run-attributiv.json"
+}

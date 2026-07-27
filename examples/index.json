@@ -760,6 +760,30 @@
       ]
     },
     {
+      "id": "msa-gage-run-chart-attributiv",
+      "type": "project",
+      "title": {
+        "de": "Messverlaufsdiagramm: attributive Prüfung",
+        "en": "Gage run chart: attribute study"
+      },
+      "description": {
+        "de": "13 Prüfeinheiten × 3 Prüfer × 2 Wiederholungen, binäres Ergebnis (i.O./n.i.O.). Alle Bewertungen stimmen überein — bis auf Prüfer D, der Prüfeinheit 20 beim zweiten Durchgang abweichend bewertet.",
+        "en": "13 parts × 3 appraisers × 2 trials, binary result (pass/fail). Every rating agrees — except appraiser D, who rates part 20 differently on the second trial."
+      },
+      "source": "DMAIC.io synthetisch",
+      "license": "public-domain",
+      "file": "projects/msa-gage-run-chart-attributiv.json",
+      "format": "json",
+      "modules": [
+        "gage-run-chart"
+      ],
+      "tags": [
+        "msa",
+        "gage-run-chart",
+        "attributiv"
+      ]
+    },
+    {
       "id": "msa-typ1-faehig",
       "type": "project",
       "title": {

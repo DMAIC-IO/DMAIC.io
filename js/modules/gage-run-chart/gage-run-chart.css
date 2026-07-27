@@ -1,0 +1,98 @@
+/* ============================================================
+   Gage Run Chart Module Styles (gage-run-chart.css)
+   BEM: .gage-run-chart__ prefix
+   ============================================================ */
+
+.gage-run-chart .dmike-split__input { width: 300px; }
+
+.gage-run-chart__hint {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+  margin-top: 2px;
+}
+
+.gage-run-chart__check {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  font-weight: var(--font-weight-normal);
+}
+
+.gage-run-chart__error {
+  display: none;
+  margin-top: var(--spacing-sm);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--border-radius);
+  background: var(--color-bg-secondary);
+  color: var(--color-error);
+  font-size: var(--font-size-sm);
+}
+
+.gage-run-chart__error.visible { display: block; }
+
+/* ── Gage information block (Minitab's report header) ── */
+
+.gage-run-chart__gage-info {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 2px var(--spacing-sm);
+  margin-bottom: var(--spacing-md);
+  padding: var(--spacing-sm) var(--spacing-md);
+  background: var(--color-bg-secondary);
+  border: var(--border-width) solid var(--color-border-secondary);
+  border-radius: var(--border-radius);
+  font-size: var(--font-size-sm);
+}
+
+.gage-run-chart__gage-row { display: contents; }
+
+.gage-run-chart__gage-label {
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+}
+
+.gage-run-chart__gage-value { color: var(--color-text-primary); }
+
+/* ── Warnings ── */
+
+.gage-run-chart__warnings { margin-bottom: var(--spacing-md); }
+
+.gage-run-chart__warning {
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-left: 3px solid var(--color-warning);
+  background: var(--color-bg-secondary);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.gage-run-chart__warning + .gage-run-chart__warning { margin-top: 2px; }
+
+/* ── Chart strips ── */
+
+.gage-run-chart__chart-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--spacing-sm) 0;
+}
+
+.gage-run-chart__chart-title {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+}
+
+.gage-run-chart__strips {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+/* A definite height is required — an auto-height host lets the chart's SVG
+   height drift on every re-render. */
+.gage-run-chart__strip {
+  height: 280px;
+  overflow: hidden;
+  background: var(--color-bg-secondary);
+  border: var(--border-width) solid var(--color-border-secondary);
+  border-radius: var(--border-radius);
+}
