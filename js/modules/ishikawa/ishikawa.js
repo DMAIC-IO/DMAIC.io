@@ -20,6 +20,7 @@ import { createModule } from '../../core/template-module.js';
 import { resolveDateOffset } from '../../core/date-offset.js';
 import { h } from '../../core/dom.js';
 import { compressImageToBudget } from '../../core/image-upload.js';
+import { draggableRows } from '../../ui/draggable-list.js';
 import { State, MAX_DEPTH_CLASS } from './ishikawa-model.js';
 import { CATS, STATUS_CSS, LINE_COLS } from './ishikawa-constants.js';
 
@@ -526,6 +527,29 @@ const mod = createModule({
   data(module, _t) {
     const i18n = () => module._context.i18n;
     return {
+      // Reorderable rows for all three tables (.dmike-table--draggable). The
+      // mixin owns the drag plumbing and Alt+Arrow; the move semantics stay in
+      // the model. `causes` is a tree, so keyboard movement there is confined
+      // to siblings — the rendered list is a flattened tree and a raw index
+      // step would jump into a foreign parent. Facts and experiments are flat.
+      ...draggableRows({
+        onMove({ group, sourceId, targetId }) {
+          if (group === 'causes') this.model.moveRowBefore(sourceId, targetId);
+          else if (group === 'experiments') this.model.moveExperimentBefore(sourceId, targetId);
+          else if (group === 'facts') this.model.moveFactBefore(sourceId, targetId);
+        },
+        rowIds(group, id) {
+          if (group === 'experiments') return this.model.experiments.map(x => x.id);
+          if (group === 'facts') return this.model.facts.map(f => f.id);
+          const row = this.model.rows.find(r => r.id === id);
+          if (!row) return [];
+          return this.model.ordered()
+            .filter(r => r.parentId === row.parentId)
+            .map(r => r.id);
+        },
+        t: (key, params) => i18n().t(key, params),
+      }),
+
       // ── Transient UI state (never persisted) ──────────────────
       activeTab: 'problem',
       expertDraft: '',
@@ -569,11 +593,13 @@ const mod = createModule({
       // ── Lifecycle ─────────────────────────────────────────────
 
       init() {
+        this.dragRowsInit();
         // Render the active tab's charts after first paint.
         this.$nextTick(() => this.renderTabCharts());
       },
 
       destroy() {
+        this.dragRowsDestroy();
         this._destroyPareto();
         this._destroyGantt();
         this._destroyCostCharts();
@@ -773,7 +799,8 @@ const mod = createModule({
         }
         return `ishikawa__depth-${Math.min(vr.depth, MAX_DEPTH_CLASS)} ${diffCls}`.trim();
       },
-      emptyColspan() { return 5 + this.model.experts.length + 2; },
+      // grip + nr + category + name + description + experts + score + status + actions
+      emptyColspan() { return 6 + this.model.experts.length + 2; },
       emptyMessage() { return this.model.rows.length ? _t('noCategoryHyp') : _t('emptyHint'); },
       isNameDup(row) { return this.model.isNameDuplicate(row.name, row.id); },
 
@@ -927,32 +954,6 @@ const mod = createModule({
         if (this.trendVisible) this.$nextTick(() => this.renderTrend());
       },
       closeTrend() { this.trendVisible = false; },
-
-      // ── Drag & drop (tree reparent — module-local) ────────────
-
-      _dragId: null,
-      dragStart(id, $event) {
-        this._dragId = id;
-        $event.target.classList.add('ishikawa__dragging');
-        $event.dataTransfer.effectAllowed = 'move';
-      },
-      dragEnd(_$event) {
-        this._dragId = null;
-        module._container.querySelectorAll('.ishikawa__dragging,.ishikawa__drag-over')
-          .forEach(x => x.classList.remove('ishikawa__dragging', 'ishikawa__drag-over'));
-      },
-      dragOver(id, $event) {
-        $event.preventDefault();
-        const tr = $event.currentTarget;
-        module._container.querySelectorAll('.ishikawa__drag-over').forEach(x => x.classList.remove('ishikawa__drag-over'));
-        tr.classList.add('ishikawa__drag-over');
-      },
-      dragDrop(targetId, $event) {
-        $event.preventDefault();
-        if (this._dragId === null || this._dragId === targetId) return;
-        this.model.moveRowBefore(this._dragId, targetId);
-        this._dragId = null;
-      },
 
       // ── Category rename modal ─────────────────────────────────
 
@@ -1348,9 +1349,15 @@ const mod = createModule({
           now: Date.now(),
           lang,
         });
-        if (config.isEmpty) { host.replaceChildren(); this.ganttEmptyMsg = _t('ganttNoData'); return; }
+        if (config.isEmpty) { host.style.height = ''; host.replaceChildren(); this.ganttEmptyMsg = _t('ganttNoData'); return; }
         this.ganttEmptyMsg = '';
         host.replaceChildren();
+        // The chart framework sizes its SVG to the host via a height:100% chain +
+        // ResizeObserver — the host MUST carry a definite height or the measured
+        // height has no stable basis and drifts on every re-render. Pin it to the
+        // gantt's content height (padT + rows·rowH + padB).
+        const gl = config.layout;
+        host.style.height = `${gl.padT + config.tasks.length * gl.rowH + gl.padB}px`;
         const gen = ++this._renderGen;
         const chart = await module._context.chartManager.create(host, 'gantt', {
           ...config,
@@ -1383,9 +1390,13 @@ const mod = createModule({
         }
         const lang = module._context.language || 'de';
         const config = computeCostConfig(this.model.experiments, mode, { now: Date.now(), lang });
-        if (config.isEmpty) { host.replaceChildren(); this[emptyField] = _t('costChartNoData'); return; }
+        if (config.isEmpty) { host.style.height = ''; host.replaceChildren(); this[emptyField] = _t('costChartNoData'); return; }
         this[emptyField] = '';
         host.replaceChildren();
+        // Pin a definite host height (padT + innerH + padB) — see renderGantt for
+        // why the framework's height:100% chain needs a definite basis.
+        const cl = config.layout;
+        host.style.height = `${cl.padT + cl.innerH + cl.padB}px`;
         const genKey = mode === 'rate' ? 'rate' : 'cumulative';
         const gen = ++this._costGen[genKey];
         const chart = await module._context.chartManager.create(host, 'cumulative-cost', {

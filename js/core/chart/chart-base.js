@@ -29,6 +29,10 @@ const FONT_MONO = "'SF Mono', 'Cascadia Code', Consolas, 'Liberation Mono', mono
 /** Default margins */
 const DEFAULT_MARGIN = { top: 48, right: 24, bottom: 58, left: 72 };
 const LEGEND_WIDTH = 90;
+// Gutter between the widest y-axis label and the plot area. Covers the largest
+// offset any chart type draws its left labels at (base ticks sit at `pa.x - 10`)
+// plus a little breathing room.
+const Y_LABEL_PAD = 14;
 const PROXIMITY_PX = 12;
 
 /**
@@ -718,15 +722,66 @@ export default class ChartBase {
     return { w: Math.round(rect.width), h: Math.round(rect.height) };
   }
 
+  /**
+   * Labels drawn in the left gutter (the y axis). The default is the numeric
+   * y tick labels; chart types whose y axis is categorical override this so
+   * the left margin can grow to fit their category names.
+   *
+   * Return ALL labels, including those of hidden series — same rationale as
+   * `_measureLegendWidth`: toggling visibility must not shift the plot area.
+   *
+   * @protected
+   * @returns {{ labels: string[], mono: boolean }} `mono` selects the font the
+   *   labels are drawn in, so the measurement matches the rendering.
+   */
+  _getYAxisLabels() {
+    if (this.config.showYTicks === false) return { labels: [], mono: true };
+    const bounds = this._getAxisBounds();
+    const { ticks } = generateTicks(bounds.yMin, bounds.yMax);
+    return {
+      labels: ticks.map((v) => formatNum(v, this.config.yDec, this.locale)),
+      mono: true,
+    };
+  }
+
+  /**
+   * Measure the left margin needed for the y-axis labels, using an offscreen
+   * Canvas (works before the SVG is laid out) — the mirror image of
+   * `_measureLegendWidth` for the right side.
+   *
+   * Without this the margin is a constant while the labels are unbounded, so
+   * anything wider than the constant is silently clipped by the
+   * `overflow: hidden` on `.dmike-chart-svg-wrap`.
+   *
+   * @private
+   * @returns {number} Required left margin in px (never below the default)
+   */
+  _measureLeftMargin() {
+    const { labels, mono } = this._getYAxisLabels();
+    if (!labels || labels.length === 0) return DEFAULT_MARGIN.left;
+
+    const ctx = document.createElement('canvas').getContext('2d');
+    ctx.font = `${this.config.tickSize || 11}px ${mono ? FONT_MONO : FONT_MAIN}`;
+
+    let maxW = 0;
+    for (const label of labels) {
+      const w = ctx.measureText(String(label ?? '')).width;
+      if (w > maxW) maxW = w;
+    }
+
+    return Math.max(DEFAULT_MARGIN.left, Math.ceil(maxW) + Y_LABEL_PAD);
+  }
+
   /** @private */
   _getPlotArea() {
     const size = this._getSize();
     const lw = this._legendWidth || LEGEND_WIDTH;
     const rMargin = this.config.showLegend ? lw + 16 : DEFAULT_MARGIN.right;
+    const lMargin = this._leftMargin || DEFAULT_MARGIN.left;
     return {
-      x: DEFAULT_MARGIN.left,
+      x: lMargin,
       y: DEFAULT_MARGIN.top,
-      w: size.w - DEFAULT_MARGIN.left - rMargin,
+      w: size.w - lMargin - rMargin,
       h: size.h - DEFAULT_MARGIN.top - DEFAULT_MARGIN.bottom,
       totalW: size.w,
       totalH: size.h,
@@ -770,6 +825,11 @@ export default class ChartBase {
     if (this.config.showLegend) {
       this._legendWidth = this._measureLegendWidth();
     }
+
+    // Same for the left gutter: the y-axis labels decide how much room they
+    // need. Cached here because `_getPlotArea()` also runs from the mouse
+    // handlers, where re-measuring on every mousemove would be wasteful.
+    this._leftMargin = this._measureLeftMargin();
 
     const pa = this._getPlotArea();
     const bounds = this._getAxisBounds();
@@ -1281,12 +1341,11 @@ export default class ChartBase {
     overlay.className = 'dmike-chart-popout-overlay';
 
     const win = document.createElement('div');
-    win.className = 'dmike-chart-popout';
-    // Popout shell is content-driven; the chart owns its render box.
-    // Width override only — height comes from `card` below. Resize: both
-    // belongs on the inner render box, not the shell, so dragging the
-    // corner grows the chart and the content-driven shell follows.
-    win.style.width = '720px';
+    // The maximized window sizes itself (viewport-relative) and carries the
+    // resize handle; the chart below just fills it. See the
+    // `--maximized` rule in chart.css — no inline sizing here, or the
+    // render box and the shell fight each other and the chart gets clipped.
+    win.className = 'dmike-chart-popout dmike-chart-popout--maximized';
 
     // ── Title bar ──
     const titleBar = document.createElement('div');
@@ -1306,12 +1365,9 @@ export default class ChartBase {
 
     const card = document.createElement('div');
     card.className = 'dmike-chart-card';
-    // Render box dimensions live on the chart, not the popout shell. The
-    // shell is content-driven and just follows. Resize: both lets the user
-    // drag the corner to enlarge the chart; the popout grows along.
-    card.style.height = '500px';
-    card.style.resize = 'both';
-    card.style.overflow = 'auto';
+    // No inline sizing: the card fills the window's body (base .dmike-chart-card
+    // is width/height 100%), so the ResizeObserver below re-renders the chart
+    // whenever the user drags the window's resize corner.
 
     const wrap = document.createElement('div');
     wrap.className = 'dmike-chart-wrap';

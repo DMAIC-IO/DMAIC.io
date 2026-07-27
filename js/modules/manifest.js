@@ -209,6 +209,16 @@ export default [
     },
   },
   {
+    id: 'kano',
+    phase: 'define',
+    allowedPhases: ['define'],
+    load: () => import('./kano/kano.js'),
+    cycles: {
+      dmaic: { phase: 'define', allowedPhases: ['define'] },
+      dmadv: { phase: 'define', allowedPhases: ['define'] },
+    },
+  },
+  {
     id: 'raci-matrix',
     phase: 'define',
     allowedPhases: ['define'],
@@ -249,6 +259,16 @@ export default [
       dmaic:  { phase: 'measure' },
       dmadv:  { phase: 'measure' },
       eightd: { phase: 'problem', allowedPhases: ['problem', 'rootcause'] },
+    },
+  },
+  {
+    id: 'gage-run-chart',
+    phase: 'measure',
+    load: () => import('./gage-run-chart/gage-run-chart.js'),
+    cycles: {
+      dmaic:  { phase: 'measure' },
+      dmadv:  { phase: 'measure' },
+      eightd: { phase: 'problem' },
     },
   },
   {

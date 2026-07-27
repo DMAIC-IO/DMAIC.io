@@ -129,6 +129,20 @@ export default class BoxplotChart extends ChartBase {
       : { xMin: dataMin,  xMax: dataMax,  yMin: groupMin, yMax: groupMax };
   }
 
+  /**
+   * @override — in the default horizontal orientation the group axis is Y, so
+   * the left gutter holds the category names instead of numeric ticks. In
+   * vertical orientation they sit below the plot and the base default applies.
+   */
+  _getYAxisLabels() {
+    if (this.config.orientation === 'vertical') return super._getYAxisLabels();
+    const groups = this.config.groups || [];
+    return {
+      labels: groups.map((g, i) => g.name || `Group ${i + 1}`),
+      mono: false,
+    };
+  }
+
   /* ── Render ──────────────────────────────────────────────── */
 
   /** @override */

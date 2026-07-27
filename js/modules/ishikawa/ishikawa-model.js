@@ -46,6 +46,26 @@ function asNum(v) {
   return typeof v === 'number' && Number.isFinite(v) ? v : 0;
 }
 
+/**
+ * Move the item with `dragId` directly before the one with `targetId`.
+ * Returns a new array; the input is left untouched. Unknown ids, or a drop on
+ * the item itself, return the list unchanged — the caller need not pre-check.
+ *
+ * @param {Array<{id:*}>} list
+ * @param {*} dragId
+ * @param {*} targetId
+ * @returns {Array<{id:*}>}
+ */
+function moveBefore(list, dragId, targetId) {
+  if (dragId === targetId) return list;
+  const item = list.find(e => e.id === dragId);
+  if (!item || !list.some(e => e.id === targetId)) return list;
+  const rest = list.filter(e => e.id !== dragId);
+  const at = rest.findIndex(e => e.id === targetId);
+  rest.splice(at, 0, item);
+  return rest;
+}
+
 export class State {
   problem = '';
   /** @type {Array<{id:number,name:string,color:string}>} */
@@ -411,6 +431,15 @@ export class State {
     this.experiments = this.experiments.filter(x => x.id !== id);
   }
 
+  /**
+   * Drag-reorder: move the experiment `dragId` directly before `targetId`.
+   * @param {number} dragId
+   * @param {number} targetId
+   */
+  moveExperimentBefore(dragId, targetId) {
+    this.experiments = moveBefore(this.experiments, dragId, targetId);
+  }
+
   // ── Facts ─────────────────────────────────────────────────
 
   addFact() {
@@ -422,6 +451,15 @@ export class State {
 
   removeFact(id) {
     this.facts = this.facts.filter(f => f.id !== id);
+  }
+
+  /**
+   * Drag-reorder: move the fact `dragId` directly before `targetId`.
+   * @param {number} dragId
+   * @param {number} targetId
+   */
+  moveFactBefore(dragId, targetId) {
+    this.facts = moveBefore(this.facts, dragId, targetId);
   }
 
   // ── Images ────────────────────────────────────────────────

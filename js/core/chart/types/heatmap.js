@@ -15,6 +15,10 @@
  *   valueDecimals: 1           — digits for inline value labels and tooltip
  *   valueLabel: ''             — semantic prefix in tooltip ('n' / 'Mittelwert')
  *   showCellLabels: true       — draw values inside cells when they fit
+ *   squareCells: false         — shrink the plot area to make every cell square
+ *                                (centered in the original area). Confusion
+ *                                matrices etc. use this; general pivot grids
+ *                                stay stretched to the container.
  *   colorScheme: 'viridis'     — sequential color ramp; see core/chart/color-schemes.js
  *   showYLabel/showXLabel come from base; row/col labels are drawn here.
  */
@@ -40,6 +44,12 @@ export default class HeatmapChart extends ChartBase {
       valueDecimals: 1,
       valueLabel: '',
       showCellLabels: true,
+      squareCells: false,
+      // Override ChartBase's DEFAULT_MARGIN for the plot area. Heatmap has no
+      // ticks and no axis titles, so the base 72/48/24/58 leaves a lot of
+      // waste around the grid. Callers with short row labels can pass e.g.
+      // { top: 8, right: 12, bottom: 22, left: 44 }.
+      plotMargins: null,
       colorScheme: 'viridis',
       // No standard legend; the colour ramp is implicit + cell labels carry values.
       showLegend: false,
@@ -56,6 +66,49 @@ export default class HeatmapChart extends ChartBase {
   /** @override */
   _getDataExtent() {
     return { xMin: 0, xMax: 1, yMin: 0, yMax: 1 };
+  }
+
+  /**
+   * @override — the y axis is categorical: the row labels sit in the left
+   * gutter, so they decide its width rather than numeric ticks.
+   */
+  _getYAxisLabels() {
+    return { labels: this.config.yCategories || [], mono: false };
+  }
+
+  /** @override */
+  _getPlotArea() {
+    const m = this.config.plotMargins;
+    let pa;
+    if (m && typeof m === 'object') {
+      const size = this._getSize();
+      const left = m.left ?? 0, right = m.right ?? 0, top = m.top ?? 0, bottom = m.bottom ?? 0;
+      pa = {
+        x: left,
+        y: top,
+        w: Math.max(1, size.w - left - right),
+        h: Math.max(1, size.h - top - bottom),
+        totalW: size.w,
+        totalH: size.h,
+        rMargin: right,
+      };
+    } else {
+      pa = super._getPlotArea();
+    }
+    if (!this.config.squareCells) return pa;
+    const nX = (this.config.xCategories || []).length;
+    const nY = (this.config.yCategories || []).length;
+    if (!nX || !nY) return pa;
+    const gap = Math.max(0, this.config.cellGap);
+    const availW = pa.w - gap * (nX - 1);
+    const availH = pa.h - gap * (nY - 1);
+    if (availW <= 0 || availH <= 0) return pa;
+    const cellSize = Math.max(1, Math.min(availW / nX, availH / nY));
+    const gridW = cellSize * nX + gap * (nX - 1);
+    const gridH = cellSize * nY + gap * (nY - 1);
+    const dx = Math.floor((pa.w - gridW) / 2);
+    const dy = Math.floor((pa.h - gridH) / 2);
+    return { ...pa, x: pa.x + dx, y: pa.y + dy, w: gridW, h: gridH };
   }
 
   /** @override */
@@ -117,7 +170,7 @@ export default class HeatmapChart extends ChartBase {
           x: cx, y: cy, w: cellW, h: cellH,
         });
 
-        if (this.config.showCellLabels && cellW >= 36 && cellH >= 18) {
+        if (this.config.showCellLabels && cellW >= 24 && cellH >= 14) {
           // Pick readable text per cell using luminance of the fill color.
           // Fixed black/white (not theme variables) — those would invert in dark mode
           // and make labels unreadable on e.g. purple plasma cells.

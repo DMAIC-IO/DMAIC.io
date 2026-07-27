@@ -431,12 +431,18 @@ suite('msa-typ6 module — Interpretations-Text (Task 13)', () => {
     return tpl.content;
   }
 
-  test('result branch has a .module-msa-typ6__interpretation paragraph bound to _lastResult.interpretation', async () => {
+  // The element is matched by class, not by tag: commit af3f410
+  // ("refactor(msa-typ5/6): Interpretation als Slot in .dmike-infobox") moved
+  // the text from a standalone <p> into the verdict infobox, where it sits as a
+  // third <span> next to __label and __detail. Pinning the tag name asserted an
+  // implementation detail and turned that deliberate refactor red. What matters
+  // is the class and the two bindings.
+  test('result branch has a .module-msa-typ6__interpretation element bound to _lastResult.interpretation', async () => {
     const doc = await loadTemplateDoc();
     const frag = resultFragment(doc);
-    const p = frag.querySelector('p.module-msa-typ6__interpretation');
-    assertTrue(p !== null, 'missing p.module-msa-typ6__interpretation element');
-    const xtext = p.getAttribute('x-text') || '';
+    const el = frag.querySelector('.module-msa-typ6__interpretation');
+    assertTrue(el !== null, 'missing .module-msa-typ6__interpretation element');
+    const xtext = el.getAttribute('x-text') || '';
     assertTrue(xtext.includes('_lastResult.interpretation.textKey'),
       'interpretation paragraph must reference _lastResult.interpretation.textKey');
     assertTrue(xtext.includes('_lastResult.interpretation.params'),

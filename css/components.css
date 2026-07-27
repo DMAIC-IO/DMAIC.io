@@ -444,6 +444,12 @@ select.input {
   border-top: var(--border-width) solid var(--color-border-secondary);
 }
 
+/* Optional destructive action (Modal.form({ onDelete })): pushed to the far
+   left while confirm/cancel stay right-aligned. */
+.modal__footer-delete {
+  margin-right: auto;
+}
+
 /* ===== Toast Notifications ===== */
 .toast-container {
   position: fixed;
@@ -500,6 +506,21 @@ select.input {
   color: var(--color-text-inverse);
 }
 
+/* ===== Screen-reader-only =====
+   Visually hidden, still announced. Used for aria-live regions that report
+   the result of an action with no visible text equivalent. */
+.dmike-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
 /* ===== Tables ===== */
 
 /* Global table style for all module tables outside of DataGrid.
@@ -551,6 +572,144 @@ select.input {
 .stats-table tr:hover td,
 .dmike-split table:not(.datagrid__table, .corr__matrix-table, .doe__preview-table) tr:hover td {
   background: var(--color-bg-secondary);
+}
+
+/* A <th scope="row"> inside <tbody> is a row header, not a column header: it
+   labels its own row and belongs with the body cells. Without this it would
+   inherit the column-header rule (2px underline, tertiary colour) and the
+   first column would read as a heavier grid line than the rest. */
+.dmike-table tbody th {
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-bottom: var(--border-width) solid var(--color-border-secondary);
+  color: var(--color-text-primary);
+  text-align: left;
+}
+
+.dmike-table tbody tr:last-child th {
+  border-bottom: none;
+}
+
+/* Scroll container for a .dmike-table — panel framing plus horizontal
+   scrolling for wide tables. Wrap the <table> in it:
+
+     <div class="dmike-table-wrap">
+       <table class="dmike-table dmike-table--sticky"> … </table>
+     </div> */
+.dmike-table-wrap {
+  background: var(--color-bg-secondary);
+  border: var(--border-width) solid var(--color-border-secondary);
+  border-radius: var(--border-radius);
+  overflow-x: auto;
+}
+
+/* The panel surface is already --color-bg-secondary, so the default row hover
+   would be invisible in here — swap it for the primary surface. */
+.dmike-table-wrap .dmike-table tr:hover td {
+  background: var(--color-bg-primary);
+}
+
+/* ── Reorderable rows ──
+   Opt in with .dmike-table--draggable and give every row a leading grip cell:
+
+     <table class="dmike-table dmike-table--draggable">
+       <thead><tr><th class="dmike-table__grip-col"></th> … </tr></thead>
+       <tbody>
+         <tr @dragstart="dragStart(id, $event)" …>
+           <td class="dmike-table__grip-col">
+             <button class="dmike-table__grip" type="button"
+                     :aria-label="t('common.reorder')"
+                     @mousedown="dragArm($event)" @keydown="dragKey(id, $event)">
+             </button>
+           </td>
+           …
+
+   The behaviour lives in draggableRows() (js/ui/draggable-list.js). Note that
+   `draggable` is NOT in the markup — the grip arms it on mousedown, so text
+   selection inside cell inputs keeps working. */
+
+.dmike-table--draggable .dmike-table__grip-col {
+  width: 32px;
+  padding-left: var(--spacing-xs);
+  padding-right: 0;
+  text-align: center;
+}
+
+.dmike-table__grip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: none;
+  border-radius: var(--border-radius-sm);
+  background: transparent;
+  color: var(--color-text-tertiary);
+  cursor: grab;
+  /* Visible at rest — a grip nobody can find is not an affordance. Still
+     clearly secondary to the row content; full strength on hover/focus. */
+  opacity: 0.55;
+  transition: opacity var(--transition-speed), color var(--transition-speed);
+}
+
+/* The conventional six-dot drag handle, drawn in CSS rather than set as a
+   glyph: the braille character it would otherwise need renders differently
+   per font and is unreadable at this size. One dot per 5×5 tile over a
+   10×15 box gives 2 columns × 3 rows. */
+.dmike-table__grip::before {
+  content: "";
+  width: 10px;
+  height: 15px;
+  background-image: radial-gradient(currentColor 1.4px, transparent 1.5px);
+  background-size: 5px 5px;
+}
+
+/* Discoverable on row hover; always visible while focused so keyboard users
+   can see where they are. */
+.dmike-table tbody tr:hover .dmike-table__grip,
+.dmike-table__grip:focus-visible {
+  opacity: 1;
+}
+
+.dmike-table__grip:focus-visible {
+  outline: none;
+  color: var(--color-accent);
+  box-shadow: 0 0 0 2px var(--color-accent-light);
+}
+
+.dmike-table__grip:active {
+  cursor: grabbing;
+}
+
+.dmike-table__row--dragging {
+  opacity: 0.4;
+}
+
+/* Insertion line at the top edge of the row the pointer is over. */
+.dmike-table__row--drop-target td {
+  box-shadow: inset 0 2px 0 var(--color-accent);
+}
+
+/* Column headers that survive scrolling. Only meaningful inside a scroll
+   container (.dmike-table-wrap or any element with its own overflow).
+   Positioning only — combine with --head-mono for the label styling. */
+.dmike-table--sticky thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--color-bg-tertiary);
+  white-space: nowrap;
+  border-bottom: 2px solid var(--color-border-secondary);
+}
+
+/* Mono-uppercase column labels — the dense "data table" look. Independent of
+   stickiness: a scrollable table may keep sentence-case labels (sortable
+   headers read better that way), and a static table may want the mono look. */
+.dmike-table--head-mono thead th {
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
 }
 
 /* ===== Tabs ===== */

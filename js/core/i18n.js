@@ -35,7 +35,9 @@ export class I18n {
    */
   async loadLanguage(lang) {
     if (this._cache.has(lang)) return;
-    const response = await fetch(`i18n/${lang}.json`);
+    const v = document.querySelector('meta[name="i18n-version"]')?.content;
+    const url = v ? `i18n/${lang}.json?v=${v}` : `i18n/${lang}.json`;
+    const response = await fetch(url);
     if (!response.ok) throw new Error(`[i18n] Could not load language: ${lang}`);
     this._cache.set(lang, await response.json());
   }

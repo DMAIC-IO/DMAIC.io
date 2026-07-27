@@ -21,11 +21,11 @@
     </div>
   </div>
 
-  <div class="todo__table-wrap">
+  <div class="dmike-table-wrap todo__table-wrap">
     <div class="todo__empty" x-show="model.items.length === 0" x-text="t('emptyState')"></div>
     <div class="todo__empty" x-show="model.items.length > 0 && filteredCount() === 0" x-text="t('noMatch')"></div>
 
-    <table class="todo__table" x-show="filteredCount() > 0">
+    <table class="dmike-table dmike-table--sticky todo__table" x-show="filteredCount() > 0">
       <thead>
         <tr>
           <th class="todo__col-check"></th>
@@ -53,26 +53,26 @@
       </thead>
       <tbody>
         <template x-for="item in filteredItems()" :key="item.id">
-          <tr class="todo__row" :class="rowClass(item)" :data-id="item.id">
+          <tr class="todo__row dmike-del-btn-host" :class="rowClass(item)" :data-id="item.id">
             <td class="todo__col-check">
               <input type="checkbox" class="todo__check" data-action="toggle"
                      :checked="item.status === 'done'"
                      @change="toggleDone(item)">
             </td>
             <td class="todo__cell-text">
-              <input type="text" class="todo__inline-input" data-field="text"
+              <input type="text" class="field field--sm field--ghost todo__inline-input" data-field="text"
                      x-model="item.text" :placeholder="t('textPlaceholder')">
             </td>
             <td>
-              <input type="text" class="todo__inline-input" data-field="owner"
+              <input type="text" class="field field--sm field--ghost todo__inline-input" data-field="owner"
                      x-model="item.owner" :placeholder="t('ownerPlaceholder')">
             </td>
             <td class="todo__cell-due">
-              <input type="date" class="todo__inline-date" data-field="due"
+              <input type="date" class="field field--sm field--ghost todo__inline-date" data-field="due"
                      x-model="item.due">
             </td>
             <td>
-              <select class="todo__inline-select" data-field="status"
+              <select class="field field--sm todo__inline-select" data-field="status"
                       @change="item.status = $event.target.value">
                 <template x-for="s in statuses">
                   <option :value="s" :selected="item.status === s" x-text="statusName(s)"></option>
@@ -87,10 +87,8 @@
               </td>
             </template>
             <td>
-              <button class="todo__delete-btn" data-action="delete"
-                      :title="t('delete')" @click="deleteTodo(item)">
-                <span x-text="deleteIcon()"></span>
-              </button>
+              <button class="dmike-del-btn" type="button" data-action="delete"
+                      :title="t('delete')" @click="deleteTodo(item)"></button>
             </td>
           </tr>
         </template>

@@ -165,6 +165,49 @@ suite('Ishikawa Model — cause tree', () => {
     assertEqual(child.parentId, null);
   });
 
+  test('moveExperimentBefore reorders the flat experiment list', () => {
+    const s = new State();
+    const a = s.addExperiment(); a.title = 'A';
+    const b = s.addExperiment(); b.title = 'B';
+    const c = s.addExperiment(); c.title = 'C';
+    s.moveExperimentBefore(c.id, a.id);
+    assertEqual(s.experiments.map(x => x.title).join(','), 'C,A,B');
+  });
+
+  test('moveExperimentBefore is a no-op for a drop on itself', () => {
+    const s = new State();
+    const a = s.addExperiment(); a.title = 'A';
+    const b = s.addExperiment(); b.title = 'B';
+    s.moveExperimentBefore(a.id, a.id);
+    assertEqual(s.experiments.map(x => x.title).join(','), 'A,B');
+  });
+
+  test('moveExperimentBefore ignores unknown ids', () => {
+    const s = new State();
+    const a = s.addExperiment(); a.title = 'A';
+    const b = s.addExperiment(); b.title = 'B';
+    s.moveExperimentBefore(a.id, 9999);
+    s.moveExperimentBefore(9999, a.id);
+    assertEqual(s.experiments.map(x => x.title).join(','), 'A,B');
+  });
+
+  test('moveFactBefore reorders the flat fact list', () => {
+    const s = new State();
+    const a = s.addFact(); a.name = 'A';
+    const b = s.addFact(); b.name = 'B';
+    const c = s.addFact(); c.name = 'C';
+    s.moveFactBefore(a.id, c.id);
+    assertEqual(s.facts.map(f => f.name).join(','), 'B,A,C');
+  });
+
+  test('moveFactBefore leaves the list alone when the target is unknown', () => {
+    const s = new State();
+    const a = s.addFact(); a.name = 'A';
+    const b = s.addFact(); b.name = 'B';
+    s.moveFactBefore(b.id, 9999);
+    assertEqual(s.facts.map(f => f.name).join(','), 'A,B');
+  });
+
   test('moveRowBefore is a no-op when target is a descendant of source', () => {
     const s = new State();
     const a = s.addRow(null);

@@ -91,13 +91,14 @@ export default createModule({
 
     return {
       // ─── Transient UI state (never persisted) ─────────────
-      viewMode: 'month',
+      // Note: viewMode lives on the model (persisted); see setView().
       phaseFilter: null,
       editingId: null,
       viewYear: today.getFullYear(),
       viewMonth: today.getMonth(),
       weekStartMs: getMonday(today).getTime(),
-      form: { title: '', date: '', time: '09:00', duration: 60, desc: '', phase: 'define' },
+      // The form is driven by start (time) + end; duration is derived on save.
+      form: { title: '', date: '', time: '09:00', end: '10:00', desc: '', phase: 'define' },
 
       // ─── Static option ranges ─────────────────────────────
       hours24: Array.from({ length: 24 }, (_, h) => h),
@@ -173,15 +174,16 @@ export default createModule({
       newEventBtnLabel: () => `+ ${  _t('newEvent')}`,
 
       // ─── Controls / navigation ────────────────────────────
-      viewBtnClass(v) { return this.viewMode === v ? 'active' : ''; },
+      viewBtnClass(v) { return this.model.viewMode === v ? 'active' : ''; },
       setView(v) {
-        this.viewMode = v;
+        // Lives on the model so the choice is persisted (auto-$watch).
+        this.model.viewMode = v;
         if (v === 'week') {
           this.weekStartMs = getMonday(new Date(this.viewYear, this.viewMonth, 15)).getTime();
         }
       },
       prevPeriod() {
-        if (this.viewMode === 'month') {
+        if (this.model.viewMode === 'month') {
           this.viewMonth--;
           if (this.viewMonth < 0) { this.viewMonth = 11; this.viewYear--; }
         } else {
@@ -189,7 +191,7 @@ export default createModule({
         }
       },
       nextPeriod() {
-        if (this.viewMode === 'month') {
+        if (this.model.viewMode === 'month') {
           this.viewMonth++;
           if (this.viewMonth > 11) { this.viewMonth = 0; this.viewYear++; }
         } else {
@@ -205,7 +207,7 @@ export default createModule({
 
       // ─── Title ────────────────────────────────────────────
       calTitleMain() {
-        if (this.viewMode === 'month') return months()[this.viewMonth];
+        if (this.model.viewMode === 'month') return months()[this.viewMonth];
         const wd = this.weekDates();
         if (!wd.length) return '';
         const first = wd[0], last = wd[wd.length - 1];
@@ -216,7 +218,7 @@ export default createModule({
         return `${first.getDate()}. ${m[first.getMonth()]} – ${last.getDate()}. ${m[last.getMonth()]}`;
       },
       calTitleYear() {
-        if (this.viewMode === 'month') return String(this.viewYear);
+        if (this.model.viewMode === 'month') return String(this.viewYear);
         const wd = this.weekDates();
         if (!wd.length) return '';
         return String(wd[wd.length - 1].getFullYear());
@@ -254,8 +256,10 @@ export default createModule({
 
       // ─── Week view ────────────────────────────────────────
       dkd,
-      weekShowClass() { return this.viewMode === 'week' ? 'module-calendar__week--show' : ''; },
+      weekShowClass() { return this.model.viewMode === 'week' ? 'module-calendar__week--show' : ''; },
       hoursList() { return this.model.hoursArr(); },
+      // Drag-to-create grid: one slot per half hour (30-minute Ziehraster).
+      slotsList() { return this.model.halfSlotsArr(); },
       weekDates() {
         return this.model.weekDates(this.weekStartMs, this.model.dayFrom, this.model.dayTo);
       },
@@ -295,32 +299,37 @@ export default createModule({
       nowLineStyle() {
         return `top:${this.nowOffsetPx()}px`;
       },
-      onSlotClick(d, h) {
-        this.openNew(dkd(d), `${fmt2(h)}:00`);
+      onSlotClick(d, m) {
+        this.openNew(dkd(d), mtt(m));
       },
 
       // ─── Week slot drag-to-create (Outlook-Stil) ──────────
-      // Transient selection while the user drags across hour slots to draw a
-      // new event span. `null` → not dragging. Never persisted (UI-only state).
+      // Transient selection while the user drags across half-hour slots to draw
+      // a new event span. Slots are addressed by their start minute-of-day
+      // (30-minute grid). `null` → not dragging. Never persisted (UI-only).
       slotSel: null,
-      // True once the drag has crossed to a different hour slot, so a plain
+      // True once the drag has crossed to a different slot, so a plain
       // (non-moving) mousedown/mouseup stays a click and leaves the double-click
       // "single-slot" path (Bug 003) untouched.
       _slotSpanMoved: false,
-      slotSelClass(d, h) {
+      slotSelClass(d, m) {
+        // Full hours keep a solid divider, half hours a dashed one.
+        const cls = m % 60 === 30 ? ['module-calendar__week-slot--hour'] : [];
         const sel = this.slotSel;
-        if (!sel || dkd(d) !== sel.day) return '';
-        const lo = Math.min(sel.startH, sel.endH);
-        const hi = Math.max(sel.startH, sel.endH);
-        return (h >= lo && h <= hi) ? 'module-calendar__week-slot--selecting' : '';
+        if (sel && dkd(d) === sel.day) {
+          const lo = Math.min(sel.startM, sel.endM);
+          const hi = Math.max(sel.startM, sel.endM);
+          if (m >= lo && m <= hi) cls.push('module-calendar__week-slot--selecting');
+        }
+        return cls.join(' ');
       },
-      slotDragStart(d, h, e) {
+      slotDragStart(d, m, e) {
         // Ignore anything but the primary button; never start a span from a
         // click that lands on an existing event block.
         if (e.button !== 0) return;
         e.preventDefault();
         const day = dkd(d);
-        this.slotSel = { day, startH: h, endH: h };
+        this.slotSel = { day, startM: m, endM: m };
         this._slotSpanMoved = false;
         const onUp = () => {
           document.removeEventListener('mouseup', onUp);
@@ -328,18 +337,18 @@ export default createModule({
           this.slotSel = null;
           // Plain click (no drag across slots) → leave it to @dblclick.
           if (!sel || !this._slotSpanMoved) return;
-          const lo = Math.min(sel.startH, sel.endH);
-          const hi = Math.max(sel.startH, sel.endH);
-          // Span is inclusive of the last slot → end at (hi + 1):00.
-          this.openNew(sel.day, `${fmt2(lo)}:00`, `${fmt2(hi + 1)}:00`);
+          const lo = Math.min(sel.startM, sel.endM);
+          const hi = Math.max(sel.startM, sel.endM);
+          // Span is inclusive of the last slot → end at (hi + 30) minutes.
+          this.openNew(sel.day, mtt(lo), mtt(hi + 30));
         };
         document.addEventListener('mouseup', onUp);
       },
-      slotDragEnter(d, h) {
+      slotDragEnter(d, m) {
         const sel = this.slotSel;
         if (!sel || dkd(d) !== sel.day) return;
-        if (h !== sel.endH) this._slotSpanMoved = true;
-        sel.endH = h;
+        if (m !== sel.endM) this._slotSpanMoved = true;
+        sel.endM = m;
       },
 
       // ─── Week drag & resize ───────────────────────────────
@@ -454,34 +463,36 @@ export default createModule({
       },
 
       // ─── Modal ────────────────────────────────────────────
-      modalOpen: false,
-      overlayClass() { return this.modalOpen ? 'module-calendar__overlay--show' : ''; },
+      // Uses the shared modal (ui/modal) via context.showModal.form(): the
+      // event form lives hidden in the template (x-ref="eventForm") and is
+      // borrowed into the dialog. Title + footer buttons are owned by the modal;
+      // the delete button only appears when editing (onDelete option).
       modalTitle() { return this.editingId ? _t('editEvent') : _t('newEvent'); },
-      deleteBtnStyle() { return this.editingId ? 'display:block' : 'display:none'; },
       phaseChipStyle: (p) => `color:${phaseColor(p)}`,
       phaseChipClass(p) {
         return this.form.phase === p ? 'module-calendar__phase-chip--selected' : '';
       },
       openModal() {
-        this.modalOpen = true;
-        this.$nextTick(() => {
-          setTimeout(() => this.$el.querySelector('[data-ref="evTitle"]')?.focus(), 100);
-        });
-      },
-      closeModal() {
-        this.modalOpen = false;
-        this.editingId = null;
+        const opts = {
+          confirmLabel: _t('save'),
+          cancelLabel: _t('cancel'),
+          onMount: (el) => { el.querySelector('[data-ref="evTitle"]')?.focus(); },
+          onConfirm: () => this.handleSave(), // returns false → dialog stays open
+        };
+        if (this.editingId) {
+          opts.deleteLabel = _t('deleteEvent');
+          opts.onDelete = () => this.handleDelete();
+        }
+        module._context.showModal
+          .form(this.modalTitle(), this.$refs.eventForm, opts)
+          .finally(() => { this.editingId = null; });
       },
       openNew(ds, t, endT) {
         this.editingId = null;
-        // When a drag span supplies an end time, derive the duration from it;
-        // otherwise fall back to the default 60-minute slot.
-        let duration = 60;
-        if (t && endT) {
-          const span = ttm(endT) - ttm(t);
-          if (span >= MIN_DUR) duration = span;
-        }
-        this.form = { title: '', date: ds || '', time: t || '09:00', duration, desc: '', phase: 'define' };
+        // Start defaults to 09:00, end to start + 60min (or the dragged span end).
+        const start = t || '09:00';
+        const end = (endT && ttm(endT) > ttm(start)) ? endT : fmtEnd(start, 60);
+        this.form = { title: '', date: ds || '', time: start, end, desc: '', phase: 'define' };
         this.openModal();
       },
       openEdit(id) {
@@ -490,28 +501,44 @@ export default createModule({
         this.editingId = id;
         this.form = {
           title: ev.title, date: ev.date, time: ev.time,
-          duration: ev.duration || 60, desc: ev.desc || '', phase: ev.phase || 'define',
+          end: fmtEnd(ev.time, ev.duration || 60),
+          desc: ev.desc || '', phase: ev.phase || 'define',
         };
         this.openModal();
       },
+      /** Derived duration (minutes) from the current start/end form values. */
+      formDuration() {
+        return ttm(this.form.end) - ttm(this.form.time);
+      },
+      /** Human-readable duration label for the modal ("1h 30min"), '—' if invalid. */
+      durationLabel() {
+        const d = this.formDuration();
+        return d >= MIN_DUR ? fmtDur(d) : '—';
+      },
+      /** Persist the form. Returns false to keep the dialog open on invalid input. */
       handleSave() {
         const title = (this.form.title || '').trim();
         const date = this.form.date;
         const time = this.form.time;
-        const duration = parseInt(this.form.duration) || 60;
+        const duration = this.formDuration();
         const desc = (this.form.desc || '').trim();
         const phase = this.form.phase || 'define';
         if (!title || !date) {
           module._context.notify(_t('requiredFields'), 'warning');
-          return;
+          return false;
+        }
+        if (duration < MIN_DUR) {
+          module._context.notify(_t('invalidTimeRange'), 'warning');
+          return false;
         }
         this.model.upsertEvent({ title, date, time, duration, desc, phase }, this.editingId);
-        this.closeModal();
+        return true;
       },
+      /** Remove the event being edited (delete button only shows while editing). */
       handleDelete() {
-        if (!this.editingId) return;
+        if (!this.editingId) return false;
         this.model.removeEvent(this.editingId);
-        this.closeModal();
+        return true;
       },
     };
   },

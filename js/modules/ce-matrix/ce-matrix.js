@@ -81,6 +81,10 @@ export default createModule({
       /** @type {{el:HTMLElement,destroy:function}|null} */
       _exportDropdown: null,
 
+      /** @type {any} live Pareto chart of Row Sums (right of the matrix). */
+      _paretoChart: null,
+      _paretoRaf: 0,
+
       // ── Score display ─────────────────────────────────────────
       /** Raw stored score for an input (empty string when unset). */
       scoreDisplay(r, c) {
@@ -216,6 +220,46 @@ export default createModule({
         }
       },
 
+      // ── Pareto (Row Sums, live) ───────────────────────────────
+
+      /** Build {name,value}[] from current inputs + row sums. */
+      _paretoItems() {
+        const m = this.model;
+        return m.inputs.map((name, r) => ({
+          name: (name && String(name).trim()) || `Input ${r + 1}`,
+          value: Math.max(0, m.rowSum(r) || 0),
+        }));
+      },
+
+      /** Recreate the chart with current items. Called on model changes. */
+      async _renderPareto() {
+        const host = this.$el.querySelector('[data-ref="pareto-host"]');
+        if (!host) return;
+        const cm = module._context.chartManager;
+
+        if (this._paretoChart) {
+          try { cm.destroy(this._paretoChart); } catch { /* ignore */ }
+          this._paretoChart = null;
+        }
+        host.replaceChildren();
+
+        this._paretoChart = await cm.create(host, 'pareto', {
+          title: this.t('paretoTitle'),
+          yLabel: this.t('paretoYLabel'),
+          items: this._paretoItems(),
+          showLegend: false,
+        });
+      },
+
+      /** rAF-debounced re-render so rapid keystrokes don't thrash the chart. */
+      _schedulePareto() {
+        if (this._paretoRaf) cancelAnimationFrame(this._paretoRaf);
+        this._paretoRaf = requestAnimationFrame(() => {
+          this._paretoRaf = 0;
+          this._renderPareto();
+        });
+      },
+
       // ── Lifecycle (per Alpine instance) ───────────────────────
       init() {
         const anchor = this.$el.querySelector('.ce-matrix__export-anchor');
@@ -232,11 +276,22 @@ export default createModule({
           );
           anchor.replaceWith(this._exportDropdown.el);
         }
+
+        this.$nextTick(() => this._renderPareto());
+        this.$watch('model.inputs',  () => this._schedulePareto());
+        this.$watch('model.outputs', () => this._schedulePareto());
+        this.$watch('model.weights', () => this._schedulePareto());
+        this.$watch('model.scores',  () => this._schedulePareto());
       },
       destroy() {
         if (this._exportDropdown) {
           this._exportDropdown.destroy();
           this._exportDropdown = null;
+        }
+        if (this._paretoRaf) { cancelAnimationFrame(this._paretoRaf); this._paretoRaf = 0; }
+        if (this._paretoChart) {
+          try { module._context.chartManager.destroy(this._paretoChart); } catch { /* ignore */ }
+          this._paretoChart = null;
         }
       },
     };

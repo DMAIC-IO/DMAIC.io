@@ -18,7 +18,24 @@
 /* ===== Body override — don't stretch to fill viewport ===== */
 .ce-matrix .module-container__body {
   flex: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-lg);
+  align-items: flex-start;
 }
+
+/* Matrix stays at intrinsic width, Pareto grows into remaining space. */
+.ce-matrix__wrap { flex: 0 0 auto; }
+
+.ce-matrix__pareto {
+  flex: 1 1 380px;
+  min-width: 340px;
+  height: 360px;
+  align-self: stretch;
+}
+
+/* Legend spans full row underneath both panels. */
+.ce-matrix__legend { flex-basis: 100%; }
 
 /* ===== Matrix Wrapper ===== */
 .ce-matrix__wrap {
@@ -84,24 +101,17 @@
   padding: var(--spacing-xs) 4px !important;
 }
 
+/* .field .field--xs base; only the narrow fixed width and the mono digits
+   are specific to the weight cell. */
 .ce-matrix__weight-select {
   width: 48px;
-  padding: 2px 4px;
-  border: var(--border-width) solid var(--color-border-secondary);
-  border-radius: var(--border-radius-sm);
-  background: var(--color-bg-primary);
-  color: var(--color-text-primary);
   font-family: var(--font-family-mono);
-  font-size: var(--font-size-sm);
   font-weight: var(--font-weight-semibold);
   text-align: center;
-  cursor: pointer;
-  outline: none;
 }
 
 .ce-matrix__weight-select:focus {
-  border-color: var(--color-accent);
-  box-shadow: 0 0 0 2px rgb(0 102 204 / 15%);
+  box-shadow: 0 0 0 2px var(--color-accent-light);
 }
 
 /* ===== Corner cell ===== */
@@ -111,12 +121,11 @@
 }
 
 /* ===== Output headers (vertical) =====
-   height acts as min-height on table cells — long output names grow the
-   header row instead of being clipped. The content wrapper has no fixed
-   height so it uses its intrinsic (rotated) size. */
+   No fixed height — cell grows with its (rotated) content, so short output
+   names show a compact row and long ones expand it. padding-bottom reserves
+   space for the delete button anchored at the cell's bottom. */
 .ce-matrix__output-header {
   white-space: nowrap;
-  height: 140px;
   vertical-align: bottom;
   position: relative;
   padding-bottom: 28px !important;
@@ -134,11 +143,12 @@
 .ce-matrix__output-name {
   border: none;
   background: transparent;
-  color: var(--color-text-secondary);
+  color: var(--color-text-primary);
   font-family: var(--font-family);
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-medium);
   width: auto;
+  field-sizing: content;
   box-sizing: border-box;
   outline: none;
   padding: 2px 4px;
@@ -147,7 +157,7 @@
 
 .ce-matrix__output-name:focus {
   background: var(--color-accent);
-  background: rgb(0 102 204 / 10%);
+  background: var(--color-accent-light);
   color: var(--color-text-primary);
 }
 
@@ -161,22 +171,17 @@
   white-space: nowrap;
 }
 
+/* .field .field--ghost base; the asymmetric padding reserves room for the
+   row delete button anchored inside the cell. */
 .ce-matrix__input-name {
-  width: 100%;
   min-width: 130px;
   field-sizing: content;
-  border: none;
-  background: transparent;
-  color: var(--color-text-primary);
-  font-family: var(--font-family);
-  font-size: var(--font-size-sm);
   font-weight: var(--font-weight-medium);
   padding: 9px 30px 9px 12px;
-  outline: none;
 }
 
 .ce-matrix__input-name:focus {
-  background: rgb(0 102 204 / 8%);
+  background: var(--color-accent-light);
 }
 
 .ce-matrix__input-name::placeholder {
@@ -228,7 +233,7 @@
 }
 
 .ce-matrix__score-input:focus {
-  background: rgb(0 102 204 / 8%);
+  background: var(--color-accent-light);
 }
 
 /* ===== Result cells ===== */
@@ -254,7 +259,6 @@
 
 /* ===== Vertical total label (Σ Zeile in header) ===== */
 .ce-matrix__total-label--vertical {
-  height: 140px;
   vertical-align: bottom;
   padding-bottom: 28px !important;
 }

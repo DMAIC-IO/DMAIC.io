@@ -262,7 +262,7 @@ export default class ParetoChart extends ChartBase {
       } else {
         // Single-series rect
         svgEl('rect', {
-          x: bx, y: yTop, width: barWidth, height: h,
+          x: bx, y: yTop, width: barWidth, height: barH,
           rx: 3, fill: color, 'fill-opacity': opacity,
         }, plotGroup);
       }
@@ -276,7 +276,7 @@ export default class ParetoChart extends ChartBase {
           patternSolidity: 0.6,
         });
         svgEl('rect', {
-          x: bx, y: yTop, width: barWidth, height: h,
+          x: bx, y: yTop, width: barWidth, height: barH,
           rx: 3, fill: `url(#${patId})`,
         }, plotGroup);
       }

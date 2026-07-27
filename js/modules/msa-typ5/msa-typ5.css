@@ -98,18 +98,15 @@
   font-size: 0.9em;
 }
 
-/* Interpretation block */
-.msa-typ5__interp {
-  padding: var(--spacing-md);
-  border-radius: var(--radius-md, 6px);
-  background: var(--color-background-secondary);
-  margin: var(--spacing-md) 0;
-  border-left: 4px solid transparent;
+/* Interpretations-Slot innerhalb .dmike-infobox — bricht als volle Zeile
+   um; Farbcodierung + Rahmen kommen bereits vom umschließenden Infobox
+   (verdictClass am Elternknoten, siehe msa-typ5.html). */
+.dmike-infobox .msa-typ5__interp {
+  flex-basis: 100%;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
   line-height: 1.5;
 }
-.msa-typ5__interp.dmike-kpi--good { border-left-color: var(--color-success, #2ea043); }
-.msa-typ5__interp.dmike-kpi--warn { border-left-color: var(--color-warning, #d29922); }
-.msa-typ5__interp.dmike-kpi--bad  { border-left-color: var(--color-error,   #da3633); }
 
 /* Tables */
 .msa-typ5__table {
@@ -151,8 +148,8 @@
 
 .msa-typ5__heatmap-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-  gap: var(--spacing-md);
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: var(--spacing-sm);
   margin-bottom: var(--spacing-md);
 }
 
@@ -160,18 +157,25 @@
   background: var(--color-background-primary);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md, 6px);
-  padding: var(--spacing-sm);
+  padding: var(--spacing-xs);
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-xs);
+  gap: 2px;
 }
 
 .msa-typ5__heatmap-title {
-  font-size: 0.9em;
+  font-size: 0.85em;
   color: var(--color-text-secondary);
   text-align: center;
 }
 
 .msa-typ5__heatmap-body {
-  height: 220px;
+  /* Compact fixed height — squareCells:true inside the plot centers a
+     square grid in whatever width the grid column gives us; the cell
+     stays a predictable size regardless of viewport width so wide viewports
+     just pack more heatmaps per row instead of stretching each one.
+     overflow:hidden clips any residual chart card that a stale render
+     might slip in — grid rows below the cell stay clean. */
+  height: 140px;
+  overflow: hidden;
 }

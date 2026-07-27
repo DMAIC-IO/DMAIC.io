@@ -279,6 +279,25 @@
   resize: none;
 }
 
+/* Maximized chart window (modebar "popout"). Inverts the default popout
+   sizing: the shell owns width/height — viewport-relative, so maximizing
+   always yields a bigger plot than in-page — and the chart fills it.
+
+   `resize` MUST stay on the shell. Putting it on the inner render box lets
+   the chart grow past the shell, which then clips it (overflow: hidden)
+   with no scrollbar to reach the cut-off part. */
+.dmike-chart-popout--maximized {
+  left: 5vw;
+  top: 7.5vh;
+  width: 90vw;
+  height: 85vh;
+  min-width: 480px;
+  min-height: 320px;
+  max-width: 98vw;
+  max-height: 96vh;
+  resize: both;
+}
+
 .dmike-chart-popout-titlebar {
   display: flex;
   align-items: center;

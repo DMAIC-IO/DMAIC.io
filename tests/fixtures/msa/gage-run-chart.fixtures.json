@@ -1,0 +1,458 @@
+{
+  "algorithm_id": "gage-run-chart",
+  "generated_with": {
+    "method": "Hand-verified — grouping, ordering and means recomputed by hand; means are over 2 resp. 6 values"
+  },
+  "generator_version": "1.0.0",
+  "tolerances": {
+    "default": {
+      "relative": 1e-12,
+      "absolute": 1e-12
+    },
+    "overrides": {}
+  },
+  "test_cases": [
+    {
+      "id": "grc_crossed_2parts_2ops",
+      "tier": "standard",
+      "description": "Balanced crossed design, 2 parts x 2 appraisers x 2 trials",
+      "reference": "Hand-verified: means 15/40/25/60, grand mean 35",
+      "inputs": {
+        "mode": "gage-run-chart",
+        "parts": [
+          "1",
+          "1",
+          "1",
+          "1",
+          "2",
+          "2",
+          "2",
+          "2"
+        ],
+        "operators": [
+          "A",
+          "A",
+          "B",
+          "B",
+          "A",
+          "A",
+          "B",
+          "B"
+        ],
+        "measurements": [
+          10,
+          20,
+          30,
+          50,
+          20,
+          30,
+          55,
+          65
+        ]
+      },
+      "expected": {
+        "parts": [
+          "1",
+          "2"
+        ],
+        "operators": [
+          "A",
+          "B"
+        ],
+        "n": 8,
+        "droppedRows": 0,
+        "balanced": true,
+        "grandMean": 35.0,
+        "yMin": 10,
+        "yMax": 65,
+        "panels": [
+          {
+            "part": "1",
+            "series": [
+              {
+                "operator": "A",
+                "values": [
+                  10,
+                  20
+                ],
+                "mean": 15.0
+              },
+              {
+                "operator": "B",
+                "values": [
+                  30,
+                  50
+                ],
+                "mean": 40.0
+              }
+            ]
+          },
+          {
+            "part": "2",
+            "series": [
+              {
+                "operator": "A",
+                "values": [
+                  20,
+                  30
+                ],
+                "mean": 25.0
+              },
+              {
+                "operator": "B",
+                "values": [
+                  55,
+                  65
+                ],
+                "mean": 60.0
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "grc_numeric_part_ordering",
+      "tier": "standard",
+      "description": "Part labels sort numerically, not lexicographically",
+      "reference": "Hand-verified: 3 < 4 < 10 < 15 (lexicographic would give 10, 15, 3, 4)",
+      "inputs": {
+        "mode": "gage-run-chart",
+        "parts": [
+          10,
+          3,
+          15,
+          4
+        ],
+        "operators": [
+          "A",
+          "A",
+          "A",
+          "A"
+        ],
+        "measurements": [
+          1,
+          2,
+          3,
+          4
+        ]
+      },
+      "expected": {
+        "parts": [
+          "3",
+          "4",
+          "10",
+          "15"
+        ],
+        "n": 4,
+        "balanced": true
+      }
+    },
+    {
+      "id": "grc_unbalanced_missing_cell",
+      "tier": "edge",
+      "description": "Appraiser B never measured part 2 — design flagged as unbalanced",
+      "reference": "Hand-verified: 3 of 4 part x appraiser cells present",
+      "inputs": {
+        "mode": "gage-run-chart",
+        "parts": [
+          "1",
+          "1",
+          "2"
+        ],
+        "operators": [
+          "A",
+          "B",
+          "A"
+        ],
+        "measurements": [
+          1,
+          2,
+          3
+        ]
+      },
+      "expected": {
+        "balanced": false,
+        "n": 3,
+        "droppedRows": 0
+      }
+    },
+    {
+      "id": "grc_attribute_13x3x2",
+      "tier": "standard",
+      "description": "Attribute study: 13 parts x 3 appraisers x 2 trials, binary, one deviating result (appraiser D, part 20)",
+      "reference": "Hand-verified: 78 measurements, 77 ones and one zero -> grand mean 77/78",
+      "inputs": {
+        "mode": "gage-run-chart",
+        "parts": [
+          "3",
+          "3",
+          "3",
+          "3",
+          "3",
+          "3",
+          "4",
+          "4",
+          "4",
+          "4",
+          "4",
+          "4",
+          "5",
+          "5",
+          "5",
+          "5",
+          "5",
+          "5",
+          "8",
+          "8",
+          "8",
+          "8",
+          "8",
+          "8",
+          "9",
+          "9",
+          "9",
+          "9",
+          "9",
+          "9",
+          "10",
+          "10",
+          "10",
+          "10",
+          "10",
+          "10",
+          "15",
+          "15",
+          "15",
+          "15",
+          "15",
+          "15",
+          "17",
+          "17",
+          "17",
+          "17",
+          "17",
+          "17",
+          "19",
+          "19",
+          "19",
+          "19",
+          "19",
+          "19",
+          "20",
+          "20",
+          "20",
+          "20",
+          "20",
+          "20",
+          "22",
+          "22",
+          "22",
+          "22",
+          "22",
+          "22",
+          "24",
+          "24",
+          "24",
+          "24",
+          "24",
+          "24",
+          "26",
+          "26",
+          "26",
+          "26",
+          "26",
+          "26"
+        ],
+        "operators": [
+          "D",
+          "D",
+          "E",
+          "E",
+          "F",
+          "F",
+          "D",
+          "D",
+          "E",
+          "E",
+          "F",
+          "F",
+          "D",
+          "D",
+          "E",
+          "E",
+          "F",
+          "F",
+          "D",
+          "D",
+          "E",
+          "E",
+          "F",
+          "F",
+          "D",
+          "D",
+          "E",
+          "E",
+          "F",
+          "F",
+          "D",
+          "D",
+          "E",
+          "E",
+          "F",
+          "F",
+          "D",
+          "D",
+          "E",
+          "E",
+          "F",
+          "F",
+          "D",
+          "D",
+          "E",
+          "E",
+          "F",
+          "F",
+          "D",
+          "D",
+          "E",
+          "E",
+          "F",
+          "F",
+          "D",
+          "D",
+          "E",
+          "E",
+          "F",
+          "F",
+          "D",
+          "D",
+          "E",
+          "E",
+          "F",
+          "F",
+          "D",
+          "D",
+          "E",
+          "E",
+          "F",
+          "F",
+          "D",
+          "D",
+          "E",
+          "E",
+          "F",
+          "F"
+        ],
+        "measurements": [
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          0,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1
+        ]
+      },
+      "expected": {
+        "parts": [
+          "3",
+          "4",
+          "5",
+          "8",
+          "9",
+          "10",
+          "15",
+          "17",
+          "19",
+          "20",
+          "22",
+          "24",
+          "26"
+        ],
+        "operators": [
+          "D",
+          "E",
+          "F"
+        ],
+        "n": 78,
+        "droppedRows": 0,
+        "balanced": true,
+        "grandMean": 0.9871794871794872,
+        "yMin": 0,
+        "yMax": 1
+      }
+    }
+  ]
+}

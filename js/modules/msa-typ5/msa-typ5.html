@@ -111,10 +111,13 @@
       <div>
         <!-- Verdikt-Header (generisches .dmike-infobox aus css/components.css;
              KEIN Punkt vorne per Design-Regel — Farbe alleine über Card-
-             Border + Label-Schrift, siehe Kommentar in components.css). -->
+             Border + Label-Schrift, siehe Kommentar in components.css).
+             Der `.msa-typ5__interp`-Slot ist typ5-spezifisch (volle Zeile,
+             flex-basis: 100 %) und trägt den narrativen Interpretationstext. -->
         <div class="dmike-infobox" :class="verdictClass(result.verdict.level)">
           <span class="dmike-infobox__label" x-text="verdictLabel(result.verdict.level)"></span>
           <span class="dmike-infobox__detail" x-text="verdictSubline()"></span>
+          <span class="msa-typ5__interp" x-text="interpretationText()"></span>
         </div>
 
         <!-- Warnungen -->
@@ -142,10 +145,6 @@
             <div class="dmike-kpi-value" x-text="fmt(meanKappaVsRef(), 3)"></div>
           </div>
         </div>
-
-        <!-- Interpretation -->
-        <div class="msa-typ5__interp" :class="verdictClass(result.verdict.level)"
-             x-text="interpretationText()"></div>
 
         <!-- Prüfer-Tabelle -->
         <div class="dmike-split__output-section" x-text="t('table.appraiser')"></div>

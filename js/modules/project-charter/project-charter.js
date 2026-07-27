@@ -127,6 +127,12 @@ export default createModule({
       _orgSel: null,
       _orgPan: { x: 0, y: 0 },
       _orgZoom: 1,
+      /** Beobachtet die Breite des Org-Fensters (siehe _orgBindPanZoom). */
+      _orgResizeObs: null,
+      /** Zuletzt beobachtete Breite — nur Breitenänderungen lösen ein Re-Fit aus. */
+      _orgLastWidth: 0,
+      /** true, sobald der Nutzer selbst geschoben/gezoomt hat — dann kein Auto-Fit mehr. */
+      _orgUserAdjusted: false,
       _modebar: null,
       _orgEditorOpen: false,
       _undoStack: [],
@@ -169,6 +175,7 @@ export default createModule({
 
       destroy() {
         if (this._modebar) { this._modebar.destroy(); this._modebar = null; }
+        if (this._orgResizeObs) { this._orgResizeObs.disconnect(); this._orgResizeObs = null; }
       },
 
       // ═══════════════════════════════════════════════════════
@@ -564,6 +571,7 @@ export default createModule({
         });
         const onMove = (e) => {
           if (!panning) return;
+          this._orgUserAdjusted = true;
           this._orgPan.x = e.clientX - startX;
           this._orgPan.y = e.clientY - startY;
           this._orgApplyTransform();
@@ -574,6 +582,7 @@ export default createModule({
         wrap.addEventListener('pointerleave', onUp);
         wrap.addEventListener('wheel', (e) => {
           e.preventDefault();
+          this._orgUserAdjusted = true;
           const rect = wrap.getBoundingClientRect();
           const mx = e.clientX - rect.left;
           const my = e.clientY - rect.top;
@@ -583,11 +592,39 @@ export default createModule({
           this._orgPan.y = my - (my - this._orgPan.y) * (this._orgZoom / oz);
           this._orgUpdateWrapHeight();
         }, { passive: false });
+
+        // Neu einpassen, wenn sich die Breite des Fensters ändert.
+        //
+        // `_orgFit()` leitet Zoom UND Pan aus `wrap.clientWidth` ab, lief aber
+        // nur einmal beim Mount in einem einzelnen requestAnimationFrame. Landet
+        // das, bevor das Split-Panel seine Endbreite hat, sitzt das Organigramm
+        // dauerhaft verschoben und falsch skaliert — sichtbar für Nutzer beim
+        // Öffnen in einem schmalen Fenster, und als lastabhängig fehlschlagender
+        // Visual-Test.
+        //
+        // NUR auf Breitenänderungen reagieren: `_orgFit()` ruft
+        // `_orgUpdateWrapHeight()`, das `wrap.style.height` setzt — auf jede
+        // Höhenänderung zu reagieren wäre eine Endlosschleife.
+        //
+        // Nach manuellem Schieben/Zoomen bleibt die Nutzeransicht stehen; der
+        // „Ausrichten"-Knopf ruft `_orgFit()` und gibt die Automatik wieder frei.
+        if (typeof ResizeObserver === 'function') {
+          this._orgLastWidth = wrap.clientWidth;
+          this._orgResizeObs = new ResizeObserver(() => {
+            const w = wrap.clientWidth;
+            if (w === this._orgLastWidth) return;
+            this._orgLastWidth = w;
+            if (this._orgUserAdjusted) return;
+            this._orgFit();
+          });
+          this._orgResizeObs.observe(wrap);
+        }
       },
 
       _orgZoomIn() {
         const wrap = this.$root.querySelector('[data-ref="orgWrap"]');
         if (!wrap) return;
+        this._orgUserAdjusted = true;
         const cx = wrap.clientWidth / 2, cy = wrap.clientHeight / 2;
         const oz = this._orgZoom;
         this._orgZoom = Math.min(3, this._orgZoom * 1.2);
@@ -601,6 +638,11 @@ export default createModule({
         if (!wrap || !this.model.orgNodes.length) return;
         const visible = this.model.orgNodes.filter(n => !n._h);
         if (!visible.length) return;
+
+        // Einpassen ist die Rückkehr zur automatischen Ansicht — ab hier darf
+        // eine Breitenänderung wieder neu einpassen.
+        this._orgUserAdjusted = false;
+        this._orgLastWidth = wrap.clientWidth;
 
         let x1 = Infinity, x2 = -Infinity;
         visible.forEach(n => {

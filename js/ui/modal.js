@@ -50,9 +50,13 @@ export class Modal {
    * @param {object} [options]
    * @param {string} [options.confirmLabel]
    * @param {string} [options.cancelLabel]
+   * @param {string} [options.deleteLabel] - label for the optional delete button
    * @param {function} [options.onMount] - called with body element after rendering
    * @param {function} [options.onConfirm] - called with body element; return false to prevent close
-   * @returns {Promise<boolean>} true if confirmed
+   * @param {function} [options.onDelete] - when provided, renders a destructive
+   *   delete button (left-aligned). Called with body element; return false to
+   *   prevent close, otherwise the dialog closes and resolves with 'deleted'.
+   * @returns {Promise<boolean|'deleted'>} true if confirmed, 'deleted' if deleted, false otherwise
    */
   form(title, content, options = {}) {
     return new Promise((resolve) => {
@@ -69,12 +73,24 @@ export class Modal {
       confirmBtn.className = 'btn btn--primary';
       confirmBtn.textContent = confirmLabel;
 
-      footer.append(cancelBtn, confirmBtn);
-
       const close = (result) => {
         this._close(overlay);
         resolve(result);
       };
+
+      // Optional destructive action, left-aligned (see .modal__footer-delete).
+      if (options.onDelete) {
+        const deleteBtn = document.createElement('button');
+        deleteBtn.className = 'btn btn--danger modal__footer-delete';
+        deleteBtn.textContent = options.deleteLabel ?? this._i18n.t('common.delete');
+        footer.append(deleteBtn);
+        deleteBtn.addEventListener('click', () => {
+          if (options.onDelete(body) === false) return; // prevent close
+          close('deleted');
+        });
+      }
+
+      footer.append(cancelBtn, confirmBtn);
 
       cancelBtn.addEventListener('click', () => close(false));
       confirmBtn.addEventListener('click', () => {
