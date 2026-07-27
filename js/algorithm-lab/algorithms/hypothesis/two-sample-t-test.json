@@ -1,5 +1,5 @@
 {
-  "id": "two-sample-{{term:t-test|t-test}}",
+  "id": "two-sample-t-test",
   "name": {
     "de": "Zwei-Stichproben-{{term:t-test|t-Test}} (pooled)",
     "en": "Two-Sample t-Test (pooled)"
