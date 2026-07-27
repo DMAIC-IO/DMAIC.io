@@ -1,6 +1,7 @@
 /* MSA Typ 5 — BEM-light styles (module-msa-typ5*) */
 
 .module-msa-typ5 { display: grid; gap: var(--spacing-md); }
+
 .module-msa-typ5__empty {
   padding: var(--spacing-xl);
   text-align: center;
@@ -24,12 +25,14 @@
   padding: 0;
   margin: 0;
 }
+
 .msa-typ5__radios legend {
   font-size: 0.85em;
   color: var(--color-text-secondary);
   margin-bottom: var(--spacing-xs);
   padding: 0;
 }
+
 .msa-typ5__radios label {
   display: inline-flex;
   align-items: center;
@@ -45,6 +48,7 @@
   gap: var(--spacing-xs);
   align-items: center;
 }
+
 .msa-typ5__level {
   padding: 2px 8px;
   border-radius: 4px;
@@ -52,24 +56,29 @@
   font-size: 0.9em;
   color: var(--color-text-primary);
 }
+
 .msa-typ5__level--pos {
-  background: var(--color-success-bg, rgba(46, 160, 67, 0.12));
+  background: var(--color-success-bg, rgb(46 160 67 / 12%));
   color: var(--color-success, #2ea043);
 }
+
 .msa-typ5__level--neg {
-  background: var(--color-error-bg, rgba(218, 54, 51, 0.12));
+  background: var(--color-error-bg, rgb(218 54 51 / 12%));
   color: var(--color-error, #da3633);
 }
+
 .msa-typ5__levels-hint {
   flex-basis: 100%;
   font-size: 0.8em;
   color: var(--color-text-secondary);
   margin-top: var(--spacing-xs);
 }
+
 .msa-typ5__swap {
   margin-left: auto;
   font-size: 0.85em;
 }
+
 .msa-typ5__ref-source {
   padding: 4px 8px;
   background: var(--color-background-secondary);
@@ -82,7 +91,7 @@
 /* Warnings */
 .msa-typ5__warn {
   padding: var(--spacing-sm);
-  background: var(--color-warning-bg, rgba(210, 153, 34, 0.12));
+  background: var(--color-warning-bg, rgb(210 153 34 / 12%));
   color: var(--color-warning, #d29922);
   border-radius: var(--radius-sm, 4px);
   margin: var(--spacing-xs) 0;
@@ -108,6 +117,7 @@
   border-collapse: collapse;
   margin-bottom: var(--spacing-md);
 }
+
 .msa-typ5__table th,
 .msa-typ5__table td {
   padding: 6px 10px;
@@ -138,12 +148,14 @@
   border-radius: var(--radius-md, 6px);
   overflow: hidden;
 }
+
 .msa-typ5__heatmap-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
   gap: var(--spacing-md);
   margin-bottom: var(--spacing-md);
 }
+
 .msa-typ5__heatmap-cell {
   background: var(--color-background-primary);
   border: 1px solid var(--color-border);
@@ -153,11 +165,13 @@
   flex-direction: column;
   gap: var(--spacing-xs);
 }
+
 .msa-typ5__heatmap-title {
   font-size: 0.9em;
   color: var(--color-text-secondary);
   text-align: center;
 }
+
 .msa-typ5__heatmap-body {
   height: 220px;
 }

@@ -80,6 +80,7 @@
 }
 
 /* ─── Charts ─────────────────────────────────────────────── */
+
 /* overflow:hidden verhindert Growing-Loop des SVGs. Kontext:
    `.dmike-split__output` ist ein flex-column-Container, dessen Kinder
    `min-height:auto` haben — `height:300px` allein reicht nicht als Cap,

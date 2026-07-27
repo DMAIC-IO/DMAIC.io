@@ -185,7 +185,7 @@ export class LocalAdapter extends StorageAdapter {
         this._pendingDel.delete(id);
         continue;
       }
-      let issued = false;
+      let issued;
       try { issued = idbBatchSync(id, { puts, deletes }); }
       catch (err) { console.error('[LocalAdapter] IDB sync flush failed', id, err); issued = false; }
       if (issued) {

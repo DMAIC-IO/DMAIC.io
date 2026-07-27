@@ -46,6 +46,10 @@ function _sortedLevels(...arrs) {
  */
 function _phiInv(p) {
   const SPLIT1 = 0.425, SPLIT2 = 5, CONST1 = 0.180625, CONST2 = 1.6;
+  /* Wichura (1988) AS 241 published coefficients — quoted at full source precision.
+     Trailing digits beyond double precision are intentional and parse to the exact
+     same IEEE-754 value; the extra digits document the reference, not runtime state. */
+  /* eslint-disable no-loss-of-precision */
   const a = [3.3871328727963666080, 133.14166789178437745, 1971.5909503065514427,
              13731.693765509461125, 45921.953931549871457, 67265.770927008700853,
              33430.575583588128105, 2509.0809287301226727];
@@ -65,6 +69,7 @@ function _phiInv(p) {
   const f = [0.599832206555887937690, 0.136929880922735805310, 0.0148753612908506148525,
              0.000786869131145613259100, 1.84631831751005468180e-5,
              1.42151175831644588870e-7, 2.04426310338993978564e-15];
+  /* eslint-enable no-loss-of-precision */
 
   const q = p - 0.5;
   let r, val;

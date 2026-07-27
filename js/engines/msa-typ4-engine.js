@@ -70,10 +70,10 @@ export function pvValue(params) {
  * Groups by unique reference value (ascending), returns one entry per group.
  * @param {number[]} reference
  * @param {number[]} measured
- * @param {number}   alpha    Significance level (reserved for callers/verdicts; not used internally).
+ * @param {number}   _alpha   Significance level (reserved for callers/verdicts; not used internally).
  * @returns {Array<{xRef:number, n:number, mean:number, bias:number, sd:number, tStat:number, pValue:number}>}
  */
-export function perReferenceStats(reference, measured, alpha = 0.05) {
+export function perReferenceStats(reference, measured, _alpha = 0.05) {
   const groups = new Map();
   for (let i = 0; i < reference.length; i++) {
     const x = reference[i];

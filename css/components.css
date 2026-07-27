@@ -695,14 +695,17 @@ select.input {
   background: rgb(52 199 89 / 8%);
   border-color: rgb(52 199 89 / 30%);
 }
+
 .dmike-infobox--warn, .dmike-infobox.dmike-kpi--warn {
   background: rgb(255 149 0 / 8%);
   border-color: rgb(255 149 0 / 30%);
 }
+
 .dmike-infobox--bad, .dmike-infobox.dmike-kpi--bad {
   background: rgb(255 59 48 / 8%);
   border-color: rgb(255 59 48 / 30%);
 }
+
 .dmike-infobox--info {
   background: var(--color-bg-secondary);
   border-color: var(--color-border-primary);
@@ -716,10 +719,13 @@ select.input {
   text-transform: uppercase;
   color: var(--color-text-primary);
 }
+
 .dmike-infobox--good .dmike-infobox__label,
 .dmike-infobox.dmike-kpi--good .dmike-infobox__label { color: var(--color-success); }
+
 .dmike-infobox--warn .dmike-infobox__label,
 .dmike-infobox.dmike-kpi--warn .dmike-infobox__label { color: var(--color-warning); }
+
 .dmike-infobox--bad  .dmike-infobox__label,
 .dmike-infobox.dmike-kpi--bad  .dmike-infobox__label { color: var(--color-error); }
 

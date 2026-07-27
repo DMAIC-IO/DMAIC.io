@@ -13,7 +13,6 @@
 /** Allowed <select>/<radio> option values (as strings). */
 const NORM_OPTIONS = ['AIAG', 'VDA5'];
 const PV_OPTIONS = ['tolerance', 'sixSigma'];
-const ALPHA_OPTIONS = ['0.01', '0.05', '0.10'];
 
 /**
  * Coerce a persisted numeric/string field into the raw string the input shows.

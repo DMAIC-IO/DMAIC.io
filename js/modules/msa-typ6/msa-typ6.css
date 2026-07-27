@@ -31,12 +31,14 @@
   padding: 0;
   margin: 0;
 }
+
 .module-msa-typ6__radios legend {
   font-size: 0.85em;
   color: var(--color-text-secondary);
   margin-bottom: var(--spacing-xs);
   padding: 0;
 }
+
 .module-msa-typ6__radios label {
   display: inline-flex;
   align-items: center;
@@ -50,6 +52,7 @@
   flex-direction: column;
   gap: var(--spacing-xs);
 }
+
 .module-msa-typ6__nelson-rule {
   display: flex;
   align-items: flex-start;
@@ -57,9 +60,11 @@
   cursor: pointer;
   font-size: 0.9em;
 }
+
 .module-msa-typ6__nelson-rule input[type="checkbox"] {
   margin-top: 2px;
 }
+
 .module-msa-typ6__nelson-desc {
   font-size: 0.85em;
   color: var(--color-text-secondary);
@@ -90,11 +95,13 @@
 .module-msa-typ6__violations {
   margin-bottom: var(--spacing-md);
 }
+
 .module-msa-typ6__violation-row {
   cursor: pointer;
 }
+
 .module-msa-typ6__violation-row--active td {
-  background: var(--color-accent-light, rgba(0, 122, 255, 0.12));
+  background: var(--color-accent-light, rgb(0 122 255 / 12%));
 }
 
 /* ─── Drift-Analyse-Chart ────────────────────────────────────── */
@@ -104,6 +111,7 @@
   gap: var(--spacing-sm);
   margin-bottom: var(--spacing-md);
 }
+
 .module-msa-typ6__drift-info {
   display: flex;
   flex-direction: column;
@@ -115,10 +123,12 @@
   font-size: 0.85em;
   color: var(--color-text-secondary);
 }
+
 .module-msa-typ6__drift-eq {
   font-family: var(--font-family-mono, monospace);
   color: var(--color-text-primary);
 }
+
 .module-msa-typ6__drift-stats {
   display: flex;
   gap: var(--spacing-lg);
