@@ -20,6 +20,8 @@ import { State } from './msa-typ2-model.js';
 import { validate, analyze } from '../../engines/msa-typ2-engine.js';
 import { ColumnPicker, getColumnValues } from '../../ui/column-picker.js';
 import { loadExampleViaWorksheet } from '../../core/examples-registry.js';
+import { panelsFromCells } from '../../engines/gage-run-chart-engine.js';
+import { renderGageRunStrips } from '../../core/chart/gage-run-strips.js';
 
 /** @param {number} v @param {number} d @returns {string} */
 function fmt(v, d = 4) { return v != null && isFinite(v) ? v.toFixed(d) : '–'; }
@@ -241,6 +243,8 @@ const mod = createModule({
         if (gen !== this._renderGen) return;
         await this._renderByPartChart(r, gen);
         if (gen !== this._renderGen) return;
+        await this._renderGageRunChart(r, gen);
+        if (gen !== this._renderGen) return;
         if (!isTyp3) {
           await this._renderByOperatorChart(r, gen);
           if (gen !== this._renderGen) return;
@@ -250,6 +254,39 @@ const mod = createModule({
         await this._renderXbarChart(r, gen);
         if (gen !== this._renderGen) return;
         await this._renderRChart(r, gen);
+      },
+
+      /**
+       * Messverlaufsdiagramm über die Rohwerte der Studie: ein Feld je
+       * Prüfeinheit, Farbe je Prüfer, Referenzlinie beim Gesamtmittelwert.
+       * Zeigt, WARUM %GRR so ausfällt — streut ein Prüfer breiter, liegt einer
+       * systematisch daneben, ist eine Prüfeinheit auffällig.
+       *
+       * Die Panels entstehen aus `cellData` der Engine, nicht aus den
+       * Rohspalten: So zeigt das Bild exakt die Zeilen, die auch in die
+       * Kennzahlen eingegangen sind.
+       */
+      async _renderGageRunChart(r, gen) {
+        const el = module._container.querySelector('[data-ref="chart-gage-run"]');
+        if (!el) return;
+
+        const g = panelsFromCells(r.partLabels, r.operatorLabels, r.cellData);
+        if (!g.n) { el.replaceChildren(); return; }
+
+        const charts = await renderGageRunStrips(module._context, el, {
+          panels: g.panels,
+          operators: g.operators,
+          refValue: g.grandMean,
+          refLabel: _t('chartGageRunMean'),
+          yMin: g.yMin,
+          yMax: g.yMax,
+          perRow: 10,
+          xLabel: _t('parts'),
+          yLabel: _t('measurementColumn'),
+          rowClass: 'msa-typ2__gage-run-row',
+          isStale: () => gen !== this._renderGen,
+        });
+        this._charts.push(...charts);
       },
 
       async _renderComponentsChart(r, gen) {

@@ -1503,6 +1503,8 @@
       "varCompTitle": "Varianzkomponenten",
       "chartComponentsTitle": "Variationskomponenten",
       "chartByPartTitle": "Messwerte nach Teil",
+      "chartGageRunTitle": "Messverlaufsdiagramm (Rohwerte je Prüfeinheit und Prüfer)",
+      "chartGageRunMean": "Mittelwert",
       "chartByOperatorTitle": "Messwerte nach Bediener",
       "chartInteractionTitle": "Teil × Bediener Wechselwirkung",
       "chartXbarTitle": "x̄-Karte nach Bediener",
@@ -1649,6 +1651,9 @@
         "kappaBar": "Cohen κ je Prüferpaar",
         "effectivenessBar": "Effektivität je Prüfer",
         "sdtScatter": "Signal Detection (d′ vs. c)",
+        "gageRun": "Messverlaufsdiagramm (Bewertungen je Prüfeinheit und Prüfer)",
+        "gageRunMean": "Mittelwert",
+        "gageRunBinaryAxis": "Bewertung (0 = {neg}, 1 = {pos})",
         "confusion": "Confusion-Matrix"
       },
       "emptyState": "Teil-, Prüfer- und Bewertungs-Spalte wählen, um die Analyse zu starten.",

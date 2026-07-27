@@ -9,7 +9,7 @@ import {
   suite, test, assertEqual, assertDeepEqual, assertAlmostEqual, assertThrows,
 } from '../test-utils.js';
 import {
-  computeGageRunChart, splitPanelRows, analyze,
+  computeGageRunChart, panelsFromCells, splitPanelRows, analyze,
 } from '../../js/engines/gage-run-chart-engine.js';
 
 async function loadFixture(path) {
@@ -174,6 +174,52 @@ suite('Gage Run Chart — robustness', () => {
 
   test('rejects non-array input', () => {
     assertThrows(() => computeGageRunChart({ parts: null, measurements: [] }));
+  });
+});
+
+suite('Gage Run Chart — Panels aus fertiger Zellmatrix', () => {
+  const CELLS = {
+    '1': { A: [10, 20], B: [30, 50] },
+    '2': { A: [20, 30], B: [55, 65] },
+  };
+
+  test('übernimmt Panel- und Serienreihenfolge unverändert', () => {
+    const r = panelsFromCells(['2', '1'], ['B', 'A'], CELLS);
+    assertDeepEqual(r.panels.map(p => p.part), ['2', '1']);
+    assertDeepEqual(r.panels[0].series.map(s => s.operator), ['B', 'A']);
+  });
+
+  test('berechnet Serien-Mittelwerte, Gesamtmittelwert und Spanne', () => {
+    const r = panelsFromCells(['1', '2'], ['A', 'B'], CELLS);
+    assertAlmostEqual(r.panels[0].series[0].mean, 15, 1e-12);
+    assertAlmostEqual(r.grandMean, 35, 1e-12);
+    assertEqual(r.n, 8);
+    assertAlmostEqual(r.yMin, 10, 1e-12);
+    assertAlmostEqual(r.yMax, 65, 1e-12);
+  });
+
+  test('lässt leere Zellen weg statt eine leere Serie zu zeichnen', () => {
+    const r = panelsFromCells(['1'], ['A', 'B'], { '1': { A: [5], B: [] } });
+    assertEqual(r.panels[0].series.length, 1);
+    assertEqual(r.panels[0].series[0].operator, 'A');
+  });
+
+  test('lässt Panels ohne jeden Wert weg', () => {
+    const r = panelsFromCells(['1', '2'], ['A'], { '1': { A: [5] }, '2': { A: [] } });
+    assertDeepEqual(r.panels.map(p => p.part), ['1']);
+  });
+
+  test('verwirft nicht-numerische Werte', () => {
+    const r = panelsFromCells(['1'], ['A'], { '1': { A: [5, null, NaN, '7'] } });
+    assertDeepEqual(r.panels[0].series[0].values, [5]);
+  });
+
+  test('liefert ein renderbares Ergebnis ohne Daten', () => {
+    const r = panelsFromCells([], [], {});
+    assertDeepEqual(r.panels, []);
+    assertEqual(r.n, 0);
+    assertEqual(r.yMin, 0);
+    assertEqual(r.yMax, 1);
   });
 });
 

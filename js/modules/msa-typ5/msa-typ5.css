@@ -126,6 +126,23 @@
 
 /* Chart-Container.
    overflow:hidden verhindert Growing-Loop (siehe msa-typ1 CSS). */
+/* Messverlaufsdiagramm — eine Zeile je Streifen. Definite Höhe nötig, sonst
+   driftet die SVG-Höhe bei jedem Neuzeichnen. */
+.msa-typ5__gage-run {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-md);
+}
+
+.msa-typ5__gage-run-row {
+  width: 100%;
+  height: 300px;
+  overflow: hidden;
+  background: var(--color-background-primary);
+  border: 1px solid var(--color-border);
+}
+
 .msa-typ5__chart {
   width: 100%;
   height: 300px;
