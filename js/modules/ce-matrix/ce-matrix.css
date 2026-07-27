@@ -156,7 +156,6 @@
 }
 
 .ce-matrix__output-name:focus {
-  background: var(--color-accent);
   background: var(--color-accent-light);
   color: var(--color-text-primary);
 }

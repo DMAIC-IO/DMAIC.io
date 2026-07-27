@@ -57,14 +57,15 @@
   max-width: 80ch;
 }
 
-/* ── Tables ── */
-/* Panel, borders, header styling and row hover come from .dmike-table-wrap /
+/* ── Tables ──
+   Panel, borders, header styling and row hover come from .dmike-table-wrap /
    .dmike-table / --head-mono. The wrap keeps only its horizontal scrolling;
    the top-aligned cells are specific here because these rows carry
    multi-line explanatory text. */
 .doe-advisor__table-wrap {
   overflow-x: auto;
 }
+
 .doe-advisor__table tbody th,
 .doe-advisor__table tbody td {
   vertical-align: top;

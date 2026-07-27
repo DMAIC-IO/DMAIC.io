@@ -111,6 +111,7 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: var(--spacing-sm);
+
   /* padding statt margin: der Scroll-Container (.dmike-split) nimmt den
      unteren Margin des letzten Kindes nicht in den scrollbaren Bereich auf,
      die Boxen klebten sonst am unteren Rand. */

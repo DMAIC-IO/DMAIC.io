@@ -82,6 +82,7 @@
 .todo__col-text  { min-width: 200px; }
 .todo__col-owner { width: 140px; }
 .todo__col-due   { width: 120px; }
+
 /* Wide enough for the longest status label plus the select's arrow — the
    shared .field padding needs more room than the old borderless select. */
 .todo__col-status { width: 150px; }

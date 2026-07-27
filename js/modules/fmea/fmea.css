@@ -263,8 +263,8 @@
   background: var(--color-border-secondary);
 }
 
-/* ── Actions Table ── */
-/* Base table and cell editors come from .dmike-table and .field --sm.
+/* ── Actions Table ──
+   Base table and cell editors come from .dmike-table and .field --sm.
    Only the compact textarea height is specific to an action row. */
 .fmea__action-table th {
   white-space: nowrap;

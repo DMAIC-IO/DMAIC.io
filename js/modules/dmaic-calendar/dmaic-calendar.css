@@ -613,8 +613,8 @@
   white-space: nowrap;
 }
 
-/* ─── Event form (borrowed into the shared ui/modal) ─────── */
-/* Overlay, modal shell + footer buttons come from ui/modal + components.css.
+/* ─── Event form (borrowed into the shared ui/modal) ───────
+   Overlay, modal shell + footer buttons come from ui/modal + components.css.
    Fields use global .field / .field-group. */
 
 .module-calendar__row-3 {
