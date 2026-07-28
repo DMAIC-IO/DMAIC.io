@@ -211,6 +211,16 @@
           </div>
         </div>
 
+        <!-- Tab: Dev Tools -->
+        <div class="settings-tab-content" :class="isTab('devtools') ? 'settings-tab-content--active' : ''"
+             data-tab-content="devtools" x-show="isTab('devtools')">
+          <div class="settings-section">
+            <p class="settings-hint" x-text="t('devtools.description')"></p>
+            <button type="button" class="btn btn--primary" id="settings-devtools-seed"
+                    @click="seedAllModules()" x-text="t('devtools.seedButton')"></button>
+          </div>
+        </div>
+
       </div>
     </div>
   </div>

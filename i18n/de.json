@@ -130,6 +130,13 @@
     "tabCharts": "Diagramme",
     "tabStatistics": "Statistik",
     "tabShortcuts": "Tastaturkürzel",
+    "tabDevtools": "Dev-Tools",
+    "devtools": {
+      "description": "Fügt jedes noch nicht vorhandene Modul dem passenden DMAIC-Reiter hinzu und lädt – sofern vorhanden – das erste Katalog-Beispiel hinein. Bereits vorhandene Module bleiben unverändert.",
+      "seedButton": "Alle Module + Beispiele laden",
+      "seedResult": "{added} Module hinzugefügt, {examples} Beispiele geladen.",
+      "seedError": "Fehler beim Laden der Module. Details in der Konsole."
+    },
     "shortcutsHint": "Hier kannst du Tastenkombinationen anpassen. Standard-Tasten (Enter, Escape, Pfeiltasten) sind nicht editierbar.",
     "shortcutsResetAll": "Alle Standardwerte",
     "shortcutsResetOne": "Auf Standardwert zurücksetzen",

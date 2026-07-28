@@ -104,6 +104,7 @@ export default createPage({
         { id: 'charts',     labelKey: 'tabCharts' },
         { id: 'statistics', labelKey: 'tabStatistics' },
         { id: 'shortcuts',  labelKey: 'tabShortcuts' },
+        { id: 'devtools',   labelKey: 'tabDevtools' },
       ].map(x => ({ id: x.id, label: t(x.labelKey) })),
       activeTab: 'appearance',
       selectTab(id) { this.activeTab = id; },
@@ -116,6 +117,9 @@ export default createPage({
 
       // ── close (overlay outside-click; Escape handled by factory) ──
       close() { page.hide(); },
+
+      // ── dev-tools ─────────────────────────────────────────
+      seedAllModules() { eventBus.emit('devtools:seed-all'); },
 
       // ── language ──────────────────────────────────────────
       currentLang: i18n.getLanguage(),

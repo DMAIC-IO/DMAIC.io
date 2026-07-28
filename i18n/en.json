@@ -130,6 +130,13 @@
     "tabCharts": "Charts",
     "tabStatistics": "Statistics",
     "tabShortcuts": "Keyboard Shortcuts",
+    "tabDevtools": "Dev Tools",
+    "devtools": {
+      "description": "Adds every module that is not yet present to its DMAIC phase and, where available, loads the first catalog example into it. Modules that already exist are left untouched.",
+      "seedButton": "Add all modules + examples",
+      "seedResult": "{added} modules added, {examples} examples loaded.",
+      "seedError": "Failed to load modules. See console for details."
+    },
     "shortcutsHint": "Customize keyboard shortcuts here. Standard keys (Enter, Escape, arrow keys) are not editable.",
     "shortcutsResetAll": "Reset all to defaults",
     "shortcutsResetOne": "Reset to default",
