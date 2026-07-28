@@ -239,9 +239,3 @@ tr[data-drag-a] {
   box-sizing: border-box;
 }
 
-/* ── Toolbar ────────────────────────────────────────────── */
-
-.raci__toolbar {
-  display: flex;
-  gap: var(--spacing-xs);
-}

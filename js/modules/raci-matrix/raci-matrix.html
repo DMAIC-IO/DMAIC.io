@@ -1,12 +1,4 @@
 <div class="module-container raci" x-data="raciMatrix">
-  <div class="module-container__header">
-    <h2 x-text="t('name')"></h2>
-    <div class="raci__toolbar">
-      <button class="btn btn--sm btn--ghost raci__export-csv-btn" type="button"
-              x-text="t('exportCSV')" @click="exportCSV()"></button>
-    </div>
-  </div>
-
   <div class="module-container__body">
     <div class="raci__legend">
       <template x-for="r in roles">
