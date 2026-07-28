@@ -14,7 +14,7 @@
 
 import { createModule } from '../../core/template-module.js';
 import {
-  downloadFile, ensureXLSX, XLSX, createExportDropdown,
+  downloadFile, ensureXLSX, XLSX,
   exportTableAsPNG, exportTableAsSVG,
 } from '../../core/export-utils.js';
 import { State } from './ce-matrix-model.js';
@@ -67,6 +67,17 @@ export default createModule({
     icon: 'grid',
     version: '1.0.0',
     meta: import.meta,
+    actions: [
+      { icon: 'plus', title: 'addInput', variant: 'primary', onClick: (d) => d.addInput() },
+      { icon: 'plus', title: 'addOutput', onClick: (d) => d.addOutput() },
+      { icon: 'download', title: 'export.label', children: [
+        { icon: 'export-xlsx', title: 'export.xlsx', onClick: (d) => d._exportXLSX() },
+        { icon: 'export-csv',  title: 'export.csv',  onClick: (d) => d._exportCSV() },
+        { icon: 'export-json', title: 'export.json', onClick: (d) => d._exportJSON() },
+        { icon: 'export-png',  title: 'export.png',  onClick: (d) => d._exportImage('png') },
+        { icon: 'export-svg',  title: 'export.svg',  onClick: (d) => d._exportImage('svg') },
+      ] },
+    ],
   },
   Model: State,
 
@@ -74,12 +85,6 @@ export default createModule({
     return {
       // ── Static view data ──────────────────────────────────────
       weightOptions: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
-
-      /** Toolbar "+ Label" text (single text node — mirrors legacy `+ ${t(key)}`). */
-      addLabel(key) { return `+ ${  _t(key)}`; },
-
-      /** @type {{el:HTMLElement,destroy:function}|null} */
-      _exportDropdown: null,
 
       /** @type {any} live Pareto chart of Row Sums (right of the matrix). */
       _paretoChart: null,
@@ -262,21 +267,6 @@ export default createModule({
 
       // ── Lifecycle (per Alpine instance) ───────────────────────
       init() {
-        const anchor = this.$el.querySelector('.ce-matrix__export-anchor');
-        if (anchor) {
-          this._exportDropdown = createExportDropdown(
-            ['xlsx', 'csv', 'json', 'png', 'svg'],
-            (fmt) => {
-              if (fmt === 'csv')  this._exportCSV();
-              if (fmt === 'xlsx') this._exportXLSX();
-              if (fmt === 'json') this._exportJSON();
-              if (fmt === 'png')  this._exportImage('png');
-              if (fmt === 'svg')  this._exportImage('svg');
-            }
-          );
-          anchor.replaceWith(this._exportDropdown.el);
-        }
-
         this.$nextTick(() => this._renderPareto());
         this.$watch('model.inputs',  () => this._schedulePareto());
         this.$watch('model.outputs', () => this._schedulePareto());
@@ -284,10 +274,6 @@ export default createModule({
         this.$watch('model.scores',  () => this._schedulePareto());
       },
       destroy() {
-        if (this._exportDropdown) {
-          this._exportDropdown.destroy();
-          this._exportDropdown = null;
-        }
         if (this._paretoRaf) { cancelAnimationFrame(this._paretoRaf); this._paretoRaf = 0; }
         if (this._paretoChart) {
           try { module._context.chartManager.destroy(this._paretoChart); } catch { /* ignore */ }

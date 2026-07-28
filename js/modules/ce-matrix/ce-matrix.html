@@ -1,16 +1,4 @@
 <div class="module-container ce-matrix" x-data="ceMatrix">
-  <div class="module-container__header">
-    <h2 class="module-container__title" x-text="t('name')"></h2>
-    <div class="ce-matrix__toolbar">
-      <div class="ce-matrix__toolbar-spacer"></div>
-      <button class="btn btn--sm ce-matrix__add-input-btn" type="button"
-              x-text="addLabel('addInput')" @click="addInput()"></button>
-      <button class="btn btn--sm ce-matrix__add-output-btn" type="button"
-              x-text="addLabel('addOutput')" @click="addOutput()"></button>
-      <span class="ce-matrix__export-anchor" data-ref="export-anchor"></span>
-    </div>
-  </div>
-
   <div class="module-container__body">
     <div class="ce-matrix__wrap">
       <table class="ce-matrix__table">
