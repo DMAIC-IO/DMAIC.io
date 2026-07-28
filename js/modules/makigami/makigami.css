@@ -6,19 +6,10 @@
   gap: var(--spacing-md);
 }
 
-.makigami__toolbar {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-sm);
-  flex: 1;
-}
-
-.makigami__toolbar-spacer {
-  flex: 1;
-}
-
 .makigami__title-input {
-  flex: 0 1 360px;
+  align-self: flex-start;
+  width: 100%;
+  max-width: 360px;
   min-width: 200px;
   padding: var(--spacing-xs) var(--spacing-sm);
   background: var(--color-bg-secondary);
@@ -31,10 +22,6 @@
 .makigami__title-input:focus {
   border-color: var(--color-accent);
   outline: none;
-}
-
-.makigami__export-anchor {
-  display: inline-flex;
 }
 
 /* ─── Matrix area ────────────────────────────────────────── */

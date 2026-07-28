@@ -11,14 +11,15 @@
  * KPI formatting, validity classes), the event handlers (which call Model
  * methods or mutate the reactive model), the table-header drag-reorder (transient
  * drag state — not the draggableList list mixin, which is clientY/list based and
- * does not fit a 2-axis table grid), the export handlers, and the imperative
- * export-dropdown widget (mounted per Alpine instance in init/destroy).
- * No HTML is built in JS for the UI — the markup lives in makigami.html.
+ * does not fit a 2-axis table grid), and the export handlers. Settings toggle and
+ * export are exposed via config.actions (unified workspace action bar) rather
+ * than an in-content toolbar. No HTML is built in JS for the UI — the markup
+ * lives in makigami.html.
  */
 
 import { createModule } from '../../core/template-module.js';
 import {
-  downloadFile, downloadBlob, ensureXLSX, XLSX, createExportDropdown, svgStringToPngBlob,
+  downloadFile, downloadBlob, ensureXLSX, XLSX, svgStringToPngBlob,
 } from '../../core/export-utils.js';
 import { escAttr } from '../../core/html-utils.js';
 import { parseDuration, formatDuration, canonicalize } from './makigami-duration.js';
@@ -32,14 +33,26 @@ export default createModule({
     icon: 'git-merge',
     version: '1.0.0',
     meta: import.meta,
+    actions: [
+      { icon: 'settings', title: 'settings', onClick: (d) => d.toggleSettings() },
+      {
+        icon: 'download',
+        title: 'export.label',
+        children: [
+          { icon: 'export-xlsx', title: 'export.xlsx', onClick: (d) => d._exportXLSX() },
+          { icon: 'export-csv',  title: 'export.csv',  onClick: (d) => d._exportCSV() },
+          { icon: 'export-json', title: 'export.json', onClick: (d) => d._exportJSON() },
+          { icon: 'export-png',  title: 'export.png',  onClick: (d) => d._exportPNG() },
+          { icon: 'export-svg',  title: 'export.svg',  onClick: (d) => d._exportSVG() },
+        ],
+      },
+    ],
   },
   Model: State,
 
   data(module, _t) {
     return {
       // ── Transient UI state (never persisted) ──────────────────
-      /** @type {{el:HTMLElement,destroy:function}|null} */
-      _exportDropdown: null,
       /** @type {string|null} */
       _draggedId: null,
       /** @type {'step'|'role'|null} */
@@ -435,21 +448,6 @@ export default createModule({
 
       // ── Lifecycle (per Alpine instance) ───────────────────────
       init() {
-        const anchor = this.$el.querySelector('[data-ref="export-anchor"]');
-        if (anchor) {
-          this._exportDropdown = createExportDropdown(
-            ['xlsx', 'csv', 'json', 'png', 'svg'],
-            (fmt) => {
-              if (fmt === 'xlsx') this._exportXLSX();
-              else if (fmt === 'csv')  this._exportCSV();
-              else if (fmt === 'json') this._exportJSON();
-              else if (fmt === 'png')  this._exportPNG();
-              else if (fmt === 'svg')  this._exportSVG();
-            },
-          );
-          anchor.replaceWith(this._exportDropdown.el);
-        }
-
         // Global mouseup disarms any `draggable` armed by a grip handle.
         this._dragMouseUpHandler = () => {
           this.$el.querySelectorAll('[draggable="true"]').forEach(el => el.removeAttribute('draggable'));
@@ -457,10 +455,6 @@ export default createModule({
         document.addEventListener('mouseup', this._dragMouseUpHandler);
       },
       destroy() {
-        if (this._exportDropdown) {
-          this._exportDropdown.destroy();
-          this._exportDropdown = null;
-        }
         if (this._dragMouseUpHandler) {
           document.removeEventListener('mouseup', this._dragMouseUpHandler);
           this._dragMouseUpHandler = null;
