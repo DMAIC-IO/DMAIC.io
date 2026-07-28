@@ -100,6 +100,13 @@ const mod = createModule({
     icon: 'alert-triangle',
     version: '1.1.0',
     meta: import.meta,
+    actions: [
+      { icon: 'glossary', title: 'scales', onClick: (d) => d.toggleScale() },
+      { icon: 'chart-thumb-run-chart', title: 'burndown', onClick: (d) => d.showBurndown() },
+      { icon: 'chevron-down', title: 'sortByRPN', onClick: (d) => d.sortByRPN() },
+      { icon: 'download', title: 'exportCSV', onClick: (d) => d.exportCSV() },
+      { icon: 'plus', title: 'addRisk', variant: 'primary', onClick: (d) => d.addRisk() },
+    ],
     dashboardTile: {
       defaultW: 3, defaultH: 10, minW: 2, minH: 6,
       enumerate: enumerateFmea,

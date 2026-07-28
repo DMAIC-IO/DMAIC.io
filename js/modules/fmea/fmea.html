@@ -1,16 +1,4 @@
 <section class="module-container fmea" x-data="fmea">
-  <div class="module-container__header">
-    <h2 class="module-container__title" x-text="t('name')"></h2>
-    <div class="pmap__toolbar">
-      <div class="pmap__toolbar-spacer"></div>
-      <button class="btn btn--sm" data-action="toggle-scale" type="button" @click="toggleScale()" x-text="t('scales')"></button>
-      <button class="btn btn--sm" data-action="show-burndown" type="button" @click="showBurndown()" x-text="t('burndown')"></button>
-      <button class="btn btn--sm" data-action="sort-rpn" type="button" @click="sortByRPN()" x-text="t('sortByRPN')"></button>
-      <button class="btn btn--sm" data-action="export-csv" type="button" @click="exportCSV()" x-text="t('exportCSV')"></button>
-      <button class="btn btn--sm btn--primary" data-action="add-risk" type="button" @click="addRisk()" x-text="t('addRisk')"></button>
-    </div>
-  </div>
-
   <div class="module-container__body">
 
     <!-- ── Scale reference (kept in DOM; visibility via --visible class) ── -->
