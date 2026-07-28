@@ -7,6 +7,7 @@
 import { confirmPopout } from './popout.js';
 import { h } from '../core/dom.js';
 import { icon } from '../core/icon.js';
+import { resolveActions } from './resolve-actions.js';
 
 export class Workspace {
   /**
@@ -95,6 +96,9 @@ export class Workspace {
     this._moduleArea.replaceChildren();
 
     if (instances.length === 0) {
+      this._actionEffectDisposers.forEach((dispose) => { try { dispose(); } catch { /* noop */ } });
+      this._actionEffectDisposers = [];
+      this._actionsEl.replaceChildren();
       this._renderEmptyState();
       return;
     }
@@ -118,6 +122,81 @@ export class Workspace {
     const ids = instances.map(i => i.instanceId);
     const keepId = ids.includes(this._activeInstanceId) ? this._activeInstanceId : ids[0];
     this._activateTab(keepId);
+  }
+
+  _renderActions() {
+    // Dispose effects and document listeners from the previous active module.
+    this._actionEffectDisposers.forEach((dispose) => { try { dispose(); } catch { /* noop */ } });
+    this._actionEffectDisposers = [];
+    this._actionsEl.replaceChildren();
+
+    const inst = this._instances.get(this._activeInstanceId);
+    if (!inst || typeof inst.getActions !== 'function') return;
+    const actions = inst.getActions() ?? [];
+    if (actions.length === 0) return;
+
+    const tf = this._i18n.tf(inst.i18nKey);
+    const vms = resolveActions(actions, tf);
+    vms.forEach((vm) => {
+      const el = vm.isDropdown
+        ? this._buildActionDropdown(vm, inst)
+        : this._buildActionButton(vm, inst);
+      this._actionsEl.append(el);
+    });
+  }
+
+  _buildActionButton(vm, inst) {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = `workspace__action workspace__action--${vm.variant}`;
+    if (vm.tooltip) btn.title = vm.tooltip;
+    const textEl = h('span', { class: 'workspace__action-text' }, vm.dynamicText ? '' : vm.text);
+    btn.append(icon(vm.iconId), textEl);
+    if (vm.onClick) {
+      btn.addEventListener('click', () => vm.onClick(inst.getActionData?.()));
+    }
+    if (vm.dynamicText && typeof inst.bindEffect === 'function') {
+      const dispose = inst.bindEffect(() => {
+        textEl.textContent = vm.dynamicText(inst.getActionData?.());
+      });
+      this._actionEffectDisposers.push(dispose);
+    }
+    return btn;
+  }
+
+  _buildActionDropdown(vm, inst) {
+    const wrap = h('div', { class: 'workspace__action-dropdown' });
+    const trigger = document.createElement('button');
+    trigger.type = 'button';
+    trigger.className = `workspace__action workspace__action--${vm.variant}`;
+    if (vm.tooltip) trigger.title = vm.tooltip;
+    trigger.append(icon(vm.iconId), h('span', { class: 'workspace__action-text' }, vm.text));
+
+    const menu = h('div', { class: 'workspace__action-menu' });
+    vm.children.forEach((child) => {
+      const item = document.createElement('button');
+      item.type = 'button';
+      item.className = 'workspace__action-item';
+      item.append(icon(child.iconId), h('span', { class: 'workspace__action-item-text' }, child.text));
+      if (child.onClick) {
+        item.addEventListener('click', () => {
+          menu.classList.remove('open');
+          child.onClick(inst.getActionData?.());
+        });
+      }
+      menu.append(item);
+    });
+
+    trigger.addEventListener('click', (e) => {
+      e.stopPropagation();
+      menu.classList.toggle('open');
+    });
+    const onDoc = (e) => { if (!wrap.contains(e.target)) menu.classList.remove('open'); };
+    document.addEventListener('click', onDoc);
+    this._actionEffectDisposers.push(() => document.removeEventListener('click', onDoc));
+
+    wrap.append(trigger, menu);
+    return wrap;
   }
 
   _renderTab(instanceId, moduleId, phase) {
@@ -240,6 +319,8 @@ export class Workspace {
     }
 
     this._eventBus.emit('module:activated', { instanceId });
+
+    this._renderActions();
   }
 
   /**
@@ -639,6 +720,7 @@ export class Workspace {
       this._instances.forEach(inst => {
         try { inst.onLanguageChange?.(lang); } catch { /* ignore module hook errors */ }
       });
+      this._renderActions();
     });
     this._eventBus.on('project:before-export', () => {
       this._persistAllModuleStates();
