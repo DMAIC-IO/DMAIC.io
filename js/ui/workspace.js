@@ -347,7 +347,19 @@ export class Workspace {
    */
   async instantiateDetached(instanceId, moduleId) {
     const container = document.createElement('div'); // NOT appended to _moduleArea
-    const context = this._buildContext(instanceId);
+    // Detached/headless mount must not drive user-facing UI:
+    //  • notify → no-op, else loadExample() fires one toast per seeded module
+    //    (toast storm).
+    //  • confirmPopout → auto-confirm, else modules whose Model.hasContent() is
+    //    truthy by default (e.g. contour-plot, ce-matrix) open an overwrite
+    //    modal inside loadExample() that never resolves headless and HANGS the
+    //    whole seed. A freshly seeded instance holds only defaults, so there is
+    //    nothing to protect — confirming the "overwrite" is always correct.
+    const context = {
+      ...this._buildContext(instanceId),
+      notify: () => {},
+      confirmPopout: async () => true,
+    };
     try {
       return await this._moduleRegistry.instantiate(moduleId, container, context);
     } catch {

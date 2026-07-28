@@ -123,4 +123,21 @@ suite('core/dev-tools-seeder', () => {
     assertEqual(res.examplesLoaded[0], 'ppk');
     assertEqual(ws.calls.dispose.length, 2);               // both disposed (finally)
   });
+
+  test('seeds silently: module:added is emitted with silent:true', async () => {
+    const sm = fakeState({ define: [] });
+    const reg = fakeRegistry([{ id: 'sipoc', phase: 'define', cycles: { dmaic: { phase: 'define' } } }]);
+    const ws = fakeWorkspace();
+    const emitted = [];
+    const spyBus = { emit: (name, payload) => { emitted.push({ name, payload }); } };
+
+    await seedAllModules({
+      moduleRegistry: reg, examplesRegistry: fakeExamples({}), stateManager: sm, eventBus: spyBus, workspace: ws,
+    });
+
+    const added = emitted.filter(e => e.name === 'module:added');
+    assertEqual(added.length, 1);
+    assertEqual(added[0].payload.moduleId, 'sipoc');
+    assertTrue(added[0].payload.silent === true);          // headless: no eager live mount
+  });
 });

@@ -38,7 +38,7 @@ export async function seedAllModules({
       continue;
     }
 
-    const instanceId = createInstance(stateManager, moduleRegistry, eventBus, def.id, def);
+    const instanceId = createInstance(stateManager, moduleRegistry, eventBus, def.id, def, { silent: true });
     added.push(def.id);
 
     const ex = examplesRegistry.getForModule(def.id)[0];

@@ -41,9 +41,14 @@ export function findExistingInstance(stateManager, moduleId) {
  * @param {object} eventBus
  * @param {string} moduleId
  * @param {object} def  Module definition (has .phase and .cycles)
+ * @param {object} [options]
+ * @param {boolean} [options.silent=false]  When true, emit `module:added` with
+ *   `silent: true` so the workspace refreshes tabs WITHOUT eagerly mounting or
+ *   activating a live instance (used by headless Dev-Tools seeding, so the
+ *   persisted example is only read when the user later opens the tab).
  * @returns {string}
  */
-export function createInstance(stateManager, moduleRegistry, eventBus, moduleId, def) {
+export function createInstance(stateManager, moduleRegistry, eventBus, moduleId, def, { silent = false } = {}) {
   const activeCycle = moduleRegistry.getActiveCycle();
   const targetPhase = def.phase === 'data'
     ? 'data'
@@ -53,6 +58,6 @@ export function createInstance(stateManager, moduleRegistry, eventBus, moduleId,
   const phases = stateManager.get(`phases.${targetPhase}`) ?? [];
   phases.push({ instanceId, moduleId, order: phases.length, state: {} });
   stateManager.set(`phases.${targetPhase}`, phases);
-  eventBus.emit('module:added', { moduleId, phase: targetPhase, instanceId });
+  eventBus.emit('module:added', { moduleId, phase: targetPhase, instanceId, silent });
   return instanceId;
 }
