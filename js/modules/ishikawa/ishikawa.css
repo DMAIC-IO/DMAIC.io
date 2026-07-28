@@ -10,16 +10,6 @@
   padding-right: var(--spacing-sm);
 }
 
-/* ===== Toolbar ===== */
-.ishikawa__toolbar {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-sm);
-  padding: var(--spacing-xs) 0;
-}
-
-.ishikawa__toolbar-spacer { flex: 1; }
-
 /* ===== Filter chips ===== */
 .ishikawa__filter-group {
   display: flex;

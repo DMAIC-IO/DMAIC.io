@@ -1,12 +1,4 @@
 <section class="module-container ishikawa" x-data="ishikawa">
-  <div class="module-container__header">
-    <h2 class="module-container__title" x-text="t('name')"></h2>
-    <div class="ishikawa__toolbar">
-      <div class="ishikawa__toolbar-spacer"></div>
-      <button class="btn btn--sm btn--secondary" data-ref="exportCsvBtn" type="button" @click="exportCSV()" x-text="t('exportCSV')"></button>
-    </div>
-  </div>
-
   <div class="module-container__body">
     <div class="ishikawa__tabs" role="tablist">
       <button class="ishikawa__tab" :class="tabClass('problem')" role="tab" data-tab="problem" @click="changeRoute('problem')" x-text="t('tabProblem')"></button>
