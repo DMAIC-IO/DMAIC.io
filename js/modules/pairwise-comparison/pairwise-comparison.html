@@ -1,7 +1,4 @@
 <section class="module-container pairwise" x-data="pairwiseComparison" @keydown.window="compareKey($event)">
-  <div class="module-container__header">
-    <h2 class="module-container__title" x-text="t('name')"></h2>
-  </div>
   <div class="module-container__body">
     <div class="pairwise__tabs">
       <div class="pairwise__tab" data-tab="input" :class="tabClass(0)" @click="goToTab('input')">
