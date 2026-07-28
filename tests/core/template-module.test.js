@@ -1,6 +1,26 @@
-import { suite, test, assertEqual, assertTrue } from '../test-utils.js';
+import { suite, test, assertEqual, assertTrue, assertDeepEqual } from '../test-utils.js';
 import Alpine from '../../vendor/alpinejs/csp.js';
 import { createModule } from '../../js/core/template-module.js';
+
+suite('createModule: getActions', () => {
+  const base = {
+    config: { id: 'x-test', phase: 'define', engine: 'alpine',
+      actions: [{ icon: 'download', title: 'export' }] },
+    Model: class {},
+    data: () => ({}),
+  };
+
+  test('getActions returns config.actions', () => {
+    const m = createModule(base);
+    assertDeepEqual(m.getActions(), [{ icon: 'download', title: 'export' }],
+      'returns declared actions');
+  });
+
+  test('getActions defaults to empty array', () => {
+    const m = createModule({ ...base, config: { id: 'x-test2', engine: 'alpine' } });
+    assertDeepEqual(m.getActions(), [], 'no actions → []');
+  });
+});
 
 suite('createModule — dashboardTile pass-through', () => {
   test('forwards a dashboardTile descriptor onto the default export', () => {

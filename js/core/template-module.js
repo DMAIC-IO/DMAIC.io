@@ -209,6 +209,19 @@ export function createModule(base) {
       }
     },
 
+    getActions() { return config.actions ?? []; },
+
+    getActionData() {
+      if (config.engine !== 'alpine') return null;
+      const root = this._container?.querySelector('[x-data]');
+      return root ? Alpine.$data(root) : null;
+    },
+
+    bindEffect(fn) {
+      const handle = Alpine.effect(fn);
+      return () => Alpine.release(handle);
+    },
+
     setState(state) {
       if (config.engine === 'alpine') {
         const model = Model.fromJSON(state);
