@@ -18,14 +18,19 @@ export function initDevTools(kernel, ui) {
   const { workspace, notify } = ui;
 
   eventBus.on('devtools:seed-all', async () => {
-    const res = await seedAllModules({
-      moduleRegistry, examplesRegistry, stateManager, eventBus, workspace,
-    });
-    notify?.(
-      i18n.t('settings.devtools.seedResult')
-        .replace('{added}', res.added.length)
-        .replace('{examples}', res.examplesLoaded.length),
-      'success',
-    );
+    try {
+      const res = await seedAllModules({
+        moduleRegistry, examplesRegistry, stateManager, eventBus, workspace,
+      });
+      notify?.(
+        i18n.t('settings.devtools.seedResult')
+          .replace('{added}', res.added.length)
+          .replace('{examples}', res.examplesLoaded.length),
+        'success',
+      );
+    } catch (err) {
+      console.error('[dev-tools] seed failed', err);
+      notify?.(i18n.t('settings.devtools.seedError'), 'error');
+    }
   });
 }
