@@ -335,6 +335,38 @@ export class Workspace {
     };
   }
 
+  /**
+   * Instantiate a module into a detached container (never inserted into the
+   * DOM), WITHOUT touching the `_instances`/`_containers` maps. For headless
+   * operations (e.g. Dev-Tools seeding) that must call `loadExample` on a live
+   * instance. Keeping it out of the maps prevents a reactive persist-$watch
+   * from racing a later, regularly-mounted instance with the same instanceId.
+   * @param {string} instanceId
+   * @param {string} moduleId
+   * @returns {Promise<object|null>} the instance, or null on error
+   */
+  async instantiateDetached(instanceId, moduleId) {
+    const container = document.createElement('div'); // NOT appended to _moduleArea
+    const context = this._buildContext(instanceId);
+    try {
+      return await this._moduleRegistry.instantiate(moduleId, container, context);
+    } catch {
+      return null;
+    }
+  }
+
+  /**
+   * Destroy an instance created via instantiateDetached. Its state was already
+   * persisted through stateManager (e.g. by loadExample); the workspace loads
+   * that state normally when the tab is later opened.
+   * @param {string} instanceId
+   * @param {object|null} instance
+   * @returns {Promise<void>}
+   */
+  async disposeDetached(instanceId, instance) {
+    try { await instance?.destroy?.(); } catch { /* ignore */ }
+  }
+
   async _removeModule(instanceId, moduleId, phase) {
     if (this._stateManager.isCompleted()) return;
     const name = this._i18n.t(`modules.${moduleId}.name`);
