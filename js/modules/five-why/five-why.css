@@ -3,18 +3,6 @@
  * BEM-light naming: .five-why__*
  */
 
-/* ── Toolbar ── */
-.five-why__toolbar {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-xs);
-  flex: 1;
-}
-
-.five-why__toolbar-spacer {
-  flex: 1;
-}
-
 /* ── Problem Statement ── */
 .five-why__problem {
   background: var(--color-bg-secondary);

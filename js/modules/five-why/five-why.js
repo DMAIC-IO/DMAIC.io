@@ -24,6 +24,11 @@ export default createModule({
     icon: 'help-circle',
     version: '1.0.0',
     meta: import.meta,
+    actions: [
+      { icon: 'chevron-up',   title: 'collapseAll', onClick: (d) => d.collapseAll() },
+      { icon: 'chevron-down', title: 'expandAll',   onClick: (d) => d.expandAll() },
+      { icon: 'download',     title: 'exportJSON',  onClick: (d) => d.exportJSON() },
+    ],
   },
   Model: State,
 

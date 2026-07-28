@@ -1,17 +1,4 @@
 <div class="module-container five-why" x-data="fiveWhy">
-  <div class="module-container__header">
-    <h2 class="module-container__title" x-text="t('name')"></h2>
-    <div class="five-why__toolbar">
-      <div class="five-why__toolbar-spacer"></div>
-      <button class="btn btn--sm five-why__collapse-btn" type="button"
-              x-text="t('collapseAll')" @click="collapseAll()"></button>
-      <button class="btn btn--sm five-why__expand-btn" type="button"
-              x-text="t('expandAll')" @click="expandAll()"></button>
-      <button class="btn btn--sm five-why__export-json-btn" type="button"
-              x-text="t('exportJSON')" @click="exportJSON()"></button>
-    </div>
-  </div>
-
   <div class="module-container__body">
     <!-- Problem statement -->
     <div class="five-why__problem">
