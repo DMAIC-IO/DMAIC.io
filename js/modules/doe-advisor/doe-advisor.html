@@ -1,6 +1,5 @@
 <section class="module-container doe-advisor" x-data="doeAdvisor">
-  <div class="module-container__header">
-    <h2 class="module-container__title" x-text="t('name')"></h2>
+  <div class="module-container__body">
     <div class="doe-advisor__tabs" role="tablist">
       <button class="doe-advisor__tab" :class="{ 'doe-advisor__tab--active': model.tab === 'overview' }"
         data-tab="overview" type="button" @click="switchTab('overview')" x-text="t('tabOverview')"></button>
@@ -9,9 +8,7 @@
       <button class="doe-advisor__tab" :class="{ 'doe-advisor__tab--active': model.tab === 'ccd' }"
         data-tab="ccd" type="button" @click="switchTab('ccd')" x-text="t('tabCcd')"></button>
     </div>
-  </div>
 
-  <div class="module-container__body">
     <!-- ── Overview tab ── -->
     <div x-show="model.tab === 'overview'">
       <section class="doe-advisor__section">

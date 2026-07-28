@@ -6,7 +6,7 @@
 .doe-advisor__tabs {
   display: flex;
   gap: var(--spacing-xs);
-  margin-left: auto;
+  margin-bottom: var(--spacing-md);
 }
 
 .doe-advisor__tab {
