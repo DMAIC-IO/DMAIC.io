@@ -740,6 +740,14 @@
       }
     }
   },
+  "export": {
+    "label": "Export",
+    "xlsx": "Excel (.xlsx)",
+    "csv": "CSV (.csv)",
+    "json": "JSON (.json)",
+    "png": "Image (.png)",
+    "svg": "Vector (.svg)"
+  },
   "ui": {
     "datasetPicker": {
       "selectColumn": "— Select column —",
