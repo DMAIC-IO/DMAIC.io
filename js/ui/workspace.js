@@ -53,7 +53,10 @@ export class Workspace {
     // same <main> container — using innerHTML on the container would
     // wipe them out and detach their event listeners.
     const content = h('div', { class: 'workspace__content' },
-      h('div', { class: 'workspace__tabs', role: 'tablist' }),
+      h('div', { class: 'workspace__tabbar' },
+        h('div', { class: 'workspace__tabs', role: 'tablist' }),
+        h('div', { class: 'workspace__actions' }),
+      ),
       h('div', { class: 'workspace__module-area' }),
     );
     // Insert before the help panel (if present) so workspace content
@@ -66,7 +69,9 @@ export class Workspace {
     }
 
     this._tabsEl = content.querySelector('.workspace__tabs');
+    this._actionsEl = content.querySelector('.workspace__actions');
     this._moduleArea = content.querySelector('.workspace__module-area');
+    this._actionEffectDisposers = [];
 
     this._subscribeEvents();
     this._showPhase('define');

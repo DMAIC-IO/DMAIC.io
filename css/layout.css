@@ -1662,13 +1662,29 @@ body.training-area-open .dmaic-tiles {
   overflow: hidden;
 }
 
+.workspace__tabbar {
+  display: flex;
+  align-items: stretch;
+  border-bottom: var(--border-width) solid var(--color-border-primary);
+  background: var(--color-bg-secondary);
+  flex-shrink: 0;
+}
+
+.workspace__actions {
+  display: flex;
+  align-items: stretch;
+  gap: var(--spacing-xs);
+  padding: 0 var(--spacing-sm);
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
 .workspace__tabs {
   display: flex;
   align-items: center;
-  border-bottom: var(--border-width) solid var(--color-border-primary);
-  background: var(--color-bg-secondary);
   overflow-x: auto;
-  flex-shrink: 0;
+  flex: 1 1 auto;
+  min-width: 0;
 }
 
 .workspace__tab {
