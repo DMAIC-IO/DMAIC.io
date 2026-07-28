@@ -1763,8 +1763,11 @@ body.training-area-open .dmaic-tiles {
 .workspace__tab {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: var(--spacing-xs);
-  padding: var(--spacing-sm) var(--spacing-md);
+  min-height: 44px;
+  box-sizing: border-box;
+  padding: var(--spacing-xs) var(--spacing-md);
   cursor: pointer;
   font-size: var(--font-size-sm);
   color: var(--color-text-secondary);
@@ -1822,10 +1825,12 @@ body.training-area-open .dmaic-tiles {
 .workspace__tab-name {
   display: flex;
   flex-direction: column;
+  align-items: center;
+  text-align: center;
   line-height: 1.2;
 }
 .workspace__tab-subtitle {
-  font-size: var(--font-size-xs);
+  font-size: 10px;
   color: var(--color-text-tertiary);
 }
 
