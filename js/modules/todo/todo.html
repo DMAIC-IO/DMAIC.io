@@ -1,6 +1,5 @@
 <section class="module-container module-todo" x-data="todo">
   <div class="todo__toolbar">
-    <button class="dmike-btn-run todo__add-btn" data-action="add" @click="addTodo()" x-text="addBtnText()"></button>
     <span class="todo__counter" x-text="filteredCount() + ' / ' + model.items.length"></span>
     <div class="todo__filter-group">
       <span class="todo__filter-label" x-text="t('filter') + ':'"></span>

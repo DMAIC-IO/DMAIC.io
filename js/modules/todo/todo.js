@@ -15,6 +15,9 @@ export default createModule({
     icon: 'check-square',
     version: '1.0.0',
     meta: import.meta,
+    actions: [
+      { icon: 'plus', title: 'addTodo', variant: 'primary', onClick: (d) => d.addTodo() },
+    ],
   },
   Model: State,
 
@@ -92,10 +95,6 @@ export default createModule({
       sortArrowClass(col) {
         if (this.model.sortCol !== col) return '';
         return 'todo__sort-arrow--active';
-      },
-
-      addBtnText() {
-        return `+ ${  _t('addTodo')}`;
       },
 
       addTodo() {
