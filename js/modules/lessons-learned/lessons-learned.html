@@ -1,13 +1,4 @@
 <section class="module-container lessons-learned" x-data="lessonsLearned">
-  <div class="module-container__header">
-    <h2 class="module-container__title" x-text="t('name')"></h2>
-    <div class="module-container__actions">
-      <button class="btn btn--sm" data-action="export-json" @click="exportJSON" type="button" x-text="t('exportJSON')"></button>
-      <button class="btn btn--sm" data-action="import-json" @click="openImport" type="button" x-text="t('importJSON')"></button>
-      <button class="btn btn--primary btn--sm" data-action="add" @click="openAddModal" type="button">+ <span x-text="t('addLesson')"></span></button>
-    </div>
-  </div>
-
   <div class="module-container__body">
     <div class="ll__stats-bar">
       <div class="ll__stat">

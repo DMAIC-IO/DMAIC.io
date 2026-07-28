@@ -14,6 +14,11 @@ const m = createModule({
     icon: 'book-open',
     version: '1.0.0',
     meta: import.meta,
+    actions: [
+      { icon: 'download', title: 'export.label', onClick: (d) => d.exportJSON() },
+      { icon: 'upload', title: 'importJSON', onClick: (d) => d.openImport() },
+      { icon: 'plus', title: 'addLesson', variant: 'primary', onClick: (d) => d.openAddModal() },
+    ],
   },
   Model: State,
   data(module, _t) {
