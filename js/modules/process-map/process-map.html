@@ -1,17 +1,4 @@
 <div class="module-container pmap" x-data="processMap" data-ref="root">
-  <div class="module-container__header">
-    <h2 class="module-container__title" x-text="t('name')"></h2>
-    <div class="pmap__toolbar">
-      <div class="pmap__toolbar-spacer"></div>
-      <span class="pmap__export-anchor" data-ref="exportAnchor"></span>
-      <button class="btn btn--sm btn--primary" data-action="add-step" type="button"
-              @click="addStep(model.steps.length)">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-        <span x-text="t('addStep')"></span>
-      </button>
-    </div>
-  </div>
-
   <div class="module-container__body">
     <div class="pmap__canvas" :class="hasLoops() ? 'pmap__canvas--has-loops' : ''">
       <div class="pmap__flow" data-ref="flow">

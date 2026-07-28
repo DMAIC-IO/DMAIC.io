@@ -21,7 +21,7 @@
 
 import { createModule } from '../../core/template-module.js';
 import {
-  downloadFile, ensureXLSX, XLSX, createExportDropdown,
+  downloadFile, ensureXLSX, XLSX,
 } from '../../core/export-utils.js';
 import { exportPmapPNG, exportPmapSVG } from './process-map-export.js';
 import { State } from './process-map-model.js';
@@ -34,14 +34,22 @@ export default createModule({
     icon: 'git-branch',
     version: '1.0.0',
     meta: import.meta,
+    actions: [
+      { icon: 'plus', title: 'addStep', variant: 'primary', onClick: (d) => d.addStep(d.model.steps.length) },
+      { icon: 'download', title: 'export.label', children: [
+        { icon: 'export-xlsx', title: 'export.xlsx', onClick: (d) => d._exportXLSX() },
+        { icon: 'export-csv',  title: 'export.csv',  onClick: (d) => d._exportCSV() },
+        { icon: 'export-json', title: 'export.json', onClick: (d) => d._exportJSON() },
+        { icon: 'export-png',  title: 'export.png',  onClick: (d) => d.onExport('png') },
+        { icon: 'export-svg',  title: 'export.svg',  onClick: (d) => d.onExport('svg') },
+      ] },
+    ],
   },
   Model: State,
 
   data(module, _t) {
     return {
       // ── Transient UI state (never persisted) ──────────────────
-      /** @type {{el:HTMLElement, destroy:function}|null} */
-      _exportDropdown: null,
       /** @type {string|null} */
       _draggedId: null,
       /** @type {string|null} */
@@ -659,16 +667,7 @@ export default createModule({
 
       // ── Lifecycle (per Alpine instance) ───────────────────────
       init() {
-        // Mount the central export dropdown into the toolbar anchor.
         this.$nextTick(() => {
-          const anchor = this.$el.querySelector('[data-ref="exportAnchor"]');
-          if (anchor) {
-            this._exportDropdown = createExportDropdown(
-              ['xlsx', 'csv', 'json', 'png', 'svg'],
-              (fmt) => this.onExport(fmt),
-            );
-            anchor.replaceWith(this._exportDropdown.el);
-          }
           this._autoSizeAll();
           this._scheduleBrackets();
         });
@@ -698,10 +697,6 @@ export default createModule({
       },
 
       destroy() {
-        if (this._exportDropdown) {
-          this._exportDropdown.destroy();
-          this._exportDropdown = null;
-        }
         if (this._onMouseUp) {
           document.removeEventListener('mouseup', this._onMouseUp);
           this._onMouseUp = null;
