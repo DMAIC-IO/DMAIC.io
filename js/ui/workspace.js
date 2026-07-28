@@ -211,7 +211,19 @@ export class Workspace {
     const defaultName = this._i18n.t(`modules.${moduleId}.name`);
     const customName = this._getCustomName(instanceId, phase);
     const closeLabel = this._i18n.t('workspace.tabs.close');
-    const nameSpan = h('span', { class: 'workspace__tab-name' }, customName || defaultName);
+
+    tab.title = this._i18n.t(`modules.${moduleId}.description`);
+
+    let nameSpan;
+    if (customName && customName !== defaultName) {
+      nameSpan = h('span', { class: 'workspace__tab-name' },
+        h('span', { class: 'workspace__tab-name-primary' }, customName),
+        h('span', { class: 'workspace__tab-subtitle' }, defaultName),
+      );
+    } else {
+      nameSpan = h('span', { class: 'workspace__tab-name' }, defaultName);
+    }
+
     const closeSpan = h('span', {
       class: 'workspace__tab-close',
       title: closeLabel,
@@ -528,7 +540,8 @@ export class Workspace {
    * Replace tab-name span with an inline text input for renaming.
    */
   _startTabRename(nameSpan, instanceId, moduleId, phase) {
-    const currentText = nameSpan.textContent;
+    const primaryEl = nameSpan.querySelector('.workspace__tab-name-primary');
+    const currentText = primaryEl ? primaryEl.textContent : nameSpan.textContent;
     const input = document.createElement('input');
     input.type = 'text';
     input.className = 'workspace__tab-name-input';
@@ -541,14 +554,16 @@ export class Workspace {
     const commit = () => {
       const val = input.value.trim();
       const defaultName = this._i18n.t(`modules.${moduleId}.name`);
-      const newSpan = document.createElement('span');
-      newSpan.className = 'workspace__tab-name';
+      let newSpan;
 
       if (val && val !== defaultName) {
-        newSpan.textContent = val;
+        newSpan = h('span', { class: 'workspace__tab-name' },
+          h('span', { class: 'workspace__tab-name-primary' }, val),
+          h('span', { class: 'workspace__tab-subtitle' }, defaultName),
+        );
         this._setCustomName(instanceId, phase, val);
       } else {
-        newSpan.textContent = defaultName;
+        newSpan = h('span', { class: 'workspace__tab-name' }, defaultName);
         this._setCustomName(instanceId, phase, null);
       }
 

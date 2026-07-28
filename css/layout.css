@@ -1819,6 +1819,16 @@ body.training-area-open .dmaic-tiles {
   outline: none;
 }
 
+.workspace__tab-name {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+.workspace__tab-subtitle {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+}
+
 .workspace__tab--dragging {
   opacity: 0.4;
 }
