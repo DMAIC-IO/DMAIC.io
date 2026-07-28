@@ -5,16 +5,17 @@
  * Migrated to createModule + Alpine CSP. The Model (sipoc-model.js) holds the
  * persisted state ({ columns }) plus the add/edit/delete/move business logic.
  * This data-fn owns only view transforms (glyphs, drag-over class), the event
- * handlers (which call Model methods or the shared modal helper), the export
- * handlers, and the imperative export-dropdown widget (mounted per Alpine
- * instance in init/destroy). No HTML is built in JS — the UI lives in sipoc.html.
+ * handlers (which call Model methods or the shared modal helper), and the
+ * export handlers. Export is exposed via config.actions (unified workspace
+ * action bar) rather than an in-content dropdown. No HTML is built in JS —
+ * the UI lives in sipoc.html.
  *
  * Spec: docs/modules/SIPOC.md
  */
 
 import { createModule } from '../../core/template-module.js';
 import {
-  downloadFile, ensureXLSX, XLSX, createExportDropdown,
+  downloadFile, ensureXLSX, XLSX,
   exportColumnsAsPNG, exportColumnsAsSVG,
 } from '../../core/export-utils.js';
 import { draggableList } from '../../ui/draggable-list.js';
@@ -36,6 +37,19 @@ export default createModule({
     icon: 'clipboard-list',
     version: '1.0.0',
     meta: import.meta,
+    actions: [
+      {
+        icon: 'download',
+        title: 'export.label',
+        children: [
+          { icon: 'export-xlsx', title: 'export.xlsx', onClick: (d) => d._exportXLSX() },
+          { icon: 'export-csv',  title: 'export.csv',  onClick: (d) => d._exportCSV() },
+          { icon: 'export-json', title: 'export.json', onClick: (d) => d._exportJSON() },
+          { icon: 'export-png',  title: 'export.png',  onClick: (d) => d._exportImage('png') },
+          { icon: 'export-svg',  title: 'export.svg',  onClick: (d) => d._exportImage('svg') },
+        ],
+      },
+    ],
   },
   Model: State,
 
@@ -58,9 +72,6 @@ export default createModule({
       }),
 
       // ── Transient UI state (never persisted) ──────────────────
-      /** @type {{el:HTMLElement,destroy:function}|null} */
-      _exportDropdown: null,
-
       // Draft bound to the borrowed edit form's <textarea> via x-model.
       editDraft: { text: '' },
 
@@ -177,29 +188,6 @@ export default createModule({
         }
       },
 
-      // ── Lifecycle (per Alpine instance) ───────────────────────
-      init() {
-        const anchor = this.$el.querySelector('.sipoc__export-anchor');
-        if (anchor) {
-          this._exportDropdown = createExportDropdown(
-            ['xlsx', 'csv', 'json', 'png', 'svg'],
-            (fmt) => {
-              if (fmt === 'csv') this._exportCSV();
-              if (fmt === 'xlsx') this._exportXLSX();
-              if (fmt === 'json') this._exportJSON();
-              if (fmt === 'png') this._exportImage('png');
-              if (fmt === 'svg') this._exportImage('svg');
-            }
-          );
-          anchor.replaceWith(this._exportDropdown.el);
-        }
-      },
-      destroy() {
-        if (this._exportDropdown) {
-          this._exportDropdown.destroy();
-          this._exportDropdown = null;
-        }
-      },
     };
   },
 });
