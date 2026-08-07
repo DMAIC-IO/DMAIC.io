@@ -1437,7 +1437,7 @@
   padding: var(--spacing-sm) var(--spacing-md);
   background: var(--color-bg-tertiary);
   border-left: 3px solid var(--color-accent);
-  border-radius: var(--radius-sm);
+  border-radius: var(--border-radius-sm);
   font-size: var(--font-size-sm);
 }
 

@@ -97,7 +97,7 @@
   color: var(--color-text-primary);
   background: var(--color-bg-primary);
   padding: var(--spacing-sm);
-  border-radius: var(--radius-sm);
+  border-radius: var(--border-radius-sm);
   resize: vertical;
   min-height: 3.5rem;
 }
@@ -153,7 +153,7 @@
   text-align: center;
   color: var(--color-text-tertiary);
   border: 1px dashed var(--color-border-secondary);
-  border-radius: var(--radius-md);
+  border-radius: var(--border-radius);
   background: var(--color-bg-primary);
   font-size: var(--font-size-sm);
 }
@@ -168,7 +168,7 @@
   margin: 0;
   background: var(--color-bg-primary);
   border: 1px solid var(--color-border-secondary);
-  border-radius: var(--radius-sm);
+  border-radius: var(--border-radius-sm);
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -253,7 +253,7 @@
   max-width: 100%;
   max-height: 70vh;
   object-fit: contain;
-  border-radius: var(--radius-sm);
+  border-radius: var(--border-radius-sm);
 }
 
 .ishikawa__img-lightbox-caption {
@@ -896,7 +896,7 @@
   font-size: var(--font-size-xs);
   color: var(--color-text-secondary);
   padding: 2px 6px;
-  border-radius: var(--radius-sm);
+  border-radius: var(--border-radius-sm);
   background: var(--color-bg-secondary);
 }
 
@@ -1078,7 +1078,7 @@
   text-align: center;
   color: var(--color-text-tertiary);
   border: 1px dashed var(--color-border-secondary);
-  border-radius: var(--radius-md);
+  border-radius: var(--border-radius);
   background: var(--color-bg-secondary);
 }
 
@@ -1151,7 +1151,7 @@
   padding: var(--spacing-md);
   background: var(--color-bg-secondary);
   border: 1px solid var(--color-border-primary);
-  border-radius: var(--radius-md);
+  border-radius: var(--border-radius);
 }
 
 .ishikawa__gantt-canvas {
@@ -1189,7 +1189,7 @@
   max-height: 400px;
   overflow-y: auto;
   border: 1px solid var(--color-border-secondary);
-  border-radius: var(--radius-sm);
+  border-radius: var(--border-radius-sm);
   background: var(--color-bg-primary);
 }
 
