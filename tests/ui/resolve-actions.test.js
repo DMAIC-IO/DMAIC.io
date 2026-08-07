@@ -26,15 +26,31 @@ suite('resolveActions', () => {
     assertEqual(vm.variant, 'secondary', 'unknown variant → secondary');
   });
 
-  test('children present → isDropdown true and children resolved recursively', () => {
+  test('two+ children → isDropdown true and children resolved recursively', () => {
     const [vm] = resolveActions([{
       icon: 'download', title: 'export',
-      children: [{ icon: 'export-csv', title: 'export.csv' }],
+      children: [
+        { icon: 'export-csv', title: 'export.csv' },
+        { icon: 'export-json', title: 'export.json' },
+      ],
     }], tf);
     assertEqual(vm.isDropdown, true, 'children → dropdown');
-    assertEqual(vm.children.length, 1, 'one child');
+    assertEqual(vm.children.length, 2, 'two children');
     assertEqual(vm.children[0].text, 'T(export.csv)', 'child title resolved');
     assertEqual(vm.children[0].iconId, 'export-csv', 'child icon');
+  });
+
+  test('single child collapses to render the child, not the generic parent', () => {
+    const onClick = () => {};
+    const [vm] = resolveActions([{
+      icon: 'download', title: 'export.label',
+      children: [{ icon: 'export-csv', title: 'export.csv', onClick }],
+    }], tf);
+    assertEqual(vm.isDropdown, false, 'single-item dropdown is not a dropdown');
+    assertEqual(vm.text, 'T(export.csv)', 'renders child label, not parent "export.label"');
+    assertEqual(vm.iconId, 'export-csv', 'renders child icon');
+    assertTrue(vm.onClick === onClick, 'child onClick preserved');
+    assertEqual(vm.children.length, 0, 'no children on the collapsed action');
   });
 
   test('empty children array is not a dropdown', () => {

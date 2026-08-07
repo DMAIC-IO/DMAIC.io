@@ -404,7 +404,9 @@ const mod = createModule({
     version: '2.0.0',
     meta: import.meta,
     actions: [
-      { icon: 'download', title: 'export.label', onClick: (d) => d.exportCSV() },
+      { icon: 'download', title: 'export.label', children: [
+        { icon: 'export-csv', title: 'export.csv', onClick: (d) => d.exportCSV() },
+      ] },
     ],
     dashboardTile: {
       defaultW: 3, defaultH: 10, minW: 2, minH: 6,

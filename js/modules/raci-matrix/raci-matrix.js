@@ -35,7 +35,9 @@ export default createModule({
     version: '1.0.0',
     meta: import.meta,
     actions: [
-      { icon: 'download', title: 'export.label', onClick: (d) => d.exportCSV() },
+      { icon: 'download', title: 'export.label', children: [
+        { icon: 'export-csv', title: 'export.csv', onClick: (d) => d.exportCSV() },
+      ] },
     ],
   },
   Model: State,

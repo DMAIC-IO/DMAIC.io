@@ -6,8 +6,8 @@
  * Migrated to createModule + Alpine CSP. The Model (ce-matrix-model.js) holds
  * the persisted state (inputs, outputs, scores, weights) plus all weighted-scoring
  * business logic. The data-fn owns the view transforms (color scale → cell styles),
- * the input/weight/score event handlers, the export handlers, and the imperative
- * export-dropdown widget (mounted per Alpine instance in init/destroy).
+ * the input/weight/score event handlers, and the export handlers. The export
+ * dropdown is declarative (config.actions children, framework-rendered).
  *
  * Spec: docs/modules/CE-MATRIX.md
  */

@@ -104,7 +104,9 @@ const mod = createModule({
       { icon: 'glossary', title: 'scales', onClick: (d) => d.toggleScale() },
       { icon: 'chart-thumb-run-chart', title: 'burndown', onClick: (d) => d.showBurndown() },
       { icon: 'chevron-down', title: 'sortByRPN', onClick: (d) => d.sortByRPN() },
-      { icon: 'download', title: 'exportCSV', onClick: (d) => d.exportCSV() },
+      { icon: 'download', title: 'export.label', children: [
+        { icon: 'export-csv', title: 'export.csv', onClick: (d) => d.exportCSV() },
+      ] },
       { icon: 'plus', title: 'addRisk', variant: 'primary', onClick: (d) => d.addRisk() },
     ],
     dashboardTile: {

@@ -10,7 +10,6 @@
  * XLSX / JSON exporters, and the imperative loop panels + loop brackets.
  *
  * Imperative exceptions (documented):
- *   - export dropdown (createExportDropdown) — mounted in init(), disposed in destroy()
  *   - loop panels + loop brackets — appended to .pmap__flow and pixel-positioned from
  *     the live DOM (the POM asserts this exact placement); re-rendered after each
  *     structural change via a bounded rAF-poll (alpine.md #6 / correlation _whenAnchor).

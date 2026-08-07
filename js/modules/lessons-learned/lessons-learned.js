@@ -15,7 +15,9 @@ const m = createModule({
     version: '1.0.0',
     meta: import.meta,
     actions: [
-      { icon: 'download', title: 'export.label', onClick: (d) => d.exportJSON() },
+      { icon: 'download', title: 'export.label', children: [
+        { icon: 'export-json', title: 'export.json', onClick: (d) => d.exportJSON() },
+      ] },
       { icon: 'upload', title: 'importJSON', onClick: (d) => d.openImport() },
       { icon: 'plus', title: 'addLesson', variant: 'primary', onClick: (d) => d.openAddModal() },
     ],
