@@ -250,7 +250,10 @@ export function createModule(base) {
       const fresh = Model.fromJSON(state);
       this._applyingRemote = true;
       Object.assign(Alpine.$data(root).model, fresh);
-      queueMicrotask(() => { this._applyingRemote = false; });
+      // Reset after Alpine flushes the reactive effects this mutation queued —
+      // the persist-$watch runs in that flush and must see the guard still set.
+      // queueMicrotask can resolve before the scheduler flush, leaking a persist.
+      Alpine.nextTick(() => { this._applyingRemote = false; });
     },
 
     _persist(model) {

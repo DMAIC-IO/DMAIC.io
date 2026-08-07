@@ -63,8 +63,24 @@
 
 <main id="results"></main>
 
+<!-- Bare specifiers used transitively by js/ source modules. Prod bundles them
+     via esbuild; the unbundled runner resolves them here — @alpinejs/csp from the
+     vendored ESM build, xlsx/katex from their node_modules ESM builds (present
+     under ddev/CI). Without this, any suite importing such a module fails to load
+     and is counted as a real failure by the loader below. -->
+<script type="importmap">
+{
+  "imports": {
+    "@alpinejs/csp": "../vendor/alpinejs/csp.js",
+    "xlsx": "../node_modules/xlsx/xlsx.mjs",
+    "katex": "../node_modules/katex/dist/katex.mjs",
+    "opentype.js": "../node_modules/opentype.js/dist/opentype.module.js"
+  }
+}
+</script>
+
 <script type="module">
-  import { runAll } from './test-utils.js';
+  import { runAll, suite, test } from './test-utils.js';
 
   // Auto-import all test files
   const testFiles = [
@@ -243,10 +259,25 @@
     './pipeline/mixed-categorical-optimization.test.js',
   ];
 
+  // UMD/browser-global deps that ship only inside the esbuild bundle (app.min.js)
+  // and have no ESM build to map in the import-map above. Suites reaching them
+  // can't run unbundled — tracked in ROADMAP for E2E migration. Only THESE are
+  // allowed to fail to load silently; any other import error is a real
+  // regression and must surface as a failure instead of vanishing from counts.
+  const BUNDLER_ONLY = ['prismjs', 'papaparse', 'tiny-inflate'];
+
   async function loadTests() {
     for (const file of testFiles) {
       try { await import(file); }
-      catch (e) { console.error(`Could not load ${file}:`, e.message); }
+      catch (e) {
+        console.error(`Could not load ${file}:`, e.message);
+        const knownUnmappable = BUNDLER_ONLY.some(s => e.message.includes(`"${s}"`));
+        if (!knownUnmappable) {
+          suite(`load error: ${file}`, () => {
+            test('module imports without error', () => { throw e; });
+          });
+        }
+      }
     }
   }
 
