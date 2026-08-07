@@ -264,7 +264,7 @@
   // can't run unbundled — tracked in ROADMAP for E2E migration. Only THESE are
   // allowed to fail to load silently; any other import error is a real
   // regression and must surface as a failure instead of vanishing from counts.
-  const BUNDLER_ONLY = ['prismjs', 'papaparse', 'tiny-inflate'];
+  const BUNDLER_ONLY = ['papaparse', 'tiny-inflate'];
 
   async function loadTests() {
     for (const file of testFiles) {

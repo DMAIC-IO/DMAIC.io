@@ -1,5 +1,5 @@
 import { suite, test, assertEqual } from '../test-utils.js';
-import { tokensToNodes } from '../../js/algorithm-lab/lab-renderer.js';
+import { tokensToNodes } from '../../js/algorithm-lab/lab-renderer-tokens.js';
 
 // Build a Prism-shaped token (duck-typed: has .type / .content / optional .alias).
 function tok(type, content, alias) {
