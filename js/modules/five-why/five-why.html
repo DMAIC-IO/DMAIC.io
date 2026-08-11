@@ -26,7 +26,7 @@
         <div class="five-why__node" :key="n1.id" :data-node-id="n1.id">
           <div class="five-why__card" :class="cardClass(n1)">
             <span class="five-why__tag" :data-level="clampLevel(n1)"
-                  x-text="nodeTag(n1, nodeNum(i1))"></span>
+                  x-text="nodeTag(i1)"></span>
             <textarea class="five-why__answer" data-field="answer" :data-id="n1.id"
                       :placeholder="answerPlaceholder(n1)"
                       x-model="n1.answer"
@@ -55,7 +55,7 @@
                 <div class="five-why__node" :key="n2.id" :data-node-id="n2.id">
                   <div class="five-why__card" :class="cardClass(n2)">
                     <span class="five-why__tag" :data-level="clampLevel(n2)"
-                          x-text="nodeTag(n2, nodeNum(i1, i2))"></span>
+                          x-text="nodeTag(i1, i2)"></span>
                     <textarea class="five-why__answer" data-field="answer" :data-id="n2.id"
                               :placeholder="answerPlaceholder(n2)"
                               x-model="n2.answer"
@@ -84,7 +84,7 @@
                         <div class="five-why__node" :key="n3.id" :data-node-id="n3.id">
                           <div class="five-why__card" :class="cardClass(n3)">
                             <span class="five-why__tag" :data-level="clampLevel(n3)"
-                                  x-text="nodeTag(n3, nodeNum(i1, i2, i3))"></span>
+                                  x-text="nodeTag(i1, i2, i3)"></span>
                             <textarea class="five-why__answer" data-field="answer" :data-id="n3.id"
                                       :placeholder="answerPlaceholder(n3)"
                                       x-model="n3.answer"
@@ -113,7 +113,7 @@
                                 <div class="five-why__node" :key="n4.id" :data-node-id="n4.id">
                                   <div class="five-why__card" :class="cardClass(n4)">
                                     <span class="five-why__tag" :data-level="clampLevel(n4)"
-                                          x-text="nodeTag(n4, nodeNum(i1, i2, i3, i4))"></span>
+                                          x-text="nodeTag(i1, i2, i3, i4)"></span>
                                     <textarea class="five-why__answer" data-field="answer" :data-id="n4.id"
                                               :placeholder="answerPlaceholder(n4)"
                                               x-model="n4.answer"
@@ -142,7 +142,7 @@
                                         <div class="five-why__node" :key="n5.id" :data-node-id="n5.id">
                                           <div class="five-why__card" :class="cardClass(n5)">
                                             <span class="five-why__tag" :data-level="clampLevel(n5)"
-                                                  x-text="nodeTag(n5, nodeNum(i1, i2, i3, i4, i5))"></span>
+                                                  x-text="nodeTag(i1, i2, i3, i4, i5)"></span>
                                             <textarea class="five-why__answer" data-field="answer" :data-id="n5.id"
                                                       :placeholder="answerPlaceholder(n5)"
                                                       x-model="n5.answer"

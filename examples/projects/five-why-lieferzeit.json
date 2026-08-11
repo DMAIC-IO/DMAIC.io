@@ -7,44 +7,48 @@
       "parentId": null,
       "question": "",
       "answer": "Pizza kommt zu spät beim Kunden an",
-      "children": [],
-      "collapsed": false
-    },
-    {
-      "id": 2,
-      "level": 2,
-      "parentId": 1,
-      "question": "",
-      "answer": "Fahrt vom Ofen zum Kunden dauert länger als geplant",
-      "children": [],
-      "collapsed": false
-    },
-    {
-      "id": 3,
-      "level": 3,
-      "parentId": 2,
-      "question": "",
-      "answer": "Fahrer wählen suboptimale Routen oder geraten in Stau",
-      "children": [],
-      "collapsed": false
-    },
-    {
-      "id": 4,
-      "level": 4,
-      "parentId": 3,
-      "question": "",
-      "answer": "Kein integriertes Routenplanungs-Tool im Bestellsystem",
-      "children": [],
-      "collapsed": false
-    },
-    {
-      "id": 5,
-      "level": 5,
-      "parentId": 4,
-      "question": "",
-      "answer": "Bestellsystem wurde ursprünglich nur für Kassenbetrieb angeschafft; Logistikfunktion fehlt",
-      "children": [],
-      "collapsed": false
+      "collapsed": false,
+      "children": [
+        {
+          "id": 2,
+          "level": 2,
+          "parentId": 1,
+          "question": "",
+          "answer": "Fahrt vom Ofen zum Kunden dauert länger als geplant",
+          "collapsed": false,
+          "children": [
+            {
+              "id": 3,
+              "level": 3,
+              "parentId": 2,
+              "question": "",
+              "answer": "Fahrer wählen suboptimale Routen oder geraten in Stau",
+              "collapsed": false,
+              "children": [
+                {
+                  "id": 4,
+                  "level": 4,
+                  "parentId": 3,
+                  "question": "",
+                  "answer": "Kein integriertes Routenplanungs-Tool im Bestellsystem",
+                  "collapsed": false,
+                  "children": [
+                    {
+                      "id": 5,
+                      "level": 5,
+                      "parentId": 4,
+                      "question": "",
+                      "answer": "Bestellsystem wurde ursprünglich nur für Kassenbetrieb angeschafft; Logistikfunktion fehlt",
+                      "collapsed": false,
+                      "children": []
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
     }
   ]
 }
