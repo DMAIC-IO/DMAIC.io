@@ -49,8 +49,8 @@ export default createModule({
       /**
        * Node tag from the render index path (1-based), NOT the stored `node.level`.
        * Depth = indices.length. At the deepest level (== MAX_LEVEL) it's the root cause.
-       * nodeTag(0)             → "W1.1"
-       * nodeTag(0, 0)          → "W2.1.1"
+       * nodeTag(0)             → "W1"
+       * nodeTag(0, 0)          → "W1.1"
        * nodeTag(0, 0, 0, 0, 0) → "◆ Root Cause"
        * Deriving the label from render depth (rather than the persisted `level`)
        * keeps it correct regardless of how the tree was loaded (Bug 020).
@@ -59,7 +59,7 @@ export default createModule({
         const depth = indices.length;
         if (depth >= MAX_LEVEL) return _t('modules.five-why.rootCause');
         const num = indices.map((i) => i + 1).join('.');
-        return `W${depth}.${num}`;
+        return `W${num}`;
       },
       /** Placeholder for the answer textarea (root-cause variant at max level). */
       answerPlaceholder(node) {
