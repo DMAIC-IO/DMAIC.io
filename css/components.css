@@ -1092,6 +1092,16 @@ select.input {
   line-height: 1.4;
 }
 
+.settings-devtools {
+  display: flex;
+  flex-direction: column;
+}
+
+.settings-devtools .btn {
+  align-self: center;
+  margin-top: var(--spacing-md);
+}
+
 /* Theme toggle buttons */
 .settings-theme-toggle {
   display: flex;
