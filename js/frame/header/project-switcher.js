@@ -92,6 +92,18 @@ export function initProjectSwitcher({ stateManager, eventBus, i18n }) {
     reloadClean();
   });
 
+  // stateManager.switchCycle() persists synchronously and emits `cycle:changed`
+  // unconditionally (state-manager.js) — independent of whether the caller also
+  // reloads. Every current UI-driven switch happens to reload right after (see
+  // above), which already repaints a closed dropdown; this listener additionally
+  // keeps an ALREADY-OPEN dropdown (and the header display) in sync without
+  // requiring a close/reopen, and hardens future non-reloading callers against
+  // Bug 021 (per-row cycle label staying stale until the dropdown is reopened).
+  eventBus.on('cycle:changed', () => {
+    refresh();
+    if (dropdownOpen) renderDropdown();
+  });
+
   const refresh = () => {
     const name = stateManager.get('projectMeta.name') ?? i18n.t('app.defaultProjectName');
     display.textContent = name + (stateManager.isCompleted() ? ' ✓' : '');
