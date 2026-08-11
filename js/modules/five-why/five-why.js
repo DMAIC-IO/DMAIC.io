@@ -37,22 +37,6 @@ export default createModule({
       /** Level cap surfaced from the model constant (template uses `maxLevel`). */
       maxLevel: MAX_LEVEL,
 
-      // ── Hierarchical numbering ────────────────────────────────
-      /** Root numbering string, 1-based: index 0 → "1". */
-      num(i) { return String(i + 1); },
-      /** Child numbering: parent "1.2" + child index → "1.2.3". */
-      sub(parent, i) { return `${parent  }.${  i + 1}`; },
-      /**
-       * Hierarchical node number from an index path.
-       * nodeNum([i1])           → "1"
-       * nodeNum([i1, i2])       → "1.2"
-       * nodeNum([i1, i2, i3])   → "1.2.3"  etc.
-       * Renders identically to the nested sub(sub(…num(i1),i2)…) expressions.
-       */
-      nodeNum(...indices) {
-        return indices.map((i) => i + 1).join('.');
-      },
-
       // ── View transforms ───────────────────────────────────────
       /** @returns {boolean} true when node is at the root-cause level */
       isRootCause(node) { return node.level >= MAX_LEVEL; },
@@ -62,9 +46,20 @@ export default createModule({
       },
       /** Level clamped to 1..maxLevel for the data-level attribute. */
       clampLevel(node) { return Math.min(node.level, MAX_LEVEL); },
-      /** Tag label: "◆ Root Cause" at max level (the 5th Why is the root cause), else "W{level}.{numbering}". */
-      nodeTag(node, numbering) {
-        return node.level >= MAX_LEVEL ? _t('modules.five-why.rootCause') : `W${  node.level  }.${  numbering}`;
+      /**
+       * Node tag from the render index path (1-based), NOT the stored `node.level`.
+       * Depth = indices.length. At the deepest level (== MAX_LEVEL) it's the root cause.
+       * nodeTag(0)             → "W1"
+       * nodeTag(0, 0)          → "W1.1"
+       * nodeTag(0, 0, 0, 0, 0) → "◆ Root Cause"
+       * Deriving the label from render depth (rather than the persisted `level`)
+       * keeps it correct regardless of how the tree was loaded (Bug 020).
+       */
+      nodeTag(...indices) {
+        const depth = indices.length;
+        if (depth >= MAX_LEVEL) return _t('modules.five-why.rootCause');
+        const num = indices.map((i) => i + 1).join('.');
+        return `W${num}`;
       },
       /** Placeholder for the answer textarea (root-cause variant at max level). */
       answerPlaceholder(node) {

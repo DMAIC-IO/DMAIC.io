@@ -145,6 +145,22 @@ suite('IVP Model — serialization', () => {
     assertEqual(JSON.stringify(r.toJSON()), JSON.stringify(s.toJSON()));
   });
 
+  test('toJSON output is structured-cloneable even when array fields are Alpine-reactive proxies', () => {
+    // Regression: getState() (template-module.js) reads the LIVE Alpine
+    // component's `model.toJSON()`. Alpine wraps nested array/object
+    // properties in a reactivity Proxy the moment they are accessed —
+    // structuredClone() cannot clone a Proxy (DataCloneError: "[object
+    // Array] could not be cloned"), even though the target is a plain
+    // array. toJSON() must therefore copy pointColors/refLines/refAreas
+    // into fresh plain arrays, not return the live references verbatim.
+    const s = new State();
+    s.pointColors = new Proxy(['#111'], {});
+    s.refLines = new Proxy([{ y: 10 }], {});
+    s.refAreas = new Proxy([{ from: 1, to: 2 }], {});
+    const json = s.toJSON();
+    structuredClone(json); // throws DataCloneError if a Proxy leaked through
+  });
+
   test('fromJSON normalizes legacy single-ref groupRefs to length-3 arrays', () => {
     // Legacy saved a single ref or null per series.
     const s = State.fromJSON({

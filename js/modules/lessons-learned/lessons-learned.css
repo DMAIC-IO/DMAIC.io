@@ -254,9 +254,10 @@
 
 .ll__chevron {
   color: var(--color-text-tertiary);
-  margin-top: 4px;
   flex-shrink: 0;
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-lg);
+  padding: var(--spacing-xs);
+  line-height: 1;
 }
 
 /* ── Card Body (expanded) ── */
