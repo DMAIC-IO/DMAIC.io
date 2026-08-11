@@ -169,10 +169,17 @@ export class State {
       jitter: this.jitter,
       showStats: this.showStats,
       confLevel: this.confLevel,
-      refLines: this.refLines,
-      refAreas: this.refAreas,
+      // Copy into fresh plain arrays/objects — do NOT return this.refLines/
+      // refAreas/pointColors verbatim. getState() (template-module.js) calls
+      // this on the LIVE Alpine component's reactive model; Alpine wraps
+      // nested array properties in a reactivity Proxy on first access, and
+      // structuredClone() cannot clone a Proxy (DataCloneError) even though
+      // its target is a plain array. A shallow copy here always yields a
+      // plain, structured-cloneable array regardless of the caller.
+      refLines: this.refLines.map((r) => (r ? { ...r } : r)),
+      refAreas: this.refAreas.map((r) => (r ? { ...r } : r)),
       bgColor: this.bgColor,
-      pointColors: this.pointColors,
+      pointColors: [...this.pointColors],
       pointSymbol: this.pointSymbol,
       pointSize: this.pointSize,
       exampleWorksheetId: this.exampleWorksheetId,

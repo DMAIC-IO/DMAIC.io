@@ -191,7 +191,12 @@ const mod = createModule({
           bgColor: cfg.bgColor,
         };
 
-        const chartWrap = module._container.querySelector('[data-ref="chart-wrap"]');
+        // Guard: this async plot can be scheduled (rAF/$watch) before this
+        // detached/torn-down instance's container was cleared by destroy()
+        // during Dev-Tools seeding — chart-wrap is then gone. Nothing to
+        // render into; bail out silently.
+        const chartWrap = module._container?.querySelector('[data-ref="chart-wrap"]');
+        if (!chartWrap) return;
         if (this._chart) {
           module._context.chartManager.update(this._chart, barConfig);
         } else {

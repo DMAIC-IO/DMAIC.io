@@ -169,6 +169,10 @@ export function createModule(base) {
     },
 
     async destroy() {
+      // Guard: a detached/aborted instance (init threw or never ran to
+      // completion) can reach destroy() with no mounted container — nothing
+      // to tear down.
+      if (!this._container) return;
       if (config.engine === 'alpine') {
         this._container.querySelectorAll('[x-data]').forEach(root => {
           Alpine.destroyTree(root);
@@ -226,6 +230,18 @@ export function createModule(base) {
       if (config.engine === 'alpine') {
         const model = Model.fromJSON(state);
         this._persist(model);
+        // Guard: a detached/aborted instance (init threw or never ran to
+        // completion) has no mounted container. Still persist the state —
+        // it will be read fresh the next time the instance is mounted —
+        // but skip the DOM remount, there is nothing to remount into.
+        if (!this._container) {
+          if (this._tmpl) {
+            this._tmpl._state = model;
+          } else {
+            this._tmpl = { _state: model, getState() { return { model: this._state }; } };
+          }
+          return;
+        }
         Alpine.destroyTree(this._container);
         this._container.replaceChildren(...cloneForInstance(this._alpineName));
         Alpine.initTree(this._container);
