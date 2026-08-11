@@ -178,10 +178,6 @@
   font-size: var(--font-size-sm);
 }
 
-.sha__card-action-btn--del:hover {
-  color: var(--color-error);
-}
-
 /* ===== Meters ===== */
 .sha__meters {
   display: grid;

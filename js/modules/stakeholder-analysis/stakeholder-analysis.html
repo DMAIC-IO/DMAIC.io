@@ -27,7 +27,7 @@
             </div>
             <div class="sha__card-actions">
               <button class="btn btn--icon-sm sha__card-action-btn sha__edit-btn" :title="t('editStakeholder')" :data-id="sh.id" @click="openModal(sh)">&#9998;</button>
-              <button class="btn btn--icon-sm sha__card-action-btn sha__card-action-btn--del sha__del-btn" :title="t('common.delete')" :data-id="sh.id" @click="deleteStakeholder(sh)">&#128465;</button>
+              <button class="btn btn--icon-sm btn--danger sha__card-action-btn sha__del-btn" :title="t('common.delete')" :data-id="sh.id" @click="deleteStakeholder(sh)">&#10005;</button>
             </div>
           </div>
           <div class="sha__meters">
