@@ -14,6 +14,7 @@
   padding: 0;          /* override dmike-split__input padding — sidebar has own header/body */
   gap: 0;
   overflow: hidden;
+
   /* .dmike-split__input defaults to align-self:flex-start (sizes to its own
      content), so .vct__sidebar-body's flex:1 never gets a bounded height
      and its overflow-y:auto never engages — the unbounded list instead
