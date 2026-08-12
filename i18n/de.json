@@ -88,6 +88,7 @@
     "extras": "Weitere",
     "achievementTooltip": "Zielerreichungsgrad dieser Phase (klicken zum Bearbeiten)",
     "editProgress": "Fortschritt bearbeiten",
+    "moduleMenu": "Module",
     "singletonExists": "{name} kann nur einmal pro Projekt angelegt werden.",
     "wrongPhase": "{name} ist nur in folgenden Phasen zulässig: {phases}"
   },

@@ -188,11 +188,12 @@ export class DmaicTiles {
     // Segment 2: pencil + % (virtual tiles have no ZEG → no segment).
     const editSeg = isVirtual ? null : this._buildEditSegment(phase, tile, pct);
 
+    const menuLabel = this._i18n.t('phases.moduleMenu');
     const menuBtn = h('button', {
       class: 'dmaic-tile__menu-btn',
       type: 'button',
-      'aria-label': 'Module',
-      title: 'Module',
+      'aria-label': menuLabel,
+      title: menuLabel,
     }, icon('chevron-down'));
     menuBtn.addEventListener('click', (e) => {
       e.stopPropagation();
@@ -445,7 +446,8 @@ export class DmaicTiles {
     const seg = h('button', {
       class: 'dmaic-tile__edit',
       type: 'button',
-      'aria-label': this._i18n.t('phases.editProgress'),
+      // Kein aria-label: der sichtbare "%"-Text ist der Accessible Name
+      // (WCAG 2.5.3 label-content-name-mismatch). Zweck steht im title/Tooltip.
       title: this._i18n.t('phases.editProgress'),
     },
       h('span', { class: 'dmaic-tile__edit-icon', 'aria-hidden': 'true' }, '✎'),
