@@ -8,9 +8,10 @@
  * Class name kept as `DmaicTiles` for backwards-compat across the codebase
  * (Plan §4.4 — file/class rename deferred).
  *
- * Each methodology tile shows: phase letter, name, hamburger menu for
- * modules, and an editable goal-achievement percentage (ZEG, 0–100 %)
- * on double-click. Virtual tiles (data, extras) skip the ZEG.
+ * Each methodology tile is a split-button: phase letter + name (select),
+ * a hover-revealed pencil to edit the goal-achievement percentage (ZEG,
+ * 0–100 %), and a chevron trigger for the module dropdown. Virtual tiles
+ * (data, extras) skip the ZEG and the pencil.
  */
 
 import {
@@ -165,14 +166,23 @@ export class DmaicTiles {
         title: this._i18n.t('phases.achievementTooltip'),
       }, `${pct  }%`),
     );
+    const editBtn = isVirtual ? null : h('button', {
+      class: 'dmaic-tile__edit',
+      type: 'button',
+      'aria-label': this._i18n.t('phases.editProgress'),
+      title: this._i18n.t('phases.editProgress'),
+    }, icon('edit'));
+
     const children = [
       body,
+      editBtn,
+      h('span', { class: 'dmaic-tile__divider', 'aria-hidden': 'true' }),
       h('button', {
         class: 'dmaic-tile__menu-btn',
         type: 'button',
         'aria-label': 'Module',
         title: 'Module',
-      }, icon('menu')),
+      }, icon('chevron-down')),
       isVirtual ? null : h('span', {
         class: 'dmaic-tile__progress-bar',
         'aria-hidden': 'true',
@@ -185,23 +195,23 @@ export class DmaicTiles {
 
     const menuBtn = tile.querySelector('.dmaic-tile__menu-btn');
 
-    // Click / Enter / Space on the body button → select phase
-    // (native button semantics cover keyboard activation).
+    // Click / Enter / Space on the body button → select phase.
     body.addEventListener('click', () => {
       this._closeMenu();
       this._navigatePhase(phase);
     });
 
-    // Double-click → edit ZEG (virtual tiles have no ZEG)
-    if (!isVirtual) {
-      body.addEventListener('dblclick', (e) => {
-        e.preventDefault();
+    // Pencil → edit ZEG (hover-revealed; virtual tiles have no ZEG/pencil).
+    if (editBtn) {
+      editBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        this._closeMenu();
         const zegEl = tile.querySelector('.dmaic-tile__zeg');
-        this._openProgressEditor(phase, tile, zegEl);
+        if (zegEl) this._openProgressEditor(phase, tile, zegEl);
       });
     }
 
-    // Hamburger menu → show module dropdown
+    // Chevron menu → module dropdown.
     menuBtn.addEventListener('click', (e) => {
       e.stopPropagation();
       this._toggleMenu(phase, tile);
@@ -302,6 +312,7 @@ export class DmaicTiles {
 
     tile.append(dropdown);
     this._openMenu = { phase, dropdown, tile };
+    tile.classList.add('dmaic-tile--menu-open');
 
     requestAnimationFrame(() => {
       document.addEventListener('click', this._closeMenuOnOutsideClick);
@@ -345,6 +356,7 @@ export class DmaicTiles {
   _closeMenu() {
     if (!this._openMenu) return;
     this._openMenu.dropdown.remove();
+    this._openMenu.tile.classList.remove('dmaic-tile--menu-open');
     this._openMenu = null;
     document.removeEventListener('click', this._closeMenuOnOutsideClick);
     document.removeEventListener('keydown', this._closeMenuOnEscape);

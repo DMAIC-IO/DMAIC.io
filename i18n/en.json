@@ -87,6 +87,7 @@
     "recognize": "Recognize the Team",
     "extras": "More",
     "achievementTooltip": "Phase achievement level (click to edit)",
+    "editProgress": "Edit progress",
     "singletonExists": "{name} can only be added once per project.",
     "wrongPhase": "{name} is only allowed in the following phases: {phases}"
   },

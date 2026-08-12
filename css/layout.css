@@ -443,10 +443,6 @@ html.is-nightly body {
   height: 32px;
 }
 
-.dmaic-tile:hover {
-  background: var(--color-bg-tertiary);
-}
-
 .dmaic-tile--active {
   background: var(--color-tile-bg-active);
 }
@@ -491,6 +487,58 @@ html.is-nightly body {
   color: var(--color-text-secondary);
   text-transform: uppercase;
   letter-spacing: 0.03em;
+}
+
+/* Split-button segments: independent hover targets. */
+.dmaic-tile { gap: 0; }
+
+.dmaic-tile__body {
+  padding: 2px 8px;
+  border-radius: var(--border-radius-sm);
+}
+.dmaic-tile__body:hover,
+.dmaic-tile__edit:hover,
+.dmaic-tile__menu-btn:hover {
+  background: var(--color-bg-tertiary);
+}
+
+.dmaic-tile__edit,
+.dmaic-tile__menu-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  padding: 3px;
+  border-radius: var(--border-radius-sm);
+}
+
+/* Pencil is hover-revealed but keeps its box reserved so an already-open
+   tile never changes width on hover — only opacity toggles. */
+.dmaic-tile__edit {
+  opacity: 0;
+  transition: opacity var(--transition-speed);
+}
+.dmaic-tile:hover .dmaic-tile__edit,
+.dmaic-tile__edit:focus-visible {
+  opacity: 1;
+}
+
+.dmaic-tile__divider {
+  width: 1px;
+  align-self: stretch;
+  margin: 4px 2px;
+  background: var(--color-border);
+}
+
+/* Chevron rotates when the module menu is open. */
+.dmaic-tile__menu-btn .icon {
+  transition: transform var(--transition-speed);
+}
+.dmaic-tile--menu-open .dmaic-tile__menu-btn .icon {
+  transform: rotate(180deg);
 }
 
 /* ===== ZEG (Goal Achievement) inline label ===== */
