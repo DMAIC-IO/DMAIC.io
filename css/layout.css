@@ -1826,6 +1826,9 @@ body.training-area-open .dmaic-tiles {
   padding: 0 var(--spacing-sm);
   margin-left: auto;
   flex-shrink: 0;
+  /* Von der Tab-Reihe abheben: klare Kante + dezenter eigener Grund. */
+  border-left: var(--border-width) solid var(--color-border-primary);
+  background: var(--color-bg-tertiary);
 }
 
 .workspace__action {
