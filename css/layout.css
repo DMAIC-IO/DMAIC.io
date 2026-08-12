@@ -443,31 +443,104 @@ html.is-nightly body {
 }
 
 .dmaic-tile {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 4px 14px;
-  cursor: pointer;
+  position: relative;
+  height: 32px;
   border-radius: var(--border-radius-sm);
   background: transparent;
-  transition: background var(--transition-speed);
+  cursor: pointer;
   user-select: none;
-  position: relative;
   white-space: nowrap;
-  height: 32px;
+  transition: transform var(--transition-speed), box-shadow var(--transition-speed);
 }
 
+/* Hover lifts the whole tile (the dimmed button box) with a small zoom and a
+   light shadow — not a text zoom. Only when not collapsed; collapsed tiles use
+   the hover overlay. */
+.dmaic-tiles:not(.dmaic-tiles--collapsed) .dmaic-tile:hover {
+  transform: scale(1.08);
+  z-index: 2;
+  box-shadow: 0 3px 12px rgb(0 0 0 / 20%);
+}
+
+/* Inactive tiles get a clearly dimmed fill (no border) so they read as
+   buttons against the header. */
+.dmaic-tile:not(.dmaic-tile--active) {
+  background: var(--color-bg-tertiary);
+}
 .dmaic-tile--active {
   background: var(--color-tile-bg-active);
 }
 
-/* Phase-select button — fills the tile body; visual chrome lives on the
-   parent .dmaic-tile, so this is a transparent, borderless button. */
+/* Active tile: bottom border takes the phase colour (like before); the
+   progress fill sits above it. Inactive tiles keep the neutral grey baseline. */
+.dmaic-tile--active[data-phase="data"] .dmaic-tile__inner { border-bottom-color: var(--color-phase-data); }
+.dmaic-tile--active[data-phase="define"] .dmaic-tile__inner { border-bottom-color: var(--color-phase-define); }
+.dmaic-tile--active[data-phase="measure"] .dmaic-tile__inner { border-bottom-color: var(--color-phase-measure); }
+.dmaic-tile--active[data-phase="analyze"] .dmaic-tile__inner { border-bottom-color: var(--color-phase-analyze); }
+.dmaic-tile--active[data-phase="improve"] .dmaic-tile__inner { border-bottom-color: var(--color-phase-improve); }
+.dmaic-tile--active[data-phase="control"] .dmaic-tile__inner { border-bottom-color: var(--color-phase-control); }
+.dmaic-tile--active[data-phase="design"] .dmaic-tile__inner { border-bottom-color: var(--color-phase-design); }
+.dmaic-tile--active[data-phase="verify"] .dmaic-tile__inner { border-bottom-color: var(--color-phase-verify); }
+.dmaic-tile--active[data-phase="prepare"] .dmaic-tile__inner { border-bottom-color: var(--color-phase-prepare); }
+.dmaic-tile--active[data-phase="team"] .dmaic-tile__inner { border-bottom-color: var(--color-phase-team); }
+.dmaic-tile--active[data-phase="problem"] .dmaic-tile__inner { border-bottom-color: var(--color-phase-problem); }
+.dmaic-tile--active[data-phase="containment"] .dmaic-tile__inner { border-bottom-color: var(--color-phase-containment); }
+.dmaic-tile--active[data-phase="rootcause"] .dmaic-tile__inner { border-bottom-color: var(--color-phase-rootcause); }
+.dmaic-tile--active[data-phase="corrective"] .dmaic-tile__inner { border-bottom-color: var(--color-phase-corrective); }
+.dmaic-tile--active[data-phase="implementation"] .dmaic-tile__inner { border-bottom-color: var(--color-phase-implementation); }
+.dmaic-tile--active[data-phase="prevent"] .dmaic-tile__inner { border-bottom-color: var(--color-phase-prevent); }
+.dmaic-tile--active[data-phase="recognize"] .dmaic-tile__inner { border-bottom-color: var(--color-phase-recognize); }
+.dmaic-tile--active[data-phase="extras"] .dmaic-tile__inner { border-bottom-color: var(--color-phase-extras); }
+
+/* Single container for the whole tile: the button row on top and the progress
+   bar beneath it (a column). This is the element that becomes the centred hover
+   overlay when a collapsed tile is hovered, so the buttons AND the bar expand
+   together. */
+.dmaic-tile__inner {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  border-radius: var(--border-radius-sm);
+  /* Neutral-grey bottom border — the baseline, visible on every tile (incl. the
+     dimmed inactive fill), like the unfilled progress track. The coloured
+     progress bar sits just above it. */
+  border-bottom: 2px solid var(--color-border-primary);
+  transition: box-shadow var(--transition-speed);
+}
+
+/* Button row fills the tile edge-to-edge above the bar — no padding, no gaps —
+   so every segment is clickable up to the border and the divider spans only
+   the button area (naturally above the bar, not over it). */
+.dmaic-tile__row {
+  display: flex;
+  align-items: stretch;
+  flex: 1;
+  min-height: 0;
+  /* The progress bar + bottom border occupy the inner column's bottom 4px, so
+     centre the row content over the FULL tile height by padding the top to
+     match — otherwise letter/name/%/chevron all sit a couple px too high. */
+  padding-top: 4px;
+}
+
+/* Left group = navigate (letter+name) + edit (pencil+%), no divider between, so
+   the whole left reads as one. The tile-level hover zoom (above) handles the
+   lift; this is just a flex container. */
+.dmaic-tile__left {
+  display: flex;
+  align-items: stretch;
+  flex: 1;
+  min-width: 0;
+}
+
 .dmaic-tile__body {
+  flex: 1;
   display: flex;
   align-items: center;
+  justify-content: flex-start;
   gap: 6px;
-  padding: 0;
+  min-width: 0;
+  padding: 0 2px 0 8px;
   margin: 0;
   border: none;
   background: transparent;
@@ -476,11 +549,16 @@ html.is-nightly body {
   cursor: pointer;
   white-space: nowrap;
 }
-
 .dmaic-tile__body:focus-visible {
   outline: 2px solid var(--color-accent);
-  outline-offset: 2px;
+  outline-offset: -2px;
   border-radius: var(--border-radius-sm);
+}
+
+/* Virtual tiles (data / extras) have no pencil+% segment, so the name would sit
+   right against the divider — give it breathing room on the right. */
+.dmaic-tile__left:not(:has(.dmaic-tile__edit)) .dmaic-tile__body {
+  padding-right: 10px;
 }
 
 .dmaic-tile__letter {
@@ -503,56 +581,71 @@ html.is-nightly body {
   letter-spacing: 0.03em;
 }
 
-/* Split-button segments: independent hover targets. */
-.dmaic-tile { gap: 0; }
-
-.dmaic-tile__body {
-  padding: 2px 8px;
-  border-radius: var(--border-radius-sm);
-}
-.dmaic-tile__body:hover,
-.dmaic-tile__edit:hover,
-.dmaic-tile__menu-btn:hover {
-  background: var(--color-bg-tertiary);
-}
-
 .dmaic-tile__edit,
 .dmaic-tile__menu-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  align-self: stretch;
   border: none;
   background: transparent;
   color: inherit;
   cursor: pointer;
-  padding: 3px;
-  border-radius: var(--border-radius-sm);
 }
 
-/* Pencil is hover-revealed but keeps its box reserved so an already-open
-   tile never changes width on hover — only opacity toggles. */
+/* Segment 2 = pencil + %. Tight gap; the pencil collapses to zero width at rest
+   (so text↔number stays tight) and animates open — width AND scale — on hover,
+   a touch more when the segment itself is hovered. */
 .dmaic-tile__edit {
-  opacity: 0;
-  transition: opacity var(--transition-speed);
+  gap: 2px;
+  padding: 0 8px 0 0;
 }
-.dmaic-tile:hover .dmaic-tile__edit,
-.dmaic-tile__edit:focus-visible {
-  opacity: 1;
+/* The pencil sits in a fixed, narrow slot so revealing it never changes the
+   tile's width (no neighbour shift). Only its scale animates — from 0 (hidden)
+   to full on hover, a touch larger when the segment itself is hovered. */
+.dmaic-tile__edit-icon {
+  display: inline-block;
+  width: 0.85em;
+  text-align: center;
+  color: var(--color-text-secondary);
+  font-size: 12px;
+  line-height: 1;
+  transform: scale(0);
+  transform-origin: center;
+  transition: transform var(--transition-speed);
+}
+.dmaic-tile:hover .dmaic-tile__edit-icon {
+  transform: scale(1);
+}
+.dmaic-tile__edit:hover .dmaic-tile__edit-icon {
+  transform: scale(1.3);
 }
 
-.dmaic-tile__divider {
-  width: 1px;
-  align-self: stretch;
-  margin: 4px 2px;
-  background: var(--color-border-primary);
+/* Dropdown segment: wide clickable area, no background on hover — the chevron
+   itself grows a little on hover instead. */
+.dmaic-tile__menu-btn {
+  padding: 0 12px;
 }
-
-/* Chevron rotates when the module menu is open. */
 .dmaic-tile__menu-btn .icon {
   transition: transform var(--transition-speed);
 }
+.dmaic-tile__menu-btn:hover .icon {
+  transform: scale(1.3);
+}
 .dmaic-tile--menu-open .dmaic-tile__menu-btn .icon {
   transform: rotate(180deg);
+}
+.dmaic-tile--menu-open .dmaic-tile__menu-btn:hover .icon {
+  transform: rotate(180deg) scale(1.3);
+}
+
+/* Vertical divider between the left group and the dropdown. Full height; the
+   progress bar (painted after) covers its bottom, so it never crosses the
+   coloured strip. */
+.dmaic-tile__divider {
+  width: 1px;
+  align-self: stretch;
+  background: var(--color-border-primary);
 }
 
 /* ===== ZEG (Goal Achievement) inline label ===== */
@@ -560,7 +653,6 @@ html.is-nightly body {
   font-size: 10px;
   font-weight: var(--font-weight-semibold);
   color: var(--color-text-secondary);
-  margin-left: 2px;
   white-space: nowrap;
 }
 
@@ -581,15 +673,14 @@ html.is-nightly body {
   outline: none;
 }
 
-/* Phase progress bar (bottom edge of tile) */
+/* Phase progress bar — its own row directly above the neutral grey bottom
+   border (in y). The track is transparent (the grey border is the baseline);
+   only the coloured fill shows the %. Expands with the overlay because it lives
+   inside `.dmaic-tile__inner`. */
 .dmaic-tile__progress-bar {
-  position: absolute;
-  left: 4px;
-  right: 4px;
-  bottom: 2px;
-  height: 3px;
-  border-radius: 2px;
-  background: var(--color-bg-tertiary);
+  flex: 0 0 2px;
+  width: 100%;
+  background: transparent;
   overflow: hidden;
   pointer-events: none;
 }
@@ -642,24 +733,6 @@ html.is-nightly body {
 .dmaic-tile[data-phase="recognize"]      .dmaic-tile__letter { color: var(--color-phase-recognize); }
 .dmaic-tile[data-phase="extras"]  .dmaic-tile__letter    { color: var(--color-phase-extras); }
 
-.dmaic-tile--active[data-phase="data"]    { box-shadow: inset 0 -2px 0 var(--color-phase-data); }
-.dmaic-tile--active[data-phase="define"]  { box-shadow: inset 0 -2px 0 var(--color-phase-define); }
-.dmaic-tile--active[data-phase="measure"] { box-shadow: inset 0 -2px 0 var(--color-phase-measure); }
-.dmaic-tile--active[data-phase="analyze"] { box-shadow: inset 0 -2px 0 var(--color-phase-analyze); }
-.dmaic-tile--active[data-phase="improve"] { box-shadow: inset 0 -2px 0 var(--color-phase-improve); }
-.dmaic-tile--active[data-phase="control"] { box-shadow: inset 0 -2px 0 var(--color-phase-control); }
-.dmaic-tile--active[data-phase="design"]  { box-shadow: inset 0 -2px 0 var(--color-phase-design); }
-.dmaic-tile--active[data-phase="verify"]  { box-shadow: inset 0 -2px 0 var(--color-phase-verify); }
-.dmaic-tile--active[data-phase="prepare"]        { box-shadow: inset 0 -2px 0 var(--color-phase-prepare); }
-.dmaic-tile--active[data-phase="team"]           { box-shadow: inset 0 -2px 0 var(--color-phase-team); }
-.dmaic-tile--active[data-phase="problem"]        { box-shadow: inset 0 -2px 0 var(--color-phase-problem); }
-.dmaic-tile--active[data-phase="containment"]    { box-shadow: inset 0 -2px 0 var(--color-phase-containment); }
-.dmaic-tile--active[data-phase="rootcause"]      { box-shadow: inset 0 -2px 0 var(--color-phase-rootcause); }
-.dmaic-tile--active[data-phase="corrective"]     { box-shadow: inset 0 -2px 0 var(--color-phase-corrective); }
-.dmaic-tile--active[data-phase="implementation"] { box-shadow: inset 0 -2px 0 var(--color-phase-implementation); }
-.dmaic-tile--active[data-phase="prevent"]        { box-shadow: inset 0 -2px 0 var(--color-phase-prevent); }
-.dmaic-tile--active[data-phase="recognize"]      { box-shadow: inset 0 -2px 0 var(--color-phase-recognize); }
-.dmaic-tile--active[data-phase="extras"]  { box-shadow: inset 0 -2px 0 var(--color-phase-extras); }
 
 .dmaic-tile--drop-target {
   outline: 2px dashed var(--color-accent);
@@ -2382,34 +2455,44 @@ body.training-area-open .dmaic-tiles {
 }
 
 /* ===== Adaptive collapse: inactive tiles show letter + progress only ===== */
-/* Name collapses to zero width (animatable); divider/menu/pencil hide. */
+/* Collapsed inactive tiles show only the letter + %. The name collapses to
+   zero width (animatable); divider and menu hide. */
 .dmaic-tiles--collapsed .dmaic-tile:not(.dmaic-tile--active) .dmaic-tile__name {
   max-width: 0;
-  opacity: 0;
   overflow: hidden;
-  transition: max-width 130ms ease, opacity 130ms ease;
+  transition: max-width var(--transition-speed) ease;
 }
 .dmaic-tiles--collapsed .dmaic-tile:not(.dmaic-tile--active) .dmaic-tile__divider,
-.dmaic-tiles--collapsed .dmaic-tile:not(.dmaic-tile--active) .dmaic-tile__menu-btn,
-.dmaic-tiles--collapsed .dmaic-tile:not(.dmaic-tile--active) .dmaic-tile__edit {
+.dmaic-tiles--collapsed .dmaic-tile:not(.dmaic-tile--active) .dmaic-tile__menu-btn {
   display: none;
 }
 
-/* Hover reveals the full split-button (fast animation). Lifts above neighbours. */
+/* Hover: the single inner container (buttons + bar) becomes a centred overlay
+   over BOTH neighbours, so the whole thing — including the progress bar —
+   expands together. The tile's flow slot keeps its JS-pinned width, so nothing
+   reflows (no flicker). The name animates open from zero width; the shadow
+   fades in via the inner's box-shadow transition. */
 .dmaic-tiles--collapsed .dmaic-tile:not(.dmaic-tile--active):hover {
-  z-index: 5;
+  z-index: 10;
+}
+.dmaic-tiles--collapsed .dmaic-tile:not(.dmaic-tile--active):hover .dmaic-tile__inner {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  height: 100%;
+  width: max-content;
+  transform: translateX(-50%);
+  background: var(--color-bg-secondary);
+  box-shadow:
+    inset 0 0 0 1px var(--color-border-secondary),
+    0 6px 16px rgb(0 0 0 / 24%);
 }
 .dmaic-tiles--collapsed .dmaic-tile:not(.dmaic-tile--active):hover .dmaic-tile__name {
-  max-width: 16ch;
-  opacity: 1;
+  max-width: var(--dmaic-name-w, 20em);
 }
 .dmaic-tiles--collapsed .dmaic-tile:not(.dmaic-tile--active):hover .dmaic-tile__divider {
   display: block;
 }
 .dmaic-tiles--collapsed .dmaic-tile:not(.dmaic-tile--active):hover .dmaic-tile__menu-btn {
   display: inline-flex;
-}
-.dmaic-tiles--collapsed .dmaic-tile:not(.dmaic-tile--active):hover .dmaic-tile__edit {
-  display: inline-flex;
-  opacity: 1;
 }
