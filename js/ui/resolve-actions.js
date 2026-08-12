@@ -13,9 +13,8 @@ export function resolveActions(actions, tf) {
   if (!Array.isArray(actions)) return [];
   return actions.map((a) => {
     const children = Array.isArray(a.children) ? resolveActions(a.children, tf) : [];
-    // A single-item dropdown carries no choice — render the lone child directly
-    // (its label/icon/onClick) instead of a generic parent that hides the format.
-    if (children.length === 1) return children[0];
+    // Kein Kollaps bei einem einzigen Kind: Export soll überall gleich als
+    // Dropdown erscheinen, egal ob ein oder mehrere Formate (einheitliche UI).
     return {
       iconId: a.icon,
       text: tf(a.title),

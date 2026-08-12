@@ -40,17 +40,18 @@ suite('resolveActions', () => {
     assertEqual(vm.children[0].iconId, 'export-csv', 'child icon');
   });
 
-  test('single child collapses to render the child, not the generic parent', () => {
+  test('single child stays a dropdown (uniform export UI, no collapse)', () => {
     const onClick = () => {};
     const [vm] = resolveActions([{
       icon: 'download', title: 'export.label',
       children: [{ icon: 'export-csv', title: 'export.csv', onClick }],
     }], tf);
-    assertEqual(vm.isDropdown, false, 'single-item dropdown is not a dropdown');
-    assertEqual(vm.text, 'T(export.csv)', 'renders child label, not parent "export.label"');
-    assertEqual(vm.iconId, 'export-csv', 'renders child icon');
-    assertTrue(vm.onClick === onClick, 'child onClick preserved');
-    assertEqual(vm.children.length, 0, 'no children on the collapsed action');
+    assertEqual(vm.isDropdown, true, 'single-item dropdown stays a dropdown');
+    assertEqual(vm.text, 'T(export.label)', 'shows the parent label, not the child');
+    assertEqual(vm.iconId, 'download', 'shows the parent icon');
+    assertEqual(vm.children.length, 1, 'the lone child is kept in children');
+    assertEqual(vm.children[0].text, 'T(export.csv)', 'child label resolved');
+    assertTrue(vm.children[0].onClick === onClick, 'child onClick preserved');
   });
 
   test('empty children array is not a dropdown', () => {
