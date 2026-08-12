@@ -140,6 +140,10 @@
   transition: opacity 0.2s ease;
 }
 
+/* Modebar erscheint, sobald der Cursor irgendwo über dem Chart ist — nicht
+   erst über der Modebar-Ecke selbst. Popout-Body nutzt dasselbe Muster
+   (siehe .dmike-chart-popout-body …:hover-Regel weiter unten). */
+.dmike-chart-svg-wrap:hover .dmike-chart-modebar,
 .dmike-chart-modebar:hover,
 .dmike-chart-modebar:focus-within {
   opacity: 1;
