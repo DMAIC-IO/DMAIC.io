@@ -24,7 +24,12 @@ body {
   line-height: 1.4;
   -webkit-font-smoothing: antialiased;
   display: grid;
-  grid-template: "header" var(--header-height) "workspace" 1fr "footer" var(--footer-height) / 1fr;
+  /* minmax(0, 1fr) (not bare 1fr): grid tracks default to a content-based
+     minimum, which would let a wide uncollapsed tile row push the whole page
+     wider than the viewport. Pinning the minimum to 0 lets .dmaic-tiles
+     actually shrink to the header's real available width, which the collapse
+     heuristic in dmaic-tiles.js reads via clientWidth. */
+  grid-template: "header" var(--header-height) "workspace" 1fr "footer" var(--footer-height) / minmax(0, 1fr);
   height: 100vh;
 }
 
@@ -86,6 +91,10 @@ html.is-nightly body {
 /* ===== Header ===== */
 .app-header {
   grid-area: header;
+  /* Grid items default to a content-based minimum width, same as flex items —
+     without this the header (and its flex:1 .dmaic-tiles child) would grow
+     past the viewport instead of shrinking, see body's grid-template above. */
+  min-width: 0;
   display: flex;
   align-items: center;
   gap: var(--spacing-sm);
@@ -422,6 +431,11 @@ html.is-nightly body {
 /* ===== DMAIC Tiles (inline header pills with hamburger menus) ===== */
 .dmaic-tiles {
   flex: 1;
+  /* Allow the flexbox to shrink below its children's intrinsic content width
+     so `clientWidth` reflects the header's true available space (the budget
+     the collapse heuristic measures against) instead of growing to fit an
+     uncollapsed tile row and overflowing the header. */
+  min-width: 0;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -2365,4 +2379,37 @@ body.training-area-open .dmaic-tiles {
 
 ::-webkit-scrollbar-thumb:hover {
   background: var(--color-text-tertiary);
+}
+
+/* ===== Adaptive collapse: inactive tiles show letter + progress only ===== */
+/* Name collapses to zero width (animatable); divider/menu/pencil hide. */
+.dmaic-tiles--collapsed .dmaic-tile:not(.dmaic-tile--active) .dmaic-tile__name {
+  max-width: 0;
+  opacity: 0;
+  overflow: hidden;
+  transition: max-width 130ms ease, opacity 130ms ease;
+}
+.dmaic-tiles--collapsed .dmaic-tile:not(.dmaic-tile--active) .dmaic-tile__divider,
+.dmaic-tiles--collapsed .dmaic-tile:not(.dmaic-tile--active) .dmaic-tile__menu-btn,
+.dmaic-tiles--collapsed .dmaic-tile:not(.dmaic-tile--active) .dmaic-tile__edit {
+  display: none;
+}
+
+/* Hover reveals the full split-button (fast animation). Lifts above neighbours. */
+.dmaic-tiles--collapsed .dmaic-tile:not(.dmaic-tile--active):hover {
+  z-index: 5;
+}
+.dmaic-tiles--collapsed .dmaic-tile:not(.dmaic-tile--active):hover .dmaic-tile__name {
+  max-width: 16ch;
+  opacity: 1;
+}
+.dmaic-tiles--collapsed .dmaic-tile:not(.dmaic-tile--active):hover .dmaic-tile__divider {
+  display: block;
+}
+.dmaic-tiles--collapsed .dmaic-tile:not(.dmaic-tile--active):hover .dmaic-tile__menu-btn {
+  display: inline-flex;
+}
+.dmaic-tiles--collapsed .dmaic-tile:not(.dmaic-tile--active):hover .dmaic-tile__edit {
+  display: inline-flex;
+  opacity: 1;
 }

@@ -23,6 +23,7 @@ import {
 } from '../core/cycles/cycles.js';
 import { h } from '../core/dom.js';
 import { icon } from '../core/icon.js';
+import { estimateTilesWidth, resolveCollapsed } from './dmaic-tiles-layout.js';
 
 export class DmaicTiles {
   /**
@@ -80,6 +81,7 @@ export class DmaicTiles {
 
     this._highlightActive();
     this._subscribeEvents();
+    this._recomputeCollapse();
   }
 
   selectPhase(phase) {
@@ -509,6 +511,47 @@ export class DmaicTiles {
     });
   }
 
+  /**
+   * Build a text-measure bound to the tile-name font, for width budgeting.
+   * @returns {(text:string) => number}
+   * @private
+   */
+  _makeMeasure() {
+    this._measureCanvas ??= document.createElement('canvas');
+    const ctx = this._measureCanvas.getContext('2d');
+    const probe = this._container.querySelector('.dmaic-tile__name');
+    if (probe) {
+      const cs = getComputedStyle(probe);
+      ctx.font = `${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`;
+    } else {
+      ctx.font = '12px sans-serif';
+    }
+    return (text) => ctx.measureText(text).width;
+  }
+
+  /**
+   * Recompute whether inactive tiles must collapse and toggle the container
+   * class. Content-driven (no ResizeObserver): called at render, cycle switch,
+   * and language change. See docs/superpowers/specs/2026-08-12-hauptmenu-phase-tiles-design.md.
+   * @private
+   */
+  _recomputeCollapse() {
+    const cycleId = this._getCycleId();
+    const tiles = getAllPhaseIds(cycleId).map((p) => {
+      const def = getPhaseDef(cycleId, p);
+      return {
+        letter: def?.letter ?? '?',
+        name: this._i18n.t(`phases.${p}`),
+        hasZeg: def?.virtual !== true,
+      };
+    });
+    const est = estimateTilesWidth(tiles, this._makeMeasure());
+    const budget = this._container.clientWidth || 1280;
+    const menuMode = getCycle(cycleId).menuMode ?? 'auto';
+    this._collapsed = resolveCollapsed({ est, budget, menuMode });
+    this._container.classList.toggle('dmaic-tiles--collapsed', this._collapsed);
+  }
+
   _subscribeEvents() {
     this._eventBus.on('module:added', () => {});
     this._eventBus.on('module:removed', () => {});
@@ -533,5 +576,6 @@ export class DmaicTiles {
       if (nameEl) nameEl.textContent = this._i18n.t(`phases.${phase}`);
       tile.setAttribute('aria-label', this._i18n.t(`phases.${phase}`));
     });
+    this._recomputeCollapse();
   }
 }
