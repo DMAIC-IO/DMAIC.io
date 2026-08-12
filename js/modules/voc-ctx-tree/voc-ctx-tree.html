@@ -44,8 +44,8 @@
        <div class="vct__card-actions">
         <button class="btn btn--icon-sm vct__card-action-btn vct__edit-voc-btn" :data-voc-id="voc.id"
                 :title="t('common.edit')" @click="editVoc(voc, $event)">✎</button>
-        <button class="btn btn--icon-sm vct__card-action-btn vct__card-action-btn--del vct__del-voc-btn"
-                :data-voc-id="voc.id" :title="t('common.delete')" @click="deleteVoc(voc, $event)">🗑</button>
+        <button class="btn btn--icon-sm btn--danger vct__card-action-btn vct__del-voc-btn"
+                :data-voc-id="voc.id" :title="t('common.delete')" @click="deleteVoc(voc, $event)">×</button>
        </div>
       </div>
      </div>
@@ -102,7 +102,7 @@
             <button class="btn btn--icon-sm vct__node-btn vct__edit-need-btn"
                     :data-voc-id="model.activeVoc.id" :data-need-id="need.id"
                     :title="t('common.edit')" @click="editNeed(model.activeVoc.id, need)">✎</button>
-            <button class="btn btn--icon-sm vct__node-btn vct__node-btn--del vct__del-need-btn"
+            <button class="btn btn--icon-sm btn--danger vct__node-btn vct__del-need-btn"
                     :data-voc-id="model.activeVoc.id" :data-need-id="need.id"
                     :title="t('common.delete')" @click="deleteNeed(model.activeVoc.id, need.id)">×</button>
            </div>
@@ -127,7 +127,7 @@
                 <button class="btn btn--icon-sm vct__node-btn vct__edit-ctx-btn"
                         :data-voc-id="model.activeVoc.id" :data-need-id="need.id" :data-drv-id="drv.id"
                         :title="t('common.edit')" @click="editDriver(model.activeVoc.id, need.id, drv)">✎</button>
-                <button class="btn btn--icon-sm vct__node-btn vct__node-btn--del vct__del-ctx-btn"
+                <button class="btn btn--icon-sm btn--danger vct__node-btn vct__del-ctx-btn"
                         :data-voc-id="model.activeVoc.id" :data-need-id="need.id" :data-drv-id="drv.id"
                         :title="t('common.delete')" @click="deleteDriver(model.activeVoc.id, need.id, drv.id)">×</button>
                </div>
@@ -156,7 +156,7 @@
                            :data-voc-id="model.activeVoc.id" :data-need-id="need.id"
                            :data-drv-id="drv.id" :data-req-id="req.id"
                            :title="t('common.edit')" @click="editReq(model.activeVoc.id, need.id, drv.id, req)">✎</button>
-                   <button class="btn btn--icon-sm vct__node-btn vct__node-btn--del vct__del-req-btn"
+                   <button class="btn btn--icon-sm btn--danger vct__node-btn vct__del-req-btn"
                            :data-voc-id="model.activeVoc.id" :data-need-id="need.id"
                            :data-drv-id="drv.id" :data-req-id="req.id"
                            :title="t('common.delete')" @click="deleteReq(model.activeVoc.id, need.id, drv.id, req.id)">×</button>

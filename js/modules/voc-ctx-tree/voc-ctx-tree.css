@@ -169,11 +169,6 @@
   font-size: 0.8rem;
 }
 
-.vct__card-action-btn--del:hover {
-  color: var(--color-error);
-  background: rgb(239 68 68 / 10%);
-}
-
 /* ── Main area ── */
 
 /* flex-direction: column and overflow inherited from dmike-split__output */
@@ -269,11 +264,6 @@
 /* Node actions use global .btn .btn--icon-sm */
 .vct__node-btn {
   font-size: 0.8rem;
-}
-
-.vct__node-btn--del:hover {
-  color: var(--color-error);
-  background: rgb(239 68 68 / 10%);
 }
 
 /* ── Tree children containers ── */
