@@ -236,7 +236,7 @@ export class Workspace {
       class: 'workspace__tab-edit',
       title: renameLabel,
       'aria-label': renameLabel,
-    }, icon('edit'));
+    }, '✎');
 
     const closeSpan = h('span', {
       class: 'workspace__tab-close',
@@ -285,6 +285,12 @@ export class Workspace {
       this._draggedTab = { instanceId, moduleId, phase };
       e.dataTransfer.effectAllowed = 'move';
       e.dataTransfer.setData('application/x-dmike-tab', JSON.stringify({ instanceId, moduleId, phase }));
+      // Drag start is armed on the grip, but the drag image is the WHOLE tab
+      // (grab point at the cursor within the tab), not just the little handle.
+      if (e.dataTransfer.setDragImage) {
+        const rect = tab.getBoundingClientRect();
+        e.dataTransfer.setDragImage(tab, e.clientX - rect.left, e.clientY - rect.top);
+      }
       tab.classList.add('workspace__tab--dragging');
     });
     gripSpan.addEventListener('dragend', () => {

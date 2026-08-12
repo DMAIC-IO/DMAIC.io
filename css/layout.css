@@ -415,13 +415,14 @@ html.is-nightly body {
   color: #ffc107;
 }
 
-/* Hide close buttons when readonly */
-.dmike--readonly .workspace__tab-close {
-  display: none;
-}
-
+/* Hide grip/pencil/close affordances when readonly — including on hover, so the
+   hover-reveal rule cannot bring them back (matched specificity via :hover). */
 .dmike--readonly .workspace__tab-grip,
-.dmike--readonly .workspace__tab-edit {
+.dmike--readonly .workspace__tab-edit,
+.dmike--readonly .workspace__tab-close,
+.dmike--readonly .workspace__tab:hover .workspace__tab-grip,
+.dmike--readonly .workspace__tab:hover .workspace__tab-edit,
+.dmike--readonly .workspace__tab:hover .workspace__tab-close {
   display: none;
 }
 
@@ -1836,6 +1837,12 @@ body.training-area-open .dmaic-tiles {
   background: var(--color-bg-tertiary);
 }
 
+/* Keine Aktionen für das aktive Modul → gar nichts anzeigen (kein Trenner,
+   kein Hintergrund-Block). */
+.workspace__actions:empty {
+  display: none;
+}
+
 .workspace__action {
   display: flex;
   flex-direction: column;
@@ -1934,10 +1941,9 @@ body.training-area-open .dmaic-tiles {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: var(--spacing-xs);
   min-height: 44px;
   box-sizing: border-box;
-  padding: var(--spacing-xs) var(--spacing-md);
+  padding: var(--spacing-xs) var(--spacing-sm);
   cursor: pointer;
   font-size: var(--font-size-sm);
   color: var(--color-text-secondary);
@@ -1946,6 +1952,13 @@ body.training-area-open .dmaic-tiles {
   white-space: nowrap;
   transition: background var(--transition-speed), color var(--transition-speed);
   user-select: none;
+}
+
+/* Idle (keine Controls) etwas mehr Außenabstand; bei Hover schrumpft das Padding
+   wieder auf den Basiswert, während grip/stift/x einblenden (mit Controls ok). */
+.workspace__tab:not(:hover) {
+  padding-left: var(--spacing-md);
+  padding-right: var(--spacing-md);
 }
 
 .workspace__tab:hover {
@@ -1959,63 +1972,63 @@ body.training-area-open .dmaic-tiles {
   border-bottom: 2px solid var(--color-accent);
 }
 
-.workspace__tab-close {
-  width: 16px;
-  height: 16px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  color: var(--color-text-tertiary);
-  transition: background var(--transition-speed), color var(--transition-speed);
-}
-
-.workspace__tab-close:hover {
-  background: var(--color-bg-tertiary);
-  color: var(--color-error);
-}
-
-.workspace__tab-close .icon {
-  width: 12px;
-  height: 12px;
-}
-
-/* Grip + Stift + X erscheinen bei Hover oder auf der aktiven Tab.
-   Platz ist immer reserviert (nur opacity), damit der Name nicht springt. */
+/* Tab-Affordances (Grip / Stift / X): im Ruhezustand komplett aus dem Layout —
+   kein reservierter Platz. Sie erscheinen nur bei Hover über die Tab (NICHT
+   dauerhaft auf der aktiven); die Tab darf dabei breiter werden. Große
+   Klickfläche: volle Tab-Höhe + großzügige Breite, nicht nur Icon-Größe. */
 .workspace__tab-grip,
-.workspace__tab-edit {
+.workspace__tab-edit,
+.workspace__tab-close {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 16px;
-  height: 16px;
-  color: var(--color-text-tertiary);
+  align-self: stretch;
+  max-width: 0;
+  padding: 0;
+  overflow: hidden;
   opacity: 0;
-  transition: opacity var(--transition-speed), color var(--transition-speed);
+  color: var(--color-text-tertiary);
+  transition:
+    max-width var(--transition-speed) ease-out,
+    padding var(--transition-speed) ease-out,
+    opacity var(--transition-speed) ease-out,
+    background var(--transition-speed),
+    color var(--transition-speed);
+}
+
+/* Bei Hover wachsen grip/stift/x aus dem Nichts auf (max-width + Fade); die Tab
+   wird dabei breiter. Volle Höhe + Breite = große Klickfläche. */
+.workspace__tab:hover .workspace__tab-grip,
+.workspace__tab:hover .workspace__tab-edit,
+.workspace__tab:hover .workspace__tab-close {
+  max-width: 2rem;
+  padding: 0 var(--spacing-xs);
+  opacity: 1;
 }
 
 .workspace__tab-grip { cursor: grab; }
 .workspace__tab-grip:active { cursor: grabbing; }
-.workspace__tab-edit { cursor: pointer; }
-
 .workspace__tab-grip .icon,
-.workspace__tab-edit .icon {
-  width: 12px;
-  height: 12px;
+.workspace__tab-close .icon { width: 14px; height: 14px; }
+
+/* Stift: reines ✎-Zeichen. Direkt-Hover zoomt (keine Umfärbung); eigene
+   transition inkl. transform, damit der Zoom neben dem Reveal läuft. */
+.workspace__tab-edit {
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1;
+  transition:
+    max-width var(--transition-speed) ease-out,
+    padding var(--transition-speed) ease-out,
+    opacity var(--transition-speed) ease-out,
+    transform var(--transition-speed);
 }
+.workspace__tab-edit:hover { transform: scale(1.3); }
 
-.workspace__tab-edit:hover { color: var(--color-accent); }
-
-/* X folgt derselben Reveal-Logik wie Grip/Stift (bisher immer sichtbar). */
-.workspace__tab-close { opacity: 0; }
-
-.workspace__tab:hover .workspace__tab-grip,
-.workspace__tab:hover .workspace__tab-edit,
-.workspace__tab:hover .workspace__tab-close,
-.workspace__tab--active .workspace__tab-grip,
-.workspace__tab--active .workspace__tab-edit,
-.workspace__tab--active .workspace__tab-close {
-  opacity: 1;
+/* X: volle Höhe als Klickfläche, rote Tönung bei Hover. */
+.workspace__tab-close:hover {
+  background: var(--color-bg-tertiary);
+  color: var(--color-error);
 }
 
 .workspace__tab-name-input {
@@ -2561,4 +2574,15 @@ body.training-area-open .dmaic-tiles {
 
 .dmaic-tiles--collapsed .dmaic-tile:not(.dmaic-tile--active):hover .dmaic-tile__menu-btn {
   display: inline-flex;
+}
+
+/* Collapsed at rest: der verborgene Stift-Slot soll die Zahl nicht von der
+   Abkürzung wegschieben — reservierte Breite auf 0. Beim Aufklappen (Hover)
+   wieder auf volle Slot-Breite, damit der Stift Platz zum Erscheinen hat. */
+.dmaic-tiles--collapsed .dmaic-tile:not(.dmaic-tile--active) .dmaic-tile__edit-icon {
+  width: 0;
+}
+
+.dmaic-tiles--collapsed .dmaic-tile:not(.dmaic-tile--active):hover .dmaic-tile__edit-icon {
+  width: 0.85em;
 }
