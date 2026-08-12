@@ -10,6 +10,13 @@
   padding: 0;          /* override dmike-split__input padding — sidebar has own header/body */
   gap: 0;
   overflow: hidden;    /* clip children to border-radius */
+  /* .dmike-split__input defaults to align-self:flex-start (sizes to its own
+     content), so .sha__sidebar-body's flex:1 never gets a bounded height
+     and its overflow-y:auto never engages — the unbounded list instead
+     grows .dmike-split / .module-container past the workspace, producing a
+     second, outer scrollbar (Bug 022). Stretch to the split's full height
+     so the sidebar body's own scroll is the only one that ever triggers. */
+  align-self: stretch;
 }
 
 .sha__sidebar-header {
