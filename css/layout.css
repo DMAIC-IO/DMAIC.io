@@ -544,7 +544,7 @@ html.is-nightly body {
   width: 1px;
   align-self: stretch;
   margin: 4px 2px;
-  background: var(--color-border);
+  background: var(--color-border-primary);
 }
 
 /* Chevron rotates when the module menu is open. */
