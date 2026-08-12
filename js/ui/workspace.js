@@ -206,11 +206,12 @@ export class Workspace {
     tab.dataset.moduleId = moduleId;
     tab.setAttribute('role', 'tab');
     tab.setAttribute('tabindex', '0');
-    tab.setAttribute('draggable', 'true');
 
     const defaultName = this._i18n.t(`modules.${moduleId}.name`);
     const customName = this._getCustomName(instanceId, phase);
     const closeLabel = this._i18n.t('workspace.tabs.close');
+    const renameLabel = this._i18n.t('workspace.tabs.rename');
+    const reorderLabel = this._i18n.t('workspace.tabs.reorder');
 
     tab.title = this._i18n.t(`modules.${moduleId}.description`);
 
@@ -224,15 +225,30 @@ export class Workspace {
       nameSpan = h('span', { class: 'workspace__tab-name' }, defaultName);
     }
 
+    const gripSpan = h('span', {
+      class: 'workspace__tab-grip',
+      title: reorderLabel,
+      'aria-label': reorderLabel,
+      draggable: 'true',
+    }, icon('move'));
+
+    const editSpan = h('span', {
+      class: 'workspace__tab-edit',
+      title: renameLabel,
+      'aria-label': renameLabel,
+    }, icon('edit'));
+
     const closeSpan = h('span', {
       class: 'workspace__tab-close',
       title: closeLabel,
       'aria-label': closeLabel,
     }, icon('close'));
-    tab.append(nameSpan, closeSpan);
+    tab.append(gripSpan, editSpan, nameSpan, closeSpan);
 
     tab.addEventListener('click', (e) => {
       if (!e.target.closest('.workspace__tab-close') &&
+          !e.target.closest('.workspace__tab-grip') &&
+          !e.target.closest('.workspace__tab-edit') &&
           !e.target.classList.contains('workspace__tab-name-input')) {
         if (this._router) {
           this._router.navigate({
@@ -250,6 +266,13 @@ export class Workspace {
       this._removeModule(instanceId, moduleId, phase);
     });
 
+    editSpan.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (this._stateManager.isCompleted()) return;
+      const liveName = tab.querySelector('.workspace__tab-name');
+      if (liveName) this._startTabRename(liveName, instanceId, moduleId, phase);
+    });
+
     // Double-click on tab name → inline rename
     nameSpan.addEventListener('dblclick', (e) => {
       e.stopPropagation();
@@ -257,14 +280,14 @@ export class Workspace {
       this._startTabRename(nameSpan, instanceId, moduleId, phase);
     });
 
-    // ── Tab drag & drop ──
-    tab.addEventListener('dragstart', (e) => {
+    // ── Tab drag & drop ── (drag starts only from the grip; tab stays the drop-zone)
+    gripSpan.addEventListener('dragstart', (e) => {
       this._draggedTab = { instanceId, moduleId, phase };
       e.dataTransfer.effectAllowed = 'move';
       e.dataTransfer.setData('application/x-dmike-tab', JSON.stringify({ instanceId, moduleId, phase }));
       tab.classList.add('workspace__tab--dragging');
     });
-    tab.addEventListener('dragend', () => {
+    gripSpan.addEventListener('dragend', () => {
       tab.classList.remove('workspace__tab--dragging');
       this._tabsEl.querySelectorAll('.workspace__tab').forEach(t =>
         t.classList.remove('workspace__tab--drop-before', 'workspace__tab--drop-after')

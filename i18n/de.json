@@ -123,7 +123,9 @@
     "emptyState": "Fügen Sie ein Modul hinzu, um zu beginnen.",
     "removeConfirm": "Modul \"{name}\" wirklich entfernen?",
     "tabs": {
-      "close": "Schließen"
+      "close": "Schließen",
+      "rename": "Umbenennen",
+      "reorder": "Verschieben"
     }
   },
   "settings": {

@@ -420,6 +420,11 @@ html.is-nightly body {
   display: none;
 }
 
+.dmike--readonly .workspace__tab-grip,
+.dmike--readonly .workspace__tab-edit {
+  display: none;
+}
+
 .app-header__spacer {
   flex: 0;
 }
@@ -1937,7 +1942,7 @@ body.training-area-open .dmaic-tiles {
   font-size: var(--font-size-sm);
   color: var(--color-text-secondary);
   background: var(--color-tab-inactive-bg);
-  border-right: var(--border-width) solid var(--color-border-secondary);
+  border-right: var(--border-width) solid var(--color-border-primary);
   white-space: nowrap;
   transition: background var(--transition-speed), color var(--transition-speed);
   user-select: none;
@@ -1973,6 +1978,44 @@ body.training-area-open .dmaic-tiles {
 .workspace__tab-close .icon {
   width: 12px;
   height: 12px;
+}
+
+/* Grip + Stift + X erscheinen bei Hover oder auf der aktiven Tab.
+   Platz ist immer reserviert (nur opacity), damit der Name nicht springt. */
+.workspace__tab-grip,
+.workspace__tab-edit {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  color: var(--color-text-tertiary);
+  opacity: 0;
+  transition: opacity var(--transition-speed), color var(--transition-speed);
+}
+
+.workspace__tab-grip { cursor: grab; }
+.workspace__tab-grip:active { cursor: grabbing; }
+.workspace__tab-edit { cursor: pointer; }
+
+.workspace__tab-grip .icon,
+.workspace__tab-edit .icon {
+  width: 12px;
+  height: 12px;
+}
+
+.workspace__tab-edit:hover { color: var(--color-accent); }
+
+/* X folgt derselben Reveal-Logik wie Grip/Stift (bisher immer sichtbar). */
+.workspace__tab-close { opacity: 0; }
+
+.workspace__tab:hover .workspace__tab-grip,
+.workspace__tab:hover .workspace__tab-edit,
+.workspace__tab:hover .workspace__tab-close,
+.workspace__tab--active .workspace__tab-grip,
+.workspace__tab--active .workspace__tab-edit,
+.workspace__tab--active .workspace__tab-close {
+  opacity: 1;
 }
 
 .workspace__tab-name-input {
