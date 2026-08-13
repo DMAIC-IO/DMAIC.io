@@ -1,0 +1,98 @@
+{
+  "lessons": [
+    {
+      "id": "l1",
+      "title": "Sequenzielle Bearbeitungsreihenfolge löst das Irreversibilitäts-Problem der Rotorlänge",
+      "category": "success",
+      "phase": "control",
+      "impact": "high",
+      "owner": "Flyer-Empfänger (Belt)",
+      "description": "Da mit nur einem Prototypen gearbeitet wurde und die Rotorlänge nur monoton per Schere gekürzt werden kann (8 → 6 → 4 cm, nie wieder länger), wurde das DoE nach Rotorlänge geblockt: erst alle Läufe bei 8 cm, dann kürzen auf 6 cm, dann auf 4 cm. `randomize: false` + Zeilenreihenfolge im Datenblatt bilden die physisch erzwungene Blockung ab.",
+      "rootCause": "Ein einzelner physischer Prototyp erlaubt keine echte Randomisierung eines irreversiblen Faktors — jede Rücknahme eines Schnitts ist unmöglich.",
+      "recommendation": "Bei irreversiblen/destruktiven Faktoren grundsätzlich nach diesem Faktor blocken und die Randomisierung auf die reversiblen Faktoren (hier: Klammernzahl) beschränken.",
+      "actions": [
+        {
+          "text": "Sequenzielle Blockung als Standard-Vorgehen für Projekte mit irreversiblen Faktoren im Handbuch dokumentieren",
+          "done": false
+        }
+      ],
+      "createdAt": "-14d",
+      "updatedAt": "-14d"
+    },
+    {
+      "id": "l2",
+      "title": "MSA vor DoE durchgeführt — Messsystem als Störgröße ausgeschlossen",
+      "category": "success",
+      "phase": "control",
+      "impact": "high",
+      "owner": "Fluglehrer (SME)",
+      "description": "Die Typ-1-Messsystemanalyse für den Zeitstopp (10 Wiederholmessungen an der Baseline-Konfiguration) wurde vor dem DoE abgeschlossen. Erst dadurch war sicher, dass die im DoE beobachtete Streuung tatsächlich von den Faktoren Rotorlänge/Klammernzahl stammt und nicht vom Messsystem selbst.",
+      "rootCause": "Ohne vorab abgesicherte Messfähigkeit wäre jede spätere Aussage über Faktoreffekte angreifbar gewesen.",
+      "recommendation": "MSA Typ 1 als Pflicht-Gate vor jedem DoE etablieren, nicht als optionalen Schritt.",
+      "actions": [
+        {
+          "text": "MSA-Typ-1-Gate vor DoE-Start fest in die Projekt-Checkliste aufnehmen",
+          "done": true
+        }
+      ],
+      "createdAt": "-13d",
+      "updatedAt": "-13d"
+    },
+    {
+      "id": "l3",
+      "title": "Fokus auf zwei Faktoren hält das Design handhabbar",
+      "category": "success",
+      "phase": "control",
+      "impact": "medium",
+      "owner": "D.Mike-Marketing",
+      "description": "Die bewusste Beschränkung auf zwei Faktoren (Rotorlänge, Klammernzahl) statt drei erlaubte ein vollständiges 3²-Design mit 2 Replikaten (18 Läufe) in einer Messestand-Session — ein drittes Faktorlevel hätte die Laufzahl auf 54+ getrieben.",
+      "rootCause": "Zeit- und Prototypen-Restriktionen am Messestand erlauben kein größeres Design.",
+      "recommendation": "Bei engem Zeitbudget den Faktorraum aktiv auf die zwei wirkungsstärksten Faktoren begrenzen, weitere Faktoren als Folgeprojekt vormerken.",
+      "actions": [],
+      "createdAt": "-12d",
+      "updatedAt": "-12d"
+    },
+    {
+      "id": "l4",
+      "title": "Rotorbreite konnte nicht als dritter Faktor aufgenommen werden",
+      "category": "problem",
+      "phase": "control",
+      "impact": "medium",
+      "owner": "Papercraft-Enthusiast (SME)",
+      "description": "Die Rotorbreite ist wie die Rotorlänge nur monoton kürzbar — mit nur einem Prototypen hätte ein dritter irreversibler Faktor die Blockungsstruktur des Designs gesprengt (3 Faktoren × sequenzielle Blockung ist mit einem einzigen Flyer nicht mehr sauber trennbar).",
+      "rootCause": "Ein einzelner physischer Prototyp limitiert die Zahl gleichzeitig blockbarer irreversibler Faktoren auf eins.",
+      "recommendation": "Rotorbreite in einem zweiten Flyer als eigenständiges Augmentierungs-Design untersuchen.",
+      "actions": [
+        {
+          "text": "Zweiten Flyer für Augmentierungs-Design mit Rotorbreite als drittem Faktor vorbereiten",
+          "done": false
+        }
+      ],
+      "createdAt": "-11d",
+      "updatedAt": "-11d"
+    },
+    {
+      "id": "l5",
+      "title": "Wurftechnik dominiert die Reststreuung trotz optimaler Einstellung",
+      "category": "problem",
+      "phase": "control",
+      "impact": "high",
+      "owner": "Flyer-Empfänger (Belt)",
+      "description": "Auch bei den Bestätigungsläufen im Optimum (L = 6 cm, C = 1) blieb eine spürbare Streuung zwischen den 5 Läufen bestehen (σ ≈ 0,12 s). Die 5-Why-Analyse zeigt: Wurftechnik (Loslasshöhe, Drehimpuls beim Loslassen) ist nicht standardisiert und dominiert die Reststreuung stärker als jeder verbleibende Faktoreffekt.",
+      "rootCause": "Ohne feste Wurfvorrichtung wirft jede Person den Flyer minimal anders — Fallhöhe und Anfangsrotation variieren von Wurf zu Wurf.",
+      "recommendation": "Wurf-SOP dokumentieren und mittelfristig eine einfache Wurfvorrichtung bauen, um die Reststreuung weiter zu senken.",
+      "actions": [
+        {
+          "text": "Wurf-SOP (Loslasshöhe, Griff, Freigabetechnik) dokumentieren",
+          "done": false
+        },
+        {
+          "text": "Einfache Wurfvorrichtung für reproduzierbare Fallhöhe/Rotation bauen",
+          "done": false
+        }
+      ],
+      "createdAt": "-10d",
+      "updatedAt": "-10d"
+    }
+  ]
+}

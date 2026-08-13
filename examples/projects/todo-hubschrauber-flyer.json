@@ -1,0 +1,50 @@
+{
+  "_dateNote": "`due` uses [+|-]Nd offsets relative to today; loadExample() resolves them via core/date-offset.js so the example stays evergreen.",
+  "items": [
+    {
+      "id": "t01",
+      "text": "Öffne response-optimization NACH doe-planner → Transfer zu Regression → dort „als Modell speichern“ — dann kommt das Optimum-Panel zum Leben.",
+      "owner": "Flyer-Empfänger (Belt)",
+      "due": "",
+      "status": "open",
+      "cal": false
+    },
+    {
+      "id": "t02",
+      "text": "Zweiten Flyer für Augmentierungs-Design bauen — Rotorbreite als dritten Faktor untersuchen",
+      "owner": "Papercraft-Enthusiast (SME)",
+      "due": "+21d",
+      "status": "open",
+      "cal": false
+    },
+    {
+      "id": "t03",
+      "text": "Fallhöhen-Variation für Robustheits-Test durchführen",
+      "owner": "Fluglehrer (SME)",
+      "due": "+28d",
+      "status": "open",
+      "cal": false
+    },
+    {
+      "id": "t04",
+      "text": "Wurf-SOP (Loslasshöhe, Griff, Freigabetechnik) dokumentieren",
+      "owner": "Flyer-Empfänger (Belt)",
+      "due": "+14d",
+      "status": "in-progress",
+      "cal": false
+    },
+    {
+      "id": "t05",
+      "text": "Einfache Wurfvorrichtung für reproduzierbare Fallhöhe/Rotation bauen",
+      "owner": "D.Mike-Marketing",
+      "due": "+35d",
+      "status": "open",
+      "cal": false
+    }
+  ],
+  "filterStatus": "all",
+  "filterOwner": "all",
+  "search": "",
+  "sortCol": "due",
+  "sortAsc": true
+}

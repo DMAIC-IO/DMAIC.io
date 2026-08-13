@@ -2900,6 +2900,78 @@
         "doe-training",
         "sequential-blocks"
       ]
+    },
+    {
+      "id": "control-chart-hubschrauber-flyer",
+      "type": "project",
+      "title": {
+        "de": "Papier-Hubschrauber — Bestätigung (I-MR-Karte)",
+        "en": "Paper Helicopter — Confirmation (I-MR Chart)"
+      },
+      "description": {
+        "de": "I-MR-Karte aus 5 Bestätigungsläufen im Optimum (L = 6 cm, C = 1 Klammer, Mittel ≈ 2,76 s, σ ≈ 0,12 s). Regelgrenzen aus der Baseline-Streuung — der Prozess läuft unter Kontrolle bei Optimum.",
+        "en": "I-MR chart from 5 confirmation runs at the optimum (L = 6 cm, C = 1 clip, mean ≈ 2.76 s, σ ≈ 0.12 s). Control limits derived from the baseline spread — the process is in control at the optimum."
+      },
+      "source": "D.Mike synthetisch, Physik-Modell, Seed=1305",
+      "license": "public-domain",
+      "file": "projects/control-chart-hubschrauber-flyer.json",
+      "format": "json",
+      "modules": [
+        "control-chart"
+      ],
+      "tags": [
+        "helicopter",
+        "doe-training",
+        "sequential-blocks"
+      ]
+    },
+    {
+      "id": "lessons-learned-hubschrauber-flyer",
+      "type": "project",
+      "title": {
+        "de": "Papier-Hubschrauber — Lessons Learned",
+        "en": "Paper Helicopter — Lessons Learned"
+      },
+      "description": {
+        "de": "5 Lessons aus dem Projekt: sequenzielle Blockung löst die Irreversibilität der Rotorlänge (Erfolg), MSA vor DoE (Erfolg), Fokus auf zwei Faktoren (Erfolg) sowie Rotorbreite als dritter Faktor nicht umsetzbar (Problem) und Wurftechnik als dominierende Reststreuung (Problem).",
+        "en": "5 lessons from the project: sequential blocking resolves the irreversibility of the rotor length (success), MSA before DoE (success), focusing on two factors (success), plus wing width not viable as a third factor (problem) and throwing technique dominating the residual variation (problem)."
+      },
+      "source": "D.Mike synthetisch, Physik-Modell, Seed=1305",
+      "license": "public-domain",
+      "file": "projects/lessons-learned-hubschrauber-flyer.json",
+      "format": "json",
+      "modules": [
+        "lessons-learned"
+      ],
+      "tags": [
+        "helicopter",
+        "doe-training",
+        "sequential-blocks"
+      ]
+    },
+    {
+      "id": "todo-hubschrauber-flyer",
+      "type": "project",
+      "title": {
+        "de": "Papier-Hubschrauber — Follow-ups (Todo-Liste)",
+        "en": "Paper Helicopter — Follow-ups (todo list)"
+      },
+      "description": {
+        "de": "5 Aufgaben nach Projektabschluss: Workflow-Hinweis zur Aktivierung des Optimum-Panels in response-optimization, zweiter Flyer für die Rotorbreiten-Augmentierung, Fallhöhen-Variation für Robustheit, Wurf-SOP dokumentieren und Wurfvorrichtung bauen.",
+        "en": "5 follow-up tasks after project close: a workflow note on activating the optimum panel in response-optimization, a second flyer for the wing-width augmentation, drop-height variation for robustness, documenting a throw SOP, and building a throwing fixture."
+      },
+      "source": "D.Mike synthetisch, Physik-Modell, Seed=1305",
+      "license": "public-domain",
+      "file": "projects/todo-hubschrauber-flyer.json",
+      "format": "json",
+      "modules": [
+        "todo"
+      ],
+      "tags": [
+        "helicopter",
+        "doe-training",
+        "sequential-blocks"
+      ]
     }
   ]
 }
