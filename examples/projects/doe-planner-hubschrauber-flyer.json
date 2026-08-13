@@ -1,0 +1,63 @@
+{
+  "version": 3,
+  "doeName": "Papier-Hubschrauber — Rotorlänge × Klammern (3², 2 Rep., geblockt L=8→6→4)",
+  "designType": "full",
+  "factors": [
+    { "id": 1, "name": "Rotorlänge", "unit": "cm", "kind": "continuous", "levels": ["4", "6", "8"] },
+    { "id": 2, "name": "Klammern", "unit": "Stück", "kind": "continuous", "levels": ["0", "1", "2"] }
+  ],
+  "responses": [
+    { "name": "Flugzeit", "unit": "s" }
+  ],
+  "options": {
+    "randomize": false,
+    "centerPoints": false,
+    "replicates": 2,
+    "alphaType": "rotatable",
+    "ccdCenterPoints": 3,
+    "bbCenterPoints": 3,
+    "taguchiArray": "",
+    "optimalRuns": 0,
+    "optimalActiveTerms": null,
+    "forbiddenVertices": []
+  },
+  "selectedRes": null,
+  "selectedPBIdx": null,
+  "design": {
+    "codedMatrix": [
+      [1, -1], [1, -1], [1, 1], [1, 1], [1, 0], [1, 0],
+      [0, 1], [0, 1], [0, 0], [0, 0], [0, -1], [0, -1],
+      [-1, -1], [-1, 1], [-1, 1], [-1, 0], [-1, -1], [-1, 0]
+    ],
+    "actualMatrix": [
+      [8, 0], [8, 0], [8, 2], [8, 2], [8, 1], [8, 1],
+      [6, 2], [6, 2], [6, 1], [6, 1], [6, 0], [6, 0],
+      [4, 0], [4, 2], [4, 2], [4, 1], [4, 0], [4, 1]
+    ],
+    "stdOrder": [7, 7, 9, 9, 8, 8, 6, 6, 5, 5, 4, 4, 1, 3, 3, 2, 1, 2],
+    "runOrder": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18],
+    "replicateIds": [2, 1, 2, 1, 1, 2, 1, 2, 2, 1, 2, 1, 2, 1, 2, 2, 1, 1],
+    "resolution": "Full",
+    "p": 0,
+    "designType": "full"
+  },
+  "previewEdits": {
+    "factors": [
+      [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null],
+      [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null]
+    ],
+    "responses": [
+      [2.548, 2.327, 2.527, 2.411, 2.894, 2.841, 2.542, 2.486, 2.86, 2.589, 2.347, 2.567, 2.449, 2.14, 2.093, 2.458, 1.939, 2.273]
+    ]
+  },
+  "previewDirty": false,
+  "worksheetRef": null,
+  "sourceWorksheet": null,
+  "evaluation": null,
+  "analysisResponseIdx": 0,
+  "fid": 2,
+  "projectMode": false,
+  "projectName": "",
+  "projectPhases": [],
+  "activePhaseIdx": -1
+}

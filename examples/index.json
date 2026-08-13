@@ -2588,6 +2588,30 @@
         "control-chart",
         "shift"
       ]
+    },
+    {
+      "id": "doe-planner-hubschrauber-flyer",
+      "type": "project",
+      "title": {
+        "de": "Papier-Hubschrauber — DoE (Rotorlänge × Klammern)",
+        "en": "Paper Helicopter — DoE (Rotor Length × Paperclips)"
+      },
+      "description": {
+        "de": "3² Voll-Faktoriell mit 2 Replikaten (18 Läufe), blockweise nach Rotorlänge (L = 8 → 6 → 4 cm, physikalisch erzwungen). Klammern-Reihenfolge innerhalb Block randomisiert. Ergebnis: wahres Optimum bei (L ≈ 7 cm, C = 1) liegt zwischen den getesteten Längen — perfektes RSM-Beispiel.",
+        "en": "3² full factorial with 2 replicates (18 runs), blocked by rotor length (L = 8 → 6 → 4 cm, physically forced). Paperclip order randomized within block. True optimum at (L ≈ 7 cm, C = 1) lies between tested lengths — a textbook RSM case."
+      },
+      "source": "D.Mike synthetisch, Physik-Modell, Seed=1305",
+      "license": "public-domain",
+      "file": "projects/doe-planner-hubschrauber-flyer.json",
+      "format": "json",
+      "modules": [
+        "doe-planner"
+      ],
+      "tags": [
+        "helicopter",
+        "doe-training",
+        "sequential-blocks"
+      ]
     }
   ]
 }
