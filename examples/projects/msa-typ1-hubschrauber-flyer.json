@@ -1,0 +1,17 @@
+{
+  "params": {
+    "name": "Zeitstopp (2 Metronomschläge)",
+    "ref": 2.0,
+    "unit": "s",
+    "lsl": 0.0,
+    "usl": 4.0,
+    "k1": 0.2,
+    "k2": 3
+  },
+  "columnRef": {
+    "instanceId": "__source__",
+    "sheetId": "sheet-msa-typ1-hubschrauber-flyer",
+    "columnId": "c-messwert"
+  },
+  "sourceWorksheetFile": "worksheets/msa-typ1-hubschrauber-flyer.json"
+}

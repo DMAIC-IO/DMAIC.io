@@ -1,0 +1,48 @@
+{
+  "sheets": [
+    {
+      "id": "sheet-msa-typ1-hubschrauber-flyer",
+      "name": "Zeitstopp – Metronom-Referenz (2,000 s)",
+      "state": {
+        "columns": [
+          {
+            "id": "c-messwert",
+            "name": "Messwert_s",
+            "shortName": "M",
+            "type": "numeric",
+            "values": [
+              2.005,
+              2.205,
+              1.909,
+              1.945,
+              1.894,
+              2.127,
+              1.934,
+              2.009,
+              2.054,
+              2.189,
+              2.043,
+              2.068,
+              1.946,
+              2.211,
+              1.957,
+              2.05,
+              2.125,
+              2.103,
+              2.138,
+              2.01,
+              2.203,
+              2.086,
+              2.094,
+              2.199,
+              1.997
+            ]
+          }
+        ],
+        "rowCount": 25
+      }
+    }
+  ],
+  "activeSheetId": "sheet-msa-typ1-hubschrauber-flyer",
+  "sheetCounter": 1
+}

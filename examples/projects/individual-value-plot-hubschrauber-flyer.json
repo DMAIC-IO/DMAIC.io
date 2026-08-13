@@ -1,0 +1,30 @@
+{
+  "seriesRefs": [
+    {
+      "instanceId": "__source__",
+      "sheetId": "sheet-hubschrauber-baseline",
+      "columnId": "c-flugzeit"
+    }
+  ],
+  "groupRefs": [
+    [
+      null,
+      null,
+      null
+    ]
+  ],
+  "showMean": true,
+  "showMedian": false,
+  "connectMeans": false,
+  "showOverallMean": true,
+  "jitter": 0.6,
+  "showStats": true,
+  "confLevel": 95,
+  "refLines": [],
+  "refAreas": [],
+  "bgColor": null,
+  "pointColors": [],
+  "pointSymbol": "circle",
+  "pointSize": 6,
+  "sourceWorksheetFile": "worksheets/hubschrauber-flyer.json"
+}

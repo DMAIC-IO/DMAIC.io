@@ -2756,6 +2756,78 @@
         "doe-training",
         "sequential-blocks"
       ]
+    },
+    {
+      "id": "process-map-hubschrauber-flyer",
+      "type": "project",
+      "title": {
+        "de": "Papier-Hubschrauber — Prozess-Map",
+        "en": "Paper Helicopter — Process Map"
+      },
+      "description": {
+        "de": "8 Prozessschritte vom Ausschneiden bis zum Blockwechsel, inklusive exakter Faltmaße (Rotor 80×47 mm, Body 130 mm, Faltlinien x = 30/47/63 mm) und Rework-Loop bei Falzfehler zurück zum Falt-Schritt.",
+        "en": "8 process steps from cutting to block change, including exact fold dimensions (rotor 80×47 mm, body 130 mm, fold lines x = 30/47/63 mm) and a rework loop back to the folding step on a fold defect."
+      },
+      "source": "D.Mike synthetisch, Physik-Modell, Seed=1305",
+      "license": "public-domain",
+      "file": "projects/process-map-hubschrauber-flyer.json",
+      "format": "json",
+      "modules": [
+        "process-map"
+      ],
+      "tags": [
+        "helicopter",
+        "doe-training",
+        "sequential-blocks"
+      ]
+    },
+    {
+      "id": "msa-typ1-hubschrauber-flyer",
+      "type": "project",
+      "title": {
+        "de": "Papier-Hubschrauber — MSA Typ 1 (Stoppuhr)",
+        "en": "Paper Helicopter — MSA Type 1 (Stopwatch)"
+      },
+      "description": {
+        "de": "25 Wiederholmessungen der Stoppuhr gegen eine Metronom-Referenz (60 bpm, Bezugswert 2,000 s) — Cg ≈ 1,35 / Cgk ≈ 1,15: fähig, aber grenzwertig. Didaktische Botschaft: erst die Uhr prüfen, bevor das DoE gefahren wird.",
+        "en": "25 repeated stopwatch readings against a metronome reference (60 bpm, target value 2.000 s) — Cg ≈ 1.35 / Cgk ≈ 1.15: capable, but borderline. Teaching point: check the clock before running the DoE."
+      },
+      "source": "D.Mike synthetisch, Physik-Modell, Seed=1305",
+      "license": "public-domain",
+      "file": "projects/msa-typ1-hubschrauber-flyer.json",
+      "format": "json",
+      "modules": [
+        "msa-typ1"
+      ],
+      "tags": [
+        "helicopter",
+        "doe-training",
+        "sequential-blocks"
+      ]
+    },
+    {
+      "id": "individual-value-plot-hubschrauber-flyer",
+      "type": "project",
+      "title": {
+        "de": "Papier-Hubschrauber — Baseline (Individual-Value-Plot)",
+        "en": "Paper Helicopter — Baseline (Individual Value Plot)"
+      },
+      "description": {
+        "de": "10 Baseline-Läufe bei (L = 8 cm, C = 0 Klammern) als Einzelwert-Diagramm — zeigt Mittelwert und Streuung der Flugzeit vor dem DoE.",
+        "en": "10 baseline runs at (L = 8 cm, C = 0 clips) as an individual value plot — shows the mean and spread of flight time before the DoE."
+      },
+      "source": "D.Mike synthetisch, Physik-Modell, Seed=1305",
+      "license": "public-domain",
+      "file": "projects/individual-value-plot-hubschrauber-flyer.json",
+      "format": "json",
+      "modules": [
+        "individual-value-plot"
+      ],
+      "tags": [
+        "helicopter",
+        "doe-training",
+        "sequential-blocks"
+      ]
     }
   ]
 }

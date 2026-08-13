@@ -1,0 +1,139 @@
+{
+  "steps": [
+    {
+      "id": "s1",
+      "title": "Flyer ausschneiden",
+      "description": "Rohflyer aus der 99 × 210 mm Vorlage mit der Schere entlang der Außenkontur ausschneiden. ~20 s.",
+      "valueType": "va",
+      "inputs": [
+        { "id": "i1a", "name": "Rohflyer-Vorlage (99×210 mm)", "inputType": "param" },
+        { "id": "i1b", "name": "Schnittgenauigkeit", "inputType": "noise" }
+      ],
+      "outputs": [
+        { "id": "o1", "name": "Zugeschnittener Flyer-Rohling" }
+      ],
+      "substeps": [],
+      "expanded": false,
+      "loop": null
+    },
+    {
+      "id": "s2",
+      "title": "Rotorblätter falten",
+      "description": "Bergfalte (⌃) mittig bei x = 47 mm; beide Rotorblätter (je 47 mm breit, Gesamtspannweite 94 mm) gegenläufig falten. Rotorlänge L (Faktorstufe 8/6/4 cm) ist der aktuelle Blockwert. ~15 s.",
+      "valueType": "va",
+      "inputs": [
+        { "id": "i2a", "name": "Zugeschnittener Flyer-Rohling" },
+        { "id": "i2b", "name": "Rotorlänge L (cm)", "inputType": "param" },
+        { "id": "i2c", "name": "Faltgenauigkeit", "inputType": "noise" }
+      ],
+      "outputs": [
+        { "id": "o2", "name": "Gefaltete Rotorblätter" }
+      ],
+      "substeps": [],
+      "expanded": false,
+      "loop": null
+    },
+    {
+      "id": "s3",
+      "title": "Rotor/Body trennen",
+      "description": "Schnitt (✂) horizontal bei y = 79 mm zwischen Rotor und Body. ~5 s.",
+      "valueType": "va",
+      "inputs": [
+        { "id": "i3a", "name": "Gefaltete Rotorblätter" }
+      ],
+      "outputs": [
+        { "id": "o3", "name": "Getrennter Rotor + Body" }
+      ],
+      "substeps": [],
+      "expanded": false,
+      "loop": null
+    },
+    {
+      "id": "s4",
+      "title": "Body-Seitenflappen falten",
+      "description": "Talfalte (⌄) vertikal bei x = 30 mm und x = 63 mm; Mittelstreifen ~30 mm + 2 × 30 mm Seitenflappen. ~15 s.",
+      "valueType": "va",
+      "inputs": [
+        { "id": "i4a", "name": "Getrennter Rotor + Body" },
+        { "id": "i4b", "name": "Faltgenauigkeit", "inputType": "noise" }
+      ],
+      "outputs": [
+        { "id": "o4", "name": "Gefalteter Body" }
+      ],
+      "substeps": [],
+      "expanded": false,
+      "loop": null
+    },
+    {
+      "id": "s5",
+      "title": "Body-Tabs einschneiden + Klammern setzen",
+      "description": "Kurze Einschnitte (✂) am Body-Oberrand bei y = 109 mm, je 30 mm lang. Anschließend 0/1/2 Büroklammern gemäß Faktorstufe C an den Tabs befestigen. ~15 s.",
+      "valueType": "va",
+      "inputs": [
+        { "id": "i5a", "name": "Gefalteter Body" },
+        { "id": "i5b", "name": "Klammern C (Stück)", "inputType": "param" }
+      ],
+      "outputs": [
+        { "id": "o5", "name": "Fertig gefalteter Prototyp" }
+      ],
+      "substeps": [],
+      "expanded": false,
+      "loop": null
+    },
+    {
+      "id": "s6",
+      "title": "Faltprüfung",
+      "description": "Sichtprüfung auf Falzfehler: unsaubere Kanten, versetzte Bergfalte, schief sitzende Rotorblätter. ~5 s.",
+      "valueType": "bnva",
+      "inputs": [
+        { "id": "i6a", "name": "Fertig gefalteter Prototyp" }
+      ],
+      "outputs": [
+        { "id": "o6", "name": "Geprüfter Prototyp" }
+      ],
+      "substeps": [],
+      "expanded": false,
+      "loop": {
+        "targetStepId": "s2",
+        "condition": "Falzfehler erkannt (unsymmetrische Rotorblätter / Body-Tabs sitzen nicht plan)",
+        "steps": [
+          { "id": "l6a", "title": "Faltlinien nachschärfen" },
+          { "id": "l6b", "title": "Rotorblätter neu ausrichten" }
+        ]
+      }
+    },
+    {
+      "id": "s7",
+      "title": "Fallenlassen + Zeit stoppen",
+      "description": "Prototyp aus 2,00 m Höhe fallen lassen; Flugzeit bis Bodenkontakt mit Metronom-kalibrierter Stoppuhr stoppen. ~3–4 s Fallzeit + Reaktionszeit.",
+      "valueType": "va",
+      "inputs": [
+        { "id": "i7a", "name": "Geprüfter Prototyp" },
+        { "id": "i7b", "name": "Fallhöhe (2,00 m, fix)", "inputType": "param" },
+        { "id": "i7c", "name": "Windzug", "inputType": "noise" },
+        { "id": "i7d", "name": "Reaktionszeit Stopper", "inputType": "noise" }
+      ],
+      "outputs": [
+        { "id": "o7", "name": "Flugzeit_s (Messwert)" }
+      ],
+      "substeps": [],
+      "expanded": false,
+      "loop": null
+    },
+    {
+      "id": "s8",
+      "title": "Rotorlänge kürzen (Blockwechsel)",
+      "description": "Zwischen den Blöcken Rotorspitzen kürzen: L = 8 → 6 → 4 cm. Irreversibel — bestimmt die physikalisch erzwungene, nicht randomisierbare Blockreihenfolge im DoE.",
+      "valueType": "bnva",
+      "inputs": [
+        { "id": "i8a", "name": "Geprüfter Prototyp" }
+      ],
+      "outputs": [
+        { "id": "o8", "name": "Prototyp mit gekürztem Rotor" }
+      ],
+      "substeps": [],
+      "expanded": false,
+      "loop": null
+    }
+  ]
+}
