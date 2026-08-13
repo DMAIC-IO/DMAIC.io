@@ -2612,6 +2612,30 @@
         "doe-training",
         "sequential-blocks"
       ]
+    },
+    {
+      "id": "response-optimization-hubschrauber-flyer",
+      "type": "project",
+      "title": {
+        "de": "Papier-Hubschrauber — Response-Optimierung",
+        "en": "Paper Helicopter — Response Optimization"
+      },
+      "description": {
+        "de": "Ziel: Regressions-Modell aus dem DoE-Planner-Beispiel „Papier-Hubschrauber\" (18 Läufe) auf „maximiere Flugzeit\" optimieren. Prognose-Optimum bei (L ≈ 7 cm, C = 1) → t̂ ≈ 2,80 s, Desirability-Untergrenze 2,5 s — liegt zwischen den physisch getesteten Rotorlängen (6 und 8 cm) und zeigt den RSM-Kernvorteil. Dieses Beispiel lädt nur einen leeren Optimizer-State, da response-optimization Modelle projektglobal aus dem Regression-Modul bezieht. Workflow: Öffne doe-planner-Beispiel → Aktion „Transfer zu Regression\" → dort „als Modell speichern\" → dann füllt sich response-optimization mit Daten.",
+        "en": "Goal: optimize the regression model from the DoE Planner \"Paper Helicopter\" example (18 runs) for \"maximize flight time\". Predicted optimum at (L ≈ 7 cm, C = 1) → t̂ ≈ 2.80 s, lower desirability bound 2.5 s — lies between the physically tested rotor lengths (6 and 8 cm) and demonstrates the core RSM advantage. This example only loads an empty optimizer state, since response-optimization sources models project-globally from the Regression module. Workflow: open the doe-planner example → action \"Transfer to Regression\" → \"save as model\" there → response-optimization then comes alive with data."
+      },
+      "source": "D.Mike synthetisch, Physik-Modell, Seed=1305",
+      "license": "public-domain",
+      "file": "projects/response-optimization-hubschrauber-flyer.json",
+      "format": "json",
+      "modules": [
+        "response-optimization"
+      ],
+      "tags": [
+        "helicopter",
+        "doe-training",
+        "sequential-blocks"
+      ]
     }
   ]
 }
