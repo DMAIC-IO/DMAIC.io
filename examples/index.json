@@ -2828,6 +2828,78 @@
         "doe-training",
         "sequential-blocks"
       ]
+    },
+    {
+      "id": "ishikawa-hubschrauber-flyer",
+      "type": "project",
+      "title": {
+        "de": "Papier-Hubschrauber — Ursachenanalyse (Ishikawa 6M)",
+        "en": "Paper Helicopter — Root Cause Analysis (Ishikawa 6M)"
+      },
+      "description": {
+        "de": "6M-Fischgräten-Diagramm zur Streuung der Flugzeit: Wurftechnik, Klammer-Sitz, Papier, Faltpräzision, Windzüge und Stoppuhr-Reaktionszeit als mögliche Ursachen — Wurftechnik als bestätigte Hauptursache.",
+        "en": "6M fishbone diagram for flight-time variation: throwing technique, clip fit, paper, folding precision, drafts and stopwatch reaction time as candidate causes — throwing technique confirmed as the main driver."
+      },
+      "source": "D.Mike synthetisch, Physik-Modell, Seed=1305",
+      "license": "public-domain",
+      "file": "projects/ishikawa-hubschrauber-flyer.json",
+      "format": "json",
+      "modules": [
+        "ishikawa"
+      ],
+      "tags": [
+        "helicopter",
+        "doe-training",
+        "sequential-blocks"
+      ]
+    },
+    {
+      "id": "five-why-hubschrauber-flyer",
+      "type": "project",
+      "title": {
+        "de": "Papier-Hubschrauber — 5-Why (Streuung der Flugzeit)",
+        "en": "Paper Helicopter — 5 Whys (Flight-Time Variation)"
+      },
+      "description": {
+        "de": "5-Why-Kette von „Zeiten streuen zwischen 1,5 und 2,3 s bei identischer Konfiguration“ bis zur Wurzelursache „Wurftechnik nicht standardisiert“.",
+        "en": "5-Why chain from \"times vary between 1.5 and 2.3 s under identical configuration\" down to the root cause \"throwing technique not standardized\"."
+      },
+      "source": "D.Mike synthetisch, Physik-Modell, Seed=1305",
+      "license": "public-domain",
+      "file": "projects/five-why-hubschrauber-flyer.json",
+      "format": "json",
+      "modules": [
+        "five-why"
+      ],
+      "tags": [
+        "helicopter",
+        "doe-training",
+        "sequential-blocks"
+      ]
+    },
+    {
+      "id": "xy-plot-hubschrauber-flyer",
+      "type": "project",
+      "title": {
+        "de": "Papier-Hubschrauber — Klammern vs. Flugzeit (XY-Plot)",
+        "en": "Paper Helicopter — Clips vs. Flight Time (XY Plot)"
+      },
+      "description": {
+        "de": "Streudiagramm der 18 DoE-Läufe (Klammern vs. Flugzeit) — zeigt einen sichtbar nicht-linearen Zusammenhang bei allen drei Rotorlängen und motiviert den quadratischen Klammer-Term im DoE.",
+        "en": "Scatter plot of the 18 DoE runs (clips vs. flight time) — shows a visibly non-linear relationship across all three rotor lengths, motivating the quadratic clip term in the DoE."
+      },
+      "source": "D.Mike synthetisch, Physik-Modell, Seed=1305",
+      "license": "public-domain",
+      "file": "projects/xy-plot-hubschrauber-flyer.json",
+      "format": "json",
+      "modules": [
+        "xy-plot"
+      ],
+      "tags": [
+        "helicopter",
+        "doe-training",
+        "sequential-blocks"
+      ]
     }
   ]
 }

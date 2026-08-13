@@ -1,0 +1,54 @@
+{
+  "problem": "Zeiten streuen zwischen 1,5 und 2,3 s bei identischer Konfiguration",
+  "nodes": [
+    {
+      "id": 1,
+      "level": 1,
+      "parentId": null,
+      "question": "",
+      "answer": "Wiederholte Läufe bei gleicher Rotorlänge und Klammernzahl liefern deutlich unterschiedliche Flugzeiten",
+      "collapsed": false,
+      "children": [
+        {
+          "id": 2,
+          "level": 2,
+          "parentId": 1,
+          "question": "",
+          "answer": "Der Hubschrauber verhält sich bei jedem Wurf leicht anders — Trudelbeginn und Sinkrate unterscheiden sich sichtbar",
+          "collapsed": false,
+          "children": [
+            {
+              "id": 3,
+              "level": 3,
+              "parentId": 2,
+              "question": "",
+              "answer": "Die Ausgangsbedingungen beim Loslassen (Höhe, Anfangsdrehimpuls, Ausrichtung) sind von Wurf zu Wurf nicht exakt reproduzierbar",
+              "collapsed": false,
+              "children": [
+                {
+                  "id": 4,
+                  "level": 4,
+                  "parentId": 3,
+                  "question": "",
+                  "answer": "Es gibt keine feste Vorgabe, wie der Hubschrauber gehalten und aus welcher Position genau losgelassen wird",
+                  "collapsed": false,
+                  "children": [
+                    {
+                      "id": 5,
+                      "level": 5,
+                      "parentId": 4,
+                      "question": "",
+                      "answer": "Wurftechnik nicht standardisiert",
+                      "collapsed": false,
+                      "children": []
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

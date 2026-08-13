@@ -1,0 +1,128 @@
+{
+  "problem": "Flugzeit streut zu stark bei identischer Konfiguration",
+  "experts": [
+    {
+      "id": 1,
+      "name": "Flyer-Empfänger (Belt)"
+    },
+    {
+      "id": 2,
+      "name": "Papercraft-Enthusiast (SME)"
+    },
+    {
+      "id": 3,
+      "name": "Fluglehrer (SME Aerodynamik)"
+    }
+  ],
+  "catLabels": {
+    "environment": "Milieu"
+  },
+  "rows": [
+    {
+      "id": 1,
+      "stableId": "H-001",
+      "parentId": null,
+      "category": "man",
+      "name": "Wurftechnik nicht standardisiert",
+      "description": "Wurfhöhe, Abwurfwinkel und Anfangsdrehimpuls variieren von Lauf zu Lauf — mit nur einem Prototypen lässt sich keine feste Wurf-SOP einüben",
+      "ratings": {
+        "1": 9,
+        "2": 7,
+        "3": 8
+      },
+      "status": "confirmed"
+    },
+    {
+      "id": 2,
+      "stableId": "H-002",
+      "parentId": null,
+      "category": "machine",
+      "name": "Klammer-Sitz variiert",
+      "description": "Position und Klemmkraft der Büroklammer am unteren Body-Ende sind nicht fixiert, verschieben sich leicht zwischen Läufen",
+      "ratings": {
+        "1": 4,
+        "2": 6,
+        "3": 3
+      },
+      "status": "open"
+    },
+    {
+      "id": 3,
+      "stableId": "H-003",
+      "parentId": null,
+      "category": "material",
+      "name": "Papiersteifigkeit uneinheitlich",
+      "description": "Feuchtigkeit und Faserausrichtung des Flyer-Papiers beeinflussen Steifigkeit der Rotorblätter und damit das Autorotationsverhalten",
+      "ratings": {
+        "1": 3,
+        "2": 5,
+        "3": 4
+      },
+      "status": "open"
+    },
+    {
+      "id": 4,
+      "stableId": "H-004",
+      "parentId": null,
+      "category": "method",
+      "name": "Faltpräzision schwankt",
+      "description": "Ungenauigkeiten an Rotor-Mittelfaltung und Body-Seitenflappen (§3) verschieben den Schwerpunkt und stören den symmetrischen Trudel",
+      "ratings": {
+        "1": 5,
+        "2": 6,
+        "3": 6
+      },
+      "status": "testing"
+    },
+    {
+      "id": 5,
+      "stableId": "H-005",
+      "parentId": null,
+      "category": "environment",
+      "name": "Windzüge im Innenraum",
+      "description": "Kleine Luftbewegungen am Messestand (Klimaanlage, Laufkundschaft) lenken den Hubschrauber während des Falls ab",
+      "ratings": {
+        "1": 4,
+        "2": 3,
+        "3": 5
+      },
+      "status": "open"
+    },
+    {
+      "id": 6,
+      "stableId": "H-006",
+      "parentId": null,
+      "category": "measurement",
+      "name": "Reaktionszeit der Handstoppuhr",
+      "description": "MSA Typ 1 zeigt Cg ≈ 1,35 / Cgk ≈ 1,15 — die Uhr ist fähig, aber grenzwertig; Start-/Stopp-Reaktionszeit trägt zur Streuung bei",
+      "ratings": {
+        "1": 3,
+        "2": 2,
+        "3": 4
+      },
+      "status": "confirmed"
+    }
+  ],
+  "snapshots": [],
+  "experiments": [],
+  "facts": [
+    {
+      "id": 1,
+      "name": "Streuung 1,5–2,3 s bei identischer Konfiguration",
+      "description": "10 Baseline-Läufe bei (L = 8 cm, C = 0) zeigen eine Spannweite von 1,5 bis 2,3 s trotz unveränderter Einstellungen",
+      "date": "-2d",
+      "owner": "Flyer-Empfänger (Belt)"
+    },
+    {
+      "id": 2,
+      "name": "MSA Typ 1: Cg ≈ 1,35 / Cgk ≈ 1,15",
+      "description": "Die Handstoppuhr ist gegenüber der Metronom-Referenz fähig, aber grenzwertig — Messsystem allein erklärt die Streuung nicht vollständig",
+      "date": "-1d",
+      "owner": "Flyer-Empfänger (Belt)"
+    }
+  ],
+  "images": {
+    "inScope": [],
+    "outScope": []
+  }
+}

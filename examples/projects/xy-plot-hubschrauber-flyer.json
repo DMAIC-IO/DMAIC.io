@@ -1,0 +1,13 @@
+{
+  "datasets": [
+    {
+      "xRef":     { "instanceId": "__source__", "sheetId": "sheet-hubschrauber-doe", "columnId": "c-klammern" },
+      "yRef":     { "instanceId": "__source__", "sheetId": "sheet-hubschrauber-doe", "columnId": "c-flugzeit" },
+      "groupRef": null
+    }
+  ],
+  "showLines": false,
+  "showMarkers": true,
+  "showStats": true,
+  "sourceWorksheetFile": "worksheets/hubschrauber-flyer.json"
+}
