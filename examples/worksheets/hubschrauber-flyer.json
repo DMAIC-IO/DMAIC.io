@@ -1,0 +1,311 @@
+{
+  "sheets": [
+    {
+      "id": "sheet-hubschrauber-baseline",
+      "name": "Hubschrauber – Baseline (L=8, C=0)",
+      "state": {
+        "columns": [
+          {
+            "id": "c-lauf",
+            "name": "Lauf",
+            "shortName": "Lauf",
+            "type": "numeric",
+            "values": [
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7,
+              8,
+              9,
+              10
+            ]
+          },
+          {
+            "id": "c-rotorlaenge",
+            "name": "Rotorlänge_cm",
+            "shortName": "L",
+            "type": "numeric",
+            "values": [
+              8,
+              8,
+              8,
+              8,
+              8,
+              8,
+              8,
+              8,
+              8,
+              8
+            ]
+          },
+          {
+            "id": "c-klammern",
+            "name": "Klammern",
+            "shortName": "C",
+            "type": "numeric",
+            "values": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "id": "c-flugzeit",
+            "name": "Flugzeit_s",
+            "shortName": "t",
+            "type": "numeric",
+            "values": [
+              2.364,
+              2.347,
+              2.677,
+              2.504,
+              2.447,
+              2.196,
+              2.382,
+              2.306,
+              2.283,
+              2.283
+            ]
+          }
+        ],
+        "rowCount": 10
+      }
+    },
+    {
+      "id": "sheet-hubschrauber-doe",
+      "name": "Hubschrauber – DoE (3² Volldesign)",
+      "state": {
+        "columns": [
+          {
+            "id": "c-lauf",
+            "name": "Lauf",
+            "shortName": "Lauf",
+            "type": "numeric",
+            "values": [
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7,
+              8,
+              9,
+              10,
+              11,
+              12,
+              13,
+              14,
+              15,
+              16,
+              17,
+              18
+            ]
+          },
+          {
+            "id": "c-block",
+            "name": "Block",
+            "shortName": "Blk",
+            "type": "numeric",
+            "values": [
+              1,
+              1,
+              1,
+              1,
+              1,
+              1,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              3,
+              3,
+              3,
+              3,
+              3,
+              3
+            ]
+          },
+          {
+            "id": "c-rotorlaenge",
+            "name": "Rotorlänge_cm",
+            "shortName": "L",
+            "type": "numeric",
+            "values": [
+              8,
+              8,
+              8,
+              8,
+              8,
+              8,
+              6,
+              6,
+              6,
+              6,
+              6,
+              6,
+              4,
+              4,
+              4,
+              4,
+              4,
+              4
+            ]
+          },
+          {
+            "id": "c-klammern",
+            "name": "Klammern",
+            "shortName": "C",
+            "type": "numeric",
+            "values": [
+              0,
+              0,
+              2,
+              2,
+              1,
+              1,
+              2,
+              2,
+              1,
+              1,
+              0,
+              0,
+              0,
+              2,
+              2,
+              1,
+              0,
+              1
+            ]
+          },
+          {
+            "id": "c-replikat",
+            "name": "Replikat",
+            "shortName": "Rep",
+            "type": "numeric",
+            "values": [
+              2,
+              1,
+              2,
+              1,
+              1,
+              2,
+              1,
+              2,
+              2,
+              1,
+              2,
+              1,
+              2,
+              1,
+              2,
+              2,
+              1,
+              1
+            ]
+          },
+          {
+            "id": "c-flugzeit",
+            "name": "Flugzeit_s",
+            "shortName": "t",
+            "type": "numeric",
+            "values": [
+              2.548,
+              2.327,
+              2.527,
+              2.411,
+              2.894,
+              2.841,
+              2.542,
+              2.486,
+              2.86,
+              2.589,
+              2.347,
+              2.567,
+              2.449,
+              2.14,
+              2.093,
+              2.458,
+              1.939,
+              2.273
+            ]
+          }
+        ],
+        "rowCount": 18
+      }
+    },
+    {
+      "id": "sheet-hubschrauber-confirmation",
+      "name": "Hubschrauber – Bestätigung (L=6, C=1)",
+      "state": {
+        "columns": [
+          {
+            "id": "c-lauf",
+            "name": "Lauf",
+            "shortName": "Lauf",
+            "type": "numeric",
+            "values": [
+              1,
+              2,
+              3,
+              4,
+              5
+            ]
+          },
+          {
+            "id": "c-rotorlaenge",
+            "name": "Rotorlänge_cm",
+            "shortName": "L",
+            "type": "numeric",
+            "values": [
+              6,
+              6,
+              6,
+              6,
+              6
+            ]
+          },
+          {
+            "id": "c-klammern",
+            "name": "Klammern",
+            "shortName": "C",
+            "type": "numeric",
+            "values": [
+              1,
+              1,
+              1,
+              1,
+              1
+            ]
+          },
+          {
+            "id": "c-flugzeit",
+            "name": "Flugzeit_s",
+            "shortName": "t",
+            "type": "numeric",
+            "values": [
+              2.775,
+              2.829,
+              2.622,
+              2.624,
+              2.931
+            ]
+          }
+        ],
+        "rowCount": 5
+      }
+    }
+  ]
+}

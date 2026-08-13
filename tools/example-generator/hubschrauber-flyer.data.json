@@ -1,0 +1,566 @@
+{
+  "runs": [
+    {
+      "runOrder": 1,
+      "block": 1,
+      "L": 8,
+      "C": 0,
+      "replicate": 2,
+      "flightTime": 2.548
+    },
+    {
+      "runOrder": 2,
+      "block": 1,
+      "L": 8,
+      "C": 0,
+      "replicate": 1,
+      "flightTime": 2.327
+    },
+    {
+      "runOrder": 3,
+      "block": 1,
+      "L": 8,
+      "C": 2,
+      "replicate": 2,
+      "flightTime": 2.527
+    },
+    {
+      "runOrder": 4,
+      "block": 1,
+      "L": 8,
+      "C": 2,
+      "replicate": 1,
+      "flightTime": 2.411
+    },
+    {
+      "runOrder": 5,
+      "block": 1,
+      "L": 8,
+      "C": 1,
+      "replicate": 1,
+      "flightTime": 2.894
+    },
+    {
+      "runOrder": 6,
+      "block": 1,
+      "L": 8,
+      "C": 1,
+      "replicate": 2,
+      "flightTime": 2.841
+    },
+    {
+      "runOrder": 7,
+      "block": 2,
+      "L": 6,
+      "C": 2,
+      "replicate": 1,
+      "flightTime": 2.542
+    },
+    {
+      "runOrder": 8,
+      "block": 2,
+      "L": 6,
+      "C": 2,
+      "replicate": 2,
+      "flightTime": 2.486
+    },
+    {
+      "runOrder": 9,
+      "block": 2,
+      "L": 6,
+      "C": 1,
+      "replicate": 2,
+      "flightTime": 2.86
+    },
+    {
+      "runOrder": 10,
+      "block": 2,
+      "L": 6,
+      "C": 1,
+      "replicate": 1,
+      "flightTime": 2.589
+    },
+    {
+      "runOrder": 11,
+      "block": 2,
+      "L": 6,
+      "C": 0,
+      "replicate": 2,
+      "flightTime": 2.347
+    },
+    {
+      "runOrder": 12,
+      "block": 2,
+      "L": 6,
+      "C": 0,
+      "replicate": 1,
+      "flightTime": 2.567
+    },
+    {
+      "runOrder": 13,
+      "block": 3,
+      "L": 4,
+      "C": 0,
+      "replicate": 2,
+      "flightTime": 2.449
+    },
+    {
+      "runOrder": 14,
+      "block": 3,
+      "L": 4,
+      "C": 2,
+      "replicate": 1,
+      "flightTime": 2.14
+    },
+    {
+      "runOrder": 15,
+      "block": 3,
+      "L": 4,
+      "C": 2,
+      "replicate": 2,
+      "flightTime": 2.093
+    },
+    {
+      "runOrder": 16,
+      "block": 3,
+      "L": 4,
+      "C": 1,
+      "replicate": 2,
+      "flightTime": 2.458
+    },
+    {
+      "runOrder": 17,
+      "block": 3,
+      "L": 4,
+      "C": 0,
+      "replicate": 1,
+      "flightTime": 1.939
+    },
+    {
+      "runOrder": 18,
+      "block": 3,
+      "L": 4,
+      "C": 1,
+      "replicate": 1,
+      "flightTime": 2.273
+    }
+  ],
+  "baselineRuns": [
+    {
+      "index": 1,
+      "L": 8,
+      "C": 0,
+      "flightTime": 2.364
+    },
+    {
+      "index": 2,
+      "L": 8,
+      "C": 0,
+      "flightTime": 2.347
+    },
+    {
+      "index": 3,
+      "L": 8,
+      "C": 0,
+      "flightTime": 2.677
+    },
+    {
+      "index": 4,
+      "L": 8,
+      "C": 0,
+      "flightTime": 2.504
+    },
+    {
+      "index": 5,
+      "L": 8,
+      "C": 0,
+      "flightTime": 2.447
+    },
+    {
+      "index": 6,
+      "L": 8,
+      "C": 0,
+      "flightTime": 2.196
+    },
+    {
+      "index": 7,
+      "L": 8,
+      "C": 0,
+      "flightTime": 2.382
+    },
+    {
+      "index": 8,
+      "L": 8,
+      "C": 0,
+      "flightTime": 2.306
+    },
+    {
+      "index": 9,
+      "L": 8,
+      "C": 0,
+      "flightTime": 2.283
+    },
+    {
+      "index": 10,
+      "L": 8,
+      "C": 0,
+      "flightTime": 2.283
+    }
+  ],
+  "confirmationRuns": [
+    {
+      "index": 1,
+      "L": 6,
+      "C": 1,
+      "flightTime": 2.775
+    },
+    {
+      "index": 2,
+      "L": 6,
+      "C": 1,
+      "flightTime": 2.829
+    },
+    {
+      "index": 3,
+      "L": 6,
+      "C": 1,
+      "flightTime": 2.622
+    },
+    {
+      "index": 4,
+      "L": 6,
+      "C": 1,
+      "flightTime": 2.624
+    },
+    {
+      "index": 5,
+      "L": 6,
+      "C": 1,
+      "flightTime": 2.931
+    }
+  ],
+  "cellMeans": {
+    "L=8,C=0": 2.4200000000000004,
+    "L=8,C=1": 2.7600000000000007,
+    "L=8,C=2": 2.42,
+    "L=6,C=0": 2.4200000000000004,
+    "L=6,C=1": 2.7600000000000007,
+    "L=6,C=2": 2.42,
+    "L=4,C=0": 2.1,
+    "L=4,C=1": 2.4400000000000004,
+    "L=4,C=2": 2.0999999999999996
+  },
+  "seed": 1305,
+  "model": "t(L,C) = 0.5 + 0.56*L - 0.04*L² + 0.68*C - 0.34*C² + N(0, 0.12²)",
+  "worksheet": {
+    "sheets": [
+      {
+        "id": "sheet-hubschrauber-baseline",
+        "name": "Hubschrauber – Baseline (L=8, C=0)",
+        "state": {
+          "columns": [
+            {
+              "id": "c-lauf",
+              "name": "Lauf",
+              "shortName": "Lauf",
+              "type": "numeric",
+              "values": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10
+              ]
+            },
+            {
+              "id": "c-rotorlaenge",
+              "name": "Rotorlänge_cm",
+              "shortName": "L",
+              "type": "numeric",
+              "values": [
+                8,
+                8,
+                8,
+                8,
+                8,
+                8,
+                8,
+                8,
+                8,
+                8
+              ]
+            },
+            {
+              "id": "c-klammern",
+              "name": "Klammern",
+              "shortName": "C",
+              "type": "numeric",
+              "values": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            },
+            {
+              "id": "c-flugzeit",
+              "name": "Flugzeit_s",
+              "shortName": "t",
+              "type": "numeric",
+              "values": [
+                2.364,
+                2.347,
+                2.677,
+                2.504,
+                2.447,
+                2.196,
+                2.382,
+                2.306,
+                2.283,
+                2.283
+              ]
+            }
+          ],
+          "rowCount": 10
+        }
+      },
+      {
+        "id": "sheet-hubschrauber-doe",
+        "name": "Hubschrauber – DoE (3² Volldesign)",
+        "state": {
+          "columns": [
+            {
+              "id": "c-lauf",
+              "name": "Lauf",
+              "shortName": "Lauf",
+              "type": "numeric",
+              "values": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18
+              ]
+            },
+            {
+              "id": "c-block",
+              "name": "Block",
+              "shortName": "Blk",
+              "type": "numeric",
+              "values": [
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                2,
+                2,
+                2,
+                2,
+                2,
+                2,
+                3,
+                3,
+                3,
+                3,
+                3,
+                3
+              ]
+            },
+            {
+              "id": "c-rotorlaenge",
+              "name": "Rotorlänge_cm",
+              "shortName": "L",
+              "type": "numeric",
+              "values": [
+                8,
+                8,
+                8,
+                8,
+                8,
+                8,
+                6,
+                6,
+                6,
+                6,
+                6,
+                6,
+                4,
+                4,
+                4,
+                4,
+                4,
+                4
+              ]
+            },
+            {
+              "id": "c-klammern",
+              "name": "Klammern",
+              "shortName": "C",
+              "type": "numeric",
+              "values": [
+                0,
+                0,
+                2,
+                2,
+                1,
+                1,
+                2,
+                2,
+                1,
+                1,
+                0,
+                0,
+                0,
+                2,
+                2,
+                1,
+                0,
+                1
+              ]
+            },
+            {
+              "id": "c-replikat",
+              "name": "Replikat",
+              "shortName": "Rep",
+              "type": "numeric",
+              "values": [
+                2,
+                1,
+                2,
+                1,
+                1,
+                2,
+                1,
+                2,
+                2,
+                1,
+                2,
+                1,
+                2,
+                1,
+                2,
+                2,
+                1,
+                1
+              ]
+            },
+            {
+              "id": "c-flugzeit",
+              "name": "Flugzeit_s",
+              "shortName": "t",
+              "type": "numeric",
+              "values": [
+                2.548,
+                2.327,
+                2.527,
+                2.411,
+                2.894,
+                2.841,
+                2.542,
+                2.486,
+                2.86,
+                2.589,
+                2.347,
+                2.567,
+                2.449,
+                2.14,
+                2.093,
+                2.458,
+                1.939,
+                2.273
+              ]
+            }
+          ],
+          "rowCount": 18
+        }
+      },
+      {
+        "id": "sheet-hubschrauber-confirmation",
+        "name": "Hubschrauber – Bestätigung (L=6, C=1)",
+        "state": {
+          "columns": [
+            {
+              "id": "c-lauf",
+              "name": "Lauf",
+              "shortName": "Lauf",
+              "type": "numeric",
+              "values": [
+                1,
+                2,
+                3,
+                4,
+                5
+              ]
+            },
+            {
+              "id": "c-rotorlaenge",
+              "name": "Rotorlänge_cm",
+              "shortName": "L",
+              "type": "numeric",
+              "values": [
+                6,
+                6,
+                6,
+                6,
+                6
+              ]
+            },
+            {
+              "id": "c-klammern",
+              "name": "Klammern",
+              "shortName": "C",
+              "type": "numeric",
+              "values": [
+                1,
+                1,
+                1,
+                1,
+                1
+              ]
+            },
+            {
+              "id": "c-flugzeit",
+              "name": "Flugzeit_s",
+              "shortName": "t",
+              "type": "numeric",
+              "values": [
+                2.775,
+                2.829,
+                2.622,
+                2.624,
+                2.931
+              ]
+            }
+          ],
+          "rowCount": 5
+        }
+      }
+    ]
+  }
+}
