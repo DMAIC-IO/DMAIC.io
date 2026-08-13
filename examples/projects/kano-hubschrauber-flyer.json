@@ -1,0 +1,92 @@
+{
+  "tree": {
+    "vocs": [
+      {
+        "id": "v1",
+        "text": "Der Hubschrauber soll lange fliegen und sanft trudeln.",
+        "source": "Beobachtung Messestand, Live-Demo-Feedback",
+        "needs": [
+          {
+            "id": "n1",
+            "text": "Langer, sanfter Flug",
+            "drivers": [
+              {
+                "id": "d1",
+                "text": "Flugzeit",
+                "type": "ctq",
+                "requirements": [
+                  {
+                    "id": "req1",
+                    "text": "Mittlere Flugzeit ≥ 3,0 s",
+                    "target": "≥ 3,0 s",
+                    "measure": "Stoppuhr, Mittelwert über 5 Läufe"
+                  }
+                ]
+              },
+              {
+                "id": "d2",
+                "text": "Streuung der Flugzeit",
+                "type": "ctq",
+                "requirements": [
+                  {
+                    "id": "req2",
+                    "text": "Standardabweichung der Flugzeit ≤ 0,15 s",
+                    "target": "σ ≤ 0,15 s",
+                    "measure": "Stoppuhr, Serie von Läufen"
+                  }
+                ]
+              },
+              {
+                "id": "d3",
+                "text": "Autorotation",
+                "type": "ctq",
+                "requirements": [
+                  {
+                    "id": "req3",
+                    "text": "Rotor dreht sich beim Fallen sichtbar und gleichmäßig (Autorotation, kein Trudeln/Kippen)",
+                    "target": "qualitativ: gleichmäßige Drehung",
+                    "measure": "visuelle Beobachtung (ja/nein)"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "activeVocId": "v1",
+    "styles": {}
+  },
+  "kano": {
+    "source": { "instanceId": null, "level": "driver" },
+    "options": { "importance": true },
+    "items": [
+      { "id": "k1", "nodeId": null, "label": "Fliegt überhaupt (unbeschädigter Start, keine Bruchlandung)", "path": "Der Hubschrauber soll lange fliegen und sanft trudeln.", "missing": false },
+      { "id": "k2", "nodeId": "d1", "label": "Flugzeit", "path": "Der Hubschrauber soll lange fliegen und sanft trudeln.", "missing": false },
+      { "id": "k3", "nodeId": "d3", "label": "Autorotation (eleganter Trudel, weiche Landung)", "path": "Der Hubschrauber soll lange fliegen und sanft trudeln.", "missing": false }
+    ],
+    "respondents": [
+      { "id": "r1", "name": "Messestand-Besucher A" },
+      { "id": "r2", "name": "Messestand-Besucher B" },
+      { "id": "r3", "name": "Messestand-Besucher C" }
+    ],
+    "answers": {
+      "r1": {
+        "k1": { "f": 3, "d": 5, "w": 4 },
+        "k2": { "f": 1, "d": 5, "w": 9 },
+        "k3": { "f": 1, "d": 3, "w": 6 }
+      },
+      "r2": {
+        "k1": { "f": 2, "d": 5, "w": 3 },
+        "k2": { "f": 1, "d": 5, "w": 8 },
+        "k3": { "f": 1, "d": 2, "w": 5 }
+      },
+      "r3": {
+        "k1": { "f": 4, "d": 5, "w": 5 },
+        "k2": { "f": 1, "d": 5, "w": 9 },
+        "k3": { "f": 1, "d": 3, "w": 6 }
+      }
+    },
+    "activeRespondentId": "r1"
+  }
+}

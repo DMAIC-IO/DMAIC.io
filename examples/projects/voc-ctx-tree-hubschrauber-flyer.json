@@ -1,0 +1,58 @@
+{
+  "vocs": [
+    {
+      "id": "v1",
+      "text": "Der Hubschrauber soll lange fliegen und sanft trudeln.",
+      "source": "Beobachtung Messestand, Live-Demo-Feedback",
+      "needs": [
+        {
+          "id": "n1",
+          "text": "Langer, sanfter Flug",
+          "drivers": [
+            {
+              "id": "d1",
+              "text": "Flugzeit",
+              "type": "ctq",
+              "requirements": [
+                {
+                  "id": "req1",
+                  "text": "Mittlere Flugzeit ≥ 3,0 s",
+                  "target": "≥ 3,0 s",
+                  "measure": "Stoppuhr, Mittelwert über 5 Läufe"
+                }
+              ]
+            },
+            {
+              "id": "d2",
+              "text": "Streuung der Flugzeit",
+              "type": "ctq",
+              "requirements": [
+                {
+                  "id": "req2",
+                  "text": "Standardabweichung der Flugzeit ≤ 0,15 s",
+                  "target": "σ ≤ 0,15 s",
+                  "measure": "Stoppuhr, Serie von Läufen"
+                }
+              ]
+            },
+            {
+              "id": "d3",
+              "text": "Autorotation",
+              "type": "ctq",
+              "requirements": [
+                {
+                  "id": "req3",
+                  "text": "Rotor dreht sich beim Fallen sichtbar und gleichmäßig (Autorotation, kein Trudeln/Kippen)",
+                  "target": "qualitativ: gleichmäßige Drehung",
+                  "measure": "visuelle Beobachtung (ja/nein)"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "activeVocId": "v1",
+  "styles": {}
+}

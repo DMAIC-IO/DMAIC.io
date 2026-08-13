@@ -1,0 +1,44 @@
+{
+  "stakeholders": [
+    {
+      "id": "s1",
+      "name": "D.Mike-Marketing",
+      "role": "Sponsor",
+      "power": 5,
+      "interest": 5,
+      "support": "supporter",
+      "category": "Sponsor",
+      "notes": "Finanziert und promotet den Messestand-Flyer, treibt das Projekt aktiv"
+    },
+    {
+      "id": "s2",
+      "name": "Messestand-Besucher",
+      "role": "Endanwender / Flyer-Empfänger",
+      "power": 3,
+      "interest": 5,
+      "support": "supporter",
+      "category": "Extern",
+      "notes": "Erlebt das DMAIC-Projekt live am Stand, hohes Interesse an einem funktionierenden Demo-Hubschrauber"
+    },
+    {
+      "id": "s3",
+      "name": "Fluglehrer",
+      "role": "SME (Aerodynamik)",
+      "power": 2,
+      "interest": 3,
+      "support": "supporter",
+      "category": "SME",
+      "notes": "Berät zu Autorotation und Flugverhalten, geringe formale Macht im Projekt"
+    },
+    {
+      "id": "s4",
+      "name": "Papierhersteller",
+      "role": "Lieferant Flyer-Papier",
+      "power": 1,
+      "interest": 1,
+      "support": "neutral",
+      "category": "Lieferant",
+      "notes": "Liefert das bedruckte Rohmaterial, keine Beteiligung am DMAIC-Ablauf"
+    }
+  ]
+}

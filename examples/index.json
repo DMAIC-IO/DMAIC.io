@@ -2636,6 +2636,126 @@
         "doe-training",
         "sequential-blocks"
       ]
+    },
+    {
+      "id": "project-charter-hubschrauber-flyer",
+      "type": "project",
+      "title": {
+        "de": "Papier-Hubschrauber — Charter",
+        "en": "Paper Helicopter — Charter"
+      },
+      "description": {
+        "de": "Charter für „Papier-Hubschrauber vom Messestand — Flugzeit-Maximierung mit einem Prototypen“. IN-Scope: Rotorlänge und Büroklammern. OUT-Scope: Rotorbreite (irreversibel, nur 1 Prototyp), Wurftechnik, Papierart, Fallhöhe. Ziel-Y: mittlere Flugzeit ≥ 3,0 s bei σ ≤ 0,15 s.",
+        "en": "Charter for \"Paper Helicopter from the trade-show booth — maximizing flight time with a single prototype\". In scope: rotor length and paperclips. Out of scope: rotor width (irreversible, only 1 prototype), throwing technique, paper type, drop height. Target Y: mean flight time ≥ 3.0 s at σ ≤ 0.15 s."
+      },
+      "source": "D.Mike synthetisch, Physik-Modell, Seed=1305",
+      "license": "public-domain",
+      "file": "projects/project-charter-hubschrauber-flyer.json",
+      "format": "json",
+      "modules": [
+        "project-charter"
+      ],
+      "tags": [
+        "helicopter",
+        "doe-training",
+        "sequential-blocks"
+      ]
+    },
+    {
+      "id": "sipoc-hubschrauber-flyer",
+      "type": "project",
+      "title": {
+        "de": "Papier-Hubschrauber — SIPOC",
+        "en": "Paper Helicopter — SIPOC"
+      },
+      "description": {
+        "de": "SIPOC des Hubschrauber-Prozesses: vom Rohflyer über Ausschneiden, Falten, Klammern und Fallenlassen bis zur 18er-Log-Tabelle. Zeigt den physisch erzwungenen Schritt „Rotor kürzen (zwischen Blöcken)“, der die spätere DoE-Blockung motiviert.",
+        "en": "SIPOC of the helicopter process: from the raw flyer through cutting, folding, clipping and dropping to the 18-run log table. Highlights the physically forced \"trim rotor (between blocks)\" step that motivates the later DoE blocking."
+      },
+      "source": "D.Mike synthetisch, Physik-Modell, Seed=1305",
+      "license": "public-domain",
+      "file": "projects/sipoc-hubschrauber-flyer.json",
+      "format": "json",
+      "modules": [
+        "sipoc"
+      ],
+      "tags": [
+        "helicopter",
+        "doe-training",
+        "sequential-blocks"
+      ]
+    },
+    {
+      "id": "voc-ctx-tree-hubschrauber-flyer",
+      "type": "project",
+      "title": {
+        "de": "Papier-Hubschrauber — VoC/CTQ",
+        "en": "Paper Helicopter — VoC/CTQ"
+      },
+      "description": {
+        "de": "VoC „soll lange fliegen und sanft trudeln“ übersetzt in drei CTQs: Flugzeit ≥ 3,0 s, Streuung σ ≤ 0,15 s und Autorotation (qualitativ). Bildet die Baum-Grundlage für das verknüpfte Kano-Beispiel.",
+        "en": "VoC \"should fly long and glide down gently\" translated into three CTQs: flight time ≥ 3.0 s, spread σ ≤ 0.15 s, and autorotation (qualitative). Forms the tree basis for the linked Kano example."
+      },
+      "source": "D.Mike synthetisch, Physik-Modell, Seed=1305",
+      "license": "public-domain",
+      "file": "projects/voc-ctx-tree-hubschrauber-flyer.json",
+      "format": "json",
+      "modules": [
+        "voc-ctx-tree"
+      ],
+      "tags": [
+        "helicopter",
+        "doe-training",
+        "sequential-blocks"
+      ]
+    },
+    {
+      "id": "kano-hubschrauber-flyer",
+      "type": "project",
+      "title": {
+        "de": "Papier-Hubschrauber — Kano",
+        "en": "Paper Helicopter — Kano"
+      },
+      "description": {
+        "de": "Kano-Klassifizierung dreier Hubschrauber-Merkmale: Basis „fliegt überhaupt“, Leistung „Flugzeit“, Begeisterung „Autorotation (eleganter Trudel, weiche Landung)“. Bringt eine eigene VoC/CTQ-Baum-Instanz mit (identisch zum Beispiel „Papier-Hubschrauber — VoC/CTQ“).",
+        "en": "Kano classification of three helicopter characteristics: must-be \"flies at all\", performance \"flight time\", attractive \"autorotation (elegant spin, soft landing)\". Ships its own VoC/CTQ tree instance (identical to the \"Paper Helicopter — VoC/CTQ\" example)."
+      },
+      "source": "D.Mike synthetisch, Physik-Modell, Seed=1305",
+      "license": "public-domain",
+      "file": "projects/kano-hubschrauber-flyer.json",
+      "format": "json",
+      "modules": [
+        "kano"
+      ],
+      "tags": [
+        "helicopter",
+        "doe-training",
+        "sequential-blocks"
+      ]
+    },
+    {
+      "id": "stakeholder-analysis-hubschrauber-flyer",
+      "type": "project",
+      "title": {
+        "de": "Papier-Hubschrauber — Stakeholder-Analyse",
+        "en": "Paper Helicopter — Stakeholder Analysis"
+      },
+      "description": {
+        "de": "Stakeholder-Matrix mit D.Mike-Marketing (Macht hoch, Interesse hoch), Messestand-Besucher (Macht mittel, Interesse hoch), Fluglehrer als SME (Macht niedrig, Interesse mittel) und Papierhersteller (Macht niedrig, Interesse niedrig).",
+        "en": "Stakeholder matrix with D.Mike Marketing (power high, interest high), trade-show visitor (power medium, interest high), flight instructor as SME (power low, interest medium), and paper supplier (power low, interest low)."
+      },
+      "source": "D.Mike synthetisch, Physik-Modell, Seed=1305",
+      "license": "public-domain",
+      "file": "projects/stakeholder-analysis-hubschrauber-flyer.json",
+      "format": "json",
+      "modules": [
+        "stakeholder-analysis"
+      ],
+      "tags": [
+        "helicopter",
+        "doe-training",
+        "sequential-blocks"
+      ]
     }
   ]
 }

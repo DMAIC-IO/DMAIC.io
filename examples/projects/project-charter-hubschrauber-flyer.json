@@ -1,0 +1,50 @@
+{
+  "problemStatement": "Ein einzelner bedruckter Papier-Hubschrauber-Flyer vom D.Mike-Messestand soll die Flugzeit maximieren — der Empfänger hat dabei nur **einen** Prototypen zur Verfügung, jede Designentscheidung muss also mit einem einzigen physischen Hubschrauber getroffen werden.\n\n**Projekt:** Papier-Hubschrauber vom Messestand — Flugzeit-Maximierung mit einem Prototypen.\n\n**IN-Scope:** Rotorlänge (kürzbar per Schere, 8 → 6 → 4 cm), Anzahl Büroklammern (0 / 1 / 2, reversibel verstellbar).\n\n**OUT-Scope:** Rotorbreite (nur monoton kürzbar, würde bei nachträglichem Schnitt das Rotorlängen-Design zerstören — Follow-up mit zweitem Flyer), Wurftechnik (mit nur einem Prototypen nicht standardisierbar), Papierart (fix vorgedruckt), Fallhöhe (fix bei 2,00 m).\n\n**Ziel-Y:** mittlere Flugzeit ≥ 3,0 s bei Streuung σ ≤ 0,15 s.\n\n**Team:** Sponsor D.Mike-Marketing, Belt Flyer-Empfänger, SME Papercraft-Enthusiast.\n\n**Meilensteine:** Define (Woche 1) → Measure (Woche 1–2) → Analyze (Woche 2) → Improve (Woche 3) → Control (Woche 3–4).",
+  "goals": [
+    {
+      "id": "g1",
+      "description": "Mittlere Flugzeit auf ≥ 3,0 s steigern",
+      "targetDate": "+1M",
+      "metric": "Flugzeit (s, Mittelwert über 5 Läufe)",
+      "targetValue": "3.0",
+      "achievementLevel": 0
+    },
+    {
+      "id": "g2",
+      "description": "Streuung der Flugzeit auf σ ≤ 0,15 s senken",
+      "targetDate": "+1M",
+      "metric": "Flugzeit-Streuung σ (s)",
+      "targetValue": "0.15",
+      "achievementLevel": 0
+    }
+  ],
+  "orgChart": [
+    {
+      "id": "n1",
+      "title": "D.Mike-Marketing",
+      "desc": "Sponsor",
+      "pid": null
+    },
+    {
+      "id": "n2",
+      "title": "Flyer-Empfänger",
+      "desc": "Belt / Projektleitung",
+      "pid": "n1"
+    },
+    {
+      "id": "n3",
+      "title": "Papercraft-Enthusiast",
+      "desc": "SME / Fachexperte",
+      "pid": "n2"
+    }
+  ],
+  "orgStyle": {
+    "nodeBg": "",
+    "nodeBorderColor": "",
+    "nodeBorderStyle": "solid",
+    "nodeBorderWidth": 1,
+    "lineColor": "",
+    "lineStyle": "solid",
+    "lineWidth": 2
+  }
+}

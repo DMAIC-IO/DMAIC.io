@@ -1,0 +1,31 @@
+{
+  "columns": {
+    "suppliers": [
+      "Druckerei (Flyer-Vorlage)",
+      "Büroartikel-Händler (Büroklammern)"
+    ],
+    "inputs": [
+      "Rohflyer (bedruckt, 99 × 210 mm)",
+      "Büroklammern",
+      "Schere",
+      "Stoppuhr",
+      "2-m-Fallhöhen-Markierung"
+    ],
+    "process": [
+      "Rohflyer ausschneiden",
+      "Rotor und Body falten",
+      "Büroklammern anbringen",
+      "Hubschrauber aus 2 m Höhe fallen lassen",
+      "Flugzeit stoppen",
+      "Rotor kürzen (zwischen Blöcken)"
+    ],
+    "outputs": [
+      "18er-Log-Tabelle (Flugzeiten je Lauf)",
+      "Optimierter Prototyp (L ≈ 6–7 cm, C = 1)"
+    ],
+    "customers": [
+      "Flyer-Empfänger (intern)",
+      "Messestand-Besucher (extern)"
+    ]
+  }
+}
