@@ -9,7 +9,7 @@
  *   - project:   pre-filled module-state snapshot (passes through to setState)
  *   - generator: synthetic data generated at runtime with reproducible seed
  *
- * Schema is documented in .claude/BEISPIELDATEN-KONZEPT.md.
+ * Schema is documented in docs/EXAMPLES.md (private site repo).
  */
 
 const CATALOG_URL = './examples/index.json';
