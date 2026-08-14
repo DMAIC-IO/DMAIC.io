@@ -3,6 +3,7 @@
  */
 import { suite, test, assertEqual, assertDeepEqual, assertTrue } from '../test-utils.js';
 import { loadScenario, describeScenario, countScenarioWorksheets } from '../../js/core/scenario-loader.js';
+import { provisionWorksheet } from '../../js/core/examples-registry.js';
 
 const EXAMPLES = {
   'ex-sipoc': { id: 'ex-sipoc', modules: ['sipoc'], title: { de: 'SIPOC', en: 'SIPOC' } },
@@ -11,10 +12,47 @@ const EXAMPLES = {
   'ex-multi': { id: 'ex-multi', modules: ['process-capability', 'histogram'], title: { de: 'M', en: 'M' } },
 };
 
-function makeDeps({ failOn = null } = {}) {
+/** Minimal worksheet state accepted by provisionWorksheet(). */
+const WS_STATE = { sheets: [{ id: 'sheet-1', name: 'Shared', state: {} }], activeSheetId: 'sheet-1' };
+
+/**
+ * Builds fakes for loadScenario(). The workspace's `loadExample` genuinely
+ * calls the real `provisionWorksheet` (against a real phases-shaped
+ * stateManager) whenever the payload carries a `worksheetKey` — a double that
+ * merely records calls without exercising the pool would make the dedup
+ * tests pass regardless of whether the implementation is correct.
+ *
+ * @param {object} [opts]
+ * @param {string|null} [opts.failOn] moduleId whose loadExample throws
+ * @param {string|null} [opts.mountFailOn] moduleId whose instantiateDetached
+ *   resolves to null (mirrors workspace.js swallowing a mount error)
+ * @param {string|null} [opts.noLoadExampleOn] moduleId whose mounted
+ *   instance has no `loadExample` function
+ */
+function makeDeps({ failOn = null, mountFailOn = null, noLoadExampleOn = null } = {}) {
   const created = [];
   const mounted = [];
+  const disposed = [];
   const events = [];
+  const phases = {};
+  const moduleStates = {};
+
+  const stateManager = {
+    get: (key) => {
+      if (key === 'phases') return phases;
+      const m = /^phases\.(.+)$/.exec(key);
+      return m ? (phases[m[1]] ?? []) : undefined;
+    },
+    set: (key, val) => {
+      const m = /^phases\.(.+)$/.exec(key);
+      if (m) phases[m[1]] = val;
+    },
+    setModuleState: (instanceId, state) => { moduleStates[instanceId] = state; },
+    removeModuleState: (instanceId) => { delete moduleStates[instanceId]; },
+    getModuleInstance: () => null,
+  };
+  const eventBus = { emit: (name, payload) => events.push({ name, payload }) };
+
   const examplesRegistry = {
     get: (id) => EXAMPLES[id],
     load: async (id) => ({
@@ -23,31 +61,40 @@ function makeDeps({ failOn = null } = {}) {
       worksheetKey: (id === 'ex-reg' || id === 'ex-corr') ? 'worksheets/shared.json' : null,
     }),
   };
+
   const workspace = {
     instantiateDetached: async (instanceId, moduleId, extraContext) => {
       mounted.push({ instanceId, moduleId, extraContext });
+      if (mountFailOn && moduleId === mountFailOn) return null;
+      if (noLoadExampleOn && moduleId === noLoadExampleOn) return {};
+      const ctx = { stateManager, eventBus, ...extraContext };
       return {
-        loadExample: async () => {
+        loadExample: async (payload) => {
           if (failOn && moduleId === failOn) throw new Error('load failed');
+          // Real dedup mechanism: only a module that actually loads a
+          // worksheet-backed example provisions one.
+          if (payload.worksheetKey) provisionWorksheet(ctx, WS_STATE);
         },
       };
     },
-    disposeDetached: async () => {},
+    disposeDetached: async (instanceId, instance) => { disposed.push({ instanceId, instance }); },
   };
+
   return {
-    created, mounted, events,
+    created, mounted, disposed, events, phases,
     deps: {
       examplesRegistry,
       moduleRegistry: { get: (id) => ({ id, phase: 'define' }) },
-      stateManager: {
-        get: () => [],
-        getModuleInstance: () => null,
-      },
-      eventBus: { emit: (name, payload) => events.push({ name, payload }) },
+      stateManager,
+      eventBus,
       workspace,
+      // Seam for tests, mirroring createInstance's real side effect (pushing
+      // into `phases`) so orphan-removal on failure can be observed.
       __createInstance: (moduleId) => {
         const instanceId = `inst-${created.length + 1}`;
         created.push({ instanceId, moduleId });
+        const list = phases.define ?? (phases.define = []);
+        list.push({ instanceId, moduleId, order: list.length, state: {} });
         return instanceId;
       },
     },
@@ -87,7 +134,7 @@ suite('loadScenario', () => {
   });
 
   test('a failing item does not abort the run', async () => {
-    const { deps } = makeDeps({ failOn: 'regression' });
+    const { deps, phases } = makeDeps({ failOn: 'regression' });
     const result = await loadScenario({
       ...deps,
       scenario: { id: 's', items: ['ex-reg', 'ex-sipoc'] },
@@ -95,6 +142,75 @@ suite('loadScenario', () => {
     assertDeepEqual(result.loaded, ['ex-sipoc']);
     assertEqual(result.failed.length, 1);
     assertEqual(result.failed[0].exampleId, 'ex-reg');
+    assertEqual(result.failed[0].moduleId, 'regression');
+    assertEqual(result.failed[0].error, 'load failed');
+    assertEqual(
+      (phases.define || []).filter(i => i.moduleId === 'regression').length, 0,
+      'no orphan instance left behind for the failed item',
+    );
+  });
+
+  test('a mount failure is reported distinctly and leaves no orphan', async () => {
+    const { deps, phases } = makeDeps({ mountFailOn: 'regression' });
+    const result = await loadScenario({
+      ...deps,
+      scenario: { id: 's', items: ['ex-reg', 'ex-sipoc'] },
+    });
+    assertDeepEqual(result.loaded, ['ex-sipoc']);
+    assertEqual(result.failed.length, 1);
+    assertEqual(result.failed[0].exampleId, 'ex-reg');
+    assertEqual(result.failed[0].moduleId, 'regression');
+    assertEqual(result.failed[0].error, 'module failed to mount');
+    assertEqual(
+      (phases.define || []).filter(i => i.moduleId === 'regression').length, 0,
+      'no orphan instance left behind for the failed mount',
+    );
+  });
+
+  test('a mount failure does not inflate the worksheet count', async () => {
+    // ex-reg carries a worksheetKey but fails to mount — its worksheet is
+    // never actually provisioned, so it must not be counted.
+    const { deps } = makeDeps({ mountFailOn: 'regression' });
+    const result = await loadScenario({ ...deps, scenario: { id: 's', items: ['ex-reg'] } });
+    assertEqual(result.worksheets, 0);
+  });
+
+  test('a module without loadExample is reported distinctly from a mount failure', async () => {
+    const { deps } = makeDeps({ noLoadExampleOn: 'sipoc' });
+    const result = await loadScenario({ ...deps, scenario: { id: 's', items: ['ex-sipoc'] } });
+    assertEqual(result.failed.length, 1);
+    assertEqual(result.failed[0].moduleId, 'sipoc');
+    assertEqual(result.failed[0].error, 'module has no loadExample');
+  });
+
+  test('a failure on a reused active instance never deletes it', async () => {
+    const { deps, phases } = makeDeps({ failOn: 'sipoc' });
+    phases.define = [{ instanceId: 'active-1', moduleId: 'sipoc', order: 0, state: {} }];
+    const result = await loadScenario({
+      ...deps,
+      scenario: { id: 's', items: ['ex-sipoc'] },
+      activeInstanceId: 'active-1',
+      activeModuleId: 'sipoc',
+    });
+    assertEqual(result.failed.length, 1);
+    assertEqual(phases.define.length, 1, 'the reused active instance must survive a failure');
+    assertEqual(phases.define[0].instanceId, 'active-1');
+  });
+
+  test('disposes every mounted instance, including after loadExample throws', async () => {
+    const { deps, mounted, disposed } = makeDeps({ failOn: 'regression' });
+    await loadScenario({ ...deps, scenario: { id: 's', items: ['ex-reg', 'ex-sipoc'] } });
+    assertEqual(disposed.length, mounted.length, 'every mounted instance was disposed');
+    assertDeepEqual(disposed.map(d => d.instanceId), mounted.map(m => m.instanceId));
+  });
+
+  test('does not dispose an instance that failed to mount', async () => {
+    const { deps, mounted, disposed } = makeDeps({ mountFailOn: 'regression' });
+    await loadScenario({ ...deps, scenario: { id: 's', items: ['ex-reg', 'ex-sipoc'] } });
+    // Only the sipoc mount succeeded — nothing to dispose for the failed regression mount.
+    assertEqual(mounted.length, 2);
+    assertEqual(disposed.length, 1);
+    assertEqual(disposed[0].instanceId, mounted[1].instanceId);
   });
 
   test('emits progress for every item', async () => {
@@ -119,7 +235,7 @@ suite('loadScenario', () => {
     assertEqual(mounted[0].instanceId, 'active-1');
   });
 
-  test('counts distinct worksheets', async () => {
+  test('counts distinct worksheets actually provisioned', async () => {
     const { deps } = makeDeps();
     const result = await loadScenario({
       ...deps,

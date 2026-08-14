@@ -29,6 +29,34 @@ function resolveItem(item, examplesRegistry) {
 }
 
 /**
+ * Remove an instance the loader itself just created after it turns out the
+ * item failed (mount error, no `loadExample`, or a thrown `loadExample`).
+ * Mirrors the scan `removeProvisionedWorksheet` uses in examples-registry.js,
+ * kept local here since it removes an arbitrary module instance, not
+ * specifically a worksheet. Never called for a reused active instance — that
+ * one pre-existed the run and is never the loader's to delete.
+ *
+ * @param {object} stateManager
+ * @param {object} eventBus
+ * @param {string|null} instanceId
+ * @returns {void}
+ */
+function removeFailedInstance(stateManager, eventBus, instanceId) {
+  if (!instanceId) return;
+  const phases = stateManager.get('phases') || {};
+  for (const phaseId of Object.keys(phases)) {
+    const list = stateManager.get(`phases.${phaseId}`) ?? [];
+    const idx = list.findIndex(i => i.instanceId === instanceId);
+    if (idx === -1) continue;
+    const next = list.slice(0, idx).concat(list.slice(idx + 1));
+    stateManager.set(`phases.${phaseId}`, next);
+    stateManager.removeModuleState?.(instanceId);
+    eventBus?.emit?.('module:removed', { instanceId, phase: phaseId, silent: true });
+    return;
+  }
+}
+
+/**
  * Summarise what loading a scenario into the current project would do.
  * Feeds the confirmation dialog — performs no side effects.
  *
@@ -95,7 +123,6 @@ export async function loadScenario({
   const loaded = [];
   const failed = [];
   const worksheetPool = new Map();
-  const worksheetKeys = new Set();
   let overwriteUsed = false;
 
   const makeInstance = __createInstance
@@ -112,36 +139,57 @@ export async function loadScenario({
     });
 
     if (!moduleId) {
-      failed.push({ exampleId, error: 'no module for example' });
+      failed.push({ exampleId, moduleId: null, error: 'no module for example' });
       continue;
     }
 
     let instance = null;
     let instanceId = null;
+    let createdNew = false;
     try {
       const payload = await examplesRegistry.load(exampleId);
-      if (payload.worksheetKey) worksheetKeys.add(payload.worksheetKey);
 
       const reuseActive = !overwriteUsed && activeInstanceId && moduleId === activeModuleId;
-      instanceId = reuseActive ? activeInstanceId : makeInstance(moduleId);
-      if (reuseActive) overwriteUsed = true;
+      if (reuseActive) {
+        instanceId = activeInstanceId;
+        overwriteUsed = true;
+      } else {
+        instanceId = makeInstance(moduleId);
+        createdNew = true;
+      }
 
       instance = await workspace.instantiateDetached(instanceId, moduleId, {
         worksheetPool,
         worksheetKey: payload.worksheetKey ?? null,
       });
-      if (typeof instance?.loadExample !== 'function') {
-        failed.push({ exampleId, error: 'module has no loadExample' });
+
+      // instantiateDetached swallows its own mount errors and returns null
+      // (see workspace.js) — distinguish that from a mounted instance that
+      // genuinely has no loadExample, otherwise a mount crash is misreported.
+      if (!instance) {
+        failed.push({ exampleId, moduleId, error: 'module failed to mount' });
+        if (createdNew) removeFailedInstance(stateManager, eventBus, instanceId);
         continue;
       }
+      if (typeof instance.loadExample !== 'function') {
+        failed.push({ exampleId, moduleId, error: 'module has no loadExample' });
+        if (createdNew) removeFailedInstance(stateManager, eventBus, instanceId);
+        continue;
+      }
+
       await instance.loadExample(payload);
       loaded.push(exampleId);
     } catch (err) {
-      failed.push({ exampleId, error: err.message });
+      failed.push({ exampleId, moduleId, error: err.message });
+      if (createdNew) removeFailedInstance(stateManager, eventBus, instanceId);
     } finally {
       if (instance) await workspace.disposeDetached(instanceId, instance);
     }
   }
 
-  return { loaded, failed, worksheets: worksheetKeys.size };
+  // worksheetPool is populated by the modules themselves, via
+  // provisionWorksheet(ctx, wsState) reading ctx.worksheetPool/worksheetKey
+  // (examples-registry.js) — so its size reflects Datensammlungen that were
+  // actually provisioned, not merely referenced by a loaded payload.
+  return { loaded, failed, worksheets: worksheetPool.size };
 }
