@@ -125,6 +125,12 @@
   --color-tab-active-bg: var(--color-bg-primary);
   --color-tab-inactive-bg: var(--color-bg-tertiary);
 
+  /* Modul-Action-Bar: eigener Grund, damit sie nicht wie eine weitere
+     (inaktive) Modul-Tab aussieht. Sie liegt auf dem Grund des Modul-
+     Inhalts darunter und gehört damit sichtbar zum offenen Modul. */
+  --color-action-bar-bg: var(--color-bg-primary);
+  --color-action-bar-border: var(--color-border-primary);
+
   /* SIPOC column colors */
   --color-sipoc-s: #f59e0b;
   --color-sipoc-i: #3b82f6;
@@ -304,6 +310,12 @@
   --color-modal-overlay: rgb(0 0 0 / 70%);
   --color-tab-active-bg: var(--color-bg-primary);
   --color-tab-inactive-bg: var(--color-bg-tertiary);
+
+  /* Modul-Action-Bar: eigener Grund, damit sie nicht wie eine weitere
+     (inaktive) Modul-Tab aussieht. Sie liegt auf dem Grund des Modul-
+     Inhalts darunter und gehört damit sichtbar zum offenen Modul. */
+  --color-action-bar-bg: var(--color-bg-primary);
+  --color-action-bar-border: var(--color-border-primary);
 
   /* DataGrid dark overrides */
   --datagrid-cell-bg-alt: #242426;

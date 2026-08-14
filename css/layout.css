@@ -1833,9 +1833,12 @@ body.training-area-open .dmaic-tiles {
   margin-left: auto;
   flex-shrink: 0;
 
-  /* Von der Tab-Reihe abheben: klare Kante + dezenter eigener Grund. */
-  border-left: var(--border-width) solid var(--color-border-primary);
-  background: var(--color-bg-tertiary);
+  /* Von der Tab-Reihe abheben: eigener Grund (der des Modul-Inhalts darunter,
+     NICHT der Grund inaktiver Tabs — sonst liest sich die Leiste wie eine
+     weitere Tab) plus ein Trenner, der deutlicher ist als der zwischen zwei
+     Tabs. */
+  border-left: calc(var(--border-width) * 2) solid var(--color-action-bar-border);
+  background: var(--color-action-bar-bg);
 }
 
 /* Keine Aktionen für das aktive Modul → gar nichts anzeigen (kein Trenner,
