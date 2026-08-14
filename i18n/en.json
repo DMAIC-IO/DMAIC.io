@@ -1,4 +1,13 @@
 {
+  "actions": {
+    "splashLabel": "Running action",
+    "loadingScenario": "Loading scenario",
+    "loadingExample": "Loading example",
+    "creatingProject": "Creating project",
+    "progressModule": "Module {index} of {total}: {name}",
+    "unknown": "Unknown action: {verb}",
+    "scenarioLoaded": "{loaded} of {total} modules loaded"
+  },
   "app": {
     "defaultProjectName": "New Project",
     "dashboard": "Dashboard",
