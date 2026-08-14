@@ -1,5 +1,5 @@
 {
-  "problem": "Zeiten streuen zwischen 1,5 und 2,3 s bei identischer Konfiguration",
+  "problem": "Zeiten streuen zwischen 2,20 und 2,68 s bei identischer Konfiguration",
   "nodes": [
     {
       "id": 1,

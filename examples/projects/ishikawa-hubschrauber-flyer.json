@@ -108,8 +108,8 @@
   "facts": [
     {
       "id": 1,
-      "name": "Streuung 1,5–2,3 s bei identischer Konfiguration",
-      "description": "10 Baseline-Läufe bei (L = 8 cm, C = 0) zeigen eine Spannweite von 1,5 bis 2,3 s trotz unveränderter Einstellungen",
+      "name": "Streuung 2,20–2,68 s bei identischer Konfiguration",
+      "description": "10 Baseline-Läufe bei (L = 8 cm, C = 0) zeigen eine Spannweite von 2,20 bis 2,68 s trotz unveränderter Einstellungen",
       "date": "-2d",
       "owner": "Flyer-Empfänger (Belt)"
     },

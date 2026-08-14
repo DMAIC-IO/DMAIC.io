@@ -26,7 +26,7 @@
       "phase": "control",
       "impact": "high",
       "owner": "Fluglehrer (SME)",
-      "description": "Die Typ-1-Messsystemanalyse für den Zeitstopp (10 Wiederholmessungen an der Baseline-Konfiguration) wurde vor dem DoE abgeschlossen. Erst dadurch war sicher, dass die im DoE beobachtete Streuung tatsächlich von den Faktoren Rotorlänge/Klammernzahl stammt und nicht vom Messsystem selbst.",
+      "description": "Die Typ-1-Messsystemanalyse für den Zeitstopp (25 Wiederholmessungen der 2,000-s-Metronom-Referenz) wurde vor dem DoE abgeschlossen. Erst dadurch war sicher, dass die im DoE beobachtete Streuung tatsächlich von den Faktoren Rotorlänge/Klammernzahl stammt und nicht vom Messsystem selbst.",
       "rootCause": "Ohne vorab abgesicherte Messfähigkeit wäre jede spätere Aussage über Faktoreffekte angreifbar gewesen.",
       "recommendation": "MSA Typ 1 als Pflicht-Gate vor jedem DoE etablieren, nicht als optionalen Schritt.",
       "actions": [
