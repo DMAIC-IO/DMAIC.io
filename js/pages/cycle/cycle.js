@@ -53,9 +53,16 @@ export function computeSwitchImpact(fromCycle, toCycle, phases, moduleRegistry) 
  * scenario id, or null if cancelled. (Same DOM/keys as the legacy _pickCycle,
  * plus the scenario radio list the dialog itself computes from the
  * examplesRegistry it was built with — see buildCyclePickerDialog.)
+ *
+ * The scenario section only renders for `context === 'create'` — picking a
+ * scenario while switching an EXISTING project's cycle would be silently
+ * discarded by project-switcher.js (only the create branch reads
+ * scenarioId), so offering the choice there would be dead UI.
+ *
+ * @param {string} context 'create'|'switch'
  * @returns {Promise<{cycleId: string, scenarioId: string|null}|null>}
  */
-function _renderPicker(dialog, modal, i18n, currentCycle) {
+function _renderPicker(dialog, modal, i18n, currentCycle, context) {
   const preselected = currentCycle ?? DEFAULT_CYCLE;
   const cycles = Object.values(CYCLES).map(c => ({
     id: c.id,
@@ -63,7 +70,7 @@ function _renderPicker(dialog, modal, i18n, currentCycle) {
     short: i18n.t(`${c.i18nKey}.short`),
     description: i18n.t(`${c.i18nKey}.description`),
   }));
-  return dialog.open(modal, { cycles, preselected }, {
+  return dialog.open(modal, { cycles, preselected, allowScenarios: context === 'create' }, {
     confirmLabel: i18n.t('common.ok'),
   });
 }
@@ -112,7 +119,7 @@ export default {
     await Promise.all([pickerDialog.prewarm(), confirmDialog.prewarm()]);
 
     eventBus.on('cycle:pick-requested', async ({ context, currentCycle }) => {
-      const picked = await _renderPicker(pickerDialog, modal, i18n, currentCycle ?? null);
+      const picked = await _renderPicker(pickerDialog, modal, i18n, currentCycle ?? null, context);
       eventBus.emit('cycle:picked', {
         context,
         cycleId: picked?.cycleId ?? null,

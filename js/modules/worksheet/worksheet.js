@@ -1244,6 +1244,20 @@ mod.loadExample = async function loadExample(payload) {
       this._context.eventBus?.emit('worksheet:dataChanged', { instanceId: this._context.instanceId });
     }
   } catch { /* ignore */ }
+  // Scenario loads pass a pool + key (see provisionWorksheet in
+  // examples-registry.js) so several examples backed by the SAME worksheet
+  // file share one Datensammlung instead of piling up duplicates. A worksheet
+  // ITSELF is a valid dedup target too — register this instance under its own
+  // key so a later analysis item referencing the same file reuses it instead
+  // of provisioning a second, out-of-sync copy. Absent outside scenario loads
+  // (worksheetPool/worksheetKey are only ever passed by the scenario loader),
+  // so normal example-load-button clicks are unaffected.
+  const pool = this._context?.worksheetPool;
+  const key = this._context?.worksheetKey;
+  if (pool && key && this._context?.instanceId && !pool.has(key)) {
+    const sheetId = payload.data.activeSheetId || payload.data.sheets[0]?.id;
+    if (sheetId) pool.set(key, { instanceId: this._context.instanceId, sheetId });
+  }
   const lang = this._context.i18n.getLanguage();
   const title = payload.meta?.title?.[lang] || payload.meta?.title?.en || payload.meta?.id || '';
   this._context?.notify?.(this._context.i18n.t('moduleHelp.exampleLoaded').replace('{title}', title), 'success');

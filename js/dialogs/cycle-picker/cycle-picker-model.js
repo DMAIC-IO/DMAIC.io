@@ -34,11 +34,22 @@ export function createScenarioModel(scenarioOptionsFor) {
     scenarioId = '';
     /** @type {{id:string,title:string,description:string}[]} */
     scenarioOptions = [];
+    /**
+     * Whether the scenario section may render at all for this open() — false
+     * for the cycle-SWITCH context, where a picked scenarioId would be
+     * silently discarded by the caller (project-switcher.js only reads it
+     * for `context: 'create'`). Kept as instance state (not a constructor
+     * arg) so `selectCycle()`, called from the template on every cycle
+     * change, can honour the same per-open restriction.
+     * @type {boolean}
+     */
+    _allowScenarios = false;
 
     apply(init = {}) {
       super.apply(init);
+      this._allowScenarios = init.allowScenarios === true;
       this.scenarioId = '';
-      this.scenarioOptions = scenarioOptionsFor(this.selected);
+      this.scenarioOptions = this._allowScenarios ? scenarioOptionsFor(this.selected) : [];
       return this;
     }
 
@@ -49,7 +60,7 @@ export function createScenarioModel(scenarioOptionsFor) {
     selectCycle(cycleId) {
       this.selected = cycleId;
       this.scenarioId = '';
-      this.scenarioOptions = scenarioOptionsFor(cycleId);
+      this.scenarioOptions = this._allowScenarios ? scenarioOptionsFor(cycleId) : [];
     }
 
     /** @returns {boolean} true once more than the "empty project" entry exists */
