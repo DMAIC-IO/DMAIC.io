@@ -67,12 +67,9 @@ export function initProjectSwitcher({ stateManager, eventBus, i18n }) {
       stateManager, eventBus, moduleRegistry: _ui.moduleRegistry,
       dmaicTiles: _ui.dmaicTiles, workspace: _ui.workspace, router: _router,
     });
-    // rehydrateProject() only rebuilds workspace/tiles; a full reload used to
-    // re-run buildFrame() from scratch, which also refreshed the header name
-    // display and the read-only banner for the now-active project. Do that
-    // explicitly here so both stay in sync without a reload.
-    refresh();
-    updateReadOnlyBanner(stateManager, i18n);
+    // Header display + read-only banner refresh live on the `project:rehydrated`
+    // listener below (not here) so EVERY caller of the shared rehydrateProject()
+    // routine gets consistent chrome — not just this module's own callers.
   };
 
   // Cycle picker/switch is event-driven (pages/cycle owns the dialogs). Track
@@ -122,6 +119,19 @@ export function initProjectSwitcher({ stateManager, eventBus, i18n }) {
   eventBus.on('cycle:changed', () => {
     refresh();
     if (dropdownOpen) renderDropdown();
+  });
+
+  // rehydrateProject() (frame/project-rehydrate.js) rebuilds workspace/tiles
+  // for the now-active project but has no chrome dependencies of its own —
+  // it only emits `project:rehydrated`. A full reload used to re-run
+  // buildFrame() from scratch, which incidentally refreshed the header name
+  // display and the read-only banner too. Do that here, on the shared event,
+  // so EVERY caller of rehydrateProject() (this module's own switches, and
+  // any future caller such as an action-URL verb) gets consistent chrome —
+  // not just callers that happen to also call refresh() themselves.
+  eventBus.on('project:rehydrated', () => {
+    refresh();
+    updateReadOnlyBanner(stateManager, i18n);
   });
 
   const refresh = () => {

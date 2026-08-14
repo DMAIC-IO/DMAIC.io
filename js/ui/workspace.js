@@ -96,6 +96,14 @@ export class Workspace {
     }
     this._actionEffectDisposers = [];
     this._activeInstanceId = null;
+    // Also forget the active phase: the `module:activated` handler skips
+    // rebuilding tabs (just re-activates an existing tab element) whenever
+    // the target instance's phase already equals `_activePhase`. Without
+    // this reset, switching back to a project whose first phase happens to
+    // match the phase shown before reset() ran would hit that shortcut even
+    // though the tab DOM was just wiped below — leaving the module area
+    // empty despite the instance being active in state.
+    this._activePhase = null;
     this._tabsEl?.replaceChildren();
     this._actionsEl?.replaceChildren();
     this._moduleArea?.replaceChildren();
