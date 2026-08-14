@@ -18,7 +18,7 @@ import { buildFrame } from './frame/index.js';
 import { setProjectSwitcherRouter, setProjectSwitcherUi } from './frame/header/project-switcher.js';
 import { initPages }  from './pages/index.js';
 import { startupTasks } from './startup/index.js';
-import { initRouteDirectives, initRouter } from './core/router/index.js';
+import { initRouteDirectives, initRouter, createAppActionVerbs } from './core/router/index.js';
 import { setCreatePageRouter } from './core/create-page.js';
 import { createActionSplash } from './ui/action-splash.js';
 
@@ -74,10 +74,22 @@ async function init() {
   // frame chrome shows the SAME overlay for its own long-running actions.
   const actionSplash = createActionSplash({ i18n });
 
-  buildFrame(kernel, { modal, dmaicTiles, helpPanel, workspace, notify, actionSplash });
-  const pages = await initPages(kernel, { modal });
+  // Verb registry (`#/action/<verb>/<arg…>`) built ahead of the Router itself
+  // — settings' action-URL list (task 12) reads it via the page context, and
+  // pages init before the Router does. `routerBox` is filled in by
+  // initRouter() below; rehydrateProject() only reads it when a verb actually
+  // runs, always after boot. See core/router/index.js.
+  const routerBox = { current: null };
+  const actionVerbs = createAppActionVerbs(kernel, { dmaicTiles, workspace, notify }, routerBox);
 
-  const router = initRouter(kernel, { dmaicTiles, workspace, notify, actionSplash }, pages, Alpine);
+  buildFrame(kernel, { modal, dmaicTiles, helpPanel, workspace, notify, actionSplash });
+  const pages = await initPages(kernel, { modal, actionVerbs, notify });
+
+  const router = initRouter(
+    kernel,
+    { dmaicTiles, workspace, notify, actionSplash, actionVerbs, routerBox },
+    pages, Alpine,
+  );
   routeDirectives.setRouter(router);
   dmaicTiles.setRouter(router);
   workspace.setRouter(router);

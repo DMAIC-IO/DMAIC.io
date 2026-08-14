@@ -14,6 +14,7 @@ import { openColorPicker, hexToRGBA, rgbaToHex6 } from '../../core/color-picker.
 import {
   shortcutRegistry, normalizeCombo, formatCombo,
 } from '../../core/shortcut-registry.js';
+import { CYCLES } from '../../core/cycles/cycles.js';
 
 /** Default 10-color chart series palette (identical to legacy DEFAULT_COLORS). */
 export const DEFAULT_CHART_COLORS = [
@@ -75,6 +76,63 @@ export function groupShortcuts(all, order) {
   return orderedIds.map(id => ({ id, items: byGroup.get(id) }));
 }
 
+/**
+ * Build the action URL overview from the verb registry (never from a literal
+ * list — a verb or scenario added later must appear here with no further
+ * edits). One group per registered verb; a verb's `list()` return drives its
+ * rows 1:1. `new-project`'s `list()` is intentionally empty (its arg is a
+ * cycle id, not a catalog entry) — it falls back to one row per cycle. Any
+ * other verb with an empty `list()` (e.g. `example`, whose arg is a
+ * free-form example id with no enumerable, always-valid value) contributes
+ * no group at all, rather than emitting a row that would 404.
+ * @param {object} ctx  needs `actionVerbs` (Map<string, {list:function}>), `i18n`
+ * @returns {{verb: string, rows: {label: string, url: string}[]}[]}
+ */
+export function buildActionUrlGroups(ctx) {
+  const base = `${location.origin}${location.pathname}`;
+  const groups = [];
+  for (const [verb, def] of ctx.actionVerbs) {
+    const entries = def.list();
+    let rows;
+    if (entries.length) {
+      rows = entries.map(e => ({ label: e.label, url: `${base}#/action/${verb}/${e.arg}` }));
+    } else if (verb === 'new-project') {
+      rows = Object.keys(CYCLES).map(c => ({
+        label: ctx.i18n.t(`cycles.${c}.name`),
+        url: `${base}#/action/${verb}/${c}`,
+      }));
+    } else {
+      rows = [];
+    }
+    if (rows.length) groups.push({ verb, rows });
+  }
+  return groups;
+}
+
+/**
+ * Copy text to the clipboard, falling back to a hidden-textarea + execCommand
+ * when the async Clipboard API is unavailable (insecure origin, permission
+ * denied) or missing entirely.
+ * @param {string} text
+ * @returns {boolean} true if the fallback copy succeeded
+ */
+export function copyToClipboardFallback(text) {
+  try {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.setAttribute('readonly', '');
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    const ok = document.execCommand('copy');
+    ta.remove();
+    return ok;
+  } catch {
+    return false;
+  }
+}
+
 export default createPage({
   id: 'settings',
   templateUrl: new URL('js/pages/settings/settings.html', document.baseURI).href,
@@ -91,6 +149,20 @@ export default createPage({
     const { stateManager, themeManager, i18n, eventBus, tipEngine } = context;
 
     return {
+      // ── action URL overview ────────────────────────────────
+      actionUrlGroups: buildActionUrlGroups(context),
+      copyActionUrl(url) {
+        const done = () => context.notify?.(i18n.t('actionUrls.copied'), 'success');
+        const failed = () => context.notify?.(i18n.t('actionUrls.copyFailed'), 'error');
+        if (navigator.clipboard?.writeText) {
+          navigator.clipboard.writeText(url).then(done, failed);
+        } else if (copyToClipboardFallback(url)) {
+          done();
+        } else {
+          failed();
+        }
+      },
+
       // size + initialPosition left empty so the centred geometry comes from the
       // CSS rule `#settings-panel.dmike-chart-popout` (width/max-height/left/top).
       // popoutStyle() then returns '' until the user drags — keeping the inline

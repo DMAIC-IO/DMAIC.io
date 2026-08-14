@@ -10,6 +10,13 @@
     "failed": "Action \"{verb}\" could not be completed",
     "scenarioItemsFailed": "Not loaded: {items}"
   },
+  "actionUrls": {
+    "title": "Action URLs",
+    "hint": "These addresses trigger an action directly when opened, for example loading a scenario.",
+    "copy": "Copy",
+    "copied": "URL copied",
+    "copyFailed": "Could not copy URL"
+  },
   "app": {
     "defaultProjectName": "New Project",
     "dashboard": "Dashboard",

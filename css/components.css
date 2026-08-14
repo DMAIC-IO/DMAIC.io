@@ -1102,6 +1102,60 @@ select.input {
   margin-top: var(--spacing-md);
 }
 
+.settings-section__title {
+  margin: 0 0 var(--spacing-xs) 0;
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--color-text-secondary);
+}
+
+/* Action URL overview (settings › dev tools) */
+.settings-action-url-group {
+  margin-top: var(--spacing-md);
+}
+
+.settings-action-url-group__title {
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--color-text-tertiary);
+  margin-bottom: var(--spacing-xs);
+}
+
+.settings-action-url {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  min-width: 0;
+  padding: var(--spacing-sm);
+  margin-bottom: var(--spacing-xs);
+  border: var(--border-width) solid var(--color-border-secondary);
+  border-radius: var(--border-radius-sm);
+}
+
+.settings-action-url__label {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.settings-action-url__value {
+  display: block;
+  padding: var(--spacing-xs);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  background: var(--color-bg-secondary);
+  border-radius: var(--border-radius-sm);
+  overflow-wrap: anywhere;
+  word-break: break-all;
+  white-space: normal;
+}
+
+.settings-action-url__copy {
+  align-self: flex-end;
+}
+
 /* Theme toggle buttons */
 .settings-theme-toggle {
   display: flex;

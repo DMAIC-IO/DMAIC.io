@@ -10,6 +10,13 @@
     "failed": "Aktion „{verb}“ konnte nicht ausgeführt werden",
     "scenarioItemsFailed": "Nicht geladen: {items}"
   },
+  "actionUrls": {
+    "title": "Aktions-URLs",
+    "hint": "Diese Adressen lösen beim Aufruf direkt eine Aktion aus, etwa das Laden eines Szenarios.",
+    "copy": "Kopieren",
+    "copied": "URL kopiert",
+    "copyFailed": "URL konnte nicht kopiert werden"
+  },
   "app": {
     "defaultProjectName": "Neues Projekt",
     "dashboard": "Dashboard",
