@@ -240,6 +240,15 @@
     "glossaryOpenAria": "Glossar: {term} öffnen",
     "glossaryHeaderTitle": "Glossar"
   },
+  "scenarios": {
+    "sectionTitle": "Szenarien",
+    "loadWhole": "Ganzes Szenario laden",
+    "confirmTitle": "Szenario laden — {title}",
+    "confirmOverwrite": "Überschrieben wird: das aktuell geöffnete Modul {module} — seine Inhalte gehen verloren.",
+    "confirmNew": "Neu angelegt werden: {count} weitere Module. Bereits vorhandene Module bleiben unverändert; das Szenario legt eigene Instanzen an.",
+    "confirmWorksheets": "Datensammlungen: {count}",
+    "confirmButton": "Szenario laden"
+  },
   "training": {
     "title": "Schulungen",
     "subtitle": "Einstieg für Umsteiger und neue Nutzer",

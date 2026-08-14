@@ -1,0 +1,38 @@
+import { suite, test, assertEqual, assertTrue } from '../test-utils.js';
+import { Model } from '../../js/dialogs/scenario-confirm/scenario-confirm-model.js';
+
+suite('scenario-confirm Model', () => {
+  test('apply stores summary fields', () => {
+    const m = new Model();
+    m.apply({
+      scenarioTitle: 'Pizza — vollständig', overwriteModuleName: 'SIPOC',
+      newCount: 4, worksheetCount: 2,
+    });
+    assertEqual(m.scenarioTitle, 'Pizza — vollständig');
+    assertEqual(m.overwriteModuleName, 'SIPOC');
+    assertEqual(m.newCount, 4);
+    assertEqual(m.worksheetCount, 2);
+    assertTrue(m.hasOverwrite);
+  });
+
+  test('no overwrite when overwriteModuleName is empty', () => {
+    const m = new Model();
+    m.apply({ scenarioTitle: 'x', newCount: 2, worksheetCount: 1 });
+    assertTrue(!m.hasOverwrite);
+    assertEqual(m.overwriteModuleName, '');
+  });
+
+  test('apply defaults missing fields', () => {
+    const m = new Model();
+    m.apply();
+    assertEqual(m.newCount, 0);
+    assertEqual(m.worksheetCount, 0);
+    assertTrue(!m.hasOverwrite);
+  });
+
+  test('validate always true; result true (no input)', () => {
+    const m = new Model();
+    assertTrue(m.validate());
+    assertEqual(m.result(), true);
+  });
+});

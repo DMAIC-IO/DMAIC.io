@@ -70,7 +70,9 @@ export class Modal {
       cancelBtn.textContent = cancelLabel;
 
       const confirmBtn = document.createElement('button');
-      confirmBtn.className = 'btn btn--primary';
+      // modal__confirm is a stable hook for E2E/POMs (btn--primary alone is
+      // shared by many unrelated buttons across the app).
+      confirmBtn.className = 'btn btn--primary modal__confirm';
       confirmBtn.textContent = confirmLabel;
 
       const close = (result) => {
