@@ -240,6 +240,9 @@ export function provisionInstance(context, { moduleId, phase, state }) {
  * unchanged so existing callers (boxplot, histogram, regression, …) keep
  * working without modification.
  *
+ * When `context.worksheetPool` (a Map) and `context.worksheetKey` are present,
+ * an already-provisioned worksheet for that key is reused (scenario loading).
+ *
  * @param {object} context — module context (must expose stateManager + eventBus)
  * @param {object} wsState — { sheets:[{id,name,state}], activeSheetId, sheetCounter }
  * @returns {{ instanceId: string, sheetId: string } | null}
@@ -249,11 +252,22 @@ export function provisionWorksheet(context, wsState) {
   const sheetId = wsState.activeSheetId || wsState.sheets[0]?.id;
   if (!sheetId) return null;
 
+  // Scenario loads pass a pool + key so several examples backed by the SAME
+  // worksheet file share one data collection instead of piling up duplicates.
+  const key = context?.worksheetKey;
+  const pool = context?.worksheetPool;
+  // Cache hit intentionally ignores this call's own `sheetId` — the cached
+  // ref's `sheetId` wins even if the current wsState implies a different one.
+  if (key && pool?.has(key)) return pool.get(key);
+
   const instanceId = provisionInstance(context, {
     moduleId: 'worksheet', phase: 'data', state: wsState,
   });
+  if (!instanceId) return null;
 
-  return instanceId ? { instanceId, sheetId } : null;
+  const ref = { instanceId, sheetId };
+  if (key && pool) pool.set(key, ref);
+  return ref;
 }
 
 /**
