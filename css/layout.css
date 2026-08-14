@@ -357,6 +357,62 @@ html.is-nightly body {
   margin-top: 4px;
 }
 
+.cycle-picker__scenarios {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--color-border-secondary);
+}
+
+.cycle-picker__scenarios-title {
+  font-weight: 600;
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.cycle-picker__scenario {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 8px 12px;
+  border: 1px solid var(--color-border-secondary);
+  border-radius: var(--border-radius-md);
+  cursor: pointer;
+  transition: border-color 0.1s, background 0.1s;
+}
+
+.cycle-picker__scenario:hover {
+  background: var(--color-bg-tertiary);
+}
+
+.cycle-picker__scenario:has(input:checked) {
+  border-color: var(--color-accent);
+  background: var(--color-accent-light);
+}
+
+.cycle-picker__scenario input[type="radio"] {
+  margin-top: 3px;
+  flex-shrink: 0;
+}
+
+.cycle-picker__scenario-title {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-text-primary);
+  display: block;
+}
+
+.cycle-picker__scenario-desc {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  display: block;
+  margin-top: 2px;
+}
+
 /* Cycle switch confirm */
 .cycle-switch {
   display: flex;

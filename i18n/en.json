@@ -121,6 +121,8 @@
     },
     "pickerTitle": "Choose cycle",
     "pickerIntro": "Which improvement or development cycle fits your project? You can change the cycle later.",
+    "emptyProject": "Empty project",
+    "scenarioSectionTitle": "Load an example scenario",
     "switchAction": "Change cycle",
     "switchTitle": "Change cycle: {from} → {to}",
     "switchIntro": "Switching reshuffles all modules and the project will use the new cycle's phases from now on.",

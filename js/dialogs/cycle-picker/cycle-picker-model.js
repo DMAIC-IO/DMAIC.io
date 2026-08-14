@@ -17,3 +17,47 @@ export class Model {
   /** @returns {string} chosen cycle id */
   result() { return this.selected; }
 }
+
+/**
+ * Build a cycle-picker Model class bound to a `scenarioOptionsFor(cycleId)`
+ * lookup — the scenario radio list ("empty project" + every scenario shipped
+ * for that cycle). Kept as a factory (rather than a fixed dependency on
+ * `Model`) so the base cycle-only Model above stays dependency-free and
+ * unit-testable on its own; only the cycle-picker dialog needs the scenario
+ * behaviour.
+ * @param {(cycleId: string) => {id:string,title:string,description:string}[]} scenarioOptionsFor
+ * @returns {typeof Model} a Model subclass with scenario support
+ */
+export function createScenarioModel(scenarioOptionsFor) {
+  return class CyclePickerModel extends Model {
+    /** @type {string} */
+    scenarioId = '';
+    /** @type {{id:string,title:string,description:string}[]} */
+    scenarioOptions = [];
+
+    apply(init = {}) {
+      super.apply(init);
+      this.scenarioId = '';
+      this.scenarioOptions = scenarioOptionsFor(this.selected);
+      return this;
+    }
+
+    /**
+     * Re-fill the scenario list whenever the picked cycle changes.
+     * @param {string} cycleId
+     */
+    selectCycle(cycleId) {
+      this.selected = cycleId;
+      this.scenarioId = '';
+      this.scenarioOptions = scenarioOptionsFor(cycleId);
+    }
+
+    /** @returns {boolean} true once more than the "empty project" entry exists */
+    get hasScenarios() { return this.scenarioOptions.length > 1; }
+
+    /** @returns {{cycleId: string, scenarioId: string|null}} */
+    result() {
+      return { cycleId: this.selected, scenarioId: this.scenarioId || null };
+    }
+  };
+}

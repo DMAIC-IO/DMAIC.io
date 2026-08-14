@@ -121,6 +121,8 @@
     },
     "pickerTitle": "Zyklus wählen",
     "pickerIntro": "Welcher Verbesserungs- oder Entwicklungszyklus passt zu deinem Projekt? Du kannst den Zyklus später noch wechseln.",
+    "emptyProject": "Leeres Projekt",
+    "scenarioSectionTitle": "Beispiel-Szenario laden",
     "switchAction": "Zyklus wechseln",
     "switchTitle": "Zyklus wechseln: {from} → {to}",
     "switchIntro": "Beim Wechsel werden alle Module umsortiert und das Projekt arbeitet ab sofort mit den Phasen des neuen Zyklus.",

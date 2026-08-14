@@ -9,7 +9,8 @@
  * Events:
  *   in : cycle:pick-requested   { context:'create'|'switch', currentCycle }
  *        cycle:switch-requested { from, to }
- *   out: cycle:picked           { context, cycleId }            (cycleId null = cancel)
+ *   out: cycle:picked           { context, cycleId, scenarioId } (cycleId null = cancel;
+ *                                                                  scenarioId null = no scenario picked)
  *        cycle:switch-confirmed { from, to, confirmed }
  */
 
@@ -48,9 +49,11 @@ export function computeSwitchImpact(fromCycle, toCycle, phases, moduleRegistry) 
 }
 
 /**
- * Render the cycle picker modal. Resolves with the picked cycle id, or null if
- * cancelled. (Same DOM/keys as the legacy _pickCycle.)
- * @returns {Promise<string|null>}
+ * Render the cycle picker modal. Resolves with the picked cycle id + optional
+ * scenario id, or null if cancelled. (Same DOM/keys as the legacy _pickCycle,
+ * plus the scenario radio list the dialog itself computes from the
+ * examplesRegistry it was built with — see buildCyclePickerDialog.)
+ * @returns {Promise<{cycleId: string, scenarioId: string|null}|null>}
  */
 function _renderPicker(dialog, modal, i18n, currentCycle) {
   const preselected = currentCycle ?? DEFAULT_CYCLE;
@@ -101,16 +104,20 @@ export default {
   id: 'cycle',
 
   async init(ctx) {
-    const { eventBus, i18n, stateManager, moduleRegistry, modal } = ctx;
-    const pickerDialog = buildCyclePickerDialog({ i18n, eventBus });
+    const { eventBus, i18n, stateManager, moduleRegistry, modal, examplesRegistry } = ctx;
+    const pickerDialog = buildCyclePickerDialog({ i18n, eventBus, examplesRegistry });
     const confirmDialog = buildCycleSwitchConfirmDialog({ i18n, eventBus });
     // Mount both dialog nodes up front so open() has no first-time fetch latency
     // — the picker→confirm hand-off is observed synchronously by the UI/E2E.
     await Promise.all([pickerDialog.prewarm(), confirmDialog.prewarm()]);
 
     eventBus.on('cycle:pick-requested', async ({ context, currentCycle }) => {
-      const cycleId = await _renderPicker(pickerDialog, modal, i18n, currentCycle ?? null);
-      eventBus.emit('cycle:picked', { context, cycleId });
+      const picked = await _renderPicker(pickerDialog, modal, i18n, currentCycle ?? null);
+      eventBus.emit('cycle:picked', {
+        context,
+        cycleId: picked?.cycleId ?? null,
+        scenarioId: picked?.scenarioId || null,
+      });
     });
 
     eventBus.on('cycle:switch-requested', async ({ from, to }) => {

@@ -76,15 +76,20 @@ export function initProjectSwitcher({ stateManager, eventBus, i18n }) {
   // the in-flight request so the async replies know how to react.
   let cyclePending = null; // { currentCycle, projectSwitched }
 
-  eventBus.on('cycle:picked', async ({ context, cycleId }) => {
+  eventBus.on('cycle:picked', async ({ context, cycleId, scenarioId }) => {
     const pending = cyclePending;
     if (!pending) return;
     if (context === 'create') {
       cyclePending = null;
       if (!cycleId) return; // cancelled
-      const id = stateManager.createProject(i18n.t('app.defaultProjectName'), cycleId);
-      await stateManager.switchProject(id);
-      await rehydrate();
+      // Both branches create + switch + rehydrate a project; routing both
+      // through the action-verb registry (rather than duplicating that
+      // sequence inline here) keeps a single implementation of "new project"
+      // and gives the empty-project path the same splash/error handling the
+      // scenario path already has.
+      if (!_router) { location.reload(); return; } // pre-wiring fallback
+      const verb = scenarioId ? 'scenario' : 'new-project';
+      await _router.navigate({ kind: 'action', verb, args: [scenarioId || cycleId] });
       return;
     }
     // context === 'switch'
