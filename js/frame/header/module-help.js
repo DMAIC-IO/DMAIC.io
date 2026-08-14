@@ -135,6 +135,14 @@ export function initModuleHelp(
           'warning',
         );
       }
+    } catch (err) {
+      // A total throw from loadScenario() itself (e.g. a stateManager
+      // failure) is distinct from the per-item failures handled above —
+      // it must still leave the user with a usable app and an honest
+      // message, never silence. Same discipline as the per-item path: the
+      // raw error goes to console.error only, never into the toast.
+      console.error('[ModuleHelp] scenario load failed', scenarioId, err);
+      notify?.(i18n.t('common.error'), 'error');
     } finally {
       actionSplash?.hide();
     }
