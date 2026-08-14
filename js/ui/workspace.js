@@ -78,6 +78,29 @@ export class Workspace {
     this._showPhase('define');
   }
 
+  /**
+   * Tear down every mounted module without touching event subscriptions.
+   * Used by the project rehydrate path, which rebuilds the workspace for a
+   * different project. `render()` must NOT be called a second time — it calls
+   * `_subscribeEvents()` and would register every listener twice.
+   * @returns {Promise<void>}
+   */
+  async reset() {
+    for (const [, instance] of this._instances) {
+      try { await instance?.destroy?.(); } catch { /* ignore module destroy errors */ }
+    }
+    this._instances.clear();
+    this._containers.clear();
+    for (const dispose of this._actionEffectDisposers ?? []) {
+      try { dispose(); } catch { /* ignore */ }
+    }
+    this._actionEffectDisposers = [];
+    this._activeInstanceId = null;
+    this._tabsEl?.replaceChildren();
+    this._actionsEl?.replaceChildren();
+    this._moduleArea?.replaceChildren();
+  }
+
   // ─── Internal ───────────────────────────────────────────────
 
   _showPhase(phase) {
@@ -470,9 +493,11 @@ export class Workspace {
    * from racing a later, regularly-mounted instance with the same instanceId.
    * @param {string} instanceId
    * @param {string} moduleId
+   * @param {object} [extraContext] merged into the module context after the
+   *   detached-mount overrides (used for the scenario worksheet pool)
    * @returns {Promise<object|null>} the instance, or null on error
    */
-  async instantiateDetached(instanceId, moduleId) {
+  async instantiateDetached(instanceId, moduleId, extraContext = {}) {
     const container = document.createElement('div'); // NOT appended to _moduleArea
     // Detached/headless mount must not drive user-facing UI:
     //  • notify → no-op, else loadExample() fires one toast per seeded module
@@ -486,6 +511,7 @@ export class Workspace {
       ...this._buildContext(instanceId),
       notify: () => {},
       confirmPopout: async () => true,
+      ...extraContext,
     };
     try {
       return await this._moduleRegistry.instantiate(moduleId, container, context);
