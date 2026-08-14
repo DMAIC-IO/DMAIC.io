@@ -6,15 +6,11 @@
  */
 export class Model {
   scenarioTitle = '';
-  overwriteModuleName = '';
   newCount = 0;
   worksheetCount = 0;
 
-  get hasOverwrite() { return Boolean(this.overwriteModuleName); }
-
   apply(init = {}) {
     this.scenarioTitle = init.scenarioTitle ?? '';
-    this.overwriteModuleName = init.overwriteModuleName ?? '';
     this.newCount = init.newCount ?? 0;
     this.worksheetCount = init.worksheetCount ?? 0;
     return this;

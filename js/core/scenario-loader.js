@@ -33,8 +33,8 @@ function resolveItem(item, examplesRegistry) {
  * item failed (mount error, no `loadExample`, or a thrown `loadExample`).
  * Mirrors the scan `removeProvisionedWorksheet` uses in examples-registry.js,
  * kept local here since it removes an arbitrary module instance, not
- * specifically a worksheet. Never called for a reused active instance — that
- * one pre-existed the run and is never the loader's to delete.
+ * specifically a worksheet. Every instance the loader mounts is one it created
+ * itself, so there is never a pre-existing instance to protect here.
  *
  * @param {object} stateManager
  * @param {object} eventBus
@@ -60,25 +60,18 @@ function removeFailedInstance(stateManager, eventBus, instanceId) {
  * Summarise what loading a scenario into the current project would do.
  * Feeds the confirmation dialog — performs no side effects.
  *
+ * Loading a scenario is purely additive: every item gets its own fresh module
+ * instance, nothing the user already has is overwritten. `newCount` therefore
+ * always equals `total`; it stays a separate field so the dialog reads as a
+ * summary rather than a bare item count.
+ *
  * @param {object} args
  * @param {object} args.scenario
- * @param {object} args.examplesRegistry
- * @param {string|null} [args.activeModuleId] module id of the currently open module
- * @returns {{ total: number, overwritesModuleId: string|null, newCount: number }}
+ * @returns {{ total: number, newCount: number }}
  */
-export function describeScenario({ scenario, examplesRegistry, activeModuleId = null }) {
-  const items = scenario?.items ?? [];
-  let overwritesModuleId = null;
-  let newCount = 0;
-  for (const item of items) {
-    const { moduleId } = resolveItem(item, examplesRegistry);
-    if (activeModuleId && moduleId === activeModuleId && !overwritesModuleId) {
-      overwritesModuleId = moduleId;
-    } else {
-      newCount += 1;
-    }
-  }
-  return { total: items.length, overwritesModuleId, newCount };
+export function describeScenario({ scenario }) {
+  const total = scenario?.items?.length ?? 0;
+  return { total, newCount: total };
 }
 
 /**
@@ -110,20 +103,17 @@ export async function countScenarioWorksheets({ scenario, examplesRegistry }) {
  * @param {object} args.stateManager
  * @param {object} args.eventBus
  * @param {object} args.workspace          exposes instantiateDetached/disposeDetached
- * @param {string|null} [args.activeInstanceId] instance to overwrite instead of creating
- * @param {string|null} [args.activeModuleId]   module id of that instance
  * @param {function} [args.__createInstance]    seam for tests
  * @returns {Promise<{ loaded: string[], failed: {exampleId: string, error: string}[], worksheets: number }>}
  */
 export async function loadScenario({
   scenario, examplesRegistry, moduleRegistry, stateManager, eventBus, workspace,
-  activeInstanceId = null, activeModuleId = null, __createInstance = null,
+  __createInstance = null,
 }) {
   const items = scenario?.items ?? [];
   const loaded = [];
   const failed = [];
   const worksheetPool = new Map();
-  let overwriteUsed = false;
 
   const makeInstance = __createInstance
     ? (moduleId) => __createInstance(moduleId)
@@ -145,18 +135,18 @@ export async function loadScenario({
 
     let instance = null;
     let instanceId = null;
-    let createdNew = false;
     try {
       const payload = await examplesRegistry.load(exampleId);
 
-      const reuseActive = !overwriteUsed && activeInstanceId && moduleId === activeModuleId;
-      if (reuseActive) {
-        instanceId = activeInstanceId;
-        overwriteUsed = true;
-      } else {
-        instanceId = makeInstance(moduleId);
-        createdNew = true;
-      }
+      // Always a FRESH instance — never a live, mounted one. A detached mount
+      // sharing an instanceId with a mounted instance re-registers that
+      // instance's Alpine.data factory (template-module.js derives the
+      // component name from context.instanceId) and, worse, the mounted copy's
+      // stale model is written back over the freshly loaded state by
+      // Workspace._persistAllModuleStates() on the next phase/tab switch.
+      // Scenario loading is therefore purely additive: nothing the user
+      // already has open is touched.
+      instanceId = makeInstance(moduleId);
 
       instance = await workspace.instantiateDetached(instanceId, moduleId, {
         worksheetPool,
@@ -168,12 +158,12 @@ export async function loadScenario({
       // genuinely has no loadExample, otherwise a mount crash is misreported.
       if (!instance) {
         failed.push({ exampleId, moduleId, error: 'module failed to mount' });
-        if (createdNew) removeFailedInstance(stateManager, eventBus, instanceId);
+        removeFailedInstance(stateManager, eventBus, instanceId);
         continue;
       }
       if (typeof instance.loadExample !== 'function') {
         failed.push({ exampleId, moduleId, error: 'module has no loadExample' });
-        if (createdNew) removeFailedInstance(stateManager, eventBus, instanceId);
+        removeFailedInstance(stateManager, eventBus, instanceId);
         continue;
       }
 
@@ -181,7 +171,7 @@ export async function loadScenario({
       loaded.push(exampleId);
     } catch (err) {
       failed.push({ exampleId, moduleId, error: err.message });
-      if (createdNew) removeFailedInstance(stateManager, eventBus, instanceId);
+      removeFailedInstance(stateManager, eventBus, instanceId);
     } finally {
       if (instance) await workspace.disposeDetached(instanceId, instance);
     }

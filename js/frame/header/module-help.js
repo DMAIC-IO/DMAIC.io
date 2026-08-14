@@ -86,40 +86,61 @@ export function initModuleHelp(
     }
   };
 
+  // Re-entrancy guard for loadScenarioAndApply(). countScenarioWorksheets()
+  // awaits one examplesRegistry.load() per item (21 for the full pizza
+  // scenario, each uncached, several fetching a second worksheet file), so the
+  // row stays clickable for seconds before the confirm dialog appears. A
+  // second click would open a SECOND dialog on the shared modal host — whose
+  // Alpine node borrow/restore does not survive being re-entered.
+  let scenarioBusy = false;
+
   // Load a whole scenario into the running project: confirms with the user
-  // first (naming what gets overwritten/created), then delegates to the
-  // shared scenario loader and reports the result via a toast. Never renders
-  // loadScenario's failed[].error strings — those are untranslated developer
-  // strings; only the failing example ids go to the user, the raw error to
-  // console.warn (mirrors action-verbs.js reportScenarioResult()).
+  // first (naming what gets created), then delegates to the shared scenario
+  // loader and reports the result via a toast. Never renders loadScenario's
+  // failed[].error strings — those are untranslated developer strings; only
+  // the failing example ids go to the user, the raw error to console.warn
+  // (mirrors action-verbs.js reportScenarioResult()).
   const loadScenarioAndApply = async (scenarioId) => {
     if (!examplesRegistry || !moduleRegistry || !stateManager || !modal) return;
-    const { info } = _activeContext();
-    const scenario = examplesRegistry.get(scenarioId);
-    if (!scenario) return;
+    if (scenarioBusy) return;
+    scenarioBusy = true;
 
-    const summary = describeScenario({
-      scenario, examplesRegistry, activeModuleId: info?.moduleId ?? null,
-    });
-    const worksheetCount = await countScenarioWorksheets({ scenario, examplesRegistry });
-    const scenarioTitle = scenario.title?.[i18n.getLanguage()] || scenario.title?.en || scenario.id;
-    const overwriteModuleName = summary.overwritesModuleId
-      ? i18n.t(`modules.${summary.overwritesModuleId}.name`) : '';
+    let confirmed = null;
+    let worksheetCount = 0;
+    let scenario = null;
+    let scenarioTitle = '';
+    try {
+      scenario = examplesRegistry.get(scenarioId);
+      if (!scenario) return;
+      scenarioTitle = scenario.title?.[i18n.getLanguage()] || scenario.title?.en || scenario.id;
 
-    const confirmed = await scenarioConfirmDialog.open(modal, {
-      scenarioTitle, overwriteModuleName, newCount: summary.newCount, worksheetCount,
-    }, {
-      title: i18n.t('scenarios.confirmTitle', { title: scenarioTitle }),
-      confirmLabel: i18n.t('scenarios.confirmButton'),
-    });
+      // The shared splash (never a second createActionSplash() — there is
+      // exactly one overlay) covers the counting phase, the slow part.
+      actionSplash?.show({ title: i18n.t('actions.loadingScenario'), subtitle: scenarioTitle });
+      try {
+        worksheetCount = await countScenarioWorksheets({ scenario, examplesRegistry });
+      } finally {
+        actionSplash?.hide();
+      }
+
+      confirmed = await scenarioConfirmDialog.open(modal, {
+        scenarioTitle, newCount: describeScenario({ scenario }).newCount, worksheetCount,
+      }, {
+        title: i18n.t('scenarios.confirmTitle', { title: scenarioTitle }),
+        confirmLabel: i18n.t('scenarios.confirmButton'),
+      });
+    } finally {
+      // Released here for every path that never reaches the load itself
+      // (unknown id, a throw while counting, cancelled dialog); the load's own
+      // finally below releases it for the confirmed path.
+      if (!confirmed) scenarioBusy = false;
+    }
     if (!confirmed) return;
 
     actionSplash?.show({ title: i18n.t('actions.loadingScenario'), subtitle: scenarioTitle });
     try {
       const result = await loadScenario({
         scenario, examplesRegistry, moduleRegistry, stateManager, eventBus, workspace,
-        activeInstanceId: info?.instanceId ?? null,
-        activeModuleId: info?.moduleId ?? null,
       });
       const total = scenario.items?.length ?? 0;
       notify?.(
@@ -145,6 +166,7 @@ export function initModuleHelp(
       notify?.(i18n.t('common.error'), 'error');
     } finally {
       actionSplash?.hide();
+      scenarioBusy = false;
     }
   };
 

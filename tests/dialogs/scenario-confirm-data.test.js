@@ -15,18 +15,6 @@ function stubT(key, params) {
 }
 
 suite('scenario-confirm data(t) line helpers', () => {
-  test('overwriteLine renders confirmOverwrite with the module name when overwriting', () => {
-    const model = new Model().apply({ overwriteModuleName: 'SIPOC', newCount: 3, worksheetCount: 1 });
-    const view = scenarioConfirmData(stubT);
-    assertEqual(view.overwriteLine.call({ model }), '[confirmOverwrite] {"module":"SIPOC"}');
-  });
-
-  test('overwriteLine is empty when nothing is overwritten', () => {
-    const model = new Model().apply({ newCount: 3, worksheetCount: 1 });
-    const view = scenarioConfirmData(stubT);
-    assertEqual(view.overwriteLine.call({ model }), '');
-  });
-
   test('newLine renders confirmNew with the new-module count', () => {
     const model = new Model().apply({ newCount: 20, worksheetCount: 2 });
     const view = scenarioConfirmData(stubT);

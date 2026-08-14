@@ -251,8 +251,7 @@
     "sectionTitle": "Scenarios",
     "loadWhole": "Load whole scenario",
     "confirmTitle": "Load scenario — {title}",
-    "confirmOverwrite": "Will be overwritten: the currently open module {module} — its content will be lost.",
-    "confirmNew": "Will be created: {count} further modules. Existing modules stay untouched; the scenario creates its own instances.",
+    "confirmNew": "Will be created: {count} modules. Modules you already have open stay untouched; the scenario only ever creates its own instances.",
     "confirmWorksheets": "Data collections: {count}",
     "confirmButton": "Load scenario"
   },

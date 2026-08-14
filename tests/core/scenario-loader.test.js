@@ -183,17 +183,12 @@ suite('loadScenario', () => {
     assertEqual(result.failed[0].error, 'module has no loadExample');
   });
 
-  test('a failure on a reused active instance never deletes it', async () => {
+  test('a failure never deletes a pre-existing instance of the same module', async () => {
     const { deps, phases } = makeDeps({ failOn: 'sipoc' });
     phases.define = [{ instanceId: 'active-1', moduleId: 'sipoc', order: 0, state: {} }];
-    const result = await loadScenario({
-      ...deps,
-      scenario: { id: 's', items: ['ex-sipoc'] },
-      activeInstanceId: 'active-1',
-      activeModuleId: 'sipoc',
-    });
+    const result = await loadScenario({ ...deps, scenario: { id: 's', items: ['ex-sipoc'] } });
     assertEqual(result.failed.length, 1);
-    assertEqual(phases.define.length, 1, 'the reused active instance must survive a failure');
+    assertEqual(phases.define.length, 1, 'only the loader\'s own instance is rolled back');
     assertEqual(phases.define[0].instanceId, 'active-1');
   });
 
@@ -223,16 +218,18 @@ suite('loadScenario', () => {
     assertEqual(progress[1].payload.exampleId, 'ex-reg');
   });
 
-  test('overwrites the active instance instead of creating a new one', async () => {
-    const { deps, created, mounted } = makeDeps();
-    await loadScenario({
-      ...deps,
-      scenario: { id: 's', items: ['ex-sipoc'] },
-      activeInstanceId: 'active-1',
-      activeModuleId: 'sipoc',
-    });
-    assertEqual(created.length, 0, 'no new instance for the active module');
-    assertEqual(mounted[0].instanceId, 'active-1');
+  test('never mounts detached onto a live instance id', async () => {
+    // Regression guard for the scenario-overwrite bug: a detached mount that
+    // reuses a MOUNTED instance's id re-registers that instance's Alpine.data
+    // factory and has its freshly loaded state clobbered by
+    // Workspace._persistAllModuleStates() on the next phase/tab switch.
+    // Every item must therefore get a brand-new instance id.
+    const { deps, created, mounted, phases } = makeDeps();
+    phases.define = [{ instanceId: 'active-1', moduleId: 'sipoc', order: 0, state: {} }];
+    await loadScenario({ ...deps, scenario: { id: 's', items: ['ex-sipoc'] } });
+    assertEqual(created.length, 1, 'a fresh instance was created');
+    assertTrue(mounted[0].instanceId !== 'active-1', 'never mounts onto the live instance id');
+    assertEqual(mounted[0].instanceId, created[0].instanceId);
   });
 
   test('counts distinct worksheets actually provisioned', async () => {
@@ -291,25 +288,18 @@ suite('loadScenario', () => {
 });
 
 suite('describeScenario', () => {
-  test('reports overwrite target and new module count', () => {
+  test('every item counts as a newly created module', () => {
     const info = describeScenario({
       scenario: { id: 's', items: ['ex-sipoc', 'ex-reg', 'ex-corr'] },
-      examplesRegistry: { get: (id) => EXAMPLES[id] },
-      activeModuleId: 'sipoc',
     });
     assertEqual(info.total, 3);
-    assertEqual(info.overwritesModuleId, 'sipoc');
-    assertEqual(info.newCount, 2);
+    assertEqual(info.newCount, 3);
   });
 
-  test('reports no overwrite when the active module is not part of it', () => {
-    const info = describeScenario({
-      scenario: { id: 's', items: ['ex-reg'] },
-      examplesRegistry: { get: (id) => EXAMPLES[id] },
-      activeModuleId: 'fmea',
-    });
-    assertEqual(info.overwritesModuleId, null);
-    assertEqual(info.newCount, 1);
+  test('reports zero for a scenario without items', () => {
+    const info = describeScenario({ scenario: { id: 's' } });
+    assertEqual(info.total, 0);
+    assertEqual(info.newCount, 0);
   });
 });
 

@@ -251,8 +251,7 @@
     "sectionTitle": "Szenarien",
     "loadWhole": "Ganzes Szenario laden",
     "confirmTitle": "Szenario laden — {title}",
-    "confirmOverwrite": "Überschrieben wird: das aktuell geöffnete Modul {module} — seine Inhalte gehen verloren.",
-    "confirmNew": "Neu angelegt werden: {count} weitere Module. Bereits vorhandene Module bleiben unverändert; das Szenario legt eigene Instanzen an.",
+    "confirmNew": "Neu angelegt werden: {count} Module. Bereits geöffnete Module bleiben unverändert; das Szenario legt ausschließlich eigene Instanzen an.",
     "confirmWorksheets": "Datensammlungen: {count}",
     "confirmButton": "Szenario laden"
   },
