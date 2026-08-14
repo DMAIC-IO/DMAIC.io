@@ -6,7 +6,9 @@
     "creatingProject": "Projekt wird angelegt",
     "progressModule": "Modul {index} von {total}: {name}",
     "unknown": "Unbekannte Aktion: {verb}",
-    "scenarioLoaded": "{loaded} von {total} Modulen geladen"
+    "scenarioLoaded": "{loaded} von {total} Modulen geladen",
+    "failed": "Aktion „{verb}“ konnte nicht ausgeführt werden",
+    "scenarioItemsFailed": "Nicht geladen: {items}"
   },
   "app": {
     "defaultProjectName": "Neues Projekt",

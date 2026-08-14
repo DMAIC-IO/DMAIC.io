@@ -15,6 +15,7 @@ function segments(hash) {
 const EMPTY = {
   kind: 'invalid', projectId: null, phaseId: null,
   instanceId: null, moduleType: null, pageId: null, sub: [],
+  verb: null, args: [],
 };
 
 /**
@@ -25,6 +26,10 @@ const EMPTY = {
 export function parseHash(hash) {
   const seg = segments(hash);
   if (seg.length === 0) return { ...EMPTY, kind: 'root' };
+  // One-shot command URLs: #/action/<verb>/<arg…>
+  if (seg[0] === 'action') {
+    return { ...EMPTY, kind: 'action', verb: seg[1] ?? null, args: seg.slice(2) };
+  }
   if (seg[0] !== 'project' || !seg[1]) return { ...EMPTY };
 
   const projectId = seg[1];
@@ -57,6 +62,8 @@ export function parseHash(hash) {
 export function serializeRoute(route) {
   if (!route || !route.projectId) return '#/';
   const parts = ['project', route.projectId];
+  // Action routes are one-shot commands and are never serialised back — they
+  // carry no projectId, so the guard above already returned '#/'.
   switch (route.kind) {
     case 'phase':      parts.push('phase', route.phaseId); break;
     case 'module':     parts.push('module', route.instanceId, ...(route.sub || [])); break;

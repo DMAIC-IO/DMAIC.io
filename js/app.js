@@ -20,6 +20,7 @@ import { initPages }  from './pages/index.js';
 import { startupTasks } from './startup/index.js';
 import { initRouteDirectives, initRouter } from './core/router/index.js';
 import { setCreatePageRouter } from './core/create-page.js';
+import { createActionSplash } from './ui/action-splash.js';
 
 async function init() {
   // ─── Core Services ───────────────────────────────────────
@@ -69,10 +70,14 @@ async function init() {
   const exportReminder = new ExportReminder({ stateManager, eventBus, i18n, notify });
   exportReminder.init();
 
-  buildFrame(kernel, { modal, dmaicTiles, helpPanel, workspace, notify });
+  // One shared action splash: the router shows it for #/action/… URLs, the
+  // frame chrome shows the SAME overlay for its own long-running actions.
+  const actionSplash = createActionSplash({ i18n });
+
+  buildFrame(kernel, { modal, dmaicTiles, helpPanel, workspace, notify, actionSplash });
   const pages = await initPages(kernel, { modal });
 
-  const router = initRouter(kernel, { dmaicTiles, workspace }, pages, Alpine);
+  const router = initRouter(kernel, { dmaicTiles, workspace, notify, actionSplash }, pages, Alpine);
   routeDirectives.setRouter(router);
   dmaicTiles.setRouter(router);
   workspace.setRouter(router);

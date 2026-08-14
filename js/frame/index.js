@@ -26,6 +26,10 @@ import { startGlossaryAugmenter } from '../core/glossary-inline.js';
  * @param {object} ui.helpPanel - Help panel instance.
  * @param {object} ui.workspace - Module workspace.
  * @param {Function} ui.notify - Toast notification helper.
+ * @param {object} [ui.actionSplash] - Shared action splash controller
+ *   (ui/action-splash.js). The SAME instance the router uses for
+ *   `#/action/…` URLs — chrome that runs its own long action shows this one
+ *   rather than creating a second overlay.
  */
 export function buildFrame(kernel, ui) {
   // Glossary wiring on the help panel:

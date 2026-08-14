@@ -38,6 +38,38 @@ export class Router {
     this._lastNonPageRoute = null;
     /** @type {Route|null} The currently applied route (any kind). */
     this._currentRoute = null;
+    /** @type {Map<string, object>|null} Action verb registry (see action-verbs.js). */
+    this._verbs = null;
+    /** @type {object|null} Shared action splash controller. */
+    this._splash = null;
+    this._notify = null;
+    this._i18n = null;
+  }
+
+  /**
+   * The shared action splash controller (see ui/action-splash.js). Consumers
+   * that want to show the same overlay for their own long-running action
+   * (rather than a second, independent one) read it from here.
+   * @returns {object|null}
+   */
+  getActionSplash() {
+    return this._splash;
+  }
+
+  /**
+   * Wire the action verb registry after construction (the verbs need a router
+   * reference themselves, so they cannot be built before it exists).
+   * @param {Map<string, object>} verbs
+   * @param {object} splash  action splash controller (show/update/hide)
+   * @param {function} notify
+   * @param {object} i18n
+   * @returns {void}
+   */
+  setActionVerbs(verbs, splash, notify, i18n) {
+    this._verbs = verbs;
+    this._splash = splash;
+    this._notify = notify;
+    this._i18n = i18n;
   }
 
   /** Attach hashchange listener and apply the current hash once. */
@@ -49,6 +81,13 @@ export class Router {
       if (this._applying) return; // avoid loops
       if (!this._currentRoute || this._currentRoute.kind !== 'page' || this._currentRoute.pageId !== pageId) return;
       this.navigateBackFromPage(pageId);
+    });
+    // Mirror scenario-loader progress into the action splash.
+    this._bus.on('scenario:progress', ({ index, total, title }) => {
+      const name = title?.[this._i18n?.getLanguage?.()] || title?.en || '';
+      this._splash?.update(
+        this._i18n?.t('actions.progressModule', { index, total, name }) ?? `${index}/${total}`,
+      );
     });
     return this.applyHash();
   }
@@ -157,6 +196,42 @@ export class Router {
             this._bus.emit('module:activated', { instanceId: route.instanceId });
           }
           break;
+        }
+        case 'action': {
+          // One-shot command: run the verb, then perform EXACTLY ONE
+          // navigation to the route it returns. Verbs never navigate
+          // themselves (see action-verbs.js).
+          const verb = this._verbs?.get(route.verb);
+          if (!verb) {
+            this._notify?.(
+              this._i18n?.t('actions.unknown', { verb: route.verb }) ?? 'Unknown action',
+              'error',
+            );
+            this._applying = false;                // allow the nested navigate to run
+            await this.navigate({ kind: 'project', projectId: this._sm.getActiveProjectId() }, { replace: true });
+            return;
+          }
+          let target = null;
+          try {
+            this._splash?.show(verb.describe(route.args));
+            target = await verb.run(route.args);
+          } catch (err) {
+            // A known verb that threw is NOT an unknown action — say so.
+            console.warn('[Router] action failed', route.verb, err);
+            this._notify?.(
+              this._i18n?.t('actions.failed', { verb: route.verb }) ?? 'Action failed',
+              'error',
+            );
+          } finally {
+            // Always: a stuck overlay would leave the app unusable.
+            this._splash?.hide();
+          }
+          this._applying = false;                  // allow the nested navigate to run
+          await this.navigate(
+            target ?? { kind: 'project', projectId: this._sm.getActiveProjectId() },
+            { replace: true },
+          );
+          return;
         }
         case 'module-new': {
           const def = this._reg.get(route.moduleType);
