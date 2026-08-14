@@ -10,6 +10,7 @@
 
 import { DEFAULT_CYCLE } from '../../core/cycles/cycles.js';
 import { updateReadOnlyBanner } from '../helpers.js';
+import { rehydrateProject } from '../project-rehydrate.js';
 
 /**
  * Router wired after boot (app.js, post-initRouter). When set, a user project
@@ -26,6 +27,18 @@ let _router = null;
  */
 export function setProjectSwitcherRouter(router) {
   _router = router;
+}
+
+/** UI handles needed for reload-free project switching, wired from app.js. */
+let _ui = null;
+
+/**
+ * Give the project switcher the UI handles required for rehydrating after a
+ * project or cycle switch (called from app.js after the router is wired).
+ * @param {{ dmaicTiles: object, workspace: object, moduleRegistry: object }} ui
+ */
+export function setProjectSwitcherUi(ui) {
+  _ui = ui;
 }
 
 /**
@@ -45,14 +58,21 @@ export function initProjectSwitcher({ stateManager, eventBus, i18n }) {
 
   let dropdownOpen = false;
 
-  // Reload after a project/cycle change. Clear the location hash first: it may
-  // still point at the previous project's route (e.g. #/project/<old>/...),
-  // and on boot the router's applyHash() would switch back to it, undoing the
-  // project we just created/switched to. With an empty hash, boot falls back
-  // to the active project persisted by switchProject().
-  const reloadClean = () => {
-    history.replaceState(null, '', location.pathname + location.search);
-    location.reload();
+  // Rebuild the UI after a project/cycle change. Replaces the former
+  // location.reload(): the router owns the hash, rehydrateProject() rebuilds
+  // workspace, tiles and chrome for the now-active project.
+  const rehydrate = async () => {
+    if (!_ui || !_router) { location.reload(); return; } // pre-wiring fallback
+    await rehydrateProject({
+      stateManager, eventBus, moduleRegistry: _ui.moduleRegistry,
+      dmaicTiles: _ui.dmaicTiles, workspace: _ui.workspace, router: _router,
+    });
+    // rehydrateProject() only rebuilds workspace/tiles; a full reload used to
+    // re-run buildFrame() from scratch, which also refreshed the header name
+    // display and the read-only banner for the now-active project. Do that
+    // explicitly here so both stay in sync without a reload.
+    refresh();
+    updateReadOnlyBanner(stateManager, i18n);
   };
 
   // Cycle picker/switch is event-driven (pages/cycle owns the dialogs). Track
@@ -67,29 +87,29 @@ export function initProjectSwitcher({ stateManager, eventBus, i18n }) {
       if (!cycleId) return; // cancelled
       const id = stateManager.createProject(i18n.t('app.defaultProjectName'), cycleId);
       await stateManager.switchProject(id);
-      reloadClean();
+      await rehydrate();
       return;
     }
     // context === 'switch'
     if (!cycleId || cycleId === pending.currentCycle) {
       cyclePending = null;
-      if (pending.projectSwitched) reloadClean(); // restore UI for now-active project
+      if (pending.projectSwitched) await rehydrate(); // restore UI for now-active project
       return;
     }
     // Keep cyclePending alive across the confirm round-trip; the cycle:switch-confirmed handler clears it.
     eventBus.emit('cycle:switch-requested', { from: pending.currentCycle, to: cycleId });
   });
 
-  eventBus.on('cycle:switch-confirmed', ({ confirmed, to }) => {
+  eventBus.on('cycle:switch-confirmed', async ({ confirmed, to }) => {
     const pending = cyclePending;
     if (!pending) return;
     cyclePending = null;
     if (!confirmed) {
-      if (pending.projectSwitched) reloadClean();
+      if (pending.projectSwitched) await rehydrate();
       return;
     }
     stateManager.switchCycle(to);
-    reloadClean();
+    await rehydrate();
   });
 
   // stateManager.switchCycle() persists synchronously and emits `cycle:changed`
@@ -203,7 +223,7 @@ export function initProjectSwitcher({ stateManager, eventBus, i18n }) {
         if (p.id !== activeId) {
           await stateManager.switchProject(p.id);
           eventBus.emit('project:switched', { id: p.id });
-          reloadClean();
+          await rehydrate();
           return;
         }
         // Inline rename for active project
@@ -266,7 +286,7 @@ export function initProjectSwitcher({ stateManager, eventBus, i18n }) {
           if (p.id === activeId) {
             const remaining = stateManager.getProjects();
             await stateManager.switchProject(remaining[0].id);
-            reloadClean();
+            await rehydrate();
           } else {
             renderDropdown();
           }
@@ -282,16 +302,17 @@ export function initProjectSwitcher({ stateManager, eventBus, i18n }) {
       // Click to switch
       item.addEventListener('click', async () => {
         if (p.id === activeId) { closeDropdown(); return; }
+        closeDropdown();
         if (_router) {
           // Route through the router → the hash carries the new project id and
-          // the router's apply step performs switchProject. Reload re-inits the
-          // app from the (now project-scoped) hash, preserving prior UX.
+          // the router's apply step performs switchProject. rehydrate() below
+          // rebuilds the UI for the (now project-scoped) hash, preserving prior UX.
           await _router.navigate({ kind: 'project', projectId: p.id });
         } else {
           await stateManager.switchProject(p.id);
         }
         eventBus.emit('project:switched', { id: p.id });
-        reloadClean();
+        await rehydrate();
       });
 
       dropdown.appendChild(item);

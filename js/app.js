@@ -15,7 +15,7 @@ import { ExportReminder }    from './core/export-reminder.js';
 import { notify }            from './core/notify.js';
 import Alpine from '@alpinejs/csp';
 import { buildFrame } from './frame/index.js';
-import { setProjectSwitcherRouter } from './frame/header/project-switcher.js';
+import { setProjectSwitcherRouter, setProjectSwitcherUi } from './frame/header/project-switcher.js';
 import { initPages }  from './pages/index.js';
 import { startupTasks } from './startup/index.js';
 import { initRouteDirectives, initRouter } from './core/router/index.js';
@@ -77,6 +77,7 @@ async function init() {
   dmaicTiles.setRouter(router);
   workspace.setRouter(router);
   setProjectSwitcherRouter(router);
+  setProjectSwitcherUi({ dmaicTiles, workspace, moduleRegistry });
   setCreatePageRouter(router);
 
   // ─── Startup concerns (deeplink, prompts, viewport, auto-save, e2e) ───
