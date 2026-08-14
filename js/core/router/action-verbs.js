@@ -11,7 +11,19 @@
  * second time, reentrantly, while the router's `_applying` guard is still set.
  */
 
-import { getPhaseIds } from '../cycles/cycles.js';
+import { getPhaseIds, DEFAULT_CYCLE } from '../cycles/cycles.js';
+
+/**
+ * A catalog entry is a scenario iff it declares `type: 'scenario'` — the same
+ * predicate ExamplesRegistry.getScenarios() uses, so `list()` and `run()` can
+ * never disagree about what a scenario is. The `items` check additionally
+ * rejects a scenario authored without anything to load.
+ * @param {object|undefined} entry
+ * @returns {boolean}
+ */
+function isScenario(entry) {
+  return !!entry && entry.type === 'scenario' && Array.isArray(entry.items);
+}
 
 /**
  * Build the verb registry.
@@ -45,17 +57,20 @@ export function createActionVerbs(ctx) {
   }
 
   /**
-   * Route to the given phase of the active project.
-   * @param {string|null} phaseId falls back to the cycle's first phase
+   * Route to the given phase of the active project. An absent OR unknown phase
+   * (e.g. a typo in a catalog `startPhase`) falls back to the cycle's first
+   * phase — an unresolvable phase would leave a dead hash and no tile selection.
+   * @param {string|null} phaseId
    * @returns {{kind: string, projectId: string, phaseId: string}}
    */
   function phaseRoute(phaseId) {
     const projectId = stateManager.getActiveProjectId();
     const cycleId = stateManager.getProjectCycle();
+    const phases = getPhaseIds(cycleId);
     return {
       kind: 'phase',
       projectId,
-      phaseId: phaseId || getPhaseIds(cycleId)[0],
+      phaseId: phases.includes(phaseId) ? phaseId : phases[0],
     };
   }
 
@@ -93,8 +108,10 @@ export function createActionVerbs(ctx) {
      */
     async run([scenarioId]) {
       const scenario = examplesRegistry.get(scenarioId);
-      // A scenario is the only catalog entry type carrying an `items` list.
-      if (!scenario || !Array.isArray(scenario.items)) {
+      // Same definition of "scenario" as list() / ExamplesRegistry.getScenarios():
+      // `type === 'scenario'`. The `items` check is an additional guard against a
+      // scenario entry authored without items (which would load nothing).
+      if (!isScenario(scenario)) {
         throw new Error(`Unknown scenario: ${scenarioId}`);
       }
       await newProject(titleOf(scenario), scenario.cycle);
@@ -125,7 +142,7 @@ export function createActionVerbs(ctx) {
      * @returns {Promise<object>} target route
      */
     async run([cycleId]) {
-      const cycle = cycleId || 'dmaic';
+      const cycle = cycleId || DEFAULT_CYCLE;
       await newProject(i18n.t('app.defaultProjectName'), cycle);
       return phaseRoute(null);
     },
@@ -147,7 +164,7 @@ export function createActionVerbs(ctx) {
      */
     async run([exampleId]) {
       const meta = examplesRegistry.get(exampleId);
-      if (!meta || Array.isArray(meta.items)) throw new Error(`Unknown example: ${exampleId}`);
+      if (!meta || meta.type === 'scenario') throw new Error(`Unknown example: ${exampleId}`);
       const scenario = { id: `ad-hoc:${exampleId}`, items: [exampleId], startPhase: null };
       await ctx.loadScenario({ scenario });
       return phaseRoute(null);

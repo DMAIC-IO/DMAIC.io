@@ -50,6 +50,10 @@ export function initRouteDirectives(Alpine) {
  * @returns {Router}
  */
 export function initRouter(kernel, ui, pages, Alpine) {
+  if (!ui.actionSplash) {
+    console.warn('[router] no ui.actionSplash passed — creating a second, ' +
+      'independent overlay. Pass the app-wide instance (see app.js) instead.');
+  }
   const splash = ui.actionSplash ?? createActionSplash({ i18n: kernel.i18n });
   const router = new Router({
     stateManager: kernel.stateManager,

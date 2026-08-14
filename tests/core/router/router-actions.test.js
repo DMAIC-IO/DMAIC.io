@@ -6,7 +6,7 @@
 import { suite, test, assertEqual, assertTrue } from '../../test-utils.js';
 import { Router } from '../../../js/core/router/router.js';
 
-function harness(initialHash = '') {
+function harness(initialHash = '', phases = { define: [], measure: [] }) {
   const writes = [];
   const fakeWin = {
     location: { hash: initialHash },
@@ -20,7 +20,11 @@ function harness(initialHash = '') {
   const splashLog = [];
   const deps = {
     stateManager: {
-      get(key) { return key === 'phases' ? { define: [], measure: [] } : []; },
+      get(key) {
+        if (key === 'phases') return phases;
+        const m = key.match(/^phases\.(.+)$/);
+        return m ? (phases[m[1]] ?? []) : [];
+      },
       set() {},
       switchProject() {},
       getActiveProjectId() { return 'p-1'; },
@@ -59,6 +63,30 @@ suite('router/action routes', () => {
     assertEqual(h.writes.length, 1, `expected one hash write, got ${JSON.stringify(h.writes)}`);
     assertEqual(h.writes[0], 'replace:#/project/p-1/phase/define');
     assertEqual(h.fakeWin.location.hash, '#/project/p-1/phase/define');
+  });
+
+  test('a populated target phase adds only the router\'s own module forwarding', async () => {
+    // The shape every real scenario action produces: the target phase holds the
+    // instances the scenario just created, so the router's pre-existing
+    // phase→first-module forwarding (router.js) fires once. Two writes, CHAINED
+    // (action → phase → module) — not the reentrant double-navigation ruling 1
+    // forbids, which would come from the verb navigating on its own.
+    const h = harness('#/action/scenario/scn-a', {
+      define: [{ instanceId: 'i1', moduleId: 'sipoc' }], measure: [],
+    });
+    const r = new Router(h.deps);
+    r.setActionVerbs(new Map([['scenario', {
+      run: async () => ({ kind: 'phase', projectId: 'p-1', phaseId: 'define' }),
+      describe: () => ({ title: 'T', subtitle: 'S' }),
+      list: () => [],
+    }]]), h.splash, h.notify, h.i18n);
+
+    await r.applyHash();
+
+    assertEqual(h.writes.length, 2, `expected two hash writes, got ${JSON.stringify(h.writes)}`);
+    assertEqual(h.writes[0], 'replace:#/project/p-1/phase/define');
+    assertEqual(h.writes[1], 'replace:#/project/p-1/module/i1');
+    assertEqual(h.fakeWin.location.hash, '#/project/p-1/module/i1');
   });
 
   test('the splash is shown and hidden again', async () => {

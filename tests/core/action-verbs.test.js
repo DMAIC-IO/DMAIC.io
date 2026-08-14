@@ -4,8 +4,10 @@
 import { suite, test, assertEqual, assertTrue, assertDeepEqual } from '../test-utils.js';
 import { createActionVerbs } from '../../js/core/router/action-verbs.js';
 
+// Mirrors a real catalog entry: scenarios are identified by `type: 'scenario'`
+// (examples/index.json), the same predicate ExamplesRegistry.getScenarios() uses.
 const SCENARIOS = [
-  { id: 'scn-a', cycle: 'dmaic', startPhase: 'define', items: ['ex-a'],
+  { id: 'scn-a', type: 'scenario', cycle: 'dmaic', startPhase: 'define', items: ['ex-a'],
     title: { de: 'A', en: 'A' }, description: { de: '', en: '' } },
 ];
 
@@ -80,6 +82,26 @@ suite('action verbs', () => {
     assertTrue(!!failNote, 'failed items are surfaced');
     assertTrue(failNote.includes('ex-a'), 'failed example id is named');
     assertTrue(!failNote.includes('module failed to mount'), 'raw developer error is not shown');
+  });
+
+  test('scenario verb rejects an entry that only looks like one', async () => {
+    const { ctx } = makeCtx();
+    // Same shape as a scenario (has `items`) but not typed as one — must not
+    // be loadable via #/action/scenario/…, or list() and run() would disagree.
+    ctx.examplesRegistry.get = (id) => (id === 'faux'
+      ? { id: 'faux', type: 'project', items: ['ex-a'] } : undefined);
+    let error = null;
+    try { await createActionVerbs(ctx).get('scenario').run(['faux']); }
+    catch (err) { error = err; }
+    assertTrue(!!error, 'throws for a non-scenario entry carrying items');
+  });
+
+  test('scenario verb falls back when startPhase is unknown', async () => {
+    const { ctx } = makeCtx();
+    ctx.examplesRegistry.get = (id) => (id === 'scn-typo'
+      ? { ...SCENARIOS[0], id: 'scn-typo', startPhase: 'defien' } : undefined);
+    const target = await createActionVerbs(ctx).get('scenario').run(['scn-typo']);
+    assertEqual(target.phaseId, 'define', 'typo falls back to the first phase');
   });
 
   test('new-project verb creates an empty project in the given cycle', async () => {
