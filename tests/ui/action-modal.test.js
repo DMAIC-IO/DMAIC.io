@@ -126,6 +126,15 @@ suite('createActionModal', () => {
     assertEqual(document.querySelector('.action-modal'), null);
   });
 
+  test('isOpen reflects whether a dialog is mounted', () => {
+    const am = make();
+    assertEqual(am.isOpen(), false, 'closed before open()');
+    am.open({ title: 'T' });
+    assertEqual(am.isOpen(), true, 'open after open()');
+    am.close();
+    assertEqual(am.isOpen(), false, 'closed again after close()');
+  });
+
   test('the body is announced politely', () => {
     const am = make();
     am.open({ title: 'T' });

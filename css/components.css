@@ -455,7 +455,12 @@ select.input {
   position: fixed;
   bottom: calc(var(--footer-height) + var(--spacing-md));
   right: var(--spacing-md);
-  z-index: 2000;
+  /* Above every overlay, including .modal-overlay--action (10000): a toast is
+     a transient notice that must stay readable while a dialog is up — dimmed
+     out behind a backdrop it would expire unseen. The action modal still
+     carries the outcome itself; the toast is the second channel, not the
+     only one. */
+  z-index: 10001;
   display: flex;
   flex-direction: column;
   gap: var(--spacing-sm);
@@ -1895,6 +1900,14 @@ body.dmike-glossary-inline-off .glossary-term:focus-within {
 .action-modal__progress {
   font-size: var(--font-size-sm);
   color: var(--color-text-secondary);
+}
+
+/* Named failed items of a partially loaded scenario. Never the raw
+   `failed[].error` — that is untranslated developer text (console only). */
+.action-modal__failed {
+  margin: 0;
+  font-size: var(--font-size-sm);
+  color: var(--color-warning);
 }
 
 .action-modal__footer { margin-top: var(--spacing-sm); }

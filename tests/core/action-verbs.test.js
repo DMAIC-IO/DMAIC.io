@@ -164,6 +164,37 @@ suite('action verbs', () => {
       `loaded/total reported, got ${state.subtitle}`);
   });
 
+  test('scenario done() does not claim success when items failed', () => {
+    // The warning toast that names the failed items is dimmed out behind the
+    // action overlay and expires unseen while the dialog holds — so the DIALOG
+    // has to tell the truth, or nothing does.
+    const { ctx } = makeCtx();
+    const verbs = createActionVerbs(ctx);
+    const ok = verbs.get('scenario').modal.done({ loaded: ['ex-a'], failed: [] }, ['scn-a']);
+    const bad = verbs.get('scenario').modal.done(
+      { loaded: [], failed: [{ exampleId: 'ex-a', moduleId: 'sipoc', error: 'module failed to mount' }] },
+      ['scn-a'],
+    );
+    assertEqual(ok.title, 'actions.scenarioReady', 'a clean run still reports success');
+    assertTrue(bad.title !== ok.title, `partial failure must not reuse the success title (${bad.title})`);
+  });
+
+  test('scenario done() names the failed items without leaking the raw error', () => {
+    const { ctx } = makeCtx();
+    const state = createActionVerbs(ctx).get('scenario').modal.done({
+      loaded: [],
+      failed: [
+        { exampleId: 'ex-a', moduleId: null, error: 'no module for example' },
+        { exampleId: 'ex-b', moduleId: 'sipoc', error: 'module failed to mount' },
+      ],
+    }, ['scn-a']);
+    const text = `${state.subtitle ?? ''} ${state.body?.textContent ?? ''}`;
+    assertTrue(text.includes('ex-a') && text.includes('ex-b'), `failed ids named, got: ${text}`);
+    assertTrue(text.includes('actions.scenarioItemsFailed'), 'reuses the existing i18n key');
+    assertTrue(!text.includes('no module for example') && !text.includes('module failed to mount'),
+      `raw developer error leaked into the dialog: ${text}`);
+  });
+
   test('scenario done() survives a missing result detail', () => {
     const { ctx } = makeCtx();
     const state = createActionVerbs(ctx).get('scenario').modal.done(null, ['scn-a']);

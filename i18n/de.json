@@ -9,7 +9,8 @@
     "failed": "Aktion „{verb}“ konnte nicht ausgeführt werden",
     "scenarioItemsFailed": "Nicht geladen: {items}",
     "startNow": "Jetzt starten",
-    "scenarioReady": "Szenario geladen"
+    "scenarioReady": "Szenario geladen",
+    "scenarioPartial": "Szenario teilweise geladen"
   },
   "actionUrls": {
     "title": "Aktions-URLs",
