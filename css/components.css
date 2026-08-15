@@ -1910,6 +1910,14 @@ body.dmike-glossary-inline-off .glossary-term:focus-within {
   gap: var(--spacing-sm);
   height: 12rem;
   max-height: 60vh;
+
+  /* Breathing room for the confirm button's focus ring: `.btn:focus-visible`
+     paints a 3px box-shadow OUTSIDE the border box, and `overflow-y: auto`
+     below clips anything that leaves this box — with a full list the button
+     sits flush against the bottom edge and the ring was cut off. Applied on
+     both sides (`padding-block`) so the centred column stays centred; the box
+     itself is unchanged, `box-sizing: border-box` keeps it at 12rem. */
+  padding-block: var(--spacing-xs);
   overflow-y: auto;
   text-align: center;
 }
