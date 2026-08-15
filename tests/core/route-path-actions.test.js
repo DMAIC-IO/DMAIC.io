@@ -27,6 +27,35 @@ suite('parseHash actions', () => {
     const r = parseHash('#/project/p-1/phase/define');
     assertEqual(r.kind, 'phase');
   });
+
+  test('action args are URI-decoded', () => {
+    const r = parseHash('#/action/new-project/dmaic/Mein%20Projekt');
+    assertEqual(r.kind, 'action');
+    assertDeepEqual(r.args, ['dmaic', 'Mein Projekt']);
+  });
+
+  test('a broken percent-escape falls back to the raw segment', () => {
+    const r = parseHash('#/action/new-project/dmaic/100%');
+    assertEqual(r.args[1], '100%');
+  });
+
+  test('umlauts and punctuation survive an encode/decode round-trip', () => {
+    const name = 'Käffchen & Törtchen, Prüfung Nr. 3 (Süß)';
+    const r = parseHash(`#/action/new-project/dmaic/${encodeURIComponent(name)}`);
+    assertEqual(r.args[1], name);
+  });
+
+  test('a slash in the name does not split into an extra segment', () => {
+    const name = 'A/B Test — Vergleich';
+    const r = parseHash(`#/action/new-project/dmaic/${encodeURIComponent(name)}`);
+    assertDeepEqual(r.args, ['dmaic', name]);
+  });
+
+  test('a hash in the name does not break parsing', () => {
+    const name = 'Ticket #42 Nachbesserung';
+    const r = parseHash(`#/action/new-project/dmaic/${encodeURIComponent(name)}`);
+    assertDeepEqual(r.args, ['dmaic', name]);
+  });
 });
 
 suite('serializeRoute actions', () => {

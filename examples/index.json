@@ -3052,6 +3052,7 @@
       "id": "scenario-pizza-full",
       "type": "scenario",
       "title": { "de": "Pizza-Lieferzeit — vollständig", "en": "Pizza delivery time — complete" },
+      "projectName": { "de": "Pizza-Lieferzeit", "en": "Pizza delivery time" },
       "description": {
         "de": "Kompletter DMAIC-Durchlauf vom Project Charter bis Lessons Learned, inklusive Datenauswertung.",
         "en": "Complete DMAIC walkthrough from project charter to lessons learned, including data analysis."
@@ -3106,6 +3107,7 @@
       "id": "scenario-bolzen-full",
       "type": "scenario",
       "title": { "de": "Bolzendurchmesser — vollständig", "en": "Bolt diameter — complete" },
+      "projectName": { "de": "Bolzendurchmesser", "en": "Bolt diameter" },
       "description": {
         "de": "Fähigkeitsanalyse, Histogramm, Regelkarte und Ausreißertest auf einer Messreihe.",
         "en": "Capability analysis, histogram, control chart and outlier test on one measurement series."
@@ -3137,6 +3139,7 @@
       "id": "scenario-triz-band-full",
       "type": "scenario",
       "title": { "de": "TRIZ Bandförderer — vollständig", "en": "TRIZ conveyor — complete" },
+      "projectName": { "de": "TRIZ Bandförderer", "en": "TRIZ conveyor" },
       "description": {
         "de": "Ideales Endresultat und Ressourcen-Checkliste zur selben Aufgabenstellung.",
         "en": "Ideal final result and resource checklist for the same problem."
@@ -3163,6 +3166,7 @@
       "id": "scenario-motor-full",
       "type": "scenario",
       "title": { "de": "Motor-Versuche — vollständig", "en": "Engine trials — complete" },
+      "projectName": { "de": "Motor-Versuche", "en": "Engine trials" },
       "description": {
         "de": "Multiple Regression mit Multikollinearität plus Streudiagramm derselben Daten.",
         "en": "Multiple regression with multicollinearity plus a scatter plot of the same data."
@@ -3189,6 +3193,7 @@
       "id": "scenario-sprit-full",
       "type": "scenario",
       "title": { "de": "Spritverbrauch — vollständig", "en": "Fuel consumption — complete" },
+      "projectName": { "de": "Spritverbrauch", "en": "Fuel consumption" },
       "description": {
         "de": "Regression mit Ausreißerdiagnostik plus Streudiagramm derselben Daten.",
         "en": "Regression with outlier diagnostics plus a scatter plot of the same data."

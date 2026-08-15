@@ -12,6 +12,17 @@ function segments(hash) {
     .filter(Boolean);
 }
 
+/**
+ * Decode one action argument. Action URLs may carry human text (a project
+ * name), so `%20` must become a space — but a hand-typed, broken escape must
+ * not tear down the whole route.
+ * @param {string} s
+ * @returns {string}
+ */
+function decodeSegment(s) {
+  try { return decodeURIComponent(s); } catch { return s; }
+}
+
 const EMPTY = {
   kind: 'invalid', projectId: null, phaseId: null,
   instanceId: null, moduleType: null, pageId: null, sub: [],
@@ -28,7 +39,7 @@ export function parseHash(hash) {
   if (seg.length === 0) return { ...EMPTY, kind: 'root' };
   // One-shot command URLs: #/action/<verb>/<arg…>
   if (seg[0] === 'action') {
-    return { ...EMPTY, kind: 'action', verb: seg[1] ?? null, args: seg.slice(2) };
+    return { ...EMPTY, kind: 'action', verb: seg[1] ?? null, args: seg.slice(2).map(decodeSegment) };
   }
   if (seg[0] !== 'project' || !seg[1]) return { ...EMPTY };
 

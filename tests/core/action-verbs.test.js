@@ -9,6 +9,9 @@ import { createActionVerbs } from '../../js/core/router/action-verbs.js';
 const SCENARIOS = [
   { id: 'scn-a', type: 'scenario', cycle: 'dmaic', startPhase: 'define', items: ['ex-a'],
     title: { de: 'A', en: 'A' }, description: { de: '', en: '' } },
+  { id: 'scn-b', type: 'scenario', cycle: 'dmaic', startPhase: 'define', items: ['ex-a'],
+    title: { de: 'Szenario B', en: 'Scenario B' }, description: { de: '', en: '' },
+    projectName: { de: 'Kurz', en: 'Short' } },
 ];
 
 function makeCtx() {
@@ -112,9 +115,29 @@ suite('action verbs', () => {
     assertEqual(res.route.kind, 'phase');
   });
 
+  test('scenario uses projectName when present, title otherwise', async () => {
+    const { ctx: ctxA, calls: callsA } = makeCtx();
+    await createActionVerbs(ctxA).get('scenario').run(['scn-a']);
+    assertTrue(callsA.includes('create:A:dmaic'), 'scn-a has no projectName, falls back to title');
+
+    const { ctx: ctxB, calls: callsB } = makeCtx();
+    await createActionVerbs(ctxB).get('scenario').run(['scn-b']);
+    assertTrue(callsB.includes('create:Kurz:dmaic'), 'scn-b uses its projectName override');
+  });
+
+  test('new-project uses the name argument, trimmed, with a default fallback', async () => {
+    const { ctx: ctx1, calls: calls1 } = makeCtx();
+    await createActionVerbs(ctx1).get('new-project').run(['dmaic', '  Mein Projekt  ']);
+    assertTrue(calls1.includes('create:Mein Projekt:dmaic'), 'name argument is trimmed');
+
+    const { ctx: ctx2, calls: calls2 } = makeCtx();
+    await createActionVerbs(ctx2).get('new-project').run(['dmaic', '   ']);
+    assertTrue(calls2.includes('create:app.defaultProjectName:dmaic'), 'blank name falls back to default');
+  });
+
   test('list() enumerates every scenario', () => {
     const { ctx } = makeCtx();
-    assertDeepEqual(createActionVerbs(ctx).get('scenario').list().map(e => e.arg), ['scn-a']);
+    assertDeepEqual(createActionVerbs(ctx).get('scenario').list().map(e => e.arg), ['scn-a', 'scn-b']);
   });
 
   test('scenario declares a holding modal, new-project declares none', () => {

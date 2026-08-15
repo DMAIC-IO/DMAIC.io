@@ -69,6 +69,18 @@ export function createActionVerbs(ctx) {
   const titleOf = (meta) => meta?.title?.[lang()] || meta?.title?.en || meta?.id || '';
 
   /**
+   * Project name for a scenario-created project. The scenario always wins —
+   * there is no user input on this path. `projectName` is the optional override
+   * for scenarios whose display title is too long or too explanatory to double
+   * as a project name; `title` is the default.
+   * @param {object} scenario
+   * @returns {string}
+   */
+  function projectNameOf(scenario) {
+    return scenario?.projectName?.[lang()] || scenario?.projectName?.en || titleOf(scenario);
+  }
+
+  /**
    * Create a project and rebuild the UI for it — without navigating; the
    * router navigates once to the route the verb returns.
    * @param {string} name
@@ -171,7 +183,7 @@ export function createActionVerbs(ctx) {
       if (!isScenario(scenario)) {
         throw new Error(`Unknown scenario: ${scenarioId}`);
       }
-      await newProject(titleOf(scenario), scenario.cycle);
+      await newProject(projectNameOf(scenario), scenario.cycle);
       const result = await ctx.loadScenario({ scenario });
       reportScenarioResult(scenario, result);
       return { route: phaseRoute(scenario.startPhase), detail: result };
@@ -187,13 +199,16 @@ export function createActionVerbs(ctx) {
     // milliseconds — a dialog that flashes for one frame is pure flicker.
     modal: null,
     /**
-     * Create an empty project in the given cycle.
-     * @param {string[]} args `[cycleId]`
+     * Create an empty project in the given cycle. The name argument is
+     * optional and free-form user text (trimmed); a blank or absent name
+     * falls back to the default project name.
+     * @param {string[]} args `[cycleId, name?]`
      * @returns {Promise<{route: object, detail: object}>}
      */
-    async run([cycleId]) {
+    async run([cycleId, name]) {
       const cycle = cycleId || DEFAULT_CYCLE;
-      const id = await newProject(i18n.t('app.defaultProjectName'), cycle);
+      const trimmed = (name || '').trim();
+      const id = await newProject(trimmed || i18n.t('app.defaultProjectName'), cycle);
       return { route: phaseRoute(null), detail: { projectId: id } };
     },
     /** @returns {{arg: string, label: string}[]} */

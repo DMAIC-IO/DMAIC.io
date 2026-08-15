@@ -126,6 +126,15 @@ suite('shipped scenario catalog', () => {
     assertEqual(reg.get('scenario-pizza-full').items.length, 21);
   });
 
+  test('an optional projectName carries both languages', async () => {
+    const reg = await loadedRegistry();
+    for (const s of reg.getScenarios()) {
+      if (!s.projectName) continue;
+      assertEqual(typeof s.projectName.de, 'string', `${s.id}: projectName.de`);
+      assertEqual(typeof s.projectName.en, 'string', `${s.id}: projectName.en`);
+    }
+  });
+
   test('worksheet examples resolve to the worksheet module', async () => {
     const reg = await loadedRegistry();
     EXPECTED_WORKSHEETS.forEach(id => {
