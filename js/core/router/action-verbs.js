@@ -38,7 +38,7 @@
  */
 
 import { getPhaseIds, DEFAULT_CYCLE } from '../cycles/cycles.js';
-import { h } from '../dom.js';
+import { scenarioDoneState } from '../../ui/action-modal.js';
 
 /**
  * A catalog entry is a scenario iff it declares `type: 'scenario'` — the same
@@ -156,37 +156,19 @@ export function createActionVerbs(ctx) {
        * modules, long enough that the user must be able to read the outcome
        * before the UI changes under them.
        *
-       * Failure-aware on purpose too: the warning toast from
-       * reportScenarioResult() sits BELOW the action overlay's backdrop and
-       * expires after a few seconds, while this dialog holds until the user
-       * clicks. If the dialog reported plain success, a half-loaded scenario
-       * would look like a complete one. Failed items are named by example id
-       * only — `failed[].error` is untranslated developer text and goes to
-       * the console, never into the UI.
+       * The state itself comes from the shared scenarioDoneState() — the help
+       * panel's examples tab holds the very same dialog and must say the very
+       * same things. Confirming here navigates into the fresh project, hence
+       * the default "Jetzt starten" label.
        * @param {{loaded: string[], failed: object[]}|null} detail  run()'s detail
        * @param {string[]} args `[scenarioId]`
        * @returns {{title: string, subtitle: string, body?: Node, confirmLabel: string}}
        */
       done(detail, [scenarioId]) {
         const scenario = examplesRegistry.get(scenarioId);
-        const total = scenario?.items?.length ?? 0;
-        const failed = detail?.failed ?? [];
-        const state = {
-          title: i18n.t(failed.length ? 'actions.scenarioPartial' : 'actions.scenarioReady'),
-          subtitle: i18n.t('actions.scenarioLoaded', {
-            loaded: detail?.loaded?.length ?? 0, total,
-          }),
-          confirmLabel: i18n.t('actions.startNow'),
-        };
-        if (failed.length) {
-          // No logging here — done() is a pure render function and the raw
-          // errors are already in the console via reportScenarioResult().
-          state.body = h('p', { class: 'action-modal__failed' },
-            i18n.t('actions.scenarioItemsFailed', {
-              items: failed.map(f => f.exampleId).join(', '),
-            }));
-        }
-        return state;
+        return scenarioDoneState({
+          i18n, result: detail, total: scenario?.items?.length ?? 0,
+        });
       },
     },
     /**

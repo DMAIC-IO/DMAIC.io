@@ -10,6 +10,7 @@ import { h } from '../../core/dom.js';
 import { renderModuleHelp } from '../../core/help-renderer.js';
 import { loadScenario, describeScenario, countScenarioWorksheets } from '../../core/scenario-loader.js';
 import { buildScenarioConfirmDialog } from '../../dialogs/scenario-confirm/scenario-confirm.js';
+import { scenarioDoneState } from '../../ui/action-modal.js';
 
 /**
  * Wire the global "Module Help" header button.
@@ -156,6 +157,23 @@ export function initModuleHelp(
           'warning',
         );
       }
+      // HOLD instead of closing: the dialog has just built a list of every
+      // loaded item and closing here would destroy it at the exact moment it
+      // becomes readable ("das geht sonst zu schnell"). Same mechanism and
+      // same state builder as the `scenario` action verb — but a different
+      // button word: that verb navigates into a freshly created project
+      // ("Jetzt starten"), while this path adds modules to the project the
+      // user is already looking at and navigates nowhere, so there is
+      // nothing to start — only something to close.
+      //
+      // No routing obligation here: the router's rule ("whoever force-closes
+      // a pending hold must navigate away from the #/action/… hash") applies
+      // to the action-URL path only; this entry point never touches the hash.
+      // The awaited hold() also resolves false if anything closes the dialog
+      // from outside, so this can never strand the finally below.
+      await actionModal?.hold(scenarioDoneState({
+        i18n, result, total, confirmLabel: 'common.close',
+      }));
     } catch (err) {
       // A total throw from loadScenario() itself (e.g. a stateManager
       // failure) is distinct from the per-item failures handled above —
@@ -165,6 +183,8 @@ export function initModuleHelp(
       console.error('[ModuleHelp] scenario load failed', scenarioId, err);
       notify?.(i18n.t('common.error'), 'error');
     } finally {
+      // Idempotent: hold() already closed the dialog on the confirmed path.
+      // This covers the throwing path and a hold cancelled from outside.
       actionModal?.close();
       scenarioBusy = false;
     }

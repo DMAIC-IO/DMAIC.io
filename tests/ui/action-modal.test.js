@@ -4,7 +4,7 @@
  */
 import { suite, test, assertEqual, assertTrue, assertDeepEqual } from '../test-utils.js';
 import { Modal } from '../../js/ui/modal.js';
-import { createActionModal } from '../../js/ui/action-modal.js';
+import { createActionModal, scenarioDoneState } from '../../js/ui/action-modal.js';
 
 const i18n = { t: (k) => k };
 const make = () => createActionModal({ i18n, modal: new Modal(i18n) });
@@ -219,6 +219,17 @@ suite('createActionModal — loaded-items list', () => {
     await p;
   });
 
+  test('the list is not announced row by row', () => {
+    // The dialog is a polite live region for its title/subtitle. Prepending
+    // 21 rows and then mutating each one would queue ~42 announcements, so
+    // the list opts out and the running commentary stays out of the way.
+    const am = make();
+    am.open({ title: 'T' });
+    am.addItem({ id: 1, label: 'SIPOC' });
+    assertEqual(document.querySelector('.action-modal__list').getAttribute('aria-live'), 'off');
+    am.close();
+  });
+
   test('a long list never lets the dialog grow past its fixed box', () => {
     // The layout guarantee itself (internal scrolling) lives in CSS and is
     // pinned by the e2e test in tests/global/scenario-load.spec.js — the unit
@@ -231,5 +242,39 @@ suite('createActionModal — loaded-items list', () => {
     assertEqual(rows().length, 30);
     assertEqual(labels()[0], 'Modul 30', 'newest still on top after many rows');
     am.close();
+  });
+});
+
+suite('scenarioDoneState', () => {
+  const i18n2 = { t: (k, p) => (p ? `${k}:${JSON.stringify(p)}` : k) };
+
+  test('a clean run reads as ready', () => {
+    const s = scenarioDoneState({ i18n: i18n2, result: { loaded: ['a', 'b'], failed: [] }, total: 2 });
+    assertEqual(s.title, 'actions.scenarioReady');
+    assertTrue(s.subtitle.startsWith('actions.scenarioLoaded'));
+    assertEqual(s.body, null, 'nothing extra to say');
+    assertEqual(s.confirmLabel, 'actions.startNow', 'default label');
+  });
+
+  test('a partial run reads as partial and names the failed ids', () => {
+    const s = scenarioDoneState({
+      i18n: i18n2,
+      result: { loaded: ['a'], failed: [{ exampleId: 'ex-b', error: 'module failed to mount' }] },
+      total: 2,
+    });
+    assertEqual(s.title, 'actions.scenarioPartial');
+    assertTrue(s.body instanceof Node, 'a body node names the failures');
+    assertTrue(s.body.textContent.includes('ex-b'), 'the failing id is named');
+    assertTrue(
+      !s.body.textContent.includes('module failed to mount'),
+      'never the raw developer error',
+    );
+  });
+
+  test('the confirm label can be overridden for callers that start nothing', () => {
+    const s = scenarioDoneState({
+      i18n: i18n2, result: { loaded: [], failed: [] }, total: 0, confirmLabel: 'common.close',
+    });
+    assertEqual(s.confirmLabel, 'common.close');
   });
 });

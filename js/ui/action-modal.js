@@ -23,6 +23,40 @@ import { h } from '../core/dom.js';
 const STATUS_GLYPH = { pending: '·', ok: '✓', failed: '✕' };
 
 /**
+ * The state the dialog holds in once a scenario has finished loading — ONE
+ * flavour for every entry point (the `scenario` action verb and the help
+ * panel's examples tab), so the two can never drift apart.
+ *
+ * Failure-aware on purpose: a warning toast sits BELOW the action overlay's
+ * backdrop and expires after a few seconds, while this dialog holds until the
+ * user clicks. If it reported plain success, a half-loaded scenario would look
+ * like a complete one. Failed items are named by example id ONLY —
+ * `failed[].error` is untranslated developer text and belongs in the console.
+ *
+ * @param {object} args
+ * @param {object} args.i18n
+ * @param {{loaded: string[], failed: {exampleId: string}[]}|null} args.result
+ * @param {number} args.total                 items the scenario declared
+ * @param {string} [args.confirmLabel]        i18n key for the button; defaults
+ *                                            to `actions.startNow`
+ * @returns {{title: string, subtitle: string, body: Node|null, confirmLabel: string}}
+ */
+export function scenarioDoneState({ i18n, result, total, confirmLabel }) {
+  const failed = result?.failed ?? [];
+  return {
+    title: i18n.t(failed.length ? 'actions.scenarioPartial' : 'actions.scenarioReady'),
+    subtitle: i18n.t('actions.scenarioLoaded', { loaded: result?.loaded?.length ?? 0, total }),
+    // No logging here — this is a pure render function and the raw errors are
+    // already in the console via the caller's own reporting.
+    body: failed.length
+      ? h('p', { class: 'action-modal__failed' },
+        i18n.t('actions.scenarioItemsFailed', { items: failed.map(f => f.exampleId).join(', ') }))
+      : null,
+    confirmLabel: i18n.t(confirmLabel || 'actions.startNow'),
+  };
+}
+
+/**
  * @param {{ i18n: object, modal: object }} deps
  * @returns {{ open: (o: {title: string, subtitle?: string, body?: Node}) => void,
  *             update: (text: string) => void,
@@ -51,7 +85,10 @@ export function createActionModal({ i18n, modal }) {
     subtitleEl = h('div', { class: 'action-modal__subtitle' });
     progressEl = h('div', { class: 'action-modal__progress' });
     bodyEl = h('div', { class: 'action-modal__body' });
-    listEl = h('ul', { class: 'action-modal__list' });
+    // aria-live="off": the dialog around it is a polite live region, and a
+    // 21-item scenario would otherwise queue ~42 announcements (one per added
+    // row plus one per status change). Title and subtitle stay announced.
+    listEl = h('ul', { class: 'action-modal__list', 'aria-live': 'off' });
     footerEl = h('div', { class: 'action-modal__footer' });
     root = h('div', {
       class: 'action-modal', role: 'status', 'aria-live': 'polite',

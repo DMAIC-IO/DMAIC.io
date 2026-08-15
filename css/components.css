@@ -455,6 +455,7 @@ select.input {
   position: fixed;
   bottom: calc(var(--footer-height) + var(--spacing-md));
   right: var(--spacing-md);
+
   /* Above every overlay, including .modal-overlay--action (10000): a toast is
      a transient notice that must stay readable while a dialog is up — dimmed
      out behind a backdrop it would expire unseen. The action modal still
@@ -1937,7 +1938,12 @@ body.dmike-glossary-inline-off .glossary-term:focus-within {
    `flex: 1` + `min-height: 0` make THIS the element that absorbs the growth:
    it scrolls inside `.action-modal`'s fixed 12rem, which never resizes. */
 .action-modal__list {
-  flex: 1 1 auto;
+  /* `0 1 auto`, never `1 1 auto`: the list takes exactly the height of its
+     rows and only ever SHRINKS (then scrolls). A greedy list would claim the
+     dialog's free space even when it holds one row or none — the counting
+     phase and the single-example verb — and push the spinner to the top edge
+     and the footer to the bottom of the centred column. */
+  flex: 0 1 auto;
   min-height: 0;
   width: 100%;
   overflow-y: auto;
@@ -1946,6 +1952,16 @@ body.dmike-glossary-inline-off .glossary-term:focus-within {
   list-style: none;
   text-align: left;
 }
+
+/* An unused slot must cost nothing — not even the column's flex gap, which a
+   zero-height element still generates. Without this the counting phase (no
+   list, no progress line, no body, no footer) renders its spinner and
+   subtitle ~37px above the centre of the box. The spinner is deliberately NOT
+   in this list: it is empty by construction (a pure CSS ring). */
+.action-modal__list:empty,
+.action-modal__progress:empty,
+.action-modal__body:empty,
+.action-modal__footer:empty { display: none; }
 
 .action-modal__item {
   display: flex;
@@ -1956,7 +1972,11 @@ body.dmike-glossary-inline-off .glossary-term:focus-within {
   color: var(--color-text-secondary);
 }
 
+/* `min-width: 0` is belt-and-braces: `overflow: hidden` already zeroes the
+   automatic minimum size, but a later change to that overflow would silently
+   kill the ellipsis and widen the list into a horizontal scrollbar. */
 .action-modal__item-label {
+  min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
