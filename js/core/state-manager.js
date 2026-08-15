@@ -679,8 +679,13 @@ export class StateManager {
     const proj = this.getProjects().find(p => p.id === projectId);
     const cycleId = proj?.cycle || DEFAULT_CYCLE;
 
-    // Reset and reload the new project from the adapter.
+    // Reset and reload the new project from the adapter. A brand-new project
+    // has no saved doc yet, so load() below finds nothing to override the
+    // default projectMeta with — seed the name from the project-list entry
+    // (set by createProject()) so the header shows the real name immediately,
+    // not the generic default, before the first save() persists a doc.
     this._state = this._defaultState(cycleId);
+    if (proj?.name) this._state.projectMeta.name = proj.name;
     this._moduleCache.clear();
     await this.load();
   }

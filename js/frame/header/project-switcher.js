@@ -76,7 +76,7 @@ export function initProjectSwitcher({ stateManager, eventBus, i18n }) {
   // the in-flight request so the async replies know how to react.
   let cyclePending = null; // { currentCycle, projectSwitched }
 
-  eventBus.on('cycle:picked', async ({ context, cycleId, scenarioId }) => {
+  eventBus.on('cycle:picked', async ({ context, cycleId, scenarioId, projectName }) => {
     const pending = cyclePending;
     if (!pending) return;
     if (context === 'create') {
@@ -86,10 +86,12 @@ export function initProjectSwitcher({ stateManager, eventBus, i18n }) {
       // through the action-verb registry (rather than duplicating that
       // sequence inline here) keeps a single implementation of "new project"
       // and gives the empty-project path the same splash/error handling the
-      // scenario path already has.
+      // scenario path already has. The name only travels on the empty-project
+      // path — a scenario always names the project itself.
       if (!_router) { location.reload(); return; } // pre-wiring fallback
       const verb = scenarioId ? 'scenario' : 'new-project';
-      await _router.navigate({ kind: 'action', verb, args: [scenarioId || cycleId] });
+      const args = scenarioId ? [scenarioId] : [cycleId, projectName || ''];
+      await _router.navigate({ kind: 'action', verb, args });
       return;
     }
     // context === 'switch'
