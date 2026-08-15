@@ -19,6 +19,9 @@
  *                                     one.
  *   modal.render(args)                → { title, subtitle?, body? }: what the
  *                                     progress dialog shows WHILE run() works.
+ *                                     REQUIRED whenever `modal` is non-null —
+ *                                     the router calls it unguarded, so a modal
+ *                                     without render() fails the whole action.
  *   modal.done: null                  the dialog auto-closes when run() resolves.
  *   modal.done(detail, args)          → { title, subtitle?, body?, confirmLabel? }:
  *                                     the dialog stays open in this state until

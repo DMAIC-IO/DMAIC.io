@@ -67,6 +67,41 @@ suite('createActionModal', () => {
     assertEqual(document.querySelector('.action-modal'), null, 'hold closes on confirm');
   });
 
+  test('confirm resolves true, a forced close resolves false', async () => {
+    // The caller must be able to tell "the user pressed the button" from
+    // "something else closed the dialog" — only the first means "go ahead".
+    const am = make();
+    am.open({ title: 'T' });
+    const confirmed = am.hold({ title: 'Fertig' });
+    await Promise.resolve();
+    document.querySelector('.action-modal__confirm').click();
+    assertEqual(await confirmed, true, 'confirm click resolves true');
+
+    am.open({ title: 'T2' });
+    const forced = am.hold({ title: 'Fertig' });
+    await Promise.resolve();
+    am.close();
+    assertEqual(await forced, false, 'forced close resolves false');
+  });
+
+  test('open during a hold settles it as a forced close and keeps the new dialog', async () => {
+    const am = make();
+    am.open({ title: 'T' });
+    const pending = am.hold({ title: 'Fertig' });
+    await Promise.resolve();
+    am.open({ title: 'Neu' });
+    // Raced against a timer so a stranded promise fails instead of hanging.
+    const outcome = await Promise.race([
+      pending, new Promise((r) => setTimeout(() => r('stranded'), 100)),
+    ]);
+    const title = document.querySelector('.modal__title')?.textContent;
+    const stillOpen = !!document.querySelector('.action-modal');
+    am.close();   // before the assertions: a failing one must not leak a dialog
+    assertEqual(outcome, false, 'the outstanding hold was not confirmed');
+    assertEqual(title, 'Neu');
+    assertTrue(stillOpen, 'the new dialog is still open');
+  });
+
   test('close settles a pending hold instead of stranding its caller', async () => {
     // The router closes the dialog in a `finally`. If close() tore the confirm
     // button out without settling hold()'s promise, the awaiting router would

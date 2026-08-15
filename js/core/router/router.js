@@ -216,14 +216,18 @@ export class Router {
           // confirmation afterwards (done). The router only executes.
           const cfg = verb.modal ?? null;
           let target = null;
+          // false only when a hold() was cancelled from outside (see below).
+          let confirmed = true;
           try {
             if (cfg) this._actionModal?.open(cfg.render(route.args));
             const res = await verb.run(route.args);
             target = res?.route ?? null;
-            // hold() resolves on confirm — or when close() is called from
-            // anywhere else, so this can never wait forever.
+            // hold() resolves true on the user's confirm and false when the
+            // dialog was closed/re-purposed by anyone else — so it can never
+            // wait forever, and a cancellation is not read as "go ahead".
             if (cfg?.done) {
-              await this._actionModal?.hold(cfg.done(res?.detail ?? null, route.args));
+              const held = await this._actionModal?.hold(cfg.done(res?.detail ?? null, route.args));
+              confirmed = held !== false;
             }
           } catch (err) {
             // A known verb that threw is NOT an unknown action — say so.
@@ -237,6 +241,9 @@ export class Router {
             // on the holding path hold() has already closed it.
             this._actionModal?.close();
           }
+          // A cancelled hold means someone else took over the UI — navigating
+          // to the verb's target now would fight them for the route.
+          if (!confirmed) return;
           this._applying = false;                  // allow the nested navigate to run
           await this.navigate(
             target ?? { kind: 'project', projectId: this._sm.getActiveProjectId() },

@@ -185,6 +185,27 @@ suite('router/action routes', () => {
     assertEqual(h.writes[0], 'replace:#/project/p-1/phase/define');
   });
 
+  test('a hold that was force-closed does not navigate', async () => {
+    // hold() resolves false when the dialog was closed by someone other than
+    // the user's confirm click — that is a cancellation, not a "go ahead".
+    const h = harness('#/action/scenario/scn-a');
+    h.actionModal.hold = async (o) => { h.modalLog.push(`hold:${o?.title}`); return false; };
+    const r = new Router(h.deps);
+    r.setActionVerbs(new Map([['scenario', {
+      modal: {
+        render: () => ({ title: 'T', subtitle: 'S' }),
+        done: () => ({ title: 'D', confirmLabel: 'go' }),
+      },
+      run: async () => ({ route: { kind: 'phase', projectId: 'p-1', phaseId: 'define' } }),
+      list: () => [],
+    }]]), h.actionModal, h.notify, h.i18n);
+
+    await r.applyHash();
+
+    assertEqual(h.writes.length, 0, `no navigation after a forced close, got ${JSON.stringify(h.writes)}`);
+    assertTrue(h.modalLog.includes('close'), 'dialog closed');
+  });
+
   test('a throwing verb never enters the hold state and still closes', async () => {
     const h = harness('#/action/scenario/boom');
     const r = new Router(h.deps);
