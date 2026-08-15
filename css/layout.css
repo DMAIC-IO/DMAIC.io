@@ -464,6 +464,13 @@ html.is-nightly body {
   white-space: nowrap;
 }
 
+/* Empty-project row: button sits beside the name input, not centred
+   between title and input. */
+.cycle-picker__start--empty .btn {
+  grid-row: 2;
+  align-self: stretch;
+}
+
 /* Cycle switch confirm */
 .cycle-switch {
   display: flex;
