@@ -54,7 +54,7 @@
     "probability-plot", "run-chart"
   ],
   "algoLab": [
-    "hypothesis/mann-whitney",
+    "hypothesis/mann-whitney-u",
     "hypothesis/kruskal-wallis",
     "hypothesis/wilcoxon-signed-rank"
   ],
