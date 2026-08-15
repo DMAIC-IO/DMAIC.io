@@ -192,15 +192,23 @@ suite('createDialog', () => {
       ctx: { i18n, eventBus },
     });
 
+    let confirmCalls = 0;
     let threw = false;
     try {
       await dialog.open(modal, { selected: 'boom' }, {
         onMount: () => { throw new Error('boom'); },
+        onConfirm: () => { confirmCalls += 1; },
       });
     } catch {
       threw = true;
     }
     assertTrue(threw, 'the onMount throw propagates to the caller of open()');
+
+    // Without resetting `_api` on the throw path, it would still point at
+    // the failed open's api here — calling submit() before any new open()
+    // would silently re-invoke that dead call's onConfirm.
+    dialog.submit();
+    assertEqual(confirmCalls, 0, 'a stale submit() after a failed open() must not fire the old onConfirm');
 
     // The failed open() above must not leave a stale `_api` behind: a fresh
     // open() + submit() has to work normally, not silently confirm/no-op
