@@ -332,25 +332,18 @@ html.is-nightly body {
   padding: 10px 12px;
   border: 1px solid var(--color-border-secondary);
   border-radius: var(--border-radius);
-  cursor: pointer;
+  cursor: default;
   transition: border-color 0.1s, background 0.1s;
 }
 
-.cycle-picker__option:hover {
+/* Switch context only: `.cycle-picker__option-pick` (the label wrapping the
+   radio + body, see cycle-picker.html) exists ONLY when the create-context
+   "Weiter" button is absent — the create context renders a plain
+   `.cycle-picker__body` span with no radio at all, so none of the rules
+   below ever match there. No :has(input:disabled) scaffolding needed: a
+   card that carries no radio simply cannot look or hover like it does. */
+.cycle-picker__option:has(.cycle-picker__option-pick):hover {
   background: var(--color-bg-tertiary);
-}
-
-/* Create context: the radio is disabled (see cycle-picker.html) because the
-   per-card "Weiter" button both selects and advances — the card itself
-   carries no selection semantics anymore, so it must not look or hover like
-   it does. Switch context (radio enabled) keeps the pointer/hover/checked
-   styling untouched below. */
-.cycle-picker__option:has(input:disabled) {
-  cursor: default;
-}
-
-.cycle-picker__option:has(input:disabled):hover {
-  background: transparent;
 }
 
 .cycle-picker__option:has(input:checked) {
@@ -358,9 +351,13 @@ html.is-nightly body {
   background: var(--color-accent-light);
 }
 
-.cycle-picker__option:has(input:disabled):has(input:checked) {
-  border-color: var(--color-border-secondary);
-  background: transparent;
+.cycle-picker__option-pick {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  flex: 1;
+  min-width: 0;
+  cursor: pointer;
 }
 
 .cycle-picker__option input[type="radio"] {

@@ -1890,12 +1890,13 @@ body.dmike-glossary-inline-off .glossary-term:focus-within {
 
 /* Fixed footprint: the body swaps between the running state (spinner +
    subtitle + progress line) and the hold state (subtitle + optional failed-
-   items line + confirm button), and a partial-failure hold adds the
-   `.action-modal__failed` line on top of that. Without a stable size the
-   dialog visibly resizes as it switches between those — width is fixed,
-   min-height covers the tallest state so the box does not jump; content
-   taller than that (a long failed-items list) wraps/scrolls instead of
-   growing the box further. */
+   items line + confirm button). `height` (not `min-height`) pins the box at
+   exactly one size for every state — a partial-failure hold must render at
+   the SAME size as a clean hold, not merely no smaller than it. The
+   `.action-modal__failed` line below absorbs any overflow from a long
+   failed-items list on its own scrollbar instead of growing this box; the
+   remaining `max-height: 60vh` + `overflow-y: auto` here is only a
+   last-resort guard against a viewport too short for 12rem. */
 .modal-overlay--action .modal {
   width: 26rem;
 }
@@ -1906,7 +1907,7 @@ body.dmike-glossary-inline-off .glossary-term:focus-within {
   align-items: center;
   justify-content: center;
   gap: var(--spacing-sm);
-  min-height: 12rem;
+  height: 12rem;
   max-height: 60vh;
   overflow-y: auto;
   text-align: center;
@@ -1919,9 +1920,14 @@ body.dmike-glossary-inline-off .glossary-term:focus-within {
 }
 
 /* Named failed items of a partially loaded scenario. Never the raw
-   `failed[].error` — that is untranslated developer text (console only). */
+   `failed[].error` — that is untranslated developer text (console only).
+   Capped independently of `.action-modal`'s fixed height: no matter how many
+   items failed, THIS scrolls — the dialog around it (title, subtitle,
+   confirm button) never moves or resizes. */
 .action-modal__failed {
   margin: 0;
+  max-height: 4.5rem;
+  overflow-y: auto;
   font-size: var(--font-size-sm);
   color: var(--color-warning);
 }

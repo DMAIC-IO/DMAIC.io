@@ -3,18 +3,34 @@
     <p class="cycle-picker__intro" x-text="t('pickerIntro')"></p>
     <fieldset class="cycle-picker">
       <template x-for="c in model.cycles" :key="c.id">
-        <label class="cycle-picker__option">
-          <input type="radio" name="cycle" :value="c.id" x-model="model.selected"
-                 :disabled="model.allowScenarios" @change="model.selectCycle(c.id)">
-          <span class="cycle-picker__body">
-            <span class="cycle-picker__name" x-text="c.name"></span>
-            <span class="cycle-picker__short" x-text="c.short"></span>
-            <span class="cycle-picker__desc" x-text="c.description"></span>
-          </span>
+        <div class="cycle-picker__option" :data-cycle="c.id">
+          <!-- Switch context (no "Weiter" button, allowScenarios=false): the
+               radio + footer confirm IS the selection mechanism, unchanged. -->
+          <template x-if="!model.allowScenarios">
+            <label class="cycle-picker__option-pick">
+              <input type="radio" name="cycle" :value="c.id" x-model="model.selected"
+                     @change="model.selectCycle(c.id)">
+              <span class="cycle-picker__body">
+                <span class="cycle-picker__name" x-text="c.name"></span>
+                <span class="cycle-picker__short" x-text="c.short"></span>
+                <span class="cycle-picker__desc" x-text="c.description"></span>
+              </span>
+            </label>
+          </template>
+          <!-- Create context (allowScenarios=true): no radio at all — the
+               per-card "Weiter" button below both selects and advances, so a
+               selectable card would be redundant, inert UI. -->
+          <template x-if="model.allowScenarios">
+            <span class="cycle-picker__body">
+              <span class="cycle-picker__name" x-text="c.name"></span>
+              <span class="cycle-picker__short" x-text="c.short"></span>
+              <span class="cycle-picker__desc" x-text="c.description"></span>
+            </span>
+          </template>
           <button type="button" class="btn btn--primary cycle-picker__next"
                   x-show="model.allowScenarios" x-text="nextLabel"
                   @click="chooseCycle(c.id)"></button>
-        </label>
+        </div>
       </template>
     </fieldset>
   </div>
