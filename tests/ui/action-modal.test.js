@@ -67,6 +67,24 @@ suite('createActionModal', () => {
     assertEqual(document.querySelector('.action-modal'), null, 'hold closes on confirm');
   });
 
+  test('close settles a pending hold instead of stranding its caller', async () => {
+    // The router closes the dialog in a `finally`. If close() tore the confirm
+    // button out without settling hold()'s promise, the awaiting router would
+    // hang forever and never navigate.
+    const am = make();
+    am.open({ title: 'T' });
+    const p = am.hold({ title: 'Fertig' }).then(() => 'settled');
+    await Promise.resolve();
+    am.close();
+    // Race against a timer so a stranded promise fails the test instead of
+    // hanging the whole run.
+    const outcome = await Promise.race([
+      p, new Promise((r) => setTimeout(() => r('stranded'), 100)),
+    ]);
+    assertEqual(outcome, 'settled', 'hold() resolved when closed from outside');
+    assertEqual(document.querySelector('.action-modal'), null);
+  });
+
   test('close is safe without open and after hold', () => {
     const am = make();
     am.close();

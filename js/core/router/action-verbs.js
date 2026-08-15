@@ -9,6 +9,29 @@
  * with the returned target route. That is why `newProject()` below rehydrates
  * with `{ navigate: false }`: rehydrateProject() would otherwise navigate a
  * second time, reentrantly, while the router's `_applying` guard is still set.
+ *
+ * ── Verb contract ────────────────────────────────────────────────────────────
+ * A verb is `{ modal, run, list }` and the router needs nothing else — adding a
+ * verb means editing this file only.
+ *
+ *   modal: null                       no dialog at all (nothing opens, nothing
+ *                                     flashes) — for effects too short to warrant
+ *                                     one.
+ *   modal.render(args)                → { title, subtitle?, body? }: what the
+ *                                     progress dialog shows WHILE run() works.
+ *   modal.done: null                  the dialog auto-closes when run() resolves.
+ *   modal.done(detail, args)          → { title, subtitle?, body?, confirmLabel? }:
+ *                                     the dialog stays open in this state until
+ *                                     the user confirms, THEN the router
+ *                                     navigates.
+ *   run(args)                         → Promise<{ route, detail? }>. `route` is
+ *                                     where the router navigates (replace);
+ *                                     `detail` is handed straight to done().
+ *                                     Throwing is fine: the router reports
+ *                                     `actions.failed`, closes the dialog and
+ *                                     falls back to the active project route.
+ *   list()                            → [{ arg, label }] for UIs that enumerate
+ *                                     the verb's arguments ([] if it has none).
  */
 
 import { getPhaseIds, DEFAULT_CYCLE } from '../cycles/cycles.js';
@@ -35,7 +58,7 @@ function isScenario(entry) {
  * @param {function} ctx.loadScenario        bound scenario loader
  * @param {function} ctx.rehydrateProject    bound rehydrate routine, takes options
  * @param {function} [ctx.notify]
- * @returns {Map<string, {run: function, describe: function, list: function}>}
+ * @returns {Map<string, {modal: object|null, run: function, list: function}>}
  */
 export function createActionVerbs(ctx) {
   const { i18n, examplesRegistry, stateManager } = ctx;
@@ -101,10 +124,41 @@ export function createActionVerbs(ctx) {
   const verbs = new Map();
 
   verbs.set('scenario', {
+    modal: {
+      /**
+       * @param {string[]} args `[scenarioId]`
+       * @returns {{title: string, subtitle: string}}
+       */
+      render([scenarioId]) {
+        return {
+          title: i18n.t('actions.loadingScenario'),
+          subtitle: titleOf(examplesRegistry.get(scenarioId)),
+        };
+      },
+      /**
+       * Stays open on purpose: a scenario mounts a whole project's worth of
+       * modules, long enough that the user must be able to read the outcome
+       * before the UI changes under them.
+       * @param {{loaded: string[], failed: object[]}|null} detail  run()'s detail
+       * @param {string[]} args `[scenarioId]`
+       * @returns {{title: string, subtitle: string, confirmLabel: string}}
+       */
+      done(detail, [scenarioId]) {
+        const scenario = examplesRegistry.get(scenarioId);
+        const total = scenario?.items?.length ?? 0;
+        return {
+          title: i18n.t('actions.scenarioReady'),
+          subtitle: i18n.t('actions.scenarioLoaded', {
+            loaded: detail?.loaded?.length ?? 0, total,
+          }),
+          confirmLabel: i18n.t('actions.startNow'),
+        };
+      },
+    },
     /**
      * Create a fresh project for the scenario and load all its examples.
      * @param {string[]} args `[scenarioId]`
-     * @returns {Promise<object>} target route
+     * @returns {Promise<{route: object, detail: object}>}
      */
     async run([scenarioId]) {
       const scenario = examplesRegistry.get(scenarioId);
@@ -117,17 +171,7 @@ export function createActionVerbs(ctx) {
       await newProject(titleOf(scenario), scenario.cycle);
       const result = await ctx.loadScenario({ scenario });
       reportScenarioResult(scenario, result);
-      return phaseRoute(scenario.startPhase);
-    },
-    /**
-     * @param {string[]} args `[scenarioId]`
-     * @returns {{title: string, subtitle: string}}
-     */
-    describe([scenarioId]) {
-      return {
-        title: i18n.t('actions.loadingScenario'),
-        subtitle: titleOf(examplesRegistry.get(scenarioId)),
-      };
+      return { route: phaseRoute(scenario.startPhase), detail: result };
     },
     /** @returns {{arg: string, label: string}[]} every scenario in the catalog */
     list() {
@@ -136,19 +180,18 @@ export function createActionVerbs(ctx) {
   });
 
   verbs.set('new-project', {
+    // No modal: createProject + switchProject + rehydrate finish in a few
+    // milliseconds — a dialog that flashes for one frame is pure flicker.
+    modal: null,
     /**
      * Create an empty project in the given cycle.
      * @param {string[]} args `[cycleId]`
-     * @returns {Promise<object>} target route
+     * @returns {Promise<{route: object, detail: object}>}
      */
     async run([cycleId]) {
       const cycle = cycleId || DEFAULT_CYCLE;
-      await newProject(i18n.t('app.defaultProjectName'), cycle);
-      return phaseRoute(null);
-    },
-    /** @returns {{title: string, subtitle: string}} */
-    describe() {
-      return { title: i18n.t('actions.creatingProject'), subtitle: '' };
+      const id = await newProject(i18n.t('app.defaultProjectName'), cycle);
+      return { route: phaseRoute(null), detail: { projectId: id } };
     },
     /** @returns {{arg: string, label: string}[]} */
     list() {
@@ -157,27 +200,32 @@ export function createActionVerbs(ctx) {
   });
 
   verbs.set('example', {
+    modal: {
+      /**
+       * @param {string[]} args `[exampleId]`
+       * @returns {{title: string, subtitle: string}}
+       */
+      render([exampleId]) {
+        return {
+          title: i18n.t('actions.loadingExample'),
+          subtitle: titleOf(examplesRegistry.get(exampleId)),
+        };
+      },
+      // Auto-close: a single example is self-explanatory and the success toast
+      // already reports it — a confirmation click here would be ceremony.
+      done: null,
+    },
     /**
      * Load a single example into the active project (no new project).
      * @param {string[]} args `[exampleId]`
-     * @returns {Promise<object>} target route
+     * @returns {Promise<{route: object, detail: object}>}
      */
     async run([exampleId]) {
       const meta = examplesRegistry.get(exampleId);
       if (!meta || meta.type === 'scenario') throw new Error(`Unknown example: ${exampleId}`);
       const scenario = { id: `ad-hoc:${exampleId}`, items: [exampleId], startPhase: null };
-      await ctx.loadScenario({ scenario });
-      return phaseRoute(null);
-    },
-    /**
-     * @param {string[]} args `[exampleId]`
-     * @returns {{title: string, subtitle: string}}
-     */
-    describe([exampleId]) {
-      return {
-        title: i18n.t('actions.loadingExample'),
-        subtitle: titleOf(examplesRegistry.get(exampleId)),
-      };
+      const result = await ctx.loadScenario({ scenario });
+      return { route: phaseRoute(null), detail: result };
     },
     /** @returns {{arg: string, label: string}[]} */
     list() {

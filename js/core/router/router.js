@@ -211,10 +211,20 @@ export class Router {
             await this.navigate({ kind: 'project', projectId: this._sm.getActiveProjectId() }, { replace: true });
             return;
           }
+          // The verb owns its dialog: whether one appears at all (modal), what
+          // it shows while running (render) and whether it stays open for a
+          // confirmation afterwards (done). The router only executes.
+          const cfg = verb.modal ?? null;
           let target = null;
           try {
-            this._actionModal?.open(verb.describe(route.args));
-            target = await verb.run(route.args);
+            if (cfg) this._actionModal?.open(cfg.render(route.args));
+            const res = await verb.run(route.args);
+            target = res?.route ?? null;
+            // hold() resolves on confirm — or when close() is called from
+            // anywhere else, so this can never wait forever.
+            if (cfg?.done) {
+              await this._actionModal?.hold(cfg.done(res?.detail ?? null, route.args));
+            }
           } catch (err) {
             // A known verb that threw is NOT an unknown action — say so.
             console.warn('[Router] action failed', route.verb, err);
@@ -223,7 +233,8 @@ export class Router {
               'error',
             );
           } finally {
-            // Always: a stuck dialog would leave the app unusable.
+            // Always: a stuck dialog would leave the app unusable. Idempotent —
+            // on the holding path hold() has already closed it.
             this._actionModal?.close();
           }
           this._applying = false;                  // allow the nested navigate to run

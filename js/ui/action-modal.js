@@ -32,6 +32,8 @@ export function createActionModal({ i18n, modal }) {
   let bodyEl = null;
   let spinnerEl = null;
   let footerEl = null;
+  /** Resolver of a pending hold(), if the dialog currently waits for a confirm. */
+  let releaseHold = null;
 
   function build() {
     spinnerEl = h('div', { class: 'app-loading__spinner' });
@@ -57,7 +59,7 @@ export function createActionModal({ i18n, modal }) {
     if (body) bodyEl.append(body);
   }
 
-  return {
+  const api = {
     open({ title, subtitle = '', body = null }) {
       if (handle) { fill({ title, subtitle, body }); progressEl.textContent = ''; return; }
       const node = build();
@@ -76,21 +78,34 @@ export function createActionModal({ i18n, modal }) {
       fill({ title, subtitle, body });
       progressEl.textContent = '';
       await new Promise((resolve) => {
+        releaseHold = resolve;
         const btn = h('button', { class: 'btn btn--primary action-modal__confirm' },
           confirmLabel || i18n.t('actions.startNow'));
         btn.addEventListener('click', () => resolve());
         footerEl.replaceChildren(btn);
         btn.focus();
       });
-      this.close();
+      api.close();
     },
 
+    /**
+     * Close the dialog. Settles a pending hold() first: whoever closes the
+     * dialog from outside (the router's `finally`, an error path) must not
+     * strand an awaiting caller on a promise whose button no longer exists.
+     * Idempotent.
+     * @returns {void}
+     */
     close() {
+      const release = releaseHold;
+      releaseHold = null;
       handle?.close();
       handle = null; root = null; subtitleEl = null; progressEl = null;
       bodyEl = null; spinnerEl = null; footerEl = null;
+      release?.();
     },
 
     isOpen() { return handle !== null; },
   };
+
+  return api;
 }

@@ -46,12 +46,13 @@ suite('action verbs', () => {
 
   test('scenario verb creates a project, rehydrates and loads', async () => {
     const { ctx, calls } = makeCtx();
-    const target = await createActionVerbs(ctx).get('scenario').run(['scn-a']);
+    const res = await createActionVerbs(ctx).get('scenario').run(['scn-a']);
     assertTrue(calls.includes('create:A:dmaic'), 'project created with scenario title');
     const rehydrateAt = calls.findIndex(c => c.startsWith('rehydrate:'));
     assertTrue(rehydrateAt > -1 && rehydrateAt < calls.indexOf('load:scn-a'), 'rehydrate before load');
-    assertEqual(target.kind, 'phase');
-    assertEqual(target.phaseId, 'define');
+    assertEqual(res.route.kind, 'phase');
+    assertEqual(res.route.phaseId, 'define');
+    assertDeepEqual(res.detail.loaded, ['ex-a'], 'run() hands the load result back for done()');
   });
 
   test('scenario verb rehydrates without navigating (router owns the navigation)', async () => {
@@ -100,15 +101,15 @@ suite('action verbs', () => {
     const { ctx } = makeCtx();
     ctx.examplesRegistry.get = (id) => (id === 'scn-typo'
       ? { ...SCENARIOS[0], id: 'scn-typo', startPhase: 'defien' } : undefined);
-    const target = await createActionVerbs(ctx).get('scenario').run(['scn-typo']);
-    assertEqual(target.phaseId, 'define', 'typo falls back to the first phase');
+    const res = await createActionVerbs(ctx).get('scenario').run(['scn-typo']);
+    assertEqual(res.route.phaseId, 'define', 'typo falls back to the first phase');
   });
 
   test('new-project verb creates an empty project in the given cycle', async () => {
     const { ctx, calls } = makeCtx();
-    const target = await createActionVerbs(ctx).get('new-project').run(['dmaic']);
+    const res = await createActionVerbs(ctx).get('new-project').run(['dmaic']);
     assertTrue(calls.some(c => c.startsWith('create:')), 'project created');
-    assertEqual(target.kind, 'phase');
+    assertEqual(res.route.kind, 'phase');
   });
 
   test('list() enumerates every scenario', () => {
@@ -116,18 +117,48 @@ suite('action verbs', () => {
     assertDeepEqual(createActionVerbs(ctx).get('scenario').list().map(e => e.arg), ['scn-a']);
   });
 
-  test('describe() yields a title for the splash', () => {
+  test('scenario declares a holding modal, new-project declares none', () => {
+    const verbs = createActionVerbs(makeCtx().ctx);
+    assertTrue(typeof verbs.get('scenario').modal.render === 'function');
+    assertTrue(typeof verbs.get('scenario').modal.done === 'function');
+    assertEqual(verbs.get('new-project').modal, null, 'new-project is too short for a modal');
+    assertEqual(verbs.get('example').modal.done, null, 'example auto-closes');
+  });
+
+  test('scenario modal.render() titles the dialog with the scenario name', () => {
     const { ctx } = makeCtx();
-    const d = createActionVerbs(ctx).get('scenario').describe(['scn-a']);
+    const d = createActionVerbs(ctx).get('scenario').modal.render(['scn-a']);
     assertEqual(typeof d.title, 'string');
     assertEqual(d.subtitle, 'A');
   });
 
+  test('scenario done() reports loaded/total', () => {
+    const { ctx } = makeCtx();
+    const state = createActionVerbs(ctx).get('scenario').modal
+      .done({ loaded: ['ex-a'], failed: [], worksheets: 1 }, ['scn-a']);
+    assertTrue(typeof state.title === 'string' && typeof state.confirmLabel === 'string');
+    assertTrue(state.subtitle.includes('"loaded":1') && state.subtitle.includes('"total":1'),
+      `loaded/total reported, got ${state.subtitle}`);
+  });
+
+  test('scenario done() survives a missing result detail', () => {
+    const { ctx } = makeCtx();
+    const state = createActionVerbs(ctx).get('scenario').modal.done(null, ['scn-a']);
+    assertTrue(state.subtitle.includes('"loaded":0'), `got ${state.subtitle}`);
+  });
+
+  test('no verb exposes describe() any more', () => {
+    const verbs = createActionVerbs(makeCtx().ctx);
+    for (const [id, verb] of verbs) {
+      assertEqual(typeof verb.describe, 'undefined', `${id} still has describe()`);
+    }
+  });
+
   test('example verb loads a single example ad-hoc', async () => {
     const { ctx, calls } = makeCtx();
-    const target = await createActionVerbs(ctx).get('example').run(['ex-a']);
+    const res = await createActionVerbs(ctx).get('example').run(['ex-a']);
     assertTrue(calls.some(c => c.startsWith('load:ad-hoc:ex-a')), 'ad-hoc scenario loaded');
-    assertEqual(target.kind, 'phase');
+    assertEqual(res.route.kind, 'phase');
   });
 
   test('example verb rejects a scenario id', async () => {
