@@ -106,10 +106,14 @@ export function initModuleHelp(
     if (scenarioBusy) return;
     scenarioBusy = true;
 
+    // `confirmed` alone needs an initializer: the finally below reads it on
+    // every path, including a throw before the dialog resolves. The other
+    // three are assigned before their first read, so seeding them would be a
+    // dead store (eslint no-useless-assignment).
     let confirmed = null;
-    let worksheetCount = 0;
-    let scenario = null;
-    let scenarioTitle = '';
+    let worksheetCount;
+    let scenario;
+    let scenarioTitle;
     try {
       scenario = examplesRegistry.get(scenarioId);
       if (!scenario) return;
