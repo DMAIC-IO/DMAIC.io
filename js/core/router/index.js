@@ -5,7 +5,7 @@
 import { Router } from './router.js';
 import { registerRouteDirectives } from './route-store.js';
 import { createActionVerbs } from './action-verbs.js';
-import { createActionSplash } from '../../ui/action-splash.js';
+import { createActionModal } from '../../ui/action-modal.js';
 import { loadScenario } from '../scenario-loader.js';
 import { rehydrateProject } from '../../frame/project-rehydrate.js';
 
@@ -86,24 +86,24 @@ export function createAppActionVerbs(kernel, ui, routerBox) {
  * `router.start()` — the boot hash may itself be an action URL, whose verb
  * closures read the box.
  *
- * The splash instance: pass one in via `ui.actionSplash` so the rest of the
+ * The modal instance: pass one in via `ui.actionModal` so the rest of the
  * chrome (built earlier in app.js) shares it; if omitted, one is created here.
- * Either way the live instance is reachable as `router.getActionSplash()`.
+ * Either way the live instance is reachable as `router.getActionModal()`.
  *
  * @param {object} kernel
  * @param {{ dmaicTiles: object, workspace: object, notify?: function,
- *          actionSplash?: object, actionVerbs: Map<string, object>,
+ *          modal?: object, actionModal?: object, actionVerbs: Map<string, object>,
  *          routerBox: { current: object|null } }} ui
  * @param {Map<string, object>} pages
  * @param {object} Alpine
  * @returns {Router}
  */
 export function initRouter(kernel, ui, pages, Alpine) {
-  if (!ui.actionSplash) {
-    console.warn('[router] no ui.actionSplash passed — creating a second, ' +
-      'independent overlay. Pass the app-wide instance (see app.js) instead.');
+  if (!ui.actionModal) {
+    console.warn('[router] no ui.actionModal passed — creating a second, ' +
+      'independent dialog. Pass the app-wide instance (see app.js) instead.');
   }
-  const splash = ui.actionSplash ?? createActionSplash({ i18n: kernel.i18n });
+  const actionModal = ui.actionModal ?? createActionModal({ i18n: kernel.i18n, modal: ui.modal });
   const router = new Router({
     stateManager: kernel.stateManager,
     moduleRegistry: kernel.moduleRegistry,
@@ -115,7 +115,7 @@ export function initRouter(kernel, ui, pages, Alpine) {
   });
   if (ui.routerBox) ui.routerBox.current = router;
 
-  router.setActionVerbs(ui.actionVerbs, splash, ui.notify, kernel.i18n);
+  router.setActionVerbs(ui.actionVerbs, actionModal, ui.notify, kernel.i18n);
 
   router.start();
   return router;

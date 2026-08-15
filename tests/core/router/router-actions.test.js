@@ -1,7 +1,7 @@
 /**
  * Tests for the Router's `action` route branch: exactly one navigation per
  * action, a distinct message for an unknown verb vs a verb that threw, and a
- * splash overlay that is always hidden again.
+ * action modal that is always closed again.
  */
 import { suite, test, assertEqual, assertTrue } from '../../test-utils.js';
 import { Router } from '../../../js/core/router/router.js';
@@ -17,7 +17,7 @@ function harness(initialHash = '', phases = { define: [], measure: [] }) {
     addEventListener() {},
   };
   const notes = [];
-  const splashLog = [];
+  const modalLog = [];
   const deps = {
     stateManager: {
       get(key) {
@@ -38,14 +38,14 @@ function harness(initialHash = '', phases = { define: [], measure: [] }) {
     Alpine: { store: () => ({}) },
     win: fakeWin,
   };
-  const splash = {
-    show: (o) => splashLog.push(`show:${o?.title}`),
+  const actionModal = {
+    open: (o) => modalLog.push(`open:${o?.title}`),
     update: () => {},
-    hide: () => splashLog.push('hide'),
+    close: () => modalLog.push('close'),
   };
   const i18n = { t: (k, p) => (p ? `${k}:${JSON.stringify(p)}` : k), getLanguage: () => 'de' };
   const notify = (msg) => notes.push(msg);
-  return { deps, fakeWin, writes, notes, splashLog, splash, i18n, notify };
+  return { deps, fakeWin, writes, notes, modalLog, actionModal, i18n, notify };
 }
 
 suite('router/action routes', () => {
@@ -56,7 +56,7 @@ suite('router/action routes', () => {
       run: async () => ({ kind: 'phase', projectId: 'p-1', phaseId: 'define' }),
       describe: () => ({ title: 'T', subtitle: 'S' }),
       list: () => [],
-    }]]), h.splash, h.notify, h.i18n);
+    }]]), h.actionModal, h.notify, h.i18n);
 
     await r.applyHash();
 
@@ -79,7 +79,7 @@ suite('router/action routes', () => {
       run: async () => ({ kind: 'phase', projectId: 'p-1', phaseId: 'define' }),
       describe: () => ({ title: 'T', subtitle: 'S' }),
       list: () => [],
-    }]]), h.splash, h.notify, h.i18n);
+    }]]), h.actionModal, h.notify, h.i18n);
 
     await r.applyHash();
 
@@ -89,29 +89,29 @@ suite('router/action routes', () => {
     assertEqual(h.fakeWin.location.hash, '#/project/p-1/module/i1');
   });
 
-  test('the splash is shown and hidden again', async () => {
+  test('the action modal is opened and closed again', async () => {
     const h = harness('#/action/scenario/scn-a');
     const r = new Router(h.deps);
     r.setActionVerbs(new Map([['scenario', {
       run: async () => ({ kind: 'phase', projectId: 'p-1', phaseId: 'define' }),
       describe: () => ({ title: 'T', subtitle: 'S' }),
       list: () => [],
-    }]]), h.splash, h.notify, h.i18n);
+    }]]), h.actionModal, h.notify, h.i18n);
 
     await r.applyHash();
-    assertEqual(h.splashLog.join(','), 'show:T,hide');
+    assertEqual(h.modalLog.join(','), 'open:T,close');
   });
 
   test('an unknown verb reports actions.unknown and lands on a real route', async () => {
     const h = harness('#/action/nope/x');
     const r = new Router(h.deps);
-    r.setActionVerbs(new Map(), h.splash, h.notify, h.i18n);
+    r.setActionVerbs(new Map(), h.actionModal, h.notify, h.i18n);
 
     await r.applyHash();
 
     assertTrue(h.notes.some(n => n.startsWith('actions.unknown')), `got ${JSON.stringify(h.notes)}`);
     assertTrue(!h.fakeWin.location.hash.includes('/action/'), 'hash left the action route');
-    assertEqual(h.splashLog.includes('show:undefined'), false);
+    assertEqual(h.modalLog.includes('open:undefined'), false);
   });
 
   test('a verb that throws reports actions.failed, not actions.unknown', async () => {
@@ -121,13 +121,13 @@ suite('router/action routes', () => {
       run: async () => { throw new Error('kaputt'); },
       describe: () => ({ title: 'T', subtitle: 'S' }),
       list: () => [],
-    }]]), h.splash, h.notify, h.i18n);
+    }]]), h.actionModal, h.notify, h.i18n);
 
     await r.applyHash();
 
     assertTrue(h.notes.some(n => n.startsWith('actions.failed')), `got ${JSON.stringify(h.notes)}`);
     assertEqual(h.notes.some(n => n.startsWith('actions.unknown')), false);
-    assertTrue(h.splashLog.includes('hide'), 'splash hidden after failure');
+    assertTrue(h.modalLog.includes('close'), 'action modal closed after failure');
     assertTrue(!h.fakeWin.location.hash.includes('/action/'), 'hash left the action route');
   });
 });

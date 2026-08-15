@@ -40,34 +40,34 @@ export class Router {
     this._currentRoute = null;
     /** @type {Map<string, object>|null} Action verb registry (see action-verbs.js). */
     this._verbs = null;
-    /** @type {object|null} Shared action splash controller. */
-    this._splash = null;
+    /** @type {object|null} Shared action modal controller. */
+    this._actionModal = null;
     this._notify = null;
     this._i18n = null;
   }
 
   /**
-   * The shared action splash controller (see ui/action-splash.js). Consumers
-   * that want to show the same overlay for their own long-running action
+   * The shared action modal controller (see ui/action-modal.js). Consumers
+   * that want to show the same dialog for their own long-running action
    * (rather than a second, independent one) read it from here.
    * @returns {object|null}
    */
-  getActionSplash() {
-    return this._splash;
+  getActionModal() {
+    return this._actionModal;
   }
 
   /**
    * Wire the action verb registry after construction (the verbs need a router
    * reference themselves, so they cannot be built before it exists).
    * @param {Map<string, object>} verbs
-   * @param {object} splash  action splash controller (show/update/hide)
+   * @param {object} actionModal  action modal controller (open/update/close)
    * @param {function} notify
    * @param {object} i18n
    * @returns {void}
    */
-  setActionVerbs(verbs, splash, notify, i18n) {
+  setActionVerbs(verbs, actionModal, notify, i18n) {
     this._verbs = verbs;
-    this._splash = splash;
+    this._actionModal = actionModal;
     this._notify = notify;
     this._i18n = i18n;
   }
@@ -82,10 +82,10 @@ export class Router {
       if (!this._currentRoute || this._currentRoute.kind !== 'page' || this._currentRoute.pageId !== pageId) return;
       this.navigateBackFromPage(pageId);
     });
-    // Mirror scenario-loader progress into the action splash.
+    // Mirror scenario-loader progress into the action modal.
     this._bus.on('scenario:progress', ({ index, total, title }) => {
       const name = title?.[this._i18n?.getLanguage?.()] || title?.en || '';
-      this._splash?.update(
+      this._actionModal?.update(
         this._i18n?.t('actions.progressModule', { index, total, name }) ?? `${index}/${total}`,
       );
     });
@@ -213,7 +213,7 @@ export class Router {
           }
           let target = null;
           try {
-            this._splash?.show(verb.describe(route.args));
+            this._actionModal?.open(verb.describe(route.args));
             target = await verb.run(route.args);
           } catch (err) {
             // A known verb that threw is NOT an unknown action — say so.
@@ -223,8 +223,8 @@ export class Router {
               'error',
             );
           } finally {
-            // Always: a stuck overlay would leave the app unusable.
-            this._splash?.hide();
+            // Always: a stuck dialog would leave the app unusable.
+            this._actionModal?.close();
           }
           this._applying = false;                  // allow the nested navigate to run
           await this.navigate(

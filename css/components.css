@@ -1879,3 +1879,22 @@ body.dmike-glossary-inline-off .glossary-term:focus-within {
 .licenses-panel__full-text a:hover {
   text-decoration: underline;
 }
+
+/* Action modal — progress/completion dialog for action URLs. */
+.modal-overlay--action { z-index: 10000; }   /* above #app-loading (9999) */
+
+.action-modal {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-sm);
+  text-align: center;
+}
+
+.action-modal__subtitle,
+.action-modal__progress {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+.action-modal__footer { margin-top: var(--spacing-sm); }

@@ -1,6 +1,6 @@
 {
   "actions": {
-    "splashLabel": "Aktion wird ausgeführt",
+    "modalLabel": "Aktion wird ausgeführt",
     "loadingScenario": "Szenario wird geladen",
     "loadingExample": "Beispiel wird geladen",
     "creatingProject": "Projekt wird angelegt",
@@ -8,7 +8,9 @@
     "unknown": "Unbekannte Aktion: {verb}",
     "scenarioLoaded": "{loaded} von {total} Modulen geladen",
     "failed": "Aktion „{verb}“ konnte nicht ausgeführt werden",
-    "scenarioItemsFailed": "Nicht geladen: {items}"
+    "scenarioItemsFailed": "Nicht geladen: {items}",
+    "startNow": "Jetzt starten",
+    "scenarioReady": "Szenario geladen"
   },
   "actionUrls": {
     "title": "Aktions-URLs",

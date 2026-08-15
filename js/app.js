@@ -20,7 +20,7 @@ import { initPages }  from './pages/index.js';
 import { startupTasks } from './startup/index.js';
 import { initRouteDirectives, initRouter, createAppActionVerbs } from './core/router/index.js';
 import { setCreatePageRouter } from './core/create-page.js';
-import { createActionSplash } from './ui/action-splash.js';
+import { createActionModal } from './ui/action-modal.js';
 
 async function init() {
   // ─── Core Services ───────────────────────────────────────
@@ -70,9 +70,9 @@ async function init() {
   const exportReminder = new ExportReminder({ stateManager, eventBus, i18n, notify });
   exportReminder.init();
 
-  // One shared action splash: the router shows it for #/action/… URLs, the
-  // frame chrome shows the SAME overlay for its own long-running actions.
-  const actionSplash = createActionSplash({ i18n });
+  // One shared action modal: the router shows it for #/action/… URLs, the
+  // frame chrome shows the SAME dialog for its own long-running actions.
+  const actionModal = createActionModal({ i18n, modal });
 
   // Verb registry (`#/action/<verb>/<arg…>`) built ahead of the Router itself
   // — settings' action-URL list (task 12) reads it via the page context, and
@@ -82,12 +82,12 @@ async function init() {
   const routerBox = { current: null };
   const actionVerbs = createAppActionVerbs(kernel, { dmaicTiles, workspace, notify }, routerBox);
 
-  buildFrame(kernel, { modal, dmaicTiles, helpPanel, workspace, notify, actionSplash });
+  buildFrame(kernel, { modal, dmaicTiles, helpPanel, workspace, notify, actionModal });
   const pages = await initPages(kernel, { modal, actionVerbs, notify });
 
   const router = initRouter(
     kernel,
-    { dmaicTiles, workspace, notify, actionSplash, actionVerbs, routerBox },
+    { dmaicTiles, workspace, notify, modal, actionModal, actionVerbs, routerBox },
     pages, Alpine,
   );
   routeDirectives.setRouter(router);

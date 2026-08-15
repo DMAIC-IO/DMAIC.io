@@ -23,11 +23,11 @@ import { buildScenarioConfirmDialog } from '../../dialogs/scenario-confirm/scena
  *
  * @param {object} kernel - { i18n, eventBus, examplesRegistry, glossaryRegistry,
  *   moduleRegistry, stateManager }
- * @param {object} ui     - { workspace, helpPanel, modal, notify, actionSplash }
+ * @param {object} ui     - { workspace, helpPanel, modal, notify, actionModal }
  */
 export function initModuleHelp(
   { i18n, eventBus, examplesRegistry, glossaryRegistry, moduleRegistry, stateManager },
-  { workspace, helpPanel, modal, notify, actionSplash },
+  { workspace, helpPanel, modal, notify, actionModal },
 ) {
   const btn = document.getElementById('module-help-btn');
   if (!btn || !workspace || !helpPanel) return;
@@ -114,13 +114,13 @@ export function initModuleHelp(
       if (!scenario) return;
       scenarioTitle = scenario.title?.[i18n.getLanguage()] || scenario.title?.en || scenario.id;
 
-      // The shared splash (never a second createActionSplash() — there is
-      // exactly one overlay) covers the counting phase, the slow part.
-      actionSplash?.show({ title: i18n.t('actions.loadingScenario'), subtitle: scenarioTitle });
+      // The shared modal (never a second createActionModal() — there is
+      // exactly one dialog) covers the counting phase, the slow part.
+      actionModal?.open({ title: i18n.t('actions.loadingScenario'), subtitle: scenarioTitle });
       try {
         worksheetCount = await countScenarioWorksheets({ scenario, examplesRegistry });
       } finally {
-        actionSplash?.hide();
+        actionModal?.close();
       }
 
       confirmed = await scenarioConfirmDialog.open(modal, {
@@ -137,7 +137,7 @@ export function initModuleHelp(
     }
     if (!confirmed) return;
 
-    actionSplash?.show({ title: i18n.t('actions.loadingScenario'), subtitle: scenarioTitle });
+    actionModal?.open({ title: i18n.t('actions.loadingScenario'), subtitle: scenarioTitle });
     try {
       const result = await loadScenario({
         scenario, examplesRegistry, moduleRegistry, stateManager, eventBus, workspace,
@@ -165,7 +165,7 @@ export function initModuleHelp(
       console.error('[ModuleHelp] scenario load failed', scenarioId, err);
       notify?.(i18n.t('common.error'), 'error');
     } finally {
-      actionSplash?.hide();
+      actionModal?.close();
       scenarioBusy = false;
     }
   };
