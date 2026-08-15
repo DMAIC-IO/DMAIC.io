@@ -37,6 +37,7 @@ export function createDialog(config) {
   let _node = null;          // the mounted [x-data] root inside the host
   let _host = null;
   let _registered = false;
+  let _api = null;           // modal.form()'s onMount api while a dialog is open
 
   function host() {
     if (!_host) _host = document.getElementById('app-dialogs');
@@ -85,9 +86,21 @@ export function createDialog(config) {
     async prewarm() { await ensureMounted(); },
 
     /**
+     * Confirm the dialog from inside its own content (row/card buttons).
+     * No-op while the dialog is closed (no open() in flight).
+     */
+    submit() { _api?.confirm(); },
+
+    /**
+     * Cancel the dialog from inside its own content.
+     * No-op while the dialog is closed (no open() in flight).
+     */
+    cancel() { _api?.cancel(); },
+
+    /**
      * @param {object} modal  ui/modal.js Modal instance
      * @param {object} init    per-open data fed to model.apply(init)
-     * @param {object} [opts]  { title, confirmLabel, cancelLabel, onConfirm }
+     * @param {object} [opts]  { title, confirmLabel, cancelLabel, onConfirm, hideConfirm, onMount }
      * @returns {Promise<any|null>}  model.result() on confirm, null on cancel
      */
     async open(modal, init, opts = {}) {
@@ -108,8 +121,11 @@ export function createDialog(config) {
       const confirmed = await modal.form(title, node, {
         confirmLabel: opts.confirmLabel,
         cancelLabel: opts.cancelLabel,
+        hideConfirm: opts.hideConfirm === true,
+        onMount: (body, api) => { _api = api; opts.onMount?.(body, api); },
         onConfirm,
       });
+      _api = null;
 
       if (!confirmed) return null;
       // When the caller owns onConfirm it reads the model itself; still return result().

@@ -100,4 +100,57 @@ suite('createDialog', () => {
     // Covered structurally: opening again still resolves correctly.
     assertTrue(true);
   });
+
+  test('dialog.submit() confirms and resolves with model.result()', async () => {
+    if (!document.getElementById('app-dialogs')) {
+      const host = document.createElement('div');
+      host.id = 'app-dialogs';
+      host.style.display = 'none';
+      document.body.append(host);
+    }
+    if (!Alpine.version) Alpine.start();
+
+    let tplEl = document.querySelector('template[data-tpl="js/dialogs/fake-submit-dialog/fake-submit-dialog.html"]');
+    if (!tplEl) {
+      tplEl = document.createElement('template');
+      tplEl.setAttribute('data-tpl', 'js/dialogs/fake-submit-dialog/fake-submit-dialog.html');
+      tplEl.innerHTML = '<div class="dlg-submit" x-data="fakeSubmitDialog"><button @click="go()">go</button></div>';
+      document.body.append(tplEl);
+    }
+
+    // Fake modal that hands the api out via onMount, mirroring ui/modal.js form().
+    let api = null;
+    const modal = {
+      form: (title, node, opts) => new Promise((resolve) => {
+        opts.onMount?.(node, {
+          confirm: () => { if (opts.onConfirm?.(node) === false) return; resolve(true); },
+          cancel: () => resolve(false),
+        });
+      }),
+    };
+
+    const dialog = createDialog({
+      id: 'fake-submit-dialog',
+      i18nKey: 'fake',
+      titleKey: 'title',
+      Model: FakeModel,
+      ctx: { i18n, eventBus },
+      // `dialog` is the outer createDialog return value, in scope via closure
+      // (data() is invoked lazily by Alpine.data(), by which point it exists).
+      data: (t, dlg) => ({ go() { dlg.submit(); api = { confirm: dlg.submit, cancel: dlg.cancel }; } }),
+    });
+
+    await dialog.prewarm();
+    const result = dialog.open(modal, { selected: 'xyz' });
+    // open() awaits ensureMounted() before calling modal.form() (where onMount
+    // wires up `_api`), so give the microtask queue a chance to drain before
+    // clicking — a macrotask boundary guarantees it without depending on an
+    // exact tick count.
+    await new Promise((r) => setTimeout(r, 0));
+    const node = document.querySelector('#app-dialogs .dlg-submit');
+    node.querySelector('button').click(); // triggers go() → dialog.submit()
+
+    assertEqual(await result, 'xyz', 'submit() confirms and resolves model.result()');
+    assertTrue(typeof api?.confirm === 'function' && typeof api?.cancel === 'function', 'api captured for later use');
+  });
 });
