@@ -100,6 +100,14 @@ export function createScenarioModel(scenarioOptionsFor) {
       return false;
     }
 
+    /**
+     * @returns {boolean} whether this open() may offer scenarios at all.
+     * Public read-only view of `_allowScenarios` for the template: Alpine's
+     * CSP build resolves plain property paths only, and the step-1 "Weiter"
+     * button renders exclusively in the create context.
+     */
+    get allowScenarios() { return this._allowScenarios; }
+
     /** Return from step 2 to step 1, keeping the picked cycle. */
     back() { this.step = 'cycle'; }
 
@@ -112,11 +120,13 @@ export function createScenarioModel(scenarioOptionsFor) {
 
     /**
      * @returns {boolean} true once at least one REAL scenario exists.
-     * Deliberately ignores entries with an empty id: today's producer
-     * (`cycle-picker.js`'s `buildScenarioOptionsFor`) still prepends a
-     * synthetic `{ id: '', title: emptyProject }` row, which is not a
-     * scenario to submit but the step-2 "empty project" affordance. This
-     * predicate stays correct once that synthetic entry is removed too.
+     * Deliberately ignores entries with an empty id. The producer
+     * (`cycle-picker.js`'s `buildScenarioOptionsFor`) no longer prepends a
+     * synthetic `{ id: '' }` "empty project" row — that choice is its own
+     * step-2 row now — but the guard keeps the predicate honest for any
+     * future producer. The two-step template does not gate on it (an empty
+     * scenario list simply renders no scenario rows); it stays part of the
+     * model's public surface for callers that need "are there examples?".
      */
     get hasScenarios() { return this.scenarioOptions.some((o) => o.id); }
 

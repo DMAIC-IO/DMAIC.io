@@ -1,25 +1,46 @@
 <div class="cycle-picker__content" x-data="cyclePicker">
-  <p x-text="t('pickerIntro')"></p>
-  <fieldset class="cycle-picker">
-    <template x-for="c in model.cycles" :key="c.id">
-      <label class="cycle-picker__option">
-        <input type="radio" name="cycle" :value="c.id" x-model="model.selected" @change="model.selectCycle(c.id)">
-        <span class="cycle-picker__body">
-          <span class="cycle-picker__name" x-text="c.name"></span>
-          <span class="cycle-picker__short" x-text="c.short"></span>
-          <span class="cycle-picker__desc" x-text="c.description"></span>
-        </span>
+  <div class="cycle-picker__step" x-show="model.step === 'cycle'">
+    <p class="cycle-picker__intro" x-text="t('pickerIntro')"></p>
+    <fieldset class="cycle-picker">
+      <template x-for="c in model.cycles" :key="c.id">
+        <label class="cycle-picker__option">
+          <input type="radio" name="cycle" :value="c.id" x-model="model.selected" @change="model.selectCycle(c.id)">
+          <span class="cycle-picker__body">
+            <span class="cycle-picker__name" x-text="c.name"></span>
+            <span class="cycle-picker__short" x-text="c.short"></span>
+            <span class="cycle-picker__desc" x-text="c.description"></span>
+          </span>
+          <button type="button" class="btn btn--primary cycle-picker__next"
+                  x-show="model.allowScenarios" x-text="nextLabel"
+                  @click="chooseCycle(c.id)"></button>
+        </label>
+      </template>
+    </fieldset>
+  </div>
+
+  <div class="cycle-picker__step cycle-picker__step--start" x-show="model.step === 'start'">
+    <div class="cycle-picker__start-head">
+      <button type="button" class="btn btn--ghost cycle-picker__back" x-text="backLabel" @click="back()"></button>
+      <span class="cycle-picker__start-title" x-text="startLabel"></span>
+    </div>
+
+    <div class="cycle-picker__start cycle-picker__start--empty">
+      <span class="cycle-picker__start-name" x-text="emptyLabel"></span>
+      <label class="cycle-picker__name-field">
+        <span x-text="nameLabel"></span>
+        <input type="text" class="cycle-picker__name-input" maxlength="100" x-model="model.projectName">
       </label>
-    </template>
-  </fieldset>
-  <div class="cycle-picker__scenarios" x-show="model.hasScenarios">
-    <div class="cycle-picker__scenarios-title" x-text="scenarioLabel"></div>
+      <button type="button" class="btn btn--primary cycle-picker__create-empty"
+              x-text="createEmptyLabel" @click="createEmpty()"></button>
+    </div>
+
     <template x-for="s in model.scenarioOptions" :key="s.id">
-      <label class="cycle-picker__scenario">
-        <input type="radio" name="scenario" :value="s.id" x-model="model.scenarioId">
-        <span class="cycle-picker__scenario-title" x-text="s.title"></span>
-        <span class="cycle-picker__scenario-desc" x-text="s.description"></span>
-      </label>
+      <div class="cycle-picker__start cycle-picker__start--scenario" :data-scenario="s.id">
+        <span class="cycle-picker__start-name" x-text="s.title"></span>
+        <span class="cycle-picker__start-desc" x-text="s.description"></span>
+        <button type="button" class="btn btn--primary cycle-picker__load-scenario"
+                x-text="loadLabel" @click="loadScenario(s.id)"></button>
+      </div>
     </template>
   </div>
 </div>

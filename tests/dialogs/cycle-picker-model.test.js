@@ -105,6 +105,19 @@ suite('createScenarioModel', () => {
     assertTrue(!explicit.hasScenarios);
   });
 
+  test('allowScenarios getter exposes the per-open restriction to the template', () => {
+    // The step-1 "Weiter" button is gated on `model.allowScenarios`; the
+    // private `_allowScenarios` field is not readable from an Alpine CSP
+    // expression, so the getter is part of the model's public surface.
+    const M = createScenarioModel(fakeOptionsFor);
+    const create = new M().apply({ cycles, preselected: 'dmaic', allowScenarios: true });
+    assertEqual(create.allowScenarios, true);
+    const scenarioSwitch = new M().apply({ cycles, preselected: 'dmaic', allowScenarios: false });
+    assertEqual(scenarioSwitch.allowScenarios, false);
+    const implicit = new M().apply({ cycles, preselected: 'dmaic' });
+    assertEqual(implicit.allowScenarios, false, 'default is off');
+  });
+
   test('chooseCycle advances to step 2 in the create context', () => {
     const m = new (createScenarioModel(fakeOptionsFor))()
       .apply({ cycles, preselected: 'dmaic', allowScenarios: true });

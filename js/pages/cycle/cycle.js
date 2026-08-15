@@ -9,8 +9,9 @@
  * Events:
  *   in : cycle:pick-requested   { context:'create'|'switch', currentCycle }
  *        cycle:switch-requested { from, to }
- *   out: cycle:picked           { context, cycleId, scenarioId } (cycleId null = cancel;
- *                                                                  scenarioId null = no scenario picked)
+ *   out: cycle:picked           { context, cycleId, scenarioId, projectName }
+ *                                (cycleId null = cancel; scenarioId null = empty project;
+ *                                 projectName null = none typed / scenario supplies its own)
  *        cycle:switch-confirmed { from, to, confirmed }
  */
 
@@ -49,18 +50,21 @@ export function computeSwitchImpact(fromCycle, toCycle, phases, moduleRegistry) 
 }
 
 /**
- * Render the cycle picker modal. Resolves with the picked cycle id + optional
- * scenario id, or null if cancelled. (Same DOM/keys as the legacy _pickCycle,
- * plus the scenario radio list the dialog itself computes from the
- * examplesRegistry it was built with — see buildCyclePickerDialog.)
+ * Render the cycle picker modal. Resolves with the picked cycle id, the
+ * optional scenario id and the optional project name, or null if cancelled.
  *
- * The scenario section only renders for `context === 'create'` — picking a
+ * `context === 'create'` gets the two-step flow: step 1 picks a cycle via the
+ * card's "Weiter" button, step 2 offers the empty project (with a name field)
+ * and one row per scenario. Both step-2 rows confirm the dialog from inside
+ * its own content, so the modal footer's confirm button is hidden there.
+ *
+ * `context === 'switch'` stays single-step with footer confirmation: picking a
  * scenario while switching an EXISTING project's cycle would be silently
- * discarded by project-switcher.js (only the create branch reads
- * scenarioId), so offering the choice there would be dead UI.
+ * discarded by project-switcher.js (only the create branch reads scenarioId),
+ * so offering the choice there would be dead UI.
  *
  * @param {string} context 'create'|'switch'
- * @returns {Promise<{cycleId: string, scenarioId: string|null}|null>}
+ * @returns {Promise<{cycleId: string, scenarioId: string|null, projectName: string|null}|null>}
  */
 function _renderPicker(dialog, modal, i18n, currentCycle, context) {
   const preselected = currentCycle ?? DEFAULT_CYCLE;
@@ -70,8 +74,14 @@ function _renderPicker(dialog, modal, i18n, currentCycle, context) {
     short: i18n.t(`${c.i18nKey}.short`),
     description: i18n.t(`${c.i18nKey}.description`),
   }));
-  return dialog.open(modal, { cycles, preselected, allowScenarios: context === 'create' }, {
+  return dialog.open(modal, {
+    cycles,
+    preselected,
+    allowScenarios: context === 'create',
+    defaultProjectName: i18n.t('app.defaultProjectName'),
+  }, {
     confirmLabel: i18n.t('common.ok'),
+    hideConfirm: context === 'create',   // create confirms from its own content
   });
 }
 
@@ -124,6 +134,7 @@ export default {
         context,
         cycleId: picked?.cycleId ?? null,
         scenarioId: picked?.scenarioId || null,
+        projectName: picked?.projectName ?? null,
       });
     });
 

@@ -297,7 +297,25 @@ html.is-nightly body {
   font-family: var(--font-mono, monospace);
 }
 
-/* Cycle picker (modal) */
+/* Cycle picker (modal) — two-step flow: step 1 picks the cycle, step 2 the
+   start (empty project with a name, or one of the example scenarios). Both
+   steps share one min-height so the dialog does not jump when stepping. */
+.cycle-picker__content {
+  display: flex;
+  flex-direction: column;
+  min-height: 360px;
+}
+
+.cycle-picker__step {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.cycle-picker__intro {
+  margin: 0 0 var(--spacing-md);
+}
+
 .cycle-picker {
   display: flex;
   flex-direction: column;
@@ -357,16 +375,21 @@ html.is-nightly body {
   margin-top: 4px;
 }
 
-.cycle-picker__scenarios {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  margin-top: 16px;
-  padding-top: 16px;
-  border-top: 1px solid var(--color-border-secondary);
+/* Step 1: the per-card "Weiter" button (create context only). */
+.cycle-picker__next {
+  align-self: center;
+  flex-shrink: 0;
 }
 
-.cycle-picker__scenarios-title {
+/* Step 2: header row with "Zurück" + the start-choice heading. */
+.cycle-picker__start-head {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-sm);
+}
+
+.cycle-picker__start-title {
   font-weight: 600;
   font-size: 12px;
   color: var(--color-text-secondary);
@@ -374,43 +397,71 @@ html.is-nightly body {
   letter-spacing: 0.02em;
 }
 
-.cycle-picker__scenario {
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  padding: 8px 12px;
+/* Step 2 rows: the empty project first, then one row per scenario. */
+.cycle-picker__start {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  column-gap: var(--spacing-md);
+  row-gap: var(--spacing-xs);
+  padding: 10px 12px;
   border: 1px solid var(--color-border-secondary);
   border-radius: var(--border-radius);
-  cursor: pointer;
   transition: border-color 0.1s, background 0.1s;
 }
 
-.cycle-picker__scenario:hover {
+.cycle-picker__start:hover {
   background: var(--color-bg-tertiary);
 }
 
-.cycle-picker__scenario:has(input:checked) {
-  border-color: var(--color-accent);
-  background: var(--color-accent-light);
+.cycle-picker__start--empty {
+  border-color: var(--color-border-primary);
+  background: var(--color-bg-secondary);
 }
 
-.cycle-picker__scenario input[type="radio"] {
-  margin-top: 3px;
-  flex-shrink: 0;
-}
-
-.cycle-picker__scenario-title {
+.cycle-picker__start-name {
   font-size: 13px;
   font-weight: 500;
   color: var(--color-text-primary);
-  display: block;
 }
 
-.cycle-picker__scenario-desc {
+.cycle-picker__start-desc {
+  grid-column: 1;
   font-size: 12px;
   color: var(--color-text-secondary);
-  display: block;
-  margin-top: 2px;
+}
+
+/* Name field for the empty project — the scenario rows bring their own name. */
+.cycle-picker__name-field {
+  grid-column: 1;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  font-size: 12px;
+  color: var(--color-text-secondary);
+}
+
+.cycle-picker__name-input {
+  flex: 1;
+  min-width: 0;
+  padding: 5px 8px;
+  font-size: 13px;
+  color: var(--color-text-primary);
+  background: var(--color-bg-primary);
+  border: 1px solid var(--color-input-border);
+  border-radius: var(--border-radius-sm);
+}
+
+.cycle-picker__name-input:focus {
+  outline: none;
+  border-color: var(--color-accent);
+}
+
+.cycle-picker__start .btn {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  align-self: center;
+  white-space: nowrap;
 }
 
 /* Cycle switch confirm */
