@@ -767,7 +767,9 @@ html.is-nightly body {
 
 /* The pencil sits in a fixed, narrow slot so revealing it never changes the
    tile's width (no neighbour shift). Only its scale animates — from 0 (hidden)
-   to full on hover, a touch larger when the segment itself is hovered. */
+   to full when the tile is hovered. It does NOT grow further on direct hover:
+   a symbol that changes size under the pointer just moves its own hit area
+   around. */
 .dmaic-tile__edit-icon {
   display: inline-block;
   width: 0.85em;
@@ -782,10 +784,6 @@ html.is-nightly body {
 
 .dmaic-tile:hover .dmaic-tile__edit-icon {
   transform: scale(1);
-}
-
-.dmaic-tile__edit:hover .dmaic-tile__edit-icon {
-  transform: scale(1.3);
 }
 
 /* Dropdown segment: wide clickable area, no background on hover — the chevron
