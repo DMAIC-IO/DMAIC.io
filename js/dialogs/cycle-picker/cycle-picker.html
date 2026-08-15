@@ -4,7 +4,8 @@
     <fieldset class="cycle-picker">
       <template x-for="c in model.cycles" :key="c.id">
         <label class="cycle-picker__option">
-          <input type="radio" name="cycle" :value="c.id" x-model="model.selected" @change="model.selectCycle(c.id)">
+          <input type="radio" name="cycle" :value="c.id" x-model="model.selected"
+                 :disabled="model.allowScenarios" @change="model.selectCycle(c.id)">
           <span class="cycle-picker__body">
             <span class="cycle-picker__name" x-text="c.name"></span>
             <span class="cycle-picker__short" x-text="c.short"></span>

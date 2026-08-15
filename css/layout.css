@@ -340,9 +340,27 @@ html.is-nightly body {
   background: var(--color-bg-tertiary);
 }
 
+/* Create context: the radio is disabled (see cycle-picker.html) because the
+   per-card "Weiter" button both selects and advances — the card itself
+   carries no selection semantics anymore, so it must not look or hover like
+   it does. Switch context (radio enabled) keeps the pointer/hover/checked
+   styling untouched below. */
+.cycle-picker__option:has(input:disabled) {
+  cursor: default;
+}
+
+.cycle-picker__option:has(input:disabled):hover {
+  background: transparent;
+}
+
 .cycle-picker__option:has(input:checked) {
   border-color: var(--color-accent);
   background: var(--color-accent-light);
+}
+
+.cycle-picker__option:has(input:disabled):has(input:checked) {
+  border-color: var(--color-border-secondary);
+  background: transparent;
 }
 
 .cycle-picker__option input[type="radio"] {

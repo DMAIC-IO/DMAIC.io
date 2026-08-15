@@ -1888,11 +1888,27 @@ body.dmike-glossary-inline-off .glossary-term:focus-within {
 /* Action modal — progress/completion dialog for action URLs. */
 .modal-overlay--action { z-index: 10000; }   /* above #app-loading (9999) */
 
+/* Fixed footprint: the body swaps between the running state (spinner +
+   subtitle + progress line) and the hold state (subtitle + optional failed-
+   items line + confirm button), and a partial-failure hold adds the
+   `.action-modal__failed` line on top of that. Without a stable size the
+   dialog visibly resizes as it switches between those — width is fixed,
+   min-height covers the tallest state so the box does not jump; content
+   taller than that (a long failed-items list) wraps/scrolls instead of
+   growing the box further. */
+.modal-overlay--action .modal {
+  width: 26rem;
+}
+
 .action-modal {
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   gap: var(--spacing-sm);
+  min-height: 12rem;
+  max-height: 60vh;
+  overflow-y: auto;
   text-align: center;
 }
 
