@@ -225,3 +225,70 @@ suite('router/action routes', () => {
     assertTrue(h.notes.some(n => n.startsWith('actions.failed')), `got ${JSON.stringify(h.notes)}`);
   });
 });
+
+suite('router/scenario progress → action modal list', () => {
+  /** Harness variant with a real (tiny) event bus and a recording modal. */
+  function busHarness() {
+    const handlers = new Map();
+    const h = harness('');
+    h.deps.eventBus = {
+      emit: (name, payload) => { for (const fn of handlers.get(name) ?? []) fn(payload); },
+      on: (name, fn) => { (handlers.get(name) ?? handlers.set(name, []).get(name)).push(fn); },
+      off: () => {},
+    };
+    const added = [];
+    const marked = [];
+    h.actionModal.addItem = (o) => added.push(o);
+    h.actionModal.markItem = (id, ok) => marked.push({ id, ok });
+    return { h, added, marked };
+  }
+
+  test('each progress event adds one row, named like the item', async () => {
+    const { h, added } = busHarness();
+    const r = new Router(h.deps);
+    r.setActionVerbs(new Map(), h.actionModal, h.notify, h.i18n);
+    await r.start();
+    h.deps.eventBus.emit('scenario:progress', {
+      index: 1, total: 2, exampleId: 'ex-a', moduleId: 'sipoc', title: { de: 'SIPOC', en: 'SIPOC' },
+    });
+    assertEqual(added.length, 1);
+    assertTrue(String(added[0].label).includes('SIPOC'), `got ${JSON.stringify(added[0])}`);
+  });
+
+  test('a row falls back to the example id when the item has no title', async () => {
+    const { h, added } = busHarness();
+    const r = new Router(h.deps);
+    r.setActionVerbs(new Map(), h.actionModal, h.notify, h.i18n);
+    await r.start();
+    h.deps.eventBus.emit('scenario:progress', {
+      index: 1, total: 1, exampleId: 'ex-a', moduleId: null, title: null,
+    });
+    assertTrue(String(added[0].label).includes('ex-a'), `got ${JSON.stringify(added[0])}`);
+  });
+
+  test('an item-done event marks that very row', async () => {
+    const { h, added, marked } = busHarness();
+    const r = new Router(h.deps);
+    r.setActionVerbs(new Map(), h.actionModal, h.notify, h.i18n);
+    await r.start();
+    h.deps.eventBus.emit('scenario:progress', { index: 1, total: 2, exampleId: 'ex-a', title: null });
+    h.deps.eventBus.emit('scenario:progress', { index: 2, total: 2, exampleId: 'ex-b', title: null });
+    h.deps.eventBus.emit('scenario:item-done', { index: 1, total: 2, exampleId: 'ex-a', ok: false });
+    assertEqual(marked.length, 1);
+    assertEqual(marked[0].id, added[0].id, 'marks the row that progress created');
+    assertEqual(marked[0].ok, false);
+  });
+
+  test('no raw developer error ever reaches the modal', async () => {
+    const { h, added, marked } = busHarness();
+    const r = new Router(h.deps);
+    r.setActionVerbs(new Map(), h.actionModal, h.notify, h.i18n);
+    await r.start();
+    h.deps.eventBus.emit('scenario:progress', { index: 1, total: 1, exampleId: 'ex-a', title: null });
+    h.deps.eventBus.emit('scenario:item-done', {
+      index: 1, total: 1, exampleId: 'ex-a', ok: false, error: 'module failed to mount',
+    });
+    const seen = JSON.stringify(added) + JSON.stringify(marked);
+    assertTrue(!seen.includes('module failed to mount'), `raw error leaked: ${seen}`);
+  });
+});

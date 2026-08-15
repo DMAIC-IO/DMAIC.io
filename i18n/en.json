@@ -10,7 +10,10 @@
     "scenarioItemsFailed": "Not loaded: {items}",
     "startNow": "Start now",
     "scenarioReady": "Scenario ready",
-    "scenarioPartial": "Scenario partially loaded"
+    "scenarioPartial": "Scenario partially loaded",
+    "itemPending": "loading",
+    "itemLoaded": "loaded",
+    "itemFailed": "not loaded"
   },
   "actionUrls": {
     "title": "Action URLs",

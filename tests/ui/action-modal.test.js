@@ -2,7 +2,7 @@
  * Tests for ui/action-modal.js — the non-dismissible progress dialog shown
  * while an action verb runs.
  */
-import { suite, test, assertEqual, assertTrue } from '../test-utils.js';
+import { suite, test, assertEqual, assertTrue, assertDeepEqual } from '../test-utils.js';
 import { Modal } from '../../js/ui/modal.js';
 import { createActionModal } from '../../js/ui/action-modal.js';
 
@@ -141,6 +141,95 @@ suite('createActionModal', () => {
     const el = document.querySelector('.action-modal');
     assertEqual(el.getAttribute('role'), 'status');
     assertEqual(el.getAttribute('aria-live'), 'polite');
+    am.close();
+  });
+});
+
+suite('createActionModal — loaded-items list', () => {
+  const rows = () => [...document.querySelectorAll('.action-modal__item')];
+  const labels = () => rows().map(r => r.querySelector('.action-modal__item-label').textContent);
+
+  test('addItem prepends rows, newest on top', () => {
+    const am = make();
+    am.open({ title: 'T' });
+    am.addItem({ id: 1, label: 'SIPOC' });
+    am.addItem({ id: 2, label: 'Regression' });
+    am.addItem({ id: 3, label: 'Histogramm' });
+    assertDeepEqual(labels(), ['Histogramm', 'Regression', 'SIPOC']);
+    am.close();
+  });
+
+  test('a fresh row is pending until it reports back', () => {
+    const am = make();
+    am.open({ title: 'T' });
+    am.addItem({ id: 1, label: 'SIPOC' });
+    assertTrue(rows()[0].classList.contains('action-modal__item--pending'));
+    am.close();
+  });
+
+  test('markItem retroactively marks an earlier row as failed', () => {
+    const am = make();
+    am.open({ title: 'T' });
+    am.addItem({ id: 1, label: 'SIPOC' });
+    am.addItem({ id: 2, label: 'Regression' });
+    am.markItem(1, false);
+    am.markItem(2, true);
+    const [newest, older] = rows();
+    assertTrue(newest.classList.contains('action-modal__item--ok'), 'newest ok');
+    assertTrue(older.classList.contains('action-modal__item--failed'), 'older failed');
+    assertEqual(rows().length, 2, 'marking never adds or removes rows');
+    am.close();
+  });
+
+  test('markItem for an unknown id is a no-op', () => {
+    const am = make();
+    am.open({ title: 'T' });
+    am.addItem({ id: 1, label: 'SIPOC' });
+    am.markItem(99, false);
+    assertEqual(rows().length, 1);
+    assertTrue(rows()[0].classList.contains('action-modal__item--pending'));
+    am.close();
+  });
+
+  test('addItem/markItem are no-ops when nothing is open', () => {
+    const am = make();
+    am.addItem({ id: 1, label: 'X' });
+    am.markItem(1, true);
+    assertEqual(document.querySelector('.action-modal__item'), null);
+  });
+
+  test('re-opening clears the list of the previous run', () => {
+    const am = make();
+    am.open({ title: 'A' });
+    am.addItem({ id: 1, label: 'SIPOC' });
+    am.open({ title: 'B' });
+    assertEqual(rows().length, 0);
+    am.close();
+  });
+
+  test('the list survives hold — that is when the user reads it', async () => {
+    const am = make();
+    am.open({ title: 'T' });
+    am.addItem({ id: 1, label: 'SIPOC' });
+    am.markItem(1, true);
+    const p = am.hold({ title: 'Fertig' });
+    await Promise.resolve();
+    assertDeepEqual(labels(), ['SIPOC']);
+    am.close();
+    await p;
+  });
+
+  test('a long list never lets the dialog grow past its fixed box', () => {
+    // The layout guarantee itself (internal scrolling) lives in CSS and is
+    // pinned by the e2e test in tests/global/scenario-load.spec.js — the unit
+    // runner loads no stylesheet. What IS testable here: the list stays ONE
+    // element with one row per item, so nothing else in the dialog moves.
+    const am = make();
+    am.open({ title: 'T' });
+    for (let i = 1; i <= 30; i++) am.addItem({ id: i, label: `Modul ${i}` });
+    assertEqual(document.querySelectorAll('.action-modal__list').length, 1);
+    assertEqual(rows().length, 30);
+    assertEqual(labels()[0], 'Modul 30', 'newest still on top after many rows');
     am.close();
   });
 });

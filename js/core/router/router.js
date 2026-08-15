@@ -82,12 +82,22 @@ export class Router {
       if (!this._currentRoute || this._currentRoute.kind !== 'page' || this._currentRoute.pageId !== pageId) return;
       this.navigateBackFromPage(pageId);
     });
-    // Mirror scenario-loader progress into the action modal.
-    this._bus.on('scenario:progress', ({ index, total, title }) => {
-      const name = title?.[this._i18n?.getLanguage?.()] || title?.en || '';
-      this._actionModal?.update(
-        this._i18n?.t('actions.progressModule', { index, total, name }) ?? `${index}/${total}`,
-      );
+    // Mirror scenario-loader progress into the action modal as a LIST: one row
+    // per item, newest on top, so the user can read what happened instead of
+    // watching a single line flash past. `index` is the row key — the loader
+    // emits it on both events for the same item.
+    this._bus.on('scenario:progress', ({ index, total, exampleId, title }) => {
+      const name = title?.[this._i18n?.getLanguage?.()] || title?.en || exampleId || '';
+      this._actionModal?.addItem({
+        id: index,
+        label: this._i18n?.t('actions.progressModule', { index, total, name }) ?? `${index}/${total} ${name}`,
+      });
+    });
+    // The loader announces an item BEFORE it knows the outcome; this settles
+    // that row. Only the boolean `ok` is used — the payload's developer-facing
+    // error text (if any) never reaches the UI.
+    this._bus.on('scenario:item-done', ({ index, ok }) => {
+      this._actionModal?.markItem(index, ok !== false);
     });
     return this.applyHash();
   }

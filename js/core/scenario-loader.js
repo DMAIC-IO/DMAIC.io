@@ -121,59 +121,85 @@ export async function loadScenario({
       stateManager, moduleRegistry, eventBus, moduleId, moduleRegistry.get(moduleId), { silent: true },
     );
 
+  /**
+   * Emit without ever letting a listener abort the run — one broken UI
+   * subscriber must not cost the user the rest of the scenario.
+   * @param {string} name  @param {object} payload  @returns {void}
+   */
+  const emitSafe = (name, payload) => {
+    try {
+      eventBus?.emit?.(name, payload);
+    } catch (err) {
+      console.warn('[scenario-loader] listener threw on', name, err);
+    }
+  };
+
   for (const [i, item] of items.entries()) {
     const { exampleId, moduleId, meta } = resolveItem(item, examplesRegistry);
-    eventBus?.emit?.('scenario:progress', {
+    emitSafe('scenario:progress', {
       index: i + 1, total: items.length, exampleId, moduleId,
       title: meta?.title ?? null,
     });
 
-    if (!moduleId) {
-      failed.push({ exampleId, moduleId: null, error: 'no module for example' });
-      continue;
-    }
-
-    let instance = null;
-    let instanceId = null;
+    // Announced BEFORE the attempt (progress) and again AFTER it resolves
+    // (item-done), so a UI that lists items can mark a row retroactively. The
+    // outer try/finally below guarantees the second event on EVERY exit path
+    // of this item — including each `continue` — because `continue` runs the
+    // finally block. A row that never hears back would sit pending forever.
+    const failedBefore = failed.length;
     try {
-      const payload = await examplesRegistry.load(exampleId);
-
-      // Always a FRESH instance — never a live, mounted one. A detached mount
-      // sharing an instanceId with a mounted instance re-registers that
-      // instance's Alpine.data factory (template-module.js derives the
-      // component name from context.instanceId) and, worse, the mounted copy's
-      // stale model is written back over the freshly loaded state by
-      // Workspace._persistAllModuleStates() on the next phase/tab switch.
-      // Scenario loading is therefore purely additive: nothing the user
-      // already has open is touched.
-      instanceId = makeInstance(moduleId);
-
-      instance = await workspace.instantiateDetached(instanceId, moduleId, {
-        worksheetPool,
-        worksheetKey: payload.worksheetKey ?? null,
-      });
-
-      // instantiateDetached swallows its own mount errors and returns null
-      // (see workspace.js) — distinguish that from a mounted instance that
-      // genuinely has no loadExample, otherwise a mount crash is misreported.
-      if (!instance) {
-        failed.push({ exampleId, moduleId, error: 'module failed to mount' });
-        removeFailedInstance(stateManager, eventBus, instanceId);
-        continue;
-      }
-      if (typeof instance.loadExample !== 'function') {
-        failed.push({ exampleId, moduleId, error: 'module has no loadExample' });
-        removeFailedInstance(stateManager, eventBus, instanceId);
+      if (!moduleId) {
+        failed.push({ exampleId, moduleId: null, error: 'no module for example' });
         continue;
       }
 
-      await instance.loadExample(payload);
-      loaded.push(exampleId);
-    } catch (err) {
-      failed.push({ exampleId, moduleId, error: err.message });
-      removeFailedInstance(stateManager, eventBus, instanceId);
+      let instance = null;
+      let instanceId = null;
+      try {
+        const payload = await examplesRegistry.load(exampleId);
+
+        // Always a FRESH instance — never a live, mounted one. A detached mount
+        // sharing an instanceId with a mounted instance re-registers that
+        // instance's Alpine.data factory (template-module.js derives the
+        // component name from context.instanceId) and, worse, the mounted copy's
+        // stale model is written back over the freshly loaded state by
+        // Workspace._persistAllModuleStates() on the next phase/tab switch.
+        // Scenario loading is therefore purely additive: nothing the user
+        // already has open is touched.
+        instanceId = makeInstance(moduleId);
+
+        instance = await workspace.instantiateDetached(instanceId, moduleId, {
+          worksheetPool,
+          worksheetKey: payload.worksheetKey ?? null,
+        });
+
+        // instantiateDetached swallows its own mount errors and returns null
+        // (see workspace.js) — distinguish that from a mounted instance that
+        // genuinely has no loadExample, otherwise a mount crash is misreported.
+        if (!instance) {
+          failed.push({ exampleId, moduleId, error: 'module failed to mount' });
+          removeFailedInstance(stateManager, eventBus, instanceId);
+          continue;
+        }
+        if (typeof instance.loadExample !== 'function') {
+          failed.push({ exampleId, moduleId, error: 'module has no loadExample' });
+          removeFailedInstance(stateManager, eventBus, instanceId);
+          continue;
+        }
+
+        await instance.loadExample(payload);
+        loaded.push(exampleId);
+      } catch (err) {
+        failed.push({ exampleId, moduleId, error: err.message });
+        removeFailedInstance(stateManager, eventBus, instanceId);
+      } finally {
+        if (instance) await workspace.disposeDetached(instanceId, instance);
+      }
     } finally {
-      if (instance) await workspace.disposeDetached(instanceId, instance);
+      emitSafe('scenario:item-done', {
+        index: i + 1, total: items.length, exampleId, moduleId,
+        ok: failed.length === failedBefore,
+      });
     }
   }
 

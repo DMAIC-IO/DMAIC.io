@@ -17,9 +17,17 @@
 import { h } from '../core/dom.js';
 
 /**
+ * Row markers. Purely typographic (no words) — the meaning is carried by the
+ * translated `aria-label` on the same element and by the row's colour.
+ */
+const STATUS_GLYPH = { pending: '·', ok: '✓', failed: '✕' };
+
+/**
  * @param {{ i18n: object, modal: object }} deps
  * @returns {{ open: (o: {title: string, subtitle?: string, body?: Node}) => void,
  *             update: (text: string) => void,
+ *             addItem: (o: {id: string|number, label: string}) => void,
+ *             markItem: (id: string|number, ok: boolean) => void,
  *             hold: (o: {title: string, subtitle?: string, body?: Node,
  *                        confirmLabel?: string}) => Promise<boolean>,
  *             close: () => void, isOpen: () => boolean }}
@@ -30,8 +38,11 @@ export function createActionModal({ i18n, modal }) {
   let subtitleEl = null;
   let progressEl = null;
   let bodyEl = null;
+  let listEl = null;
   let spinnerEl = null;
   let footerEl = null;
+  /** id → row element, so a row can be marked long after it was added. */
+  let rowsById = new Map();
   /** Resolver of a pending hold(), if the dialog currently waits for a confirm. */
   let releaseHold = null;
 
@@ -40,12 +51,19 @@ export function createActionModal({ i18n, modal }) {
     subtitleEl = h('div', { class: 'action-modal__subtitle' });
     progressEl = h('div', { class: 'action-modal__progress' });
     bodyEl = h('div', { class: 'action-modal__body' });
+    listEl = h('ul', { class: 'action-modal__list' });
     footerEl = h('div', { class: 'action-modal__footer' });
     root = h('div', {
       class: 'action-modal', role: 'status', 'aria-live': 'polite',
       'aria-label': i18n.t('actions.modalLabel'),
-    }, spinnerEl, subtitleEl, progressEl, bodyEl, footerEl);
+    }, spinnerEl, subtitleEl, progressEl, listEl, bodyEl, footerEl);
     return root;
+  }
+
+  /** Drop every row of a previous run. @returns {void} */
+  function clearList() {
+    rowsById = new Map();
+    listEl?.replaceChildren();
   }
 
   function setTitle(title) {
@@ -77,7 +95,12 @@ export function createActionModal({ i18n, modal }) {
       // Re-purposing a holding dialog cancels the hold: its button is about to
       // be replaced, so nobody will ever confirm it.
       settleHold(false);
-      if (handle) { fill({ title, subtitle, body }); progressEl.textContent = ''; return; }
+      if (handle) {
+        fill({ title, subtitle, body });
+        progressEl.textContent = '';
+        clearList();
+        return;
+      }
       const node = build();
       handle = modal.show(title, node, {
         dismissible: false, overlayClass: 'modal-overlay--action',
@@ -87,6 +110,44 @@ export function createActionModal({ i18n, modal }) {
     },
 
     update(text) { if (progressEl) progressEl.textContent = text; },
+
+    /**
+     * Append one item to the running list — newest FIRST, so what just
+     * happened is readable without waiting and without auto-scrolling. The row
+     * starts out pending; markItem() settles it once the item reports back.
+     * No-op while no dialog is open.
+     * @param {{id: string|number, label: string}} item
+     * @returns {void}
+     */
+    addItem({ id, label }) {
+      if (!listEl || rowsById.has(id)) return;
+      const status = h('span', {
+        class: 'action-modal__item-status', 'aria-label': i18n.t('actions.itemPending'),
+      }, STATUS_GLYPH.pending);
+      const row = h('li', { class: 'action-modal__item action-modal__item--pending' },
+        status, h('span', { class: 'action-modal__item-label' }, label));
+      rowsById.set(id, row);
+      listEl.prepend(row);
+    },
+
+    /**
+     * Retroactively settle the row added for `id`. The loader announces an
+     * item before it knows the outcome, so the row is marked here — never with
+     * the raw `failed[].error`, which is untranslated developer text.
+     * Unknown ids are ignored (an item-done without a row is harmless).
+     * @param {string|number} id  @param {boolean} ok  @returns {void}
+     */
+    markItem(id, ok) {
+      const row = rowsById.get(id);
+      if (!row) return;
+      row.classList.remove('action-modal__item--pending');
+      row.classList.add(ok ? 'action-modal__item--ok' : 'action-modal__item--failed');
+      const status = row.querySelector('.action-modal__item-status');
+      if (status) {
+        status.textContent = ok ? STATUS_GLYPH.ok : STATUS_GLYPH.failed;
+        status.setAttribute('aria-label', i18n.t(ok ? 'actions.itemLoaded' : 'actions.itemFailed'));
+      }
+    },
 
     async hold({ title, subtitle = '', body = null, confirmLabel }) {
       if (!handle) return false;
@@ -122,7 +183,8 @@ export function createActionModal({ i18n, modal }) {
     close() {
       handle?.close();
       handle = null; root = null; subtitleEl = null; progressEl = null;
-      bodyEl = null; spinnerEl = null; footerEl = null;
+      bodyEl = null; listEl = null; spinnerEl = null; footerEl = null;
+      rowsById = new Map();
       settleHold(false);   // after teardown: the awaiting caller sees a closed dialog
     },
 

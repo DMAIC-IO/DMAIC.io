@@ -1932,4 +1932,51 @@ body.dmike-glossary-inline-off .glossary-term:focus-within {
   color: var(--color-warning);
 }
 
+/* Running list of scenario items — newest row prepended on top, so what just
+   happened is readable without any auto-scrolling (scrollTop stays 0).
+   `flex: 1` + `min-height: 0` make THIS the element that absorbs the growth:
+   it scrolls inside `.action-modal`'s fixed 12rem, which never resizes. */
+.action-modal__list {
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 100%;
+  overflow-y: auto;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  text-align: left;
+}
+
+.action-modal__item {
+  display: flex;
+  align-items: baseline;
+  gap: var(--spacing-xs);
+  padding: 1px var(--spacing-xs);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+.action-modal__item-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.action-modal__item-status {
+  flex: none;
+  width: 1em;
+  text-align: center;
+}
+
+.action-modal__item--pending { color: var(--color-text-tertiary); }
+.action-modal__item--pending .action-modal__item-status { color: var(--color-text-tertiary); }
+.action-modal__item--ok .action-modal__item-status { color: var(--color-success); }
+
+.action-modal__item--failed {
+  color: var(--color-error);
+  font-weight: var(--font-weight-medium);
+}
+
+.action-modal__item--failed .action-modal__item-status { color: var(--color-error); }
+
 .action-modal__footer { margin-top: var(--spacing-sm); }

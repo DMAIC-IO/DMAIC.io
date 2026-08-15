@@ -218,6 +218,47 @@ suite('loadScenario', () => {
     assertEqual(progress[1].payload.exampleId, 'ex-reg');
   });
 
+  test('reports every item back when it is done — success and failure alike', async () => {
+    const { deps, events } = makeDeps({ failOn: 'regression' });
+    await loadScenario({ ...deps, scenario: { id: 's', items: ['ex-sipoc', 'ex-reg'] } });
+    const done = events.filter(e => e.name === 'scenario:item-done');
+    assertEqual(done.length, 2, 'one report per item');
+    assertEqual(done[0].payload.exampleId, 'ex-sipoc');
+    assertEqual(done[0].payload.ok, true);
+    assertEqual(done[0].payload.index, 1);
+    assertEqual(done[1].payload.exampleId, 'ex-reg');
+    assertEqual(done[1].payload.ok, false);
+  });
+
+  test('reports back on the early exit of an item without a module', async () => {
+    const { deps, events } = makeDeps();
+    await loadScenario({ ...deps, scenario: { id: 's', items: ['ex-nope'] } });
+    const done = events.filter(e => e.name === 'scenario:item-done');
+    assertEqual(done.length, 1, 'the no-module early exit still reports');
+    assertEqual(done[0].payload.ok, false);
+  });
+
+  test('reports back when the module fails to mount or has no loadExample', async () => {
+    const mount = makeDeps({ mountFailOn: 'sipoc' });
+    await loadScenario({ ...mount.deps, scenario: { id: 's', items: ['ex-sipoc'] } });
+    const mountDone = mount.events.filter(e => e.name === 'scenario:item-done');
+    assertEqual(mountDone.length, 1);
+    assertEqual(mountDone[0].payload.ok, false, 'mount failure reports not-ok');
+
+    const noLoad = makeDeps({ noLoadExampleOn: 'sipoc' });
+    await loadScenario({ ...noLoad.deps, scenario: { id: 's', items: ['ex-sipoc'] } });
+    const noLoadDone = noLoad.events.filter(e => e.name === 'scenario:item-done');
+    assertEqual(noLoadDone.length, 1);
+    assertEqual(noLoadDone[0].payload.ok, false, 'missing loadExample reports not-ok');
+  });
+
+  test('an event listener that throws never aborts the run', async () => {
+    const { deps } = makeDeps();
+    deps.eventBus = { emit: () => { throw new Error('listener exploded'); } };
+    const result = await loadScenario({ ...deps, scenario: { id: 's', items: ['ex-sipoc', 'ex-reg'] } });
+    assertDeepEqual(result.loaded, ['ex-sipoc', 'ex-reg']);
+  });
+
   test('never mounts detached onto a live instance id', async () => {
     // Regression guard for the scenario-overwrite bug: a detached mount that
     // reuses a MOUNTED instance's id re-registers that instance's Alpine.data
