@@ -6,6 +6,7 @@ import { ExamplesRegistry, parseScenarioItem } from '../../js/core/examples-regi
 import { getPhaseIds } from '../../js/core/cycles/cycles.js';
 
 const EXPECTED_SCENARIOS = [
+  'scenario-hubschrauber-full', 'scenario-hubschrauber-starter',
   'scenario-pizza-full', 'scenario-pizza-starter',
   'scenario-bolzen-full', 'scenario-bolzen-starter',
   'scenario-triz-band-full', 'scenario-triz-band-starter',
@@ -14,6 +15,7 @@ const EXPECTED_SCENARIOS = [
 ];
 
 const EXPECTED_WORKSHEETS = [
+  'worksheet-hubschrauber-flyer', 'worksheet-msa-typ1-hubschrauber-flyer',
   'worksheet-pizza-lieferungen', 'worksheet-pizza-fahrer', 'worksheet-bolzendurchmesser',
   'worksheet-motorversuche', 'worksheet-spritverbrauch',
 ];
@@ -35,13 +37,13 @@ async function loadedRegistry() {
 }
 
 suite('shipped scenario catalog', () => {
-  test('all ten scenarios are present', async () => {
+  test('all twelve scenarios are present', async () => {
     const reg = await loadedRegistry();
     const ids = reg.getScenarios().map(s => s.id);
     EXPECTED_SCENARIOS.forEach(id => assertTrue(ids.includes(id), `${id} missing`));
   });
 
-  test('the five worksheet examples are present', async () => {
+  test('the seven worksheet examples are present', async () => {
     const reg = await loadedRegistry();
     const ids = reg.getForModule('worksheet').map(e => e.id);
     EXPECTED_WORKSHEETS.forEach(id => assertTrue(ids.includes(id), `${id} missing`));
@@ -126,6 +128,26 @@ suite('shipped scenario catalog', () => {
     assertEqual(reg.get('scenario-pizza-full').items.length, 21);
   });
 
+  // NOTE for maintainers: coupled to the literal item list of
+  // scenario-hubschrauber-full in examples/index.json — update in the same
+  // commit when items are added or removed there.
+  test('the helicopter scenario covers 18 examples', async () => {
+    const reg = await loadedRegistry();
+    assertEqual(reg.get('scenario-hubschrauber-full').items.length, 18);
+  });
+
+  // The catalog array order IS the display order — getScenarios() does not
+  // sort, and neither do the cycle-picker or the action-verb registry. The
+  // helicopter pair is meant to head the list, so pin it here.
+  test('the helicopter scenarios head the scenario list', async () => {
+    const reg = await loadedRegistry();
+    const ids = reg.getScenarios().map(s => s.id);
+    assertEqual(ids[0], 'scenario-hubschrauber-full');
+    assertEqual(ids[1], 'scenario-hubschrauber-starter');
+    const dmaicIds = reg.getScenarios({ cycle: 'dmaic' }).map(s => s.id);
+    assertEqual(dmaicIds[0], 'scenario-hubschrauber-full');
+  });
+
   test('an optional projectName carries both languages', async () => {
     const reg = await loadedRegistry();
     for (const s of reg.getScenarios()) {
@@ -156,6 +178,7 @@ suite('shipped scenario catalog', () => {
   test('starter scenarios pair with their full scenario (same cycle/phase, fewer items)', async () => {
     const reg = await loadedRegistry();
     const pairs = [
+      ['scenario-hubschrauber-starter', 'scenario-hubschrauber-full'],
       ['scenario-pizza-starter', 'scenario-pizza-full'],
       ['scenario-bolzen-starter', 'scenario-bolzen-full'],
       ['scenario-triz-band-starter', 'scenario-triz-band-full'],
