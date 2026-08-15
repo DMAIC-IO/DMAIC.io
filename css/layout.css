@@ -570,14 +570,10 @@ html.is-nightly body {
   color: #ffc107;
 }
 
-/* Hide grip/pencil/close affordances when readonly — including on hover, so the
-   hover-reveal rule cannot bring them back (matched specificity via :hover). */
-.dmike--readonly .workspace__tab-grip,
-.dmike--readonly .workspace__tab-edit,
-.dmike--readonly .workspace__tab-close,
-.dmike--readonly .workspace__tab:hover .workspace__tab-grip,
-.dmike--readonly .workspace__tab:hover .workspace__tab-edit,
-.dmike--readonly .workspace__tab:hover .workspace__tab-close {
+/* Readonly: nothing about the tab set may be changed, so the drag grip goes.
+   Rename/remove need no rule — `_renderTabActions()` does not build them for a
+   completed project at all. */
+.dmike--readonly .workspace__tab-grip {
   display: none;
 }
 
@@ -2027,6 +2023,20 @@ body.training-area-open .dmaic-tiles {
   height: 18px;
 }
 
+/* Umbenennen / Entfernen ganz rechts. Sie betreffen die Tab selbst, nicht den
+   Modulinhalt — ein Trenner vor der Gruppe hält das auseinander. `:first-of-type`
+   trifft nur die erste der beiden; hat das Modul gar keine eigenen Aktionen,
+   entfällt der Trenner (nichts links davon, was abzugrenzen wäre). */
+.workspace__action--tab:first-of-type:not(:first-child) {
+  margin-left: var(--spacing-xs);
+  border-left: var(--border-width) solid var(--color-action-bar-border);
+  padding-left: var(--spacing-sm);
+}
+
+.workspace__action--tab-remove:hover {
+  color: var(--color-error);
+}
+
 .workspace__action--primary {
   color: var(--color-accent);
 }
@@ -2102,7 +2112,7 @@ body.training-area-open .dmaic-tiles {
   justify-content: center;
   min-height: 44px;
   box-sizing: border-box;
-  padding: var(--spacing-xs) var(--spacing-sm);
+  padding: var(--spacing-xs) var(--spacing-md);
   cursor: pointer;
   font-size: var(--font-size-sm);
   color: var(--color-text-secondary);
@@ -2111,13 +2121,6 @@ body.training-area-open .dmaic-tiles {
   white-space: nowrap;
   transition: background var(--transition-speed), color var(--transition-speed);
   user-select: none;
-}
-
-/* Idle (keine Controls) etwas mehr Außenabstand; bei Hover schrumpft das Padding
-   wieder auf den Basiswert, während grip/stift/x einblenden (mit Controls ok). */
-.workspace__tab:not(:hover) {
-  padding-left: var(--spacing-md);
-  padding-right: var(--spacing-md);
 }
 
 .workspace__tab:hover {
@@ -2131,65 +2134,30 @@ body.training-area-open .dmaic-tiles {
   border-bottom: 2px solid var(--color-accent);
 }
 
-/* Tab-Affordances (Grip / Stift / X): im Ruhezustand komplett aus dem Layout —
-   kein reservierter Platz. Sie erscheinen nur bei Hover über die Tab (NICHT
-   dauerhaft auf der aktiven); die Tab darf dabei breiter werden. Große
-   Klickfläche: volle Tab-Höhe + großzügige Breite, nicht nur Icon-Größe. */
-.workspace__tab-grip,
-.workspace__tab-edit,
-.workspace__tab-close {
+/* Grip: dauerhaft im Layout, inline vor dem Namen, mit kleinem Abstand nach
+   außen und zum Text. Er ändert bei Hover NICHT seine Größe — genau das war der
+   Fehler der alten Lösung: grip/Stift/X klappten erst bei Hover auf, die Tab
+   wuchs unter dem Zeiger und der Klick auf den Namen landete im Stift. Ruhend
+   ist er nur zurückgenommen gefärbt, bei Hover über die Tab kräftiger. */
+.workspace__tab-grip {
   display: flex;
   align-items: center;
   justify-content: center;
-  align-self: stretch;
-  max-width: 0;
-  padding: 0;
-  overflow: hidden;
-  opacity: 0;
+  flex: none;
+  margin-right: var(--spacing-xs);
+  cursor: grab;
   color: var(--color-text-tertiary);
-  transition:
-    max-width var(--transition-speed) ease-out,
-    padding var(--transition-speed) ease-out,
-    opacity var(--transition-speed) ease-out,
-    background var(--transition-speed),
-    color var(--transition-speed);
+  opacity: 0.45;
+  transition: opacity var(--transition-speed), color var(--transition-speed);
 }
 
-/* Bei Hover wachsen grip/stift/x aus dem Nichts auf (max-width + Fade); die Tab
-   wird dabei breiter. Volle Höhe + Breite = große Klickfläche. */
-.workspace__tab:hover .workspace__tab-grip,
-.workspace__tab:hover .workspace__tab-edit,
-.workspace__tab:hover .workspace__tab-close {
-  max-width: 2rem;
-  padding: 0 var(--spacing-xs);
+.workspace__tab:hover .workspace__tab-grip {
   opacity: 1;
 }
 
-.workspace__tab-grip { cursor: grab; }
 .workspace__tab-grip:active { cursor: grabbing; }
 
-.workspace__tab-grip .icon,
-.workspace__tab-close .icon { width: 14px; height: 14px; }
-
-/* Stift: reines ✎-Zeichen. Direkt-Hover zoomt (keine Umfärbung); eigene
-   transition inkl. transform, damit der Zoom neben dem Reveal läuft. */
-.workspace__tab-edit {
-  cursor: pointer;
-  font-size: 14px;
-  line-height: 1;
-  transition:
-    max-width var(--transition-speed) ease-out,
-    padding var(--transition-speed) ease-out,
-    opacity var(--transition-speed) ease-out,
-    transform var(--transition-speed);
-}
-.workspace__tab-edit:hover { transform: scale(1.3); }
-
-/* X: volle Höhe als Klickfläche, rote Tönung bei Hover. */
-.workspace__tab-close:hover {
-  background: var(--color-bg-tertiary);
-  color: var(--color-error);
-}
+.workspace__tab-grip .icon { width: 14px; height: 14px; }
 
 .workspace__tab-name-input {
   background: var(--color-bg-primary);

@@ -151,7 +151,7 @@
     "emptyState": "Add a module to get started.",
     "removeConfirm": "Really remove module \"{name}\"?",
     "tabs": {
-      "close": "Close",
+      "remove": "Remove",
       "rename": "Rename",
       "reorder": "Move"
     }
