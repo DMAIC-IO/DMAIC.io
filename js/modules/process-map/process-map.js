@@ -24,6 +24,13 @@ import {
 } from '../../core/export-utils.js';
 import { exportPmapPNG, exportPmapSVG } from './process-map-export.js';
 import { State } from './process-map-model.js';
+import { listSipocInstances, appendSipocProcess } from './process-map-sipoc-import.js';
+
+// Loop rendering is temporarily disabled while the map switches to a
+// horizontal (L→R) layout. The loop toggle in the step header still
+// persists state; only the imperative brackets/panels are suppressed
+// until they are redesigned for horizontal rows.
+const LOOPS_ENABLED = false;
 
 export default createModule({
   config: {
@@ -35,6 +42,7 @@ export default createModule({
     meta: import.meta,
     actions: [
       { icon: 'plus', title: 'addStep', variant: 'primary', onClick: (d) => d.addStep(d.model.steps.length) },
+      { icon: 'upload', title: 'importFromSipoc', onClick: (d) => d._openSipocImport() },
       { icon: 'download', title: 'export.label', children: [
         { icon: 'export-xlsx', title: 'export.xlsx', onClick: (d) => d._exportXLSX() },
         { icon: 'export-csv',  title: 'export.csv',  onClick: (d) => d._exportCSV() },
@@ -119,6 +127,7 @@ export default createModule({
         return step.loop ? 'pmap__step-loop-toggle--active' : '';
       },
       hasLoops() {
+        if (!LOOPS_ENABLED) return false;
         return this.model.steps.some((s) => s.loop);
       },
       // IO panel labels as single text runs (mirror legacy "{label} »" / "» {label}").
@@ -412,6 +421,11 @@ export default createModule({
 
       _renderLoopBrackets(flow) {
         if (!flow) return;
+        if (!LOOPS_ENABLED) {
+          this.loopBrackets = [];
+          this.loopPanels = [];
+          return;
+        }
 
         const steps = this.model.steps;
         const loops = [];
@@ -664,11 +678,143 @@ export default createModule({
         module._context.notify('Excel ✓', 'success');
       },
 
+      // ── SIPOC import (picker + append) ────────────────────────
+      /** @type {Array<{instanceId:string,label:string,processCount:number,processPreview:string[]}>} */
+      _sipocOptions: [],
+      /** @type {string|null} */
+      _sipocSelectedId: null,
+
+      _pickSipoc(opt) {
+        if (!opt || opt.processCount === 0) return;
+        this._sipocSelectedId = opt.instanceId;
+      },
+
+      _openSipocImport() {
+        const sm = module._context.stateManager;
+        this._sipocOptions = listSipocInstances(sm);
+        if (this._sipocOptions.length === 0) {
+          module._context.notify?.(_t('importFromSipocHint'), 'info');
+          return;
+        }
+        const firstUsable = this._sipocOptions.find(o => o.processCount > 0);
+        this._sipocSelectedId = firstUsable ? firstUsable.instanceId : null;
+        // Wait one Alpine tick so the x-for renders the option rows into the
+        // sipocForm subtree before the modal borrows it — otherwise onMount
+        // sees an empty form (no radios) and the initial check never lands.
+        this.$nextTick(() => {
+          module._context.showModal.form(
+            _t('importFromSipocTitle'),
+            this.$refs.sipocForm,
+            {
+              confirmLabel: _t('importFromSipocConfirm'),
+              onMount: (body) => this._sipocFormMount(body),
+              onConfirm: (body) => this._runSipocImport(body),
+            },
+          );
+        });
+      },
+
+      /**
+       * Modal-mount hook: wire plain-DOM click listeners on the radios so the
+       * checked state is authoritative even though the form node has been
+       * borrowed out of its Alpine root. Also stamps the initial selection.
+       */
+      _sipocFormMount(body) {
+        const form = body?.querySelector?.('.pmap__sipoc-form');
+        if (!form) return;
+        // Alpine's x-for may render on a later tick even after the modal has
+        // already borrowed the form node; defer the wiring until the radios
+        // actually exist. rAF is enough because the modal body is on-screen.
+        const wire = () => {
+          const initId = this._sipocSelectedId;
+          const radios = form.querySelectorAll('.pmap__sipoc-option input[type="radio"]');
+          if (radios.length === 0) { requestAnimationFrame(wire); return; }
+          radios.forEach((radio) => {
+            const label = radio.closest('.pmap__sipoc-option');
+            // Alpine's :class on the borrowed element does not always
+            // propagate, so mirror the disabled state in plain DOM.
+            const opt = this._sipocOptions.find(o => o.instanceId === radio.value);
+            if (opt && opt.processCount === 0) {
+              radio.disabled = true;
+              label?.classList.add('pmap__sipoc-option--disabled');
+            }
+            if (radio.value === initId) radio.checked = true;
+            radio.addEventListener('change', () => {
+              form.setAttribute('data-selected', radio.value);
+              form.querySelectorAll('.pmap__sipoc-option').forEach((lbl) => {
+                lbl.classList.toggle('pmap__sipoc-option--selected',
+                  lbl.querySelector('input[type="radio"]') === radio);
+              });
+            });
+          });
+          if (initId) {
+            form.setAttribute('data-selected', initId);
+            const initLabel = form.querySelector(`.pmap__sipoc-option input[value="${initId}"]`)?.closest('.pmap__sipoc-option');
+            initLabel?.classList.add('pmap__sipoc-option--selected');
+          }
+        };
+        wire();
+      },
+
+      /** Read the picked SIPOC id from the borrowed form's checked radio and append. */
+      _runSipocImport(body) {
+        const checked = body?.querySelector?.('.pmap__sipoc-option input[type="radio"]:checked');
+        const id = checked?.value || null;
+        if (!id) return false;
+        const opt = this._sipocOptions.find(o => o.instanceId === id);
+        if (!opt || opt.processCount === 0) return false;
+        const state = module._context.stateManager.getModuleState(id);
+        const n = appendSipocProcess(this.model, state);
+        module._context.notify?.(_t('importFromSipocDone').replace('{n}', n), 'success');
+        return true;
+      },
+
+      /** Mark this Process Map instance as "seen" so the auto-picker never fires again. */
+      _seedEmptyIfFresh() {
+        const sm = module._context.stateManager;
+        if (sm.getModuleState(module._context.instanceId) === null) {
+          sm.setModuleState(module._context.instanceId, this.model.toJSON());
+        }
+      },
+
       // ── Lifecycle (per Alpine instance) ───────────────────────
       init() {
         this.$nextTick(() => {
           this._autoSizeAll();
           this._scheduleBrackets();
+        });
+
+        // Auto-open the SIPOC picker on the very first init of a fresh Process
+        // Map instance (never persisted) when ≥ 1 SIPOC exists in the project.
+        // After the user picks or dismisses, persist a {steps:[]} stub so the
+        // picker does not reappear on later tab switches.
+        this.$nextTick(() => {
+          const sm = module._context.stateManager;
+          const isFresh = sm.getModuleState(module._context.instanceId) === null
+                        && this.model.steps.length === 0;
+          if (!isFresh) return;
+          const sipocs = listSipocInstances(sm);
+          if (sipocs.length === 0) return;
+          this._sipocOptions = sipocs;
+          const firstUsable = sipocs.find(o => o.processCount > 0);
+          this._sipocSelectedId = firstUsable ? firstUsable.instanceId : null;
+          // Second $nextTick so the x-for renders the option rows before the
+          // modal borrows the sipocForm subtree (empty form → onMount sees
+          // no radios and the initial check never lands).
+          this.$nextTick(() => {
+            module._context.showModal.form(
+              _t('importFromSipocTitle'),
+              this.$refs.sipocForm,
+              {
+                confirmLabel: _t('importFromSipocConfirm'),
+                onMount: (body) => this._sipocFormMount(body),
+                onConfirm: (body) => {
+                  const ok = this._runSipocImport(body);
+                  if (!ok) this._seedEmptyIfFresh();
+                },
+              },
+            ).then((confirmed) => { if (!confirmed) this._seedEmptyIfFresh(); });
+          });
         });
 
         // Release any armed draggable rows/items after the mouse is released.

@@ -1232,7 +1232,14 @@
       "loopTarget": "Zurück zu",
       "loopSelectTarget": "Zielschritt wählen…",
       "loopStepPlaceholder": "Loop-Schritt…",
-      "addLoopStep": "Loop-Schritt hinzufügen"
+      "addLoopStep": "Loop-Schritt hinzufügen",
+      "importFromSipoc": "Aus SIPOC übernehmen",
+      "importFromSipocTitle": "Prozessschritte aus SIPOC übernehmen",
+      "importFromSipocHint": "Wähle einen SIPOC aus. Alle Einträge der P-Spalte werden als Prozessschritte ans Ende angehängt.",
+      "importFromSipocEmpty": "leer",
+      "importFromSipocSteps": "{n} Prozessschritt(e)",
+      "importFromSipocConfirm": "Übernehmen",
+      "importFromSipocDone": "{n} Schritt(e) aus SIPOC übernommen"
     },
     "raci-matrix": {
       "name": "RACI-Matrix",

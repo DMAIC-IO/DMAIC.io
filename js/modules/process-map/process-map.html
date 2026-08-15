@@ -2,248 +2,215 @@
   <div class="module-container__body">
     <div class="pmap__canvas" :class="hasLoops() ? 'pmap__canvas--has-loops' : ''">
       <div class="pmap__flow" data-ref="flow">
-        <table class="pmap__table">
-          <colgroup>
-            <col class="pmap__col-io"><col class="pmap__col-step"><col class="pmap__col-io">
-          </colgroup>
 
-          <!-- Empty state: single add connector -->
-          <template x-if="model.steps.length === 0">
+        <!-- Empty state has no in-canvas add button; the toolbar "Add Step"
+             action bar on the top right covers it. -->
+
+        <template x-if="model.steps.length > 0">
+          <table class="pmap__table">
             <tbody>
-              <tr class="pmap__connector-row">
-                <td></td>
-                <td>
-                  <div class="pmap__connector pmap__connector--clickable pmap__connector--empty"
-                       data-action="insert-step" data-idx="0" :title="t('addFirstStep')"
-                       @click="addStep(0)">
-                    <span class="pmap__connector-arrow">&raquo;</span>
-                  </div>
-                </td>
-                <td></td>
-              </tr>
-            </tbody>
-          </template>
 
-          <!-- Leading connector before the first step -->
-          <template x-if="model.steps.length > 0">
-            <tbody>
-              <tr class="pmap__connector-row">
-                <td></td>
-                <td>
-                  <div class="pmap__connector pmap__connector--clickable"
-                       data-action="insert-step" data-idx="0" :title="t('insertHere')"
-                       @click="addStep(0)">
-                    <span class="pmap__connector-arrow">&raquo;</span>
-                  </div>
-                </td>
-                <td></td>
+              <!-- ─── Row 1: Inputs — one cell per step, table-row alignment
+                   guarantees a shared baseline across all step columns. ─── -->
+              <tr class="pmap__row pmap__row--inputs">
+                <template x-for="(step, idx) in model.steps" :key="'in-' + step.id">
+                  <td class="pmap__cell pmap__cell--io pmap__cell--io-input" :data-step-id="step.id">
+                    <div class="pmap__io-panel pmap__io-panel--input">
+                      <div class="pmap__io-label" data-action="add-io" :data-step-id="step.id" data-io-type="inputs"
+                           @click="addIO(step.id, 'inputs')">
+                        <span class="pmap__io-label-text pmap__io-label-text--input">
+                          <span class="pmap__io-dot pmap__io-dot--input"></span> <span x-text="ioLabelIn()"></span>
+                        </span>
+                      </div>
+                      <div class="pmap__io-list">
+                        <template x-for="io in step.inputs" :key="io.id">
+                          <div class="pmap__io-item pmap__io-item--input"
+                               :data-io-id="io.id" :data-io-step="step.id" data-io-type="inputs"
+                               @dragstart="ioDragStart(step.id, 'inputs', io.id, $event)"
+                               @dragend="ioDragEnd($event)"
+                               @dragover="ioDragOver(step.id, 'inputs', io.id, $event)"
+                               @dragleave="ioDragLeave(io.id, $event)"
+                               @drop="ioDrop(step.id, 'inputs', io.id, $event)">
+                            <span class="pmap__io-dot pmap__io-dot--input"
+                                  @mousedown="armIODrag($event)"></span>
+                            <button class="pmap__input-type" :class="inputTypeClass(io)"
+                                    data-action="cycle-input-type" :data-step-id="step.id" :data-io-id="io.id"
+                                    :title="inputTypeTitle(io)"
+                                    @click.stop="cycleInputType(step.id, io.id)"
+                                    x-text="inputTypeLabel(io)"></button>
+                            <textarea class="pmap__io-name" rows="1" :placeholder="t('inputPlaceholder')"
+                                      :data-io-step="step.id" data-io-type="inputs" :data-io-id="io.id"
+                                      x-model="io.name" @input="autoSize($event)"></textarea>
+                            <button class="pmap__io-remove" data-action="remove-io"
+                                    :data-step-id="step.id" data-io-type="inputs" :data-io-id="io.id"
+                                    @click.stop="removeIO(step.id, 'inputs', io.id)">
+                              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                            </button>
+                          </div>
+                        </template>
+                      </div>
+                    </div>
+                  </td>
+                </template>
               </tr>
-            </tbody>
-          </template>
 
-          <!-- One tbody per step (connector before steps after the first, then the step row) -->
-          <template x-for="(step, idx) in model.steps">
-            <tbody :key="step.id">
-              <template x-if="idx > 0">
-                <tr class="pmap__connector-row">
-                  <td></td>
-                  <td>
-                    <div class="pmap__connector pmap__connector--clickable"
-                         data-action="insert-step" :data-idx="idx" :title="t('insertHere')"
-                         @click="addStep(idx)">
+              <!-- ─── Row 2: Step cards — table-row keeps all card cells the
+                   same height and same Y across columns. Connectors are
+                   absolute-positioned inside the cells, overflowing into the
+                   horizontal border-spacing between columns. ─── -->
+              <tr class="pmap__row pmap__row--cards">
+                <template x-for="(step, idx) in model.steps" :key="'card-' + step.id">
+                  <td class="pmap__cell pmap__cell--step pmap__step-row" :data-step-id="step.id"
+                      @dragstart="stepDragStart(step.id, $event)"
+                      @dragend="stepDragEnd($event)"
+                      @dragover="stepDragOver(step.id, $event)"
+                      @dragleave="stepDragLeave(step.id, $event)"
+                      @drop="stepDrop(step.id, $event)">
+
+                    <!-- Leading connector (before the first step only) -->
+                    <template x-if="idx === 0">
+                      <div class="pmap__connector pmap__connector--leading pmap__connector--clickable"
+                           data-action="insert-step" data-idx="0" :title="t('insertHere')"
+                           @click="addStep(0)">
+                        <span class="pmap__connector-arrow">&raquo;</span>
+                      </div>
+                    </template>
+
+                    <div class="pmap__step-card">
+                      <div class="pmap__step-header">
+                        <span class="pmap__step-number" x-text="stepNum(idx)"
+                              @mousedown="armStepDrag(step.id, $event)"></span>
+                        <button class="pmap__value-badge" :class="valueBadgeClass(step)"
+                                data-action="cycle-value" :data-step-id="step.id"
+                                :title="valueBadgeTitle(step)"
+                                @click.stop="cycleValueType(step.id)"
+                                x-text="valueBadgeLabel(step)"></button>
+                        <input class="pmap__step-title" type="text" :placeholder="t('stepNamePlaceholder')"
+                               data-field="title" :data-step-id="step.id"
+                               x-model="step.title">
+                        <div class="pmap__step-actions">
+                          <button class="pmap__step-loop-toggle" :class="loopToggleClass(step)"
+                                  data-action="toggle-loop" :data-step-id="step.id"
+                                  :title="t('loopLabel')"
+                                  @click.stop="toggleLoop(step.id)">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 2l4 4-4 4"/><path d="M3 11V9a4 4 0 014-4h14"/><path d="M7 22l-4-4 4-4"/><path d="M21 13v2a4 4 0 01-4 4H3"/></svg>
+                          </button>
+                          <button class="pmap__step-delete" data-action="remove-step" :data-step-id="step.id"
+                                  :title="t('common.delete')"
+                                  @click.stop="removeStep(step.id)">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg>
+                          </button>
+                        </div>
+                      </div>
+                      <div class="pmap__step-body">
+                        <textarea class="field field--ghost pmap__step-description" :placeholder="t('descriptionPlaceholder')"
+                                  data-field="description" :data-step-id="step.id"
+                                  x-model="step.description"></textarea>
+                      </div>
+                      <div class="pmap__substeps-bar" :class="substepsBarClass(step)"
+                           data-action="toggle-substeps" :data-step-id="step.id"
+                           @click.stop="toggleSubsteps(step.id)">
+                        <span class="pmap__substeps-bar-icon">
+                          <svg x-show="step.expanded" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+                          <svg x-show="!step.expanded" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+                        </span>
+                        <span class="pmap__substeps-bar-label" x-text="substepsBarLabel(step)"></span>
+                      </div>
+                      <template x-if="step.expanded">
+                        <div class="pmap__substeps" :data-step-id="step.id">
+                          <div class="pmap__substeps-list">
+                            <template x-for="(sub, subIdx) in step.substeps" :key="sub.id">
+                              <div class="pmap__substep-item"
+                                   :data-substep-id="sub.id" :data-parent-id="step.id"
+                                   @dragstart="subDragStart(step.id, sub.id, $event)"
+                                   @dragend="subDragEnd($event)"
+                                   @dragover="subDragOver(step.id, sub.id, $event)"
+                                   @dragleave="subDragLeave(sub.id, $event)"
+                                   @drop="subDrop(step.id, sub.id, $event)">
+                                <span class="pmap__substep-number" x-text="substepNum(idx, subIdx)"
+                                      @mousedown="armSubDrag($event)"></span>
+                                <input class="pmap__substep-title" type="text" :placeholder="t('substepPlaceholder')"
+                                       :data-substep-id="sub.id" :data-parent-id="step.id"
+                                       x-model="sub.title">
+                                <button class="pmap__substep-remove" data-action="remove-substep"
+                                        :data-parent-id="step.id" :data-substep-id="sub.id"
+                                        :title="t('common.delete')"
+                                        @click.stop="removeSubstep(step.id, sub.id)">
+                                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                                </button>
+                              </div>
+                            </template>
+                          </div>
+                          <button class="pmap__substep-add" data-action="add-substep" :data-step-id="step.id"
+                                  :title="t('addSubstep')" @click.stop="addSubstep(step.id)">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                            <span x-text="t('addSubstep')"></span>
+                          </button>
+                        </div>
+                      </template>
+                    </div>
+
+                    <!-- Trailing connector (after every step, sits in the
+                         border-spacing between this cell and the next) -->
+                    <div class="pmap__connector pmap__connector--trailing pmap__connector--clickable"
+                         data-action="insert-step" :data-idx="idx + 1" :title="t('insertHere')"
+                         @click="addStep(idx + 1)">
                       <span class="pmap__connector-arrow">&raquo;</span>
                     </div>
                   </td>
-                  <td></td>
-                </tr>
-              </template>
+                </template>
+              </tr>
 
-              <tr class="pmap__step-row" :data-step-id="step.id"
-                  @dragstart="stepDragStart(step.id, $event)"
-                  @dragend="stepDragEnd($event)"
-                  @dragover="stepDragOver(step.id, $event)"
-                  @dragleave="stepDragLeave(step.id, $event)"
-                  @drop="stepDrop(step.id, $event)">
-
-                <!-- Inputs (left) -->
-                <td class="pmap__cell-io">
-                  <div class="pmap__io-panel pmap__io-panel--left">
-                    <div class="pmap__io-label" data-action="add-io" :data-step-id="step.id" data-io-type="inputs"
-                         @click="addIO(step.id, 'inputs')">
-                      <span class="pmap__io-label-text pmap__io-label-text--input">
-                        <span class="pmap__io-dot pmap__io-dot--input"></span> <span x-text="ioLabelIn()"></span>
-                      </span>
-                    </div>
-                    <div class="pmap__io-list">
-                      <template x-for="io in step.inputs">
-                        <div class="pmap__io-item pmap__io-item--input" :key="io.id"
-                             :data-io-id="io.id" :data-io-step="step.id" data-io-type="inputs"
-                             @dragstart="ioDragStart(step.id, 'inputs', io.id, $event)"
-                             @dragend="ioDragEnd($event)"
-                             @dragover="ioDragOver(step.id, 'inputs', io.id, $event)"
-                             @dragleave="ioDragLeave(io.id, $event)"
-                             @drop="ioDrop(step.id, 'inputs', io.id, $event)">
-                          <span class="pmap__io-dot pmap__io-dot--input"
-                                @mousedown="armIODrag($event)"></span>
-                          <button class="pmap__input-type" :class="inputTypeClass(io)"
-                                  data-action="cycle-input-type" :data-step-id="step.id" :data-io-id="io.id"
-                                  :title="inputTypeTitle(io)"
-                                  @click.stop="cycleInputType(step.id, io.id)"
-                                  x-text="inputTypeLabel(io)"></button>
-                          <textarea class="pmap__io-name" rows="1" :placeholder="t('inputPlaceholder')"
-                                    :data-io-step="step.id" data-io-type="inputs" :data-io-id="io.id"
-                                    x-model="io.name" @input="autoSize($event)"></textarea>
-                          <button class="pmap__io-remove" data-action="remove-io"
-                                  :data-step-id="step.id" data-io-type="inputs" :data-io-id="io.id"
-                                  @click.stop="removeIO(step.id, 'inputs', io.id)">
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                          </button>
-                        </div>
-                      </template>
-                    </div>
-                  </div>
-                </td>
-
-                <!-- Step card -->
-                <td class="pmap__cell-step">
-                  <div class="pmap__step-card">
-                    <div class="pmap__step-header">
-                      <span class="pmap__step-number" x-text="stepNum(idx)"
-                            @mousedown="armStepDrag(step.id, $event)"></span>
-                      <button class="pmap__value-badge" :class="valueBadgeClass(step)"
-                              data-action="cycle-value" :data-step-id="step.id"
-                              :title="valueBadgeTitle(step)"
-                              @click.stop="cycleValueType(step.id)"
-                              x-text="valueBadgeLabel(step)"></button>
-                      <input class="pmap__step-title" type="text" :placeholder="t('stepNamePlaceholder')"
-                             data-field="title" :data-step-id="step.id"
-                             x-model="step.title">
-                      <div class="pmap__step-actions">
-                        <button class="pmap__step-loop-toggle" :class="loopToggleClass(step)"
-                                data-action="toggle-loop" :data-step-id="step.id"
-                                :title="t('loopLabel')"
-                                @click.stop="toggleLoop(step.id)">
-                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 2l4 4-4 4"/><path d="M3 11V9a4 4 0 014-4h14"/><path d="M7 22l-4-4 4-4"/><path d="M21 13v2a4 4 0 01-4 4H3"/></svg>
-                        </button>
-                        <button class="pmap__step-delete" data-action="remove-step" :data-step-id="step.id"
-                                :title="t('common.delete')"
-                                @click.stop="removeStep(step.id)">
-                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg>
-                        </button>
+              <!-- ─── Row 3: Outputs — one cell per step. ─── -->
+              <tr class="pmap__row pmap__row--outputs">
+                <template x-for="(step, idx) in model.steps" :key="'out-' + step.id">
+                  <td class="pmap__cell pmap__cell--io pmap__cell--io-output" :data-step-id="step.id">
+                    <div class="pmap__io-panel pmap__io-panel--output">
+                      <div class="pmap__io-label" data-action="add-io" :data-step-id="step.id" data-io-type="outputs"
+                           @click="addIO(step.id, 'outputs')">
+                        <span class="pmap__io-label-text pmap__io-label-text--output">
+                          <span class="pmap__io-dot pmap__io-dot--output"></span> <span x-text="ioLabelOut()"></span>
+                        </span>
+                      </div>
+                      <div class="pmap__io-list">
+                        <template x-for="io in step.outputs" :key="io.id">
+                          <div class="pmap__io-item pmap__io-item--output"
+                               :data-io-id="io.id" :data-io-step="step.id" data-io-type="outputs"
+                               @dragstart="ioDragStart(step.id, 'outputs', io.id, $event)"
+                               @dragend="ioDragEnd($event)"
+                               @dragover="ioDragOver(step.id, 'outputs', io.id, $event)"
+                               @dragleave="ioDragLeave(io.id, $event)"
+                               @drop="ioDrop(step.id, 'outputs', io.id, $event)">
+                            <span class="pmap__io-dot pmap__io-dot--output"
+                                  @mousedown="armIODrag($event)"></span>
+                            <textarea class="pmap__io-name" rows="1" :placeholder="t('outputPlaceholder')"
+                                      :data-io-step="step.id" data-io-type="outputs" :data-io-id="io.id"
+                                      x-model="io.name" @input="autoSize($event)"></textarea>
+                            <button class="pmap__io-remove" data-action="remove-io"
+                                    :data-step-id="step.id" data-io-type="outputs" :data-io-id="io.id"
+                                    @click.stop="removeIO(step.id, 'outputs', io.id)">
+                              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                            </button>
+                          </div>
+                        </template>
                       </div>
                     </div>
-                    <div class="pmap__step-body">
-                      <textarea class="field field--ghost pmap__step-description" :placeholder="t('descriptionPlaceholder')"
-                                data-field="description" :data-step-id="step.id"
-                                x-model="step.description"></textarea>
-                    </div>
-                    <div class="pmap__substeps-bar" :class="substepsBarClass(step)"
-                         data-action="toggle-substeps" :data-step-id="step.id"
-                         @click.stop="toggleSubsteps(step.id)">
-                      <span class="pmap__substeps-bar-icon">
-                        <svg x-show="step.expanded" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
-                        <svg x-show="!step.expanded" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
-                      </span>
-                      <span class="pmap__substeps-bar-label" x-text="substepsBarLabel(step)"></span>
-                    </div>
-                    <template x-if="step.expanded">
-                      <div class="pmap__substeps" :data-step-id="step.id">
-                        <div class="pmap__substeps-list">
-                          <template x-for="(sub, subIdx) in step.substeps">
-                            <div class="pmap__substep-item" :key="sub.id"
-                                 :data-substep-id="sub.id" :data-parent-id="step.id"
-                                 @dragstart="subDragStart(step.id, sub.id, $event)"
-                                 @dragend="subDragEnd($event)"
-                                 @dragover="subDragOver(step.id, sub.id, $event)"
-                                 @dragleave="subDragLeave(sub.id, $event)"
-                                 @drop="subDrop(step.id, sub.id, $event)">
-                              <span class="pmap__substep-number" x-text="substepNum(idx, subIdx)"
-                                    @mousedown="armSubDrag($event)"></span>
-                              <input class="pmap__substep-title" type="text" :placeholder="t('substepPlaceholder')"
-                                     :data-substep-id="sub.id" :data-parent-id="step.id"
-                                     x-model="sub.title">
-                              <button class="pmap__substep-remove" data-action="remove-substep"
-                                      :data-parent-id="step.id" :data-substep-id="sub.id"
-                                      :title="t('common.delete')"
-                                      @click.stop="removeSubstep(step.id, sub.id)">
-                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                              </button>
-                            </div>
-                          </template>
-                        </div>
-                        <button class="pmap__substep-add" data-action="add-substep" :data-step-id="step.id"
-                                :title="t('addSubstep')" @click.stop="addSubstep(step.id)">
-                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                          <span x-text="t('addSubstep')"></span>
-                        </button>
-                      </div>
-                    </template>
-                  </div>
-                </td>
-
-                <!-- Outputs (right) -->
-                <td class="pmap__cell-io">
-                  <div class="pmap__io-panel pmap__io-panel--right">
-                    <div class="pmap__io-label" data-action="add-io" :data-step-id="step.id" data-io-type="outputs"
-                         @click="addIO(step.id, 'outputs')">
-                      <span class="pmap__io-label-text pmap__io-label-text--output">
-                        <span x-text="ioLabelOut()"></span> <span class="pmap__io-dot pmap__io-dot--output"></span>
-                      </span>
-                    </div>
-                    <div class="pmap__io-list">
-                      <template x-for="io in step.outputs">
-                        <div class="pmap__io-item pmap__io-item--output" :key="io.id"
-                             :data-io-id="io.id" :data-io-step="step.id" data-io-type="outputs"
-                             @dragstart="ioDragStart(step.id, 'outputs', io.id, $event)"
-                             @dragend="ioDragEnd($event)"
-                             @dragover="ioDragOver(step.id, 'outputs', io.id, $event)"
-                             @dragleave="ioDragLeave(io.id, $event)"
-                             @drop="ioDrop(step.id, 'outputs', io.id, $event)">
-                          <span class="pmap__io-dot pmap__io-dot--output"
-                                @mousedown="armIODrag($event)"></span>
-                          <textarea class="pmap__io-name" rows="1" :placeholder="t('outputPlaceholder')"
-                                    :data-io-step="step.id" data-io-type="outputs" :data-io-id="io.id"
-                                    x-model="io.name" @input="autoSize($event)"></textarea>
-                          <button class="pmap__io-remove" data-action="remove-io"
-                                  :data-step-id="step.id" data-io-type="outputs" :data-io-id="io.id"
-                                  @click.stop="removeIO(step.id, 'outputs', io.id)">
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                          </button>
-                        </div>
-                      </template>
-                    </div>
-                  </div>
-                </td>
+                  </td>
+                </template>
               </tr>
-            </tbody>
-          </template>
 
-          <!-- Trailing connector after the last step -->
-          <template x-if="model.steps.length > 0">
-            <tbody>
-              <tr class="pmap__connector-row">
-                <td></td>
-                <td>
-                  <div class="pmap__connector pmap__connector--clickable"
-                       data-action="insert-step" :data-idx="model.steps.length" :title="t('insertHere')"
-                       @click="addStep(model.steps.length)">
-                    <span class="pmap__connector-arrow">&raquo;</span>
-                  </div>
-                </td>
-                <td></td>
-              </tr>
             </tbody>
-          </template>
-        </table>
+          </table>
+        </template>
 
-        <!-- Loop brackets (absolutely positioned next to measured step rows) -->
+        <!-- Loop brackets (temporarily disabled: LOOPS_ENABLED = false in process-map.js) -->
         <template x-for="(b, bi) in loopBrackets" :key="b.stepId">
           <div class="pmap__loop-bracket" :style="bracketStyle(b)">
             <span class="pmap__loop-bracket-arrow"></span>
           </div>
         </template>
 
-        <!-- Loop panels (absolutely positioned, measured post-render) -->
+        <!-- Loop panels (temporarily disabled: LOOPS_ENABLED = false in process-map.js) -->
         <template x-for="(p, pi) in loopPanels" :key="p.stepId">
           <div class="pmap__loop-panel" :data-step-id="p.stepId" :style="panelStyle(p)">
             <div class="pmap__loop-header">
@@ -298,6 +265,47 @@
           </div>
         </template>
       </div>
+    </div>
+  </div>
+
+  <!-- Picker form, mounted into the shared modal by _openSipocImport().
+       Hidden inside the module container via CSS; visible when borrowed into
+       the modal body. -->
+  <div x-ref="sipocForm" class="pmap__sipoc-form" :data-selected="_sipocSelectedId">
+    <p class="pmap__sipoc-hint" x-text="t('importFromSipocHint')"></p>
+    <div class="pmap__sipoc-list">
+      <template x-for="opt in _sipocOptions" :key="opt.instanceId">
+        <label class="pmap__sipoc-option"
+               :class="[
+                 opt.processCount === 0 ? 'pmap__sipoc-option--disabled' : '',
+                 _sipocSelectedId === opt.instanceId ? 'pmap__sipoc-option--selected' : '',
+               ]"
+               :data-sipoc-id="opt.instanceId"
+               @click.stop="_pickSipoc(opt)">
+          <input type="radio" name="pmap-sipoc-pick"
+                 :value="opt.instanceId"
+                 :checked="_sipocSelectedId === opt.instanceId"
+                 :disabled="opt.processCount === 0"
+                 @click.stop="_pickSipoc(opt)">
+          <div class="pmap__sipoc-option-body">
+            <div class="pmap__sipoc-option-header">
+              <span class="pmap__sipoc-option-label" x-text="opt.label"></span>
+              <span class="pmap__sipoc-option-count"
+                    x-text="opt.processCount === 0
+                              ? t('importFromSipocEmpty')
+                              : t('importFromSipocSteps').replace('{n}', opt.processCount)"></span>
+            </div>
+            <div class="pmap__sipoc-option-chips" x-show="opt.processPreview.length">
+              <template x-for="(chip, ci) in opt.processPreview" :key="ci">
+                <span class="pmap__sipoc-option-chip" x-text="chip"></span>
+              </template>
+              <span class="pmap__sipoc-option-chip pmap__sipoc-option-chip--more"
+                    x-show="opt.processCount > opt.processPreview.length"
+                    x-text="'+' + (opt.processCount - opt.processPreview.length)"></span>
+            </div>
+          </div>
+        </label>
+      </template>
     </div>
   </div>
 </div>

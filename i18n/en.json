@@ -1232,7 +1232,14 @@
       "loopTarget": "Back to",
       "loopSelectTarget": "Select target step…",
       "loopStepPlaceholder": "Loop step…",
-      "addLoopStep": "Add loop step"
+      "addLoopStep": "Add loop step",
+      "importFromSipoc": "Import from SIPOC",
+      "importFromSipocTitle": "Import process steps from SIPOC",
+      "importFromSipocHint": "Pick a SIPOC. Every entry in its P column will be appended as a process step.",
+      "importFromSipocEmpty": "empty",
+      "importFromSipocSteps": "{n} process step(s)",
+      "importFromSipocConfirm": "Import",
+      "importFromSipocDone": "Imported {n} step(s) from SIPOC"
     },
     "raci-matrix": {
       "name": "RACI Matrix",

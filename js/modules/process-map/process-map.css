@@ -3,47 +3,61 @@
    BEM: .pmap__ prefix
    ============================================================ */
 
-/* ===== Canvas ===== */
+/* ===== Canvas =====
+   Horizontal L→R flow: scroll along the process axis when many steps
+   are present. The vertical axis is intrinsic to each step (Inputs top,
+   Card middle, Outputs bottom) — no vertical scroll on the canvas. */
 .pmap__canvas {
   margin: 0 auto;
   padding: var(--spacing-md) var(--spacing-lg);
-  overflow: visible;
+  overflow-x: auto;
+  overflow-y: visible;
 }
 
-/* ===== Process Flow ===== */
+/* ===== Process Flow =====
+   Layout is a <table>: 3 rows (Inputs / Cards / Outputs) with one <td>
+   per step. Table-row cells share a common height across all columns,
+   which pins the graue Karte to the same Y across every step-row
+   regardless of how many inputs any single row has — the CSS-only
+   equivalent of subgrid, but with universal browser support. */
 .pmap__flow {
   position: relative;
+  min-width: min-content;
 }
 
-/* ===== Table Layout ===== */
 .pmap__table {
-  width: 100%;
+  border-collapse: separate;
+  /* 32 px horizontal gap between step columns — this is where the
+     connector arrows sit (absolute-positioned inside the card cells). */
+  border-spacing: 32px 0;
   table-layout: fixed;
-  border-collapse: collapse;
+  margin: 0;
 }
 
-.pmap__col-io {
-  width: 30%;
-}
+.pmap__row--inputs  .pmap__cell { vertical-align: bottom; }
+.pmap__row--cards   .pmap__cell { vertical-align: middle; }
+.pmap__row--outputs .pmap__cell { vertical-align: top; }
 
-.pmap__col-step {
-  width: 40%;
-}
-
-.pmap__cell-io {
-  vertical-align: top;
-  padding: 0 var(--spacing-sm);
-}
-
-.pmap__cell-step {
-  vertical-align: top;
-}
-
-.pmap__connector-row td {
+.pmap__cell {
+  width: 224px;
   padding: 0;
 }
 
-/* ===== Step Row ===== */
+.pmap__cell--io    { padding: 0; }
+
+/* Breathing room between the IO panels and the step card. The <tr> rows
+   share no vertical border-spacing, so without this the last input chip
+   (or the "Outputs" label) collides with the grey card edge. */
+.pmap__row--inputs  .pmap__cell--io { padding-bottom: var(--spacing-sm); }
+.pmap__row--outputs .pmap__cell--io { padding-top:    var(--spacing-sm); }
+
+.pmap__cell--step  {
+  position: relative;
+  padding: 0;
+}
+
+/* Compat alias — the POM and E2E specs target .pmap__step-row (which
+   is now the card cell). */
 .pmap__step-row--dragging .pmap__step-card {
   opacity: 0.45;
   transform: scale(0.97);
@@ -54,10 +68,25 @@
   box-shadow: 0 0 0 3px var(--color-pmap-step-accent-bg);
 }
 
-/* ===== IO Panels ===== */
+/* ===== IO Panels =====
+   In horizontal flow the two panels stack vertically inside the
+   step-row: --input above the card, --output below. Both keep the same
+   internal rhythm (label → list).
+
+   Row 1/3 tracks of the flow grid stretch to the tallest panel across
+   ALL steps (so the cards land on a shared baseline), which would leave
+   empty space between the label and the card in step-rows with no IO.
+   Pinning the panel content to the card edge (inputs bottom-aligned,
+   outputs top-aligned) makes label + chips hug the card in every row,
+   whether the row has items or just the label. */
 .pmap__io-panel {
-  padding-top: var(--spacing-xs);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
 }
+
+.pmap__io-panel--input  { justify-content: flex-end; }
+.pmap__io-panel--output { justify-content: flex-start; }
 
 .pmap__io-label {
   display: flex;
@@ -382,23 +411,35 @@
   padding: var(--spacing-sm) var(--spacing-md);
 }
 
-/* .field .field--ghost base — only the compact height is local. */
-.pmap__step-description {
+/* .field .field--ghost base — only the compact height is local. The
+   `textarea.…` selector beats the field base's `resize: vertical`. */
+textarea.pmap__step-description {
   min-height: 44px;
+  resize: none;
 }
 
-/* ===== Vertical Connector ===== */
+/* ===== Horizontal Connector =====
+   Absolute-positioned inside the card cell (.pmap__cell--step). The
+   arrow overflows into the table's horizontal border-spacing (32px),
+   which is the empty gap between step columns. Trailing connector on
+   every card, leading connector only on the first (via x-if). */
 .pmap__connector {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 32px;
+  height: 32px;
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 28px;
-  margin: var(--spacing-xs) 0;
+  z-index: 1;
 }
+
+.pmap__connector--trailing { right: -32px; }
+.pmap__connector--leading  { left:  -32px; }
 
 .pmap__connector-arrow {
   display: inline-block;
-  transform: rotate(90deg);
   color: var(--color-pmap-connector);
   font-size: 35px;
   line-height: 1;
@@ -417,7 +458,6 @@
 /* Replace arrow with + on hover */
 .pmap__connector--clickable:hover .pmap__connector-arrow {
   font-size: 0;
-  transform: none;
 }
 
 .pmap__connector--clickable:hover .pmap__connector-arrow::before {
@@ -428,19 +468,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 28px;
   line-height: 1;
-}
-
-.pmap__connector--empty {
-  height: 60px;
-  border: 2px dashed var(--color-border-primary);
-  border-radius: var(--border-radius);
-  background: var(--color-bg-secondary);
-}
-
-.pmap__connector--empty:hover {
-  border-color: var(--color-accent);
 }
 
 /* ===== Toolbar ===== */
@@ -635,9 +663,18 @@
   background: var(--color-pmap-loop-bg);
 }
 
-/* ===== Loop Panel ===== */
+/* ===== Loop Panel =====
+   Brackets/panels are visually suppressed while the map is horizontal
+   (LOOPS_ENABLED = false in process-map.js). The loop-toggle in the
+   step header still persists state; the visual layer returns in a
+   follow-up redesigned for horizontal rows. */
+.pmap__loop-bracket,
+.pmap__loop-panel {
+  display: none;
+}
+
 .pmap__canvas--has-loops {
-  padding-right: 320px;
+  padding-right: var(--spacing-lg);
 }
 
 .pmap__loop-panel {
@@ -833,4 +870,89 @@
 @keyframes pmap-fade-in {
   from { opacity: 0; transform: translateY(4px); }
   to { opacity: 1; transform: translateY(0); }
+}
+
+/* ===== SIPOC import picker (rendered inside the shared modal) =====
+   Hidden while the form node lives inside the module container; the shared
+   modal borrows the node into .modal__body which un-hides it. */
+.pmap__sipoc-form { display: none; }
+.modal__body .pmap__sipoc-form { display: block; }
+.pmap__sipoc-hint {
+  margin: 0 0 var(--spacing-md);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}
+.pmap__sipoc-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  max-height: 60vh;
+  overflow-y: auto;
+}
+.pmap__sipoc-option {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm) var(--spacing-md);
+  border: var(--border-width) solid var(--color-border-secondary);
+  border-radius: var(--border-radius-md);
+  cursor: pointer;
+  transition: border-color var(--transition-speed), background var(--transition-speed);
+}
+.pmap__sipoc-option:hover {
+  border-color: var(--color-border-primary);
+  background: var(--color-bg-secondary);
+}
+.pmap__sipoc-option--selected {
+  border-color: var(--color-accent);
+  background: var(--color-pmap-step-accent-bg);
+}
+.pmap__sipoc-option--disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.pmap__sipoc-option--disabled:hover {
+  border-color: var(--color-border-secondary);
+  background: transparent;
+}
+.pmap__sipoc-option input[type="radio"] {
+  margin-top: 3px;
+  flex-shrink: 0;
+}
+.pmap__sipoc-option-body { flex: 1; min-width: 0; }
+.pmap__sipoc-option-header {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--spacing-sm);
+  align-items: baseline;
+}
+.pmap__sipoc-option-label {
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+}
+.pmap__sipoc-option-count {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+}
+.pmap__sipoc-option-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: var(--spacing-xs);
+}
+.pmap__sipoc-option-chip {
+  font-size: var(--font-size-xs);
+  padding: 2px var(--spacing-sm);
+  border-radius: var(--border-radius-sm);
+  background: var(--color-bg-tertiary);
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 200px;
+}
+.pmap__sipoc-option-chip--more {
+  background: transparent;
+  color: var(--color-text-tertiary);
+  padding: 2px 0;
 }
