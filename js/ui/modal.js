@@ -78,12 +78,23 @@ export class Modal {
       confirmBtn.className = 'btn btn--primary modal__confirm';
       confirmBtn.textContent = confirmLabel;
 
+      // Guards against a late confirm()/cancel() firing after the dialog has
+      // already resolved (e.g. a caller holding on to `api` past close, or a
+      // stray footer-button click racing a programmatic close): the promise
+      // itself is settle-once by nature, but without this flag a second
+      // `runConfirm()` would still re-run `onConfirm`'s side effects even
+      // though `close()` would silently no-op.
+      let settled = false;
+
       const close = (result) => {
+        if (settled) return;
+        settled = true;
         this._close(overlay);
         resolve(result);
       };
 
       const runConfirm = () => {
+        if (settled) return;
         if (options.onConfirm && options.onConfirm(body) === false) return; // Veto
         close(true);
       };

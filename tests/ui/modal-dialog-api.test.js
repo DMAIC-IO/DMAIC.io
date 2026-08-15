@@ -69,4 +69,20 @@ suite('Modal options', () => {
     api.confirm();
     assertEqual(await p, true);
   });
+
+  test('confirm()/cancel() after the dialog resolved are no-ops', async () => {
+    const m = new Modal(i18n);
+    let api = null;
+    let calls = 0;
+    const p = m.form('T', document.createElement('div'), {
+      onMount: (_b, a) => { api = a; },
+      onConfirm: () => { calls += 1; },
+    });
+    api.confirm();
+    assertEqual(await p, true);
+    assertEqual(calls, 1, 'onConfirm ran exactly once');
+    api.confirm();
+    api.cancel();
+    assertEqual(calls, 1, 'a late confirm()/cancel() does not re-run onConfirm or re-resolve');
+  });
 });

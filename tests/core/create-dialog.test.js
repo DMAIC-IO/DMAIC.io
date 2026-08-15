@@ -153,4 +153,61 @@ suite('createDialog', () => {
     assertEqual(await result, 'xyz', 'submit() confirms and resolves model.result()');
     assertTrue(typeof api?.confirm === 'function' && typeof api?.cancel === 'function', 'api captured for later use');
   });
+
+  test('a throwing onMount resets _api instead of leaking into the next open()', async () => {
+    if (!document.getElementById('app-dialogs')) {
+      const host = document.createElement('div');
+      host.id = 'app-dialogs';
+      host.style.display = 'none';
+      document.body.append(host);
+    }
+    if (!Alpine.version) Alpine.start();
+
+    let tplEl = document.querySelector('template[data-tpl="js/dialogs/fake-throw-dialog/fake-throw-dialog.html"]');
+    if (!tplEl) {
+      tplEl = document.createElement('template');
+      tplEl.setAttribute('data-tpl', 'js/dialogs/fake-throw-dialog/fake-throw-dialog.html');
+      tplEl.innerHTML = '<div class="dlg-throw" x-data="fakeThrowDialog"></div>';
+      document.body.append(tplEl);
+    }
+
+    // Fake modal mirroring ui/modal.js form(): onMount runs synchronously
+    // inside the Promise executor, so a throwing onMount auto-rejects the
+    // promise per JS spec — no explicit try/catch needed here, same as the
+    // real modal.
+    const modal = {
+      form: (title, node, opts) => new Promise((resolve) => {
+        opts.onMount?.(node, {
+          confirm: () => { if (opts.onConfirm?.(node) === false) return; resolve(true); },
+          cancel: () => resolve(false),
+        });
+      }),
+    };
+
+    const dialog = createDialog({
+      id: 'fake-throw-dialog',
+      i18nKey: 'fake',
+      titleKey: 'title',
+      Model: FakeModel,
+      ctx: { i18n, eventBus },
+    });
+
+    let threw = false;
+    try {
+      await dialog.open(modal, { selected: 'boom' }, {
+        onMount: () => { throw new Error('boom'); },
+      });
+    } catch {
+      threw = true;
+    }
+    assertTrue(threw, 'the onMount throw propagates to the caller of open()');
+
+    // The failed open() above must not leave a stale `_api` behind: a fresh
+    // open() + submit() has to work normally, not silently confirm/no-op
+    // against the dead dialog from the throw.
+    const result = dialog.open(modal, { selected: 'ok' });
+    await new Promise((r) => setTimeout(r, 0));
+    dialog.submit();
+    assertEqual(await result, 'ok', 'submit() still confirms correctly after a prior onMount throw');
+  });
 });
