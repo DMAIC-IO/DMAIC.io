@@ -135,6 +135,7 @@
     "pickerIntro": "Which improvement or development cycle fits your project? You can change the cycle later.",
     "emptyProject": "Empty project",
     "startTitle": "How do you want to start?",
+    "scenariosTitle": "Example scenarios",
     "createEmpty": "Create empty project",
     "loadScenario": "Load scenario",
     "switchAction": "Change cycle",

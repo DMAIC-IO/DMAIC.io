@@ -51,6 +51,10 @@
               x-text="createEmptyLabel" @click="createEmpty()"></button>
     </div>
 
+    <template x-if="model.hasScenarios">
+      <span class="cycle-picker__scenarios-title" x-text="scenariosLabel"></span>
+    </template>
+
     <template x-for="s in model.scenarioOptions" :key="s.id">
       <div class="cycle-picker__start cycle-picker__start--scenario" :data-scenario="s.id">
         <span class="cycle-picker__start-name" x-text="s.title"></span>

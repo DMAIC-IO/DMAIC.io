@@ -33,6 +33,7 @@ export function buildCyclePickerDialog(ctx) {
       // Step-2 heading: the section now covers BOTH the empty project and the
       // scenarios, hence `startTitle` rather than the old scenario-only key.
       startLabel: t('startTitle'),
+      scenariosLabel: t('scenariosTitle'),
       emptyLabel: t('emptyProject'),
       createEmptyLabel: t('createEmpty'),
       loadLabel: t('loadScenario'),

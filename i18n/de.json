@@ -135,6 +135,7 @@
     "pickerIntro": "Welcher Verbesserungs- oder Entwicklungszyklus passt zu deinem Projekt? Du kannst den Zyklus später noch wechseln.",
     "emptyProject": "Leeres Projekt",
     "startTitle": "Wie möchtest du starten?",
+    "scenariosTitle": "Beispielszenarien",
     "createEmpty": "Leeres Projekt erstellen",
     "loadScenario": "Szenario laden",
     "switchAction": "Zyklus wechseln",

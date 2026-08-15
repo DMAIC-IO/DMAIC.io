@@ -412,6 +412,20 @@ html.is-nightly body {
   letter-spacing: 0.02em;
 }
 
+/* Separator heading between the empty-project row and the scenario rows.
+   Only rendered when scenarios exist (model.hasScenarios) — cycles without
+   scenarios (DMADV, 8D) show no heading over an empty list. */
+.cycle-picker__scenarios-title {
+  display: block;
+  padding-top: var(--spacing-sm);
+  border-top: 1px solid var(--color-border-secondary);
+  font-weight: 600;
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
 /* Step 2 rows: the empty project first, then one row per scenario. */
 .cycle-picker__start {
   display: grid;
