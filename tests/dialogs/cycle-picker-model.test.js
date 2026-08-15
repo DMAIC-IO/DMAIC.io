@@ -60,6 +60,26 @@ suite('createScenarioModel', () => {
     assertTrue(!withoutScenarios.hasScenarios);
   });
 
+  test('hasScenarios ignores a synthetic empty-project entry from the producer', () => {
+    // cycle-picker.js's buildScenarioOptionsFor still prepends a
+    // { id: '', title: emptyProject } entry today (Task 6 removes it).
+    // hasScenarios must stay correct against BOTH shapes: today's producer
+    // (synthetic entry present) and Task 6's future one (absent).
+    const optionsWithSynthetic = (cycleId) => [
+      { id: '', title: 'Empty project', description: '' },
+      ...(cycleId === 'dmaic' ? [{ id: 's1', title: 'Scenario 1', description: 'd1' }] : []),
+    ];
+    const ScenarioModel = createScenarioModel(optionsWithSynthetic);
+
+    const onlySynthetic = new ScenarioModel().apply({ cycles, preselected: 'dmadv', allowScenarios: true });
+    assertEqual(onlySynthetic.scenarioOptions.length, 1, 'synthetic entry alone is still in the list');
+    assertTrue(!onlySynthetic.hasScenarios, 'the synthetic entry is not a real scenario');
+
+    const withReal = new ScenarioModel().apply({ cycles, preselected: 'dmaic', allowScenarios: true });
+    assertEqual(withReal.scenarioOptions.length, 2);
+    assertTrue(withReal.hasScenarios, 'a real scenario alongside the synthetic entry still counts');
+  });
+
   test('selectCycle() switches cycle, resets scenarioId, refills scenarioOptions', () => {
     const ScenarioModel = createScenarioModel(fakeOptionsFor);
     const m = new ScenarioModel().apply({ cycles, preselected: 'dmaic', allowScenarios: true });

@@ -110,8 +110,15 @@ export function createScenarioModel(scenarioOptionsFor) {
      */
     pickScenario(id) { this.scenarioId = id || ''; }
 
-    /** @returns {boolean} true once at least one real scenario exists */
-    get hasScenarios() { return this.scenarioOptions.length > 0; }
+    /**
+     * @returns {boolean} true once at least one REAL scenario exists.
+     * Deliberately ignores entries with an empty id: today's producer
+     * (`cycle-picker.js`'s `buildScenarioOptionsFor`) still prepends a
+     * synthetic `{ id: '', title: emptyProject }` row, which is not a
+     * scenario to submit but the step-2 "empty project" affordance. This
+     * predicate stays correct once that synthetic entry is removed too.
+     */
+    get hasScenarios() { return this.scenarioOptions.some((o) => o.id); }
 
     /** @returns {{cycleId: string, scenarioId: string|null, projectName: string|null}} */
     result() {
