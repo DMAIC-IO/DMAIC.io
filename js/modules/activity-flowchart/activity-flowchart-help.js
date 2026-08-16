@@ -54,13 +54,13 @@ export default {
       de: {
         title: 'Rework-Loops',
         blocks: [
-          { type: 'paragraph', content: 'Zeigt eine Entscheidung auf einen früheren statt auf den nächsten Schritt, entsteht ein Nacharbeits-Bogen (Rework-Loop) — visuell durch einen Bogen über die betroffenen Schritte gekennzeichnet. Jede Schleife braucht einen erreichbaren Ausgang, sonst bleibt der Prozess in der Analyse hängen; ein Ziel „Prozessende" auf mindestens einem Zweig verhindert das.' },
+          { type: 'paragraph', content: 'Zeigt eine Entscheidung auf einen früheren statt auf den nächsten Schritt, entsteht ein Nacharbeits-Bogen (Rework-Loop) — das Ziel ist am Yes/No-Label sichtbar (Titel des Ziel-Schritts). Ein visueller Bogen über die betroffenen Schritte ist noch nicht gerendert; das folgt in einem späteren Task. Jede Schleife braucht einen erreichbaren Ausgang, sonst bleibt der Prozess in der Analyse hängen; ein Ziel „Prozessende" auf mindestens einem Zweig verhindert das.' },
         ],
       },
       en: {
         title: 'Rework loops',
         blocks: [
-          { type: 'paragraph', content: 'When a decision points back to an earlier step instead of the next one, a rework loop appears — shown visually as an arc spanning the affected steps. Every loop needs a reachable exit, otherwise the process gets stuck in the analysis; setting "process end" on at least one branch prevents that.' },
+          { type: 'paragraph', content: 'When a decision points back to an earlier step instead of the next one, a rework loop appears — the target is visible on the Yes/No label (the target step\'s title). A visual arc spanning the affected steps is not rendered yet; that follows in a later task. Every loop needs a reachable exit, otherwise the process gets stuck in the analysis; setting "process end" on at least one branch prevents that.' },
         ],
       },
     },

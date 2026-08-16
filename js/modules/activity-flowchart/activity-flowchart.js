@@ -77,6 +77,10 @@ export default createModule({
       isBranchOpen(stepId, branch) {
         return this._openBranchStepId === stepId && this._openBranch === branch;
       },
+      /** Steps excluding the given one — used by branch-popover to list jump targets. */
+      otherSteps(stepId) {
+        return this.model.steps.filter((s) => s.id !== stepId);
+      },
       toggleBranchMenu(stepId, branch) {
         if (this.isBranchOpen(stepId, branch)) {
           this._openBranchStepId = null; this._openBranch = null;

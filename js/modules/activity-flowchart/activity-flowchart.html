@@ -65,7 +65,7 @@
                             x-text="t('next')"></button>
                     <button @click="pickBranchTarget(step.id, _openBranch, 'end')"
                             x-text="t('end')"></button>
-                    <template x-for="s in model.steps.filter((s) => s.id !== step.id)" :key="s.id">
+                    <template x-for="s in otherSteps(step.id)" :key="s.id">
                       <button @click="pickBranchTarget(step.id, _openBranch, s.id)"
                               x-text="s.title || t('unnamedStep')"></button>
                     </template>
