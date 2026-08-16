@@ -118,4 +118,56 @@ export class FlowchartState {
     this.steps.splice(ti, 0, moved);
     return true;
   }
+
+  /**
+   * Add a substep to a parent step. seed is normalized via normalizeSubstep.
+   * @param {string} parentId
+   * @param {object} [seed]
+   * @returns {object|null} inserted substep, or null if parent not found
+   */
+  addSubstep(parentId, seed = {}) {
+    const p = this.steps.find((s) => s.id === parentId);
+    if (!p) return null;
+    const ss = normalizeSubstep(seed);
+    if (!Array.isArray(p.substeps)) p.substeps = [];
+    p.substeps.push(ss);
+    return ss;
+  }
+
+  /**
+   * Remove a substep from a parent step by id.
+   * @param {string} parentId
+   * @param {string} substepId
+   * @returns {boolean} true if removed
+   */
+  removeSubstep(parentId, substepId) {
+    const p = this.steps.find((s) => s.id === parentId);
+    if (!p || !Array.isArray(p.substeps)) return false;
+    const i = p.substeps.findIndex((x) => x.id === substepId);
+    if (i === -1) return false;
+    p.substeps.splice(i, 1);
+    return true;
+  }
+
+  /**
+   * Move a substep from one position to another within the same parent.
+   * Mirrors moveStep's semantics: the moved substep lands in toId's
+   * original slot (siblings between shift to fill the gap).
+   * @param {string} parentId
+   * @param {string} fromId
+   * @param {string} toId
+   * @returns {boolean} true if moved
+   */
+  moveSubstep(parentId, fromId, toId) {
+    if (fromId === toId) return false;
+    const p = this.steps.find((s) => s.id === parentId);
+    if (!p || !Array.isArray(p.substeps)) return false;
+    const fi = p.substeps.findIndex((x) => x.id === fromId);
+    const ti = p.substeps.findIndex((x) => x.id === toId);
+    if (fi === -1 || ti === -1) return false;
+    const [moved] = p.substeps.splice(fi, 1);
+    // Insert at the original target position (after removal, ti indices stay valid)
+    p.substeps.splice(ti, 0, moved);
+    return true;
+  }
 }

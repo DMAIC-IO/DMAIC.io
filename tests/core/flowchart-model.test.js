@@ -166,3 +166,37 @@ suite('FlowchartState — chain CRUD', () => {
     assertEqual(s.moveStep('nope', 'nada'), false);
   });
 });
+
+suite('FlowchartState — substep CRUD', () => {
+  test('addSubstep appends and returns the new substep', () => {
+    const s = new FlowchartState();
+    const p = s.addStep();
+    const ss = s.addSubstep(p.id, { title: 'sub1' });
+    assertEqual(p.substeps.length, 1);
+    assertEqual(p.substeps[0].id, ss.id);
+    assertEqual(ss.title, 'sub1');
+  });
+
+  test('addSubstep with unknown parent returns null', () => {
+    const s = new FlowchartState();
+    assertEqual(s.addSubstep('nope'), null);
+  });
+
+  test('removeSubstep removes and returns true', () => {
+    const s = new FlowchartState();
+    const p = s.addStep();
+    const ss = s.addSubstep(p.id);
+    assertEqual(s.removeSubstep(p.id, ss.id), true);
+    assertEqual(p.substeps.length, 0);
+  });
+
+  test('moveSubstep reorders within parent', () => {
+    const s = new FlowchartState();
+    const p = s.addStep();
+    const a = s.addSubstep(p.id, { title: 'A' });
+    const b = s.addSubstep(p.id, { title: 'B' });
+    const c = s.addSubstep(p.id, { title: 'C' });
+    s.moveSubstep(p.id, a.id, c.id);
+    assertEqual(p.substeps.map((x) => x.title).join(','), 'B,C,A');
+  });
+});
