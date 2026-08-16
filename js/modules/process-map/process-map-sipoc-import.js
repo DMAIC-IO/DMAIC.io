@@ -9,7 +9,19 @@
  * Kept isolated from the process-map data-fn so it can be unit-tested without
  * Alpine, DOM, or the state-manager itself (a stub with { get, getModuleState }
  * suffices).
+ *
+ * Also registers PM's SIPOC→PM step mapper with the generic flowchart-import
+ * registry (`core/flowchart/flowchart-import.js`), so any generic import
+ * picker built on that registry can offer "import from SIPOC" for
+ * process-map targets. This is a side effect of importing this module — see
+ * `registerSourceMapper(...)` below. The two functions above remain the
+ * concrete implementation actually driving PM's own modal-picker UI (see
+ * `process-map.js` `_openSipocImport`/`_runSipocImport`): the UI's option rows
+ * need the richer `{ label, processCount, processPreview }` shape produced
+ * here, which the generic registry's instance listing does not provide.
  */
+
+import { registerSourceMapper } from '../../core/flowchart/flowchart-import.js';
 
 const PREVIEW_MAX = 4;
 
@@ -67,3 +79,18 @@ export function appendSipocProcess(model, sipocState) {
   }
   return titles.length;
 }
+
+/**
+ * Map a SIPOC instance's persisted state to seed steps for the generic
+ * flowchart-import registry (one seed per non-empty process-column entry).
+ * @param {any} sipocState  { columns: { process: string[] } }
+ * @returns {Array<{ title: string }>}
+ */
+function sipocToPmSteps(sipocState) {
+  return cleanStrings(sipocState?.columns?.process).map((title) => ({ title }));
+}
+
+registerSourceMapper('process-map', 'sipoc', sipocToPmSteps);
+
+/** Exposed for internal tests of the mapper in isolation. */
+export const __sipocMapper = sipocToPmSteps;
