@@ -16,9 +16,11 @@
   font-size: var(--font-size-sm);
   padding: var(--spacing-md) 0;
 }
+/* Top-aligned: cards differ in height (description, substeps) and must still
+   line up along their headers. */
 .af__flow {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: var(--spacing-sm);
 }
 /* Connector and card sit side by side, so a chain reads left-to-right like
@@ -27,7 +29,7 @@
   position: relative;
   flex: 0 0 auto;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: var(--spacing-sm);
 }
 
@@ -49,12 +51,9 @@
    Surface, header, number badge, title and delete button come from the
    shared `.fc-*` base in js/core/flowchart/flowchart.css — only the
    module-specific sizing lives here. */
-.af__card { min-width: 160px; }
-.af__step-title {
-  min-height: 2.5em;
-  resize: none;
-  overflow: hidden;
-}
+.af__card { min-width: 220px; }
+/* Height/line-box come from textarea.fc-card__title; nothing module-specific
+   left to say about the title itself. */
 
 /* ── Decision diamond ───────────────────────────────────────────────── */
 .af__diamond {

@@ -1,0 +1,60 @@
+<!--
+  D.Mike — Flowchart Chain-Core: substeps block (substeps.part.html)
+
+  Shared markup for the substep disclosure bar and its list. Module templates
+  pull it in with an `@include js/core/flowchart/substeps.part.html` directive
+  in an HTML comment; tools/build-templates/build.mjs inlines it at build time.
+  Alpine CSP has no partial mechanism of its own, so this is how the four
+  modules share one block instead of four copies that drift.
+
+  NOTE: never write a literal comment-close marker inside this header — it
+  would end the comment early and the rest would render as visible text.
+
+  Expects in scope, all provided by chainViewMixin + FlowchartState:
+    step, idx            — the current step and its chain index
+    substepsBarLabel()   — "Detail-Schritte (2)"
+    substepNum()         — "2.3"
+    toggleSubsteps() / addSubstep() / removeSubstep()
+    armSubDrag() / subDrag*() / subDrop()
+    t()                  — module-scoped i18n
+-->
+<div class="fc-substeps-bar" :class="step.substeps.length > 0 ? 'fc-substeps-bar--has' : ''"
+     data-action="toggle-substeps" :data-step-id="step.id"
+     @click.stop="toggleSubsteps(step.id)">
+  <span class="fc-substeps-bar-icon">
+    <svg x-show="step.expanded" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+    <svg x-show="!step.expanded" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+  </span>
+  <span class="fc-substeps-bar-label" x-text="substepsBarLabel(step)"></span>
+</div>
+<template x-if="step.expanded">
+  <div class="fc-substeps" :data-step-id="step.id">
+    <div class="fc-substeps-list">
+      <template x-for="(sub, subIdx) in step.substeps" :key="sub.id">
+        <div class="fc-substep-item" :data-substep-id="sub.id" :data-parent-id="step.id"
+             @dragstart="subDragStart(step.id, sub.id, $event)"
+             @dragend="subDragEnd($event)"
+             @dragover="subDragOver(step.id, sub.id, $event)"
+             @dragleave="subDragLeave(sub.id, $event)"
+             @drop="subDrop(step.id, sub.id, $event)">
+          <span class="fc-substep-number" x-text="substepNum(idx, subIdx)"
+                @mousedown="armSubDrag($event)"></span>
+          <input class="fc-substep-title" type="text" :placeholder="t('substepPlaceholder')"
+                 :data-substep-id="sub.id" :data-parent-id="step.id"
+                 x-model="sub.title">
+          <button class="fc-substep-remove" data-action="remove-substep"
+                  :data-parent-id="step.id" :data-substep-id="sub.id"
+                  :title="t('common.delete')"
+                  @click.stop="removeSubstep(step.id, sub.id)">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </div>
+      </template>
+    </div>
+    <button class="fc-substep-add" data-action="add-substep" :data-step-id="step.id"
+            :title="t('addSubstep')" @click.stop="addSubstep(step.id)">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      <span x-text="t('addSubstep')"></span>
+    </button>
+  </div>
+</template>

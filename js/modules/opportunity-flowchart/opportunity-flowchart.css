@@ -44,6 +44,9 @@
   grid-template-columns: 1fr 1fr;
   gap: var(--spacing-md);
   padding: var(--spacing-xs) 0;
+  /* Top-aligned: a card grown by its description or substeps must not
+     stretch or re-centre the opposite (empty) cell. */
+  align-items: start;
 }
 .of__cell { min-height: var(--spacing-lg); }
 
@@ -57,20 +60,19 @@
    `.fc-*` base in js/core/flowchart/flowchart.css. Only the column accent
    and the centre-line alignment are module-specific. */
 .of__card { max-width: 480px; }
-.of__card--va  { border-left: 4px solid var(--color-success); }
-.of__card--nva { border-left: 4px solid var(--color-error); }
+/* The stripe itself is `.fc-card--accent`; only the colour is ours. */
+.of__card--va  { --fc-card-accent: var(--color-success); }
+.of__card--nva { --fc-card-accent: var(--color-error); }
 /* Pull the VA cards towards the centre line so the chain reads as one column
    of alternating sides rather than two far-apart lists. */
 .of__cell--va .of__card { margin-left: auto; }
-.of__step-title {
-  width: 100%;
-  min-height: 2.5em;
-  resize: none;
-  overflow: hidden;
-}
+/* Height/line-box come from textarea.fc-card__title. */
 .of__side-toggle:hover { color: var(--color-accent); background: transparent; }
 
 /* ── Connector + insert menu (spans both columns) ───────────────────── */
+/* Opportunity inserts BETWEEN rows rather than beside cards, so its connector
+   is a full-width row of its own; the arrow itself is the shared
+   `.fc-connector`, so it reads identically to the other modules. */
 .of__connector {
   grid-column: 1 / -1;
   position: relative;

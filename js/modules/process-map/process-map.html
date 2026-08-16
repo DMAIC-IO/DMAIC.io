@@ -76,7 +76,7 @@
                       </div>
                     </template>
 
-                    <div class="pmap__step-card fc-card">
+                    <div class="pmap__step-card fc-card" :class="cardAccentClass(step)">
                       <div class="pmap__step-header fc-card__header">
                         <span class="pmap__step-number fc-step-number" x-text="stepNum(idx)"
                               @mousedown="armStepDrag(step.id, $event)"></span>
@@ -105,49 +105,10 @@
                       <div class="pmap__step-body fc-card__body">
                         <textarea class="field field--ghost pmap__step-description fc-card__description" :placeholder="t('descriptionPlaceholder')"
                                   data-field="description" :data-step-id="step.id"
-                                  x-model="step.description"></textarea>
+                                  x-model="step.description"
+                                  @input="autoSize($event)"></textarea>
                       </div>
-                      <div class="pmap__substeps-bar" :class="substepsBarClass(step)"
-                           data-action="toggle-substeps" :data-step-id="step.id"
-                           @click.stop="toggleSubsteps(step.id)">
-                        <span class="pmap__substeps-bar-icon">
-                          <svg x-show="step.expanded" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
-                          <svg x-show="!step.expanded" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
-                        </span>
-                        <span class="pmap__substeps-bar-label" x-text="substepsBarLabel(step)"></span>
-                      </div>
-                      <template x-if="step.expanded">
-                        <div class="pmap__substeps" :data-step-id="step.id">
-                          <div class="pmap__substeps-list">
-                            <template x-for="(sub, subIdx) in step.substeps" :key="sub.id">
-                              <div class="pmap__substep-item"
-                                   :data-substep-id="sub.id" :data-parent-id="step.id"
-                                   @dragstart="subDragStart(step.id, sub.id, $event)"
-                                   @dragend="subDragEnd($event)"
-                                   @dragover="subDragOver(step.id, sub.id, $event)"
-                                   @dragleave="subDragLeave(sub.id, $event)"
-                                   @drop="subDrop(step.id, sub.id, $event)">
-                                <span class="pmap__substep-number" x-text="substepNum(idx, subIdx)"
-                                      @mousedown="armSubDrag($event)"></span>
-                                <input class="pmap__substep-title" type="text" :placeholder="t('substepPlaceholder')"
-                                       :data-substep-id="sub.id" :data-parent-id="step.id"
-                                       x-model="sub.title">
-                                <button class="pmap__substep-remove" data-action="remove-substep"
-                                        :data-parent-id="step.id" :data-substep-id="sub.id"
-                                        :title="t('common.delete')"
-                                        @click.stop="removeSubstep(step.id, sub.id)">
-                                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                                </button>
-                              </div>
-                            </template>
-                          </div>
-                          <button class="pmap__substep-add" data-action="add-substep" :data-step-id="step.id"
-                                  :title="t('addSubstep')" @click.stop="addSubstep(step.id)">
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                            <span x-text="t('addSubstep')"></span>
-                          </button>
-                        </div>
-                      </template>
+                      <!-- @include js/core/flowchart/substeps.part.html -->
                     </div>
 
                     <!-- Trailing connector (after every step, sits in the

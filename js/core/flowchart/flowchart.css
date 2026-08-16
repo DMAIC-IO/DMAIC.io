@@ -31,10 +31,23 @@
   box-shadow: var(--shadow-md);
 }
 
+/* Opt-in status stripe down the card's leading edge. The module supplies the
+   colour through --fc-card-accent, so the mechanism is shared while the
+   meaning stays module-specific: Opportunity paints value-added vs rework,
+   Process Map paints its three value types. A card without the class, or
+   without the property set, is unchanged. */
+.fc-card--accent {
+  border-left: 4px solid var(--fc-card-accent, var(--color-border-secondary));
+}
+
 /* ── Card header (number badge · title · actions) ───────────────────── */
+/* Top-aligned, not centred: a title that wraps to two lines would otherwise
+   push its own text above the number badge (the badge centres on the whole
+   field, the text starts at its first line). Aligning both to the top keeps
+   the badge on the title's FIRST line whatever the title's height. */
 .fc-card__header {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: var(--spacing-sm);
   padding: var(--spacing-sm) var(--spacing-md);
   border-bottom: var(--border-width) solid var(--color-border-secondary);
@@ -65,6 +78,22 @@
   font-weight: var(--font-weight-semibold);
   outline: none;
   min-width: 0;
+}
+
+/* Modules that use a <textarea> for the title (so it can wrap) must still
+   render on the same line box as the number badge next to it. A textarea is
+   an inline-block with its own padding and a baseline of its own, so without
+   this it starts taller than one line and the text reads as shifted up
+   against the badge — Process Map's <input> title never had that problem.
+   chainViewMixin auto-sizes it, so one line is the floor, not the cap. */
+textarea.fc-card__title {
+  display: block;
+  padding: 0;
+  margin: 0;
+  line-height: 1.4;
+  min-height: 1.4em;
+  resize: none;
+  overflow: hidden;
 }
 
 .fc-card__title::placeholder { color: var(--color-text-tertiary); }
@@ -106,9 +135,13 @@
 /* ── Card body ──────────────────────────────────────────────────────── */
 .fc-card__body { padding: var(--spacing-sm) var(--spacing-md); }
 
-/* The `textarea.` prefix beats the .field base's `resize: vertical`. */
+/* The `textarea.` prefix beats the .field base's `resize: vertical`.
+   `min-height` is only the empty-state floor — chainViewMixin auto-sizes the
+   field to its content (on input and on mount), so the body is always exactly
+   as tall as its text and never hides that more of it follows. */
 textarea.fc-card__description {
   min-height: 44px;
+  height: auto;
   resize: none;
   overflow: hidden;
 }
@@ -152,6 +185,12 @@ textarea.fc-card__description {
   line-height: 1;
 }
 
+/* Cards are top-aligned and differ in height, so a connector centred on the
+   card would sit at a different height in every module — and beside every
+   card. It lines up with the card HEADER instead, the one row every card
+   shares (header ≈ 40px, connector 32px → 4px offset). */
+.fc-connector--header-aligned { margin-top: 4px; }
+
 .fc-connector--clickable {
   cursor: pointer;
   border-radius: var(--border-radius);
@@ -173,4 +212,146 @@ textarea.fc-card__description {
   align-items: center;
   justify-content: center;
   line-height: 1;
+}
+
+/* ── Substeps ───────────────────────────────────────────────────────────
+   Disclosure bar plus the collapsible list inside a step card. Markup lives
+   in substeps.part.html and is inlined into every module template at build
+   time; the model has always carried `substeps`/`expanded`, so all four
+   flowcharts share one implementation. Values lifted verbatim from Process
+   Map, which shipped this UI first. */
+.fc-substeps-bar {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-xs) var(--spacing-md);
+  border-top: var(--border-width) solid var(--color-border-secondary);
+  cursor: pointer;
+  user-select: none;
+  transition: background var(--transition-speed);
+}
+
+.fc-substeps-bar:hover { background: var(--color-bg-tertiary); }
+
+.fc-substeps-bar-icon {
+  display: flex;
+  align-items: center;
+  color: var(--color-text-tertiary);
+  transition: color var(--transition-speed);
+}
+
+.fc-substeps-bar-label {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: var(--color-text-tertiary);
+}
+
+/* A step that already has substeps advertises them in the accent colour. */
+.fc-substeps-bar--has .fc-substeps-bar-icon,
+.fc-substeps-bar--has .fc-substeps-bar-label {
+  color: var(--color-accent);
+}
+
+.fc-substeps {
+  padding: var(--spacing-sm) var(--spacing-md);
+  background: var(--color-bg-tertiary);
+  border-radius: 0 0 var(--border-radius-lg) var(--border-radius-lg);
+  animation: fc-fade-in 0.2s ease;
+}
+
+.fc-substeps-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.fc-substep-item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--border-radius-sm);
+  background: var(--color-bg-secondary);
+  transition: background var(--transition-speed);
+}
+
+.fc-substep-item:hover { background: var(--color-bg-primary); }
+.fc-substep-item.is-dragging { opacity: 0.4; }
+.fc-substep-item.is-drop-target { box-shadow: 0 -2px 0 0 var(--color-accent); }
+
+.fc-substep-number {
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-xs);
+  color: var(--color-accent);
+  background: var(--color-flowchart-step-accent-bg);
+  padding: 1px var(--spacing-xs);
+  border-radius: var(--border-radius-sm);
+  flex-shrink: 0;
+  white-space: nowrap;
+  cursor: grab;
+}
+
+.fc-substep-number:active { cursor: grabbing; }
+
+.fc-substep-title {
+  flex: 1;
+  background: none;
+  border: none;
+  color: var(--color-text-primary);
+  font-family: var(--font-family);
+  font-size: var(--font-size-sm);
+  outline: none;
+  min-width: 0;
+}
+
+.fc-substep-title::placeholder { color: var(--color-text-tertiary); }
+
+.fc-substep-remove {
+  background: none;
+  border: none;
+  color: var(--color-text-tertiary);
+  cursor: pointer;
+  padding: 2px;
+  display: flex;
+  border-radius: var(--border-radius-sm);
+  opacity: 0;
+  transition: all var(--transition-speed);
+  flex-shrink: 0;
+}
+
+.fc-substep-item:hover .fc-substep-remove { opacity: 1; }
+
+.fc-substep-remove:hover {
+  color: var(--color-error);
+  background: rgb(255 59 48 / 10%);
+}
+
+.fc-substep-add {
+  width: 100%;
+  margin-top: var(--spacing-xs);
+  padding: var(--spacing-xs) 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-xs);
+  border: none;
+  border-radius: var(--border-radius-sm);
+  background: transparent;
+  color: var(--color-text-tertiary);
+  font-family: var(--font-family);
+  font-size: var(--font-size-xs);
+  cursor: pointer;
+  transition: all var(--transition-speed);
+}
+
+.fc-substep-add:hover {
+  color: var(--color-accent);
+  background: var(--color-flowchart-step-accent-bg);
+}
+
+@keyframes fc-fade-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
 }

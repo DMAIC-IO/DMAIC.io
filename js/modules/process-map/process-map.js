@@ -59,7 +59,7 @@ export default createModule({
     const _core = chainViewMixin(module, _t, {
       autoSizeSelector: 'textarea.pmap__io-name, textarea.pmap__title, textarea.pmap__step-title, textarea.pmap__loop-step-title',
       dragRowSelector: '.pmap__step-row',
-      substepItemSelector: '.pmap__substep-item',
+      substepItemSelector: '.fc-substep-item',
     });
     return {
       ..._core,
@@ -115,6 +115,18 @@ export default createModule({
           : 'pmap__value-badge--none';
       },
 
+      /**
+       * Status stripe down the card's leading edge (shared `.fc-card--accent`,
+       * see js/core/flowchart/flowchart.css). Unclassified steps get no
+       * stripe, so the colour reads as a deliberate judgement rather than a
+       * default.
+       * @param {object} step
+       * @returns {string}
+       */
+      cardAccentClass(step) {
+        return step.valueType ? `fc-card--accent pmap__step-card--${step.valueType}` : '';
+      },
+
       // ── Input-type badge ──────────────────────────────────────
       inputTypeLabel(io) {
         if (!io.inputType) return '?';
@@ -130,9 +142,6 @@ export default createModule({
       },
 
       // ── Misc view transforms ──────────────────────────────────
-      substepsBarClass(step) {
-        return (step.substeps && step.substeps.length > 0) ? 'pmap__substeps-bar--has' : '';
-      },
       loopToggleClass(step) {
         return step.loop ? 'pmap__step-loop-toggle--active' : '';
       },
@@ -264,13 +273,11 @@ export default createModule({
       _clearDragMarkers() {
         const sel = '.pmap__step-row--dragging, .pmap__step-row--drag-over, '
           + '.pmap__io-item--dragging, .pmap__io-item--drag-over, '
-          + '.pmap__substep-item--dragging, .pmap__substep-item--drag-over, '
-          + '.pmap__substep-item.is-dragging, .pmap__substep-item.is-drop-target';
+          + '.fc-substep-item.is-dragging, .fc-substep-item.is-drop-target';
         requestAnimationFrame(() => requestAnimationFrame(() => {
           document.querySelectorAll(sel).forEach((el) => el.classList.remove(
             'pmap__step-row--dragging', 'pmap__step-row--drag-over',
             'pmap__io-item--dragging', 'pmap__io-item--drag-over',
-            'pmap__substep-item--dragging', 'pmap__substep-item--drag-over',
             'is-dragging', 'is-drop-target',
           ));
         }));

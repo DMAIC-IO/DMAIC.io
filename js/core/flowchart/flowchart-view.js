@@ -19,8 +19,17 @@
  * }} [opts]
  * @returns {object} data()-mixin with transient drag state and handlers
  */
+/**
+ * Fields every flowchart card has. They are ALWAYS auto-sized, on top of
+ * whatever a module adds via `opts.autoSizeSelector`: a card body must show
+ * its whole text, otherwise a long description is silently clipped and the
+ * reader has no cue that more is there.
+ */
+const CORE_AUTOSIZE = 'textarea.fc-card__title, textarea.fc-card__description';
+
 export function chainViewMixin(module, _t, opts = {}) {
-  const autoSizeSelector = opts.autoSizeSelector || 'textarea[data-autosize]';
+  const autoSizeSelector = [CORE_AUTOSIZE, opts.autoSizeSelector]
+    .filter(Boolean).join(', ');
   const dragRowSelector = opts.dragRowSelector || '[data-step-id]';
   const substepItemSelector = opts.substepItemSelector || '[data-substep-id]';
 

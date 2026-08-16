@@ -333,7 +333,18 @@ export class DmaicTiles {
    * @returns {Array<object|{divider:string}>}
    */
   _groupModules(modules) {
-    const GROUP_ORDER = ['collect', 'process', 'visualize', 'charts', 'plan', 'evaluate', 'optimize'];
+    // Order of the divider sections inside a phase dropdown. Only the groups
+    // present in the current phase show up, so one flat list covers all phases.
+    // `flowcharts` and `causes` are shared across phases (Measure/Analyze and
+    // Define/Analyze) — their slot here fixes the order in every phase at once.
+    const GROUP_ORDER = [
+      'collect', 'process', 'visualize',       // Daten
+      'scope', 'customer', 'team',             // Define
+      'causes', 'flowcharts', 'statistics',    // Define / Measure / Analyze
+      'msa', 'capability',                     // Measure
+      'plan', 'evaluate', 'optimize',          // Improve
+      'charts',                                // Control
+    ];
     const hasGroups = modules.some(m => m.group);
     if (!hasGroups) return modules;
 

@@ -80,7 +80,7 @@
   display: grid;
   grid-template-columns: 140px 1fr;
   gap: var(--spacing-md);
-  align-items: center;
+  align-items: start;
   padding: var(--spacing-md) var(--spacing-xs);
   border-bottom: 1px dashed var(--color-border-primary);
   min-height: 72px;
@@ -93,7 +93,8 @@
 }
 .df__band-flow {
   display: flex;
-  align-items: center;
+  /* Top-aligned: cards in one lane differ in height and line up on headers. */
+  align-items: flex-start;
   gap: var(--spacing-md);
   flex-wrap: wrap;
 }
@@ -106,12 +107,7 @@
   min-width: 180px;
   max-width: 260px;
 }
-.df__step-title {
-  width: 100%;
-  min-height: 2.5em;
-  resize: none;
-  overflow: hidden;
-}
+/* Height/line-box come from textarea.fc-card__title. */
 
 /* ── Import picker form (borrowed into the shared modal) ────────────── */
 /* Hidden inside the module container; the shared modal borrows the node,

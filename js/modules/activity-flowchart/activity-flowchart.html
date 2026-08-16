@@ -28,7 +28,7 @@
 
             <!-- Connector before this step -->
             <template x-if="idx > 0">
-              <div class="af__connector fc-connector fc-connector--clickable"
+              <div class="af__connector fc-connector fc-connector--clickable fc-connector--header-aligned"
                    data-action="insert-step" :data-idx="idx" :title="t('insertHere')"
                    @click="model.insertStep(idx, { kind: 'activity' })">
                 <span class="af__connector-arrow fc-connector__arrow">&raquo;</span>
@@ -55,6 +55,7 @@
                             x-model="step.description"
                             @input="autoSize($event)"></textarea>
                 </div>
+                <!-- @include js/core/flowchart/substeps.part.html -->
               </div>
             </template>
 

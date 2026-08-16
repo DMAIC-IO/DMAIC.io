@@ -10,6 +10,10 @@
  *                                Module Registry's backwards-compat shim and
  *                                still consumed by `dmaic-tiles` / `workspace`
  *                                (refactor in v0.3 Schritt 4).
+ * - `group`                    → section of the phase dropdown the entry lands in.
+ *                                Label comes from `dataGroups.<group>` in i18n,
+ *                                section order from `GROUP_ORDER` in `ui/dmaic-tiles.js`.
+ *                                Entries without a group fall into "Sonstige".
  * - `cycles[<cycleId>]`        → primary phase + allowedPhases inside a cycle.
  *                                Modules without a mapping for the active cycle
  *                                land in the trailing `extras` tile.
@@ -153,6 +157,7 @@ export default [
   {
     id: 'project-charter',
     phase: 'define',
+    group: 'scope',
     singleton: true,
     allowedPhases: ['define'],
     load: () => import('./project-charter/project-charter.js'),
@@ -165,6 +170,7 @@ export default [
   {
     id: 'dmaic-calendar',
     phase: 'define',
+    group: 'team',
     singleton: true,
     allowedPhases: ['define'],
     load: () => import('./dmaic-calendar/dmaic-calendar.js'),
@@ -177,6 +183,7 @@ export default [
   {
     id: 'todo',
     phase: 'define',
+    group: 'team',
     allowedPhases: ['define'],
     load: () => import('./todo/todo.js'),
     cycles: {
@@ -188,6 +195,7 @@ export default [
   {
     id: 'stakeholder-analysis',
     phase: 'define',
+    group: 'team',
     allowedPhases: ['define'],
     load: () => import('./stakeholder-analysis/stakeholder-analysis.js'),
     cycles: {
@@ -199,6 +207,7 @@ export default [
   {
     id: 'voc-ctx-tree',
     phase: 'define',
+    group: 'customer',
     singleton: true,
     allowedPhases: ['define'],
     load: () => import('./voc-ctx-tree/voc-ctx-tree.js'),
@@ -211,6 +220,7 @@ export default [
   {
     id: 'kano',
     phase: 'define',
+    group: 'customer',
     allowedPhases: ['define'],
     load: () => import('./kano/kano.js'),
     cycles: {
@@ -221,6 +231,7 @@ export default [
   {
     id: 'raci-matrix',
     phase: 'define',
+    group: 'team',
     allowedPhases: ['define'],
     load: () => import('./raci-matrix/raci-matrix.js'),
     cycles: {
@@ -232,6 +243,7 @@ export default [
   {
     id: 'sipoc',
     phase: 'define',
+    group: 'scope',
     load: () => import('./sipoc/sipoc.js'),
     cycles: {
       dmaic:  { phase: 'define'  },
@@ -242,6 +254,7 @@ export default [
   {
     id: 'five-why',
     phase: 'define',
+    group: 'causes',
     load: () => import('./five-why/five-why.js'),
     cycles: {
       dmaic:  { phase: 'define' },
@@ -254,6 +267,7 @@ export default [
   {
     id: 'process-map',
     phase: 'measure',
+    group: 'flowcharts',
     load: () => import('./process-map/process-map.js'),
     cycles: {
       dmaic:  { phase: 'measure' },
@@ -264,6 +278,7 @@ export default [
   {
     id: 'gage-run-chart',
     phase: 'measure',
+    group: 'msa',
     load: () => import('./gage-run-chart/gage-run-chart.js'),
     cycles: {
       dmaic:  { phase: 'measure' },
@@ -274,6 +289,7 @@ export default [
   {
     id: 'msa-typ1',
     phase: 'measure',
+    group: 'msa',
     load: () => import('./msa-typ1/msa-typ1.js'),
     cycles: {
       dmaic:  { phase: 'measure' },
@@ -284,6 +300,7 @@ export default [
   {
     id: 'msa-typ2',
     phase: 'measure',
+    group: 'msa',
     load: () => import('./msa-typ2/msa-typ2.js'),
     cycles: {
       dmaic:  { phase: 'measure' },
@@ -294,6 +311,7 @@ export default [
   {
     id: 'msa-typ4',
     phase: 'measure',
+    group: 'msa',
     load: () => import('./msa-typ4/msa-typ4.js'),
     cycles: {
       dmaic:  { phase: 'measure' },
@@ -304,6 +322,7 @@ export default [
   {
     id: 'msa-typ5',
     phase: 'measure',
+    group: 'msa',
     load: () => import('./msa-typ5/msa-typ5.js'),
     cycles: {
       dmaic:  { phase: 'measure' },
@@ -314,6 +333,7 @@ export default [
   {
     id: 'msa-typ6',
     phase: 'measure',
+    group: 'msa',
     load: () => import('./msa-typ6/msa-typ6.js'),
     cycles: {
       dmaic:  { phase: 'measure' },
@@ -324,6 +344,7 @@ export default [
   {
     id: 'process-capability',
     phase: 'measure',
+    group: 'capability',
     load: () => import('./process-capability/process-capability.js'),
     cycles: {
       dmaic:  { phase: 'measure' },
@@ -336,6 +357,7 @@ export default [
   {
     id: 'ce-matrix',
     phase: 'analyze',
+    group: 'causes',
     load: () => import('./ce-matrix/ce-matrix.js'),
     cycles: {
       dmaic:  { phase: 'analyze' },
@@ -346,6 +368,7 @@ export default [
   {
     id: 'ishikawa',
     phase: 'analyze',
+    group: 'causes',
     allowedPhases: ['measure', 'analyze', 'improve'],
     load: () => import('./ishikawa/ishikawa.js'),
     cycles: {
@@ -357,6 +380,7 @@ export default [
   {
     id: 'makigami',
     phase: 'analyze',
+    group: 'flowcharts',
     load: () => import('./makigami/makigami.js'),
     cycles: {
       dmaic:  { phase: 'analyze'   },
@@ -367,6 +391,7 @@ export default [
   {
     id: 'activity-flowchart',
     phase: 'analyze',
+    group: 'flowcharts',
     load: () => import('./activity-flowchart/activity-flowchart.js'),
     cycles: {
       dmaic:  { phase: 'analyze'   },
@@ -377,6 +402,7 @@ export default [
   {
     id: 'opportunity-flowchart',
     phase: 'analyze',
+    group: 'flowcharts',
     load: () => import('./opportunity-flowchart/opportunity-flowchart.js'),
     cycles: {
       dmaic:  { phase: 'analyze'   },
@@ -387,6 +413,7 @@ export default [
   {
     id: 'deployment-flowchart',
     phase: 'analyze',
+    group: 'flowcharts',
     load: () => import('./deployment-flowchart/deployment-flowchart.js'),
     cycles: {
       dmaic:  { phase: 'analyze'   },
@@ -397,6 +424,7 @@ export default [
   {
     id: 'correlation',
     phase: 'analyze',
+    group: 'statistics',
     load: () => import('./correlation/correlation.js'),
     cycles: {
       dmaic:  { phase: 'analyze' },
@@ -407,6 +435,7 @@ export default [
   {
     id: 'distribution-fit',
     phase: 'analyze',
+    group: 'statistics',
     load: () => import('./distribution-fit/distribution-fit.js'),
     cycles: {
       dmaic:  { phase: 'analyze' },
@@ -417,6 +446,7 @@ export default [
   {
     id: 'fmea',
     phase: 'analyze',
+    group: 'causes',
     load: () => import('./fmea/fmea.js'),
     cycles: {
       dmaic:  { phase: 'analyze' },
@@ -427,6 +457,7 @@ export default [
   {
     id: 'hypothesis-test',
     phase: 'analyze',
+    group: 'statistics',
     load: () => import('./hypothesis-test/hypothesis-test.js'),
     cycles: {
       dmaic:  { phase: 'analyze' },
@@ -437,6 +468,7 @@ export default [
   {
     id: 'sample-size',
     phase: 'analyze',
+    group: 'statistics',
     load: () => import('./sample-size/sample-size.js'),
     cycles: {
       dmaic:  { phase: 'analyze' },
@@ -447,6 +479,7 @@ export default [
   {
     id: 'pairwise-comparison',
     phase: 'analyze',
+    group: 'statistics',
     load: () => import('./pairwise-comparison/pairwise-comparison.js'),
     cycles: {
       dmaic:  { phase: 'analyze' },
@@ -457,6 +490,7 @@ export default [
   {
     id: 'outlier-test',
     phase: 'analyze',
+    group: 'statistics',
     load: () => import('./outlier-test/outlier-test.js'),
     cycles: {
       dmaic:  { phase: 'analyze' },

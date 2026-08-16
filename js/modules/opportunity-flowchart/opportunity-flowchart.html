@@ -48,7 +48,7 @@
             <!-- VA cell (left) -->
             <div class="of__cell of__cell--va">
               <template x-if="isVA(step)">
-                <div class="of__card of__card--va fc-card">
+                <div class="of__card of__card--va fc-card fc-card--accent">
                   <div class="of__card-header fc-card__header">
                     <span class="of__step-number fc-step-number" x-text="stepNum(idx)"></span>
                     <textarea class="of__step-title fc-card__title" x-model="step.title"
@@ -68,6 +68,7 @@
                               x-model="step.description"
                               @input="autoSize($event)"></textarea>
                   </div>
+                  <!-- @include js/core/flowchart/substeps.part.html -->
                 </div>
               </template>
             </div>
@@ -75,7 +76,7 @@
             <!-- NVA cell (right) -->
             <div class="of__cell of__cell--nva">
               <template x-if="!isVA(step)">
-                <div class="of__card of__card--nva fc-card">
+                <div class="of__card of__card--nva fc-card fc-card--accent">
                   <div class="of__card-header fc-card__header">
                     <span class="of__step-number fc-step-number" x-text="stepNum(idx)"></span>
                     <textarea class="of__step-title fc-card__title" x-model="step.title"
@@ -95,6 +96,7 @@
                               x-model="step.description"
                               @input="autoSize($event)"></textarea>
                   </div>
+                  <!-- @include js/core/flowchart/substeps.part.html -->
                 </div>
               </template>
             </div>
