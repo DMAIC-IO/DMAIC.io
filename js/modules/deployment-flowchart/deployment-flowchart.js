@@ -54,6 +54,7 @@ export default createModule({
     return {
       ...chainViewMixin(module, _t, {
         autoSizeSelector: 'textarea.df__step-title, textarea.df__step-description',
+        dragRowSelector: '.df__step',
       }),
 
       // ── Lifecycle (per Alpine instance) ───────────────────────

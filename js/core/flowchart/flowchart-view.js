@@ -68,6 +68,9 @@ export function chainViewMixin(module, _t, opts = {}) {
     stepDragEnd(event) {
       this._draggedStepId = null;
       event?.target?.classList?.remove('is-dragging');
+      // Disarm: the row is only draggable while a drag started from the number
+      // badge is in flight, so text in the title/description stays selectable.
+      event?.target?.closest?.(dragRowSelector)?.removeAttribute('draggable');
     },
 
     /**

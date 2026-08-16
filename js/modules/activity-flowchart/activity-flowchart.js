@@ -55,6 +55,7 @@ export default createModule({
     return {
       ...chainViewMixin(module, _t, {
         autoSizeSelector: 'textarea.af__step-title, textarea.af__decision-label, textarea.af__step-description',
+        dragRowSelector: '.af__step',
       }),
 
       // ── Lifecycle (per Alpine instance) ───────────────────────

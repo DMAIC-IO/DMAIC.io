@@ -46,14 +46,14 @@
             <template x-for="step in stepsForLane(lane.id)" :key="step.id">
               <div class="df__step fc-card"
                    :data-step-id="step.id"
-                   draggable="true"
                    @dragstart="stepDragStart(step.id, $event)"
                    @dragover="stepDragOver(step.id, $event)"
                    @dragleave="stepDragLeave(step.id, $event)"
                    @drop.stop="stepDrop(step.id, $event)"
                    @dragend="stepDragEnd($event)">
                 <div class="df__step-header fc-card__header">
-                  <span class="df__step-number fc-step-number" x-text="chainNum(step.id)"></span>
+                  <span class="df__step-number fc-step-number" x-text="chainNum(step.id)"
+                        @mousedown="armStepDrag(step.id, $event)"></span>
                   <textarea class="df__step-title fc-card__title" x-model="step.title"
                             :placeholder="t('titlePlaceholder')"
                             @input="autoSize($event)"></textarea>

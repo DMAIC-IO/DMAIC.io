@@ -85,9 +85,11 @@
                                 :title="valueBadgeTitle(step)"
                                 @click.stop="cycleValueType(step.id)"
                                 x-text="valueBadgeLabel(step)"></button>
-                        <input class="pmap__step-title fc-card__title" type="text" :placeholder="t('stepNamePlaceholder')"
-                               data-field="title" :data-step-id="step.id"
-                               x-model="step.title">
+                        <textarea class="pmap__step-title fc-card__title" rows="1"
+                                  :placeholder="t('stepNamePlaceholder')"
+                                  data-field="title" :data-step-id="step.id"
+                                  x-model="step.title"
+                                  @input="autoSize($event)"></textarea>
                         <div class="pmap__step-actions fc-card__actions">
                           <button class="pmap__step-loop-toggle" :class="loopToggleClass(step)"
                                   data-action="toggle-loop" :data-step-id="step.id"

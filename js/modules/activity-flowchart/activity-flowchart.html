@@ -19,7 +19,6 @@
         <template x-for="(step, idx) in model.steps" :key="step.id">
           <div class="af__step" :class="isDecision(step) ? 'af__step--decision' : 'af__step--activity'"
                :data-step-id="step.id"
-               draggable="true"
                @dragstart="stepDragStart(step.id, $event)"
                @dragover="stepDragOver(step.id, $event)"
                @dragleave="stepDragLeave(step.id, $event)"
@@ -39,7 +38,8 @@
             <template x-if="!isDecision(step)">
               <div class="af__card fc-card">
                 <div class="af__card-header fc-card__header">
-                  <span class="af__step-number fc-step-number" x-text="stepNum(idx)"></span>
+                  <span class="af__step-number fc-step-number" x-text="stepNum(idx)"
+                        @mousedown="armStepDrag(step.id, $event)"></span>
                   <textarea class="af__step-title fc-card__title" x-model="step.title"
                             :placeholder="t('titlePlaceholder')"
                             @input="autoSize($event)"></textarea>

@@ -20,7 +20,6 @@
         <template x-for="(step, idx) in model.steps" :key="step.id">
           <div class="of__row"
                :data-step-id="step.id"
-               draggable="true"
                @dragstart="stepDragStart(step.id, $event)"
                @dragover="stepDragOver(step.id, $event)"
                @dragleave="stepDragLeave(step.id, $event)"
@@ -50,7 +49,8 @@
               <template x-if="isVA(step)">
                 <div class="of__card of__card--va fc-card fc-card--accent">
                   <div class="of__card-header fc-card__header">
-                    <span class="of__step-number fc-step-number" x-text="stepNum(idx)"></span>
+                    <span class="of__step-number fc-step-number" x-text="stepNum(idx)"
+                              @mousedown="armStepDrag(step.id, $event)"></span>
                     <textarea class="of__step-title fc-card__title" x-model="step.title"
                               :placeholder="t('titlePlaceholder')"
                               @input="autoSize($event)"></textarea>
@@ -78,7 +78,8 @@
               <template x-if="!isVA(step)">
                 <div class="of__card of__card--nva fc-card fc-card--accent">
                   <div class="of__card-header fc-card__header">
-                    <span class="of__step-number fc-step-number" x-text="stepNum(idx)"></span>
+                    <span class="of__step-number fc-step-number" x-text="stepNum(idx)"
+                              @mousedown="armStepDrag(step.id, $event)"></span>
                     <textarea class="of__step-title fc-card__title" x-model="step.title"
                               :placeholder="t('titlePlaceholder')"
                               @input="autoSize($event)"></textarea>
