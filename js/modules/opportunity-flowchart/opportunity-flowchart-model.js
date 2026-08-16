@@ -7,6 +7,7 @@
  */
 
 import { FlowchartState } from '../../core/flowchart/flowchart-model.js';
+import { registerSourceMapper } from '../../core/flowchart/flowchart-import.js';
 
 const VALID_SIDES = new Set(['va', 'nva']);
 
@@ -64,3 +65,65 @@ export class OpportunityModel extends FlowchartState {
     return m;
   }
 }
+
+/**
+ * Trimmed non-empty strings from an unknown array shape.
+ * (mirrors `cleanStrings` in `modules/activity-flowchart/activity-flowchart-model.js`)
+ * @param {*} raw - Raw value, expected to be an array of strings.
+ * @returns {string[]} Trimmed, non-empty strings.
+ */
+function cleanStrings(raw) {
+  if (!Array.isArray(raw)) return [];
+  return raw
+    .filter((v) => typeof v === 'string')
+    .map((v) => v.trim())
+    .filter((v) => v.length > 0);
+}
+
+/**
+ * Maps a Process Map `valueType` to an Opportunity column. PM distinguishes
+ * three value types, Opportunity only two: business-necessary-but-non-value-
+ * added (`bnva`) collapses into the rework/NVA column, everything unknown
+ * defaults to value-added.
+ * @param {*} vt - PM's `valueType` field.
+ * @returns {'va'|'nva'} Opportunity column.
+ */
+function pmSideFromValueType(vt) {
+  if (vt === 'nva' || vt === 'bnva') return 'nva';
+  return 'va';
+}
+
+/**
+ * Maps a Process Map instance's persisted state to seed steps for the
+ * Opportunity Flowchart import registry. Keeps title/description, translates
+ * valueType into `side`, drops PM-only extensions (inputs, outputs, loop).
+ * @param {any} pmState - Process Map's persisted state, `{ steps: object[] }`.
+ * @returns {Array<{title: string, description: string, side: 'va'|'nva'}>} Seed steps.
+ */
+function pmToOpportunity(pmState) {
+  const steps = Array.isArray(pmState?.steps) ? pmState.steps : [];
+  return steps.map((s) => ({
+    title: typeof s?.title === 'string' ? s.title : '',
+    description: typeof s?.description === 'string' ? s.description : '',
+    side: pmSideFromValueType(s?.valueType),
+  }));
+}
+
+/**
+ * Maps a SIPOC instance's persisted state to seed steps. SIPOC has no
+ * value-type information, so every process entry lands in the VA column and
+ * the user re-classifies from there.
+ * @param {any} sipocState - SIPOC's persisted state, `{ columns: { process: string[] } }`.
+ * @returns {Array<{title: string, side: 'va'}>} Seed steps.
+ */
+function sipocToOpportunity(sipocState) {
+  return cleanStrings(sipocState?.columns?.process).map((title) => ({ title, side: 'va' }));
+}
+
+registerSourceMapper('opportunity-flowchart', 'process-map', pmToOpportunity);
+registerSourceMapper('opportunity-flowchart', 'sipoc', sipocToOpportunity);
+
+/** Exposed for internal tests of the mappers in isolation. */
+export const __pmMapper = pmToOpportunity;
+/** Exposed for internal tests of the mappers in isolation. */
+export const __sipocMapper = sipocToOpportunity;

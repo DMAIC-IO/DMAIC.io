@@ -1,5 +1,15 @@
 import { suite, test, assertEqual } from '../test-utils.js';
 import { OpportunityModel } from '../../js/modules/opportunity-flowchart/opportunity-flowchart-model.js';
+import { __resetRegistryForTests, appendFromInstance }
+  from '../../js/core/flowchart/flowchart-import.js';
+
+// Re-import the model to trigger the mapper registration side-effect.
+// (dynamic import ensures the registry is populated after the reset.)
+async function loadModelWithMappers() {
+  __resetRegistryForTests();
+  const url = '../../js/modules/opportunity-flowchart/opportunity-flowchart-model.js?bust=' + Math.random();
+  return import(url);
+}
 
 suite('OpportunityModel — normalizer', () => {
   test('defaults side to "va" when unset', () => {
@@ -58,5 +68,44 @@ suite('OpportunityModel — setSide', () => {
     const b = m.insertStep(1, { title: 'B', side: 'nva' });
     assertEqual(m.steps.map((s) => s.title).join(','), 'A,B,C');
     assertEqual(b.side, 'nva');
+  });
+});
+
+suite('OpportunityModel — import mappers', () => {
+  test('PM → Opportunity: va→va, nva→nva, bnva→nva, unset→va', async () => {
+    const { OpportunityModel } = await loadModelWithMappers();
+    const target = new OpportunityModel();
+    const sm = {
+      listInstances: (id) => id === 'process-map' ? [{ instanceId: 'i', title: 'PM' }] : [],
+      getModuleState: () => ({ steps: [
+        { id: 's1', title: 'A', valueType: 'va' },
+        { id: 's2', title: 'B', valueType: 'nva' },
+        { id: 's3', title: 'C', valueType: 'bnva' },
+        { id: 's4', title: 'D', valueType: null },
+      ] }),
+    };
+    const appended = appendFromInstance({
+      targetModuleId: 'opportunity-flowchart', sourceModuleId: 'process-map',
+      instanceId: 'i', stateManager: sm, targetState: target,
+    });
+    assertEqual(appended.length, 4);
+    assertEqual(target.steps.map((s) => s.side).join(','), 'va,nva,nva,va');
+    // PM-only fields must NOT survive into Opportunity (mapper strips them).
+    assertEqual(target.steps[0].valueType, undefined);
+  });
+
+  test('SIPOC → Opportunity: all steps land in the VA column', async () => {
+    const { OpportunityModel } = await loadModelWithMappers();
+    const target = new OpportunityModel();
+    const sm = {
+      listInstances: (id) => id === 'sipoc' ? [{ instanceId: 'i', title: 'S' }] : [],
+      getModuleState: () => ({ columns: { process: ['Anfrage', 'Prüfung'] } }),
+    };
+    appendFromInstance({
+      targetModuleId: 'opportunity-flowchart', sourceModuleId: 'sipoc',
+      instanceId: 'i', stateManager: sm, targetState: target,
+    });
+    assertEqual(target.steps.every((s) => s.side === 'va'), true);
+    assertEqual(target.steps.map((s) => s.title).join(','), 'Anfrage,Prüfung');
   });
 });
