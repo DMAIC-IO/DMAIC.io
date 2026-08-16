@@ -25,6 +25,7 @@ import {
 import { exportPmapPNG, exportPmapSVG } from './process-map-export.js';
 import { State } from './process-map-model.js';
 import { listSipocInstances, appendSipocProcess } from './process-map-sipoc-import.js';
+import { chainViewMixin } from '../../core/flowchart/flowchart-view.js';
 
 // Loop rendering is temporarily disabled while the map switches to a
 // horizontal (L→R) layout. The loop toggle in the step header still
@@ -56,9 +57,11 @@ export default createModule({
 
   data(module, _t) {
     return {
+      ...chainViewMixin(module, _t, {
+        autoSizeSelector: 'textarea.pmap__io-name, textarea.pmap__title, textarea.pmap__step-title, textarea.pmap__loop-step-title',
+      }),
+
       // ── Transient UI state (never persisted) ──────────────────
-      /** @type {string|null} */
-      _draggedId: null,
       /** @type {string|null} */
       _draggedIOId: null,
       /** @type {string|null} */
@@ -139,20 +142,6 @@ export default createModule({
       },
 
       // ── Render side-effects ───────────────────────────────────
-      /** Auto-grow an IO-name textarea to fit its content (mirror legacy). */
-      autoSize(event) {
-        const ta = event.target;
-        if (!ta) return;
-        ta.style.height = '0';
-        ta.style.height = `${ta.scrollHeight  }px`;
-      },
-      /** Re-apply auto-grow to every IO textarea (mount + after re-render). */
-      _autoSizeAll() {
-        this.$el.querySelectorAll('.pmap__io-name').forEach((ta) => {
-          ta.style.height = '0';
-          ta.style.height = `${ta.scrollHeight  }px`;
-        });
-      },
       /** Focus the title input of the step at the given index after a render. */
       _focusStepTitle(atIndex) {
         this.$nextTick(() => setTimeout(() => {
@@ -271,39 +260,6 @@ export default createModule({
       armStepDrag(stepId, event) {
         const row = event.target.closest('.pmap__step-row');
         if (row) row.setAttribute('draggable', 'true');
-      },
-      stepDragStart(stepId, event) {
-        this._draggedId = stepId;
-        if (event.dataTransfer) event.dataTransfer.effectAllowed = 'move';
-        const row = event.target.closest('.pmap__step-row');
-        setTimeout(() => row?.classList.add('pmap__step-row--dragging'), 0);
-      },
-      stepDragEnd(event) {
-        const row = event.target.closest('.pmap__step-row');
-        row?.removeAttribute('draggable');
-        this._clearDragMarkers();
-        this._draggedId = null;
-      },
-      stepDragOver(stepId, event) {
-        event.preventDefault();
-        if (event.dataTransfer) event.dataTransfer.dropEffect = 'move';
-        if (stepId !== this._draggedId) {
-          event.currentTarget.classList.add('pmap__step-row--drag-over');
-        }
-      },
-      stepDragLeave(stepId, event) {
-        const row = event.currentTarget;
-        if (!row.contains(event.relatedTarget)) {
-          row.classList.remove('pmap__step-row--drag-over');
-        }
-      },
-      stepDrop(stepId, event) {
-        event.preventDefault();
-        if (!this._draggedId || this._draggedId === stepId) return;
-        this.model.moveStep(this._draggedId, stepId);
-        this._draggedId = null;
-        this._clearDragMarkers();
-        this._scheduleBrackets();
       },
 
       // ── IO drag (within a step's input or output list) ────────
