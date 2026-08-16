@@ -173,12 +173,20 @@ export class FlowchartState {
 
   /**
    * Serialize the chain to a plain-object persistence payload.
-   * Shallow clone of each step — Alpine-proxied objects would otherwise leak
-   * reactivity into the persisted payload.
+   * Deep-clone via JSON round-trip. Two reasons:
+   *   1. Detaches nested arrays/objects (substeps, inputs, outputs, loop, ...)
+   *      from the live model, so the persisted snapshot is a true copy.
+   *   2. Alpine's fine-grained reactivity ($watch on toJSON) tracks the
+   *      (target, key) pairs actually read during the getter. A shallow
+   *      `{...s}` reads only top-level keys, so nested-in-place mutations
+   *      (push/splice on substeps/inputs/loop.steps, or setting a key on
+   *      a nested object) would NOT re-fire the watch. The recursive JSON
+   *      traversal reads every nested property, establishing dependencies
+   *      at every depth — which is what auto-persist relies on.
    * @returns {{ steps: object[] }}
    */
   toJSON() {
-    return { steps: this.steps.map((s) => ({ ...s })) };
+    return { steps: JSON.parse(JSON.stringify(this.steps)) };
   }
 
   /**

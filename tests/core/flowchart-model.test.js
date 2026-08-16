@@ -242,4 +242,19 @@ suite('FlowchartState — persistence', () => {
     assertEqual(s.steps[0].tag, 'x');
     assertEqual(s.steps[1].tag, 'x');
   });
+
+  test('toJSON returns a deep copy — mutating nested arrays does not leak back', () => {
+    const s = new FlowchartState();
+    s.addStep(0, {
+      title: 'A',
+      substeps: [{ id: 'x', title: 'sub' }],
+      inputs: [{ id: 'i1', name: 'in' }],
+    });
+    const json = s.toJSON();
+    json.steps[0].substeps.push({ id: 'y', title: 'leaked' });
+    json.steps[0].inputs[0].name = 'MUTATED';
+    // Live model must be untouched.
+    assertEqual(s.steps[0].substeps.length, 1);
+    assertEqual(s.steps[0].inputs[0].name, 'in');
+  });
 });
