@@ -57,6 +57,11 @@ export default createModule({
         autoSizeSelector: 'textarea.af__step-title, textarea.af__decision-label',
       }),
 
+      // ── Lifecycle (per Alpine instance) ───────────────────────
+      init() {
+        this.$nextTick(() => this._autoSizeAll());
+      },
+
       // Decision popover state (transient — never persisted)
       _openBranchStepId: null,
       _openBranch: null,   // 'yes' | 'no' | null
