@@ -1,0 +1,200 @@
+/**
+ * D.Mike — Opportunity Flowchart Module (opportunity-flowchart.css)
+ * Two-column layout (value-added | rework/NVA), step cards, the per-connector
+ * insert menu, and the cross-module import picker form.
+ */
+
+/* ── Canvas ─────────────────────────────────────────────────────────── */
+.of__canvas {
+  position: relative;
+  padding: var(--spacing-lg);
+  overflow: auto;
+  min-height: 200px;
+}
+.of__empty-hint {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  padding: var(--spacing-md) 0;
+}
+
+/* ── Column headers ─────────────────────────────────────────────────── */
+.of__headers {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-sm);
+}
+.of__header {
+  padding: var(--spacing-sm);
+  font-weight: 600;
+  font-size: var(--font-size-sm);
+  text-align: center;
+  border-bottom: 2px solid var(--color-border-primary);
+}
+.of__header--va  { color: var(--color-success); }
+.of__header--nva { color: var(--color-error); }
+
+/* ── Rows: one per step, two columns, only one cell filled ──────────── */
+.of__flow {
+  display: flex;
+  flex-direction: column;
+}
+.of__row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--spacing-md);
+  padding: var(--spacing-xs) 0;
+}
+.of__cell { min-height: var(--spacing-lg); }
+
+/* Drag/drop feedback — chainViewMixin toggles is-dragging/is-drop-target
+   directly on the .of__row node (dragstart target / dragover currentTarget). */
+.of__row.is-dragging { opacity: 0.5; }
+.of__row.is-drop-target .of__card {
+  outline: 2px dashed var(--color-accent);
+  outline-offset: 2px;
+}
+
+/* ── Step card ──────────────────────────────────────────────────────── */
+.of__card {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-xs);
+  background: var(--color-bg-elevated);
+  border: 1px solid var(--color-border-primary);
+  border-radius: var(--border-radius);
+  padding: var(--spacing-md);
+  padding-right: var(--spacing-lg);
+  max-width: 480px;
+}
+.of__card--va  { border-left: 4px solid var(--color-success); }
+.of__card--nva { border-left: 4px solid var(--color-error); }
+/* Pull the VA cards towards the centre line so the chain reads as one column
+   of alternating sides rather than two far-apart lists. */
+.of__cell--va .of__card { margin-left: auto; }
+.of__step-title {
+  flex: 1;
+  min-height: 2.5em;
+  resize: none;
+  border: none;
+  background: transparent;
+  color: var(--color-text-primary);
+  font-family: inherit;
+  font-size: var(--font-size-md);
+  overflow: hidden;
+}
+.of__step-title:focus { outline: none; }
+.of__side-toggle {
+  flex: 0 0 auto;
+  border: none;
+  background: transparent;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  font-size: var(--font-size-md);
+  line-height: 1.4;
+  padding: 0 var(--spacing-xs);
+}
+.of__side-toggle:hover { color: var(--color-accent); }
+
+/* ── Delete button ──────────────────────────────────────────────────── */
+.of__delete {
+  position: absolute;
+  top: var(--spacing-xs);
+  right: var(--spacing-xs);
+  border: none;
+  background: transparent;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  font-size: var(--font-size-md);
+  line-height: 1;
+  padding: 0;
+}
+.of__delete:hover { color: var(--color-error); }
+
+/* ── Connector + insert menu (spans both columns) ───────────────────── */
+.of__connector {
+  grid-column: 1 / -1;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  padding: var(--spacing-xs) 0;
+}
+.of__insert-btn {
+  background: transparent;
+  border: 1px dashed var(--color-border-primary);
+  border-radius: var(--border-radius-sm);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  line-height: 1;
+  padding: 2px var(--spacing-sm);
+  user-select: none;
+}
+.of__insert-btn:hover {
+  color: var(--color-accent);
+  border-color: var(--color-accent);
+}
+.of__insert-menu {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  min-width: 180px;
+  background: var(--color-bg-elevated);
+  border: 1px solid var(--color-border-primary);
+  border-radius: var(--border-radius-sm);
+  box-shadow: var(--shadow-md);
+  padding: var(--spacing-xs);
+}
+.of__insert-menu button {
+  border: none;
+  background: transparent;
+  text-align: left;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  cursor: pointer;
+  color: var(--color-text-primary);
+  font-size: var(--font-size-sm);
+  border-radius: var(--border-radius-sm);
+}
+.of__insert-menu button:hover { background: var(--color-bg-secondary); }
+
+/* ── Import picker form (borrowed into the shared modal) ────────────── */
+.of__import-form { display: none; }
+.of__import-hint {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  margin-bottom: var(--spacing-sm);
+}
+.of__import-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  max-height: 320px;
+  overflow-y: auto;
+}
+.of__import-option {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm);
+  border: 1px solid var(--color-border-primary);
+  border-radius: var(--border-radius-sm);
+  cursor: pointer;
+}
+.of__import-option--selected {
+  border-color: var(--color-accent);
+  background: var(--color-accent-light);
+}
+.of__import-option-source {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  flex: 0 0 auto;
+}
+.of__import-option-title {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-primary);
+}

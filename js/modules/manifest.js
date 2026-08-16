@@ -375,6 +375,16 @@ export default [
     },
   },
   {
+    id: 'opportunity-flowchart',
+    phase: 'analyze',
+    load: () => import('./opportunity-flowchart/opportunity-flowchart.js'),
+    cycles: {
+      dmaic:  { phase: 'analyze'   },
+      dmadv:  { phase: 'analyze'   },
+      eightd: { phase: 'rootcause' },
+    },
+  },
+  {
     id: 'correlation',
     phase: 'analyze',
     load: () => import('./correlation/correlation.js'),

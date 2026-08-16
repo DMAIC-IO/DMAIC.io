@@ -1,0 +1,100 @@
+<div class="module-container of" x-data="opportunityFlowchart" data-ref="root">
+  <div class="module-container__body">
+    <div class="of__canvas">
+
+      <!-- Column headers -->
+      <div class="of__headers">
+        <div class="of__header of__header--va"  x-text="t('headerVA')"></div>
+        <div class="of__header of__header--nva" x-text="t('headerNVA')"></div>
+      </div>
+
+      <!-- Empty state -->
+      <template x-if="model.steps.length === 0">
+        <p class="of__empty-hint" x-text="t('emptyHint')"></p>
+      </template>
+
+      <!-- Chain of steps: one row per step, top-to-bottom in sequence order.
+           Each row is a two-column grid; only the cell matching the step's
+           `side` is filled, so a column switch never changes the index. -->
+      <div class="of__flow" data-ref="flow">
+        <template x-for="(step, idx) in model.steps" :key="step.id">
+          <div class="of__row"
+               :data-step-id="step.id"
+               draggable="true"
+               @dragstart="stepDragStart(step.id, $event)"
+               @dragover="stepDragOver(step.id, $event)"
+               @dragleave="stepDragLeave(step.id, $event)"
+               @drop="stepDrop(step.id, $event)"
+               @dragend="stepDragEnd($event)">
+
+            <!-- Connector above this step: opens the "insert left / right" menu -->
+            <template x-if="idx > 0">
+              <div class="of__connector">
+                <button class="of__insert-btn" @click="toggleInsertMenu(idx)"
+                        :title="t('insertHere')">&raquo;</button>
+                <template x-if="isInsertOpen(idx)">
+                  <div class="of__insert-menu">
+                    <button @click="insertAt(idx, 'va')"  x-text="t('insertVA')"></button>
+                    <button @click="insertAt(idx, 'nva')" x-text="t('insertNVA')"></button>
+                  </div>
+                </template>
+              </div>
+            </template>
+
+            <!-- VA cell (left) -->
+            <div class="of__cell of__cell--va">
+              <template x-if="isVA(step)">
+                <div class="of__card of__card--va">
+                  <textarea class="of__step-title" x-model="step.title"
+                            :placeholder="t('titlePlaceholder')"
+                            @input="autoSize($event)"></textarea>
+                  <button class="of__side-toggle" @click="toggleSide(step.id)"
+                          :title="t('moveToNVA')">&rarr;</button>
+                  <button class="of__delete" @click="model.removeStep(step.id)"
+                          :title="t('deleteStep')">×</button>
+                </div>
+              </template>
+            </div>
+
+            <!-- NVA cell (right) -->
+            <div class="of__cell of__cell--nva">
+              <template x-if="!isVA(step)">
+                <div class="of__card of__card--nva">
+                  <button class="of__side-toggle" @click="toggleSide(step.id)"
+                          :title="t('moveToVA')">&larr;</button>
+                  <textarea class="of__step-title" x-model="step.title"
+                            :placeholder="t('titlePlaceholder')"
+                            @input="autoSize($event)"></textarea>
+                  <button class="of__delete" @click="model.removeStep(step.id)"
+                          :title="t('deleteStep')">×</button>
+                </div>
+              </template>
+            </div>
+          </div>
+        </template>
+      </div>
+    </div>
+  </div>
+
+  <!-- Import picker form, mounted into the shared modal by _openImport().
+       Hidden inside the module container via CSS; visible when borrowed
+       into the modal body (mirrors the Activity Flowchart picker). -->
+  <div x-ref="importForm" class="of__import-form" :data-selected="_importSelectedId">
+    <p class="of__import-hint" x-text="t('importHint')"></p>
+    <div class="of__import-list">
+      <template x-for="opt in _importOptions" :key="opt.moduleId + '-' + opt.instanceId">
+        <label class="of__import-option"
+               :class="_importSelectedId === opt.instanceId ? 'of__import-option--selected' : ''"
+               :data-instance-id="opt.instanceId"
+               @click.stop="_pickImportOption(opt)">
+          <input type="radio" name="of-import-pick"
+                 :value="opt.instanceId"
+                 :checked="_importSelectedId === opt.instanceId"
+                 @click.stop="_pickImportOption(opt)">
+          <span class="of__import-option-source" x-text="t('modules.' + opt.moduleId + '.name')"></span>
+          <span class="of__import-option-title" x-text="opt.title"></span>
+        </label>
+      </template>
+    </div>
+  </div>
+</div>
