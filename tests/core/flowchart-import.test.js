@@ -64,4 +64,34 @@ suite('flowchart-import — mapper registry', () => {
     assertEqual(found.length, 1);
     assertEqual(found[0].instanceId, 'a');
   });
+
+  test('listSourceInstances leaves an unrenamed instance untitled', () => {
+    // Never fall back to the instanceId — the picker would show a raw UUID.
+    // The row still identifies itself via the module-name label next to it.
+    __resetRegistryForTests();
+    const sm = fakeSM([{ instanceId: 'uuid-1234', moduleId: 'process-map', state: {} }]);
+    const found = listSourceInstances({ sources: ['process-map'], stateManager: sm });
+    assertEqual(found.length, 1);
+    assertEqual(found[0].title, '');
+  });
+
+  test('listSourceInstances numbers several unrenamed instances of one source', () => {
+    __resetRegistryForTests();
+    const sm = fakeSM([
+      { instanceId: 'u1', moduleId: 'process-map', state: {} },
+      { instanceId: 'u2', moduleId: 'process-map', state: {} },
+    ]);
+    const found = listSourceInstances({ sources: ['process-map'], stateManager: sm });
+    assertEqual(found.map((f) => f.title).join(','), '#1,#2');
+  });
+
+  test('listSourceInstances numbers only the untitled ones', () => {
+    __resetRegistryForTests();
+    const sm = fakeSM([
+      { instanceId: 'u1', moduleId: 'process-map', state: {}, title: 'Wareneingang' },
+      { instanceId: 'u2', moduleId: 'process-map', state: {} },
+    ]);
+    const found = listSourceInstances({ sources: ['process-map'], stateManager: sm });
+    assertEqual(found.map((f) => f.title).join(','), 'Wareneingang,#2');
+  });
 });

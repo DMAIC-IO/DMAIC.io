@@ -324,12 +324,23 @@ suite('StateManager', () => {
       assertDeepEqual(result[1], { instanceId: 's2', moduleId: 'sipoc', title: 'SIPOC B' });
     });
 
-    test('defaults title to instanceId when item has no title field', () => {
+    test('reads the tab label from customName — the field the workspace writes', () => {
+      const sm = new StateManager(new EventBus());
+      sm.set('phases.measure', [
+        { instanceId: 'p1', moduleId: 'process-map', customName: 'Wareneingang' },
+      ]);
+      assertEqual(sm.listInstances('process-map')[0].title, 'Wareneingang');
+    });
+
+    test('leaves the title empty when an instance was never renamed', () => {
+      // The workspace persists NO title/customName for an unrenamed instance —
+      // the tab shows the i18n module name. Falling back to the instanceId here
+      // would surface a raw UUID in every consumer (e.g. the import picker).
       const sm = new StateManager(new EventBus());
       sm.set('phases.define', [{ instanceId: 'p1', moduleId: 'process-map' }]);
       const result = sm.listInstances('process-map');
       assertEqual(result.length, 1);
-      assertEqual(result[0].title, 'p1');
+      assertEqual(result[0].title, '');
     });
   });
 });

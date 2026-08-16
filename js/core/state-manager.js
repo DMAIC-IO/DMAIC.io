@@ -194,6 +194,12 @@ export class StateManager {
    * List all module instances of the given moduleId across all phases in the
    * active project. Synchronous — reads from the state's `phases` tree.
    * Returns [] if no phases loaded or no instances match.
+   *
+   * `title` is the instance's user-visible label: the `customName` the
+   * workspace writes when a tab is renamed (see workspace.js `_setCustomName`),
+   * or '' when it was never renamed — the tab then shows the i18n module name,
+   * which is the caller's job to supply. It deliberately does NOT fall back to
+   * the instanceId: that surfaced a raw UUID in the flowchart import picker.
    * @param {string} moduleId
    * @returns {Array<{instanceId: string, moduleId: string, title: string}>}
    */
@@ -208,7 +214,7 @@ export class StateManager {
         out.push({
           instanceId: item.instanceId,
           moduleId: item.moduleId,
-          title: item.title || item.instanceId,
+          title: item.customName || item.title || '',
         });
       }
     }

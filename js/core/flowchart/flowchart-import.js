@@ -47,13 +47,19 @@ export function listSourceInstances({ sources, stateManager }) {
   const out = [];
   for (const src of sources) {
     const list = stateManager?.listInstances?.(src) || [];
-    for (const inst of list) {
+    list.forEach((inst, i) => {
+      // An instance the user never renamed carries no label — the picker row
+      // still names its source module, so the title stays empty rather than
+      // falling back to the instanceId (that surfaced a raw UUID). With more
+      // than one unnamed instance of the same source an ordinal keeps the rows
+      // distinguishable.
+      const label = inst.title || inst.name || '';
       out.push({
         instanceId: inst.instanceId ?? inst.id,
         moduleId: src,
-        title: inst.title ?? inst.name ?? inst.instanceId ?? '(unnamed)',
+        title: label || (list.length > 1 ? `#${i + 1}` : ''),
       });
-    }
+    });
   }
   return out;
 }
