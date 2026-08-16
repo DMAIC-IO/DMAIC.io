@@ -68,6 +68,18 @@
   box-shadow: 0 0 0 3px var(--color-pmap-step-accent-bg);
 }
 
+/* Aliases for the flowchart-core chainViewMixin's generic drag classes.
+   The mixin toggles is-dragging/is-drop-target; PM keeps its own visual
+   feedback by mapping those to the same style. */
+.pmap__step-row.is-dragging .pmap__step-card {
+  opacity: 0.45;
+  transform: scale(0.97);
+}
+.pmap__step-row.is-drop-target .pmap__step-card {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px var(--color-pmap-step-accent-bg);
+}
+
 /* ===== IO Panels =====
    In horizontal flow the two panels stack vertically inside the
    step-row: --input above the card, --output below. Both keep the same
