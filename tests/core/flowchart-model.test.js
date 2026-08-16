@@ -200,3 +200,46 @@ suite('FlowchartState — substep CRUD', () => {
     assertEqual(p.substeps.map((x) => x.title).join(','), 'B,C,A');
   });
 });
+
+suite('FlowchartState — persistence', () => {
+  test('toJSON returns { steps }', () => {
+    const s = new FlowchartState();
+    s.addStep(0, { title: 'A', laneId: 'sales' });
+    const json = s.toJSON();
+    assertEqual(Array.isArray(json.steps), true);
+    assertEqual(json.steps[0].title, 'A');
+    assertEqual(json.steps[0].laneId, 'sales');
+  });
+
+  test('fromJSON(null) returns empty state', () => {
+    const s = FlowchartState.fromJSON(null);
+    assertEqual(s instanceof FlowchartState, true);
+    assertEqual(s.steps.length, 0);
+  });
+
+  test('fromJSON roundtrip preserves core AND extension fields', () => {
+    const src = {
+      steps: [
+        { id: 's1', title: 'A', description: 'd', expanded: true,
+          substeps: [{ id: 'x', title: 'sub' }],
+          valueType: 'va', inputs: [{ id: 'i', name: 'in' }], laneId: 'sales' },
+        { id: 's2', title: 'B', side: 'nva', decision: { yesTarget: 'next', noTarget: 'end' } },
+      ],
+    };
+    const s = FlowchartState.fromJSON(src);
+    const out = s.toJSON();
+    assertEqual(out.steps[0].valueType, 'va');
+    assertEqual(out.steps[0].inputs[0].name, 'in');
+    assertEqual(out.steps[0].laneId, 'sales');
+    assertEqual(out.steps[1].side, 'nva');
+    assertEqual(out.steps[1].decision.noTarget, 'end');
+    assertEqual(out.steps[0].substeps[0].title, 'sub');
+  });
+
+  test('fromJSON forwards moduleNormalize to each step', () => {
+    const src = { steps: [{ title: 'A' }, { title: 'B' }] };
+    const s = FlowchartState.fromJSON(src, (step) => ({ ...step, tag: 'x' }));
+    assertEqual(s.steps[0].tag, 'x');
+    assertEqual(s.steps[1].tag, 'x');
+  });
+});

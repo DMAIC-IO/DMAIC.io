@@ -170,4 +170,28 @@ export class FlowchartState {
     p.substeps.splice(ti, 0, moved);
     return true;
   }
+
+  /**
+   * Serialize the chain to a plain-object persistence payload.
+   * Shallow clone of each step — Alpine-proxied objects would otherwise leak
+   * reactivity into the persisted payload.
+   * @returns {{ steps: object[] }}
+   */
+  toJSON() {
+    return { steps: this.steps.map((s) => ({ ...s })) };
+  }
+
+  /**
+   * Rehydrate a FlowchartState from a persisted payload. Every step is run
+   * through normalizeStep (core coercion + extension pass-through).
+   * @param {any} data
+   * @param {(step: object) => object} [moduleNormalize]
+   * @returns {FlowchartState}
+   */
+  static fromJSON(data, moduleNormalize) {
+    const state = new FlowchartState();
+    const rawSteps = Array.isArray(data?.steps) ? data.steps : [];
+    state.steps = rawSteps.map((raw) => state.normalizeStep(raw, moduleNormalize));
+    return state;
+  }
 }
