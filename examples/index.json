@@ -2974,6 +2974,30 @@
       ]
     },
     {
+      "id": "opportunity-flowchart-angebotsprozess",
+      "type": "project",
+      "title": {
+        "de": "Opportunity Flowchart Angebotsprozess",
+        "en": "Opportunity Flowchart Quotation Process"
+      },
+      "description": {
+        "de": "5 Schritte von der Kundenanfrage bis zum versendeten Angebot — 3 wertsch\u00f6pfende Schritte links, 2 Nacharbeits-Schritte rechts (Nachforderung fehlender Angaben, Korrektur der Kalkulation).",
+        "en": "5 steps from the customer inquiry to the sent quotation \u2014 3 value-added steps on the left, 2 rework steps on the right (chasing missing details, correcting the calculation)."
+      },
+      "source": "DMAIC.io Lehrkonfiguration",
+      "license": "public-domain",
+      "file": "projects/opportunity-flowchart-angebotsprozess.json",
+      "format": "json",
+      "modules": [
+        "opportunity-flowchart"
+      ],
+      "tags": [
+        "analyze",
+        "opportunity-flowchart",
+        "wertstrom"
+      ]
+    },
+    {
       "id": "activity-flowchart-anfrage-zu-angebot",
       "type": "project",
       "title": {

@@ -172,6 +172,18 @@ export class FlowchartState {
   }
 
   /**
+   * loadExample guard: createModule only installs `loadExample` when the Model
+   * prototype has a `hasContent()` — without it a registered example scenario
+   * silently never loads. Living on the Core means every chain module
+   * (Process Map, Activity, Opportunity, Deployment) inherits it; PM keeps its
+   * own identical override.
+   * @returns {boolean} true when at least one step exists
+   */
+  hasContent() {
+    return (this.steps?.length || 0) > 0;
+  }
+
+  /**
    * Serialize the chain to a plain-object persistence payload.
    * Deep-clone via JSON round-trip. Two reasons:
    *   1. Detaches nested arrays/objects (substeps, inputs, outputs, loop, ...)

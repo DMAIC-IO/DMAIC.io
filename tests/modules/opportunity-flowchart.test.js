@@ -109,3 +109,13 @@ suite('OpportunityModel — import mappers', () => {
     assertEqual(target.steps.map((s) => s.title).join(','), 'Anfrage,Prüfung');
   });
 });
+
+suite('OpportunityModel — loadExample guard', () => {
+  test('hasContent() is inherited from the chain core', () => {
+    const m = new OpportunityModel();
+    assertEqual(typeof m.hasContent, 'function');
+    assertEqual(m.hasContent(), false);
+    m.addStep(0, { title: 'A' });
+    assertEqual(m.hasContent(), true);
+  });
+});

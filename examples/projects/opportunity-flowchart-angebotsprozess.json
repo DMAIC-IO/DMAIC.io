@@ -1,0 +1,44 @@
+{
+  "steps": [
+    {
+      "id": "o1",
+      "title": "Kundenanfrage aufnehmen",
+      "description": "Vertrieb erfasst Bedarf, Menge und Wunschtermin direkt im Kundengespräch.",
+      "side": "va",
+      "expanded": false,
+      "substeps": []
+    },
+    {
+      "id": "o2",
+      "title": "Fehlende Angaben nachfordern",
+      "description": "Unvollständige Anfragen gehen zurück an den Kunden — Wartezeit ohne Wertzuwachs.",
+      "side": "nva",
+      "expanded": false,
+      "substeps": []
+    },
+    {
+      "id": "o3",
+      "title": "Angebot kalkulieren",
+      "description": "Preis, Liefertermin und Konditionen werden ermittelt.",
+      "side": "va",
+      "expanded": false,
+      "substeps": []
+    },
+    {
+      "id": "o4",
+      "title": "Kalkulation nach Rückfrage korrigieren",
+      "description": "Die Vertriebsleitung beanstandet die Marge, die Kalkulation wird überarbeitet.",
+      "side": "nva",
+      "expanded": false,
+      "substeps": []
+    },
+    {
+      "id": "o5",
+      "title": "Angebot versenden",
+      "description": "Das freigegebene Angebot geht an den Kunden.",
+      "side": "va",
+      "expanded": false,
+      "substeps": []
+    }
+  ]
+}
