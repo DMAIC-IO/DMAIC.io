@@ -58,6 +58,8 @@ export default createModule({
   data(module, _t) {
     const _core = chainViewMixin(module, _t, {
       autoSizeSelector: 'textarea.pmap__io-name, textarea.pmap__title, textarea.pmap__step-title, textarea.pmap__loop-step-title',
+      dragRowSelector: '.pmap__step-row',
+      substepItemSelector: '.pmap__substep-item',
     });
     return {
       ..._core,
@@ -128,13 +130,6 @@ export default createModule({
       },
 
       // ── Misc view transforms ──────────────────────────────────
-      substepNum(parentIdx, subIdx) {
-        return `${parentIdx + 1  }.${  subIdx + 1}`;
-      },
-      substepsBarLabel(step) {
-        const has = step.substeps && step.substeps.length > 0;
-        return _t('substepsLabel') + (has ? ` (${  step.substeps.length  })` : '');
-      },
       substepsBarClass(step) {
         return (step.substeps && step.substeps.length > 0) ? 'pmap__substeps-bar--has' : '';
       },
@@ -218,18 +213,29 @@ export default createModule({
       },
 
       // ── Substep handlers ──────────────────────────────────────
+      // The mixin already mutates the model; PM only adds its bracket redraw
+      // (and the focus jump on add) on top — hence the explicit _core calls.
       toggleSubsteps(stepId) {
-        this.model.toggleSubsteps(stepId);
+        _core.toggleSubsteps.call(this, stepId);
         this._scheduleBrackets();
       },
       addSubstep(stepId) {
-        this.model.addSubstep(stepId);
+        _core.addSubstep.call(this, stepId);
         this._scheduleBrackets();
         this._focusLastSubstep(stepId);
       },
       removeSubstep(parentId, substepId) {
-        this.model.removeSubstep(parentId, substepId);
+        _core.removeSubstep.call(this, parentId, substepId);
         this._scheduleBrackets();
+      },
+      subDrop(parentId, subId, event) {
+        _core.subDrop.call(this, parentId, subId, event);
+        this._clearDragMarkers();
+        this._scheduleBrackets();
+      },
+      subDragEnd(event) {
+        _core.subDragEnd.call(this, event);
+        this._clearDragMarkers();
       },
 
       // ── Loop handlers ─────────────────────────────────────────
@@ -258,20 +264,16 @@ export default createModule({
       _clearDragMarkers() {
         const sel = '.pmap__step-row--dragging, .pmap__step-row--drag-over, '
           + '.pmap__io-item--dragging, .pmap__io-item--drag-over, '
-          + '.pmap__substep-item--dragging, .pmap__substep-item--drag-over';
+          + '.pmap__substep-item--dragging, .pmap__substep-item--drag-over, '
+          + '.pmap__substep-item.is-dragging, .pmap__substep-item.is-drop-target';
         requestAnimationFrame(() => requestAnimationFrame(() => {
           document.querySelectorAll(sel).forEach((el) => el.classList.remove(
             'pmap__step-row--dragging', 'pmap__step-row--drag-over',
             'pmap__io-item--dragging', 'pmap__io-item--drag-over',
             'pmap__substep-item--dragging', 'pmap__substep-item--drag-over',
+            'is-dragging', 'is-drop-target',
           ));
         }));
-      },
-
-      // ── Step drag (handle = step number) ──────────────────────
-      armStepDrag(stepId, event) {
-        const row = event.target.closest('.pmap__step-row');
-        if (row) row.setAttribute('draggable', 'true');
       },
 
       // ── IO drag (within a step's input or output list) ────────
@@ -325,51 +327,6 @@ export default createModule({
         this._scheduleBrackets();
       },
 
-      // ── Substep drag (within a step) ──────────────────────────
-      armSubDrag(event) {
-        const item = event.target.closest('.pmap__substep-item');
-        if (item) item.setAttribute('draggable', 'true');
-      },
-      subDragStart(parentId, subId, event) {
-        event.stopPropagation();
-        this._draggedSubId = subId;
-        this._draggedParentId = parentId;
-        if (event.dataTransfer) event.dataTransfer.effectAllowed = 'move';
-        const item = event.target.closest('.pmap__substep-item');
-        setTimeout(() => item?.classList.add('pmap__substep-item--dragging'), 0);
-      },
-      subDragEnd(event) {
-        const item = event.target.closest('.pmap__substep-item');
-        item?.removeAttribute('draggable');
-        this._clearDragMarkers();
-        this._draggedSubId = null;
-        this._draggedParentId = null;
-      },
-      subDragOver(parentId, subId, event) {
-        event.preventDefault();
-        event.stopPropagation();
-        if (event.dataTransfer) event.dataTransfer.dropEffect = 'move';
-        if (subId !== this._draggedSubId && parentId === this._draggedParentId) {
-          event.currentTarget.classList.add('pmap__substep-item--drag-over');
-        }
-      },
-      subDragLeave(subId, event) {
-        const item = event.currentTarget;
-        if (!item.contains(event.relatedTarget)) {
-          item.classList.remove('pmap__substep-item--drag-over');
-        }
-      },
-      subDrop(parentId, subId, event) {
-        event.preventDefault();
-        event.stopPropagation();
-        if (!this._draggedSubId || this._draggedSubId === subId) return;
-        if (parentId !== this._draggedParentId) return;
-        this.model.moveSubstep(parentId, this._draggedSubId, subId);
-        this._draggedSubId = null;
-        this._draggedParentId = null;
-        this._clearDragMarkers();
-        this._scheduleBrackets();
-      },
 
       // ── Imperative loop panels + brackets ─────────────────────
       _scheduleBrackets() {

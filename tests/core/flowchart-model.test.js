@@ -258,3 +258,28 @@ suite('FlowchartState — persistence', () => {
     assertEqual(s.steps[0].inputs[0].name, 'in');
   });
 });
+
+suite('FlowchartState — toggleSubsteps', () => {
+  test('flips expanded and back', () => {
+    const s = new FlowchartState();
+    const a = s.addStep(0, { title: 'A' });
+    assertEqual(a.expanded, false);
+    assertEqual(s.toggleSubsteps(a.id), true);
+    assertEqual(s.steps[0].expanded, true);
+    assertEqual(s.toggleSubsteps(a.id), false);
+    assertEqual(s.steps[0].expanded, false);
+  });
+
+  test('materialises a missing substeps array', () => {
+    const s = new FlowchartState();
+    const a = s.addStep(0, { title: 'A' });
+    delete a.substeps;
+    s.toggleSubsteps(a.id);
+    assertEqual(Array.isArray(s.steps[0].substeps), true);
+  });
+
+  test('returns false for an unknown step', () => {
+    const s = new FlowchartState();
+    assertEqual(s.toggleSubsteps('nope'), false);
+  });
+});

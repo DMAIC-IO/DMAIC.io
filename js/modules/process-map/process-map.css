@@ -283,41 +283,10 @@
 }
 
 /* ===== Step Card ===== */
-.pmap__step-card {
-  background: var(--color-bg-secondary);
-  border: var(--border-width) solid var(--color-border-secondary);
-  border-radius: var(--border-radius-lg);
-  transition: border-color var(--transition-speed), box-shadow var(--transition-speed), transform 0.15s;
-}
-
-.pmap__step-card:hover {
-  border-color: var(--color-border-primary);
-  box-shadow: var(--shadow-md);
-}
-
-.pmap__step-header {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-sm);
-  padding: var(--spacing-sm) var(--spacing-md);
-  border-bottom: var(--border-width) solid var(--color-border-secondary);
-}
-
-.pmap__step-number {
-  font-family: var(--font-family-mono);
-  font-size: var(--font-size-xs);
-  font-weight: var(--font-weight-medium);
-  color: var(--color-pmap-step-accent);
-  background: var(--color-pmap-step-accent-bg);
-  padding: 2px var(--spacing-sm);
-  border-radius: var(--border-radius-sm);
-  flex-shrink: 0;
-  cursor: grab;
-}
-
-.pmap__step-number:active {
-  cursor: grabbing;
-}
+/* Card shell, header, number badge, title, actions, delete button, body and
+   description all come from `.fc-*` in js/core/flowchart/flowchart.css —
+   Process Map's markup carries those classes alongside its own BEM names.
+   Only the PM-only pieces (value badge, loop toggle, substeps, IO) stay here. */
 
 /* ===== Value Type Badge ===== */
 .pmap__value-badge {
@@ -372,63 +341,6 @@
   opacity: 0.8;
 }
 
-.pmap__step-title {
-  flex: 1;
-  background: none;
-  border: none;
-  color: var(--color-text-primary);
-  font-family: var(--font-family);
-  font-size: var(--font-size-md);
-  font-weight: var(--font-weight-semibold);
-  outline: none;
-  min-width: 0;
-}
-
-.pmap__step-title::placeholder {
-  color: var(--color-text-tertiary);
-}
-
-.pmap__step-actions {
-  display: flex;
-  gap: var(--spacing-xs);
-  opacity: 0;
-  transition: opacity var(--transition-speed);
-}
-
-.pmap__step-card:hover .pmap__step-actions {
-  opacity: 1;
-}
-
-.pmap__step-delete {
-  width: 28px;
-  height: 28px;
-  padding: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: var(--border-radius-sm);
-  border: none;
-  background: transparent;
-  color: var(--color-text-tertiary);
-  cursor: pointer;
-  transition: all var(--transition-speed);
-}
-
-.pmap__step-delete:hover {
-  color: var(--color-error);
-  background: rgb(255 59 48 / 10%);
-}
-
-.pmap__step-body {
-  padding: var(--spacing-sm) var(--spacing-md);
-}
-
-/* .field .field--ghost base — only the compact height is local. The
-   `textarea.…` selector beats the field base's `resize: vertical`. */
-textarea.pmap__step-description {
-  min-height: 44px;
-  resize: none;
-}
 
 /* ===== Horizontal Connector =====
    Absolute-positioned inside the card cell (.pmap__cell--step). The
@@ -529,11 +441,16 @@ textarea.pmap__step-description {
   background: var(--color-bg-primary);
 }
 
-.pmap__substep-item--dragging {
+/* The chain-core's substep drag handlers toggle the generic is-dragging /
+   is-drop-target classes; PM's own modifiers are kept as aliases so nothing
+   that still sets them (e.g. the defensive _clearDragMarkers sweep) breaks. */
+.pmap__substep-item--dragging,
+.pmap__substep-item.is-dragging {
   opacity: 0.4;
 }
 
-.pmap__substep-item--drag-over {
+.pmap__substep-item--drag-over,
+.pmap__substep-item.is-drop-target {
   box-shadow: 0 -2px 0 0 var(--color-accent);
 }
 

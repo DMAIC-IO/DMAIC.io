@@ -42,3 +42,57 @@ suite('chainViewMixin — stepNum', () => {
     assertEqual(m.stepNum(99), '100');
   });
 });
+
+suite('chainViewMixin — substeps', () => {
+  function ctx(state) {
+    return Object.assign(Object.create(null), chainViewMixin(null, (k) => k), { model: state });
+  }
+
+  test('substepNum builds a hierarchical label', () => {
+    const m = chainViewMixin(null, (k) => k);
+    assertEqual(m.substepNum(1, 2), '2.3');
+  });
+
+  test('substepsBarLabel appends the count only when non-empty', () => {
+    const m = chainViewMixin(null, (k) => k);
+    assertEqual(m.substepsBarLabel({ substeps: [] }), 'substepsLabel');
+    assertEqual(m.substepsBarLabel({ substeps: [1, 2] }), 'substepsLabel (2)');
+    assertEqual(m.substepsBarLabel(undefined), 'substepsLabel');
+  });
+
+  test('subDrop reorders within one parent and ignores cross-parent drops', () => {
+    const moves = [];
+    const c = ctx({ moveSubstep: (p, f, t) => { moves.push([p, f, t]); return true; } });
+    const evt = () => ({ preventDefault() {}, stopPropagation() {}, currentTarget: { classList: { remove() {} } } });
+
+    c.subDragStart('p1', 's1', { stopPropagation() {}, target: {} });
+    c.subDrop('p1', 's2', evt());
+    assertEqual(moves.length, 1);
+    assertEqual(moves[0].join(','), 'p1,s1,s2');
+
+    // A drop on a different parent must not move anything.
+    c.subDragStart('p1', 's1', { stopPropagation() {}, target: {} });
+    c.subDrop('p2', 's9', evt());
+    assertEqual(moves.length, 1);
+  });
+
+  test('subDrop on the dragged substep itself is a no-op', () => {
+    let called = 0;
+    const c = ctx({ moveSubstep: () => { called++; return true; } });
+    const evt = () => ({ preventDefault() {}, stopPropagation() {}, currentTarget: { classList: { remove() {} } } });
+    c.subDragStart('p1', 's1', { stopPropagation() {}, target: {} });
+    c.subDrop('p1', 's1', evt());
+    assertEqual(called, 0);
+  });
+
+  test('toggleSubsteps/addSubstep/removeSubstep delegate to the model', () => {
+    const calls = [];
+    const c = ctx({
+      toggleSubsteps: (id) => calls.push(['toggle', id]),
+      addSubstep: (id) => calls.push(['add', id]),
+      removeSubstep: (p, s) => calls.push(['remove', p, s]),
+    });
+    c.toggleSubsteps('a'); c.addSubstep('a'); c.removeSubstep('a', 'b');
+    assertEqual(calls.map((x) => x[0]).join(','), 'toggle,add,remove');
+  });
+});

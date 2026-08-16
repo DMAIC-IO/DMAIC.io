@@ -76,34 +76,34 @@
                       </div>
                     </template>
 
-                    <div class="pmap__step-card">
-                      <div class="pmap__step-header">
-                        <span class="pmap__step-number" x-text="stepNum(idx)"
+                    <div class="pmap__step-card fc-card">
+                      <div class="pmap__step-header fc-card__header">
+                        <span class="pmap__step-number fc-step-number" x-text="stepNum(idx)"
                               @mousedown="armStepDrag(step.id, $event)"></span>
                         <button class="pmap__value-badge" :class="valueBadgeClass(step)"
                                 data-action="cycle-value" :data-step-id="step.id"
                                 :title="valueBadgeTitle(step)"
                                 @click.stop="cycleValueType(step.id)"
                                 x-text="valueBadgeLabel(step)"></button>
-                        <input class="pmap__step-title" type="text" :placeholder="t('stepNamePlaceholder')"
+                        <input class="pmap__step-title fc-card__title" type="text" :placeholder="t('stepNamePlaceholder')"
                                data-field="title" :data-step-id="step.id"
                                x-model="step.title">
-                        <div class="pmap__step-actions">
+                        <div class="pmap__step-actions fc-card__actions">
                           <button class="pmap__step-loop-toggle" :class="loopToggleClass(step)"
                                   data-action="toggle-loop" :data-step-id="step.id"
                                   :title="t('loopLabel')"
                                   @click.stop="toggleLoop(step.id)">
                             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 2l4 4-4 4"/><path d="M3 11V9a4 4 0 014-4h14"/><path d="M7 22l-4-4 4-4"/><path d="M21 13v2a4 4 0 01-4 4H3"/></svg>
                           </button>
-                          <button class="pmap__step-delete" data-action="remove-step" :data-step-id="step.id"
+                          <button class="pmap__step-delete fc-card__delete" data-action="remove-step" :data-step-id="step.id"
                                   :title="t('common.delete')"
                                   @click.stop="removeStep(step.id)">
                             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg>
                           </button>
                         </div>
                       </div>
-                      <div class="pmap__step-body">
-                        <textarea class="field field--ghost pmap__step-description" :placeholder="t('descriptionPlaceholder')"
+                      <div class="pmap__step-body fc-card__body">
+                        <textarea class="field field--ghost pmap__step-description fc-card__description" :placeholder="t('descriptionPlaceholder')"
                                   data-field="description" :data-step-id="step.id"
                                   x-model="step.description"></textarea>
                       </div>

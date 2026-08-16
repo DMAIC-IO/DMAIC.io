@@ -184,13 +184,6 @@ export class State extends FlowchartState {
 
   // ─── Substeps ───────────────────────────────────────────────
 
-  toggleSubsteps(stepId) {
-    const step = this.findStep(stepId);
-    if (!step) return;
-    if (!Array.isArray(step.substeps)) step.substeps = [];
-    step.expanded = !step.expanded;
-  }
-
   /**
    * Add an empty substep to a step.
    * @param {string} stepId

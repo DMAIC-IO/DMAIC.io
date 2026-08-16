@@ -135,6 +135,20 @@ export class FlowchartState {
   }
 
   /**
+   * Toggle a step's substep disclosure. Touches only Core fields
+   * (`expanded` / `substeps`), so it belongs here rather than in a module.
+   * @param {string} stepId
+   * @returns {boolean} the new expanded state, or false if the step is unknown
+   */
+  toggleSubsteps(stepId) {
+    const step = this.steps.find((s) => s.id === stepId);
+    if (!step) return false;
+    if (!Array.isArray(step.substeps)) step.substeps = [];
+    step.expanded = !step.expanded;
+    return step.expanded;
+  }
+
+  /**
    * Remove a substep from a parent step by id.
    * @param {string} parentId
    * @param {string} substepId
