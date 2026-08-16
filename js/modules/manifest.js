@@ -385,6 +385,16 @@ export default [
     },
   },
   {
+    id: 'deployment-flowchart',
+    phase: 'analyze',
+    load: () => import('./deployment-flowchart/deployment-flowchart.js'),
+    cycles: {
+      dmaic:  { phase: 'analyze'   },
+      dmadv:  { phase: 'analyze'   },
+      eightd: { phase: 'rootcause' },
+    },
+  },
+  {
     id: 'correlation',
     phase: 'analyze',
     load: () => import('./correlation/correlation.js'),

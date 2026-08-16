@@ -2195,6 +2195,27 @@
       "importDone": "{n} step(s) imported",
       "exportImageComingSoon": "Image export lands in a later release."
     },
+    "deployment-flowchart": {
+      "name": "Deployment Flowchart",
+      "description": "Process chain across role lanes — makes hand-offs visible",
+      "titlePlaceholder": "Step …",
+      "lanes": "Roles / departments",
+      "laneHint": "Clicking a role makes it the active lane — new steps land there. Drag steps onto another lane to reassign them.",
+      "addStep": "Add step",
+      "addLane": "Add role",
+      "removeLane": "Remove role",
+      "unnamedLane": "New role …",
+      "unassigned": "Unassigned",
+      "deleteStep": "Delete step",
+      "emptyHint": "No roles yet — add a role from the toolbar, then add steps.",
+      "importFrom": "Import from …",
+      "importTitle": "Import steps",
+      "importHint": "Pick a source. Its steps are appended to the end of the chain and start out in \u201cUnassigned\u201d.",
+      "importConfirm": "Import",
+      "importEmptyHint": "No matching source (SIPOC / Process Map) found in this project.",
+      "importDone": "{n} step(s) imported",
+      "exportImageComingSoon": "Image export lands in a later release."
+    },
     "correlation": {
       "name": "Correlation Analysis",
       "description": "Pearson, Spearman, and Kendall correlation between variables",

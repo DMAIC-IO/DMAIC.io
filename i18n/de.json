@@ -2195,6 +2195,27 @@
       "importDone": "{n} Schritt(e) übernommen",
       "exportImageComingSoon": "Bild-Export folgt in einer späteren Version."
     },
+    "deployment-flowchart": {
+      "name": "Deployment Flowchart",
+      "description": "Prozesskette über Rollen-Lanes — macht Übergaben sichtbar",
+      "titlePlaceholder": "Schritt …",
+      "lanes": "Rollen / Abteilungen",
+      "laneHint": "Klick auf eine Rolle macht sie zur aktiven Lane — neue Schritte landen dort. Schritte per Drag & Drop in eine andere Lane ziehen.",
+      "addStep": "Schritt hinzufügen",
+      "addLane": "Rolle hinzufügen",
+      "removeLane": "Rolle entfernen",
+      "unnamedLane": "Neue Rolle …",
+      "unassigned": "Nicht zugeordnet",
+      "deleteStep": "Schritt löschen",
+      "emptyHint": "Noch keine Rollen — über die Symbolleiste eine Rolle anlegen und danach Schritte hinzufügen.",
+      "importFrom": "Importieren aus …",
+      "importTitle": "Schritte übernehmen",
+      "importHint": "Wähle eine Quelle aus. Ihre Schritte werden ans Ende der Kette angehängt und landen zunächst in „Nicht zugeordnet\u201c.",
+      "importConfirm": "Übernehmen",
+      "importEmptyHint": "Keine passende Quelle (SIPOC / Process Map) im Projekt gefunden.",
+      "importDone": "{n} Schritt(e) übernommen",
+      "exportImageComingSoon": "Bild-Export folgt in einer späteren Version."
+    },
     "correlation": {
       "name": "Korrelationsanalyse",
       "description": "Pearson-, Spearman- und Kendall-Korrelation zwischen Variablen",

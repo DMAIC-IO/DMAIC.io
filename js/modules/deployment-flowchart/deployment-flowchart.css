@@ -1,0 +1,179 @@
+/**
+ * D.Mike — Deployment Flowchart Module (deployment-flowchart.css)
+ * Lane sidebar, horizontal lane bands, step cards, and the cross-module
+ * import picker form.
+ */
+
+/* ── Body split: lane sidebar | lane canvas ─────────────────────────── */
+.df__body {
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  height: 100%;
+  min-height: 240px;
+}
+
+/* ── Sidebar ────────────────────────────────────────────────────────── */
+.df__sidebar {
+  border-right: 1px solid var(--color-border-primary);
+  padding: var(--spacing-md);
+  overflow: auto;
+}
+.df__sidebar-title {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  margin-bottom: var(--spacing-sm);
+}
+.df__sidebar-hint {
+  margin-top: var(--spacing-sm);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+}
+.df__lane-list { list-style: none; margin: 0; padding: 0; }
+.df__lane-item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--border-radius-sm);
+  border: 1px solid transparent;
+  cursor: pointer;
+}
+.df__lane-item--active {
+  border-color: var(--color-accent);
+  background: var(--color-accent-light);
+}
+.df__lane-name {
+  flex: 1;
+  min-width: 0;
+  background: transparent;
+  border: none;
+  font: inherit;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-primary);
+  padding: 0;
+}
+.df__lane-name:focus { outline: none; }
+.df__lane-name--fixed { color: var(--color-text-secondary); font-style: italic; }
+.df__lane-remove {
+  flex: 0 0 auto;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: var(--color-text-secondary);
+  line-height: 1;
+  padding: 0;
+}
+.df__lane-remove:hover { color: var(--color-error); }
+
+/* ── Canvas / lane bands ────────────────────────────────────────────── */
+.df__canvas {
+  padding: var(--spacing-md);
+  overflow: auto;
+}
+.df__empty-hint {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  padding: var(--spacing-md) 0;
+}
+.df__band {
+  display: grid;
+  grid-template-columns: 140px 1fr;
+  gap: var(--spacing-md);
+  align-items: center;
+  padding: var(--spacing-md) var(--spacing-xs);
+  border-bottom: 1px dashed var(--color-border-primary);
+  min-height: 72px;
+}
+.df__band--active { background: var(--color-bg-secondary); }
+.df__band-label {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--color-text-secondary);
+}
+.df__band-flow {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  flex-wrap: wrap;
+}
+
+/* ── Step card ──────────────────────────────────────────────────────── */
+.df__step {
+  position: relative;
+  background: var(--color-bg-elevated);
+  border: 1px solid var(--color-border-primary);
+  border-radius: var(--border-radius);
+  padding: var(--spacing-md);
+  padding-right: var(--spacing-lg);
+  min-width: 160px;
+  max-width: 260px;
+}
+.df__step.is-dragging { opacity: 0.5; }
+.df__step.is-drop-target {
+  outline: 2px dashed var(--color-accent);
+  outline-offset: 2px;
+}
+.df__step-title {
+  width: 100%;
+  min-height: 2.5em;
+  resize: none;
+  border: none;
+  background: transparent;
+  color: var(--color-text-primary);
+  font-family: inherit;
+  font-size: var(--font-size-md);
+  overflow: hidden;
+}
+.df__step-title:focus { outline: none; }
+.df__delete {
+  position: absolute;
+  top: var(--spacing-xs);
+  right: var(--spacing-xs);
+  border: none;
+  background: transparent;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  font-size: var(--font-size-md);
+  line-height: 1;
+  padding: 0;
+}
+.df__delete:hover { color: var(--color-error); }
+
+/* ── Import picker form (borrowed into the shared modal) ────────────── */
+.df__import-form { display: none; }
+.df__import-hint {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  margin-bottom: var(--spacing-sm);
+}
+.df__import-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  max-height: 320px;
+  overflow-y: auto;
+}
+.df__import-option {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm);
+  border: 1px solid var(--color-border-primary);
+  border-radius: var(--border-radius-sm);
+  cursor: pointer;
+}
+.df__import-option--selected {
+  border-color: var(--color-accent);
+  background: var(--color-accent-light);
+}
+.df__import-option-source {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  flex: 0 0 auto;
+}
+.df__import-option-title {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-primary);
+}
