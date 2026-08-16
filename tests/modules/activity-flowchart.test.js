@@ -51,3 +51,36 @@ suite('ActivityModel — normalizer', () => {
     assertEqual(out.steps[1].decision.noTarget, 's1');
   });
 });
+
+suite('ActivityModel — decisions', () => {
+  test('addDecision creates a decision step with default targets', () => {
+    const m = new ActivityModel();
+    const d = m.addDecision(0, { title: 'D?' });
+    assertEqual(d.kind, 'decision');
+    assertEqual(d.decision.yesTarget, 'next');
+    assertEqual(d.decision.noTarget, 'next');
+    assertEqual(m.steps[0].id, d.id);
+  });
+
+  test('setDecisionTarget updates yes/no targets', () => {
+    const m = new ActivityModel();
+    m.addStep(0, { title: 'A' });
+    const d = m.addDecision(1, { title: 'D?' });
+    assertEqual(m.setDecisionTarget(d.id, 'yes', 'end'), true);
+    assertEqual(m.setDecisionTarget(d.id, 'no', m.steps[0].id), true);
+    assertEqual(d.decision.yesTarget, 'end');
+    assertEqual(d.decision.noTarget, m.steps[0].id);
+  });
+
+  test('setDecisionTarget rejects on non-decision step', () => {
+    const m = new ActivityModel();
+    const a = m.addStep(0, { title: 'A' });
+    assertEqual(m.setDecisionTarget(a.id, 'yes', 'end'), false);
+  });
+
+  test('setDecisionTarget rejects unknown branch', () => {
+    const m = new ActivityModel();
+    const d = m.addDecision(0);
+    assertEqual(m.setDecisionTarget(d.id, 'maybe', 'end'), false);
+  });
+});
