@@ -9,13 +9,13 @@ export default {
       de: {
         title: 'Aufbau',
         blocks: [
-          { type: 'paragraph', content: 'Das Opportunity Flowchart teilt einen Ablauf in zwei Spalten: links die wertschöpfenden Schritte (VA), rechts die nicht wertschöpfenden Schritte — Nacharbeit, Warten, Prüfen, Korrigieren (NVA). Die Reihenfolge läuft von oben nach unten und ist spaltenübergreifend: Zeile für Zeile durchläuft der Prozess genau einen Schritt, egal in welcher Spalte er steht. Je mehr Karten rechts stehen, desto mehr Aufwand steckt im Prozess, der für den Kunden keinen Wert erzeugt.' },
+          { type: 'paragraph', content: 'Das Opportunity Flowchart teilt einen Ablauf in zwei Bahnen: oben die wertschöpfenden Schritte (VA), unten die nicht wertschöpfenden — Nacharbeit, Warten, Prüfen, Korrigieren (NVA). Die Kette läuft wie in allen Flowcharts von links nach rechts; die Bahn ist ausschließlich die vertikale Position. Je mehr Karten in der unteren Bahn liegen, desto mehr Aufwand steckt im Prozess, der für den Kunden keinen Wert erzeugt.' },
         ],
       },
       en: {
         title: 'Structure',
         blocks: [
-          { type: 'paragraph', content: 'The Opportunity Flowchart splits a process into two columns: value-added steps (VA) on the left, non-value-added steps on the right — rework, waiting, inspecting, correcting (NVA). The sequence runs top to bottom across both columns: each row is exactly one step, no matter which column it sits in. The more cards on the right, the more effort the process spends without creating customer value.' },
+          { type: 'paragraph', content: 'The Opportunity Flowchart splits a process into two bands: value-added steps (VA) on top, non-value-added ones below — rework, waiting, inspecting, correcting (NVA). The chain runs left to right as in every flowchart; the band is purely the vertical position. The more cards in the lower band, the more effort the process spends without creating customer value.' },
         ],
       },
     },
@@ -39,13 +39,13 @@ export default {
       de: {
         title: 'Bedienung',
         blocks: [
-          { type: 'paragraph', content: 'Über „Schritt links (VA) hinzufügen" bzw. „Schritt rechts (NVA) hinzufügen" wird ein neuer Schritt am Ende der Kette in der jeweiligen Spalte angelegt. Der Pfeil-Knopf auf einer Karte verschiebt sie in die andere Spalte, ohne ihre Position in der Reihenfolge zu ändern. Der `»`-Knopf zwischen zwei Zeilen öffnet ein kleines Menü und fügt an dieser Stelle einen Schritt links oder rechts ein. Karten lassen sich per Drag & Drop umsortieren. Über „Importieren aus …" werden Schritte aus einer bestehenden Process-Map- oder SIPOC-Instanz übernommen.' },
+          { type: 'paragraph', content: 'Über „Schritt links (VA) hinzufügen" bzw. „Schritt rechts (NVA) hinzufügen" wird ein neuer Schritt am Ende der Kette in der jeweiligen Bahn angelegt. Der Pfeil-Knopf auf einer Karte (↓ bzw. ↑) schiebt sie in die andere Bahn, ohne ihre Position in der Kette zu ändern. Der `»`-Knopf zwischen zwei Spalten öffnet ein kleines Menü und fügt an dieser Stelle einen Schritt oben (VA) oder unten (NVA) ein. Karten werden an der blauen Nummer gegriffen: Ziehen auf eine andere Karte sortiert die Kette um, Ziehen in die andere Bahn wechselt die Einstufung. Über „Detail-Schritte" lässt sich jede Karte in Unter-Schritte aufklappen. Über „Importieren aus …" werden Schritte aus einer bestehenden Process-Map- oder SIPOC-Instanz übernommen.' },
         ],
       },
       en: {
         title: 'How to use',
         blocks: [
-          { type: 'paragraph', content: 'Use "Add step left (VA)" or "Add step right (NVA)" to append a step to the end of the chain in that column. The arrow button on a card moves it to the other column without changing its position in the sequence. The `»` button between two rows opens a small menu and inserts a step at that position, left or right. Cards can be reordered by drag and drop. "Import from …" pulls steps in from an existing Process Map or SIPOC instance.' },
+          { type: 'paragraph', content: 'Use "Add step left (VA)" or "Add step right (NVA)" to append a step to the end of the chain in that band. The arrow button on a card (↓ or ↑) moves it to the other band without changing its position in the chain. The `»` button between two columns opens a small menu and inserts a step there, top (VA) or bottom (NVA). Cards are grabbed by their blue number: drop one on another card to reorder the chain, drop it in the other band to re-classify it. "Detail steps" expands any card into sub-steps. "Import from …" pulls steps in from an existing Process Map or SIPOC instance.' },
         ],
       },
     },
@@ -54,13 +54,13 @@ export default {
       de: {
         title: 'Import und Wert-Einstufung',
         blocks: [
-          { type: 'paragraph', content: 'Beim Import aus einer Process Map wird deren dreistufige Wert-Einstufung auf die zwei Spalten abgebildet: „wertschöpfend" bleibt links, „nicht wertschöpfend" wandert nach rechts, und „notwendig, aber nicht wertschöpfend" (BNVA) landet ebenfalls rechts — es ist Aufwand, den der Kunde nicht bezahlt, auch wenn er heute nicht entfallen kann. Schritte ohne Einstufung landen links. Aus SIPOC kommen alle Schritte links an, weil dort keine Wert-Information hinterlegt ist; die Einstufung erfolgt danach von Hand über den Pfeil-Knopf.' },
+          { type: 'paragraph', content: 'Beim Import aus einer Process Map wird deren dreistufige Wert-Einstufung auf die zwei Spalten abgebildet: „wertschöpfend" bleibt oben, „nicht wertschöpfend" wandert nach unten, und „notwendig, aber nicht wertschöpfend" (BNVA) landet ebenfalls unten — es ist Aufwand, den der Kunde nicht bezahlt, auch wenn er heute nicht entfallen kann. Schritte ohne Einstufung landen oben. Aus SIPOC kommen alle Schritte oben an, weil dort keine Wert-Information hinterlegt ist; die Einstufung erfolgt danach von Hand über den Pfeil-Knopf.' },
         ],
       },
       en: {
         title: 'Import and value classification',
         blocks: [
-          { type: 'paragraph', content: 'Importing from a Process Map maps its three-level value classification onto the two columns: "value-added" stays left, "non-value-added" moves right, and "business-necessary but non-value-added" (BNVA) also moves right — it is effort the customer does not pay for, even if it cannot be dropped today. Steps without a classification land on the left. SIPOC carries no value information, so all its steps arrive on the left and are classified by hand afterwards via the arrow button.' },
+          { type: 'paragraph', content: 'Importing from a Process Map maps its three-level value classification onto the two columns: "value-added" stays in the top band, "non-value-added" moves down, and "business-necessary but non-value-added" (BNVA) also moves down — it is effort the customer does not pay for, even if it cannot be dropped today. Steps without a classification land on top. SIPOC carries no value information, so all its steps arrive in the top band and are classified by hand afterwards via the arrow button.' },
         ],
       },
     },

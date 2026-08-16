@@ -39,13 +39,13 @@ export default {
       de: {
         title: 'Bedienung',
         blocks: [
-          { type: 'paragraph', content: 'Über „Aktivität hinzufügen" wird ein neuer Schritt am Ende der Kette angelegt, über „Entscheidung hinzufügen" eine Raute mit Ja/Nein-Ausgängen. Ein Klick auf ein Ja/Nein-Label öffnet den Target-Picker, in dem der nächste Schritt, das Prozessende oder ein beliebiger anderer Schritt als Ziel gewählt werden kann. Über „Importieren aus …" lassen sich Schritte aus einer bestehenden SIPOC- oder Process-Map-Instanz übernehmen.' },
+          { type: 'paragraph', content: 'Über „Aktivität hinzufügen" wird ein neuer Schritt am Ende der Kette angelegt, über „Entscheidung hinzufügen" eine Raute mit Ja/Nein-Ausgängen. Ein Klick auf ein Ja/Nein-Label öffnet den Target-Picker, in dem der nächste Schritt, das Prozessende oder ein beliebiger anderer Schritt als Ziel gewählt werden kann. Karten werden an der blauen Nummer gegriffen und per Drag & Drop umsortiert; überall sonst bleibt der Text markierbar. Über „Detail-Schritte" lässt sich jede Karte in Unter-Schritte aufklappen. Über „Importieren aus …" lassen sich Schritte aus einer bestehenden SIPOC- oder Process-Map-Instanz übernehmen.' },
         ],
       },
       en: {
         title: 'How to use',
         blocks: [
-          { type: 'paragraph', content: 'Use "Add activity" to append a new step at the end of the chain, and "Add decision" for a diamond with Yes/No outputs. Clicking a Yes/No label opens the target picker, where the next step, the process end, or any other step can be chosen as the target. "Import from …" pulls steps in from an existing SIPOC or Process Map instance.' },
+          { type: 'paragraph', content: 'Use "Add activity" to append a new step at the end of the chain, and "Add decision" for a diamond with Yes/No outputs. Clicking a Yes/No label opens the target picker, where the next step, the process end, or any other step can be chosen as the target. Cards are grabbed by their blue number to reorder them, so text stays selectable everywhere else. "Detail steps" expands any card into sub-steps. "Import from …" pulls steps in from an existing SIPOC or Process Map instance.' },
         ],
       },
     },
