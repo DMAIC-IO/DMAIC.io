@@ -1,0 +1,49 @@
+{
+  "lanes": [
+    { "id": "lane-kunde", "name": "Kunde", "order": 0 },
+    { "id": "lane-vertrieb", "name": "Vertrieb", "order": 1 },
+    { "id": "lane-fertigung", "name": "Fertigung", "order": 2 }
+  ],
+  "steps": [
+    {
+      "id": "d1",
+      "title": "Bestellung aufgeben",
+      "description": "Der Kunde bestellt über das Portal oder per E-Mail.",
+      "laneId": "lane-kunde",
+      "expanded": false,
+      "substeps": []
+    },
+    {
+      "id": "d2",
+      "title": "Auftrag erfassen",
+      "description": "Vertrieb prüft die Bestellung und legt den Auftrag im ERP an.",
+      "laneId": "lane-vertrieb",
+      "expanded": false,
+      "substeps": []
+    },
+    {
+      "id": "d3",
+      "title": "Auftragsbestätigung senden",
+      "description": "Vertrieb bestätigt Menge, Preis und Liefertermin.",
+      "laneId": "lane-vertrieb",
+      "expanded": false,
+      "substeps": []
+    },
+    {
+      "id": "d4",
+      "title": "Auftrag fertigen",
+      "description": "Fertigung produziert und meldet den Auftrag fertig.",
+      "laneId": "lane-fertigung",
+      "expanded": false,
+      "substeps": []
+    },
+    {
+      "id": "d5",
+      "title": "Ware annehmen",
+      "description": "Der Kunde nimmt die Lieferung an und quittiert.",
+      "laneId": "lane-kunde",
+      "expanded": false,
+      "substeps": []
+    }
+  ]
+}

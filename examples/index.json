@@ -2974,6 +2974,30 @@
       ]
     },
     {
+      "id": "deployment-flowchart-auftragsdurchlauf",
+      "type": "project",
+      "title": {
+        "de": "Deployment Flowchart Auftragsdurchlauf",
+        "en": "Deployment Flowchart Order Flow"
+      },
+      "description": {
+        "de": "5 Schritte von der Bestellung bis zur Warenannahme, verteilt auf die drei Lanes Kunde, Vertrieb und Fertigung \u2014 vier \u00dcbergaben werden als Lane-Wechsel sichtbar.",
+        "en": "5 steps from order to goods receipt across three lanes \u2014 customer, sales, and production \u2014 with four hand-offs made visible as lane switches."
+      },
+      "source": "DMAIC.io Lehrkonfiguration",
+      "license": "public-domain",
+      "file": "projects/deployment-flowchart-auftragsdurchlauf.json",
+      "format": "json",
+      "modules": [
+        "deployment-flowchart"
+      ],
+      "tags": [
+        "analyze",
+        "deployment-flowchart",
+        "swimlane"
+      ]
+    },
+    {
       "id": "opportunity-flowchart-angebotsprozess",
       "type": "project",
       "title": {
