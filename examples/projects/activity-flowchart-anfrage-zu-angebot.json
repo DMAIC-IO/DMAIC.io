@@ -1,0 +1,62 @@
+{
+  "steps": [
+    {
+      "id": "s1",
+      "title": "Anfrage erfassen",
+      "description": "Vertrieb erfasst die eingehende Kundenanfrage im CRM (Produkt, Menge, Wunschtermin).",
+      "kind": "activity",
+      "decision": null,
+      "expanded": false,
+      "substeps": []
+    },
+    {
+      "id": "s2",
+      "title": "Machbarkeit prüfen",
+      "description": "Engineering prüft technische Umsetzbarkeit und verfügbare Kapazität.",
+      "kind": "activity",
+      "decision": null,
+      "expanded": false,
+      "substeps": []
+    },
+    {
+      "id": "s3",
+      "title": "Angebot kalkulieren",
+      "description": "Preis- und Liefertermin-Kalkulation auf Basis der Machbarkeitsprüfung.",
+      "kind": "activity",
+      "decision": null,
+      "expanded": false,
+      "substeps": []
+    },
+    {
+      "id": "s4",
+      "title": "Angebot freigegeben?",
+      "description": "Vertriebsleitung prüft Kalkulation und Konditionen.",
+      "kind": "decision",
+      "decision": {
+        "label": "Angebot freigegeben?",
+        "yesTarget": "next",
+        "noTarget": "s3"
+      },
+      "expanded": false,
+      "substeps": []
+    },
+    {
+      "id": "s5",
+      "title": "Angebot versenden",
+      "description": "Freigegebenes Angebot geht an den Kunden raus.",
+      "kind": "activity",
+      "decision": null,
+      "expanded": false,
+      "substeps": []
+    },
+    {
+      "id": "s6",
+      "title": "Auftragsbestätigung erstellen",
+      "description": "Nach Kundenzusage wird die Auftragsbestätigung erstellt.",
+      "kind": "activity",
+      "decision": null,
+      "expanded": false,
+      "substeps": []
+    }
+  ]
+}

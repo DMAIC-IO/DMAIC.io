@@ -2972,6 +2972,30 @@
         "doe-training",
         "sequential-blocks"
       ]
+    },
+    {
+      "id": "activity-flowchart-anfrage-zu-angebot",
+      "type": "project",
+      "title": {
+        "de": "Activity Flowchart Anfrage-zu-Angebot",
+        "en": "Activity Flowchart Quote Request"
+      },
+      "description": {
+        "de": "6 Schritte vom Erfassen der Kundenanfrage bis zur Auftragsbestätigung — 5 Aktivitäten plus eine Freigabe-Entscheidung, deren Nein-Zweig als Rework-Loop zurück auf die Angebotskalkulation zeigt.",
+        "en": "6 steps from capturing a customer inquiry to the order confirmation — 5 activities plus one approval decision whose no-branch loops back to the quote calculation as a rework loop."
+      },
+      "source": "DMAIC.io Lehrkonfiguration",
+      "license": "public-domain",
+      "file": "projects/activity-flowchart-anfrage-zu-angebot.json",
+      "format": "json",
+      "modules": [
+        "activity-flowchart"
+      ],
+      "tags": [
+        "analyze",
+        "activity-flowchart",
+        "rfq-prozess"
+      ]
     }
   ]
 }
