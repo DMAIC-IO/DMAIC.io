@@ -551,10 +551,15 @@ export class Workspace {
     //    modal inside loadExample() that never resolves headless and HANGS the
     //    whole seed. A freshly seeded instance holds only defaults, so there is
     //    nothing to protect — confirming the "overwrite" is always correct.
+    //  • detached → a module that opens a modal on its OWN initiative (Process
+    //    Map offers its SIPOC import to a fresh instance) is not covered by the
+    //    two hooks above: its modal would survive the seed and block the page.
+    //    Such modules check this flag and stay silent.
     const context = {
       ...this._buildContext(instanceId),
       notify: () => {},
       confirmPopout: async () => true,
+      detached: true,
       ...extraContext,
     };
     try {

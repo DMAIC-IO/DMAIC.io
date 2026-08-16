@@ -55,3 +55,25 @@ suite('ui/workspace detached lifecycle', () => {
     assertTrue(true);
   });
 });
+
+suite('ui/workspace detached mount — headless contract', () => {
+  test('marks the context detached so modules can skip user-facing UI', async () => {
+    // A detached mount drives no UI: notify is a no-op and confirmPopout
+    // auto-confirms. Modules that open a modal on their OWN initiative (e.g.
+    // Process Map offering its SIPOC import to a fresh instance) cannot be
+    // covered by those two hooks — a modal opened during a dev-tools seed
+    // stays on screen and blocks the page. The flag lets them opt out.
+    let seen = null;
+    const ws = makeWorkspace(async (_id, _el, ctx) => { seen = ctx; return {}; });
+    await ws.instantiateDetached('i1', 'process-map');
+    assertEqual(seen.detached, true);
+    assertEqual(typeof seen.notify, 'function');
+    assertEqual(typeof seen.confirmPopout, 'function');
+  });
+
+  test('a normally mounted module is not marked detached', () => {
+    const ws = makeWorkspace(async () => ({}));
+    const ctx = ws._buildContext('i2');
+    assertTrue(!ctx.detached);
+  });
+});

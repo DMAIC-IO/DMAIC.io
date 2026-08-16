@@ -722,6 +722,10 @@ export default createModule({
         // picker does not reappear on later tab switches.
         this.$nextTick(() => {
           const sm = module._context.stateManager;
+          // A headless/detached mount (dev-tools seeding, scenario loading)
+          // must not open UI of its own — the modal would outlive the seed and
+          // block the page. See workspace.instantiateDetached.
+          if (module._context.detached) return;
           const isFresh = sm.getModuleState(module._context.instanceId) === null
                         && this.model.steps.length === 0;
           if (!isFresh) return;
