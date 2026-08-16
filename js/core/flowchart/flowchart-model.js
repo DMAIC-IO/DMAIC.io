@@ -64,4 +64,58 @@ export class FlowchartState {
     const merged = { ...src, ...core };
     return moduleNormalize ? moduleNormalize(merged) : merged;
   }
+
+  /**
+   * Add a step at index (default = end). seed is normalized.
+   * @param {number} [atIndex]
+   * @param {object} [seed]
+   * @param {(step: object) => object} [moduleNormalize]
+   * @returns {object} inserted step
+   */
+  addStep(atIndex = this.steps.length, seed = {}, moduleNormalize) {
+    const step = this.normalizeStep(seed, moduleNormalize);
+    const i = Math.max(0, Math.min(atIndex, this.steps.length));
+    this.steps.splice(i, 0, step);
+    return step;
+  }
+
+  /**
+   * Alias for addStep with explicit index.
+   * @param {number} atIndex
+   * @param {object} [seed]
+   * @param {(step: object) => object} [moduleNormalize]
+   * @returns {object} inserted step
+   */
+  insertStep(atIndex, seed = {}, moduleNormalize) {
+    return this.addStep(atIndex, seed, moduleNormalize);
+  }
+
+  /**
+   * Remove a step by id.
+   * @param {string} id
+   * @returns {boolean} true if removed
+   */
+  removeStep(id) {
+    const i = this.steps.findIndex((s) => s.id === id);
+    if (i === -1) return false;
+    this.steps.splice(i, 1);
+    return true;
+  }
+
+  /**
+   * Move a step from one position to another.
+   * @param {string} fromId
+   * @param {string} toId
+   * @returns {boolean} true if moved
+   */
+  moveStep(fromId, toId) {
+    if (fromId === toId) return false;
+    const fi = this.steps.findIndex((s) => s.id === fromId);
+    const ti = this.steps.findIndex((s) => s.id === toId);
+    if (fi === -1 || ti === -1) return false;
+    const [moved] = this.steps.splice(fi, 1);
+    // Insert at the original target position (after removal, ti indices stay valid)
+    this.steps.splice(ti, 0, moved);
+    return true;
+  }
 }

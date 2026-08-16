@@ -96,3 +96,73 @@ suite('FlowchartState.normalizeStep — extension pass-through', () => {
     assertEqual(out.title, 'X');
   });
 });
+
+suite('FlowchartState — chain CRUD', () => {
+  test('addStep() appends at end with defaults', () => {
+    const s = new FlowchartState();
+    const a = s.addStep();
+    assertEqual(s.steps.length, 1);
+    assertEqual(s.steps[0].id, a.id);
+    assertEqual(a.title, '');
+  });
+
+  test('addStep(0) inserts at head', () => {
+    const s = new FlowchartState();
+    const a = s.addStep(0, { title: 'A' });
+    const b = s.addStep(0, { title: 'B' });
+    assertEqual(s.steps[0].title, 'B');
+    assertEqual(s.steps[1].title, 'A');
+  });
+
+  test('addStep clamps out-of-range index', () => {
+    const s = new FlowchartState();
+    s.addStep(0, { title: 'A' });
+    s.addStep(99, { title: 'B' });     // clamped to length
+    s.addStep(-5, { title: 'C' });     // clamped to 0
+    assertEqual(s.steps.map((x) => x.title).join(','), 'C,A,B');
+  });
+
+  test('addStep seed goes through normalizeStep (pass-through of extensions)', () => {
+    const s = new FlowchartState();
+    const a = s.addStep(0, { title: 'A', laneId: 'sales' });
+    assertEqual(a.laneId, 'sales');
+    assertEqual(typeof a.id, 'string');
+  });
+
+  test('removeStep removes by id and returns true', () => {
+    const s = new FlowchartState();
+    const a = s.addStep(); s.addStep();
+    assertEqual(s.removeStep(a.id), true);
+    assertEqual(s.steps.length, 1);
+    assertEqual(s.steps.find((x) => x.id === a.id), undefined);
+  });
+
+  test('removeStep with unknown id returns false, no throw', () => {
+    const s = new FlowchartState();
+    s.addStep();
+    assertEqual(s.removeStep('nope'), false);
+    assertEqual(s.steps.length, 1);
+  });
+
+  test('moveStep swaps positions', () => {
+    const s = new FlowchartState();
+    const a = s.addStep(0, { title: 'A' });
+    const b = s.addStep(1, { title: 'B' });
+    const c = s.addStep(2, { title: 'C' });
+    s.moveStep(a.id, c.id);   // A slides to C's slot
+    assertEqual(s.steps.map((x) => x.title).join(','), 'B,C,A');
+  });
+
+  test('moveStep same-source no-op', () => {
+    const s = new FlowchartState();
+    const a = s.addStep(); s.addStep();
+    assertEqual(s.moveStep(a.id, a.id), false);
+    assertEqual(s.steps.length, 2);
+  });
+
+  test('moveStep with unknown id returns false, no throw', () => {
+    const s = new FlowchartState();
+    s.addStep();
+    assertEqual(s.moveStep('nope', 'nada'), false);
+  });
+});
