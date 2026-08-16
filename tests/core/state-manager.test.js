@@ -105,6 +105,31 @@ suite('StateManager', () => {
     assertEqual(sm.getProjectCycle('non-existent-id'), 'dmaic');
   });
 
+  test('switchProject: a brand-new project shows its own name, not the default, before any save', async () => {
+    const sm = new StateManager(new EventBus());
+    // Establish an initial active project first (as app boot does via
+    // load()) — otherwise switchProject()'s internal save() of the OUTGOING
+    // project has no _projectId yet, latches onto whatever the adapter just
+    // made active (our new project, since createProject() below activates
+    // it too), and self-corrupts the very doc we are about to assert on.
+    await sm.load();
+    const before = sm.getProjects();
+    const beforeActive = localStorage.getItem(`${LS_PREFIX}activeProject`);
+    try {
+      const id = sm.createProject('__switch_name_test__', 'dmaic');
+      // No save() has happened yet for this project — there is no per-project
+      // doc — so switchProject() must not fall back to the generic default
+      // name; it has to seed it from the projects list createProject() wrote.
+      await sm.switchProject(id);
+      assertEqual(sm.get('projectMeta.name'), '__switch_name_test__');
+      await sm.deleteProject(id);
+    } finally {
+      localStorage.setItem(`${LS_PREFIX}projects`, JSON.stringify(before));
+      if (beforeActive === null) localStorage.removeItem(`${LS_PREFIX}activeProject`);
+      else localStorage.setItem(`${LS_PREFIX}activeProject`, beforeActive);
+    }
+  });
+
   // ─── phaseAchievementHistory persistence (v0.3) ────────────────
 
   test('default state: phaseAchievementHistory is empty object', () => {

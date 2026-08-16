@@ -78,6 +78,37 @@ export class Workspace {
     this._showPhase('define');
   }
 
+  /**
+   * Tear down every mounted module without touching event subscriptions.
+   * Used by the project rehydrate path, which rebuilds the workspace for a
+   * different project. `render()` must NOT be called a second time — it calls
+   * `_subscribeEvents()` and would register every listener twice.
+   * @returns {Promise<void>}
+   */
+  async reset() {
+    for (const [, instance] of this._instances) {
+      try { await instance?.destroy?.(); } catch { /* ignore module destroy errors */ }
+    }
+    this._instances.clear();
+    this._containers.clear();
+    for (const dispose of this._actionEffectDisposers ?? []) {
+      try { dispose(); } catch { /* ignore */ }
+    }
+    this._actionEffectDisposers = [];
+    this._activeInstanceId = null;
+    // Also forget the active phase: the `module:activated` handler skips
+    // rebuilding tabs (just re-activates an existing tab element) whenever
+    // the target instance's phase already equals `_activePhase`. Without
+    // this reset, switching back to a project whose first phase happens to
+    // match the phase shown before reset() ran would hit that shortcut even
+    // though the tab DOM was just wiped below — leaving the module area
+    // empty despite the instance being active in state.
+    this._activePhase = null;
+    this._tabsEl?.replaceChildren();
+    this._actionsEl?.replaceChildren();
+    this._moduleArea?.replaceChildren();
+  }
+
   // ─── Internal ───────────────────────────────────────────────
 
   _showPhase(phase) {
@@ -131,18 +162,75 @@ export class Workspace {
     this._actionsEl.replaceChildren();
 
     const inst = this._instances.get(this._activeInstanceId);
-    if (!inst || typeof inst.getActions !== 'function') return;
-    const actions = inst.getActions() ?? [];
-    if (actions.length === 0) return;
+    const actions = (inst && typeof inst.getActions === 'function')
+      ? (inst.getActions() ?? [])
+      : [];
 
-    const tf = this._i18n.tf(inst.i18nKey);
-    const vms = resolveActions(actions, tf);
-    vms.forEach((vm) => {
-      const el = vm.isDropdown
-        ? this._buildActionDropdown(vm, inst)
-        : this._buildActionButton(vm, inst);
-      this._actionsEl.append(el);
-    });
+    if (actions.length > 0) {
+      const tf = this._i18n.tf(inst.i18nKey);
+      const vms = resolveActions(actions, tf);
+      vms.forEach((vm) => {
+        const el = vm.isDropdown
+          ? this._buildActionDropdown(vm, inst)
+          : this._buildActionButton(vm, inst);
+        this._actionsEl.append(el);
+      });
+    }
+
+    this._renderTabActions();
+  }
+
+  /**
+   * Rename / remove for the ACTIVE module, appended after the module's own
+   * actions so they always sit at the far right of the bar. They used to be
+   * hover-revealed icons inside the tab, which made the tab grow under the
+   * pointer and stole clicks meant for the label.
+   *
+   * A completed (read-only) project gets neither — the module set is frozen,
+   * and rendering disabled buttons would only advertise what cannot be done.
+   */
+  _renderTabActions() {
+    if (!this._activeInstanceId || this._stateManager.isCompleted()) return;
+
+    const tab = this._tabsEl?.querySelector(
+      `.workspace__tab[data-instance-id="${this._activeInstanceId}"]`);
+    if (!tab) return;
+    const instanceId = this._activeInstanceId;
+    const { moduleId } = tab.dataset;
+    const phase = this._activePhase;
+
+    const rename = this._buildTabActionButton(
+      'tab-rename', 'edit', this._i18n.t('workspace.tabs.rename'), () => {
+        // Re-query: the tab node is rebuilt on every phase render, and the
+        // name span is replaced outright by a committed rename.
+        const liveName = this._tabsEl
+          ?.querySelector(`.workspace__tab[data-instance-id="${instanceId}"] .workspace__tab-name`);
+        if (liveName) this._startTabRename(liveName, instanceId, moduleId, phase);
+      });
+
+    const remove = this._buildTabActionButton(
+      'tab-remove', 'trash', this._i18n.t('workspace.tabs.remove'), () => {
+        this._removeModule(instanceId, moduleId, phase);
+      });
+
+    this._actionsEl.append(rename, remove);
+  }
+
+  /**
+   * @param {string} kind      modifier suffix, e.g. `tab-rename`
+   * @param {string} iconId    sprite icon id
+   * @param {string} label     translated, used as both caption and tooltip
+   * @param {Function} onClick
+   * @returns {HTMLButtonElement}
+   */
+  _buildTabActionButton(kind, iconId, label, onClick) {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = `workspace__action workspace__action--tab workspace__action--${kind}`;
+    btn.title = label;
+    btn.append(icon(iconId), h('span', { class: 'workspace__action-text' }, label));
+    btn.addEventListener('click', onClick);
+    return btn;
   }
 
   _buildActionButton(vm, inst) {
@@ -209,8 +297,6 @@ export class Workspace {
 
     const defaultName = this._i18n.t(`modules.${moduleId}.name`);
     const customName = this._getCustomName(instanceId, phase);
-    const closeLabel = this._i18n.t('workspace.tabs.close');
-    const renameLabel = this._i18n.t('workspace.tabs.rename');
     const reorderLabel = this._i18n.t('workspace.tabs.reorder');
 
     tab.title = this._i18n.t(`modules.${moduleId}.description`);
@@ -232,23 +318,15 @@ export class Workspace {
       draggable: 'true',
     }, icon('move'));
 
-    const editSpan = h('span', {
-      class: 'workspace__tab-edit',
-      title: renameLabel,
-      'aria-label': renameLabel,
-    }, '✎');
-
-    const closeSpan = h('span', {
-      class: 'workspace__tab-close',
-      title: closeLabel,
-      'aria-label': closeLabel,
-    }, icon('close'));
-    tab.append(gripSpan, editSpan, nameSpan, closeSpan);
+    // Rename and remove are NOT in the tab: as hover-revealed icons they grew
+    // the tab out from under the pointer, so a click aimed at the label landed
+    // on the pencil. They live in the action bar (`_renderTabActions`) and act
+    // on the active module. The grip stays — dragging is inherently per-tab —
+    // but it is always laid out, never revealed on hover.
+    tab.append(gripSpan, nameSpan);
 
     tab.addEventListener('click', (e) => {
-      if (!e.target.closest('.workspace__tab-close') &&
-          !e.target.closest('.workspace__tab-grip') &&
-          !e.target.closest('.workspace__tab-edit') &&
+      if (!e.target.closest('.workspace__tab-grip') &&
           !e.target.classList.contains('workspace__tab-name-input')) {
         if (this._router) {
           this._router.navigate({
@@ -262,17 +340,6 @@ export class Workspace {
         }
       }
     });
-    closeSpan.addEventListener('click', () => {
-      this._removeModule(instanceId, moduleId, phase);
-    });
-
-    editSpan.addEventListener('click', (e) => {
-      e.stopPropagation();
-      if (this._stateManager.isCompleted()) return;
-      const liveName = tab.querySelector('.workspace__tab-name');
-      if (liveName) this._startTabRename(liveName, instanceId, moduleId, phase);
-    });
-
     // Double-click on tab name → inline rename
     nameSpan.addEventListener('dblclick', (e) => {
       e.stopPropagation();
@@ -470,9 +537,11 @@ export class Workspace {
    * from racing a later, regularly-mounted instance with the same instanceId.
    * @param {string} instanceId
    * @param {string} moduleId
+   * @param {object} [extraContext] merged into the module context after the
+   *   detached-mount overrides (used for the scenario worksheet pool)
    * @returns {Promise<object|null>} the instance, or null on error
    */
-  async instantiateDetached(instanceId, moduleId) {
+  async instantiateDetached(instanceId, moduleId, extraContext = {}) {
     const container = document.createElement('div'); // NOT appended to _moduleArea
     // Detached/headless mount must not drive user-facing UI:
     //  • notify → no-op, else loadExample() fires one toast per seeded module
@@ -486,6 +555,7 @@ export class Workspace {
       ...this._buildContext(instanceId),
       notify: () => {},
       confirmPopout: async () => true,
+      ...extraContext,
     };
     try {
       return await this._moduleRegistry.instantiate(moduleId, container, context);

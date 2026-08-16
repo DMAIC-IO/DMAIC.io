@@ -219,6 +219,24 @@
             <button type="button" class="btn btn--primary" id="settings-devtools-seed"
                     @click="seedAllModules()" x-text="t('devtools.seedButton')"></button>
           </div>
+          <div class="settings-section" id="settings-action-urls">
+            <h3 class="settings-section__title" x-text="t('actionUrls.title')"></h3>
+            <p class="settings-hint" x-text="t('actionUrls.hint')"></p>
+            <template x-for="group in actionUrlGroups">
+              <div class="settings-action-url-group" :key="group.verb">
+                <div class="settings-action-url-group__title" x-text="group.verb"></div>
+                <template x-for="row in group.rows">
+                  <div class="settings-action-url" :key="row.url">
+                    <span class="settings-action-url__label" x-text="row.label"></span>
+                    <code class="settings-action-url__value" x-text="row.url"></code>
+                    <button type="button" class="btn btn--sm btn--ghost settings-action-url__copy"
+                            :data-url="row.url" @click="copyActionUrl(row.url)"
+                            x-text="t('actionUrls.copy')"></button>
+                  </div>
+                </template>
+              </div>
+            </template>
+          </div>
         </div>
 
       </div>

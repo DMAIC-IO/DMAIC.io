@@ -62,7 +62,7 @@
     "probability-plot", "run-chart"
   ],
   "algoLab": [
-    "control-charts/xbar-r"
+    "control-charts/control-chart"
   ],
   "sources": [
     { "label": "Montgomery, D.C.: Introduction to Statistical Quality Control, 8th ed., Wiley, 2020 — Kap. 6", "url": null },

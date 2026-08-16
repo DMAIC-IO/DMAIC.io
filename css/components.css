@@ -455,7 +455,13 @@ select.input {
   position: fixed;
   bottom: calc(var(--footer-height) + var(--spacing-md));
   right: var(--spacing-md);
-  z-index: 2000;
+
+  /* Above every overlay, including .modal-overlay--action (10000): a toast is
+     a transient notice that must stay readable while a dialog is up — dimmed
+     out behind a backdrop it would expire unseen. The action modal still
+     carries the outcome itself; the toast is the second channel, not the
+     only one. */
+  z-index: 10001;
   display: flex;
   flex-direction: column;
   gap: var(--spacing-sm);
@@ -1100,6 +1106,60 @@ select.input {
 .settings-devtools .btn {
   align-self: center;
   margin-top: var(--spacing-md);
+}
+
+.settings-section__title {
+  margin: 0 0 var(--spacing-xs) 0;
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--color-text-secondary);
+}
+
+/* Action URL overview (settings › dev tools) */
+.settings-action-url-group {
+  margin-top: var(--spacing-md);
+}
+
+.settings-action-url-group__title {
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--color-text-tertiary);
+  margin-bottom: var(--spacing-xs);
+}
+
+.settings-action-url {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  min-width: 0;
+  padding: var(--spacing-sm);
+  margin-bottom: var(--spacing-xs);
+  border: var(--border-width) solid var(--color-border-secondary);
+  border-radius: var(--border-radius-sm);
+}
+
+.settings-action-url__label {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.settings-action-url__value {
+  display: block;
+  padding: var(--spacing-xs);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  background: var(--color-bg-secondary);
+  border-radius: var(--border-radius-sm);
+  overflow-wrap: anywhere;
+  word-break: break-all;
+  white-space: normal;
+}
+
+.settings-action-url__copy {
+  align-self: flex-end;
 }
 
 /* Theme toggle buttons */
@@ -1825,3 +1885,126 @@ body.dmike-glossary-inline-off .glossary-term:focus-within {
 .licenses-panel__full-text a:hover {
   text-decoration: underline;
 }
+
+/* Action modal — progress/completion dialog for action URLs. */
+.modal-overlay--action { z-index: 10000; }   /* above #app-loading (9999) */
+
+/* Fixed footprint: the body swaps between the running state (spinner +
+   subtitle + progress line) and the hold state (subtitle + optional failed-
+   items line + confirm button). `height` (not `min-height`) pins the box at
+   exactly one size for every state — a partial-failure hold must render at
+   the SAME size as a clean hold, not merely no smaller than it. The
+   `.action-modal__failed` line below absorbs any overflow from a long
+   failed-items list on its own scrollbar instead of growing this box; the
+   remaining `max-height: 60vh` + `overflow-y: auto` here is only a
+   last-resort guard against a viewport too short for 12rem. */
+.modal-overlay--action .modal {
+  width: 26rem;
+}
+
+.action-modal {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-sm);
+  height: 12rem;
+  max-height: 60vh;
+
+  /* Breathing room for the confirm button's focus ring: `.btn:focus-visible`
+     paints a 3px box-shadow OUTSIDE the border box, and `overflow-y: auto`
+     below clips anything that leaves this box — with a full list the button
+     sits flush against the bottom edge and the ring was cut off. Applied on
+     both sides (`padding-block`) so the centred column stays centred; the box
+     itself is unchanged, `box-sizing: border-box` keeps it at 12rem. */
+  padding-block: var(--spacing-xs);
+  overflow-y: auto;
+  text-align: center;
+}
+
+.action-modal__subtitle,
+.action-modal__progress {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+/* Named failed items of a partially loaded scenario. Never the raw
+   `failed[].error` — that is untranslated developer text (console only).
+   Capped independently of `.action-modal`'s fixed height: no matter how many
+   items failed, THIS scrolls — the dialog around it (title, subtitle,
+   confirm button) never moves or resizes. */
+.action-modal__failed {
+  margin: 0;
+  max-height: 4.5rem;
+  overflow-y: auto;
+  font-size: var(--font-size-sm);
+  color: var(--color-warning);
+}
+
+/* Running list of scenario items — newest row prepended on top, so what just
+   happened is readable without any auto-scrolling (scrollTop stays 0).
+   `flex: 1` + `min-height: 0` make THIS the element that absorbs the growth:
+   it scrolls inside `.action-modal`'s fixed 12rem, which never resizes. */
+.action-modal__list {
+  /* `0 1 auto`, never `1 1 auto`: the list takes exactly the height of its
+     rows and only ever SHRINKS (then scrolls). A greedy list would claim the
+     dialog's free space even when it holds one row or none — the counting
+     phase and the single-example verb — and push the spinner to the top edge
+     and the footer to the bottom of the centred column. */
+  flex: 0 1 auto;
+  min-height: 0;
+  width: 100%;
+  overflow-y: auto;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  text-align: left;
+}
+
+/* An unused slot must cost nothing — not even the column's flex gap, which a
+   zero-height element still generates. Without this the counting phase (no
+   list, no progress line, no body, no footer) renders its spinner and
+   subtitle ~37px above the centre of the box. The spinner is deliberately NOT
+   in this list: it is empty by construction (a pure CSS ring). */
+.action-modal__list:empty,
+.action-modal__progress:empty,
+.action-modal__body:empty,
+.action-modal__footer:empty { display: none; }
+
+.action-modal__item {
+  display: flex;
+  align-items: baseline;
+  gap: var(--spacing-xs);
+  padding: 1px var(--spacing-xs);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+/* `min-width: 0` is belt-and-braces: `overflow: hidden` already zeroes the
+   automatic minimum size, but a later change to that overflow would silently
+   kill the ellipsis and widen the list into a horizontal scrollbar. */
+.action-modal__item-label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.action-modal__item-status {
+  flex: none;
+  width: 1em;
+  text-align: center;
+}
+
+.action-modal__item--pending { color: var(--color-text-tertiary); }
+.action-modal__item--pending .action-modal__item-status { color: var(--color-text-tertiary); }
+.action-modal__item--ok .action-modal__item-status { color: var(--color-success); }
+
+.action-modal__item--failed {
+  color: var(--color-error);
+  font-weight: var(--font-weight-medium);
+}
+
+.action-modal__item--failed .action-modal__item-status { color: var(--color-error); }
+
+.action-modal__footer { margin-top: var(--spacing-sm); }

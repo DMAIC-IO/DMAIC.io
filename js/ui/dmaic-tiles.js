@@ -43,6 +43,7 @@ export class DmaicTiles {
     this._workspace = null;
     this._activePhase = 'define';
     this._openMenu = null;
+    this._subscribed = false;
     this._closeMenuOnOutsideClick = this._closeMenuOnOutsideClick.bind(this);
   }
 
@@ -61,6 +62,23 @@ export class DmaicTiles {
   setRouter(router) { this._router = router; }
 
   render() {
+    this._buildTiles();
+    if (!this._subscribed) {
+      this._subscribeEvents();
+      this._subscribed = true;
+    }
+  }
+
+  /**
+   * Rebuild the tiles for the currently active cycle. Used after a project or
+   * cycle switch — unlike render() it never re-registers event listeners.
+   */
+  rebuild() {
+    this._buildTiles();
+  }
+
+  /** Build the tile DOM for the active cycle. */
+  _buildTiles() {
     const cycleId = this._getCycleId();
     this._applyPhaseColors(cycleId);
     this._moduleRegistry?.setActiveCycle(cycleId);
@@ -80,7 +98,6 @@ export class DmaicTiles {
     });
 
     this._highlightActive();
-    this._subscribeEvents();
     this._recomputeCollapse();
   }
 

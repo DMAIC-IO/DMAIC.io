@@ -8,31 +8,59 @@
 
 import { h } from '../../core/dom.js';
 import { renderModuleHelp } from '../../core/help-renderer.js';
+import { loadScenario, describeScenario, countScenarioWorksheets } from '../../core/scenario-loader.js';
+import { buildScenarioConfirmDialog } from '../../dialogs/scenario-confirm/scenario-confirm.js';
+import { scenarioDoneState } from '../../ui/action-modal.js';
 
 /**
  * Wire the global "Module Help" header button.
  * Opens the right-side help panel showing two tabs for the active module:
  *   - "Hilfe"        — lazy-loaded module help (via the module's `help` field)
- *   - "Beispieldaten" — catalog examples matching the active module
+ *   - "Beispieldaten" — catalog examples matching the active module, plus any
+ *                       scenarios that reference them (load-whole-scenario)
  *
  * The button is visible whenever the active module exposes at least one
  * of these (help loader OR matching catalog examples + loadExample method).
  *
- * @param {object} kernel - { i18n, eventBus, examplesRegistry, glossaryRegistry }
- * @param {object} ui     - { workspace, helpPanel }
+ * @param {object} kernel - { i18n, eventBus, examplesRegistry, glossaryRegistry,
+ *   moduleRegistry, stateManager }
+ * @param {object} ui     - { workspace, helpPanel, modal, notify, actionModal }
  */
-export function initModuleHelp({ i18n, eventBus, examplesRegistry, glossaryRegistry }, { workspace, helpPanel }) {
+export function initModuleHelp(
+  { i18n, eventBus, examplesRegistry, glossaryRegistry, moduleRegistry, stateManager },
+  { workspace, helpPanel, modal, notify, actionModal },
+) {
   const btn = document.getElementById('module-help-btn');
   if (!btn || !workspace || !helpPanel) return;
 
+  const scenarioConfirmDialog = buildScenarioConfirmDialog({ i18n, eventBus });
+  scenarioConfirmDialog.prewarm?.();
+
   const _activeContext = () => {
     const info = workspace.getActiveModuleInfo();
-    if (!info) return { info: null, hasHelp: false, examples: [], canLoadExample: false, glossary: [] };
+    if (!info) {
+      return {
+        info: null, hasHelp: false, examples: [], canLoadExample: false, glossary: [], scenarios: [],
+      };
+    }
     const hasHelp = typeof info.instance?.help === 'function';
     const examples = examplesRegistry ? examplesRegistry.getForModule(info.moduleId) : [];
     const canLoadExample = typeof info.instance?.loadExample === 'function';
     const glossary = glossaryRegistry ? glossaryRegistry.getForModule(info.moduleId) : [];
-    return { info, hasHelp, examples, canLoadExample, glossary };
+
+    const scenarioMap = new Map();
+    if (examplesRegistry) {
+      for (const ex of examples) {
+        for (const s of examplesRegistry.getScenariosForExample(ex.id)) scenarioMap.set(s.id, s);
+      }
+    }
+    const scenarios = [...scenarioMap.values()].map(s => ({
+      id: s.id,
+      title: s.title?.[i18n.getLanguage()] || s.title?.en || s.id,
+      description: s.description?.[i18n.getLanguage()] || s.description?.en || '',
+    }));
+
+    return { info, hasHelp, examples, canLoadExample, glossary, scenarios };
   };
 
   // The button is ALWAYS visible: glossary (full catalog) is always available
@@ -59,6 +87,113 @@ export function initModuleHelp({ i18n, eventBus, examplesRegistry, glossaryRegis
     }
   };
 
+  // Re-entrancy guard for loadScenarioAndApply(). countScenarioWorksheets()
+  // awaits one examplesRegistry.load() per item (21 for the full pizza
+  // scenario, each uncached, several fetching a second worksheet file), so the
+  // row stays clickable for seconds before the confirm dialog appears. A
+  // second click would open a SECOND dialog on the shared modal host — whose
+  // Alpine node borrow/restore does not survive being re-entered.
+  let scenarioBusy = false;
+
+  // Load a whole scenario into the running project: confirms with the user
+  // first (naming what gets created), then delegates to the shared scenario
+  // loader and reports the result via a toast. Never renders loadScenario's
+  // failed[].error strings — those are untranslated developer strings; only
+  // the failing example ids go to the user, the raw error to console.warn
+  // (mirrors action-verbs.js reportScenarioResult()).
+  const loadScenarioAndApply = async (scenarioId) => {
+    if (!examplesRegistry || !moduleRegistry || !stateManager || !modal) return;
+    if (scenarioBusy) return;
+    scenarioBusy = true;
+
+    // `confirmed` alone needs an initializer: the finally below reads it on
+    // every path, including a throw before the dialog resolves. The other
+    // three are assigned before their first read, so seeding them would be a
+    // dead store (eslint no-useless-assignment).
+    let confirmed = null;
+    let worksheetCount;
+    let scenario;
+    let scenarioTitle;
+    try {
+      scenario = examplesRegistry.get(scenarioId);
+      if (!scenario) return;
+      scenarioTitle = scenario.title?.[i18n.getLanguage()] || scenario.title?.en || scenario.id;
+
+      // The shared modal (never a second createActionModal() — there is
+      // exactly one dialog) covers the counting phase, the slow part.
+      actionModal?.open({ title: i18n.t('actions.loadingScenario'), subtitle: scenarioTitle });
+      try {
+        worksheetCount = await countScenarioWorksheets({ scenario, examplesRegistry });
+      } finally {
+        actionModal?.close();
+      }
+
+      confirmed = await scenarioConfirmDialog.open(modal, {
+        scenarioTitle, newCount: describeScenario({ scenario }).newCount, worksheetCount,
+      }, {
+        title: i18n.t('scenarios.confirmTitle', { title: scenarioTitle }),
+        confirmLabel: i18n.t('scenarios.confirmButton'),
+      });
+    } finally {
+      // Released here for every path that never reaches the load itself
+      // (unknown id, a throw while counting, cancelled dialog); the load's own
+      // finally below releases it for the confirmed path.
+      if (!confirmed) scenarioBusy = false;
+    }
+    if (!confirmed) return;
+
+    actionModal?.open({ title: i18n.t('actions.loadingScenario'), subtitle: scenarioTitle });
+    try {
+      const result = await loadScenario({
+        scenario, examplesRegistry, moduleRegistry, stateManager, eventBus, workspace,
+      });
+      const total = scenario.items?.length ?? 0;
+      notify?.(
+        i18n.t('actions.scenarioLoaded', { loaded: result.loaded.length, total }),
+        result.failed.length ? 'warning' : 'success',
+      );
+      if (result.failed.length) {
+        console.warn('[ModuleHelp] scenario items failed:', result.failed);
+        notify?.(
+          i18n.t('actions.scenarioItemsFailed', {
+            items: result.failed.map(f => f.exampleId).join(', '),
+          }),
+          'warning',
+        );
+      }
+      // HOLD instead of closing: the dialog has just built a list of every
+      // loaded item and closing here would destroy it at the exact moment it
+      // becomes readable ("das geht sonst zu schnell"). Same mechanism and
+      // same state builder as the `scenario` action verb — but a different
+      // button word: that verb navigates into a freshly created project
+      // ("Jetzt starten"), while this path adds modules to the project the
+      // user is already looking at and navigates nowhere, so there is
+      // nothing to start — only something to close.
+      //
+      // No routing obligation here: the router's rule ("whoever force-closes
+      // a pending hold must navigate away from the #/action/… hash") applies
+      // to the action-URL path only; this entry point never touches the hash.
+      // The awaited hold() also resolves false if anything closes the dialog
+      // from outside, so this can never strand the finally below.
+      await actionModal?.hold(scenarioDoneState({
+        i18n, result, total, confirmLabel: 'common.close',
+      }));
+    } catch (err) {
+      // A total throw from loadScenario() itself (e.g. a stateManager
+      // failure) is distinct from the per-item failures handled above —
+      // it must still leave the user with a usable app and an honest
+      // message, never silence. Same discipline as the per-item path: the
+      // raw error goes to console.error only, never into the toast.
+      console.error('[ModuleHelp] scenario load failed', scenarioId, err);
+      notify?.(i18n.t('common.error'), 'error');
+    } finally {
+      // Idempotent: hold() already closed the dialog on the confirmed path.
+      // This covers the throwing path and a hold cancelled from outside.
+      actionModal?.close();
+      scenarioBusy = false;
+    }
+  };
+
   const glossaryGet = glossaryRegistry ? (termId) => glossaryRegistry.get(termId) : null;
 
   // Populate the panel for the CURRENT active module. Shared by the button
@@ -66,7 +201,7 @@ export function initModuleHelp({ i18n, eventBus, examplesRegistry, glossaryRegis
   // `preferredTab` (optional) keeps the user on their current tab across a
   // module switch; on first open it defaults to the help tab.
   async function populatePanel(preferredTab) {
-    const { info, hasHelp, examples, canLoadExample, glossary } = _activeContext();
+    const { info, hasHelp, examples, canLoadExample, glossary, scenarios } = _activeContext();
     const tabPref = preferredTab ? { preferredTab } : {};
 
     if (!info) {
@@ -83,6 +218,7 @@ export function initModuleHelp({ i18n, eventBus, examplesRegistry, glossaryRegis
 
     const moduleName = i18n.t(`modules.${info.moduleId}.name`);
     const tabExamples = canLoadExample ? examples : [];
+    const tabScenarios = canLoadExample ? scenarios : [];
 
     // Loading placeholder for help tab.
     const helpPlaceholder = hasHelp
@@ -93,6 +229,8 @@ export function initModuleHelp({ i18n, eventBus, examplesRegistry, glossaryRegis
       helpNode: helpPlaceholder,
       examples: tabExamples,
       onLoadExample: loadExampleAndApply,
+      scenarios: tabScenarios,
+      onLoadScenario: loadScenarioAndApply,
       glossary,
       glossaryGet,
       ...tabPref,
@@ -108,6 +246,8 @@ export function initModuleHelp({ i18n, eventBus, examplesRegistry, glossaryRegis
         helpNode: node,
         examples: tabExamples,
         onLoadExample: loadExampleAndApply,
+        scenarios: tabScenarios,
+        onLoadScenario: loadScenarioAndApply,
         glossary,
         glossaryGet,
         preferredTab: preferredTab || 'help',
@@ -118,6 +258,8 @@ export function initModuleHelp({ i18n, eventBus, examplesRegistry, glossaryRegis
         helpNode: h('p', { style: 'color:var(--color-error)' }, `${i18n.t('moduleHelp.loadError')}: ${err.message}`),
         examples: tabExamples,
         onLoadExample: loadExampleAndApply,
+        scenarios: tabScenarios,
+        onLoadScenario: loadScenarioAndApply,
         glossary,
         glossaryGet,
         ...tabPref,

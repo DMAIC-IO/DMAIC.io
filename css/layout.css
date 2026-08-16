@@ -297,7 +297,25 @@ html.is-nightly body {
   font-family: var(--font-mono, monospace);
 }
 
-/* Cycle picker (modal) */
+/* Cycle picker (modal) — two-step flow: step 1 picks the cycle, step 2 the
+   start (empty project with a name, or one of the example scenarios). Both
+   steps share one min-height so the dialog does not jump when stepping. */
+.cycle-picker__content {
+  display: flex;
+  flex-direction: column;
+  min-height: 360px;
+}
+
+.cycle-picker__step {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.cycle-picker__intro {
+  margin: 0 0 var(--spacing-md);
+}
+
 .cycle-picker {
   display: flex;
   flex-direction: column;
@@ -313,18 +331,33 @@ html.is-nightly body {
   gap: 10px;
   padding: 10px 12px;
   border: 1px solid var(--color-border-secondary);
-  border-radius: var(--border-radius-md);
-  cursor: pointer;
+  border-radius: var(--border-radius);
+  cursor: default;
   transition: border-color 0.1s, background 0.1s;
 }
 
-.cycle-picker__option:hover {
+/* Switch context only: `.cycle-picker__option-pick` (the label wrapping the
+   radio + body, see cycle-picker.html) exists ONLY when the create-context
+   "Weiter" button is absent — the create context renders a plain
+   `.cycle-picker__body` span with no radio at all, so none of the rules
+   below ever match there. No :has(input:disabled) scaffolding needed: a
+   card that carries no radio simply cannot look or hover like it does. */
+.cycle-picker__option:has(.cycle-picker__option-pick):hover {
   background: var(--color-bg-tertiary);
 }
 
 .cycle-picker__option:has(input:checked) {
   border-color: var(--color-accent);
   background: var(--color-accent-light);
+}
+
+.cycle-picker__option-pick {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  flex: 1;
+  min-width: 0;
+  cursor: pointer;
 }
 
 .cycle-picker__option input[type="radio"] {
@@ -357,12 +390,134 @@ html.is-nightly body {
   margin-top: 4px;
 }
 
+/* Step 1: the per-card "Weiter" button (create context only). */
+.cycle-picker__next {
+  align-self: center;
+  flex-shrink: 0;
+}
+
+/* Step 2: header row with "Zurück" + the start-choice heading. */
+.cycle-picker__start-head {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-sm);
+}
+
+.cycle-picker__start-title {
+  font-weight: 600;
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+/* Separator heading between the empty-project row and the scenario rows.
+   Only rendered when scenarios exist (model.hasScenarios) — cycles without
+   scenarios (DMADV, 8D) show no heading over an empty list. */
+.cycle-picker__scenarios-title {
+  display: block;
+  padding-top: var(--spacing-sm);
+  border-top: 1px solid var(--color-border-secondary);
+  font-weight: 600;
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+/* Step 2 rows: the empty project first, then one row per scenario. */
+.cycle-picker__start {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: var(--spacing-xs) var(--spacing-md);
+  padding: 10px 12px;
+  border: 1px solid var(--color-border-secondary);
+  border-radius: var(--border-radius);
+  transition: border-color 0.1s, background 0.1s;
+}
+
+.cycle-picker__start:hover {
+  background: var(--color-bg-tertiary);
+}
+
+.cycle-picker__start--empty {
+  border-color: var(--color-border-primary);
+  background: var(--color-bg-secondary);
+}
+
+.cycle-picker__start-name {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-text-primary);
+}
+
+.cycle-picker__start-desc {
+  grid-column: 1;
+  font-size: 12px;
+  color: var(--color-text-secondary);
+}
+
+/* Name field for the empty project — the scenario rows bring their own name. */
+.cycle-picker__name-field {
+  grid-column: 1;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  font-size: 12px;
+  color: var(--color-text-secondary);
+}
+
+.cycle-picker__name-input {
+  flex: 1;
+  min-width: 0;
+  padding: 5px 8px;
+  font-size: 13px;
+  color: var(--color-text-primary);
+  background: var(--color-bg-primary);
+  border: 1px solid var(--color-input-border);
+  border-radius: var(--border-radius-sm);
+}
+
+.cycle-picker__name-input:focus {
+  outline: none;
+  border-color: var(--color-accent);
+}
+
+.cycle-picker__start .btn {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  align-self: center;
+  white-space: nowrap;
+}
+
+/* Empty-project row: button sits beside the name input, not centred
+   between title and input. */
+.cycle-picker__start--empty .btn {
+  grid-row: 2;
+  align-self: stretch;
+}
+
 /* Cycle switch confirm */
 .cycle-switch {
   display: flex;
   flex-direction: column;
   gap: 10px;
   font-size: 13px;
+}
+
+/* Scenario confirm */
+.scenario-confirm {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  font-size: 13px;
+}
+
+.scenario-confirm__overwrite {
+  color: var(--color-warning, var(--color-text-primary));
+  font-weight: var(--font-weight-semibold);
 }
 
 .app-header__project-new {
@@ -415,14 +570,10 @@ html.is-nightly body {
   color: #ffc107;
 }
 
-/* Hide grip/pencil/close affordances when readonly — including on hover, so the
-   hover-reveal rule cannot bring them back (matched specificity via :hover). */
-.dmike--readonly .workspace__tab-grip,
-.dmike--readonly .workspace__tab-edit,
-.dmike--readonly .workspace__tab-close,
-.dmike--readonly .workspace__tab:hover .workspace__tab-grip,
-.dmike--readonly .workspace__tab:hover .workspace__tab-edit,
-.dmike--readonly .workspace__tab:hover .workspace__tab-close {
+/* Readonly: nothing about the tab set may be changed, so the drag grip goes.
+   Rename/remove need no rule — `_renderTabActions()` does not build them for a
+   completed project at all. */
+.dmike--readonly .workspace__tab-grip {
   display: none;
 }
 
@@ -616,7 +767,9 @@ html.is-nightly body {
 
 /* The pencil sits in a fixed, narrow slot so revealing it never changes the
    tile's width (no neighbour shift). Only its scale animates — from 0 (hidden)
-   to full on hover, a touch larger when the segment itself is hovered. */
+   to full when the tile is hovered. It does NOT grow further on direct hover:
+   a symbol that changes size under the pointer just moves its own hit area
+   around. */
 .dmaic-tile__edit-icon {
   display: inline-block;
   width: 0.85em;
@@ -631,10 +784,6 @@ html.is-nightly body {
 
 .dmaic-tile:hover .dmaic-tile__edit-icon {
   transform: scale(1);
-}
-
-.dmaic-tile__edit:hover .dmaic-tile__edit-icon {
-  transform: scale(1.3);
 }
 
 /* Dropdown segment: wide clickable area, no background on hover — the chevron
@@ -1872,6 +2021,20 @@ body.training-area-open .dmaic-tiles {
   height: 18px;
 }
 
+/* Umbenennen / Entfernen ganz rechts. Sie betreffen die Tab selbst, nicht den
+   Modulinhalt — ein Trenner vor der Gruppe hält das auseinander. `:first-of-type`
+   trifft nur die erste der beiden; hat das Modul gar keine eigenen Aktionen,
+   entfällt der Trenner (nichts links davon, was abzugrenzen wäre). */
+.workspace__action--tab:first-of-type:not(:first-child) {
+  margin-left: var(--spacing-xs);
+  border-left: var(--border-width) solid var(--color-action-bar-border);
+  padding-left: var(--spacing-sm);
+}
+
+.workspace__action--tab-remove:hover {
+  color: var(--color-error);
+}
+
 .workspace__action--primary {
   color: var(--color-accent);
 }
@@ -1947,7 +2110,7 @@ body.training-area-open .dmaic-tiles {
   justify-content: center;
   min-height: 44px;
   box-sizing: border-box;
-  padding: var(--spacing-xs) var(--spacing-sm);
+  padding: var(--spacing-xs) var(--spacing-md);
   cursor: pointer;
   font-size: var(--font-size-sm);
   color: var(--color-text-secondary);
@@ -1956,13 +2119,6 @@ body.training-area-open .dmaic-tiles {
   white-space: nowrap;
   transition: background var(--transition-speed), color var(--transition-speed);
   user-select: none;
-}
-
-/* Idle (keine Controls) etwas mehr Außenabstand; bei Hover schrumpft das Padding
-   wieder auf den Basiswert, während grip/stift/x einblenden (mit Controls ok). */
-.workspace__tab:not(:hover) {
-  padding-left: var(--spacing-md);
-  padding-right: var(--spacing-md);
 }
 
 .workspace__tab:hover {
@@ -1976,65 +2132,30 @@ body.training-area-open .dmaic-tiles {
   border-bottom: 2px solid var(--color-accent);
 }
 
-/* Tab-Affordances (Grip / Stift / X): im Ruhezustand komplett aus dem Layout —
-   kein reservierter Platz. Sie erscheinen nur bei Hover über die Tab (NICHT
-   dauerhaft auf der aktiven); die Tab darf dabei breiter werden. Große
-   Klickfläche: volle Tab-Höhe + großzügige Breite, nicht nur Icon-Größe. */
-.workspace__tab-grip,
-.workspace__tab-edit,
-.workspace__tab-close {
+/* Grip: dauerhaft im Layout, inline vor dem Namen, mit kleinem Abstand nach
+   außen und zum Text. Er ändert bei Hover NICHT seine Größe — genau das war der
+   Fehler der alten Lösung: grip/Stift/X klappten erst bei Hover auf, die Tab
+   wuchs unter dem Zeiger und der Klick auf den Namen landete im Stift. Ruhend
+   ist er nur zurückgenommen gefärbt, bei Hover über die Tab kräftiger. */
+.workspace__tab-grip {
   display: flex;
   align-items: center;
   justify-content: center;
-  align-self: stretch;
-  max-width: 0;
-  padding: 0;
-  overflow: hidden;
-  opacity: 0;
+  flex: none;
+  margin-right: var(--spacing-xs);
+  cursor: grab;
   color: var(--color-text-tertiary);
-  transition:
-    max-width var(--transition-speed) ease-out,
-    padding var(--transition-speed) ease-out,
-    opacity var(--transition-speed) ease-out,
-    background var(--transition-speed),
-    color var(--transition-speed);
+  opacity: 0.45;
+  transition: opacity var(--transition-speed), color var(--transition-speed);
 }
 
-/* Bei Hover wachsen grip/stift/x aus dem Nichts auf (max-width + Fade); die Tab
-   wird dabei breiter. Volle Höhe + Breite = große Klickfläche. */
-.workspace__tab:hover .workspace__tab-grip,
-.workspace__tab:hover .workspace__tab-edit,
-.workspace__tab:hover .workspace__tab-close {
-  max-width: 2rem;
-  padding: 0 var(--spacing-xs);
+.workspace__tab:hover .workspace__tab-grip {
   opacity: 1;
 }
 
-.workspace__tab-grip { cursor: grab; }
 .workspace__tab-grip:active { cursor: grabbing; }
 
-.workspace__tab-grip .icon,
-.workspace__tab-close .icon { width: 14px; height: 14px; }
-
-/* Stift: reines ✎-Zeichen. Direkt-Hover zoomt (keine Umfärbung); eigene
-   transition inkl. transform, damit der Zoom neben dem Reveal läuft. */
-.workspace__tab-edit {
-  cursor: pointer;
-  font-size: 14px;
-  line-height: 1;
-  transition:
-    max-width var(--transition-speed) ease-out,
-    padding var(--transition-speed) ease-out,
-    opacity var(--transition-speed) ease-out,
-    transform var(--transition-speed);
-}
-.workspace__tab-edit:hover { transform: scale(1.3); }
-
-/* X: volle Höhe als Klickfläche, rote Tönung bei Hover. */
-.workspace__tab-close:hover {
-  background: var(--color-bg-tertiary);
-  color: var(--color-error);
-}
+.workspace__tab-grip .icon { width: 14px; height: 14px; }
 
 .workspace__tab-name-input {
   background: var(--color-bg-primary);
@@ -2422,6 +2543,44 @@ body.training-area-open .dmaic-tiles {
 }
 
 .help-panel__example-load {
+  width: 100%;
+  margin-top: var(--spacing-xs);
+}
+
+/* ─── Examples tab: scenario block ─────────────────────── */
+
+.help-panel__scenarios {
+  margin-top: var(--spacing-md);
+  padding-top: var(--spacing-md);
+  border-top: var(--border-width) solid var(--color-border-primary);
+}
+
+.help-panel__scenarios-title {
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  margin-bottom: var(--spacing-sm);
+}
+
+.help-panel__scenario {
+  border: var(--border-width) solid var(--color-border-primary);
+  border-radius: var(--border-radius);
+  padding: var(--spacing-sm) var(--spacing-md);
+  margin-bottom: var(--spacing-sm);
+  background: var(--color-bg-primary);
+}
+
+.help-panel__scenario-title {
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  margin-bottom: var(--spacing-xs);
+}
+
+.help-panel__scenario-desc {
+  margin: 0 0 var(--spacing-xs);
+  color: var(--color-text-secondary);
+}
+
+.help-panel__scenario-load {
   width: 100%;
   margin-top: var(--spacing-xs);
 }

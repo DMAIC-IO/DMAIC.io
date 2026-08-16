@@ -51,7 +51,10 @@ export class Modal {
    * @param {string} [options.confirmLabel]
    * @param {string} [options.cancelLabel]
    * @param {string} [options.deleteLabel] - label for the optional delete button
-   * @param {function} [options.onMount] - called with body element after rendering
+   * @param {boolean} [options.hideConfirm=false] - omit the confirm button (self-driving
+   *   content confirms via the `onMount` api instead); cancel stays available
+   * @param {function} [options.onMount] - called with (body, api) after rendering, where
+   *   api = { confirm(): void, cancel(): void } lets embedded content confirm/cancel itself
    * @param {function} [options.onConfirm] - called with body element; return false to prevent close
    * @param {function} [options.onDelete] - when provided, renders a destructive
    *   delete button (left-aligned). Called with body element; return false to
@@ -70,12 +73,30 @@ export class Modal {
       cancelBtn.textContent = cancelLabel;
 
       const confirmBtn = document.createElement('button');
-      confirmBtn.className = 'btn btn--primary';
+      // modal__confirm is a stable hook for E2E/POMs (btn--primary alone is
+      // shared by many unrelated buttons across the app).
+      confirmBtn.className = 'btn btn--primary modal__confirm';
       confirmBtn.textContent = confirmLabel;
 
+      // Guards against a late confirm()/cancel() firing after the dialog has
+      // already resolved (e.g. a caller holding on to `api` past close, or a
+      // stray footer-button click racing a programmatic close): the promise
+      // itself is settle-once by nature, but without this flag a second
+      // `runConfirm()` would still re-run `onConfirm`'s side effects even
+      // though `close()` would silently no-op.
+      let settled = false;
+
       const close = (result) => {
+        if (settled) return;
+        settled = true;
         this._close(overlay);
         resolve(result);
+      };
+
+      const runConfirm = () => {
+        if (settled) return;
+        if (options.onConfirm && options.onConfirm(body) === false) return; // Veto
+        close(true);
       };
 
       // Optional destructive action, left-aligned (see .modal__footer-delete).
@@ -90,20 +111,17 @@ export class Modal {
         });
       }
 
-      footer.append(cancelBtn, confirmBtn);
+      footer.append(cancelBtn);
+      if (!options.hideConfirm) {
+        footer.append(confirmBtn);
+        confirmBtn.addEventListener('click', runConfirm);
+      }
 
       cancelBtn.addEventListener('click', () => close(false));
-      confirmBtn.addEventListener('click', () => {
-        if (options.onConfirm) {
-          const result = options.onConfirm(body);
-          if (result === false) return; // prevent close
-        }
-        close(true);
-      });
       overlay.addEventListener('click', (e) => { if (e.target === overlay) close(false); });
       this._onEscape(() => close(false));
 
-      if (options.onMount) options.onMount(body);
+      if (options.onMount) options.onMount(body, { confirm: runConfirm, cancel: () => close(false) });
     });
   }
 
@@ -113,6 +131,11 @@ export class Modal {
    * @param {HTMLElement} content
    * @param {object} [options]
    * @param {boolean} [options.wide=false]
+   * @param {boolean} [options.dismissible=true] - false omits the header close (✕)
+   *   button. show() never wires Escape or overlay-click handlers, so with
+   *   dismissible:false the dialog is closable only via the returned `close()`
+   *   handle — the caller must call it eventually or the overlay is stuck.
+   * @param {string} [options.overlayClass] - extra class appended to `.modal-overlay`
    * @returns {{ close: function }} handle to close programmatically
    */
   show(title, content, options = {}) {
@@ -126,20 +149,28 @@ export class Modal {
   // ─── Internal ───────────────────────────────────────────────
 
   _create(title, content, options = {}) {
+    const { wide = false, dismissible = true, overlayClass = '' } = options;
     const overlay = document.createElement('div');
-    overlay.className = 'modal-overlay';
+    overlay.className = `modal-overlay${overlayClass ? ` ${overlayClass}` : ''}`;
     overlay.setAttribute('role', 'dialog');
     overlay.setAttribute('aria-modal', 'true');
 
     const modal = document.createElement('div');
     modal.className = 'modal';
-    if (options.wide) modal.style.maxWidth = '800px';
+    if (wide) modal.style.maxWidth = '800px';
 
     const header = document.createElement('div');
     header.className = 'modal__header';
     const title_el = h('span', { class: 'modal__title' }, title);
-    const closeBtn = h('button', { class: 'btn btn--icon btn--ghost modal__close', 'aria-label': this._i18n.t('common.close') }, '✕');
-    header.append(title_el, closeBtn);
+    header.append(title_el);
+    if (dismissible) {
+      const closeBtn = h('button', {
+        class: 'btn btn--icon btn--ghost modal__close',
+        'aria-label': this._i18n.t('common.close'),
+      }, '✕');
+      header.append(closeBtn);
+      closeBtn.addEventListener('click', () => this._close(overlay));
+    }
 
     const body = document.createElement('div');
     body.className = 'modal__body';
@@ -162,8 +193,6 @@ export class Modal {
     overlay.append(modal);
     document.body.append(overlay);
     this._stack.push(overlay);
-
-    header.querySelector('.modal__close').addEventListener('click', () => this._close(overlay));
 
     return { overlay, modal, body, footer };
   }

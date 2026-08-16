@@ -1,4 +1,27 @@
 {
+  "actions": {
+    "modalLabel": "Aktion wird ausgeführt",
+    "loadingScenario": "Szenario wird geladen",
+    "loadingExample": "Beispiel wird geladen",
+    "progressModule": "Modul {index} von {total}: {name}",
+    "unknown": "Unbekannte Aktion: {verb}",
+    "scenarioLoaded": "{loaded} von {total} Modulen geladen",
+    "failed": "Aktion „{verb}“ konnte nicht ausgeführt werden",
+    "scenarioItemsFailed": "Nicht geladen: {items}",
+    "startNow": "Jetzt starten",
+    "scenarioReady": "Szenario geladen",
+    "scenarioPartial": "Szenario teilweise geladen",
+    "itemPending": "wird geladen",
+    "itemLoaded": "geladen",
+    "itemFailed": "nicht geladen"
+  },
+  "actionUrls": {
+    "title": "Aktions-URLs",
+    "hint": "Diese Adressen lösen beim Aufruf direkt eine Aktion aus, etwa das Laden eines Szenarios.",
+    "copy": "Kopieren",
+    "copied": "URL kopiert",
+    "copyFailed": "URL konnte nicht kopiert werden"
+  },
   "app": {
     "defaultProjectName": "Neues Projekt",
     "dashboard": "Dashboard",
@@ -118,6 +141,11 @@
     },
     "pickerTitle": "Zyklus wählen",
     "pickerIntro": "Welcher Verbesserungs- oder Entwicklungszyklus passt zu deinem Projekt? Du kannst den Zyklus später noch wechseln.",
+    "emptyProject": "Leeres Projekt",
+    "startTitle": "Wie möchtest du starten?",
+    "scenariosTitle": "Beispielszenarien",
+    "createEmpty": "Leeres Projekt erstellen",
+    "loadScenario": "Szenario laden",
     "switchAction": "Zyklus wechseln",
     "switchTitle": "Zyklus wechseln: {from} → {to}",
     "switchIntro": "Beim Wechsel werden alle Module umsortiert und das Projekt arbeitet ab sofort mit den Phasen des neuen Zyklus.",
@@ -131,7 +159,7 @@
     "emptyState": "Fügen Sie ein Modul hinzu, um zu beginnen.",
     "removeConfirm": "Modul \"{name}\" wirklich entfernen?",
     "tabs": {
-      "close": "Schließen",
+      "remove": "Entfernen",
       "rename": "Umbenennen",
       "reorder": "Verschieben"
     }
@@ -234,6 +262,14 @@
     "glossaryLoadError": "Begriff konnte nicht geladen werden.",
     "glossaryOpenAria": "Glossar: {term} öffnen",
     "glossaryHeaderTitle": "Glossar"
+  },
+  "scenarios": {
+    "sectionTitle": "Szenarien",
+    "loadWhole": "Ganzes Szenario laden",
+    "confirmTitle": "Szenario laden — {title}",
+    "confirmNew": "Neu angelegt werden: {count} Module. Bereits geöffnete Module bleiben unverändert; das Szenario legt ausschließlich eigene Instanzen an.",
+    "confirmWorksheets": "Datensammlungen: {count}",
+    "confirmButton": "Szenario laden"
   },
   "training": {
     "title": "Schulungen",
@@ -604,6 +640,8 @@
     "close": "Schließen",
     "yes": "Ja",
     "ok": "OK",
+    "next": "Weiter",
+    "back": "Zurück",
     "error": "Fehler",
     "statsPanel": {
       "series": "Datenreihe",

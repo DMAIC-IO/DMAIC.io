@@ -30,6 +30,8 @@ export class HelpPanel {
     this._hasGlossary = false;
     /** @type {?(exampleId: string) => void} */
     this._onLoadExample = null;
+    /** @type {?(scenarioId: string) => void} */
+    this._onLoadScenario = null;
     /** @type {?(termId: string) => Promise<object|null>} */
     this._glossaryGet = null;
     /** Permanent fallback loader (set once at bootstrap) so inline
@@ -95,6 +97,8 @@ export class HelpPanel {
     });
 
     this._examplesPane.addEventListener('click', (e) => {
+      const scenarioId = e.target.closest('[data-scenario-id]')?.dataset.scenarioId;
+      if (scenarioId && this._onLoadScenario) { this._onLoadScenario(scenarioId); return; }
       const btn = e.target.closest('[data-example-id]');
       if (!btn) return;
       const id = btn.dataset.exampleId;
@@ -145,11 +149,16 @@ export class HelpPanel {
    * @param {?Node} opts.helpNode        Node for the Help tab (null → hidden)
    * @param {object[]=} opts.examples    Catalog entries to render in the Examples tab
    * @param {(exampleId: string) => void=} opts.onLoadExample
+   * @param {object[]=} opts.scenarios   Scenarios applicable to the listed examples,
+   *                                     rendered as a block below the example list.
+   * @param {(scenarioId: string) => void=} opts.onLoadScenario
    * @param {object[]=} opts.glossary    Lightweight term entries for the Glossary tab
    * @param {(termId: string) => Promise<object|null>=} opts.glossaryGet  Lazy loader for full term
    * @param {'help'|'examples'|'glossary'=} opts.preferredTab
    */
-  showWithTabs(title, { helpNode, examples, onLoadExample, glossary, glossaryGet, preferredTab } = {}) {
+  showWithTabs(title, {
+    helpNode, examples, onLoadExample, scenarios, onLoadScenario, glossary, glossaryGet, preferredTab,
+  } = {}) {
     this._titleEl.textContent = title;
 
     this._hasHelp = Boolean(helpNode);
@@ -158,8 +167,15 @@ export class HelpPanel {
 
     this._hasExamples = Array.isArray(examples) && examples.length > 0;
     this._onLoadExample = onLoadExample || null;
-    if (this._hasExamples) this._renderExamplesList(examples);
-    else this._examplesPane.replaceChildren();
+    this._onLoadScenario = onLoadScenario || null;
+    if (this._hasExamples) {
+      this._renderExamplesList(examples);
+      if (Array.isArray(scenarios) && scenarios.length > 0) {
+        this._examplesPane.appendChild(this._buildScenarioBlock(scenarios));
+      }
+    } else {
+      this._examplesPane.replaceChildren();
+    }
 
     this._glossaryItems = Array.isArray(glossary) ? glossary : [];
     this._glossaryGet = glossaryGet || null;
@@ -366,6 +382,26 @@ export class HelpPanel {
       );
     });
     this._examplesPane.replaceChildren(...items);
+  }
+
+  /**
+   * Render the "Szenarien" block below the example list. One row per scenario
+   * variant applicable to the active module's examples; the click handler is
+   * delegated through _onLoadScenario.
+   * @param {object[]} scenarios
+   * @returns {HTMLElement}
+   */
+  _buildScenarioBlock(scenarios) {
+    const rows = scenarios.map(s => h('div', { class: 'help-panel__scenario' },
+      h('div', { class: 'help-panel__scenario-title' }, s.title),
+      s.description ? h('p', { class: 'help-panel__scenario-desc' }, s.description) : null,
+      h('button', {
+        class: 'btn btn--sm help-panel__scenario-load', type: 'button', 'data-scenario-id': s.id,
+      }, this._i18n.t('scenarios.loadWhole')),
+    ));
+    return h('div', { class: 'help-panel__scenarios' },
+      h('div', { class: 'help-panel__scenarios-title' }, this._i18n.t('scenarios.sectionTitle')),
+      ...rows);
   }
 
   // ─── Glossary tab rendering ──────────────────────────────

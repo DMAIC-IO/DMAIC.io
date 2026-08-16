@@ -1,8 +1,10 @@
-import { suite, test, assertEqual } from '../test-utils.js';
+import { suite, test, assertEqual, assertTrue } from '../test-utils.js';
 import {
   linkedAlpha, linkedBeta, clampConfPower, clampRisk, clampMinutes,
   groupShortcuts, DEFAULT_CHART_COLORS, STAT_DEFAULTS, SHORTCUT_GROUP_ORDER, FONT_SLIDERS,
+  buildActionUrlGroups, copyToClipboardFallback,
 } from '../../js/pages/settings/settings.js';
+import { CYCLES } from '../../js/core/cycles/cycles.js';
 
 suite('settings pure helpers — linked stats', () => {
   test('linkedAlpha = 100 − confidence (2dp)', () => {
@@ -70,5 +72,68 @@ suite('settings constants', () => {
     assertEqual(SHORTCUT_GROUP_ORDER[0], 'general');
     assertEqual(FONT_SLIDERS.length, 3);
     assertEqual(FONT_SLIDERS[0].key, 'chartTitleSize');
+  });
+});
+
+suite('settings pure helpers — buildActionUrlGroups', () => {
+  const fakeI18n = { t: (key) => (key === 'cycles.dmaic.name' ? 'DMAIC' : key) };
+  const base = `${location.origin}${location.pathname}`;
+
+  test('rows come from a verb\'s list(), never a hardcoded literal', () => {
+    const actionVerbs = new Map([
+      ['scenario', { list: () => [{ arg: 'pizza-full', label: 'Pizza (voll)' }] }],
+    ]);
+    const groups = buildActionUrlGroups({ actionVerbs, i18n: fakeI18n });
+    assertEqual(groups.length, 1);
+    assertEqual(groups[0].verb, 'scenario');
+    assertEqual(groups[0].rows.length, 1);
+    assertEqual(groups[0].rows[0].url, `${base}#/action/scenario/pizza-full`);
+    assertEqual(groups[0].rows[0].label, 'Pizza (voll)');
+  });
+
+  test('a verb added to the registry later is picked up automatically', () => {
+    // Proves the list is built from the registry, not a literal: a verb this
+    // module has never heard of still produces a group as long as it exposes
+    // list(). If a real verb or scenario is registered later, the settings
+    // section needs no further edits — this is the automated proof for that.
+    const actionVerbs = new Map([
+      ['scenario', { list: () => [] }],
+      ['future-verb', { list: () => [{ arg: 'demo', label: 'Demo' }] }],
+    ]);
+    const groups = buildActionUrlGroups({ actionVerbs, i18n: fakeI18n });
+    const future = groups.find(g => g.verb === 'future-verb');
+    assertTrue(!!future, 'future-verb group missing');
+    assertEqual(future.rows[0].url, `${base}#/action/future-verb/demo`);
+  });
+
+  test('new-project falls back to one row per cycle when list() is empty', () => {
+    const actionVerbs = new Map([['new-project', { list: () => [] }]]);
+    const groups = buildActionUrlGroups({ actionVerbs, i18n: fakeI18n });
+    assertEqual(groups.length, 1);
+    assertEqual(groups[0].rows.length, Object.keys(CYCLES).length);
+    assertTrue(
+      groups[0].rows.some(r => r.url === `${base}#/action/new-project/dmaic`),
+      'missing dmaic row',
+    );
+  });
+
+  test('a verb with an empty list() other than new-project contributes no group', () => {
+    // 'example' takes a free-form example id, not an enumerable cycle id —
+    // emitting a cycle-shaped URL for it would 404 (ruling: no dead links).
+    const actionVerbs = new Map([
+      ['example', { list: () => [] }],
+      ['scenario', { list: () => [{ arg: 's1', label: 'S1' }] }],
+    ]);
+    const groups = buildActionUrlGroups({ actionVerbs, i18n: fakeI18n });
+    assertEqual(groups.length, 1);
+    assertEqual(groups[0].verb, 'scenario');
+  });
+});
+
+suite('settings pure helpers — copyToClipboardFallback', () => {
+  test('copies via a hidden textarea without leaving it in the DOM', () => {
+    const before = document.querySelectorAll('textarea').length;
+    copyToClipboardFallback('https://example.test/#/action/scenario/s1');
+    assertEqual(document.querySelectorAll('textarea').length, before);
   });
 });

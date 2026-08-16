@@ -1,4 +1,27 @@
 {
+  "actions": {
+    "modalLabel": "Running action",
+    "loadingScenario": "Loading scenario",
+    "loadingExample": "Loading example",
+    "progressModule": "Module {index} of {total}: {name}",
+    "unknown": "Unknown action: {verb}",
+    "scenarioLoaded": "{loaded} of {total} modules loaded",
+    "failed": "Action \"{verb}\" could not be completed",
+    "scenarioItemsFailed": "Not loaded: {items}",
+    "startNow": "Start now",
+    "scenarioReady": "Scenario ready",
+    "scenarioPartial": "Scenario partially loaded",
+    "itemPending": "loading",
+    "itemLoaded": "loaded",
+    "itemFailed": "not loaded"
+  },
+  "actionUrls": {
+    "title": "Action URLs",
+    "hint": "These addresses trigger an action directly when opened, for example loading a scenario.",
+    "copy": "Copy",
+    "copied": "URL copied",
+    "copyFailed": "Could not copy URL"
+  },
   "app": {
     "defaultProjectName": "New Project",
     "dashboard": "Dashboard",
@@ -118,6 +141,11 @@
     },
     "pickerTitle": "Choose cycle",
     "pickerIntro": "Which improvement or development cycle fits your project? You can change the cycle later.",
+    "emptyProject": "Empty project",
+    "startTitle": "How do you want to start?",
+    "scenariosTitle": "Example scenarios",
+    "createEmpty": "Create empty project",
+    "loadScenario": "Load scenario",
     "switchAction": "Change cycle",
     "switchTitle": "Change cycle: {from} → {to}",
     "switchIntro": "Switching reshuffles all modules and the project will use the new cycle's phases from now on.",
@@ -131,7 +159,7 @@
     "emptyState": "Add a module to get started.",
     "removeConfirm": "Really remove module \"{name}\"?",
     "tabs": {
-      "close": "Close",
+      "remove": "Remove",
       "rename": "Rename",
       "reorder": "Move"
     }
@@ -234,6 +262,14 @@
     "glossaryLoadError": "Failed to load term.",
     "glossaryOpenAria": "Open glossary: {term}",
     "glossaryHeaderTitle": "Glossary"
+  },
+  "scenarios": {
+    "sectionTitle": "Scenarios",
+    "loadWhole": "Load whole scenario",
+    "confirmTitle": "Load scenario — {title}",
+    "confirmNew": "Will be created: {count} modules. Modules you already have open stay untouched; the scenario only ever creates its own instances.",
+    "confirmWorksheets": "Data collections: {count}",
+    "confirmButton": "Load scenario"
   },
   "training": {
     "title": "Training",
@@ -604,6 +640,8 @@
     "close": "Close",
     "yes": "Yes",
     "ok": "OK",
+    "next": "Next",
+    "back": "Back",
     "error": "Error",
     "statsPanel": {
       "series": "Series",

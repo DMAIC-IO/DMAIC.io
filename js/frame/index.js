@@ -26,6 +26,10 @@ import { startGlossaryAugmenter } from '../core/glossary-inline.js';
  * @param {object} ui.helpPanel - Help panel instance.
  * @param {object} ui.workspace - Module workspace.
  * @param {Function} ui.notify - Toast notification helper.
+ * @param {object} [ui.actionModal] - Shared action modal controller
+ *   (ui/action-modal.js). The SAME instance the router uses for
+ *   `#/action/…` URLs — chrome that runs its own long action shows this one
+ *   rather than creating a second dialog.
  */
 export function buildFrame(kernel, ui) {
   // Glossary wiring on the help panel:

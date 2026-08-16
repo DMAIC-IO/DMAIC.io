@@ -38,6 +38,38 @@ export class Router {
     this._lastNonPageRoute = null;
     /** @type {Route|null} The currently applied route (any kind). */
     this._currentRoute = null;
+    /** @type {Map<string, object>|null} Action verb registry (see action-verbs.js). */
+    this._verbs = null;
+    /** @type {object|null} Shared action modal controller. */
+    this._actionModal = null;
+    this._notify = null;
+    this._i18n = null;
+  }
+
+  /**
+   * The shared action modal controller (see ui/action-modal.js). Consumers
+   * that want to show the same dialog for their own long-running action
+   * (rather than a second, independent one) read it from here.
+   * @returns {object|null}
+   */
+  getActionModal() {
+    return this._actionModal;
+  }
+
+  /**
+   * Wire the action verb registry after construction (the verbs need a router
+   * reference themselves, so they cannot be built before it exists).
+   * @param {Map<string, object>} verbs
+   * @param {object} actionModal  action modal controller (open/update/close)
+   * @param {function} notify
+   * @param {object} i18n
+   * @returns {void}
+   */
+  setActionVerbs(verbs, actionModal, notify, i18n) {
+    this._verbs = verbs;
+    this._actionModal = actionModal;
+    this._notify = notify;
+    this._i18n = i18n;
   }
 
   /** Attach hashchange listener and apply the current hash once. */
@@ -49,6 +81,23 @@ export class Router {
       if (this._applying) return; // avoid loops
       if (!this._currentRoute || this._currentRoute.kind !== 'page' || this._currentRoute.pageId !== pageId) return;
       this.navigateBackFromPage(pageId);
+    });
+    // Mirror scenario-loader progress into the action modal as a LIST: one row
+    // per item, newest on top, so the user can read what happened instead of
+    // watching a single line flash past. `index` is the row key — the loader
+    // emits it on both events for the same item.
+    this._bus.on('scenario:progress', ({ index, total, exampleId, title }) => {
+      const name = title?.[this._i18n?.getLanguage?.()] || title?.en || exampleId || '';
+      this._actionModal?.addItem({
+        id: index,
+        label: this._i18n?.t('actions.progressModule', { index, total, name }) ?? `${index}/${total} ${name}`,
+      });
+    });
+    // The loader announces an item BEFORE it knows the outcome; this settles
+    // that row. Only the boolean `ok` is used — the payload's developer-facing
+    // error text (if any) never reaches the UI.
+    this._bus.on('scenario:item-done', ({ index, ok }) => {
+      this._actionModal?.markItem(index, ok !== false);
     });
     return this.applyHash();
   }
@@ -157,6 +206,60 @@ export class Router {
             this._bus.emit('module:activated', { instanceId: route.instanceId });
           }
           break;
+        }
+        case 'action': {
+          // One-shot command: run the verb, then perform EXACTLY ONE
+          // navigation to the route it returns. Verbs never navigate
+          // themselves (see action-verbs.js).
+          const verb = this._verbs?.get(route.verb);
+          if (!verb) {
+            this._notify?.(
+              this._i18n?.t('actions.unknown', { verb: route.verb }) ?? 'Unknown action',
+              'error',
+            );
+            this._applying = false;                // allow the nested navigate to run
+            await this.navigate({ kind: 'project', projectId: this._sm.getActiveProjectId() }, { replace: true });
+            return;
+          }
+          // The verb owns its dialog: whether one appears at all (modal), what
+          // it shows while running (render) and whether it stays open for a
+          // confirmation afterwards (done). The router only executes.
+          const cfg = verb.modal ?? null;
+          let target = null;
+          // false only when a hold() was cancelled from outside (see below).
+          let confirmed = true;
+          try {
+            if (cfg) this._actionModal?.open(cfg.render(route.args));
+            const res = await verb.run(route.args);
+            target = res?.route ?? null;
+            // hold() resolves true on the user's confirm and false when the
+            // dialog was closed/re-purposed by anyone else — so it can never
+            // wait forever, and a cancellation is not read as "go ahead".
+            if (cfg?.done) {
+              const held = await this._actionModal?.hold(cfg.done(res?.detail ?? null, route.args));
+              confirmed = held !== false;
+            }
+          } catch (err) {
+            // A known verb that threw is NOT an unknown action — say so.
+            console.warn('[Router] action failed', route.verb, err);
+            this._notify?.(
+              this._i18n?.t('actions.failed', { verb: route.verb }) ?? 'Action failed',
+              'error',
+            );
+          } finally {
+            // Always: a stuck dialog would leave the app unusable. Idempotent —
+            // on the holding path hold() has already closed it.
+            this._actionModal?.close();
+          }
+          // A cancelled hold means someone else took over the UI — navigating
+          // to the verb's target now would fight them for the route.
+          if (!confirmed) return;
+          this._applying = false;                  // allow the nested navigate to run
+          await this.navigate(
+            target ?? { kind: 'project', projectId: this._sm.getActiveProjectId() },
+            { replace: true },
+          );
+          return;
         }
         case 'module-new': {
           const def = this._reg.get(route.moduleType);

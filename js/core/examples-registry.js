@@ -9,11 +9,22 @@
  *   - project:   pre-filled module-state snapshot (passes through to setState)
  *   - generator: synthetic data generated at runtime with reproducible seed
  *
- * Schema is documented in .claude/BEISPIELDATEN-KONZEPT.md.
+ * Schema is documented in docs/EXAMPLES.md (private site repo).
  */
 
 const CATALOG_URL = './examples/index.json';
 const BASE_PATH = './examples/';
+
+/**
+ * Split a scenario item into example id and optional explicit module.
+ * `"ex-b#histogram"` → `{ exampleId: 'ex-b', moduleId: 'histogram' }`.
+ * @param {string} item
+ * @returns {{ exampleId: string, moduleId: string|null }}
+ */
+export function parseScenarioItem(item) {
+  const [exampleId, moduleId] = String(item).split('#');
+  return { exampleId, moduleId: moduleId || null };
+}
 
 export class ExamplesRegistry {
   constructor() {
@@ -53,7 +64,31 @@ export class ExamplesRegistry {
    */
   getForModule(moduleId) {
     if (!moduleId) return [];
-    return this._examples.filter(e => Array.isArray(e.modules) && e.modules.includes(moduleId));
+    return this._examples.filter(e =>
+      e.type !== 'scenario'
+      && Array.isArray(e.modules) && e.modules.includes(moduleId));
+  }
+
+  /**
+   * All scenario entries, optionally filtered by cycle.
+   * @param {{ cycle?: string }} [opts]
+   * @returns {object[]}
+   */
+  getScenarios({ cycle } = {}) {
+    return this._examples.filter(e =>
+      e.type === 'scenario' && (!cycle || e.cycle === cycle));
+  }
+
+  /**
+   * All scenarios whose `items` reference the given example id (the optional
+   * `#module` suffix is ignored when matching).
+   * @param {string} exampleId
+   * @returns {object[]}
+   */
+  getScenariosForExample(exampleId) {
+    if (!exampleId) return [];
+    return this.getScenarios().filter(s =>
+      (s.items || []).some(item => parseScenarioItem(item).exampleId === exampleId));
   }
 
   /**
@@ -70,14 +105,14 @@ export class ExamplesRegistry {
    * or generates synthetic data for `generator` entries.
    *
    * @param {string} exampleId
-   * @returns {Promise<{ meta: object, data: any }>}
+   * @returns {Promise<{ meta: object, data: any, worksheetKey: string|null }>}
    */
   async load(exampleId) {
     const meta = this.get(exampleId);
     if (!meta) throw new Error(`Unknown example id: ${exampleId}`);
 
     if (meta.type === 'generator') {
-      return { meta, data: this._runGenerator(meta.generator) };
+      return { meta, data: this._runGenerator(meta.generator), worksheetKey: null };
     }
 
     if (!meta.file) throw new Error(`Example "${exampleId}" has no file`);
@@ -89,8 +124,13 @@ export class ExamplesRegistry {
     if (meta.format === 'json') {
       const data = await res.json();
       // Resolve sourceWorksheetFile reference → inline as sourceWorksheetData.
-      // Lets multiple project snapshots share one worksheet definition.
+      // Lets multiple project snapshots share one worksheet definition. The
+      // worksheet file path doubles as the dedup key for scenario loads. It
+      // is returned on the envelope, never on `data` — modules pass `data`
+      // straight into setState().
+      let worksheetKey = null;
       if (data && typeof data.sourceWorksheetFile === 'string') {
+        worksheetKey = data.sourceWorksheetFile;
         const wsUrl = `${BASE_PATH}${data.sourceWorksheetFile}`;
         try {
           const wsRes = await fetch(wsUrl, { cache: 'no-cache' });
@@ -103,14 +143,17 @@ export class ExamplesRegistry {
           console.warn(`[ExamplesRegistry] Failed to fetch worksheet file ${wsUrl}:`, err.message);
         }
         delete data.sourceWorksheetFile;
+      } else if (Array.isArray(meta.modules) && meta.modules.includes('worksheet')) {
+        // A worksheet example IS the data collection — key it by its own file.
+        worksheetKey = meta.file;
       }
-      return { meta, data };
+      return { meta, data, worksheetKey };
     }
 
-    // Default: CSV
+    // Default: CSV — the source file is the dedup key.
     const text = await res.text();
     const data = parseCsv(text);
-    return { meta, data };
+    return { meta, data, worksheetKey: meta.file };
   }
 
   // ─── Generators ─────────────────────────────────────────────
@@ -197,6 +240,9 @@ export function provisionInstance(context, { moduleId, phase, state }) {
  * unchanged so existing callers (boxplot, histogram, regression, …) keep
  * working without modification.
  *
+ * When `context.worksheetPool` (a Map) and `context.worksheetKey` are present,
+ * an already-provisioned worksheet for that key is reused (scenario loading).
+ *
  * @param {object} context — module context (must expose stateManager + eventBus)
  * @param {object} wsState — { sheets:[{id,name,state}], activeSheetId, sheetCounter }
  * @returns {{ instanceId: string, sheetId: string } | null}
@@ -206,11 +252,22 @@ export function provisionWorksheet(context, wsState) {
   const sheetId = wsState.activeSheetId || wsState.sheets[0]?.id;
   if (!sheetId) return null;
 
+  // Scenario loads pass a pool + key so several examples backed by the SAME
+  // worksheet file share one data collection instead of piling up duplicates.
+  const key = context?.worksheetKey;
+  const pool = context?.worksheetPool;
+  // Cache hit intentionally ignores this call's own `sheetId` — the cached
+  // ref's `sheetId` wins even if the current wsState implies a different one.
+  if (key && pool?.has(key)) return pool.get(key);
+
   const instanceId = provisionInstance(context, {
     moduleId: 'worksheet', phase: 'data', state: wsState,
   });
+  if (!instanceId) return null;
 
-  return instanceId ? { instanceId, sheetId } : null;
+  const ref = { instanceId, sheetId };
+  if (key && pool) pool.set(key, ref);
+  return ref;
 }
 
 /**
