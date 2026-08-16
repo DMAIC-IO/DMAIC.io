@@ -1,5 +1,15 @@
 import { suite, test, assertEqual } from '../test-utils.js';
 import { ActivityModel } from '../../js/modules/activity-flowchart/activity-flowchart-model.js';
+import { __resetRegistryForTests, appendFromInstance }
+  from '../../js/core/flowchart/flowchart-import.js';
+
+// Re-import the model to trigger the mapper registration side-effect.
+// (dynamic import ensures the registry is populated after the reset.)
+async function loadModelWithMappers() {
+  __resetRegistryForTests();
+  const url = '../../js/modules/activity-flowchart/activity-flowchart-model.js?bust=' + Math.random();
+  return import(url);
+}
 
 suite('ActivityModel — normalizer', () => {
   test('defaults kind to "activity" for plain step', () => {
@@ -82,5 +92,43 @@ suite('ActivityModel — decisions', () => {
     const m = new ActivityModel();
     const d = m.addDecision(0);
     assertEqual(m.setDecisionTarget(d.id, 'maybe', 'end'), false);
+  });
+});
+
+suite('ActivityModel — import mappers', () => {
+  test('SIPOC → Activity: process names become activity steps', async () => {
+    const { ActivityModel } = await loadModelWithMappers();
+    const target = new ActivityModel();
+    const sm = {
+      listInstances: (id) => id === 'sipoc' ? [{ instanceId: 'i', title: 'S' }] : [],
+      getModuleState: (i) => ({ columns: { process: ['Anfrage', 'Prüfung', 'Freigabe'] } }),
+    };
+    const appended = appendFromInstance({
+      targetModuleId: 'activity-flowchart', sourceModuleId: 'sipoc',
+      instanceId: 'i', stateManager: sm, targetState: target,
+    });
+    assertEqual(appended.length, 3);
+    assertEqual(target.steps.map((s) => s.title).join(','), 'Anfrage,Prüfung,Freigabe');
+    assertEqual(target.steps.every((s) => s.kind === 'activity'), true);
+  });
+
+  test('PM → Activity: steps come across as kind:"activity"', async () => {
+    const { ActivityModel } = await loadModelWithMappers();
+    const target = new ActivityModel();
+    const sm = {
+      listInstances: (id) => id === 'process-map' ? [{ instanceId: 'i', title: 'P' }] : [],
+      getModuleState: (i) => ({ steps: [
+        { id: 's1', title: 'X', valueType: 'va' },
+        { id: 's2', title: 'Y', valueType: 'nva' },
+      ] }),
+    };
+    const appended = appendFromInstance({
+      targetModuleId: 'activity-flowchart', sourceModuleId: 'process-map',
+      instanceId: 'i', stateManager: sm, targetState: target,
+    });
+    assertEqual(appended.length, 2);
+    assertEqual(target.steps.every((s) => s.kind === 'activity'), true);
+    // PM-only fields must NOT survive into Activity (mapper strips them).
+    assertEqual(target.steps[0].valueType, undefined);
   });
 });

@@ -5,6 +5,7 @@
  */
 
 import { FlowchartState } from '../../core/flowchart/flowchart-model.js';
+import { registerSourceMapper } from '../../core/flowchart/flowchart-import.js';
 
 const VALID_KINDS = new Set(['activity', 'decision']);
 
@@ -103,3 +104,52 @@ export class ActivityModel extends FlowchartState {
     return m;
   }
 }
+
+/**
+ * Trimmed non-empty strings from an unknown array shape.
+ * (mirrors `cleanStrings` in `modules/process-map/process-map-sipoc-import.js`)
+ * @param {*} raw - Raw value, expected to be an array of strings.
+ * @returns {string[]} Trimmed, non-empty strings.
+ */
+function cleanStrings(raw) {
+  if (!Array.isArray(raw)) return [];
+  return raw
+    .filter((v) => typeof v === 'string')
+    .map((v) => v.trim())
+    .filter((v) => v.length > 0);
+}
+
+/**
+ * Maps a SIPOC instance's persisted state to seed steps for the Activity
+ * Flowchart import registry. SIPOC's process-column entries become Activity
+ * steps (one per non-empty entry).
+ * @param {any} sipocState - SIPOC's persisted state, `{ columns: { process: string[] } }`.
+ * @returns {Array<{title: string, kind: 'activity'}>} Seed steps for `ActivityModel.addStep`.
+ */
+function sipocToActivity(sipocState) {
+  return cleanStrings(sipocState?.columns?.process).map((title) => ({ title, kind: 'activity' }));
+}
+
+/**
+ * Maps a Process Map instance's persisted state to seed steps for the
+ * Activity Flowchart import registry. Keeps title/description, drops
+ * PM-only extensions (valueType, inputs, outputs, loop).
+ * @param {any} pmState - Process Map's persisted state, `{ steps: object[] }`.
+ * @returns {Array<{title: string, description: string, kind: 'activity'}>} Seed steps for `ActivityModel.addStep`.
+ */
+function pmToActivity(pmState) {
+  const steps = Array.isArray(pmState?.steps) ? pmState.steps : [];
+  return steps.map((s) => ({
+    title: typeof s?.title === 'string' ? s.title : '',
+    description: typeof s?.description === 'string' ? s.description : '',
+    kind: 'activity',
+  }));
+}
+
+registerSourceMapper('activity-flowchart', 'sipoc', sipocToActivity);
+registerSourceMapper('activity-flowchart', 'process-map', pmToActivity);
+
+/** Exposed for internal tests of the mappers in isolation. */
+export const __sipocMapper = sipocToActivity;
+/** Exposed for internal tests of the mappers in isolation. */
+export const __pmMapper = pmToActivity;
