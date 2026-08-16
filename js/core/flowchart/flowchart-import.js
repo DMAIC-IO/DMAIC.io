@@ -41,6 +41,9 @@ export function __resetRegistryForTests() { registry.clear(); }
  * @returns {Array<{ instanceId: string, moduleId: string, title: string }>}
  */
 export function listSourceInstances({ sources, stateManager }) {
+  if (stateManager && typeof stateManager.listInstances !== 'function') {
+    console.warn('[flowchart-import] stateManager has no listInstances(moduleId) method — every source will return []; register the method on stateManager or pass a wrapper. Sources requested:', sources);
+  }
   const out = [];
   for (const src of sources) {
     const list = stateManager?.listInstances?.(src) || [];

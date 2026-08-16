@@ -56,10 +56,25 @@ export default createModule({
   Model: State,
 
   data(module, _t) {
+    const _core = chainViewMixin(module, _t, {
+      autoSizeSelector: 'textarea.pmap__io-name, textarea.pmap__title, textarea.pmap__step-title, textarea.pmap__loop-step-title',
+    });
     return {
-      ...chainViewMixin(module, _t, {
-        autoSizeSelector: 'textarea.pmap__io-name, textarea.pmap__title, textarea.pmap__step-title, textarea.pmap__loop-step-title',
-      }),
+      ..._core,
+
+      // PM-local override of the mixin's stepDragEnd (F1/F2 fixes): the mixin
+      // only clears _draggedStepId + the is-dragging class, but PM's
+      // armStepDrag sets a `draggable` attribute directly on the row that
+      // must be removed again on dragend (else the row stays draggable from
+      // anywhere, not just the arm handle) — and PM's own drag-marker
+      // classes (set by stepDragStart/stepDragOver) need the same defensive
+      // sweep as the IO/substep drag contexts.
+      stepDragEnd(event) {
+        _core.stepDragEnd.call(this, event);
+        const row = event?.target?.closest?.('.pmap__step-row');
+        row?.removeAttribute?.('draggable');
+        this._clearDragMarkers();
+      },
 
       // ── Transient UI state (never persisted) ──────────────────
       /** @type {string|null} */

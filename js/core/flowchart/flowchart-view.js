@@ -13,8 +13,7 @@
  * @returns {object} data()-mixin with transient drag state and handlers
  */
 export function chainViewMixin(module, _t, opts = {}) {
-  const autoSizeSelector = opts.autoSizeSelector
-    || 'textarea[data-autosize], textarea.pmap__io-name, textarea.pmap__title, textarea.pmap__step-title';
+  const autoSizeSelector = opts.autoSizeSelector || 'textarea[data-autosize]';
 
   return {
     _draggedStepId: /** @type {string|null} */ (null),
