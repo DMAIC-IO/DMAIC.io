@@ -128,9 +128,6 @@ export default createModule({
       },
 
       // ── Misc view transforms ──────────────────────────────────
-      stepNum(idx) {
-        return String(idx + 1).padStart(2, '0');
-      },
       substepNum(parentIdx, subIdx) {
         return `${parentIdx + 1  }.${  subIdx + 1}`;
       },

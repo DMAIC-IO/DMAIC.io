@@ -30,8 +30,12 @@
             <!-- Connector above this step: opens the "insert left / right" menu -->
             <template x-if="idx > 0">
               <div class="of__connector">
-                <button class="of__insert-btn" @click="toggleInsertMenu(idx)"
-                        :title="t('insertHere')">&raquo;</button>
+                <button class="of__insert-btn fc-connector fc-connector--clickable"
+                        data-action="insert-step" :data-idx="idx"
+                        @click="toggleInsertMenu(idx)"
+                        :title="t('insertHere')">
+                  <span class="fc-connector__arrow">&raquo;</span>
+                </button>
                 <template x-if="isInsertOpen(idx)">
                   <div class="of__insert-menu">
                     <button @click="insertAt(idx, 'va')"  x-text="t('insertVA')"></button>
@@ -44,14 +48,26 @@
             <!-- VA cell (left) -->
             <div class="of__cell of__cell--va">
               <template x-if="isVA(step)">
-                <div class="of__card of__card--va">
-                  <textarea class="of__step-title" x-model="step.title"
-                            :placeholder="t('titlePlaceholder')"
-                            @input="autoSize($event)"></textarea>
-                  <button class="of__side-toggle" @click="toggleSide(step.id)"
-                          :title="t('moveToNVA')">&rarr;</button>
-                  <button class="of__delete" @click="model.removeStep(step.id)"
-                          :title="t('deleteStep')">×</button>
+                <div class="of__card of__card--va fc-card">
+                  <div class="of__card-header fc-card__header">
+                    <span class="of__step-number fc-step-number" x-text="stepNum(idx)"></span>
+                    <textarea class="of__step-title fc-card__title" x-model="step.title"
+                              :placeholder="t('titlePlaceholder')"
+                              @input="autoSize($event)"></textarea>
+                    <div class="of__card-actions fc-card__actions">
+                      <button class="of__side-toggle fc-card__delete" @click="toggleSide(step.id)"
+                              :title="t('moveToNVA')">&rarr;</button>
+                      <button class="of__delete fc-card__delete" @click="model.removeStep(step.id)"
+                              :title="t('deleteStep')">×</button>
+                    </div>
+                  </div>
+                  <div class="of__card-body fc-card__body">
+                    <textarea class="field field--ghost of__step-description fc-card__description"
+                              :placeholder="t('descriptionPlaceholder')"
+                              data-field="description" :data-step-id="step.id"
+                              x-model="step.description"
+                              @input="autoSize($event)"></textarea>
+                  </div>
                 </div>
               </template>
             </div>
@@ -59,14 +75,26 @@
             <!-- NVA cell (right) -->
             <div class="of__cell of__cell--nva">
               <template x-if="!isVA(step)">
-                <div class="of__card of__card--nva">
-                  <button class="of__side-toggle" @click="toggleSide(step.id)"
-                          :title="t('moveToVA')">&larr;</button>
-                  <textarea class="of__step-title" x-model="step.title"
-                            :placeholder="t('titlePlaceholder')"
-                            @input="autoSize($event)"></textarea>
-                  <button class="of__delete" @click="model.removeStep(step.id)"
-                          :title="t('deleteStep')">×</button>
+                <div class="of__card of__card--nva fc-card">
+                  <div class="of__card-header fc-card__header">
+                    <span class="of__step-number fc-step-number" x-text="stepNum(idx)"></span>
+                    <textarea class="of__step-title fc-card__title" x-model="step.title"
+                              :placeholder="t('titlePlaceholder')"
+                              @input="autoSize($event)"></textarea>
+                    <div class="of__card-actions fc-card__actions">
+                      <button class="of__side-toggle fc-card__delete" @click="toggleSide(step.id)"
+                              :title="t('moveToVA')">&larr;</button>
+                      <button class="of__delete fc-card__delete" @click="model.removeStep(step.id)"
+                              :title="t('deleteStep')">×</button>
+                    </div>
+                  </div>
+                  <div class="of__card-body fc-card__body">
+                    <textarea class="field field--ghost of__step-description fc-card__description"
+                              :placeholder="t('descriptionPlaceholder')"
+                              data-field="description" :data-step-id="step.id"
+                              x-model="step.description"
+                              @input="autoSize($event)"></textarea>
+                  </div>
                 </div>
               </template>
             </div>

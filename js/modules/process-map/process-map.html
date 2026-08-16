@@ -69,10 +69,10 @@
 
                     <!-- Leading connector (before the first step only) -->
                     <template x-if="idx === 0">
-                      <div class="pmap__connector pmap__connector--leading pmap__connector--clickable"
+                      <div class="pmap__connector pmap__connector--leading pmap__connector--clickable fc-connector fc-connector--clickable"
                            data-action="insert-step" data-idx="0" :title="t('insertHere')"
                            @click="addStep(0)">
-                        <span class="pmap__connector-arrow">&raquo;</span>
+                        <span class="pmap__connector-arrow fc-connector__arrow">&raquo;</span>
                       </div>
                     </template>
 
@@ -152,10 +152,10 @@
 
                     <!-- Trailing connector (after every step, sits in the
                          border-spacing between this cell and the next) -->
-                    <div class="pmap__connector pmap__connector--trailing pmap__connector--clickable"
+                    <div class="pmap__connector pmap__connector--trailing pmap__connector--clickable fc-connector fc-connector--clickable"
                          data-action="insert-step" :data-idx="idx + 1" :title="t('insertHere')"
                          @click="addStep(idx + 1)">
-                      <span class="pmap__connector-arrow">&raquo;</span>
+                      <span class="pmap__connector-arrow fc-connector__arrow">&raquo;</span>
                     </div>
                   </td>
                 </template>

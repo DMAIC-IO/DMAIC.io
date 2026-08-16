@@ -435,53 +435,18 @@ textarea.pmap__step-description {
    arrow overflows into the table's horizontal border-spacing (32px),
    which is the empty gap between step columns. Trailing connector on
    every card, leading connector only on the first (via x-if). */
+/* Look (size, arrow, hover-+) comes from `.fc-connector` in
+   js/core/flowchart/flowchart.css — PM only adds the absolute positioning
+   that drops the connector into the table's border-spacing. */
 .pmap__connector {
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
-  width: 32px;
-  height: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   z-index: 1;
 }
 
 .pmap__connector--trailing { right: -32px; }
 .pmap__connector--leading  { left:  -32px; }
-
-.pmap__connector-arrow {
-  display: inline-block;
-  color: var(--color-pmap-connector);
-  font-size: 35px;
-  line-height: 1;
-}
-
-.pmap__connector--clickable {
-  cursor: pointer;
-  border-radius: var(--border-radius);
-  transition: background var(--transition-speed);
-}
-
-.pmap__connector--clickable:hover {
-  background: var(--color-pmap-step-accent-bg);
-}
-
-/* Replace arrow with + on hover */
-.pmap__connector--clickable:hover .pmap__connector-arrow {
-  font-size: 0;
-}
-
-.pmap__connector--clickable:hover .pmap__connector-arrow::before {
-  content: '+';
-  font-size: 28px;
-  font-weight: 300;
-  color: var(--color-accent);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  line-height: 1;
-}
 
 /* ===== Toolbar ===== */
 .pmap__toolbar {

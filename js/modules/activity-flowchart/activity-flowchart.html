@@ -28,19 +28,33 @@
 
             <!-- Connector before this step -->
             <template x-if="idx > 0">
-              <div class="af__connector" @click="model.insertStep(idx, { kind: 'activity' })">
-                <span class="af__connector-arrow">&raquo;</span>
+              <div class="af__connector fc-connector fc-connector--clickable"
+                   data-action="insert-step" :data-idx="idx" :title="t('insertHere')"
+                   @click="model.insertStep(idx, { kind: 'activity' })">
+                <span class="af__connector-arrow fc-connector__arrow">&raquo;</span>
               </div>
             </template>
 
             <!-- Activity card OR Decision diamond -->
             <template x-if="!isDecision(step)">
-              <div class="af__card">
-                <textarea class="af__step-title" x-model="step.title"
-                          :placeholder="t('titlePlaceholder')"
-                          @input="autoSize($event)"></textarea>
-                <button class="af__delete" @click="model.removeStep(step.id)"
-                        :title="t('deleteStep')">×</button>
+              <div class="af__card fc-card">
+                <div class="af__card-header fc-card__header">
+                  <span class="af__step-number fc-step-number" x-text="stepNum(idx)"></span>
+                  <textarea class="af__step-title fc-card__title" x-model="step.title"
+                            :placeholder="t('titlePlaceholder')"
+                            @input="autoSize($event)"></textarea>
+                  <div class="af__card-actions fc-card__actions">
+                    <button class="af__delete fc-card__delete" @click="model.removeStep(step.id)"
+                            :title="t('deleteStep')">×</button>
+                  </div>
+                </div>
+                <div class="af__card-body fc-card__body">
+                  <textarea class="field field--ghost af__step-description fc-card__description"
+                            :placeholder="t('descriptionPlaceholder')"
+                            data-field="description" :data-step-id="step.id"
+                            x-model="step.description"
+                            @input="autoSize($event)"></textarea>
+                </div>
               </div>
             </template>
 

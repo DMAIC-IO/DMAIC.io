@@ -1,0 +1,176 @@
+/**
+ * D.Mike — Flowchart Chain-Core (flowchart.css)
+ *
+ * Shared step-card look for the four chain-based flowchart modules:
+ * Process Map, Activity, Opportunity, Deployment. The Core already shares
+ * the model (flowchart-model.js), the drag/autosize behaviour
+ * (flowchart-view.js) and the import registry (flowchart-import.js) — these
+ * classes complete the set so a step card reads the same in every module.
+ *
+ * Values are Process Map's, lifted verbatim: PM is the oldest of the four
+ * and ships visual snapshots, so the extraction is a pure move.
+ *
+ * Modules keep their own BEM class names as behaviour/test hooks and add the
+ * `fc-*` classes alongside; only genuinely module-specific rules (value
+ * badges, decision diamonds, columns, lane bands) stay in the module CSS.
+ */
+
+/* ── Card surface ───────────────────────────────────────────────────── */
+.fc-card {
+  position: relative;
+  background: var(--color-bg-secondary);
+  border: var(--border-width) solid var(--color-border-secondary);
+  border-radius: var(--border-radius-lg);
+  transition: border-color var(--transition-speed),
+              box-shadow var(--transition-speed),
+              transform 0.15s;
+}
+
+.fc-card:hover {
+  border-color: var(--color-border-primary);
+  box-shadow: var(--shadow-md);
+}
+
+/* ── Card header (number badge · title · actions) ───────────────────── */
+.fc-card__header {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-bottom: var(--border-width) solid var(--color-border-secondary);
+}
+
+/* The sequence position — also the drag handle in every module. */
+.fc-step-number {
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-flowchart-step-accent);
+  background: var(--color-flowchart-step-accent-bg);
+  padding: 2px var(--spacing-sm);
+  border-radius: var(--border-radius-sm);
+  flex-shrink: 0;
+  cursor: grab;
+}
+
+.fc-step-number:active { cursor: grabbing; }
+
+.fc-card__title {
+  flex: 1;
+  background: none;
+  border: none;
+  color: var(--color-text-primary);
+  font-family: var(--font-family);
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-semibold);
+  outline: none;
+  min-width: 0;
+}
+
+.fc-card__title::placeholder { color: var(--color-text-tertiary); }
+
+/* Actions stay hidden until the card is hovered, so a long chain reads calm. */
+.fc-card__actions {
+  display: flex;
+  gap: var(--spacing-xs);
+  opacity: 0;
+  transition: opacity var(--transition-speed);
+}
+
+.fc-card:hover .fc-card__actions { opacity: 1; }
+
+/* Modules whose card is header-only (no description/IO body below) must not
+   render a dangling divider. */
+.fc-card__header:last-child { border-bottom: none; }
+
+.fc-card__delete {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--border-radius-sm);
+  border: none;
+  background: transparent;
+  color: var(--color-text-tertiary);
+  cursor: pointer;
+  transition: all var(--transition-speed);
+}
+
+.fc-card__delete:hover {
+  color: var(--color-error);
+  background: rgb(255 59 48 / 10%);
+}
+
+/* ── Card body ──────────────────────────────────────────────────────── */
+.fc-card__body { padding: var(--spacing-sm) var(--spacing-md); }
+
+/* The `textarea.` prefix beats the .field base's `resize: vertical`. */
+textarea.fc-card__description {
+  min-height: 44px;
+  resize: none;
+  overflow: hidden;
+}
+
+/* ── Drag feedback ──────────────────────────────────────────────────────
+   chainViewMixin toggles is-dragging / is-drop-target on the element that
+   carries the `draggable` attribute — which is the card itself in some
+   modules and its row wrapper in others, so both are matched. */
+.fc-card.is-dragging,
+.is-dragging > .fc-card,
+.is-dragging .fc-card {
+  opacity: 0.45;
+  transform: scale(0.97);
+}
+
+.fc-card.is-drop-target,
+.is-drop-target > .fc-card,
+.is-drop-target .fc-card {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px var(--color-flowchart-step-accent-bg);
+}
+
+/* ── Connector between two steps ────────────────────────────────────────
+   The `»` chevron that sits in the gap between cards and turns into a `+`
+   on hover, marking it as an insert point. Look only — each module keeps
+   its own positioning (Process Map absolutely positions it into the table's
+   border-spacing, the others place it as a flow item). */
+.fc-connector {
+  width: 32px;
+  height: 32px;
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.fc-connector__arrow {
+  display: inline-block;
+  color: var(--color-flowchart-connector);
+  font-size: 35px;
+  line-height: 1;
+}
+
+.fc-connector--clickable {
+  cursor: pointer;
+  border-radius: var(--border-radius);
+  transition: background var(--transition-speed);
+}
+
+.fc-connector--clickable:hover { background: var(--color-flowchart-step-accent-bg); }
+
+/* Swap the chevron for a + while hovering, so the insert affordance is
+   unmistakable without adding a second glyph to the layout. */
+.fc-connector--clickable:hover .fc-connector__arrow { font-size: 0; }
+
+.fc-connector--clickable:hover .fc-connector__arrow::before {
+  content: '+';
+  font-size: 28px;
+  font-weight: 300;
+  color: var(--color-accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}

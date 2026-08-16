@@ -28,3 +28,17 @@ suite('chainViewMixin — shape', () => {
     assertEqual(mixin._draggedStepId, null);
   });
 });
+
+suite('chainViewMixin — stepNum', () => {
+  test('zero-pads the 1-based chain position', () => {
+    const m = chainViewMixin(null, (k) => k);
+    assertEqual(m.stepNum(0), '01');
+    assertEqual(m.stepNum(8), '09');
+  });
+
+  test('does not pad beyond two digits', () => {
+    const m = chainViewMixin(null, (k) => k);
+    assertEqual(m.stepNum(9), '10');
+    assertEqual(m.stepNum(99), '100');
+  });
+});

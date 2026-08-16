@@ -21,52 +21,40 @@
   align-items: center;
   gap: var(--spacing-sm);
 }
+/* Connector and card sit side by side, so a chain reads left-to-right like
+   Process Map's. */
 .af__step {
   position: relative;
   flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
 }
 
 /* Drag/drop feedback — chainViewMixin toggles is-dragging/is-drop-target
    directly on the .af__step node (dragstart target / dragover currentTarget). */
 .af__step.is-dragging { opacity: 0.5; }
-.af__step.is-drop-target .af__card,
+/* Cards get their drag feedback from the core (.fc-card.is-*); the decision
+   diamond is not an .fc-card, so it keeps a rule of its own. */
 .af__step.is-drop-target .af__diamond {
   outline: 2px dashed var(--color-accent);
   outline-offset: 2px;
 }
 
-/* ── Connector between steps ───────────────────────────────────────── */
-.af__connector {
-  cursor: pointer;
-  padding: 0 var(--spacing-sm);
-  color: var(--color-text-secondary);
-  font-size: var(--font-size-lg);
-  line-height: 1;
-  user-select: none;
-}
-.af__connector:hover { color: var(--color-accent); }
+/* ── Connector between steps ────────────────────────────────────────────
+   Look comes from `.fc-connector` in js/core/flowchart/flowchart.css — the
+   chain is a flex row here, so no extra positioning is needed. */
 
-/* ── Activity card ──────────────────────────────────────────────────── */
-.af__card {
-  position: relative;
-  background: var(--color-bg-elevated);
-  border: 1px solid var(--color-border-primary);
-  border-radius: var(--border-radius);
-  padding: var(--spacing-md);
-  min-width: 140px;
-}
+/* ── Activity card ──────────────────────────────────────────────────────
+   Surface, header, number badge, title and delete button come from the
+   shared `.fc-*` base in js/core/flowchart/flowchart.css — only the
+   module-specific sizing lives here. */
+.af__card { min-width: 160px; }
 .af__step-title {
-  width: 100%;
   min-height: 2.5em;
   resize: none;
-  border: none;
-  background: transparent;
-  color: var(--color-text-primary);
-  font-family: inherit;
-  font-size: var(--font-size-md);
   overflow: hidden;
 }
-.af__step-title:focus { outline: none; }
 
 /* ── Decision diamond ───────────────────────────────────────────────── */
 .af__diamond {
@@ -96,11 +84,15 @@
 }
 .af__decision-label:focus { outline: none; }
 
-/* ── Delete button ──────────────────────────────────────────────────── */
-.af__delete {
+/* ── Delete button ──────────────────────────────────────────────────────
+   Base look from `.fc-card__delete`; the decision diamond needs an
+   absolutely positioned variant because it has no header row. */
+.af__diamond .af__delete {
   position: absolute;
   top: var(--spacing-xs);
   right: var(--spacing-xs);
+  width: auto;
+  height: auto;
   border: none;
   background: transparent;
   color: var(--color-text-secondary);
@@ -109,7 +101,7 @@
   line-height: 1;
   padding: 0;
 }
-.af__delete:hover { color: var(--color-error); }
+.af__diamond .af__delete:hover { color: var(--color-error); background: transparent; }
 
 /* ── Decision branches (Yes/No) ─────────────────────────────────────── */
 .af__branches {

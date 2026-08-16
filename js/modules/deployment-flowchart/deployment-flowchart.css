@@ -98,47 +98,20 @@
   flex-wrap: wrap;
 }
 
-/* ── Step card ──────────────────────────────────────────────────────── */
+/* ── Step card ──────────────────────────────────────────────────────────
+   Surface, header, number badge, title and delete button come from the
+   shared `.fc-*` base in js/core/flowchart/flowchart.css — only the sizing
+   inside a lane band is module-specific. */
 .df__step {
-  position: relative;
-  background: var(--color-bg-elevated);
-  border: 1px solid var(--color-border-primary);
-  border-radius: var(--border-radius);
-  padding: var(--spacing-md);
-  padding-right: var(--spacing-lg);
-  min-width: 160px;
+  min-width: 180px;
   max-width: 260px;
-}
-.df__step.is-dragging { opacity: 0.5; }
-.df__step.is-drop-target {
-  outline: 2px dashed var(--color-accent);
-  outline-offset: 2px;
 }
 .df__step-title {
   width: 100%;
   min-height: 2.5em;
   resize: none;
-  border: none;
-  background: transparent;
-  color: var(--color-text-primary);
-  font-family: inherit;
-  font-size: var(--font-size-md);
   overflow: hidden;
 }
-.df__step-title:focus { outline: none; }
-.df__delete {
-  position: absolute;
-  top: var(--spacing-xs);
-  right: var(--spacing-xs);
-  border: none;
-  background: transparent;
-  color: var(--color-text-secondary);
-  cursor: pointer;
-  font-size: var(--font-size-md);
-  line-height: 1;
-  padding: 0;
-}
-.df__delete:hover { color: var(--color-error); }
 
 /* ── Import picker form (borrowed into the shared modal) ────────────── */
 /* Hidden inside the module container; the shared modal borrows the node,

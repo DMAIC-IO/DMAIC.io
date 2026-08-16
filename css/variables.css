@@ -143,14 +143,22 @@
   --color-sipoc-o-bg: rgb(168 85 247 / 8%);
   --color-sipoc-c-bg: rgb(239 68 68 / 8%);
 
+  /* Flowchart family (Process Map, Activity, Opportunity, Deployment) —
+     shared step-card accent, consumed by js/core/flowchart/flowchart.css.
+     The --color-pmap-* aliases below keep Process Map's existing selectors
+     working unchanged. */
+  --color-flowchart-step-accent: var(--color-accent);
+  --color-flowchart-step-accent-bg: rgb(0 102 204 / 10%);
+  --color-flowchart-connector: var(--color-border-secondary);
+
   /* Process Map colors */
   --color-pmap-input: #34c759;
   --color-pmap-input-bg: rgb(52 199 89 / 10%);
   --color-pmap-output: #ff9500;
   --color-pmap-output-bg: rgb(255 149 0 / 10%);
-  --color-pmap-step-accent: var(--color-accent);
-  --color-pmap-step-accent-bg: rgb(0 102 204 / 10%);
-  --color-pmap-connector: var(--color-border-secondary);
+  --color-pmap-step-accent: var(--color-flowchart-step-accent);
+  --color-pmap-step-accent-bg: var(--color-flowchart-step-accent-bg);
+  --color-pmap-connector: var(--color-flowchart-connector);
   --color-pmap-va: #34c759;
   --color-pmap-va-bg: rgb(52 199 89 / 12%);
   --color-pmap-bnva: #ff9f0a;

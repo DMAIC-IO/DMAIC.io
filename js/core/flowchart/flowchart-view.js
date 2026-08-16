@@ -52,6 +52,17 @@ export function chainViewMixin(module, _t, opts = {}) {
       event?.target?.classList?.remove('is-dragging');
     },
 
+    /**
+     * Sequence label for a step, zero-padded to two digits ("01", "02", …) so
+     * a chain of cards keeps a stable badge width. Shared by all four
+     * flowchart modules — Process Map set the format, the others follow it.
+     * @param {number} idx 0-based index in the chain
+     * @returns {string}
+     */
+    stepNum(idx) {
+      return String(idx + 1).padStart(2, '0');
+    },
+
     autoSize(event) {
       const el = event?.target;
       if (!el || typeof el.scrollHeight !== 'number') return;
