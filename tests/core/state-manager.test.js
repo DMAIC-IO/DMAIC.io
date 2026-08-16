@@ -294,6 +294,44 @@ suite('StateManager', () => {
     assertEqual(id, 'new-id');
     assertEqual(calls.includes('create:X:dmadv'), true);
   });
+
+  // ─── listInstances (generic flowchart-import support) ──────────
+
+  suite('StateManager.listInstances', () => {
+    test('returns [] when no phases match', () => {
+      const sm = new StateManager(new EventBus());
+      assertEqual(sm.listInstances('sipoc').length, 0);
+    });
+
+    test('returns [] when no instances match the moduleId', () => {
+      const sm = new StateManager(new EventBus());
+      sm.set('phases.define', [{ instanceId: 'i1', moduleId: 'ce-matrix' }]);
+      assertEqual(sm.listInstances('sipoc').length, 0);
+    });
+
+    test('returns all matching instances across multiple phases', () => {
+      const sm = new StateManager(new EventBus());
+      sm.set('phases.define', [
+        { instanceId: 's1', moduleId: 'sipoc', title: 'SIPOC A' },
+        { instanceId: 'c1', moduleId: 'ce-matrix', title: 'C&E' },
+      ]);
+      sm.set('phases.measure', [
+        { instanceId: 's2', moduleId: 'sipoc', title: 'SIPOC B' },
+      ]);
+      const result = sm.listInstances('sipoc');
+      assertEqual(result.length, 2);
+      assertDeepEqual(result[0], { instanceId: 's1', moduleId: 'sipoc', title: 'SIPOC A' });
+      assertDeepEqual(result[1], { instanceId: 's2', moduleId: 'sipoc', title: 'SIPOC B' });
+    });
+
+    test('defaults title to instanceId when item has no title field', () => {
+      const sm = new StateManager(new EventBus());
+      sm.set('phases.define', [{ instanceId: 'p1', moduleId: 'process-map' }]);
+      const result = sm.listInstances('process-map');
+      assertEqual(result.length, 1);
+      assertEqual(result[0].title, 'p1');
+    });
+  });
 });
 
 // ─── Remote Sync (Task 4) ───────────────────────────────────────────────────

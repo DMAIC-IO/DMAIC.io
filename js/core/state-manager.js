@@ -191,6 +191,31 @@ export class StateManager {
   }
 
   /**
+   * List all module instances of the given moduleId across all phases in the
+   * active project. Synchronous — reads from the state's `phases` tree.
+   * Returns [] if no phases loaded or no instances match.
+   * @param {string} moduleId
+   * @returns {Array<{instanceId: string, moduleId: string, title: string}>}
+   */
+  listInstances(moduleId) {
+    const out = [];
+    const phases = this.get('phases') || {};
+    for (const phaseId of Object.keys(phases)) {
+      const items = this.get(`phases.${phaseId}`) || [];
+      if (!Array.isArray(items)) continue;
+      for (const item of items) {
+        if (!item || item.moduleId !== moduleId) continue;
+        out.push({
+          instanceId: item.instanceId,
+          moduleId: item.moduleId,
+          title: item.title || item.instanceId,
+        });
+      }
+    }
+    return out;
+  }
+
+  /**
    * Update state for a specific module instance. Synchronous: writes to
    * the cache and queues an async write-behind to IndexedDB.
    *
