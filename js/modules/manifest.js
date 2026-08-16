@@ -365,6 +365,16 @@ export default [
     },
   },
   {
+    id: 'activity-flowchart',
+    phase: 'analyze',
+    load: () => import('./activity-flowchart/activity-flowchart.js'),
+    cycles: {
+      dmaic:  { phase: 'analyze'   },
+      dmadv:  { phase: 'analyze'   },
+      eightd: { phase: 'rootcause' },
+    },
+  },
+  {
     id: 'correlation',
     phase: 'analyze',
     load: () => import('./correlation/correlation.js'),

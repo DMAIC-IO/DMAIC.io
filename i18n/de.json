@@ -2152,6 +2152,26 @@
       "paretoTitle": "Priorisierung der Inputs",
       "paretoYLabel": "Σ Zeile"
     },
+    "activity-flowchart": {
+      "name": "Activity Flowchart",
+      "description": "Kette aus Aktivitäten und Entscheidungen mit Nacharbeits-Bögen",
+      "titlePlaceholder": "Aktivität …",
+      "decisionPlaceholder": "Entscheidung …",
+      "addStep": "Aktivität hinzufügen",
+      "addDecision": "Entscheidung hinzufügen",
+      "deleteStep": "Schritt löschen",
+      "emptyHint": "Noch keine Schritte — über die Symbolleiste eine Aktivität oder Entscheidung hinzufügen.",
+      "importFrom": "Importieren aus …",
+      "importTitle": "Schritte übernehmen",
+      "importHint": "Wähle eine Quelle aus. Ihre Schritte werden ans Ende der Kette angehängt.",
+      "importConfirm": "Übernehmen",
+      "importEmptyHint": "Keine passende Quelle (SIPOC / Process Map) im Projekt gefunden.",
+      "importDone": "{n} Schritt(e) übernommen",
+      "exportImageComingSoon": "Bild-Export folgt in einer späteren Version.",
+      "next": "→ Nächster Schritt",
+      "end": "Prozessende",
+      "unnamedStep": "(unbenannt)"
+    },
     "correlation": {
       "name": "Korrelationsanalyse",
       "description": "Pearson-, Spearman- und Kendall-Korrelation zwischen Variablen",

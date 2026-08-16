@@ -1,0 +1,103 @@
+<div class="module-container af" x-data="activityFlowchart" data-ref="root">
+  <div class="module-container__body">
+    <div class="af__canvas">
+
+      <!-- Rework arcs (rendered above the chain, at measured positions —
+           positioning/drawing lands in a later task; the DOM hooks exist
+           already so that task only needs to add measurement + drawing). -->
+      <template x-for="loop in reworkLoops()" :key="loop.fromId + '-' + loop.branch">
+        <div class="af__rework-arc" :data-from="loop.fromId" :data-to="loop.toId" :data-branch="loop.branch"></div>
+      </template>
+
+      <!-- Empty state -->
+      <template x-if="model.steps.length === 0">
+        <p class="af__empty-hint" x-text="t('emptyHint')"></p>
+      </template>
+
+      <!-- Chain of steps -->
+      <div class="af__flow" data-ref="flow">
+        <template x-for="(step, idx) in model.steps" :key="step.id">
+          <div class="af__step" :class="isDecision(step) ? 'af__step--decision' : 'af__step--activity'"
+               :data-step-id="step.id"
+               draggable="true"
+               @dragstart="stepDragStart(step.id, $event)"
+               @dragover="stepDragOver(step.id, $event)"
+               @dragleave="stepDragLeave(step.id, $event)"
+               @drop="stepDrop(step.id, $event)"
+               @dragend="stepDragEnd($event)">
+
+            <!-- Connector before this step -->
+            <template x-if="idx > 0">
+              <div class="af__connector" @click="model.insertStep(idx, { kind: 'activity' })">
+                <span class="af__connector-arrow">&raquo;</span>
+              </div>
+            </template>
+
+            <!-- Activity card OR Decision diamond -->
+            <template x-if="!isDecision(step)">
+              <div class="af__card">
+                <textarea class="af__step-title" x-model="step.title"
+                          :placeholder="t('titlePlaceholder')"
+                          @input="autoSize($event)"></textarea>
+                <button class="af__delete" @click="model.removeStep(step.id)"
+                        :title="t('deleteStep')">×</button>
+              </div>
+            </template>
+
+            <template x-if="isDecision(step)">
+              <div class="af__diamond">
+                <textarea class="af__decision-label" x-model="step.decision.label"
+                          :placeholder="t('decisionPlaceholder')"
+                          @input="autoSize($event)"></textarea>
+                <button class="af__delete" @click="model.removeStep(step.id)"
+                        :title="t('deleteStep')">×</button>
+                <div class="af__branches">
+                  <button class="af__branch af__branch--yes"
+                          @click="toggleBranchMenu(step.id, 'yes')"
+                          x-text="'✓ ' + branchLabel(step, 'yes')"></button>
+                  <button class="af__branch af__branch--no"
+                          @click="toggleBranchMenu(step.id, 'no')"
+                          x-text="'✗ ' + branchLabel(step, 'no')"></button>
+                </div>
+                <template x-if="isBranchOpen(step.id, 'yes') || isBranchOpen(step.id, 'no')">
+                  <div class="af__branch-menu">
+                    <button @click="pickBranchTarget(step.id, _openBranch, 'next')"
+                            x-text="t('next')"></button>
+                    <button @click="pickBranchTarget(step.id, _openBranch, 'end')"
+                            x-text="t('end')"></button>
+                    <template x-for="s in model.steps.filter((s) => s.id !== step.id)" :key="s.id">
+                      <button @click="pickBranchTarget(step.id, _openBranch, s.id)"
+                              x-text="s.title || t('unnamedStep')"></button>
+                    </template>
+                  </div>
+                </template>
+              </div>
+            </template>
+          </div>
+        </template>
+      </div>
+    </div>
+  </div>
+
+  <!-- Import picker form, mounted into the shared modal by _openImport().
+       Hidden inside the module container via CSS; visible when borrowed
+       into the modal body (mirrors Process Map's SIPOC picker form). -->
+  <div x-ref="importForm" class="af__import-form" :data-selected="_importSelectedId">
+    <p class="af__import-hint" x-text="t('importHint')"></p>
+    <div class="af__import-list">
+      <template x-for="opt in _importOptions" :key="opt.moduleId + '-' + opt.instanceId">
+        <label class="af__import-option"
+               :class="_importSelectedId === opt.instanceId ? 'af__import-option--selected' : ''"
+               :data-instance-id="opt.instanceId"
+               @click.stop="_pickImportOption(opt)">
+          <input type="radio" name="af-import-pick"
+                 :value="opt.instanceId"
+                 :checked="_importSelectedId === opt.instanceId"
+                 @click.stop="_pickImportOption(opt)">
+          <span class="af__import-option-source" x-text="t('modules.' + opt.moduleId + '.name')"></span>
+          <span class="af__import-option-title" x-text="opt.title"></span>
+        </label>
+      </template>
+    </div>
+  </div>
+</div>

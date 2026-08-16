@@ -2152,6 +2152,26 @@
       "paretoTitle": "Input Prioritization",
       "paretoYLabel": "Σ Row"
     },
+    "activity-flowchart": {
+      "name": "Activity Flowchart",
+      "description": "Chain of activities and decisions with rework loops",
+      "titlePlaceholder": "Activity …",
+      "decisionPlaceholder": "Decision …",
+      "addStep": "Add activity",
+      "addDecision": "Add decision",
+      "deleteStep": "Delete step",
+      "emptyHint": "No steps yet — use the toolbar to add an activity or decision.",
+      "importFrom": "Import from …",
+      "importTitle": "Import steps",
+      "importHint": "Pick a source. Its steps are appended to the end of the chain.",
+      "importConfirm": "Import",
+      "importEmptyHint": "No matching source (SIPOC / Process Map) found in this project.",
+      "importDone": "{n} step(s) imported",
+      "exportImageComingSoon": "Image export lands in a later release.",
+      "next": "→ Next step",
+      "end": "Process end",
+      "unnamedStep": "(unnamed)"
+    },
     "correlation": {
       "name": "Correlation Analysis",
       "description": "Pearson, Spearman, and Kendall correlation between variables",
