@@ -4,90 +4,31 @@
  * insert menu, and the cross-module import picker form.
  */
 
-/* ── Canvas ─────────────────────────────────────────────────────────── */
+/* ── Canvas ─────────────────────────────────────────────────────────────
+   Layout comes from `.fc-swimlanes` in js/core/flowchart/flowchart.css —
+   only the band colours and the connector placement are ours. */
+/* Two fixed bands: value-added on top, rework below. */
 .of__canvas {
-  position: relative;
-  padding: var(--spacing-lg);
-  overflow: auto;
-  min-height: 200px;
+  --fc-lane-count: 2;
+  min-height: 220px;
 }
 .of__empty-hint {
   color: var(--color-text-secondary);
   font-size: var(--font-size-sm);
-  padding: var(--spacing-md) 0;
+  padding: var(--spacing-lg);
 }
 
-/* ── Column headers ─────────────────────────────────────────────────── */
-.of__headers {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--spacing-md);
-  margin-bottom: var(--spacing-sm);
-}
-.of__header {
-  padding: var(--spacing-sm);
-  font-weight: 600;
-  font-size: var(--font-size-sm);
-  text-align: center;
-  border-bottom: 2px solid var(--color-border-primary);
-}
-.of__header--va  { color: var(--color-success); }
-.of__header--nva { color: var(--color-error); }
+.of__label--va  { color: var(--color-success); }
+.of__label--nva { color: var(--color-error); }
 
-/* ── Rows: one per step, two columns, only one cell filled ──────────── */
-.of__flow {
-  display: flex;
-  flex-direction: column;
-}
-.of__row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--spacing-md);
-  padding: var(--spacing-xs) 0;
-  /* Top-aligned: a card grown by its description or substeps must not
-     stretch or re-centre the opposite (empty) cell. */
-  align-items: start;
-}
-.of__cell { min-height: var(--spacing-lg); }
-
-/* Drag/drop feedback — chainViewMixin toggles is-dragging/is-drop-target
-   directly on the .of__row node (dragstart target / dragover currentTarget). */
-/* Card drag feedback comes from the core (.is-dragging/.is-drop-target
-   on the row, matched by .fc-card's descendant rules). */
-
-/* ── Step card ──────────────────────────────────────────────────────────
-   Surface, header, number badge, title and buttons come from the shared
-   `.fc-*` base in js/core/flowchart/flowchart.css. Only the column accent
-   and the centre-line alignment are module-specific. */
-.of__card { max-width: 480px; }
-/* The stripe itself is `.fc-card--accent`; only the colour is ours. */
-.of__card--va  { --fc-card-accent: var(--color-success); }
-.of__card--nva { --fc-card-accent: var(--color-error); }
-/* Pull the VA cards towards the centre line so the chain reads as one column
-   of alternating sides rather than two far-apart lists. */
-.of__cell--va .of__card { margin-left: auto; }
-/* Height/line-box come from textarea.fc-card__title. */
-.of__side-toggle:hover { color: var(--color-accent); background: transparent; }
-
-/* ── Connector + insert menu (spans both columns) ───────────────────── */
-/* Opportunity inserts BETWEEN rows rather than beside cards, so its connector
-   is a full-width row of its own; the arrow itself is the shared
-   `.fc-connector`, so it reads identically to the other modules. */
+/* Connector sits in the gap to the column's left, at card-header height. */
 .of__connector {
-  grid-column: 1 / -1;
-  position: relative;
-  display: flex;
-  justify-content: center;
-  padding: var(--spacing-xs) 0;
+  position: absolute;
+  left: calc(-1 * var(--spacing-lg));
+  top: var(--spacing-sm);
+  z-index: 3;
 }
-/* Look comes from `.fc-connector` in js/core/flowchart/flowchart.css; the
-   button element only needs its chrome reset. */
-.of__insert-btn {
-  background: transparent;
-  border: none;
-  padding: 0;
-  user-select: none;
-}
+
 .of__insert-menu {
   position: absolute;
   top: 100%;
@@ -112,8 +53,23 @@
   color: var(--color-text-primary);
   font-size: var(--font-size-sm);
   border-radius: var(--border-radius-sm);
+  white-space: nowrap;
 }
 .of__insert-menu button:hover { background: var(--color-bg-secondary); }
+
+/* ── Step card ──────────────────────────────────────────────────────────
+   Surface, header, number badge, title and buttons come from the shared
+   `.fc-*` base in js/core/flowchart/flowchart.css. Only the column accent
+   and the centre-line alignment are module-specific. */
+.of__card { max-width: 480px; }
+/* The stripe itself is `.fc-card--accent`; only the colour is ours. */
+.of__card--va  { --fc-card-accent: var(--color-success); }
+.of__card--nva { --fc-card-accent: var(--color-error); }
+/* Pull the VA cards towards the centre line so the chain reads as one column
+   of alternating sides rather than two far-apart lists. */
+.of__cell--va .of__card { margin-left: auto; }
+/* Height/line-box come from textarea.fc-card__title. */
+.of__side-toggle:hover { color: var(--color-accent); background: transparent; }
 
 /* ── Import picker form (borrowed into the shared modal) ────────────── */
 /* Hidden inside the module container; the shared modal borrows the node,

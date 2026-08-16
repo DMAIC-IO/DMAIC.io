@@ -53,7 +53,7 @@ export default createModule({
     return {
       ...chainViewMixin(module, _t, {
         autoSizeSelector: 'textarea.of__step-title, textarea.of__step-description',
-        dragRowSelector: '.of__row',
+        dragRowSelector: '.of__col',
       }),
 
       // ── Lifecycle (per Alpine instance) ───────────────────────
@@ -61,15 +61,33 @@ export default createModule({
         this.$nextTick(() => this._autoSizeAll());
       },
 
-      // ── Columns ───────────────────────────────────────────────
-      /** @param {object} step @returns {boolean} true when the step belongs in the VA column */
+      // ── Bands (value-added / rework) ──────────────────────────
+      /** The two bands, top to bottom — the template renders one slot each. */
+      sides() { return ['va', 'nva']; },
+
+      /** @param {object} step @returns {boolean} true when the step is value-added */
       isVA(step) { return step?.side === 'va'; },
 
-      /** Flip a step into the other column — its sequence index never changes. */
+      /** Move a step to the other band — its position in the chain never changes. */
       toggleSide(stepId) {
         const s = this.model.steps.find((x) => x.id === stepId);
         if (!s) return;
         this.model.setSide(s.id, s.side === 'va' ? 'nva' : 'va');
+      },
+
+      /**
+       * Drop on a band slot: re-band the dragged step, keep its chain
+       * position. Dropping on another COLUMN reorders instead (stepDrop).
+       * @param {'va'|'nva'} side
+       * @param {DragEvent} event
+       */
+      dropOnSide(side, event) {
+        event?.preventDefault();
+        const from = this._draggedStepId;
+        this._draggedStepId = null;
+        event?.currentTarget?.classList?.remove('is-drop-target');
+        if (!from) return;
+        this.model.setSide(from, side);
       },
 
       // ── Insert menu (which column does the new step go into?) ──

@@ -54,7 +54,7 @@ export default createModule({
     return {
       ...chainViewMixin(module, _t, {
         autoSizeSelector: 'textarea.df__step-title, textarea.df__step-description',
-        dragRowSelector: '.df__step',
+        dragRowSelector: '.df__col',
       }),
 
       // ── Lifecycle (per Alpine instance) ───────────────────────
@@ -69,18 +69,6 @@ export default createModule({
       /** Steps of one lane, in chain order (the filter preserves the array order). */
       stepsForLane(laneId) {
         return this.model.steps.filter((s) => s.laneId === laneId);
-      },
-
-      /**
-       * Badge label for a step. Steps are rendered per lane, so the loop index
-       * is lane-local — the badge must show the position in the whole chain,
-       * otherwise every lane would restart at 01 and the hand-off order would
-       * be unreadable.
-       * @param {string} stepId
-       * @returns {string} zero-padded chain position
-       */
-      chainNum(stepId) {
-        return this.stepNum(this.model.steps.findIndex((s) => s.id === stepId));
       },
 
       /**
@@ -129,6 +117,7 @@ export default createModule({
         event?.preventDefault();
         const from = this._draggedStepId;
         this._draggedStepId = null;
+        event?.currentTarget?.classList?.remove('is-drop-target');
         if (!from) return;
         this.model.setLaneForStep(from, laneId);
       },

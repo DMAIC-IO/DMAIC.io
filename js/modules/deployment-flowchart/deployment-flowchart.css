@@ -66,38 +66,20 @@
 }
 .df__lane-remove:hover { color: var(--color-error); }
 
-/* ── Canvas / lane bands ────────────────────────────────────────────── */
-.df__canvas {
-  padding: var(--spacing-md);
-  overflow: auto;
-}
+/* ── Canvas / lane bands ────────────────────────────────────────────────
+   Layout comes from `.fc-swimlanes` in js/core/flowchart/flowchart.css;
+   only the active-lane highlight is ours. */
+.df__canvas { min-height: 220px; }
 .df__empty-hint {
   color: var(--color-text-secondary);
   font-size: var(--font-size-sm);
-  padding: var(--spacing-md) 0;
+  padding: var(--spacing-lg);
 }
-.df__band {
-  display: grid;
-  grid-template-columns: 140px 1fr;
-  gap: var(--spacing-md);
-  align-items: start;
-  padding: var(--spacing-md) var(--spacing-xs);
-  border-bottom: 1px dashed var(--color-border-primary);
-  min-height: 72px;
-}
-.df__band--active { background: var(--color-bg-secondary); }
 .df__band-label {
-  font-size: var(--font-size-sm);
-  font-weight: 600;
-  color: var(--color-text-secondary);
+  cursor: pointer;
+  border-radius: var(--border-radius-sm);
 }
-.df__band-flow {
-  display: flex;
-  /* Top-aligned: cards in one lane differ in height and line up on headers. */
-  align-items: flex-start;
-  gap: var(--spacing-md);
-  flex-wrap: wrap;
-}
+.df__band-label--active { color: var(--color-accent); }
 
 /* ── Step card ──────────────────────────────────────────────────────────
    Surface, header, number badge, title and delete button come from the

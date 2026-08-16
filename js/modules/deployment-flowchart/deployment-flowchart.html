@@ -29,50 +29,66 @@
       <p class="df__sidebar-hint" x-text="t('laneHint')"></p>
     </aside>
 
-    <!-- Lane canvas: horizontal bands, steps in chain order (L→R) inside them -->
-    <div class="df__canvas">
+    <!-- Lane canvas: the chain runs left to right (one column per step) and
+         the lane is only the vertical position, so moving a step to another
+         role is a pure up/down move that keeps its place in the chain. -->
+    <div class="df__canvas fc-swimlanes" data-ref="flow"
+         :style="'--fc-lane-count: ' + model.lanes.length">
       <template x-if="model.lanes.length === 0">
         <p class="df__empty-hint" x-text="t('emptyHint')"></p>
       </template>
 
-      <template x-for="lane in model.lanes" :key="'band-' + lane.id">
-        <div class="df__band"
-             :class="lane.id === activeLaneId() ? 'df__band--active' : ''"
-             :data-lane-id="lane.id"
-             @dragover.prevent
-             @drop="dropOnLane(lane.id, $event)">
-          <div class="df__band-label" x-text="laneLabel(lane)"></div>
-          <div class="df__band-flow">
-            <template x-for="step in stepsForLane(lane.id)" :key="step.id">
-              <div class="df__step fc-card"
-                   :data-step-id="step.id"
-                   @dragstart="stepDragStart(step.id, $event)"
-                   @dragover="stepDragOver(step.id, $event)"
-                   @dragleave="stepDragLeave(step.id, $event)"
-                   @drop.stop="stepDrop(step.id, $event)"
-                   @dragend="stepDragEnd($event)">
-                <div class="df__step-header fc-card__header">
-                  <span class="df__step-number fc-step-number" x-text="chainNum(step.id)"
-                        @mousedown="armStepDrag(step.id, $event)"></span>
-                  <textarea class="df__step-title fc-card__title" x-model="step.title"
-                            :placeholder="t('titlePlaceholder')"
-                            @input="autoSize($event)"></textarea>
-                  <div class="df__step-actions fc-card__actions">
-                    <button class="df__delete fc-card__delete" @click="model.removeStep(step.id)"
-                            :title="t('deleteStep')">×</button>
+      <div class="fc-swimlane-labels">
+        <template x-for="lane in model.lanes" :key="'label-' + lane.id">
+          <div class="df__band-label fc-swimlane-label"
+               :class="lane.id === activeLaneId() ? 'df__band-label--active' : ''"
+               :data-lane-id="lane.id"
+               @click="setActiveLane(lane.id)"
+               x-text="laneLabel(lane)"></div>
+        </template>
+      </div>
+
+      <template x-for="(step, idx) in model.steps" :key="step.id">
+        <div class="df__col fc-swimlane-col"
+             :data-step-id="step.id"
+             @dragstart="stepDragStart(step.id, $event)"
+             @dragend="stepDragEnd($event)">
+
+          <template x-for="lane in model.lanes" :key="'slot-' + step.id + '-' + lane.id">
+            <div class="df__slot fc-swimlane-slot"
+                 :data-lane-id="lane.id"
+                 @dragover.prevent
+                 @drop.stop="dropOnLane(lane.id, $event)">
+              <template x-if="step.laneId === lane.id">
+                <!-- Drop on a CARD reorders the chain; drop on the empty band
+                     around it only re-assigns the lane. -->
+                <div class="df__step fc-card"
+                     @dragover.stop="stepDragOver(step.id, $event)"
+                     @dragleave.stop="stepDragLeave(step.id, $event)"
+                     @drop.stop="stepDrop(step.id, $event)">
+                  <div class="df__step-header fc-card__header">
+                    <span class="df__step-number fc-step-number" x-text="stepNum(idx)"
+                          @mousedown="armStepDrag(step.id, $event)"></span>
+                    <textarea class="df__step-title fc-card__title" x-model="step.title"
+                              :placeholder="t('titlePlaceholder')"
+                              @input="autoSize($event)"></textarea>
+                    <div class="df__step-actions fc-card__actions">
+                      <button class="df__delete fc-card__delete" @click="model.removeStep(step.id)"
+                              :title="t('deleteStep')">×</button>
+                    </div>
                   </div>
+                  <div class="df__step-body fc-card__body">
+                    <textarea class="field field--ghost df__step-description fc-card__description"
+                              :placeholder="t('descriptionPlaceholder')"
+                              data-field="description" :data-step-id="step.id"
+                              x-model="step.description"
+                              @input="autoSize($event)"></textarea>
+                  </div>
+                  <!-- @include js/core/flowchart/substeps.part.html -->
                 </div>
-                <div class="df__step-body fc-card__body">
-                  <textarea class="field field--ghost df__step-description fc-card__description"
-                            :placeholder="t('descriptionPlaceholder')"
-                            data-field="description" :data-step-id="step.id"
-                            x-model="step.description"
-                            @input="autoSize($event)"></textarea>
-                </div>
-                <!-- @include js/core/flowchart/substeps.part.html -->
-              </div>
-            </template>
-          </div>
+              </template>
+            </div>
+          </template>
         </div>
       </template>
     </div>
