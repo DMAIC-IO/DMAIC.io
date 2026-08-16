@@ -20,6 +20,27 @@
  * @returns {object} data()-mixin with transient drag state and handlers
  */
 /**
+ * Grow a textarea to exactly its content height.
+ *
+ * `scrollHeight` is the CONTENT height. Under `box-sizing: border-box` — which
+ * the shared `.field` base sets — assigning it to `height` makes the border
+ * eat into the content box and clips the last couple of pixels of the final
+ * line. The borders are added back explicitly.
+ *
+ * @param {HTMLElement|undefined|null} el
+ * @returns {void}
+ */
+function fitToContent(el) {
+  if (!el || typeof el.scrollHeight !== 'number') return;
+  el.style.height = 'auto';
+  const cs = typeof getComputedStyle === 'function' ? getComputedStyle(el) : null;
+  const borders = cs && cs.boxSizing === 'border-box'
+    ? (parseFloat(cs.borderTopWidth) || 0) + (parseFloat(cs.borderBottomWidth) || 0)
+    : 0;
+  el.style.height = (el.scrollHeight + borders) + 'px';
+}
+
+/**
  * Fields every flowchart card has. They are ALWAYS auto-sized, on top of
  * whatever a module adds via `opts.autoSizeSelector`: a card body must show
  * its whole text, otherwise a long description is silently clipped and the
@@ -179,18 +200,12 @@ export function chainViewMixin(module, _t, opts = {}) {
     },
 
     autoSize(event) {
-      const el = event?.target;
-      if (!el || typeof el.scrollHeight !== 'number') return;
-      el.style.height = 'auto';
-      el.style.height = el.scrollHeight + 'px';
+      fitToContent(event?.target);
     },
 
     _autoSizeAll() {
       const root = this.$root || document;
-      root.querySelectorAll(autoSizeSelector).forEach((el) => {
-        el.style.height = 'auto';
-        el.style.height = el.scrollHeight + 'px';
-      });
+      root.querySelectorAll(autoSizeSelector).forEach(fitToContent);
     },
   };
 }

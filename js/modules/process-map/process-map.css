@@ -29,7 +29,7 @@
   border-collapse: separate;
   /* 32 px horizontal gap between step columns — this is where the
      connector arrows sit (absolute-positioned inside the card cells). */
-  border-spacing: 32px 0;
+  border-spacing: var(--fc-chain-gap) 0;
   table-layout: fixed;
   margin: 0;
 }
@@ -367,8 +367,8 @@
   z-index: 1;
 }
 
-.pmap__connector--trailing { right: -32px; }
-.pmap__connector--leading  { left:  -32px; }
+.pmap__connector--trailing { right: calc(-1 * var(--fc-chain-gap)); }
+.pmap__connector--leading  { left:  calc(-1 * var(--fc-chain-gap)); }
 
 /* ===== Toolbar ===== */
 .pmap__toolbar {

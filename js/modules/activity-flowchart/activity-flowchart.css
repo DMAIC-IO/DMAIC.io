@@ -21,16 +21,21 @@
 .af__flow {
   display: flex;
   align-items: flex-start;
-  gap: var(--spacing-sm);
+  gap: var(--fc-chain-gap);
 }
-/* Connector and card sit side by side, so a chain reads left-to-right like
-   Process Map's. */
 .af__step {
   position: relative;
   flex: 0 0 auto;
-  display: flex;
-  align-items: flex-start;
-  gap: var(--spacing-sm);
+}
+
+/* The connector is absolutely positioned INTO the gap left of its step, so it
+   costs no layout space and two cards sit exactly --fc-chain-gap apart —
+   the same distance Process Map's table border-spacing produces. */
+.af__connector {
+  position: absolute;
+  left: calc(-1 * var(--fc-chain-gap));
+  top: 4px;
+  z-index: 1;
 }
 
 /* Drag/drop feedback — chainViewMixin toggles is-dragging/is-drop-target

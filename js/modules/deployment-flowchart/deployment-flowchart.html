@@ -59,6 +59,16 @@
                  :data-lane-id="lane.id"
                  @dragover.prevent
                  @drop.stop="dropOnLane(lane.id, $event)">
+              <!-- Connector sits in the gap left of the card, so it stays at
+                   the card's header height whichever lane the card is in. -->
+              <template x-if="idx > 0 && step.laneId === lane.id">
+                <div class="df__connector fc-connector fc-connector--clickable"
+                     data-action="insert-step" :data-idx="idx"
+                     @click="insertBefore(idx, lane.id)"
+                     :title="t('insertHere')">
+                  <span class="fc-connector__arrow">&raquo;</span>
+                </div>
+              </template>
               <template x-if="step.laneId === lane.id">
                 <!-- Drop on a CARD reorders the chain; drop on the empty band
                      around it only re-assigns the lane. -->

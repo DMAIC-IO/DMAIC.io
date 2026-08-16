@@ -112,6 +112,18 @@ export default createModule({
 
       removeLaneById(laneId) { this.model.removeLane(laneId); },
 
+      /**
+       * Insert a step at a chain position via the connector. It lands in the
+       * lane of the step it precedes — inserting between two steps of one role
+       * is the common case, and the lane is a drag away otherwise.
+       * @param {number} idx chain index the new step should take
+       * @param {string} laneId
+       */
+      insertBefore(idx, laneId) {
+        this.model.insertStep(idx, { laneId });
+        this.$nextTick(() => this._autoSizeAll());
+      },
+
       /** Drop on a lane band: re-assign the dragged step, keep its chain position. */
       dropOnLane(laneId, event) {
         event?.preventDefault();

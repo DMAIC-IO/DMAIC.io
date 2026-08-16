@@ -22,27 +22,27 @@
                @dragstart="stepDragStart(step.id, $event)"
                @dragend="stepDragEnd($event)">
 
-            <!-- Connector into this column, sitting in the gap on its left -->
-            <template x-if="idx > 0">
-              <div class="of__connector fc-connector fc-connector--clickable"
-                   data-action="insert-step" :data-idx="idx"
-                   @click="toggleInsertMenu(idx)"
-                   :title="t('insertHere')">
-                <span class="fc-connector__arrow">&raquo;</span>
-                <template x-if="isInsertOpen(idx)">
-                  <div class="of__insert-menu">
-                    <button @click.stop="insertAt(idx, 'va')"  x-text="t('insertVA')"></button>
-                    <button @click.stop="insertAt(idx, 'nva')" x-text="t('insertNVA')"></button>
-                  </div>
-                </template>
-              </div>
-            </template>
-
             <template x-for="side in sides()" :key="side">
               <div class="of__slot fc-swimlane-slot"
                    :data-side="side"
                    @dragover.prevent
                    @drop.stop="dropOnSide(side, $event)">
+                <!-- Connector sits in the gap left of the card, so it stays at
+                     the card's header height whichever band the card is in. -->
+                <template x-if="idx > 0 && step.side === side">
+                  <div class="of__connector fc-connector fc-connector--clickable"
+                       data-action="insert-step" :data-idx="idx"
+                       @click="toggleInsertMenu(idx)"
+                       :title="t('insertHere')">
+                    <span class="fc-connector__arrow">&raquo;</span>
+                    <template x-if="isInsertOpen(idx)">
+                      <div class="of__insert-menu">
+                        <button @click.stop="insertAt(idx, 'va')"  x-text="t('insertVA')"></button>
+                        <button @click.stop="insertAt(idx, 'nva')" x-text="t('insertNVA')"></button>
+                      </div>
+                    </template>
+                  </div>
+                </template>
                 <template x-if="step.side === side">
                   <!-- Drop on a CARD reorders the chain; drop on the empty band
                        around it only re-bands (see the slot handler above). -->

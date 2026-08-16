@@ -21,14 +21,13 @@
 .of__label--va  { color: var(--color-success); }
 .of__label--nva { color: var(--color-error); }
 
-/* Connector sits in the gap to the column's left, at card-header height. */
+/* Connector sits in the column gap, at the card's header height. */
 .of__connector {
   position: absolute;
-  left: calc(-1 * var(--spacing-lg));
+  left: calc(-1 * var(--fc-chain-gap));
   top: var(--spacing-sm);
   z-index: 3;
 }
-
 .of__insert-menu {
   position: absolute;
   top: 100%;

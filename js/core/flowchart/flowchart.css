@@ -15,6 +15,12 @@
  * badges, decision diamonds, columns, lane bands) stay in the module CSS.
  */
 
+/* Horizontal distance between two steps in a chain. The connector is
+   absolutely positioned INTO this gap and takes no layout space of its own,
+   so the spacing is the same number in every module — Process Map set it as
+   its table's border-spacing and the others follow. */
+:root { --fc-chain-gap: 32px; }
+
 /* ── Card surface ───────────────────────────────────────────────────── */
 .fc-card {
   position: relative;
@@ -379,7 +385,9 @@ textarea.fc-card__description {
      band would balloon to a third of the viewport. Bands size to content. */
   align-content: start;
   justify-content: start;
-  column-gap: var(--spacing-lg);
+  /* Same distance between two steps as in the linear charts, so the connector
+     positioned into it neither overlaps a card nor floats free. */
+  column-gap: var(--fc-chain-gap);
   padding: var(--spacing-md);
   overflow-x: auto;
 }
@@ -421,6 +429,7 @@ textarea.fc-card__description {
 /* One slot per band. Empty slots keep the band readable as a continuous row
    across the whole chart. */
 .fc-swimlane-slot {
+  position: relative;   /* anchors the connector positioned into the gap */
   display: flex;
   align-items: flex-start;
   min-height: 84px;

@@ -132,3 +132,11 @@
   font-size: var(--font-size-sm);
   color: var(--color-text-primary);
 }
+
+/* Connector sits in the column gap, at the card's header height. */
+.df__connector {
+  position: absolute;
+  left: calc(-1 * var(--fc-chain-gap));
+  top: var(--spacing-sm);
+  z-index: 3;
+}
