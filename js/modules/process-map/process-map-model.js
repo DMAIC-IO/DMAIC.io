@@ -4,6 +4,11 @@
  * Pure state + business logic for the vertical process-flow builder.
  * No DOM, no i18n, no CSS classes, no view getters — those live in the data-fn.
  *
+ * Chain CRUD (add/remove/move step, add/remove/move substep, JSON round-trip)
+ * is inherited from `FlowchartState` (see `core/flowchart/flowchart-model.js`).
+ * This module only supplies PM-specific extension normalization and the
+ * PM-only business logic (IO, value type, loops).
+ *
  * Persisted shape (toJSON / fromJSON), unchanged from the legacy module:
  *   { steps: Step[] }
  *
@@ -15,6 +20,8 @@
  *   Substep   { id, title }
  *   Loop      { targetStepId: string|null, condition: string, steps: { id, title }[] }
  */
+
+import { FlowchartState } from '../../core/flowchart/flowchart-model.js';
 
 /** @returns {string} Unique id for steps and IO items (mirrors legacy generateId). */
 function generateId() {
@@ -31,40 +38,52 @@ function normalizeIO(raw) {
   return io;
 }
 
-/** Normalize a raw step entry to the canonical shape (mirrors legacy load/setState). */
-function normalizeStep(raw) {
+/** Normalize a raw loop entry to the canonical shape. */
+function normalizeLoop(raw) {
   return {
-    id: typeof raw?.id === 'string' ? raw.id : generateId(),
-    title: typeof raw?.title === 'string' ? raw.title : '',
-    description: typeof raw?.description === 'string' ? raw.description : '',
-    valueType: raw?.valueType || null,
-    inputs: Array.isArray(raw?.inputs) ? raw.inputs.map(normalizeIO) : [],
-    outputs: Array.isArray(raw?.outputs) ? raw.outputs.map(normalizeIO) : [],
-    substeps: Array.isArray(raw?.substeps)
-      ? raw.substeps.map((ss) => ({ id: typeof ss?.id === 'string' ? ss.id : generateId(), title: typeof ss?.title === 'string' ? ss.title : '' }))
+    targetStepId: typeof raw?.targetStepId === 'string' ? raw.targetStepId : null,
+    condition: typeof raw?.condition === 'string' ? raw.condition : '',
+    steps: Array.isArray(raw?.steps)
+      ? raw.steps.map((ls) => ({ id: typeof ls?.id === 'string' ? ls.id : generateId(), title: typeof ls?.title === 'string' ? ls.title : '' }))
       : [],
-    expanded: typeof raw?.expanded === 'boolean' ? raw.expanded : false,
-    loop: raw?.loop
-      ? {
-          targetStepId: typeof raw.loop.targetStepId === 'string' ? raw.loop.targetStepId : null,
-          condition: typeof raw.loop.condition === 'string' ? raw.loop.condition : '',
-          steps: Array.isArray(raw.loop.steps)
-            ? raw.loop.steps.map((ls) => ({ id: typeof ls?.id === 'string' ? ls.id : generateId(), title: typeof ls?.title === 'string' ? ls.title : '' }))
-            : [],
-        }
-      : null,
   };
 }
 
-export class State {
-  /** @type {Array<object>} ordered process steps */
-  steps = [];
+/**
+ * PM-specific extension normalizer, passed as `moduleNormalize` to
+ * `FlowchartState#normalizeStep` / `.addStep` / `.fromJSON`. Core fields
+ * (id, title, description, expanded, substeps) are already coerced by the
+ * base class by the time this runs.
+ * @param {object} step
+ * @returns {object}
+ */
+function pmNormalize(step) {
+  return {
+    ...step,
+    valueType: (step.valueType === 'va' || step.valueType === 'bnva' || step.valueType === 'nva')
+      ? step.valueType : null,
+    inputs: Array.isArray(step.inputs) ? step.inputs.map(normalizeIO) : [],
+    outputs: Array.isArray(step.outputs) ? step.outputs.map(normalizeIO) : [],
+    loop: step.loop ? normalizeLoop(step.loop) : null,
+  };
+}
+
+export class State extends FlowchartState {
+  constructor() {
+    super();
+    // PM has no extra state fields beyond FlowchartState#steps.
+  }
 
   // ─── Lookup ─────────────────────────────────────────────────
 
   /** @returns {object|undefined} the step with the given id */
   findStep(id) {
     return this.steps.find((s) => s.id === id);
+  }
+
+  /** @returns {number} 0-based index of a step, or -1 */
+  stepIndexById(id) {
+    return this.steps.findIndex((s) => s.id === id);
   }
 
   /** @returns {object|undefined} an input/output item */
@@ -74,50 +93,46 @@ export class State {
     return step[type].find((io) => io.id === ioId);
   }
 
-  /** @returns {number} 0-based index of a step, or -1 */
-  stepIndexById(id) {
-    return this.steps.findIndex((s) => s.id === id);
-  }
-
-  // ─── Step CRUD ──────────────────────────────────────────────
+  // ─── Step CRUD (chain-core overrides) ────────────────────────
 
   /**
-   * Insert a new empty step at the given index.
+   * Insert a new empty, PM-normalized step at the given index.
    * @param {number} atIndex
    * @returns {string} the new step id
    */
   addStep(atIndex) {
-    const step = {
-      id: generateId(),
-      title: '',
-      description: '',
-      valueType: null,
-      inputs: [],
-      outputs: [],
-      substeps: [],
-      expanded: false,
-      loop: null,
-    };
-    this.steps.splice(atIndex, 0, step);
+    const step = super.addStep(atIndex, {}, pmNormalize);
     return step.id;
   }
 
-  /** Remove a step; clear any loop targeting it. */
+  /**
+   * Remove a step; clear the loop of any step that was targeting it
+   * (preserves legacy behavior: the whole loop is cleared, not just the
+   * target reference).
+   * @param {string} id
+   * @returns {boolean} true if removed
+   */
   removeStep(id) {
-    this.steps = this.steps.filter((s) => s.id !== id);
-    this.steps.forEach((s) => {
-      if (s.loop && s.loop.targetStepId === id) s.loop = null;
-    });
+    const ok = super.removeStep(id);
+    if (ok) {
+      this.steps.forEach((s) => {
+        if (s.loop && s.loop.targetStepId === id) s.loop = null;
+      });
+    }
+    return ok;
   }
 
-  /** Move a step from one id's slot to another id's slot, then revalidate loops. */
+  /**
+   * Move a step from one id's slot to another id's slot, then revalidate
+   * loop targets that might now point forward.
+   * @param {string} fromId
+   * @param {string} toId
+   * @returns {boolean} true if moved
+   */
   moveStep(fromId, toId) {
-    const from = this.stepIndexById(fromId);
-    const to = this.stepIndexById(toId);
-    if (from === -1 || to === -1 || fromId === toId) return;
-    const [moved] = this.steps.splice(from, 1);
-    this.steps.splice(to, 0, moved);
-    this.validateLoopTargets();
+    const ok = super.moveStep(fromId, toId);
+    if (ok) this.validateLoopTargets();
+    return ok;
   }
 
   // ─── IO CRUD ────────────────────────────────────────────────
@@ -176,31 +191,30 @@ export class State {
     step.expanded = !step.expanded;
   }
 
+  /**
+   * Add an empty substep to a step.
+   * @param {string} stepId
+   * @returns {string|null} the new substep id, or null if the step doesn't exist
+   */
   addSubstep(stepId) {
-    const step = this.findStep(stepId);
-    if (!step) return null;
-    if (!Array.isArray(step.substeps)) step.substeps = [];
-    const ss = { id: generateId(), title: '' };
-    step.substeps.push(ss);
-    return ss.id;
+    const ss = super.addSubstep(stepId, {});
+    return ss ? ss.id : null;
   }
 
+  /**
+   * Remove a substep; collapse the parent (`expanded = false`) once its
+   * substeps list becomes empty.
+   * @param {string} parentId
+   * @param {string} substepId
+   * @returns {boolean} true if removed
+   */
   removeSubstep(parentId, substepId) {
-    const step = this.findStep(parentId);
-    if (!step) return;
-    step.substeps = step.substeps.filter((ss) => ss.id !== substepId);
-    if (step.substeps.length === 0) step.expanded = false;
-  }
-
-  moveSubstep(parentId, fromId, toId) {
-    const step = this.findStep(parentId);
-    if (!step || !Array.isArray(step.substeps) || fromId === toId) return;
-    const arr = step.substeps;
-    const from = arr.findIndex((ss) => ss.id === fromId);
-    const to = arr.findIndex((ss) => ss.id === toId);
-    if (from === -1 || to === -1) return;
-    const [moved] = arr.splice(from, 1);
-    arr.splice(to, 0, moved);
+    const ok = super.removeSubstep(parentId, substepId);
+    if (ok) {
+      const parent = this.findStep(parentId);
+      if (parent && parent.substeps.length === 0) parent.expanded = false;
+    }
+    return ok;
   }
 
   // ─── Loops ──────────────────────────────────────────────────
@@ -287,20 +301,15 @@ export class State {
 
   // ─── Serialization ──────────────────────────────────────────
 
-  toJSON() {
-    return { steps: JSON.parse(JSON.stringify(this.steps)) };
-  }
-
   /**
    * Deserialize, validating each field and always returning a usable default.
    * @param {object|null|undefined} d
    * @returns {State}
    */
   static fromJSON(d) {
+    const base = FlowchartState.fromJSON(d, pmNormalize);
     const s = new State();
-    if (d && typeof d === 'object' && Array.isArray(d.steps)) {
-      s.steps = d.steps.map(normalizeStep);
-    }
+    s.steps = base.steps;
     return s;
   }
 }
