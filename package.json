@@ -4,7 +4,7 @@
   "scripts": {
     "postinstall": "node tools/license-report/generate.mjs",
     "dev": "npx serve . --no-cache",
-    "build": "node tools/build/build.mjs",
+    "build": "node tools/build-icons.mjs && node tools/build/build.mjs",
     "build:check": "node tools/build/build.mjs --check",
     "build:watch": "node tools/build/build.mjs --watch",
     "test:build": "node --test tools/build/",
@@ -15,7 +15,9 @@
     "docs:clean": "node tools/static-handbook/build.mjs --clean",
     "licenses": "node tools/license-report/generate.mjs",
     "licenses:check": "node tools/license-report/generate.mjs --check",
-    "icons:vendor": "node tools/vendor-icons.mjs"
+    "icons:vendor": "node tools/vendor-icons.mjs",
+    "icons": "node tools/build-icons.mjs",
+    "icons:check": "node tools/build-icons.mjs --check"
   },
   "dependencies": {
     "@alpinejs/csp": "^3.14.0",
