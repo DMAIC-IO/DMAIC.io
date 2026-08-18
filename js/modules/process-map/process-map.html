@@ -63,16 +63,18 @@
                 <template x-for="(step, idx) in model.steps" :key="'card-' + step.id">
                   <td class="pmap__cell pmap__cell--step pmap__step-row" :data-step-id="step.id"
                       @dragstart="stepDragStart(step.id, $event)"
-                      @dragend="stepDragEnd($event)"
-                      @dragover="stepDragOver(step.id, $event)"
-                      @dragleave="stepDragLeave(step.id, $event)"
-                      @drop="stepDrop(step.id, $event)">
+                      @dragend="stepDragEnd($event)">
 
                     <!-- Leading connector (before the first step only) -->
                     <template x-if="idx === 0">
                       <div class="pmap__connector pmap__connector--leading pmap__connector--clickable fc-connector fc-connector--clickable"
-                           data-action="insert-step" data-idx="0" :title="t('insertHere')"
-                           @click="addStep(0)">
+                           :class="gapClass(0)"
+                           data-action="insert-step" data-idx="0" data-gap="0"
+                           :title="t('insertHere')"
+                           @click="addStep(0)"
+                           @dragover="gapDragOver(0, $event)"
+                           @dragleave="gapDragLeave(0, $event)"
+                           @drop="gapDrop(0, $event)">
                         <span class="pmap__connector-arrow fc-connector__arrow">&raquo;</span>
                       </div>
                     </template>
@@ -117,8 +119,13 @@
                     <!-- Trailing connector (after every step, sits in the
                          border-spacing between this cell and the next) -->
                     <div class="pmap__connector pmap__connector--trailing pmap__connector--clickable fc-connector fc-connector--clickable"
-                         data-action="insert-step" :data-idx="idx + 1" :title="t('insertHere')"
-                         @click="addStep(idx + 1)">
+                         :class="gapClassAfter(idx)"
+                         data-action="insert-step" :data-idx="idx + 1" :data-gap="idx + 1"
+                         :title="t('insertHere')"
+                         @click="addStep(idx + 1)"
+                         @dragover="gapDragOverAfter(idx, $event)"
+                         @dragleave="gapDragLeaveAfter(idx, $event)"
+                         @drop="gapDropAfter(idx, $event)">
                       <span class="pmap__connector-arrow fc-connector__arrow">&raquo;</span>
                     </div>
                   </td>

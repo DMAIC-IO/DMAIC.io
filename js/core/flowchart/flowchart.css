@@ -19,7 +19,15 @@
    absolutely positioned INTO this gap and takes no layout space of its own,
    so the spacing is the same number in every module — Process Map set it as
    its table's border-spacing and the others follow. */
-:root { --fc-chain-gap: 32px; }
+:root {
+  --fc-chain-gap: 32px;
+  /* How far the drop hit area grows past the 32 × 32 arrow on every side
+     while a card is in flight. 32 + 2 × 28 = 88px, so the target covers the
+     whole card-header band and reaches into both neighbouring card edges —
+     the old card-on-card drop failed precisely because the gap was too small
+     to hit reliably. */
+  --fc-drop-grow: 28px;
+}
 
 /* ── Card surface ───────────────────────────────────────────────────── */
 .fc-card {
@@ -229,6 +237,51 @@ textarea.fc-card__description {
   justify-content: center;
   line-height: 1;
 }
+
+/* ── Gap drops ──────────────────────────────────────────────────────────
+   A connector carries both meanings that fit it: click inserts a new step
+   here, drop moves an existing card here. While a card is in flight,
+   chainViewMixin adds `fc-connector--drop` and a ::before overlay grows the
+   hit area (see --fc-drop-grow).
+
+   The overlay is a PSEUDO-element on purpose. A child <div> would be an
+   event target, and every crossing into it would fire `dragleave` on the
+   connector — the insert bar would flicker on and off under the cursor.
+
+   Positioning note: the overlay's containing block is the connector, which
+   every module positions absolutely into the chain gap. A module that ever
+   renders .fc-connector statically must give it `position: relative`. */
+.fc-connector--drop::before {
+  content: '';
+  position: absolute;
+  inset: calc(-1 * var(--fc-drop-grow));
+}
+
+/* The gap under the cursor draws the bar where the card will land, so the
+   drop point is visible BEFORE the button is released. */
+.fc-connector.is-drop-target::after {
+  content: '';
+  position: absolute;
+  top: -10px;
+  bottom: -10px;
+  left: 50%;
+  width: 3px;
+  margin-left: -1.5px;
+  border-radius: 2px;
+  background: var(--color-accent);
+}
+
+/* While a card is dragged, a "+" would be the wrong promise — the drop moves
+   the card, it does not insert a step. Keep the chevron. */
+.fc-connector--drop:hover { background: none; }
+.fc-connector--drop:hover .fc-connector__arrow { font-size: 35px; }
+.fc-connector--drop:hover .fc-connector__arrow::before { content: none; }
+
+/* Rails for gap 0 and gap n. They are in the DOM only while a card is in
+   flight (x-if on isDragging()), so they read as a drag affordance rather
+   than as part of the chain. Process Map is the exception: its leading and
+   trailing arrows are permanent and simply gained the gap handlers. */
+.fc-connector--rail .fc-connector__arrow { opacity: 0.45; }
 
 /* ── Substeps ───────────────────────────────────────────────────────────
    Disclosure bar plus the collapsible list inside a step card. Markup lives

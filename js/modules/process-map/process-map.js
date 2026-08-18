@@ -69,7 +69,7 @@ export default createModule({
       // armStepDrag sets a `draggable` attribute directly on the row that
       // must be removed again on dragend (else the row stays draggable from
       // anywhere, not just the arm handle) — and PM's own drag-marker
-      // classes (set by stepDragStart/stepDragOver) need the same defensive
+      // classes (set by stepDragStart) need the same defensive
       // sweep as the IO/substep drag contexts.
       stepDragEnd(event) {
         _core.stepDragEnd.call(this, event);
