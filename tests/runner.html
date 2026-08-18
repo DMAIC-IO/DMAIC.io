@@ -87,6 +87,7 @@
     './core/event-bus.test.js',
     './core/flowchart-model.test.js',
     './core/flowchart-view.test.js',
+    './core/flowchart-view-autosize.test.js',
     './core/flowchart-import.test.js',
     './core/state-manager.test.js',
     './core/i18n.test.js',
@@ -304,6 +305,13 @@
   }
 
   async function run() {
+    // Headless gates (tools/test-browser/run.mjs, and the Playwright bridge in
+    // the private repo) poll these two hooks instead of guessing from the
+    // counters: `data-test-run` flips to "done" only after every suite ran, so
+    // a crashed or still-running load can never be read as a green result.
+    delete window.__testRunResults;
+    document.body.dataset.testRun = 'running';
+
     document.getElementById('results').innerHTML = '';
     document.getElementById('progress-bar').style.width = '0';
 
@@ -352,6 +360,23 @@
 
       container.append(el);
     }
+
+    window.__testRunResults = {
+      passed: results.passed,
+      failed: results.failed,
+      skipped: results.skipped,
+      todo: results.todo,
+      suiteCount: results.suites.length,
+      failures: results.suites
+        .filter((s) => s.failed > 0)
+        .map((s) => ({
+          suite: s.name,
+          tests: s.tests
+            .filter((t) => t.status === 'failed')
+            .map((t) => ({ name: t.name, error: t.error })),
+        })),
+    };
+    document.body.dataset.testRun = 'done';
   }
 
   document.getElementById('run-btn').addEventListener('click', run);

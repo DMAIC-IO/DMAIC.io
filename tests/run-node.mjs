@@ -46,6 +46,7 @@ globalThis.fetch = async (input, init) => {
 // this directory. Keep sorted; add a file here if it starts needing the DOM.
 const SKIP = new Set([
   'algorithm-lab/lab-renderer.test.js',
+  'core/action-verbs.test.js',
   'core/chart/cumulative-cost.test.js',
   'core/chart/gantt.test.js',
   'core/chart/trend.test.js',
@@ -55,6 +56,7 @@ const SKIP = new Set([
   'core/datagrid-locked-columns.test.js',
   'core/datagrid-roles.test.js',
   'core/dom.test.js',
+  'core/flowchart-view-autosize.test.js',
   'core/help-renderer.test.js',
   'core/html-utils.test.js',
   'core/icon.test.js',
@@ -64,9 +66,13 @@ const SKIP = new Set([
   'core/template-module-imagepaths.test.js',
   'core/template-module-route.test.js',
   'core/template-module.test.js',
+  'core/worksheet-pool.test.js',
+  'core/workspace-detached.test.js',
+  'dialogs/scenario-confirm-data.test.js',
   'modules/ishikawa-cost.test.js',
   'modules/ishikawa-gantt.test.js',
   'modules/ishikawa-trend.test.js',
+  'modules/msa-typ6.test.js',
   'modules/project-charter-richtext.test.js',
   'modules/project-charter.test.js',
   'pages/cycle.test.js',
@@ -75,6 +81,10 @@ const SKIP = new Set([
   'startup/cross-version-prompt.test.js',
   'startup/example-deeplink.test.js',
   'startup/migration-notice.test.js',
+  'ui/action-modal.test.js',
+  'ui/dmaic-tiles-rebuild.test.js',
+  'ui/modal-dialog-api.test.js',
+  'ui/workspace-reset.test.js',
 ]);
 
 /** Recursively collect every `*.test.js` file under `dir`. */

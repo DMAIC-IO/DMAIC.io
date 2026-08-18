@@ -9,6 +9,8 @@
     "build:watch": "node tools/build/build.mjs --watch",
     "test:build": "node --test tools/build/",
     "test:unit": "node tests/run-node.mjs",
+    "test:browser": "node tools/test-browser/run.mjs",
+    "test:all": "npm run test:unit && npm run test:browser",
     "docs": "node tools/static-handbook/build.mjs",
     "docs:clean": "node tools/static-handbook/build.mjs --clean",
     "licenses": "node tools/license-report/generate.mjs",
