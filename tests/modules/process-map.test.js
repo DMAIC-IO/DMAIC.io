@@ -121,16 +121,16 @@ suite('Process Map Model — step CRUD', () => {
     assertEqual(s.findStep(b).loop, null);
   });
 
-  test('moveStep reorders and validates loop targets', () => {
+  test('moveStepToGap reorders and validates loop targets', () => {
     const s = new State();
     const a = s.addStep(0);
     const b = s.addStep(1);
     const c = s.addStep(2);
     s.toggleLoop(c);
-    s.findStep(c).loop.targetStepId = a; // valid: a before c
-    s.moveStep(c, a); // move c to a's slot → c now before a
+    s.findStep(c).loop.targetStepId = a; // gültig: a liegt vor c
+    s.moveStepToGap(c, 0); // c ganz nach vorn → a liegt jetzt HINTER c
     assertEqual(s.steps[0].id, c);
-    // target a is now AFTER c → invalidated to null
+    // Ziel a zeigt nun nach vorn → wird auf null invalidiert
     assertEqual(s.findStep(c).loop.targetStepId, null);
     assertEqual(b, b);
   });

@@ -119,7 +119,8 @@ export class DeploymentModel extends FlowchartState {
   }
 
   /**
-   * Reorders lanes. Mirrors `FlowchartState#moveStep`: the moved lane lands
+   * Reorders lanes by item-on-item drop (the chain reorders via gaps
+   * instead — see `FlowchartState#moveStepToGap`): the moved lane lands
    * in the target's original slot. The reserved Unassigned lane never moves.
    * @param {string} fromId - Lane being moved.
    * @param {string} toId - Lane whose slot it should take.

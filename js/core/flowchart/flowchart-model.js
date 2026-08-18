@@ -103,19 +103,22 @@ export class FlowchartState {
   }
 
   /**
-   * Move a step from one position to another.
-   * @param {string} fromId
-   * @param {string} toId
-   * @returns {boolean} true if moved
+   * Move a step to a gap in the chain. A chain of n steps has n+1 gaps,
+   * numbered 0…n, where gap g is the chain position a card dropped there
+   * takes: gap 0 is "to the very front", gap n "to the very end".
+   * @param {string} fromId - Id of the step being moved.
+   * @param {number} gapIndex - Target gap, 0…steps.length.
+   * @returns {boolean} True if the chain order changed.
    */
-  moveStep(fromId, toId) {
-    if (fromId === toId) return false;
+  moveStepToGap(fromId, gapIndex) {
     const fi = this.steps.findIndex((s) => s.id === fromId);
-    const ti = this.steps.findIndex((s) => s.id === toId);
-    if (fi === -1 || ti === -1) return false;
+    if (fi === -1) return false;
+    if (!Number.isInteger(gapIndex) || gapIndex < 0 || gapIndex > this.steps.length) return false;
+    // The two gaps touching the step are where it already is.
+    if (gapIndex === fi || gapIndex === fi + 1) return false;
     const [moved] = this.steps.splice(fi, 1);
-    // Insert at the original target position (after removal, ti indices stay valid)
-    this.steps.splice(ti, 0, moved);
+    // After the removal every gap right of the step shifted one to the left.
+    this.steps.splice(gapIndex > fi ? gapIndex - 1 : gapIndex, 0, moved);
     return true;
   }
 
@@ -165,7 +168,8 @@ export class FlowchartState {
 
   /**
    * Move a substep from one position to another within the same parent.
-   * Mirrors moveStep's semantics: the moved substep lands in toId's
+   * Item-on-item drop (unlike the chain, which reorders via gaps): the moved
+   * substep lands in toId's
    * original slot (siblings between shift to fill the gap).
    * @param {string} parentId
    * @param {string} fromId

@@ -144,26 +144,61 @@ suite('FlowchartState — chain CRUD', () => {
     assertEqual(s.steps.length, 1);
   });
 
-  test('moveStep swaps positions', () => {
+  test('moveStepToGap moves a step to the right', () => {
     const s = new FlowchartState();
     const a = s.addStep(0, { title: 'A' });
-    const b = s.addStep(1, { title: 'B' });
-    const c = s.addStep(2, { title: 'C' });
-    s.moveStep(a.id, c.id);   // A slides to C's slot
+    s.addStep(1, { title: 'B' });
+    s.addStep(2, { title: 'C' });
+    assertEqual(s.moveStepToGap(a.id, 3), true);   // A ans Ende
     assertEqual(s.steps.map((x) => x.title).join(','), 'B,C,A');
   });
 
-  test('moveStep same-source no-op', () => {
+  test('moveStepToGap moves a step to the left', () => {
     const s = new FlowchartState();
-    const a = s.addStep(); s.addStep();
-    assertEqual(s.moveStep(a.id, a.id), false);
-    assertEqual(s.steps.length, 2);
+    s.addStep(0, { title: 'A' });
+    s.addStep(1, { title: 'B' });
+    const c = s.addStep(2, { title: 'C' });
+    assertEqual(s.moveStepToGap(c.id, 0), true);   // C ganz nach vorn
+    assertEqual(s.steps.map((x) => x.title).join(','), 'C,A,B');
   });
 
-  test('moveStep with unknown id returns false, no throw', () => {
+  test('moveStepToGap is a no-op on the two gaps touching the step', () => {
+    const s = new FlowchartState();
+    s.addStep(0, { title: 'A' });
+    const b = s.addStep(1, { title: 'B' });
+    s.addStep(2, { title: 'C' });
+    // Lücke 1 liegt vor B, Lücke 2 dahinter — beide sind schon B's Platz.
+    assertEqual(s.moveStepToGap(b.id, 1), false);
+    assertEqual(s.moveStepToGap(b.id, 2), false);
+    assertEqual(s.steps.map((x) => x.title).join(','), 'A,B,C');
+  });
+
+  test('moveStepToGap accepts the boundary gaps 0 and n', () => {
+    const s = new FlowchartState();
+    const a = s.addStep(0, { title: 'A' });
+    const b = s.addStep(1, { title: 'B' });
+    assertEqual(s.moveStepToGap(b.id, 0), true);
+    assertEqual(s.steps.map((x) => x.title).join(','), 'B,A');
+    assertEqual(s.moveStepToGap(b.id, 2), true);
+    assertEqual(s.steps.map((x) => x.title).join(','), 'A,B');
+    assertEqual(a.id === b.id, false);
+  });
+
+  test('moveStepToGap rejects out-of-range and non-integer gaps', () => {
+    const s = new FlowchartState();
+    const a = s.addStep(0, { title: 'A' });
+    s.addStep(1, { title: 'B' });
+    assertEqual(s.moveStepToGap(a.id, -1), false);
+    assertEqual(s.moveStepToGap(a.id, 3), false);
+    assertEqual(s.moveStepToGap(a.id, 1.5), false);
+    assertEqual(s.moveStepToGap(a.id, '2'), false);
+    assertEqual(s.steps.map((x) => x.title).join(','), 'A,B');
+  });
+
+  test('moveStepToGap with an unknown id returns false, no throw', () => {
     const s = new FlowchartState();
     s.addStep();
-    assertEqual(s.moveStep('nope', 'nada'), false);
+    assertEqual(s.moveStepToGap('nope', 0), false);
   });
 });
 

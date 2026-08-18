@@ -123,14 +123,14 @@ export class State extends FlowchartState {
   }
 
   /**
-   * Move a step from one id's slot to another id's slot, then revalidate
-   * loop targets that might now point forward.
+   * Move a step to a chain gap, then revalidate loop targets that might now
+   * point forward.
    * @param {string} fromId
-   * @param {string} toId
-   * @returns {boolean} true if moved
+   * @param {number} gapIndex
+   * @returns {boolean} true if the chain order changed
    */
-  moveStep(fromId, toId) {
-    const ok = super.moveStep(fromId, toId);
+  moveStepToGap(fromId, gapIndex) {
+    const ok = super.moveStepToGap(fromId, gapIndex);
     if (ok) this.validateLoopTargets();
     return ok;
   }

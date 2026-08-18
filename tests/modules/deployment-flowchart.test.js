@@ -115,7 +115,7 @@ suite('DeploymentModel — lane CRUD', () => {
     assertEqual(m.lanes.find((l) => l.id === 'unassigned').name, '');
   });
 
-  test('moveLane reorders with the same semantics as moveStep', () => {
+  test('moveLane reorders by item-on-item drop, unlike the gap-based chain', () => {
     const m = new DeploymentModel();
     const a = m.addLane('A');
     m.addLane('B');
