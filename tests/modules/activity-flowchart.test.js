@@ -102,7 +102,7 @@ suite('ActivityModel — import mappers', () => {
     const target = new ActivityModel();
     const sm = {
       listInstances: (id) => id === 'sipoc' ? [{ instanceId: 'i', title: 'S' }] : [],
-      getModuleState: (i) => ({ columns: { process: ['Anfrage', 'Prüfung', 'Freigabe'] } }),
+      getModuleState: () => ({ columns: { process: ['Anfrage', 'Prüfung', 'Freigabe'] } }),
     };
     const appended = appendFromInstance({
       targetModuleId: 'activity-flowchart', sourceModuleId: 'sipoc',
@@ -118,7 +118,7 @@ suite('ActivityModel — import mappers', () => {
     const target = new ActivityModel();
     const sm = {
       listInstances: (id) => id === 'process-map' ? [{ instanceId: 'i', title: 'P' }] : [],
-      getModuleState: (i) => ({ steps: [
+      getModuleState: () => ({ steps: [
         { id: 's1', title: 'X', valueType: 'va' },
         { id: 's2', title: 'Y', valueType: 'nva' },
       ] }),

@@ -10,8 +10,7 @@
 .pmap__canvas {
   margin: 0 auto;
   padding: var(--spacing-md) var(--spacing-lg);
-  overflow-x: auto;
-  overflow-y: visible;
+  overflow: auto visible;
 }
 
 /* ===== Process Flow =====
@@ -27,6 +26,7 @@
 
 .pmap__table {
   border-collapse: separate;
+
   /* 32 px horizontal gap between step columns — this is where the
      connector arrows sit (absolute-positioned inside the card cells). */
   border-spacing: var(--fc-chain-gap) 0;
@@ -35,6 +35,7 @@
 }
 
 .pmap__row--inputs  .pmap__cell { vertical-align: bottom; }
+
 /* Cards are top-aligned so a tall card never pushes its neighbours off the
    shared baseline — the chain reads across the card headers. */
 .pmap__row--cards   .pmap__cell { vertical-align: top; }
@@ -283,6 +284,7 @@
 }
 
 /* ===== Step Card ===== */
+
 /* Card shell, header, number badge, title, actions, delete button, body and
    description all come from `.fc-*` in js/core/flowchart/flowchart.css —
    Process Map's markup carries those classes alongside its own BEM names.
@@ -353,11 +355,13 @@
    arrow overflows into the table's horizontal border-spacing (32px),
    which is the empty gap between step columns. Trailing connector on
    every card, leading connector only on the first (via x-if). */
+
 /* Look (size, arrow, hover-+) comes from `.fc-connector` in
    js/core/flowchart/flowchart.css — PM only adds the absolute positioning
    that drops the connector into the table's border-spacing. */
 .pmap__connector {
   position: absolute;
+
   /* Aligned with the card header, matching every other flowchart — see
      .fc-connector--header-aligned. Centring on the card would place the arrow
      at a different height for every card now that cards are top-aligned. */
@@ -381,6 +385,7 @@
 }
 
 /* ===== Substeps Toggle Bar (always visible at bottom of card) ===== */
+
 /* Substeps (disclosure bar + list) now come from `.fc-substeps*` in
    js/core/flowchart/flowchart.css, with the markup inlined from
    js/core/flowchart/substeps.part.html — all four flowcharts share it. */
@@ -625,11 +630,13 @@
    modal borrows the node into .modal__body which un-hides it. */
 .pmap__sipoc-form { display: none; }
 .modal__body .pmap__sipoc-form { display: block; }
+
 .pmap__sipoc-hint {
   margin: 0 0 var(--spacing-md);
   color: var(--color-text-secondary);
   font-size: var(--font-size-sm);
 }
+
 .pmap__sipoc-list {
   display: flex;
   flex-direction: column;
@@ -637,6 +644,7 @@
   max-height: 60vh;
   overflow-y: auto;
 }
+
 .pmap__sipoc-option {
   display: flex;
   align-items: flex-start;
@@ -647,47 +655,57 @@
   cursor: pointer;
   transition: border-color var(--transition-speed), background var(--transition-speed);
 }
+
 .pmap__sipoc-option:hover {
   border-color: var(--color-border-primary);
   background: var(--color-bg-secondary);
 }
+
 .pmap__sipoc-option--selected {
   border-color: var(--color-accent);
   background: var(--color-pmap-step-accent-bg);
 }
+
 .pmap__sipoc-option--disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
+
 .pmap__sipoc-option--disabled:hover {
   border-color: var(--color-border-secondary);
   background: transparent;
 }
+
 .pmap__sipoc-option input[type="radio"] {
   margin-top: 3px;
   flex-shrink: 0;
 }
 .pmap__sipoc-option-body { flex: 1; min-width: 0; }
+
 .pmap__sipoc-option-header {
   display: flex;
   justify-content: space-between;
   gap: var(--spacing-sm);
   align-items: baseline;
 }
+
 .pmap__sipoc-option-label {
   font-weight: var(--font-weight-semibold);
   color: var(--color-text-primary);
 }
+
 .pmap__sipoc-option-count {
   font-size: var(--font-size-xs);
   color: var(--color-text-secondary);
 }
+
 .pmap__sipoc-option-chips {
   display: flex;
   flex-wrap: wrap;
   gap: 4px;
   margin-top: var(--spacing-xs);
 }
+
 .pmap__sipoc-option-chip {
   font-size: var(--font-size-xs);
   padding: 2px var(--spacing-sm);
@@ -699,6 +717,7 @@
   text-overflow: ellipsis;
   max-width: 200px;
 }
+
 .pmap__sipoc-option-chip--more {
   background: transparent;
   color: var(--color-text-tertiary);

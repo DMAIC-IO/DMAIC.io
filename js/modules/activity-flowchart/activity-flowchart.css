@@ -11,11 +11,13 @@
   overflow: auto;
   min-height: 200px;
 }
+
 .af__empty-hint {
   color: var(--color-text-secondary);
   font-size: var(--font-size-sm);
   padding: var(--spacing-md) 0;
 }
+
 /* Top-aligned: cards differ in height (description, substeps) and must still
    line up along their headers. */
 .af__flow {
@@ -23,6 +25,7 @@
   align-items: flex-start;
   gap: var(--fc-chain-gap);
 }
+
 .af__step {
   position: relative;
   flex: 0 0 auto;
@@ -67,6 +70,7 @@
    shared `.fc-*` base in js/core/flowchart/flowchart.css — only the
    module-specific sizing lives here. */
 .af__card { min-width: 220px; }
+
 /* Height/line-box come from textarea.fc-card__title; nothing module-specific
    left to say about the title itself. */
 
@@ -97,6 +101,7 @@
 .af {
   --af-diamond-w: 200px;
   --af-diamond-h: 120px;
+
   /* Wide enough for the longest target word the picker can produce
      ("Prozessende"); anything longer wraps rather than reaching into the
      next step's connector. */
@@ -179,9 +184,11 @@
   opacity: 0;
   transition: opacity var(--transition-speed), color var(--transition-speed);
 }
+
 /* The diamond's delete is a sibling of the clipped shape, so it never gets
    `.fc-card__delete` — size its trash glyph like the card ones anyway. */
 .af__diamond .af__delete .icon { font-size: 13px; }
+
 .af__step--decision:hover .af__delete,
 .af__diamond .af__delete:focus-visible { opacity: 1; }
 .af__diamond .af__delete:hover { color: var(--color-error); background: transparent; }
@@ -259,6 +266,7 @@
   box-shadow: var(--shadow-md);
   padding: var(--spacing-xs);
 }
+
 .af__branch-menu button {
   border: none;
   background: transparent;
@@ -278,16 +286,19 @@
 }
 
 /* ── Import picker form (borrowed into the shared modal) ────────────── */
+
 /* Hidden inside the module container; the shared modal borrows the node,
    so it must become visible again once it sits in the modal body
    (mirrors .modal__body .pmap__sipoc-form in process-map.css). */
 .af__import-form { display: none; }
 .modal__body .af__import-form { display: block; }
+
 .af__import-hint {
   color: var(--color-text-secondary);
   font-size: var(--font-size-sm);
   margin-bottom: var(--spacing-sm);
 }
+
 .af__import-list {
   display: flex;
   flex-direction: column;
@@ -295,6 +306,7 @@
   max-height: 320px;
   overflow-y: auto;
 }
+
 .af__import-option {
   display: flex;
   align-items: center;
@@ -304,16 +316,19 @@
   border-radius: var(--border-radius-sm);
   cursor: pointer;
 }
+
 .af__import-option--selected {
   border-color: var(--color-accent);
   background: var(--color-accent-light);
 }
+
 .af__import-option-source {
   font-size: var(--font-size-xs);
   color: var(--color-text-secondary);
   text-transform: uppercase;
   flex: 0 0 auto;
 }
+
 .af__import-option-title {
   font-size: var(--font-size-sm);
   color: var(--color-text-primary);

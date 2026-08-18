@@ -108,8 +108,8 @@ suite('FlowchartState — chain CRUD', () => {
 
   test('addStep(0) inserts at head', () => {
     const s = new FlowchartState();
-    const a = s.addStep(0, { title: 'A' });
-    const b = s.addStep(0, { title: 'B' });
+    s.addStep(0, { title: 'A' });
+    s.addStep(0, { title: 'B' });
     assertEqual(s.steps[0].title, 'B');
     assertEqual(s.steps[1].title, 'A');
   });
@@ -229,7 +229,7 @@ suite('FlowchartState — substep CRUD', () => {
     const s = new FlowchartState();
     const p = s.addStep();
     const a = s.addSubstep(p.id, { title: 'A' });
-    const b = s.addSubstep(p.id, { title: 'B' });
+    s.addSubstep(p.id, { title: 'B' });
     const c = s.addSubstep(p.id, { title: 'C' });
     s.moveSubstep(p.id, a.id, c.id);
     assertEqual(p.substeps.map((x) => x.title).join(','), 'B,C,A');

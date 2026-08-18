@@ -24,11 +24,13 @@ const EXPECTED_WORKSHEETS = [
 // relative to the *document* the test runner is executing in
 // (tests/runner.html), not relative to this test module — so a plain
 // `reg.init()` here would 404 against tests/examples/index.json. Fetch the
-// real catalog ourselves (path relative to tests/runner.html) and inject it,
-// the same way the fixture-based scenario tests build a registry.
+// real catalog ourselves (resolved against this module's URL, so the path
+// holds both in the browser runner and in the headless node runner) and
+// inject it, the same way the fixture-based scenario tests build a registry.
 async function loadedRegistry() {
   const reg = new ExamplesRegistry();
-  const res = await fetch('../examples/index.json', { cache: 'no-cache' });
+  const url = new URL('../../examples/index.json', import.meta.url);
+  const res = await fetch(url, { cache: 'no-cache' });
   assertTrue(res.ok, `could not fetch examples/index.json: HTTP ${res.status}`);
   const catalog = await res.json();
   reg._examples = catalog.examples;
@@ -91,7 +93,8 @@ suite('shipped scenario catalog', () => {
       if (meta.type === 'generator') continue;
       assertTrue(typeof meta.file === 'string' && meta.file.length > 0,
         `${id}: missing file field`);
-      const res = await fetch(`../examples/${meta.file}`, { cache: 'no-cache' });
+      const res = await fetch(new URL(`../../examples/${meta.file}`, import.meta.url),
+        { cache: 'no-cache' });
       assertTrue(res.ok, `${id}: file ${meta.file} not reachable (HTTP ${res.status})`);
     }
   });

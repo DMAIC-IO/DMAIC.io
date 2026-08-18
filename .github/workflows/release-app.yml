@@ -101,8 +101,14 @@ jobs:
           git diff --exit-code -- THIRD-PARTY-LICENSES.txt js/pages/licenses/licenses-data.generated.js \
             || { echo "::error::License artifacts are stale. Run 'npm install' (or 'npm run licenses') and commit THIRD-PARTY-LICENSES.txt + js/pages/licenses/licenses-data.generated.js."; exit 1; }
 
-      - name: Run unit tests (deploy gate — no build/deploy on failure)
+      - name: Run DOM-free unit tests (deploy gate — no build/deploy on failure)
         run: npm run test:unit
+
+      - name: Install Chromium for the DOM test runner
+        run: npx playwright install --with-deps chromium
+
+      - name: Run DOM unit tests in headless Chromium (deploy gate)
+        run: npm run test:browser
 
       - name: Build app (generate index.html + bundle)
         run: npm run build

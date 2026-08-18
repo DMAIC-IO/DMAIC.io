@@ -55,6 +55,7 @@
 }
 
 /* ── Card header (number badge · title · actions) ───────────────────── */
+
 /* Top-aligned, not centred: a title that wraps to two lines would otherwise
    push its own text above the number badge (the badge centres on the whole
    field, the text starts at its first line). Aligning both to the top keeps
@@ -440,10 +441,11 @@ textarea.fc-card__description {
   grid-auto-columns: max-content;
   grid-template-rows: repeat(var(--fc-lane-count, 2), auto);
   align-items: stretch;
+
   /* `auto` rows would otherwise absorb the container's spare height and each
      band would balloon to a third of the viewport. Bands size to content. */
-  align-content: start;
-  justify-content: start;
+  place-content: start start;
+
   /* Same distance between two steps as in the linear charts, so the connector
      positioned into it neither overlaps a card nor floats free. */
   column-gap: var(--fc-chain-gap);

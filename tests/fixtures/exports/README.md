@@ -29,6 +29,8 @@ Aktueller Stand:
 | v0.3.0_single_project.json      | 1        | 34              |
 | v0.3.0_all_projects.json        | 3        | 38              |
 | v0.5.0_8d_project.json          | 1        | 19              |
+| v0.9.0_single_project.json      | 1        | 11              |
+| v1.0.0_single_project.json      | 1        | 11              |
 
 Die v0.3-Fixtures decken zusammen **alle produktiven Module** aus
 `js/modules/manifest.js` mindestens einmal ab. Wenn ein neues Modul hinzukommt,
@@ -38,6 +40,12 @@ Import-Pfad in der Regression mitläuft.
 Die v0.5-Fixture demonstriert den neuen `eightd`-Zyklus mit Modulen über alle
 D-Phasen — sie hält die Phasen-Struktur D0…D8 + `data`/`extras` für künftige
 Regressionen fest.
+
+Die v1.0-Fixture ist der inhaltsgleiche Nachzug der v0.9-Fixture auf das erste
+stabile Release: zwischen 0.9 und 1.0 hat sich am Export-Format nichts geändert
+(kein Migrationsschritt in `js/core/migrations.js`), die Fixture hält die
+aktuelle MAJOR.MINOR-Linie für den Release-Gate-Test
+`current VERSION fixture exists` fest.
 
 ## Pflicht beim Release
 
