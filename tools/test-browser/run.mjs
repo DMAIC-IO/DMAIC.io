@@ -20,6 +20,11 @@ import { fileURLToPath } from 'node:url';
 import { dirname, extname, join, normalize, resolve, sep } from 'node:path';
 import { chromium } from 'playwright';
 
+// The callbacks handed to page.waitForFunction/page.evaluate are serialised and
+// run inside the browser, not in this node process — `document` and `window`
+// there are the page's, which eslint cannot know from a .mjs file.
+/* global document, window */
+
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..');
 const HEADED = process.argv.includes('--headed');
 const TIMEOUT_MS = 180_000;
