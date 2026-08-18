@@ -56,6 +56,8 @@ export function chainViewMixin(module, _t, opts = {}) {
 
   return {
     _draggedStepId: /** @type {string|null} */ (null),
+    /** @type {number|null} gap under the cursor while a card is in flight */
+    _activeGap: null,
 
     stepDragStart(stepId, event) {
       this._draggedStepId = stepId;
@@ -66,33 +68,100 @@ export function chainViewMixin(module, _t, opts = {}) {
       event?.target?.classList?.add('is-dragging');
     },
 
-    stepDragOver(stepId, event) {
-      if (!this._draggedStepId || this._draggedStepId === stepId) return;
-      event?.preventDefault();
-      if (event?.dataTransfer) event.dataTransfer.dropEffect = 'move';
-      event?.currentTarget?.classList?.add('is-drop-target');
-    },
-
-    stepDragLeave(_stepId, event) {
-      event?.currentTarget?.classList?.remove('is-drop-target');
-    },
-
-    stepDrop(stepId, event) {
-      event?.preventDefault();
-      event?.currentTarget?.classList?.remove('is-drop-target');
-      const from = this._draggedStepId;
-      this._draggedStepId = null;
-      if (!from || from === stepId) return;
-      this.model?.moveStep?.(from, stepId);
-    },
-
     stepDragEnd(event) {
       this._draggedStepId = null;
+      // An aborted drag must not leave an insert bar behind.
+      this._activeGap = null;
       event?.target?.classList?.remove('is-dragging');
       // Disarm: the row is only draggable while a drag started from the number
       // badge is in flight, so text in the title/description stays selectable.
       event?.target?.closest?.(dragRowSelector)?.removeAttribute('draggable');
     },
+
+    // ── Gap drops ─────────────────────────────────────────────────────
+    // A chain of n steps has n+1 gaps (0…n); gap g is the chain position a
+    // card dropped there takes. The arrows between the cards ARE those gaps,
+    // so a drop says "the card goes here" and nothing else — in the swimlane
+    // charts the area around a card already belongs to the band change.
+
+    /** True while a card is in flight — gates the rails and their hit areas. */
+    isDragging() {
+      return this._draggedStepId !== null;
+    },
+
+    /**
+     * Gap 0 sits in front of the first card. Only rendered during a drag —
+     * otherwise every chain would start with an arrow pointing at nothing.
+     * @param {number} idx 0-based index of the step the rail belongs to
+     * @returns {boolean}
+     */
+    showStartRail(idx) {
+      return idx === 0 && this._draggedStepId !== null;
+    },
+
+    /**
+     * Gap n hangs off the last card. Same drag-only rule as showStartRail.
+     * @param {number} idx 0-based index of the step the rail belongs to
+     * @returns {boolean}
+     */
+    showEndRail(idx) {
+      return idx === (this.model?.steps?.length || 0) - 1 && this._draggedStepId !== null;
+    },
+
+    /**
+     * @param {number} g gap index
+     * @returns {boolean} true when the cursor currently sits over gap g
+     */
+    isGapActive(g) {
+      return this._activeGap === g;
+    },
+
+    /**
+     * Transient classes for the connector at gap `g`: the enlarged hit area
+     * while a card is in flight, plus the insert bar for the gap under the
+     * cursor. Assembled here rather than in the template — Alpine CSP wants
+     * one plain method call per binding (.claude/alpine.md).
+     * @param {number} g gap index
+     * @returns {string}
+     */
+    gapClass(g) {
+      if (this._draggedStepId === null) return '';
+      return this.isGapActive(g) ? 'fc-connector--drop is-drop-target' : 'fc-connector--drop';
+    },
+
+    gapDragOver(g, event) {
+      // Without a card in flight the connector stays a plain insert button —
+      // preventDefault() here would make it a drop target for anything.
+      if (this._draggedStepId === null) return;
+      event?.preventDefault();
+      if (event?.dataTransfer) event.dataTransfer.dropEffect = 'move';
+      this._activeGap = g;
+    },
+
+    gapDragLeave(g, _event) {
+      // Only clear OUR gap: dragover on the next connector may already have
+      // claimed _activeGap before this leave fires.
+      if (this._activeGap === g) this._activeGap = null;
+    },
+
+    gapDrop(g, event) {
+      event?.preventDefault();
+      const from = this._draggedStepId;
+      this._draggedStepId = null;
+      this._activeGap = null;
+      if (!from) return;
+      this.model?.moveStepToGap?.(from, g);
+    },
+
+    // The gap BEHIND step `idx` is gap idx + 1. It gets its own methods
+    // instead of `gapDrop(idx + 1, $event)` in the template: Alpine CSP event
+    // expressions are plain method calls, and arithmetic in an argument is
+    // not worth the risk (.claude/alpine.md, "Event-Expression: Nur
+    // Methodenaufrufe"). Used by every trailing arrow and every end rail.
+    gapDragOverAfter(idx, event) { this.gapDragOver(idx + 1, event); },
+    gapDragLeaveAfter(idx, event) { this.gapDragLeave(idx + 1, event); },
+    gapDropAfter(idx, event) { this.gapDrop(idx + 1, event); },
+    gapClassAfter(idx) { return this.gapClass(idx + 1); },
 
     /**
      * Sequence label for a step, zero-padded to two digits ("01", "02", …) so
