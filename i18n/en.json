@@ -2273,6 +2273,7 @@
       "emptyHint": "No roles yet — add a role from the toolbar, then add steps.",
       "importFrom": "Import from …",
       "importTitle": "Import steps",
+      "insertHere": "Insert here — or drop a card here to move it",
       "importHint": "Pick a source. Its steps are appended to the end of the chain and start out in “Unassigned”.",
       "importConfirm": "Import",
       "importEmptyHint": "No matching source (SIPOC / Process Map) found in this project.",

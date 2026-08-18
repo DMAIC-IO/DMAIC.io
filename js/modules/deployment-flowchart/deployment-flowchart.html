@@ -57,23 +57,37 @@
                  :data-lane-id="lane.id"
                  @dragover.prevent
                  @drop.stop="dropOnLane(lane.id, $event)">
+              <!-- Gap 0 — rail in front of the first card, only while a card
+                   is in flight. -->
+              <template x-if="railStart(idx, lane.id)">
+                <div class="df__connector fc-connector fc-connector--rail"
+                     :class="gapClass(0)" data-gap="0"
+                     @dragover="gapDragOver(0, $event)"
+                     @dragleave="gapDragLeave(0, $event)"
+                     @drop.stop="gapDrop(0, $event)">
+                  <span class="fc-connector__arrow">&raquo;</span>
+                </div>
+              </template>
               <!-- Connector sits in the gap left of the card, so it stays at
-                   the card's header height whichever lane the card is in. -->
+                   the card's header height whichever lane the card is in.
+                   Gap `idx`: click inserts here, drop moves the dragged card
+                   here — and only that; its lane is unaffected. -->
               <template x-if="idx > 0 && step.laneId === lane.id">
                 <div class="df__connector fc-connector fc-connector--clickable"
-                     data-action="insert-step" :data-idx="idx"
+                     :class="gapClass(idx)"
+                     data-action="insert-step" :data-idx="idx" :data-gap="idx"
                      @click="insertBefore(idx, lane.id)"
-                     :title="t('insertHere')">
+                     :title="t('insertHere')"
+                     @dragover="gapDragOver(idx, $event)"
+                     @dragleave="gapDragLeave(idx, $event)"
+                     @drop.stop="gapDrop(idx, $event)">
                   <span class="fc-connector__arrow">&raquo;</span>
                 </div>
               </template>
               <template x-if="step.laneId === lane.id">
-                <!-- Drop on a CARD reorders the chain; drop on the empty band
-                     around it only re-assigns the lane. -->
-                <div class="df__step fc-card"
-                     @dragover.stop="stepDragOver(step.id, $event)"
-                     @dragleave.stop="stepDragLeave(step.id, $event)"
-                     @drop.stop="stepDrop(step.id, $event)">
+                <!-- Reordering happens on the arrows only; a drop on the empty
+                     band around a card re-assigns the lane (slot handler). -->
+                <div class="df__step fc-card">
                   <div class="df__step-header fc-card__header">
                     <span class="df__step-number fc-step-number" x-text="stepNum(idx)"
                           @mousedown="armStepDrag(step.id, $event)"></span>
@@ -95,6 +109,16 @@
                               @input="autoSize($event)"></textarea>
                   </div>
                   <!-- @include js/core/flowchart/substeps.part.html -->
+                </div>
+              </template>
+              <!-- Gap n — rail behind the last card, only while dragging. -->
+              <template x-if="railEnd(idx, lane.id)">
+                <div class="df__connector df__connector--end fc-connector fc-connector--rail"
+                     :class="gapClassAfter(idx)" :data-gap="idx + 1"
+                     @dragover="gapDragOverAfter(idx, $event)"
+                     @dragleave="gapDragLeaveAfter(idx, $event)"
+                     @drop.stop="gapDropAfter(idx, $event)">
+                  <span class="fc-connector__arrow">&raquo;</span>
                 </div>
               </template>
             </div>

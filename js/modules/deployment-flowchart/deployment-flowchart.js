@@ -129,6 +129,28 @@ export default createModule({
         this.$nextTick(() => this._autoSizeAll());
       },
 
+      /**
+       * Gap 0's rail belongs to the FIRST card and is drawn in that card's
+       * lane. Lane and chain-end check are merged into one method because
+       * Alpine CSP wants a single call per x-if (.claude/alpine.md).
+       * @param {number} idx chain index of the column being rendered
+       * @param {string} laneId lane of the slot being rendered
+       * @returns {boolean}
+       */
+      railStart(idx, laneId) {
+        return this.showStartRail(idx) && this.model.steps[idx].laneId === laneId;
+      },
+
+      /**
+       * Gap n's rail belongs to the LAST card, in that card's lane.
+       * @param {number} idx chain index of the column being rendered
+       * @param {string} laneId lane of the slot being rendered
+       * @returns {boolean}
+       */
+      railEnd(idx, laneId) {
+        return this.showEndRail(idx) && this.model.steps[idx].laneId === laneId;
+      },
+
       /** Drop on a lane band: re-assign the dragged step, keep its chain position. */
       dropOnLane(laneId, event) {
         event?.preventDefault();
