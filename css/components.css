@@ -1757,20 +1757,34 @@ body.dmike-glossary-inline-off .glossary-term:focus-within {
   background: transparent;
 }
 
-/* ─── Mask icons (glyph: assets/icons/icons.css, generated; colour: currentColor) ─── */
+/* ─── Masken-Icons ────────────────────────────────────────────────────────
+   Glyphe: assets/icons/icons.css (generiert aus assets/icons/icon-map.json).
+   Farbe: currentColor, damit Hover/Aktiv/Disabled vom Elternelement kommen.
+   Drei Stufen: sm 16, md 20 (Standard), lg 24. Die Maske ist pro Stufe mit
+   angepasster Strichstärke gebacken, damit der Strich optisch gleich bleibt.
+   --icon-size ist die Ausnahmeschraube für Sonderfälle (z. B. 12px in den
+   Dashboard-Kachelgriffen); sie ändert nur die Fläche, nicht die Maske. */
 .icon {
   display: inline-block;
-  width: 1em; height: 1em;
+  width: var(--icon-size, 20px);
+  height: var(--icon-size, 20px);
   vertical-align: -0.125em;
   background-color: currentcolor;
   mask: var(--icon) center / contain no-repeat;
 }
-.icon--accent { background-color: var(--color-accent); }
-.icon--muted  { background-color: var(--color-text-tertiary); }
+.icon--sm { --icon-size: 16px; }
+.icon--lg { --icon-size: 24px; }
 
-/* Raw icons render the baked SVG directly (background-image, no mask) — for
-   glyphs that carry their own colour/opacity (e.g. accent chart thumbnails).
-   Theme-swapped via [data-theme] overrides of --icon (see icons.css). */
+/* Farbvarianten. muted senkt ab, statt eine zweite Farbe zu setzen — das wirkt
+   in hellem und dunklem Theme gleich und braucht kein eigenes Token. */
+.icon--muted   { opacity: .55; }
+.icon--accent  { background-color: var(--color-accent); }
+.icon--danger  { background-color: var(--color-error); }
+.icon--success { background-color: var(--color-success); }
+
+/* Raw-Icons rendern das gebackene SVG direkt (background-image, keine Maske) —
+   für Glyphen mit eigener Farbe und Deckkraft, etwa die Accent-Miniaturen der
+   Diagramme. Theme-Wechsel über [data-theme]-Overrides von --icon (icons.css). */
 .icon--raw {
   mask: none;
   background: transparent var(--icon) center / contain no-repeat;
