@@ -76,7 +76,7 @@ export const CYCLES = Object.freeze({
 
 /** Frame tiles, present in every cycle, framework-fixed. */
 export const VIRTUAL_PHASES = Object.freeze({
-  data:   { id: 'data',   letter: '▦', i18nKey: 'phases.data',   virtual: true, position: 'leading'  },
+  data:   { id: 'data',   letter: '⊞', i18nKey: 'phases.data',   virtual: true, position: 'leading'  },
   extras: { id: 'extras', letter: '⋯', i18nKey: 'phases.extras', virtual: true, position: 'trailing' },
 });
 
