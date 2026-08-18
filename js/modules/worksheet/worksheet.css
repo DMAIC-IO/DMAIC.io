@@ -66,12 +66,6 @@
   pointer-events: none;
 }
 
-.worksheet-toolbar .toolbar__btn svg {
-  width: 15px;
-  height: 15px;
-  stroke-width: 1.8;
-}
-
 .worksheet-toolbar .toolbar__sep {
   width: 1px;
   height: 18px;
@@ -83,10 +77,11 @@
   flex: 1;
 }
 
-/* Export trigger icon — solid black (uses stroke="currentColor", so color makes it black).
-   Scoped to the first svg (upload arrow) inside the export dropdown trigger only.
+/* Export trigger icon — solid black (mask-icon uses background-color: currentColor,
+   so setting color makes it black).
+   Scoped to the first .icon (download arrow) inside the export dropdown trigger only.
    The :not(:disabled) guard prevents overriding the .toolbar__btn:disabled state. */
-.worksheet-toolbar .toolbar__dropdown[data-action="export-dropdown"] > .toolbar__btn:not(:disabled) > svg:first-of-type {
+.worksheet-toolbar .toolbar__dropdown[data-action="export-dropdown"] > .toolbar__btn:not(:disabled) > .icon:first-of-type {
   color: var(--color-text-primary);
 }
 
@@ -97,9 +92,6 @@
 }
 
 .worksheet-toolbar .toolbar__chevron {
-  width: 12px;
-  height: 12px;
-  stroke-width: 2;
   margin-left: -2px;
 }
 
