@@ -1,6 +1,7 @@
 import { renderBlockMath, renderInlineMath } from '../core/katex-loader.js';
 import { h } from '../core/dom.js';
 import { parseInline } from '../core/markdown-parser.js';
+import { icon } from '../core/icon.js';
 
 /**
  * DMAIC.io — Help Panel (help-panel.js)
@@ -62,7 +63,7 @@ export class HelpPanel {
           class: 'btn btn--icon btn--ghost',
           id: 'help-close-btn',
           'aria-label': t('common.close'),
-        }, '✕'),
+        }, icon('action.close', { size: 'sm' })),
       ),
       h('div', { class: 'help-panel__tabs', role: 'tablist' },
         h('button', {

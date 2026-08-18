@@ -11,6 +11,7 @@
 import { DEFAULT_CYCLE } from '../../core/cycles/cycles.js';
 import { updateReadOnlyBanner } from '../helpers.js';
 import { rehydrateProject } from '../project-rehydrate.js';
+import { icon } from '../../core/icon.js';
 
 /**
  * Router wired after boot (app.js, post-initRouter). When set, a user project
@@ -233,7 +234,7 @@ export function initProjectSwitcher({ stateManager, eventBus, i18n }) {
       const renameBtn = document.createElement('button');
       renameBtn.className = 'app-header__project-action-btn';
       renameBtn.title = i18n.t('app.projectRename');
-      renameBtn.textContent = '✎';
+      renameBtn.replaceChildren(icon('action.edit', { size: 'sm' }));
       renameBtn.addEventListener('click', async (e) => {
         e.stopPropagation();
         closeDropdown();
@@ -294,7 +295,7 @@ export function initProjectSwitcher({ stateManager, eventBus, i18n }) {
         const delBtn = document.createElement('button');
         delBtn.className = 'app-header__project-action-btn app-header__project-action-btn--danger';
         delBtn.title = i18n.t('app.projectDelete');
-        delBtn.textContent = '✕';
+        delBtn.replaceChildren(icon('action.close', { size: 'sm' }));
         delBtn.addEventListener('click', async (e) => {
           e.stopPropagation();
           const ok = window.confirm(i18n.t('app.projectDeleteConfirm', { name: p.name }));

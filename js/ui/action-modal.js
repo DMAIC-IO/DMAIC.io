@@ -15,12 +15,14 @@
  */
 
 import { h } from '../core/dom.js';
+import { icon } from '../core/icon.js';
 
 /**
- * Row markers. Purely typographic (no words) — the meaning is carried by the
+ * Row markers for ok/failed. `pending` keeps the typographic dot — no icon
+ * exists for it and none is needed. The meaning is carried by the
  * translated `aria-label` on the same element and by the row's colour.
  */
-const STATUS_GLYPH = { pending: '·', ok: '✓', failed: '✕' };
+const STATUS_ICON = { ok: 'status.ok', failed: 'status.error' };
 
 /**
  * The state the dialog holds in once a scenario has finished loading — ONE
@@ -160,7 +162,7 @@ export function createActionModal({ i18n, modal }) {
       if (!listEl || rowsById.has(id)) return;
       const status = h('span', {
         class: 'action-modal__item-status', 'aria-label': i18n.t('actions.itemPending'),
-      }, STATUS_GLYPH.pending);
+      }, '·');
       const row = h('li', { class: 'action-modal__item action-modal__item--pending' },
         status, h('span', { class: 'action-modal__item-label' }, label));
       rowsById.set(id, row);
@@ -181,7 +183,9 @@ export function createActionModal({ i18n, modal }) {
       row.classList.add(ok ? 'action-modal__item--ok' : 'action-modal__item--failed');
       const status = row.querySelector('.action-modal__item-status');
       if (status) {
-        status.textContent = ok ? STATUS_GLYPH.ok : STATUS_GLYPH.failed;
+        status.replaceChildren(icon(ok ? STATUS_ICON.ok : STATUS_ICON.failed, {
+          size: 'sm', variant: ok ? 'success' : 'danger',
+        }));
         status.setAttribute('aria-label', i18n.t(ok ? 'actions.itemLoaded' : 'actions.itemFailed'));
       }
     },

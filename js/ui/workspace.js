@@ -316,7 +316,7 @@ export class Workspace {
       title: reorderLabel,
       'aria-label': reorderLabel,
       draggable: 'true',
-    }, icon('move'));
+    }, icon('action.move', { size: 'sm' }));
 
     // Rename and remove are NOT in the tab: as hover-revealed icons they grew
     // the tab out from under the pointer, so a click aimed at the label landed
@@ -699,7 +699,7 @@ export class Workspace {
 
   _renderEmptyState() {
     const el = h('div', { class: 'workspace__empty' },
-      h('div', { class: 'workspace__empty-icon' }, '⊞'),
+      h('div', { class: 'workspace__empty-icon' }, icon('status.empty', { size: 'lg', variant: 'muted' })),
       h('p', { class: 'workspace__empty-text' }, this._i18n.t('workspace.emptyState')),
     );
     this._moduleArea.append(el);
