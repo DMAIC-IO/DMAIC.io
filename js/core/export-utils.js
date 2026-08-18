@@ -149,7 +149,7 @@ export function createExportDropdown(formats, onExport) {
     const item = h(
       'button',
       { class: 'dmike-chart-dropdown-item', 'data-export': fmt },
-      icon(`format.${  fmt}`),
+      icon(`format.${fmt}`),
       LABELS[fmt] || fmt,
     );
     menu.appendChild(item);

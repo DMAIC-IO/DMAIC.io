@@ -2001,11 +2001,6 @@ body.training-area-open .dmaic-tiles {
   color: var(--color-text-primary);
 }
 
-.workspace__action .icon {
-  width: 18px;
-  height: 18px;
-}
-
 /* Umbenennen / Entfernen ganz rechts. Sie betreffen die Tab selbst, nicht den
    Modulinhalt — ein Trenner vor der Gruppe hält das auseinander. `:first-of-type`
    trifft nur die erste der beiden; hat das Modul gar keine eigenen Aktionen,
@@ -2076,8 +2071,6 @@ body.training-area-open .dmaic-tiles {
 }
 
 .workspace__action-item .icon {
-  width: 14px;
-  height: 14px;
   flex-shrink: 0;
 }
 

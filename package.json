@@ -7,7 +7,7 @@
     "build": "node tools/build-icons.mjs && node tools/build/build.mjs",
     "build:check": "node tools/build/build.mjs --check",
     "build:watch": "node tools/build/build.mjs --watch",
-    "test:build": "node --test tools/build/",
+    "test:build": "node --test tools/build/*.test.mjs",
     "test:unit": "node tests/run-node.mjs",
     "test:browser": "node tools/test-browser/run.mjs",
     "test:all": "npm run test:unit && npm run test:browser",

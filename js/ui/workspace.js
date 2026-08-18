@@ -228,7 +228,7 @@ export class Workspace {
     btn.type = 'button';
     btn.className = `workspace__action workspace__action--tab workspace__action--${kind}`;
     btn.title = label;
-    btn.append(icon(iconId), h('span', { class: 'workspace__action-text' }, label));
+    btn.append(icon(iconId, { size: 'sm' }), h('span', { class: 'workspace__action-text' }, label));
     btn.addEventListener('click', onClick);
     return btn;
   }
@@ -239,7 +239,7 @@ export class Workspace {
     btn.className = `workspace__action workspace__action--${vm.variant}`;
     if (vm.tooltip) btn.title = vm.tooltip;
     const textEl = h('span', { class: 'workspace__action-text' }, vm.dynamicText ? '' : vm.text);
-    btn.append(icon(vm.iconId), textEl);
+    btn.append(icon(vm.iconId, { size: 'sm' }), textEl);
     if (vm.onClick) {
       btn.addEventListener('click', () => vm.onClick(inst.getActionData?.()));
     }
@@ -258,14 +258,14 @@ export class Workspace {
     trigger.type = 'button';
     trigger.className = `workspace__action workspace__action--${vm.variant}`;
     if (vm.tooltip) trigger.title = vm.tooltip;
-    trigger.append(icon(vm.iconId), h('span', { class: 'workspace__action-text' }, vm.text));
+    trigger.append(icon(vm.iconId, { size: 'sm' }), h('span', { class: 'workspace__action-text' }, vm.text));
 
     const menu = h('div', { class: 'workspace__action-menu' });
     vm.children.forEach((child) => {
       const item = document.createElement('button');
       item.type = 'button';
       item.className = 'workspace__action-item';
-      item.append(icon(child.iconId), h('span', { class: 'workspace__action-item-text' }, child.text));
+      item.append(icon(child.iconId, { size: 'sm' }), h('span', { class: 'workspace__action-item-text' }, child.text));
       if (child.onClick) {
         item.addEventListener('click', () => {
           menu.classList.remove('open');
