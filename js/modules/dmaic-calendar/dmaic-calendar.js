@@ -31,7 +31,7 @@ export default createModule({
     id: 'dmaic-calendar',
     engine: 'alpine',
     phase: 'define',
-    icon: 'calendar',
+    icon: 'module.dmaic-calendar',
     version: '1.0.0',
     meta: import.meta,
   },

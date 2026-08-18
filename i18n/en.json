@@ -1368,7 +1368,7 @@
       "collapse": "Collapse",
       "expand": "Expand",
       "collapseAll": "⊟ Collapse",
-      "expandAll": "⊞ Expand",
+      "expandAll": "Expand",
       "delete": "Delete",
       "deleteConfirm": "Delete question and all sub-questions?",
       "reset": "Reset",

@@ -88,7 +88,7 @@ export default createModule({
     id: 'project-charter',
     engine: 'alpine',
     phase: 'define',
-    icon: 'clipboard-check',
+    icon: 'module.project-charter',
     version: '0.2.0',
     meta: import.meta,
     dashboardTile: {
@@ -436,16 +436,16 @@ export default createModule({
             n.desc ? h('div', { class: 'pc__org-node-desc' }, n.desc) : null,
             h('div', { class: 'pc__org-node-bar' },
               h('button', { class: 'pc__org-node-btn', 'data-action': 'add', title: _t('addChild') },
-                icon('plus', { cls: 'pc__org-node-ico' })),
+                icon('action.add', { cls: 'pc__org-node-ico' })),
               h('button', { class: 'pc__org-node-btn', 'data-action': 'edit', title: module._context.i18n.t('common.edit') },
-                icon('edit', { cls: 'pc__org-node-ico' })),
+                icon('action.edit', { cls: 'pc__org-node-ico' })),
               childCount
                 ? h('button', { class: 'pc__org-node-btn', 'data-action': 'toggle' },
-                    icon(n._col ? 'chevron-down' : 'chevron-up', { cls: 'pc__org-node-ico' }),
+                    icon(n._col ? 'nav.expand-down' : 'nav.collapse-up', { cls: 'pc__org-node-ico' }),
                     n._col ? String(childCount) : null)
                 : null,
               h('button', { class: 'pc__org-node-btn pc__org-node-btn--del', 'data-action': 'del', title: module._context.i18n.t('common.delete') },
-                icon('trash', { cls: 'pc__org-node-ico' })),
+                icon('action.delete', { cls: 'pc__org-node-ico' })),
             ),
             h('div', { class: 'pc__org-dot-b' }),
           ].filter(Boolean));

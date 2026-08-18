@@ -83,7 +83,7 @@ const mod = createModule({
     engine: 'alpine',
     phase: 'improve',
     allowedPhases: ['measure', 'analyze', 'improve', 'control'],
-    icon: 'grid',
+    icon: 'module.doe-planner',
     version: '3.0.0',
     meta: import.meta,
   },

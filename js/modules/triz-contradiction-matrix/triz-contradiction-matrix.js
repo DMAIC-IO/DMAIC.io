@@ -13,7 +13,7 @@ const base = createModule({
     id: 'triz-contradiction-matrix',
     engine: 'alpine',
     phase: 'improve',
-    icon: 'git-merge',
+    icon: 'module.triz-contradiction-matrix',
     version: '0.1.0',
     meta: import.meta,
   },

@@ -44,7 +44,7 @@ export default createModule({
     id: 'voc-ctx-tree',
     engine: 'alpine',
     phase: 'define',
-    icon: 'message-circle',
+    icon: 'module.voc-ctx-tree',
     version: '0.1.0',
     meta: import.meta,
   },

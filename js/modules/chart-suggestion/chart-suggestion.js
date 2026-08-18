@@ -40,7 +40,7 @@ const mod = createModule({
     id: 'chart-suggestion',
     engine: 'alpine',
     phase: 'data',
-    icon: 'sparkles',
+    icon: 'module.chart-suggestion',
     version: '1.1.0',
     meta: import.meta,
   },
@@ -941,7 +941,9 @@ const KNOWN_THUMBS = new Set([
 ]);
 function chartThumbNode(type) {
   const name = KNOWN_THUMBS.has(type) ? type : 'generic';
-  return icon(`chart-thumb-${name}`, { raw: RAW_THUMBS.has(type), cls: 'chart-suggestion__thumb-ico' });
+  // Dynamischer Name: der Lint in tools/build-icons.mjs sieht nur Literale. Die
+  // Abdeckung garantiert stattdessen icon-map.json, die alle chart.*-Einträge führt.
+  return icon(`chart.${name}`, { raw: RAW_THUMBS.has(type), cls: 'chart-suggestion__thumb-ico' });
 }
 
 export default mod;

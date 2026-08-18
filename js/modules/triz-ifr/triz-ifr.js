@@ -6,7 +6,7 @@ export default createModule({
     id: 'triz-ifr',
     engine: 'alpine',
     phase: 'improve',
-    icon: 'target',
+    icon: 'module.triz-ifr',
     version: '0.1.0',
     meta: import.meta,
   },

@@ -4,7 +4,7 @@
   "scripts": {
     "postinstall": "node tools/license-report/generate.mjs",
     "dev": "npx serve . --no-cache",
-    "build": "node tools/build-icons.mjs --report-only && node tools/build/build.mjs",
+    "build": "node tools/build-icons.mjs && node tools/build/build.mjs",
     "build:check": "node tools/build/build.mjs --check",
     "build:watch": "node tools/build/build.mjs --watch",
     "test:build": "node --test tools/build/",

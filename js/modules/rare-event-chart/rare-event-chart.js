@@ -29,7 +29,7 @@ const mod = createModule({
     id: 'rare-event-chart',
     engine: 'alpine',
     phase: 'control',
-    icon: 'activity',
+    icon: 'module.rare-event-chart',
     version: '1.0.0',
     meta: import.meta,
   },

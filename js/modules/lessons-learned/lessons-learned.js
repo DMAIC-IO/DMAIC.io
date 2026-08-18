@@ -11,15 +11,15 @@ const m = createModule({
     id: 'lessons-learned',
     engine: 'alpine',
     phase: 'control',
-    icon: 'book-open',
+    icon: 'module.lessons-learned',
     version: '1.0.0',
     meta: import.meta,
     actions: [
-      { icon: 'download', title: 'export.label', children: [
-        { icon: 'export-json', title: 'export.json', onClick: (d) => d.exportJSON() },
+      { icon: 'action.download', title: 'export.label', children: [
+        { icon: 'format.json', title: 'export.json', onClick: (d) => d.exportJSON() },
       ] },
-      { icon: 'upload', title: 'importJSON', onClick: (d) => d.openImport() },
-      { icon: 'plus', title: 'addLesson', variant: 'primary', onClick: (d) => d.openAddModal() },
+      { icon: 'action.upload', title: 'importJSON', onClick: (d) => d.openImport() },
+      { icon: 'action.add', title: 'addLesson', variant: 'primary', onClick: (d) => d.openAddModal() },
     ],
   },
   Model: State,

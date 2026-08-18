@@ -34,7 +34,7 @@ const mod = createModule({
     id: 'transformed-imr-chart',
     engine: 'alpine',
     phase: 'control',
-    icon: 'activity',
+    icon: 'module.transformed-imr-chart',
     version: '1.0.0',
     meta: import.meta,
   },

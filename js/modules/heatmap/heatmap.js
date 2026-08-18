@@ -39,7 +39,7 @@ const mod = createModule({
     id: 'heatmap',
     engine: 'alpine',
     phase: 'data',
-    icon: 'bar-chart',
+    icon: 'module.heatmap',
     version: '1.0.0',
     meta: import.meta,
   },

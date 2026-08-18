@@ -85,7 +85,7 @@ const mod = createModule({
     id: 'msa-typ6',
     engine: 'alpine',
     phase: 'measure',
-    icon: 'activity',
+    icon: 'module.msa-typ6',
     version: '1.0.0',
     meta: import.meta,
   },

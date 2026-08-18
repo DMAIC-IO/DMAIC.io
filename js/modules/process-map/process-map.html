@@ -45,7 +45,7 @@
                                     :data-step-id="step.id" data-io-type="inputs" :data-io-id="io.id"
                                     :title="t('common.delete')" :aria-label="t('common.delete')"
                                     @click.stop="removeIO(step.id, 'inputs', io.id)">
-                              <span class="icon fc-remove-icon" data-icon="trash" aria-hidden="true"></span>
+                              <span class="icon fc-remove-icon" data-icon="action.delete" aria-hidden="true"></span>
                             </button>
                           </div>
                         </template>
@@ -101,7 +101,7 @@
                           <button class="pmap__step-delete fc-card__delete" data-action="remove-step" :data-step-id="step.id"
                                   :title="t('deleteStep')" :aria-label="t('deleteStep')"
                                   @click.stop="removeStep(step.id)">
-                            <span class="icon" data-icon="trash" aria-hidden="true"></span>
+                            <span class="icon" data-icon="action.delete" aria-hidden="true"></span>
                           </button>
                         </div>
                       </div>
@@ -154,7 +154,7 @@
                                     :data-step-id="step.id" data-io-type="outputs" :data-io-id="io.id"
                                     :title="t('common.delete')" :aria-label="t('common.delete')"
                                     @click.stop="removeIO(step.id, 'outputs', io.id)">
-                              <span class="icon fc-remove-icon" data-icon="trash" aria-hidden="true"></span>
+                              <span class="icon fc-remove-icon" data-icon="action.delete" aria-hidden="true"></span>
                             </button>
                           </div>
                         </template>
@@ -186,7 +186,7 @@
               <button class="pmap__loop-remove" data-action="remove-loop" :data-step-id="p.stepId"
                 :title="t('removeLoop')" :aria-label="t('removeLoop')"
                 @click.stop="removeLoopPanel(p.stepId)">
-                <span class="icon fc-remove-icon" data-icon="trash" aria-hidden="true"></span>
+                <span class="icon fc-remove-icon" data-icon="action.delete" aria-hidden="true"></span>
               </button>
             </div>
             <div class="pmap__loop-body">
@@ -218,7 +218,7 @@
                       :data-parent-id="p.stepId" :data-loop-step-id="ls.id"
                       :title="t('common.delete')" :aria-label="t('common.delete')"
                       @click.stop="removeLoopStep(p.stepId, ls.id)">
-                      <span class="icon fc-remove-icon" data-icon="trash" aria-hidden="true"></span>
+                      <span class="icon fc-remove-icon" data-icon="action.delete" aria-hidden="true"></span>
                     </button>
                   </div>
                 </template>

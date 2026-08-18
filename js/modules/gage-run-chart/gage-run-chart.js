@@ -41,7 +41,7 @@ const mod = createModule({
     id: 'gage-run-chart',
     engine: 'alpine',
     phase: 'measure',
-    icon: 'activity',
+    icon: 'module.gage-run-chart',
     version: '1.0.0',
     meta: import.meta,
   },

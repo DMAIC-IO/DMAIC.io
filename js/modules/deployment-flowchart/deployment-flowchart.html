@@ -20,7 +20,7 @@
             <template x-if="!isUnassigned(lane)">
               <button class="df__lane-remove" @click.stop="removeLaneById(lane.id)"
                       :title="t('removeLane')" :aria-label="t('removeLane')">
-                <span class="icon fc-remove-icon" data-icon="trash" aria-hidden="true"></span>
+                <span class="icon fc-remove-icon" data-icon="action.delete" aria-hidden="true"></span>
               </button>
             </template>
           </li>
@@ -83,7 +83,7 @@
                     <div class="df__step-actions fc-card__actions">
                       <button class="df__delete fc-card__delete" @click="model.removeStep(step.id)"
                               :title="t('deleteStep')" :aria-label="t('deleteStep')">
-                        <span class="icon" data-icon="trash" aria-hidden="true"></span>
+                        <span class="icon" data-icon="action.delete" aria-hidden="true"></span>
                       </button>
                     </div>
                   </div>

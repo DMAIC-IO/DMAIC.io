@@ -1,5 +1,6 @@
 {
   "action.add": "own:plus",
+  "action.branch": "lucide:git-fork",
   "action.delete": "own:trash",
   "action.edit": "own:edit",
   "action.close": "own:close",

@@ -53,7 +53,7 @@ const mod = createModule({
     id: 'correlation',
     engine: 'alpine',
     phase: 'analyze',
-    icon: 'trending-up',
+    icon: 'module.correlation',
     version: '1.1.0',
     meta: import.meta,
   },

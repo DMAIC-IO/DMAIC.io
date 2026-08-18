@@ -43,7 +43,7 @@ const mod = createModule({
     id: 'attribute-control-chart',
     engine: 'alpine',
     phase: 'control',
-    icon: 'activity',
+    icon: 'module.attribute-control-chart',
     version: '1.0.0',
     meta: import.meta,
   },

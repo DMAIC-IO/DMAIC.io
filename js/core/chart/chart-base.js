@@ -1354,7 +1354,7 @@ export default class ChartBase {
     titleText.textContent = this.config.title || 'Chart';
     const closeBtn = document.createElement('button');
     closeBtn.className = 'dmike-chart-popout-close';
-    closeBtn.replaceChildren(icon('close'));
+    closeBtn.replaceChildren(icon('action.close'));
     titleBar.appendChild(titleText);
     titleBar.appendChild(closeBtn);
     win.appendChild(titleBar);

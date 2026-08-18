@@ -71,7 +71,7 @@ const mod = createModule({
     id: 'outlier-test',
     engine: 'alpine',
     phase: 'analyze',
-    icon: 'alert-triangle',
+    icon: 'module.outlier-test',
     version: '1.0.0',
     meta: import.meta,
   },

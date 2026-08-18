@@ -35,7 +35,7 @@ export default createModule({
     id: 'calculator',
     engine: 'alpine',
     phase: 'data',
-    icon: 'calculator',
+    icon: 'module.calculator',
     version: '1.0.0',
     meta: import.meta,
   },

@@ -6,7 +6,7 @@ export default createModule({
     id: 'triz-evolution-trends',
     engine: 'alpine',
     phase: 'improve',
-    icon: 'trending-up',
+    icon: 'module.triz-evolution-trends',
     version: '0.1.0',
     meta: import.meta,
   },

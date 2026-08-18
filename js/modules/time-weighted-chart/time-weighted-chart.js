@@ -49,7 +49,7 @@ const mod = createModule({
     id: 'time-weighted-chart',
     engine: 'alpine',
     phase: 'control',
-    icon: 'activity',
+    icon: 'module.time-weighted-chart',
     version: '1.0.0',
     meta: import.meta,
   },

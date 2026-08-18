@@ -103,7 +103,7 @@ function augmentOne(span) {
   btn.className = 'glossary-term__btn';
   btn.dataset.glossaryTerm = termId;
   btn.setAttribute('aria-label', aria);
-  btn.replaceChildren(icon('glossary'));
+  btn.replaceChildren(icon('action.glossary'));
 
   span.appendChild(btn);
   span.dataset.glossaryAugmented = '1';

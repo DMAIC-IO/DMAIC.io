@@ -53,7 +53,7 @@ const mod = createModule({
     engine: 'alpine',
     phase: 'improve',
     allowedPhases: ['measure', 'analyze', 'improve', 'control'],
-    icon: 'trending-up',
+    icon: 'module.regression',
     version: '2.0.0',
     meta: import.meta,
   },

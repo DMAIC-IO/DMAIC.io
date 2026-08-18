@@ -12,11 +12,11 @@ export default createModule({
     id: 'todo',
     engine: 'alpine',
     phase: 'define',
-    icon: 'check-square',
+    icon: 'module.todo',
     version: '1.0.0',
     meta: import.meta,
     actions: [
-      { icon: 'plus', title: 'addTodo', variant: 'primary', onClick: (d) => d.addTodo() },
+      { icon: 'action.add', title: 'addTodo', variant: 'primary', onClick: (d) => d.addTodo() },
     ],
   },
   Model: State,

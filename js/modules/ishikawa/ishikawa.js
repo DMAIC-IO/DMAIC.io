@@ -400,12 +400,12 @@ const mod = createModule({
     id: 'ishikawa',
     engine: 'alpine',
     phase: 'analyze',
-    icon: 'git-branch',
+    icon: 'module.ishikawa',
     version: '2.0.0',
     meta: import.meta,
     actions: [
-      { icon: 'download', title: 'export.label', children: [
-        { icon: 'export-csv', title: 'export.csv', onClick: (d) => d.exportCSV() },
+      { icon: 'action.download', title: 'export.label', children: [
+        { icon: 'format.csv', title: 'export.csv', onClick: (d) => d.exportCSV() },
       ] },
     ],
     dashboardTile: {

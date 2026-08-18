@@ -35,7 +35,7 @@ const mod = createModule({
     id: 'multivariate-control-chart',
     engine: 'alpine',
     phase: 'control',
-    icon: 'activity',
+    icon: 'module.multivariate-control-chart',
     version: '1.0.0',
     meta: import.meta,
   },

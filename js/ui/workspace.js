@@ -200,7 +200,7 @@ export class Workspace {
     const phase = this._activePhase;
 
     const rename = this._buildTabActionButton(
-      'tab-rename', 'edit', this._i18n.t('workspace.tabs.rename'), () => {
+      'tab-rename', 'action.edit', this._i18n.t('workspace.tabs.rename'), () => {
         // Re-query: the tab node is rebuilt on every phase render, and the
         // name span is replaced outright by a committed rename.
         const liveName = this._tabsEl
@@ -209,7 +209,7 @@ export class Workspace {
       });
 
     const remove = this._buildTabActionButton(
-      'tab-remove', 'trash', this._i18n.t('workspace.tabs.remove'), () => {
+      'tab-remove', 'action.delete', this._i18n.t('workspace.tabs.remove'), () => {
         this._removeModule(instanceId, moduleId, phase);
       });
 
