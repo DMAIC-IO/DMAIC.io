@@ -14,7 +14,8 @@
     "docs": "node tools/static-handbook/build.mjs",
     "docs:clean": "node tools/static-handbook/build.mjs --clean",
     "licenses": "node tools/license-report/generate.mjs",
-    "licenses:check": "node tools/license-report/generate.mjs --check"
+    "licenses:check": "node tools/license-report/generate.mjs --check",
+    "icons:vendor": "node tools/vendor-icons.mjs"
   },
   "dependencies": {
     "@alpinejs/csp": "^3.14.0",
@@ -26,6 +27,7 @@
   },
   "devDependencies": {
     "esbuild": "^0.25.0",
+    "lucide-static": "^1.32.0",
     "playwright": "^1.59.1"
   }
 }
