@@ -7,9 +7,7 @@
       <ul class="df__lane-list">
         <template x-for="lane in model.lanes" :key="lane.id">
           <li class="df__lane-item"
-              :class="lane.id === activeLaneId() ? 'df__lane-item--active' : ''"
-              :data-lane-id="lane.id"
-              @click="setActiveLane(lane.id)">
+              :data-lane-id="lane.id">
             <template x-if="!isUnassigned(lane)">
               <input class="df__lane-name" type="text" x-model="lane.name"
                      :data-lane-id="lane.id"
@@ -21,7 +19,9 @@
             </template>
             <template x-if="!isUnassigned(lane)">
               <button class="df__lane-remove" @click.stop="removeLaneById(lane.id)"
-                      :title="t('removeLane')">×</button>
+                      :title="t('removeLane')" :aria-label="t('removeLane')">
+                <span class="icon fc-remove-icon" data-icon="trash" aria-hidden="true"></span>
+              </button>
             </template>
           </li>
         </template>
@@ -41,9 +41,7 @@
       <div class="fc-swimlane-labels">
         <template x-for="lane in model.lanes" :key="'label-' + lane.id">
           <div class="df__band-label fc-swimlane-label"
-               :class="lane.id === activeLaneId() ? 'df__band-label--active' : ''"
                :data-lane-id="lane.id"
-               @click="setActiveLane(lane.id)"
                x-text="laneLabel(lane)"></div>
         </template>
       </div>
@@ -84,7 +82,9 @@
                               @input="autoSize($event)"></textarea>
                     <div class="df__step-actions fc-card__actions">
                       <button class="df__delete fc-card__delete" @click="model.removeStep(step.id)"
-                              :title="t('deleteStep')">×</button>
+                              :title="t('deleteStep')" :aria-label="t('deleteStep')">
+                        <span class="icon" data-icon="trash" aria-hidden="true"></span>
+                      </button>
                     </div>
                   </div>
                   <div class="df__step-body fc-card__body">

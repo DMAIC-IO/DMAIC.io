@@ -62,7 +62,9 @@
                                 :title="isVA(step) ? t('moveToNVA') : t('moveToVA')"
                                 x-text="isVA(step) ? '↓' : '↑'"></button>
                         <button class="of__delete fc-card__delete" @click="model.removeStep(step.id)"
-                                :title="t('deleteStep')">×</button>
+                                :title="t('deleteStep')" :aria-label="t('deleteStep')">
+                          <span class="icon" data-icon="trash" aria-hidden="true"></span>
+                        </button>
                       </div>
                     </div>
                     <div class="of__card-body fc-card__body">

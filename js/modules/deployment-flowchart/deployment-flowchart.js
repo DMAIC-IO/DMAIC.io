@@ -36,7 +36,7 @@ export default createModule({
     meta: import.meta,
     actions: [
       { icon: 'plus', title: 'addStep', variant: 'primary',
-        onClick: (d) => d.addStepInActiveLane() },
+        onClick: (d) => d.addStepUnassigned() },
       { icon: 'plus', title: 'addLane',
         onClick: (d) => d.addLaneInline() },
       { icon: 'upload', title: 'importFrom',
@@ -63,9 +63,6 @@ export default createModule({
       },
 
       // ── Lanes ─────────────────────────────────────────────────
-      /** @type {string|null} lane new steps land in — transient, never persisted */
-      _activeLaneId: null,
-
       /** Steps of one lane, in chain order (the filter preserves the array order). */
       stepsForLane(laneId) {
         return this.model.steps.filter((s) => s.laneId === laneId);
@@ -81,29 +78,37 @@ export default createModule({
       },
       isUnassigned(lane) { return lane?.id === UNASSIGNED_ID; },
 
-      /** @returns {string} the lane new steps go into (first user lane by default) */
-      activeLaneId() {
-        if (this._activeLaneId && this.model.lanes.some((l) => l.id === this._activeLaneId)) {
-          return this._activeLaneId;
-        }
-        const first = this.model.lanes.find((l) => l.id !== UNASSIGNED_ID);
-        return first ? first.id : UNASSIGNED_ID;
-      },
-      setActiveLane(laneId) { this._activeLaneId = laneId; },
-
-      addStepInActiveLane() {
-        this.model.addStep(this.model.steps.length, { laneId: this.activeLaneId() });
-        this.$nextTick(() => this._autoSizeAll());
+      /**
+       * Append a step to the chain. It always lands in the reserved Unassigned
+       * lane: which role owns a step is a deliberate decision, so the user
+       * makes it explicitly by dragging the card onto a lane band afterwards.
+       */
+      addStepUnassigned() {
+        this.model.addStep(this.model.steps.length, { laneId: UNASSIGNED_ID });
+        this.$nextTick(() => {
+          this._autoSizeAll();
+          this._scrollToChainEnd();
+        });
       },
 
       /**
-       * Append an unnamed lane, make it the active one, and focus its name
-       * input so the role can be typed in place — same interaction as adding
-       * a step, no prompt dialog in between.
+       * Jump the horizontally scrolling canvas to the end of the chain, where
+       * a newly appended step sits — otherwise a long chain hides the very card
+       * the user just asked for. Assigning past the maximum clamps.
+       * @returns {void}
+       */
+      _scrollToChainEnd() {
+        const canvas = this.$root?.querySelector('.df__canvas');
+        if (canvas) canvas.scrollLeft = canvas.scrollWidth;
+      },
+
+      /**
+       * Append an unnamed lane and focus its name input so the role can be
+       * typed in place — same interaction as adding a step, no prompt dialog
+       * in between.
        */
       addLaneInline() {
         const lane = this.model.addLane('');
-        this._activeLaneId = lane.id;
         this.$nextTick(() => {
           const input = this.$root?.querySelector(`.df__lane-name[data-lane-id="${lane.id}"]`);
           input?.focus();

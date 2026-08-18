@@ -28,6 +28,7 @@
             <!-- Connector before this step -->
             <template x-if="idx > 0">
               <div class="af__connector fc-connector fc-connector--clickable fc-connector--header-aligned"
+                   :class="connectorClass(idx)"
                    data-action="insert-step" :data-idx="idx" :title="t('insertHere')"
                    @click="model.insertStep(idx, { kind: 'activity' })">
                 <span class="af__connector-arrow fc-connector__arrow">&raquo;</span>
@@ -45,7 +46,9 @@
                             @input="autoSize($event)"></textarea>
                   <div class="af__card-actions fc-card__actions">
                     <button class="af__delete fc-card__delete" @click="model.removeStep(step.id)"
-                            :title="t('deleteStep')">×</button>
+                            :title="t('deleteStep')" :aria-label="t('deleteStep')">
+                      <span class="icon" data-icon="trash" aria-hidden="true"></span>
+                    </button>
                   </div>
                 </div>
                 <div class="af__card-body fc-card__body">
@@ -61,19 +64,34 @@
 
             <template x-if="isDecision(step)">
               <div class="af__diamond">
-                <textarea class="af__decision-label" x-model="step.decision.label"
-                          :placeholder="t('decisionPlaceholder')"
-                          @input="autoSize($event)"></textarea>
-                <button class="af__delete" @click="model.removeStep(step.id)"
-                        :title="t('deleteStep')">×</button>
-                <div class="af__branches">
-                  <button class="af__branch af__branch--yes"
-                          @click="toggleBranchMenu(step.id, 'yes')"
-                          x-text="'✓ ' + branchLabel(step, 'yes')"></button>
-                  <button class="af__branch af__branch--no"
-                          @click="toggleBranchMenu(step.id, 'no')"
-                          x-text="'✗ ' + branchLabel(step, 'no')"></button>
+                <!-- The shape is clipped to a diamond, so anything that must
+                     escape it (delete button, branch popover) is a sibling,
+                     not a child — clip-path clips descendants too. -->
+                <div class="af__diamond-shape">
+                  <textarea class="af__decision-label" x-model="step.decision.label"
+                            :placeholder="t('decisionPlaceholder')"
+                            @input="autoSize($event)"></textarea>
                 </div>
+                <button class="af__delete" @click="model.removeStep(step.id)"
+                        :title="t('deleteStep')" :aria-label="t('deleteStep')">
+                  <span class="icon" data-icon="trash" aria-hidden="true"></span>
+                </button>
+                <!-- The exits are labelled AT the vertices they leave from:
+                     "Yes" beside the right one (the chain flows on to the
+                     right), "No" under the bottom one. The target is only
+                     spelled out where the branch deviates from flowing on. -->
+                <button class="af__branch af__branch--yes"
+                        @click="toggleBranchMenu(step.id, 'yes')"
+                        :title="t('pickTarget')">
+                  <span class="af__branch-word" x-text="branchWord('yes')"></span>
+                  <span class="af__branch-target" x-text="branchTarget(step, 'yes')"></span>
+                </button>
+                <button class="af__branch af__branch--no"
+                        @click="toggleBranchMenu(step.id, 'no')"
+                        :title="t('pickTarget')">
+                  <span class="af__branch-word" x-text="branchWord('no')"></span>
+                  <span class="af__branch-target" x-text="branchTarget(step, 'no')"></span>
+                </button>
                 <template x-if="isBranchOpen(step.id, 'yes') || isBranchOpen(step.id, 'no')">
                   <div class="af__branch-menu">
                     <button @click="pickBranchTarget(step.id, _openBranch, 'next')"

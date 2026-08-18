@@ -9,13 +9,13 @@ export default {
       de: {
         title: 'Aufbau',
         blocks: [
-          { type: 'paragraph', content: 'Das Activity-Flowchart bildet eine Kette aus Aktivitäten (Rechtecke) und Entscheidungen (Rauten) von links nach rechts ab. Jede Entscheidung hat zwei Verzweigungen — „Ja" und „Nein" — die auf den nächsten Schritt, das Prozessende oder einen früheren Schritt (Nacharbeits-Bogen) zeigen können.' },
+          { type: 'paragraph', content: 'Das Activity-Flowchart bildet eine Kette aus Aktivitäten (Rechtecke) und Entscheidungen (Rauten) von links nach rechts ab. In der Raute steht eine Ja/Nein-Frage; ihre beiden Ausgänge sind an den Ecken beschriftet, an denen sie die Raute verlassen: „Ja" rechts, wo die Kette weiterläuft, „Nein" unten. Jeder Ausgang kann auf den nächsten Schritt, das Prozessende oder einen früheren Schritt (Nacharbeits-Bogen) zeigen.' },
         ],
       },
       en: {
         title: 'Structure',
         blocks: [
-          { type: 'paragraph', content: 'The Activity Flowchart renders a left-to-right chain of activities (rectangles) and decisions (diamonds). Each decision has two branches — "Yes" and "No" — that can point to the next step, the process end, or an earlier step (a rework loop).' },
+          { type: 'paragraph', content: 'The Activity Flowchart renders a left-to-right chain of activities (rectangles) and decisions (diamonds). A diamond holds a yes/no question, and its two exits are labelled at the vertices they leave from: "Yes" on the right, where the chain flows on, "No" at the bottom. Each exit can point to the next step, the process end, or an earlier step (a rework loop).' },
         ],
       },
     },
@@ -39,13 +39,13 @@ export default {
       de: {
         title: 'Bedienung',
         blocks: [
-          { type: 'paragraph', content: 'Über „Aktivität hinzufügen" wird ein neuer Schritt am Ende der Kette angelegt, über „Entscheidung hinzufügen" eine Raute mit Ja/Nein-Ausgängen. Ein Klick auf ein Ja/Nein-Label öffnet den Target-Picker, in dem der nächste Schritt, das Prozessende oder ein beliebiger anderer Schritt als Ziel gewählt werden kann. Karten werden an der blauen Nummer gegriffen und per Drag & Drop umsortiert; überall sonst bleibt der Text markierbar. Über „Detail-Schritte" lässt sich jede Karte in Unter-Schritte aufklappen. Über „Importieren aus …" lassen sich Schritte aus einer bestehenden SIPOC- oder Process-Map-Instanz übernehmen.' },
+          { type: 'paragraph', content: 'Über „Aktivität hinzufügen" wird ein neuer Schritt am Ende der Kette angelegt, über „Entscheidung hinzufügen" eine Raute mit Ja/Nein-Ausgängen. Ein Klick auf „Ja" oder „Nein" öffnet den Target-Picker, in dem der nächste Schritt, das Prozessende oder ein beliebiger anderer Schritt als Ziel gewählt werden kann. Unter dem Ausgang steht das Ziel nur dann, wenn es vom einfachen Weiterfluss abweicht — bei „Prozessende" oder einem Sprung; ein Rücksprung ist mit ↩ markiert. Karten werden an der blauen Nummer gegriffen und per Drag & Drop umsortiert; überall sonst bleibt der Text markierbar. Über „Detail-Schritte" lässt sich jede Karte in Unter-Schritte aufklappen. Über „Importieren aus …" lassen sich Schritte aus einer bestehenden SIPOC- oder Process-Map-Instanz übernehmen.' },
         ],
       },
       en: {
         title: 'How to use',
         blocks: [
-          { type: 'paragraph', content: 'Use "Add activity" to append a new step at the end of the chain, and "Add decision" for a diamond with Yes/No outputs. Clicking a Yes/No label opens the target picker, where the next step, the process end, or any other step can be chosen as the target. Cards are grabbed by their blue number to reorder them, so text stays selectable everywhere else. "Detail steps" expands any card into sub-steps. "Import from …" pulls steps in from an existing SIPOC or Process Map instance.' },
+          { type: 'paragraph', content: 'Use "Add activity" to append a new step at the end of the chain, and "Add decision" for a diamond with Yes/No outputs. Clicking "Yes" or "No" opens the target picker, where the next step, the process end, or any other step can be chosen as the target. The target is spelled out under the exit only where it deviates from simply flowing on — a process end or a jump; a jump back is marked with ↩. Cards are grabbed by their blue number to reorder them, so text stays selectable everywhere else. "Detail steps" expands any card into sub-steps. "Import from …" pulls steps in from an existing SIPOC or Process Map instance.' },
         ],
       },
     },
@@ -54,13 +54,13 @@ export default {
       de: {
         title: 'Rework-Loops',
         blocks: [
-          { type: 'paragraph', content: 'Zeigt eine Entscheidung auf einen früheren statt auf den nächsten Schritt, entsteht ein Nacharbeits-Bogen (Rework-Loop) — das Ziel ist am Yes/No-Label sichtbar (Titel des Ziel-Schritts). Ein visueller Bogen über die betroffenen Schritte ist noch nicht gerendert; das folgt in einem späteren Task. Jede Schleife braucht einen erreichbaren Ausgang, sonst bleibt der Prozess in der Analyse hängen; ein Ziel „Prozessende" auf mindestens einem Zweig verhindert das.' },
+          { type: 'paragraph', content: 'Zeigt eine Entscheidung auf einen früheren statt auf den nächsten Schritt, entsteht ein Nacharbeits-Bogen (Rework-Loop) — das Ziel steht unter dem Ja- bzw. Nein-Ausgang, mit ↩ als Schleifen-Markierung. Ein visueller Bogen über die betroffenen Schritte ist noch nicht gerendert; das folgt in einem späteren Task. Jede Schleife braucht einen erreichbaren Ausgang, sonst bleibt der Prozess in der Analyse hängen; ein Ziel „Prozessende" auf mindestens einem Zweig verhindert das.' },
         ],
       },
       en: {
         title: 'Rework loops',
         blocks: [
-          { type: 'paragraph', content: 'When a decision points back to an earlier step instead of the next one, a rework loop appears — the target is visible on the Yes/No label (the target step\'s title). A visual arc spanning the affected steps is not rendered yet; that follows in a later task. Every loop needs a reachable exit, otherwise the process gets stuck in the analysis; setting "process end" on at least one branch prevents that.' },
+          { type: 'paragraph', content: 'When a decision points back to an earlier step instead of the next one, a rework loop appears — the target is spelled out under the Yes or No exit, marked with ↩. A visual arc spanning the affected steps is not rendered yet; that follows in a later task. Every loop needs a reachable exit, otherwise the process gets stuck in the analysis; setting "process end" on at least one branch prevents that.' },
         ],
       },
     },

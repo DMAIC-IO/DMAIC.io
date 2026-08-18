@@ -68,12 +68,44 @@ export default createModule({
       _openBranch: null,   // 'yes' | 'no' | null
 
       isDecision(step) { return step?.kind === 'decision'; },
-      branchLabel(step, branch) {
+      /**
+       * The word that names a branch at its vertex — the whole label in the
+       * common case, because the arrow leaving that vertex already says where
+       * the branch goes.
+       * @param {'yes'|'no'} branch
+       * @returns {string} translated "Yes" / "No".
+       */
+      branchWord(branch) { return _t(branch === 'yes' ? 'yes' : 'no'); },
+      /**
+       * The branch's target, spelled out only where it deviates from simply
+       * flowing on to the next step — process end, or a jump to another step.
+       * A jump BACK is a rework loop and says so with a ↩.
+       * @param {object} step - The decision step.
+       * @param {'yes'|'no'} branch
+       * @returns {string} Target text, or `''` when the branch just flows on.
+       */
+      branchTarget(step, branch) {
         const target = step?.decision?.[`${branch}Target`];
-        if (target === 'next') return _t('next');
+        if (!target || target === 'next') return '';
         if (target === 'end') return _t('end');
-        const targetStep = this.model.steps.find((s) => s.id === target);
-        return targetStep ? (targetStep.title || _t('unnamedStep')) : _t('next');
+        const targetIdx = this.model.steps.findIndex((s) => s.id === target);
+        if (targetIdx === -1) return '';
+        const ownIdx = this.model.steps.findIndex((s) => s.id === step.id);
+        const title = this.model.steps[targetIdx].title || _t('unnamedStep');
+        return targetIdx < ownIdx ? `↩ ${title}` : title;
+      },
+      /**
+       * Extra class for the connector rendered in front of step `idx`.
+       * Connectors line up with the card header everywhere in the chain, but
+       * a diamond has no header — its vertices sit on its middle line, so a
+       * connector touching one drops to that height and meets the tip.
+       * @param {number} idx - Index of the step the connector belongs to.
+       * @returns {string} `'af__connector--diamond'` or `''`.
+       */
+      connectorClass(idx) {
+        const touchesDiamond = this.isDecision(this.model.steps[idx])
+          || this.isDecision(this.model.steps[idx - 1]);
+        return touchesDiamond ? 'af__connector--diamond' : '';
       },
       isBranchOpen(stepId, branch) {
         return this._openBranchStepId === stepId && this._openBranch === branch;

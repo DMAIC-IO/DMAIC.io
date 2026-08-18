@@ -73,9 +73,10 @@
                     data-action="delete-muda"
                     :data-muda-id="cat.id"
                     type="button"
-                    :aria-label="t('settings')"
+                    :title="t('common.delete')"
+                    :aria-label="t('common.delete')"
                     @click="deleteMudaCategory(cat.id)">
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                    <span class="icon fc-remove-icon" data-icon="trash" aria-hidden="true"></span>
                   </button>
                 </td>
               </tr>
@@ -130,8 +131,10 @@
                     data-action="delete-unit"
                     :data-unit-id="unit.id"
                     type="button"
+                    :title="t('common.delete')"
+                    :aria-label="t('common.delete')"
                     @click="deleteTimeUnit(unit.id)">
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                    <span class="icon fc-remove-icon" data-icon="trash" aria-hidden="true"></span>
                   </button>
                 </td>
               </tr>
@@ -206,7 +209,7 @@
                         :aria-label="t('deleteStep')"
                         type="button"
                         @click="deleteStep(step.id)">
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                        <span class="icon fc-remove-icon" data-icon="trash" aria-hidden="true"></span>
                       </button>
                     </div>
                   </th>
@@ -249,7 +252,7 @@
                         :aria-label="t('deleteRole')"
                         type="button"
                         @click="deleteRole(role.id)">
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                        <span class="icon fc-remove-icon" data-icon="trash" aria-hidden="true"></span>
                       </button>
                     </div>
                   </th>

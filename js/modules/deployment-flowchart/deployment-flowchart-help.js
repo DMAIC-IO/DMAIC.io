@@ -39,13 +39,13 @@ export default {
       de: {
         title: 'Bedienung',
         blocks: [
-          { type: 'paragraph', content: '„Rolle hinzufügen" legt eine neue Lane an; der Name wird direkt in der Seitenleiste eingetippt. Ein Klick auf eine Rolle macht sie zur aktiven Lane — „Schritt hinzufügen" hängt den neuen Schritt dort ans Ende der Kette. Karten werden an der blauen Nummer gegriffen. Zieht man eine Karte in ein anderes Band, wechselt die Zuständigkeit — ihre Position in der Kette bleibt. Zieht man sie stattdessen auf eine andere Karte, ändert sich ihre Position in der Kette und die Rolle bleibt. Über „Detail-Schritte" lässt sich jede Karte in Unter-Schritte aufklappen. Über „Importieren aus …" werden Schritte aus einer Process Map oder SIPOC übernommen.' },
+          { type: 'paragraph', content: '„Rolle hinzufügen" legt eine neue Lane an; der Name wird direkt in der Seitenleiste eingetippt. „Schritt hinzufügen" hängt den neuen Schritt ans Ende der Kette an — immer in der Lane „Nicht zugeordnet", und die Ansicht springt gleich dorthin. Wem der Schritt gehört, entscheidet man danach bewusst per Drag auf ein Rollen-Band. Karten werden an der blauen Nummer gegriffen. Zieht man eine Karte in ein anderes Band, wechselt die Zuständigkeit — ihre Position in der Kette bleibt. Zieht man sie stattdessen auf eine andere Karte, ändert sich ihre Position in der Kette und die Rolle bleibt. Über „Detail-Schritte" lässt sich jede Karte in Unter-Schritte aufklappen. Über „Importieren aus …" werden Schritte aus einer Process Map oder SIPOC übernommen.' },
         ],
       },
       en: {
         title: 'How to use',
         blocks: [
-          { type: 'paragraph', content: '"Add role" creates a new lane; type its name directly in the sidebar. Clicking a role makes it the active lane — "Add step" appends the new step there, at the end of the chain. Cards are grabbed by their blue number. Drag one into another band to change ownership — its place in the chain is kept. Drag it onto another card instead and its place in the chain changes while the role is kept. "Detail steps" expands any card into sub-steps. "Import from …" pulls steps in from a Process Map or SIPOC.' },
+          { type: 'paragraph', content: '"Add role" creates a new lane; type its name directly in the sidebar. "Add step" appends the new step at the end of the chain — always in the "Unassigned" lane, and the view jumps straight there. Who owns the step is a deliberate second decision, made by dragging its card onto a role band. Cards are grabbed by their blue number. Drag one into another band to change ownership — its place in the chain is kept. Drag it onto another card instead and its place in the chain changes while the role is kept. "Detail steps" expands any card into sub-steps. "Import from …" pulls steps in from a Process Map or SIPOC.' },
         ],
       },
     },

@@ -38,15 +38,21 @@
   z-index: 1;
 }
 
+/* A connector next to a diamond drops from the card-header line to the
+   diamond's middle line, where its left/right vertices are — otherwise the
+   chevron points at the empty corner beside the top vertex.
+   (--af-diamond-h / 2) centres it on the shape, −16px re-centres the 32px
+   connector itself, +4px cancels .fc-connector--header-aligned's offset. */
+.af__connector--diamond { margin-top: calc(var(--af-diamond-h) / 2 - 16px - 4px); }
+
 /* Drag/drop feedback — chainViewMixin toggles is-dragging/is-drop-target
    directly on the .af__step node (dragstart target / dragover currentTarget). */
 .af__step.is-dragging { opacity: 0.5; }
 /* Cards get their drag feedback from the core (.fc-card.is-*); the decision
-   diamond is not an .fc-card, so it keeps a rule of its own. */
-.af__step.is-drop-target .af__diamond {
-  outline: 2px dashed var(--color-accent);
-  outline-offset: 2px;
-}
+   diamond is not an .fc-card, so it keeps a rule of its own. An outline would
+   be clipped away by the shape's clip-path, so the diamond widens its accent
+   ring instead — see --af-diamond-ring below. */
+.af__step.is-drop-target .af__diamond-shape { --af-diamond-ring: 3; }
 
 /* ── Connector between steps ────────────────────────────────────────────
    Look comes from `.fc-connector` in js/core/flowchart/flowchart.css — the
@@ -60,23 +66,79 @@
 /* Height/line-box come from textarea.fc-card__title; nothing module-specific
    left to say about the title itself. */
 
-/* ── Decision diamond ───────────────────────────────────────────────── */
+/* ── Decision diamond ───────────────────────────────────────────────────
+   The shape is CLIPPED, not rotated. A rotated square carried its own
+   problems: its bounding box is the diagonal (160px square → 226px box), so
+   it overflowed the canvas at the top and hung below the cards, and every
+   child had to be counter-rotated — which stacked label, delete button and
+   branches into one grid cell. Clipping keeps the box exactly as big as the
+   diamond and leaves the content in normal flow.
+
+   `.af__diamond` is the unclipped wrapper: everything that has to escape the
+   shape (delete button, branch popover) is a sibling of it, because clip-path
+   clips descendants too. */
 .af__diamond {
   position: relative;
-  width: 160px;
-  height: 160px;
-  transform: rotate(45deg);
-  background: var(--color-bg-elevated);
-  border: 2px solid var(--color-accent);
+  box-sizing: border-box;
+  width: calc(var(--af-diamond-w) + var(--af-branch-gutter));
+  padding-right: var(--af-branch-gutter);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+/* Wider than tall: a square diamond next to 220px cards would tower over the
+   chain, and the label only ever gets the width around the middle anyway. */
+.af {
+  --af-diamond-w: 200px;
+  --af-diamond-h: 120px;
+  /* Wide enough for the longest target word the picker can produce
+     ("Prozessende"); anything longer wraps rather than reaching into the
+     next step's connector. */
+  --af-branch-gutter: 76px;
+}
+
+.af__diamond-shape {
+  position: relative;
+  width: var(--af-diamond-w);
+  height: var(--af-diamond-h);
+  flex: 0 0 auto;
+  clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
+  background: var(--color-accent);
   display: grid;
   place-items: center;
-  padding: var(--spacing-sm);
-  box-sizing: border-box;
+  transition: filter var(--transition-speed);
 }
-.af__diamond > * { transform: rotate(-45deg); }
+
+/* The accent ring. A clipped element cannot carry a border, so the shape's
+   own background IS the ring and this inner layer paints the fill on top.
+   The insets must keep the diamond's aspect ratio (200:120 → 5:3), otherwise
+   the two outlines are not parallel and the ring comes out thicker at the
+   left/right vertices than at the top/bottom ones. 2.4px × 4px gives a ring
+   ~2px thick measured perpendicular to the edge. */
+.af__diamond-shape::before {
+  content: '';
+  position: absolute;
+  inset: calc(2.4px * var(--af-diamond-ring, 1)) calc(4px * var(--af-diamond-ring, 1));
+  background: var(--color-bg-elevated);
+  clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
+}
+
+/* drop-shadow (not box-shadow) follows the clipped outline instead of the
+   element's rectangle. */
+.af__step--decision:hover .af__diamond-shape {
+  filter: drop-shadow(0 2px 6px rgb(0 0 0 / 18%));
+}
+
+/* Sits above ::before, and narrow enough to stay inside the sloped edges for
+   the two lines chainViewMixin auto-sizes it to. */
 .af__decision-label {
-  width: 90px;
-  min-height: 2.5em;
+  position: relative;
+  width: 116px;
+  min-height: 1.4em;
+  line-height: 1.4;
+  padding: 0;
   resize: none;
   border: none;
   background: transparent;
@@ -86,50 +148,103 @@
   text-align: center;
   overflow: hidden;
 }
+.af__decision-label::placeholder { color: var(--color-text-tertiary); }
 .af__decision-label:focus { outline: none; }
 
 /* ── Delete button ──────────────────────────────────────────────────────
-   Base look from `.fc-card__delete`; the decision diamond needs an
-   absolutely positioned variant because it has no header row. */
+   Parked over the shape's top-right corner — beside its upper slope, where
+   the diamond leaves the box empty, so it never covers the label. Offset by
+   the gutter so it stays on the SHAPE and not out in the exit label's column.
+   Hidden until the step is hovered, like `.fc-card__actions`. */
 .af__diamond .af__delete {
   position: absolute;
-  top: var(--spacing-xs);
-  right: var(--spacing-xs);
-  width: auto;
-  height: auto;
+  top: 0;
+  right: var(--af-branch-gutter);
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   border: none;
+  border-radius: var(--border-radius-sm);
   background: transparent;
-  color: var(--color-text-secondary);
+  color: var(--color-text-tertiary);
   cursor: pointer;
-  font-size: var(--font-size-md);
   line-height: 1;
   padding: 0;
+  opacity: 0;
+  transition: opacity var(--transition-speed), color var(--transition-speed);
 }
+/* The diamond's delete is a sibling of the clipped shape, so it never gets
+   `.fc-card__delete` — size its trash glyph like the card ones anyway. */
+.af__diamond .af__delete .icon { font-size: 13px; }
+.af__step--decision:hover .af__delete,
+.af__diamond .af__delete:focus-visible { opacity: 1; }
 .af__diamond .af__delete:hover { color: var(--color-error); background: transparent; }
 
-/* ── Decision branches (Yes/No) ─────────────────────────────────────── */
-.af__branches {
+/* ── Decision exits (Yes/No) ────────────────────────────────────────────
+   A flowchart labels the EDGE leaving a vertex, not a list under the shape:
+   "Yes" beside the right vertex, where the chain flows on to the next card,
+   "No" under the bottom one. Two words at two corners are readable without
+   explanation; a stack of two lines under the diamond is not.
+
+   The gutter is the room the right-hand label needs. It is part of the
+   wrapper (not of the chain gap), so the label can never land under the
+   connector chevron of the following step. */
+.af__branch {
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-xs);
-  transform: rotate(-45deg);
-}
-.af__branch {
+  gap: 1px;
   border: none;
+  border-radius: var(--border-radius-sm);
   background: transparent;
   cursor: pointer;
   font-size: var(--font-size-xs);
-  padding: 0;
-  text-align: center;
+  line-height: 1.25;
+  padding: 2px var(--spacing-xs);
+  transition: background var(--transition-speed);
 }
-.af__branch--yes { color: var(--color-success); }
-.af__branch--no  { color: var(--color-error); }
+.af__branch:hover { background: var(--color-bg-tertiary); }
+.af__branch-word { font-weight: var(--font-weight-semibold); }
 
+/* The target only appears where the branch does NOT simply flow on — see
+   branchTarget() in activity-flowchart.js. Muted, because the branch itself
+   is the message and the target is the footnote. */
+.af__branch-target {
+  color: var(--color-text-secondary);
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+.af__branch-target:empty { display: none; }
+
+/* Centred on the diamond's middle line — the same line the connector to the
+   next step sits on, so shape, label and arrow read as one edge. */
+.af__branch--yes {
+  position: absolute;
+  right: 0;
+  top: calc(var(--af-diamond-h) / 2);
+  transform: translateY(-50%);
+  width: var(--af-branch-gutter);
+  align-items: flex-start;
+  text-align: left;
+  padding-left: 6px;
+  color: var(--color-success);
+}
+
+.af__branch--no {
+  max-width: 100%;
+  align-items: center;
+  text-align: center;
+  color: var(--color-error);
+}
+
+/* Anchored on the unclipped wrapper — inside the shape the clip-path would
+   swallow it. */
 .af__branch-menu {
   position: absolute;
   top: 100%;
-  left: 50%;
-  transform: translateX(-50%) rotate(-45deg);
+  left: calc(var(--af-diamond-w) / 2);
+  transform: translateX(-50%);
   z-index: 10;
   display: flex;
   flex-direction: column;

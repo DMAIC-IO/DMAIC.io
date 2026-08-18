@@ -37,11 +37,6 @@
   padding: var(--spacing-xs) var(--spacing-sm);
   border-radius: var(--border-radius-sm);
   border: 1px solid transparent;
-  cursor: pointer;
-}
-.df__lane-item--active {
-  border-color: var(--color-accent);
-  background: var(--color-accent-light);
 }
 .df__lane-name {
   flex: 1;
@@ -68,18 +63,15 @@
 
 /* ── Canvas / lane bands ────────────────────────────────────────────────
    Layout comes from `.fc-swimlanes` in js/core/flowchart/flowchart.css;
-   only the active-lane highlight is ours. */
+   the bands are pure read-out — a step's lane is changed by dragging its
+   card, never by selecting a band. */
 .df__canvas { min-height: 220px; }
 .df__empty-hint {
   color: var(--color-text-secondary);
   font-size: var(--font-size-sm);
   padding: var(--spacing-lg);
 }
-.df__band-label {
-  cursor: pointer;
-  border-radius: var(--border-radius-sm);
-}
-.df__band-label--active { color: var(--color-accent); }
+.df__band-label { border-radius: var(--border-radius-sm); }
 
 /* ── Step card ──────────────────────────────────────────────────────────
    Surface, header, number badge, title and delete button come from the
