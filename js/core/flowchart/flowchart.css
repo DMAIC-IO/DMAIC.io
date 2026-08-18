@@ -171,21 +171,17 @@ textarea.fc-card__description {
 }
 
 /* ── Drag feedback ──────────────────────────────────────────────────────
-   chainViewMixin toggles is-dragging / is-drop-target on the element that
-   carries the `draggable` attribute — which is the card itself in some
-   modules and its row wrapper in others, so both are matched. */
+   chainViewMixin's stepDragStart/stepDragEnd toggle is-dragging on the drag
+   source (the element carrying the `draggable` attribute — the card itself
+   in some modules and its row wrapper in others, so both are matched). Cards
+   are no longer drop targets: is-drop-target is only ever emitted onto a
+   connector (gapClass(), below) or onto a substep item (subDragOver /
+   subDragLeave in flowchart-view.js). */
 .fc-card.is-dragging,
 .is-dragging > .fc-card,
 .is-dragging .fc-card {
   opacity: 0.45;
   transform: scale(0.97);
-}
-
-.fc-card.is-drop-target,
-.is-drop-target > .fc-card,
-.is-drop-target .fc-card {
-  border-color: var(--color-accent);
-  box-shadow: 0 0 0 3px var(--color-flowchart-step-accent-bg);
 }
 
 /* ── Connector between two steps ────────────────────────────────────────

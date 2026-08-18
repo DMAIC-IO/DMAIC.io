@@ -50,184 +50,193 @@ export default createModule({
     ],
   },
   Model: ActivityModel,
-
-  data(module, _t) {
-    return {
-      ...chainViewMixin(module, _t, {
-        autoSizeSelector: 'textarea.af__step-title, textarea.af__decision-label, textarea.af__step-description',
-        dragRowSelector: '.af__step',
-      }),
-
-      // ── Lifecycle (per Alpine instance) ───────────────────────
-      init() {
-        this.$nextTick(() => this._autoSizeAll());
-      },
-
-      // Decision popover state (transient — never persisted)
-      _openBranchStepId: null,
-      _openBranch: null,   // 'yes' | 'no' | null
-
-      isDecision(step) { return step?.kind === 'decision'; },
-      /**
-       * The word that names a branch at its vertex — the whole label in the
-       * common case, because the arrow leaving that vertex already says where
-       * the branch goes.
-       * @param {'yes'|'no'} branch
-       * @returns {string} translated "Yes" / "No".
-       */
-      branchWord(branch) { return _t(branch === 'yes' ? 'yes' : 'no'); },
-      /**
-       * The branch's target, spelled out only where it deviates from simply
-       * flowing on to the next step — process end, or a jump to another step.
-       * A jump BACK is a rework loop and says so with a ↩.
-       * @param {object} step - The decision step.
-       * @param {'yes'|'no'} branch
-       * @returns {string} Target text, or `''` when the branch just flows on.
-       */
-      branchTarget(step, branch) {
-        const target = step?.decision?.[`${branch}Target`];
-        if (!target || target === 'next') return '';
-        if (target === 'end') return _t('end');
-        const targetIdx = this.model.steps.findIndex((s) => s.id === target);
-        if (targetIdx === -1) return '';
-        const ownIdx = this.model.steps.findIndex((s) => s.id === step.id);
-        const title = this.model.steps[targetIdx].title || _t('unnamedStep');
-        return targetIdx < ownIdx ? `↩ ${title}` : title;
-      },
-      /**
-       * Extra classes for the connector rendered in front of step `idx`.
-       * Two things are merged here because Alpine CSP allows only one plain
-       * method call per binding (.claude/alpine.md):
-       *  - the diamond offset — connectors line up with the card header
-       *    everywhere in the chain, but a diamond has no header; its vertices
-       *    sit on its middle line, so a connector touching one drops to that
-       *    height and meets the tip;
-       *  - the gap classes from chainViewMixin (hit area + insert bar).
-       * @param {number} idx - Index of the step the connector belongs to.
-       * @returns {string}
-       */
-      connectorClass(idx) {
-        const touchesDiamond = this.isDecision(this.model.steps[idx])
-          || this.isDecision(this.model.steps[idx - 1]);
-        return [touchesDiamond ? 'af__connector--diamond' : '', this.gapClass(idx)]
-          .filter(Boolean).join(' ');
-      },
-      isBranchOpen(stepId, branch) {
-        return this._openBranchStepId === stepId && this._openBranch === branch;
-      },
-      /** Steps excluding the given one — used by branch-popover to list jump targets. */
-      otherSteps(stepId) {
-        return this.model.steps.filter((s) => s.id !== stepId);
-      },
-      toggleBranchMenu(stepId, branch) {
-        if (this.isBranchOpen(stepId, branch)) {
-          this._openBranchStepId = null; this._openBranch = null;
-        } else {
-          this._openBranchStepId = stepId; this._openBranch = branch;
-        }
-      },
-      pickBranchTarget(stepId, branch, target) {
-        this.model.setDecisionTarget(stepId, branch, target);
-        this._openBranchStepId = null; this._openBranch = null;
-      },
-
-      /** Compute rework-loop {fromId,toId,branch} triples for arcs (rendering follows in a later task). */
-      reworkLoops() {
-        const loops = [];
-        this.model.steps.forEach((s, i) => {
-          if (s.kind !== 'decision' || !s.decision) return;
-          ['yes', 'no'].forEach((br) => {
-            const target = s.decision[`${br}Target`];
-            if (target === 'next' || target === 'end') return;
-            const targetIdx = this.model.steps.findIndex((x) => x.id === target);
-            if (targetIdx !== -1 && targetIdx < i) {
-              loops.push({ fromId: s.id, toId: target, branch: br });
-            }
-          });
-        });
-        return loops;
-      },
-
-      // ── Cross-module import (SIPOC / Process Map → Activity) ──────────
-      /** @type {Array<{instanceId:string, moduleId:string, title:string}>} */
-      _importOptions: [],
-      /** @type {string|null} */
-      _importSelectedId: null,
-
-      _pickImportOption(opt) {
-        this._importSelectedId = opt.instanceId;
-      },
-
-      _openImport() {
-        const sm = module._context.stateManager;
-        this._importOptions = listSourceInstances({ sources: IMPORT_SOURCES, stateManager: sm });
-        if (this._importOptions.length === 0) {
-          module._context.notify?.(_t('importEmptyHint'), 'info');
-          return;
-        }
-        this._importSelectedId = this._importOptions[0].instanceId;
-        // Wait one Alpine tick so the x-for renders the option rows into the
-        // importForm subtree before the modal borrows it (mirrors Process
-        // Map's SIPOC picker — see process-map.js _openSipocImport).
-        this.$nextTick(() => {
-          module._context.showModal.form(
-            _t('importTitle'),
-            this.$refs.importForm,
-            {
-              confirmLabel: _t('importConfirm'),
-              onMount: (body) => this._importFormMount(body),
-              onConfirm: (body) => this._runImport(body),
-            },
-          );
-        });
-      },
-
-      /** Modal-mount hook: wire plain-DOM change listeners on the borrowed radios. */
-      _importFormMount(body) {
-        const form = body?.querySelector?.('.af__import-form');
-        if (!form) return;
-        const wire = () => {
-          const radios = form.querySelectorAll('.af__import-option input[type="radio"]');
-          if (radios.length === 0) { requestAnimationFrame(wire); return; }
-          radios.forEach((radio) => {
-            if (radio.value === this._importSelectedId) radio.checked = true;
-            radio.addEventListener('change', () => {
-              if (radio.checked) this._importSelectedId = radio.value;
-            });
-          });
-        };
-        wire();
-      },
-
-      /** Read the picked instance from the borrowed form's checked radio and append. */
-      _runImport(body) {
-        const checked = body?.querySelector?.('.af__import-option input[type="radio"]:checked');
-        const id = checked?.value || this._importSelectedId;
-        const opt = this._importOptions.find((o) => o.instanceId === id);
-        if (!opt) return false;
-        const appended = appendFromInstance({
-          targetModuleId: 'activity-flowchart',
-          sourceModuleId: opt.moduleId,
-          instanceId: opt.instanceId,
-          stateManager: module._context.stateManager,
-          targetState: this.model,
-        });
-        module._context.notify?.(_t('importDone', { n: appended ? appended.length : 0 }), 'success');
-        return true;
-      },
-
-      // ── Export ─────────────────────────────────────────────────────
-      _exportJSON() {
-        downloadFile(JSON.stringify(this.model.toJSON(), null, 2), 'activity-flowchart.json', 'application/json');
-        module._context.notify?.('JSON ✓', 'success');
-      },
-
-      onExport(format) {
-        if (format === 'json') { this._exportJSON(); return; }
-        // PNG/SVG rendering (with rework-arc layout) lands once the arcs are
-        // measured/drawn — see reworkLoops() above.
-        module._context.notify?.(_t('exportImageComingSoon'), 'info');
-      },
-    };
-  },
+  data: activityFlowchartData,
 });
+
+/**
+ * Activity Flowchart data-fn — view transforms, drag/drop, decision popover,
+ * import + export. Exported as a standalone function (not an inline object
+ * shorthand) so connectorClass's diamond/gap class merge can be unit tested
+ * without mounting the module via Alpine — see activity-flowchart.test.js.
+ * @param {object} module - the createModule instance.
+ * @param {(key: string) => string} _t - i18n helper.
+ */
+export function activityFlowchartData(module, _t) {
+  return {
+    ...chainViewMixin(module, _t, {
+      autoSizeSelector: 'textarea.af__step-title, textarea.af__decision-label, textarea.af__step-description',
+      dragRowSelector: '.af__step',
+    }),
+
+    // ── Lifecycle (per Alpine instance) ───────────────────────
+    init() {
+      this.$nextTick(() => this._autoSizeAll());
+    },
+
+    // Decision popover state (transient — never persisted)
+    _openBranchStepId: null,
+    _openBranch: null,   // 'yes' | 'no' | null
+
+    isDecision(step) { return step?.kind === 'decision'; },
+    /**
+     * The word that names a branch at its vertex — the whole label in the
+     * common case, because the arrow leaving that vertex already says where
+     * the branch goes.
+     * @param {'yes'|'no'} branch
+     * @returns {string} translated "Yes" / "No".
+     */
+    branchWord(branch) { return _t(branch === 'yes' ? 'yes' : 'no'); },
+    /**
+     * The branch's target, spelled out only where it deviates from simply
+     * flowing on to the next step — process end, or a jump to another step.
+     * A jump BACK is a rework loop and says so with a ↩.
+     * @param {object} step - The decision step.
+     * @param {'yes'|'no'} branch
+     * @returns {string} Target text, or `''` when the branch just flows on.
+     */
+    branchTarget(step, branch) {
+      const target = step?.decision?.[`${branch}Target`];
+      if (!target || target === 'next') return '';
+      if (target === 'end') return _t('end');
+      const targetIdx = this.model.steps.findIndex((s) => s.id === target);
+      if (targetIdx === -1) return '';
+      const ownIdx = this.model.steps.findIndex((s) => s.id === step.id);
+      const title = this.model.steps[targetIdx].title || _t('unnamedStep');
+      return targetIdx < ownIdx ? `↩ ${title}` : title;
+    },
+    /**
+     * Extra classes for the connector rendered in front of step `idx`.
+     * Two things are merged here because Alpine CSP allows only one plain
+     * method call per binding (.claude/alpine.md):
+     *  - the diamond offset — connectors line up with the card header
+     *    everywhere in the chain, but a diamond has no header; its vertices
+     *    sit on its middle line, so a connector touching one drops to that
+     *    height and meets the tip;
+     *  - the gap classes from chainViewMixin (hit area + insert bar).
+     * @param {number} idx - Index of the step the connector belongs to.
+     * @returns {string}
+     */
+    connectorClass(idx) {
+      const touchesDiamond = this.isDecision(this.model.steps[idx])
+        || this.isDecision(this.model.steps[idx - 1]);
+      return [touchesDiamond ? 'af__connector--diamond' : '', this.gapClass(idx)]
+        .filter(Boolean).join(' ');
+    },
+    isBranchOpen(stepId, branch) {
+      return this._openBranchStepId === stepId && this._openBranch === branch;
+    },
+    /** Steps excluding the given one — used by branch-popover to list jump targets. */
+    otherSteps(stepId) {
+      return this.model.steps.filter((s) => s.id !== stepId);
+    },
+    toggleBranchMenu(stepId, branch) {
+      if (this.isBranchOpen(stepId, branch)) {
+        this._openBranchStepId = null; this._openBranch = null;
+      } else {
+        this._openBranchStepId = stepId; this._openBranch = branch;
+      }
+    },
+    pickBranchTarget(stepId, branch, target) {
+      this.model.setDecisionTarget(stepId, branch, target);
+      this._openBranchStepId = null; this._openBranch = null;
+    },
+
+    /** Compute rework-loop {fromId,toId,branch} triples for arcs (rendering follows in a later task). */
+    reworkLoops() {
+      const loops = [];
+      this.model.steps.forEach((s, i) => {
+        if (s.kind !== 'decision' || !s.decision) return;
+        ['yes', 'no'].forEach((br) => {
+          const target = s.decision[`${br}Target`];
+          if (target === 'next' || target === 'end') return;
+          const targetIdx = this.model.steps.findIndex((x) => x.id === target);
+          if (targetIdx !== -1 && targetIdx < i) {
+            loops.push({ fromId: s.id, toId: target, branch: br });
+          }
+        });
+      });
+      return loops;
+    },
+
+    // ── Cross-module import (SIPOC / Process Map → Activity) ──────────
+    /** @type {Array<{instanceId:string, moduleId:string, title:string}>} */
+    _importOptions: [],
+    /** @type {string|null} */
+    _importSelectedId: null,
+
+    _pickImportOption(opt) {
+      this._importSelectedId = opt.instanceId;
+    },
+
+    _openImport() {
+      const sm = module._context.stateManager;
+      this._importOptions = listSourceInstances({ sources: IMPORT_SOURCES, stateManager: sm });
+      if (this._importOptions.length === 0) {
+        module._context.notify?.(_t('importEmptyHint'), 'info');
+        return;
+      }
+      this._importSelectedId = this._importOptions[0].instanceId;
+      // Wait one Alpine tick so the x-for renders the option rows into the
+      // importForm subtree before the modal borrows it (mirrors Process
+      // Map's SIPOC picker — see process-map.js _openSipocImport).
+      this.$nextTick(() => {
+        module._context.showModal.form(
+          _t('importTitle'),
+          this.$refs.importForm,
+          {
+            confirmLabel: _t('importConfirm'),
+            onMount: (body) => this._importFormMount(body),
+            onConfirm: (body) => this._runImport(body),
+          },
+        );
+      });
+    },
+
+    /** Modal-mount hook: wire plain-DOM change listeners on the borrowed radios. */
+    _importFormMount(body) {
+      const form = body?.querySelector?.('.af__import-form');
+      if (!form) return;
+      const wire = () => {
+        const radios = form.querySelectorAll('.af__import-option input[type="radio"]');
+        if (radios.length === 0) { requestAnimationFrame(wire); return; }
+        radios.forEach((radio) => {
+          if (radio.value === this._importSelectedId) radio.checked = true;
+          radio.addEventListener('change', () => {
+            if (radio.checked) this._importSelectedId = radio.value;
+          });
+        });
+      };
+      wire();
+    },
+
+    /** Read the picked instance from the borrowed form's checked radio and append. */
+    _runImport(body) {
+      const checked = body?.querySelector?.('.af__import-option input[type="radio"]:checked');
+      const id = checked?.value || this._importSelectedId;
+      const opt = this._importOptions.find((o) => o.instanceId === id);
+      if (!opt) return false;
+      const appended = appendFromInstance({
+        targetModuleId: 'activity-flowchart',
+        sourceModuleId: opt.moduleId,
+        instanceId: opt.instanceId,
+        stateManager: module._context.stateManager,
+        targetState: this.model,
+      });
+      module._context.notify?.(_t('importDone', { n: appended ? appended.length : 0 }), 'success');
+      return true;
+    },
+
+    // ── Export ─────────────────────────────────────────────────────
+    _exportJSON() {
+      downloadFile(JSON.stringify(this.model.toJSON(), null, 2), 'activity-flowchart.json', 'application/json');
+      module._context.notify?.('JSON ✓', 'success');
+    },
+
+    onExport(format) {
+      if (format === 'json') { this._exportJSON(); return; }
+      // PNG/SVG rendering (with rework-arc layout) lands once the arcs are
+      // measured/drawn — see reworkLoops() above.
+      module._context.notify?.(_t('exportImageComingSoon'), 'info');
+    },
+  };
+}

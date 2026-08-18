@@ -132,7 +132,8 @@ suite('Process Map Model — step CRUD', () => {
     assertEqual(s.steps[0].id, c);
     // Ziel a zeigt nun nach vorn → wird auf null invalidiert
     assertEqual(s.findStep(c).loop.targetStepId, null);
-    assertEqual(b, b);
+    // Kette nach dem Move: c, a, b.
+    assertEqual(s.steps[2].id, b);
   });
 });
 

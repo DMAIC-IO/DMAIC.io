@@ -70,16 +70,14 @@
   box-shadow: 0 0 0 3px var(--color-pmap-step-accent-bg);
 }
 
-/* Aliases for the flowchart-core chainViewMixin's generic drag classes.
-   The mixin toggles is-dragging/is-drop-target; PM keeps its own visual
-   feedback by mapping those to the same style. */
+/* Alias for the flowchart-core chainViewMixin's generic drag class.
+   The mixin toggles is-dragging on the drag source (the step row); PM keeps
+   its own visual feedback by mapping that to the same style. The row is
+   never a drop target any more — is-drop-target only ever lands on a
+   connector or a substep item — so there is no is-drop-target alias here. */
 .pmap__step-row.is-dragging .pmap__step-card {
   opacity: 0.45;
   transform: scale(0.97);
-}
-.pmap__step-row.is-drop-target .pmap__step-card {
-  border-color: var(--color-accent);
-  box-shadow: 0 0 0 3px var(--color-pmap-step-accent-bg);
 }
 
 /* ===== IO Panels =====

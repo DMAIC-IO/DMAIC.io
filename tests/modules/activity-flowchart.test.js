@@ -1,5 +1,6 @@
 import { suite, test, assertEqual } from '../test-utils.js';
 import { ActivityModel } from '../../js/modules/activity-flowchart/activity-flowchart-model.js';
+import { activityFlowchartData } from '../../js/modules/activity-flowchart/activity-flowchart.js';
 import { __resetRegistryForTests, appendFromInstance }
   from '../../js/core/flowchart/flowchart-import.js';
 
@@ -130,5 +131,44 @@ suite('ActivityModel — import mappers', () => {
     assertEqual(target.steps.every((s) => s.kind === 'activity'), true);
     // PM-only fields must NOT survive into Activity (mapper strips them).
     assertEqual(target.steps[0].valueType, undefined);
+  });
+});
+
+suite('activityFlowchartData — connectorClass', () => {
+  // connectorClass merges two class fragments because Alpine CSP allows
+  // only one plain method call per :class binding (.claude/alpine.md): the
+  // diamond offset (from isDecision) and the gap classes from
+  // chainViewMixin's gapClass(). Calling the real, exported data-fn (rather
+  // than reimplementing the merge here) means a broken merge — e.g.
+  // dropping the gapClass(idx) half — fails this test.
+  function ctx(steps) {
+    const c = activityFlowchartData(null, (k) => k);
+    c.model = { steps };
+    return c;
+  }
+  const dragEvt = () => ({ dataTransfer: { setData() {}, effectAllowed: '' }, target: null });
+  const activity = { kind: 'activity' };
+  const decision = { kind: 'decision' };
+
+  test('idle, non-diamond neighbour → no classes', () => {
+    const c = ctx([activity, activity, activity]);
+    assertEqual(c.connectorClass(1), '');
+  });
+
+  test('idle, touching a diamond → diamond class only', () => {
+    const c = ctx([activity, decision, activity]);
+    assertEqual(c.connectorClass(1), 'af__connector--diamond');
+  });
+
+  test('dragging, non-diamond neighbour → gap class only', () => {
+    const c = ctx([activity, activity, activity]);
+    c.stepDragStart('s1', dragEvt());
+    assertEqual(c.connectorClass(1), 'fc-connector--drop');
+  });
+
+  test('dragging, touching a diamond → both classes present', () => {
+    const c = ctx([activity, decision, activity]);
+    c.stepDragStart('s1', dragEvt());
+    assertEqual(c.connectorClass(1), 'af__connector--diamond fc-connector--drop');
   });
 });

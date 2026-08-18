@@ -52,14 +52,11 @@
   right: calc(-1 * var(--fc-chain-gap));
 }
 
-/* Drag/drop feedback — chainViewMixin toggles is-dragging/is-drop-target
-   directly on the .af__step node (dragstart target / dragover currentTarget). */
+/* Drag feedback — chainViewMixin's stepDragStart toggles is-dragging
+   directly on the .af__step node (the dragstart target). The step is never
+   a drop target any more; is-drop-target is emitted only onto connectors
+   (gapClass()) and substep items. */
 .af__step.is-dragging { opacity: 0.5; }
-/* Cards get their drag feedback from the core (.fc-card.is-*); the decision
-   diamond is not an .fc-card, so it keeps a rule of its own. An outline would
-   be clipped away by the shape's clip-path, so the diamond widens its accent
-   ring instead — see --af-diamond-ring below. */
-.af__step.is-drop-target .af__diamond-shape { --af-diamond-ring: 3; }
 
 /* ── Connector between steps ────────────────────────────────────────────
    Look comes from `.fc-connector` in js/core/flowchart/flowchart.css — the
