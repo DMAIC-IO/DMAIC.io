@@ -77,7 +77,7 @@ export default createModule({
 
       /**
        * Drop on a band slot: re-band the dragged step, keep its chain
-       * position. Dropping on another COLUMN reorders instead (stepDrop).
+       * position. Dropping on one of the gap arrows reorders instead (gapDrop).
        * @param {'va'|'nva'} side
        * @param {DragEvent} event
        */
@@ -101,6 +101,28 @@ export default createModule({
       insertAt(idx, side) {
         this.model.insertStep(idx, { side });
         this._insertMenuIdx = null;
+      },
+
+      /**
+       * Gap 0's rail belongs to the FIRST card and is drawn in that card's
+       * band. Band and chain-end check are merged into one method because
+       * Alpine CSP wants a single call per x-if (.claude/alpine.md).
+       * @param {number} idx chain index of the column being rendered
+       * @param {'va'|'nva'} side band of the slot being rendered
+       * @returns {boolean}
+       */
+      railStart(idx, side) {
+        return this.showStartRail(idx) && this.model.steps[idx].side === side;
+      },
+
+      /**
+       * Gap n's rail belongs to the LAST card, in that card's band.
+       * @param {number} idx chain index of the column being rendered
+       * @param {'va'|'nva'} side band of the slot being rendered
+       * @returns {boolean}
+       */
+      railEnd(idx, side) {
+        return this.showEndRail(idx) && this.model.steps[idx].side === side;
       },
 
       // ── Cross-module import (SIPOC / Process Map → Opportunity) ──

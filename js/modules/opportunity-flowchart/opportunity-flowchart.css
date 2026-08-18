@@ -28,6 +28,12 @@
   top: var(--spacing-sm);
   z-index: 3;
 }
+/* Gap n hangs off the RIGHT of the last card. The canvas scrolls
+   horizontally, so the rail may extend past the padding — that is fine. */
+.of__connector--end {
+  left: auto;
+  right: calc(-1 * var(--fc-chain-gap));
+}
 .of__insert-menu {
   position: absolute;
   top: 100%;
