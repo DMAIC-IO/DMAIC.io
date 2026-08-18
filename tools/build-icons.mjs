@@ -12,6 +12,8 @@ import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { loadIconMap } from './build/icon-map.mjs';
 import { buildIconsCss } from './build/icons.mjs';
+import { readdirSync, statSync } from 'node:fs';
+import { collectIconRefs, findUnmappedRefs } from './build/icon-refs.mjs';
 
 const APP = join(import.meta.dirname, '..');
 const MAP = join(APP, 'assets/icons/icon-map.json');
@@ -45,4 +47,31 @@ if (check) {
 } else {
   writeFileSync(OUT, css);
   console.log(`icons.css: ${Object.keys(map).length} Icons -> ${OUT}`);
+}
+
+// ── Referenz-Lint: jeder im Quellcode benutzte Name muss in der Map stehen. ──
+const JS_DIR = join(APP, 'js');
+const SKIP_FILE = /\.(min\.js|map)$/;
+
+function sourceFiles(dir) {
+  const out = [];
+  for (const entry of readdirSync(dir)) {
+    const path = join(dir, entry);
+    if (statSync(path).isDirectory()) { out.push(...sourceFiles(path)); continue; }
+    if (!/\.(js|html)$/.test(entry) || SKIP_FILE.test(entry)) continue;
+    out.push({ path, text: readFileSync(path, 'utf8') });
+  }
+  return out;
+}
+
+const unmapped = findUnmappedRefs(map, collectIconRefs(sourceFiles(JS_DIR)));
+if (unmapped.length) {
+  const list = unmapped.map((r) => `  ${r.path}:${r.line}  ${r.name}`).join('\n');
+  const msg = `${unmapped.length} Icon-Referenzen ohne Eintrag in icon-map.json:\n${list}`;
+  if (process.argv.includes('--report-only')) {
+    console.warn(`WARNUNG: ${msg}`);
+  } else {
+    console.error(msg);
+    process.exit(1);
+  }
 }
