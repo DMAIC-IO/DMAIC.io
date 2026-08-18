@@ -95,17 +95,22 @@ export default createModule({
         return targetIdx < ownIdx ? `↩ ${title}` : title;
       },
       /**
-       * Extra class for the connector rendered in front of step `idx`.
-       * Connectors line up with the card header everywhere in the chain, but
-       * a diamond has no header — its vertices sit on its middle line, so a
-       * connector touching one drops to that height and meets the tip.
+       * Extra classes for the connector rendered in front of step `idx`.
+       * Two things are merged here because Alpine CSP allows only one plain
+       * method call per binding (.claude/alpine.md):
+       *  - the diamond offset — connectors line up with the card header
+       *    everywhere in the chain, but a diamond has no header; its vertices
+       *    sit on its middle line, so a connector touching one drops to that
+       *    height and meets the tip;
+       *  - the gap classes from chainViewMixin (hit area + insert bar).
        * @param {number} idx - Index of the step the connector belongs to.
-       * @returns {string} `'af__connector--diamond'` or `''`.
+       * @returns {string}
        */
       connectorClass(idx) {
         const touchesDiamond = this.isDecision(this.model.steps[idx])
           || this.isDecision(this.model.steps[idx - 1]);
-        return touchesDiamond ? 'af__connector--diamond' : '';
+        return [touchesDiamond ? 'af__connector--diamond' : '', this.gapClass(idx)]
+          .filter(Boolean).join(' ');
       },
       isBranchOpen(stepId, branch) {
         return this._openBranchStepId === stepId && this._openBranch === branch;

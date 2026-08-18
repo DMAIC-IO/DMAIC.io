@@ -20,17 +20,32 @@
           <div class="af__step" :class="isDecision(step) ? 'af__step--decision' : 'af__step--activity'"
                :data-step-id="step.id"
                @dragstart="stepDragStart(step.id, $event)"
-               @dragover="stepDragOver(step.id, $event)"
-               @dragleave="stepDragLeave(step.id, $event)"
-               @drop="stepDrop(step.id, $event)"
                @dragend="stepDragEnd($event)">
 
-            <!-- Connector before this step -->
+            <!-- Gap 0 — the rail in front of the first card. Only in the DOM
+                 while a card is in flight; outside a drag it would be an
+                 arrow pointing at nothing. -->
+            <template x-if="showStartRail(idx)">
+              <div class="af__connector fc-connector fc-connector--rail fc-connector--header-aligned"
+                   :class="gapClass(0)" data-gap="0"
+                   @dragover="gapDragOver(0, $event)"
+                   @dragleave="gapDragLeave(0, $event)"
+                   @drop="gapDrop(0, $event)">
+                <span class="af__connector-arrow fc-connector__arrow">&raquo;</span>
+              </div>
+            </template>
+
+            <!-- Connector before this step — gap `idx`: click inserts a step
+                 here, drop moves the dragged card here. -->
             <template x-if="idx > 0">
               <div class="af__connector fc-connector fc-connector--clickable fc-connector--header-aligned"
                    :class="connectorClass(idx)"
-                   data-action="insert-step" :data-idx="idx" :title="t('insertHere')"
-                   @click="model.insertStep(idx, { kind: 'activity' })">
+                   data-action="insert-step" :data-idx="idx" :data-gap="idx"
+                   :title="t('insertHere')"
+                   @click="model.insertStep(idx, { kind: 'activity' })"
+                   @dragover="gapDragOver(idx, $event)"
+                   @dragleave="gapDragLeave(idx, $event)"
+                   @drop="gapDrop(idx, $event)">
                 <span class="af__connector-arrow fc-connector__arrow">&raquo;</span>
               </div>
             </template>
@@ -104,6 +119,17 @@
                     </template>
                   </div>
                 </template>
+              </div>
+            </template>
+
+            <!-- Gap n — the rail behind the last card, same drag-only rule. -->
+            <template x-if="showEndRail(idx)">
+              <div class="af__connector af__connector--end fc-connector fc-connector--rail fc-connector--header-aligned"
+                   :class="gapClassAfter(idx)" :data-gap="idx + 1"
+                   @dragover="gapDragOverAfter(idx, $event)"
+                   @dragleave="gapDragLeaveAfter(idx, $event)"
+                   @drop="gapDropAfter(idx, $event)">
+                <span class="af__connector-arrow fc-connector__arrow">&raquo;</span>
               </div>
             </template>
           </div>

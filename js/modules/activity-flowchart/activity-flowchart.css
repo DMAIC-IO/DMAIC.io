@@ -45,6 +45,13 @@
    connector itself, +4px cancels .fc-connector--header-aligned's offset. */
 .af__connector--diamond { margin-top: calc(var(--af-diamond-h) / 2 - 16px - 4px); }
 
+/* Gap n hangs off the RIGHT of the last card, mirroring the connector that
+   normally sits in the gap to a card's left. */
+.af__connector--end {
+  left: auto;
+  right: calc(-1 * var(--fc-chain-gap));
+}
+
 /* Drag/drop feedback — chainViewMixin toggles is-dragging/is-drop-target
    directly on the .af__step node (dragstart target / dragover currentTarget). */
 .af__step.is-dragging { opacity: 0.5; }
