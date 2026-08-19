@@ -101,9 +101,15 @@
   pointer-events: none;
 }
 
-/* The slot is the rail's containing block; its content stands above it. */
-.af__slot { position: relative; }
+/* The slot is already the rail's containing block via the core
+   `.fc-swimlane-slot { position: relative; }` rule — its content only needs
+   to stand above the rail. */
 .af__step, .af__band-add, .af__band-exit { position: relative; z-index: 1; }
+
+/* Placeholder and exit sit ON their band's line, not above it. Slots align
+   their content to the top so cards line up along their headers; the tail
+   column holds no card, so its content centres onto the rail instead. */
+.af__col--tail .af__slot { align-items: center; }
 
 /* The connector is absolutely positioned INTO the gap left of its step, so it
    costs no layout space and two cards sit exactly --fc-chain-gap apart —

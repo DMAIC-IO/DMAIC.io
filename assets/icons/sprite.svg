@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="100" height="10000">
+<svg xmlns="http://www.w3.org/2000/svg" width="100" height="10200">
   <view id="chart-thumb-bar-light" viewBox="0 0 100 100"/>
   <view id="chart-thumb-bar-dark" viewBox="0 100 100 100"/>
   <view id="chart-thumb-boxplot-light" viewBox="0 200 100 100"/>
@@ -71,34 +71,36 @@
   <view id="eye-off-dark" viewBox="0 6900 100 100"/>
   <view id="eye-light" viewBox="0 7000 100 100"/>
   <view id="eye-dark" viewBox="0 7100 100 100"/>
-  <view id="glossary-light" viewBox="0 7200 100 100"/>
-  <view id="glossary-dark" viewBox="0 7300 100 100"/>
-  <view id="lock-closed-light" viewBox="0 7400 100 100"/>
-  <view id="lock-closed-dark" viewBox="0 7500 100 100"/>
-  <view id="lock-open-light" viewBox="0 7600 100 100"/>
-  <view id="lock-open-dark" viewBox="0 7700 100 100"/>
-  <view id="menu-light" viewBox="0 7800 100 100"/>
-  <view id="menu-dark" viewBox="0 7900 100 100"/>
-  <view id="move-light" viewBox="0 8000 100 100"/>
-  <view id="move-dark" viewBox="0 8100 100 100"/>
-  <view id="pan-light" viewBox="0 8200 100 100"/>
-  <view id="pan-dark" viewBox="0 8300 100 100"/>
-  <view id="plus-light" viewBox="0 8400 100 100"/>
-  <view id="plus-dark" viewBox="0 8500 100 100"/>
-  <view id="popout-light" viewBox="0 8600 100 100"/>
-  <view id="popout-dark" viewBox="0 8700 100 100"/>
-  <view id="reset-light" viewBox="0 8800 100 100"/>
-  <view id="reset-dark" viewBox="0 8900 100 100"/>
-  <view id="resize-light" viewBox="0 9000 100 100"/>
-  <view id="resize-dark" viewBox="0 9100 100 100"/>
-  <view id="settings-light" viewBox="0 9200 100 100"/>
-  <view id="settings-dark" viewBox="0 9300 100 100"/>
-  <view id="trash-light" viewBox="0 9400 100 100"/>
-  <view id="trash-dark" viewBox="0 9500 100 100"/>
-  <view id="upload-light" viewBox="0 9600 100 100"/>
-  <view id="upload-dark" viewBox="0 9700 100 100"/>
-  <view id="zoom-in-light" viewBox="0 9800 100 100"/>
-  <view id="zoom-in-dark" viewBox="0 9900 100 100"/>
+  <view id="git-fork-light" viewBox="0 7200 100 100"/>
+  <view id="git-fork-dark" viewBox="0 7300 100 100"/>
+  <view id="glossary-light" viewBox="0 7400 100 100"/>
+  <view id="glossary-dark" viewBox="0 7500 100 100"/>
+  <view id="lock-closed-light" viewBox="0 7600 100 100"/>
+  <view id="lock-closed-dark" viewBox="0 7700 100 100"/>
+  <view id="lock-open-light" viewBox="0 7800 100 100"/>
+  <view id="lock-open-dark" viewBox="0 7900 100 100"/>
+  <view id="menu-light" viewBox="0 8000 100 100"/>
+  <view id="menu-dark" viewBox="0 8100 100 100"/>
+  <view id="move-light" viewBox="0 8200 100 100"/>
+  <view id="move-dark" viewBox="0 8300 100 100"/>
+  <view id="pan-light" viewBox="0 8400 100 100"/>
+  <view id="pan-dark" viewBox="0 8500 100 100"/>
+  <view id="plus-light" viewBox="0 8600 100 100"/>
+  <view id="plus-dark" viewBox="0 8700 100 100"/>
+  <view id="popout-light" viewBox="0 8800 100 100"/>
+  <view id="popout-dark" viewBox="0 8900 100 100"/>
+  <view id="reset-light" viewBox="0 9000 100 100"/>
+  <view id="reset-dark" viewBox="0 9100 100 100"/>
+  <view id="resize-light" viewBox="0 9200 100 100"/>
+  <view id="resize-dark" viewBox="0 9300 100 100"/>
+  <view id="settings-light" viewBox="0 9400 100 100"/>
+  <view id="settings-dark" viewBox="0 9500 100 100"/>
+  <view id="trash-light" viewBox="0 9600 100 100"/>
+  <view id="trash-dark" viewBox="0 9700 100 100"/>
+  <view id="upload-light" viewBox="0 9800 100 100"/>
+  <view id="upload-dark" viewBox="0 9900 100 100"/>
+  <view id="zoom-in-light" viewBox="0 10000 100 100"/>
+  <view id="zoom-in-dark" viewBox="0 10100 100 100"/>
   <g transform="translate(0 0)"><svg viewBox="0 0 30 30" width="100" height="100" x="0" y="0" fill="#1d1d1f"><rect x="4" y="10" width="5" height="17"/><rect x="11" y="6" width="5" height="21"/><rect x="18" y="14" width="5" height="13"/></svg></g>
   <g transform="translate(0 100)"><svg viewBox="0 0 30 30" width="100" height="100" x="0" y="0" fill="#f5f5f7"><rect x="4" y="10" width="5" height="17"/><rect x="11" y="6" width="5" height="21"/><rect x="18" y="14" width="5" height="13"/></svg></g>
   <g transform="translate(0 200)"><svg viewBox="0 0 30 30" width="100" height="100" x="0" y="0" fill="#1d1d1f"><g stroke="#1d1d1f" stroke-width="1.5"><line x1="6" y1="15" x2="24" y2="15"/><rect x="9" y="9" width="12" height="12" fill="none"/><line x1="6" y1="9" x2="6" y2="21"/><line x1="24" y1="9" x2="24" y2="21"/></g></svg></g>
@@ -171,32 +173,34 @@
   <g transform="translate(0 6900)"><svg viewBox="0 0 24 24" width="100" height="100" x="0" y="0" fill="none" stroke="#f5f5f7" stroke-width="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg></g>
   <g transform="translate(0 7000)"><svg viewBox="0 0 24 24" width="100" height="100" x="0" y="0" fill="none" stroke="#1d1d1f" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg></g>
   <g transform="translate(0 7100)"><svg viewBox="0 0 24 24" width="100" height="100" x="0" y="0" fill="none" stroke="#f5f5f7" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg></g>
-  <g transform="translate(0 7200)"><svg viewBox="0 0 16 16" width="100" height="100" x="0" y="0"><path fill="#1d1d1f" fill-rule="evenodd" d="M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1ZM7 6.8h2v5H7v-5ZM8 3.65a1.05 1.05 0 1 0 0 2.1 1.05 1.05 0 0 0 0-2.1Z"/></svg></g>
-  <g transform="translate(0 7300)"><svg viewBox="0 0 16 16" width="100" height="100" x="0" y="0"><path fill="#f5f5f7" fill-rule="evenodd" d="M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1ZM7 6.8h2v5H7v-5ZM8 3.65a1.05 1.05 0 1 0 0 2.1 1.05 1.05 0 0 0 0-2.1Z"/></svg></g>
-  <g transform="translate(0 7400)"><svg viewBox="0 0 24 24" width="100" height="100" x="0" y="0" fill="none" stroke="#1d1d1f" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></g>
-  <g transform="translate(0 7500)"><svg viewBox="0 0 24 24" width="100" height="100" x="0" y="0" fill="none" stroke="#f5f5f7" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></g>
-  <g transform="translate(0 7600)"><svg viewBox="0 0 24 24" width="100" height="100" x="0" y="0" fill="none" stroke="#1d1d1f" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 7.5-1.7"/></svg></g>
-  <g transform="translate(0 7700)"><svg viewBox="0 0 24 24" width="100" height="100" x="0" y="0" fill="none" stroke="#f5f5f7" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 7.5-1.7"/></svg></g>
-  <g transform="translate(0 7800)"><svg viewBox="0 0 24 24" width="100" height="100" x="0" y="0" fill="none" stroke="#1d1d1f" stroke-width="2.5" stroke-linecap="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/></svg></g>
-  <g transform="translate(0 7900)"><svg viewBox="0 0 24 24" width="100" height="100" x="0" y="0" fill="none" stroke="#f5f5f7" stroke-width="2.5" stroke-linecap="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/></svg></g>
-  <g transform="translate(0 8000)"><svg viewBox="0 0 16 16" width="100" height="100" x="0" y="0" fill="#1d1d1f" stroke="none"><circle cx="5" cy="4" r="1"/><circle cx="11" cy="4" r="1"/><circle cx="5" cy="8" r="1"/><circle cx="11" cy="8" r="1"/><circle cx="5" cy="12" r="1"/><circle cx="11" cy="12" r="1"/></svg></g>
-  <g transform="translate(0 8100)"><svg viewBox="0 0 16 16" width="100" height="100" x="0" y="0" fill="#f5f5f7" stroke="none"><circle cx="5" cy="4" r="1"/><circle cx="11" cy="4" r="1"/><circle cx="5" cy="8" r="1"/><circle cx="11" cy="8" r="1"/><circle cx="5" cy="12" r="1"/><circle cx="11" cy="12" r="1"/></svg></g>
-  <g transform="translate(0 8200)"><svg viewBox="0 0 24 24" width="100" height="100" x="0" y="0" fill="none" stroke="#1d1d1f" stroke-width="2"><path d="M5 9l-3 3 3 3M9 5l3-3 3 3M15 19l-3 3-3-3M19 9l3 3-3 3M2 12h20M12 2v20"/></svg></g>
-  <g transform="translate(0 8300)"><svg viewBox="0 0 24 24" width="100" height="100" x="0" y="0" fill="none" stroke="#f5f5f7" stroke-width="2"><path d="M5 9l-3 3 3 3M9 5l3-3 3 3M15 19l-3 3-3-3M19 9l3 3-3 3M2 12h20M12 2v20"/></svg></g>
-  <g transform="translate(0 8400)"><svg viewBox="0 0 24 24" width="100" height="100" x="0" y="0" fill="none" stroke="#1d1d1f" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></g>
-  <g transform="translate(0 8500)"><svg viewBox="0 0 24 24" width="100" height="100" x="0" y="0" fill="none" stroke="#f5f5f7" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></g>
-  <g transform="translate(0 8600)"><svg viewBox="0 0 24 24" width="100" height="100" x="0" y="0" fill="none" stroke="#1d1d1f" stroke-width="2"><rect x="2" y="7" width="15" height="15" rx="2"/><path d="M14 2h8v8"/><path d="M22 2L12 12"/></svg></g>
-  <g transform="translate(0 8700)"><svg viewBox="0 0 24 24" width="100" height="100" x="0" y="0" fill="none" stroke="#f5f5f7" stroke-width="2"><rect x="2" y="7" width="15" height="15" rx="2"/><path d="M14 2h8v8"/><path d="M22 2L12 12"/></svg></g>
-  <g transform="translate(0 8800)"><svg viewBox="0 0 24 24" width="100" height="100" x="0" y="0" fill="none" stroke="#1d1d1f" stroke-width="2"><path d="M3 12a9 9 0 1 0 3-6.36L3 3"/><path d="M3 3v5h5"/></svg></g>
-  <g transform="translate(0 8900)"><svg viewBox="0 0 24 24" width="100" height="100" x="0" y="0" fill="none" stroke="#f5f5f7" stroke-width="2"><path d="M3 12a9 9 0 1 0 3-6.36L3 3"/><path d="M3 3v5h5"/></svg></g>
-  <g transform="translate(0 9000)"><svg viewBox="0 0 16 16" width="100" height="100" x="0" y="0" fill="none" stroke="#1d1d1f" stroke-width="1.5" stroke-linecap="round"><line x1="14" y1="6" x2="6" y2="14"/><line x1="14" y1="10" x2="10" y2="14"/></svg></g>
-  <g transform="translate(0 9100)"><svg viewBox="0 0 16 16" width="100" height="100" x="0" y="0" fill="none" stroke="#f5f5f7" stroke-width="1.5" stroke-linecap="round"><line x1="14" y1="6" x2="6" y2="14"/><line x1="14" y1="10" x2="10" y2="14"/></svg></g>
-  <g transform="translate(0 9200)"><svg viewBox="0 0 24 24" width="100" height="100" x="0" y="0" fill="none" stroke="#1d1d1f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></g>
-  <g transform="translate(0 9300)"><svg viewBox="0 0 24 24" width="100" height="100" x="0" y="0" fill="none" stroke="#f5f5f7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></g>
-  <g transform="translate(0 9400)"><svg viewBox="0 0 24 24" width="100" height="100" x="0" y="0" fill="none" stroke="#1d1d1f" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg></g>
-  <g transform="translate(0 9500)"><svg viewBox="0 0 24 24" width="100" height="100" x="0" y="0" fill="none" stroke="#f5f5f7" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg></g>
-  <g transform="translate(0 9600)"><svg viewBox="0 0 24 24" width="100" height="100" x="0" y="0" fill="none" stroke="#1d1d1f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></g>
-  <g transform="translate(0 9700)"><svg viewBox="0 0 24 24" width="100" height="100" x="0" y="0" fill="none" stroke="#f5f5f7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></g>
-  <g transform="translate(0 9800)"><svg viewBox="0 0 24 24" width="100" height="100" x="0" y="0" fill="none" stroke="#1d1d1f" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/><path d="M8 11h6M11 8v6"/></svg></g>
-  <g transform="translate(0 9900)"><svg viewBox="0 0 24 24" width="100" height="100" x="0" y="0" fill="none" stroke="#f5f5f7" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/><path d="M8 11h6M11 8v6"/></svg></g>
+  <g transform="translate(0 7200)"><svg viewBox="0 0 24 24" width="100" height="100" x="0" y="0" fill="none" stroke="#1d1d1f" stroke-width="2"><circle cx="12" cy="18" r="3"/><circle cx="6" cy="6" r="3"/><circle cx="18" cy="6" r="3"/><path d="M18 9v2c0 .6-.4 1-1 1H7c-.6 0-1-.4-1-1V9"/><path d="M12 12v3"/></svg></g>
+  <g transform="translate(0 7300)"><svg viewBox="0 0 24 24" width="100" height="100" x="0" y="0" fill="none" stroke="#f5f5f7" stroke-width="2"><circle cx="12" cy="18" r="3"/><circle cx="6" cy="6" r="3"/><circle cx="18" cy="6" r="3"/><path d="M18 9v2c0 .6-.4 1-1 1H7c-.6 0-1-.4-1-1V9"/><path d="M12 12v3"/></svg></g>
+  <g transform="translate(0 7400)"><svg viewBox="0 0 16 16" width="100" height="100" x="0" y="0"><path fill="#1d1d1f" fill-rule="evenodd" d="M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1ZM7 6.8h2v5H7v-5ZM8 3.65a1.05 1.05 0 1 0 0 2.1 1.05 1.05 0 0 0 0-2.1Z"/></svg></g>
+  <g transform="translate(0 7500)"><svg viewBox="0 0 16 16" width="100" height="100" x="0" y="0"><path fill="#f5f5f7" fill-rule="evenodd" d="M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1ZM7 6.8h2v5H7v-5ZM8 3.65a1.05 1.05 0 1 0 0 2.1 1.05 1.05 0 0 0 0-2.1Z"/></svg></g>
+  <g transform="translate(0 7600)"><svg viewBox="0 0 24 24" width="100" height="100" x="0" y="0" fill="none" stroke="#1d1d1f" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></g>
+  <g transform="translate(0 7700)"><svg viewBox="0 0 24 24" width="100" height="100" x="0" y="0" fill="none" stroke="#f5f5f7" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></g>
+  <g transform="translate(0 7800)"><svg viewBox="0 0 24 24" width="100" height="100" x="0" y="0" fill="none" stroke="#1d1d1f" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 7.5-1.7"/></svg></g>
+  <g transform="translate(0 7900)"><svg viewBox="0 0 24 24" width="100" height="100" x="0" y="0" fill="none" stroke="#f5f5f7" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 7.5-1.7"/></svg></g>
+  <g transform="translate(0 8000)"><svg viewBox="0 0 24 24" width="100" height="100" x="0" y="0" fill="none" stroke="#1d1d1f" stroke-width="2.5" stroke-linecap="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/></svg></g>
+  <g transform="translate(0 8100)"><svg viewBox="0 0 24 24" width="100" height="100" x="0" y="0" fill="none" stroke="#f5f5f7" stroke-width="2.5" stroke-linecap="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/></svg></g>
+  <g transform="translate(0 8200)"><svg viewBox="0 0 16 16" width="100" height="100" x="0" y="0" fill="#1d1d1f" stroke="none"><circle cx="5" cy="4" r="1"/><circle cx="11" cy="4" r="1"/><circle cx="5" cy="8" r="1"/><circle cx="11" cy="8" r="1"/><circle cx="5" cy="12" r="1"/><circle cx="11" cy="12" r="1"/></svg></g>
+  <g transform="translate(0 8300)"><svg viewBox="0 0 16 16" width="100" height="100" x="0" y="0" fill="#f5f5f7" stroke="none"><circle cx="5" cy="4" r="1"/><circle cx="11" cy="4" r="1"/><circle cx="5" cy="8" r="1"/><circle cx="11" cy="8" r="1"/><circle cx="5" cy="12" r="1"/><circle cx="11" cy="12" r="1"/></svg></g>
+  <g transform="translate(0 8400)"><svg viewBox="0 0 24 24" width="100" height="100" x="0" y="0" fill="none" stroke="#1d1d1f" stroke-width="2"><path d="M5 9l-3 3 3 3M9 5l3-3 3 3M15 19l-3 3-3-3M19 9l3 3-3 3M2 12h20M12 2v20"/></svg></g>
+  <g transform="translate(0 8500)"><svg viewBox="0 0 24 24" width="100" height="100" x="0" y="0" fill="none" stroke="#f5f5f7" stroke-width="2"><path d="M5 9l-3 3 3 3M9 5l3-3 3 3M15 19l-3 3-3-3M19 9l3 3-3 3M2 12h20M12 2v20"/></svg></g>
+  <g transform="translate(0 8600)"><svg viewBox="0 0 24 24" width="100" height="100" x="0" y="0" fill="none" stroke="#1d1d1f" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></g>
+  <g transform="translate(0 8700)"><svg viewBox="0 0 24 24" width="100" height="100" x="0" y="0" fill="none" stroke="#f5f5f7" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></g>
+  <g transform="translate(0 8800)"><svg viewBox="0 0 24 24" width="100" height="100" x="0" y="0" fill="none" stroke="#1d1d1f" stroke-width="2"><rect x="2" y="7" width="15" height="15" rx="2"/><path d="M14 2h8v8"/><path d="M22 2L12 12"/></svg></g>
+  <g transform="translate(0 8900)"><svg viewBox="0 0 24 24" width="100" height="100" x="0" y="0" fill="none" stroke="#f5f5f7" stroke-width="2"><rect x="2" y="7" width="15" height="15" rx="2"/><path d="M14 2h8v8"/><path d="M22 2L12 12"/></svg></g>
+  <g transform="translate(0 9000)"><svg viewBox="0 0 24 24" width="100" height="100" x="0" y="0" fill="none" stroke="#1d1d1f" stroke-width="2"><path d="M3 12a9 9 0 1 0 3-6.36L3 3"/><path d="M3 3v5h5"/></svg></g>
+  <g transform="translate(0 9100)"><svg viewBox="0 0 24 24" width="100" height="100" x="0" y="0" fill="none" stroke="#f5f5f7" stroke-width="2"><path d="M3 12a9 9 0 1 0 3-6.36L3 3"/><path d="M3 3v5h5"/></svg></g>
+  <g transform="translate(0 9200)"><svg viewBox="0 0 16 16" width="100" height="100" x="0" y="0" fill="none" stroke="#1d1d1f" stroke-width="1.5" stroke-linecap="round"><line x1="14" y1="6" x2="6" y2="14"/><line x1="14" y1="10" x2="10" y2="14"/></svg></g>
+  <g transform="translate(0 9300)"><svg viewBox="0 0 16 16" width="100" height="100" x="0" y="0" fill="none" stroke="#f5f5f7" stroke-width="1.5" stroke-linecap="round"><line x1="14" y1="6" x2="6" y2="14"/><line x1="14" y1="10" x2="10" y2="14"/></svg></g>
+  <g transform="translate(0 9400)"><svg viewBox="0 0 24 24" width="100" height="100" x="0" y="0" fill="none" stroke="#1d1d1f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></g>
+  <g transform="translate(0 9500)"><svg viewBox="0 0 24 24" width="100" height="100" x="0" y="0" fill="none" stroke="#f5f5f7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></g>
+  <g transform="translate(0 9600)"><svg viewBox="0 0 24 24" width="100" height="100" x="0" y="0" fill="none" stroke="#1d1d1f" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg></g>
+  <g transform="translate(0 9700)"><svg viewBox="0 0 24 24" width="100" height="100" x="0" y="0" fill="none" stroke="#f5f5f7" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg></g>
+  <g transform="translate(0 9800)"><svg viewBox="0 0 24 24" width="100" height="100" x="0" y="0" fill="none" stroke="#1d1d1f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></g>
+  <g transform="translate(0 9900)"><svg viewBox="0 0 24 24" width="100" height="100" x="0" y="0" fill="none" stroke="#f5f5f7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></g>
+  <g transform="translate(0 10000)"><svg viewBox="0 0 24 24" width="100" height="100" x="0" y="0" fill="none" stroke="#1d1d1f" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/><path d="M8 11h6M11 8v6"/></svg></g>
+  <g transform="translate(0 10100)"><svg viewBox="0 0 24 24" width="100" height="100" x="0" y="0" fill="none" stroke="#f5f5f7" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/><path d="M8 11h6M11 8v6"/></svg></g>
 </svg>

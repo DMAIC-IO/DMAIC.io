@@ -275,6 +275,10 @@ export function activityFlowchartData(module, _t) {
       });
       if (own.length === 0) return '';
       const first = own[0];
+      // A detour band's line has to carry on to the LAST column, because its
+      // exit sits in the tail column beyond every step column. Stopping at its
+      // own last step would break the line before it reaches its own exit.
+      if (!this.isMainBand(band)) return idx >= first ? 'af__slot--rail' : '';
       const last = own[own.length - 1];
       return idx >= first && idx <= last ? 'af__slot--rail' : '';
     },
