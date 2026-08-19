@@ -21,6 +21,7 @@
    its table's border-spacing and the others follow. */
 :root {
   --fc-chain-gap: 32px;
+
   /* How far the drop hit area grows past the 32 × 32 arrow on every side
      while a card is in flight. 32 + 2 × 28 = 88px, so the target covers the
      whole card-header band and reaches into both neighbouring card edges —

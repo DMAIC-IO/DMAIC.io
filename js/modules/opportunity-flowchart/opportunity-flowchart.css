@@ -38,6 +38,7 @@
   left: auto;
   right: calc(-1 * var(--fc-chain-gap));
 }
+
 .of__insert-menu {
   position: absolute;
   top: 100%;
