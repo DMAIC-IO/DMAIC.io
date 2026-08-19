@@ -247,8 +247,12 @@ export class ActivityModel extends FlowchartState {
     const block = [fi, ...this._branchMemberIndices(BRANCH_PREFIX + fromId)];
     const blockSet = new Set(block);
     const lastPlusOne = block[block.length - 1] + 1;
-    // Every gap inside the block's own span (and the one before it) is a no-op.
-    if (gapIndex >= fi && gapIndex <= lastPlusOne) return false;
+    // The fast no-op test only holds for a CONTIGUOUS block: there, every gap
+    // inside its own span leaves the order untouched. A block with a foreign
+    // step wedged into it has no such gap — reinserting always closes the
+    // block up, so every gap in the span is a real move and must go through.
+    const contiguous = lastPlusOne - fi === block.length;
+    if (contiguous && gapIndex >= fi && gapIndex <= lastPlusOne) return false;
 
     const moved = block.map((i) => this.steps[i]);
     const rest = this.steps.filter((_, i) => !blockSet.has(i));

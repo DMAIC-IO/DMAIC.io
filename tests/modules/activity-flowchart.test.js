@@ -310,6 +310,27 @@ suite('ActivityModel — branches', () => {
     assertEqual(m.steps.map((s) => s.title).join(','), 'A,D?,u1,B');
   });
 
+  test('a decision with a gapped band still closes it up when dragged', () => {
+    // A foreign step can end up between a decision and its band member — drag
+    // B in there and it does. Dragging the decision must then still move the
+    // block; the fast no-op test would wrongly swallow it.
+    const { m, d, b } = chain();                 // A · D? · u1(no:D) · B
+    assertEqual(m.moveStepToGap(b.id, 2), true); // A · D? · B · u1
+    assertEqual(m.steps.map((s) => s.title).join(','), 'A,D?,B,u1');
+
+    assertEqual(m.moveStepToGap(d.id, 2), true);
+    assertEqual(m.steps.map((s) => s.title).join(','), 'A,D?,u1,B');
+  });
+
+  test('a band member dragged in front of its decision falls back to main', () => {
+    // The non-decision path relies on _reconcileBranches() to catch this —
+    // without it, u1 would keep pointing at a decision standing behind it.
+    const { m, u1 } = chain();
+    assertEqual(m.moveStepToGap(u1.id, 0), true);
+    assertEqual(m.steps[0].id, u1.id);
+    assertEqual(m.steps[0].branchId, 'main');
+  });
+
   test('a plain step still moves on its own', () => {
     const { m, b } = chain();
     assertEqual(m.moveStepToGap(b.id, 0), true);
