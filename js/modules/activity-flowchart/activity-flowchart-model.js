@@ -9,16 +9,16 @@ import { registerSourceMapper } from '../../core/flowchart/flowchart-import.js';
 
 const VALID_KINDS = new Set(['activity', 'decision']);
 
-/** Das Band des Hauptpfads. Jeder Schritt ohne eigene Abzweigung liegt hier. */
+/** The main path's band. Every step that is not on a detour lives here. */
 export const MAIN_BRANCH = 'main';
 
-/** Präfix der Band-Id einer Raute: `no:<stepId>`. */
+/** Prefix of a decision's band id: `no:<stepId>`. */
 export const BRANCH_PREFIX = 'no:';
 
 /**
- * Die Raute, der ein Band gehört.
- * @param {string} branchId - `'main'` oder `no:<stepId>`.
- * @returns {string|null} Step-Id der Raute, oder `null` beim Hauptpfad.
+ * The decision a band belongs to.
+ * @param {string} branchId - `'main'` or `no:<stepId>`.
+ * @returns {string|null} The decision's step id, or `null` for the main path.
  */
 export function branchOwnerId(branchId) {
   return typeof branchId === 'string' && branchId.startsWith(BRANCH_PREFIX)
@@ -27,11 +27,11 @@ export function branchOwnerId(branchId) {
 }
 
 /**
- * Form-Prüfung einer Band-Id. Ob die referenzierte Raute existiert und früh
- * genug steht, kann ein Schritt allein nicht wissen — das prüft
- * `_reconcileBranches()` über die ganze Kette.
- * @param {*} raw - Rohwert.
- * @returns {string} `'main'` oder eine wohlgeformte `no:`-Id.
+ * Shape check for a band id. Whether the referenced decision exists and
+ * stands early enough is nothing a single step can know — `_reconcileBranches()`
+ * settles that across the whole chain.
+ * @param {*} raw - Raw value.
+ * @returns {string} `'main'` or a well-formed `no:` id.
  */
 function normalizeBranchId(raw) {
   const owner = branchOwnerId(raw);
@@ -127,10 +127,10 @@ export class ActivityModel extends FlowchartState {
   }
 
   /**
-   * Erzwingt die Band-Invariante über die ganze Kette: ein Schritt darf nur in
-   * dem Band einer Raute liegen, die im Array VOR ihm steht. Damit sind
-   * Zyklen strukturell unmöglich — die Spaltenordnung ist die Kettenordnung.
-   * Ungültige Zuordnungen fallen auf den Hauptpfad zurück.
+   * Enforces the band invariant across the whole chain: a step may only live
+   * in the band of a decision that stands BEFORE it in the array. That makes
+   * cycles structurally impossible — column order IS chain order. Invalid
+   * assignments fall back to the main path.
    * @returns {void}
    */
   _reconcileBranches() {

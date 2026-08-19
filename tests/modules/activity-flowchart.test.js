@@ -93,8 +93,8 @@ suite('ActivityModel — normalizer', () => {
   });
 
   test('drops a branchId whose decision stands LATER in the chain', () => {
-    // Sonst wäre der Umweg vor seiner Abzweigung — die Spaltenordnung ist
-    // zugleich die Kettenordnung, also ist das strukturell unmöglich.
+    // The detour would stand before the branch it hangs off — column order
+    // IS chain order here, so that is structurally impossible.
     const m = ActivityModel.fromJSON({ steps: [
       { id: 's1', title: 'Umweg', branchId: 'no:d1' },
       { id: 'd1', title: 'D', kind: 'decision', decision: { label: '?' } },
