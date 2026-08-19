@@ -274,7 +274,7 @@ suite('ActivityModel — branches', () => {
   });
 
   test('deleting a step clears the branch targets that pointed at it', () => {
-    // Sonst behauptet der Ausgang eine Sackgasse, die niemand gewählt hat.
+    // Otherwise the exit claims a dead end nobody chose.
     const m = new ActivityModel();
     const a = m.addStep(0, { title: 'A' });
     const d = m.addDecision(1, { title: 'D?' });
