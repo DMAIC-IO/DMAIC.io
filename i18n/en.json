@@ -2225,7 +2225,10 @@
       "pickTarget": "Pick this branch's target …",
       "next": "Next step",
       "end": "Process end",
-      "unnamedStep": "(unnamed)"
+      "unnamedStep": "(unnamed)",
+      "mainPath": "Main path",
+      "bandLabel": "No: {q}",
+      "unnamedDecision": "(no question)"
     },
     "opportunity-flowchart": {
       "name": "Opportunity Flowchart",

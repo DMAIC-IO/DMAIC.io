@@ -393,3 +393,76 @@ suite('activityFlowchartData — connectorClass', () => {
     assertEqual(c.connectorClass(1), 'af__connector--diamond fc-connector--drop');
   });
 });
+
+suite('activityFlowchartData — bands', () => {
+  function ctx(model) {
+    const c = activityFlowchartData(null, (k, p) => (p ? `${k}:${JSON.stringify(p)}` : k));
+    c.model = model;
+    return c;
+  }
+
+  test('a chain without decisions has only the main band', () => {
+    const m = new ActivityModel();
+    m.addStep(0, { title: 'A' });
+    const c = ctx(m);
+    assertEqual(c.bands().length, 1);
+    assertEqual(c.bands()[0].id, 'main');
+    assertEqual(c.hasBands(), false);
+  });
+
+  test('each decision contributes one band, depth-first', () => {
+    // A · D1? · u1(D1) · D2?(D1) · D3? · B
+    const m = new ActivityModel();
+    m.addStep(0, { title: 'A' });
+    const d1 = m.addDecision(1, { title: 'D1?' });
+    const u1 = m.addStep(2, { title: 'u1' });
+    const d2 = m.addDecision(3, { title: 'D2?' });
+    const d3 = m.addDecision(4, { title: 'D3?' });
+    m.setStepBranch(u1.id, 'no:' + d1.id);
+    m.setStepBranch(d2.id, 'no:' + d1.id);
+
+    const ids = ctx(m).bands().map((b) => b.id);
+    assertEqual(ids.join(','), ['main', 'no:' + d1.id, 'no:' + d2.id, 'no:' + d3.id].join(','));
+  });
+
+  test('band depth grows with nesting', () => {
+    const m = new ActivityModel();
+    const d1 = m.addDecision(0, { title: 'D1?' });
+    const d2 = m.addDecision(1, { title: 'D2?' });
+    m.setStepBranch(d2.id, 'no:' + d1.id);
+    const depths = ctx(m).bands().map((b) => b.depth);
+    assertEqual(depths.join(','), '0,1,2');
+  });
+
+  test('band exit for "next" names the following step in the parent band', () => {
+    const m = new ActivityModel();
+    const d = m.addDecision(0, { title: 'D?' });
+    m.addStep(1, { title: 'Danach' });
+    const band = ctx(m).bands()[1];
+    assertEqual(ctx(m).bandExitLabel(band), 'Danach');
+  });
+
+  test('band exit for "next" without a following step reads as the process end', () => {
+    const m = new ActivityModel();
+    m.addDecision(0, { title: 'D?' });
+    const c = ctx(m);
+    assertEqual(c.bandExitLabel(c.bands()[1]), 'end');
+  });
+
+  test('band exit for a backward jump is marked as a loop', () => {
+    const m = new ActivityModel();
+    const a = m.addStep(0, { title: 'A' });
+    const d = m.addDecision(1, { title: 'D?' });
+    m.setDecisionTarget(d.id, a.id);
+    const c = ctx(m);
+    assertEqual(c.bandExitLabel(c.bands()[1]), '↩ A');
+  });
+
+  test('band exit for "end" reads as the process end', () => {
+    const m = new ActivityModel();
+    const d = m.addDecision(0, { title: 'D?' });
+    m.setDecisionTarget(d.id, 'end');
+    const c = ctx(m);
+    assertEqual(c.bandExitLabel(c.bands()[1]), 'end');
+  });
+});

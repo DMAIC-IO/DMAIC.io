@@ -23,7 +23,7 @@ import { chainViewMixin } from '../../core/flowchart/flowchart-view.js';
 import {
   listSourceInstances, appendFromInstance,
 } from '../../core/flowchart/flowchart-import.js';
-import { ActivityModel } from './activity-flowchart-model.js';
+import { ActivityModel, MAIN_BRANCH, BRANCH_PREFIX } from './activity-flowchart-model.js';
 
 const IMPORT_SOURCES = ['process-map', 'sipoc'];
 
@@ -104,6 +104,63 @@ export function activityFlowchartData(module, _t) {
       const ownIdx = this.model.steps.findIndex((s) => s.id === step.id);
       const title = this.model.steps[targetIdx].title || _t('unnamedStep');
       return targetIdx < ownIdx ? `↩ ${title}` : title;
+    },
+    /**
+     * The bands as rows, top to bottom: main path, then one band per decision,
+     * depth-first under the band its decision stands in. None of this is
+     * persisted — the rows are a view onto the decisions in `steps[]`.
+     * @returns {Array<{id: string, ownerId: string|null, label: string, depth: number}>}
+     */
+    bands() {
+      const rows = [];
+      const walk = (branchId, owner, depth) => {
+        rows.push({
+          id: branchId,
+          ownerId: owner ? owner.id : null,
+          label: owner
+            ? _t('bandLabel', { q: owner.decision?.label || _t('unnamedDecision') })
+            : _t('mainPath'),
+          depth,
+        });
+        this.model.steps
+          .filter((s) => s.kind === 'decision' && s.branchId === branchId)
+          .forEach((d) => walk(BRANCH_PREFIX + d.id, d, depth + 1));
+      };
+      walk(MAIN_BRANCH, null, 0);
+      return rows;
+    },
+
+    /** True as soon as there is at least one band besides the main path. */
+    hasBands() { return this.bands().length > 1; },
+
+    /** @param {object} band @returns {boolean} */
+    isMainBand(band) { return band?.id === MAIN_BRANCH; },
+
+    /**
+     * Does this step belong in this band's row?
+     * @param {object} step @param {string} bandId @returns {boolean}
+     */
+    stepInBand(step, bandId) { return step?.branchId === bandId; },
+
+    /**
+     * The text at the end of a band. Unlike at the diamond, the target is
+     * ALWAYS spelled out here — a rail that runs off into nothing says nothing.
+     * @param {object} band
+     * @returns {string}
+     */
+    bandExitLabel(band) {
+      const owner = this.model.steps.find((s) => s.id === band?.ownerId);
+      if (!owner) return '';
+      const target = owner.decision?.noTarget || 'next';
+      if (target === 'end') return _t('end');
+      if (target === 'next') {
+        const oi = this.model.steps.indexOf(owner);
+        const next = this.model.steps
+          .slice(oi + 1)
+          .find((s) => s.branchId === owner.branchId);
+        return next ? (next.title || _t('unnamedStep')) : _t('end');
+      }
+      return this.branchTarget(owner) || _t('end');
     },
     /**
      * Extra classes for the connector rendered in front of step `idx`.

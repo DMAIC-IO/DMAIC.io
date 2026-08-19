@@ -2225,7 +2225,10 @@
       "pickTarget": "Ziel dieses Zweigs wählen …",
       "next": "Nächster Schritt",
       "end": "Prozessende",
-      "unnamedStep": "(unbenannt)"
+      "unnamedStep": "(unbenannt)",
+      "mainPath": "Hauptpfad",
+      "bandLabel": "Nein: {q}",
+      "unnamedDecision": "(ohne Frage)"
     },
     "opportunity-flowchart": {
       "name": "Opportunity Flowchart",
