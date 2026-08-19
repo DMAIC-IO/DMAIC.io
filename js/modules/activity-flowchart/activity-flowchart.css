@@ -85,7 +85,25 @@
 /* .af__flow is gone — the columns are direct children of .fc-swimlanes.
    (A wrapper in between breaks the subgrid, see the NOTE in flowchart.css.) */
 
-.af__step { position: relative; }
+/* The rail: a line on the slot's centre axis, behind card and diamond. It
+   sits on the slot rather than on a grid child of its own — explicitly placed
+   grid children are positioned before the auto-placed ones and would take the
+   label column and the step columns their places. */
+.af__slot--rail::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 2px;
+  background: var(--color-border-primary);
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* The slot is the rail's containing block; its content stands above it. */
+.af__slot { position: relative; }
+.af__step, .af__band-add, .af__band-exit { position: relative; z-index: 1; }
 
 /* The connector is absolutely positioned INTO the gap left of its step, so it
    costs no layout space and two cards sit exactly --fc-chain-gap apart —

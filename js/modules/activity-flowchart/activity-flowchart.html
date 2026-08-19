@@ -36,6 +36,7 @@
              @dragend="stepDragEnd($event)">
           <template x-for="band in bands()" :key="'slot-' + step.id + '-' + band.id">
             <div class="af__slot fc-swimlane-slot" :data-band-id="band.id"
+                 :class="slotClass(idx, band.id)"
                  @dragover.prevent
                  @drop.stop="dropOnBand(band.id, $event)">
               <template x-if="stepInBand(step, band.id)">
@@ -167,7 +168,8 @@
       <template x-if="hasBands()">
         <div class="af__col af__col--tail fc-swimlane-col">
           <template x-for="band in bands()" :key="'tail-' + band.id">
-            <div class="af__slot fc-swimlane-slot" :data-band-id="band.id">
+            <div class="af__slot fc-swimlane-slot" :data-band-id="band.id"
+                 :class="tailSlotClass(band)">
               <template x-if="!isMainBand(band)">
                 <div class="af__band-add">
                   <button data-add="activity" @click="addActivityToBand(band.id)"

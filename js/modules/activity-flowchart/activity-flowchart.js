@@ -253,6 +253,42 @@ export function activityFlowchartData(module, _t) {
       return [touchesDiamond ? 'af__connector--diamond' : '', this.gapClass(idx)]
         .filter(Boolean).join(' ');
     },
+    /**
+     * Does band `bandId` span column `idx`? The main path spans from its first
+     * to its last step; a detour band starts at its DECISION already, otherwise
+     * the branch-off would hang in the air while the band is still empty.
+     *
+     * The class is assembled here rather than in the template — Alpine CSP
+     * allows only one plain method call per binding (.claude/alpine.md), the
+     * same rule connectorClass(idx) follows.
+     *
+     * @param {number} idx - Column / chain index.
+     * @param {string} bandId
+     * @returns {string} `'af__slot--rail'` or `''`.
+     */
+    slotClass(idx, bandId) {
+      const band = this.bands().find((b) => b.id === bandId);
+      if (!band) return '';
+      const own = [];
+      this.model.steps.forEach((s, i) => {
+        if (s.branchId === bandId || s.id === band.ownerId) own.push(i);
+      });
+      if (own.length === 0) return '';
+      const first = own[0];
+      const last = own[own.length - 1];
+      return idx >= first && idx <= last ? 'af__slot--rail' : '';
+    },
+    /**
+     * Rail class for the tail column's slot. A no-band's line has to reach
+     * into that column, because that is where its exit sits — without it the
+     * `↳ …` would float beside the line instead of ending it. The main path
+     * has no exit there and stops at its last step.
+     * @param {object} band
+     * @returns {string} `'af__slot--rail'` or `''`.
+     */
+    tailSlotClass(band) {
+      return this.isMainBand(band) ? '' : 'af__slot--rail';
+    },
     isBranchOpen(stepId) {
       return this._openMenuStepId === stepId;
     },
