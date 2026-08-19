@@ -486,4 +486,34 @@ suite('activityFlowchartData — bands', () => {
     const c = ctx(m);
     assertEqual(c.bandExitLabel(c.bands()[1]), 'end');
   });
+
+  test('isMainBand tells the main path row from a decision band', () => {
+    const m = new ActivityModel();
+    m.addDecision(0, { title: 'D?' });
+    const c = ctx(m);
+    const rows = c.bands();
+    assertEqual(c.isMainBand(rows[0]), true);
+    assertEqual(c.isMainBand(rows[1]), false);
+  });
+
+  test('stepInBand matches a step against its own band only', () => {
+    const m = new ActivityModel();
+    const d = m.addDecision(0, { title: 'D?' });
+    const u1 = m.addStepToBranch('no:' + d.id, { title: 'u1' });
+    const c = ctx(m);
+    assertEqual(c.stepInBand(u1, 'no:' + d.id), true);
+    assertEqual(c.stepInBand(u1, 'main'), false);
+    assertEqual(c.stepInBand(d, 'main'), true);
+  });
+
+  test('a band label names its decision, with a fallback when it has no question', () => {
+    const m = new ActivityModel();
+    m.addDecision(0, { title: 'D?' });
+    const c = ctx(m);
+    assertEqual(c.bands()[0].label, 'mainPath');
+    assertEqual(c.bands()[1].label, 'bandLabel:{"q":"unnamedDecision"}');
+
+    m.steps[0].decision.label = 'Angebot freigegeben?';
+    assertEqual(c.bands()[1].label, 'bandLabel:{"q":"Angebot freigegeben?"}');
+  });
 });
