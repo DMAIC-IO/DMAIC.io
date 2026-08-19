@@ -516,4 +516,14 @@ suite('activityFlowchartData — bands', () => {
     m.steps[0].decision.label = 'Angebot freigegeben?';
     assertEqual(c.bands()[1].label, 'bandLabel:{"q":"Angebot freigegeben?"}');
   });
+
+  test('bandGridStyle reports the swimlane grid\'s row count', () => {
+    const m = new ActivityModel();
+    m.addStep(0, { title: 'A' });
+    const c = ctx(m);
+    assertEqual(c.bandGridStyle(), '--fc-lane-count: 1');
+
+    m.addDecision(1, { title: 'D?' });
+    assertEqual(c.bandGridStyle(), '--fc-lane-count: 2');
+  });
 });

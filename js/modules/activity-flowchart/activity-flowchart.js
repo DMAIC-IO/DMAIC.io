@@ -151,6 +151,37 @@ export function activityFlowchartData(module, _t) {
     bandGridStyle() { return `--fc-lane-count: ${this.bands().length}`; },
 
     /**
+     * Drop on a band row: the dragged step changes band and keeps its chain
+     * position. The other gesture — a drop on an arrow — does the opposite and
+     * leaves the band alone.
+     * @param {string} bandId
+     * @param {Event} event
+     * @returns {void}
+     */
+    dropOnBand(bandId, event) {
+      event?.preventDefault();
+      const from = this._draggedStepId;
+      this._draggedStepId = null;
+      this._activeGap = null;
+      event?.currentTarget?.classList?.remove('is-drop-target');
+      if (!from) return;
+      this.model.setStepBranch(from, bandId);
+    },
+
+    /**
+     * Insert at a chain arrow. The new step inherits the arrow's band —
+     * inserting between two detour cards means inserting INTO the detour; the
+     * band is a drag away otherwise.
+     * @param {number} idx Chain index the new step takes
+     * @param {string} bandId
+     * @returns {void}
+     */
+    insertInBand(idx, bandId) {
+      this.model.insertStep(idx, { kind: 'activity', branchId: bandId });
+      this.$nextTick(() => this._autoSizeAll());
+    },
+
+    /**
      * The text at the end of a band. Unlike at the diamond, the target is
      * ALWAYS spelled out here — a rail that runs off into nothing says nothing.
      * @param {object} band

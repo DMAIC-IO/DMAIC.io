@@ -35,7 +35,9 @@
              @dragstart="stepDragStart(step.id, $event)"
              @dragend="stepDragEnd($event)">
           <template x-for="band in bands()" :key="'slot-' + step.id + '-' + band.id">
-            <div class="af__slot fc-swimlane-slot" :data-band-id="band.id">
+            <div class="af__slot fc-swimlane-slot" :data-band-id="band.id"
+                 @dragover.prevent
+                 @drop.stop="dropOnBand(band.id, $event)">
               <template x-if="stepInBand(step, band.id)">
                 <div class="af__step" :class="isDecision(step) ? 'af__step--decision' : 'af__step--activity'">
 
@@ -59,7 +61,7 @@
                          :class="connectorClass(idx)"
                          data-action="insert-step" :data-idx="idx" :data-gap="idx"
                          :title="t('insertHere')"
-                         @click="model.insertStep(idx, { kind: 'activity' })"
+                         @click="insertInBand(idx, band.id)"
                          @dragover="gapDragOver(idx, $event)"
                          @dragleave="gapDragLeave(idx, $event)"
                          @drop="gapDrop(idx, $event)">

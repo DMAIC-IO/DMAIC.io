@@ -19,10 +19,19 @@
   padding: var(--spacing-md) 0;
 }
 
+/* Band label. One indent step per nesting level shows which band branches
+   off which — with two rows flush against the same left edge, the parentage
+   would not be readable. */
+.af__band-label {
+  color: var(--color-text-secondary);
+  padding-left: calc(var(--spacing-sm) * var(--af-band-depth, 0));
+}
+.af__band-label[data-depth="1"] { --af-band-depth: 1; }
+.af__band-label[data-depth="2"] { --af-band-depth: 2; }
+.af__band-label[data-depth="3"] { --af-band-depth: 3; }
+
 /* .af__flow is gone — the columns are direct children of .fc-swimlanes.
    (A wrapper in between breaks the subgrid, see the NOTE in flowchart.css.) */
-
-.af__col { position: relative; }
 
 .af__step { position: relative; }
 
@@ -57,8 +66,7 @@
 .af__col.is-dragging { opacity: 0.5; }
 
 /* ── Connector between steps ────────────────────────────────────────────
-   Look comes from `.fc-connector` in js/core/flowchart/flowchart.css — the
-   chain is a flex row here, so no extra positioning is needed. */
+   Look comes from `.fc-connector` in js/core/flowchart/flowchart.css. */
 
 /* ── Activity card ──────────────────────────────────────────────────────
    Surface, header, number badge, title and delete button come from the
