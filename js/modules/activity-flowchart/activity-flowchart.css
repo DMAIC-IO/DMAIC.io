@@ -4,11 +4,12 @@
  * hooks, and the cross-module import picker form.
  */
 
-/* ── Canvas / chain layout ─────────────────────────────────────────── */
+/* ── Canvas / chain layout ─────────────────────────────────────────────
+   The canvas IS the swimlane grid (one column per step, one row per band) —
+   the engine lives in js/core/flowchart/flowchart.css. Without a diamond it
+   has exactly one row and reads like the former flex chain. */
 .af__canvas {
   position: relative;
-  padding: var(--spacing-lg);
-  overflow: auto;
   min-height: 200px;
 }
 
@@ -18,18 +19,12 @@
   padding: var(--spacing-md) 0;
 }
 
-/* Top-aligned: cards differ in height (description, substeps) and must still
-   line up along their headers. */
-.af__flow {
-  display: flex;
-  align-items: flex-start;
-  gap: var(--fc-chain-gap);
-}
+/* .af__flow is gone — the columns are direct children of .fc-swimlanes.
+   (A wrapper in between breaks the subgrid, see the NOTE in flowchart.css.) */
 
-.af__step {
-  position: relative;
-  flex: 0 0 auto;
-}
+.af__col { position: relative; }
+
+.af__step { position: relative; }
 
 /* The connector is absolutely positioned INTO the gap left of its step, so it
    costs no layout space and two cards sit exactly --fc-chain-gap apart —
@@ -56,10 +51,10 @@
 }
 
 /* Drag feedback — chainViewMixin's stepDragStart toggles is-dragging
-   directly on the .af__step node (the dragstart target). The step is never
-   a drop target any more; is-drop-target is emitted only onto connectors
-   (gapClass()) and substep items. */
-.af__step.is-dragging { opacity: 0.5; }
+   directly on the .af__col node (the dragstart target, since .af__col carries
+   `draggable` now). The column is never a drop target itself; is-drop-target
+   is emitted only onto connectors (gapClass()) and substep items. */
+.af__col.is-dragging { opacity: 0.5; }
 
 /* ── Connector between steps ────────────────────────────────────────────
    Look comes from `.fc-connector` in js/core/flowchart/flowchart.css — the

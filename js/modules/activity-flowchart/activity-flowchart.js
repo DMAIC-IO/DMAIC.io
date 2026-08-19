@@ -65,7 +65,7 @@ export function activityFlowchartData(module, _t) {
   return {
     ...chainViewMixin(module, _t, {
       autoSizeSelector: 'textarea.af__step-title, textarea.af__decision-label, textarea.af__step-description',
-      dragRowSelector: '.af__step',
+      dragRowSelector: '.af__col',
     }),
 
     // ── Lifecycle (per Alpine instance) ───────────────────────
@@ -141,6 +141,14 @@ export function activityFlowchartData(module, _t) {
      * @param {object} step @param {string} bandId @returns {boolean}
      */
     stepInBand(step, bandId) { return step?.branchId === bandId; },
+
+    /**
+     * The swimlane grid's row count as an inline style. Alpine CSP allows only
+     * one plain method call per binding, so the string is assembled here rather
+     * than in the template (.claude/alpine.md).
+     * @returns {string}
+     */
+    bandGridStyle() { return `--fc-lane-count: ${this.bands().length}`; },
 
     /**
      * The text at the end of a band. Unlike at the diamond, the target is

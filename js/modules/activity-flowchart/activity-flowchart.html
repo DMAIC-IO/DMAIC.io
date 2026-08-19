@@ -1,6 +1,7 @@
 <div class="module-container af" x-data="activityFlowchart" data-ref="root">
   <div class="module-container__body">
-    <div class="af__canvas">
+    <div class="af__canvas fc-swimlanes" data-ref="flow"
+         :style="bandGridStyle()">
 
       <!-- Rework arcs (rendered above the chain, at measured positions —
            positioning/drawing lands in a later task; the DOM hooks exist
@@ -14,135 +15,158 @@
         <p class="af__empty-hint" x-text="t('emptyHint')"></p>
       </template>
 
-      <!-- Chain of steps -->
-      <div class="af__flow" data-ref="flow">
-        <template x-for="(step, idx) in model.steps" :key="step.id">
-          <div class="af__step" :class="isDecision(step) ? 'af__step--decision' : 'af__step--activity'"
-               :data-step-id="step.id"
-               @dragstart="stepDragStart(step.id, $event)"
-               @dragend="stepDragEnd($event)">
+      <!-- Label column, only once there is a second band besides the main
+           path — a lone main path reads exactly like the former flex chain. -->
+      <template x-if="hasBands()">
+        <div class="fc-swimlane-labels">
+          <template x-for="band in bands()" :key="'label-' + band.id">
+            <div class="af__band-label fc-swimlane-label"
+                 :data-band-id="band.id" :data-depth="band.depth"
+                 x-text="band.label"></div>
+          </template>
+        </div>
+      </template>
 
-            <!-- Gap 0 — the rail in front of the first card. Only in the DOM
-                 while a card is in flight; outside a drag it would be an
-                 arrow pointing at nothing. -->
-            <template x-if="showStartRail(idx)">
-              <div class="af__connector fc-connector fc-connector--rail fc-connector--header-aligned"
-                   :class="gapClass(0)" data-gap="0"
-                   @dragover="gapDragOver(0, $event)"
-                   @dragleave="gapDragLeave(0, $event)"
-                   @drop="gapDrop(0, $event)">
-                <span class="af__connector-arrow fc-connector__arrow">&raquo;</span>
-              </div>
-            </template>
+      <!-- Chain of steps — columns are direct children of .fc-swimlanes so
+           the subgrid rows line up (see the NOTE in flowchart.css). -->
+      <template x-for="(step, idx) in model.steps" :key="step.id">
+        <div class="af__col fc-swimlane-col"
+             :data-step-id="step.id"
+             @dragstart="stepDragStart(step.id, $event)"
+             @dragend="stepDragEnd($event)">
+          <template x-for="band in bands()" :key="'slot-' + step.id + '-' + band.id">
+            <div class="af__slot fc-swimlane-slot" :data-band-id="band.id">
+              <template x-if="stepInBand(step, band.id)">
+                <div class="af__step" :class="isDecision(step) ? 'af__step--decision' : 'af__step--activity'">
 
-            <!-- Connector before this step — gap `idx`: click inserts a step
-                 here, drop moves the dragged card here. -->
-            <template x-if="idx > 0">
-              <div class="af__connector fc-connector fc-connector--clickable fc-connector--header-aligned"
-                   :class="connectorClass(idx)"
-                   data-action="insert-step" :data-idx="idx" :data-gap="idx"
-                   :title="t('insertHere')"
-                   @click="model.insertStep(idx, { kind: 'activity' })"
-                   @dragover="gapDragOver(idx, $event)"
-                   @dragleave="gapDragLeave(idx, $event)"
-                   @drop="gapDrop(idx, $event)">
-                <span class="af__connector-arrow fc-connector__arrow">&raquo;</span>
-              </div>
-            </template>
+                  <!-- Gap 0 — the rail in front of the first card. Only in the
+                       DOM while a card is in flight; outside a drag it would
+                       be an arrow pointing at nothing. -->
+                  <template x-if="showStartRail(idx)">
+                    <div class="af__connector fc-connector fc-connector--rail fc-connector--header-aligned"
+                         :class="gapClass(0)" data-gap="0"
+                         @dragover="gapDragOver(0, $event)"
+                         @dragleave="gapDragLeave(0, $event)"
+                         @drop="gapDrop(0, $event)">
+                      <span class="af__connector-arrow fc-connector__arrow">&raquo;</span>
+                    </div>
+                  </template>
 
-            <!-- Activity card OR Decision diamond -->
-            <template x-if="!isDecision(step)">
-              <div class="af__card fc-card">
-                <div class="af__card-header fc-card__header">
-                  <span class="af__step-number fc-step-number" x-text="stepNum(idx)"
-                        @mousedown="armStepDrag(step.id, $event)"></span>
-                  <textarea class="af__step-title fc-card__title" x-model="step.title"
-                            :placeholder="t('titlePlaceholder')"
-                            @input="autoSize($event)"></textarea>
-                  <div class="af__card-actions fc-card__actions">
-                    <button class="af__delete fc-card__delete" @click="model.removeStep(step.id)"
-                            :title="t('deleteStep')" :aria-label="t('deleteStep')">
-                      <span class="icon" data-icon="trash" aria-hidden="true"></span>
-                    </button>
-                  </div>
+                  <!-- Connector before this step — gap `idx`: click inserts a
+                       step here, drop moves the dragged card here. -->
+                  <template x-if="idx > 0">
+                    <div class="af__connector fc-connector fc-connector--clickable fc-connector--header-aligned"
+                         :class="connectorClass(idx)"
+                         data-action="insert-step" :data-idx="idx" :data-gap="idx"
+                         :title="t('insertHere')"
+                         @click="model.insertStep(idx, { kind: 'activity' })"
+                         @dragover="gapDragOver(idx, $event)"
+                         @dragleave="gapDragLeave(idx, $event)"
+                         @drop="gapDrop(idx, $event)">
+                      <span class="af__connector-arrow fc-connector__arrow">&raquo;</span>
+                    </div>
+                  </template>
+
+                  <!-- Activity card OR Decision diamond -->
+                  <template x-if="!isDecision(step)">
+                    <div class="af__card fc-card">
+                      <div class="af__card-header fc-card__header">
+                        <span class="af__step-number fc-step-number" x-text="stepNum(idx)"
+                              @mousedown="armStepDrag(step.id, $event)"></span>
+                        <textarea class="af__step-title fc-card__title" x-model="step.title"
+                                  :placeholder="t('titlePlaceholder')"
+                                  @input="autoSize($event)"></textarea>
+                        <div class="af__card-actions fc-card__actions">
+                          <button class="af__delete fc-card__delete" @click="model.removeStep(step.id)"
+                                  :title="t('deleteStep')" :aria-label="t('deleteStep')">
+                            <span class="icon" data-icon="trash" aria-hidden="true"></span>
+                          </button>
+                        </div>
+                      </div>
+                      <div class="af__card-body fc-card__body">
+                        <textarea class="field field--ghost af__step-description fc-card__description"
+                                  :placeholder="t('descriptionPlaceholder')"
+                                  data-field="description" :data-step-id="step.id"
+                                  x-model="step.description"
+                                  @input="autoSize($event)"></textarea>
+                      </div>
+                      <!-- @include js/core/flowchart/substeps.part.html -->
+                    </div>
+                  </template>
+
+                  <template x-if="isDecision(step)">
+                    <div class="af__diamond">
+                      <!-- The shape is clipped to a diamond, so anything that
+                           must escape it (number badge, delete button, branch
+                           popover) is a sibling, not a child — clip-path clips
+                           descendants too. -->
+                      <!-- The badge is the chain's drag handle everywhere
+                           (armStepDrag) — without it the diamond would be the
+                           one step type that cannot be reordered — and it
+                           keeps the visible numbering from skipping the
+                           decision. -->
+                      <span class="af__step-number fc-step-number" x-text="stepNum(idx)"
+                            @mousedown="armStepDrag(step.id, $event)"></span>
+                      <div class="af__diamond-shape">
+                        <textarea class="af__decision-label" x-model="step.decision.label"
+                                  :placeholder="t('decisionPlaceholder')"
+                                  @input="autoSize($event)"></textarea>
+                      </div>
+                      <button class="af__delete" @click="model.removeStep(step.id)"
+                              :title="t('deleteStep')" :aria-label="t('deleteStep')">
+                        <span class="icon" data-icon="trash" aria-hidden="true"></span>
+                      </button>
+                      <!-- The exits are labelled AT the vertices they leave
+                           from: "Yes" beside the right one, "No" under the
+                           bottom one.
+
+                           Yes is a plain label, not a control: it means the
+                           value stream simply continues to the right, so
+                           there is nothing to pick — the chain arrow to the
+                           next step already says where it goes. Only "No" can
+                           deviate (process end or a jump), and only it
+                           carries the target picker. -->
+                      <span class="af__branch af__branch--yes">
+                        <span class="af__branch-word" x-text="branchWord('yes')"></span>
+                      </span>
+                      <button class="af__branch af__branch--no"
+                              @click="toggleBranchMenu(step.id)"
+                              :title="t('pickTarget')">
+                        <span class="af__branch-word" x-text="branchWord('no')"></span>
+                        <span class="af__branch-target" x-text="branchTarget(step)"></span>
+                      </button>
+                      <template x-if="isBranchOpen(step.id)">
+                        <div class="af__branch-menu">
+                          <button @click="pickBranchTarget(step.id, 'next')"
+                                  x-text="t('next')"></button>
+                          <button @click="pickBranchTarget(step.id, 'end')"
+                                  x-text="t('end')"></button>
+                          <template x-for="s in otherSteps(step.id)" :key="s.id">
+                            <button @click="pickBranchTarget(step.id, s.id)"
+                                    x-text="s.title || t('unnamedStep')"></button>
+                          </template>
+                        </div>
+                      </template>
+                    </div>
+                  </template>
+
+                  <!-- Gap n — the rail behind the last card, same drag-only
+                       rule. -->
+                  <template x-if="showEndRail(idx)">
+                    <div class="af__connector af__connector--end fc-connector fc-connector--rail fc-connector--header-aligned"
+                         :class="gapClassAfter(idx)" :data-gap="idx + 1"
+                         @dragover="gapDragOverAfter(idx, $event)"
+                         @dragleave="gapDragLeaveAfter(idx, $event)"
+                         @drop="gapDropAfter(idx, $event)">
+                      <span class="af__connector-arrow fc-connector__arrow">&raquo;</span>
+                    </div>
+                  </template>
                 </div>
-                <div class="af__card-body fc-card__body">
-                  <textarea class="field field--ghost af__step-description fc-card__description"
-                            :placeholder="t('descriptionPlaceholder')"
-                            data-field="description" :data-step-id="step.id"
-                            x-model="step.description"
-                            @input="autoSize($event)"></textarea>
-                </div>
-                <!-- @include js/core/flowchart/substeps.part.html -->
-              </div>
-            </template>
-
-            <template x-if="isDecision(step)">
-              <div class="af__diamond">
-                <!-- The shape is clipped to a diamond, so anything that must
-                     escape it (number badge, delete button, branch popover)
-                     is a sibling, not a child — clip-path clips descendants
-                     too. -->
-                <!-- The badge is the chain's drag handle everywhere
-                     (armStepDrag) — without it the diamond would be the one
-                     step type that cannot be reordered — and it keeps the
-                     visible numbering from skipping the decision. -->
-                <span class="af__step-number fc-step-number" x-text="stepNum(idx)"
-                      @mousedown="armStepDrag(step.id, $event)"></span>
-                <div class="af__diamond-shape">
-                  <textarea class="af__decision-label" x-model="step.decision.label"
-                            :placeholder="t('decisionPlaceholder')"
-                            @input="autoSize($event)"></textarea>
-                </div>
-                <button class="af__delete" @click="model.removeStep(step.id)"
-                        :title="t('deleteStep')" :aria-label="t('deleteStep')">
-                  <span class="icon" data-icon="trash" aria-hidden="true"></span>
-                </button>
-                <!-- The exits are labelled AT the vertices they leave from:
-                     "Yes" beside the right one, "No" under the bottom one.
-
-                     Yes is a plain label, not a control: it means the value
-                     stream simply continues to the right, so there is nothing
-                     to pick — the chain arrow to the next step already says
-                     where it goes. Only "No" can deviate (process end or a
-                     jump), and only it carries the target picker. -->
-                <span class="af__branch af__branch--yes">
-                  <span class="af__branch-word" x-text="branchWord('yes')"></span>
-                </span>
-                <button class="af__branch af__branch--no"
-                        @click="toggleBranchMenu(step.id)"
-                        :title="t('pickTarget')">
-                  <span class="af__branch-word" x-text="branchWord('no')"></span>
-                  <span class="af__branch-target" x-text="branchTarget(step)"></span>
-                </button>
-                <template x-if="isBranchOpen(step.id)">
-                  <div class="af__branch-menu">
-                    <button @click="pickBranchTarget(step.id, 'next')"
-                            x-text="t('next')"></button>
-                    <button @click="pickBranchTarget(step.id, 'end')"
-                            x-text="t('end')"></button>
-                    <template x-for="s in otherSteps(step.id)" :key="s.id">
-                      <button @click="pickBranchTarget(step.id, s.id)"
-                              x-text="s.title || t('unnamedStep')"></button>
-                    </template>
-                  </div>
-                </template>
-              </div>
-            </template>
-
-            <!-- Gap n — the rail behind the last card, same drag-only rule. -->
-            <template x-if="showEndRail(idx)">
-              <div class="af__connector af__connector--end fc-connector fc-connector--rail fc-connector--header-aligned"
-                   :class="gapClassAfter(idx)" :data-gap="idx + 1"
-                   @dragover="gapDragOverAfter(idx, $event)"
-                   @dragleave="gapDragLeaveAfter(idx, $event)"
-                   @drop="gapDropAfter(idx, $event)">
-                <span class="af__connector-arrow fc-connector__arrow">&raquo;</span>
-              </div>
-            </template>
-          </div>
-        </template>
-      </div>
+              </template>
+            </div>
+          </template>
+        </div>
+      </template>
     </div>
   </div>
 
