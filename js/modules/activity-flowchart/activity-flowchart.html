@@ -185,25 +185,35 @@
               <!-- The exit: where the detour rejoins the main path. This is
                    where the no-branch's target is picked now, not at the
                    diamond — a rail running off the end of the band has to
-                   say where it goes. -->
+                   say where it goes.
+
+                   The exit and its picker share a positioned wrapper
+                   (.af__band-exit-wrap) rather than each being a bare sibling
+                   in the slot: the slot itself is at least 84px tall, so a
+                   popover anchored on the slot would dock under the whole
+                   row instead of under the button that opened it.
+
+                   bandMenuOpen(band), not isBranchOpen(band.ownerId)
+                   directly: the main band has no ownerId, and
+                   isBranchOpen(null) reads true while nothing is open —
+                   bandMenuOpen excludes it. -->
               <template x-if="!isMainBand(band)">
-                <button class="af__band-exit" :data-band-id="band.id"
-                        @click="toggleBranchMenu(band.ownerId)"
-                        :title="t('pickTarget')">
-                  <span class="af__band-exit-arrow">&#8627;</span>
-                  <span class="af__band-exit-target" x-text="bandExitLabel(band)"></span>
-                </button>
-              </template>
-              <!-- bandMenuOpen(band), not isBranchOpen(band.ownerId) directly:
-                   the main band has no ownerId, and isBranchOpen(null) reads
-                   true while nothing is open — bandMenuOpen excludes it. -->
-              <template x-if="bandMenuOpen(band)">
-                <div class="af__branch-menu">
-                  <button @click="pickBranchTarget(band.ownerId, 'next')" x-text="t('next')"></button>
-                  <button @click="pickBranchTarget(band.ownerId, 'end')" x-text="t('end')"></button>
-                  <template x-for="s in otherSteps(band.ownerId)" :key="s.id">
-                    <button @click="pickBranchTarget(band.ownerId, s.id)"
-                            x-text="s.title || t('unnamedStep')"></button>
+                <div class="af__band-exit-wrap">
+                  <button class="af__band-exit" :data-band-id="band.id"
+                          @click="toggleBranchMenu(band.ownerId)"
+                          :title="t('pickTarget')">
+                    <span class="af__band-exit-arrow">&#8627;</span>
+                    <span class="af__band-exit-target" x-text="bandExitLabel(band)"></span>
+                  </button>
+                  <template x-if="bandMenuOpen(band)">
+                    <div class="af__branch-menu">
+                      <button @click="pickBranchTarget(band.ownerId, 'next')" x-text="t('next')"></button>
+                      <button @click="pickBranchTarget(band.ownerId, 'end')" x-text="t('end')"></button>
+                      <template x-for="s in otherSteps(band.ownerId)" :key="s.id">
+                        <button @click="pickBranchTarget(band.ownerId, s.id)"
+                                x-text="s.title || t('unnamedStep')"></button>
+                      </template>
+                    </div>
                   </template>
                 </div>
               </template>

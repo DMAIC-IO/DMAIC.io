@@ -77,6 +77,11 @@
 .af__band-exit:hover { background: var(--color-bg-tertiary); color: var(--color-text-primary); }
 .af__band-exit-arrow { color: var(--color-error); }
 
+/* The exit and its picker share a positioned wrapper, so the popover docks
+   directly under the button instead of under the whole slot — the slot is at
+   least 84px tall, which would tear the list away from its trigger. */
+.af__band-exit-wrap { position: relative; }
+
 /* .af__flow is gone — the columns are direct children of .fc-swimlanes.
    (A wrapper in between breaks the subgrid, see the NOTE in flowchart.css.) */
 
@@ -340,10 +345,6 @@
   border-radius: var(--border-radius-sm);
 }
 .af__branch-menu button:hover { background: var(--color-bg-secondary); }
-
-/* The slot of the tail column is the popover's reference frame, now that the
-   target picker sits there rather than on the diamond. */
-.af__col--tail .af__slot { position: relative; }
 
 .af__col--tail .af__branch-menu {
   left: 0;
