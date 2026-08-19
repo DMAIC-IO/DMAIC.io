@@ -9,13 +9,13 @@ export default {
       de: {
         title: 'Aufbau',
         blocks: [
-          { type: 'paragraph', content: 'Das Activity-Flowchart bildet eine Kette aus Aktivitäten (Rechtecke) und Entscheidungen (Rauten) von links nach rechts ab. In der Raute steht eine Ja/Nein-Frage; ihre beiden Ausgänge sind an den Ecken beschriftet, an denen sie die Raute verlassen: „Ja" rechts, wo die Kette weiterläuft, „Nein" unten. Jeder Ausgang kann auf den nächsten Schritt, das Prozessende oder einen früheren Schritt (Nacharbeits-Bogen) zeigen.' },
+          { type: 'paragraph', content: 'Das Activity-Flowchart bildet eine Kette aus Aktivitäten (Rechtecke) und Entscheidungen (Rauten) von links nach rechts ab. In der Raute steht eine Ja/Nein-Frage; ihre beiden Ausgänge sind an den Ecken beschriftet, an denen sie die Raute verlassen: „Ja" rechts, wo die Kette weiterläuft, „Nein" unten. „Ja" ist dabei der Weiterfluss selbst und trägt kein Ziel. Nur der Nein-Ausgang zweigt ab: Er öffnet unter dem Hauptpfad ein eigenes Band, und erst an dessen Ende steht das Ziel — der nächste Schritt, das Prozessende oder ein Sprung auf einen anderen Schritt.' },
         ],
       },
       en: {
         title: 'Structure',
         blocks: [
-          { type: 'paragraph', content: 'The Activity Flowchart renders a left-to-right chain of activities (rectangles) and decisions (diamonds). A diamond holds a yes/no question, and its two exits are labelled at the vertices they leave from: "Yes" on the right, where the chain flows on, "No" at the bottom. Each exit can point to the next step, the process end, or an earlier step (a rework loop).' },
+          { type: 'paragraph', content: 'The Activity Flowchart renders a left-to-right chain of activities (rectangles) and decisions (diamonds). A diamond holds a yes/no question, and its two exits are labelled at the vertices they leave from: "Yes" on the right, where the chain flows on, "No" at the bottom. "Yes" is the flow on itself and carries no target. Only the No exit branches off: it opens a band of its own below the main path, and the target sits at the end of that band — the next step, the process end, or a jump to another step.' },
         ],
       },
     },
