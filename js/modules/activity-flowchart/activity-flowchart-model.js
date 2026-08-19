@@ -127,6 +127,70 @@ export class ActivityModel extends FlowchartState {
   }
 
   /**
+   * Ascending indices of every step belonging to `branchId` — including the
+   * steps of nested sub-bands, excluding the owning decision itself. A
+   * sub-band joins as soon as its decision shows up in the band (or in a
+   * sub-band already counted).
+   * @param {string} branchId
+   * @returns {number[]}
+   */
+  _branchMemberIndices(branchId) {
+    const ownerId = branchOwnerId(branchId);
+    const start = ownerId === null ? -1 : this.steps.findIndex((s) => s.id === ownerId);
+    if (ownerId !== null && start === -1) return [];
+    const members = new Set([branchId]);
+    const out = [];
+    for (let i = start + 1; i < this.steps.length; i++) {
+      const s = this.steps[i];
+      if (!members.has(s.branchId)) continue;
+      out.push(i);
+      if (s.kind === 'decision') members.add(BRANCH_PREFIX + s.id);
+    }
+    return out;
+  }
+
+  /**
+   * Assigns a step to a band. `'main'` always works; a decision band only if
+   * the decision exists, IS a decision, and stands before the step.
+   * @param {string} stepId
+   * @param {string} branchId - `'main'` or `no:<decisionStepId>`.
+   * @returns {boolean} True if assigned.
+   */
+  setStepBranch(stepId, branchId) {
+    const i = this.steps.findIndex((s) => s.id === stepId);
+    if (i === -1) return false;
+    if (branchId === MAIN_BRANCH) { this.steps[i].branchId = MAIN_BRANCH; return true; }
+    const ownerId = branchOwnerId(branchId);
+    const oi = this.steps.findIndex((s) => s.id === ownerId);
+    if (oi === -1 || oi >= i || this.steps[oi].kind !== 'decision') return false;
+    this.steps[i].branchId = branchId;
+    return true;
+  }
+
+  /**
+   * Creates a step at the END of a band — behind its last step and any nested
+   * sub-bands, or directly behind the decision when the band is empty.
+   * @param {string} branchId
+   * @param {object} [seed] - Seed fields, e.g. `{ kind: 'decision' }`.
+   * @returns {object|null} The new step, or `null` for an unknown band.
+   */
+  addStepToBranch(branchId, seed = {}) {
+    // ALWAYS branch on `kind`, main path included: `addStep` creates no
+    // `decision` object, so a diamond born that way would be silent bad data.
+    const create = (at) => (seed.kind === 'decision'
+      ? this.addDecision(at, { ...seed, branchId })
+      : this.addStep(at, { ...seed, branchId }));
+
+    if (branchId === MAIN_BRANCH) return create(this.steps.length);
+
+    const ownerId = branchOwnerId(branchId);
+    const oi = this.steps.findIndex((s) => s.id === ownerId);
+    if (oi === -1 || this.steps[oi].kind !== 'decision') return null;
+    const members = this._branchMemberIndices(branchId);
+    return create((members.length > 0 ? members[members.length - 1] : oi) + 1);
+  }
+
+  /**
    * Enforces the band invariant across the whole chain: a step may only live
    * in the band of a decision that stands BEFORE it in the array. That makes
    * cycles structurally impossible — column order IS chain order. Invalid
