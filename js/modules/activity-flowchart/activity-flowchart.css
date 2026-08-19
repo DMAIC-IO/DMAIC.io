@@ -30,6 +30,34 @@
 .af__band-label[data-depth="2"] { --af-band-depth: 2; }
 .af__band-label[data-depth="3"] { --af-band-depth: 3; }
 
+/* Placeholder at the end of a band: dashed, so it reads as an empty slot
+   rather than as a card. */
+.af__band-add {
+  display: flex;
+  gap: var(--spacing-xs);
+  align-items: center;
+  padding: var(--spacing-xs);
+  border: 1px dashed var(--color-border-primary);
+  border-radius: var(--border-radius-sm);
+}
+
+.af__band-add button {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  border: none;
+  background: transparent;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-xs);
+  cursor: pointer;
+  padding: 2px var(--spacing-xs);
+  border-radius: var(--border-radius-sm);
+}
+.af__band-add button:hover {
+  background: var(--color-bg-tertiary);
+  color: var(--color-text-primary);
+}
+
 /* .af__flow is gone — the columns are direct children of .fc-swimlanes.
    (A wrapper in between breaks the subgrid, see the NOTE in flowchart.css.) */
 

@@ -2210,6 +2210,8 @@
       "decisionPlaceholder": "Ja/Nein-Frage …",
       "addStep": "Aktivität hinzufügen",
       "addDecision": "Entscheidung hinzufügen",
+      "addStepToBand": "Aktivität in diesem Umweg anlegen",
+      "addDecisionToBand": "Entscheidung in diesem Umweg anlegen",
       "deleteStep": "Schritt löschen",
       "insertHere": "Hier einfügen — oder eine Karte hierher ziehen",
       "emptyHint": "Noch keine Schritte — über die Symbolleiste eine Aktivität oder Entscheidung hinzufügen.",

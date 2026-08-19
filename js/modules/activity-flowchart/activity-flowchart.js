@@ -182,6 +182,25 @@ export function activityFlowchartData(module, _t) {
     },
 
     /**
+     * Creates an activity at the end of the band.
+     * @param {string} bandId @returns {void}
+     */
+    addActivityToBand(bandId) {
+      this.model.addStepToBranch(bandId, { kind: 'activity' });
+      this.$nextTick(() => this._autoSizeAll());
+    },
+
+    /**
+     * Creates a decision at the end of the band — which opens a band of its
+     * own below it.
+     * @param {string} bandId @returns {void}
+     */
+    addDecisionToBand(bandId) {
+      this.model.addStepToBranch(bandId, { kind: 'decision' });
+      this.$nextTick(() => this._autoSizeAll());
+    },
+
+    /**
      * The text at the end of a band. Unlike at the diamond, the target is
      * ALWAYS spelled out here — a rail that runs off into nothing says nothing.
      * @param {object} band
