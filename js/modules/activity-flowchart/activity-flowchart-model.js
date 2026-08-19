@@ -226,6 +226,41 @@ export class ActivityModel extends FlowchartState {
   }
 
   /**
+   * Moves a step to a chain gap. For a DECISION the whole band travels along
+   * as one block — otherwise the drag would tear the detour off its branch
+   * point and `_reconcileBranches()` would tip it into the main path. Every
+   * other step keeps the Core's behaviour.
+   * @param {string} fromId
+   * @param {number} gapIndex - 0…steps.length, against the chain BEFORE the move.
+   * @returns {boolean} True if the order changed.
+   */
+  moveStepToGap(fromId, gapIndex) {
+    const fi = this.steps.findIndex((s) => s.id === fromId);
+    if (fi === -1) return false;
+    if (this.steps[fi].kind !== 'decision') {
+      const moved = super.moveStepToGap(fromId, gapIndex);
+      if (moved) this._reconcileBranches();
+      return moved;
+    }
+    if (!Number.isInteger(gapIndex) || gapIndex < 0 || gapIndex > this.steps.length) return false;
+
+    const block = [fi, ...this._branchMemberIndices(BRANCH_PREFIX + fromId)];
+    const blockSet = new Set(block);
+    const lastPlusOne = block[block.length - 1] + 1;
+    // Every gap inside the block's own span (and the one before it) is a no-op.
+    if (gapIndex >= fi && gapIndex <= lastPlusOne) return false;
+
+    const moved = block.map((i) => this.steps[i]);
+    const rest = this.steps.filter((_, i) => !blockSet.has(i));
+    const removedBefore = block.filter((i) => i < gapIndex).length;
+    rest.splice(gapIndex - removedBefore, 0, ...moved);
+    // Replace in place so Alpine's reactivity stays bound to the same array.
+    this.steps.splice(0, this.steps.length, ...rest);
+    this._reconcileBranches();
+    return true;
+  }
+
+  /**
    * Rehydrates an ActivityModel from serialized JSON data.
    * @param {object} data - Serialized flowchart data.
    * @returns {ActivityModel} New ActivityModel instance.

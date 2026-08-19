@@ -272,6 +272,49 @@ suite('ActivityModel — branches', () => {
     assertEqual(m.removeStep(u1.id), true);
     assertEqual(m.steps.find((s) => s.id === extra.id).branchId, 'no:' + d.id);
   });
+
+  test('dragging a decision carries its band steps along', () => {
+    // A · D? · u1(D) · B  →  diamond to gap 4 (the end): A · B · D? · u1
+    const { m, d } = chain();
+    assertEqual(m.moveStepToGap(d.id, 4), true);
+    assertEqual(m.steps.map((s) => s.title).join(','), 'A,B,D?,u1');
+    assertEqual(m.steps[3].branchId, 'no:' + d.id);
+  });
+
+  test('a decision dragged to the front keeps its band behind it', () => {
+    const { m, d } = chain();
+    assertEqual(m.moveStepToGap(d.id, 0), true);
+    assertEqual(m.steps.map((s) => s.title).join(','), 'D?,u1,A,B');
+    assertEqual(m.steps[1].branchId, 'no:' + d.id);
+  });
+
+  test('a nested band travels with the whole block', () => {
+    const m = new ActivityModel();
+    const a = m.addStep(0, { title: 'A' });
+    const d1 = m.addDecision(1, { title: 'D1?' });
+    const d2 = m.addDecision(2, { title: 'D2?' });
+    const tief = m.addStep(3, { title: 'tief' });
+    const b = m.addStep(4, { title: 'B' });
+    m.setStepBranch(d2.id, 'no:' + d1.id);
+    m.setStepBranch(tief.id, 'no:' + d2.id);
+
+    assertEqual(m.moveStepToGap(d1.id, 5), true);
+    assertEqual(m.steps.map((s) => s.title).join(','), 'A,B,D1?,D2?,tief');
+    assertEqual(m.steps[3].branchId, 'no:' + d1.id);
+    assertEqual(m.steps[4].branchId, 'no:' + d2.id);
+  });
+
+  test('dropping a decision inside its own block changes nothing', () => {
+    const { m, d } = chain();
+    assertEqual(m.moveStepToGap(d.id, 2), false);   // straight behind itself
+    assertEqual(m.steps.map((s) => s.title).join(','), 'A,D?,u1,B');
+  });
+
+  test('a plain step still moves on its own', () => {
+    const { m, b } = chain();
+    assertEqual(m.moveStepToGap(b.id, 0), true);
+    assertEqual(m.steps.map((s) => s.title).join(','), 'B,A,D?,u1');
+  });
 });
 
 suite('ActivityModel — import mappers', () => {
