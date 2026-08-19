@@ -19,15 +19,25 @@ suite('ActivityModel — normalizer', () => {
     assertEqual(m.steps[0].decision, null);
   });
 
-  test('preserves kind: "decision" with normalized targets', () => {
+  test('preserves kind: "decision" with a normalized no-target', () => {
     const m = ActivityModel.fromJSON({ steps: [
-      { title: 'D', kind: 'decision',
-        decision: { label: '?', yesTarget: 'next', noTarget: 'end' } },
+      { title: 'D', kind: 'decision', decision: { label: '?', noTarget: 'end' } },
     ] });
     assertEqual(m.steps[0].kind, 'decision');
-    assertEqual(m.steps[0].decision.yesTarget, 'next');
     assertEqual(m.steps[0].decision.noTarget, 'end');
     assertEqual(m.steps[0].decision.label, '?');
+  });
+
+  test('drops a legacy yesTarget — yes is the flow on to the next step', () => {
+    // Projects saved while the yes branch still had its own target must keep
+    // loading; the branch is gone, so the field is dropped rather than kept
+    // as dead state.
+    const m = ActivityModel.fromJSON({ steps: [
+      { title: 'D', kind: 'decision',
+        decision: { label: '?', yesTarget: 'end', noTarget: 'next' } },
+    ] });
+    assertEqual('yesTarget' in m.steps[0].decision, false);
+    assertEqual(m.steps[0].decision.noTarget, 'next');
   });
 
   test('coerces invalid kind to "activity"', () => {
@@ -42,15 +52,14 @@ suite('ActivityModel — normalizer', () => {
     assertEqual(m.steps[0].decision, null);
   });
 
-  test('coerces missing decision targets to "next"', () => {
+  test('coerces a missing no-target to "next"', () => {
     const m = ActivityModel.fromJSON({ steps: [
       { title: 'D', kind: 'decision', decision: { label: 'ok?' } },
     ] });
-    assertEqual(m.steps[0].decision.yesTarget, 'next');
     assertEqual(m.steps[0].decision.noTarget, 'next');
   });
 
-  test('roundtrip preserves decision fields', () => {
+  test('roundtrip preserves the decision fields that remain', () => {
     const src = { steps: [
       { id: 's1', title: 'A' },
       { id: 's2', title: 'D', kind: 'decision',
@@ -58,41 +67,43 @@ suite('ActivityModel — normalizer', () => {
     ] };
     const m = ActivityModel.fromJSON(src);
     const out = m.toJSON();
-    assertEqual(out.steps[1].decision.yesTarget, 'end');
+    assertEqual(out.steps[1].decision.label, 'ok?');
     assertEqual(out.steps[1].decision.noTarget, 's1');
+    assertEqual('yesTarget' in out.steps[1].decision, false);
   });
 });
 
 suite('ActivityModel — decisions', () => {
-  test('addDecision creates a decision step with default targets', () => {
+  test('addDecision creates a decision step whose no-branch flows on', () => {
     const m = new ActivityModel();
     const d = m.addDecision(0, { title: 'D?' });
     assertEqual(d.kind, 'decision');
-    assertEqual(d.decision.yesTarget, 'next');
     assertEqual(d.decision.noTarget, 'next');
+    assertEqual('yesTarget' in d.decision, false);
     assertEqual(m.steps[0].id, d.id);
   });
 
-  test('setDecisionTarget updates yes/no targets', () => {
+  test('setDecisionTarget updates the no-target', () => {
     const m = new ActivityModel();
     m.addStep(0, { title: 'A' });
     const d = m.addDecision(1, { title: 'D?' });
-    assertEqual(m.setDecisionTarget(d.id, 'yes', 'end'), true);
-    assertEqual(m.setDecisionTarget(d.id, 'no', m.steps[0].id), true);
-    assertEqual(d.decision.yesTarget, 'end');
+    assertEqual(m.setDecisionTarget(d.id, 'end'), true);
+    assertEqual(d.decision.noTarget, 'end');
+    assertEqual(m.setDecisionTarget(d.id, m.steps[0].id), true);
     assertEqual(d.decision.noTarget, m.steps[0].id);
   });
 
   test('setDecisionTarget rejects on non-decision step', () => {
     const m = new ActivityModel();
     const a = m.addStep(0, { title: 'A' });
-    assertEqual(m.setDecisionTarget(a.id, 'yes', 'end'), false);
+    assertEqual(m.setDecisionTarget(a.id, 'end'), false);
   });
 
-  test('setDecisionTarget rejects unknown branch', () => {
+  test('setDecisionTarget coerces an empty target to "next"', () => {
     const m = new ActivityModel();
     const d = m.addDecision(0);
-    assertEqual(m.setDecisionTarget(d.id, 'maybe', 'end'), false);
+    assertEqual(m.setDecisionTarget(d.id, ''), true);
+    assertEqual(d.decision.noTarget, 'next');
   });
 });
 

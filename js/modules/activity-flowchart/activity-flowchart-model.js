@@ -22,14 +22,20 @@ function normalizeTarget(t) {
 
 /**
  * Normalizes a raw decision object into the canonical shape.
+ *
+ * Only the NO branch carries a target. Yes means "the value stream simply
+ * continues to the right", so it has nothing to point at — the chain arrow
+ * to the next step already says where it goes. A `yesTarget` from a project
+ * saved before that rule is dropped here rather than kept as dead state; the
+ * project itself keeps loading.
+ *
  * @param {*} raw - Raw decision value (may be missing/malformed).
- * @returns {{label: string, yesTarget: string, noTarget: string}} Normalized decision.
+ * @returns {{label: string, noTarget: string}} Normalized decision.
  */
 function normalizeDecision(raw) {
-  if (!raw || typeof raw !== 'object') return { label: '', yesTarget: 'next', noTarget: 'next' };
+  if (!raw || typeof raw !== 'object') return { label: '', noTarget: 'next' };
   return {
     label: typeof raw.label === 'string' ? raw.label : '',
-    yesTarget: normalizeTarget(raw.yesTarget),
     noTarget: normalizeTarget(raw.noTarget),
   };
 }
@@ -72,23 +78,22 @@ export class ActivityModel extends FlowchartState {
   addDecision(atIndex, seed = {}) {
     return super.addStep(atIndex, {
       kind: 'decision',
-      decision: { label: '', yesTarget: 'next', noTarget: 'next' },
+      decision: { label: '', noTarget: 'next' },
       ...seed,
     }, activityNormalize);
   }
 
   /**
-   * Sets a decision branch target on the given step.
+   * Sets the target of a decision's NO branch. The yes branch has no target
+   * to set — it is the flow on to the next step (see `normalizeDecision`).
    * @param {string} stepId - Id of the decision step.
-   * @param {'yes'|'no'} branch - Which branch to set.
    * @param {string} target - New target (`'next' | 'end' | <stepId>`).
    * @returns {boolean} True if the target was set, false otherwise.
    */
-  setDecisionTarget(stepId, branch, target) {
+  setDecisionTarget(stepId, target) {
     const s = this.steps.find((x) => x.id === stepId);
     if (!s || s.kind !== 'decision' || !s.decision) return false;
-    if (branch !== 'yes' && branch !== 'no') return false;
-    s.decision[branch === 'yes' ? 'yesTarget' : 'noTarget'] = normalizeTarget(target);
+    s.decision.noTarget = normalizeTarget(target);
     return true;
   }
 

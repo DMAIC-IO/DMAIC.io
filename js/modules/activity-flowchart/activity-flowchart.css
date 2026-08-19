@@ -102,10 +102,11 @@
   --af-diamond-w: 200px;
   --af-diamond-h: 120px;
 
-  /* Wide enough for the longest target word the picker can produce
-     ("Prozessende"); anything longer wraps rather than reaching into the
-     next step's connector. */
-  --af-branch-gutter: 76px;
+  /* Only wide enough for the word at the right vertex ("Ja" / "Yes"). It
+     used to hold a spelled-out target too and was 76px for it; since yes
+     simply flows on, the next step moves back in and the chain reads as one
+     line running to the right. */
+  --af-branch-gutter: 40px;
 }
 
 .af__diamond-shape {
@@ -160,6 +161,20 @@
 .af__decision-label::placeholder { color: var(--color-text-tertiary); }
 .af__decision-label:focus { outline: none; }
 
+/* ── Number badge / drag handle ─────────────────────────────────────────
+   The badge IS the grip in every chain module (`armStepDrag` arms the row
+   from its mousedown), so a diamond without one is the only step type that
+   cannot be reordered — and the visible numbering would skip it (01 → 03).
+   Parked in the box's top-left corner, mirroring the delete button at the
+   top-right: the diamond leaves both corners empty, so it never covers the
+   label. Sibling of the clipped shape, because clip-path clips descendants. */
+.af__diamond .af__step-number {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 1;
+}
+
 /* ── Delete button ──────────────────────────────────────────────────────
    Parked over the shape's top-right corner — beside its upper slope, where
    the diamond leaves the box empty, so it never covers the label. Offset by
@@ -199,7 +214,10 @@
    "No" under the bottom one. Two words at two corners are readable without
    explanation; a stack of two lines under the diamond is not.
 
-   The gutter is the room the right-hand label needs. It is part of the
+   Only "No" is a control. "Yes" is the flow on to the right and has nothing
+   to pick, so it stays a plain label — no pointer, no hover surface.
+
+   The gutter is the room the right-hand word needs. It is part of the
    wrapper (not of the chain gap), so the label can never land under the
    connector chevron of the following step. */
 .af__branch {
@@ -209,13 +227,14 @@
   border: none;
   border-radius: var(--border-radius-sm);
   background: transparent;
-  cursor: pointer;
   font-size: var(--font-size-xs);
   line-height: 1.25;
   padding: 2px var(--spacing-xs);
   transition: background var(--transition-speed);
 }
-.af__branch:hover { background: var(--color-bg-tertiary); }
+
+.af__branch--no { cursor: pointer; }
+.af__branch--no:hover { background: var(--color-bg-tertiary); }
 .af__branch-word { font-weight: var(--font-weight-semibold); }
 
 /* The target only appears where the branch does NOT simply flow on — see
@@ -238,7 +257,10 @@
   width: var(--af-branch-gutter);
   align-items: flex-start;
   text-align: left;
-  padding-left: 6px;
+  padding-left: 4px;
+
+  /* One word, never broken across two lines — the gutter is measured for it. */
+  white-space: nowrap;
   color: var(--color-success);
 }
 

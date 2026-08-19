@@ -73,29 +73,30 @@ export function activityFlowchartData(module, _t) {
       this.$nextTick(() => this._autoSizeAll());
     },
 
-    // Decision popover state (transient — never persisted)
-    _openBranchStepId: null,
-    _openBranch: null,   // 'yes' | 'no' | null
+    // Decision popover state (transient — never persisted). One id is
+    // enough: only the no branch has a target to pick.
+    _openMenuStepId: null,
 
     isDecision(step) { return step?.kind === 'decision'; },
     /**
-     * The word that names a branch at its vertex — the whole label in the
-     * common case, because the arrow leaving that vertex already says where
-     * the branch goes.
+     * The word that names a branch at its vertex.
      * @param {'yes'|'no'} branch
      * @returns {string} translated "Yes" / "No".
      */
     branchWord(branch) { return _t(branch === 'yes' ? 'yes' : 'no'); },
     /**
-     * The branch's target, spelled out only where it deviates from simply
+     * The NO branch's target, spelled out only where it deviates from simply
      * flowing on to the next step — process end, or a jump to another step.
      * A jump BACK is a rework loop and says so with a ↩.
+     *
+     * The yes branch has no counterpart here: yes IS the flow on to the
+     * right, so the chain arrow to the next step already says where it goes.
+     *
      * @param {object} step - The decision step.
-     * @param {'yes'|'no'} branch
      * @returns {string} Target text, or `''` when the branch just flows on.
      */
-    branchTarget(step, branch) {
-      const target = step?.decision?.[`${branch}Target`];
+    branchTarget(step) {
+      const target = step?.decision?.noTarget;
       if (!target || target === 'next') return '';
       if (target === 'end') return _t('end');
       const targetIdx = this.model.steps.findIndex((s) => s.id === target);
@@ -122,38 +123,37 @@ export function activityFlowchartData(module, _t) {
       return [touchesDiamond ? 'af__connector--diamond' : '', this.gapClass(idx)]
         .filter(Boolean).join(' ');
     },
-    isBranchOpen(stepId, branch) {
-      return this._openBranchStepId === stepId && this._openBranch === branch;
+    isBranchOpen(stepId) {
+      return this._openMenuStepId === stepId;
     },
     /** Steps excluding the given one — used by branch-popover to list jump targets. */
     otherSteps(stepId) {
       return this.model.steps.filter((s) => s.id !== stepId);
     },
-    toggleBranchMenu(stepId, branch) {
-      if (this.isBranchOpen(stepId, branch)) {
-        this._openBranchStepId = null; this._openBranch = null;
-      } else {
-        this._openBranchStepId = stepId; this._openBranch = branch;
-      }
+    toggleBranchMenu(stepId) {
+      this._openMenuStepId = this.isBranchOpen(stepId) ? null : stepId;
     },
-    pickBranchTarget(stepId, branch, target) {
-      this.model.setDecisionTarget(stepId, branch, target);
-      this._openBranchStepId = null; this._openBranch = null;
+    pickBranchTarget(stepId, target) {
+      this.model.setDecisionTarget(stepId, target);
+      this._openMenuStepId = null;
     },
 
-    /** Compute rework-loop {fromId,toId,branch} triples for arcs (rendering follows in a later task). */
+    /**
+     * Compute rework-loop {fromId,toId,branch} triples for arcs (rendering
+     * follows in a later task). Only the no branch can jump back — yes flows
+     * on to the right — so every loop here is a `'no'` one.
+     * @returns {Array<{fromId: string, toId: string, branch: 'no'}>}
+     */
     reworkLoops() {
       const loops = [];
       this.model.steps.forEach((s, i) => {
         if (s.kind !== 'decision' || !s.decision) return;
-        ['yes', 'no'].forEach((br) => {
-          const target = s.decision[`${br}Target`];
-          if (target === 'next' || target === 'end') return;
-          const targetIdx = this.model.steps.findIndex((x) => x.id === target);
-          if (targetIdx !== -1 && targetIdx < i) {
-            loops.push({ fromId: s.id, toId: target, branch: br });
-          }
-        });
+        const target = s.decision.noTarget;
+        if (target === 'next' || target === 'end') return;
+        const targetIdx = this.model.steps.findIndex((x) => x.id === target);
+        if (targetIdx !== -1 && targetIdx < i) {
+          loops.push({ fromId: s.id, toId: target, branch: 'no' });
+        }
       });
       return loops;
     },

@@ -80,8 +80,15 @@
             <template x-if="isDecision(step)">
               <div class="af__diamond">
                 <!-- The shape is clipped to a diamond, so anything that must
-                     escape it (delete button, branch popover) is a sibling,
-                     not a child — clip-path clips descendants too. -->
+                     escape it (number badge, delete button, branch popover)
+                     is a sibling, not a child — clip-path clips descendants
+                     too. -->
+                <!-- The badge is the chain's drag handle everywhere
+                     (armStepDrag) — without it the diamond would be the one
+                     step type that cannot be reordered — and it keeps the
+                     visible numbering from skipping the decision. -->
+                <span class="af__step-number fc-step-number" x-text="stepNum(idx)"
+                      @mousedown="armStepDrag(step.id, $event)"></span>
                 <div class="af__diamond-shape">
                   <textarea class="af__decision-label" x-model="step.decision.label"
                             :placeholder="t('decisionPlaceholder')"
@@ -92,29 +99,30 @@
                   <span class="icon" data-icon="trash" aria-hidden="true"></span>
                 </button>
                 <!-- The exits are labelled AT the vertices they leave from:
-                     "Yes" beside the right one (the chain flows on to the
-                     right), "No" under the bottom one. The target is only
-                     spelled out where the branch deviates from flowing on. -->
-                <button class="af__branch af__branch--yes"
-                        @click="toggleBranchMenu(step.id, 'yes')"
-                        :title="t('pickTarget')">
+                     "Yes" beside the right one, "No" under the bottom one.
+
+                     Yes is a plain label, not a control: it means the value
+                     stream simply continues to the right, so there is nothing
+                     to pick — the chain arrow to the next step already says
+                     where it goes. Only "No" can deviate (process end or a
+                     jump), and only it carries the target picker. -->
+                <span class="af__branch af__branch--yes">
                   <span class="af__branch-word" x-text="branchWord('yes')"></span>
-                  <span class="af__branch-target" x-text="branchTarget(step, 'yes')"></span>
-                </button>
+                </span>
                 <button class="af__branch af__branch--no"
-                        @click="toggleBranchMenu(step.id, 'no')"
+                        @click="toggleBranchMenu(step.id)"
                         :title="t('pickTarget')">
                   <span class="af__branch-word" x-text="branchWord('no')"></span>
-                  <span class="af__branch-target" x-text="branchTarget(step, 'no')"></span>
+                  <span class="af__branch-target" x-text="branchTarget(step)"></span>
                 </button>
-                <template x-if="isBranchOpen(step.id, 'yes') || isBranchOpen(step.id, 'no')">
+                <template x-if="isBranchOpen(step.id)">
                   <div class="af__branch-menu">
-                    <button @click="pickBranchTarget(step.id, _openBranch, 'next')"
+                    <button @click="pickBranchTarget(step.id, 'next')"
                             x-text="t('next')"></button>
-                    <button @click="pickBranchTarget(step.id, _openBranch, 'end')"
+                    <button @click="pickBranchTarget(step.id, 'end')"
                             x-text="t('end')"></button>
                     <template x-for="s in otherSteps(step.id)" :key="s.id">
-                      <button @click="pickBranchTarget(step.id, _openBranch, s.id)"
+                      <button @click="pickBranchTarget(step.id, s.id)"
                               x-text="s.title || t('unnamedStep')"></button>
                     </template>
                   </div>

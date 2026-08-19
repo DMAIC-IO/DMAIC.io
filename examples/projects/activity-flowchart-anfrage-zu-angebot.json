@@ -34,7 +34,6 @@
       "kind": "decision",
       "decision": {
         "label": "Angebot freigegeben?",
-        "yesTarget": "next",
         "noTarget": "s3"
       },
       "expanded": false,
