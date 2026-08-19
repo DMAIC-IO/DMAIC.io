@@ -89,6 +89,26 @@ export class ActivityModel extends FlowchartState {
   constructor() { super(); }
 
   /**
+   * Removes a step. If it is a decision, its band DISSOLVES: the steps in it
+   * inherit the decision's own band instead of being deleted with it. Nested
+   * bands travel up automatically, because their owning decisions are among
+   * those very steps.
+   * @param {string} id
+   * @returns {boolean} True if removed.
+   */
+  removeStep(id) {
+    const step = this.steps.find((s) => s.id === id);
+    if (!step) return false;
+    const ownBranch = step.branchId;
+    const dissolved = step.kind === 'decision' ? BRANCH_PREFIX + step.id : null;
+    if (!super.removeStep(id)) return false;
+    if (dissolved) {
+      this.steps.forEach((s) => { if (s.branchId === dissolved) s.branchId = ownBranch; });
+    }
+    return true;
+  }
+
+  /**
    * Adds a new activity step at the given index.
    * @param {number} atIndex - Insertion index.
    * @param {object} [seed] - Seed fields for the new step.

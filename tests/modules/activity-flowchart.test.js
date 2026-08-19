@@ -242,6 +242,36 @@ suite('ActivityModel — branches', () => {
     const m = new ActivityModel();
     assertEqual(m.addStepToBranch('no:ghost', {}), null);
   });
+
+  test('removing a decision dissolves its band instead of deleting its steps', () => {
+    const { m, d, u1 } = chain();
+    assertEqual(m.removeStep(d.id), true);
+    const survivor = m.steps.find((s) => s.id === u1.id);
+    assertEqual(!!survivor, true);
+    assertEqual(survivor.branchId, 'main');
+    assertEqual(m.steps.map((s) => s.title).join(','), 'A,u1,B');
+  });
+
+  test('a dissolved band hands its steps to the decision\'s own band', () => {
+    // D2 lives in D1's band. Delete D2 and its steps belong in D1's band —
+    // not in the main path.
+    const m = new ActivityModel();
+    const d1 = m.addDecision(0, { title: 'D1?' });
+    const d2 = m.addDecision(1, { title: 'D2?' });
+    const tief = m.addStep(2, { title: 'tief' });
+    m.setStepBranch(d2.id, 'no:' + d1.id);
+    m.setStepBranch(tief.id, 'no:' + d2.id);
+
+    assertEqual(m.removeStep(d2.id), true);
+    assertEqual(m.steps.find((s) => s.id === tief.id).branchId, 'no:' + d1.id);
+  });
+
+  test('removing a plain step leaves the bands alone', () => {
+    const { m, u1, d } = chain();
+    const extra = m.addStepToBranch('no:' + d.id, { title: 'u2' });
+    assertEqual(m.removeStep(u1.id), true);
+    assertEqual(m.steps.find((s) => s.id === extra.id).branchId, 'no:' + d.id);
+  });
 });
 
 suite('ActivityModel — import mappers', () => {
