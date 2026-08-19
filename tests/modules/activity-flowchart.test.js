@@ -290,11 +290,11 @@ suite('ActivityModel — branches', () => {
 
   test('a nested band travels with the whole block', () => {
     const m = new ActivityModel();
-    const a = m.addStep(0, { title: 'A' });
+    m.addStep(0, { title: 'A' });
     const d1 = m.addDecision(1, { title: 'D1?' });
     const d2 = m.addDecision(2, { title: 'D2?' });
     const tief = m.addStep(3, { title: 'tief' });
-    const b = m.addStep(4, { title: 'B' });
+    m.addStep(4, { title: 'B' });
     m.setStepBranch(d2.id, 'no:' + d1.id);
     m.setStepBranch(tief.id, 'no:' + d2.id);
 
@@ -457,7 +457,7 @@ suite('activityFlowchartData — bands', () => {
 
   test('band exit for "next" names the following step in the parent band', () => {
     const m = new ActivityModel();
-    const d = m.addDecision(0, { title: 'D?' });
+    m.addDecision(0, { title: 'D?' });
     m.addStep(1, { title: 'Danach' });
     const band = ctx(m).bands()[1];
     assertEqual(ctx(m).bandExitLabel(band), 'Danach');

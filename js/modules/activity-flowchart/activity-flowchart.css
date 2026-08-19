@@ -53,6 +53,7 @@
   padding: 2px var(--spacing-xs);
   border-radius: var(--border-radius-sm);
 }
+
 .af__band-add button:hover {
   background: var(--color-bg-tertiary);
   color: var(--color-text-primary);

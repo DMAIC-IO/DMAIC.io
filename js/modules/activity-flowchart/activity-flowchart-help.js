@@ -50,17 +50,36 @@ export default {
       },
     },
 
+    noBranchBand: {
+      de: {
+        title: 'Nein-Band',
+        blocks: [
+          { type: 'paragraph', content: 'Jede Raute öffnet unter dem Hauptpfad ein eigenes Band für ihren Nein-Zweig. Darin lassen sich eigene Aktivitäten und weitere Rauten anlegen — eine Raute im Band öffnet ihrerseits ein Band darunter, beliebig tief verschachtelt. Am Ende jedes Bandes steht ein Platzhalter mit zwei Tasten, „Aktivität hinzufügen" und „Entscheidung hinzufügen", und dahinter der Ausgang des Bandes.' },
+          { type: 'paragraph', content: 'Der Ausgang schreibt sein Ziel immer aus: der nächste Schritt, das Prozessende als Sackgasse (etwa „verschrotten") oder ein Sprung auf einen anderen Schritt — rückwärts mit ↩ als Nacharbeitsschleife markiert, vorwärts als Wiedereinstieg weiter unten in der Kette. Am Wort „Nein" an der unteren Spitze der Raute steht dagegen kein Ziel mehr; es beschriftet nur noch die Kante, die ins Band hinunterführt.' },
+          { type: 'paragraph', content: 'Eine Karte wird an zwei Stellen gegriffen, die sich nicht überschneiden: der Drop auf eine Bandzeile ändert, in welchem Band die Karte liegt, und lässt ihre Kettenposition unangetastet; der Drop auf einen Pfeil zwischen zwei Karten ändert die Kettenposition und lässt das Band unangetastet. Wird eine Raute selbst gezogen, nimmt sie ihr ganzes Band als zusammenhängenden Block mit. Wird sie gelöscht, löst sich ihr Band auf — die Schritte darin erben das Band der gelöschten Raute, statt mit ihr gelöscht zu werden.' },
+        ],
+      },
+      en: {
+        title: 'No-branch band',
+        blocks: [
+          { type: 'paragraph', content: 'Every diamond opens its own band below the main path for its No branch. Inside it, activities and further diamonds can be added — a diamond inside a band opens a band of its own underneath, nested as deep as needed. At the end of every band sits a placeholder with two buttons, "Add activity" and "Add decision", and behind it the band\'s exit.' },
+          { type: 'paragraph', content: 'The exit always spells out its target: the next step, the process end as a dead end (e.g. "scrap"), or a jump to another step — marked with ↩ for a jump back as a rework loop, or plain for a jump forward re-entering the chain further down. At the "No" word at the diamond\'s lower vertex, by contrast, no target is shown any more — it only labels the edge leading down into the band.' },
+          { type: 'paragraph', content: 'A card is grabbed for two gestures that never overlap: dropping it on a band row changes which band it lives in and leaves its chain position untouched; dropping it on an arrow between two cards changes its chain position and leaves the band untouched. Dragging a diamond itself takes its whole band along as one connected block. Deleting it dissolves its band — the steps inside inherit the deleted diamond\'s own band instead of being deleted along with it.' },
+        ],
+      },
+    },
+
     reworkLoops: {
       de: {
         title: 'Rework-Loops',
         blocks: [
-          { type: 'paragraph', content: 'Zeigt eine Entscheidung auf einen früheren statt auf den nächsten Schritt, entsteht ein Nacharbeits-Bogen (Rework-Loop) — das Ziel steht unter dem Ja- bzw. Nein-Ausgang, mit ↩ als Schleifen-Markierung. Ein visueller Bogen über die betroffenen Schritte ist noch nicht gerendert; das folgt in einem späteren Task. Jede Schleife braucht einen erreichbaren Ausgang, sonst bleibt der Prozess in der Analyse hängen; ein Ziel „Prozessende" auf mindestens einem Zweig verhindert das.' },
+          { type: 'paragraph', content: 'Zeigt der Ausgang eines Nein-Bands auf einen früheren statt auf den nächsten Schritt, entsteht ein Nacharbeits-Bogen (Rework-Loop) — das Ziel steht am Bandausgang, mit ↩ als Schleifen-Markierung, nicht mehr an der Raute selbst. Der Umweg kann dabei mehr sein als ein bloßer Rücksprung: im Band lassen sich vor dem Sprung zurück beliebig viele Überarbeitungs-Schritte anlegen, z. B. „Angebot überarbeiten" vor der Rückkehr in die Kalkulation. Ein visueller Bogen über die betroffenen Schritte ist noch nicht gerendert; das folgt in einem späteren Task. Jede Schleife braucht einen erreichbaren Ausgang, sonst bleibt der Prozess in der Analyse hängen; ein Ziel „Prozessende" auf mindestens einem Zweig verhindert das.' },
         ],
       },
       en: {
         title: 'Rework loops',
         blocks: [
-          { type: 'paragraph', content: 'When a decision points back to an earlier step instead of the next one, a rework loop appears — the target is spelled out under the Yes or No exit, marked with ↩. A visual arc spanning the affected steps is not rendered yet; that follows in a later task. Every loop needs a reachable exit, otherwise the process gets stuck in the analysis; setting "process end" on at least one branch prevents that.' },
+          { type: 'paragraph', content: 'When a band\'s exit points back to an earlier step instead of the next one, a rework loop appears — the target is spelled out at the band\'s exit, marked with ↩, no longer at the diamond itself. The detour can be more than a bare jump back: the band can hold any number of revision steps before the jump back, e.g. "Revise quote" before returning to the calculation. A visual arc spanning the affected steps is not rendered yet; that follows in a later task. Every loop needs a reachable exit, otherwise the process gets stuck in the analysis; setting "process end" on at least one branch prevents that.' },
         ],
       },
     },
