@@ -9,6 +9,35 @@ import { registerSourceMapper } from '../../core/flowchart/flowchart-import.js';
 
 const VALID_KINDS = new Set(['activity', 'decision']);
 
+/** Das Band des Hauptpfads. Jeder Schritt ohne eigene Abzweigung liegt hier. */
+export const MAIN_BRANCH = 'main';
+
+/** Präfix der Band-Id einer Raute: `no:<stepId>`. */
+export const BRANCH_PREFIX = 'no:';
+
+/**
+ * Die Raute, der ein Band gehört.
+ * @param {string} branchId - `'main'` oder `no:<stepId>`.
+ * @returns {string|null} Step-Id der Raute, oder `null` beim Hauptpfad.
+ */
+export function branchOwnerId(branchId) {
+  return typeof branchId === 'string' && branchId.startsWith(BRANCH_PREFIX)
+    ? branchId.slice(BRANCH_PREFIX.length)
+    : null;
+}
+
+/**
+ * Form-Prüfung einer Band-Id. Ob die referenzierte Raute existiert und früh
+ * genug steht, kann ein Schritt allein nicht wissen — das prüft
+ * `_reconcileBranches()` über die ganze Kette.
+ * @param {*} raw - Rohwert.
+ * @returns {string} `'main'` oder eine wohlgeformte `no:`-Id.
+ */
+function normalizeBranchId(raw) {
+  const owner = branchOwnerId(raw);
+  return owner && owner.length > 0 ? String(raw) : MAIN_BRANCH;
+}
+
 /**
  * Normalizes a decision branch target to one of `'next' | 'end' | <stepId>`.
  * @param {*} t - Raw target value.
@@ -49,7 +78,7 @@ function normalizeDecision(raw) {
 export function activityNormalize(step) {
   const kind = VALID_KINDS.has(step.kind) ? step.kind : 'activity';
   const decision = kind === 'decision' ? normalizeDecision(step.decision) : null;
-  return { ...step, kind, decision };
+  return { ...step, kind, decision, branchId: normalizeBranchId(step.branchId) };
 }
 
 /**
@@ -98,6 +127,21 @@ export class ActivityModel extends FlowchartState {
   }
 
   /**
+   * Erzwingt die Band-Invariante über die ganze Kette: ein Schritt darf nur in
+   * dem Band einer Raute liegen, die im Array VOR ihm steht. Damit sind
+   * Zyklen strukturell unmöglich — die Spaltenordnung ist die Kettenordnung.
+   * Ungültige Zuordnungen fallen auf den Hauptpfad zurück.
+   * @returns {void}
+   */
+  _reconcileBranches() {
+    const openBranches = new Set([MAIN_BRANCH]);
+    this.steps.forEach((s) => {
+      if (!openBranches.has(s.branchId)) s.branchId = MAIN_BRANCH;
+      if (s.kind === 'decision') openBranches.add(BRANCH_PREFIX + s.id);
+    });
+  }
+
+  /**
    * Rehydrates an ActivityModel from serialized JSON data.
    * @param {object} data - Serialized flowchart data.
    * @returns {ActivityModel} New ActivityModel instance.
@@ -106,6 +150,7 @@ export class ActivityModel extends FlowchartState {
     const base = FlowchartState.fromJSON(data, activityNormalize);
     const m = new ActivityModel();
     m.steps = base.steps;
+    m._reconcileBranches();
     return m;
   }
 }

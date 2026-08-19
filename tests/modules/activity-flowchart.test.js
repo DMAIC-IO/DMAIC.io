@@ -71,6 +71,54 @@ suite('ActivityModel — normalizer', () => {
     assertEqual(out.steps[1].decision.noTarget, 's1');
     assertEqual('yesTarget' in out.steps[1].decision, false);
   });
+
+  test('defaults branchId to "main"', () => {
+    const m = ActivityModel.fromJSON({ steps: [{ title: 'A' }] });
+    assertEqual(m.steps[0].branchId, 'main');
+  });
+
+  test('keeps a branchId whose decision stands earlier in the chain', () => {
+    const m = ActivityModel.fromJSON({ steps: [
+      { id: 'd1', title: 'D', kind: 'decision', decision: { label: '?' } },
+      { id: 's2', title: 'Umweg', branchId: 'no:d1' },
+    ] });
+    assertEqual(m.steps[1].branchId, 'no:d1');
+  });
+
+  test('drops a branchId whose decision does not exist', () => {
+    const m = ActivityModel.fromJSON({ steps: [
+      { id: 's1', title: 'A', branchId: 'no:ghost' },
+    ] });
+    assertEqual(m.steps[0].branchId, 'main');
+  });
+
+  test('drops a branchId whose decision stands LATER in the chain', () => {
+    // Sonst wäre der Umweg vor seiner Abzweigung — die Spaltenordnung ist
+    // zugleich die Kettenordnung, also ist das strukturell unmöglich.
+    const m = ActivityModel.fromJSON({ steps: [
+      { id: 's1', title: 'Umweg', branchId: 'no:d1' },
+      { id: 'd1', title: 'D', kind: 'decision', decision: { label: '?' } },
+    ] });
+    assertEqual(m.steps[0].branchId, 'main');
+  });
+
+  test('drops a branchId that points at a non-decision step', () => {
+    const m = ActivityModel.fromJSON({ steps: [
+      { id: 's1', title: 'A' },
+      { id: 's2', title: 'B', branchId: 'no:s1' },
+    ] });
+    assertEqual(m.steps[1].branchId, 'main');
+  });
+
+  test('a decision may itself live in another decision\'s branch', () => {
+    const m = ActivityModel.fromJSON({ steps: [
+      { id: 'd1', title: 'D1', kind: 'decision', decision: { label: '?' } },
+      { id: 'd2', title: 'D2', kind: 'decision', decision: { label: '?' }, branchId: 'no:d1' },
+      { id: 's3', title: 'tief', branchId: 'no:d2' },
+    ] });
+    assertEqual(m.steps[1].branchId, 'no:d1');
+    assertEqual(m.steps[2].branchId, 'no:d2');
+  });
 });
 
 suite('ActivityModel — decisions', () => {
