@@ -221,6 +221,21 @@ export function activityFlowchartData(module, _t) {
       return this.branchTarget(owner) || _t('end');
     },
     /**
+     * Whether the target picker at the end of THIS band should render. Two
+     * things are merged here because Alpine CSP allows only one plain method
+     * call per binding (.claude/alpine.md):
+     *  - the main band never owns a picker — it has no `ownerId`, so
+     *    `isBranchOpen(null)` would read true in the default (nothing open)
+     *    state and show a phantom, unclickable-through menu under its
+     *    placeholder;
+     *  - the actual open/closed state from `isBranchOpen`.
+     * @param {object} band
+     * @returns {boolean}
+     */
+    bandMenuOpen(band) {
+      return !this.isMainBand(band) && this.isBranchOpen(band?.ownerId);
+    },
+    /**
      * Extra classes for the connector rendered in front of step `idx`.
      * Two things are merged here because Alpine CSP allows only one plain
      * method call per binding (.claude/alpine.md):

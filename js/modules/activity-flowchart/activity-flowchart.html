@@ -125,30 +125,17 @@
                            Yes is a plain label, not a control: it means the
                            value stream simply continues to the right, so
                            there is nothing to pick — the chain arrow to the
-                           next step already says where it goes. Only "No" can
-                           deviate (process end or a jump), and only it
-                           carries the target picker. -->
+                           next step already says where it goes. "No" is a
+                           plain label here too — only the WORD names the
+                           vertex; the target itself is picked at the end of
+                           the band, where the detour rejoins the main path
+                           (see the tail column below). -->
                       <span class="af__branch af__branch--yes">
                         <span class="af__branch-word" x-text="branchWord('yes')"></span>
                       </span>
-                      <button class="af__branch af__branch--no"
-                              @click="toggleBranchMenu(step.id)"
-                              :title="t('pickTarget')">
+                      <span class="af__branch af__branch--no">
                         <span class="af__branch-word" x-text="branchWord('no')"></span>
-                        <span class="af__branch-target" x-text="branchTarget(step)"></span>
-                      </button>
-                      <template x-if="isBranchOpen(step.id)">
-                        <div class="af__branch-menu">
-                          <button @click="pickBranchTarget(step.id, 'next')"
-                                  x-text="t('next')"></button>
-                          <button @click="pickBranchTarget(step.id, 'end')"
-                                  x-text="t('end')"></button>
-                          <template x-for="s in otherSteps(step.id)" :key="s.id">
-                            <button @click="pickBranchTarget(step.id, s.id)"
-                                    x-text="s.title || t('unnamedStep')"></button>
-                          </template>
-                        </div>
-                      </template>
+                      </span>
                     </div>
                   </template>
 
@@ -193,6 +180,31 @@
                     <span class="icon" data-icon="git-fork" aria-hidden="true"></span>
                     <span x-text="t('addDecision')"></span>
                   </button>
+                </div>
+              </template>
+              <!-- The exit: where the detour rejoins the main path. This is
+                   where the no-branch's target is picked now, not at the
+                   diamond — a rail running off the end of the band has to
+                   say where it goes. -->
+              <template x-if="!isMainBand(band)">
+                <button class="af__band-exit" :data-band-id="band.id"
+                        @click="toggleBranchMenu(band.ownerId)"
+                        :title="t('pickTarget')">
+                  <span class="af__band-exit-arrow">&#8627;</span>
+                  <span class="af__band-exit-target" x-text="bandExitLabel(band)"></span>
+                </button>
+              </template>
+              <!-- bandMenuOpen(band), not isBranchOpen(band.ownerId) directly:
+                   the main band has no ownerId, and isBranchOpen(null) reads
+                   true while nothing is open — bandMenuOpen excludes it. -->
+              <template x-if="bandMenuOpen(band)">
+                <div class="af__branch-menu">
+                  <button @click="pickBranchTarget(band.ownerId, 'next')" x-text="t('next')"></button>
+                  <button @click="pickBranchTarget(band.ownerId, 'end')" x-text="t('end')"></button>
+                  <template x-for="s in otherSteps(band.ownerId)" :key="s.id">
+                    <button @click="pickBranchTarget(band.ownerId, s.id)"
+                            x-text="s.title || t('unnamedStep')"></button>
+                  </template>
                 </div>
               </template>
             </div>

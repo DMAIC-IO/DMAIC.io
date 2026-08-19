@@ -58,6 +58,25 @@
   color: var(--color-text-primary);
 }
 
+/* The exit at the end of a no-band: where the detour rejoins the main path.
+   This is where the branch's target is picked now, not at the diamond — see
+   the comment on `.af__branch` below. */
+.af__band-exit {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  border: none;
+  background: transparent;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-xs);
+  cursor: pointer;
+  padding: 2px var(--spacing-xs);
+  border-radius: var(--border-radius-sm);
+  white-space: nowrap;
+}
+.af__band-exit:hover { background: var(--color-bg-tertiary); color: var(--color-text-primary); }
+.af__band-exit-arrow { color: var(--color-error); }
+
 /* .af__flow is gone — the columns are direct children of .fc-swimlanes.
    (A wrapper in between breaks the subgrid, see the NOTE in flowchart.css.) */
 
@@ -245,8 +264,10 @@
    "No" under the bottom one. Two words at two corners are readable without
    explanation; a stack of two lines under the diamond is not.
 
-   Only "No" is a control. "Yes" is the flow on to the right and has nothing
-   to pick, so it stays a plain label — no pointer, no hover surface.
+   Both are plain labels here, not controls: "Yes" is the flow on to the
+   right, and "No" only names the vertex — its target is picked at the end
+   of the band now (`.af__band-exit` below), where the detour rejoins the
+   main path, not at the diamond.
 
    The gutter is the room the right-hand word needs. It is part of the
    wrapper (not of the chain gap), so the label can never land under the
@@ -264,19 +285,7 @@
   transition: background var(--transition-speed);
 }
 
-.af__branch--no { cursor: pointer; }
-.af__branch--no:hover { background: var(--color-bg-tertiary); }
 .af__branch-word { font-weight: var(--font-weight-semibold); }
-
-/* The target only appears where the branch does NOT simply flow on — see
-   branchTarget() in activity-flowchart.js. Muted, because the branch itself
-   is the message and the target is the footnote. */
-.af__branch-target {
-  color: var(--color-text-secondary);
-  max-width: 100%;
-  overflow-wrap: anywhere;
-}
-.af__branch-target:empty { display: none; }
 
 /* Centred on the diamond's middle line — the same line the connector to the
    next step sits on, so shape, label and arrow read as one edge. */
@@ -331,6 +340,15 @@
   border-radius: var(--border-radius-sm);
 }
 .af__branch-menu button:hover { background: var(--color-bg-secondary); }
+
+/* The slot of the tail column is the popover's reference frame, now that the
+   target picker sits there rather than on the diamond. */
+.af__col--tail .af__slot { position: relative; }
+
+.af__col--tail .af__branch-menu {
+  left: 0;
+  transform: none;
+}
 
 /* ── Rework arcs (positioned imperatively once measurement lands) ──── */
 .af__rework-arc {
