@@ -170,30 +170,35 @@
         </div>
       </template>
 
-      <!-- Abschluss-Spalte: je Band der Platzhalter zum Anlegen und dahinter
-           der Ausgang. Steht am Ende JEDES Bandes, nicht nur im leeren —
-           hinter der letzten Karte gibt es außerhalb eines Drags keinen
-           Einfüge-Pfeil, über den sich ein Band sonst verlängern ließe. -->
-      <div class="af__col af__col--tail fc-swimlane-col">
-        <template x-for="band in bands()" :key="'tail-' + band.id">
-          <div class="af__slot fc-swimlane-slot" :data-band-id="band.id">
-            <template x-if="!isMainBand(band)">
-              <div class="af__band-add">
-                <button data-add="activity" @click="addActivityToBand(band.id)"
-                        :title="t('addStepToBand')">
-                  <span class="icon" data-icon="plus" aria-hidden="true"></span>
-                  <span x-text="t('addStep')"></span>
-                </button>
-                <button data-add="decision" @click="addDecisionToBand(band.id)"
-                        :title="t('addDecisionToBand')">
-                  <span class="icon" data-icon="git-fork" aria-hidden="true"></span>
-                  <span x-text="t('addDecision')"></span>
-                </button>
-              </div>
-            </template>
-          </div>
-        </template>
-      </div>
+      <!-- Tail column: per band the placeholder for adding, and behind it the
+           exit. It stands at the end of EVERY band, not just an empty one —
+           behind the last card there is no insert arrow outside a drag, so a
+           band could not be extended otherwise.
+
+           Gated on hasBands(): without a decision there is no band to add to,
+           and the column would only cost a stray, empty grid track. -->
+      <template x-if="hasBands()">
+        <div class="af__col af__col--tail fc-swimlane-col">
+          <template x-for="band in bands()" :key="'tail-' + band.id">
+            <div class="af__slot fc-swimlane-slot" :data-band-id="band.id">
+              <template x-if="!isMainBand(band)">
+                <div class="af__band-add">
+                  <button data-add="activity" @click="addActivityToBand(band.id)"
+                          :title="t('addStepToBand')">
+                    <span class="icon" data-icon="plus" aria-hidden="true"></span>
+                    <span x-text="t('addStep')"></span>
+                  </button>
+                  <button data-add="decision" @click="addDecisionToBand(band.id)"
+                          :title="t('addDecisionToBand')">
+                    <span class="icon" data-icon="git-fork" aria-hidden="true"></span>
+                    <span x-text="t('addDecision')"></span>
+                  </button>
+                </div>
+              </template>
+            </div>
+          </template>
+        </div>
+      </template>
     </div>
   </div>
 
