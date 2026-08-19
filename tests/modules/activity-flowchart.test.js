@@ -156,7 +156,7 @@ suite('ActivityModel — decisions', () => {
 });
 
 suite('ActivityModel — branches', () => {
-  /** Kette: A · D? · (Umweg u1) · B — u1 liegt im Band von D. */
+  /** Chain: A · D? · (detour u1) · B — u1 lives in D's band. */
   function chain() {
     const m = new ActivityModel();
     const a = m.addStep(0, { title: 'A' });
@@ -235,7 +235,7 @@ suite('ActivityModel — branches', () => {
     const m = new ActivityModel();
     const d = m.addStepToBranch('main', { kind: 'decision', title: 'D?' });
     assertEqual(d.kind, 'decision');
-    assertEqual(d.decision.noTarget, 'next');   // ohne addDecision wäre decision null
+    assertEqual(d.decision.noTarget, 'next');   // without addDecision, decision would be null
   });
 
   test('addStepToBranch returns null for an unknown band', () => {
