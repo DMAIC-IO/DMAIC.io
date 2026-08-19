@@ -273,6 +273,18 @@ suite('ActivityModel — branches', () => {
     assertEqual(m.steps.find((s) => s.id === extra.id).branchId, 'no:' + d.id);
   });
 
+  test('deleting a step clears the branch targets that pointed at it', () => {
+    // Sonst behauptet der Ausgang eine Sackgasse, die niemand gewählt hat.
+    const m = new ActivityModel();
+    const a = m.addStep(0, { title: 'A' });
+    const d = m.addDecision(1, { title: 'D?' });
+    m.setDecisionTarget(d.id, a.id);
+    assertEqual(m.steps[1].decision.noTarget, a.id);
+
+    assertEqual(m.removeStep(a.id), true);
+    assertEqual(m.steps[0].decision.noTarget, 'next');
+  });
+
   test('dragging a decision carries its band steps along', () => {
     // A · D? · u1(D) · B  →  diamond to gap 4 (the end): A · B · D? · u1
     const { m, d } = chain();

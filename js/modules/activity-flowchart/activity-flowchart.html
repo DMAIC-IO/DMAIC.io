@@ -213,7 +213,7 @@
                       <button @click="pickBranchTarget(band.ownerId, 'end')" x-text="t('end')"></button>
                       <template x-for="s in otherSteps(band.ownerId)" :key="s.id">
                         <button @click="pickBranchTarget(band.ownerId, s.id)"
-                                x-text="s.title || t('unnamedStep')"></button>
+                                x-text="stepLabel(s)"></button>
                       </template>
                     </div>
                   </template>

@@ -313,13 +313,9 @@
   display: flex;
   flex-direction: column;
   gap: 1px;
-  border: none;
-  border-radius: var(--border-radius-sm);
-  background: transparent;
   font-size: var(--font-size-xs);
   line-height: 1.25;
   padding: 2px var(--spacing-xs);
-  transition: background var(--transition-speed);
 }
 
 .af__branch-word { font-weight: var(--font-weight-semibold); }

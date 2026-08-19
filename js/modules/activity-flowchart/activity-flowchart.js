@@ -85,6 +85,18 @@ export function activityFlowchartData(module, _t) {
      */
     branchWord(branch) { return _t(branch === 'yes' ? 'yes' : 'no'); },
     /**
+     * How a step names itself when another step points at it. A diamond keeps
+     * its text in `decision.label` and never sets `title`, so reading `title`
+     * alone left every decision reading as "(unnamed)" wherever it was a
+     * target — in an exit, in the picker list.
+     * @param {object} step
+     * @returns {string}
+     */
+    stepLabel(step) {
+      if (step?.kind === 'decision') return step.decision?.label || _t('unnamedDecision');
+      return step?.title || _t('unnamedStep');
+    },
+    /**
      * The NO branch's target, spelled out only where it deviates from simply
      * flowing on to the next step — process end, or a jump to another step.
      * A jump BACK is a rework loop and says so with a ↩.
@@ -102,8 +114,8 @@ export function activityFlowchartData(module, _t) {
       const targetIdx = this.model.steps.findIndex((s) => s.id === target);
       if (targetIdx === -1) return '';
       const ownIdx = this.model.steps.findIndex((s) => s.id === step.id);
-      const title = this.model.steps[targetIdx].title || _t('unnamedStep');
-      return targetIdx < ownIdx ? `↩ ${title}` : title;
+      const label = this.stepLabel(this.model.steps[targetIdx]);
+      return targetIdx < ownIdx ? `↩ ${label}` : label;
     },
     /**
      * The bands as rows, top to bottom: main path, then one band per decision,
@@ -216,7 +228,7 @@ export function activityFlowchartData(module, _t) {
         const next = this.model.steps
           .slice(oi + 1)
           .find((s) => s.branchId === owner.branchId);
-        return next ? (next.title || _t('unnamedStep')) : _t('end');
+        return next ? this.stepLabel(next) : _t('end');
       }
       return this.branchTarget(owner) || _t('end');
     },

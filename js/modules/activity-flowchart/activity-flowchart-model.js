@@ -105,6 +105,14 @@ export class ActivityModel extends FlowchartState {
     if (dissolved) {
       this.steps.forEach((s) => { if (s.branchId === dissolved) s.branchId = ownBranch; });
     }
+    // The band exit is the ONLY statement about the no-branch's target — a
+    // noTarget left pointing at the now-deleted step would read as a
+    // deliberately chosen dead end ("process end") forever after, and would
+    // outlive any number of save/load cycles. Falling back to 'next' matches
+    // what happens when a decision's target was never set.
+    this.steps.forEach((s) => {
+      if (s.kind === 'decision' && s.decision?.noTarget === id) s.decision.noTarget = 'next';
+    });
     return true;
   }
 
