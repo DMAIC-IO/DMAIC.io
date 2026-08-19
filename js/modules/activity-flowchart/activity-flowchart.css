@@ -106,6 +106,13 @@
    to stand above the rail. */
 .af__step, .af__band-add, .af__band-exit { position: relative; z-index: 1; }
 
+/* …and they mask the rail rather than letting it run through their labels.
+   A card carries its own surface and hides the line by itself; these two are
+   transparent, so the rail would strike right through their text. Masking
+   also makes the exit read as the END of the line instead of a stop on it. */
+.af__band-add,
+.af__band-exit { background: var(--color-bg-primary); }
+
 /* Placeholder and exit sit ON their band's line, not above it. Slots align
    their content to the top so cards line up along their headers; the tail
    column holds no card, so its content centres onto the rail instead. */
