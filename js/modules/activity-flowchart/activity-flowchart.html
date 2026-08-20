@@ -31,12 +31,6 @@
         </div>
       </template>
 
-      <!-- One rail per band: the continuous line that makes a band read as one
-           flow, from its first column to its own exit. -->
-      <template x-for="band in bands()" :key="'rail-' + band.id">
-        <div class="af__band-rail" :data-band-id="band.id" :style="railStyle(band)"></div>
-      </template>
-
       <!-- One lane per band, behind the cards: it carries the band's rail and
            takes the drop that moves a card into this band. It replaces the
            per-column slots — those forced every step to own a column in every

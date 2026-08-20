@@ -122,7 +122,7 @@
    again — reachable without going through the picker first. */
 .af__band-exit-clear {
   border: none;
-  background: var(--color-bg-primary);
+  background: transparent;
   color: var(--color-text-tertiary);
   cursor: pointer;
   font-size: var(--font-size-xs);
@@ -164,24 +164,7 @@
 
 .af__step--dimmed { opacity: 0.45; }
 
-/* The rail: one line per band, behind its cards, from the band's first column
-   to its own exit. */
-.af__band-rail {
-  align-self: center;
-  height: 2px;
-  background: var(--color-border-primary);
-  z-index: 0;
-  pointer-events: none;
-}
-
 .af__step, .af__band-add, .af__band-exit { position: relative; z-index: 1; }
-
-/* …and they mask the rail rather than letting it run through their labels.
-   A card carries its own surface and hides the line by itself; these two are
-   transparent, so the rail would strike right through their text. Masking
-   also makes the exit read as the END of the line instead of a stop on it. */
-.af__band-add,
-.af__band-exit { background: var(--color-bg-primary); }
 
 
 

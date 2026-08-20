@@ -278,27 +278,6 @@ export function activityFlowchartData(module, _t) {
       return `grid-row: ${row}; grid-column: ${last + 1 + (this.hasBands() ? 1 : 0)}`;
     },
 
-    /**
-     * Grid placement for a band's rail — the continuous line that makes the
-     * band read as one flow. It runs from the band's first column to its tail,
-     * so a detour starts under the diamond it hangs off and ends at its own
-     * exit. Now a plain grid child: with every item explicitly placed there is
-     * no auto-placement left for it to disturb.
-     * @param {object} band
-     * @returns {string}
-     */
-    railStyle(band) {
-      const { colOf } = this.model.steps.length ? this._layout() : { colOf: new Map() };
-      const owner = this.model.steps.find((s) => s.id === band.ownerId);
-      const own = this.model.steps.filter((s) => s.branchId === band.id).map((x) => colOf.get(x.id));
-      if (owner) own.push(colOf.get(owner.id));
-      if (own.length === 0) return 'display: none';
-      const off = this.hasBands() ? 1 : 0;
-      const row = this.bands().findIndex((b) => b.id === band.id) + 1;
-      const from = Math.min(...own) + off;
-      const to = Math.max(...own) + off + (this.isMainBand(band) ? 1 : 2);
-      return `grid-row: ${row}; grid-column: ${from} / ${to}`;
-    },
 
     /**
      * Is this step the first card of its band? Such a card has no arrow to its
