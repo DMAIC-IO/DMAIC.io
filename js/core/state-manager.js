@@ -827,12 +827,27 @@ export class StateManager {
   // ─── IDB Write-Behind ─────────────────────────────────────────
 
   /**
-   * Schedule a debounced flush of pending module-state writes to IDB.
+   * Schedule a flush of pending module-state writes to IDB — immediately on
+   * the leading edge, debounced for everything that follows.
+   *
+   * Trailing-edge-only debouncing left every discrete commit — saving a
+   * dialog, adding a row — sitting in memory for 500ms, protected by nothing
+   * but the unload handler. That handler cannot be made reliable: an IDB
+   * transaction started in `beforeunload` may still be discarded while the
+   * browser tears the page down, which is exactly how Bug 012 lost data. So
+   * the first write after a quiet period goes to storage at once, and only
+   * the writes that follow it inside the window are batched — which is what
+   * the debounce is actually for: not losing the keystroke, but not writing
+   * on every one of them.
    * @private
    */
   _scheduleFlush() {
+    const wasQuiet = this._flushTimer === null;
     if (this._flushTimer) clearTimeout(this._flushTimer);
     this._flushTimer = setTimeout(() => this._flush(), IDB_FLUSH_DELAY);
+    // Straight to the adapter, not via _flush(): that one clears the timer we
+    // just armed for whatever else arrives inside the window.
+    if (wasQuiet) this._adapter.flush();
   }
 
   /**
