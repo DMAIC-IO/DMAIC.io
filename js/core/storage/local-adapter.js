@@ -26,8 +26,19 @@ export class LocalAdapter extends StorageAdapter {
     // back to the async path, which the browser may discard while tearing the
     // page down. That is Bug 012, and it stayed reproducible in roughly one
     // of twelve instant reloads until the connection was warmed here.
-    openDB().catch(() => { /* a real read/write will surface the failure */ });
+    // Kept, not discarded: boot awaits ready() so the connection is up before
+    // the first edit can happen. Fire-and-forget left a race — a fresh project
+    // reads nothing at boot, so load() returned before the open completed and
+    // an item entered right away could still meet a closed database.
+    this._warm = openDB().catch(() => { /* a real read/write surfaces it */ });
   }
+
+  /**
+   * Resolve once the IDB connection is open (or its open has failed), so that
+   * flushSync() has a connection to write through. See the constructor.
+   * @returns {Promise<void>}
+   */
+  async ready() { await this._warm; }
 
   _pp(id) { return `${this._P}p_${id}_`; }
 
