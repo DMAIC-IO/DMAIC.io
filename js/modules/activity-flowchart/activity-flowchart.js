@@ -65,7 +65,7 @@ export function activityFlowchartData(module, _t) {
   return {
     ...chainViewMixin(module, _t, {
       autoSizeSelector: 'textarea.af__step-title, textarea.af__decision-label, textarea.af__step-description',
-      dragRowSelector: '.af__col',
+      dragRowSelector: '.af__step',
     }),
 
     // ── Lifecycle (per Alpine instance) ───────────────────────
@@ -140,6 +140,163 @@ export function activityFlowchartData(module, _t) {
       };
       walk(MAIN_BRANCH, null, 0);
       return rows;
+    },
+
+    /**
+     * Column for every step, and how many columns the chart needs.
+     *
+     * Each band packs its own steps: a step takes its band's next free column,
+     * and a decision hands its own column on to the band it opens — which is
+     * what puts the first detour card directly below the diamond. Nothing else
+     * reserves a column, so the main path stays dense where a detour runs
+     * beside it instead of tearing open across it.
+     *
+     * Only a detour that rejoins FORWARD imposes anything: its target has to
+     * sit at least one column past the detour's last card, or the rejoin would
+     * point backwards. Where that does not hold, the target and everything
+     * after it in the chain move right — repeated until nothing is left to
+     * push, because one shift can create the next. A dead end or a rework loop
+     * constrains nothing.
+     *
+     * @returns {{colOf: Map<string, number>, count: number}} 1-based columns.
+     */
+    _layout() {
+      const steps = this.model.steps;
+      const colOf = new Map();
+      const next = new Map([[MAIN_BRANCH, 1]]);
+
+      steps.forEach((s) => {
+        const c = next.get(s.branchId) ?? 1;
+        colOf.set(s.id, c);
+        next.set(s.branchId, c + 1);
+        if (s.kind === 'decision') next.set(BRANCH_PREFIX + s.id, c);
+      });
+
+      const indexOf = new Map(steps.map((s, i) => [s.id, i]));
+      for (let guard = 0; guard < steps.length + 1; guard++) {
+        let shifted = false;
+        for (const d of steps) {
+          if (d.kind !== 'decision') continue;
+          const target = this._rejoinTarget(d);
+          if (!target) continue;                       // dead end or rework loop
+          const band = BRANCH_PREFIX + d.id;
+          let last = colOf.get(d.id);
+          steps.forEach((s) => {
+            if (s.branchId === band) last = Math.max(last, colOf.get(s.id));
+          });
+          const need = last + 1 - colOf.get(target.id);
+          if (need <= 0) continue;
+          const from = indexOf.get(target.id);
+          steps.forEach((s, i) => {
+            if (i >= from) colOf.set(s.id, colOf.get(s.id) + need);
+          });
+          shifted = true;
+        }
+        if (!shifted) break;
+      }
+
+      let count = 0;
+      colOf.forEach((c) => { count = Math.max(count, c); });
+      return { colOf, count };
+    },
+
+    /**
+     * The step a decision's detour rejoins, but only when that is FORWARD in
+     * the chain — a dead end and a rework loop both pull nothing along.
+     * @param {object} decision
+     * @returns {object|null}
+     */
+    _rejoinTarget(decision) {
+      const steps = this.model.steps;
+      const own = steps.indexOf(decision);
+      const target = decision.decision?.noTarget || 'next';
+      if (target === 'end') return null;
+      const found = target === 'next'
+        ? steps.slice(own + 1).find((s) => s.branchId === decision.branchId)
+        : steps.find((s) => s.id === target);
+      if (!found) return null;
+      return steps.indexOf(found) > own ? found : null;
+    },
+
+    /**
+     * Grid placement for a step: its band's row, its packed column.
+     * Assembled here because Alpine CSP allows one plain method call per
+     * binding (.claude/alpine.md).
+     * @param {object} step
+     * @returns {string}
+     */
+    stepStyle(step) {
+      const rows = this.bands();
+      const row = rows.findIndex((b) => b.id === step.branchId) + 1;
+      const col = this._layout().colOf.get(step.id) + (this.hasBands() ? 1 : 0);
+      return `grid-row: ${row}; grid-column: ${col}`;
+    },
+
+    /**
+     * Grid placement for a band's lane — the full-width strip behind its
+     * cards. It carries the band's rail and takes the drop that moves a card
+     * into this band.
+     * @param {object} band
+     * @returns {string}
+     */
+    laneStyle(band) {
+      const row = this.bands().findIndex((b) => b.id === band.id) + 1;
+      const off = this.hasBands() ? 1 : 0;
+      // Spelled out rather than `/ -1`: -1 counts from the end of the EXPLICIT
+      // grid, and every column here is implicit — created by placing an item
+      // beyond the template. The lane would collapse onto the label column.
+      // +2 covers the tail that sits one column past the last card.
+      const end = this._layout().count + off + 2;
+      return `grid-row: ${row}; grid-column: ${1 + off} / ${end}`;
+    },
+
+    /**
+     * Grid placement for a band's tail — placeholder and exit, directly after
+     * that band's last card rather than in a column shared by every band.
+     * @param {object} band
+     * @returns {string}
+     */
+    tailStyle(band) {
+      const { colOf } = this._layout();
+      const owner = this.model.steps.find((s) => s.id === band.ownerId);
+      let last = owner ? colOf.get(owner.id) : 0;
+      this.model.steps.forEach((s) => {
+        if (s.branchId === band.id) last = Math.max(last, colOf.get(s.id));
+      });
+      const row = this.bands().findIndex((b) => b.id === band.id) + 1;
+      return `grid-row: ${row}; grid-column: ${last + 1 + (this.hasBands() ? 1 : 0)}`;
+    },
+
+    /**
+     * Grid placement for a band's rail — the continuous line that makes the
+     * band read as one flow. It runs from the band's first column to its tail,
+     * so a detour starts under the diamond it hangs off and ends at its own
+     * exit. Now a plain grid child: with every item explicitly placed there is
+     * no auto-placement left for it to disturb.
+     * @param {object} band
+     * @returns {string}
+     */
+    railStyle(band) {
+      const { colOf } = this.model.steps.length ? this._layout() : { colOf: new Map() };
+      const owner = this.model.steps.find((s) => s.id === band.ownerId);
+      const own = this.model.steps.filter((s) => s.branchId === band.id).map((x) => colOf.get(x.id));
+      if (owner) own.push(colOf.get(owner.id));
+      if (own.length === 0) return 'display: none';
+      const off = this.hasBands() ? 1 : 0;
+      const row = this.bands().findIndex((b) => b.id === band.id) + 1;
+      const from = Math.min(...own) + off;
+      const to = Math.max(...own) + off + (this.isMainBand(band) ? 1 : 2);
+      return `grid-row: ${row}; grid-column: ${from} / ${to}`;
+    },
+
+    /**
+     * Is this step the first card of its band? Such a card has no arrow to its
+     * left — what precedes it is the diamond one row up, not a card beside it.
+     * @param {object} step
+     * @returns {boolean}
+     */
+    isBandStart(step) {
+      return this.model.steps.filter((s) => s.branchId === step.branchId)[0]?.id === step.id;
     },
 
     /** True as soon as there is at least one band besides the main path. */
@@ -264,46 +421,6 @@ export function activityFlowchartData(module, _t) {
         || this.isDecision(this.model.steps[idx - 1]);
       return [touchesDiamond ? 'af__connector--diamond' : '', this.gapClass(idx)]
         .filter(Boolean).join(' ');
-    },
-    /**
-     * Does band `bandId` span column `idx`? The main path spans from its first
-     * to its last step; a detour band starts at its DECISION already, otherwise
-     * the branch-off would hang in the air while the band is still empty.
-     *
-     * The class is assembled here rather than in the template — Alpine CSP
-     * allows only one plain method call per binding (.claude/alpine.md), the
-     * same rule connectorClass(idx) follows.
-     *
-     * @param {number} idx - Column / chain index.
-     * @param {string} bandId
-     * @returns {string} `'af__slot--rail'` or `''`.
-     */
-    slotClass(idx, bandId) {
-      const band = this.bands().find((b) => b.id === bandId);
-      if (!band) return '';
-      const own = [];
-      this.model.steps.forEach((s, i) => {
-        if (s.branchId === bandId || s.id === band.ownerId) own.push(i);
-      });
-      if (own.length === 0) return '';
-      const first = own[0];
-      // A detour band's line has to carry on to the LAST column, because its
-      // exit sits in the tail column beyond every step column. Stopping at its
-      // own last step would break the line before it reaches its own exit.
-      if (!this.isMainBand(band)) return idx >= first ? 'af__slot--rail' : '';
-      const last = own[own.length - 1];
-      return idx >= first && idx <= last ? 'af__slot--rail' : '';
-    },
-    /**
-     * Rail class for the tail column's slot. A no-band's line has to reach
-     * into that column, because that is where its exit sits — without it the
-     * `↳ …` would float beside the line instead of ending it. The main path
-     * has no exit there and stops at its last step.
-     * @param {object} band
-     * @returns {string} `'af__slot--rail'` or `''`.
-     */
-    tailSlotClass(band) {
-      return this.isMainBand(band) ? '' : 'af__slot--rail';
     },
     isBranchOpen(stepId) {
       return this._openMenuStepId === stepId;

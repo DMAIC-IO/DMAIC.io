@@ -5,12 +5,44 @@
  */
 
 /* ── Canvas / chain layout ─────────────────────────────────────────────
-   The canvas IS the swimlane grid (one column per step, one row per band) —
-   the engine lives in js/core/flowchart/flowchart.css. Without a diamond it
-   has exactly one row and reads like the former flex chain. */
+   The canvas is a grid whose every item is placed explicitly: the row from a
+   step's band, the column from a packing pass that lets each band fill its
+   own columns (see _layout() in activity-flowchart.js). A column therefore
+   belongs to no single step — a diamond and the first card of the detour it
+   opens share one — which is what keeps the main path dense where a detour
+   runs beside it instead of tearing it open across it.
+
+   Because nothing is auto-placed any more, the rail can be a plain grid child
+   again; the earlier conflict (explicitly placed children are positioned
+   before auto-placed ones and stole the columns) cannot arise. */
 .af__canvas {
   position: relative;
   min-height: 200px;
+}
+
+/* The label column is the only leftover that would be auto-placed; pin it so
+   it cannot land anywhere but first. */
+.af__canvas > .fc-swimlane-labels { grid-column: 1; }
+
+/* A band's lane: the full-width strip behind its cards. It exists to take the
+   drop that moves a card into this band — the per-column slots that used to
+   do that are gone with the packed layout — and to draw the band separator. */
+.af__lane {
+  border-bottom: var(--border-width) dashed var(--color-border-secondary);
+  z-index: 0;
+}
+.af__lane:last-of-type { border-bottom: none; }
+.af__lane.is-drop-target { background: var(--color-flowchart-step-accent-bg); }
+
+/* A band's tail: placeholder and exit, directly after that band's last card.
+   Centred on the rail, because unlike a card there is nothing here to align
+   along a header. */
+.af__tail {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  padding-left: var(--fc-chain-gap);
+  z-index: 1;
 }
 
 .af__empty-hint {
@@ -83,28 +115,16 @@
    least 84px tall, which would tear the list away from its trigger. */
 .af__band-exit-wrap { position: relative; }
 
-/* .af__flow is gone — the columns are direct children of .fc-swimlanes.
-   (A wrapper in between breaks the subgrid, see the NOTE in flowchart.css.) */
-
-/* The rail: a line on the slot's centre axis, behind card and diamond. It
-   sits on the slot rather than on a grid child of its own — explicitly placed
-   grid children are positioned before the auto-placed ones and would take the
-   label column and the step columns their places. */
-.af__slot--rail::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 50%;
+/* The rail: one line per band, behind its cards, from the band's first column
+   to its own exit. */
+.af__band-rail {
+  align-self: center;
   height: 2px;
   background: var(--color-border-primary);
   z-index: 0;
   pointer-events: none;
 }
 
-/* The slot is already the rail's containing block via the core
-   `.fc-swimlane-slot { position: relative; }` rule — its content only needs
-   to stand above the rail. */
 .af__step, .af__band-add, .af__band-exit { position: relative; z-index: 1; }
 
 /* …and they mask the rail rather than letting it run through their labels.
@@ -114,10 +134,7 @@
 .af__band-add,
 .af__band-exit { background: var(--color-bg-primary); }
 
-/* Placeholder and exit sit ON their band's line, not above it. Slots align
-   their content to the top so cards line up along their headers; the tail
-   column holds no card, so its content centres onto the rail instead. */
-.af__col--tail .af__slot { align-items: center; }
+
 
 /* The connector is absolutely positioned INTO the gap left of its step, so it
    costs no layout space and two cards sit exactly --fc-chain-gap apart —
@@ -143,11 +160,10 @@
   right: calc(-1 * var(--fc-chain-gap));
 }
 
-/* Drag feedback — chainViewMixin's stepDragStart toggles is-dragging
-   directly on the .af__col node (the dragstart target, since .af__col carries
-   `draggable` now). The column is never a drop target itself; is-drop-target
-   is emitted only onto connectors (gapClass()) and substep items. */
-.af__col.is-dragging { opacity: 0.5; }
+/* Drag feedback — chainViewMixin's stepDragStart toggles is-dragging directly
+   on the .af__step node, which carries `draggable` again now that a step is
+   its own grid item rather than living inside a per-column wrapper. */
+.af__step.is-dragging { opacity: 0.5; }
 
 /* ── Connector between steps ────────────────────────────────────────────
    Look comes from `.fc-connector` in js/core/flowchart/flowchart.css. */
@@ -374,7 +390,7 @@
 }
 .af__branch-menu button:hover { background: var(--color-bg-secondary); }
 
-.af__col--tail .af__branch-menu {
+.af__tail .af__branch-menu {
   left: 0;
   transform: none;
 }

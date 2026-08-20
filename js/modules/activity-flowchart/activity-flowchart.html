@@ -27,20 +27,34 @@
         </div>
       </template>
 
-      <!-- Chain of steps — columns are direct children of .fc-swimlanes so
-           the subgrid rows line up (see the NOTE in flowchart.css). -->
+      <!-- One rail per band: the continuous line that makes a band read as one
+           flow, from its first column to its own exit. -->
+      <template x-for="band in bands()" :key="'rail-' + band.id">
+        <div class="af__band-rail" :data-band-id="band.id" :style="railStyle(band)"></div>
+      </template>
+
+      <!-- One lane per band, behind the cards: it carries the band's rail and
+           takes the drop that moves a card into this band. It replaces the
+           per-column slots — those forced every step to own a column in every
+           band, which is exactly what tore the main path open wherever a
+           detour ran beside it. -->
+      <template x-for="band in bands()" :key="'lane-' + band.id">
+        <div class="af__lane" :data-band-id="band.id" :style="laneStyle(band)"
+             @dragover.prevent
+             @drop.stop="dropOnBand(band.id, $event)"></div>
+      </template>
+
+      <!-- Steps, each placed explicitly: its band decides the row, the packed
+           column its position. Two steps may share a column — a diamond and
+           the first card of the detour it opens do exactly that. -->
       <template x-for="(step, idx) in model.steps" :key="step.id">
-        <div class="af__col fc-swimlane-col"
+        <div class="af__step"
+             :class="isDecision(step) ? 'af__step--decision' : 'af__step--activity'"
+             :style="stepStyle(step)"
              :data-step-id="step.id"
+             :data-band-id="step.branchId"
              @dragstart="stepDragStart(step.id, $event)"
              @dragend="stepDragEnd($event)">
-          <template x-for="band in bands()" :key="'slot-' + step.id + '-' + band.id">
-            <div class="af__slot fc-swimlane-slot" :data-band-id="band.id"
-                 :class="slotClass(idx, band.id)"
-                 @dragover.prevent
-                 @drop.stop="dropOnBand(band.id, $event)">
-              <template x-if="stepInBand(step, band.id)">
-                <div class="af__step" :class="isDecision(step) ? 'af__step--decision' : 'af__step--activity'">
 
                   <!-- Gap 0 — the rail in front of the first card. Only in the
                        DOM while a card is in flight; outside a drag it would
@@ -56,13 +70,16 @@
                   </template>
 
                   <!-- Connector before this step — gap `idx`: click inserts a
-                       step here, drop moves the dragged card here. -->
-                  <template x-if="idx > 0">
+                       step here, drop moves the dragged card here. Not on a
+                       band's first card: what precedes it is the diamond one
+                       row up, not a card beside it, so an arrow there would
+                       point at empty space. -->
+                  <template x-if="!isBandStart(step)">
                     <div class="af__connector fc-connector fc-connector--clickable fc-connector--header-aligned"
                          :class="connectorClass(idx)"
                          data-action="insert-step" :data-idx="idx" :data-gap="idx"
                          :title="t('insertHere')"
-                         @click="insertInBand(idx, band.id)"
+                         @click="insertInBand(idx, step.branchId)"
                          @dragover="gapDragOver(idx, $event)"
                          @dragleave="gapDragLeave(idx, $event)"
                          @drop="gapDrop(idx, $event)">
@@ -151,26 +168,23 @@
                       <span class="af__connector-arrow fc-connector__arrow">&raquo;</span>
                     </div>
                   </template>
-                </div>
-              </template>
-            </div>
-          </template>
         </div>
       </template>
 
-      <!-- Tail column: per band the placeholder for adding, and behind it the
-           exit. It stands at the end of EVERY band, not just an empty one —
-           behind the last card there is no insert arrow outside a drag, so a
-           band could not be extended otherwise.
+      <!-- Each band's tail: the placeholder for adding, and behind it the
+           exit. It sits directly after that band's OWN last card, not in a
+           column shared by every band — the point of the packed layout is
+           that a band ends where its cards end.
 
-           Gated on hasBands(): without a decision there is no band to add to,
-           and the column would only cost a stray, empty grid track. -->
-      <template x-if="hasBands()">
-        <div class="af__col af__col--tail fc-swimlane-col">
-          <template x-for="band in bands()" :key="'tail-' + band.id">
-            <div class="af__slot fc-swimlane-slot" :data-band-id="band.id"
-                 :class="tailSlotClass(band)">
-              <template x-if="!isMainBand(band)">
+           It stands at the end of every band, not just an empty one: behind
+           the last card there is no insert arrow outside a drag, so a band
+           could not be extended otherwise. The main path has neither exit nor
+           placeholder — it is extended from the toolbar. -->
+      <template x-for="band in bands()" :key="'tail-' + band.id">
+        <template x-if="!isMainBand(band)">
+          <div class="af__tail" :data-band-id="band.id" :style="tailStyle(band)"
+               @dragover.prevent
+               @drop.stop="dropOnBand(band.id, $event)">
                 <div class="af__band-add">
                   <button data-add="activity" @click="addActivityToBand(band.id)"
                           :title="t('addStepToBand')">
@@ -183,7 +197,6 @@
                     <span x-text="t('addDecision')"></span>
                   </button>
                 </div>
-              </template>
               <!-- The exit: where the detour rejoins the main path. This is
                    where the no-branch's target is picked now, not at the
                    diamond — a rail running off the end of the band has to
@@ -199,7 +212,6 @@
                    directly: the main band has no ownerId, and
                    isBranchOpen(null) reads true while nothing is open —
                    bandMenuOpen excludes it. -->
-              <template x-if="!isMainBand(band)">
                 <div class="af__band-exit-wrap">
                   <button class="af__band-exit" :data-band-id="band.id"
                           @click="toggleBranchMenu(band.ownerId)"
@@ -218,10 +230,8 @@
                     </div>
                   </template>
                 </div>
-              </template>
-            </div>
-          </template>
-        </div>
+          </div>
+        </template>
       </template>
     </div>
   </div>
