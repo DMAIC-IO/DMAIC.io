@@ -37,7 +37,9 @@ suite('ActivityModel — normalizer', () => {
         decision: { label: '?', yesTarget: 'end', noTarget: 'next' } },
     ] });
     assertEqual('yesTarget' in m.steps[0].decision, false);
-    assertEqual(m.steps[0].decision.noTarget, 'next');
+    // 'next' is gone too: a detour either rejoins at a card someone picked,
+    // or it does not rejoin — and not rejoining IS the process ending there.
+    assertEqual(m.steps[0].decision.noTarget, 'end');
   });
 
   test('coerces invalid kind to "activity"', () => {
@@ -52,11 +54,11 @@ suite('ActivityModel — normalizer', () => {
     assertEqual(m.steps[0].decision, null);
   });
 
-  test('coerces a missing no-target to "next"', () => {
+  test('coerces a missing no-target to "end"', () => {
     const m = ActivityModel.fromJSON({ steps: [
       { title: 'D', kind: 'decision', decision: { label: 'ok?' } },
     ] });
-    assertEqual(m.steps[0].decision.noTarget, 'next');
+    assertEqual(m.steps[0].decision.noTarget, 'end');
   });
 
   test('roundtrip preserves the decision fields that remain', () => {
@@ -122,11 +124,11 @@ suite('ActivityModel — normalizer', () => {
 });
 
 suite('ActivityModel — decisions', () => {
-  test('addDecision creates a decision step whose no-branch flows on', () => {
+  test('addDecision creates a decision whose detour does not rejoin yet', () => {
     const m = new ActivityModel();
     const d = m.addDecision(0, { title: 'D?' });
     assertEqual(d.kind, 'decision');
-    assertEqual(d.decision.noTarget, 'next');
+    assertEqual(d.decision.noTarget, 'end');
     assertEqual('yesTarget' in d.decision, false);
     assertEqual(m.steps[0].id, d.id);
   });
@@ -147,11 +149,11 @@ suite('ActivityModel — decisions', () => {
     assertEqual(m.setDecisionTarget(a.id, 'end'), false);
   });
 
-  test('setDecisionTarget coerces an empty target to "next"', () => {
+  test('setDecisionTarget coerces an empty target to "end"', () => {
     const m = new ActivityModel();
     const d = m.addDecision(0);
     assertEqual(m.setDecisionTarget(d.id, ''), true);
-    assertEqual(d.decision.noTarget, 'next');
+    assertEqual(d.decision.noTarget, 'end');
   });
 });
 
@@ -235,7 +237,7 @@ suite('ActivityModel — branches', () => {
     const m = new ActivityModel();
     const d = m.addStepToBranch('main', { kind: 'decision', title: 'D?' });
     assertEqual(d.kind, 'decision');
-    assertEqual(d.decision.noTarget, 'next');   // without addDecision, decision would be null
+    assertEqual(d.decision.noTarget, 'end');   // without addDecision, decision would be null
   });
 
   test('addStepToBranch returns null for an unknown band', () => {
@@ -282,7 +284,7 @@ suite('ActivityModel — branches', () => {
     assertEqual(m.steps[1].decision.noTarget, a.id);
 
     assertEqual(m.removeStep(a.id), true);
-    assertEqual(m.steps[0].decision.noTarget, 'next');
+    assertEqual(m.steps[0].decision.noTarget, 'end');
   });
 
   test('dragging a decision carries its band steps along', () => {
@@ -467,19 +469,20 @@ suite('activityFlowchartData — bands', () => {
     assertEqual(depths.join(','), '0,1,2');
   });
 
-  test('band exit for "next" names the following step in the parent band', () => {
+  test('band exit names the card the detour rejoins at', () => {
     const m = new ActivityModel();
-    m.addDecision(0, { title: 'D?' });
-    m.addStep(1, { title: 'Danach' });
-    const band = ctx(m).bands()[1];
-    assertEqual(ctx(m).bandExitLabel(band), 'Danach');
+    const d = m.addDecision(0, { title: 'D?' });
+    const after = m.addStep(1, { title: 'Danach' });
+    m.setDecisionTarget(d.id, after.id);
+    const c = ctx(m);
+    assertEqual(c.bandExitLabel(c.bands()[1]), 'Danach');
   });
 
-  test('band exit for "next" without a following step reads as the process end', () => {
+  test('band exit invites a choice while the detour does not rejoin', () => {
     const m = new ActivityModel();
     m.addDecision(0, { title: 'D?' });
     const c = ctx(m);
-    assertEqual(c.bandExitLabel(c.bands()[1]), 'end');
+    assertEqual(c.bandExitLabel(c.bands()[1]), 'pickEntry');
   });
 
   test('band exit for a backward jump is marked as a loop', () => {
@@ -491,12 +494,14 @@ suite('activityFlowchartData — bands', () => {
     assertEqual(c.bandExitLabel(c.bands()[1]), '↩ A');
   });
 
-  test('band exit for "end" reads as the process end', () => {
+  test('dropping the target puts the band back to inviting a choice', () => {
     const m = new ActivityModel();
-    const d = m.addDecision(0, { title: 'D?' });
+    const a = m.addStep(0, { title: 'A' });
+    const d = m.addDecision(1, { title: 'D?' });
+    m.setDecisionTarget(d.id, a.id);
     m.setDecisionTarget(d.id, 'end');
     const c = ctx(m);
-    assertEqual(c.bandExitLabel(c.bands()[1]), 'end');
+    assertEqual(c.bandExitLabel(c.bands()[1]), 'pickEntry');
   });
 
   test('isMainBand tells the main path row from a decision band', () => {

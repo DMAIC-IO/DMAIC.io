@@ -39,14 +39,18 @@ function normalizeBranchId(raw) {
 }
 
 /**
- * Normalizes a decision branch target to one of `'next' | 'end' | <stepId>`.
+ * Normalizes a decision branch target to one of `'end' | <stepId>`.
  * @param {*} t - Raw target value.
- * @returns {string} Normalized target, defaulting to `'next'`.
+ * @returns {string} Normalized target, defaulting to `'end'`.
  */
 function normalizeTarget(t) {
-  if (t === 'next' || t === 'end') return t;
+  // 'next' is gone. A detour either rejoins at a card its author picked, or it
+  // does not rejoin at all — and not rejoining IS the process ending there, so
+  // there is nothing for a separate "flows on" destination to mean. Older
+  // projects that stored 'next' land on 'end', which is what they showed.
+  if (t === 'end' || t === 'next') return 'end';
   if (typeof t === 'string' && t.length > 0) return t;   // treat as stepId
-  return 'next';
+  return 'end';
 }
 
 /**
@@ -62,7 +66,7 @@ function normalizeTarget(t) {
  * @returns {{label: string, noTarget: string}} Normalized decision.
  */
 function normalizeDecision(raw) {
-  if (!raw || typeof raw !== 'object') return { label: '', noTarget: 'next' };
+  if (!raw || typeof raw !== 'object') return { label: '', noTarget: 'end' };
   return {
     label: typeof raw.label === 'string' ? raw.label : '',
     noTarget: normalizeTarget(raw.noTarget),
@@ -108,10 +112,10 @@ export class ActivityModel extends FlowchartState {
     // The band exit is the ONLY statement about the no-branch's target — a
     // noTarget left pointing at the now-deleted step would read as a
     // deliberately chosen dead end ("process end") forever after, and would
-    // outlive any number of save/load cycles. Falling back to 'next' matches
+    // outlive any number of save/load cycles. Falling back to 'end' matches
     // what happens when a decision's target was never set.
     this.steps.forEach((s) => {
-      if (s.kind === 'decision' && s.decision?.noTarget === id) s.decision.noTarget = 'next';
+      if (s.kind === 'decision' && s.decision?.noTarget === id) s.decision.noTarget = 'end';
     });
     return true;
   }
@@ -135,7 +139,7 @@ export class ActivityModel extends FlowchartState {
   addDecision(atIndex, seed = {}) {
     return super.addStep(atIndex, {
       kind: 'decision',
-      decision: { label: '', noTarget: 'next' },
+      decision: { label: '', noTarget: 'end' },
       ...seed,
     }, activityNormalize);
   }
@@ -144,7 +148,7 @@ export class ActivityModel extends FlowchartState {
    * Sets the target of a decision's NO branch. The yes branch has no target
    * to set — it is the flow on to the next step (see `normalizeDecision`).
    * @param {string} stepId - Id of the decision step.
-   * @param {string} target - New target (`'next' | 'end' | <stepId>`).
+   * @param {string} target - New target (`'end' | <stepId>`).
    * @returns {boolean} True if the target was set, false otherwise.
    */
   setDecisionTarget(stepId, target) {

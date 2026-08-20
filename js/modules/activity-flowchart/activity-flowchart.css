@@ -118,7 +118,21 @@
   gap: 2px;
 }
 
-.af__band-exit-caption {
+/* The ✕ that drops a chosen re-entry, so the detour ends where its cards do
+   again — reachable without going through the picker first. */
+.af__band-exit-clear {
+  border: none;
+  background: var(--color-bg-primary);
+  color: var(--color-text-tertiary);
+  cursor: pointer;
+  font-size: var(--font-size-xs);
+  line-height: 1;
+  padding: 3px 4px;
+  border-radius: var(--border-radius-sm);
+}
+.af__band-exit-clear:hover { color: var(--color-error); background: var(--color-bg-tertiary); }
+
+.af__band-exit-caption--unused {
   color: var(--color-text-secondary);
   font-size: var(--font-size-xs);
   white-space: nowrap;

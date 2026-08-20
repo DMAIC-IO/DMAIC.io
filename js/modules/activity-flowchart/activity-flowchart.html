@@ -213,39 +213,26 @@
                    The third button doubles as the display: once a card is
                    chosen it carries that card's name, so the band's state
                    reads without opening anything. -->
+              <!-- One control, because there is only one thing to say: where
+                   this detour rejoins. Nothing chosen means it does not rejoin
+                   — the stream ends where its cards end — so "process end" is
+                   not a destination to pick but the absence of one, and
+                   "flows on to the next step" was never a thing the author
+                   asked for. -->
               <div class="af__band-exit-group">
-                <!-- Names what the three buttons are: where the detour REJOINS
-                     once its cards are done. Not where "no" leads — the card
-                     below the diamond already says that, and calling this row
-                     that made every button in it read as nonsense. -->
-                <span class="af__band-exit-caption" x-text="t('exitCaption')"></span>
-                <!-- Only where there is something to flow on to. With the
-                     diamond last in its band this button would repeat the one
-                     beside it word for word. -->
-                <template x-if="hasNextExit(band)">
-                  <button class="af__band-exit" data-exit="next"
-                          :class="exitClass(band, 'next')"
-                          :data-band-id="band.id"
-                          @click.stop="setExitNext(band)"
-                          :title="t('next')">
-                    <span class="af__band-exit-arrow">&#8627;</span>
-                    <span class="af__band-exit-target" x-text="exitNextLabel(band)"></span>
-                  </button>
-                </template>
-                <button class="af__band-exit" data-exit="end"
-                        :class="exitClass(band, 'end')"
-                        @click.stop="setExitEnd(band)"
-                        :title="t('end')">
-                  <span class="af__band-exit-arrow">&#8627;</span>
-                  <span class="af__band-exit-target" x-text="t('end')"></span>
-                </button>
-                <button class="af__band-exit af__band-exit--pick" data-exit="pick"
-                        :class="exitClass(band, 'step')"
+                <button class="af__band-exit" data-exit="pick"
+                        :class="exitClass(band)"
+                        :data-band-id="band.id"
                         @click.stop="togglePick(band)"
                         :title="t('pickEntryTitle')">
                   <span class="af__band-exit-arrow">&#9673;</span>
                   <span class="af__band-exit-target" x-text="exitPickLabel(band)"></span>
                 </button>
+                <template x-if="hasRejoin(band)">
+                  <button class="af__band-exit-clear"
+                          @click.stop="clearExit(band)"
+                          :title="t('clearRejoin')">&#10005;</button>
+                </template>
               </div>
           </div>
         </template>

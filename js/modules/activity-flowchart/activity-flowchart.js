@@ -107,12 +107,11 @@ export function activityFlowchartData(module, _t) {
      * right, so the chain arrow to the next step already says where it goes.
      *
      * @param {object} step - The decision step.
-     * @returns {string} Target text, or `''` when the branch just flows on.
+     * @returns {string} Target text, or `''` when the branch does not rejoin.
      */
     branchTarget(step) {
       const target = step?.decision?.noTarget;
-      if (!target || target === 'next') return '';
-      if (target === 'end') return _t('end');
+      if (!target || target === 'end') return '';
       const targetIdx = this.model.steps.findIndex((s) => s.id === target);
       if (targetIdx === -1) return '';
       const ownIdx = this.model.steps.findIndex((s) => s.id === step.id);
@@ -154,8 +153,9 @@ export function activityFlowchartData(module, _t) {
      * beside it instead of tearing open across it.
      *
      * Only a detour that rejoins FORWARD imposes anything: its target has to
-     * sit at least one column past the detour's last card, or the rejoin would
-     * point backwards. Where that does not hold, the target and everything
+     * sit past the detour's last card AND past the exit control that follows
+     * it, or the rejoin would point backwards or stand on top of its own
+     * exit. Where that does not hold, the target and everything
      * after it in the chain move right — repeated until nothing is left to
      * push, because one shift can create the next. A dead end or a rework loop
      * constrains nothing.
@@ -186,7 +186,11 @@ export function activityFlowchartData(module, _t) {
           steps.forEach((s) => {
             if (s.branchId === band) last = Math.max(last, colOf.get(s.id));
           });
-          const need = last + 1 - colOf.get(target.id);
+          // +2, not +1: the band's exit control sits in the column right after
+          // its last card, so a target one column past the cards would stand
+          // directly ABOVE that control rather than after it. The eye should
+          // read detour cards, then the exit, then the card it rejoins at.
+          const need = last + 2 - colOf.get(target.id);
           if (need <= 0) continue;
           const from = indexOf.get(target.id);
           steps.forEach((s, i) => {
@@ -211,11 +215,9 @@ export function activityFlowchartData(module, _t) {
     _rejoinTarget(decision) {
       const steps = this.model.steps;
       const own = steps.indexOf(decision);
-      const target = decision.decision?.noTarget || 'next';
+      const target = decision.decision?.noTarget || 'end';
       if (target === 'end') return null;
-      const found = target === 'next'
-        ? steps.slice(own + 1).find((s) => s.branchId === decision.branchId)
-        : steps.find((s) => s.id === target);
+      const found = steps.find((s) => s.id === target);
       if (!found) return null;
       return steps.indexOf(found) > own ? found : null;
     },
@@ -378,54 +380,17 @@ export function activityFlowchartData(module, _t) {
      * @returns {string}
      */
     bandExitLabel(band) {
-      const which = this.exitKind(band);
-      if (which === 'end') return _t('end');
-      if (which === 'next') return this.exitNextLabel(band);
       return this.exitPickLabel(band);
     },
 
     /**
-     * Which of the three exits a band currently uses.
+     * Does this band rejoin at a card, or does it end where its cards end?
      * @param {object} band
-     * @returns {'next'|'end'|'step'}
+     * @returns {'end'|'step'}
      */
     exitKind(band) {
       const owner = this.model.steps.find((s) => s.id === band?.ownerId);
-      const target = owner?.decision?.noTarget || 'next';
-      if (target === 'step' || (target !== 'next' && target !== 'end')) return 'step';
-      // With nothing behind the diamond, "flows on" and "ends" are the same
-      // destination — say it once, as the end, instead of offering two buttons
-      // that both read "Prozessende".
-      if (target === 'next' && !this.hasNextExit(band)) return 'end';
-      return target;
-    },
-
-    /**
-     * Is there a step for this band's detour to flow on to — that is, one
-     * after the diamond in the band the diamond itself lives in?
-     * @param {object} band
-     * @returns {boolean}
-     */
-    hasNextExit(band) {
-      const owner = this.model.steps.find((s) => s.id === band?.ownerId);
-      if (!owner) return false;
-      const oi = this.model.steps.indexOf(owner);
-      return this.model.steps.slice(oi + 1).some((s) => s.branchId === owner.branchId);
-    },
-
-    /**
-     * The "flows on" exit, named after the step it actually reaches rather
-     * than by the abstraction — "Nächster Schritt" tells the reader nothing
-     * they cannot already see, the step's name does.
-     * @param {object} band
-     * @returns {string}
-     */
-    exitNextLabel(band) {
-      const owner = this.model.steps.find((s) => s.id === band?.ownerId);
-      if (!owner) return '';
-      const oi = this.model.steps.indexOf(owner);
-      const next = this.model.steps.slice(oi + 1).find((s) => s.branchId === owner.branchId);
-      return next ? this.stepLabel(next) : _t('end');
+      return (owner?.decision?.noTarget || 'end') === 'end' ? 'end' : 'step';
     },
 
     /**
@@ -442,30 +407,27 @@ export function activityFlowchartData(module, _t) {
     },
 
     /**
-     * Marks the exit a band currently uses. Assembled here because Alpine CSP
+     * Marks the exit once a card is chosen. Assembled here because Alpine CSP
      * allows one plain method call per binding (.claude/alpine.md).
      * @param {object} band
-     * @param {'next'|'end'|'step'} which
      * @returns {string}
      */
-    exitClass(band, which) {
-      return this.exitKind(band) === which ? 'af__band-exit--active' : '';
+    exitClass(band) {
+      return this.exitKind(band) === 'step' ? 'af__band-exit--active' : '';
     },
 
-    /** @param {object} band @returns {void} */
-    setExitNext(band) { this._setExit(band, 'next'); },
-    /** @param {object} band @returns {void} */
-    setExitEnd(band) { this._setExit(band, 'end'); },
+    /** True once this band rejoins somewhere — the ✕ only makes sense then. */
+    hasRejoin(band) { return this.exitKind(band) === 'step'; },
 
     /**
+     * Drop the chosen re-entry. The detour then ends where its cards end,
+     * which is the state a band starts in.
      * @param {object} band
-     * @param {string} target
      * @returns {void}
-     * @private
      */
-    _setExit(band, target) {
+    clearExit(band) {
       this._pickBandId = null;
-      this.model.setDecisionTarget(band?.ownerId, target);
+      this.model.setDecisionTarget(band?.ownerId, 'end');
     },
     /**
      * Extra classes for the connector rendered in front of step `idx`.
@@ -569,7 +531,7 @@ export function activityFlowchartData(module, _t) {
       this.model.steps.forEach((s, i) => {
         if (s.kind !== 'decision' || !s.decision) return;
         const target = s.decision.noTarget;
-        if (target === 'next' || target === 'end') return;
+        if (target === 'end') return;
         const targetIdx = this.model.steps.findIndex((x) => x.id === target);
         if (targetIdx !== -1 && targetIdx < i) {
           loops.push({ fromId: s.id, toId: target, branch: 'no' });
