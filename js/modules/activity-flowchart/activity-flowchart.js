@@ -392,7 +392,25 @@ export function activityFlowchartData(module, _t) {
     exitKind(band) {
       const owner = this.model.steps.find((s) => s.id === band?.ownerId);
       const target = owner?.decision?.noTarget || 'next';
-      return (target === 'next' || target === 'end') ? target : 'step';
+      if (target === 'step' || (target !== 'next' && target !== 'end')) return 'step';
+      // With nothing behind the diamond, "flows on" and "ends" are the same
+      // destination — say it once, as the end, instead of offering two buttons
+      // that both read "Prozessende".
+      if (target === 'next' && !this.hasNextExit(band)) return 'end';
+      return target;
+    },
+
+    /**
+     * Is there a step for this band's detour to flow on to — that is, one
+     * after the diamond in the band the diamond itself lives in?
+     * @param {object} band
+     * @returns {boolean}
+     */
+    hasNextExit(band) {
+      const owner = this.model.steps.find((s) => s.id === band?.ownerId);
+      if (!owner) return false;
+      const oi = this.model.steps.indexOf(owner);
+      return this.model.steps.slice(oi + 1).some((s) => s.branchId === owner.branchId);
     },
 
     /**

@@ -118,6 +118,14 @@
   gap: 2px;
 }
 
+.af__band-exit-caption {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-xs);
+  white-space: nowrap;
+  padding-right: var(--spacing-xs);
+  background: var(--color-bg-primary);
+}
+
 /* Doubled class on purpose: the rule that gives every exit the canvas colour
    (so the rail does not strike through its label) sits further down, and a
    single class would lose to it on source order — the chosen exit would look
