@@ -110,10 +110,37 @@
 .af__band-exit:hover { background: var(--color-bg-tertiary); color: var(--color-text-primary); }
 .af__band-exit-arrow { color: var(--color-error); }
 
-/* The exit and its picker share a positioned wrapper, so the popover docks
-   directly under the button instead of under the whole slot — the slot is at
-   least 84px tall, which would tear the list away from its trigger. */
-.af__band-exit-wrap { position: relative; }
+/* The three exits sit side by side; the one in use is marked, so a glance at
+   the band end says where the detour goes without opening anything. */
+.af__band-exit-group {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+/* Doubled class on purpose: the rule that gives every exit the canvas colour
+   (so the rail does not strike through its label) sits further down, and a
+   single class would lose to it on source order — the chosen exit would look
+   like all the others. */
+.af__band-exit.af__band-exit--active {
+  background: var(--color-flowchart-step-accent-bg);
+  color: var(--color-flowchart-step-accent);
+  box-shadow: inset 0 0 0 1px var(--color-flowchart-step-accent);
+  font-weight: var(--font-weight-semibold);
+}
+
+/* While the picker is armed, the eligible cards invite the click and the rest
+   step back — the choice is made on the chart, so the chart has to say which
+   cards are choices. */
+.af__step--pickable { cursor: pointer; }
+
+.af__step--pickable .af__card,
+.af__step--pickable .af__diamond-shape {
+  outline: 2px dashed var(--color-accent);
+  outline-offset: 2px;
+}
+
+.af__step--dimmed { opacity: 0.45; }
 
 /* The rail: one line per band, behind its cards, from the band's first column
    to its own exit. */
@@ -360,40 +387,6 @@
   color: var(--color-error);
 }
 
-/* Anchored on the unclipped wrapper — inside the shape the clip-path would
-   swallow it. */
-.af__branch-menu {
-  position: absolute;
-  top: 100%;
-  left: calc(var(--af-diamond-w) / 2);
-  transform: translateX(-50%);
-  z-index: 10;
-  display: flex;
-  flex-direction: column;
-  min-width: 160px;
-  background: var(--color-bg-elevated);
-  border: 1px solid var(--color-border-primary);
-  border-radius: var(--border-radius-sm);
-  box-shadow: var(--shadow-md);
-  padding: var(--spacing-xs);
-}
-
-.af__branch-menu button {
-  border: none;
-  background: transparent;
-  text-align: left;
-  padding: var(--spacing-xs) var(--spacing-sm);
-  cursor: pointer;
-  color: var(--color-text-primary);
-  font-size: var(--font-size-sm);
-  border-radius: var(--border-radius-sm);
-}
-.af__branch-menu button:hover { background: var(--color-bg-secondary); }
-
-.af__tail .af__branch-menu {
-  left: 0;
-  transform: none;
-}
 
 /* ── Rework arcs (positioned imperatively once measurement lands) ──── */
 .af__rework-arc {

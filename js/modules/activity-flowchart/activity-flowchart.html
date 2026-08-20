@@ -1,7 +1,11 @@
 <div class="module-container af" x-data="activityFlowchart" data-ref="root">
   <div class="module-container__body">
+    <!-- A click anywhere that is not an eligible card or an exit button
+         cancels the picker; those two stop the event. Escape does too. -->
     <div class="af__canvas fc-swimlanes" data-ref="flow"
-         :style="bandGridStyle()">
+         :style="bandGridStyle()"
+         @click="cancelPick()"
+         @keydown.escape.window="cancelPick()">
 
       <!-- Rework arcs (rendered above the chain, at measured positions —
            positioning/drawing lands in a later task; the DOM hooks exist
@@ -49,10 +53,11 @@
            the first card of the detour it opens do exactly that. -->
       <template x-for="(step, idx) in model.steps" :key="step.id">
         <div class="af__step"
-             :class="isDecision(step) ? 'af__step--decision' : 'af__step--activity'"
+             :class="stepClass(step)"
              :style="stepStyle(step)"
              :data-step-id="step.id"
              :data-band-id="step.branchId"
+             @click="pickStep(step)"
              @dragstart="stepDragStart(step.id, $event)"
              @dragend="stepDragEnd($event)">
 
@@ -197,39 +202,41 @@
                     <span x-text="t('addDecision')"></span>
                   </button>
                 </div>
-              <!-- The exit: where the detour rejoins the main path. This is
-                   where the no-branch's target is picked now, not at the
-                   diamond — a rail running off the end of the band has to
-                   say where it goes.
+              <!-- The exit: where the detour rejoins the main path. Three
+                   buttons rather than a dropdown — the dropdown listed every
+                   step in the chart, which in a real process map is dozens of
+                   entries, several reading "(unnamed)", and none of them
+                   saying where it sits. The two fixed destinations are one
+                   click each; anything else is picked on the chart itself,
+                   which already shows what the list could not.
 
-                   The exit and its picker share a positioned wrapper
-                   (.af__band-exit-wrap) rather than each being a bare sibling
-                   in the slot: the slot itself is at least 84px tall, so a
-                   popover anchored on the slot would dock under the whole
-                   row instead of under the button that opened it.
-
-                   bandMenuOpen(band), not isBranchOpen(band.ownerId)
-                   directly: the main band has no ownerId, and
-                   isBranchOpen(null) reads true while nothing is open —
-                   bandMenuOpen excludes it. -->
-                <div class="af__band-exit-wrap">
-                  <button class="af__band-exit" :data-band-id="band.id"
-                          @click="toggleBranchMenu(band.ownerId)"
-                          :title="t('pickTarget')">
-                    <span class="af__band-exit-arrow">&#8627;</span>
-                    <span class="af__band-exit-target" x-text="bandExitLabel(band)"></span>
-                  </button>
-                  <template x-if="bandMenuOpen(band)">
-                    <div class="af__branch-menu">
-                      <button @click="pickBranchTarget(band.ownerId, 'next')" x-text="t('next')"></button>
-                      <button @click="pickBranchTarget(band.ownerId, 'end')" x-text="t('end')"></button>
-                      <template x-for="s in otherSteps(band.ownerId)" :key="s.id">
-                        <button @click="pickBranchTarget(band.ownerId, s.id)"
-                                x-text="stepLabel(s)"></button>
-                      </template>
-                    </div>
-                  </template>
-                </div>
+                   The third button doubles as the display: once a card is
+                   chosen it carries that card's name, so the band's state
+                   reads without opening anything. -->
+              <div class="af__band-exit-group">
+                <button class="af__band-exit" data-exit="next"
+                        :class="exitClass(band, 'next')"
+                        :data-band-id="band.id"
+                        @click.stop="setExitNext(band)"
+                        :title="t('next')">
+                  <span class="af__band-exit-arrow">&#8627;</span>
+                  <span class="af__band-exit-target" x-text="exitNextLabel(band)"></span>
+                </button>
+                <button class="af__band-exit" data-exit="end"
+                        :class="exitClass(band, 'end')"
+                        @click.stop="setExitEnd(band)"
+                        :title="t('end')">
+                  <span class="af__band-exit-arrow">&#8627;</span>
+                  <span class="af__band-exit-target" x-text="t('end')"></span>
+                </button>
+                <button class="af__band-exit af__band-exit--pick" data-exit="pick"
+                        :class="exitClass(band, 'step')"
+                        @click.stop="togglePick(band)"
+                        :title="t('pickEntryTitle')">
+                  <span class="af__band-exit-arrow">&#9673;</span>
+                  <span class="af__band-exit-target" x-text="exitPickLabel(band)"></span>
+                </button>
+              </div>
           </div>
         </template>
       </template>

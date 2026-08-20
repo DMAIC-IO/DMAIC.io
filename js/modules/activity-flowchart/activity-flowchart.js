@@ -23,7 +23,9 @@ import { chainViewMixin } from '../../core/flowchart/flowchart-view.js';
 import {
   listSourceInstances, appendFromInstance,
 } from '../../core/flowchart/flowchart-import.js';
-import { ActivityModel, MAIN_BRANCH, BRANCH_PREFIX } from './activity-flowchart-model.js';
+import {
+  ActivityModel, MAIN_BRANCH, BRANCH_PREFIX, branchOwnerId,
+} from './activity-flowchart-model.js';
 
 const IMPORT_SOURCES = ['process-map', 'sipoc'];
 
@@ -73,9 +75,9 @@ export function activityFlowchartData(module, _t) {
       this.$nextTick(() => this._autoSizeAll());
     },
 
-    // Decision popover state (transient — never persisted). One id is
-    // enough: only the no branch has a target to pick.
-    _openMenuStepId: null,
+    // Entry-point picker state (transient — never persisted): the band whose
+    // exit is waiting for a card to be clicked, or null.
+    _pickBandId: null,
 
     isDecision(step) { return step?.kind === 'decision'; },
     /**
@@ -376,33 +378,76 @@ export function activityFlowchartData(module, _t) {
      * @returns {string}
      */
     bandExitLabel(band) {
+      const which = this.exitKind(band);
+      if (which === 'end') return _t('end');
+      if (which === 'next') return this.exitNextLabel(band);
+      return this.exitPickLabel(band);
+    },
+
+    /**
+     * Which of the three exits a band currently uses.
+     * @param {object} band
+     * @returns {'next'|'end'|'step'}
+     */
+    exitKind(band) {
+      const owner = this.model.steps.find((s) => s.id === band?.ownerId);
+      const target = owner?.decision?.noTarget || 'next';
+      return (target === 'next' || target === 'end') ? target : 'step';
+    },
+
+    /**
+     * The "flows on" exit, named after the step it actually reaches rather
+     * than by the abstraction — "Nächster Schritt" tells the reader nothing
+     * they cannot already see, the step's name does.
+     * @param {object} band
+     * @returns {string}
+     */
+    exitNextLabel(band) {
       const owner = this.model.steps.find((s) => s.id === band?.ownerId);
       if (!owner) return '';
-      const target = owner.decision?.noTarget || 'next';
-      if (target === 'end') return _t('end');
-      if (target === 'next') {
-        const oi = this.model.steps.indexOf(owner);
-        const next = this.model.steps
-          .slice(oi + 1)
-          .find((s) => s.branchId === owner.branchId);
-        return next ? this.stepLabel(next) : _t('end');
-      }
-      return this.branchTarget(owner) || _t('end');
+      const oi = this.model.steps.indexOf(owner);
+      const next = this.model.steps.slice(oi + 1).find((s) => s.branchId === owner.branchId);
+      return next ? this.stepLabel(next) : _t('end');
     },
+
     /**
-     * Whether the target picker at the end of THIS band should render. Two
-     * things are merged here because Alpine CSP allows only one plain method
-     * call per binding (.claude/alpine.md):
-     *  - the main band never owns a picker — it has no `ownerId`, so
-     *    `isBranchOpen(null)` would read true in the default (nothing open)
-     *    state and show a phantom, unclickable-through menu under its
-     *    placeholder;
-     *  - the actual open/closed state from `isBranchOpen`.
+     * The pick exit: the chosen step once there is one, otherwise the
+     * invitation to choose. It doubles as the display so the band's state is
+     * readable without opening anything.
      * @param {object} band
-     * @returns {boolean}
+     * @returns {string}
      */
-    bandMenuOpen(band) {
-      return !this.isMainBand(band) && this.isBranchOpen(band?.ownerId);
+    exitPickLabel(band) {
+      const owner = this.model.steps.find((s) => s.id === band?.ownerId);
+      if (!owner || this.exitKind(band) !== 'step') return _t('pickEntry');
+      return this.branchTarget(owner) || _t('pickEntry');
+    },
+
+    /**
+     * Marks the exit a band currently uses. Assembled here because Alpine CSP
+     * allows one plain method call per binding (.claude/alpine.md).
+     * @param {object} band
+     * @param {'next'|'end'|'step'} which
+     * @returns {string}
+     */
+    exitClass(band, which) {
+      return this.exitKind(band) === which ? 'af__band-exit--active' : '';
+    },
+
+    /** @param {object} band @returns {void} */
+    setExitNext(band) { this._setExit(band, 'next'); },
+    /** @param {object} band @returns {void} */
+    setExitEnd(band) { this._setExit(band, 'end'); },
+
+    /**
+     * @param {object} band
+     * @param {string} target
+     * @returns {void}
+     * @private
+     */
+    _setExit(band, target) {
+      this._pickBandId = null;
+      this.model.setDecisionTarget(band?.ownerId, target);
     },
     /**
      * Extra classes for the connector rendered in front of step `idx`.
@@ -422,19 +467,77 @@ export function activityFlowchartData(module, _t) {
       return [touchesDiamond ? 'af__connector--diamond' : '', this.gapClass(idx)]
         .filter(Boolean).join(' ');
     },
-    isBranchOpen(stepId) {
-      return this._openMenuStepId === stepId;
+    /**
+     * Arm the entry-point picker for a band — or disarm it if it was already
+     * armed. The next click on an eligible card sets the exit.
+     *
+     * This replaces a dropdown that listed every step in the chart. In a real
+     * process map that is dozens of entries, several of them reading
+     * "(unnamed)", and nothing in the list says where any of them sits. The
+     * chart itself already shows that, so the chart is where the choice is
+     * made.
+     * @param {object} band
+     * @returns {void}
+     */
+    togglePick(band) {
+      this._pickBandId = this._pickBandId === band?.id ? null : band?.id;
     },
-    /** Steps excluding the given one — used by branch-popover to list jump targets. */
-    otherSteps(stepId) {
-      return this.model.steps.filter((s) => s.id !== stepId);
+
+    /** @returns {void} */
+    cancelPick() { this._pickBandId = null; },
+
+    /** @param {object} band @returns {boolean} */
+    isPicking(band) { return this._pickBandId === band?.id; },
+
+    /**
+     * Can this step be picked right now? Only the cards of the band the
+     * decision branches OFF — for a decision in the main path that is the
+     * main lane. A detour rejoins where it came from, not sideways into a
+     * foreign branch, and never into itself.
+     * @param {object} step
+     * @returns {boolean}
+     */
+    isPickTarget(step) {
+      if (!this._pickBandId) return false;
+      const owner = this.model.steps.find((s) => s.id === branchOwnerId(this._pickBandId));
+      if (!owner || step.id === owner.id) return false;
+      return step.branchId === owner.branchId;
     },
-    toggleBranchMenu(stepId) {
-      this._openMenuStepId = this.isBranchOpen(stepId) ? null : stepId;
+
+    /**
+     * Every class a card carries: its kind, and — while the picker is armed —
+     * whether it is a choice. Merged into one binding because an element can
+     * only have one `:class`; two of them and the browser drops the second
+     * while parsing, silently.
+     * @param {object} step
+     * @returns {string}
+     */
+    stepClass(step) {
+      const kind = this.isDecision(step) ? 'af__step--decision' : 'af__step--activity';
+      return [kind, this.pickClass(step)].filter(Boolean).join(' ');
     },
-    pickBranchTarget(stepId, target) {
-      this.model.setDecisionTarget(stepId, target);
-      this._openMenuStepId = null;
+
+    /**
+     * Extra class for a card while the picker is armed: eligible cards invite
+     * the click, the rest step back so the choice is obvious.
+     * @param {object} step
+     * @returns {string}
+     */
+    pickClass(step) {
+      if (!this._pickBandId) return '';
+      return this.isPickTarget(step) ? 'af__step--pickable' : 'af__step--dimmed';
+    },
+
+    /**
+     * Take a card as the armed band's entry point.
+     * @param {object} step
+     * @returns {void}
+     */
+    pickStep(step) {
+      if (!this.isPickTarget(step)) return;
+      const ownerId = branchOwnerId(this._pickBandId);
+      this._pickBandId = null;
+      this.model.setDecisionTarget(ownerId, step.id);
     },
 
     /**
