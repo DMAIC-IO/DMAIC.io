@@ -182,19 +182,26 @@ export function activityFlowchartData(module, _t) {
           const target = this._rejoinTarget(d);
           if (!target) continue;                       // dead end or rework loop
           const band = BRANCH_PREFIX + d.id;
+          const members = steps.filter((s) => s.branchId === band);
           let last = colOf.get(d.id);
-          steps.forEach((s) => {
-            if (s.branchId === band) last = Math.max(last, colOf.get(s.id));
-          });
+          members.forEach((s) => { last = Math.max(last, colOf.get(s.id)); });
           // +2, not +1: the band's exit control sits in the column right after
           // its last card, so a target one column past the cards would stand
           // directly ABOVE that control rather than after it. The eye should
           // read detour cards, then the exit, then the card it rejoins at.
           const need = last + 2 - colOf.get(target.id);
           if (need <= 0) continue;
+          // Everything from the target rightwards makes room — except this
+          // band's own cards. A member sitting later in the CHAIN than the
+          // target would otherwise be pushed along with it, tearing the very
+          // detour apart whose room we are making, and each pass would push
+          // it further: the run that found this had a card at column 19
+          // instead of 4.
+          const own = new Set(members.map((s) => s.id));
+          own.add(d.id);
           const from = indexOf.get(target.id);
           steps.forEach((s, i) => {
-            if (i >= from) colOf.set(s.id, colOf.get(s.id) + need);
+            if (i >= from && !own.has(s.id)) colOf.set(s.id, colOf.get(s.id) + need);
           });
           shifted = true;
         }
