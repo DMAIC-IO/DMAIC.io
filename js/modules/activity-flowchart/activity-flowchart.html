@@ -70,11 +70,16 @@
                   </template>
 
                   <!-- Connector before this step — gap `idx`: click inserts a
-                       step here, drop moves the dragged card here. Not on a
-                       band's first card: what precedes it is the diamond one
-                       row up, not a card beside it, so an arrow there would
-                       point at empty space. -->
-                  <template x-if="!isBandStart(step)">
+                       step here, drop moves the dragged card here. A band's
+                       first card carries one too, the same as its siblings in
+                       the opportunity and deployment charts: without it that
+                       card had no gap in front of it, so nothing could be
+                       inserted or dropped BEFORE the first card of a band —
+                       inside a band, reordering only ever went backwards.
+                       Only the head of the CHAIN stays free of it; there an
+                       arrow really would point at nothing, and gap 0 has its
+                       drag-only rail above instead. -->
+                  <template x-if="idx > 0">
                     <div class="af__connector fc-connector fc-connector--clickable fc-connector--header-aligned"
                          :class="gapClass(idx)"
                          data-action="insert-step" :data-idx="idx" :data-gap="idx"
@@ -83,7 +88,8 @@
                          @dragover="gapDragOver(idx, $event)"
                          @dragleave="gapDragLeave(idx, $event)"
                          @drop="gapDrop(idx, $event)">
-                      <span class="af__connector-arrow fc-connector__arrow">&raquo;</span>
+                      <span class="af__connector-arrow fc-connector__arrow"
+                            :class="arrowClass(idx)">&raquo;</span>
 
                       <!-- Which of the two goes in here. The arrow cannot
                            decide that on its own: a decision inserted between

@@ -306,13 +306,29 @@ export function activityFlowchartData(module, _t) {
 
 
     /**
-     * Is this step the first card of its band? Such a card has no arrow to its
-     * left — what precedes it is the diamond one row up, not a card beside it.
-     * @param {object} step
-     * @returns {boolean}
+     * Which way the arrow in front of step `idx` points. Only the HEAD of a
+     * band can turn. A band that rejoins backwards carries its return path to
+     * the left of that first card — the stream there runs from the card back
+     * to the kachel it re-enters at, not into the card — so an arrow pointing
+     * right would name a flow that does not exist. A forward rejoin, a dead
+     * end and the whole main path all follow the chain, left to right.
+     * @param {number} idx chain index of the step the arrow belongs to
+     * @returns {string}
      */
-    isBandStart(step) {
-      return this.model.steps.filter((s) => s.branchId === step.branchId)[0]?.id === step.id;
+    arrowClass(idx) {
+      const step = this.model.steps[idx];
+      if (!step || step.branchId === MAIN_BRANCH) return '';
+      const bandSteps = this.model.steps.filter((s) => s.branchId === step.branchId);
+      if (bandSteps[0]?.id !== step.id) return '';
+      const band = this.bands().find((b) => b.id === step.branchId);
+      const owner = this.model.steps.find((s) => s.id === band?.ownerId);
+      const target = owner?.decision?.noTarget;
+      if (!target || target === 'end') return '';
+      const { colOf } = this._layout();
+      const targetCol = colOf.get(target);
+      const headCol = colOf.get(step.id);
+      if (targetCol == null || headCol == null) return '';
+      return targetCol < headCol ? 'af__connector-arrow--back' : '';
     },
 
     /** True as soon as there is at least one band besides the main path. */

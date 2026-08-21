@@ -43,6 +43,11 @@
 
 .af__rejoin-arrow { transform: rotate(-90deg); }
 
+/* Turned around, not swapped for a « glyph: it is the same chevron, so it
+   keeps the size, weight and colour of every other arrow in the chart, and
+   the hover state that trades it for a + keeps working. */
+.af__connector-arrow--back { transform: rotate(180deg); }
+
 /* A band's lane: the full-width strip behind its cards. It exists to take the
    drop that moves a card into this band — the per-column slots that used to
    do that are gone with the packed layout — and to draw the band separator. */
