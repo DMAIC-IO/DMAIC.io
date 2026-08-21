@@ -471,6 +471,19 @@ textarea.fc-card__description {
   margin-right: var(--spacing-md);
 }
 
+/* The column sticks at the container's CONTENT edge, so the container's own
+   left padding stays uncovered — cards scrolled out to the left reappear in
+   that strip, beside the labels. Bleed the column's background across it. */
+.fc-swimlane-labels::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 100%;
+  width: var(--spacing-md);
+  background: var(--color-bg-primary);
+}
+
 .fc-swimlane-label {
   display: flex;
   align-items: center;

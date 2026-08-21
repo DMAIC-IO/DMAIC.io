@@ -41,6 +41,17 @@ export class StorageAdapter {
   flushSync() {}
 
   /**
+   * Resolve once the adapter is ready for synchronous writes. Adapters backed
+   * by an async store open their connection lazily; until that connection is
+   * up, {@link flushSync} cannot issue anything and an unload falls back to
+   * the async path the browser may discard. Boot awaits this so no edit can
+   * be made before the store can be written to synchronously.
+   * Default: ready immediately.
+   * @returns {Promise<void>}
+   */
+  async ready() {}
+
+  /**
    * Register a callback fired when the backing store changes remotely
    * (another client/co-author wrote). Returns an unsubscribe function.
    * @param {() => void} _onRemoteChange

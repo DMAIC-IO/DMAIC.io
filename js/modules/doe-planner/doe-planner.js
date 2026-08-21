@@ -43,6 +43,7 @@ import {
   computeAliasStructure, computeDispersionAnalysis,
 } from './doe-planner-analysis.js';
 import { provisionWorksheet } from '../../core/examples-registry.js';
+import { uid } from '../../core/uid.js';
 
 // ─── Constants ─────────────────────────────────────────────────────
 
@@ -1167,7 +1168,7 @@ const mod = createModule({
         this.applyPreviewEditsToDesign();
         if (m.worksheetRef) { this.removeOldWorksheet(m.worksheetRef); m.worksheetRef = null; }
 
-        const expId = crypto.randomUUID();
+        const expId = uid();
         const ref = createDesignWorksheet(ctx(), m.design, m.factors, m.responses, m.doeName, 'improve', expId);
         createExperimentRecord(ctx(), expId, m.design, m.factors, m.responses, m.doeName, ref);
         ref.designSignature = m.designSignature();
@@ -1254,7 +1255,7 @@ const mod = createModule({
           const items = sm.get(`phases.${p}`) ?? [];
           if (items.some(i => i.instanceId === ctx().instanceId)) { phase = p; break; }
         }
-        const regInstanceId = crypto.randomUUID();
+        const regInstanceId = uid();
         const existing = sm.get(`phases.${phase}`) ?? [];
         sm.set(`phases.${phase}`, [...existing, { instanceId: regInstanceId, moduleId: 'regression', order: existing.length, state: {} }]);
         sm.setModuleState(regInstanceId, {

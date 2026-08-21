@@ -3100,8 +3100,8 @@
         "en": "Activity Flowchart Quote Request"
       },
       "description": {
-        "de": "6 Schritte vom Erfassen der Kundenanfrage bis zur Auftragsbestätigung — 5 Aktivitäten plus eine Freigabe-Entscheidung, deren Nein-Zweig als Rework-Loop zurück auf die Angebotskalkulation zeigt.",
-        "en": "6 steps from capturing a customer inquiry to the order confirmation — 5 activities plus one approval decision whose no-branch loops back to the quote calculation as a rework loop."
+        "de": "7 Schritte vom Erfassen der Kundenanfrage bis zur Auftragsbestätigung — 6 Aktivitäten plus eine Freigabe-Entscheidung, deren Nein-Zweig ein eigenes Band mit einem Überarbeitungs-Schritt öffnet, bevor es zurück in die Angebotskalkulation geht.",
+        "en": "7 steps from capturing a customer inquiry to the order confirmation — 6 activities plus one approval decision whose no-branch opens its own band with a revision step before looping back into the quote calculation."
       },
       "source": "DMAIC.io Lehrkonfiguration",
       "license": "public-domain",

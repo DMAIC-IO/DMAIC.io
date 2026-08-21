@@ -2,7 +2,7 @@ import { StorageAdapter } from './storage-adapter.js';
 import { VERSION } from '../version.js';
 import { stripPatch } from '../version-utils.js';
 import { DEFAULT_CYCLE, getCycle } from '../cycles/cycles.js';
-import { idbGetAllForProject, idbBatch, idbBatchSync, idbDeleteAllForProject } from '../idb-store.js';
+import { openDB, idbGetAllForProject, idbBatch, idbBatchSync, idbDeleteAllForProject } from '../idb-store.js';
 
 const genId = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
 
@@ -18,7 +18,27 @@ export class LocalAdapter extends StorageAdapter {
     /** @type {Map<string, Set<string>>} pending per-project deletes */
     this._pendingDel = new Map();
     this.migrateLegacyIfNeeded();
+    // Warm the IDB connection now. flushSync() is the only write path that
+    // survives an immediate reload, and it needs an ALREADY OPEN connection —
+    // idbBatchSync bails with `if (!_db) return false` otherwise. Without
+    // this, the first item of a fresh project can be entered and the page
+    // reloaded before anything ever opened the database; the write then falls
+    // back to the async path, which the browser may discard while tearing the
+    // page down. That is Bug 012, and it stayed reproducible in roughly one
+    // of twelve instant reloads until the connection was warmed here.
+    // Kept, not discarded: boot awaits ready() so the connection is up before
+    // the first edit can happen. Fire-and-forget left a race — a fresh project
+    // reads nothing at boot, so load() returned before the open completed and
+    // an item entered right away could still meet a closed database.
+    this._warm = openDB().catch(() => { /* a real read/write surfaces it */ });
   }
+
+  /**
+   * Resolve once the IDB connection is open (or its open has failed), so that
+   * flushSync() has a connection to write through. See the constructor.
+   * @returns {Promise<void>}
+   */
+  async ready() { await this._warm; }
 
   _pp(id) { return `${this._P}p_${id}_`; }
 

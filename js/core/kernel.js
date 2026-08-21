@@ -30,6 +30,11 @@ import { shortcutRegistry } from './shortcut-registry.js';
 export async function bootKernel(adapter = new LocalAdapter()) {
   const eventBus     = new EventBus();
   const stateManager = new StateManager(eventBus, adapter);
+  // Before anything can be edited: wait until the adapter can write
+  // synchronously. Otherwise an item entered into a fresh project and
+  // reloaded at once races the still-opening store, and the unload flush
+  // falls back to the async path the browser may drop (Bug 012).
+  await adapter.ready?.();
   await stateManager.load();
 
   const i18n = new I18n('de');

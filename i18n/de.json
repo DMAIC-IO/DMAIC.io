@@ -2210,6 +2210,8 @@
       "decisionPlaceholder": "Ja/Nein-Frage …",
       "addStep": "Aktivität hinzufügen",
       "addDecision": "Entscheidung hinzufügen",
+      "addStepToBand": "Aktivität in diesem Umweg anlegen",
+      "addDecisionToBand": "Entscheidung in diesem Umweg anlegen",
       "deleteStep": "Schritt löschen",
       "insertHere": "Hier einfügen — oder eine Karte hierher ziehen",
       "emptyHint": "Noch keine Schritte — über die Symbolleiste eine Aktivität oder Entscheidung hinzufügen.",
@@ -2222,10 +2224,14 @@
       "exportImageComingSoon": "Bild-Export folgt in einer späteren Version.",
       "yes": "Ja",
       "no": "Nein",
-      "pickTarget": "Ziel dieses Zweigs wählen …",
-      "next": "Nächster Schritt",
       "end": "Prozessende",
-      "unnamedStep": "(unbenannt)"
+      "pickEntry": "Wiedereinstieg wählen",
+      "pickEntryTitle": "Wiedereinstiegspunkt anklicken — ohne Auswahl endet der Wertstrom hier",
+      "clearRejoin": "Wiedereinstieg aufheben — der Wertstrom endet dann hier",
+      "unnamedStep": "(unbenannt)",
+      "mainPath": "Hauptpfad",
+      "bandLabel": "Nein: {q}",
+      "unnamedDecision": "(ohne Frage)"
     },
     "opportunity-flowchart": {
       "name": "Opportunity Flowchart",

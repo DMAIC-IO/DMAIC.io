@@ -12,6 +12,8 @@
  * Schema is documented in docs/EXAMPLES.md (private site repo).
  */
 
+import { uid } from './uid.js';
+
 const CATALOG_URL = './examples/index.json';
 const BASE_PATH = './examples/';
 
@@ -218,7 +220,7 @@ export function removeProvisionedWorksheet(context, instanceId) {
 export function provisionInstance(context, { moduleId, phase, state }) {
   if (!context?.stateManager || !moduleId || !phase) return null;
   const sm = context.stateManager;
-  const instanceId = crypto.randomUUID();
+  const instanceId = uid();
   const list = sm.get(`phases.${phase}`) ?? [];
   list.push({ instanceId, moduleId, order: list.length, state: {} });
   sm.set(`phases.${phase}`, list);

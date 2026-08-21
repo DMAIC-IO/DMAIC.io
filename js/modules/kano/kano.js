@@ -23,6 +23,7 @@ import { exportSvgAsPNG, exportSvgAsFile } from '../../core/chart/modebar.js';
 import { provisionInstance } from '../../core/examples-registry.js';
 import manifest from '../manifest.js';
 import { DEFAULT_CYCLE } from '../../core/cycles/cycles.js';
+import { uid } from '../../core/uid.js';
 
 /**
  * Ermittelt die Phase, in der eine frisch provisionierte `voc-ctx-tree`-
@@ -324,7 +325,7 @@ export default createModule({
         const tree = this.activeTreeState();
         if (!tree) return;
         const d = diff(this.model.items, flatten(tree, this.model.source.level));
-        this.model.setItems(applyDiff(this.model.items, d, () => crypto.randomUUID()));
+        this.model.setItems(applyDiff(this.model.items, d, () => uid()));
         this.refreshPending();
         this.$nextTick(() => this.mountChart());
       },

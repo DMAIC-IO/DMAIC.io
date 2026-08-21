@@ -2210,6 +2210,8 @@
       "decisionPlaceholder": "Yes/no question …",
       "addStep": "Add activity",
       "addDecision": "Add decision",
+      "addStepToBand": "Add an activity to this detour",
+      "addDecisionToBand": "Add a decision to this detour",
       "deleteStep": "Delete step",
       "insertHere": "Insert here — or drop a card here to move it",
       "emptyHint": "No steps yet — use the toolbar to add an activity or decision.",
@@ -2222,10 +2224,14 @@
       "exportImageComingSoon": "Image export lands in a later release.",
       "yes": "Yes",
       "no": "No",
-      "pickTarget": "Pick this branch's target …",
-      "next": "Next step",
       "end": "Process end",
-      "unnamedStep": "(unnamed)"
+      "pickEntry": "Pick re-entry",
+      "pickEntryTitle": "Click the re-entry point — without one the stream ends here",
+      "clearRejoin": "Drop the re-entry — the stream then ends here",
+      "unnamedStep": "(unnamed)",
+      "mainPath": "Main path",
+      "bandLabel": "No: {q}",
+      "unnamedDecision": "(no question)"
     },
     "opportunity-flowchart": {
       "name": "Opportunity Flowchart",

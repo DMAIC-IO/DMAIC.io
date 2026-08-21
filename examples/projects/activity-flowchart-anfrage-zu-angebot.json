@@ -34,11 +34,20 @@
       "kind": "decision",
       "decision": {
         "label": "Angebot freigegeben?",
-        "yesTarget": "next",
         "noTarget": "s3"
       },
       "expanded": false,
       "substeps": []
+    },
+    {
+      "id": "s4b",
+      "title": "Angebot überarbeiten",
+      "description": "Vertrieb passt Konditionen oder Kalkulation gemäß Rückmeldung der Vertriebsleitung an, bevor es zurück in die Kalkulation geht.",
+      "kind": "activity",
+      "decision": null,
+      "expanded": false,
+      "substeps": [],
+      "branchId": "no:s4"
     },
     {
       "id": "s5",

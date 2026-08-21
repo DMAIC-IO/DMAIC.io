@@ -1,6 +1,12 @@
 <div class="module-container af" x-data="activityFlowchart" data-ref="root">
   <div class="module-container__body">
-    <div class="af__canvas">
+    <!-- A click anywhere that is not an eligible card, an exit button or an
+         open insert menu closes what is open; those stop the event. Escape
+         does the same. -->
+    <div class="af__canvas fc-swimlanes" data-ref="flow"
+         :style="bandGridStyle()"
+         @click="closeOverlays()"
+         @keydown.escape.window="closeOverlays()">
 
       <!-- Rework arcs (rendered above the chain, at measured positions —
            positioning/drawing lands in a later task; the DOM hooks exist
@@ -14,127 +20,264 @@
         <p class="af__empty-hint" x-text="t('emptyHint')"></p>
       </template>
 
-      <!-- Chain of steps -->
-      <div class="af__flow" data-ref="flow">
-        <template x-for="(step, idx) in model.steps" :key="step.id">
-          <div class="af__step" :class="isDecision(step) ? 'af__step--decision' : 'af__step--activity'"
-               :data-step-id="step.id"
-               @dragstart="stepDragStart(step.id, $event)"
-               @dragend="stepDragEnd($event)">
+      <!-- Label column, only once there is a second band besides the main
+           path — a lone main path reads exactly like the former flex chain. -->
+      <template x-if="hasBands()">
+        <div class="fc-swimlane-labels">
+          <template x-for="band in bands()" :key="'label-' + band.id">
+            <div class="af__band-label fc-swimlane-label"
+                 :data-band-id="band.id" :data-depth="band.depth"
+                 x-text="band.label"></div>
+          </template>
+        </div>
+      </template>
 
-            <!-- Gap 0 — the rail in front of the first card. Only in the DOM
-                 while a card is in flight; outside a drag it would be an
-                 arrow pointing at nothing. -->
-            <template x-if="showStartRail(idx)">
-              <div class="af__connector fc-connector fc-connector--rail fc-connector--header-aligned"
-                   :class="gapClass(0)" data-gap="0"
-                   @dragover="gapDragOver(0, $event)"
-                   @dragleave="gapDragLeave(0, $event)"
-                   @drop="gapDrop(0, $event)">
-                <span class="af__connector-arrow fc-connector__arrow">&raquo;</span>
-              </div>
-            </template>
+      <!-- One lane per band, behind the cards: it carries the band's rail and
+           takes the drop that moves a card into this band. It replaces the
+           per-column slots — those forced every step to own a column in every
+           band, which is exactly what tore the main path open wherever a
+           detour ran beside it. -->
+      <template x-for="band in bands()" :key="'lane-' + band.id">
+        <div class="af__lane" :data-band-id="band.id" :style="laneStyle(band)"
+             @dragover.prevent
+             @drop.stop="dropOnBand(band.id, $event)"></div>
+      </template>
 
-            <!-- Connector before this step — gap `idx`: click inserts a step
-                 here, drop moves the dragged card here. -->
-            <template x-if="idx > 0">
-              <div class="af__connector fc-connector fc-connector--clickable fc-connector--header-aligned"
-                   :class="connectorClass(idx)"
-                   data-action="insert-step" :data-idx="idx" :data-gap="idx"
-                   :title="t('insertHere')"
-                   @click="model.insertStep(idx, { kind: 'activity' })"
-                   @dragover="gapDragOver(idx, $event)"
-                   @dragleave="gapDragLeave(idx, $event)"
-                   @drop="gapDrop(idx, $event)">
-                <span class="af__connector-arrow fc-connector__arrow">&raquo;</span>
-              </div>
-            </template>
+      <!-- Steps, each placed explicitly: its band decides the row, the packed
+           column its position. Two steps may share a column — a diamond and
+           the first card of the detour it opens do exactly that. -->
+      <template x-for="(step, idx) in model.steps" :key="step.id">
+        <div class="af__step"
+             :class="stepClass(step)"
+             :style="stepStyle(step)"
+             :data-step-id="step.id"
+             :data-band-id="step.branchId"
+             @click="pickStep(step)"
+             @dragstart="stepDragStart(step.id, $event)"
+             @dragend="stepDragEnd($event)">
 
-            <!-- Activity card OR Decision diamond -->
-            <template x-if="!isDecision(step)">
-              <div class="af__card fc-card">
-                <div class="af__card-header fc-card__header">
-                  <span class="af__step-number fc-step-number" x-text="stepNum(idx)"
-                        @mousedown="armStepDrag(step.id, $event)"></span>
-                  <textarea class="af__step-title fc-card__title" x-model="step.title"
-                            :placeholder="t('titlePlaceholder')"
-                            @input="autoSize($event)"></textarea>
-                  <div class="af__card-actions fc-card__actions">
-                    <button class="af__delete fc-card__delete" @click="model.removeStep(step.id)"
-                            :title="t('deleteStep')" :aria-label="t('deleteStep')">
-                      <span class="icon" data-icon="action.delete" aria-hidden="true"></span>
-                    </button>
-                  </div>
+                  <!-- Gap 0 — the rail in front of the first card. Only in the
+                       DOM while a card is in flight; outside a drag it would
+                       be an arrow pointing at nothing. -->
+                  <template x-if="showStartRail(idx)">
+                    <div class="af__connector fc-connector fc-connector--rail fc-connector--header-aligned"
+                         :class="gapClass(0)" data-gap="0"
+                         @dragover="gapDragOver(0, $event)"
+                         @dragleave="gapDragLeave(0, $event)"
+                         @drop="gapDrop(0, $event)">
+                      <span class="af__connector-arrow fc-connector__arrow">&raquo;</span>
+                    </div>
+                  </template>
+
+                  <!-- Connector before this step — gap `idx`: click inserts a
+                       step here, drop moves the dragged card here. A band's
+                       first card carries one too, the same as its siblings in
+                       the opportunity and deployment charts: without it that
+                       card had no gap in front of it, so nothing could be
+                       inserted or dropped BEFORE the first card of a band —
+                       inside a band, reordering only ever went backwards.
+                       Only the head of the CHAIN stays free of it; there an
+                       arrow really would point at nothing, and gap 0 has its
+                       drag-only rail above instead. -->
+                  <template x-if="idx > 0">
+                    <div class="af__connector fc-connector fc-connector--clickable fc-connector--header-aligned"
+                         :class="gapClass(idx)"
+                         data-action="insert-step" :data-idx="idx" :data-gap="idx"
+                         :title="t('insertHere')"
+                         @click.stop="toggleInsertMenu(idx, step.branchId)"
+                         @dragover="gapDragOver(idx, $event)"
+                         @dragleave="gapDragLeave(idx, $event)"
+                         @drop="gapDrop(idx, $event)">
+                      <span class="af__connector-arrow fc-connector__arrow"
+                            :class="arrowClass(idx)">&raquo;</span>
+
+                      <!-- Which of the two goes in here. The arrow cannot
+                           decide that on its own: a decision inserted between
+                           two cards is as ordinary as an activity, and until
+                           this menu existed it could only ever be appended to
+                           the end of a band. -->
+                      <template x-if="isInsertMenuOpen(idx)">
+                        <div class="af__insert-menu" @click.stop>
+                          <button data-insert="activity" @click.stop="insertAtMenu('activity')">
+                            <span class="icon" data-icon="action.add" aria-hidden="true"></span>
+                            <span x-text="t('addStep')"></span>
+                          </button>
+                          <button data-insert="decision" @click.stop="insertAtMenu('decision')">
+                            <span class="icon" data-icon="action.branch" aria-hidden="true"></span>
+                            <span x-text="t('addDecision')"></span>
+                          </button>
+                        </div>
+                      </template>
+                    </div>
+                  </template>
+
+                  <!-- Activity card OR Decision diamond -->
+                  <template x-if="!isDecision(step)">
+                    <div class="af__card fc-card">
+                      <div class="af__card-header fc-card__header">
+                        <span class="af__step-number fc-step-number" x-text="stepNum(idx)"
+                              @mousedown="armStepDrag(step.id, $event)"></span>
+                        <textarea class="af__step-title fc-card__title" x-model="step.title"
+                                  :placeholder="t('titlePlaceholder')"
+                                  @input="autoSize($event)"></textarea>
+                        <div class="af__card-actions fc-card__actions">
+                          <button class="af__delete fc-card__delete" @click="model.removeStep(step.id)"
+                                  :title="t('deleteStep')" :aria-label="t('deleteStep')">
+                            <span class="icon" data-icon="action.delete" aria-hidden="true"></span>
+                          </button>
+                        </div>
+                      </div>
+                      <div class="af__card-body fc-card__body">
+                        <textarea class="field field--ghost af__step-description fc-card__description"
+                                  :placeholder="t('descriptionPlaceholder')"
+                                  data-field="description" :data-step-id="step.id"
+                                  x-model="step.description"
+                                  @input="autoSize($event)"></textarea>
+                      </div>
+                      <!-- @include js/core/flowchart/substeps.part.html -->
+                    </div>
+                  </template>
+
+                  <template x-if="isDecision(step)">
+                    <div class="af__diamond">
+                      <!-- The shape is clipped to a diamond, so anything that
+                           must escape it (number badge, delete button, branch
+                           popover) is a sibling, not a child — clip-path clips
+                           descendants too. -->
+                      <!-- The badge is the chain's drag handle everywhere
+                           (armStepDrag) — without it the diamond would be the
+                           one step type that cannot be reordered — and it
+                           keeps the visible numbering from skipping the
+                           decision. -->
+                      <span class="af__step-number fc-step-number" x-text="stepNum(idx)"
+                            @mousedown="armStepDrag(step.id, $event)"></span>
+                      <div class="af__diamond-shape">
+                        <textarea class="af__decision-label" x-model="step.decision.label"
+                                  :placeholder="t('decisionPlaceholder')"
+                                  @input="autoSize($event)"></textarea>
+                      </div>
+                      <button class="af__delete" @click="model.removeStep(step.id)"
+                              :title="t('deleteStep')" :aria-label="t('deleteStep')">
+                        <span class="icon" data-icon="action.delete" aria-hidden="true"></span>
+                      </button>
+                      <!-- The exits are labelled AT the vertices they leave
+                           from: "Yes" beside the right one, "No" under the
+                           bottom one.
+
+                           Yes is a plain label, not a control: it means the
+                           value stream simply continues to the right, so
+                           there is nothing to pick — the chain arrow to the
+                           next step already says where it goes. "No" is a
+                           plain label here too — only the WORD names the
+                           vertex; the target itself is picked at the end of
+                           the band, where the detour rejoins the main path
+                           (see the tail column below). -->
+                      <span class="af__branch af__branch--yes">
+                        <span class="af__branch-word" x-text="branchWord('yes')"></span>
+                      </span>
+                      <span class="af__branch af__branch--no">
+                        <span class="af__branch-word" x-text="branchWord('no')"></span>
+                      </span>
+                    </div>
+                  </template>
+
+                  <!-- Gap n — the rail behind the last card, same drag-only
+                       rule. -->
+                  <template x-if="showEndRail(idx)">
+                    <div class="af__connector af__connector--end fc-connector fc-connector--rail fc-connector--header-aligned"
+                         :class="gapClassAfter(idx)" :data-gap="idx + 1"
+                         @dragover="gapDragOverAfter(idx, $event)"
+                         @dragleave="gapDragLeaveAfter(idx, $event)"
+                         @drop="gapDropAfter(idx, $event)">
+                      <span class="af__connector-arrow fc-connector__arrow">&raquo;</span>
+                    </div>
+                  </template>
+        </div>
+      </template>
+
+      <!-- The re-entry marker: the chain's own double arrow, turned to point
+           up. It stands in the detour's row under the card the band rejoins
+           at, so the turn back into the main path is visible at the place it
+           happens — the exit button names that card, but sits at the other
+           end of the band. -->
+      <template x-for="marker in rejoinMarkers()" :key="'rejoin-' + marker.id">
+        <div class="af__rejoin" :data-band-id="marker.id" :style="marker.style">
+          <span class="af__rejoin-arrow fc-connector__arrow">&raquo;</span>
+          <div class="af__band-exit-group" :data-band-id="marker.id">
+            <button class="af__band-exit af__band-exit--active" data-exit="pick"
+                    :data-band-id="marker.id"
+                    @click.stop="togglePick(marker.band)"
+                    :title="t('pickEntryTitle')">
+              <span class="af__band-exit-arrow">&#9673;</span>
+              <span class="af__band-exit-target" x-text="exitPickLabel(marker.band)"></span>
+            </button>
+            <button class="af__band-exit-clear"
+                    @click.stop="clearExit(marker.band)"
+                    :title="t('clearRejoin')">&#10005;</button>
+          </div>
+        </div>
+      </template>
+
+      <!-- Each band's tail: the placeholder for adding, and behind it the
+           exit. It sits directly after that band's OWN last card, not in a
+           column shared by every band — the point of the packed layout is
+           that a band ends where its cards end.
+
+           It stands at the end of every band, not just an empty one: behind
+           the last card there is no insert arrow outside a drag, so a band
+           could not be extended otherwise. The main path has neither exit nor
+           placeholder — it is extended from the toolbar. -->
+      <template x-for="band in bands()" :key="'tail-' + band.id">
+        <template x-if="!isMainBand(band)">
+          <div class="af__tail" :data-band-id="band.id" :style="tailStyle(band)"
+               @dragover.prevent
+               @drop.stop="dropOnBand(band.id, $event)">
+                <div class="af__band-add">
+                  <button data-add="activity" @click="addActivityToBand(band.id)"
+                          :title="t('addStepToBand')">
+                    <span class="icon" data-icon="action.add" aria-hidden="true"></span>
+                    <span x-text="t('addStep')"></span>
+                  </button>
+                  <button data-add="decision" @click="addDecisionToBand(band.id)"
+                          :title="t('addDecisionToBand')">
+                    <span class="icon" data-icon="action.branch" aria-hidden="true"></span>
+                    <span x-text="t('addDecision')"></span>
+                  </button>
                 </div>
-                <div class="af__card-body fc-card__body">
-                  <textarea class="field field--ghost af__step-description fc-card__description"
-                            :placeholder="t('descriptionPlaceholder')"
-                            data-field="description" :data-step-id="step.id"
-                            x-model="step.description"
-                            @input="autoSize($event)"></textarea>
-                </div>
-                <!-- @include js/core/flowchart/substeps.part.html -->
-              </div>
-            </template>
+              <!-- The exit: where the detour rejoins the main path. Three
+                   buttons rather than a dropdown — the dropdown listed every
+                   step in the chart, which in a real process map is dozens of
+                   entries, several reading "(unnamed)", and none of them
+                   saying where it sits. The two fixed destinations are one
+                   click each; anything else is picked on the chart itself,
+                   which already shows what the list could not.
 
-            <template x-if="isDecision(step)">
-              <div class="af__diamond">
-                <!-- The shape is clipped to a diamond, so anything that must
-                     escape it (delete button, branch popover) is a sibling,
-                     not a child — clip-path clips descendants too. -->
-                <div class="af__diamond-shape">
-                  <textarea class="af__decision-label" x-model="step.decision.label"
-                            :placeholder="t('decisionPlaceholder')"
-                            @input="autoSize($event)"></textarea>
-                </div>
-                <button class="af__delete" @click="model.removeStep(step.id)"
-                        :title="t('deleteStep')" :aria-label="t('deleteStep')">
-                  <span class="icon" data-icon="action.delete" aria-hidden="true"></span>
-                </button>
-                <!-- The exits are labelled AT the vertices they leave from:
-                     "Yes" beside the right one (the chain flows on to the
-                     right), "No" under the bottom one. The target is only
-                     spelled out where the branch deviates from flowing on. -->
-                <button class="af__branch af__branch--yes"
-                        @click="toggleBranchMenu(step.id, 'yes')"
-                        :title="t('pickTarget')">
-                  <span class="af__branch-word" x-text="branchWord('yes')"></span>
-                  <span class="af__branch-target" x-text="branchTarget(step, 'yes')"></span>
-                </button>
-                <button class="af__branch af__branch--no"
-                        @click="toggleBranchMenu(step.id, 'no')"
-                        :title="t('pickTarget')">
-                  <span class="af__branch-word" x-text="branchWord('no')"></span>
-                  <span class="af__branch-target" x-text="branchTarget(step, 'no')"></span>
-                </button>
-                <template x-if="isBranchOpen(step.id, 'yes') || isBranchOpen(step.id, 'no')">
-                  <div class="af__branch-menu">
-                    <button @click="pickBranchTarget(step.id, _openBranch, 'next')"
-                            x-text="t('next')"></button>
-                    <button @click="pickBranchTarget(step.id, _openBranch, 'end')"
-                            x-text="t('end')"></button>
-                    <template x-for="s in otherSteps(step.id)" :key="s.id">
-                      <button @click="pickBranchTarget(step.id, _openBranch, s.id)"
-                              x-text="s.title || t('unnamedStep')"></button>
-                    </template>
-                  </div>
-                </template>
-              </div>
-            </template>
+                   The third button doubles as the display: once a card is
+                   chosen it carries that card's name, so the band's state
+                   reads without opening anything. -->
+              <!-- One control, because there is only one thing to say: where
+                   this detour rejoins. Nothing chosen means it does not rejoin
+                   — the stream ends where its cards end — so "process end" is
+                   not a destination to pick but the absence of one.
 
-            <!-- Gap n — the rail behind the last card, same drag-only rule. -->
-            <template x-if="showEndRail(idx)">
-              <div class="af__connector af__connector--end fc-connector fc-connector--rail fc-connector--header-aligned"
-                   :class="gapClassAfter(idx)" :data-gap="idx + 1"
-                   @dragover="gapDragOverAfter(idx, $event)"
-                   @dragleave="gapDragLeaveAfter(idx, $event)"
-                   @drop="gapDropAfter(idx, $event)">
-                <span class="af__connector-arrow fc-connector__arrow">&raquo;</span>
-              </div>
-            </template>
+                   Only the INVITATION lives here. Once a card is picked, the
+                   control moves to that card's column and hangs under the
+                   arrow (see the re-entry marker above), where it names the
+                   re-entry at the place it happens. -->
+              <template x-if="!hasRejoin(band)">
+                <div class="af__band-exit-group" :data-band-id="band.id">
+                  <button class="af__band-exit" data-exit="pick"
+                          :data-band-id="band.id"
+                          @click.stop="togglePick(band)"
+                          :title="t('pickEntryTitle')">
+                    <span class="af__band-exit-arrow">&#9673;</span>
+                    <span class="af__band-exit-target" x-text="exitPickLabel(band)"></span>
+                  </button>
+                </div>
+              </template>
           </div>
         </template>
-      </div>
+      </template>
     </div>
   </div>
 

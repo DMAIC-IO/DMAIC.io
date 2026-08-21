@@ -27,6 +27,7 @@ import { bridgeEmitter } from '../../core/tips/tip-engine.js';
 import { shortcutRegistry } from '../../core/shortcut-registry.js';
 import { h } from '../../core/dom.js';
 import { icon } from '../../core/icon.js';
+import { uid } from '../../core/uid.js';
 
 // ═══════════════════════════════════════════════════════════
 //  FORMULA EDITOR (imperative — bound to the live DataGrid)
@@ -1139,7 +1140,7 @@ const mod = createModule({
           if (isNewCol) {
             const nextIdx = cols.length + 1;
             cols.push({
-              id: crypto.randomUUID(),
+              id: uid(),
               name,
               shortName: `C${  nextIdx}`,
               type: colType,
