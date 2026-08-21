@@ -24,6 +24,7 @@ import {
 import { h } from '../core/dom.js';
 import { icon } from '../core/icon.js';
 import { estimateTilesWidth, resolveCollapsed } from './dmaic-tiles-layout.js';
+import { uid } from '../core/uid.js';
 
 export class DmaicTiles {
   /**
@@ -451,7 +452,7 @@ export class DmaicTiles {
     if (this._stateManager.isCompleted()) return;
     const def = this._moduleRegistry.get(moduleId);
     if (def && !this._canAdd(def, phase).ok) return;
-    const instanceId = crypto.randomUUID();
+    const instanceId = uid();
     const phases = this._stateManager.get(`phases.${phase}`) ?? [];
     phases.push({ instanceId, moduleId, order: phases.length, state: {} });
     this._stateManager.set(`phases.${phase}`, phases);

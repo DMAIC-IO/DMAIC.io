@@ -8,6 +8,7 @@
  */
 
 import { ROLE } from '../../core/datagrid/datagrid-roles.js';
+import { uid } from '../../core/uid.js';
 
 // ─── Create Worksheet ──────────────────────────────────────────────
 
@@ -49,7 +50,7 @@ export function createDesignWorksheet(context, design, factors, responses, doeNa
   const { stateManager: sm, eventBus, i18n } = context;
 
   // Generate IDs
-  const wsInstanceId = crypto.randomUUID();
+  const wsInstanceId = uid();
   const sheetId = 'sheet_1';
   const managedRef = experimentId ? `experiment:${experimentId}` : null;
 
@@ -73,7 +74,7 @@ export function createDesignWorksheet(context, design, factors, responses, doeNa
   const stdOrderName = i18n.t('modules.doe-planner.colStdOrder');
 
   // RunOrder column
-  const runOrderColId = crypto.randomUUID();
+  const runOrderColId = uid();
   columns.push({
     id: runOrderColId,
     name: i18n.t('modules.doe-planner.colRunOrder'),
@@ -90,7 +91,7 @@ export function createDesignWorksheet(context, design, factors, responses, doeNa
 
   // StdOrder column — also serves as group id for replicate aggregates,
   // so it stays hard-locked even though aggregates depend on it.
-  const stdOrderColId = crypto.randomUUID();
+  const stdOrderColId = uid();
   columns.push({
     id: stdOrderColId,
     name: stdOrderName,
@@ -107,7 +108,7 @@ export function createDesignWorksheet(context, design, factors, responses, doeNa
 
   // Block column (always 1 for now — multi-block support in Phase E)
   columns.push({
-    id: crypto.randomUUID(),
+    id: uid(),
     name: i18n.t('modules.doe-planner.colBlock'),
     shortName: `C${columns.length + 1}`,
     type: 'numeric',
@@ -122,7 +123,7 @@ export function createDesignWorksheet(context, design, factors, responses, doeNa
 
   // Replicate column
   columns.push({
-    id: crypto.randomUUID(),
+    id: uid(),
     name: i18n.t('modules.doe-planner.colReplicate'),
     shortName: `C${columns.length + 1}`,
     type: 'numeric',
@@ -141,7 +142,7 @@ export function createDesignWorksheet(context, design, factors, responses, doeNa
   // label back to ±1 for numerical work. For continuous factors the column
   // stays numeric and the meta has no coding.
   factors.forEach((f, fi) => {
-    const colId = crypto.randomUUID();
+    const colId = uid();
     factorColumnIds.push(colId);
     const letter = String.fromCharCode(65 + fi);
     const isCategorical = f.kind === 'categorical';
@@ -185,7 +186,7 @@ export function createDesignWorksheet(context, design, factors, responses, doeNa
   const seedRows = Number.isFinite(design.sourceRowCount) ? design.sourceRowCount : 0;
   const seeds = Array.isArray(design.sourceResponseSeeds) ? design.sourceResponseSeeds : null;
   responses.forEach((r, ri) => {
-    const colId = crypto.randomUUID();
+    const colId = uid();
     responseColumnIds.push(colId);
     const values = new Array(nRuns).fill(null);
     if (seeds && seeds[ri]) {
@@ -232,8 +233,8 @@ export function createDesignWorksheet(context, design, factors, responses, doeNa
       const meanFormulas  = buildFormulas('=AVERAGEIF({STD}; {STD}[{ROW}]; {RESP})');
       const lnVarFormulas = buildFormulas('=LN(VARIF({STD}; {STD}[{ROW}]; {RESP}))');
 
-      const meanId  = crypto.randomUUID();
-      const lnVarId = crypto.randomUUID();
+      const meanId  = uid();
+      const lnVarId = uid();
       meanColumnIds.push(meanId);
       lnVarColumnIds.push(lnVarId);
 

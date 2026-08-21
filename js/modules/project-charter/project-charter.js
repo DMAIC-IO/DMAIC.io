@@ -23,6 +23,7 @@ import { h } from '../../core/dom.js';
 import { markdownToFragment, domToMarkdown } from './project-charter-richtext.js';
 import { icon } from '../../core/icon.js';
 import { resolveDateOffset } from '../../core/date-offset.js';
+import { uid } from '../../core/uid.js';
 
 const NW = 220;   // node width (px)
 const HG = 44;    // horizontal gap between sibling subtrees
@@ -878,7 +879,7 @@ export default createModule({
             this._pushUndo();
             const desc = this.nodeDraft.desc.trim();
             const newNode = {
-              id: crypto.randomUUID(), title, desc,
+              id: uid(), title, desc,
               pid: parentId ?? null,
               bg: '', borderColor: '', borderStyle: '', borderWidth: 0,
               _col: false, _h: false, _x: 0, _y: 0,

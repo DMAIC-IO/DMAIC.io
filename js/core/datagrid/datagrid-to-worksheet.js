@@ -6,6 +6,8 @@
  * button in integrated datagrids.
  */
 
+import { uid } from '../uid.js';
+
 /**
  * Create a new Worksheet instance from a DataGrid's current state.
  *
@@ -49,7 +51,7 @@ export function openGridInWorksheet(grid, context, options = {}) {
   // Deep-clone through JSON to drop any class instances (e.g. History)
   const cleanSheetState = JSON.parse(JSON.stringify(sheetState));
 
-  const wsInstanceId = crypto.randomUUID();
+  const wsInstanceId = uid();
   const sheetId = 'sheet_1';
   const wbState = {
     sheets: [{ id: sheetId, name: sheetName, state: cleanSheetState }],

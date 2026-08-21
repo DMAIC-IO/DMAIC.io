@@ -4,6 +4,8 @@
  * stateManager, moduleRegistry, and eventBus.
  */
 
+import { uid } from '../uid.js';
+
 /**
  * Find the phase id whose instance array contains the given instanceId.
  * @param {object} stateManager
@@ -54,7 +56,7 @@ export function createInstance(stateManager, moduleRegistry, eventBus, moduleId,
     ? 'data'
     : (def.cycles?.[activeCycle]?.phase || def.phase || 'extras');
 
-  const instanceId = crypto.randomUUID();
+  const instanceId = uid();
   const phases = stateManager.get(`phases.${targetPhase}`) ?? [];
   phases.push({ instanceId, moduleId, order: phases.length, state: {} });
   stateManager.set(`phases.${targetPhase}`, phases);
