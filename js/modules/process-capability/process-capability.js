@@ -37,7 +37,7 @@ const mod = createModule({
     id: 'process-capability',
     engine: 'alpine',
     phase: 'measure',
-    icon: 'bar-chart',
+    icon: 'module.process-capability',
     version: '1.1.0',
     meta: import.meta,
   },

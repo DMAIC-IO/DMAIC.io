@@ -6,7 +6,7 @@ export default createModule({
         id: 'triz-resources',
         engine: 'alpine',
         phase: 'improve',
-        icon: 'package',
+        icon: 'module.triz-resources',
         version: '0.1.0',
         meta: import.meta,
     },

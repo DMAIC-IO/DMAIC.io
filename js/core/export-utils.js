@@ -140,7 +140,7 @@ export function createExportDropdown(formats, onExport) {
   btn.className = 'btn btn--sm btn--secondary';
   btn.type = 'button';
   btn.style.cssText = 'display:inline-flex;align-items:center;gap:6px';
-  btn.replaceChildren(icon('download'), document.createTextNode(' Export'));
+  btn.replaceChildren(icon('action.download'), document.createTextNode(' Export'));
 
   const menu = document.createElement('div');
   menu.className = 'dmike-chart-dropdown-menu';
@@ -149,7 +149,7 @@ export function createExportDropdown(formats, onExport) {
     const item = h(
       'button',
       { class: 'dmike-chart-dropdown-item', 'data-export': fmt },
-      icon(`export-${  fmt}`),
+      icon(`format.${fmt}`),
       LABELS[fmt] || fmt,
     );
     menu.appendChild(item);

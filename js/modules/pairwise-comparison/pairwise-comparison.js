@@ -27,7 +27,7 @@ export default createModule({
     id: 'pairwise-comparison',
     engine: 'alpine',
     phase: 'analyze',
-    icon: 'scale',
+    icon: 'module.pairwise-comparison',
     version: '1.0.0',
     meta: import.meta,
   },

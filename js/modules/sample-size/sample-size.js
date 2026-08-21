@@ -33,7 +33,7 @@ export default createModule({
     id: 'sample-size',
     engine: 'alpine',
     phase: 'analyze',
-    icon: 'hash',
+    icon: 'module.sample-size',
     version: '1.0.0',
     meta: import.meta,
   },

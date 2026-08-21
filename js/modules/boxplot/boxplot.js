@@ -32,7 +32,7 @@ const mod = createModule({
     id: 'boxplot',
     engine: 'alpine',
     phase: 'data',
-    icon: 'bar-chart-2',
+    icon: 'module.boxplot',
     version: '1.0.0',
     meta: import.meta,
   },

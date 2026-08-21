@@ -8,7 +8,7 @@ export default createModule({
     id: 'triz-physical-contradiction',
     engine: 'alpine',
     phase: 'improve',
-    icon: 'split',
+    icon: 'module.triz-physical-contradiction',
     version: '0.1.0',
     meta: import.meta,
   },

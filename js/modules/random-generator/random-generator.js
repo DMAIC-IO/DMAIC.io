@@ -45,7 +45,7 @@ export default createModule({
     id: 'random-generator',
     engine: 'alpine',
     phase: 'data',
-    icon: 'dice',
+    icon: 'module.random-generator',
     version: '1.1.0',
     meta: import.meta,
   },

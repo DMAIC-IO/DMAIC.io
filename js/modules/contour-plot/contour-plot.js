@@ -45,7 +45,7 @@ const mod = createModule({
     id: 'contour-plot',
     engine: 'alpine',
     phase: 'data',
-    icon: 'grid',
+    icon: 'module.contour-plot',
     version: '1.0.0',
     meta: import.meta,
   },

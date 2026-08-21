@@ -38,7 +38,7 @@ const mod = createModule({
     id: 'pie-chart',
     engine: 'alpine',
     phase: 'data',
-    icon: 'pie-chart',
+    icon: 'module.pie-chart',
     version: '1.1.0',
     meta: import.meta,
   },

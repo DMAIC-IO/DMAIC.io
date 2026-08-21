@@ -33,7 +33,7 @@ const mod = createModule({
     engine: 'alpine',
     phase: 'data',
     group: 'visualize',
-    icon: 'activity',
+    icon: 'module.run-chart',
     version: '1.0.0',
     meta: import.meta,
   },

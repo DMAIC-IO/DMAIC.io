@@ -56,7 +56,7 @@ const mod = createModule({
     id: 'histogram',
     engine: 'alpine',
     phase: 'data',
-    icon: 'bar-chart-2',
+    icon: 'module.histogram',
     version: '1.1.0',
     meta: import.meta,
   },

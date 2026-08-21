@@ -1234,7 +1234,7 @@ export class DataGrid {
     // ── Corner cell: export button (+ optional "open in worksheet") ──
     const exportBtn = h('button',
       { class: 'datagrid__export-btn', type: 'button', title: 'Export' },
-      icon('download'),
+      icon('action.download'),
     );
     const cornerBtns = h('div', { class: 'datagrid__corner-btns' }, exportBtn);
     if (this.options.openInWorksheet) {
@@ -1244,7 +1244,7 @@ export class DataGrid {
           type: 'button',
           title: this._t('ui.datagrid.openInWorksheet'),
         },
-        icon('external-link'),
+        icon('nav.external'),
       ));
     }
     const cornerTh = h('th', { class: 'datagrid__row-header datagrid__corner' }, cornerBtns);
@@ -1284,7 +1284,7 @@ export class DataGrid {
       if (col.meta?.lock) {
         th.append(h('span',
           { class: 'col-lock-icon', title: this._lockTooltip(col) },
-          icon(col.meta.lock === 'hard' ? 'lock-closed' : 'lock-open'),
+          icon(col.meta.lock === 'hard' ? 'action.lock' : 'action.unlock'),
         ));
       }
 
@@ -3102,7 +3102,7 @@ export class DataGrid {
     titleText.textContent = t('scanTitle');
     const closeBtn = document.createElement('button');
     closeBtn.className = 'dmike-chart-popout-close';
-    closeBtn.appendChild(icon('close'));
+    closeBtn.appendChild(icon('action.close'));
     titleBar.append(titleText, closeBtn);
 
     const body = document.createElement('div');

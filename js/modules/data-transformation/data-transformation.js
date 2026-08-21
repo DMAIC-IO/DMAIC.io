@@ -42,7 +42,7 @@ const mod = createModule({
     id: 'data-transformation',
     engine: 'alpine',
     phase: 'data',
-    icon: 'refresh-cw',
+    icon: 'module.data-transformation',
     version: '1.0.0',
     meta: import.meta,
   },

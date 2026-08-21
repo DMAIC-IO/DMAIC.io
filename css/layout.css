@@ -926,11 +926,6 @@ html.is-nightly body {
   flex-shrink: 0;
 }
 
-.dmaic-tile__menu-btn .icon {
-  width: 14px;
-  height: 14px;
-}
-
 .dmaic-tile__menu-btn:hover {
   color: var(--color-text-primary);
   background: var(--color-bg-tertiary);
@@ -1166,9 +1161,7 @@ body.dev-area-open .dmaic-tiles {
 
 .dashboard-grid__tile-move .icon,
 .dashboard-grid__tile-resize .icon {
-  width: 12px;
-  height: 12px;
-  opacity: 0.55;
+  --icon-size: 12px;              /* Sonderfall: kleiner als sm, siehe components.css */
   transition: opacity 0.15s;
 }
 
@@ -1197,7 +1190,7 @@ body.dev-area-open .dmaic-tiles {
 .dashboard-grid__tile:hover .dashboard-grid__tile-resize .icon,
 .dashboard-grid__tile--moving .dashboard-grid__tile-move .icon,
 .dashboard-grid__tile--resizing .dashboard-grid__tile-resize .icon {
-  opacity: 1;
+  opacity: 1;                     /* schlägt .icon--muted (.55) */
 }
 
 .dashboard-grid__tile-remove {
@@ -1219,10 +1212,7 @@ body.dev-area-open .dmaic-tiles {
   border-radius: 3px;
 }
 
-.dashboard-grid__tile-remove .icon {
-  width: 12px;
-  height: 12px;
-}
+.dashboard-grid__tile-remove .icon { --icon-size: 12px; }
 
 .dashboard-grid__tile:hover .dashboard-grid__tile-remove {
   opacity: 0.7;
@@ -1260,11 +1250,6 @@ body.dev-area-open .dmaic-tiles {
   cursor: pointer;
   color: var(--color-text-tertiary);
   border-radius: 3px;
-}
-
-.dashboard-grid__tile-export-btn .icon {
-  width: 14px;
-  height: 14px;
 }
 
 .dashboard-grid__tile-export-btn:hover {
@@ -2016,11 +2001,6 @@ body.training-area-open .dmaic-tiles {
   color: var(--color-text-primary);
 }
 
-.workspace__action .icon {
-  width: 18px;
-  height: 18px;
-}
-
 /* Umbenennen / Entfernen ganz rechts. Sie betreffen die Tab selbst, nicht den
    Modulinhalt — ein Trenner vor der Gruppe hält das auseinander. `:first-of-type`
    trifft nur die erste der beiden; hat das Modul gar keine eigenen Aktionen,
@@ -2091,8 +2071,6 @@ body.training-area-open .dmaic-tiles {
 }
 
 .workspace__action-item .icon {
-  width: 14px;
-  height: 14px;
   flex-shrink: 0;
 }
 
@@ -2154,8 +2132,6 @@ body.training-area-open .dmaic-tiles {
 }
 
 .workspace__tab-grip:active { cursor: grabbing; }
-
-.workspace__tab-grip .icon { width: 14px; height: 14px; }
 
 .workspace__tab-name-input {
   background: var(--color-bg-primary);

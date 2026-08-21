@@ -39,7 +39,7 @@ const mod = createModule({
     id: 'mosaic',
     engine: 'alpine',
     phase: 'data',
-    icon: 'bar-chart',
+    icon: 'module.mosaic',
     version: '1.0.0',
     meta: import.meta,
   },

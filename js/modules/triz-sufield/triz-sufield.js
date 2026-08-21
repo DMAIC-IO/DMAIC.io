@@ -22,7 +22,7 @@ export default createModule({
     id: 'triz-sufield',
     engine: 'alpine',
     phase: 'improve',
-    icon: 'triangle',
+    icon: 'module.triz-sufield',
     version: '0.1.0',
     meta: import.meta,
   },

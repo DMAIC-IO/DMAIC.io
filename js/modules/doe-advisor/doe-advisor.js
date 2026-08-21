@@ -22,7 +22,7 @@ export default createModule({
     id: 'doe-advisor',
     engine: 'alpine',
     phase: 'improve',
-    icon: 'compass',
+    icon: 'module.doe-advisor',
     version: '1.0.0',
     meta: import.meta,
   },

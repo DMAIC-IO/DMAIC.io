@@ -54,15 +54,15 @@ export default createModule({
     id: 'kano',
     engine: 'alpine',
     phase: 'define',
-    icon: 'layers',
+    icon: 'module.kano',
     version: '1.0.0',
     meta: import.meta,
     actions: [
-      { icon: 'download', title: 'export.label', children: [
-        { icon: 'export-xlsx', title: 'export.xlsx', onClick: (d) => d.exportXLSX() },
-        { icon: 'export-csv',  title: 'export.csv',  onClick: (d) => d.exportCSV() },
-        { icon: 'export-png',  title: 'export.png',  onClick: (d) => d.exportPNG() },
-        { icon: 'export-svg',  title: 'export.svg',  onClick: (d) => d.exportSVG() },
+      { icon: 'action.download', title: 'export.label', children: [
+        { icon: 'format.xlsx', title: 'export.xlsx', onClick: (d) => d.exportXLSX() },
+        { icon: 'format.csv',  title: 'export.csv',  onClick: (d) => d.exportCSV() },
+        { icon: 'format.png',  title: 'export.png',  onClick: (d) => d.exportPNG() },
+        { icon: 'format.svg',  title: 'export.svg',  onClick: (d) => d.exportSVG() },
       ] },
     ],
   },

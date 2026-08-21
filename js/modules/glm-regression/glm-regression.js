@@ -68,7 +68,7 @@ const mod = createModule({
     engine: 'alpine',
     phase: 'improve',
     allowedPhases: ['analyze', 'improve'],
-    icon: 'git-branch',
+    icon: 'module.glm-regression',
     version: '1.1.0',
     meta: import.meta,
   },

@@ -213,7 +213,7 @@ export function edColorSwatch(color, onClick) {
 export function edVisToggle(visible, onClick) {
   const btn = document.createElement('button');
   btn.className = 'dmike-chart-ed-vis-toggle';
-  btn.replaceChildren(icon(visible ? 'eye' : 'eye-off'));
+  btn.replaceChildren(icon(visible ? 'action.show' : 'action.hide'));
   btn.addEventListener('click', onClick);
   return btn;
 }
@@ -227,7 +227,7 @@ export function edVisToggle(visible, onClick) {
 export function edExpandBtn(label, target) {
   const btn = document.createElement('button');
   btn.className = 'dmike-chart-ed-expand-btn';
-  btn.replaceChildren(h('span', null, label), document.createTextNode(' '), icon('chevron-down'));
+  btn.replaceChildren(h('span', null, label), document.createTextNode(' '), icon('nav.expand-down'));
   btn.addEventListener('click', () => {
     const isOpen = target.classList.toggle('open');
     btn.classList.toggle('open', isOpen);

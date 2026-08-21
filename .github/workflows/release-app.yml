@@ -104,6 +104,12 @@ jobs:
       - name: Run DOM-free unit tests (deploy gate — no build/deploy on failure)
         run: npm run test:unit
 
+      - name: Run build-tooling tests (deploy gate)
+        run: npm run test:build
+
+      - name: Verify icon map is in sync (deploy gate)
+        run: npm run icons:check
+
       - name: Install Chromium for the DOM test runner
         run: npx playwright install --with-deps chromium
 

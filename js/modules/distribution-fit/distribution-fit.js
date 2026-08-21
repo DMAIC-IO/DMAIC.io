@@ -50,7 +50,7 @@ const mod = createModule({
     id: 'distribution-fit',
     engine: 'alpine',
     phase: 'analyze',
-    icon: 'bar-chart-2',
+    icon: 'module.distribution-fit',
     version: '1.0.0',
     meta: import.meta,
   },

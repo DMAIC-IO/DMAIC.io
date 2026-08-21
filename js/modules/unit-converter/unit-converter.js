@@ -40,7 +40,7 @@ export default createModule({
     id: 'unit-converter',
     engine: 'alpine',
     phase: 'data',
-    icon: 'ruler',
+    icon: 'module.unit-converter',
     version: '1.0.0',
     meta: import.meta,
   },

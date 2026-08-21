@@ -88,7 +88,7 @@ export default createModule({
     id: 'data-import',
     engine: 'alpine',
     phase: 'data',
-    icon: 'upload',
+    icon: 'module.data-import',
     version: '1.0.0',
     meta: import.meta,
   },

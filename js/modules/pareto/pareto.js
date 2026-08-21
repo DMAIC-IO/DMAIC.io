@@ -39,7 +39,7 @@ const mod = createModule({
     id: 'pareto',
     engine: 'alpine',
     phase: 'data',
-    icon: 'bar-chart',
+    icon: 'module.pareto',
     version: '1.0.0',
     meta: import.meta,
   },

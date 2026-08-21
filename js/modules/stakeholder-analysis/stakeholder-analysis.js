@@ -63,7 +63,7 @@ export default createModule({
     id: 'stakeholder-analysis',
     engine: 'alpine',
     phase: 'define',
-    icon: 'users',
+    icon: 'module.stakeholder-analysis',
     version: '0.1.0',
     meta: import.meta,
   },

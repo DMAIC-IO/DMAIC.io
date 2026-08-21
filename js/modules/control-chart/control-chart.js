@@ -40,7 +40,7 @@ const mod = createModule({
     id: 'control-chart',
     engine: 'alpine',
     phase: 'control',
-    icon: 'activity',
+    icon: 'module.control-chart',
     version: '1.1.0',
     meta: import.meta,
   },

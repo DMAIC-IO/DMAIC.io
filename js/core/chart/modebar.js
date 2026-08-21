@@ -19,16 +19,16 @@ import { icon } from '../icon.js';
 
 /** Maps each modebar button to its sprite icon name. */
 const ICONS = {
-  zoom: 'zoom-in',
-  pan: 'pan',
-  reset: 'reset',
-  download: 'download',
-  png: 'export-png',
-  svg: 'export-svg',
-  csv: 'export-csv',
-  xlsx: 'export-xlsx',
-  editor: 'edit',
-  popout: 'popout',
+  zoom: 'action.zoom-in',
+  pan: 'action.pan',
+  reset: 'action.reset',
+  download: 'action.download',
+  png: 'format.png',
+  svg: 'format.svg',
+  csv: 'format.csv',
+  xlsx: 'format.xlsx',
+  editor: 'action.edit',
+  popout: 'action.popout',
 };
 
 /**

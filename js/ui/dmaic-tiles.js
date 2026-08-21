@@ -211,7 +211,7 @@ export class DmaicTiles {
       type: 'button',
       'aria-label': menuLabel,
       title: menuLabel,
-    }, icon('chevron-down'));
+    }, icon('nav.expand-down', { size: 'sm' }));
     menuBtn.addEventListener('click', (e) => {
       e.stopPropagation();
       this._toggleMenu(phase, tile);
@@ -478,7 +478,7 @@ export class DmaicTiles {
       // (WCAG 2.5.3 label-content-name-mismatch). Zweck steht im title/Tooltip.
       title: this._i18n.t('phases.editProgress'),
     },
-      h('span', { class: 'dmaic-tile__edit-icon', 'aria-hidden': 'true' }, '✎'),
+      icon('action.edit', { size: 'sm', cls: 'dmaic-tile__edit-icon' }),
       h('span', {
         class: 'dmaic-tile__zeg',
         title: this._i18n.t('phases.achievementTooltip'),

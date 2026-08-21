@@ -57,7 +57,7 @@ const mod = createModule({
     id: 'hypothesis-test',
     engine: 'alpine',
     phase: 'analyze',
-    icon: 'check-circle',
+    icon: 'module.hypothesis-test',
     version: '1.1.0',
     meta: import.meta,
   },
