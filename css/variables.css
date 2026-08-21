@@ -149,7 +149,11 @@
      working unchanged. */
   --color-flowchart-step-accent: var(--color-accent);
   --color-flowchart-step-accent-bg: rgb(0 102 204 / 10%);
-  --color-flowchart-connector: var(--color-border-secondary);
+
+  /* A text tone, not a border tone: the arrows between the cards are the
+     chart's only reading direction, and as borders they disappeared against
+     the card outlines they sit between. */
+  --color-flowchart-connector: var(--color-text-tertiary);
 
   /* Process Map colors */
   --color-pmap-input: #34c759;
