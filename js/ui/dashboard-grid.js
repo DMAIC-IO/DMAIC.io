@@ -372,7 +372,7 @@ export class DashboardGrid {
         class: 'dashboard-grid__tile-move',
         title: def.moveTitle || '',
         'aria-label': def.moveTitle || '',
-      }, icon('action.move', { variant: 'muted' })),
+      }, icon('action.drag-handle', { variant: 'muted' })),
       h('h3', { class: 'dashboard-grid__tile-title' }, def.title || ''),
       h('div', { class: 'dashboard-grid__tile-export' },
         h('button', {

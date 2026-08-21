@@ -256,7 +256,7 @@ export function initProjectSwitcher({ stateManager, eventBus, i18n }) {
       const cycleBtn = document.createElement('button');
       cycleBtn.className = 'app-header__project-action-btn';
       cycleBtn.title = i18n.t('cycles.switchAction');
-      cycleBtn.textContent = '⇆';
+      cycleBtn.replaceChildren(icon('action.switch', { size: 'sm' }));
       cycleBtn.addEventListener('click', async (e) => {
         e.stopPropagation();
         closeDropdown();
@@ -277,7 +277,9 @@ export function initProjectSwitcher({ stateManager, eventBus, i18n }) {
       statusBtn.className = 'app-header__project-action-btn';
       const isCompleted = p.status === 'completed';
       statusBtn.title = i18n.t(isCompleted ? 'app.projectActivate' : 'app.projectComplete');
-      statusBtn.textContent = isCompleted ? '▶' : '✓';
+      statusBtn.replaceChildren(
+        icon(isCompleted ? 'action.activate' : 'action.confirm', { size: 'sm' }),
+      );
       statusBtn.addEventListener('click', (e) => {
         e.stopPropagation();
         const newStatus = p.status === 'completed' ? 'active' : 'completed';
