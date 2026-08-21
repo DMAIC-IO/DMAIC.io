@@ -58,8 +58,8 @@ export default createModule({
 /**
  * Activity Flowchart data-fn — view transforms, drag/drop, decision popover,
  * import + export. Exported as a standalone function (not an inline object
- * shorthand) so connectorClass's diamond/gap class merge can be unit tested
- * without mounting the module via Alpine — see activity-flowchart.test.js.
+ * shorthand) so its view transforms can be unit tested without mounting the
+ * module via Alpine — see activity-flowchart.test.js.
  * @param {object} module - the createModule instance.
  * @param {(key: string) => string} _t - i18n helper.
  */
@@ -78,6 +78,10 @@ export function activityFlowchartData(module, _t) {
     // Entry-point picker state (transient — never persisted): the band whose
     // exit is waiting for a card to be clicked, or null.
     _pickBandId: null,
+
+    // Insert-menu state (transient — never persisted): {idx, bandId} of the
+    // arrow whose menu is open, or null.
+    _insertMenu: null,
 
     isDecision(step) { return step?.kind === 'decision'; },
     /**
@@ -262,6 +266,28 @@ export function activityFlowchartData(module, _t) {
     },
 
     /**
+     * The re-entry markers: one per band that rejoins at a card. Each sits in
+     * the band's OWN row, in the column of the card it rejoins at — directly
+     * under that card — and carries the arrow plus the exit control itself, so
+     * the chosen re-entry is named at the place it happens rather than at the
+     * far end of the band. A band that has not picked one yet has no marker;
+     * its invitation to pick stays in the tail behind its cards.
+     * @returns {Array<{id: string, band: object, style: string}>}
+     */
+    rejoinMarkers() {
+      const { colOf } = this._layout();
+      const off = this.hasBands() ? 1 : 0;
+      return this.bands().map((band, i) => {
+        const owner = this.model.steps.find((s) => s.id === band.ownerId);
+        const targetId = owner?.decision?.noTarget;
+        if (!targetId || targetId === 'end') return null;
+        const col = colOf.get(targetId);
+        if (!col) return null;
+        return { id: band.id, band, style: `grid-row: ${i + 1}; grid-column: ${col + off}` };
+      }).filter(Boolean);
+    },
+
+    /**
      * Grid placement for a band's tail — placeholder and exit, directly after
      * that band's last card rather than in a column shared by every band.
      * @param {object} band
@@ -341,6 +367,46 @@ export function activityFlowchartData(module, _t) {
     },
 
     /**
+     * Open the small menu at the arrow in gap `idx`, or close it if it was
+     * already open there. The arrow used to insert an activity outright, which
+     * left a decision addable only at the END of a band — never between two
+     * cards. Now the arrow asks which of the two.
+     * @param {number} idx gap index, the chain position the new step takes
+     * @param {string} bandId band the new step belongs to
+     * @returns {void}
+     */
+    toggleInsertMenu(idx, bandId) {
+      this._insertMenu = this._insertMenu?.idx === idx ? null : { idx, bandId };
+    },
+
+    /** @param {number} idx @returns {boolean} is the menu open at this gap? */
+    isInsertMenuOpen(idx) { return this._insertMenu?.idx === idx; },
+
+    /**
+     * Insert a step of `kind` at the open menu's gap, then close the menu.
+     * @param {'activity'|'decision'} kind
+     * @returns {void}
+     */
+    insertAtMenu(kind) {
+      const m = this._insertMenu;
+      if (!m) return;
+      this._insertMenu = null;
+      this.model.insertStep(m.idx, { kind, branchId: m.bandId });
+      this.$nextTick(() => this._autoSizeAll());
+    },
+
+    /**
+     * Close whatever is open on the canvas — the insert menu, the re-entry
+     * picker. One method because Alpine CSP allows a single plain call per
+     * binding (.claude/alpine.md), and the canvas click has to end both.
+     * @returns {void}
+     */
+    closeOverlays() {
+      this._insertMenu = null;
+      this.cancelPick();
+    },
+
+    /**
      * Creates an activity at the end of the band.
      * @param {string} bandId @returns {void}
      */
@@ -416,24 +482,6 @@ export function activityFlowchartData(module, _t) {
       this.model.setDecisionTarget(band?.ownerId, 'end');
     },
     /**
-     * Extra classes for the connector rendered in front of step `idx`.
-     * Two things are merged here because Alpine CSP allows only one plain
-     * method call per binding (.claude/alpine.md):
-     *  - the diamond offset — connectors line up with the card header
-     *    everywhere in the chain, but a diamond has no header; its vertices
-     *    sit on its middle line, so a connector touching one drops to that
-     *    height and meets the tip;
-     *  - the gap classes from chainViewMixin (hit area + insert bar).
-     * @param {number} idx - Index of the step the connector belongs to.
-     * @returns {string}
-     */
-    connectorClass(idx) {
-      const touchesDiamond = this.isDecision(this.model.steps[idx])
-        || this.isDecision(this.model.steps[idx - 1]);
-      return [touchesDiamond ? 'af__connector--diamond' : '', this.gapClass(idx)]
-        .filter(Boolean).join(' ');
-    },
-    /**
      * Arm the entry-point picker for a band — or disarm it if it was already
      * armed. The next click on an eligible card sets the exit.
      *
@@ -471,16 +519,18 @@ export function activityFlowchartData(module, _t) {
     },
 
     /**
-     * Every class a card carries: its kind, and — while the picker is armed —
-     * whether it is a choice. Merged into one binding because an element can
-     * only have one `:class`; two of them and the browser drops the second
-     * while parsing, silently.
+     * Every class a card carries: its kind, whether it is a choice while the
+     * picker is armed, and whether its arrow carries the open insert menu —
+     * that card has to rise above the one after it, or the menu is covered.
+     * Merged into one binding because an element can only have one `:class`;
+     * two of them and the browser drops the second while parsing, silently.
      * @param {object} step
      * @returns {string}
      */
     stepClass(step) {
       const kind = this.isDecision(step) ? 'af__step--decision' : 'af__step--activity';
-      return [kind, this.pickClass(step)].filter(Boolean).join(' ');
+      const menu = this.isInsertMenuOpen(this.model.steps.indexOf(step)) ? 'af__step--menu-open' : '';
+      return [kind, this.pickClass(step), menu].filter(Boolean).join(' ');
     },
 
     /**

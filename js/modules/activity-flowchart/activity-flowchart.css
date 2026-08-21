@@ -24,6 +24,25 @@
    it cannot land anywhere but first. */
 .af__canvas > .fc-swimlane-labels { grid-column: 1; }
 
+/* The re-entry marker: the chain arrow rotated a quarter turn so it points
+   up at the card the detour rejoins at. It carries fc-connector__arrow and
+   so takes its colour and size from the chain — one arrow tone across every
+   flowchart, nothing to keep in sync here. */
+.af__rejoin {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-xs);
+  pointer-events: none;   /* the lane behind it still takes card drops */
+  z-index: 1;
+}
+
+/* Only the control takes clicks; the arrow above it stays transparent so a
+   card can still be dropped into the band underneath. */
+.af__rejoin .af__band-exit-group { pointer-events: auto; }
+
+.af__rejoin-arrow { transform: rotate(-90deg); }
+
 /* A band's lane: the full-width strip behind its cards. It exists to take the
    drop that moves a card into this band — the per-column slots that used to
    do that are gone with the packed layout — and to draw the band separator. */
@@ -39,7 +58,7 @@
    along a header. */
 .af__tail {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: var(--spacing-xs);
   padding-left: var(--fc-chain-gap);
   z-index: 1;
@@ -66,8 +85,9 @@
    rather than as a card. */
 .af__band-add {
   display: flex;
-  gap: var(--spacing-xs);
-  align-items: center;
+  flex-direction: column;
+  gap: 2px;
+  align-items: stretch;
   padding: var(--spacing-xs);
   border: 1px dashed var(--color-border-primary);
   border-radius: var(--border-radius-sm);
@@ -110,8 +130,7 @@
 .af__band-exit:hover { background: var(--color-bg-tertiary); color: var(--color-text-primary); }
 .af__band-exit-arrow { color: var(--color-error); }
 
-/* The three exits sit side by side; the one in use is marked, so a glance at
-   the band end says where the detour goes without opening anything. */
+/* Button and its ✕ side by side. */
 .af__band-exit-group {
   display: flex;
   align-items: center;
@@ -178,12 +197,11 @@
   z-index: 1;
 }
 
-/* A connector next to a diamond drops from the card-header line to the
-   diamond's middle line, where its left/right vertices are — otherwise the
-   chevron points at the empty corner beside the top vertex.
-   (--af-diamond-h / 2) centres it on the shape, −16px re-centres the 32px
-   connector itself, +4px cancels .fc-connector--header-aligned's offset. */
-.af__connector--diamond { margin-top: calc(var(--af-diamond-h) / 2 - 16px - 4px); }
+/* No exception for the diamond. Dropping its connector to the shape's middle
+   line did make the chevron meet the left vertex, but only the connector
+   BEFORE a diamond ever got that offset — the one after it sits beside a
+   card and stayed on the header line — so the row of arrows read as broken
+   rather than as aimed. One line for all of them. */
 
 /* Gap n hangs off the RIGHT of the last card, mirroring the connector that
    normally sits in the gap to a card's left. */
@@ -191,6 +209,47 @@
   left: auto;
   right: calc(-1 * var(--fc-chain-gap));
 }
+
+/* The insert menu at an arrow. It hangs BELOW the arrow rather than over it,
+   so the two cards it would go between stay visible while choosing. */
+.af__insert-menu {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--spacing-xs);
+  background: var(--color-bg-elevated);
+  border: var(--border-width) solid var(--color-border-primary);
+  border-radius: var(--border-radius-sm);
+  box-shadow: 0 4px 12px rgb(0 0 0 / 12%);
+  z-index: 10;
+}
+
+.af__insert-menu button {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  border: none;
+  background: transparent;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-xs);
+  white-space: nowrap;
+  cursor: pointer;
+  padding: 2px var(--spacing-xs);
+  border-radius: var(--border-radius-sm);
+}
+
+.af__insert-menu button:hover {
+  background: var(--color-bg-tertiary);
+  color: var(--color-text-primary);
+}
+
+/* Cards all sit at z-index 1, so the one after this arrow would paint over
+   the open menu — later sibling, same layer. Lift the card that carries it. */
+.af__step--menu-open { z-index: 10; }
 
 /* Drag feedback — chainViewMixin's stepDragStart toggles is-dragging directly
    on the .af__step node, which carries `draggable` again now that a step is
@@ -223,8 +282,13 @@
 .af__diamond {
   position: relative;
   box-sizing: border-box;
-  width: calc(var(--af-diamond-w) + var(--af-branch-gutter));
-  padding-right: var(--af-branch-gutter);
+
+  /* A gutter on BOTH sides, though only the right one holds anything ("Ja"
+     at the right vertex). With the gutter on the right alone the shape sat
+     half a gutter left of its column's middle, off-centre between the two
+     arrows it connects. The left gutter stays empty and buys the symmetry. */
+  width: calc(var(--af-diamond-w) + 2 * var(--af-branch-gutter));
+  padding: 0 var(--af-branch-gutter);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -302,11 +366,14 @@
    cannot be reordered — and the visible numbering would skip it (01 → 03).
    Parked in the box's top-left corner, mirroring the delete button at the
    top-right: the diamond leaves both corners empty, so it never covers the
-   label. Sibling of the clipped shape, because clip-path clips descendants. */
+   label. Sibling of the clipped shape, because clip-path clips descendants.
+   Offset by the gutter, like the delete button: since the gutter became
+   symmetric, `left: 0` is a column of empty space beside the shape, not the
+   shape's own corner. */
 .af__diamond .af__step-number {
   position: absolute;
   top: 0;
-  left: 0;
+  left: var(--af-branch-gutter);
   z-index: 1;
 }
 

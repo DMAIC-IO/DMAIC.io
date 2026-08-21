@@ -1,11 +1,12 @@
 <div class="module-container af" x-data="activityFlowchart" data-ref="root">
   <div class="module-container__body">
-    <!-- A click anywhere that is not an eligible card or an exit button
-         cancels the picker; those two stop the event. Escape does too. -->
+    <!-- A click anywhere that is not an eligible card, an exit button or an
+         open insert menu closes what is open; those stop the event. Escape
+         does the same. -->
     <div class="af__canvas fc-swimlanes" data-ref="flow"
          :style="bandGridStyle()"
-         @click="cancelPick()"
-         @keydown.escape.window="cancelPick()">
+         @click="closeOverlays()"
+         @keydown.escape.window="closeOverlays()">
 
       <!-- Rework arcs (rendered above the chain, at measured positions —
            positioning/drawing lands in a later task; the DOM hooks exist
@@ -75,14 +76,32 @@
                        point at empty space. -->
                   <template x-if="!isBandStart(step)">
                     <div class="af__connector fc-connector fc-connector--clickable fc-connector--header-aligned"
-                         :class="connectorClass(idx)"
+                         :class="gapClass(idx)"
                          data-action="insert-step" :data-idx="idx" :data-gap="idx"
                          :title="t('insertHere')"
-                         @click="insertInBand(idx, step.branchId)"
+                         @click.stop="toggleInsertMenu(idx, step.branchId)"
                          @dragover="gapDragOver(idx, $event)"
                          @dragleave="gapDragLeave(idx, $event)"
                          @drop="gapDrop(idx, $event)">
                       <span class="af__connector-arrow fc-connector__arrow">&raquo;</span>
+
+                      <!-- Which of the two goes in here. The arrow cannot
+                           decide that on its own: a decision inserted between
+                           two cards is as ordinary as an activity, and until
+                           this menu existed it could only ever be appended to
+                           the end of a band. -->
+                      <template x-if="isInsertMenuOpen(idx)">
+                        <div class="af__insert-menu" @click.stop>
+                          <button data-insert="activity" @click.stop="insertAtMenu('activity')">
+                            <span class="icon" data-icon="plus" aria-hidden="true"></span>
+                            <span x-text="t('addStep')"></span>
+                          </button>
+                          <button data-insert="decision" @click.stop="insertAtMenu('decision')">
+                            <span class="icon" data-icon="git-fork" aria-hidden="true"></span>
+                            <span x-text="t('addDecision')"></span>
+                          </button>
+                        </div>
+                      </template>
                     </div>
                   </template>
 
@@ -170,6 +189,29 @@
         </div>
       </template>
 
+      <!-- The re-entry marker: the chain's own double arrow, turned to point
+           up. It stands in the detour's row under the card the band rejoins
+           at, so the turn back into the main path is visible at the place it
+           happens — the exit button names that card, but sits at the other
+           end of the band. -->
+      <template x-for="marker in rejoinMarkers()" :key="'rejoin-' + marker.id">
+        <div class="af__rejoin" :data-band-id="marker.id" :style="marker.style">
+          <span class="af__rejoin-arrow fc-connector__arrow">&raquo;</span>
+          <div class="af__band-exit-group" :data-band-id="marker.id">
+            <button class="af__band-exit af__band-exit--active" data-exit="pick"
+                    :data-band-id="marker.id"
+                    @click.stop="togglePick(marker.band)"
+                    :title="t('pickEntryTitle')">
+              <span class="af__band-exit-arrow">&#9673;</span>
+              <span class="af__band-exit-target" x-text="exitPickLabel(marker.band)"></span>
+            </button>
+            <button class="af__band-exit-clear"
+                    @click.stop="clearExit(marker.band)"
+                    :title="t('clearRejoin')">&#10005;</button>
+          </div>
+        </div>
+      </template>
+
       <!-- Each band's tail: the placeholder for adding, and behind it the
            exit. It sits directly after that band's OWN last card, not in a
            column shared by every band — the point of the packed layout is
@@ -210,24 +252,23 @@
               <!-- One control, because there is only one thing to say: where
                    this detour rejoins. Nothing chosen means it does not rejoin
                    — the stream ends where its cards end — so "process end" is
-                   not a destination to pick but the absence of one, and
-                   "flows on to the next step" was never a thing the author
-                   asked for. -->
-              <div class="af__band-exit-group">
-                <button class="af__band-exit" data-exit="pick"
-                        :class="exitClass(band)"
-                        :data-band-id="band.id"
-                        @click.stop="togglePick(band)"
-                        :title="t('pickEntryTitle')">
-                  <span class="af__band-exit-arrow">&#9673;</span>
-                  <span class="af__band-exit-target" x-text="exitPickLabel(band)"></span>
-                </button>
-                <template x-if="hasRejoin(band)">
-                  <button class="af__band-exit-clear"
-                          @click.stop="clearExit(band)"
-                          :title="t('clearRejoin')">&#10005;</button>
-                </template>
-              </div>
+                   not a destination to pick but the absence of one.
+
+                   Only the INVITATION lives here. Once a card is picked, the
+                   control moves to that card's column and hangs under the
+                   arrow (see the re-entry marker above), where it names the
+                   re-entry at the place it happens. -->
+              <template x-if="!hasRejoin(band)">
+                <div class="af__band-exit-group" :data-band-id="band.id">
+                  <button class="af__band-exit" data-exit="pick"
+                          :data-band-id="band.id"
+                          @click.stop="togglePick(band)"
+                          :title="t('pickEntryTitle')">
+                    <span class="af__band-exit-arrow">&#9673;</span>
+                    <span class="af__band-exit-target" x-text="exitPickLabel(band)"></span>
+                  </button>
+                </div>
+              </template>
           </div>
         </template>
       </template>
