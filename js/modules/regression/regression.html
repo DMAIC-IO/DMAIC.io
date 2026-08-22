@@ -200,11 +200,11 @@
             <table class="reg__table">
               <thead><tr>
                 <th x-text="t('source')"></th>
-                <th>SS <button class="reg__algo-link" :title="t('algoLabTitle')" @click="algoNavigate('regression-anova')"><svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg></button></th>
-                <th>DF <button class="reg__algo-link" :title="t('algoLabTitle')" @click="algoNavigate('regression-anova')"><svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg></button></th>
-                <th>MS <button class="reg__algo-link" :title="t('algoLabTitle')" @click="algoNavigate('regression-anova')"><svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg></button></th>
-                <th>F <button class="reg__algo-link" :title="t('algoLabTitle')" @click="algoNavigate('regression-anova')"><svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg></button></th>
-                <th><span x-text="t('pValue')"></span> <button class="reg__algo-link" :title="t('algoLabTitle')" @click="algoNavigate('regression-anova')"><svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg></button></th>
+                <th>SS <button class="reg__algo-link" :title="t('algoLabTitle')" @click="algoNavigate('regression-anova')"><span class="icon icon--sm" data-icon="nav.algorithm-lab" aria-hidden="true"></span></button></th>
+                <th>DF <button class="reg__algo-link" :title="t('algoLabTitle')" @click="algoNavigate('regression-anova')"><span class="icon icon--sm" data-icon="nav.algorithm-lab" aria-hidden="true"></span></button></th>
+                <th>MS <button class="reg__algo-link" :title="t('algoLabTitle')" @click="algoNavigate('regression-anova')"><span class="icon icon--sm" data-icon="nav.algorithm-lab" aria-hidden="true"></span></button></th>
+                <th>F <button class="reg__algo-link" :title="t('algoLabTitle')" @click="algoNavigate('regression-anova')"><span class="icon icon--sm" data-icon="nav.algorithm-lab" aria-hidden="true"></span></button></th>
+                <th><span x-text="t('pValue')"></span> <button class="reg__algo-link" :title="t('algoLabTitle')" @click="algoNavigate('regression-anova')"><span class="icon icon--sm" data-icon="nav.algorithm-lab" aria-hidden="true"></span></button></th>
               </tr></thead>
               <tbody>
                 <tr :class="anova().regRowClass">
@@ -246,18 +246,18 @@
                   <th x-text="t('stdErrorCoef')"></th>
                 </template>
                 <template x-if="coefView().hasDetails">
-                  <th><span x-text="t('tValue')"></span> <button class="reg__algo-link" :title="t('algoLabTitle')" @click="algoNavigate('regression-coefficients')"><svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg></button></th>
+                  <th><span x-text="t('tValue')"></span> <button class="reg__algo-link" :title="t('algoLabTitle')" @click="algoNavigate('regression-coefficients')"><span class="icon icon--sm" data-icon="nav.algorithm-lab" aria-hidden="true"></span></button></th>
                 </template>
                 <template x-if="coefView().hasDetails">
                   <th>
                     <span x-text="t('pValue')"></span>
-                    <button class="reg__algo-link" :title="t('algoLabTitle')" @click="algoNavigate('regression-coefficients')"><svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg></button>
+                    <button class="reg__algo-link" :title="t('algoLabTitle')" @click="algoNavigate('regression-coefficients')"><span class="icon icon--sm" data-icon="nav.algorithm-lab" aria-hidden="true"></span></button>
                     <button class="reg__sort-btn" :class="model.coefSortByP ? 'reg__sort-btn--active' : ''"
                       data-action="sort-coef-p" :title="t('sortByPValue')" @click="toggleSort()"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M7 15l5 5 5-5M7 9l5-5 5 5"/></svg></button>
                   </th>
                 </template>
                 <template x-if="coefView().hasVIF">
-                  <th>VIF <button class="reg__algo-link" :title="t('algoLabTitle')" @click="algoNavigate('vif')"><svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg></button></th>
+                  <th>VIF <button class="reg__algo-link" :title="t('algoLabTitle')" @click="algoNavigate('vif')"><span class="icon icon--sm" data-icon="nav.algorithm-lab" aria-hidden="true"></span></button></th>
                 </template>
               </tr></thead>
               <tbody>

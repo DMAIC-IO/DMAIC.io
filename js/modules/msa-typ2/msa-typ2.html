@@ -75,7 +75,7 @@
           <div class="dmike-kpi-strip">
             <div class="dmike-kpi" :class="kpiModClass(result.grrStatus)">
               <div class="dmike-kpi-label">%GRR (<span x-text="t('studyVar')"></span>)
-                <button class="msa-typ2__algo-link" data-algo-id="grr" title="Algorithm Lab" @click="algoNavigate('grr', $event)"><svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg></button>
+                <button class="msa-typ2__algo-link" data-algo-id="grr" title="Algorithm Lab" @click="algoNavigate('grr', $event)"><span class="icon icon--sm" data-icon="nav.algorithm-lab" aria-hidden="true"></span></button>
               </div>
               <div class="dmike-kpi-value"><span x-text="fmt(result.varComp.grr.pctStudyVar)"></span> %</div>
               <div class="dmike-kpi-sub"><span x-text="t('threshold')"></span>: &lt; 10 % · <span x-text="badgeLabel(result.grrStatus)"></span></div>
