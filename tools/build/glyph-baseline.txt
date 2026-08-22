@@ -57,17 +57,6 @@ js/modules/control-chart/control-chart-help.js:148:✕
 js/modules/control-chart/control-chart-help.js:171:✕
 js/modules/correlation/correlation.js:31:●
 js/modules/doe-planner/doe-planner.js:1031:↻
-js/modules/fmea/fmea.html:74:⚠
-js/modules/fmea/fmea.html:78:▲
-js/modules/fmea/fmea.html:82:●
-js/modules/fmea/fmea.html:86:✓
-js/modules/fmea/fmea.html:94:↑
-js/modules/fmea/fmea.html:105:▼
-js/modules/fmea/fmea.html:110:→
-js/modules/fmea/fmea.html:113:✕
-js/modules/fmea/fmea.html:192:✓
-js/modules/fmea/fmea.html:244:✕
-js/modules/fmea/fmea.html:256:→
 js/modules/hypothesis-test/hypothesis-test.html:200:→
 js/modules/ishikawa/ishikawa.js:1213:●
 js/modules/ishikawa/ishikawa.js:1214:◆
