@@ -266,11 +266,6 @@ export default createModule({
         return Boolean(this._confirmingDelete[id]);
       },
 
-      delBtnLabel(id) {
-        this._confirmTick;
-        return this._confirmingDelete[id] ? _t('deleteGoalConfirm') : '🗑';
-      },
-
       goalDeleteClick(id, event) {
         if (this._confirmingDelete[id]) {
           this._pushUndo();

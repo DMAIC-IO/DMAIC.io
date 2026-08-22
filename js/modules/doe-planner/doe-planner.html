@@ -28,7 +28,7 @@
                   <span class="doe__timeline-num" x-text="ph.cycleNumber"></span>
                   <span class="doe__timeline-label" x-text="phaseLabel(ph)"></span>
                   <template x-if="phaseDecIcon(ph)">
-                    <span class="doe__timeline-dec" x-text="phaseDecIcon(ph)"></span>
+                    <span class="doe__timeline-dec icon icon--sm" :data-icon="phaseDecIcon(ph)" aria-hidden="true"></span>
                   </template>
                 </button>
               </template>

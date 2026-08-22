@@ -35,10 +35,10 @@
             <label class="settings-section__label" x-text="t('theme')"></label>
             <div class="settings-theme-toggle">
               <button id="theme-toggle-light" :class="themeClass('light')" data-theme="light" @click="setTheme('light')">
-                <span class="settings-theme-icon">☀</span><span x-text="t('themeLight')"></span>
+                <span class="icon icon--sm settings-theme-icon" data-icon="action.theme-light" aria-hidden="true"></span><span x-text="t('themeLight')"></span>
               </button>
               <button id="theme-toggle-dark" :class="themeClass('dark')" data-theme="dark" @click="setTheme('dark')">
-                <span class="settings-theme-icon">🌙</span><span x-text="t('themeDark')"></span>
+                <span class="icon icon--sm settings-theme-icon" data-icon="action.theme-dark" aria-hidden="true"></span><span x-text="t('themeDark')"></span>
               </button>
             </div>
           </div>

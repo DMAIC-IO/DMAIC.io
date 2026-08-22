@@ -242,8 +242,14 @@
 }
 
 .module-error__icon {
-  font-size: 32px;
   opacity: 0.6;
+}
+
+/* Error-card icon sits above two lines of text — 32px reads better here
+   than the largest regular step (24px, .icon--lg). --icon-size exception
+   per docs/ICONS.md, scoped to this one layout. */
+.module-error__icon .icon {
+  --icon-size: 32px;
 }
 
 .module-error__title {

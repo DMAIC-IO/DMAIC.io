@@ -1003,6 +1003,7 @@
       "goalAchievement": "ZEG",
       "goalAchievementFull": "Zielerreichungsgrad",
       "goalAchievementTooltip": "Zielerreichungsgrad: 0 = nicht begonnen, 100 = vollständig erreicht",
+      "goalAchieved": "Erreicht",
       "deleteGoal": "Ziel löschen",
       "deleteGoalConfirm": "Wirklich löschen?",
       "dateInPast": "Zieldatum liegt in der Vergangenheit",

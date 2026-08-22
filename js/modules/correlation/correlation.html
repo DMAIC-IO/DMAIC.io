@@ -192,14 +192,22 @@
             </div>
 
             <div class="corr__matrix-legend">
-              <span class="corr__matrix-legend-item" style="color:var(--color-success)"
-                x-text="BULLET + ' ' + t('strongPositive')"></span>
-              <span class="corr__matrix-legend-item" style="color:var(--color-warning)"
-                x-text="BULLET + ' ' + t('moderate')"></span>
-              <span class="corr__matrix-legend-item" style="color:var(--color-text-tertiary)"
-                x-text="BULLET + ' ' + t('weak')"></span>
-              <span class="corr__matrix-legend-item" style="color:var(--color-error)"
-                x-text="BULLET + ' ' + t('strongNegative')"></span>
+              <span class="corr__matrix-legend-item" style="color:var(--color-success)">
+                <span class="icon icon--sm icon--text" data-icon="fill.100" aria-hidden="true"></span>
+                <span x-text="t('strongPositive')"></span>
+              </span>
+              <span class="corr__matrix-legend-item" style="color:var(--color-warning)">
+                <span class="icon icon--sm icon--text" data-icon="fill.100" aria-hidden="true"></span>
+                <span x-text="t('moderate')"></span>
+              </span>
+              <span class="corr__matrix-legend-item" style="color:var(--color-text-tertiary)">
+                <span class="icon icon--sm icon--text" data-icon="fill.100" aria-hidden="true"></span>
+                <span x-text="t('weak')"></span>
+              </span>
+              <span class="corr__matrix-legend-item" style="color:var(--color-error)">
+                <span class="icon icon--sm icon--text" data-icon="fill.100" aria-hidden="true"></span>
+                <span x-text="t('strongNegative')"></span>
+              </span>
             </div>
 
             <template x-if="filteredPairs.length > 0">

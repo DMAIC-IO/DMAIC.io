@@ -3,7 +3,7 @@
   <template x-if="!model.suggestions || model.suggestions.length === 0">
     <div class="chart-suggestion chart-suggestion--empty">
       <div class="chart-suggestion__empty-card">
-        <div class="chart-suggestion__empty-icon">✨</div>
+        <div class="chart-suggestion__empty-icon"><span class="icon" data-icon="module.chart-suggestion" aria-hidden="true"></span></div>
         <h2 class="chart-suggestion__empty-title" x-text="t('emptyTitle')"></h2>
         <p class="chart-suggestion__empty-text" x-text="emptyText()"></p>
       </div>

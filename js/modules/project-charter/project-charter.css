@@ -201,9 +201,8 @@ tbody .pc__col-nr:active { cursor: grabbing; }
   position: absolute;
   right: 4px;
   top: 2px;
-  font-size: var(--font-size-xs);
   color: var(--color-success);
-  font-weight: var(--font-weight-semibold);
+  line-height: 0;
 }
 
 /* ===== Add button ===== */

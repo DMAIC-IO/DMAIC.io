@@ -1003,6 +1003,7 @@
       "goalAchievement": "GAL",
       "goalAchievementFull": "Goal Achievement Level",
       "goalAchievementTooltip": "Goal Achievement Level: 0 = not started, 100 = fully achieved",
+      "goalAchieved": "Achieved",
       "deleteGoal": "Delete goal",
       "deleteGoalConfirm": "Really delete?",
       "dateInPast": "Target date is in the past",

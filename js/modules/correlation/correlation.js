@@ -28,7 +28,6 @@ const GLYPH_RHO = 'ρ';      // ρ
 const GLYPH_TAU = 'τ';      // τ
 const GLYPH_GE_R = '|r| ≥'; // |r| ≥
 const GLYPH_LE_P = 'p ≤';   // p ≤
-const BULLET = '●';         // ●
 const EN_DASH = '–';        // –
 const HEART_LR = '↔';       // ↔
 
@@ -61,7 +60,7 @@ const mod = createModule({
   data(module, _t) {
     return {
       // ── Glyph constants exposed to the template ──────────────
-      GLYPH_RHO, GLYPH_TAU, GLYPH_GE_R, GLYPH_LE_P, BULLET,
+      GLYPH_RHO, GLYPH_TAU, GLYPH_GE_R, GLYPH_LE_P,
 
       // ── Transient view state (never persisted) ───────────────
       result: null,         // pairwise engine result (or { error })

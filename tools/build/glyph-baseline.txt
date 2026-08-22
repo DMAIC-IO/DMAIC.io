@@ -31,39 +31,22 @@
 # waren schon vor dieser Härtung sauber). Das ist der Arbeitsvorrat für die
 # Migrationsfolge-Aufgabe — diese Aufgabe migriert nichts.
 
-css/components.css:188:✕
 js/core/chart/chart-editor.js:458:●
 js/core/chart/chart-editor.js:460:◆
 js/core/chart/chart-editor.js:461:▲
 js/core/chart/chart-editor.js:462:▼
 js/core/chart/chart-editor.js:464:★
-js/core/chart/types/run-chart.js:142:↑
-js/core/chart/types/trend.js:291:●
 js/core/cycles/cycles.js:79:⊞
-js/core/datagrid/datagrid-utils.js:61:📅
-js/core/datagrid/datagrid-utils.js:62:🕐
-js/core/datagrid/datagrid.css:229:✓
-js/core/datagrid/datagrid.js:3174:📅
-js/core/datagrid/datagrid.js:3291:✔
 js/core/migrations.js:55:→
-js/core/module-registry.js:177:⚠
-js/frame/helpers.js:24:🔒
-js/modules/chart-suggestion/chart-suggestion.html:6:✨
 js/modules/contour-plot/contour-plot-editor.js:81:●
 js/modules/contour-plot/contour-plot-editor.js:82:◆
 js/modules/contour-plot/contour-plot-editor.js:83:▼
 js/modules/contour-plot/contour-plot-editor.js:84:★
 js/modules/control-chart/control-chart-help.js:148:✕
 js/modules/control-chart/control-chart-help.js:171:✕
-js/modules/correlation/correlation.js:31:●
-js/modules/doe-planner/doe-planner.js:1031:↻
 js/modules/ishikawa/ishikawa.js:1213:●
 js/modules/ishikawa/ishikawa.js:1214:◆
 js/modules/ishikawa/ishikawa.js:1215:▼
 js/modules/ishikawa/ishikawa.js:1216:★
 js/modules/kano/kano-link.js:20:▸
 js/modules/process-map/process-map.js:546:→
-js/modules/project-charter/project-charter.html:125:✓
-js/modules/project-charter/project-charter.js:271:🗑
-js/pages/settings/settings.html:38:☀
-js/pages/settings/settings.html:41:🌙

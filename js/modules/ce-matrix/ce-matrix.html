@@ -33,7 +33,7 @@
                 </div>
                 <button class="dmike-del-btn ce-matrix__del-btn ce-matrix__col-del-btn"
                         :data-col="c" :title="t('removeOutput')"
-                        @click="removeOutput(c)"></button>
+                        @click="removeOutput(c)"><span class="icon icon--sm" data-icon="action.delete" aria-hidden="true"></span></button>
               </th>
             </template>
             <th class="ce-matrix__total-label ce-matrix__total-label--vertical">
@@ -53,7 +53,7 @@
                        @change="inputNameChanged(r, $event)" />
                 <button class="dmike-del-btn ce-matrix__del-btn ce-matrix__row-del-btn"
                         :data-row="r" :title="t('removeInput')"
-                        @click="removeInput(r)"></button>
+                        @click="removeInput(r)"><span class="icon icon--sm" data-icon="action.delete" aria-hidden="true"></span></button>
               </td>
               <template x-for="(out, c) in model.outputs">
                 <td class="ce-matrix__score-cell" :key="'s-' + r + '-' + c">

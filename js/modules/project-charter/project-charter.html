@@ -122,7 +122,7 @@
                         <div class="pc__zeg-bar-fill" :style="zegBarStyle(goal.achievementLevel)"></div>
                       </div>
                       <template x-if="zegClamped(goal.achievementLevel) === 100">
-                        <span class="pc__zeg-done" aria-label="Erreicht">✓</span>
+                        <span class="pc__zeg-done" :aria-label="t('goalAchieved')" role="img"><span class="icon icon--sm" data-icon="status.ok" aria-hidden="true"></span></span>
                       </template>
                     </div>
                   </td>
@@ -130,12 +130,11 @@
                     <button
                       class="btn btn--icon btn--ghost pc__del-btn"
                       type="button"
-                      :title="t('deleteGoal')"
-                      :aria-label="t('deleteGoal')"
-                      x-text="delBtnLabel(goal.id)"
+                      :title="isConfirmingDelete(goal.id) ? t('deleteGoalConfirm') : t('deleteGoal')"
+                      :aria-label="isConfirmingDelete(goal.id) ? t('deleteGoalConfirm') : t('deleteGoal')"
                       :class="isConfirmingDelete(goal.id) ? 'btn--danger' : 'btn--ghost'"
                       @click="goalDeleteClick(goal.id, $event)"
-                    ></button>
+                    ><span class="icon icon--sm" data-icon="action.delete" aria-hidden="true" x-show="!isConfirmingDelete(goal.id)"></span><span x-show="isConfirmingDelete(goal.id)" x-text="t('deleteGoalConfirm')"></span></button>
                   </td>
                 </tr>
               </template>

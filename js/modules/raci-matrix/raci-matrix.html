@@ -56,7 +56,7 @@
                   <button class="dmike-del-btn raci__del-btn" type="button"
                           data-del="stakeholder" :data-idx="sIdx"
                           :title="t('removeStakeholder')"
-                          @click.stop="removeStakeholder(sIdx)"></button>
+                          @click.stop="removeStakeholder(sIdx)"><span class="icon icon--sm" data-icon="action.delete" aria-hidden="true"></span></button>
                 </th>
               </template>
             </tr>
@@ -94,7 +94,7 @@
                   <button class="dmike-del-btn raci__del-btn" type="button"
                           data-del="activity" :data-idx="aIdx"
                           :title="t('removeActivity')"
-                          @click.stop="removeActivity(aIdx)"></button>
+                          @click.stop="removeActivity(aIdx)"><span class="icon icon--sm" data-icon="action.delete" aria-hidden="true"></span></button>
                 </td>
                 <template x-for="(sh, sIdx) in model.stakeholders">
                   <td class="raci__cell" :key="'cell-' + aIdx + '-' + sIdx"

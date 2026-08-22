@@ -12,6 +12,7 @@
 
 import ChartBase from '../chart-base.js';
 import { h } from '../../dom.js';
+import { icon } from '../../icon.js';
 import { svgEl, resolveColor, formatNum, drawMarker } from '../chart-core.js';
 
 export default class RunChartType extends ChartBase {
@@ -139,10 +140,13 @@ export default class RunChartType extends ChartBase {
       const dy = Math.abs(py - dataY);
       const dist = Math.sqrt(dx * dx + dy * dy);
       if (dist <= proximityPx * 2) {
-        const side = v > median ? '↑' : v < median ? '↓' : '=';
+        const side = v > median ? icon('nav.arrow-up', { size: 'sm', cls: 'icon--text' })
+          : v < median ? icon('nav.arrow-down', { size: 'sm', cls: 'icon--text' })
+          : '=';
         const node = h('div', null,
           h('strong', null, `#${i + 1}`),
-          ` ${side}`,
+          ' ',
+          side,
           h('br'),
           formatNum(v, null, this.locale),
         );

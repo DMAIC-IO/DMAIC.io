@@ -3,6 +3,8 @@
  * Shared DOM helpers for the application chrome (header, footer, banners).
  */
 
+import { icon } from '../core/icon.js';
+
 /**
  * Show or hide the read-only banner depending on the active project's status.
  * When the project is completed the app enters read-only mode (banner + body
@@ -21,7 +23,10 @@ export function updateReadOnlyBanner(stateManager, i18n) {
       const workspace = document.getElementById('app-workspace');
       workspace?.prepend(banner);
     }
-    banner.textContent = `🔒 ${  i18n.t('app.projectReadOnly')}`;
+    banner.replaceChildren(
+      icon('action.lock', { size: 'sm', cls: 'icon--text' }),
+      document.createTextNode(` ${i18n.t('app.projectReadOnly')}`),
+    );
     banner.style.display = '';
     document.body.classList.add('dmike--readonly');
   } else {
