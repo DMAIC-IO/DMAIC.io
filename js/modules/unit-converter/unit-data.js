@@ -6,7 +6,7 @@
 
 export const CATEGORIES = {
   laenge: {
-    nameKey: 'catLength', icon: '📏',
+    nameKey: 'catLength', icon: 'unit.length',
     units: {
       nm:  { nameKey: 'nm',  toBase: v => v * 1e-9,       fromBase: v => v / 1e-9 },
       um:  { nameKey: 'um',  toBase: v => v * 1e-6,       fromBase: v => v / 1e-6 },
@@ -23,7 +23,7 @@ export const CATEGORIES = {
     refs: [[1,'mil','um'],[1,'mil','mm'],[10,'mil','mm'],[1,'in','mil'],[1,'in','mm'],[1,'ft','cm'],[1,'mi','km']],
   },
   flaeche: {
-    nameKey: 'catArea', icon: '⬜',
+    nameKey: 'catArea', icon: 'unit.area',
     units: {
       mm2: { nameKey: 'mm2', toBase: v => v * 1e-6,      fromBase: v => v / 1e-6 },
       cm2: { nameKey: 'cm2', toBase: v => v * 1e-4,      fromBase: v => v / 1e-4 },
@@ -38,7 +38,7 @@ export const CATEGORIES = {
     refs: [[1,'ar','m2'],[1,'ha','ar'],[1,'ha','m2'],[1,'ac','m2'],[1,'km2','ha'],[1,'ft2','m2']],
   },
   volumen: {
-    nameKey: 'catVolume', icon: '🧪',
+    nameKey: 'catVolume', icon: 'unit.volume',
     units: {
       mm3:  { nameKey: 'mm3',  toBase: v => v * 1e-9,           fromBase: v => v / 1e-9 },
       cm3:  { nameKey: 'cm3',  toBase: v => v * 1e-6,           fromBase: v => v / 1e-6 },
@@ -52,7 +52,7 @@ export const CATEGORIES = {
     refs: [[1,'l','ml'],[1,'l','cm3'],[1,'gal','l'],[1,'m3','l'],[1,'l','floz']],
   },
   masse: {
-    nameKey: 'catMass', icon: '⚖',
+    nameKey: 'catMass', icon: 'unit.mass',
     units: {
       mg: { nameKey: 'mg', toBase: v => v * 1e-6,     fromBase: v => v / 1e-6 },
       g:  { nameKey: 'g',  toBase: v => v * 1e-3,     fromBase: v => v / 1e-3 },
@@ -64,7 +64,7 @@ export const CATEGORIES = {
     refs: [[1,'kg','lb'],[1,'oz','g'],[1,'t','kg'],[1,'lb','g']],
   },
   druck: {
-    nameKey: 'catPressure', icon: '⏲',
+    nameKey: 'catPressure', icon: 'unit.pressure',
     units: {
       Pa:   { nameKey: 'Pa',   toBase: v => v,            fromBase: v => v },
       hPa:  { nameKey: 'hPa',  toBase: v => v * 100,      fromBase: v => v / 100 },
@@ -79,7 +79,7 @@ export const CATEGORIES = {
     refs: [[1,'bar','Pa'],[1,'atm','bar'],[1,'psi','kPa'],[1013.25,'hPa','atm']],
   },
   temperatur: {
-    nameKey: 'catTemperature', icon: '🌡',
+    nameKey: 'catTemperature', icon: 'unit.temperature',
     units: {
       C: { nameKey: 'C', toBase: v => v,                fromBase: v => v },
       F: { nameKey: 'F', toBase: v => (v - 32) * 5 / 9, fromBase: v => v * 9 / 5 + 32 },
@@ -88,7 +88,7 @@ export const CATEGORIES = {
     refs: [[0,'C','F'],[100,'C','F'],[0,'C','K'],[212,'F','C']],
   },
   kraft: {
-    nameKey: 'catForce', icon: '💪',
+    nameKey: 'catForce', icon: 'unit.force',
     units: {
       N:   { nameKey: 'N',   toBase: v => v,             fromBase: v => v },
       kN:  { nameKey: 'kN',  toBase: v => v * 1e3,       fromBase: v => v / 1e3 },
@@ -99,7 +99,7 @@ export const CATEGORIES = {
     refs: [[1,'kN','N'],[1,'lbf','N'],[1,'kgf','N'],[1e5,'dyn','N']],
   },
   drehmoment: {
-    nameKey: 'catTorque', icon: '🔧',
+    nameKey: 'catTorque', icon: 'unit.torque',
     units: {
       Nm:    { nameKey: 'Nm',    toBase: v => v,            fromBase: v => v },
       kNm:   { nameKey: 'kNm',   toBase: v => v * 1e3,      fromBase: v => v / 1e3 },
@@ -109,7 +109,7 @@ export const CATEGORIES = {
     refs: [[1,'Nm','lbfft'],[100,'Nm','kgfm'],[1,'kNm','Nm'],[1,'lbfft','Nm']],
   },
   energie: {
-    nameKey: 'catEnergy', icon: '⚡',
+    nameKey: 'catEnergy', icon: 'unit.energy',
     units: {
       J:    { nameKey: 'J',    toBase: v => v,           fromBase: v => v },
       kJ:   { nameKey: 'kJ',   toBase: v => v * 1e3,     fromBase: v => v / 1e3 },
@@ -122,7 +122,7 @@ export const CATEGORIES = {
     refs: [[1,'kWh','kJ'],[1,'kcal','kJ'],[1,'BTU','J'],[1,'kJ','Wh']],
   },
   leistung: {
-    nameKey: 'catPower', icon: '🔋',
+    nameKey: 'catPower', icon: 'unit.power',
     units: {
       uW:   { nameKey: 'uW',   toBase: v => v * 1e-6,                    fromBase: v => v * 1e6 },
       mW:   { nameKey: 'mW',   toBase: v => v * 1e-3,                    fromBase: v => v * 1e3 },
@@ -138,7 +138,7 @@ export const CATEGORIES = {
     refs: [[1,'kW','PS'],[1,'hp','kW'],[0,'dBm','mW'],[10,'dBm','mW'],[20,'dBm','W'],[30,'dBm','W'],[0,'dBW','W'],[1,'W','dBm']],
   },
   durchfluss: {
-    nameKey: 'catFlowRate', icon: '🌊',
+    nameKey: 'catFlowRate', icon: 'unit.flow-rate',
     units: {
       lmin: { nameKey: 'lmin', toBase: v => v,                fromBase: v => v },
       lh:   { nameKey: 'lh',   toBase: v => v / 60,           fromBase: v => v * 60 },
@@ -149,7 +149,7 @@ export const CATEGORIES = {
     refs: [[1,'lmin','lh'],[1,'m3h','lmin'],[1,'gpm','lmin'],[60,'lmin','m3h']],
   },
   geschwindigkeit: {
-    nameKey: 'catSpeed', icon: '🚀',
+    nameKey: 'catSpeed', icon: 'unit.speed',
     units: {
       ms:   { nameKey: 'ms',   toBase: v => v,              fromBase: v => v },
       kmh:  { nameKey: 'kmh',  toBase: v => v / 3.6,        fromBase: v => v * 3.6 },
@@ -162,7 +162,7 @@ export const CATEGORIES = {
     refs: [[100,'kmh','ms'],[1,'mph','kmh'],[1,'kn','kmh'],[1,'mach','kmh'],[1,'c','kmh'],[1,'c','ms']],
   },
   zeit: {
-    nameKey: 'catTime', icon: '⏱',
+    nameKey: 'catTime', icon: 'unit.time',
     units: {
       ms_t: { nameKey: 'ms_t', toBase: v => v * 0.001,  fromBase: v => v / 0.001 },
       s:    { nameKey: 's',    toBase: v => v,            fromBase: v => v },
@@ -178,7 +178,7 @@ export const CATEGORIES = {
     refs: [[1,'h','iMin'],[45,'min','iMin'],[30,'iMin','min'],[100,'iMin','min'],[1,'iStd','min'],[8,'h','iMin']],
   },
   winkel: {
-    nameKey: 'catAngle', icon: '📐',
+    nameKey: 'catAngle', icon: 'unit.angle',
     units: {
       deg:  { nameKey: 'deg',  toBase: v => v,                     fromBase: v => v },
       rad:  { nameKey: 'rad',  toBase: v => v * (180 / Math.PI),    fromBase: v => v * (Math.PI / 180) },
@@ -190,7 +190,7 @@ export const CATEGORIES = {
     refs: [[180,'deg','rad'],[360,'deg','gon'],[1,'rev','deg'],[90,'deg','rad']],
   },
   drehzahl: {
-    nameKey: 'catRPM', icon: '⚙',
+    nameKey: 'catRPM', icon: 'unit.rpm',
     units: {
       rpm:  { nameKey: 'rpm',  toBase: v => v,                              fromBase: v => v },
       rps:  { nameKey: 'rps',  toBase: v => v * 60,                         fromBase: v => v / 60 },
@@ -201,7 +201,7 @@ export const CATEGORIES = {
     refs: [[1,'rpm','rps'],[1,'Hz','rpm'],[1500,'rpm','radS'],[3000,'rpm','Hz']],
   },
   ph: {
-    nameKey: 'catPH', icon: '🧬',
+    nameKey: 'catPH', icon: 'unit.ph',
     units: {
       pH:    { nameKey: 'pH',    toBase: v => Math.pow(10, -v),         fromBase: v => -Math.log10(v) },
       pOH:   { nameKey: 'pOH',   toBase: v => Math.pow(10, -(14 - v)), fromBase: v => 14 + Math.log10(v) },
@@ -213,7 +213,7 @@ export const CATEGORIES = {
     refs: [[0,'pH','Hmol'],[7,'pH','Hmol'],[7,'pH','pOH'],[14,'pH','Hmol'],[2,'pH','Hmmol'],[1,'pH','OHmol']],
   },
   konzentration: {
-    nameKey: 'catConcentration', icon: '🔬',
+    nameKey: 'catConcentration', icon: 'unit.concentration',
     units: {
       mgl:  { nameKey: 'mgl',  toBase: v => v,        fromBase: v => v },
       ugl:  { nameKey: 'ugl',  toBase: v => v * 1e-3, fromBase: v => v * 1e3 },
@@ -230,7 +230,7 @@ export const CATEGORIES = {
     refs: [[1,'ppm','mgl'],[1,'ppb','ugl'],[1,'proz','ppm'],[1,'prom','ppm'],[1,'gl','ppm'],[1000,'ppm','proz']],
   },
   schall: {
-    nameKey: 'catSound', icon: '🔊',
+    nameKey: 'catSound', icon: 'unit.sound',
     units: {
       dBSPL: { nameKey: 'dBSPL', toBase: v => 2e-5 * Math.pow(10, v / 20), fromBase: v => 20 * Math.log10(v / 2e-5) },
       Pa_s:  { nameKey: 'Pa_s',  toBase: v => v,                            fromBase: v => v },
@@ -240,7 +240,7 @@ export const CATEGORIES = {
     refs: [[0,'dBSPL','uPa'],[20,'dBSPL','uPa'],[60,'dBSPL','Pa_s'],[85,'dBSPL','Pa_s'],[120,'dBSPL','Pa_s'],[140,'dBSPL','Pa_s']],
   },
   laborwerte: {
-    nameKey: 'catLabValues', icon: '🏥',
+    nameKey: 'catLabValues', icon: 'unit.lab-values',
     groups: {
       'bloodSugar':  ['mgdl_bz','mmoll_bz','gl_bz','mgml_bz'],
       'cholesterol': ['mgdl_ch','mmoll_ch','gl_ch'],

@@ -5,15 +5,17 @@
         class="module-unit-converter__cat-btn"
         :class="catActiveClass(catKey)"
         :data-cat="catKey"
-        @click="selectCategory(catKey)"
-        x-text="catLabel(catKey)"></button>
+        @click="selectCategory(catKey)">
+        <span class="icon icon--sm" :data-icon="catIcon(catKey)" aria-hidden="true"></span>
+        <span x-text="catName(catKey)"></span>
+      </button>
     </template>
   </div>
 
   <div class="module-unit-converter__panel">
     <div class="module-unit-converter__panel-header">
       <div class="module-unit-converter__panel-title">
-        <span data-ref="catIcon" x-text="catIcon(model.activeCat)"></span>
+        <span class="icon" data-ref="catIcon" :data-icon="catIcon(model.activeCat)" aria-hidden="true"></span>
         <span data-ref="catTitle" x-text="catName(model.activeCat)"></span>
       </div>
       <button class="module-unit-converter__swap-btn" type="button" data-action="swap" @click="swapUnits()">
@@ -88,7 +90,7 @@
     <div class="module-unit-converter__panel">
       <div class="module-unit-converter__panel-header">
         <div class="module-unit-converter__panel-title">
-          <span>🌐</span> <span x-text="t('timezone')"></span>
+          <span class="icon" data-icon="unit.timezone" aria-hidden="true"></span> <span x-text="t('timezone')"></span>
         </div>
         <button class="module-unit-converter__swap-btn" type="button" data-action="tz-swap" @click="swapTimezones()">
           <span class="icon icon--sm" data-icon="action.swap" aria-hidden="true"></span>
@@ -128,6 +130,7 @@
           <span data-ref="tzDiff" x-text="tzDiffText()"></span>
         </div>
         <button class="module-unit-converter__tz-now-btn" type="button" data-action="tz-now" @click="tzSetNow()">
+          <span class="icon icon--sm icon--text" data-icon="status.time" aria-hidden="true"></span>
           <span x-text="tzNowLabel()"></span>
         </button>
       </div>
