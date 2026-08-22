@@ -39,6 +39,7 @@
   "nav.external": "lucide:external-link",
   "nav.algorithm-lab": "lucide:code",
   "nav.back": "lucide:arrow-left",
+  "nav.arrow-left": "lucide:arrow-left",
   "nav.arrow-down": "lucide:arrow-down",
   "nav.arrow-right": "lucide:arrow-right",
   "nav.arrow-up": "lucide:arrow-up",

@@ -488,7 +488,7 @@ export class HelpPanel {
 
     const backBtn = () => h('button', {
       type: 'button', class: 'help-panel__glossary-back', 'data-glossary-back': true,
-    }, `← ${t('moduleHelp.glossaryBack')}`);
+    }, icon('nav.back', { size: 'sm' }), t('moduleHelp.glossaryBack'));
 
     // Show loading state immediately.
     this._glossaryPane.replaceChildren(
@@ -604,7 +604,7 @@ function renderGlossaryDetail(term, lang, t, titleOf = (id) => id) {
 
   return h('div', { class: 'help-panel__glossary-detail' },
     h('button', { type: 'button', class: 'help-panel__glossary-back', 'data-glossary-back': true },
-      `← ${t('moduleHelp.glossaryBack')}`),
+      icon('nav.back', { size: 'sm' }), t('moduleHelp.glossaryBack')),
     h('h3', { class: 'help-panel__glossary-title' }, title),
     aliasesNode,
     h('div', { class: 'help-panel__glossary-body' }, ...blocks.map(b => renderGlossaryBlock(b, titleOf))),

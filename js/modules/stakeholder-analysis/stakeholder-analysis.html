@@ -57,10 +57,16 @@
       <div class="sha__section-body">
         <div class="sha__matrix-container">
           <div class="sha__matrix-wrapper">
-            <div class="sha__matrix-ylabel" x-text="axisYLabel()"></div>
+            <div class="sha__matrix-ylabel">
+              <span x-text="axisYLabel()"></span>
+              <span class="icon icon--sm icon--text" data-icon="nav.arrow-right" aria-hidden="true"></span>
+            </div>
             <div class="sha__axis-labels" style="margin-bottom:6px">
               <span x-text="t('axisLow')"></span>
-              <span x-text="axisXLabel()"></span>
+              <span class="sha__axis-label-x">
+                <span x-text="axisXLabel()"></span>
+                <span class="icon icon--sm icon--text" data-icon="nav.arrow-right" aria-hidden="true"></span>
+              </span>
               <span x-text="t('axisHigh')"></span>
             </div>
             <div class="sha__matrix-grid">

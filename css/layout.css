@@ -2351,6 +2351,9 @@ body.training-area-open .dmaic-tiles {
 }
 
 .help-panel__glossary-back {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
   background: transparent;
   border: none;
   padding: 0;

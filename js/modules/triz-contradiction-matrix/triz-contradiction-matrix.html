@@ -35,7 +35,7 @@
         <template x-if="model.worsening"><p class="triz-cm__param-desc" x-text="paramDesc(model.worsening)"></p></template>
       </div>
 
-      <button class="btn btn--sm triz-cm__swap-btn" type="button" data-action="swap" @click="swapParams" :title="t('swap')" :aria-label="t('swap')">⇅</button>
+      <button class="btn btn--sm triz-cm__swap-btn" type="button" data-action="swap" @click="swapParams" :title="t('swap')" :aria-label="t('swap')"><span class="icon icon--sm" data-icon="action.swap" aria-hidden="true"></span></button>
     </section>
 
     <section class="triz-cm__section">
