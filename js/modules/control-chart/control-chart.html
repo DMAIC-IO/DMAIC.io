@@ -44,7 +44,10 @@
     <div class="dmike-split__section-title" x-text="t('sectionPhase2')"></div>
     <div class="control-chart__phase2">
       <div class="control-chart__phase2-status">
-        <span class="control-chart__phase2-badge" :class="phase2BadgeClass()" x-text="phase2BadgeText()"></span>
+        <span class="control-chart__phase2-badge" :class="phase2BadgeClass()">
+          <span class="icon icon--sm" :data-icon="phase2BadgeIcon()" aria-hidden="true"></span>
+          <span x-text="phase2BadgeText()"></span>
+        </span>
       </div>
       <button type="button" class="btn btn--small" :class="phase2BtnClass()"
         data-ref="phase2-toggle" @click="phase2Toggle()" x-text="phase2BtnText()"></button>

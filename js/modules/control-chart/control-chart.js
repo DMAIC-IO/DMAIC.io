@@ -134,6 +134,9 @@ const mod = createModule({
       phase2BadgeClass() {
         return this.model.frozenLimits ? 'control-chart__phase2-badge--frozen' : '';
       },
+      phase2BadgeIcon() {
+        return this.model.frozenLimits ? 'action.lock' : 'action.unlock';
+      },
       phase2BtnText() {
         return this.model.frozenLimits ? _t('phase2_unfreeze') : _t('phase2_freeze');
       },
