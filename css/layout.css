@@ -2608,6 +2608,9 @@ body.training-area-open .dmaic-tiles {
 }
 
 .app-footer__version {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
   cursor: pointer;
   color: var(--color-text-tertiary);
   text-decoration: none;
@@ -2615,6 +2618,14 @@ body.training-area-open .dmaic-tiles {
 
 .app-footer__version:hover {
   color: var(--color-accent);
+}
+
+/* The trailing nav.external icon reads as a quiet hint ("opens in a new
+   tab"), not a full-strength icon — icon--muted (opacity .55) already
+   matches the weight the old ::after arrow carried; this just brightens
+   it on hover along with the text color above. */
+.app-footer__version:hover .icon--muted {
+  opacity: 1;
 }
 
 .app-footer__licenses {
