@@ -148,7 +148,10 @@
               <span class="ishikawa__diff-stat"><span class="ishikawa__diff-val ishikawa__diff-val--chg" x-text="glyphUpDown() + diff().changed.length + ' ' + t('diffChanged')"></span></span>
               <span class="ishikawa__diff-stat" style="color:var(--color-text-tertiary)" x-text="compareLabel()"></span>
             </div>
-            <button class="ishikawa__diff-close" data-ref="diffCloseBtn" @click="closeDiff()" x-text="t('endCompare')"></button>
+            <button class="ishikawa__diff-close" data-ref="diffCloseBtn" @click="closeDiff()">
+              <span x-text="t('endCompare')"></span>
+              <span class="icon icon--sm" data-icon="action.close" aria-hidden="true"></span>
+            </button>
           </div>
         </template>
       </div>

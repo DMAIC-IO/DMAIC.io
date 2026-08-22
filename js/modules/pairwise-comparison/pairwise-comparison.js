@@ -76,6 +76,8 @@ export default createModule({
           ? _t('startBtnNeed', { n: MIN_CRITERIA - n })
           : _t('startBtnReady', { n: this.model.pairCount });
       },
+      /** @returns {boolean} true once enough criteria exist to start — the state in which the start button carries the send-to icon. */
+      isStartReady() { return this.model.criteria.length >= MIN_CRITERIA; },
       addCriterion() {
         const status = this.model.addCriterion(this.inputValue);
         this.inputValue = '';

@@ -103,9 +103,15 @@
         <div class="dt-export-box" id="dt-export-box" x-text="exportText"></div>
         <div class="dt-export-actions">
           <button class="btn btn--secondary btn--sm" data-action="copy" @click="copyExport()" x-text="t('copy')"></button>
-          <button class="btn btn--secondary btn--sm" data-action="csv" @click="downloadCSV()" x-text="t('downloadCSV')"></button>
+          <button class="btn btn--secondary btn--sm" data-action="csv" @click="downloadCSV()">
+            <span x-text="t('downloadCSV')"></span>
+            <span class="icon icon--sm" data-icon="action.download" aria-hidden="true"></span>
+          </button>
           <span id="dt-target-wrap" data-ref="target-wrap"></span>
-          <button class="btn btn--secondary btn--sm" data-action="to-worksheet" @click="toWorksheet()" x-text="t('toWorksheet')"></button>
+          <button class="btn btn--secondary btn--sm" data-action="to-worksheet" @click="toWorksheet()">
+            <span class="icon icon--sm" data-icon="action.send-to" aria-hidden="true"></span>
+            <span x-text="t('toWorksheet')"></span>
+          </button>
         </div>
       </div>
     </template>

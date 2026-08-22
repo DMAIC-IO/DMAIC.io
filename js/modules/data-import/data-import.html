@@ -187,7 +187,10 @@
 
           <div class="data-import__send-row">
             <button class="dmike-btn-run" data-action="send" type="button"
-              @click="sendToWorksheet()" x-text="t('sendToWorksheet')"></button>
+              @click="sendToWorksheet()">
+              <span class="icon icon--sm" data-icon="action.send-to" aria-hidden="true"></span>
+              <span x-text="t('sendToWorksheet')"></span>
+            </button>
           </div>
         </div>
       </template>

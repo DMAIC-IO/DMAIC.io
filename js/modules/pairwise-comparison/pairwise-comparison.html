@@ -52,8 +52,10 @@
           </template>
           <button class="pairwise__btn pairwise__btn--start" type="button"
             data-action="start" :disabled="model.criteria.length < 3"
-            @click="startComparison()"
-            x-text="startLabel()"></button>
+            @click="startComparison()">
+            <span x-text="startLabel()"></span>
+            <span class="icon icon--sm" data-icon="action.send-to" aria-hidden="true" x-show="isStartReady()"></span>
+          </button>
         </div>
       </template>
 

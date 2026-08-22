@@ -141,8 +141,10 @@
                                       <template x-for="(n5, i5) in n4.children">
                                         <div class="five-why__node" :key="n5.id" :data-node-id="n5.id">
                                           <div class="five-why__card" :class="cardClass(n5)">
-                                            <span class="five-why__tag" :data-level="clampLevel(n5)"
-                                                  x-text="nodeTag(i1, i2, i3, i4, i5)"></span>
+                                            <span class="five-why__tag" :data-level="clampLevel(n5)">
+                                              <span class="icon icon--sm" data-icon="flow.root-cause" aria-hidden="true"></span>
+                                              <span x-text="nodeTag(i1, i2, i3, i4, i5)"></span>
+                                            </span>
                                             <textarea class="five-why__answer" data-field="answer" :data-id="n5.id"
                                                       :placeholder="answerPlaceholder(n5)"
                                                       x-model="n5.answer"

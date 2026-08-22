@@ -64,7 +64,10 @@
           <span class="rg-export-group" id="rg-export-group" x-show="hasResults()">
             <button class="btn btn--secondary" id="rg-btn-csv" x-text="t('exportCSV')" @click="exportCSV()"></button>
             <span class="rg-target-wrap" id="rg-target-wrap" data-ref="rg-target-wrap"></span>
-            <button class="btn btn--secondary" id="rg-btn-worksheet" x-text="t('toWorksheet')" @click="toWorksheet()"></button>
+            <button class="btn btn--secondary" id="rg-btn-worksheet" @click="toWorksheet()">
+              <span class="icon icon--sm" data-icon="action.send-to" aria-hidden="true"></span>
+              <span x-text="t('toWorksheet')"></span>
+            </button>
           </span>
         </div>
 
@@ -166,7 +169,10 @@
           <span class="rg-export-group" id="rg-export-group" x-show="hasResults()">
             <button class="btn btn--secondary" id="rg-btn-csv" x-text="t('exportCSV')" @click="exportCSV()"></button>
             <span class="rg-target-wrap" id="rg-target-wrap" data-ref="rg-target-wrap"></span>
-            <button class="btn btn--secondary" id="rg-btn-worksheet" x-text="t('toWorksheet')" @click="toWorksheet()"></button>
+            <button class="btn btn--secondary" id="rg-btn-worksheet" @click="toWorksheet()">
+              <span class="icon icon--sm" data-icon="action.send-to" aria-hidden="true"></span>
+              <span x-text="t('toWorksheet')"></span>
+            </button>
           </span>
         </div>
 

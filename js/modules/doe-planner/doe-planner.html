@@ -565,7 +565,10 @@
               <span class="doe__results-text" x-text="boundProgressText()"></span>
             </div>
             <div class="doe__datasheet-link-row">
-              <button class="btn btn--secondary doe__open-worksheet-btn" type="button" @click="openLinkedWorksheet()" x-text="t('worksheetOpen')"></button>
+              <button class="btn btn--secondary doe__open-worksheet-btn" type="button" @click="openLinkedWorksheet()">
+                <span class="icon icon--sm" data-icon="action.send-to" aria-hidden="true"></span>
+                <span x-text="t('worksheetOpen')"></span>
+              </button>
             </div>
             <template x-if="boundComplete()">
               <div class="doe__transfer-section">
