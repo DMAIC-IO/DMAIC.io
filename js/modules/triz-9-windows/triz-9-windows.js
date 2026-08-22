@@ -25,7 +25,7 @@ export default createModule({
       },
 
       axisColsText() {
-        return `${_t('axisCols')  } \u2192`;
+        return _t('axisCols');
       },
 
       colAxisAria(c) {

@@ -723,3 +723,16 @@
   color: var(--color-text-tertiary);
   padding: 2px 0;
 }
+
+/* Kundenrückmeldung (Pizza-Lieferung-Beispiel): die Icons wirken zu hell.
+   Sie erben --color-text-tertiary aus den geteilten Flowchart-Regeln
+   (js/core/flowchart.css .fc-card__delete/.fc-remove-icon), das ist auch
+   für Makigami korrekt und bleibt dort unverändert — hier auf
+   --color-text-secondary angehoben, eine Stufe dunkler, ohne die Farbe
+   hart zu kodieren. */
+.pmap .fc-remove-icon,
+.pmap .fc-card__delete,
+.pmap__io-remove,
+.pmap__step-loop-toggle {
+  color: var(--color-text-secondary);
+}

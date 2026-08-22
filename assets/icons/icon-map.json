@@ -55,7 +55,7 @@
   "status.time": "lucide:clock",
   "status.no-data": "lucide:clipboard-list",
   "flow.decision": "lucide:diamond",
-  "flow.root-cause": "lucide:diamond",
+  "flow.root-cause": "lucide:target",
   "domain.time": "lucide:clock",
   "domain.space": "lucide:map-pin",
   "domain.condition": "lucide:scale",
