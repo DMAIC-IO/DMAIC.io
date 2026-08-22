@@ -4946,25 +4946,21 @@
       "principles": {
         "time": {
           "name": "Trennung in der Zeit",
-          "icon": "⏱",
           "question": "Kann der Parameter zu unterschiedlichen Zeitpunkten verschiedene Werte annehmen?",
           "example": "Klapptragwerk — Flügel lang beim Start, kurz im Reiseflug. Auch: Fahrwerk, Airbag, Sägeblatt (Hin- vs. Rückhub)."
         },
         "space": {
           "name": "Trennung im Raum",
-          "icon": "📍",
           "question": "Kann der Parameter an unterschiedlichen Stellen des Systems verschiedene Werte annehmen?",
           "example": "Schraube — Kopf hart, Schaft elastisch. Auch: Bohrer scharf an der Spitze, Gleitsichtbrille."
         },
         "condition": {
           "name": "Trennung nach Bedingung",
-          "icon": "⚖",
           "question": "Kann der Parameter abhängig von Last, Temperatur, Geschwindigkeit, Nutzer … unterschiedliche Werte annehmen?",
           "example": "Nicht-Newton'sche Flüssigkeit — flüssig bei Ruhe, fest beim Schlag. Auch: photochrome Brille, Memory-Schaum, ABS."
         },
         "system": {
           "name": "Trennung in der Systemebene",
-          "icon": "🪜",
           "question": "Lässt sich der Widerspruch auflösen, wenn man zwischen Sub-, System- und Supersystem wechselt?",
           "example": "Fahrradkette — als Ganzes flexibel, einzelne Glieder starr. Auch: Litze (dünne Drähte, dicker Strang), Sandwich-Bauteile."
         }
@@ -5052,32 +5048,26 @@
       "category": {
         "substance": {
           "name": "Stoffe",
-          "icon": "🧱",
           "prompt": "Materialien, Bauteile, Abfall, Nebenprodukte, Atmosphäre, Verunreinigungen …"
         },
         "field": {
           "name": "Felder",
-          "icon": "🧲",
           "prompt": "Mechanisch, thermisch, chemisch, elektrisch, magnetisch, akustisch, optisch, gravitativ …"
         },
         "space": {
           "name": "Raum",
-          "icon": "📐",
           "prompt": "Ungenutzte Volumina, Oberflächen, Spalte, Hohlräume, Kontaktflächen …"
         },
         "time": {
           "name": "Zeit",
-          "icon": "⏱",
           "prompt": "Leerlaufphasen, Übergänge, Pausen zwischen Zyklen, Vor-/Nachlaufzeiten …"
         },
         "info": {
           "name": "Information",
-          "icon": "📡",
           "prompt": "Sensorsignale, Indikatoren, natürlich anfallende Daten, Nebenprodukt-Informationen …"
         },
         "function": {
           "name": "Funktion / Energie",
-          "icon": "⚙",
           "prompt": "Bestehende Funktionen für Doppelnutzung; Energie, die ohnehin durch das System fließt …"
         }
       },

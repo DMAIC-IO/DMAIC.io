@@ -16,7 +16,7 @@
       <template x-for="(catVal, catKey) in model.cells">
         <div class="triz-res__row">
           <div class="triz-res__row-head">
-            <span class="triz-res__row-icon" x-text="catIcon(catKey)"></span>
+            <span class="icon icon--sm" :data-icon="catIcon(catKey)" aria-hidden="true"></span>
             <span class="triz-res__row-title" x-text="catName(catKey)"></span>
           </div>
 

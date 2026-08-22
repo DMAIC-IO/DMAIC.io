@@ -4946,25 +4946,21 @@
       "principles": {
         "time": {
           "name": "Separation in time",
-          "icon": "⏱",
           "question": "Can the parameter take different values at different moments?",
           "example": "Folding wing — long for take-off, short at cruise. Also: landing gear, airbag, saw blade (cut vs. return stroke)."
         },
         "space": {
           "name": "Separation in space",
-          "icon": "📍",
           "question": "Can the parameter take different values in different regions of the system?",
           "example": "Screw — hard head, elastic shaft. Also: drill bit sharp at the tip, progressive eyeglass lenses."
         },
         "condition": {
           "name": "Separation on condition",
-          "icon": "⚖",
           "question": "Can the parameter take different values depending on load, temperature, speed, user …?",
           "example": "Non-Newtonian fluid — liquid at rest, solid under impact. Also: photochromic glasses, memory foam, ABS."
         },
         "system": {
           "name": "Separation between system levels",
-          "icon": "🪜",
           "question": "Does the contradiction dissolve when you switch between sub-, system and supersystem?",
           "example": "Bicycle chain — flexible as a whole, rigid in each link. Also: stranded wire (thin threads, thick strand), sandwich composites."
         }
@@ -5052,32 +5048,26 @@
       "category": {
         "substance": {
           "name": "Substances",
-          "icon": "🧱",
           "prompt": "Materials, parts, waste, by-products, atmosphere, contaminants …"
         },
         "field": {
           "name": "Fields",
-          "icon": "🧲",
           "prompt": "Mechanical, thermal, chemical, electrical, magnetic, acoustic, optical, gravitational …"
         },
         "space": {
           "name": "Space",
-          "icon": "📐",
           "prompt": "Unused volumes, surfaces, gaps, cavities, contact regions …"
         },
         "time": {
           "name": "Time",
-          "icon": "⏱",
           "prompt": "Idle phases, transitions, pauses between cycles, lead/lag windows …"
         },
         "info": {
           "name": "Information",
-          "icon": "📡",
           "prompt": "Sensor signals, indicators, naturally occurring data, by-product information …"
         },
         "function": {
           "name": "Function / energy",
-          "icon": "⚙",
           "prompt": "Existing functions usable for double duty; energy already flowing through the system …"
         }
       },

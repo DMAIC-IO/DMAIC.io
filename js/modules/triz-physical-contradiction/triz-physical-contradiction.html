@@ -61,7 +61,7 @@
             :data-principle="key">
             <header class="triz-pc__principle-head">
               <span class="triz-pc__principle-num" x-text="principleNum(key)"></span>
-              <span class="triz-pc__principle-icon" aria-hidden="true" x-text="principleIcon(key)"></span>
+              <span class="icon icon--sm" :data-icon="principleIcon(key)" aria-hidden="true"></span>
               <h4 class="triz-pc__principle-title" x-text="principleName(key)"></h4>
             </header>
             <p class="triz-pc__principle-question" x-text="principleQuestion(key)"></p>
