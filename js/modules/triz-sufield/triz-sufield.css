@@ -152,15 +152,12 @@
 
 .triz-sf__class-head::-webkit-details-marker { display: none; }
 
-.triz-sf__class-head::before {
-  content: '▸';
-  display: inline-block;
-  width: 12px;
+.triz-sf__class-head .icon {
   transition: transform var(--transition-speed);
   color: var(--color-text-tertiary);
 }
 
-.triz-sf__class[open] > .triz-sf__class-head::before {
+.triz-sf__class[open] > .triz-sf__class-head .icon {
   transform: rotate(90deg);
 }
 

@@ -548,12 +548,6 @@ html.is-nightly body {
   font-style: italic;
 }
 
-.app-header__project-item--completed .app-header__project-item-date::after {
-  content: ' \2713'; /* ✓ */
-  color: var(--color-success, #59a14f);
-  font-weight: 600;
-}
-
 /* ── Read-only banner ── */
 .app-readonly-banner {
   background: var(--color-warning-bg, #fff3cd);
@@ -2619,18 +2613,8 @@ body.training-area-open .dmaic-tiles {
   text-decoration: none;
 }
 
-.app-footer__version::after {
-  content: " ↗";
-  opacity: 0.5;
-  font-size: 0.85em;
-}
-
 .app-footer__version:hover {
   color: var(--color-accent);
-}
-
-.app-footer__version:hover::after {
-  opacity: 1;
 }
 
 .app-footer__licenses {

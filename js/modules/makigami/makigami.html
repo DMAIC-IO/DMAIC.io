@@ -179,7 +179,13 @@
           <table class="makigami__matrix">
             <thead>
               <tr>
-                <th class="makigami__matrix-corner" scope="col" x-text="t('rolesHeader')"></th>
+                <th class="makigami__matrix-corner" scope="col">
+                  <span x-text="t('rolesHeaderRows')"></span>
+                  <span class="icon icon--sm" data-icon="nav.arrow-down" aria-hidden="true"></span>
+                  <span> / </span>
+                  <span x-text="t('rolesHeaderCols')"></span>
+                  <span class="icon icon--sm" data-icon="nav.arrow-right" aria-hidden="true"></span>
+                </th>
                 <template x-for="(step, i) in model.steps">
                   <th class="makigami__matrix-step-head" scope="col" :data-step-id="step.id" :key="step.id"
                     @dragstart="dragStartStep(step.id, $event)"

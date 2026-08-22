@@ -8,7 +8,13 @@
     </section>
 
     <section class="triz-res__grid" :aria-label="t('gridAriaLabel')">
-      <div class="triz-res__corner" x-text="t('cornerTip')"></div>
+      <div class="triz-res__corner">
+        <span x-text="t('cornerTipRows')"></span>
+        <span class="icon icon--sm" data-icon="nav.arrow-down" aria-hidden="true"></span>
+        <span> / </span>
+        <span x-text="t('cornerTipCols')"></span>
+        <span class="icon icon--sm" data-icon="nav.arrow-right" aria-hidden="true"></span>
+      </div>
       <div class="triz-res__col-head" x-text="t('level.sub')"></div>
       <div class="triz-res__col-head" x-text="t('level.sys')"></div>
       <div class="triz-res__col-head" x-text="t('level.super')"></div>
@@ -28,7 +34,7 @@
                 :aria-label="cell.status"
                 :class="statusSuffix(cell.status)"
                 @click="cycleStatus(catKey, lvlKey)">
-                <span x-text="glyph(cell.status)"></span>
+                <span class="icon icon--sm" :data-icon="fillIcon(cell.status)" aria-hidden="true"></span>
               </button>
               <textarea class="field triz-res__notes" rows="3" data-role="notes"
                 :data-cat="catKey" :data-lvl="lvlKey"
@@ -40,6 +46,20 @@
       </template>
     </section>
 
-    <p class="triz-res__legend" x-text="t('statusLegend')"></p>
+    <p class="triz-res__legend">
+      <span class="icon icon--sm" data-icon="fill.0" aria-hidden="true"></span>
+      <span x-text="t('legendUnknown')"></span>
+      <span> · </span>
+      <span class="icon icon--sm" data-icon="fill.25" aria-hidden="true"></span>
+      <span x-text="t('legendUnused')"></span>
+      <span> · </span>
+      <span class="icon icon--sm" data-icon="fill.50" aria-hidden="true"></span>
+      <span x-text="t('legendPartial')"></span>
+      <span> · </span>
+      <span class="icon icon--sm" data-icon="fill.100" aria-hidden="true"></span>
+      <span x-text="t('legendFull')"></span>
+      <span> — </span>
+      <span x-text="t('legendHint')"></span>
+    </p>
   </div>
 </section>

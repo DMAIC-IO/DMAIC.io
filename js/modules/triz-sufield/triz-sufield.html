@@ -126,6 +126,7 @@
           :open="cls.open"
           @toggle="classToggled(cls, $event)">
           <summary class="triz-sf__class-head">
+            <span class="icon icon--sm" data-icon="nav.expand-right" aria-hidden="true"></span>
             <span class="triz-sf__class-num" x-text="cls.key"></span>
             <span class="triz-sf__class-title" x-text="className(cls.key)"></span>
             <span class="triz-sf__class-count" x-text="classCount(cls.standards)"></span>

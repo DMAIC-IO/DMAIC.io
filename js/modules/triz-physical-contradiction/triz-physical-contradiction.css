@@ -132,11 +132,6 @@
   font-weight: var(--font-weight-semibold);
 }
 
-.triz-pc__principle-icon {
-  font-size: var(--font-size-md);
-  line-height: 1;
-}
-
 .triz-pc__principle-title {
   margin: 0;
   font-size: var(--font-size-md);

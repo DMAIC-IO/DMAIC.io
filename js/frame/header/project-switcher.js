@@ -226,6 +226,9 @@ export function initProjectSwitcher({ stateManager, eventBus, i18n }) {
       dateEl.className = 'app-header__project-item-date';
       const mod = p.modified ? new Date(p.modified) : null;
       dateEl.textContent = mod ? mod.toLocaleDateString() : '';
+      if (p.status === 'completed') {
+        dateEl.append(icon('action.confirm', { size: 'sm', variant: 'success' }));
+      }
 
       const actions = document.createElement('span');
       actions.className = 'app-header__project-item-actions';

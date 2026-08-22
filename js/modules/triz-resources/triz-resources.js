@@ -31,7 +31,7 @@ export default createModule({
             catName: (k) => _t(`category.${  k  }.name`),
             catPrompt: (k) => _t(`category.${  k  }.prompt`),
 
-            glyph: (s) => ({full: '●', partial: '◑', unused: '◔'}[s] || '○'),
+            fillIcon: (s) => ({ full: 'fill.100', partial: 'fill.50', unused: 'fill.25' }[s] || 'fill.0'),
             statusSuffix: (s) => `triz-res__status--${  s}`,
 
             cycleStatus(catKey, lvlKey) {
