@@ -10,20 +10,20 @@
           @click.outside="exportMenuOpen = false">
       <button class="vct__add-btn vct__export-btn" type="button" title="Export"
               @click="toggleExportMenu($event)">
-       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+       <span class="icon icon--sm" data-icon="action.download" aria-hidden="true"></span>
       </button>
       <div class="dmike-chart-dropdown-menu" data-ref="exportMenu" :class="exportMenuOpen ? 'open' : ''">
        <button class="dmike-chart-dropdown-item" data-export="png" @click="onExport('png')">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg> PNG
+        <span class="icon icon--sm" data-icon="format.png" aria-hidden="true"></span> PNG
        </button>
        <button class="dmike-chart-dropdown-item" data-export="svg" @click="onExport('svg')">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 3v4a1 1 0 0 0 1 1h4"/><path d="M17 21H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2z"/><path d="M9 15l2 2 4-4"/></svg> SVG
+        <span class="icon icon--sm" data-icon="format.svg" aria-hidden="true"></span> SVG
        </button>
        <button class="dmike-chart-dropdown-item" data-export="csv" @click="onExport('csv')">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 3v4a1 1 0 0 0 1 1h4"/><path d="M17 21H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2z"/><path d="M8 15h2M11 15h2M14 15h2"/></svg> CSV
+        <span class="icon icon--sm" data-icon="format.csv" aria-hidden="true"></span> CSV
        </button>
        <button class="dmike-chart-dropdown-item" data-export="xlsx" @click="onExport('xlsx')">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 3v4a1 1 0 0 0 1 1h4"/><path d="M17 21H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2z"/><path d="M9 13l6 6M15 13l-6 6"/></svg> Excel
+        <span class="icon icon--sm" data-icon="format.xlsx" aria-hidden="true"></span> Excel
        </button>
       </div>
      </div>

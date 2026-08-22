@@ -17,7 +17,7 @@
         <span data-ref="catTitle" x-text="catName(model.activeCat)"></span>
       </div>
       <button class="module-unit-converter__swap-btn" type="button" data-action="swap" @click="swapUnits()">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 16V4m0 0L3 8m4-4l4 4M17 8v12m0 0l4-4m-4 4l-4-4"/></svg>
+        <span class="icon icon--sm" data-icon="action.swap" aria-hidden="true"></span>
         <span x-text="t('swap')"></span>
       </button>
     </div>
@@ -42,7 +42,7 @@
             x-model="model.inputVal">
         </div>
         <div class="module-unit-converter__arrow">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          <span class="icon" data-icon="action.send-to" aria-hidden="true"></span>
         </div>
         <div>
           <label class="module-unit-converter__field-label" x-text="t('to')"></label>
@@ -91,7 +91,7 @@
           <span>🌐</span> <span x-text="t('timezone')"></span>
         </div>
         <button class="module-unit-converter__swap-btn" type="button" data-action="tz-swap" @click="swapTimezones()">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 16V4m0 0L3 8m4-4l4 4M17 8v12m0 0l4-4m-4 4l-4-4"/></svg>
+          <span class="icon icon--sm" data-icon="action.swap" aria-hidden="true"></span>
           <span x-text="t('swap')"></span>
         </button>
       </div>
@@ -110,7 +110,7 @@
             </div>
           </div>
           <div class="module-unit-converter__arrow">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            <span class="icon" data-icon="action.send-to" aria-hidden="true"></span>
           </div>
           <div>
             <label class="module-unit-converter__field-label" x-text="t('toTimezone')"></label>

@@ -253,7 +253,7 @@
                     <span x-text="t('pValue')"></span>
                     <button class="reg__algo-link" :title="t('algoLabTitle')" @click="algoNavigate('regression-coefficients')"><span class="icon icon--sm" data-icon="nav.algorithm-lab" aria-hidden="true"></span></button>
                     <button class="reg__sort-btn" :class="model.coefSortByP ? 'reg__sort-btn--active' : ''"
-                      data-action="sort-coef-p" :title="t('sortByPValue')" @click="toggleSort()"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M7 15l5 5 5-5M7 9l5-5 5 5"/></svg></button>
+                      data-action="sort-coef-p" :title="t('sortByPValue')" @click="toggleSort()"><span class="icon icon--sm" data-icon="action.sort" aria-hidden="true"></span></button>
                   </th>
                 </template>
                 <template x-if="coefView().hasVIF">

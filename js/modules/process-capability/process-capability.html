@@ -64,7 +64,7 @@
       <!-- No worksheet at all: actionable orange warning info-box. -->
       <template x-if="!model.embeddedValues && _colState === 'noWorksheet'">
         <div class="pc__no-worksheet">
-          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          <span class="icon icon--sm" data-icon="status.info" aria-hidden="true"></span>
           <span x-text="t('noWorksheet')"></span>
         </div>
       </template>
@@ -72,7 +72,7 @@
       <!-- Worksheet exists but has no numeric columns: muted info-box. -->
       <template x-if="!model.embeddedValues && _colState === 'noNumericColumns'">
         <div class="pc__no-worksheet pc__no-worksheet--empty">
-          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          <span class="icon icon--sm" data-icon="status.info" aria-hidden="true"></span>
           <span x-text="t('noNumericColumns')"></span>
         </div>
       </template>
