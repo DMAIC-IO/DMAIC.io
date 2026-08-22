@@ -6,7 +6,7 @@
         <span class="rest-api__sidebar-title" x-text="t('name')"></span>
         <span class="rest-api__count" x-text="model.endpoints.length"></span>
         <button class="rest-api__add-btn" type="button" :title="t('addEndpoint')" @click="addEndpoint()">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          <span class="icon icon--sm" data-icon="action.add" aria-hidden="true"></span>
         </button>
       </div>
       <div class="rest-api__list">
@@ -23,7 +23,7 @@
               x-model="ep.name" :placeholder="t('namePlaceholder')"
               @focus="focusEndpoint(ep)">
             <button class="rest-api__item-del" :data-del="ep.id" :title="t('delete')" @click="deleteEndpoint(ep, $event)">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>
+              <span class="icon icon--sm" data-icon="action.delete" aria-hidden="true"></span>
             </button>
           </div>
         </template>
@@ -40,7 +40,7 @@
             <input class="field rest-api__url-input" data-field="url"
               x-model="model.activeEndpoint().url" placeholder="https://api.example.com/data">
             <button class="rest-api__send-btn dmike-btn-run" data-action="send" @click="sendRequest()">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+              <span class="icon icon--sm" data-icon="action.run" aria-hidden="true"></span>
               <span x-text="t('send')"></span>
             </button>
           </div>
@@ -50,7 +50,7 @@
             <div class="rest-api__section-header">
               <span class="rest-api__section-label" x-text="t('headers')"></span>
               <button class="rest-api__add-header-btn" type="button" @click="addHeader()">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                <span class="icon icon--sm" data-icon="action.add" aria-hidden="true"></span>
                 <span x-text="t('addHeader')"></span>
               </button>
             </div>
@@ -70,7 +70,7 @@
             <div class="rest-api__section-header">
               <span class="rest-api__section-label" x-text="t('columnMappings')"></span>
               <button class="rest-api__add-mapping-btn" type="button" @click="addMapping()">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                <span class="icon icon--sm" data-icon="action.add" aria-hidden="true"></span>
                 <span x-text="t('addMapping')"></span>
               </button>
             </div>
@@ -105,7 +105,7 @@
           <div class="rest-api__section rest-api__schedule">
             <div class="rest-api__section-header">
               <span class="rest-api__section-label">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                <span class="icon icon--sm" data-icon="status.time" aria-hidden="true"></span>
                 <span x-text="t('schedule')"></span>
               </span>
               <span class="rest-api__schedule-badge"
@@ -157,7 +157,7 @@
               </template>
               <template x-if="lastResponse">
                 <button class="rest-api__copy-btn" data-action="copy-response" :title="t('copyResponse')" @click="copyResponse()">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                  <span class="icon icon--sm" data-icon="action.copy" aria-hidden="true"></span>
                 </button>
               </template>
             </div>
