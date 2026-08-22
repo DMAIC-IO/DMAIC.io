@@ -76,8 +76,6 @@ const mod = createModule({
         return Boolean(ct?.requiresConstantN);
       },
 
-      chevron() { return '▼'; }, // ▼
-
       nelsonRuleShort(rule) {
         const lang = module._context.language || 'de';
         return rule.short[lang] || rule.short.de;

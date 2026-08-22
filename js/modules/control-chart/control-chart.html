@@ -72,7 +72,7 @@
     <div class="dmike-split__section-title control-chart__collapsible" data-ref="nelson-toggle"
       :class="nelsonToggleClass()" @click="toggleNelson()">
       <span x-text="t('sectionNelson')"></span>
-      <span class="control-chart__chevron" x-text="chevronGlyph()"></span>
+      <span class="control-chart__chevron icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span>
     </div>
     <div class="control-chart__nelson-panel" data-ref="nelson-panel" :class="nelsonPanelClass()">
       <template x-for="rule in rulesView()">

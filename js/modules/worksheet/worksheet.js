@@ -361,7 +361,7 @@ class FormulaEditor {
     const menuChip = (cls, triggerLabel, items) =>
       h('span', { class: 'fn-chip-group' },
         h('span', { class: `fn-chip ${cls} fn-chip--has-menu` },
-          `${triggerLabel} `, h('span', { class: 'fn-chip__arrow' }, '▾')),
+          `${triggerLabel} `, icon('nav.expand-down', { size: 'sm', cls: 'fn-chip__arrow' })),
         h('span', { class: 'fn-chip-group__menu' }, ...items));
 
     const fnBar = h('div', { class: 'formula-editor__fn-bar' },

@@ -30,19 +30,19 @@
           <th class="todo__col-check"></th>
           <th class="todo__col-text" data-sort="text" @click="sortBy('text')">
             <span x-text="t('colText')"></span>
-            <span class="todo__sort-arrow" :class="sortArrowClass('text')" x-text="sortArrow('text')"></span>
+            <span class="todo__sort-arrow icon icon--sm" :class="sortArrowClass('text')" :data-icon="sortArrowIcon('text')" aria-hidden="true"></span>
           </th>
           <th class="todo__col-owner" data-sort="owner" @click="sortBy('owner')">
             <span x-text="t('colOwner')"></span>
-            <span class="todo__sort-arrow" :class="sortArrowClass('owner')" x-text="sortArrow('owner')"></span>
+            <span class="todo__sort-arrow icon icon--sm" :class="sortArrowClass('owner')" :data-icon="sortArrowIcon('owner')" aria-hidden="true"></span>
           </th>
           <th class="todo__col-due" data-sort="due" @click="sortBy('due')">
             <span x-text="t('colDue')"></span>
-            <span class="todo__sort-arrow" :class="sortArrowClass('due')" x-text="sortArrow('due')"></span>
+            <span class="todo__sort-arrow icon icon--sm" :class="sortArrowClass('due')" :data-icon="sortArrowIcon('due')" aria-hidden="true"></span>
           </th>
           <th class="todo__col-status" data-sort="status" @click="sortBy('status')">
             <span x-text="t('colStatus')"></span>
-            <span class="todo__sort-arrow" :class="sortArrowClass('status')" x-text="sortArrow('status')"></span>
+            <span class="todo__sort-arrow icon icon--sm" :class="sortArrowClass('status')" :data-icon="sortArrowIcon('status')" aria-hidden="true"></span>
           </th>
           <template x-if="hasCalendar">
             <th class="todo__col-cal" :title="t('showInCalendar')">&#x1F4C5;</th>

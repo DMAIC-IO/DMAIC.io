@@ -117,8 +117,8 @@ const m = createModule({
         this.filter = category;
       },
 
-      chevron(lesson) {
-        return this.openCards.includes(lesson.id) ? '\u25BE' : '\u25B8';
+      chevronIcon(lesson) {
+        return this.openCards.includes(lesson.id) ? 'nav.expand-down' : 'nav.expand-right';
       },
 
       toggleCard(id) {

@@ -382,9 +382,14 @@ const mod = createModule({
         this.nddCollapsed = !this.nddCollapsed;
       },
 
-      /** Chevron glyph for the normality toggle button. */
-      nddChevron() {
-        return this.nddCollapsed ? '▼' : '▲';
+      /** Icon name for the normality toggle button. */
+      nddChevronIcon() {
+        return this.nddCollapsed ? 'nav.expand-down' : 'nav.collapse-up';
+      },
+
+      /** Accessible title for the normality toggle button. */
+      nddToggleTitle() {
+        return this.nddCollapsed ? this.t('nddExpand') : this.t('nddCollapse');
       },
 
       /** CSS class for the collapsible normality body. */

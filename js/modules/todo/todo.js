@@ -87,9 +87,9 @@ export default createModule({
         };
       },
 
-      sortArrow(col) {
-        if (this.model.sortCol !== col) return '\u2195';
-        return this.model.sortAsc ? '\u25b2' : '\u25bc';
+      sortArrowIcon(col) {
+        if (this.model.sortCol !== col) return 'action.sort';
+        return this.model.sortAsc ? 'nav.arrow-up' : 'nav.arrow-down';
       },
 
       sortArrowClass(col) {

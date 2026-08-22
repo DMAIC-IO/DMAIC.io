@@ -171,7 +171,6 @@ const mod = createModule({
       nelsonToggleClass() {
         return this.nelsonCollapsed ? 'control-chart__collapsible--collapsed' : '';
       },
-      chevronGlyph() { return '▼'; },
 
       /** Localized Nelson-rule view rows. */
       rulesView() {

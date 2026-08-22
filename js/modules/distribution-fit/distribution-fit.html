@@ -120,7 +120,9 @@
             <div class="distfit__ndd">
               <div class="distfit__ndd-header">
                 <h4 x-text="t('nddTitle')"></h4>
-                <button class="distfit__ndd-toggle" data-action="toggle-ndd" @click="toggleNdd()" x-text="nddChevron()"></button>
+                <button class="distfit__ndd-toggle" data-action="toggle-ndd" @click="toggleNdd()" :title="nddToggleTitle()" :aria-label="nddToggleTitle()">
+                  <span class="icon icon--sm" :data-icon="nddChevronIcon()" aria-hidden="true"></span>
+                </button>
               </div>
               <div class="distfit__ndd-body" data-ref="ndd-body" :class="nddBodyClass()">
                 <div class="distfit__ndd-grid">

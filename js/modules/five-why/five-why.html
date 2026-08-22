@@ -35,7 +35,7 @@
               <template x-if="n1.children.length > 0">
                 <button class="btn btn--icon-sm five-why__icon-btn" type="button"
                         data-action="toggle" :data-id="n1.id" :title="toggleTitle(n1)"
-                        x-text="toggleGlyph(n1)" @click.stop="toggleCollapse(n1.id)"></button>
+                        @click.stop="toggleCollapse(n1.id)"><span class="icon icon--sm" :data-icon="toggleIcon(n1)" aria-hidden="true"></span></button>
               </template>
               <template x-if="n1.level < maxLevel">
                 <button class="btn btn--icon-sm five-why__icon-btn five-why__icon-btn--add" type="button"
@@ -64,7 +64,7 @@
                       <template x-if="n2.children.length > 0">
                         <button class="btn btn--icon-sm five-why__icon-btn" type="button"
                                 data-action="toggle" :data-id="n2.id" :title="toggleTitle(n2)"
-                                x-text="toggleGlyph(n2)" @click.stop="toggleCollapse(n2.id)"></button>
+                                @click.stop="toggleCollapse(n2.id)"><span class="icon icon--sm" :data-icon="toggleIcon(n2)" aria-hidden="true"></span></button>
                       </template>
                       <template x-if="n2.level < maxLevel">
                         <button class="btn btn--icon-sm five-why__icon-btn five-why__icon-btn--add" type="button"
@@ -93,7 +93,7 @@
                               <template x-if="n3.children.length > 0">
                                 <button class="btn btn--icon-sm five-why__icon-btn" type="button"
                                         data-action="toggle" :data-id="n3.id" :title="toggleTitle(n3)"
-                                        x-text="toggleGlyph(n3)" @click.stop="toggleCollapse(n3.id)"></button>
+                                        @click.stop="toggleCollapse(n3.id)"><span class="icon icon--sm" :data-icon="toggleIcon(n3)" aria-hidden="true"></span></button>
                               </template>
                               <template x-if="n3.level < maxLevel">
                                 <button class="btn btn--icon-sm five-why__icon-btn five-why__icon-btn--add" type="button"
@@ -122,7 +122,7 @@
                                       <template x-if="n4.children.length > 0">
                                         <button class="btn btn--icon-sm five-why__icon-btn" type="button"
                                                 data-action="toggle" :data-id="n4.id" :title="toggleTitle(n4)"
-                                                x-text="toggleGlyph(n4)" @click.stop="toggleCollapse(n4.id)"></button>
+                                                @click.stop="toggleCollapse(n4.id)"><span class="icon icon--sm" :data-icon="toggleIcon(n4)" aria-hidden="true"></span></button>
                                       </template>
                                       <template x-if="n4.level < maxLevel">
                                         <button class="btn btn--icon-sm five-why__icon-btn five-why__icon-btn--add" type="button"
@@ -153,7 +153,7 @@
                                               <template x-if="n5.children.length > 0">
                                                 <button class="btn btn--icon-sm five-why__icon-btn" type="button"
                                                         data-action="toggle" :data-id="n5.id" :title="toggleTitle(n5)"
-                                                        x-text="toggleGlyph(n5)" @click.stop="toggleCollapse(n5.id)"></button>
+                                                        @click.stop="toggleCollapse(n5.id)"><span class="icon icon--sm" :data-icon="toggleIcon(n5)" aria-hidden="true"></span></button>
                                               </template>
                                               <button class="btn btn--icon-sm five-why__icon-btn five-why__icon-btn--delete" type="button"
                                                       data-action="delete" :data-id="n5.id" :title="deleteTitle()"

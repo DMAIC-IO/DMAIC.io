@@ -640,7 +640,9 @@ const mod = createModule({
 
       glyphNdash() { return '–'; },
       glyphMinus() { return '−'; },
-      glyphTriangle() { return '▼'; },
+      toggleRowTitle(vr) {
+        return _t(vr.collapsed ? 'toggleRowExpand' : 'toggleRowCollapse');
+      },
       glyphDupe() { return '⎘'; },
 
       // ── Category / expert view helpers ────────────────────────

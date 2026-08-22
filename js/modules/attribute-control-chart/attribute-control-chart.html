@@ -47,7 +47,7 @@
       :class="nelsonCollapsed ? 'attr-cc__collapsible--collapsed' : ''"
       @click="toggleNelson()">
       <span x-text="t('sectionNelson')"></span>
-      <span class="attr-cc__chevron" x-text="chevron()"></span>
+      <span class="attr-cc__chevron icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span>
     </div>
     <div class="attr-cc__nelson-panel" data-ref="nelson-panel"
       :class="nelsonCollapsed ? 'attr-cc__nelson-panel--collapsed' : ''">
