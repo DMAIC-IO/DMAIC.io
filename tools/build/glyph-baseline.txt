@@ -1,0 +1,174 @@
+# glyph-baseline.txt — bekannter Bestand handgezeichneter Icon-Glyphen.
+#
+# Erzeugt beim Härten des Gates (`tools/build-icons.mjs` /
+# `tools/build/no-glyphs.mjs`), 2026-08-22. Jede Zeile ist ein Fund von
+# damals: `datei:zeile:glyphe`, sortiert nach Datei, dann Zeile.
+#
+# WIE DAS GATE DIESE DATEI BENUTZT (`npm run icons:check`):
+#   - Ein Fund, dessen Zeile HIER steht, wird gemeldet, aber der Build
+#     bleibt grün — bekannter Rückstand, keine neue Regression.
+#   - Ein Fund, dessen Zeile HIER NICHT steht, lässt den Build rot laufen.
+#     Das ist der eigentliche Zweck des Gates: kein Icon darf mehr am
+#     Icon-System vorbei ins Repo kommen, ohne dass es hier auffällt.
+#
+# WIE MAN EINE ZEILE LOSWIRD:
+#   Migrieren heißt LÖSCHEN. Wird `js/modules/sipoc/sipoc.js:81` auf
+#   `icon('action.delete')` umgestellt, verschwindet die Glyphe aus dem
+#   Quelltext — der nächste `icons:check`-Lauf findet sie ohnehin nicht
+#   mehr, aber die verwaiste Baseline-Zeile sollte man trotzdem von Hand
+#   entfernen (sonst verwässert sie langsam mit toten Einträgen). Wird eine
+#   Zeile stattdessen absichtlich nicht migriert (z. B. ein Marker-Icon in
+#   einer Diagramm-Legende, das nie eine CSS-Maske braucht), bleibt sie
+#   stehen — die Datei ist ein Bestand, keine Checkliste mit Deadline.
+#
+# NICHT VON HAND SORTIEREN NACH GEFÜHL — bei einer Neuerzeugung diesen
+# Header behalten und den Rest durch einen frischen `icons:check`-Lauf
+# ersetzen (siehe `collectFindings()`/`checkNoGlyphs()` in
+# `tools/build-icons.mjs` für das exakte Key-Format).
+#
+# Bestand bei Erzeugung: 141 Funde — 105 in js/**/*.js, 34 in js/**/*.html,
+# 2 in css/**/*.css (Escape-Notation). 0 in i18n/*.json (die i18n-Dateien
+# waren schon vor dieser Härtung sauber). Das ist der Arbeitsvorrat für die
+# Migrationsfolge-Aufgabe — diese Aufgabe migriert nichts.
+
+css/components.css:188:✕
+js/algorithm-lab/lab-component.js:151:✓
+js/algorithm-lab/lab-component.js:181:✓
+js/algorithm-lab/lab-tryit-component.js:168:✓
+js/core/chart/chart-editor.js:458:●
+js/core/chart/chart-editor.js:460:◆
+js/core/chart/chart-editor.js:461:▲
+js/core/chart/chart-editor.js:462:▼
+js/core/chart/chart-editor.js:464:★
+js/core/chart/types/run-chart.js:142:↑
+js/core/chart/types/trend.js:291:●
+js/core/cycles/cycles.js:79:⊞
+js/core/datagrid/datagrid-utils.js:61:📅
+js/core/datagrid/datagrid-utils.js:62:🕐
+js/core/datagrid/datagrid.css:229:✓
+js/core/datagrid/datagrid.js:3174:📅
+js/core/datagrid/datagrid.js:3291:✔
+js/core/migrations.js:55:→
+js/core/module-registry.js:177:⚠
+js/frame/header/action-buttons.js:70:✓
+js/frame/header/action-buttons.js:89:✓
+js/frame/header/action-buttons.js:110:✓
+js/frame/header/action-buttons.js:134:✓
+js/frame/header/project-switcher.js:147:✓
+js/frame/header/project-switcher.js:212:⠿
+js/frame/helpers.js:24:🔒
+js/modules/activity-flowchart/activity-flowchart.js:666:✓
+js/modules/attribute-control-chart/attribute-control-chart.js:79:▼
+js/modules/calculator/calculator.js:164:✓
+js/modules/calculator/calculator.js:180:✓
+js/modules/ce-matrix/ce-matrix.js:158:✓
+js/modules/ce-matrix/ce-matrix.js:181:✓
+js/modules/ce-matrix/ce-matrix.js:187:✓
+js/modules/ce-matrix/ce-matrix.js:221:✓
+js/modules/ce-matrix/ce-matrix.js:224:✓
+js/modules/chart-suggestion/chart-suggestion.html:6:✨
+js/modules/contour-plot/contour-plot-editor.js:81:●
+js/modules/contour-plot/contour-plot-editor.js:82:◆
+js/modules/contour-plot/contour-plot-editor.js:83:▼
+js/modules/contour-plot/contour-plot-editor.js:84:★
+js/modules/control-chart/control-chart-help.js:148:✕
+js/modules/control-chart/control-chart-help.js:171:✕
+js/modules/control-chart/control-chart.js:174:▼
+js/modules/correlation/correlation.js:31:●
+js/modules/correlation/correlation.js:32:▼
+js/modules/correlation/correlation.js:239:✓
+js/modules/data-transformation/data-transformation.js:97:✓
+js/modules/deployment-flowchart/deployment-flowchart.js:235:✓
+js/modules/distribution-fit/distribution-fit.js:347:✔
+js/modules/distribution-fit/distribution-fit.js:387:▼
+js/modules/doe-planner/doe-planner.js:1031:↻
+js/modules/five-why/five-why.html:47:✕
+js/modules/five-why/five-why.html:76:✕
+js/modules/five-why/five-why.html:105:✕
+js/modules/five-why/five-why.html:134:✕
+js/modules/five-why/five-why.html:160:✕
+js/modules/five-why/five-why.js:75:▸
+js/modules/fmea/fmea.html:74:⚠
+js/modules/fmea/fmea.html:78:▲
+js/modules/fmea/fmea.html:82:●
+js/modules/fmea/fmea.html:86:✓
+js/modules/fmea/fmea.html:94:↑
+js/modules/fmea/fmea.html:105:▼
+js/modules/fmea/fmea.html:110:→
+js/modules/fmea/fmea.html:113:✕
+js/modules/fmea/fmea.html:192:✓
+js/modules/fmea/fmea.html:244:✕
+js/modules/fmea/fmea.html:256:→
+js/modules/glm-regression/glm-regression.js:42:⚠
+js/modules/hypothesis-test/hypothesis-test.html:197:→
+js/modules/hypothesis-test/hypothesis-test.js:228:✗
+js/modules/ishikawa/ishikawa.js:641:✕
+js/modules/ishikawa/ishikawa.js:642:✕
+js/modules/ishikawa/ishikawa.js:645:↕
+js/modules/ishikawa/ishikawa.js:646:▼
+js/modules/ishikawa/ishikawa.js:1214:●
+js/modules/ishikawa/ishikawa.js:1215:◆
+js/modules/ishikawa/ishikawa.js:1216:▼
+js/modules/ishikawa/ishikawa.js:1217:★
+js/modules/kano/kano-link.js:20:▸
+js/modules/lessons-learned/lessons-learned.js:121:▾
+js/modules/opportunity-flowchart/opportunity-flowchart.js:199:✓
+js/modules/outlier-test/outlier-test.js:318:✓
+js/modules/outlier-test/outlier-test.js:319:⚠
+js/modules/outlier-test/outlier-test.js:357:✗
+js/modules/outlier-test/outlier-test.js:528:✓
+js/modules/pairwise-comparison/pairwise-comparison.html:75:←
+js/modules/pairwise-comparison/pairwise-comparison.html:80:→
+js/modules/pairwise-comparison/pairwise-comparison.html:92:←
+js/modules/pairwise-comparison/pairwise-comparison.html:179:⬇
+js/modules/pairwise-comparison/pairwise-comparison.html:183:⬇
+js/modules/process-capability/process-capability.html:60:✕
+js/modules/process-map/process-map.js:528:✓
+js/modules/process-map/process-map.js:546:→
+js/modules/process-map/process-map.js:584:✓
+js/modules/process-map/process-map.js:610:✓
+js/modules/project-charter/project-charter.html:125:✓
+js/modules/project-charter/project-charter.js:271:🗑
+js/modules/raci-matrix/raci-matrix.js:51:⠿
+js/modules/raci-matrix/raci-matrix.js:52:⚠
+js/modules/sipoc/sipoc.js:79:⠿
+js/modules/sipoc/sipoc.js:80:✎
+js/modules/sipoc/sipoc.js:81:✕
+js/modules/sipoc/sipoc.js:134:✓
+js/modules/sipoc/sipoc.js:149:✓
+js/modules/sipoc/sipoc.js:165:✓
+js/modules/sipoc/sipoc.js:184:✓
+js/modules/sipoc/sipoc.js:187:✓
+js/modules/stakeholder-analysis/stakeholder-analysis.js:111:→
+js/modules/stakeholder-analysis/stakeholder-analysis.js:112:→
+js/modules/todo/todo.js:91:↕
+js/modules/todo/todo.js:92:▲
+js/modules/triz-contradiction-matrix/triz-contradiction-matrix.html:38:⇅
+js/modules/triz-physical-contradiction/triz-physical-contradiction.html:30:⇅
+js/modules/unit-converter/unit-converter.html:91:🌐
+js/modules/unit-converter/unit-converter.js:141:⏱
+js/modules/unit-converter/unit-data.js:9:📏
+js/modules/unit-converter/unit-data.js:41:🧪
+js/modules/unit-converter/unit-data.js:55:⚖
+js/modules/unit-converter/unit-data.js:82:🌡
+js/modules/unit-converter/unit-data.js:91:💪
+js/modules/unit-converter/unit-data.js:102:🔧
+js/modules/unit-converter/unit-data.js:125:🔋
+js/modules/unit-converter/unit-data.js:141:🌊
+js/modules/unit-converter/unit-data.js:152:🚀
+js/modules/unit-converter/unit-data.js:165:⏱
+js/modules/unit-converter/unit-data.js:181:📐
+js/modules/unit-converter/unit-data.js:193:⚙
+js/modules/unit-converter/unit-data.js:204:🧬
+js/modules/unit-converter/unit-data.js:216:🔬
+js/modules/unit-converter/unit-data.js:233:🔊
+js/modules/unit-converter/unit-data.js:243:🏥
+js/modules/voc-ctx-tree/voc-ctx-tree.html:46:✎
+js/modules/voc-ctx-tree/voc-ctx-tree.html:104:✎
+js/modules/voc-ctx-tree/voc-ctx-tree.html:129:✎
+js/modules/voc-ctx-tree/voc-ctx-tree.html:158:✎
+js/modules/worksheet/worksheet.js:364:▾
+js/pages/settings/settings.html:38:☀
+js/pages/settings/settings.html:41:🌙
+js/ui/help-panel.js:491:←
+js/ui/help-panel.js:607:←

@@ -14,7 +14,7 @@ import { loadIconMap } from './build/icon-map.mjs';
 import { buildIconsCss } from './build/icons.mjs';
 import { readdirSync, statSync } from 'node:fs';
 import { collectIconRefs, findUnmappedRefs } from './build/icon-refs.mjs';
-import { findInlineSvg, findGlyphs, findPseudoGlyphs } from './build/no-glyphs.mjs';
+import { findInlineSvg, findGlyphs, findGlyphsInJs, findGlyphsInHtml, findPseudoGlyphs } from './build/no-glyphs.mjs';
 
 const APP = join(import.meta.dirname, '..');
 const MAP = join(APP, 'assets/icons/icon-map.json');
@@ -110,24 +110,78 @@ function walk(dir, ext) {
 
 const read = (path) => readFileSync(path, 'utf8');
 
-function checkNoGlyphs() {
+/**
+ * Baseline des Glyphen-Bestands (`tools/build/glyph-baseline.txt`): eine
+ * sortierte `datei:zeile:glyphe`-Liste des Rückstands, den das gehärtete
+ * Gate am 2026-08-22 vorfand. Das Gate meldet Baseline-Funde, lässt den
+ * Build aber grün — sonst würde diese Härtung selbst den Build für jeden
+ * blockieren, der als Nächstes zieht, für einen Bestand, den diese Aufgabe
+ * ausdrücklich nicht migriert. Ein NEUER Fund (nicht in der Baseline) ist
+ * dagegen ein Build-Fehler: das ist der eigentliche Zweck des Gates.
+ * Migrieren heißt: die Zeile aus der Baseline-Datei streichen.
+ */
+const BASELINE_FILE = join(import.meta.dirname, 'build/glyph-baseline.txt');
+
+function loadBaseline() {
+  if (!existsSync(BASELINE_FILE)) return new Set();
+  const lines = readFileSync(BASELINE_FILE, 'utf8').split('\n');
+  return new Set(lines.map((l) => l.trim()).filter((l) => l && !l.startsWith('#')));
+}
+
+/**
+ * Sammelt alle Funde als `{key, message}`. `key` ist die Baseline-Zeile
+ * (`datei:zeile:glyphe`), `message` die für Menschen lesbare Fehlerzeile.
+ */
+function collectFindings() {
   const findings = [];
   for (const path of walk(JS_DIR, /\.html$/)) {
     const rel = relative(APP, path);
     if (GLYPH_EXEMPT.includes(rel)) continue;
-    for (const hit of findInlineSvg(read(path))) findings.push(`${rel}: inline <svg> — ${hit}`);
+    for (const hit of findInlineSvg(read(path))) {
+      findings.push({ key: `${rel}:${hit.line}:<svg>`, message: `${rel}:${hit.line}: inline <svg> — ${hit.text}` });
+    }
+    for (const hit of findGlyphsInHtml(read(path))) {
+      findings.push({ key: `${rel}:${hit.line}:${hit.glyph}`, message: `${rel}:${hit.line}: Icon-Glyphe — ${hit.text}` });
+    }
+  }
+  for (const path of walk(JS_DIR, /\.js$/)) {
+    const rel = relative(APP, path);
+    if (GLYPH_EXEMPT.includes(rel)) continue;
+    for (const hit of findGlyphsInJs(read(path))) {
+      findings.push({ key: `${rel}:${hit.line}:${hit.glyph}`, message: `${rel}:${hit.line}: Icon-Glyphe — ${hit.text}` });
+    }
   }
   for (const rel of ['i18n/de.json', 'i18n/en.json']) {
-    for (const hit of findGlyphs(read(join(APP, rel)))) findings.push(`${rel}:${hit.line}: Icon-Glyphe — ${hit.text}`);
+    for (const hit of findGlyphs(read(join(APP, rel)))) {
+      findings.push({ key: `${rel}:${hit.line}:${hit.glyph}`, message: `${rel}:${hit.line}: Icon-Glyphe — ${hit.text}` });
+    }
   }
   const cssFiles = [...walk(join(APP, 'css'), /\.css$/), ...walk(JS_DIR, /\.css$/)];
   for (const path of cssFiles) {
     const rel = relative(APP, path);
-    for (const hit of findPseudoGlyphs(read(path))) findings.push(`${rel}:${hit.line}: content mit Glyphe — ${hit.text}`);
+    for (const hit of findPseudoGlyphs(read(path))) {
+      findings.push({ key: `${rel}:${hit.line}:${hit.glyph}`, message: `${rel}:${hit.line}: content mit Glyphe — ${hit.text}` });
+    }
   }
-  if (findings.length) {
-    console.error(`Icons außerhalb des Icon-Systems:\n  ${findings.join('\n  ')}`);
+  return findings;
+}
+
+function checkNoGlyphs() {
+  const findings = collectFindings();
+  const baseline = loadBaseline();
+  const known = findings.filter((f) => baseline.has(f.key));
+  const unknown = findings.filter((f) => !baseline.has(f.key));
+
+  if (unknown.length) {
+    const list = unknown.map((f) => `  ${f.message}`).join('\n');
+    console.error(`${unknown.length} neue Icons außerhalb des Icon-Systems (nicht in der Baseline):\n${list}`);
     process.exit(1);
+  }
+
+  if (known.length) {
+    console.log(`icons:check — ${known.length} bekannte Baseline-Funde außerhalb des Icon-Systems (siehe tools/build/glyph-baseline.txt), keine neuen.`);
+  } else {
+    console.log('icons:check — keine Icons außerhalb des Icon-Systems.');
   }
 }
 
