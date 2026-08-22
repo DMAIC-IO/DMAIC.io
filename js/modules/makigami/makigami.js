@@ -374,7 +374,14 @@ export default createModule({
 
         // Corner header
         parts.push(`<rect x="0" y="0" width="${  ROLE_COL_W  }" height="${  HEADER_H  }" fill="${  C.bgSec  }" stroke="${  C.border  }"/>`);
-        parts.push(`<text x="${  ROLE_COL_W / 2  }" y="${  HEADER_H / 2 + 4  }" fill="${  C.muted  }" text-anchor="middle">${  escAttr(_t('rolesHeader'))  }</text>`);
+        // The on-screen corner header reads two i18n keys side by side
+        // (rolesHeaderRows / rolesHeaderCols) with a nav.arrow-down and a
+        // nav.arrow-right icon between them. This export is a downloaded
+        // SVG file — no CSS mask icons exist there — so it composes the
+        // same two keys as plain text, joined the same way the arrows used
+        // to read before they became icons.
+        const rolesHeaderText = `${  _t('rolesHeaderRows')  } / ${  _t('rolesHeaderCols')  }`;
+        parts.push(`<text x="${  ROLE_COL_W / 2  }" y="${  HEADER_H / 2 + 4  }" fill="${  C.muted  }" text-anchor="middle">${  escAttr(rolesHeaderText)  }</text>`);
 
         // Step headers
         steps.forEach((s, i) => {
