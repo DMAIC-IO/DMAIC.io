@@ -52,7 +52,12 @@ if (check) {
 
 // ── Referenz-Lint: jeder im Quellcode benutzte Name muss in der Map stehen. ──
 const JS_DIR = join(APP, 'js');
-const SKIP_FILE = /\.(min\.js|map)$/;
+// css/app.min.css ist aus genau den css/*.css-Quellen gebündelt, die der
+// Glyphen-Scan ohnehin einzeln liest — ein Fund darin existiert immer auch
+// (mit brauchbarer Zeilennummer) in der Quelle. Die minifizierte, einzeilige
+// Kopie zusätzlich zu scannen bringt keine neue Abdeckung, nur eine
+// Fundstelle, die sich nicht reparieren lässt.
+const SKIP_FILE = /\.(min\.js|min\.css|map)$/;
 
 function sourceFiles(dir) {
   const out = [];
