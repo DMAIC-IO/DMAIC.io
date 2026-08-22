@@ -255,3 +255,11 @@
   color: var(--color-text-secondary);
   max-width: 400px;
 }
+
+/* Empty-States zeigen ihr Icon deutlich größer als jede Größenstufe des
+   Systems: der leere Bereich trägt sonst nichts, was den Blick hält. lg
+   (24px) ist dafür zu klein, deshalb hier die --icon-size-Ausnahme. */
+.icon--empty-state {
+  --icon-size: 48px;
+  opacity: 0.4;
+}
