@@ -131,7 +131,7 @@ export default createModule({
         const out = { tool: 'SIPOC', timestamp: new Date().toISOString(), sipoc: {} };
         for (const col of COLUMNS) out.sipoc[col.key] = [...this.model.columns[col.key]];
         downloadFile(JSON.stringify(out, null, 2), 'sipoc.json', 'application/json');
-        module._context.notify('JSON ✓', 'success');
+        module._context.notify('JSON', 'success', 'status.ok');
       },
 
       _exportCSV() {
@@ -146,7 +146,7 @@ export default createModule({
           }).join(';')  }\n`;
         }
         downloadFile(csv, 'sipoc.csv', 'text/csv;charset=utf-8');
-        module._context.notify('CSV ✓', 'success');
+        module._context.notify('CSV', 'success', 'status.ok');
       },
 
       async _exportXLSX() {
@@ -162,7 +162,7 @@ export default createModule({
         const ws = XLSX.utils.aoa_to_sheet(rows);
         XLSX.utils.book_append_sheet(wb, ws, 'SIPOC');
         XLSX.writeFile(wb, 'sipoc.xlsx');
-        module._context.notify('Excel ✓', 'success');
+        module._context.notify('Excel', 'success', 'status.ok');
       },
 
       /**
@@ -181,10 +181,10 @@ export default createModule({
 
         if (format === 'png') {
           exportColumnsAsPNG(columns, {}, 'sipoc.png');
-          module._context.notify('PNG ✓', 'success');
+          module._context.notify('PNG', 'success', 'status.ok');
         } else {
           exportColumnsAsSVG(columns, {}, 'sipoc.svg');
-          module._context.notify('SVG ✓', 'success');
+          module._context.notify('SVG', 'success', 'status.ok');
         }
       },
 

@@ -525,7 +525,7 @@ export default createModule({
       _exportJSON() {
         const out = this.model.toExportJSON();
         downloadFile(JSON.stringify(out, null, 2), 'process-map.json', 'application/json');
-        module._context.notify('JSON ✓', 'success');
+        module._context.notify('JSON', 'success', 'status.ok');
       },
 
       _csvRows() {
@@ -581,7 +581,7 @@ export default createModule({
         });
 
         downloadFile(csv, 'process-map.csv', 'text/csv;charset=utf-8');
-        module._context.notify('CSV ✓', 'success');
+        module._context.notify('CSV', 'success', 'status.ok');
       },
 
       async _exportXLSX() {
@@ -607,7 +607,7 @@ export default createModule({
         const ws = XLSX.utils.aoa_to_sheet(rows);
         XLSX.utils.book_append_sheet(wb, ws, 'Process Map');
         XLSX.writeFile(wb, 'process-map.xlsx');
-        module._context.notify('Excel ✓', 'success');
+        module._context.notify('Excel', 'success', 'status.ok');
       },
 
       // ── SIPOC import (picker + append) ────────────────────────

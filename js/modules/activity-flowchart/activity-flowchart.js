@@ -663,7 +663,7 @@ export function activityFlowchartData(module, _t) {
     // ── Export ─────────────────────────────────────────────────────
     _exportJSON() {
       downloadFile(JSON.stringify(this.model.toJSON(), null, 2), 'activity-flowchart.json', 'application/json');
-      module._context.notify?.('JSON ✓', 'success');
+      module._context.notify?.('JSON', 'success', 'status.ok');
     },
 
     onExport(format) {

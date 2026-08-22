@@ -196,7 +196,7 @@ export default createModule({
       // ── Export ─────────────────────────────────────────────────
       _exportJSON() {
         downloadFile(JSON.stringify(this.model.toJSON(), null, 2), 'opportunity-flowchart.json', 'application/json');
-        module._context.notify?.('JSON ✓', 'success');
+        module._context.notify?.('JSON', 'success', 'status.ok');
       },
 
       onExport(format) {
