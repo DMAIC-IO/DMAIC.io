@@ -9,11 +9,12 @@
  * Build-Schritt, also muss die generierte Datei im Repo liegen.
  */
 import { readFileSync, writeFileSync, existsSync } from 'node:fs';
-import { join } from 'node:path';
+import { join, relative } from 'node:path';
 import { loadIconMap } from './build/icon-map.mjs';
 import { buildIconsCss } from './build/icons.mjs';
 import { readdirSync, statSync } from 'node:fs';
 import { collectIconRefs, findUnmappedRefs } from './build/icon-refs.mjs';
+import { findInlineSvg, findGlyphs, findPseudoGlyphs } from './build/no-glyphs.mjs';
 
 const APP = join(import.meta.dirname, '..');
 const MAP = join(APP, 'assets/icons/icon-map.json');
@@ -75,3 +76,54 @@ if (unmapped.length) {
     process.exit(1);
   }
 }
+
+// ── Glyphen-Lint: kein Icon darf am Icon-System vorbei gezeichnet werden. ──
+
+/**
+ * Dateien, die ein Icon berechtigt selbst zeichnen: die vier
+ * SVG-Export-Generatoren erzeugen Dateien, in denen es keine CSS-Maske gibt,
+ * und triz-sufield.html definiert eine Pfeilspitze für sein Diagramm.
+ */
+const GLYPH_EXEMPT = [
+  'js/core/export-utils.js',
+  'js/modules/process-map/process-map-export.js',
+  'js/modules/makigami/makigami.js',
+  'js/modules/response-optimization/response-optimization.js',
+  'js/modules/triz-sufield/triz-sufield.html',
+];
+
+function walk(dir, ext) {
+  const out = [];
+  for (const entry of readdirSync(dir)) {
+    const path = join(dir, entry);
+    if (statSync(path).isDirectory()) { out.push(...walk(path, ext)); continue; }
+    if (!ext.test(entry) || SKIP_FILE.test(entry)) continue;
+    out.push(path);
+  }
+  return out;
+}
+
+const read = (path) => readFileSync(path, 'utf8');
+
+function checkNoGlyphs() {
+  const findings = [];
+  for (const path of walk(JS_DIR, /\.html$/)) {
+    const rel = relative(APP, path);
+    if (GLYPH_EXEMPT.includes(rel)) continue;
+    for (const hit of findInlineSvg(read(path))) findings.push(`${rel}: inline <svg> — ${hit}`);
+  }
+  for (const rel of ['i18n/de.json', 'i18n/en.json']) {
+    for (const hit of findGlyphs(read(join(APP, rel)))) findings.push(`${rel}:${hit.line}: Icon-Glyphe — ${hit.text}`);
+  }
+  const cssFiles = [...walk(join(APP, 'css'), /\.css$/), ...walk(JS_DIR, /\.css$/)];
+  for (const path of cssFiles) {
+    const rel = relative(APP, path);
+    for (const hit of findPseudoGlyphs(read(path))) findings.push(`${rel}:${hit.line}: content mit Glyphe — ${hit.text}`);
+  }
+  if (findings.length) {
+    console.error(`Icons außerhalb des Icon-Systems:\n  ${findings.join('\n  ')}`);
+    process.exit(1);
+  }
+}
+
+checkNoGlyphs();
