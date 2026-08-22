@@ -54,7 +54,10 @@
         <div class="timr__chart-section">
           <div class="timr__chart-header">
             <span class="timr__chart-title" x-text="cv.title"></span>
-            <span class="timr__badge" :class="cv.badgeClass" x-text="cv.badgeText"></span>
+            <span class="timr__badge" :class="cv.badgeClass">
+              <span class="icon icon--sm" :data-icon="cv.badgeIcon" aria-hidden="true"></span>
+              <span x-text="cv.badgeText"></span>
+            </span>
           </div>
           <div class="timr__plot-wrap" :data-chart-host="cv.id"></div>
         </div>

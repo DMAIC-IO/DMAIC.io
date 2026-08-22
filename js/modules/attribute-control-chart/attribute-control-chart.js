@@ -131,6 +131,9 @@ const mod = createModule({
           ? _t('stable')
           : _t('unstable', { count: violations.length });
       },
+      badgeIcon() {
+        return this.isStable() ? 'status.ok' : 'status.warning';
+      },
 
       // ── Violations panel (unique index-ruleId pairs, sorted) ──
 

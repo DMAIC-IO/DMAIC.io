@@ -88,6 +88,10 @@ const mod = createModule({
         return r.signals === 0 ? _t('stable') : _t('unstable', { count: r.signals });
       },
 
+      badgeIcon() {
+        return this.isStable() ? 'status.ok' : 'status.warning';
+      },
+
       // ── Event handlers ─────────────────────────────────────────
 
       chartTypeChanged() {

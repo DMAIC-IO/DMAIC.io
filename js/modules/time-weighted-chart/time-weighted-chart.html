@@ -112,7 +112,10 @@
         <div class="twc__chart-section">
           <div class="twc__chart-header">
             <span class="twc__chart-title" x-text="cv.title"></span>
-            <span class="twc__badge" :class="cv.badgeClass" x-text="cv.badgeText"></span>
+            <span class="twc__badge" :class="cv.badgeClass">
+              <span class="icon icon--sm" :data-icon="cv.badgeIcon" aria-hidden="true"></span>
+              <span x-text="cv.badgeText"></span>
+            </span>
           </div>
           <div class="twc__plot-wrap" :data-chart-host="cv.id"></div>
         </div>

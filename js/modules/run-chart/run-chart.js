@@ -111,6 +111,11 @@ const mod = createModule({
         return p < this.model.alpha ? _t('flagFail') : _t('flagPass');
       },
 
+      /** @returns {boolean} true once a test is flagged — the state in which the status carries the warning icon. */
+      isTestFlagged(p) {
+        return p < this.model.alpha;
+      },
+
       chartTitle() {
         const colName = getColumnName(module._context.stateManager, this.model.columnRef);
         return _t('chartTitle', { col: colName });

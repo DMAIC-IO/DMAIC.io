@@ -422,6 +422,7 @@ const mod = createModule({
           badgeClass: p.isStable
             ? 'control-chart__badge--stable'
             : 'control-chart__badge--unstable',
+          badgeIcon: p.isStable ? 'status.ok' : 'status.warning',
         }));
 
         for (const p of plans) {

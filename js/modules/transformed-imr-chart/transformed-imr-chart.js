@@ -170,6 +170,7 @@ const mod = createModule({
           title: _t('chartTitle', { col: colName, lambda: r.lambda }),
           badgeText: isStable ? _t('stable') : _t('unstable', { count: r.signalsI.length }),
           badgeClass: isStable ? 'timr__badge--stable' : 'timr__badge--unstable',
+          badgeIcon: isStable ? 'status.ok' : 'status.warning',
         }];
 
         const host = await this.whenAnchor('[data-chart-host="i"]', gen);

@@ -241,6 +241,7 @@ const mod = createModule({
           title: _t('chartTitle_ewma', { col: colName }),
           badgeText: isStable ? _t('stable') : _t('unstable', { count: sigCount }),
           badgeClass: isStable ? 'twc__badge--stable' : 'twc__badge--unstable',
+          badgeIcon: isStable ? 'status.ok' : 'status.warning',
         }];
 
         const host = await this.whenAnchor('[data-chart-host="ewma"]', gen);
@@ -297,6 +298,7 @@ const mod = createModule({
             title: _t(sc.titleKey, { col: colName }),
             badgeText: isStable ? _t('stable') : _t('unstable', { count: sigCount }),
             badgeClass: isStable ? 'twc__badge--stable' : 'twc__badge--unstable',
+            badgeIcon: isStable ? 'status.ok' : 'status.warning',
           };
         });
 
