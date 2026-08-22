@@ -146,8 +146,8 @@
         style="width:420px;height:auto;max-height:80vh;left:calc(50% - 210px);top:120px;">
         <div class="dmike-chart-popout-titlebar">
           <span x-text="annTitle()"></span>
-          <button class="dmike-chart-popout-close" type="button" @click="closeAnnotation()">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+          <button class="dmike-chart-popout-close" type="button" :aria-label="t('common.close')" @click="closeAnnotation()">
+            <span class="icon icon--sm" data-icon="action.close" aria-hidden="true"></span>
           </button>
         </div>
         <div class="dmike-chart-popout-body dmike-popout-body--column">
