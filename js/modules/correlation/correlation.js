@@ -232,11 +232,15 @@ const mod = createModule({
         };
         const toP = (v) => ((v + 1) / 2) * 100;
 
-        // Recommendation tooltip lines.
-        const lines = [`${_t('recommendation')}: ${REC_NAMES[recommendation.best]}`];
+        // Recommendation tooltip lines — {icon, text} pairs so an icon can sit
+        // beside each line without an x-text trap wiping it. The header line
+        // carries no icon (iconName: null, hidden via x-show in the
+        // template). Per reason: ok → criterion met, !ok → criterion
+        // violated — reads as an assumption check, not a hard error, hence
+        // status.ok/status.warning.
+        const lines = [{ iconName: null, text: `${_t('recommendation')}: ${REC_NAMES[recommendation.best]}` }];
         for (const r of recommendation.reasons) {
-          const ico = r.ok ? '✓' : '⚠'; // ✓ / ⚠
-          lines.push(`${ico} ${_t(r.key, r.params)}`);
+          lines.push({ iconName: r.ok ? 'status.ok' : 'status.warning', text: _t(r.key, r.params) });
         }
         this.recTooltipLines = lines;
 

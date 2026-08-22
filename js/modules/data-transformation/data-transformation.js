@@ -91,10 +91,15 @@ const mod = createModule({
         if (!ad) return '';
         return ad.pValue >= ALPHA ? 'dt-badge--pass' : 'dt-badge--fail';
       },
+      normBadgeIcon(slot) {
+        const ad = this._norm[slot];
+        if (!ad) return null;
+        return ad.pValue >= ALPHA ? 'status.ok' : 'status.error';
+      },
       normBadgeText(slot) {
         const ad = this._norm[slot];
         if (!ad) return '';
-        return ad.pValue >= ALPHA ? `✓ ${  _t('normal')}` : `✗ ${  _t('notNormal')}`;
+        return ad.pValue >= ALPHA ? _t('normal') : _t('notNormal');
       },
       normAlpha: () => `α = ${ALPHA} | H₀: ${_t('h0Normal')}`,
 

@@ -155,7 +155,10 @@
                         <template x-for="(p, i) in (selectedAlgo.source.signature.parameters || [])" :key="i">
                           <tr><td><code x-text="p.name"></code></td>
                             <td class="lab__sig-type" x-text="p.type"></td>
-                            <td x-text="requiredGlyph(p)"></td>
+                            <td>
+                              <span class="icon icon--sm icon--text" data-icon="status.ok" aria-hidden="true" x-show="p.required"></span>
+                              <span x-show="!p.required">—</span>
+                            </td>
                             <td x-text="loc(p.description)"></td></tr>
                         </template>
                       </tbody>
@@ -209,7 +212,10 @@
                         <template x-for="row in tier.rows" :key="row.id">
                           <tr :data-test-id="row.id">
                             <td :title="row.description" x-text="row.id"></td>
-                            <td :class="'lab__test-' + row.status" x-text="row.statusGlyph"></td>
+                            <td :class="'lab__test-' + row.status">
+                              <span class="icon icon--sm icon--text" :data-icon="row.statusIcon" aria-hidden="true" x-show="row.statusIcon"></span>
+                              <span x-show="!row.statusIcon">—</span>
+                            </td>
                             <td class="lab__test-diff" x-text="row.details"></td>
                             <td class="lab__test-duration" x-text="row.durationText"></td>
                           </tr>
@@ -352,7 +358,10 @@
                               <template x-if="row.hasExpected">
                                 <td :class="!row.noExpected && 'lab__tryit-value'" x-text="row.displayExp"></td></template>
                               <template x-if="row.hasExpected">
-                                <td :class="row.noExpected ? '' : (row.pass ? 'lab__test-pass' : 'lab__test-fail')" x-text="row.matchGlyph"></td></template>
+                                <td :class="row.noExpected ? '' : (row.pass ? 'lab__test-pass' : 'lab__test-fail')">
+                                  <span class="icon icon--sm icon--text" :data-icon="row.matchIcon" aria-hidden="true" x-show="!row.noExpected"></span>
+                                  <span x-show="row.noExpected">—</span>
+                                </td></template>
                             </tr>
                           </template>
                         </tbody>

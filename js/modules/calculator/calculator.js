@@ -46,6 +46,10 @@ export default createModule({
       // ── Transient display state (not persisted) ───────────────
       exprText: '',
       resultText: '0',
+      /** Icon name shown before resultText, or null for plain text (numbers,
+       *  errors). Only the data-point confirmation case sets this — kept as
+       *  its own field so setting resultText never has to embed a glyph. */
+      resultIcon: null,
       isError: false,
 
       /** @type {(e:KeyboardEvent)=>void|null} */
@@ -55,15 +59,25 @@ export default createModule({
       /** Push the model's current expression to the result line. */
       _syncDisplay() {
         this.isError = false;
+        this.resultIcon = null;
         this.resultText = this.model.expression || '0';
       },
       _showResult(text) {
         this.isError = false;
+        this.resultIcon = null;
         this.resultText = text;
       },
       _showError(msg) {
         this.isError = true;
+        this.resultIcon = null;
         this.resultText = msg;
+      },
+      /** Like _showResult, but prefixed with a status icon (data-point
+       *  confirmation only — numbers/errors never carry an icon). */
+      _showResultWithIcon(icon, text) {
+        this.isError = false;
+        this.resultIcon = icon;
+        this.resultText = text;
       },
 
       // ── Editing handlers ──────────────────────────────────────
@@ -161,7 +175,7 @@ export default createModule({
         const v = this.model.addDataPoint();
         if (v !== null) {
           this.exprText = '';
-          this._showResult(`✓ ${  v}`);
+          this._showResultWithIcon('status.ok', String(v));
         }
       },
       removeLast() {
@@ -177,7 +191,7 @@ export default createModule({
         const v = this.model.addSSDataPoint();
         if (v !== null) {
           this.exprText = '';
-          this._showResult(`✓ ${  v}`);
+          this._showResultWithIcon('status.ok', String(v));
         }
       },
       removeLastSS() {

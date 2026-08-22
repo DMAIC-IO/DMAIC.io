@@ -201,7 +201,10 @@
                       <tr>
                         <td x-text="row.term"></td>
                         <td x-text="row.vif"></td>
-                        <td :class="row.warnClass" x-text="row.warn"></td>
+                        <td :class="row.warnClass">
+                          <span class="icon icon--sm icon--text" data-icon="status.warning" aria-hidden="true" x-show="row.warnIcon"></span>
+                          <span x-show="!row.warnIcon" x-text="row.warnText"></span>
+                        </td>
                       </tr>
                     </template>
                   </tbody>

@@ -159,7 +159,10 @@
                         </td>
                         <td x-text="row.stat"></td>
                         <td :class="row.pClass" x-text="row.p"></td>
-                        <td x-text="row.decision"></td>
+                        <td>
+                          <span class="icon icon--sm icon--text" :data-icon="row.decisionIcon" aria-hidden="true"></span>
+                          <span x-text="row.decisionText"></span>
+                        </td>
                       </tr>
                     </template>
                   </tbody>

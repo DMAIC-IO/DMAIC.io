@@ -56,10 +56,14 @@
             <div class="corr__cards">
               <template x-for="card in cards">
                 <div class="corr__card" :class="card.recClass" :key="card.method">
-                  <span class="result-card__badge" x-text="t('recommended')">
+                  <span class="result-card__badge">
+                    <span x-text="t('recommended')"></span>
                     <span class="result-card__tooltip">
                       <template x-for="(line, li) in recTooltipLines">
-                        <span :key="li" style="display:block" x-text="line"></span>
+                        <span :key="li" style="display:block">
+                          <span class="icon icon--sm icon--text" :data-icon="line.iconName" aria-hidden="true" x-show="line.iconName"></span>
+                          <span x-text="line.text"></span>
+                        </span>
                       </template>
                     </span>
                   </span>

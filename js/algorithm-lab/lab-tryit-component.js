@@ -165,11 +165,11 @@ export function createTryItComponent({ registry, i18n, eventBus }) {
           const exp = expectedResult[key];
           row.displayExp = typeof exp === 'number' ? exp.toFixed(decimals) : String(exp);
           row.pass = tolerances ? compare(val, exp, tolerances) : val === exp;
-          row.matchGlyph = row.pass ? '✓' : '✗';
+          row.matchIcon = row.pass ? 'status.ok' : 'status.error';
         } else if (out.hasExpected) {
           // No per-key expected value → bare em-dash placeholders with NO value /
           // pass-fail styling (matches the pre-Alpine plain `<td>—</td>` cells).
-          row.displayExp = '—'; row.matchGlyph = '—'; row.noExpected = true;
+          row.displayExp = '—'; row.noExpected = true;
         }
         return row;
       });

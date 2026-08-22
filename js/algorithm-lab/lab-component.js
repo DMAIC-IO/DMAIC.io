@@ -148,7 +148,6 @@ export function createLabComponent({ registry, i18n, eventBus }) {
     },
     renderSource(el) { if (this.sourceCode) renderCode(el, this.sourceCode, 'javascript'); },
     copySource() { navigator.clipboard.writeText(this.sourceCode).catch(() => {}); },
-    requiredGlyph(p) { return p.required ? '✓' : '—'; },
     get returnRows() {
       const props = this.selectedAlgo?.source?.signature?.returns?.properties || {};
       return Object.entries(props).map(([key, v]) => ({ key, type: v.type, description: v.description }));
@@ -178,7 +177,7 @@ export function createLabComponent({ registry, i18n, eventBus }) {
       return TIERS.map(name => {
         const rows = this.vRows.filter(r => r.tier === name).map(r => ({
           ...r,
-          statusGlyph: r.status === 'pass' ? '✓' : r.status === 'fail' ? '✗' : '—',
+          statusIcon: r.status === 'pass' ? 'status.ok' : r.status === 'fail' ? 'status.error' : null,
           durationText: r.duration == null ? '' : `${r.duration.toFixed(2)} ms`,
         }));
         const pass = rows.filter(r => r.status === 'pass').length;

@@ -344,7 +344,7 @@ const mod = createModule({
           }
 
           const q = pVal >= 0.1 ? 'pass' : pVal >= 0.05 ? 'warn' : 'fail';
-          const qI = q === 'pass' ? '✔' : q === 'warn' ? '⚠' : '✘';
+          const qIcon = q === 'pass' ? 'status.ok' : q === 'warn' ? 'status.warning' : 'status.error';
           const pClass = q === 'pass' ? 'good' : q === 'warn' ? 'moderate' : 'poor';
           return {
             tooSmall: false,
@@ -353,7 +353,8 @@ const mod = createModule({
             algoId,
             hasAlgoLink: Boolean(algoId),
             pillClass: `distfit__ndd-pill--${  q}`,
-            pillText: `${qI  } ${  t(`nddVerdict${  q.charAt(0).toUpperCase()  }${q.slice(1)}`)}`,
+            pillIcon: qIcon,
+            pillText: t(`nddVerdict${  q.charAt(0).toUpperCase()  }${q.slice(1)}`),
             desc,
             statRowLabel: `${t('nddStatistic')  } (${  statL  })`,
             statVal: fmt(stat),

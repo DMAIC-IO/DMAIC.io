@@ -86,14 +86,14 @@
             <strong x-text="normLabel('original')"></strong>
             <span x-text="normStat('orig')"></span>
             <template x-if="normHasBadge('orig')">
-              <span class="dt-badge" :class="normBadgeClass('orig')" x-text="normBadgeText('orig')"></span>
+              <span class="dt-badge" :class="normBadgeClass('orig')"><span class="icon icon--sm icon--text" :data-icon="normBadgeIcon('orig')" aria-hidden="true"></span><span x-text="normBadgeText('orig')"></span></span>
             </template>
           </div>
           <div class="dt-normality__row">
             <strong x-text="normLabel('transformed')"></strong>
             <span x-text="normStat('trans')"></span>
             <template x-if="normHasBadge('trans')">
-              <span class="dt-badge" :class="normBadgeClass('trans')" x-text="normBadgeText('trans')"></span>
+              <span class="dt-badge" :class="normBadgeClass('trans')"><span class="icon icon--sm icon--text" :data-icon="normBadgeIcon('trans')" aria-hidden="true"></span><span x-text="normBadgeText('trans')"></span></span>
             </template>
           </div>
           <div class="dt-normality__alpha" x-text="normAlpha()"></div>

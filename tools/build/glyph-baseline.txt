@@ -32,9 +32,6 @@
 # Migrationsfolge-Aufgabe — diese Aufgabe migriert nichts.
 
 css/components.css:188:✕
-js/algorithm-lab/lab-component.js:151:✓
-js/algorithm-lab/lab-component.js:181:✓
-js/algorithm-lab/lab-tryit-component.js:168:✓
 js/core/chart/chart-editor.js:458:●
 js/core/chart/chart-editor.js:460:◆
 js/core/chart/chart-editor.js:461:▲
@@ -51,8 +48,6 @@ js/core/datagrid/datagrid.js:3291:✔
 js/core/migrations.js:55:→
 js/core/module-registry.js:177:⚠
 js/frame/helpers.js:24:🔒
-js/modules/calculator/calculator.js:164:✓
-js/modules/calculator/calculator.js:180:✓
 js/modules/chart-suggestion/chart-suggestion.html:6:✨
 js/modules/contour-plot/contour-plot-editor.js:81:●
 js/modules/contour-plot/contour-plot-editor.js:82:◆
@@ -61,9 +56,6 @@ js/modules/contour-plot/contour-plot-editor.js:84:★
 js/modules/control-chart/control-chart-help.js:148:✕
 js/modules/control-chart/control-chart-help.js:171:✕
 js/modules/correlation/correlation.js:31:●
-js/modules/correlation/correlation.js:238:✓
-js/modules/data-transformation/data-transformation.js:97:✓
-js/modules/distribution-fit/distribution-fit.js:347:✔
 js/modules/doe-planner/doe-planner.js:1031:↻
 js/modules/fmea/fmea.html:74:⚠
 js/modules/fmea/fmea.html:78:▲
@@ -76,18 +68,12 @@ js/modules/fmea/fmea.html:113:✕
 js/modules/fmea/fmea.html:192:✓
 js/modules/fmea/fmea.html:244:✕
 js/modules/fmea/fmea.html:256:→
-js/modules/glm-regression/glm-regression.js:42:⚠
-js/modules/hypothesis-test/hypothesis-test.html:197:→
-js/modules/hypothesis-test/hypothesis-test.js:228:✗
+js/modules/hypothesis-test/hypothesis-test.html:200:→
 js/modules/ishikawa/ishikawa.js:1213:●
 js/modules/ishikawa/ishikawa.js:1214:◆
 js/modules/ishikawa/ishikawa.js:1215:▼
 js/modules/ishikawa/ishikawa.js:1216:★
 js/modules/kano/kano-link.js:20:▸
-js/modules/outlier-test/outlier-test.js:318:✓
-js/modules/outlier-test/outlier-test.js:319:⚠
-js/modules/outlier-test/outlier-test.js:357:✗
-js/modules/outlier-test/outlier-test.js:528:✓
 js/modules/pairwise-comparison/pairwise-comparison.html:75:←
 js/modules/pairwise-comparison/pairwise-comparison.html:80:→
 js/modules/pairwise-comparison/pairwise-comparison.html:92:←

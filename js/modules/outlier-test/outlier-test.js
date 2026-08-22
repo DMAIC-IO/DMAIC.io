@@ -314,9 +314,10 @@ const mod = createModule({
         const key = LABEL_KEY_MAP[id] || 'Grubbs';
         const label = _t(`m${  key}`);
         const k = r.outliers && r.outliers.length ? r.outliers.length : 0;
+        const verdictIcon = k === 0 ? 'status.ok' : 'status.warning';
         const verdictText = k === 0
-          ? `✓ ${  _t('verdictClean')}`
-          : `⚠ ${  _t('verdictFlagged', { count: k })}`;
+          ? _t('verdictClean')
+          : _t('verdictFlagged', { count: k });
         const verdictClass = k === 0
           ? 'outliertest__verdict--clean'
           : 'outliertest__verdict--flag';
@@ -354,7 +355,7 @@ const mod = createModule({
             value: fmt(s.value, 4),
             R: fmt(s.R, 4),
             lambda: fmt(s.lambda, 4),
-            mark: s.R > s.lambda ? '✗' : '✓',
+            markIcon: s.R > s.lambda ? 'status.error' : 'status.ok',
             rejectClass: s.R > s.lambda ? 'outliertest__step--reject' : '',
           }));
         } else if (id === 'tukey-iqr') {
@@ -416,6 +417,7 @@ const mod = createModule({
           cardClass: '',
           label,
           algoId: ALGO_LAB_IDS[id] || '',
+          verdictIcon,
           verdictText,
           verdictClass,
           metrics,
@@ -525,8 +527,8 @@ const mod = createModule({
             value: fmt(data[idx], 4),
             count: String(flags.size),
             cells: cols.map((id) => flags.has(id)
-              ? { mark: '✓', cls: 'outliertest__flag' }
-              : { mark: '–', cls: 'outliertest__no-flag' }),
+              ? { flagged: true, cls: 'outliertest__flag' }
+              : { flagged: false, cls: 'outliertest__no-flag' }),
           };
         });
         this.flaggedShow = totalFlagged > 0;
