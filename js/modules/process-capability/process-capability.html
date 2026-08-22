@@ -57,7 +57,7 @@
         <div class="pc__embedded">
           <span class="pc__embedded-label" x-text="(model.embeddedLabel || t('exampleData')) + ' (n=' + model.embeddedValues.length + ')'"></span>
           <button class="btn btn--sm btn--ghost" data-ref="btn-clear-embedded" type="button"
-                  :title="removeTitle()" @click="clearEmbedded()">✕</button>
+                  :title="removeTitle()" @click="clearEmbedded()"><span class="icon icon--sm" data-icon="action.close" aria-hidden="true"></span></button>
         </div>
       </template>
 

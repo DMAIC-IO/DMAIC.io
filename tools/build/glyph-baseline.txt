@@ -69,11 +69,6 @@ js/modules/data-transformation/data-transformation.js:97:✓
 js/modules/distribution-fit/distribution-fit.js:347:✔
 js/modules/distribution-fit/distribution-fit.js:387:▼
 js/modules/doe-planner/doe-planner.js:1031:↻
-js/modules/five-why/five-why.html:47:✕
-js/modules/five-why/five-why.html:76:✕
-js/modules/five-why/five-why.html:105:✕
-js/modules/five-why/five-why.html:134:✕
-js/modules/five-why/five-why.html:160:✕
 js/modules/five-why/five-why.js:75:▸
 js/modules/fmea/fmea.html:74:⚠
 js/modules/fmea/fmea.html:78:▲
@@ -105,7 +100,6 @@ js/modules/pairwise-comparison/pairwise-comparison.html:80:→
 js/modules/pairwise-comparison/pairwise-comparison.html:92:←
 js/modules/pairwise-comparison/pairwise-comparison.html:179:⬇
 js/modules/pairwise-comparison/pairwise-comparison.html:183:⬇
-js/modules/process-capability/process-capability.html:60:✕
 js/modules/process-map/process-map.js:546:→
 js/modules/project-charter/project-charter.html:125:✓
 js/modules/project-charter/project-charter.js:271:🗑
