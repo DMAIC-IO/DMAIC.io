@@ -45,7 +45,7 @@
     <div class="control-chart__phase2">
       <div class="control-chart__phase2-status">
         <span class="control-chart__phase2-badge" :class="phase2BadgeClass()">
-          <span class="icon icon--sm" :data-icon="phase2BadgeIcon()" aria-hidden="true"></span>
+          <span class="icon icon--sm icon--text" :data-icon="phase2BadgeIcon()" aria-hidden="true"></span>
           <span x-text="phase2BadgeText()"></span>
         </span>
       </div>
@@ -109,7 +109,7 @@
           <div class="control-chart__chart-header">
             <span class="control-chart__chart-title" x-text="cv.title"></span>
             <span class="control-chart__badge" :class="cv.badgeClass">
-              <span class="icon icon--sm" :data-icon="cv.badgeIcon" aria-hidden="true"></span>
+              <span class="icon icon--sm icon--text" :data-icon="cv.badgeIcon" aria-hidden="true"></span>
               <span x-text="cv.badgeText"></span>
             </span>
           </div>

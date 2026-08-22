@@ -630,7 +630,7 @@
                         <div class="dmike-kpi-label">
                           <span x-text="c.label"></span>
                           <button class="doe__algo-link" :data-algo-id="c.algoId" type="button" @click="algoNavigate(c.algoId, $event)">
-                            <span class="icon icon--sm" data-icon="nav.algorithm-lab" aria-hidden="true"></span>
+                            <span class="icon icon--sm icon--text" data-icon="nav.algorithm-lab" aria-hidden="true"></span>
                           </button>
                         </div>
                         <div class="dmike-kpi-value" x-text="c.value"></div>
@@ -655,7 +655,7 @@
                       <span x-text="t('vifTitle')"></span>
                       <span class="doe__eval-tooltip" :title="t('tipVIF')">?</span>
                       <button class="doe__algo-link" data-algo-id="vif" type="button" @click="algoNavigate('vif', $event)">
-                        <span class="icon icon--sm" data-icon="nav.algorithm-lab" aria-hidden="true"></span>
+                        <span class="icon icon--sm icon--text" data-icon="nav.algorithm-lab" aria-hidden="true"></span>
                       </button>
                     </h4>
                     <div class="doe__vif-tables">

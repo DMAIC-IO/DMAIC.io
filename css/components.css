@@ -1775,6 +1775,21 @@ body.dmike-glossary-inline-off .glossary-term:focus-within {
 .icon--sm { --icon-size: 16px; }
 .icon--lg { --icon-size: 24px; }
 
+/* Icon läuft inline mit Fließtext (Badges, Tags, Tabellenzeilen-Links,
+   Kopfzeilen-Beschriftungen) statt allein in einem Button zu stehen.
+   --icon-size ist dort absolut (16/20/24px) unabhängig von der
+   Schriftgröße daneben — das reißt bei xs/sm-Text (11–12px) auseinander:
+   ein 16px-Icon neben 11px-Text ist 23 % höher als die Zeile und kann sie
+   zum Umbruch zwingen (siehe Messwerte in fix-a-report.md). icon--text
+   macht --icon-size em-basiert, sodass das Icon mit der geerbten
+   Schriftgröße mitskaliert; vertical-align bleibt -0.125em, das ist
+   bereits em-basiert und braucht keine Anpassung. NICHT auf alleinstehende
+   Icon-Buttons anwenden (z. B. 22×22px-Löschen-Buttons) — deren Größe ist
+   bewusst fix und unabhängig vom Text darum. Zusammen mit icon--sm/--lg
+   nutzen, damit weiterhin die für die jeweilige Stufe gebackene
+   Strichstärke greift. */
+.icon--text { --icon-size: 1.1em; }
+
 /* Farbvarianten. muted senkt ab, statt eine zweite Farbe zu setzen — das wirkt
    in hellem und dunklem Theme gleich und braucht kein eigenes Token. */
 .icon--muted   { opacity: .55; }

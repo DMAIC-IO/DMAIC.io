@@ -155,7 +155,7 @@
                         <td>
                           <span x-text="row.name"></span>
                           <button class="hyptest__algo-link" :data-algo-id="row.algoId"
-                            title="Algorithm Lab" @click="algoNavigate(row.algoId, $event)"><span class="icon icon--sm" data-icon="nav.algorithm-lab" aria-hidden="true"></span></button>
+                            title="Algorithm Lab" @click="algoNavigate(row.algoId, $event)"><span class="icon icon--sm icon--text" data-icon="nav.algorithm-lab" aria-hidden="true"></span></button>
                         </td>
                         <td x-text="row.stat"></td>
                         <td :class="row.pClass" x-text="row.p"></td>
@@ -198,7 +198,7 @@
                 <span x-text="result.route.name"></span>
                 <template x-if="result.route.algoId">
                   <button class="hyptest__algo-link" :data-algo-id="result.route.algoId"
-                    title="Algorithm Lab" @click="algoNavigate(result.route.algoId, $event)"><span class="icon icon--sm" data-icon="nav.algorithm-lab" aria-hidden="true"></span></button>
+                    title="Algorithm Lab" @click="algoNavigate(result.route.algoId, $event)"><span class="icon icon--sm icon--text" data-icon="nav.algorithm-lab" aria-hidden="true"></span></button>
                 </template>
               </strong></span>
             </div>
@@ -217,7 +217,7 @@
                         <span x-text="m.value"></span>
                         <template x-if="m.algoId">
                           <button class="hyptest__algo-link" :data-algo-id="m.algoId"
-                            title="Algorithm Lab" @click="algoNavigate(m.algoId, $event)"><span class="icon icon--sm" data-icon="nav.algorithm-lab" aria-hidden="true"></span></button>
+                            title="Algorithm Lab" @click="algoNavigate(m.algoId, $event)"><span class="icon icon--sm icon--text" data-icon="nav.algorithm-lab" aria-hidden="true"></span></button>
                         </template>
                       </div>
                     </div>
@@ -251,7 +251,7 @@
                     <span x-text="m.value"></span>
                     <template x-if="m.algoId">
                       <button class="hyptest__algo-link" :data-algo-id="m.algoId"
-                        title="Algorithm Lab" @click="algoNavigate(m.algoId, $event)"><span class="icon icon--sm" data-icon="nav.algorithm-lab" aria-hidden="true"></span></button>
+                        title="Algorithm Lab" @click="algoNavigate(m.algoId, $event)"><span class="icon icon--sm icon--text" data-icon="nav.algorithm-lab" aria-hidden="true"></span></button>
                     </template>
                   </div>
                 </div>
@@ -336,7 +336,7 @@
                     <span x-text="result.pairwise.methodName"></span>
                     <template x-if="result.pairwise.methodAlgoId">
                       <button class="hyptest__algo-link" :data-algo-id="result.pairwise.methodAlgoId"
-                        title="Algorithm Lab" @click="algoNavigate(result.pairwise.methodAlgoId, $event)"><span class="icon icon--sm" data-icon="nav.algorithm-lab" aria-hidden="true"></span></button>
+                        title="Algorithm Lab" @click="algoNavigate(result.pairwise.methodAlgoId, $event)"><span class="icon icon--sm icon--text" data-icon="nav.algorithm-lab" aria-hidden="true"></span></button>
                     </template>
                   </strong>
                   · <span x-text="result.pairwise.hint"></span>
