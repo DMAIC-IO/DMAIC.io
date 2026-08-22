@@ -48,9 +48,6 @@ export default createModule({
       roles: ROLES,
       activityMaxlen: ACTIVITY_MAXLEN,
       stakeholderMaxlen: STAKEHOLDER_MAXLEN,
-      dragGlyph: '⠿',  // ⠿ drag handle (Braille dots 1-6)
-      warnGlyph: '⚠',  // ⚠ warning sign
-
       // ── Transient input + rename + drag UI state ──────────────
       newActivity: '',
       newStakeholder: '',

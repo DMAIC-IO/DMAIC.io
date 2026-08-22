@@ -638,11 +638,8 @@ const mod = createModule({
 
       // ── Glyphs (Unicode via data-Fn, never \u in template) ────
 
-      glyphX() { return '✕'; },
-      glyphClose() { return '✕'; },
       glyphNdash() { return '–'; },
       glyphMinus() { return '−'; },
-      glyphUpDown() { return '↕'; },
       glyphTriangle() { return '▼'; },
       glyphDupe() { return '⎘'; },
 

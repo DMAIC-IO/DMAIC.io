@@ -75,11 +75,6 @@ export default createModule({
       // Draft bound to the borrowed edit form's <textarea> via x-model.
       editDraft: { text: '' },
 
-      // ── Glyphs (entities from the legacy innerHTML) ───────────
-      gripGlyph: () => '⠿',   // ⠿
-      editGlyph: () => '✎',   // ✎
-      deleteGlyph: () => '✕', // ✕
-
       // ── View transforms ───────────────────────────────────────
       dragOverClass(colKey) {
         return this.isDragOver(colKey) ? 'sipoc__column--drag-over' : '';

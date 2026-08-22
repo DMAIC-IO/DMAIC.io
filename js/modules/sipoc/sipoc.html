@@ -39,7 +39,7 @@
               <div class="sipoc__item" draggable="true" :data-col="col.key" :data-idx="i" :key="col.key + ':' + i"
                 @dragstart="dragStart(col.key, i, $event)"
                 @dragend="dragEnd($event)">
-                <span class="sipoc__grip" x-text="gripGlyph()"></span>
+                <span class="sipoc__grip"><span class="icon icon--sm" data-icon="action.drag-handle" aria-hidden="true"></span></span>
                 <template x-if="col.key === 'process'">
                   <span class="sipoc__step-num" x-text="i + 1"></span>
                 </template>
@@ -47,10 +47,10 @@
                 <div class="sipoc__item-actions">
                   <button class="btn btn--icon-sm sipoc__item-btn" data-action="edit"
                     :data-col="col.key" :data-idx="i" :title="t('common.edit')"
-                    x-text="editGlyph()" @click="editItem(col.key, i, $event)"></button>
+                    @click="editItem(col.key, i, $event)"><span class="icon icon--sm" data-icon="action.edit" aria-hidden="true"></span></button>
                   <button class="btn btn--icon-sm sipoc__item-btn sipoc__item-btn--delete" data-action="delete"
                     :data-col="col.key" :data-idx="i" :title="t('common.delete')"
-                    x-text="deleteGlyph()" @click="deleteItem(col.key, i, $event)"></button>
+                    @click="deleteItem(col.key, i, $event)"><span class="icon icon--sm" data-icon="action.delete" aria-hidden="true"></span></button>
                 </div>
               </div>
             </template>

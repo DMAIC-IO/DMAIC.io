@@ -72,7 +72,7 @@
                   @dragleave="dragLeave($event)"
                   @drop="drop(aIdx, $event)">
                 <td class="raci__activity-cell dmike-del-btn-host">
-                  <span class="raci__drag-handle" :title="t('dragHint')" x-text="dragGlyph"></span>
+                  <span class="raci__drag-handle" :title="t('dragHint')"><span class="icon icon--sm" data-icon="action.drag-handle" aria-hidden="true"></span></span>
                   <span class="raci__activity-text"
                         x-show="!isRenaming('activity', aIdx)"
                         :title="renameTitle(act)"
@@ -89,8 +89,7 @@
                   </template>
                   <template x-if="hasWarning(aIdx)">
                     <span class="raci__row-warn"
-                          :title="warnTitle(aIdx)"
-                          x-text="warnGlyph"></span>
+                          :title="warnTitle(aIdx)"><span class="icon icon--sm" data-icon="status.warning" aria-hidden="true"></span></span>
                   </template>
                   <button class="dmike-del-btn raci__del-btn" type="button"
                           data-del="activity" :data-idx="aIdx"

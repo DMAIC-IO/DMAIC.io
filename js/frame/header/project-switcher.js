@@ -144,7 +144,10 @@ export function initProjectSwitcher({ stateManager, eventBus, i18n }) {
 
   const refresh = () => {
     const name = stateManager.get('projectMeta.name') ?? i18n.t('app.defaultProjectName');
-    display.textContent = name + (stateManager.isCompleted() ? ' ✓' : '');
+    display.textContent = name;
+    if (stateManager.isCompleted()) {
+      display.append(icon('action.confirm', { size: 'sm', variant: 'success' }));
+    }
     input.value = name;
   };
   refresh();
@@ -209,7 +212,7 @@ export function initProjectSwitcher({ stateManager, eventBus, i18n }) {
       // ── Drag handle ──
       const handle = document.createElement('span');
       handle.className = 'app-header__project-drag-handle';
-      handle.textContent = '⠿';
+      handle.appendChild(icon('action.drag-handle', { size: 'sm' }));
       item.appendChild(handle);
 
       const nameEl = document.createElement('span');
