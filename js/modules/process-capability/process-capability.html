@@ -118,7 +118,7 @@
           </div>
 
           <!-- Stats panel -->
-          <div class="dmike-split__output-section" x-text="t('statsTitle')"></div>
+          <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('statsTitle')"></span></div>
           <div class="pc__stats-panel">
             <table class="dmike-table pc__stats-table">
               <thead><tr>
@@ -131,11 +131,11 @@
           </div>
 
           <!-- Chart -->
-          <div class="dmike-split__output-section" x-text="t('histTitle')"></div>
+          <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('histTitle')"></span></div>
           <div class="pc__chart-plot" data-ref="chart-hist"></div>
 
           <!-- Interpretation -->
-          <div class="dmike-split__output-section" x-text="t('formulasTitle')"></div>
+          <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('formulasTitle')"></span></div>
           <div class="pc__interpretation">
             <template x-if="result.twoSided">
               <div>

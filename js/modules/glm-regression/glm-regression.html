@@ -98,7 +98,7 @@
                 x-text="model.savedModelId ? t('modelSaved') : ''"></span>
             </div>
 
-            <div class="dmike-split__output-section" x-text="t('modelSummary')"></div>
+            <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('modelSummary')"></span></div>
             <div class="glm__quality-grid">
               <template x-for="item in result.summaryItems" :key="item.label">
                 <div class="glm__quality-item">
@@ -125,7 +125,7 @@
               </template>
             </div>
 
-            <div class="dmike-split__output-section" x-text="t('modelQuality')"></div>
+            <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('modelQuality')"></span></div>
             <div class="glm__quality-grid">
               <template x-for="item in result.qualityItems" :key="item.label">
                 <div class="glm__quality-item">
@@ -135,10 +135,10 @@
               </template>
             </div>
 
-            <div class="dmike-split__output-section" x-text="t('equation')"></div>
+            <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('equation')"></span></div>
             <div class="glm__equation" x-text="result.equation"></div>
 
-            <div class="dmike-split__output-section" x-text="t('coefTable')"></div>
+            <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('coefTable')"></span></div>
             <table class="glm__coef-table">
               <thead><tr>
                 <th x-text="t('term')"></th>
@@ -173,19 +173,19 @@
           <div class="dmike-tab-content" :class="model.activeTab === 'diagnostics' ? 'dmike-tab-content--active' : ''"
             data-tab-content="diagnostics" x-show="model.activeTab === 'diagnostics'">
 
-            <div class="dmike-split__output-section" x-text="t('residualsVsFitted')"></div>
+            <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('residualsVsFitted')"></span></div>
             <div data-ref="chart-residuals" style="height:280px"></div>
             <template x-if="chartErr('residuals')">
               <div class="dmike-chart-error" x-text="chartErr('residuals')"></div>
             </template>
 
-            <div class="dmike-split__output-section" x-text="t('qqTitle')"></div>
+            <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('qqTitle')"></span></div>
             <div data-ref="chart-qq" style="height:280px"></div>
             <template x-if="chartErr('qq')">
               <div class="dmike-chart-error" x-text="chartErr('qq')"></div>
             </template>
 
-            <div class="dmike-split__output-section" x-text="t('cooksTitle')"></div>
+            <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('cooksTitle')"></span></div>
             <div data-ref="chart-cooks" style="height:250px"></div>
             <template x-if="chartErr('cooks')">
               <div class="dmike-chart-error" x-text="chartErr('cooks')"></div>
@@ -193,7 +193,7 @@
 
             <template x-if="result.vifRows">
               <div>
-                <div class="dmike-split__output-section">VIF</div>
+                <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span>VIF</span></div>
                 <table class="glm__coef-table">
                   <thead><tr><th x-text="t('term')"></th><th>VIF</th><th></th></tr></thead>
                   <tbody>
@@ -214,7 +214,7 @@
 
             <template x-if="result.overdispersion">
               <div>
-                <div class="dmike-split__output-section" x-text="t('overdispersionTitle')"></div>
+                <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('overdispersionTitle')"></span></div>
                 <div class="glm__quality-grid">
                   <template x-for="item in result.overdispersion.items" :key="item.label">
                     <div class="glm__quality-item">
@@ -235,13 +235,13 @@
             <div class="dmike-tab-content" :class="model.activeTab === 'roc' ? 'dmike-tab-content--active' : ''"
               data-tab-content="roc" x-show="model.activeTab === 'roc'">
 
-              <div class="dmike-split__output-section" x-text="t('rocCurve')"></div>
+              <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('rocCurve')"></span></div>
               <div data-ref="chart-roc" style="height:320px"></div>
               <template x-if="chartErr('roc')">
                 <div class="dmike-chart-error" x-text="chartErr('roc')"></div>
               </template>
 
-              <div class="dmike-split__output-section" x-text="t('classificationTitle')"></div>
+              <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('classificationTitle')"></span></div>
 
               <div class="glm__cutoff-row">
                 <label x-text="t('cutoff')"></label>
@@ -284,7 +284,7 @@
           <div class="dmike-tab-content" :class="model.activeTab === 'prediction' ? 'dmike-tab-content--active' : ''"
             data-tab-content="prediction" x-show="model.activeTab === 'prediction'">
 
-            <div class="dmike-split__output-section" x-text="t('predictionTitle')"></div>
+            <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('predictionTitle')"></span></div>
 
             <div class="glm__predict-inputs">
               <template x-for="term in predictionTerms()" :key="term.idx">

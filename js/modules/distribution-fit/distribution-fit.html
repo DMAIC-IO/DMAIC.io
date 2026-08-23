@@ -38,7 +38,7 @@
     <div data-ref="results" style="display:none">
       <template x-if="panelShow">
         <div>
-          <div class="dmike-split__output-section" x-text="t('sectionDescriptive')"></div>
+          <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('sectionDescriptive')"></span></div>
           <div class="dmike-kpi-strip">
             <template x-for="(c, i) in kpiCells" :key="i">
               <div class="dmike-kpi">
@@ -48,10 +48,10 @@
             </template>
           </div>
 
-          <div class="dmike-split__output-section" x-text="t('sectionHistogram')"></div>
+          <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('sectionHistogram')"></span></div>
           <div class="distfit__chart-wrap" data-ref="histogram"></div>
 
-          <div class="dmike-split__output-section" x-text="t('sectionRanking')"></div>
+          <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('sectionRanking')"></span></div>
           <div class="distfit__table-wrap">
             <table class="dmike-table">
               <thead><tr>
@@ -82,7 +82,7 @@
             </table>
           </div>
 
-          <div class="dmike-split__output-section" x-text="t('sectionDetails')"></div>
+          <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('sectionDetails')"></span></div>
           <template x-if="detailTiles.length">
             <div class="distfit__detail-grid">
               <template x-for="(d, i) in detailTiles" :key="i">

@@ -40,7 +40,7 @@
 
     <div class="dmike-split__output" data-ref="output">
       <div class="dmike-split__output-section-header">
-        <div class="dmike-split__output-section" x-text="t('captureTitle')"></div>
+        <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('captureTitle')"></span></div>
         <button class="btn btn--sm" type="button" data-ref="addRespondent"
                 x-text="t('respondentAdd')" @click="addRespondent()"></button>
       </div>
@@ -136,7 +136,7 @@
         </tbody>
       </table>
 
-      <div class="dmike-split__output-section" x-text="t('resultTitle')"></div>
+      <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('resultTitle')"></span></div>
 
       <div class="dmike-kpi-strip" data-ref="kpis">
         <div class="dmike-kpi">
@@ -194,7 +194,7 @@
         </tbody>
       </table>
 
-      <div class="dmike-split__output-section" x-text="t('chartTitle')"></div>
+      <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('chartTitle')"></span></div>
       <div class="kano__chart" data-ref="chart"></div>
       <div class="kano__chart-legend" data-ref="chartLegend">
         <div class="kano__chart-legend-item">

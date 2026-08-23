@@ -74,13 +74,8 @@
 }
 
 .lab__category-chevron {
-  transition: transform var(--transition-speed);
   flex-shrink: 0;
   color: var(--color-text-tertiary);
-}
-
-.lab__category--open > .lab__category-toggle .lab__category-chevron {
-  transform: rotate(90deg);
 }
 
 .lab__category-count {

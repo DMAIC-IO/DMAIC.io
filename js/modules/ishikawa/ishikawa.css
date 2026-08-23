@@ -730,11 +730,6 @@
   gap: 4px;
 }
 
-/* Tree toggle — .btn--icon-sm base, only the flex/rotation bits are local. */
-.ishikawa__toggle-btn--collapsed {
-  transform: rotate(-90deg);
-}
-
 /* Category select — .field base; mono label plus the inline category colour
    stripe set per row via :style. */
 .ishikawa__cat-select {

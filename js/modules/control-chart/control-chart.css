@@ -36,10 +36,6 @@
   color: var(--color-text-tertiary);
 }
 
-.control-chart__collapsible--collapsed .control-chart__chevron {
-  transform: rotate(-90deg);
-}
-
 .control-chart__nelson-panel {
   display: flex;
   flex-direction: column;

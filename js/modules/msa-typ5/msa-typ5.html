@@ -147,7 +147,7 @@
         </div>
 
         <!-- Prüfer-Tabelle -->
-        <div class="dmike-split__output-section" x-text="t('table.appraiser')"></div>
+        <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('table.appraiser')"></span></div>
         <table class="dmike-table msa-typ5__table">
           <thead><tr>
             <th x-text="t('table.appraiser')"></th>
@@ -172,7 +172,7 @@
         </table>
 
         <!-- Prüferpaar-Tabelle -->
-        <div class="dmike-split__output-section" x-text="pairTableTitle()"></div>
+        <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="pairTableTitle()"></span></div>
         <table class="dmike-table msa-typ5__table">
           <thead><tr>
             <th x-text="t('table.pair')"></th>
@@ -195,7 +195,7 @@
         <!-- κ vs. Referenz (nur wenn Referenz vorhanden) -->
         <template x-if="vsRefRows().length">
           <div>
-            <div class="dmike-split__output-section" x-text="t('table.vsReference')"></div>
+            <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('table.vsReference')"></span></div>
             <table class="dmike-table msa-typ5__table">
               <thead><tr>
                 <th x-text="t('table.appraiser')"></th>
@@ -218,13 +218,13 @@
         </template>
 
         <!-- κ-Bar Chart -->
-        <div class="dmike-split__output-section" x-text="t('charts.kappaBar')"></div>
+        <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('charts.kappaBar')"></span></div>
         <div class="msa-typ5__chart" data-ref="chart-kappa-bar"></div>
 
         <!-- Effektivitäts-Bar -->
         <template x-if="hasEffectivenessChart()">
           <div>
-            <div class="dmike-split__output-section" x-text="t('charts.effectivenessBar')"></div>
+            <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('charts.effectivenessBar')"></span></div>
             <div class="msa-typ5__chart" data-ref="chart-eff-bar"></div>
           </div>
         </template>
@@ -232,7 +232,7 @@
         <!-- SDT-Scatter (nur binär mit Referenz) -->
         <template x-if="hasSdtChart()">
           <div>
-            <div class="dmike-split__output-section" x-text="t('charts.sdtScatter')"></div>
+            <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('charts.sdtScatter')"></span></div>
             <div class="msa-typ5__chart" data-ref="chart-sdt"></div>
           </div>
         </template>
@@ -242,13 +242,13 @@
              Zeilen-Hosts werden imperativ erzeugt (Anzahl datenabhängig). -->
         <template x-if="hasGageRunChart()">
           <div>
-            <div class="dmike-split__output-section" x-text="t('charts.gageRun')"></div>
+            <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('charts.gageRun')"></span></div>
             <div class="msa-typ5__gage-run" data-ref="chart-gage-run"></div>
           </div>
         </template>
 
         <!-- Confusion-Heatmap-Grid (Zellen + Charts imperativ befüllt) -->
-        <div class="dmike-split__output-section" x-text="t('charts.confusion')"></div>
+        <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('charts.confusion')"></span></div>
         <div class="msa-typ5__heatmap-grid" data-ref="chart-heatmaps"></div>
       </div>
     </template>

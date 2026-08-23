@@ -3,7 +3,7 @@
 
     <!-- Problem Statement -->
     <section class="pc__section">
-      <div class="dmike-split__output-section" x-text="t('problemStatement')"></div>
+      <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('problemStatement')"></span></div>
       <div class="pc__problem-wrap">
         <div class="pc__problem-toolbar">
           <button class="pc__fmt-btn" data-cmd="bold" :title="t('fmtBold')" :aria-label="t('fmtBold')"
@@ -29,7 +29,7 @@
 
     <!-- Goals -->
     <section class="pc__section">
-      <div class="dmike-split__output-section" x-text="t('goals')"></div>
+      <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('goals')"></span></div>
 
       <template x-if="model.goals.length === 0">
         <p class="pc__no-goals" x-text="t('noGoals')"></p>
@@ -149,7 +149,7 @@
 
     <!-- Org Chart -->
     <section class="pc__section pc__org-section">
-      <div class="dmike-split__output-section" x-text="t('orgChart')"></div>
+      <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('orgChart')"></span></div>
       <div class="pc__org-toolbar">
         <button class="btn btn--primary btn--sm pc__org-add-btn" type="button"
           @click="orgAddRoot()" x-text="'+ ' + t('orgNew')"></button>

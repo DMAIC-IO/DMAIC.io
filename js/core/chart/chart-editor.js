@@ -227,10 +227,12 @@ export function edVisToggle(visible, onClick) {
 export function edExpandBtn(label, target) {
   const btn = document.createElement('button');
   btn.className = 'dmike-chart-ed-expand-btn';
-  btn.replaceChildren(h('span', null, label), document.createTextNode(' '), icon('nav.expand-down'));
+  const chevron = icon('nav.expand-down');
+  btn.replaceChildren(h('span', null, label), document.createTextNode(' '), chevron);
   btn.addEventListener('click', () => {
     const isOpen = target.classList.toggle('open');
     btn.classList.toggle('open', isOpen);
+    chevron.dataset.icon = isOpen ? 'nav.collapse-up' : 'nav.expand-down';
   });
   return btn;
 }

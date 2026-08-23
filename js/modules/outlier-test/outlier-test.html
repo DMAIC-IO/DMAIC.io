@@ -115,7 +115,7 @@
       <template x-if="panelShow">
         <div class="outliertest__panel">
           <!-- ── Summary ── -->
-          <div class="dmike-split__output-section" x-text="t('sectionSummary')"></div>
+          <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('sectionSummary')"></span></div>
           <div class="dmike-kpi-strip">
             <template x-for="(c, i) in summaryKpis" :key="i">
               <div class="dmike-kpi" :class="c.kpiClass">
@@ -126,7 +126,7 @@
           </div>
 
           <!-- ── Chart ── -->
-          <div class="dmike-split__output-section" x-text="t('sectionChart')"></div>
+          <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('sectionChart')"></span></div>
           <div class="outliertest__chart-method btn-group">
             <template x-for="(s, i) in chartSegs" :key="i">
               <button class="btn--segment outliertest__chart-method-btn"
@@ -141,7 +141,7 @@
           </div>
 
           <!-- ── Per-method cards ── -->
-          <div class="dmike-split__output-section" x-text="t('sectionMethods')"></div>
+          <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('sectionMethods')"></span></div>
           <template x-for="(card, ci) in methodCards" :key="ci">
             <div class="outliertest__card" :class="card.cardClass">
               <template x-if="card.isError">
@@ -207,7 +207,7 @@
           <!-- ── Flagged-points table ── -->
           <template x-if="flaggedShow">
             <div class="outliertest__flagged-block">
-              <div class="dmike-split__output-section" x-text="t('sectionFlagged')"></div>
+              <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('sectionFlagged')"></span></div>
               <table class="outliertest__flagged">
                 <thead><tr>
                   <th>#</th>

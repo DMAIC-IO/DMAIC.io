@@ -12,7 +12,7 @@
         <div class="lab__category" :class="cat.open && 'lab__category--open'"
              :data-category-id="cat.id">
           <button class="lab__category-toggle" @click="toggleCategory(cat)">
-            <span class="icon icon--sm lab__category-chevron" data-icon="nav.expand-right" aria-hidden="true"></span>
+            <span class="icon icon--sm lab__category-chevron" :data-icon="cat.open ? 'nav.expand-down' : 'nav.expand-right'" aria-hidden="true"></span>
             <span x-text="loc(cat.name)"></span>
             <span class="lab__category-count" x-text="cat.algos.length"></span>
           </button>

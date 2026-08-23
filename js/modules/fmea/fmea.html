@@ -102,7 +102,7 @@
         <div class="fmea__risk-card" :key="risk.id" :class="cardClass(risk)" :data-risk-id="risk.id" :data-rpn="risk.rpn()" :data-proj-rpn="risk.projRpn()">
           <div class="fmea__risk-header">
             <span class="fmea__risk-number" data-action="toggle-collapse" :data-risk-id="risk.id" :title="t('collapseToggle')" @click="toggleCollapse(risk)">
-              <span class="fmea__collapse-arrow icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span> <span x-text="riskNum(ri)"></span>
+              <span class="fmea__collapse-arrow icon icon--sm" :data-icon="risk.collapsed ? 'nav.expand-right' : 'nav.expand-down'" aria-hidden="true"></span> <span x-text="riskNum(ri)"></span>
             </span>
             <input class="fmea__risk-title" name="step" :placeholder="t('stepPlaceholder')" x-model="risk.step">
             <div class="fmea__rpn-header-group">

@@ -219,7 +219,7 @@
                 <td class="ishikawa__col-nr" :style="'--ishikawa-depth:' + vr.depth">
                   <div class="ishikawa__nr-cell">
                     <template x-if="vr.hasKids">
-                      <button class="btn btn--icon-sm ishikawa__toggle-btn" :class="vr.collapsed ? 'ishikawa__toggle-btn--collapsed' : ''" :data-toggle="vr.row.id" @click="toggleRow(vr.row.id)" :title="toggleRowTitle(vr)" :aria-label="toggleRowTitle(vr)"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span></button>
+                      <button class="btn btn--icon-sm ishikawa__toggle-btn" :data-toggle="vr.row.id" @click="toggleRow(vr.row.id)" :title="toggleRowTitle(vr)" :aria-label="toggleRowTitle(vr)"><span class="icon icon--sm" :data-icon="vr.collapsed ? 'nav.expand-right' : 'nav.expand-down'" aria-hidden="true"></span></button>
                     </template>
                     <span class="ishikawa__nr-text" x-text="vr.num"></span>
                   </div>

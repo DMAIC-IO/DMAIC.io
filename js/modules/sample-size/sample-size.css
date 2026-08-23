@@ -2,30 +2,14 @@
  * D.Mike — Sample Size Module Styles
  * BEM-light naming: .smpsize__*
  *
- * Section labels: use global .dmike-split__output-section (css/modules.css),
- * but scoped-override the hand-drawn CSS triangle with a real icon-system
- * chevron (Kundenrückmeldung: "Aufklappdreiecke sind noch glyphs"). This
- * module never wires a click handler to these headers — the shared class's
- * cursor:pointer/--collapsed styling is decorative dead weight — so this
- * only swaps the ::before border-trick for `nav.expand-down`, scoped to
- * .smpsize so the shared component and every other module that still draws
- * the same triangle keep their exact current look.
+ * Section labels: use global .dmike-split__output-section (css/modules.css)
+ * as-is — the shared rule now renders the `nav.expand-down` marker icon and
+ * is genuinely wired to collapse behaviour (initCollapsibleSections() in
+ * js/frame/helpers.js), so this module no longer needs a scoped override.
+ * smpsize__output-section stays on the template as a hook for future
+ * module-specific styling, it just carries no rules today.
  * Run button: use global .dmike-btn-run (css/modules.css)
  */
-.smpsize .dmike-split__output-section {
-  padding-left: 0;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.smpsize .dmike-split__output-section::before {
-  display: none;
-}
-
-.smpsize .smpsize__output-section .icon {
-  color: var(--color-text-tertiary);
-}
 
 /* Field groups and rows now come from global .field-group / .field-row (components.css) */
 

@@ -62,6 +62,14 @@ export function initCollapsibleSections() {
       : 'dmike-split__output-section--collapsed';
     const collapsed = toggle.classList.toggle(modifierClass);
 
+    // State lives in the icon name (variant B), not in a CSS rotation — see
+    // docs/ICONS.md. The marker is the same `nav.expand-down`/`nav.expand-right`
+    // pair five-why.js and lessons-learned.js already use for expand/collapse.
+    const markerIcon = toggle.querySelector('.icon');
+    if (markerIcon) {
+      markerIcon.dataset.icon = collapsed ? 'nav.expand-right' : 'nav.expand-down';
+    }
+
     // Walk forward siblings, hide/show until we hit the next section label.
     let sib = toggle.nextElementSibling;
     while (sib) {

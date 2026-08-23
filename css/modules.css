@@ -116,30 +116,28 @@
   letter-spacing: 0.08em;
   color: var(--color-text-tertiary);
   padding-bottom: var(--spacing-xs);
-  padding-left: 16px;
   border-bottom: var(--border-width) solid var(--color-border-secondary);
   margin-bottom: var(--spacing-sm);
   cursor: pointer;
   user-select: none;
-  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
-.dmike-split__output-section::before {
-  content: '';
-  position: absolute;
-  left: 2px;
-  top: 50%;
-  width: 0;
-  height: 0;
-  border-left: 4px solid transparent;
-  border-right: 4px solid transparent;
-  border-top: 5px solid var(--color-text-tertiary);
-  transform: translateY(-65%);
-  transition: transform var(--transition-speed);
-}
-
-.dmike-split__output-section--collapsed::before {
-  transform: translateY(-50%) rotate(-90deg);
+/* Marker icon replaces the old hand-drawn ::before triangle. It is wired to
+   collapse behaviour by `initCollapsibleSections()` in js/frame/helpers.js, a
+   document-level delegated click handler started from js/frame/index.js that
+   toggles `--collapsed` on whichever `.dmike-split__output-section(-header)`
+   was clicked, hides the following siblings, AND swaps the icon's
+   `data-icon` between `nav.expand-down` / `nav.expand-right` — state lives in
+   the icon name, not in a CSS transform (see docs/ICONS.md). Same convention
+   already used by five-why.js and distribution-fit.js for expand/collapse
+   chevrons elsewhere in the app. icon--sm (16px) is the closest system step
+   to the old 5px triangle's visual weight; color matches the old
+   --color-text-tertiary exactly. */
+.dmike-split__output-section .icon {
+  color: var(--color-text-tertiary);
 }
 
 .dmike-split__output-section:not(:first-child) {
@@ -153,45 +151,27 @@
   justify-content: space-between;
   gap: var(--spacing-sm);
   padding-bottom: var(--spacing-xs);
-  padding-left: 16px;
   border-bottom: var(--border-width) solid var(--color-border-secondary);
   margin-bottom: var(--spacing-sm);
-  position: relative;
-}
-
-.dmike-split__output-section-header::before {
-  content: '';
-  position: absolute;
-  left: 2px;
-  top: 50%;
-  width: 0;
-  height: 0;
-  border-left: 4px solid transparent;
-  border-right: 4px solid transparent;
-  border-top: 5px solid var(--color-text-tertiary);
-  transform: translateY(-65%);
-  transition: transform var(--transition-speed);
-  cursor: pointer;
-}
-
-.dmike-split__output-section-header--collapsed::before {
-  transform: translateY(-50%) rotate(-90deg);
 }
 
 .dmike-split__output-section-header:not(:first-child) {
   margin-top: var(--spacing-lg);
 }
 
+/* The nested label (see rule above) carries its own marker icon, so the
+   header row itself never draws a second one — unlike the old ::before
+   version, which needed an explicit
+   `.dmike-split__output-section-header .dmike-split__output-section::before
+   { display: none }` rule to suppress a duplicate triangle. That
+   suppression has no equivalent to port: there is only ever one icon to
+   begin with now, because only the inner label renders one. */
 .dmike-split__output-section-header .dmike-split__output-section {
   margin: 0;
   padding: 0;
   border: none;
   cursor: pointer;
   user-select: none;
-}
-
-.dmike-split__output-section-header .dmike-split__output-section::before {
-  display: none;
 }
 
 /* Siblings hidden when preceding section is collapsed */

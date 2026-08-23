@@ -42,7 +42,7 @@
 
     <template x-if="!errorMsg && hasResults">
       <div>
-        <div class="dmike-split__output-section" x-text="t('charts')"></div>
+        <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('charts')"></span></div>
         <div class="dt-results-grid">
           <div class="dt-chart-card">
             <div class="dt-chart-card__title" x-text="t('histOriginal')"></div>
@@ -62,7 +62,7 @@
           </div>
         </div>
 
-        <div class="dmike-split__output-section" x-text="t('descriptiveStats')"></div>
+        <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('descriptiveStats')"></span></div>
         <table class="dmike-table dt-stats-table">
           <thead><tr>
             <th x-text="t('statistic')"></th>
@@ -80,7 +80,7 @@
           </tbody>
         </table>
 
-        <div class="dmike-split__output-section" x-text="t('normalityTest')"></div>
+        <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('normalityTest')"></span></div>
         <div class="dt-normality" id="dt-normality">
           <div class="dt-normality__row">
             <strong x-text="normLabel('original')"></strong>
@@ -99,7 +99,7 @@
           <div class="dt-normality__alpha" x-text="normAlpha()"></div>
         </div>
 
-        <div class="dmike-split__output-section" x-text="t('exportData')"></div>
+        <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('exportData')"></span></div>
         <div class="dt-export-box" id="dt-export-box" x-text="exportText"></div>
         <div class="dt-export-actions">
           <button class="btn btn--secondary btn--sm" data-action="copy" @click="copyExport()" x-text="t('copy')"></button>

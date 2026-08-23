@@ -94,10 +94,10 @@
               </template>
             </div>
 
-            <div class="dmike-split__output-section" x-text="t('sectionScatter')"></div>
+            <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('sectionScatter')"></span></div>
             <div class="corr__plot-wrap" data-ref="scatter-plot"></div>
 
-            <div class="dmike-split__output-section" x-text="t('sectionStats')"></div>
+            <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('sectionStats')"></span></div>
             <div class="corr__stats-grid">
               <template x-for="grp in statGroups">
                 <div class="corr__stats-card" :key="grp.title">
@@ -117,7 +117,7 @@
         <!-- ── Matrix mode (3+ columns) ─────────────────────────── -->
         <template x-if="mode() === 'matrix'">
           <div>
-            <div class="dmike-split__output-section" x-text="t('sectionMatrix')"></div>
+            <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('sectionMatrix')"></span></div>
             <div class="corr__matrix-toolbar">
               <div class="btn-group corr__matrix-toggle">
                 <button class="btn--segment corr__toggle-btn" data-method="pearson"
@@ -213,7 +213,7 @@
             <template x-if="filteredPairs.length > 0">
               <div class="corr__matrix-scatter-block">
                 <div class="dmike-split__output-section-header">
-                  <div class="dmike-split__output-section" x-text="t('sectionScatterMatrix')"></div>
+                  <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('sectionScatterMatrix')"></span></div>
                   <button class="corr__collapse-all-btn" data-action="toggle-all-plots"
                     @click="toggleAllPlots()" x-text="collapseAllLabel()"></button>
                 </div>
@@ -232,7 +232,7 @@
                               x-text="confPctText() + '% ' + t('ciShort') + ' ' + pair.ciLabel"></span>
                           </template>
                           <span class="corr__matrix-plot-meta" x-text="'| p = ' + pair.pLabel"></span>
-                          <span class="corr__matrix-plot-chevron icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span>
+                          <span class="corr__matrix-plot-chevron icon icon--sm" :data-icon="collapsedPairs[pair.key] ? 'nav.expand-right' : 'nav.expand-down'" aria-hidden="true"></span>
                         </span>
                       </div>
                       <div class="corr__matrix-plot-area" :data-ref="'matrix-plot-' + pair.key"></div>
