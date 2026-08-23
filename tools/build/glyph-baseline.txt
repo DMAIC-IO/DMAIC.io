@@ -44,9 +44,9 @@ js/modules/contour-plot/contour-plot-editor.js:83:▼
 js/modules/contour-plot/contour-plot-editor.js:84:★
 js/modules/control-chart/control-chart-help.js:148:✕
 js/modules/control-chart/control-chart-help.js:171:✕
-js/modules/ishikawa/ishikawa.js:1213:●
-js/modules/ishikawa/ishikawa.js:1214:◆
-js/modules/ishikawa/ishikawa.js:1215:▼
-js/modules/ishikawa/ishikawa.js:1216:★
+js/modules/ishikawa/ishikawa.js:1214:●
+js/modules/ishikawa/ishikawa.js:1215:◆
+js/modules/ishikawa/ishikawa.js:1216:▼
+js/modules/ishikawa/ishikawa.js:1217:★
 js/modules/kano/kano-link.js:20:▸
 js/modules/process-map/process-map.js:546:→

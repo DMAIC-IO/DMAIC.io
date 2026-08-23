@@ -14,7 +14,7 @@
   "action.switch": "lucide:arrow-left-right",
   "action.activate": "lucide:play",
   "action.send-to": "lucide:arrow-right",
-  "action.swap": "lucide:arrow-down-up",
+  "action.swap": "lucide:arrow-left-right",
   "action.sort": "lucide:chevrons-up-down",
   "action.loop": "lucide:repeat",
   "action.run": "lucide:play",

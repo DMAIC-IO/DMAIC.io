@@ -258,6 +258,11 @@
   font-size: var(--font-size-lg);
   padding: var(--spacing-xs);
   line-height: 1;
+  /* .ll__card-head is align-items:flex-start (title/meta can wrap to
+     multiple lines), which docked the chevron to the top of the row.
+     Center it on the row instead — matches customer feedback ("Chevrons
+     nach rechts sollten weiter unten stehen, in etwa mittig"). */
+  align-self: center;
 }
 
 /* ── Card Body (expanded) ── */

@@ -10,7 +10,28 @@
   width: 380px;
 }
 
-/* Section labels: use global .dmike-split__output-section (css/modules.css) */
+/* Section labels: use global .dmike-split__output-section (css/modules.css),
+   but scoped-override the hand-drawn CSS triangle with a real icon-system
+   chevron (Kundenrückmeldung: "hat noch glyph Aufklapppfeile"). No module
+   here ever wires a click handler to these headers — the shared class's
+   cursor:pointer/--collapsed styling is decorative dead weight — so this
+   only swaps the ::before border-trick for `nav.expand-down`, scoped to
+   .module-msa-typ2 so the shared component and every other module that
+   still draws the same triangle keep their exact current look. */
+.module-msa-typ2 .dmike-split__output-section {
+  padding-left: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.module-msa-typ2 .dmike-split__output-section::before {
+  display: none;
+}
+
+.module-msa-typ2 .msa-typ2__output-section .icon {
+  color: var(--color-text-tertiary);
+}
 
 /* Fields use global .field / .field-group (components.css) */
 

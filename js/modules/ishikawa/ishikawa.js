@@ -640,6 +640,7 @@ const mod = createModule({
 
       glyphNdash() { return '–'; },
       glyphMinus() { return '−'; },
+      glyphChanged() { return '~'; },
       toggleRowTitle(vr) {
         return _t(vr.collapsed ? 'toggleRowExpand' : 'toggleRowCollapse');
       },
