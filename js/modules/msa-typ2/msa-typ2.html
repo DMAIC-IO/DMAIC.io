@@ -75,7 +75,7 @@
           <div class="dmike-kpi-strip">
             <div class="dmike-kpi" :class="kpiModClass(result.grrStatus)">
               <div class="dmike-kpi-label">%GRR (<span x-text="t('studyVar')"></span>)
-                <button class="msa-typ2__algo-link" data-algo-id="grr" title="Algorithm Lab" @click="algoNavigate('grr', $event)"><svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg></button>
+                <button class="msa-typ2__algo-link" data-algo-id="grr" title="Algorithm Lab" @click="algoNavigate('grr', $event)"><span class="icon icon--sm icon--text" data-icon="nav.algorithm-lab" aria-hidden="true"></span></button>
               </div>
               <div class="dmike-kpi-value"><span x-text="fmt(result.varComp.grr.pctStudyVar)"></span> %</div>
               <div class="dmike-kpi-sub"><span x-text="t('threshold')"></span>: &lt; 10 % · <span x-text="badgeLabel(result.grrStatus)"></span></div>
@@ -100,7 +100,7 @@
           </div>
 
           <!-- ANOVA table -->
-          <div class="dmike-split__output-section" x-text="t('anovaTitle')"></div>
+          <div class="dmike-split__output-section msa-typ2__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('anovaTitle')"></span></div>
           <div class="msa-typ2__stats-panel">
             <table class="dmike-table msa-typ2__stats-table">
               <thead><tr>
@@ -123,7 +123,7 @@
           </div>
 
           <!-- Variance components table -->
-          <div class="dmike-split__output-section" x-text="t('varCompTitle')"></div>
+          <div class="dmike-split__output-section msa-typ2__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('varCompTitle')"></span></div>
           <div class="msa-typ2__stats-panel">
             <table class="dmike-table msa-typ2__stats-table">
               <thead><tr>
@@ -156,35 +156,35 @@
           </div>
 
           <!-- Charts -->
-          <div class="dmike-split__output-section" x-text="t('chartComponentsTitle')"></div>
+          <div class="dmike-split__output-section msa-typ2__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('chartComponentsTitle')"></span></div>
           <div class="msa-typ2__chart-plot" data-ref="chart-components"></div>
 
-          <div class="dmike-split__output-section" x-text="t('chartByPartTitle')"></div>
+          <div class="dmike-split__output-section msa-typ2__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('chartByPartTitle')"></span></div>
           <div class="msa-typ2__chart-plot" data-ref="chart-by-part"></div>
 
           <!-- Messverlaufsdiagramm: Zeilen-Hosts werden imperativ erzeugt,
                weil ihre Anzahl von der Prüfeinheiten-Zahl abhängt. -->
-          <div class="dmike-split__output-section" x-text="t('chartGageRunTitle')"></div>
+          <div class="dmike-split__output-section msa-typ2__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('chartGageRunTitle')"></span></div>
           <div class="msa-typ2__gage-run" data-ref="chart-gage-run"></div>
 
           <template x-if="result.mode !== 'typ3'">
             <div>
-              <div class="dmike-split__output-section" x-text="t('chartByOperatorTitle')"></div>
+              <div class="dmike-split__output-section msa-typ2__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('chartByOperatorTitle')"></span></div>
               <div class="msa-typ2__chart-plot" data-ref="chart-by-operator"></div>
 
-              <div class="dmike-split__output-section" x-text="t('chartInteractionTitle')"></div>
+              <div class="dmike-split__output-section msa-typ2__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('chartInteractionTitle')"></span></div>
               <div class="msa-typ2__chart-plot" data-ref="chart-interaction"></div>
             </div>
           </template>
 
-          <div class="dmike-split__output-section" x-text="t('chartXbarTitle')"></div>
+          <div class="dmike-split__output-section msa-typ2__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('chartXbarTitle')"></span></div>
           <div class="msa-typ2__chart-plot" data-ref="chart-xbar"></div>
 
-          <div class="dmike-split__output-section" x-text="t('chartRTitle')"></div>
+          <div class="dmike-split__output-section msa-typ2__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('chartRTitle')"></span></div>
           <div class="msa-typ2__chart-plot" data-ref="chart-r"></div>
 
           <!-- Interpretation -->
-          <div class="dmike-split__output-section" x-text="t('interpretTitle')"></div>
+          <div class="dmike-split__output-section msa-typ2__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('interpretTitle')"></span></div>
           <div class="msa-typ2__interpretation">
             <p><span class="msa-typ2__tag msa-typ2__tag--pass">%GRR &lt; 10 %</span> <span x-text="t('interpPass')"></span></p>
             <p><span class="msa-typ2__tag msa-typ2__tag--warn">10 % ≤ %GRR &lt; 30 %</span> <span x-text="t('interpWarn')"></span></p>

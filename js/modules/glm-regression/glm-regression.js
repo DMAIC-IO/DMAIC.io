@@ -39,7 +39,6 @@ const EN_DASH = '–';     // –
 const SWAP = '↔';        // ↔
 const THETA = 'θ';       // θ
 const CHI2 = 'χ²';       // χ²
-const WARN = '⚠';        // ⚠
 
 /** @param {number} v @param {number} d */
 function fmt(v, d = 4) {
@@ -68,7 +67,7 @@ const mod = createModule({
     engine: 'alpine',
     phase: 'improve',
     allowedPhases: ['analyze', 'improve'],
-    icon: 'git-branch',
+    icon: 'module.glm-regression',
     version: '1.1.0',
     meta: import.meta,
   },
@@ -470,7 +469,8 @@ const mod = createModule({
           vifRows = r._vifs.map((vif, j) => ({
             term: r.terms[j + 1],
             vif: fmt(vif, 2),
-            warn: vif > 10 ? WARN : vif > 5 ? '!' : '',
+            warnIcon: vif > 10 ? 'status.warning' : null,
+            warnText: vif > 10 ? '' : vif > 5 ? '!' : '',
             warnClass: vif > 10 ? 'glm__sig--high' : vif > 5 ? 'glm__sig--low' : '',
           }));
         }

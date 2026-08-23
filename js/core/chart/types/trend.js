@@ -34,6 +34,7 @@
 
 import ChartBase from '../chart-base.js';
 import { h } from '../../dom.js';
+import { icon } from '../../icon.js';
 import { svgEl, svgText, resolveColor } from '../chart-core.js';
 
 const FONT_MAIN = "'Segoe UI', 'Helvetica Neue', Arial, sans-serif";
@@ -286,9 +287,11 @@ export default class TrendChart extends ChartBase {
     if (best < 0 || bestDist > proximityPx) return [];
 
     const p = pts[best];
+    const dot = icon('fill.100', { size: 'sm', cls: 'icon--text' });
+    dot.style.color = p.color;
     // p.name is USER INPUT → DOM textContent escapes it natively.
     const node = h('div', null,
-      h('span', { style: `color:${p.color}` }, '●'),
+      dot,
       ` ${p.name} `,
       h('b', null, p.val.toFixed(1)),
     );

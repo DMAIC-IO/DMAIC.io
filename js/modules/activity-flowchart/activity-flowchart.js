@@ -34,20 +34,20 @@ export default createModule({
     id: 'activity-flowchart',
     engine: 'alpine',
     phase: 'analyze',
-    icon: 'git-fork',
+    icon: 'module.activity-flowchart',
     version: '1.0.0',
     meta: import.meta,
     actions: [
-      { icon: 'plus', title: 'addStep',
+      { icon: 'action.add', title: 'addStep',
         variant: 'primary', onClick: (d) => d.appendStep('activity') },
-      { icon: 'git-fork', title: 'addDecision',
+      { icon: 'action.branch', title: 'addDecision',
         onClick: (d) => d.appendStep('decision') },
-      { icon: 'upload', title: 'importFrom',
+      { icon: 'action.upload', title: 'importFrom',
         onClick: (d) => d._openImport() },
-      { icon: 'download', title: 'export.label', children: [
-        { icon: 'export-png',  title: 'export.png',  onClick: (d) => d.onExport('png') },
-        { icon: 'export-svg',  title: 'export.svg',  onClick: (d) => d.onExport('svg') },
-        { icon: 'export-json', title: 'export.json', onClick: (d) => d._exportJSON() },
+      { icon: 'action.download', title: 'export.label', children: [
+        { icon: 'format.png',  title: 'export.png',  onClick: (d) => d.onExport('png') },
+        { icon: 'format.svg',  title: 'export.svg',  onClick: (d) => d.onExport('svg') },
+        { icon: 'format.json', title: 'export.json', onClick: (d) => d._exportJSON() },
       ] },
     ],
   },
@@ -713,7 +713,7 @@ export function activityFlowchartData(module, _t) {
     // ── Export ─────────────────────────────────────────────────────
     _exportJSON() {
       downloadFile(JSON.stringify(this.model.toJSON(), null, 2), 'activity-flowchart.json', 'application/json');
-      module._context.notify?.('JSON ✓', 'success');
+      module._context.notify?.('JSON', 'success', 'status.ok');
     },
 
     onExport(format) {

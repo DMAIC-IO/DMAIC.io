@@ -111,10 +111,6 @@
   display: inline-block;
 }
 
-.fmea__risk-card--collapsed .fmea__collapse-arrow {
-  transform: rotate(-90deg);
-}
-
 .fmea__risk-card--collapsed .fmea__risk-body {
   display: none;
 }

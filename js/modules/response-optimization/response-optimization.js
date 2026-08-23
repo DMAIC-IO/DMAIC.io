@@ -244,7 +244,7 @@ export default createModule({
     id: 'response-optimization',
     engine: 'alpine',
     phase: 'improve',
-    icon: 'target',
+    icon: 'module.response-optimization',
     version: '0.1.0',
     meta: import.meta,
   },

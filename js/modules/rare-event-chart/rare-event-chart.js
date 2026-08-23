@@ -29,7 +29,7 @@ const mod = createModule({
     id: 'rare-event-chart',
     engine: 'alpine',
     phase: 'control',
-    icon: 'activity',
+    icon: 'module.rare-event-chart',
     version: '1.0.0',
     meta: import.meta,
   },
@@ -86,6 +86,10 @@ const mod = createModule({
         const r = this.result;
         if (!r) return '';
         return r.signals === 0 ? _t('stable') : _t('unstable', { count: r.signals });
+      },
+
+      badgeIcon() {
+        return this.isStable() ? 'status.ok' : 'status.warning';
       },
 
       // ── Event handlers ─────────────────────────────────────────

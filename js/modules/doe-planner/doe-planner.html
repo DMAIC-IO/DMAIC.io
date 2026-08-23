@@ -28,7 +28,7 @@
                   <span class="doe__timeline-num" x-text="ph.cycleNumber"></span>
                   <span class="doe__timeline-label" x-text="phaseLabel(ph)"></span>
                   <template x-if="phaseDecIcon(ph)">
-                    <span class="doe__timeline-dec" x-text="phaseDecIcon(ph)"></span>
+                    <span class="doe__timeline-dec icon icon--sm" :data-icon="phaseDecIcon(ph)" aria-hidden="true"></span>
                   </template>
                 </button>
               </template>
@@ -541,7 +541,7 @@
     <template x-if="model.design">
       <div class="doe__output-content">
         <div class="dmike-split__output-section-header">
-          <span class="dmike-split__output-section" x-text="t('stepResults')"></span>
+          <span class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('stepResults')"></span></span>
         </div>
 
         <!-- Stale state -->
@@ -565,12 +565,15 @@
               <span class="doe__results-text" x-text="boundProgressText()"></span>
             </div>
             <div class="doe__datasheet-link-row">
-              <button class="btn btn--secondary doe__open-worksheet-btn" type="button" @click="openLinkedWorksheet()" x-text="t('worksheetOpen')"></button>
+              <button class="btn btn--secondary doe__open-worksheet-btn" type="button" @click="openLinkedWorksheet()">
+                <span class="icon icon--sm" data-icon="action.send-to" aria-hidden="true"></span>
+                <span x-text="t('worksheetOpen')"></span>
+              </button>
             </div>
             <template x-if="boundComplete()">
               <div class="doe__transfer-section">
                 <button class="btn btn--primary doe__transfer-regression-btn" type="button" @click="transferToRegression()">
-                  <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                  <span class="icon icon--sm" data-icon="action.send-to" aria-hidden="true"></span>
                   <span x-text="t('transferToRegression')"></span>
                 </button>
               </div>
@@ -614,7 +617,7 @@
         <template x-if="model.evaluation">
           <div class="doe__eval-region">
             <div class="dmike-split__output-section-header">
-              <span class="dmike-split__output-section" x-text="t('stepEvaluate')"></span>
+              <span class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('stepEvaluate')"></span></span>
             </div>
             <div class="doe__eval-compact">
               <div class="doe__eval-detail">
@@ -627,7 +630,7 @@
                         <div class="dmike-kpi-label">
                           <span x-text="c.label"></span>
                           <button class="doe__algo-link" :data-algo-id="c.algoId" type="button" @click="algoNavigate(c.algoId, $event)">
-                            <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+                            <span class="icon icon--sm icon--text" data-icon="nav.algorithm-lab" aria-hidden="true"></span>
                           </button>
                         </div>
                         <div class="dmike-kpi-value" x-text="c.value"></div>
@@ -652,7 +655,7 @@
                       <span x-text="t('vifTitle')"></span>
                       <span class="doe__eval-tooltip" :title="t('tipVIF')">?</span>
                       <button class="doe__algo-link" data-algo-id="vif" type="button" @click="algoNavigate('vif', $event)">
-                        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+                        <span class="icon icon--sm icon--text" data-icon="nav.algorithm-lab" aria-hidden="true"></span>
                       </button>
                     </h4>
                     <div class="doe__vif-tables">
@@ -745,7 +748,7 @@
         <template x-if="dispersion()">
           <div class="doe__dispersion-region">
             <div class="dmike-split__output-section-header">
-              <span class="dmike-split__output-section" x-text="t('dispersionSection')"></span>
+              <span class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('dispersionSection')"></span></span>
             </div>
             <div class="doe__eval-detail">
               <div class="doe__eval-section">

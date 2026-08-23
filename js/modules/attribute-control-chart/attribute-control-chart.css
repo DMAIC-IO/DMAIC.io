@@ -27,10 +27,6 @@
   color: var(--color-text-tertiary);
 }
 
-.attr-cc__collapsible--collapsed .attr-cc__chevron {
-  transform: rotate(-90deg);
-}
-
 .attr-cc__nelson-panel {
   display: flex;
   flex-direction: column;

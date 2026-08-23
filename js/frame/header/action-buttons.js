@@ -67,7 +67,7 @@ function initExportImport({ stateManager, eventBus, i18n }, { modal, notify }) {
       const name = (stateManager.get('projectMeta.name') ?? 'projekt').replace(/[^a-z0-9_-]/gi, '_');
       downloadJSON(json, `${name}_${new Date().toISOString().split('T')[0]}.json`);
       eventBus.emit('project:exported');
-      notify(`${i18n.t('app.export')  } ✓`, 'success');
+      notify(i18n.t('app.export'), 'success', 'status.ok');
       return;
     }
 
@@ -86,7 +86,7 @@ function initExportImport({ stateManager, eventBus, i18n }, { modal, notify }) {
       downloadJSON(json, `${name}_${date}.json`);
     }
     eventBus.emit('project:exported');
-    notify(`${i18n.t('app.export')  } ✓`, 'success');
+    notify(i18n.t('app.export'), 'success', 'status.ok');
   });
 
   importBtn?.addEventListener('click', () => importInput?.click());
@@ -107,7 +107,7 @@ function initExportImport({ stateManager, eventBus, i18n }, { modal, notify }) {
       } else {
         // Single-project import
         await stateManager.importJSON(text);
-        notify(`${i18n.t('app.import')  } ✓`, 'success');
+        notify(i18n.t('app.import'), 'success', 'status.ok');
       }
       if (migrated) {
         // Persist across the upcoming reload — toast is wiped otherwise.
@@ -131,7 +131,7 @@ function initExportImport({ stateManager, eventBus, i18n }, { modal, notify }) {
       const json = await stateManager.exportAllJSON();
       downloadJSON(json, `dmike_alle_projekte_${date}.json`);
       eventBus.emit('project:exported');
-      notify(`${i18n.t('app.export')  } ✓`, 'success');
+      notify(i18n.t('app.export'), 'success', 'status.ok');
     }
   });
 }

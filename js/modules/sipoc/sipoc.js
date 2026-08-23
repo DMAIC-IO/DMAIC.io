@@ -34,19 +34,19 @@ export default createModule({
     id: 'sipoc',
     engine: 'alpine',
     phase: 'define',
-    icon: 'clipboard-list',
+    icon: 'module.sipoc',
     version: '1.0.0',
     meta: import.meta,
     actions: [
       {
-        icon: 'download',
+        icon: 'action.download',
         title: 'export.label',
         children: [
-          { icon: 'export-xlsx', title: 'export.xlsx', onClick: (d) => d._exportXLSX() },
-          { icon: 'export-csv',  title: 'export.csv',  onClick: (d) => d._exportCSV() },
-          { icon: 'export-json', title: 'export.json', onClick: (d) => d._exportJSON() },
-          { icon: 'export-png',  title: 'export.png',  onClick: (d) => d._exportImage('png') },
-          { icon: 'export-svg',  title: 'export.svg',  onClick: (d) => d._exportImage('svg') },
+          { icon: 'format.xlsx', title: 'export.xlsx', onClick: (d) => d._exportXLSX() },
+          { icon: 'format.csv',  title: 'export.csv',  onClick: (d) => d._exportCSV() },
+          { icon: 'format.json', title: 'export.json', onClick: (d) => d._exportJSON() },
+          { icon: 'format.png',  title: 'export.png',  onClick: (d) => d._exportImage('png') },
+          { icon: 'format.svg',  title: 'export.svg',  onClick: (d) => d._exportImage('svg') },
         ],
       },
     ],
@@ -74,11 +74,6 @@ export default createModule({
       // ── Transient UI state (never persisted) ──────────────────
       // Draft bound to the borrowed edit form's <textarea> via x-model.
       editDraft: { text: '' },
-
-      // ── Glyphs (entities from the legacy innerHTML) ───────────
-      gripGlyph: () => '⠿',   // ⠿
-      editGlyph: () => '✎',   // ✎
-      deleteGlyph: () => '✕', // ✕
 
       // ── View transforms ───────────────────────────────────────
       dragOverClass(colKey) {
@@ -131,7 +126,7 @@ export default createModule({
         const out = { tool: 'SIPOC', timestamp: new Date().toISOString(), sipoc: {} };
         for (const col of COLUMNS) out.sipoc[col.key] = [...this.model.columns[col.key]];
         downloadFile(JSON.stringify(out, null, 2), 'sipoc.json', 'application/json');
-        module._context.notify('JSON ✓', 'success');
+        module._context.notify('JSON', 'success', 'status.ok');
       },
 
       _exportCSV() {
@@ -146,7 +141,7 @@ export default createModule({
           }).join(';')  }\n`;
         }
         downloadFile(csv, 'sipoc.csv', 'text/csv;charset=utf-8');
-        module._context.notify('CSV ✓', 'success');
+        module._context.notify('CSV', 'success', 'status.ok');
       },
 
       async _exportXLSX() {
@@ -162,7 +157,7 @@ export default createModule({
         const ws = XLSX.utils.aoa_to_sheet(rows);
         XLSX.utils.book_append_sheet(wb, ws, 'SIPOC');
         XLSX.writeFile(wb, 'sipoc.xlsx');
-        module._context.notify('Excel ✓', 'success');
+        module._context.notify('Excel', 'success', 'status.ok');
       },
 
       /**
@@ -181,10 +176,10 @@ export default createModule({
 
         if (format === 'png') {
           exportColumnsAsPNG(columns, {}, 'sipoc.png');
-          module._context.notify('PNG ✓', 'success');
+          module._context.notify('PNG', 'success', 'status.ok');
         } else {
           exportColumnsAsSVG(columns, {}, 'sipoc.svg');
-          module._context.notify('SVG ✓', 'success');
+          module._context.notify('SVG', 'success', 'status.ok');
         }
       },
 

@@ -408,10 +408,6 @@
   gap: var(--spacing-md);
 }
 
-.hyptest__placeholder svg {
-  opacity: 0.3;
-}
-
 .hyptest__placeholder p {
   font-size: var(--font-size-sm);
   max-width: 280px;

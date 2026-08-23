@@ -3,12 +3,20 @@ import { State } from './triz-physical-contradiction-model.js';
 
 const PRINCIPLE_NUM = { time: 1, space: 2, condition: 3, system: 4 };
 
+/** @type {Record<string, string>} */
+const PRINCIPLE_ICONS = {
+  time: 'domain.time',
+  space: 'domain.space',
+  condition: 'domain.condition',
+  system: 'domain.system',
+};
+
 export default createModule({
   config: {
     id: 'triz-physical-contradiction',
     engine: 'alpine',
     phase: 'improve',
-    icon: 'split',
+    icon: 'module.triz-physical-contradiction',
     version: '0.1.0',
     meta: import.meta,
   },
@@ -25,7 +33,7 @@ export default createModule({
 
       // Principle helpers (i18n for dynamic keys — cannot use string concatenation in template)
       principleNum: (key) => PRINCIPLE_NUM[key] || '',
-      principleIcon: (key) => _t(`principles.${  key  }.icon`),
+      principleIcon: (key) => PRINCIPLE_ICONS[key] ?? 'status.info',
       principleName: (key) => _t(`principles.${  key  }.name`),
       principleQuestion: (key) => _t(`principles.${  key  }.question`),
       principleExample: (key) => _t(`principles.${  key  }.example`),

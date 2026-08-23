@@ -40,7 +40,7 @@ export default createModule({
     id: 'unit-converter',
     engine: 'alpine',
     phase: 'data',
-    icon: 'ruler',
+    icon: 'module.unit-converter',
     version: '1.0.0',
     meta: import.meta,
   },
@@ -71,7 +71,6 @@ export default createModule({
       },
 
       // ── Categories ────────────────────────────────────────
-      catLabel: (catKey) => `${CATEGORIES[catKey]?.icon || ''  } ${  _t(CATEGORIES[catKey]?.nameKey || '')}`,
       catName: (catKey) => _t(CATEGORIES[catKey]?.nameKey || ''),
       catIcon: (catKey) => CATEGORIES[catKey]?.icon || '',
       catActiveClass(catKey) {
@@ -138,7 +137,7 @@ export default createModule({
 
       // ── Timezone ──────────────────────────────────────────
       tzLabel: (z) => _t(z.labelKey),
-      tzNowLabel: () => `⏱ ${  _t('now')}`,
+      tzNowLabel: () => _t('now'),
 
       _utcFromInput() {
         const fromTz = TIMEZONES[this.model.tzFrom]?.tz;

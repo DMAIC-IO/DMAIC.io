@@ -22,8 +22,8 @@
      data-action="toggle-substeps" :data-step-id="step.id"
      @click.stop="toggleSubsteps(step.id)">
   <span class="fc-substeps-bar-icon">
-    <svg x-show="step.expanded" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
-    <svg x-show="!step.expanded" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+    <span class="icon icon--sm" x-show="step.expanded" data-icon="nav.expand-down" aria-hidden="true"></span>
+    <span class="icon icon--sm" x-show="!step.expanded" data-icon="nav.expand-right" aria-hidden="true"></span>
   </span>
   <span class="fc-substeps-bar-label" x-text="substepsBarLabel(step)"></span>
 </div>
@@ -46,14 +46,14 @@
                   :data-parent-id="step.id" :data-substep-id="sub.id"
                   :title="t('common.delete')"
                   @click.stop="removeSubstep(step.id, sub.id)">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            <span class="icon" style="--icon-size: 12px" data-icon="action.close" aria-hidden="true"></span>
           </button>
         </div>
       </template>
     </div>
     <button class="fc-substep-add" data-action="add-substep" :data-step-id="step.id"
             :title="t('addSubstep')" @click.stop="addSubstep(step.id)">
-      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      <span class="icon" style="--icon-size: 12px" data-icon="action.add" aria-hidden="true"></span>
       <span x-text="t('addSubstep')"></span>
     </button>
   </div>

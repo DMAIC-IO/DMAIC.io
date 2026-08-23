@@ -36,7 +36,7 @@ const mod = createModule({
     id: 'msa-typ4',
     engine: 'alpine',
     phase: 'measure',
-    icon: 'trending-up',
+    icon: 'module.msa-typ4',
     version: '1.1.0',
     meta: import.meta,
   },

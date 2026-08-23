@@ -152,16 +152,8 @@
 
 .triz-sf__class-head::-webkit-details-marker { display: none; }
 
-.triz-sf__class-head::before {
-  content: '▸';
-  display: inline-block;
-  width: 12px;
-  transition: transform var(--transition-speed);
+.triz-sf__class-head .icon {
   color: var(--color-text-tertiary);
-}
-
-.triz-sf__class[open] > .triz-sf__class-head::before {
-  transform: rotate(90deg);
 }
 
 .triz-sf__class-num {

@@ -42,7 +42,7 @@
                 <div class="ishikawa__img-meta">
                   <span class="ishikawa__img-size" x-text="formatImgSize(img.dataUrl)"></span>
                   <button class="ishikawa__img-del" type="button" :data-img-del="img.id" :data-img-kind="kind"
-                          :title="t('common.delete')" @click="deleteImage(kind, img.id)" x-text="glyphClose()"></button>
+                          :title="t('common.delete')" @click="deleteImage(kind, img.id)"><span class="icon icon--sm" data-icon="action.delete" aria-hidden="true"></span></button>
                 </div>
               </figure>
             </template>
@@ -95,7 +95,7 @@
                   <td><input class="field field--sm field--ghost ishikawa__exp-date-input" type="date" :data-fact-date="f.id" x-model="f.date" /></td>
                   <td><input class="field field--sm field--ghost ishikawa__exp-resp-input" type="text" :placeholder="t('factOwnerPlaceholder')" list="ishikawa-fact-owner-list" :data-fact-owner="f.id" x-model="f.owner" /></td>
                   <td><div class="ishikawa__row-actions">
-                    <button class="btn btn--icon-sm btn--danger" :title="t('common.delete')" :data-fact-del="f.id" @click="deleteFact(f.id)" x-text="glyphClose()"></button>
+                    <button class="btn btn--icon-sm btn--danger" :title="t('common.delete')" :data-fact-del="f.id" @click="deleteFact(f.id)"><span class="icon icon--sm" data-icon="action.delete" aria-hidden="true"></span></button>
                   </div></td>
                 </tr>
               </template>
@@ -130,7 +130,7 @@
                 <input type="text" class="ishikawa__expert-name-edit" :data-expert-name-id="e.id"
                        :value="e.name" spellcheck="false"
                        @keydown="expertEditKey(e.id, $event)" @blur="commitExpertRename(e.id, $event)" />
-                <button class="ishikawa__expert-rm" :data-expert-id="e.id" :title="t('common.remove')" @click="removeExpert(e.id)" x-text="glyphX()"></button>
+                <button class="ishikawa__expert-rm" :data-expert-id="e.id" :title="t('common.remove')" @click="removeExpert(e.id)"><span class="icon icon--sm" data-icon="action.close" aria-hidden="true"></span></button>
               </span>
             </template>
           </div>
@@ -145,10 +145,13 @@
             <div class="ishikawa__diff-stats">
               <span class="ishikawa__diff-stat"><span class="ishikawa__diff-val ishikawa__diff-val--new" x-text="'+' + diff().added.length + ' ' + t('diffNew')"></span></span>
               <span class="ishikawa__diff-stat"><span class="ishikawa__diff-val ishikawa__diff-val--del" x-text="glyphMinus() + diff().removed.length + ' ' + t('diffRemoved')"></span></span>
-              <span class="ishikawa__diff-stat"><span class="ishikawa__diff-val ishikawa__diff-val--chg" x-text="glyphUpDown() + diff().changed.length + ' ' + t('diffChanged')"></span></span>
+              <span class="ishikawa__diff-stat"><span class="ishikawa__diff-val ishikawa__diff-val--chg" x-text="glyphChanged() + diff().changed.length + ' ' + t('diffChanged')"></span></span>
               <span class="ishikawa__diff-stat" style="color:var(--color-text-tertiary)" x-text="compareLabel()"></span>
             </div>
-            <button class="ishikawa__diff-close" data-ref="diffCloseBtn" @click="closeDiff()" x-text="t('endCompare')"></button>
+            <button class="ishikawa__diff-close" data-ref="diffCloseBtn" @click="closeDiff()">
+              <span x-text="t('endCompare')"></span>
+              <span class="icon icon--sm" data-icon="action.close" aria-hidden="true"></span>
+            </button>
           </div>
         </template>
       </div>
@@ -172,11 +175,7 @@
           </template>
           <button class="ishikawa__cat-rename-btn" data-ref="renameCatsBtn"
                   :title="t('renameCatsTitle')" :aria-label="t('renameCatsTitle')" @click="openCatRename()">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <path d="M12 20h9"/>
-              <path d="M16.5 3.5a2.121 2.121 0 1 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/>
-            </svg>
+            <span class="icon icon--sm" data-icon="action.edit" aria-hidden="true"></span>
           </button>
         </div>
       </div>
@@ -220,7 +219,7 @@
                 <td class="ishikawa__col-nr" :style="'--ishikawa-depth:' + vr.depth">
                   <div class="ishikawa__nr-cell">
                     <template x-if="vr.hasKids">
-                      <button class="btn btn--icon-sm ishikawa__toggle-btn" :class="vr.collapsed ? 'ishikawa__toggle-btn--collapsed' : ''" :data-toggle="vr.row.id" @click="toggleRow(vr.row.id)" x-text="glyphTriangle()"></button>
+                      <button class="btn btn--icon-sm ishikawa__toggle-btn" :data-toggle="vr.row.id" @click="toggleRow(vr.row.id)" :title="toggleRowTitle(vr)" :aria-label="toggleRowTitle(vr)"><span class="icon icon--sm" :data-icon="vr.collapsed ? 'nav.expand-right' : 'nav.expand-down'" aria-hidden="true"></span></button>
                     </template>
                     <span class="ishikawa__nr-text" x-text="vr.num"></span>
                   </div>
@@ -277,17 +276,12 @@
                   <button class="btn btn--icon-sm" :title="t('duplicate')" :data-dupe="vr.row.id" @click="dupeRow(vr.row.id)" x-text="glyphDupe()"></button>
                   <button class="btn btn--icon-sm" :class="linkedExpCount(vr.row) > 0 ? 'ishikawa__icon-btn--exp ishikawa__icon-btn--linked' : 'ishikawa__icon-btn--exp'"
                           :title="linkExpTitle(vr.row)" :aria-label="linkExpTitle(vr.row)" :data-link-exp="vr.row.id" @click="openExpLink(vr.row.id)">
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                         stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                      <path d="M9 3h6"/>
-                      <path d="M10 3v6L3.5 19.5A1.5 1.5 0 0 0 4.8 22h14.4a1.5 1.5 0 0 0 1.3-2.5L14 9V3"/>
-                      <path d="M7 15h10"/>
-                    </svg>
+                    <span class="icon icon--sm" data-icon="action.experiment" aria-hidden="true"></span>
                     <template x-if="linkedExpCount(vr.row) > 0">
                       <span class="ishikawa__exp-link-badge" x-text="linkedExpCount(vr.row)"></span>
                     </template>
                   </button>
-                  <button class="btn btn--icon-sm btn--danger" :title="t('common.delete')" :data-del-row="vr.row.id" @click="deleteRow(vr.row.id)" x-text="glyphX()"></button>
+                  <button class="btn btn--icon-sm btn--danger" :title="t('common.delete')" :data-del-row="vr.row.id" @click="deleteRow(vr.row.id)"><span class="icon icon--sm" data-icon="action.close" aria-hidden="true"></span></button>
                 </div></td>
               </tr>
             </template>
@@ -352,7 +346,7 @@
                   <span class="ishikawa__snap-date" x-text="snapDate(s)"></span>
                   <span class="ishikawa__snap-name" x-text="s.name"></span>
                   <span class="ishikawa__snap-badge" x-text="snapBadge(s)"></span>
-                  <button class="ishikawa__snap-del" :data-snap-del="s.id" :title="t('common.delete')" @click="deleteSnapshot(s.id, $event)" x-text="glyphX()"></button>
+                  <button class="ishikawa__snap-del" :data-snap-del="s.id" :title="t('common.delete')" @click="deleteSnapshot(s.id, $event)"><span class="icon icon--sm" data-icon="action.close" aria-hidden="true"></span></button>
                 </div>
               </template>
             </div>
@@ -365,7 +359,7 @@
         <div class="ishikawa__trend-inner">
           <div class="ishikawa__trend-header">
             <h3 x-text="t('trendTitle')"></h3>
-            <button class="ishikawa__trend-close" data-ref="trendCloseBtn" @click="closeTrend()" x-text="glyphX()"></button>
+            <button class="ishikawa__trend-close" data-ref="trendCloseBtn" :title="t('common.close')" @click="closeTrend()"><span class="icon icon--sm" data-icon="action.close" aria-hidden="true"></span></button>
           </div>
           <template x-if="trendEmptyMsg"><div class="ishikawa__trend-empty" x-text="trendEmptyMsg"></div></template>
           <div class="ishikawa__trend-body" data-ref="trendContent"></div>
@@ -432,7 +426,7 @@
                   <td><input class="field field--sm field--ghost field--num ishikawa__exp-num-input" type="number" min="0" step="0.5" placeholder="0" :data-xp-hours="x.id" x-model="x.costHours" @input="expCostChanged()" /></td>
                   <td><button class="btn btn--sm ishikawa__exp-link-btn" :data-xp-link="x.id" @click="openHypLink(x.id)" x-text="expLinkText(x)"></button></td>
                   <td><div class="ishikawa__row-actions">
-                    <button class="btn btn--icon-sm btn--danger" :title="t('common.delete')" :data-xp-del="x.id" @click="deleteExperiment(x.id)" x-text="glyphX()"></button>
+                    <button class="btn btn--icon-sm btn--danger" :title="t('common.delete')" :data-xp-del="x.id" @click="deleteExperiment(x.id)"><span class="icon icon--sm" data-icon="action.close" aria-hidden="true"></span></button>
                   </div></td>
                 </tr>
               </template>

@@ -114,7 +114,7 @@
     <div data-ref="results" style="display:none">
       <template x-if="resultShow">
         <div>
-          <div class="dmike-split__output-section" x-text="t('sectionResult')"></div>
+          <div class="dmike-split__output-section smpsize__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('sectionResult')"></span></div>
           <div class="smpsize__summary">
             <strong x-text="summaryStrong"></strong>
             <p x-text="summaryText"></p>
@@ -129,9 +129,10 @@
             </template>
           </div>
 
-          <div class="dmike-split__output-section">
+          <div class="dmike-split__output-section smpsize__output-section">
+            <span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span>
             <span x-text="t('sectionCurve')"></span>
-            <button class="smpsize__algo-link" :data-algo-id="curveAlgoId" title="Algorithm Lab" @click="openAlgoLab($event)"><svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg></button>
+            <button class="smpsize__algo-link" :data-algo-id="curveAlgoId" title="Algorithm Lab" @click="openAlgoLab($event)"><span class="icon icon--sm" data-icon="nav.algorithm-lab" aria-hidden="true"></span></button>
           </div>
           <div data-ref="power-chart" style="height:320px"></div>
         </div>

@@ -97,17 +97,17 @@ const mod = createModule({
     id: 'fmea',
     engine: 'alpine',
     phase: 'analyze',
-    icon: 'alert-triangle',
+    icon: 'module.fmea',
     version: '1.1.0',
     meta: import.meta,
     actions: [
-      { icon: 'glossary', title: 'scales', onClick: (d) => d.toggleScale() },
-      { icon: 'chart-thumb-run-chart', title: 'burndown', onClick: (d) => d.showBurndown() },
-      { icon: 'chevron-down', title: 'sortByRPN', onClick: (d) => d.sortByRPN() },
-      { icon: 'download', title: 'export.label', children: [
-        { icon: 'export-csv', title: 'export.csv', onClick: (d) => d.exportCSV() },
+      { icon: 'action.glossary', title: 'scales', onClick: (d) => d.toggleScale() },
+      { icon: 'chart.run-chart', title: 'burndown', onClick: (d) => d.showBurndown() },
+      { icon: 'nav.expand-down', title: 'sortByRPN', onClick: (d) => d.sortByRPN() },
+      { icon: 'action.download', title: 'export.label', children: [
+        { icon: 'format.csv', title: 'export.csv', onClick: (d) => d.exportCSV() },
       ] },
-      { icon: 'plus', title: 'addRisk', variant: 'primary', onClick: (d) => d.addRisk() },
+      { icon: 'action.add', title: 'addRisk', variant: 'primary', onClick: (d) => d.addRisk() },
     ],
     dashboardTile: {
       defaultW: 3, defaultH: 10, minW: 2, minH: 6,

@@ -257,6 +257,7 @@
   justify-content: center;
   writing-mode: vertical-lr;
   transform: rotate(180deg);
+  gap: var(--spacing-xs);
   font-size: var(--font-size-xs);
   font-weight: var(--font-weight-semibold);
   text-transform: uppercase;
@@ -274,6 +275,12 @@
   text-transform: uppercase;
   letter-spacing: 0.1em;
   padding: 0 4px;
+}
+
+.sha__axis-label-x {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
 }
 
 .sha__matrix-grid {

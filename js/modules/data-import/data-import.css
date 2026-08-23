@@ -379,3 +379,10 @@
   outline: 2px solid var(--color-accent);
   outline-offset: 1px;
 }
+
+/* Kundenwunsch: das Dropzone-Icon soll nicht abgedunkelt wirken — anders als
+   die übrigen .icon--empty-state-Verwendungen (hypothesis-test, outlier-test),
+   die diese Rückmeldung nicht bekamen und deshalb unverändert bleiben. */
+.data-import__dropzone-icon .icon--empty-state {
+  opacity: 1;
+}

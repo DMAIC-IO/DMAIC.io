@@ -3,6 +3,11 @@
  * BEM-light naming: .smpsize__*
  *
  * Section labels: use global .dmike-split__output-section (css/modules.css)
+ * as-is — the shared rule now renders the `nav.expand-down` marker icon and
+ * is genuinely wired to collapse behaviour (initCollapsibleSections() in
+ * js/frame/helpers.js), so this module no longer needs a scoped override.
+ * smpsize__output-section stays on the template as a hook for future
+ * module-specific styling, it just carries no rules today.
  * Run button: use global .dmike-btn-run (css/modules.css)
  */
 

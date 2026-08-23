@@ -52,8 +52,10 @@
           </template>
           <button class="pairwise__btn pairwise__btn--start" type="button"
             data-action="start" :disabled="model.criteria.length < 3"
-            @click="startComparison()"
-            x-text="startLabel()"></button>
+            @click="startComparison()">
+            <span x-text="startLabel()"></span>
+            <span class="icon icon--sm" data-icon="action.send-to" aria-hidden="true" x-show="isStartReady()"></span>
+          </button>
         </div>
       </template>
 
@@ -70,12 +72,12 @@
             <div class="pairwise__vs-label" x-text="t('vsPrompt')"></div>
             <div class="pairwise__vs">
               <button class="pairwise__vs-option" type="button" data-action="choose" @click="chooseLeft()">
-                <span class="pairwise__vs-hotkey">←</span>
+                <span class="pairwise__vs-hotkey"><span class="icon icon--sm" data-icon="nav.arrow-left" aria-hidden="true"></span></span>
                 <span class="pairwise__vs-name" x-text="leftName()"></span>
               </button>
               <div class="pairwise__vs-divider">vs</div>
               <button class="pairwise__vs-option" type="button" data-action="choose" @click="chooseRight()">
-                <span class="pairwise__vs-hotkey">→</span>
+                <span class="pairwise__vs-hotkey"><span class="icon icon--sm" data-icon="nav.arrow-right" aria-hidden="true"></span></span>
                 <span class="pairwise__vs-name" x-text="rightName()"></span>
               </button>
             </div>
@@ -87,7 +89,7 @@
           <div class="pairwise__compare-actions">
             <button class="pairwise__btn pairwise__btn--outline" type="button"
               data-action="back-to-input" @click="backToInput()">
-              <span class="pairwise__nav-arrow">← </span><span x-text="backLabel()"></span>
+              <span class="icon icon--sm icon--text" data-icon="nav.back" aria-hidden="true"></span><span x-text="backLabel()"></span>
             </button>
           </div>
         </div>
@@ -174,11 +176,11 @@
               <div class="pairwise__actions">
                 <button class="pairwise__btn pairwise__btn--outline" type="button"
                   data-action="export-csv" @click="exportCSV()">
-                  <span class="pairwise__nav-arrow">⬇ </span><span x-text="t('exportCSV')"></span>
+                  <span class="icon icon--sm icon--text" data-icon="action.download" aria-hidden="true"></span><span x-text="t('exportCSV')"></span>
                 </button>
                 <button class="pairwise__btn pairwise__btn--outline" type="button"
                   data-action="export-json" @click="exportJSON()">
-                  <span class="pairwise__nav-arrow">⬇ </span><span x-text="t('exportJSON')"></span>
+                  <span class="icon icon--sm icon--text" data-icon="action.download" aria-hidden="true"></span><span x-text="t('exportJSON')"></span>
                 </button>
                 <button class="pairwise__btn pairwise__btn--outline" type="button"
                   data-action="copy-results" @click="copyResults()">

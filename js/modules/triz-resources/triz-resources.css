@@ -79,10 +79,6 @@
   border-radius: var(--border-radius-sm);
 }
 
-.triz-res__row-icon {
-  font-size: var(--font-size-md);
-}
-
 .triz-res__row-title {
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-semibold);

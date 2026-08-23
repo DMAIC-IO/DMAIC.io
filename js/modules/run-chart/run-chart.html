@@ -64,7 +64,12 @@
                   <span class="run-chart__test-desc" x-text="testDesc(row.id)"></span>
                 </div>
                 <div class="run-chart__test-pvalue" x-text="fmtP(row.p)"></div>
-                <div class="run-chart__test-status" :class="testStatusClass(row.p)" x-text="testStatusText(row.p)"></div>
+                <div class="run-chart__test-status" :class="testStatusClass(row.p)">
+                  <template x-if="isTestFlagged(row.p)">
+                    <span class="icon icon--sm icon--text" data-icon="status.warning" aria-hidden="true"></span>
+                  </template>
+                  <span x-text="testStatusText(row.p)"></span>
+                </div>
               </div>
             </template>
           </div>

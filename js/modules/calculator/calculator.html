@@ -9,7 +9,10 @@
 
     <div class="module-calculator__display">
       <div class="module-calculator__expr" data-ref="expr" x-text="exprText"></div>
-      <div class="module-calculator__result" data-ref="display" :class="isError ? 'module-calculator__result--error' : ''" x-text="resultText"></div>
+      <div class="module-calculator__result" data-ref="display" :class="isError ? 'module-calculator__result--error' : ''">
+        <span class="icon icon--sm icon--text" :data-icon="resultIcon" aria-hidden="true" x-show="resultIcon"></span>
+        <span x-text="resultText"></span>
+      </div>
       <div class="module-calculator__info">
         <span data-ref="angle-mode" x-text="model.angleMode"></span>
         <span class="module-calculator__mem" data-ref="mem-ind" x-text="model.memory !== 0 ? 'M' : ''"></span>

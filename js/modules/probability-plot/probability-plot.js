@@ -37,7 +37,7 @@ const mod = createModule({
     id: 'probability-plot',
     engine: 'alpine',
     phase: 'data',
-    icon: 'trending-up',
+    icon: 'module.probability-plot',
     version: '1.1.0',
     meta: import.meta,
   },

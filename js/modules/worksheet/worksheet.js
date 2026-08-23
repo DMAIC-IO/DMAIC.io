@@ -361,7 +361,7 @@ class FormulaEditor {
     const menuChip = (cls, triggerLabel, items) =>
       h('span', { class: 'fn-chip-group' },
         h('span', { class: `fn-chip ${cls} fn-chip--has-menu` },
-          `${triggerLabel} `, h('span', { class: 'fn-chip__arrow' }, '▾')),
+          `${triggerLabel} `, icon('nav.expand-down', { size: 'sm', cls: 'fn-chip__arrow' })),
         h('span', { class: 'fn-chip-group__menu' }, ...items));
 
     const fnBar = h('div', { class: 'formula-editor__fn-bar' },
@@ -476,7 +476,7 @@ class FormulaEditor {
           ` ${t('formulaEditor')} `,
           h('span', { class: 'formula-editor__cell-ref' }, `${t('feCell')} —`)),
         h('button', { class: 'dmike-chart-popout-close', title: `${t('close')} (Esc)` },
-          icon('close'))),
+          icon('action.close'))),
       h('div', { class: 'dmike-chart-popout-body dmike-popout-body--column' },
         fnBar,
         h('div', { class: 'formula-editor__cols-bar' },
@@ -485,7 +485,7 @@ class FormulaEditor {
       h('div', { class: 'dmike-popout-footer' },
         h('button', { class: 'btn', 'data-action': 'fe-cancel' }, t('cancel')),
         h('button', { class: 'btn btn--primary', 'data-action': 'fe-apply' },
-          icon('check', { cls: 'worksheet__fe-check' }), ` ${t('feApply')}`)),
+          icon('action.confirm', { cls: 'worksheet__fe-check' }), ` ${t('feApply')}`)),
     );
   }
 }
@@ -499,7 +499,7 @@ const mod = createModule({
     id: 'worksheet',
     engine: 'alpine',
     phase: 'data',
-    icon: 'table',
+    icon: 'module.worksheet',
     version: '1.0.0',
     meta: import.meta,
     // Worksheet (central DataHub) owns ALL persistence itself: the debounced
@@ -845,7 +845,7 @@ const mod = createModule({
           titleText.textContent = t('confirmRolesTitle');
           const closeBtn = document.createElement('button');
           closeBtn.className = 'dmike-chart-popout-close';
-          closeBtn.replaceChildren(icon('close'));
+          closeBtn.replaceChildren(icon('action.close'));
           titleBar.append(titleText, closeBtn);
 
           const body = document.createElement('div');
@@ -1289,7 +1289,7 @@ function showFormulaExpandHint(grid, fe, colIdx, rowIdx) {
 
   const hint = document.createElement('button');
   hint.className = 'fe-expand-hint';
-  hint.replaceChildren(icon('expand'));
+  hint.replaceChildren(icon('action.expand'));
   hint.title = 'Formula Editor (F4)';
   hint.style.cssText = `
     position:absolute; z-index:20;

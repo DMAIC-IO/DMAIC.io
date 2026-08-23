@@ -31,12 +31,12 @@ export default createModule({
     id: 'raci-matrix',
     engine: 'alpine',
     phase: 'define',
-    icon: 'users',
+    icon: 'module.raci-matrix',
     version: '1.0.0',
     meta: import.meta,
     actions: [
-      { icon: 'download', title: 'export.label', children: [
-        { icon: 'export-csv', title: 'export.csv', onClick: (d) => d.exportCSV() },
+      { icon: 'action.download', title: 'export.label', children: [
+        { icon: 'format.csv', title: 'export.csv', onClick: (d) => d.exportCSV() },
       ] },
     ],
   },
@@ -48,9 +48,6 @@ export default createModule({
       roles: ROLES,
       activityMaxlen: ACTIVITY_MAXLEN,
       stakeholderMaxlen: STAKEHOLDER_MAXLEN,
-      dragGlyph: '⠿',  // ⠿ drag handle (Braille dots 1-6)
-      warnGlyph: '⚠',  // ⚠ warning sign
-
       // ── Transient input + rename + drag UI state ──────────────
       newActivity: '',
       newStakeholder: '',

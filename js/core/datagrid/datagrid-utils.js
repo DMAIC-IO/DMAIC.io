@@ -3,6 +3,8 @@
  * Shared helper functions, column type definitions, cell formatting & parsing.
  */
 
+import { icon } from '../icon.js';
+
 // ─── ID & Math ─────────────────────────────────────────────
 
 /** Generate a unique column id. */
@@ -55,15 +57,34 @@ export function formatNumber(val, decimals = null) {
  * Supported column types with display metadata.
  * Labels are used as fallback; the worksheet module uses i18n keys.
  */
+// `badge` is a literal typographic character (number/currency/percent sign,
+// text shorthand) \u2014 real notation, stays text. `date`/`time` have no such
+// notational glyph, so they carry `badgeIcon` (a semantic icon-map name)
+// instead; renderers must branch on which field is present (see
+// `renderColTypeBadge()` below).
 export const COLUMN_TYPES = {
   numeric:  { label: 'Numeric',  badge: '#',   isNumeric: true  },
   text:     { label: 'Text',     badge: 'Abc', isNumeric: false },
-  date:     { label: 'Date',     badge: '\u{1F4C5}', isNumeric: false },
-  time:     { label: 'Time',     badge: '\u{1F550}', isNumeric: false },
+  date:     { label: 'Date',     badgeIcon: 'coltype.date', isNumeric: false },
+  time:     { label: 'Time',     badgeIcon: 'coltype.time', isNumeric: false },
   currency: { label: 'Currency', badge: '\u20AC',  isNumeric: true  },
   percent:  { label: 'Percent',  badge: '%',   isNumeric: true  },
   binary:   { label: 'Binary',   badge: '01',  isNumeric: true  },
 };
+
+/**
+ * Build the DOM content for one column-type badge cell \u2014 a short text token
+ * for notational types (#, Abc, \u20AC, %, 01), or an `icon()` span for types
+ * without a notational glyph (date/time). Shared by all three badge render
+ * sites (column header, attribute picker, column-scan panel) so the
+ * text-vs-icon branch lives in one place.
+ * @param {string} typeKey  key into COLUMN_TYPES
+ * @returns {string|Node}
+ */
+export function renderColTypeBadge(typeKey) {
+  const typeDef = COLUMN_TYPES[typeKey] || COLUMN_TYPES.text;
+  return typeDef.badgeIcon ? icon(typeDef.badgeIcon, { size: 'sm' }) : typeDef.badge;
+}
 
 /** @param {string} type @returns {boolean} */
 export function isNumericType(type) {

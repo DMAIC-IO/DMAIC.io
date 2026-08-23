@@ -209,7 +209,7 @@ export class Workspace {
     const phase = this._activePhase;
 
     const rename = this._buildTabActionButton(
-      'tab-rename', 'edit', this._i18n.t('workspace.tabs.rename'), () => {
+      'tab-rename', 'action.edit', this._i18n.t('workspace.tabs.rename'), () => {
         // Re-query: the tab node is rebuilt on every phase render, and the
         // name span is replaced outright by a committed rename.
         const liveName = this._tabsEl
@@ -218,7 +218,7 @@ export class Workspace {
       });
 
     const remove = this._buildTabActionButton(
-      'tab-remove', 'trash', this._i18n.t('workspace.tabs.remove'), () => {
+      'tab-remove', 'action.delete', this._i18n.t('workspace.tabs.remove'), () => {
         this._removeModule(instanceId, moduleId, phase);
       });
 
@@ -237,7 +237,7 @@ export class Workspace {
     btn.type = 'button';
     btn.className = `workspace__action workspace__action--tab workspace__action--${kind}`;
     btn.title = label;
-    btn.append(icon(iconId), h('span', { class: 'workspace__action-text' }, label));
+    btn.append(icon(iconId, { size: 'sm' }), h('span', { class: 'workspace__action-text' }, label));
     btn.addEventListener('click', onClick);
     return btn;
   }
@@ -248,7 +248,7 @@ export class Workspace {
     btn.className = `workspace__action workspace__action--${vm.variant}`;
     if (vm.tooltip) btn.title = vm.tooltip;
     const textEl = h('span', { class: 'workspace__action-text' }, vm.dynamicText ? '' : vm.text);
-    btn.append(icon(vm.iconId), textEl);
+    btn.append(icon(vm.iconId, { size: 'sm' }), textEl);
     if (vm.onClick) {
       btn.addEventListener('click', () => vm.onClick(inst.getActionData?.()));
     }
@@ -267,14 +267,14 @@ export class Workspace {
     trigger.type = 'button';
     trigger.className = `workspace__action workspace__action--${vm.variant}`;
     if (vm.tooltip) trigger.title = vm.tooltip;
-    trigger.append(icon(vm.iconId), h('span', { class: 'workspace__action-text' }, vm.text));
+    trigger.append(icon(vm.iconId, { size: 'sm' }), h('span', { class: 'workspace__action-text' }, vm.text));
 
     const menu = h('div', { class: 'workspace__action-menu' });
     vm.children.forEach((child) => {
       const item = document.createElement('button');
       item.type = 'button';
       item.className = 'workspace__action-item';
-      item.append(icon(child.iconId), h('span', { class: 'workspace__action-item-text' }, child.text));
+      item.append(icon(child.iconId, { size: 'sm' }), h('span', { class: 'workspace__action-item-text' }, child.text));
       if (child.onClick) {
         item.addEventListener('click', () => {
           menu.classList.remove('open');
@@ -325,7 +325,7 @@ export class Workspace {
       title: reorderLabel,
       'aria-label': reorderLabel,
       draggable: 'true',
-    }, icon('move'));
+    }, icon('action.move', { size: 'sm' }));
 
     // Rename and remove are NOT in the tab: as hover-revealed icons they grew
     // the tab out from under the pointer, so a click aimed at the label landed
@@ -708,7 +708,7 @@ export class Workspace {
 
   _renderEmptyState() {
     const el = h('div', { class: 'workspace__empty' },
-      h('div', { class: 'workspace__empty-icon' }, '⊞'),
+      h('div', { class: 'workspace__empty-icon' }, icon('status.empty', { size: 'lg', variant: 'muted' })),
       h('p', { class: 'workspace__empty-text' }, this._i18n.t('workspace.emptyState')),
     );
     this._moduleArea.append(el);

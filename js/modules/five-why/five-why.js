@@ -21,13 +21,13 @@ export default createModule({
     id: 'five-why',
     engine: 'alpine',
     phase: 'define',
-    icon: 'help-circle',
+    icon: 'module.five-why',
     version: '1.0.0',
     meta: import.meta,
     actions: [
-      { icon: 'chevron-up',   title: 'collapseAll', onClick: (d) => d.collapseAll() },
-      { icon: 'chevron-down', title: 'expandAll',   onClick: (d) => d.expandAll() },
-      { icon: 'download',     title: 'exportJSON',  onClick: (d) => d.exportJSON() },
+      { icon: 'nav.collapse-up',   title: 'collapseAll', onClick: (d) => d.collapseAll() },
+      { icon: 'nav.expand-down', title: 'expandAll',   onClick: (d) => d.expandAll() },
+      { icon: 'action.download',     title: 'exportJSON',  onClick: (d) => d.exportJSON() },
     ],
   },
   Model: State,
@@ -71,8 +71,8 @@ export default createModule({
       toggleTitle(node) {
         return node.collapsed ? _t('modules.five-why.expand') : _t('modules.five-why.collapse');
       },
-      /** Collapse/expand toggle glyph (literal chars — avoid \u escapes in template). */
-      toggleGlyph(node) { return node.collapsed ? '▸' : '▾'; },
+      /** Collapse/expand toggle icon. */
+      toggleIcon(node) { return node.collapsed ? 'nav.expand-right' : 'nav.expand-down'; },
       /** Delete button tooltip (shared "common.delete" key). */
       deleteTitle() { return _t('common.delete'); },
       /** Inline add-child button label: "＋ Add Why {nextLevel}". */

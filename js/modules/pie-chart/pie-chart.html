@@ -13,7 +13,7 @@
       <div class="pie-chart__stats-panel" data-ref="stats-panel">
         <template x-if="statsShow">
           <div>
-            <div class="dmike-split__output-section" x-text="t('statsTitle')"></div>
+            <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('statsTitle')"></span></div>
             <table class="dmike-table pie-chart__stats-table">
               <thead><tr>
                 <th x-text="t('statName')"></th>

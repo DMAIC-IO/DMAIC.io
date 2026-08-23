@@ -11,6 +11,7 @@
 import { DEFAULT_CYCLE } from '../../core/cycles/cycles.js';
 import { updateReadOnlyBanner } from '../helpers.js';
 import { rehydrateProject } from '../project-rehydrate.js';
+import { icon } from '../../core/icon.js';
 
 /**
  * Router wired after boot (app.js, post-initRouter). When set, a user project
@@ -143,7 +144,10 @@ export function initProjectSwitcher({ stateManager, eventBus, i18n }) {
 
   const refresh = () => {
     const name = stateManager.get('projectMeta.name') ?? i18n.t('app.defaultProjectName');
-    display.textContent = name + (stateManager.isCompleted() ? ' ✓' : '');
+    display.textContent = name;
+    if (stateManager.isCompleted()) {
+      display.append(icon('action.confirm', { size: 'sm', variant: 'success' }));
+    }
     input.value = name;
   };
   refresh();
@@ -208,7 +212,7 @@ export function initProjectSwitcher({ stateManager, eventBus, i18n }) {
       // ── Drag handle ──
       const handle = document.createElement('span');
       handle.className = 'app-header__project-drag-handle';
-      handle.textContent = '⠿';
+      handle.appendChild(icon('action.drag-handle', { size: 'sm' }));
       item.appendChild(handle);
 
       const nameEl = document.createElement('span');
@@ -225,6 +229,9 @@ export function initProjectSwitcher({ stateManager, eventBus, i18n }) {
       dateEl.className = 'app-header__project-item-date';
       const mod = p.modified ? new Date(p.modified) : null;
       dateEl.textContent = mod ? mod.toLocaleDateString() : '';
+      if (p.status === 'completed') {
+        dateEl.append(icon('action.confirm', { size: 'sm', variant: 'success' }));
+      }
 
       const actions = document.createElement('span');
       actions.className = 'app-header__project-item-actions';
@@ -233,7 +240,7 @@ export function initProjectSwitcher({ stateManager, eventBus, i18n }) {
       const renameBtn = document.createElement('button');
       renameBtn.className = 'app-header__project-action-btn';
       renameBtn.title = i18n.t('app.projectRename');
-      renameBtn.textContent = '✎';
+      renameBtn.replaceChildren(icon('action.edit', { size: 'sm' }));
       renameBtn.addEventListener('click', async (e) => {
         e.stopPropagation();
         closeDropdown();
@@ -255,7 +262,7 @@ export function initProjectSwitcher({ stateManager, eventBus, i18n }) {
       const cycleBtn = document.createElement('button');
       cycleBtn.className = 'app-header__project-action-btn';
       cycleBtn.title = i18n.t('cycles.switchAction');
-      cycleBtn.textContent = '⇆';
+      cycleBtn.replaceChildren(icon('action.switch', { size: 'sm' }));
       cycleBtn.addEventListener('click', async (e) => {
         e.stopPropagation();
         closeDropdown();
@@ -276,7 +283,9 @@ export function initProjectSwitcher({ stateManager, eventBus, i18n }) {
       statusBtn.className = 'app-header__project-action-btn';
       const isCompleted = p.status === 'completed';
       statusBtn.title = i18n.t(isCompleted ? 'app.projectActivate' : 'app.projectComplete');
-      statusBtn.textContent = isCompleted ? '▶' : '✓';
+      statusBtn.replaceChildren(
+        icon(isCompleted ? 'action.activate' : 'action.confirm', { size: 'sm' }),
+      );
       statusBtn.addEventListener('click', (e) => {
         e.stopPropagation();
         const newStatus = p.status === 'completed' ? 'active' : 'completed';
@@ -294,7 +303,7 @@ export function initProjectSwitcher({ stateManager, eventBus, i18n }) {
         const delBtn = document.createElement('button');
         delBtn.className = 'app-header__project-action-btn app-header__project-action-btn--danger';
         delBtn.title = i18n.t('app.projectDelete');
-        delBtn.textContent = '✕';
+        delBtn.replaceChildren(icon('action.close', { size: 'sm' }));
         delBtn.addEventListener('click', async (e) => {
           e.stopPropagation();
           const ok = window.confirm(i18n.t('app.projectDeleteConfirm', { name: p.name }));

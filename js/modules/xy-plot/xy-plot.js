@@ -41,7 +41,7 @@ const mod = createModule({
     id: 'xy-plot',
     engine: 'alpine',
     phase: 'data',
-    icon: 'scatter-chart',
+    icon: 'module.xy-plot',
     version: '1.4.0',
     meta: import.meta,
   },

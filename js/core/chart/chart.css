@@ -629,12 +629,6 @@
 .dmike-chart-ed-expand-btn .icon {
   width: 12px;
   height: 12px;
-  transition: transform 0.2s;
-}
-
-.dmike-chart-ed-expand-btn.open svg,
-.dmike-chart-ed-expand-btn.open .icon {
-  transform: rotate(180deg);
 }
 
 /* Series items */

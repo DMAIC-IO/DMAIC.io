@@ -35,7 +35,7 @@ const mod = createModule({
     id: 'short-run-chart',
     engine: 'alpine',
     phase: 'control',
-    icon: 'activity',
+    icon: 'module.short-run-chart',
     version: '1.0.0',
     meta: import.meta,
   },
@@ -157,6 +157,7 @@ const mod = createModule({
             title: _t(`chartTitle_${  sc.id}`, { col: colName }),
             badgeText: isStable ? _t('stable') : _t('unstable', { count: sc.violations.length }),
             badgeClass: isStable ? 'src__badge--stable' : 'src__badge--unstable',
+            badgeIcon: isStable ? 'status.ok' : 'status.warning',
           };
         });
 

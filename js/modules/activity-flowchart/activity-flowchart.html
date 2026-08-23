@@ -99,11 +99,11 @@
                       <template x-if="isInsertMenuOpen(idx)">
                         <div class="af__insert-menu" @click.stop>
                           <button data-insert="activity" @click.stop="insertAtMenu('activity')">
-                            <span class="icon" data-icon="plus" aria-hidden="true"></span>
+                            <span class="icon" data-icon="action.add" aria-hidden="true"></span>
                             <span x-text="t('addStep')"></span>
                           </button>
                           <button data-insert="decision" @click.stop="insertAtMenu('decision')">
-                            <span class="icon" data-icon="git-fork" aria-hidden="true"></span>
+                            <span class="icon" data-icon="action.branch" aria-hidden="true"></span>
                             <span x-text="t('addDecision')"></span>
                           </button>
                         </div>
@@ -123,7 +123,7 @@
                         <div class="af__card-actions fc-card__actions">
                           <button class="af__delete fc-card__delete" @click="model.removeStep(step.id)"
                                   :title="t('deleteStep')" :aria-label="t('deleteStep')">
-                            <span class="icon" data-icon="trash" aria-hidden="true"></span>
+                            <span class="icon" data-icon="action.delete" aria-hidden="true"></span>
                           </button>
                         </div>
                       </div>
@@ -158,7 +158,7 @@
                       </div>
                       <button class="af__delete" @click="model.removeStep(step.id)"
                               :title="t('deleteStep')" :aria-label="t('deleteStep')">
-                        <span class="icon" data-icon="trash" aria-hidden="true"></span>
+                        <span class="icon" data-icon="action.delete" aria-hidden="true"></span>
                       </button>
                       <!-- The exits are labelled AT the vertices they leave
                            from: "Yes" beside the right one, "No" under the
@@ -236,12 +236,12 @@
                 <div class="af__band-add">
                   <button data-add="activity" @click="addActivityToBand(band.id)"
                           :title="t('addStepToBand')">
-                    <span class="icon" data-icon="plus" aria-hidden="true"></span>
+                    <span class="icon" data-icon="action.add" aria-hidden="true"></span>
                     <span x-text="t('addStep')"></span>
                   </button>
                   <button data-add="decision" @click="addDecisionToBand(band.id)"
                           :title="t('addDecisionToBand')">
-                    <span class="icon" data-icon="git-fork" aria-hidden="true"></span>
+                    <span class="icon" data-icon="action.branch" aria-hidden="true"></span>
                     <span x-text="t('addDecision')"></span>
                   </button>
                 </div>

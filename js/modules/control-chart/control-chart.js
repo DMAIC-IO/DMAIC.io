@@ -40,7 +40,7 @@ const mod = createModule({
     id: 'control-chart',
     engine: 'alpine',
     phase: 'control',
-    icon: 'activity',
+    icon: 'module.control-chart',
     version: '1.1.0',
     meta: import.meta,
   },
@@ -134,6 +134,9 @@ const mod = createModule({
       phase2BadgeClass() {
         return this.model.frozenLimits ? 'control-chart__phase2-badge--frozen' : '';
       },
+      phase2BadgeIcon() {
+        return this.model.frozenLimits ? 'action.lock' : 'action.unlock';
+      },
       phase2BtnText() {
         return this.model.frozenLimits ? _t('phase2_unfreeze') : _t('phase2_freeze');
       },
@@ -168,7 +171,6 @@ const mod = createModule({
       nelsonToggleClass() {
         return this.nelsonCollapsed ? 'control-chart__collapsible--collapsed' : '';
       },
-      chevronGlyph() { return '▼'; },
 
       /** Localized Nelson-rule view rows. */
       rulesView() {
@@ -422,6 +424,7 @@ const mod = createModule({
           badgeClass: p.isStable
             ? 'control-chart__badge--stable'
             : 'control-chart__badge--unstable',
+          badgeIcon: p.isStable ? 'status.ok' : 'status.warning',
         }));
 
         for (const p of plans) {

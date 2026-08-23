@@ -225,13 +225,14 @@
   font-weight: 600;
 }
 
-.attr-picker__item.active::after {
-  content: '\2713';
+/* Active-state checkmark — real .icon element appended by the JS builders
+   (see _renderAttrPickerTypeColumn/-RoleColumn/-FormatColumn), not a CSS
+   pseudo-element: a mask-based icon cannot be drawn from `content:`. */
+.attr-picker__item-check {
   margin-left: auto;
-  font-size: 11px;
   color: var(--color-accent);
 }
-.attr-picker__item:hover.active::after { color: #fff; }
+.attr-picker__item:hover .attr-picker__item-check { color: #fff; }
 
 .attr-picker__item--disabled {
   cursor: not-allowed;

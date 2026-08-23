@@ -71,19 +71,19 @@
         <div><div class="fmea__stat-value" data-stat="total" x-text="stats().total"></div><div class="fmea__stat-label" x-text="t('statTotal')"></div></div>
       </div>
       <div class="fmea__stat-card">
-        <div class="fmea__stat-icon" style="background:rgba(239,68,68,0.12);color:var(--color-error)">⚠</div>
+        <div class="fmea__stat-icon" style="background:rgba(239,68,68,0.12);color:var(--color-error)"><span class="icon icon--sm" data-icon="severity.critical" aria-hidden="true"></span></div>
         <div><div class="fmea__stat-value" data-stat="critical" x-text="stats().critical"></div><div class="fmea__stat-label" x-text="t('statCritical')"></div></div>
       </div>
       <div class="fmea__stat-card">
-        <div class="fmea__stat-icon" style="background:rgba(251,146,60,0.12);color:#FB923C">▲</div>
+        <div class="fmea__stat-icon" style="background:rgba(251,146,60,0.12);color:#FB923C"><span class="icon icon--sm" data-icon="severity.high" aria-hidden="true"></span></div>
         <div><div class="fmea__stat-value" data-stat="high" x-text="stats().high"></div><div class="fmea__stat-label" x-text="t('statHigh')"></div></div>
       </div>
       <div class="fmea__stat-card">
-        <div class="fmea__stat-icon" style="background:rgba(251,191,36,0.12);color:#FBBF24">●</div>
+        <div class="fmea__stat-icon" style="background:rgba(251,191,36,0.12);color:#FBBF24"><span class="icon icon--sm" data-icon="severity.medium" aria-hidden="true"></span></div>
         <div><div class="fmea__stat-value" data-stat="medium" x-text="stats().medium"></div><div class="fmea__stat-label" x-text="t('statMedium')"></div></div>
       </div>
       <div class="fmea__stat-card">
-        <div class="fmea__stat-icon" style="background:rgba(52,211,153,0.12);color:var(--color-success, #34D399)">✓</div>
+        <div class="fmea__stat-icon" style="background:rgba(52,211,153,0.12);color:var(--color-success, #34D399)"><span class="icon icon--sm" data-icon="severity.low" aria-hidden="true"></span></div>
         <div><div class="fmea__stat-value" data-stat="low" x-text="stats().low"></div><div class="fmea__stat-label" x-text="t('statLow')"></div></div>
       </div>
       <div class="fmea__stat-card">
@@ -91,7 +91,7 @@
         <div><div class="fmea__stat-value" data-stat="avg" x-text="statAvg()"></div><div class="fmea__stat-label" x-text="t('statAvg')"></div></div>
       </div>
       <div class="fmea__stat-card">
-        <div class="fmea__stat-icon" style="background:rgba(239,68,68,0.12);color:var(--color-error)">↑</div>
+        <div class="fmea__stat-icon" style="background:rgba(239,68,68,0.12);color:var(--color-error)"><span class="icon icon--sm" data-icon="nav.arrow-up" aria-hidden="true"></span></div>
         <div><div class="fmea__stat-value" data-stat="max" x-text="statMax()"></div><div class="fmea__stat-label" x-text="t('statMax')"></div></div>
       </div>
     </div>
@@ -102,15 +102,15 @@
         <div class="fmea__risk-card" :key="risk.id" :class="cardClass(risk)" :data-risk-id="risk.id" :data-rpn="risk.rpn()" :data-proj-rpn="risk.projRpn()">
           <div class="fmea__risk-header">
             <span class="fmea__risk-number" data-action="toggle-collapse" :data-risk-id="risk.id" :title="t('collapseToggle')" @click="toggleCollapse(risk)">
-              <span class="fmea__collapse-arrow">▼</span> <span x-text="riskNum(ri)"></span>
+              <span class="fmea__collapse-arrow icon icon--sm" :data-icon="risk.collapsed ? 'nav.expand-right' : 'nav.expand-down'" aria-hidden="true"></span> <span x-text="riskNum(ri)"></span>
             </span>
             <input class="fmea__risk-title" name="step" :placeholder="t('stepPlaceholder')" x-model="risk.step">
             <div class="fmea__rpn-header-group">
               <span class="fmea__rpn-badge" :class="rpnBadgeClass(risk.rpn())" data-rpn-badge x-text="rpnText(risk.rpn())"></span>
-              <span class="fmea__rpn-arrow-sep">→</span>
+              <span class="fmea__rpn-arrow-sep icon icon--sm" data-icon="nav.arrow-right" aria-hidden="true"></span>
               <span class="fmea__rpn-badge fmea__rpn-badge--sm" :class="rpnBadgeClass(risk.projRpn())" data-proj-rpn-badge x-text="targetText(risk.projRpn())"></span>
             </div>
-            <button class="fmea__risk-delete" data-action="del-risk" :data-risk-id="risk.id" :title="t('common.delete')" @click="deleteRisk(risk.id)">✕</button>
+            <button class="fmea__risk-delete" data-action="del-risk" :data-risk-id="risk.id" :title="t('common.delete')" :aria-label="t('common.delete')" @click="deleteRisk(risk.id)"><span class="icon icon--sm" data-icon="action.delete" aria-hidden="true"></span></button>
           </div>
           <div class="fmea__risk-body">
             <div class="fmea__fields-row">
@@ -189,7 +189,7 @@
             <div class="fmea__actions-section">
               <table class="dmike-table fmea__action-table">
                 <thead><tr>
-                  <th style="width:28px">✓</th>
+                  <th style="width:28px"><span class="icon icon--sm" data-icon="action.confirm" aria-hidden="true"></span><span class="dmike-sr-only" x-text="t('done')"></span></th>
                   <th x-text="t('action')"></th>
                   <th style="width:110px" x-text="t('responsible')"></th>
                   <th style="width:105px" x-text="t('dueDate')"></th>
@@ -241,7 +241,7 @@
                         <option value="8">−8</option>
                         <option value="9">−9</option>
                       </select></td>
-                      <td style="text-align:center"><button class="fmea__action-del-btn" data-action="del-action" :data-risk-id="risk.id" :data-action-idx="ai" :title="t('common.delete')" @click="deleteAction(risk, ai)">✕</button></td>
+                      <td style="text-align:center"><button class="fmea__action-del-btn" data-action="del-action" :data-risk-id="risk.id" :data-action-idx="ai" :title="t('common.delete')" :aria-label="t('common.delete')" @click="deleteAction(risk, ai)"><span class="icon icon--sm" data-icon="action.delete" aria-hidden="true"></span></button></td>
                     </tr>
                   </template>
                 </tbody>
@@ -253,7 +253,7 @@
               <span class="fmea__proj-item">S: <strong data-proj-s x-text="projSDisp(risk)"></strong></span>
               <span class="fmea__proj-item">O: <strong data-proj-o x-text="projODisp(risk)"></strong></span>
               <span class="fmea__proj-item">D: <strong data-proj-d x-text="projDDisp(risk)"></strong></span>
-              <span class="fmea__proj-arrow">→</span>
+              <span class="fmea__proj-arrow icon icon--sm" data-icon="nav.arrow-right" aria-hidden="true"></span>
               <span class="fmea__rpn-badge" :class="rpnBadgeClass(risk.projRpn())" data-proj-rpn x-text="rpnText(risk.projRpn())"></span>
             </div>
           </div>
@@ -273,8 +273,8 @@
       <div class="dmike-chart-popout" :style="popoutStyle()">
         <div class="dmike-chart-popout-titlebar" @mousedown="popoutDragStart($event)">
           <span x-text="t('burndownTitle')"></span>
-          <button class="dmike-chart-popout-close" type="button" @click="closeBurndown()">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"></path></svg>
+          <button class="dmike-chart-popout-close" type="button" :aria-label="t('common.close')" @click="closeBurndown()">
+            <span class="icon icon--sm" data-icon="action.close" aria-hidden="true"></span>
           </button>
         </div>
         <div class="dmike-chart-popout-body">

@@ -35,7 +35,7 @@ const mod = createModule({
     id: 'individual-value-plot',
     engine: 'alpine',
     phase: 'data',
-    icon: 'scatter-chart',
+    icon: 'module.individual-value-plot',
     version: '1.0.0',
     meta: import.meta,
   },

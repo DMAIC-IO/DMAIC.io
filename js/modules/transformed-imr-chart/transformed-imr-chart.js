@@ -34,7 +34,7 @@ const mod = createModule({
     id: 'transformed-imr-chart',
     engine: 'alpine',
     phase: 'control',
-    icon: 'activity',
+    icon: 'module.transformed-imr-chart',
     version: '1.0.0',
     meta: import.meta,
   },
@@ -170,6 +170,7 @@ const mod = createModule({
           title: _t('chartTitle', { col: colName, lambda: r.lambda }),
           badgeText: isStable ? _t('stable') : _t('unstable', { count: r.signalsI.length }),
           badgeClass: isStable ? 'timr__badge--stable' : 'timr__badge--unstable',
+          badgeIcon: isStable ? 'status.ok' : 'status.warning',
         }];
 
         const host = await this.whenAnchor('[data-chart-host="i"]', gen);

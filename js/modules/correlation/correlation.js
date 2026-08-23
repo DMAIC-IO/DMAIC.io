@@ -28,8 +28,6 @@ const GLYPH_RHO = 'ρ';      // ρ
 const GLYPH_TAU = 'τ';      // τ
 const GLYPH_GE_R = '|r| ≥'; // |r| ≥
 const GLYPH_LE_P = 'p ≤';   // p ≤
-const BULLET = '●';         // ●
-const CHEVRON = '▼';        // ▼
 const EN_DASH = '–';        // –
 const HEART_LR = '↔';       // ↔
 
@@ -53,7 +51,7 @@ const mod = createModule({
     id: 'correlation',
     engine: 'alpine',
     phase: 'analyze',
-    icon: 'trending-up',
+    icon: 'module.correlation',
     version: '1.1.0',
     meta: import.meta,
   },
@@ -62,7 +60,7 @@ const mod = createModule({
   data(module, _t) {
     return {
       // ── Glyph constants exposed to the template ──────────────
-      GLYPH_RHO, GLYPH_TAU, GLYPH_GE_R, GLYPH_LE_P, BULLET, CHEVRON,
+      GLYPH_RHO, GLYPH_TAU, GLYPH_GE_R, GLYPH_LE_P,
 
       // ── Transient view state (never persisted) ───────────────
       result: null,         // pairwise engine result (or { error })
@@ -233,11 +231,15 @@ const mod = createModule({
         };
         const toP = (v) => ((v + 1) / 2) * 100;
 
-        // Recommendation tooltip lines.
-        const lines = [`${_t('recommendation')}: ${REC_NAMES[recommendation.best]}`];
+        // Recommendation tooltip lines — {icon, text} pairs so an icon can sit
+        // beside each line without an x-text trap wiping it. The header line
+        // carries no icon (iconName: null, hidden via x-show in the
+        // template). Per reason: ok → criterion met, !ok → criterion
+        // violated — reads as an assumption check, not a hard error, hence
+        // status.ok/status.warning.
+        const lines = [{ iconName: null, text: `${_t('recommendation')}: ${REC_NAMES[recommendation.best]}` }];
         for (const r of recommendation.reasons) {
-          const ico = r.ok ? '✓' : '⚠'; // ✓ / ⚠
-          lines.push(`${ico} ${_t(r.key, r.params)}`);
+          lines.push({ iconName: r.ok ? 'status.ok' : 'status.warning', text: _t(r.key, r.params) });
         }
         this.recTooltipLines = lines;
 

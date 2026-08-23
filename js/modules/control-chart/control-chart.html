@@ -44,7 +44,10 @@
     <div class="dmike-split__section-title" x-text="t('sectionPhase2')"></div>
     <div class="control-chart__phase2">
       <div class="control-chart__phase2-status">
-        <span class="control-chart__phase2-badge" :class="phase2BadgeClass()" x-text="phase2BadgeText()"></span>
+        <span class="control-chart__phase2-badge" :class="phase2BadgeClass()">
+          <span class="icon icon--sm icon--text" :data-icon="phase2BadgeIcon()" aria-hidden="true"></span>
+          <span x-text="phase2BadgeText()"></span>
+        </span>
       </div>
       <button type="button" class="btn btn--small" :class="phase2BtnClass()"
         data-ref="phase2-toggle" @click="phase2Toggle()" x-text="phase2BtnText()"></button>
@@ -69,7 +72,7 @@
     <div class="dmike-split__section-title control-chart__collapsible" data-ref="nelson-toggle"
       :class="nelsonToggleClass()" @click="toggleNelson()">
       <span x-text="t('sectionNelson')"></span>
-      <span class="control-chart__chevron" x-text="chevronGlyph()"></span>
+      <span class="control-chart__chevron icon icon--sm" :data-icon="nelsonCollapsed ? 'nav.expand-right' : 'nav.expand-down'" aria-hidden="true"></span>
     </div>
     <div class="control-chart__nelson-panel" data-ref="nelson-panel" :class="nelsonPanelClass()">
       <template x-for="rule in rulesView()">
@@ -105,7 +108,10 @@
         <div class="control-chart__chart-section">
           <div class="control-chart__chart-header">
             <span class="control-chart__chart-title" x-text="cv.title"></span>
-            <span class="control-chart__badge" :class="cv.badgeClass" x-text="cv.badgeText"></span>
+            <span class="control-chart__badge" :class="cv.badgeClass">
+              <span class="icon icon--sm icon--text" :data-icon="cv.badgeIcon" aria-hidden="true"></span>
+              <span x-text="cv.badgeText"></span>
+            </span>
           </div>
           <div class="control-chart__plot-wrap" :data-chart-host="cv.id"></div>
         </div>
@@ -146,8 +152,8 @@
         style="width:420px;height:auto;max-height:80vh;left:calc(50% - 210px);top:120px;">
         <div class="dmike-chart-popout-titlebar">
           <span x-text="annTitle()"></span>
-          <button class="dmike-chart-popout-close" type="button" @click="closeAnnotation()">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+          <button class="dmike-chart-popout-close" type="button" :aria-label="t('common.close')" @click="closeAnnotation()">
+            <span class="icon icon--sm" data-icon="action.close" aria-hidden="true"></span>
           </button>
         </div>
         <div class="dmike-chart-popout-body dmike-popout-body--column">

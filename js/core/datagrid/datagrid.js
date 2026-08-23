@@ -9,7 +9,7 @@ import { isFormula, evaluateFormula, recalcAllFormulas } from './datagrid-formul
 import { detectPattern, generateFill, shiftFormulaRefs, withCtrlModifier } from './datagrid-fill.js';
 import {
   uid, clamp, parseNumeric, formatNumber,
-  COLUMN_TYPES, isNumericType, formatCellValue,
+  COLUMN_TYPES, isNumericType, formatCellValue, renderColTypeBadge,
   parseCellInput, detectInputType, analyzeColumn,
   DATE_FORMATS, TIME_FORMATS,
 } from './datagrid-utils.js';
@@ -1234,7 +1234,7 @@ export class DataGrid {
     // ── Corner cell: export button (+ optional "open in worksheet") ──
     const exportBtn = h('button',
       { class: 'datagrid__export-btn', type: 'button', title: 'Export' },
-      icon('download'),
+      icon('action.download'),
     );
     const cornerBtns = h('div', { class: 'datagrid__corner-btns' }, exportBtn);
     if (this.options.openInWorksheet) {
@@ -1244,7 +1244,7 @@ export class DataGrid {
           type: 'button',
           title: this._t('ui.datagrid.openInWorksheet'),
         },
-        icon('external-link'),
+        icon('nav.external'),
       ));
     }
     const cornerTh = h('th', { class: 'datagrid__row-header datagrid__corner' }, cornerBtns);
@@ -1253,7 +1253,6 @@ export class DataGrid {
     const tr = h('tr', { class: 'datagrid__column-header' }, cornerTh);
     for (let i = 0; i < cols.length; i++) {
       const col = cols[i];
-      const typeDef = COLUMN_TYPES[col.type] || COLUMN_TYPES.text;
       const roleKey = col.role || defaultRoleForType(col.type);
       const manualMark = col.roleManual ? ' col-type-badge--role-manual' : '';
       let badgeTitle = `${this._typeLabel(col.type)} · ${this._roleLabel(roleKey)}`;
@@ -1265,7 +1264,7 @@ export class DataGrid {
         class: `col-type-badge col-role-${roleKey}${manualMark}`,
         'data-col-idx': i,
         title: badgeTitle,
-      }, typeDef.badge);
+      }, renderColTypeBadge(col.type));
 
       const sortClass = this.sortCol === i ? (this.sortDir === 'asc' ? ' sorted-asc' : ' sorted-desc') : '';
       const lockClass = col.meta?.lock ? ` col-locked col-locked--${col.meta.lock}` : '';
@@ -1284,7 +1283,7 @@ export class DataGrid {
       if (col.meta?.lock) {
         th.append(h('span',
           { class: 'col-lock-icon', title: this._lockTooltip(col) },
-          icon(col.meta.lock === 'hard' ? 'lock-closed' : 'lock-open'),
+          icon(col.meta.lock === 'hard' ? 'action.lock' : 'action.unlock'),
         ));
       }
 
@@ -2794,7 +2793,7 @@ export class DataGrid {
       ? typeHeading : 'Column type';
     colEl.appendChild(colTitle);
 
-    for (const [typeKey, typeDef] of Object.entries(COLUMN_TYPES)) {
+    for (const typeKey of Object.keys(COLUMN_TYPES)) {
       const item = document.createElement('div');
       item.className = `attr-picker__item${
          col.type === typeKey ? ' active' : ''
@@ -2803,7 +2802,7 @@ export class DataGrid {
 
       const badge = document.createElement('span');
       badge.className = 'attr-picker__badge';
-      badge.textContent = typeDef.badge;
+      badge.append(renderColTypeBadge(typeKey));
 
       const label = document.createElement('span');
       label.className = 'attr-picker__label';
@@ -2811,6 +2810,9 @@ export class DataGrid {
 
       item.appendChild(badge);
       item.appendChild(label);
+      if (col.type === typeKey) {
+        item.appendChild(icon('action.confirm', { size: 'sm', cls: 'attr-picker__item-check' }));
+      }
       colEl.appendChild(item);
     }
     return colEl;
@@ -2848,6 +2850,9 @@ export class DataGrid {
 
       item.appendChild(dot);
       item.appendChild(label);
+      if (col.role === role) {
+        item.appendChild(icon('action.confirm', { size: 'sm', cls: 'attr-picker__item-check' }));
+      }
 
       if (!isLocked) {
         item.addEventListener('click', (ev) => {
@@ -2914,6 +2919,9 @@ export class DataGrid {
       labelEl.className = 'attr-picker__label';
       labelEl.textContent = label;
       item.appendChild(labelEl);
+      if (isActive) {
+        item.appendChild(icon('action.confirm', { size: 'sm', cls: 'attr-picker__item-check' }));
+      }
       if (!isLocked) {
         item.addEventListener('click', (ev) => {
           ev.stopPropagation();
@@ -3102,7 +3110,7 @@ export class DataGrid {
     titleText.textContent = t('scanTitle');
     const closeBtn = document.createElement('button');
     closeBtn.className = 'dmike-chart-popout-close';
-    closeBtn.appendChild(icon('close'));
+    closeBtn.appendChild(icon('action.close'));
     titleBar.append(titleText, closeBtn);
 
     const body = document.createElement('div');
@@ -3171,7 +3179,10 @@ export class DataGrid {
 
     titleText.textContent = `${t('scanTitle')} — ${colLabel} (${t('scanDominant')}: ${dominantLabel})`;
 
-    const typeLabels = { numeric: '#', text: 'Abc', date: '\u{1F4C5}', time: '\u{1F550}', currency: '\u20AC', percent: '%', binary: '01' };
+    // Column-scan badges reuse the same COLUMN_TYPES badge definitions as the
+    // header/attr-picker badges (see renderColTypeBadge in datagrid-utils.js)
+    // instead of keeping a third, separately-maintained copy of the mapping.
+    const typeBadge = (type) => (COLUMN_TYPES[type] ? renderColTypeBadge(type) : type);
 
     const frag = document.createDocumentFragment();
 
@@ -3189,7 +3200,7 @@ export class DataGrid {
           class: `column-scan__bar-seg column-scan__bar-seg--${type}`,
           title: `${type}: ${info.count} (${pct}%)`,
           style: `width:${pct}%`,
-        }, typeLabels[type] || type));
+        }, typeBadge(type)));
       }
       frag.append(bar);
 
@@ -3200,7 +3211,7 @@ export class DataGrid {
         types.append(h('div', {
           class: `column-scan__type-row${isDominant ? ' column-scan__type-row--dominant' : ''}`,
         },
-          h('span', { class: `column-scan__type-badge column-scan__type-badge--${type}` }, typeLabels[type] || type),
+          h('span', { class: `column-scan__type-badge column-scan__type-badge--${type}` }, typeBadge(type)),
           h('span', { class: 'column-scan__type-label' }, this._typeLabel(type)),
           h('span', { class: 'column-scan__type-count' }, info.count),
           h('span', { class: 'column-scan__type-pct' }, `${pct}%`),
@@ -3266,7 +3277,7 @@ export class DataGrid {
         const row = scan.outliers.rows[i];
         const val = scan.outliers.values[i];
         const oType = scan.outliers.types[i];
-        const badge = typeLabels[oType] || oType;
+        const badge = typeBadge(oType);
         const display = val.length > 30 ? `${val.substring(0, 27)  }…` : val;
         mlist.append(h('div', {
           class: 'column-scan__mismatch-row',
@@ -3288,7 +3299,8 @@ export class DataGrid {
         mlist,
       ));
     } else if (filled > 0) {
-      frag.append(h('div', { class: 'column-scan__ok' }, `✔ ${t('scanAllMatch')}`));
+      frag.append(h('div', { class: 'column-scan__ok' },
+        icon('status.ok', { size: 'sm' }), ` ${t('scanAllMatch')}`));
     }
 
     scanBody.replaceChildren(frag);

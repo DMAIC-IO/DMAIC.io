@@ -11,14 +11,19 @@ export function initFooter({ stateManager, eventBus, i18n }) {
   const footerSaved = document.getElementById('footer-last-saved');
   const footerStorage = document.getElementById('footer-storage');
   const footerVersion = document.getElementById('footer-version');
+  // The version text lives in its own child span (#footer-version-text),
+  // separate from the trailing nav.external icon span that marks the link
+  // as opening in a new tab: setting textContent directly on the <a> would
+  // wipe that icon on every refresh, the same trap x-text has.
+  const footerVersionText = document.getElementById('footer-version-text');
 
-  if (footerVersion) {
-    footerVersion.textContent = `v${VERSION}`;
+  if (footerVersion && footerVersionText) {
+    footerVersionText.textContent = `v${VERSION}`;
     fetch('./release.json', { cache: 'no-cache' })
       .then(r => r.ok ? r.json() : null)
       .then(rel => {
         if (!rel?.version) return;
-        footerVersion.textContent = `v${rel.version}`;
+        footerVersionText.textContent = `v${rel.version}`;
         if (rel.date) footerVersion.title = rel.title ? `${rel.title} (${rel.date})` : rel.date;
       })
       .catch(() => {});

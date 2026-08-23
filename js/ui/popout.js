@@ -49,7 +49,7 @@ export function confirmPopout(message, options = {}) {
     titleText.textContent = title;
     const closeBtn = document.createElement('button');
     closeBtn.className = 'dmike-chart-popout-close';
-    closeBtn.replaceChildren(icon('close'));
+    closeBtn.replaceChildren(icon('action.close', { size: 'sm' }));
     titleBar.append(titleText, closeBtn);
 
     const body = document.createElement('div');

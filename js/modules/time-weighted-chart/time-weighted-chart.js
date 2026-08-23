@@ -49,7 +49,7 @@ const mod = createModule({
     id: 'time-weighted-chart',
     engine: 'alpine',
     phase: 'control',
-    icon: 'activity',
+    icon: 'module.time-weighted-chart',
     version: '1.0.0',
     meta: import.meta,
   },
@@ -241,6 +241,7 @@ const mod = createModule({
           title: _t('chartTitle_ewma', { col: colName }),
           badgeText: isStable ? _t('stable') : _t('unstable', { count: sigCount }),
           badgeClass: isStable ? 'twc__badge--stable' : 'twc__badge--unstable',
+          badgeIcon: isStable ? 'status.ok' : 'status.warning',
         }];
 
         const host = await this.whenAnchor('[data-chart-host="ewma"]', gen);
@@ -297,6 +298,7 @@ const mod = createModule({
             title: _t(sc.titleKey, { col: colName }),
             badgeText: isStable ? _t('stable') : _t('unstable', { count: sigCount }),
             badgeClass: isStable ? 'twc__badge--stable' : 'twc__badge--unstable',
+            badgeIcon: isStable ? 'status.ok' : 'status.warning',
           };
         });
 

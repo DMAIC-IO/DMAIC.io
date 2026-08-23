@@ -12,8 +12,7 @@
         <div class="lab__category" :class="cat.open && 'lab__category--open'"
              :data-category-id="cat.id">
           <button class="lab__category-toggle" @click="toggleCategory(cat)">
-            <svg class="lab__category-chevron" width="10" height="10" viewBox="0 0 10 10"
-                 fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 1.5L7 5L3 8.5"/></svg>
+            <span class="icon icon--sm lab__category-chevron" :data-icon="cat.open ? 'nav.expand-down' : 'nav.expand-right'" aria-hidden="true"></span>
             <span x-text="loc(cat.name)"></span>
             <span class="lab__category-count" x-text="cat.algos.length"></span>
           </button>
@@ -141,7 +140,7 @@
                 <div class="lab__source-meta">
                   <span x-text="selectedAlgo.source.file_path"></span>
                   <button class="btn btn--sm btn--ghost lab__source-copy" title="Copy code" @click="copySource()">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+                    <span class="icon icon--sm" data-icon="action.copy" aria-hidden="true"></span>
                   </button>
                 </div>
                 <div class="lab__source-code" x-effect="renderSource($el)"></div>
@@ -156,7 +155,10 @@
                         <template x-for="(p, i) in (selectedAlgo.source.signature.parameters || [])" :key="i">
                           <tr><td><code x-text="p.name"></code></td>
                             <td class="lab__sig-type" x-text="p.type"></td>
-                            <td x-text="requiredGlyph(p)"></td>
+                            <td>
+                              <span class="icon icon--sm icon--text" data-icon="status.ok" aria-hidden="true" x-show="p.required"></span>
+                              <span x-show="!p.required">—</span>
+                            </td>
                             <td x-text="loc(p.description)"></td></tr>
                         </template>
                       </tbody>
@@ -210,7 +212,10 @@
                         <template x-for="row in tier.rows" :key="row.id">
                           <tr :data-test-id="row.id">
                             <td :title="row.description" x-text="row.id"></td>
-                            <td :class="'lab__test-' + row.status" x-text="row.statusGlyph"></td>
+                            <td :class="'lab__test-' + row.status">
+                              <span class="icon icon--sm icon--text" :data-icon="row.statusIcon" aria-hidden="true" x-show="row.statusIcon"></span>
+                              <span x-show="!row.statusIcon">—</span>
+                            </td>
                             <td class="lab__test-diff" x-text="row.details"></td>
                             <td class="lab__test-duration" x-text="row.durationText"></td>
                           </tr>
@@ -353,7 +358,10 @@
                               <template x-if="row.hasExpected">
                                 <td :class="!row.noExpected && 'lab__tryit-value'" x-text="row.displayExp"></td></template>
                               <template x-if="row.hasExpected">
-                                <td :class="row.noExpected ? '' : (row.pass ? 'lab__test-pass' : 'lab__test-fail')" x-text="row.matchGlyph"></td></template>
+                                <td :class="row.noExpected ? '' : (row.pass ? 'lab__test-pass' : 'lab__test-fail')">
+                                  <span class="icon icon--sm icon--text" :data-icon="row.matchIcon" aria-hidden="true" x-show="!row.noExpected"></span>
+                                  <span x-show="row.noExpected">—</span>
+                                </td></template>
                             </tr>
                           </template>
                         </tbody>

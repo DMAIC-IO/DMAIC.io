@@ -72,7 +72,7 @@
       </aside>
 
       <main class="dmike-split__output mdg-output">
-        <div class="dmike-split__output-section" x-text="t('modelTitle')"></div>
+        <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('modelTitle')"></span></div>
         <p class="mdg-section__desc" x-text="t('modelDesc')"></p>
 
         <div class="mdg-equation" id="mdg-equation" data-role="equation">
@@ -85,7 +85,7 @@
           <span class="mdg-eq-eps"> + ε</span>
         </div>
 
-        <div class="dmike-split__output-section" x-text="t('coefficients')"></div>
+        <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('coefficients')"></span></div>
 
         <div class="mdg-group-label" x-text="t('intercept')"></div>
         <div class="mdg-beta-grid">
@@ -116,7 +116,7 @@
         </div>
 
         <div id="mdg-results-section" :style="resultsVisible ? 'display:block' : 'display:none'">
-          <div class="dmike-split__output-section" x-text="t('statsTitle')"></div>
+          <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('statsTitle')"></span></div>
           <div class="dmike-kpi-strip" id="mdg-stats-grid">
             <template x-for="kpi in statKpis">
               <div class="dmike-kpi" :key="kpi.label">
@@ -127,6 +127,7 @@
           </div>
 
           <div class="dmike-split__output-section">
+            <span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span>
             <span x-text="t('previewTitle')"></span>
             <span id="mdg-row-count" class="mdg-row-count" x-text="rowCountText"></span>
           </div>

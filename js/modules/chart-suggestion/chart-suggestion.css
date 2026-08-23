@@ -43,8 +43,14 @@
 }
 
 .chart-suggestion__empty-icon {
-  font-size: 40px;
   margin-bottom: var(--space-md, 16px);
+}
+
+/* Empty-state icon above the title/text — 40px reads better here than the
+   largest regular step (24px, .icon--lg). --icon-size exception per
+   docs/ICONS.md, scoped to this one layout. */
+.chart-suggestion__empty-icon .icon {
+  --icon-size: 40px;
 }
 
 .chart-suggestion__empty-title {

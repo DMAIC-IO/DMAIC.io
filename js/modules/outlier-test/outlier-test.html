@@ -107,11 +107,7 @@
   <div class="outliertest__output dmike-split__output">
 
     <div class="outliertest__placeholder" data-ref="placeholder">
-      <svg width="64" height="64" fill="none" stroke="currentColor" stroke-width="1" viewBox="0 0 24 24">
-        <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
-        <line x1="12" y1="9" x2="12" y2="13"/>
-        <line x1="12" y1="17" x2="12.01" y2="17"/>
-      </svg>
+      <span class="icon icon--lg icon--empty-state" data-icon="status.warning" aria-hidden="true"></span>
       <p x-text="t('placeholderText')"></p>
     </div>
 
@@ -119,7 +115,7 @@
       <template x-if="panelShow">
         <div class="outliertest__panel">
           <!-- ── Summary ── -->
-          <div class="dmike-split__output-section" x-text="t('sectionSummary')"></div>
+          <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('sectionSummary')"></span></div>
           <div class="dmike-kpi-strip">
             <template x-for="(c, i) in summaryKpis" :key="i">
               <div class="dmike-kpi" :class="c.kpiClass">
@@ -130,7 +126,7 @@
           </div>
 
           <!-- ── Chart ── -->
-          <div class="dmike-split__output-section" x-text="t('sectionChart')"></div>
+          <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('sectionChart')"></span></div>
           <div class="outliertest__chart-method btn-group">
             <template x-for="(s, i) in chartSegs" :key="i">
               <button class="btn--segment outliertest__chart-method-btn"
@@ -145,7 +141,7 @@
           </div>
 
           <!-- ── Per-method cards ── -->
-          <div class="dmike-split__output-section" x-text="t('sectionMethods')"></div>
+          <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('sectionMethods')"></span></div>
           <template x-for="(card, ci) in methodCards" :key="ci">
             <div class="outliertest__card" :class="card.cardClass">
               <template x-if="card.isError">
@@ -154,7 +150,7 @@
                     <span x-text="card.label + ' '"></span>
                     <template x-if="card.algoId">
                       <button class="outliertest__algo-link" :data-algo-id="card.algoId" title="Algorithm Lab" @click="openAlgoLab(card.algoId, $event)">
-                        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+                        <span class="icon icon--sm icon--text" data-icon="nav.algorithm-lab" aria-hidden="true"></span>
                       </button>
                     </template>
                   </div>
@@ -164,8 +160,11 @@
               <template x-if="!card.isError">
                 <div>
                   <div class="outliertest__card-header">
-                    <span class="outliertest__card-title"><span x-text="card.label + ' '"></span><template x-if="card.algoId"><button class="outliertest__algo-link" :data-algo-id="card.algoId" title="Algorithm Lab" @click="openAlgoLab(card.algoId, $event)"><svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg></button></template></span>
-                    <span class="outliertest__verdict" :class="card.verdictClass" x-text="card.verdictText"></span>
+                    <span class="outliertest__card-title"><span x-text="card.label + ' '"></span><template x-if="card.algoId"><button class="outliertest__algo-link" :data-algo-id="card.algoId" title="Algorithm Lab" @click="openAlgoLab(card.algoId, $event)"><span class="icon icon--sm icon--text" data-icon="nav.algorithm-lab" aria-hidden="true"></span></button></template></span>
+                    <span class="outliertest__verdict" :class="card.verdictClass">
+                      <span class="icon icon--sm icon--text" :data-icon="card.verdictIcon" aria-hidden="true"></span>
+                      <span x-text="card.verdictText"></span>
+                    </span>
                   </div>
                   <div class="dmike-kpi-strip">
                     <template x-for="(m, mi) in card.metrics" :key="mi">
@@ -191,7 +190,7 @@
                             <td x-text="st.i"></td><td x-text="st.value"></td>
                             <td x-text="st.R"></td>
                             <td x-text="st.lambda"></td>
-                            <td x-text="st.mark"></td>
+                            <td><span class="icon icon--sm icon--text" :data-icon="st.markIcon" aria-hidden="true"></span></td>
                           </tr>
                         </template>
                       </tbody>
@@ -208,7 +207,7 @@
           <!-- ── Flagged-points table ── -->
           <template x-if="flaggedShow">
             <div class="outliertest__flagged-block">
-              <div class="dmike-split__output-section" x-text="t('sectionFlagged')"></div>
+              <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('sectionFlagged')"></span></div>
               <table class="outliertest__flagged">
                 <thead><tr>
                   <th>#</th>
@@ -224,7 +223,10 @@
                       <td x-text="row.idx"></td>
                       <td x-text="row.value"></td>
                       <template x-for="(cell, cci) in row.cells" :key="cci">
-                        <td :class="cell.cls" x-text="cell.mark"></td>
+                        <td :class="cell.cls">
+                          <span class="icon icon--sm icon--text" data-icon="status.ok" aria-hidden="true" x-show="cell.flagged"></span>
+                          <span x-show="!cell.flagged">–</span>
+                        </td>
                       </template>
                       <td><strong x-text="row.count"></strong></td>
                     </tr>

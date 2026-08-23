@@ -10,20 +10,20 @@
           @click.outside="exportMenuOpen = false">
       <button class="vct__add-btn vct__export-btn" type="button" title="Export"
               @click="toggleExportMenu($event)">
-       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+       <span class="icon icon--sm" data-icon="action.download" aria-hidden="true"></span>
       </button>
       <div class="dmike-chart-dropdown-menu" data-ref="exportMenu" :class="exportMenuOpen ? 'open' : ''">
        <button class="dmike-chart-dropdown-item" data-export="png" @click="onExport('png')">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg> PNG
+        <span class="icon icon--sm" data-icon="format.png" aria-hidden="true"></span> PNG
        </button>
        <button class="dmike-chart-dropdown-item" data-export="svg" @click="onExport('svg')">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 3v4a1 1 0 0 0 1 1h4"/><path d="M17 21H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2z"/><path d="M9 15l2 2 4-4"/></svg> SVG
+        <span class="icon icon--sm" data-icon="format.svg" aria-hidden="true"></span> SVG
        </button>
        <button class="dmike-chart-dropdown-item" data-export="csv" @click="onExport('csv')">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 3v4a1 1 0 0 0 1 1h4"/><path d="M17 21H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2z"/><path d="M8 15h2M11 15h2M14 15h2"/></svg> CSV
+        <span class="icon icon--sm" data-icon="format.csv" aria-hidden="true"></span> CSV
        </button>
        <button class="dmike-chart-dropdown-item" data-export="xlsx" @click="onExport('xlsx')">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 3v4a1 1 0 0 0 1 1h4"/><path d="M17 21H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2z"/><path d="M9 13l6 6M15 13l-6 6"/></svg> Excel
+        <span class="icon icon--sm" data-icon="format.xlsx" aria-hidden="true"></span> Excel
        </button>
       </div>
      </div>
@@ -43,7 +43,7 @@
        <span class="vct__card-count" x-text="cardCountText(voc)"></span>
        <div class="vct__card-actions">
         <button class="btn btn--icon-sm vct__card-action-btn vct__edit-voc-btn" :data-voc-id="voc.id"
-                :title="t('common.edit')" @click="editVoc(voc, $event)">✎</button>
+                :title="t('common.edit')" @click="editVoc(voc, $event)"><span class="icon icon--sm" data-icon="action.edit" aria-hidden="true"></span></button>
         <button class="btn btn--icon-sm btn--danger vct__card-action-btn vct__del-voc-btn"
                 :data-voc-id="voc.id" :title="t('common.delete')" @click="deleteVoc(voc, $event)">×</button>
        </div>
@@ -101,7 +101,7 @@
                     :title="t('addDriver')" @click="openDriverModal(model.activeVoc.id, need.id)">+</button>
             <button class="btn btn--icon-sm vct__node-btn vct__edit-need-btn"
                     :data-voc-id="model.activeVoc.id" :data-need-id="need.id"
-                    :title="t('common.edit')" @click="editNeed(model.activeVoc.id, need)">✎</button>
+                    :title="t('common.edit')" @click="editNeed(model.activeVoc.id, need)"><span class="icon icon--sm" data-icon="action.edit" aria-hidden="true"></span></button>
             <button class="btn btn--icon-sm btn--danger vct__node-btn vct__del-need-btn"
                     :data-voc-id="model.activeVoc.id" :data-need-id="need.id"
                     :title="t('common.delete')" @click="deleteNeed(model.activeVoc.id, need.id)">×</button>
@@ -126,7 +126,7 @@
                         :title="t('addReq')" @click="openReqModal(model.activeVoc.id, need.id, drv.id)">+</button>
                 <button class="btn btn--icon-sm vct__node-btn vct__edit-ctx-btn"
                         :data-voc-id="model.activeVoc.id" :data-need-id="need.id" :data-drv-id="drv.id"
-                        :title="t('common.edit')" @click="editDriver(model.activeVoc.id, need.id, drv)">✎</button>
+                        :title="t('common.edit')" @click="editDriver(model.activeVoc.id, need.id, drv)"><span class="icon icon--sm" data-icon="action.edit" aria-hidden="true"></span></button>
                 <button class="btn btn--icon-sm btn--danger vct__node-btn vct__del-ctx-btn"
                         :data-voc-id="model.activeVoc.id" :data-need-id="need.id" :data-drv-id="drv.id"
                         :title="t('common.delete')" @click="deleteDriver(model.activeVoc.id, need.id, drv.id)">×</button>
@@ -155,7 +155,7 @@
                    <button class="btn btn--icon-sm vct__node-btn vct__edit-req-btn"
                            :data-voc-id="model.activeVoc.id" :data-need-id="need.id"
                            :data-drv-id="drv.id" :data-req-id="req.id"
-                           :title="t('common.edit')" @click="editReq(model.activeVoc.id, need.id, drv.id, req)">✎</button>
+                           :title="t('common.edit')" @click="editReq(model.activeVoc.id, need.id, drv.id, req)"><span class="icon icon--sm" data-icon="action.edit" aria-hidden="true"></span></button>
                    <button class="btn btn--icon-sm btn--danger vct__node-btn vct__del-req-btn"
                            :data-voc-id="model.activeVoc.id" :data-need-id="need.id"
                            :data-drv-id="drv.id" :data-req-id="req.id"
@@ -191,7 +191,7 @@
     <div class="dmike-chart-popout-titlebar" @mousedown="popoutDragStart($event)">
      <span x-text="modalTitle()"></span>
      <button class="dmike-chart-popout-close" type="button" :aria-label="t('common.close')" @click="closeModal()">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      <span class="icon icon--sm" data-icon="action.close" aria-hidden="true"></span>
      </button>
     </div>
     <div class="dmike-chart-popout-body vct__popout-body">

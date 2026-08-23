@@ -38,18 +38,18 @@ export default createModule({
     id: 'process-map',
     engine: 'alpine',
     phase: 'measure',
-    icon: 'git-branch',
+    icon: 'module.process-map',
     version: '1.0.0',
     meta: import.meta,
     actions: [
-      { icon: 'plus', title: 'addStep', variant: 'primary', onClick: (d) => d.addStep(d.model.steps.length) },
-      { icon: 'upload', title: 'importFromSipoc', onClick: (d) => d._openSipocImport() },
-      { icon: 'download', title: 'export.label', children: [
-        { icon: 'export-xlsx', title: 'export.xlsx', onClick: (d) => d._exportXLSX() },
-        { icon: 'export-csv',  title: 'export.csv',  onClick: (d) => d._exportCSV() },
-        { icon: 'export-json', title: 'export.json', onClick: (d) => d._exportJSON() },
-        { icon: 'export-png',  title: 'export.png',  onClick: (d) => d.onExport('png') },
-        { icon: 'export-svg',  title: 'export.svg',  onClick: (d) => d.onExport('svg') },
+      { icon: 'action.add', title: 'addStep', variant: 'primary', onClick: (d) => d.addStep(d.model.steps.length) },
+      { icon: 'action.upload', title: 'importFromSipoc', onClick: (d) => d._openSipocImport() },
+      { icon: 'action.download', title: 'export.label', children: [
+        { icon: 'format.xlsx', title: 'export.xlsx', onClick: (d) => d._exportXLSX() },
+        { icon: 'format.csv',  title: 'export.csv',  onClick: (d) => d._exportCSV() },
+        { icon: 'format.json', title: 'export.json', onClick: (d) => d._exportJSON() },
+        { icon: 'format.png',  title: 'export.png',  onClick: (d) => d.onExport('png') },
+        { icon: 'format.svg',  title: 'export.svg',  onClick: (d) => d.onExport('svg') },
       ] },
     ],
   },
@@ -525,7 +525,7 @@ export default createModule({
       _exportJSON() {
         const out = this.model.toExportJSON();
         downloadFile(JSON.stringify(out, null, 2), 'process-map.json', 'application/json');
-        module._context.notify('JSON ✓', 'success');
+        module._context.notify('JSON', 'success', 'status.ok');
       },
 
       _csvRows() {
@@ -581,7 +581,7 @@ export default createModule({
         });
 
         downloadFile(csv, 'process-map.csv', 'text/csv;charset=utf-8');
-        module._context.notify('CSV ✓', 'success');
+        module._context.notify('CSV', 'success', 'status.ok');
       },
 
       async _exportXLSX() {
@@ -607,7 +607,7 @@ export default createModule({
         const ws = XLSX.utils.aoa_to_sheet(rows);
         XLSX.utils.book_append_sheet(wb, ws, 'Process Map');
         XLSX.writeFile(wb, 'process-map.xlsx');
-        module._context.notify('Excel ✓', 'success');
+        module._context.notify('Excel', 'success', 'status.ok');
       },
 
       // ── SIPOC import (picker + append) ────────────────────────

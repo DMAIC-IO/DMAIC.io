@@ -106,7 +106,7 @@
           <!-- Results after optimisation -->
           <template x-if="currentOpt">
             <div>
-              <div class="dmike-split__output-section" x-text="t('resultTitle')"></div>
+              <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('resultTitle')"></span></div>
 
               <!-- Composite desirability KPI -->
               <div class="dmike-kpi-strip">
@@ -117,7 +117,7 @@
               </div>
 
               <!-- Optimum factor point -->
-              <div class="dmike-split__output-section" x-text="t('optimumPoint')"></div>
+              <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('optimumPoint')"></span></div>
               <table class="dmike-table">
                 <thead>
                   <tr>
@@ -136,7 +136,7 @@
               </table>
 
               <!-- Predictions -->
-              <div class="dmike-split__output-section" x-text="t('predictions')"></div>
+              <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('predictions')"></span></div>
               <table class="dmike-table">
                 <thead>
                   <tr>
@@ -159,7 +159,7 @@
               <!-- Contour plot section (only if contourData is available) -->
               <template x-if="contourData !== null">
                 <div>
-                  <div class="dmike-split__output-section" x-text="t('contourTitle')"></div>
+                  <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('contourTitle')"></span></div>
 
                   <!-- Axis + categorical fixing controls -->
                   <div class="ro__contour-controls">

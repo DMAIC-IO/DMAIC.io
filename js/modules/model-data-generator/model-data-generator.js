@@ -22,7 +22,7 @@ export default createModule({
     id: 'model-data-generator',
     engine: 'alpine',
     phase: 'data',
-    icon: 'function',
+    icon: 'module.model-data-generator',
     version: '1.0.0',
     meta: import.meta,
   },

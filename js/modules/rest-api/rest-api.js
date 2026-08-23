@@ -20,7 +20,7 @@ export default createModule({
     id: 'rest-api',
     engine: 'alpine',
     phase: 'data',
-    icon: 'cloud',
+    icon: 'module.rest-api',
     version: '1.0.0',
     meta: import.meta,
   },

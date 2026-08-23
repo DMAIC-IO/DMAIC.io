@@ -53,14 +53,20 @@
   <!-- Main -->
   <div class="sha__main dmike-split__output">
     <div class="sha__sections">
-      <div class="dmike-split__output-section" x-text="t('tabMatrix')"></div>
+      <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('tabMatrix')"></span></div>
       <div class="sha__section-body">
         <div class="sha__matrix-container">
           <div class="sha__matrix-wrapper">
-            <div class="sha__matrix-ylabel" x-text="axisYLabel()"></div>
+            <div class="sha__matrix-ylabel">
+              <span x-text="axisYLabel()"></span>
+              <span class="icon icon--sm icon--text" data-icon="nav.arrow-right" aria-hidden="true"></span>
+            </div>
             <div class="sha__axis-labels" style="margin-bottom:6px">
               <span x-text="t('axisLow')"></span>
-              <span x-text="axisXLabel()"></span>
+              <span class="sha__axis-label-x">
+                <span x-text="axisXLabel()"></span>
+                <span class="icon icon--sm icon--text" data-icon="nav.arrow-right" aria-hidden="true"></span>
+              </span>
               <span x-text="t('axisHigh')"></span>
             </div>
             <div class="sha__matrix-grid">
@@ -122,7 +128,7 @@
         </div>
       </div>
 
-      <div class="dmike-split__output-section" x-text="t('tabSummary')"></div>
+      <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('tabSummary')"></span></div>
       <div class="sha__section-body">
         <template x-if="model.stakeholders.length === 0">
           <div class="sha__empty"><p class="sha__empty-text" x-text="t('noStakeholders')"></p></div>
@@ -165,7 +171,7 @@
         </template>
       </div>
 
-      <div class="dmike-split__output-section" x-text="t('tabComm')"></div>
+      <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('tabComm')"></span></div>
       <div class="sha__section-body">
         <template x-if="model.stakeholders.length === 0">
           <div class="sha__empty"><p class="sha__empty-text" x-text="t('noStakeholders')"></p></div>
@@ -224,8 +230,8 @@
      <div class="dmike-chart-popout sha__popout-win" :style="popoutStyle()">
        <div class="dmike-chart-popout-titlebar" @mousedown="popoutDragStart($event)">
          <span x-text="modalTitle()"></span>
-         <button class="dmike-chart-popout-close" type="button" @click="closeModal()">
-           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+         <button class="dmike-chart-popout-close" type="button" :aria-label="t('common.close')" @click="closeModal()">
+           <span class="icon icon--sm" data-icon="action.close" aria-hidden="true"></span>
          </button>
        </div>
        <div class="dmike-chart-popout-body sha__popout-body">

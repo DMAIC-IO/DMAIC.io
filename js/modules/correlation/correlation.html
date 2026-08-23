@@ -56,10 +56,14 @@
             <div class="corr__cards">
               <template x-for="card in cards">
                 <div class="corr__card" :class="card.recClass" :key="card.method">
-                  <span class="result-card__badge" x-text="t('recommended')">
+                  <span class="result-card__badge">
+                    <span x-text="t('recommended')"></span>
                     <span class="result-card__tooltip">
                       <template x-for="(line, li) in recTooltipLines">
-                        <span :key="li" style="display:block" x-text="line"></span>
+                        <span :key="li" style="display:block">
+                          <span class="icon icon--sm icon--text" :data-icon="line.iconName" aria-hidden="true" x-show="line.iconName"></span>
+                          <span x-text="line.text"></span>
+                        </span>
                       </template>
                     </span>
                   </span>
@@ -90,10 +94,10 @@
               </template>
             </div>
 
-            <div class="dmike-split__output-section" x-text="t('sectionScatter')"></div>
+            <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('sectionScatter')"></span></div>
             <div class="corr__plot-wrap" data-ref="scatter-plot"></div>
 
-            <div class="dmike-split__output-section" x-text="t('sectionStats')"></div>
+            <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('sectionStats')"></span></div>
             <div class="corr__stats-grid">
               <template x-for="grp in statGroups">
                 <div class="corr__stats-card" :key="grp.title">
@@ -113,7 +117,7 @@
         <!-- ── Matrix mode (3+ columns) ─────────────────────────── -->
         <template x-if="mode() === 'matrix'">
           <div>
-            <div class="dmike-split__output-section" x-text="t('sectionMatrix')"></div>
+            <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('sectionMatrix')"></span></div>
             <div class="corr__matrix-toolbar">
               <div class="btn-group corr__matrix-toggle">
                 <button class="btn--segment corr__toggle-btn" data-method="pearson"
@@ -188,20 +192,28 @@
             </div>
 
             <div class="corr__matrix-legend">
-              <span class="corr__matrix-legend-item" style="color:var(--color-success)"
-                x-text="BULLET + ' ' + t('strongPositive')"></span>
-              <span class="corr__matrix-legend-item" style="color:var(--color-warning)"
-                x-text="BULLET + ' ' + t('moderate')"></span>
-              <span class="corr__matrix-legend-item" style="color:var(--color-text-tertiary)"
-                x-text="BULLET + ' ' + t('weak')"></span>
-              <span class="corr__matrix-legend-item" style="color:var(--color-error)"
-                x-text="BULLET + ' ' + t('strongNegative')"></span>
+              <span class="corr__matrix-legend-item" style="color:var(--color-success)">
+                <span class="icon icon--sm icon--text" data-icon="fill.100" aria-hidden="true"></span>
+                <span x-text="t('strongPositive')"></span>
+              </span>
+              <span class="corr__matrix-legend-item" style="color:var(--color-warning)">
+                <span class="icon icon--sm icon--text" data-icon="fill.100" aria-hidden="true"></span>
+                <span x-text="t('moderate')"></span>
+              </span>
+              <span class="corr__matrix-legend-item" style="color:var(--color-text-tertiary)">
+                <span class="icon icon--sm icon--text" data-icon="fill.100" aria-hidden="true"></span>
+                <span x-text="t('weak')"></span>
+              </span>
+              <span class="corr__matrix-legend-item" style="color:var(--color-error)">
+                <span class="icon icon--sm icon--text" data-icon="fill.100" aria-hidden="true"></span>
+                <span x-text="t('strongNegative')"></span>
+              </span>
             </div>
 
             <template x-if="filteredPairs.length > 0">
               <div class="corr__matrix-scatter-block">
                 <div class="dmike-split__output-section-header">
-                  <div class="dmike-split__output-section" x-text="t('sectionScatterMatrix')"></div>
+                  <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('sectionScatterMatrix')"></span></div>
                   <button class="corr__collapse-all-btn" data-action="toggle-all-plots"
                     @click="toggleAllPlots()" x-text="collapseAllLabel()"></button>
                 </div>
@@ -220,7 +232,7 @@
                               x-text="confPctText() + '% ' + t('ciShort') + ' ' + pair.ciLabel"></span>
                           </template>
                           <span class="corr__matrix-plot-meta" x-text="'| p = ' + pair.pLabel"></span>
-                          <span class="corr__matrix-plot-chevron" x-text="CHEVRON"></span>
+                          <span class="corr__matrix-plot-chevron icon icon--sm" :data-icon="collapsedPairs[pair.key] ? 'nav.expand-right' : 'nav.expand-down'" aria-hidden="true"></span>
                         </span>
                       </div>
                       <div class="corr__matrix-plot-area" :data-ref="'matrix-plot-' + pair.key"></div>

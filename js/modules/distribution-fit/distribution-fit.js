@@ -50,7 +50,7 @@ const mod = createModule({
     id: 'distribution-fit',
     engine: 'alpine',
     phase: 'analyze',
-    icon: 'bar-chart-2',
+    icon: 'module.distribution-fit',
     version: '1.0.0',
     meta: import.meta,
   },
@@ -344,7 +344,7 @@ const mod = createModule({
           }
 
           const q = pVal >= 0.1 ? 'pass' : pVal >= 0.05 ? 'warn' : 'fail';
-          const qI = q === 'pass' ? '✔' : q === 'warn' ? '⚠' : '✘';
+          const qIcon = q === 'pass' ? 'status.ok' : q === 'warn' ? 'status.warning' : 'status.error';
           const pClass = q === 'pass' ? 'good' : q === 'warn' ? 'moderate' : 'poor';
           return {
             tooSmall: false,
@@ -353,7 +353,8 @@ const mod = createModule({
             algoId,
             hasAlgoLink: Boolean(algoId),
             pillClass: `distfit__ndd-pill--${  q}`,
-            pillText: `${qI  } ${  t(`nddVerdict${  q.charAt(0).toUpperCase()  }${q.slice(1)}`)}`,
+            pillIcon: qIcon,
+            pillText: t(`nddVerdict${  q.charAt(0).toUpperCase()  }${q.slice(1)}`),
             desc,
             statRowLabel: `${t('nddStatistic')  } (${  statL  })`,
             statVal: fmt(stat),
@@ -382,9 +383,14 @@ const mod = createModule({
         this.nddCollapsed = !this.nddCollapsed;
       },
 
-      /** Chevron glyph for the normality toggle button. */
-      nddChevron() {
-        return this.nddCollapsed ? '▼' : '▲';
+      /** Icon name for the normality toggle button. */
+      nddChevronIcon() {
+        return this.nddCollapsed ? 'nav.expand-down' : 'nav.collapse-up';
+      },
+
+      /** Accessible title for the normality toggle button. */
+      nddToggleTitle() {
+        return this.nddCollapsed ? this.t('nddExpand') : this.t('nddCollapse');
       },
 
       /** CSS class for the collapsible normality body. */

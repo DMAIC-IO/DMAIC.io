@@ -372,7 +372,7 @@ export class DashboardGrid {
         class: 'dashboard-grid__tile-move',
         title: def.moveTitle || '',
         'aria-label': def.moveTitle || '',
-      }, icon('move')),
+      }, icon('action.drag-handle', { variant: 'muted' })),
       h('h3', { class: 'dashboard-grid__tile-title' }, def.title || ''),
       h('div', { class: 'dashboard-grid__tile-export' },
         h('button', {
@@ -380,26 +380,26 @@ export class DashboardGrid {
           class: 'dashboard-grid__tile-export-btn',
           'data-export': 'png',
           title: 'PNG',
-        }, icon('export-png')),
+        }, icon('format.png', { size: 'sm' })),
         h('button', {
           type: 'button',
           class: 'dashboard-grid__tile-export-btn',
           'data-export': 'svg',
           title: 'SVG',
-        }, icon('export-svg')),
+        }, icon('format.svg', { size: 'sm' })),
       ),
       h('button', {
         type: 'button',
         class: 'dashboard-grid__tile-remove',
         'aria-label': def.removeLabel || '',
         title: def.removeLabel || '',
-      }, icon('close')),
+      }, icon('action.close', { size: 'sm' })),
       h('div', { class: 'dashboard-grid__tile-body' }),
       h('div', {
         class: 'dashboard-grid__tile-resize',
         title: def.resizeTitle || '',
         'aria-label': def.resizeTitle || '',
-      }, icon('resize')),
+      }, icon('action.resize', { variant: 'muted' })),
     );
 
     el.querySelector('.dashboard-grid__tile-remove')

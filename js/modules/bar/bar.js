@@ -41,7 +41,7 @@ const mod = createModule({
     id: 'bar',
     engine: 'alpine',
     phase: 'data',
-    icon: 'bar-chart',
+    icon: 'module.bar',
     version: '1.0.0',
     meta: import.meta,
   },

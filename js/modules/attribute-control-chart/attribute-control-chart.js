@@ -43,7 +43,7 @@ const mod = createModule({
     id: 'attribute-control-chart',
     engine: 'alpine',
     phase: 'control',
-    icon: 'activity',
+    icon: 'module.attribute-control-chart',
     version: '1.0.0',
     meta: import.meta,
   },
@@ -75,8 +75,6 @@ const mod = createModule({
         const ct = getAttributeChartType(this.model.chartTypeId);
         return Boolean(ct?.requiresConstantN);
       },
-
-      chevron() { return '▼'; }, // ▼
 
       nelsonRuleShort(rule) {
         const lang = module._context.language || 'de';
@@ -130,6 +128,9 @@ const mod = createModule({
         return violations.length === 0
           ? _t('stable')
           : _t('unstable', { count: violations.length });
+      },
+      badgeIcon() {
+        return this.isStable() ? 'status.ok' : 'status.warning';
       },
 
       // ── Violations panel (unique index-ruleId pairs, sorted) ──

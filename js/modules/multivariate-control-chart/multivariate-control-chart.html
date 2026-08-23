@@ -56,7 +56,10 @@
         <div class="mvcc__chart-section">
           <div class="mvcc__chart-header">
             <span class="mvcc__chart-title" x-text="cv.title"></span>
-            <span class="mvcc__badge" :class="cv.badgeClass" x-text="cv.badgeText"></span>
+            <span class="mvcc__badge" :class="cv.badgeClass">
+              <span class="icon icon--sm icon--text" :data-icon="cv.badgeIcon" aria-hidden="true"></span>
+              <span x-text="cv.badgeText"></span>
+            </span>
           </div>
           <div class="mvcc__plot-wrap" :data-chart-host="cv.id"></div>
         </div>

@@ -57,7 +57,7 @@ const mod = createModule({
     id: 'hypothesis-test',
     engine: 'alpine',
     phase: 'analyze',
-    icon: 'check-circle',
+    icon: 'module.hypothesis-test',
     version: '1.1.0',
     meta: import.meta,
   },
@@ -225,7 +225,13 @@ const mod = createModule({
         const ciVar = this._ciVariance(variance, n, alpha);
         const ciSd = ciVar ? [Math.sqrt(ciVar[0]), Math.sqrt(ciVar[1])] : null;
         const ciFmt = (ci) => ci ? `[${fmt(ci[0])}, ${fmt(ci[1])}]` : '';
-        const decisionGlyph = (p) => p < alpha ? `✗ ${  _t('reject')}` : `✓ ${  _t('notReject')}`;
+        // Normality assumption check per test: reject H0 (✗) means the
+        // normality assumption is violated, not-reject (✓) means it holds —
+        // status.warning/status.ok, not status.error, since a rejected
+        // normality assumption is a diagnostic finding, not a computation
+        // failure.
+        const decisionIcon = (p) => p < alpha ? 'status.warning' : 'status.ok';
+        const decisionText = (p) => p < alpha ? _t('reject') : _t('notReject');
         const pCls = (p) => p < alpha ? 'hyptest__text-danger' : 'hyptest__text-success';
 
         return {
@@ -233,8 +239,8 @@ const mod = createModule({
           badgeClass: isNormal ? 'hyptest__badge--pass' : 'hyptest__badge--fail',
           badgeText: isNormal ? _t('normal') : _t('notNormal'),
           rows: [
-            { name: 'Shapiro-Wilk', algoId: ALGO_LAB_IDS['Shapiro-Wilk'], stat: fmt(sw.statistic), p: fmt(sw.pValue), pClass: pCls(sw.pValue), decision: decisionGlyph(sw.pValue) },
-            { name: 'Anderson-Darling', algoId: ALGO_LAB_IDS['Anderson-Darling'], stat: fmt(ad.statistic), p: fmt(ad.pValue), pClass: pCls(ad.pValue), decision: decisionGlyph(ad.pValue) },
+            { name: 'Shapiro-Wilk', algoId: ALGO_LAB_IDS['Shapiro-Wilk'], stat: fmt(sw.statistic), p: fmt(sw.pValue), pClass: pCls(sw.pValue), decisionIcon: decisionIcon(sw.pValue), decisionText: decisionText(sw.pValue) },
+            { name: 'Anderson-Darling', algoId: ALGO_LAB_IDS['Anderson-Darling'], stat: fmt(ad.statistic), p: fmt(ad.pValue), pClass: pCls(ad.pValue), decisionIcon: decisionIcon(ad.pValue), decisionText: decisionText(ad.pValue) },
           ],
           metrics: [
             { label: 'n', value: String(n), title: this._tip('n') },

@@ -47,7 +47,7 @@
       :class="nelsonCollapsed ? 'attr-cc__collapsible--collapsed' : ''"
       @click="toggleNelson()">
       <span x-text="t('sectionNelson')"></span>
-      <span class="attr-cc__chevron" x-text="chevron()"></span>
+      <span class="attr-cc__chevron icon icon--sm" :data-icon="nelsonCollapsed ? 'nav.expand-right' : 'nav.expand-down'" aria-hidden="true"></span>
     </div>
     <div class="attr-cc__nelson-panel" data-ref="nelson-panel"
       :class="nelsonCollapsed ? 'attr-cc__nelson-panel--collapsed' : ''">
@@ -98,8 +98,10 @@
           <div class="attr-cc__chart-header">
             <span class="attr-cc__chart-title" x-text="chartTitle()"></span>
             <span class="attr-cc__badge"
-              :class="isStable() ? 'attr-cc__badge--stable' : 'attr-cc__badge--unstable'"
-              x-text="badgeText()"></span>
+              :class="isStable() ? 'attr-cc__badge--stable' : 'attr-cc__badge--unstable'">
+              <span class="icon icon--sm icon--text" :data-icon="badgeIcon()" aria-hidden="true"></span>
+              <span x-text="badgeText()"></span>
+            </span>
           </div>
           <div class="attr-cc__plot-wrap" data-ref="plot"></div>
         </div>

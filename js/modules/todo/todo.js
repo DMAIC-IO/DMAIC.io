@@ -12,11 +12,11 @@ export default createModule({
     id: 'todo',
     engine: 'alpine',
     phase: 'define',
-    icon: 'check-square',
+    icon: 'module.todo',
     version: '1.0.0',
     meta: import.meta,
     actions: [
-      { icon: 'plus', title: 'addTodo', variant: 'primary', onClick: (d) => d.addTodo() },
+      { icon: 'action.add', title: 'addTodo', variant: 'primary', onClick: (d) => d.addTodo() },
     ],
   },
   Model: State,
@@ -87,9 +87,9 @@ export default createModule({
         };
       },
 
-      sortArrow(col) {
-        if (this.model.sortCol !== col) return '\u2195';
-        return this.model.sortAsc ? '\u25b2' : '\u25bc';
+      sortArrowIcon(col) {
+        if (this.model.sortCol !== col) return 'action.sort';
+        return this.model.sortAsc ? 'nav.arrow-up' : 'nav.arrow-down';
       },
 
       sortArrowClass(col) {

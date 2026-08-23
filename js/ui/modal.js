@@ -9,6 +9,7 @@
  */
 
 import { h } from '../core/dom.js';
+import { icon } from '../core/icon.js';
 
 export class Modal {
   /**
@@ -167,7 +168,7 @@ export class Modal {
       const closeBtn = h('button', {
         class: 'btn btn--icon btn--ghost modal__close',
         'aria-label': this._i18n.t('common.close'),
-      }, '✕');
+      }, icon('action.close', { size: 'sm' }));
       header.append(closeBtn);
       closeBtn.addEventListener('click', () => this._close(overlay));
     }

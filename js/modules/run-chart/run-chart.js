@@ -33,7 +33,7 @@ const mod = createModule({
     engine: 'alpine',
     phase: 'data',
     group: 'visualize',
-    icon: 'activity',
+    icon: 'module.run-chart',
     version: '1.0.0',
     meta: import.meta,
   },
@@ -109,6 +109,11 @@ const mod = createModule({
 
       testStatusText(p) {
         return p < this.model.alpha ? _t('flagFail') : _t('flagPass');
+      },
+
+      /** @returns {boolean} true once a test is flagged — the state in which the status carries the warning icon. */
+      isTestFlagged(p) {
+        return p < this.model.alpha;
       },
 
       chartTitle() {

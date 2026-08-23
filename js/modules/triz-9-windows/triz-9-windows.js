@@ -7,7 +7,7 @@ export default createModule({
     id: 'triz-9-windows',
     engine: 'alpine',
     phase: 'improve',
-    icon: 'grid',
+    icon: 'module.triz-9-windows',
     version: '0.1.0',
     meta: import.meta,
   },
@@ -25,7 +25,7 @@ export default createModule({
       },
 
       axisColsText() {
-        return `${_t('axisCols')  } \u2192`;
+        return _t('axisCols');
       },
 
       colAxisAria(c) {

@@ -64,18 +64,18 @@ export default createModule({
     id: 'ce-matrix',
     engine: 'alpine',
     phase: 'analyze',
-    icon: 'grid',
+    icon: 'module.ce-matrix',
     version: '1.0.0',
     meta: import.meta,
     actions: [
-      { icon: 'plus', title: 'addInput', variant: 'primary', onClick: (d) => d.addInput() },
-      { icon: 'plus', title: 'addOutput', onClick: (d) => d.addOutput() },
-      { icon: 'download', title: 'export.label', children: [
-        { icon: 'export-xlsx', title: 'export.xlsx', onClick: (d) => d._exportXLSX() },
-        { icon: 'export-csv',  title: 'export.csv',  onClick: (d) => d._exportCSV() },
-        { icon: 'export-json', title: 'export.json', onClick: (d) => d._exportJSON() },
-        { icon: 'export-png',  title: 'export.png',  onClick: (d) => d._exportImage('png') },
-        { icon: 'export-svg',  title: 'export.svg',  onClick: (d) => d._exportImage('svg') },
+      { icon: 'action.add', title: 'addInput', variant: 'primary', onClick: (d) => d.addInput() },
+      { icon: 'action.add', title: 'addOutput', onClick: (d) => d.addOutput() },
+      { icon: 'action.download', title: 'export.label', children: [
+        { icon: 'format.xlsx', title: 'export.xlsx', onClick: (d) => d._exportXLSX() },
+        { icon: 'format.csv',  title: 'export.csv',  onClick: (d) => d._exportCSV() },
+        { icon: 'format.json', title: 'export.json', onClick: (d) => d._exportJSON() },
+        { icon: 'format.png',  title: 'export.png',  onClick: (d) => d._exportImage('png') },
+        { icon: 'format.svg',  title: 'export.svg',  onClick: (d) => d._exportImage('svg') },
       ] },
     ],
   },
@@ -155,7 +155,7 @@ export default createModule({
         for (let c = 0; c < m.outputs.length; c++) csv += sep + m.colSum(c);
         csv += '\n';
         downloadFile(csv, 'ce-matrix.csv', 'text/csv;charset=utf-8');
-        module._context.notify('CSV ✓', 'success');
+        module._context.notify('CSV', 'success', 'status.ok');
       },
 
       async _exportXLSX() {
@@ -178,13 +178,13 @@ export default createModule({
         const ws = XLSX.utils.aoa_to_sheet(rows);
         XLSX.utils.book_append_sheet(wb, ws, 'C&E Matrix');
         XLSX.writeFile(wb, 'ce-matrix.xlsx');
-        module._context.notify('Excel ✓', 'success');
+        module._context.notify('Excel', 'success', 'status.ok');
       },
 
       _exportJSON() {
         const json = JSON.stringify(this.model.toJSON(), null, 2);
         downloadFile(json, 'ce-matrix.json', 'application/json');
-        module._context.notify('JSON ✓', 'success');
+        module._context.notify('JSON', 'success', 'status.ok');
       },
 
       _buildTableDescriptor() {
@@ -218,10 +218,10 @@ export default createModule({
         const td = this._buildTableDescriptor();
         if (format === 'png') {
           exportTableAsPNG(td, 'ce-matrix.png');
-          module._context.notify('PNG ✓', 'success');
+          module._context.notify('PNG', 'success', 'status.ok');
         } else {
           await exportTableAsSVG(td, 'ce-matrix.svg');
-          module._context.notify('SVG ✓', 'success');
+          module._context.notify('SVG', 'success', 'status.ok');
         }
       },
 

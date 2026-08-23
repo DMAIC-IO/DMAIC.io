@@ -372,6 +372,22 @@
 .pmap__connector--trailing { right: calc(-1 * var(--fc-chain-gap)); }
 .pmap__connector--leading  { left:  calc(-1 * var(--fc-chain-gap)); }
 
+/* Kundenrückmeldung: der Doppelchevron ("»") zwischen den Stages wirkt zu
+   dunkel. Er erbt --color-text-tertiary aus der geteilten Flowchart-Regel
+   (.fc-connector__arrow in js/core/flowchart/flowchart.css) — bei 35px
+   Schriftgröße liest sich das schwerer als anderswo. Über opacity
+   abgesenkt statt über einen anderen Farb-Token (gleiches Muster wie
+   .icon--muted in css/components.css), scoped auf .pmap, damit Makigami &
+   die anderen drei Flow-Module ihren Ton unverändert behalten. Volle
+   Deckkraft bleibt beim Hover-"+", das den Einfüge-Punkt markiert. */
+.pmap .fc-connector__arrow {
+  opacity: 0.6;
+}
+
+.pmap .fc-connector--clickable:hover .fc-connector__arrow {
+  opacity: 1;
+}
+
 /* ===== Toolbar ===== */
 .pmap__toolbar {
   display: flex;
@@ -722,4 +738,17 @@
   background: transparent;
   color: var(--color-text-tertiary);
   padding: 2px 0;
+}
+
+/* Kundenrückmeldung (Pizza-Lieferung-Beispiel): die Icons wirken zu hell.
+   Sie erben --color-text-tertiary aus den geteilten Flowchart-Regeln
+   (js/core/flowchart.css .fc-card__delete/.fc-remove-icon), das ist auch
+   für Makigami korrekt und bleibt dort unverändert — hier auf
+   --color-text-secondary angehoben, eine Stufe dunkler, ohne die Farbe
+   hart zu kodieren. */
+.pmap .fc-remove-icon,
+.pmap .fc-card__delete,
+.pmap__io-remove,
+.pmap__step-loop-toggle {
+  color: var(--color-text-secondary);
 }

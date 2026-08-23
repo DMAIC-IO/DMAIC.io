@@ -63,7 +63,7 @@ export default createModule({
     id: 'stakeholder-analysis',
     engine: 'alpine',
     phase: 'define',
-    icon: 'users',
+    icon: 'module.stakeholder-analysis',
     version: '0.1.0',
     meta: import.meta,
   },
@@ -107,9 +107,9 @@ export default createModule({
       dotClass: (i, level) => `sha__level-dot${  i <= level ? ' sha__level-dot--filled' : ''}`,
       roleText: (sh) => sh.role || '—',
 
-      // ── Axis labels (→ arrow kept out of templates) ──
-      axisYLabel() { return `${this.t('axisPower')  } →`; },
-      axisXLabel() { return `${this.t('axisInterest')  } →`; },
+      // ── Axis labels (arrow rendered as icon in the template, not text) ──
+      axisYLabel() { return this.t('axisPower'); },
+      axisXLabel() { return this.t('axisInterest'); },
 
       // ── Grouped / sorted lists (read from reactive model) ──
       chipsFor(quad) {

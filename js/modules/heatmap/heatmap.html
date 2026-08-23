@@ -25,7 +25,7 @@
       <div class="heatmap-module__stats-panel" data-ref="stats-panel">
         <template x-if="statsShow">
           <div>
-            <div class="dmike-split__output-section" x-text="t('statsTitle')"></div>
+            <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('statsTitle')"></span></div>
             <table class="dmike-table heatmap-module__stats-table">
               <thead><tr>
                 <th x-text="statsCorner"></th>

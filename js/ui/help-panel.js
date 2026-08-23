@@ -1,6 +1,7 @@
 import { renderBlockMath, renderInlineMath } from '../core/katex-loader.js';
 import { h } from '../core/dom.js';
 import { parseInline } from '../core/markdown-parser.js';
+import { icon } from '../core/icon.js';
 
 /**
  * DMAIC.io — Help Panel (help-panel.js)
@@ -62,7 +63,7 @@ export class HelpPanel {
           class: 'btn btn--icon btn--ghost',
           id: 'help-close-btn',
           'aria-label': t('common.close'),
-        }, '✕'),
+        }, icon('action.close', { size: 'sm' })),
       ),
       h('div', { class: 'help-panel__tabs', role: 'tablist' },
         h('button', {
@@ -487,7 +488,7 @@ export class HelpPanel {
 
     const backBtn = () => h('button', {
       type: 'button', class: 'help-panel__glossary-back', 'data-glossary-back': true,
-    }, `← ${t('moduleHelp.glossaryBack')}`);
+    }, icon('nav.back', { size: 'sm' }), t('moduleHelp.glossaryBack'));
 
     // Show loading state immediately.
     this._glossaryPane.replaceChildren(
@@ -603,7 +604,7 @@ function renderGlossaryDetail(term, lang, t, titleOf = (id) => id) {
 
   return h('div', { class: 'help-panel__glossary-detail' },
     h('button', { type: 'button', class: 'help-panel__glossary-back', 'data-glossary-back': true },
-      `← ${t('moduleHelp.glossaryBack')}`),
+      icon('nav.back', { size: 'sm' }), t('moduleHelp.glossaryBack')),
     h('h3', { class: 'help-panel__glossary-title' }, title),
     aliasesNode,
     h('div', { class: 'help-panel__glossary-body' }, ...blocks.map(b => renderGlossaryBlock(b, titleOf))),

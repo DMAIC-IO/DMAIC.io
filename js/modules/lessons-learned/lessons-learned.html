@@ -80,7 +80,7 @@
                 <span x-show="lesson.actions.length > 0" x-text="actionsSummary(lesson)"></span>
               </div>
             </div>
-            <span class="ll__chevron" x-text="chevron(lesson)"></span>
+            <span class="ll__chevron icon icon--sm" :data-icon="chevronIcon(lesson)" aria-hidden="true"></span>
           </div>
 
           <div x-show="openCards.includes(lesson.id)" class="ll__card-body">

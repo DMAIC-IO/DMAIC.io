@@ -12,6 +12,7 @@
 
 import { DEFAULT_CYCLE } from './cycles/cycles.js';
 import { h } from './dom.js';
+import { icon } from './icon.js';
 
 export class ModuleRegistry {
   constructor() {
@@ -174,7 +175,7 @@ export class ModuleRegistry {
   _renderErrorCard(container, moduleId, err) {
     container.replaceChildren(
       h('div', { class: 'module-error' },
-        h('div', { class: 'module-error__icon' }, '⚠'),
+        h('div', { class: 'module-error__icon' }, icon('status.warning')),
         h('div', { class: 'module-error__title' }, 'Module failed to load'),
         h('div', { class: 'module-error__message' }, `${moduleId}: ${err.message}`),
       ),

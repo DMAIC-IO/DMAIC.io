@@ -82,14 +82,14 @@
           <div class="dmike-kpi-strip">
             <div class="dmike-kpi" :class="kpiModClass(result.cgStatus)">
               <div class="dmike-kpi-label">Cg (<span x-text="t('repeatability')"></span>)
-                <button class="msa-typ1__algo-link" data-algo-id="cg" title="Algorithm Lab" @click="algoNavigate('cg', $event)"><svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg></button>
+                <button class="msa-typ1__algo-link" data-algo-id="cg" title="Algorithm Lab" @click="algoNavigate('cg', $event)"><span class="icon icon--sm icon--text" data-icon="nav.algorithm-lab" aria-hidden="true"></span></button>
               </div>
               <div class="dmike-kpi-value" x-text="fmt(result.Cg)"></div>
               <div class="dmike-kpi-sub"><span x-text="t('threshold')"></span>: ≥ 1.33 · <span x-text="badgeLabel(result.cgStatus)"></span></div>
             </div>
             <div class="dmike-kpi" :class="kpiModClass(result.cgkStatus)">
               <div class="dmike-kpi-label">Cgk (<span x-text="t('withBias')"></span>)
-                <button class="msa-typ1__algo-link" data-algo-id="cgk" title="Algorithm Lab" @click="algoNavigate('cgk', $event)"><svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg></button>
+                <button class="msa-typ1__algo-link" data-algo-id="cgk" title="Algorithm Lab" @click="algoNavigate('cgk', $event)"><span class="icon icon--sm icon--text" data-icon="nav.algorithm-lab" aria-hidden="true"></span></button>
               </div>
               <div class="dmike-kpi-value" x-text="fmt(result.Cgk)"></div>
               <div class="dmike-kpi-sub"><span x-text="t('threshold')"></span>: ≥ 1.33 · <span x-text="badgeLabel(result.cgkStatus)"></span></div>
@@ -107,7 +107,7 @@
           </div>
 
           <!-- Stats table -->
-          <div class="dmike-split__output-section" x-text="t('statsTitle')"></div>
+          <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('statsTitle')"></span></div>
           <div class="msa-typ1__stats-panel">
             <table class="dmike-table msa-typ1__stats-table">
               <thead><tr>
@@ -120,15 +120,15 @@
           </div>
 
           <!-- Run chart -->
-          <div class="dmike-split__output-section" x-text="t('runChartTitle')"></div>
+          <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('runChartTitle')"></span></div>
           <div class="msa-typ1__chart-plot" data-ref="chart-run"></div>
 
           <!-- Histogram -->
-          <div class="dmike-split__output-section" x-text="t('histTitle')"></div>
+          <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('histTitle')"></span></div>
           <div class="msa-typ1__chart-plot" data-ref="chart-hist"></div>
 
           <!-- Interpretation -->
-          <div class="dmike-split__output-section" x-text="t('formulasTitle')"></div>
+          <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('formulasTitle')"></span></div>
           <div class="msa-typ1__interpretation">
             <p><strong>Cg</strong> = (k₁ · T) / (2 · k₂ · sg) = (<span x-text="result.params.k1"></span> · <span x-text="fmt(result.T)"></span>) / (2 · <span x-text="result.params.k2"></span> · <span x-text="fmt(result.sg)"></span>) = <strong x-text="fmt(result.Cg)"></strong></p>
             <p><strong>Cgk</strong> = (k₁ · T/2 − |x̄ − x<sub>ref</sub>|) / (k₂ · sg) = (<span x-text="fmt(result.params.k1 * result.T / 2)"></span> − <span x-text="fmt(abs(result.bias))"></span>) / (<span x-text="result.params.k2"></span> · <span x-text="fmt(result.sg)"></span>) = <strong x-text="fmt(result.Cgk)"></strong></p>

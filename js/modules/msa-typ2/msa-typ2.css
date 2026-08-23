@@ -10,7 +10,12 @@
   width: 380px;
 }
 
-/* Section labels: use global .dmike-split__output-section (css/modules.css) */
+/* Section labels: use global .dmike-split__output-section (css/modules.css)
+   as-is — the shared rule now renders the `nav.expand-down` marker icon and
+   is genuinely wired to collapse behaviour (initCollapsibleSections() in
+   js/frame/helpers.js), so this module no longer needs a scoped override.
+   msa-typ2__output-section stays on the template as a hook for future
+   module-specific styling, it just carries no rules today. */
 
 /* Fields use global .field / .field-group (components.css) */
 

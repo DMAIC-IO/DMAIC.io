@@ -84,7 +84,7 @@ const mod = createModule({
     engine: 'alpine',
     phase: 'improve',
     allowedPhases: ['measure', 'analyze', 'improve', 'control'],
-    icon: 'grid',
+    icon: 'module.doe-planner',
     version: '3.0.0',
     meta: import.meta,
   },
@@ -1028,7 +1028,9 @@ const mod = createModule({
       },
       phaseLabel(ph) { return ph.doeName || `Phase ${ph.cycleNumber}`; },
       phaseDecIcon(ph) {
-        return ph.decision === 'recenter' ? '↻' : ph.decision === 'repeat' ? '↺' : ph.decision === 'stop' ? '✓' : '';
+        return ph.decision === 'recenter' ? 'action.loop'
+          : ph.decision === 'repeat' ? 'action.reset'
+          : ph.decision === 'stop' ? 'status.ok' : '';
       },
       canStartNewPhase() {
         const m = this.model;

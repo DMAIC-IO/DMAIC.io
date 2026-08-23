@@ -45,7 +45,7 @@
                                     :data-step-id="step.id" data-io-type="inputs" :data-io-id="io.id"
                                     :title="t('common.delete')" :aria-label="t('common.delete')"
                                     @click.stop="removeIO(step.id, 'inputs', io.id)">
-                              <span class="icon fc-remove-icon" data-icon="trash" aria-hidden="true"></span>
+                              <span class="icon fc-remove-icon" data-icon="action.delete" aria-hidden="true"></span>
                             </button>
                           </div>
                         </template>
@@ -98,12 +98,12 @@
                                   data-action="toggle-loop" :data-step-id="step.id"
                                   :title="t('loopLabel')"
                                   @click.stop="toggleLoop(step.id)">
-                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 2l4 4-4 4"/><path d="M3 11V9a4 4 0 014-4h14"/><path d="M7 22l-4-4 4-4"/><path d="M21 13v2a4 4 0 01-4 4H3"/></svg>
+                            <span class="icon icon--sm" data-icon="action.loop" aria-hidden="true"></span>
                           </button>
                           <button class="pmap__step-delete fc-card__delete" data-action="remove-step" :data-step-id="step.id"
                                   :title="t('deleteStep')" :aria-label="t('deleteStep')"
                                   @click.stop="removeStep(step.id)">
-                            <span class="icon" data-icon="trash" aria-hidden="true"></span>
+                            <span class="icon" data-icon="action.delete" aria-hidden="true"></span>
                           </button>
                         </div>
                       </div>
@@ -161,7 +161,7 @@
                                     :data-step-id="step.id" data-io-type="outputs" :data-io-id="io.id"
                                     :title="t('common.delete')" :aria-label="t('common.delete')"
                                     @click.stop="removeIO(step.id, 'outputs', io.id)">
-                              <span class="icon fc-remove-icon" data-icon="trash" aria-hidden="true"></span>
+                              <span class="icon fc-remove-icon" data-icon="action.delete" aria-hidden="true"></span>
                             </button>
                           </div>
                         </template>
@@ -187,18 +187,18 @@
           <div class="pmap__loop-panel" :data-step-id="p.stepId" :style="panelStyle(p)">
             <div class="pmap__loop-header">
               <span class="pmap__loop-icon">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 2l4 4-4 4"/><path d="M3 11V9a4 4 0 014-4h14"/><path d="M7 22l-4-4 4-4"/><path d="M21 13v2a4 4 0 01-4 4H3"/></svg>
+                <span class="icon icon--sm" data-icon="action.loop" aria-hidden="true"></span>
               </span>
               <span class="pmap__loop-title" x-text="t('loopLabel')"></span>
               <button class="pmap__loop-remove" data-action="remove-loop" :data-step-id="p.stepId"
                 :title="t('removeLoop')" :aria-label="t('removeLoop')"
                 @click.stop="removeLoopPanel(p.stepId)">
-                <span class="icon fc-remove-icon" data-icon="trash" aria-hidden="true"></span>
+                <span class="icon fc-remove-icon" data-icon="action.delete" aria-hidden="true"></span>
               </button>
             </div>
             <div class="pmap__loop-body">
               <div class="pmap__loop-field">
-                <label class="pmap__loop-field-label"><svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12 2l10 10-10 10L2 12z"/></svg> <span x-text="t('loopCondition')"></span></label>
+                <label class="pmap__loop-field-label"><span class="icon icon--sm" data-icon="flow.decision" aria-hidden="true"></span> <span x-text="t('loopCondition')"></span></label>
                 <input class="field field--sm pmap__loop-condition" type="text" :value="loopConditionOf(p.stepId)"
                   :placeholder="t('loopConditionPlaceholder')"
                   :data-step-id="p.stepId" @input="loopConditionInput(p.stepId, $event)">
@@ -216,7 +216,7 @@
               <div class="pmap__loop-steps-list">
                 <template x-for="(ls, li) in loopStepsOf(p.stepId)" :key="ls.id">
                   <div class="pmap__loop-step-item" :data-loop-step-id="ls.id" :data-parent-id="p.stepId">
-                    <span class="pmap__loop-step-number"><svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12 2l10 10-10 10L2 12z"/></svg></span>
+                    <span class="pmap__loop-step-number"><span class="icon icon--sm" data-icon="flow.decision" aria-hidden="true"></span></span>
                     <input class="pmap__loop-step-title" type="text" :value="ls.title"
                       :placeholder="t('loopStepPlaceholder')"
                       :data-loop-step-id="ls.id" :data-parent-id="p.stepId"
@@ -225,14 +225,14 @@
                       :data-parent-id="p.stepId" :data-loop-step-id="ls.id"
                       :title="t('common.delete')" :aria-label="t('common.delete')"
                       @click.stop="removeLoopStep(p.stepId, ls.id)">
-                      <span class="icon fc-remove-icon" data-icon="trash" aria-hidden="true"></span>
+                      <span class="icon fc-remove-icon" data-icon="action.delete" aria-hidden="true"></span>
                     </button>
                   </div>
                 </template>
               </div>
               <button class="pmap__loop-step-add" data-action="add-loop-step" :data-step-id="p.stepId"
                 @click.stop="addLoopStep(p.stepId)">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                <span class="icon icon--sm" data-icon="action.add" aria-hidden="true"></span>
                 <span x-text="t('addLoopStep')"></span>
               </button>
             </div>

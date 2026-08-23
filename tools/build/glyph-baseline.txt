@@ -1,0 +1,52 @@
+# glyph-baseline.txt — bekannter Bestand handgezeichneter Icon-Glyphen.
+#
+# Erzeugt beim Härten des Gates (`tools/build-icons.mjs` /
+# `tools/build/no-glyphs.mjs`), 2026-08-22. Jede Zeile ist ein Fund von
+# damals: `datei:zeile:glyphe`, sortiert nach Datei, dann Zeile.
+#
+# WIE DAS GATE DIESE DATEI BENUTZT (`npm run icons:check`):
+#   - Ein Fund, dessen Zeile HIER steht, wird gemeldet, aber der Build
+#     bleibt grün — bekannter Rückstand, keine neue Regression.
+#   - Ein Fund, dessen Zeile HIER NICHT steht, lässt den Build rot laufen.
+#     Das ist der eigentliche Zweck des Gates: kein Icon darf mehr am
+#     Icon-System vorbei ins Repo kommen, ohne dass es hier auffällt.
+#
+# WIE MAN EINE ZEILE LOSWIRD:
+#   Migrieren heißt LÖSCHEN. Wird `js/modules/sipoc/sipoc.js:81` auf
+#   `icon('action.delete')` umgestellt, verschwindet die Glyphe aus dem
+#   Quelltext — der nächste `icons:check`-Lauf findet sie ohnehin nicht
+#   mehr, aber die verwaiste Baseline-Zeile sollte man trotzdem von Hand
+#   entfernen (sonst verwässert sie langsam mit toten Einträgen). Wird eine
+#   Zeile stattdessen absichtlich nicht migriert (z. B. ein Marker-Icon in
+#   einer Diagramm-Legende, das nie eine CSS-Maske braucht), bleibt sie
+#   stehen — die Datei ist ein Bestand, keine Checkliste mit Deadline.
+#
+# NICHT VON HAND SORTIEREN NACH GEFÜHL — bei einer Neuerzeugung diesen
+# Header behalten und den Rest durch einen frischen `icons:check`-Lauf
+# ersetzen (siehe `collectFindings()`/`checkNoGlyphs()` in
+# `tools/build-icons.mjs` für das exakte Key-Format).
+#
+# Bestand bei Erzeugung: 141 Funde — 105 in js/**/*.js, 34 in js/**/*.html,
+# 2 in css/**/*.css (Escape-Notation). 0 in i18n/*.json (die i18n-Dateien
+# waren schon vor dieser Härtung sauber). Das ist der Arbeitsvorrat für die
+# Migrationsfolge-Aufgabe — diese Aufgabe migriert nichts.
+
+js/core/chart/chart-editor.js:460:●
+js/core/chart/chart-editor.js:462:◆
+js/core/chart/chart-editor.js:463:▲
+js/core/chart/chart-editor.js:464:▼
+js/core/chart/chart-editor.js:466:★
+js/core/cycles/cycles.js:79:⊞
+js/core/migrations.js:55:→
+js/modules/contour-plot/contour-plot-editor.js:81:●
+js/modules/contour-plot/contour-plot-editor.js:82:◆
+js/modules/contour-plot/contour-plot-editor.js:83:▼
+js/modules/contour-plot/contour-plot-editor.js:84:★
+js/modules/control-chart/control-chart-help.js:148:✕
+js/modules/control-chart/control-chart-help.js:171:✕
+js/modules/ishikawa/ishikawa.js:1214:●
+js/modules/ishikawa/ishikawa.js:1215:◆
+js/modules/ishikawa/ishikawa.js:1216:▼
+js/modules/ishikawa/ishikawa.js:1217:★
+js/modules/kano/kano-link.js:20:▸
+js/modules/process-map/process-map.js:546:→

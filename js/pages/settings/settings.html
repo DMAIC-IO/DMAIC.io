@@ -8,7 +8,7 @@
       <span x-text="t('title')"></span>
       <button class="dmike-chart-popout-close" type="button"
               :aria-label="t('title')" @click="close()">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"></path></svg>
+        <span class="icon icon--sm" data-icon="action.close" aria-hidden="true"></span>
       </button>
     </div>
     <div class="dmike-chart-popout-body settings-panel__layout">
@@ -35,10 +35,10 @@
             <label class="settings-section__label" x-text="t('theme')"></label>
             <div class="settings-theme-toggle">
               <button id="theme-toggle-light" :class="themeClass('light')" data-theme="light" @click="setTheme('light')">
-                <span class="settings-theme-icon">☀</span><span x-text="t('themeLight')"></span>
+                <span class="icon icon--sm settings-theme-icon" data-icon="action.theme-light" aria-hidden="true"></span><span x-text="t('themeLight')"></span>
               </button>
               <button id="theme-toggle-dark" :class="themeClass('dark')" data-theme="dark" @click="setTheme('dark')">
-                <span class="settings-theme-icon">🌙</span><span x-text="t('themeDark')"></span>
+                <span class="icon icon--sm settings-theme-icon" data-icon="action.theme-dark" aria-hidden="true"></span><span x-text="t('themeDark')"></span>
               </button>
             </div>
           </div>
@@ -190,7 +190,7 @@
                         <button type="button" class="btn btn--icon btn--ghost settings-shortcut-reset"
                                 :title="t('shortcutsResetOne')" :aria-label="t('shortcutsResetOne')"
                                 :disabled="!item.isCustom" @click="resetOne(item)">
-                          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"></path><path d="M3 3v5h5"></path></svg>
+                          <span class="icon icon--sm" data-icon="action.reset" aria-hidden="true"></span>
                         </button>
                       </span>
                     </div>

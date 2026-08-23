@@ -163,8 +163,10 @@
 }
 
 /* ===== Inline delete button =====
-   × appears (grey) when hovering a host element marked .dmike-del-btn-host,
-   turns red when hovering the button itself.
+   Icon (real .icon element, action.delete, in the button's markup — see
+   kano.html/ce-matrix.html/raci-matrix.html/todo.html) appears (grey) when
+   hovering a host element marked .dmike-del-btn-host, turns red when
+   hovering the button itself.
    Module CSS only needs to add positioning rules (absolute/right/top etc.). */
 .dmike-del-btn {
   display: inline-flex;
@@ -177,15 +179,10 @@
   border-radius: 50%;
   background: transparent;
   color: var(--color-text-tertiary);
-  font-size: var(--font-size-xs);
   line-height: 1;
   cursor: pointer;
   opacity: 0;
   transition: all var(--transition-speed);
-}
-
-.dmike-del-btn::before {
-  content: "\2715";
 }
 
 .dmike-del-btn-host:hover .dmike-del-btn,
@@ -1194,8 +1191,7 @@ select.input {
 }
 
 .settings-theme-icon {
-  font-size: 16px;
-  line-height: 1;
+  line-height: 0;
 }
 
 /* ── Shortcuts tab ────────────────────────────────────────── */
@@ -1757,20 +1753,49 @@ body.dmike-glossary-inline-off .glossary-term:focus-within {
   background: transparent;
 }
 
-/* ─── Mask icons (glyph: assets/icons/icons.css, generated; colour: currentColor) ─── */
+/* ─── Masken-Icons ────────────────────────────────────────────────────────
+   Glyphe: assets/icons/icons.css (generiert aus assets/icons/icon-map.json).
+   Farbe: currentColor, damit Hover/Aktiv/Disabled vom Elternelement kommen.
+   Drei Stufen: sm 16, md 20 (Standard), lg 24. Die Maske ist pro Stufe mit
+   angepasster Strichstärke gebacken, damit der Strich optisch gleich bleibt.
+   --icon-size ist die Ausnahmeschraube für Sonderfälle (z. B. 12px in den
+   Dashboard-Kachelgriffen); sie ändert nur die Fläche, nicht die Maske. */
 .icon {
   display: inline-block;
-  width: 1em; height: 1em;
+  width: var(--icon-size, 20px);
+  height: var(--icon-size, 20px);
   vertical-align: -0.125em;
   background-color: currentcolor;
   mask: var(--icon) center / contain no-repeat;
 }
-.icon--accent { background-color: var(--color-accent); }
-.icon--muted  { background-color: var(--color-text-tertiary); }
+.icon--sm { --icon-size: 16px; }
+.icon--lg { --icon-size: 24px; }
 
-/* Raw icons render the baked SVG directly (background-image, no mask) — for
-   glyphs that carry their own colour/opacity (e.g. accent chart thumbnails).
-   Theme-swapped via [data-theme] overrides of --icon (see icons.css). */
+/* Icon läuft inline mit Fließtext (Badges, Tags, Tabellenzeilen-Links,
+   Kopfzeilen-Beschriftungen) statt allein in einem Button zu stehen.
+   --icon-size ist dort absolut (16/20/24px) unabhängig von der
+   Schriftgröße daneben — das reißt bei xs/sm-Text (11–12px) auseinander:
+   ein 16px-Icon neben 11px-Text ist 23 % höher als die Zeile und kann sie
+   zum Umbruch zwingen (siehe Messwerte in fix-a-report.md). icon--text
+   macht --icon-size em-basiert, sodass das Icon mit der geerbten
+   Schriftgröße mitskaliert; vertical-align bleibt -0.125em, das ist
+   bereits em-basiert und braucht keine Anpassung. NICHT auf alleinstehende
+   Icon-Buttons anwenden (z. B. 22×22px-Löschen-Buttons) — deren Größe ist
+   bewusst fix und unabhängig vom Text darum. Zusammen mit icon--sm/--lg
+   nutzen, damit weiterhin die für die jeweilige Stufe gebackene
+   Strichstärke greift. */
+.icon--text { --icon-size: 1.1em; }
+
+/* Farbvarianten. muted senkt ab, statt eine zweite Farbe zu setzen — das wirkt
+   in hellem und dunklem Theme gleich und braucht kein eigenes Token. */
+.icon--muted   { opacity: .55; }
+.icon--accent  { background-color: var(--color-accent); }
+.icon--danger  { background-color: var(--color-error); }
+.icon--success { background-color: var(--color-success); }
+
+/* Raw-Icons rendern das gebackene SVG direkt (background-image, keine Maske) —
+   für Glyphen mit eigener Farbe und Deckkraft, etwa die Accent-Miniaturen der
+   Diagramme. Theme-Wechsel über [data-theme]-Overrides von --icon (icons.css). */
 .icon--raw {
   mask: none;
   background: transparent var(--icon) center / contain no-repeat;
