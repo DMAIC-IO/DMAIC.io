@@ -229,7 +229,8 @@
            placeholder — it is extended from the toolbar. -->
       <template x-for="band in bands()" :key="'tail-' + band.id">
         <template x-if="!isMainBand(band)">
-          <div class="af__tail" :data-band-id="band.id" :style="tailStyle(band)"
+          <div class="af__tail" :class="tailClass(band)"
+               :data-band-id="band.id" :style="tailStyle(band)"
                @dragover.prevent
                @drop.stop="dropOnBand(band.id, $event)">
                 <div class="af__band-add">

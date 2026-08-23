@@ -39,9 +39,9 @@ export default createModule({
     meta: import.meta,
     actions: [
       { icon: 'plus', title: 'addStep',
-        variant: 'primary', onClick: (d) => d.model.addStep(d.model.steps.length) },
+        variant: 'primary', onClick: (d) => d.appendStep('activity') },
       { icon: 'git-fork', title: 'addDecision',
-        onClick: (d) => d.model.addDecision(d.model.steps.length) },
+        onClick: (d) => d.appendStep('decision') },
       { icon: 'upload', title: 'importFrom',
         onClick: (d) => d._openImport() },
       { icon: 'download', title: 'export.label', children: [
@@ -68,6 +68,7 @@ export function activityFlowchartData(module, _t) {
     ...chainViewMixin(module, _t, {
       autoSizeSelector: 'textarea.af__step-title, textarea.af__decision-label, textarea.af__step-description',
       dragRowSelector: '.af__step',
+      canvasSelector: '.af__canvas',
     }),
 
     // ── Lifecycle (per Alpine instance) ───────────────────────
@@ -156,13 +157,26 @@ export function activityFlowchartData(module, _t) {
      * reserves a column, so the main path stays dense where a detour runs
      * beside it instead of tearing open across it.
      *
-     * Only a detour that rejoins FORWARD imposes anything: its target has to
-     * sit past the detour's last card AND past the exit control that follows
-     * it, or the rejoin would point backwards or stand on top of its own
-     * exit. Where that does not hold, the target and everything
-     * after it in the chain move right — repeated until nothing is left to
-     * push, because one shift can create the next. A dead end or a rework loop
-     * constrains nothing.
+     * "Next free" counts in the band's own DIRECTION. A rework loop re-enters
+     * the chain to the LEFT of its diamond, so its stream runs right to left
+     * — and a value stream only ever runs one way. Its cards therefore march
+     * leftwards from the diamond towards the card they rejoin at, instead of
+     * away from it: appending to such a band puts the new card at the head of
+     * the return path, not behind the eye's back at the far right.
+     *
+     * Either way the band's exit control needs a column of its own between
+     * its last card and the card it rejoins at, so a detour has to clear its
+     * target by two. Where it does not, the chain makes room:
+     *
+     * - flowing right, the target and everything after it move right, all but
+     *   this band's own cards — pulling those along would tear apart the very
+     *   detour we are making room for;
+     * - flowing left, everything BEHIND the target moves right, this band
+     *   included: its cards hang off the diamond and travel with it, which is
+     *   exactly what opens the gap on the target's right.
+     *
+     * Repeated until nothing is left to push, because one shift can create the
+     * next. A dead end constrains nothing.
      *
      * @returns {{colOf: Map<string, number>, count: number}} 1-based columns.
      */
@@ -170,12 +184,16 @@ export function activityFlowchartData(module, _t) {
       const steps = this.model.steps;
       const colOf = new Map();
       const next = new Map([[MAIN_BRANCH, 1]]);
+      const dir = new Map([[MAIN_BRANCH, 1]]);
 
       steps.forEach((s) => {
         const c = next.get(s.branchId) ?? 1;
         colOf.set(s.id, c);
-        next.set(s.branchId, c + 1);
-        if (s.kind === 'decision') next.set(BRANCH_PREFIX + s.id, c);
+        next.set(s.branchId, c + (dir.get(s.branchId) ?? 1));
+        if (s.kind === 'decision') {
+          next.set(BRANCH_PREFIX + s.id, c);
+          dir.set(BRANCH_PREFIX + s.id, this._bandFlow(s)?.backward ? -1 : 1);
+        }
       });
 
       const indexOf = new Map(steps.map((s, i) => [s.id, i]));
@@ -183,29 +201,27 @@ export function activityFlowchartData(module, _t) {
         let shifted = false;
         for (const d of steps) {
           if (d.kind !== 'decision') continue;
-          const target = this._rejoinTarget(d);
-          if (!target) continue;                       // dead end or rework loop
+          const flow = this._bandFlow(d);
+          if (!flow) continue;                         // dead end
           const band = BRANCH_PREFIX + d.id;
           const members = steps.filter((s) => s.branchId === band);
-          let last = colOf.get(d.id);
-          members.forEach((s) => { last = Math.max(last, colOf.get(s.id)); });
-          // +2, not +1: the band's exit control sits in the column right after
-          // its last card, so a target one column past the cards would stand
-          // directly ABOVE that control rather than after it. The eye should
-          // read detour cards, then the exit, then the card it rejoins at.
-          const need = last + 2 - colOf.get(target.id);
+          const cols = [colOf.get(d.id), ...members.map((s) => colOf.get(s.id))];
+          const targetCol = colOf.get(flow.target.id);
+          const from = indexOf.get(flow.target.id);
+          // +2, not +1: the band's exit control sits in the column right past
+          // its last card, so a target one column further would stand directly
+          // above that control rather than beyond it. The eye should read
+          // detour cards, then the exit, then the card it rejoins at.
+          const need = flow.backward
+            ? targetCol + 2 - Math.min(...cols)
+            : Math.max(...cols) + 2 - targetCol;
           if (need <= 0) continue;
-          // Everything from the target rightwards makes room — except this
-          // band's own cards. A member sitting later in the CHAIN than the
-          // target would otherwise be pushed along with it, tearing the very
-          // detour apart whose room we are making, and each pass would push
-          // it further: the run that found this had a card at column 19
-          // instead of 4.
-          const own = new Set(members.map((s) => s.id));
-          own.add(d.id);
-          const from = indexOf.get(target.id);
+          const own = flow.backward
+            ? new Set()
+            : new Set([d.id, ...members.map((s) => s.id)]);
+          const start = flow.backward ? from + 1 : from;
           steps.forEach((s, i) => {
-            if (i >= from && !own.has(s.id)) colOf.set(s.id, colOf.get(s.id) + need);
+            if (i >= start && !own.has(s.id)) colOf.set(s.id, colOf.get(s.id) + need);
           });
           shifted = true;
         }
@@ -218,19 +234,35 @@ export function activityFlowchartData(module, _t) {
     },
 
     /**
-     * The step a decision's detour rejoins, but only when that is FORWARD in
-     * the chain — a dead end and a rework loop both pull nothing along.
+     * Where a decision's detour goes, and which way that makes its band run.
+     * A target EARLIER in the chain is a rework loop: the band flows right to
+     * left, from the diamond back to the card it re-enters at. A later target
+     * flows on to the right like everything else. A dead end has neither.
      * @param {object} decision
-     * @returns {object|null}
+     * @returns {{target: object, backward: boolean}|null}
      */
-    _rejoinTarget(decision) {
+    _bandFlow(decision) {
       const steps = this.model.steps;
       const own = steps.indexOf(decision);
-      const target = decision.decision?.noTarget || 'end';
-      if (target === 'end') return null;
-      const found = steps.find((s) => s.id === target);
-      if (!found) return null;
-      return steps.indexOf(found) > own ? found : null;
+      const id = decision?.decision?.noTarget || 'end';
+      if (id === 'end') return null;
+      const i = steps.findIndex((s) => s.id === id);
+      if (i === -1) return null;
+      return { target: steps[i], backward: i < own };
+    },
+
+    /**
+     * Does this step sit in a band that runs right to left? Read off the
+     * decision that owns the band, not off columns — the direction is a fact
+     * about the CHAIN, and the columns are derived from it.
+     * @param {object} step
+     * @returns {boolean}
+     */
+    isBackwardStep(step) {
+      const ownerId = branchOwnerId(step?.branchId);
+      if (!ownerId) return false;
+      const owner = this.model.steps.find((s) => s.id === ownerId);
+      return !!(owner && this._bandFlow(owner)?.backward);
     },
 
     /**
@@ -288,47 +320,51 @@ export function activityFlowchartData(module, _t) {
     },
 
     /**
-     * Grid placement for a band's tail — placeholder and exit, directly after
+     * Grid placement for a band's tail — placeholder and exit, directly past
      * that band's last card rather than in a column shared by every band.
+     * "Past" follows the band's direction: a rework loop runs right to left,
+     * so its tail sits LEFT of its cards, where the stream is heading and
+     * where the next card will land.
      * @param {object} band
      * @returns {string}
      */
     tailStyle(band) {
       const { colOf } = this._layout();
       const owner = this.model.steps.find((s) => s.id === band.ownerId);
-      let last = owner ? colOf.get(owner.id) : 0;
+      const cols = owner ? [colOf.get(owner.id)] : [0];
       this.model.steps.forEach((s) => {
-        if (s.branchId === band.id) last = Math.max(last, colOf.get(s.id));
+        if (s.branchId === band.id) cols.push(colOf.get(s.id));
       });
+      const back = owner ? !!this._bandFlow(owner)?.backward : false;
+      const edge = back ? Math.min(...cols) - 1 : Math.max(...cols) + 1;
       const row = this.bands().findIndex((b) => b.id === band.id) + 1;
-      return `grid-row: ${row}; grid-column: ${last + 1 + (this.hasBands() ? 1 : 0)}`;
+      return `grid-row: ${row}; grid-column: ${edge + (this.hasBands() ? 1 : 0)}`;
+    },
+
+    /**
+     * The tail's gap sits between it and the card it follows, so it changes
+     * sides with the band's direction.
+     * @param {object} band
+     * @returns {string}
+     */
+    tailClass(band) {
+      const owner = this.model.steps.find((s) => s.id === band.ownerId);
+      return owner && this._bandFlow(owner)?.backward ? 'af__tail--back' : '';
     },
 
 
     /**
-     * Which way the arrow in front of step `idx` points. Only the HEAD of a
-     * band can turn. A band that rejoins backwards carries its return path to
-     * the left of that first card — the stream there runs from the card back
-     * to the kachel it re-enters at, not into the card — so an arrow pointing
-     * right would name a flow that does not exist. A forward rejoin, a dead
-     * end and the whole main path all follow the chain, left to right.
+     * Which way the arrow in front of step `idx` points. In a band that
+     * rejoins backwards the whole stream runs leftwards — not just the return
+     * path beyond its first card — so EVERY arrow in it turns, or the band
+     * would claim two directions at once. A forward rejoin, a dead end and the
+     * whole main path all follow the chain, left to right.
      * @param {number} idx chain index of the step the arrow belongs to
      * @returns {string}
      */
     arrowClass(idx) {
-      const step = this.model.steps[idx];
-      if (!step || step.branchId === MAIN_BRANCH) return '';
-      const bandSteps = this.model.steps.filter((s) => s.branchId === step.branchId);
-      if (bandSteps[0]?.id !== step.id) return '';
-      const band = this.bands().find((b) => b.id === step.branchId);
-      const owner = this.model.steps.find((s) => s.id === band?.ownerId);
-      const target = owner?.decision?.noTarget;
-      if (!target || target === 'end') return '';
-      const { colOf } = this._layout();
-      const targetCol = colOf.get(target);
-      const headCol = colOf.get(step.id);
-      if (targetCol == null || headCol == null) return '';
-      return targetCol < headCol ? 'af__connector-arrow--back' : '';
+      return this.isBackwardStep(this.model.steps[idx])
+        ? 'af__connector-arrow--back' : '';
     },
 
     /** True as soon as there is at least one band besides the main path. */
@@ -378,8 +414,8 @@ export function activityFlowchartData(module, _t) {
      * @returns {void}
      */
     insertInBand(idx, bandId) {
-      this.model.insertStep(idx, { kind: 'activity', branchId: bandId });
-      this.$nextTick(() => this._autoSizeAll());
+      const step = this.model.insertStep(idx, { kind: 'activity', branchId: bandId });
+      this.$nextTick(() => { this._autoSizeAll(); this.revealStep(step); });
     },
 
     /**
@@ -407,8 +443,8 @@ export function activityFlowchartData(module, _t) {
       const m = this._insertMenu;
       if (!m) return;
       this._insertMenu = null;
-      this.model.insertStep(m.idx, { kind, branchId: m.bandId });
-      this.$nextTick(() => this._autoSizeAll());
+      const step = this.model.insertStep(m.idx, { kind, branchId: m.bandId });
+      this.$nextTick(() => { this._autoSizeAll(); this.revealStep(step); });
     },
 
     /**
@@ -427,8 +463,8 @@ export function activityFlowchartData(module, _t) {
      * @param {string} bandId @returns {void}
      */
     addActivityToBand(bandId) {
-      this.model.addStepToBranch(bandId, { kind: 'activity' });
-      this.$nextTick(() => this._autoSizeAll());
+      const step = this.model.addStepToBranch(bandId, { kind: 'activity' });
+      this.$nextTick(() => { this._autoSizeAll(); this.revealStep(step); });
     },
 
     /**
@@ -437,8 +473,22 @@ export function activityFlowchartData(module, _t) {
      * @param {string} bandId @returns {void}
      */
     addDecisionToBand(bandId) {
-      this.model.addStepToBranch(bandId, { kind: 'decision' });
-      this.$nextTick(() => this._autoSizeAll());
+      const step = this.model.addStepToBranch(bandId, { kind: 'decision' });
+      this.$nextTick(() => { this._autoSizeAll(); this.revealStep(step); });
+    },
+
+    /**
+     * Append to the MAIN path, from the toolbar. Same reveal as every other
+     * way of adding a card — the toolbar is the one that most often adds
+     * beyond the right edge, because the main path is the longest band.
+     * @param {'activity'|'decision'} kind
+     * @returns {void}
+     */
+    appendStep(kind) {
+      const at = this.model.steps.length;
+      const step = kind === 'decision'
+        ? this.model.addDecision(at) : this.model.addStep(at);
+      this.$nextTick(() => { this._autoSizeAll(); this.revealStep(step); });
     },
 
     /**

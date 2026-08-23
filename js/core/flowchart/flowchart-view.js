@@ -15,7 +15,8 @@
  * @param {{
  *   autoSizeSelector?: string,
  *   dragRowSelector?: string,    // element that carries `draggable`, armed by armStepDrag
- *   substepItemSelector?: string // element that carries `draggable` for a substep
+ *   substepItemSelector?: string, // element that carries `draggable` for a substep
+ *   canvasSelector?: string      // the sideways-scrolling box `revealStep` moves
  * }} [opts]
  * @returns {object} data()-mixin with transient drag state and handlers
  */
@@ -53,8 +54,40 @@ export function chainViewMixin(module, _t, opts = {}) {
     .filter(Boolean).join(', ');
   const dragRowSelector = opts.dragRowSelector || '[data-step-id]';
   const substepItemSelector = opts.substepItemSelector || '[data-substep-id]';
+  const canvasSelector = opts.canvasSelector || null;
 
   return {
+    /**
+     * Scroll the canvas until a freshly created card is on screen. A chain
+     * wider than its canvas otherwise answers "add" by growing out of sight,
+     * and the user has to go looking for the very card they just asked for.
+     *
+     * The card says where to look, rather than the end of the chain: a card
+     * can land at an insert arrow, or in a band that runs right to left, and
+     * neither is the right edge. The nearest edge wins, so a card already in
+     * view moves nothing.
+     *
+     * @param {{id: string}|string|null} step the new step, or its id
+     * @returns {void}
+     */
+    revealStep(step) {
+      if (!canvasSelector) return;
+      const id = typeof step === 'string' ? step : step?.id;
+      if (!id) return;
+      const canvas = this.$root?.querySelector(canvasSelector);
+      // The card, not any field inside it that repeats the id — hence the
+      // module's own row selector rather than a bare attribute match.
+      const el = canvas?.querySelector(`${dragRowSelector}[data-step-id="${id}"]`);
+      if (!canvas || !el) return;
+      // Room for the connector in front of the card, and for whatever follows
+      // it — a band's tail sits one gap further on.
+      const pad = 48;
+      const c = canvas.getBoundingClientRect();
+      const r = el.getBoundingClientRect();
+      if (r.left < c.left + pad) canvas.scrollLeft += r.left - c.left - pad;
+      else if (r.right > c.right - pad) canvas.scrollLeft += r.right - c.right + pad;
+    },
+
     _draggedStepId: /** @type {string|null} */ (null),
     /** @type {number|null} gap under the cursor while a card is in flight */
     _activeGap: null,

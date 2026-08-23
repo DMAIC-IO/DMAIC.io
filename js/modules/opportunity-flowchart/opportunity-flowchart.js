@@ -35,9 +35,9 @@ export default createModule({
     meta: import.meta,
     actions: [
       { icon: 'plus', title: 'addStepVA', variant: 'primary',
-        onClick: (d) => d.model.addStep(d.model.steps.length, { side: 'va' }) },
+        onClick: (d) => d.appendStep('va') },
       { icon: 'plus', title: 'addStepNVA',
-        onClick: (d) => d.model.addStep(d.model.steps.length, { side: 'nva' }) },
+        onClick: (d) => d.appendStep('nva') },
       { icon: 'upload', title: 'importFrom',
         onClick: (d) => d._openImport() },
       { icon: 'download', title: 'export.label', children: [
@@ -54,7 +54,19 @@ export default createModule({
       ...chainViewMixin(module, _t, {
         autoSizeSelector: 'textarea.of__step-title, textarea.of__step-description',
         dragRowSelector: '.of__col',
+        canvasSelector: '.of__canvas',
       }),
+
+      /**
+       * Append to the chain from the toolbar, and look at what was added — a
+       * chain wider than the canvas otherwise grows out of sight.
+       * @param {'va'|'nva'} side which column the new step lands in
+       * @returns {void}
+       */
+      appendStep(side) {
+        const step = this.model.addStep(this.model.steps.length, { side });
+        this.$nextTick(() => this.revealStep(step));
+      },
 
       // ── Lifecycle (per Alpine instance) ───────────────────────
       init() {

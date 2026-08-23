@@ -519,3 +519,20 @@
   font-size: var(--font-size-sm);
   color: var(--color-text-primary);
 }
+
+/* A band that rejoins backwards runs right to left, and its arrows stay where
+   every other arrow in the chart is: left of their card. That is the side the
+   stream is heading for here, so each one marks the gap the card flows INTO.
+   Moving them to the right paired each arrow with the card it came from, which
+   is exact for every card but the first — the head's predecessor is the
+   diamond, and that stands ABOVE it in the same column, leaving the arrow to
+   claim a column nothing flows through.
+
+   The tail is the one thing that does change sides: in a right-to-left band it
+   stands left of the cards, so the gap that separates it from the last one
+   lies on its right. */
+.af__tail--back {
+  padding-left: 0;
+  padding-right: var(--fc-chain-gap);
+  justify-content: flex-end;
+}
