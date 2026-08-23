@@ -130,7 +130,16 @@ export class Workspace {
       this._actionEffectDisposers.forEach((dispose) => { try { dispose(); } catch { /* noop */ } });
       this._actionEffectDisposers = [];
       this._actionsEl.replaceChildren();
+      // There is no tab left to be active, and nothing announces that on its
+      // own — `_activateTab` is what emits `module:activated`, and it is never
+      // reached from here. A stale `_activeInstanceId` is worse than untidy:
+      // `getActiveModuleInfo()` keeps answering with it, so the help panel
+      // goes on showing the handbook of a module this phase does not have —
+      // one that was just deleted, or one that lives in another phase
+      // entirely. Clear it and say so.
+      this._activeInstanceId = null;
       this._renderEmptyState();
+      this._eventBus.emit('module:deactivated', { phase });
       return;
     }
 

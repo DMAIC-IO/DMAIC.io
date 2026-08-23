@@ -295,6 +295,19 @@ export function initModuleHelp(
     if (ownsPanel) populatePanel(tab);
   });
 
+  // A phase with no modules has no active module either — closing the last
+  // one, or stepping into an empty phase, leaves the panel with nothing to be
+  // about. Repopulating it would only trade a dead module's handbook for a
+  // "no active module" placeholder that nobody asked to see, so the panel
+  // closes and the button gives up its active state with it.
+  eventBus.on('module:deactivated', () => {
+    const tab = helpPanel.getActiveTab?.();
+    const ownsPanel = helpPanel.isVisible() && (tab === 'help' || tab === 'examples' || tab === 'glossary');
+    if (!ownsPanel) return;
+    helpPanel.hide();
+    btn.classList.remove('btn--active');
+  });
+
   // Sync button active state with the panel. The help/examples/glossary tabs
   // all belong to this single sidebar button now (the standalone glossary
   // button has been removed).
