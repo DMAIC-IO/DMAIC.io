@@ -30,6 +30,7 @@
   cursor: pointer;
   transition: all var(--transition-speed);
   white-space: nowrap;
+
   /* Icon + label are sibling spans (batch 8 restructured this from x-text
      to icon-plus-label); as plain inline content the icon's own
      vertical-align docked it near the button's top instead of centering on

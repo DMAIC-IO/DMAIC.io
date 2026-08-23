@@ -247,5 +247,6 @@
    (24px) ist dafür zu klein, deshalb hier die --icon-size-Ausnahme. */
 .icon--empty-state {
   --icon-size: 48px;
+
   opacity: 0.4;
 }

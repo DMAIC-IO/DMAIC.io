@@ -72,7 +72,7 @@ export function buildIconsCss(map, readSource) {
     try {
       raw = readSource(src);
     } catch (err) {
-      throw new Error(`icon "${name}" -> ${map[name]}: ${err.message}`);
+      throw new Error(`icon "${name}" -> ${map[name]}: ${err.message}`, { cause: err });
     }
     const svg = normalizeSvg(raw);
     if (svg.includes('ACCENT')) {

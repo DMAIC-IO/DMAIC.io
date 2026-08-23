@@ -37,7 +37,7 @@ export function loadIconMap(path) {
     try {
       parseSpec(spec);
     } catch (err) {
-      throw new Error(`icon-map.json: ${name}: ${err.message}`);
+      throw new Error(`icon-map.json: ${name}: ${err.message}`, { cause: err });
     }
   }
   return map;

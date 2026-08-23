@@ -1156,6 +1156,7 @@ body.dev-area-open .dmaic-tiles {
 .dashboard-grid__tile-move .icon,
 .dashboard-grid__tile-resize .icon {
   --icon-size: 12px;              /* Sonderfall: kleiner als sm, siehe components.css */
+
   transition: opacity 0.15s;
 }
 
