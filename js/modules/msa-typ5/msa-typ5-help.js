@@ -21,7 +21,7 @@ export default {
         blocks: [
           {
             type: 'paragraph',
-            content: 'MSA Verfahren 5 (Attribute Measurement System Analysis) prüft Prüfprozesse, die keine stetigen Messwerte liefern, sondern eine <em>kategoriale Entscheidung</em> treffen — binär (i.O./n.i.O.), nominal (Fehlerklassen A/B/C ohne Rangordnung) oder ordinal (Note 1–5, geordnet). Das Modul bewertet {{term:kappa|Kappa}}-basiert, wie zuverlässig und reproduzierbar mehrere Prüfer die Teile derselben Kategorie zuordnen.',
+            content: 'MSA Verfahren 5 (Attribute Measurement System Analysis) prüft Prüfprozesse, die keine stetigen Messwerte liefern, sondern eine *kategoriale Entscheidung* treffen — binär (i.O./n.i.O.), nominal (Fehlerklassen A/B/C ohne Rangordnung) oder ordinal (Note 1–5, geordnet). Das Modul bewertet {{term:kappa|Kappa}}-basiert, wie zuverlässig und reproduzierbar mehrere Prüfer die Teile derselben Kategorie zuordnen.',
           },
           {
             type: 'definition',
@@ -40,7 +40,7 @@ export default {
           },
           {
             type: 'paragraph',
-            content: 'Abgrenzung: MSA Typ 1/2/4 arbeiten mit variablen Messwerten (mm, N, °C) und liefern Cg/Cgk, {{term:gage-rr|Gage R&R}} oder {{term:linearitaet|Linearität}}. Typ 5 dagegen bewertet <em>attributive</em> Prüfprozesse — visuelle Sichtprüfungen, Klassifikationsentscheidungen, Sortierungen — und liefert {{term:kappa|κ}}, {{term:effektivitaet|Effektivität}} sowie — bei binären Merkmalen mit Referenz — {{term:signal-detection|Signal-Detection}}-Kennzahlen.',
+            content: 'Abgrenzung: MSA Typ 1/2/4 arbeiten mit variablen Messwerten (mm, N, °C) und liefern Cg/Cgk, {{term:gage-rr|Gage R&R}} oder {{term:linearitaet|Linearität}}. Typ 5 dagegen bewertet *attributive* Prüfprozesse — visuelle Sichtprüfungen, Klassifikationsentscheidungen, Sortierungen — und liefert {{term:kappa|κ}}, {{term:effektivitaet|Effektivität}} sowie — bei binären Merkmalen mit Referenz — {{term:signal-detection|Signal-Detection}}-Kennzahlen.',
           },
         ],
       },
@@ -49,7 +49,7 @@ export default {
         blocks: [
           {
             type: 'paragraph',
-            content: 'MSA Type 5 (Attribute Measurement System Analysis) evaluates inspection processes that do not produce continuous readings but a <em>categorical decision</em> — binary (OK/NOK), nominal (defect classes A/B/C without order) or ordinal (grades 1–5, ordered). The module uses {{term:kappa|kappa}}-based statistics to assess how reliably and reproducibly multiple appraisers assign the same category to the same parts.',
+            content: 'MSA Type 5 (Attribute Measurement System Analysis) evaluates inspection processes that do not produce continuous readings but a *categorical decision* — binary (OK/NOK), nominal (defect classes A/B/C without order) or ordinal (grades 1–5, ordered). The module uses {{term:kappa|kappa}}-based statistics to assess how reliably and reproducibly multiple appraisers assign the same category to the same parts.',
           },
           {
             type: 'definition',
@@ -68,7 +68,7 @@ export default {
           },
           {
             type: 'paragraph',
-            content: 'Boundary: MSA Type 1/2/4 handle variable measurements (mm, N, °C) and yield Cg/Cgk, Gage R&R or linearity metrics. Type 5 in contrast evaluates <em>attribute</em> inspection processes — visual checks, classification, sorting — and delivers {{term:kappa|κ}}, {{term:effektivitaet|effectiveness}} and — for binary characteristics with a reference — {{term:signal-detection|signal-detection}} metrics.',
+            content: 'Boundary: MSA Type 1/2/4 handle variable measurements (mm, N, °C) and yield Cg/Cgk, Gage R&R or linearity metrics. Type 5 in contrast evaluates *attribute* inspection processes — visual checks, classification, sorting — and delivers {{term:kappa|κ}}, {{term:effektivitaet|effectiveness}} and — for binary characteristics with a reference — {{term:signal-detection|signal-detection}} metrics.',
           },
         ],
       },
@@ -81,11 +81,11 @@ export default {
           {
             type: 'list',
             items: [
-              'Long/tidy-Format mit drei Pflicht-Spalten: <strong>Teil-ID</strong>, <strong>Prüfer-ID</strong>, <strong>Bewertung</strong>. Jede Zeile ist eine Einzel-Bewertung.',
-              'Optionale <strong>Referenz-Spalte</strong> mit dem wahren Kategoriewert je Teil. Fehlt sie, greift der {{term:konsens-fallback|Konsens-Fallback}}.',
-              'Optionale <strong>Wiederholungs-Spalte</strong>. Fehlt sie, nummeriert die Engine je (Teil × Prüfer) automatisch von 1 an.',
+              'Long/tidy-Format mit drei Pflicht-Spalten: **Teil-ID**, **Prüfer-ID**, **Bewertung**. Jede Zeile ist eine Einzel-Bewertung.',
+              'Optionale **Referenz-Spalte** mit dem wahren Kategoriewert je Teil. Fehlt sie, greift der {{term:konsens-fallback|Konsens-Fallback}}.',
+              'Optionale **Wiederholungs-Spalte**. Fehlt sie, nummeriert die Engine je (Teil × Prüfer) automatisch von 1 an.',
               'Mindestens 2 unterschiedliche Teile, 2 unterschiedliche Prüfer und 2 vorkommende Bewertungs-Klassen.',
-              'Für {{term:wiederholbarkeit|Wiederholbarkeit}}: mindestens 2 Wiederholungen je (Teil × Prüfer) — sonst warnt die Engine mit <code>W_LOW_REP_COUNT</code>.',
+              'Für {{term:wiederholbarkeit|Wiederholbarkeit}}: mindestens 2 Wiederholungen je (Teil × Prüfer) — sonst warnt die Engine mit **W_LOW_REP_COUNT**.',
               'AIAG-Empfehlung für Freigabestudien: 50 Teile · 3 Prüfer · 3 Wiederholungen, mit ~50 % Grenzfällen im Datensatz.',
             ],
           },
@@ -102,7 +102,7 @@ export default {
           {
             type: 'definition',
             term: 'Referenz vs. Konsens',
-            content: 'Rückführbare Referenzurteile (Experten-Set, Master-Sample) liefern die belastbarste {{term:effektivitaet|Effektivität}}. Ohne Referenz leitet der {{term:konsens-fallback|Konsens-Fallback}} je Teil ein Mehrheitsvotum ab; bei Gleichstand landet das Teil in <code>meta.ambiguousParts</code> und wird aus allen Vs-Referenz-Kennzahlen ausgeschlossen. κ unter Prüfern bleibt davon unberührt.',
+            content: 'Rückführbare Referenzurteile (Experten-Set, Master-Sample) liefern die belastbarste {{term:effektivitaet|Effektivität}}. Ohne Referenz leitet der {{term:konsens-fallback|Konsens-Fallback}} je Teil ein Mehrheitsvotum ab; bei Gleichstand landet das Teil in **meta.ambiguousParts** und wird aus allen Vs-Referenz-Kennzahlen ausgeschlossen. κ unter Prüfern bleibt davon unberührt.',
           },
         ],
       },
@@ -112,11 +112,11 @@ export default {
           {
             type: 'list',
             items: [
-              'Long/tidy layout with three required columns: <strong>Part ID</strong>, <strong>Appraiser ID</strong>, <strong>Rating</strong>. Each row is one individual rating.',
-              'Optional <strong>reference column</strong> with the true category for each part. If missing, the {{term:konsens-fallback|consensus fallback}} kicks in.',
-              'Optional <strong>replicate column</strong>. If missing, the engine auto-numbers replicates per (part × appraiser) starting at 1.',
+              'Long/tidy layout with three required columns: **Part ID**, **Appraiser ID**, **Rating**. Each row is one individual rating.',
+              'Optional **reference column** with the true category for each part. If missing, the {{term:konsens-fallback|consensus fallback}} kicks in.',
+              'Optional **replicate column**. If missing, the engine auto-numbers replicates per (part × appraiser) starting at 1.',
               'At least 2 distinct parts, 2 distinct appraisers and 2 distinct rating classes present in the data.',
-              'For repeatability: at least 2 replicates per (part × appraiser) — otherwise the engine emits <code>W_LOW_REP_COUNT</code>.',
+              'For repeatability: at least 2 replicates per (part × appraiser) — otherwise the engine emits **W_LOW_REP_COUNT**.',
               'AIAG recommendation for release studies: 50 parts · 3 appraisers · 3 replicates, with roughly 50 % borderline parts in the sample.',
             ],
           },
@@ -133,7 +133,7 @@ export default {
           {
             type: 'definition',
             term: 'Reference vs. consensus',
-            content: 'Traceable reference calls (expert set, master sample) give the most reliable {{term:effektivitaet|effectiveness}}. Without a reference the {{term:konsens-fallback|consensus fallback}} derives a majority vote per part; ties push the part into <code>meta.ambiguousParts</code> and exclude it from all vs-reference metrics. κ between appraisers is not affected.',
+            content: 'Traceable reference calls (expert set, master sample) give the most reliable {{term:effektivitaet|effectiveness}}. Without a reference the {{term:konsens-fallback|consensus fallback}} derives a majority vote per part; ties push the part into **meta.ambiguousParts and exclude it from all vs-reference metrics. κ between appraisers is not affected.',
           },
         ],
       },
@@ -154,17 +154,17 @@ export default {
           {
             type: 'definition',
             term: 'Beobachtete Übereinstimmung',
-            content: 'p<sub>o</sub> = Σ<sub>i</sub> n<sub>ii</sub> / N — Diagonalsumme der {{term:kontingenztafel|Kreuztabelle}} geteilt durch Gesamtzahl der Bewertungspaare.',
+            content: '$p_{o} = Σ_{i} n_{ii}$ / N — Diagonalsumme der {{term:kontingenztafel|Kreuztabelle}} geteilt durch Gesamtzahl der Bewertungspaare.',
           },
           {
             type: 'definition',
             term: 'Zufällige Übereinstimmung',
-            content: 'p<sub>e</sub> = Σ<sub>i</sub> (n<sub>i·</sub> · n<sub>·i</sub>) / N² — erwartete Übereinstimmung aus den Randverteilungen der beiden Prüfer.',
+            content: '$p_{e} = Σ_{i} (n_{i·} · n_{·i}$) / N² — erwartete Übereinstimmung aus den Randverteilungen der beiden Prüfer.',
           },
           {
             type: 'definition',
             term: '{{term:cohen-kappa|Cohen κ}}',
-            content: 'κ = (p<sub>o</sub> − p<sub>e</sub>) / (1 − p<sub>e</sub>). SE(κ) nach Fleiss/Cohen/Everitt (1969); 95 %-KI = κ ± z<sub>1−α/2</sub> · SE(κ).',
+            content: '$κ = (p_o − p_e) / (1 − p_e)$. SE(κ) nach Fleiss/Cohen/Everitt (1969); 95 %-KI $= κ ± z_{1−α/2} \\cdot SE(κ)$.',
           },
           {
             type: 'heading',
@@ -173,7 +173,7 @@ export default {
           {
             type: 'definition',
             term: '{{term:fleiss-kappa|Fleiss κ}}',
-            content: 'P<sub>i</sub> = (Σ<sub>j</sub> n<sub>ij</sub>² − n<sub>i·</sub>) / (n<sub>i·</sub>(n<sub>i·</sub> − 1)) je Teil i, P̄ = {{term:mittelwert|Mittelwert}}. p̄<sub>j</sub> = Klassen-Randanteil. κ = (P̄ − P<sub>e</sub>) / (1 − P<sub>e</sub>) mit P<sub>e</sub> = Σ<sub>j</sub> p̄<sub>j</sub>². Bei ungleichen Rater-Zahlen wechselt die Engine auf die Randolph-Variante und vermerkt dies im Feld <code>method</code>.',
+            content: '$P_i = (Σ_j n_{ij}^2 − n_{i·}) / (n_{i·}(n_{i·} − 1))$ je Teil $i$, $P̄$ = {{term:mittelwert|Mittelwert}}. $p̄_j$ = Klassen-Randanteil. $κ = (P̄ − P_e) / (1 − P_e)$ mit $P_e = Σ_j p̄_j^2$. Bei ungleichen Rater-Zahlen wechselt die Engine auf die Randolph-Variante und vermerkt dies im Feld method.',
           },
           {
             type: 'heading',
@@ -182,7 +182,7 @@ export default {
           {
             type: 'definition',
             term: '{{term:weighted-kappa|Weighted κ}}',
-            content: 'Gewichts-Matrix W: linear w<sub>ij</sub> = 1 − |i − j|/(k − 1) oder quadratisch w<sub>ij</sub> = 1 − ((i − j)/(k − 1))². Damit werden nahe Fehlklassifikationen (Note 3 ⟷ 4) milder gestraft als weite (1 ⟷ 5). κ<sub>w</sub> = (p<sub>o</sub><sup>w</sup> − p<sub>e</sub><sup>w</sup>) / (1 − p<sub>e</sub><sup>w</sup>).',
+            content: 'Gewichts-Matrix $W$: linear $w_{ij} = 1 − |i − j|/(k − 1)$ oder quadratisch $w_{ij} = 1 − ((i − j)/(k − 1))^2$. Damit werden nahe Fehlklassifikationen (Note 3 ⟷ 4) milder gestraft als weite (1 ⟷ 5). $κ_w = (p_o^w − p_e^w) / (1 − p_e^w)$.',
           },
           {
             type: 'heading',
@@ -251,17 +251,17 @@ export default {
           {
             type: 'definition',
             term: 'Observed agreement',
-            content: 'p<sub>o</sub> = Σ<sub>i</sub> n<sub>ii</sub> / N — diagonal sum of the cross tab divided by the total number of rating pairs.',
+            content: '$p_{o} = Σ_{i} n_{ii}$ / N — diagonal sum of the cross tab divided by the total number of rating pairs.',
           },
           {
             type: 'definition',
             term: 'Chance agreement',
-            content: 'p<sub>e</sub> = Σ<sub>i</sub> (n<sub>i·</sub> · n<sub>·i</sub>) / N² — expected agreement from the marginal distributions of both appraisers.',
+            content: '$p_{e} = Σ_{i} (n_{i·} · n_{·i}$) / N² — expected agreement from the marginal distributions of both appraisers.',
           },
           {
             type: 'definition',
             term: '{{term:cohen-kappa|Cohen κ}}',
-            content: 'κ = (p<sub>o</sub> − p<sub>e</sub>) / (1 − p<sub>e</sub>). SE(κ) after Fleiss/Cohen/Everitt (1969); 95 % CI = κ ± z<sub>1−α/2</sub> · SE(κ).',
+            content: '$κ = (p_o − p_e) / (1 − p_e)$. SE(κ) after Fleiss/Cohen/Everitt (1969); 95 % CI $= κ ± z_{1−α/2} \\cdot SE(κ)$.',
           },
           {
             type: 'heading',
@@ -270,7 +270,7 @@ export default {
           {
             type: 'definition',
             term: '{{term:fleiss-kappa|Fleiss κ}}',
-            content: 'P<sub>i</sub> = (Σ<sub>j</sub> n<sub>ij</sub>² − n<sub>i·</sub>) / (n<sub>i·</sub>(n<sub>i·</sub> − 1)) per part i, P̄ = mean. p̄<sub>j</sub> = class marginal. κ = (P̄ − P<sub>e</sub>) / (1 − P<sub>e</sub>) with P<sub>e</sub> = Σ<sub>j</sub> p̄<sub>j</sub>². Under unbalanced rater counts the engine switches to the Randolph variant and records this in the <code>method</code> field.',
+            content: '$P_i = (Σ_j n_{ij}^2 − n_{i·}) / (n_{i·}(n_{i·} − 1))$ per part $i$, $P̄$ = mean. $p̄_j$ = class marginal. $κ = (P̄ − P_e) / (1 − P_e)$ with $P_e = Σ_j p̄_j^2$. Under unbalanced rater counts the engine switches to the Randolph variant and records this in the method field.',
           },
           {
             type: 'heading',
@@ -279,7 +279,7 @@ export default {
           {
             type: 'definition',
             term: '{{term:weighted-kappa|Weighted κ}}',
-            content: 'Weight matrix W: linear w<sub>ij</sub> = 1 − |i − j|/(k − 1) or quadratic w<sub>ij</sub> = 1 − ((i − j)/(k − 1))². Near misclassifications (grade 3 ⟷ 4) are penalised more mildly than distant ones (1 ⟷ 5). κ<sub>w</sub> = (p<sub>o</sub><sup>w</sup> − p<sub>e</sub><sup>w</sup>) / (1 − p<sub>e</sub><sup>w</sup>).',
+            content: 'Weight matrix $W$: linear $w_{ij} = 1 − |i − j|/(k − 1)$ or quadratic $w_{ij} = 1 − ((i − j)/(k − 1))^2$. Near misclassifications (grade 3 ⟷ 4) are penalised more mildly than distant ones (1 ⟷ 5). $κ_w = (p_o^w − p_e^w) / (1 − p_e^w)$.',
           },
           {
             type: 'heading',
@@ -347,7 +347,7 @@ export default {
           {
             type: 'definition',
             term: 'Grün — freigegeben',
-            content: 'Fleiss κ ≥ 0,75 <strong>und</strong> alle Effektivitäten ≥ 0,90. Das Prüfsystem misst reproduzierbar und trifft die Referenz zuverlässig.',
+            content: 'Fleiss κ ≥ 0,75 und** alle Effektivitäten ≥ 0,90. Das Prüfsystem misst reproduzierbar und trifft die Referenz zuverlässig.',
           },
           {
             type: 'definition',
@@ -357,17 +357,17 @@ export default {
           {
             type: 'definition',
             term: 'Rot — nicht tauglich',
-            content: 'Fleiss κ &lt; 0,40 <strong>oder</strong> mindestens eine Effektivität &lt; 0,80. Das Prüfsystem ist nicht freigebbar — Schulung, Prüfanweisung überarbeiten oder Grenzmuster ergänzen.',
+            content: 'Fleiss κ &lt; 0,40 **oder** mindestens eine Effektivität &lt; 0,80. Das Prüfsystem ist nicht freigebbar — Schulung, Prüfanweisung überarbeiten oder Grenzmuster ergänzen.',
           },
           {
             type: 'definition',
             term: 'Ambige Teile ohne Referenz',
-            content: 'Wenn der {{term:konsens-fallback|Konsens-Fallback}} für ein Teil kein Mehrheitsvotum findet (Gleichstand bei binär/nominal, kein eindeutiger Median bei ordinal), landet das Teil in <code>meta.ambiguousParts</code> und wird nur aus Effektivität, Miss-/False-Alarm und {{term:signal-detection|SDT}} ausgeschlossen. Kappa unter Prüfern bleibt erhalten.',
+            content: 'Wenn der {{term:konsens-fallback|Konsens-Fallback}} für ein Teil kein Mehrheitsvotum findet (Gleichstand bei binär/nominal, kein eindeutiger Median bei ordinal), landet das Teil in **meta.ambiguousParts** und wird nur aus Effektivität, Miss-/False-Alarm und {{term:signal-detection|SDT}} ausgeschlossen. Kappa unter Prüfern bleibt erhalten.',
           },
           {
             type: 'definition',
             term: 'Interpretation-Textbaustein',
-            content: 'Der Interpretations-Absatz benennt zusätzlich den Ampelfarben-<em>Treiber</em> (Fleiss κ, Effektivität, Miss-Rate oder False-Alarm-Rate) sowie ggf. die Warnungen <code>W_UNBALANCED_REPS</code>, <code>W_AMBIGUOUS_CONSENSUS</code> und <code>W_LOW_REP_COUNT</code>.',
+            content: 'Der Interpretations-Absatz benennt zusätzlich den Ampelfarben-*Treiber* (Fleiss κ, Effektivität, Miss-Rate oder False-Alarm-Rate) sowie ggf. die Warnungen **W_UNBALANCED_REPS**, **W_AMBIGUOUS_CONSENSUS** und **W_LOW_REP_COUNT**.',
           },
         ],
       },
@@ -381,7 +381,7 @@ export default {
           {
             type: 'definition',
             term: 'Green — release',
-            content: 'Fleiss κ ≥ 0.75 <strong>and</strong> all effectiveness ≥ 0.90. The inspection system is reproducible and reliably hits the reference.',
+            content: 'Fleiss κ ≥ 0.75 **and** all effectiveness ≥ 0.90. The inspection system is reproducible and reliably hits the reference.',
           },
           {
             type: 'definition',
@@ -391,17 +391,17 @@ export default {
           {
             type: 'definition',
             term: 'Red — not usable',
-            content: 'Fleiss κ &lt; 0.40 <strong>or</strong> at least one effectiveness &lt; 0.80. Do not release — retrain appraisers, update the inspection instruction or add borderline reference samples.',
+            content: 'Fleiss κ &lt; 0.40 **or** at least one effectiveness &lt; 0.80. Do not release — retrain appraisers, update the inspection instruction or add borderline reference samples.',
           },
           {
             type: 'definition',
             term: 'Ambiguous parts without reference',
-            content: 'When the {{term:konsens-fallback|consensus fallback}} finds no majority vote for a part (tie for binary/nominal, no unique median for ordinal), the part lands in <code>meta.ambiguousParts</code> and is excluded only from effectiveness, miss/false-alarm and {{term:signal-detection|SDT}}. Kappa between appraisers is retained.',
+            content: 'When the {{term:konsens-fallback|consensus fallback}} finds no majority vote for a part (tie for binary/nominal, no unique median for ordinal), the part lands in **meta.ambiguousParts** and is excluded only from effectiveness, miss/false-alarm and {{term:signal-detection|SDT}}. Kappa between appraisers is retained.',
           },
           {
             type: 'definition',
             term: 'Interpretation text',
-            content: 'The interpretation paragraph additionally names the traffic-light <em>driver</em> (Fleiss κ, effectiveness, miss rate or false-alarm rate) and, where applicable, the warnings <code>W_UNBALANCED_REPS</code>, <code>W_AMBIGUOUS_CONSENSUS</code> and <code>W_LOW_REP_COUNT</code>.',
+            content: 'The interpretation paragraph additionally names the traffic-light *driver* (Fleiss κ, effectiveness, miss rate or false-alarm rate) and, where applicable, the warnings **W_UNBALANCED_REPS**, **W_AMBIGUOUS_CONSENSUS** and **W_LOW_REP_COUNT**.',
           },
         ],
       },

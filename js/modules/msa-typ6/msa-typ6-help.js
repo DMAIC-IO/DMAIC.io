@@ -25,7 +25,7 @@ export default {
         blocks: [
           {
             type: 'paragraph',
-            content: 'MSA Verfahren 6 prüft die <em>Stabilität eines Messsystems über die Zeit</em>. Anders als Typ 1 (ein Zeitpunkt, viele Wiederholungen) misst eine {{term:stabilitaets-studie|Stabilitäts-Studie}} regelmäßig — täglich, wöchentlich, monatlich — dasselbe {{term:referenzteil|Referenzteil}} und zieht die Werte über Wochen oder Monate zu einer {{term:regelkarte|Regelkarte}} zusammen. Die Frage lautet nicht „Wie präzise misst das System heute?", sondern „Verändert sich das System schleichend oder sprunghaft?"',
+            content: 'MSA Verfahren 6 prüft die *Stabilität eines Messsystems über die Zeit*. Anders als Typ 1 (ein Zeitpunkt, viele Wiederholungen) misst eine {{term:stabilitaets-studie|Stabilitäts-Studie}} regelmäßig — täglich, wöchentlich, monatlich — dasselbe {{term:referenzteil|Referenzteil}} und zieht die Werte über Wochen oder Monate zu einer {{term:regelkarte|Regelkarte}} zusammen. Die Frage lautet nicht „Wie präzise misst das System heute?", sondern „Verändert sich das System schleichend oder sprunghaft?"',
           },
           {
             type: 'definition',
@@ -38,7 +38,7 @@ export default {
           },
           {
             type: 'paragraph',
-            content: 'Abgrenzung: MSA Typ 1 prüft Wiederholpräzision und Bias an <em>einem</em> Zeitpunkt (Cg/Cgk). Typ 2 prüft Wiederhol- und Vergleichspräzision mit Bediener-Einfluss ({{term:gage-rr|Gage R&R}}). Typ 4 prüft {{term:linearitaet|Linearität}} über den Messbereich. Typ 5 prüft attributive Prüfprozesse (Kappa). Typ 6 dagegen prüft <em>ein</em> Referenzteil über <em>viele Zeitpunkte</em> — die einzige der sechs MSA-Studien, die eine echte Zeitachse hat.',
+            content: 'Abgrenzung: MSA Typ 1 prüft Wiederholpräzision und Bias an *einem* Zeitpunkt (Cg/Cgk). Typ 2 prüft Wiederhol- und Vergleichspräzision mit Bediener-Einfluss ({{term:gage-rr|Gage R&R}}). Typ 4 prüft {{term:linearitaet|Linearität}} über den Messbereich. Typ 5 prüft attributive Prüfprozesse (Kappa). Typ 6 dagegen prüft *ein* Referenzteil über *viele Zeitpunkte* — die einzige der sechs MSA-Studien, die eine echte Zeitachse hat.',
           },
         ],
       },
@@ -47,7 +47,7 @@ export default {
         blocks: [
           {
             type: 'paragraph',
-            content: 'MSA Type 6 assesses the <em>stability of a measurement system over time</em>. Unlike Type 1 (one point in time, many replicates), a {{term:stabilitaets-studie|stability study}} measures the same {{term:referenzteil|reference part}} at regular intervals — daily, weekly, monthly — and combines the readings across weeks or months into a {{term:regelkarte|control chart}}. The question is not "how precise is the system today?" but "is the system drifting gradually or shifting abruptly?"',
+            content: 'MSA Type 6 assesses the *stability of a measurement system over time*. Unlike Type 1 (one point in time, many replicates), a {{term:stabilitaets-studie|stability study}} measures the same {{term:referenzteil|reference part}} at regular intervals — daily, weekly, monthly — and combines the readings across weeks or months into a {{term:regelkarte|control chart}}. The question is not "how precise is the system today?" but "is the system drifting gradually or shifting abruptly?"',
           },
           {
             type: 'definition',
@@ -60,7 +60,7 @@ export default {
           },
           {
             type: 'paragraph',
-            content: 'Boundary: MSA Type 1 checks repeatability and bias at <em>one</em> point in time (Cg/Cgk). Type 2 checks repeatability and reproducibility with operator effects (Gage R&R). Type 4 checks linearity across the measurement range. Type 5 checks attribute inspection processes (kappa). Type 6, in contrast, tracks <em>one</em> reference part across <em>many time points</em> — the only one of the six MSA studies with a genuine time axis.',
+            content: 'Boundary: MSA Type 1 checks repeatability and bias at *one* point in time (Cg/Cgk). Type 2 checks repeatability and reproducibility with operator effects (Gage R&R). Type 4 checks linearity across the measurement range. Type 5 checks attribute inspection processes (kappa). Type 6, in contrast, tracks *one* reference part across *many time points* — the only one of the six MSA studies with a genuine time axis.',
           },
         ],
       },
@@ -77,14 +77,14 @@ export default {
               'Mindestens 10 Messzeitpunkte bei I-MR (einzeln), mindestens 5 Untergruppen bei x̄-R (mehrere Wiederholungen je Zeitpunkt). Empfohlen: 20 oder mehr Basis-Zeitpunkte, damit die Grenzen aus der Studie belastbar sind.',
               'Konstante Prüfbedingungen über die gesamte Studiendauer — dasselbe Prüfmittel, möglichst derselbe Prüfer oder eine dokumentierte Rotation, gleichbleibende Umgebungsbedingungen. Wechsel während der Studie erschweren die Interpretation von Nelson-Verletzungen.',
               'Eine Zeitstempel- oder Reihenfolge-Spalte (Datum oder ganzzahliger Index) und eine Messwert-Spalte im Worksheet. Bei x̄-R zusätzlich eine Untergruppen-Spalte (z. B. Tag, Charge, Kalibrierintervall).',
-              'Für den Grenzen-Modus <em>aus Studien-Daten</em>: die Basis-Untergruppen selbst sollten weitgehend frei von {{term:nelson-regeln|Nelson-Verletzungen}} sein — sonst sind die daraus abgeleiteten Grenzen kontaminiert.',
-              'Alternativ für den Grenzen-Modus <em>manuell</em>: bekannte oder aus einer Typ-1-Studie übernommene Werte für µ₀ (Sollwert des Referenzteils) und σ₀ (bekannte {{term:wiederholbarkeit|Wiederholstreuung}}).',
+              'Für den Grenzen-Modus *aus Studien-Daten*: die Basis-Untergruppen selbst sollten weitgehend frei von {{term:nelson-regeln|Nelson-Verletzungen}} sein — sonst sind die daraus abgeleiteten Grenzen kontaminiert.',
+              'Alternativ für den Grenzen-Modus *manuell*: bekannte oder aus einer Typ-1-Studie übernommene Werte für µ₀ (Sollwert des Referenzteils) und σ₀ (bekannte {{term:wiederholbarkeit|Wiederholstreuung}}).',
             ],
           },
           {
             type: 'definition',
             term: 'Warum nicht einfach eine normale Regelkarte?',
-            content: 'Eine Prozess-Regelkarte in der Control-Phase überwacht das <em>Produkt</em> — Streuung des Fertigungsprozesses. Die Stabilitäts-Studie in Typ 6 überwacht dagegen das <em>Messsystem selbst</em>, indem sie ein konstantes Referenzteil misst. Jede Streuung, die hier auftritt, kommt ausschließlich vom Messsystem — nicht vom Teil.',
+            content: 'Eine Prozess-Regelkarte in der Control-Phase überwacht das *Produkt* — Streuung des Fertigungsprozesses. Die Stabilitäts-Studie in Typ 6 überwacht dagegen das *Messsystem selbst*, indem sie ein konstantes Referenzteil misst. Jede Streuung, die hier auftritt, kommt ausschließlich vom Messsystem — nicht vom Teil.',
           },
         ],
       },
@@ -98,14 +98,14 @@ export default {
               'At least 10 time points for I-MR (single readings), at least 5 subgroups for x̄-R (several replicates per time point). Recommended: 20 or more baseline points so the study-derived limits are trustworthy.',
               'Constant measurement conditions across the whole study — the same gage, ideally the same appraiser or a documented rotation, stable environmental conditions. Mid-study changes make Nelson-rule violations harder to interpret.',
               'A timestamp or sequence column (date or integer index) and a value column in the worksheet. For x̄-R, additionally a {{term:subgruppe|subgroup}} column (e.g. day, batch, calibration interval).',
-              'For the <em>from-study</em> limits mode: the baseline subgroups themselves should be largely free of {{term:nelson-regeln|Nelson-rule violations}} — otherwise the derived limits are contaminated.',
-              'Alternatively, for the <em>given</em> limits mode: known values, or values imported from a Type 1 study, for µ₀ (target value of the reference part) and σ₀ (known repeatability spread).',
+              'For the *from-study* limits mode: the baseline subgroups themselves should be largely free of {{term:nelson-regeln|Nelson-rule violations}} — otherwise the derived limits are contaminated.',
+              'Alternatively, for the *given* limits mode: known values, or values imported from a Type 1 study, for µ₀ (target value of the reference part) and σ₀ (known repeatability spread).',
             ],
           },
           {
             type: 'definition',
             term: 'Why not just use a regular control chart?',
-            content: 'A process control chart in the Control phase monitors the <em>product</em> — variation of the manufacturing process. The stability study in Type 6 instead monitors the <em>measurement system itself</em> by measuring a constant reference part. Any variation observed here comes exclusively from the measurement system — not from the part.',
+            content: 'A process control chart in the Control phase monitors the *product* — variation of the manufacturing process. The stability study in Type 6 instead monitors the *measurement system itself* by measuring a constant reference part. Any variation observed here comes exclusively from the measurement system — not from the part.',
           },
         ],
       },
@@ -123,7 +123,7 @@ export default {
           {
             type: 'definition',
             term: 'Grenzen-Modus — aus Studien-Daten vs. manuell',
-            content: '<em>Aus Studien-Daten</em> (Default) berechnet {{term:regelkarte|Regelkarten}}-Grenzen aus den ersten <code>k</code> Untergruppen/Punkten der Studie selbst (Default k = 20, Minimum 5) — dieselbe Logik wie eine neu aufgesetzte {{term:regelkarte|Regelkarte}}. <em>Manuell / aus Typ 1</em> übernimmt stattdessen feste Werte µ₀ (Sollwert) und σ₀ (Streuung), z. B. direkt aus einer bereits abgeschlossenen MSA-Typ-1-Studie desselben Referenzteils — dann prüft Typ 6, ob das System bei den <em>bekannten</em> Sollgrenzen bleibt, statt sich neue Grenzen aus den aktuellen Daten selbst zu ziehen.',
+            content: '*Aus Studien-Daten* (Default) berechnet {{term:regelkarte|Regelkarten}}-Grenzen aus den ersten **k** Untergruppen/Punkten der Studie selbst (Default k = 20, Minimum 5) — dieselbe Logik wie eine neu aufgesetzte {{term:regelkarte|Regelkarte}}. *Manuell / aus Typ 1* übernimmt stattdessen feste Werte µ₀ (Sollwert) und σ₀ (Streuung), z. B. direkt aus einer bereits abgeschlossenen MSA-Typ-1-Studie desselben Referenzteils — dann prüft Typ 6, ob das System bei den *bekannten* Sollgrenzen bleibt, statt sich neue Grenzen aus den aktuellen Daten selbst zu ziehen.',
           },
           {
             type: 'definition',
@@ -133,12 +133,12 @@ export default {
           {
             type: 'definition',
             term: 'Signifikanzniveau α für den Drift-Test',
-            content: 'Steuert, ab welchem p-Wert der lineare {{term:drift-test|Drift-Test}} einen Trend als signifikant einstuft (0,01 · 0,05 Default · 0,10). Ein <em>starker</em> Trend (p &lt; α/10) wiegt in der Ampel-Bewertung schwerer als ein nur knapp signifikanter.',
+            content: 'Steuert, ab welchem p-Wert der lineare {{term:drift-test|Drift-Test}} einen Trend als signifikant einstuft (0,01 · 0,05 Default · 0,10). Ein *starker* Trend (p &lt; α/10) wiegt in der Ampel-Bewertung schwerer als ein nur knapp signifikanter.',
           },
           {
             type: 'definition',
             term: 'Basis-Untergruppen k',
-            content: 'Nur im Grenzen-Modus <em>aus Studien-Daten</em>. Anzahl der ersten Untergruppen bzw. Einzelwerte, aus denen die {{term:regelkarte|Regelkarten}}-Grenzen berechnet werden. Unter 20 erscheint die Warnung, dass die Grenzen noch instabil sein können.',
+            content: 'Nur im Grenzen-Modus *aus Studien-Daten*. Anzahl der ersten Untergruppen bzw. Einzelwerte, aus denen die {{term:regelkarte|Regelkarten}}-Grenzen berechnet werden. Unter 20 erscheint die Warnung, dass die Grenzen noch instabil sein können.',
           },
         ],
       },
@@ -153,7 +153,7 @@ export default {
           {
             type: 'definition',
             term: 'Limits mode — from study data vs. given',
-            content: '<em>From study data</em> (default) computes {{term:regelkarte|control chart}} limits from the first <code>k</code> subgroups/points of the study itself (default k = 20, minimum 5) — the same logic as setting up a fresh {{term:regelkarte|control chart}}. <em>Given / from Type 1</em> instead uses fixed values µ₀ (target) and σ₀ (spread), e.g. taken directly from an already-completed MSA Type 1 study of the same reference part — Type 6 then checks whether the system stays within the <em>known</em> target limits instead of deriving new limits from the current data itself.',
+            content: '*From study data* (default) computes {{term:regelkarte|control chart}} limits from the first **k** subgroups/points of the study itself (default k = 20, minimum 5) — the same logic as setting up a fresh {{term:regelkarte|control chart}}. *Given / from Type 1* instead uses fixed values µ₀ (target) and σ₀ (spread), e.g. taken directly from an already-completed MSA Type 1 study of the same reference part — Type 6 then checks whether the system stays within the *known* target limits instead of deriving new limits from the current data itself.',
           },
           {
             type: 'definition',
@@ -163,12 +163,12 @@ export default {
           {
             type: 'definition',
             term: 'Significance level α for the drift test',
-            content: 'Controls the p-value threshold at which the linear {{term:drift-test|drift test}} classifies a trend as significant (0.01 · 0.05 default · 0.10). A <em>strong</em> trend (p &lt; α/10) weighs more heavily in the verdict than one that is only barely significant.',
+            content: 'Controls the p-value threshold at which the linear {{term:drift-test|drift test}} classifies a trend as significant (0.01 · 0.05 default · 0.10). A *strong* trend (p &lt; α/10) weighs more heavily in the verdict than one that is only barely significant.',
           },
           {
             type: 'definition',
             term: 'Baseline subgroups k',
-            content: 'Only in the <em>from study data</em> limits mode. Number of leading subgroups or individual values used to compute the {{term:regelkarte|control chart}} limits. Below 20 a warning is shown that the limits may still be unstable.',
+            content: 'Only in the *from study data* limits mode. Number of leading subgroups or individual values used to compute the {{term:regelkarte|control chart}} limits. Below 20 a warning is shown that the limits may still be unstable.',
           },
         ],
       },
@@ -185,22 +185,22 @@ export default {
           {
             type: 'definition',
             term: 'Stabil (grün)',
-            content: '0 Nelson-Verletzungen <strong>und</strong> p<sub>drift</sub> ≥ α. Das Messsystem zeigt weder Muster-Ausreißer noch einen signifikanten Trend — die {{term:regelkarte|Regelkarte}} ist unauffällig.',
+            content: '0 Nelson-Verletzungen **und $p_{drift}$ ≥ α. Das Messsystem zeigt weder Muster-Ausreißer noch einen signifikanten Trend — die {{term:regelkarte|Regelkarte}} ist unauffällig.',
           },
           {
             type: 'definition',
             term: 'Instabil (rot)',
-            content: '≥ 3 Nelson-Verletzungen <strong>oder</strong> p<sub>drift</sub> &lt; α/10 (starker Trend). Mindestens eines der beiden Signale ist deutlich — entweder wiederholte Muster-Verletzungen oder ein klarer, statistisch belastbarer Trend. Das Messsystem ist in diesem Zustand nicht freigebbar.',
+            content: '≥ 3 Nelson-Verletzungen oder $p_{drift}$ &lt; α/10 (starker Trend). Mindestens eines der beiden Signale ist deutlich — entweder wiederholte Muster-Verletzungen oder ein klarer, statistisch belastbarer Trend. Das Messsystem ist in diesem Zustand nicht freigebbar.',
           },
           {
             type: 'definition',
             term: 'Bedingt / marginal (gelb)',
-            content: 'Weder die grüne noch die rote Bedingung ist erfüllt — z. B. 1–2 Nelson-Verletzungen ohne signifikanten Trend, oder ein knapp signifikanter Trend (α ≤ p<sub>drift</sub> &lt; α/10) ohne Muster-Verletzungen. Beobachten und Ursache klären, bevor die nächste Studie ansteht.',
+            content: 'Weder die grüne noch die rote Bedingung ist erfüllt — z. B. 1–2 Nelson-Verletzungen ohne signifikanten Trend, oder ein knapp signifikanter Trend (α ≤ $p_{drift}$ &lt; α/10) ohne Muster-Verletzungen. Beobachten und Ursache klären, bevor die nächste Studie ansteht.',
           },
           {
             type: 'definition',
             term: 'Ausschlag-Treiber (driver)',
-            content: 'Das Feld <code>verdict.driver</code> benennt, welches Signal die Ampel bestimmt hat: <code>nelson</code> (Muster-Verletzungen dominieren), <code>drift</code> (der Trend dominiert), <code>both</code> (beide Bedingungen gemeinsam bei Instabil) oder <code>none</code> (stabil). Der Interpretationstext greift dieses Feld auf, um konkret zu benennen, worauf reagiert werden sollte.',
+            content: 'Das Feld verdict.driver** benennt, welches Signal die Ampel bestimmt hat: **nelson** (Muster-Verletzungen dominieren), **drift** (der Trend dominiert), **both** (beide Bedingungen gemeinsam bei Instabil) oder **none** (stabil). Der Interpretationstext greift dieses Feld auf, um konkret zu benennen, worauf reagiert werden sollte.',
           },
         ],
       },
@@ -214,22 +214,22 @@ export default {
           {
             type: 'definition',
             term: 'Stable (green)',
-            content: '0 Nelson violations <strong>and</strong> p<sub>drift</sub> ≥ α. The measurement system shows neither pattern outliers nor a significant trend — the {{term:regelkarte|control chart}} is unremarkable.',
+            content: '0 Nelson violations **and $p_{drift}$ ≥ α. The measurement system shows neither pattern outliers nor a significant trend — the {{term:regelkarte|control chart}} is unremarkable.',
           },
           {
             type: 'definition',
             term: 'Unstable (red)',
-            content: '≥ 3 Nelson violations <strong>or</strong> p<sub>drift</sub> &lt; α/10 (strong trend). At least one of the two signals is pronounced — either repeated pattern violations or a clear, statistically robust trend. The measurement system cannot be released in this state.',
+            content: '≥ 3 Nelson violations or $p_{drift}$ &lt; α/10 (strong trend). At least one of the two signals is pronounced — either repeated pattern violations or a clear, statistically robust trend. The measurement system cannot be released in this state.',
           },
           {
             type: 'definition',
             term: 'Conditional / marginal (yellow)',
-            content: 'Neither the green nor the red condition is met — e.g. 1–2 Nelson violations without a significant trend, or a barely significant trend (α ≤ p<sub>drift</sub> &lt; α/10) without pattern violations. Watch closely and clarify the {{term:ursachenanalyse|root cause}} before the next study.',
+            content: 'Neither the green nor the red condition is met — e.g. 1–2 Nelson violations without a significant trend, or a barely significant trend (α ≤ $p_{drift}$ &lt; α/10) without pattern violations. Watch closely and clarify the {{term:ursachenanalyse|root cause}} before the next study.',
           },
           {
             type: 'definition',
             term: 'Verdict driver',
-            content: 'The <code>verdict.driver</code> field names which signal determined the verdict: <code>nelson</code> (pattern violations dominate), <code>drift</code> (the trend dominates), <code>both</code> (both conditions together for unstable) or <code>none</code> (stable). The interpretation text uses this field to name concretely what needs a response.',
+            content: 'The verdict.driver** field names which signal determined the verdict: **nelson** (pattern violations dominate), **drift** (the trend dominates), **both** (both conditions together for unstable) or **none** (stable). The interpretation text uses this field to name concretely what needs a response.',
           },
         ],
       },
@@ -256,12 +256,12 @@ export default {
           {
             type: 'definition',
             term: 'Bei beiden Signalen gemeinsam',
-            content: 'Kombiniert deuten Drift <strong>und</strong> Nelson-Verletzungen häufig auf eine sich beschleunigende Verschlechterung hin (z. B. fortschreitender Verschleiß, der erst als Trend beginnt und später zu Ausreißern führt). Priorität: Prüfmittel kurzfristig aus dem Einsatz nehmen, bis die Ursache geklärt und eine neue Stabilitäts-Studie die Freigabe bestätigt.',
+            content: 'Kombiniert deuten Drift **und** Nelson-Verletzungen häufig auf eine sich beschleunigende Verschlechterung hin (z. B. fortschreitender Verschleiß, der erst als Trend beginnt und später zu Ausreißern führt). Priorität: Prüfmittel kurzfristig aus dem Einsatz nehmen, bis die Ursache geklärt und eine neue Stabilitäts-Studie die Freigabe bestätigt.',
           },
           {
             type: 'definition',
             term: 'Basis-Warnung beachten',
-            content: 'Wenn die Warnung erscheint, dass die Grenzen aus einer bereits instabilen Basis stammen (<code>W_LIMITS_FROM_UNSTABLE_BASELINE</code>), sind alle Nelson-Auswertungen mit Vorsicht zu lesen — die Grenzen selbst können kontaminiert sein. In diesem Fall zuerst eine bereinigte Basis wählen oder in den Grenzen-Modus <em>manuell</em> wechseln.',
+            content: 'Wenn die Warnung erscheint, dass die Grenzen aus einer bereits instabilen Basis stammen (**W_LIMITS_FROM_UNSTABLE_BASELINE**), sind alle Nelson-Auswertungen mit Vorsicht zu lesen — die Grenzen selbst können kontaminiert sein. In diesem Fall zuerst eine bereinigte Basis wählen oder in den Grenzen-Modus *manuell* wechseln.',
           },
         ],
       },
@@ -285,12 +285,12 @@ export default {
           {
             type: 'definition',
             term: 'When both signals combine',
-            content: 'Drift <strong>and</strong> Nelson violations together often indicate an accelerating degradation (e.g. progressive wear that starts as a trend and later produces outliers). Priority: take the gage out of service temporarily until the cause is clarified and a new stability study confirms release.',
+            content: 'Drift **and** Nelson violations together often indicate an accelerating degradation (e.g. progressive wear that starts as a trend and later produces outliers). Priority: take the gage out of service temporarily until the cause is clarified and a new stability study confirms release.',
           },
           {
             type: 'definition',
             term: 'Mind the baseline warning',
-            content: 'If the warning appears that the limits come from an already unstable baseline (<code>W_LIMITS_FROM_UNSTABLE_BASELINE</code>), read all Nelson results with caution — the limits themselves may be contaminated. In that case, choose a cleaner baseline first or switch to the <em>given</em> limits mode.',
+            content: 'If the warning appears that the limits come from an already unstable baseline (**W_LIMITS_FROM_UNSTABLE_BASELINE**), read all Nelson results with caution — the limits themselves may be contaminated. In that case, choose a cleaner baseline first or switch to the *given* limits mode.',
           },
         ],
       },
@@ -307,10 +307,10 @@ export default {
           {
             type: 'list',
             items: [
-              '<strong>I-MR — stabil</strong>: 50 Einzelwerte, keine {{term:nelson-regeln|Nelson-Verletzung}}, kein Trend. Verdikt grün.',
-              '<strong>I-MR — driftend</strong>: 50 Einzelwerte mit langsamem linearen Trend (~0,01·σ pro Punkt). Der {{term:drift-test|Drift-Test}} erkennt den Trend deutlich, Verdikt rot mit Driver <code>drift</code>.',
-              '<strong>x̄-R — stabil</strong>: 25 Untergruppen à 5 Wiederholungen, unauffällige {{term:xbar-r-chart|x̄-R-Karte}}. Verdikt grün.',
-              '<strong>x̄-R — Mittelwert-Shift</strong>: 25 Untergruppen à 5 Wiederholungen mit einem abrupten Mittelwert-Sprung ab Untergruppe 15. Mehrere {{term:nelson-regeln|Regel-2-Verletzungen}} in Folge, Verdikt rot mit Driver <code>nelson</code>.',
+              '**I-MR — stabil**: 50 Einzelwerte, keine {{term:nelson-regeln|Nelson-Verletzung}}, kein Trend. Verdikt grün.',
+              '**I-MR — driftend**: 50 Einzelwerte mit langsamem linearen Trend (~0,01·σ pro Punkt). Der {{term:drift-test|Drift-Test}} erkennt den Trend deutlich, Verdikt rot mit Driver **drift**.',
+              '**x̄-R — stabil**: 25 Untergruppen à 5 Wiederholungen, unauffällige {{term:xbar-r-chart|x̄-R-Karte}}. Verdikt grün.',
+              '**x̄-R — Mittelwert-Shift**: 25 Untergruppen à 5 Wiederholungen mit einem abrupten Mittelwert-Sprung ab Untergruppe 15. Mehrere {{term:nelson-regeln|Regel-2-Verletzungen}} in Folge, Verdikt rot mit Driver **nelson**.',
             ],
           },
           {
@@ -329,10 +329,10 @@ export default {
           {
             type: 'list',
             items: [
-              '<strong>I-MR — stable</strong>: 50 individual values, no {{term:nelson-regeln|Nelson-rule violation}}, no trend. Verdict green.',
-              '<strong>I-MR — drifting</strong>: 50 individual values with a slow linear trend (~0.01·σ per point). The {{term:drift-test|drift test}} clearly detects the trend, verdict red with driver <code>drift</code>.',
-              '<strong>x̄-R — stable</strong>: 25 subgroups of 5 replicates, unremarkable {{term:xbar-r-chart|x̄-R chart}}. Verdict green.',
-              '<strong>x̄-R — mean shift</strong>: 25 subgroups of 5 replicates with an abrupt mean jump starting at subgroup 15. Several consecutive {{term:nelson-regeln|rule-2 violations}}, verdict red with driver <code>nelson</code>.',
+              '**I-MR — stable**: 50 individual values, no {{term:nelson-regeln|Nelson-rule violation}}, no trend. Verdict green.',
+              '**I-MR — drifting**: 50 individual values with a slow linear trend (~0.01·σ per point). The {{term:drift-test|drift test}} clearly detects the trend, verdict red with driver **drift**.',
+              '**x̄-R — stable**: 25 subgroups of 5 replicates, unremarkable {{term:xbar-r-chart|x̄-R chart}}. Verdict green.',
+              '**x̄-R — mean shift**: 25 subgroups of 5 replicates with an abrupt mean jump starting at subgroup 15. Several consecutive {{term:nelson-regeln|rule-2 violations}}, verdict red with driver **nelson**.',
             ],
           },
           {

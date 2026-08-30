@@ -12,11 +12,11 @@ export default {
         blocks: [
           {
             type: 'paragraph',
-            content: 'Das Messverlaufsdiagramm zeigt <strong>jede einzelne Messung</strong> einer Prüfmittelstudie: gruppiert in ein Feld je Prüfeinheit, farblich und symbolisch getrennt nach Prüfer, gegen eine gemeinsame waagerechte Referenzlinie. Es rechnet nichts aus — es macht sichtbar, was eine Kennzahl verdichtet.',
+            content: 'Das Messverlaufsdiagramm zeigt **jede einzelne Messung** einer Prüfmittelstudie: gruppiert in ein Feld je Prüfeinheit, farblich und symbolisch getrennt nach Prüfer, gegen eine gemeinsame waagerechte Referenzlinie. Es rechnet nichts aus — es macht sichtbar, was eine Kennzahl verdichtet.',
           },
           {
             type: 'paragraph',
-            content: 'In Minitab liegt es unter <em>Statistik → Qualitätswerkzeuge → Messsystemanalyse → Messverlaufsdiagramm</em>. Es ist <strong>nicht</strong> dasselbe wie das Verlaufsdiagramm ({{term:run-chart|Run Chart}}) — jenes zeigt eine einzelne Reihe über die Zeit mit Medianlinie und vier Lauftests und hat mit Messmitteln nichts zu tun.',
+            content: 'In Minitab liegt es unter *Statistik → Qualitätswerkzeuge → Messsystemanalyse → Messverlaufsdiagramm*. Es ist **nicht** dasselbe wie das Verlaufsdiagramm ({{term:run-chart|Run Chart}}) — jenes zeigt eine einzelne Reihe über die Zeit mit Medianlinie und vier Lauftests und hat mit Messmitteln nichts zu tun.',
           },
           {
             type: 'definition',
@@ -35,11 +35,11 @@ export default {
         blocks: [
           {
             type: 'paragraph',
-            content: 'The gage run chart shows <strong>every single measurement</strong> of a gage study: grouped into one panel per part, separated by colour and symbol per operator, against a common horizontal reference line. It computes nothing — it makes visible what a summary statistic compresses away.',
+            content: 'The gage run chart shows **every single measurement** of a gage study: grouped into one panel per part, separated by colour and symbol per operator, against a common horizontal reference line. It computes nothing — it makes visible what a summary statistic compresses away.',
           },
           {
             type: 'paragraph',
-            content: 'In Minitab it lives under <em>Stat → Quality Tools → Gage Study → Gage Run Chart</em>. It is <strong>not</strong> the run chart — that one shows a single series over time with a median line and four runs tests, and has nothing to do with gages.',
+            content: 'In Minitab it lives under *Stat → Quality Tools → Gage Study → Gage Run Chart*. It is **not** the run chart — that one shows a single series over time with a median line and four runs tests, and has nothing to do with gages.',
           },
           {
             type: 'definition',
@@ -62,8 +62,8 @@ export default {
           {
             type: 'list',
             items: [
-              'Long/tidy-Format mit zwei Pflicht-Spalten: <strong>Prüfeinheit</strong> und <strong>Messwert</strong>. Jede Zeile ist eine Einzelmessung.',
-              'Optionale <strong>Prüfer</strong>-Spalte. Fehlt sie, wird je Prüfeinheit eine einzelne Reihe gezeichnet — sinnvoll für Studien mit nur einem Prüfer oder automatisierten Messsystemen.',
+              'Long/tidy-Format mit zwei Pflicht-Spalten: **Prüfeinheit** und **Messwert**. Jede Zeile ist eine Einzelmessung.',
+              'Optionale **Prüfer**-Spalte. Fehlt sie, wird je Prüfeinheit eine einzelne Reihe gezeichnet — sinnvoll für Studien mit nur einem Prüfer oder automatisierten Messsystemen.',
               'Die Reihenfolge der Zeilen im Arbeitsblatt definiert die Wiederholung. Eine eigene Wiederholungs-Spalte gibt es bewusst nicht.',
               'Prüfeinheiten werden numerisch sortiert, wenn alle Bezeichner Zahlen sind (3, 4, 10, 15), sonst alphabetisch.',
               'Prüfer behalten die Reihenfolge ihres ersten Auftretens im Arbeitsblatt — eine bewusst gewählte Reihenfolge bleibt damit erhalten.',
@@ -85,8 +85,8 @@ export default {
           {
             type: 'list',
             items: [
-              'Long/tidy layout with two required columns: <strong>parts</strong> and <strong>measurement data</strong>. Each row is one individual measurement.',
-              'Optional <strong>operators</strong> column. Without it a single series per part is drawn — useful for single-operator studies or automated measuring systems.',
+              'Long/tidy layout with two required columns: **parts** and **measurement data**. Each row is one individual measurement.',
+              'Optional **operators** column. Without it a single series per part is drawn — useful for single-operator studies or automated measuring systems.',
               'Row order in the worksheet defines the repeat. There is deliberately no separate trial column.',
               'Parts are ordered numerically when every label is a number (3, 4, 10, 15), alphabetically otherwise.',
               'Operators keep the order of their first appearance in the worksheet, so a deliberately chosen order survives.',
@@ -111,16 +111,16 @@ export default {
           {
             type: 'list',
             items: [
-              '<strong>Ein Prüfer liegt durchgehend höher oder tiefer</strong> als die anderen: Hinweis auf Prüfer-Bias — unterschiedliche Ablesegewohnheit, Aufspannung oder Auslegung der Prüfvorschrift.',
-              '<strong>Ein Prüfer streut sichtbar breiter</strong>: schlechte Wiederholpräzision bei diesem Prüfer. Die Verbindungslinien zwischen den Wiederholmessungen zeigen das direkt.',
-              '<strong>Große senkrechte Sprünge innerhalb eines Felds</strong>: die Wiederholmessungen an derselben Prüfeinheit gehen auseinander — das Messsystem ist an dieser Stelle nicht reproduzierbar.',
-              '<strong>Felder streuen stark untereinander, innerhalb aber wenig</strong>: das ist der Normalfall einer brauchbaren Prüfmittelstudie — die {{term:teile-variation|Teile-zu-Teile-Streuung}} dominiert.',
-              '<strong>Alle Felder liegen dicht beieinander</strong>: die Prüfeinheiten decken den Prozessbereich nicht ab. Die Studie kann das Messsystem so nicht sinnvoll bewerten.',
+              '**Ein Prüfer liegt durchgehend höher oder tiefer** als die anderen: Hinweis auf Prüfer-Bias — unterschiedliche Ablesegewohnheit, Aufspannung oder Auslegung der Prüfvorschrift.',
+              '**Ein Prüfer streut sichtbar breiter**: schlechte Wiederholpräzision bei diesem Prüfer. Die Verbindungslinien zwischen den Wiederholmessungen zeigen das direkt.',
+              '**Große senkrechte Sprünge innerhalb eines Felds**: die Wiederholmessungen an derselben Prüfeinheit gehen auseinander — das Messsystem ist an dieser Stelle nicht reproduzierbar.',
+              '**Felder streuen stark untereinander, innerhalb aber wenig**: das ist der Normalfall einer brauchbaren Prüfmittelstudie — die {{term:teile-variation|Teile-zu-Teile-Streuung}} dominiert.',
+              '**Alle Felder liegen dicht beieinander**: die Prüfeinheiten decken den Prozessbereich nicht ab. Die Studie kann das Messsystem so nicht sinnvoll bewerten.',
             ],
           },
           {
             type: 'paragraph',
-            content: 'Das Diagramm liefert keine Kennzahlen. Für %GRR, Wiederholpräzision und Vergleichspräzision gehört eine {{term:gage-rr|Prüfmittelfähigkeitsstudie}} daneben — Typ 2 für variable, Typ 5 für attributive Merkmale. Das Messverlaufsdiagramm zeigt, <em>warum</em> eine Kennzahl so ausfällt.',
+            content: 'Das Diagramm liefert keine Kennzahlen. Für %GRR, Wiederholpräzision und Vergleichspräzision gehört eine {{term:gage-rr|Prüfmittelfähigkeitsstudie}} daneben — Typ 2 für variable, Typ 5 für attributive Merkmale. Das Messverlaufsdiagramm zeigt, *warum* eine Kennzahl so ausfällt.',
           },
         ],
       },
@@ -130,16 +130,16 @@ export default {
           {
             type: 'list',
             items: [
-              '<strong>One operator sits consistently high or low</strong> versus the others: operator bias — different reading habits, fixturing, or reading of the inspection instruction.',
-              '<strong>One operator scatters visibly wider</strong>: poor repeatability for that operator. The lines connecting repeat measurements show this directly.',
-              '<strong>Large vertical jumps inside one panel</strong>: repeat measurements on the same part disagree — the measuring system is not reproducible there.',
-              '<strong>Panels differ a lot, within-panel scatter is small</strong>: the normal picture of a usable gage study — part-to-part variation dominates.',
-              '<strong>All panels sit close together</strong>: the parts do not span the process range. The study cannot meaningfully assess the measuring system that way.',
+              '**One operator sits consistently high or low** versus the others: operator bias — different reading habits, fixturing, or reading of the inspection instruction.',
+              '**One operator scatters visibly wider**: poor repeatability for that operator. The lines connecting repeat measurements show this directly.',
+              '**Large vertical jumps inside one panel**: repeat measurements on the same part disagree — the measuring system is not reproducible there.',
+              '**Panels differ a lot, within-panel scatter is small**: the normal picture of a usable gage study — part-to-part variation dominates.',
+              '**All panels sit close together**: the parts do not span the process range. The study cannot meaningfully assess the measuring system that way.',
             ],
           },
           {
             type: 'paragraph',
-            content: 'The chart yields no numbers. For %GRR, repeatability and reproducibility run a {{term:gage-rr|gage study}} alongside — type 2 for variable, type 5 for attribute characteristics. The gage run chart shows <em>why</em> a number came out the way it did.',
+            content: 'The chart yields no numbers. For %GRR, repeatability and reproducibility run a {{term:gage-rr|gage study}} alongside — type 2 for variable, type 5 for attribute characteristics. The gage run chart shows *why* a number came out the way it did.',
           },
         ],
       },
@@ -152,11 +152,11 @@ export default {
           {
             type: 'list',
             items: [
-              '<strong>Namensverwechslung.</strong> „Messverlaufsdiagramm" ist der Gage Run Chart, „Verlaufsdiagramm" der Run Chart. Wer die Lauftests sucht, ist im Modul Verlaufsdiagramm richtig.',
-              '<strong>Unbalancierter Versuchsplan.</strong> Fehlt einem Prüfer eine Prüfeinheit, wird das als Warnung gemeldet. Das Diagramm bleibt lesbar, aber die Felder sind nicht mehr direkt vergleichbar.',
-              '<strong>Zu viele Prüfeinheiten je Zeile.</strong> Ab etwa zehn Feldern pro Zeile werden die Punkte ununterscheidbar. Lieber den Umbruch verkleinern als das Diagramm breiter ziehen.',
-              '<strong>Attributive Daten.</strong> Bei 0/1-Ergebnissen liegen fast alle Punkte auf zwei Höhen — genau das macht die wenigen Abweichler auffällig. Der Mittelwert als Referenzlinie ist dann aber kaum interpretierbar.',
-              '<strong>Reihenfolge im Arbeitsblatt.</strong> Da die Zeilenreihenfolge die Wiederholung definiert, verändert Sortieren des Arbeitsblatts die Verbindungslinien.',
+              '**Namensverwechslung.** „Messverlaufsdiagramm" ist der Gage Run Chart, „Verlaufsdiagramm" der Run Chart. Wer die Lauftests sucht, ist im Modul Verlaufsdiagramm richtig.',
+              '**Unbalancierter Versuchsplan.** Fehlt einem Prüfer eine Prüfeinheit, wird das als Warnung gemeldet. Das Diagramm bleibt lesbar, aber die Felder sind nicht mehr direkt vergleichbar.',
+              '**Zu viele Prüfeinheiten je Zeile.** Ab etwa zehn Feldern pro Zeile werden die Punkte ununterscheidbar. Lieber den Umbruch verkleinern als das Diagramm breiter ziehen.',
+              '**Attributive Daten.** Bei 0/1-Ergebnissen liegen fast alle Punkte auf zwei Höhen — genau das macht die wenigen Abweichler auffällig. Der Mittelwert als Referenzlinie ist dann aber kaum interpretierbar.',
+              '**Reihenfolge im Arbeitsblatt.** Da die Zeilenreihenfolge die Wiederholung definiert, verändert Sortieren des Arbeitsblatts die Verbindungslinien.',
             ],
           },
         ],
@@ -167,11 +167,11 @@ export default {
           {
             type: 'list',
             items: [
-              '<strong>Name confusion.</strong> German Minitab calls the gage run chart "Messverlaufsdiagramm" and the run chart "Verlaufsdiagramm". If you are after the runs tests, use the run chart module.',
-              '<strong>Unbalanced design.</strong> A part missing for one operator is reported as a warning. The chart stays readable, but the panels are no longer directly comparable.',
-              '<strong>Too many parts per row.</strong> Beyond roughly ten panels per row the points become indistinguishable. Reduce the wrap rather than widening the chart.',
-              '<strong>Attribute data.</strong> With 0/1 results almost all points sit at two heights — which is exactly what makes the few deviants stand out. The mean as a reference line, however, is then barely interpretable.',
-              '<strong>Worksheet order.</strong> Because row order defines the repeat, sorting the worksheet changes the connecting lines.',
+              '**Name confusion.** German Minitab calls the gage run chart "Messverlaufsdiagramm" and the run chart "Verlaufsdiagramm". If you are after the runs tests, use the run chart module.',
+              '**Unbalanced design.** A part missing for one operator is reported as a warning. The chart stays readable, but the panels are no longer directly comparable.',
+              '**Too many parts per row.** Beyond roughly ten panels per row the points become indistinguishable. Reduce the wrap rather than widening the chart.',
+              '**Attribute data.** With 0/1 results almost all points sit at two heights — which is exactly what makes the few deviants stand out. The mean as a reference line, however, is then barely interpretable.',
+              '**Worksheet order.** Because row order defines the repeat, sorting the worksheet changes the connecting lines.',
             ],
           },
         ],

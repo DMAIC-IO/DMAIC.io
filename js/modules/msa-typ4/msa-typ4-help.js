@@ -18,7 +18,7 @@ export default {
         blocks: [
           {
             type: 'paragraph',
-            content: 'MSA Verfahren 4 ({{term:linearitaet|Linearität}}) prüft, ob ein Messsystem <em>über seinen gesamten Arbeitsbereich</em> gleichmäßig misst — oder ob die {{term:bias|systematische Abweichung}} mit steigendem Referenzwert driftet. Während MSA Typ 1 nur einen einzelnen Punkt auf der Skala bewertet, deckt Typ 4 den kompletten Bereich zwischen unterer und oberer Spezifikationsgrenze ab.',
+            content: 'MSA Verfahren 4 ({{term:linearitaet|Linearität}}) prüft, ob ein Messsystem *über seinen gesamten Arbeitsbereich* gleichmäßig misst — oder ob die {{term:bias|systematische Abweichung}} mit steigendem Referenzwert driftet. Während MSA Typ 1 nur einen einzelnen Punkt auf der Skala bewertet, deckt Typ 4 den kompletten Bereich zwischen unterer und oberer Spezifikationsgrenze ab.',
           },
           {
             type: 'definition',
@@ -33,7 +33,7 @@ export default {
           {
             type: 'definition',
             term: 'Prozessvarianz (PV)',
-            content: 'Bezugsgröße, gegen die die Linearitätsabweichung normiert wird. Zwei Modi: <em>Toleranz</em> (PV = USL − LSL) für Fähigkeitsstudien oder <em>6·σ<sub>P</sub></em> aus einer laufenden Prozessstreuung. AIAG bevorzugt PV, VDA 5 stets die Toleranz.',
+            content: 'Bezugsgröße, gegen die die Linearitätsabweichung normiert wird. Zwei Modi: *Toleranz* (PV = USL − LSL) für Fähigkeitsstudien oder 6·$σ_{P}$ aus einer laufenden Prozessstreuung. AIAG bevorzugt PV, VDA 5 stets die Toleranz.',
           },
           {
             type: 'paragraph',
@@ -46,7 +46,7 @@ export default {
         blocks: [
           {
             type: 'paragraph',
-            content: 'MSA Type 4 ({{term:linearitaet|linearity}}) checks whether a measurement system reads consistently <em>across its entire operating range</em> — or whether the systematic deviation drifts as the reference value grows. While MSA Type 1 only evaluates a single point on the scale, Type 4 covers the complete range between the lower and upper {{term:spezifikationsgrenzen|specification limits}}.',
+            content: 'MSA Type 4 ({{term:linearitaet|linearity}}) checks whether a measurement system reads consistently *across its entire operating range* — or whether the systematic deviation drifts as the reference value grows. While MSA Type 1 only evaluates a single point on the scale, Type 4 covers the complete range between the lower and upper {{term:spezifikationsgrenzen|specification limits}}.',
           },
           {
             type: 'definition',
@@ -61,7 +61,7 @@ export default {
           {
             type: 'definition',
             term: 'Process Variation (PV)',
-            content: 'Reference figure used to normalize the linearity deviation. Two modes: <em>Tolerance</em> (PV = USL − LSL) for capability studies, or <em>6·σ<sub>P</sub></em> derived from ongoing process spread. AIAG prefers PV, VDA 5 always uses the tolerance.',
+            content: 'Reference figure used to normalize the linearity deviation. Two modes: *Tolerance* (PV = USL − LSL) for capability studies, or 6·$σ_{P}$ derived from ongoing process spread. AIAG prefers PV, VDA 5 always uses the tolerance.',
           },
           {
             type: 'paragraph',
@@ -78,7 +78,7 @@ export default {
           {
             type: 'list',
             items: [
-              'Zwei Spalten aus der Datensammlung, long/tidy: eine Spalte <strong>Referenz</strong>, eine Spalte <strong>Messwert</strong>. Jede Zeile ist eine Einzelmessung.',
+              'Zwei Spalten aus der Datensammlung, long/tidy: eine Spalte **Referenz**, eine Spalte **Messwert. Jede Zeile ist eine Einzelmessung.',
               'Mindestens fünf unterschiedliche Referenzwerte, die den gesamten Messbereich abdecken — bevorzugt gleichmäßig zwischen LSL und USL verteilt.',
               'Mindestens drei Wiederholmessungen pro Referenzwert; üblich sind 10–12. Mehr Wiederholungen stabilisieren die {{term:standardabweichung|Standardabweichung}} pro Punkt.',
               'Ein Prüfer, ein Messmittel, kurze Zeitspanne — Wiederholbedingungen wie in Typ 1.',
@@ -93,7 +93,7 @@ export default {
           {
             type: 'definition',
             term: 'Toleranz vs. σ_P',
-            content: 'Bei Fähigkeitsstudien (Freigabe eines neuen Messmittels) LSL/USL eintragen. Bei Prozessunsicherheitsbudgets (VDA 5, laufende Serie) statt der Toleranz die Prozessstreuung σ<sub>P</sub> nutzen; die Formel wechselt intern zu PV = 6·σ<sub>P</sub>.',
+            content: 'Bei Fähigkeitsstudien (Freigabe eines neuen Messmittels) LSL/USL eintragen. Bei Prozessunsicherheitsbudgets (VDA 5, laufende Serie) statt der Toleranz die Prozessstreuung $σ_{P}$ nutzen; die Formel wechselt intern zu PV = 6·$σ_{P}$.',
           },
         ],
       },
@@ -103,7 +103,7 @@ export default {
           {
             type: 'list',
             items: [
-              'Two columns from the worksheet, long/tidy layout: one <strong>reference</strong> column, one <strong>measured</strong> column. Each row is one individual measurement.',
+              'Two columns from the worksheet, long/tidy layout: one reference** column, one **measured** column. Each row is one individual measurement.',
               'At least five distinct reference values that cover the whole measurement range — ideally evenly spaced between LSL and USL.',
               'At least three repeat measurements per reference; 10–12 are common. More repeats stabilize the {{term:standardabweichung|standard deviation}} per point.',
               'One operator, one instrument, short time frame — repeatability conditions as in Type 1.',
@@ -118,7 +118,7 @@ export default {
           {
             type: 'definition',
             term: 'Tolerance vs. σ_P',
-            content: 'For capability studies (release of a new gage) enter LSL/USL. For process-uncertainty budgets (VDA 5, running production) use the process spread σ<sub>P</sub> instead of the tolerance; the formula switches internally to PV = 6·σ<sub>P</sub>.',
+            content: 'For capability studies (release of a new gage) enter LSL/USL. For process-uncertainty budgets (VDA 5, running production) use the process spread $σ_{P}$ instead of the tolerance; the formula switches internally to PV = 6·$σ_{P}$.',
           },
         ],
       },
@@ -130,42 +130,42 @@ export default {
         blocks: [
           {
             type: 'paragraph',
-            content: 'Kern von Typ 4 ist eine {{term:lineare-regression|lineare Regression}} aller Einzel-Bias-Werte b<sub>ij</sub> = y<sub>ij</sub> − x<sub>ref,i</sub> gegen den Referenzwert x<sub>ref,i</sub>. Aus dieser {{term:regression|Regression}} leiten sich sowohl die AIAG-Kennzahlen als auch der VDA-5-Unsicherheitsbeitrag ab.',
+            content: 'Kern von Typ 4 ist eine {{term:lineare-regression|lineare Regression}} aller Einzel-Bias-Werte $b_{ij} = y_{ij} − x_{ref,i}$ gegen den Referenzwert $x_{ref,i}$. Aus dieser {{term:regression|Regression}} leiten sich sowohl die AIAG-Kennzahlen als auch der VDA-5-Unsicherheitsbeitrag ab.',
           },
           {
             type: 'definition',
             term: 'Regressionsmodell',
-            content: 'b<sub>ij</sub> = a · x<sub>ref,i</sub> + b̂ + ε. Steigung a ≠ 0 heißt: der Bias wächst systematisch mit dem Referenzwert (Linearitätsfehler). Achsenabschnitt b̂ ≠ 0 heißt: über den ganzen Bereich verschobenes Messsystem (konstanter Offset).',
+            content: '$b_{ij}$ = a · $x_{ref,i}$ + b̂ + ε. Steigung a ≠ 0 heißt: der Bias wächst systematisch mit dem Referenzwert (Linearitätsfehler). Achsenabschnitt b̂ ≠ 0 heißt: über den ganzen Bereich verschobenes Messsystem (konstanter Offset).',
           },
           {
             type: 'definition',
             term: 'Bias je Referenzpunkt',
-            content: 'Für jeden Referenzwert x<sub>ref,i</sub> mit n<sub>i</sub> Wiederholungen: b<sub>i</sub> = ȳ<sub>i</sub> − x<sub>ref,i</sub>. Der Einstichproben-t-Test t = b<sub>i</sub>·√n<sub>i</sub>/s<sub>i</sub> prüft H<sub>0</sub>: b<sub>i</sub> = 0. Ist der p-Wert < α, ist der Bias an diesem Punkt statistisch signifikant.',
+            content: 'Für jeden Referenzwert $x_{ref,i}$ mit $n_i$ Wiederholungen: $b_i = ȳ_i − x_{ref,i}$. Der Einstichproben-t-Test $t = b_i \\sqrt{n_i} / s_i$ prüft $H_0: b_i = 0$. Ist der p-Wert < α, ist der Bias an diesem Punkt statistisch signifikant.',
           },
           {
             type: 'definition',
             term: 'AIAG %Linearität',
-            content: '%Lin = 100 · |a| · Range(x<sub>ref</sub>) / PV. Range ist die Differenz zwischen dem größten und kleinsten Referenzwert. PV ist entweder die Toleranz T = USL − LSL oder 6·σ<sub>P</sub>.',
+            content: '%Lin = 100 · |a| · Range($x_{ref}$) / PV. Range ist die Differenz zwischen dem größten und kleinsten Referenzwert. PV ist entweder die Toleranz T = USL − LSL oder 6·$σ_{P}$.',
           },
           {
             type: 'definition',
             term: 'AIAG %Bias-Peak',
-            content: '%Bias<sub>max</sub> = 100 · max<sub>i</sub>|b<sub>i</sub>| / PV. Zeigt den schlimmsten einzelnen Bias-Punkt normiert auf die Bezugsgröße.',
+            content: '$\\%\\text{Bias}_{\\max} = 100 \\cdot \\max_i |b_i| / PV$. Zeigt den schlimmsten einzelnen Bias-Punkt normiert auf die Bezugsgröße.',
           },
           {
             type: 'definition',
             term: 'VDA 5 Unsicherheitsbeitrag u_BI',
-            content: 'u<sub>BI</sub> = √( max<sub>i</sub>|b<sub>i</sub>|² + (SE(a)·Range)² ). Kombiniert den größten beobachteten Bias-Betrag mit der Unsicherheit der Steigung, hochgerechnet über den Messbereich.',
+            content: '$u_{BI} = \\sqrt{\\max_i |b_i|^2 + (SE(a) \\cdot \\text{Range})^2}$. Kombiniert den größten beobachteten Bias-Betrag mit der Unsicherheit der Steigung, hochgerechnet über den Messbereich.',
           },
           {
             type: 'definition',
             term: 'VDA 5 erweiterte Unsicherheit U',
-            content: 'U = 2 · u<sub>BI</sub> (Erweiterungsfaktor k = 2 für ca. 95 % Überdeckung). U wird direkt für die Ampelbewertung gegen die Toleranz verwendet.',
+            content: 'U = 2 · $u_{BI}$ (Erweiterungsfaktor k = 2 für ca. 95 % Überdeckung). U wird direkt für die Ampelbewertung gegen die Toleranz verwendet.',
           },
           {
             type: 'definition',
             term: 'VDA 5 Q_MS,BI',
-            content: 'Q<sub>MS,BI</sub> = U / T · 100 % — Anteil der Toleranz T, den der Bias-/Linearitätsbeitrag aufbraucht. Zusammen mit den anderen Q-Anteilen ({{term:wiederholbarkeit|Wiederholbarkeit}}, Vergleich, Auflösung) ergibt sich das gesamte Q<sub>MS</sub>.',
+            content: '$Q_{MS,BI}$ = U / T · 100 % — Anteil der Toleranz T, den der Bias-/Linearitätsbeitrag aufbraucht. Zusammen mit den anderen Q-Anteilen ({{term:wiederholbarkeit|Wiederholbarkeit}}, Vergleich, Auflösung) ergibt sich das gesamte $Q_{MS}$.',
           },
         ],
       },
@@ -174,42 +174,42 @@ export default {
         blocks: [
           {
             type: 'paragraph',
-            content: 'Type 4 boils down to a {{term:lineare-regression|linear regression}} of individual bias values b<sub>ij</sub> = y<sub>ij</sub> − x<sub>ref,i</sub> against the reference value x<sub>ref,i</sub>. Both the AIAG KPIs and the VDA 5 uncertainty contribution are derived from this regression.',
+            content: 'Type 4 boils down to a {{term:lineare-regression|linear regression}} of individual bias values $b_{ij} = y_{ij} − x_{ref,i}$ against the reference value $x_{ref,i}$. Both the AIAG KPIs and the VDA 5 uncertainty contribution are derived from this regression.',
           },
           {
             type: 'definition',
             term: 'Regression model',
-            content: 'b<sub>ij</sub> = a · x<sub>ref,i</sub> + b̂ + ε. Slope a ≠ 0 means the bias grows systematically with the reference (linearity error). Intercept b̂ ≠ 0 means a constant offset across the whole range.',
+            content: '$b_{ij}$ = a · $x_{ref,i}$ + b̂ + ε. Slope a ≠ 0 means the bias grows systematically with the reference (linearity error). Intercept b̂ ≠ 0 means a constant offset across the whole range.',
           },
           {
             type: 'definition',
             term: 'Per-reference bias',
-            content: 'For each reference x<sub>ref,i</sub> with n<sub>i</sub> repeats: b<sub>i</sub> = ȳ<sub>i</sub> − x<sub>ref,i</sub>. The one-sample {{term:t-test|t-test}} t = b<sub>i</sub>·√n<sub>i</sub>/s<sub>i</sub> tests H<sub>0</sub>: b<sub>i</sub> = 0. If the p-value < α, bias at that point is statistically significant.',
+            content: 'For each reference $x_{ref,i}$ with $n_i$ repeats: $b_i = ȳ_i − x_{ref,i}$. The one-sample {{term:t-test|t-test}} $t = b_i \\sqrt{n_i} / s_i$ tests $H_0: b_i = 0$. If the p-value < α, bias at that point is statistically significant.',
           },
           {
             type: 'definition',
             term: 'AIAG %Linearity',
-            content: '%Lin = 100 · |a| · Range(x<sub>ref</sub>) / PV. Range is the difference between the largest and smallest reference. PV is either the tolerance T = USL − LSL or 6·σ<sub>P</sub>.',
+            content: '%Lin = 100 · |a| · Range($x_{ref}$) / PV. Range is the difference between the largest and smallest reference. PV is either the tolerance T = USL − LSL or 6·$σ_{P}$.',
           },
           {
             type: 'definition',
             term: 'AIAG peak %Bias',
-            content: '%Bias<sub>max</sub> = 100 · max<sub>i</sub>|b<sub>i</sub>| / PV. Shows the worst individual bias point normalized to the reference figure.',
+            content: '$\\%\\text{Bias}_{\\max} = 100 \\cdot \\max_i |b_i| / PV$. Shows the worst individual bias point normalized to the reference figure.',
           },
           {
             type: 'definition',
             term: 'VDA 5 uncertainty contribution u_BI',
-            content: 'u<sub>BI</sub> = √( max<sub>i</sub>|b<sub>i</sub>|² + (SE(a)·Range)² ). Combines the largest observed bias magnitude with the slope uncertainty extrapolated across the measurement range.',
+            content: '$u_{BI} = \\sqrt{\\max_i |b_i|^2 + (SE(a) \\cdot \\text{Range})^2}$. Combines the largest observed bias magnitude with the slope uncertainty extrapolated across the measurement range.',
           },
           {
             type: 'definition',
             term: 'VDA 5 expanded uncertainty U',
-            content: 'U = 2 · u<sub>BI</sub> (coverage factor k = 2 for approximately 95 % coverage). U is used directly against the tolerance in the traffic-light verdict.',
+            content: 'U = 2 · $u_{BI}$ (coverage factor k = 2 for approximately 95 % coverage). U is used directly against the tolerance in the traffic-light verdict.',
           },
           {
             type: 'definition',
             term: 'VDA 5 Q_MS,BI',
-            content: 'Q<sub>MS,BI</sub> = U / T · 100 % — share of the tolerance T consumed by the bias/linearity contribution. Together with the other Q-shares (repeatability, reproducibility, resolution) it makes up the total Q<sub>MS</sub>.',
+            content: '$Q_{MS,BI}$ = U / T · 100 % — share of the tolerance T consumed by the bias/linearity contribution. Together with the other Q-shares (repeatability, reproducibility, resolution) it makes up the total $Q_{MS}$.',
           },
         ],
       },
@@ -221,7 +221,7 @@ export default {
         blocks: [
           {
             type: 'paragraph',
-            content: 'Das Modul zeigt eine Ampel für die aktive Norm. AIAG bewertet %Linearität und %Bias-Peak, VDA 5 bewertet Q<sub>MS,BI</sub>. Beide Normen führen häufig zum selben Ergebnis, können bei grenzwertigen Fällen aber divergieren — dann entscheidet der Kunde bzw. die Freigabespezifikation.',
+            content: 'Das Modul zeigt eine Ampel für die aktive Norm. AIAG bewertet %Linearität und %Bias-Peak, VDA 5 bewertet $Q_{MS,BI}$. Beide Normen führen häufig zum selben Ergebnis, können bei grenzwertigen Fällen aber divergieren — dann entscheidet der Kunde bzw. die Freigabespezifikation.',
           },
           {
             type: 'definition',
@@ -241,17 +241,17 @@ export default {
           {
             type: 'definition',
             term: 'VDA-5-Ampel — grün',
-            content: 'Q<sub>MS,BI</sub> ≤ 15 %. Der Bias-Beitrag zur {{term:messunsicherheit|Messunsicherheit}} ist so klein, dass er die Prozessfähigkeit nicht relevant belastet.',
+            content: '$Q_{MS,BI}$ ≤ 15 %. Der Bias-Beitrag zur {{term:messunsicherheit|Messunsicherheit}} ist so klein, dass er die Prozessfähigkeit nicht relevant belastet.',
           },
           {
             type: 'definition',
             term: 'VDA-5-Ampel — gelb',
-            content: 'Q<sub>MS,BI</sub> zwischen 15 % und 30 %. Bedingt tauglich; das Messsystem darf verwendet werden, wenn die restlichen Q-Anteile und die Prozessreserve dies zulassen.',
+            content: '$Q_{MS,BI}$ zwischen 15 % und 30 %. Bedingt tauglich; das Messsystem darf verwendet werden, wenn die restlichen Q-Anteile und die Prozessreserve dies zulassen.',
           },
           {
             type: 'definition',
             term: 'VDA-5-Ampel — rot',
-            content: 'Q<sub>MS,BI</sub> > 30 %. Der Linearitäts-/Bias-Beitrag frisst mehr als 30 % der Toleranz — nicht tauglich, Messmittel überarbeiten oder ersetzen.',
+            content: '$Q_{MS,BI}$ > 30 %. Der Linearitäts-/Bias-Beitrag frisst mehr als 30 % der Toleranz — nicht tauglich, Messmittel überarbeiten oder ersetzen.',
           },
           {
             type: 'paragraph',
@@ -264,7 +264,7 @@ export default {
         blocks: [
           {
             type: 'paragraph',
-            content: 'The module displays one traffic light for the active standard. AIAG evaluates %Linearity and peak %Bias, VDA 5 evaluates Q<sub>MS,BI</sub>. The two standards typically agree, but may diverge in borderline cases — the customer or release specification then decides.',
+            content: 'The module displays one traffic light for the active standard. AIAG evaluates %Linearity and peak %Bias, VDA 5 evaluates $Q_{MS,BI}$. The two standards typically agree, but may diverge in borderline cases — the customer or release specification then decides.',
           },
           {
             type: 'definition',
@@ -284,17 +284,17 @@ export default {
           {
             type: 'definition',
             term: 'VDA 5 light — green',
-            content: 'Q<sub>MS,BI</sub> ≤ 15 %. The bias contribution to measurement uncertainty is small enough not to burden {{term:prozessfaehigkeit|process capability}}.',
+            content: '$Q_{MS,BI}$ ≤ 15 %. The bias contribution to measurement uncertainty is small enough not to burden {{term:prozessfaehigkeit|process capability}}.',
           },
           {
             type: 'definition',
             term: 'VDA 5 light — yellow',
-            content: 'Q<sub>MS,BI</sub> between 15 % and 30 %. Conditionally usable; the system may be used if the remaining Q-shares and the process margin allow it.',
+            content: '$Q_{MS,BI}$ between 15 % and 30 %. Conditionally usable; the system may be used if the remaining Q-shares and the process margin allow it.',
           },
           {
             type: 'definition',
             term: 'VDA 5 light — red',
-            content: 'Q<sub>MS,BI</sub> > 30 %. The linearity/bias contribution eats more than 30 % of the tolerance — not usable, rework or replace the gage.',
+            content: '$Q_{MS,BI}$ > 30 %. The linearity/bias contribution eats more than 30 % of the tolerance — not usable, rework or replace the gage.',
           },
           {
             type: 'paragraph',
