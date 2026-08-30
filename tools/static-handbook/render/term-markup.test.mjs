@@ -29,8 +29,8 @@ test('stripTermTokens reduziert Markup auf das sichtbare Label', () => {
   assert.equal(stripTermTokens(null), '');
 });
 
-test('die Überschrift eines Definitionsblocks löst Markup auf', () => {
-  const html = renderBlock(
+test('die Überschrift eines Definitionsblocks löst Markup auf', async () => {
+  const html = await renderBlock(
     { type: 'definition', term: 'p-Karte — siehe {{term:p-chart|p-Karte}}', content: 'Anteil defekter Einheiten.' },
     HREF,
   );
@@ -38,8 +38,8 @@ test('die Überschrift eines Definitionsblocks löst Markup auf', () => {
   assert.ok(html.includes('/de/glossar/p-chart.html'), 'Glossarlink fehlt');
 });
 
-test('Tabellenköpfe lösen Markup auf', () => {
-  const html = renderBlock(
+test('Tabellenköpfe lösen Markup auf', async () => {
+  const html = await renderBlock(
     { type: 'table', headers: ['Kennzahl {{term:cp|Cp}}'], rows: [['1,33']] },
     HREF,
   );
@@ -72,13 +72,13 @@ test('der Kurztext einer Begriffsseite erscheint verlinkt, die Metadaten als Kla
   assert.ok(head.includes('Cp'), 'das Label muss in den Metadaten erhalten bleiben');
 });
 
-test('die Kurztexte auf der Glossar-Übersicht lösen Markup auf', () => {
+test('die Kurztexte auf der Glossar-Übersicht lösen Markup auf', async () => {
   const t = term();
   const glossary = {
     termById: new Map([[t.id, t]]),
     categories: [{ id: 'capability', label: { de: 'Prozessfähigkeit', en: 'Process Capability' } }],
     terms: [t],
   };
-  const { html } = renderGlossaryIndex({ glossary, modules: [], lang: 'de', i18n: {} });
+  const { html } = await renderGlossaryIndex({ glossary, modules: [], lang: 'de', i18n: {} });
   assert.equal(html.includes('{{term:'), false, 'Rohmarkup in der Übersicht');
 });

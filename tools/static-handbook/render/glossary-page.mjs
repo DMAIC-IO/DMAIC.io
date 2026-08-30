@@ -14,6 +14,7 @@ import { renderPage, getStrings } from './page-shell.mjs';
 import { escapeHtml, escapeAttr, pick, stripTermTokens } from './escape.mjs';
 import { getModuleName } from '../loaders/load-sources.mjs';
 import { renderLatex } from './katex.mjs';
+import { renderInline } from './inline.mjs';
 
 const APP_ORIGIN = 'https://dmaic.io';
 
@@ -34,6 +35,7 @@ export async function renderGlossaryTermPage({ term, glossary, modules, lang, i1
       glossary?.termById?.has(otherId) ? `/${lang}/glossar/${otherId}.html` : '',
   };
 
+  const leadHtml = shortText ? await renderInline(shortText, blockOpts) : '';
   const definition = term.definition?.[lang] || term.definition?.en || [];
   const bodyHtml = await renderGlossaryBlocks(definition, blockOpts);
 
@@ -58,7 +60,7 @@ export async function renderGlossaryTermPage({ term, glossary, modules, lang, i1
   const article = `
 <article class="handbook-article handbook-glossary">
   <h1>${escapeHtml(title)}</h1>
-  ${shortText ? `<p class="handbook-article__lead">${linkTerms(shortText, blockOpts)}</p>` : ''}
+  ${shortText ? `<p class="handbook-article__lead">${leadHtml}</p>` : ''}
   ${aliasesHtml}
   <section class="handbook-section handbook-glossary__definition">${bodyHtml}</section>
   ${seeAlsoHtml}
@@ -103,7 +105,7 @@ export async function renderGlossaryTermPage({ term, glossary, modules, lang, i1
 
 // ─── Index page ─────────────────────────────────────────────────
 
-export function renderGlossaryIndex({ glossary, modules: _modules, lang, i18n: _i18n }) {
+export async function renderGlossaryIndex({ glossary, modules: _modules, lang, i18n: _i18n }) {
   const s = getStrings(lang);
   const pathFromRoot = `/${lang}/glossar/index.html`;
   const altLang = lang === 'de' ? 'en' : 'de';
@@ -124,17 +126,21 @@ export function renderGlossaryIndex({ glossary, modules: _modules, lang, i18n: _
     const entries = termsByCategory.get(cat.id) || [];
     if (entries.length === 0) continue;
     const catLabel = pick(cat.label, lang) || cat.id;
-    const cards = entries
+    const cardParts = await Promise.all(entries
       .slice()
       .sort((a, b) => (pick(a.title, lang) || a.id).localeCompare(pick(b.title, lang) || b.id, lang))
-      .map((term) => {
+      .map(async (term) => {
         const tTitle = pick(term.title, lang) || term.id;
         const tShort = pick(term.short, lang) || '';
+        // Ohne glossaryHref bleiben Begriffsverweise Klartext — die Karte ist
+        // selbst ein <a>, ein Link darin wäre ungültiges HTML.
+        const desc = tShort ? await renderInline(tShort) : '';
         return `<a class="handbook-card" href="./${escapeAttr(term.id)}.html">
           <div class="handbook-card__title">${escapeHtml(tTitle)}</div>
-          ${tShort ? `<div class="handbook-card__desc">${escapeHtml(stripTermTokens(tShort))}</div>` : ''}
+          ${desc ? `<div class="handbook-card__desc">${desc}</div>` : ''}
         </a>`;
-      }).join('');
+      }));
+    const cards = cardParts.join('');
     groupHtmlParts.push(
       `<section class="handbook-phase-group" id="${escapeAttr(cat.id)}">
          <h2>${escapeHtml(catLabel)}</h2>
@@ -199,13 +205,13 @@ async function renderGlossaryBlock(block, opts) {
   if (!block || typeof block !== 'object') return '';
   switch (block.type) {
     case 'paragraph':
-      return `<p>${await escAndLinkAndMath(block.text || '', opts)}</p>`;
+      return `<p>${await renderInline(block.text || '', opts)}</p>`;
     case 'note':
-      return `<aside class="handbook-callout">${await escAndLinkAndMath(block.text || '', opts)}</aside>`;
+      return `<aside class="handbook-callout">${await renderInline(block.text || '', opts)}</aside>`;
     case 'list': {
       const items = [];
       for (const it of block.items || []) {
-        items.push(`<li>${await escAndLinkAndMath(it || '', opts)}</li>`);
+        items.push(`<li>${await renderInline(it || '', opts)}</li>`);
       }
       return `<ul class="handbook-block__list">${items.join('')}</ul>`;
     }
@@ -214,75 +220,8 @@ async function renderGlossaryBlock(block, opts) {
       return `<figure class="handbook-glossary__formula">${html}</figure>`;
     }
     default:
-      return block.text ? `<p>${await escAndLinkAndMath(block.text, opts)}</p>` : '';
+      return block.text ? `<p>${await renderInline(block.text, opts)}</p>` : '';
   }
-}
-
-/**
- * Kurztexte (`short`) tragen dieselben `{{term:…}}`-Verweise wie die Prosa.
- * Sie erscheinen im Lead einer Begriffsseite und auf den Übersichtskarten —
- * ohne Auflösung stand dort das Rohmarkup.
- *
- * @param {string} text
- * @param {{ glossaryHref?: (id: string) => string }} [opts]
- * @returns {string}
- */
-function linkTerms(text, opts) {
-  return escapeHtml(text).replace(
-    /\{\{term:([a-z0-9-]+)(?:\|([^}]+))?\}\}/gi,
-    (_m, id, label) => {
-      const visible = label || id;
-      const href = opts?.glossaryHref?.(id);
-      return href ? `<a class="handbook-glossary-link" href="${escapeAttr(href)}">${visible}</a>` : visible;
-    },
-  );
-}
-
-/**
- * Pipeline for inline text in glossary blocks:
- *   1. Lift `$…$` bodies out of the RAW text into placeholders
- *   2. HTML-escape the remaining prose
- *   3. Replace `{{term:id|label}}` with anchor to other glossary page
- *   4. Markdown-lite: **bold**, *italic*
- *   5. Substitute the placeholders with rendered inline KaTeX
- *
- * Step 1 has to precede step 2: KaTeX must see `<`, `>` and `'` as
- * themselves. Escaping first handed it `&lt;` / `&#39;`, so every formula
- * carrying a comparison operator or a prime failed to parse. Step 5 comes
- * last so neither the escaper nor the markdown-lite passes can touch the
- * emitted KaTeX markup. This mirrors the token-first order that the in-app
- * renderer uses (js/core/markdown-parser.js).
- */
-async function escAndLinkAndMath(text, opts) {
-  // The marker is indexed and delimited: `@` survives escapeHtml() and the
-  // markdown-lite passes untouched, the delimiters do not occur in prose, and
-  // every formula keeps its own slot — a bare word as placeholder gets eaten
-  // by prose that happens to use that word.
-  const mathMatches = [];
-  let s = String(text ?? '').replace(/\$(\S(?:[^$\n]*?\S)?)\$/g, (_, body) => {
-    mathMatches.push(body);
-    return `@@math${mathMatches.length - 1}@@`;
-  });
-
-  s = escapeHtml(s);
-
-  s = s.replace(/\{\{term:([a-z0-9-]+)(?:\|([^}]+))?\}\}/gi, (_, id, label) => {
-    const visible = label || id;
-    const href = opts?.glossaryHref?.(id);
-    if (!href) return visible;
-    return `<a class="handbook-glossary-link" href="${escapeAttr(href)}">${visible}</a>`;
-  });
-
-  s = s.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
-  s = s.replace(/\*([^*]+)\*/g, '<em>$1</em>');
-
-  if (mathMatches.length) {
-    const rendered = await Promise.all(
-      mathMatches.map((latex) => renderLatex(latex, { displayMode: false })),
-    );
-    s = s.replace(/@@math(\d+)@@/g, (_, i) => rendered[Number(i)]);
-  }
-  return s;
 }
 
 function renderSeeAlso(seeAlsoIds, glossary, lang, s) {

@@ -29,6 +29,7 @@ function escAndLinkHeading(text, opts) {
 }
 import { getModuleName, getExamplesForModule } from '../loaders/load-sources.mjs';
 import { renderLatex } from './katex.mjs';
+import { renderInline } from './inline.mjs';
 import { CYCLES, getPhaseIds } from '../../../js/core/cycles/cycles.js';
 
 const APP_ORIGIN = 'https://dmaic.io';
@@ -47,7 +48,7 @@ const SECTION_ORDER = [
 
 // ─── Module page ─────────────────────────────────────────────────
 
-export function renderModulePage({ module, lang, i18n, examples, glossary }) {
+export async function renderModulePage({ module, lang, i18n, examples, glossary }) {
   const s = getStrings(lang);
   const { id, phase, help, cycles: moduleCycles } = module;
 
@@ -86,7 +87,8 @@ export function renderModulePage({ module, lang, i18n, examples, glossary }) {
 
     const heading = localized.title || s.sectionHeadings[key] || key;
     sectionHtmlParts.push(
-      `<section class="handbook-section" id="${escapeAttr(key)}"><h2>${escAndLinkHeading(heading, blockOpts)}</h2>${renderBlocks(localized.blocks, blockOpts)}</section>`,
+      `<section class="handbook-section" id="${escapeAttr(key)}"><h2>${escAndLinkHeading(heading, blockOpts)}</h2>`
+      + `${await renderBlocks(localized.blocks, blockOpts)}</section>`,
     );
   }
 
@@ -195,6 +197,9 @@ export async function renderAlgoPage({ algorithm, lang, categoryById, i18n: _i18
   if (algorithm.documentation?.minitab_equivalent) {
     metaItems.push(`<div class="algo-meta__item"><span class="algo-meta__label">${escapeHtml(s.algoMinitab)}</span><span class="algo-meta__value">${escapeHtml(algorithm.documentation.minitab_equivalent)}</span></div>`);
   }
+  const shortHtml = short ? await renderInline(short, blockOpts) : '';
+  const longHtml = long ? await renderInline(long, blockOpts) : '';
+
   const metaHtml = metaItems.length
     ? `<div class="algo-meta">${metaItems.join('')}</div>`
     : '';
@@ -251,9 +256,9 @@ export async function renderAlgoPage({ algorithm, lang, categoryById, i18n: _i18
 <article class="handbook-article">
   <span class="handbook-article__tag">${escapeHtml(stripTermTokens(categoryName))}</span>
   <h1>${escapeHtml(stripTermTokens(name))}</h1>
-  ${short ? `<p class="handbook-article__lead">${escapeHtml(stripTermTokens(short))}</p>` : ''}
+  ${short ? `<p class="handbook-article__lead">${shortHtml}</p>` : ''}
   ${metaHtml}
-  ${long ? `<section class="handbook-section"><h2>${escapeHtml(s.algoLong)}</h2><p>${escapeHtml(stripTermTokens(long))}</p></section>` : ''}
+  ${long ? `<section class="handbook-section"><h2>${escapeHtml(s.algoLong)}</h2><p>${longHtml}</p></section>` : ''}
   ${formulasHtml}
   ${assumptionsHtml}
   ${limitationsHtml}

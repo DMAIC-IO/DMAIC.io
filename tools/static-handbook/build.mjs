@@ -120,7 +120,7 @@ async function main() {
 
     // Module pages
     for (const mod of sources.modules) {
-      const page = renderModulePage({
+      const page = await renderModulePage({
         module: mod,
         lang,
         i18n: sources.i18n,
@@ -135,7 +135,7 @@ async function main() {
 
     // Glossary index + per-term pages
     if (sources.glossary?.terms?.length) {
-      const idx = renderGlossaryIndex({
+      const idx = await renderGlossaryIndex({
         glossary: sources.glossary,
         modules: sources.modules,
         lang,

@@ -8,72 +8,60 @@
  * All output is static HTML — no runtime JS needed on the published pages.
  */
 
-import { escapeHtml, escapeAttr } from './escape.mjs';
+import { renderInline } from './inline.mjs';
 
 const CALLOUT_KINDS = new Set(['pitfall', 'scenario', 'result', 'decision']);
 
-/**
- * Escape `s` and, if `opts.glossaryHref` is supplied, post-process
- * `{{term:id|label}}` / `{{term:id}}` markers into static glossary links.
- * The latex `{`/`|`/`}` chars are not HTML-special, so the markers survive
- * the escape step and we can match them on the already-escaped string.
- *
- * @param {string} s
- * @param {{ glossaryHref?: (id: string) => string }} [opts]
- */
-function escAndLink(s, opts) {
-  const out = escapeHtml(s);
-  if (!opts?.glossaryHref) return out;
-  return out.replace(/\{\{term:([a-z0-9-]+)(?:\|([^}]+))?\}\}/gi, (_, id, label) => {
-    const text = label || id;
-    const href = opts.glossaryHref(id);
-    // Unknown term → strip the marker and emit plain text (no broken link).
-    if (!href) return text;
-    return `<a class="handbook-glossary-link" href="${escapeAttr(href)}">${text}</a>`;
-  });
-}
-
-export function renderBlock(block, opts = {}) {
+export async function renderBlock(block, opts = {}) {
   if (!block || typeof block !== 'object') return '';
   const type = block.type;
+  const inline = (text) => renderInline(text, opts);
 
   switch (type) {
     case 'paragraph':
     case 'text':
-      return `<p>${escAndLink(block.content, opts)}</p>`;
+      return `<p>${await inline(block.content)}</p>`;
 
     case 'heading':
-      return `<h3 class="handbook-block__heading">${escAndLink(block.content, opts)}</h3>`;
+      return `<h3 class="handbook-block__heading">${await inline(block.content)}</h3>`;
 
     case 'definition':
-      return `<p class="handbook-block__definition"><strong>${escAndLink(block.term, opts)}:</strong> ${escAndLink(block.content, opts)}</p>`;
+      return `<p class="handbook-block__definition"><strong>${await inline(block.term)}:</strong> `
+        + `${await inline(block.content)}</p>`;
 
-    case 'list':
-      return `<ul class="handbook-block__list">${(block.items || []).map((it) => `<li>${escAndLink(it, opts)}</li>`).join('')}</ul>`;
+    case 'list': {
+      const items = await Promise.all((block.items || []).map(async (it) => `<li>${await inline(it)}</li>`));
+      return `<ul class="handbook-block__list">${items.join('')}</ul>`;
+    }
 
-    case 'steps':
-      return `<ol class="handbook-block__steps">${(block.items || []).map((it) => `<li>${escAndLink(it, opts)}</li>`).join('')}</ol>`;
+    case 'steps': {
+      const items = await Promise.all((block.items || []).map(async (it) => `<li>${await inline(it)}</li>`));
+      return `<ol class="handbook-block__steps">${items.join('')}</ol>`;
+    }
 
     case 'table': {
-      const head = (block.headers || []).map((h) => `<th>${escAndLink(h, opts)}</th>`).join('');
-      const rows = (block.rows || [])
-        .map((row) => `<tr>${(row || []).map((cell) => `<td>${escAndLink(cell, opts)}</td>`).join('')}</tr>`)
-        .join('');
-      return `<div class="handbook-block__table-wrap"><table class="handbook-block__table"><thead><tr>${head}</tr></thead><tbody>${rows}</tbody></table></div>`;
+      const headCells = await Promise.all((block.headers || []).map(async (h) => `<th>${await inline(h)}</th>`));
+      const bodyRows = await Promise.all((block.rows || []).map(async (row) => {
+        const cells = await Promise.all((row || []).map(async (cell) => `<td>${await inline(cell)}</td>`));
+        return `<tr>${cells.join('')}</tr>`;
+      }));
+      return `<div class="handbook-block__table-wrap"><table class="handbook-block__table">`
+        + `<thead><tr>${headCells.join('')}</tr></thead><tbody>${bodyRows.join('')}</tbody></table></div>`;
     }
 
     default:
       if (CALLOUT_KINDS.has(type)) {
-        return `<aside class="handbook-callout handbook-callout--${type}"><p>${escAndLink(block.content, opts)}</p></aside>`;
+        return `<aside class="handbook-callout handbook-callout--${type}"><p>${await inline(block.content)}</p></aside>`;
       }
       // Unknown block — fall back to plain paragraph if it carries text.
-      if (block.content) return `<p>${escAndLink(block.content, opts)}</p>`;
+      if (block.content) return `<p>${await inline(block.content)}</p>`;
       return '';
   }
 }
 
-export function renderBlocks(blocks, opts = {}) {
-  return (blocks || []).map(b => renderBlock(b, opts)).join('\n');
+export async function renderBlocks(blocks, opts = {}) {
+  const parts = await Promise.all((blocks || []).map((b) => renderBlock(b, opts)));
+  return parts.join('\n');
 }
 
 /**
