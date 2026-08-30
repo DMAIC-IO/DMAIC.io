@@ -220,36 +220,48 @@ async function renderGlossaryBlock(block, opts) {
 
 /**
  * Pipeline for inline text in glossary blocks:
- *   1. HTML-escape
- *   2. Replace `{{term:id|label}}` with anchor to other glossary page
- *   3. Replace `$…$` with rendered inline KaTeX
+ *   1. Lift `$…$` bodies out of the RAW text into placeholders
+ *   2. HTML-escape the remaining prose
+ *   3. Replace `{{term:id|label}}` with anchor to other glossary page
  *   4. Markdown-lite: **bold**, *italic*
+ *   5. Substitute the placeholders with rendered inline KaTeX
+ *
+ * Step 1 has to precede step 2: KaTeX must see `<`, `>` and `'` as
+ * themselves. Escaping first handed it `&lt;` / `&#39;`, so every formula
+ * carrying a comparison operator or a prime failed to parse. Step 5 comes
+ * last so neither the escaper nor the markdown-lite passes can touch the
+ * emitted KaTeX markup. This mirrors the token-first order that the in-app
+ * renderer uses (js/core/markdown-parser.js).
  */
 async function escAndLinkAndMath(text, opts) {
-  let s = escapeHtml(text);
-  // Term refs first — these don't contain `$`.
+  // The marker is indexed and delimited: `@` survives escapeHtml() and the
+  // markdown-lite passes untouched, the delimiters do not occur in prose, and
+  // every formula keeps its own slot — a bare word as placeholder gets eaten
+  // by prose that happens to use that word.
+  const mathMatches = [];
+  let s = String(text ?? '').replace(/\$(\S(?:[^$\n]*?\S)?)\$/g, (_, body) => {
+    mathMatches.push(body);
+    return `@@math${mathMatches.length - 1}@@`;
+  });
+
+  s = escapeHtml(s);
+
   s = s.replace(/\{\{term:([a-z0-9-]+)(?:\|([^}]+))?\}\}/gi, (_, id, label) => {
     const visible = label || id;
     const href = opts?.glossaryHref?.(id);
     if (!href) return visible;
     return `<a class="handbook-glossary-link" href="${escapeAttr(href)}">${visible}</a>`;
   });
-  // Inline math — process placeholders sequentially via async KaTeX.
-  const mathMatches = [];
-  const placeholder = 'MATH';
-  s = s.replace(/\$(\S(?:[^$\n]*?\S)?)\$/g, (_, body) => {
-    mathMatches.push(body);
-    return placeholder;
-  });
+
+  s = s.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+  s = s.replace(/\*([^*]+)\*/g, '<em>$1</em>');
+
   if (mathMatches.length) {
     const rendered = await Promise.all(
       mathMatches.map((latex) => renderLatex(latex, { displayMode: false })),
     );
-    let i = 0;
-    s = s.replace(new RegExp(placeholder, 'g'), () => rendered[i++]);
+    s = s.replace(/@@math(\d+)@@/g, (_, i) => rendered[Number(i)]);
   }
-  s = s.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
-  s = s.replace(/\*([^*]+)\*/g, '<em>$1</em>');
   return s;
 }
 
