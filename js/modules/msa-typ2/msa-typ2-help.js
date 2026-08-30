@@ -50,7 +50,7 @@ export default {
         blocks: [
           {
             type: 'paragraph',
-            content: 'The MSA Type 2 study ({{term:gage-rr|Gage R&R}}, Repeatability & Reproducibility) decomposes measurement-system variation into three components: {{term:wiederholbarkeit|repeatability}} (same part, same operator), {{term:reproduzierbarkeit|reproducibility}} (same part, different operators), and {{term:teile-variation|part-to-part variation}}. It is the standard check before process capability or control charts become trustworthy.',
+            content: 'The MSA Type 2 study ({{term:gage-rr|Gage R&R}}, Repeatability & Reproducibility) decomposes measurement-system variation into three components: {{term:wiederholbarkeit|repeatability}} (same part, same operator), {{term:reproduzierbarkeit|reproducibility}} (same part, different operators), and {{term:teile-variation|part-to-part variation}}. It is the standard check before {{term:prozessfaehigkeit|process capability}} or control charts become trustworthy.',
           },
           {
             type: 'definition',
@@ -154,7 +154,7 @@ export default {
             type: 'list',
             items: [
               'Typischer Aufbau: 10 Teile × 3 Bediener × 2–3 Wiederholungen = 60–90 Messungen.',
-              'Teile so auswählen, dass sie die Prozessspanne abdecken — nicht alle nahe am Mittelwert.',
+              'Teile so auswählen, dass sie die Prozessspanne abdecken — nicht alle nahe am {{term:mittelwert|Mittelwert}}.',
               'Bediener sind in der Produktion tätig, nicht speziell trainiert für den Test.',
               'Reihenfolge zufallsverteilt, Bediener blind gegenüber dem wahren Teil.',
               'Gleiche Messprozedur, gleiches Gerät, gleiche Vorrichtung.',
@@ -242,7 +242,7 @@ export default {
           {
             type: 'definition',
             term: 'Order not randomized',
-            content: 'Systematic order (e.g. operator 1 first, then operator 2) confounds drift with operator effect. Randomization is mandatory.',
+            content: 'Systematic order (e.g. operator 1 first, then operator 2) confounds drift with operator effect. {{term:randomisierung|Randomization}} is mandatory.',
           },
           {
             type: 'definition',

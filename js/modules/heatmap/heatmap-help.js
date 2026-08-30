@@ -22,7 +22,7 @@ export default {
           {
             type: 'definition',
             term: 'Zellwert',
-            content: 'Ohne Wertespalte zeigt jede Zelle die Häufigkeit der Kombination (X, G) — die Heatmap wird dann zu einer farbcodierten Kreuztabelle. Mit Wertespalte (V) zeigt jede Zelle den Mittelwert oder die Summe der V-Werte innerhalb der Kombination — z. B. „mittlere Zykluszeit pro Schicht × Linie".',
+            content: 'Ohne Wertespalte zeigt jede Zelle die Häufigkeit der Kombination (X, G) — die Heatmap wird dann zu einer farbcodierten Kreuztabelle. Mit Wertespalte (V) zeigt jede Zelle den {{term:mittelwert|Mittelwert}} oder die Summe der V-Werte innerhalb der Kombination — z. B. „mittlere Zykluszeit pro Schicht × Linie".',
           },
           {
             type: 'definition',
@@ -31,7 +31,7 @@ export default {
           },
           {
             type: 'paragraph',
-            content: 'Typische Anwendungen im Six-Sigma-Kontext: Defekthäufigkeit nach Schicht × Linie, mittlere Bearbeitungszeit nach Standort × Auftragstyp, Effektive Yield nach Maschine × Werkstoff. Wenn beide kategorialen Variablen wenige (≤10) Ausprägungen haben, ist die Heatmap dem mehrfachen Boxplot oder dem gestapelten Säulendiagramm oft überlegen.',
+            content: 'Typische Anwendungen im Six-Sigma-Kontext: Defekthäufigkeit nach Schicht × Linie, mittlere {{term:durchlaufzeit|Bearbeitungszeit}} nach Standort × Auftragstyp, Effektive Yield nach Maschine × Werkstoff. Wenn beide kategorialen Variablen wenige (≤10) Ausprägungen haben, ist die Heatmap dem mehrfachen {{term:boxplot|Boxplot}} oder dem gestapelten Säulendiagramm oft überlegen.',
           },
         ],
       },
@@ -59,7 +59,7 @@ export default {
           },
           {
             type: 'paragraph',
-            content: 'Typical Six-Sigma uses: defect counts by shift × line, mean processing time by site × order type, effective yield by machine × material. When both categorical variables have few (≤10) levels, a heatmap often beats a series of boxplots or a stacked bar chart.',
+            content: 'Typical Six-Sigma uses: defect counts by shift × line, mean processing time by site × order type, effective yield by machine × material. When both categorical variables have few (≤10) levels, a heatmap often beats a series of boxplots or a {{term:balkendiagramm|stacked bar chart}}.',
           },
         ],
       },
@@ -77,7 +77,7 @@ export default {
           {
             type: 'definition',
             term: 'Unbalancierte Stichproben',
-            content: 'Wenn eine X-Kategorie nur einmal vorkommt, ist der Mittelwert dort gleich dem Einzelwert — die Farbe in dieser Spalte ist ein Einzelschicksal, kein robustes Muster. Bei stark unterschiedlichen Fallzahlen pro Zelle die Statistiktabelle und ggf. ein Mosaikdiagramm der Kombinationsverteilung dazunehmen.',
+            content: 'Wenn eine X-Kategorie nur einmal vorkommt, ist der Mittelwert dort gleich dem Einzelwert — die Farbe in dieser Spalte ist ein Einzelschicksal, kein robustes Muster. Bei stark unterschiedlichen Fallzahlen pro Zelle die Statistiktabelle und ggf. ein {{term:mosaikdiagramm|Mosaikdiagramm}} der Kombinationsverteilung dazunehmen.',
           },
           {
             type: 'definition',

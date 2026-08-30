@@ -51,13 +51,11 @@
     "de": [
       "5-Why",
       "Fünf-mal-Warum",
-      "Root-Cause-Analyse",
       "Why-Why-Analyse"
     ],
     "en": [
       "5 Whys",
-      "five whys",
-      "root cause analysis"
+      "five whys"
     ]
   },
   "seeAlso": [

@@ -32,7 +32,7 @@ export default {
           {
             type: 'definition',
             term: 'Stichprobenstatistik & Histogramm',
-            content: 'Direkt nach der Generierung werden {{term:mittelwert|Mittelwert}}, {{term:standardabweichung|Standardabweichung}}, {{term:schiefe|Schiefe}}, Min/Max und ein Histogramm der erzeugten Werte angezeigt — so lässt sich auf einen Blick prüfen, ob die Stichprobe der theoretischen Verteilung entspricht.',
+            content: 'Direkt nach der Generierung werden {{term:mittelwert|Mittelwert}}, {{term:standardabweichung|Standardabweichung}}, {{term:schiefe|Schiefe}}, Min/Max und ein {{term:histogramm|Histogramm}} der erzeugten Werte angezeigt — so lässt sich auf einen Blick prüfen, ob die Stichprobe der theoretischen Verteilung entspricht.',
           },
         ],
       },
@@ -76,7 +76,7 @@ export default {
             items: [
               'Verteilung wählen und die zugehörigen Parameter eintragen.',
               'Stichprobenumfang n festlegen — typischerweise zwischen 10 und mehreren tausend.',
-              'Optional einen Seed setzen (z. B. 42) für Reproduzierbarkeit.',
+              'Optional einen Seed setzen (z. B. 42) für {{term:reproduzierbarkeit|Reproduzierbarkeit}}.',
               'Auf „Generieren" klicken — Histogramm und Statistik erscheinen sofort.',
               'Mit „In Worksheet übernehmen" werden die erzeugten Werte als neue Spalte ins Arbeitsblatt geschrieben.',
               'Optional: Export als CSV für externe Tools.',

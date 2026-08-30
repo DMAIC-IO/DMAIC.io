@@ -15,7 +15,7 @@ export default {
       en: {
         title: 'Structure',
         blocks: [
-          { type: 'paragraph', content: 'The Opportunity Flowchart splits a process into two bands: {{term:wertschoepfung|value-added}} steps (VA) on top, non-value-added ones below — rework, waiting, inspecting, correcting (NVA). The chain runs left to right as in every flowchart; the band is purely the vertical position. The more cards in the lower band, the more effort the process spends without creating customer value.' },
+          { type: 'paragraph', content: 'The Opportunity {{term:flussdiagramm|Flowchart}} splits a process into two bands: {{term:wertschoepfung|value-added}} steps (VA) on top, non-value-added ones below — rework, waiting, inspecting, correcting (NVA). The chain runs left to right as in every flowchart; the band is purely the vertical position. The more cards in the lower band, the more effort the process spends without creating customer value.' },
         ],
       },
     },
@@ -24,7 +24,7 @@ export default {
       de: {
         title: 'Wann verwenden?',
         blocks: [
-          { type: 'paragraph', content: 'Das Opportunity Flowchart eignet sich in der Analyze-Phase, wenn die Verschwendung in einem bereits erfassten Ablauf sichtbar gemacht werden soll. Es beantwortet die Frage „Welcher Anteil unserer Schritte erzeugt tatsächlich Wert?" und liefert damit die Kandidaten für die Improve-Phase. Im Unterschied zur Prozesskarte verzichtet es auf Input/Output-Klassifikation und Swim Lanes; im Unterschied zum Activity Flowchart bildet es keine Verzweigungen ab, sondern eine Bewertung pro Schritt.' },
+          { type: 'paragraph', content: 'Das Opportunity Flowchart eignet sich in der Analyze-Phase, wenn die {{term:muda|Verschwendung}} in einem bereits erfassten Ablauf sichtbar gemacht werden soll. Es beantwortet die Frage „Welcher Anteil unserer Schritte erzeugt tatsächlich Wert?" und liefert damit die Kandidaten für die Improve-Phase. Im Unterschied zur {{term:process-map|Prozesskarte}} verzichtet es auf Input/Output-Klassifikation und Swim Lanes; im Unterschied zum Activity Flowchart bildet es keine Verzweigungen ab, sondern eine Bewertung pro Schritt.' },
         ],
       },
       en: {

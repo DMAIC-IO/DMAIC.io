@@ -12,7 +12,7 @@ export default {
         blocks: [
           {
             type: 'paragraph',
-            content: 'Die **Substanz-Feld-Analyse** (russisch: вепольный анализ — Vepol-Analyse) ist das formalste {{term:triz|TRIZ}}-Werkzeug. Sie reduziert jede technische Wechselwirkung auf ein **Dreieck aus drei minimalen Elementen**:',
+            content: 'Die **{{term:substanz-feld-analyse|Substanz-Feld-Analyse}}** (russisch: вепольный анализ — Vepol-Analyse) ist das formalste {{term:triz|TRIZ}}-Werkzeug. Sie reduziert jede technische {{term:wechselwirkung|Wechselwirkung}} auf ein **Dreieck aus drei minimalen Elementen**:',
           },
           {
             type: 'definition',
@@ -40,7 +40,7 @@ export default {
               '**Klasse 2** — Entwicklung bestehender Modelle (für unzureichende oder exzessive Wirkungen).',
               '**Klasse 3** — Übergang ins Supersystem / zur Mikroebene (wenn das System an seine Grenzen stößt).',
               '**Klasse 4** — Messung und Detektion (für Mess- und Steuerungsprobleme).',
-              '**Klasse 5** — Hilfsstandards (Vereinfachung, Idealität).',
+              '**Klasse 5** — Hilfsstandards (Vereinfachung, {{term:idealitaet|Idealität}}).',
             ],
           },
           {
@@ -105,7 +105,7 @@ export default {
               'Wirkungsqualität wählen: nützlich (alles in Ordnung), unzureichend (zu schwach), exzessiv (zu stark), schädlich (Nebeneffekt), fehlend (sollte da sein, ist es aber nicht).',
               'Diagnose ablesen: Welche Standardklassen sind für die Situation relevant? Diese sind aufgeklappt.',
               'Die einzelnen Standards einer Klasse durchgehen. Jeder hat einen Trigger („wann anwenden") und ein Beispiel. Notizen sammeln pro Standard, „berücksichtigt"-Häkchen für die, die passen.',
-              'Ausgewählte Standards in konkrete Lösungsskizzen überführen — gerne in Kombination mit anderen TRIZ-Werkzeugen (IFR, Ressourcen, Widerspruchsmatrix).',
+              'Ausgewählte Standards in konkrete Lösungsskizzen überführen — gerne in Kombination mit anderen TRIZ-Werkzeugen (IFR, Ressourcen, {{term:widerspruchsmatrix|Widerspruchsmatrix}}).',
             ],
           },
           {
@@ -193,9 +193,9 @@ export default {
             type: 'list',
             items: [
               '**Widerspruchsmatrix** — wenn die Matrix mehrere Prinzipien vorschlägt, klärt das Su-Field-Modell oft, welches Prinzip konkret umsetzbar ist; jedes Prinzip rendert sich in eine spezifische Klasse von Standards.',
-              '**Ressourcen-Checkliste** — viele Klasse-1-Standards verlangen eine neue Substanz oder ein Feld; die Ressourcen-Checkliste listet Kandidaten systematisch auf.',
+              '**Ressourcen-Checkliste** — viele Klasse-1-Standards verlangen eine neue Substanz oder ein Feld; die {{term:ressourcen-analyse|Ressourcen-Checkliste}} listet Kandidaten systematisch auf.',
               '**Ideales Endresultat (IFR)** — sobald ein Standard ausgewählt ist, lässt sich der IFR konkreter formulieren (Standard sagt *wie*, IFR sagt *dass*).',
-              '**Physikalischer Widerspruch** — Klasse-5-Hilfsstandards kombinieren sich oft mit Separationsprinzipien zur räumlichen / zeitlichen Auflösung des Widerspruchs.',
+              '**Physikalischer Widerspruch** — Klasse-5-Hilfsstandards kombinieren sich oft mit {{term:separationsprinzipien|Separationsprinzipien}} zur räumlichen / zeitlichen Auflösung des Widerspruchs.',
             ],
           },
         ],

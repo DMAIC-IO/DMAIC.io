@@ -27,7 +27,7 @@ export default {
           {
             type: 'definition',
             term: 'Scope (Umfang)',
-            content: 'Was ist Teil des Projekts und was nicht? Eine klare Abgrenzung verhindert Scope Creep — z. B. „Nur Produktionslinie 3, nicht die Endmontage".',
+            content: 'Was ist Teil des Projekts und was nicht? Eine klare Abgrenzung verhindert {{term:projektumfang|Scope Creep}} — z. B. „Nur Produktionslinie 3, nicht die Endmontage".',
           },
           {
             type: 'definition',
@@ -51,7 +51,7 @@ export default {
         blocks: [
           {
             type: 'paragraph',
-            content: 'The {{term:project-charter|project charter}} is the founding document of a Six Sigma project. It describes briefly and traceably why the project is needed, what it should achieve, who is involved, and within which boundaries the work happens. It is the first tool of the Define phase and is used as a reference in tollgate reviews.',
+            content: 'The {{term:project-charter|project charter}} is the founding document of a {{term:six-sigma|Six Sigma}} project. It describes briefly and traceably why the project is needed, what it should achieve, who is involved, and within which boundaries the work happens. It is the first tool of the Define phase and is used as a reference in tollgate reviews.',
           },
           {
             type: 'definition',
@@ -94,12 +94,12 @@ export default {
           {
             type: 'list',
             items: [
-              'Problemstellung in 2–4 Sätzen formulieren — mit Fakten, ohne Vermutungen.',
+              '{{term:problembeschreibung|Problemstellung}} in 2–4 Sätzen formulieren — mit Fakten, ohne Vermutungen.',
               'Ziele als nummerierte Liste anlegen, jeweils mit Ausgangswert (heute), Erwartung (Soll) und Grenzwert (akzeptables Minimum).',
               'Scope und Out-of-Scope klar abgrenzen — was wird NICHT bearbeitet.',
               'Team und Rollen eintragen, mindestens Sponsor und Projektleiter.',
               'Zeitplan mit den fünf DMAIC-Tollgates entwerfen.',
-              'Business Case ergänzen — Schätzung der Einsparung und der Projektkosten.',
+              '{{term:business-case|Business Case}} ergänzen — Schätzung der Einsparung und der Projektkosten.',
               'Charter mit Sponsor abstimmen und freigeben — er ist die Basis für alles, was folgt.',
             ],
           },

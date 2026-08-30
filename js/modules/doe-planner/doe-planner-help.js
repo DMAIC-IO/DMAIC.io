@@ -125,7 +125,7 @@ export default {
               'Zielgröße eindeutig festlegen — was soll optimiert oder verstanden werden?',
               'Faktoren und sinnvolle Stufen bestimmen — mit Prozessfachleuten, nicht am Schreibtisch.',
               'Störgrößen identifizieren, die konstant gehalten oder randomisiert werden müssen.',
-              'Designtyp wählen: Screening (Plackett-Burman, fractional 2ᵏ⁻ᵖ), Optimierung (Response Surface, Central Composite), Mischungen (Mixture Designs).',
+              'Designtyp wählen: Screening ({{term:plackett-burman|Plackett-Burman}}, fractional 2ᵏ⁻ᵖ), Optimierung (Response Surface, Central Composite), Mischungen (Mixture Designs).',
               'Plan randomisieren — Reihenfolge der Versuche zufällig, nicht systematisch.',
               'Versuche durchführen, Zielgröße messen, Daten sorgfältig aufzeichnen.',
               'Modell anpassen, Hauptwirkungen und Wechselwirkungen bewerten.',

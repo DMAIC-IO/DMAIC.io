@@ -51,17 +51,10 @@
   },
   "aliases": {
     "de": [
-      "Prozesskarte",
-      "Flowchart",
-      "Flussdiagramm",
-      "Swimlane",
-      "Value Stream Map"
+      "Prozesskarte"
     ],
     "en": [
-      "process map",
-      "flowchart",
-      "swimlane",
-      "value stream map"
+      "process map"
     ]
   },
   "seeAlso": [

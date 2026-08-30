@@ -58,8 +58,8 @@ export default {
       de: {
         title: 'Stolperfallen',
         blocks: [
-          { type: 'definition', term: 'Auto-λ ohne Plausibilitätsprüfung', content: 'Die Anderson-Darling-Suche findet immer ein Minimum — auch wenn die Daten gar nicht durch Box-Cox normalisierbar sind. Vorher Verteilung anschauen (Histogramm, P-P-Plot).' },
-          { type: 'definition', term: 'Rück-Transformation lügt nicht', content: 'Die zurückgerechneten Grenzen sind nicht symmetrisch um die Mittellinie — das ist korrekt: rechtsschiefe Originaldaten erlauben mehr Spielraum nach oben als nach unten. Wer das anders erwartet, hat die Verteilung nicht verstanden.' },
+          { type: 'definition', term: 'Auto-λ ohne Plausibilitätsprüfung', content: 'Die Anderson-Darling-Suche findet immer ein Minimum — auch wenn die Daten gar nicht durch Box-Cox normalisierbar sind. Vorher Verteilung anschauen ({{term:histogramm|Histogramm}}, P-P-Plot).' },
+          { type: 'definition', term: 'Rück-Transformation lügt nicht', content: 'Die zurückgerechneten Grenzen sind nicht symmetrisch um die {{term:mittellinie|Mittellinie}} — das ist korrekt: rechtsschiefe Originaldaten erlauben mehr Spielraum nach oben als nach unten. Wer das anders erwartet, hat die Verteilung nicht verstanden.' },
           { type: 'definition', term: 'λ ändert sich mit jedem neuen Punkt', content: 'Im Live-Modus passt sich λ an neue Daten an. Für Phase-II-Monitoring λ einfrieren (manueller Modus mit dem Phase-I-λ).' },
         ],
       },

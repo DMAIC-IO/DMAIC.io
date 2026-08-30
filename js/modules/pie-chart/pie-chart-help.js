@@ -72,12 +72,12 @@ export default {
           {
             type: 'definition',
             term: 'Zu viele Sektoren',
-            content: 'Mehr als 7 Sektoren werden visuell unverdaulich, kleine Anteile lassen sich kaum unterscheiden. Lieber ein Pareto-Diagramm verwenden — es ordnet die Kategorien zusätzlich nach Größe.',
+            content: 'Mehr als 7 Sektoren werden visuell unverdaulich, kleine Anteile lassen sich kaum unterscheiden. Lieber ein {{term:pareto|Pareto-Diagramm}} verwenden — es ordnet die Kategorien zusätzlich nach Größe.',
           },
           {
             type: 'definition',
             term: 'Schlechter Größenvergleich',
-            content: 'Das menschliche Auge schätzt Winkel und Flächen schlecht. Unterschiede von wenigen Prozentpunkten sind im Tortendiagramm kaum erkennbar. Für präzise Vergleiche ein Balkendiagramm wählen.',
+            content: 'Das menschliche Auge schätzt Winkel und Flächen schlecht. Unterschiede von wenigen Prozentpunkten sind im Tortendiagramm kaum erkennbar. Für präzise Vergleiche ein {{term:balkendiagramm|Balkendiagramm}} wählen.',
           },
           {
             type: 'definition',

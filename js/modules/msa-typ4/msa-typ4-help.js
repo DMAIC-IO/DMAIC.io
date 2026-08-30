@@ -18,7 +18,7 @@ export default {
         blocks: [
           {
             type: 'paragraph',
-            content: 'MSA Verfahren 4 ({{term:linearitaet|Linearität}}) prüft, ob ein Messsystem <em>über seinen gesamten Arbeitsbereich</em> gleichmäßig misst — oder ob die systematische Abweichung mit steigendem Referenzwert driftet. Während MSA Typ 1 nur einen einzelnen Punkt auf der Skala bewertet, deckt Typ 4 den kompletten Bereich zwischen unterer und oberer Spezifikationsgrenze ab.',
+            content: 'MSA Verfahren 4 ({{term:linearitaet|Linearität}}) prüft, ob ein Messsystem <em>über seinen gesamten Arbeitsbereich</em> gleichmäßig misst — oder ob die {{term:bias|systematische Abweichung}} mit steigendem Referenzwert driftet. Während MSA Typ 1 nur einen einzelnen Punkt auf der Skala bewertet, deckt Typ 4 den kompletten Bereich zwischen unterer und oberer Spezifikationsgrenze ab.',
           },
           {
             type: 'definition',
@@ -46,7 +46,7 @@ export default {
         blocks: [
           {
             type: 'paragraph',
-            content: 'MSA Type 4 ({{term:linearitaet|linearity}}) checks whether a measurement system reads consistently <em>across its entire operating range</em> — or whether the systematic deviation drifts as the reference value grows. While MSA Type 1 only evaluates a single point on the scale, Type 4 covers the complete range between the lower and upper specification limits.',
+            content: 'MSA Type 4 ({{term:linearitaet|linearity}}) checks whether a measurement system reads consistently <em>across its entire operating range</em> — or whether the systematic deviation drifts as the reference value grows. While MSA Type 1 only evaluates a single point on the scale, Type 4 covers the complete range between the lower and upper {{term:spezifikationsgrenzen|specification limits}}.',
           },
           {
             type: 'definition',
@@ -130,7 +130,7 @@ export default {
         blocks: [
           {
             type: 'paragraph',
-            content: 'Kern von Typ 4 ist eine {{term:lineare-regression|lineare Regression}} aller Einzel-Bias-Werte b<sub>ij</sub> = y<sub>ij</sub> − x<sub>ref,i</sub> gegen den Referenzwert x<sub>ref,i</sub>. Aus dieser Regression leiten sich sowohl die AIAG-Kennzahlen als auch der VDA-5-Unsicherheitsbeitrag ab.',
+            content: 'Kern von Typ 4 ist eine {{term:lineare-regression|lineare Regression}} aller Einzel-Bias-Werte b<sub>ij</sub> = y<sub>ij</sub> − x<sub>ref,i</sub> gegen den Referenzwert x<sub>ref,i</sub>. Aus dieser {{term:regression|Regression}} leiten sich sowohl die AIAG-Kennzahlen als auch der VDA-5-Unsicherheitsbeitrag ab.',
           },
           {
             type: 'definition',
@@ -165,7 +165,7 @@ export default {
           {
             type: 'definition',
             term: 'VDA 5 Q_MS,BI',
-            content: 'Q<sub>MS,BI</sub> = U / T · 100 % — Anteil der Toleranz T, den der Bias-/Linearitätsbeitrag aufbraucht. Zusammen mit den anderen Q-Anteilen (Wiederholbarkeit, Vergleich, Auflösung) ergibt sich das gesamte Q<sub>MS</sub>.',
+            content: 'Q<sub>MS,BI</sub> = U / T · 100 % — Anteil der Toleranz T, den der Bias-/Linearitätsbeitrag aufbraucht. Zusammen mit den anderen Q-Anteilen ({{term:wiederholbarkeit|Wiederholbarkeit}}, Vergleich, Auflösung) ergibt sich das gesamte Q<sub>MS</sub>.',
           },
         ],
       },
@@ -184,7 +184,7 @@ export default {
           {
             type: 'definition',
             term: 'Per-reference bias',
-            content: 'For each reference x<sub>ref,i</sub> with n<sub>i</sub> repeats: b<sub>i</sub> = ȳ<sub>i</sub> − x<sub>ref,i</sub>. The one-sample t-test t = b<sub>i</sub>·√n<sub>i</sub>/s<sub>i</sub> tests H<sub>0</sub>: b<sub>i</sub> = 0. If the p-value < α, bias at that point is statistically significant.',
+            content: 'For each reference x<sub>ref,i</sub> with n<sub>i</sub> repeats: b<sub>i</sub> = ȳ<sub>i</sub> − x<sub>ref,i</sub>. The one-sample {{term:t-test|t-test}} t = b<sub>i</sub>·√n<sub>i</sub>/s<sub>i</sub> tests H<sub>0</sub>: b<sub>i</sub> = 0. If the p-value < α, bias at that point is statistically significant.',
           },
           {
             type: 'definition',
@@ -241,7 +241,7 @@ export default {
           {
             type: 'definition',
             term: 'VDA-5-Ampel — grün',
-            content: 'Q<sub>MS,BI</sub> ≤ 15 %. Der Bias-Beitrag zur Messunsicherheit ist so klein, dass er die Prozessfähigkeit nicht relevant belastet.',
+            content: 'Q<sub>MS,BI</sub> ≤ 15 %. Der Bias-Beitrag zur {{term:messunsicherheit|Messunsicherheit}} ist so klein, dass er die Prozessfähigkeit nicht relevant belastet.',
           },
           {
             type: 'definition',
@@ -284,7 +284,7 @@ export default {
           {
             type: 'definition',
             term: 'VDA 5 light — green',
-            content: 'Q<sub>MS,BI</sub> ≤ 15 %. The bias contribution to measurement uncertainty is small enough not to burden process capability.',
+            content: 'Q<sub>MS,BI</sub> ≤ 15 %. The bias contribution to measurement uncertainty is small enough not to burden {{term:prozessfaehigkeit|process capability}}.',
           },
           {
             type: 'definition',

@@ -92,7 +92,7 @@ export default {
           {
             type: 'list',
             items: [
-              'Testart oder Schätzproblem klären — 1 Stichprobe, 2 Stichproben, Anteilsvergleich, Regression?',
+              'Testart oder Schätzproblem klären — 1 Stichprobe, 2 Stichproben, Anteilsvergleich, {{term:regression|Regression}}?',
               'Signifikanzniveau wählen (meist α = 0,05).',
               'Power festlegen (meist 0,80 oder 0,90).',
               'Kleinste praktisch relevante Effektgröße definieren — nicht die erwartete, sondern die kleinste noch interessante.',

@@ -95,7 +95,7 @@ export default {
               'Map Y to one of the 39 standard parameters (worsening).',
               'Pick both parameters in the module — the matrix returns 0–4 recommended principles.',
               'For each principle, develop at least one concrete idea applicable to your problem.',
-              'Develop the most promising ideas further or combine with other TRIZ tools (e.g. Substance-Field analysis, ARIZ).',
+              'Develop the most promising ideas further or combine with other TRIZ tools (e.g. {{term:substanz-feld-analyse|Substance-Field analysis}}, ARIZ).',
             ],
           },
           {
@@ -124,11 +124,11 @@ export default {
           },
           {
             type: 'paragraph',
-            content: 'Wenn die Matrix mehrere widersprüchliche Prinzipien empfiehlt oder die Zelle leer bleibt, liegt häufig ein **physikalischer Widerspruch** zugrunde (derselbe Parameter muss zwei entgegengesetzte Werte annehmen). Dafür gibt es das Modul „Physikalischer Widerspruch (TRIZ)" mit den vier Separationsprinzipien.',
+            content: 'Wenn die Matrix mehrere widersprüchliche Prinzipien empfiehlt oder die Zelle leer bleibt, liegt häufig ein **physikalischer Widerspruch** zugrunde (derselbe Parameter muss zwei entgegengesetzte Werte annehmen). Dafür gibt es das Modul „{{term:physikalischer-widerspruch|Physikalischer Widerspruch}} (TRIZ)" mit den vier {{term:separationsprinzipien|Separationsprinzipien}}.',
           },
           {
             type: 'paragraph',
-            content: 'Wer den Lösungsraum noch weiter öffnen will, formuliert vor der Matrix-Analyse ein **Ideales Endresultat** (Modul „Ideales Endresultat (TRIZ)") und inventarisiert die verfügbaren Ressourcen über die **Ressourcen-Checkliste**. Häufig wird die Matrix dadurch überflüssig — eine Ressource erledigt den Job direkt.',
+            content: 'Wer den Lösungsraum noch weiter öffnen will, formuliert vor der Matrix-Analyse ein **Ideales Endresultat** (Modul „{{term:ifr|Ideales Endresultat}} (TRIZ)") und inventarisiert die verfügbaren Ressourcen über die **Ressourcen-Checkliste**. Häufig wird die Matrix dadurch überflüssig — eine Ressource erledigt den Job direkt.',
           },
         ],
       },

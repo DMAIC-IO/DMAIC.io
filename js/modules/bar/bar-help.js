@@ -22,7 +22,7 @@ export default {
           {
             type: 'definition',
             term: 'Wert (Y-Achse)',
-            content: 'Die Größe, die der Balken darstellt. Drei Möglichkeiten: (1) eine reine Häufigkeitszählung der Kategorie („wie oft kommt sie vor?"), (2) der Mittelwert einer numerischen Spalte je Kategorie, (3) die Summe einer numerischen Spalte je Kategorie.',
+            content: 'Die Größe, die der Balken darstellt. Drei Möglichkeiten: (1) eine reine Häufigkeitszählung der Kategorie („wie oft kommt sie vor?"), (2) der {{term:mittelwert|Mittelwert}} einer numerischen Spalte je Kategorie, (3) die Summe einer numerischen Spalte je Kategorie.',
           },
           {
             type: 'definition',
@@ -36,7 +36,7 @@ export default {
           },
           {
             type: 'paragraph',
-            content: 'Säulendiagramme eignen sich, um Kategorien hinsichtlich einer Kenngröße zu vergleichen — etwa „durchschnittliche Zykluszeit pro Schicht" oder „Häufigkeit der Defektarten". Für eine nach Häufigkeit sortierte Variante mit kumulativer Linie verwende ein Pareto-Diagramm. Für stetige Daten mit Bin-Achse ist das Histogramm das richtige Werkzeug.',
+            content: 'Säulendiagramme eignen sich, um Kategorien hinsichtlich einer Kenngröße zu vergleichen — etwa „durchschnittliche Zykluszeit pro Schicht" oder „Häufigkeit der Defektarten". Für eine nach Häufigkeit sortierte Variante mit kumulativer Linie verwende ein {{term:pareto|Pareto-Diagramm}}. Für stetige Daten mit Bin-Achse ist das {{term:histogramm|Histogramm}} das richtige Werkzeug.',
           },
         ],
       },
@@ -92,7 +92,7 @@ export default {
           {
             type: 'definition',
             term: 'Mittelwert ohne Streuung',
-            content: 'Ein Balken zeigt nur den Mittelwert (oder die Summe) — die Streuung innerhalb der Kategorie ist nicht sichtbar. Bei Verdacht auf Heterogenität ergänzend ein Boxplot oder Individual-Value-Plot heranziehen.',
+            content: 'Ein Balken zeigt nur den Mittelwert (oder die Summe) — die Streuung innerhalb der Kategorie ist nicht sichtbar. Bei Verdacht auf Heterogenität ergänzend ein {{term:boxplot|Boxplot}} oder Individual-Value-Plot heranziehen.',
           },
           {
             type: 'definition',
@@ -102,7 +102,7 @@ export default {
           {
             type: 'definition',
             term: 'Gestapelte Balken bei vielen Untergruppen',
-            content: 'Gestapelte Balken sind schwer ablesbar, wenn die Untergruppen sehr unterschiedliche Größen haben oder es mehr als 4–5 gibt. In solchen Fällen lieber ein Mosaikdiagramm oder eine Heatmap.',
+            content: 'Gestapelte Balken sind schwer ablesbar, wenn die Untergruppen sehr unterschiedliche Größen haben oder es mehr als 4–5 gibt. In solchen Fällen lieber ein {{term:mosaikdiagramm|Mosaikdiagramm}} oder eine {{term:heatmap|Heatmap}}.',
           },
         ],
       },

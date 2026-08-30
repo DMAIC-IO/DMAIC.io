@@ -27,7 +27,7 @@ export default {
           {
             type: 'definition',
             term: 'P — Process (Prozess)',
-            content: 'Der eigentliche Ablauf — auf hoher Ebene als 5 bis 8 Hauptschritte. SIPOC ist bewusst grob: Es zeigt das „Was", nicht das „Wie". Detaillierte Abläufe gehören in ein Flowchart oder eine Value Stream Map.',
+            content: 'Der eigentliche Ablauf — auf hoher Ebene als 5 bis 8 Hauptschritte. SIPOC ist bewusst grob: Es zeigt das „Was", nicht das „Wie". Detaillierte Abläufe gehören in ein {{term:flussdiagramm|Flowchart}} oder eine Value Stream Map.',
           },
           {
             type: 'definition',
@@ -41,7 +41,7 @@ export default {
           },
           {
             type: 'paragraph',
-            content: 'Kurz gesagt: SIPOC ist ein „One-Page-Process" — der schnellste Weg, um ein Team auf einen gemeinsamen Stand zu bringen, bevor detaillierte Analysen beginnen. Es wird in der Define-Phase eingesetzt, typischerweise direkt nach dem Project Charter.',
+            content: 'Kurz gesagt: SIPOC ist ein „One-Page-Process" — der schnellste Weg, um ein Team auf einen gemeinsamen Stand zu bringen, bevor detaillierte Analysen beginnen. Es wird in der Define-Phase eingesetzt, typischerweise direkt nach dem {{term:project-charter|Project Charter}}.',
           },
         ],
       },
@@ -134,7 +134,7 @@ export default {
           },
           {
             type: 'paragraph',
-            content: 'SIPOC folgt auf den Project Charter und liefert Eingaben für die C&E-Matrix (welche Inputs beeinflussen die Outputs?) sowie die Stakeholder-Analyse (wer sind Lieferanten und Kunden?).',
+            content: 'SIPOC folgt auf den Project Charter und liefert Eingaben für die {{term:ce-matrix|C&E-Matrix}} (welche Inputs beeinflussen die Outputs?) sowie die Stakeholder-Analyse (wer sind Lieferanten und Kunden?).',
           },
         ],
       },
@@ -186,7 +186,7 @@ export default {
           },
           {
             type: 'paragraph',
-            content: 'SIPOC follows the Project Charter and provides input for the C&E Matrix (which inputs influence the outputs?) and the Stakeholder Analysis (who are the suppliers and customers?).',
+            content: 'SIPOC follows the Project Charter and provides input for the C&E Matrix (which inputs influence the outputs?) and the {{term:stakeholder|Stakeholder Analysis}} (who are the suppliers and customers?).',
           },
         ],
       },
@@ -225,7 +225,7 @@ export default {
         blocks: [
           {
             type: 'paragraph',
-            content: 'A manufacturer of automotive sealing rings finds that the defect rate at final inspection is 4.2 %. The Six Sigma team first creates a SIPOC to capture the manufacturing process at the highest level.',
+            content: 'A manufacturer of automotive sealing rings finds that the defect rate at final inspection is 4.2 %. The {{term:six-sigma|Six Sigma}} team first creates a SIPOC to capture the manufacturing process at the highest level.',
           },
           {
             type: 'heading',

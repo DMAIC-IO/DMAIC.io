@@ -27,7 +27,7 @@ export default {
           {
             type: 'definition',
             term: 'Prozessfähigkeit abschätzen',
-            content: 'Du kannst direkt ablesen, welcher Anteil deiner Daten innerhalb oder außerhalb der Spezifikationsgrenzen liegt, indem du die Grenzen auf der x-Achse einträgst und den zugehörigen Prozentsatz auf der y-Achse abliest.',
+            content: 'Du kannst direkt ablesen, welcher Anteil deiner Daten innerhalb oder außerhalb der {{term:spezifikationsgrenzen|Spezifikationsgrenzen}} liegt, indem du die Grenzen auf der x-Achse einträgst und den zugehörigen Prozentsatz auf der y-Achse abliest.',
           },
           {
             type: 'definition',
@@ -142,7 +142,7 @@ export default {
         blocks: [
           {
             type: 'scenario',
-            content: 'Ein Qualitätsteam misst die Bohrungstiefe (mm) von 50 Werkstücken und möchte vor einer Prozessfähigkeitsanalyse prüfen, ob die Werte normalverteilt sind.',
+            content: 'Ein Qualitätsteam misst die Bohrungstiefe (mm) von 50 Werkstücken und möchte vor einer {{term:prozessfaehigkeit|Prozessfähigkeitsanalyse}} prüfen, ob die Werte normalverteilt sind.',
           },
           {
             type: 'steps',
@@ -205,7 +205,7 @@ export default {
           },
           {
             type: 'decision',
-            content: 'Das Wahrscheinlichkeitsnetz ist ein visueller Schnelltest. Bei Unsicherheit sollte ein formaler Normalitätstest (Shapiro-Wilk, Anderson-Darling) ergänzt werden — verfügbar im Modul „Verteilungsanpassung".',
+            content: 'Das Wahrscheinlichkeitsnetz ist ein visueller Schnelltest. Bei Unsicherheit sollte ein formaler {{term:normalitaetstest|Normalitätstest}} (Shapiro-Wilk, Anderson-Darling) ergänzt werden — verfügbar im Modul „Verteilungsanpassung".',
           },
         ],
       },
@@ -283,7 +283,7 @@ export default {
           },
           {
             type: 'pitfall',
-            content: 'Probability plot ≠ goodness-of-fit test: the chart only shows whether the normal distribution looks appropriate — other distributions (Weibull, lognormal) require dedicated tests.',
+            content: 'Probability plot ≠ {{term:chi-quadrat-test|goodness-of-fit test}}: the chart only shows whether the normal distribution looks appropriate — other distributions (Weibull, lognormal) require dedicated tests.',
           },
         ],
       },

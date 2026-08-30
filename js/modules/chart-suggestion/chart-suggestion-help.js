@@ -36,7 +36,7 @@ export default {
           {
             type: 'definition',
             term: 'Im eigenen Modul öffnen',
-            content: 'Über der Vorschau gibt es bei vielen Diagrammen den Button „Im eigenen Modul öffnen". Er legt eine neue Instanz des entsprechenden Vollmoduls (Histogramm, Boxplot, Einzelwertdiagramm, Verlaufsdiagramm, Wahrscheinlichkeitsnetz oder XY-Diagramm) im gleichen Phasenbereich an — mit den ausgewählten Spalten bereits vorverknüpft, sodass Du direkt mit Anmerkungen, Referenzlinien, Achsen-Tuning oder Export weiterarbeiten kannst. Für reine Vergleichs-Diagramme (Balken, Pareto, Torte) und für die Scatter-Matrix existiert kein dedizierter Modul-Klick — der Button ist dort ausgeblendet.',
+            content: 'Über der Vorschau gibt es bei vielen Diagrammen den Button „Im eigenen Modul öffnen". Er legt eine neue Instanz des entsprechenden Vollmoduls ({{term:histogramm|Histogramm}}, {{term:boxplot|Boxplot}}, Einzelwertdiagramm, Verlaufsdiagramm, {{term:wahrscheinlichkeitsnetz|Wahrscheinlichkeitsnetz}} oder {{term:streudiagramm|XY-Diagramm}}) im gleichen Phasenbereich an — mit den ausgewählten Spalten bereits vorverknüpft, sodass Du direkt mit Anmerkungen, Referenzlinien, Achsen-Tuning oder Export weiterarbeiten kannst. Für reine Vergleichs-Diagramme (Balken, {{term:pareto|Pareto}}, Torte) und für die Scatter-Matrix existiert kein dedizierter Modul-Klick — der Button ist dort ausgeblendet.',
           },
           {
             type: 'definition',
@@ -46,7 +46,7 @@ export default {
           {
             type: 'definition',
             term: 'Regelkarten-Vorschau',
-            content: 'Bei der Kombination „Datum + stetige Spalte" enthält der Vorschlag eine Regelkarte. Die Vorschau berechnet automatisch eine I-Karte (Individuals-Chart) mit zentralem Mittelwert, ±3σ-Grenzen (σ aus dem mittleren Moving Range, d2=1,128) und der Beobachtung sortiert nach Datum. Für X̄/R, X̄/S oder Phase-I-Ausschlüsse wechselst Du in die ausgewachsene Regelkarte unter „Control".',
+            content: 'Bei der Kombination „Datum + stetige Spalte" enthält der Vorschlag eine Regelkarte. Die Vorschau berechnet automatisch eine I-Karte (Individuals-Chart) mit zentralem {{term:mittelwert|Mittelwert}}, ±3σ-Grenzen (σ aus dem mittleren Moving Range, d2=1,128) und der Beobachtung sortiert nach Datum. Für X̄/R, X̄/S oder Phase-I-Ausschlüsse wechselst Du in die ausgewachsene Regelkarte unter „Control".',
           },
         ],
       },
@@ -89,7 +89,7 @@ export default {
           {
             type: 'definition',
             term: 'Control-chart preview',
-            content: 'For the combination "date + continuous" the suggestion includes a control chart. The preview automatically computes an I-chart (Individuals) with the centerline at the mean, ±3σ limits (σ derived from the mean moving range, d2=1.128) and observations sorted by date. Switch to the full Control-chart module under "Control" for X̄/R, X̄/S, or Phase-I exclusions.',
+            content: 'For the combination "date + continuous" the suggestion includes a {{term:regelkarte|control chart}}. The preview automatically computes an I-chart (Individuals) with the {{term:mittellinie|centerline}} at the mean, ±3σ limits (σ derived from the mean moving range, d2=1.128) and observations sorted by date. Switch to the full Control-chart module under "Control" for X̄/R, X̄/S, or Phase-I exclusions.',
           },
         ],
       },

@@ -37,7 +37,7 @@ export default {
           {
             type: 'definition',
             term: 'Fehler 1. und 2. Art',
-            content: '{{term:fehler-erster-art|Fehler 1. Art (α)}}: H₀ verwerfen, obwohl sie stimmt — „Alarm ohne Grund". Fehler 2. Art (β): H₀ nicht verwerfen, obwohl sie falsch ist — „echten Effekt übersehen". Power = 1 − β.',
+            content: '{{term:fehler-erster-art|Fehler 1. Art (α)}}: H₀ verwerfen, obwohl sie stimmt — „Alarm ohne Grund". {{term:fehler-zweiter-art|Fehler 2. Art}} (β): H₀ nicht verwerfen, obwohl sie falsch ist — „echten Effekt übersehen". Power = 1 − β.',
           },
           {
             type: 'definition',
@@ -90,7 +90,7 @@ export default {
           {
             type: 'definition',
             term: 'Type I and Type II errors',
-            content: '{{term:fehler-erster-art|Type I (α)}}: reject H₀ when it is true — "false alarm". Type II (β): fail to reject H₀ when it is false — "missed real effect". Power = 1 − β.',
+            content: '{{term:fehler-erster-art|Type I (α)}}: reject H₀ when it is true — "{{term:false-alarm-rate|false alarm}}". Type II (β): fail to reject H₀ when it is false — "missed real effect". Power = 1 − β.',
           },
           {
             type: 'definition',
@@ -171,7 +171,7 @@ export default {
           {
             type: 'definition',
             term: 'Voraussetzungen nicht geprüft',
-            content: 'Ein t-Test auf stark schiefe Daten oder ein ANOVA bei massiv unterschiedlichen Varianzen liefert falsche p-Werte. Mindestens Histogramm und Varianzen prüfen, ggf. nichtparametrisch arbeiten.',
+            content: 'Ein t-Test auf stark schiefe Daten oder ein ANOVA bei massiv unterschiedlichen Varianzen liefert falsche p-Werte. Mindestens {{term:histogramm|Histogramm}} und Varianzen prüfen, ggf. nichtparametrisch arbeiten.',
           },
           {
             type: 'definition',

@@ -35,7 +35,7 @@ export default {
           },
           {
             type: 'paragraph',
-            content: 'Genrich Altschuller selbst hat dieses Werkzeug propagiert. Es ist kein algorithmisches Verfahren wie die Widerspruchsmatrix, sondern eine Denkstruktur, die Tunnelblick gegen Systemdenken eintauscht.',
+            content: 'Genrich Altschuller selbst hat dieses Werkzeug propagiert. Es ist kein algorithmisches Verfahren wie die {{term:widerspruchsmatrix|Widerspruchsmatrix}}, sondern eine Denkstruktur, die Tunnelblick gegen Systemdenken eintauscht.',
           },
         ],
       },

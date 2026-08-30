@@ -40,7 +40,7 @@ export default {
         blocks: [
           {
             type: 'paragraph',
-            content: 'The DoE Advisor helps you choose the right {{term:doe|experimental design}} for a Six Sigma project. The choice of design decides whether a limited number of runs yields robust insight into {{term:haupteffekt|main effects}}, {{term:wechselwirkung|interactions}} and optima — or whether effort is wasted.',
+            content: 'The DoE Advisor helps you choose the right {{term:doe|experimental design}} for a {{term:six-sigma|Six Sigma}} project. The choice of design decides whether a limited number of runs yields robust insight into {{term:haupteffekt|main effects}}, {{term:wechselwirkung|interactions}} and optima — or whether effort is wasted.',
           },
           {
             type: 'definition',
@@ -77,10 +77,10 @@ export default {
               '{{term:faktor|Faktoren}} zählen — wenige (≤4) erlauben Vollfaktorielle, viele (>10) erfordern Plackett-Burman.',
               '{{term:stufe|Stufen}} pro Faktor festlegen — bei reinen 2-Stufen-Faktoren reicht 2^k, bei mehrstufigen oder kategorialen Faktoren (Material A/B/C, 3 Druckstufen) braucht es den allgemeinen Vollplan.',
               'Robustheitsweg wählen — bei Streuungsreduktion entscheidet die Frage, ob explizite Störgrößen vorliegen ({{term:taguchi|Taguchi}}-Inner-Outer-Array) oder die Streuung direkt aus Replikaten modelliert werden soll ({{term:streuungs-doe|Streuungs-DoE / Dual-Response}}).',
-              'Faktorgrenzen prüfen — sind sie erweiterbar ({{term:ccd|CCD rotatable}}) oder hart durch Sicherheits-/Spezifikationsgrenzen (CCD face-centered)?',
+              'Faktorgrenzen prüfen — sind sie erweiterbar ({{term:ccd|CCD rotatable}}) oder hart durch Sicherheits-/{{term:spezifikationsgrenzen|Spezifikationsgrenzen}} (CCD face-centered)?',
               'Eckpunkte prüfen — sind extreme Kombinationen aller Faktoren physikalisch zulässig ({{term:vollfaktoriell|Vollfaktoriell}}/CCD)? Falls nicht: {{term:box-behnken|Box-Behnken}} oder {{term:d-optimal|D-optimal}}.',
               'Krümmung berücksichtigen — werden quadratische Effekte vermutet, ist {{term:dsd|DSD}} oder ein {{term:response-surface|RSM}}-Design (CCD/Box-Behnken) sinnvoll.',
-              'Empfehlung im DoE-Planer umsetzen, Daten ins Worksheet übernehmen, mit Regression/ANOVA auswerten.',
+              'Empfehlung im DoE-Planer umsetzen, Daten ins Worksheet übernehmen, mit {{term:regression|Regression}}/ANOVA auswerten.',
             ],
           },
         ],
@@ -148,7 +148,7 @@ export default {
           {
             type: 'definition',
             term: 'Streuungs-DoE ohne echte Replikate',
-            content: 'Ein Dispersion-Design braucht echte, unabhängige {{term:replikat|Replikate}} je Versuchslauf — nur dann ist log(s²) eine valide Antwort. Mehrfachmessungen am selben Lauf (Pseudo-Replikate) erfassen nur die Messunsicherheit, nicht die Prozessstreuung.',
+            content: 'Ein Dispersion-Design braucht echte, unabhängige {{term:replikat|Replikate}} je Versuchslauf — nur dann ist log(s²) eine valide Antwort. Mehrfachmessungen am selben Lauf (Pseudo-Replikate) erfassen nur die {{term:messunsicherheit|Messunsicherheit}}, nicht die Prozessstreuung.',
           },
         ],
       },

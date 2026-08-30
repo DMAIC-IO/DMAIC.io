@@ -123,7 +123,7 @@ export default {
             type: 'list',
             items: [
               'Umfang abgrenzen — welche Funktion, welcher Prozessabschnitt wird analysiert?',
-              'Funktionen bzw. Schritte auflisten — am besten an der Prozesskarte entlang.',
+              'Funktionen bzw. Schritte auflisten — am besten an der {{term:process-map|Prozesskarte}} entlang.',
               'Pro Schritt mögliche Fehler brainstormen — im Team, mit Experten und Praktikern.',
               'Pro Fehler die Folgen und Ursachen beschreiben.',
               'B, A, E gemeinsam vergeben — ein einheitlicher Bewertungsrahmen ist Pflicht.',

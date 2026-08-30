@@ -38,7 +38,7 @@ export default {
           },
           {
             type: 'paragraph',
-            content: 'Abgrenzung: MSA Typ 1 prüft Wiederholpräzision und Bias an <em>einem</em> Zeitpunkt (Cg/Cgk). Typ 2 prüft Wiederhol- und Vergleichspräzision mit Bediener-Einfluss (Gage R&R). Typ 4 prüft Linearität über den Messbereich. Typ 5 prüft attributive Prüfprozesse (Kappa). Typ 6 dagegen prüft <em>ein</em> Referenzteil über <em>viele Zeitpunkte</em> — die einzige der sechs MSA-Studien, die eine echte Zeitachse hat.',
+            content: 'Abgrenzung: MSA Typ 1 prüft Wiederholpräzision und Bias an <em>einem</em> Zeitpunkt (Cg/Cgk). Typ 2 prüft Wiederhol- und Vergleichspräzision mit Bediener-Einfluss ({{term:gage-rr|Gage R&R}}). Typ 4 prüft {{term:linearitaet|Linearität}} über den Messbereich. Typ 5 prüft attributive Prüfprozesse (Kappa). Typ 6 dagegen prüft <em>ein</em> Referenzteil über <em>viele Zeitpunkte</em> — die einzige der sechs MSA-Studien, die eine echte Zeitachse hat.',
           },
         ],
       },
@@ -78,7 +78,7 @@ export default {
               'Konstante Prüfbedingungen über die gesamte Studiendauer — dasselbe Prüfmittel, möglichst derselbe Prüfer oder eine dokumentierte Rotation, gleichbleibende Umgebungsbedingungen. Wechsel während der Studie erschweren die Interpretation von Nelson-Verletzungen.',
               'Eine Zeitstempel- oder Reihenfolge-Spalte (Datum oder ganzzahliger Index) und eine Messwert-Spalte im Worksheet. Bei x̄-R zusätzlich eine Untergruppen-Spalte (z. B. Tag, Charge, Kalibrierintervall).',
               'Für den Grenzen-Modus <em>aus Studien-Daten</em>: die Basis-Untergruppen selbst sollten weitgehend frei von {{term:nelson-regeln|Nelson-Verletzungen}} sein — sonst sind die daraus abgeleiteten Grenzen kontaminiert.',
-              'Alternativ für den Grenzen-Modus <em>manuell</em>: bekannte oder aus einer Typ-1-Studie übernommene Werte für µ₀ (Sollwert des Referenzteils) und σ₀ (bekannte Wiederholstreuung).',
+              'Alternativ für den Grenzen-Modus <em>manuell</em>: bekannte oder aus einer Typ-1-Studie übernommene Werte für µ₀ (Sollwert des Referenzteils) und σ₀ (bekannte {{term:wiederholbarkeit|Wiederholstreuung}}).',
             ],
           },
           {
@@ -97,7 +97,7 @@ export default {
               'Exactly one {{term:referenzteil|reference part}} (master sample) with a stable, reproducible characteristic — the same physical part is remeasured at every time point.',
               'At least 10 time points for I-MR (single readings), at least 5 subgroups for x̄-R (several replicates per time point). Recommended: 20 or more baseline points so the study-derived limits are trustworthy.',
               'Constant measurement conditions across the whole study — the same gage, ideally the same appraiser or a documented rotation, stable environmental conditions. Mid-study changes make Nelson-rule violations harder to interpret.',
-              'A timestamp or sequence column (date or integer index) and a value column in the worksheet. For x̄-R, additionally a subgroup column (e.g. day, batch, calibration interval).',
+              'A timestamp or sequence column (date or integer index) and a value column in the worksheet. For x̄-R, additionally a {{term:subgruppe|subgroup}} column (e.g. day, batch, calibration interval).',
               'For the <em>from-study</em> limits mode: the baseline subgroups themselves should be largely free of {{term:nelson-regeln|Nelson-rule violations}} — otherwise the derived limits are contaminated.',
               'Alternatively, for the <em>given</em> limits mode: known values, or values imported from a Type 1 study, for µ₀ (target value of the reference part) and σ₀ (known repeatability spread).',
             ],
@@ -118,7 +118,7 @@ export default {
           {
             type: 'definition',
             term: 'Kartentyp — I-MR vs. x̄-R',
-            content: 'Bei genau einer Messung je Zeitpunkt zieht das Modul eine {{term:i-mr-chart|I-MR-Karte}} (Individualwerte + gleitende Spannweite). Sobald eine Untergruppen-Spalte gewählt wird (mehrere Wiederholungen je Zeitpunkt, z. B. drei Messungen pro Tag), wechselt der Kartentyp automatisch auf {{term:xbar-r-chart|x̄-R}} (Untergruppen-Mittelwert + Spannweite). Der Nutzer kann jederzeit zurück auf I-MR schalten; dann wird die Untergruppen-Referenz ignoriert und die Werte flach durchgezählt.',
+            content: 'Bei genau einer Messung je Zeitpunkt zieht das Modul eine {{term:i-mr-chart|I-MR-Karte}} (Individualwerte + gleitende {{term:spannweite|Spannweite}}). Sobald eine Untergruppen-Spalte gewählt wird (mehrere Wiederholungen je Zeitpunkt, z. B. drei Messungen pro Tag), wechselt der Kartentyp automatisch auf {{term:xbar-r-chart|x̄-R}} (Untergruppen-Mittelwert + Spannweite). Der Nutzer kann jederzeit zurück auf I-MR schalten; dann wird die Untergruppen-Referenz ignoriert und die Werte flach durchgezählt.',
           },
           {
             type: 'definition',
@@ -128,7 +128,7 @@ export default {
           {
             type: 'definition',
             term: '{{term:nelson-regeln|Nelson-Regeln}} 1–8',
-            content: 'Acht Muster-Tests auf der {{term:regelkarte|Regelkarte}} (Punkt außerhalb ±3σ, sieben Punkte in Folge auf einer Seite der Mittellinie, Trend über sechs Punkte, Punkte in den {{term:sigma-zonen|Sigma-Zonen}} B/C usw.). Default aktiviert sind Regel 1–6; Regel 7 und 8 (Stratifikation) sind optional zuschaltbar. Jede Verletzung zählt in die Ampel-Bewertung.',
+            content: 'Acht Muster-Tests auf der {{term:regelkarte|Regelkarte}} (Punkt außerhalb ±3σ, sieben Punkte in Folge auf einer Seite der {{term:mittellinie|Mittellinie}}, Trend über sechs Punkte, Punkte in den {{term:sigma-zonen|Sigma-Zonen}} B/C usw.). Default aktiviert sind Regel 1–6; Regel 7 und 8 (Stratifikation) sind optional zuschaltbar. Jede Verletzung zählt in die Ampel-Bewertung.',
           },
           {
             type: 'definition',
@@ -224,7 +224,7 @@ export default {
           {
             type: 'definition',
             term: 'Conditional / marginal (yellow)',
-            content: 'Neither the green nor the red condition is met — e.g. 1–2 Nelson violations without a significant trend, or a barely significant trend (α ≤ p<sub>drift</sub> &lt; α/10) without pattern violations. Watch closely and clarify the root cause before the next study.',
+            content: 'Neither the green nor the red condition is met — e.g. 1–2 Nelson violations without a significant trend, or a barely significant trend (α ≤ p<sub>drift</sub> &lt; α/10) without pattern violations. Watch closely and clarify the {{term:ursachenanalyse|root cause}} before the next study.',
           },
           {
             type: 'definition',

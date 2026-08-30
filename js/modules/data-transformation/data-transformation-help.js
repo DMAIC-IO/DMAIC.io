@@ -12,7 +12,7 @@ export default {
         blocks: [
           {
             type: 'paragraph',
-            content: 'Die Datentransformation rechnet Messwerte mit einer mathematischen Funktion (z. B. ln, √, Box-Cox) um, sodass die transformierten Werte einer Normalverteilung näher kommen. Sinn der Sache ist nicht, „bessere Daten" zu erzeugen, sondern Methoden anwendbar zu machen, die Normalverteilung voraussetzen — etwa Cp/Cpk, I-MR-Karten, t-Test oder lineare Regression.',
+            content: 'Die Datentransformation rechnet Messwerte mit einer mathematischen Funktion (z. B. ln, √, Box-Cox) um, sodass die transformierten Werte einer Normalverteilung näher kommen. Sinn der Sache ist nicht, „bessere Daten" zu erzeugen, sondern Methoden anwendbar zu machen, die Normalverteilung voraussetzen — etwa Cp/Cpk, I-MR-Karten, {{term:t-test|t-Test}} oder lineare {{term:regression|Regression}}.',
           },
           {
             type: 'paragraph',
@@ -52,14 +52,14 @@ export default {
             items: [
               'Prozessfähigkeit (Cp, Cpk, Pp, Ppk) für rechtsschiefe Größen wie Zykluszeiten, Wartezeiten, Rauheit oder Lebensdauern.',
               'I-MR- oder X̄-S-Karten, wenn die Schiefe systematisch zu falschen Eingriffsgrenzen oder vielen falschen Alarmen führt.',
-              'Lineare Regression, wenn die Residuenanalyse Trichterform (Heteroskedastizität) oder Schiefe zeigt — eine Transformation der Zielgröße stabilisiert oft die Varianz.',
+              '{{term:lineare-regression|Lineare Regression}}, wenn die Residuenanalyse Trichterform ({{term:heteroskedastizitaet|Heteroskedastizität}}) oder Schiefe zeigt — eine Transformation der {{term:zielgroesse|Zielgröße}} stabilisiert oft die {{term:varianz|Varianz}}.',
               't-Test oder ANOVA bei stark schiefen Daten und kleinen Stichproben, wo das Konfidenzintervall sonst unsymmetrisch verzerrt ist.',
               'Daten mit physikalisch erzwungener unterer Grenze bei null (Konzentrationen, Partikelgrößen, Fehleranzahlen pro Einheit), die auf einer log- oder Wurzelskala natürlich symmetrisch werden.',
             ],
           },
           {
             type: 'paragraph',
-            content: 'Faustregel: Wenn der Anderson-Darling- oder Shapiro-Wilk-Test die Normalitätshypothese verwirft UND das Histogramm/Wahrscheinlichkeitsnetz eine klare, einseitige {{term:schiefe|Schiefe}} zeigt, ist eine Transformation einen Versuch wert.',
+            content: 'Faustregel: Wenn der Anderson-Darling- oder Shapiro-Wilk-Test die Normalitätshypothese verwirft UND das {{term:histogramm|Histogramm}}/{{term:wahrscheinlichkeitsnetz|Wahrscheinlichkeitsnetz}} eine klare, einseitige {{term:schiefe|Schiefe}} zeigt, ist eine Transformation einen Versuch wert.',
           },
         ],
       },
@@ -77,7 +77,7 @@ export default {
           {
             type: 'list',
             items: [
-              'Process capability (Cp, Cpk, Pp, Ppk) for right-skewed measurands like cycle times, waiting times, surface roughness or lifetimes.',
+              '{{term:prozessfaehigkeit|Process capability}} (Cp, Cpk, Pp, Ppk) for right-skewed measurands like cycle times, waiting times, surface roughness or lifetimes.',
               'I-MR or X̄-S charts, when skewness systematically pushes the control limits and produces frequent false alarms.',
               'Linear regression, when residual analysis shows funnel shape (heteroscedasticity) or skewness — transforming the response often stabilizes variance.',
               't-test or ANOVA on heavily skewed data with small samples, where the confidence interval would otherwise be asymmetrically biased.',
@@ -118,7 +118,7 @@ export default {
           {
             type: 'definition',
             term: 'Diskrete oder gezählte Daten',
-            content: 'Anzahlen, Klassen, Bewertungen oder ja/nein-Daten gehören in attributive Verfahren (p-, np-, c-, u-Karte, Poisson-/Binomial-Verteilung). Eine Box-Cox-Transformation darauf ist methodisch falsch.',
+            content: 'Anzahlen, Klassen, Bewertungen oder ja/nein-Daten gehören in attributive Verfahren (p-, np-, c-, {{term:c-chart|u-Karte}}, Poisson-/Binomial-Verteilung). Eine Box-Cox-Transformation darauf ist methodisch falsch.',
           },
           {
             type: 'definition',
@@ -133,7 +133,7 @@ export default {
           {
             type: 'definition',
             term: 'Kommunikation mit Stakeholdern',
-            content: 'Spezifikationsgrenzen, Toleranzen und Prozessziele sind in Originaleinheiten definiert. Wenn das Ergebnis von Kunden, Auditoren oder der Produktion verstanden werden muss, wiegt die Verständlichkeit oft schwerer als ein paar Zehntel im Cpk.',
+            content: '{{term:spezifikationsgrenzen|Spezifikationsgrenzen}}, Toleranzen und Prozessziele sind in Originaleinheiten definiert. Wenn das Ergebnis von Kunden, Auditoren oder der Produktion verstanden werden muss, wiegt die Verständlichkeit oft schwerer als ein paar Zehntel im Cpk.',
           },
           {
             type: 'paragraph',
@@ -161,7 +161,7 @@ export default {
           {
             type: 'definition',
             term: 'Outliers and special causes',
-            content: 'A few extreme values can skew the distribution, but they signal a disturbed process. Investigate and fix the root cause; do not "smooth them away" with a transformation.',
+            content: 'A few extreme values can skew the distribution, but they signal a disturbed process. Investigate and fix the {{term:ursachenanalyse|root cause}}; do not "smooth them away" with a transformation.',
           },
           {
             type: 'definition',
@@ -303,7 +303,7 @@ export default {
               'Pick a suitable transformation: positive data with skew → Box-Cox; sign changes → Yeo-Johnson; theoretically motivated (e.g. lifetimes) → logarithm.',
               'For Box-Cox / Yeo-Johnson use the automatic λ optimization.',
               'Re-check the transformed data: histogram, probability plot, Anderson-Darling / Shapiro-Wilk.',
-              'Run the downstream analysis (Cpk, control chart, test) on the transformed values.',
+              'Run the downstream analysis (Cpk, {{term:regelkarte|control chart}}, test) on the transformed values.',
               'Back-transform results into the original unit for communication — carry the specification limits along.',
             ],
           },
@@ -321,7 +321,7 @@ export default {
               'Negative oder null-Werte mit Box-Cox/Logarithmus: kein Ergebnis. Stattdessen Yeo-Johnson verwenden oder eine Verschiebung explizit dokumentieren.',
               'λ manuell setzen: führt fast immer zu schlechteren Ergebnissen als die automatische Optimierung — und überdeckt oft, dass die Daten gar nicht transformierbar sind.',
               'Spezifikationsgrenzen vergessen mitzutransformieren: Cpk auf transformierten Daten ist sinnlos, wenn USL/LSL noch in der Originaleinheit stehen.',
-              'Erfolgsmeldung „p > 0,05" überschätzen: Ein bestandener Normalitätstest auf transformierten Daten heißt nicht, dass die Modellannahmen für das Folgeverfahren wirklich erfüllt sind. Residuen weiterhin prüfen.',
+              'Erfolgsmeldung „p > 0,05" überschätzen: Ein bestandener {{term:normalitaetstest|Normalitätstest}} auf transformierten Daten heißt nicht, dass die Modellannahmen für das Folgeverfahren wirklich erfüllt sind. {{term:residuen|Residuen}} weiterhin prüfen.',
               'Eine Transformation als „Datenkorrektur" verkaufen: Transformation ändert nicht die Werte, sondern die Skala. Das muss bei Auditierung, Reporting und Rückverfolgbarkeit klar kommuniziert werden.',
               'Auf jede neue Charge dasselbe λ anwenden: Wenn sich der Prozess ändert, ändert sich auch die optimale Transformation. Regelmäßig nachkalibrieren.',
             ],

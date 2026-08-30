@@ -37,7 +37,7 @@ export default {
           {
             type: 'definition',
             term: 'Tukey IQR-Regel',
-            content: 'Markiert Punkte unterhalb Q1 − k·IQR oder oberhalb Q3 + k·IQR (Standard k = 1,5; „extreme" Ausreißer bei k = 3). Verteilungsfrei, robust, und entspricht den Whiskers im Boxplot.',
+            content: 'Markiert Punkte unterhalb Q1 − k·IQR oder oberhalb Q3 + k·IQR (Standard k = 1,5; „extreme" Ausreißer bei k = 3). Verteilungsfrei, robust, und entspricht den Whiskers im {{term:boxplot|Boxplot}}.',
           },
           {
             type: 'definition',
@@ -107,7 +107,7 @@ export default {
               'Erst visuell prüfen — Boxplot oder Individual-Value-Plot zeigt sofort, ob es überhaupt verdächtige Punkte gibt.',
               'Spalte mit numerischen Daten wählen (mindestens n ≥ 3, für Generalized ESD eher n ≥ 15).',
               'Verfahren aktivieren, die zur Datensituation passen: kleine Stichprobe → Dixon Q oder Grubbs; mehrere Ausreißer vermutet → Generalized ESD; verteilungsfrei → Tukey IQR oder Hampel.',
-              'Signifikanzniveau α (typisch 0,05) und Schwellen festlegen — Tukey-Faktor 1,5 (potenziell) bzw. 3 (extrem), Hampel k = 3, Z-Score 3, Modified Z 3,5.',
+              '{{term:signifikanzniveau|Signifikanzniveau}} α (typisch 0,05) und Schwellen festlegen — Tukey-Faktor 1,5 (potenziell) bzw. 3 (extrem), Hampel k = 3, Z-Score 3, Modified Z 3,5.',
               'Ergebnisse vergleichen: Stimmen mehrere Verfahren überein, ist das Urteil belastbar; widersprechen sie sich, lohnt der Blick auf die Verteilung.',
               'Niemals automatisch löschen — Ursache eines Ausreißers untersuchen (Messfehler, Prozessstörung, neuer Effekt) und dokumentieren, was gemacht wurde.',
               'Bei Bedarf Analyse mit und ohne markierte Punkte rechnen und die Robustheit der Schlussfolgerung bewerten.',
@@ -126,7 +126,7 @@ export default {
               'Enable methods that fit the data: small sample → Dixon Q or Grubbs; multiple outliers suspected → Generalized ESD; distribution-free → Tukey IQR or Hampel.',
               'Set the significance level α (typical 0.05) and the thresholds — Tukey factor 1.5 (potential) or 3 (extreme), Hampel k = 3, Z-score 3, Modified Z 3.5.',
               'Compare results: when several methods agree the verdict is robust; when they disagree, inspect the distribution.',
-              'Never delete automatically — investigate the root cause of any outlier (measurement error, process disturbance, real new effect) and document what was done.',
+              'Never delete automatically — investigate the {{term:ursachenanalyse|root cause}} of any outlier (measurement error, process disturbance, real new effect) and document what was done.',
               'If in doubt, run the downstream analysis both with and without the flagged points and evaluate how sensitive the conclusion is.',
             ],
           },
@@ -196,7 +196,7 @@ export default {
           {
             type: 'definition',
             term: 'Grubbs on non-normal data',
-            content: 'On skewed or heavy-tailed distributions Grubbs produces too many false positives. Test for normality first — otherwise switch to Hampel or Tukey IQR.',
+            content: 'On skewed or heavy-tailed distributions Grubbs produces too many false positives. {{term:normalitaetstest|Test for normality}} first — otherwise switch to Hampel or Tukey IQR.',
           },
           {
             type: 'definition',

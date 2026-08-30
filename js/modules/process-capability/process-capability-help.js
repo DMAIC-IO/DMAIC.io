@@ -12,7 +12,7 @@ export default {
         blocks: [
           {
             type: 'paragraph',
-            content: 'Die {{term:prozessfaehigkeit|Prozessfähigkeitsanalyse}} misst, wie gut ein Prozess die Anforderungen des Kunden einhält. Sie vergleicht die natürliche Streuung des Prozesses mit den Spezifikationsgrenzen und drückt das Ergebnis in einer Handvoll Kennzahlen aus. Sie ist ein Kernwerkzeug der Measure- und Control-Phase, um ein objektives Vorher/Nachher-Bild zu liefern.',
+            content: 'Die {{term:prozessfaehigkeit|Prozessfähigkeitsanalyse}} misst, wie gut ein Prozess die Anforderungen des Kunden einhält. Sie vergleicht die {{term:zufallsursache|natürliche Streuung}} des Prozesses mit den Spezifikationsgrenzen und drückt das Ergebnis in einer Handvoll Kennzahlen aus. Sie ist ein Kernwerkzeug der Measure- und Control-Phase, um ein objektives Vorher/Nachher-Bild zu liefern.',
           },
           {
             type: 'definition',
@@ -95,7 +95,7 @@ export default {
               'Spezifikationsgrenzen aus Anforderungen, Zeichnung oder Kundenvertrag holen.',
               'Daten sammeln — stabil, repräsentativ, mindestens 30 Werte, idealerweise 100+.',
               'Stabilität prüfen (Regelkarte) — nur ein stabiler Prozess liefert sinnvolle Kennzahlen.',
-              'Normalität prüfen (Histogramm, Probability Plot, Shapiro-Wilk). Bei Abweichung Transformation oder nicht-parametrische Methode.',
+              'Normalität prüfen ({{term:histogramm|Histogramm}}, {{term:wahrscheinlichkeitsnetz|Probability Plot}}, Shapiro-Wilk). Bei Abweichung Transformation oder nicht-parametrische Methode.',
               'Kennzahlen berechnen (Cp, Cpk, Pp, Ppk) und mit Konfidenzintervall angeben.',
               'Ergebnis grafisch darstellen — Histogramm mit Spezifikationsgrenzen und angepasster Normalkurve.',
               'Interpretation: fähig / nicht fähig / Verschiebung vs. Streuung dominieren.',
@@ -111,7 +111,7 @@ export default {
             items: [
               'Get specification limits from requirements, drawings, or customer contracts.',
               'Collect data — stable, representative, at least 30 values, ideally 100+.',
-              'Check stability (control chart) — only a stable process gives meaningful indices.',
+              'Check stability ({{term:regelkarte|control chart}}) — only a stable process gives meaningful indices.',
               'Check normality (histogram, probability plot, Shapiro-Wilk). If off, transform or use nonparametric method.',
               'Compute indices (Cp, Cpk, Pp, Ppk) and report with confidence intervals.',
               'Visualize — histogram with spec limits and fitted normal curve.',

@@ -37,7 +37,7 @@ export default {
           {
             type: 'definition',
             term: 'Zäune (innere Grenzen)',
-            content: 'Die unsichtbaren Grenzen bei Q1 − 1,5 × IQR und Q3 + 1,5 × IQR werden als Zäune bezeichnet. Sie sind keine Spezifikationsgrenzen, sondern eine rein statistische Faustregel (Tukey), die Ausreißer von „normalen" Werten trennt.',
+            content: 'Die unsichtbaren Grenzen bei Q1 − 1,5 × IQR und Q3 + 1,5 × IQR werden als Zäune bezeichnet. Sie sind keine {{term:spezifikationsgrenzen|Spezifikationsgrenzen}}, sondern eine rein statistische Faustregel (Tukey), die Ausreißer von „normalen" Werten trennt.',
           },
           {
             type: 'definition',
@@ -141,7 +141,7 @@ export default {
         blocks: [
           {
             type: 'paragraph',
-            content: 'A boxplot (box-and-whisker plot) is a graphical display of a dataset\'s distribution based on its five-number summary: minimum, first quartile (Q1), median, third quartile (Q3), and maximum.',
+            content: 'A boxplot ({{term:boxplot|box-and-whisker plot}}) is a graphical display of a dataset\'s distribution based on its five-number summary: minimum, first quartile (Q1), median, third quartile (Q3), and maximum.',
           },
           {
             type: 'definition',
@@ -250,7 +250,7 @@ export default {
           },
           {
             type: 'decision',
-            content: 'Wenn sich Boxen verschiedener Gruppen kaum überlappen, liegt vermutlich ein signifikanter Unterschied vor — ein Hypothesentest (z. B. t-Test, ANOVA) kann dies bestätigen.',
+            content: 'Wenn sich Boxen verschiedener Gruppen kaum überlappen, liegt vermutlich ein signifikanter Unterschied vor — ein Hypothesentest (z. B. {{term:t-test|t-Test}}, ANOVA) kann dies bestätigen.',
           },
         ],
       },
@@ -274,7 +274,7 @@ export default {
           },
           {
             type: 'decision',
-            content: 'When boxes of different groups barely overlap, a significant difference is likely — confirm with a hypothesis test (e.g. t-test, ANOVA).',
+            content: 'When boxes of different groups barely overlap, a significant difference is likely — confirm with a {{term:hypothesentest|hypothesis test}} (e.g. t-test, ANOVA).',
           },
         ],
       },

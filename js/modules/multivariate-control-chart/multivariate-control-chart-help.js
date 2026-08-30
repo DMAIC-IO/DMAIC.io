@@ -11,7 +11,7 @@ export default {
         blocks: [
           {
             type: 'paragraph',
-            content: 'Wenn ein Prozess mehrere zusammenhängende Merkmale hat (z. B. Druck und Temperatur, Härte und Dichte), reicht es nicht, jedes Merkmal mit einer eigenen Shewhart-Karte zu überwachen. Das übersieht Verschiebungen, die nur in der Korrelationsstruktur sichtbar sind: Druck steigt, Temperatur fällt — beides individuell unauffällig, gemeinsam aber ein Alarmsignal.',
+            content: 'Wenn ein Prozess mehrere zusammenhängende Merkmale hat (z. B. Druck und Temperatur, Härte und Dichte), reicht es nicht, jedes Merkmal mit einer eigenen {{term:regelkarte|Shewhart-Karte}} zu überwachen. Das übersieht Verschiebungen, die nur in der Korrelationsstruktur sichtbar sind: Druck steigt, Temperatur fällt — beides individuell unauffällig, gemeinsam aber ein Alarmsignal.',
           },
           {
             type: 'definition',
@@ -58,7 +58,7 @@ export default {
       de: {
         title: 'Stolperfallen',
         blocks: [
-          { type: 'definition', term: 'Hochkorrelierte Merkmale doppelt erfasst', content: 'Wenn zwei Spalten faktisch dasselbe messen (Korrelation > 0,99), wird die Kovarianzmatrix singulär oder fast-singulär — die Inversion bricht ab. Vorher prüfen, ob alle Variablen unabhängig informativ sind.' },
+          { type: 'definition', term: 'Hochkorrelierte Merkmale doppelt erfasst', content: 'Wenn zwei Spalten faktisch dasselbe messen ({{term:korrelation|Korrelation}} > 0,99), wird die Kovarianzmatrix singulär oder fast-singulär — die Inversion bricht ab. Vorher prüfen, ob alle Variablen unabhängig informativ sind.' },
           { type: 'definition', term: 'Zu kleines m', content: 'Mit m ≤ p ist die Kovarianzmatrix nicht invertierbar. Faustregel: m sollte mindestens das 5-Fache von p sein, besser 10-Fache.' },
           { type: 'definition', term: 'Diagnose schwierig', content: 'Ein T²-Alarm zeigt „irgendetwas im Merkmals-Vektor ist außerhalb". Welches Merkmal — oder welche Kombination — verantwortlich ist, sieht man nicht direkt; dafür braucht es Beitragszerlegung oder ergänzende Shewhart-Karten je Variable.' },
           { type: 'definition', term: 'α-Wahl', content: 'α = 0,0027 entspricht der klassischen 3σ-Konvention. Größere α erhöhen die Sensitivität, vervielfachen aber Falsch-Alarme — bei p Variablen multiplikativ.' },

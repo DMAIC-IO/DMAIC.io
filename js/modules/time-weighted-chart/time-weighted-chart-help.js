@@ -17,7 +17,7 @@ export default {
           {
             type: 'definition',
             term: 'EWMA — Exponentially Weighted Moving Average',
-            content: 'Bei der {{term:ewma-chart|EWMA-Karte}} ist jeder Wert ist ein gewichteter Durchschnitt aus aktueller Beobachtung und vorherigem EWMA: zᵢ = λ·xᵢ + (1−λ)·zᵢ₋₁. Der Glättungsparameter λ steuert das „Gedächtnis": kleines λ (0,05–0,1) reagiert auf sehr kleine Verschiebungen, größeres λ (0,3–0,4) verhält sich Shewhart-ähnlich.',
+            content: 'Bei der {{term:ewma-chart|EWMA-Karte}} ist jeder Wert ist ein gewichteter {{term:mittelwert|Durchschnitt}} aus aktueller Beobachtung und vorherigem EWMA: zᵢ = λ·xᵢ + (1−λ)·zᵢ₋₁. Der Glättungsparameter λ steuert das „Gedächtnis": kleines λ (0,05–0,1) reagiert auf sehr kleine Verschiebungen, größeres λ (0,3–0,4) verhält sich Shewhart-ähnlich.',
           },
           {
             type: 'definition',
@@ -63,7 +63,7 @@ export default {
             type: 'list',
             items: [
               'Sollwert μ₀ und Streuung σ aus einem stabilen Vorlauf bestimmen (Baseline).',
-              'σ vorzugsweise aus mittlerer Spannweite MR̄/d₂ schätzen (robuster gegen Sonderursachen als Stichproben-SD).',
+              'σ vorzugsweise aus mittlerer {{term:spannweite|Spannweite}} MR̄/d₂ schätzen (robuster gegen Sonderursachen als Stichproben-SD).',
               'Verschiebungsgröße festlegen, die früh erkannt werden soll — z. B. 1σ.',
               'EWMA: λ ≈ 0,1 für 1σ-Shifts; L = 2,7 (statt 3,0) bei kleinen λ, sonst L = 3.',
               'CUSUM: k = 0,5σ und h = 4σ oder 5σ — diese Kombination erkennt 1σ-Shifts in ~10 Punkten.',
@@ -105,7 +105,7 @@ export default {
           {
             type: 'list',
             items: [
-              'EWMA: Die zᵢ-Linie kreuzt UCL/LCL → Sonderursache. Die Grenzen weiten sich zu Beginn (Einschwingphase) und nähern sich asymptotisch dem Steady-State.',
+              'EWMA: Die zᵢ-Linie kreuzt UCL/LCL → {{term:sonderursache|Sonderursache}}. Die Grenzen weiten sich zu Beginn (Einschwingphase) und nähern sich asymptotisch dem Steady-State.',
               'CUSUM: C⁺ steigt → positive Verschiebung; C⁻ steigt → negative Verschiebung. Signal sobald eine Summe die horizontale Grenze h überschreitet.',
               'Beide Karten zeigen den Beginn der Verschiebung deutlich später als ihr eigentliches Auftreten — die nötige Aufzinsung kostet Reaktionszeit, gewinnt aber Sensitivität.',
               'Nach einem Signal: Ursache untersuchen, Prozess korrigieren, beide Summen / EWMA neu starten.',

@@ -49,7 +49,7 @@ export default {
           },
           {
             type: 'paragraph',
-            content: 'Models come from the Regression module (click "Save as model" there). The optimisation result itself is project-central, stored in state.optimizations[id].',
+            content: 'Models come from the {{term:regression|Regression}} module (click "Save as model" there). The optimisation result itself is project-central, stored in state.optimizations[id].',
           },
         ],
       },

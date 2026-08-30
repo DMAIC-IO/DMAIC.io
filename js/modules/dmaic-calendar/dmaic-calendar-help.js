@@ -183,7 +183,7 @@ export default {
           {
             type: 'definition',
             term: 'Kalender ist kein Aufgabenmanager',
-            content: 'Der Kalender plant Termine — er ersetzt keine Aufgabenliste mit Prioritäten, Verantwortlichen und Status. Für Aufgaben das Modul „Lessons Learned" oder externe Tools nutzen.',
+            content: 'Der Kalender plant Termine — er ersetzt keine Aufgabenliste mit Prioritäten, Verantwortlichen und Status. Für Aufgaben das Modul „{{term:lessons-learned|Lessons Learned}}" oder externe Tools nutzen.',
           },
         ],
       },

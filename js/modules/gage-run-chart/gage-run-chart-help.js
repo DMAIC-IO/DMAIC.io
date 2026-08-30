@@ -16,7 +16,7 @@ export default {
           },
           {
             type: 'paragraph',
-            content: 'In Minitab liegt es unter <em>Statistik → Qualitätswerkzeuge → Messsystemanalyse → Messverlaufsdiagramm</em>. Es ist <strong>nicht</strong> dasselbe wie das Verlaufsdiagramm (Run Chart) — jenes zeigt eine einzelne Reihe über die Zeit mit Medianlinie und vier Lauftests und hat mit Messmitteln nichts zu tun.',
+            content: 'In Minitab liegt es unter <em>Statistik → Qualitätswerkzeuge → Messsystemanalyse → Messverlaufsdiagramm</em>. Es ist <strong>nicht</strong> dasselbe wie das Verlaufsdiagramm ({{term:run-chart|Run Chart}}) — jenes zeigt eine einzelne Reihe über die Zeit mit Medianlinie und vier Lauftests und hat mit Messmitteln nichts zu tun.',
           },
           {
             type: 'definition',
@@ -26,7 +26,7 @@ export default {
           {
             type: 'definition',
             term: 'Referenzlinie',
-            content: 'Standardmäßig der Mittelwert aller Messwerte. Ein eigener Wert lässt sich eintragen — etwa der bekannte Referenzwert eines Normals oder die Mitte des Toleranzbands.',
+            content: 'Standardmäßig der {{term:mittelwert|Mittelwert}} aller Messwerte. Ein eigener Wert lässt sich eintragen — etwa der bekannte Referenzwert eines Normals oder die Mitte des Toleranzbands.',
           },
         ],
       },
@@ -114,7 +114,7 @@ export default {
               '<strong>Ein Prüfer liegt durchgehend höher oder tiefer</strong> als die anderen: Hinweis auf Prüfer-Bias — unterschiedliche Ablesegewohnheit, Aufspannung oder Auslegung der Prüfvorschrift.',
               '<strong>Ein Prüfer streut sichtbar breiter</strong>: schlechte Wiederholpräzision bei diesem Prüfer. Die Verbindungslinien zwischen den Wiederholmessungen zeigen das direkt.',
               '<strong>Große senkrechte Sprünge innerhalb eines Felds</strong>: die Wiederholmessungen an derselben Prüfeinheit gehen auseinander — das Messsystem ist an dieser Stelle nicht reproduzierbar.',
-              '<strong>Felder streuen stark untereinander, innerhalb aber wenig</strong>: das ist der Normalfall einer brauchbaren Prüfmittelstudie — die Teile-zu-Teile-Streuung dominiert.',
+              '<strong>Felder streuen stark untereinander, innerhalb aber wenig</strong>: das ist der Normalfall einer brauchbaren Prüfmittelstudie — die {{term:teile-variation|Teile-zu-Teile-Streuung}} dominiert.',
               '<strong>Alle Felder liegen dicht beieinander</strong>: die Prüfeinheiten decken den Prozessbereich nicht ab. Die Studie kann das Messsystem so nicht sinnvoll bewerten.',
             ],
           },

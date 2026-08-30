@@ -27,7 +27,7 @@ export default {
           {
             type: 'definition',
             term: 'Modus „Six Sigma"',
-            content: 'Berechnet Cp und Cpk aus Mittelwert, Standardabweichung sowie unterer und oberer Spezifikationsgrenze. Wandelt zudem zwischen DPMO, Sigma-Niveau und Yield um.',
+            content: 'Berechnet Cp und Cpk aus Mittelwert, Standardabweichung sowie unterer und oberer Spezifikationsgrenze. Wandelt zudem zwischen DPMO, {{term:sigma-niveau|Sigma-Niveau}} und Yield um.',
           },
           {
             type: 'paragraph',
@@ -40,7 +40,7 @@ export default {
         blocks: [
           {
             type: 'paragraph',
-            content: 'The scientific calculator is an integrated helper for quick computations without leaving the app. It offers three modes, each tailored to a typical Six Sigma use case.',
+            content: 'The scientific calculator is an integrated helper for quick computations without leaving the app. It offers three modes, each tailored to a typical {{term:six-sigma|Six Sigma}} use case.',
           },
           {
             type: 'definition',
@@ -75,7 +75,7 @@ export default {
               'Modus oben über die Tabs auswählen (Wissenschaftlich / Statistik / Six Sigma).',
               'Zahlen und Operatoren über die Tasten oder die Tastatur eingeben.',
               'Im Statistik-Modus die Werte komma- oder zeilengetrennt einfügen — auch Copy & Paste aus dem Worksheet funktioniert.',
-              'Im Six-Sigma-Modus die Spezifikationsgrenzen, Mittelwert und Standardabweichung eintragen — Cp/Cpk werden sofort angezeigt.',
+              'Im Six-Sigma-Modus die {{term:spezifikationsgrenzen|Spezifikationsgrenzen}}, Mittelwert und Standardabweichung eintragen — Cp/Cpk werden sofort angezeigt.',
               'DPMO ↔ Sigma-Niveau ↔ Yield: einen der drei Werte eintragen, die anderen werden automatisch berechnet.',
             ],
           },
@@ -110,7 +110,7 @@ export default {
           {
             type: 'definition',
             term: 'Cp/Cpk ohne Normalverteilungsprüfung',
-            content: 'Der Six-Sigma-Modus rechnet ohne Verteilungsannahme zu prüfen. Bei nicht-normalen Daten ist das Ergebnis irreführend — vorher mit Wahrscheinlichkeitsnetz oder Verteilungsanpassung absichern.',
+            content: 'Der Six-Sigma-Modus rechnet ohne Verteilungsannahme zu prüfen. Bei nicht-normalen Daten ist das Ergebnis irreführend — vorher mit {{term:wahrscheinlichkeitsnetz|Wahrscheinlichkeitsnetz}} oder Verteilungsanpassung absichern.',
           },
           {
             type: 'definition',
@@ -125,7 +125,7 @@ export default {
           {
             type: 'definition',
             term: 'Kein Audit-Trail',
-            content: 'Berechnungen werden nicht ins Projekt gespeichert. Wichtige Zwischenergebnisse direkt ins Worksheet oder den Project Charter übertragen, sonst gehen sie beim Schließen verloren.',
+            content: 'Berechnungen werden nicht ins Projekt gespeichert. Wichtige Zwischenergebnisse direkt ins Worksheet oder den {{term:project-charter|Project Charter}} übertragen, sonst gehen sie beim Schließen verloren.',
           },
         ],
       },

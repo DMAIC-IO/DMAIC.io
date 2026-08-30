@@ -198,7 +198,7 @@ export default {
         blocks: [
           {
             type: 'paragraph',
-            content: 'Neben dem Spaltentyp (wie sind die Werte gespeichert?) hat jede Spalte zusätzlich eine analytische Rolle (wie sind sie gemeint?). Die Rolle entscheidet, welche Diagramme und Statistiken sinnvoll sind — sie ist die Grundlage des Diagramm-Vorschlags und ähnelt dem Skalenniveau aus Tableau oder Minitab.',
+            content: 'Neben dem Spaltentyp (wie sind die Werte gespeichert?) hat jede Spalte zusätzlich eine analytische Rolle (wie sind sie gemeint?). Die Rolle entscheidet, welche Diagramme und Statistiken sinnvoll sind — sie ist die Grundlage des Diagramm-Vorschlags und ähnelt dem {{term:skalenniveau|Skalenniveau}} aus Tableau oder Minitab.',
           },
           {
             type: 'paragraph',
@@ -207,12 +207,12 @@ export default {
           {
             type: 'definition',
             term: 'Stetig (Continuous)',
-            content: 'Numerische Messwerte mit sinnvoller Arithmetik — z. B. Maße, Gewichte, Zeiten, Erträge. Mittelwert, {{term:standardabweichung|Standardabweichung}} und Histogramm sind anwendbar.',
+            content: 'Numerische Messwerte mit sinnvoller Arithmetik — z. B. Maße, Gewichte, Zeiten, Erträge. Mittelwert, {{term:standardabweichung|Standardabweichung}} und {{term:histogramm|Histogramm}} sind anwendbar.',
           },
           {
             type: 'definition',
             term: 'Kategorial (Categorical)',
-            content: 'Unordered Kategorien — z. B. Schicht, Maschine, Region. Wird per Pareto, Balken oder Tortendiagramm dargestellt. Kein Mittelwert.',
+            content: 'Unordered Kategorien — z. B. Schicht, Maschine, Region. Wird per {{term:pareto|Pareto}}, Balken oder {{term:kreisdiagramm|Tortendiagramm}} dargestellt. Kein Mittelwert.',
           },
           {
             type: 'definition',
@@ -222,7 +222,7 @@ export default {
           {
             type: 'definition',
             term: 'Datum/Zeit',
-            content: 'Zeitachse — Voraussetzung für Verlaufsdiagramm, Zeitreihe, Regelkarte über die Zeit.',
+            content: 'Zeitachse — Voraussetzung für Verlaufsdiagramm, Zeitreihe, {{term:regelkarte|Regelkarte}} über die Zeit.',
           },
           {
             type: 'definition',

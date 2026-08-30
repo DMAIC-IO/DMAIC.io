@@ -32,7 +32,7 @@ export default {
           {
             type: 'definition',
             term: 'Cg',
-            content: '{{term:cg|Cg}} ist das Maß für die Wiederholbarkeit im Verhältnis zur Toleranz. Typische Formel: Cg = 0,2·T / (6·s), wobei T die Toleranzbreite und s die {{term:standardabweichung|Standardabweichung}} der Wiederholmessungen ist. Akzeptanz üblich Cg ≥ 1,33.',
+            content: '{{term:cg|Cg}} ist das Maß für die Wiederholbarkeit im Verhältnis zur Toleranz. Typische Formel: Cg = 0,2·T / (6·s), wobei T die {{term:spezifikationsgrenzen|Toleranzbreite}} und s die {{term:standardabweichung|Standardabweichung}} der Wiederholmessungen ist. Akzeptanz üblich Cg ≥ 1,33.',
           },
           {
             type: 'definition',

@@ -12,7 +12,7 @@ export default {
         blocks: [
           {
             type: 'paragraph',
-            content: 'Der Modell-Datengenerator erzeugt synthetische Datensätze aus einem konfigurierbaren Regressionsmodell. Im Unterschied zum reinen Zufallsgenerator wird hier ein gerichteter Zusammenhang zwischen Eingangs- und Ausgangsgrößen modelliert — ideal, um DOE-Auswertungen, Regressionsanalysen oder Optimierungsmethoden an einem bekannten „wahren" Modell zu üben und zu validieren.',
+            content: 'Der Modell-Datengenerator erzeugt synthetische Datensätze aus einem konfigurierbaren {{term:regression|Regressionsmodell}}. Im Unterschied zum reinen Zufallsgenerator wird hier ein gerichteter Zusammenhang zwischen Eingangs- und Ausgangsgrößen modelliert — ideal, um DOE-Auswertungen, Regressionsanalysen oder Optimierungsmethoden an einem bekannten „wahren" Modell zu üben und zu validieren.',
           },
           {
             type: 'definition',
@@ -42,7 +42,7 @@ export default {
           {
             type: 'definition',
             term: 'Seed (Saat)',
-            content: 'Mit einem festen Seed entsteht bei jedem Lauf derselbe Datensatz — wichtig für Reproduzierbarkeit von Schulungen und Vergleichen.',
+            content: 'Mit einem festen Seed entsteht bei jedem Lauf derselbe Datensatz — wichtig für {{term:reproduzierbarkeit|Reproduzierbarkeit}} von Schulungen und Vergleichen.',
           },
         ],
       },
@@ -71,7 +71,7 @@ export default {
           {
             type: 'definition',
             term: 'Sampling method',
-            content: 'Controls how factor combinations are generated — Monte Carlo (random), Latin Hypercube Sampling (LHS, more evenly spread), or full factorial (all combinations of a fixed number of levels).',
+            content: 'Controls how factor combinations are generated — Monte Carlo (random), Latin Hypercube Sampling (LHS, more evenly spread), or {{term:vollfaktoriell|full factorial}} (all combinations of a fixed number of levels).',
           },
           {
             type: 'definition',
@@ -98,7 +98,7 @@ export default {
               'Beta-Koeffizienten setzen: Achsenabschnitt, Haupteffekte und gewünschte Wechselwirkungs-Terme.',
               'Sampling-Methode wählen: Monte Carlo für schnelle Streuung, LHS für gleichmäßige Abdeckung, vollfaktoriell für DOE-Schulungen.',
               'Stichprobenumfang n bzw. Stufenzahl festlegen.',
-              'Noise-Stärke (z. B. σ = 0,5) eintragen — bestimmt die Streuung der Antwortgröße.',
+              'Noise-Stärke (z. B. σ = 0,5) eintragen — bestimmt die Streuung der {{term:zielgroesse|Antwortgröße}}.',
               'Optional Seed setzen, dann „Generieren".',
               'Mit „In Worksheet übernehmen" wird der Datensatz als neue Tabelle ins Arbeitsblatt geschrieben.',
             ],

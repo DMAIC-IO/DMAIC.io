@@ -46,17 +46,17 @@ export default {
           {
             type: 'definition',
             term: 'Wertschöpfungsklassifikation (VA / BNVA / NVA)',
-            content: 'Jeder Schritt kann als wertschöpfend (VA), geschäftlich notwendig (BNVA) oder nicht wertschöpfend (NVA) markiert werden. VA-Schritte erzeugen direkten Kundennutzen. BNVA-Schritte sind betrieblich nötig, aber kein Kundennutzen. NVA-Schritte sind Verschwendung und Kandidaten für Eliminierung. Ein Klick auf das Badge wechselt den Typ.',
+            content: 'Jeder Schritt kann als wertschöpfend (VA), geschäftlich notwendig (BNVA) oder {{term:wertschoepfung|nicht wertschöpfend}} (NVA) markiert werden. VA-Schritte erzeugen direkten Kundennutzen. BNVA-Schritte sind betrieblich nötig, aber kein Kundennutzen. NVA-Schritte sind {{term:muda|Verschwendung}} und Kandidaten für Eliminierung. Ein Klick auf das Badge wechselt den Typ.',
           },
           {
             type: 'definition',
             term: 'Input-Typ: Prozessparameter (x) vs. Störgröße (n)',
-            content: 'Jeder Input kann als Prozessparameter (x) oder Störgröße (n) klassifiziert werden. Prozessparameter sind steuerbare Eingangsgrößen — Maschineneinstellungen, Rezepturen, Sollwerte. Störgrößen sind nicht oder schwer kontrollierbar — Umgebungstemperatur, Chargenschwankungen, Bedienerstreuung. Die Unterscheidung hilft bei der späteren DOE-Planung und Ursachenanalyse.',
+            content: 'Jeder Input kann als Prozessparameter (x) oder Störgröße (n) klassifiziert werden. Prozessparameter sind steuerbare Eingangsgrößen — Maschineneinstellungen, Rezepturen, Sollwerte. Störgrößen sind nicht oder schwer kontrollierbar — Umgebungstemperatur, Chargenschwankungen, Bedienerstreuung. Die Unterscheidung hilft bei der späteren DOE-Planung und {{term:ursachenanalyse|Ursachenanalyse}}.',
           },
           {
             type: 'definition',
             term: 'Loops (Rücksprünge)',
-            content: 'Über das Loop-Symbol in der Kopfzeile eines Schritts kann ein Rücksprung zu einem früheren Schritt definiert werden. Die Bedingung beschreibt, wann der Loop ausgelöst wird (z. B. „Wenn Messung außerhalb Toleranz"). Zusätzliche Loop-Schritte beschreiben Aktionen, die nur im Rücksprungpfad ausgeführt werden. Eine visuelle Klammer am rechten Rand zeigt die Spannweite des Loops.',
+            content: 'Über das Loop-Symbol in der Kopfzeile eines Schritts kann ein Rücksprung zu einem früheren Schritt definiert werden. Die Bedingung beschreibt, wann der Loop ausgelöst wird (z. B. „Wenn Messung außerhalb Toleranz"). Zusätzliche Loop-Schritte beschreiben Aktionen, die nur im Rücksprungpfad ausgeführt werden. Eine visuelle Klammer am rechten Rand zeigt die {{term:spannweite|Spannweite}} des Loops.',
           },
         ],
       },

@@ -12,7 +12,7 @@ export default {
         blocks: [
           {
             type: 'paragraph',
-            content: 'Die **Ressourcen-Checkliste** ist ein zentrales {{term:triz|TRIZ}}-Werkzeug: bevor man neue Komponenten erfindet, inventarisiert das Team systematisch alles, was bereits **im System, an seinen Grenzen oder im Supersystem** vorhanden ist. Erfahrungsgemäß findet sich die Lösung in den allermeisten Fällen bereits unter den existierenden Ressourcen — sie war nur ungenutzt.',
+            content: 'Die **{{term:ressourcen-analyse|Ressourcen-Checkliste}}** ist ein zentrales {{term:triz|TRIZ}}-Werkzeug: bevor man neue Komponenten erfindet, inventarisiert das Team systematisch alles, was bereits **im System, an seinen Grenzen oder im Supersystem** vorhanden ist. Erfahrungsgemäß findet sich die Lösung in den allermeisten Fällen bereits unter den existierenden Ressourcen — sie war nur ungenutzt.',
           },
           {
             type: 'paragraph',
@@ -156,7 +156,7 @@ export default {
           {
             type: 'list',
             items: [
-              '**Ideal Final Result (IFR)** — sits directly upstream. IFR-3 explicitly asks for a supersystem resource; this module enumerates them systematically.',
+              '**{{term:ifr|Ideal Final Result}} (IFR)** — sits directly upstream. IFR-3 explicitly asks for a supersystem resource; this module enumerates them systematically.',
               '**9-Windows** — same hierarchy axis (sub / system / super). Resources spotted in the 9-Windows grid can be transferred here for systematic rating.',
               '**Contradiction Matrix / Physical Contradiction** — separation principles often need a resource to implement (spatial separation needs unused volume; conditional separation needs a sensor signal — both are entries on this checklist).',
             ],

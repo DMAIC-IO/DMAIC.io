@@ -40,7 +40,7 @@ export default {
         blocks: [
           {
             type: 'paragraph',
-            content: 'The {{term:mosaikdiagramm|mosaic plot}} shows the joint distribution of two {{term:skalenniveau|categorical}} variables. Unlike a stacked bar chart — where every column has the same width — the mosaic plot encodes the marginal distribution of both variables geometrically: column widths and segment heights are each proportional to frequency.',
+            content: 'The {{term:mosaikdiagramm|mosaic plot}} shows the joint distribution of two {{term:skalenniveau|categorical}} variables. Unlike a {{term:balkendiagramm|stacked bar chart}} — where every column has the same width — the mosaic plot encodes the marginal distribution of both variables geometrically: column widths and segment heights are each proportional to frequency.',
           },
           {
             type: 'definition',
@@ -122,7 +122,7 @@ export default {
           {
             type: 'definition',
             term: 'Causality',
-            content: 'A visible relationship in the mosaic plot does NOT mean that X causes G (or vice versa) — it only shows dependence. For causal claims you need a designed experiment (DoE) or at least solid domain theory.',
+            content: 'A visible relationship in the mosaic plot does NOT mean that X causes G (or vice versa) — it only shows dependence. For causal claims you need a {{term:doe|designed experiment}} (DoE) or at least solid domain theory.',
           },
         ],
       },

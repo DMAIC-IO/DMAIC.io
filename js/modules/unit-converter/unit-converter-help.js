@@ -77,7 +77,7 @@ export default {
           {
             type: 'definition',
             term: 'Stille Rundungsfehler',
-            content: 'Bei sehr kleinen oder sehr großen Werten können Anzeigerundungen Genauigkeit verbergen. Für hochpräzise Berechnungen lieber Roh-Faktoren verwenden oder die volle Stellenzahl prüfen.',
+            content: 'Bei sehr kleinen oder sehr großen Werten können Anzeigerundungen {{term:genauigkeit|Genauigkeit}} verbergen. Für hochpräzise Berechnungen lieber Roh-Faktoren verwenden oder die volle Stellenzahl prüfen.',
           },
         ],
       },

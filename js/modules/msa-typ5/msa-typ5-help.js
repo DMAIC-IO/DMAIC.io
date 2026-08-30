@@ -40,7 +40,7 @@ export default {
           },
           {
             type: 'paragraph',
-            content: 'Abgrenzung: MSA Typ 1/2/4 arbeiten mit variablen Messwerten (mm, N, °C) und liefern Cg/Cgk, Gage R&R oder Linearität. Typ 5 dagegen bewertet <em>attributive</em> Prüfprozesse — visuelle Sichtprüfungen, Klassifikationsentscheidungen, Sortierungen — und liefert {{term:kappa|κ}}, {{term:effektivitaet|Effektivität}} sowie — bei binären Merkmalen mit Referenz — {{term:signal-detection|Signal-Detection}}-Kennzahlen.',
+            content: 'Abgrenzung: MSA Typ 1/2/4 arbeiten mit variablen Messwerten (mm, N, °C) und liefern Cg/Cgk, {{term:gage-rr|Gage R&R}} oder {{term:linearitaet|Linearität}}. Typ 5 dagegen bewertet <em>attributive</em> Prüfprozesse — visuelle Sichtprüfungen, Klassifikationsentscheidungen, Sortierungen — und liefert {{term:kappa|κ}}, {{term:effektivitaet|Effektivität}} sowie — bei binären Merkmalen mit Referenz — {{term:signal-detection|Signal-Detection}}-Kennzahlen.',
           },
         ],
       },
@@ -85,7 +85,7 @@ export default {
               'Optionale <strong>Referenz-Spalte</strong> mit dem wahren Kategoriewert je Teil. Fehlt sie, greift der {{term:konsens-fallback|Konsens-Fallback}}.',
               'Optionale <strong>Wiederholungs-Spalte</strong>. Fehlt sie, nummeriert die Engine je (Teil × Prüfer) automatisch von 1 an.',
               'Mindestens 2 unterschiedliche Teile, 2 unterschiedliche Prüfer und 2 vorkommende Bewertungs-Klassen.',
-              'Für Wiederholbarkeit: mindestens 2 Wiederholungen je (Teil × Prüfer) — sonst warnt die Engine mit <code>W_LOW_REP_COUNT</code>.',
+              'Für {{term:wiederholbarkeit|Wiederholbarkeit}}: mindestens 2 Wiederholungen je (Teil × Prüfer) — sonst warnt die Engine mit <code>W_LOW_REP_COUNT</code>.',
               'AIAG-Empfehlung für Freigabestudien: 50 Teile · 3 Prüfer · 3 Wiederholungen, mit ~50 % Grenzfällen im Datensatz.',
             ],
           },
@@ -154,7 +154,7 @@ export default {
           {
             type: 'definition',
             term: 'Beobachtete Übereinstimmung',
-            content: 'p<sub>o</sub> = Σ<sub>i</sub> n<sub>ii</sub> / N — Diagonalsumme der Kreuztabelle geteilt durch Gesamtzahl der Bewertungspaare.',
+            content: 'p<sub>o</sub> = Σ<sub>i</sub> n<sub>ii</sub> / N — Diagonalsumme der {{term:kontingenztafel|Kreuztabelle}} geteilt durch Gesamtzahl der Bewertungspaare.',
           },
           {
             type: 'definition',
@@ -173,7 +173,7 @@ export default {
           {
             type: 'definition',
             term: '{{term:fleiss-kappa|Fleiss κ}}',
-            content: 'P<sub>i</sub> = (Σ<sub>j</sub> n<sub>ij</sub>² − n<sub>i·</sub>) / (n<sub>i·</sub>(n<sub>i·</sub> − 1)) je Teil i, P̄ = Mittelwert. p̄<sub>j</sub> = Klassen-Randanteil. κ = (P̄ − P<sub>e</sub>) / (1 − P<sub>e</sub>) mit P<sub>e</sub> = Σ<sub>j</sub> p̄<sub>j</sub>². Bei ungleichen Rater-Zahlen wechselt die Engine auf die Randolph-Variante und vermerkt dies im Feld <code>method</code>.',
+            content: 'P<sub>i</sub> = (Σ<sub>j</sub> n<sub>ij</sub>² − n<sub>i·</sub>) / (n<sub>i·</sub>(n<sub>i·</sub> − 1)) je Teil i, P̄ = {{term:mittelwert|Mittelwert}}. p̄<sub>j</sub> = Klassen-Randanteil. κ = (P̄ − P<sub>e</sub>) / (1 − P<sub>e</sub>) mit P<sub>e</sub> = Σ<sub>j</sub> p̄<sub>j</sub>². Bei ungleichen Rater-Zahlen wechselt die Engine auf die Randolph-Variante und vermerkt dies im Feld <code>method</code>.',
           },
           {
             type: 'heading',
@@ -386,7 +386,7 @@ export default {
           {
             type: 'definition',
             term: 'Yellow — conditionally usable',
-            content: 'Neither the green nor the red condition met. The system may be used, but the root cause (which appraiser, which classes?) should be understood before a series release.',
+            content: 'Neither the green nor the red condition met. The system may be used, but the {{term:ursachenanalyse|root cause}} (which appraiser, which classes?) should be understood before a series release.',
           },
           {
             type: 'definition',

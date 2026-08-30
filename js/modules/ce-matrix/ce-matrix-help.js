@@ -12,7 +12,7 @@ export default {
         blocks: [
           {
             type: 'paragraph',
-            content: 'Die {{term:ce-matrix|C&E-Matrix}} (Cause-and-Effect-Matrix, auch X-Y-Matrix oder Prioritätenmatrix) verbindet Prozess-Eingaben (X, Inputs) mit Kunden-Outputs (Y) und zeigt, welche X auf welche Y am stärksten wirken. Sie ist die strukturierte Brücke zwischen SIPOC und tieferen Analysen wie {{term:fmea|FMEA}}, DOE oder Regression.',
+            content: 'Die {{term:ce-matrix|C&E-Matrix}} (Cause-and-Effect-Matrix, auch X-Y-Matrix oder Prioritätenmatrix) verbindet Prozess-Eingaben (X, Inputs) mit Kunden-Outputs (Y) und zeigt, welche X auf welche Y am stärksten wirken. Sie ist die strukturierte Brücke zwischen SIPOC und tieferen Analysen wie {{term:fmea|FMEA}}, DOE oder {{term:regression|Regression}}.',
           },
           {
             type: 'definition',
@@ -22,7 +22,7 @@ export default {
           {
             type: 'definition',
             term: 'Inputs (X, Zeilen)',
-            content: 'Die Prozessparameter und Einflussgrößen — z. B. Temperatur, Vorschub, Materialcharge, Werkzeugverschleiß. Sie stammen typischerweise aus dem SIPOC und dem Ishikawa-Diagramm.',
+            content: 'Die Prozessparameter und Einflussgrößen — z. B. Temperatur, Vorschub, Materialcharge, Werkzeugverschleiß. Sie stammen typischerweise aus dem SIPOC und dem {{term:ishikawa|Ishikawa-Diagramm}}.',
           },
           {
             type: 'definition',
@@ -51,7 +51,7 @@ export default {
           {
             type: 'definition',
             term: 'Outputs (Y, columns)',
-            content: 'The customer-relevant results — e.g. dimensional accuracy, surface roughness, lead time. Each output gets a weight (1–10) reflecting its importance from the customer perspective.',
+            content: 'The customer-relevant results — e.g. dimensional accuracy, surface roughness, {{term:durchlaufzeit|lead time}}. Each output gets a weight (1–10) reflecting its importance from the customer perspective.',
           },
           {
             type: 'definition',
@@ -71,7 +71,7 @@ export default {
           {
             type: 'definition',
             term: 'Pareto of X',
-            content: 'Sorting inputs by score often yields a Pareto distribution — a few X dominate the result. The next investigations focus on these "critical X".',
+            content: 'Sorting inputs by score often yields a {{term:pareto|Pareto}} distribution — a few X dominate the result. The next investigations focus on these "critical X".',
           },
         ],
       },
@@ -128,7 +128,7 @@ export default {
           },
           {
             type: 'paragraph',
-            content: 'Die C&E-Matrix ist ein Konsens-Werkzeug. Die Werte spiegeln das Wissen des Teams — sie sind Hypothesen, keine Fakten. Bei kritischen X mit Daten (Korrelation, Regression, DOE) absichern.',
+            content: 'Die C&E-Matrix ist ein Konsens-Werkzeug. Die Werte spiegeln das Wissen des Teams — sie sind Hypothesen, keine Fakten. Bei kritischen X mit Daten ({{term:korrelation|Korrelation}}, Regression, DOE) absichern.',
           },
         ],
       },

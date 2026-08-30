@@ -20,7 +20,7 @@ export default {
           type: 'table',
           headers: ['Modell', 'Formel', 'Anwendung'],
           rows: [
-            ['Quadratisch', 'β₀ + β₁x + β₂y + β₃x² + β₄y² + β₅xy', 'Response Surface Methodology (RSM), CCD, Box-Behnken'],
+            ['Quadratisch', 'β₀ + β₁x + β₂y + β₃x² + β₄y² + β₅xy', '{{term:response-surface|Response Surface Methodology}} (RSM), CCD, {{term:box-behnken|Box-Behnken}}'],
             ['Linear + Interaktion', 'β₀ + β₁x + β₂y + β₅xy', 'Faktorielle Versuchspläne (2k)'],
             ['Eigene Formel', 'Beliebiger JS-Ausdruck: Math.*-Aufrufe und arithmetische Ausdrücke werden voll unterstützt', 'Komplexe oder nicht-polynomiale Modelle'],
           ],
@@ -45,7 +45,7 @@ export default {
       blocks: [
         {
           type: 'text',
-          content: 'Ein CCD-Versuchsplan untersucht den Einfluss von Temperatur und Druck auf die Ausbeute. Das quadratische Regressionsmodell lautet:',
+          content: 'Ein CCD-Versuchsplan untersucht den Einfluss von Temperatur und Druck auf die Ausbeute. Das quadratische {{term:regression|Regressionsmodell}} lautet:',
         },
         {
           type: 'text',
@@ -115,7 +115,7 @@ export default {
       blocks: [
         {
           type: 'text',
-          content: 'A contour plot visualizes a response surface z = f(x, y) as a color-coded 2D map. It shows how a response variable (e.g., yield, roughness) depends on two input factors — typical for results from DoE regression models.',
+          content: 'A contour plot visualizes a response surface z = f(x, y) as a color-coded 2D map. It shows how a {{term:zielgroesse|response variable}} (e.g., yield, roughness) depends on two input factors — typical for results from DoE regression models.',
         },
         {
           type: 'heading',
@@ -126,7 +126,7 @@ export default {
           headers: ['Model', 'Formula', 'Application'],
           rows: [
             ['Quadratic', 'β₀ + β₁x + β₂y + β₃x² + β₄y² + β₅xy', 'Response Surface Methodology (RSM), CCD, Box-Behnken'],
-            ['Linear + Interaction', 'β₀ + β₁x + β₂y + β₅xy', 'Factorial designs (2k)'],
+            ['Linear + {{term:wechselwirkung|Interaction}}', 'β₀ + β₁x + β₂y + β₅xy', 'Factorial designs (2k)'],
             ['Custom Formula', 'Any JS expression: Math.* calls and arithmetic expressions are fully supported', 'Complex or non-polynomial models'],
           ],
         },

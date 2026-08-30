@@ -12,7 +12,7 @@ export default {
         blocks: [
           {
             type: 'paragraph',
-            content: 'Die Korrelationsanalyse misst die Stärke und Richtung des linearen Zusammenhangs zwischen zwei stetigen Variablen. Sie ist ein erster Schritt der Analyze-Phase, um zu prüfen, ob zwei Größen überhaupt zusammenhängen — und ob sich eine genauere Untersuchung (z. B. Regression) lohnt.',
+            content: 'Die Korrelationsanalyse misst die Stärke und Richtung des linearen Zusammenhangs zwischen zwei stetigen Variablen. Sie ist ein erster Schritt der Analyze-Phase, um zu prüfen, ob zwei Größen überhaupt zusammenhängen — und ob sich eine genauere Untersuchung (z. B. {{term:regression|Regression}}) lohnt.',
           },
           {
             type: 'definition',
@@ -93,7 +93,7 @@ export default {
             type: 'list',
             items: [
               'Zwei stetige Variablen auswählen, deren Zusammenhang interessiert.',
-              'Streudiagramm erstellen — vor jeder Zahl. Sieht das Bild linear aus, gekrümmt, ohne Muster?',
+              '{{term:streudiagramm|Streudiagramm}} erstellen — vor jeder Zahl. Sieht das Bild linear aus, gekrümmt, ohne Muster?',
               'Verteilungsannahme prüfen: bei näherungsweise normalverteilten, linearen Daten Pearson; bei schiefen oder nichtlinearen Daten Spearman/Kendall.',
               'Koeffizienten berechnen und p-Wert beachten.',
               'Bei signifikantem Ergebnis prüfen, ob die Größe praktisch relevant ist (r = 0,15 ist signifikant in großen Stichproben, aber inhaltlich wenig wert).',
@@ -181,7 +181,7 @@ export default {
           {
             type: 'definition',
             term: 'Signifikant ≠ stark',
-            content: 'Bei n = 10 000 ist r = 0,03 statistisch signifikant — und praktisch belanglos. p-Wert und Effektstärke immer gemeinsam interpretieren.',
+            content: 'Bei n = 10 000 ist r = 0,03 statistisch signifikant — und praktisch belanglos. p-Wert und {{term:effektstaerke|Effektstärke}} immer gemeinsam interpretieren.',
           },
           {
             type: 'definition',
@@ -191,7 +191,7 @@ export default {
           {
             type: 'definition',
             term: 'Sub-Gruppen ignoriert',
-            content: 'Ein einzelner Korrelationskoeffizient kann zwei gegensätzliche Untergruppen verschmelzen (Simpson-Paradoxon). Bei strukturierten Daten gruppiert plotten und gruppiert berechnen.',
+            content: 'Ein einzelner {{term:korrelation|Korrelationskoeffizient}} kann zwei gegensätzliche Untergruppen verschmelzen (Simpson-Paradoxon). Bei strukturierten Daten gruppiert plotten und gruppiert berechnen.',
           },
         ],
       },

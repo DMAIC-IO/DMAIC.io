@@ -24,7 +24,7 @@ export default {
       de: {
         title: 'Wann verwenden?',
         blocks: [
-          { type: 'paragraph', content: 'Das Activity Flowchart eignet sich in der Analyze-Phase, wenn ein Ablauf mit klaren Entscheidungspunkten und möglichen Rücksprüngen dokumentiert werden soll — z. B. Freigabe-, Prüf- oder Genehmigungsprozesse. Im Unterschied zur Prozesskarte verzichtet es bewusst auf Swim Lanes, Input/Output-Klassifikation und Wertschöpfungstypen und konzentriert sich auf die reine Ablauflogik inklusive Verzweigungen.' },
+          { type: 'paragraph', content: 'Das Activity Flowchart eignet sich in der Analyze-Phase, wenn ein Ablauf mit klaren Entscheidungspunkten und möglichen Rücksprüngen dokumentiert werden soll — z. B. Freigabe-, Prüf- oder Genehmigungsprozesse. Im Unterschied zur {{term:process-map|Prozesskarte}} verzichtet es bewusst auf Swim Lanes, Input/Output-Klassifikation und Wertschöpfungstypen und konzentriert sich auf die reine Ablauflogik inklusive Verzweigungen.' },
         ],
       },
       en: {

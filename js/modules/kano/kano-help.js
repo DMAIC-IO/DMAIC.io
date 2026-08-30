@@ -50,7 +50,7 @@ export default {
           },
           {
             type: 'paragraph',
-            content: 'Die Items kommen aus dem VoC→CTx-Baum: wahlweise auf Ebene der Bedürfnisse, der Treiber oder der Requirements. Eine Kano-Instanz arbeitet immer auf genau einer dieser drei Ebenen; wer sowohl Bedürfnisse als auch Treiber bewerten will, legt zwei getrennte Instanzen an.',
+            content: 'Die Items kommen aus dem {{term:ctx-baum|VoC→CTx-Baum}}: wahlweise auf Ebene der Bedürfnisse, der Treiber oder der Requirements. Eine Kano-Instanz arbeitet immer auf genau einer dieser drei Ebenen; wer sowohl Bedürfnisse als auch Treiber bewerten will, legt zwei getrennte Instanzen an.',
           },
           {
             type: 'paragraph',

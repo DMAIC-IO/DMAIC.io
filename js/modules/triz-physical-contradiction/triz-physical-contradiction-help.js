@@ -63,7 +63,7 @@ export default {
           },
           {
             type: 'paragraph',
-            content: 'Resolution is not via a matrix but via the **four separation principles**: time, space, condition, system level. One of these {{term:separationsprinzipien|four principles}} resolves almost every physical contradiction — the question is just which one.',
+            content: 'Resolution is not via a matrix but via the **four separation principles**: time, space, condition, {{term:supersystem|system level}}. One of these {{term:separationsprinzipien|four principles}} resolves almost every physical contradiction — the question is just which one.',
           },
         ],
       },
@@ -78,7 +78,7 @@ export default {
             items: [
               'Den Parameter klar benennen — *ein* messbares Attribut des Systems, nicht das System selbst (also „Tragflügellänge", nicht „Tragflügel").',
               'Die zwei entgegengesetzten Anforderungen formulieren („soll A sein, damit …" / „soll ¬A sein, damit …"). Wichtig: das *damit* — die jeweilige Funktion oder Wirkung mitschreiben.',
-              'Plausibilitätscheck: handelt es sich wirklich um einen *physikalischen* Widerspruch (gleicher Parameter zwei Werte) und nicht um einen *technischen* (zwei Parameter)? Im Zweifel zurück in die Widerspruchsmatrix.',
+              'Plausibilitätscheck: handelt es sich wirklich um einen *physikalischen* Widerspruch (gleicher Parameter zwei Werte) und nicht um einen *technischen* (zwei Parameter)? Im Zweifel zurück in die {{term:widerspruchsmatrix|Widerspruchsmatrix}}.',
               'Die vier Separationsprinzipien der Reihe nach durchgehen. Für jedes prüfen, ob es im konkreten Fall anwendbar ist, und die Idee dazu festhalten.',
               'Das passende Prinzip auswählen und die konkrete Lösungsidee im Lösungs-Feld konkretisieren — was wird wann / wo / unter welcher Bedingung / auf welcher Ebene anders?',
             ],
@@ -186,7 +186,7 @@ export default {
         blocks: [
           {
             type: 'paragraph',
-            content: 'The physical contradiction sits between the **contradiction matrix** (technical contradiction) and **Substance-Field analysis** (76 standard solutions):',
+            content: 'The physical contradiction sits between the **contradiction matrix** (technical contradiction) and **Substance-Field analysis** ({{term:standardloesungen|76 standard solutions}}):',
           },
           {
             type: 'list',

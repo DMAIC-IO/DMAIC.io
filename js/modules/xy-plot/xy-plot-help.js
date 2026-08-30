@@ -59,7 +59,7 @@ export default {
           },
           {
             type: 'paragraph',
-            content: 'Unlike the scatter plot in the correlation module, the XY plot is purely descriptive — it does not run any statistical test and is used for visual exploration.',
+            content: 'Unlike the scatter plot in the correlation module, the XY plot is purely descriptive — it does not run any {{term:hypothesentest|statistical test}} and is used for visual exploration.',
           },
         ],
       },
@@ -141,7 +141,7 @@ export default {
               'Mehrere Datensätze: Über „Datensatz hinzufügen" weitere X/Y-Paare auflegen, um Gruppen zu vergleichen.',
               'Punkte oder Linie: Globaler Schalter „Linien zeigen" und „Punkte zeigen" steuert das Erscheinungsbild aller Datensätze.',
               'Pro Datensatz lassen sich Farbe, Symbol, Strichstärke und Name im Editor anpassen.',
-              'Referenzlinien und -bereiche im Editor-Panel ergänzen — ideal für Spezifikationsgrenzen, Soll-Werte oder Trendlinien.',
+              'Referenzlinien und -bereiche im Editor-Panel ergänzen — ideal für {{term:spezifikationsgrenzen|Spezifikationsgrenzen}}, Soll-Werte oder Trendlinien.',
             ],
           },
           {
@@ -181,8 +181,8 @@ export default {
               'Punkte ordnen sich entlang einer steigenden Linie → positiver Zusammenhang zwischen X und Y.',
               'Punkte ordnen sich entlang einer fallenden Linie → negativer Zusammenhang.',
               'Punkte streuen ohne erkennbare Richtung → kein Zusammenhang oder reine Zufallsstreuung.',
-              'Bogen oder U-Form → nichtlinearer Zusammenhang (für Korrelation linearisieren oder Spearman verwenden).',
-              'Trichterförmige Streuung → Heteroskedastizität (Streuung wächst mit X) — wichtig für Regression.',
+              'Bogen oder U-Form → nichtlinearer Zusammenhang (für {{term:korrelation|Korrelation}} linearisieren oder Spearman verwenden).',
+              'Trichterförmige Streuung → {{term:heteroskedastizitaet|Heteroskedastizität}} (Streuung wächst mit X) — wichtig für {{term:regression|Regression}}.',
               'Mehrere getrennte Punktwolken → vermischte Populationen, Daten stratifizieren.',
             ],
           },
@@ -241,7 +241,7 @@ export default {
           {
             type: 'definition',
             term: 'Überlappende Punkte (Overplotting)',
-            content: 'Bei vielen Datenpunkten verdecken sich Marker gegenseitig — die wahre Dichte bleibt unsichtbar. Marker verkleinern, transparenter zeichnen oder zusätzlich ein Histogramm/Boxplot betrachten.',
+            content: 'Bei vielen Datenpunkten verdecken sich Marker gegenseitig — die wahre Dichte bleibt unsichtbar. Marker verkleinern, transparenter zeichnen oder zusätzlich ein {{term:histogramm|Histogramm}}/{{term:boxplot|Boxplot}} betrachten.',
           },
         ],
       },

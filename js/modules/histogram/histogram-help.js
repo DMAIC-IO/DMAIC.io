@@ -45,7 +45,7 @@ export default {
         blocks: [
           {
             type: 'paragraph',
-            content: 'A histogram shows the frequency distribution of a numeric variable. Values are bucketed into equal-width classes (bins); the height of each bar equals the number of observations in that class. It is one of the most important tools for visually characterizing a dataset.',
+            content: 'A histogram shows the {{term:histogramm|frequency distribution}} of a numeric variable. Values are bucketed into equal-width classes (bins); the height of each bar equals the number of observations in that class. It is one of the most important tools for visually characterizing a dataset.',
           },
           {
             type: 'definition',
@@ -131,7 +131,7 @@ export default {
           {
             type: 'definition',
             term: 'Histogramm ≠ Normalitätstest',
-            content: 'Eine glockenförmige Form ist ein Indiz, kein Beweis. Vor Cpk- oder t-Test-Anwendungen mit einem Wahrscheinlichkeitsnetz oder einem formalen Test absichern.',
+            content: 'Eine glockenförmige Form ist ein Indiz, kein Beweis. Vor Cpk- oder t-Test-Anwendungen mit einem {{term:wahrscheinlichkeitsnetz|Wahrscheinlichkeitsnetz}} oder einem formalen Test absichern.',
           },
           {
             type: 'definition',
@@ -141,7 +141,7 @@ export default {
           {
             type: 'definition',
             term: 'Diskrete Daten in stetigem Histogramm',
-            content: 'Zähldaten oder gerundete Werte erzeugen typische Lücken im Histogramm. Für diskrete Daten sind Balkendiagramme oder Pareto besser geeignet.',
+            content: 'Zähldaten oder gerundete Werte erzeugen typische Lücken im Histogramm. Für diskrete Daten sind Balkendiagramme oder {{term:pareto|Pareto}} besser geeignet.',
           },
         ],
       },
@@ -161,7 +161,7 @@ export default {
           {
             type: 'definition',
             term: 'Histogram ≠ normality test',
-            content: 'A bell shape is an indication, not a proof. Before Cpk or t-test applications, verify with a probability plot or formal test.',
+            content: 'A bell shape is an indication, not a proof. Before Cpk or {{term:t-test|t-test}} applications, verify with a probability plot or formal test.',
           },
           {
             type: 'definition',

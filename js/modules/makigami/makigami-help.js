@@ -12,11 +12,11 @@ export default {
         blocks: [
           {
             type: 'paragraph',
-            content: '{{term:makigami|Makigami}} (jap. „aufgerolltes Papier") ist ein Lean-Werkzeug zur Aufnahme administrativer und dienstleistungsorientierter Prozesse. Während eine klassische Prozesskarte den Materialfluss zeigt, macht Makigami sichtbar, wer wann an einem Vorgang arbeitet und wie viel Zeit zwischen den Schritten verloren geht.',
+            content: '{{term:makigami|Makigami}} (jap. „aufgerolltes Papier") ist ein Lean-Werkzeug zur Aufnahme administrativer und dienstleistungsorientierter Prozesse. Während eine klassische {{term:process-map|Prozesskarte}} den Materialfluss zeigt, macht Makigami sichtbar, wer wann an einem Vorgang arbeitet und wie viel Zeit zwischen den Schritten verloren geht.',
           },
           {
             type: 'paragraph',
-            content: 'Aufbau: Zeilen sind beteiligte Rollen (Personen, Abteilungen, Systeme), Spalten sind Prozessschritte in chronologischer Reihenfolge. In jeder Zelle wird markiert, ob eine Rolle an einem Schritt mitwirkt. Pro Schritt wird zusätzlich erfasst: Aktivität, Bearbeitungszeit, Wartezeit, Verschwendungsart und Notizen.',
+            content: 'Aufbau: Zeilen sind beteiligte Rollen (Personen, Abteilungen, Systeme), Spalten sind Prozessschritte in chronologischer Reihenfolge. In jeder Zelle wird markiert, ob eine Rolle an einem Schritt mitwirkt. Pro Schritt wird zusätzlich erfasst: Aktivität, {{term:durchlaufzeit|Bearbeitungszeit}}, Wartezeit, Verschwendungsart und Notizen.',
           },
           {
             type: 'definition',
@@ -31,7 +31,7 @@ export default {
           {
             type: 'definition',
             term: 'Bearbeitungszeit vs. Wartezeit',
-            content: 'Bearbeitungszeit ist die Zeit, in der tatsächlich gearbeitet wird (wertschöpfend). Wartezeit ist die Liegezeit zwischen Aktivitäten — die Vorgang ruht in der Ablage, im Postkorb, in der Mail-Queue. In Büro-Prozessen sind 95 %+ Wartezeit nicht ungewöhnlich.',
+            content: 'Bearbeitungszeit ist die Zeit, in der tatsächlich gearbeitet wird ({{term:wertschoepfung|wertschöpfend}}). Wartezeit ist die Liegezeit zwischen Aktivitäten — die Vorgang ruht in der Ablage, im Postkorb, in der Mail-Queue. In Büro-Prozessen sind 95 %+ Wartezeit nicht ungewöhnlich.',
           },
           {
             type: 'definition',
@@ -174,7 +174,7 @@ export default {
               'Aktivität: Was passiert konkret? Auch zwei Sätze sind völlig in Ordnung.',
               'Beteiligte Rollen: gleicher Inhalt wie die Punkte in der Matrix — Chips lassen sich genauso umschalten.',
               'Bearbeitungszeit / Wartezeit: Freitext-Eingabe (siehe unten). Auf Tab/Blur wird kanonisch normalisiert.',
-              'Verschwendung (Muda): mehrere Kategorien pro Schritt möglich. Farben und Bezeichnungen sind in den Einstellungen anpassbar.',
+              '{{term:muda|Verschwendung}} (Muda): mehrere Kategorien pro Schritt möglich. Farben und Bezeichnungen sind in den Einstellungen anpassbar.',
               'Notizen: alles, was nicht in andere Felder passt — Übergabewege, Engpässe, IT-Brüche.',
             ],
           },

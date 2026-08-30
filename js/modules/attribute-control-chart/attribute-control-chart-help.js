@@ -36,7 +36,7 @@ export default {
           },
           {
             type: 'paragraph',
-            content: 'Variable Eingriffsgrenzen: Bei p- und u-Karten mit unterschiedlichen Stichprobengrößen sind UCL und LCL pro Punkt verschieden — die Karte zeigt eine treppenförmige Grenzlinie. Zonen A/B/C werden nicht eingezeichnet, weil σ nicht konstant ist.',
+            content: 'Variable Eingriffsgrenzen: Bei p- und u-Karten mit unterschiedlichen Stichprobengrößen sind UCL und LCL pro Punkt verschieden — die Karte zeigt eine treppenförmige Grenzlinie. {{term:sigma-zonen|Zonen A/B/C}} werden nicht eingezeichnet, weil σ nicht konstant ist.',
           },
         ],
       },
@@ -86,7 +86,7 @@ export default {
               'Untergruppengröße prüfen: konstant (np, c) oder variabel (p, u)?',
               'Mindestens 20–25 Untergruppen Vorlauf für eine stabile Baseline sammeln.',
               'Bei p-/np-Karten: ausreichend großes n, damit n·p̄ ≥ 5 (sonst sind die Grenzen unsymmetrisch und unzuverlässig).',
-              'Phase I: Mittellinie und Grenzen aus dem Vorlauf berechnen.',
+              'Phase I: {{term:mittellinie|Mittellinie}} und Grenzen aus dem Vorlauf berechnen.',
               'Sonderursachen identifizieren, ausschließen, Grenzen ggf. neu berechnen.',
               'Phase II: Laufender Betrieb mit fixen Grenzen — neue Punkte werden geprüft, nicht in die Berechnung gemischt.',
             ],
@@ -100,7 +100,7 @@ export default {
             type: 'list',
             items: [
               'Check the data type: are we counting defective units (p, np) or defect counts (c, u)?',
-              'Check subgroup size: constant (np, c) or variable (p, u)?',
+              'Check {{term:subgruppe|subgroup}} size: constant (np, c) or variable (p, u)?',
               'Collect at least 20–25 subgroups of baseline data for stable limits.',
               'For p/np: ensure n is large enough that n·p̄ ≥ 5 (otherwise limits are asymmetric and unreliable).',
               'Phase I: compute center line and limits from the baseline.',

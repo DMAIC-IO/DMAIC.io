@@ -27,7 +27,7 @@ export default {
           {
             type: 'definition',
             term: 'Treiber (Driver)',
-            content: 'Konkrete Eigenschaften des Prozesses oder Produkts, die das Bedürfnis adressieren. Aus „schnelle Lieferung" wird z. B. „Bearbeitungszeit", „Versandzeit", „Lagerverfügbarkeit".',
+            content: 'Konkrete Eigenschaften des Prozesses oder Produkts, die das Bedürfnis adressieren. Aus „schnelle Lieferung" wird z. B. „{{term:durchlaufzeit|Bearbeitungszeit}}", „Versandzeit", „Lagerverfügbarkeit".',
           },
           {
             type: 'definition',
@@ -87,7 +87,7 @@ export default {
               'Pro Bedürfnis Treiber ableiten — was im Prozess bestimmt das Erleben?',
               'Pro Treiber eine oder mehrere CTx-Anforderungen formulieren — mit Messgröße, Sollwert und Toleranz.',
               'Mit Kunden bzw. Stakeholdern gegenprüfen — sind die CTx wirklich das, was gemeint war?',
-              'Priorisieren — nicht alle Anforderungen sind gleich wichtig. Kano-Modell oder Gewichtung helfen.',
+              'Priorisieren — nicht alle Anforderungen sind gleich wichtig. {{term:kano|Kano-Modell}} oder Gewichtung helfen.',
             ],
           },
         ],

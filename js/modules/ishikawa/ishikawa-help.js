@@ -36,7 +36,7 @@ export default {
           },
           {
             type: 'paragraph',
-            content: 'Das Ishikawa ist kein Beweis-Werkzeug — es ist eine strukturierte Sammlung von Hypothesen. Welche Ursachen tatsächlich relevant sind, wird anschließend mit Daten geprüft (C&E-Matrix, Hypothesentests, DOE).',
+            content: 'Das Ishikawa ist kein Beweis-Werkzeug — es ist eine strukturierte Sammlung von Hypothesen. Welche Ursachen tatsächlich relevant sind, wird anschließend mit Daten geprüft ({{term:ce-matrix|C&E-Matrix}}, Hypothesentests, DOE).',
           },
         ],
       },

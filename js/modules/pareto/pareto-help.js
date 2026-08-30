@@ -12,7 +12,7 @@ export default {
         blocks: [
           {
             type: 'paragraph',
-            content: 'Das Pareto-Diagramm ist eines der „7 QC-Werkzeuge" und kombiniert ein nach Häufigkeit absteigend sortiertes Säulendiagramm mit einer kumulativen Prozent-Linie. Es macht das 80/20-Prinzip („vital few — trivial many") visuell unmittelbar greifbar: wenige Kategorien sind für den Großteil des Problems verantwortlich.',
+            content: 'Das Pareto-Diagramm ist eines der „7 QC-Werkzeuge" und kombiniert ein nach Häufigkeit absteigend sortiertes {{term:balkendiagramm|Säulendiagramm}} mit einer kumulativen Prozent-Linie. Es macht das 80/20-Prinzip („vital few — trivial many") visuell unmittelbar greifbar: wenige Kategorien sind für den Großteil des Problems verantwortlich.',
           },
           {
             type: 'definition',
@@ -92,7 +92,7 @@ export default {
           {
             type: 'definition',
             term: 'Aggregation falsch gewählt',
-            content: 'Bei aktiver Y-Spalte muss man wählen, ob über die Kategorie summiert oder gemittelt wird. Für Kosten/Schaden/Mengen ist „Summe" richtig (Gesamtbeitrag), für eine durchschnittliche Reklamationshöhe „Mittelwert". Falsche Wahl führt zu falschem Ranking.',
+            content: 'Bei aktiver Y-Spalte muss man wählen, ob über die Kategorie summiert oder gemittelt wird. Für Kosten/Schaden/Mengen ist „Summe" richtig (Gesamtbeitrag), für eine durchschnittliche Reklamationshöhe „{{term:mittelwert|Mittelwert}}". Falsche Wahl führt zu falschem Ranking.',
           },
           {
             type: 'definition',

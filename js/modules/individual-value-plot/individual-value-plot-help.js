@@ -12,7 +12,7 @@ export default {
         blocks: [
           {
             type: 'paragraph',
-            content: 'Ein Einzelwertdiagramm (engl. „Individual Value Plot") zeigt jede einzelne Beobachtung als eigenen Punkt. Anders als ein Boxplot, der die Verteilung zu fünf Kennzahlen zusammenfasst, bleibt jeder Messwert sichtbar. Das macht das Diagramm besonders nützlich bei kleinen bis mittleren Stichproben, bei denen ein Boxplot zu wenige Punkte zum Verdichten hat.',
+            content: 'Ein Einzelwertdiagramm (engl. „Individual Value Plot") zeigt jede einzelne Beobachtung als eigenen Punkt. Anders als ein {{term:boxplot|Boxplot}}, der die Verteilung zu fünf Kennzahlen zusammenfasst, bleibt jeder Messwert sichtbar. Das macht das Diagramm besonders nützlich bei kleinen bis mittleren Stichproben, bei denen ein Boxplot zu wenige Punkte zum Verdichten hat.',
           },
           {
             type: 'definition',
@@ -113,7 +113,7 @@ export default {
               'Stichprobengröße unter 50 pro Gruppe: Boxplots werden bei wenigen Punkten unzuverlässig, das Einzelwertdiagramm zeigt jeden Wert.',
               'Diskrete oder gerundete Daten: Häufungen auf wenigen Werten werden im Boxplot unsichtbar, im Einzelwertdiagramm direkt erkennbar.',
               'Vergleich mehrerer Gruppen mit Fokus auf einzelne Ausreißer.',
-              'Vor dem Einsatz formaler Tests (t-Test, ANOVA), um die Plausibilität der Annahmen visuell zu prüfen.',
+              'Vor dem Einsatz formaler Tests ({{term:t-test|t-Test}}, ANOVA), um die Plausibilität der Annahmen visuell zu prüfen.',
             ],
           },
           {
@@ -259,7 +259,7 @@ export default {
               'Lage der Punktwolke: Wo liegt der Schwerpunkt einer Gruppe relativ zu den anderen?',
               'Streuung innerhalb einer Gruppe: Eine breite vertikale Wolke bedeutet hohe Variabilität, eine eng zusammengedrängte Wolke geringe Variabilität.',
               'Häufungen: Mehrere Punkte auf demselben Y-Wert (sichtbar durch Jitter) deuten auf gerundete oder diskrete Messwerte hin.',
-              'Lücken: Ein Bereich ohne Punkte innerhalb der Spannweite kann auf bimodale Daten oder eine fehlende Messstufe hindeuten.',
+              'Lücken: Ein Bereich ohne Punkte innerhalb der {{term:spannweite|Spannweite}} kann auf bimodale Daten oder eine fehlende Messstufe hindeuten.',
               'Einzelne Punkte abseits der Wolke: Mögliche Ausreißer — Ursache prüfen, nicht automatisch entfernen.',
               'Mittelwert vs. Median: Liegen die beiden weit auseinander, ist die Verteilung schief.',
             ],
@@ -284,7 +284,7 @@ export default {
               'Within-group spread: a wide vertical cloud means high variability, a tight cloud means low variability.',
               'Clusters: multiple points at the same Y value (visible through jitter) suggest rounded or discrete measurements.',
               'Gaps: an empty band inside a group\'s range can indicate bimodal data or a missing measurement level.',
-              'Isolated points: potential outliers — investigate the root cause, do not delete automatically.',
+              'Isolated points: potential outliers — investigate the {{term:ursachenanalyse|root cause}}, do not delete automatically.',
               'Mean vs. median: a large gap between the two indicates a skewed distribution.',
             ],
           },
@@ -306,7 +306,7 @@ export default {
           },
           {
             type: 'pitfall',
-            content: 'Sehr große Stichproben (n > 200 pro Gruppe): Die Punktwolke wird so dicht, dass einzelne Werte nicht mehr unterscheidbar sind. In diesem Fall ist ein Boxplot oder ein Histogramm die bessere Wahl.',
+            content: 'Sehr große Stichproben (n > 200 pro Gruppe): Die Punktwolke wird so dicht, dass einzelne Werte nicht mehr unterscheidbar sind. In diesem Fall ist ein Boxplot oder ein {{term:histogramm|Histogramm}} die bessere Wahl.',
           },
           {
             type: 'pitfall',
@@ -335,7 +335,7 @@ export default {
           },
           {
             type: 'pitfall',
-            content: 'Very large samples (n > 200 per group): the point cloud becomes so dense that individual values can no longer be distinguished. Use a boxplot or histogram instead.',
+            content: 'Very large samples (n > 200 per group): the {{term:streudiagramm|point cloud}} becomes so dense that individual values can no longer be distinguished. Use a boxplot or histogram instead.',
           },
           {
             type: 'pitfall',
@@ -347,7 +347,7 @@ export default {
           },
           {
             type: 'pitfall',
-            content: 'Individual value plot ≠ hypothesis test: this is an exploratory plot. For statistical significance, run a formal test.',
+            content: 'Individual value plot ≠ {{term:hypothesentest|hypothesis test}}: this is an exploratory plot. For statistical significance, run a formal test.',
           },
           {
             type: 'pitfall',

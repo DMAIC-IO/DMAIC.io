@@ -41,7 +41,7 @@ export default {
         blocks: [
           {
             type: 'paragraph',
-            content: '{{term:lessons-learned|Lessons learned}} document insights from a running or completed project — what worked, what did not, and what conclusion follows for future projects. They are the organizational memory of Six Sigma practice and belong in the Control phase, but are best kept continuously.',
+            content: '{{term:lessons-learned|Lessons learned}} document insights from a running or completed project — what worked, what did not, and what conclusion follows for future projects. They are the organizational memory of {{term:six-sigma|Six Sigma}} practice and belong in the Control phase, but are best kept continuously.',
           },
           {
             type: 'definition',

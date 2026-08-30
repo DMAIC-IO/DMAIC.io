@@ -11,7 +11,7 @@ export default {
         blocks: [
           {
             type: 'paragraph',
-            content: 'In Werkstätten oder Werkzeugbau-Umgebungen werden viele verschiedene Teile in kleinen Stückzahlen gefertigt. Eine klassische I-MR-Karte braucht 20–25 Punkte je Teil — das ergibt sich bei kurzen Serien nicht. Die Z-MR-Karte umgeht das, indem jeder Wert innerhalb seines Teils standardisiert wird; alle Teile landen dann auf einer einzigen Karte.',
+            content: 'In Werkstätten oder Werkzeugbau-Umgebungen werden viele verschiedene Teile in kleinen Stückzahlen gefertigt. Eine klassische {{term:i-mr-chart|I-MR-Karte}} braucht 20–25 Punkte je Teil — das ergibt sich bei kurzen Serien nicht. Die Z-MR-Karte umgeht das, indem jeder Wert innerhalb seines Teils standardisiert wird; alle Teile landen dann auf einer einzigen Karte.',
           },
           {
             type: 'definition',
