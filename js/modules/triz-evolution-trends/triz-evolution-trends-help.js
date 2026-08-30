@@ -12,7 +12,7 @@ export default {
         blocks: [
           {
             type: 'paragraph',
-            content: 'Altschullers Patentanalyse zeigt: technische Systeme entwickeln sich nicht zufällig, sondern entlang einer kleinen Zahl wiederkehrender **Evolutionslinien**. Wer das aktuelle System auf diesen Linien verortet, kann mit hoher Trefferquote vorhersagen, wohin die nächste Generation gehen wird.',
+            content: 'Altschullers Patentanalyse zeigt: technische Systeme entwickeln sich nicht zufällig, sondern entlang einer kleinen Zahl wiederkehrender **Evolutionslinien**. Wer das aktuelle System auf diesen {{term:evolutionsgesetze|Evolutionslinien}} verortet, kann mit hoher Trefferquote vorhersagen, wohin die nächste Generation gehen wird.',
           },
           {
             type: 'paragraph',
@@ -42,7 +42,7 @@ export default {
         blocks: [
           {
             type: 'paragraph',
-            content: 'Altshuller\'s patent analysis shows: technical systems do not evolve randomly but along a small number of recurring **evolution trajectories**. Placing the current system on these trajectories predicts with high hit rate where the next product generation will go.',
+            content: 'Altshuller\'s patent analysis shows: technical systems do not evolve randomly but along a small number of recurring **evolution trajectories**. Placing the current system on these {{term:evolutionsgesetze|evolution trajectories}} predicts with high hit rate where the next product generation will go.',
           },
           {
             type: 'paragraph',

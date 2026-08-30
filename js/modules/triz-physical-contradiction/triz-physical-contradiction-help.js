@@ -12,7 +12,7 @@ export default {
         blocks: [
           {
             type: 'paragraph',
-            content: 'Ein **physikalischer Widerspruch** liegt vor, wenn ein und derselbe Parameter eines Systems gleichzeitig zwei entgegengesetzte Werte annehmen muss. Anders als der technische Widerspruch der Altschuller-Matrix („Parameter A verbessert ↑, Parameter B verschlechtert ↓") ist der physikalische Widerspruch enger — und genau deshalb mächtiger: Er zwingt zur klaren Aussage „X muss A sein UND nicht-A sein".',
+            content: 'Ein **physikalischer Widerspruch** liegt vor, wenn ein und derselbe Parameter eines Systems gleichzeitig zwei entgegengesetzte Werte annehmen muss. Anders als der {{term:technischer-widerspruch|technische Widerspruch}} der Altschuller-Matrix („Parameter A verbessert ↑, Parameter B verschlechtert ↓") ist der physikalische Widerspruch enger — und genau deshalb mächtiger: Er zwingt zur klaren Aussage „X muss A sein UND nicht-A sein".',
           },
           {
             type: 'definition',
@@ -33,7 +33,7 @@ export default {
           },
           {
             type: 'paragraph',
-            content: 'Die Lösung führt nicht über eine Matrix, sondern über die **vier Separationsprinzipien**: Zeit, Raum, Bedingung und Systemebene. Eines dieser vier Prinzipien löst praktisch jeden physikalischen Widerspruch auf — die Frage ist nur, welches.',
+            content: 'Die Lösung führt nicht über eine Matrix, sondern über die **vier Separationsprinzipien**: Zeit, Raum, Bedingung und Systemebene. Eines dieser {{term:separationsprinzipien|vier Prinzipien}} löst praktisch jeden physikalischen Widerspruch auf — die Frage ist nur, welches.',
           },
         ],
       },
@@ -42,7 +42,7 @@ export default {
         blocks: [
           {
             type: 'paragraph',
-            content: 'A **physical contradiction** exists when one and the same parameter of a system must take two opposite values at the same time. Unlike the technical contradiction of Altshuller\'s matrix ("if I improve A, B gets worse"), the physical contradiction is sharper — and that is its power: it forces the explicit statement "X must be A AND not-A".',
+            content: 'A **physical contradiction** exists when one and the same parameter of a system must take two opposite values at the same time. Unlike the {{term:technischer-widerspruch|technical contradiction}} of Altshuller\'s matrix ("if I improve A, B gets worse"), the physical contradiction is sharper — and that is its power: it forces the explicit statement "X must be A AND not-A".',
           },
           {
             type: 'definition',
@@ -63,7 +63,7 @@ export default {
           },
           {
             type: 'paragraph',
-            content: 'Resolution is not via a matrix but via the **four separation principles**: time, space, condition, system level. One of these four principles resolves almost every physical contradiction — the question is just which one.',
+            content: 'Resolution is not via a matrix but via the **four separation principles**: time, space, condition, system level. One of these {{term:separationsprinzipien|four principles}} resolves almost every physical contradiction — the question is just which one.',
           },
         ],
       },

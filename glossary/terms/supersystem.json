@@ -1,0 +1,100 @@
+{
+  "id": "supersystem",
+  "category": "triz",
+  "title": {
+    "de": "Supersystem und Subsystem",
+    "en": "Supersystem and Subsystem"
+  },
+  "short": {
+    "de": "Die Ebene über und unter dem betrachteten System — Quelle freier Ressourcen und Ansatzpunkt für Systemsprünge.",
+    "en": "The level above and below the system under study — source of free resources and starting point for system jumps."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "TRIZ betrachtet jedes System in einer **Hierarchie aus drei Ebenen**. Die Zuordnung ist relativ: Was System ist, hängt allein davon ab, worauf die Untersuchung zielt."
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Subsystem** — die Bestandteile, aus denen das System aufgebaut ist (eine Ebene tiefer)",
+          "**System** — das Untersuchungsobjekt selbst (z. B. „Spannvorrichtung\", „Fertigungslinie\")",
+          "**Supersystem** — die übergeordnete Struktur, in die das System eingebettet ist (eine Ebene höher: Maschine, Halle, Umgebung, Markt)"
+        ]
+      },
+      {
+        "type": "paragraph",
+        "text": "Der Ebenenwechsel ist ein eigenständiger Lösungszug: Das Supersystem hält Ressourcen bereit, die nichts kosten (Schwerkraft, Umgebungswärme, ohnehin vorhandene Luftströmung) — der dritte Grad des {{term:ifr|Idealen Endresultats}} setzt genau hier an. Auch die {{term:separationsprinzipien|Trennung nach Systemebene}} nutzt diese Hierarchie."
+      },
+      {
+        "type": "note",
+        "text": "Systematisch abgefragt wird die Hierarchie im {{term:systemoperator|Systemoperator}} (vertikale Achse) und in der {{term:ressourcen-analyse|Ressourcen-Checkliste}} (drei Ebenen × sechs Kategorien)."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "TRIZ views every system inside a **three-level hierarchy**. The assignment is relative: what counts as the system depends solely on what the investigation targets."
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Subsystem** — the components the system is built from (one level down)",
+          "**System** — the object under study itself (e.g. \"clamping fixture\", \"production line\")",
+          "**Supersystem** — the superordinate structure the system is embedded in (one level up: machine, shop floor, environment, market)"
+        ]
+      },
+      {
+        "type": "paragraph",
+        "text": "Changing level is a solution move in its own right: the supersystem holds resources that cost nothing (gravity, ambient heat, air flow that is present anyway) — the third grade of the {{term:ifr|Ideal Final Result}} builds on exactly this. {{term:separationsprinzipien|Separation by system level}} uses the same hierarchy."
+      },
+      {
+        "type": "note",
+        "text": "The hierarchy is queried systematically in the {{term:systemoperator|system operator}} (vertical axis) and in the {{term:ressourcen-analyse|resource checklist}} (three levels × six categories)."
+      }
+    ]
+  },
+  "aliases": {
+    "de": [
+      "Übersystem",
+      "Systemebene",
+      "Systemhierarchie",
+      "Subsystem"
+    ],
+    "en": [
+      "super-system",
+      "system level",
+      "system hierarchy",
+      "subsystem"
+    ]
+  },
+  "seeAlso": [
+    "systemoperator",
+    "ressourcen-analyse",
+    "ifr",
+    "separationsprinzipien",
+    "triz"
+  ],
+  "modules": [
+    "triz-9-windows",
+    "triz-resources",
+    "triz-ifr",
+    "triz-sufield"
+  ],
+  "algoLab": [],
+  "sources": [
+    {
+      "label": "Altschuller, G. S. — Erfinden: Wege zur Lösung technischer Probleme, 2. Auflage, VEB Verlag Technik Berlin, 1986",
+      "url": null
+    },
+    {
+      "label": "Koltze, K. & Souchkov, V. — Systematische Innovation: TRIZ-Anwendung in der Produkt- und Prozessentwicklung, 3. Auflage, Hanser, 2018",
+      "url": null
+    },
+    {
+      "label": "Orloff, M. A. — Modern TRIZ: A Practical Course with EASyTRIZ Technology, Springer, 2012",
+      "url": null
+    }
+  ]
+}

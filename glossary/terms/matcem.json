@@ -1,0 +1,79 @@
+{
+  "id": "matcem",
+  "category": "triz",
+  "title": {
+    "de": "MATCEM (Feldtypen)",
+    "en": "MATCEM (Field Types)"
+  },
+  "short": {
+    "de": "Sechs kanonische Wirkfelder: Mechanisch, Akustisch, Thermisch, Chemisch, Elektrisch, Magnetisch.",
+    "en": "Six canonical fields of action: Mechanical, Acoustic, Thermal, Chemical, Electrical, Magnetic."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "**MATCEM** ist die Merkhilfe für die sechs kanonischen Feldtypen, mit denen TRIZ jede Wechselwirkung beschreibt: **M**echanisch, **A**kustisch, **T**hermisch, **C**hemisch, **E**lektrisch, **M**agnetisch. Häufig ergänzt um optische, gravitative und biologische Felder (MATCEMIB)."
+      },
+      {
+        "type": "paragraph",
+        "text": "In der {{term:substanz-feld-analyse|Substanz-Feld-Analyse}} ist das Feld $F$ das dritte Element neben Werkzeug und Objekt. Die Reihenfolge M → A → T → C → E → M ist zugleich eine Entwicklungsrichtung: elektrische und magnetische Felder sind feiner steuerbar, schneller und verschleißärmer als mechanische — ein Feldwechsel nach rechts ist deshalb ein typischer Lösungszug."
+      },
+      {
+        "type": "note",
+        "text": "Bei der {{term:ressourcen-analyse|Ressourcen-Analyse}} dient MATCEM als Checkliste: Welche dieser Felder wirken im System bereits, ohne genutzt zu werden? Abwärme, Vibration oder Streufelder sind vorhandene Ressourcen."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "**MATCEM** is the mnemonic for the six canonical field types TRIZ uses to describe any interaction: **M**echanical, **A**coustic, **T**hermal, **C**hemical, **E**lectrical, **M**agnetic. Often extended by optical, gravitational and biological fields (MATCEMIB)."
+      },
+      {
+        "type": "paragraph",
+        "text": "In {{term:substanz-feld-analyse|substance-field analysis}} the field $F$ is the third element alongside tool and object. The order M → A → T → C → E → M is also a direction of development: electrical and magnetic fields are more finely controllable, faster and less wear-prone than mechanical ones — switching the field to the right is therefore a typical solution move."
+      },
+      {
+        "type": "note",
+        "text": "In {{term:ressourcen-analyse|resource analysis}} MATCEM serves as a checklist: which of these fields already act in the system without being used? Waste heat, vibration or stray fields are existing resources."
+      }
+    ]
+  },
+  "aliases": {
+    "de": [
+      "Feldtypen",
+      "MATCEMIB",
+      "Wirkfelder"
+    ],
+    "en": [
+      "field types",
+      "MATCEMIB",
+      "fields of action"
+    ]
+  },
+  "seeAlso": [
+    "substanz-feld-analyse",
+    "ressourcen-analyse",
+    "standardloesungen",
+    "triz"
+  ],
+  "modules": [
+    "triz-sufield",
+    "triz-resources"
+  ],
+  "algoLab": [],
+  "sources": [
+    {
+      "label": "Terninko, J., Zusman, A. & Zlotin, B. — Systematic Innovation: An Introduction to TRIZ, St. Lucie Press, 1998",
+      "url": null
+    },
+    {
+      "label": "Koltze, K. & Souchkov, V. — Systematische Innovation: TRIZ-Anwendung in der Produkt- und Prozessentwicklung, 3. Auflage, Hanser, 2018",
+      "url": null
+    },
+    {
+      "label": "Orloff, M. A. — Modern TRIZ: A Practical Course with EASyTRIZ Technology, Springer, 2012",
+      "url": null
+    }
+  ]
+}

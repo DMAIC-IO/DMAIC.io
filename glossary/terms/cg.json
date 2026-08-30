@@ -61,7 +61,8 @@
     "cgk",
     "wiederholbarkeit",
     "praezision",
-    "referenzteil"
+    "referenzteil",
+    "linearitaet"
   ],
   "modules": [
     "msa-typ1"

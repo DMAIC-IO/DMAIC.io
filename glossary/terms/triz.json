@@ -1,0 +1,105 @@
+{
+  "id": "triz",
+  "category": "triz",
+  "title": {
+    "de": "TRIZ (Theorie des erfinderischen Problemlösens)",
+    "en": "TRIZ (Theory of Inventive Problem Solving)"
+  },
+  "short": {
+    "de": "Systematische Innovationsmethodik aus der Patentanalyse — löst Widersprüche mit bewährten Mustern statt mit Kompromissen.",
+    "en": "Systematic innovation methodology distilled from patent analysis — resolves contradictions with proven patterns instead of trade-offs."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "**TRIZ** (russisch ТРИЗ, „Theorie des erfinderischen Problemlösens\") wurde ab 1946 von Genrich Altschuller aus der Analyse zehntausender Patente entwickelt. Der Kerngedanke: erfinderische Lösungen sind nicht zufällig, sondern folgen wiederkehrenden Mustern — wer das Muster kennt, muss es nicht neu erfinden."
+      },
+      {
+        "type": "paragraph",
+        "text": "TRIZ unterscheidet sich damit grundlegend von Brainstorming-Techniken wie {{term:ishikawa|Ishikawa}}: statt möglichst viele Ideen zu erzeugen, wird das Problem so lange abstrahiert, bis es einem gelösten Standardproblem entspricht — dessen Standardlösung dann zurück auf den konkreten Fall übertragen wird."
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Widerspruch statt Kompromiss** — ein {{term:technischer-widerspruch|technischer}} oder {{term:physikalischer-widerspruch|physikalischer Widerspruch}} wird aufgelöst, nicht ausbalanciert",
+          "**Idealität als Richtung** — das {{term:ifr|Ideale Endresultat}} legt das Ziel fest, bevor Lösungen gesucht werden",
+          "**Ressourcen vor Erfindung** — die {{term:ressourcen-analyse|Ressourcen-Analyse}} inventarisiert erst, was ohnehin vorhanden ist",
+          "**Gesetzmäßige Entwicklung** — die {{term:evolutionsgesetze|Evolutionstrends}} zeigen, wohin ein System als Nächstes reift"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "TRIZ ist im DMAIC-Zyklus in der Improve-Phase zu Hause: die Ursache ist analytisch belegt, gesucht wird die Lösung. In der Analyze-Phase bleibt es bei {{term:five-why|5-Why}}, {{term:ishikawa|Ishikawa}} und {{term:hypothesentest|Hypothesentests}}."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "**TRIZ** (Russian ТРИЗ, \"theory of inventive problem solving\") was developed from 1946 onwards by Genrich Altshuller out of the analysis of tens of thousands of patents. Its core idea: inventive solutions are not random but follow recurring patterns — once the pattern is known, it need not be reinvented."
+      },
+      {
+        "type": "paragraph",
+        "text": "This sets TRIZ apart from brainstorming techniques such as {{term:ishikawa|Ishikawa}}: instead of generating as many ideas as possible, the problem is abstracted until it matches a solved standard problem, whose standard solution is then mapped back onto the concrete case."
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Contradiction instead of compromise** — a {{term:technischer-widerspruch|technical}} or {{term:physikalischer-widerspruch|physical contradiction}} is resolved, not balanced",
+          "**Ideality as direction** — the {{term:ifr|Ideal Final Result}} fixes the target before solutions are sought",
+          "**Resources before invention** — the {{term:ressourcen-analyse|resource analysis}} first inventories what is already present",
+          "**Lawful evolution** — the {{term:evolutionsgesetze|evolution trends}} show where a system matures next"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "Within DMAIC, TRIZ belongs to the Improve phase: the root cause is analytically established and a solution is wanted. The Analyze phase stays with {{term:five-why|5-Why}}, {{term:ishikawa|Ishikawa}} and {{term:hypothesentest|hypothesis tests}}."
+      }
+    ]
+  },
+  "aliases": {
+    "de": [
+      "TIPS",
+      "Theorie des erfinderischen Problemlösens",
+      "Altschuller-Methode"
+    ],
+    "en": [
+      "TIPS",
+      "theory of inventive problem solving",
+      "Altshuller method"
+    ]
+  },
+  "seeAlso": [
+    "technischer-widerspruch",
+    "physikalischer-widerspruch",
+    "ifr",
+    "ressourcen-analyse",
+    "evolutionsgesetze",
+    "substanz-feld-analyse",
+    "dmaic"
+  ],
+  "modules": [
+    "triz-9-windows",
+    "triz-contradiction-matrix",
+    "triz-evolution-trends",
+    "triz-ifr",
+    "triz-physical-contradiction",
+    "triz-resources",
+    "triz-sufield"
+  ],
+  "algoLab": [],
+  "sources": [
+    {
+      "label": "Altschuller, G. S. — Erfinden: Wege zur Lösung technischer Probleme, 2. Auflage, VEB Verlag Technik Berlin, 1986",
+      "url": null
+    },
+    {
+      "label": "Altshuller, G. S. — The Innovation Algorithm: TRIZ, Systematic Innovation and Technical Creativity, Technical Innovation Center, 1999",
+      "url": null
+    },
+    {
+      "label": "Koltze, K. & Souchkov, V. — Systematische Innovation: TRIZ-Anwendung in der Produkt- und Prozessentwicklung, 3. Auflage, Hanser, 2018",
+      "url": null
+    }
+  ]
+}

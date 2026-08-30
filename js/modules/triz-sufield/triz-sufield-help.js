@@ -12,7 +12,7 @@ export default {
         blocks: [
           {
             type: 'paragraph',
-            content: 'Die **Substanz-Feld-Analyse** (russisch: вепольный анализ — Vepol-Analyse) ist das formalste TRIZ-Werkzeug. Sie reduziert jede technische Wechselwirkung auf ein **Dreieck aus drei minimalen Elementen**:',
+            content: 'Die **Substanz-Feld-Analyse** (russisch: вепольный анализ — Vepol-Analyse) ist das formalste {{term:triz|TRIZ}}-Werkzeug. Sie reduziert jede technische Wechselwirkung auf ein **Dreieck aus drei minimalen Elementen**:',
           },
           {
             type: 'definition',
@@ -27,7 +27,7 @@ export default {
           {
             type: 'definition',
             term: 'F — Feld',
-            content: 'Das Medium der Wechselwirkung. Sechs kanonische Typen (MATCEM): **M**echanisch, **A**kustisch, **T**hermisch, **C**hemisch, **E**lektrisch, **M**agnetisch.',
+            content: 'Das Medium der Wechselwirkung. Sechs kanonische Typen ({{term:matcem|MATCEM}}): **M**echanisch, **A**kustisch, **T**hermisch, **C**hemisch, **E**lektrisch, **M**agnetisch.',
           },
           {
             type: 'paragraph',
@@ -54,7 +54,7 @@ export default {
         blocks: [
           {
             type: 'paragraph',
-            content: 'The **Substance-Field analysis** (Russian: вепольный анализ — Vepol analysis, English: Su-Field) is TRIZ\'s most formal tool. It reduces every technical interaction to a **triangle of three minimal elements**:',
+            content: 'The **Substance-Field analysis** (Russian: вепольный анализ — Vepol analysis, English: Su-Field) is {{term:triz|TRIZ}}\'s most formal tool. It reduces every technical interaction to a **triangle of three minimal elements**:',
           },
           {
             type: 'definition',
@@ -69,7 +69,7 @@ export default {
           {
             type: 'definition',
             term: 'F — Field',
-            content: 'The medium of interaction. Six canonical types (MATCEM): **M**echanical, **A**coustic, **T**hermal, **C**hemical, **E**lectric, **M**agnetic.',
+            content: 'The medium of interaction. Six canonical types ({{term:matcem|MATCEM}}): **M**echanical, **A**coustic, **T**hermal, **C**hemical, **E**lectric, **M**agnetic.',
           },
           {
             type: 'paragraph',

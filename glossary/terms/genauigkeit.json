@@ -76,7 +76,8 @@
   "modules": [
     "msa-typ1",
     "msa-typ2",
-    "unit-converter"
+    "unit-converter",
+    "msa-typ4"
   ],
   "algoLab": [
     "msa/cg",

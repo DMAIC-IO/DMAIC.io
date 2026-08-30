@@ -1,0 +1,73 @@
+{
+  "id": "technischer-widerspruch",
+  "category": "triz",
+  "title": {
+    "de": "Technischer Widerspruch",
+    "en": "Technical Contradiction"
+  },
+  "short": {
+    "de": "Ein Parameter verbessert sich nur auf Kosten eines anderen — der Standardfall für die Widerspruchsmatrix.",
+    "en": "One parameter improves only at the expense of another — the standard case for the contradiction matrix."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "Ein **technischer Widerspruch** liegt vor, wenn die Verbesserung eines Systemparameters zwangsläufig einen zweiten verschlechtert: höhere Festigkeit erkauft mehr Gewicht, höhere Geschwindigkeit mehr Verschleiß, kürzere Taktzeit mehr Ausschuss."
+      },
+      {
+        "type": "paragraph",
+        "text": "Formal: *Parameter A soll steigen* ↑, *dabei sinkt Parameter B* ↓. Genau dieses Paar ist der Zugang zur {{term:widerspruchsmatrix|Widerspruchsmatrix}} — die 39 generischen Parameter Altschullers bilden ihre beiden Achsen, die Zelle nennt die passenden {{term:erfinderische-prinzipien|erfinderischen Prinzipien}}."
+      },
+      {
+        "type": "note",
+        "text": "Klassische Ingenieurspraxis beantwortet den technischen Widerspruch mit einem **Kompromiss** (etwas mehr Festigkeit, etwas mehr Gewicht). TRIZ betrachtet den Kompromiss als Verzicht auf die Lösung: gesucht ist die Konstruktion, in der beide Parameter gewinnen. Lässt sich der Widerspruch auf einen einzigen Parameter zuspitzen, wird daraus der schärfere {{term:physikalischer-widerspruch|physikalische Widerspruch}}."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "A **technical contradiction** exists when improving one system parameter inevitably degrades another: higher strength buys more weight, higher speed more wear, shorter cycle time more scrap."
+      },
+      {
+        "type": "paragraph",
+        "text": "Formally: *parameter A should rise* ↑, *while parameter B falls* ↓. This pair is exactly the entry point into the {{term:widerspruchsmatrix|contradiction matrix}} — Altshuller's 39 generic parameters form its two axes, and the cell names the applicable {{term:erfinderische-prinzipien|inventive principles}}."
+      },
+      {
+        "type": "note",
+        "text": "Classic engineering answers a technical contradiction with a **compromise** (a bit more strength, a bit more weight). TRIZ treats the compromise as giving up on the solution: what is wanted is the design in which both parameters win. If the contradiction can be sharpened down to a single parameter, it becomes the stronger {{term:physikalischer-widerspruch|physical contradiction}}."
+      }
+    ]
+  },
+  "aliases": {
+    "de": [
+      "Technischer Konflikt",
+      "Zielkonflikt"
+    ],
+    "en": [
+      "technical conflict",
+      "engineering contradiction"
+    ]
+  },
+  "seeAlso": [
+    "triz",
+    "widerspruchsmatrix",
+    "erfinderische-prinzipien",
+    "physikalischer-widerspruch"
+  ],
+  "modules": [
+    "triz-contradiction-matrix",
+    "triz-physical-contradiction"
+  ],
+  "algoLab": [],
+  "sources": [
+    {
+      "label": "Altschuller, G. S. — Erfinden: Wege zur Lösung technischer Probleme, 2. Auflage, VEB Verlag Technik Berlin, 1986",
+      "url": null
+    },
+    {
+      "label": "Koltze, K. & Souchkov, V. — Systematische Innovation: TRIZ-Anwendung in der Produkt- und Prozessentwicklung, 3. Auflage, Hanser, 2018",
+      "url": null
+    }
+  ]
+}

@@ -1,0 +1,96 @@
+{
+  "id": "substanz-feld-analyse",
+  "category": "triz",
+  "title": {
+    "de": "Substanz-Feld-Analyse (Su-Field)",
+    "en": "Substance-Field Analysis (Su-Field)"
+  },
+  "short": {
+    "de": "Modelliert jede Wechselwirkung als Dreieck aus Werkzeug (S1), Objekt (S2) und Feld (F) samt Qualität der Wirkung.",
+    "en": "Models every interaction as a triangle of tool (S1), object (S2) and field (F), including the quality of the effect."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "Die **Substanz-Feld-Analyse** (russisch вепольный анализ, Vepol-Analyse) ist das formalste TRIZ-Werkzeug. Sie reduziert jede technische Wechselwirkung auf ein Dreieck aus drei minimalen Elementen:"
+      },
+      {
+        "type": "list",
+        "items": [
+          "**S1 — Werkzeug:** die Substanz, die die Arbeit verrichtet (Bohrer, Klinge, Strahl, Hand)",
+          "**S2 — Werkstück:** die Substanz, an der gearbeitet wird (Material, Bauteil, Information)",
+          "**F — Feld:** das Medium der Wechselwirkung, in sechs kanonischen Typen ({{term:matcem|MATCEM}})"
+        ]
+      },
+      {
+        "type": "paragraph",
+        "text": "Jede Kante des Dreiecks trägt eine **Qualität**: nützlich, unzureichend, exzessiv, schädlich — oder fehlend. Genau diese Konstellation bestimmt, welche der 76 {{term:standardloesungen|Standardlösungen}} greift: ein unvollständiges Modell wird ergänzt, ein schädliches abgeschirmt oder zerstört, ein unzureichendes verstärkt."
+      },
+      {
+        "type": "note",
+        "text": "Ein vollständiges Su-Field-Modell braucht **alle drei Elemente**. Fehlt eines — etwa das Feld —, ist das Modell unvollständig, und genau darin liegt die Diagnose: die Standardlösungen der Klasse 1 bauen das fehlende Element auf."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "**Substance-field analysis** (Russian вепольный анализ, Vepol analysis) is the most formal TRIZ tool. It reduces every technical interaction to a triangle of three minimal elements:"
+      },
+      {
+        "type": "list",
+        "items": [
+          "**S1 — tool:** the substance doing the work (drill, blade, jet, hand)",
+          "**S2 — workpiece:** the substance worked upon (material, part, information)",
+          "**F — field:** the medium of interaction, in six canonical types ({{term:matcem|MATCEM}})"
+        ]
+      },
+      {
+        "type": "paragraph",
+        "text": "Each edge of the triangle carries a **quality**: useful, insufficient, excessive, harmful — or missing. This constellation determines which of the 76 {{term:standardloesungen|standard solutions}} applies: an incomplete model is completed, a harmful one shielded or destroyed, an insufficient one strengthened."
+      },
+      {
+        "type": "note",
+        "text": "A complete su-field model needs **all three elements**. If one is missing — the field, say — the model is incomplete, and that is precisely the diagnosis: the class 1 standard solutions build the missing element."
+      }
+    ]
+  },
+  "aliases": {
+    "de": [
+      "Su-Field",
+      "Vepol-Analyse",
+      "Stoff-Feld-Analyse",
+      "Substanz-Feld-Modell"
+    ],
+    "en": [
+      "su-field",
+      "Vepol analysis",
+      "substance-field model"
+    ]
+  },
+  "seeAlso": [
+    "standardloesungen",
+    "matcem",
+    "triz",
+    "idealitaet",
+    "supersystem"
+  ],
+  "modules": [
+    "triz-sufield"
+  ],
+  "algoLab": [],
+  "sources": [
+    {
+      "label": "Altschuller, G. S. — Erfinden: Wege zur Lösung technischer Probleme, 2. Auflage, VEB Verlag Technik Berlin, 1986",
+      "url": null
+    },
+    {
+      "label": "Terninko, J., Zusman, A. & Zlotin, B. — Systematic Innovation: An Introduction to TRIZ, St. Lucie Press, 1998",
+      "url": null
+    },
+    {
+      "label": "Koltze, K. & Souchkov, V. — Systematische Innovation: TRIZ-Anwendung in der Produkt- und Prozessentwicklung, 3. Auflage, Hanser, 2018",
+      "url": null
+    }
+  ]
+}

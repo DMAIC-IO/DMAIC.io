@@ -1,0 +1,102 @@
+{
+  "id": "linearitaet",
+  "category": "msa",
+  "title": {
+    "de": "Linearität (MSA Verfahren 4)",
+    "en": "Linearity (MSA Type 4)"
+  },
+  "short": {
+    "de": "Änderung des Bias über den Messbereich — misst das System an jedem Referenzpunkt gleich richtig?",
+    "en": "Change of bias across the measurement range — does the system read equally true at every reference point?"
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "**Linearität** ist die Veränderung des {{term:bias|Bias}} über den Arbeitsbereich eines Messsystems. Ein lineares Messsystem hat an jedem Referenzpunkt denselben — idealerweise verschwindenden — Bias. Ein nichtlineares System driftet: kleine Werte werden zu klein, große zu groß gemessen."
+      },
+      {
+        "type": "paragraph",
+        "text": "Bewertet wird über eine {{term:lineare-regression|lineare Regression}} aller Einzel-Bias-Werte $b_{ij} = y_{ij} - x_{\\text{ref},i}$ gegen den Referenzwert. Die Steigung $a$ ist der Linearitätsfehler, der Achsenabschnitt ein konstanter Offset über den gesamten Bereich."
+      },
+      {
+        "type": "formula",
+        "latex": "\\%\\text{Lin} = 100 \\cdot \\frac{|a| \\cdot \\text{Range}(x_{\\text{ref}})}{PV}"
+      },
+      {
+        "type": "paragraph",
+        "text": "Die Bezugsgröße $PV$ ist entweder die Toleranz $T = USL - LSL$ oder $6\\sigma_P$ aus der laufenden Prozessstreuung. Ergänzend wird der größte Einzel-Bias als $\\%\\text{Bias}_{\\max} = 100 \\cdot \\max_i |b_i| / PV$ ausgewiesen und je Referenzpunkt ein Einstichproben-{{term:t-test|t-Test}} auf $H_0: b_i = 0$ gerechnet."
+      },
+      {
+        "type": "note",
+        "text": "Ein Linearitätsfehler ist tückisch, weil er am Kalibrierpunkt unsichtbar bleibt: in der Mitte des Bereichs misst das System fehlerfrei, an den Rändern der Spezifikation systematisch daneben. Eine {{term:cg|Cg/Cgk-Studie}} nach Verfahren 1 prüft nur diesen einen Punkt und kann den Fehler grundsätzlich nicht entdecken."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "**Linearity** is the change of {{term:bias|bias}} across the working range of a measurement system. A linear system shows the same — ideally vanishing — bias at every reference point. A non-linear system drifts: small values read too low, large values too high."
+      },
+      {
+        "type": "paragraph",
+        "text": "It is assessed by a {{term:lineare-regression|linear regression}} of all individual bias values $b_{ij} = y_{ij} - x_{\\text{ref},i}$ against the reference value. The slope $a$ is the linearity error; the intercept is a constant offset across the whole range."
+      },
+      {
+        "type": "formula",
+        "latex": "\\%\\text{Lin} = 100 \\cdot \\frac{|a| \\cdot \\text{Range}(x_{\\text{ref}})}{PV}"
+      },
+      {
+        "type": "paragraph",
+        "text": "The reference figure $PV$ is either the tolerance $T = USL - LSL$ or $6\\sigma_P$ from ongoing process spread. In addition the largest single bias is reported as $\\%\\text{Bias}_{\\max} = 100 \\cdot \\max_i |b_i| / PV$, and a one-sample {{term:t-test|t-test}} on $H_0: b_i = 0$ is run per reference point."
+      },
+      {
+        "type": "note",
+        "text": "A linearity error is insidious because it stays invisible at the calibration point: mid-range the system reads perfectly, near the specification edges it is systematically off. A {{term:cg|Cg/Cgk study}} (Type 1) covers only that single point and cannot detect the error at all."
+      }
+    ]
+  },
+  "aliases": {
+    "de": [
+      "Linearitätsstudie",
+      "MSA Verfahren 4",
+      "MSA Typ 4",
+      "Linearitätsfehler"
+    ],
+    "en": [
+      "linearity study",
+      "MSA Type 4",
+      "gage linearity"
+    ]
+  },
+  "seeAlso": [
+    "bias",
+    "richtigkeit",
+    "referenzteil",
+    "lineare-regression",
+    "messunsicherheit",
+    "cg",
+    "spezifikationsgrenzen"
+  ],
+  "modules": [
+    "msa-typ4"
+  ],
+  "algoLab": [],
+  "sources": [
+    {
+      "label": "AIAG — Measurement Systems Analysis (MSA) Reference Manual, 4th Edition, 2010",
+      "url": null
+    },
+    {
+      "label": "VDA Band 5 — Mess- und Prüfprozesseignung, 3. Auflage, 2021",
+      "url": null
+    },
+    {
+      "label": "Dietrich, E. & Schulze, A. — Eignungsnachweis von Prüfprozessen, 4. Auflage, Hanser",
+      "url": null
+    },
+    {
+      "label": "Montgomery, D. C. — Introduction to Statistical Quality Control, 8th Edition, Chapter 8",
+      "url": null
+    }
+  ]
+}

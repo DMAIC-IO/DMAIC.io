@@ -63,6 +63,13 @@
         "de": "Methodik",
         "en": "Methodology"
       }
+    },
+    {
+      "id": "triz",
+      "label": {
+        "de": "TRIZ / Erfinderisches Problemlösen",
+        "en": "TRIZ / Inventive Problem Solving"
+      }
     }
   ],
   "terms": [
@@ -700,6 +707,91 @@
       "id": "wilson-konfidenzintervall",
       "category": "msa",
       "file": "terms/wilson-konfidenzintervall.json"
+    },
+    {
+      "id": "linearitaet",
+      "category": "msa",
+      "file": "terms/linearitaet.json"
+    },
+    {
+      "id": "messunsicherheit",
+      "category": "msa",
+      "file": "terms/messunsicherheit.json"
+    },
+    {
+      "id": "triz",
+      "category": "triz",
+      "file": "terms/triz.json"
+    },
+    {
+      "id": "technischer-widerspruch",
+      "category": "triz",
+      "file": "terms/technischer-widerspruch.json"
+    },
+    {
+      "id": "widerspruchsmatrix",
+      "category": "triz",
+      "file": "terms/widerspruchsmatrix.json"
+    },
+    {
+      "id": "erfinderische-prinzipien",
+      "category": "triz",
+      "file": "terms/erfinderische-prinzipien.json"
+    },
+    {
+      "id": "physikalischer-widerspruch",
+      "category": "triz",
+      "file": "terms/physikalischer-widerspruch.json"
+    },
+    {
+      "id": "separationsprinzipien",
+      "category": "triz",
+      "file": "terms/separationsprinzipien.json"
+    },
+    {
+      "id": "ifr",
+      "category": "triz",
+      "file": "terms/ifr.json"
+    },
+    {
+      "id": "idealitaet",
+      "category": "triz",
+      "file": "terms/idealitaet.json"
+    },
+    {
+      "id": "systemoperator",
+      "category": "triz",
+      "file": "terms/systemoperator.json"
+    },
+    {
+      "id": "supersystem",
+      "category": "triz",
+      "file": "terms/supersystem.json"
+    },
+    {
+      "id": "ressourcen-analyse",
+      "category": "triz",
+      "file": "terms/ressourcen-analyse.json"
+    },
+    {
+      "id": "substanz-feld-analyse",
+      "category": "triz",
+      "file": "terms/substanz-feld-analyse.json"
+    },
+    {
+      "id": "standardloesungen",
+      "category": "triz",
+      "file": "terms/standardloesungen.json"
+    },
+    {
+      "id": "matcem",
+      "category": "triz",
+      "file": "terms/matcem.json"
+    },
+    {
+      "id": "evolutionsgesetze",
+      "category": "triz",
+      "file": "terms/evolutionsgesetze.json"
     }
   ]
 }

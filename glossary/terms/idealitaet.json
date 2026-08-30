@@ -1,0 +1,86 @@
+{
+  "id": "idealitaet",
+  "category": "triz",
+  "title": {
+    "de": "Idealitätsgrad",
+    "en": "Degree of Ideality"
+  },
+  "short": {
+    "de": "Verhältnis von nützlichen Funktionen zu Kosten und schädlichen Wirkungen — die Richtungsgröße jeder TRIZ-Entwicklung.",
+    "en": "Ratio of useful functions to cost and harmful effects — the directional measure of every TRIZ development."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "Der **Idealitätsgrad** setzt den Nutzen eines Systems ins Verhältnis zu dem, was er kostet:"
+      },
+      {
+        "type": "formula",
+        "latex": "I = \\frac{\\sum \\text{Nutzen}}{\\sum \\text{Kosten} + \\sum \\text{Schaden}}"
+      },
+      {
+        "type": "paragraph",
+        "text": "Im Zähler stehen alle nützlichen Funktionen, im Nenner die Kosten und alle schädlichen Nebenwirkungen. Technische Systeme entwickeln sich nach Altschuller gesetzmäßig in Richtung **steigender Idealität**: mehr Funktion bei weniger Aufwand und weniger Nebenwirkung. Das {{term:ifr|Ideale Endresultat}} ist der Grenzfall $I \\to \\infty$ — Nutzen ohne System."
+      },
+      {
+        "type": "note",
+        "text": "Der Idealitätsgrad wird selten exakt beziffert; er dient als **Richtungsentscheid** beim Vergleich zweier Lösungsideen. Eine Lösung, die eine Funktion ergänzt und dafür ein Bauteil einspart, gewinnt gegen eine, die dieselbe Funktion mit einem zusätzlichen Bauteil erkauft."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "The **degree of ideality** relates a system's benefit to what it costs:"
+      },
+      {
+        "type": "formula",
+        "latex": "I = \\frac{\\sum \\text{benefit}}{\\sum \\text{cost} + \\sum \\text{harm}}"
+      },
+      {
+        "type": "paragraph",
+        "text": "The numerator holds all useful functions, the denominator the cost plus all harmful side effects. According to Altshuller, technical systems evolve lawfully towards **increasing ideality**: more function for less effort and fewer side effects. The {{term:ifr|Ideal Final Result}} is the limiting case $I \\to \\infty$ — benefit without a system."
+      },
+      {
+        "type": "note",
+        "text": "Ideality is rarely quantified exactly; it serves as a **directional verdict** when comparing two solution ideas. A solution that adds a function while removing a part beats one that buys the same function with an extra part."
+      }
+    ]
+  },
+  "aliases": {
+    "de": [
+      "Idealität",
+      "Idealitätsquotient"
+    ],
+    "en": [
+      "ideality",
+      "ideality ratio"
+    ]
+  },
+  "seeAlso": [
+    "ifr",
+    "evolutionsgesetze",
+    "substanz-feld-analyse",
+    "triz"
+  ],
+  "modules": [
+    "triz-ifr",
+    "triz-evolution-trends",
+    "triz-sufield"
+  ],
+  "algoLab": [],
+  "sources": [
+    {
+      "label": "Altschuller, G. S. — Erfinden: Wege zur Lösung technischer Probleme, 2. Auflage, VEB Verlag Technik Berlin, 1986",
+      "url": null
+    },
+    {
+      "label": "Salamatov, Y. — TRIZ: The Right Solution at the Right Time, Insytec, 1999",
+      "url": null
+    },
+    {
+      "label": "Koltze, K. & Souchkov, V. — Systematische Innovation: TRIZ-Anwendung in der Produkt- und Prozessentwicklung, 3. Auflage, Hanser, 2018",
+      "url": null
+    }
+  ]
+}

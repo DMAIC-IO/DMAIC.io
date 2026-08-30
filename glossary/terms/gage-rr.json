@@ -83,7 +83,8 @@
     "teile-variation",
     "ndc",
     "cg",
-    "cgk"
+    "cgk",
+    "messunsicherheit"
   ],
   "modules": [
     "msa-typ2"

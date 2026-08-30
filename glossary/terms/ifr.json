@@ -1,0 +1,89 @@
+{
+  "id": "ifr",
+  "category": "triz",
+  "title": {
+    "de": "Ideales Endresultat (IFR)",
+    "en": "Ideal Final Result (IFR)"
+  },
+  "short": {
+    "de": "Die nützliche Funktion wird erfüllt, ohne System, ohne Kosten, ohne Nebenwirkung — Zielbild vor jeder Lösungssuche.",
+    "en": "The useful function is delivered with no system, no cost and no side effect — the target image set before any solution search."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "Das **Ideale Endresultat** beschreibt den Zustand, in dem die nützliche Funktion vollständig erfüllt wird, **das System selbst aber verschwindet**: keine Kosten, keine zusätzliche Komplexität, keine schädliche Nebenwirkung. Es wird formuliert, *bevor* Lösungen gesucht werden — als Zielbild, nicht als Vorschlag."
+      },
+      {
+        "type": "list",
+        "items": [
+          "**IFR-1 — das System löst das Problem selbst:** das System bleibt, die schädliche Wirkung verschwindet ohne neuen Mechanismus",
+          "**IFR-2 — Funktion ohne System:** die nützliche Funktion entsteht, ohne dass das System überhaupt existiert",
+          "**IFR-3 — Supersystem-Ressource erfüllt die Funktion:** eine vorhandene Ressource aus dem {{term:supersystem|Supersystem}} übernimmt die Aufgabe kostenfrei"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "Das IFR ist **absichtlich unerreichbar**. Sein Nutzen liegt in der Gap-Analyse: die Lücke zwischen heutigem Zustand und Idealbild benennt die eigentliche Problemstellung — und diese Lücke ist es, die anschließend über {{term:ressourcen-analyse|Ressourcen}}, Widersprüche oder die {{term:evolutionsgesetze|Evolutionstrends}} bearbeitet wird."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "The **Ideal Final Result** describes the state in which the useful function is fully delivered while **the system itself disappears**: no cost, no added complexity, no harmful side effect. It is formulated *before* solutions are sought — as a target image, not as a proposal."
+      },
+      {
+        "type": "list",
+        "items": [
+          "**IFR-1 — the system solves the problem itself:** the system remains, the harmful effect vanishes without a new mechanism",
+          "**IFR-2 — function without system:** the useful function arises without the system existing at all",
+          "**IFR-3 — a supersystem resource delivers the function:** an existing resource from the {{term:supersystem|supersystem}} takes over at no cost"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "The IFR is **deliberately unreachable**. Its value lies in the gap analysis: the gap between today's state and the ideal names the real problem statement — and that gap is then worked through {{term:ressourcen-analyse|resources}}, contradictions or the {{term:evolutionsgesetze|evolution trends}}."
+      }
+    ]
+  },
+  "aliases": {
+    "de": [
+      "IFR",
+      "Ideal Final Result",
+      "Idealitätsziel",
+      "IER"
+    ],
+    "en": [
+      "IFR",
+      "ideal final result"
+    ]
+  },
+  "seeAlso": [
+    "idealitaet",
+    "ressourcen-analyse",
+    "supersystem",
+    "triz",
+    "evolutionsgesetze"
+  ],
+  "modules": [
+    "triz-ifr",
+    "triz-resources",
+    "triz-evolution-trends"
+  ],
+  "algoLab": [],
+  "sources": [
+    {
+      "label": "Altschuller, G. S. — Erfinden: Wege zur Lösung technischer Probleme, 2. Auflage, VEB Verlag Technik Berlin, 1986",
+      "url": null
+    },
+    {
+      "label": "Altshuller, G. S. — The Innovation Algorithm: TRIZ, Systematic Innovation and Technical Creativity, Technical Innovation Center, 1999",
+      "url": null
+    },
+    {
+      "label": "Koltze, K. & Souchkov, V. — Systematische Innovation: TRIZ-Anwendung in der Produkt- und Prozessentwicklung, 3. Auflage, Hanser, 2018",
+      "url": null
+    }
+  ]
+}

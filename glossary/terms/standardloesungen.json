@@ -1,0 +1,98 @@
+{
+  "id": "standardloesungen",
+  "category": "triz",
+  "title": {
+    "de": "76 Standardlösungen",
+    "en": "76 Standard Solutions"
+  },
+  "short": {
+    "de": "Altschullers Lösungskatalog zur Su-Field-Analyse, in fünf Klassen — von Modellaufbau bis Messung und Vereinfachung.",
+    "en": "Altshuller's solution catalogue for su-field analysis, in five classes — from model building to measurement and simplification."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "Die **76 Standardlösungen** schreiben vor, was bei einer bestimmten Su-Field-Konstellation zu tun ist. Sie sind in fünf Klassen organisiert:"
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Klasse 1** — Aufbau und Zerstörung von Su-Field-Modellen (unvollständige oder schädliche Modelle)",
+          "**Klasse 2** — Entwicklung bestehender Modelle (unzureichende oder exzessive Wirkungen)",
+          "**Klasse 3** — Übergang ins {{term:supersystem|Supersystem}} oder zur Mikroebene (System an der Leistungsgrenze)",
+          "**Klasse 4** — Messung und Detektion (Mess- und Steuerungsprobleme)",
+          "**Klasse 5** — Hilfsstandards (Vereinfachung, Erhöhung der {{term:idealitaet|Idealität}})"
+        ]
+      },
+      {
+        "type": "paragraph",
+        "text": "Der Zugang läuft über die Diagnose des {{term:substanz-feld-analyse|Su-Field-Modells}}: aus Vollständigkeit und Qualität der Kanten ergibt sich die passende Klasse, innerhalb der Klasse die konkreten Standards."
+      },
+      {
+        "type": "note",
+        "text": "Klasse 4 wird gern übersehen, ist aber für Six Sigma besonders anschlussfähig: „Wenn du nicht messen kannst, ändere das System so, dass es messbar wird\" trifft dieselbe Logik wie eine {{term:gage-rr|Messsystemanalyse}} vor der Prozessverbesserung."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "The **76 standard solutions** prescribe what to do for a given su-field constellation. They are organised in five classes:"
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Class 1** — building and destroying su-field models (incomplete or harmful models)",
+          "**Class 2** — developing existing models (insufficient or excessive effects)",
+          "**Class 3** — transition to the {{term:supersystem|supersystem}} or to the micro level (system at its performance limit)",
+          "**Class 4** — measurement and detection (measurement and control problems)",
+          "**Class 5** — helper standards (simplification, raising {{term:idealitaet|ideality}})"
+        ]
+      },
+      {
+        "type": "paragraph",
+        "text": "Entry runs through the diagnosis of the {{term:substanz-feld-analyse|su-field model}}: completeness and edge quality select the class, and within the class the concrete standards."
+      },
+      {
+        "type": "note",
+        "text": "Class 4 is easily overlooked but connects particularly well to Six Sigma: \"if you cannot measure it, change the system so it becomes measurable\" is the same logic as running a {{term:gage-rr|measurement system analysis}} before process improvement."
+      }
+    ]
+  },
+  "aliases": {
+    "de": [
+      "Standards",
+      "76 Standards",
+      "Standardlösungen nach Altschuller"
+    ],
+    "en": [
+      "76 standards",
+      "standard solutions"
+    ]
+  },
+  "seeAlso": [
+    "substanz-feld-analyse",
+    "matcem",
+    "supersystem",
+    "idealitaet",
+    "triz"
+  ],
+  "modules": [
+    "triz-sufield"
+  ],
+  "algoLab": [],
+  "sources": [
+    {
+      "label": "Altschuller, G. S. — Erfinden: Wege zur Lösung technischer Probleme, 2. Auflage, VEB Verlag Technik Berlin, 1986",
+      "url": null
+    },
+    {
+      "label": "Terninko, J., Zusman, A. & Zlotin, B. — Systematic Innovation: An Introduction to TRIZ, St. Lucie Press, 1998",
+      "url": null
+    },
+    {
+      "label": "Orloff, M. A. — Modern TRIZ: A Practical Course with EASyTRIZ Technology, Springer, 2012",
+      "url": null
+    }
+  ]
+}

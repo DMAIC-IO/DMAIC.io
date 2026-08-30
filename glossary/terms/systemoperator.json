@@ -1,0 +1,79 @@
+{
+  "id": "systemoperator",
+  "category": "triz",
+  "title": {
+    "de": "Systemoperator (9 Fenster)",
+    "en": "System Operator (9 Windows)"
+  },
+  "short": {
+    "de": "3×3-Raster aus Zeit (Vergangenheit/Gegenwart/Zukunft) und Hierarchie (Sub-/System/Supersystem) gegen den Tunnelblick.",
+    "en": "3×3 grid of time (past/present/future) and hierarchy (sub-/system/supersystem) that breaks tunnel vision."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "Der **Systemoperator** — auch „9 Fenster\" oder Multi-Screen-Tool — betrachtet ein System gleichzeitig auf zwei Achsen: **in der Zeit** (Vergangenheit, Gegenwart, Zukunft) und **in der Hierarchie** ({{term:supersystem|Subsystem, System, Supersystem}}). Das ergibt neun Perspektiven auf denselben Sachverhalt."
+      },
+      {
+        "type": "paragraph",
+        "text": "Der Wert liegt in den Nachbarzellen: Wie löste das Vorgängersystem die Aufgabe? Welche Bestandteile werden sich ändern? In welcher Umgebung arbeitet das System künftig? Antworten aus diesen Feldern liegen außerhalb dessen, was reine Gegenwartsbetrachtung liefert."
+      },
+      {
+        "type": "note",
+        "text": "Der Systemoperator ist **kein algorithmisches Verfahren** wie die {{term:widerspruchsmatrix|Widerspruchsmatrix}}, sondern eine Denkstruktur. Die Zeitachse nach rechts lässt sich mit den {{term:evolutionsgesetze|Evolutionstrends}} füllen, die Hierarchieachse nach oben mit der {{term:ressourcen-analyse|Ressourcen-Analyse}}."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "The **system operator** — also \"9 windows\" or multi-screen tool — views a system on two axes at once: **in time** (past, present, future) and **in hierarchy** ({{term:supersystem|subsystem, system, supersystem}}). This yields nine perspectives on the same subject."
+      },
+      {
+        "type": "paragraph",
+        "text": "The value sits in the neighbouring cells: how did the predecessor system solve the task? Which components will change? In which environment will the system operate in future? Answers from these fields lie outside what present-only thinking produces."
+      },
+      {
+        "type": "note",
+        "text": "The system operator is **not an algorithmic procedure** like the {{term:widerspruchsmatrix|contradiction matrix}} but a thinking structure. Its time axis to the right can be filled with the {{term:evolutionsgesetze|evolution trends}}, its hierarchy axis upward with the {{term:ressourcen-analyse|resource analysis}}."
+      }
+    ]
+  },
+  "aliases": {
+    "de": [
+      "9 Fenster",
+      "Neun Fenster",
+      "Multi-Screen",
+      "Multi-Screen-Tool"
+    ],
+    "en": [
+      "9 windows",
+      "nine windows",
+      "multi-screen tool"
+    ]
+  },
+  "seeAlso": [
+    "supersystem",
+    "evolutionsgesetze",
+    "triz",
+    "ressourcen-analyse"
+  ],
+  "modules": [
+    "triz-9-windows"
+  ],
+  "algoLab": [],
+  "sources": [
+    {
+      "label": "Altschuller, G. S. — Erfinden: Wege zur Lösung technischer Probleme, 2. Auflage, VEB Verlag Technik Berlin, 1986",
+      "url": null
+    },
+    {
+      "label": "Koltze, K. & Souchkov, V. — Systematische Innovation: TRIZ-Anwendung in der Produkt- und Prozessentwicklung, 3. Auflage, Hanser, 2018",
+      "url": null
+    },
+    {
+      "label": "Orloff, M. A. — Modern TRIZ: A Practical Course with EASyTRIZ Technology, Springer, 2012",
+      "url": null
+    }
+  ]
+}

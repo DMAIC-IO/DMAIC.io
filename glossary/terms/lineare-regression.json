@@ -60,7 +60,7 @@
     "en": ["OLS", "least squares", "multiple linear regression"]
   },
   "seeAlso": ["regression", "residuen", "r-quadrat", "glm", "haupteffekt"],
-  "modules": ["regression", "doe-planner", "correlation"],
+  "modules": ["regression", "doe-planner", "correlation", "msa-typ4"],
   "algoLab": ["regression/regression-coefficients", "regression/regression-anova"],
   "sources": [
     { "label": "Montgomery, D. C., Peck, E. A. & Vining, G. G. — Introduction to Linear Regression Analysis, 6th Edition", "url": null },

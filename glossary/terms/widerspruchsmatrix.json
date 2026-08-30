@@ -1,0 +1,93 @@
+{
+  "id": "widerspruchsmatrix",
+  "category": "triz",
+  "title": {
+    "de": "Widerspruchsmatrix (Altschuller-Matrix)",
+    "en": "Contradiction Matrix (Altshuller Matrix)"
+  },
+  "short": {
+    "de": "39×39-Nachschlagetabelle: verbesserter gegen verschlechterten Parameter — die Zelle nennt die bewährten Lösungsprinzipien.",
+    "en": "39×39 lookup table: improving versus worsening parameter — the cell names the proven inventive principles."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "Die **Widerspruchsmatrix** ist das bekannteste TRIZ-Werkzeug. Ihre beiden Achsen tragen dieselben **39 generischen Konstruktionsparameter** (Gewicht, Länge, Festigkeit, Temperatur, Genauigkeit der Messung, …): auf der einen Achse der Parameter, der verbessert werden soll, auf der anderen der, der sich dabei verschlechtert."
+      },
+      {
+        "type": "paragraph",
+        "text": "Die angesteuerte Zelle nennt drei bis vier {{term:erfinderische-prinzipien|erfinderische Prinzipien}}, die Altschuller in Patenten zu genau dieser Parameterkombination am häufigsten fand. Die Matrix ist damit kein Rechenverfahren, sondern eine empirische Häufigkeitsstatistik über Patentlösungen."
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Schritt 1** — den konkreten {{term:technischer-widerspruch|technischen Widerspruch}} in zwei der 39 Parameter übersetzen",
+          "**Schritt 2** — die Zelle ablesen und die genannten Prinzipien nachschlagen",
+          "**Schritt 3** — jedes Prinzip auf den eigenen Fall zurückübersetzen; nicht jedes trägt"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "Leere Zellen sind normal — Altschuller fand dort keine belastbare Häufung. Auch die Diagonale bleibt leer: derselbe Parameter auf beiden Achsen ist kein technischer, sondern ein {{term:physikalischer-widerspruch|physikalischer Widerspruch}} und wird über die {{term:separationsprinzipien|Separationsprinzipien}} gelöst."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "The **contradiction matrix** is the best-known TRIZ tool. Both of its axes carry the same **39 generic engineering parameters** (weight, length, strength, temperature, measurement accuracy, …): one axis for the parameter to be improved, the other for the one that degrades."
+      },
+      {
+        "type": "paragraph",
+        "text": "The addressed cell names three to four {{term:erfinderische-prinzipien|inventive principles}} that Altshuller found most frequently in patents for exactly this parameter pair. The matrix is therefore not a computation but an empirical frequency statistic over patented solutions."
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Step 1** — translate the concrete {{term:technischer-widerspruch|technical contradiction}} into two of the 39 parameters",
+          "**Step 2** — read the cell and look up the principles named there",
+          "**Step 3** — map every principle back onto your own case; not all of them will carry"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "Empty cells are normal — Altshuller found no reliable accumulation there. The diagonal stays empty too: the same parameter on both axes is not a technical but a {{term:physikalischer-widerspruch|physical contradiction}}, solved via the {{term:separationsprinzipien|separation principles}}."
+      }
+    ]
+  },
+  "aliases": {
+    "de": [
+      "Altschuller-Matrix",
+      "39×39-Matrix",
+      "Contradiction Matrix"
+    ],
+    "en": [
+      "Altshuller matrix",
+      "39×39 matrix"
+    ]
+  },
+  "seeAlso": [
+    "triz",
+    "technischer-widerspruch",
+    "erfinderische-prinzipien",
+    "physikalischer-widerspruch"
+  ],
+  "modules": [
+    "triz-contradiction-matrix"
+  ],
+  "algoLab": [],
+  "sources": [
+    {
+      "label": "Altschuller, G. S. — Erfinden: Wege zur Lösung technischer Probleme, 2. Auflage, VEB Verlag Technik Berlin, 1986",
+      "url": null
+    },
+    {
+      "label": "Altshuller, G. S. — The Innovation Algorithm: TRIZ, Systematic Innovation and Technical Creativity, Technical Innovation Center, 1999",
+      "url": null
+    },
+    {
+      "label": "Koltze, K. & Souchkov, V. — Systematische Innovation: TRIZ-Anwendung in der Produkt- und Prozessentwicklung, 3. Auflage, Hanser, 2018",
+      "url": null
+    }
+  ]
+}

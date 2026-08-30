@@ -1,0 +1,98 @@
+{
+  "id": "erfinderische-prinzipien",
+  "category": "triz",
+  "title": {
+    "de": "40 erfinderische Prinzipien",
+    "en": "40 Inventive Principles"
+  },
+  "short": {
+    "de": "Altschullers Katalog abstrakter Lösungsstrategien — von „Zerlegung\" bis „Eigenschaftsänderung\", nummeriert 1–40.",
+    "en": "Altshuller's catalogue of abstract solution strategies — from 'segmentation' to 'parameter change', numbered 1–40."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "Die **40 erfinderischen Prinzipien** sind der Lösungsvorrat von TRIZ: abstrakte Strategien, die Altschuller aus wiederkehrenden Patentmustern destilliert hat. Sie sind bewusst allgemein formuliert und müssen für den konkreten Fall erst übersetzt werden."
+      },
+      {
+        "type": "list",
+        "items": [
+          "**1 Zerlegung** — das System in unabhängige Teile trennen",
+          "**10 Vorgezogene Wirkung** — die nötige Wirkung ganz oder teilweise vorab erzeugen",
+          "**15 Dynamisierung** — starre Merkmale beweglich oder anpassbar machen",
+          "**24 Vermittler** — ein Zwischenobjekt einführen, das die Wirkung überträgt",
+          "**35 Eigenschaftsänderung** — Aggregatzustand, Konzentration, Flexibilität oder Temperatur ändern"
+        ]
+      },
+      {
+        "type": "paragraph",
+        "text": "Die {{term:widerspruchsmatrix|Widerspruchsmatrix}} ist der übliche Zugang: sie zeigt, welche drei bis vier Prinzipien für einen bestimmten {{term:technischer-widerspruch|technischen Widerspruch}} statistisch am häufigsten getragen haben. Die {{term:separationsprinzipien|Separationsprinzipien}} verweisen ihrerseits auf Teilmengen dieser 40."
+      },
+      {
+        "type": "note",
+        "text": "Die Prinzipien sind **Denkanstöße, keine Rezepte**. Ein Prinzip, das im ersten Anlauf absurd wirkt, ist oft das produktivste — die Übersetzungsarbeit vom abstrakten Prinzip zur konkreten Konstruktion ist der eigentliche erfinderische Schritt."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "The **40 inventive principles** are the TRIZ solution stock: abstract strategies distilled by Altshuller from recurring patent patterns. They are deliberately generic and must first be translated into the concrete case."
+      },
+      {
+        "type": "list",
+        "items": [
+          "**1 Segmentation** — divide the system into independent parts",
+          "**10 Prior action** — perform the required action fully or partly in advance",
+          "**15 Dynamics** — make rigid characteristics movable or adaptive",
+          "**24 Intermediary** — introduce an intermediate object that carries the action",
+          "**35 Parameter change** — change state of matter, concentration, flexibility or temperature"
+        ]
+      },
+      {
+        "type": "paragraph",
+        "text": "The {{term:widerspruchsmatrix|contradiction matrix}} is the usual entry point: it shows which three or four principles have statistically carried a given {{term:technischer-widerspruch|technical contradiction}} most often. The {{term:separationsprinzipien|separation principles}} in turn point to subsets of these 40."
+      },
+      {
+        "type": "note",
+        "text": "The principles are **prompts, not recipes**. A principle that looks absurd at first reading is often the most productive one — translating the abstract principle into a concrete design is the actual inventive step."
+      }
+    ]
+  },
+  "aliases": {
+    "de": [
+      "40 Prinzipien",
+      "Innovationsprinzipien",
+      "Lösungsprinzipien"
+    ],
+    "en": [
+      "40 principles",
+      "inventive principles"
+    ]
+  },
+  "seeAlso": [
+    "triz",
+    "widerspruchsmatrix",
+    "technischer-widerspruch",
+    "separationsprinzipien"
+  ],
+  "modules": [
+    "triz-contradiction-matrix",
+    "triz-physical-contradiction"
+  ],
+  "algoLab": [],
+  "sources": [
+    {
+      "label": "Altschuller, G. S. — Erfinden: Wege zur Lösung technischer Probleme, 2. Auflage, VEB Verlag Technik Berlin, 1986",
+      "url": null
+    },
+    {
+      "label": "Altshuller, G. S. — The Innovation Algorithm: TRIZ, Systematic Innovation and Technical Creativity, Technical Innovation Center, 1999",
+      "url": null
+    },
+    {
+      "label": "Orloff, M. A. — Modern TRIZ: A Practical Course with EASyTRIZ Technology, Springer, 2012",
+      "url": null
+    }
+  ]
+}

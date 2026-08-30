@@ -1,0 +1,99 @@
+{
+  "id": "evolutionsgesetze",
+  "category": "triz",
+  "title": {
+    "de": "Evolutionstrends technischer Systeme",
+    "en": "Trends of Technical System Evolution"
+  },
+  "short": {
+    "de": "Wiederkehrende Entwicklungslinien aus der Patentanalyse — die nächste Stufe ist eine prüfbare Innovations-Hypothese.",
+    "en": "Recurring lines of development from patent analysis — the next stage is a testable innovation hypothesis."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "Altschullers Patentanalyse zeigt: technische Systeme entwickeln sich nicht zufällig, sondern entlang einer kleinen Zahl wiederkehrender **Evolutionslinien**. Wer das aktuelle System auf einer Linie verortet, kann mit hoher Trefferquote sagen, wohin die nächste Generation geht."
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Aggregation:** Mono → Bi → Poly → integriertes System",
+          "**Dynamisierung:** starr → gelenkig → elastisch → flüssig → Feld",
+          "**Skala:** Makro → Meso → Mikro → Nano",
+          "**Automatisierung:** manuell → mechanisiert → automatisch → autonom",
+          "**Ungleichmäßige Entwicklung:** qualitativ, ohne feste Stufen — fragt nach dem schwächsten Glied"
+        ]
+      },
+      {
+        "type": "paragraph",
+        "text": "Alle Linien laufen in dieselbe Richtung: steigende {{term:idealitaet|Idealität}}. Die Trends beantworten damit die Zukunftsspalte des {{term:systemoperator|Systemoperators}} — nicht als Prognose, sondern als Hypothese, die das Team gegen Machbarkeit und Kundennutzen prüft."
+      },
+      {
+        "type": "note",
+        "text": "Eine Verortung ist **kein Beweis**. Der Sprung zur nächsten Stufe muss technisch und wirtschaftlich tragen; die Trends sagen nur, in welche Richtung zu suchen sich statistisch lohnt."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "Altshuller's patent analysis shows that technical systems do not evolve randomly but along a small number of recurring **lines of evolution**. Locating the current system on a line predicts with good hit rate where the next generation goes."
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Aggregation:** mono → bi → poly → integrated system",
+          "**Dynamisation:** rigid → jointed → elastic → fluid → field",
+          "**Scale:** macro → meso → micro → nano",
+          "**Automation:** manual → mechanised → automatic → autonomous",
+          "**Uneven development:** qualitative, without fixed stages — asks for the weakest link"
+        ]
+      },
+      {
+        "type": "paragraph",
+        "text": "All lines run in the same direction: rising {{term:idealitaet|ideality}}. The trends therefore answer the future column of the {{term:systemoperator|system operator}} — not as a forecast but as a hypothesis the team tests against feasibility and customer value."
+      },
+      {
+        "type": "note",
+        "text": "A placement is **not a proof**. The jump to the next stage must carry technically and economically; the trends only say in which direction searching statistically pays off."
+      }
+    ]
+  },
+  "aliases": {
+    "de": [
+      "Evolutionstrends",
+      "Entwicklungsgesetze",
+      "Trends der technischen Evolution"
+    ],
+    "en": [
+      "evolution trends",
+      "laws of system evolution",
+      "lines of evolution"
+    ]
+  },
+  "seeAlso": [
+    "idealitaet",
+    "systemoperator",
+    "ifr",
+    "triz"
+  ],
+  "modules": [
+    "triz-evolution-trends",
+    "triz-9-windows"
+  ],
+  "algoLab": [],
+  "sources": [
+    {
+      "label": "Altschuller, G. S. — Erfinden: Wege zur Lösung technischer Probleme, 2. Auflage, VEB Verlag Technik Berlin, 1986",
+      "url": null
+    },
+    {
+      "label": "Salamatov, Y. — TRIZ: The Right Solution at the Right Time, Insytec, 1999",
+      "url": null
+    },
+    {
+      "label": "Koltze, K. & Souchkov, V. — Systematische Innovation: TRIZ-Anwendung in der Produkt- und Prozessentwicklung, 3. Auflage, Hanser, 2018",
+      "url": null
+    }
+  ]
+}

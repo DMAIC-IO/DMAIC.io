@@ -18,7 +18,7 @@ export default {
         blocks: [
           {
             type: 'paragraph',
-            content: 'MSA Verfahren 4 (Linearität) prüft, ob ein Messsystem <em>über seinen gesamten Arbeitsbereich</em> gleichmäßig misst — oder ob die systematische Abweichung mit steigendem Referenzwert driftet. Während MSA Typ 1 nur einen einzelnen Punkt auf der Skala bewertet, deckt Typ 4 den kompletten Bereich zwischen unterer und oberer Spezifikationsgrenze ab.',
+            content: 'MSA Verfahren 4 ({{term:linearitaet|Linearität}}) prüft, ob ein Messsystem <em>über seinen gesamten Arbeitsbereich</em> gleichmäßig misst — oder ob die systematische Abweichung mit steigendem Referenzwert driftet. Während MSA Typ 1 nur einen einzelnen Punkt auf der Skala bewertet, deckt Typ 4 den kompletten Bereich zwischen unterer und oberer Spezifikationsgrenze ab.',
           },
           {
             type: 'definition',
@@ -46,7 +46,7 @@ export default {
         blocks: [
           {
             type: 'paragraph',
-            content: 'MSA Type 4 (linearity) checks whether a measurement system reads consistently <em>across its entire operating range</em> — or whether the systematic deviation drifts as the reference value grows. While MSA Type 1 only evaluates a single point on the scale, Type 4 covers the complete range between the lower and upper specification limits.',
+            content: 'MSA Type 4 ({{term:linearitaet|linearity}}) checks whether a measurement system reads consistently <em>across its entire operating range</em> — or whether the systematic deviation drifts as the reference value grows. While MSA Type 1 only evaluates a single point on the scale, Type 4 covers the complete range between the lower and upper specification limits.',
           },
           {
             type: 'definition',
@@ -130,7 +130,7 @@ export default {
         blocks: [
           {
             type: 'paragraph',
-            content: 'Kern von Typ 4 ist eine lineare Regression aller Einzel-Bias-Werte b<sub>ij</sub> = y<sub>ij</sub> − x<sub>ref,i</sub> gegen den Referenzwert x<sub>ref,i</sub>. Aus dieser Regression leiten sich sowohl die AIAG-Kennzahlen als auch der VDA-5-Unsicherheitsbeitrag ab.',
+            content: 'Kern von Typ 4 ist eine {{term:lineare-regression|lineare Regression}} aller Einzel-Bias-Werte b<sub>ij</sub> = y<sub>ij</sub> − x<sub>ref,i</sub> gegen den Referenzwert x<sub>ref,i</sub>. Aus dieser Regression leiten sich sowohl die AIAG-Kennzahlen als auch der VDA-5-Unsicherheitsbeitrag ab.',
           },
           {
             type: 'definition',
@@ -174,7 +174,7 @@ export default {
         blocks: [
           {
             type: 'paragraph',
-            content: 'Type 4 boils down to a linear regression of individual bias values b<sub>ij</sub> = y<sub>ij</sub> − x<sub>ref,i</sub> against the reference value x<sub>ref,i</sub>. Both the AIAG KPIs and the VDA 5 uncertainty contribution are derived from this regression.',
+            content: 'Type 4 boils down to a {{term:lineare-regression|linear regression}} of individual bias values b<sub>ij</sub> = y<sub>ij</sub> − x<sub>ref,i</sub> against the reference value x<sub>ref,i</sub>. Both the AIAG KPIs and the VDA 5 uncertainty contribution are derived from this regression.',
           },
           {
             type: 'definition',

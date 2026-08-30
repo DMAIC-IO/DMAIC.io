@@ -12,7 +12,7 @@ export default {
         blocks: [
           {
             type: 'paragraph',
-            content: 'TRIZ (russisch ТРИЗ — „Theorie des erfinderischen Problemlösens") ist eine systematische Methode, technische Probleme zu lösen, indem man die zugrundeliegenden Widersprüche identifiziert und mit bewährten Lösungsmustern bearbeitet. Die Widerspruchsmatrix ist das bekannteste TRIZ-Werkzeug.',
+            content: '{{term:triz|TRIZ}} (russisch ТРИЗ — „Theorie des erfinderischen Problemlösens") ist eine systematische Methode, technische Probleme zu lösen, indem man die zugrundeliegenden Widersprüche identifiziert und mit bewährten Lösungsmustern bearbeitet. Die {{term:widerspruchsmatrix|Widerspruchsmatrix}} ist das bekannteste TRIZ-Werkzeug.',
           },
           {
             type: 'paragraph',
@@ -21,12 +21,12 @@ export default {
           {
             type: 'definition',
             term: 'Technischer Widerspruch',
-            content: 'Eine Verbesserung in einem Parameter (z.B. höhere Festigkeit) führt zu einer Verschlechterung in einem anderen (z.B. höheres Gewicht). Genau für diese Widersprüche liefert die Matrix Lösungsvorschläge.',
+            content: 'Eine Verbesserung in einem Parameter (z.B. höhere Festigkeit) führt zu einer Verschlechterung in einem anderen (z.B. höheres Gewicht). Genau für diese {{term:technischer-widerspruch|technischen Widersprüche}} liefert die Matrix Lösungsvorschläge.',
           },
           {
             type: 'definition',
             term: 'Erfinderisches Prinzip',
-            content: 'Eine abstrakte Lösungsstrategie, die sich in vielen Patenten bewährt hat — z.B. „Zerlegung", „Vorgezogene Wirkung", „Dynamisierung". Insgesamt 40 Prinzipien, nummeriert nach Altschuller.',
+            content: 'Eine abstrakte Lösungsstrategie, die sich in vielen Patenten bewährt hat — z.B. „Zerlegung", „Vorgezogene Wirkung", „Dynamisierung". Insgesamt {{term:erfinderische-prinzipien|40 Prinzipien}}, nummeriert nach Altschuller.',
           },
           {
             type: 'paragraph',
@@ -39,7 +39,7 @@ export default {
         blocks: [
           {
             type: 'paragraph',
-            content: 'TRIZ (Russian: ТРИЗ — "Theory of Inventive Problem Solving") is a systematic methodology for solving technical problems by identifying underlying contradictions and applying proven solution patterns. The contradiction matrix is its best-known tool.',
+            content: '{{term:triz|TRIZ}} (Russian: ТРИЗ — "Theory of Inventive Problem Solving") is a systematic methodology for solving technical problems by identifying underlying contradictions and applying proven solution patterns. The {{term:widerspruchsmatrix|contradiction matrix}} is its best-known tool.',
           },
           {
             type: 'paragraph',
@@ -48,12 +48,12 @@ export default {
           {
             type: 'definition',
             term: 'Technical contradiction',
-            content: 'Improving one parameter (e.g. higher strength) makes another worsen (e.g. higher weight). The matrix provides candidate solutions for exactly these contradictions.',
+            content: 'Improving one parameter (e.g. higher strength) makes another worsen (e.g. higher weight). The matrix provides candidate solutions for exactly these {{term:technischer-widerspruch|technical contradictions}}.',
           },
           {
             type: 'definition',
             term: 'Inventive principle',
-            content: 'An abstract solution strategy validated by many patents — e.g. "Segmentation", "Preliminary action", "Dynamics". 40 principles total, numbered as in Altschuller\'s catalogue.',
+            content: 'An abstract solution strategy validated by many patents — e.g. "Segmentation", "Preliminary action", "Dynamics". {{term:erfinderische-prinzipien|40 principles}} total, numbered as in Altschuller\'s catalogue.',
           },
           {
             type: 'paragraph',

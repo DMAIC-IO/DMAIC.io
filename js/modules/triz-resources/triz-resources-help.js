@@ -12,7 +12,7 @@ export default {
         blocks: [
           {
             type: 'paragraph',
-            content: 'Die **Ressourcen-Checkliste** ist ein zentrales TRIZ-Werkzeug: bevor man neue Komponenten erfindet, inventarisiert das Team systematisch alles, was bereits **im System, an seinen Grenzen oder im Supersystem** vorhanden ist. Erfahrungsgemäß findet sich die Lösung in den allermeisten Fällen bereits unter den existierenden Ressourcen — sie war nur ungenutzt.',
+            content: 'Die **Ressourcen-Checkliste** ist ein zentrales {{term:triz|TRIZ}}-Werkzeug: bevor man neue Komponenten erfindet, inventarisiert das Team systematisch alles, was bereits **im System, an seinen Grenzen oder im Supersystem** vorhanden ist. Erfahrungsgemäß findet sich die Lösung in den allermeisten Fällen bereits unter den existierenden Ressourcen — sie war nur ungenutzt.',
           },
           {
             type: 'paragraph',
@@ -55,7 +55,7 @@ export default {
         blocks: [
           {
             type: 'paragraph',
-            content: 'The **Resources Checklist** is a central TRIZ tool: before inventing new components, the team systematically inventories everything that is already **in the system, at its boundaries, or in the supersystem**. Experience shows that the solution almost always lives among the existing resources — it was just unused.',
+            content: 'The **Resources Checklist** is a central {{term:triz|TRIZ}} tool: before inventing new components, the team systematically inventories everything that is already **in the system, at its boundaries, or in the supersystem**. Experience shows that the solution almost always lives among the existing resources — it was just unused.',
           },
           {
             type: 'paragraph',

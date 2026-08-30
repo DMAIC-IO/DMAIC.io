@@ -1,0 +1,87 @@
+{
+  "id": "separationsprinzipien",
+  "category": "triz",
+  "title": {
+    "de": "Separationsprinzipien",
+    "en": "Separation Principles"
+  },
+  "short": {
+    "de": "Vier Wege, einen physikalischen Widerspruch aufzulösen: Trennung in Zeit, Raum, Bedingung oder Systemebene.",
+    "en": "Four ways to resolve a physical contradiction: separation in time, space, condition or system level."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "Ein {{term:physikalischer-widerspruch|physikalischer Widerspruch}} wird nicht ausbalanciert, sondern **getrennt**: die gegensätzlichen Anforderungen gelten nicht mehr gleichzeitig am selben Ort in derselben Form. Altschuller nennt dafür vier Wege."
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Trennung in der Zeit** — X ist zeitweise A, zeitweise ¬A (einziehbares Fahrwerk, Klappflügel)",
+          "**Trennung im Raum** — X ist an einer Stelle A, an einer anderen ¬A (Thermosbecher: innen heiß, außen kalt)",
+          "**Trennung nach Bedingung** — X reagiert auf einen Auslöser (Bimetall, thermochromes Material, Sollbruchstelle)",
+          "**Trennung nach Systemebene** — X ist auf {{term:supersystem|Systemebene}} A, auf Bauteilebene ¬A (Fahrradkette: starr im Glied, biegsam als Kette)"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "Die vier Prinzipien in dieser Reihenfolge durchgehen — praktisch löst eines davon nahezu jeden physikalischen Widerspruch. Jedes verweist auf eine Teilmenge der 40 {{term:erfinderische-prinzipien|erfinderischen Prinzipien}}, die die Trennung konstruktiv umsetzt."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "A {{term:physikalischer-widerspruch|physical contradiction}} is not balanced but **separated**: the opposing requirements no longer hold at the same time, in the same place, in the same form. Altshuller names four routes."
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Separation in time** — X is A at times, ¬A at others (retractable landing gear, folding wings)",
+          "**Separation in space** — X is A in one place, ¬A in another (thermal mug: hot inside, cool outside)",
+          "**Separation on condition** — X responds to a trigger (bimetal, thermochromic material, breaking point)",
+          "**Separation by system level** — X is A at {{term:supersystem|system level}}, ¬A at component level (bicycle chain: rigid per link, flexible as a chain)"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "Work through the four in this order — in practice one of them resolves nearly every physical contradiction. Each points to a subset of the 40 {{term:erfinderische-prinzipien|inventive principles}} that implement the separation in hardware."
+      }
+    ]
+  },
+  "aliases": {
+    "de": [
+      "Separation",
+      "Trennungsprinzipien",
+      "Separation in Zeit und Raum"
+    ],
+    "en": [
+      "separation",
+      "separation in time and space"
+    ]
+  },
+  "seeAlso": [
+    "physikalischer-widerspruch",
+    "erfinderische-prinzipien",
+    "triz",
+    "supersystem"
+  ],
+  "modules": [
+    "triz-physical-contradiction"
+  ],
+  "algoLab": [],
+  "sources": [
+    {
+      "label": "Altschuller, G. S. — Erfinden: Wege zur Lösung technischer Probleme, 2. Auflage, VEB Verlag Technik Berlin, 1986",
+      "url": null
+    },
+    {
+      "label": "Koltze, K. & Souchkov, V. — Systematische Innovation: TRIZ-Anwendung in der Produkt- und Prozessentwicklung, 3. Auflage, Hanser, 2018",
+      "url": null
+    },
+    {
+      "label": "Orloff, M. A. — Modern TRIZ: A Practical Course with EASyTRIZ Technology, Springer, 2012",
+      "url": null
+    }
+  ]
+}

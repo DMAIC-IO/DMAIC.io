@@ -81,11 +81,13 @@
     "richtigkeit",
     "genauigkeit",
     "cgk",
-    "referenzteil"
+    "referenzteil",
+    "linearitaet"
   ],
   "modules": [
     "msa-typ1",
-    "msa-typ2"
+    "msa-typ2",
+    "msa-typ4"
   ],
   "algoLab": [
     "msa/cgk",

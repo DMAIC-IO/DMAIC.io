@@ -97,7 +97,8 @@
     "msa-typ1",
     "random-generator",
     "worksheet",
-    "response-optimization"
+    "response-optimization",
+    "msa-typ4"
   ],
   "algoLab": [
     "hypothesis/levene-test",

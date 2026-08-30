@@ -12,7 +12,7 @@ export default {
         blocks: [
           {
             type: 'paragraph',
-            content: 'Der Systemoperator — auch „9 Fenster" oder „Multi-Screen Tool" genannt — ist ein TRIZ-Werkzeug, das ein System gleichzeitig auf zwei Achsen betrachtet: in der Zeit (Vergangenheit, Gegenwart, Zukunft) und in der Hierarchie (Subsystem, System, Supersystem). Das ergibt ein 3×3-Raster aus neun Perspektiven auf denselben Sachverhalt.',
+            content: 'Der {{term:systemoperator|Systemoperator}} — auch „9 Fenster" oder „Multi-Screen Tool" genannt — ist ein {{term:triz|TRIZ}}-Werkzeug, das ein System gleichzeitig auf zwei Achsen betrachtet: in der Zeit (Vergangenheit, Gegenwart, Zukunft) und in der Hierarchie ({{term:supersystem|Subsystem, System, Supersystem}}). Das ergibt ein 3×3-Raster aus neun Perspektiven auf denselben Sachverhalt.',
           },
           {
             type: 'paragraph',
@@ -44,7 +44,7 @@ export default {
         blocks: [
           {
             type: 'paragraph',
-            content: 'The System Operator — also called "9 Windows" or "Multi-Screen Tool" — is a TRIZ tool that analyses a system on two axes simultaneously: time (past, present, future) and hierarchy (subsystem, system, supersystem). The result is a 3×3 grid of nine perspectives on the same subject.',
+            content: 'The {{term:systemoperator|System Operator}} — also called "9 Windows" or "Multi-Screen Tool" — is a {{term:triz|TRIZ}} tool that analyses a system on two axes simultaneously: time (past, present, future) and hierarchy ({{term:supersystem|subsystem, system, supersystem}}). The result is a 3×3 grid of nine perspectives on the same subject.',
           },
           {
             type: 'paragraph',

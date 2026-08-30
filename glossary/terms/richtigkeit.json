@@ -61,11 +61,13 @@
     "genauigkeit",
     "praezision",
     "bias",
-    "mittelwert"
+    "mittelwert",
+    "linearitaet"
   ],
   "modules": [
     "msa-typ1",
-    "msa-typ2"
+    "msa-typ2",
+    "msa-typ4"
   ],
   "algoLab": [
     "msa/cgk",

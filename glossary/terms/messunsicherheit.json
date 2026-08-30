@@ -1,0 +1,126 @@
+{
+  "id": "messunsicherheit",
+  "category": "msa",
+  "title": {
+    "de": "Messunsicherheit (VDA 5 / GUM)",
+    "en": "Measurement Uncertainty (VDA 5 / GUM)"
+  },
+  "short": {
+    "de": "Streubereich, der dem Messergebnis beizuordnen ist — bewertet als Anteil der Toleranz (Q_MS).",
+    "en": "The dispersion attributable to a measurement result — assessed as a share of the tolerance (Q_MS)."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "Die **Messunsicherheit** fasst alle Streuungsbeiträge eines Messprozesses zu einer Kennzahl zusammen. Anders als die AIAG-Kennzahlen, die einzelne Effekte prozentual bewerten, bildet VDA 5 nach dem GUM ein **Unsicherheitsbudget**: jeder Beitrag wird als Standardunsicherheit $u_i$ erfasst und quadratisch addiert."
+      },
+      {
+        "type": "formula",
+        "latex": "U = k \\cdot \\sqrt{\\textstyle\\sum_i u_i^2}, \\quad k = 2"
+      },
+      {
+        "type": "paragraph",
+        "text": "Der Erweiterungsfaktor $k = 2$ entspricht rund 95 % Überdeckung. Die erweiterte Unsicherheit $U$ wird auf die Toleranz bezogen:"
+      },
+      {
+        "type": "formula",
+        "latex": "Q_{MS} = \\frac{U}{T} \\cdot 100\\,\\%"
+      },
+      {
+        "type": "list",
+        "items": [
+          "$Q_{MS} \\leq 15\\,\\%$ — geeignet",
+          "$15\\,\\% \\lt Q_{MS} \\leq 30\\,\\%$ — bedingt geeignet, Prozessreserve prüfen",
+          "$Q_{MS} \\gt 30\\,\\%$ — nicht geeignet"
+        ]
+      },
+      {
+        "type": "paragraph",
+        "text": "Typische Beiträge sind {{term:wiederholbarkeit|Wiederholbarkeit}}, {{term:reproduzierbarkeit|Vergleichspräzision}}, Auflösung, Kalibrierunsicherheit des {{term:referenzteil|Referenzteils}} sowie Bias und {{term:linearitaet|Linearität}}. Letztere gehen als $u_{BI} = \\sqrt{\\max_i |b_i|^2 + (SE(a) \\cdot \\text{Range})^2}$ ein."
+      },
+      {
+        "type": "note",
+        "text": "AIAG- und VDA-5-Bewertung können bei grenzwertigen Fällen auseinanderlaufen — AIAG bewertet Einzeleffekte gegen $PV$, VDA 5 das Gesamtbudget gegen die Toleranz. Welche Norm gilt, legt die Freigabespezifikation bzw. der Kunde fest."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "**Measurement uncertainty** condenses every dispersion contribution of a measurement process into one figure. Unlike the AIAG metrics, which rate individual effects as percentages, VDA 5 follows the GUM and builds an **uncertainty budget**: every contribution is captured as a standard uncertainty $u_i$ and added in quadrature."
+      },
+      {
+        "type": "formula",
+        "latex": "U = k \\cdot \\sqrt{\\textstyle\\sum_i u_i^2}, \\quad k = 2"
+      },
+      {
+        "type": "paragraph",
+        "text": "The coverage factor $k = 2$ corresponds to roughly 95 % coverage. The expanded uncertainty $U$ is then related to the tolerance:"
+      },
+      {
+        "type": "formula",
+        "latex": "Q_{MS} = \\frac{U}{T} \\cdot 100\\,\\%"
+      },
+      {
+        "type": "list",
+        "items": [
+          "$Q_{MS} \\leq 15\\,\\%$ — capable",
+          "$15\\,\\% \\lt Q_{MS} \\leq 30\\,\\%$ — conditionally capable, check process reserve",
+          "$Q_{MS} \\gt 30\\,\\%$ — not capable"
+        ]
+      },
+      {
+        "type": "paragraph",
+        "text": "Typical contributions are {{term:wiederholbarkeit|repeatability}}, {{term:reproduzierbarkeit|comparison precision}}, resolution, the calibration uncertainty of the {{term:referenzteil|reference part}}, plus bias and {{term:linearitaet|linearity}}. The latter enter as $u_{BI} = \\sqrt{\\max_i |b_i|^2 + (SE(a) \\cdot \\text{Range})^2}$."
+      },
+      {
+        "type": "note",
+        "text": "AIAG and VDA 5 verdicts can diverge in borderline cases — AIAG rates single effects against $PV$, VDA 5 the total budget against the tolerance. Which standard applies is fixed by the release specification or by the customer."
+      }
+    ]
+  },
+  "aliases": {
+    "de": [
+      "Unsicherheitsbudget",
+      "erweiterte Messunsicherheit",
+      "Q_MS",
+      "Prüfprozesseignung"
+    ],
+    "en": [
+      "uncertainty budget",
+      "expanded uncertainty",
+      "Q_MS",
+      "measurement process capability"
+    ]
+  },
+  "seeAlso": [
+    "linearitaet",
+    "bias",
+    "wiederholbarkeit",
+    "reproduzierbarkeit",
+    "referenzteil",
+    "spezifikationsgrenzen"
+  ],
+  "modules": [
+    "msa-typ4"
+  ],
+  "algoLab": [],
+  "sources": [
+    {
+      "label": "VDA Band 5 — Mess- und Prüfprozesseignung, 3. Auflage, 2021",
+      "url": null
+    },
+    {
+      "label": "JCGM 100:2008 (GUM) — Evaluation of Measurement Data: Guide to the Expression of Uncertainty in Measurement",
+      "url": null
+    },
+    {
+      "label": "Dietrich, E. & Schulze, A. — Eignungsnachweis von Prüfprozessen, 4. Auflage, Hanser",
+      "url": null
+    },
+    {
+      "label": "AIAG — Measurement Systems Analysis (MSA) Reference Manual, 4th Edition, 2010",
+      "url": null
+    }
+  ]
+}

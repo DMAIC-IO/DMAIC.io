@@ -1,0 +1,77 @@
+{
+  "id": "physikalischer-widerspruch",
+  "category": "triz",
+  "title": {
+    "de": "Physikalischer Widerspruch",
+    "en": "Physical Contradiction"
+  },
+  "short": {
+    "de": "Ein und derselbe Parameter muss gleichzeitig zwei gegensätzliche Werte annehmen — „X soll A sein UND nicht-A\".",
+    "en": "One and the same parameter must take two opposite values at once — 'X should be A AND not-A'."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "Beim **physikalischen Widerspruch** wird die Forderung auf einen einzigen Parameter zugespitzt: *X soll A sein*, damit die eine Wirkung eintritt, *und X soll ¬A sein*, damit die andere eintritt. Eine Tragfläche soll lang sein (Auftrieb beim Start) und kurz (Widerstand im Reiseflug); eine Tasse soll heiß sein (warmer Kaffee) und kalt (Lippenschutz)."
+      },
+      {
+        "type": "paragraph",
+        "text": "Der physikalische Widerspruch ist enger als der {{term:technischer-widerspruch|technische}} — und genau deshalb mächtiger: er lässt keinen Kompromiss zu und erzwingt eine echte Auflösung über die vier {{term:separationsprinzipien|Separationsprinzipien}} in Zeit, Raum, Bedingung oder Systemebene."
+      },
+      {
+        "type": "note",
+        "text": "Jeder technische Widerspruch lässt sich in der Regel zu einem physikalischen verschärfen, indem man fragt: *Welcher eine Parameter steckt hinter beiden Anforderungen?* Diese Zuspitzung ist Arbeit — sie zahlt sich aus, weil die Separationsprinzipien zielgerichteter sind als eine Matrixzelle mit vier Prinzipien."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "In a **physical contradiction** the requirement is sharpened onto a single parameter: *X should be A* for one effect to occur, *and X should be ¬A* for the other. A wing should be long (lift at take-off) and short (drag in cruise); a cup should be hot (keeping coffee warm) and cold (protecting the lip)."
+      },
+      {
+        "type": "paragraph",
+        "text": "The physical contradiction is narrower than the {{term:technischer-widerspruch|technical}} one — and stronger for it: it admits no compromise and forces a genuine resolution through the four {{term:separationsprinzipien|separation principles}} in time, space, condition or system level."
+      },
+      {
+        "type": "note",
+        "text": "Any technical contradiction can usually be sharpened into a physical one by asking: *which single parameter sits behind both requirements?* That sharpening is work — and it pays off, because the separation principles are more targeted than a matrix cell holding four principles."
+      }
+    ]
+  },
+  "aliases": {
+    "de": [
+      "Physikalischer Konflikt",
+      "Inhärenter Widerspruch"
+    ],
+    "en": [
+      "physical conflict",
+      "inherent contradiction"
+    ]
+  },
+  "seeAlso": [
+    "triz",
+    "separationsprinzipien",
+    "technischer-widerspruch",
+    "erfinderische-prinzipien"
+  ],
+  "modules": [
+    "triz-physical-contradiction",
+    "triz-contradiction-matrix"
+  ],
+  "algoLab": [],
+  "sources": [
+    {
+      "label": "Altschuller, G. S. — Erfinden: Wege zur Lösung technischer Probleme, 2. Auflage, VEB Verlag Technik Berlin, 1986",
+      "url": null
+    },
+    {
+      "label": "Koltze, K. & Souchkov, V. — Systematische Innovation: TRIZ-Anwendung in der Produkt- und Prozessentwicklung, 3. Auflage, Hanser, 2018",
+      "url": null
+    },
+    {
+      "label": "Orloff, M. A. — Modern TRIZ: A Practical Course with EASyTRIZ Technology, Springer, 2012",
+      "url": null
+    }
+  ]
+}

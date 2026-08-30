@@ -12,7 +12,7 @@ export default {
         blocks: [
           {
             type: 'paragraph',
-            content: 'Das **Ideale Endresultat** (IFR — Ideal Final Result) ist eines der zentralen TRIZ-Werkzeuge: Bevor man Kompromisse sucht, formuliert das Team den Idealzustand — die nützliche Funktion wird erfüllt, **das System selbst verschwindet**, **es entstehen keine Kosten**, **keine Komplikation**, **keine schädliche Nebenwirkung**. Von diesem Idealzustand aus rückwärts zu arbeiten ist erfahrungsgemäß ergiebiger als inkrementelle Optimierung vom Status quo.',
+            content: 'Das **Ideale Endresultat** (IFR — Ideal Final Result) ist eines der zentralen {{term:triz|TRIZ}}-Werkzeuge: Bevor man Kompromisse sucht, formuliert das Team den Idealzustand — die nützliche Funktion wird erfüllt, **das System selbst verschwindet**, **es entstehen keine Kosten**, **keine Komplikation**, **keine schädliche Nebenwirkung**. Von diesem Idealzustand aus rückwärts zu arbeiten ist erfahrungsgemäß ergiebiger als inkrementelle Optimierung vom Status quo.',
           },
           {
             type: 'paragraph',
@@ -31,7 +31,7 @@ export default {
           {
             type: 'definition',
             term: 'IFR-3: Supersystem-Ressource erfüllt die Funktion',
-            content: 'Eine bereits vorhandene Ressource aus dem Supersystem (Schwerkraft, Umgebungswärme, Luftströmung …) übernimmt die Aufgabe — kostenfrei, ohne neue Komponente.',
+            content: 'Eine bereits vorhandene Ressource aus dem {{term:supersystem|Supersystem}} (Schwerkraft, Umgebungswärme, Luftströmung …) übernimmt die Aufgabe — kostenfrei, ohne neue Komponente.',
           },
           {
             type: 'paragraph',
@@ -44,7 +44,7 @@ export default {
         blocks: [
           {
             type: 'paragraph',
-            content: 'The **Ideal Final Result** (IFR) is one of TRIZ\'s central tools: before seeking compromises, the team formulates the ideal state — the useful function is fulfilled, **the system itself disappears**, **for free**, **with no complication**, **and no harmful side-effect**. Working backwards from that ideal is far more productive than incremental improvement from the status quo.',
+            content: 'The **Ideal Final Result** (IFR) is one of {{term:triz|TRIZ}}\'s central tools: before seeking compromises, the team formulates the ideal state — the useful function is fulfilled, **the system itself disappears**, **for free**, **with no complication**, **and no harmful side-effect**. Working backwards from that ideal is far more productive than incremental improvement from the status quo.',
           },
           {
             type: 'paragraph',

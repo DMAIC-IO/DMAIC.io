@@ -1,0 +1,94 @@
+{
+  "id": "ressourcen-analyse",
+  "category": "triz",
+  "title": {
+    "de": "Ressourcen-Analyse",
+    "en": "Resource Analysis"
+  },
+  "short": {
+    "de": "Inventur aller vorhandenen Stoffe, Felder, Räume, Zeiten, Informationen und Funktionen — vor jeder neuen Komponente.",
+    "en": "Inventory of all present substances, fields, spaces, times, information and functions — before any new component."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "Bevor eine neue Komponente erfunden wird, inventarisiert die **Ressourcen-Analyse** systematisch alles, was im System, an seinen Grenzen oder im {{term:supersystem|Supersystem}} bereits vorhanden ist. Erfahrungsgemäß liegt die Lösung meist unter den existierenden Ressourcen — sie war nur ungenutzt."
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Stoffe** — Materialien, Bauteile, Abfall, Nebenprodukte, Atmosphäre, Verunreinigungen",
+          "**Felder** — mechanisch, thermisch, chemisch, elektrisch, magnetisch, akustisch, optisch, gravitativ ({{term:matcem|MATCEM}})",
+          "**Raum** — ungenutzte Volumina, Oberflächen, Spalte, Hohlräume, Kontaktflächen",
+          "**Zeit** — Leerlaufphasen, Übergänge, Pausen zwischen Zyklen, Vor- und Nachlaufzeiten",
+          "**Information** — Sensorsignale, Indikatoren, ohnehin anfallende Daten",
+          "**Funktion / Energie** — bestehende Funktionen zur Doppelnutzung; Energie, die ohnehin durch das System fließt"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "Jede Kategorie wird über die drei Systemebenen abgefragt — das ergibt ein Raster, das gezielt nach ungenutzten Ressourcen fahndet. Ressourcen aus dem Supersystem sind besonders wertvoll: sie sind kostenfrei und erhöhen die {{term:idealitaet|Idealität}} unmittelbar."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "Before a new component is invented, the **resource analysis** systematically inventories everything already present in the system, at its boundaries or in the {{term:supersystem|supersystem}}. Experience shows the solution usually already sits among the existing resources — merely unused."
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Substances** — materials, parts, waste, by-products, atmosphere, contaminants",
+          "**Fields** — mechanical, thermal, chemical, electrical, magnetic, acoustic, optical, gravitational ({{term:matcem|MATCEM}})",
+          "**Space** — unused volumes, surfaces, gaps, cavities, contact areas",
+          "**Time** — idle phases, transitions, pauses between cycles, lead and lag times",
+          "**Information** — sensor signals, indicators, data that accrues anyway",
+          "**Function / energy** — existing functions available for dual use; energy already flowing through the system"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "Each category is queried across the three system levels — producing a grid that hunts specifically for unused resources. Supersystem resources are especially valuable: they are free and raise {{term:idealitaet|ideality}} immediately."
+      }
+    ]
+  },
+  "aliases": {
+    "de": [
+      "Ressourcen-Checkliste",
+      "Ressourcen",
+      "Substanz-Feld-Ressourcen"
+    ],
+    "en": [
+      "resource checklist",
+      "resources",
+      "substance-field resources"
+    ]
+  },
+  "seeAlso": [
+    "supersystem",
+    "ifr",
+    "idealitaet",
+    "matcem",
+    "triz"
+  ],
+  "modules": [
+    "triz-resources",
+    "triz-ifr"
+  ],
+  "algoLab": [],
+  "sources": [
+    {
+      "label": "Altschuller, G. S. — Erfinden: Wege zur Lösung technischer Probleme, 2. Auflage, VEB Verlag Technik Berlin, 1986",
+      "url": null
+    },
+    {
+      "label": "Koltze, K. & Souchkov, V. — Systematische Innovation: TRIZ-Anwendung in der Produkt- und Prozessentwicklung, 3. Auflage, Hanser, 2018",
+      "url": null
+    },
+    {
+      "label": "Terninko, J., Zusman, A. & Zlotin, B. — Systematic Innovation: An Introduction to TRIZ, St. Lucie Press, 1998",
+      "url": null
+    }
+  ]
+}
