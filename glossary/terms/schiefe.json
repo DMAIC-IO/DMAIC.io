@@ -62,7 +62,8 @@
     "median",
     "standardabweichung",
     "histogramm",
-    "boxplot"
+    "boxplot",
+    "wahrscheinlichkeitsnetz"
   ],
   "modules": [
     "histogram",

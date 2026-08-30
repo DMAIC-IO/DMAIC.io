@@ -12,7 +12,7 @@ export default {
         blocks: [
           {
             type: 'paragraph',
-            content: 'Ein Wahrscheinlichkeitsnetz (auch Normal Probability Plot) zeigt dir auf einen Blick mehrere wichtige Dinge:',
+            content: 'Ein {{term:wahrscheinlichkeitsnetz|Wahrscheinlichkeitsnetz}} (auch Normal Probability Plot) zeigt dir auf einen Blick mehrere wichtige Dinge:',
           },
           {
             type: 'definition',
@@ -45,7 +45,7 @@ export default {
         blocks: [
           {
             type: 'paragraph',
-            content: 'A probability plot (also called a Normal Probability Plot) shows you several important things at a glance:',
+            content: 'A {{term:wahrscheinlichkeitsnetz|probability plot}} (also called a Normal Probability Plot) shows you several important things at a glance:',
           },
           {
             type: 'definition',

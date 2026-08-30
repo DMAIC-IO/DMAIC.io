@@ -12,7 +12,7 @@ export default {
         blocks: [
           {
             type: 'paragraph',
-            content: 'Das XY-Diagramm trägt zwei numerische Spalten gegeneinander auf — eine als X-Wert, eine als Y-Wert. Es ist das Standardwerkzeug, um Zusammenhänge, Trends und Muster zwischen zwei Größen sichtbar zu machen.',
+            content: 'Das {{term:streudiagramm|XY-Diagramm}} trägt zwei numerische Spalten gegeneinander auf — eine als X-Wert, eine als Y-Wert. Es ist das Standardwerkzeug, um Zusammenhänge, Trends und Muster zwischen zwei Größen sichtbar zu machen.',
           },
           {
             type: 'definition',
@@ -40,7 +40,7 @@ export default {
         blocks: [
           {
             type: 'paragraph',
-            content: 'The XY plot maps two numeric columns against each other — one as the X value, one as the Y value. It is the standard tool for making relationships, trends, and patterns between two variables visible.',
+            content: 'The {{term:streudiagramm|XY plot}} maps two numeric columns against each other — one as the X value, one as the Y value. It is the standard tool for making relationships, trends, and patterns between two variables visible.',
           },
           {
             type: 'definition',

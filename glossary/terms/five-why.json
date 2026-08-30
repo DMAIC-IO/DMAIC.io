@@ -64,10 +64,13 @@
     "ishikawa",
     "fmea",
     "dmaic",
-    "pareto"
+    "pareto",
+    "ursachenanalyse"
   ],
   "modules": [
-    "five-why"
+    "five-why",
+    "ishikawa",
+    "fmea"
   ],
   "algoLab": [],
   "sources": [

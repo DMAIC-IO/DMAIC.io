@@ -1,0 +1,102 @@
+{
+  "id": "ctx-baum",
+  "category": "methodology",
+  "title": {
+    "de": "VoC→CTx-Baum",
+    "en": "VoC-to-CTx Tree"
+  },
+  "short": {
+    "de": "Übersetzt Kundenaussagen in vier Stufen zu messbaren Anforderungen: Aussage, Bedürfnis, Treiber, CTx.",
+    "en": "Translates customer statements in four stages into measurable requirements: statement, need, driver, CTx."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "Der **CTx-Baum** überbrückt den Abstand zwischen dem, was Kunden sagen, und dem, was sich messen lässt. Er arbeitet in vier Stufen, und jede Stufe verdichtet die vorherige:"
+      },
+      {
+        "type": "list",
+        "items": [
+          "**{{term:voc|Voice of Customer}}** — die Originalaussage, wörtlich und unsortiert: „Ich warte ewig auf mein Essen\"",
+          "**Bedürfnis** — die Erwartung dahinter, verdichtet und entpersonalisiert: „schnelle Lieferung\"",
+          "**Treiber** — was im Prozess das Erleben bestimmt: „Zeit von Bestellung bis Auslieferung\"",
+          "**Critical-to-X** — die messbare, spezifizierte Anforderung: „Lieferzeit ≤ 30 min in 95 % der Fälle\""
+        ]
+      },
+      {
+        "type": "paragraph",
+        "text": "Das X steht für die Zieldimension: **CTQ** (Quality), **CTC** (Cost), **CTD** (Delivery), daneben CTS für Safety. Ein Bedürfnis erzeugt oft mehrere Treiber, ein Treiber mehrere CTx — der Baum verzweigt sich nach unten und wird dabei konkreter."
+      },
+      {
+        "type": "note",
+        "text": "Die Stufen zu überspringen ist der klassische Fehler: Wer direkt von der Kundenaussage zur Kennzahl springt, misst meist den Treiber, den er ohnehin schon im Blick hatte. Erst die Zwischenstufe „Bedürfnis\" löst die Aussage von ihrer Formulierung — und erst dann wird sichtbar, dass „ewig warten\" auch die *Vorhersagbarkeit* der Wartezeit meinen kann und nicht nur ihre Länge. Welche Anforderung wie stark auf die Zufriedenheit wirkt, klärt anschließend das {{term:kano|Kano-Modell}}."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "The **CTx tree** bridges the distance between what customers say and what can be measured. It works in four stages, each condensing the one before:"
+      },
+      {
+        "type": "list",
+        "items": [
+          "**{{term:voc|Voice of Customer}}** — the original statement, verbatim and unsorted: \"I wait forever for my food\"",
+          "**Need** — the expectation behind it, condensed and depersonalised: \"fast delivery\"",
+          "**Driver** — what in the process shapes the experience: \"time from order to delivery\"",
+          "**Critical-to-X** — the measurable, specified requirement: \"delivery time ≤ 30 min in 95 % of cases\""
+        ]
+      },
+      {
+        "type": "paragraph",
+        "text": "The X stands for the target dimension: **CTQ** (quality), **CTC** (cost), **CTD** (delivery), plus CTS for safety. One need often produces several drivers, one driver several CTx — the tree branches downward and grows more concrete as it goes."
+      },
+      {
+        "type": "note",
+        "text": "Skipping stages is the classic mistake: jumping straight from the customer statement to a metric usually measures the driver you already had in mind. Only the intermediate \"need\" stage detaches the statement from its wording — and only then does it become visible that \"waiting forever\" may also mean the *predictability* of the wait rather than its length. Which requirement affects satisfaction how strongly is then settled by the {{term:kano|Kano model}}."
+      }
+    ]
+  },
+  "aliases": {
+    "de": [
+      "CTQ-Baum",
+      "Critical-to-X",
+      "CTQ CTC CTD",
+      "VoC-Übersetzung",
+      "CTx"
+    ],
+    "en": [
+      "CTQ tree",
+      "critical-to-X",
+      "CTQ CTC CTD",
+      "VoC translation"
+    ]
+  },
+  "seeAlso": [
+    "voc",
+    "ctq",
+    "kano",
+    "sipoc",
+    "zieldefinition"
+  ],
+  "modules": [
+    "voc-ctx-tree",
+    "kano",
+    "sipoc"
+  ],
+  "algoLab": [],
+  "sources": [
+    {
+      "label": "Pyzdek, T. & Keller, P. — The Six Sigma Handbook, 5th Edition",
+      "url": null
+    },
+    {
+      "label": "Breyfogle, F. W. — Implementing Six Sigma: Smarter Solutions Using Statistical Methods, 2nd Edition, Wiley, 2003",
+      "url": null
+    },
+    {
+      "label": "George, M. L. — Lean Six Sigma: Combining Six Sigma Quality with Lean Speed, McGraw-Hill, 2002",
+      "url": null
+    }
+  ]
+}

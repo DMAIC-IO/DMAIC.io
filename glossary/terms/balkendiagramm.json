@@ -72,7 +72,8 @@
     "pareto",
     "randverteilung",
     "kreisdiagramm",
-    "histogramm"
+    "histogramm",
+    "streudiagramm"
   ],
   "modules": [
     "bar",

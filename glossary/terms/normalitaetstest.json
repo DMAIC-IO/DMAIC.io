@@ -64,11 +64,13 @@
   "seeAlso": [
     "hypothesentest",
     "p-wert",
-    "varianzhomogenitaet"
+    "varianzhomogenitaet",
+    "wahrscheinlichkeitsnetz"
   ],
   "modules": [
     "hypothesis-test",
-    "process-capability"
+    "process-capability",
+    "probability-plot"
   ],
   "algoLab": [
     "hypothesis/shapiro-wilk",

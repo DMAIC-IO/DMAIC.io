@@ -68,7 +68,9 @@
     "ctq",
     "process-map",
     "ce-matrix",
-    "flussdiagramm"
+    "flussdiagramm",
+    "projektumfang",
+    "ctx-baum"
   ],
   "modules": [
     "sipoc",

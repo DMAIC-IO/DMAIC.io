@@ -12,7 +12,7 @@ export default {
         blocks: [
           {
             type: 'paragraph',
-            content: 'Der VoC → CTx-Baum übersetzt unstrukturierte Kundenaussagen in messbare Anforderungen. Ausgehend von der {{term:voc|Voice of Customer}} (VoC) werden Bedürfnisse identifiziert, in Treiber zerlegt und schließlich in {{term:ctq|Critical-to-X}}-Anforderungen (CTQ, CTC, CTD) überführt — also in messbare Eigenschaften, die ein Prozess oder Produkt erfüllen muss.',
+            content: 'Der {{term:ctx-baum|VoC → CTx-Baum}} übersetzt unstrukturierte Kundenaussagen in messbare Anforderungen. Ausgehend von der {{term:voc|Voice of Customer}} (VoC) werden Bedürfnisse identifiziert, in Treiber zerlegt und schließlich in {{term:ctq|Critical-to-X}}-Anforderungen (CTQ, CTC, CTD) überführt — also in messbare Eigenschaften, die ein Prozess oder Produkt erfüllen muss.',
           },
           {
             type: 'definition',
@@ -45,7 +45,7 @@ export default {
         blocks: [
           {
             type: 'paragraph',
-            content: 'The VoC → CTx tree translates unstructured customer statements into measurable requirements. Starting from the Voice of Customer (VoC), needs are identified, broken down into drivers, and finally converted into Critical-to-X requirements (CTQ, CTC, CTD) — measurable properties a process or product must fulfill.',
+            content: 'The {{term:ctx-baum|VoC → CTx tree}} translates unstructured customer statements into measurable requirements. Starting from the Voice of Customer (VoC), needs are identified, broken down into drivers, and finally converted into Critical-to-X requirements (CTQ, CTC, CTD) — measurable properties a process or product must fulfill.',
           },
           {
             type: 'definition',

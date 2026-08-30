@@ -1,0 +1,110 @@
+{
+  "id": "kano-fragebogen",
+  "category": "methodology",
+  "title": {
+    "de": "Kano-Fragebogen",
+    "en": "Kano Questionnaire"
+  },
+  "short": {
+    "de": "Fragt jede Anforderung doppelt — funktional und dysfunktional; erst beide Antworten ergeben die Kategorie.",
+    "en": "Asks each requirement twice — functional and dysfunctional; only both answers yield the category."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "Der **Kano-Fragebogen** ermittelt, in welche Kategorie des {{term:kano|Kano-Modells}} eine Anforderung fällt. Dazu wird jedes Merkmal in zwei gegensätzlichen Formen abgefragt:"
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Funktionale Frage** — „Wie empfinden Sie es, wenn das Merkmal vorhanden ist?\"",
+          "**Dysfunktionale Frage** — „Wie empfinden Sie es, wenn es nicht vorhanden ist?\""
+        ]
+      },
+      {
+        "type": "paragraph",
+        "text": "Beide werden auf derselben fünfstufigen Skala beantwortet (von *das erfreut mich* bis *das stört mich*). Erst die **Kombination** ergibt die Kategorie: Zustimmung zu „vorhanden\" allein unterscheidet nicht, ob das Merkmal begeistert oder schlicht vorausgesetzt wird — das zeigt erst die Reaktion auf sein Fehlen. Die Zuordnung erfolgt über eine feste Auswertungstabelle; die Kategorie eines Items ist der Modalwert über alle Befragten."
+      },
+      {
+        "type": "paragraph",
+        "text": "Aus denselben Zähldaten entstehen zwei Kennzahlen nach Berger:"
+      },
+      {
+        "type": "formula",
+        "latex": "CS = \\frac{A + O}{A + O + M + I} \\qquad DS = -\\frac{O + M}{A + O + M + I}"
+      },
+      {
+        "type": "note",
+        "text": "**CS** (Zufriedenheitsstiftung) sagt, wie viel Zufriedenheit die Erfüllung bringt; **DS** (Unzufriedenheitsstiftung, negativ notiert) sagt, wie viel Schaden das Fehlen anrichtet. Ein Merkmal mit hohem $|DS|$ und niedrigem CS ist ein Basismerkmal — dort lohnt sich Investition nur bis zur Erfüllung, nicht darüber hinaus."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "The **Kano questionnaire** determines which category of the {{term:kano|Kano model}} a requirement falls into. Each attribute is asked in two opposing forms:"
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Functional question** — \"How do you feel if the attribute is present?\"",
+          "**Dysfunctional question** — \"How do you feel if it is absent?\""
+        ]
+      },
+      {
+        "type": "paragraph",
+        "text": "Both are answered on the same five-point scale (from *I like it* to *I dislike it*). Only the **combination** yields the category: agreement with \"present\" alone cannot distinguish whether the attribute delights or is simply taken for granted — that shows only in the reaction to its absence. The mapping uses a fixed evaluation table; an item's category is the modal value across respondents."
+      },
+      {
+        "type": "paragraph",
+        "text": "The same counts produce two coefficients after Berger:"
+      },
+      {
+        "type": "formula",
+        "latex": "CS = \\frac{A + O}{A + O + M + I} \\qquad DS = -\\frac{O + M}{A + O + M + I}"
+      },
+      {
+        "type": "note",
+        "text": "**CS** (satisfaction coefficient) says how much satisfaction fulfilment creates; **DS** (dissatisfaction coefficient, written negative) says how much damage absence does. An attribute with high $|DS|$ and low CS is a must-be — investing there pays only up to fulfilment, not beyond."
+      }
+    ]
+  },
+  "aliases": {
+    "de": [
+      "funktionale und dysfunktionale Frage",
+      "CS-Koeffizient",
+      "DS-Koeffizient",
+      "Kano-Befragung"
+    ],
+    "en": [
+      "functional and dysfunctional question",
+      "CS coefficient",
+      "DS coefficient",
+      "Kano survey"
+    ]
+  },
+  "seeAlso": [
+    "kano",
+    "voc",
+    "ctx-baum",
+    "ctq"
+  ],
+  "modules": [
+    "kano"
+  ],
+  "algoLab": [],
+  "sources": [
+    {
+      "label": "Kano, N., Seraku, N., Takahashi, F. & Tsuji, S. — Attractive Quality and Must-be Quality, Journal of the Japanese Society for Quality Control 14 (2), 1984",
+      "url": null
+    },
+    {
+      "label": "Berger, C. et al. — Kano's Methods for Understanding Customer-Defined Quality, Center for Quality Management Journal 2 (4), 1993",
+      "url": null
+    },
+    {
+      "label": "Pyzdek, T. & Keller, P. — The Six Sigma Handbook, 5th Edition",
+      "url": null
+    }
+  ]
+}

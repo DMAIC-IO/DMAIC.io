@@ -51,7 +51,7 @@
     "de": ["Wölbung", "Exzess", "g₂"],
     "en": ["excess kurtosis", "g₂"]
   },
-  "seeAlso": ["schiefe", "varianz", "standardabweichung"],
+  "seeAlso": ["schiefe", "varianz", "standardabweichung", "wahrscheinlichkeitsnetz"],
   "modules": [
     "histogram", "boxplot",
     "distribution-fit", "outlier-test",

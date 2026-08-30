@@ -70,12 +70,14 @@
     "dmaic",
     "ctq",
     "balkendiagramm",
-    "kreisdiagramm"
+    "kreisdiagramm",
+    "ursachenanalyse"
   ],
   "modules": [
     "pareto",
     "bar",
-    "ce-matrix"
+    "ce-matrix",
+    "ishikawa"
   ],
   "algoLab": [],
   "sources": [

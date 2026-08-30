@@ -79,7 +79,8 @@
   ],
   "modules": [
     "opportunity-flowchart",
-    "makigami"
+    "makigami",
+    "process-map"
   ],
   "algoLab": [],
   "sources": [

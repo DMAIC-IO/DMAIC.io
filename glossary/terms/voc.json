@@ -67,12 +67,14 @@
     "sipoc",
     "dmaic",
     "project-charter",
-    "stakeholder"
+    "stakeholder",
+    "ctx-baum"
   ],
   "modules": [
     "voc-ctx-tree",
     "sipoc",
-    "stakeholder-analysis"
+    "stakeholder-analysis",
+    "kano"
   ],
   "algoLab": [],
   "sources": [

@@ -1,0 +1,90 @@
+{
+  "id": "projektumfang",
+  "category": "methodology",
+  "title": {
+    "de": "Projektumfang (Scope)",
+    "en": "Project Scope"
+  },
+  "short": {
+    "de": "Grenzt ab, was zum Projekt gehört und was nicht — die Verteidigungslinie gegen Scope Creep.",
+    "en": "Delimits what belongs to the project and what does not — the defence line against scope creep."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "Der **Projektumfang** legt die Grenzen fest: welcher Prozessabschnitt, welche Produkte, welche Standorte, welcher Zeitraum. Entscheidend ist, dass **beide Seiten** notiert werden — was dazugehört (*in frame*) und was ausdrücklich nicht (*out of frame*)."
+      },
+      {
+        "type": "paragraph",
+        "text": "Die explizite Negativliste ist der eigentliche Schutz. „Nur Linie 3, nicht Linie 1 und 2\" hält im Verlauf des Projekts stand; das bloße Fehlen einer Erwähnung tut es nicht. Ohne sie wächst der Umfang schleichend — **Scope Creep** — bis das Projekt an seiner eigenen Breite scheitert."
+      },
+      {
+        "type": "paragraph",
+        "text": "Die Prozessgrenzen des {{term:sipoc|SIPOC}} und der Projektumfang bedingen sich: Startereignis und Endereignis des SIPOC sind die operative Fassung dessen, was der Charter abgrenzt. Weichen beide voneinander ab, arbeiten Team und Sponsor an verschiedenen Projekten."
+      },
+      {
+        "type": "note",
+        "text": "Ein zu großer Umfang ist der häufigste Grund für gescheiterte Six-Sigma-Projekte — häufiger als fehlende Daten oder schwache Statistik. Die Faustregel lautet: lieber ein eng geschnittenes Projekt in vier Monaten abschließen als ein umfassendes nach einem Jahr abbrechen. Was nicht hineinpasst, wird zum Folgeprojekt, nicht zur Erweiterung."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "The **project scope** sets the boundaries: which process section, which products, which sites, which period. What matters is that **both sides** are written down — what is included (*in frame*) and what is explicitly not (*out of frame*)."
+      },
+      {
+        "type": "paragraph",
+        "text": "The explicit exclusion list is the actual protection. \"Line 3 only, not lines 1 and 2\" holds up over the course of the project; a mere absence of mention does not. Without it the scope grows quietly — **scope creep** — until the project fails from its own breadth."
+      },
+      {
+        "type": "paragraph",
+        "text": "The process boundaries of the {{term:sipoc|SIPOC}} and the project scope depend on each other: the SIPOC's start and end events are the operational version of what the charter delimits. If the two diverge, team and sponsor are working on different projects."
+      },
+      {
+        "type": "note",
+        "text": "Excessive scope is the most common reason Six Sigma projects fail — more common than missing data or weak statistics. The rule of thumb: better to finish a narrow project in four months than to abandon a comprehensive one after a year. Whatever does not fit becomes a follow-up project, not an extension."
+      }
+    ]
+  },
+  "aliases": {
+    "de": [
+      "Scope",
+      "Projektabgrenzung",
+      "In Frame / Out of Frame",
+      "Scope Creep"
+    ],
+    "en": [
+      "scope",
+      "in frame / out of frame",
+      "scope creep",
+      "project boundaries"
+    ]
+  },
+  "seeAlso": [
+    "project-charter",
+    "sipoc",
+    "problembeschreibung",
+    "zieldefinition",
+    "stakeholder"
+  ],
+  "modules": [
+    "project-charter",
+    "sipoc"
+  ],
+  "algoLab": [],
+  "sources": [
+    {
+      "label": "Project Management Institute — A Guide to the Project Management Body of Knowledge (PMBOK Guide), 7th Edition, 2021",
+      "url": null
+    },
+    {
+      "label": "Pyzdek, T. & Keller, P. — The Six Sigma Handbook, 5th Edition",
+      "url": null
+    },
+    {
+      "label": "George, M. L. — Lean Six Sigma: Combining Six Sigma Quality with Lean Speed, McGraw-Hill, 2002",
+      "url": null
+    }
+  ]
+}

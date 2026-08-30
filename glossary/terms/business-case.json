@@ -1,0 +1,89 @@
+{
+  "id": "business-case",
+  "category": "methodology",
+  "title": {
+    "de": "Business Case",
+    "en": "Business Case"
+  },
+  "short": {
+    "de": "Begründet in Geld, warum das Projekt die eingesetzte Zeit wert ist — und wer den Nutzen bestätigt.",
+    "en": "Justifies in money why the project is worth the time invested — and who confirms the benefit."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "Der **Business Case** beantwortet die Frage, warum gerade dieses Projekt Ressourcen bekommt. Er stellt den erwarteten Nutzen den Kosten gegenüber — beides in Geld, nicht in Absichtserklärungen."
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Kosten der schlechten Qualität** — Ausschuss, Nacharbeit, Gewährleistung, Bestand, Überstunden",
+          "**Erwarteter Nutzen** — jährlich wiederkehrend, nicht einmalig gerechnet",
+          "**Projektaufwand** — Arbeitszeit des Teams, Investitionen, Ausfallzeiten während der Umstellung",
+          "**Bestätigung** — der Nutzen wird vom Controlling mitgetragen, nicht vom Projektteam allein geschätzt"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "Die Mitzeichnung durch das Controlling ist kein Formalismus, sondern der Unterschied zwischen einer Einsparung und einer behaupteten Einsparung. Sie schützt das Projekt außerdem am Ende: Ein in der Control-Phase nachgewiesener Nutzen, dessen Rechenweg vorab abgestimmt war, wird nicht mehr in Frage gestellt. Der Business Case liefert zugleich die Begründung für den Zielwert der {{term:zieldefinition|Zieldefinition}}."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "The **business case** answers why this particular project gets resources. It weighs the expected benefit against the cost — both in money, not in statements of intent."
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Cost of poor quality** — scrap, rework, warranty, inventory, overtime",
+          "**Expected benefit** — counted as recurring annually, not as a one-off",
+          "**Project effort** — team working time, investment, downtime during changeover",
+          "**Confirmation** — the benefit is co-signed by finance, not estimated by the project team alone"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "Finance co-signing is not a formality but the difference between a saving and a claimed saving. It also protects the project at the end: a benefit demonstrated in the Control phase whose calculation was agreed up front does not get questioned. The business case likewise supplies the justification for the target in the {{term:zieldefinition|goal statement}}."
+      }
+    ]
+  },
+  "aliases": {
+    "de": [
+      "Wirtschaftlichkeit",
+      "Nutzenrechnung",
+      "COPQ",
+      "Kosten der schlechten Qualität"
+    ],
+    "en": [
+      "cost of poor quality",
+      "COPQ",
+      "benefit case"
+    ]
+  },
+  "seeAlso": [
+    "project-charter",
+    "zieldefinition",
+    "six-sigma",
+    "dmaic"
+  ],
+  "modules": [
+    "project-charter"
+  ],
+  "algoLab": [],
+  "sources": [
+    {
+      "label": "Pyzdek, T. & Keller, P. — The Six Sigma Handbook, 5th Edition",
+      "url": null
+    },
+    {
+      "label": "George, M. L. — Lean Six Sigma: Combining Six Sigma Quality with Lean Speed, McGraw-Hill, 2002",
+      "url": null
+    },
+    {
+      "label": "Breyfogle, F. W. — Implementing Six Sigma: Smarter Solutions Using Statistical Methods, 2nd Edition, Wiley, 2003",
+      "url": null
+    }
+  ]
+}

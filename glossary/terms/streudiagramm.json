@@ -1,0 +1,103 @@
+{
+  "id": "streudiagramm",
+  "category": "visualization",
+  "title": {
+    "de": "Streudiagramm (XY-Diagramm)",
+    "en": "Scatter Plot (XY Plot)"
+  },
+  "short": {
+    "de": "Trägt zwei metrische Merkmale gegeneinander auf — die Grundform jeder Zusammenhangsbetrachtung.",
+    "en": "Plots two metric characteristics against each other — the base form of every association analysis."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "Ein **Streudiagramm** trägt zwei metrische Merkmale gegeneinander auf: jedes Wertepaar wird ein Punkt. Es beantwortet, ob zwischen X und Y ein Zusammenhang besteht, welche Richtung er hat, wie eng er ist und ob er über den ganzen Bereich gleich bleibt."
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Richtung** — steigende oder fallende Punktwolke",
+          "**Form** — linear, gekrümmt oder stufenförmig; nur der lineare Fall wird von der {{term:korrelation|Korrelation}} korrekt erfasst",
+          "**Enge** — wie schmal das Band ist, in dem die Punkte liegen",
+          "**Auffälligkeiten** — Ausreißer, Gruppen, Lücken und ein sich aufweitendes Band ({{term:heteroskedastizitaet|Heteroskedastizität}})"
+        ]
+      },
+      {
+        "type": "paragraph",
+        "text": "Wird zusätzlich eine dritte numerische Spalte über die Punktgröße kodiert, entsteht ein **Blasendiagramm**. Die Größe muss dabei flächentreu skaliert werden — der Durchmesser folgt der Wurzel des Werts, weil das Auge die Fläche und nicht den Radius als Menge liest."
+      },
+      {
+        "type": "note",
+        "text": "Das Streudiagramm ist immer der erste Schritt, nie der letzte — aber auch nie ersetzbar: Anscombes Quartett zeigt vier Datensätze mit identischem {{term:mittelwert|Mittelwert}}, identischer Varianz und identischem {{term:korrelation|Korrelationskoeffizienten}}, die als Bild völlig verschieden aussehen. Umgekehrt gilt: ein sichtbarer Zusammenhang ist noch keine Ursache — dafür braucht es einen {{term:doe|Versuchsplan}}."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "A **scatter plot** places two metric characteristics against each other: every value pair becomes a point. It answers whether an association between X and Y exists, in which direction, how tight it is, and whether it stays the same across the range."
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Direction** — a rising or falling cloud of points",
+          "**Form** — linear, curved or stepped; only the linear case is captured correctly by {{term:korrelation|correlation}}",
+          "**Tightness** — how narrow the band containing the points is",
+          "**Anomalies** — outliers, clusters, gaps and a widening band ({{term:heteroskedastizitaet|heteroscedasticity}})"
+        ]
+      },
+      {
+        "type": "paragraph",
+        "text": "Encoding a third numeric column through point size turns it into a **bubble chart**. The size must be scaled by area — the diameter follows the square root of the value, because the eye reads area, not radius, as quantity."
+      },
+      {
+        "type": "note",
+        "text": "The scatter plot is always the first step, never the last — but never dispensable either: Anscombe's quartet shows four data sets with identical {{term:mittelwert|mean}}, identical variance and identical {{term:korrelation|correlation coefficient}} that look entirely different as pictures. Conversely, a visible association is not yet a cause — that needs a {{term:doe|designed experiment}}."
+      }
+    ]
+  },
+  "aliases": {
+    "de": [
+      "XY-Diagramm",
+      "Punktwolke",
+      "Scatterplot",
+      "Blasendiagramm",
+      "Bubble Chart"
+    ],
+    "en": [
+      "scatterplot",
+      "XY chart",
+      "bubble chart",
+      "point cloud"
+    ]
+  },
+  "seeAlso": [
+    "korrelation",
+    "lineare-regression",
+    "heteroskedastizitaet",
+    "skalenniveau",
+    "balkendiagramm"
+  ],
+  "modules": [
+    "xy-plot",
+    "correlation",
+    "regression",
+    "chart-suggestion"
+  ],
+  "algoLab": [],
+  "sources": [
+    {
+      "label": "Cleveland, W. S. & McGill, R. — Graphical Perception: Theory, Experimentation, and Application to the Development of Graphical Methods, JASA 79 (387), 1984",
+      "url": null
+    },
+    {
+      "label": "Tufte, E. R. — The Visual Display of Quantitative Information, 2nd Edition, Graphics Press, 2001",
+      "url": null
+    },
+    {
+      "label": "Chambers, J. M., Cleveland, W. S., Kleiner, B. & Tukey, P. A. — Graphical Methods for Data Analysis, Wadsworth, 1983",
+      "url": null
+    }
+  ]
+}

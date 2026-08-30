@@ -1,0 +1,89 @@
+{
+  "id": "problembeschreibung",
+  "category": "methodology",
+  "title": {
+    "de": "Problembeschreibung (Problem Statement)",
+    "en": "Problem Statement"
+  },
+  "short": {
+    "de": "Beschreibt in Fakten, was wo wann wie oft passiert — ohne Ursache, ohne Schuldige, ohne Lösung.",
+    "en": "States in facts what happens, where, when and how often — no cause, no blame, no solution."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "Die **Problembeschreibung** eröffnet den {{term:project-charter|Project Charter}} und legt fest, woran das Projekt arbeitet. Sie umfasst zwei bis vier Sätze und beantwortet vier Fragen mit Fakten: *Was* passiert, *wo*, *wann* beziehungsweise *wie oft*, und welche *Auswirkung* hat es?"
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Messbar** — mit Zahl und Bezug: „12 % Nacharbeit an Linie 3 seit Januar\", nicht „zu viel Nacharbeit\"",
+          "**Ohne Ursache** — „weil die Maschine alt ist\" nimmt das Ergebnis der {{term:ursachenanalyse|Ursachenanalyse}} vorweg",
+          "**Ohne Lösung** — „wir brauchen eine neue Anlage\" legt die Improve-Phase fest, bevor gemessen wurde",
+          "**Ohne Schuldzuweisung** — Personen statt Prozess zu benennen beendet die Mitarbeit der Betroffenen"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "Die drei verbotenen Elemente — Ursache, Lösung, Schuldiger — sind der eigentliche Kern der Regel. Sie sind verlockend, weil sie den Eindruck von Klarheit erzeugen; tatsächlich legen sie das Ergebnis fest, bevor die Daten vorliegen, und machen die Analyze-Phase zur Bestätigungsübung. Die Gegenprobe zur Problembeschreibung ist die {{term:zieldefinition|Zieldefinition}}: Sie sagt, woran der Erfolg gemessen wird."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "The **problem statement** opens the {{term:project-charter|project charter}} and fixes what the project works on. It runs two to four sentences and answers four questions with facts: *what* happens, *where*, *when* or *how often*, and what *impact* it has."
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Measurable** — with a number and a reference: \"12 % rework on line 3 since January\", not \"too much rework\"",
+          "**No cause** — \"because the machine is old\" pre-empts the result of the {{term:ursachenanalyse|root cause analysis}}",
+          "**No solution** — \"we need a new machine\" fixes the Improve phase before anything was measured",
+          "**No blame** — naming people instead of the process ends the cooperation of those involved"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "The three forbidden elements — cause, solution, culprit — are the real heart of the rule. They are tempting because they create an impression of clarity; in fact they fix the outcome before the data exists and reduce the Analyze phase to a confirmation exercise. The counterpart to the problem statement is the {{term:zieldefinition|goal statement}}: it says how success will be measured."
+      }
+    ]
+  },
+  "aliases": {
+    "de": [
+      "Problem Statement",
+      "Problemstellung",
+      "Ist-Beschreibung"
+    ],
+    "en": [
+      "problem definition",
+      "issue statement"
+    ]
+  },
+  "seeAlso": [
+    "project-charter",
+    "zieldefinition",
+    "projektumfang",
+    "ursachenanalyse",
+    "dmaic"
+  ],
+  "modules": [
+    "project-charter",
+    "five-why"
+  ],
+  "algoLab": [],
+  "sources": [
+    {
+      "label": "Pyzdek, T. & Keller, P. — The Six Sigma Handbook, 5th Edition",
+      "url": null
+    },
+    {
+      "label": "Breyfogle, F. W. — Implementing Six Sigma: Smarter Solutions Using Statistical Methods, 2nd Edition, Wiley, 2003",
+      "url": null
+    },
+    {
+      "label": "Project Management Institute — A Guide to the Project Management Body of Knowledge (PMBOK Guide), 7th Edition, 2021",
+      "url": null
+    }
+  ]
+}

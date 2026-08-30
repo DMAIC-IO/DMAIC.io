@@ -75,7 +75,8 @@
     "standardabweichung",
     "schiefe",
     "normalitaetstest",
-    "skalenniveau"
+    "skalenniveau",
+    "wahrscheinlichkeitsnetz"
   ],
   "modules": [
     "histogram",

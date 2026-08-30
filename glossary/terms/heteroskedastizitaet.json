@@ -53,8 +53,8 @@
     "de": ["Heteroskedastizität", "ungleiche Fehlervarianz"],
     "en": ["heteroscedasticity", "non-constant error variance"]
   },
-  "seeAlso": ["residuen", "lineare-regression", "glm", "regression"],
-  "modules": ["regression", "glm-regression"],
+  "seeAlso": ["residuen", "lineare-regression", "glm", "regression", "streudiagramm"],
+  "modules": ["regression", "glm-regression", "xy-plot"],
   "algoLab": ["regression/regression-coefficients"],
   "sources": [
     { "label": "White, H. — A Heteroskedasticity-Consistent Covariance Matrix Estimator and a Direct Test for Heteroskedasticity, Econometrica, 48(4), 1980", "url": null },

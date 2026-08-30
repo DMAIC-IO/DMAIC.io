@@ -909,6 +909,51 @@
       "id": "lessons-learned",
       "category": "methodology",
       "file": "terms/lessons-learned.json"
+    },
+    {
+      "id": "ursachenanalyse",
+      "category": "methodology",
+      "file": "terms/ursachenanalyse.json"
+    },
+    {
+      "id": "problembeschreibung",
+      "category": "methodology",
+      "file": "terms/problembeschreibung.json"
+    },
+    {
+      "id": "zieldefinition",
+      "category": "methodology",
+      "file": "terms/zieldefinition.json"
+    },
+    {
+      "id": "projektumfang",
+      "category": "methodology",
+      "file": "terms/projektumfang.json"
+    },
+    {
+      "id": "business-case",
+      "category": "methodology",
+      "file": "terms/business-case.json"
+    },
+    {
+      "id": "ctx-baum",
+      "category": "methodology",
+      "file": "terms/ctx-baum.json"
+    },
+    {
+      "id": "kano-fragebogen",
+      "category": "methodology",
+      "file": "terms/kano-fragebogen.json"
+    },
+    {
+      "id": "streudiagramm",
+      "category": "visualization",
+      "file": "terms/streudiagramm.json"
+    },
+    {
+      "id": "wahrscheinlichkeitsnetz",
+      "category": "visualization",
+      "file": "terms/wahrscheinlichkeitsnetz.json"
     }
   ]
 }

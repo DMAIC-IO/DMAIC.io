@@ -61,8 +61,8 @@
     "de": ["Pearson-Korrelation", "Korrelationskoeffizient", "Pearson r"],
     "en": ["Pearson correlation", "correlation coefficient", "Pearson r"]
   },
-  "seeAlso": ["regression", "lineare-regression", "r-quadrat", "multikollinearitaet", "kontingenztafel"],
-  "modules": ["correlation", "regression", "glm-regression"],
+  "seeAlso": ["regression", "lineare-regression", "r-quadrat", "multikollinearitaet", "kontingenztafel", "streudiagramm"],
+  "modules": ["correlation", "regression", "glm-regression", "xy-plot"],
   "algoLab": ["regression/correlation-analysis"],
   "sources": [
     { "label": "Fahrmeir, L., Künstler, R., Pigeot, I. & Tutz, G. — Statistik: Der Weg zur Datenanalyse, Springer", "url": null },

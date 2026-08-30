@@ -71,7 +71,11 @@
     "ctq",
     "stakeholder",
     "raci",
-    "lessons-learned"
+    "lessons-learned",
+    "problembeschreibung",
+    "zieldefinition",
+    "projektumfang",
+    "business-case"
   ],
   "modules": [
     "project-charter",

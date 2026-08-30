@@ -1,0 +1,97 @@
+{
+  "id": "zieldefinition",
+  "category": "methodology",
+  "title": {
+    "de": "Zieldefinition (Goal Statement)",
+    "en": "Goal Statement"
+  },
+  "short": {
+    "de": "Legt messbar fest, was das Projekt erreichen soll — mit Ausgangswert, Zielwert und Termin.",
+    "en": "Defines measurably what the project is to achieve — with baseline, target and deadline."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "Die **Zieldefinition** wandelt die {{term:problembeschreibung|Problembeschreibung}} in ein überprüfbares Ergebnis. Jedes Ziel trägt drei Werte, damit am Projektende ohne Diskussion feststeht, ob es erreicht wurde:"
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Ausgangswert** — der gemessene Ist-Zustand zu Projektbeginn (Baseline)",
+          "**Zielwert** — der angestrebte Soll-Zustand",
+          "**Grenzwert** — das gerade noch akzeptable Ergebnis, unterhalb dessen das Projekt gescheitert ist"
+        ]
+      },
+      {
+        "type": "paragraph",
+        "text": "Die gängige Prüfung ist **SMART**: spezifisch, messbar, erreichbar, relevant, terminiert. Für Six-Sigma-Projekte ist „messbar\" die härteste Anforderung — sie verlangt eine Kennzahl, deren Messsystem selbst tauglich ist. Genau dafür steht die {{term:gage-rr|Messsystemanalyse}} in der Measure-Phase."
+      },
+      {
+        "type": "note",
+        "text": "Ein Ziel ohne Ausgangswert ist wertlos: „Ausschuss halbieren\" ist ohne den heutigen Wert nicht überprüfbar, und der heutige Wert steht bei Projektstart oft noch gar nicht fest. Deshalb wird die Zieldefinition am Ende der Measure-Phase überarbeitet — mit der dann belastbaren Baseline. Der Zielwert selbst gehört begründet, nicht geraten: aus Benchmark, {{term:voc|Kundenanforderung}} oder {{term:business-case|Wirtschaftlichkeit}}."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "The **goal statement** turns the {{term:problembeschreibung|problem statement}} into a verifiable outcome. Every goal carries three values so that at project close there is no argument about whether it was met:"
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Baseline** — the measured current state at project start",
+          "**Target** — the intended future state",
+          "**Threshold** — the barely acceptable result, below which the project has failed"
+        ]
+      },
+      {
+        "type": "paragraph",
+        "text": "The usual check is **SMART**: specific, measurable, achievable, relevant, time-bound. For Six Sigma projects \"measurable\" is the hardest requirement — it demands a metric whose measurement system is itself capable. That is exactly what the {{term:gage-rr|measurement system analysis}} in the Measure phase is for."
+      },
+      {
+        "type": "note",
+        "text": "A goal without a baseline is worthless: \"halve the scrap\" cannot be verified without today's value, and today's value is often not yet established at project start. So the goal statement is revised at the end of the Measure phase — with the baseline that then holds. The target itself should be justified, not guessed: from a benchmark, a {{term:voc|customer requirement}} or the {{term:business-case|business case}}."
+      }
+    ]
+  },
+  "aliases": {
+    "de": [
+      "Goal Statement",
+      "Zielsetzung",
+      "SMART-Ziel",
+      "Zielwert"
+    ],
+    "en": [
+      "objective statement",
+      "SMART goal",
+      "target definition"
+    ]
+  },
+  "seeAlso": [
+    "problembeschreibung",
+    "project-charter",
+    "business-case",
+    "projektumfang",
+    "gage-rr"
+  ],
+  "modules": [
+    "project-charter",
+    "dmaic-calendar"
+  ],
+  "algoLab": [],
+  "sources": [
+    {
+      "label": "Doran, G. T. — There's a S.M.A.R.T. Way to Write Management's Goals and Objectives, Management Review 70 (11), 1981",
+      "url": null
+    },
+    {
+      "label": "Pyzdek, T. & Keller, P. — The Six Sigma Handbook, 5th Edition",
+      "url": null
+    },
+    {
+      "label": "Project Management Institute — A Guide to the Project Management Body of Knowledge (PMBOK Guide), 7th Edition, 2021",
+      "url": null
+    }
+  ]
+}

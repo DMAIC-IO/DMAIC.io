@@ -71,12 +71,14 @@
     "spezifikationsgrenzen",
     "prozessfaehigkeit",
     "cpk",
-    "ce-matrix"
+    "ce-matrix",
+    "ctx-baum"
   ],
   "modules": [
     "voc-ctx-tree",
     "sipoc",
-    "ce-matrix"
+    "ce-matrix",
+    "kano"
   ],
   "algoLab": [],
   "sources": [

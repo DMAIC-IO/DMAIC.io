@@ -12,7 +12,7 @@ export default {
         blocks: [
           {
             type: 'paragraph',
-            content: 'Das Ishikawa-Diagramm (auch Fishbone-Diagramm oder Ursache-Wirkungs-Diagramm) sammelt mögliche Ursachen für ein definiertes Problem strukturiert nach Hauptkategorien. Es ist eines der Standard-Werkzeuge der Analyze-Phase und entsteht typischerweise im Team-Workshop.',
+            content: 'Das {{term:ishikawa|Ishikawa-Diagramm}} (auch Fishbone-Diagramm oder Ursache-Wirkungs-Diagramm) sammelt mögliche Ursachen für ein definiertes Problem strukturiert nach Hauptkategorien. Es ist eines der Standard-Werkzeuge der Analyze-Phase und entsteht typischerweise im Team-Workshop.',
           },
           {
             type: 'definition',

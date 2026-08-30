@@ -64,7 +64,8 @@
     "pp",
     "ppk",
     "spezifikationsgrenzen",
-    "sigma-niveau"
+    "sigma-niveau",
+    "wahrscheinlichkeitsnetz"
   ],
   "modules": [
     "process-capability"

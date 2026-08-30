@@ -1,0 +1,110 @@
+{
+  "id": "wahrscheinlichkeitsnetz",
+  "category": "visualization",
+  "title": {
+    "de": "Wahrscheinlichkeitsnetz",
+    "en": "Probability Plot"
+  },
+  "short": {
+    "de": "Verzerrt die Achse so, dass eine passende Verteilung als Gerade erscheint — Abweichungen werden zur Krümmung.",
+    "en": "Warps the axis so a fitting distribution appears as a straight line — deviations become curvature."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "Ein **Wahrscheinlichkeitsnetz** prüft grafisch, ob eine Stichprobe zu einer angenommenen Verteilung passt. Die sortierten Messwerte werden gegen ihre erwarteten Quantile aufgetragen; die Wahrscheinlichkeitsachse ist dabei so verzerrt, dass die angenommene Verteilung eine **Gerade** ergibt. Jede Abweichung von der Geraden ist damit unmittelbar sichtbar."
+      },
+      {
+        "type": "paragraph",
+        "text": "Die Position jedes Punktes folgt aus seinem Rang $i$ unter $n$ Werten. Gebräuchlich ist die Formel nach Blom:"
+      },
+      {
+        "type": "formula",
+        "latex": "p_i = \\frac{i - 3/8}{n + 1/4}"
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Gerade Punktreihe** — die Annahme passt; Steigung und Achsenabschnitt entsprechen {{term:standardabweichung|Streuung}} und Lage",
+          "**S-Form** — die Verteilung ist zu schwach oder zu stark besetzt an den Rändern ({{term:kurtosis|Kurtosis}})",
+          "**Gekrümmter Verlauf** — {{term:schiefe|Schiefe}}; eine Transformation kann helfen",
+          "**Knick in der Mitte** — Hinweis auf eine Mischung zweier Grundgesamtheiten",
+          "**Einzelne abgesetzte Punkte** — Ausreißer"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "Das Wahrscheinlichkeitsnetz ist dem {{term:histogramm|Histogramm}} für diese Frage überlegen, weil es nicht von der Klassenanzahl abhängt und die Ränder der Verteilung sichtbar macht — genau dort, wo für die {{term:prozessfaehigkeit|Prozessfähigkeit}} entschieden wird. Es ersetzt den {{term:normalitaetstest|Normalitätstest}} nicht, sondern ergänzt ihn: Der Test liefert einen {{term:p-wert|p-Wert}}, das Netz zeigt, *wie* die Daten abweichen."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "A **probability plot** graphically checks whether a sample fits an assumed distribution. The sorted measurements are plotted against their expected quantiles, with the probability axis warped so that the assumed distribution comes out as a **straight line**. Any departure from that line is immediately visible."
+      },
+      {
+        "type": "paragraph",
+        "text": "Each point's position follows from its rank $i$ among $n$ values. Blom's formula is the common choice:"
+      },
+      {
+        "type": "formula",
+        "latex": "p_i = \\frac{i - 3/8}{n + 1/4}"
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Straight line of points** — the assumption fits; slope and intercept correspond to {{term:standardabweichung|spread}} and location",
+          "**S shape** — tails too light or too heavy ({{term:kurtosis|kurtosis}})",
+          "**Curved run** — {{term:schiefe|skewness}}; a transformation may help",
+          "**Kink in the middle** — a sign of two mixed populations",
+          "**Isolated points** — outliers"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "For this question the probability plot beats the {{term:histogramm|histogram}}, because it does not depend on a bin count and it exposes the tails of the distribution — exactly where {{term:prozessfaehigkeit|process capability}} is decided. It does not replace the {{term:normalitaetstest|normality test}} but complements it: the test gives a {{term:p-wert|p-value}}, the plot shows *how* the data departs."
+      }
+    ]
+  },
+  "aliases": {
+    "de": [
+      "Normal Probability Plot",
+      "Q-Q-Plot",
+      "Quantil-Quantil-Diagramm",
+      "Wahrscheinlichkeitspapier"
+    ],
+    "en": [
+      "normal probability plot",
+      "Q-Q plot",
+      "quantile-quantile plot"
+    ]
+  },
+  "seeAlso": [
+    "normalitaetstest",
+    "histogramm",
+    "schiefe",
+    "kurtosis",
+    "prozessfaehigkeit",
+    "boxplot"
+  ],
+  "modules": [
+    "probability-plot",
+    "distribution-fit"
+  ],
+  "algoLab": [],
+  "sources": [
+    {
+      "label": "Blom, G. — Statistical Estimates and Transformed Beta-Variables, Wiley, 1958",
+      "url": null
+    },
+    {
+      "label": "Chambers, J. M., Cleveland, W. S., Kleiner, B. & Tukey, P. A. — Graphical Methods for Data Analysis, Wadsworth, 1983",
+      "url": null
+    },
+    {
+      "label": "Montgomery, D. C. — Introduction to Statistical Quality Control, 8th Edition",
+      "url": null
+    }
+  ]
+}

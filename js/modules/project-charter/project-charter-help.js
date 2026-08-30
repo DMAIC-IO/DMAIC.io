@@ -12,7 +12,7 @@ export default {
         blocks: [
           {
             type: 'paragraph',
-            content: 'Der Project Charter ist das Gründungsdokument eines Six-Sigma-Projekts. Er beschreibt knapp und nachvollziehbar, warum das Projekt nötig ist, was es erreichen soll, wer beteiligt ist und in welchem Rahmen gearbeitet wird. Er ist das erste Tool der Define-Phase und wird im Tollgate-Review als Referenz herangezogen.',
+            content: 'Der {{term:project-charter|Project Charter}} ist das Gründungsdokument eines Six-Sigma-Projekts. Er beschreibt knapp und nachvollziehbar, warum das Projekt nötig ist, was es erreichen soll, wer beteiligt ist und in welchem Rahmen gearbeitet wird. Er ist das erste Tool der Define-Phase und wird im Tollgate-Review als Referenz herangezogen.',
           },
           {
             type: 'definition',
@@ -51,7 +51,7 @@ export default {
         blocks: [
           {
             type: 'paragraph',
-            content: 'The project charter is the founding document of a Six Sigma project. It describes briefly and traceably why the project is needed, what it should achieve, who is involved, and within which boundaries the work happens. It is the first tool of the Define phase and is used as a reference in tollgate reviews.',
+            content: 'The {{term:project-charter|project charter}} is the founding document of a Six Sigma project. It describes briefly and traceably why the project is needed, what it should achieve, who is involved, and within which boundaries the work happens. It is the first tool of the Define phase and is used as a reference in tollgate reviews.',
           },
           {
             type: 'definition',

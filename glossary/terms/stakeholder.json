@@ -75,7 +75,8 @@
   ],
   "modules": [
     "stakeholder-analysis",
-    "project-charter"
+    "project-charter",
+    "dmaic-calendar"
   ],
   "algoLab": [],
   "sources": [

@@ -12,7 +12,7 @@ export default {
         blocks: [
           {
             type: 'paragraph',
-            content: 'Die {{term:five-why|5-Why-Methode}} (auch 5×Warum) ist eine einfache, aber wirkungsvolle Technik zur Wurzelursachenanalyse. Ausgehend von einem konkreten Problem wird wiederholt „Warum?" gefragt — typischerweise fünfmal — bis eine grundlegende Ursache erreicht ist, deren Beseitigung das Problem nachhaltig löst.',
+            content: 'Die {{term:five-why|5-Why-Methode}} (auch 5×Warum) ist eine einfache, aber wirkungsvolle Technik zur {{term:ursachenanalyse|Wurzelursachenanalyse}}. Ausgehend von einem konkreten Problem wird wiederholt „Warum?" gefragt — typischerweise fünfmal — bis eine grundlegende Ursache erreicht ist, deren Beseitigung das Problem nachhaltig löst.',
           },
           {
             type: 'definition',
@@ -45,7 +45,7 @@ export default {
         blocks: [
           {
             type: 'paragraph',
-            content: 'The {{term:five-why|5-Why method}} (also "5 Whys") is a simple but powerful technique for root-cause analysis. Starting from a concrete problem, you repeatedly ask "why?" — typically five times — until you reach a fundamental cause whose removal solves the problem sustainably.',
+            content: 'The {{term:five-why|5-Why method}} (also "5 Whys") is a simple but powerful technique for {{term:ursachenanalyse|root-cause analysis}}. Starting from a concrete problem, you repeatedly ask "why?" — typically five times — until you reach a fundamental cause whose removal solves the problem sustainably.',
           },
           {
             type: 'definition',

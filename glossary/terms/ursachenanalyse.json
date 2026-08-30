@@ -1,0 +1,101 @@
+{
+  "id": "ursachenanalyse",
+  "category": "methodology",
+  "title": {
+    "de": "Wurzelursachenanalyse",
+    "en": "Root Cause Analysis"
+  },
+  "short": {
+    "de": "Sucht die Ursache hinter dem Symptom — die Stelle, an der eine Maßnahme das Problem dauerhaft beseitigt.",
+    "en": "Looks for the cause behind the symptom — the point at which a measure removes the problem for good."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "Die **Wurzelursachenanalyse** sucht nicht die Stelle, an der ein Problem *sichtbar* wird, sondern die, an der es *entsteht*. Eine Wurzelursache ist erreicht, wenn zwei Bedingungen gelten: Ihre Beseitigung verhindert das Wiederauftreten, und sie liegt im Einflussbereich der Organisation."
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Sofortmaßnahme** — beseitigt das Symptom und schützt den Kunden; wirkt sofort, aber nicht dauerhaft",
+          "**Korrekturmaßnahme** — beseitigt die Wurzelursache; wirkt langsamer, aber nachhaltig",
+          "**Vorbeugende Maßnahme** — verhindert dieselbe Ursache an anderer Stelle"
+        ]
+      },
+      {
+        "type": "paragraph",
+        "text": "Die Werkzeuge greifen ineinander und ersetzen sich nicht: {{term:ishikawa|Ishikawa}} *sammelt* Hypothesen in der Breite, {{term:five-why|5-Why}} *vertieft* die aussichtsreichste in die Tiefe, {{term:pareto|Pareto}} und {{term:hypothesentest|Hypothesentests}} *belegen* sie an Daten. Erst der letzte Schritt macht aus einer Vermutung eine Ursache."
+      },
+      {
+        "type": "note",
+        "text": "Der häufigste Fehler ist der Abbruch bei der erstbesten plausiblen Erklärung — meist ein menschlicher Fehler („Mitarbeiter hat nicht aufgepasst\"). Das ist fast nie eine Wurzelursache, sondern der Punkt, an dem die Analyse aufgehört hat: Warum konnte der Fehler überhaupt passieren, und warum ist er nicht aufgefallen? Eine belegte Wurzelursache steht am Ende in der {{term:fmea|FMEA}} und in den {{term:lessons-learned|Lessons Learned}}."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "**Root cause analysis** does not look for the place where a problem *shows up* but for the place where it *originates*. A root cause is reached when two conditions hold: removing it prevents recurrence, and it lies within the organisation's control."
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Containment action** — removes the symptom and protects the customer; immediate, but not durable",
+          "**Corrective action** — removes the root cause; slower, but lasting",
+          "**Preventive action** — stops the same cause from acting elsewhere"
+        ]
+      },
+      {
+        "type": "paragraph",
+        "text": "The tools interlock rather than replace each other: {{term:ishikawa|Ishikawa}} *collects* hypotheses in breadth, {{term:five-why|5-Why}} *deepens* the most promising one, {{term:pareto|Pareto}} and {{term:hypothesentest|hypothesis tests}} *substantiate* it with data. Only the last step turns a suspicion into a cause."
+      },
+      {
+        "type": "note",
+        "text": "The most common failure is stopping at the first plausible explanation — usually human error (\"the operator was not paying attention\"). That is almost never a root cause but the point where the analysis stopped: why was the error possible at all, and why did it go unnoticed? A substantiated root cause ends up in the {{term:fmea|FMEA}} and in the {{term:lessons-learned|lessons learned}}."
+      }
+    ]
+  },
+  "aliases": {
+    "de": [
+      "Root Cause Analysis",
+      "RCA",
+      "Wurzelursache",
+      "Ursachenanalyse"
+    ],
+    "en": [
+      "RCA",
+      "root cause",
+      "causal analysis"
+    ]
+  },
+  "seeAlso": [
+    "five-why",
+    "ishikawa",
+    "pareto",
+    "fmea",
+    "hypothesentest",
+    "lessons-learned"
+  ],
+  "modules": [
+    "five-why",
+    "ishikawa",
+    "fmea",
+    "pareto",
+    "lessons-learned"
+  ],
+  "algoLab": [],
+  "sources": [
+    {
+      "label": "Andersen, B. & Fagerhaug, T. — Root Cause Analysis: Simplified Tools and Techniques, 2nd Edition, ASQ Quality Press, 2006",
+      "url": null
+    },
+    {
+      "label": "Ohno, T. — Toyota Production System: Beyond Large-Scale Production, Productivity Press, 1988",
+      "url": null
+    },
+    {
+      "label": "Pyzdek, T. & Keller, P. — The Six Sigma Handbook, 5th Edition",
+      "url": null
+    }
+  ]
+}

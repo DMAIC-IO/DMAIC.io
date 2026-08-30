@@ -59,7 +59,7 @@
     "de": ["OLS", "Ordinary Least Squares", "Methode der kleinsten Quadrate", "Multiple lineare Regression"],
     "en": ["OLS", "least squares", "multiple linear regression"]
   },
-  "seeAlso": ["regression", "residuen", "r-quadrat", "glm", "haupteffekt"],
+  "seeAlso": ["regression", "residuen", "r-quadrat", "glm", "haupteffekt", "streudiagramm"],
   "modules": ["regression", "doe-planner", "correlation", "msa-typ4"],
   "algoLab": ["regression/regression-coefficients", "regression/regression-anova"],
   "sources": [

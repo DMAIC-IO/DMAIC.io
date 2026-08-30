@@ -12,7 +12,7 @@ export default {
         blocks: [
           {
             type: 'paragraph',
-            content: 'Das Kano-Modell beantwortet eine Frage, die eine reine Bedürfnisliste offenlässt: Wirkt eine Anforderung überhaupt gleich stark, egal ob sie erfüllt ist oder nicht? Die Antwort ist meist nein. Manche Merkmale verärgern nur bei Fehlen, ohne bei Erfüllung zusätzlich zu begeistern; andere tun genau das Gegenteil. Das Modul ordnet jede erhobene Anforderung nach diesem Muster ein und liefert damit eine Priorisierung, die reine Wichtigkeitsskalen nicht leisten.',
+            content: 'Das {{term:kano|Kano-Modell}} beantwortet eine Frage, die eine reine Bedürfnisliste offenlässt: Wirkt eine Anforderung überhaupt gleich stark, egal ob sie erfüllt ist oder nicht? Die Antwort ist meist nein. Manche Merkmale verärgern nur bei Fehlen, ohne bei Erfüllung zusätzlich zu begeistern; andere tun genau das Gegenteil. Das Modul ordnet jede erhobene Anforderung nach diesem Muster ein und liefert damit eine Priorisierung, die reine Wichtigkeitsskalen nicht leisten.',
           },
           {
             type: 'paragraph',
@@ -63,7 +63,7 @@ export default {
         blocks: [
           {
             type: 'paragraph',
-            content: 'The Kano model answers a question a plain needs list leaves open: does a requirement really matter the same amount whether it is met or not? Usually not. Some features only cause frustration when missing, without adding extra delight when present; others do the exact opposite. The module classifies every collected requirement along that pattern, producing a prioritization that a simple importance scale cannot deliver on its own.',
+            content: 'The {{term:kano|Kano model}} answers a question a plain needs list leaves open: does a requirement really matter the same amount whether it is met or not? Usually not. Some features only cause frustration when missing, without adding extra delight when present; others do the exact opposite. The module classifies every collected requirement along that pattern, producing a prioritization that a simple importance scale cannot deliver on its own.',
           },
           {
             type: 'paragraph',

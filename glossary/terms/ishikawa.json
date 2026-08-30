@@ -70,11 +70,14 @@
     "fmea",
     "dmaic",
     "regression",
-    "ce-matrix"
+    "ce-matrix",
+    "ursachenanalyse"
   ],
   "modules": [
     "ishikawa",
-    "ce-matrix"
+    "ce-matrix",
+    "five-why",
+    "pareto"
   ],
   "algoLab": [],
   "sources": [

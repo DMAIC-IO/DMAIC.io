@@ -121,6 +121,58 @@ suite('Glossar: Modul-Abdeckung', () => {
       assertTrue(terms.includes(id), `gage-run-chart ist nicht mit ${id} verknüpft`);
     }
   });
+
+  // Reine Abdeckung reicht bei den meistgenutzten Werkzeugen nicht: five-why,
+  // ishikawa und kano trugen genau einen Begriff — sich selbst. Ein Glossar-Tab,
+  // der nur den Modulnamen wiederholt, hilft niemandem weiter.
+  test('kein Kernwerkzeug zeigt im Glossar nur sich selbst', () => {
+    const eponymous = {
+      'five-why': 'five-why',
+      'ishikawa': 'ishikawa',
+      'kano': 'kano',
+      'pareto': 'pareto',
+      'process-map': 'process-map',
+      'project-charter': 'project-charter',
+      'sipoc': 'sipoc',
+    };
+    const thin = Object.entries(eponymous)
+      .filter(([moduleId, termId]) => {
+        const others = termsForModule(moduleId).filter(id => id !== termId);
+        return others.length === 0;
+      })
+      .map(([moduleId]) => moduleId);
+    assertEqual(thin.length, 0,
+      `Kernwerkzeuge ohne begleitendes Vokabular: ${JSON.stringify(thin)}`);
+  });
+
+  test('die Wurzelursachenanalyse verbindet die Werkzeuge, die sie einsetzen', () => {
+    assertTrue(TERM_IDS.has('ursachenanalyse'), 'Begriff "ursachenanalyse" fehlt');
+    const mods = GLOSSARY_TERMS.ursachenanalyse?.modules || [];
+    for (const id of ['five-why', 'ishikawa']) {
+      assertTrue(mods.includes(id), `ursachenanalyse ist nicht mit ${id} verknüpft`);
+    }
+  });
+
+  test('der Project Charter trägt sein eigenes Vokabular', () => {
+    const terms = termsForModule('project-charter');
+    for (const id of ['problembeschreibung', 'zieldefinition', 'projektumfang']) {
+      assertTrue(TERM_IDS.has(id), `Begriff "${id}" fehlt`);
+      assertTrue(terms.includes(id), `project-charter ist nicht mit ${id} verknüpft`);
+    }
+  });
+
+  test('Streudiagramm und Wahrscheinlichkeitsnetz sind als Diagrammtypen erfasst', () => {
+    // xy-plot und probability-plot trugen nur allgemeine Kennzahlbegriffe
+    // (Mittelwert, Median, …), aber keinen über den Diagrammtyp selbst.
+    for (const [termId, moduleId] of [['streudiagramm', 'xy-plot'],
+                                      ['wahrscheinlichkeitsnetz', 'probability-plot']]) {
+      assertTrue(TERM_IDS.has(termId), `Begriff "${termId}" fehlt`);
+      assertEqual(GLOSSARY_TERMS[termId]?.category, 'visualization',
+        `${termId} gehört in die Kategorie visualization`);
+      assertTrue(termsForModule(moduleId).includes(termId),
+        `${moduleId} ist nicht mit ${termId} verknüpft`);
+    }
+  });
 });
 
 suite('Glossar: Katalog-Integrität', () => {
