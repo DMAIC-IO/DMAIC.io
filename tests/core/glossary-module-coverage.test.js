@@ -46,6 +46,42 @@ suite('Glossar: Modul-Abdeckung', () => {
     assertTrue((GLOSSARY_TERMS.linearitaet?.modules || []).includes('msa-typ4'),
       'linearitaet ist nicht mit msa-typ4 verknüpft');
   });
+
+  // Die reinen Diagramm-Module trugen ebenfalls keinen Begriff. Aufgenommen
+  // wurden nicht Zeichenmechaniken, sondern die statistischen Konzepte, die
+  // diese Diagramme kodieren (Skalenniveau, Kontingenztafel, Randverteilung,
+  // Chi-Quadrat-Test) plus die Diagrammtypen selbst — so, wie das Glossar
+  // die SPC-Kartentypen (run-chart, p-chart, …) schon führt.
+  test('jedes Diagramm-Modul trägt mindestens einen Glossarbegriff', () => {
+    const plotModules = ['bar', 'pie-chart', 'heatmap', 'mosaic', 'contour-plot', 'chart-suggestion'];
+    const unknown = plotModules.filter(id => !MODULE_IDS.has(id));
+    assertEqual(unknown.length, 0, `Modul-ID nicht im Manifest: ${JSON.stringify(unknown)}`);
+    const empty = plotModules.filter(id => termsForModule(id).length === 0);
+    assertEqual(empty.length, 0, `Diagramm-Module ohne Glossarbegriff: ${JSON.stringify(empty)}`);
+  });
+
+  test('der Katalog führt eine Visualisierungs-Kategorie', () => {
+    assertTrue(CATEGORY_IDS.has('visualization'),
+      'Kategorie "visualization" fehlt in glossary/index.json');
+  });
+
+  test('der Chi-Quadrat-Test ist erfasst und mit Mosaik und Hypothesentest verknüpft', () => {
+    assertTrue(TERM_IDS.has('chi-quadrat-test'), 'Begriff "chi-quadrat-test" fehlt');
+    const mods = GLOSSARY_TERMS['chi-quadrat-test']?.modules || [];
+    for (const id of ['mosaic', 'hypothesis-test']) {
+      assertTrue(mods.includes(id), `chi-quadrat-test ist nicht mit ${id} verknüpft`);
+    }
+    assertEqual(GLOSSARY_TERMS['chi-quadrat-test']?.category, 'hypothesis',
+      'chi-quadrat-test gehört in die Kategorie hypothesis');
+  });
+
+  test('das Skalenniveau ist erfasst und trägt die Module, deren Logik darauf beruht', () => {
+    assertTrue(TERM_IDS.has('skalenniveau'), 'Begriff "skalenniveau" fehlt');
+    const mods = GLOSSARY_TERMS.skalenniveau?.modules || [];
+    for (const id of ['chart-suggestion', 'worksheet']) {
+      assertTrue(mods.includes(id), `skalenniveau ist nicht mit ${id} verknüpft`);
+    }
+  });
 });
 
 suite('Glossar: Katalog-Integrität', () => {

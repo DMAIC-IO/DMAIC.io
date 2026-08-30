@@ -43,7 +43,7 @@
     "de": ["50. Perzentil", "Q2", "Zentralwert"],
     "en": ["50th percentile", "Q2"]
   },
-  "seeAlso": ["mittelwert", "spannweite", "schiefe"],
+  "seeAlso": ["mittelwert", "spannweite", "schiefe", "skalenniveau"],
   "modules": [
     "histogram", "boxplot", "process-capability", "hypothesis-test",
     "regression", "glm-regression", "correlation", "msa-typ2",

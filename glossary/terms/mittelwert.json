@@ -65,7 +65,8 @@
   "seeAlso": [
     "median",
     "varianz",
-    "standardabweichung"
+    "standardabweichung",
+    "skalenniveau"
   ],
   "modules": [
     "histogram",
@@ -98,7 +99,9 @@
     "random-generator",
     "worksheet",
     "response-optimization",
-    "msa-typ4"
+    "msa-typ4",
+    "bar",
+    "heatmap"
   ],
   "algoLab": [
     "hypothesis/one-sample-t-test",

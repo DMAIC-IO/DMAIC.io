@@ -1,0 +1,90 @@
+{
+  "id": "kreisdiagramm",
+  "category": "visualization",
+  "title": {
+    "de": "Kreisdiagramm (Tortendiagramm)",
+    "en": "Pie Chart"
+  },
+  "short": {
+    "de": "Zeigt die Aufteilung eines Ganzen auf wenige Kategorien — nur bei sehr wenigen Sektoren die richtige Wahl.",
+    "en": "Shows how a whole splits across a few categories — the right choice only for very few sectors."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "Das **Kreisdiagramm** stellt Anteile an einem Ganzen als Kreissektoren dar; der Winkel jedes Sektors ist proportional zum Anteil, alle Sektoren ergeben zusammen 100 %. Es beantwortet genau eine Frage: *Wie verteilt sich das Ganze?*"
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Sektor** — Winkel und Fläche proportional zum Anteil, üblicherweise vom größten zum kleinsten sortiert",
+          "**„Sonstige\"** — viele kleine Kategorien werden zusammengefasst; ein lesbares Kreisdiagramm hat selten mehr als fünf bis sieben Sektoren"
+        ]
+      },
+      {
+        "type": "paragraph",
+        "text": "Die Einschränkung ist wahrnehmungspsychologisch belegt: Cleveland und McGill (1984) zeigen, dass Menschen **Längen deutlich genauer dekodieren als Winkel und Flächen**. Sobald zwei Sektoren ähnlich groß sind oder mehr als eine Handvoll Kategorien auftreten, liest man aus einem {{term:balkendiagramm|Balkendiagramm}} schneller und richtiger ab."
+      },
+      {
+        "type": "note",
+        "text": "Im Six-Sigma-Kontext ist das Kreisdiagramm fast immer die schwächere Wahl: Für die Priorisierung von Fehlerarten ist das {{term:pareto|Pareto-Diagramm}} gemacht — es zeigt Rangfolge *und* kumulierten Anteil. Das Kreisdiagramm bleibt sinnvoll, wenn wenige Anteile an einem Ganzen kommuniziert werden sollen und die genaue Rangfolge zweitrangig ist."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "A **pie chart** displays shares of a whole as circular sectors; each sector's angle is proportional to its share, and all sectors together make 100 %. It answers exactly one question: *how does the whole split up?*"
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Sector** — angle and area proportional to the share, usually sorted from largest to smallest",
+          "**\"Other\"** — many small categories get pooled; a readable pie chart rarely has more than five to seven sectors"
+        ]
+      },
+      {
+        "type": "paragraph",
+        "text": "The limitation is established in perception research: Cleveland and McGill (1984) show that people **decode lengths considerably more accurately than angles and areas**. As soon as two sectors are of similar size, or more than a handful of categories appear, a {{term:balkendiagramm|bar chart}} is read faster and more correctly."
+      },
+      {
+        "type": "note",
+        "text": "In a Six Sigma context the pie chart is almost always the weaker choice: prioritising defect types is what the {{term:pareto|Pareto chart}} was built for — it shows rank order *and* cumulative share. The pie chart stays useful when a few shares of a whole are to be communicated and exact ranking is secondary."
+      }
+    ]
+  },
+  "aliases": {
+    "de": [
+      "Tortendiagramm",
+      "Kuchendiagramm",
+      "Kreissektordiagramm"
+    ],
+    "en": [
+      "pie chart",
+      "circle chart"
+    ]
+  },
+  "seeAlso": [
+    "balkendiagramm",
+    "pareto",
+    "skalenniveau"
+  ],
+  "modules": [
+    "pie-chart"
+  ],
+  "algoLab": [],
+  "sources": [
+    {
+      "label": "Cleveland, W. S. & McGill, R. — Graphical Perception: Theory, Experimentation, and Application to the Development of Graphical Methods, JASA 79 (387), 1984",
+      "url": null
+    },
+    {
+      "label": "Tufte, E. R. — The Visual Display of Quantitative Information, 2nd Edition, Graphics Press, 2001",
+      "url": null
+    },
+    {
+      "label": "Few, S. — Show Me the Numbers: Designing Tables and Graphs to Enlighten, 2nd Edition, Analytics Press, 2012",
+      "url": null
+    }
+  ]
+}

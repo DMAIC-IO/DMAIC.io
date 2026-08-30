@@ -72,12 +72,14 @@
     "box-behnken",
     "dsd",
     "doe",
-    "zentralpunkt"
+    "zentralpunkt",
+    "isolinie"
   ],
   "modules": [
     "doe-planner",
     "doe-advisor",
-    "response-optimization"
+    "response-optimization",
+    "contour-plot"
   ],
   "algoLab": [
     "doe/ccd-with-categorical",

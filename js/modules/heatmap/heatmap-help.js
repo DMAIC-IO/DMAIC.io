@@ -12,12 +12,12 @@ export default {
         blocks: [
           {
             type: 'paragraph',
-            content: 'Eine Heatmap ordnet die Zellen einer Kreuztabelle in einem Gitter an und kodiert ihren Wert über die Farbintensität. So lassen sich Muster und Auffälligkeiten in zweidimensionalen Daten auf einen Blick erkennen — viel schneller, als wenn man Zahlen aus einer Tabelle ablesen müsste.',
+            content: 'Eine {{term:heatmap|Heatmap}} ordnet die Zellen einer {{term:kontingenztafel|Kreuztabelle}} in einem Gitter an und kodiert ihren Wert über die Farbintensität. So lassen sich Muster und Auffälligkeiten in zweidimensionalen Daten auf einen Blick erkennen — viel schneller, als wenn man Zahlen aus einer Tabelle ablesen müsste.',
           },
           {
             type: 'definition',
             term: 'X- und Y-Achse',
-            content: 'Beide Achsen sind kategorial: die X-Spalte (X-Slot) bestimmt die Spalten, die G-Spalte (G-Slot) bestimmt die Zeilen. Die Reihenfolge der Kategorien entspricht der Eingabereihenfolge im Worksheet.',
+            content: 'Beide Achsen sind {{term:skalenniveau|kategorial}}: die X-Spalte (X-Slot) bestimmt die Spalten, die G-Spalte (G-Slot) bestimmt die Zeilen. Die Reihenfolge der Kategorien entspricht der Eingabereihenfolge im Worksheet.',
           },
           {
             type: 'definition',
@@ -40,12 +40,12 @@ export default {
         blocks: [
           {
             type: 'paragraph',
-            content: 'A heatmap arranges the cells of a cross-tabulation in a grid and encodes their value with color intensity. Patterns and anomalies in two-dimensional data become visible at a glance — much faster than reading numbers off a table.',
+            content: 'A {{term:heatmap|heatmap}} arranges the cells of a {{term:kontingenztafel|cross-tabulation}} in a grid and encodes their value with color intensity. Patterns and anomalies in two-dimensional data become visible at a glance — much faster than reading numbers off a table.',
           },
           {
             type: 'definition',
             term: 'X and Y axis',
-            content: 'Both axes are categorical: the X column (X slot) drives the columns; the G column (G slot) drives the rows. Category order follows the input order in the worksheet.',
+            content: 'Both axes are {{term:skalenniveau|categorical}}: the X column (X slot) drives the columns; the G column (G slot) drives the rows. Category order follows the input order in the worksheet.',
           },
           {
             type: 'definition',

@@ -68,10 +68,13 @@
     "fmea",
     "ishikawa",
     "dmaic",
-    "ctq"
+    "ctq",
+    "balkendiagramm",
+    "kreisdiagramm"
   ],
   "modules": [
-    "pareto"
+    "pareto",
+    "bar"
   ],
   "algoLab": [],
   "sources": [

@@ -65,6 +65,13 @@
       }
     },
     {
+      "id": "visualization",
+      "label": {
+        "de": "Datenvisualisierung",
+        "en": "Data Visualisation"
+      }
+    },
+    {
       "id": "triz",
       "label": {
         "de": "TRIZ / Erfinderisches Problemlösen",
@@ -792,6 +799,51 @@
       "id": "evolutionsgesetze",
       "category": "triz",
       "file": "terms/evolutionsgesetze.json"
+    },
+    {
+      "id": "skalenniveau",
+      "category": "descriptive",
+      "file": "terms/skalenniveau.json"
+    },
+    {
+      "id": "kontingenztafel",
+      "category": "descriptive",
+      "file": "terms/kontingenztafel.json"
+    },
+    {
+      "id": "randverteilung",
+      "category": "descriptive",
+      "file": "terms/randverteilung.json"
+    },
+    {
+      "id": "chi-quadrat-test",
+      "category": "hypothesis",
+      "file": "terms/chi-quadrat-test.json"
+    },
+    {
+      "id": "balkendiagramm",
+      "category": "visualization",
+      "file": "terms/balkendiagramm.json"
+    },
+    {
+      "id": "kreisdiagramm",
+      "category": "visualization",
+      "file": "terms/kreisdiagramm.json"
+    },
+    {
+      "id": "heatmap",
+      "category": "visualization",
+      "file": "terms/heatmap.json"
+    },
+    {
+      "id": "mosaikdiagramm",
+      "category": "visualization",
+      "file": "terms/mosaikdiagramm.json"
+    },
+    {
+      "id": "isolinie",
+      "category": "visualization",
+      "file": "terms/isolinie.json"
     }
   ]
 }

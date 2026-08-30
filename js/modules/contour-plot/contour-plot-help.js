@@ -33,7 +33,7 @@ export default {
           type: 'list',
           items: [
             'Farbfläche: Jeder Pixel wird gemäß z-Wert eingefärbt (Farbschema wählbar)',
-            'Konturlinien: Marching-Squares-Algorithmus berechnet Isolinien für gleichmäßig verteilte z-Stufen',
+            '{{term:isolinie|Konturlinien}}: Marching-Squares-Algorithmus berechnet Isolinien für gleichmäßig verteilte z-Stufen',
             'Datenpunkte: Optionale Überlagerung tatsächlicher Messpunkte (x; y; z)',
             'Tooltip: Hover zeigt exakte x/y/z-Werte an jeder Position',
           ],
@@ -138,7 +138,7 @@ export default {
           type: 'list',
           items: [
             'Color fill: Each pixel is colored according to its z-value (color scheme selectable)',
-            'Contour lines: Marching squares algorithm computes isolines at evenly spaced z-levels',
+            '{{term:isolinie|Contour lines}}: Marching squares algorithm computes isolines at evenly spaced z-levels',
             'Data points: Optional overlay of actual measurement points (x; y; z)',
             'Tooltip: Hover shows exact x/y/z values at any position',
           ],

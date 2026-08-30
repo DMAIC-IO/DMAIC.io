@@ -1,0 +1,105 @@
+{
+  "id": "randverteilung",
+  "category": "descriptive",
+  "title": {
+    "de": "Rand- und bedingte Verteilung",
+    "en": "Marginal and Conditional Distribution"
+  },
+  "short": {
+    "de": "Die Verteilung eines Merkmals allein (Rand) gegenüber seiner Verteilung innerhalb einer Kategorie des anderen (bedingt).",
+    "en": "The distribution of one characteristic alone (marginal) versus its distribution within a category of the other (conditional)."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "Aus einer {{term:kontingenztafel|Kontingenztafel}} lassen sich zwei grundverschiedene Verteilungen ablesen. Die **Randverteilung** ergibt sich aus den Zeilen- bzw. Spaltensummen und beschreibt ein Merkmal für sich allein:"
+      },
+      {
+        "type": "formula",
+        "latex": "P(X = i) = \\frac{n_{i\\cdot}}{n}"
+      },
+      {
+        "type": "paragraph",
+        "text": "Die **bedingte Verteilung** betrachtet dagegen nur eine Spalte (oder Zeile) und normiert innerhalb dieser:"
+      },
+      {
+        "type": "formula",
+        "latex": "P(G = j \\mid X = i) = \\frac{n_{ij}}{n_{i\\cdot}}"
+      },
+      {
+        "type": "paragraph",
+        "text": "Stimmen die bedingten Verteilungen über alle Kategorien von $X$ überein, gilt $P(G \\mid X) = P(G)$ — die Merkmale sind **unabhängig**. Genau diese Gleichheit prüft der {{term:chi-quadrat-test|Chi-Quadrat-Test}} rechnerisch und das {{term:mosaikdiagramm|Mosaikdiagramm}} optisch."
+      },
+      {
+        "type": "note",
+        "text": "Die Unterscheidung entscheidet über die Aussage: „40 % unserer Reklamationen betreffen Linie 3\" ist eine Randaussage und wird groß, wenn Linie 3 einfach viel produziert. „Linie 3 hat eine Reklamationsquote von 40 %\" ist bedingt und damit die Aussage, die für eine Verbesserung zählt."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "A {{term:kontingenztafel|contingency table}} yields two fundamentally different distributions. The **marginal distribution** comes from the row or column sums and describes one characteristic on its own:"
+      },
+      {
+        "type": "formula",
+        "latex": "P(X = i) = \\frac{n_{i\\cdot}}{n}"
+      },
+      {
+        "type": "paragraph",
+        "text": "The **conditional distribution** instead looks at a single column (or row) and normalises within it:"
+      },
+      {
+        "type": "formula",
+        "latex": "P(G = j \\mid X = i) = \\frac{n_{ij}}{n_{i\\cdot}}"
+      },
+      {
+        "type": "paragraph",
+        "text": "If the conditional distributions agree across all categories of $X$, then $P(G \\mid X) = P(G)$ — the characteristics are **independent**. That equality is exactly what the {{term:chi-quadrat-test|chi-square test}} checks numerically and the {{term:mosaikdiagramm|mosaic plot}} shows visually."
+      },
+      {
+        "type": "note",
+        "text": "The distinction decides what a statement means: \"40 % of our complaints concern line 3\" is marginal and grows simply because line 3 produces a lot. \"Line 3 has a complaint rate of 40 %\" is conditional — and that is the statement improvement work acts on."
+      }
+    ]
+  },
+  "aliases": {
+    "de": [
+      "Randhäufigkeit",
+      "bedingte Wahrscheinlichkeit",
+      "Marginalverteilung"
+    ],
+    "en": [
+      "marginal frequency",
+      "conditional probability",
+      "marginal distribution"
+    ]
+  },
+  "seeAlso": [
+    "kontingenztafel",
+    "chi-quadrat-test",
+    "mosaikdiagramm",
+    "heatmap",
+    "balkendiagramm"
+  ],
+  "modules": [
+    "mosaic",
+    "heatmap",
+    "bar"
+  ],
+  "algoLab": [],
+  "sources": [
+    {
+      "label": "Agresti, A. — Categorical Data Analysis, 3rd Edition, Wiley, 2013",
+      "url": null
+    },
+    {
+      "label": "Bortz, J. & Schuster, C. — Statistik für Human- und Sozialwissenschaftler, 7. Auflage, Springer, 2010",
+      "url": null
+    },
+    {
+      "label": "Montgomery, D. C. & Runger, G. C. — Applied Statistics and Probability for Engineers, 7th Edition",
+      "url": null
+    }
+  ]
+}

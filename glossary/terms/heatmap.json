@@ -1,0 +1,95 @@
+{
+  "id": "heatmap",
+  "category": "visualization",
+  "title": {
+    "de": "Heatmap",
+    "en": "Heatmap"
+  },
+  "short": {
+    "de": "Farbcodierte Matrix zweier kategorialer Achsen — macht Hotspots in einer Kreuztabelle auf einen Blick sichtbar.",
+    "en": "Colour-coded matrix over two categorical axes — makes hotspots in a cross tabulation visible at a glance."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "Eine **Heatmap** legt die Zellen einer {{term:kontingenztafel|Kreuztabelle}} als Gitter aus und kodiert den Zellwert über die Farbintensität. Ohne Wertespalte zeigt jede Zelle die Häufigkeit der Kombination, mit Wertespalte den {{term:mittelwert|Mittelwert}} oder die Summe darin."
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Beide Achsen kategorial** — die Reihenfolge der Kategorien ist frei und beeinflusst, welche Muster auffallen",
+          "**Sequenzielle Farbskala** — hell nach dunkel für Größenordnungen; erst eine divergierende Skala mit neutraler Mitte eignet sich für Abweichungen nach oben *und* unten",
+          "**Leerzellen** — Kombinationen ohne Daten müssen sich sichtbar von „Wert null\" unterscheiden"
+        ]
+      },
+      {
+        "type": "paragraph",
+        "text": "Typische Anwendungen: Defekthäufigkeit nach Schicht × Linie, mittlere Bearbeitungszeit nach Standort × Auftragstyp. Die Stärke ist das Überblicken vieler Zellen gleichzeitig — dort, wo eine Tabelle mit Zahlen zu langsam zu lesen wäre."
+      },
+      {
+        "type": "note",
+        "text": "Farbe wird deutlich ungenauer dekodiert als Länge. Die Heatmap findet **wo** etwas auffällt; für den quantitativen Vergleich zweier konkreter Zellen ist ein {{term:balkendiagramm|Balkendiagramm}} die ehrlichere Darstellung. Und: hohe Häufigkeit einer Kombination heißt oft nur, dass beide Ränder groß sind — dafür ist die {{term:randverteilung|bedingte Verteilung}} bzw. das {{term:mosaikdiagramm|Mosaikdiagramm}} zuständig."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "A **heatmap** lays out the cells of a {{term:kontingenztafel|cross tabulation}} as a grid and encodes the cell value through colour intensity. Without a value column each cell shows the frequency of the combination; with one it shows the {{term:mittelwert|mean}} or the sum within it."
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Both axes categorical** — the category order is free and determines which patterns stand out",
+          "**Sequential colour scale** — light to dark for magnitudes; only a diverging scale with a neutral midpoint suits deviations in both directions",
+          "**Empty cells** — combinations without data must be visibly distinct from \"value zero\""
+        ]
+      },
+      {
+        "type": "paragraph",
+        "text": "Typical uses: defect counts by shift × line, mean processing time by site × order type. Its strength is scanning many cells at once — where reading a table of numbers would be too slow."
+      },
+      {
+        "type": "note",
+        "text": "Colour is decoded considerably less precisely than length. A heatmap finds **where** something stands out; for quantitatively comparing two specific cells a {{term:balkendiagramm|bar chart}} is the more honest display. And a frequent combination often just means both margins are large — that is what the {{term:randverteilung|conditional distribution}} and the {{term:mosaikdiagramm|mosaic plot}} are for."
+      }
+    ]
+  },
+  "aliases": {
+    "de": [
+      "Wärmekarte",
+      "Hitzekarte",
+      "farbcodierte Kreuztabelle"
+    ],
+    "en": [
+      "heat map",
+      "colour matrix"
+    ]
+  },
+  "seeAlso": [
+    "kontingenztafel",
+    "randverteilung",
+    "mosaikdiagramm",
+    "balkendiagramm",
+    "skalenniveau"
+  ],
+  "modules": [
+    "heatmap",
+    "chart-suggestion"
+  ],
+  "algoLab": [],
+  "sources": [
+    {
+      "label": "Wilkinson, L. & Friendly, M. — The History of the Cluster Heat Map, The American Statistician 63 (2), 2009",
+      "url": null
+    },
+    {
+      "label": "Few, S. — Show Me the Numbers: Designing Tables and Graphs to Enlighten, 2nd Edition, Analytics Press, 2012",
+      "url": null
+    },
+    {
+      "label": "Tufte, E. R. — The Visual Display of Quantitative Information, 2nd Edition, Graphics Press, 2001",
+      "url": null
+    }
+  ]
+}

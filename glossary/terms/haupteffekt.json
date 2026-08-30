@@ -68,7 +68,8 @@
   "modules": [
     "doe-planner",
     "doe-advisor",
-    "regression"
+    "regression",
+    "contour-plot"
   ],
   "algoLab": [
     "doe/doe-planner",

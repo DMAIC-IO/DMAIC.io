@@ -61,7 +61,7 @@
     "de": ["Pearson-Korrelation", "Korrelationskoeffizient", "Pearson r"],
     "en": ["Pearson correlation", "correlation coefficient", "Pearson r"]
   },
-  "seeAlso": ["regression", "lineare-regression", "r-quadrat", "multikollinearitaet"],
+  "seeAlso": ["regression", "lineare-regression", "r-quadrat", "multikollinearitaet", "kontingenztafel"],
   "modules": ["correlation", "regression", "glm-regression"],
   "algoLab": ["regression/correlation-analysis"],
   "sources": [

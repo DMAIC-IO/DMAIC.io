@@ -21,7 +21,7 @@ export default {
           {
             type: 'definition',
             term: 'Eingabe: Spaltenauswahl',
-            content: 'Markiere im Worksheet eine oder mehrere Spalten. Aus der Kombination ihrer Rollen (Stetig, Kategorial, Ordinal, Datum) leiten wir den passenden Visualisierungstyp ab.',
+            content: 'Markiere im Worksheet eine oder mehrere Spalten. Aus der Kombination ihrer {{term:skalenniveau|Rollen}} (Stetig, Kategorial, Ordinal, Datum) leiten wir den passenden Visualisierungstyp ab.',
           },
           {
             type: 'definition',
@@ -64,7 +64,7 @@ export default {
           {
             type: 'definition',
             term: 'Input: column selection',
-            content: 'Pick one or more columns in the Worksheet. From the combination of their roles (Continuous, Categorical, Ordinal, Date) we derive the most fitting visualization type.',
+            content: 'Pick one or more columns in the Worksheet. From the combination of their {{term:skalenniveau|roles}} (Continuous, Categorical, Ordinal, Date) we derive the most fitting visualization type.',
           },
           {
             type: 'definition',

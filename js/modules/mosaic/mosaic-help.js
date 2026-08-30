@@ -12,12 +12,12 @@ export default {
         blocks: [
           {
             type: 'paragraph',
-            content: 'Das Mosaikdiagramm zeigt die gemeinsame Verteilung zweier kategorialer Variablen. Anders als das gestapelte Säulendiagramm — bei dem alle Säulen gleich breit sind — kodiert das Mosaikdiagramm die Randverteilung beider Variablen geometrisch: Spaltenbreiten und Segmenthöhen geben jeweils proportional die Häufigkeit wieder.',
+            content: 'Das {{term:mosaikdiagramm|Mosaikdiagramm}} zeigt die gemeinsame Verteilung zweier {{term:skalenniveau|kategorialer}} Variablen. Anders als das gestapelte Säulendiagramm — bei dem alle Säulen gleich breit sind — kodiert das Mosaikdiagramm die Randverteilung beider Variablen geometrisch: Spaltenbreiten und Segmenthöhen geben jeweils proportional die Häufigkeit wieder.',
           },
           {
             type: 'definition',
             term: 'Spaltenbreite',
-            content: 'Jede Spalte gehört zu einer Ausprägung der ersten Variable (X). Die Breite ist proportional zur Randhäufigkeit dieser Ausprägung: eine breite Spalte = häufige X-Kategorie, eine schmale Spalte = seltene X-Kategorie. So sieht man auf einen Blick, wie sich die Stichprobe auf X aufteilt.',
+            content: 'Jede Spalte gehört zu einer Ausprägung der ersten Variable (X). Die Breite ist proportional zur {{term:randverteilung|Randhäufigkeit}} dieser Ausprägung: eine breite Spalte = häufige X-Kategorie, eine schmale Spalte = seltene X-Kategorie. So sieht man auf einen Blick, wie sich die Stichprobe auf X aufteilt.',
           },
           {
             type: 'definition',
@@ -27,7 +27,7 @@ export default {
           {
             type: 'definition',
             term: 'Unabhängigkeit erkennen',
-            content: 'Das Mosaikdiagramm ist ein visueller Test auf statistische Unabhängigkeit. Sind die Segment-Anteile (Höhen) über alle X-Spalten konstant, gilt P(G | X) = P(G) für alle X — die beiden Merkmale sind unabhängig. Weicht ein Segment in einer Spalte deutlich vom Gesamtanteil ab, liegt ein Zusammenhang vor.',
+            content: 'Das Mosaikdiagramm ist ein visueller Test auf statistische Unabhängigkeit — rechnerisch prüft das der {{term:chi-quadrat-test|Chi-Quadrat-Test}}. Sind die Segment-Anteile (Höhen) über alle X-Spalten konstant, gilt P(G | X) = P(G) für alle X — die beiden Merkmale sind unabhängig. Weicht ein Segment in einer Spalte deutlich vom Gesamtanteil ab, liegt ein Zusammenhang vor.',
           },
           {
             type: 'paragraph',
@@ -40,12 +40,12 @@ export default {
         blocks: [
           {
             type: 'paragraph',
-            content: 'The mosaic plot shows the joint distribution of two categorical variables. Unlike a stacked bar chart — where every column has the same width — the mosaic plot encodes the marginal distribution of both variables geometrically: column widths and segment heights are each proportional to frequency.',
+            content: 'The {{term:mosaikdiagramm|mosaic plot}} shows the joint distribution of two {{term:skalenniveau|categorical}} variables. Unlike a stacked bar chart — where every column has the same width — the mosaic plot encodes the marginal distribution of both variables geometrically: column widths and segment heights are each proportional to frequency.',
           },
           {
             type: 'definition',
             term: 'Column width',
-            content: 'Each column corresponds to one level of the first variable (X). Width is proportional to the marginal frequency of that level: a wide column = frequent X-category, a narrow column = rare X-category. At a glance you see how the sample splits across X.',
+            content: 'Each column corresponds to one level of the first variable (X). Width is proportional to the {{term:randverteilung|marginal frequency}} of that level: a wide column = frequent X-category, a narrow column = rare X-category. At a glance you see how the sample splits across X.',
           },
           {
             type: 'definition',
@@ -55,7 +55,7 @@ export default {
           {
             type: 'definition',
             term: 'Spotting independence',
-            content: 'The mosaic plot is a visual test for statistical independence. If the segment shares (heights) stay constant across all X-columns, then P(G | X) = P(G) for every X — the two variables are independent. A segment that deviates strongly in one column reveals a relationship.',
+            content: 'The mosaic plot is a visual test for statistical independence — the numerical counterpart is the {{term:chi-quadrat-test|chi-square test}}. If the segment shares (heights) stay constant across all X-columns, then P(G | X) = P(G) for every X — the two variables are independent. A segment that deviates strongly in one column reveals a relationship.',
           },
           {
             type: 'paragraph',

@@ -78,7 +78,8 @@
     "doe-planner",
     "doe-advisor",
     "regression",
-    "glm-regression"
+    "glm-regression",
+    "contour-plot"
   ],
   "algoLab": [
     "doe/doe-planner",

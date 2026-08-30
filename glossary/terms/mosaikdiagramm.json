@@ -1,0 +1,95 @@
+{
+  "id": "mosaikdiagramm",
+  "category": "visualization",
+  "title": {
+    "de": "Mosaikdiagramm",
+    "en": "Mosaic Plot"
+  },
+  "short": {
+    "de": "Flächentreue Darstellung einer Kontingenztafel — Spaltenbreite zeigt die Randverteilung, Segmenthöhe die bedingte.",
+    "en": "Area-true display of a contingency table — column width shows the marginal, segment height the conditional distribution."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "Das **Mosaikdiagramm** stellt die gemeinsame Verteilung zweier kategorialer Merkmale so dar, dass jede Fläche proportional zur zugehörigen Zellhäufigkeit einer {{term:kontingenztafel|Kontingenztafel}} ist. Anders als das gestapelte {{term:balkendiagramm|Balkendiagramm}}, bei dem alle Säulen gleich breit sind, kodiert es beide Ränder geometrisch."
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Spaltenbreite** — proportional zur {{term:randverteilung|Randhäufigkeit}} der X-Kategorie: breit heißt häufig, schmal heißt selten",
+          "**Segmenthöhe** — proportional zur bedingten Wahrscheinlichkeit $P(G \\mid X)$ innerhalb dieser Spalte",
+          "**Fläche** — Breite mal Höhe und damit proportional zur Zellhäufigkeit $n_{ij}$"
+        ]
+      },
+      {
+        "type": "paragraph",
+        "text": "Daraus folgt die eigentliche Stärke: Sind die Segmenthöhen über alle Spalten hinweg gleich, gilt $P(G \\mid X) = P(G)$ — die Merkmale sind **unabhängig**. Das Mosaikdiagramm ist damit ein visueller Vortest zum {{term:chi-quadrat-test|Chi-Quadrat-Test}}, und die Spaltenbreiten zeigen zugleich, welche Kategorie überhaupt genug Fälle für eine belastbare Aussage hat."
+      },
+      {
+        "type": "note",
+        "text": "Genau das leistet ein gestapeltes Balkendiagramm nicht: Dort sehen alle Säulen gleich breit aus, eine Kategorie mit fünf Fällen wirkt so bedeutsam wie eine mit fünfhundert. Bei vielen Kategorien werden die Segmente allerdings zu schmal zum Beschriften — dann ist die {{term:heatmap|Heatmap}} die robustere Wahl."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "A **mosaic plot** displays the joint distribution of two categorical characteristics so that every area is proportional to the corresponding cell frequency of a {{term:kontingenztafel|contingency table}}. Unlike the stacked {{term:balkendiagramm|bar chart}}, whose columns are all equally wide, it encodes both margins geometrically."
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Column width** — proportional to the {{term:randverteilung|marginal frequency}} of the X category: wide means frequent, narrow means rare",
+          "**Segment height** — proportional to the conditional probability $P(G \\mid X)$ within that column",
+          "**Area** — width times height, hence proportional to the cell frequency $n_{ij}$"
+        ]
+      },
+      {
+        "type": "paragraph",
+        "text": "Hence its real strength: if the segment heights are equal across all columns, then $P(G \\mid X) = P(G)$ — the characteristics are **independent**. The mosaic plot is thus a visual precursor to the {{term:chi-quadrat-test|chi-square test}}, and the column widths simultaneously show which category even has enough cases to support a claim."
+      },
+      {
+        "type": "note",
+        "text": "A stacked bar chart cannot do this: there all columns look equally wide, so a category with five cases appears as weighty as one with five hundred. With many categories the segments do become too narrow to label — the {{term:heatmap|heatmap}} is then the more robust choice."
+      }
+    ]
+  },
+  "aliases": {
+    "de": [
+      "Mosaikplot",
+      "Marimekko-Diagramm",
+      "Flächendiagramm für Kontingenztafeln"
+    ],
+    "en": [
+      "mosaic display",
+      "Marimekko chart"
+    ]
+  },
+  "seeAlso": [
+    "kontingenztafel",
+    "randverteilung",
+    "chi-quadrat-test",
+    "heatmap",
+    "balkendiagramm"
+  ],
+  "modules": [
+    "mosaic",
+    "chart-suggestion"
+  ],
+  "algoLab": [],
+  "sources": [
+    {
+      "label": "Hartigan, J. A. & Kleiner, B. — Mosaics for Contingency Tables, Computer Science and Statistics, 1981",
+      "url": null
+    },
+    {
+      "label": "Friendly, M. — Mosaic Displays for Multi-Way Contingency Tables, JASA 89 (425), 1994",
+      "url": null
+    },
+    {
+      "label": "Agresti, A. — Categorical Data Analysis, 3rd Edition, Wiley, 2013",
+      "url": null
+    }
+  ]
+}

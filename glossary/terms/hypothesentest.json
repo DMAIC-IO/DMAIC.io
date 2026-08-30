@@ -69,7 +69,8 @@
     "p-wert",
     "signifikanzniveau",
     "t-test",
-    "anova"
+    "anova",
+    "chi-quadrat-test"
   ],
   "modules": [
     "hypothesis-test",

@@ -12,7 +12,7 @@ export default {
         blocks: [
           {
             type: 'paragraph',
-            content: 'Ein Säulendiagramm zeigt für jede Kategorie einen senkrechten Balken, dessen Höhe einen numerischen Wert ausdrückt. Es ist das geradlinigste Werkzeug, um diskrete Größen unmittelbar visuell zu vergleichen — die Länge der Balken übersetzt das menschliche Auge nahezu fehlerfrei in Größenverhältnisse.',
+            content: 'Ein {{term:balkendiagramm|Säulendiagramm}} zeigt für jede Kategorie einen senkrechten Balken, dessen Höhe einen numerischen Wert ausdrückt. Es ist das geradlinigste Werkzeug, um diskrete Größen unmittelbar visuell zu vergleichen — die Länge der Balken übersetzt das menschliche Auge nahezu fehlerfrei in Größenverhältnisse.',
           },
           {
             type: 'definition',
@@ -27,7 +27,7 @@ export default {
           {
             type: 'definition',
             term: 'Gruppierung',
-            content: 'Wenn eine zweite kategoriale Spalte angegeben wird, entsteht pro X-Kategorie ein Balkenbündel oder ein gestapelter Balken — jede Untergruppe bekommt eine eigene Farbe. So lassen sich Effekte wie „Defektart × Schicht" oder „Lieferant × Werk" auf einen Blick vergleichen.',
+            content: 'Wenn eine zweite {{term:skalenniveau|kategoriale}} Spalte angegeben wird, entsteht pro X-Kategorie ein Balkenbündel oder ein gestapelter Balken — jede Untergruppe bekommt eine eigene Farbe. So lassen sich Effekte wie „Defektart × Schicht" oder „Lieferant × Werk" auf einen Blick vergleichen.',
           },
           {
             type: 'definition',
@@ -45,7 +45,7 @@ export default {
         blocks: [
           {
             type: 'paragraph',
-            content: 'A bar chart draws one vertical bar per category, the height of which expresses a numeric value. It is the most straightforward tool to compare discrete quantities — the eye translates bar length into magnitude almost without error.',
+            content: 'A {{term:balkendiagramm|bar chart}} draws one vertical bar per category, the height of which expresses a numeric value. It is the most straightforward tool to compare discrete quantities — the eye translates bar length into magnitude almost without error.',
           },
           {
             type: 'definition',
@@ -60,7 +60,7 @@ export default {
           {
             type: 'definition',
             term: 'Grouping',
-            content: 'When a second categorical column is supplied, each X-category becomes a bundle of bars (or a stacked bar) — each subgroup in its own color. This makes effects such as "defect type × shift" or "supplier × plant" comparable at a glance.',
+            content: 'When a second {{term:skalenniveau|categorical}} column is supplied, each X-category becomes a bundle of bars (or a stacked bar) — each subgroup in its own color. This makes effects such as "defect type × shift" or "supplier × plant" comparable at a glance.',
           },
           {
             type: 'definition',

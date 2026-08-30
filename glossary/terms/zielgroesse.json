@@ -71,7 +71,8 @@
     "doe-advisor",
     "regression",
     "glm-regression",
-    "response-optimization"
+    "response-optimization",
+    "contour-plot"
   ],
   "algoLab": [
     "doe/doe-planner",

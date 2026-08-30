@@ -12,7 +12,7 @@ export default {
         blocks: [
           {
             type: 'paragraph',
-            content: 'Ein Tortendiagramm (Kreisdiagramm) zeigt, wie sich ein Ganzes auf wenige Kategorien aufteilt. Jede Kategorie wird als Kreissektor mit einer Fläche proportional zu ihrem Anteil dargestellt. Zusammen ergeben alle Sektoren genau 100 %.',
+            content: 'Ein {{term:kreisdiagramm|Tortendiagramm}} (Kreisdiagramm) zeigt, wie sich ein Ganzes auf wenige Kategorien aufteilt. Jede Kategorie wird als Kreissektor mit einer Fläche proportional zu ihrem Anteil dargestellt. Zusammen ergeben alle Sektoren genau 100 %.',
           },
           {
             type: 'definition',
@@ -40,7 +40,7 @@ export default {
         blocks: [
           {
             type: 'paragraph',
-            content: 'A pie chart shows how a whole is split into a few categories. Each category is drawn as a circle slice with an area proportional to its share. Together all slices add up to exactly 100 %.',
+            content: 'A {{term:kreisdiagramm|pie chart}} shows how a whole is split into a few categories. Each category is drawn as a circle slice with an area proportional to its share. Together all slices add up to exactly 100 %.',
           },
           {
             type: 'definition',

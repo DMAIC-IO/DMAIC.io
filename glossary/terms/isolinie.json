@@ -1,0 +1,98 @@
+{
+  "id": "isolinie",
+  "category": "visualization",
+  "title": {
+    "de": "Isolinie (Konturlinie)",
+    "en": "Contour Line (Isoline)"
+  },
+  "short": {
+    "de": "Linie konstanter Antwort in einem Konturdiagramm — ihr Abstand zeigt, wie stark ein Faktor wirkt.",
+    "en": "Line of constant response in a contour plot — its spacing shows how strongly a factor acts."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "Eine **Isolinie** verbindet in einem Konturdiagramm alle Punkte $(x, y)$ mit demselben Wert der {{term:zielgroesse|Zielgröße}} $z$ — wie die Höhenlinien einer Landkarte. Das Konturdiagramm ist damit die zweidimensionale Draufsicht auf eine {{term:response-surface|Antwortfläche}}."
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Enge Linien** — steiler Gradient: eine kleine Faktoränderung verschiebt die Zielgröße stark",
+          "**Weite Linien** — flacher Gradient: der Faktor wirkt in diesem Bereich kaum",
+          "**Geschlossene Konturen** — ein lokales Optimum liegt innerhalb des dargestellten Bereichs",
+          "**Sattelpunkt** — die Linien laufen kreuzförmig zusammen: kein Extremum, sondern Maximum in einer und Minimum in der anderen Richtung",
+          "**Gekrümmte statt paralleler Linien** — Anzeichen für eine {{term:wechselwirkung|Wechselwirkung}} der beiden Faktoren"
+        ]
+      },
+      {
+        "type": "paragraph",
+        "text": "Berechnet werden die Linien meist mit dem Marching-Squares-Algorithmus über ein feines Raster der Modellgleichung. Acht bis zehn Stufen sind ein guter Kompromiss: weniger verschluckt feine Strukturen, mehr überzeichnet das Bild."
+      },
+      {
+        "type": "note",
+        "text": "Das Konturdiagramm zeigt die **Modellantwort, nicht die Realität**. Außerhalb des Versuchsbereichs extrapoliert das Modell ungeprüft — deshalb die tatsächlichen Versuchspunkte einblenden und Aussagen auf deren Hüllkurve beschränken."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "An **isoline** connects all points $(x, y)$ in a contour plot that share the same value of the {{term:zielgroesse|response}} $z$ — like the contour lines of a map. The contour plot is thus the two-dimensional top view of a {{term:response-surface|response surface}}."
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Tightly spaced lines** — steep gradient: a small change in the factor moves the response a lot",
+          "**Widely spaced lines** — flat gradient: the factor barely acts in this region",
+          "**Closed contours** — a local optimum lies inside the displayed region",
+          "**Saddle point** — lines meet in a cross: no extremum, but a maximum in one direction and a minimum in the other",
+          "**Curved rather than parallel lines** — a sign of an {{term:wechselwirkung|interaction}} between the two factors"
+        ]
+      },
+      {
+        "type": "paragraph",
+        "text": "The lines are usually computed with the marching-squares algorithm over a fine grid of the model equation. Eight to ten levels is a good compromise: fewer swallows fine structure, more clutters the picture."
+      },
+      {
+        "type": "note",
+        "text": "A contour plot shows the **model response, not reality**. Outside the experimental region the model extrapolates unchecked — so overlay the actual design points and confine statements to their hull."
+      }
+    ]
+  },
+  "aliases": {
+    "de": [
+      "Konturlinie",
+      "Höhenlinie",
+      "Konturdiagramm",
+      "Isokontur"
+    ],
+    "en": [
+      "contour line",
+      "isoline",
+      "contour plot",
+      "level curve"
+    ]
+  },
+  "seeAlso": [
+    "response-surface",
+    "zielgroesse",
+    "wechselwirkung",
+    "haupteffekt",
+    "doe"
+  ],
+  "modules": [
+    "contour-plot",
+    "response-optimization"
+  ],
+  "algoLab": [],
+  "sources": [
+    {
+      "label": "Box, G. E. P. & Draper, N. R. — Empirical Model-Building and Response Surfaces, Wiley, 1987",
+      "url": null
+    },
+    {
+      "label": "Myers, R. H., Montgomery, D. C. & Anderson-Cook, C. M. — Response Surface Methodology, 4th Edition, Wiley, 2016",
+      "url": null
+    }
+  ]
+}

@@ -1,0 +1,96 @@
+{
+  "id": "balkendiagramm",
+  "category": "visualization",
+  "title": {
+    "de": "Balken- und Säulendiagramm",
+    "en": "Bar and Column Chart"
+  },
+  "short": {
+    "de": "Vergleicht eine Kenngröße über kategoriale Ausprägungen — die Länge kodiert den Wert und wird vom Auge am genauesten gelesen.",
+    "en": "Compares a measure across categorical levels — length encodes the value and is what the eye reads most accurately."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "Das **Balkendiagramm** zeichnet je Ausprägung eines {{term:skalenniveau|kategorialen Merkmals}} einen Balken, dessen Länge den Wert ausdrückt (senkrecht dargestellt heißt es Säulendiagramm). Der Wert ist entweder eine Häufigkeit, ein {{term:mittelwert|Mittelwert}} oder eine Summe je Kategorie."
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Gruppiert** — eine zweite kategoriale Variable erzeugt Balkenbündel nebeneinander; gut zum direkten Vergleich der Untergruppen",
+          "**Gestapelt** — die Untergruppen werden übereinander getürmt; gut für die Summe je Kategorie, schlecht für den Vergleich der oberen Segmente, weil deren Basislinie wandert"
+        ]
+      },
+      {
+        "type": "paragraph",
+        "text": "Abgrenzung: Ein Histogramm sieht ähnlich aus, zeigt aber ein **metrisches** Merkmal in Klassen — dort berühren sich die Balken, und ihre Reihenfolge ist durch die Skala festgelegt. Beim Balkendiagramm ist die Reihenfolge frei wählbar. Sortiert man absteigend nach Häufigkeit und ergänzt eine Kumulativlinie, entsteht ein {{term:pareto|Pareto-Diagramm}}."
+      },
+      {
+        "type": "note",
+        "text": "Die Werteachse **muss bei null beginnen**. Da die Länge den Wert kodiert, verzerrt eine abgeschnittene Achse das Größenverhältnis unmittelbar — aus 3 % Unterschied werden optisch 300 %. Bei mehr als etwa zwölf Kategorien wird die horizontale Variante mit Beschriftung links lesbarer."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "A **bar chart** draws one bar per level of a {{term:skalenniveau|categorical characteristic}}, its length expressing the value (drawn vertically it is called a column chart). The value is either a count, a {{term:mittelwert|mean}} or a sum per category."
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Grouped** — a second categorical variable produces clusters of bars side by side; good for comparing subgroups directly",
+          "**Stacked** — subgroups are piled on top of each other; good for the per-category total, poor for comparing upper segments because their baseline shifts"
+        ]
+      },
+      {
+        "type": "paragraph",
+        "text": "Distinction: a histogram looks similar but shows a **metric** characteristic in bins — there the bars touch and their order is fixed by the scale. In a bar chart the order is free. Sorted descending by frequency and topped with a cumulative line, it becomes a {{term:pareto|Pareto chart}}."
+      },
+      {
+        "type": "note",
+        "text": "The value axis **must start at zero**. Because length encodes the value, a truncated axis distorts the ratio immediately — a 3 % difference can be made to look like 300 %. Beyond roughly twelve categories the horizontal variant with labels on the left reads better."
+      }
+    ]
+  },
+  "aliases": {
+    "de": [
+      "Säulendiagramm",
+      "Balkendiagramm",
+      "gestapeltes Balkendiagramm",
+      "gruppiertes Balkendiagramm"
+    ],
+    "en": [
+      "bar chart",
+      "column chart",
+      "stacked bar chart",
+      "grouped bar chart"
+    ]
+  },
+  "seeAlso": [
+    "skalenniveau",
+    "pareto",
+    "randverteilung",
+    "kreisdiagramm"
+  ],
+  "modules": [
+    "bar",
+    "pareto",
+    "chart-suggestion"
+  ],
+  "algoLab": [],
+  "sources": [
+    {
+      "label": "Cleveland, W. S. & McGill, R. — Graphical Perception: Theory, Experimentation, and Application to the Development of Graphical Methods, JASA 79 (387), 1984",
+      "url": null
+    },
+    {
+      "label": "Few, S. — Show Me the Numbers: Designing Tables and Graphs to Enlighten, 2nd Edition, Analytics Press, 2012",
+      "url": null
+    },
+    {
+      "label": "Pyzdek, T. & Keller, P. — The Six Sigma Handbook, 5th Edition",
+      "url": null
+    }
+  ]
+}

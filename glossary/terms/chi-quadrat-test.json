@@ -1,0 +1,111 @@
+{
+  "id": "chi-quadrat-test",
+  "category": "hypothesis",
+  "title": {
+    "de": "Chi-Quadrat-Test",
+    "en": "Chi-Square Test"
+  },
+  "short": {
+    "de": "Prüft kategoriale Häufigkeiten gegen eine Erwartung — auf Unabhängigkeit, Anpassung oder eine geforderte Varianz.",
+    "en": "Tests categorical frequencies against an expectation — for independence, goodness of fit, or a required variance."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "Der **Chi-Quadrat-Test** vergleicht beobachtete mit erwarteten Häufigkeiten. Die {{term:teststatistik|Prüfgröße}} summiert die quadrierten Abweichungen, jeweils normiert auf die Erwartung:"
+      },
+      {
+        "type": "formula",
+        "latex": "\\chi^2 = \\sum_{i,j} \\frac{(n_{ij} - e_{ij})^2}{e_{ij}}"
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Unabhängigkeitstest** — arbeitet auf einer {{term:kontingenztafel|Kontingenztafel}}. $H_0$: die beiden Merkmale sind unabhängig. Freiheitsgrade $df = (r-1)(c-1)$",
+          "**Anpassungstest** — vergleicht eine beobachtete Verteilung mit einer theoretischen. Freiheitsgrade $df = k - 1 - m$ bei $m$ geschätzten Parametern",
+          "**Varianztest** — prüft $H_0: \\sigma^2 = \\sigma_0^2$ über $\\chi^2 = (n-1)s^2/\\sigma_0^2$ mit $df = n-1$; setzt Normalverteilung voraus und reagiert empfindlich auf deren Verletzung"
+        ]
+      },
+      {
+        "type": "paragraph",
+        "text": "Ist der {{term:p-wert|p-Wert}} kleiner als das {{term:signifikanzniveau|Signifikanzniveau}}, wird $H_0$ verworfen — bei der Kontingenztafel heißt das: die Merkmale hängen zusammen. *Wie stark* der Zusammenhang ist, sagt der Test nicht; dafür braucht es ein Zusammenhangsmaß wie Cramérs V."
+      },
+      {
+        "type": "note",
+        "text": "**Voraussetzung (Cochran-Regel):** höchstens 20 % der Zellen dürfen eine erwartete Häufigkeit unter 5 haben, keine unter 1. Bei kleinen Tafeln stattdessen Fishers exakten Test verwenden. Und: eine große Stichprobe macht auch praktisch belanglose Abweichungen signifikant — deshalb immer zusätzlich die {{term:effektstaerke|Effektstärke}} betrachten."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "The **chi-square test** compares observed with expected frequencies. The {{term:teststatistik|test statistic}} sums the squared deviations, each normalised by the expectation:"
+      },
+      {
+        "type": "formula",
+        "latex": "\\chi^2 = \\sum_{i,j} \\frac{(n_{ij} - e_{ij})^2}{e_{ij}}"
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Test of independence** — operates on a {{term:kontingenztafel|contingency table}}. $H_0$: the two characteristics are independent. Degrees of freedom $df = (r-1)(c-1)$",
+          "**Goodness-of-fit test** — compares an observed distribution with a theoretical one. Degrees of freedom $df = k - 1 - m$ with $m$ estimated parameters",
+          "**Variance test** — tests $H_0: \\sigma^2 = \\sigma_0^2$ via $\\chi^2 = (n-1)s^2/\\sigma_0^2$ with $df = n-1$; assumes normality and is sensitive to its violation"
+        ]
+      },
+      {
+        "type": "paragraph",
+        "text": "If the {{term:p-wert|p-value}} falls below the {{term:signifikanzniveau|significance level}}, $H_0$ is rejected — for a contingency table that means the characteristics are associated. *How strong* the association is, the test does not say; that needs an association measure such as Cramér's V."
+      },
+      {
+        "type": "note",
+        "text": "**Assumption (Cochran's rule):** at most 20 % of cells may have an expected frequency below 5, none below 1. For small tables use Fisher's exact test instead. And note: a large sample makes even practically irrelevant deviations significant — so always look at the {{term:effektstaerke|effect size}} as well."
+      }
+    ]
+  },
+  "aliases": {
+    "de": [
+      "χ²-Test",
+      "Chi-Quadrat-Unabhängigkeitstest",
+      "Chi-Quadrat-Anpassungstest",
+      "Chi²-Test"
+    ],
+    "en": [
+      "χ² test",
+      "chi-square test of independence",
+      "goodness-of-fit test"
+    ]
+  },
+  "seeAlso": [
+    "kontingenztafel",
+    "hypothesentest",
+    "p-wert",
+    "teststatistik",
+    "effektstaerke",
+    "mosaikdiagramm",
+    "varianzhomogenitaet"
+  ],
+  "modules": [
+    "mosaic",
+    "hypothesis-test"
+  ],
+  "algoLab": [],
+  "sources": [
+    {
+      "label": "Agresti, A. — Categorical Data Analysis, 3rd Edition, Wiley, 2013",
+      "url": null
+    },
+    {
+      "label": "Cochran, W. G. — The χ² Test of Goodness of Fit, Annals of Mathematical Statistics 23 (3), 1952",
+      "url": null
+    },
+    {
+      "label": "Montgomery, D. C. & Runger, G. C. — Applied Statistics and Probability for Engineers, 7th Edition",
+      "url": null
+    },
+    {
+      "label": "Pyzdek, T. & Keller, P. — The Six Sigma Handbook, 5th Edition",
+      "url": null
+    }
+  ]
+}

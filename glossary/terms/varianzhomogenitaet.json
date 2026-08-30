@@ -67,7 +67,8 @@
     "hypothesentest",
     "t-test",
     "anova",
-    "normalitaetstest"
+    "normalitaetstest",
+    "chi-quadrat-test"
   ],
   "modules": [
     "hypothesis-test"

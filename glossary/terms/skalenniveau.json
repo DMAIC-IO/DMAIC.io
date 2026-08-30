@@ -1,0 +1,106 @@
+{
+  "id": "skalenniveau",
+  "category": "descriptive",
+  "title": {
+    "de": "Skalenniveau",
+    "en": "Level of Measurement"
+  },
+  "short": {
+    "de": "Nominal, ordinal, intervall oder verhältnis — entscheidet, welche Kennzahlen, Diagramme und Tests überhaupt zulässig sind.",
+    "en": "Nominal, ordinal, interval or ratio — decides which statistics, charts and tests are admissible at all."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "Das **Skalenniveau** einer Variablen bestimmt, welche Rechenoperationen auf ihren Werten sinnvoll sind. Es ist die erste Frage jeder Auswertung — nicht der Datentyp im Speicher, sondern die Bedeutung der Werte. Die Einteilung geht auf S. S. Stevens (1946) zurück."
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Nominal** — nur unterscheidbar, keine Reihenfolge (Defektart, Lieferant, Schicht). Zulässig: Häufigkeiten, Modus, {{term:kontingenztafel|Kontingenztafeln}}",
+          "**Ordinal** — geordnet, aber ohne definierte Abstände (Schulnote, Prioritätsstufe, RPZ-Rang). Zulässig: zusätzlich {{term:median|Median}} und Quantile",
+          "**Intervall** — definierte Abstände, willkürlicher Nullpunkt (Temperatur in °C, Kalenderdatum). Zulässig: zusätzlich {{term:mittelwert|Mittelwert}} und {{term:standardabweichung|Standardabweichung}}",
+          "**Verhältnis** — definierte Abstände und absoluter Nullpunkt (Länge, Masse, Zykluszeit, Ausschussanteil). Zulässig: zusätzlich Verhältnisse und Prozentaussagen"
+        ]
+      },
+      {
+        "type": "paragraph",
+        "text": "Intervall- und Verhältnisskala werden in der Praxis meist als **metrisch** (stetig) zusammengefasst, nominal und ordinal als **kategorial** (attributiv). Diese gröbere Einteilung reicht für die Wahl von Diagramm und Testverfahren fast immer aus."
+      },
+      {
+        "type": "note",
+        "text": "Der häufigste Fehler ist die Mittelwertbildung über ordinale Daten — die mittlere Schulnote 2,7 unterstellt gleiche Abstände zwischen den Stufen, die es nicht gibt. Ebenso gilt: {{term:hypothesentest|Hypothesentests}} für metrische Daten ({{term:t-test|t-Test}}, {{term:anova|ANOVA}}) sind auf kategoriale Merkmale nicht anwendbar — dort greifen {{term:chi-quadrat-test|Chi-Quadrat-Tests}}."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "A variable's **level of measurement** determines which operations on its values are meaningful. It is the first question of any analysis — not the storage data type, but the meaning of the values. The classification goes back to S. S. Stevens (1946)."
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Nominal** — distinguishable only, no order (defect type, supplier, shift). Admissible: counts, mode, {{term:kontingenztafel|contingency tables}}",
+          "**Ordinal** — ordered, but without defined distances (grade, priority level, RPN rank). Admissible: additionally {{term:median|median}} and quantiles",
+          "**Interval** — defined distances, arbitrary zero (temperature in °C, calendar date). Admissible: additionally {{term:mittelwert|mean}} and {{term:standardabweichung|standard deviation}}",
+          "**Ratio** — defined distances and an absolute zero (length, mass, cycle time, scrap rate). Admissible: additionally ratios and percentage statements"
+        ]
+      },
+      {
+        "type": "paragraph",
+        "text": "In practice interval and ratio are usually merged into **metric** (continuous), nominal and ordinal into **categorical** (attribute). That coarser split is almost always sufficient for choosing a chart and a test procedure."
+      },
+      {
+        "type": "note",
+        "text": "The most common error is averaging ordinal data — a mean grade of 2.7 assumes equal spacing between levels that does not exist. Likewise, {{term:hypothesentest|hypothesis tests}} for metric data ({{term:t-test|t-test}}, {{term:anova|ANOVA}}) do not apply to categorical characteristics — {{term:chi-quadrat-test|chi-square tests}} take over there."
+      }
+    ]
+  },
+  "aliases": {
+    "de": [
+      "Messniveau",
+      "Skalentyp",
+      "nominal ordinal metrisch",
+      "Stevens-Skalen"
+    ],
+    "en": [
+      "scale of measurement",
+      "measurement scale",
+      "nominal ordinal interval ratio"
+    ]
+  },
+  "seeAlso": [
+    "mittelwert",
+    "median",
+    "kontingenztafel",
+    "chi-quadrat-test",
+    "hypothesentest",
+    "balkendiagramm"
+  ],
+  "modules": [
+    "chart-suggestion",
+    "worksheet",
+    "bar",
+    "pie-chart",
+    "heatmap",
+    "mosaic",
+    "pareto",
+    "hypothesis-test"
+  ],
+  "algoLab": [],
+  "sources": [
+    {
+      "label": "Stevens, S. S. — On the Theory of Scales of Measurement, Science 103 (2684), 1946",
+      "url": null
+    },
+    {
+      "label": "Bortz, J. & Schuster, C. — Statistik für Human- und Sozialwissenschaftler, 7. Auflage, Springer, 2010",
+      "url": null
+    },
+    {
+      "label": "Pyzdek, T. & Keller, P. — The Six Sigma Handbook, 5th Edition",
+      "url": null
+    }
+  ]
+}

@@ -1,0 +1,106 @@
+{
+  "id": "kontingenztafel",
+  "category": "descriptive",
+  "title": {
+    "de": "Kontingenztafel (Kreuztabelle)",
+    "en": "Contingency Table (Cross Tabulation)"
+  },
+  "short": {
+    "de": "Häufigkeitstabelle zweier kategorialer Merkmale — Grundlage für Mosaik, Heatmap und den Chi-Quadrat-Test.",
+    "en": "Frequency table of two categorical characteristics — the basis for mosaic plot, heatmap and the chi-square test."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "Eine **Kontingenztafel** kreuzt zwei kategoriale Merkmale und zählt, wie oft jede Kombination auftritt. Bei $r$ Zeilen und $c$ Spalten spricht man von einer $r \\times c$-Tafel; die Zelle $n_{ij}$ enthält die beobachtete Häufigkeit der Kombination (Zeile $i$, Spalte $j$)."
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Zellhäufigkeit** $n_{ij}$ — beobachtete Fälle je Kombination",
+          "**Randhäufigkeiten** $n_{i\\cdot}$ und $n_{\\cdot j}$ — Zeilen- bzw. Spaltensummen, siehe {{term:randverteilung|Randverteilung}}",
+          "**Gesamtsumme** $n$ — alle beobachteten Fälle"
+        ]
+      },
+      {
+        "type": "paragraph",
+        "text": "Unter der Annahme, dass beide Merkmale unabhängig sind, ergibt sich die **erwartete Häufigkeit** jeder Zelle allein aus den Rändern:"
+      },
+      {
+        "type": "formula",
+        "latex": "e_{ij} = \\frac{n_{i\\cdot} \\cdot n_{\\cdot j}}{n}"
+      },
+      {
+        "type": "note",
+        "text": "Die Differenz zwischen $n_{ij}$ und $e_{ij}$ ist der ganze Informationsgehalt der Tafel: der {{term:chi-quadrat-test|Chi-Quadrat-Test}} verdichtet sie zu einer Prüfgröße, das {{term:mosaikdiagramm|Mosaikdiagramm}} macht sie geometrisch sichtbar und die {{term:heatmap|Heatmap}} färbt sie ein."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "A **contingency table** crosses two categorical characteristics and counts how often each combination occurs. With $r$ rows and $c$ columns it is called an $r \\times c$ table; cell $n_{ij}$ holds the observed frequency of combination (row $i$, column $j$)."
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Cell frequency** $n_{ij}$ — observed cases per combination",
+          "**Marginal frequencies** $n_{i\\cdot}$ and $n_{\\cdot j}$ — row and column sums, see {{term:randverteilung|marginal distribution}}",
+          "**Grand total** $n$ — all observed cases"
+        ]
+      },
+      {
+        "type": "paragraph",
+        "text": "Assuming both characteristics are independent, each cell's **expected frequency** follows from the margins alone:"
+      },
+      {
+        "type": "formula",
+        "latex": "e_{ij} = \\frac{n_{i\\cdot} \\cdot n_{\\cdot j}}{n}"
+      },
+      {
+        "type": "note",
+        "text": "The difference between $n_{ij}$ and $e_{ij}$ carries the whole information content of the table: the {{term:chi-quadrat-test|chi-square test}} condenses it into a test statistic, the {{term:mosaikdiagramm|mosaic plot}} makes it geometrically visible and the {{term:heatmap|heatmap}} colours it in."
+      }
+    ]
+  },
+  "aliases": {
+    "de": [
+      "Kreuztabelle",
+      "Häufigkeitstabelle",
+      "r×c-Tafel",
+      "Vierfeldertafel"
+    ],
+    "en": [
+      "cross tabulation",
+      "crosstab",
+      "two-way table",
+      "r×c table"
+    ]
+  },
+  "seeAlso": [
+    "chi-quadrat-test",
+    "randverteilung",
+    "mosaikdiagramm",
+    "heatmap",
+    "skalenniveau"
+  ],
+  "modules": [
+    "mosaic",
+    "heatmap"
+  ],
+  "algoLab": [],
+  "sources": [
+    {
+      "label": "Agresti, A. — Categorical Data Analysis, 3rd Edition, Wiley, 2013",
+      "url": null
+    },
+    {
+      "label": "Bortz, J. & Schuster, C. — Statistik für Human- und Sozialwissenschaftler, 7. Auflage, Springer, 2010",
+      "url": null
+    },
+    {
+      "label": "Montgomery, D. C. & Runger, G. C. — Applied Statistics and Probability for Engineers, 7th Edition",
+      "url": null
+    }
+  ]
+}
