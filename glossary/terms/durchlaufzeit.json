@@ -1,0 +1,105 @@
+{
+  "id": "durchlaufzeit",
+  "category": "methodology",
+  "title": {
+    "de": "Durchlaufzeit und Prozesszykluseffizienz",
+    "en": "Lead Time and Process Cycle Efficiency"
+  },
+  "short": {
+    "de": "Gesamtzeit vom Auslösen bis zum Abschluss — und wie viel davon tatsächlich Bearbeitung ist.",
+    "en": "Total time from trigger to completion — and how much of it is actual processing."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "Die **Durchlaufzeit** ist die Zeit, die ein Vorgang von der Auslösung bis zum Abschluss braucht — inklusive aller Liegezeiten. Sie zerfällt in zwei Anteile, die im Prozess selten gleich groß sind:"
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Bearbeitungszeit** — die Zeit, in der tatsächlich an dem Vorgang gearbeitet wird",
+          "**Wartezeit** — die Liegezeit dazwischen: in der Ablage, im Postfach, in der Freigabeschleife"
+        ]
+      },
+      {
+        "type": "paragraph",
+        "text": "Ins Verhältnis gesetzt ergibt sich die **Prozesszykluseffizienz (PCE)**, das zentrale Lean-Maß für Flusseffizienz:"
+      },
+      {
+        "type": "formula",
+        "latex": "PCE = \\frac{\\text{Bearbeitungszeit}}{\\text{Durchlaufzeit}} \\cdot 100\\,\\%"
+      },
+      {
+        "type": "note",
+        "text": "Als grobe Orientierung gelten in der Fertigung etwa 25 % und in administrativen Prozessen etwa 10 % als gut; gemessen werden dort häufig unter 5 %. Deshalb ist die Durchlaufzeit die ehrlichere Kennzahl als die Bearbeitungszeit: Erstere sieht der Kunde, letztere steht in der Arbeitsplanung. Erfasst wird beides je Schritt im {{term:makigami|Makigami}}."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "**Lead time** is the time a case takes from trigger to completion — including all idle time. It splits into two shares that are rarely of equal size:"
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Processing time** — the time actually spent working on the case",
+          "**Waiting time** — the idle time in between: in a tray, an inbox, an approval loop"
+        ]
+      },
+      {
+        "type": "paragraph",
+        "text": "Their ratio gives the **process cycle efficiency (PCE)**, the central Lean measure of flow efficiency:"
+      },
+      {
+        "type": "formula",
+        "latex": "PCE = \\frac{\\text{processing time}}{\\text{lead time}} \\cdot 100\\,\\%"
+      },
+      {
+        "type": "note",
+        "text": "As a rough orientation, around 25 % in manufacturing and around 10 % in administrative processes count as good; measured values there are frequently below 5 %. That makes lead time the more honest metric than processing time: the customer experiences the former, the latter sits in the work plan. Both are captured per step in {{term:makigami|Makigami}}."
+      }
+    ]
+  },
+  "aliases": {
+    "de": [
+      "Lead Time",
+      "Bearbeitungszeit",
+      "Wartezeit",
+      "PCE",
+      "Prozesszykluseffizienz",
+      "Flusseffizienz"
+    ],
+    "en": [
+      "lead time",
+      "cycle time",
+      "process cycle efficiency",
+      "flow efficiency"
+    ]
+  },
+  "seeAlso": [
+    "makigami",
+    "muda",
+    "wertschoepfung",
+    "process-map"
+  ],
+  "modules": [
+    "makigami",
+    "opportunity-flowchart"
+  ],
+  "algoLab": [],
+  "sources": [
+    {
+      "label": "George, M. L. — Lean Six Sigma: Combining Six Sigma Quality with Lean Speed, McGraw-Hill, 2002",
+      "url": null
+    },
+    {
+      "label": "Rother, M. & Shook, J. — Learning to See: Value Stream Mapping to Add Value and Eliminate Muda, Lean Enterprise Institute, 2003",
+      "url": null
+    },
+    {
+      "label": "Liker, J. K. — The Toyota Way, McGraw-Hill, 2004",
+      "url": null
+    }
+  ]
+}

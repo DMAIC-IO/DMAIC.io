@@ -70,11 +70,13 @@
     "sipoc",
     "spezifikationsgrenzen",
     "prozessfaehigkeit",
-    "cpk"
+    "cpk",
+    "ce-matrix"
   ],
   "modules": [
     "voc-ctx-tree",
-    "sipoc"
+    "sipoc",
+    "ce-matrix"
   ],
   "algoLab": [],
   "sources": [

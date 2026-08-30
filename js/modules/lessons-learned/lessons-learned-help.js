@@ -12,7 +12,7 @@ export default {
         blocks: [
           {
             type: 'paragraph',
-            content: 'Lessons Learned dokumentieren Erkenntnisse aus einem laufenden oder abgeschlossenen Projekt — was hat funktioniert, was nicht, und welche Schlussfolgerung ergibt sich daraus für zukünftige Projekte. Sie sind das organisationale Gedächtnis der Six-Sigma-Praxis und gehören in die Control-Phase, am besten aber kontinuierlich gepflegt.',
+            content: '{{term:lessons-learned|Lessons Learned}} dokumentieren Erkenntnisse aus einem laufenden oder abgeschlossenen Projekt — was hat funktioniert, was nicht, und welche Schlussfolgerung ergibt sich daraus für zukünftige Projekte. Sie sind das organisationale Gedächtnis der Six-Sigma-Praxis und gehören in die Control-Phase, am besten aber kontinuierlich gepflegt.',
           },
           {
             type: 'definition',
@@ -41,7 +41,7 @@ export default {
         blocks: [
           {
             type: 'paragraph',
-            content: 'Lessons learned document insights from a running or completed project — what worked, what did not, and what conclusion follows for future projects. They are the organizational memory of Six Sigma practice and belong in the Control phase, but are best kept continuously.',
+            content: '{{term:lessons-learned|Lessons learned}} document insights from a running or completed project — what worked, what did not, and what conclusion follows for future projects. They are the organizational memory of Six Sigma practice and belong in the Control phase, but are best kept continuously.',
           },
           {
             type: 'definition',

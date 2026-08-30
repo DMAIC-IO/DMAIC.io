@@ -73,7 +73,8 @@
     "msa-typ1",
     "msa-typ2",
     "msa-typ6",
-    "msa-typ4"
+    "msa-typ4",
+    "gage-run-chart"
   ],
   "algoLab": [
     "msa/cg",

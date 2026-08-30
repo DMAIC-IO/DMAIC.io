@@ -101,7 +101,8 @@
     "response-optimization",
     "msa-typ4",
     "bar",
-    "heatmap"
+    "heatmap",
+    "gage-run-chart"
   ],
   "algoLab": [
     "hypothesis/one-sample-t-test",

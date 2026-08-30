@@ -82,7 +82,8 @@
     "genauigkeit"
   ],
   "modules": [
-    "msa-typ2"
+    "msa-typ2",
+    "gage-run-chart"
   ],
   "algoLab": [
     "msa/grr"

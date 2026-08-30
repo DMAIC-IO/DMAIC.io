@@ -1,0 +1,101 @@
+{
+  "id": "boxplot",
+  "category": "visualization",
+  "title": {
+    "de": "Boxplot (Kastengrafik)",
+    "en": "Box Plot"
+  },
+  "short": {
+    "de": "Fünf-Punkte-Zusammenfassung als Kasten mit Antennen — der kompakteste Vergleich mehrerer Gruppen.",
+    "en": "Five-number summary as a box with whiskers — the most compact way to compare several groups."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "Der **Boxplot** (Tukey, 1977) verdichtet eine Verteilung auf fünf Kennzahlen und macht damit den Vergleich vieler Gruppen nebeneinander möglich — dort, wo mehrere {{term:histogramm|Histogramme}} zu viel Platz bräuchten."
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Box** — vom unteren Quartil $Q_1$ bis zum oberen Quartil $Q_3$; sie enthält die mittleren 50 % der Werte",
+          "**Medianlinie** — der {{term:median|Median}} innerhalb der Box; ihre Lage zeigt die {{term:schiefe|Schiefe}}",
+          "**Interquartilsabstand** — $IQR = Q_3 - Q_1$, das robuste Streuungsmaß",
+          "**Antennen (Whisker)** — bis zum äußersten Wert innerhalb von $1{,}5 \\cdot IQR$ ab der Box",
+          "**Ausreißer** — alles jenseits der Antennen wird einzeln geplottet"
+        ]
+      },
+      {
+        "type": "paragraph",
+        "text": "Alle fünf Kennzahlen sind **robust**: Sie beruhen auf Rängen, nicht auf Summen, und ein einzelner Extremwert verschiebt weder Box noch Medianlinie. Genau darin liegt der Vorteil gegenüber der Kombination aus {{term:mittelwert|Mittelwert}} und {{term:standardabweichung|Standardabweichung}}."
+      },
+      {
+        "type": "note",
+        "text": "Der Boxplot verschweigt die **Form** innerhalb der Box: eine zweigipflige und eine gleichverteilte Gruppe können identisch aussehen. Bei kleinem $n$ (unter etwa 10 Werten je Gruppe) sind die Quartile instabil — dann ist ein Einzelwertdiagramm ehrlicher, das jeden Punkt zeigt."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "The **box plot** (Tukey, 1977) condenses a distribution into five numbers and thereby makes it possible to compare many groups side by side — where several {{term:histogramm|histograms}} would need too much space."
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Box** — from the lower quartile $Q_1$ to the upper quartile $Q_3$; it holds the middle 50 % of values",
+          "**Median line** — the {{term:median|median}} inside the box; its position reveals {{term:schiefe|skewness}}",
+          "**Interquartile range** — $IQR = Q_3 - Q_1$, the robust measure of spread",
+          "**Whiskers** — out to the most extreme value within $1.5 \\cdot IQR$ of the box",
+          "**Outliers** — anything beyond the whiskers is plotted individually"
+        ]
+      },
+      {
+        "type": "paragraph",
+        "text": "All five numbers are **robust**: they rest on ranks, not sums, so a single extreme value moves neither the box nor the median line. That is precisely the advantage over the {{term:mittelwert|mean}} plus {{term:standardabweichung|standard deviation}} combination."
+      },
+      {
+        "type": "note",
+        "text": "A box plot hides the **shape** inside the box: a bimodal and a uniform group can look identical. With small $n$ (below roughly 10 values per group) the quartiles are unstable — an individual value plot showing every point is then the more honest display."
+      }
+    ]
+  },
+  "aliases": {
+    "de": [
+      "Kastengrafik",
+      "Box-Whisker-Plot",
+      "Kastendiagramm",
+      "IQR-Plot"
+    ],
+    "en": [
+      "box-and-whisker plot",
+      "box chart"
+    ]
+  },
+  "seeAlso": [
+    "median",
+    "spannweite",
+    "histogramm",
+    "schiefe",
+    "mittelwert",
+    "skalenniveau"
+  ],
+  "modules": [
+    "boxplot",
+    "chart-suggestion"
+  ],
+  "algoLab": [],
+  "sources": [
+    {
+      "label": "Tukey, J. W. — Exploratory Data Analysis, Addison-Wesley, 1977",
+      "url": null
+    },
+    {
+      "label": "Cleveland, W. S. & McGill, R. — Graphical Perception: Theory, Experimentation, and Application to the Development of Graphical Methods, JASA 79 (387), 1984",
+      "url": null
+    },
+    {
+      "label": "Montgomery, D. C. — Introduction to Statistical Quality Control, 8th Edition",
+      "url": null
+    }
+  ]
+}

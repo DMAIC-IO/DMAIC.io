@@ -82,6 +82,45 @@ suite('Glossar: Modul-Abdeckung', () => {
       assertTrue(mods.includes(id), `skalenniveau ist nicht mit ${id} verknüpft`);
     }
   });
+
+  // Die Abdeckung wird als Komplement formuliert, damit die Lücke nicht
+  // unbemerkt mitwächst: nur Module ohne eigenes Six-Sigma-Vokabular dürfen
+  // leer bleiben. Ein neues Modul schlägt hier auf — dann entweder einen
+  // Begriff ergänzen oder, wenn es reine Infrastruktur ist, hier eintragen.
+  test('nur Infrastruktur-Module bleiben ohne Glossarbegriff', () => {
+    const withoutOwnVocabulary = new Set([
+      'data-import',           // Dateiformate und Parser, keine Six-Sigma-Begriffe
+      'rest-api',              // Schnittstellenkonfiguration
+      'model-data-generator',  // Testdaten-Erzeugung
+      'todo',                  // Aufgabenliste
+    ]);
+    const empty = MODULE_MANIFEST
+      .map(m => m.id)
+      .filter(id => termsForModule(id).length === 0 && !withoutOwnVocabulary.has(id));
+    assertEqual(empty.length, 0,
+      `Module ohne Glossarbegriff: ${JSON.stringify(empty)} — Begriff ergänzen `
+      + 'oder als Infrastruktur in withoutOwnVocabulary eintragen');
+  });
+
+  test('Histogramm und Boxplot sind als Diagrammtypen erfasst', () => {
+    // Beim Balkendiagramm sollte auf das Histogramm verwiesen werden; der
+    // Begriff fehlte, der Verweis musste als Klartext stehen bleiben.
+    for (const id of ['histogramm', 'boxplot']) {
+      assertTrue(TERM_IDS.has(id), `Begriff "${id}" fehlt`);
+      assertEqual(GLOSSARY_TERMS[id]?.category, 'visualization',
+        `${id} gehört in die Kategorie visualization`);
+    }
+  });
+
+  test('das Messverlaufsdiagramm ist über die bestehenden MSA-Begriffe erschlossen', () => {
+    // gage-run-chart rechnet nichts aus, es zeigt die Rohdaten einer
+    // Prüfmittelstudie — es braucht keinen eigenen Begriff, sondern die
+    // Verknüpfung mit dem MSA-Vokabular.
+    const terms = termsForModule('gage-run-chart');
+    for (const id of ['wiederholbarkeit', 'reproduzierbarkeit', 'gage-rr']) {
+      assertTrue(terms.includes(id), `gage-run-chart ist nicht mit ${id} verknüpft`);
+    }
+  });
 });
 
 suite('Glossar: Katalog-Integrität', () => {

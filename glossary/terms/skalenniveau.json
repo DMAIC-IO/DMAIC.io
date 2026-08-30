@@ -76,7 +76,9 @@
     "kontingenztafel",
     "chi-quadrat-test",
     "hypothesentest",
-    "balkendiagramm"
+    "balkendiagramm",
+    "histogramm",
+    "boxplot"
   ],
   "modules": [
     "chart-suggestion",

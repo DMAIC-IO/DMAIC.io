@@ -1,0 +1,107 @@
+{
+  "id": "muda",
+  "category": "methodology",
+  "title": {
+    "de": "Muda (Verschwendung)",
+    "en": "Muda (Waste)"
+  },
+  "short": {
+    "de": "Jede Tätigkeit, die Ressourcen verbraucht, ohne Wert für den Kunden zu schaffen — klassisch in acht Arten.",
+    "en": "Any activity that consumes resources without creating customer value — classically in eight types."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "**Muda** ist der japanische Begriff für Verschwendung: jede Tätigkeit, die Ressourcen verbraucht, ohne Wert für den Kunden zu schaffen. Taiichi Ohno hat sieben Arten benannt, später kam eine achte hinzu — im Deutschen oft als **TIMWOODS** gemerkt."
+      },
+      {
+        "type": "list",
+        "items": [
+          "**T — Transport** — unnötiges Bewegen von Material, Dokumenten oder Daten",
+          "**I — Inventory (Bestand)** — Material, Aufträge oder Vorgänge, die auf Bearbeitung warten",
+          "**M — Motion (Bewegung)** — unnötige Wege und Griffe der Mitarbeitenden",
+          "**W — Waiting (Warten)** — Liegezeit, in der nichts am Vorgang geschieht",
+          "**O — Overproduction (Überproduktion)** — mehr oder früher herstellen als abgerufen wird",
+          "**O — Overprocessing (Überbearbeitung)** — mehr Genauigkeit oder Schritte, als der Kunde verlangt",
+          "**D — Defects (Fehler)** — Ausschuss, Nacharbeit und Korrekturschleifen",
+          "**S — Skills** — ungenutztes Wissen und Können der Mitarbeitenden"
+        ]
+      },
+      {
+        "type": "paragraph",
+        "text": "Überproduktion gilt als die schwerwiegendste Art, weil sie die übrigen erzeugt: Was zu früh entsteht, muss transportiert, gelagert und bei Änderungen nachgearbeitet werden."
+      },
+      {
+        "type": "note",
+        "text": "Verschwendung zu benennen ist nur der erste Schritt — entscheidend ist die Einordnung in {{term:wertschoepfung|wertschöpfend und nicht wertschöpfend}}. Manche nicht wertschöpfenden Tätigkeiten sind notwendig (gesetzliche Prüfungen, Dokumentationspflichten); sie lassen sich verkleinern, aber nicht streichen."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "**Muda** is the Japanese term for waste: any activity that consumes resources without creating value for the customer. Taiichi Ohno named seven types, an eighth was added later — commonly memorised as **TIMWOODS**."
+      },
+      {
+        "type": "list",
+        "items": [
+          "**T — Transport** — unnecessary movement of material, documents or data",
+          "**I — Inventory** — material, orders or cases waiting to be processed",
+          "**M — Motion** — unnecessary walking and reaching by staff",
+          "**W — Waiting** — idle time in which nothing happens to the case",
+          "**O — Overproduction** — producing more or earlier than is called for",
+          "**O — Overprocessing** — more precision or more steps than the customer asks for",
+          "**D — Defects** — scrap, rework and correction loops",
+          "**S — Skills** — unused knowledge and capability of the workforce"
+        ]
+      },
+      {
+        "type": "paragraph",
+        "text": "Overproduction is considered the most severe type because it generates the others: whatever is made too early must be moved, stored, and reworked when requirements change."
+      },
+      {
+        "type": "note",
+        "text": "Naming waste is only the first step — what matters is classifying it as {{term:wertschoepfung|value-adding or non-value-adding}}. Some non-value-adding activities are necessary (statutory inspections, mandatory documentation); they can be shrunk but not deleted."
+      }
+    ]
+  },
+  "aliases": {
+    "de": [
+      "Verschwendung",
+      "TIMWOODS",
+      "sieben Arten der Verschwendung",
+      "7 Muda"
+    ],
+    "en": [
+      "waste",
+      "TIMWOODS",
+      "seven wastes",
+      "eight wastes"
+    ]
+  },
+  "seeAlso": [
+    "wertschoepfung",
+    "durchlaufzeit",
+    "makigami",
+    "process-map"
+  ],
+  "modules": [
+    "makigami",
+    "opportunity-flowchart"
+  ],
+  "algoLab": [],
+  "sources": [
+    {
+      "label": "Ohno, T. — Toyota Production System: Beyond Large-Scale Production, Productivity Press, 1988",
+      "url": null
+    },
+    {
+      "label": "Liker, J. K. — The Toyota Way, McGraw-Hill, 2004",
+      "url": null
+    },
+    {
+      "label": "George, M. L. — Lean Six Sigma: Combining Six Sigma Quality with Lean Speed, McGraw-Hill, 2002",
+      "url": null
+    }
+  ]
+}

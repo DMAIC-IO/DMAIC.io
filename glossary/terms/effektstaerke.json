@@ -65,7 +65,8 @@
     "p-wert",
     "power",
     "hypothesentest",
-    "korrelation"
+    "korrelation",
+    "cramers-v"
   ],
   "modules": [
     "hypothesis-test",

@@ -60,7 +60,9 @@
     "kurtosis",
     "mittelwert",
     "median",
-    "standardabweichung"
+    "standardabweichung",
+    "histogramm",
+    "boxplot"
   ],
   "modules": [
     "histogram",

@@ -1,0 +1,101 @@
+{
+  "id": "histogramm",
+  "category": "visualization",
+  "title": {
+    "de": "Histogramm",
+    "en": "Histogram"
+  },
+  "short": {
+    "de": "Klassierte Häufigkeitsdarstellung eines metrischen Merkmals — zeigt Lage, Streuung und Form der Verteilung.",
+    "en": "Binned frequency display of a metric characteristic — shows location, spread and shape of the distribution."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "Ein **Histogramm** teilt den Wertebereich eines {{term:skalenniveau|metrischen}} Merkmals in gleich breite Klassen und zeichnet je Klasse einen Balken, dessen Höhe die Anzahl der darin liegenden Werte angibt. Es beantwortet drei Fragen auf einmal: Wo liegt die Verteilung, wie breit ist sie, und welche Form hat sie?"
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Lage** — wo liegt der Schwerpunkt? Vergleich mit {{term:mittelwert|Mittelwert}} und {{term:median|Median}}",
+          "**Streuung** — wie breit ist die Verteilung? Bezug zur {{term:standardabweichung|Standardabweichung}}",
+          "**Form** — symmetrisch, {{term:schiefe|schief}}, zweigipflig oder abgeschnitten",
+          "**Ausreißer** — einzelne Balken weit abseits des Hauptkörpers"
+        ]
+      },
+      {
+        "type": "paragraph",
+        "text": "Die **Klassenanzahl** ist die einzige echte Stellschraube und verändert das Bild erheblich: zu wenige Klassen glätten reale Struktur weg, zu viele erzeugen Zufallszacken. Gängige Faustregeln sind $k \\approx \\sqrt{n}$ oder die Regel von Sturges; die Klassenbreite nach Scott orientiert sich zusätzlich an der Streuung."
+      },
+      {
+        "type": "note",
+        "text": "Abgrenzung zum {{term:balkendiagramm|Balkendiagramm}}: dort ist das Merkmal kategorial, die Balken stehen getrennt und ihre Reihenfolge ist frei. Im Histogramm berühren sich die Balken, weil die Skala stetig ist. Für die Beurteilung der Normalverteilung ist ein {{term:normalitaetstest|Normalitätstest}} oder ein Wahrscheinlichkeitsnetz aussagekräftiger als der optische Eindruck — ein Histogramm braucht dafür etwa $n \\geq 50$."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "A **histogram** divides the value range of a {{term:skalenniveau|metric}} characteristic into equally wide bins and draws one bar per bin whose height gives the count of values inside it. It answers three questions at once: where does the distribution sit, how wide is it, and what shape does it have?"
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Location** — where is the centre of mass? Compare with {{term:mittelwert|mean}} and {{term:median|median}}",
+          "**Spread** — how wide is the distribution? Relates to the {{term:standardabweichung|standard deviation}}",
+          "**Shape** — symmetric, {{term:schiefe|skewed}}, bimodal or truncated",
+          "**Outliers** — isolated bars far from the main body"
+        ]
+      },
+      {
+        "type": "paragraph",
+        "text": "The **number of bins** is the only real tuning knob and changes the picture considerably: too few smooth away real structure, too many create random spikes. Common rules of thumb are $k \\approx \\sqrt{n}$ or Sturges' rule; Scott's bin width additionally accounts for the spread."
+      },
+      {
+        "type": "note",
+        "text": "Distinction from the {{term:balkendiagramm|bar chart}}: there the characteristic is categorical, the bars stand apart and their order is free. In a histogram the bars touch because the scale is continuous. For judging normality a {{term:normalitaetstest|normality test}} or a probability plot is far more informative than the visual impression — a histogram needs roughly $n \\geq 50$ for that."
+      }
+    ]
+  },
+  "aliases": {
+    "de": [
+      "Häufigkeitsverteilung",
+      "Klassendiagramm",
+      "Verteilungsdiagramm"
+    ],
+    "en": [
+      "frequency distribution",
+      "binned distribution"
+    ]
+  },
+  "seeAlso": [
+    "balkendiagramm",
+    "boxplot",
+    "mittelwert",
+    "standardabweichung",
+    "schiefe",
+    "normalitaetstest",
+    "skalenniveau"
+  ],
+  "modules": [
+    "histogram",
+    "chart-suggestion",
+    "distribution-fit",
+    "process-capability"
+  ],
+  "algoLab": [],
+  "sources": [
+    {
+      "label": "Scott, D. W. — On Optimal and Data-Based Histograms, Biometrika 66 (3), 1979",
+      "url": null
+    },
+    {
+      "label": "Montgomery, D. C. — Introduction to Statistical Quality Control, 8th Edition",
+      "url": null
+    },
+    {
+      "label": "Few, S. — Show Me the Numbers: Designing Tables and Graphs to Enlighten, 2nd Edition, Analytics Press, 2012",
+      "url": null
+    }
+  ]
+}

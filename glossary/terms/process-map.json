@@ -68,11 +68,18 @@
     "sipoc",
     "dmaic",
     "ishikawa",
-    "fmea"
+    "fmea",
+    "flussdiagramm",
+    "swimlane",
+    "wertschoepfung"
   ],
   "modules": [
     "process-map",
-    "sipoc"
+    "sipoc",
+    "activity-flowchart",
+    "deployment-flowchart",
+    "opportunity-flowchart",
+    "makigami"
   ],
   "algoLab": [],
   "sources": [

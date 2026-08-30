@@ -1,0 +1,95 @@
+{
+  "id": "stakeholder",
+  "category": "methodology",
+  "title": {
+    "de": "Stakeholder und Stakeholder-Analyse",
+    "en": "Stakeholder and Stakeholder Analysis"
+  },
+  "short": {
+    "de": "Wer das Projekt beeinflussen kann oder von ihm betroffen ist — eingeordnet nach Macht, Interesse und Haltung.",
+    "en": "Who can influence the project or is affected by it — mapped by power, interest and attitude."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "Ein **Stakeholder** ist eine Person oder Gruppe, die ein Projekt beeinflussen kann oder von seinem Ergebnis betroffen ist: Sponsor, Operatoren, Kunden, IT, Betriebsrat, Vertrieb. Die **Stakeholder-Analyse** erfasst sie systematisch und ordnet sie nach zwei Achsen ein."
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Macht / Einfluss** — wie stark kann diese Person das Projekt fördern oder behindern? Formelle Entscheidungsmacht oder informelle Autorität",
+          "**Interesse / Betroffenheit** — wie sehr ändert das Ergebnis ihren Alltag oder ihre Ziele?"
+        ]
+      },
+      {
+        "type": "paragraph",
+        "text": "Aus beiden Achsen ergibt sich die **Macht-Interesse-Matrix** mit vier Quadranten und je einer Strategie: hoch/hoch *eng managen*, hoch/niedrig *zufrieden halten*, niedrig/hoch *gut informieren*, niedrig/niedrig *beobachten*. Ergänzend wird die **aktuelle gegen die gewünschte Haltung** gestellt — Befürworter, neutral, Gegner. Die Differenz zwischen beiden ist der eigentliche Handlungsbedarf."
+      },
+      {
+        "type": "note",
+        "text": "Die Analyse gehört in die Define-Phase und wird über die Projektlaufzeit fortgeschrieben, denn Haltungen ändern sich. Wer *welche Aufgabe* übernimmt, klärt danach die {{term:raci|RACI-Matrix}}; was der Kunde inhaltlich braucht, kommt aus {{term:voc|VoC}} und {{term:ctq|CTQ}}."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "A **stakeholder** is a person or group that can influence a project or is affected by its outcome: sponsor, operators, customers, IT, works council, sales. The **stakeholder analysis** captures them systematically and maps them along two axes."
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Power / influence** — how strongly can this person advance or obstruct the project? Formal decision authority or informal standing",
+          "**Interest / concern** — how much does the outcome change their daily work or their goals?"
+        ]
+      },
+      {
+        "type": "paragraph",
+        "text": "Both axes form the **power-interest grid** with four quadrants and one strategy each: high/high *manage closely*, high/low *keep satisfied*, low/high *keep informed*, low/low *monitor*. In addition the **current versus the desired attitude** is recorded — supporter, neutral, opponent. The gap between the two is the actual work to be done."
+      },
+      {
+        "type": "note",
+        "text": "The analysis belongs in the Define phase and is updated over the project, because attitudes change. Who takes on *which task* is settled afterwards by the {{term:raci|RACI matrix}}; what the customer actually needs comes from {{term:voc|VoC}} and {{term:ctq|CTQ}}."
+      }
+    ]
+  },
+  "aliases": {
+    "de": [
+      "Stakeholder-Analyse",
+      "Anspruchsgruppe",
+      "Macht-Interesse-Matrix",
+      "Power-Interest-Matrix"
+    ],
+    "en": [
+      "stakeholder analysis",
+      "power-interest grid",
+      "interested party"
+    ]
+  },
+  "seeAlso": [
+    "raci",
+    "project-charter",
+    "voc",
+    "ctq",
+    "dmaic"
+  ],
+  "modules": [
+    "stakeholder-analysis",
+    "project-charter"
+  ],
+  "algoLab": [],
+  "sources": [
+    {
+      "label": "Freeman, R. E. — Strategic Management: A Stakeholder Approach, Pitman, 1984",
+      "url": null
+    },
+    {
+      "label": "Mendelow, A. L. — Environmental Scanning: The Impact of the Stakeholder Concept, ICIS Proceedings, 1981",
+      "url": null
+    },
+    {
+      "label": "Project Management Institute — A Guide to the Project Management Body of Knowledge (PMBOK Guide), 7th Edition, 2021",
+      "url": null
+    }
+  ]
+}

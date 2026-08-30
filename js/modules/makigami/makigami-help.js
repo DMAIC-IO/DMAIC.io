@@ -12,7 +12,7 @@ export default {
         blocks: [
           {
             type: 'paragraph',
-            content: 'Makigami (jap. „aufgerolltes Papier") ist ein Lean-Werkzeug zur Aufnahme administrativer und dienstleistungsorientierter Prozesse. Während eine klassische Prozesskarte den Materialfluss zeigt, macht Makigami sichtbar, wer wann an einem Vorgang arbeitet und wie viel Zeit zwischen den Schritten verloren geht.',
+            content: '{{term:makigami|Makigami}} (jap. „aufgerolltes Papier") ist ein Lean-Werkzeug zur Aufnahme administrativer und dienstleistungsorientierter Prozesse. Während eine klassische Prozesskarte den Materialfluss zeigt, macht Makigami sichtbar, wer wann an einem Vorgang arbeitet und wie viel Zeit zwischen den Schritten verloren geht.',
           },
           {
             type: 'paragraph',
@@ -45,7 +45,7 @@ export default {
         blocks: [
           {
             type: 'paragraph',
-            content: 'Makigami (Japanese for "rolled paper") is a Lean tool for mapping administrative and service processes. Whereas a classic process map shows material flow, Makigami exposes who works on a case when, and how much time is lost in between steps.',
+            content: '{{term:makigami|Makigami}} (Japanese for "rolled paper") is a Lean tool for mapping administrative and service processes. Whereas a classic process map shows material flow, Makigami exposes who works on a case when, and how much time is lost in between steps.',
           },
           {
             type: 'paragraph',

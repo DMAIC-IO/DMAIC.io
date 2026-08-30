@@ -1,0 +1,94 @@
+{
+  "id": "makigami",
+  "category": "methodology",
+  "title": {
+    "de": "Makigami",
+    "en": "Makigami"
+  },
+  "short": {
+    "de": "Lean-Prozessaufnahme für Büro- und Dienstleistungsprozesse — Rollen über Schritte, mit Zeiten je Schritt.",
+    "en": "Lean process mapping for office and service processes — roles across steps, with times per step."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "**Makigami** (japanisch „aufgerolltes Papier\") nimmt administrative und dienstleistungsorientierte Prozesse auf. Wo eine klassische {{term:process-map|Prozesskarte}} den Materialfluss zeigt, macht Makigami sichtbar, **wer wann an einem Vorgang arbeitet** — und vor allem, wo er zwischendurch liegen bleibt."
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Zeilen** — die beteiligten Rollen als {{term:swimlane|Swimlanes}}: Kunde, Sachbearbeitung, Vorgesetzte, ein IT-System",
+          "**Spalten** — die Prozessschritte in chronologischer Reihenfolge",
+          "**Je Schritt erfasst** — Bearbeitungszeit, Wartezeit und die {{term:muda|Verschwendungsart}}"
+        ]
+      },
+      {
+        "type": "paragraph",
+        "text": "Der Erkenntnisgewinn liegt in zwei Mustern. **Übergaben** zwischen Rollen sind die klassischen Fehler- und Wartestellen: Jeder Zeilenwechsel ist ein Risiko. Und die Gegenüberstellung von Bearbeitungs- und {{term:durchlaufzeit|Wartezeit}} zeigt fast immer, dass der Vorgang die meiste Zeit einfach nur liegt."
+      },
+      {
+        "type": "note",
+        "text": "Im Büroprozess ist der Bestand unsichtbar — er liegt in Postfächern, Freigabeschleifen und Ticketsystemen statt im Regal. Genau deshalb braucht es die explizite Erfassung der Wartezeit; ohne sie sieht ein administrativer Prozess auf dem Papier effizient aus."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "**Makigami** (Japanese for \"rolled paper\") maps administrative and service processes. Where a classic {{term:process-map|process map}} shows material flow, Makigami reveals **who works on a case and when** — and above all where it sits idle in between."
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Rows** — the roles involved as {{term:swimlane|swimlanes}}: customer, case handler, supervisor, an IT system",
+          "**Columns** — the process steps in chronological order",
+          "**Captured per step** — processing time, waiting time and the type of {{term:muda|waste}}"
+        ]
+      },
+      {
+        "type": "paragraph",
+        "text": "The insight comes from two patterns. **Handovers** between roles are the classic points of error and delay: every row change is a risk. And contrasting processing time with {{term:durchlaufzeit|waiting time}} almost always shows that the case spends most of its life simply lying around."
+      },
+      {
+        "type": "note",
+        "text": "In an office process the inventory is invisible — it sits in inboxes, approval loops and ticket systems rather than on a shelf. That is exactly why waiting time must be recorded explicitly; without it an administrative process looks efficient on paper."
+      }
+    ]
+  },
+  "aliases": {
+    "de": [
+      "Makigami-Analyse",
+      "Papierrollen-Methode",
+      "Büro-Wertstromanalyse"
+    ],
+    "en": [
+      "Makigami analysis",
+      "office value stream mapping"
+    ]
+  },
+  "seeAlso": [
+    "muda",
+    "durchlaufzeit",
+    "wertschoepfung",
+    "swimlane",
+    "process-map"
+  ],
+  "modules": [
+    "makigami"
+  ],
+  "algoLab": [],
+  "sources": [
+    {
+      "label": "Rother, M. & Shook, J. — Learning to See: Value Stream Mapping to Add Value and Eliminate Muda, Lean Enterprise Institute, 2003",
+      "url": null
+    },
+    {
+      "label": "George, M. L. — Lean Six Sigma: Combining Six Sigma Quality with Lean Speed, McGraw-Hill, 2002",
+      "url": null
+    },
+    {
+      "label": "Liker, J. K. — The Toyota Way, McGraw-Hill, 2004",
+      "url": null
+    }
+  ]
+}

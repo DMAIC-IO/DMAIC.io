@@ -12,7 +12,7 @@ export default {
         blocks: [
           {
             type: 'paragraph',
-            content: 'Die Stakeholder-Analyse identifiziert alle Personen und Gruppen, die ein Six-Sigma-Projekt beeinflussen oder von ihm betroffen sind, und ordnet sie nach ihrem Einfluss und ihrer Haltung zum Projekt. Sie ist ein zentrales Werkzeug der Define-Phase und bildet die Grundlage für gezielte Kommunikation und Change Management.',
+            content: 'Die {{term:stakeholder|Stakeholder-Analyse}} identifiziert alle Personen und Gruppen, die ein Six-Sigma-Projekt beeinflussen oder von ihm betroffen sind, und ordnet sie nach ihrem Einfluss und ihrer Haltung zum Projekt. Sie ist ein zentrales Werkzeug der Define-Phase und bildet die Grundlage für gezielte Kommunikation und Change Management.',
           },
           {
             type: 'definition',
@@ -46,7 +46,7 @@ export default {
         blocks: [
           {
             type: 'paragraph',
-            content: 'Stakeholder analysis identifies all individuals and groups who influence a Six Sigma project or are affected by it, and classifies them by their influence and attitude toward the project. It is a central tool of the Define phase and forms the basis for targeted communication and change management.',
+            content: '{{term:stakeholder|Stakeholder analysis}} identifies all individuals and groups who influence a Six Sigma project or are affected by it, and classifies them by their influence and attitude toward the project. It is a central tool of the Define phase and forms the basis for targeted communication and change management.',
           },
           {
             type: 'definition',

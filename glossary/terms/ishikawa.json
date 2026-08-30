@@ -69,10 +69,12 @@
     "pareto",
     "fmea",
     "dmaic",
-    "regression"
+    "regression",
+    "ce-matrix"
   ],
   "modules": [
-    "ishikawa"
+    "ishikawa",
+    "ce-matrix"
   ],
   "algoLab": [],
   "sources": [

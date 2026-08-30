@@ -1,0 +1,99 @@
+{
+  "id": "wertschoepfung",
+  "category": "methodology",
+  "title": {
+    "de": "Wertschöpfung (VA / NVA)",
+    "en": "Value Add (VA / NVA)"
+  },
+  "short": {
+    "de": "Trennt Schritte, für die der Kunde zahlt, von denen, die er nicht bezahlen würde — die Grundfrage jeder Lean-Analyse.",
+    "en": "Separates steps the customer pays for from those they would not pay for — the base question of every Lean analysis."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "Ein Prozessschritt ist **wertschöpfend (VA)**, wenn er drei Bedingungen erfüllt: Der Kunde ist bereit, dafür zu zahlen; der Schritt verändert das Produkt oder die Leistung; und er wird beim ersten Mal richtig ausgeführt. Alles andere ist **nicht wertschöpfend (NVA)**."
+      },
+      {
+        "type": "list",
+        "items": [
+          "**VA — wertschöpfend** — fräsen, montieren, beraten, eine Entscheidung treffen",
+          "**BNVA — notwendig, aber nicht wertschöpfend** — gesetzliche Prüfung, Dokumentationspflicht, Rüstvorgang: verkleinern, nicht streichen",
+          "**NVA — nicht wertschöpfend** — Warten, Transportieren, Nacharbeiten, doppelt Erfassen: streichen"
+        ]
+      },
+      {
+        "type": "paragraph",
+        "text": "Diese Einteilung ist die Grundlage des Opportunity Flowcharts, das die Schritte auf zwei Bahnen verteilt: oben wertschöpfend, unten nicht wertschöpfend. Jeder Sprung nach unten macht eine Gelegenheit sichtbar — daher der Name."
+      },
+      {
+        "type": "note",
+        "text": "In typischen administrativen Prozessen liegt der wertschöpfende Anteil an der {{term:durchlaufzeit|Durchlaufzeit}} oft unter fünf Prozent. Die Konsequenz für Verbesserungsprojekte ist unbequem, aber klar: Den wertschöpfenden Schritt zu beschleunigen bringt fast nichts — die {{term:muda|Verschwendung}} dazwischen zu entfernen bringt fast alles."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "A process step is **value-adding (VA)** when it meets three conditions: the customer is willing to pay for it; it changes the product or service; and it is done right the first time. Everything else is **non-value-adding (NVA)**."
+      },
+      {
+        "type": "list",
+        "items": [
+          "**VA — value-adding** — machining, assembling, advising, making a decision",
+          "**BNVA — necessary but non-value-adding** — statutory inspection, mandatory documentation, setup: shrink it, do not delete it",
+          "**NVA — non-value-adding** — waiting, transporting, reworking, entering data twice: delete it"
+        ]
+      },
+      {
+        "type": "paragraph",
+        "text": "This split is the basis of the opportunity flowchart, which spreads steps over two lanes: value-adding on top, non-value-adding below. Every drop to the lower lane exposes an opportunity — hence the name."
+      },
+      {
+        "type": "note",
+        "text": "In typical administrative processes the value-adding share of {{term:durchlaufzeit|lead time}} is often below five percent. The consequence for improvement projects is uncomfortable but clear: speeding up the value-adding step gains almost nothing — removing the {{term:muda|waste}} in between gains almost everything."
+      }
+    ]
+  },
+  "aliases": {
+    "de": [
+      "wertschöpfend",
+      "nicht wertschöpfend",
+      "VA/NVA",
+      "BNVA",
+      "Wertanalyse"
+    ],
+    "en": [
+      "value-adding",
+      "non-value-adding",
+      "VA/NVA",
+      "BNVA"
+    ]
+  },
+  "seeAlso": [
+    "muda",
+    "durchlaufzeit",
+    "makigami",
+    "flussdiagramm",
+    "process-map"
+  ],
+  "modules": [
+    "opportunity-flowchart",
+    "makigami"
+  ],
+  "algoLab": [],
+  "sources": [
+    {
+      "label": "Rother, M. & Shook, J. — Learning to See: Value Stream Mapping to Add Value and Eliminate Muda, Lean Enterprise Institute, 2003",
+      "url": null
+    },
+    {
+      "label": "George, M. L. — Lean Six Sigma: Combining Six Sigma Quality with Lean Speed, McGraw-Hill, 2002",
+      "url": null
+    },
+    {
+      "label": "Ohno, T. — Toyota Production System: Beyond Large-Scale Production, Productivity Press, 1988",
+      "url": null
+    }
+  ]
+}

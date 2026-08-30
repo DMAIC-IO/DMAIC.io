@@ -1,0 +1,102 @@
+{
+  "id": "cramers-v",
+  "category": "hypothesis",
+  "title": {
+    "de": "Cramérs V",
+    "en": "Cramér's V"
+  },
+  "short": {
+    "de": "Effektstärke für den Zusammenhang zweier kategorialer Merkmale — zwischen 0 (unabhängig) und 1 (perfekt).",
+    "en": "Effect size for the association of two categorical characteristics — between 0 (independent) and 1 (perfect)."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "Der {{term:chi-quadrat-test|Chi-Quadrat-Test}} sagt, *ob* ein Zusammenhang statistisch gesichert ist — nicht, *wie stark* er ist. Da $\\chi^2$ direkt mit dem Stichprobenumfang wächst, taugt die Prüfgröße selbst nicht als Maß. **Cramérs V** normiert sie auf den Bereich $[0, 1]$:"
+      },
+      {
+        "type": "formula",
+        "latex": "V = \\sqrt{\\frac{\\chi^2}{n \\cdot (\\min(r, c) - 1)}}"
+      },
+      {
+        "type": "paragraph",
+        "text": "Dabei sind $r$ und $c$ Zeilen- und Spaltenzahl der {{term:kontingenztafel|Kontingenztafel}} und $n$ der Stichprobenumfang. $V = 0$ bedeutet vollständige Unabhängigkeit, $V = 1$ einen deterministischen Zusammenhang. Für die $2 \\times 2$-Tafel fällt V mit dem Phi-Koeffizienten zusammen."
+      },
+      {
+        "type": "list",
+        "items": [
+          "$V \\approx 0{,}1$ — schwacher Zusammenhang",
+          "$V \\approx 0{,}3$ — mittlerer Zusammenhang",
+          "$V \\geq 0{,}5$ — starker Zusammenhang"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "Die Richtwerte gehen auf Cohen zurück und sind an die Tafelgröße zu relativieren — bei großen Tafeln fallen dieselben Muster in V kleiner aus. Der eigentliche Nutzen liegt im Zusammenspiel: erst der {{term:p-wert|p-Wert}} für die Frage „gesichert?\", dann V für „relevant?\". Eine große Stichprobe liefert leicht ein signifikantes Ergebnis bei $V = 0{,}05$ — statistisch gesichert, praktisch bedeutungslos."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "The {{term:chi-quadrat-test|chi-square test}} says *whether* an association is statistically established — not *how strong* it is. Because $\\chi^2$ grows directly with sample size, the statistic itself is useless as a measure. **Cramér's V** normalises it to the range $[0, 1]$:"
+      },
+      {
+        "type": "formula",
+        "latex": "V = \\sqrt{\\frac{\\chi^2}{n \\cdot (\\min(r, c) - 1)}}"
+      },
+      {
+        "type": "paragraph",
+        "text": "Here $r$ and $c$ are the row and column counts of the {{term:kontingenztafel|contingency table}} and $n$ is the sample size. $V = 0$ means complete independence, $V = 1$ a deterministic association. For a $2 \\times 2$ table V coincides with the phi coefficient."
+      },
+      {
+        "type": "list",
+        "items": [
+          "$V \\approx 0.1$ — weak association",
+          "$V \\approx 0.3$ — moderate association",
+          "$V \\geq 0.5$ — strong association"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "These benchmarks go back to Cohen and must be read relative to table size — for large tables the same pattern yields a smaller V. The real value lies in the pairing: first the {{term:p-wert|p-value}} for \"established?\", then V for \"relevant?\". A large sample easily produces a significant result at $V = 0.05$ — statistically established, practically meaningless."
+      }
+    ]
+  },
+  "aliases": {
+    "de": [
+      "Cramérs Kontingenzmaß",
+      "Cramér-V",
+      "Phi-Koeffizient"
+    ],
+    "en": [
+      "Cramer V",
+      "phi coefficient"
+    ]
+  },
+  "seeAlso": [
+    "chi-quadrat-test",
+    "kontingenztafel",
+    "effektstaerke",
+    "p-wert",
+    "mosaikdiagramm"
+  ],
+  "modules": [
+    "mosaic"
+  ],
+  "algoLab": [],
+  "sources": [
+    {
+      "label": "Cramér, H. — Mathematical Methods of Statistics, Princeton University Press, 1946",
+      "url": null
+    },
+    {
+      "label": "Agresti, A. — Categorical Data Analysis, 3rd Edition, Wiley, 2013",
+      "url": null
+    },
+    {
+      "label": "Cohen, J. — Statistical Power Analysis for the Behavioral Sciences, 2nd Edition, Lawrence Erlbaum, 1988",
+      "url": null
+    }
+  ]
+}

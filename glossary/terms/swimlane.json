@@ -1,0 +1,97 @@
+{
+  "id": "swimlane",
+  "category": "methodology",
+  "title": {
+    "de": "Swimlane (Deployment-Flowchart)",
+    "en": "Swimlane (Deployment Flowchart)"
+  },
+  "short": {
+    "de": "Verteilt Prozessschritte auf Bahnen je Rolle — macht Zuständigkeiten und Übergaben sichtbar.",
+    "en": "Spreads process steps across one lane per role — makes responsibilities and handovers visible."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "Ein **Swimlane-Diagramm** — auch Deployment- oder Cross-Functional-Flowchart — verteilt die Schritte eines {{term:flussdiagramm|Flussdiagramms}} auf horizontale Bänder. Jede **Lane** steht für eine Rolle, Abteilung oder ein System; die Reihenfolge der Schritte bleibt erhalten, ihre vertikale Position beantwortet zusätzlich die Frage: *Wer macht das?*"
+      },
+      {
+        "type": "paragraph",
+        "text": "Der eigentliche Erkenntnisgewinn liegt in den **Übergaben**: Jeder Wechsel der Lane ist eine Schnittstelle — und Schnittstellen sind die klassischen Stellen für Wartezeiten, Informationsverluste und Rückfragen. Ein Prozess, dessen Kette ständig zwischen den Bahnen springt, ist unabhängig von seinen Einzelschritten fehleranfällig."
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Viele Übergaben** — Kandidat für Bündelung von Zuständigkeiten",
+          "**Eine überfüllte Lane** — Engpass; passt zur Spaltenprüfung der {{term:raci|RACI-Matrix}}",
+          "**Rückführungen über Lanes hinweg** — Korrekturschleifen mit hoher Wartezeit"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "Swimlanes zeigen Zuständigkeit, nicht Verantwortungsart: Dass eine Rolle einen Schritt ausführt, sagt nichts darüber, wer ihn verantwortet oder wer vorher gefragt wird — das klärt die {{term:raci|RACI-Matrix}}. Für administrative Prozesse ergänzt {{term:makigami|Makigami}} dieselbe Zeilenlogik um Zeiten und {{term:muda|Verschwendungsarten}}."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "A **swimlane diagram** — also deployment or cross-functional flowchart — spreads the steps of a {{term:flussdiagramm|flowchart}} across horizontal bands. Each **lane** stands for a role, department or system; the order of steps is preserved while their vertical position additionally answers: *who does this?*"
+      },
+      {
+        "type": "paragraph",
+        "text": "The real insight lies in the **handovers**: every change of lane is an interface — and interfaces are the classic places for waiting, lost information and follow-up queries. A process whose chain keeps jumping between lanes is error-prone regardless of its individual steps."
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Many handovers** — a candidate for consolidating responsibilities",
+          "**One crowded lane** — a bottleneck; matches the column check of the {{term:raci|RACI matrix}}",
+          "**Backward arrows across lanes** — correction loops with high waiting time"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "Swimlanes show who acts, not the kind of responsibility: that a role performs a step says nothing about who owns it or who is consulted first — the {{term:raci|RACI matrix}} settles that. For administrative processes {{term:makigami|Makigami}} extends the same row logic with times and {{term:muda|types of waste}}."
+      }
+    ]
+  },
+  "aliases": {
+    "de": [
+      "Deployment-Flowchart",
+      "Cross-Functional-Flowchart",
+      "Lane",
+      "Bahnendiagramm"
+    ],
+    "en": [
+      "deployment flowchart",
+      "cross-functional flowchart",
+      "lane"
+    ]
+  },
+  "seeAlso": [
+    "flussdiagramm",
+    "raci",
+    "makigami",
+    "process-map",
+    "muda"
+  ],
+  "modules": [
+    "deployment-flowchart",
+    "makigami"
+  ],
+  "algoLab": [],
+  "sources": [
+    {
+      "label": "Damelio, R. — The Basics of Process Mapping, 2nd Edition, Productivity Press, 2011",
+      "url": null
+    },
+    {
+      "label": "Pyzdek, T. & Keller, P. — The Six Sigma Handbook, 5th Edition",
+      "url": null
+    },
+    {
+      "label": "George, M. L. — Lean Six Sigma: Combining Six Sigma Quality with Lean Speed, McGraw-Hill, 2002",
+      "url": null
+    }
+  ]
+}

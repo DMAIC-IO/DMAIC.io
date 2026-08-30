@@ -12,7 +12,7 @@ export default {
         blocks: [
           {
             type: 'paragraph',
-            content: 'Die RACI-Matrix klärt für jede Aufgabe oder Aktivität in einem Projekt, wer welche Rolle hat. Die vier Buchstaben stehen für vier klar definierte Verantwortungsarten. Sie verhindert Doppelarbeit, Zuständigkeitslücken und unklare Entscheidungswege.',
+            content: 'Die {{term:raci|RACI-Matrix}} klärt für jede Aufgabe oder Aktivität in einem Projekt, wer welche Rolle hat. Die vier Buchstaben stehen für vier klar definierte Verantwortungsarten. Sie verhindert Doppelarbeit, Zuständigkeitslücken und unklare Entscheidungswege.',
           },
           {
             type: 'definition',
@@ -46,7 +46,7 @@ export default {
         blocks: [
           {
             type: 'paragraph',
-            content: 'The RACI matrix clarifies, for every task or activity in a project, who has which role. The four letters stand for four clearly defined types of responsibility. It prevents duplicated work, responsibility gaps, and unclear decision paths.',
+            content: 'The {{term:raci|RACI matrix}} clarifies, for every task or activity in a project, who has which role. The four letters stand for four clearly defined types of responsibility. It prevents duplicated work, responsibility gaps, and unclear decision paths.',
           },
           {
             type: 'definition',

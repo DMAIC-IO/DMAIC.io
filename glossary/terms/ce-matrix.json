@@ -1,0 +1,99 @@
+{
+  "id": "ce-matrix",
+  "category": "methodology",
+  "title": {
+    "de": "C&E-Matrix (Ursache-Wirkungs-Matrix)",
+    "en": "C&E Matrix (Cause-and-Effect Matrix)"
+  },
+  "short": {
+    "de": "Bewertet, welche Prozess-Inputs am stärksten auf die kundenrelevanten Outputs wirken — die Vorauswahl der kritischen X.",
+    "en": "Rates which process inputs act most strongly on the customer-relevant outputs — the pre-selection of the critical X."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "Die **C&E-Matrix** (auch X-Y-Matrix oder Prioritätenmatrix) verbindet Prozess-Eingaben mit Kunden-Ergebnisgrößen und gewichtet, welche Eingabe auf welches Ergebnis am stärksten wirkt. Sie ist die strukturierte Brücke zwischen der Prozessaufnahme im {{term:sipoc|SIPOC}} und der detaillierten Risikobetrachtung in der {{term:fmea|FMEA}}."
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Outputs (Y, Spalten)** — die kundenrelevanten Ergebnisgrößen, jede mit einer Wichtung von 1 bis 10 aus Sicht des {{term:ctq|CTQ}}",
+          "**Inputs (X, Zeilen)** — Prozessparameter und Einflussgrößen, typischerweise aus {{term:sipoc|SIPOC}} und {{term:ishikawa|Ishikawa}}",
+          "**Bewertung (Zelle)** — Stärke des Einflusses auf einer gespreizten Skala, üblich 0/1/3/9",
+          "**Score** — Zeilensumme aus Wichtung × Bewertung über alle Outputs"
+        ]
+      },
+      {
+        "type": "paragraph",
+        "text": "Die gespreizte Skala ist Absicht: Sie trennt starke von schwachen Einflüssen deutlicher als eine lineare Skala und verhindert, dass sich viele mittlere Bewertungen zu einem hohen Score summieren."
+      },
+      {
+        "type": "note",
+        "text": "Sortiert nach Score ergibt sich meist eine {{term:pareto|Pareto-Verteilung}} — wenige X dominieren. Diese kritischen X gehen in die FMEA, in {{term:hypothesentest|Hypothesentests}} oder direkt in einen {{term:doe|Versuchsplan}}. Wichtig: Die Matrix bündelt **Expertenschätzungen**, keine Messdaten. Sie priorisiert, was untersucht wird — sie beweist nichts."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "The **C&E matrix** (also X-Y matrix or prioritisation matrix) links process inputs to customer outcomes and weights which input acts most strongly on which outcome. It is the structured bridge between capturing the process in {{term:sipoc|SIPOC}} and the detailed risk assessment of the {{term:fmea|FMEA}}."
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Outputs (Y, columns)** — customer-relevant outcomes, each weighted 1 to 10 from the {{term:ctq|CTQ}} perspective",
+          "**Inputs (X, rows)** — process parameters and influences, typically taken from {{term:sipoc|SIPOC}} and {{term:ishikawa|Ishikawa}}",
+          "**Rating (cell)** — strength of influence on a spread scale, commonly 0/1/3/9",
+          "**Score** — row sum of weight × rating across all outputs"
+        ]
+      },
+      {
+        "type": "paragraph",
+        "text": "The spread scale is deliberate: it separates strong from weak influences more sharply than a linear scale and prevents many middling ratings from adding up to a high score."
+      },
+      {
+        "type": "note",
+        "text": "Sorted by score a {{term:pareto|Pareto distribution}} usually emerges — a few X dominate. These critical X feed the FMEA, {{term:hypothesentest|hypothesis tests}} or directly a {{term:doe|design of experiments}}. Important: the matrix bundles **expert judgement**, not measured data. It prioritises what gets investigated — it proves nothing."
+      }
+    ]
+  },
+  "aliases": {
+    "de": [
+      "X-Y-Matrix",
+      "Cause-and-Effect-Matrix",
+      "Prioritätenmatrix",
+      "Ursache-Wirkungs-Matrix"
+    ],
+    "en": [
+      "X-Y matrix",
+      "cause and effect matrix",
+      "prioritisation matrix"
+    ]
+  },
+  "seeAlso": [
+    "sipoc",
+    "ctq",
+    "ishikawa",
+    "fmea",
+    "pareto",
+    "doe"
+  ],
+  "modules": [
+    "ce-matrix"
+  ],
+  "algoLab": [],
+  "sources": [
+    {
+      "label": "Pyzdek, T. & Keller, P. — The Six Sigma Handbook, 5th Edition",
+      "url": null
+    },
+    {
+      "label": "Breyfogle, F. W. — Implementing Six Sigma: Smarter Solutions Using Statistical Methods, 2nd Edition, Wiley, 2003",
+      "url": null
+    },
+    {
+      "label": "George, M. L. — Lean Six Sigma: Combining Six Sigma Quality with Lean Speed, McGraw-Hill, 2002",
+      "url": null
+    }
+  ]
+}

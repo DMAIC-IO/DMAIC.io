@@ -9,13 +9,13 @@ export default {
       de: {
         title: 'Aufbau',
         blocks: [
-          { type: 'paragraph', content: 'Das Deployment Flowchart (auch Swimlane- oder Cross-Functional-Flowchart) zeigt einen Prozess als Kette von Schritten, die auf horizontale Bänder — die Lanes — verteilt sind. Jede Lane steht für eine Rolle oder Abteilung. Die Reihenfolge der Schritte läuft von links nach rechts durch die Kette; der Wechsel von einer Lane in eine andere ist eine Übergabe. Genau diese Übergaben sind der Grund für die Darstellung: an ihnen entstehen Wartezeiten, Missverständnisse und Verantwortungslücken.' },
+          { type: 'paragraph', content: 'Das {{term:swimlane|Deployment Flowchart}} (auch Swimlane- oder Cross-Functional-Flowchart) zeigt einen Prozess als Kette von Schritten, die auf horizontale Bänder — die Lanes — verteilt sind. Jede Lane steht für eine Rolle oder Abteilung. Die Reihenfolge der Schritte läuft von links nach rechts durch die Kette; der Wechsel von einer Lane in eine andere ist eine Übergabe. Genau diese Übergaben sind der Grund für die Darstellung: an ihnen entstehen Wartezeiten, Missverständnisse und Verantwortungslücken.' },
         ],
       },
       en: {
         title: 'Structure',
         blocks: [
-          { type: 'paragraph', content: 'The Deployment Flowchart (also swimlane or cross-functional flowchart) shows a process as a chain of steps distributed across horizontal bands — the lanes. Each lane stands for a role or department. Steps run left to right through the chain; moving from one lane to another is a hand-off. Those hand-offs are the whole point of the view: they are where waiting time, misunderstandings, and ownership gaps appear.' },
+          { type: 'paragraph', content: 'The {{term:swimlane|Deployment Flowchart}} (also swimlane or cross-functional flowchart) shows a process as a chain of steps distributed across horizontal bands — the lanes. Each lane stands for a role or department. Steps run left to right through the chain; moving from one lane to another is a hand-off. Those hand-offs are the whole point of the view: they are where waiting time, misunderstandings, and ownership gaps appear.' },
         ],
       },
     },

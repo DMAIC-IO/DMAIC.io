@@ -73,11 +73,14 @@
     "five-why",
     "doe",
     "regelkarte",
-    "triz"
+    "triz",
+    "lessons-learned"
   ],
   "modules": [
     "dmaic-calendar",
-    "project-charter"
+    "project-charter",
+    "lessons-learned",
+    "raci-matrix"
   ],
   "algoLab": [],
   "sources": [

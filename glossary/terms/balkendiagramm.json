@@ -24,7 +24,7 @@
       },
       {
         "type": "paragraph",
-        "text": "Abgrenzung: Ein Histogramm sieht ähnlich aus, zeigt aber ein **metrisches** Merkmal in Klassen — dort berühren sich die Balken, und ihre Reihenfolge ist durch die Skala festgelegt. Beim Balkendiagramm ist die Reihenfolge frei wählbar. Sortiert man absteigend nach Häufigkeit und ergänzt eine Kumulativlinie, entsteht ein {{term:pareto|Pareto-Diagramm}}."
+        "text": "Abgrenzung: Ein {{term:histogramm|Histogramm}} sieht ähnlich aus, zeigt aber ein **metrisches** Merkmal in Klassen — dort berühren sich die Balken, und ihre Reihenfolge ist durch die Skala festgelegt. Beim Balkendiagramm ist die Reihenfolge frei wählbar. Sortiert man absteigend nach Häufigkeit und ergänzt eine Kumulativlinie, entsteht ein {{term:pareto|Pareto-Diagramm}}."
       },
       {
         "type": "note",
@@ -45,7 +45,7 @@
       },
       {
         "type": "paragraph",
-        "text": "Distinction: a histogram looks similar but shows a **metric** characteristic in bins — there the bars touch and their order is fixed by the scale. In a bar chart the order is free. Sorted descending by frequency and topped with a cumulative line, it becomes a {{term:pareto|Pareto chart}}."
+        "text": "Distinction: a {{term:histogramm|histogram}} looks similar but shows a **metric** characteristic in bins — there the bars touch and their order is fixed by the scale. In a bar chart the order is free. Sorted descending by frequency and topped with a cumulative line, it becomes a {{term:pareto|Pareto chart}}."
       },
       {
         "type": "note",
@@ -71,7 +71,8 @@
     "skalenniveau",
     "pareto",
     "randverteilung",
-    "kreisdiagramm"
+    "kreisdiagramm",
+    "histogramm"
   ],
   "modules": [
     "bar",

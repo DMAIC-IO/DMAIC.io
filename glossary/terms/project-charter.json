@@ -68,11 +68,16 @@
     "dmaic",
     "sipoc",
     "voc",
-    "ctq"
+    "ctq",
+    "stakeholder",
+    "raci",
+    "lessons-learned"
   ],
   "modules": [
     "project-charter",
-    "dmaic-calendar"
+    "dmaic-calendar",
+    "stakeholder-analysis",
+    "raci-matrix"
   ],
   "algoLab": [],
   "sources": [

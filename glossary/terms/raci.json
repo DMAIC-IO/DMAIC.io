@@ -1,0 +1,93 @@
+{
+  "id": "raci",
+  "category": "methodology",
+  "title": {
+    "de": "RACI-Matrix",
+    "en": "RACI Matrix"
+  },
+  "short": {
+    "de": "Ordnet jeder Aufgabe vier Verantwortungsarten zu — Responsible, Accountable, Consulted, Informed.",
+    "en": "Assigns four kinds of responsibility to each task — Responsible, Accountable, Consulted, Informed."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "Die **RACI-Matrix** klärt für jede Aufgabe eines Projekts, wer sie ausführt, wer sie verantwortet, wer gefragt wird und wer Bescheid weiß. Aufgaben stehen in den Zeilen, Rollen oder Personen in den Spalten; jede Zelle trägt einen der vier Buchstaben oder bleibt leer."
+      },
+      {
+        "type": "list",
+        "items": [
+          "**R — Responsible** — führt die Arbeit aus; mehrere R sind möglich, aber je weniger, desto klarer",
+          "**A — Accountable** — verantwortet das Ergebnis und entscheidet final; **genau ein A je Aufgabe**, nicht null und nicht zwei",
+          "**C — Consulted** — wird vorher um Input gefragt; Zweiwege-Kommunikation mit Fachexperten",
+          "**I — Informed** — wird über das Ergebnis informiert; Einwege-Kommunikation"
+        ]
+      },
+      {
+        "type": "paragraph",
+        "text": "Die eigentliche Arbeit steckt in der Zeilen- und Spaltenprüfung: Eine Zeile ohne A hat keinen Verantwortlichen, eine mit zwei A führt garantiert zum Konflikt. Eine Spalte voller C blockiert den Fortschritt, eine Person mit R in jeder Zeile ist ein Engpass."
+      },
+      {
+        "type": "note",
+        "text": "RACI klärt Verantwortung, nicht Haltung — wer ein Projekt fördert oder bremst, gehört in die {{term:stakeholder|Stakeholder-Analyse}}. Beides ergänzt sich: die Stakeholder-Analyse bestimmt, *wer* eine Rolle bekommen sollte, RACI legt fest, *welche*."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "The **RACI matrix** clarifies for every project task who performs it, who owns it, who is asked, and who is kept informed. Tasks form the rows, roles or people the columns; each cell carries one of the four letters or stays empty."
+      },
+      {
+        "type": "list",
+        "items": [
+          "**R — Responsible** — does the work; several R are possible, but fewer is clearer",
+          "**A — Accountable** — owns the outcome and makes the final call; **exactly one A per task**, not zero and not two",
+          "**C — Consulted** — asked for input beforehand; two-way communication with subject experts",
+          "**I — Informed** — told about the outcome; one-way communication"
+        ]
+      },
+      {
+        "type": "paragraph",
+        "text": "The real work lies in checking rows and columns: a row without an A has no owner, one with two A guarantees conflict. A column full of C blocks progress, and a person holding R in every row is a bottleneck."
+      },
+      {
+        "type": "note",
+        "text": "RACI clarifies responsibility, not attitude — who supports or resists a project belongs in the {{term:stakeholder|stakeholder analysis}}. The two complement each other: the stakeholder analysis determines *who* should hold a role, RACI defines *which* one."
+      }
+    ]
+  },
+  "aliases": {
+    "de": [
+      "RACI",
+      "Verantwortlichkeitsmatrix",
+      "RASCI",
+      "Rollenmatrix"
+    ],
+    "en": [
+      "RACI",
+      "responsibility assignment matrix",
+      "RASCI"
+    ]
+  },
+  "seeAlso": [
+    "stakeholder",
+    "project-charter",
+    "dmaic",
+    "swimlane"
+  ],
+  "modules": [
+    "raci-matrix"
+  ],
+  "algoLab": [],
+  "sources": [
+    {
+      "label": "Project Management Institute — A Guide to the Project Management Body of Knowledge (PMBOK Guide), 7th Edition, 2021",
+      "url": null
+    },
+    {
+      "label": "Pyzdek, T. & Keller, P. — The Six Sigma Handbook, 5th Edition",
+      "url": null
+    }
+  ]
+}

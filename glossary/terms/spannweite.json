@@ -51,7 +51,7 @@
     "de": ["Range", "R"],
     "en": ["span", "R"]
   },
-  "seeAlso": ["varianz", "standardabweichung", "median"],
+  "seeAlso": ["varianz", "standardabweichung", "median", "boxplot"],
   "modules": [
     "histogram", "boxplot", "process-capability", "hypothesis-test",
     "regression", "glm-regression", "correlation", "msa-typ2",

@@ -66,11 +66,14 @@
     "project-charter",
     "voc",
     "ctq",
-    "process-map"
+    "process-map",
+    "ce-matrix",
+    "flussdiagramm"
   ],
   "modules": [
     "sipoc",
-    "voc-ctx-tree"
+    "voc-ctx-tree",
+    "ce-matrix"
   ],
   "algoLab": [],
   "sources": [

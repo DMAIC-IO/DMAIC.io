@@ -1,0 +1,89 @@
+{
+  "id": "lessons-learned",
+  "category": "methodology",
+  "title": {
+    "de": "Lessons Learned",
+    "en": "Lessons Learned"
+  },
+  "short": {
+    "de": "Dokumentierte Erkenntnisse aus einem Projekt — mit Ursache und konkreter Empfehlung, nicht nur mit Befund.",
+    "en": "Documented findings from a project — with cause and a concrete recommendation, not just an observation."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "**Lessons Learned** halten fest, was in einem Projekt funktioniert hat und was nicht — und welche Schlussfolgerung sich daraus für künftige Projekte ergibt. Sie sind das organisationale Gedächtnis der Six-Sigma-Arbeit und gehören in die Control-Phase des {{term:dmaic|DMAIC}}-Zyklus."
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Erkenntnis** — ein in sich geschlossener Eintrag mit Beschreibung, Kontext, Ursache und Empfehlung; auch ohne Projektkenntnis verständlich",
+          "**Beides erfassen** — Erfolge, die wiederholt werden sollen, und Fehler, die zu vermeiden sind. Eine Sammlung nur aus Misserfolgen wird nicht gelesen",
+          "**Empfehlung** — konkret und umsetzbar: nicht „besser kommunizieren\", sondern „Kick-off mit allen Schichten, nicht nur der Frühschicht\"",
+          "**Kategorisierung** — nach DMAIC-Phase, Thema oder Wirkung, damit die Sammlung durchsuchbar bleibt"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "Der wunde Punkt ist nicht das Erfassen, sondern das Wiederfinden: Lessons Learned, die erst am Projektende gesammelt und nie wieder gelesen werden, sind verlorene Arbeit. Deshalb laufend während des Projekts erfassen — und beim Start eines neuen Projekts die Sammlung der Vorgänger gezielt durchsehen. Für die Ursachenanalyse hinter einer Erkenntnis eignen sich {{term:five-why|5-Why}} und {{term:ishikawa|Ishikawa}}."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "**Lessons learned** record what worked in a project and what did not — and what follows from that for future projects. They are the organisational memory of Six Sigma work and belong in the Control phase of the {{term:dmaic|DMAIC}} cycle."
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Lesson** — a self-contained entry with description, context, cause and recommendation; understandable without knowing the project",
+          "**Capture both** — successes worth repeating and mistakes worth avoiding. A collection of failures alone does not get read",
+          "**Recommendation** — concrete and actionable: not \"communicate better\" but \"hold the kick-off with all shifts, not just the early one\"",
+          "**Categorisation** — by DMAIC phase, topic or impact, so the collection stays searchable"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "The weak point is not the capturing but the retrieval: lessons gathered only at project close and never read again are wasted work. So capture them continuously during the project — and when starting a new one, deliberately review the predecessors' collection. For the root cause behind a lesson, {{term:five-why|5-Why}} and {{term:ishikawa|Ishikawa}} apply."
+      }
+    ]
+  },
+  "aliases": {
+    "de": [
+      "Erfahrungssicherung",
+      "Projektrückschau",
+      "Retrospektive",
+      "Wissenssicherung"
+    ],
+    "en": [
+      "retrospective",
+      "after action review",
+      "project review"
+    ]
+  },
+  "seeAlso": [
+    "dmaic",
+    "project-charter",
+    "five-why",
+    "ishikawa"
+  ],
+  "modules": [
+    "lessons-learned"
+  ],
+  "algoLab": [],
+  "sources": [
+    {
+      "label": "Project Management Institute — A Guide to the Project Management Body of Knowledge (PMBOK Guide), 7th Edition, 2021",
+      "url": null
+    },
+    {
+      "label": "Pyzdek, T. & Keller, P. — The Six Sigma Handbook, 5th Edition",
+      "url": null
+    },
+    {
+      "label": "Breyfogle, F. W. — Implementing Six Sigma: Smarter Solutions Using Statistical Methods, 2nd Edition, Wiley, 2003",
+      "url": null
+    }
+  ]
+}

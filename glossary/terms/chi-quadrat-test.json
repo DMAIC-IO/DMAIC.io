@@ -83,7 +83,8 @@
     "teststatistik",
     "effektstaerke",
     "mosaikdiagramm",
-    "varianzhomogenitaet"
+    "varianzhomogenitaet",
+    "cramers-v"
   ],
   "modules": [
     "mosaic",

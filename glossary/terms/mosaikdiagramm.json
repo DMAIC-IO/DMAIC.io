@@ -71,7 +71,8 @@
     "randverteilung",
     "chi-quadrat-test",
     "heatmap",
-    "balkendiagramm"
+    "balkendiagramm",
+    "cramers-v"
   ],
   "modules": [
     "mosaic",

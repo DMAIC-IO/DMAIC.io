@@ -844,6 +844,71 @@
       "id": "isolinie",
       "category": "visualization",
       "file": "terms/isolinie.json"
+    },
+    {
+      "id": "histogramm",
+      "category": "visualization",
+      "file": "terms/histogramm.json"
+    },
+    {
+      "id": "boxplot",
+      "category": "visualization",
+      "file": "terms/boxplot.json"
+    },
+    {
+      "id": "cramers-v",
+      "category": "hypothesis",
+      "file": "terms/cramers-v.json"
+    },
+    {
+      "id": "ce-matrix",
+      "category": "methodology",
+      "file": "terms/ce-matrix.json"
+    },
+    {
+      "id": "raci",
+      "category": "methodology",
+      "file": "terms/raci.json"
+    },
+    {
+      "id": "stakeholder",
+      "category": "methodology",
+      "file": "terms/stakeholder.json"
+    },
+    {
+      "id": "makigami",
+      "category": "methodology",
+      "file": "terms/makigami.json"
+    },
+    {
+      "id": "muda",
+      "category": "methodology",
+      "file": "terms/muda.json"
+    },
+    {
+      "id": "wertschoepfung",
+      "category": "methodology",
+      "file": "terms/wertschoepfung.json"
+    },
+    {
+      "id": "durchlaufzeit",
+      "category": "methodology",
+      "file": "terms/durchlaufzeit.json"
+    },
+    {
+      "id": "flussdiagramm",
+      "category": "methodology",
+      "file": "terms/flussdiagramm.json"
+    },
+    {
+      "id": "swimlane",
+      "category": "methodology",
+      "file": "terms/swimlane.json"
+    },
+    {
+      "id": "lessons-learned",
+      "category": "methodology",
+      "file": "terms/lessons-learned.json"
     }
   ]
 }

@@ -77,10 +77,12 @@
     "bedeutung",
     "auftreten",
     "entdeckung",
-    "rpz"
+    "rpz",
+    "ce-matrix"
   ],
   "modules": [
-    "fmea"
+    "fmea",
+    "ce-matrix"
   ],
   "algoLab": [],
   "sources": [

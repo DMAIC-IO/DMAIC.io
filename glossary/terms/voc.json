@@ -66,11 +66,13 @@
     "kano",
     "sipoc",
     "dmaic",
-    "project-charter"
+    "project-charter",
+    "stakeholder"
   ],
   "modules": [
     "voc-ctx-tree",
-    "sipoc"
+    "sipoc",
+    "stakeholder-analysis"
   ],
   "algoLab": [],
   "sources": [

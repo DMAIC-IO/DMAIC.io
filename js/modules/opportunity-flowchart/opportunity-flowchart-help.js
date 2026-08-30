@@ -9,13 +9,13 @@ export default {
       de: {
         title: 'Aufbau',
         blocks: [
-          { type: 'paragraph', content: 'Das Opportunity Flowchart teilt einen Ablauf in zwei Bahnen: oben die wertschöpfenden Schritte (VA), unten die nicht wertschöpfenden — Nacharbeit, Warten, Prüfen, Korrigieren (NVA). Die Kette läuft wie in allen Flowcharts von links nach rechts; die Bahn ist ausschließlich die vertikale Position. Je mehr Karten in der unteren Bahn liegen, desto mehr Aufwand steckt im Prozess, der für den Kunden keinen Wert erzeugt.' },
+          { type: 'paragraph', content: 'Das Opportunity Flowchart teilt einen Ablauf in zwei Bahnen: oben die {{term:wertschoepfung|wertschöpfenden}} Schritte (VA), unten die nicht wertschöpfenden — Nacharbeit, Warten, Prüfen, Korrigieren (NVA). Die Kette läuft wie in allen Flowcharts von links nach rechts; die Bahn ist ausschließlich die vertikale Position. Je mehr Karten in der unteren Bahn liegen, desto mehr Aufwand steckt im Prozess, der für den Kunden keinen Wert erzeugt.' },
         ],
       },
       en: {
         title: 'Structure',
         blocks: [
-          { type: 'paragraph', content: 'The Opportunity Flowchart splits a process into two bands: value-added steps (VA) on top, non-value-added ones below — rework, waiting, inspecting, correcting (NVA). The chain runs left to right as in every flowchart; the band is purely the vertical position. The more cards in the lower band, the more effort the process spends without creating customer value.' },
+          { type: 'paragraph', content: 'The Opportunity Flowchart splits a process into two bands: {{term:wertschoepfung|value-added}} steps (VA) on top, non-value-added ones below — rework, waiting, inspecting, correcting (NVA). The chain runs left to right as in every flowchart; the band is purely the vertical position. The more cards in the lower band, the more effort the process spends without creating customer value.' },
         ],
       },
     },

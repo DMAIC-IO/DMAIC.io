@@ -1,0 +1,101 @@
+{
+  "id": "flussdiagramm",
+  "category": "methodology",
+  "title": {
+    "de": "Flussdiagramm",
+    "en": "Flowchart"
+  },
+  "short": {
+    "de": "Stellt einen Ablauf als Kette aus Tätigkeiten und Entscheidungen dar — die Grundform aller Prozessdarstellungen.",
+    "en": "Represents a sequence as a chain of activities and decisions — the base form of all process displays."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "Ein **Flussdiagramm** bildet einen Ablauf als gerichtete Kette ab. Die Symbolik ist seit ISO 5807 weitgehend einheitlich und in jeder Variante dieselbe:"
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Abgerundetes Rechteck** — Start und Ende (Terminator)",
+          "**Rechteck** — eine Tätigkeit oder ein Prozessschritt",
+          "**Raute** — eine Entscheidung mit beschrifteten Ausgängen, typisch Ja/Nein",
+          "**Pfeil** — die Reihenfolge; eine Rückführung ist eine Schleife, meist Nacharbeit"
+        ]
+      },
+      {
+        "type": "paragraph",
+        "text": "Auf dieser Grundform bauen die Varianten auf, die jeweils eine zusätzliche Dimension einziehen: das {{term:swimlane|Deployment-Flowchart}} verteilt die Schritte auf Rollenbahnen, das Opportunity Flowchart trennt {{term:wertschoepfung|wertschöpfende von nicht wertschöpfenden}} Schritten, und {{term:makigami|Makigami}} ergänzt Zeiten je Schritt."
+      },
+      {
+        "type": "note",
+        "text": "Zwei Fehler treten regelmäßig auf. Erstens der falsche Detaillierungsgrad — ein Flussdiagramm mit achtzig Kästchen wird nicht mehr gelesen; grob beginnen und nur den kritischen Abschnitt vertiefen. Zweitens der Soll-Ist-Verwechsler: Aufgenommen wird der Prozess, **wie er tatsächlich läuft**, nicht wie er in der Verfahrensanweisung steht. Die Differenz zwischen beidem ist oft schon das Ergebnis."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "A **flowchart** maps a sequence as a directed chain. Its symbols have been largely uniform since ISO 5807 and are the same in every variant:"
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Rounded rectangle** — start and end (terminator)",
+          "**Rectangle** — an activity or process step",
+          "**Diamond** — a decision with labelled exits, typically yes/no",
+          "**Arrow** — the order; a backward arrow is a loop, usually rework"
+        ]
+      },
+      {
+        "type": "paragraph",
+        "text": "The variants build on this base form, each adding one dimension: the {{term:swimlane|deployment flowchart}} spreads the steps across role lanes, the opportunity flowchart separates {{term:wertschoepfung|value-adding from non-value-adding}} steps, and {{term:makigami|Makigami}} adds times per step."
+      },
+      {
+        "type": "note",
+        "text": "Two mistakes recur. First the wrong level of detail — a flowchart with eighty boxes stops being read; start coarse and deepen only the critical section. Second the as-is/to-be mix-up: capture the process **as it actually runs**, not as the work instruction describes it. The gap between the two is often the finding already."
+      }
+    ]
+  },
+  "aliases": {
+    "de": [
+      "Ablaufdiagramm",
+      "Flowchart",
+      "Aktivitätsdiagramm",
+      "Prozessflussdiagramm"
+    ],
+    "en": [
+      "flow chart",
+      "activity diagram",
+      "process flow diagram"
+    ]
+  },
+  "seeAlso": [
+    "process-map",
+    "swimlane",
+    "wertschoepfung",
+    "sipoc",
+    "makigami"
+  ],
+  "modules": [
+    "activity-flowchart",
+    "opportunity-flowchart",
+    "deployment-flowchart",
+    "process-map"
+  ],
+  "algoLab": [],
+  "sources": [
+    {
+      "label": "ISO 5807:1985 — Information processing: Documentation symbols and conventions for data, program and system flowcharts",
+      "url": null
+    },
+    {
+      "label": "Damelio, R. — The Basics of Process Mapping, 2nd Edition, Productivity Press, 2011",
+      "url": null
+    },
+    {
+      "label": "Pyzdek, T. & Keller, P. — The Six Sigma Handbook, 5th Edition",
+      "url": null
+    }
+  ]
+}
