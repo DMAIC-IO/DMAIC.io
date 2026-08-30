@@ -44,7 +44,7 @@
       }
     ],
     "assumptions": [
-      { "de": "p-/n{{term:p-chart|p-Karte}}n: Defekte sind binomialverteilt; n·p̄ ≥ 5 für tragfähige Normalapproximation", "en": "p/n{{term:p-chart|p chart}}s: defects are binomial; n·p̄ ≥ 5 for usable normal approximation" },
+      { "de": "{{term:p-chart|p-/np-Karten}}: Defekte sind binomialverteilt; n·p̄ ≥ 5 für tragfähige Normalapproximation", "en": "{{term:p-chart|p/np charts}}: defects are binomial; n·p̄ ≥ 5 for usable normal approximation" },
       { "de": "c-/u-Karten: Fehlerzahlen sind Poisson-verteilt; keine Überdispersion", "en": "c/u charts: defect counts are Poisson; no overdispersion" },
       { "de": "Untergruppen sind unabhängig und stammen aus stabilem Prozess", "en": "Subgroups are independent and from a stable process" }
     ],

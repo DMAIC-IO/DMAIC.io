@@ -11,7 +11,22 @@
 
 import { renderPage, getStrings, CONSTANTS } from './page-shell.mjs';
 import { renderBlocks, firstParagraphText } from './blocks.mjs';
-import { escapeHtml, escapeAttr, pick } from './escape.mjs';
+import { escapeHtml, escapeAttr, pick, stripTermTokens } from './escape.mjs';
+
+/**
+ * Abschnittsüberschriften dürfen `{{term:…}}` tragen (z. B. „Regeln für
+ * Sonderursachen (Nelson)"). Ohne Auflösung landet das Rohmarkup in der <h2>.
+ */
+function escAndLinkHeading(text, opts) {
+  return escapeHtml(text).replace(
+    /\{\{term:([a-z0-9-]+)(?:\|([^}]+))?\}\}/gi,
+    (_m, id, label) => {
+      const visible = label || id;
+      const href = opts?.glossaryHref?.(id);
+      return href ? `<a class="handbook-glossary-link" href="${escapeAttr(href)}">${visible}</a>` : visible;
+    },
+  );
+}
 import { getModuleName, getExamplesForModule } from '../loaders/load-sources.mjs';
 import { renderLatex } from './katex.mjs';
 import { CYCLES, getPhaseIds } from '../../../js/core/cycles/cycles.js';
@@ -71,7 +86,7 @@ export function renderModulePage({ module, lang, i18n, examples, glossary }) {
 
     const heading = localized.title || s.sectionHeadings[key] || key;
     sectionHtmlParts.push(
-      `<section class="handbook-section" id="${escapeAttr(key)}"><h2>${escapeHtml(heading)}</h2>${renderBlocks(localized.blocks, blockOpts)}</section>`,
+      `<section class="handbook-section" id="${escapeAttr(key)}"><h2>${escAndLinkHeading(heading, blockOpts)}</h2>${renderBlocks(localized.blocks, blockOpts)}</section>`,
     );
   }
 
@@ -92,7 +107,7 @@ export function renderModulePage({ module, lang, i18n, examples, glossary }) {
       const exDesc = pick(ex.description, lang) || '';
       const typeLabel = s.exampleTypeLabel[ex.type] || ex.type;
       const href = `../examples/${ex.id}.html`;
-      return `<a class="handbook-card" href="${escapeAttr(href)}"><div class="handbook-card__title">${escapeHtml(exName)} <span style="font-weight:400;color:var(--t3);font-size:.8em;">— ${escapeHtml(typeLabel)}</span></div>${exDesc ? `<div class="handbook-card__desc">${escapeHtml(exDesc)}</div>` : ''}</a>`;
+      return `<a class="handbook-card" href="${escapeAttr(href)}"><div class="handbook-card__title">${escapeHtml(stripTermTokens(exName))} <span style="font-weight:400;color:var(--t3);font-size:.8em;">— ${escapeHtml(typeLabel)}</span></div>${exDesc ? `<div class="handbook-card__desc">${escapeHtml(stripTermTokens(exDesc))}</div>` : ''}</a>`;
     }).join('');
     examplesSectionHtml = `<section class="handbook-section" id="examples"><h2>${escapeHtml(s.examplesHeading)}</h2><p>${escapeHtml(s.examplesIntro)}</p><div class="handbook-grid">${cards}</div></section>`;
   }
@@ -121,8 +136,8 @@ export function renderModulePage({ module, lang, i18n, examples, glossary }) {
   const body = `
 <article class="handbook-article">
   <span class="handbook-article__tag">${escapeHtml(phaseLabel)}</span>
-  <h1>${escapeHtml(name)}</h1>
-  ${leadText ? `<p class="handbook-article__lead">${escapeHtml(leadText)}</p>` : ''}
+  <h1>${escapeHtml(stripTermTokens(name))}</h1>
+  ${leadText ? `<p class="handbook-article__lead">${escapeHtml(stripTermTokens(leadText))}</p>` : ''}
   ${sectionHtmlParts.join('\n')}
   ${examplesSectionHtml}
   ${cyclesSectionHtml}
@@ -148,8 +163,14 @@ export function renderModulePage({ module, lang, i18n, examples, glossary }) {
 
 // ─── Algorithm page ──────────────────────────────────────────────
 
-export async function renderAlgoPage({ algorithm, lang, categoryById, i18n: _i18n }) {
+export async function renderAlgoPage({ algorithm, lang, categoryById, i18n: _i18n, glossary }) {
   const s = getStrings(lang);
+  // Auch Annahmen, Einschränkungen und Formelbeschriftungen tragen
+  // `{{term:…}}` — ohne Auflösung stand dort das Rohmarkup auf der Seite.
+  const knownTermIds = glossary?.termById instanceof Map ? glossary.termById : new Map();
+  const blockOpts = {
+    glossaryHref: (termId) => (knownTermIds.has(termId) ? `/${lang}/glossar/${termId}.html` : ''),
+  };
   const category = categoryById.get(algorithm.category);
   const categoryName = category ? pick(category.name, lang) : algorithm.category;
   const name = pick(algorithm.name, lang);
@@ -183,7 +204,7 @@ export async function renderAlgoPage({ algorithm, lang, categoryById, i18n: _i18
   const renderedFormulas = await Promise.all(
     formulas.map(async (f) => {
       const label = escapeHtml(f.label || '');
-      const desc = escapeHtml(pick(f.description, lang));
+      const desc = escAndLinkHeading(pick(f.description, lang), blockOpts);
       const math = f.latex ? await renderLatex(f.latex, { displayMode: true }) : '';
       return `<figure class="algo-formula">${
         label ? `<span class="algo-formula__label">${label}</span>` : ''
@@ -200,7 +221,7 @@ export async function renderAlgoPage({ algorithm, lang, categoryById, i18n: _i18
   const assumptions = algorithm.documentation?.assumptions || [];
   const assumptionsHtml = assumptions.length
     ? `<section class="handbook-section"><h2>${escapeHtml(s.algoAssumptions)}</h2><ul class="handbook-block__list">${
-        assumptions.map((a) => `<li>${escapeHtml(pick(a, lang))}</li>`).join('')
+        assumptions.map((a) => `<li>${escAndLinkHeading(pick(a, lang), blockOpts)}</li>`).join('')
       }</ul></section>`
     : '';
 
@@ -208,7 +229,7 @@ export async function renderAlgoPage({ algorithm, lang, categoryById, i18n: _i18
   const limitations = algorithm.documentation?.limitations || [];
   const limitationsHtml = limitations.length
     ? `<section class="handbook-section"><h2>${escapeHtml(s.algoLimitations)}</h2><ul class="handbook-block__list">${
-        limitations.map((l) => `<li>${escapeHtml(pick(l, lang))}</li>`).join('')
+        limitations.map((l) => `<li>${escAndLinkHeading(pick(l, lang), blockOpts)}</li>`).join('')
       }</ul></section>`
     : '';
 
@@ -228,11 +249,11 @@ export async function renderAlgoPage({ algorithm, lang, categoryById, i18n: _i18
 
   const body = `
 <article class="handbook-article">
-  <span class="handbook-article__tag">${escapeHtml(categoryName)}</span>
-  <h1>${escapeHtml(name)}</h1>
-  ${short ? `<p class="handbook-article__lead">${escapeHtml(short)}</p>` : ''}
+  <span class="handbook-article__tag">${escapeHtml(stripTermTokens(categoryName))}</span>
+  <h1>${escapeHtml(stripTermTokens(name))}</h1>
+  ${short ? `<p class="handbook-article__lead">${escapeHtml(stripTermTokens(short))}</p>` : ''}
   ${metaHtml}
-  ${long ? `<section class="handbook-section"><h2>${escapeHtml(s.algoLong)}</h2><p>${escapeHtml(long)}</p></section>` : ''}
+  ${long ? `<section class="handbook-section"><h2>${escapeHtml(s.algoLong)}</h2><p>${escapeHtml(stripTermTokens(long))}</p></section>` : ''}
   ${formulasHtml}
   ${assumptionsHtml}
   ${limitationsHtml}
@@ -299,7 +320,7 @@ export function renderCycleIndex({ cycleId, modules, lang, i18n }) {
     }
     // Module pages live under their DMAIC top-level phase — link there.
     const href = `/${lang}/${mod.phase}/${mod.id}.html`;
-    return `<a class="handbook-card" href="${escapeAttr(href)}"><div class="handbook-card__title">${escapeHtml(name)}</div>${desc ? `<div class="handbook-card__desc">${escapeHtml(desc)}</div>` : ''}</a>`;
+    return `<a class="handbook-card" href="${escapeAttr(href)}"><div class="handbook-card__title">${escapeHtml(stripTermTokens(name))}</div>${desc ? `<div class="handbook-card__desc">${escapeHtml(stripTermTokens(desc))}</div>` : ''}</a>`;
   };
 
   const groups = [];
@@ -393,7 +414,7 @@ export function renderLangIndex({ modules, lang, i18n, examples }) {
         if (overview) desc = firstParagraphText(overview.blocks);
       }
       const href = `./${phase}/${mod.id}.html`;
-      return `<a class="handbook-card" href="${escapeAttr(href)}"><div class="handbook-card__title">${escapeHtml(name)}</div>${desc ? `<div class="handbook-card__desc">${escapeHtml(desc)}</div>` : ''}</a>`;
+      return `<a class="handbook-card" href="${escapeAttr(href)}"><div class="handbook-card__title">${escapeHtml(stripTermTokens(name))}</div>${desc ? `<div class="handbook-card__desc">${escapeHtml(stripTermTokens(desc))}</div>` : ''}</a>`;
     }).join('');
 
     groupHtmlParts.push(
@@ -481,7 +502,7 @@ export function renderLabIndex({ algorithms, categories, categoryById: _category
       const name = pick(algo.name, lang);
       const shortDesc = pick(algo.description?.short, lang);
       const href = `./${cat.id}/${algo.id}.html`;
-      return `<a class="handbook-card" href="${escapeAttr(href)}"><div class="handbook-card__title">${escapeHtml(name)}</div>${shortDesc ? `<div class="handbook-card__desc">${escapeHtml(shortDesc)}</div>` : ''}</a>`;
+      return `<a class="handbook-card" href="${escapeAttr(href)}"><div class="handbook-card__title">${escapeHtml(stripTermTokens(name))}</div>${shortDesc ? `<div class="handbook-card__desc">${escapeHtml(stripTermTokens(shortDesc))}</div>` : ''}</a>`;
     }).join('');
 
     groupHtmlParts.push(
@@ -538,7 +559,7 @@ export function renderTrainingIndex({ lang, i18n: _i18n }) {
     const title = s.training[`${topic}Title`];
     const desc = s.training[`${topic}Short`];
     const href = `./${topic}.html`;
-    return `<a class="handbook-card" href="${escapeAttr(href)}"><div class="handbook-card__title">${escapeHtml(title)}</div><div class="handbook-card__desc">${escapeHtml(desc)}</div></a>`;
+    return `<a class="handbook-card" href="${escapeAttr(href)}"><div class="handbook-card__title">${escapeHtml(title)}</div><div class="handbook-card__desc">${escapeHtml(stripTermTokens(desc))}</div></a>`;
   }).join('');
 
   const body = `
@@ -983,8 +1004,8 @@ export function renderExamplePage({ example, modules, lang, i18n }) {
   const body = `
 <article class="handbook-article">
   <span class="handbook-article__tag">${escapeHtml(s.examplesHeading)}</span>
-  <h1>${escapeHtml(name)}</h1>
-  ${desc ? `<p class="handbook-article__lead">${escapeHtml(desc)}</p>` : ''}
+  <h1>${escapeHtml(stripTermTokens(name))}</h1>
+  ${desc ? `<p class="handbook-article__lead">${escapeHtml(stripTermTokens(desc))}</p>` : ''}
   ${metaHtml}
   ${specHtml}
   ${columnsHtml}
@@ -1078,8 +1099,8 @@ export function renderExamplesIndex({ examples, modules, lang, i18n }) {
           : '';
         const href = `./${ex.id}.html`;
         return `<a class="handbook-card" href="${escapeAttr(href)}">
-          <div class="handbook-card__title">${escapeHtml(name)}</div>
-          ${desc ? `<div class="handbook-card__desc">${escapeHtml(desc)}</div>` : ''}
+          <div class="handbook-card__title">${escapeHtml(stripTermTokens(name))}</div>
+          ${desc ? `<div class="handbook-card__desc">${escapeHtml(stripTermTokens(desc))}</div>` : ''}
           <div class="handbook-card__meta" style="margin-top:.5rem;display:flex;gap:.5rem;flex-wrap:wrap;font-size:.85em;color:var(--text-muted);">
             <span class="handbook-card__badge">${escapeHtml(typeLabel)}</span>
             ${moduleHint ? `<span>${escapeHtml(moduleHint)}</span>` : ''}

@@ -46,7 +46,7 @@ export function renderBlock(block, opts = {}) {
       return `<h3 class="handbook-block__heading">${escAndLink(block.content, opts)}</h3>`;
 
     case 'definition':
-      return `<p class="handbook-block__definition"><strong>${escapeHtml(block.term)}:</strong> ${escAndLink(block.content, opts)}</p>`;
+      return `<p class="handbook-block__definition"><strong>${escAndLink(block.term, opts)}:</strong> ${escAndLink(block.content, opts)}</p>`;
 
     case 'list':
       return `<ul class="handbook-block__list">${(block.items || []).map((it) => `<li>${escAndLink(it, opts)}</li>`).join('')}</ul>`;
@@ -55,7 +55,7 @@ export function renderBlock(block, opts = {}) {
       return `<ol class="handbook-block__steps">${(block.items || []).map((it) => `<li>${escAndLink(it, opts)}</li>`).join('')}</ol>`;
 
     case 'table': {
-      const head = (block.headers || []).map((h) => `<th>${escapeHtml(h)}</th>`).join('');
+      const head = (block.headers || []).map((h) => `<th>${escAndLink(h, opts)}</th>`).join('');
       const rows = (block.rows || [])
         .map((row) => `<tr>${(row || []).map((cell) => `<td>${escAndLink(cell, opts)}</td>`).join('')}</tr>`)
         .join('');

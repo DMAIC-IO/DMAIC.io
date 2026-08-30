@@ -15,6 +15,24 @@ export function escapeAttr(value) {
 }
 
 /**
+ * Reduce `{{term:id|label}}` / `{{term:id}}` to its visible text.
+ *
+ * For plain-text slots that cannot carry a link — <title>, meta description,
+ * og:description, JSON-LD. Without this the raw token is what search engines
+ * index. Mirrors stripTermTokens() in js/core/markdown-parser.js.
+ *
+ * @param {string} value
+ * @returns {string}
+ */
+export function stripTermTokens(value) {
+  if (value == null) return '';
+  return String(value).replace(
+    /\{\{term:([a-z0-9-]+)(?:\|([^}]+))?\}\}/gi,
+    (_m, id, label) => label || id,
+  );
+}
+
+/**
  * Pick the localized variant of a { de, en } object, with fallback.
  */
 export function pick(obj, lang) {

@@ -11,7 +11,7 @@
  */
 
 import { renderPage, getStrings } from './page-shell.mjs';
-import { escapeHtml, escapeAttr, pick } from './escape.mjs';
+import { escapeHtml, escapeAttr, pick, stripTermTokens } from './escape.mjs';
 import { getModuleName } from '../loaders/load-sources.mjs';
 import { renderLatex } from './katex.mjs';
 
@@ -58,7 +58,7 @@ export async function renderGlossaryTermPage({ term, glossary, modules, lang, i1
   const article = `
 <article class="handbook-article handbook-glossary">
   <h1>${escapeHtml(title)}</h1>
-  ${shortText ? `<p class="handbook-article__lead">${escapeHtml(shortText)}</p>` : ''}
+  ${shortText ? `<p class="handbook-article__lead">${linkTerms(shortText, blockOpts)}</p>` : ''}
   ${aliasesHtml}
   <section class="handbook-section handbook-glossary__definition">${bodyHtml}</section>
   ${seeAlsoHtml}
@@ -67,7 +67,7 @@ export async function renderGlossaryTermPage({ term, glossary, modules, lang, i1
   ${sourcesHtml}
 </article>`;
 
-  const description = (shortText || title).slice(0, 160);
+  const description = stripTermTokens(shortText || title).slice(0, 160);
 
   // DefinedTerm structured data is the SEO-correct schema for a glossary entry.
   const jsonLdOverride = {
@@ -132,7 +132,7 @@ export function renderGlossaryIndex({ glossary, modules: _modules, lang, i18n: _
         const tShort = pick(term.short, lang) || '';
         return `<a class="handbook-card" href="./${escapeAttr(term.id)}.html">
           <div class="handbook-card__title">${escapeHtml(tTitle)}</div>
-          ${tShort ? `<div class="handbook-card__desc">${escapeHtml(tShort)}</div>` : ''}
+          ${tShort ? `<div class="handbook-card__desc">${escapeHtml(stripTermTokens(tShort))}</div>` : ''}
         </a>`;
       }).join('');
     groupHtmlParts.push(
@@ -216,6 +216,26 @@ async function renderGlossaryBlock(block, opts) {
     default:
       return block.text ? `<p>${await escAndLinkAndMath(block.text, opts)}</p>` : '';
   }
+}
+
+/**
+ * Kurztexte (`short`) tragen dieselben `{{term:…}}`-Verweise wie die Prosa.
+ * Sie erscheinen im Lead einer Begriffsseite und auf den Übersichtskarten —
+ * ohne Auflösung stand dort das Rohmarkup.
+ *
+ * @param {string} text
+ * @param {{ glossaryHref?: (id: string) => string }} [opts]
+ * @returns {string}
+ */
+function linkTerms(text, opts) {
+  return escapeHtml(text).replace(
+    /\{\{term:([a-z0-9-]+)(?:\|([^}]+))?\}\}/gi,
+    (_m, id, label) => {
+      const visible = label || id;
+      const href = opts?.glossaryHref?.(id);
+      return href ? `<a class="handbook-glossary-link" href="${escapeAttr(href)}">${visible}</a>` : visible;
+    },
+  );
 }
 
 /**

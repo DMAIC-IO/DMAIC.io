@@ -245,6 +245,7 @@ async function main() {
         lang,
         categoryById: sources.algorithms.categoryById,
         i18n: sources.i18n,
+        glossary: sources.glossary,
       });
       const dest = path.join(OUT, rel(page.pathFromRoot));
       await writeOut(dest, page.html);

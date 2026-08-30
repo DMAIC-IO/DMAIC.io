@@ -10,7 +10,7 @@
  *   - Footer with DMAIC.io link + lightweight legal row
  */
 
-import { escapeHtml, escapeAttr } from './escape.mjs';
+import { escapeHtml, escapeAttr, stripTermTokens } from './escape.mjs';
 
 const SITE_ORIGIN = 'https://dmaic.io/app/latest/docs';
 const APP_ORIGIN = 'https://dmaic.io';
@@ -317,8 +317,8 @@ export const CONSTANTS = {
 export function renderPage(opts) {
   const {
     lang,
-    title,
-    description,
+    title: rawTitle,
+    description: rawDescription,
     pathFromRoot,
     altPathFromRoot,
     breadcrumbs,
@@ -329,6 +329,12 @@ export function renderPage(opts) {
     jsonLdOverride = null,
   } = opts;
 
+  // <title>, Meta-Beschreibungen und JSON-LD sind Klartext-Slots: ein
+  // {{term:…}}-Token würde dort wörtlich ausgeliefert und von Suchmaschinen
+  // so indiziert. Zentral hier reduzieren, statt an jeder Aufrufstelle.
+  const title = stripTermTokens(rawTitle);
+  const description = stripTermTokens(rawDescription);
+
   const canonical = SITE_ORIGIN + pathFromRoot;
   const altHref = altPathFromRoot ? SITE_ORIGIN + altPathFromRoot : null;
   const otherLang = lang === 'de' ? 'en' : 'de';
@@ -337,10 +343,14 @@ export function renderPage(opts) {
   const faviconHref = relativeTo(pathFromRoot, '/assets/favicon.svg');
   const katexCssHref = needsKatex ? relativeTo(pathFromRoot, '/assets/katex/katex.min.css') : null;
 
-  const jsonLd = jsonLdOverride || {
+  const jsonLd = (jsonLdOverride && {
+    ...jsonLdOverride,
+    ...(jsonLdOverride.name ? { name: stripTermTokens(jsonLdOverride.name) } : {}),
+    ...(jsonLdOverride.description ? { description: stripTermTokens(jsonLdOverride.description) } : {}),
+  }) || {
     '@context': 'https://schema.org',
     '@type': 'TechArticle',
-    headline: headingKey || title,
+    headline: stripTermTokens(headingKey) || title,
     inLanguage: lang,
     url: canonical,
     isAccessibleForFree: true,
@@ -429,8 +439,9 @@ function renderBreadcrumbs(items) {
   if (!items || items.length === 0) return '';
   const parts = items.map((item, idx) => {
     const last = idx === items.length - 1;
-    if (last || !item.href) return `<li aria-current="page">${escapeHtml(item.label)}</li>`;
-    return `<li><a href="${escapeAttr(item.href)}">${escapeHtml(item.label)}</a></li>`;
+    const label = escapeHtml(stripTermTokens(item.label));
+    if (last || !item.href) return `<li aria-current="page">${label}</li>`;
+    return `<li><a href="${escapeAttr(item.href)}">${label}</a></li>`;
   });
   return `<nav class="handbook-breadcrumbs" aria-label="Breadcrumb"><ol>${parts.join('')}</ol></nav>`;
 }
