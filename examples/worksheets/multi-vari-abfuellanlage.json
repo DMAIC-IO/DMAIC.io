@@ -10,31 +10,31 @@
             "name": "Maschine",
             "shortName": "Masch",
             "type": "text",
-            "values": ["M1","M1","M1","M1","M1","M1","M1","M2","M2","M2","M2","M2","M2","M2","M2","M2"]
+            "values": ["M1","M1","M1","M1","M1","M1","M1","M2","M2","M2","M2","M2","M2","M2"]
           },
           {
             "id": "c-schicht",
             "name": "Schicht",
             "shortName": "Schicht",
             "type": "text",
-            "values": ["Früh","Früh","Früh","Spät","Spät","Spät","Spät","Früh","Früh","Früh","Früh","Spät","Spät","Spät","Spät","Spät"]
+            "values": ["Früh","Früh","Früh","Spät","Spät","Spät","Spät","Früh","Früh","Früh","Früh","Spät","Spät","Spät"]
           },
           {
             "id": "c-charge",
             "name": "Charge",
             "shortName": "Charge",
             "type": "text",
-            "values": ["C1","C1","C2","C1","C1","C2","C2","C1","C1","C2","C2","C1","C1","C1","C2","C2"]
+            "values": ["C1","C1","C2","C1","C1","C2","C2","C1","C1","C2","C2","C1","C1","C1"]
           },
           {
             "id": "c-fuell",
             "name": "Füllmenge",
             "shortName": "Füll",
             "type": "numeric",
-            "values": [500.2,500.4,501.1,499.8,500.0,500.9,501.0,502.3,502.5,503.1,503.0,501.7,501.9,502.0,502.8,502.6]
+            "values": [500.2,500.4,501.1,499.8,500.0,500.9,501.0,502.3,502.5,503.1,503.0,501.7,501.9,502.0]
           }
         ],
-        "rowCount": 16
+        "rowCount": 14
       }
     }
   ],

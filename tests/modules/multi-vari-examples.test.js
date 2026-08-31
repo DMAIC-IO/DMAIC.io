@@ -8,20 +8,20 @@
  * real engines classify each dataset exactly as designed.
  *
  * Task 19's brief predicted (Step 5) that Spritzguss shows *no* warning and
- * that Abfüllanlage shows *both* `unbalanced` and `emptyCells`. Measured
- * against the transcribed data, neither holds exactly:
- *   - Spritzguss: the nested ANOVA's Schicht (A) component comes out
- *     slightly negative (MS_A < MS_B(A) at df=1) and gets clamped to 0,
- *     which raises `negativeComponent` — a real, correctly-surfaced warning,
- *     not a bug. The nest-vs-shift story ("Löwenanteil beim Werkzeugnest")
- *     still holds: B(A) carries ~96.7% of the variance.
- *   - Abfüllanlage: every one of the 8 (Maschine × Schicht × Charge) cells
- *     is actually occupied (counts 1–3) — the design is unevenly occupied
- *     (`unbalanced`) but no cell is empty, so `emptyCells` never fires.
- * Both are pinned here so a future data/engine change is caught either way.
+ * that Abfüllanlage shows *both* `unbalanced` and `emptyCells`. Task 19's
+ * first cut of the data didn't quite land there (see task-19-report.md,
+ * "Fix round 1"): Spritzguss clamped a negative Schicht component, and
+ * Abfüllanlage had every cell occupied despite being unevenly sized. Round 1
+ * corrected the data to match the catalog description's own claims —
+ * Spritzguss lifted the Spät wall-thickness values by +0.10 to make the
+ * shift effect large enough that nothing clamps; Abfüllanlage dropped the
+ * (Maschine=M2, Schicht=Spät, Charge=C2) cell entirely so the catalog's "mit
+ * einer fehlenden Kombination" / "with one missing combination" claim is
+ * literally true. Both outcomes are pinned here — including the percentages
+ * — so a future data or engine change is caught precisely.
  */
 
-import { suite, test, assertEqual, assertTrue } from '../test-utils.js';
+import { suite, test, assertEqual, assertDeepEqual, assertTrue, assertAlmostEqual } from '../test-utils.js';
 import { computeMultiVari } from '../../js/engines/multi-vari-engine.js';
 import { runVarianceDecomposition, pickLargestTerm } from '../../js/modules/multi-vari/multi-vari-analysis.js';
 
@@ -34,6 +34,12 @@ async function fetchJson(relPath) {
 
 function sheetColumns(worksheetJson) {
   return Object.fromEntries(worksheetJson.sheets[0].state.columns.map(c => [c.id, c]));
+}
+
+function termPercent(terms, id) {
+  const t = terms.find(x => x.id === id);
+  assertTrue(!!t, `term ${id} not found in ${JSON.stringify(terms.map(x => x.id))}`);
+  return t.percent;
 }
 
 suite('multi-vari catalog registration', () => {
@@ -60,6 +66,10 @@ suite('multi-vari catalog registration', () => {
     assertDeepEqualModules(abfuell.modules);
     assertEqual(typeof abfuell.title.de, 'string');
     assertEqual(typeof abfuell.title.en, 'string');
+    // The catalog description literally promises a missing combination —
+    // round 1 corrected the data so this claim is true (see suite below).
+    assertTrue(abfuell.description.de.includes('fehlenden Kombination'));
+    assertTrue(abfuell.description.en.includes('missing combination'));
 
     function assertDeepEqualModules(modules) {
       assertTrue(Array.isArray(modules) && modules.length === 1 && modules[0] === 'multi-vari',
@@ -98,7 +108,7 @@ suite('multi-vari-spritzguss example data', () => {
     assertEqual(ws.sheets[0].state.rowCount, 24);
   });
 
-  test('engines: balanced, largest variance share at the tool nest', async () => {
+  test('engines: balanced, warning-free flagship, largest variance share at the tool nest', async () => {
     const ws = await fetchJson('../../examples/worksheets/multi-vari-spritzguss.json');
     const cols = sheetColumns(ws);
     const factorNames = ['Schicht', 'Werkzeugnest', 'Teil'];
@@ -119,15 +129,20 @@ suite('multi-vari-spritzguss example data', () => {
     assertEqual(result.droppedRows, 0);
     assertTrue(result.balanced, 'expected the Spritzguss design to be balanced');
 
-    const largest = pickLargestTerm(result.vc.terms);
-    assertEqual(largest.id, 'B(A)', 'expected the largest variance share at the nest term B(A)');
-    assertTrue(largest.percent > 90, `expected B(A) to dominate, got ${largest.percent}%`);
+    // Round 1: the Spät wall-thickness values were lifted by +0.10 precisely
+    // so the shift effect no longer clamps to 0 — this is now the
+    // warning-free flagship example the plan's Step 5 predicted.
+    assertDeepEqual(result.warnings, [], `expected no warnings, got ${JSON.stringify(result.warnings)}`);
+    result.vc.terms.forEach(t => assertTrue(!t.clamped, `expected no clamped term, got ${t.id}`));
 
-    // See file header: the Schicht (A) component clamps to 0 for this data,
-    // which correctly raises `negativeComponent` — contra the brief's Step 5
-    // prediction of "no warning".
-    assertTrue(result.warnings.includes('negativeComponent'),
-      'expected negativeComponent (Schicht component clamped to 0)');
+    const terms = result.vc.terms;
+    assertAlmostEqual(termPercent(terms, 'A'), 32.830205887049246, 1e-6, 'Schicht (A) percent');
+    assertAlmostEqual(termPercent(terms, 'B(A)'), 64.98096171823687, 1e-6, 'Werkzeugnest (B(A)) percent');
+    assertAlmostEqual(termPercent(terms, 'C(AB)'), 1.9425887503192203, 1e-6, 'Teil (C(AB)) percent');
+    assertAlmostEqual(termPercent(terms, 'Error'), 0.24624364439468407, 1e-6, 'Error percent');
+
+    const largest = pickLargestTerm(terms);
+    assertEqual(largest.id, 'B(A)', 'expected the largest variance share at the nest term B(A)');
   });
 });
 
@@ -141,17 +156,25 @@ suite('multi-vari-abfuellanlage example data', () => {
     assertEqual(project.estimator, 'reml');
   });
 
-  test('worksheet is 16 rows, 2×2×2', async () => {
+  test('worksheet is 14 rows, 2×2×2 with one missing combination', async () => {
     const ws = await fetchJson('../../examples/worksheets/multi-vari-abfuellanlage.json');
     const cols = sheetColumns(ws);
-    assertEqual(cols['c-maschine'].values.length, 16);
+    assertEqual(cols['c-maschine'].values.length, 14);
     assertEqual(new Set(cols['c-maschine'].values).size, 2);
     assertEqual(new Set(cols['c-schicht'].values).size, 2);
     assertEqual(new Set(cols['c-charge'].values).size, 2);
-    assertEqual(ws.sheets[0].state.rowCount, 16);
+    assertEqual(ws.sheets[0].state.rowCount, 14);
+
+    // Round 1 dropped the (M2, Spät, C2) cell entirely so the catalog's
+    // "mit einer fehlenden Kombination" claim is literally true.
+    const rows = cols['c-maschine'].values.map((_, i) => [
+      cols['c-maschine'].values[i], cols['c-schicht'].values[i], cols['c-charge'].values[i],
+    ]);
+    const hasMissingCell = !rows.some(([m, s, c]) => m === 'M2' && s === 'Spät' && c === 'C2');
+    assertTrue(hasMissingCell, 'expected (M2, Spät, C2) to be entirely absent');
   });
 
-  test('engines: unevenly occupied, all 8 cells present (no emptyCells)', async () => {
+  test('engines: unbalanced with an empty cell, REML sits on the boundary', async () => {
     const ws = await fetchJson('../../examples/worksheets/multi-vari-abfuellanlage.json');
     const cols = sheetColumns(ws);
     const factorNames = ['Maschine', 'Schicht', 'Charge'];
@@ -167,16 +190,25 @@ suite('multi-vari-abfuellanlage example data', () => {
       factorNames, modelForm: 'crossed', estimator: 'reml',
     });
 
-    assertEqual(result.n, 16);
+    assertEqual(result.n, 14);
     assertEqual(result.droppedRows, 0);
     assertTrue(result.balanced === false, 'expected the Abfüllanlage design to be unbalanced');
-    assertTrue(result.warnings.includes('unbalanced'));
 
-    // See file header: every one of the 8 combinations is actually occupied
-    // in this transcribed data (counts range 1–3) — no cell is empty, so
-    // `emptyCells` does not fire, contra the brief's Step 2/5 claim that the
-    // "last combination is missing entirely".
-    assertTrue(!result.warnings.includes('emptyCells'),
-      'did not expect emptyCells — every (Maschine, Schicht, Charge) cell is occupied');
+    // Round 1: dropping the (M2, Spät, C2) cell makes `emptyCells` fire
+    // alongside `unbalanced` — matching the catalog's own description. The
+    // fully-crossed 2×2×2 model with all interactions is over-parameterised
+    // on 14 rows, so REML honestly reports `notConverged` too; that is
+    // intentional and must not be tuned away.
+    assertDeepEqual(
+      [...result.warnings].sort(),
+      ['emptyCells', 'notConverged', 'unbalanced'],
+      `unexpected warning set: ${JSON.stringify(result.warnings)}`,
+    );
+
+    const terms = result.vc.terms;
+    assertAlmostEqual(termPercent(terms, 'A'), 81.4605031489062, 1e-6, 'Maschine (A) percent');
+    assertAlmostEqual(termPercent(terms, 'B'), 1.2156340706646913, 1e-6, 'Schicht (B) percent');
+    assertAlmostEqual(termPercent(terms, 'C'), 15.570015510656491, 1e-6, 'Charge (C) percent');
+    assertAlmostEqual(termPercent(terms, 'Error'), 0.5843712170787688, 1e-6, 'Error percent');
   });
 });
