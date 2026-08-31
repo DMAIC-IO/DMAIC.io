@@ -467,3 +467,63 @@ suite('Variance components — public API', () => {
     assertEqual(r.warnings.includes('rowCapExceeded'), true);
   });
 });
+
+// ── Gold-standard fixtures ────────────────────────────────────────────────
+//
+// Reference values from `tools/fixture-generator` in the site repo:
+// sequential SS/df from cumulative statsmodels OLS fits, REML components from
+// statsmodels MixedLM. Regenerate with
+// `python3 generate_fixtures.py --algorithm variance-components`.
+
+// Loaded at module level: the runner registers suites synchronously, so a
+// fixture awaited inside the suite callback would arrive after the run.
+const fixtureResp = await fetch(new URL(
+  '../fixtures/variance/variance-components.fixtures.json', import.meta.url));
+const fx = await fixtureResp.json();
+
+suite('Variance components — gold-standard fixtures (ANOVA)', () => {
+  const tol = fx.tolerances.default;
+  for (const tc of fx.test_cases.filter(c => c.inputs.estimator !== 'reml')) {
+    test(`${tc.id} — ${tc.description}`, () => {
+      const terms = buildTerms(tc.inputs.modelForm, tc.inputs.factorNames);
+      const table = anovaTable({
+        response: tc.inputs.response,
+        factorValues: tc.inputs.factorValues,
+        terms,
+      });
+      const { variances } = anovaComponents(table);
+      tc.expected.terms.forEach((exp, i) => {
+        assertEqual(table.rows[i].df, exp.df);
+        assertAlmostEqual(table.rows[i].ss, exp.ss,
+          tol.absolute + Math.abs(exp.ss) * tol.relative);
+        assertAlmostEqual(variances[i], exp.variance,
+          tol.absolute + Math.abs(exp.variance) * tol.relative);
+      });
+      assertEqual(table.error.df, tc.expected.error.df);
+      assertAlmostEqual(table.error.ss, tc.expected.error.ss,
+        tol.absolute + Math.abs(tc.expected.error.ss) * tol.relative);
+      assertAlmostEqual(variances[variances.length - 1], tc.expected.error.variance,
+        tol.absolute + Math.abs(tc.expected.error.variance) * tol.relative);
+    });
+  }
+});
+
+suite('Variance components — gold-standard fixtures (REML)', () => {
+  const tol = fx.tolerances.overrides.reml;
+  for (const tc of fx.test_cases.filter(c => c.inputs.estimator === 'reml')) {
+    test(`${tc.id} — ${tc.description}`, () => {
+      const terms = buildTerms(tc.inputs.modelForm, tc.inputs.factorNames);
+      const r = remlComponents({
+        response: tc.inputs.response,
+        factorValues: tc.inputs.factorValues,
+        terms,
+      });
+      assertEqual(r.converged, true);
+      [...tc.expected.terms.map(t => t.variance), tc.expected.error.variance]
+        .forEach((expected, i) => {
+          assertAlmostEqual(r.variances[i], expected,
+            tol.absolute + Math.abs(expected) * tol.relative);
+        });
+    });
+  }
+});
