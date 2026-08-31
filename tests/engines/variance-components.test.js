@@ -10,6 +10,7 @@ import {
 } from '../test-utils.js';
 import {
   buildTerms, termCells, KEY_SEP, appendBlock, projectSquares, anovaTable,
+  emsMatrix, anovaComponents,
 } from '../../js/engines/variance-components-engine.js';
 
 suite('Variance components — term construction', () => {
@@ -240,5 +241,58 @@ suite('Variance components — ANOVA table', () => {
       terms,
     });
     assertEqual(t.error.df, 0);
+  });
+});
+
+suite('Variance components — EMS matrix and ANOVA estimator', () => {
+  test('balanced nested EMS coefficients match the textbook values', () => {
+    // For a levels of A, b levels of B within A, n replicates:
+    //   E[MS_A]    = var_e + n*var_B + b*n*var_A  -> coefficients (4, 2, 1)
+    //   E[MS_B(A)] = var_e + n*var_B              -> coefficients (0, 2, 1)
+    //   E[MS_e]    = var_e                        -> coefficients (0, 0, 1)
+    const terms = buildTerms('nested', ['A', 'B']);
+    const C = emsMatrix(anovaTable({ ...NESTED_BALANCED, terms }));
+    assertAlmostEqual(C[0][0], 4, 1e-9);
+    assertAlmostEqual(C[0][1], 2, 1e-9);
+    assertAlmostEqual(C[0][2], 1, 1e-9);
+    assertAlmostEqual(C[1][0], 0, 1e-9);
+    assertAlmostEqual(C[1][1], 2, 1e-9);
+    assertAlmostEqual(C[1][2], 1, 1e-9);
+    assertAlmostEqual(C[2][0], 0, 1e-9);
+    assertAlmostEqual(C[2][1], 0, 1e-9);
+    assertAlmostEqual(C[2][2], 1, 1e-9);
+  });
+
+  test('balanced nested components match the hand computation', () => {
+    // var_e = MS_e = 2;  var_B = (16-2)/2 = 7;  var_A = (200-16)/4 = 46
+    const terms = buildTerms('nested', ['A', 'B']);
+    const { variances, clamped } = anovaComponents(anovaTable({ ...NESTED_BALANCED, terms }));
+    assertAlmostEqual(variances[0], 46, 1e-8);
+    assertAlmostEqual(variances[1], 7, 1e-8);
+    assertAlmostEqual(variances[2], 2, 1e-8);
+    assertDeepEqual(clamped, [false, false, false]);
+  });
+
+  test('balanced crossed components match the hand computation', () => {
+    // MS_A 5000, MS_B 1800, MS_AB 200, MS_e 2  (a=b=2, n=2)
+    //   var_e = 2;  var_AB = (200-2)/2 = 99
+    //   var_A = (5000-200)/4 = 1200;  var_B = (1800-200)/4 = 400
+    const terms = buildTerms('crossed', ['A', 'B']);
+    const { variances } = anovaComponents(anovaTable({ ...CROSSED_BALANCED, terms }));
+    assertAlmostEqual(variances[0], 1200, 1e-7);
+    assertAlmostEqual(variances[1], 400, 1e-7);
+    assertAlmostEqual(variances[2], 99, 1e-7);
+    assertAlmostEqual(variances[3], 2, 1e-8);
+  });
+
+  test('a negative component is clamped to zero and flagged', () => {
+    // MS_B(A) = 0 < MS_e = 26 -> var_B = (0-26)/2 = -13 -> clamped
+    // var_A stays (800-0)/4 = 200, computed from the RAW mean squares
+    const terms = buildTerms('nested', ['A', 'B']);
+    const { variances, clamped } = anovaComponents(anovaTable({ ...NESTED_NEGATIVE, terms }));
+    assertAlmostEqual(variances[0], 200, 1e-7);
+    assertEqual(variances[1], 0);
+    assertAlmostEqual(variances[2], 26, 1e-8);
+    assertDeepEqual(clamped, [false, true, false]);
   });
 });

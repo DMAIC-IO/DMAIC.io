@@ -18,6 +18,8 @@
  * No DOM, no state — all functions are stateless and testable.
  */
 
+import { matInverse } from './matrix-utils.js';
+
 /** Model bounds, mirrored from the multi-vari engine. */
 export const MIN_FACTORS = 2;
 export const MAX_FACTORS = 4;
@@ -238,4 +240,97 @@ export function anovaTable({ response, factorValues, terms }) {
     termColumns,
     n,
   };
+}
+
+/**
+ * Expected-mean-square coefficient matrix (Henderson method I).
+ *
+ * For term i and component j:  E[MS_i] = sum_j c_ij * var_j  with
+ *
+ *     c_ij = ||P_i Z_j||_F^2 / df_i
+ *
+ * where Z_j is term j's indicator matrix and P_i the projector onto the basis
+ * vectors term i contributed. Computed column-wise via `projectSquares`, so no
+ * n x n matrix is ever formed — the cost is O(n * cells).
+ *
+ * Deriving the coefficients numerically rather than plugging in per-design
+ * textbook formulas is what makes unbalanced data work: those formulas hold
+ * only under balance and silently produce wrong components otherwise.
+ *
+ * The last row is the error term, the last column the error variance, whose
+ * coefficient is 1 in every row because the expected squared projection
+ * contains var_e * df_i.
+ *
+ * @param {ReturnType<typeof anovaTable>} table
+ * @returns {number[][]} (T+1) x (T+1)
+ */
+export function emsMatrix(table) {
+  const { rows, error, basis, ranks, termColumns, n } = table;
+  const T = rows.length;
+  const C = [];
+
+  for (let i = 0; i < T; i++) {
+    const from = i === 0 ? 1 : ranks[i - 1];   // slot 0 is the intercept
+    const to = ranks[i];
+    const df = rows[i].df;
+    const line = new Array(T + 1).fill(0);
+    for (let j = 0; j < T; j++) {
+      let frob = 0;
+      for (const z of termColumns[j]) frob += projectSquares(basis, from, to, z);
+      line[j] = df > 0 ? frob / df : 0;
+    }
+    line[T] = 1;
+    C.push(line);
+  }
+
+  // Error row: the part of each Z_j orthogonal to the full model. For a
+  // hierarchical design this is zero, but computing it keeps the matrix right
+  // even when a term is aliased away.
+  const errLine = new Array(T + 1).fill(0);
+  for (let j = 0; j < T; j++) {
+    let frob = 0;
+    for (const z of termColumns[j]) {
+      let sq = 0;
+      for (let i = 0; i < n; i++) sq += z[i] * z[i];
+      frob += sq - projectSquares(basis, 0, basis.length, z);
+    }
+    errLine[j] = error.df > 0 ? Math.max(0, frob) / error.df : 0;
+  }
+  errLine[T] = 1;
+  C.push(errLine);
+
+  return C;
+}
+
+/**
+ * ANOVA/EMS variance component estimates.
+ *
+ * Solves C * var = MS, then clamps negatives to zero. The clamping happens
+ * AFTER the solve, never during: every component is estimated from the raw mean
+ * squares, so a negative estimate for one term does not silently distort its
+ * neighbours. Clamped terms are flagged so the UI can say so.
+ *
+ * @param {ReturnType<typeof anovaTable>} table
+ * @returns {{variances: number[], clamped: boolean[]}} length T+1, last = error
+ */
+export function anovaComponents(table) {
+  const C = emsMatrix(table);
+  const ms = [...table.rows.map(r => r.ms), table.error.ms];
+  const T = table.rows.length;
+
+  // A term with zero df carries no information — reduce it to a unit row so the
+  // system stays solvable and its component comes out as 0.
+  for (let i = 0; i <= T; i++) {
+    if (!Number.isFinite(ms[i])) {
+      for (let j = 0; j <= T; j++) C[i][j] = i === j ? 1 : 0;
+      ms[i] = 0;
+    }
+  }
+
+  const inv = matInverse(C);
+  const raw = inv.map(row => row.reduce((acc, v, j) => acc + v * ms[j], 0));
+
+  const clamped = raw.map(v => v < 0);
+  const variances = raw.map(v => (v < 0 ? 0 : v));
+  return { variances, clamped };
 }
