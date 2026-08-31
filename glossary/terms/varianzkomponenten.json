@@ -1,0 +1,112 @@
+{
+  "id": "varianzkomponenten",
+  "category": "doe",
+  "title": {
+    "de": "Varianzkomponenten",
+    "en": "Variance Components"
+  },
+  "short": {
+    "de": "Additive Zerlegung der Gesamtvarianz in die Beiträge einzelner Streuquellen — geschätzt per ANOVA/EMS-Verfahren oder REML.",
+    "en": "Additive decomposition of total variance into the contributions of individual sources — estimated via the ANOVA/EMS method or REML."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "**Varianzkomponenten** zerlegen die Gesamt-{{term:varianz|Varianz}} additiv in die Beiträge der einzelnen Streuquellen — z. B. Teil, Werkzeugnest, Schicht — plus einen Restanteil. Jede Quelle entspricht einem der kategorialen Faktoren, die auch die Achsen und Panels des {{term:multi-vari-diagramm|Multi-Vari-Diagramms}} bilden."
+      },
+      {
+        "type": "formula",
+        "latex": "\\sigma^2_{\\text{total}} = \\sum_{i=1}^{k} \\sigma^2_i + \\sigma^2_{\\text{Rest}}"
+      },
+      {
+        "type": "paragraph",
+        "text": "Zwei Modellformen sind zu unterscheiden: **gekreuzt**, wenn jede Stufe von Faktor B mit jeder Stufe von Faktor A vorkommt, und **geschachtelt (nested)**, wenn die Stufen von B je Ausprägung von A verschieden sind — Nest 1 in Schicht 1 ist dann nicht dasselbe Nest 1 in Schicht 2, sondern eine eigene Stufe. Welche Form vorliegt, bestimmt allein die Datenerhebung, nicht die Wahl im Modul."
+      },
+      {
+        "type": "list",
+        "items": [
+          "**ANOVA-Verfahren (Henderson I / EMS)** — setzt die erwarteten mittleren Quadratsummen den beobachteten gleich und löst nach den Varianzkomponenten auf. Schnell und exakt bei balancierten Plänen, kann aber negative Schätzwerte liefern, die auf null gesetzt werden.",
+          "**REML** (Restricted Maximum Likelihood) — iteratives Verfahren, liefert konstruktionsbedingt nie negative Schätzwerte und bleibt bei unbalancierten Plänen robuster als das ANOVA-Verfahren."
+        ]
+      },
+      {
+        "type": "paragraph",
+        "text": "Je Quelle weist das Modul Varianz, Standardabweichung und prozentualen Anteil an der Gesamtstreuung aus — die Zahlen zu dem, was das Multi-Vari-Diagramm zeigt."
+      },
+      {
+        "type": "note",
+        "text": "{{term:gage-rr|Gage R&R}} ist derselbe Gedanke, angewandt auf ein Messsystem statt auf einen Prozess: dieselbe additive Zerlegung, nur mit Prüfer und Wiederholung statt Schicht und Nest als Quellen."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "**Variance components** decompose total {{term:varianz|variance}} additively into the contributions of individual sources — e.g. part, tool cavity, shift — plus a residual. Each source corresponds to one of the categorical factors that also form the axes and panels of the {{term:multi-vari-diagramm|multi-vari chart}}."
+      },
+      {
+        "type": "formula",
+        "latex": "\\sigma^2_{\\text{total}} = \\sum_{i=1}^{k} \\sigma^2_i + \\sigma^2_{\\text{residual}}"
+      },
+      {
+        "type": "paragraph",
+        "text": "Two model forms must be distinguished: **crossed**, when every level of factor B occurs with every level of factor A, and **nested**, when the levels of B differ per level of A — cavity 1 in shift 1 is then not the same cavity 1 in shift 2, but a distinct level. Which form applies is determined by how the data was collected, not by a choice in the module."
+      },
+      {
+        "type": "list",
+        "items": [
+          "**ANOVA method (Henderson I / EMS)** — sets expected mean squares equal to observed mean squares and solves for the variance components. Fast and exact for balanced designs, but can yield negative estimates, which are floored at zero.",
+          "**REML** (Restricted Maximum Likelihood) — an iterative method that by construction never yields negative estimates and stays more robust than the ANOVA method under unbalanced designs."
+        ]
+      },
+      {
+        "type": "paragraph",
+        "text": "For every source the module reports variance, standard deviation and percentage share of total variation — the numbers behind what the multi-vari chart shows."
+      },
+      {
+        "type": "note",
+        "text": "{{term:gage-rr|Gage R&R}} is the same idea applied to a measurement system instead of a process: the same additive decomposition, just with operator and repeat instead of shift and cavity as sources."
+      }
+    ]
+  },
+  "aliases": {
+    "de": [
+      "Varianzkomponentenanalyse",
+      "VCA"
+    ],
+    "en": [
+      "variance components analysis",
+      "VCA"
+    ]
+  },
+  "seeAlso": [
+    "varianz",
+    "anova",
+    "gage-rr",
+    "multi-vari-diagramm",
+    "faktor",
+    "stufe"
+  ],
+  "modules": [
+    "multi-vari"
+  ],
+  "algoLab": [],
+  "sources": [
+    {
+      "label": "Searle, S. R., Casella, G. & McCulloch, C. E. — Variance Components, Wiley, 1992",
+      "url": null
+    },
+    {
+      "label": "Montgomery, D. C. — Design and Analysis of Experiments, 10th Edition, Chapter 13 (Random Effects and Variance Components)",
+      "url": null
+    },
+    {
+      "label": "Patterson, H. D. & Thompson, R. — Recovery of Inter-Block Information when Block Sizes Are Unequal, Biometrika 58(3), 1971",
+      "url": null
+    },
+    {
+      "label": "AIAG — Measurement Systems Analysis (MSA) Reference Manual, 4th Edition, 2010",
+      "url": null
+    }
+  ]
+}

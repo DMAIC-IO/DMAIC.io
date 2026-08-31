@@ -336,6 +336,11 @@
       "file": "terms/streuungs-doe.json"
     },
     {
+      "id": "varianzkomponenten",
+      "category": "doe",
+      "file": "terms/varianzkomponenten.json"
+    },
+    {
       "id": "regression",
       "category": "regression",
       "file": "terms/regression.json"
@@ -944,6 +949,11 @@
       "id": "kano-fragebogen",
       "category": "methodology",
       "file": "terms/kano-fragebogen.json"
+    },
+    {
+      "id": "multi-vari-diagramm",
+      "category": "visualization",
+      "file": "terms/multi-vari-diagramm.json"
     },
     {
       "id": "streudiagramm",
