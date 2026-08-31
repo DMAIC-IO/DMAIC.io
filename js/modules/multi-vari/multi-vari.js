@@ -27,6 +27,7 @@ import { ColumnPicker, getColumnValues, getColumnName } from '../../ui/column-pi
 import { draggableRows } from '../../ui/draggable-list.js';
 import { computeMultiVari } from '../../engines/multi-vari-engine.js';
 import { runVarianceDecomposition } from './multi-vari-analysis.js';
+import { whenAnchor } from '../../core/chart/chart-module-base.js';
 
 /** Debounce für den Neulauf nach einer Eingabeänderung. */
 const RERUN_DELAY = 120;
@@ -205,8 +206,59 @@ const mod = createModule({
         this.$nextTick(() => this._renderStrips(this.result, gen));
       },
 
-      // In Task 17 gefüllt.
-      async _renderStrips(_res, _gen) {},
+      /**
+       * Eine Chart-Instanz je Streifen. Alle Streifen teilen Y-Domäne und
+       * Referenzlinie, sonst sind die Zeilen nicht vergleichbar; nur der
+       * unterste trägt die X-Achsenbeschriftung. Jeder Streifen reserviert
+       * Platz für die Legende (und zeigt sie auch an) — reserviert nur der
+       * oberste, würden die Streifen unterschiedlich breit und ihre Panels
+       * ständen nicht mehr untereinander (siehe `gage-run-chart`).
+       *
+       * @param {object} res
+       * @param {number} gen — Schutz gegen veraltete Renderläufe
+       */
+      async _renderStrips(res, gen) {
+        this._destroyCharts();
+
+        const sm = module._context.stateManager;
+        const measurementName = getColumnName(sm, this.model.columnRefs.measurement);
+        const axisName = res.factorNames[0] || '';
+
+        for (const strip of res.strips) {
+          const host = await this.whenAnchor(`[data-strip="${strip.idx}"]`, gen);
+          if (!host || gen !== this._renderGen) return;
+          host.replaceChildren();
+
+          const isLast = strip.idx === res.strips.length - 1;
+          const chart = await module._context.chartManager.create(host, 'multi-vari', {
+            title: '',
+            showTitle: false,
+            xLabel: isLast ? axisName : '',
+            showXLabel: isLast,
+            yLabel: measurementName,
+            showLegend: true,
+            panels: strip.panels,
+            seriesLevels: res.seriesLevels,
+            rowLabel: strip.rowLevel,
+            refValue: this.model.showRefLine ? res.grandMean : null,
+            refLabel: _t('refMean'),
+            sharedYMin: res.yMin,
+            sharedYMax: res.yMax,
+            showPoints: this.model.showPoints,
+            connectMeans: this.model.connectMeans,
+            showGroupMean: this.model.showGroupMean,
+          });
+          if (gen !== this._renderGen) {
+            try { module._context.chartManager.destroy(chart); } catch { /* ignore */ }
+            return;
+          }
+          this._charts.push(chart);
+        }
+      },
+
+      whenAnchor(selector, gen, maxFrames = 30) {
+        return whenAnchor(module, this, selector, gen, maxFrames);
+      },
 
       _destroyCharts() {
         for (const c of this._charts) {
