@@ -103,6 +103,11 @@ export class State {
     if (row) row.ref = ref || null;
   }
 
+  /**
+   * Serialisiert den Zustand. `factorRows` hält die Zeilen mit ihren Ids,
+   * `columnRefs.factors` spiegelt dieselben Referenzen zusätzlich flach.
+   * @returns {object} Persistierbarer Zustand.
+   */
   toJSON() {
     return {
       columnRefs: {
