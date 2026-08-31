@@ -56,6 +56,19 @@
   display: block;
 }
 
+.multi-vari__warnings {
+  margin-bottom: var(--spacing-sm);
+}
+
+.multi-vari__warning {
+  padding: var(--spacing-xs) var(--spacing-sm);
+  margin-bottom: var(--spacing-xs);
+  border-left: 3px solid var(--color-warning);
+  background: color-mix(in srgb, var(--color-warning) 12%, transparent);
+  color: var(--color-text-primary);
+  font-size: var(--font-size-sm);
+}
+
 .multi-vari__chart-header {
   margin-bottom: var(--spacing-sm);
 }

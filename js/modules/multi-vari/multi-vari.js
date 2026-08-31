@@ -11,6 +11,9 @@
  *
  * Zwei Engines, bewusst getrennt: `multi-vari-engine.js` gruppiert (und rechnet
  * nichts), `variance-components-engine.js` zerlegt (und weiß nichts vom Bild).
+ * `multi-vari-analysis.js` verbindet beide — insbesondere sorgt sie dafür,
+ * dass die Zerlegung dieselben (bereinigten) Zeilen sieht wie das Diagramm
+ * und dass die Warnungen beider Engines zusammenfließen.
  *
  * `ChartBase` liefert genau einen Plot-Bereich, also entsteht das
  * Panel-Raster durch Stapeln einer Chart-Instanz je Streifen mit geteilter
@@ -20,6 +23,13 @@
 
 import { createModule } from '../../core/template-module.js';
 import { State } from './multi-vari-model.js';
+import { ColumnPicker, getColumnValues, getColumnName } from '../../ui/column-picker.js';
+import { draggableRows } from '../../ui/draggable-list.js';
+import { computeMultiVari } from '../../engines/multi-vari-engine.js';
+import { runVarianceDecomposition } from './multi-vari-analysis.js';
+
+/** Debounce für den Neulauf nach einer Eingabeänderung. */
+const RERUN_DELAY = 120;
 
 const mod = createModule({
   config: {
@@ -34,38 +44,269 @@ const mod = createModule({
 
   data(module, _t) {
     return {
-      /** Abgeleitetes Ergebnis für das Template, oder null. */
+      ...draggableRows({
+        onMove({ group, sourceId, targetId }) {
+          if (group !== 'factors') return;
+          this.model.moveFactorBefore(sourceId, targetId);
+          // Die Reihenfolge ist die Eingabe — nach dem Verschieben neu rechnen.
+          this._syncFactorPickers();
+          this._scheduleRerun();
+        },
+        rowIds(group) {
+          return group === 'factors' ? this.model.factors.map(f => f.id) : [];
+        },
+        t: (key, params) => module._context.i18n.t(key, params),
+      }),
+
+      /**
+       * Abgeleitetes Ergebnis für das Template, oder null. Form:
+       *   { strips: [{ idx, rowLevel, panels }], seriesLevels, factorNames,
+       *     grandMean, n, droppedRows, warnings, yMin, yMax, balanced,
+       *     panelCount, vc }
+       */
       result: null,
       errorMsg: '',
 
+      _measurementPicker: null,
+      /** @type {Map<string, ColumnPicker>} Picker je Faktorzeilen-Id. */
+      _factorPickers: new Map(),
+      _charts: [],
+      _unsubs: [],
+      _rerunTimer: null,
+      _renderGen: 0,
+
       // ── Anzeige-Helfer ────────────────────────────────────────
 
-      /** Rolle der Faktorzeile an Position `idx` (X-Achse, Serie, …). */
+      fmt(v) {
+        return Number.isFinite(v) ? v.toFixed(4) : '–';
+      },
+
+      pct(v) {
+        return Number.isFinite(v) ? v.toFixed(1) : '–';
+      },
+
       factorRole(idx) {
         return _t(`factorRole_${idx}`);
       },
 
       chartTitle() {
-        return _t('chartTitle', { col: '' });
+        const col = getColumnName(module._context.stateManager, this.model.columnRefs.measurement);
+        return _t('chartTitle', { col });
       },
 
-      // ── Platzhalter, in Task 16 gefüllt ───────────────────────
+      termLabel(term) {
+        return term.id === 'Error' ? _t('termError') : term.label;
+      },
+
+      /** Term mit dem größten Varianzanteil, `Error` eingeschlossen. */
+      largestTerm() {
+        const terms = this.result?.vc?.terms;
+        if (!terms || !terms.length) return null;
+        return terms.reduce((best, t) => (t.percent > best.percent ? t : best), terms[0]);
+      },
+
+      largestPercent() {
+        const t = this.largestTerm();
+        return t ? `${this.pct(t.percent)} %` : '–';
+      },
+
+      largestTermLabel() {
+        const t = this.largestTerm();
+        return t ? this.termLabel(t) : '';
+      },
+
+      /** Engine-Warnungen plus die synthetische `droppedRows`-Meldung. */
+      warningCodes() {
+        const r = this.result;
+        if (!r) return [];
+        return r.droppedRows > 0 ? [...r.warnings, 'droppedRows'] : r.warnings;
+      },
+
+      hasWarnings() {
+        return this.warningCodes().length > 0;
+      },
+
+      warningText(code) {
+        if (code === 'droppedRows') {
+          return _t('warnDroppedRows', { count: this.result.droppedRows });
+        }
+        return _t(`warn_${code}`);
+      },
+
+      // ── Ereignisse ────────────────────────────────────────────
 
       addFactor() {
         this.model.addFactor();
+        this.$nextTick(() => { this._syncFactorPickers(); });
       },
 
       removeFactor(id) {
         this.model.removeFactor(id);
+        this._factorPickers.get(id)?.destroy();
+        this._factorPickers.delete(id);
+        this.$nextTick(() => {
+          this._syncFactorPickers();
+          this._scheduleRerun();
+        });
       },
 
       optionChanged() {
-        // x-model hat den Wert bereits geschrieben.
+        this._scheduleRerun();
       },
 
-      init() {},
+      // ── Analyse ───────────────────────────────────────────────
 
-      destroy() {},
+      _scheduleRerun() {
+        clearTimeout(this._rerunTimer);
+        this._rerunTimer = setTimeout(() => this._runAnalysis(), RERUN_DELAY);
+      },
+
+      _runAnalysis() {
+        const clear = (msg = '') => {
+          this._destroyCharts();
+          this.result = null;
+          this.errorMsg = msg;
+        };
+
+        const sm = module._context.stateManager;
+        if (!this.model.columnRefs.measurement) return clear();
+
+        const selected = this.model.selectedFactors();
+        if (selected.length < 2) return clear(_t('errNeedFactors'));
+
+        const measurements = getColumnValues(sm, this.model.columnRefs.measurement);
+        const factorNames = selected.map(f => getColumnName(sm, f.ref));
+        const factorValues = selected.map(f => getColumnValues(sm, f.ref));
+        const factors = selected.map((f, i) => ({ name: factorNames[i], values: factorValues[i] }));
+
+        let g;
+        try {
+          g = computeMultiVari({ measurements, factors });
+        } catch (err) {
+          return clear(String(err.message || err));
+        }
+        if (g.n === 0) return clear(_t('errNoData'));
+
+        // Die Zerlegung darf scheitern (singuläres Modell, REML ohne
+        // Konvergenz), ohne das Diagramm mitzureißen: das Bild trägt für sich.
+        // runVarianceDecomposition() speist dabei ausschließlich g.cleaned in
+        // die Zerlegung ein (dieselben Zeilen wie das Diagramm) und vereinigt
+        // die Warnungen beider Engines dedupliziert.
+        const { result, vcError } = runVarianceDecomposition(g, {
+          factorNames,
+          modelForm: this.model.modelForm,
+          estimator: this.model.estimator,
+        });
+
+        this.result = result;
+        this.errorMsg = vcError ? _t('errCompute', { msg: String(vcError.message || vcError) }) : '';
+
+        const gen = ++this._renderGen;
+        this.$nextTick(() => this._renderStrips(this.result, gen));
+      },
+
+      // In Task 17 gefüllt.
+      async _renderStrips(_res, _gen) {},
+
+      _destroyCharts() {
+        for (const c of this._charts) {
+          try { module._context.chartManager.destroy(c); } catch { /* ignore */ }
+        }
+        this._charts = [];
+      },
+
+      // ── ColumnPicker (imperative Widgets) ─────────────────────
+
+      _mountMeasurementPicker() {
+        const el = module._container.querySelector('[data-ref="col-measurement-wrap"]');
+        if (!el) return;
+        this._measurementPicker?.destroy();
+        this._measurementPicker = new ColumnPicker(el, module._context, {
+          mode: 'single',
+          types: ['numeric', 'percent', 'currency'],
+          onChange: (ref) => {
+            this.model.columnRefs.measurement = ref;
+            this._scheduleRerun();
+          },
+        });
+        if (this.model.columnRefs.measurement) {
+          this._measurementPicker.value = this.model.columnRefs.measurement;
+        }
+      },
+
+      /**
+       * Je Faktorzeile einen Picker in ihre Zelle hängen. Läuft auch nach jedem
+       * Hinzufügen, Entfernen und Umsortieren: `x-for` baut die Zeilen neu auf,
+       * die imperativen Widgets darin überleben das nicht.
+       */
+      _syncFactorPickers() {
+        for (const [id, picker] of this._factorPickers) {
+          if (!this.model.factors.some(f => f.id === id)) {
+            picker.destroy();
+            this._factorPickers.delete(id);
+          }
+        }
+        for (const f of this.model.factors) {
+          const cell = module._container.querySelector(`[data-factor-wrap="${f.id}"]`);
+          if (!cell) continue;
+          if (cell.firstElementChild && this._factorPickers.has(f.id)) continue;
+          this._factorPickers.get(f.id)?.destroy();
+          cell.replaceChildren();
+          const picker = new ColumnPicker(cell, module._context, {
+            mode: 'single',
+            onChange: (ref) => {
+              this.model.setFactorRef(f.id, ref);
+              this._scheduleRerun();
+            },
+          });
+          if (f.ref) picker.value = f.ref;
+          this._factorPickers.set(f.id, picker);
+        }
+      },
+
+      // ── Lebenszyklus ──────────────────────────────────────────
+
+      init() {
+        this._unsubs = [];
+        this._charts = [];
+        this._factorPickers = new Map();
+        this._renderGen = 0;
+        this._rerunTimer = null;
+
+        this.dragRowsInit();
+        this._mountMeasurementPicker();
+        this.$nextTick(() => this._syncFactorPickers());
+
+        const eb = module._context.eventBus;
+        const onActivated = ({ instanceId }) => {
+          if (instanceId !== module._context.instanceId) return;
+          this._measurementPicker?.refresh();
+          for (const p of this._factorPickers.values()) p.refresh();
+        };
+        eb.on('module:activated', onActivated);
+        this._unsubs.push(() => eb.off('module:activated', onActivated));
+
+        // Chart-Farben kommen aus CSS-Custom-Properties — beim Theme-Wechsel neu zeichnen.
+        const onTheme = () => {
+          if (this.result) this._renderStrips(this.result, ++this._renderGen);
+        };
+        eb.on('theme:changed', onTheme);
+        this._unsubs.push(() => eb.off('theme:changed', onTheme));
+
+        this._runAnalysis();
+      },
+
+      destroy() {
+        for (const unsub of this._unsubs) unsub();
+        this._unsubs = [];
+        clearTimeout(this._rerunTimer);
+        this.dragRowsDestroy();
+        this._measurementPicker?.destroy();
+        this._measurementPicker = null;
+        for (const p of this._factorPickers.values()) p.destroy();
+        this._factorPickers.clear();
+        this._destroyCharts();
+      },
     };
   },
 });

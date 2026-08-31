@@ -97,6 +97,30 @@
     <template x-if="result">
       <div class="multi-vari__result" data-ref="result">
 
+        <div class="dmike-kpi-strip" data-ref="stats-bar">
+          <div class="dmike-kpi">
+            <div class="dmike-kpi-value" x-text="result.n"></div>
+            <div class="dmike-kpi-label" x-text="t('statMeasurements')"></div>
+            <div class="dmike-kpi-sub" x-text="t('statFactors', { count: result.factorNames.length })"></div>
+          </div>
+          <div class="dmike-kpi">
+            <div class="dmike-kpi-value" x-text="fmt(result.grandMean)"></div>
+            <div class="dmike-kpi-label" x-text="t('statGrandMean')"></div>
+            <div class="dmike-kpi-sub" x-text="t('statSpan', { min: fmt(result.yMin), max: fmt(result.yMax) })"></div>
+          </div>
+          <div class="dmike-kpi" x-show="largestTerm()">
+            <div class="dmike-kpi-value" x-text="largestPercent()"></div>
+            <div class="dmike-kpi-label" x-text="t('statLargest')"></div>
+            <div class="dmike-kpi-sub" x-text="largestTermLabel()"></div>
+          </div>
+        </div>
+
+        <div class="multi-vari__warnings" data-ref="warnings" x-show="hasWarnings()">
+          <template x-for="code in warningCodes()">
+            <div class="multi-vari__warning" :key="code" x-text="warningText(code)"></div>
+          </template>
+        </div>
+
         <div class="multi-vari__chart-header">
           <span class="multi-vari__chart-title" x-text="chartTitle()"></span>
         </div>
