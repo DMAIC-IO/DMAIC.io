@@ -334,3 +334,127 @@ export function anovaComponents(table) {
   const variances = raw.map(v => (v < 0 ? 0 : v));
   return { variances, clamped };
 }
+
+/**
+ * Materialise the pieces REML needs: the response and one indicator block per
+ * term. The fixed part is the intercept alone — every factor is random, which
+ * is the modelling assumption of this tool.
+ *
+ * @param {{response: number[], factorValues: string[][],
+ *          terms: Array<{factorIndices: number[]}>}} input
+ * @returns {{y: Float64Array, Z: Float64Array[][], q: number[], n: number}}
+ */
+export function remlWorkspace({ response, factorValues, terms }) {
+  const n = response.length;
+  const Z = terms.map(t => termCells(t.factorIndices, factorValues).columns);
+  return { y: Float64Array.from(response), Z, q: Z.map(b => b.length), n };
+}
+
+/**
+ * The REML projector P = Vinv - Vinv X (X' Vinv X)inv X' Vinv, for X = 1.
+ *
+ * @param {ReturnType<typeof remlWorkspace>} ws
+ * @param {number[]} theta — components, last entry the error variance
+ * @returns {{P: number[][], Py: Float64Array, ok: boolean}} ok=false when V is singular
+ */
+export function remlP(ws, theta) {
+  const { Z, n } = ws;
+  const sigmaE = theta[theta.length - 1];
+
+  const V = [];
+  for (let i = 0; i < n; i++) V.push(new Array(n).fill(0));
+  for (let i = 0; i < n; i++) V[i][i] = sigmaE;
+  for (let j = 0; j < Z.length; j++) {
+    const s = theta[j];
+    if (s === 0) continue;
+    for (const z of Z[j]) {
+      for (let a = 0; a < n; a++) {
+        if (z[a] === 0) continue;
+        for (let b = 0; b < n; b++) if (z[b] !== 0) V[a][b] += s;
+      }
+    }
+  }
+
+  let Vinv;
+  try {
+    Vinv = matInverse(V);
+  } catch {
+    return { P: null, Py: null, ok: false };
+  }
+  // matInverse reports a singular matrix by returning null rather than throwing.
+  if (!Vinv) return { P: null, Py: null, ok: false };
+
+  // X = 1, so X' Vinv X is the scalar sum of all entries of Vinv.
+  let total = 0;
+  const rowSums = new Float64Array(n);
+  for (let i = 0; i < n; i++) {
+    let s = 0;
+    for (let j = 0; j < n; j++) s += Vinv[i][j];
+    rowSums[i] = s;
+    total += s;
+  }
+  if (!Number.isFinite(total) || total === 0) return { P: null, Py: null, ok: false };
+
+  const P = [];
+  for (let i = 0; i < n; i++) {
+    const row = new Array(n);
+    for (let j = 0; j < n; j++) row[j] = Vinv[i][j] - (rowSums[i] * rowSums[j]) / total;
+    P.push(row);
+  }
+
+  const Py = new Float64Array(n);
+  for (let i = 0; i < n; i++) {
+    let s = 0;
+    for (let j = 0; j < n; j++) s += P[i][j] * ws.y[j];
+    Py[i] = s;
+  }
+
+  return { P, Py, ok: true };
+}
+
+/**
+ * One EM step for REML.
+ *
+ *   var_j <- var_j + (var_j^2 / q_j) * (||Z_j' P y||^2 - tr(Z_j' P Z_j))
+ *   var_e <- var_e + (var_e^2 / n)   * (||P y||^2      - tr(P))
+ *
+ * Monotone in the likelihood and never leaves the non-negative orthant, which
+ * is why it serves as the warm start before AI-REML takes over.
+ *
+ * @param {ReturnType<typeof remlWorkspace>} ws
+ * @param {number[]} theta
+ * @returns {number[]} the updated components
+ */
+export function emStep(ws, theta) {
+  const { Z, q, n } = ws;
+  const { P, Py, ok } = remlP(ws, theta);
+  if (!ok) return theta.slice();
+
+  const next = theta.slice();
+
+  for (let j = 0; j < Z.length; j++) {
+    let quad = 0;
+    let trace = 0;
+    for (const z of Z[j]) {
+      let zPy = 0;
+      for (let i = 0; i < n; i++) zPy += z[i] * Py[i];
+      quad += zPy * zPy;
+
+      for (let a = 0; a < n; a++) {
+        if (z[a] === 0) continue;
+        for (let b = 0; b < n; b++) if (z[b] !== 0) trace += P[a][b];
+      }
+    }
+    const s = theta[j];
+    next[j] = Math.max(0, s + (s * s / q[j]) * (quad - trace));
+  }
+
+  let quadE = 0;
+  for (let i = 0; i < n; i++) quadE += Py[i] * Py[i];
+  let trP = 0;
+  for (let i = 0; i < n; i++) trP += P[i][i];
+  const se = theta[theta.length - 1];
+  next[next.length - 1] = Math.max(0, se + (se * se / n) * (quadE - trP));
+
+  return next;
+}

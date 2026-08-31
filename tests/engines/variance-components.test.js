@@ -10,7 +10,7 @@ import {
 } from '../test-utils.js';
 import {
   buildTerms, termCells, KEY_SEP, appendBlock, projectSquares, anovaTable,
-  emsMatrix, anovaComponents,
+  emsMatrix, anovaComponents, remlWorkspace, remlP, emStep,
 } from '../../js/engines/variance-components-engine.js';
 
 suite('Variance components — term construction', () => {
@@ -294,5 +294,44 @@ suite('Variance components — EMS matrix and ANOVA estimator', () => {
     assertEqual(variances[1], 0);
     assertAlmostEqual(variances[2], 26, 1e-8);
     assertDeepEqual(clamped, [false, true, false]);
+  });
+});
+
+suite('Variance components — REML building blocks', () => {
+  test('workspace exposes one indicator block per term plus the response', () => {
+    const terms = buildTerms('nested', ['A', 'B']);
+    const ws = remlWorkspace({ ...NESTED_BALANCED, terms });
+    assertEqual(ws.n, 8);
+    assertEqual(ws.Z.length, 2);
+    assertDeepEqual(ws.q, [2, 4]);
+  });
+
+  test('P annihilates the intercept', () => {
+    const terms = buildTerms('nested', ['A', 'B']);
+    const ws = remlWorkspace({ ...NESTED_BALANCED, terms });
+    const { P } = remlP(ws, [1, 1, 1]);
+    // P times the all-ones vector is zero: the fixed part is projected out.
+    for (let i = 0; i < ws.n; i++) {
+      let s = 0;
+      for (let j = 0; j < ws.n; j++) s += P[i][j];
+      assertAlmostEqual(s, 0, 1e-9);
+    }
+  });
+
+  test('an EM step keeps every component non-negative', () => {
+    const terms = buildTerms('nested', ['A', 'B']);
+    const ws = remlWorkspace({ ...NESTED_BALANCED, terms });
+    const next = emStep(ws, [46, 7, 2]);
+    assertEqual(next.length, 3);
+    for (const v of next) assertEqual(v >= 0, true);
+  });
+
+  test('an EM step started at the ANOVA solution stays in its neighbourhood', () => {
+    // The balanced nested design has a solution both methods share, so EM must
+    // not run away from it.
+    const terms = buildTerms('nested', ['A', 'B']);
+    const ws = remlWorkspace({ ...NESTED_BALANCED, terms });
+    const next = emStep(ws, [46, 7, 2]);
+    assertAlmostEqual(next[2], 2, 0.5);
   });
 });
