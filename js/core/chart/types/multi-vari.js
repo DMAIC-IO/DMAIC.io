@@ -334,8 +334,8 @@ export default class MultiVariChartType extends ChartBase {
           );
           results.push({
             node,
-            px: this._xScaleInv(slot.x),
-            py: v,
+            px: slot.x,
+            py: sy,
             color: this._seriesColor(slot.seriesIndex),
             dist,
           });

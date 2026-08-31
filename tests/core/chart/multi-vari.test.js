@@ -120,6 +120,35 @@ suite('Multi-Vari type — structure', () => {
     assertEqual(chart._getLegendItems().map(i => i.label).join('|'), '1|2');
     host.remove();
   });
+
+  test('_findNearby returns pixel-space px/py for the hover ring, not data-space values', () => {
+    const { host, chart } = mount(fixtureConfig());
+    const pa = chart._plotArea;
+    const panelW = pa.w / 2;
+    // Same geometry the type itself uses to place panel 0's points.
+    const slots = chart._layoutPanel(chart.config.panels[0], pa.x, panelW);
+    const slot = slots.find(s => s.level === 'F' && s.seriesLevel === '1');
+    const value = slot.values[0]; // 10
+    const expectedPx = slot.x;              // pixel x of that slot
+    const expectedPy = chart._yScale(value); // pixel y of that value
+
+    // Query at the slot's own pixel position (round-tripped through the
+    // inverse x scale) so this exact point is unambiguously the nearest —
+    // independent of how far generateTicks pads the x/y domains.
+    const dataX = chart._xScaleInv(slot.x);
+    const near = chart._findNearby(dataX, value, 1e9);
+    assertEqual(near.length, 1);
+    const [pt] = near;
+
+    assertAlmostEqual(pt.px, expectedPx, 0.01, 'px must be the slot pixel x-coordinate');
+    assertAlmostEqual(pt.py, expectedPy, 0.01, 'py must be the y-scaled pixel coordinate');
+    // Direct regression guard: data-space values (raw x domain / raw value)
+    // must not leak into the pixel fields the hover ring positions itself with.
+    assertTrue(pt.py !== value, 'py must not be the raw data value');
+    assertTrue(pt.px >= pa.x && pt.px <= pa.x + pa.w, 'px must lie inside the plot area');
+    assertTrue(pt.py >= pa.y && pt.py <= pa.y + pa.h, 'py must lie inside the plot area');
+    host.remove();
+  });
 });
 
 suite('Multi-Vari type — geometry', () => {
