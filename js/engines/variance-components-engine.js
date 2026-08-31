@@ -620,3 +620,105 @@ export function remlComponents({ response, factorValues, terms, start }) {
 
   return { variances: theta.map(v => Math.max(0, v)), converged, iterations };
 }
+
+/**
+ * Is every occupied cell of the finest term the same size, with no cell missing?
+ *
+ * @param {string[][]} factorValues
+ * @param {number[]} allIndices
+ * @returns {boolean}
+ */
+function isBalanced(factorValues, allIndices) {
+  const { keys } = termCells(allIndices, factorValues);
+  const counts = new Map();
+  for (const k of keys) counts.set(k, (counts.get(k) || 0) + 1);
+  const sizes = [...counts.values()];
+  if (!sizes.length) return false;
+  if (sizes.some(s => s !== sizes[0])) return false;
+  // No cell missing: the number of occupied cells must equal the full product.
+  let product = 1;
+  for (const idx of allIndices) product *= new Set(factorValues[idx]).size;
+  return counts.size === product;
+}
+
+/**
+ * Full variance decomposition — the engine's public entry point.
+ *
+ * @param {{response: number[], factorValues: string[][], factorNames: string[],
+ *          modelForm: 'nested'|'crossed', estimator: 'anova'|'reml'}} input
+ * @returns {object} see docs/superpowers/specs/2026-08-31-multi-vari-design.md
+ */
+export function computeVarianceComponents({
+  response, factorValues, factorNames, modelForm, estimator,
+}) {
+  const warnings = [];
+  let terms = buildTerms(modelForm, factorNames);
+  const allIndices = factorNames.map((_, i) => i);
+  const balanced = isBalanced(factorValues, allIndices);
+  if (!balanced) warnings.push('unbalanced');
+
+  // No replicates: the finest term has one observation per cell and cannot be
+  // separated from the error. Drop it; it becomes the error term.
+  let table = anovaTable({ response, factorValues, terms });
+  if (table.error.df === 0 && terms.length > 1) {
+    warnings.push('noReplicates');
+    terms = terms.slice(0, -1);
+    table = anovaTable({ response, factorValues, terms });
+  }
+
+  let usedEstimator = estimator;
+  if (estimator === 'reml' && response.length > REML_MAX_ROWS) {
+    warnings.push('rowCapExceeded');
+    usedEstimator = 'anova';
+  }
+
+  let variances;
+  let clamped;
+  let converged = null;
+  let iterations = null;
+
+  if (usedEstimator === 'reml') {
+    const r = remlComponents({ response, factorValues, terms });
+    variances = r.variances;
+    clamped = variances.map(() => false);
+    converged = r.converged;
+    iterations = r.iterations;
+    if (!converged) warnings.push('notConverged');
+  } else {
+    const r = anovaComponents(table);
+    variances = r.variances;
+    clamped = r.clamped;
+    if (clamped.some(Boolean)) warnings.push('negativeComponent');
+  }
+
+  const totalVariance = variances.reduce((a, v) => a + v, 0);
+  const isAnova = usedEstimator === 'anova';
+  const rows = [
+    ...terms.map(t => ({ id: t.id, label: t.label })),
+    { id: 'Error', label: 'Error' },
+  ];
+
+  const out = rows.map((row, i) => ({
+    id: row.id,
+    label: row.label,
+    df: isAnova ? (i < terms.length ? table.rows[i].df : table.error.df) : null,
+    ss: isAnova ? (i < terms.length ? table.rows[i].ss : table.error.ss) : null,
+    ms: isAnova ? (i < terms.length ? table.rows[i].ms : table.error.ms) : null,
+    variance: variances[i],
+    sd: Math.sqrt(variances[i]),
+    percent: totalVariance > 0 ? (variances[i] / totalVariance) * 100 : 0,
+    clamped: clamped[i],
+  }));
+
+  return {
+    modelForm,
+    estimator: usedEstimator,
+    balanced,
+    n: response.length,
+    terms: out,
+    totalVariance,
+    converged,
+    iterations,
+    warnings,
+  };
+}

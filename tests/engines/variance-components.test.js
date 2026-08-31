@@ -11,7 +11,7 @@ import {
 import {
   buildTerms, termCells, KEY_SEP, appendBlock, projectSquares, anovaTable,
   emsMatrix, anovaComponents, remlWorkspace, remlP, emStep,
-  remlComponents, REML_MAX_ITER, REML_MAX_ROWS,
+  remlComponents, REML_MAX_ITER, REML_MAX_ROWS, computeVarianceComponents,
 } from '../../js/engines/variance-components-engine.js';
 
 suite('Variance components — term construction', () => {
@@ -381,5 +381,89 @@ suite('Variance components — REML estimator', () => {
       ],
       terms,
     }), /row cap/i);
+  });
+});
+
+suite('Variance components — public API', () => {
+  test('returns one row per term plus the error row', () => {
+    const r = computeVarianceComponents({
+      ...NESTED_BALANCED, factorNames: ['Schicht', 'Teil'],
+      modelForm: 'nested', estimator: 'anova',
+    });
+    assertDeepEqual(r.terms.map(t => t.id), ['A', 'B(A)', 'Error']);
+  });
+
+  test('percentages are normalised over the clamped variances and sum to 100', () => {
+    const r = computeVarianceComponents({
+      ...NESTED_BALANCED, factorNames: ['A', 'B'],
+      modelForm: 'nested', estimator: 'anova',
+    });
+    // variances 46 / 7 / 2, total 55
+    assertAlmostEqual(r.totalVariance, 55, 1e-8);
+    assertAlmostEqual(r.terms[0].percent, 46 / 55 * 100, 1e-6);
+    assertAlmostEqual(r.terms.reduce((a, t) => a + t.percent, 0), 100, 1e-6);
+  });
+
+  test('standard deviation is the square root of the variance', () => {
+    const r = computeVarianceComponents({
+      ...NESTED_BALANCED, factorNames: ['A', 'B'],
+      modelForm: 'nested', estimator: 'anova',
+    });
+    assertAlmostEqual(r.terms[2].sd, Math.SQRT2, 1e-9);
+  });
+
+  test('flags an unbalanced design', () => {
+    const r = computeVarianceComponents({
+      response: [1, 2, 3, 4, 5],
+      factorValues: [['1', '1', '1', '2', '2'], ['1', '1', '2', '1', '2']],
+      factorNames: ['A', 'B'], modelForm: 'nested', estimator: 'anova',
+    });
+    assertEqual(r.balanced, false);
+    assertEqual(r.warnings.includes('unbalanced'), true);
+  });
+
+  test('reports a clamped component through a warning', () => {
+    const r = computeVarianceComponents({
+      ...NESTED_NEGATIVE, factorNames: ['A', 'B'],
+      modelForm: 'nested', estimator: 'anova',
+    });
+    assertEqual(r.warnings.includes('negativeComponent'), true);
+    assertEqual(r.terms[1].clamped, true);
+  });
+
+  test('without replicates the finest term becomes the error', () => {
+    const r = computeVarianceComponents({
+      response: [1, 2, 3, 5],
+      factorValues: [['1', '1', '2', '2'], ['1', '2', '1', '2']],
+      factorNames: ['A', 'B'], modelForm: 'crossed', estimator: 'anova',
+    });
+    assertEqual(r.warnings.includes('noReplicates'), true);
+    assertEqual(r.terms.some(t => t.id === 'A*B'), false);
+    assertEqual(r.terms[r.terms.length - 1].id, 'Error');
+  });
+
+  test('REML leaves the ANOVA-only columns empty', () => {
+    const r = computeVarianceComponents({
+      ...NESTED_BALANCED, factorNames: ['A', 'B'],
+      modelForm: 'nested', estimator: 'reml',
+    });
+    assertEqual(r.terms[0].ss, null);
+    assertEqual(r.terms[0].ms, null);
+    assertEqual(r.terms[0].df, null);
+    assertEqual(r.converged, true);
+  });
+
+  test('falls back to ANOVA above the REML row cap and says so', () => {
+    const n = REML_MAX_ROWS + 1;
+    const r = computeVarianceComponents({
+      response: new Array(n).fill(0).map((_, i) => (i % 7) + (i % 3) * 0.5),
+      factorValues: [
+        new Array(n).fill(0).map((_, i) => String(i % 3)),
+        new Array(n).fill(0).map((_, i) => String(i % 5)),
+      ],
+      factorNames: ['A', 'B'], modelForm: 'nested', estimator: 'reml',
+    });
+    assertEqual(r.estimator, 'anova');
+    assertEqual(r.warnings.includes('rowCapExceeded'), true);
   });
 });
