@@ -1,0 +1,21 @@
+{
+  "columnRefs": {
+    "measurement": {
+      "instanceId": "__source__",
+      "sheetId": "sheet-multi-vari-abfuell",
+      "columnId": "c-fuell"
+    },
+    "factors": [
+      { "instanceId": "__source__", "sheetId": "sheet-multi-vari-abfuell", "columnId": "c-maschine" },
+      { "instanceId": "__source__", "sheetId": "sheet-multi-vari-abfuell", "columnId": "c-schicht" },
+      { "instanceId": "__source__", "sheetId": "sheet-multi-vari-abfuell", "columnId": "c-charge" }
+    ]
+  },
+  "modelForm": "crossed",
+  "estimator": "reml",
+  "showPoints": true,
+  "connectMeans": true,
+  "showGroupMean": true,
+  "showRefLine": true,
+  "sourceWorksheetFile": "worksheets/multi-vari-abfuellanlage.json"
+}

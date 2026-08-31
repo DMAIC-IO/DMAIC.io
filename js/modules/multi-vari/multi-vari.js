@@ -26,6 +26,7 @@ import { State } from './multi-vari-model.js';
 import { ColumnPicker, getColumnValues, getColumnName } from '../../ui/column-picker.js';
 import { draggableRows } from '../../ui/draggable-list.js';
 import { computeMultiVari } from '../../engines/multi-vari-engine.js';
+import { loadWorksheetExample } from '../../core/examples-registry.js';
 import {
   runVarianceDecomposition,
   vcTermRows, isUnbalanced, hasClampedTerm,
@@ -433,5 +434,44 @@ const mod = createModule({
     };
   },
 });
+
+/**
+ * Eigenes loadExample: die Katalogbeispiele bringen ein vollständiges
+ * Worksheet mit (`sourceWorksheetData`) und verwenden den Platzhalter
+ * `__source__` als instanceId auf allen Spaltenreferenzen. Beim Laden wird ein
+ * frisches Worksheet bereitgestellt, die Platzhalter werden ersetzt, dann
+ * greift setState (was die Analyse neu anstößt).
+ *
+ * @param {{ meta: object, data: object }} payload
+ */
+mod.loadExample = function loadExample(payload) {
+  return loadWorksheetExample(this, payload, {
+    Model: State,
+    // `loadWorksheetExample` verwirft den Rückgabewert — `data` in place ändern.
+    rewriteRefs(data, oldId, newId) {
+      const refs = data.columnRefs;
+      if (!refs) return data;
+      if (refs.measurement?.instanceId === oldId) {
+        refs.measurement = { ...refs.measurement, instanceId: newId };
+      }
+      if (Array.isArray(refs.factors)) {
+        refs.factors = refs.factors.map(r => (
+          r && r.instanceId === oldId ? { ...r, instanceId: newId } : r
+        ));
+      }
+      // Beispiele speichern die Faktoren flach; `factorRows` wird nur
+      // vollständigkeitshalber mitgezogen, falls ein exportiertes Projekt
+      // wieder als Beispiel eingespielt wird.
+      if (Array.isArray(data.factorRows)) {
+        data.factorRows = data.factorRows.map(row => (
+          row?.ref?.instanceId === oldId
+            ? { ...row, ref: { ...row.ref, instanceId: newId } }
+            : row
+        ));
+      }
+      return data;
+    },
+  });
+};
 
 export default mod;
