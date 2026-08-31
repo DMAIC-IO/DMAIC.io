@@ -8,7 +8,9 @@
 import {
   suite, test, assertEqual, assertDeepEqual, assertAlmostEqual, assertThrows,
 } from '../test-utils.js';
-import { buildTerms, termCells, KEY_SEP } from '../../js/engines/variance-components-engine.js';
+import {
+  buildTerms, termCells, KEY_SEP, appendBlock, projectSquares,
+} from '../../js/engines/variance-components-engine.js';
 
 suite('Variance components — term construction', () => {
   test('nested with three factors yields the prefix chain', () => {
@@ -84,5 +86,69 @@ suite('Variance components — cells and indicator columns', () => {
     // 'ab' as one level must not collide with the pair ('a','b').
     const r = termCells([0, 1], [['ab'], ['c']]);
     assertEqual(r.cells[0], `ab${KEY_SEP}c`);
+  });
+});
+
+suite('Variance components — orthonormal basis', () => {
+  test('independent columns each raise the rank by one', () => {
+    const basis = [];
+    const added = appendBlock(basis, [
+      Float64Array.from([1, 1, 1, 1]),
+      Float64Array.from([1, 1, 0, 0]),
+    ]);
+    assertEqual(added, 2);
+    assertEqual(basis.length, 2);
+  });
+
+  test('a dependent column raises the rank by nothing', () => {
+    const basis = [];
+    appendBlock(basis, [Float64Array.from([1, 1, 0, 0])]);
+    const added = appendBlock(basis, [Float64Array.from([2, 2, 0, 0])]);
+    assertEqual(added, 0);
+    assertEqual(basis.length, 1);
+  });
+
+  test('an indicator block adds only what the intercept does not already span', () => {
+    const basis = [];
+    appendBlock(basis, [Float64Array.from([1, 1, 1, 1])]);   // intercept
+    const { columns } = termCells([0], [['1', '1', '2', '2']]);
+    // Two cells, but their sum is the intercept → rank rises by 1, not 2.
+    assertEqual(appendBlock(basis, columns), 1);
+  });
+
+  test('basis vectors are orthonormal', () => {
+    const basis = [];
+    appendBlock(basis, [
+      Float64Array.from([1, 1, 1, 1]),
+      Float64Array.from([1, 1, 0, 0]),
+      Float64Array.from([1, 0, 0, 0]),
+    ]);
+    for (let i = 0; i < basis.length; i++) {
+      for (let j = 0; j < basis.length; j++) {
+        let dot = 0;
+        for (let r = 0; r < 4; r++) dot += basis[i][r] * basis[j][r];
+        assertAlmostEqual(dot, i === j ? 1 : 0, 1e-12);
+      }
+    }
+  });
+
+  test('projectSquares over the whole basis equals the squared norm of a spanned vector', () => {
+    const basis = [];
+    appendBlock(basis, [
+      Float64Array.from([1, 1, 1, 1]),
+      Float64Array.from([1, 1, 0, 0]),
+    ]);
+    const v = Float64Array.from([3, 3, 5, 5]);   // lies in the span
+    let sq = 0;
+    for (const x of v) sq += x * x;
+    assertAlmostEqual(projectSquares(basis, 0, basis.length, v), sq, 1e-10);
+  });
+
+  test('projectSquares over a slice sees only those basis vectors', () => {
+    const basis = [];
+    appendBlock(basis, [Float64Array.from([1, 1, 1, 1])]);
+    const v = Float64Array.from([1, 1, 1, 1]);
+    assertAlmostEqual(projectSquares(basis, 0, 1, v), 4, 1e-12);
+    assertAlmostEqual(projectSquares(basis, 1, 1, v), 0, 1e-12);
   });
 });

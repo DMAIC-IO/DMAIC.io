@@ -112,3 +112,75 @@ export function termCells(factorIndices, factorValues) {
 
   return { keys, cells, columns };
 }
+
+/** Relative tolerance below which a column counts as linearly dependent. */
+export const RANK_TOL = 1e-10;
+
+/** Euclidean norm of a vector. */
+function norm(v) {
+  let s = 0;
+  for (let i = 0; i < v.length; i++) s += v[i] * v[i];
+  return Math.sqrt(s);
+}
+
+/**
+ * Append columns to an orthonormal basis, skipping linearly dependent ones.
+ *
+ * Modified Gram-Schmidt with one re-orthogonalisation pass — the second pass
+ * matters here because the indicator columns of a fine term are highly
+ * collinear with the coarse terms already in the basis, and a single pass loses
+ * orthogonality on exactly that case.
+ *
+ * @param {Float64Array[]} basis — extended in place
+ * @param {Float64Array[]} columns
+ * @param {number} [tol=RANK_TOL]
+ * @returns {number} how many columns were actually added (the rank increase)
+ */
+export function appendBlock(basis, columns, tol = RANK_TOL) {
+  let added = 0;
+  for (const raw of columns) {
+    const v = Float64Array.from(raw);
+    const n0 = norm(v);
+    if (n0 === 0) continue;
+
+    for (let pass = 0; pass < 2; pass++) {
+      for (const q of basis) {
+        let d = 0;
+        for (let i = 0; i < v.length; i++) d += q[i] * v[i];
+        for (let i = 0; i < v.length; i++) v[i] -= d * q[i];
+      }
+    }
+
+    const nv = norm(v);
+    if (nv <= tol * n0) continue;          // dependent — no rank increase
+    for (let i = 0; i < v.length; i++) v[i] /= nv;
+    basis.push(v);
+    added++;
+  }
+  return added;
+}
+
+/**
+ * Sum of squared projections of `vector` onto basis vectors [from, to).
+ *
+ * With an orthonormal basis this is the squared norm of the projection onto
+ * that slice — exactly a sequential sum of squares when `vector` is the
+ * response, and exactly the Frobenius contribution of one indicator column to
+ * an EMS coefficient.
+ *
+ * @param {Float64Array[]} basis
+ * @param {number} from — inclusive
+ * @param {number} to — exclusive
+ * @param {Float64Array} vector
+ * @returns {number}
+ */
+export function projectSquares(basis, from, to, vector) {
+  let total = 0;
+  for (let c = from; c < to; c++) {
+    const q = basis[c];
+    let d = 0;
+    for (let i = 0; i < vector.length; i++) d += q[i] * vector[i];
+    total += d * d;
+  }
+  return total;
+}
