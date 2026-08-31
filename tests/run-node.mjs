@@ -49,6 +49,7 @@ const SKIP = new Set([
   'core/action-verbs.test.js',
   'core/chart/cumulative-cost.test.js',
   'core/chart/gantt.test.js',
+  'core/chart/multi-vari.test.js',
   'core/chart/trend.test.js',
   'core/create-dialog.test.js',
   'core/create-page.test.js',

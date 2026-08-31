@@ -14,6 +14,7 @@ const TYPE_MAP = {
   'control-chart':    () => import('./types/control-chart.js'),
   'run-chart':        () => import('./types/run-chart.js'),
   'gage-run-chart':   () => import('./types/gage-run-chart.js'),
+  'multi-vari':       () => import('./types/multi-vari.js'),
   'probability-plot': () => import('./types/probability-plot.js'),
   pareto:             () => import('./types/pareto.js'),
   gantt:              () => import('./types/gantt.js'),
