@@ -2530,6 +2530,32 @@
       ]
     },
     {
+      "id": "msa-typ5-zaehltest",
+      "type": "project",
+      "title": {
+        "de": "MSA Typ 5: Zähltest (Training)",
+        "en": "MSA Type 5: counting test (training)"
+      },
+      "description": {
+        "de": "3 Prüfer × 20 Vorlagen × 2 Wiederholungen (binär i.O./n.i.O.). Die klassische Zählübung aus dem Training: Fleiss κ ≈ 0,79, Effektivität 85–90 %, Verdikt gelb. Enthält alle drei Lehrbilder — ein zu strenger Prüfer, ein mit sich selbst uneiniger Prüfer und eine Vorlage, bei der sich alle einig und alle falsch sind.",
+        "en": "3 appraisers × 20 templates × 2 replicates (binary OK/NOK). The classic counting exercise from training: Fleiss κ ≈ 0.79, effectiveness 85–90 %, marginal verdict. Contains all three teaching cases — an over-strict appraiser, an appraiser who contradicts himself, and one template where everyone agrees and everyone is wrong."
+      },
+      "source": "DMAIC.io synthetisch",
+      "license": "public-domain",
+      "file": "projects/msa-typ5-zaehltest.json",
+      "format": "json",
+      "modules": [
+        "msa-typ5"
+      ],
+      "tags": [
+        "msa",
+        "attribute",
+        "kappa",
+        "binary",
+        "training"
+      ]
+    },
+    {
       "id": "msa-typ5-ordinal-scale5",
       "type": "project",
       "title": {

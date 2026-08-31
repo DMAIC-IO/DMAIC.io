@@ -1470,7 +1470,7 @@
       "errNoData": "No usable measurements in the selected columns."
     },
     "msa-typ1": {
-      "name": "MSA Type 1",
+      "name": "MSA Type 1 (Cg/Cgk)",
       "description": "Measurement System Analysis Type 1 — Repeatability (Cg) and Bias (Cgk)",
       "sectionParams": "Parameters",
       "sectionValues": "Enter Measurements",
@@ -1525,7 +1525,7 @@
       "chartIndex": "Measurement #"
     },
     "msa-typ2": {
-      "name": "MSA Type 2/3",
+      "name": "MSA Type 2/3 (Gage R&R)",
       "description": "Measurement System Analysis Type 2 (with operator, Gage R&R) and Type 3 (no operator, automated measurement systems)",
       "typeLabelTyp2": "Type 2",
       "typeLabelTyp3": "Type 3",
@@ -1596,7 +1596,7 @@
       "errUslLeqLsl": "USL must be greater than LSL."
     },
     "msa-typ4": {
-      "name": "MSA Type 4",
+      "name": "MSA Type 4 (linearity)",
       "description": "Measurement System Analysis Type 4 — linearity and bias across the measurement range (AIAG %Lin, VDA 5 Q_MS,BI)",
       "title": "MSA Type 4",
       "titleLong": "Linearity & Bias Across the Measurement Range",
@@ -1666,7 +1666,7 @@
       "interpVDA5_red": "Q_MS,BI = {qMsBi} % > 30 %. Not suitable — rework the measurement system."
     },
     "msa-typ5": {
-      "name": "MSA Type 5",
+      "name": "MSA Type 5 (attribute)",
       "description": "Attribute Measurement System Analysis — multiple appraisers, kappa-based agreement (Cohen, Fleiss, weighted)",
       "title": "MSA Type 5",
       "titleLong": "Attribute Measurement System Analysis",
@@ -1701,7 +1701,9 @@
         "fleissKappa": "Fleiss κ",
         "repeatability": "Avg. repeatability",
         "effectiveness": "Avg. effectiveness",
-        "kappaVsRef": "Avg. κ vs. reference"
+        "kappaVsRef": "Avg. κ vs. reference",
+        "overallBetween": "All appraisers agree",
+        "overallVsRef": "All agree and correct"
       },
       "table": {
         "appraiser": "Appraiser",
@@ -1714,7 +1716,20 @@
         "cohenKappa": "Cohen κ",
         "ci95": "95 % CI",
         "verdict": "Verdict",
-        "vsReference": "κ vs. reference"
+        "vsReference": "κ vs. reference",
+        "perPart": "Ratings per part",
+        "part": "Part",
+        "reference": "Reference",
+        "vsRefErrors": "Deviations",
+        "mixedAppraisers": "Inconsistent appraisers",
+        "onlyDisputed": "Disputed parts only",
+        "noDisputes": "No part is disputed — all appraisers agree.",
+        "disagreement": "Misclassifications per appraiser",
+        "kind": "Kind",
+        "count": "Count",
+        "parts": "Parts",
+        "mixedKind": "mixed",
+        "noDisagreement": "No misclassification and no inconsistent repeat."
       },
       "charts": {
         "kappaBar": "Cohen κ per appraiser pair",
@@ -1745,7 +1760,7 @@
       "interp_unacceptable": "Fleiss κ = {kappa}, minimum effectiveness {minEff} %. Not acceptable — the inspection process must be reworked."
     },
     "msa-typ6": {
-      "name": "MSA Type 6",
+      "name": "MSA Type 6 (stability)",
       "description": "Stability / long-term behavior — control chart (I-MR/x̄-R) over a repeatedly measured reference part, Nelson rules 1–8 and a linear drift test",
       "emptyHint": "Select a timestamp/order and a value column to start the analysis.",
       "empty": "Select a timestamp/order and a value column to start the analysis.",

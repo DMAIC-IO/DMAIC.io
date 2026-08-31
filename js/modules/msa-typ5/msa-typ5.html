@@ -144,6 +144,18 @@
             <div class="dmike-kpi-label" x-text="t('kpi.kappaVsRef')"></div>
             <div class="dmike-kpi-value" x-text="fmt(meanKappaVsRef(), 3)"></div>
           </div>
+          <div class="dmike-kpi">
+            <div class="dmike-kpi-label" x-text="t('kpi.overallBetween')"></div>
+            <div class="dmike-kpi-value" x-text="overallBetweenRate()"></div>
+            <div class="dmike-kpi-sub" x-text="overallBetweenSub()"></div>
+          </div>
+          <template x-if="hasOverallVsRef()">
+            <div class="dmike-kpi">
+              <div class="dmike-kpi-label" x-text="t('kpi.overallVsRef')"></div>
+              <div class="dmike-kpi-value" x-text="overallVsRefRate()"></div>
+              <div class="dmike-kpi-sub" x-text="overallVsRefSub()"></div>
+            </div>
+          </template>
         </div>
 
         <!-- Prüfer-Tabelle -->
@@ -215,6 +227,70 @@
               </tbody>
             </table>
           </div>
+        </template>
+
+
+        <!-- Fehlerdetails, Teile-Sicht: welche Teile sind strittig.
+             Die Engine liefert `perPart` bereits nach Problemgrad sortiert. -->
+        <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('table.perPart')"></span></div>
+        <label class="msa-typ5__filter">
+          <input type="checkbox" x-model="onlyDisputed">
+          <span x-text="t('table.onlyDisputed')"></span>
+        </label>
+        <template x-if="!hasDisputedParts()">
+          <div class="msa-typ5__hint" x-text="t('table.noDisputes')"></div>
+        </template>
+        <table class="dmike-table msa-typ5__table msa-typ5__table--per-part">
+          <thead><tr>
+            <th x-text="t('table.part')"></th>
+            <th x-text="t('table.reference')"></th>
+            <template x-for="a in partAppraisers()">
+              <th :key="a" x-text="a"></th>
+            </template>
+            <th x-text="t('table.vsRefErrors')"></th>
+            <th x-text="t('table.mixedAppraisers')"></th>
+          </tr></thead>
+          <tbody>
+            <template x-for="row in perPartRows()">
+              <tr :key="row.part" :class="row.rowClass">
+                <td x-text="row.part"></td>
+                <td x-text="row.reference"></td>
+                <template x-for="c in row.ratings">
+                  <td :key="c.appraiser" :class="c.cellClass" x-text="c.text"></td>
+                </template>
+                <td x-text="row.vsRefErrors"></td>
+                <td x-text="row.mixedAppraisers"></td>
+              </tr>
+            </template>
+          </tbody>
+        </table>
+
+        <!-- Fehlerdetails, Prüfer-Sicht: wer irrt in welche Richtung.
+             Eine Zeile je Verwechslungsart, plus „gemischt" für in sich
+             uneinheitliche Wiederholungen. -->
+        <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('table.disagreement')"></span></div>
+        <template x-if="!disagreementRows().length">
+          <div class="msa-typ5__hint" x-text="t('table.noDisagreement')"></div>
+        </template>
+        <template x-if="disagreementRows().length">
+          <table class="dmike-table msa-typ5__table msa-typ5__table--disagreement">
+            <thead><tr>
+              <th x-text="t('table.appraiser')"></th>
+              <th x-text="t('table.kind')"></th>
+              <th x-text="t('table.count')"></th>
+              <th x-text="t('table.parts')"></th>
+            </tr></thead>
+            <tbody>
+              <template x-for="row in disagreementRows()">
+                <tr :key="row.key" :class="row.rowClass">
+                  <td x-text="row.appraiser"></td>
+                  <td x-text="row.kind"></td>
+                  <td x-text="row.count"></td>
+                  <td x-text="row.parts"></td>
+                </tr>
+              </template>
+            </tbody>
+          </table>
         </template>
 
         <!-- κ-Bar Chart -->

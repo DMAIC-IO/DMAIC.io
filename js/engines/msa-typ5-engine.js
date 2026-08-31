@@ -564,6 +564,16 @@ export function analyze(input) {
   }
   const reps = repMap.size > 0 ? Math.max(...repMap.values()) : 0;
 
+  // ─── Fehlerdetails: je Teil, je Prüfer, gesamt ───
+  // `refs` ist die Referenzquelle für alle drei Auswertungen — null, sobald
+  // gar keine Referenz vorliegt. Konsens-Referenzen zählen mit; die dabei
+  // uneindeutig gebliebenen Teile haben keinen Eintrag und fallen dadurch
+  // von selbst heraus, wie schon bei Effektivität und κ vs. Referenz.
+  const refs = hasReference ? references : null;
+  const perPart = perPartDetails(ratings, refs);
+  const disagreement = disagreementByAppraiser(ratings, refs, { appraisers });
+  const overall = overallAgreement(ratings, refs, { alpha });
+
   return {
     meta: {
       type,
@@ -581,6 +591,9 @@ export function analyze(input) {
       fleissKappa: fleiss,
     },
     signalDetection: sd,
+    perPart,
+    disagreement,
+    overall,
     verdict: {
       level,
       driver,
@@ -641,4 +654,171 @@ function _pairAligned(ratings, A, B, parts) {
     for (let i = 0; i < n; i++) { aVals.push(ar[i]); bVals.push(br[i]); }
   }
   return { aVals, bVals };
+}
+
+// ═══════════════════════════════════════════════════════════
+//  FEHLERDETAILS (je Teil, je Prüfer, gesamt)
+// ═══════════════════════════════════════════════════════════
+
+/**
+ * Bewertungen eines Teils nach Prüfer gruppiert, in Wiederholungsreihenfolge.
+ * @param {Array} ratings
+ * @returns {Map<any, Map<string, Array>>} part → appraiser → values
+ * @internal
+ */
+function _byPartAppraiser(ratings) {
+  const out = new Map();
+  for (const r of ratings) {
+    if (!out.has(r.part)) out.set(r.part, new Map());
+    const inner = out.get(r.part);
+    if (!inner.has(r.appraiser)) inner.set(r.appraiser, []);
+    inner.get(r.appraiser).push(r);
+  }
+  for (const inner of out.values()) {
+    for (const [a, rows] of inner) {
+      const sorted = rows.every(x => Number.isFinite(x.rep))
+        ? rows.slice().sort((x, y) => x.rep - y.rep)
+        : rows;
+      inner.set(a, sorted.map(x => x.value));
+    }
+  }
+  return out;
+}
+
+/** @param {Array} vals @returns {boolean} true, wenn nicht alle Wiederholungen gleich sind */
+function _isMixed(vals) {
+  return vals.length >= 2 && !vals.every(v => v === vals[0]);
+}
+
+/**
+ * Detailzeile je Teil: wer hat wie bewertet, wie oft weicht das von der
+ * Referenz ab, welche Prüfer waren in sich uneinheitlich.
+ *
+ * `vsRefErrors` zählt EINZELNE Bewertungen (nicht Prüfer), damit ein
+ * konsistent falscher Prüfer schwerer wiegt als ein einmaliger Ausrutscher.
+ * Teile ohne bekannte Referenz — auch die per Konsens uneindeutigen — bekommen
+ * `null`, nicht 0: „nicht bewertbar" ist etwas anderes als „fehlerfrei".
+ *
+ * Sortiert nach Problemgrad (Referenzabweichungen, dann Uneinigkeit); bei
+ * Gleichstand bleibt die Eingabereihenfolge erhalten.
+ *
+ * @param {Array} ratings
+ * @param {object|null} references `null`, wenn keine Referenz vorliegt
+ * @returns {Array<object>} Zeilen mit part, reference, byAppraiser, vsRefErrors, mixedAppraisers, isDisputed
+ */
+export function perPartDetails(ratings, references) {
+  const grouped = _byPartAppraiser(ratings);
+  const rows = [];
+  let order = 0;
+  for (const [part, byAppr] of grouped) {
+    const ref = references && references[part] !== undefined ? references[part] : null;
+    const byAppraiser = {};
+    let vsRefErrors = ref === null ? null : 0;
+    let mixedAppraisers = 0;
+    for (const [a, vals] of byAppr) {
+      byAppraiser[a] = vals.slice();
+      if (_isMixed(vals)) mixedAppraisers++;
+      if (ref !== null) vsRefErrors += vals.filter(v => v !== ref).length;
+    }
+    rows.push({
+      part,
+      reference: ref,
+      byAppraiser,
+      vsRefErrors,
+      mixedAppraisers,
+      isDisputed: (vsRefErrors ?? 0) > 0 || mixedAppraisers > 0,
+      _order: order++,
+    });
+  }
+  rows.sort((a, b) =>
+    (b.vsRefErrors ?? 0) - (a.vsRefErrors ?? 0)
+    || b.mixedAppraisers - a.mixedAppraisers
+    || a._order - b._order);
+  return rows.map(({ _order, ...rest }) => rest);
+}
+
+/**
+ * Verwechslungsarten je Prüfer: welche Referenzklasse wurde als welche andere
+ * Klasse bewertet, wie oft, und an welchen Teilen. Dazu `mixed` — die Zahl der
+ * (Teil, Prüfer)-Paare, deren Wiederholungen nicht alle gleich sind.
+ *
+ * Teile ohne bekannte Referenz zählen nicht in die Verwechslungen, wohl aber
+ * in `mixed` — Uneinigkeit mit sich selbst braucht keine Referenz.
+ *
+ * @param {Array} ratings
+ * @param {object|null} references
+ * @param {{appraisers: Array<string>}} opts
+ * @returns {Object<string, object>} je Prüfer `confusionPairs`, `mixed` und
+ *   `mixedParts` (die Teile hinter der `mixed`-Zahl)
+ */
+export function disagreementByAppraiser(ratings, references, opts) {
+  const { appraisers } = opts;
+  const out = {};
+  const pairs = new Map();   // appraiser → key → {from, to, count, parts}
+  for (const a of appraisers) {
+    out[a] = { confusionPairs: [], mixed: 0, mixedParts: [] };
+    pairs.set(a, new Map());
+  }
+
+  for (const [part, byAppr] of _byPartAppraiser(ratings)) {
+    const ref = references && references[part] !== undefined ? references[part] : null;
+    for (const [a, vals] of byAppr) {
+      if (!out[a]) continue;
+      if (_isMixed(vals)) { out[a].mixed++; out[a].mixedParts.push(part); }
+      if (ref === null) continue;
+      for (const v of vals) {
+        if (v === ref) continue;
+        const key = `${ref} ${v}`;
+        const bucket = pairs.get(a);
+        if (!bucket.has(key)) bucket.set(key, { from: ref, to: v, count: 0, parts: [] });
+        const entry = bucket.get(key);
+        entry.count++;
+        if (!entry.parts.includes(part)) entry.parts.push(part);
+      }
+    }
+  }
+  for (const a of appraisers) out[a].confusionPairs = [...pairs.get(a).values()];
+  return out;
+}
+
+/**
+ * Die zwei Gesamtauswertungen über alle Prüfer hinweg (AIAG MSA 4th Ed.,
+ * Kap. III-B, „Between Appraisers" und „All Appraisers vs Standard"):
+ *
+ * - `betweenAppraisers` — Anteil der Teile, an denen ALLE Prüfer über ALLE
+ *   Wiederholungen dasselbe bewertet haben. Braucht keine Referenz.
+ * - `allVsReference` — Anteil der Teile, an denen alle einig sind UND mit der
+ *   Referenz übereinstimmen. Nenner sind nur Teile mit bekannter Referenz;
+ *   ohne Referenz ist das Ergebnis `null`.
+ *
+ * @param {Array} ratings
+ * @param {object|null} references
+ * @param {{alpha?: number}} [opts]
+ * @returns {{betweenAppraisers: object, allVsReference: object|null}}
+ */
+export function overallAgreement(ratings, references, opts = {}) {
+  const alpha = opts.alpha ?? 0.05;
+  let agree = 0, total = 0, correct = 0, refTotal = 0;
+
+  for (const [part, byAppr] of _byPartAppraiser(ratings)) {
+    const all = [...byAppr.values()].flat();
+    if (all.length === 0) continue;
+    const unanimous = all.every(v => v === all[0]);
+    total++;
+    if (unanimous) agree++;
+
+    const ref = references && references[part] !== undefined ? references[part] : null;
+    if (ref === null) continue;
+    refTotal++;
+    if (unanimous && all[0] === ref) correct++;
+  }
+
+  const w = wilsonCI(agree, total, alpha);
+  const betweenAppraisers = { agree, n: total, rate: w.rate, ci95: w.ci95 };
+  if (refTotal === 0) return { betweenAppraisers, allVsReference: null };
+  const wr = wilsonCI(correct, refTotal, alpha);
+  return {
+    betweenAppraisers,
+    allVsReference: { agree: correct, n: refTotal, rate: wr.rate, ci95: wr.ci95 },
+  };
 }

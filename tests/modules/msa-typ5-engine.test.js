@@ -446,3 +446,174 @@ suite('msa-typ5-engine — analyze (Return-Shape)', () => {
     assert(!r.perAppraiser);
   });
 });
+
+// ─── Fehlerdetails: perPart / disagreement / overall ─────────
+//
+// Ein von Hand nachrechenbarer Datensatz: 3 Prüfer × 4 Teile × 2 Wdh.,
+// binär (ok/nok), mit vier bewusst unterschiedlichen Fehlerbildern.
+//
+//   Teil 1 (Ref ok):  alle richtig, alle einig          → sauber
+//   Teil 2 (Ref ok):  B einmal ok, einmal nok           → B uneinheitlich
+//   Teil 3 (Ref nok): A beide Male ok                   → A konsistent falsch
+//   Teil 4 (Ref nok): alle sagen ok                     → alle einig, alle falsch
+//
+// Daraus folgt (abzählbar):
+//   perPart.vsRefErrors      = 0, 1, 2, 6
+//   perPart.mixedAppraisers  = 0, 1, 0, 0
+//   disagreement A: nok→ok 4 (Teile 3+4), mixed 0
+//   disagreement B: ok→nok 1 (Teil 2), nok→ok 2 (Teil 4), mixed 1
+//   disagreement C: nok→ok 2 (Teil 4), mixed 0
+//   overall.betweenAppraisers = 2/4 (Teile 1 und 4 sind einig)
+//   overall.allVsReference    = 1/4 (nur Teil 1 ist einig UND richtig)
+function buildDisagreementScenario() {
+  const plan = {
+    1: { ref: 'ok',  A: ['ok', 'ok'],  B: ['ok', 'ok'],   C: ['ok', 'ok'] },
+    2: { ref: 'ok',  A: ['ok', 'ok'],  B: ['ok', 'nok'],  C: ['ok', 'ok'] },
+    3: { ref: 'nok', A: ['ok', 'ok'],  B: ['nok', 'nok'], C: ['nok', 'nok'] },
+    4: { ref: 'nok', A: ['ok', 'ok'],  B: ['ok', 'ok'],   C: ['ok', 'ok'] },
+  };
+  const ratings = [], references = {};
+  for (const [part, row] of Object.entries(plan)) {
+    references[part] = row.ref;
+    for (const a of ['A', 'B', 'C']) {
+      row[a].forEach((value, i) => ratings.push({ part: Number(part), appraiser: a, rep: i + 1, value }));
+    }
+  }
+  return { type: 'binary', levels: ['ok', 'nok'], ratings, references,
+           params: { alpha: 0.05, weights: 'quadratic' } };
+}
+
+/** @param {Array} perPart @param {number} part */
+const partRow = (perPart, part) => perPart.find(r => String(r.part) === String(part));
+
+suite('msa-typ5-engine — analyze (perPart)', () => {
+  test('eine Zeile je Teil, mit Referenz und Bewertungen je Pruefer', () => {
+    const r = analyze(buildDisagreementScenario());
+    assert(Array.isArray(r.perPart), 'perPart fehlt');
+    assert(r.perPart.length === 4, `erwartet 4 Zeilen, got ${r.perPart.length}`);
+    const p2 = partRow(r.perPart, 2);
+    assert(p2.reference === 'ok');
+    assert(JSON.stringify(p2.byAppraiser.B) === JSON.stringify(['ok', 'nok']),
+      `B-Bewertungen falsch: ${JSON.stringify(p2.byAppraiser.B)}`);
+  });
+
+  test('vsRefErrors zaehlt einzelne Abweichungen von der Referenz', () => {
+    const r = analyze(buildDisagreementScenario());
+    assert(partRow(r.perPart, 1).vsRefErrors === 0);
+    assert(partRow(r.perPart, 2).vsRefErrors === 1);
+    assert(partRow(r.perPart, 3).vsRefErrors === 2);
+    assert(partRow(r.perPart, 4).vsRefErrors === 6);
+  });
+
+  test('mixedAppraisers zaehlt in sich uneinheitliche Pruefer', () => {
+    const r = analyze(buildDisagreementScenario());
+    assert(partRow(r.perPart, 2).mixedAppraisers === 1, 'Teil 2: B ist uneinheitlich');
+    assert(partRow(r.perPart, 1).mixedAppraisers === 0);
+    assert(partRow(r.perPart, 3).mixedAppraisers === 0);
+    assert(partRow(r.perPart, 4).mixedAppraisers === 0);
+  });
+
+  test('isDisputed markiert jedes Teil mit Abweichung oder Uneinigkeit', () => {
+    const r = analyze(buildDisagreementScenario());
+    assert(partRow(r.perPart, 1).isDisputed === false);
+    assert(partRow(r.perPart, 2).isDisputed === true);
+    assert(partRow(r.perPart, 3).isDisputed === true);
+    assert(partRow(r.perPart, 4).isDisputed === true);
+  });
+
+  test('nach Problemgrad sortiert: schwerster Fall zuerst', () => {
+    const r = analyze(buildDisagreementScenario());
+    assert(r.perPart.map(x => Number(x.part)).join(',') === '4,3,2,1',
+      `Reihenfolge falsch: ${r.perPart.map(x => x.part).join(',')}`);
+  });
+
+  test('ohne Referenz: vsRefErrors null, Uneinigkeit bleibt zaehlbar', () => {
+    const s = buildDisagreementScenario();
+    s.references = {};
+    const r = analyze(s);
+    assert(r.meta.referenceSource === 'none');
+    assert(partRow(r.perPart, 2).vsRefErrors === null);
+    assert(partRow(r.perPart, 2).mixedAppraisers === 1);
+    assert(partRow(r.perPart, 2).isDisputed === true);
+  });
+});
+
+suite('msa-typ5-engine — analyze (disagreement)', () => {
+  const pairCount = (d, a, from, to) => {
+    const hit = d[a].confusionPairs.find(p => p.from === from && p.to === to);
+    return hit ? hit.count : 0;
+  };
+
+  test('Verwechslungsarten je Pruefer, Richtung Referenz -> Bewertung', () => {
+    const d = analyze(buildDisagreementScenario()).disagreement;
+    assert(d, 'disagreement fehlt');
+    assert(pairCount(d, 'A', 'nok', 'ok') === 4, 'A: Teile 3+4 je 2 Wdh.');
+    assert(pairCount(d, 'B', 'ok', 'nok') === 1, 'B: Teil 2, eine Wdh.');
+    assert(pairCount(d, 'B', 'nok', 'ok') === 2, 'B: Teil 4, zwei Wdh.');
+    assert(pairCount(d, 'C', 'nok', 'ok') === 2, 'C: Teil 4, zwei Wdh.');
+  });
+
+  test('keine Nulleintraege in confusionPairs', () => {
+    const d = analyze(buildDisagreementScenario()).disagreement;
+    for (const a of ['A', 'B', 'C']) {
+      assert(d[a].confusionPairs.every(p => p.count > 0), `${a} hat einen Nulleintrag`);
+      assert(d[a].confusionPairs.every(p => p.from !== p.to), `${a} hat ein Treffer-Paar`);
+    }
+  });
+
+  test('mixed zaehlt (Teil, Pruefer)-Paare mit uneinheitlichen Wiederholungen', () => {
+    const d = analyze(buildDisagreementScenario()).disagreement;
+    assert(d.A.mixed === 0);
+    assert(d.B.mixed === 1);
+    assert(d.C.mixed === 0);
+  });
+
+  test('betroffene Teile je Verwechslungsart benannt', () => {
+    const d = analyze(buildDisagreementScenario()).disagreement;
+    const hit = d.A.confusionPairs.find(p => p.from === 'nok' && p.to === 'ok');
+    assert(JSON.stringify(hit.parts.map(String)) === JSON.stringify(['3', '4']),
+      `erwartet Teile 3+4, got ${JSON.stringify(hit.parts)}`);
+  });
+});
+
+suite('msa-typ5-engine — analyze (overall)', () => {
+  test('betweenAppraisers: Anteil der Teile, bei denen alle Pruefer einig sind', () => {
+    const o = analyze(buildDisagreementScenario()).overall;
+    assert(o, 'overall fehlt');
+    assertClose(o.betweenAppraisers.rate, 0.5, 1e-12);
+    assert(o.betweenAppraisers.n === 4);
+    assert(Array.isArray(o.betweenAppraisers.ci95));
+  });
+
+  test('allVsReference: einig UND uebereinstimmend mit der Referenz', () => {
+    const o = analyze(buildDisagreementScenario()).overall;
+    assertClose(o.allVsReference.rate, 0.25, 1e-12);
+    assert(o.allVsReference.n === 4);
+  });
+
+  test('ohne Referenz: allVsReference null, betweenAppraisers bleibt', () => {
+    const s = buildDisagreementScenario();
+    s.references = {};
+    const o = analyze(s).overall;
+    assert(o.allVsReference === null);
+    assertClose(o.betweenAppraisers.rate, 0.5, 1e-12);
+  });
+});
+
+suite('msa-typ5-engine — analyze (disagreement, gemischte Teile)', () => {
+  test('mixedParts benennt die Teile, an denen der Pruefer sich selbst widerspricht', () => {
+    const d = analyze(buildDisagreementScenario()).disagreement;
+    assert(JSON.stringify(d.B.mixedParts.map(String)) === JSON.stringify(['2']),
+      `erwartet Teil 2, got ${JSON.stringify(d.B.mixedParts)}`);
+    assert(d.A.mixedParts.length === 0);
+    assert(d.C.mixedParts.length === 0);
+  });
+
+  test('mixedParts bleibt gefuellt, wenn keine Referenz vorliegt', () => {
+    const s = buildDisagreementScenario();
+    s.references = {};
+    const d = analyze(s).disagreement;
+    assert(d.B.mixedParts.length === 1);
+    assert(d.B.confusionPairs.length === 0, 'ohne Referenz keine Verwechslungsarten');
+  });
+});

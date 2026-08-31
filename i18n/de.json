@@ -1470,7 +1470,7 @@
       "errNoData": "Keine verwertbaren Messwerte in den gewählten Spalten."
     },
     "msa-typ1": {
-      "name": "MSA Typ 1",
+      "name": "MSA Typ 1 (Cg/Cgk)",
       "description": "Messmittelanalyse Typ 1 — Wiederholbarkeit (Cg) und Bias (Cgk)",
       "sectionParams": "Parameter",
       "sectionValues": "Messwerte eingeben",
@@ -1525,7 +1525,7 @@
       "chartIndex": "Messung #"
     },
     "msa-typ2": {
-      "name": "MSA Typ 2/3",
+      "name": "MSA Typ 2/3 (Gage R&R)",
       "description": "Messmittelanalyse Typ 2 (mit Prüfer, Gage R&R) und Typ 3 (ohne Prüfer, automatisierte Messsysteme)",
       "typeLabelTyp2": "Typ 2",
       "typeLabelTyp3": "Typ 3",
@@ -1596,7 +1596,7 @@
       "errUslLeqLsl": "OSG muss größer als USG sein."
     },
     "msa-typ4": {
-      "name": "MSA Typ 4",
+      "name": "MSA Typ 4 (Linearität)",
       "description": "Messmittelanalyse Typ 4 — Linearität und Bias über den Messbereich (AIAG %Lin, VDA 5 Q_MS,BI)",
       "title": "MSA Typ 4",
       "titleLong": "Linearität & Bias über den Messbereich",
@@ -1666,7 +1666,7 @@
       "interpVDA5_red": "Q_MS,BI = {qMsBi} % > 30 %. Nicht geeignet — Messsystem überarbeiten."
     },
     "msa-typ5": {
-      "name": "MSA Typ 5",
+      "name": "MSA Typ 5 (attributiv)",
       "description": "Attributive Prüfmittel-Fähigkeit — mehrere Prüfer, Kappa-basierte Übereinstimmung (Cohen, Fleiss, weighted)",
       "title": "MSA Typ 5",
       "titleLong": "Attributive Prüfmittel-Fähigkeit",
@@ -1701,7 +1701,9 @@
         "fleissKappa": "Fleiss κ",
         "repeatability": "Ø Wiederholbarkeit",
         "effectiveness": "Ø Effektivität",
-        "kappaVsRef": "Ø κ vs. Referenz"
+        "kappaVsRef": "Ø κ vs. Referenz",
+        "overallBetween": "Alle Prüfer einig",
+        "overallVsRef": "Alle einig und richtig"
       },
       "table": {
         "appraiser": "Prüfer",
@@ -1714,7 +1716,20 @@
         "cohenKappa": "Cohen κ",
         "ci95": "95 %-KI",
         "verdict": "Ampel",
-        "vsReference": "κ vs. Referenz"
+        "vsReference": "κ vs. Referenz",
+        "perPart": "Bewertungen je Teil",
+        "part": "Teil",
+        "reference": "Referenz",
+        "vsRefErrors": "Abweichungen",
+        "mixedAppraisers": "uneinheitliche Prüfer",
+        "onlyDisputed": "Nur strittige Teile",
+        "noDisputes": "Kein Teil ist strittig — alle Prüfer stimmen überein.",
+        "disagreement": "Verwechslungen je Prüfer",
+        "kind": "Art",
+        "count": "Anzahl",
+        "parts": "Teile",
+        "mixedKind": "gemischt",
+        "noDisagreement": "Keine Verwechslung und keine uneinheitliche Wiederholung."
       },
       "charts": {
         "kappaBar": "Cohen κ je Prüferpaar",
@@ -1745,7 +1760,7 @@
       "interp_unacceptable": "Fleiss κ = {kappa}, minimale Effektivität {minEff} %. Nicht akzeptabel — Prüfprozess muss überarbeitet werden."
     },
     "msa-typ6": {
-      "name": "MSA Typ 6",
+      "name": "MSA Typ 6 (Stabilität)",
       "description": "Stabilität / Langzeitverhalten — Regelkarte (I-MR/x̄-R) über ein wiederholt gemessenes Referenzteil, Nelson-Regeln 1–8 und linearer Drift-Test",
       "emptyHint": "Zeitstempel/Reihenfolge- und Messwert-Spalte wählen, um die Analyse zu starten.",
       "empty": "Zeitstempel/Reihenfolge- und Messwert-Spalte wählen, um die Analyse zu starten.",

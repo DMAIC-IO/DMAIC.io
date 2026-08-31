@@ -197,3 +197,36 @@
   height: 140px;
   overflow: hidden;
 }
+
+/* ── Fehlerdetails: Teile- und Prüfer-Tabelle ─────────────────────
+   Farbe trägt hier keine Information allein: die Zellklassen markieren,
+   was die Zahlenspalten „Abweichungen" und „uneinheitliche Prüfer"
+   ohnehin ausweisen. Daher reine Flächen-Tönung, kein Rahmen-Signal. */
+
+.msa-typ5__filter {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  margin-bottom: var(--spacing-sm);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+}
+
+.msa-typ5__hint {
+  margin-bottom: var(--spacing-sm);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+.msa-typ5__cell--wrong {
+  background: var(--color-error-bg, rgb(218 54 51 / 14%));
+}
+
+.msa-typ5__cell--mixed {
+  background: var(--color-warning-bg, rgb(210 153 34 / 18%));
+}
+
+.msa-typ5__row--mixed td {
+  background: var(--color-warning-bg, rgb(210 153 34 / 8%));
+}

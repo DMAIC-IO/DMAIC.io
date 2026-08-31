@@ -54,7 +54,7 @@ const mod = createModule({
     engine: 'alpine',
     phase: 'measure',
     icon: 'module.msa-typ5',
-    version: '1.1.0',
+    version: '1.2.0',
     meta: import.meta,
   },
   Model: State,
@@ -67,6 +67,9 @@ const mod = createModule({
       _charts: [],
       _unsubs: [],
       _renderGen: 0,
+      // Filter der Teile-Tabelle. Reine Anzeigevorliebe, daher transient —
+      // ein neu geladenes Projekt startet bewusst mit allen Teilen sichtbar.
+      onlyDisputed: false,
 
       // Passthroughs für Template-Ausdrücke
       fmt,
@@ -270,6 +273,116 @@ const mod = createModule({
               ampelClass: kappaClass(k.kappa),
             };
           });
+      },
+
+      // ── Fehlerdetails: Teile-Sicht ───────────────────────────
+
+      /** Prüfer-Spalten der Teile-Tabelle, in stabiler Reihenfolge. */
+      partAppraisers() {
+        return Object.keys(this.result?.perAppraiser || {});
+      },
+
+      /**
+       * Zeilen der Teile-Tabelle. Die Engine liefert sie bereits nach
+       * Problemgrad sortiert; hier kommt nur der Filter und die Formatierung
+       * dazu. Ein Teil ohne bekannte Referenz zeigt „—" statt einer Null,
+       * damit „nicht bewertbar" nicht wie „fehlerfrei" aussieht.
+       */
+      perPartRows() {
+        const rows = this.result?.perPart || [];
+        const appraisers = this.partAppraisers();
+        return rows
+          .filter((r) => !this.onlyDisputed || r.isDisputed)
+          .map((r) => ({
+            part: String(r.part),
+            reference: r.reference ?? '—',
+            ratings: appraisers.map((a) => {
+              const vals = r.byAppraiser[a] || [];
+              const mixed = vals.length >= 2 && !vals.every((v) => v === vals[0]);
+              const wrong = r.reference !== null && vals.some((v) => v !== r.reference);
+              return {
+                appraiser: a,
+                text: vals.join(', ') || '—',
+                // Klasse hier fertig gerechnet — im Template wären das
+                // verschachtelte Ausdrücke, die Alpine CSP nicht kann.
+                cellClass: mixed ? 'msa-typ5__cell--mixed' : (wrong ? 'msa-typ5__cell--wrong' : ''),
+              };
+            }),
+            vsRefErrors: r.vsRefErrors === null ? '—' : String(r.vsRefErrors),
+            mixedAppraisers: String(r.mixedAppraisers),
+            rowClass: r.isDisputed ? 'msa-typ5__row--disputed' : '',
+          }));
+      },
+
+      hasDisputedParts() {
+        return (this.result?.perPart || []).some((r) => r.isDisputed);
+      },
+
+      toggleOnlyDisputed() {
+        this.onlyDisputed = !this.onlyDisputed;
+      },
+
+      // ── Fehlerdetails: Prüfer-Sicht ──────────────────────────
+
+      /**
+       * Eine Zeile je Prüfer und Verwechslungsart, plus — wo vorhanden — eine
+       * Zeile „gemischt" für in sich uneinheitliche Wiederholungen. Prüfer
+       * ohne jeden Befund erscheinen nicht; ist die Tabelle dadurch leer,
+       * zeigt das Template den Hinweis `table.noDisagreement`.
+       */
+      disagreementRows() {
+        const d = this.result?.disagreement || {};
+        const out = [];
+        for (const [appraiser, entry] of Object.entries(d)) {
+          for (const p of entry.confusionPairs || []) {
+            out.push({
+              key: `${appraiser}|${p.from}|${p.to}`,
+              appraiser,
+              kind: `${p.from} → ${p.to}`,
+              count: String(p.count),
+              parts: (p.parts || []).map(String).join(', '),
+              rowClass: '',
+            });
+          }
+          if (entry.mixed > 0) {
+            out.push({
+              key: `${appraiser}|mixed`,
+              appraiser,
+              kind: _t('table.mixedKind'),
+              count: String(entry.mixed),
+              parts: (entry.mixedParts || []).map(String).join(', '),
+              rowClass: 'msa-typ5__row--mixed',
+            });
+          }
+        }
+        return out;
+      },
+
+      // ── Gesamtauswertung (KPI-Kacheln) ───────────────────────
+
+      // Flach gehalten, weil Alpine CSP keine verschachtelten Ausdrücke im
+      // Template kann: je Kachel eine Methode für Wert und Unterzeile.
+
+      overallBetweenRate() {
+        return fmtPct(this.result?.overall?.betweenAppraisers?.rate);
+      },
+
+      overallBetweenSub() {
+        const o = this.result?.overall?.betweenAppraisers;
+        return o ? `${o.agree} / ${o.n}` : '';
+      },
+
+      hasOverallVsRef() {
+        return !!this.result?.overall?.allVsReference;
+      },
+
+      overallVsRefRate() {
+        return fmtPct(this.result?.overall?.allVsReference?.rate);
+      },
+
+      overallVsRefSub() {
+        const o = this.result?.overall?.allVsReference;
+        return o ? `${o.agree} / ${o.n}` : '';
       },
 
       hasEffectivenessChart() {

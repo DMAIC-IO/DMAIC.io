@@ -336,6 +336,66 @@ export default {
       },
     },
 
+    details: {
+      de: {
+        title: 'Fehlerdetails',
+        blocks: [
+          {
+            type: 'paragraph',
+            content: 'Die Kennzahlen sagen, *wie gut* das Prüfsystem ist. Die zwei Detailtabellen sagen, *woran es liegt* — und erst damit lässt sich etwas verbessern. Beide schließen Teile ohne bekannte Referenz aus der Fehlerzählung aus, zeigen sie aber weiterhin an.',
+          },
+          {
+            type: 'definition',
+            term: 'Bewertungen je Teil',
+            content: 'Eine Zeile je Teil mit der Referenz, den Bewertungen jedes Prüfers, der Zahl der Abweichungen von der Referenz und der Zahl der in sich uneinheitlichen Prüfer. Gezählt werden **einzelne Bewertungen**, nicht Prüfer: ein konsistent falscher Prüfer wiegt damit schwerer als ein einmaliger Ausrutscher. Sortiert ist nach Problemgrad, der Filter blendet die unstrittigen Teile aus. Häufen sich die Abweichungen auf wenigen Teilen, fehlt dort meist ein Grenzmuster — nicht die Schulung.',
+          },
+          {
+            type: 'definition',
+            term: 'Verwechslungen je Prüfer',
+            content: 'Eine Zeile je Prüfer und Verwechslungsart („n.i.O. → i.O." heißt: Referenz n.i.O., bewertet als i.O.), dazu die betroffenen Teile. Die Zeile **gemischt** zählt die (Teil, Prüfer)-Paare, deren Wiederholungen nicht alle gleich ausfielen — das ist Uneinigkeit mit sich selbst und braucht keine Referenz. Einseitige Verwechslungen zeigen einen systematischen Bias (zu streng oder zu lax), beidseitige eher eine unklare Prüfanweisung.',
+          },
+          {
+            type: 'definition',
+            term: 'Alle Prüfer einig',
+            content: 'Anteil der Teile, an denen **alle** Prüfer über **alle** Wiederholungen dasselbe bewertet haben. Braucht keine Referenz und ist strenger als jede Einzelkennzahl: ein einziger abweichender Prüfer lässt das Teil herausfallen.',
+          },
+          {
+            type: 'definition',
+            term: 'Alle einig und richtig',
+            content: 'Dieselbe Bedingung, zusätzlich muss die einhellige Bewertung der Referenz entsprechen. Die Differenz zur Kachel daneben ist der interessanteste Wert der ganzen Auswertung: sie zählt die Teile, bei denen sich das Team **einig und trotzdem falsch** war. Solche Fälle findet keine Übereinstimmungs-Kennzahl — auch κ nicht, denn κ misst Übereinstimmung, nicht Richtigkeit.',
+          },
+        ],
+      },
+      en: {
+        title: 'Error Details',
+        blocks: [
+          {
+            type: 'paragraph',
+            content: 'The key figures tell you *how good* the gage is. The two detail tables tell you *what is causing it* — and only that lets you improve anything. Both exclude parts without a known reference from the error counts while still listing them.',
+          },
+          {
+            type: 'definition',
+            term: 'Ratings per part',
+            content: 'One row per part with the reference, each appraiser\'s ratings, the number of deviations from the reference and the number of self-inconsistent appraisers. **Individual ratings** are counted, not appraisers: a consistently wrong appraiser therefore weighs more than a one-off slip. Rows are sorted by severity; the filter hides the undisputed parts. When deviations cluster on a few parts, what is usually missing there is a boundary sample — not training.',
+          },
+          {
+            type: 'definition',
+            term: 'Misclassifications per appraiser',
+            content: 'One row per appraiser and kind of misclassification ("NOK → OK" means: reference NOK, rated OK), plus the parts affected. The **mixed** row counts the (part, appraiser) pairs whose repeats did not all come out the same — that is disagreement with oneself and needs no reference. One-sided misclassifications indicate a systematic bias (too strict or too lax), two-sided ones rather an unclear inspection instruction.',
+          },
+          {
+            type: 'definition',
+            term: 'All appraisers agree',
+            content: 'Share of parts where **all** appraisers rated the same across **all** repeats. Needs no reference and is stricter than any single figure: one dissenting appraiser drops the part.',
+          },
+          {
+            type: 'definition',
+            term: 'All agree and correct',
+            content: 'The same condition, plus the unanimous rating must match the reference. The gap to the tile next to it is the most interesting number in the whole analysis: it counts the parts where the team was **unanimous and still wrong**. No agreement measure finds those — κ included, because κ measures agreement, not correctness.',
+          },
+        ],
+      },
+    },
     verdict: {
       de: {
         title: 'Bewertung & Ampeln',
