@@ -85,6 +85,27 @@ export function cleanRows(measurements, factors) {
 }
 
 /**
+ * Check the balance of the occupied cells.
+ *
+ * Two distinct findings, named differently in the UI too:
+ * `uneven` — the occupied cells differ in size;
+ * `missing` — at least one factor combination is missing entirely.
+ *
+ * @param {Map<string, number[]>} cells
+ * @param {string[][]} levels — levels per **actually selected** factor
+ * @returns {{balanced: boolean, uneven: boolean, missing: boolean}}
+ */
+function balanceOf(cells, levels) {
+  let product = 1;
+  for (const l of levels) product *= l.length;
+
+  const sizes = [...cells.values()].map(v => v.length);
+  const uneven = sizes.length > 0 && sizes.some(s => s !== sizes[0]);
+  const missing = sizes.length > 0 && sizes.length < product;
+  return { balanced: sizes.length > 0 && !uneven && !missing, uneven, missing };
+}
+
+/**
  * Grouping for the multi-vari chart.
  *
  * @param {{measurements: Array<*>, factors: Array<{name: string, values: Array<*>}>}} input
@@ -160,6 +181,16 @@ export function computeMultiVari({ measurements, factors }) {
     factorValues: list.map((_, j) => rows.map(r => r.keys[j])),
   };
 
+  const { balanced, uneven, missing } = balanceOf(cells, levels);
+  const panelCount = strips.length * panelLevels.length;
+
+  const warnings = [];
+  if (uneven) warnings.push('unbalanced');
+  if (missing) warnings.push('emptyCells');
+  if (axisLevels.length > MAX_AXIS_LEVELS) warnings.push('tooManyAxisLevels');
+  if (seriesLevels.length > MAX_SERIES_LEVELS) warnings.push('tooManySeriesLevels');
+  if (panelCount > MAX_PANELS) warnings.push('tooManyPanels');
+
   return {
     factors: list.map((f, j) => ({ name: f.name, levels: levels[j] })),
     strips,
@@ -169,6 +200,9 @@ export function computeMultiVari({ measurements, factors }) {
     droppedRows,
     yMin,
     yMax,
+    balanced,
+    panelCount,
+    warnings,
     cleaned,
   };
 }
