@@ -131,6 +131,58 @@
           </template>
         </div>
 
+        <div class="multi-vari__vc" data-ref="vc" x-show="result.vc">
+          <table class="dmike-table multi-vari__vc-table" data-ref="vc-table">
+            <thead>
+              <tr>
+                <th x-text="t('tableTerm')"></th>
+                <th class="num" x-text="t('tableDf')"></th>
+                <th class="num" x-text="t('tableSs')"></th>
+                <th class="num" x-text="t('tableMs')"></th>
+                <th class="num" x-text="t('tableVariance')"></th>
+                <th class="num" x-text="t('tableSd')"></th>
+                <th class="num" x-text="t('tablePercent')"></th>
+              </tr>
+            </thead>
+            <tbody>
+              <template x-for="term in vcTerms()">
+                <tr :key="term.id" :data-term="term.id">
+                  <td x-text="termLabel(term)"></td>
+                  <td class="num" x-text="intOrDash(term.df)"></td>
+                  <td class="num" x-text="fmt(term.ss)"></td>
+                  <td class="num" x-text="fmt(term.ms)"></td>
+                  <td class="num" x-text="fmt(term.variance)"></td>
+                  <td class="num" x-text="fmt(term.sd)"></td>
+                  <td class="num" x-text="pct(term.percent)"></td>
+                </tr>
+              </template>
+            </tbody>
+            <tfoot>
+              <tr data-term="__total__">
+                <td x-text="t('tableTotal')"></td>
+                <td class="num"></td>
+                <td class="num"></td>
+                <td class="num"></td>
+                <td class="num" x-text="fmt(result.vc.totalVariance)"></td>
+                <td class="num" x-text="totalSd()"></td>
+                <td class="num">100.0</td>
+              </tr>
+            </tfoot>
+          </table>
+
+          <p class="multi-vari__interpretation" data-ref="interpretation"
+             x-text="interpretationText()"></p>
+
+          <p class="multi-vari__note" data-ref="unbalanced-note"
+             x-show="showUnbalancedNote()" x-text="t('unbalancedNote')"></p>
+
+          <p class="multi-vari__note" data-ref="clamped-note"
+             x-show="showClampedNote()" x-text="t('clampedNote')"></p>
+
+          <button class="btn btn--sm" type="button" data-ref="btn-export-csv"
+                  @click="exportCsv()" x-text="t('exportCsv')"></button>
+        </div>
+
       </div>
     </template>
   </div>

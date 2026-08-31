@@ -19,7 +19,11 @@
 
 import { suite, test, assertEqual, assertDeepEqual, assertTrue } from '../test-utils.js';
 import { computeMultiVari } from '../../js/engines/multi-vari-engine.js';
-import { runVarianceDecomposition } from '../../js/modules/multi-vari/multi-vari-analysis.js';
+import {
+  runVarianceDecomposition,
+  vcTermRows, isUnbalanced, hasClampedTerm,
+  pickLargestTerm, interpretationKey, intOrDash, vcCsvText, totalSdValue,
+} from '../../js/modules/multi-vari/multi-vari-analysis.js';
 
 const NESTED_OPTS = (factorNames) => ({ factorNames, modelForm: 'nested', estimator: 'anova' });
 
@@ -111,5 +115,163 @@ suite('runVarianceDecomposition — decomposition failure does not break the cha
     assertTrue(vcError instanceof Error, 'a thrown decomposition error must be surfaced, not swallowed');
     assertEqual(result.n, g.n);
     assertDeepEqual(result.warnings, g.warnings, 'without a vc, the warnings are just the grouping engine\'s');
+  });
+});
+
+// ─── Task 18: variance-components table view helpers ──────────────────────
+//
+// Pure, DOM-free formatting/derivation logic behind the table's view methods
+// (multi-vari.js's vcTerms(), interpretationText(), showUnbalancedNote(),
+// showClampedNote(), exportCsv()) lives here so it is testable without an
+// Alpine/DOM environment — see multi-vari.js for the thin i18n wrapping.
+
+suite('vcTermRows — table rows, Error row included, empty when the decomposition failed', () => {
+  test('returns result.vc.terms unchanged', () => {
+    const terms = [{ id: 'A', percent: 60 }, { id: 'Error', percent: 40 }];
+    assertEqual(vcTermRows({ vc: { terms } }), terms);
+  });
+
+  test('returns [] when vc is null (decomposition failed)', () => {
+    assertDeepEqual(vcTermRows({ vc: null }), []);
+  });
+
+  test('returns [] when result itself is null', () => {
+    assertDeepEqual(vcTermRows(null), []);
+  });
+});
+
+suite('isUnbalanced — the honesty-rule gate', () => {
+  test('true when result.balanced === false', () => {
+    assertTrue(isUnbalanced({ balanced: false }));
+  });
+
+  test('false when result.balanced === true', () => {
+    assertEqual(isUnbalanced({ balanced: true }), false);
+  });
+
+  test('false when result is null', () => {
+    assertEqual(isUnbalanced(null), false);
+  });
+});
+
+suite('hasClampedTerm — REML-clamped-to-0 note gate', () => {
+  test('true when at least one term is clamped', () => {
+    assertTrue(hasClampedTerm([{ id: 'A', clamped: false }, { id: 'B', clamped: true }]));
+  });
+
+  test('false when no term is clamped', () => {
+    assertEqual(hasClampedTerm([{ id: 'A', clamped: false }]), false);
+  });
+
+  test('false on an empty term list', () => {
+    assertEqual(hasClampedTerm([]), false);
+  });
+});
+
+suite('pickLargestTerm — the term the interpretation sentence names', () => {
+  test('picks the term with the largest percent share, Error included', () => {
+    const terms = [
+      { id: 'A', percent: 20 },
+      { id: 'B(A)', percent: 55 },
+      { id: 'Error', percent: 25 },
+    ];
+    assertEqual(pickLargestTerm(terms).id, 'B(A)');
+  });
+
+  test('Error can win when repeat variation dominates', () => {
+    const terms = [{ id: 'A', percent: 10 }, { id: 'Error', percent: 90 }];
+    assertEqual(pickLargestTerm(terms).id, 'Error');
+  });
+
+  test('a tie keeps the first-seen term (stable, not engine-order-dependent)', () => {
+    const terms = [{ id: 'A', percent: 50 }, { id: 'B', percent: 50 }];
+    assertEqual(pickLargestTerm(terms).id, 'A');
+  });
+
+  test('null on an empty or missing term list', () => {
+    assertEqual(pickLargestTerm([]), null);
+    assertEqual(pickLargestTerm(undefined), null);
+  });
+});
+
+suite('interpretationKey — Error gets its own honest sentence', () => {
+  test('the Error term maps to interpretationError', () => {
+    assertEqual(interpretationKey({ id: 'Error' }), 'interpretationError');
+  });
+
+  test('any other term maps to interpretation', () => {
+    assertEqual(interpretationKey({ id: 'B(A)' }), 'interpretation');
+  });
+});
+
+suite('intOrDash — REML has no degrees of freedom', () => {
+  test('a finite number formats as an integer string', () => {
+    assertEqual(intOrDash(3), '3');
+    assertEqual(intOrDash(0), '0');
+  });
+
+  test('null (REML path) formats as an en dash, never "null" or "NaN"', () => {
+    assertEqual(intOrDash(null), '–');
+    assertEqual(intOrDash(NaN), '–');
+    assertEqual(intOrDash(undefined), '–');
+  });
+});
+
+suite('totalSdValue — total row\'s standard deviation', () => {
+  // The template cannot call Math.sqrt() directly: Alpine CSP's expression
+  // evaluator throws "Accessing global variables is prohibited" for any bare
+  // global identifier (Math included) — see vendor/alpinejs/csp.js's
+  // checkForDangerousValues(). The square root has to be computed here and
+  // exposed through a data-fn method (multi-vari.js's totalSd()).
+  test('square root of totalVariance', () => {
+    assertEqual(totalSdValue({ totalVariance: 12.25 }), 3.5);
+  });
+
+  test('NaN when totalVariance is missing or non-finite, never a thrown error', () => {
+    assertTrue(Number.isNaN(totalSdValue({ totalVariance: NaN })));
+    assertTrue(Number.isNaN(totalSdValue(null)));
+    assertTrue(Number.isNaN(totalSdValue(undefined)));
+  });
+});
+
+suite('vcCsvText — CSV export mirrors the on-screen table', () => {
+  const HEAD = ['Komponente', 'FG', 'SS', 'MS', 'Varianz', 'Std.abw.', 'Anteil %'];
+  const termLabelFn = (t) => (t.id === 'Error' ? 'Rest (Wiederholung)' : t.label);
+
+  test('one row per term plus a totals row, dot as decimal separator', () => {
+    const vc = {
+      totalVariance: 12.5,
+      terms: [
+        { id: 'A', label: 'Schicht', df: 2, ss: 30, ms: 15, variance: 7.5, sd: 2.7386, percent: 60 },
+        { id: 'Error', label: 'Error', df: 9, ss: 20, ms: 2.2222, variance: 5, sd: 2.2361, percent: 40 },
+      ],
+    };
+    const csv = vcCsvText(vc, HEAD, 'Gesamt', termLabelFn);
+    const lines = csv.split('\n');
+    assertEqual(lines.length, 4, 'header + 2 terms + total');
+    assertEqual(lines[0], HEAD.join(','));
+    assertEqual(lines[1], '"Schicht",2,30,15,7.5,2.7386,60');
+    assertEqual(lines[2], '"Rest (Wiederholung)",9,20,2.2222,5,2.2361,40');
+    assertEqual(lines[3], `"Gesamt",,,,${12.5},${Math.sqrt(12.5)},100`);
+  });
+
+  test('REML rows (df/ss/ms null) leave those cells empty, not "null"', () => {
+    const vc = {
+      totalVariance: 5,
+      terms: [
+        { id: 'A', label: 'Schicht', df: null, ss: null, ms: null, variance: 3, sd: 1.7321, percent: 60 },
+      ],
+    };
+    const csv = vcCsvText(vc, HEAD, 'Gesamt', termLabelFn);
+    assertEqual(csv.split('\n')[1], '"Schicht",,,,3,1.7321,60');
+  });
+
+  test('a term label containing a double quote is escaped, not left to break the CSV', () => {
+    const vc = {
+      totalVariance: 1,
+      terms: [{ id: 'A', label: 'Maß "Toleranz"', df: 1, ss: 1, ms: 1, variance: 1, sd: 1, percent: 100 }],
+    };
+    const csv = vcCsvText(vc, HEAD, 'Gesamt', (t) => t.label);
+    assertEqual(csv.split('\n')[1], '"Maß ""Toleranz""",1,1,1,1,1,100');
   });
 });

@@ -26,8 +26,14 @@ import { State } from './multi-vari-model.js';
 import { ColumnPicker, getColumnValues, getColumnName } from '../../ui/column-picker.js';
 import { draggableRows } from '../../ui/draggable-list.js';
 import { computeMultiVari } from '../../engines/multi-vari-engine.js';
-import { runVarianceDecomposition } from './multi-vari-analysis.js';
+import {
+  runVarianceDecomposition,
+  vcTermRows, isUnbalanced, hasClampedTerm,
+  pickLargestTerm, interpretationKey, intOrDash,
+  totalSdValue, vcCsvText,
+} from './multi-vari-analysis.js';
 import { whenAnchor } from '../../core/chart/chart-module-base.js';
+import { downloadFile } from '../../core/export-utils.js';
 
 /** Debounce für den Neulauf nach einer Eingabeänderung. */
 const RERUN_DELAY = 120;
@@ -99,11 +105,28 @@ const mod = createModule({
         return term.id === 'Error' ? _t('termError') : term.label;
       },
 
+      /** Ganzzahl oder Gedankenstrich — REML liefert keine Freiheitsgrade. */
+      intOrDash(v) {
+        return intOrDash(v);
+      },
+
+      /** Zeilen der Varianztabelle, Error-Zeile eingeschlossen. */
+      vcTerms() {
+        return vcTermRows(this.result);
+      },
+
+      /**
+       * Std.abw. der Gesamt-Zeile. Eigene Methode statt `Math.sqrt(...)` im
+       * Template: Alpine CSP verweigert jeden nackten globalen Bezeichner
+       * (auch `Math`) mit „Accessing global variables is prohibited".
+       */
+      totalSd() {
+        return this.fmt(totalSdValue(this.result?.vc));
+      },
+
       /** Term mit dem größten Varianzanteil, `Error` eingeschlossen. */
       largestTerm() {
-        const terms = this.result?.vc?.terms;
-        if (!terms || !terms.length) return null;
-        return terms.reduce((best, t) => (t.percent > best.percent ? t : best), terms[0]);
+        return pickLargestTerm(this.result?.vc?.terms);
       },
 
       largestPercent() {
@@ -114,6 +137,42 @@ const mod = createModule({
       largestTermLabel() {
         const t = this.largestTerm();
         return t ? this.termLabel(t) : '';
+      },
+
+      /**
+       * Ein Satz, der die Tabelle liest. Steht die Reststreuung oben, sagt er
+       * genau das — die Einflussgrößen erklären die Streuung dann eben nicht.
+       */
+      interpretationText() {
+        const t = this.largestTerm();
+        if (!t) return '';
+        const params = { term: this.termLabel(t), percent: this.pct(t.percent) };
+        return _t(interpretationKey(t), params);
+      },
+
+      /**
+       * Ehrlichkeitsregel: bei unbalanciertem Plan hängen die Komponenten vom
+       * Verfahren ab. Das gehört sichtbar unter die Tabelle, nicht in die
+       * Fußnote eines Handbuchs.
+       */
+      showUnbalancedNote() {
+        return isUnbalanced(this.result);
+      },
+
+      showClampedNote() {
+        return hasClampedTerm(this.vcTerms());
+      },
+
+      /** Tabelle als CSV — dieselben Spalten wie die Anzeige, Punkt als Dezimaltrenner. */
+      exportCsv() {
+        const vc = this.result?.vc;
+        if (!vc) return;
+        const head = [
+          _t('tableTerm'), _t('tableDf'), _t('tableSs'), _t('tableMs'),
+          _t('tableVariance'), _t('tableSd'), _t('tablePercent'),
+        ];
+        const csv = vcCsvText(vc, head, _t('tableTotal'), (t) => this.termLabel(t));
+        downloadFile(csv, 'multi-vari-varianzkomponenten.csv', 'text/csv');
       },
 
       /** Engine-Warnungen plus die synthetische `droppedRows`-Meldung. */

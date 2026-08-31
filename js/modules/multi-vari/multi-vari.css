@@ -88,3 +88,29 @@
 .multi-vari__strip {
   min-height: 200px;
 }
+
+.multi-vari__vc {
+  margin-top: var(--spacing-md);
+}
+
+.multi-vari__vc-table {
+  width: 100%;
+  margin-bottom: var(--spacing-sm);
+}
+
+.multi-vari__vc-table .num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.multi-vari__interpretation {
+  margin: 0 0 var(--spacing-xs);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-primary);
+}
+
+.multi-vari__note {
+  margin: 0 0 var(--spacing-xs);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+}
