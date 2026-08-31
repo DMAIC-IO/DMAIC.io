@@ -130,6 +130,7 @@
   "module.msa-typ4": "lucide:trending-up",
   "module.msa-typ5": "lucide:square-check",
   "module.msa-typ6": "lucide:activity",
+  "module.multi-vari": "lucide:git-fork",
   "module.multivariate-control-chart": "lucide:activity",
   "module.opportunity-flowchart": "lucide:columns-3",
   "module.outlier-test": "lucide:triangle-alert",

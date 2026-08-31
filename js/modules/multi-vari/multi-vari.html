@@ -1,0 +1,113 @@
+<div class="multi-vari dmike-split" x-data="multiVari">
+  <div class="multi-vari__input dmike-split__input">
+
+    <div class="dmike-split__section-title" x-text="t('sectionColumns')"></div>
+
+    <div class="field-group">
+      <label x-text="t('measurementColumn')"></label>
+      <div data-ref="col-measurement-wrap"></div>
+    </div>
+
+    <div class="field-group">
+      <label x-text="t('factors')"></label>
+      <!-- draggableRows addressiert Zeilen über `closest('tr')` und räumt den
+           Zustand über `closest('table')` auf — die Faktorliste MUSS deshalb
+           eine echte Tabelle sein. -->
+      <table class="dmike-table multi-vari__factors" data-ref="factor-table">
+        <tbody>
+          <template x-for="(f, idx) in model.factors" :key="f.id">
+            <tr :data-factor="f.id"
+                @dragstart="dragStart('factors', f.id, $event)" @dragend="dragEnd($event)"
+                @dragover="dragOver('factors', f.id, $event)" @drop="dragDrop('factors', f.id, $event)">
+              <td class="dmike-table__grip-col">
+                <button class="dmike-table__grip" type="button" :data-grip="f.id"
+                        :aria-label="t('common.reorder')"
+                        @mousedown="dragArm($event)" @keydown="dragKey('factors', f.id, $event)"></button>
+              </td>
+              <td class="multi-vari__factor-role" x-text="factorRole(idx)"></td>
+              <td class="multi-vari__factor-picker" :data-factor-wrap="f.id"></td>
+              <td class="multi-vari__factor-actions">
+                <button class="btn btn--icon btn--ghost" type="button"
+                        :data-remove-factor="f.id" :aria-label="t('removeFactor')"
+                        :disabled="model.factors.length <= 2"
+                        @click="removeFactor(f.id)">
+                  <span class="icon icon--sm" data-icon="action.delete"></span>
+                </button>
+              </td>
+            </tr>
+          </template>
+        </tbody>
+      </table>
+      <span class="multi-vari__hint" x-text="t('factorsHint')"></span>
+      <button class="btn btn--sm" type="button" data-ref="btn-add-factor"
+              :disabled="model.factors.length >= 4" @click="addFactor()"
+              x-text="t('addFactor')"></button>
+    </div>
+
+    <div class="dmike-split__section-title" x-text="t('sectionModel')"></div>
+
+    <div class="field-group">
+      <label x-text="t('modelForm')"></label>
+      <select class="field" data-ref="sel-model-form"
+              x-model="model.modelForm" @change="optionChanged()">
+        <option value="nested" x-text="t('modelForm_nested')"></option>
+        <option value="crossed" x-text="t('modelForm_crossed')"></option>
+      </select>
+    </div>
+
+    <div class="field-group">
+      <label x-text="t('estimator')"></label>
+      <select class="field" data-ref="sel-estimator"
+              x-model="model.estimator" @change="optionChanged()">
+        <option value="anova" x-text="t('estimator_anova')"></option>
+        <option value="reml" x-text="t('estimator_reml')"></option>
+      </select>
+    </div>
+
+    <div class="dmike-split__section-title" x-text="t('sectionDisplay')"></div>
+
+    <div class="field-group">
+      <label class="multi-vari__check">
+        <input type="checkbox" data-ref="chk-points"
+               x-model="model.showPoints" @change="optionChanged()">
+        <span x-text="t('showPoints')"></span>
+      </label>
+      <label class="multi-vari__check">
+        <input type="checkbox" data-ref="chk-connect"
+               x-model="model.connectMeans" @change="optionChanged()">
+        <span x-text="t('connectMeans')"></span>
+      </label>
+      <label class="multi-vari__check">
+        <input type="checkbox" data-ref="chk-group-mean"
+               x-model="model.showGroupMean" @change="optionChanged()">
+        <span x-text="t('showGroupMean')"></span>
+      </label>
+      <label class="multi-vari__check">
+        <input type="checkbox" data-ref="chk-ref-line"
+               x-model="model.showRefLine" @change="optionChanged()">
+        <span x-text="t('showRefLine')"></span>
+      </label>
+    </div>
+
+    <div class="multi-vari__error" data-ref="error-box"
+         :class="{ visible: errorMsg }" x-text="errorMsg"></div>
+  </div>
+
+  <div class="multi-vari__output dmike-split__output">
+    <template x-if="result">
+      <div class="multi-vari__result" data-ref="result">
+
+        <div class="multi-vari__chart-header">
+          <span class="multi-vari__chart-title" x-text="chartTitle()"></span>
+        </div>
+
+        <div class="multi-vari__strips" data-ref="strips">
+          <template x-for="strip in result.strips">
+            <div class="multi-vari__strip" :key="strip.idx" :data-strip="strip.idx"></div>
+          </template>
+        </div>
+
+      </div>
+    </template>
+  </div>
+</div>
