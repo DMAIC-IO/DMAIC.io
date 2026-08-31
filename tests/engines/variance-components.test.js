@@ -9,7 +9,7 @@ import {
   suite, test, assertEqual, assertDeepEqual, assertAlmostEqual, assertThrows,
 } from '../test-utils.js';
 import {
-  buildTerms, termCells, KEY_SEP, appendBlock, projectSquares,
+  buildTerms, termCells, KEY_SEP, appendBlock, projectSquares, anovaTable,
 } from '../../js/engines/variance-components-engine.js';
 
 suite('Variance components — term construction', () => {
@@ -150,5 +150,95 @@ suite('Variance components — orthonormal basis', () => {
     const v = Float64Array.from([1, 1, 1, 1]);
     assertAlmostEqual(projectSquares(basis, 0, 1, v), 4, 1e-12);
     assertAlmostEqual(projectSquares(basis, 1, 1, v), 0, 1e-12);
+  });
+});
+
+/**
+ * Balanced nested design, hand-computed:
+ *   A=1,B=1: 10,12 -> cell mean 11    A=1,B=2: 14,16 -> 15
+ *   A=2,B=1: 20,22 -> 21              A=2,B=2: 24,26 -> 25
+ *   A means 13 / 23, grand mean 18
+ *   SS_A    = 4(13-18)^2 + 4(23-18)^2 = 200,  df 1
+ *   SS_B(A) = 2(11-13)^2 + 2(15-13)^2 + 2(21-23)^2 + 2(25-23)^2 = 32,  df 2
+ *   SS_e    = 8 x 1 = 8,  df 4
+ *   Corrected total = 240 = 200 + 32 + 8
+ */
+const NESTED_BALANCED = {
+  response: [10, 12, 14, 16, 20, 22, 24, 26],
+  factorValues: [
+    ['1', '1', '1', '1', '2', '2', '2', '2'],
+    ['1', '1', '2', '2', '1', '1', '2', '2'],
+  ],
+};
+
+/**
+ * Balanced crossed design, hand-computed:
+ *   cell means 10 / 30 / 50 / 90, replicates +/-1
+ *   SS_A = 5000 (df 1), SS_B = 1800 (df 1), SS_AB = 200 (df 1), SS_e = 8 (df 4)
+ */
+const CROSSED_BALANCED = {
+  response: [9, 11, 29, 31, 49, 51, 89, 91],
+  factorValues: [
+    ['1', '1', '1', '1', '2', '2', '2', '2'],
+    ['1', '1', '2', '2', '1', '1', '2', '2'],
+  ],
+};
+
+/**
+ * Nested design whose B means coincide inside every A level, so MS_B(A) = 0
+ * while MS_e = 26 — the estimator must produce a NEGATIVE component here.
+ */
+const NESTED_NEGATIVE = {
+  response: [10, 20, 14, 16, 30, 40, 34, 36],
+  factorValues: [
+    ['1', '1', '1', '1', '2', '2', '2', '2'],
+    ['1', '1', '2', '2', '1', '1', '2', '2'],
+  ],
+};
+
+suite('Variance components — ANOVA table', () => {
+  test('reproduces the hand-computed nested sums of squares', () => {
+    const terms = buildTerms('nested', ['A', 'B']);
+    const t = anovaTable({ ...NESTED_BALANCED, terms });
+    assertAlmostEqual(t.rows[0].ss, 200, 1e-9);
+    assertEqual(t.rows[0].df, 1);
+    assertAlmostEqual(t.rows[1].ss, 32, 1e-9);
+    assertEqual(t.rows[1].df, 2);
+    assertAlmostEqual(t.error.ss, 8, 1e-9);
+    assertEqual(t.error.df, 4);
+  });
+
+  test('mean squares are ss / df', () => {
+    const terms = buildTerms('nested', ['A', 'B']);
+    const t = anovaTable({ ...NESTED_BALANCED, terms });
+    assertAlmostEqual(t.rows[0].ms, 200, 1e-9);
+    assertAlmostEqual(t.rows[1].ms, 16, 1e-9);
+    assertAlmostEqual(t.error.ms, 2, 1e-9);
+  });
+
+  test('sequential sums of squares add up to the corrected total', () => {
+    const terms = buildTerms('nested', ['A', 'B']);
+    const t = anovaTable({ ...NESTED_BALANCED, terms });
+    const sum = t.rows.reduce((a, r) => a + r.ss, 0) + t.error.ss;
+    assertAlmostEqual(sum, 240, 1e-9);
+  });
+
+  test('crossed design splits main effects and interaction', () => {
+    const terms = buildTerms('crossed', ['A', 'B']);
+    const t = anovaTable({ ...CROSSED_BALANCED, terms });
+    assertAlmostEqual(t.rows[0].ss, 5000, 1e-9);
+    assertAlmostEqual(t.rows[1].ss, 1800, 1e-9);
+    assertAlmostEqual(t.rows[2].ss, 200, 1e-9);
+    assertAlmostEqual(t.error.ss, 8, 1e-9);
+  });
+
+  test('a design without replicates leaves the error with zero df', () => {
+    const terms = buildTerms('crossed', ['A', 'B']);
+    const t = anovaTable({
+      response: [1, 2, 3, 5],
+      factorValues: [['1', '1', '2', '2'], ['1', '2', '1', '2']],
+      terms,
+    });
+    assertEqual(t.error.df, 0);
   });
 });

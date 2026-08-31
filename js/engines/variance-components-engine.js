@@ -184,3 +184,58 @@ export function projectSquares(basis, from, to, vector) {
   }
   return total;
 }
+
+/**
+ * Sequential (Type I) ANOVA table for the given terms.
+ *
+ * Builds an orthonormal basis incrementally: intercept first, then each term's
+ * indicator columns. A term's sequential sum of squares is the squared
+ * projection of the response onto the basis vectors that term contributed; its
+ * degrees of freedom are how many vectors that was. The error picks up whatever
+ * the full model leaves.
+ *
+ * @param {{response: number[], factorValues: string[][],
+ *          terms: Array<{id: string, factorIndices: number[]}>}} input
+ * @returns {{rows: Array<{id: string, df: number, ss: number, ms: number}>,
+ *            error: {df: number, ss: number, ms: number},
+ *            basis: Float64Array[], ranks: number[],
+ *            termColumns: Float64Array[][], n: number}}
+ */
+export function anovaTable({ response, factorValues, terms }) {
+  const n = response.length;
+  const y = Float64Array.from(response);
+
+  const basis = [];
+  const ones = new Float64Array(n).fill(1);
+  appendBlock(basis, [ones]);            // intercept — occupies slot 0
+
+  const rows = [];
+  const ranks = [];
+  const termColumns = [];
+
+  for (const term of terms) {
+    const { columns } = termCells(term.factorIndices, factorValues);
+    termColumns.push(columns);
+    const before = basis.length;
+    appendBlock(basis, columns);
+    const df = basis.length - before;
+    const ss = projectSquares(basis, before, basis.length, y);
+    rows.push({ id: term.id, df, ss, ms: df > 0 ? ss / df : NaN });
+    ranks.push(basis.length);
+  }
+
+  let ySq = 0;
+  for (let i = 0; i < n; i++) ySq += y[i] * y[i];
+  const fitted = projectSquares(basis, 0, basis.length, y);
+  const errDf = n - basis.length;
+  const errSs = Math.max(0, ySq - fitted);
+
+  return {
+    rows,
+    error: { df: errDf, ss: errSs, ms: errDf > 0 ? errSs / errDf : NaN },
+    basis,
+    ranks,
+    termColumns,
+    n,
+  };
+}
