@@ -72,3 +72,43 @@ export function buildTerms(modelForm, factorNames) {
 
   throw new Error(`buildTerms: unknown model form "${modelForm}"`);
 }
+
+/**
+ * Separator for composite cell keys. U+001F (unit separator) is a control
+ * character that cannot occur in a worksheet cell, so a level label can never
+ * forge a key boundary. Built with `String.fromCharCode` on purpose: a literal
+ * control character in source is invisible in diffs and gets mangled by
+ * tooling.
+ */
+export const KEY_SEP = String.fromCharCode(31);
+
+/**
+ * Cell keys and indicator columns for one term.
+ *
+ * @param {number[]} factorIndices — the term's factors
+ * @param {string[][]} factorValues — one array of level labels per factor, all length n
+ * @returns {{keys: string[], cells: string[], columns: Float64Array[]}}
+ */
+export function termCells(factorIndices, factorValues) {
+  const n = factorValues[factorIndices[0]].length;
+  const keys = new Array(n);
+  const index = new Map();
+  const cells = [];
+
+  for (let i = 0; i < n; i++) {
+    let key = factorValues[factorIndices[0]][i];
+    for (let j = 1; j < factorIndices.length; j++) {
+      key += KEY_SEP + factorValues[factorIndices[j]][i];
+    }
+    keys[i] = key;
+    if (!index.has(key)) {
+      index.set(key, cells.length);
+      cells.push(key);
+    }
+  }
+
+  const columns = cells.map(() => new Float64Array(n));
+  for (let i = 0; i < n; i++) columns[index.get(keys[i])][i] = 1;
+
+  return { keys, cells, columns };
+}

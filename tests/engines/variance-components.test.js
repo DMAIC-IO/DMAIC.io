@@ -8,7 +8,7 @@
 import {
   suite, test, assertEqual, assertDeepEqual, assertAlmostEqual, assertThrows,
 } from '../test-utils.js';
-import { buildTerms } from '../../js/engines/variance-components-engine.js';
+import { buildTerms, termCells, KEY_SEP } from '../../js/engines/variance-components-engine.js';
 
 suite('Variance components — term construction', () => {
   test('nested with three factors yields the prefix chain', () => {
@@ -53,5 +53,36 @@ suite('Variance components — term construction', () => {
 
   test('rejects an unknown model form', () => {
     assertThrows(() => buildTerms('mixed', ['A', 'B']), /unknown model form/i);
+  });
+});
+
+suite('Variance components — cells and indicator columns', () => {
+  const A = ['1', '1', '1', '1', '2', '2', '2', '2'];
+  const B = ['1', '1', '2', '2', '1', '1', '2', '2'];
+
+  test('a single-factor term keys rows by that factor', () => {
+    const r = termCells([0], [A, B]);
+    assertDeepEqual(r.cells, ['1', '2']);
+    assertDeepEqual(r.keys, ['1', '1', '1', '1', '2', '2', '2', '2']);
+  });
+
+  test('a two-factor term keys rows by the level pair', () => {
+    const r = termCells([0, 1], [A, B]);
+    assertEqual(r.cells.length, 4);
+    assertEqual(r.keys[0], `1${KEY_SEP}1`);
+    assertEqual(r.keys[6], `2${KEY_SEP}2`);
+  });
+
+  test('produces one 0/1 indicator column per cell', () => {
+    const r = termCells([0], [A, B]);
+    assertEqual(r.columns.length, 2);
+    assertDeepEqual([...r.columns[0]], [1, 1, 1, 1, 0, 0, 0, 0]);
+    assertDeepEqual([...r.columns[1]], [0, 0, 0, 0, 1, 1, 1, 1]);
+  });
+
+  test('a level label cannot forge a key boundary', () => {
+    // 'ab' as one level must not collide with the pair ('a','b').
+    const r = termCells([0, 1], [['ab'], ['c']]);
+    assertEqual(r.cells[0], `ab${KEY_SEP}c`);
   });
 });
