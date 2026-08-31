@@ -218,11 +218,11 @@ suite('intOrDash — REML has no degrees of freedom', () => {
 });
 
 suite('totalSdValue — total row\'s standard deviation', () => {
-  // The template cannot call Math.sqrt() directly: Alpine CSP's expression
-  // evaluator throws "Accessing global variables is prohibited" for any bare
-  // global identifier (Math included) — see vendor/alpinejs/csp.js's
-  // checkForDangerousValues(). The square root has to be computed here and
-  // exposed through a data-fn method (multi-vari.js's totalSd()).
+  // The template cannot call Math.sqrt() directly: Alpine CSP's evaluator
+  // resolves a bare identifier only against the component scope, and Math is
+  // not in it — the expression throws "Undefined variable: Math"
+  // (vendor/alpinejs/csp.js, Identifier case). The square root has to be
+  // computed here and exposed through a data-fn method (totalSd()).
   test('square root of totalVariance', () => {
     assertEqual(totalSdValue({ totalVariance: 12.25 }), 3.5);
   });

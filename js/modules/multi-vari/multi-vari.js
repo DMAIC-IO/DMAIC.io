@@ -116,9 +116,21 @@ const mod = createModule({
       },
 
       /**
+       * Gesamtvarianz der Fußzeile. Eigene Methode statt der rohen Kette
+       * `result.vc.totalVariance` im Template: `x-show` blendet die Tabelle
+       * nur aus, hängt sie aber nicht ab — bei gescheiterter Zerlegung
+       * (`vc === null`) liefe die Bindung weiter und würde bei jedem
+       * Reaktivitätszyklus einen Alpine-Ausdrucksfehler loggen.
+       */
+      totalVarianceText() {
+        return this.fmt(this.result?.vc?.totalVariance);
+      },
+
+      /**
        * Std.abw. der Gesamt-Zeile. Eigene Methode statt `Math.sqrt(...)` im
-       * Template: Alpine CSP verweigert jeden nackten globalen Bezeichner
-       * (auch `Math`) mit „Accessing global variables is prohibited".
+       * Template: Alpines CSP-Evaluator löst nackte Bezeichner nur gegen den
+       * Komponenten-Scope auf, und `Math` steht dort nicht — der Ausdruck
+       * scheiterte an „Undefined variable: Math".
        */
       totalSd() {
         return this.fmt(totalSdValue(this.result?.vc));
@@ -172,7 +184,7 @@ const mod = createModule({
           _t('tableVariance'), _t('tableSd'), _t('tablePercent'),
         ];
         const csv = vcCsvText(vc, head, _t('tableTotal'), (t) => this.termLabel(t));
-        downloadFile(csv, 'multi-vari-varianzkomponenten.csv', 'text/csv');
+        downloadFile(csv, 'multi-vari-varianzkomponenten.csv', 'text/csv;charset=utf-8');
       },
 
       /** Engine-Warnungen plus die synthetische `droppedRows`-Meldung. */

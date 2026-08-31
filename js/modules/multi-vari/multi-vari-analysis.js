@@ -146,9 +146,11 @@ export function intOrDash(v) {
 
 /**
  * Standard deviation of the total row (√totalVariance). Pulled out of the
- * template on purpose: Alpine CSP's expression evaluator refuses any bare
- * global identifier (`Math` included) with "Accessing global variables is
- * prohibited in the CSP build" — see vendor/alpinejs/csp.js.
+ * template on purpose: Alpine's CSP evaluator resolves a bare identifier
+ * only against the component scope (magics plus data), and `Math` is not in
+ * it — `Math.sqrt(…)` in a template throws "Undefined variable: Math"
+ * (vendor/alpinejs/csp.js, Identifier case). Globals reached through the
+ * scope are barred on top of that by checkForDangerousValues().
  * @param {{totalVariance: number}|null|undefined} vc
  * @returns {number} NaN when totalVariance is missing or non-finite.
  */
