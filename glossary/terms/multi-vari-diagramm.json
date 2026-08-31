@@ -75,7 +75,11 @@
   "modules": [
     "multi-vari"
   ],
-  "algoLab": [],
+  "algoLab": [
+    "variance/variance-components-nested-anova",
+    "variance/variance-components-crossed-anova",
+    "variance/variance-components-reml"
+  ],
   "sources": [
     {
       "label": "Seder, L. A. — Diagnosis with Diagrams, Parts I and II, Industrial Quality Control, 1950",

@@ -90,7 +90,11 @@
   "modules": [
     "multi-vari"
   ],
-  "algoLab": [],
+  "algoLab": [
+    "variance/variance-components-nested-anova",
+    "variance/variance-components-crossed-anova",
+    "variance/variance-components-reml"
+  ],
   "sources": [
     {
       "label": "Searle, S. R., Casella, G. & McCulloch, C. E. — Variance Components, Wiley, 1992",

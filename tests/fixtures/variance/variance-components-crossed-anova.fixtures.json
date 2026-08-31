@@ -1,0 +1,187 @@
+{
+  "algorithm_id": "variance-components-crossed-anova",
+  "generated_with": {
+    "python": "3.14.4",
+    "scipy": "1.18.0",
+    "numpy": "2.5.1",
+    "statsmodels": "0.14.6",
+    "method": "Sequential SS/df from cumulative statsmodels OLS fits; REML components from statsmodels MixedLM(reml=True) with one variance component per term; ANOVA/EMS components recomputed in NumPy via explicit pinv projectors (Henderson I)"
+  },
+  "generated_at": "2026-08-31T20:06:29.223218+00:00",
+  "generator_script": "tools/fixture-generator/generate_fixtures.py",
+  "generator_version": "1.0.0",
+  "tolerances": {
+    "default": {
+      "relative": 0.000001,
+      "absolute": 1e-8
+    },
+    "overrides": {
+      "reml": {
+        "relative": 0.001,
+        "absolute": 0.000001,
+        "reason": "The REML surface of these small unbalanced designs is nearly flat near its optimum: the four statsmodels optimizers stop at points that differ by up to 1e-3 relative while their log-likelihoods agree to the eighth digit. The reference is the highest-likelihood fit, but no reference can be sharper than that spread, so the tolerance is set to it."
+      }
+    }
+  },
+  "test_cases": [
+    {
+      "id": "crossed-unbalanced-three-factor-anova",
+      "tier": "standard",
+      "description": "Crossed three-factor design with three cells removed, ANOVA/EMS estimator",
+      "inputs": {
+        "modelForm": "crossed",
+        "estimator": "anova",
+        "factorNames": [
+          "A",
+          "B",
+          "C"
+        ],
+        "factorValues": [
+          [
+            "2",
+            "1",
+            "2",
+            "2",
+            "1",
+            "2",
+            "1",
+            "1",
+            "2",
+            "1",
+            "2",
+            "1",
+            "2",
+            "1",
+            "2",
+            "1",
+            "2",
+            "1",
+            "2",
+            "1",
+            "2"
+          ],
+          [
+            "1",
+            "2",
+            "2",
+            "1",
+            "2",
+            "2",
+            "1",
+            "2",
+            "2",
+            "1",
+            "1",
+            "2",
+            "2",
+            "1",
+            "1",
+            "2",
+            "2",
+            "1",
+            "1",
+            "2",
+            "2"
+          ],
+          [
+            "1",
+            "1",
+            "1",
+            "2",
+            "2",
+            "2",
+            "1",
+            "1",
+            "1",
+            "2",
+            "2",
+            "2",
+            "2",
+            "1",
+            "1",
+            "1",
+            "1",
+            "2",
+            "2",
+            "2",
+            "2"
+          ]
+        ],
+        "response": [
+          19.152,
+          17.48,
+          21.375,
+          20.47,
+          18.024,
+          21.349,
+          16.064,
+          17.842,
+          20.992,
+          16.573,
+          20.44,
+          19.389,
+          22.033,
+          16.564,
+          19.234,
+          17.57,
+          21.184,
+          16.521,
+          20.439,
+          18.975,
+          21.908
+        ]
+      },
+      "expected": {
+        "terms": [
+          {
+            "id": "A",
+            "variance": 5.450718327900187,
+            "df": 1,
+            "ss": 56.334157854545474
+          },
+          {
+            "id": "B",
+            "variance": 1.431022795733115,
+            "df": 1,
+            "ss": 13.89960331921342
+          },
+          {
+            "id": "C",
+            "variance": 0.4359032982566271,
+            "df": 1,
+            "ss": 3.699157634064264
+          },
+          {
+            "id": "A*B",
+            "variance": 0,
+            "df": 1,
+            "ss": 0.037900714612760567
+          },
+          {
+            "id": "A*C",
+            "variance": 0,
+            "df": 1,
+            "ss": 0.010087877564103565
+          },
+          {
+            "id": "B*C",
+            "variance": 0,
+            "df": 1,
+            "ss": 0.00921979298246356
+          },
+          {
+            "id": "A*B*C",
+            "variance": 0.27747079807691893,
+            "df": 1,
+            "ss": 0.8178801403508658
+          }
+        ],
+        "error": {
+          "variance": 0.11690128205128182,
+          "df": 13,
+          "ss": 1.5197166666666637
+        }
+      }
+    }
+  ]
+}

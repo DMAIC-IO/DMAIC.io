@@ -1,0 +1,164 @@
+{
+  "id": "variance-components-reml",
+  "name": {
+    "de": "Varianzkomponenten — REML",
+    "en": "Variance Components — REML"
+  },
+  "category": "variance",
+  "subcategory": "reml",
+  "status": "validated",
+  "version": "1.0.0",
+  "description": {
+    "short": {
+      "de": "Schätzt die Varianzkomponenten direkt aus der restringierten Likelihood — auch bei unbalanciertem Plan.",
+      "en": "Estimates the variance components directly from the restricted likelihood — including on unbalanced designs."
+    },
+    "long": {
+      "de": "REML (Restricted Maximum Likelihood) schätzt die Komponenten, ohne den Umweg über die erwarteten mittleren Quadrate: maximiert wird die Likelihood der um die festen Effekte bereinigten Daten. Bei balanciertem Plan stimmt das Ergebnis praktisch mit Henderson I überein; bei unbalanciertem Plan ist REML die belastbarere Wahl, weil es keine Balance-Annahme braucht. Die Engine startet mit EM-Schritten (`REML_EM_WARMUP = 5`) und wechselt dann auf Average-Information-Iterationen (`REML_MAX_ITER = 100`, `REML_TOL = 1e-8`); die Zeilenzahl ist auf `REML_MAX_ROWS = 500` gedeckelt, weil der Speicherbedarf quadratisch wächst.",
+      "en": "REML (restricted maximum likelihood) estimates the components without the detour through expected mean squares: it maximises the likelihood of the data adjusted for the fixed effects. On a balanced design the result agrees with Henderson I for practical purposes; on an unbalanced one REML is the more dependable choice because it assumes no balance. The engine starts with EM steps (`REML_EM_WARMUP = 5`) and then switches to average-information iterations (`REML_MAX_ITER = 100`, `REML_TOL = 1e-8`); the row count is capped at `REML_MAX_ROWS = 500` because the memory footprint grows quadratically."
+    }
+  },
+  "documentation": {
+    "formulas": [
+      {
+        "label": "P",
+        "latex": "P = V^{-1} - V^{-1} X (X^{\\top} V^{-1} X)^{-1} X^{\\top} V^{-1}",
+        "description": {
+          "de": "Projektionsmatrix der restringierten Likelihood",
+          "en": "Projection matrix of the restricted likelihood"
+        }
+      },
+      {
+        "label": "ℓ_R",
+        "latex": "-2\\ell_R = \\log|V| + \\log|X^{\\top} V^{-1} X| + y^{\\top} P y",
+        "description": {
+          "de": "Restringierte Log-Likelihood",
+          "en": "Restricted log-likelihood"
+        }
+      },
+      {
+        "label": "EM",
+        "latex": "\\sigma_j^{2\\,(t+1)} = \\frac{\\sigma_j^{4}\\, y^{\\top} P Z_j Z_j^{\\top} P y + \\sigma_j^{2}\\,\\mathrm{tr}(\\cdot)}{q_j}",
+        "description": {
+          "de": "EM-Aufwärmschritt — monoton, aber langsam",
+          "en": "EM warm-up step — monotone but slow"
+        }
+      },
+      {
+        "label": "AI",
+        "latex": "\\sigma^{(t+1)} = \\sigma^{(t)} + \\mathcal{I}_{AI}^{-1} \\, s",
+        "description": {
+          "de": "Average-Information-Newton-Schritt",
+          "en": "Average-information Newton step"
+        }
+      }
+    ],
+    "assumptions": [
+      { "de": "Die Effekte sind unabhängig und normalverteilt", "en": "Effects are independent and normally distributed" },
+      { "de": "Das Modell ist identifizierbar — jede Komponente hat eigene Information", "en": "The model is identifiable — each component carries its own information" }
+    ],
+    "limitations": [
+      { "de": "Höchstens 500 Zeilen (REML_MAX_ROWS) — der Speicherbedarf wächst quadratisch", "en": "At most 500 rows (REML_MAX_ROWS) — memory grows quadratically" },
+      { "de": "Liefert keine ANOVA-Tabelle: Freiheitsgrade und Quadratsummen fehlen", "en": "Produces no ANOVA table: degrees of freedom and sums of squares are absent" },
+      { "de": "Die Likelihood-Fläche kleiner unbalancierter Pläne ist flach — das Ergebnis kann vom Startwert abhängen", "en": "The likelihood surface of small unbalanced designs is flat — the result can depend on the starting value" }
+    ],
+    "references": [
+      { "source": "Patterson & Thompson (1971), Recovery of Inter-Block Information, Biometrika 58(3)" },
+      { "source": "Gilmour, Thompson & Cullis (1995), Average Information REML, Biometrics 51(4)" },
+      { "source": "Searle, Casella & McCulloch (1992), Variance Components, Wiley" }
+    ],
+    "minitab_equivalent": "Stat > ANOVA > General Linear Model > Variance Components (REML)"
+  },
+  "source": {
+    "function_name": "computeVarianceComponents",
+    "file_path": "js/engines/variance-components-engine.js",
+    "signature": {
+      "parameters": [
+        {
+          "name": "response",
+          "type": "number[]",
+          "required": true,
+          "description": { "de": "Messwerte, eine Zeile je Beobachtung", "en": "Measurements, one row per observation" }
+        },
+        {
+          "name": "factorValues",
+          "type": "Array<Array<string|number>>",
+          "required": true,
+          "description": { "de": "Stufen je Faktor, parallel zu response", "en": "Levels per factor, parallel to response" }
+        },
+        {
+          "name": "factorNames",
+          "type": "string[]",
+          "required": true,
+          "description": { "de": "Namen der Faktoren, für die Termbeschriftung", "en": "Factor names, used for the term labels" }
+        },
+        {
+          "name": "modelForm",
+          "type": "'nested'|'crossed'",
+          "required": true,
+          "description": { "de": "Termgerüst — REML rechnet beide", "en": "Term skeleton — REML handles both" }
+        },
+        {
+          "name": "estimator",
+          "type": "'anova'|'reml'",
+          "required": true,
+          "description": { "de": "Hier 'reml'", "en": "'reml' here" }
+        }
+      ]
+    }
+  },
+  "try_it": {
+    "input_schema": {
+      "fields": [
+        {
+          "name": "response",
+          "label": { "de": "Messwerte (eine Zahl je Zeile)", "en": "Measurements (one number per line)" },
+          "type": "textarea",
+          "placeholder": { "de": "500.2\n500.4\n501.1\n499.8", "en": "500.2\n500.4\n501.1\n499.8" },
+          "parse_as": "number_array",
+          "required": true
+        },
+        {
+          "name": "factorValues",
+          "label": { "de": "Faktorstufen (eine Zeile je Faktor)", "en": "Factor levels (one line per factor)" },
+          "type": "textarea",
+          "placeholder": { "de": "M1, M1, M2, M2\nFrüh, Spät, Früh, Spät", "en": "M1, M1, M2, M2\nEarly, Late, Early, Late" },
+          "parse_as": "string_array_2d",
+          "required": true
+        },
+        {
+          "name": "factorNames",
+          "label": { "de": "Faktornamen", "en": "Factor names" },
+          "type": "text",
+          "placeholder": { "de": "Maschine, Schicht", "en": "Machine, Shift" },
+          "parse_as": "string_array",
+          "required": true
+        }
+      ]
+    },
+    "output_schema": {
+      "display_fields": ["estimator", "converged", "iterations", "n", "totalVariance", "terms"],
+      "primary_field": "totalVariance",
+      "format": {
+        "estimator": { "decimals": 0, "label": { "de": "Schätzer", "en": "Estimator" } },
+        "converged": { "decimals": 0, "label": { "de": "Konvergiert", "en": "Converged" } },
+        "iterations": { "decimals": 0, "label": { "de": "Iterationen", "en": "Iterations" } },
+        "n": { "decimals": 0, "label": "n" },
+        "totalVariance": { "decimals": 6, "label": { "de": "Gesamtvarianz", "en": "Total variance" } },
+        "terms": { "decimals": 6, "label": { "de": "Komponenten", "en": "Components" } }
+      }
+    }
+  },
+  "changelog": [
+    {
+      "version": "1.0.0",
+      "date": "2026-08-31",
+      "type": "initial",
+      "description": {
+        "de": "Erstimplementierung der REML-Schätzung mit EM-Aufwärmphase und AI-Iterationen",
+        "en": "Initial implementation of REML estimation with EM warm-up and AI iterations"
+      },
+      "breaking": false
+    }
+  ]
+}

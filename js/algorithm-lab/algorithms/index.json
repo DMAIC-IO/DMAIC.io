@@ -5,6 +5,7 @@
     { "id": "distributions", "name": { "de": "Verteilungen & Tests", "en": "Distributions & Tests" } },
     { "id": "capability", "name": { "de": "Prozessfähigkeit", "en": "Process Capability" } },
     { "id": "hypothesis", "name": { "de": "Hypothesentests", "en": "Hypothesis Tests" } },
+    { "id": "variance", "name": { "de": "Varianzkomponenten", "en": "Variance Components" } },
     { "id": "outliers", "name": { "de": "Ausreißertests", "en": "Outlier Tests" } },
     { "id": "regression", "name": { "de": "Regression & Korrelation", "en": "Regression & Correlation" } },
     { "id": "msa", "name": { "de": "Messsystemanalyse", "en": "Measurement System Analysis" } },
@@ -84,6 +85,9 @@
     { "id": "taguchi-l18-mixed", "path": "js/algorithm-lab/algorithms/doe/taguchi-l18-mixed.json" },
     { "id": "ccd-with-categorical", "path": "js/algorithm-lab/algorithms/doe/ccd-with-categorical.json" },
     { "id": "box-behnken-with-categorical", "path": "js/algorithm-lab/algorithms/doe/box-behnken-with-categorical.json" },
-    { "id": "d-optimal-mixed-level", "path": "js/algorithm-lab/algorithms/doe/d-optimal-mixed-level.json" }
+    { "id": "d-optimal-mixed-level", "path": "js/algorithm-lab/algorithms/doe/d-optimal-mixed-level.json" },
+    { "id": "variance-components-nested-anova", "path": "js/algorithm-lab/algorithms/variance/variance-components-nested-anova.json" },
+    { "id": "variance-components-crossed-anova", "path": "js/algorithm-lab/algorithms/variance/variance-components-crossed-anova.json" },
+    { "id": "variance-components-reml", "path": "js/algorithm-lab/algorithms/variance/variance-components-reml.json" }
   ]
 }
