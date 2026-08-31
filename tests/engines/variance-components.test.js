@@ -11,6 +11,7 @@ import {
 import {
   buildTerms, termCells, KEY_SEP, appendBlock, projectSquares, anovaTable,
   emsMatrix, anovaComponents, remlWorkspace, remlP, emStep,
+  remlComponents, REML_MAX_ITER, REML_MAX_ROWS,
 } from '../../js/engines/variance-components-engine.js';
 
 suite('Variance components — term construction', () => {
@@ -333,5 +334,52 @@ suite('Variance components — REML building blocks', () => {
     const ws = remlWorkspace({ ...NESTED_BALANCED, terms });
     const next = emStep(ws, [46, 7, 2]);
     assertAlmostEqual(next[2], 2, 0.5);
+  });
+});
+
+suite('Variance components — REML estimator', () => {
+  test('balanced designs give the same answer as ANOVA', () => {
+    // With balance the two methods coincide — the sharpest available check that
+    // the REML loop converges to the right place.
+    const terms = buildTerms('nested', ['A', 'B']);
+    const anova = anovaComponents(anovaTable({ ...NESTED_BALANCED, terms }));
+    const reml = remlComponents({ ...NESTED_BALANCED, terms });
+    assertEqual(reml.converged, true);
+    assertAlmostEqual(reml.variances[0], anova.variances[0], 1e-4);
+    assertAlmostEqual(reml.variances[1], anova.variances[1], 1e-4);
+    assertAlmostEqual(reml.variances[2], anova.variances[2], 1e-4);
+  });
+
+  test('converges well inside the iteration budget', () => {
+    const terms = buildTerms('nested', ['A', 'B']);
+    const reml = remlComponents({ ...NESTED_BALANCED, terms });
+    assertEqual(reml.iterations < REML_MAX_ITER, true);
+  });
+
+  test('never returns a negative component', () => {
+    const terms = buildTerms('nested', ['A', 'B']);
+    const reml = remlComponents({ ...NESTED_NEGATIVE, terms });
+    for (const v of reml.variances) assertEqual(v >= 0, true);
+  });
+
+  test('is deterministic — two runs agree exactly', () => {
+    const terms = buildTerms('nested', ['A', 'B']);
+    const a = remlComponents({ ...NESTED_BALANCED, terms });
+    const b = remlComponents({ ...NESTED_BALANCED, terms });
+    assertDeepEqual(a.variances, b.variances);
+    assertEqual(a.iterations, b.iterations);
+  });
+
+  test('refuses to run beyond the row cap', () => {
+    const n = REML_MAX_ROWS + 1;
+    const terms = buildTerms('nested', ['A', 'B']);
+    assertThrows(() => remlComponents({
+      response: new Array(n).fill(0).map((_, i) => i % 7),
+      factorValues: [
+        new Array(n).fill(0).map((_, i) => String(i % 3)),
+        new Array(n).fill(0).map((_, i) => String(i % 5)),
+      ],
+      terms,
+    }), /row cap/i);
   });
 });

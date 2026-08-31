@@ -458,3 +458,165 @@ export function emStep(ws, theta) {
 
   return next;
 }
+
+/** EM warm-up steps before AI-REML takes over. */
+export const REML_EM_WARMUP = 5;
+/** Hard iteration budget for the REML loop. */
+export const REML_MAX_ITER = 100;
+/** Relative change below which the components count as converged. */
+export const REML_TOL = 1e-8;
+/** Row cap — every iteration builds and inverts an n x n matrix. */
+export const REML_MAX_ROWS = 500;
+
+/**
+ * One AI-REML (Fisher scoring) step.
+ *
+ *   score_j = -0.5 * (tr(Z_j' P Z_j) - ||Z_j' P y||^2)
+ *   AI_jk   =  0.5 * u_j' P u_k        with u_j = Z_j Z_j' P y  (u_e = P y)
+ *   theta  <- theta + AIinv * score
+ *
+ * The error component is handled as an identity design block.
+ *
+ * @param {ReturnType<typeof remlWorkspace>} ws
+ * @param {number[]} theta
+ * @returns {number[]|null} null when P or AI is singular
+ */
+function aiStep(ws, theta) {
+  const { Z, n } = ws;
+  const { P, Py, ok } = remlP(ws, theta);
+  if (!ok) return null;
+
+  const T = Z.length;
+
+  const u = [];
+  for (let j = 0; j < T; j++) {
+    const acc = new Float64Array(n);
+    for (const z of Z[j]) {
+      let zPy = 0;
+      for (let i = 0; i < n; i++) zPy += z[i] * Py[i];
+      for (let i = 0; i < n; i++) acc[i] += z[i] * zPy;
+    }
+    u.push(acc);
+  }
+  u.push(Float64Array.from(Py));
+
+  const score = new Array(T + 1).fill(0);
+  for (let j = 0; j < T; j++) {
+    let quad = 0;
+    let trace = 0;
+    for (const z of Z[j]) {
+      let zPy = 0;
+      for (let i = 0; i < n; i++) zPy += z[i] * Py[i];
+      quad += zPy * zPy;
+      for (let a = 0; a < n; a++) {
+        if (z[a] === 0) continue;
+        for (let b = 0; b < n; b++) if (z[b] !== 0) trace += P[a][b];
+      }
+    }
+    score[j] = -0.5 * (trace - quad);
+  }
+  let quadE = 0;
+  for (let i = 0; i < n; i++) quadE += Py[i] * Py[i];
+  let trP = 0;
+  for (let i = 0; i < n; i++) trP += P[i][i];
+  score[T] = -0.5 * (trP - quadE);
+
+  const Pu = u.map(vec => {
+    const out = new Float64Array(n);
+    for (let i = 0; i < n; i++) {
+      let s = 0;
+      for (let k = 0; k < n; k++) s += P[i][k] * vec[k];
+      out[i] = s;
+    }
+    return out;
+  });
+
+  const AI = [];
+  for (let j = 0; j <= T; j++) {
+    const row = new Array(T + 1);
+    for (let k = 0; k <= T; k++) {
+      let s = 0;
+      for (let i = 0; i < n; i++) s += u[j][i] * Pu[k][i];
+      row[k] = 0.5 * s;
+    }
+    AI.push(row);
+  }
+
+  let inv;
+  try {
+    inv = matInverse(AI);
+  } catch {
+    return null;
+  }
+  // matInverse returns null on a singular matrix rather than throwing.
+  if (!inv) return null;
+
+  const next = new Array(T + 1);
+  for (let j = 0; j <= T; j++) {
+    let delta = 0;
+    for (let k = 0; k <= T; k++) delta += inv[j][k] * score[k];
+    next[j] = theta[j] + delta;
+    if (!Number.isFinite(next[j])) return null;
+  }
+  return next;
+}
+
+/**
+ * REML variance components: EM warm start, then AI-REML.
+ *
+ * Pure EM is monotone and stays non-negative but needs hundreds of iterations,
+ * each costing an n x n inversion — unusable in a browser. AI-REML converges in
+ * well under twenty iterations; whenever an AI step proposes a negative
+ * component, this falls back to an EM step for that iteration, which keeps the
+ * estimate admissible without giving up the speed in the normal case.
+ *
+ * Deterministic: fixed start (the ANOVA estimate, floored to a small positive
+ * value), fixed tolerance, fixed budget.
+ *
+ * @param {{response: number[], factorValues: string[][],
+ *          terms: Array<{id: string, factorIndices: number[]}>, start?: number[]}} input
+ * @returns {{variances: number[], converged: boolean, iterations: number}}
+ * @throws {Error} when the design exceeds REML_MAX_ROWS
+ */
+export function remlComponents({ response, factorValues, terms, start }) {
+  if (response.length > REML_MAX_ROWS) {
+    throw new Error(`remlComponents: row cap of ${REML_MAX_ROWS} exceeded`);
+  }
+
+  const ws = remlWorkspace({ response, factorValues, terms });
+  const T = terms.length;
+
+  let theta = start
+    ? start.slice()
+    : anovaComponents(anovaTable({ response, factorValues, terms })).variances.slice();
+
+  // A component pinned at exactly zero can never move again — floor the start.
+  let scale = 0;
+  for (const v of theta) scale += v;
+  const floor = Math.max(1e-6, (scale / (T + 1)) * 1e-4);
+  theta = theta.map(v => (v > 0 ? v : floor));
+
+  let converged = false;
+  let iterations = 0;
+
+  for (let iter = 1; iter <= REML_MAX_ITER; iter++) {
+    iterations = iter;
+    const prev = theta;
+
+    if (iter <= REML_EM_WARMUP) {
+      theta = emStep(ws, prev);
+    } else {
+      const proposal = aiStep(ws, prev);
+      theta = (proposal && proposal.every(v => v > 0)) ? proposal : emStep(ws, prev);
+    }
+
+    let maxRel = 0;
+    for (let j = 0; j <= T; j++) {
+      const denom = Math.max(Math.abs(prev[j]), 1e-12);
+      maxRel = Math.max(maxRel, Math.abs(theta[j] - prev[j]) / denom);
+    }
+    if (maxRel < REML_TOL) { converged = true; break; }
+  }
+
+  return { variances: theta.map(v => Math.max(0, v)), converged, iterations };
+}
