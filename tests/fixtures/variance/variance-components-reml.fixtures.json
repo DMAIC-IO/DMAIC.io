@@ -7,19 +7,19 @@
     "statsmodels": "0.14.6",
     "method": "Sequential SS/df from cumulative statsmodels OLS fits; REML components from statsmodels MixedLM(reml=True) with one variance component per term; ANOVA/EMS components recomputed in NumPy via explicit pinv projectors (Henderson I)"
   },
-  "generated_at": "2026-08-31T20:06:29.223218+00:00",
+  "generated_at": "2026-09-01T01:30:34.678465+00:00",
   "generator_script": "tools/fixture-generator/generate_fixtures.py",
   "generator_version": "1.0.0",
   "tolerances": {
     "default": {
-      "relative": 0.000001,
-      "absolute": 1e-8
+      "relative": 1e-06,
+      "absolute": 1e-08
     },
     "overrides": {
       "reml": {
         "relative": 0.001,
-        "absolute": 0.000001,
-        "reason": "The REML surface of these small unbalanced designs is nearly flat near its optimum: the four statsmodels optimizers stop at points that differ by up to 1e-3 relative while their log-likelihoods agree to the eighth digit. The reference is the highest-likelihood fit, but no reference can be sharper than that spread, so the tolerance is set to it."
+        "absolute": 1e-06,
+        "reason": "The REML surface of the small unbalanced designs here is nearly flat near its optimum: the four statsmodels optimizers stop at points that differ by up to 1e-3 relative while their log-likelihoods agree to the eighth digit. The reference is the highest-likelihood fit, but no reference can be sharper than that spread, so the tolerance is set to it. The balanced REML case is far better conditioned and clears the same bound with room to spare."
       }
     }
   },
@@ -87,7 +87,7 @@
           10.1,
           12.4,
           12.9,
-          11,
+          11.0,
           11.3,
           20.5,
           20.9,
@@ -204,6 +204,101 @@
         ],
         "error": {
           "variance": 0.11546301191408885
+        }
+      }
+    },
+    {
+      "id": "crossed-balanced-reml",
+      "tier": "standard",
+      "description": "Crossed two-factor design, fully balanced (3 x 2 x 3 replicates), REML estimator",
+      "inputs": {
+        "modelForm": "crossed",
+        "estimator": "reml",
+        "factorNames": [
+          "A",
+          "B"
+        ],
+        "factorValues": [
+          [
+            "1",
+            "1",
+            "1",
+            "1",
+            "1",
+            "1",
+            "2",
+            "2",
+            "2",
+            "2",
+            "2",
+            "2",
+            "3",
+            "3",
+            "3",
+            "3",
+            "3",
+            "3"
+          ],
+          [
+            "X",
+            "X",
+            "X",
+            "Y",
+            "Y",
+            "Y",
+            "X",
+            "X",
+            "X",
+            "Y",
+            "Y",
+            "Y",
+            "X",
+            "X",
+            "X",
+            "Y",
+            "Y",
+            "Y"
+          ]
+        ],
+        "response": [
+          19.99,
+          20.01,
+          19.98,
+          20.74,
+          20.39,
+          20.66,
+          20.83,
+          20.96,
+          21.21,
+          21.94,
+          22.03,
+          21.9,
+          19.55,
+          19.02,
+          19.48,
+          19.46,
+          19.48,
+          19.72
+        ]
+      },
+      "tolerance_override": "reml",
+      "expected": {
+        "terms": [
+          {
+            "id": "A",
+            "variance": 1.0009513279081008
+          },
+          {
+            "id": "B",
+            "variance": 0.14908515549412069
+          },
+          {
+            "id": "A*B",
+            "variance": 0.06106096773247632
+          }
+        ],
+        "error": {
+          "variance": 0.02990533487726444
         }
       }
     }
