@@ -9,6 +9,7 @@
 import { suite, test, assertEqual, assertDeepEqual, assertAlmostEqual } from '../test-utils.js';
 import {
   MIN_FACTORS, MAX_FACTORS,
+  MAX_AXIS_LEVELS, MAX_SERIES_LEVELS, MAX_PANELS,
   levelKey, orderLevels, cleanRows, computeMultiVari,
 } from '../../js/engines/multi-vari-engine.js';
 
@@ -279,5 +280,120 @@ suite('Multi-Vari engine — size limits', () => {
     });
     assertEqual(r.panelCount, 49);
     assertEqual(r.warnings.includes('tooManyPanels'), true);
+  });
+});
+
+suite('Multi-Vari engine — balance follows the model form', () => {
+  /**
+   * Nested, balanced, inner labels globally unique: three machines with two
+   * parts each, two measurements per part. The raw level product is 3 × 6 = 18
+   * cells — twelve of which a nested plan can never occupy. Measured against
+   * that product the design looks incomplete; measured against what the model
+   * form can reach it is exactly full.
+   */
+  const NESTED_UNIQUE = {
+    measurements: [10.1, 10.3, 10.9, 11.0, 12.2, 12.4, 12.8, 13.1, 9.4, 9.6, 8.8, 9.0],
+    factors: [
+      {
+        name: 'Maschine',
+        values: ['M1', 'M1', 'M1', 'M1', 'M2', 'M2', 'M2', 'M2', 'M3', 'M3', 'M3', 'M3'],
+      },
+      {
+        name: 'Teil',
+        values: ['P1', 'P1', 'P2', 'P2', 'P3', 'P3', 'P4', 'P4', 'P5', 'P5', 'P6', 'P6'],
+      },
+    ],
+  };
+
+  test('nested: globally unique inner labels are balanced, no warning', () => {
+    const r = computeMultiVari({ ...NESTED_UNIQUE, modelForm: 'nested' });
+    assertEqual(r.balanced, true);
+    assertDeepEqual(r.warnings, [], `unexpected warnings: ${JSON.stringify(r.warnings)}`);
+  });
+
+  test('crossed: the same data is genuinely incomplete', () => {
+    const r = computeMultiVari({ ...NESTED_UNIQUE, modelForm: 'crossed' });
+    assertEqual(r.balanced, false);
+    assertEqual(r.warnings.includes('emptyCells'), true);
+  });
+
+  test('the default is the stricter crossed reading', () => {
+    const r = computeMultiVari(NESTED_UNIQUE);
+    assertEqual(r.balanced, false);
+  });
+
+  test('the model form does not paper over unequal cell sizes', () => {
+    const r = computeMultiVari({
+      measurements: [10, 12, 14, 20, 30, 31, 40, 41],
+      factors: [
+        { name: 'A', values: ['M1', 'M1', 'M1', 'M1', 'M2', 'M2', 'M2', 'M2'] },
+        { name: 'B', values: ['P1', 'P1', 'P1', 'P2', 'P3', 'P3', 'P4', 'P4'] },
+      ],
+      modelForm: 'nested',
+    });
+    assertEqual(r.balanced, false);
+    assertEqual(r.warnings.includes('unbalanced'), true);
+  });
+});
+
+suite('Multi-Vari engine — a size limit blocks rendering', () => {
+  test('within the limits the result is renderable and carries no limit entry', () => {
+    const r = computeMultiVari(TWO);
+    assertEqual(r.renderable, true);
+    assertDeepEqual(r.limits, []);
+  });
+
+  test('too many axis levels: not renderable, and the limit names the column', () => {
+    const r = computeMultiVari(manyLevels(31));
+    assertEqual(r.renderable, false);
+    assertEqual(r.limits.length, 1);
+    assertEqual(r.limits[0].code, 'tooManyAxisLevels');
+    assertEqual(r.limits[0].column, 'A');
+    assertEqual(r.limits[0].count, 31);
+    assertEqual(r.limits[0].max, MAX_AXIS_LEVELS);
+  });
+
+  test('too many series levels: the second column is named', () => {
+    const base = manyLevels(13);
+    const r = computeMultiVari({
+      measurements: base.measurements,
+      factors: [
+        { name: 'Achse', values: base.factors[0].values.map(() => 'x') },
+        { name: 'Serie', values: base.factors[0].values },
+      ],
+    });
+    assertEqual(r.renderable, false);
+    assertEqual(r.limits[0].code, 'tooManySeriesLevels');
+    assertEqual(r.limits[0].column, 'Serie');
+    assertEqual(r.limits[0].max, MAX_SERIES_LEVELS);
+  });
+
+  test('too many panels: the panel columns are named', () => {
+    const measurements = [];
+    const a = []; const b = []; const c = []; const d = [];
+    for (let i = 0; i < 7; i++) {
+      for (let j = 0; j < 7; j++) {
+        measurements.push(i * 7 + j);
+        a.push('x'); b.push('1'); c.push(`P${i}`); d.push(`R${j}`);
+      }
+    }
+    const r = computeMultiVari({
+      measurements,
+      factors: [
+        { name: 'A', values: a }, { name: 'B', values: b },
+        { name: 'Panel', values: c }, { name: 'Zeile', values: d },
+      ],
+    });
+    assertEqual(r.renderable, false);
+    assertEqual(r.limits[0].code, 'tooManyPanels');
+    assertEqual(r.limits[0].column, 'Panel, Zeile');
+    assertEqual(r.limits[0].count, 49);
+    assertEqual(r.limits[0].max, MAX_PANELS);
+  });
+
+  test('exactly at the limit the chart is still drawn', () => {
+    const r = computeMultiVari(manyLevels(MAX_AXIS_LEVELS));
+    assertEqual(r.renderable, true);
+    assertDeepEqual(r.limits, []);
   });
 });
