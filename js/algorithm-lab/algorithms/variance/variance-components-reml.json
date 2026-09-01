@@ -14,8 +14,8 @@
       "en": "Estimates the variance components directly from the restricted likelihood — including on unbalanced designs."
     },
     "long": {
-      "de": "REML (Restricted Maximum Likelihood) schätzt die Komponenten, ohne den Umweg über die erwarteten mittleren Quadrate: maximiert wird die Likelihood der um die festen Effekte bereinigten Daten. Bei balanciertem Plan stimmt das Ergebnis praktisch mit Henderson I überein; bei unbalanciertem Plan ist REML die belastbarere Wahl, weil es keine Balance-Annahme braucht. Die Engine startet mit EM-Schritten (`REML_EM_WARMUP = 5`) und wechselt dann auf Average-Information-Iterationen (`REML_MAX_ITER = 100`, `REML_TOL = 1e-8`); die Zeilenzahl ist auf `REML_MAX_ROWS = 500` gedeckelt, weil der Speicherbedarf quadratisch wächst.",
-      "en": "REML (restricted maximum likelihood) estimates the components without the detour through expected mean squares: it maximises the likelihood of the data adjusted for the fixed effects. On a balanced design the result agrees with Henderson I for practical purposes; on an unbalanced one REML is the more dependable choice because it assumes no balance. The engine starts with EM steps (`REML_EM_WARMUP = 5`) and then switches to average-information iterations (`REML_MAX_ITER = 100`, `REML_TOL = 1e-8`); the row count is capped at `REML_MAX_ROWS = 500` because the memory footprint grows quadratically."
+      "de": "REML (Restricted Maximum Likelihood) schätzt die Komponenten, ohne den Umweg über die erwarteten mittleren Quadrate: maximiert wird die Likelihood der um die festen Effekte bereinigten Daten. Bei balanciertem Plan stimmt das Ergebnis praktisch mit Henderson I überein; bei unbalanciertem Plan ist REML die belastbarere Wahl, weil es keine Balance-Annahme braucht. Die Engine läuft mit `REML_EM_WARMUP = 5` EM-Schritten warm und rechnet danach mit Average-Information-Schritten weiter (`REML_MAX_ITER = 100`, `REML_TOL = 1e-8`, absolut **und** relativ geprüft). Der AI-Schritt ist restringiert: Komponenten, die negativ werden wollen, hält er auf null fest (aktive Menge) und gibt sie erst wieder frei, wenn ihr Score positiv wird — ein unrestringierter Newton-Schritt springt auf dem Rand sonst zwischen den Iterationen hin und her und konvergiert nicht. Ist der AI-Schritt gar nicht definiert, übernimmt für diese Iteration wieder EM; scheitern beide, gilt der Fit als **nicht** konvergiert (kein stilles Abbrechen). Vorher aussortiert werden vollständig aliasierte Terme (ANOVA-Freiheitsgrade 0) — sie machen die Average-Information-Matrix exakt singulär. Eine konstante Zielgröße wird erkannt und liefert lauter Nullkomponenten, statt aus Rundungsrauschen eine Komponente zu erfinden. Die Zeilenzahl ist auf `REML_MAX_ROWS = 500` gedeckelt, weil Speicherbedarf und Laufzeit stark wachsen — je Iteration wird eine n×n-Matrix invertiert.",
+      "en": "REML (restricted maximum likelihood) estimates the components without the detour through expected mean squares: it maximises the likelihood of the data adjusted for the fixed effects. On a balanced design the result agrees with Henderson I for practical purposes; on an unbalanced one REML is the more dependable choice because it assumes no balance. The engine warms up with `REML_EM_WARMUP = 5` EM steps and then continues with average-information steps (`REML_MAX_ITER = 100`, `REML_TOL = 1e-8`, checked both absolutely and relatively). The AI step is constrained: components that would go negative are pinned at zero (active set) and released again only once their score turns positive — an unconstrained Newton step otherwise oscillates along the boundary and never converges. When the AI step is undefined at all, EM takes over for that iteration; if both fail the fit counts as **not** converged, never a silent stop. Fully aliased terms (ANOVA degrees of freedom 0) are dropped beforehand — they make the average-information matrix exactly singular. A constant response is detected and yields all-zero components instead of inventing one out of rounding noise. The row count is capped at `REML_MAX_ROWS = 500` because memory and runtime grow steeply — one n×n matrix inversion per iteration."
     }
   },
   "documentation": {
@@ -46,10 +46,10 @@
       },
       {
         "label": "AI",
-        "latex": "\\sigma^{(t+1)} = \\sigma^{(t)} + \\mathcal{I}_{AI}^{-1} \\, s",
+        "latex": "\\sigma_{\\mathcal{F}}^{(t+1)} = \\sigma_{\\mathcal{F}}^{(t)} + \\left(\\mathcal{I}_{AI}\\right)_{\\mathcal{F}\\mathcal{F}}^{-1} \\, s_{\\mathcal{F}}",
         "description": {
-          "de": "Average-Information-Newton-Schritt",
-          "en": "Average-information Newton step"
+          "de": "Average-Information-Newton-Schritt auf der freien Menge 𝓕 — auf null festgehaltene Komponenten stehen nicht im System",
+          "en": "Average-information Newton step on the free set 𝓕 — components pinned at zero stay out of the system"
         }
       }
     ],
@@ -59,8 +59,10 @@
     ],
     "limitations": [
       { "de": "Höchstens 500 Zeilen (REML_MAX_ROWS) — der Speicherbedarf wächst quadratisch", "en": "At most 500 rows (REML_MAX_ROWS) — memory grows quadratically" },
+      { "de": "Laufzeit: je Iteration wird eine n×n-Matrix invertiert — an der Zeilengrenze dauert ein Fit mehrere Sekunden", "en": "Runtime: one n×n matrix inversion per iteration — at the row cap a fit takes several seconds" },
       { "de": "Liefert keine ANOVA-Tabelle: Freiheitsgrade und Quadratsummen fehlen", "en": "Produces no ANOVA table: degrees of freedom and sums of squares are absent" },
-      { "de": "Die Likelihood-Fläche kleiner unbalancierter Pläne ist flach — das Ergebnis kann vom Startwert abhängen", "en": "The likelihood surface of small unbalanced designs is flat — the result can depend on the starting value" }
+      { "de": "Die Likelihood-Fläche kleiner unbalancierter Pläne ist flach — das Ergebnis kann vom Startwert abhängen", "en": "The likelihood surface of small unbalanced designs is flat — the result can depend on the starting value" },
+      { "de": "Vollständig aliasierte Terme (Freiheitsgrade 0) werden vor dem Fit entfernt und mit der Komponente 0 berichtet", "en": "Fully aliased terms (zero degrees of freedom) are removed before the fit and reported with component 0" }
     ],
     "references": [
       { "source": "Patterson & Thompson (1971), Recovery of Inter-Block Information, Biometrika 58(3)" },
