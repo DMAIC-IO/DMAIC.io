@@ -479,8 +479,15 @@ export const REML_TOL = 1e-8;
 export const REML_MAX_ROWS = 500;
 /**
  * Relative threshold below which the response counts as constant. Squared
- * against the data's own scale, so it is unit-free: measurements in metres and
- * the same measurements in micrometres get the same verdict.
+ * against the data's own scale (`responseIsConstant()`'s `scale`) — but that
+ * scale is floored at 1, so the invariance holds only for |mean| >= 1.
+ * Measurements in metres and the same measurements in micrometres get the
+ * same verdict as long as their mean is at least 1 in the respective unit;
+ * below that the floor takes over and the threshold becomes effectively
+ * absolute (`REML_CONSTANT_TOL` on a 1-scale), which is deliberate — without
+ * it a mean near zero would shrink the scale towards zero too and collapse
+ * the threshold with it, making even a response with real variance look
+ * constant.
  */
 export const REML_CONSTANT_TOL = 1e-12;
 
