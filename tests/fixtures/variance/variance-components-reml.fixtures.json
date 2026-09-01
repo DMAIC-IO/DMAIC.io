@@ -104,6 +104,7 @@
           30.6
         ]
       },
+      "tolerance_override": "reml",
       "expected": {
         "terms": [
           {
@@ -185,6 +186,7 @@
           36.982
         ]
       },
+      "tolerance_override": "reml",
       "expected": {
         "terms": [
           {

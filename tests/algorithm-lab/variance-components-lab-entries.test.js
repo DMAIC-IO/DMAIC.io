@@ -14,6 +14,8 @@
  */
 import { suite, test, assertTrue, assertEqual } from '../test-utils.js';
 import { INDEX, ALGOS, FIXTURES } from '../../js/algorithm-lab/lab-data.generated.js';
+import { buildFunction, prepareInputs, mapArgs, getByPath, compare }
+  from '../../js/algorithm-lab/lab-exec.js';
 
 const ALGO_IDS = [
   'variance-components-nested-anova',
@@ -67,4 +69,31 @@ suite('Algorithm Lab: Kategorie "variance" mit drei Einträgen', () => {
     assertTrue(ids.includes('nested-unbalanced-reml'), 'nested-unbalanced-reml fehlt');
     assertTrue(ids.includes('crossed-unbalanced-two-factor-reml'), 'crossed-unbalanced-two-factor-reml fehlt');
   });
+});
+
+// Der Validierungstab führt jeden Fixture-Fall wirklich aus — über
+// `buildFunction()` (source.file_path + source.function_name) und `mapArgs()`
+// (signature.parameters). Die Metadaten-Tests oben sagen darüber nichts: eine
+// Signatur, die nicht zur echten Funktion passt, oder eine Ergebnis-Shape, die
+// nicht zur Fixture-Shape passt, fällt erst im Browser auf. Diese Suite ist
+// genau dieser Durchstich, damit ein Bruch hier rot wird und nicht erst in
+// tests/global/algorithm-lab.spec.js.
+suite('Algorithm Lab: die drei variance-Einträge bestehen ihre Fixtures', () => {
+  for (const id of ALGO_IDS) {
+    test(`${id}: alle Fixture-Fälle laufen durch und stimmen überein`, async () => {
+      const algo = ALGOS[id];
+      const fx = FIXTURES[id];
+      const fn = await buildFunction(algo);
+      for (const tc of fx.test_cases) {
+        const tol = tc.tolerance_override
+          ? fx.tolerances.overrides[tc.tolerance_override]
+          : fx.tolerances.default;
+        const result = fn(...mapArgs(algo, prepareInputs(tc.inputs)));
+        for (const [key, expected] of Object.entries(tc.expected)) {
+          assertTrue(compare(getByPath(result, key), expected, tol),
+            `${id}/${tc.id}: ${key} weicht ab — ${JSON.stringify(getByPath(result, key))}`);
+        }
+      }
+    });
+  }
 });

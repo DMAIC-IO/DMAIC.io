@@ -70,39 +70,18 @@
     "minitab_equivalent": "Stat > ANOVA > General Linear Model > Variance Components (REML)"
   },
   "source": {
-    "function_name": "computeVarianceComponents",
-    "file_path": "js/engines/variance-components-engine.js",
+    "function_name": "varianceComponentsRemlLab",
+    "file_path": "js/algorithm-lab/wrappers/variance-components-wrappers.js",
     "signature": {
       "parameters": [
         {
-          "name": "response",
-          "type": "number[]",
+          "name": "inputs",
+          "type": "object",
           "required": true,
-          "description": { "de": "Messwerte, eine Zeile je Beobachtung", "en": "Measurements, one row per observation" }
-        },
-        {
-          "name": "factorValues",
-          "type": "Array<Array<string|number>>",
-          "required": true,
-          "description": { "de": "Stufen je Faktor, parallel zu response", "en": "Levels per factor, parallel to response" }
-        },
-        {
-          "name": "factorNames",
-          "type": "string[]",
-          "required": true,
-          "description": { "de": "Namen der Faktoren, für die Termbeschriftung", "en": "Factor names, used for the term labels" }
-        },
-        {
-          "name": "modelForm",
-          "type": "'nested'|'crossed'",
-          "required": true,
-          "description": { "de": "Termgerüst — REML rechnet beide", "en": "Term skeleton — REML handles both" }
-        },
-        {
-          "name": "estimator",
-          "type": "'anova'|'reml'",
-          "required": true,
-          "description": { "de": "Hier 'reml'", "en": "'reml' here" }
+          "description": {
+            "de": "Eingabeobjekt: response, factorValues, factorNames, optional modelForm. Den Schätzer (REML) setzt der Wrapper.",
+            "en": "Input object: response, factorValues, factorNames, optional modelForm. The estimator (REML) is fixed by the wrapper."
+          }
         }
       ]
     }
