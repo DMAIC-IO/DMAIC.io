@@ -121,15 +121,20 @@
           </template>
         </div>
 
-        <div class="multi-vari__chart-header">
+        <!-- Über einer Größengrenze wird nichts gezeichnet (Spec): Kopfzeile
+             und Streifenraster verschwinden zusammen, die Warnung darüber
+             nennt die verantwortliche Spalte, die Tabelle darunter bleibt. -->
+        <div class="multi-vari__chart-header" x-show="canRender()">
           <span class="multi-vari__chart-title" x-text="chartTitle()"></span>
         </div>
 
-        <div class="multi-vari__strips" data-ref="strips">
-          <template x-for="strip in result.strips">
-            <div class="multi-vari__strip" :key="strip.idx" :data-strip="strip.idx"></div>
-          </template>
-        </div>
+        <template x-if="canRender()">
+          <div class="multi-vari__strips" data-ref="strips">
+            <template x-for="strip in result.strips">
+              <div class="multi-vari__strip" :key="strip.idx" :data-strip="strip.idx"></div>
+            </template>
+          </div>
+        </template>
 
         <div class="multi-vari__vc" data-ref="vc" x-show="result.vc">
           <table class="dmike-table multi-vari__vc-table" data-ref="vc-table">
@@ -165,7 +170,7 @@
                 <td class="num"></td>
                 <td class="num" x-text="totalVarianceText()"></td>
                 <td class="num" x-text="totalSd()"></td>
-                <td class="num">100.0</td>
+                <td class="num" x-text="totalPercent()"></td>
               </tr>
             </tfoot>
           </table>

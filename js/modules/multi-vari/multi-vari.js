@@ -31,7 +31,7 @@ import {
   runVarianceDecomposition,
   vcTermRows, isUnbalanced, hasClampedTerm,
   pickLargestTerm, interpretationKey, intOrDash,
-  totalSdValue, vcCsvText,
+  totalSdValue, totalPercentValue, vcCsvText,
 } from './multi-vari-analysis.js';
 import { whenAnchor } from '../../core/chart/chart-module-base.js';
 import { downloadFile } from '../../core/export-utils.js';
@@ -137,6 +137,16 @@ const mod = createModule({
         return this.fmt(totalSdValue(this.result?.vc));
       },
 
+      /**
+       * Anteil-Summe der Fußzeile. Aufaddiert statt fest „100.0" im Template:
+       * eine geklemmte (auf 0 gesetzte) Komponente oder ein auf dem Rand
+       * stehengebliebener REML-Fit lassen die Spalte durchaus auf etwas
+       * anderes hinauslaufen — dann muss die Summe das auch zeigen.
+       */
+      totalPercent() {
+        return this.pct(totalPercentValue(this.result?.vc));
+      },
+
       /** Term mit dem größten Varianzanteil, `Error` eingeschlossen. */
       largestTerm() {
         return pickLargestTerm(this.result?.vc?.terms);
@@ -185,7 +195,9 @@ const mod = createModule({
           _t('tableVariance'), _t('tableSd'), _t('tablePercent'),
         ];
         const csv = vcCsvText(vc, head, _t('tableTotal'), (t) => this.termLabel(t));
-        downloadFile(csv, 'multi-vari-varianzkomponenten.csv', 'text/csv;charset=utf-8');
+        // Dateiname über i18n: der Export heißt in einer englischen Oberfläche
+        // nicht „…-varianzkomponenten".
+        downloadFile(csv, `${_t('csvFileName')}.csv`, 'text/csv;charset=utf-8');
       },
 
       /** Engine-Warnungen plus die synthetische `droppedRows`-Meldung. */
@@ -203,7 +215,23 @@ const mod = createModule({
         if (code === 'droppedRows') {
           return _t('warnDroppedRows', { count: this.result.droppedRows });
         }
+        // Größengrenzen benennen die Spalte, die sie gesprengt hat — bei bis
+        // zu vier Faktoren ist „sehr viele Stufen" sonst ein Ratespiel.
+        const limit = (this.result?.limits || []).find(l => l.code === code);
+        if (limit) {
+          return _t(`warn_${code}`, { col: limit.column, count: limit.count, max: limit.max });
+        }
         return _t(`warn_${code}`);
+      },
+
+      /**
+       * Spec: wird eine der drei Größengrenzen überschritten, wird das
+       * Diagramm nicht gezeichnet — die Spaltenauswahl bleibt unangetastet,
+       * die Warnung nennt die verantwortliche Spalte, und die
+       * Varianzkomponenten-Tabelle bleibt sichtbar.
+       */
+      canRender() {
+        return Boolean(this.result) && this.result.renderable !== false;
       },
 
       // ── Ereignisse ────────────────────────────────────────────
@@ -254,7 +282,7 @@ const mod = createModule({
 
         let g;
         try {
-          g = computeMultiVari({ measurements, factors });
+          g = computeMultiVari({ measurements, factors, modelForm: this.model.modelForm });
         } catch (err) {
           return clear(String(err.message || err));
         }
@@ -291,6 +319,10 @@ const mod = createModule({
        */
       async _renderStrips(res, gen) {
         this._destroyCharts();
+        // Über einer Größengrenze wird nichts gezeichnet (Spec). Der Abbruch
+        // gehört hierher und nicht nur ins Template: sonst liefe der
+        // Render-Lauf für ein ausgeblendetes Raster trotzdem durch.
+        if (!res || res.renderable === false) return;
 
         const sm = module._context.stateManager;
         const measurementName = getColumnName(sm, this.model.columnRefs.measurement);

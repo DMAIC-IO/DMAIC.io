@@ -103,7 +103,7 @@ export default {
             items: [
               '**Unbalancierter Plan.** Sind die Zellen unterschiedlich besetzt, hängen die Komponenten vom Schätzverfahren ab. Das Modul weist darauf hin; REML ist dann die belastbarere Wahl.',
               '**Falsche Modellform.** Ein geschachtelter Plan, gekreuzt gerechnet, erzeugt Wechselwirkungsterme, die es gar nicht geben kann. Im Zweifel: existieren die Stufen des zweiten Faktors auch außerhalb der ersten?',
-              '**Zu viele Stufen auf Position 1.** Über 30 Stufen wird die X-Achse unlesbar. Faktor mit weniger Stufen nach vorn.',
+              '**Größengrenzen.** Über 30 Stufen auf Position 1, über 12 Serien auf Position 2 oder über 48 Panels wird das Diagramm nicht gezeichnet — es wäre ohnehin unlesbar. Die Meldung nennt die verantwortliche Spalte; die Varianzkomponenten-Tabelle bleibt gültig. Faktor mit weniger Stufen nach vorn.',
               '**Anteil ≠ Bedeutung.** Ein großer Varianzanteil sagt, wo die Streuung entsteht — nicht, ob sie stört. Erst der Vergleich mit der Toleranz macht daraus eine Aussage.',
               '**Reihenfolge ist Modell.** Das Umsortieren der Faktoren ändert im geschachtelten Fall die gerechneten Terme, nicht nur das Bild.',
             ],
@@ -118,7 +118,7 @@ export default {
             items: [
               '**Unbalanced design.** With unequally occupied cells the components depend on the estimator. The module says so; REML is the more dependable choice then.',
               '**Wrong model form.** A nested design computed as crossed produces interaction terms that cannot exist. When in doubt: do the second factor\'s levels also exist outside the first?',
-              '**Too many levels in position 1.** Beyond 30 levels the x axis becomes unreadable. Move a factor with fewer levels to the front.',
+              '**Size limits.** Beyond 30 levels in position 1, 12 series in position 2 or 48 panels the chart is not drawn — it would be unreadable anyway. The message names the offending column; the variance-components table stays valid. Move a factor with fewer levels to the front.',
               '**Share ≠ importance.** A large variance share says where the variation arises — not whether it hurts. Only the comparison with the tolerance turns it into a statement.',
               '**Order is model.** Reordering the factors changes the computed terms in the nested case, not just the picture.',
             ],

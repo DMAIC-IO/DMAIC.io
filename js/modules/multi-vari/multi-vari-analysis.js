@@ -67,6 +67,11 @@ export function runVarianceDecomposition(g, { factorNames, modelForm, estimator 
     yMax: g.yMax,
     balanced: g.balanced,
     panelCount: g.panelCount,
+    // Size limits travel with the result: `limits` carries the offending
+    // column per exceeded limit so the warning can name it, `renderable`
+    // gates the chart itself (spec: past a limit nothing is drawn).
+    limits: g.limits || [],
+    renderable: g.renderable !== false,
     vc,
   };
 
@@ -159,6 +164,25 @@ export function totalSdValue(vc) {
 }
 
 /**
+ * Sum of the terms' variance shares — the total row's percentage.
+ *
+ * Not the constant 100: the shares are computed per term and rounded for
+ * display, and a clamped (zero) component or a REML fit that stopped on the
+ * boundary can leave the column summing to something else. Printing a
+ * hardcoded 100 under a column that visibly adds up to 97.4 would make the
+ * table lie about its own numbers.
+ * @param {{terms?: Array<{percent: number}>}|null|undefined} vc
+ * @returns {number} NaN when there are no terms.
+ */
+export function totalPercentValue(vc) {
+  const terms = vc?.terms;
+  if (!terms || !terms.length) return NaN;
+  let sum = 0;
+  for (const t of terms) sum += Number.isFinite(t.percent) ? t.percent : 0;
+  return sum;
+}
+
+/**
  * CSV text for the variance-components table — the same columns as the
  * on-screen table, dot as decimal separator, term labels quoted (they can
  * contain a comma or a quote from user column names). `head` and
@@ -180,6 +204,6 @@ export function vcCsvText(vc, head, totalLabel, termLabelFn) {
     ].join(','));
   }
   lines.push([`"${totalLabel}"`, '', '', '', cell(vc.totalVariance),
-    cell(Math.sqrt(vc.totalVariance)), '100'].join(','));
+    cell(Math.sqrt(vc.totalVariance)), cell(totalPercentValue(vc))].join(','));
   return lines.join('\n');
 }

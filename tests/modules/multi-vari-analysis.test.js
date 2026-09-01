@@ -23,6 +23,7 @@ import {
   runVarianceDecomposition,
   vcTermRows, isUnbalanced, hasClampedTerm,
   pickLargestTerm, interpretationKey, intOrDash, vcCsvText, totalSdValue,
+  totalPercentValue,
 } from '../../js/modules/multi-vari/multi-vari-analysis.js';
 
 const NESTED_OPTS = (factorNames) => ({ factorNames, modelForm: 'nested', estimator: 'anova' });
@@ -273,5 +274,65 @@ suite('vcCsvText — CSV export mirrors the on-screen table', () => {
     };
     const csv = vcCsvText(vc, HEAD, 'Gesamt', (t) => t.label);
     assertEqual(csv.split('\n')[1], '"Maß ""Toleranz""",1,1,1,1,1,100');
+  });
+});
+
+suite('totalPercentValue — the total row adds its own column up', () => {
+  test('a complete decomposition sums to 100', () => {
+    const vc = { terms: [{ percent: 60 }, { percent: 25 }, { percent: 15 }] };
+    assertEqual(totalPercentValue(vc), 100);
+  });
+
+  test('the sum follows the column, it is not the constant 100', () => {
+    // What a clamped component leaves behind: the shares no longer add up, and
+    // the footer must show that instead of claiming a tidy 100.
+    const vc = { terms: [{ percent: 60 }, { percent: 25 }] };
+    assertEqual(totalPercentValue(vc), 85);
+  });
+
+  test('a non-finite share counts as zero rather than poisoning the sum', () => {
+    const vc = { terms: [{ percent: 40 }, { percent: NaN }, { percent: 20 }] };
+    assertEqual(totalPercentValue(vc), 60);
+  });
+
+  test('no decomposition, no sum', () => {
+    assertTrue(Number.isNaN(totalPercentValue(null)));
+    assertTrue(Number.isNaN(totalPercentValue({ terms: [] })));
+  });
+});
+
+suite('runVarianceDecomposition — size limits reach the view', () => {
+  test('within the limits the result is renderable', () => {
+    const g = computeMultiVari({
+      measurements: [1, 2, 3, 4],
+      factors: [
+        { name: 'A', values: ['a', 'a', 'b', 'b'] },
+        { name: 'B', values: ['1', '2', '1', '2'] },
+      ],
+    });
+    const { result } = runVarianceDecomposition(g, NESTED_OPTS(['A', 'B']));
+    assertEqual(result.renderable, true);
+    assertDeepEqual(result.limits, []);
+  });
+
+  test('an exceeded limit travels through with the offending column', () => {
+    const measurements = [];
+    const a = [];
+    const b = [];
+    for (let i = 0; i < 31; i++) {
+      measurements.push(i, i + 1);
+      a.push(`L${i}`, `L${i}`);
+      b.push('1', '2');
+    }
+    const g = computeMultiVari({
+      measurements,
+      factors: [{ name: 'Charge', values: a }, { name: 'Seite', values: b }],
+    });
+    const { result } = runVarianceDecomposition(g, NESTED_OPTS(['Charge', 'Seite']));
+    assertEqual(result.renderable, false);
+    assertEqual(result.limits[0].code, 'tooManyAxisLevels');
+    assertEqual(result.limits[0].column, 'Charge');
+    // The chart is out; the decomposition is not.
+    assertTrue(result.vc !== null, 'the variance table must survive the limit');
   });
 });
