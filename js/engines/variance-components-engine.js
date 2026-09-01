@@ -668,13 +668,23 @@ function responseIsConstant(response) {
  * each costing an n x n inversion — unusable in a browser. AI-REML converges in
  * well under twenty iterations.
  *
- * The AI proposal is accepted COMPONENT BY COMPONENT: whichever components it
- * puts at or below zero take the EM value for that iteration, the rest keep the
- * AI value. Accepting or rejecting the whole vector, as an earlier version did,
- * degenerates to pure EM on any real design — a higher-order interaction
- * sitting at variance 0 is the normal case, not the exception, so one boundary
- * component was enough to throw away every AI step forever. Only a wholly
- * failed `aiStep` (null) still costs a full EM step.
+ * The AI step (`aiStep()`, above) runs under an ACTIVE SET, not a
+ * component-by-component accept/reject: components the unconstrained step
+ * would push at or below zero are pinned at 0 and dropped from the linear
+ * system, at most one per pass; a pinned component becomes free again on a
+ * later iteration as soon as its score turns positive. Only a wholly failed
+ * `aiStep` (every pass exhausts the free set, or a projector/AI-block solve
+ * is singular — `null`) still costs a full EM step.
+ *
+ * An earlier version mixed AI and EM per component instead — whichever
+ * components the AI proposal put at or below zero took that iteration's EM
+ * value, the rest kept the AI value. It was dropped: it does not converge on
+ * this module's own example data. A higher-order interaction sitting at
+ * variance 0 is the normal case, not the exception, so at least one component
+ * falls back to EM on nearly every iteration, and the fit never settles —
+ * this is functionally pure EM again, just slower to admit it, which is the
+ * exact failure the active-set step above was written to avoid. Do not
+ * reintroduce it.
  *
  * Both branches reuse the single projector P built for the current theta, so an
  * iteration inverts one n x n matrix, never two.
