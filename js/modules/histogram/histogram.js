@@ -91,6 +91,8 @@ const mod = createModule({
       _interactionsReady: false,
       _activeColorPicker: null,
       _exampleWorksheetId: null,
+      _renderedW: 0,
+      _renderedH: 0,
       // Rendering state kept across renders (tooltip / zoom-pan)
       _curBinData: null,
       _lastXScale: null,
@@ -393,6 +395,38 @@ const mod = createModule({
           : [];
       },
 
+      /**
+       * Hält die viewBox an der tatsächlichen Breite der Chart-Fläche.
+       *
+       * Das Modul zeichnet ein eigenes SVG und bekommt darum nicht den
+       * ResizeObserver, den `chart-base.js` den Framework-Charts mitgibt.
+       * Ohne ihn behält die viewBox die Breite, die beim Zeichnen gemessen
+       * wurde. Das SVG-Element selbst wächst per `width: 100%` mit, der alte
+       * Inhalt wird also von `preserveAspectRatio` nur zentriert eingepasst —
+       * der Plot steht dann mit Leerrand links und rechts statt die Fläche zu
+       * füllen. Bis hierher half allein der Zufall: neu gezeichnet wurde erst,
+       * wenn ein fremdes Ereignis feuerte (Autosave, Themenwechsel, neue
+       * Worksheet-Daten).
+       *
+       * @private
+       */
+      _observeChartResize() {
+        if (typeof ResizeObserver !== 'function') return;
+        const wrap = module._container?.querySelector('[data-ref="chart-wrap"]');
+        if (!wrap) return;
+
+        const ro = new ResizeObserver(() => {
+          if (!this._seriesData) return;
+          const rect = wrap.getBoundingClientRect();
+          if (rect.width <= 0 || rect.height <= 0) return;
+          if (Math.round(rect.width) === this._renderedW
+            && Math.round(rect.height) === this._renderedH) return;
+          this._renderChart();
+        });
+        ro.observe(wrap);
+        this._unsubs.push(() => ro.disconnect());
+      },
+
       // ── Chart rendering (module-owned SVG) ────────────────────
       _renderChart() {
         const seriesData = this._seriesData;
@@ -404,6 +438,11 @@ const mod = createModule({
         const rect = wrap.getBoundingClientRect();
         const size = { w: rect.width, h: rect.height };
         if (size.w <= 0 || size.h <= 0) return;
+
+        // Maß festhalten, auf das gerade gezeichnet wird — _observeChartResize()
+        // vergleicht dagegen und zeichnet nur bei echter Änderung neu.
+        this._renderedW = Math.round(size.w);
+        this._renderedH = Math.round(size.h);
 
         svg.setAttribute('viewBox', `0 0 ${size.w} ${size.h}`);
         svg.replaceChildren();
@@ -968,6 +1007,7 @@ const mod = createModule({
         this._createPicker();
         this._createModebar();
         this._bindInteractionEvents();
+        this._observeChartResize();
 
         const eb = module._context.eventBus;
 
