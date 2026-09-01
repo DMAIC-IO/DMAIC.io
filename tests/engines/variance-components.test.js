@@ -12,6 +12,7 @@ import {
   buildTerms, termCells, KEY_SEP, appendBlock, projectSquares, anovaTable,
   emsMatrix, anovaComponents, remlWorkspace, remlP, emStep,
   remlComponents, REML_MAX_ITER, REML_MAX_ROWS, computeVarianceComponents,
+  expectedCellCount,
 } from '../../js/engines/variance-components-engine.js';
 
 suite('Variance components — term construction', () => {
@@ -526,4 +527,230 @@ suite('Variance components — gold-standard fixtures (REML)', () => {
         });
     });
   }
+});
+
+// The two suites above drive `anovaTable`/`anovaComponents` and
+// `remlComponents` directly — the internals. The suite below runs the same
+// gold references through `computeVarianceComponents()`, the entry point the
+// module and the Algorithm Lab actually call, so the assembly around the
+// estimators (term ordering, the Error row, df/ss/ms passthrough, the
+// percent column, the clamping and warning rules, the balance verdict) is
+// pinned by reference values too and not only by hand-written expectations.
+suite('Variance components — gold-standard fixtures through the public entry', () => {
+  for (const tc of fx.test_cases) {
+    const isReml = tc.inputs.estimator === 'reml';
+    const tol = isReml ? fx.tolerances.overrides.reml : fx.tolerances.default;
+
+    test(`${tc.id} — computeVarianceComponents()`, () => {
+      const r = computeVarianceComponents({
+        response: tc.inputs.response,
+        factorValues: tc.inputs.factorValues,
+        factorNames: tc.inputs.factorNames,
+        modelForm: tc.inputs.modelForm,
+        estimator: tc.inputs.estimator,
+      });
+
+      assertEqual(r.estimator, tc.inputs.estimator);
+      assertEqual(r.n, tc.inputs.response.length);
+      assertEqual(r.balanced, tc.id.includes('-balanced-'),
+        `balance verdict for ${tc.id}`);
+      if (isReml) assertEqual(r.converged, true, 'REML must converge');
+
+      // The Error row is the last row; every fixture term must appear before
+      // it, in the fixture's own order.
+      assertDeepEqual(r.terms.map(t => t.id),
+        [...tc.expected.terms.map(t => t.id), 'Error']);
+
+      const expected = [...tc.expected.terms, tc.expected.error];
+      expected.forEach((exp, i) => {
+        const row = r.terms[i];
+        assertAlmostEqual(row.variance, exp.variance,
+          tol.absolute + Math.abs(exp.variance) * tol.relative,
+          `${tc.id}: variance of ${row.id}`);
+        // Only the ANOVA path carries an ANOVA table; REML reports null.
+        if (isReml) {
+          assertEqual(row.df, null, `${tc.id}: ${row.id} df must be null under REML`);
+          assertEqual(row.ss, null, `${tc.id}: ${row.id} ss must be null under REML`);
+        } else {
+          assertEqual(row.df, exp.df, `${tc.id}: df of ${row.id}`);
+          assertAlmostEqual(row.ss, exp.ss,
+            tol.absolute + Math.abs(exp.ss) * tol.relative, `${tc.id}: ss of ${row.id}`);
+        }
+      });
+
+      // The derived columns must agree with the variance column they come from.
+      const total = r.terms.reduce((a, t) => a + t.variance, 0);
+      assertAlmostEqual(r.totalVariance, total, 1e-12, 'totalVariance');
+      const percentSum = r.terms.reduce((a, t) => a + t.percent, 0);
+      assertAlmostEqual(percentSum, 100, 1e-9, 'percent column must sum to 100');
+      r.terms.forEach((t) => {
+        assertAlmostEqual(t.sd, Math.sqrt(t.variance), 1e-12, `sd of ${t.id}`);
+      });
+    });
+  }
+
+  test('the balanced crossed design gives the same answer either way', () => {
+    const anovaCase = fx.test_cases.find(c => c.id === 'crossed-balanced-anova');
+    const remlCase = fx.test_cases.find(c => c.id === 'crossed-balanced-reml');
+    assertEqual(Boolean(anovaCase && remlCase), true, 'both balanced crossed fixtures present');
+    assertDeepEqual(anovaCase.inputs.response, remlCase.inputs.response,
+      'the two cases must run on identical data');
+
+    const run = (tc) => computeVarianceComponents({
+      response: tc.inputs.response,
+      factorValues: tc.inputs.factorValues,
+      factorNames: tc.inputs.factorNames,
+      modelForm: tc.inputs.modelForm,
+      estimator: tc.inputs.estimator,
+    });
+    const a = run(anovaCase);
+    const b = run(remlCase);
+    // Henderson I and REML coincide on a balanced design — that is the textbook
+    // claim the estimator choice rests on, so it is asserted, not assumed.
+    a.terms.forEach((t, i) => {
+      assertAlmostEqual(b.terms[i].variance, t.variance, 1e-4,
+        `balanced design: ${t.id} must agree between the estimators`);
+    });
+  });
+});
+
+suite('Variance components — degenerate input and failure reporting', () => {
+  test('a singular EMS matrix is reported as an error, not as a TypeError', () => {
+    // Hand-built table whose two terms project onto orthogonal but
+    // indistinguishable directions: both EMS rows come out identical, so C is
+    // exactly singular. `matInverse` signals that by returning null; without
+    // the guard in anovaComponents() the null would be dereferenced and the UI
+    // would show "cannot read properties of null".
+    const z = [0, 1, 1, 0];
+    const table = {
+      rows: [{ id: 'A', df: 1, ss: 2, ms: 2 }, { id: 'B', df: 1, ss: 3, ms: 3 }],
+      error: { df: 1, ss: 1, ms: 1 },
+      basis: [[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0]],
+      ranks: [2, 3],
+      termColumns: [[z], [z]],
+      n: 4,
+    };
+    const C = emsMatrix(table);
+    assertDeepEqual(C, [[1, 1, 1], [1, 1, 1], [0, 0, 1]], 'the fixture must be singular');
+    assertThrows(() => anovaComponents(table), /singular EMS matrix/);
+  });
+
+  test('emStep reports a failed solve as null instead of standing still', () => {
+    // All-zero variances make V the zero matrix, so remlP() cannot invert it.
+    // A silent `theta` handed back unchanged would look exactly like
+    // convergence to the caller — the one confusion the null return prevents.
+    const response = [1, 2, 3, 4, 5, 6];
+    const factorValues = [
+      ['a', 'a', 'a', 'b', 'b', 'b'],
+      ['1', '1', '2', '1', '2', '2'],
+    ];
+    const terms = buildTerms('nested', ['A', 'B']);
+    const ws = remlWorkspace({ response, factorValues, terms });
+    assertEqual(emStep(ws, [0, 0, 0]), null);
+    // With a usable theta the same call returns a vector, so the null above is
+    // about the singular V and not about a broken workspace.
+    const ok = emStep(ws, [1, 1, 1]);
+    assertEqual(Array.isArray(ok), true);
+    assertEqual(ok.length, 3);
+  });
+
+  test('a constant response yields all-zero components rather than an invented one', () => {
+    // Every measurement identical: there is no variance to attribute, and the
+    // only honest answer is zero everywhere. Left to the iteration, REML picks
+    // up floating-point dust and reports a component of ~1e-30 as if it were a
+    // finding.
+    const response = new Array(12).fill(7.5);
+    const factorValues = [
+      ['a', 'a', 'a', 'a', 'b', 'b', 'b', 'b', 'c', 'c', 'c', 'c'],
+      ['1', '1', '2', '2', '1', '1', '2', '2', '1', '1', '2', '2'],
+    ];
+    const r = computeVarianceComponents({
+      response, factorValues, factorNames: ['A', 'B'],
+      modelForm: 'nested', estimator: 'reml',
+    });
+    assertEqual(r.converged, true, 'the constant case is decided, not iterated');
+    assertEqual(r.warnings.includes('notConverged'), false);
+    r.terms.forEach(t => assertEqual(t.variance, 0, `${t.id} must be exactly zero`));
+    assertEqual(r.totalVariance, 0);
+
+    // Unit-free: the same data in micrometres must get the same verdict.
+    const scaled = computeVarianceComponents({
+      response: response.map(v => v * 1e6), factorValues, factorNames: ['A', 'B'],
+      modelForm: 'nested', estimator: 'reml',
+    });
+    scaled.terms.forEach(t => assertEqual(t.variance, 0, `${t.id} must be zero at any scale`));
+  });
+
+  test('REML converges on the design that used to exhaust the iteration budget', () => {
+    // The catalog's Abfüllanlage plan: crossed, unbalanced, one cell missing —
+    // which makes A*B*C fully aliased (df 0) and the average-information matrix
+    // exactly singular. Dropping the non-estimable term and constraining the AI
+    // step to the non-negative orthant is what turns 100 fruitless iterations
+    // into a converged fit.
+    const factorValues = [
+      ['M1', 'M1', 'M1', 'M1', 'M1', 'M1', 'M1', 'M1', 'M2', 'M2', 'M2', 'M2', 'M2', 'M2'],
+      ['Früh', 'Früh', 'Früh', 'Spät', 'Spät', 'Spät', 'Spät', 'Früh',
+        'Früh', 'Früh', 'Spät', 'Spät', 'Früh', 'Früh'],
+      ['C1', 'C1', 'C2', 'C1', 'C1', 'C2', 'C2', 'C2',
+        'C1', 'C2', 'C1', 'C1', 'C1', 'C2'],
+    ];
+    const response = [
+      500.2, 500.4, 501.1, 499.8, 500.1, 501.4, 501.2, 500.9,
+      497.6, 498.3, 497.1, 497.4, 497.9, 498.1,
+    ];
+    const r = computeVarianceComponents({
+      response, factorValues, factorNames: ['Maschine', 'Schicht', 'Charge'],
+      modelForm: 'crossed', estimator: 'reml',
+    });
+    assertEqual(r.converged, true, 'the fit must converge');
+    assertEqual(r.iterations < REML_MAX_ITER, true,
+      `expected fewer than ${REML_MAX_ITER} iterations, got ${r.iterations}`);
+    assertEqual(r.warnings.includes('notConverged'), false);
+    // The aliased three-way term is reported as the zero it is, not omitted.
+    const abc = r.terms.find(t => t.id === 'A*B*C');
+    assertEqual(Boolean(abc), true, 'A*B*C must still appear in the table');
+    assertEqual(abc.variance, 0, 'an aliased term has no estimable component');
+    r.terms.forEach(t => assertEqual(t.variance >= 0, true, `${t.id} must be non-negative`));
+  });
+});
+
+suite('Variance components — balance under the model form', () => {
+  // A nested plan whose inner labels are globally unique (P1…P6 rather than
+  // P1/P2 repeated under each parent) has six "levels" in the raw count but
+  // only two per parent. Measuring it against the raw level product declares a
+  // perfectly balanced design incomplete.
+  const factorValues = [
+    ['M1', 'M1', 'M1', 'M1', 'M2', 'M2', 'M2', 'M2', 'M3', 'M3', 'M3', 'M3'],
+    ['P1', 'P1', 'P2', 'P2', 'P3', 'P3', 'P4', 'P4', 'P5', 'P5', 'P6', 'P6'],
+  ];
+  const response = [
+    10.1, 10.3, 10.9, 11.0, 12.2, 12.4, 12.8, 13.1, 9.4, 9.6, 8.8, 9.0,
+  ];
+
+  test('expectedCellCount counts what the model form can reach', () => {
+    // Crossed: the raw product, 3 x 6 = 18 — most of which cannot occur.
+    assertEqual(expectedCellCount(factorValues, [0, 1], 'crossed'), 18);
+    // Nested: three parents, two children each = 6, which is exactly what the
+    // data occupies.
+    assertEqual(expectedCellCount(factorValues, [0, 1], 'nested'), 6);
+  });
+
+  test('a balanced nested plan with globally unique inner labels is balanced', () => {
+    const r = computeVarianceComponents({
+      response, factorValues, factorNames: ['Maschine', 'Teil'],
+      modelForm: 'nested', estimator: 'anova',
+    });
+    assertEqual(r.balanced, true, 'the nested plan is balanced');
+    assertEqual(r.warnings.includes('unbalanced'), false,
+      `unexpected warnings: ${JSON.stringify(r.warnings)}`);
+  });
+
+  test('the same data read as a crossed plan is genuinely incomplete', () => {
+    const r = computeVarianceComponents({
+      response, factorValues, factorNames: ['Maschine', 'Teil'],
+      modelForm: 'crossed', estimator: 'anova',
+    });
+    assertEqual(r.balanced, false, 'as a crossed plan 12 of 18 cells are empty');
+    assertEqual(r.warnings.includes('unbalanced'), true);
+  });
 });

@@ -195,20 +195,22 @@ suite('multi-vari-abfuellanlage example data', () => {
     assertTrue(result.balanced === false, 'expected the Abfüllanlage design to be unbalanced');
 
     // Round 1: dropping the (M2, Spät, C2) cell makes `emptyCells` fire
-    // alongside `unbalanced` — matching the catalog's own description. The
-    // fully-crossed 2×2×2 model with all interactions is over-parameterised
-    // on 14 rows, so REML honestly reports `notConverged` too; that is
-    // intentional and must not be tuned away.
+    // alongside `unbalanced` — matching the catalog's own description.
+    // `notConverged` used to sit here too. It no longer does: the missing cell
+    // makes A*B*C fully aliased (df 0), and the constrained AI-REML step now
+    // drops that non-estimable term and pins the boundary components instead
+    // of degenerating to pure EM. Thirteen iterations, converged.
     assertDeepEqual(
       [...result.warnings].sort(),
-      ['emptyCells', 'notConverged', 'unbalanced'],
+      ['emptyCells', 'unbalanced'],
       `unexpected warning set: ${JSON.stringify(result.warnings)}`,
     );
+    assertTrue(result.vc.converged, 'expected the REML fit to converge');
 
     const terms = result.vc.terms;
-    assertAlmostEqual(termPercent(terms, 'A'), 81.4605031489062, 1e-6, 'Maschine (A) percent');
-    assertAlmostEqual(termPercent(terms, 'B'), 1.2156340706646913, 1e-6, 'Schicht (B) percent');
-    assertAlmostEqual(termPercent(terms, 'C'), 15.570015510656491, 1e-6, 'Charge (C) percent');
-    assertAlmostEqual(termPercent(terms, 'Error'), 0.5843712170787688, 1e-6, 'Error percent');
+    assertAlmostEqual(termPercent(terms, 'A'), 81.49270013066668, 1e-6, 'Maschine (A) percent');
+    assertAlmostEqual(termPercent(terms, 'B'), 1.1794200669283021, 1e-6, 'Schicht (B) percent');
+    assertAlmostEqual(termPercent(terms, 'C'), 15.5764816784071, 1e-6, 'Charge (C) percent');
+    assertAlmostEqual(termPercent(terms, 'Error'), 0.581584478430451, 1e-6, 'Error percent');
   });
 });
