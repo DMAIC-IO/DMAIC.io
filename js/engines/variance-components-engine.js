@@ -327,7 +327,13 @@ export function anovaComponents(table) {
     }
   }
 
+  // matInverse reports a singular matrix by returning null rather than
+  // throwing — same contract as at remlP() and aiStep(). Without this check
+  // the `inv.map(...)` below would raise a bare TypeError that reaches the UI
+  // as an unreadable "cannot read properties of null" message.
   const inv = matInverse(C);
+  if (!inv) throw new Error('anovaComponents: singular EMS matrix');
+
   const raw = inv.map(row => row.reduce((acc, v, j) => acc + v * ms[j], 0));
 
   const clamped = raw.map(v => v < 0);
@@ -423,12 +429,16 @@ export function remlP(ws, theta) {
  *
  * @param {ReturnType<typeof remlWorkspace>} ws
  * @param {number[]} theta
- * @returns {number[]} the updated components
+ * @param {ReturnType<typeof remlP>} [projector] — reuse an already built P for
+ *        this very `theta`; the caller pays for one n x n inversion, not two.
+ * @returns {number[]|null} the updated components, or null when V is singular.
+ *          Returning the input unchanged would be indistinguishable from a
+ *          converged step and would report a failed solve as `converged: true`.
  */
-export function emStep(ws, theta) {
+export function emStep(ws, theta, projector) {
   const { Z, q, n } = ws;
-  const { P, Py, ok } = remlP(ws, theta);
-  if (!ok) return theta.slice();
+  const { P, Py, ok } = projector || remlP(ws, theta);
+  if (!ok) return null;
 
   const next = theta.slice();
 
@@ -467,25 +477,36 @@ export const REML_MAX_ITER = 100;
 export const REML_TOL = 1e-8;
 /** Row cap — every iteration builds and inverts an n x n matrix. */
 export const REML_MAX_ROWS = 500;
+/**
+ * Relative threshold below which the response counts as constant. Squared
+ * against the data's own scale (`responseIsConstant()`'s `scale`) — but that
+ * scale is floored at 1, so the invariance holds only for |mean| >= 1.
+ * Measurements in metres and the same measurements in micrometres get the
+ * same verdict as long as their mean is at least 1 in the respective unit;
+ * below that the floor takes over and the threshold becomes effectively
+ * absolute (`REML_CONSTANT_TOL` on a 1-scale), which is deliberate — without
+ * it a mean near zero would shrink the scale towards zero too and collapse
+ * the threshold with it, making even a response with real variance look
+ * constant.
+ */
+export const REML_CONSTANT_TOL = 1e-12;
 
 /**
- * One AI-REML (Fisher scoring) step.
+ * Score vector and average-information matrix at the current fit.
  *
  *   score_j = -0.5 * (tr(Z_j' P Z_j) - ||Z_j' P y||^2)
  *   AI_jk   =  0.5 * u_j' P u_k        with u_j = Z_j Z_j' P y  (u_e = P y)
- *   theta  <- theta + AIinv * score
  *
- * The error component is handled as an identity design block.
+ * The error component is handled as an identity design block, so both arrays
+ * carry T+1 entries with the error last.
  *
  * @param {ReturnType<typeof remlWorkspace>} ws
- * @param {number[]} theta
- * @returns {number[]|null} null when P or AI is singular
+ * @param {ReturnType<typeof remlP>} projector
+ * @returns {{score: number[], AI: number[][]}}
  */
-function aiStep(ws, theta) {
+function aiSystem(ws, projector) {
   const { Z, n } = ws;
-  const { P, Py, ok } = remlP(ws, theta);
-  if (!ok) return null;
-
+  const { P, Py } = projector;
   const T = Z.length;
 
   const u = [];
@@ -542,23 +563,102 @@ function aiStep(ws, theta) {
     AI.push(row);
   }
 
-  let inv;
-  try {
-    inv = matInverse(AI);
-  } catch {
-    return null;
-  }
-  // matInverse returns null on a singular matrix rather than throwing.
-  if (!inv) return null;
+  return { score, AI };
+}
 
-  const next = new Array(T + 1);
+/**
+ * One AI-REML (Fisher scoring) step, constrained to the non-negative orthant.
+ *
+ *     theta_free <- theta_free + AI[free,free]^-1 * score[free]
+ *
+ * A variance of exactly zero is the NORMAL outcome for a higher-order
+ * interaction, not an exception, and the unconstrained Newton step happily
+ * proposes a negative value there. Rejecting the whole step in that case
+ * degenerates the loop to pure EM (hundreds of iterations, one n x n inversion
+ * each); accepting the proposal and pasting an EM value over the offending
+ * components mixes two different directions and oscillates. Both were measured
+ * and both failed to converge.
+ *
+ * So the offending components are PINNED at zero and the step is re-solved on
+ * the remaining ones — an active-set method. A pinned component is released
+ * again as soon as its score turns positive, i.e. as soon as the likelihood
+ * wants to lift it off the boundary, so an early wrong pin cannot stick.
+ * Re-solving costs one inversion of a matrix of size at most T+1 = 8; the
+ * expensive n x n work already happened when `projector` was built.
+ *
+ * The error variance is never pinned: a zero there makes V singular.
+ *
+ * @param {ReturnType<typeof remlWorkspace>} ws
+ * @param {number[]} theta
+ * @param {ReturnType<typeof remlP>} [projector] — reuse an already built P
+ * @returns {number[]|null} null when P or the restricted AI block is singular
+ */
+function aiStep(ws, theta, projector) {
+  const pp = projector || remlP(ws, theta);
+  if (!pp.ok) return null;
+
+  const T = ws.Z.length;
+  const { score, AI } = aiSystem(ws, pp);
+
+  let free = [];
   for (let j = 0; j <= T; j++) {
-    let delta = 0;
-    for (let k = 0; k <= T; k++) delta += inv[j][k] * score[k];
-    next[j] = theta[j] + delta;
-    if (!Number.isFinite(next[j])) return null;
+    if (j === T || theta[j] > 0 || score[j] > 0) free.push(j);
   }
-  return next;
+
+  // Each pass drops at most one component, so T+2 passes always suffice.
+  for (let pass = 0; pass <= T + 1; pass++) {
+    const sub = free.map(j => free.map(k => AI[j][k]));
+    let inv;
+    try {
+      inv = matInverse(sub);
+    } catch {
+      return null;
+    }
+    if (!inv) return null;
+
+    const next = theta.map((v, j) => (j === T || free.includes(j) ? v : 0));
+    for (let a = 0; a < free.length; a++) {
+      let delta = 0;
+      for (let b = 0; b < free.length; b++) delta += inv[a][b] * score[free[b]];
+      next[free[a]] = theta[free[a]] + delta;
+      if (!Number.isFinite(next[free[a]])) return null;
+    }
+
+    if (next[T] <= 0) return null;         // a zero error variance leaves V singular
+
+    let worst = -1;
+    for (const j of free) {
+      if (j === T) continue;
+      if (next[j] <= 0 && (worst < 0 || next[j] < next[worst])) worst = j;
+    }
+    if (worst < 0) return next;
+    free = free.filter(j => j !== worst);
+    if (!free.length) return null;
+  }
+  return null;
+}
+
+/**
+ * Is the response constant (to within its own numerical scale)?
+ *
+ * With zero total variation there is nothing to decompose, and REML must not
+ * pretend otherwise: the start floor below is a strictly positive value, and EM
+ * has no gradient pushing it back down, so the loop would happily report a
+ * fabricated component on noise-free data.
+ *
+ * @param {number[]} response
+ * @returns {boolean}
+ */
+function responseIsConstant(response) {
+  const n = response.length;
+  if (n < 2) return true;
+  let sum = 0;
+  for (const v of response) sum += v;
+  const mean = sum / n;
+  let ss = 0;
+  for (const v of response) ss += (v - mean) * (v - mean);
+  const scale = Math.max(Math.abs(mean), 1);
+  return ss / (n - 1) <= (REML_CONSTANT_TOL * scale) ** 2;
 }
 
 /**
@@ -566,9 +666,34 @@ function aiStep(ws, theta) {
  *
  * Pure EM is monotone and stays non-negative but needs hundreds of iterations,
  * each costing an n x n inversion — unusable in a browser. AI-REML converges in
- * well under twenty iterations; whenever an AI step proposes a negative
- * component, this falls back to an EM step for that iteration, which keeps the
- * estimate admissible without giving up the speed in the normal case.
+ * well under twenty iterations.
+ *
+ * The AI step (`aiStep()`, above) runs under an ACTIVE SET, not a
+ * component-by-component accept/reject: components the unconstrained step
+ * would push at or below zero are pinned at 0 and dropped from the linear
+ * system, at most one per pass; a pinned component becomes free again on a
+ * later iteration as soon as its score turns positive. Only a wholly failed
+ * `aiStep` (every pass exhausts the free set, or a projector/AI-block solve
+ * is singular — `null`) still costs a full EM step.
+ *
+ * An earlier version mixed AI and EM per component instead — whichever
+ * components the AI proposal put at or below zero took that iteration's EM
+ * value, the rest kept the AI value. It was dropped: it does not converge on
+ * this module's own example data. A higher-order interaction sitting at
+ * variance 0 is the normal case, not the exception, so at least one component
+ * falls back to EM on nearly every iteration, and the fit never settles —
+ * this is functionally pure EM again, just slower to admit it, which is the
+ * exact failure the active-set step above was written to avoid. Do not
+ * reintroduce it.
+ *
+ * Both branches reuse the single projector P built for the current theta, so an
+ * iteration inverts one n x n matrix, never two.
+ *
+ * Convergence is judged per component against a relative OR an absolute bound,
+ * the latter scaled by the total variance. A purely relative test never fires
+ * here: components pinned near the start floor keep drifting by ~1e-4 relative
+ * while contributing nothing, and the loop would burn its full budget long
+ * after the components that matter have stopped moving.
  *
  * Deterministic: fixed start (the ANOVA estimate, floored to a small positive
  * value), fixed tolerance, fixed budget.
@@ -583,17 +708,25 @@ export function remlComponents({ response, factorValues, terms, start }) {
     throw new Error(`remlComponents: row cap of ${REML_MAX_ROWS} exceeded`);
   }
 
-  const ws = remlWorkspace({ response, factorValues, terms });
   const T = terms.length;
+
+  // Constant response: every component is exactly zero. Reported with the same
+  // `converged` semantics as a cleanly converged fit — there is nothing left to
+  // iterate towards.
+  if (responseIsConstant(response)) {
+    return { variances: new Array(T + 1).fill(0), converged: true, iterations: 0 };
+  }
+
+  const ws = remlWorkspace({ response, factorValues, terms });
 
   let theta = start
     ? start.slice()
     : anovaComponents(anovaTable({ response, factorValues, terms })).variances.slice();
 
   // A component pinned at exactly zero can never move again — floor the start.
-  let scale = 0;
-  for (const v of theta) scale += v;
-  const floor = Math.max(1e-6, (scale / (T + 1)) * 1e-4);
+  let startScale = 0;
+  for (const v of theta) startScale += v;
+  const floor = Math.max(1e-6, (startScale / (T + 1)) * 1e-4);
   theta = theta.map(v => (v > 0 ? v : floor));
 
   let converged = false;
@@ -603,22 +736,83 @@ export function remlComponents({ response, factorValues, terms, start }) {
     iterations = iter;
     const prev = theta;
 
-    if (iter <= REML_EM_WARMUP) {
-      theta = emStep(ws, prev);
+    // One projector per iteration, shared by the AI and the EM branch.
+    const projector = remlP(ws, prev);
+    let next = null;
+
+    if (!projector.ok) {
+      next = null;
+    } else if (iter <= REML_EM_WARMUP) {
+      next = emStep(ws, prev, projector);
     } else {
-      const proposal = aiStep(ws, prev);
-      theta = (proposal && proposal.every(v => v > 0)) ? proposal : emStep(ws, prev);
+      // The constrained AI step handles the boundary itself, so the EM
+      // fallback is reached only when the step is genuinely undefined. The
+      // rejection branch no longer pays for a second n x n matrix.
+      next = aiStep(ws, prev, projector) || emStep(ws, prev, projector);
     }
 
-    let maxRel = 0;
+    // A failed solve is a failed fit, never a silent convergence.
+    if (!next) break;
+    theta = next;
+
+    let scale = 0;
+    for (let j = 0; j <= T; j++) scale += Math.abs(theta[j]);
+    const atol = REML_TOL * Math.max(scale, 1e-12);
+
+    let settled = true;
     for (let j = 0; j <= T; j++) {
-      const denom = Math.max(Math.abs(prev[j]), 1e-12);
-      maxRel = Math.max(maxRel, Math.abs(theta[j] - prev[j]) / denom);
+      const delta = Math.abs(theta[j] - prev[j]);
+      if (delta < atol) continue;
+      if (delta / Math.max(Math.abs(prev[j]), 1e-12) < REML_TOL) continue;
+      settled = false;
+      break;
     }
-    if (maxRel < REML_TOL) { converged = true; break; }
+    if (settled) { converged = true; break; }
   }
 
   return { variances: theta.map(v => Math.max(0, v)), converged, iterations };
+}
+
+/**
+ * How many factor-level combinations the design could reach at all.
+ *
+ * Crossed: the raw product of the level counts — every combination is a cell.
+ *
+ * Nested: NOT the product. A nested factor's levels live under exactly one
+ * parent, and the usual way to label them is globally unique (part serial
+ * numbers, batch ids). Three lots with two parts each then read as 3 x 6 = 18
+ * possible cells while only 6 exist, and a perfectly balanced plan would be
+ * reported as unbalanced with empty cells. Counted depth by depth instead: the
+ * widest parent sets the expectation per level, so a parent with fewer children
+ * than its siblings still shows up as missing cells.
+ *
+ * @param {string[][]} factorValues
+ * @param {number[]} allIndices — factor positions in nesting/model order
+ * @param {'nested'|'crossed'} modelForm
+ * @returns {number}
+ */
+export function expectedCellCount(factorValues, allIndices, modelForm) {
+  if (modelForm !== 'nested') {
+    let product = 1;
+    for (const idx of allIndices) product *= new Set(factorValues[idx]).size;
+    return product;
+  }
+
+  let expected = new Set(factorValues[allIndices[0]]).size;
+  for (let d = 1; d < allIndices.length; d++) {
+    const parentKeys = termCells(allIndices.slice(0, d), factorValues).keys;
+    const child = factorValues[allIndices[d]];
+    const perParent = new Map();
+    for (let i = 0; i < parentKeys.length; i++) {
+      let set = perParent.get(parentKeys[i]);
+      if (!set) { set = new Set(); perParent.set(parentKeys[i], set); }
+      set.add(child[i]);
+    }
+    let widest = 0;
+    for (const set of perParent.values()) if (set.size > widest) widest = set.size;
+    expected *= widest;
+  }
+  return expected;
 }
 
 /**
@@ -626,19 +820,19 @@ export function remlComponents({ response, factorValues, terms, start }) {
  *
  * @param {string[][]} factorValues
  * @param {number[]} allIndices
+ * @param {'nested'|'crossed'} modelForm
  * @returns {boolean}
  */
-function isBalanced(factorValues, allIndices) {
+function isBalanced(factorValues, allIndices, modelForm) {
   const { keys } = termCells(allIndices, factorValues);
   const counts = new Map();
   for (const k of keys) counts.set(k, (counts.get(k) || 0) + 1);
   const sizes = [...counts.values()];
   if (!sizes.length) return false;
   if (sizes.some(s => s !== sizes[0])) return false;
-  // No cell missing: the number of occupied cells must equal the full product.
-  let product = 1;
-  for (const idx of allIndices) product *= new Set(factorValues[idx]).size;
-  return counts.size === product;
+  // No cell missing: the occupied cells must fill everything the model form
+  // can reach — which is not the raw level product for a nested plan.
+  return counts.size === expectedCellCount(factorValues, allIndices, modelForm);
 }
 
 /**
@@ -654,7 +848,7 @@ export function computeVarianceComponents({
   const warnings = [];
   let terms = buildTerms(modelForm, factorNames);
   const allIndices = factorNames.map((_, i) => i);
-  const balanced = isBalanced(factorValues, allIndices);
+  const balanced = isBalanced(factorValues, allIndices, modelForm);
   if (!balanced) warnings.push('unbalanced');
 
   // No replicates: the finest term has one observation per cell and cannot be
@@ -678,8 +872,22 @@ export function computeVarianceComponents({
   let iterations = null;
 
   if (usedEstimator === 'reml') {
-    const r = remlComponents({ response, factorValues, terms });
-    variances = r.variances;
+    // A term with zero degrees of freedom is fully aliased — its indicator
+    // columns add nothing the coarser terms do not already span, so its
+    // variance component is not estimable. Carried into REML it makes the
+    // average-information matrix EXACTLY singular (one zero eigenvalue per
+    // aliased term), every AI step is rejected and the loop crawls on pure EM
+    // until the budget runs out. Estimate the identifiable terms and report the
+    // aliased ones as the zero the ANOVA path already shows for them.
+    const estimable = terms.map((t, i) => (table.rows[i].df > 0 ? t : null));
+    const fitTerms = estimable.filter(Boolean);
+    if (fitTerms.length < estimable.length) warnings.push('aliasedTerms');
+    const r = remlComponents({ response, factorValues, terms: fitTerms });
+    let k = 0;
+    variances = [
+      ...estimable.map(t => (t ? r.variances[k++] : 0)),
+      r.variances[r.variances.length - 1],
+    ];
     clamped = variances.map(() => false);
     converged = r.converged;
     iterations = r.iterations;

@@ -1,0 +1,194 @@
+<div class="multi-vari dmike-split" x-data="multiVari">
+  <div class="multi-vari__input dmike-split__input">
+
+    <div class="dmike-split__section-title" x-text="t('sectionColumns')"></div>
+
+    <div class="field-group">
+      <label x-text="t('measurementColumn')"></label>
+      <div data-ref="col-measurement-wrap"></div>
+    </div>
+
+    <div class="field-group">
+      <label x-text="t('factors')"></label>
+      <!-- draggableRows addressiert Zeilen über `closest('tr')` und räumt den
+           Zustand über `closest('table')` auf — die Faktorliste MUSS deshalb
+           eine echte Tabelle sein. -->
+      <table class="dmike-table multi-vari__factors" data-ref="factor-table">
+        <tbody>
+          <template x-for="(f, idx) in model.factors" :key="f.id">
+            <tr :data-factor="f.id"
+                @dragstart="dragStart('factors', f.id, $event)" @dragend="dragEnd($event)"
+                @dragover="dragOver('factors', f.id, $event)" @drop="dragDrop('factors', f.id, $event)">
+              <td class="dmike-table__grip-col">
+                <button class="dmike-table__grip" type="button" :data-grip="f.id"
+                        :aria-label="t('common.reorder')"
+                        @mousedown="dragArm($event)" @keydown="dragKey('factors', f.id, $event)"></button>
+              </td>
+              <td class="multi-vari__factor-role" x-text="factorRole(idx)"></td>
+              <td class="multi-vari__factor-picker" :data-factor-wrap="f.id"></td>
+              <td class="multi-vari__factor-actions">
+                <button class="btn btn--icon btn--ghost" type="button"
+                        :data-remove-factor="f.id" :aria-label="t('removeFactor')"
+                        :disabled="model.factors.length <= 2"
+                        @click="removeFactor(f.id)">
+                  <span class="icon icon--sm" data-icon="action.delete"></span>
+                </button>
+              </td>
+            </tr>
+          </template>
+        </tbody>
+      </table>
+      <span class="multi-vari__hint" x-text="t('factorsHint')"></span>
+      <button class="btn btn--sm" type="button" data-ref="btn-add-factor"
+              :disabled="model.factors.length >= 4" @click="addFactor()"
+              x-text="t('addFactor')"></button>
+    </div>
+
+    <div class="dmike-split__section-title" x-text="t('sectionModel')"></div>
+
+    <div class="field-group">
+      <label x-text="t('modelForm')"></label>
+      <select class="field" data-ref="sel-model-form"
+              x-model="model.modelForm" @change="optionChanged()">
+        <option value="nested" x-text="t('modelForm_nested')"></option>
+        <option value="crossed" x-text="t('modelForm_crossed')"></option>
+      </select>
+    </div>
+
+    <div class="field-group">
+      <label x-text="t('estimator')"></label>
+      <select class="field" data-ref="sel-estimator"
+              x-model="model.estimator" @change="optionChanged()">
+        <option value="anova" x-text="t('estimator_anova')"></option>
+        <option value="reml" x-text="t('estimator_reml')"></option>
+      </select>
+    </div>
+
+    <div class="dmike-split__section-title" x-text="t('sectionDisplay')"></div>
+
+    <div class="field-group">
+      <label class="multi-vari__check">
+        <input type="checkbox" data-ref="chk-points"
+               x-model="model.showPoints" @change="optionChanged()">
+        <span x-text="t('showPoints')"></span>
+      </label>
+      <label class="multi-vari__check">
+        <input type="checkbox" data-ref="chk-connect"
+               x-model="model.connectMeans" @change="optionChanged()">
+        <span x-text="t('connectMeans')"></span>
+      </label>
+      <label class="multi-vari__check">
+        <input type="checkbox" data-ref="chk-group-mean"
+               x-model="model.showGroupMean" @change="optionChanged()">
+        <span x-text="t('showGroupMean')"></span>
+      </label>
+      <label class="multi-vari__check">
+        <input type="checkbox" data-ref="chk-ref-line"
+               x-model="model.showRefLine" @change="optionChanged()">
+        <span x-text="t('showRefLine')"></span>
+      </label>
+    </div>
+
+    <div class="multi-vari__error" data-ref="error-box"
+         :class="{ visible: errorMsg }" x-text="errorMsg"></div>
+  </div>
+
+  <div class="multi-vari__output dmike-split__output">
+    <template x-if="result">
+      <div class="multi-vari__result" data-ref="result">
+
+        <div class="dmike-kpi-strip" data-ref="stats-bar">
+          <div class="dmike-kpi">
+            <div class="dmike-kpi-value" x-text="result.n"></div>
+            <div class="dmike-kpi-label" x-text="t('statMeasurements')"></div>
+            <div class="dmike-kpi-sub" x-text="t('statFactors', { count: result.factorNames.length })"></div>
+          </div>
+          <div class="dmike-kpi">
+            <div class="dmike-kpi-value" x-text="fmt(result.grandMean)"></div>
+            <div class="dmike-kpi-label" x-text="t('statGrandMean')"></div>
+            <div class="dmike-kpi-sub" x-text="t('statSpan', { min: fmt(result.yMin), max: fmt(result.yMax) })"></div>
+          </div>
+          <div class="dmike-kpi" x-show="largestTerm()">
+            <div class="dmike-kpi-value" x-text="largestPercent()"></div>
+            <div class="dmike-kpi-label" x-text="t('statLargest')"></div>
+            <div class="dmike-kpi-sub" x-text="largestTermLabel()"></div>
+          </div>
+        </div>
+
+        <div class="multi-vari__warnings" data-ref="warnings" x-show="hasWarnings()">
+          <template x-for="code in warningCodes()">
+            <div class="multi-vari__warning" :key="code" x-text="warningText(code)"></div>
+          </template>
+        </div>
+
+        <!-- Über einer Größengrenze wird nichts gezeichnet (Spec): Kopfzeile
+             und Streifenraster verschwinden zusammen, die Warnung darüber
+             nennt die verantwortliche Spalte, die Tabelle darunter bleibt. -->
+        <div class="multi-vari__chart-header" x-show="canRender()">
+          <span class="multi-vari__chart-title" x-text="chartTitle()"></span>
+        </div>
+
+        <template x-if="canRender()">
+          <div class="multi-vari__strips" data-ref="strips">
+            <template x-for="strip in result.strips">
+              <div class="multi-vari__strip" :key="strip.idx" :data-strip="strip.idx"></div>
+            </template>
+          </div>
+        </template>
+
+        <div class="multi-vari__vc" data-ref="vc" x-show="result.vc">
+          <table class="dmike-table multi-vari__vc-table" data-ref="vc-table">
+            <thead>
+              <tr>
+                <th x-text="t('tableTerm')"></th>
+                <th class="num" x-text="t('tableDf')"></th>
+                <th class="num" x-text="t('tableSs')"></th>
+                <th class="num" x-text="t('tableMs')"></th>
+                <th class="num" x-text="t('tableVariance')"></th>
+                <th class="num" x-text="t('tableSd')"></th>
+                <th class="num" x-text="t('tablePercent')"></th>
+              </tr>
+            </thead>
+            <tbody>
+              <template x-for="term in vcTerms()">
+                <tr :key="term.id" :data-term="term.id">
+                  <td x-text="termLabel(term)"></td>
+                  <td class="num" x-text="intOrDash(term.df)"></td>
+                  <td class="num" x-text="fmt(term.ss)"></td>
+                  <td class="num" x-text="fmt(term.ms)"></td>
+                  <td class="num" x-text="fmt(term.variance)"></td>
+                  <td class="num" x-text="fmt(term.sd)"></td>
+                  <td class="num" x-text="pct(term.percent)"></td>
+                </tr>
+              </template>
+            </tbody>
+            <tfoot>
+              <tr data-term="__total__">
+                <td x-text="t('tableTotal')"></td>
+                <td class="num"></td>
+                <td class="num"></td>
+                <td class="num"></td>
+                <td class="num" x-text="totalVarianceText()"></td>
+                <td class="num" x-text="totalSd()"></td>
+                <td class="num" x-text="totalPercent()"></td>
+              </tr>
+            </tfoot>
+          </table>
+
+          <p class="multi-vari__interpretation" data-ref="interpretation"
+             x-text="interpretationText()"></p>
+
+          <p class="multi-vari__note" data-ref="unbalanced-note"
+             x-show="showUnbalancedNote()" x-text="t('unbalancedNote')"></p>
+
+          <p class="multi-vari__note" data-ref="clamped-note"
+             x-show="showClampedNote()" x-text="t('clampedNote')"></p>
+
+          <button class="btn btn--sm" type="button" data-ref="btn-export-csv"
+                  @click="exportCsv()" x-text="t('exportCsv')"></button>
+        </div>
+
+      </div>
+    </template>
+  </div>
+</div>

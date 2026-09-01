@@ -1,0 +1,21 @@
+{
+  "columnRefs": {
+    "measurement": {
+      "instanceId": "__source__",
+      "sheetId": "sheet-multi-vari-spritzguss",
+      "columnId": "c-wand"
+    },
+    "factors": [
+      { "instanceId": "__source__", "sheetId": "sheet-multi-vari-spritzguss", "columnId": "c-schicht" },
+      { "instanceId": "__source__", "sheetId": "sheet-multi-vari-spritzguss", "columnId": "c-nest" },
+      { "instanceId": "__source__", "sheetId": "sheet-multi-vari-spritzguss", "columnId": "c-teil" }
+    ]
+  },
+  "modelForm": "nested",
+  "estimator": "anova",
+  "showPoints": true,
+  "connectMeans": true,
+  "showGroupMean": true,
+  "showRefLine": true,
+  "sourceWorksheetFile": "worksheets/multi-vari-spritzguss.json"
+}

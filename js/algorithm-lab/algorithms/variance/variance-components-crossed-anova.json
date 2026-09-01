@@ -1,0 +1,135 @@
+{
+  "id": "variance-components-crossed-anova",
+  "name": {
+    "de": "Varianzkomponenten — gekreuzt (ANOVA)",
+    "en": "Variance Components — Crossed (ANOVA)"
+  },
+  "category": "variance",
+  "subcategory": "crossed",
+  "status": "validated",
+  "version": "1.0.0",
+  "description": {
+    "short": {
+      "de": "Zerlegt die Gesamtstreuung eines gekreuzten Versuchsplans inklusive aller Wechselwirkungen.",
+      "en": "Decomposes the total variation of a crossed design including all interactions."
+    },
+    "long": {
+      "de": "Im gekreuzten Modell kommt jede Stufe eines Faktors mit jeder Stufe der anderen vor — Maschine 1 läuft in Früh- und Spätschicht. Die Terme sind daher alle nichtleeren Teilmengen der Faktormenge, geordnet nach Größe und Position: A, B, A×B, C, A×C, … Der Rechenweg ist derselbe wie im geschachtelten Fall — sequenzielle Quadratsummen, mittlere Quadrate, Henderson-I-Lösung, Kappen negativer Schätzungen nach dem Lösen. Nur das Termgerüst unterscheidet die beiden Modellformen.",
+      "en": "In the crossed model every level of one factor occurs with every level of the others — machine 1 runs on both the early and the late shift. The terms are therefore all non-empty subsets of the factor set, ordered by size then position: A, B, A×B, C, A×C, … The computation is identical to the nested case — sequential sums of squares, mean squares, Henderson I solve, clamping negative estimates after the solve. Only the term skeleton distinguishes the two model forms."
+    }
+  },
+  "documentation": {
+    "formulas": [
+      {
+        "label": "Terme",
+        "latex": "T = \\{ S \\subseteq \\{1..k\\} : S \\neq \\emptyset \\}",
+        "description": {
+          "de": "Alle nichtleeren Teilmengen der Faktoren, nach Größe geordnet",
+          "en": "All non-empty subsets of the factors, ordered by size"
+        }
+      },
+      {
+        "label": "σ²",
+        "latex": "\\hat{\\sigma} = C^{-1} \\, MS",
+        "description": {
+          "de": "Henderson I: Lösen des EMS-Gleichungssystems",
+          "en": "Henderson I: solving the EMS system"
+        }
+      },
+      {
+        "label": "Anteil",
+        "latex": "p_i = 100 \\cdot \\frac{\\sigma_i^2}{\\sum_j \\sigma_j^2}",
+        "description": {
+          "de": "Anteil einer Komponente an der Gesamtvarianz",
+          "en": "Share of one component in the total variance"
+        }
+      }
+    ],
+    "assumptions": [
+      { "de": "Alle Faktoren sind zufällige Effekte", "en": "All factors are random effects" },
+      { "de": "Jede Faktorkombination kommt vor", "en": "Every factor combination occurs" },
+      { "de": "Die Effekte sind unabhängig und normalverteilt", "en": "Effects are independent and normally distributed" }
+    ],
+    "limitations": [
+      { "de": "Die Zahl der Terme wächst mit 2^k − 1 — bei vier Faktoren sind es 15", "en": "The number of terms grows as 2^k − 1 — 15 for four factors" },
+      { "de": "Fehlende Kombinationen machen das Modell singulär", "en": "Missing combinations make the model singular" },
+      { "de": "Bei unbalanciertem Plan REML bevorzugen", "en": "Prefer REML on an unbalanced design" }
+    ],
+    "references": [
+      { "source": "Henderson, C. R. (1953), Estimation of Variance and Covariance Components, Biometrics 9(2)" },
+      { "source": "Searle, Casella & McCulloch (1992), Variance Components, Wiley" }
+    ],
+    "minitab_equivalent": "Stat > ANOVA > General Linear Model > Variance Components"
+  },
+  "source": {
+    "function_name": "varianceComponentsCrossedAnovaLab",
+    "file_path": "js/algorithm-lab/wrappers/variance-components-wrappers.js",
+    "signature": {
+      "parameters": [
+        {
+          "name": "inputs",
+          "type": "object",
+          "required": true,
+          "description": {
+            "de": "Eingabeobjekt: response, factorValues, factorNames. Modellform (gekreuzt) und Schätzer (ANOVA) setzt der Wrapper.",
+            "en": "Input object: response, factorValues, factorNames. Model form (crossed) and estimator (ANOVA) are fixed by the wrapper."
+          }
+        }
+      ]
+    }
+  },
+  "try_it": {
+    "input_schema": {
+      "fields": [
+        {
+          "name": "response",
+          "label": { "de": "Messwerte (eine Zahl je Zeile)", "en": "Measurements (one number per line)" },
+          "type": "textarea",
+          "placeholder": { "de": "500.2\n500.4\n501.1\n499.8", "en": "500.2\n500.4\n501.1\n499.8" },
+          "parse_as": "number_array",
+          "required": true
+        },
+        {
+          "name": "factorValues",
+          "label": { "de": "Faktorstufen (eine Zeile je Faktor)", "en": "Factor levels (one line per factor)" },
+          "type": "textarea",
+          "placeholder": { "de": "M1, M1, M2, M2\nFrüh, Spät, Früh, Spät", "en": "M1, M1, M2, M2\nEarly, Late, Early, Late" },
+          "parse_as": "string_array_2d",
+          "required": true
+        },
+        {
+          "name": "factorNames",
+          "label": { "de": "Faktornamen", "en": "Factor names" },
+          "type": "text",
+          "placeholder": { "de": "Maschine, Schicht", "en": "Machine, Shift" },
+          "parse_as": "string_array",
+          "required": true
+        }
+      ]
+    },
+    "output_schema": {
+      "display_fields": ["modelForm", "estimator", "balanced", "n", "totalVariance", "terms"],
+      "primary_field": "totalVariance",
+      "format": {
+        "modelForm": { "decimals": 0, "label": { "de": "Modellform", "en": "Model form" } },
+        "estimator": { "decimals": 0, "label": { "de": "Schätzer", "en": "Estimator" } },
+        "balanced": { "decimals": 0, "label": { "de": "Balanciert", "en": "Balanced" } },
+        "n": { "decimals": 0, "label": "n" },
+        "totalVariance": { "decimals": 6, "label": { "de": "Gesamtvarianz", "en": "Total variance" } },
+        "terms": { "decimals": 6, "label": { "de": "Komponenten", "en": "Components" } }
+      }
+    }
+  },
+  "changelog": [
+    {
+      "version": "1.0.0",
+      "date": "2026-08-31",
+      "type": "initial",
+      "description": {
+        "de": "Erstimplementierung der gekreuzten Varianzkomponenten über Henderson I",
+        "en": "Initial implementation of crossed variance components via Henderson I"
+      },
+      "breaking": false
+    }
+  ]
+}

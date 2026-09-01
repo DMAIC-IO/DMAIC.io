@@ -1,0 +1,43 @@
+{
+  "sheets": [
+    {
+      "id": "sheet-multi-vari-spritzguss",
+      "name": "Spritzguss",
+      "state": {
+        "columns": [
+          {
+            "id": "c-schicht",
+            "name": "Schicht",
+            "shortName": "Schicht",
+            "type": "text",
+            "values": ["Früh","Früh","Früh","Früh","Früh","Früh","Früh","Früh","Früh","Früh","Früh","Früh","Spät","Spät","Spät","Spät","Spät","Spät","Spät","Spät","Spät","Spät","Spät","Spät"]
+          },
+          {
+            "id": "c-nest",
+            "name": "Werkzeugnest",
+            "shortName": "Nest",
+            "type": "text",
+            "values": ["N1","N1","N1","N1","N1","N1","N2","N2","N2","N2","N2","N2","N1","N1","N1","N1","N1","N1","N2","N2","N2","N2","N2","N2"]
+          },
+          {
+            "id": "c-teil",
+            "name": "Teil",
+            "shortName": "Teil",
+            "type": "text",
+            "values": ["T1","T1","T2","T2","T3","T3","T1","T1","T2","T2","T3","T3","T1","T1","T2","T2","T3","T3","T1","T1","T2","T2","T3","T3"]
+          },
+          {
+            "id": "c-wand",
+            "name": "Wandstärke",
+            "shortName": "Wand",
+            "type": "numeric",
+            "values": [2.01,2.03,2.05,2.04,1.99,2.00,2.21,2.22,2.25,2.24,2.19,2.20,2.21,2.22,2.25,2.24,2.19,2.20,2.41,2.43,2.45,2.44,2.39,2.40]
+          }
+        ],
+        "rowCount": 24
+      }
+    }
+  ],
+  "activeSheetId": "sheet-multi-vari-spritzguss",
+  "sheetCounter": 1
+}

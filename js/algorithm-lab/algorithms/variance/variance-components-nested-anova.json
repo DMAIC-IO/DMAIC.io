@@ -1,0 +1,144 @@
+{
+  "id": "variance-components-nested-anova",
+  "name": {
+    "de": "Varianzkomponenten — geschachtelt (ANOVA)",
+    "en": "Variance Components — Nested (ANOVA)"
+  },
+  "category": "variance",
+  "subcategory": "nested",
+  "status": "validated",
+  "version": "1.0.0",
+  "description": {
+    "short": {
+      "de": "Zerlegt die Gesamtstreuung eines geschachtelten Versuchsplans über die erwarteten mittleren Quadrate.",
+      "en": "Decomposes the total variation of a nested design via expected mean squares."
+    },
+    "long": {
+      "de": "Im geschachtelten Modell existieren die Stufen jedes Faktors nur innerhalb einer Stufe des vorangehenden — Teil 1 aus Werkzeugnest 1 hat mit Teil 1 aus Werkzeugnest 2 nichts gemein. Die Terme sind daher die Präfixe der Faktorliste: A, B(A), C(A,B), … Aus den sequenziellen (Typ-I-)Quadratsummen und den zugehörigen Freiheitsgraden entstehen die mittleren Quadrate; die Henderson-I-Koeffizientenmatrix der erwarteten mittleren Quadrate wird gelöst und liefert die {{term:varianzkomponenten|Varianzkomponenten}}. Negative Schätzungen werden **nach** dem Lösen auf 0 gesetzt — eine Berichtsregel, kein Teil der Rechnung.",
+      "en": "In the nested model the levels of each factor exist only inside one level of the preceding factor — part 1 from cavity 1 has nothing in common with part 1 from cavity 2. The terms are therefore the prefixes of the factor list: A, B(A), C(A,B), … The sequential (type I) sums of squares and their degrees of freedom give the mean squares; solving Henderson I's coefficient matrix of expected mean squares yields the variance components. Negative estimates are clamped to 0 **after** the solve — a reporting rule, not part of the computation."
+    }
+  },
+  "documentation": {
+    "formulas": [
+      {
+        "label": "MS",
+        "latex": "MS_i = \\frac{SS_i}{df_i}",
+        "description": {
+          "de": "Mittleres Quadrat aus sequenzieller Quadratsumme und Freiheitsgraden",
+          "en": "Mean square from sequential sum of squares and degrees of freedom"
+        }
+      },
+      {
+        "label": "EMS",
+        "latex": "E[MS_i] = \\sigma^2 + \\sum_j c_{ij} \\, \\sigma_j^2",
+        "description": {
+          "de": "Erwartetes mittleres Quadrat als Linearkombination der Komponenten",
+          "en": "Expected mean square as a linear combination of the components"
+        }
+      },
+      {
+        "label": "σ²",
+        "latex": "\\hat{\\sigma} = C^{-1} \\, MS",
+        "description": {
+          "de": "Henderson I: Lösen des EMS-Gleichungssystems",
+          "en": "Henderson I: solving the EMS system"
+        }
+      },
+      {
+        "label": "Anteil",
+        "latex": "p_i = 100 \\cdot \\frac{\\sigma_i^2}{\\sum_j \\sigma_j^2}",
+        "description": {
+          "de": "Anteil einer Komponente an der Gesamtvarianz",
+          "en": "Share of one component in the total variance"
+        }
+      }
+    ],
+    "assumptions": [
+      { "de": "Alle Faktoren sind zufällige Effekte", "en": "All factors are random effects" },
+      { "de": "Die Effekte sind unabhängig und normalverteilt", "en": "Effects are independent and normally distributed" },
+      { "de": "Die Faktorreihenfolge entspricht der Schachtelung", "en": "The factor order matches the nesting" }
+    ],
+    "limitations": [
+      { "de": "Bei unbalanciertem Plan hängen die Komponenten vom Verfahren ab — dann REML bevorzugen", "en": "On an unbalanced design the components depend on the method — prefer REML then" },
+      { "de": "Negative Schätzungen werden auf 0 gesetzt und verlieren dabei Information", "en": "Negative estimates are clamped to 0, losing information in the process" },
+      { "de": "Zwei bis vier Faktoren", "en": "Two to four factors" }
+    ],
+    "references": [
+      { "source": "Henderson, C. R. (1953), Estimation of Variance and Covariance Components, Biometrics 9(2)" },
+      { "source": "Searle, Casella & McCulloch (1992), Variance Components, Wiley" },
+      { "source": "NIST/SEMATECH e-Handbook of Statistical Methods, Section 2.5" }
+    ],
+    "minitab_equivalent": "Stat > ANOVA > Fully Nested ANOVA"
+  },
+  "source": {
+    "function_name": "varianceComponentsNestedAnovaLab",
+    "file_path": "js/algorithm-lab/wrappers/variance-components-wrappers.js",
+    "signature": {
+      "parameters": [
+        {
+          "name": "inputs",
+          "type": "object",
+          "required": true,
+          "description": {
+            "de": "Eingabeobjekt: response, factorValues, factorNames. Modellform (geschachtelt) und Schätzer (ANOVA) setzt der Wrapper.",
+            "en": "Input object: response, factorValues, factorNames. Model form (nested) and estimator (ANOVA) are fixed by the wrapper."
+          }
+        }
+      ]
+    }
+  },
+  "try_it": {
+    "input_schema": {
+      "fields": [
+        {
+          "name": "response",
+          "label": { "de": "Messwerte (eine Zahl je Zeile)", "en": "Measurements (one number per line)" },
+          "type": "textarea",
+          "placeholder": { "de": "2.01\n2.03\n2.05\n2.04", "en": "2.01\n2.03\n2.05\n2.04" },
+          "parse_as": "number_array",
+          "required": true
+        },
+        {
+          "name": "factorValues",
+          "label": { "de": "Faktorstufen (eine Zeile je Faktor)", "en": "Factor levels (one line per factor)" },
+          "type": "textarea",
+          "placeholder": { "de": "Früh, Früh, Spät, Spät\nN1, N2, N1, N2", "en": "Early, Early, Late, Late\nN1, N2, N1, N2" },
+          "parse_as": "string_array_2d",
+          "required": true
+        },
+        {
+          "name": "factorNames",
+          "label": { "de": "Faktornamen", "en": "Factor names" },
+          "type": "text",
+          "placeholder": { "de": "Schicht, Nest", "en": "Shift, Cavity" },
+          "parse_as": "string_array",
+          "required": true
+        }
+      ]
+    },
+    "output_schema": {
+      "display_fields": ["modelForm", "estimator", "balanced", "n", "totalVariance", "terms"],
+      "primary_field": "totalVariance",
+      "format": {
+        "modelForm": { "decimals": 0, "label": { "de": "Modellform", "en": "Model form" } },
+        "estimator": { "decimals": 0, "label": { "de": "Schätzer", "en": "Estimator" } },
+        "balanced": { "decimals": 0, "label": { "de": "Balanciert", "en": "Balanced" } },
+        "n": { "decimals": 0, "label": "n" },
+        "totalVariance": { "decimals": 6, "label": { "de": "Gesamtvarianz", "en": "Total variance" } },
+        "terms": { "decimals": 6, "label": { "de": "Komponenten", "en": "Components" } }
+      }
+    }
+  },
+  "changelog": [
+    {
+      "version": "1.0.0",
+      "date": "2026-08-31",
+      "type": "initial",
+      "description": {
+        "de": "Erstimplementierung der geschachtelten Varianzkomponenten über Henderson I",
+        "en": "Initial implementation of nested variance components via Henderson I"
+      },
+      "breaking": false
+    }
+  ]
+}

@@ -3267,6 +3267,42 @@
       "tags": ["worksheet", "regression", "rohdaten"]
     },
     {
+      "id": "multi-vari-spritzguss",
+      "type": "project",
+      "title": {
+        "de": "Multi-Vari: Spritzguss, geschachtelt",
+        "en": "Multi-vari: injection moulding, nested"
+      },
+      "description": {
+        "de": "2 Schichten × 2 Werkzeugnester × 3 Teile, je 2 Messungen der Wandstärke. Balanciert und geschachtelt: der Löwenanteil der Streuung sitzt zwischen den Werkzeugnestern, nicht zwischen den Schichten.",
+        "en": "2 shifts × 2 mould cavities × 3 parts, 2 wall-thickness measurements each. Balanced and nested: most of the variation sits between the cavities, not between the shifts."
+      },
+      "source": "DMAIC.io synthetisch",
+      "license": "public-domain",
+      "file": "projects/multi-vari-spritzguss.json",
+      "format": "json",
+      "modules": ["multi-vari"],
+      "tags": ["multi-vari", "varianzkomponenten", "geschachtelt"]
+    },
+    {
+      "id": "multi-vari-abfuellanlage",
+      "type": "project",
+      "title": {
+        "de": "Multi-Vari: Abfüllanlage, gekreuzt",
+        "en": "Multi-vari: filling line, crossed"
+      },
+      "description": {
+        "de": "2 Maschinen × 2 Schichten × 2 Chargen, ungleich besetzt und mit einer fehlenden Kombination. Gekreuzt mit REML — zeigt zugleich, wie das Modul einen unbalancierten Plan ausweist.",
+        "en": "2 machines × 2 shifts × 2 batches, unequally occupied with one missing combination. Crossed with REML — also shows how the module flags an unbalanced design."
+      },
+      "source": "DMAIC.io synthetisch",
+      "license": "public-domain",
+      "file": "projects/multi-vari-abfuellanlage.json",
+      "format": "json",
+      "modules": ["multi-vari"],
+      "tags": ["multi-vari", "varianzkomponenten", "gekreuzt", "unbalanciert"]
+    },
+    {
       "id": "scenario-pizza-full",
       "type": "scenario",
       "title": { "de": "Pizza-Lieferzeit — vollständig", "en": "Pizza delivery time — complete" },

@@ -1,0 +1,97 @@
+{
+  "id": "multi-vari-diagramm",
+  "category": "visualization",
+  "title": {
+    "de": "Multi-Vari-Diagramm",
+    "en": "Multi-Vari Chart"
+  },
+  "short": {
+    "de": "Grafische Zerlegung der Streuung einer Messgröße nach bis zu vier kategorialen Einflussfaktoren — zeigt, wo die Streuung sitzt, bevor ein {{term:doe|Versuch}} geplant wird.",
+    "en": "Graphical breakdown of a measurement's spread by up to four categorical factors — shows where the variation sits before a {{term:doe|designed experiment}} is planned."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "Das **Multi-Vari-Diagramm** zeigt jede Einzelmessung einer Zielgröße gleichzeitig nach mehreren kategorialen Einflussfaktoren aufgeschlüsselt: Faktor 1 liegt auf der X-Achse, Faktor 2 als Serie (Farbe/Symbol, über Mittelwertlinien verbunden), Faktor 3 als Panel-Spalte und Faktor 4 als Panel-Zeile. Es ist ein rein grafisches Werkzeug der Analyze-Phase — es rechnet keine Signifikanz, sondern lenkt den Blick dahin, wo die {{term:varianz|Streuung}} tatsächlich entsteht."
+      },
+      {
+        "type": "paragraph",
+        "text": "Seders ursprüngliche Systematik (1950) unterscheidet drei Streuungsarten: **positionsbedingt** (innerhalb eines Teils, z. B. mehrere Messstellen an einem Werkstück), **zyklisch** (von Teil zu Teil innerhalb eines kurzen Fensters, z. B. Nest zu Nest oder Charge zu Charge) und **zeitlich** (über längere Zeiträume, z. B. Schicht zu Schicht, Tag zu Tag). Die Reihenfolge der gewählten Faktoren im Diagramm ist bedeutungstragend: dieselbe Reihenfolge legt zugleich fest, welcher Faktor im begleitenden {{term:varianzkomponenten|Varianzkomponenten}}-Modell in welchem verschachtelt ist."
+      },
+      {
+        "type": "formula",
+        "latex": "R_{\\text{gesamt}} \\;\\approx\\; R_{\\text{positionsbedingt}} + R_{\\text{zyklisch}} + R_{\\text{zeitlich}}"
+      },
+      {
+        "type": "paragraph",
+        "text": "Das Bild allein beantwortet nur „wo“, nicht „wie viel“ und nicht „ob signifikant“. Die dominierende Streuquelle numerisch zu beziffern — als Varianz, Standardabweichung und Prozentanteil je Quelle — übernimmt die begleitende {{term:varianzkomponenten|Varianzkomponenten-Tabelle}}; beide sind im Modul bewusst als zwei getrennte, aufeinander aufbauende Auswertungen angelegt."
+      },
+      {
+        "type": "note",
+        "text": "Ein Multi-Vari-Diagramm ist nur so aussagekräftig wie seine Besetzung: leere oder stark unbalancierte Zellen (z. B. ein Panel mit nur einer Messung) verzerren den optischen Eindruck, ohne dass das Diagramm selbst darauf hinweist. Bei wenigen Wiederholungen je Zelle ist das begleitende {{term:boxplot|Box-Plot}} pro Faktor oft der ehrlichere erste Blick."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "The **multi-vari chart** shows every individual measurement of a response broken down by several categorical factors at once: factor 1 sits on the X axis, factor 2 as a series (colour/symbol, connected by mean lines), factor 3 as a panel column, and factor 4 as a panel row. It is a purely graphical Analyze-phase tool — it computes no significance, it directs the eye to where the {{term:varianz|variation}} actually arises."
+      },
+      {
+        "type": "paragraph",
+        "text": "Seder's original framework (1950) distinguishes three kinds of variation: **positional** (within a single part, e.g. several measurement points on one workpiece), **cyclical** (part to part within a short window, e.g. cavity to cavity or batch to batch) and **temporal** (over longer spans, e.g. shift to shift, day to day). The order in which factors are chosen is meaningful: the same order also fixes which factor is nested within which in the accompanying {{term:varianzkomponenten|variance components}} model."
+      },
+      {
+        "type": "formula",
+        "latex": "R_{\\text{total}} \\;\\approx\\; R_{\\text{positional}} + R_{\\text{cyclical}} + R_{\\text{temporal}}"
+      },
+      {
+        "type": "paragraph",
+        "text": "The picture alone answers \"where\", not \"how much\" and not \"whether significant\". Quantifying the dominant source of variation — as variance, standard deviation and percentage share per source — is the job of the companion {{term:varianzkomponenten|variance components table}}; the module deliberately keeps the two as separate, complementary views."
+      },
+      {
+        "type": "note",
+        "text": "A multi-vari chart is only as informative as its cell counts: empty or heavily unbalanced cells (e.g. a panel with a single measurement) distort the visual impression without the chart flagging it. With few replicates per cell, a companion {{term:boxplot|box plot}} per factor is often the more honest first look."
+      }
+    ]
+  },
+  "aliases": {
+    "de": [
+      "Multi-Vari-Chart",
+      "Multi-Vari-Analyse"
+    ],
+    "en": [
+      "multi-vari chart",
+      "multi-vari analysis"
+    ]
+  },
+  "seeAlso": [
+    "varianzkomponenten",
+    "varianz",
+    "boxplot",
+    "faktor",
+    "streuungs-doe"
+  ],
+  "modules": [
+    "multi-vari"
+  ],
+  "algoLab": [
+    "variance/variance-components-nested-anova",
+    "variance/variance-components-crossed-anova",
+    "variance/variance-components-reml"
+  ],
+  "sources": [
+    {
+      "label": "Seder, L. A. — Diagnosis with Diagrams, Parts I and II, Industrial Quality Control, 1950",
+      "url": null
+    },
+    {
+      "label": "Bhote, K. R. & Bhote, A. K. — World Class Quality: Using Design of Experiments to Make It Right the First Time, 2nd Edition, AMACOM, 2000",
+      "url": null
+    },
+    {
+      "label": "Montgomery, D. C. — Design and Analysis of Experiments, 10th Edition, Chapter 1",
+      "url": null
+    }
+  ]
+}

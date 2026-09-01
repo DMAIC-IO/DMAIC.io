@@ -1,0 +1,116 @@
+/* D.Mike — Multi-Vari-Diagramm. Farben und Abstände ausschließlich über
+   CSS-Custom-Properties, damit der Theme-Wechsel greift. */
+
+.multi-vari {
+  height: 100%;
+}
+
+.multi-vari .dmike-split__input {
+  width: 320px;
+}
+
+.multi-vari__hint {
+  display: block;
+  margin-top: var(--spacing-xs);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+}
+
+.multi-vari__factors {
+  width: 100%;
+  margin-bottom: var(--spacing-xs);
+}
+
+.multi-vari__factor-role {
+  white-space: nowrap;
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+}
+
+.multi-vari__factor-picker {
+  width: 100%;
+}
+
+.multi-vari__factor-actions {
+  text-align: right;
+}
+
+.multi-vari__check {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  margin-bottom: var(--spacing-xs);
+}
+
+.multi-vari__error {
+  display: none;
+  margin-top: var(--spacing-sm);
+  padding: var(--spacing-sm);
+  border-radius: var(--border-radius-sm);
+  background: color-mix(in srgb, var(--color-error) 12%, transparent);
+  color: var(--color-error);
+  font-size: var(--font-size-sm);
+}
+
+.multi-vari__error.visible {
+  display: block;
+}
+
+.multi-vari__warnings {
+  margin-bottom: var(--spacing-sm);
+}
+
+.multi-vari__warning {
+  padding: var(--spacing-xs) var(--spacing-sm);
+  margin-bottom: var(--spacing-xs);
+  border-left: 3px solid var(--color-warning);
+  background: color-mix(in srgb, var(--color-warning) 12%, transparent);
+  color: var(--color-text-primary);
+  font-size: var(--font-size-sm);
+}
+
+.multi-vari__chart-header {
+  margin-bottom: var(--spacing-sm);
+}
+
+.multi-vari__chart-title {
+  font-size: var(--font-size-md);
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.multi-vari__strips {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.multi-vari__strip {
+  min-height: 200px;
+}
+
+.multi-vari__vc {
+  margin-top: var(--spacing-md);
+}
+
+.multi-vari__vc-table {
+  width: 100%;
+  margin-bottom: var(--spacing-sm);
+}
+
+.multi-vari__vc-table .num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.multi-vari__interpretation {
+  margin: 0 0 var(--spacing-xs);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-primary);
+}
+
+.multi-vari__note {
+  margin: 0 0 var(--spacing-xs);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+}
