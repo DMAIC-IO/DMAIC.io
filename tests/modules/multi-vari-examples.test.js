@@ -199,10 +199,12 @@ suite('multi-vari-abfuellanlage example data', () => {
     // `notConverged` used to sit here too. It no longer does: the missing cell
     // makes A*B*C fully aliased (df 0), and the constrained AI-REML step now
     // drops that non-estimable term and pins the boundary components instead
-    // of degenerating to pure EM. Thirteen iterations, converged.
+    // of degenerating to pure EM. Thirteen iterations, converged. The dropped
+    // term now also raises `aliasedTerms`, so its variance-0 row reads as
+    // "not estimable", not as "estimated and happens to be zero".
     assertDeepEqual(
       [...result.warnings].sort(),
-      ['emptyCells', 'unbalanced'],
+      ['aliasedTerms', 'emptyCells', 'unbalanced'],
       `unexpected warning set: ${JSON.stringify(result.warnings)}`,
     );
     assertTrue(result.vc.converged, 'expected the REML fit to converge');

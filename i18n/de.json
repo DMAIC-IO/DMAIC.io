@@ -1913,6 +1913,7 @@
       "warn_rowCapExceeded": "Zu viele Zeilen für die REML-Schätzung — es wurde auf das ANOVA-Verfahren umgeschaltet.",
       "warn_notConverged": "Die REML-Schätzung ist nicht konvergiert — die Varianzkomponenten sind Näherungswerte.",
       "warn_negativeComponent": "Eine negative Varianzschätzung wurde auf null gesetzt — diese Quelle ist nicht von null unterscheidbar.",
+      "warn_aliasedTerms": "Mindestens eine Komponente ist im Versuchsplan nicht schätzbar (0 Freiheitsgrade) und wurde vor der REML-Schätzung entfernt — der ausgewiesene Wert 0 ist keine Schätzung, sondern eine Aliasierung.",
       "warn_emptyCells": "Leere Zellen — mindestens eine Faktorkombination kommt in den Daten nicht vor.",
       "warn_tooManyAxisLevels": "„{col}“ hat {count} Stufen auf der X-Achse (Grenze: {max}) — das Diagramm wird deshalb nicht gezeichnet. Faktor mit weniger Stufen an Position 1 setzen.",
       "warn_tooManySeriesLevels": "„{col}“ hat {count} Serienstufen (Grenze: {max}) — das Diagramm wird deshalb nicht gezeichnet. Faktor mit weniger Stufen an Position 2 setzen.",

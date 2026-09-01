@@ -1913,6 +1913,7 @@
       "warn_rowCapExceeded": "Too many rows for the REML estimate — the calculation fell back to the ANOVA method.",
       "warn_notConverged": "The REML estimate did not converge — the variance components are approximations.",
       "warn_negativeComponent": "A negative variance estimate was set to zero — this source is not distinguishable from zero.",
+      "warn_aliasedTerms": "At least one component is not estimable in this design (0 degrees of freedom) and was removed before the REML fit — the reported value of 0 is not an estimate, it is aliasing.",
       "warn_emptyCells": "Empty cells — at least one factor combination does not occur in the data.",
       "warn_tooManyAxisLevels": "\u201c{col}\u201d has {count} levels on the x axis (limit: {max}) — the chart is therefore not drawn. Put a factor with fewer levels in position 1.",
       "warn_tooManySeriesLevels": "\u201c{col}\u201d has {count} series levels (limit: {max}) — the chart is therefore not drawn. Put a factor with fewer levels in position 2.",

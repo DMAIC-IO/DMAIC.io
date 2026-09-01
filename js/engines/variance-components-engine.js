@@ -864,6 +864,7 @@ export function computeVarianceComponents({
     // aliased ones as the zero the ANOVA path already shows for them.
     const estimable = terms.map((t, i) => (table.rows[i].df > 0 ? t : null));
     const fitTerms = estimable.filter(Boolean);
+    if (fitTerms.length < estimable.length) warnings.push('aliasedTerms');
     const r = remlComponents({ response, factorValues, terms: fitTerms });
     let k = 0;
     variances = [

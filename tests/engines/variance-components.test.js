@@ -711,6 +711,33 @@ suite('Variance components — degenerate input and failure reporting', () => {
     assertEqual(Boolean(abc), true, 'A*B*C must still appear in the table');
     assertEqual(abc.variance, 0, 'an aliased term has no estimable component');
     r.terms.forEach(t => assertEqual(t.variance >= 0, true, `${t.id} must be non-negative`));
+    // N2: a dropped, non-estimable term must be told apart from a term that
+    // was genuinely fit and happens to land on 0 — otherwise both read as
+    // "estimated, variance 0" in the result.
+    assertEqual(r.warnings.includes('aliasedTerms'), true,
+      'a fully aliased term (df 0) must raise aliasedTerms on the REML path');
+  });
+
+  test('aliasedTerms is absent when every term is estimable', () => {
+    // Same shape as the design above, but with a full 2×2×2 grid — nothing
+    // aliased, nothing to warn about.
+    const factorValues = [
+      ['M1', 'M1', 'M1', 'M1', 'M1', 'M1', 'M1', 'M1', 'M2', 'M2', 'M2', 'M2', 'M2', 'M2', 'M2', 'M2'],
+      ['Früh', 'Früh', 'Früh', 'Früh', 'Spät', 'Spät', 'Spät', 'Spät',
+        'Früh', 'Früh', 'Früh', 'Früh', 'Spät', 'Spät', 'Spät', 'Spät'],
+      ['C1', 'C1', 'C2', 'C2', 'C1', 'C1', 'C2', 'C2',
+        'C1', 'C1', 'C2', 'C2', 'C1', 'C1', 'C2', 'C2'],
+    ];
+    const response = [
+      500.2, 500.4, 501.1, 501.3, 499.8, 500.1, 501.4, 501.2,
+      497.6, 498.3, 497.1, 497.4, 497.9, 498.1, 498.6, 498.4,
+    ];
+    const r = computeVarianceComponents({
+      response, factorValues, factorNames: ['Maschine', 'Schicht', 'Charge'],
+      modelForm: 'crossed', estimator: 'reml',
+    });
+    assertEqual(r.warnings.includes('aliasedTerms'), false,
+      `no term is aliased in a full grid, got warnings: ${JSON.stringify(r.warnings)}`);
   });
 });
 
