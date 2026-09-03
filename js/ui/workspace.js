@@ -504,6 +504,17 @@ export class Workspace {
   }
 
   /**
+   * All currently loaded instances of one module type, in insertion order.
+   * Unlike getActiveInstance() this does not depend on which tile has focus —
+   * test helpers and cross-module lookups need a deterministic resolution.
+   * @param {string} moduleId
+   * @returns {object[]}
+   */
+  getInstancesByModuleId(moduleId) {
+    return [...this._instances.values()].filter(inst => inst?.id === moduleId);
+  }
+
+  /**
    * Get metadata for the currently active module: { instanceId, moduleId, instance }.
    * Returns null if no module is active.
    * @returns {{ instanceId: string, moduleId: string, instance: object }|null}
