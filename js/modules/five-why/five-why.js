@@ -51,7 +51,7 @@ export default createModule({
        * Depth = indices.length. At the deepest level (== MAX_LEVEL) it's the root cause.
        * nodeTag(0)             → "W1"
        * nodeTag(0, 0)          → "W1.1"
-       * nodeTag(0, 0, 0, 0, 0) → "◆ Root Cause"
+       * nodeTag(0, 0, 0, 0, 0) → "Root Cause"
        * Deriving the label from render depth (rather than the persisted `level`)
        * keeps it correct regardless of how the tree was loaded (Bug 020).
        */
