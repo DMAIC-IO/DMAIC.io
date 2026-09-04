@@ -25,7 +25,7 @@ suite('Layout-Primitive', () => {
     if (host) { host.remove(); host = null; }
   });
 
-  test('dmike-stack setzt margin-top auf jedem Kind ausser dem ersten', () => {
+  test('dmike-stack setzt margin-top auf jedem Kind außer dem ersten', () => {
     const el = mount('dmike-stack dmike-stack--m');
     const kids = [...el.children];
     assertEqual(getComputedStyle(kids[0]).marginTop, '0px');
@@ -33,13 +33,18 @@ suite('Layout-Primitive', () => {
     assertEqual(getComputedStyle(kids[2]).marginTop, '12px');
   });
 
-  test('dmike-stack laesst das letzte Kind ohne unteren Aussenabstand', () => {
-    // Das ist der Kern: ein trailing margin-bottom wuerde vom Scroll-Container
-    // verschluckt (Roadmap-Eintrag ".dmike-split verschluckt den unteren
+  test('dmike-stack trägt den Abstand oben, nicht unten', () => {
+    // Das ist der Kern: ein trailing margin-bottom würde vom Scroll-Container
+    // verschluckt (Roadmap-Eintrag „.dmike-split verschluckt den unteren
     // Abstand"). Mit margin-top gibt es ihn gar nicht erst.
+    //
+    // Beide Hälften gehören zusammen: margin-bottom allein wäre auch ohne das
+    // Primitiv 0px — Browser-Default und der Reset des Test-Runners liefern
+    // das ohnehin — und würde damit gar nichts zusichern.
     const el = mount('dmike-stack dmike-stack--l');
-    const last = el.lastElementChild;
-    assertEqual(getComputedStyle(last).marginBottom, '0px');
+    const cs = getComputedStyle(el.lastElementChild);
+    assertEqual(cs.marginTop, '24px');
+    assertEqual(cs.marginBottom, '0px');
   });
 
   test('dmike-cluster setzt gap und bricht um', () => {
@@ -65,7 +70,7 @@ suite('Layout-Primitive', () => {
     assertEqual(getComputedStyle(el).columnGap, '12px');
   });
 
-  test('alle fuenf Modifier decken die vorgesehenen Stufen ab', () => {
+  test('alle fünf Modifier decken die vorgesehenen Stufen ab', () => {
     const erwartet = { s: '6px', sm: '8px', m: '12px', ml: '16px', l: '24px' };
     for (const [mod, px] of Object.entries(erwartet)) {
       const el = mount(`dmike-cluster dmike-cluster--${mod}`);
