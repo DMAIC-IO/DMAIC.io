@@ -1,6 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { existsSync, readFileSync, rmSync } from 'node:fs';
+import { existsSync, readFileSync, rmSync, mkdirSync, mkdtempSync, readdirSync, symlinkSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { bundleJs, assertEvalFree, readCssLinks, bundleCss, hash8, rewriteBlock, buildStylesBlock, buildScriptsBlock, runBuild } from './build.mjs';
@@ -116,14 +117,55 @@ test('renderIndexHtml liefert die fertige Shell, ohne zu schreiben', () => {
   assert.equal(after, before, 'renderIndexHtml darf index.html nicht anfassen');
 });
 
+/**
+ * Eine App-Wurzel zum Bauen, die die echte index.html nicht anfasst: jeder
+ * Eintrag von APP_DIR wird in ein frisches Temp-Verzeichnis gesymlinkt, nur
+ * die Build-Ausgaben index.html und THIRD-PARTY-LICENSES.txt bleiben aus,
+ * damit runBuild() sie dort neu anlegt. Alles andere (js/, css/, node_modules/,
+ * i18n/) liest und schreibt der Build wie bei einem echten Lauf durch den
+ * Symlink — die Ausgaben sind deterministisch, es entsteht also kein Fenster,
+ * in dem eine parallele Playwright-Suite eine fehlende Shell sähe.
+ * @returns {string} Pfad der Temp-App-Wurzel (Aufrufer räumt auf)
+ */
+function makeShadowAppDir() {
+  const dir = mkdtempSync(join(tmpdir(), 'dmike-build-'));
+  for (const name of readdirSync(APP_DIR)) {
+    if (name === 'index.html' || name === 'THIRD-PARTY-LICENSES.txt') continue;
+    symlinkSync(join(APP_DIR, name), join(dir, name));
+  }
+  return dir;
+}
+
 test('runBuild schreibt index.html nie im Dev-Entry-Zustand', async () => {
-  const indexPath = join(APP_DIR, 'index.html');
-  // index.html löschen: gelingt der Build trotzdem, kann Schritt 3 die
-  // CSS-Hrefs nicht mehr aus einer bereits geschriebenen Datei lesen — genau
-  // die Kopplung, die das Rennen erzeugt hat.
-  if (existsSync(indexPath)) rmSync(indexPath);
-  await runBuild(APP_DIR, { check: false });
-  const html = readFileSync(indexPath, 'utf8');
-  assert.match(html, /src="js\/app\.min\.js\?v=/);
-  assert.doesNotMatch(html, /src="js\/app\.js"/);
+  const dir = makeShadowAppDir();
+  const realIndex = join(APP_DIR, 'index.html');
+  const realBefore = existsSync(realIndex) ? readFileSync(realIndex, 'utf8') : null;
+  try {
+    // In der Schatten-Wurzel gibt es noch keine index.html. Gelingt der Build
+    // trotzdem, kann Schritt 3 die CSS-Hrefs nicht aus einer bereits
+    // geschriebenen Datei gelesen haben — genau die Kopplung, die das Rennen
+    // erzeugt hat.
+    await runBuild(dir, { check: false });
+    const html = readFileSync(join(dir, 'index.html'), 'utf8');
+    assert.match(html, /src="js\/app\.min\.js\?v=/);
+    assert.doesNotMatch(html, /src="js\/app\.js"/);
+    const realAfter = existsSync(realIndex) ? readFileSync(realIndex, 'utf8') : null;
+    assert.equal(realAfter, realBefore, 'die echte index.html bleibt unberührt');
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test('runBuild lässt keine .tmp-Datei zurück, wenn das Umbenennen scheitert', async () => {
+  const dir = makeShadowAppDir();
+  try {
+    // index.html als Verzeichnis anlegen: renameSync(tmp -> index.html)
+    // scheitert dann garantiert (EISDIR/ENOTDIR/EPERM, je nach Plattform).
+    mkdirSync(join(dir, 'index.html'));
+    await assert.rejects(() => runBuild(dir, { check: false }));
+    const leftovers = readdirSync(dir).filter(n => n.endsWith('.tmp'));
+    assert.deepEqual(leftovers, [], 'keine Temp-Datei nach dem Fehlerfall');
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
 });

@@ -197,7 +197,8 @@ function emit(path, text, check, changed) {
  * Full build orchestrator.
  *
  * Steps:
- *   0. build-templates (inline *.html partials into index.html)
+ *   0. build-templates: Shell aus index.dist.html + inlined *.html-Templates
+ *      rendern — nur in den Speicher, index.html wird hier nicht angefasst
  *   1. lab-data.generated.js
  *   2. JS bundle (esbuild)
  *   3. CSS bundle (esbuild)
@@ -288,10 +289,18 @@ export async function runBuild(appDir = APP_DIR, { check = false } = {}) {
   html = rewriteBlock(html, 'I18N_VERSION',
     `  <meta name="i18n-version" content="${i18nHash}">`);
   // Atomar schreiben: ein parallel laufender Testlauf sieht entweder die alte
-  // oder die neue Shell, nie eine halb geschriebene.
-  const tmpPath = `${indexPath}.tmp`;
-  writeFileSync(tmpPath, html);
-  renameSync(tmpPath, indexPath);
+  // oder die neue Shell, nie eine halb geschriebene. Der Temp-Name ist
+  // prozess-eindeutig (Watcher und manueller Build laufen sonst auf dieselbe
+  // Datei) und liegt im selben Verzeichnis — nur dann ist renameSync atomar.
+  const tmpPath = `${indexPath}.${process.pid}.tmp`;
+  try {
+    writeFileSync(tmpPath, html);
+    renameSync(tmpPath, indexPath);
+  } catch (err) {
+    // Scheitert das Schreiben oder das Umbenennen, darf kein Torso liegen bleiben.
+    try { unlinkSync(tmpPath); } catch { /* nie geschrieben oder schon weg */ }
+    throw err;
+  }
 
   return { changed };
 }
