@@ -51,6 +51,20 @@ import {
   provisionWorksheet, removeProvisionedWorksheet, csvPayloadToWorksheetState,
 } from '../../core/examples-registry.js';
 
+/**
+ * Verzögert `fn`, bis `ms` Millisekunden ohne weiteren Aufruf vergangen sind.
+ * Gleiche Ausdrucksform wie in `core/chart/chart-base.js` — dort ist der
+ * Helfer nicht exportiert.
+ *
+ * @param {Function} fn Aufzurufende Funktion.
+ * @param {number} ms Ruhezeit in Millisekunden.
+ * @returns {Function} Entprellte Fassung von `fn`.
+ */
+function debounce(fn, ms) {
+  let t;
+  return function (...args) { clearTimeout(t); t = setTimeout(() => fn.apply(this, args), ms); };
+}
+
 const mod = createModule({
   config: {
     id: 'histogram',
@@ -88,6 +102,8 @@ const mod = createModule({
       _panStart: null,
       _unsubs: [],
       _plotting: false,
+      _resizeObserver: null,
+      _lastRenderSize: null,
       _interactionsReady: false,
       _activeColorPicker: null,
       _exampleWorksheetId: null,
@@ -187,6 +203,43 @@ const mod = createModule({
           },
         });
         chartWrap.appendChild(this._modebar.el);
+      },
+
+      // ── Größenänderung der Zeichenfläche ──────────────────────
+
+      /**
+       * Legt einen entprellten `ResizeObserver` auf die Zeichenfläche
+       * (`[data-ref="chart-wrap"]`) und zeichnet das Diagramm neu, sobald sich
+       * deren Maße ändern.
+       *
+       * Ohne das bliebe die in `_renderChart()` einmalig aus
+       * `getBoundingClientRect()` gesetzte `viewBox` stehen. Wird der Container
+       * später breiter — etwa weil das 360 px breite Hilfe-Panel verschwindet —,
+       * skaliert das Default-`preserveAspectRatio` das alte Bild mittig in die
+       * neue Fläche: links und rechts bleibt ein leerer Rand statt eines neu
+       * aufgebauten Diagramms. Boxplot-Streifen und Pareto-Sekundärachse hängen
+       * am selben Durchlauf und werden dabei mitgezogen.
+       *
+       * Eine Rückkopplung ist ausgeschlossen: neu gezeichnet wird nur, wenn die
+       * gemessene Fläche vom Maßstab des letzten Durchlaufs abweicht
+       * (`_lastRenderSize`), und das Zeichnen selbst schreibt ausschließlich in
+       * das SVG.
+       *
+       * @private
+       */
+      _observeChartResize() {
+        if (typeof ResizeObserver === 'undefined') return;
+        const wrap = module._container?.querySelector('[data-ref="chart-wrap"]');
+        if (!wrap) return;
+        this._resizeObserver = new ResizeObserver(debounce(() => {
+          if (!this._seriesData) return;
+          const rect = wrap.getBoundingClientRect();
+          if (rect.width <= 0 || rect.height <= 0) return;
+          const last = this._lastRenderSize;
+          if (last && Math.abs(last.w - rect.width) < 0.5 && Math.abs(last.h - rect.height) < 0.5) return;
+          this._renderChart();
+        }, 80));
+        this._resizeObserver.observe(wrap);
       },
 
       // ── Zoom / pan / global mouse ─────────────────────────────
@@ -406,6 +459,9 @@ const mod = createModule({
         if (size.w <= 0 || size.h <= 0) return;
 
         svg.setAttribute('viewBox', `0 0 ${size.w} ${size.h}`);
+        // Maßstab dieses Durchlaufs merken — der ResizeObserver zeichnet nur
+        // neu, wenn die Fläche davon abweicht (siehe _observeChartResize).
+        this._lastRenderSize = { w: size.w, h: size.h };
         svg.replaceChildren();
 
         const textColor = resolveColor('var(--color-text-primary)');
@@ -968,6 +1024,7 @@ const mod = createModule({
         this._createPicker();
         this._createModebar();
         this._bindInteractionEvents();
+        this._observeChartResize();
 
         const eb = module._context.eventBus;
 
@@ -997,6 +1054,8 @@ const mod = createModule({
         if (this._picker) { this._picker.destroy(); this._picker = null; }
         this._closeColorPicker();
         if (this._modebar) { this._modebar.destroy(); this._modebar = null; }
+        if (this._resizeObserver) { this._resizeObserver.disconnect(); this._resizeObserver = null; }
+        this._lastRenderSize = null;
         if (this._globalMoveHandler) window.removeEventListener('mousemove', this._globalMoveHandler);
         if (this._globalUpHandler) window.removeEventListener('mouseup', this._globalUpHandler);
       },
