@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { existsSync, readFileSync, rmSync, mkdirSync, mkdtempSync, readdirSync, symlinkSync } from 'node:fs';
+import { existsSync, readFileSync, rmSync, mkdirSync, mkdtempSync, readdirSync, symlinkSync, statSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -18,15 +18,12 @@ test('assertEvalFree throws on eval', () => {
 test('bundleJs writes an eval-free app.min.js', async () => {
   // In der Schatten-Wurzel bauen: der echte Baum darf durch einen Testlauf
   // nicht angefasst werden (siehe makeShadowAppDir weiter unten).
-  const dir = makeShadowAppDir();
-  try {
+  await withShadowAppDir(async (dir) => {
     const { outfile, code } = await bundleJs(dir);
     assert.ok(existsSync(outfile), 'app.min.js exists');
     assert.ok(code.length > 1000, 'bundle non-trivial');
     assert.doesNotThrow(() => assertEvalFree(code));
-  } finally {
-    rmSync(dir, { recursive: true, force: true });
-  }
+  });
 });
 
 test('readCssLinks preserves order excludes non-stylesheet links', () => {
@@ -86,15 +83,12 @@ test('bundled CSS includes katex + prism rules and copies katex fonts', async ()
   // Source stylesheet list (index.dist.html), NOT the built index.html whose
   // single app.min.css link would re-import the just-emitted url(fonts/…).
   const html = readFileSync(join(APP_DIR, 'index.dist.html'), 'utf8');
-  const dir = makeShadowAppDir();
-  try {
+  await withShadowAppDir(async (dir) => {
     const { code } = await bundleCss(dir, readCssLinks(html), { write: true });
     assert.match(code, /\.katex/);   // KaTeX styles folded in
     assert.match(code, /token/);     // Prism token classes folded in
     assert.ok(existsSync(join(dir, 'css', 'fonts')), 'katex fonts copied to css/fonts');
-  } finally {
-    rmSync(dir, { recursive: true, force: true });
-  }
+  });
 });
 
 test('built index.html contains the pre-JS loading overlay', () => {
@@ -103,19 +97,15 @@ test('built index.html contains the pre-JS loading overlay', () => {
 });
 
 test('runBuild --check passes immediately after a real build', async () => {
-  const dir = makeShadowAppDir();
-  try {
+  await withShadowAppDir(async (dir) => {
     await runBuild(dir, { check: false });          // produce artifacts
     const res = await runBuild(dir, { check: true }); // verify clean
     assert.deepEqual(res.changed, [], 'no stale artifacts after a build');
-  } finally {
-    rmSync(dir, { recursive: true, force: true });
-  }
+  });
 });
 
 test('build emits license artifacts', async () => {
-  const dir = makeShadowAppDir();
-  try {
+  await withShadowAppDir(async (dir) => {
     await runBuild(dir, { check: false });
     const mod = join(dir, 'js', 'pages', 'licenses', 'licenses-data.generated.js');
     const txt = join(dir, 'THIRD-PARTY-LICENSES.txt');
@@ -123,9 +113,7 @@ test('build emits license artifacts', async () => {
     assert.ok(existsSync(txt), 'THIRD-PARTY-LICENSES.txt exists after build');
     assert.match(readFileSync(mod, 'utf8'), /export const LICENSES/);
     assert.match(readFileSync(txt, 'utf8'), /Apache-2\.0/);
-  } finally {
-    rmSync(dir, { recursive: true, force: true });
-  }
+  });
 });
 
 test('renderIndexHtml liefert die fertige Shell, ohne zu schreiben', () => {
@@ -197,11 +185,96 @@ function makeShadowAppDir() {
   return dir;
 }
 
-test('runBuild schreibt index.html nie im Dev-Entry-Zustand', async () => {
+/**
+ * Momentaufnahme des echten `js/`- und `css/`-Baums: relativer Pfad →
+ * `"<Größe>:<mtimeMs>"` für Dateien, `"dir"` für Verzeichnisse. Nur diese
+ * beiden Bäume werden abgetastet — `node_modules/` und die übrigen Top-Level-
+ * Einträge bleiben außen vor, damit der Wächter im Millisekundenbereich bleibt.
+ *
+ * Hinweis am Rande (nicht Teil dieser Runde): `GENERATED_FILE_RE` prüft nur den
+ * Basisnamen; eine künftige *Quelldatei* mit der Endung `.generated.js` fiele
+ * darum stumm aus der Spiegelung. Der Wächter unten fängt das nicht, weil dabei
+ * nichts geschrieben, sondern nur etwas ausgelassen wird.
+ * @param {string} [root] App-Wurzel, deren js/ und css/ aufgenommen werden
+ * @returns {Map<string, string>} Pfad → Fingerabdruck
+ */
+function snapshotBuildTargets(root = APP_DIR) {
+  const snap = new Map();
+  const walk = (abs, rel) => {
+    for (const entry of readdirSync(abs, { withFileTypes: true })) {
+      const childRel = `${rel}/${entry.name}`;
+      const childAbs = join(abs, entry.name);
+      if (entry.isDirectory()) {
+        snap.set(`${childRel}/`, 'dir');
+        walk(childAbs, childRel);
+      } else {
+        const st = statSync(childAbs);
+        snap.set(childRel, `${st.size}:${st.mtimeMs}`);
+      }
+    }
+  };
+  for (const top of ['js', 'css']) walk(join(root, top), top);
+  return snap;
+}
+
+/**
+ * Vergleicht zwei Momentaufnahmen und beschreibt die Abweichungen.
+ * @param {Map<string, string>} before
+ * @param {Map<string, string>} after
+ * @returns {string[]} Zeilen der Form "<Art> <Pfad>", leer wenn identisch
+ */
+function diffSnapshots(before, after) {
+  const lines = [];
+  for (const [path, fp] of after) {
+    if (!before.has(path)) lines.push(`neu       ${path}`);
+    else if (before.get(path) !== fp) lines.push(`geändert  ${path}`);
+  }
+  for (const path of before.keys()) {
+    if (!after.has(path)) lines.push(`entfernt  ${path}`);
+  }
+  return lines.sort();
+}
+
+/**
+ * Legt eine Schatten-App-Wurzel an, führt `fn(dir)` darin aus, räumt sie
+ * anschließend wieder ab — und wacht dabei über den echten Baum.
+ *
+ * Der Wächter nimmt `js/` und `css/` vor dem Schatten-Build auf und vergleicht
+ * danach. Fehlt eine Build-Ausgabe künftig in `GENERATED_FILE_RE` /
+ * `GENERATED_DIRS`, wird sie gespiegelt, der Build schreibt durch den Symlink
+ * hindurch ins Repo — und genau das schlägt hier fehl, statt still
+ * durchzugehen. `git status --porcelain` reichte dafür nicht: die
+ * Build-Ausgaben sind gitignored und blieben unsichtbar (Fehlermodus Runde 1).
+ * @param {(dir: string) => Promise<void>} fn Testkörper, bekommt die Wurzel
+ * @returns {Promise<void>}
+ */
+async function withShadowAppDir(fn) {
+  const before = snapshotBuildTargets();
   const dir = makeShadowAppDir();
+  let bodyFailed = false;
+  try {
+    await fn(dir);
+  } catch (err) {
+    bodyFailed = true;
+    throw err;
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+    const changes = diffSnapshots(before, snapshotBuildTargets());
+    if (changes.length) {
+      const msg = 'Schatten-Build hat den echten Baum verändert '
+        + '(Build-Ausgabe fehlt in GENERATED_FILE_RE/GENERATED_DIRS und wurde '
+        + `gespiegelt):\n${changes.join('\n')}`;
+      // Ist der Testkörper schon gescheitert, dessen Fehler nicht überdecken.
+      if (bodyFailed) console.error(msg);
+      else assert.fail(msg);
+    }
+  }
+}
+
+test('runBuild schreibt index.html nie im Dev-Entry-Zustand', async () => {
   const realIndex = join(APP_DIR, 'index.html');
   const realBefore = existsSync(realIndex) ? readFileSync(realIndex, 'utf8') : null;
-  try {
+  await withShadowAppDir(async (dir) => {
     // In der Schatten-Wurzel gibt es noch keine index.html. Gelingt der Build
     // trotzdem, kann Schritt 3 die CSS-Hrefs nicht aus einer bereits
     // geschriebenen Datei gelesen haben — genau die Kopplung, die das Rennen
@@ -212,21 +285,16 @@ test('runBuild schreibt index.html nie im Dev-Entry-Zustand', async () => {
     assert.doesNotMatch(html, /src="js\/app\.js"/);
     const realAfter = existsSync(realIndex) ? readFileSync(realIndex, 'utf8') : null;
     assert.equal(realAfter, realBefore, 'die echte index.html bleibt unberührt');
-  } finally {
-    rmSync(dir, { recursive: true, force: true });
-  }
+  });
 });
 
 test('runBuild lässt keine .tmp-Datei zurück, wenn das Umbenennen scheitert', async () => {
-  const dir = makeShadowAppDir();
-  try {
+  await withShadowAppDir(async (dir) => {
     // index.html als Verzeichnis anlegen: renameSync(tmp -> index.html)
     // scheitert dann garantiert (EISDIR/ENOTDIR/EPERM, je nach Plattform).
     mkdirSync(join(dir, 'index.html'));
     await assert.rejects(() => runBuild(dir, { check: false }));
     const leftovers = readdirSync(dir).filter(n => n.endsWith('.tmp'));
     assert.deepEqual(leftovers, [], 'keine Temp-Datei nach dem Fehlerfall');
-  } finally {
-    rmSync(dir, { recursive: true, force: true });
-  }
+  });
 });
