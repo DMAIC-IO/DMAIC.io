@@ -1063,15 +1063,24 @@ const mod = createModule({
         }
       },
 
+      /**
+       * Reihenfolge ist Absicht: Beobachter und entprellter Timer werden
+       * *zuerst* abgeräumt. Alles Weitere ruft Fremdcode (`_picker.destroy()`,
+       * `_closeColorPicker()`, `_modebar.destroy()`) — wirft davon etwas, liefe
+       * sonst der 80-ms-Debounce weiter und zöge `_renderChart()` auf der
+       * abgerissenen Instanz nach, genau das Loch, das dieser Teardown schließt.
+       * Bewusst kein `try/finally`: das Modul räumt sonst überall mit einfachen
+       * bewachten Zuweisungen auf, und ein Reihenfolgewechsel kostet nichts.
+       */
       destroy() {
+        if (this._resizeObserver) { this._resizeObserver.disconnect(); this._resizeObserver = null; }
+        if (this._resizeDebounced) { this._resizeDebounced.cancel(); this._resizeDebounced = null; }
+        this._lastRenderSize = null;
         for (const unsub of this._unsubs) unsub();
         this._unsubs = [];
         if (this._picker) { this._picker.destroy(); this._picker = null; }
         this._closeColorPicker();
         if (this._modebar) { this._modebar.destroy(); this._modebar = null; }
-        if (this._resizeObserver) { this._resizeObserver.disconnect(); this._resizeObserver = null; }
-        if (this._resizeDebounced) { this._resizeDebounced.cancel(); this._resizeDebounced = null; }
-        this._lastRenderSize = null;
         if (this._globalMoveHandler) window.removeEventListener('mousemove', this._globalMoveHandler);
         if (this._globalUpHandler) window.removeEventListener('mouseup', this._globalUpHandler);
       },
