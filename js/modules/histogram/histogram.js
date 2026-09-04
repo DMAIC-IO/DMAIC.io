@@ -56,13 +56,21 @@ import {
  * Gleiche Ausdrucksform wie in `core/chart/chart-base.js` — dort ist der
  * Helfer nicht exportiert.
  *
+ * Die zurückgegebene Funktion trägt eine `cancel()`-Methode, die einen noch
+ * laufenden Timer verwirft. Ohne sie feuert ein kurz vor dem Teardown
+ * ausgelöster Aufruf auch nach `destroy()` noch — und da die Instanz ihr DOM
+ * über das Modul-Singleton `module._container` auflöst, schriebe er alte Daten
+ * in ein bereits neu gemountetes SVG.
+ *
  * @param {Function} fn Aufzurufende Funktion.
  * @param {number} ms Ruhezeit in Millisekunden.
- * @returns {Function} Entprellte Fassung von `fn`.
+ * @returns {Function & { cancel: () => void }} Entprellte Fassung von `fn`.
  */
 function debounce(fn, ms) {
   let t;
-  return function (...args) { clearTimeout(t); t = setTimeout(() => fn.apply(this, args), ms); };
+  const debounced = function (...args) { clearTimeout(t); t = setTimeout(() => fn.apply(this, args), ms); };
+  debounced.cancel = () => { clearTimeout(t); t = undefined; };
+  return debounced;
 }
 
 const mod = createModule({
@@ -103,6 +111,7 @@ const mod = createModule({
       _unsubs: [],
       _plotting: false,
       _resizeObserver: null,
+      _resizeDebounced: null,
       _lastRenderSize: null,
       _interactionsReady: false,
       _activeColorPicker: null,
@@ -220,25 +229,31 @@ const mod = createModule({
        * aufgebauten Diagramms. Boxplot-Streifen und Pareto-Sekundärachse hängen
        * am selben Durchlauf und werden dabei mitgezogen.
        *
-       * Eine Rückkopplung ist ausgeschlossen: neu gezeichnet wird nur, wenn die
-       * gemessene Fläche vom Maßstab des letzten Durchlaufs abweicht
-       * (`_lastRenderSize`), und das Zeichnen selbst schreibt ausschließlich in
-       * das SVG.
+       * Eine Rückkopplung ist ausgeschlossen: die beobachtete Fläche hat eine
+       * feste Höhe und schneidet Überstehendes ab (`histogram.css`:
+       * `.histogram__chart-wrap { height: 420px; overflow: hidden }`), das SVG
+       * darin liegt auf `width/height: 100%`. `_renderChart()` kann die
+       * gemessene Box also gar nicht verändern. Zusätzlich zeichnet der
+       * Beobachter nur neu, wenn die Fläche vom Maßstab des letzten Durchlaufs
+       * abweicht (`_lastRenderSize`).
        *
        * @private
        */
       _observeChartResize() {
+        if (this._resizeObserver) { this._resizeObserver.disconnect(); this._resizeObserver = null; }
+        if (this._resizeDebounced) { this._resizeDebounced.cancel(); this._resizeDebounced = null; }
         if (typeof ResizeObserver === 'undefined') return;
         const wrap = module._container?.querySelector('[data-ref="chart-wrap"]');
         if (!wrap) return;
-        this._resizeObserver = new ResizeObserver(debounce(() => {
+        this._resizeDebounced = debounce(() => {
           if (!this._seriesData) return;
           const rect = wrap.getBoundingClientRect();
           if (rect.width <= 0 || rect.height <= 0) return;
           const last = this._lastRenderSize;
           if (last && Math.abs(last.w - rect.width) < 0.5 && Math.abs(last.h - rect.height) < 0.5) return;
           this._renderChart();
-        }, 80));
+        }, 80);
+        this._resizeObserver = new ResizeObserver(this._resizeDebounced);
         this._resizeObserver.observe(wrap);
       },
 
@@ -1055,6 +1070,7 @@ const mod = createModule({
         this._closeColorPicker();
         if (this._modebar) { this._modebar.destroy(); this._modebar = null; }
         if (this._resizeObserver) { this._resizeObserver.disconnect(); this._resizeObserver = null; }
+        if (this._resizeDebounced) { this._resizeDebounced.cancel(); this._resizeDebounced = null; }
         this._lastRenderSize = null;
         if (this._globalMoveHandler) window.removeEventListener('mousemove', this._globalMoveHandler);
         if (this._globalUpHandler) window.removeEventListener('mouseup', this._globalUpHandler);
