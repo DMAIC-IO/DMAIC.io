@@ -281,32 +281,43 @@ async function withShadowAppDir(fn) {
   const before = snapshotBuildTargets();
   const dir = makeShadowAppDir();
   let bodyFailed = false;
+  let bodyErr;
   try {
     await fn(dir);
   } catch (err) {
     bodyFailed = true;
-    throw err;
-  } finally {
-    // Ist der Testkörper schon gescheitert, darf hier nichts mehr nach oben
-    // durchschlagen — weder der Wächterbefund selbst noch ein Fehler aus
-    // rmSync() oder aus der Momentaufnahme. Sonst überdeckte der Aufräum- bzw.
-    // Wächterpfad genau den Originalfehler, den er stehen lassen soll.
-    try {
-      rmSync(dir, { recursive: true, force: true });
-      const changes = diffSnapshots(before, snapshotBuildTargets());
-      if (changes.length) {
-        const msg = 'Schatten-Build hat den echten Baum verändert '
-          + '(Build-Ausgabe fehlt in GENERATED_FILE_RE/GENERATED_DIRS und wurde '
-          + `gespiegelt):\n${changes.join('\n')}`;
-        if (bodyFailed) console.error(msg);
-        else assert.fail(msg);
-      }
-    } catch (guardErr) {
-      if (!bodyFailed) throw guardErr;
+    bodyErr = err;
+  }
+
+  // Aufräumen und Wächter laufen in jedem Fall — aber bewusst NICHT in einem
+  // finally-Block: ein Wurf von dort überdeckte den Originalfehler des
+  // Testkörpers (und wäre no-unsafe-finally). Stattdessen wird der Befund
+  // hier eingesammelt und erst unten priorisiert weitergereicht.
+  let guardErr;
+  let guardFailed = false;
+  try {
+    rmSync(dir, { recursive: true, force: true });
+    const changes = diffSnapshots(before, snapshotBuildTargets());
+    if (changes.length) {
+      assert.fail('Schatten-Build hat den echten Baum verändert '
+        + '(Build-Ausgabe fehlt in GENERATED_FILE_RE/GENERATED_DIRS und wurde '
+        + `gespiegelt):\n${changes.join('\n')}`);
+    }
+  } catch (err) {
+    guardFailed = true;
+    guardErr = err;
+  }
+
+  // Vorrang hat immer der Originalfehler des Testkörpers; ein zusätzlicher
+  // Wächter-/Aufräumbefund wird daneben nur protokolliert.
+  if (bodyFailed) {
+    if (guardFailed) {
       console.error('Wächter/Aufräumen fehlgeschlagen, Originalfehler des '
         + 'Testkörpers bleibt maßgeblich:', guardErr);
     }
+    throw bodyErr;
   }
+  if (guardFailed) throw guardErr;
 }
 
 test('runBuild schreibt index.html nie im Dev-Entry-Zustand', async () => {
