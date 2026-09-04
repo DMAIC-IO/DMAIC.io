@@ -3,6 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <title>D.Mike — Test Runner</title>
+  <!-- Lädt die echten CSS-Custom-Properties (u. a. Abstands-Token), damit
+       Suiten wie core/spacing-tokens.test.js via getComputedStyle gegen die
+       realen Werte prüfen können, statt gegen die Runner-eigenen Inline-Styles. -->
+  <link rel="stylesheet" href="../css/variables.css">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
@@ -154,6 +158,7 @@
     './core/image-upload.test.js',
     './core/worksheet-columns.test.js',
     './core/scenario-catalog.test.js',
+    './core/spacing-tokens.test.js',
     './modules/activity-flowchart.test.js',
     './modules/opportunity-flowchart.test.js',
     './modules/deployment-flowchart.test.js',

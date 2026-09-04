@@ -61,6 +61,7 @@ const SKIP = new Set([
   'core/html-utils.test.js',
   'core/icon.test.js',
   'core/markdown-parser.test.js',
+  'core/spacing-tokens.test.js',
   'core/state-manager.test.js',
   'core/storage/local-adapter.test.js',
   'core/template-module-imagepaths.test.js',

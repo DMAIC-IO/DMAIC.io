@@ -12,12 +12,23 @@
   --help-panel-width: 360px;
   --footer-height: 28px;
 
-  /* Spacing */
+  /* Spacing — Hauptreihe s/m/l = 6/12/24 (Verdopplung).
+     sm und ml sind die Zwischenschritte, x/2x die Erweiterung nach außen.
+     Siehe docs/superpowers/specs/2026-09-04-ui-spacing-vereinheitlichung-design.md */
+  --spacing-2xs: 2px;
   --spacing-xs: 4px;
+  --spacing-s: 6px;
   --spacing-sm: 8px;
-  --spacing-md: 16px;
-  --spacing-lg: 24px;
+  --spacing-m: 12px;
+  --spacing-ml: 16px;
+  --spacing-l: 24px;
   --spacing-xl: 32px;
+  --spacing-2xl: 48px;
+
+  /* DEPRECATED — nur noch für Altbestand. Neuer Code nutzt --spacing-ml
+     bzw. --spacing-l. Nicht entfernen, solange Modul-CSS sie referenziert. */
+  --spacing-md: var(--spacing-ml);
+  --spacing-lg: var(--spacing-l);
 
   /* Typography */
   --font-family: -apple-system, blinkmacsystemfont, 'Segoe UI', system-ui, sans-serif;
