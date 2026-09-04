@@ -16,10 +16,17 @@ test('assertEvalFree throws on eval', () => {
 });
 
 test('bundleJs writes an eval-free app.min.js', async () => {
-  const { outfile, code } = await bundleJs(APP_DIR);
-  assert.ok(existsSync(outfile), 'app.min.js exists');
-  assert.ok(code.length > 1000, 'bundle non-trivial');
-  assert.doesNotThrow(() => assertEvalFree(code));
+  // In der Schatten-Wurzel bauen: der echte Baum darf durch einen Testlauf
+  // nicht angefasst werden (siehe makeShadowAppDir weiter unten).
+  const dir = makeShadowAppDir();
+  try {
+    const { outfile, code } = await bundleJs(dir);
+    assert.ok(existsSync(outfile), 'app.min.js exists');
+    assert.ok(code.length > 1000, 'bundle non-trivial');
+    assert.doesNotThrow(() => assertEvalFree(code));
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
 });
 
 test('readCssLinks preserves order excludes non-stylesheet links', () => {
@@ -79,10 +86,15 @@ test('bundled CSS includes katex + prism rules and copies katex fonts', async ()
   // Source stylesheet list (index.dist.html), NOT the built index.html whose
   // single app.min.css link would re-import the just-emitted url(fonts/…).
   const html = readFileSync(join(APP_DIR, 'index.dist.html'), 'utf8');
-  const { code } = await bundleCss(APP_DIR, readCssLinks(html), { write: true });
-  assert.match(code, /\.katex/);   // KaTeX styles folded in
-  assert.match(code, /token/);     // Prism token classes folded in
-  assert.ok(existsSync(join(APP_DIR, 'css', 'fonts')), 'katex fonts copied to css/fonts');
+  const dir = makeShadowAppDir();
+  try {
+    const { code } = await bundleCss(dir, readCssLinks(html), { write: true });
+    assert.match(code, /\.katex/);   // KaTeX styles folded in
+    assert.match(code, /token/);     // Prism token classes folded in
+    assert.ok(existsSync(join(dir, 'css', 'fonts')), 'katex fonts copied to css/fonts');
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
 });
 
 test('built index.html contains the pre-JS loading overlay', () => {
@@ -91,21 +103,29 @@ test('built index.html contains the pre-JS loading overlay', () => {
 });
 
 test('runBuild --check passes immediately after a real build', async () => {
-  await runBuild(APP_DIR, { check: false });          // produce artifacts
-  const res = await runBuild(APP_DIR, { check: true }); // verify clean
-  assert.deepEqual(res.changed, [], 'no stale artifacts after a build');
+  const dir = makeShadowAppDir();
+  try {
+    await runBuild(dir, { check: false });          // produce artifacts
+    const res = await runBuild(dir, { check: true }); // verify clean
+    assert.deepEqual(res.changed, [], 'no stale artifacts after a build');
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
 });
 
 test('build emits license artifacts', async () => {
-  const { existsSync, readFileSync } = await import('node:fs');
-  const { join } = await import('node:path');
-  const appDir = APP_DIR; // already imported in test file
-  const mod = join(appDir, 'js', 'pages', 'licenses', 'licenses-data.generated.js');
-  const txt = join(appDir, 'THIRD-PARTY-LICENSES.txt');
-  assert.ok(existsSync(mod), 'licenses-data.generated.js exists after build');
-  assert.ok(existsSync(txt), 'THIRD-PARTY-LICENSES.txt exists after build');
-  assert.match(readFileSync(mod, 'utf8'), /export const LICENSES/);
-  assert.match(readFileSync(txt, 'utf8'), /Apache-2\.0/);
+  const dir = makeShadowAppDir();
+  try {
+    await runBuild(dir, { check: false });
+    const mod = join(dir, 'js', 'pages', 'licenses', 'licenses-data.generated.js');
+    const txt = join(dir, 'THIRD-PARTY-LICENSES.txt');
+    assert.ok(existsSync(mod), 'licenses-data.generated.js exists after build');
+    assert.ok(existsSync(txt), 'THIRD-PARTY-LICENSES.txt exists after build');
+    assert.match(readFileSync(mod, 'utf8'), /export const LICENSES/);
+    assert.match(readFileSync(txt, 'utf8'), /Apache-2\.0/);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
 });
 
 test('renderIndexHtml liefert die fertige Shell, ohne zu schreiben', () => {
@@ -118,19 +138,60 @@ test('renderIndexHtml liefert die fertige Shell, ohne zu schreiben', () => {
 });
 
 /**
- * Eine App-Wurzel zum Bauen, die die echte index.html nicht anfasst: jeder
- * Eintrag von APP_DIR wird in ein frisches Temp-Verzeichnis gesymlinkt, nur
- * die Build-Ausgaben index.html und THIRD-PARTY-LICENSES.txt bleiben aus,
- * damit runBuild() sie dort neu anlegt. Alles andere (js/, css/, node_modules/,
- * i18n/) liest und schreibt der Build wie bei einem echten Lauf durch den
- * Symlink — die Ausgaben sind deterministisch, es entsteht also kein Fenster,
- * in dem eine parallele Playwright-Suite eine fehlende Shell sähe.
+ * Namen, die der Build in js/ oder css/ selbst erzeugt. Sie dürfen in der
+ * Schatten-Wurzel nicht als Symlink liegen, sonst schriebe der Build durch den
+ * Link hindurch in den echten Baum (Schreiben auf einen Symlink trifft das
+ * Ziel, nicht den Link).
+ */
+const GENERATED_FILE_RE = /(^_bundle_entry\.css$|\.generated\.js$|^app\.min\.(js|css)$|^app\.min\.js\.(map|LEGAL\.txt)$)/;
+
+/** Verzeichnisse unterhalb von js/ bzw. css/, die reine Build-Ausgaben sind. */
+const GENERATED_DIRS = new Set(['css/fonts']);
+
+/**
+ * Spiegelt `srcDir` nach `dstDir`: Verzeichnisse werden als echte Verzeichnisse
+ * angelegt, Dateien nur gesymlinkt. Build-Ausgaben werden ausgelassen, damit
+ * jeder Schreibvorgang im Spiegel landet und nicht im Original.
+ * @param {string} srcDir  Quellverzeichnis im echten Baum
+ * @param {string} dstDir  Zielverzeichnis in der Schatten-Wurzel
+ * @param {string} rel     Pfad von der App-Wurzel aus, mit '/' getrennt
+ */
+function mirrorDir(srcDir, dstDir, rel) {
+  mkdirSync(dstDir, { recursive: true });
+  for (const entry of readdirSync(srcDir, { withFileTypes: true })) {
+    const childRel = rel ? `${rel}/${entry.name}` : entry.name;
+    if (entry.isDirectory()) {
+      if (GENERATED_DIRS.has(childRel)) continue;
+      mirrorDir(join(srcDir, entry.name), join(dstDir, entry.name), childRel);
+    } else {
+      if (GENERATED_FILE_RE.test(entry.name)) continue;
+      symlinkSync(join(srcDir, entry.name), join(dstDir, entry.name));
+    }
+  }
+}
+
+/**
+ * Eine App-Wurzel zum Bauen, die den echten Baum nicht anfasst.
+ *
+ * Nur-lesende Top-Level-Einträge (node_modules/, i18n/, tools/, …) werden als
+ * Ganzes gesymlinkt. `js/` und `css/` dagegen werden als echte Verzeichnisbäume
+ * nachgebildet, deren Dateien einzeln gesymlinkt sind: dort liegen sämtliche
+ * Build-Ziele (app.min.js/.map/.LEGAL.txt, app.min.css, css/fonts/*, das Temp-
+ * Entry _bundle_entry.css und alle *.generated.js), und die sollen in der
+ * Schatten-Wurzel entstehen statt im Repo. Die vorhandenen Ausgaben werden
+ * bewusst nicht mitgespiegelt, sonst schriebe der Build durch den Symlink
+ * hindurch in die echten Dateien. index.html und THIRD-PARTY-LICENSES.txt
+ * fehlen ebenfalls, damit runBuild() sie hier neu anlegt.
  * @returns {string} Pfad der Temp-App-Wurzel (Aufrufer räumt auf)
  */
 function makeShadowAppDir() {
   const dir = mkdtempSync(join(tmpdir(), 'dmike-build-'));
   for (const name of readdirSync(APP_DIR)) {
     if (name === 'index.html' || name === 'THIRD-PARTY-LICENSES.txt') continue;
+    if (name === 'js' || name === 'css') {
+      mirrorDir(join(APP_DIR, name), join(dir, name), name);
+      continue;
+    }
     symlinkSync(join(APP_DIR, name), join(dir, name));
   }
   return dir;
