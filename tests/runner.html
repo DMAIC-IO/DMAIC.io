@@ -7,6 +7,10 @@
        Suiten wie core/spacing-tokens.test.js via getComputedStyle gegen die
        realen Werte prüfen können, statt gegen die Runner-eigenen Inline-Styles. -->
   <link rel="stylesheet" href="../css/variables.css">
+  <!-- Lädt die Layout-Primitive (.dmike-stack, .dmike-cluster, .dmike-row),
+       damit ui/layout-primitives.test.js sie via getComputedStyle gegen die
+       realen Klassen prüfen kann, statt gegen die Runner-eigenen Inline-Styles. -->
+  <link rel="stylesheet" href="../css/components.css">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
@@ -255,6 +259,7 @@
     './ui/dmaic-tiles-layout.test.js',
     './ui/dmaic-tiles-rebuild.test.js',
     './ui/action-modal.test.js',
+    './ui/layout-primitives.test.js',
     './engines/math-utils.test.js',
     './engines/expression-eval.test.js',
     './engines/factorial.test.js',

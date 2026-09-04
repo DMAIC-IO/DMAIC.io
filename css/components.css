@@ -2033,3 +2033,61 @@ body.dmike-glossary-inline-off .glossary-term:focus-within {
 .action-modal__item--failed .action-modal__item-status { color: var(--color-error); }
 
 .action-modal__footer { margin-top: var(--spacing-sm); }
+
+/* ============================================================
+   Layout-Primitive
+   Drei semantische Klassen für die wiederkehrenden Abstands-Muster.
+   Bewusst keine Utility-Skala (.p-m, .mt-l, …): die Einheitlichkeit
+   entsteht aus dem Stylelint-Guard, nicht aus der Klassenmenge.
+
+     .dmike-stack    vertikale Liste, Abstand zwischen den Kindern
+     .dmike-cluster  umbrechende Reihe (Buttons, Chips, Badges)
+     .dmike-row      einzeilige Reihe, vertikal zentriert
+
+   Modifier --s / --sm / --m / --ml / --l setzen die Stufe.
+   ============================================================ */
+
+.dmike-stack,
+.dmike-cluster,
+.dmike-row {
+  --dmike-space: var(--spacing-m);
+}
+
+.dmike-stack--s,
+.dmike-cluster--s,
+.dmike-row--s { --dmike-space: var(--spacing-s); }
+
+.dmike-stack--sm,
+.dmike-cluster--sm,
+.dmike-row--sm { --dmike-space: var(--spacing-sm); }
+
+.dmike-stack--m,
+.dmike-cluster--m,
+.dmike-row--m { --dmike-space: var(--spacing-m); }
+
+.dmike-stack--ml,
+.dmike-cluster--ml,
+.dmike-row--ml { --dmike-space: var(--spacing-ml); }
+
+.dmike-stack--l,
+.dmike-cluster--l,
+.dmike-row--l { --dmike-space: var(--spacing-l); }
+
+/* margin-top statt margin-bottom: so hat das letzte Kind keinen unteren
+   Außenabstand, den ein Scroll-Container verschlucken könnte. */
+.dmike-stack > * + * {
+  margin-top: var(--dmike-space);
+}
+
+.dmike-cluster {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--dmike-space);
+}
+
+.dmike-row {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: var(--dmike-space);
+}
