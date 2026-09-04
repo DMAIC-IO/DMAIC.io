@@ -9,7 +9,7 @@
  */
 import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { readdirSync, statSync } from 'node:fs';
-import { join, relative, dirname } from 'node:path';
+import { join, relative, dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const APP_DIR = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
@@ -108,10 +108,14 @@ export function buildTemplateBlock(records) {
   return [START, ...parts, END].join('\n');
 }
 
-/** Collect template records from the app js/ tree. */
-function collect() {
-  return htmlFiles(join(APP_DIR, KEY_PREFIX)).map(abs => ({
-    key: relative(APP_DIR, abs).split('\\').join('/'),
+/**
+ * Collect template records from the app js/ tree.
+ * @param {string} [dir] App-Wurzel (Standard: dieses Repo)
+ * @returns {{key: string, content: string}[]}
+ */
+function collect(dir = APP_DIR) {
+  return htmlFiles(join(dir, KEY_PREFIX)).map(abs => ({
+    key: relative(dir, abs).split('\\').join('/'),
     content: readFileSync(abs, 'utf8'),
   }));
 }
@@ -131,6 +135,24 @@ function splice(name, html, block) {
 const TARGETS = [
   { dist: 'index.dist.html', out: 'index.html' },
 ];
+
+/**
+ * Die fertige index.html als String — Template-Block in index.dist.html
+ * gespliced, ohne irgendetwas zu schreiben.
+ *
+ * runBuild() nutzt das, damit index.html EINMAL am Ende geschrieben wird.
+ * Vorher schrieb dieser Schritt die Datei sofort im Dev-Entry-Zustand
+ * (Script-Tag auf js/app.js) und ein parallel laufender Testlauf sah eine
+ * tote App-Shell.
+ *
+ * @param {string} [dir] App-Wurzel (Standard: dieses Repo)
+ * @returns {string} vollständige index.html
+ */
+export function renderIndexHtml(dir = APP_DIR) {
+  const block = buildTemplateBlock(collect(dir));
+  const distPath = join(dir, 'index.dist.html');
+  return splice('index.dist.html', readFileSync(distPath, 'utf8'), block);
+}
 
 function main() {
   const check = process.argv.includes('--check');
@@ -158,4 +180,6 @@ function main() {
   }
 }
 
-if (process.argv[1] && process.argv[1].endsWith('build.mjs')) main();
+// Nur als CLI ausführen — nicht, wenn eine andere build.mjs dieses Modul
+// importiert (ein endsWith('build.mjs')-Test würde dort mitfeuern).
+if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) main();

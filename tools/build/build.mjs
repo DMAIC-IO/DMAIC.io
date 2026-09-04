@@ -9,12 +9,12 @@
  *   node tools/build/build.mjs --watch   # rebuild on change (dev daemon)
  */
 import { build as esbuild } from 'esbuild';
-import { readFileSync, writeFileSync, unlinkSync, existsSync, mkdirSync } from 'node:fs';
+import { readFileSync, writeFileSync, unlinkSync, existsSync, mkdirSync, renameSync } from 'node:fs';
 import { mkdir, writeFile } from 'node:fs/promises';
-import { join, dirname } from 'node:path';
+import { join, dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createHash } from 'node:crypto';
-import { execFileSync } from 'node:child_process';
+import { renderIndexHtml } from '../build-templates/build.mjs';
 import { collectLabData, renderLabDataModule } from './lab-data.mjs';
 import { collectHelpIds, renderHelpRegistryModule } from './help-data.mjs';
 import { collectGlossaryData, renderGlossaryDataModule } from './glossary-data.mjs';
@@ -215,11 +215,12 @@ function emit(path, text, check, changed) {
 export async function runBuild(appDir = APP_DIR, { check = false } = {}) {
   const changed = [];
 
-  // 0. templates — always generate index.html from index.dist.html (write mode).
-  //    index.html is git-ignored and generated; it must exist for readCssLinks below.
-  execFileSync('node', [
-    join(appDir, 'tools', 'build-templates', 'build.mjs'),
-  ], { cwd: appDir, stdio: 'inherit' });
+  // 0. templates — die fertige Shell NUR in den Speicher rendern. Geschrieben
+  //    wird index.html erst in Schritt 4, in einem Rutsch: sonst liegt die
+  //    Datei zwischendurch im Dev-Entry-Zustand (Script-Tag auf js/app.js mit
+  //    blanken Specifiern) und ein parallel laufender Testlauf sieht eine tote
+  //    App-Shell.
+  let html = renderIndexHtml(appDir);
 
   // 1. lab-data
   const labData = renderLabDataModule(await collectLabData(appDir));
@@ -242,11 +243,11 @@ export async function runBuild(appDir = APP_DIR, { check = false } = {}) {
   // 2. JS bundle (in check mode: in-memory only — do NOT mutate app.min.js)
   const { code: jsCode } = await bundleJs(appDir, { write: !check });
 
-  // 3. Read the generated index.html (sourced from index.dist.html) for CSS hrefs.
-  //    index.dist.html always has the full 74-link STYLES list, so readCssLinks
-  //    always returns the full source list — never a self-overwritten bundle link.
+  // 3. CSS-Hrefs aus der in Schritt 0 gerenderten Shell lesen — nicht von der
+  //    Platte. index.dist.html trägt immer die vollständige STYLES-Liste, also
+  //    liefert readCssLinks die volle Quellliste, nie einen bereits ersetzten
+  //    Bundle-Link.
   const indexPath = join(appDir, 'index.html');
-  let html = readFileSync(indexPath, 'utf8');
   const hrefs = readCssLinks(html);
   const minCssPath = join(appDir, 'css', 'app.min.css');
   let cssCode;
@@ -286,7 +287,11 @@ export async function runBuild(appDir = APP_DIR, { check = false } = {}) {
   html = rewriteBlock(html, 'SCRIPTS', buildScriptsBlock(jsHref));
   html = rewriteBlock(html, 'I18N_VERSION',
     `  <meta name="i18n-version" content="${i18nHash}">`);
-  writeFileSync(indexPath, html);
+  // Atomar schreiben: ein parallel laufender Testlauf sieht entweder die alte
+  // oder die neue Shell, nie eine halb geschriebene.
+  const tmpPath = `${indexPath}.tmp`;
+  writeFileSync(tmpPath, html);
+  renameSync(tmpPath, indexPath);
 
   return { changed };
 }
@@ -334,4 +339,6 @@ async function main() {
   console.log('build: done');
 }
 
-if (process.argv[1] && process.argv[1].endsWith('build.mjs')) main();
+// Nur als CLI ausführen — nicht, wenn eine andere build.mjs dieses Modul
+// importiert (ein endsWith('build.mjs')-Test würde dort mitfeuern).
+if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) main();

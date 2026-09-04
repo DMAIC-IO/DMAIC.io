@@ -1,9 +1,10 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, readFileSync, rmSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { bundleJs, assertEvalFree, readCssLinks, bundleCss, hash8, rewriteBlock, buildStylesBlock, buildScriptsBlock, runBuild } from './build.mjs';
+import { renderIndexHtml } from '../build-templates/build.mjs';
 
 const APP_DIR = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
 
@@ -104,4 +105,25 @@ test('build emits license artifacts', async () => {
   assert.ok(existsSync(txt), 'THIRD-PARTY-LICENSES.txt exists after build');
   assert.match(readFileSync(mod, 'utf8'), /export const LICENSES/);
   assert.match(readFileSync(txt, 'utf8'), /Apache-2\.0/);
+});
+
+test('renderIndexHtml liefert die fertige Shell, ohne zu schreiben', () => {
+  const indexPath = join(APP_DIR, 'index.html');
+  const before = existsSync(indexPath) ? readFileSync(indexPath, 'utf8') : null;
+  const html = renderIndexHtml(APP_DIR);
+  assert.match(html, /<template data-tpl="js\//);
+  const after = existsSync(indexPath) ? readFileSync(indexPath, 'utf8') : null;
+  assert.equal(after, before, 'renderIndexHtml darf index.html nicht anfassen');
+});
+
+test('runBuild schreibt index.html nie im Dev-Entry-Zustand', async () => {
+  const indexPath = join(APP_DIR, 'index.html');
+  // index.html löschen: gelingt der Build trotzdem, kann Schritt 3 die
+  // CSS-Hrefs nicht mehr aus einer bereits geschriebenen Datei lesen — genau
+  // die Kopplung, die das Rennen erzeugt hat.
+  if (existsSync(indexPath)) rmSync(indexPath);
+  await runBuild(APP_DIR, { check: false });
+  const html = readFileSync(indexPath, 'utf8');
+  assert.match(html, /src="js\/app\.min\.js\?v=/);
+  assert.doesNotMatch(html, /src="js\/app\.js"/);
 });
