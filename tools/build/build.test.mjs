@@ -130,6 +130,11 @@ test('renderIndexHtml liefert die fertige Shell, ohne zu schreiben', () => {
  * Schatten-Wurzel nicht als Symlink liegen, sonst schriebe der Build durch den
  * Link hindurch in den echten Baum (Schreiben auf einen Symlink trifft das
  * Ziel, nicht den Link).
+ *
+ * Hinweis am Rande: der Ausdruck prüft nur den Basisnamen; eine künftige
+ * *Quelldatei* mit der Endung `.generated.js` fiele darum stumm aus der
+ * Spiegelung. Der Wächter unten fängt das nicht, weil dabei nichts geschrieben,
+ * sondern nur etwas ausgelassen wird.
  */
 const GENERATED_FILE_RE = /(^_bundle_entry\.css$|\.generated\.js$|^app\.min\.(js|css)$|^app\.min\.js\.(map|LEGAL\.txt)$)/;
 
@@ -186,20 +191,34 @@ function makeShadowAppDir() {
 }
 
 /**
- * Momentaufnahme des echten `js/`- und `css/`-Baums: relativer Pfad →
- * `"<Größe>:<mtimeMs>"` für Dateien, `"dir"` für Verzeichnisse. Nur diese
- * beiden Bäume werden abgetastet — `node_modules/` und die übrigen Top-Level-
- * Einträge bleiben außen vor, damit der Wächter im Millisekundenbereich bleibt.
+ * Top-Level-Einträge, die die Momentaufnahme auslässt. Alles andere wird
+ * abgetastet — auch `assets/`, `i18n/`, `glossary/`, `examples/` &c., die
+ * `makeShadowAppDir()` als *ganze Verzeichnisse* symlinkt: dort schlüge ein
+ * künftiger Schreibvorgang des Builds sonst still in den echten Baum durch.
  *
- * Hinweis am Rande (nicht Teil dieser Runde): `GENERATED_FILE_RE` prüft nur den
- * Basisnamen; eine künftige *Quelldatei* mit der Endung `.generated.js` fiele
- * darum stumm aus der Spiegelung. Der Wächter unten fängt das nicht, weil dabei
- * nichts geschrieben, sondern nur etwas ausgelassen wird.
- * @param {string} [root] App-Wurzel, deren js/ und css/ aufgenommen werden
+ * - `.git` — Git-Innereien, die sich unabhängig vom Build laufend ändern
+ *   (Index-Refresh); jede Momentaufnahme wäre verrauscht.
+ * - `node_modules` — ~108 MB Fremdcode, nie Ziel einer Build-Ausgabe; das
+ *   Abtasten würde den Wächter um Größenordnungen verlangsamen.
+ * - `docs`, `tests` — ~13 MB bzw. ~5 MB reiner Doku- und Testbestand, vom
+ *   Build ebenfalls nie beschrieben und damit der größte vermeidbare Ballast.
+ */
+const SNAPSHOT_SKIP = new Set(['.git', 'node_modules', 'docs', 'tests']);
+
+/**
+ * Momentaufnahme des echten App-Baums: relativer Pfad →
+ * `"<Größe>:<mtimeMs>"` für Dateien, `"dir"` für Verzeichnisse. Abgetastet
+ * werden alle Top-Level-Einträge außer denen in `SNAPSHOT_SKIP` — der
+ * verbleibende Rest liegt bei ~5 MB und kostet nur Millisekunden.
+ * @param {string} [root] App-Wurzel, die aufgenommen wird
  * @returns {Map<string, string>} Pfad → Fingerabdruck
  */
 function snapshotBuildTargets(root = APP_DIR) {
   const snap = new Map();
+  const fingerprint = (abs) => {
+    const st = statSync(abs);
+    return `${st.size}:${st.mtimeMs}`;
+  };
   const walk = (abs, rel) => {
     for (const entry of readdirSync(abs, { withFileTypes: true })) {
       const childRel = `${rel}/${entry.name}`;
@@ -208,12 +227,20 @@ function snapshotBuildTargets(root = APP_DIR) {
         snap.set(`${childRel}/`, 'dir');
         walk(childAbs, childRel);
       } else {
-        const st = statSync(childAbs);
-        snap.set(childRel, `${st.size}:${st.mtimeMs}`);
+        snap.set(childRel, fingerprint(childAbs));
       }
     }
   };
-  for (const top of ['js', 'css']) walk(join(root, top), top);
+  for (const entry of readdirSync(root, { withFileTypes: true })) {
+    if (SNAPSHOT_SKIP.has(entry.name)) continue;
+    const childAbs = join(root, entry.name);
+    if (entry.isDirectory()) {
+      snap.set(`${entry.name}/`, 'dir');
+      walk(childAbs, entry.name);
+    } else {
+      snap.set(entry.name, fingerprint(childAbs));
+    }
+  }
   return snap;
 }
 
@@ -239,12 +266,14 @@ function diffSnapshots(before, after) {
  * Legt eine Schatten-App-Wurzel an, führt `fn(dir)` darin aus, räumt sie
  * anschließend wieder ab — und wacht dabei über den echten Baum.
  *
- * Der Wächter nimmt `js/` und `css/` vor dem Schatten-Build auf und vergleicht
- * danach. Fehlt eine Build-Ausgabe künftig in `GENERATED_FILE_RE` /
- * `GENERATED_DIRS`, wird sie gespiegelt, der Build schreibt durch den Symlink
- * hindurch ins Repo — und genau das schlägt hier fehl, statt still
- * durchzugehen. `git status --porcelain` reichte dafür nicht: die
- * Build-Ausgaben sind gitignored und blieben unsichtbar (Fehlermodus Runde 1).
+ * Der Wächter nimmt den echten Baum (alles außer `SNAPSHOT_SKIP`) vor dem
+ * Schatten-Build auf und vergleicht danach. Fehlt eine Build-Ausgabe künftig in
+ * `GENERATED_FILE_RE` / `GENERATED_DIRS`, wird sie gespiegelt, der Build
+ * schreibt durch den Symlink hindurch ins Repo — und genau das schlägt hier
+ * fehl, statt still durchzugehen. Gleiches gilt für die übrigen Top-Level-
+ * Verzeichnisse, die als Ganzes gesymlinkt sind. `git status --porcelain`
+ * reichte dafür nicht: die Build-Ausgaben sind gitignored und blieben
+ * unsichtbar (Fehlermodus Runde 1).
  * @param {(dir: string) => Promise<void>} fn Testkörper, bekommt die Wurzel
  * @returns {Promise<void>}
  */
@@ -258,15 +287,24 @@ async function withShadowAppDir(fn) {
     bodyFailed = true;
     throw err;
   } finally {
-    rmSync(dir, { recursive: true, force: true });
-    const changes = diffSnapshots(before, snapshotBuildTargets());
-    if (changes.length) {
-      const msg = 'Schatten-Build hat den echten Baum verändert '
-        + '(Build-Ausgabe fehlt in GENERATED_FILE_RE/GENERATED_DIRS und wurde '
-        + `gespiegelt):\n${changes.join('\n')}`;
-      // Ist der Testkörper schon gescheitert, dessen Fehler nicht überdecken.
-      if (bodyFailed) console.error(msg);
-      else assert.fail(msg);
+    // Ist der Testkörper schon gescheitert, darf hier nichts mehr nach oben
+    // durchschlagen — weder der Wächterbefund selbst noch ein Fehler aus
+    // rmSync() oder aus der Momentaufnahme. Sonst überdeckte der Aufräum- bzw.
+    // Wächterpfad genau den Originalfehler, den er stehen lassen soll.
+    try {
+      rmSync(dir, { recursive: true, force: true });
+      const changes = diffSnapshots(before, snapshotBuildTargets());
+      if (changes.length) {
+        const msg = 'Schatten-Build hat den echten Baum verändert '
+          + '(Build-Ausgabe fehlt in GENERATED_FILE_RE/GENERATED_DIRS und wurde '
+          + `gespiegelt):\n${changes.join('\n')}`;
+        if (bodyFailed) console.error(msg);
+        else assert.fail(msg);
+      }
+    } catch (guardErr) {
+      if (!bodyFailed) throw guardErr;
+      console.error('Wächter/Aufräumen fehlgeschlagen, Originalfehler des '
+        + 'Testkörpers bleibt maßgeblich:', guardErr);
     }
   }
 }
