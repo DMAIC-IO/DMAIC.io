@@ -94,6 +94,22 @@
   min-height: 0;
 }
 
+/* ===== Scroll-Besitz: Bauform "Wurzel direkt in .dmike-split" =====
+   39 von 71 Modulen haben kein .module-container — ihr Wurzelelement ist
+   .dmike-split direkt unter dem klassenlosen Modul-Wrapper der Werkbank
+   (height:100%, erzeugt in js/ui/workspace.js `_instantiateModule`). Ohne
+   eigene Höhenbegrenzung wuchs der Split bisher mit seinem Inhalt, und der
+   Überlauf entwich nach `.workspace__module-area` — seit deren `overflow:
+   hidden` (siehe css/layout.css) würde das den Inhalt abschneiden. Der
+   Kind-Kombinator trifft NUR diese Bauform: bei Modulen mit
+   `.module-container` sitzt der Container immer zwischen Wrapper und
+   `.dmike-split` (oder der Split fehlt ganz, z. B. `todo`), das schließt
+   beide anderen Fälle sauber aus — kein zusätzlicher Selektor nötig. */
+.workspace__module-area > div > .dmike-split {
+  height: 100%;
+  overflow-y: auto;
+}
+
 .dmike-split__input {
   width: var(--split-input, 320px);
   flex-shrink: 0;

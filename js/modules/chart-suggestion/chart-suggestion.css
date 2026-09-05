@@ -17,9 +17,15 @@
 }
 
 /* Definite height (not just .dmike-split's min-height:100%) so the preview
-   plot resolves a real block height and the resize feedback loop breaks. */
+   plot resolves a real block height and the resize feedback loop breaks.
+   overflow-y:auto macht diese Wurzel zusätzlich zum Besitzer ihres eigenen
+   Überlaufs (Bauform "weder noch" der Scroll-Inventur, docs/superpowers/
+   plans/2026-09-04-scroll-inventur.md) — ohne eigenen Scroll-Owner entwich
+   Inhalt, der die feste Höhe sprengt, bisher nach .workspace__module-area
+   (jetzt overflow:hidden, siehe css/layout.css). */
 .chart-suggestion.dmike-split {
   height: 100%;
+  overflow-y: auto;
 }
 
 /* ─── Empty state ──────────────────────────────────────────── */

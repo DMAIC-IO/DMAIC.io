@@ -55,9 +55,19 @@
 }
 
 /* ── Main Content ── */
+
+/* min-height:0 lässt diese Fläche unter ihre Inhaltshöhe schrumpfen, damit
+   overflow-y:auto greifen KANN. Ob es das tut, hängt aber vom Geschwister
+   .rg-sidebar ab: dessen Kategorienliste hat selbst kein min-height:0 und
+   wächst bei vielen Kategorien über die Split-Höhe hinaus — dann wird
+   .dmike-split (Bauform "Wurzel direkt in .dmike-split", generische Regel
+   in css/modules.css) zum tatsächlichen Besitzer, nicht diese Fläche.
+   Kein Fehlverhalten (weiterhin genau ein Scroller, nichts abgeschnitten),
+   nur nicht die feinste Granularität — siehe scroll-inventur.md. */
 .rg-main {
   padding: var(--spacing-lg) var(--spacing-xl);
   overflow-y: auto;
+  min-height: 0;
 }
 
 .rg-main__empty {

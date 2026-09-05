@@ -2,7 +2,15 @@
    D.Mike — Unit Converter Module (unit-converter.css)
    ============================================================ */
 
+/* Wurzel ohne .module-container / .dmike-split ("weder noch", Bauform 4 der
+   Scroll-Inventur, docs/superpowers/plans/2026-09-04-scroll-inventur.md).
+   Ohne eigene Höhenbegrenzung wächst der Inhalt (Kategorien + Panel) mit
+   der Anzahl sichtbarer Umrechnungsfelder; der Überlauf entwich bisher nach
+   `.workspace__module-area` (jetzt overflow:hidden, siehe css/layout.css).
+   height:100% + overflow-y:auto macht die Wurzel selbst zum Besitzer. */
 .module-unit-converter {
+  height: 100%;
+  overflow-y: auto;
   padding: var(--spacing-lg);
   max-width: 960px;
   margin: 0 auto;

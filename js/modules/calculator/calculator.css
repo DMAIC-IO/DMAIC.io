@@ -2,11 +2,18 @@
    D.Mike — Scientific Calculator Module (calculator.css)
    ============================================================ */
 
+/* Wurzel ohne .module-container / .dmike-split ("weder noch", Bauform 4 der
+   Scroll-Inventur, docs/superpowers/plans/2026-09-04-scroll-inventur.md).
+   `min-height:100%` ist nur eine Untergrenze — wächst der Inhalt (z. B. der
+   Verlauf im sci-Modus) darüber hinaus, entwich der Überlauf bisher nach
+   `.workspace__module-area` (jetzt overflow:hidden, siehe css/layout.css).
+   height:100% + overflow-y:auto macht die Wurzel selbst zum Besitzer. */
 .module-calculator {
   display: flex;
   align-items: flex-start;
   justify-content: center;
-  min-height: 100%;
+  height: 100%;
+  overflow-y: auto;
   padding: var(--spacing-lg);
 }
 

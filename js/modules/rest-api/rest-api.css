@@ -3,13 +3,33 @@
    All colors via CSS custom properties (see css/variables.css)
    ============================================================ */
 
+/* Root-Split füllt die feste Höhe von .module-container statt sich am
+   Inhalt zu bemessen — sonst wächst er unbegrenzt (siehe .rest-api__detail
+   unten) und der Überlauf entweicht nach .workspace__module-area. Gleiches
+   Muster wie das inline `style="flex:1;min-height:0"` bei
+   stakeholder-analysis.html / voc-ctx-tree.html, hier als CSS-Regel, weil
+   rest-api.html keinen Inline-Stil auf dem Split trägt. */
+.rest-api.module-container > .dmike-split {
+  flex: 1;
+  min-height: 0;
+}
+
 /* ===== Sidebar ===== */
 .rest-api__sidebar {
   display: flex;
   flex-direction: column;
   padding: 0;
   gap: 0;
-  overflow: hidden;
+  overflow: hidden;    /* clip children to border-radius */
+
+  /* .dmike-split__input defaults to align-self:flex-start (sizes to its own
+     content), so .rest-api__list's flex:1 never gets a bounded height and
+     its overflow-y:auto never engages — the unbounded endpoint list instead
+     grows .dmike-split / .module-container past the workspace, producing a
+     second, outer scrollbar (Bug 022 twin, siehe stakeholder-analysis.css /
+     voc-ctx-tree.css). Stretch to the split's full height so the list's own
+     scroll is the only one that ever triggers. */
+  align-self: stretch;
 }
 
 .rest-api__sidebar-header {
@@ -140,6 +160,18 @@
 }
 
 /* ===== Detail panel ===== */
+
+/* Ohne min-height:0 nimmt sich der Flex-Kind die volle Höhe seines Inhalts
+   (Header-Liste + Response können beliebig lang werden) und wächst über
+   .dmike-split hinaus — der Überlauf entwich bislang nach
+   .workspace__module-area (zweite, äußere Scrollleiste, Bug 022 twin, siehe
+   .rest-api__sidebar oben). overflow-y:auto macht das Detailpanel selbst zum
+   Besitzer seines Überlaufs. */
+.rest-api__detail {
+  overflow-y: auto;
+  min-height: 0;
+}
+
 .rest-api__detail-inner {
   display: flex;
   flex-direction: column;

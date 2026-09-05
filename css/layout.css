@@ -2165,10 +2165,15 @@ body.training-area-open .dmaic-tiles {
   box-shadow: inset -3px 0 0 var(--color-accent);
 }
 
+/* Genau ein Scroll-Container pro Modul (docs/superpowers/plans/
+   2026-09-04-scroll-inventur.md): die Werkbankfläche selbst scrollt nicht
+   mehr, jede Bauform hat einen eigenen, benannten Besitzer (siehe
+   css/modules.css, `.workspace__module-area > div > .dmike-split`, und die
+   je Bauform betroffenen Modul-CSS-Dateien). */
 .workspace__module-area {
   flex: 1;
   min-height: 0;
-  overflow: auto;
+  overflow: hidden;
   padding: 0;
 }
 
