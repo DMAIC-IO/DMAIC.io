@@ -30,7 +30,7 @@
   font-family: var(--font-family);
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-medium);
-  padding: 7px 14px;
+  padding: var(--spacing-sm) var(--spacing-m);
   border-radius: var(--border-radius);
   border: var(--border-width) solid var(--color-border-secondary);
   background: transparent;
@@ -71,7 +71,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: var(--spacing-md) 20px;
+  padding: var(--spacing-md) var(--spacing-l);
   border-bottom: var(--border-width) solid var(--color-border-secondary);
   background: var(--color-bg-tertiary);
 }
@@ -106,7 +106,7 @@
 }
 
 .module-unit-converter__panel-body {
-  padding: var(--spacing-lg) 20px;
+  padding: var(--spacing-lg) var(--spacing-l);
 }
 
 /* ── Fields Grid ── */
@@ -170,13 +170,13 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding-top: 52px;
+  padding-top: var(--spacing-2xl);
   color: var(--color-text-tertiary);
 }
 
 /* ── Formula Bar ── */
 .module-unit-converter__formula {
-  margin-top: 20px;
+  margin-top: var(--spacing-l);
   padding: var(--spacing-m) var(--spacing-md);
   background: var(--color-bg-tertiary);
   border: var(--border-width) solid var(--color-border-secondary);
@@ -308,8 +308,8 @@
   font-family: var(--font-family);
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-medium);
-  margin-top: 14px;
-  padding: 7px 14px;
+  margin-top: var(--spacing-m);
+  padding: var(--spacing-sm) var(--spacing-m);
   border-radius: var(--border-radius);
   border: var(--border-width) solid var(--color-border-secondary);
   background: transparent;

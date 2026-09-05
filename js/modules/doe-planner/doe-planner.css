@@ -334,7 +334,7 @@
 }
 
 .doe__res-table th {
-  padding: 3px var(--spacing-xs);
+  padding: var(--spacing-xs) var(--spacing-xs);
   font-weight: var(--font-weight-medium);
   color: var(--color-text-tertiary);
   text-align: center;
@@ -467,14 +467,14 @@
 
 .doe__res-alias-table th {
   text-align: left;
-  padding: 3px var(--spacing-sm);
+  padding: var(--spacing-xs) var(--spacing-sm);
   font-weight: var(--font-weight-medium);
   color: var(--color-text-tertiary);
   border-bottom: 1px solid var(--color-border);
 }
 
 .doe__res-alias-table td {
-  padding: 3px var(--spacing-sm);
+  padding: var(--spacing-xs) var(--spacing-sm);
   border-bottom: 1px solid var(--color-border-light, var(--color-border));
 }
 
@@ -1560,7 +1560,7 @@
   display: flex;
   align-items: center;
   gap: var(--spacing-xs);
-  padding: var(--spacing-xs) 10px;
+  padding: var(--spacing-xs) var(--spacing-m);
   background: var(--color-bg-primary);
   border: var(--border-width) solid var(--color-border-secondary);
   border-radius: var(--border-radius);

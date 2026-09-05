@@ -201,7 +201,7 @@
   letter-spacing: 0.06em;
   color: var(--color-text-tertiary);
   display: block;
-  margin-bottom: 3px;
+  margin-bottom: var(--spacing-xs);
 }
 
 .sha__meter-bar {
@@ -220,7 +220,7 @@
 /* ===== Strategy label ===== */
 .sha__strategy {
   margin-top: var(--spacing-xs);
-  padding: 5px var(--spacing-sm);
+  padding: var(--spacing-s) var(--spacing-sm);
   border-radius: var(--border-radius-sm);
   font-size: var(--font-size-xs);
   font-weight: var(--font-weight-medium);
@@ -243,7 +243,7 @@
   position: relative;
   width: 100%;
   max-width: 640px;
-  margin-left: 50px;
+  margin-left: var(--spacing-2xl);
 }
 
 .sha__matrix-ylabel {
@@ -356,7 +356,7 @@
 .sha__chip {
   font-size: var(--font-size-xs);
   font-weight: var(--font-weight-medium);
-  padding: 3px var(--spacing-sm);
+  padding: var(--spacing-xs) var(--spacing-sm);
   border-radius: 20px;
   display: flex;
   align-items: center;
@@ -404,7 +404,7 @@
 
 .sha__level-dots {
   display: flex;
-  gap: 3px;
+  gap: var(--spacing-xs);
   align-items: center;
 }
 
@@ -470,7 +470,7 @@
   text-transform: uppercase;
   letter-spacing: 0.06em;
   color: var(--color-text-tertiary);
-  margin-bottom: 3px;
+  margin-bottom: var(--spacing-xs);
 }
 
 .sha__comm-detail-value {

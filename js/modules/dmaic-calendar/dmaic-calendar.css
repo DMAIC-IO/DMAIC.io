@@ -30,7 +30,7 @@
   display: flex;
   align-items: center;
   gap: var(--spacing-sm);
-  padding: var(--spacing-s) 10px;
+  padding: var(--spacing-s) var(--spacing-m);
   border-radius: var(--border-radius);
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-medium);
@@ -103,7 +103,7 @@
 }
 
 .module-calendar__upcoming-item {
-  padding: var(--spacing-sm) 10px;
+  padding: var(--spacing-sm) var(--spacing-m);
   border-radius: var(--border-radius);
   background: var(--color-bg-tertiary);
   border-left: 3px solid var(--color-accent);
@@ -232,7 +232,7 @@
   color: var(--color-text-secondary);
   font-family: var(--font-family-mono);
   font-size: var(--font-size-xs);
-  padding: var(--spacing-xs) 10px;
+  padding: var(--spacing-xs) var(--spacing-m);
   cursor: pointer;
   transition: all 150ms;
   letter-spacing: 0.04em;
@@ -330,7 +330,7 @@
 
 .module-calendar__day-ev {
   font-size: var(--font-size-xs);
-  padding: var(--spacing-2xs) 5px;
+  padding: var(--spacing-2xs) var(--spacing-s);
   border-radius: 3px;
   white-space: nowrap;
   overflow: hidden;
@@ -515,7 +515,7 @@
 }
 
 .module-calendar__week-ev-content {
-  padding: 3px 7px;
+  padding: var(--spacing-xs) var(--spacing-sm);
   pointer-events: none;
   flex: 1;
   overflow: hidden;
@@ -629,7 +629,7 @@
 }
 
 .module-calendar__phase-chip {
-  padding: var(--spacing-xs) 10px;
+  padding: var(--spacing-xs) var(--spacing-m);
   border-radius: 20px;
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-semibold);

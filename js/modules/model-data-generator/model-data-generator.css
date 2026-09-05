@@ -90,7 +90,7 @@
 }
 
 .mdg-factor-grid .mdg-inp {
-  padding: 5px 7px;
+  padding: var(--spacing-s) var(--spacing-sm);
   font-size: 12px;
 }
 
@@ -99,7 +99,7 @@
 }
 
 .mdg-factor-grid--row {
-  padding: 3px 0;
+  padding: var(--spacing-xs) 0;
 }
 
 /* 4th grid cell — wraps the (conditionally rendered) remove button */
@@ -126,7 +126,7 @@
   background: var(--color-bg-primary);
   border: 1px solid var(--color-accent-light);
   border-radius: var(--border-radius);
-  padding: 14px 18px;
+  padding: var(--spacing-m) var(--spacing-ml);
   font-family: var(--font-family-mono);
   font-size: 13px;
   overflow-x: auto;
@@ -180,7 +180,7 @@
   gap: var(--spacing-sm);
   background: var(--color-bg-tertiary);
   border-radius: var(--border-radius-sm);
-  padding: var(--spacing-s) 10px;
+  padding: var(--spacing-s) var(--spacing-m);
   border: 1px solid var(--color-border-secondary);
 }
 
@@ -220,7 +220,7 @@
 }
 
 .mdg-triple-grid .mdg-inp {
-  padding: 5px var(--spacing-s);
+  padding: var(--spacing-s) var(--spacing-s);
   font-size: 12px;
 }
 
@@ -235,14 +235,14 @@
   font-weight: 400;
   font-size: var(--font-size-xs);
   color: var(--color-text-tertiary);
-  margin-left: 10px;
+  margin-left: var(--spacing-m);
 }
 
 /* ── Utility ── */
 
 .mdg-row {
   display: flex;
-  gap: 10px;
+  gap: var(--spacing-m);
   align-items: center;
   flex-wrap: wrap;
 }

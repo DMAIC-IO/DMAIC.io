@@ -23,7 +23,7 @@
   letter-spacing: 1.2px;
   text-transform: uppercase;
   color: var(--color-text-tertiary);
-  padding: var(--spacing-m) 14px var(--spacing-s);
+  padding: var(--spacing-m) var(--spacing-m) var(--spacing-s);
   user-select: none;
 }
 
@@ -36,7 +36,7 @@
   color: var(--color-text-secondary);
   font-family: var(--font-family);
   font-size: var(--font-size-sm);
-  padding: var(--spacing-s) 14px var(--spacing-s) 22px;
+  padding: var(--spacing-s) var(--spacing-m) var(--spacing-s) var(--spacing-l);
   cursor: pointer;
   transition: all var(--transition-speed);
   border-left: 3px solid transparent;
@@ -130,7 +130,7 @@
 
 /* Target column: uses global .col-picker (css/components.css) */
 .rg-target-wrap { min-width: 180px; max-width: 220px; }
-.rg-target-wrap .col-picker__select { font-size: var(--font-size-sm); padding: 5px var(--spacing-sm); }
+.rg-target-wrap .col-picker__select { font-size: var(--font-size-sm); padding: var(--spacing-s) var(--spacing-sm); }
 
 /* ── Histogram (Chart Framework) ── */
 .rg-histogram {
@@ -150,7 +150,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 10px 14px;
+  padding: var(--spacing-m) var(--spacing-m);
   border-bottom: 1px solid var(--color-border-secondary);
 }
 
@@ -171,7 +171,7 @@
 .rg-data__grid {
   max-height: 280px;
   overflow-y: auto;
-  padding: var(--spacing-sm) 14px 14px;
+  padding: var(--spacing-sm) var(--spacing-m) var(--spacing-m);
 }
 
 .rg-data__values {
@@ -211,7 +211,7 @@
   background: var(--color-bg-primary);
   border: 1px solid var(--color-border-primary);
   border-radius: var(--border-radius-sm);
-  padding: var(--spacing-m) 14px;
+  padding: var(--spacing-m) var(--spacing-m);
 }
 
 .rg-attr-head {
@@ -246,7 +246,7 @@
   grid-template-columns: 1fr 110px 32px;
   gap: var(--spacing-sm);
   align-items: center;
-  padding-left: 10px;
+  padding-left: var(--spacing-m);
   border-left: 3px solid var(--rg-attr-color, var(--color-accent));
   height: 32px;
 }
@@ -284,7 +284,7 @@
   background: none;
   border: 1px dashed var(--color-border-primary);
   color: var(--color-text-tertiary);
-  padding: 7px var(--spacing-m);
+  padding: var(--spacing-sm) var(--spacing-m);
   border-radius: var(--border-radius-sm);
   cursor: pointer;
   width: 100%;
@@ -328,7 +328,7 @@
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  padding: 0 10px;
+  padding: 0 var(--spacing-m);
   font-family: var(--font-family-mono);
   font-size: 11px;
   color: #fff;
@@ -367,7 +367,7 @@
   background: var(--color-bg-primary);
   border: 1px solid var(--color-border-primary);
   border-radius: var(--border-radius-sm);
-  padding: 10px 14px;
+  padding: var(--spacing-m) var(--spacing-m);
 }
 
 .rg-freq-row {
@@ -422,7 +422,7 @@
 .rg-attr-chip {
   font-family: var(--font-family);
   font-size: var(--font-size-xs);
-  padding: 3px var(--spacing-sm);
+  padding: var(--spacing-xs) var(--spacing-sm);
   border-radius: 4px;
   font-weight: var(--font-weight-medium);
   color: var(--rg-attr-color, var(--color-text-primary));
