@@ -2722,6 +2722,75 @@ body.training-area-open .dmaic-tiles {
   display: none;
 }
 
+/* Kollabiert braucht das %-Segment kein großzügiges rechtes Polster mehr —
+   der Divider ist weg, der Chevron folgt direkt. Task 4b: 140px Überlauf der
+   8D-Reihe bei 1280px zurückgewinnen, ohne den Chevron zu verstecken. */
+.dmaic-tiles--collapsed .dmaic-tile:not(.dmaic-tile--active) > .dmaic-tile__inner .dmaic-tile__edit {
+  padding-right: 0;
+}
+
+/* Der Name ist kollabiert unsichtbar (max-width: 0), aber `.dmaic-tile__body`
+   ist weiterhin ein Flex-Container mit Buchstabe UND Name als Kinder — das
+   `gap` zwischen ihnen bliebe sonst als tote Fläche stehen. Linkes Polster
+   ebenfalls verkleinert: ohne Name braucht der Buchstabe weniger Abstand zum
+   Kachelrand. `:has(.dmaic-tile__edit)` grenzt auf echte Phasen-Kacheln ein —
+   die beiden virtuellen Rahmenkacheln (`data` / `extras`) haben kein
+   %-Segment und bleiben hier unberührt, damit sie nicht als Nebenwirkung
+   mitschrumpfen. */
+.dmaic-tiles--collapsed .dmaic-tile:not(.dmaic-tile--active) > .dmaic-tile__inner .dmaic-tile__left:has(.dmaic-tile__edit) .dmaic-tile__body {
+  gap: 0;
+  padding-left: var(--spacing-2xs);
+  padding-right: 0;
+}
+
+/* Kollabiert braucht die Reihe selbst weniger Luft zwischen den Kacheln —
+   zehn Lücken zwischen elf Kacheln summieren sich schnell. Betrifft die
+   ganze Reihe (inkl. aktiver und Rahmenkacheln), nicht nur die inaktiven
+   Kacheln: das ist der Container-Abstand, kein Kachel-Innenabstand. */
+.dmaic-tiles--collapsed {
+  gap: var(--spacing-2xs);
+}
+
+/* Die beiden Rahmenkacheln (`data` / `extras`) verlieren ihren Namen
+   kollabiert genauso wie die Phasen-Kacheln (siehe Regel oben, sie ist nicht
+   auf `:has(.dmaic-tile__edit)` eingegrenzt) — tragen aber noch das rechte
+   10px-Namenspolster aus Zeile ~726 (für den sichtbaren Namen gedacht) und
+   das `gap` zur toten Namensfläche. Eigene Regel statt Nebenwirkung: nur
+   Rahmenkacheln, nur kollabiert. */
+.dmaic-tiles--collapsed .dmaic-tile:not(.dmaic-tile--active) > .dmaic-tile__inner .dmaic-tile__left:not(:has(.dmaic-tile__edit)) .dmaic-tile__body {
+  gap: 0;
+  padding-left: var(--spacing-2xs);
+  padding-right: var(--spacing-2xs);
+}
+
+/* Die aktive Kachel bleibt vollständig (Name, Stift-Overlay, Chevron) —
+   ihre beiden Standard-Innenabstände sind für die entspannte, unkollabierte
+   Reihe bemessen. Eigene Regel (nicht die der inaktiven Kacheln): nur
+   kollabiert etwas knapper, um die letzten Pixel für die 8D-Reihe
+   zurückzugewinnen. */
+.dmaic-tiles--collapsed .dmaic-tile--active > .dmaic-tile__inner .dmaic-tile__edit {
+  padding-right: var(--spacing-xs);
+}
+
+.dmaic-tiles--collapsed .dmaic-tile--active > .dmaic-tile__inner .dmaic-tile__body {
+  padding-left: var(--spacing-xs);
+  padding-right: 0;
+}
+
+/* Gleiche Messgrundlage wie bei den inaktiven Kacheln (25,6px für "100%"),
+   minimal großzügiger, weil hier zusätzlich der Stift-Overlay im selben
+   Slot liegt. */
+.dmaic-tiles--collapsed .dmaic-tile--active > .dmaic-tile__inner .dmaic-tile__edit-slot {
+  min-width: 26px;
+}
+
+/* "100%" braucht rund 25,6px im 10px-halbfetten ZEG-Font (gemessen) — 26px
+   lässt gerade noch Luft, ohne wie die volle 30px-Basis (bemessen für die
+   editierbare aktive Kachel samt Stift-Overlay) zu verschwenden. */
+.dmaic-tiles--collapsed .dmaic-tile:not(.dmaic-tile--active) > .dmaic-tile__inner .dmaic-tile__edit-slot {
+  min-width: 26px;
+}
+
 /* Flyout: zweite, vollständige Darstellung — mittig unter der Kachel, mit
    Schatten. Der optische Abstand steckt als transparentes `padding-top` IM
    Flyout, nicht als `margin` davor: als Außenabstand läge zwischen Kachel und
