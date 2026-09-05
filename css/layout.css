@@ -604,15 +604,22 @@ html.is-nightly body {
   cursor: pointer;
   user-select: none;
   white-space: nowrap;
-  transition: background var(--transition-speed), box-shadow var(--transition-speed);
+  transition: box-shadow var(--transition-speed);
 }
 
-/* Hover hebt die Kachel nur an: Schatten plus eine Stufe hellerer Grund. Kein
-   Zoom — eine Kachel, die unter dem Zeiger wächst, verschiebt ihren eigenen
-   Inhalt und ihre Trefferfläche. `z-index` entfiel mit dem Zoom, es hielt nur
-   die vergrößerte Kachel über den Nachbarn. */
+/* Hover hebt die Kachel nur mit Schatten an, kein Zoom mehr — eine Kachel,
+   die unter dem Zeiger wächst, verschiebt ihren eigenen Inhalt und ihre
+   Trefferfläche. `z-index` entfiel mit dem Zoom, es hielt nur die
+   vergrößerte Kachel über den Nachbarn.
+   Kein Hintergrundwechsel: die aktive Kachel steht auf `--color-tile-bg-active`
+   (Akzentfläche), inaktive auf `--color-bg-tertiary` — im Dark-Theme ist
+   `--color-bg-secondary` dunkler als `--color-bg-tertiary`, ein Wechsel dorthin
+   würde inaktive Kacheln beim Hovern also abdunkeln statt anheben. Es gibt in
+   der Palette keine neutrale Stufe, die in beiden Themes heller als
+   `--color-bg-tertiary` ist — der Schatten trägt die Hover-Rückmeldung allein.
+   Da nur noch `box-shadow` gesetzt wird, kollidiert das mit keinem Hintergrund
+   — die aktive Kachel behält ihre Akzentfläche unverändert. */
 .dmaic-tiles:not(.dmaic-tiles--collapsed) .dmaic-tile:hover {
-  background: var(--color-bg-secondary);
   box-shadow: 0 3px 12px rgb(0 0 0 / 20%);
 }
 
