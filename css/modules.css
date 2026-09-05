@@ -10,8 +10,10 @@
   display: flex;
   flex-direction: column;
 
-  /* Einziger Besitzer des Modul-Außenabstands. Alles darunter steht auf 0;
-     der Spaltenzwischenraum kommt aus gap, nicht aus margin + padding. */
+  /* Einer von zwei möglichen Besitzern des Modul-Außenabstands (der andere
+     ist .dmike-split selbst, siehe weiter unten). Ist ein Split direkt in
+     diesem Container, steht dessen Polster auf 0 — der Spaltenzwischenraum
+     kommt dann aus gap, nicht aus margin + padding. */
   padding: var(--spacing-m);
 }
 
@@ -119,7 +121,8 @@
   gap: var(--spacing-m);
 
   /* Innenpolster bleibt: es gehört zur Panel-Optik (Hintergrund, Rahmen,
-     Radius). Der Außenabstand gehört dem .module-container. */
+     Radius). Der Außenabstand gehört je nach Bauform dem .module-container
+     oder .dmike-split selbst — nie diesem Input-Panel. */
   padding: var(--spacing-m);
   background: var(--color-bg-secondary);
   border: var(--border-width) solid var(--color-border-secondary);

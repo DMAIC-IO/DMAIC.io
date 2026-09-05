@@ -1,7 +1,9 @@
 /**
  * Split-Layout — Außenabstände und Spaltenbreiten.
- * Genau ein Knoten hält den Modul-Außenabstand: .module-container.
- * Alles darunter steht auf 0; der Spaltenzwischenraum kommt aus gap.
+ * Genau ein Knoten pro Modul hält den Außenabstand — je nach Bauform ist
+ * das .module-container (Split innerhalb steht auf 0) oder, wurzelt das
+ * Modul direkt in .dmike-split, der Split selbst. Der Spaltenzwischenraum
+ * kommt in beiden Fällen aus gap.
  */
 import { suite, test, assertEqual, afterEach } from '../test-utils.js';
 
@@ -28,7 +30,7 @@ suite('Split-Layout — Außenabstände', () => {
     if (host) { host.remove(); host = null; }
   });
 
-  test('der Modul-Container ist der einzige Besitzer des Außenabstands', () => {
+  test('liegt ein Split im Container, hält der Modul-Container den Außenabstand', () => {
     const { host: container } = mountSplit();
     const cs = getComputedStyle(container);
     assertEqual(cs.paddingTop, '12px');
