@@ -2168,10 +2168,7 @@ body.training-area-open .dmaic-tiles {
 .workspace__module-area {
   flex: 1;
   min-height: 0;
-
-  /* Genau ein Scroll-Container pro Modul: .module-container__body. Scrollte
-     die Fläche hier mit, entstünde die zweite Scrollleiste daneben. */
-  overflow: hidden;
+  overflow: auto;
   padding: 0;
 }
 
