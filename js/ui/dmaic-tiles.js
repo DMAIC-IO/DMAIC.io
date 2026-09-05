@@ -696,25 +696,6 @@ export class DmaicTiles {
     const menuMode = getCycle(cycleId).menuMode ?? 'auto';
     this._collapsed = resolveCollapsed({ est, budget, menuMode });
     this._container.classList.toggle('dmaic-tiles--collapsed', this._collapsed);
-    this._pinCollapsedWidths();
-  }
-
-  /**
-   * Pin each collapsed inactive tile to its current content width so the hover
-   * overlay — which lifts `.dmaic-tile__inner` to `position:absolute` — cannot
-   * collapse the tile's flow slot. With the slot width fixed, the expanding
-   * overlay spreads over both neighbours instead of pushing them (no reflow,
-   * no hover flicker). Cleared and re-measured on every recompute.
-   * @private
-   */
-  _pinCollapsedWidths() {
-    const tiles = this._container.querySelectorAll('.dmaic-tile');
-    tiles.forEach((t) => { t.style.width = ''; });
-    if (!this._collapsed) return;
-    tiles.forEach((t) => {
-      if (t.classList.contains('dmaic-tile--active')) return;
-      t.style.width = `${t.offsetWidth}px`;
-    });
   }
 
   _subscribeEvents() {
