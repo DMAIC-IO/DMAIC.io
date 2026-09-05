@@ -3,7 +3,6 @@
    BEM: .twc__ prefix
    ============================================================ */
 
-.twc .dmike-split__input { width: 320px; }
 
 .twc__hint {
   font-size: var(--font-size-xs);

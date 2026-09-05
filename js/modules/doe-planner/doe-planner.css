@@ -12,8 +12,6 @@
 
 /* ===== Container (split-panel via dmike-split) ===== */
 .doe {
-  --dmike-split-input-width: 420px;
-
   animation: doe-fade-in 0.3s ease;
 }
 

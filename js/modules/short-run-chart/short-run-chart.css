@@ -3,7 +3,6 @@
    BEM: .src__ prefix
    ============================================================ */
 
-.src .dmike-split__input { width: 300px; }
 
 .src__hint {
   font-size: var(--font-size-xs);

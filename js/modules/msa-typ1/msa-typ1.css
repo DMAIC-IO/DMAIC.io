@@ -3,11 +3,6 @@
    Theme-aware using CSS custom properties from variables.css.
    ============================================================ */
 
-/* ─── Layout (extends global dmike-split from css/modules.css) ── */
-.module-msa-typ1 .dmike-split__input {
-  width: 380px;
-}
-
 /* Section labels: use global .dmike-split__output-section (css/modules.css) */
 
 /* Fields use global .field / .field-group (components.css) */

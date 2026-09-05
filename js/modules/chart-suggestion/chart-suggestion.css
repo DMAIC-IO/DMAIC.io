@@ -19,8 +19,6 @@
 /* Definite height (not just .dmike-split's min-height:100%) so the preview
    plot resolves a real block height and the resize feedback loop breaks. */
 .chart-suggestion.dmike-split {
-  --dmike-split-input-width: 320px;
-
   height: 100%;
 }
 

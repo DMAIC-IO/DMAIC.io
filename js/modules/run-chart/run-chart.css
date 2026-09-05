@@ -3,7 +3,6 @@
    BEM: .run-chart__ prefix
    ============================================================ */
 
-.run-chart .dmike-split__input { width: 280px; }
 
 .run-chart__hint {
   font-size: var(--font-size-xs);

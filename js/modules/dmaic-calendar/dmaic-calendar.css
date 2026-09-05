@@ -4,10 +4,9 @@
    Only calendar-specific styles here.
    ============================================================ */
 
-/* ─── Input panel width override ────────────────────────── */
-
-.module-calendar .dmike-split__input {
-  width: 240px;
+/* Das Panel bringt seinen eigenen Innenaufbau mit und braucht daher kein
+   Innenpolster; die Breite kommt aus .dmike-split--input-sm. */
+.calendar-sidebar {
   padding: 0;
 }
 

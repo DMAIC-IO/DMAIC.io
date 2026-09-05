@@ -3,7 +3,6 @@
    BEM: .pareto-module__ prefix
    ============================================================ */
 
-.pareto-module .dmike-split__input { width: 280px; }
 
 .pareto-module__error {
   display: none;

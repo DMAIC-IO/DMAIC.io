@@ -3,7 +3,6 @@
    BEM: .rec__ prefix
    ============================================================ */
 
-.rec .dmike-split__input { width: 280px; }
 
 .rec__hint {
   font-size: var(--font-size-xs);

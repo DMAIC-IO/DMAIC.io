@@ -52,9 +52,20 @@
        <div class="dmike-split__output"> ... </div>
      </div>
 
-   Customise input width per module:
-     .my-module .dmike-split__input { width: 380px; }
+   Die Breite der Eingabespalte kennt genau drei Stufen. Sie wird am
+   .dmike-split gesetzt, nie im Modul-CSS — ein Stylelint-Guard verbietet
+   Modulen, .dmike-split__input anzufassen.
+
+     (ohne Klasse)             320px  Standard
+     .dmike-split--input-sm    280px  Charts, wenige Bedienelemente
+     .dmike-split--input-lg    420px  dichte Formulare
+
+   Kein Modul darf schrumpfen: die linken Spalten sind informationsdicht,
+   Verkleinerung erzeugt ungewollte Umbrüche.
 */
+.dmike-split           { --split-input: 320px; }
+.dmike-split--input-sm { --split-input: 280px; }
+.dmike-split--input-lg { --split-input: 420px; }
 
 /* Der Split hält den Außenabstand selbst — 39 der 71 Module wurzeln direkt
    in ihm und haben gar kein `.module-container` (die Klasse ist reine
@@ -84,7 +95,7 @@
 }
 
 .dmike-split__input {
-  width: var(--dmike-split-input-width, 320px);
+  width: var(--split-input, 320px);
   flex-shrink: 0;
   align-self: flex-start;
   display: flex;

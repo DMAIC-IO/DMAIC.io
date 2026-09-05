@@ -3,7 +3,6 @@
    BEM: .mvcc__ prefix
    ============================================================ */
 
-.mvcc .dmike-split__input { width: 320px; }
 
 .mvcc__hint {
   font-size: var(--font-size-xs);

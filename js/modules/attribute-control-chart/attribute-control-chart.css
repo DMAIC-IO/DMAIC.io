@@ -3,7 +3,6 @@
    BEM: .attr-cc__ prefix
    ============================================================ */
 
-.attr-cc .dmike-split__input { width: 300px; }
 
 .attr-cc__hint {
   font-size: var(--font-size-xs);

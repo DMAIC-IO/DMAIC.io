@@ -88,3 +88,39 @@ suite('Split-Layout — Außenabstände', () => {
     assertEqual(cPad + sPad, 12);
   });
 });
+
+suite('Split-Layout — Spaltenbreiten', () => {
+  afterEach(() => {
+    if (host) { host.remove(); host = null; }
+  });
+
+  test('ohne Modifier ist die Eingabespalte 320px breit', () => {
+    const { input } = mountSplit('dmike-split');
+    assertEqual(getComputedStyle(input).width, '320px');
+  });
+
+  test('der sm-Modifier ergibt 280px', () => {
+    const { input } = mountSplit('dmike-split dmike-split--input-sm');
+    assertEqual(getComputedStyle(input).width, '280px');
+  });
+
+  test('der lg-Modifier ergibt 420px', () => {
+    const { input } = mountSplit('dmike-split dmike-split--input-lg');
+    assertEqual(getComputedStyle(input).width, '420px');
+  });
+
+  test('es gibt genau drei Stufen und keine dazwischen', () => {
+    // Regressionsschutz gegen erneute Drift: früher lagen 240/280/300/320/
+    // 380/420px nebeneinander, über zwei konkurrierende Mechanismen.
+    const stufen = ['dmike-split', 'dmike-split dmike-split--input-sm',
+      'dmike-split dmike-split--input-lg'];
+    const breiten = stufen.map((cls) => {
+      const { input, host: h } = mountSplit(cls);
+      const w = getComputedStyle(input).width;
+      h.remove();
+      return w;
+    });
+    host = null;
+    assertEqual(breiten.join(','), '320px,280px,420px');
+  });
+});

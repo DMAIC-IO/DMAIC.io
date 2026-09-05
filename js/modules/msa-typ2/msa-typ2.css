@@ -6,10 +6,6 @@
 
 /* ═══ LAYOUT (extends global dmike-split from css/modules.css) ═══ */
 
-.module-msa-typ2 .dmike-split__input {
-  width: 380px;
-}
-
 /* Section labels: use global .dmike-split__output-section (css/modules.css)
    as-is — the shared rule now renders the `nav.expand-down` marker icon and
    is genuinely wired to collapse behaviour (initCollapsibleSections() in

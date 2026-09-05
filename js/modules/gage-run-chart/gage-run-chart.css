@@ -3,7 +3,6 @@
    BEM: .gage-run-chart__ prefix
    ============================================================ */
 
-.gage-run-chart .dmike-split__input { width: 300px; }
 
 .gage-run-chart__hint {
   font-size: var(--font-size-xs);

@@ -3,7 +3,6 @@
    BEM: .timr__ prefix
    ============================================================ */
 
-.timr .dmike-split__input { width: 320px; }
 
 .timr__hint {
   font-size: var(--font-size-xs);

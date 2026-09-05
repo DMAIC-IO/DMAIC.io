@@ -3,7 +3,13 @@
    ═══════════════════════════════════════════════════════════════ */
 
 /* Base layout provided by .dmike-split (css/modules.css) */
-.module-random-generator .dmike-split__input { width: 240px; padding: 0; overflow: hidden; }
+
+/* Das Panel bringt seinen eigenen Kopf/Körper mit und braucht daher kein
+   Innenpolster; die Breite kommt aus .dmike-split--input-sm. */
+.rg-sidebar {
+  padding: 0;
+  overflow: hidden;
+}
 
 /* ── Distribution Sidebar ── */
 

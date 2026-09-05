@@ -3,10 +3,6 @@
  * Nur Ergänzungen zu den geteilten Klassen (.dmike-split, .dmike-table, …).
  */
 
-.kano {
-  --dmike-split-input-width: 380px;
-}
-
 .kano__label {
   display: block;
   margin: var(--spacing-sm) 0 var(--spacing-xs);

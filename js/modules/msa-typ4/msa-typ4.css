@@ -6,11 +6,6 @@
    and css/components.css.
    ============================================================ */
 
-/* ─── Layout (extends global dmike-split from css/modules.css) ── */
-.module-msa-typ4 .dmike-split__input {
-  width: 380px;
-}
-
 .module-msa-typ4__empty {
   padding: var(--spacing-xl);
   text-align: center;

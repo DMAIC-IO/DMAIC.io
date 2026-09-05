@@ -3,7 +3,6 @@
    BEM: .mosaic-module__ prefix
    ============================================================ */
 
-.mosaic-module .dmike-split__input { width: 280px; }
 
 .mosaic-module__error {
   display: none;
