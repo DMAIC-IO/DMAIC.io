@@ -655,9 +655,9 @@ html.is-nightly body {
 .dmaic-tile--active[data-phase="extras"] .dmaic-tile__inner { border-bottom-color: var(--color-phase-extras); }
 
 /* Single container for the whole tile: the button row on top and the progress
-   bar beneath it (a column). This is the element that becomes the centred hover
-   overlay when a collapsed tile is hovered, so the buttons AND the bar expand
-   together. */
+   bar beneath it (a column). Es gibt ihn zweimal je Kachel — einmal im Fluss,
+   einmal als Kopie im Flyout unter der Reihe. Beide tragen dieselben Klassen,
+   deshalb greift jede Regel hier auf beide. */
 .dmaic-tile__inner {
   display: flex;
   flex-direction: column;
@@ -803,8 +803,9 @@ html.is-nightly body {
   transform-origin: center;
 }
 
-/* Nur die aktive Kachel tauscht: allein dort ist der Fortschritt bearbeitbar.
-   Auf inaktiven Kacheln bleibt die Zahl stehen und es erscheint kein Stift. */
+/* Nur die aktive Kachel tauscht Zahl gegen Stift — und nur dort öffnet das
+   %-Segment den Editor. Auf inaktiven Kacheln bleibt die Zahl stehen, es
+   erscheint kein Stift, und ein Klick navigiert wie der Körper daneben. */
 .dmaic-tile--active:hover .dmaic-tile__zeg {
   opacity: 0;
 }
@@ -2742,7 +2743,7 @@ body.training-area-open .dmaic-tiles {
   background: var(--color-bg-secondary);
   box-shadow:
     inset 0 0 0 1px var(--color-border-secondary),
-    0 6px 16px rgb(0 0 0 / 24%);
+    var(--shadow-lg);
 }
 
 /* Sichtbar beim Hovern — und solange das Dropdown offen ist, sonst

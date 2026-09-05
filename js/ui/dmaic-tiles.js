@@ -167,76 +167,13 @@ export class DmaicTiles {
 
     const pct = isVirtual ? 0 : (this._stateManager.get(`phaseAchievement.${phase}`) ?? 0);
 
-    const letterClass = letter.length > 1
-      ? 'dmaic-tile__letter dmaic-tile__letter--multichar'
-      : 'dmaic-tile__letter';
-    // Interactive controls are siblings (not nested) to satisfy the
-    // WAI/axe "nested-interactive" rule: a select button carries the phase
-    // navigation + keyboard semantics, the menu button opens the dropdown.
-    // No aria-label here: an explicit label would override the visible text
-    // ("Define 0%") and trip WCAG 2.5.3 (label-content-name-mismatch). The
-    // accessible name is computed from the visible children instead — the
-    // decorative first-letter badge is hidden so the name is "<Phase> <pct>%".
-    // Three full-height click segments, each a sibling button (never nested —
-    // nested-interactive): (1) letter+name → navigate, (2) pencil+% → edit
-    // progress, (3) chevron → module menu. Dividers separate them. The whole
-    // row lives in `.dmaic-tile__inner`, which always stays in flow. A
-    // collapsed tile renders a SECOND copy in `.dmaic-tile__flyout`, shown
-    // below the row on hover — nothing ever overlaps a neighbour, so no
-    // width pinning is needed.
     const nameText = this._i18n.t(`phases.${phase}`);
-    const body = h('button', {
-      class: 'dmaic-tile__body',
-      type: 'button',
-    },
-      h('span', { class: letterClass, 'aria-hidden': 'true' }, letter),
-      h('span', { class: 'dmaic-tile__name' }, nameText),
-    );
-    // Click / Enter / Space on the body button → select phase.
-    body.addEventListener('click', () => {
-      this._closeMenu();
-      this._navigatePhase(phase);
-    });
-
-    // Segment 2: pencil + % (virtual tiles have no ZEG → no segment).
-    const editSeg = isVirtual ? null : this._buildEditSegment(phase, tile, pct);
-
-    const menuLabel = this._i18n.t('phases.moduleMenu');
-    const menuBtn = h('button', {
-      class: 'dmaic-tile__menu-btn',
-      type: 'button',
-      'aria-label': menuLabel,
-      title: menuLabel,
-    }, icon('nav.expand-down', { size: 'sm' }));
-    menuBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      this._toggleMenu(phase, tile);
-    });
-
-    // Left group = navigate (letter+name) + edit (pencil+%) with no divider
-    // between them, so the whole left reads as one. A single divider separates
-    // the left group from the dropdown.
-    const left = h('div', { class: 'dmaic-tile__left' }, ...[body, editSeg].filter(Boolean));
-    const row = h('div', { class: 'dmaic-tile__row' },
-      left,
-      h('span', { class: 'dmaic-tile__divider', 'aria-hidden': 'true' }),
-      menuBtn,
-    );
-
-    // Progress bar is its own row UNDER the button row (in y), not overlapping —
-    // so the divider ends naturally above it. Both live inside `.dmaic-tile__inner`,
-    // the single container the flyout mirrors, so the bar travels with the
-    // buttons into the flyout copy.
-    const progressBar = isVirtual ? null : h('span', {
-      class: 'dmaic-tile__progress-bar',
-      'aria-hidden': 'true',
-    }, h('span', {
-      class: 'dmaic-tile__progress-fill',
-      style: `width: ${pct}%`,
-    }));
-
-    const inner = h('div', { class: 'dmaic-tile__inner' }, ...[row, progressBar].filter(Boolean));
-    tile.append(inner, this._buildFlyout(phase, letter, nameText, isVirtual, pct));
+    // Zwei Darstellungen, ein Bauplan: die Kachel im Fluss und ihre Flyout-Kopie
+    // entstehen aus derselben Methode und unterscheiden sich nur im %-Segment.
+    const inner = this._buildInner(phase, tile, letter, nameText, isVirtual, pct,
+      { editable: true });
+    tile.append(inner,
+      this._buildFlyout(phase, tile, letter, nameText, isVirtual, pct));
 
     // ── Drop target for tab drag & drop ──
     tile.addEventListener('dragover', (e) => {
@@ -463,44 +400,65 @@ export class DmaicTiles {
   // ─── Progress Editor ───────────────────────────────────────
 
   /**
-   * Second, absolutely positioned rendering of the tile, shown BELOW the row
-   * while a collapsed inactive tile is hovered. It carries the same class
-   * names as the in-flow `.dmaic-tile__inner`, so every existing rule applies
-   * without duplication; code that means exactly one of the two addresses the
-   * in-flow child through the direct-child selector
+   * Build a `.dmaic-tile__inner` — the button row on top, the progress bar
+   * beneath it. Called TWICE per tile: once for the rendering in flow, once for
+   * the flyout copy below the row. Both carry the same class names, so every
+   * CSS rule applies to both without duplication; code that means exactly one
+   * of them addresses the in-flow child through
    * `.dmaic-tile > .dmaic-tile__inner`.
    *
-   * The number is a plain span here, not a button: only the ACTIVE tile can
-   * edit its progress, and a collapsed tile is by definition inactive — a
-   * second entry point into the editor would be unreachable by design and a
-   * nested-interactive risk by accident.
+   * Interactive controls are siblings (not nested) to satisfy the WAI/axe
+   * "nested-interactive" rule: a select button carries the phase navigation +
+   * keyboard semantics, the menu button opens the dropdown. No aria-label on
+   * the segments: an explicit label would override the visible text
+   * ("Define 0%") and trip WCAG 2.5.3 (label-content-name-mismatch). The
+   * accessible name is computed from the visible children instead — the
+   * decorative first-letter badge is hidden so the name is "<Phase> <pct>%".
+   * Three full-height click segments, each a sibling button (never nested):
+   * (1) letter+name → navigate, (2) pencil+% → edit progress on the active
+   * tile / navigate on an inactive one, (3) chevron → module menu.
    *
    * @param {string} phase
-   * @param {string} letter    phase abbreviation, e.g. "D3"
-   * @param {string} nameText  translated phase name
+   * @param {HTMLElement} tile   the owning `.dmaic-tile` (both renderings live in it)
+   * @param {string} letter      phase abbreviation, e.g. "D3"
+   * @param {string} nameText    translated phase name
    * @param {boolean} isVirtual  frame tiles have neither ZEG nor progress bar
    * @param {number} pct
+   * @param {object} opts
+   * @param {boolean} opts.editable  in flow the %-segment is a button (it opens
+   *   the ZEG editor on the active tile); in the flyout it is a static span.
+   *   A second interactive control on the same value would be a redundant
+   *   editor entry and a nested-interactive risk, and it would buy nothing —
+   *   the segment in flow is reachable in every state.
    * @returns {HTMLDivElement}
    * @private
    */
-  _buildFlyout(phase, letter, nameText, isVirtual, pct) {
+  _buildInner(phase, tile, letter, nameText, isVirtual, pct, { editable }) {
     const letterClass = letter.length > 1
       ? 'dmaic-tile__letter dmaic-tile__letter--multichar'
       : 'dmaic-tile__letter';
 
-    const body = h('button', { class: 'dmaic-tile__body', type: 'button' },
+    const body = h('button', {
+      class: 'dmaic-tile__body',
+      type: 'button',
+    },
       h('span', { class: letterClass, 'aria-hidden': 'true' }, letter),
       h('span', { class: 'dmaic-tile__name' }, nameText),
     );
+    // Click / Enter / Space on the body button → select phase.
     body.addEventListener('click', () => {
       this._closeMenu();
       this._navigatePhase(phase);
     });
 
-    const zegSeg = isVirtual ? null : h('span',
-      { class: 'dmaic-tile__edit dmaic-tile__edit--static' },
-      h('span', { class: 'dmaic-tile__zeg' }, `${pct}%`),
-    );
+    // Segment 2: pencil + % (virtual tiles have no ZEG → no segment).
+    let editSeg = null;
+    if (!isVirtual) {
+      editSeg = editable
+        ? this._buildEditSegment(phase, tile, pct)
+        : h('span', { class: 'dmaic-tile__edit dmaic-tile__edit--static' },
+            h('span', { class: 'dmaic-tile__zeg' }, `${pct}%`));
+    }
 
     const menuLabel = this._i18n.t('phases.moduleMenu');
     const menuBtn = h('button', {
@@ -511,16 +469,22 @@ export class DmaicTiles {
     }, icon('nav.expand-down', { size: 'sm' }));
     menuBtn.addEventListener('click', (e) => {
       e.stopPropagation();
-      this._toggleMenu(phase, menuBtn.closest('.dmaic-tile'));
+      this._toggleMenu(phase, tile);
     });
 
-    const left = h('div', { class: 'dmaic-tile__left' }, ...[body, zegSeg].filter(Boolean));
+    // Left group = navigate (letter+name) + edit (pencil+%) with no divider
+    // between them, so the whole left reads as one. A single divider separates
+    // the left group from the dropdown.
+    const left = h('div', { class: 'dmaic-tile__left' }, ...[body, editSeg].filter(Boolean));
     const row = h('div', { class: 'dmaic-tile__row' },
       left,
       h('span', { class: 'dmaic-tile__divider', 'aria-hidden': 'true' }),
       menuBtn,
     );
 
+    // Progress bar is its own row UNDER the button row (in y), not overlapping —
+    // so the divider ends naturally above it. Both live inside
+    // `.dmaic-tile__inner`, so the bar travels with the buttons into the flyout.
     const progressBar = isVirtual ? null : h('span', {
       class: 'dmaic-tile__progress-bar',
       'aria-hidden': 'true',
@@ -529,14 +493,34 @@ export class DmaicTiles {
       style: `width: ${pct}%`,
     }));
 
-    const inner = h('div', { class: 'dmaic-tile__inner' }, ...[row, progressBar].filter(Boolean));
-    return h('div', { class: 'dmaic-tile__flyout' }, inner);
+    return h('div', { class: 'dmaic-tile__inner' }, ...[row, progressBar].filter(Boolean));
   }
 
   /**
-   * Build the pencil+% edit segment (click area 2). Clicking anywhere in it —
-   * the pencil or the number — opens the ZEG editor. Rebuilt after each edit so
-   * the fresh segment keeps its click handler.
+   * Second rendering of the tile, shown BELOW the row while a collapsed
+   * inactive tile is hovered — nothing ever overlaps a neighbour. Virtual frame
+   * tiles get one too: their name needs revealing just as much.
+   *
+   * @param {string} phase
+   * @param {HTMLElement} tile
+   * @param {string} letter
+   * @param {string} nameText
+   * @param {boolean} isVirtual
+   * @param {number} pct
+   * @returns {HTMLDivElement}
+   * @private
+   */
+  _buildFlyout(phase, tile, letter, nameText, isVirtual, pct) {
+    return h('div', { class: 'dmaic-tile__flyout' },
+      this._buildInner(phase, tile, letter, nameText, isVirtual, pct, { editable: false }));
+  }
+
+  /**
+   * Build the pencil+% edit segment (click area 2). On the ACTIVE tile a click
+   * anywhere in it — pencil or number — opens the ZEG editor; on an inactive
+   * tile it navigates to the phase, matching the pencil, which only appears on
+   * the active tile. Rebuilt after each edit so the fresh segment keeps its
+   * click handler.
    * @param {string} phase
    * @param {HTMLElement} tile
    * @param {number} pct
@@ -567,6 +551,15 @@ export class DmaicTiles {
     seg.addEventListener('click', (e) => {
       e.stopPropagation();
       this._closeMenu();
+      // Den Fortschritt bearbeitet nur die aktive Kachel — allein dort kündigt
+      // der Stift das auch an. Auf einer inaktiven Kachel navigiert das Segment
+      // wie der Körper daneben; sonst öffnete es einen Editor ganz ohne
+      // sichtbare Ankündigung, und in der kollabierten Leiste liegt genau dort
+      // die Kachelmitte.
+      if (!tile.classList.contains('dmaic-tile--active')) {
+        this._navigatePhase(phase);
+        return;
+      }
       this._openProgressEditor(phase, tile, seg);
     });
     return seg;
