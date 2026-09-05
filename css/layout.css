@@ -604,15 +604,15 @@ html.is-nightly body {
   cursor: pointer;
   user-select: none;
   white-space: nowrap;
-  transition: transform var(--transition-speed), box-shadow var(--transition-speed);
+  transition: background var(--transition-speed), box-shadow var(--transition-speed);
 }
 
-/* Hover lifts the whole tile (the dimmed button box) with a small zoom and a
-   light shadow — not a text zoom. Only when not collapsed; collapsed tiles use
-   the hover overlay. */
+/* Hover hebt die Kachel nur an: Schatten plus eine Stufe hellerer Grund. Kein
+   Zoom — eine Kachel, die unter dem Zeiger wächst, verschiebt ihren eigenen
+   Inhalt und ihre Trefferfläche. `z-index` entfiel mit dem Zoom, es hielt nur
+   die vergrößerte Kachel über den Nachbarn. */
 .dmaic-tiles:not(.dmaic-tiles--collapsed) .dmaic-tile:hover {
-  transform: scale(1.08);
-  z-index: 2;
+  background: var(--color-bg-secondary);
   box-shadow: 0 3px 12px rgb(0 0 0 / 20%);
 }
 
@@ -807,26 +807,22 @@ html.is-nightly body {
   transform: scale(1);
 }
 
-/* Dropdown segment: wide clickable area, no background on hover — the chevron
-   itself grows a little on hover instead. */
-.dmaic-tile__menu-btn {
-  padding: 0 var(--spacing-m);
-}
-
+/* Der Chevron dreht sich bei offenem Menü — das ist sein einziger
+   Zustandsmarker. Er zoomt beim Hovern NICHT: ein bewusst klein gehaltenes
+   Symbol, das unter dem Zeiger wieder aufgeht, arbeitet gegen sich selbst.
+   Die frühere Regel `padding: 0 var(--spacing-m)` stand hier wirkungslos —
+   der Block ab `.dmaic-tile__menu-btn { width: 18px … }` überschrieb sie. */
 .dmaic-tile__menu-btn .icon {
+  /* Kleiner als `icon--sm` (16px), sonst füllt der Chevron die 18-px-Box
+     randlos. `--icon-size` ist dafür die vorgesehene Ausnahmeschraube
+     (components.css:1758–1771) — eine abweichende `width` würde die Maske
+     stauchen statt das Symbol zu verkleinern. */
+  --icon-size: 12px;
   transition: transform var(--transition-speed);
-}
-
-.dmaic-tile__menu-btn:hover .icon {
-  transform: scale(1.3);
 }
 
 .dmaic-tile--menu-open .dmaic-tile__menu-btn .icon {
   transform: rotate(180deg);
-}
-
-.dmaic-tile--menu-open .dmaic-tile__menu-btn:hover .icon {
-  transform: rotate(180deg) scale(1.3);
 }
 
 /* Vertical divider between the left group and the dropdown. Full height; the
@@ -935,21 +931,20 @@ html.is-nightly body {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 22px;
-  height: 22px;
+  width: 18px;
+  height: 18px;
   padding: 0;
   border: none;
   border-radius: var(--border-radius-sm);
   background: transparent;
   color: var(--color-text-tertiary);
   cursor: pointer;
-  transition: color 0.15s, background 0.15s;
+  transition: color 0.15s;
   flex-shrink: 0;
 }
 
 .dmaic-tile__menu-btn:hover {
   color: var(--color-text-primary);
-  background: var(--color-bg-tertiary);
 }
 
 .dmaic-tile--active .dmaic-tile__menu-btn {
