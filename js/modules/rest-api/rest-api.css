@@ -22,13 +22,14 @@
   gap: 0;
   overflow: hidden;    /* clip children to border-radius */
 
-  /* .dmike-split__input defaults to align-self:flex-start (sizes to its own
-     content), so .rest-api__list's flex:1 never gets a bounded height and
-     its overflow-y:auto never engages — the unbounded endpoint list instead
-     grows .dmike-split / .module-container past the workspace, producing a
-     second, outer scrollbar (Bug 022 twin, siehe stakeholder-analysis.css /
-     voc-ctx-tree.css). Stretch to the split's full height so the list's own
-     scroll is the only one that ever triggers. */
+  /* .dmike-split__input hat standardmäßig align-self:flex-start (bemisst
+     sich an seinem eigenen Inhalt), deshalb bekommt .rest-api__lists
+     flex:1 nie eine begrenzte Höhe und dessen overflow-y:auto greift nie —
+     die unbegrenzte Endpunktliste wächst stattdessen über .dmike-split /
+     .module-container hinaus und erzeugt eine zweite, äußere Scrollleiste
+     (Bug-022-Zwilling, siehe stakeholder-analysis.css / voc-ctx-tree.css).
+     Auf die volle Höhe des Splits strecken, damit der eigene Scroll der
+     Liste der einzige ist, der je greift. */
   align-self: stretch;
 }
 
