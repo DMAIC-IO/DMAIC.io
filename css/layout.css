@@ -974,6 +974,12 @@ html.is-nightly body {
   flex-direction: column;
 }
 
+/* Im Flyout schließt das Dropdown bündig an — die vier Pixel Abstand der
+   Normalposition wären hier eine tote Fläche mitten im Hover-Bereich. */
+.dmaic-tile__flyout .dmaic-tile__dropdown {
+  top: 100%;
+}
+
 .dmaic-tile__dropdown-item {
   appearance: none;
   display: block;
@@ -2700,52 +2706,54 @@ body.training-area-open .dmaic-tiles {
   background: var(--color-text-tertiary);
 }
 
-/* ===== Adaptive collapse: inactive tiles show letter + progress only ===== */
+/* ===== Adaptive collapse: inaktive Kacheln zeigen nur Kürzel + % ===== */
 
-/* Collapsed inactive tiles show only the letter + %. The name collapses to
-   zero width (animatable); divider and menu hide. */
-.dmaic-tiles--collapsed .dmaic-tile:not(.dmaic-tile--active) .dmaic-tile__name {
+/* Kollabiert bleibt der Name im Fluss dauerhaft verborgen — auch beim Hovern.
+   Die volle Darstellung übernimmt das Flyout unterhalb der Reihe. Der Divider
+   entfällt, der Chevron bleibt: erschiene er erst beim Hovern, wäre der
+   Breitensprung zurück, den diese Arbeit beseitigt. */
+.dmaic-tiles--collapsed .dmaic-tile:not(.dmaic-tile--active) > .dmaic-tile__inner .dmaic-tile__name {
   max-width: 0;
   overflow: hidden;
-  transition: max-width var(--transition-speed) ease;
 }
 
-.dmaic-tiles--collapsed .dmaic-tile:not(.dmaic-tile--active) .dmaic-tile__divider,
-.dmaic-tiles--collapsed .dmaic-tile:not(.dmaic-tile--active) .dmaic-tile__menu-btn {
+.dmaic-tiles--collapsed .dmaic-tile:not(.dmaic-tile--active) > .dmaic-tile__inner .dmaic-tile__divider {
   display: none;
 }
 
-/* Hover: the single inner container (buttons + bar) becomes a centred overlay
-   over BOTH neighbours, so the whole thing — including the progress bar —
-   expands together. The tile's flow slot keeps its JS-pinned width, so nothing
-   reflows (no flicker). The name animates open from zero width; the shadow
-   fades in via the inner's box-shadow transition. */
-.dmaic-tiles--collapsed .dmaic-tile:not(.dmaic-tile--active):hover {
-  z-index: 10;
+/* Flyout: zweite, vollständige Darstellung — mittig unter der Kachel, mit
+   Schatten. Der optische Abstand steckt als transparentes `padding-top` IM
+   Flyout, nicht als `margin` davor: als Außenabstand läge zwischen Kachel und
+   Flyout eine tote Fläche, und der Hover risse ab, sobald der Zeiger sie
+   überquert. */
+.dmaic-tile__flyout {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 20;
+  padding-top: var(--spacing-xs);
+  width: max-content;
 }
 
-.dmaic-tiles--collapsed .dmaic-tile:not(.dmaic-tile--active):hover .dmaic-tile__inner {
-  position: absolute;
-  top: 0;
-  left: 50%;
-  height: 100%;
-  width: max-content;
-  transform: translateX(-50%);
+.dmaic-tile__flyout > .dmaic-tile__inner {
+  border-radius: var(--border-radius-sm);
   background: var(--color-bg-secondary);
   box-shadow:
     inset 0 0 0 1px var(--color-border-secondary),
     0 6px 16px rgb(0 0 0 / 24%);
 }
 
-.dmaic-tiles--collapsed .dmaic-tile:not(.dmaic-tile--active):hover .dmaic-tile__name {
-  max-width: var(--dmaic-name-w, 20em);
-}
-
-.dmaic-tiles--collapsed .dmaic-tile:not(.dmaic-tile--active):hover .dmaic-tile__divider {
+/* Sichtbar beim Hovern — und solange das Dropdown offen ist, sonst
+   verschwände es mit dem Flyout, sobald der Zeiger die Kachel verlässt. */
+.dmaic-tiles--collapsed .dmaic-tile:not(.dmaic-tile--active):hover .dmaic-tile__flyout,
+.dmaic-tiles--collapsed .dmaic-tile--menu-open:not(.dmaic-tile--active) .dmaic-tile__flyout {
   display: block;
 }
 
-.dmaic-tiles--collapsed .dmaic-tile:not(.dmaic-tile--active):hover .dmaic-tile__menu-btn {
-  display: inline-flex;
+/* Der Zahl-Träger im Flyout ist ein span, kein Button: kein Zeigefinger, kein
+   Hover-Zustand. */
+.dmaic-tile__edit--static {
+  cursor: default;
 }
-

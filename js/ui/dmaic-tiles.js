@@ -118,10 +118,12 @@ export class DmaicTiles {
     const tile = this._container.querySelector(`[data-phase="${phase}"]`);
     if (!tile) return;
     const pct = Math.max(0, Math.min(100, value));
-    const fill = tile.querySelector('.dmaic-tile__progress-fill');
-    if (fill) fill.style.width = `${pct}%`;
-    const zeg = tile.querySelector('.dmaic-tile__zeg');
-    if (zeg) zeg.textContent = `${pct}%`;
+    // Beide Vorkommen: die Kachel im Fluss UND ihr Flyout. Wird eines
+    // vergessen, zeigt das Flyout einen veralteten Wert.
+    tile.querySelectorAll('.dmaic-tile__progress-fill')
+      .forEach((fill) => { fill.style.width = `${pct}%`; });
+    tile.querySelectorAll('.dmaic-tile__zeg')
+      .forEach((zeg) => { zeg.textContent = `${pct}%`; });
   }
 
   // ─── Internal ───────────────────────────────────────────────
@@ -178,24 +180,17 @@ export class DmaicTiles {
     // Three full-height click segments, each a sibling button (never nested —
     // nested-interactive): (1) letter+name → navigate, (2) pencil+% → edit
     // progress, (3) chevron → module menu. Dividers separate them. The whole
-    // row lives in `.dmaic-tile__inner`, which is lifted to a centred absolute
-    // overlay when a collapsed tile is hovered (see CSS) so it spreads over
-    // both neighbours without reflowing them (the flow slot keeps its pinned
-    // width).
+    // row lives in `.dmaic-tile__inner`, which always stays in flow. A
+    // collapsed tile renders a SECOND copy in `.dmaic-tile__flyout`, shown
+    // below the row on hover — nothing ever overlaps a neighbour, so no
+    // width pinning is needed.
     const nameText = this._i18n.t(`phases.${phase}`);
     const body = h('button', {
       class: 'dmaic-tile__body',
       type: 'button',
     },
       h('span', { class: letterClass, 'aria-hidden': 'true' }, letter),
-      // `--dmaic-name-w` sizes the collapsed→hover reveal to the actual name
-      // length (1em/char safely over-estimates uppercase width), so long names
-      // are never clipped. max-width just caps, so the animation still grows
-      // smoothly to the real content width.
-      h('span', {
-        class: 'dmaic-tile__name',
-        style: `--dmaic-name-w: ${nameText.length + 1}em`,
-      }, nameText),
+      h('span', { class: 'dmaic-tile__name' }, nameText),
     );
     // Click / Enter / Space on the body button → select phase.
     body.addEventListener('click', () => {
@@ -230,8 +225,8 @@ export class DmaicTiles {
 
     // Progress bar is its own row UNDER the button row (in y), not overlapping —
     // so the divider ends naturally above it. Both live inside `.dmaic-tile__inner`,
-    // the single container that becomes the hover overlay, so the bar expands
-    // together with the buttons when a collapsed tile is hovered.
+    // the single container the flyout mirrors, so the bar travels with the
+    // buttons into the flyout copy.
     const progressBar = isVirtual ? null : h('span', {
       class: 'dmaic-tile__progress-bar',
       'aria-hidden': 'true',
@@ -241,7 +236,7 @@ export class DmaicTiles {
     }));
 
     const inner = h('div', { class: 'dmaic-tile__inner' }, ...[row, progressBar].filter(Boolean));
-    tile.append(inner);
+    tile.append(inner, this._buildFlyout(phase, letter, nameText, isVirtual, pct));
 
     // ── Drop target for tab drag & drop ──
     tile.addEventListener('dragover', (e) => {
@@ -336,7 +331,13 @@ export class DmaicTiles {
       dropdown.append(item);
     });
 
-    tile.append(dropdown);
+    // Ist die Kachel kollabiert, sitzt das Dropdown unter dem Flyout statt
+    // unter der Kachel — sonst überdeckten sich beide. Das Flyout ist absolut
+    // positioniert und damit selbst Bezugsrahmen; `top: 100%` genügt.
+    const host = (this._collapsed && !tile.classList.contains('dmaic-tile--active'))
+      ? tile.querySelector('.dmaic-tile__flyout')
+      : tile;
+    (host ?? tile).append(dropdown);
     this._openMenu = { phase, dropdown, tile };
     tile.classList.add('dmaic-tile--menu-open');
 
@@ -462,6 +463,77 @@ export class DmaicTiles {
   // ─── Progress Editor ───────────────────────────────────────
 
   /**
+   * Second, absolutely positioned rendering of the tile, shown BELOW the row
+   * while a collapsed inactive tile is hovered. It carries the same class
+   * names as the in-flow `.dmaic-tile__inner`, so every existing rule applies
+   * without duplication; code that means exactly one of the two addresses the
+   * in-flow child through the direct-child selector
+   * `.dmaic-tile > .dmaic-tile__inner`.
+   *
+   * The number is a plain span here, not a button: only the ACTIVE tile can
+   * edit its progress, and a collapsed tile is by definition inactive — a
+   * second entry point into the editor would be unreachable by design and a
+   * nested-interactive risk by accident.
+   *
+   * @param {string} phase
+   * @param {string} letter    phase abbreviation, e.g. "D3"
+   * @param {string} nameText  translated phase name
+   * @param {boolean} isVirtual  frame tiles have neither ZEG nor progress bar
+   * @param {number} pct
+   * @returns {HTMLDivElement}
+   * @private
+   */
+  _buildFlyout(phase, letter, nameText, isVirtual, pct) {
+    const letterClass = letter.length > 1
+      ? 'dmaic-tile__letter dmaic-tile__letter--multichar'
+      : 'dmaic-tile__letter';
+
+    const body = h('button', { class: 'dmaic-tile__body', type: 'button' },
+      h('span', { class: letterClass, 'aria-hidden': 'true' }, letter),
+      h('span', { class: 'dmaic-tile__name' }, nameText),
+    );
+    body.addEventListener('click', () => {
+      this._closeMenu();
+      this._navigatePhase(phase);
+    });
+
+    const zegSeg = isVirtual ? null : h('span',
+      { class: 'dmaic-tile__edit dmaic-tile__edit--static' },
+      h('span', { class: 'dmaic-tile__zeg' }, `${pct}%`),
+    );
+
+    const menuLabel = this._i18n.t('phases.moduleMenu');
+    const menuBtn = h('button', {
+      class: 'dmaic-tile__menu-btn',
+      type: 'button',
+      'aria-label': menuLabel,
+      title: menuLabel,
+    }, icon('nav.expand-down', { size: 'sm' }));
+    menuBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      this._toggleMenu(phase, menuBtn.closest('.dmaic-tile'));
+    });
+
+    const left = h('div', { class: 'dmaic-tile__left' }, ...[body, zegSeg].filter(Boolean));
+    const row = h('div', { class: 'dmaic-tile__row' },
+      left,
+      h('span', { class: 'dmaic-tile__divider', 'aria-hidden': 'true' }),
+      menuBtn,
+    );
+
+    const progressBar = isVirtual ? null : h('span', {
+      class: 'dmaic-tile__progress-bar',
+      'aria-hidden': 'true',
+    }, h('span', {
+      class: 'dmaic-tile__progress-fill',
+      style: `width: ${pct}%`,
+    }));
+
+    const inner = h('div', { class: 'dmaic-tile__inner' }, ...[row, progressBar].filter(Boolean));
+    return h('div', { class: 'dmaic-tile__flyout' }, inner);
+  }
+
+  /**
    * Build the pencil+% edit segment (click area 2). Clicking anywhere in it —
    * the pencil or the number — opens the ZEG editor. Rebuilt after each edit so
    * the fresh segment keeps its click handler.
@@ -535,8 +607,12 @@ export class DmaicTiles {
 
       input.replaceWith(this._buildEditSegment(phase, tile, val));
 
-      const fill = tile.querySelector('.dmaic-tile__progress-fill');
-      if (fill) fill.style.width = `${val}%`;
+      tile.querySelectorAll('.dmaic-tile__progress-fill')
+        .forEach((fill) => { fill.style.width = `${val}%`; });
+      // Die Zahl im Fluss erneuert sich schon durch das neu gebaute Segment
+      // oben; nur das Flyout braucht den Nachtrag.
+      tile.querySelectorAll('.dmaic-tile__flyout .dmaic-tile__zeg')
+        .forEach((zeg) => { zeg.textContent = `${val}%`; });
     };
 
     let done = false;
@@ -594,7 +670,9 @@ export class DmaicTiles {
   _makeMeasure() {
     this._measureCanvas ??= document.createElement('canvas');
     const ctx = this._measureCanvas.getContext('2d');
-    const probe = this._container.querySelector('.dmaic-tile__name');
+    // Direkter Kindpfad: den Namen gibt es zweimal je Kachel (Fluss + Flyout).
+    // Für die Schriftmessung zählt der im Fluss.
+    const probe = this._container.querySelector('.dmaic-tile > .dmaic-tile__inner .dmaic-tile__name');
     if (probe) {
       const cs = getComputedStyle(probe);
       ctx.font = `${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`;
@@ -666,8 +744,8 @@ export class DmaicTiles {
     this._container.querySelectorAll('.dmaic-tile').forEach(tile => {
       const phase = tile.dataset.phase;
       if (!phase) return;
-      const nameEl = tile.querySelector('.dmaic-tile__name');
-      if (nameEl) nameEl.textContent = this._i18n.t(`phases.${phase}`);
+      tile.querySelectorAll('.dmaic-tile__name')
+        .forEach((nameEl) => { nameEl.textContent = this._i18n.t(`phases.${phase}`); });
       tile.setAttribute('aria-label', this._i18n.t(`phases.${phase}`));
     });
     this._recomputeCollapse();
