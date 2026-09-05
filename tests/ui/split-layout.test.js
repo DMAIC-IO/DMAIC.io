@@ -109,18 +109,11 @@ suite('Split-Layout — Spaltenbreiten', () => {
     assertEqual(getComputedStyle(input).width, '420px');
   });
 
-  test('es gibt genau drei Stufen und keine dazwischen', () => {
-    // Regressionsschutz gegen erneute Drift: früher lagen 240/280/300/320/
-    // 380/420px nebeneinander, über zwei konkurrierende Mechanismen.
-    const stufen = ['dmike-split', 'dmike-split dmike-split--input-sm',
-      'dmike-split dmike-split--input-lg'];
-    const breiten = stufen.map((cls) => {
-      const { input, host: h } = mountSplit(cls);
-      const w = getComputedStyle(input).width;
-      h.remove();
-      return w;
-    });
-    host = null;
-    assertEqual(breiten.join(','), '320px,280px,420px');
+  test('eine unbekannte Modifier-Klasse fällt auf den Standard zurück', () => {
+    // Sichert ab, dass es neben sm und lg keine weitere Stufe gibt: eine
+    // erfundene Klasse darf --split-input nicht setzen, die Spalte bleibt
+    // beim Standard. Die drei Stufen selbst prüfen die Tests darüber.
+    const { input } = mountSplit('dmike-split dmike-split--input-xl');
+    assertEqual(getComputedStyle(input).width, '320px');
   });
 });
