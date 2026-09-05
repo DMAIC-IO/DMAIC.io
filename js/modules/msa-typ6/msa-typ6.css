@@ -62,7 +62,7 @@
 }
 
 .module-msa-typ6__nelson-rule input[type="checkbox"] {
-  margin-top: 2px;
+  margin-top: var(--spacing-2xs);
 }
 
 .module-msa-typ6__nelson-desc {

@@ -28,7 +28,7 @@
   align-items: center;
   justify-content: center;
   gap: var(--spacing-sm);
-  padding: 48px 64px;
+  padding: var(--spacing-2xl) 64px;
   min-width: 480px;
   max-width: 720px;
   border: 2px dashed var(--color-border-primary);
@@ -94,7 +94,7 @@
 .data-import__file-info {
   display: grid;
   grid-template-columns: auto 1fr;
-  gap: 4px var(--spacing-md);
+  gap: var(--spacing-xs) var(--spacing-md);
   font-size: var(--font-size-sm);
 }
 
@@ -119,7 +119,7 @@
 }
 
 .data-import__btn-secondary {
-  padding: 6px 12px;
+  padding: var(--spacing-s) var(--spacing-m);
   font-size: var(--font-size-sm);
   background: transparent;
   color: var(--color-text-primary);
@@ -157,7 +157,7 @@
 }
 
 .data-import__error-detail {
-  margin-top: 4px;
+  margin-top: var(--spacing-xs);
   color: var(--color-text-tertiary);
   font-size: var(--font-size-sm);
 }
@@ -194,7 +194,7 @@
 
 .data-import__sheet-tabs {
   display: flex;
-  gap: 2px;
+  gap: var(--spacing-2xs);
   border-bottom: 1px solid var(--color-border-secondary);
   overflow-x: auto;
 }
@@ -203,8 +203,8 @@
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 2px;
-  padding: 6px 12px;
+  gap: var(--spacing-2xs);
+  padding: var(--spacing-s) var(--spacing-m);
   background: transparent;
   border: none;
   border-bottom: 2px solid transparent;
@@ -252,7 +252,7 @@
 
 .data-import__preview-table th,
 .data-import__preview-table td {
-  padding: 4px 10px;
+  padding: var(--spacing-xs) 10px;
   text-align: left;
   border-bottom: 1px solid var(--color-border-secondary);
   border-right: 1px solid var(--color-border-secondary);
@@ -297,7 +297,7 @@
   font-size: var(--font-size-sm);
   color: var(--color-text-tertiary);
   font-style: italic;
-  padding: 4px;
+  padding: var(--spacing-xs);
 }
 
 .data-import__send-row {
@@ -329,7 +329,7 @@
 .data-import__option {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: var(--spacing-xs);
   font-size: var(--font-size-sm);
 }
 
@@ -338,7 +338,7 @@
   align-items: center;
   gap: var(--spacing-sm);
   align-self: end;
-  padding-bottom: 4px;
+  padding-bottom: var(--spacing-xs);
 }
 
 .data-import__option-label {
@@ -348,7 +348,7 @@
 
 .data-import__option select {
   min-width: 180px;
-  padding: 4px 8px;
+  padding: var(--spacing-xs) var(--spacing-sm);
   background: var(--color-bg-primary);
   color: var(--color-text-primary);
   border: 1px solid var(--color-border-primary);
@@ -367,7 +367,7 @@
 
 .data-import__num-input {
   width: 80px;
-  padding: 4px 8px;
+  padding: var(--spacing-xs) var(--spacing-sm);
   background: var(--color-bg-primary);
   color: var(--color-text-primary);
   border: 1px solid var(--color-border-primary);

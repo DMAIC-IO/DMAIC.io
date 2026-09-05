@@ -84,7 +84,7 @@
 /* ===== Weight row ===== */
 .ce-matrix__weight-row th {
   background: var(--color-bg-secondary) !important;
-  padding: var(--spacing-xs) 6px !important;
+  padding: var(--spacing-xs) var(--spacing-s) !important;
   border-bottom: 2px solid var(--color-border-secondary);
 }
 
@@ -98,7 +98,7 @@
 }
 
 .ce-matrix__weight-cell {
-  padding: var(--spacing-xs) 4px !important;
+  padding: var(--spacing-xs) var(--spacing-xs) !important;
 }
 
 /* .field .field--xs base; only the narrow fixed width and the mono digits
@@ -137,7 +137,7 @@
   transform: rotate(180deg);
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: var(--spacing-xs);
 }
 
 .ce-matrix__output-name {
@@ -151,7 +151,7 @@
   field-sizing: content;
   box-sizing: border-box;
   outline: none;
-  padding: 2px 4px;
+  padding: var(--spacing-2xs) var(--spacing-xs);
   border-radius: var(--border-radius-sm);
 }
 
@@ -176,7 +176,7 @@
   min-width: 130px;
   field-sizing: content;
   font-weight: var(--font-weight-medium);
-  padding: 9px 30px 9px 12px;
+  padding: 9px 30px 9px var(--spacing-m);
 }
 
 .ce-matrix__input-name:focus {
@@ -220,7 +220,7 @@
   font-size: var(--font-size-md);
   font-weight: var(--font-weight-semibold);
   text-align: center;
-  padding: 8px 0;
+  padding: var(--spacing-sm) 0;
   outline: none;
   appearance: textfield;
 }

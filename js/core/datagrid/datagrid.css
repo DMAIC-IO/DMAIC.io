@@ -51,7 +51,7 @@
   top: 0;
   z-index: 10;
   height: var(--datagrid-header-height);
-  padding: 0 8px;
+  padding: 0 var(--spacing-sm);
   font-weight: 500;
   text-align: left;
   border-right: 1px solid var(--datagrid-border-color);
@@ -91,7 +91,7 @@
   font-size: var(--font-size-sm);
   font-weight: 500;
   color: var(--datagrid-header-text);
-  margin-left: 4px;
+  margin-left: var(--spacing-xs);
 }
 
 .col-unit {
@@ -107,10 +107,10 @@
   font-family: var(--font-family);
   font-size: var(--font-size-sm);
   font-weight: 500;
-  padding: 1px 4px;
+  padding: 1px var(--spacing-xs);
   border-radius: 2px;
   width: 80px;
-  margin-left: 4px;
+  margin-left: var(--spacing-xs);
 }
 
 /* Column type+role badge.
@@ -123,7 +123,7 @@
   font-weight: 600;
   padding: 0 3px;
   border-radius: 2px;
-  margin-left: 2px;
+  margin-left: var(--spacing-2xs);
   vertical-align: middle;
   line-height: 14px;
   opacity: .8;
@@ -169,7 +169,7 @@
 }
 
 .attr-picker__title {
-  padding: 6px 12px;
+  padding: var(--spacing-s) var(--spacing-m);
   font-size: 10px;
   text-transform: uppercase;
   letter-spacing: .8px;
@@ -185,7 +185,7 @@
 
 .attr-picker__col {
   min-width: 160px;
-  padding: 4px 0 6px;
+  padding: var(--spacing-xs) 0 var(--spacing-s);
 }
 
 .attr-picker__col--format {
@@ -197,7 +197,7 @@
 }
 
 .attr-picker__col-title {
-  padding: 4px 12px 6px;
+  padding: var(--spacing-xs) var(--spacing-m) var(--spacing-s);
   font-size: 10px;
   text-transform: uppercase;
   letter-spacing: .6px;
@@ -209,7 +209,7 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 6px 12px;
+  padding: var(--spacing-s) var(--spacing-m);
   cursor: pointer;
   color: var(--color-text-secondary);
   transition: background 80ms ease, color 80ms ease;
@@ -254,7 +254,7 @@
 }
 
 .attr-picker__lock-note {
-  padding: 6px 12px;
+  padding: var(--spacing-s) var(--spacing-m);
   font-size: 11px;
   color: var(--color-text-tertiary);
   border-bottom: 1px solid var(--color-border-primary);
@@ -265,7 +265,7 @@
   display: inline-block;
   font-size: 9px;
   font-weight: 600;
-  padding: 0 4px;
+  padding: 0 var(--spacing-xs);
   border-radius: 2px;
   line-height: 16px;
   min-width: 22px;
@@ -343,7 +343,7 @@ td.datagrid__row-header {
   justify-content: center;
   width: 100%;
   height: 100%;
-  gap: 2px;
+  gap: var(--spacing-2xs);
 }
 
 .datagrid__export-btn,
@@ -354,7 +354,7 @@ td.datagrid__row-header {
   flex: 1 1 auto;
   min-width: 0;
   height: 100%;
-  padding: 4px 2px;
+  padding: var(--spacing-xs) var(--spacing-2xs);
   background: none;
   border: none;
   cursor: pointer;
@@ -392,7 +392,7 @@ td.datagrid__row-header {
 /* Body cells */
 .datagrid__table td {
   height: var(--datagrid-cell-height);
-  padding: 0 8px;
+  padding: 0 var(--spacing-sm);
   border-right: 1px solid var(--datagrid-border-color);
   border-bottom: 1px solid var(--datagrid-border-color);
 
@@ -505,7 +505,7 @@ td.cell-editing {
   height: 100%;
   border: none;
   outline: none;
-  padding: 0 8px;
+  padding: 0 var(--spacing-sm);
   font-family: var(--font-family-mono);
   font-size: var(--font-size-sm);
   color: var(--color-text-primary);
@@ -599,7 +599,7 @@ td.cell-locked--hard {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  margin-right: 4px;
+  margin-right: var(--spacing-xs);
   vertical-align: middle;
 }
 
@@ -623,7 +623,7 @@ th.col-locked--hard .col-lock-icon {
   position: fixed;
   z-index: 1000;
   min-width: 200px;
-  padding: 4px 0;
+  padding: var(--spacing-xs) 0;
   background: var(--color-bg-elevated);
   border: 1px solid var(--color-border-primary);
   border-radius: var(--border-radius);
@@ -635,7 +635,7 @@ th.col-locked--hard .col-lock-icon {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 6px 12px;
+  padding: var(--spacing-s) var(--spacing-m);
   cursor: pointer;
   color: var(--color-text-secondary);
   transition: all 80ms ease;
@@ -651,7 +651,7 @@ th.col-locked--hard .col-lock-icon {
 }
 
 .context-menu__shortcut {
-  margin-left: 24px;
+  margin-left: var(--spacing-l);
   font-family: var(--font-family-mono);
   font-size: 10px;
   opacity: .6;
@@ -659,12 +659,12 @@ th.col-locked--hard .col-lock-icon {
 
 .context-menu__sep {
   height: 1px;
-  margin: 4px 8px;
+  margin: var(--spacing-xs) var(--spacing-sm);
   background: var(--color-border-primary);
 }
 
 .context-menu__label {
-  padding: 4px 12px 2px;
+  padding: var(--spacing-xs) var(--spacing-m) var(--spacing-2xs);
   font-size: 10px;
   text-transform: uppercase;
   letter-spacing: .8px;
@@ -682,7 +682,7 @@ th.col-locked--hard .col-lock-icon {
   display: flex;
   align-items: flex-start;
   justify-content: flex-end;
-  padding: 40px 24px;
+  padding: 40px var(--spacing-l);
 }
 
 .column-scan-overlay--modal {
@@ -708,8 +708,8 @@ th.col-locked--hard .col-lock-icon {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 4px 12px;
-  padding: 12px 16px 8px;
+  gap: var(--spacing-xs) var(--spacing-m);
+  padding: var(--spacing-m) var(--spacing-ml) var(--spacing-sm);
   border-bottom: 1px solid var(--color-border-primary);
   position: relative;
 }
@@ -735,7 +735,7 @@ th.col-locked--hard .col-lock-icon {
   font-size: 20px;
   cursor: pointer;
   color: var(--color-text-tertiary);
-  padding: 2px 6px;
+  padding: var(--spacing-2xs) var(--spacing-s);
   border-radius: var(--border-radius);
 }
 
@@ -745,16 +745,16 @@ th.col-locked--hard .col-lock-icon {
 }
 
 .column-scan__body {
-  padding: 12px 16px 16px;
+  padding: var(--spacing-m) var(--spacing-ml) var(--spacing-ml);
   overflow-y: auto;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: var(--spacing-m);
 }
 
 .column-scan__overview {
   display: flex;
-  gap: 16px;
+  gap: var(--spacing-ml);
   font-size: var(--font-size-sm);
   color: var(--color-text-secondary);
 }
@@ -792,13 +792,13 @@ th.col-locked--hard .col-lock-icon {
 .column-scan__types {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: var(--spacing-xs);
 }
 
 .column-scan__type-row {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--spacing-sm);
   font-size: var(--font-size-sm);
 }
 
@@ -852,7 +852,7 @@ th.col-locked--hard .col-lock-icon {
 .column-scan__mismatch-header {
   background: var(--color-warning);
   color: #fff;
-  padding: 6px 10px;
+  padding: var(--spacing-s) 10px;
   font-size: var(--font-size-sm);
   font-weight: 600;
 }
@@ -865,8 +865,8 @@ th.col-locked--hard .col-lock-icon {
 .column-scan__mismatch-row {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 4px 10px;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-xs) 10px;
   font-size: var(--font-size-sm);
   cursor: pointer;
   border-bottom: 1px solid var(--color-border-primary);
@@ -909,14 +909,14 @@ th.col-locked--hard .col-lock-icon {
 }
 
 .column-scan__mismatch-more {
-  padding: 4px 10px;
+  padding: var(--spacing-xs) 10px;
   font-size: var(--font-size-xs);
   color: var(--color-text-tertiary);
   font-style: italic;
 }
 
 .column-scan__ok {
-  padding: 8px 12px;
+  padding: var(--spacing-sm) var(--spacing-m);
   background: color-mix(in srgb, var(--color-success) 12%, transparent);
   color: var(--color-success);
   border-radius: var(--border-radius);
@@ -934,7 +934,7 @@ th.col-locked--hard .col-lock-icon {
 .column-scan__clusters-header {
   background: var(--color-accent);
   color: #fff;
-  padding: 6px 10px;
+  padding: var(--spacing-s) 10px;
   font-size: var(--font-size-sm);
   font-weight: 600;
 }
@@ -946,7 +946,7 @@ th.col-locked--hard .col-lock-icon {
 
 .column-scan__cluster {
   border-bottom: 1px solid var(--color-border-primary);
-  padding: 6px 10px;
+  padding: var(--spacing-s) 10px;
 }
 
 .column-scan__cluster:last-child {
@@ -956,21 +956,21 @@ th.col-locked--hard .col-lock-icon {
 .column-scan__cluster-summary {
   font-size: var(--font-size-xs);
   color: var(--color-text-tertiary);
-  margin-bottom: 4px;
+  margin-bottom: var(--spacing-xs);
 }
 
 .column-scan__cluster-variants {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: var(--spacing-2xs);
 }
 
 .column-scan__cluster-variant {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
-  padding: 3px 6px;
+  gap: var(--spacing-sm);
+  padding: 3px var(--spacing-s);
   font-size: var(--font-size-sm);
   cursor: pointer;
   border-radius: var(--border-radius);
@@ -1042,7 +1042,7 @@ th.col-locked--hard .col-lock-icon {
 }
 
 .column-stats__label {
-  padding: 5px 8px 5px 0;
+  padding: 5px var(--spacing-sm) 5px 0;
   color: var(--color-text-secondary);
   white-space: nowrap;
 }
@@ -1064,11 +1064,11 @@ th.col-locked--hard .col-lock-icon {
   border-collapse: collapse;
   font-family: var(--font-family-mono);
   font-size: var(--font-size-xs);
-  margin-top: 8px;
+  margin-top: var(--spacing-sm);
 }
 
 .preview-table th, .preview-table td {
-  padding: 4px 8px;
+  padding: var(--spacing-xs) var(--spacing-sm);
   border: 1px solid var(--color-border-primary);
   text-align: left;
   max-width: 140px;
@@ -1100,7 +1100,7 @@ th.col-locked--hard .col-lock-icon {
   font-weight: 600;
   color: var(--color-accent);
   background: var(--color-bg-secondary);
-  padding: 12px 24px;
+  padding: var(--spacing-m) var(--spacing-l);
   border-radius: var(--border-radius);
 }
 
@@ -1123,7 +1123,7 @@ th.col-locked--hard .col-lock-icon {
 .sheet-tab {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: var(--spacing-xs);
   padding: 0 14px;
   font-family: var(--font-family);
   font-size: var(--font-size-sm);
@@ -1174,7 +1174,7 @@ th.col-locked--hard .col-lock-icon {
   font-family: var(--font-family);
   font-size: var(--font-size-sm);
   font-weight: 600;
-  padding: 1px 4px;
+  padding: 1px var(--spacing-xs);
   border-radius: 2px;
   width: 100px;
 }
@@ -1224,7 +1224,7 @@ td.datagrid__row-header:active {
 .row-drag-ghost {
   position: fixed;
   z-index: 100;
-  padding: 4px 12px;
+  padding: var(--spacing-xs) var(--spacing-m);
   background: var(--color-bg-elevated);
   border: 1px solid var(--color-accent);
   border-radius: var(--border-radius-sm);
@@ -1257,7 +1257,7 @@ td.datagrid__row-header:active {
 .col-drag-ghost {
   position: fixed;
   z-index: 100;
-  padding: 4px 12px;
+  padding: var(--spacing-xs) var(--spacing-m);
   background: var(--color-bg-elevated);
   border: 1px solid var(--color-accent);
   border-radius: var(--border-radius-sm);
@@ -1281,7 +1281,7 @@ td.datagrid__row-header:active {
   bottom: 40px;
   left: 50%;
   transform: translateX(-50%);
-  padding: 8px 20px;
+  padding: var(--spacing-sm) 20px;
   border-radius: var(--border-radius);
   font-size: var(--font-size-sm);
   font-weight: 500;
@@ -1304,7 +1304,7 @@ td.datagrid__row-header:active {
 .dmike-chart-popout--formula-editor .dmike-chart-popout-titlebar span {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--spacing-sm);
   white-space: normal;
   overflow: visible;
 }
@@ -1329,8 +1329,8 @@ td.datagrid__row-header:active {
 .formula-editor__fn-bar {
   display: flex;
   flex-wrap: wrap;
-  gap: 4px;
-  padding: 8px 12px;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-sm) var(--spacing-m);
   border-bottom: 1px solid var(--color-border-secondary);
   background: var(--color-bg-tertiary);
 }
@@ -1342,14 +1342,14 @@ td.datagrid__row-header:active {
   letter-spacing: .8px;
   color: var(--color-text-tertiary);
   width: 100%;
-  margin-bottom: 2px;
+  margin-bottom: var(--spacing-2xs);
 }
 
 .fn-chip {
   display: inline-flex;
   align-items: center;
   gap: 3px;
-  padding: 3px 8px;
+  padding: 3px var(--spacing-sm);
   border-radius: var(--border-radius-sm);
   background: var(--color-bg-elevated);
   border: 1px solid var(--color-border-primary);
@@ -1396,7 +1396,7 @@ td.datagrid__row-header:active {
   position: fixed;
   z-index: 9999;
   min-width: 180px;
-  padding: 4px 0;
+  padding: var(--spacing-xs) 0;
   background: var(--color-bg-elevated);
   border: 1px solid var(--color-border-primary);
   border-radius: var(--border-radius-sm);
@@ -1424,8 +1424,8 @@ td.datagrid__row-header:active {
 .formula-editor__cols-bar {
   display: flex;
   flex-wrap: wrap;
-  gap: 4px;
-  padding: 6px 12px 8px;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-s) var(--spacing-m) var(--spacing-sm);
   border-bottom: 1px solid var(--color-border-secondary);
   min-height: 36px;
 }
@@ -1436,8 +1436,8 @@ td.datagrid__row-header:active {
 }
 
 .col-ref-pill {
-  display: inline-flex; align-items: center; gap: 4px;
-  padding: 2px 8px;
+  display: inline-flex; align-items: center; gap: var(--spacing-xs);
+  padding: var(--spacing-2xs) var(--spacing-sm);
   border-radius: var(--border-radius-sm);
   background: rgb(59 130 246 / 10%);
   border: 1px solid rgb(59 130 246 / 25%);
@@ -1462,7 +1462,7 @@ td.datagrid__row-header:active {
   display: flex;
   flex-direction: column;
   gap: 0;
-  padding: 12px;
+  padding: var(--spacing-m);
   flex: 1;
 }
 
@@ -1476,7 +1476,7 @@ td.datagrid__row-header:active {
   min-height: 130px;
   max-height: 300px;
   resize: vertical;
-  padding: 10px 12px;
+  padding: 10px var(--spacing-m);
   border: 1px solid var(--color-border-primary);
   border-radius: var(--border-radius);
   background: var(--color-input-bg);
@@ -1503,8 +1503,8 @@ td.datagrid__row-header:active {
 .formula-editor__preview {
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin-top: 8px;
+  gap: var(--spacing-sm);
+  margin-top: var(--spacing-sm);
   padding: 7px 10px;
   border-radius: var(--border-radius-sm);
   background: var(--color-bg-tertiary);
@@ -1528,8 +1528,8 @@ td.datagrid__row-header:active {
 
 /* Reference guide */
 .formula-editor__ref-guide {
-  margin-top: 8px;
-  padding: 6px 8px;
+  margin-top: var(--spacing-sm);
+  padding: var(--spacing-s) var(--spacing-sm);
   background: var(--color-bg-tertiary);
   border: 1px solid var(--color-border-secondary);
   border-radius: var(--border-radius-sm);
@@ -1541,7 +1541,7 @@ td.datagrid__row-header:active {
   text-transform: uppercase;
   letter-spacing: .6px;
   color: var(--color-text-tertiary);
-  margin-bottom: 4px;
+  margin-bottom: var(--spacing-xs);
 }
 
 .formula-editor__ref-table {
@@ -1550,7 +1550,7 @@ td.datagrid__row-header:active {
 }
 
 .formula-editor__ref-table td {
-  padding: 2px 0;
+  padding: var(--spacing-2xs) 0;
   font-size: 11px;
   color: var(--color-text-secondary);
   vertical-align: baseline;
@@ -1567,7 +1567,7 @@ td.datagrid__row-header:active {
   font-size: 11px;
   color: var(--color-accent);
   background: var(--color-bg-elevated);
-  padding: 1px 4px;
+  padding: 1px var(--spacing-xs);
   border-radius: 3px;
   border: 1px solid var(--color-border-primary);
 }
@@ -1580,7 +1580,7 @@ td.datagrid__row-header:active {
 
 /* Help text */
 .formula-editor__help {
-  margin-top: 6px;
+  margin-top: var(--spacing-s);
   font-size: 10px;
   color: var(--color-text-tertiary);
   line-height: 1.5;
@@ -1588,7 +1588,7 @@ td.datagrid__row-header:active {
 
 .formula-editor__help kbd {
   display: inline-block;
-  padding: 0 4px;
+  padding: 0 var(--spacing-xs);
   border: 1px solid var(--color-border-primary);
   border-radius: 3px;
   background: var(--color-bg-elevated);
@@ -1621,14 +1621,14 @@ td.datagrid__row-header:active {
 
 .column-stats-popup__title {
   font-weight: 600;
-  margin-bottom: 6px;
+  margin-bottom: var(--spacing-s);
   color: var(--color-text-primary);
 }
 
 .column-stats-popup__row {
   display: flex;
   justify-content: space-between;
-  padding: 2px 0;
+  padding: var(--spacing-2xs) 0;
   color: var(--color-text-secondary);
 }
 

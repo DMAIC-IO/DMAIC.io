@@ -18,8 +18,8 @@
 .worksheet-toolbar {
   display: flex;
   align-items: center;
-  gap: 2px;
-  padding: 0 12px;
+  gap: var(--spacing-2xs);
+  padding: 0 var(--spacing-m);
   height: 40px;
   background: var(--color-bg-secondary);
   border-bottom: 1px solid var(--color-border-primary);
@@ -70,7 +70,7 @@
   width: 1px;
   height: 18px;
   background: var(--color-border-primary);
-  margin: 0 4px;
+  margin: 0 var(--spacing-xs);
 }
 
 .worksheet-toolbar .toolbar__spacer {
@@ -92,7 +92,7 @@
 }
 
 .worksheet-toolbar .toolbar__chevron {
-  margin-left: -2px;
+  margin-left: calc(-1 * var(--spacing-2xs));
 }
 
 .worksheet-toolbar .toolbar__dropdown-menu {
@@ -101,7 +101,7 @@
   top: calc(100% + 4px);
   left: 0;
   min-width: 140px;
-  padding: 4px 0;
+  padding: var(--spacing-xs) 0;
   background: var(--color-bg-primary);
   border: 1px solid var(--color-border-primary);
   border-radius: var(--border-radius-sm);
@@ -116,7 +116,7 @@
 .worksheet-toolbar .toolbar__dropdown-item {
   display: block;
   width: 100%;
-  padding: 6px 12px;
+  padding: var(--spacing-s) var(--spacing-m);
   border: none;
   background: none;
   cursor: pointer;
@@ -150,11 +150,11 @@
 .worksheet-role-confirm__list {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  margin: 8px 0 4px;
+  gap: var(--spacing-s);
+  margin: var(--spacing-sm) 0 var(--spacing-xs);
   max-height: 320px;
   overflow-y: auto;
-  padding-right: 4px;
+  padding-right: var(--spacing-xs);
 }
 
 .worksheet-role-confirm__row {
@@ -162,7 +162,7 @@
   grid-template-columns: 1fr 80px 180px;
   align-items: center;
   gap: 10px;
-  padding: 8px 10px;
+  padding: var(--spacing-sm) 10px;
   background: var(--color-bg-elevated, var(--color-bg));
   border: 1px solid var(--color-border-primary, var(--color-border));
   border-radius: 4px;
@@ -186,7 +186,7 @@
 .worksheet-role-confirm__select {
   font: inherit;
   font-size: 12px;
-  padding: 4px 6px;
+  padding: var(--spacing-xs) var(--spacing-s);
   background: var(--color-bg, #fff);
   color: var(--color-text-primary);
   border: 1px solid var(--color-border-primary, var(--color-border));
@@ -205,6 +205,6 @@
 .worksheet__fe-check {
   width: 13px;
   height: 13px;
-  margin-right: 4px;
+  margin-right: var(--spacing-xs);
   vertical-align: middle;
 }

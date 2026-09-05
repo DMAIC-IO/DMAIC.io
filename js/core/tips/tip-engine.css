@@ -4,7 +4,7 @@
   display: inline-flex;
   align-items: center;
   gap: var(--spacing-sm);
-  padding: 3px var(--spacing-sm) 3px 8px;
+  padding: 3px var(--spacing-sm) 3px var(--spacing-sm);
   border-radius: 999px;
   background: var(--color-accent-light);
   color: var(--color-accent);
@@ -41,7 +41,7 @@
   background: none;
   border: none;
   cursor: pointer;
-  padding: 0 4px;
+  padding: 0 var(--spacing-xs);
   font-size: var(--font-size-md);
   line-height: 1;
   color: var(--color-accent);

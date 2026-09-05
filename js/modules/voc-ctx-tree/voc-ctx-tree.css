@@ -53,7 +53,7 @@
   font-weight: var(--font-weight-semibold);
   background: var(--color-accent-light);
   color: var(--color-accent);
-  padding: 2px 8px;
+  padding: var(--spacing-2xs) var(--spacing-sm);
   border-radius: 10px;
   min-width: 24px;
   text-align: center;
@@ -115,7 +115,7 @@
   border: var(--border-width) solid var(--color-vct-voc-border);
   border-radius: var(--border-radius);
   padding: var(--spacing-xs) var(--spacing-sm);
-  margin-bottom: 6px;
+  margin-bottom: var(--spacing-s);
   cursor: pointer;
   transition: border-color var(--transition-speed), box-shadow var(--transition-speed);
 }
@@ -152,7 +152,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-top: 4px;
+  margin-top: var(--spacing-xs);
 }
 
 .vct__card-count {
@@ -162,7 +162,7 @@
 
 .vct__card-actions {
   display: flex;
-  gap: 2px;
+  gap: var(--spacing-2xs);
   opacity: 0;
   transition: opacity var(--transition-speed);
 }
@@ -260,7 +260,7 @@
 
 .vct__node-actions {
   display: flex;
-  gap: 2px;
+  gap: var(--spacing-2xs);
   opacity: 0;
   transition: opacity var(--transition-speed);
   flex-shrink: 0;
@@ -278,7 +278,7 @@
 /* ── Tree children containers ── */
 .vct__children {
   padding-left: 20px;
-  margin-left: 16px;
+  margin-left: var(--spacing-ml);
   border-left: 2px dashed;
 }
 
@@ -373,7 +373,7 @@
 .vct__req-target {
   font-size: var(--font-size-xs);
   color: var(--color-vct-req);
-  margin-top: 2px;
+  margin-top: var(--spacing-2xs);
 }
 
 .vct__req-measure {

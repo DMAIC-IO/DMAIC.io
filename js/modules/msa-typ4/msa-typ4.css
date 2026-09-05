@@ -47,7 +47,7 @@
 .msa-typ4__error {
   display: none;
   margin-top: var(--spacing-sm);
-  padding: var(--spacing-sm) 12px;
+  padding: var(--spacing-sm) var(--spacing-m);
   background: rgb(255 59 48 / 8%);
   border: 1px solid rgb(255 59 48 / 25%);
   border-radius: var(--border-radius);

@@ -30,12 +30,12 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: var(--space-lg, 24px);
+  padding: var(--space-lg, var(--spacing-l));
 }
 
 .chart-suggestion__empty-card {
   max-width: 480px;
-  padding: var(--space-xl, 32px);
+  padding: var(--space-xl, var(--spacing-xl));
   background: var(--color-bg-elevated);
   border: 1px solid var(--color-border);
   border-radius: var(--border-radius);
@@ -43,7 +43,7 @@
 }
 
 .chart-suggestion__empty-icon {
-  margin-bottom: var(--space-md, 16px);
+  margin-bottom: var(--space-md, var(--spacing-ml));
 }
 
 /* Empty-state icon above the title/text — 40px reads better here than the
@@ -56,7 +56,7 @@
 .chart-suggestion__empty-title {
   font-size: 16px;
   font-weight: 600;
-  margin: 0 0 8px;
+  margin: 0 0 var(--spacing-sm);
   color: var(--color-text-primary);
 }
 
@@ -70,24 +70,24 @@
 /* ─── Selection chips (left pane header) ───────────────────── */
 
 .chart-suggestion__selection-info {
-  margin: 0 0 var(--space-md, 12px) 0;
+  margin: 0 0 var(--space-md, var(--spacing-m)) 0;
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: var(--spacing-s);
 }
 
 .chart-suggestion__selection-label {
   flex-basis: 100%;
   font-size: 11px;
   color: var(--color-text-secondary);
-  margin-bottom: 4px;
+  margin-bottom: var(--spacing-xs);
 }
 
 .chart-suggestion__col-chip {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 3px 8px;
+  gap: var(--spacing-s);
+  padding: 3px var(--spacing-sm);
   border-radius: 12px;
   font-size: 12px;
   font-weight: 500;
@@ -117,7 +117,7 @@
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: var(--spacing-s);
   overflow-y: auto;
 }
 
@@ -175,14 +175,14 @@
   font-size: 13px;
   font-weight: 600;
   color: var(--color-text-primary);
-  margin-bottom: 2px;
+  margin-bottom: var(--spacing-2xs);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .chart-suggestion__card-notes {
-  margin-top: 4px;
+  margin-top: var(--spacing-xs);
   font-size: 11px;
   color: var(--color-text-secondary);
   font-style: italic;
@@ -194,10 +194,10 @@
 .chart-suggestion__preview-header {
   display: flex;
   align-items: baseline;
-  gap: var(--space-md, 12px);
-  padding: 0 0 var(--space-sm, 8px) 0;
+  gap: var(--space-md, var(--spacing-m));
+  padding: 0 0 var(--space-sm, var(--spacing-sm)) 0;
   border-bottom: 1px solid var(--color-border);
-  margin-bottom: var(--space-md, 12px);
+  margin-bottom: var(--space-md, var(--spacing-m));
 }
 
 .chart-suggestion__preview-title {
@@ -214,7 +214,7 @@
 }
 
 .chart-suggestion__open-btn {
-  padding: 4px 10px;
+  padding: var(--spacing-xs) 10px;
   font: inherit;
   font-size: 12px;
   font-weight: 500;
@@ -270,7 +270,7 @@
   display: grid;
   grid-template-columns: repeat(var(--matrix-n, 3), 1fr);
   grid-template-rows:    repeat(var(--matrix-n, 3), 1fr);
-  gap: 4px;
+  gap: var(--spacing-xs);
   width: 100%;
   height: 100%;
   min-height: 0;
@@ -294,13 +294,13 @@
   font-weight: 600;
   color: var(--color-text-primary);
   background: var(--color-bg);
-  padding: 0 6px;
+  padding: 0 var(--spacing-s);
   text-align: center;
   overflow-wrap: anywhere;
 }
 
 .chart-suggestion__matrix-note {
-  margin-top: 6px;
+  margin-top: var(--spacing-s);
   font-size: 11px;
   color: var(--color-text-secondary);
   font-style: italic;

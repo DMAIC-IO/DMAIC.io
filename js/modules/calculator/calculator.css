@@ -18,7 +18,7 @@
 /* ── Mode Tabs ── */
 .module-calculator__tabs {
   display: flex;
-  gap: 2px;
+  gap: var(--spacing-2xs);
   margin-bottom: var(--spacing-sm);
   background: var(--color-bg-secondary);
   border-radius: var(--border-radius);
@@ -28,7 +28,7 @@
 
 .module-calculator__tab {
   flex: 1;
-  padding: 8px 6px;
+  padding: var(--spacing-sm) var(--spacing-s);
   text-align: center;
   font-family: var(--font-family-mono);
   font-size: var(--font-size-xs);
@@ -107,7 +107,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-top: 6px;
+  margin-top: var(--spacing-s);
   font-family: var(--font-family-mono);
   font-size: 10px;
   color: var(--color-text-tertiary);
@@ -122,7 +122,7 @@
 /* ── Button Grid ── */
 .module-calculator__grid {
   display: grid;
-  gap: 6px;
+  gap: var(--spacing-s);
 }
 
 .module-calculator__grid--5col {
@@ -137,7 +137,7 @@
   font-family: var(--font-family-mono);
   font-size: var(--font-size-md);
   font-weight: var(--font-weight-medium);
-  padding: 14px 4px;
+  padding: 14px var(--spacing-xs);
   border: var(--border-width) solid var(--color-border-secondary);
   border-radius: var(--border-radius);
   background: var(--color-bg-secondary);
@@ -207,7 +207,7 @@
   background: var(--color-bg-secondary);
   border: var(--border-width) solid var(--color-border-secondary);
   border-radius: var(--border-radius);
-  padding: 12px var(--spacing-md);
+  padding: var(--spacing-m) var(--spacing-md);
   margin-bottom: var(--spacing-sm);
 }
 
@@ -218,7 +218,7 @@
   text-transform: uppercase;
   letter-spacing: 0.06em;
   display: block;
-  margin-bottom: 6px;
+  margin-bottom: var(--spacing-s);
 }
 
 .module-calculator__data-display {
@@ -248,7 +248,7 @@
   background: var(--color-bg-tertiary);
   padding: 1px 7px;
   border-radius: var(--border-radius-sm);
-  margin: 2px 3px 2px 0;
+  margin: var(--spacing-2xs) 3px var(--spacing-2xs) 0;
 }
 
 .module-calculator__val--empty {
@@ -260,7 +260,7 @@
   font-family: var(--font-family-mono);
   font-size: 10px;
   color: var(--color-text-tertiary);
-  margin-top: 6px;
+  margin-top: var(--spacing-s);
 }
 
 /* ── Cpk Inputs ── */

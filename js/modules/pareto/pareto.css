@@ -73,5 +73,5 @@ table.pareto-module__stats-table td:not(:first-child) {
   height: 8px;
   border-radius: 2px;
   flex-shrink: 0;
-  margin-right: 4px;
+  margin-right: var(--spacing-xs);
 }

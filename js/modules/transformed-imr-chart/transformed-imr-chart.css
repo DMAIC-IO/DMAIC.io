@@ -8,7 +8,7 @@
 .timr__hint {
   font-size: var(--font-size-xs);
   color: var(--color-text-tertiary);
-  margin-top: 2px;
+  margin-top: var(--spacing-2xs);
 }
 
 .timr__lambda-row {
@@ -43,7 +43,7 @@
 
 .timr__badge {
   font-size: var(--font-size-xs);
-  padding: 2px 8px;
+  padding: var(--spacing-2xs) var(--spacing-sm);
   border-radius: 12px;
   font-weight: var(--font-weight-medium);
 }
@@ -69,7 +69,7 @@
 
 .timr__limits-table th,
 .timr__limits-table td {
-  padding: 4px 8px;
+  padding: var(--spacing-xs) var(--spacing-sm);
   text-align: right;
   border-bottom: var(--border-width) solid var(--color-border-secondary);
 }

@@ -29,7 +29,7 @@
 .triz-sf__field {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: var(--spacing-xs);
 }
 
 .triz-sf__label {
@@ -80,7 +80,7 @@
 
 .triz-sf__diagnosis-classes code {
   display: inline-block;
-  padding: 1px 6px;
+  padding: 1px var(--spacing-s);
   background: var(--color-bg-tertiary);
   border-radius: var(--border-radius-sm);
   font-family: inherit;
@@ -104,8 +104,8 @@
 .triz-sf__filter-label {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 4px 10px;
+  gap: var(--spacing-s);
+  padding: var(--spacing-xs) 10px;
   background: var(--color-bg-secondary);
   border: 1px solid var(--color-border-primary);
   border-radius: var(--border-radius-sm);
@@ -192,7 +192,7 @@
   margin: 0;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: var(--spacing-xs);
 }
 
 /* ── One standard ───────────────────────────────────────── */
@@ -200,7 +200,7 @@
   background: var(--color-bg-elevated);
   border: 1px solid var(--color-border-primary);
   border-radius: var(--border-radius-sm);
-  padding: 6px 10px;
+  padding: var(--spacing-s) 10px;
   transition: border-color var(--transition-speed);
 }
 
@@ -225,7 +225,7 @@
 
 .triz-sf__standard-id {
   display: inline-block;
-  padding: 1px 6px;
+  padding: 1px var(--spacing-s);
   background: var(--color-bg-tertiary);
   color: var(--color-text-secondary);
   border-radius: var(--border-radius-sm);
@@ -249,7 +249,7 @@
 .triz-sf__standard-desc,
 .triz-sf__standard-trigger,
 .triz-sf__standard-example {
-  margin: 4px 0;
+  margin: var(--spacing-xs) 0;
   font-size: var(--font-size-sm);
   color: var(--color-text-secondary);
   line-height: 1.4;
@@ -264,7 +264,7 @@
 
 .triz-sf__standard-note {
   width: 100%;
-  margin-top: 4px;
+  margin-top: var(--spacing-xs);
   resize: vertical;
   font-size: var(--font-size-sm);
 }
@@ -272,8 +272,8 @@
 .triz-sf__standard-select {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  margin-top: 4px;
+  gap: var(--spacing-s);
+  margin-top: var(--spacing-xs);
   font-size: var(--font-size-sm);
   color: var(--color-text-secondary);
   cursor: pointer;

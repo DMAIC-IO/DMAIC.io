@@ -8,7 +8,7 @@
 .twc__hint {
   font-size: var(--font-size-xs);
   color: var(--color-text-tertiary);
-  margin-top: 2px;
+  margin-top: var(--spacing-2xs);
 }
 
 .twc__row-2 {
@@ -47,7 +47,7 @@
 
 .twc__badge {
   font-size: var(--font-size-xs);
-  padding: 2px 8px;
+  padding: var(--spacing-2xs) var(--spacing-sm);
   border-radius: 12px;
   font-weight: var(--font-weight-medium);
 }

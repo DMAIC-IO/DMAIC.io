@@ -91,7 +91,7 @@
 .af__band-add {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: var(--spacing-2xs);
   align-items: stretch;
   padding: var(--spacing-xs);
   border: 1px dashed var(--color-border-primary);
@@ -101,13 +101,13 @@
 .af__band-add button {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: var(--spacing-xs);
   border: none;
   background: transparent;
   color: var(--color-text-secondary);
   font-size: var(--font-size-xs);
   cursor: pointer;
-  padding: 2px var(--spacing-xs);
+  padding: var(--spacing-2xs) var(--spacing-xs);
   border-radius: var(--border-radius-sm);
 }
 
@@ -122,13 +122,13 @@
 .af__band-exit {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: var(--spacing-xs);
   border: none;
   background: transparent;
   color: var(--color-text-secondary);
   font-size: var(--font-size-xs);
   cursor: pointer;
-  padding: 2px var(--spacing-xs);
+  padding: var(--spacing-2xs) var(--spacing-xs);
   border-radius: var(--border-radius-sm);
   white-space: nowrap;
 }
@@ -139,7 +139,7 @@
 .af__band-exit-group {
   display: flex;
   align-items: center;
-  gap: 2px;
+  gap: var(--spacing-2xs);
 }
 
 /* The ✕ that drops a chosen re-entry, so the detour ends where its cards do
@@ -151,7 +151,7 @@
   cursor: pointer;
   font-size: var(--font-size-xs);
   line-height: 1;
-  padding: 3px 4px;
+  padding: 3px var(--spacing-xs);
   border-radius: var(--border-radius-sm);
 }
 .af__band-exit-clear:hover { color: var(--color-error); background: var(--color-bg-tertiary); }
@@ -224,7 +224,7 @@
   transform: translateX(-50%);
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: var(--spacing-2xs);
   padding: var(--spacing-xs);
   background: var(--color-bg-elevated);
   border: var(--border-width) solid var(--color-border-primary);
@@ -236,14 +236,14 @@
 .af__insert-menu button {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: var(--spacing-xs);
   border: none;
   background: transparent;
   color: var(--color-text-secondary);
   font-size: var(--font-size-xs);
   white-space: nowrap;
   cursor: pointer;
-  padding: 2px var(--spacing-xs);
+  padding: var(--spacing-2xs) var(--spacing-xs);
   border-radius: var(--border-radius-sm);
 }
 
@@ -435,7 +435,7 @@
   gap: 1px;
   font-size: var(--font-size-xs);
   line-height: 1.25;
-  padding: 2px var(--spacing-xs);
+  padding: var(--spacing-2xs) var(--spacing-xs);
 }
 
 .af__branch-word { font-weight: var(--font-weight-semibold); }
@@ -450,7 +450,7 @@
   width: var(--af-branch-gutter);
   align-items: flex-start;
   text-align: left;
-  padding-left: 4px;
+  padding-left: var(--spacing-xs);
 
   /* One word, never broken across two lines — the gutter is measured for it. */
   white-space: nowrap;

@@ -10,18 +10,18 @@
 .glm__method-group {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  padding: 4px 0;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-xs) 0;
 }
 
 .glm__method-option {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--spacing-s);
   font-size: var(--font-size-xs);
   color: var(--color-text-secondary);
   cursor: pointer;
-  padding: 3px 4px;
+  padding: 3px var(--spacing-xs);
   border-radius: var(--border-radius);
   transition: background 0.15s;
 }
@@ -44,8 +44,8 @@
 
 .glm__detect-info {
   display: none;
-  margin-top: 6px;
-  padding: 6px 8px;
+  margin-top: var(--spacing-s);
+  padding: var(--spacing-s) var(--spacing-sm);
   font-size: var(--font-size-xs);
   color: var(--color-text-secondary);
   background: var(--color-accent-dim, rgb(74 144 217 / 8%));
@@ -60,7 +60,7 @@
 
 .glm__error {
   display: none;
-  padding: 8px 10px;
+  padding: var(--spacing-sm) 10px;
   font-size: var(--font-size-xs);
   color: var(--color-error);
   background: var(--color-error-bg, rgb(239 68 68 / 8%));
@@ -69,13 +69,13 @@
 }
 
 .glm__warning {
-  padding: 6px 8px;
+  padding: var(--spacing-s) var(--spacing-sm);
   font-size: var(--font-size-xs);
   color: var(--color-warning, #e8a317);
   background: var(--color-warning-bg, rgb(232 163 23 / 8%));
   border: var(--border-width) solid var(--color-warning, #e8a317);
   border-radius: var(--border-radius);
-  margin-bottom: 8px;
+  margin-bottom: var(--spacing-sm);
 }
 
 /* ─── KPI strip ───────────────────────────────────────────────── */
@@ -92,7 +92,7 @@
 
 .glm__coef-table th {
   text-align: left;
-  padding: 5px 8px;
+  padding: 5px var(--spacing-sm);
   font-weight: var(--font-weight-medium);
   color: var(--color-text-secondary);
   border-bottom: 2px solid var(--color-border-secondary);
@@ -100,7 +100,7 @@
 }
 
 .glm__coef-table td {
-  padding: 4px 8px;
+  padding: var(--spacing-xs) var(--spacing-sm);
   border-bottom: var(--border-width) solid var(--color-border-primary);
   font-variant-numeric: tabular-nums;
 }
@@ -125,16 +125,16 @@
 .glm__quality-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 6px 16px;
+  gap: var(--spacing-s) var(--spacing-ml);
   font-size: var(--font-size-xs);
-  padding: 8px 0;
+  padding: var(--spacing-sm) 0;
 }
 
 .glm__quality-item {
   display: flex;
   justify-content: space-between;
   align-items: baseline;
-  gap: 8px;
+  gap: var(--spacing-sm);
 }
 
 .glm__quality-label {
@@ -153,12 +153,12 @@
   width: auto;
   border-collapse: collapse;
   font-size: var(--font-size-xs);
-  margin: 8px 0;
+  margin: var(--spacing-sm) 0;
 }
 
 .glm__class-table th,
 .glm__class-table td {
-  padding: 4px 10px;
+  padding: var(--spacing-xs) 10px;
   border: var(--border-width) solid var(--color-border-secondary);
   text-align: center;
 }
@@ -184,10 +184,10 @@
 .glm__cutoff-row {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--spacing-sm);
   font-size: var(--font-size-xs);
   color: var(--color-text-secondary);
-  padding: 4px 0;
+  padding: var(--spacing-xs) 0;
 }
 
 .glm__cutoff-row input[type="range"] {
@@ -207,14 +207,14 @@
 .glm__predict-inputs {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  margin-bottom: 8px;
+  gap: var(--spacing-s);
+  margin-bottom: var(--spacing-sm);
 }
 
 .glm__predict-row {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--spacing-s);
 }
 
 .glm__predict-row label {
@@ -228,11 +228,11 @@
 }
 
 .glm__predict-result {
-  padding: 8px 10px;
+  padding: var(--spacing-sm) 10px;
   font-size: var(--font-size-xs);
   background: var(--color-bg-secondary);
   border-radius: var(--border-radius);
-  margin-top: 6px;
+  margin-top: var(--spacing-s);
 }
 
 .glm__predict-result strong {
@@ -259,7 +259,7 @@
 /* ─── Tab override: narrower tab labels ───────────────────────── */
 
 .glm__tabs .dmike-tab {
-  padding: 6px 10px;
+  padding: var(--spacing-s) 10px;
   font-size: var(--font-size-xs);
 }
 
@@ -269,7 +269,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 4px 0;
+  padding: var(--spacing-xs) 0;
 }
 
 .glm__toggle-row label {

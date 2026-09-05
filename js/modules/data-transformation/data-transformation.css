@@ -10,14 +10,14 @@
 .dt-tf-grid {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: var(--spacing-xs);
 }
 
 .dt-tf-opt {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 8px 10px;
+  padding: var(--spacing-sm) 10px;
   border: var(--border-width) solid var(--color-border-secondary);
   border-radius: var(--border-radius);
   cursor: pointer;
@@ -65,13 +65,13 @@
 .dt-param-group {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--spacing-sm);
 }
 
 .dt-param {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--spacing-sm);
 }
 
 .dt-param__label {
@@ -141,8 +141,8 @@
 .dt-badge {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  padding: 3px 8px;
+  gap: var(--spacing-xs);
+  padding: 3px var(--spacing-sm);
   border-radius: var(--border-radius);
   font-family: var(--font-family-mono);
   font-size: var(--font-size-xs);
@@ -172,7 +172,7 @@
 .dt-normality__row {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--spacing-sm);
   flex-wrap: wrap;
 }
 

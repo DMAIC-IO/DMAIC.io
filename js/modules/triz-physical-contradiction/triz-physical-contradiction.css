@@ -32,7 +32,7 @@
 .triz-pc__field {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: var(--spacing-xs);
 }
 
 .triz-pc__label {
@@ -40,7 +40,7 @@
   color: var(--color-text-secondary);
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--spacing-s);
 }
 
 .triz-pc__input,
@@ -62,7 +62,7 @@
 
 .triz-pc__swap-btn {
   align-self: end;
-  margin-bottom: 4px;
+  margin-bottom: var(--spacing-xs);
 }
 
 .triz-pc__dot {
@@ -161,7 +161,7 @@
 .triz-pc__principle-select {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--spacing-s);
   font-size: var(--font-size-sm);
   color: var(--color-text-secondary);
   cursor: pointer;

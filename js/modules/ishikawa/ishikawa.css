@@ -13,14 +13,14 @@
 /* ===== Filter chips ===== */
 .ishikawa__filter-group {
   display: flex;
-  gap: 4px;
+  gap: var(--spacing-xs);
   flex-wrap: wrap;
 }
 
 .ishikawa__filter-chip {
   font-family: var(--font-family-mono);
   font-size: 10px;
-  padding: 4px 10px;
+  padding: var(--spacing-xs) 10px;
   border-radius: 99px;
   border: var(--border-width) solid var(--color-border-secondary);
   background: var(--color-bg-secondary);
@@ -41,14 +41,14 @@
 
 .ishikawa__filter-chip-count {
   opacity: 0.65;
-  margin-left: 2px;
+  margin-left: var(--spacing-2xs);
 }
 
 .ishikawa__cat-rename-btn {
   width: 22px;
   height: 22px;
   padding: 0;
-  margin-left: 4px;
+  margin-left: var(--spacing-xs);
   border-radius: 50%;
   border: var(--border-width) solid var(--color-border-secondary);
   background: var(--color-bg-secondary);
@@ -133,7 +133,7 @@
 }
 
 .ishikawa__img-hint {
-  margin: 4px 0 0;
+  margin: var(--spacing-xs) 0 0;
   font-size: var(--font-size-xs);
   color: var(--color-text-tertiary);
   font-style: italic;
@@ -194,7 +194,7 @@
 
 .ishikawa__img-caption {
   width: 100%;
-  padding: 6px 8px;
+  padding: var(--spacing-s) var(--spacing-sm);
   background: transparent;
   border: none;
   border-top: 1px solid var(--color-border-secondary);
@@ -212,7 +212,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 4px 6px 4px 8px;
+  padding: var(--spacing-xs) var(--spacing-s) var(--spacing-xs) var(--spacing-sm);
   border-top: 1px solid var(--color-border-secondary);
   background: var(--color-bg-secondary);
 }
@@ -313,7 +313,7 @@
   gap: 5px;
   font-family: var(--font-family-mono);
   font-size: var(--font-size-xs);
-  padding: 4px 10px 4px 6px;
+  padding: var(--spacing-xs) 10px var(--spacing-xs) var(--spacing-s);
   border-radius: 99px;
   background: var(--color-bg-tertiary);
 }
@@ -337,7 +337,7 @@
   color: var(--color-text-primary);
   font-family: inherit;
   font-size: inherit;
-  padding: 2px 6px;
+  padding: var(--spacing-2xs) var(--spacing-s);
   border-radius: var(--border-radius-sm);
   width: 11ch;
   min-width: 60px;
@@ -378,7 +378,7 @@
   font-size: var(--font-size-sm);
   color: var(--color-text-tertiary);
   font-style: italic;
-  padding: 4px 0;
+  padding: var(--spacing-xs) 0;
 }
 
 /* ===== Category rename modal ===== */
@@ -448,7 +448,7 @@
 .ishikawa__snap-items {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: var(--spacing-xs);
   max-height: 160px;
   overflow-y: auto;
 }
@@ -490,7 +490,7 @@
 .ishikawa__snap-badge {
   font-family: var(--font-family-mono);
   font-size: 10px;
-  padding: 2px 6px;
+  padding: var(--spacing-2xs) var(--spacing-s);
   border-radius: 99px;
   background: var(--color-bg-tertiary);
   color: var(--color-text-tertiary);
@@ -550,12 +550,12 @@
   font-size: var(--font-size-xs);
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: var(--spacing-xs);
 }
 
 .ishikawa__diff-val {
   font-weight: var(--font-weight-semibold);
-  padding: 2px 6px;
+  padding: var(--spacing-2xs) var(--spacing-s);
   border-radius: var(--border-radius-sm);
 }
 
@@ -604,7 +604,7 @@
   cursor: pointer;
   color: var(--color-text-tertiary);
   font-size: var(--font-size-lg);
-  padding: 2px;
+  padding: var(--spacing-2xs);
 }
 
 .ishikawa__trend-close:hover { color: var(--color-accent); }
@@ -648,7 +648,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 2px;
+  gap: var(--spacing-2xs);
 }
 
 .ishikawa__exp-ini {
@@ -727,7 +727,7 @@
 .ishikawa__hypo-cell {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: var(--spacing-xs);
 }
 
 /* Category select — .field base; mono label plus the inline category colour
@@ -740,7 +740,7 @@
 .ishikawa__cat-inherited {
   font-family: var(--font-family-mono);
   font-size: var(--font-size-xs);
-  padding: 5px 8px;
+  padding: 5px var(--spacing-sm);
   border-radius: var(--border-radius);
   color: var(--color-text-tertiary);
   font-style: italic;
@@ -796,7 +796,7 @@
   font-family: var(--font-family-mono);
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-semibold);
-  padding: 4px 8px;
+  padding: var(--spacing-xs) var(--spacing-sm);
   border-radius: var(--border-radius);
   background: var(--color-bg-tertiary);
   color: var(--color-text-tertiary);
@@ -831,7 +831,7 @@
   font-family: var(--font-family-mono);
   font-size: 10px;
   font-weight: var(--font-weight-semibold);
-  margin-top: 2px;
+  margin-top: var(--spacing-2xs);
 }
 
 .ishikawa__delta-up { color: #dc2626; }
@@ -855,7 +855,7 @@
 .ishikawa__row-actions {
   display: flex;
   justify-content: center;
-  gap: 2px;
+  gap: var(--spacing-2xs);
 }
 
 /* Row action buttons use .btn--icon-sm; only the experiment-link badge
@@ -890,7 +890,7 @@
 .ishikawa__exp-link-status {
   font-size: var(--font-size-xs);
   color: var(--color-text-secondary);
-  padding: 2px 6px;
+  padding: var(--spacing-2xs) var(--spacing-s);
   border-radius: var(--border-radius-sm);
   background: var(--color-bg-secondary);
 }
@@ -923,12 +923,12 @@
 .ishikawa__s-value {
   font-size: var(--font-size-xl);
   font-weight: 700;
-  margin-top: 2px;
+  margin-top: var(--spacing-2xs);
 }
 
 .ishikawa__cat-bar {
   display: flex;
-  gap: 2px;
+  gap: var(--spacing-2xs);
   margin-top: var(--spacing-xs);
   height: 6px;
   border-radius: 3px;
@@ -973,7 +973,7 @@
 .ishikawa__pareto-select {
   font-family: var(--font-family-mono);
   font-size: var(--font-size-xs);
-  padding: 4px 8px;
+  padding: var(--spacing-xs) var(--spacing-sm);
   border-radius: var(--border-radius);
   border: var(--border-width) solid var(--color-border-secondary);
   background: var(--color-bg-primary);

@@ -117,7 +117,7 @@
 }
 
 .btn--sm {
-  padding: 2px var(--spacing-sm);
+  padding: var(--spacing-2xs) var(--spacing-sm);
   font-size: var(--font-size-xs);
 }
 
@@ -131,10 +131,10 @@
    One child carries .btn--active to indicate the selection. */
 .btn-group {
   display: flex;
-  gap: 2px;
+  gap: var(--spacing-2xs);
   background: var(--color-bg-tertiary);
   border-radius: var(--border-radius);
-  padding: 2px;
+  padding: var(--spacing-2xs);
 }
 
 .btn--segment {
@@ -277,7 +277,7 @@ select.input {
 }
 
 .field--xs {
-  padding: 2px var(--spacing-xs);
+  padding: var(--spacing-2xs) var(--spacing-xs);
   font-size: var(--font-size-xs);
 }
 
@@ -373,7 +373,7 @@ select.input {
 .badge {
   display: inline-flex;
   align-items: center;
-  padding: 1px 6px;
+  padding: 1px var(--spacing-s);
   font-size: var(--font-size-xs);
   font-weight: var(--font-weight-medium);
   border-radius: 10px;
@@ -493,7 +493,7 @@ select.input {
 }
 
 .lang-toggle__option {
-  padding: 2px var(--spacing-sm);
+  padding: var(--spacing-2xs) var(--spacing-sm);
   font-size: var(--font-size-xs);
   font-weight: var(--font-weight-medium);
   cursor: pointer;
@@ -724,7 +724,7 @@ select.input {
 
 .dmike-tabs {
   display: flex;
-  gap: 2px;
+  gap: var(--spacing-2xs);
   background: var(--color-bg-primary);
   border: var(--border-width) solid var(--color-border-secondary);
   border-radius: var(--border-radius);
@@ -734,7 +734,7 @@ select.input {
 
 .dmike-tab {
   flex: 1;
-  padding: 7px 8px;
+  padding: 7px var(--spacing-sm);
   font-size: var(--font-size-xs);
   font-weight: var(--font-weight-semibold);
   font-family: var(--font-family);
@@ -799,7 +799,7 @@ select.input {
   font-weight: var(--font-weight-medium);
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  margin-top: 2px;
+  margin-top: var(--spacing-2xs);
 }
 
 .dmike-kpi-sub {
@@ -845,8 +845,8 @@ select.input {
 .dmike-infobox {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 12px var(--spacing-md);
+  gap: var(--spacing-m);
+  padding: var(--spacing-m) var(--spacing-md);
   margin-bottom: var(--spacing-md);
   border-radius: var(--border-radius);
   border: 1px solid transparent;
@@ -920,7 +920,7 @@ select.input {
   text-transform: uppercase;
   background: var(--color-success);
   color: #fff;
-  padding: 2px 6px;
+  padding: var(--spacing-2xs) var(--spacing-s);
   border-radius: 3px;
   display: none;
   cursor: help;
@@ -1201,7 +1201,7 @@ select.input {
   flex-direction: column;
   gap: 18px;
   margin-top: 18px;
-  margin-bottom: 16px;
+  margin-bottom: var(--spacing-ml);
 }
 
 .settings-shortcuts-group__title {
@@ -1210,7 +1210,7 @@ select.input {
   text-transform: uppercase;
   letter-spacing: 0.05em;
   color: var(--color-text-secondary);
-  margin: 0 0 6px;
+  margin: 0 0 var(--spacing-s);
 }
 
 .settings-shortcut-row {
@@ -1218,11 +1218,11 @@ select.input {
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
-  padding: 8px 10px;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm) 10px;
   border: 1px solid var(--color-border-secondary);
   border-radius: 6px;
-  margin-bottom: 4px;
+  margin-bottom: var(--spacing-xs);
   background: var(--color-bg-secondary);
 }
 
@@ -1240,14 +1240,14 @@ select.input {
 .settings-shortcut-row__controls {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--spacing-s);
 }
 
 .settings-shortcut-key {
   font-family: var(--font-mono, ui-monospace, Menlo, Consolas, monospace);
   font-size: 12px;
   min-width: 90px;
-  padding: 4px 10px;
+  padding: var(--spacing-xs) 10px;
   border: 1px solid var(--color-border-primary);
   border-radius: 4px;
   background: var(--color-bg-primary);
@@ -1282,8 +1282,8 @@ select.input {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 8px;
-  margin-top: 6px;
+  gap: var(--spacing-sm);
+  margin-top: var(--spacing-s);
   font-size: 12px;
   color: var(--color-danger, #d93b3b);
 }
@@ -1324,8 +1324,8 @@ select.input {
 .dmike-slider-row {
   display: flex;
   align-items: center;
-  gap: 6px;
-  margin-bottom: 6px;
+  gap: var(--spacing-s);
+  margin-bottom: var(--spacing-s);
 }
 
 .dmike-slider-row__label {
@@ -1456,7 +1456,7 @@ select.input {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: var(--spacing-xs);
 }
 
 .settings-stat-field__label {
@@ -1467,7 +1467,7 @@ select.input {
 .settings-stat-input-group {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: var(--spacing-xs);
 }
 
 .settings-stat-input {
@@ -1484,7 +1484,7 @@ select.input {
 .settings-stat-link {
   color: var(--color-text-tertiary);
   font-size: var(--font-size-lg);
-  padding-bottom: 4px;
+  padding-bottom: var(--spacing-xs);
 }
 
 /* ===== Column Picker (shared column-select widget) ===== */
@@ -1505,7 +1505,7 @@ select.input {
   border-radius: var(--border-radius);
   background: var(--color-bg-primary);
   padding: var(--spacing-xs);
-  gap: 2px;
+  gap: var(--spacing-2xs);
 }
 
 .col-picker--multi::-webkit-scrollbar { width: 5px; }
@@ -1525,14 +1525,14 @@ select.input {
   text-transform: uppercase;
   letter-spacing: 0.06em;
   color: var(--color-text-tertiary);
-  padding: 2px 4px;
+  padding: var(--spacing-2xs) var(--spacing-xs);
 }
 
 .col-picker__item {
   display: flex;
   align-items: center;
   gap: var(--spacing-xs);
-  padding: 3px 4px;
+  padding: 3px var(--spacing-xs);
   border-radius: var(--border-radius-sm);
   cursor: pointer;
   font-size: var(--font-size-sm);
@@ -1643,7 +1643,7 @@ body.hide-algo-lab-links .distfit__ndd-algo-link { display: none; }
   min-width: 0;
   font-family: var(--font-family);
   font-size: var(--font-size-sm);
-  padding: 6px 8px;
+  padding: var(--spacing-s) var(--spacing-sm);
   border: var(--border-width) solid var(--color-border-secondary);
   border-radius: var(--border-radius);
   background: var(--color-bg-primary);
@@ -1870,7 +1870,7 @@ body.dmike-glossary-inline-off .glossary-term:focus-within {
 /* SPDX identifier rendered as a compact pill. */
 .licenses-panel__badge {
   display: inline-block;
-  padding: 2px var(--spacing-sm);
+  padding: var(--spacing-2xs) var(--spacing-sm);
   border-radius: var(--border-radius-sm);
   background: var(--color-bg-tertiary);
   color: var(--color-text-secondary);

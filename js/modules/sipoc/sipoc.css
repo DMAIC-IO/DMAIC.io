@@ -146,7 +146,7 @@
   font-size: var(--font-size-xs);
   color: var(--color-text-tertiary);
   background: var(--color-bg-primary);
-  padding: 2px 8px;
+  padding: var(--spacing-2xs) var(--spacing-sm);
   border-radius: 10px;
 }
 
@@ -202,7 +202,7 @@
   color: var(--color-text-tertiary);
   font-size: var(--font-size-xs);
   line-height: 1;
-  padding-top: 2px;
+  padding-top: var(--spacing-2xs);
   flex-shrink: 0;
   user-select: none;
 }
@@ -216,7 +216,7 @@
 
 .sipoc__item-actions {
   display: flex;
-  gap: 2px;
+  gap: var(--spacing-2xs);
   opacity: 0;
   transition: opacity 0.15s;
   flex-shrink: 0;
@@ -260,14 +260,14 @@
   text-transform: uppercase;
   color: var(--color-sipoc-p);
   text-align: center;
-  padding: 4px 0;
+  padding: var(--spacing-xs) 0;
   position: relative;
 }
 
 .sipoc__process-cap::before {
   content: '';
   display: block;
-  margin: 0 auto 4px;
+  margin: 0 auto var(--spacing-xs);
   width: 8px;
   height: 8px;
   border-radius: 50%;
@@ -276,12 +276,12 @@
 }
 
 .sipoc__process-cap--start::before {
-  margin: 0 auto 4px;
+  margin: 0 auto var(--spacing-xs);
 }
 
 .sipoc__process-cap--end::before {
   order: 1;
-  margin: 4px auto 0;
+  margin: var(--spacing-xs) auto 0;
 }
 
 .sipoc__process-cap--end {

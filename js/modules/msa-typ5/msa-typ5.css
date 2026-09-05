@@ -50,7 +50,7 @@
 }
 
 .msa-typ5__level {
-  padding: 2px 8px;
+  padding: var(--spacing-2xs) var(--spacing-sm);
   border-radius: 4px;
   background: var(--color-background-secondary);
   font-size: 0.9em;
@@ -80,7 +80,7 @@
 }
 
 .msa-typ5__ref-source {
-  padding: 4px 8px;
+  padding: var(--spacing-xs) var(--spacing-sm);
   background: var(--color-background-secondary);
   border-radius: 4px;
   font-size: 0.9em;
@@ -117,7 +117,7 @@
 
 .msa-typ5__table th,
 .msa-typ5__table td {
-  padding: 6px 10px;
+  padding: var(--spacing-s) 10px;
   text-align: left;
   border-bottom: 1px solid var(--color-border);
 }
@@ -178,7 +178,7 @@
   padding: var(--spacing-xs);
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: var(--spacing-2xs);
 }
 
 .msa-typ5__heatmap-title {

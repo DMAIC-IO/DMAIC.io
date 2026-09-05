@@ -8,7 +8,7 @@
 .gage-run-chart__hint {
   font-size: var(--font-size-xs);
   color: var(--color-text-tertiary);
-  margin-top: 2px;
+  margin-top: var(--spacing-2xs);
 }
 
 .gage-run-chart__check {
@@ -35,7 +35,7 @@
 .gage-run-chart__gage-info {
   display: grid;
   grid-template-columns: max-content 1fr;
-  gap: 2px var(--spacing-sm);
+  gap: var(--spacing-2xs) var(--spacing-sm);
   margin-bottom: var(--spacing-md);
   padding: var(--spacing-sm) var(--spacing-md);
   background: var(--color-bg-secondary);
@@ -65,7 +65,7 @@
   font-size: var(--font-size-sm);
 }
 
-.gage-run-chart__warning + .gage-run-chart__warning { margin-top: 2px; }
+.gage-run-chart__warning + .gage-run-chart__warning { margin-top: var(--spacing-2xs); }
 
 /* ── Chart strips ── */
 

@@ -14,7 +14,7 @@
   display: block;
   font-size: var(--font-size-xs);
   color: var(--color-text-secondary);
-  margin-bottom: 2px;
+  margin-bottom: var(--spacing-2xs);
   font-weight: 500;
 }
 
@@ -69,7 +69,7 @@
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--color-text-tertiary);
-  margin-bottom: 4px;
+  margin-bottom: var(--spacing-xs);
 }
 
 .contour__info-value {
@@ -84,7 +84,7 @@
 .contour__info-sub {
   font-size: 11px;
   color: var(--color-text-tertiary);
-  margin-top: 2px;
+  margin-top: var(--spacing-2xs);
 }
 
 /* ============================================================
@@ -157,7 +157,7 @@
 
 .contour__editor--open {
   width: 336px;
-  margin-left: 8px;
+  margin-left: var(--spacing-sm);
   background: var(--color-bg-secondary);
   border: 1px solid var(--color-border-primary);
   border-radius: var(--border-radius-sm);
@@ -200,13 +200,13 @@
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--color-text-tertiary);
-  margin-right: 4px;
+  margin-right: var(--spacing-xs);
 }
 
 .contour__legend-item {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: var(--spacing-xs);
   font-family: var(--font-family-mono);
   font-size: 11px;
   color: var(--color-text-secondary);
@@ -223,7 +223,7 @@
 .contour__color-preview {
   display: flex;
   gap: 1px;
-  margin-top: 4px;
+  margin-top: var(--spacing-xs);
   height: 8px;
   border-radius: 2px;
   overflow: hidden;
@@ -232,14 +232,14 @@
 .contour__color-preview div { flex: 1; }
 
 .contour__formula-hint {
-  margin: 4px 0 0;
+  margin: var(--spacing-xs) 0 0;
   font-size: 12px;
   line-height: 1.4;
   color: var(--color-text-secondary);
 }
 
 .contour__formula-error {
-  margin: 4px 0 0;
+  margin: var(--spacing-xs) 0 0;
   font-size: 12px;
   line-height: 1.4;
   color: var(--color-error);

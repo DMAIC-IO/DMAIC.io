@@ -267,7 +267,7 @@
   border: none;
   color: var(--color-text-tertiary);
   cursor: pointer;
-  padding: 2px;
+  padding: var(--spacing-2xs);
   display: flex;
   border-radius: var(--border-radius-sm);
   opacity: 0;
@@ -301,7 +301,7 @@
   font-family: var(--font-family);
   font-size: var(--font-size-xs);
   font-weight: var(--font-weight-semibold);
-  padding: 2px var(--spacing-sm);
+  padding: var(--spacing-2xs) var(--spacing-sm);
   border-radius: var(--border-radius-sm);
   border: none;
   cursor: pointer;
@@ -483,7 +483,7 @@
   border: none;
   color: var(--color-text-tertiary);
   cursor: pointer;
-  padding: 2px;
+  padding: var(--spacing-2xs);
   display: flex;
   border-radius: var(--border-radius-sm);
   transition: all var(--transition-speed);
@@ -504,7 +504,7 @@
 .pmap__loop-field {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: var(--spacing-2xs);
 }
 
 .pmap__loop-field-label {
@@ -513,7 +513,7 @@
   color: var(--color-text-secondary);
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: var(--spacing-xs);
 }
 
 .pmap__loop-field-label svg {
@@ -531,7 +531,7 @@
 .pmap__loop-steps-list {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: var(--spacing-2xs);
 }
 
 .pmap__loop-step-item {
@@ -575,7 +575,7 @@
   border: none;
   color: var(--color-text-tertiary);
   cursor: pointer;
-  padding: 2px;
+  padding: var(--spacing-2xs);
   display: flex;
   border-radius: var(--border-radius-sm);
   opacity: 0;
@@ -718,13 +718,13 @@
 .pmap__sipoc-option-chips {
   display: flex;
   flex-wrap: wrap;
-  gap: 4px;
+  gap: var(--spacing-xs);
   margin-top: var(--spacing-xs);
 }
 
 .pmap__sipoc-option-chip {
   font-size: var(--font-size-xs);
-  padding: 2px var(--spacing-sm);
+  padding: var(--spacing-2xs) var(--spacing-sm);
   border-radius: var(--border-radius-sm);
   background: var(--color-bg-tertiary);
   color: var(--color-text-secondary);
@@ -737,7 +737,7 @@
 .pmap__sipoc-option-chip--more {
   background: transparent;
   color: var(--color-text-tertiary);
-  padding: 2px 0;
+  padding: var(--spacing-2xs) 0;
 }
 
 /* Kundenrückmeldung (Pizza-Lieferung-Beispiel): die Icons wirken zu hell.

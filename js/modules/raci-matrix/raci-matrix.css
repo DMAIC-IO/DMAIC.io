@@ -14,7 +14,7 @@
 .raci__legend-item {
   display: inline-flex;
   align-items: center;
-  padding: 2px 10px;
+  padding: var(--spacing-2xs) 10px;
   border-radius: var(--border-radius);
   font-size: var(--font-size-xs);
   font-weight: var(--font-weight-semibold);

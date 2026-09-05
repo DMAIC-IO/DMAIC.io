@@ -12,7 +12,7 @@
 .module-unit-converter__categories {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: var(--spacing-s);
   margin-bottom: var(--spacing-lg);
   padding-bottom: var(--spacing-md);
   border-bottom: var(--border-width) solid var(--color-border-secondary);
@@ -37,7 +37,7 @@
      the label text. Flex centers both on the button's cross-axis. */
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--spacing-s);
 }
 
 .module-unit-converter__cat-btn:hover {
@@ -80,7 +80,7 @@
   font-family: var(--font-family);
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-medium);
-  padding: 6px 12px;
+  padding: var(--spacing-s) var(--spacing-m);
   border-radius: var(--border-radius);
   border: var(--border-width) solid var(--color-border-secondary);
   background: transparent;
@@ -89,7 +89,7 @@
   transition: all var(--transition-speed);
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--spacing-s);
 }
 
 .module-unit-converter__swap-btn:hover {
@@ -126,12 +126,12 @@
   font-size: 28px;
   font-weight: var(--font-weight-medium);
   width: 100%;
-  padding: 12px 0;
+  padding: var(--spacing-m) 0;
   border: none;
   border-bottom: 2px solid var(--color-border-secondary);
   background: transparent;
   color: var(--color-text-primary);
-  margin-top: 12px;
+  margin-top: var(--spacing-m);
   transition: border-color var(--transition-speed);
 }
 
@@ -148,8 +148,8 @@
   font-family: var(--font-family-mono);
   font-size: 28px;
   font-weight: var(--font-weight-medium);
-  padding: 12px 0;
-  margin-top: 12px;
+  padding: var(--spacing-m) 0;
+  margin-top: var(--spacing-m);
   border-bottom: 2px solid transparent;
   color: var(--color-success);
   min-height: 58px;
@@ -169,7 +169,7 @@
 /* ── Formula Bar ── */
 .module-unit-converter__formula {
   margin-top: 20px;
-  padding: 12px var(--spacing-md);
+  padding: var(--spacing-m) var(--spacing-md);
   background: var(--color-bg-tertiary);
   border: var(--border-width) solid var(--color-border-secondary);
   border-radius: var(--border-radius);
@@ -188,7 +188,7 @@
   text-transform: uppercase;
   letter-spacing: 0.1em;
   color: var(--color-text-tertiary);
-  padding: 2px 6px;
+  padding: var(--spacing-2xs) var(--spacing-s);
   background: var(--color-bg-secondary);
   border-radius: 3px;
   flex-shrink: 0;
@@ -203,7 +203,7 @@
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-semibold);
   color: var(--color-text-tertiary);
-  margin-bottom: 12px;
+  margin-bottom: var(--spacing-m);
 }
 
 /* .dmike-table --head-mono base; the mono value column and the panel framing
@@ -231,7 +231,7 @@
 .module-unit-converter__tz-input-row {
   display: flex;
   gap: var(--spacing-sm);
-  margin-top: 12px;
+  margin-top: var(--spacing-m);
 }
 
 .module-unit-converter__tz-time {
@@ -239,7 +239,7 @@
   font-size: 28px;
   font-weight: var(--font-weight-medium);
   flex: 0 0 auto;
-  padding: 8px 4px;
+  padding: var(--spacing-sm) var(--spacing-xs);
   border: none;
   border-bottom: 2px solid var(--color-border-secondary);
   background: transparent;
@@ -261,7 +261,7 @@
   font-family: var(--font-family-mono);
   font-size: var(--font-size-md);
   flex: 1;
-  padding: 8px 4px;
+  padding: var(--spacing-sm) var(--spacing-xs);
   border: none;
   border-bottom: 2px solid var(--color-border-secondary);
   background: transparent;
@@ -283,8 +283,8 @@
   font-family: var(--font-family-mono);
   font-size: 28px;
   font-weight: var(--font-weight-medium);
-  padding: 12px 0 2px;
-  margin-top: 12px;
+  padding: var(--spacing-m) 0 var(--spacing-2xs);
+  margin-top: var(--spacing-m);
   color: var(--color-success);
   min-height: 48px;
 }
@@ -293,7 +293,7 @@
   font-family: var(--font-family-mono);
   font-size: var(--font-size-sm);
   color: var(--color-text-tertiary);
-  padding-bottom: 4px;
+  padding-bottom: var(--spacing-xs);
 }
 
 .module-unit-converter__tz-now-btn {

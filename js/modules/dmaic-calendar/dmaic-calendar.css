@@ -31,7 +31,7 @@
   display: flex;
   align-items: center;
   gap: var(--spacing-sm);
-  padding: 6px 10px;
+  padding: var(--spacing-s) 10px;
   border-radius: var(--border-radius);
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-medium);
@@ -60,7 +60,7 @@
 .module-calendar__axis {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: var(--spacing-s);
 }
 
 .module-calendar__axis-label {
@@ -81,7 +81,7 @@
 .module-calendar__axis-col {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: var(--spacing-2xs);
 }
 
 .module-calendar__axis-col label {
@@ -120,7 +120,7 @@
   font-family: var(--font-family-mono);
   font-size: var(--font-size-xs);
   color: var(--color-text-tertiary);
-  margin-bottom: 2px;
+  margin-bottom: var(--spacing-2xs);
 }
 
 .module-calendar__upcoming-title {
@@ -202,7 +202,7 @@
 }
 
 .module-calendar__today-btn {
-  padding: var(--spacing-xs) 12px;
+  padding: var(--spacing-xs) var(--spacing-m);
   border-radius: var(--border-radius);
   background: var(--color-accent-light);
   border: var(--border-width) solid var(--color-accent);
@@ -259,7 +259,7 @@
 .module-calendar__grid {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  gap: 2px;
+  gap: var(--spacing-2xs);
   background: var(--color-border-secondary);
   border-radius: var(--border-radius-lg);
   overflow: hidden;
@@ -324,14 +324,14 @@
 .module-calendar__day-events {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: var(--spacing-2xs);
   flex: 1;
   overflow: hidden;
 }
 
 .module-calendar__day-ev {
   font-size: var(--font-size-xs);
-  padding: 2px 5px;
+  padding: var(--spacing-2xs) 5px;
   border-radius: 3px;
   white-space: nowrap;
   overflow: hidden;
@@ -349,7 +349,7 @@
   font-size: 10px;
   color: var(--color-text-tertiary);
   font-family: var(--font-family-mono);
-  margin-top: 2px;
+  margin-top: var(--spacing-2xs);
 }
 
 /* ─── Week view ─────────────────────────────────────────── */
@@ -396,7 +396,7 @@
   font-size: var(--font-size-lg);
   font-weight: var(--font-weight-semibold);
   color: var(--color-text-primary);
-  margin-top: 2px;
+  margin-top: var(--spacing-2xs);
   font-family: var(--font-family);
   width: 32px;
   height: 32px;
@@ -424,7 +424,7 @@
 
 .module-calendar__week-time-label {
   height: 60px;
-  padding: 2px 6px 0 0;
+  padding: var(--spacing-2xs) var(--spacing-s) 0 0;
   text-align: right;
   font-family: var(--font-family-mono);
   font-size: 10px;
@@ -620,7 +620,7 @@
 .module-calendar__row-3 {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
-  gap: 12px;
+  gap: var(--spacing-m);
 }
 
 .module-calendar__phase-select {

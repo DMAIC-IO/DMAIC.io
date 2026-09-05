@@ -35,7 +35,7 @@
   font-weight: var(--font-weight-semibold);
   background: var(--color-accent-light);
   color: var(--color-accent);
-  padding: 2px 8px;
+  padding: var(--spacing-2xs) var(--spacing-sm);
   border-radius: 10px;
 }
 
@@ -92,7 +92,7 @@
   background: transparent;
   border: none;
   outline: none;
-  padding: 2px 4px;
+  padding: var(--spacing-2xs) var(--spacing-xs);
   border-radius: 3px;
   font-family: inherit;
 }
@@ -112,7 +112,7 @@
   border: none;
   color: var(--color-text-tertiary);
   cursor: pointer;
-  padding: 2px;
+  padding: var(--spacing-2xs);
   transition: opacity .15s, color .15s;
 }
 
@@ -218,7 +218,7 @@
   color: var(--color-text-tertiary);
   font-size: 16px;
   cursor: pointer;
-  padding: 2px 4px;
+  padding: var(--spacing-2xs) var(--spacing-xs);
   line-height: 1;
 }
 
@@ -229,13 +229,13 @@
 .rest-api__add-header-btn {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: var(--spacing-xs);
   background: none;
   border: none;
   color: var(--color-accent);
   font-size: var(--font-size-xs);
   cursor: pointer;
-  padding: 2px 0;
+  padding: var(--spacing-2xs) 0;
 }
 
 .rest-api__add-header-btn:hover {
@@ -253,7 +253,7 @@
 .rest-api__write-mode-option {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--spacing-s);
   font-size: var(--font-size-sm);
   color: var(--color-text-secondary);
   cursor: pointer;
@@ -298,7 +298,7 @@
   color: var(--color-text-tertiary);
   font-size: 16px;
   cursor: pointer;
-  padding: 2px 4px;
+  padding: var(--spacing-2xs) var(--spacing-xs);
   line-height: 1;
 }
 
@@ -309,13 +309,13 @@
 .rest-api__add-mapping-btn {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: var(--spacing-xs);
   background: none;
   border: none;
   color: var(--color-accent);
   font-size: var(--font-size-xs);
   cursor: pointer;
-  padding: 2px 0;
+  padding: var(--spacing-2xs) 0;
 }
 
 .rest-api__add-mapping-btn:hover {
@@ -327,7 +327,7 @@
   font-family: var(--font-family-mono);
   font-size: var(--font-size-xs);
   font-weight: var(--font-weight-bold);
-  padding: 2px 8px;
+  padding: var(--spacing-2xs) var(--spacing-sm);
   border-radius: 3px;
 }
 .rest-api__status--ok  { background: #22c55e20; color: #22c55e; }
@@ -338,7 +338,7 @@
   border: none;
   color: var(--color-text-tertiary);
   cursor: pointer;
-  padding: 2px;
+  padding: var(--spacing-2xs);
 }
 
 .rest-api__copy-btn:hover {
@@ -392,13 +392,13 @@
 .rest-api__schedule .rest-api__section-label {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--spacing-s);
 }
 
 .rest-api__schedule-badge {
   font-size: var(--font-size-xs);
   font-weight: var(--font-weight-bold);
-  padding: 2px 8px;
+  padding: var(--spacing-2xs) var(--spacing-sm);
   border-radius: 3px;
 }
 .rest-api__schedule-badge--on  { background: #22c55e20; color: #22c55e; }
@@ -414,7 +414,7 @@
 .rest-api__schedule-toggle {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--spacing-sm);
   font-size: var(--font-size-sm);
   color: var(--color-text-secondary);
   cursor: pointer;
@@ -429,7 +429,7 @@
 .rest-api__schedule-interval-group {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--spacing-s);
 }
 
 .rest-api__schedule-interval-label {
@@ -441,7 +441,7 @@
 .rest-api__schedule-interval-value {
   width: 64px !important;
   min-width: 0;
-  padding: 4px var(--spacing-sm) !important;
+  padding: var(--spacing-xs) var(--spacing-sm) !important;
   text-align: center;
   font-variant-numeric: tabular-nums;
   appearance: textfield;
@@ -455,7 +455,7 @@
 .rest-api__schedule-interval-unit {
   width: auto !important;
   min-width: 90px;
-  padding: 4px var(--spacing-sm) !important;
+  padding: var(--spacing-xs) var(--spacing-sm) !important;
 }
 
 .rest-api__schedule-status {

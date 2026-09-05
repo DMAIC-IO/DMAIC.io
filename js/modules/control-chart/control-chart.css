@@ -11,7 +11,7 @@
 .control-chart__hint {
   font-size: var(--font-size-xs);
   color: var(--color-text-tertiary);
-  margin-top: 2px;
+  margin-top: var(--spacing-2xs);
 }
 
 .control-chart__spec-row {
@@ -59,7 +59,7 @@
 }
 
 .control-chart__nelson-rule input[type="checkbox"] {
-  margin-top: 2px;
+  margin-top: var(--spacing-2xs);
   accent-color: var(--color-accent);
 }
 
@@ -100,7 +100,7 @@
 
 .control-chart__badge {
   font-size: var(--font-size-xs);
-  padding: 2px 8px;
+  padding: var(--spacing-2xs) var(--spacing-sm);
   border-radius: 12px;
   font-weight: var(--font-weight-medium);
 }
@@ -223,7 +223,7 @@
 
 .control-chart__phase2-badge {
   display: inline-block;
-  padding: 2px 8px;
+  padding: var(--spacing-2xs) var(--spacing-sm);
   border-radius: 10px;
   font-size: var(--font-size-xs);
   font-weight: var(--font-weight-medium);

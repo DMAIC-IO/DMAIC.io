@@ -8,7 +8,7 @@
 .src__hint {
   font-size: var(--font-size-xs);
   color: var(--color-text-tertiary);
-  margin-top: 2px;
+  margin-top: var(--spacing-2xs);
 }
 
 .src__chart-section {
@@ -36,7 +36,7 @@
 
 .src__badge {
   font-size: var(--font-size-xs);
-  padding: 2px 8px;
+  padding: var(--spacing-2xs) var(--spacing-sm);
   border-radius: 12px;
   font-weight: var(--font-weight-medium);
 }
@@ -62,7 +62,7 @@
 
 .src__groups-table th,
 .src__groups-table td {
-  padding: 4px 8px;
+  padding: var(--spacing-xs) var(--spacing-sm);
   text-align: right;
   border-bottom: var(--border-width) solid var(--color-border-secondary);
 }

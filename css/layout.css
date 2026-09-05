@@ -60,7 +60,7 @@ body {
   font-size: var(--font-size-xs);
   font-weight: var(--font-weight-bold);
   letter-spacing: 0.06em;
-  padding: 2px 8px;
+  padding: var(--spacing-2xs) var(--spacing-sm);
   border-radius: var(--border-radius-sm);
   text-transform: uppercase;
 }
@@ -124,11 +124,11 @@ html.is-nightly body {
 .app-header__project-btn {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: var(--spacing-xs);
   background: none;
   border: 1px solid transparent;
   border-radius: var(--border-radius-sm);
-  padding: 2px var(--spacing-sm);
+  padding: var(--spacing-2xs) var(--spacing-sm);
   cursor: pointer;
   transition: border-color 0.15s, background 0.15s;
 }
@@ -162,7 +162,7 @@ html.is-nightly body {
   background: var(--color-input-bg);
   border: var(--border-width) solid var(--color-accent);
   border-radius: var(--border-radius-sm);
-  padding: 2px var(--spacing-sm);
+  padding: var(--spacing-2xs) var(--spacing-sm);
   outline: none;
 }
 
@@ -170,7 +170,7 @@ html.is-nightly body {
   position: absolute;
   top: 100%;
   left: 0;
-  margin-top: 4px;
+  margin-top: var(--spacing-xs);
   min-width: 260px;
   max-height: 360px;
   overflow-y: auto;
@@ -244,7 +244,7 @@ html.is-nightly body {
 
 .app-header__project-item-actions {
   display: flex;
-  gap: 2px;
+  gap: var(--spacing-2xs);
   flex-shrink: 0;
   opacity: 0;
   transition: opacity 0.1s;
@@ -319,7 +319,7 @@ html.is-nightly body {
 .cycle-picker {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--spacing-sm);
   margin: 0;
   padding: 0;
   border: none;
@@ -329,7 +329,7 @@ html.is-nightly body {
   display: flex;
   align-items: flex-start;
   gap: 10px;
-  padding: 10px 12px;
+  padding: 10px var(--spacing-m);
   border: 1px solid var(--color-border-secondary);
   border-radius: var(--border-radius);
   cursor: default;
@@ -368,7 +368,7 @@ html.is-nightly body {
 .cycle-picker__body {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: var(--spacing-2xs);
   flex: 1;
 }
 
@@ -387,7 +387,7 @@ html.is-nightly body {
 .cycle-picker__desc {
   font-size: 12px;
   color: var(--color-text-secondary);
-  margin-top: 4px;
+  margin-top: var(--spacing-xs);
 }
 
 /* Step 1: the per-card "Weiter" button (create context only). */
@@ -432,7 +432,7 @@ html.is-nightly body {
   grid-template-columns: 1fr auto;
   align-items: center;
   gap: var(--spacing-xs) var(--spacing-md);
-  padding: 10px 12px;
+  padding: 10px var(--spacing-m);
   border: 1px solid var(--color-border-secondary);
   border-radius: var(--border-radius);
   transition: border-color 0.1s, background 0.1s;
@@ -472,7 +472,7 @@ html.is-nightly body {
 .cycle-picker__name-input {
   flex: 1;
   min-width: 0;
-  padding: 5px 8px;
+  padding: 5px var(--spacing-sm);
   font-size: 13px;
   color: var(--color-text-primary);
   background: var(--color-bg-primary);
@@ -593,7 +593,7 @@ html.is-nightly body {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 4px;
+  gap: var(--spacing-xs);
 }
 
 .dmaic-tile {
@@ -677,7 +677,7 @@ html.is-nightly body {
   /* The progress bar + bottom border occupy the inner column's bottom 4px, so
      centre the row content over the FULL tile height by padding the top to
      match — otherwise letter/name/%/chevron all sit a couple px too high. */
-  padding-top: 4px;
+  padding-top: var(--spacing-xs);
 }
 
 /* Left group = navigate (letter+name) + edit (pencil+%), no divider between, so
@@ -695,9 +695,9 @@ html.is-nightly body {
   display: flex;
   align-items: center;
   justify-content: flex-start;
-  gap: 6px;
+  gap: var(--spacing-s);
   min-width: 0;
-  padding: 0 2px 0 8px;
+  padding: 0 var(--spacing-2xs) 0 var(--spacing-sm);
   margin: 0;
   border: none;
   background: transparent;
@@ -755,8 +755,8 @@ html.is-nightly body {
    (so text↔number stays tight) and animates open — width AND scale — on hover,
    a touch more when the segment itself is hovered. */
 .dmaic-tile__edit {
-  gap: 2px;
-  padding: 0 8px 0 0;
+  gap: var(--spacing-2xs);
+  padding: 0 var(--spacing-sm) 0 0;
 }
 
 /* The pencil sits in a fixed, narrow slot so revealing it never changes the
@@ -783,7 +783,7 @@ html.is-nightly body {
 /* Dropdown segment: wide clickable area, no background on hover — the chevron
    itself grows a little on hover instead. */
 .dmaic-tile__menu-btn {
-  padding: 0 12px;
+  padding: 0 var(--spacing-m);
 }
 
 .dmaic-tile__menu-btn .icon {
@@ -1057,7 +1057,7 @@ body.dev-area-open .dmaic-tiles {
   z-index: 10;
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: var(--spacing-2xs);
 }
 
 .dashboard-area__add-menu-item {
@@ -1096,7 +1096,7 @@ body.dev-area-open .dmaic-tiles {
   background: var(--color-bg-secondary);
   border: 1px solid var(--color-border-primary);
   border-radius: var(--border-radius);
-  padding: var(--spacing-md) var(--spacing-md) calc(var(--spacing-md) + 4px);
+  padding: var(--spacing-md) var(--spacing-md) calc(var(--spacing-md) + var(--spacing-xs));
   display: flex;
   flex-direction: column;
   gap: var(--spacing-sm);
@@ -1224,7 +1224,7 @@ body.dev-area-open .dmaic-tiles {
   top: 6px;
   right: 28px;
   display: flex;
-  gap: 2px;
+  gap: var(--spacing-2xs);
   opacity: 0;
   transition: opacity 0.15s;
 }
@@ -1308,7 +1308,7 @@ body.dev-area-open .dmaic-tiles {
   justify-content: space-between;
   gap: var(--spacing-sm);
   align-items: baseline;
-  margin-bottom: 2px;
+  margin-bottom: var(--spacing-2xs);
 }
 
 .dashboard-charter__goal-desc {
@@ -1375,7 +1375,7 @@ body.dev-area-open .dmaic-tiles {
 .dashboard-fmea__legend-item {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: var(--spacing-xs);
 }
 
 .dashboard-fmea__legend-dot {
@@ -1400,7 +1400,7 @@ body.dev-area-open .dmaic-tiles {
   margin: 0;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: var(--spacing-xs);
 }
 
 .dashboard-fmea__top-item {
@@ -1467,7 +1467,7 @@ body.dev-area-open .dmaic-tiles {
 .dashboard-voc__legend-item {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: var(--spacing-xs);
 }
 
 .dashboard-voc__list-label {
@@ -1485,7 +1485,7 @@ body.dev-area-open .dmaic-tiles {
   margin: 0;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: var(--spacing-xs);
 }
 
 .dashboard-voc__item {
@@ -1532,7 +1532,7 @@ body.dev-area-open .dmaic-tiles {
 .dashboard-raci__legend-item {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: var(--spacing-xs);
 }
 
 .dashboard-raci__warn-label {
@@ -1550,7 +1550,7 @@ body.dev-area-open .dmaic-tiles {
   margin: 0;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: var(--spacing-xs);
 }
 
 .dashboard-raci__warn-item {
@@ -1567,14 +1567,14 @@ body.dev-area-open .dmaic-tiles {
 .dashboard-spc {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--spacing-sm);
   font-size: var(--font-size-sm, 13px);
 }
 
 .dashboard-spc__header {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--spacing-sm);
   flex-wrap: wrap;
 }
 
@@ -1583,7 +1583,7 @@ body.dev-area-open .dmaic-tiles {
   font-family: var(--font-family-mono, monospace);
   font-size: var(--font-size-sm, 13px);
   background: var(--color-bg-tertiary);
-  padding: 2px 6px;
+  padding: var(--spacing-2xs) var(--spacing-s);
   border-radius: 4px;
 }
 
@@ -1607,7 +1607,7 @@ body.dev-area-open .dmaic-tiles {
 .dashboard-spc__stats {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 4px;
+  gap: var(--spacing-xs);
 }
 
 .dashboard-spc__stat {
@@ -1616,7 +1616,7 @@ body.dev-area-open .dmaic-tiles {
   align-items: center;
   background: var(--color-bg-tertiary);
   border-radius: 4px;
-  padding: 4px 2px;
+  padding: var(--spacing-xs) var(--spacing-2xs);
 }
 
 .dashboard-spc__stat-label {
@@ -1635,7 +1635,7 @@ body.dev-area-open .dmaic-tiles {
 
 .dashboard-spc__metrics {
   display: flex;
-  gap: 8px;
+  gap: var(--spacing-sm);
 }
 
 .dashboard-spc__metric {
@@ -1643,7 +1643,7 @@ body.dev-area-open .dmaic-tiles {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 6px 4px;
+  padding: var(--spacing-s) var(--spacing-xs);
   border-radius: 6px;
   background: var(--color-bg-tertiary);
   border: 1px solid var(--color-border-primary);
@@ -1981,7 +1981,7 @@ body.training-area-open .dmaic-tiles {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 2px;
+  gap: var(--spacing-2xs);
   padding: var(--spacing-xs) var(--spacing-sm);
   border: none;
   background: none;
@@ -2038,7 +2038,7 @@ body.training-area-open .dmaic-tiles {
      header pushing it down) can never intercept clicks meant for this menu. */
   z-index: 150;
   min-width: 160px;
-  padding: 4px 0;
+  padding: var(--spacing-xs) 0;
 }
 
 .workspace__action-menu.open {
@@ -2048,9 +2048,9 @@ body.training-area-open .dmaic-tiles {
 .workspace__action-item {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--spacing-sm);
   width: 100%;
-  padding: 6px 12px;
+  padding: var(--spacing-s) var(--spacing-m);
   border: none;
   background: none;
   cursor: pointer;
@@ -2309,7 +2309,7 @@ body.training-area-open .dmaic-tiles {
   color: inherit;
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: var(--spacing-2xs);
 }
 
 .help-panel__glossary-item:hover,
@@ -2456,7 +2456,7 @@ body.training-area-open .dmaic-tiles {
 .help-panel__glossary-seealso a {
   color: var(--color-accent);
   text-decoration: none;
-  padding: 2px var(--spacing-xs);
+  padding: var(--spacing-2xs) var(--spacing-xs);
   border: var(--border-width) solid var(--color-border-primary);
   border-radius: var(--border-radius-sm);
   font-size: var(--font-size-xs);
@@ -2614,7 +2614,7 @@ body.training-area-open .dmaic-tiles {
 .app-footer__version {
   display: inline-flex;
   align-items: center;
-  gap: 2px;
+  gap: var(--spacing-2xs);
   cursor: pointer;
   color: var(--color-text-tertiary);
   text-decoration: none;

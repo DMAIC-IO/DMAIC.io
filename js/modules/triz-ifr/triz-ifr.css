@@ -31,7 +31,7 @@
 .triz-ifr__field {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: var(--spacing-xs);
 }
 
 .triz-ifr__label {
@@ -49,7 +49,7 @@
 .triz-ifr__level {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: var(--spacing-s);
   padding: var(--spacing-sm);
   background: var(--color-bg-elevated);
   border: 1px solid var(--color-border-primary);
@@ -69,7 +69,7 @@
 
 .triz-ifr__level-num {
   display: inline-block;
-  padding: 2px 8px;
+  padding: var(--spacing-2xs) var(--spacing-sm);
   background: var(--color-accent, #2e7dd9);
   color: #fff;
   font-size: var(--font-size-xs);

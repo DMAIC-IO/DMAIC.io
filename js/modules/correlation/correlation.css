@@ -36,15 +36,15 @@
   text-transform: uppercase;
   letter-spacing: 0.06em;
   color: var(--color-text-tertiary);
-  padding: 2px 4px;
-  margin-top: 2px;
+  padding: var(--spacing-2xs) var(--spacing-xs);
+  margin-top: var(--spacing-2xs);
 }
 
 .corr__col-item {
   display: flex;
   align-items: center;
   gap: var(--spacing-xs);
-  padding: 3px 6px;
+  padding: 3px var(--spacing-s);
   border-radius: var(--border-radius-sm);
   cursor: pointer;
   font-size: var(--font-size-sm);
@@ -84,7 +84,7 @@
   font-family: var(--font-family-mono);
   font-size: var(--font-size-xs);
   color: var(--color-text-tertiary);
-  margin-top: 2px;
+  margin-top: var(--spacing-2xs);
 }
 
 .corr__hint {
@@ -142,7 +142,7 @@
   font-size: 28px;
   font-weight: 700;
   line-height: 1.2;
-  margin-bottom: 2px;
+  margin-bottom: var(--spacing-2xs);
 }
 
 .corr__interpret-tag {
@@ -151,7 +151,7 @@
   font-weight: var(--font-weight-semibold);
   letter-spacing: 0.5px;
   text-transform: uppercase;
-  padding: 2px 8px;
+  padding: var(--spacing-2xs) var(--spacing-sm);
   border-radius: var(--border-radius-sm);
   display: inline-block;
   margin-bottom: var(--spacing-sm);
@@ -185,7 +185,7 @@
   color: var(--color-text-tertiary);
   letter-spacing: 1px;
   text-transform: uppercase;
-  margin-bottom: 4px;
+  margin-bottom: var(--spacing-xs);
 }
 
 .corr__ci-track {
@@ -229,7 +229,7 @@
   font-family: var(--font-family-mono);
   font-size: 10px;
   color: var(--color-text-tertiary);
-  margin-top: 2px;
+  margin-top: var(--spacing-2xs);
 }
 
 /* Scatter plot */
@@ -267,7 +267,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 4px 0;
+  padding: var(--spacing-xs) 0;
   border-bottom: var(--border-width) solid var(--color-border-secondary);
   font-size: var(--font-size-sm);
 }
@@ -323,7 +323,7 @@
 .corr__filter-field {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: var(--spacing-xs);
   font-family: var(--font-family-mono);
   font-size: var(--font-size-xs);
   color: var(--color-text-secondary);
@@ -331,7 +331,7 @@
 
 .corr__filter-input {
   width: 64px;
-  padding: 3px 6px;
+  padding: 3px var(--spacing-s);
   border: var(--border-width) solid var(--color-border-secondary);
   border-radius: var(--border-radius-sm);
   background: var(--color-bg-primary);
@@ -464,13 +464,13 @@
 .corr__matrix-legend-item {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: var(--spacing-xs);
 }
 
 /* Scatter header row: uses global .dmike-split__output-section-header (css/modules.css) */
 
 .corr__collapse-all-btn {
-  padding: 2px var(--spacing-sm);
+  padding: var(--spacing-2xs) var(--spacing-sm);
   border: var(--border-width) solid var(--color-border-secondary);
   border-radius: var(--border-radius-sm);
   background: var(--color-bg-secondary);

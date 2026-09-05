@@ -39,7 +39,7 @@
 .ro__r2 {
   font-family: var(--font-family-mono);
   font-size: 12px;
-  padding: 2px 6px;
+  padding: var(--spacing-2xs) var(--spacing-s);
   border-radius: var(--border-radius);
 }
 
@@ -60,7 +60,7 @@
 .ro__spec label {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--spacing-s);
   font-size: 12px;
   color: var(--color-text-secondary);
 }
@@ -84,7 +84,7 @@
 }
 
 .ro__diagnostic ul {
-  margin: 4px 0 0 var(--spacing-md);
+  margin: var(--spacing-xs) 0 0 var(--spacing-md);
   padding: 0;
 }
 
