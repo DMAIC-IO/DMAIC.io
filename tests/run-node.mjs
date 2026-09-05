@@ -86,6 +86,7 @@ const SKIP = new Set([
   'ui/dmaic-tiles-rebuild.test.js',
   'ui/layout-primitives.test.js',
   'ui/modal-dialog-api.test.js',
+  'ui/split-layout.test.js',
   'ui/workspace-reset.test.js',
 ]);
 

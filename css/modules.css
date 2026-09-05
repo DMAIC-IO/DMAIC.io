@@ -9,7 +9,10 @@
   height: 100%;
   display: flex;
   flex-direction: column;
-  padding: var(--spacing-md);
+
+  /* Einziger Besitzer des Modul-Außenabstands. Alles darunter steht auf 0;
+     der Spaltenzwischenraum kommt aus gap, nicht aus margin + padding. */
+  padding: var(--spacing-m);
 }
 
 .module-container__header {
@@ -53,10 +56,21 @@
      .my-module .dmike-split__input { width: 380px; }
 */
 
+/* Der Split hält den Außenabstand selbst — 39 der 71 Module wurzeln direkt
+   in ihm und haben gar kein `.module-container` (die Klasse ist reine
+   Template-Konvention, kein Framework-Element). Dort wäre der Abstand sonst 0. */
 .dmike-split {
   display: flex;
   min-height: 100%;
-  padding: var(--spacing-md);
+  padding: var(--spacing-m);
+  gap: var(--spacing-m);
+}
+
+/* Liegt der Split INNERHALB eines `.module-container`, hält der Container den
+   Abstand allein — sonst stapelten sich beide wieder auf 24px. So hat jedes
+   Modul genau einen Besitzer, unabhängig davon, wie sein Template aufgebaut ist. */
+.module-container .dmike-split {
+  padding: 0;
 }
 
 /* Liegt `.dmike-split` direkt auf `.module-container__body` (dem Scroll-
@@ -75,12 +89,15 @@
   align-self: flex-start;
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-md);
-  padding: var(--spacing-md);
+  gap: var(--spacing-m);
+
+  /* Innenpolster bleibt: es gehört zur Panel-Optik (Hintergrund, Rahmen,
+     Radius). Der Außenabstand gehört dem .module-container. */
+  padding: var(--spacing-m);
   background: var(--color-bg-secondary);
   border: var(--border-width) solid var(--color-border-secondary);
   border-radius: var(--border-radius);
-  margin: var(--spacing-sm);
+  margin: 0;
 }
 
 .dmike-split__output {
@@ -88,7 +105,7 @@
   min-width: 0;
   display: flex;
   flex-direction: column;
-  padding: var(--spacing-sm);
+  padding: 0;
 }
 
 /* Section headers inside input panel */
