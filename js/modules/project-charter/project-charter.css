@@ -173,7 +173,7 @@ tbody .pc__col-nr:active { cursor: grabbing; }
 .pc__zeg-wrap {
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: var(--spacing-xs);
   position: relative;
 }
 
@@ -338,7 +338,7 @@ tbody .pc__col-nr:active { cursor: grabbing; }
 }
 
 .pc__org-node-title {
-  padding: 10px var(--spacing-m) var(--spacing-xs);
+  padding: var(--spacing-m) var(--spacing-m) var(--spacing-xs);
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-semibold);
   line-height: 1.3;
@@ -346,7 +346,7 @@ tbody .pc__col-nr:active { cursor: grabbing; }
 }
 
 .pc__org-node-desc {
-  padding: 0 var(--spacing-m) 10px;
+  padding: 0 var(--spacing-m) var(--spacing-m);
   font-size: var(--font-size-xs);
   line-height: 1.45;
   color: var(--color-text-secondary);

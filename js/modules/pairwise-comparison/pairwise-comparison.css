@@ -532,7 +532,7 @@
 
 .pairwise__matrix th,
 .pairwise__matrix td {
-  padding: var(--spacing-sm) 10px;
+  padding: var(--spacing-sm) var(--spacing-m);
   text-align: center;
   border: var(--border-width) solid var(--color-border-secondary);
   font-size: var(--font-size-sm);

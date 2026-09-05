@@ -14,7 +14,7 @@
 .raci__legend-item {
   display: inline-flex;
   align-items: center;
-  padding: var(--spacing-2xs) 10px;
+  padding: var(--spacing-2xs) var(--spacing-m);
   border-radius: var(--border-radius);
   font-size: var(--font-size-xs);
   font-weight: var(--font-weight-semibold);
@@ -117,7 +117,12 @@
   white-space: nowrap;
   max-width: 250px;
   position: relative;
-  padding-right: 26px;
+
+  /* 26px ist nicht in der Rundungstabelle; nächstes Token ist
+     --spacing-l (24px, 2px entfernt) statt --spacing-xl (32px, 6px
+     entfernt) — reiner horizontaler Platz für Drag-Handle/Lösch-Button,
+     beeinflusst keine Zeilenhöhe. */
+  padding-right: var(--spacing-l);
 }
 
 .raci__activity-text {

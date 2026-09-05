@@ -29,8 +29,8 @@
 .worksheet-toolbar .toolbar__btn {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
-  padding: 5px 10px;
+  gap: var(--spacing-s);
+  padding: var(--spacing-s) var(--spacing-m);
   border: none;
   border-radius: var(--border-radius-sm);
   background: transparent;
@@ -141,7 +141,7 @@
   font-family: var(--font-family-mono);
   font-size: var(--font-size-xs);
   color: var(--color-text-tertiary);
-  padding: 0 10px;
+  padding: 0 var(--spacing-m);
   white-space: nowrap;
   align-self: center;
 }
@@ -161,8 +161,8 @@
   display: grid;
   grid-template-columns: 1fr 80px 180px;
   align-items: center;
-  gap: 10px;
-  padding: var(--spacing-sm) 10px;
+  gap: var(--spacing-m);
+  padding: var(--spacing-sm) var(--spacing-m);
   background: var(--color-bg-elevated, var(--color-bg));
   border: 1px solid var(--color-border-primary, var(--color-border));
   border-radius: 4px;

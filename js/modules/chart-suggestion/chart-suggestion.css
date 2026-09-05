@@ -91,7 +91,7 @@
   display: inline-flex;
   align-items: center;
   gap: var(--spacing-s);
-  padding: 3px var(--spacing-sm);
+  padding: var(--spacing-xs) var(--spacing-sm);
   border-radius: 12px;
   font-size: 12px;
   font-weight: 500;
@@ -128,9 +128,9 @@
 .chart-suggestion__card {
   display: flex;
   align-items: center;
-  gap: var(--space-sm, 10px);
+  gap: var(--space-sm, var(--spacing-m));
   width: 100%;
-  padding: 10px;
+  padding: var(--spacing-m);
   background: var(--color-bg-elevated);
   border: 1px solid var(--color-border);
   border-radius: 6px;
@@ -218,7 +218,7 @@
 }
 
 .chart-suggestion__open-btn {
-  padding: var(--spacing-xs) 10px;
+  padding: var(--spacing-xs) var(--spacing-m);
   font: inherit;
   font-size: 12px;
   font-weight: 500;
@@ -260,7 +260,7 @@
   font-size: 13px;
   font-style: italic;
   text-align: center;
-  padding: var(--space-lg, 20px);
+  padding: var(--space-lg, var(--spacing-l));
 }
 
 .chart-suggestion__placeholder--error {

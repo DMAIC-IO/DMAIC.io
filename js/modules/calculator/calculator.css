@@ -29,7 +29,7 @@
   margin-bottom: var(--spacing-sm);
   background: var(--color-bg-secondary);
   border-radius: var(--border-radius);
-  padding: 3px;
+  padding: var(--spacing-xs);
   border: var(--border-width) solid var(--color-border-secondary);
 }
 
@@ -65,7 +65,7 @@
   background: var(--color-bg-secondary);
   border: var(--border-width) solid var(--color-border-secondary);
   border-radius: var(--border-radius);
-  padding: var(--spacing-md) 20px 14px;
+  padding: var(--spacing-md) var(--spacing-l) var(--spacing-m);
   margin-bottom: var(--spacing-sm);
   position: relative;
   overflow: hidden;
@@ -144,7 +144,7 @@
   font-family: var(--font-family-mono);
   font-size: var(--font-size-md);
   font-weight: var(--font-weight-medium);
-  padding: 14px var(--spacing-xs);
+  padding: var(--spacing-m) var(--spacing-xs);
   border: var(--border-width) solid var(--color-border-secondary);
   border-radius: var(--border-radius);
   background: var(--color-bg-secondary);
@@ -253,9 +253,9 @@
 .module-calculator__val {
   display: inline-block;
   background: var(--color-bg-tertiary);
-  padding: 1px 7px;
+  padding: 1px var(--spacing-sm);
   border-radius: var(--border-radius-sm);
-  margin: var(--spacing-2xs) 3px var(--spacing-2xs) 0;
+  margin: var(--spacing-2xs) var(--spacing-xs) var(--spacing-2xs) 0;
 }
 
 .module-calculator__val--empty {

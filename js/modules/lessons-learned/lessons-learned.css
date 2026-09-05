@@ -268,7 +268,7 @@
 
 /* ── Card Body (expanded) ── */
 .ll__card-body {
-  padding: 0 var(--spacing-md) var(--spacing-md) 42px;
+  padding: 0 var(--spacing-md) var(--spacing-md) var(--spacing-2xl);
 }
 
 .ll__section {
@@ -355,7 +355,10 @@
 /* ── Empty State ── */
 .ll__empty {
   text-align: center;
-  padding: var(--spacing-xxl, 60px) var(--spacing-md);
+
+  /* --spacing-xxl existiert nicht in der Skala (nie definiert, Fallback griff
+     immer) — direkt auf --spacing-2xl (60px gerundet) umgestellt. */
+  padding: var(--spacing-2xl) var(--spacing-md);
   color: var(--color-text-tertiary);
   font-size: var(--font-size-sm);
 }
@@ -414,7 +417,7 @@
   font-size: var(--font-size-xs);
   background: var(--color-bg-tertiary, var(--color-bg-secondary));
   border: var(--border-width) solid var(--color-border-secondary);
-  padding: var(--spacing-xs) 10px;
+  padding: var(--spacing-xs) var(--spacing-m);
   border-radius: var(--border-radius);
   display: flex;
   align-items: center;

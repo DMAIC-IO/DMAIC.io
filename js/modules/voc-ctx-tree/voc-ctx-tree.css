@@ -234,9 +234,9 @@
   font-size: 0.62rem;
   font-weight: var(--font-weight-semibold);
   letter-spacing: 0.5px;
-  padding: 1px 5px;
+  padding: 1px var(--spacing-s);
   border-radius: 3px;
-  margin-bottom: 3px;
+  margin-bottom: var(--spacing-xs);
   display: inline-block;
   text-transform: uppercase;
 }
@@ -277,7 +277,7 @@
 
 /* ── Tree children containers ── */
 .vct__children {
-  padding-left: 20px;
+  padding-left: var(--spacing-l);
   margin-left: var(--spacing-ml);
   border-left: 2px dashed;
 }
@@ -385,7 +385,7 @@
 .vct__node-source {
   font-size: var(--font-size-xs);
   color: var(--color-text-tertiary);
-  margin-top: 3px;
+  margin-top: var(--spacing-xs);
 }
 
 /* ── Settings panel (inside sidebar, pinned to bottom) ── */

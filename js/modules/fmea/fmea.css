@@ -97,7 +97,7 @@
   transition: all 0.15s;
   display: inline-flex;
   align-items: center;
-  gap: 5px;
+  gap: var(--spacing-s);
 }
 
 .fmea__risk-number:hover {
@@ -150,14 +150,14 @@
   font-family: var(--font-family-mono);
   font-size: var(--font-size-sm);
   font-weight: 700;
-  padding: 3px var(--spacing-m);
+  padding: var(--spacing-xs) var(--spacing-m);
   border-radius: 20px;
   white-space: nowrap;
 }
 
 .fmea__rpn-badge--sm {
   font-size: var(--font-size-xs);
-  padding: var(--spacing-2xs) 10px;
+  padding: var(--spacing-2xs) var(--spacing-m);
 }
 
 .fmea__rpn-badge--low      { background: rgb(52 211 153 / 10%);  color: var(--color-success, #34D399); }
@@ -298,13 +298,13 @@
   border: 1px dashed var(--color-border-primary);
   border-radius: var(--border-radius);
   color: var(--color-text-tertiary);
-  padding: var(--spacing-s) 14px;
+  padding: var(--spacing-s) var(--spacing-m);
   cursor: pointer;
   margin-top: var(--spacing-s);
   transition: all 0.15s;
   display: inline-flex;
   align-items: center;
-  gap: 5px;
+  gap: var(--spacing-s);
 }
 
 .fmea__add-action-btn:hover {

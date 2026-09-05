@@ -121,7 +121,7 @@
   letter-spacing: 0.8px;
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: var(--spacing-s);
 }
 
 .pmap__io-label-text--input {
@@ -159,7 +159,7 @@
   display: flex;
   align-items: center;
   gap: var(--spacing-xs);
-  padding: 5px var(--spacing-sm);
+  padding: var(--spacing-s) var(--spacing-sm);
   border-radius: var(--border-radius-sm);
   font-size: var(--font-size-sm);
   animation: pmap-fade-in 0.2s ease;
@@ -693,7 +693,7 @@
 }
 
 .pmap__sipoc-option input[type="radio"] {
-  margin-top: 3px;
+  margin-top: var(--spacing-xs);
   flex-shrink: 0;
 }
 .pmap__sipoc-option-body { flex: 1; min-width: 0; }

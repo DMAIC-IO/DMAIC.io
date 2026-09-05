@@ -86,7 +86,7 @@
   font-family: inherit;
   font-weight: var(--font-weight-semibold);
   color: var(--color-accent);
-  margin-left: 3px;
+  margin-left: var(--spacing-xs);
 }
 
 .triz-sf__problem-note {
@@ -105,7 +105,7 @@
   display: inline-flex;
   align-items: center;
   gap: var(--spacing-s);
-  padding: var(--spacing-xs) 10px;
+  padding: var(--spacing-xs) var(--spacing-m);
   background: var(--color-bg-secondary);
   border: 1px solid var(--color-border-primary);
   border-radius: var(--border-radius-sm);
@@ -200,7 +200,7 @@
   background: var(--color-bg-elevated);
   border: 1px solid var(--color-border-primary);
   border-radius: var(--border-radius-sm);
-  padding: var(--spacing-s) 10px;
+  padding: var(--spacing-s) var(--spacing-m);
   transition: border-color var(--transition-speed);
 }
 

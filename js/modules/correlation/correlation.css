@@ -44,7 +44,7 @@
   display: flex;
   align-items: center;
   gap: var(--spacing-xs);
-  padding: 3px var(--spacing-s);
+  padding: var(--spacing-xs) var(--spacing-s);
   border-radius: var(--border-radius-sm);
   cursor: pointer;
   font-size: var(--font-size-sm);
@@ -164,7 +164,7 @@
   font-family: var(--font-family-mono);
   font-size: var(--font-size-sm);
   gap: var(--spacing-sm);
-  padding: 3px 0;
+  padding: var(--spacing-xs) 0;
   border-top: var(--border-width) solid var(--color-border-secondary);
 }
 
@@ -331,7 +331,7 @@
 
 .corr__filter-input {
   width: 64px;
-  padding: 3px var(--spacing-s);
+  padding: var(--spacing-xs) var(--spacing-s);
   border: var(--border-width) solid var(--color-border-secondary);
   border-radius: var(--border-radius-sm);
   background: var(--color-bg-primary);

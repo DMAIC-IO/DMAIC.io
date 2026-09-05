@@ -21,7 +21,7 @@
   font-size: var(--font-size-xs);
   color: var(--color-text-secondary);
   cursor: pointer;
-  padding: 3px var(--spacing-xs);
+  padding: var(--spacing-xs) var(--spacing-xs);
   border-radius: var(--border-radius);
   transition: background 0.15s;
 }
@@ -60,7 +60,7 @@
 
 .glm__error {
   display: none;
-  padding: var(--spacing-sm) 10px;
+  padding: var(--spacing-sm) var(--spacing-m);
   font-size: var(--font-size-xs);
   color: var(--color-error);
   background: var(--color-error-bg, rgb(239 68 68 / 8%));
@@ -92,7 +92,7 @@
 
 .glm__coef-table th {
   text-align: left;
-  padding: 5px var(--spacing-sm);
+  padding: var(--spacing-s) var(--spacing-sm);
   font-weight: var(--font-weight-medium);
   color: var(--color-text-secondary);
   border-bottom: 2px solid var(--color-border-secondary);
@@ -158,7 +158,7 @@
 
 .glm__class-table th,
 .glm__class-table td {
-  padding: var(--spacing-xs) 10px;
+  padding: var(--spacing-xs) var(--spacing-m);
   border: var(--border-width) solid var(--color-border-secondary);
   text-align: center;
 }
@@ -228,7 +228,7 @@
 }
 
 .glm__predict-result {
-  padding: var(--spacing-sm) 10px;
+  padding: var(--spacing-sm) var(--spacing-m);
   font-size: var(--font-size-xs);
   background: var(--color-bg-secondary);
   border-radius: var(--border-radius);
@@ -259,7 +259,7 @@
 /* ─── Tab override: narrower tab labels ───────────────────────── */
 
 .glm__tabs .dmike-tab {
-  padding: var(--spacing-s) 10px;
+  padding: var(--spacing-s) var(--spacing-m);
   font-size: var(--font-size-xs);
 }
 
