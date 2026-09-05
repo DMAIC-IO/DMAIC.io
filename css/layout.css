@@ -751,32 +751,59 @@ html.is-nightly body {
   cursor: pointer;
 }
 
-/* Segment 2 = pencil + %. Tight gap; the pencil collapses to zero width at rest
-   (so text↔number stays tight) and animates open — width AND scale — on hover,
-   a touch more when the segment itself is hovered. */
+/* Segment 2 = Zahl mit Stift darüber. Der Slot ist so breit wie die längste
+   Zahl ("100%"), damit ein Fortschrittswechsel die Kachelbreite nicht ändert.
+   Stift und Zahl liegen darin übereinander — der Tausch beim Hovern bewegt
+   deshalb nichts. */
 .dmaic-tile__edit {
   gap: var(--spacing-2xs);
   padding: 0 var(--spacing-sm) 0 0;
 }
 
-/* The pencil sits in a fixed, narrow slot so revealing it never changes the
-   tile's width (no neighbour shift). Only its scale animates — from 0 (hidden)
-   to full when the tile is hovered. It does NOT grow further on direct hover:
-   a symbol that changes size under the pointer just moves its own hit area
-   around. */
-.dmaic-tile__edit-icon {
-  display: inline-block;
-  width: 0.85em;
-  text-align: center;
-  color: var(--color-text-secondary);
-  font-size: 12px;
-  line-height: 1;
-  transform: scale(0);
-  transform-origin: center;
-  transition: transform var(--transition-speed);
+/* 30px trägt "100%" bei 10px halbfett mit Luft. Ein `ch`-Maß wäre hier
+   trügerisch: das Prozentzeichen ist deutlich breiter als eine Ziffer. */
+.dmaic-tile__edit-slot {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 30px;
+  height: 1.2em;
 }
 
-.dmaic-tile:hover .dmaic-tile__edit-icon {
+.dmaic-tile__edit-slot > .dmaic-tile__zeg,
+.dmaic-tile__edit-slot > .dmaic-tile__edit-icon {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity var(--transition-speed), transform var(--transition-speed);
+}
+
+/* Größe über `--icon-size`, nicht über `width`: `.icon` ist selbst das
+   maskierte Element (components.css:1763–1771), eine abweichende `width`
+   staucht die Maske, statt das Symbol zu verkleinern. Die alte Regel hatte
+   genau diesen Fehler — `width: 0.85em` bei unveränderter Höhe von 16px.
+   11px liegt unter `icon--sm` (16px), wie im Kommentar zu `--icon-size` als
+   Ausnahmeschraube vorgesehen. */
+.dmaic-tile__edit-icon {
+  --icon-size: 11px;
+  margin: auto;
+  color: var(--color-text-secondary);
+  opacity: 0;
+  transform: scale(0);
+  transform-origin: center;
+}
+
+/* Nur die aktive Kachel tauscht: allein dort ist der Fortschritt bearbeitbar.
+   Auf inaktiven Kacheln bleibt die Zahl stehen und es erscheint kein Stift. */
+.dmaic-tile--active:hover .dmaic-tile__zeg {
+  opacity: 0;
+}
+
+.dmaic-tile--active:hover .dmaic-tile__edit-icon {
+  opacity: 1;
   transform: scale(1);
 }
 
@@ -2720,13 +2747,3 @@ body.training-area-open .dmaic-tiles {
   display: inline-flex;
 }
 
-/* Collapsed at rest: der verborgene Stift-Slot soll die Zahl nicht von der
-   Abkürzung wegschieben — reservierte Breite auf 0. Beim Aufklappen (Hover)
-   wieder auf volle Slot-Breite, damit der Stift Platz zum Erscheinen hat. */
-.dmaic-tiles--collapsed .dmaic-tile:not(.dmaic-tile--active) .dmaic-tile__edit-icon {
-  width: 0;
-}
-
-.dmaic-tiles--collapsed .dmaic-tile:not(.dmaic-tile--active):hover .dmaic-tile__edit-icon {
-  width: 0.85em;
-}

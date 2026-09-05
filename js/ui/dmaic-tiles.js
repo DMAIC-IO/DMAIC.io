@@ -479,11 +479,18 @@ export class DmaicTiles {
       // (WCAG 2.5.3 label-content-name-mismatch). Zweck steht im title/Tooltip.
       title: this._i18n.t('phases.editProgress'),
     },
-      icon('action.edit', { size: 'sm', cls: 'dmaic-tile__edit-icon' }),
-      h('span', {
-        class: 'dmaic-tile__zeg',
-        title: this._i18n.t('phases.achievementTooltip'),
-      }, `${pct}%`),
+      // Zahl und Stift teilen einen Slot und liegen darin übereinander: beim
+      // Hovern der aktiven Kachel blendet die Zahl aus und der Stift ein, ohne
+      // dass sich eine Breite ändert. Die Slotbreite kommt von `.dmaic-tile__edit-slot`
+      // (fixe `min-width` in layout.css), nicht vom Icon — sonst würde die Kachel
+      // beim Wechsel von "7%" auf "100%" springen.
+      h('span', { class: 'dmaic-tile__edit-slot' },
+        h('span', {
+          class: 'dmaic-tile__zeg',
+          title: this._i18n.t('phases.achievementTooltip'),
+        }, `${pct}%`),
+        icon('action.edit', { size: 'sm', cls: 'dmaic-tile__edit-icon' }),
+      ),
     );
     seg.addEventListener('click', (e) => {
       e.stopPropagation();
