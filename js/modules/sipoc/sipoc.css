@@ -50,7 +50,7 @@
   top: -4px;
   border: solid;
   border-width: 0 2px 2px 0;
-  padding: 3px;
+  padding: var(--spacing-xs);
   transform: rotate(-45deg);
 }
 

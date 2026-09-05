@@ -151,7 +151,7 @@
   cursor: pointer;
   font-size: var(--font-size-xs);
   line-height: 1;
-  padding: 3px var(--spacing-xs);
+  padding: var(--spacing-xs) var(--spacing-xs);
   border-radius: var(--border-radius-sm);
 }
 .af__band-exit-clear:hover { color: var(--color-error); background: var(--color-bg-tertiary); }

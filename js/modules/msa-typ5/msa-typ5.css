@@ -117,7 +117,7 @@
 
 .msa-typ5__table th,
 .msa-typ5__table td {
-  padding: var(--spacing-s) 10px;
+  padding: var(--spacing-s) var(--spacing-m);
   text-align: left;
   border-bottom: 1px solid var(--color-border);
 }

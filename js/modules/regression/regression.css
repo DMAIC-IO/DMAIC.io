@@ -70,7 +70,7 @@
 /* Error box */
 .reg__error {
   display: none;
-  padding: var(--spacing-sm) 10px;
+  padding: var(--spacing-sm) var(--spacing-m);
   font-size: var(--font-size-xs);
   color: var(--color-error);
   background: var(--color-error-bg, rgb(239 68 68 / 8%));
@@ -243,7 +243,7 @@
   background: none;
   border: 1px solid var(--color-border);
   border-radius: 4px;
-  padding: 1px 3px;
+  padding: 1px var(--spacing-xs);
   margin-left: var(--spacing-2xs);
   cursor: pointer;
   color: var(--color-text-tertiary);

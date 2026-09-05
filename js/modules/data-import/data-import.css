@@ -28,7 +28,7 @@
   align-items: center;
   justify-content: center;
   gap: var(--spacing-sm);
-  padding: var(--spacing-2xl) 64px;
+  padding: var(--spacing-2xl) var(--spacing-2xl);
   min-width: 480px;
   max-width: 720px;
   border: 2px dashed var(--color-border-primary);
@@ -252,7 +252,7 @@
 
 .data-import__preview-table th,
 .data-import__preview-table td {
-  padding: var(--spacing-xs) 10px;
+  padding: var(--spacing-xs) var(--spacing-m);
   text-align: left;
   border-bottom: 1px solid var(--color-border-secondary);
   border-right: 1px solid var(--color-border-secondary);

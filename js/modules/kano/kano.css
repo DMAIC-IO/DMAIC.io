@@ -31,7 +31,7 @@
   flex: 1;
 }
 
-.kano__tab-wrap .dmike-tab { flex: 1; padding-right: 20px; }
+.kano__tab-wrap .dmike-tab { flex: 1; padding-right: var(--spacing-l); }
 
 .kano__tab-del-btn {
   position: absolute;

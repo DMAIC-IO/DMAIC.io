@@ -69,7 +69,7 @@
 
 .todo__sort-arrow {
   font-size: 10px;
-  margin-left: 3px;
+  margin-left: var(--spacing-xs);
   opacity: 0.5;
 }
 
