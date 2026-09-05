@@ -325,7 +325,7 @@ export class Workspace {
       title: reorderLabel,
       'aria-label': reorderLabel,
       draggable: 'true',
-    }, icon('action.move', { size: 'sm' }));
+    }, icon('action.drag-handle', { size: 'sm' }));
 
     // Rename and remove are NOT in the tab: as hover-revealed icons they grew
     // the tab out from under the pointer, so a click aimed at the label landed
