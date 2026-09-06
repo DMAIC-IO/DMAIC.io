@@ -607,6 +607,18 @@ html.is-nightly body {
   transition: box-shadow var(--transition-speed);
 }
 
+/* The collapse decision drops `dmaic-tiles--collapsed`, measures
+   `scrollWidth`, then sets it back — all synchronously (see
+   `_recomputeCollapse()` in dmaic-tiles.js). That is a style change on every
+   descendant, and any transition on an affected property could start even
+   though the end state is identical. `--measuring` freezes transitions for
+   the container and everything inside it for the duration of that
+   measurement so nothing animates. */
+.dmaic-tiles--measuring,
+.dmaic-tiles--measuring * {
+  transition: none !important;
+}
+
 /* Hover hebt die Kachel nur mit Schatten an, kein Zoom mehr — eine Kachel,
    die unter dem Zeiger wächst, verschiebt ihren eigenen Inhalt und ihre
    Trefferfläche. `z-index` entfiel mit dem Zoom, es hielt nur die

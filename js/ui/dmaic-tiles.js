@@ -23,7 +23,7 @@ import {
 } from '../core/cycles/cycles.js';
 import { h } from '../core/dom.js';
 import { icon } from '../core/icon.js';
-import { estimateTilesWidth, resolveCollapsed } from './dmaic-tiles-layout.js';
+import { resolveCollapsed } from './dmaic-tiles-layout.js';
 import { uid } from '../core/uid.js';
 
 export class DmaicTiles {
@@ -659,46 +659,36 @@ export class DmaicTiles {
   }
 
   /**
-   * Build a text-measure bound to the tile-name font, for width budgeting.
-   * @returns {(text:string) => number}
-   * @private
-   */
-  _makeMeasure() {
-    this._measureCanvas ??= document.createElement('canvas');
-    const ctx = this._measureCanvas.getContext('2d');
-    // Direkter Kindpfad: den Namen gibt es zweimal je Kachel (Fluss + Flyout).
-    // Für die Schriftmessung zählt der im Fluss.
-    const probe = this._container.querySelector('.dmaic-tile > .dmaic-tile__inner .dmaic-tile__name');
-    if (probe) {
-      const cs = getComputedStyle(probe);
-      ctx.font = `${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`;
-    } else {
-      ctx.font = '12px sans-serif';
-    }
-    return (text) => ctx.measureText(text).width;
-  }
-
-  /**
    * Recompute whether inactive tiles must collapse and toggle the container
    * class. Content-driven (no ResizeObserver): called at render, cycle switch,
-   * and language change. See docs/superpowers/specs/2026-08-12-hauptmenu-phase-tiles-design.md.
+   * and language change. See
+   * docs/superpowers/specs/2026-09-06-kachelreihe-messen-statt-schaetzen-design.md.
+   *
+   * Measures the REAL width instead of estimating it: drop
+   * `dmaic-tiles--collapsed`, read `scrollWidth` against `clientWidth`, set
+   * the class back on. `dmaic-tiles--measuring` freezes transitions for the
+   * duration so the intermediate, uncollapsed style change never animates.
+   *
+   * FLICKER-FREE ONLY IF SYNCHRONOUS END TO END: a browser paints after the
+   * running JS task ends, not after a forced layout read. This method and
+   * ALL THREE of its callers (`_buildTiles`, `_highlightActive`,
+   * `_refreshLabels`) must stay synchronous — no `await`, no
+   * `requestAnimationFrame` between removing the collapsed class and setting
+   * it back. Introduce either one anywhere on that path and the uncollapsed
+   * row becomes visible for a frame.
    * @private
    */
   _recomputeCollapse() {
     const cycleId = this._getCycleId();
-    const tiles = getAllPhaseIds(cycleId).map((p) => {
-      const def = getPhaseDef(cycleId, p);
-      return {
-        letter: def?.letter ?? '?',
-        name: this._i18n.t(`phases.${p}`),
-        hasZeg: def?.virtual !== true,
-      };
-    });
-    const est = estimateTilesWidth(tiles, this._makeMeasure());
-    const budget = this._container.clientWidth || 1280;
     const menuMode = getCycle(cycleId).menuMode ?? 'auto';
-    this._collapsed = resolveCollapsed({ est, budget, menuMode });
-    this._container.classList.toggle('dmaic-tiles--collapsed', this._collapsed);
+    const container = this._container;
+
+    container.classList.add('dmaic-tiles--measuring');
+    container.classList.remove('dmaic-tiles--collapsed');
+    const overflows = container.scrollWidth > container.clientWidth;
+    this._collapsed = resolveCollapsed({ overflows, menuMode });
+    container.classList.toggle('dmaic-tiles--collapsed', this._collapsed);
+    container.classList.remove('dmaic-tiles--measuring');
   }
 
   _subscribeEvents() {
