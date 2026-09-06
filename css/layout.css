@@ -946,12 +946,26 @@ html.is-nightly body {
    der Querachse, also nach oben. Jetzt eine Deklaration mit `align-self:
    center`, damit der Chevron in der Kachelzeile vertikal zentriert sitzt.
    22×22px Trefferfläche um das 16px-Icon (icon--sm aus dem Markup, keine
-   eigene `--icon-size` mehr) lässt 3px Luft auf jeder Seite. */
+   eigene `--icon-size` mehr) lässt 3px Luft auf jeder Seite.
+
+   `align-self: center` allein zentriert innerhalb der GEPOLSTERTEN
+   Content-Box von `.dmaic-tile__row` (die `padding-top: var(--spacing-xs)`
+   trägt, siehe dort) — das liegt 2px tiefer als die Mitte der eigenen Box
+   von `.dmaic-tile__row` selbst, denn ein Flex-Kind mit negativem
+   `margin-top` zentriert sein RAND-Kästchen (Content + Margin) im
+   verfügbaren Raum, verschiebt sich also um mehr als den nominalen
+   Margin-Betrag. Empirisch verifiziert (siehe shell.spec.js "vertically
+   centred"): `margin-top: calc(var(--spacing-xs) * -1)` (-4px bei
+   --spacing-xs: 4px) trifft exakt die Mitte von `.dmaic-tile__row` selbst
+   — der Bezug, den die Zusicherung in shell.spec.js misst. Nicht durch
+   `padding-top / -2` ableitbar; die Flexbox-Zentrierung mit asymmetrischem
+   Margin ist keine reine 1:1-Verschiebung. */
 .dmaic-tile__menu-btn {
   display: flex;
   align-items: center;
   justify-content: center;
   align-self: center;
+  margin-top: calc(var(--spacing-xs) * -1);
   width: 22px;
   height: 22px;
   padding: 0;
@@ -2745,14 +2759,19 @@ body.training-area-open .dmaic-tiles {
 /* Der Name ist kollabiert unsichtbar (max-width: 0), aber `.dmaic-tile__body`
    ist weiterhin ein Flex-Container mit Buchstabe UND Name als Kinder — das
    `gap` zwischen ihnen bliebe sonst als tote Fläche stehen. Linkes Polster
-   ebenfalls verkleinert: ohne Name braucht der Buchstabe weniger Abstand zum
-   Kachelrand. `:has(.dmaic-tile__edit)` grenzt auf echte Phasen-Kacheln ein —
-   die beiden virtuellen Rahmenkacheln (`data` / `extras`) haben kein
-   %-Segment und bleiben hier unberührt, damit sie nicht als Nebenwirkung
-   mitschrumpfen. */
+   ganz entfernt (nicht nur verkleinert): ohne Name braucht der Buchstabe
+   keinen Abstand zum Kachelrand mehr. `:has(.dmaic-tile__edit)` grenzt auf
+   echte Phasen-Kacheln ein — die beiden virtuellen Rahmenkacheln (`data` /
+   `extras`) haben kein %-Segment und bleiben hier unberührt, damit sie nicht
+   als Nebenwirkung mitschrumpfen.
+   Der Chevron ist von 18 auf 22px gewachsen (icon--sm statt Ausnahme-
+   `--icon-size`, siehe `.dmaic-tile__menu-btn`) — +4px je Kachel, 44px über
+   die 8D-Reihe. Dieses `padding-left: 0` (vorher `--spacing-2xs`, 2px) ist
+   einer der Innenabstände, die das dafür zurückgeben, statt den Chevron zu
+   schrumpfen oder die aktive Kachel weiter auf ihre Ellipse zu drücken. */
 .dmaic-tiles--collapsed .dmaic-tile:not(.dmaic-tile--active) > .dmaic-tile__inner .dmaic-tile__left:has(.dmaic-tile__edit) .dmaic-tile__body {
   gap: 0;
-  padding-left: var(--spacing-2xs);
+  padding-left: 0;
   padding-right: 0;
 }
 
@@ -2769,11 +2788,14 @@ body.training-area-open .dmaic-tiles {
    auf `:has(.dmaic-tile__edit)` eingegrenzt) — tragen aber noch das rechte
    10px-Namenspolster aus Zeile ~726 (für den sichtbaren Namen gedacht) und
    das `gap` zur toten Namensfläche. Eigene Regel statt Nebenwirkung: nur
-   Rahmenkacheln, nur kollabiert. */
+   Rahmenkacheln, nur kollabiert.
+   Beide Polster ganz entfernt (vorher je `--spacing-2xs`, 2px): derselbe
+   44px-Chevron-Rückgewinn wie an der Phasen-Kachel-Regel oben — hier ohne
+   %-Segment ist links UND rechts kein Namenspolster mehr nötig. */
 .dmaic-tiles--collapsed .dmaic-tile:not(.dmaic-tile--active) > .dmaic-tile__inner .dmaic-tile__left:not(:has(.dmaic-tile__edit)) .dmaic-tile__body {
   gap: 0;
-  padding-left: var(--spacing-2xs);
-  padding-right: var(--spacing-2xs);
+  padding-left: 0;
+  padding-right: 0;
 }
 
 /* Die aktive Kachel bleibt vollständig (Name, Stift-Overlay, Chevron) —
