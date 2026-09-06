@@ -1,10 +1,11 @@
 /**
  * icons.mjs — erzeugt aus der Proxy-Tabelle die CSS-Maskenregeln.
  *
- * Je Icon entstehen drei Regeln (md, sm, lg). Sie unterscheiden sich nur in der
- * eingebackenen stroke-width: Lucide zeichnet 2px auf 24er-Raster, was bei 16px
- * optisch ausdünnt und bei 24px zu fett wirkt. Die Reihenfolge base → sm → lg ist
- * bindend: alle drei Selektoren haben dieselbe Spezifität, es gewinnt der spätere.
+ * Je Icon entstehen vier Regeln (md, xs, sm, lg). Sie unterscheiden sich nur in
+ * der eingebackenen stroke-width: Lucide zeichnet 2px auf 24er-Raster, was bei
+ * kleiner Darstellung optisch ausdünnt und bei 24px zu fett wirkt. Die
+ * Reihenfolge base → xs → sm → lg ist bindend: alle vier Selektoren haben
+ * dieselbe Spezifität, es gewinnt der spätere.
  *
  * Accent-Icons (Quelle enthält das Literal ACCENT) tragen eigene Farbe und laufen
  * als background-image statt als Maske — sie brauchen keine Größenvarianten, aber
@@ -15,9 +16,10 @@ import { parseSpec } from './icon-map.mjs';
 /** Farbtokens aus css/variables.css — --color-accent je Theme. */
 const ACCENT_COLORS = { light: '#0066cc', dark: '#4da3ff' };
 
-/** Die drei Größenstufen. `cls: ''` ist die Standardgröße md (20px). */
+/** Die vier Größenstufen. `cls: ''` ist die Standardgröße md (20px). */
 export const SIZES = [
   { cls: '', strokeWidth: 2 },
+  { cls: 'icon--xs', strokeWidth: 2.5 },
   { cls: 'icon--sm', strokeWidth: 2.25 },
   { cls: 'icon--lg', strokeWidth: 1.75 },
 ];

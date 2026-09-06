@@ -1756,10 +1756,10 @@ body.dmike-glossary-inline-off .glossary-term:focus-within {
 /* ─── Masken-Icons ────────────────────────────────────────────────────────
    Glyphe: assets/icons/icons.css (generiert aus assets/icons/icon-map.json).
    Farbe: currentColor, damit Hover/Aktiv/Disabled vom Elternelement kommen.
-   Drei Stufen: sm 16, md 20 (Standard), lg 24. Die Maske ist pro Stufe mit
-   angepasster Strichstärke gebacken, damit der Strich optisch gleich bleibt.
-   --icon-size ist die Ausnahmeschraube für Sonderfälle (z. B. 12px in den
-   Dashboard-Kachelgriffen); sie ändert nur die Fläche, nicht die Maske. */
+   Vier Stufen: xs 12, sm 16, md 20 (Standard), lg 24. Die Maske ist pro Stufe
+   mit angepasster Strichstärke gebacken, damit der Strich optisch gleich
+   bleibt. --icon-size ist die Ausnahmeschraube für Sonderfälle (z. B. 12px in
+   den Dashboard-Kachelgriffen); sie ändert nur die Fläche, nicht die Maske. */
 .icon {
   display: inline-block;
   width: var(--icon-size, 20px);
@@ -1768,6 +1768,7 @@ body.dmike-glossary-inline-off .glossary-term:focus-within {
   background-color: currentcolor;
   mask: var(--icon) center / contain no-repeat;
 }
+.icon--xs { --icon-size: 12px; }
 .icon--sm { --icon-size: 16px; }
 .icon--lg { --icon-size: 24px; }
 

@@ -548,7 +548,7 @@ export class DmaicTiles {
           class: 'dmaic-tile__zeg',
           title: this._i18n.t('phases.achievementTooltip'),
         }, `${pct}%`),
-        icon('action.edit', { size: 'sm', cls: 'dmaic-tile__edit-icon' }),
+        icon('action.edit', { size: 'xs', cls: 'dmaic-tile__edit-icon' }),
       ),
     );
     seg.addEventListener('click', (e) => {

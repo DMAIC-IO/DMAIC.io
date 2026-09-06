@@ -758,8 +758,7 @@ html.is-nightly body {
   letter-spacing: 0.03em;
 }
 
-.dmaic-tile__edit,
-.dmaic-tile__menu-btn {
+.dmaic-tile__edit {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -790,6 +789,8 @@ html.is-nightly body {
   height: 1.2em;
 }
 
+/* Der Tausch zwischen Zahl und Stift ist ein harter Schnitt, kein Übergang —
+   siehe die Begründung an `.dmaic-tile__edit-icon` unten. */
 .dmaic-tile__edit-slot > .dmaic-tile__zeg,
 .dmaic-tile__edit-slot > .dmaic-tile__edit-icon {
   position: absolute;
@@ -797,23 +798,17 @@ html.is-nightly body {
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: opacity var(--transition-speed), transform var(--transition-speed);
 }
 
-/* Größe über `--icon-size`, nicht über `width`: `.icon` ist selbst das
-   maskierte Element (components.css:1763–1771), eine abweichende `width`
-   staucht die Maske, statt das Symbol zu verkleinern. Die alte Regel hatte
-   genau diesen Fehler — `width: 0.85em` bei unveränderter Höhe von 16px.
-   11px liegt unter `icon--sm` (16px), wie im Kommentar zu `--icon-size` als
-   Ausnahmeschraube vorgesehen. */
+/* `icon--xs` (12px, components.css) statt der früheren Ausnahmeschraube
+   `--icon-size: 11px` — die Stufe existiert jetzt im System. Kein
+   `transform: scale()` und kein Übergang auf `opacity`/`transform`: der
+   Tausch zwischen Zahl und Stift ist bewusst ein harter Schnitt ohne
+   Zwischenbild. */
 .dmaic-tile__edit-icon {
-  --icon-size: 11px;
-
   margin: auto;
   color: var(--color-text-secondary);
   opacity: 0;
-  transform: scale(0);
-  transform-origin: center;
 }
 
 /* Nur die aktive Kachel tauscht Zahl gegen Stift — und nur dort öffnet das
@@ -825,21 +820,15 @@ html.is-nightly body {
 
 .dmaic-tile--active:hover .dmaic-tile__edit-icon {
   opacity: 1;
-  transform: scale(1);
 }
 
 /* Der Chevron dreht sich bei offenem Menü — das ist sein einziger
    Zustandsmarker. Er zoomt beim Hovern NICHT: ein bewusst klein gehaltenes
    Symbol, das unter dem Zeiger wieder aufgeht, arbeitet gegen sich selbst.
-   Die frühere Regel `padding: 0 var(--spacing-m)` stand hier wirkungslos —
-   der Block ab `.dmaic-tile__menu-btn { width: 18px … }` überschrieb sie. */
+   Er trägt keine eigene `--icon-size` mehr — die Standardstufe `icon--sm`
+   aus seinem Markup (16px) reicht, wie bei jedem anderen Chevron im
+   Projekt. */
 .dmaic-tile__menu-btn .icon {
-  /* Kleiner als `icon--sm` (16px), sonst füllt der Chevron die 18-px-Box
-     randlos. `--icon-size` ist dafür die vorgesehene Ausnahmeschraube
-     (components.css:1758–1771) — eine abweichende `width` würde die Maske
-     stauchen statt das Symbol zu verkleinern. */
-  --icon-size: 12px;
-
   transition: transform var(--transition-speed);
 }
 
@@ -949,13 +938,22 @@ html.is-nightly body {
   background: var(--color-tile-bg-active);
 }
 
-/* ── Hamburger menu button inside tile ── */
+/* ── Hamburger menu button inside tile ──
+   War zweimal deklariert (einmal zusammen mit `.dmaic-tile__edit` oben,
+   einmal hier) — die zweite, wirkungslos wirkende Deklaration überschrieb
+   nur `height`, während `align-self: stretch` aus dem ersten Block stehen
+   blieb; ein gestrecktes Flex-Element mit fester Höhe rutscht an den Anfang
+   der Querachse, also nach oben. Jetzt eine Deklaration mit `align-self:
+   center`, damit der Chevron in der Kachelzeile vertikal zentriert sitzt.
+   22×22px Trefferfläche um das 16px-Icon (icon--sm aus dem Markup, keine
+   eigene `--icon-size` mehr) lässt 3px Luft auf jeder Seite. */
 .dmaic-tile__menu-btn {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 18px;
-  height: 18px;
+  align-self: center;
+  width: 22px;
+  height: 22px;
   padding: 0;
   border: none;
   border-radius: var(--border-radius-sm);
