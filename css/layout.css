@@ -796,6 +796,7 @@ html.is-nightly body {
    Ausnahmeschraube vorgesehen. */
 .dmaic-tile__edit-icon {
   --icon-size: 11px;
+
   margin: auto;
   color: var(--color-text-secondary);
   opacity: 0;
@@ -826,6 +827,7 @@ html.is-nightly body {
      (components.css:1758–1771) — eine abweichende `width` würde die Maske
      stauchen statt das Symbol zu verkleinern. */
   --icon-size: 12px;
+
   transition: transform var(--transition-speed);
 }
 
