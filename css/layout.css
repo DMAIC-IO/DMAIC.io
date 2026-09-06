@@ -948,24 +948,26 @@ html.is-nightly body {
    22×22px Trefferfläche um das 16px-Icon (icon--sm aus dem Markup, keine
    eigene `--icon-size` mehr) lässt 3px Luft auf jeder Seite.
 
-   `align-self: center` allein zentriert innerhalb der GEPOLSTERTEN
-   Content-Box von `.dmaic-tile__row` (die `padding-top: var(--spacing-xs)`
-   trägt, siehe dort) — das liegt 2px tiefer als die Mitte der eigenen Box
-   von `.dmaic-tile__row` selbst, denn ein Flex-Kind mit negativem
-   `margin-top` zentriert sein RAND-Kästchen (Content + Margin) im
-   verfügbaren Raum, verschiebt sich also um mehr als den nominalen
-   Margin-Betrag. Empirisch verifiziert (siehe shell.spec.js "vertically
-   centred"): `margin-top: calc(var(--spacing-xs) * -1)` (-4px bei
-   --spacing-xs: 4px) trifft exakt die Mitte von `.dmaic-tile__row` selbst
-   — der Bezug, den die Zusicherung in shell.spec.js misst. Nicht durch
-   `padding-top / -2` ableitbar; die Flexbox-Zentrierung mit asymmetrischem
-   Margin ist keine reine 1:1-Verschiebung. */
+   `align-self: center` zentriert absichtlich in der GEPOLSTERTEN Content-Box
+   von `.dmaic-tile__row` (`padding-top: var(--spacing-xs)`, siehe dort) —
+   dieselbe Box, in der `.dmaic-tile__left` (Buchstabe, Name, %-Segment) via
+   `align-items: stretch` gestreckt wird. Der Chevron landet damit auf
+   derselben optischen Mitte wie seine Geschwister, nicht auf der Mitte der
+   eigenen (ungepolsterten) Border-Box von `.dmaic-tile__row` — die Border-
+   Box sitzt 2px höher, weil das `padding-top` genau das ausgleicht (Kommentar
+   an `.dmaic-tile__row`: ohne es säßen Buchstabe/Name/%/Chevron zu hoch).
+   Ein `margin-top`, das den Chevron auf die Border-Box-Mitte zieht, WÄRE der
+   Fehler: er säße dann 2px über Buchstabe und Prozentzahl statt auf gleicher
+   Höhe — genau das wurde in einer Review-Runde fälschlich vorgeschlagen und
+   wieder verworfen, nachdem sich die Referenz (Border-Box statt Content-Box)
+   als falsch herausstellte. Die Zusicherung in shell.spec.js misst deshalb
+   gegen ein Geschwisterelement (`.dmaic-tile__zeg`), nicht gegen
+   `.dmaic-tile__row` selbst. */
 .dmaic-tile__menu-btn {
   display: flex;
   align-items: center;
   justify-content: center;
   align-self: center;
-  margin-top: calc(var(--spacing-xs) * -1);
   width: 22px;
   height: 22px;
   padding: 0;
