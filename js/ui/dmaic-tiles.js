@@ -457,7 +457,10 @@ export class DmaicTiles {
       editSeg = editable
         ? this._buildEditSegment(phase, tile, pct)
         : h('span', { class: 'dmaic-tile__edit dmaic-tile__edit--static' },
-            h('span', { class: 'dmaic-tile__zeg' }, `${pct}%`));
+            h('span', {
+              class: 'dmaic-tile__zeg',
+              title: this._i18n.t('phases.achievementTooltip'),
+            }, `${pct}%`));
     }
 
     const menuLabel = this._i18n.t('phases.moduleMenu');
@@ -650,8 +653,8 @@ export class DmaicTiles {
     this._container.querySelectorAll('.dmaic-tile').forEach(tile => {
       tile.classList.toggle('dmaic-tile--active', tile.dataset.phase === this._activePhase);
     });
-    // Active tile changed → the previously active tile may now be collapsed
-    // (and needs a pinned width) and the new one expanded. Re-pin.
+    // Active tile changed → the collapse decision depends on which tile is
+    // active (only the active tile keeps its full name), so recompute.
     this._recomputeCollapse();
   }
 

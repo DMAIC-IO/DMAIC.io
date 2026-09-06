@@ -688,8 +688,8 @@ html.is-nightly body {
 }
 
 /* Left group = navigate (letter+name) + edit (pencil+%), no divider between, so
-   the whole left reads as one. The tile-level hover zoom (above) handles the
-   lift; this is just a flex container. */
+   the whole left reads as one. The tile-level hover box-shadow (above) handles
+   the lift; this is just a flex container. */
 .dmaic-tile__left {
   display: flex;
   align-items: stretch;
@@ -871,8 +871,9 @@ html.is-nightly body {
 
 /* Phase progress bar — its own row directly above the neutral grey bottom
    border (in y). The track is transparent (the grey border is the baseline);
-   only the coloured fill shows the %. Expands with the overlay because it lives
-   inside `.dmaic-tile__inner`. */
+   only the coloured fill shows the %. It lives inside `.dmaic-tile__inner`, so
+   it exists in both renderings of the tile (in-flow and flyout copy) without
+   needing to expand or resize between them. */
 .dmaic-tile__progress-bar {
   flex: 0 0 2px;
   width: 100%;
@@ -2784,6 +2785,34 @@ body.training-area-open .dmaic-tiles {
    Slot liegt. */
 .dmaic-tiles--collapsed .dmaic-tile--active > .dmaic-tile__inner .dmaic-tile__edit-slot {
   min-width: 26px;
+}
+
+/* Kollabiert behält nur die aktive Kachel ihren vollen Namen (siehe oben) —
+   das kann die Reihe knapp über ihren Container treiben, wenn gerade die
+   längste Phase aktiv ist (z. B. "Wiederholung verhindern" im 8D-Zyklus,
+   DE). Der Name darf deshalb schrumpfen und mit Ellipse abschneiden statt die
+   Reihe zu sprengen — das passiert nur, wenn der Platz wirklich nicht reicht,
+   im Regelfall bleibt der Name vollständig sichtbar.
+   `min-width: 0` muss entlang der GESAMTEN Flex-Kette bis zum Namen gesetzt
+   werden, angefangen bei `.dmaic-tile` selbst: das ist das Flex-Item in
+   `.dmaic-tiles`, und ohne dessen eigenes `min-width: 0` bleibt sein
+   automatisches Minimum an der Inhaltsbreite hängen (Standard-Flexbox-
+   Verhalten) — dann hätte kein `min-width: 0` weiter unten in der Kette
+   irgendeinen Effekt, die Kachel schrumpft schlicht nie unter ihre
+   Inhaltsbreite. */
+.dmaic-tiles--collapsed .dmaic-tile--active,
+.dmaic-tiles--collapsed .dmaic-tile--active > .dmaic-tile__inner,
+.dmaic-tiles--collapsed .dmaic-tile--active > .dmaic-tile__inner .dmaic-tile__row,
+.dmaic-tiles--collapsed .dmaic-tile--active > .dmaic-tile__inner .dmaic-tile__left,
+.dmaic-tiles--collapsed .dmaic-tile--active > .dmaic-tile__inner .dmaic-tile__body {
+  min-width: 0;
+}
+
+.dmaic-tiles--collapsed .dmaic-tile--active > .dmaic-tile__inner .dmaic-tile__name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 /* "100%" braucht rund 25,6px im 10px-halbfetten ZEG-Font (gemessen) — 26px

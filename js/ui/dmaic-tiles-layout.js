@@ -6,8 +6,10 @@
  * injected measure (no canvas/browser layout needed).
  */
 
-/** Fixed per-tile chrome budget (px): segment paddings + divider + trigger. */
-const PER_TILE_CHROME = 44;
+/** Fixed per-tile chrome budget (px): segment paddings + divider + trigger.
+ *  Includes the menu chevron, which shrank from 22px to 18px in the
+ *  2026-09-05 adaptive-collapse series; the budget was lowered to match. */
+const PER_TILE_CHROME = 40;
 /** Representative ZEG label used for width budgeting. */
 const ZEG_SAMPLE = '100%';
 
