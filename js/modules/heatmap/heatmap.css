@@ -3,7 +3,6 @@
    BEM: .heatmap-module__ prefix
    ============================================================ */
 
-.heatmap-module .dmike-split__input { width: 280px; }
 
 .heatmap-module__error {
   display: none;

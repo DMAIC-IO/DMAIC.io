@@ -60,7 +60,7 @@ body {
   font-size: var(--font-size-xs);
   font-weight: var(--font-weight-bold);
   letter-spacing: 0.06em;
-  padding: 2px 8px;
+  padding: var(--spacing-2xs) var(--spacing-sm);
   border-radius: var(--border-radius-sm);
   text-transform: uppercase;
 }
@@ -124,11 +124,11 @@ html.is-nightly body {
 .app-header__project-btn {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: var(--spacing-xs);
   background: none;
   border: 1px solid transparent;
   border-radius: var(--border-radius-sm);
-  padding: 2px var(--spacing-sm);
+  padding: var(--spacing-2xs) var(--spacing-sm);
   cursor: pointer;
   transition: border-color 0.15s, background 0.15s;
 }
@@ -162,7 +162,7 @@ html.is-nightly body {
   background: var(--color-input-bg);
   border: var(--border-width) solid var(--color-accent);
   border-radius: var(--border-radius-sm);
-  padding: 2px var(--spacing-sm);
+  padding: var(--spacing-2xs) var(--spacing-sm);
   outline: none;
 }
 
@@ -170,7 +170,7 @@ html.is-nightly body {
   position: absolute;
   top: 100%;
   left: 0;
-  margin-top: 4px;
+  margin-top: var(--spacing-xs);
   min-width: 260px;
   max-height: 360px;
   overflow-y: auto;
@@ -244,7 +244,7 @@ html.is-nightly body {
 
 .app-header__project-item-actions {
   display: flex;
-  gap: 2px;
+  gap: var(--spacing-2xs);
   flex-shrink: 0;
   opacity: 0;
   transition: opacity 0.1s;
@@ -319,7 +319,7 @@ html.is-nightly body {
 .cycle-picker {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--spacing-sm);
   margin: 0;
   padding: 0;
   border: none;
@@ -329,7 +329,7 @@ html.is-nightly body {
   display: flex;
   align-items: flex-start;
   gap: 10px;
-  padding: 10px 12px;
+  padding: 10px var(--spacing-m);
   border: 1px solid var(--color-border-secondary);
   border-radius: var(--border-radius);
   cursor: default;
@@ -368,7 +368,7 @@ html.is-nightly body {
 .cycle-picker__body {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: var(--spacing-2xs);
   flex: 1;
 }
 
@@ -387,7 +387,7 @@ html.is-nightly body {
 .cycle-picker__desc {
   font-size: 12px;
   color: var(--color-text-secondary);
-  margin-top: 4px;
+  margin-top: var(--spacing-xs);
 }
 
 /* Step 1: the per-card "Weiter" button (create context only). */
@@ -432,7 +432,7 @@ html.is-nightly body {
   grid-template-columns: 1fr auto;
   align-items: center;
   gap: var(--spacing-xs) var(--spacing-md);
-  padding: 10px 12px;
+  padding: 10px var(--spacing-m);
   border: 1px solid var(--color-border-secondary);
   border-radius: var(--border-radius);
   transition: border-color 0.1s, background 0.1s;
@@ -472,7 +472,7 @@ html.is-nightly body {
 .cycle-picker__name-input {
   flex: 1;
   min-width: 0;
-  padding: 5px 8px;
+  padding: 5px var(--spacing-sm);
   font-size: 13px;
   color: var(--color-text-primary);
   background: var(--color-bg-primary);
@@ -593,7 +593,7 @@ html.is-nightly body {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 4px;
+  gap: var(--spacing-xs);
 }
 
 .dmaic-tile {
@@ -604,15 +604,34 @@ html.is-nightly body {
   cursor: pointer;
   user-select: none;
   white-space: nowrap;
-  transition: transform var(--transition-speed), box-shadow var(--transition-speed);
+  transition: box-shadow var(--transition-speed);
 }
 
-/* Hover lifts the whole tile (the dimmed button box) with a small zoom and a
-   light shadow — not a text zoom. Only when not collapsed; collapsed tiles use
-   the hover overlay. */
+/* The collapse decision drops `dmaic-tiles--collapsed`, measures
+   `scrollWidth`, then sets it back — all synchronously (see
+   `_recomputeCollapse()` in dmaic-tiles.js). That is a style change on every
+   descendant, and any transition on an affected property could start even
+   though the end state is identical. `--measuring` freezes transitions for
+   the container and everything inside it for the duration of that
+   measurement so nothing animates. */
+.dmaic-tiles--measuring,
+.dmaic-tiles--measuring * {
+  transition: none !important;
+}
+
+/* Hover hebt die Kachel nur mit Schatten an, kein Zoom mehr — eine Kachel,
+   die unter dem Zeiger wächst, verschiebt ihren eigenen Inhalt und ihre
+   Trefferfläche. `z-index` entfiel mit dem Zoom, es hielt nur die
+   vergrößerte Kachel über den Nachbarn.
+   Kein Hintergrundwechsel: die aktive Kachel steht auf `--color-tile-bg-active`
+   (Akzentfläche), inaktive auf `--color-bg-tertiary` — im Dark-Theme ist
+   `--color-bg-secondary` dunkler als `--color-bg-tertiary`, ein Wechsel dorthin
+   würde inaktive Kacheln beim Hovern also abdunkeln statt anheben. Es gibt in
+   der Palette keine neutrale Stufe, die in beiden Themes heller als
+   `--color-bg-tertiary` ist — der Schatten trägt die Hover-Rückmeldung allein.
+   Da nur noch `box-shadow` gesetzt wird, kollidiert das mit keinem Hintergrund
+   — die aktive Kachel behält ihre Akzentfläche unverändert. */
 .dmaic-tiles:not(.dmaic-tiles--collapsed) .dmaic-tile:hover {
-  transform: scale(1.08);
-  z-index: 2;
   box-shadow: 0 3px 12px rgb(0 0 0 / 20%);
 }
 
@@ -648,9 +667,9 @@ html.is-nightly body {
 .dmaic-tile--active[data-phase="extras"] .dmaic-tile__inner { border-bottom-color: var(--color-phase-extras); }
 
 /* Single container for the whole tile: the button row on top and the progress
-   bar beneath it (a column). This is the element that becomes the centred hover
-   overlay when a collapsed tile is hovered, so the buttons AND the bar expand
-   together. */
+   bar beneath it (a column). Es gibt ihn zweimal je Kachel — einmal im Fluss,
+   einmal als Kopie im Flyout unter der Reihe. Beide tragen dieselben Klassen,
+   deshalb greift jede Regel hier auf beide. */
 .dmaic-tile__inner {
   display: flex;
   flex-direction: column;
@@ -677,12 +696,12 @@ html.is-nightly body {
   /* The progress bar + bottom border occupy the inner column's bottom 4px, so
      centre the row content over the FULL tile height by padding the top to
      match — otherwise letter/name/%/chevron all sit a couple px too high. */
-  padding-top: 4px;
+  padding-top: var(--spacing-xs);
 }
 
 /* Left group = navigate (letter+name) + edit (pencil+%), no divider between, so
-   the whole left reads as one. The tile-level hover zoom (above) handles the
-   lift; this is just a flex container. */
+   the whole left reads as one. The tile-level hover box-shadow (above) handles
+   the lift; this is just a flex container. */
 .dmaic-tile__left {
   display: flex;
   align-items: stretch;
@@ -695,9 +714,9 @@ html.is-nightly body {
   display: flex;
   align-items: center;
   justify-content: flex-start;
-  gap: 6px;
+  gap: var(--spacing-s);
   min-width: 0;
-  padding: 0 2px 0 8px;
+  padding: 0 var(--spacing-2xs) 0 var(--spacing-sm);
   margin: 0;
   border: none;
   background: transparent;
@@ -739,8 +758,7 @@ html.is-nightly body {
   letter-spacing: 0.03em;
 }
 
-.dmaic-tile__edit,
-.dmaic-tile__menu-btn {
+.dmaic-tile__edit {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -751,55 +769,71 @@ html.is-nightly body {
   cursor: pointer;
 }
 
-/* Segment 2 = pencil + %. Tight gap; the pencil collapses to zero width at rest
-   (so text↔number stays tight) and animates open — width AND scale — on hover,
-   a touch more when the segment itself is hovered. */
+/* Segment 2 = Zahl mit Stift darüber. Der Slot ist so breit wie die längste
+   Zahl ("100%"), damit ein Fortschrittswechsel die Kachelbreite nicht ändert.
+   Stift und Zahl liegen darin übereinander — der Tausch beim Hovern bewegt
+   deshalb nichts. */
 .dmaic-tile__edit {
-  gap: 2px;
-  padding: 0 8px 0 0;
+  gap: var(--spacing-2xs);
+  padding: 0 var(--spacing-sm) 0 0;
 }
 
-/* The pencil sits in a fixed, narrow slot so revealing it never changes the
-   tile's width (no neighbour shift). Only its scale animates — from 0 (hidden)
-   to full when the tile is hovered. It does NOT grow further on direct hover:
-   a symbol that changes size under the pointer just moves its own hit area
-   around. */
+/* 30px trägt "100%" bei 10px halbfett mit Luft. Ein `ch`-Maß wäre hier
+   trügerisch: das Prozentzeichen ist deutlich breiter als eine Ziffer. */
+.dmaic-tile__edit-slot {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 30px;
+  height: 1.2em;
+}
+
+/* Der Tausch zwischen Zahl und Stift ist ein harter Schnitt, kein Übergang —
+   siehe die Begründung an `.dmaic-tile__edit-icon` unten. */
+.dmaic-tile__edit-slot > .dmaic-tile__zeg,
+.dmaic-tile__edit-slot > .dmaic-tile__edit-icon {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* `icon--xs` (12px, components.css) statt der früheren Ausnahmeschraube
+   `--icon-size: 11px` — die Stufe existiert jetzt im System. Kein
+   `transform: scale()` und kein Übergang auf `opacity`/`transform`: der
+   Tausch zwischen Zahl und Stift ist bewusst ein harter Schnitt ohne
+   Zwischenbild. */
 .dmaic-tile__edit-icon {
-  display: inline-block;
-  width: 0.85em;
-  text-align: center;
+  margin: auto;
   color: var(--color-text-secondary);
-  font-size: 12px;
-  line-height: 1;
-  transform: scale(0);
-  transform-origin: center;
-  transition: transform var(--transition-speed);
+  opacity: 0;
 }
 
-.dmaic-tile:hover .dmaic-tile__edit-icon {
-  transform: scale(1);
+/* Nur die aktive Kachel tauscht Zahl gegen Stift — und nur dort öffnet das
+   %-Segment den Editor. Auf inaktiven Kacheln bleibt die Zahl stehen, es
+   erscheint kein Stift, und ein Klick navigiert wie der Körper daneben. */
+.dmaic-tile--active:hover .dmaic-tile__zeg {
+  opacity: 0;
 }
 
-/* Dropdown segment: wide clickable area, no background on hover — the chevron
-   itself grows a little on hover instead. */
-.dmaic-tile__menu-btn {
-  padding: 0 12px;
+.dmaic-tile--active:hover .dmaic-tile__edit-icon {
+  opacity: 1;
 }
 
+/* Der Chevron dreht sich bei offenem Menü — das ist sein einziger
+   Zustandsmarker. Er zoomt beim Hovern NICHT: ein bewusst klein gehaltenes
+   Symbol, das unter dem Zeiger wieder aufgeht, arbeitet gegen sich selbst.
+   Er trägt keine eigene `--icon-size` mehr — die Standardstufe `icon--sm`
+   aus seinem Markup (16px) reicht, wie bei jedem anderen Chevron im
+   Projekt. */
 .dmaic-tile__menu-btn .icon {
   transition: transform var(--transition-speed);
 }
 
-.dmaic-tile__menu-btn:hover .icon {
-  transform: scale(1.3);
-}
-
 .dmaic-tile--menu-open .dmaic-tile__menu-btn .icon {
   transform: rotate(180deg);
-}
-
-.dmaic-tile--menu-open .dmaic-tile__menu-btn:hover .icon {
-  transform: rotate(180deg) scale(1.3);
 }
 
 /* Vertical divider between the left group and the dropdown. Full height; the
@@ -838,8 +872,9 @@ html.is-nightly body {
 
 /* Phase progress bar — its own row directly above the neutral grey bottom
    border (in y). The track is transparent (the grey border is the baseline);
-   only the coloured fill shows the %. Expands with the overlay because it lives
-   inside `.dmaic-tile__inner`. */
+   only the coloured fill shows the %. It lives inside `.dmaic-tile__inner`, so
+   it exists in both renderings of the tile (in-flow and flyout copy) without
+   needing to expand or resize between them. */
 .dmaic-tile__progress-bar {
   flex: 0 0 2px;
   width: 100%;
@@ -903,11 +938,36 @@ html.is-nightly body {
   background: var(--color-tile-bg-active);
 }
 
-/* ── Hamburger menu button inside tile ── */
+/* ── Hamburger menu button inside tile ──
+   War zweimal deklariert (einmal zusammen mit `.dmaic-tile__edit` oben,
+   einmal hier) — die zweite, wirkungslos wirkende Deklaration überschrieb
+   nur `height`, während `align-self: stretch` aus dem ersten Block stehen
+   blieb; ein gestrecktes Flex-Element mit fester Höhe rutscht an den Anfang
+   der Querachse, also nach oben. Jetzt eine Deklaration mit `align-self:
+   center`, damit der Chevron in der Kachelzeile vertikal zentriert sitzt.
+   22×22px Trefferfläche um das 16px-Icon (icon--sm aus dem Markup, keine
+   eigene `--icon-size` mehr) lässt 3px Luft auf jeder Seite.
+
+   `align-self: center` zentriert absichtlich in der GEPOLSTERTEN Content-Box
+   von `.dmaic-tile__row` (`padding-top: var(--spacing-xs)`, siehe dort) —
+   dieselbe Box, in der `.dmaic-tile__left` (Buchstabe, Name, %-Segment) via
+   `align-items: stretch` gestreckt wird. Der Chevron landet damit auf
+   derselben optischen Mitte wie seine Geschwister, nicht auf der Mitte der
+   eigenen (ungepolsterten) Border-Box von `.dmaic-tile__row` — die Border-
+   Box sitzt 2px höher, weil das `padding-top` genau das ausgleicht (Kommentar
+   an `.dmaic-tile__row`: ohne es säßen Buchstabe/Name/%/Chevron zu hoch).
+   Ein `margin-top`, das den Chevron auf die Border-Box-Mitte zieht, WÄRE der
+   Fehler: er säße dann 2px über Buchstabe und Prozentzahl statt auf gleicher
+   Höhe — genau das wurde in einer Review-Runde fälschlich vorgeschlagen und
+   wieder verworfen, nachdem sich die Referenz (Border-Box statt Content-Box)
+   als falsch herausstellte. Die Zusicherung in shell.spec.js misst deshalb
+   gegen ein Geschwisterelement (`.dmaic-tile__zeg`), nicht gegen
+   `.dmaic-tile__row` selbst. */
 .dmaic-tile__menu-btn {
   display: flex;
   align-items: center;
   justify-content: center;
+  align-self: center;
   width: 22px;
   height: 22px;
   padding: 0;
@@ -916,13 +976,12 @@ html.is-nightly body {
   background: transparent;
   color: var(--color-text-tertiary);
   cursor: pointer;
-  transition: color 0.15s, background 0.15s;
+  transition: color 0.15s;
   flex-shrink: 0;
 }
 
 .dmaic-tile__menu-btn:hover {
   color: var(--color-text-primary);
-  background: var(--color-bg-tertiary);
 }
 
 .dmaic-tile--active .dmaic-tile__menu-btn {
@@ -943,6 +1002,12 @@ html.is-nightly body {
   padding: var(--spacing-xs) 0;
   display: flex;
   flex-direction: column;
+}
+
+/* Im Flyout schließt das Dropdown bündig an — die vier Pixel Abstand der
+   Normalposition wären hier eine tote Fläche mitten im Hover-Bereich. */
+.dmaic-tile__flyout .dmaic-tile__dropdown {
+  top: 100%;
 }
 
 .dmaic-tile__dropdown-item {
@@ -1057,7 +1122,7 @@ body.dev-area-open .dmaic-tiles {
   z-index: 10;
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: var(--spacing-2xs);
 }
 
 .dashboard-area__add-menu-item {
@@ -1096,7 +1161,7 @@ body.dev-area-open .dmaic-tiles {
   background: var(--color-bg-secondary);
   border: 1px solid var(--color-border-primary);
   border-radius: var(--border-radius);
-  padding: var(--spacing-md) var(--spacing-md) calc(var(--spacing-md) + 4px);
+  padding: var(--spacing-md) var(--spacing-md) calc(var(--spacing-md) + var(--spacing-xs));
   display: flex;
   flex-direction: column;
   gap: var(--spacing-sm);
@@ -1224,7 +1289,7 @@ body.dev-area-open .dmaic-tiles {
   top: 6px;
   right: 28px;
   display: flex;
-  gap: 2px;
+  gap: var(--spacing-2xs);
   opacity: 0;
   transition: opacity 0.15s;
 }
@@ -1308,7 +1373,7 @@ body.dev-area-open .dmaic-tiles {
   justify-content: space-between;
   gap: var(--spacing-sm);
   align-items: baseline;
-  margin-bottom: 2px;
+  margin-bottom: var(--spacing-2xs);
 }
 
 .dashboard-charter__goal-desc {
@@ -1375,7 +1440,7 @@ body.dev-area-open .dmaic-tiles {
 .dashboard-fmea__legend-item {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: var(--spacing-xs);
 }
 
 .dashboard-fmea__legend-dot {
@@ -1400,7 +1465,7 @@ body.dev-area-open .dmaic-tiles {
   margin: 0;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: var(--spacing-xs);
 }
 
 .dashboard-fmea__top-item {
@@ -1467,7 +1532,7 @@ body.dev-area-open .dmaic-tiles {
 .dashboard-voc__legend-item {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: var(--spacing-xs);
 }
 
 .dashboard-voc__list-label {
@@ -1485,7 +1550,7 @@ body.dev-area-open .dmaic-tiles {
   margin: 0;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: var(--spacing-xs);
 }
 
 .dashboard-voc__item {
@@ -1532,7 +1597,7 @@ body.dev-area-open .dmaic-tiles {
 .dashboard-raci__legend-item {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: var(--spacing-xs);
 }
 
 .dashboard-raci__warn-label {
@@ -1550,7 +1615,7 @@ body.dev-area-open .dmaic-tiles {
   margin: 0;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: var(--spacing-xs);
 }
 
 .dashboard-raci__warn-item {
@@ -1567,14 +1632,14 @@ body.dev-area-open .dmaic-tiles {
 .dashboard-spc {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--spacing-sm);
   font-size: var(--font-size-sm, 13px);
 }
 
 .dashboard-spc__header {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--spacing-sm);
   flex-wrap: wrap;
 }
 
@@ -1583,7 +1648,7 @@ body.dev-area-open .dmaic-tiles {
   font-family: var(--font-family-mono, monospace);
   font-size: var(--font-size-sm, 13px);
   background: var(--color-bg-tertiary);
-  padding: 2px 6px;
+  padding: var(--spacing-2xs) var(--spacing-s);
   border-radius: 4px;
 }
 
@@ -1607,7 +1672,7 @@ body.dev-area-open .dmaic-tiles {
 .dashboard-spc__stats {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 4px;
+  gap: var(--spacing-xs);
 }
 
 .dashboard-spc__stat {
@@ -1616,7 +1681,7 @@ body.dev-area-open .dmaic-tiles {
   align-items: center;
   background: var(--color-bg-tertiary);
   border-radius: 4px;
-  padding: 4px 2px;
+  padding: var(--spacing-xs) var(--spacing-2xs);
 }
 
 .dashboard-spc__stat-label {
@@ -1635,7 +1700,7 @@ body.dev-area-open .dmaic-tiles {
 
 .dashboard-spc__metrics {
   display: flex;
-  gap: 8px;
+  gap: var(--spacing-sm);
 }
 
 .dashboard-spc__metric {
@@ -1643,7 +1708,7 @@ body.dev-area-open .dmaic-tiles {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 6px 4px;
+  padding: var(--spacing-s) var(--spacing-xs);
   border-radius: 6px;
   background: var(--color-bg-tertiary);
   border: 1px solid var(--color-border-primary);
@@ -1981,7 +2046,7 @@ body.training-area-open .dmaic-tiles {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 2px;
+  gap: var(--spacing-2xs);
   padding: var(--spacing-xs) var(--spacing-sm);
   border: none;
   background: none;
@@ -2038,7 +2103,7 @@ body.training-area-open .dmaic-tiles {
      header pushing it down) can never intercept clicks meant for this menu. */
   z-index: 150;
   min-width: 160px;
-  padding: 4px 0;
+  padding: var(--spacing-xs) 0;
 }
 
 .workspace__action-menu.open {
@@ -2048,9 +2113,9 @@ body.training-area-open .dmaic-tiles {
 .workspace__action-item {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--spacing-sm);
   width: 100%;
-  padding: 6px 12px;
+  padding: var(--spacing-s) var(--spacing-m);
   border: none;
   background: none;
   cursor: pointer;
@@ -2165,10 +2230,15 @@ body.training-area-open .dmaic-tiles {
   box-shadow: inset -3px 0 0 var(--color-accent);
 }
 
+/* Genau ein Scroll-Container pro Modul (docs/superpowers/plans/
+   2026-09-04-scroll-inventur.md): die Werkbankfläche selbst scrollt nicht
+   mehr, jede Bauform hat einen eigenen, benannten Besitzer (siehe
+   css/modules.css, `.workspace__module-area > div > .dmike-split`, und die
+   je Bauform betroffenen Modul-CSS-Dateien). */
 .workspace__module-area {
   flex: 1;
   min-height: 0;
-  overflow: auto;
+  overflow: hidden;
   padding: 0;
 }
 
@@ -2309,7 +2379,7 @@ body.training-area-open .dmaic-tiles {
   color: inherit;
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: var(--spacing-2xs);
 }
 
 .help-panel__glossary-item:hover,
@@ -2456,7 +2526,7 @@ body.training-area-open .dmaic-tiles {
 .help-panel__glossary-seealso a {
   color: var(--color-accent);
   text-decoration: none;
-  padding: 2px var(--spacing-xs);
+  padding: var(--spacing-2xs) var(--spacing-xs);
   border: var(--border-width) solid var(--color-border-primary);
   border-radius: var(--border-radius-sm);
   font-size: var(--font-size-xs);
@@ -2614,7 +2684,7 @@ body.training-area-open .dmaic-tiles {
 .app-footer__version {
   display: inline-flex;
   align-items: center;
-  gap: 2px;
+  gap: var(--spacing-2xs);
   cursor: pointer;
   color: var(--color-text-tertiary);
   text-decoration: none;
@@ -2666,62 +2736,159 @@ body.training-area-open .dmaic-tiles {
   background: var(--color-text-tertiary);
 }
 
-/* ===== Adaptive collapse: inactive tiles show letter + progress only ===== */
+/* ===== Adaptive collapse: inaktive Kacheln zeigen nur Kürzel + % ===== */
 
-/* Collapsed inactive tiles show only the letter + %. The name collapses to
-   zero width (animatable); divider and menu hide. */
-.dmaic-tiles--collapsed .dmaic-tile:not(.dmaic-tile--active) .dmaic-tile__name {
+/* Kollabiert bleibt der Name im Fluss dauerhaft verborgen — auch beim Hovern.
+   Die volle Darstellung übernimmt das Flyout unterhalb der Reihe. Der Divider
+   entfällt, der Chevron bleibt: erschiene er erst beim Hovern, wäre der
+   Breitensprung zurück, den diese Arbeit beseitigt. */
+.dmaic-tiles--collapsed .dmaic-tile:not(.dmaic-tile--active) > .dmaic-tile__inner .dmaic-tile__name {
   max-width: 0;
   overflow: hidden;
-  transition: max-width var(--transition-speed) ease;
 }
 
-.dmaic-tiles--collapsed .dmaic-tile:not(.dmaic-tile--active) .dmaic-tile__divider,
-.dmaic-tiles--collapsed .dmaic-tile:not(.dmaic-tile--active) .dmaic-tile__menu-btn {
+.dmaic-tiles--collapsed .dmaic-tile:not(.dmaic-tile--active) > .dmaic-tile__inner .dmaic-tile__divider {
   display: none;
 }
 
-/* Hover: the single inner container (buttons + bar) becomes a centred overlay
-   over BOTH neighbours, so the whole thing — including the progress bar —
-   expands together. The tile's flow slot keeps its JS-pinned width, so nothing
-   reflows (no flicker). The name animates open from zero width; the shadow
-   fades in via the inner's box-shadow transition. */
-.dmaic-tiles--collapsed .dmaic-tile:not(.dmaic-tile--active):hover {
-  z-index: 10;
+/* Kollabiert braucht das %-Segment kein großzügiges rechtes Polster mehr —
+   der Divider ist weg, der Chevron folgt direkt. Task 4b: 140px Überlauf der
+   8D-Reihe bei 1280px zurückgewinnen, ohne den Chevron zu verstecken. */
+.dmaic-tiles--collapsed .dmaic-tile:not(.dmaic-tile--active) > .dmaic-tile__inner .dmaic-tile__edit {
+  padding-right: 0;
 }
 
-.dmaic-tiles--collapsed .dmaic-tile:not(.dmaic-tile--active):hover .dmaic-tile__inner {
+/* Der Name ist kollabiert unsichtbar (max-width: 0), aber `.dmaic-tile__body`
+   ist weiterhin ein Flex-Container mit Buchstabe UND Name als Kinder — das
+   `gap` zwischen ihnen bliebe sonst als tote Fläche stehen. Linkes Polster
+   ganz entfernt (nicht nur verkleinert): ohne Name braucht der Buchstabe
+   keinen Abstand zum Kachelrand mehr. `:has(.dmaic-tile__edit)` grenzt auf
+   echte Phasen-Kacheln ein — die beiden virtuellen Rahmenkacheln (`data` /
+   `extras`) haben kein %-Segment und bleiben hier unberührt, damit sie nicht
+   als Nebenwirkung mitschrumpfen.
+   Der Chevron ist von 18 auf 22px gewachsen (icon--sm statt Ausnahme-
+   `--icon-size`, siehe `.dmaic-tile__menu-btn`) — +4px je Kachel, 44px über
+   die 8D-Reihe. Dieses `padding-left: 0` (vorher `--spacing-2xs`, 2px) ist
+   einer der Innenabstände, die das dafür zurückgeben, statt den Chevron zu
+   schrumpfen oder die aktive Kachel weiter auf ihre Ellipse zu drücken. */
+.dmaic-tiles--collapsed .dmaic-tile:not(.dmaic-tile--active) > .dmaic-tile__inner .dmaic-tile__left:has(.dmaic-tile__edit) .dmaic-tile__body {
+  gap: 0;
+  padding-left: 0;
+  padding-right: 0;
+}
+
+/* Kollabiert braucht die Reihe selbst weniger Luft zwischen den Kacheln —
+   zehn Lücken zwischen elf Kacheln summieren sich schnell. Betrifft die
+   ganze Reihe (inkl. aktiver und Rahmenkacheln), nicht nur die inaktiven
+   Kacheln: das ist der Container-Abstand, kein Kachel-Innenabstand. */
+.dmaic-tiles--collapsed {
+  gap: var(--spacing-2xs);
+}
+
+/* Die beiden Rahmenkacheln (`data` / `extras`) verlieren ihren Namen
+   kollabiert genauso wie die Phasen-Kacheln (siehe Regel oben, sie ist nicht
+   auf `:has(.dmaic-tile__edit)` eingegrenzt) — tragen aber noch das rechte
+   10px-Namenspolster aus Zeile ~726 (für den sichtbaren Namen gedacht) und
+   das `gap` zur toten Namensfläche. Eigene Regel statt Nebenwirkung: nur
+   Rahmenkacheln, nur kollabiert.
+   Beide Polster ganz entfernt (vorher je `--spacing-2xs`, 2px): derselbe
+   44px-Chevron-Rückgewinn wie an der Phasen-Kachel-Regel oben — hier ohne
+   %-Segment ist links UND rechts kein Namenspolster mehr nötig. */
+.dmaic-tiles--collapsed .dmaic-tile:not(.dmaic-tile--active) > .dmaic-tile__inner .dmaic-tile__left:not(:has(.dmaic-tile__edit)) .dmaic-tile__body {
+  gap: 0;
+  padding-left: 0;
+  padding-right: 0;
+}
+
+/* Die aktive Kachel bleibt vollständig (Name, Stift-Overlay, Chevron) —
+   ihre beiden Standard-Innenabstände sind für die entspannte, unkollabierte
+   Reihe bemessen. Eigene Regel (nicht die der inaktiven Kacheln): nur
+   kollabiert etwas knapper, um die letzten Pixel für die 8D-Reihe
+   zurückzugewinnen. */
+.dmaic-tiles--collapsed .dmaic-tile--active > .dmaic-tile__inner .dmaic-tile__edit {
+  padding-right: var(--spacing-xs);
+}
+
+.dmaic-tiles--collapsed .dmaic-tile--active > .dmaic-tile__inner .dmaic-tile__body {
+  padding-left: var(--spacing-xs);
+  padding-right: 0;
+}
+
+/* Gleiche Messgrundlage wie bei den inaktiven Kacheln (25,6px für "100%"),
+   minimal großzügiger, weil hier zusätzlich der Stift-Overlay im selben
+   Slot liegt. */
+.dmaic-tiles--collapsed .dmaic-tile--active > .dmaic-tile__inner .dmaic-tile__edit-slot {
+  min-width: 26px;
+}
+
+/* Kollabiert behält nur die aktive Kachel ihren vollen Namen (siehe oben) —
+   das kann die Reihe knapp über ihren Container treiben, wenn gerade die
+   längste Phase aktiv ist (z. B. "Wiederholung verhindern" im 8D-Zyklus,
+   DE). Der Name darf deshalb schrumpfen und mit Ellipse abschneiden statt die
+   Reihe zu sprengen — das passiert nur, wenn der Platz wirklich nicht reicht,
+   im Regelfall bleibt der Name vollständig sichtbar.
+   `min-width: 0` muss entlang der GESAMTEN Flex-Kette bis zum Namen gesetzt
+   werden, angefangen bei `.dmaic-tile` selbst: das ist das Flex-Item in
+   `.dmaic-tiles`, und ohne dessen eigenes `min-width: 0` bleibt sein
+   automatisches Minimum an der Inhaltsbreite hängen (Standard-Flexbox-
+   Verhalten) — dann hätte kein `min-width: 0` weiter unten in der Kette
+   irgendeinen Effekt, die Kachel schrumpft schlicht nie unter ihre
+   Inhaltsbreite. */
+.dmaic-tiles--collapsed .dmaic-tile--active,
+.dmaic-tiles--collapsed .dmaic-tile--active > .dmaic-tile__inner,
+.dmaic-tiles--collapsed .dmaic-tile--active > .dmaic-tile__inner .dmaic-tile__row,
+.dmaic-tiles--collapsed .dmaic-tile--active > .dmaic-tile__inner .dmaic-tile__left,
+.dmaic-tiles--collapsed .dmaic-tile--active > .dmaic-tile__inner .dmaic-tile__body {
+  min-width: 0;
+}
+
+.dmaic-tiles--collapsed .dmaic-tile--active > .dmaic-tile__inner .dmaic-tile__name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* "100%" braucht rund 25,6px im 10px-halbfetten ZEG-Font (gemessen) — 26px
+   lässt gerade noch Luft, ohne wie die volle 30px-Basis (bemessen für die
+   editierbare aktive Kachel samt Stift-Overlay) zu verschwenden. */
+.dmaic-tiles--collapsed .dmaic-tile:not(.dmaic-tile--active) > .dmaic-tile__inner .dmaic-tile__edit-slot {
+  min-width: 26px;
+}
+
+/* Flyout: zweite, vollständige Darstellung — mittig unter der Kachel, mit
+   Schatten. Der optische Abstand steckt als transparentes `padding-top` IM
+   Flyout, nicht als `margin` davor: als Außenabstand läge zwischen Kachel und
+   Flyout eine tote Fläche, und der Hover risse ab, sobald der Zeiger sie
+   überquert. */
+.dmaic-tile__flyout {
+  display: none;
   position: absolute;
-  top: 0;
+  top: 100%;
   left: 50%;
-  height: 100%;
-  width: max-content;
   transform: translateX(-50%);
+  z-index: 20;
+  padding-top: var(--spacing-xs);
+  width: max-content;
+}
+
+.dmaic-tile__flyout > .dmaic-tile__inner {
+  border-radius: var(--border-radius-sm);
   background: var(--color-bg-secondary);
   box-shadow:
     inset 0 0 0 1px var(--color-border-secondary),
-    0 6px 16px rgb(0 0 0 / 24%);
+    var(--shadow-lg);
 }
 
-.dmaic-tiles--collapsed .dmaic-tile:not(.dmaic-tile--active):hover .dmaic-tile__name {
-  max-width: var(--dmaic-name-w, 20em);
-}
-
-.dmaic-tiles--collapsed .dmaic-tile:not(.dmaic-tile--active):hover .dmaic-tile__divider {
+/* Sichtbar beim Hovern — und solange das Dropdown offen ist, sonst
+   verschwände es mit dem Flyout, sobald der Zeiger die Kachel verlässt. */
+.dmaic-tiles--collapsed .dmaic-tile:not(.dmaic-tile--active):hover .dmaic-tile__flyout,
+.dmaic-tiles--collapsed .dmaic-tile--menu-open:not(.dmaic-tile--active) .dmaic-tile__flyout {
   display: block;
 }
 
-.dmaic-tiles--collapsed .dmaic-tile:not(.dmaic-tile--active):hover .dmaic-tile__menu-btn {
-  display: inline-flex;
-}
-
-/* Collapsed at rest: der verborgene Stift-Slot soll die Zahl nicht von der
-   Abkürzung wegschieben — reservierte Breite auf 0. Beim Aufklappen (Hover)
-   wieder auf volle Slot-Breite, damit der Stift Platz zum Erscheinen hat. */
-.dmaic-tiles--collapsed .dmaic-tile:not(.dmaic-tile--active) .dmaic-tile__edit-icon {
-  width: 0;
-}
-
-.dmaic-tiles--collapsed .dmaic-tile:not(.dmaic-tile--active):hover .dmaic-tile__edit-icon {
-  width: 0.85em;
+/* Der Zahl-Träger im Flyout ist ein span, kein Button: kein Zeigefinger, kein
+   Hover-Zustand. */
+.dmaic-tile__edit--static {
+  cursor: default;
 }

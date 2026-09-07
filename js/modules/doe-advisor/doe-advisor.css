@@ -80,7 +80,7 @@
 .doe-advisor__design-name {
   font-size: var(--font-size-sm);
   color: var(--color-text-primary);
-  margin-bottom: 2px;
+  margin-bottom: var(--spacing-2xs);
 }
 
 .doe-advisor__design-tip {
@@ -294,7 +294,7 @@
 .doe-advisor__result-meta-item {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: var(--spacing-2xs);
   min-width: 120px;
 }
 

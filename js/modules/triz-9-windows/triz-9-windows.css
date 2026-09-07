@@ -144,8 +144,8 @@
 .triz-9w__upload-btn {
   display: inline-flex;
   align-items: center;
-  gap: 2px;
-  padding: 2px var(--spacing-xs);
+  gap: var(--spacing-2xs);
+  padding: var(--spacing-2xs) var(--spacing-xs);
   font-size: var(--font-size-xs);
   color: var(--color-text-secondary);
   background: var(--color-bg-secondary);

@@ -51,7 +51,7 @@
 
 /* ── Node ── */
 .five-why__node {
-  margin-bottom: 3px;
+  margin-bottom: var(--spacing-xs);
 }
 
 /* ── Card (compact single-row layout: tag | textarea | actions) ── */
@@ -86,11 +86,11 @@
   font-size: var(--font-size-xs);
   font-weight: 600;
   letter-spacing: 0.03em;
-  padding: 4px 8px;
+  padding: var(--spacing-xs) var(--spacing-sm);
   border-radius: 4px;
   white-space: nowrap;
   flex-shrink: 0;
-  margin-top: 3px;
+  margin-top: var(--spacing-xs);
   line-height: 1;
 }
 
@@ -127,7 +127,7 @@
 /* ── Card Actions ── */
 .five-why__card-actions {
   display: flex;
-  gap: 2px;
+  gap: var(--spacing-2xs);
   flex-shrink: 0;
   opacity: 0;
   transition: opacity var(--transition-speed);
@@ -158,7 +158,7 @@
   background: transparent;
   border: none;
   border-bottom: 1px solid transparent;
-  padding: 4px;
+  padding: var(--spacing-xs);
   font-family: var(--font-family);
   font-size: var(--font-size-sm);
   color: var(--color-text-primary);
@@ -180,10 +180,10 @@
 
 /* ── Children Container ── */
 .five-why__children {
-  margin-left: 20px;
+  margin-left: var(--spacing-l);
   padding-left: var(--spacing-sm);
   border-left: 2px solid var(--color-border-primary);
-  margin-top: 2px;
+  margin-top: var(--spacing-2xs);
 }
 
 .five-why__children[data-level="1"] { border-left-color: rgb(245 158 11 / 30%); }

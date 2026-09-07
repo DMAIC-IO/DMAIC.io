@@ -23,7 +23,7 @@ table.dmike-stats-table td:not(:first-child) {
 .dmike-stats-table td:first-child {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--spacing-s);
 }
 
 /* Color swatch next to series name */
@@ -39,7 +39,7 @@ table.dmike-stats-table td:not(:first-child) {
 .dmike-stats-ci {
   font-size: var(--font-size-xs);
   color: var(--color-text-secondary);
-  margin-left: 4px;
+  margin-left: var(--spacing-xs);
   white-space: nowrap;
   cursor: help;
 }

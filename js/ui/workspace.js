@@ -325,7 +325,7 @@ export class Workspace {
       title: reorderLabel,
       'aria-label': reorderLabel,
       draggable: 'true',
-    }, icon('action.move', { size: 'sm' }));
+    }, icon('action.drag-handle', { size: 'sm' }));
 
     // Rename and remove are NOT in the tab: as hover-revealed icons they grew
     // the tab out from under the pointer, so a click aimed at the label landed
@@ -501,6 +501,17 @@ export class Workspace {
   getActiveInstance() {
     if (!this._activeInstanceId) return null;
     return this._instances.get(this._activeInstanceId) || null;
+  }
+
+  /**
+   * All currently loaded instances of one module type, in insertion order.
+   * Unlike getActiveInstance() this does not depend on which tile has focus —
+   * test helpers and cross-module lookups need a deterministic resolution.
+   * @param {string} moduleId
+   * @returns {object[]}
+   */
+  getInstancesByModuleId(moduleId) {
+    return [...this._instances.values()].filter(inst => inst?.id === moduleId);
   }
 
   /**

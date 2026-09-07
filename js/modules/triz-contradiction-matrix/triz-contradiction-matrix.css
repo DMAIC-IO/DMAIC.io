@@ -155,7 +155,7 @@
   font-weight: var(--font-weight-semibold);
   font-size: var(--font-size-md);
   color: var(--color-text-primary);
-  margin-bottom: 2px;
+  margin-bottom: var(--spacing-2xs);
 }
 
 .triz-cm__principle-desc {

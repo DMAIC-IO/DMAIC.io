@@ -3,7 +3,13 @@
    ═══════════════════════════════════════════════════════════════ */
 
 /* Base layout provided by .dmike-split (css/modules.css) */
-.module-random-generator .dmike-split__input { width: 240px; padding: 0; overflow: hidden; }
+
+/* Das Panel bringt seinen eigenen Kopf/Körper mit und braucht daher kein
+   Innenpolster; die Breite kommt aus .dmike-split--input-sm. */
+.rg-sidebar {
+  padding: 0;
+  overflow: hidden;
+}
 
 /* ── Distribution Sidebar ── */
 
@@ -17,7 +23,7 @@
   letter-spacing: 1.2px;
   text-transform: uppercase;
   color: var(--color-text-tertiary);
-  padding: 12px 14px 6px;
+  padding: var(--spacing-m) var(--spacing-m) var(--spacing-s);
   user-select: none;
 }
 
@@ -30,7 +36,7 @@
   color: var(--color-text-secondary);
   font-family: var(--font-family);
   font-size: var(--font-size-sm);
-  padding: 6px 14px 6px 22px;
+  padding: var(--spacing-s) var(--spacing-m) var(--spacing-s) var(--spacing-l);
   cursor: pointer;
   transition: all var(--transition-speed);
   border-left: 3px solid transparent;
@@ -49,9 +55,21 @@
 }
 
 /* ── Main Content ── */
+
+/* Legitimer Besitzer der Hauptfläche (siehe scroll-inventur.md): min-height:0
+   lässt sie unter ihre Inhaltshöhe schrumpfen, damit overflow-y:auto greifen
+   kann. Ob sie im Einzelfall die scrollende Fläche ist, hängt vom Geschwister
+   .rg-sidebar ab: dessen Kategorienliste hat selbst kein min-height:0 und
+   wächst bei vielen Kategorien über die Split-Höhe hinaus — dann übernimmt
+   .dmike-split (Bauform "Wurzel direkt in .dmike-split", generische Regel in
+   css/modules.css) den Scroll für beide Spalten gemeinsam. In beiden Fällen
+   bleibt es bei genau einem Scroller, nichts wird abgeschnitten — die Regel
+   hier bleibt bewusst stehen, weil sie im Normalfall (Sidebar kürzer als die
+   Fläche) die feinere, richtige Besitzerin ist. */
 .rg-main {
   padding: var(--spacing-lg) var(--spacing-xl);
   overflow-y: auto;
+  min-height: 0;
 }
 
 .rg-main__empty {
@@ -67,7 +85,7 @@
   font-size: var(--font-size-xl);
   font-weight: 700;
   letter-spacing: -0.3px;
-  margin-bottom: 2px;
+  margin-bottom: var(--spacing-2xs);
   color: var(--color-text-primary);
 }
 
@@ -92,7 +110,7 @@
   font-size: 10px;
   color: var(--color-text-tertiary);
   font-style: italic;
-  margin-top: -2px;
+  margin-top: calc(-1 * var(--spacing-2xs));
 }
 
 /* ── Action Bar ── */
@@ -112,7 +130,7 @@
 
 /* Target column: uses global .col-picker (css/components.css) */
 .rg-target-wrap { min-width: 180px; max-width: 220px; }
-.rg-target-wrap .col-picker__select { font-size: var(--font-size-sm); padding: 5px 8px; }
+.rg-target-wrap .col-picker__select { font-size: var(--font-size-sm); padding: var(--spacing-s) var(--spacing-sm); }
 
 /* ── Histogram (Chart Framework) ── */
 .rg-histogram {
@@ -132,7 +150,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 10px 14px;
+  padding: var(--spacing-m) var(--spacing-m);
   border-bottom: 1px solid var(--color-border-secondary);
 }
 
@@ -153,20 +171,20 @@
 .rg-data__grid {
   max-height: 280px;
   overflow-y: auto;
-  padding: var(--spacing-sm) 14px 14px;
+  padding: var(--spacing-sm) var(--spacing-m) var(--spacing-m);
 }
 
 .rg-data__values {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-  gap: 2px;
+  gap: var(--spacing-2xs);
   font-family: var(--font-family-mono);
   font-size: var(--font-size-xs);
   color: var(--color-text-secondary);
 }
 
 .rg-data__values span {
-  padding: 2px 4px;
+  padding: var(--spacing-2xs) var(--spacing-xs);
   border-radius: 2px;
   text-align: right;
   transition: background var(--transition-speed);
@@ -193,14 +211,14 @@
   background: var(--color-bg-primary);
   border: 1px solid var(--color-border-primary);
   border-radius: var(--border-radius-sm);
-  padding: 12px 14px;
+  padding: var(--spacing-m) var(--spacing-m);
 }
 
 .rg-attr-head {
   display: grid;
   grid-template-columns: 1fr 110px 32px;
   gap: var(--spacing-sm);
-  margin-bottom: 6px;
+  margin-bottom: var(--spacing-s);
   min-height: 14px;
 }
 
@@ -219,8 +237,8 @@
 .rg-attr-list {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  margin-bottom: 8px;
+  gap: var(--spacing-s);
+  margin-bottom: var(--spacing-sm);
 }
 
 .rg-attr-row {
@@ -228,7 +246,7 @@
   grid-template-columns: 1fr 110px 32px;
   gap: var(--spacing-sm);
   align-items: center;
-  padding-left: 10px;
+  padding-left: var(--spacing-m);
   border-left: 3px solid var(--rg-attr-color, var(--color-accent));
   height: 32px;
 }
@@ -266,7 +284,7 @@
   background: none;
   border: 1px dashed var(--color-border-primary);
   color: var(--color-text-tertiary);
-  padding: 7px 12px;
+  padding: var(--spacing-sm) var(--spacing-m);
   border-radius: var(--border-radius-sm);
   cursor: pointer;
   width: 100%;
@@ -282,7 +300,7 @@
 .rg-attr-prob__bars {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: var(--spacing-s);
 }
 
 .rg-attr-prob__bar {
@@ -310,7 +328,7 @@
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  padding: 0 10px;
+  padding: 0 var(--spacing-m);
   font-family: var(--font-family-mono);
   font-size: 11px;
   color: #fff;
@@ -339,17 +357,17 @@
   letter-spacing: 0.8px;
   text-transform: uppercase;
   color: var(--color-text-tertiary);
-  margin-bottom: 6px;
+  margin-bottom: var(--spacing-s);
 }
 
 .rg-freq-list {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: var(--spacing-xs);
   background: var(--color-bg-primary);
   border: 1px solid var(--color-border-primary);
   border-radius: var(--border-radius-sm);
-  padding: 10px 14px;
+  padding: var(--spacing-m) var(--spacing-m);
 }
 
 .rg-freq-row {
@@ -398,13 +416,13 @@
 .rg-attr-chips {
   display: flex;
   flex-wrap: wrap;
-  gap: 4px;
+  gap: var(--spacing-xs);
 }
 
 .rg-attr-chip {
   font-family: var(--font-family);
   font-size: var(--font-size-xs);
-  padding: 3px 8px;
+  padding: var(--spacing-xs) var(--spacing-sm);
   border-radius: 4px;
   font-weight: var(--font-weight-medium);
   color: var(--rg-attr-color, var(--color-text-primary));

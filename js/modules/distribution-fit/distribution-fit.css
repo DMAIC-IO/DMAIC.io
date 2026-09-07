@@ -84,9 +84,9 @@
 
 .distfit__tag {
   font-size: 9px;
-  padding: 1px 6px;
+  padding: 1px var(--spacing-s);
   border-radius: 10px;
-  margin-left: 4px;
+  margin-left: var(--spacing-xs);
   font-weight: 500;
   vertical-align: middle;
 }
@@ -170,7 +170,7 @@
   color: var(--color-text-tertiary);
   text-transform: uppercase;
   letter-spacing: 0.03em;
-  margin-bottom: 3px;
+  margin-bottom: var(--spacing-xs);
 }
 
 /* ── Normality Deep-Dive ── */
@@ -198,7 +198,7 @@
   border: 1px solid var(--color-border-primary);
   color: var(--color-text-tertiary);
   font-size: 10px;
-  padding: 2px 10px;
+  padding: var(--spacing-2xs) var(--spacing-m);
   border-radius: 12px;
   cursor: pointer;
   transition: all var(--transition-speed);
@@ -242,7 +242,7 @@
   font-size: 9px;
   background: var(--color-bg-tertiary, var(--color-bg-secondary));
   color: var(--color-text-tertiary);
-  padding: 1px 5px;
+  padding: 1px var(--spacing-s);
   border-radius: 8px;
   font-weight: 500;
 }
@@ -254,8 +254,8 @@
   background: none;
   border: 1px solid var(--color-border);
   border-radius: 4px;
-  padding: 2px 4px;
-  margin-left: 6px;
+  padding: var(--spacing-2xs) var(--spacing-xs);
+  margin-left: var(--spacing-s);
   cursor: pointer;
   color: var(--color-text-secondary);
   opacity: 0.6;
@@ -272,7 +272,7 @@
 .distfit__ndd-pill {
   margin-left: auto;
   font-size: 10px;
-  padding: 1px 8px;
+  padding: 1px var(--spacing-sm);
   border-radius: 10px;
   font-weight: 600;
 }
@@ -291,7 +291,7 @@
 .distfit__ndd-stats {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: var(--spacing-2xs);
 }
 
 .distfit__ndd-row {
@@ -327,7 +327,7 @@
 
 .distfit__ndd-score {
   display: flex;
-  gap: 3px;
+  gap: var(--spacing-xs);
   align-items: center;
   margin-bottom: var(--spacing-xs);
 }

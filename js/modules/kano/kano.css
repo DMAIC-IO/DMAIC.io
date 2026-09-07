@@ -3,10 +3,6 @@
  * Nur Ergänzungen zu den geteilten Klassen (.dmike-split, .dmike-table, …).
  */
 
-.kano {
-  --dmike-split-input-width: 380px;
-}
-
 .kano__label {
   display: block;
   margin: var(--spacing-sm) 0 var(--spacing-xs);
@@ -35,7 +31,7 @@
   flex: 1;
 }
 
-.kano__tab-wrap .dmike-tab { flex: 1; padding-right: 20px; }
+.kano__tab-wrap .dmike-tab { flex: 1; padding-right: var(--spacing-l); }
 
 .kano__tab-del-btn {
   position: absolute;
@@ -98,11 +94,6 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: var(--spacing-sm);
-
-  /* padding statt margin: der Scroll-Container (.dmike-split) nimmt den
-     unteren Margin des letzten Kindes nicht in den scrollbaren Bereich auf,
-     die Boxen klebten sonst am unteren Rand. */
-  padding-bottom: var(--spacing-lg);
 }
 
 .kano__chart-legend-item {

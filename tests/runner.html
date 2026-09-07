@@ -3,6 +3,18 @@
 <head>
   <meta charset="UTF-8">
   <title>D.Mike — Test Runner</title>
+  <!-- Lädt die echten CSS-Custom-Properties (u. a. Abstands-Token), damit
+       Suiten wie core/spacing-tokens.test.js via getComputedStyle gegen die
+       realen Werte prüfen können, statt gegen die Runner-eigenen Inline-Styles. -->
+  <link rel="stylesheet" href="../css/variables.css">
+  <!-- Lädt die Layout-Primitive (.dmike-stack, .dmike-cluster, .dmike-row),
+       damit ui/layout-primitives.test.js sie via getComputedStyle gegen die
+       realen Klassen prüfen kann, statt gegen die Runner-eigenen Inline-Styles. -->
+  <link rel="stylesheet" href="../css/components.css">
+  <!-- Lädt die Modul-Grundstile (.module-container, .dmike-split), damit
+       ui/split-layout.test.js sie via getComputedStyle gegen die realen
+       Werte prüfen kann, statt gegen die Runner-eigenen Inline-Styles. -->
+  <link rel="stylesheet" href="../css/modules.css">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
@@ -100,6 +112,7 @@
     './core/uid.test.js',
     './core/glossary-module-coverage.test.js',
     './core/help-content-syntax.test.js',
+    './ui/workspace-instances.test.js',
     './ui/workspace-reset.test.js',
     './ui/modal-dialog-api.test.js',
     './frame/project-rehydrate.test.js',
@@ -154,6 +167,7 @@
     './core/image-upload.test.js',
     './core/worksheet-columns.test.js',
     './core/scenario-catalog.test.js',
+    './core/spacing-tokens.test.js',
     './modules/activity-flowchart.test.js',
     './modules/opportunity-flowchart.test.js',
     './modules/deployment-flowchart.test.js',
@@ -255,6 +269,8 @@
     './ui/dmaic-tiles-layout.test.js',
     './ui/dmaic-tiles-rebuild.test.js',
     './ui/action-modal.test.js',
+    './ui/layout-primitives.test.js',
+    './ui/split-layout.test.js',
     './engines/math-utils.test.js',
     './engines/matrix-utils.test.js',
     './engines/variance-components.test.js',

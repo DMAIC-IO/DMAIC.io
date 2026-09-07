@@ -49,7 +49,7 @@
 
 /* ── Category groups ── */
 .lab__category {
-  margin-bottom: 2px;
+  margin-bottom: var(--spacing-2xs);
 }
 
 .lab__category-toggle {
@@ -189,8 +189,8 @@
 .lab__status-badge {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  padding: 2px var(--spacing-sm);
+  gap: var(--spacing-xs);
+  padding: var(--spacing-2xs) var(--spacing-sm);
   border-radius: var(--border-radius-sm);
   font-size: var(--font-size-xs);
   font-weight: var(--font-weight-medium);
@@ -536,7 +536,7 @@
   display: flex;
   align-items: center;
   gap: var(--spacing-sm);
-  margin-bottom: 2px;
+  margin-bottom: var(--spacing-2xs);
 }
 
 .lab__timeline-version {
@@ -639,7 +639,7 @@
 .lab__stat-label {
   font-size: var(--font-size-xs);
   color: var(--color-text-tertiary);
-  margin-top: 2px;
+  margin-top: var(--spacing-2xs);
 }
 
 .lab__category-cards {
@@ -725,10 +725,10 @@
 
 .lab__tryit-modes {
   display: flex;
-  gap: 2px;
+  gap: var(--spacing-2xs);
   background: var(--color-bg-tertiary);
   border-radius: var(--border-radius-sm);
-  padding: 2px;
+  padding: var(--spacing-2xs);
   width: fit-content;
   margin-bottom: var(--spacing-sm);
 }
@@ -854,7 +854,7 @@
   padding: var(--spacing-xs) var(--spacing-sm);
   border-radius: var(--border-radius-sm);
   overflow-x: auto;
-  margin-top: 2px;
+  margin-top: var(--spacing-2xs);
 }
 
 .lab__tryit-file-row {

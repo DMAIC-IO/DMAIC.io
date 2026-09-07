@@ -9,7 +9,12 @@
   height: 100%;
   display: flex;
   flex-direction: column;
-  padding: var(--spacing-md);
+
+  /* Einer von zwei möglichen Besitzern des Modul-Außenabstands (der andere
+     ist .dmike-split selbst, siehe weiter unten). Ist ein Split direkt in
+     diesem Container, steht dessen Polster auf 0 — der Spaltenzwischenraum
+     kommt dann aus gap, nicht aus margin + padding. */
+  padding: var(--spacing-m);
 }
 
 .module-container__header {
@@ -49,14 +54,36 @@
        <div class="dmike-split__output"> ... </div>
      </div>
 
-   Customise input width per module:
-     .my-module .dmike-split__input { width: 380px; }
-*/
+   Die Breite der Eingabespalte kennt genau drei Stufen. Sie wird am
+   .dmike-split gesetzt, nie im Modul-CSS — ein Stylelint-Guard verbietet
+   Modulen, .dmike-split__input anzufassen.
 
+     (ohne Klasse)             320px  Standard
+     .dmike-split--input-sm    280px  Charts, wenige Bedienelemente
+     .dmike-split--input-lg    420px  dichte Formulare
+
+   Kein Modul darf schrumpfen: die linken Spalten sind informationsdicht,
+   Verkleinerung erzeugt ungewollte Umbrüche.
+*/
+.dmike-split           { --split-input: 320px; }
+.dmike-split--input-sm { --split-input: 280px; }
+.dmike-split--input-lg { --split-input: 420px; }
+
+/* Der Split hält den Außenabstand selbst — 39 der 71 Module wurzeln direkt
+   in ihm und haben gar kein `.module-container` (die Klasse ist reine
+   Template-Konvention, kein Framework-Element). Dort wäre der Abstand sonst 0. */
 .dmike-split {
   display: flex;
   min-height: 100%;
-  padding: var(--spacing-md);
+  padding: var(--spacing-m);
+  gap: var(--spacing-m);
+}
+
+/* Liegt der Split INNERHALB eines `.module-container`, hält der Container den
+   Abstand allein — sonst stapelten sich beide wieder auf 24px. So hat jedes
+   Modul genau einen Besitzer, unabhängig davon, wie sein Template aufgebaut ist. */
+.module-container .dmike-split {
+  padding: 0;
 }
 
 /* Liegt `.dmike-split` direkt auf `.module-container__body` (dem Scroll-
@@ -69,18 +96,38 @@
   min-height: 0;
 }
 
+/* ===== Scroll-Besitz: Bauform "Wurzel direkt in .dmike-split" =====
+   39 von 71 Modulen haben kein .module-container — ihr Wurzelelement ist
+   .dmike-split direkt unter dem klassenlosen Modul-Wrapper der Werkbank
+   (height:100%, erzeugt in js/ui/workspace.js `_instantiateModule`). Ohne
+   eigene Höhenbegrenzung wuchs der Split bisher mit seinem Inhalt, und der
+   Überlauf entwich nach `.workspace__module-area` — seit deren `overflow:
+   hidden` (siehe css/layout.css) würde das den Inhalt abschneiden. Der
+   Kind-Kombinator trifft NUR diese Bauform: bei Modulen mit
+   `.module-container` sitzt der Container immer zwischen Wrapper und
+   `.dmike-split` (oder der Split fehlt ganz, z. B. `todo`), das schließt
+   beide anderen Fälle sauber aus — kein zusätzlicher Selektor nötig. */
+.workspace__module-area > div > .dmike-split {
+  height: 100%;
+  overflow-y: auto;
+}
+
 .dmike-split__input {
-  width: var(--dmike-split-input-width, 320px);
+  width: var(--split-input, 320px);
   flex-shrink: 0;
   align-self: flex-start;
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-md);
-  padding: var(--spacing-md);
+  gap: var(--spacing-m);
+
+  /* Innenpolster bleibt: es gehört zur Panel-Optik (Hintergrund, Rahmen,
+     Radius). Der Außenabstand gehört je nach Bauform dem .module-container
+     oder .dmike-split selbst — nie diesem Input-Panel. */
+  padding: var(--spacing-m);
   background: var(--color-bg-secondary);
   border: var(--border-width) solid var(--color-border-secondary);
   border-radius: var(--border-radius);
-  margin: var(--spacing-sm);
+  margin: 0;
 }
 
 .dmike-split__output {
@@ -88,7 +135,7 @@
   min-width: 0;
   display: flex;
   flex-direction: column;
-  padding: var(--spacing-sm);
+  padding: 0;
 }
 
 /* Section headers inside input panel */
@@ -122,7 +169,7 @@
   user-select: none;
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--spacing-s);
 }
 
 /* Marker icon replaces the old hand-drawn ::before triangle. It is wired to
@@ -184,7 +231,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
+  gap: var(--spacing-s);
   width: 100%;
   margin-top: var(--spacing-sm);
   padding: 10px var(--spacing-md);

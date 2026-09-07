@@ -3,7 +3,6 @@
    BEM: .pareto-module__ prefix
    ============================================================ */
 
-.pareto-module .dmike-split__input { width: 280px; }
 
 .pareto-module__error {
   display: none;
@@ -73,5 +72,5 @@ table.pareto-module__stats-table td:not(:first-child) {
   height: 8px;
   border-radius: 2px;
   flex-shrink: 0;
-  margin-right: 4px;
+  margin-right: var(--spacing-xs);
 }

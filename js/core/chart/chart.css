@@ -62,7 +62,7 @@
   background: rgb(26 26 46 / 92%);
   color: #fff;
   font-size: var(--font-size-sm, 12px);
-  padding: 6px 10px;
+  padding: var(--spacing-s) 10px;
   border-radius: var(--border-radius-sm, 4px);
   white-space: nowrap;
   opacity: 0;
@@ -84,7 +84,7 @@
 /* Separator between multiple tooltip entries (was an inline-styled div). */
 .dmike-chart-tip-sep {
   border-top: 1px solid rgb(255 255 255 / 20%);
-  margin: 4px 0;
+  margin: var(--spacing-xs) 0;
 }
 
 /* ── Crosshair ─────────────────────────────────────────────── */
@@ -116,7 +116,7 @@
   color: #fff;
   font-size: 10px;
   font-family: var(--font-family-mono);
-  padding: 2px 6px;
+  padding: var(--spacing-2xs) var(--spacing-s);
   border-radius: 3px;
   white-space: nowrap;
 }
@@ -133,7 +133,7 @@
   right: 8px;
   display: flex;
   align-items: center;
-  gap: 2px;
+  gap: var(--spacing-2xs);
   z-index: 100;
   pointer-events: auto;
   opacity: 0;
@@ -188,7 +188,7 @@
   height: 18px;
   background: var(--color-border-primary);
   align-self: center;
-  margin: 0 2px;
+  margin: 0 var(--spacing-2xs);
 }
 
 /* ── Download dropdown ─────────────────────────────────────── */
@@ -212,7 +212,7 @@
   box-shadow: var(--shadow-md);
   z-index: 60;
   min-width: 120px;
-  padding: 4px 0;
+  padding: var(--spacing-xs) 0;
 }
 
 .dmike-chart-dropdown-menu.open {
@@ -222,9 +222,9 @@
 .dmike-chart-dropdown-item {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--spacing-sm);
   width: 100%;
-  padding: 6px 12px;
+  padding: var(--spacing-s) var(--spacing-m);
   border: none;
   background: none;
   cursor: pointer;
@@ -308,7 +308,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 8px 12px;
+  padding: var(--spacing-sm) var(--spacing-m);
   background: var(--color-bg-secondary);
   border-bottom: 1px solid var(--color-border-primary);
   cursor: move;
@@ -418,7 +418,7 @@
 
 .dmike-chart-editor--open {
   width: 336px;
-  margin-left: 8px;
+  margin-left: var(--spacing-sm);
   background: var(--color-bg-secondary);
   border: 1px solid var(--color-border-primary);
   border-radius: var(--border-radius-sm);
@@ -454,7 +454,7 @@
   letter-spacing: 0.08em;
   color: var(--color-text-tertiary);
   margin-bottom: 10px;
-  padding-bottom: 6px;
+  padding-bottom: var(--spacing-s);
   border-bottom: var(--border-width) solid var(--color-border-secondary);
 }
 
@@ -462,8 +462,8 @@
 .dmike-chart-ed-row {
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin-bottom: 8px;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-sm);
 }
 
 .dmike-chart-ed-row label {
@@ -479,7 +479,7 @@
   height: 30px;
   border: var(--border-width) solid var(--color-border-secondary);
   border-radius: var(--border-radius-sm);
-  padding: 0 8px;
+  padding: 0 var(--spacing-sm);
   font-size: var(--font-size-sm);
   font-family: var(--font-family);
   background: var(--color-bg-primary);
@@ -496,8 +496,8 @@
 .dmike-chart-ed-check {
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin-bottom: 8px;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-sm);
   font-size: var(--font-size-sm);
   color: var(--color-text-tertiary);
   cursor: pointer;
@@ -516,8 +516,8 @@
 .dmike-chart-ed-inline-row {
   display: flex;
   align-items: center;
-  gap: 6px;
-  margin-bottom: 6px;
+  gap: var(--spacing-s);
+  margin-bottom: var(--spacing-s);
 }
 
 .dmike-chart-ed-inline-row label {
@@ -532,7 +532,7 @@
   height: 26px;
   border: var(--border-width) solid var(--color-border-secondary);
   border-radius: var(--border-radius-sm);
-  padding: 0 6px;
+  padding: 0 var(--spacing-s);
   font-size: var(--font-size-xs);
   font-family: var(--font-family);
   background: var(--color-bg-primary);
@@ -566,8 +566,8 @@
 .dmike-chart-ed-color-pair {
   display: flex;
   align-items: center;
-  gap: 6px;
-  margin-bottom: 6px;
+  gap: var(--spacing-s);
+  margin-bottom: var(--spacing-s);
 }
 
 .dmike-chart-ed-color-pair label {
@@ -609,8 +609,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 4px;
-  padding: 4px 0;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-xs) 0;
   border: none;
   border-top: var(--border-width) solid var(--color-border-secondary);
   background: transparent;
@@ -635,7 +635,7 @@
 .dmike-chart-ed-series-item {
   background: var(--color-bg-secondary);
   border-radius: var(--border-radius-sm);
-  margin-bottom: 6px;
+  margin-bottom: var(--spacing-s);
 }
 
 .dmike-chart-ed-series-item.hidden .dmike-chart-ed-series-header {
@@ -645,8 +645,8 @@
 .dmike-chart-ed-series-header {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 6px 8px;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-s) var(--spacing-sm);
 }
 
 .dmike-chart-ed-series-header input {
@@ -654,7 +654,7 @@
   height: 26px;
   border: var(--border-width) solid transparent;
   border-radius: var(--border-radius-sm);
-  padding: 0 6px;
+  padding: 0 var(--spacing-s);
   font-size: var(--font-size-sm);
   font-family: var(--font-family);
   background: transparent;
@@ -676,7 +676,7 @@
 /* Series detail panel (legacy) */
 .dmike-chart-ed-series-detail {
   display: none;
-  padding: 0 8px 8px;
+  padding: 0 var(--spacing-sm) var(--spacing-sm);
 }
 
 .dmike-chart-ed-series-detail.open {
@@ -685,7 +685,7 @@
 
 /* Series descriptor detail controls (symbol, size, stroke, …) */
 .dmike-chart-ed-series-details {
-  padding: 4px 8px 8px;
+  padding: var(--spacing-xs) var(--spacing-sm) var(--spacing-sm);
   border-top: var(--border-width) solid var(--color-border-secondary);
 }
 
@@ -693,16 +693,16 @@
 .dmike-chart-ed-subsection-title {
   font-size: var(--font-size-xs);
   font-weight: var(--font-weight-semibold);
-  margin: 10px 0 6px;
-  padding-top: 8px;
+  margin: 10px 0 var(--spacing-s);
+  padding-top: var(--spacing-sm);
   border-top: var(--border-width) solid var(--color-border-secondary);
   color: var(--color-text-primary);
 }
 
 /* Inline editor (toggleable detail section) */
 .dmike-chart-ed-inline-editor {
-  margin-top: 8px;
-  padding-top: 8px;
+  margin-top: var(--spacing-sm);
+  padding-top: var(--spacing-sm);
   border-top: var(--border-width) solid var(--color-border-secondary);
   display: none;
 }
@@ -715,8 +715,8 @@
 .dmike-chart-ed-ref-item {
   background: var(--color-bg-secondary);
   border-radius: var(--border-radius-sm);
-  padding: 8px 10px;
-  margin-bottom: 6px;
+  padding: var(--spacing-sm) 10px;
+  margin-bottom: var(--spacing-s);
   font-size: var(--font-size-sm);
   position: relative;
 }
@@ -724,7 +724,7 @@
 .dmike-chart-ed-ref-header {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--spacing-s);
 }
 
 .dmike-chart-ed-ref-color {
@@ -780,7 +780,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 4px;
+  gap: var(--spacing-xs);
   width: 100%;
   height: 30px;
   border: var(--border-width) dashed var(--color-border-secondary);
@@ -843,7 +843,7 @@
 .dmike-chart-ed-cp-hex-row {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: var(--spacing-xs);
   margin-bottom: 10px;
 }
 
@@ -859,7 +859,7 @@
   height: 28px;
   border: var(--border-width) solid var(--color-border-secondary);
   border-radius: var(--border-radius-sm);
-  padding: 0 8px;
+  padding: 0 var(--spacing-sm);
   font-family: var(--font-family-mono);
   font-size: 12px;
   letter-spacing: 0.5px;
@@ -875,8 +875,8 @@
 .dmike-chart-ed-cp-slider-row {
   display: flex;
   align-items: center;
-  gap: 6px;
-  margin-bottom: 6px;
+  gap: var(--spacing-s);
+  margin-bottom: var(--spacing-s);
 }
 
 .dmike-chart-ed-cp-slider-row span {
@@ -908,7 +908,7 @@
 .dmike-chart-ed__color-preview {
   display: flex;
   gap: 1px;
-  margin-top: 4px;
+  margin-top: var(--spacing-xs);
   height: 8px;
   border-radius: 2px;
   overflow: hidden;

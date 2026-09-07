@@ -3,12 +3,11 @@
    BEM: .run-chart__ prefix
    ============================================================ */
 
-.run-chart .dmike-split__input { width: 280px; }
 
 .run-chart__hint {
   font-size: var(--font-size-xs);
   color: var(--color-text-tertiary);
-  margin-top: 2px;
+  margin-top: var(--spacing-2xs);
 }
 
 /* ── Chart section ── */

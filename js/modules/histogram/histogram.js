@@ -51,6 +51,28 @@ import {
   provisionWorksheet, removeProvisionedWorksheet, csvPayloadToWorksheetState,
 } from '../../core/examples-registry.js';
 
+/**
+ * Verzögert `fn`, bis `ms` Millisekunden ohne weiteren Aufruf vergangen sind.
+ * Gleiche Ausdrucksform wie in `core/chart/chart-base.js` — dort ist der
+ * Helfer nicht exportiert.
+ *
+ * Die zurückgegebene Funktion trägt eine `cancel()`-Methode, die einen noch
+ * laufenden Timer verwirft. Ohne sie feuert ein kurz vor dem Teardown
+ * ausgelöster Aufruf auch nach `destroy()` noch — und da die Instanz ihr DOM
+ * über das Modul-Singleton `module._container` auflöst, schriebe er alte Daten
+ * in ein bereits neu gemountetes SVG.
+ *
+ * @param {Function} fn Aufzurufende Funktion.
+ * @param {number} ms Ruhezeit in Millisekunden.
+ * @returns {Function & { cancel: () => void }} Entprellte Fassung von `fn`.
+ */
+function debounce(fn, ms) {
+  let t;
+  const debounced = function (...args) { clearTimeout(t); t = setTimeout(() => fn.apply(this, args), ms); };
+  debounced.cancel = () => { clearTimeout(t); t = undefined; };
+  return debounced;
+}
+
 const mod = createModule({
   config: {
     id: 'histogram',
@@ -88,11 +110,12 @@ const mod = createModule({
       _panStart: null,
       _unsubs: [],
       _plotting: false,
+      _resizeObserver: null,
+      _resizeDebounced: null,
+      _lastRenderSize: null,
       _interactionsReady: false,
       _activeColorPicker: null,
       _exampleWorksheetId: null,
-      _renderedW: 0,
-      _renderedH: 0,
       // Rendering state kept across renders (tooltip / zoom-pan)
       _curBinData: null,
       _lastXScale: null,
@@ -189,6 +212,49 @@ const mod = createModule({
           },
         });
         chartWrap.appendChild(this._modebar.el);
+      },
+
+      // ── Größenänderung der Zeichenfläche ──────────────────────
+
+      /**
+       * Legt einen entprellten `ResizeObserver` auf die Zeichenfläche
+       * (`[data-ref="chart-wrap"]`) und zeichnet das Diagramm neu, sobald sich
+       * deren Maße ändern.
+       *
+       * Ohne das bliebe die in `_renderChart()` einmalig aus
+       * `getBoundingClientRect()` gesetzte `viewBox` stehen. Wird der Container
+       * später breiter — etwa weil das 360 px breite Hilfe-Panel verschwindet —,
+       * skaliert das Default-`preserveAspectRatio` das alte Bild mittig in die
+       * neue Fläche: links und rechts bleibt ein leerer Rand statt eines neu
+       * aufgebauten Diagramms. Boxplot-Streifen und Pareto-Sekundärachse hängen
+       * am selben Durchlauf und werden dabei mitgezogen.
+       *
+       * Eine Rückkopplung ist ausgeschlossen: die beobachtete Fläche hat eine
+       * feste Höhe und schneidet Überstehendes ab (`histogram.css`:
+       * `.histogram__chart-wrap { height: 420px; overflow: hidden }`), das SVG
+       * darin liegt auf `width/height: 100%`. `_renderChart()` kann die
+       * gemessene Box also gar nicht verändern. Zusätzlich zeichnet der
+       * Beobachter nur neu, wenn die Fläche vom Maßstab des letzten Durchlaufs
+       * abweicht (`_lastRenderSize`).
+       *
+       * @private
+       */
+      _observeChartResize() {
+        if (this._resizeObserver) { this._resizeObserver.disconnect(); this._resizeObserver = null; }
+        if (this._resizeDebounced) { this._resizeDebounced.cancel(); this._resizeDebounced = null; }
+        if (typeof ResizeObserver === 'undefined') return;
+        const wrap = module._container?.querySelector('[data-ref="chart-wrap"]');
+        if (!wrap) return;
+        this._resizeDebounced = debounce(() => {
+          if (!this._seriesData) return;
+          const rect = wrap.getBoundingClientRect();
+          if (rect.width <= 0 || rect.height <= 0) return;
+          const last = this._lastRenderSize;
+          if (last && Math.abs(last.w - rect.width) < 0.5 && Math.abs(last.h - rect.height) < 0.5) return;
+          this._renderChart();
+        }, 80);
+        this._resizeObserver = new ResizeObserver(this._resizeDebounced);
+        this._resizeObserver.observe(wrap);
       },
 
       // ── Zoom / pan / global mouse ─────────────────────────────
@@ -395,38 +461,6 @@ const mod = createModule({
           : [];
       },
 
-      /**
-       * Hält die viewBox an der tatsächlichen Breite der Chart-Fläche.
-       *
-       * Das Modul zeichnet ein eigenes SVG und bekommt darum nicht den
-       * ResizeObserver, den `chart-base.js` den Framework-Charts mitgibt.
-       * Ohne ihn behält die viewBox die Breite, die beim Zeichnen gemessen
-       * wurde. Das SVG-Element selbst wächst per `width: 100%` mit, der alte
-       * Inhalt wird also von `preserveAspectRatio` nur zentriert eingepasst —
-       * der Plot steht dann mit Leerrand links und rechts statt die Fläche zu
-       * füllen. Bis hierher half allein der Zufall: neu gezeichnet wurde erst,
-       * wenn ein fremdes Ereignis feuerte (Autosave, Themenwechsel, neue
-       * Worksheet-Daten).
-       *
-       * @private
-       */
-      _observeChartResize() {
-        if (typeof ResizeObserver !== 'function') return;
-        const wrap = module._container?.querySelector('[data-ref="chart-wrap"]');
-        if (!wrap) return;
-
-        const ro = new ResizeObserver(() => {
-          if (!this._seriesData) return;
-          const rect = wrap.getBoundingClientRect();
-          if (rect.width <= 0 || rect.height <= 0) return;
-          if (Math.round(rect.width) === this._renderedW
-            && Math.round(rect.height) === this._renderedH) return;
-          this._renderChart();
-        });
-        ro.observe(wrap);
-        this._unsubs.push(() => ro.disconnect());
-      },
-
       // ── Chart rendering (module-owned SVG) ────────────────────
       _renderChart() {
         const seriesData = this._seriesData;
@@ -439,12 +473,10 @@ const mod = createModule({
         const size = { w: rect.width, h: rect.height };
         if (size.w <= 0 || size.h <= 0) return;
 
-        // Maß festhalten, auf das gerade gezeichnet wird — _observeChartResize()
-        // vergleicht dagegen und zeichnet nur bei echter Änderung neu.
-        this._renderedW = Math.round(size.w);
-        this._renderedH = Math.round(size.h);
-
         svg.setAttribute('viewBox', `0 0 ${size.w} ${size.h}`);
+        // Maßstab dieses Durchlaufs merken — der ResizeObserver zeichnet nur
+        // neu, wenn die Fläche davon abweicht (siehe _observeChartResize).
+        this._lastRenderSize = { w: size.w, h: size.h };
         svg.replaceChildren();
 
         const textColor = resolveColor('var(--color-text-primary)');
@@ -1031,7 +1063,19 @@ const mod = createModule({
         }
       },
 
+      /**
+       * Reihenfolge ist Absicht: Beobachter und entprellter Timer werden
+       * *zuerst* abgeräumt. Alles Weitere ruft Fremdcode (`_picker.destroy()`,
+       * `_closeColorPicker()`, `_modebar.destroy()`) — wirft davon etwas, liefe
+       * sonst der 80-ms-Debounce weiter und zöge `_renderChart()` auf der
+       * abgerissenen Instanz nach, genau das Loch, das dieser Teardown schließt.
+       * Bewusst kein `try/finally`: das Modul räumt sonst überall mit einfachen
+       * bewachten Zuweisungen auf, und ein Reihenfolgewechsel kostet nichts.
+       */
       destroy() {
+        if (this._resizeObserver) { this._resizeObserver.disconnect(); this._resizeObserver = null; }
+        if (this._resizeDebounced) { this._resizeDebounced.cancel(); this._resizeDebounced = null; }
+        this._lastRenderSize = null;
         for (const unsub of this._unsubs) unsub();
         this._unsubs = [];
         if (this._picker) { this._picker.destroy(); this._picker = null; }

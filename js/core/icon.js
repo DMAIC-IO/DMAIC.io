@@ -14,7 +14,7 @@
  * der Diagramme): sie rendern als background-image statt als Maske.
  */
 
-const SIZE_CLASS = { sm: 'icon--sm', md: '', lg: 'icon--lg' };
+const SIZE_CLASS = { xs: 'icon--xs', sm: 'icon--sm', md: '', lg: 'icon--lg' };
 const VARIANT_CLASS = {
   accent: 'icon--accent',
   muted: 'icon--muted',
@@ -24,7 +24,7 @@ const VARIANT_CLASS = {
 
 /**
  * @param {string} name  semantischer Icon-Name, z. B. 'action.delete'
- * @param {{size?: 'sm'|'md'|'lg', variant?: 'accent'|'muted'|'danger'|'success',
+ * @param {{size?: 'xs'|'sm'|'md'|'lg', variant?: 'accent'|'muted'|'danger'|'success',
  *          cls?: string, raw?: boolean}} [opts]
  * @returns {HTMLSpanElement}
  */

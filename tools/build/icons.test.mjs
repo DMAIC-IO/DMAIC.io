@@ -41,24 +41,27 @@ test('svgToDataUri percent-encodes the markup', () => {
   assert.ok(uri.includes('%3Csvg'), 'encoded');
 });
 
-test('SIZES carries the three steps with their stroke widths', () => {
+test('SIZES carries the four steps with their stroke widths', () => {
   assert.deepEqual(SIZES, [
     { cls: '', strokeWidth: 2 },
+    { cls: 'icon--xs', strokeWidth: 2.5 },
     { cls: 'icon--sm', strokeWidth: 2.25 },
     { cls: 'icon--lg', strokeWidth: 1.75 },
   ]);
 });
 
-test('buildIconsCss emits base, sm and lg rules in that order', () => {
+test('buildIconsCss emits base, xs, sm and lg rules in that order', () => {
   const css = buildIconsCss({ 'action.delete': 'lucide:trash-2' }, () => LUCIDE);
   const iBase = css.indexOf('.icon[data-icon="action.delete"]');
+  const iXs = css.indexOf('.icon--xs[data-icon="action.delete"]');
   const iSm = css.indexOf('.icon--sm[data-icon="action.delete"]');
   const iLg = css.indexOf('.icon--lg[data-icon="action.delete"]');
-  assert.ok(iBase >= 0 && iSm > iBase && iLg > iSm, 'base < sm < lg');
+  assert.ok(iBase >= 0 && iXs > iBase && iSm > iXs && iLg > iSm, 'base < xs < sm < lg');
 });
 
 test('buildIconsCss bakes a different stroke width per size', () => {
   const css = buildIconsCss({ 'action.delete': 'lucide:trash-2' }, () => LUCIDE);
+  assert.ok(css.includes(encodeURIComponent('stroke-width="2.5"')), 'xs stroke');
   assert.ok(css.includes(encodeURIComponent('stroke-width="2.25"')), 'sm stroke');
   assert.ok(css.includes(encodeURIComponent('stroke-width="1.75"')), 'lg stroke');
 });

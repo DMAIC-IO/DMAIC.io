@@ -76,7 +76,7 @@
   font-weight: var(--font-weight-medium);
   color: var(--color-flowchart-step-accent);
   background: var(--color-flowchart-step-accent-bg);
-  padding: 2px var(--spacing-sm);
+  padding: var(--spacing-2xs) var(--spacing-sm);
   border-radius: var(--border-radius-sm);
   flex-shrink: 0;
   cursor: grab;
@@ -211,7 +211,7 @@ textarea.fc-card__description {
    card would sit at a different height in every module — and beside every
    card. It lines up with the card HEADER instead, the one row every card
    shares (header ≈ 40px, connector 32px → 4px offset). */
-.fc-connector--header-aligned { margin-top: 4px; }
+.fc-connector--header-aligned { margin-top: var(--spacing-xs); }
 
 .fc-connector--clickable {
   cursor: pointer;
@@ -331,7 +331,7 @@ textarea.fc-card__description {
 .fc-substeps-list {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: var(--spacing-2xs);
 }
 
 .fc-substep-item {
@@ -380,7 +380,7 @@ textarea.fc-card__description {
   border: none;
   color: var(--color-text-tertiary);
   cursor: pointer;
-  padding: 2px;
+  padding: var(--spacing-2xs);
   display: flex;
   border-radius: var(--border-radius-sm);
   opacity: 0;

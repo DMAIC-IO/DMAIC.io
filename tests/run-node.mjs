@@ -62,6 +62,7 @@ const SKIP = new Set([
   'core/html-utils.test.js',
   'core/icon.test.js',
   'core/markdown-parser.test.js',
+  'core/spacing-tokens.test.js',
   'core/state-manager.test.js',
   'core/storage/local-adapter.test.js',
   'core/template-module-imagepaths.test.js',
@@ -84,7 +85,9 @@ const SKIP = new Set([
   'startup/migration-notice.test.js',
   'ui/action-modal.test.js',
   'ui/dmaic-tiles-rebuild.test.js',
+  'ui/layout-primitives.test.js',
   'ui/modal-dialog-api.test.js',
+  'ui/split-layout.test.js',
   'ui/workspace-reset.test.js',
 ]);
 

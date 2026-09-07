@@ -3844,7 +3844,6 @@
       "noise": "Noise",
       "generate": "Generate Data",
       "exportCSV": "CSV Export",
-      "toWorksheet": "Worksheet",
       "statsTitle": "Descriptive Statistics",
       "statMean": "Mean",
       "statStd": "Std.Dev.",

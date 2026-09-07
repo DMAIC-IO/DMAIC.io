@@ -40,7 +40,7 @@
 .smpsize__summary strong {
   display: block;
   font-size: var(--font-size-sm);
-  margin-bottom: 2px;
+  margin-bottom: var(--spacing-2xs);
 }
 
 .smpsize__summary p {
@@ -57,8 +57,8 @@
   background: none;
   border: 1px solid var(--color-border, var(--color-border-primary));
   border-radius: 4px;
-  padding: 2px 4px;
-  margin-left: 6px;
+  padding: var(--spacing-2xs) var(--spacing-xs);
+  margin-left: var(--spacing-s);
   cursor: pointer;
   color: var(--color-text-secondary);
   opacity: 0.6;
