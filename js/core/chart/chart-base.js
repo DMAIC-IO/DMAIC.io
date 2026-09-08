@@ -21,6 +21,7 @@ import {
 import { ensureXLSX as _ensureXLSX } from '../export-utils.js';
 import { icon } from '../icon.js';
 import { h } from '../dom.js';
+import { debounce } from '../debounce.js';
 
 /** Font families embedded in SVG for export fidelity */
 const FONT_MAIN = "'Segoe UI', 'Helvetica Neue', Arial, sans-serif";
@@ -34,17 +35,6 @@ const LEGEND_WIDTH = 90;
 // plus a little breathing room.
 const Y_LABEL_PAD = 14;
 const PROXIMITY_PX = 12;
-
-/**
- * Debounce helper.
- * @param {Function} fn
- * @param {number} ms
- * @returns {Function}
- */
-function debounce(fn, ms) {
-  let t;
-  return function (...args) { clearTimeout(t); t = setTimeout(() => fn.apply(this, args), ms); };
-}
 
 export default class ChartBase {
   /**

@@ -46,32 +46,11 @@ import {
 import { DatasetPicker, getColumnValues, getColumnName } from '../../ui/dataset-picker.js';
 import { computeSeriesStats, renderStatsTable } from '../../core/stats-panel.js';
 import { CHART_COLORS_RGBA, BORDER_COLORS } from '../../core/chart/chart-colors.js';
+import { debounce } from '../../core/debounce.js';
 import { binAll, computeBoxStats, createBarPattern } from './histogram-binning.js';
 import {
   provisionWorksheet, removeProvisionedWorksheet, csvPayloadToWorksheetState,
 } from '../../core/examples-registry.js';
-
-/**
- * Verzögert `fn`, bis `ms` Millisekunden ohne weiteren Aufruf vergangen sind.
- * Gleiche Ausdrucksform wie in `core/chart/chart-base.js` — dort ist der
- * Helfer nicht exportiert.
- *
- * Die zurückgegebene Funktion trägt eine `cancel()`-Methode, die einen noch
- * laufenden Timer verwirft. Ohne sie feuert ein kurz vor dem Teardown
- * ausgelöster Aufruf auch nach `destroy()` noch — und da die Instanz ihr DOM
- * über das Modul-Singleton `module._container` auflöst, schriebe er alte Daten
- * in ein bereits neu gemountetes SVG.
- *
- * @param {Function} fn Aufzurufende Funktion.
- * @param {number} ms Ruhezeit in Millisekunden.
- * @returns {Function & { cancel: () => void }} Entprellte Fassung von `fn`.
- */
-function debounce(fn, ms) {
-  let t;
-  const debounced = function (...args) { clearTimeout(t); t = setTimeout(() => fn.apply(this, args), ms); };
-  debounced.cancel = () => { clearTimeout(t); t = undefined; };
-  return debounced;
-}
 
 const mod = createModule({
   config: {

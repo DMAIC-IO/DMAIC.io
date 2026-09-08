@@ -28,6 +28,7 @@ import { shortcutRegistry } from '../../core/shortcut-registry.js';
 import { h } from '../../core/dom.js';
 import { icon } from '../../core/icon.js';
 import { uid } from '../../core/uid.js';
+import { debounce } from '../../core/debounce.js';
 
 // ═══════════════════════════════════════════════════════════
 //  FORMULA EDITOR (imperative — bound to the live DataGrid)
@@ -1070,6 +1071,13 @@ const mod = createModule({
       },
 
       destroy() {
+        // Zuerst die Entpreller stilllegen. Beide schreiben über
+        // setModuleState in den Projektzustand; ein noch laufender Timer
+        // feuerte bis zu zwei Sekunden nach dem Teardown und legte den Stand
+        // dieser Instanz erneut ab — nach dem Entfernen des Moduls als
+        // verwaisten Datensatz, den kein Aufräumpfad je wieder anfasst.
+        this._autoSave?.cancel?.();
+        this._persistAndNotify?.cancel?.();
         if (this._boundKeyDown) document.removeEventListener('keydown', this._boundKeyDown, true);
         for (const unsub of this._unsubs) { try { unsub(); } catch { /* ignore */ } }
         this._unsubs = [];
@@ -1265,11 +1273,6 @@ mod.loadExample = async function loadExample(payload) {
 };
 
 // ── Helpers ────────────────────────────────────────────────────
-
-function debounce(fn, ms) {
-  let timer;
-  return (...args) => { clearTimeout(timer); timer = setTimeout(() => fn(...args), ms); };
-}
 
 function _showToast(msg, type = 'info') {
   const el = document.createElement('div');
