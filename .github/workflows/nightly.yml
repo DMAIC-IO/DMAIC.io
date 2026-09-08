@@ -14,8 +14,11 @@
 #     DEPLOY_KNOWN_HOSTS — known_hosts entries; should include the nightly host
 #                          (and the production host if you share the secret).
 #
-# Trigger: any push to the `dev` branch in this repo.
-# No build step, no versioning — the latest dev state always wins.
+# Trigger: any push to `dev` or `main` in this repo.
+# Keine Versionierung — der letzte Stand gewinnt immer. Gebaut und geprüft wird
+# aber sehr wohl: dieselben vier Test-Gates wie im Tag-Release laufen vor dem
+# Build, denn nightly.dmaic.io ist eine veröffentlichte Adresse. Ohne sie ginge
+# jeder Push auf main ungeprüft live.
 
 name: Nightly Deploy
 
@@ -53,6 +56,24 @@ jobs:
         run: |
           git diff --exit-code -- THIRD-PARTY-LICENSES.txt js/pages/licenses/licenses-data.generated.js \
             || { echo "::error::License artifacts are stale. Run 'npm install' (or 'npm run licenses') and commit THIRD-PARTY-LICENSES.txt + js/pages/licenses/licenses-data.generated.js."; exit 1; }
+
+      # ── Deploy-Gates ────────────────────────────────────────────────
+      # Wortgleich mit release-app.yml. Ein Fehlschlag bricht den Job ab,
+      # bevor irgendetwas gebaut oder per rsync ausgeliefert wird.
+      - name: Run DOM-free unit tests (deploy gate — no build/deploy on failure)
+        run: npm run test:unit
+
+      - name: Run build-tooling tests (deploy gate)
+        run: npm run test:build
+
+      - name: Verify icon map is in sync (deploy gate)
+        run: npm run icons:check
+
+      - name: Install Chromium for the DOM test runner
+        run: npx playwright install --with-deps chromium
+
+      - name: Run DOM unit tests in headless Chromium (deploy gate)
+        run: npm run test:browser
 
       - name: Build app (generate index.html + bundle)
         run: npm run build

@@ -71,6 +71,10 @@ const SKIP = new Set([
   'core/worksheet-pool.test.js',
   'core/workspace-detached.test.js',
   'dialogs/scenario-confirm-data.test.js',
+  // Zieht über activity-flowchart.js Alpine CSP herein, das beim Import
+  // MutationObserver anfasst. Läuft unverändert im Browser-Runner
+  // (tests/runner.html) — dort ist die Suite seit jeher registriert.
+  'modules/activity-flowchart.test.js',
   'modules/ishikawa-cost.test.js',
   'modules/ishikawa-gantt.test.js',
   'modules/ishikawa-trend.test.js',
