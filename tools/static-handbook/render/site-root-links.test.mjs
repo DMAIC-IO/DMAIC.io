@@ -103,6 +103,59 @@ test('renderNav/renderFooter werden nur aus renderPage heraus gerufen', async ()
     'renderNav/renderFooter außerhalb von page-shell.mjs — die %SITE_ROOT%-Auflösung würde ausbleiben');
 });
 
+test('jede Seitenhülle trägt Kontrollkästchen, Burger, Scrim und Drawer als Geschwister', () => {
+  for (const lang of ['de', 'en']) {
+    for (const { pathFromRoot } of PATHS) {
+      const html = render(pathFromRoot, lang);
+      const box = html.indexOf('id="navToggle"');
+      const bar = html.indexOf('<header class="handbook-nav">');
+      const scrim = html.indexOf('class="nav-scrim"');
+      const drawer = html.indexOf('id="navDrawer"');
+      assert.ok(box > -1, `Kontrollkästchen fehlt auf ${pathFromRoot} (${lang})`);
+      assert.ok(box < bar, `Kontrollkästchen steht nicht vor der Leiste (${pathFromRoot}, ${lang})`);
+      assert.ok(bar < scrim && scrim < drawer,
+        `Reihenfolge Leiste → Scrim → Drawer verletzt (${pathFromRoot}, ${lang})`);
+      assert.ok(html.includes('<label for="navToggle" class="burger"'),
+        `Burger-Label fehlt (${pathFromRoot}, ${lang})`);
+      assert.ok(html.includes('<label for="navToggle" class="nav-scrim"'),
+        `Scrim-Label fehlt (${pathFromRoot}, ${lang})`);
+    }
+  }
+});
+
+test('das Kontrollkästchen trägt die übersetzte Beschriftung navMenu', () => {
+  assert.ok(render('/de/index.html', 'de').includes('aria-label="Menü"'), 'deutsche Beschriftung fehlt');
+  assert.ok(render('/en/index.html', 'en').includes('aria-label="Menu"'), 'englische Beschriftung fehlt');
+});
+
+test('der Drawer führt Aufruf, alle drei Links und den Sprachlink in dieser Reihenfolge', () => {
+  const html = render('/de/define/sipoc.html', 'de');
+  const drawer = html.slice(html.indexOf('id="navDrawer"'));
+  const cta = drawer.indexOf('nav-drawer__cta');
+  const links = drawer.indexOf('nav-drawer__links');
+  const lang = drawer.indexOf('nav-drawer__lang');
+  assert.ok(cta > -1 && links > cta, 'der Aufruf muss über den Links stehen');
+  assert.ok(lang > links, 'der Sprachlink muss unter den Links stehen');
+  for (const label of ['Module', 'Algorithmus-Lab', 'Schulungen']) {
+    assert.ok(drawer.includes(`>${label}<`), `Drawer-Eintrag ${label} fehlt`);
+  }
+});
+
+test('der Skriptpfad ist relativ zur Seitentiefe aufgelöst', () => {
+  const cases = [
+    ['/de/index.html', '../assets/nav-drawer.js'],
+    ['/de/define/sipoc.html', '../../assets/nav-drawer.js'],
+    ['/en/measure/msa/gage-rr.html', '../../../assets/nav-drawer.js'],
+  ];
+  for (const [pathFromRoot, expected] of cases) {
+    const html = render(pathFromRoot, 'de');
+    assert.ok(
+      html.includes(`<script src="${expected}" defer></script>`),
+      `Skript-Tag für ${pathFromRoot} erwartet ${expected}`,
+    );
+  }
+});
+
 /** Alle .mjs-Dateien unterhalb von dir (ohne Testdateien). */
 async function collectMjs(dir) {
   const out = [];

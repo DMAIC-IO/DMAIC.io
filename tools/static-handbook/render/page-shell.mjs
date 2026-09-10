@@ -50,6 +50,7 @@ const UI_STRINGS = {
     navLab: 'Algorithmus-Lab',
     navTraining: 'Schulungen',
     navApp: 'App öffnen',
+    navMenu: 'Menü',
     home: 'Startseite',
     breadcrumbRoot: 'Handbuch',
     breadcrumbLab: 'Algorithmus-Lab',
@@ -185,6 +186,7 @@ const UI_STRINGS = {
     navLab: 'Algorithm Lab',
     navTraining: 'Training',
     navApp: 'Open App',
+    navMenu: 'Menu',
     home: 'Home',
     breadcrumbRoot: 'Handbook',
     breadcrumbLab: 'Algorithm Lab',
@@ -385,6 +387,9 @@ export function renderPage(opts) {
   const faviconHref = relativeTo(pathFromRoot, '/assets/favicon.svg');
   const logoHref = relativeTo(pathFromRoot, '/assets/logo.svg');
   const katexCssHref = needsKatex ? relativeTo(pathFromRoot, '/assets/katex/katex.min.css') : null;
+  // Der Rewrite am Ende dieser Funktion fasst nur href="…" an, nicht src="…" —
+  // der Skriptpfad wird deshalb hier selbst relativ aufgelöst.
+  const navJsHref = relativeTo(pathFromRoot, '/assets/nav-drawer.js');
 
   const jsonLd = (jsonLdOverride && {
     ...jsonLdOverride,
@@ -436,6 +441,7 @@ ${bodyHtml}
 ${showCta ? renderCta(lang, pathFromRoot) : ''}
 </main>
 ${renderFooter(lang)}
+<script src="${escapeAttr(navJsHref)}" defer></script>
 </body>
 </html>
 `;
@@ -467,7 +473,13 @@ function renderNav(lang, currentPath, altPath, logoAssetHref) {
   const trainingHref = relativeTo(currentPath, trainingRoot);
   const altLangHref = relativeTo(currentPath, otherLangRoot);
 
-  return `<header class="handbook-nav">
+  return `<!-- Der Drawer läuft ohne JavaScript: das versteckte Kontrollkästchen
+     schaltet über :checked ~ … Scrim und Panel. Kontrollkästchen, Leiste,
+     Scrim und Drawer MÜSSEN Geschwister in genau dieser Reihenfolge bleiben —
+     sonst greift der Geschwisterselektor nicht. Identisch zur Site-Navigation
+     (site-src/templates/base.html im privaten Repo). -->
+<input type="checkbox" id="navToggle" class="nav-toggle" aria-label="${escapeAttr(s.navMenu)}">
+<header class="handbook-nav">
   <div class="handbook-nav__inner">
     <a href="${SITE_ROOT_TOKEN}" class="handbook-nav__logo" aria-label="Qprovement">
       <img src="${escapeAttr(logoAssetHref)}" alt="" width="48" height="40">
@@ -481,9 +493,20 @@ function renderNav(lang, currentPath, altPath, logoAssetHref) {
     <div class="handbook-nav__actions">
       <a href="${escapeAttr(altLangHref)}" class="handbook-nav__lang" rel="alternate" hreflang="${lang === 'de' ? 'en' : 'de'}">${escapeHtml(s.langOther)}</a>
       <a href="${escapeAttr(appHref)}" class="handbook-nav__cta">${escapeHtml(s.navApp)} →</a>
+      <label for="navToggle" class="burger" aria-controls="navDrawer"><span></span><span></span><span></span></label>
     </div>
   </div>
-</header>`;
+</header>
+<label for="navToggle" class="nav-scrim"></label>
+<aside class="nav-drawer" id="navDrawer" aria-label="${escapeAttr(s.navMenu)}">
+  <a href="${escapeAttr(appHref)}" class="handbook-nav__cta nav-drawer__cta">${escapeHtml(s.navApp)} →</a>
+  <nav class="nav-drawer__links">
+    <a href="${escapeAttr(homeHref)}">${escapeHtml(s.navModules)}</a>
+    <a href="${escapeAttr(labHref)}">${escapeHtml(s.navLab)}</a>
+    <a href="${escapeAttr(trainingHref)}">${escapeHtml(s.navTraining)}</a>
+  </nav>
+  <a href="${escapeAttr(altLangHref)}" class="handbook-nav__lang nav-drawer__lang" rel="alternate" hreflang="${lang === 'de' ? 'en' : 'de'}">${escapeHtml(s.langOther)}</a>
+</aside>`;
 }
 
 function renderBreadcrumbs(items) {
