@@ -57,7 +57,7 @@ async function calloutIconSvg(kind) {
   const name = CALLOUT_ICON_NAMES[kind];
   if (!name) return '';
   if (iconSvgCache.has(name)) return iconSvgCache.get(name);
-  let svg = '';
+  let svg;
   try {
     const raw = await readFile(path.join(ICON_VENDOR_DIR, `${name}.svg`), 'utf8');
     // normalizeSvg() (tools/build/icons.mjs) entfernt Lizenzkommentar und das

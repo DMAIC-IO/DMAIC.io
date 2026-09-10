@@ -33,7 +33,7 @@
   --bg-c:    #F3F7F9;
   --bg-e:    #D9E9F3;
   --bg-s:    #F4F9FB;
-  --bg-card: #FFFFFF;
+  --bg-card: #FFF;
   --border:   #CBDCE6;
   --border-h: #A9C6D6;
   --t1: #0D4065;
@@ -43,8 +43,8 @@
   --green:   #79AE68;
   --green-h: #6B9D5B;
   --teal:    #538A8D;
-  --shadow:  0 8px 24px rgba(13, 64, 101, .10);
-  --shadow-h: 0 12px 32px rgba(13, 64, 101, .16);
+  --shadow:  0 8px 24px rgb(13 64 101 / 10%);
+  --shadow-h: 0 12px 32px rgb(13 64 101 / 16%);
   --max: 960px;
 }
 
@@ -173,6 +173,7 @@ a:hover { color: var(--t1); }
 .handbook-breadcrumbs [aria-current="page"] { color: var(--t1); }
 
 /* ─── Headline ────────────────────────────────────────────────── */
+
 /* Instrument Serif entfällt (Task 6, Site-Repo) — Display-Typografie ist
    DM Sans 700 uppercase, gespiegelt aus .title in css/site.css. */
 .handbook-article > h1 {
@@ -296,6 +297,7 @@ a:hover { color: var(--t1); }
 .handbook-block__table td { color: var(--t1); }
 
 /* ─── Callouts ────────────────────────────────────────────────── */
+
 /* Review fix (Task 10): the palette has only three usable accent hues
    (blue/green/teal) for four callout kinds, and blocks.mjs renders no text
    label — colour tint alone made scenario/decision indistinguishable on a
@@ -346,6 +348,7 @@ a:hover { color: var(--t1); }
   border-left-color: var(--green);
   background: color-mix(in srgb, var(--green) 14%, var(--bg-card));
 }
+
 /* Icon nicht in --green: kleines Symbol auf hellem Tint erreicht die 3:1 aus
    WCAG 1.4.11 nicht. Grün bleibt Rand und Fläche, das Symbol trägt --t1. */
 .handbook-callout--result .handbook-callout__icon { color: var(--t1); }
