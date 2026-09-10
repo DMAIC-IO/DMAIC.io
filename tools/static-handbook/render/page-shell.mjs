@@ -7,13 +7,13 @@
  *   - Top nav (logo, language switch, "App öffnen" CTA)
  *   - Breadcrumbs
  *   - Main content slot
- *   - Footer with DMAIC.io link + lightweight legal row
+ *   - Footer with Qprovement link + lightweight legal row
  */
 
 import { escapeHtml, escapeAttr, stripTermTokens } from './escape.mjs';
 
-const SITE_ORIGIN = 'https://dmaic.io/app/latest/docs';
-const APP_ORIGIN = 'https://dmaic.io';
+const SITE_ORIGIN = 'https://qprovement.com/app/latest/docs';
+const APP_ORIGIN = 'https://qprovement.com';
 
 const PHASES = ['define', 'measure', 'analyze', 'improve', 'control', 'data'];
 
@@ -39,12 +39,12 @@ const UI_STRINGS = {
       trizTitle: 'TRIZ verstehen',
       trizShort: 'Theorie des erfinderischen Problemlösens nach Altschuller — Widersprüche, Idealität, 40 Prinzipien und Widerspruchsmatrix.',
       minitabTitle: 'Für Minitab-Nutzer',
-      minitabShort: 'Wo finden Minitab-Nutzer ihre gewohnten Analysen in DMAIC.io wieder — mit Menü-Mapping und Umstiegs-Tipps.',
+      minitabShort: 'Wo finden Minitab-Nutzer ihre gewohnten Analysen in Qprovement wieder — mit Menü-Mapping und Umstiegs-Tipps.',
       jmpTitle: 'Für JMP-Nutzer',
-      jmpShort: 'Wo finden JMP-Nutzer Distribution, Fit Y by X, DOE und Quality Tools in DMAIC.io — mit Menü-Mapping und Umstiegs-Tipps.',
+      jmpShort: 'Wo finden JMP-Nutzer Distribution, Fit Y by X, DOE und Quality Tools in Qprovement — mit Menü-Mapping und Umstiegs-Tipps.',
     },
     ctaTitle: 'Dieses Werkzeug direkt nutzen',
-    ctaBody: 'DMAIC.io ist kostenlos, läuft vollständig in deinem Browser — keine Anmeldung, keine Daten verlassen dein Gerät.',
+    ctaBody: 'Qprovement ist kostenlos, läuft vollständig in deinem Browser — keine Anmeldung, keine Daten verlassen dein Gerät.',
     ctaButton: 'App öffnen',
     footerTagline: 'Open-Source Six-Sigma-Werkzeug. Läuft zu 100 % in deinem Browser.',
     footerDocs: 'Handbuch',
@@ -109,11 +109,11 @@ const UI_STRINGS = {
       workflow: 'Ablauf',
       advanced: 'Erweiterte Optionen',
     },
-    handbookTitle: 'DMAIC.io Handbuch',
+    handbookTitle: 'Qprovement Handbuch',
     handbookSub: 'Die DMAIC-Werkzeugbibliothek — als Nachschlagewerk.',
     modulesHeading: 'Module',
     cyclesHeading: 'Zyklen',
-    cyclesIntro: 'DMAIC.io unterstützt mehrere Verbesserungs- und Entwicklungszyklen. Wähle einen Zyklus, um seine Phasen und die zugehörigen Werkzeuge im Überblick zu sehen.',
+    cyclesIntro: 'Qprovement unterstützt mehrere Verbesserungs- und Entwicklungszyklen. Wähle einen Zyklus, um seine Phasen und die zugehörigen Werkzeuge im Überblick zu sehen.',
     cycleIndexHeading: 'Werkzeuge im Zyklus',
     cycleExtrasHeading: 'Weitere Werkzeuge',
     cycleExtrasIntro: 'Diese Werkzeuge haben in diesem Zyklus keine feste Phasen-Zuordnung. In der App erscheinen sie im rechten „Weitere"-Tile und können per Drag & Drop in eine Phase gezogen werden.',
@@ -122,7 +122,7 @@ const UI_STRINGS = {
     examplesHeading: 'Beispieldaten',
     examplesIntro: 'Dieses Modul wird mit den folgenden Beispieldatensätzen ausgeliefert — mit einem Klick in der App ladbar.',
     examplesIndexHeading: 'Beispieldaten — Übersicht',
-    examplesIndexIntro: 'Alle Beispieldatensätze und Projektvorlagen, die mit DMAIC.io ausgeliefert werden. Jeder Eintrag öffnet sich per Deeplink direkt im passenden Modul.',
+    examplesIndexIntro: 'Alle Beispieldatensätze und Projektvorlagen, die mit Qprovement ausgeliefert werden. Jeder Eintrag öffnet sich per Deeplink direkt im passenden Modul.',
     examplesIndexCount: '{n} Beispiele über {modules} Module',
     examplesIndexInModule: 'Modul: {module}',
     exampleSource: 'Quelle',
@@ -174,12 +174,12 @@ const UI_STRINGS = {
       trizTitle: 'Understanding TRIZ',
       trizShort: 'Altshuller\'s Theory of Inventive Problem Solving — contradictions, ideality, the 40 principles and the contradiction matrix.',
       minitabTitle: 'For Minitab users',
-      minitabShort: 'Where Minitab users find their usual analyses inside DMAIC.io — with menu mapping and switching tips.',
+      minitabShort: 'Where Minitab users find their usual analyses inside Qprovement — with menu mapping and switching tips.',
       jmpTitle: 'For JMP users',
-      jmpShort: 'Where JMP users find Distribution, Fit Y by X, DOE and Quality Tools inside DMAIC.io — with menu mapping and switching tips.',
+      jmpShort: 'Where JMP users find Distribution, Fit Y by X, DOE and Quality Tools inside Qprovement — with menu mapping and switching tips.',
     },
     ctaTitle: 'Use this tool right away',
-    ctaBody: 'DMAIC.io is free, runs entirely in your browser — no sign-up, no data leaves your device.',
+    ctaBody: 'Qprovement is free, runs entirely in your browser — no sign-up, no data leaves your device.',
     ctaButton: 'Open App',
     footerTagline: 'Open-source Six Sigma toolkit. 100 % in-browser, always.',
     footerDocs: 'Handbook',
@@ -244,11 +244,11 @@ const UI_STRINGS = {
       workflow: 'Workflow',
       advanced: 'Advanced options',
     },
-    handbookTitle: 'DMAIC.io Handbook',
+    handbookTitle: 'Qprovement Handbook',
     handbookSub: 'The DMAIC toolbox — as a reference work.',
     modulesHeading: 'Modules',
     cyclesHeading: 'Cycles',
-    cyclesIntro: 'DMAIC.io supports multiple improvement and development cycles. Pick a cycle to see its phases and the matching tools at a glance.',
+    cyclesIntro: 'Qprovement supports multiple improvement and development cycles. Pick a cycle to see its phases and the matching tools at a glance.',
     cycleIndexHeading: 'Tools in this cycle',
     cycleExtrasHeading: 'More tools',
     cycleExtrasIntro: 'These tools have no fixed phase assignment in this cycle. In the app they appear in the trailing "More" tile and can be dragged into a phase.',
@@ -257,7 +257,7 @@ const UI_STRINGS = {
     examplesHeading: 'Examples',
     examplesIntro: 'This module ships with the following example datasets — load any of them in the app with a single click.',
     examplesIndexHeading: 'Examples — overview',
-    examplesIndexIntro: 'All example datasets and project templates that ship with DMAIC.io. Every entry opens directly in the matching module via deeplink.',
+    examplesIndexIntro: 'All example datasets and project templates that ship with Qprovement. Every entry opens directly in the matching module via deeplink.',
     examplesIndexCount: '{n} examples across {modules} modules',
     examplesIndexInModule: 'Module: {module}',
     exampleSource: 'Source',
@@ -341,6 +341,7 @@ export function renderPage(opts) {
 
   const cssHref = relativeTo(pathFromRoot, '/assets/handbook.css');
   const faviconHref = relativeTo(pathFromRoot, '/assets/favicon.svg');
+  const logoHref = relativeTo(pathFromRoot, '/assets/logo.svg');
   const katexCssHref = needsKatex ? relativeTo(pathFromRoot, '/assets/katex/katex.min.css') : null;
 
   const jsonLd = (jsonLdOverride && {
@@ -356,7 +357,7 @@ export function renderPage(opts) {
     isAccessibleForFree: true,
     publisher: {
       '@type': 'Organization',
-      name: 'DMAIC.io',
+      name: 'Qprovement',
       url: APP_ORIGIN,
     },
   };
@@ -380,12 +381,12 @@ ${altHref ? `<link rel="alternate" hreflang="${otherLang}" href="${escapeAttr(al
 <meta property="og:title" content="${escapeAttr(title)}">
 <meta property="og:description" content="${escapeAttr(description)}">
 <meta property="og:url" content="${escapeAttr(canonical)}">
-<meta property="og:site_name" content="DMAIC.io">
+<meta property="og:site_name" content="Qprovement">
 <meta name="twitter:card" content="summary">
 <script type="application/ld+json">${JSON.stringify(jsonLd)}</script>
 </head>
 <body>
-${renderNav(lang, pathFromRoot, altPathFromRoot)}
+${renderNav(lang, pathFromRoot, altPathFromRoot, logoHref)}
 <main class="handbook-main">
 ${renderBreadcrumbs(breadcrumbs)}
 ${bodyHtml}
@@ -404,26 +405,26 @@ ${renderFooter(lang)}
     `href="${escapeAttr(relativeTo(pathFromRoot, target))}"`);
 }
 
-function renderNav(lang, currentPath, altPath) {
+function renderNav(lang, currentPath, altPath, logoAssetHref) {
   const s = getStrings(lang);
   const root = `/${lang}/`;
   const labRoot = `/${lang}/lab/`;
   const trainingRoot = `/${lang}/training/`;
   const otherLangRoot = altPath || `/${lang === 'de' ? 'en' : 'de'}/`;
 
-  const logoHref = relativeTo(currentPath, root);
+  const homeHref = relativeTo(currentPath, root);
   const labHref = relativeTo(currentPath, labRoot);
   const trainingHref = relativeTo(currentPath, trainingRoot);
   const altLangHref = relativeTo(currentPath, otherLangRoot);
 
   return `<header class="handbook-nav">
   <div class="handbook-nav__inner">
-    <a href="${escapeAttr(logoHref)}" class="handbook-nav__logo">
-      <span class="handbook-nav__mark">D</span>
-      <span class="handbook-nav__brand">DMAIC.io <span class="handbook-nav__docs">docs</span></span>
+    <a href="${escapeAttr(homeHref)}" class="handbook-nav__logo" aria-label="Qprovement">
+      <img src="${escapeAttr(logoAssetHref)}" alt="" width="48" height="40">
+      <span class="handbook-nav__brand">provement</span><span class="handbook-nav__docs">docs</span>
     </a>
     <nav class="handbook-nav__links" aria-label="${escapeAttr(s.navHandbook)}">
-      <a href="${escapeAttr(logoHref)}">${escapeHtml(s.navModules)}</a>
+      <a href="${escapeAttr(homeHref)}">${escapeHtml(s.navModules)}</a>
       <a href="${escapeAttr(labHref)}">${escapeHtml(s.navLab)}</a>
       <a href="${escapeAttr(trainingHref)}">${escapeHtml(s.navTraining)}</a>
     </nav>
@@ -460,11 +461,11 @@ function renderFooter(lang) {
   return `<footer class="handbook-footer">
   <div class="handbook-footer__inner">
     <div class="handbook-footer__brand">
-      <span class="handbook-footer__logo">DMAIC.io</span>
+      <span class="handbook-footer__logo">Qprovement</span>
       <span class="handbook-footer__tag">${escapeHtml(s.footerTagline)}</span>
     </div>
     <nav class="handbook-footer__links" aria-label="${escapeAttr(s.footerDocs)}">
-      <a href="${APP_ORIGIN}/">DMAIC.io</a>
+      <a href="${APP_ORIGIN}/">Qprovement</a>
       <a href="/${lang}/">${escapeHtml(s.footerDocs)}</a>
       <a href="${APP_ORIGIN}/#imprint">${escapeHtml(s.footerImprint)}</a>
       <a href="${APP_ORIGIN}/#privacy">${escapeHtml(s.footerPrivacy)}</a>

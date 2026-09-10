@@ -18,15 +18,6 @@
 }
 
 @font-face {
-  font-family: 'Instrument Serif';
-  font-style: normal;
-  font-weight: 400;
-  font-display: swap;
-  src: url('fonts/instrumentserif-latin.woff2') format('woff2');
-  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+20AC;
-}
-
-@font-face {
   font-family: 'JetBrains Mono';
   font-style: normal;
   font-weight: 400 700;
@@ -35,23 +26,25 @@
   unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC;
 }
 
+/* Qprovement-Palette — gespiegelt aus css/site.css :root (Site-Repo,
+   Task 4/6). --max ist handbuchspezifisch und bleibt bestehen. */
 :root {
-  --bg: #06080C;
-  --bg-s: #0C0F16;
-  --bg-t: #12161F;
-  --bg-card: #0F1219;
-  --border: #1A1F2E;
-  --border-h: #262D40;
-  --t1: #E6E9F0;
-  --t2: #858DA5;
-  --t3: #4E5672;
-  --green: #22C55E;
-  --green-dim: #22C55E20;
-  --green-glow: #22C55E30;
-  --cyan: #06B6D4;
-  --cyan-dim: #06B6D420;
-  --blue: #3B82F6;
-  --gold: #D4A843;
+  --bg:      #E7F1F7;
+  --bg-c:    #F3F7F9;
+  --bg-e:    #D9E9F3;
+  --bg-s:    #F4F9FB;
+  --bg-card: #FFFFFF;
+  --border:   #CBDCE6;
+  --border-h: #A9C6D6;
+  --t1: #0D4065;
+  --t2: #3A5F7D;
+  --t3: #6E8AA0;
+  --blue:    #0B567F;
+  --green:   #79AE68;
+  --green-h: #6B9D5B;
+  --teal:    #538A8D;
+  --shadow:  0 8px 24px rgba(13, 64, 101, .10);
+  --shadow-h: 0 12px 32px rgba(13, 64, 101, .16);
   --max: 960px;
 }
 
@@ -66,13 +59,23 @@ body {
   -webkit-font-smoothing: antialiased;
   font-feature-settings: 'ss01', 'ss02';
 }
-a { color: var(--cyan); text-decoration: none; }
+
+/* Der Flyer-Hintergrund ist ein einzelner Radialverlauf, hell in der Mitte,
+   blau zum Rand. Als fixierte eigene Ebene statt background-attachment:fixed
+   — letzteres springt auf iOS-Safari beim Scrollen. Gespiegelt aus site.css. */
+body::before {
+  content: ""; position: fixed; inset: 0; z-index: -2;
+  background: radial-gradient(ellipse 120% 90% at 50% 40%,
+                              var(--bg-c) 0%, var(--bg-e) 100%);
+}
+
+a { color: var(--blue); text-decoration: none; }
 a:hover { color: var(--t1); }
 
 /* ─── Nav ─────────────────────────────────────────────────────── */
 .handbook-nav {
   position: sticky; top: 0; z-index: 50;
-  background: #06080CEE;
+  background: color-mix(in srgb, var(--bg) 86%, transparent);
   backdrop-filter: blur(18px) saturate(1.2);
   border-bottom: 1px solid var(--border);
 }
@@ -84,22 +87,22 @@ a:hover { color: var(--t1); }
   display: flex; align-items: center; gap: 1.4rem;
 }
 
+/* Marke: die Bildmarke ist das Q, das Wort setzt bei "provement" an —
+   gespiegelt aus der Site-Navigation (.logo in css/site.css). Der
+   aria-label liefert den vollständigen Firmennamen als zugänglichen
+   Namen, alt="" hält die dekorative Bildmarke aus dem Accessibility-Baum. */
 .handbook-nav__logo {
-  display: inline-flex; align-items: center; gap: .55rem;
-  font-family: 'JetBrains Mono', monospace;
-  font-weight: 600; font-size: 1rem;
+  display: inline-flex; align-items: center; gap: 0;
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 700; font-size: 1rem;
+  letter-spacing: -.01em;
   color: var(--t1);
+  text-decoration: none;
 }
 
-.handbook-nav__mark {
-  width: 28px; height: 28px;
-  background: linear-gradient(135deg, var(--green), var(--cyan));
-  border-radius: 6px;
-  display: grid; place-items: center;
-  color: #fff; font-weight: 700;
-}
+.handbook-nav__logo img { width: 48px; height: 40px; display: block; margin-right: -.18rem; }
 .handbook-nav__brand { color: var(--t1); }
-.handbook-nav__docs { color: var(--t3); font-weight: 500; }
+.handbook-nav__docs { color: var(--t3); font-weight: 500; margin-left: .5rem; }
 
 .handbook-nav__links {
   display: flex; gap: 1.4rem;
@@ -122,7 +125,7 @@ a:hover { color: var(--t1); }
   padding: .4rem .75rem;
   border: 1px solid var(--border);
   border-radius: 6px;
-  background: var(--bg-t);
+  background: var(--bg-card);
   color: var(--t2);
   font-family: 'JetBrains Mono', monospace;
   font-size: .72rem;
@@ -134,13 +137,13 @@ a:hover { color: var(--t1); }
 .handbook-nav__cta {
   padding: .5rem 1rem;
   background: var(--green);
-  color: var(--bg);
+  color: var(--bg-card);
   border-radius: 7px;
   font-weight: 600;
   font-size: .85rem;
   transition: transform .2s, box-shadow .2s;
 }
-.handbook-nav__cta:hover { transform: translateY(-1px); box-shadow: 0 4px 16px var(--green-glow); color: var(--bg); }
+.handbook-nav__cta:hover { transform: translateY(-1px); box-shadow: var(--shadow-h); color: var(--bg-card); }
 
 /* ─── Main layout ─────────────────────────────────────────────── */
 .handbook-main {
@@ -170,12 +173,15 @@ a:hover { color: var(--t1); }
 .handbook-breadcrumbs [aria-current="page"] { color: var(--t1); }
 
 /* ─── Headline ────────────────────────────────────────────────── */
+/* Instrument Serif entfällt (Task 6, Site-Repo) — Display-Typografie ist
+   DM Sans 700 uppercase, gespiegelt aus .title in css/site.css. */
 .handbook-article > h1 {
-  font-family: 'Instrument Serif', serif;
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: -.01em;
   font-size: clamp(2.2rem, 4.5vw, 3.4rem);
-  font-weight: 400;
-  line-height: 1.1;
-  letter-spacing: -0.02em;
+  line-height: 1.15;
   margin-bottom: .6rem;
 }
 
@@ -188,7 +194,7 @@ a:hover { color: var(--t1); }
   text-transform: uppercase;
   padding: .3rem .7rem;
   border-radius: 100px;
-  background: var(--bg-t);
+  background: var(--bg-card);
   border: 1px solid var(--border);
   color: var(--t2);
   margin-bottom: 1rem;
@@ -209,10 +215,11 @@ a:hover { color: var(--t1); }
 }
 
 .handbook-section > h2 {
-  font-family: 'Instrument Serif', serif;
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: -.01em;
   font-size: 1.8rem;
-  font-weight: 400;
-  letter-spacing: -0.01em;
   margin-bottom: 1rem;
   color: var(--t1);
 }
@@ -243,7 +250,7 @@ a:hover { color: var(--t1); }
 }
 
 .handbook-block__definition strong {
-  color: var(--cyan);
+  color: var(--blue);
   font-weight: 600;
 }
 
@@ -278,7 +285,7 @@ a:hover { color: var(--t1); }
 }
 
 .handbook-block__table th {
-  background: var(--bg-t);
+  background: var(--bg-card);
   color: var(--t2);
   font-weight: 600;
   font-size: .78rem;
@@ -289,6 +296,11 @@ a:hover { color: var(--t1); }
 .handbook-block__table td { color: var(--t1); }
 
 /* ─── Callouts ────────────────────────────────────────────────── */
+/* Vier Akzentfarben aus drei Tönen im Token-Set: pitfall/decision teilen
+   sich keine Farbe mit scenario — pitfall nutzt teal (kein Amber im
+   Token-Set), decision und scenario beide blue (unterscheiden sich über
+   Tönungsstärke). --green bleibt reine Flächenfarbe (Rand + schwache
+   Tönung), nie Text — Kontrastregel. */
 .handbook-callout {
   border-left: 3px solid var(--border-h);
   background: var(--bg-s);
@@ -305,23 +317,23 @@ a:hover { color: var(--t1); }
 }
 
 .handbook-callout--pitfall {
-  border-left-color: var(--gold);
-  background: #D4A84310;
+  border-left-color: var(--teal);
+  background: color-mix(in srgb, var(--teal) 10%, var(--bg-card));
 }
 
 .handbook-callout--scenario {
   border-left-color: var(--blue);
-  background: #3B82F610;
+  background: color-mix(in srgb, var(--blue) 10%, var(--bg-card));
 }
 
 .handbook-callout--result {
   border-left-color: var(--green);
-  background: var(--green-dim);
+  background: color-mix(in srgb, var(--green) 14%, var(--bg-card));
 }
 
 .handbook-callout--decision {
-  border-left-color: var(--cyan);
-  background: var(--cyan-dim);
+  border-left-color: var(--blue);
+  background: color-mix(in srgb, var(--blue) 5%, var(--bg-card));
 }
 
 /* ─── CTA (app button) ────────────────────────────────────────── */
@@ -331,15 +343,17 @@ a:hover { color: var(--t1); }
   border: 1px solid var(--border);
   border-radius: 14px;
   background:
-    radial-gradient(ellipse at top left, var(--green-glow), transparent 60%),
+    radial-gradient(ellipse at top left, color-mix(in srgb, var(--green) 18%, transparent), transparent 60%),
     var(--bg-s);
   text-align: center;
 }
 
 .handbook-cta__title {
-  font-family: 'Instrument Serif', serif;
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: -.01em;
   font-size: 1.7rem;
-  font-weight: 400;
   margin-bottom: .6rem;
 }
 
@@ -354,7 +368,7 @@ a:hover { color: var(--t1); }
   display: inline-block;
   padding: .85rem 2rem;
   background: var(--green);
-  color: var(--bg);
+  color: var(--bg-card);
   border-radius: 9px;
   font-weight: 600;
   font-size: .95rem;
@@ -363,8 +377,8 @@ a:hover { color: var(--t1); }
 
 .handbook-cta__button:hover {
   transform: translateY(-1px);
-  box-shadow: 0 6px 22px var(--green-glow);
-  color: var(--bg);
+  box-shadow: var(--shadow-h);
+  color: var(--bg-card);
 }
 
 /* ─── Footer ──────────────────────────────────────────────────── */
@@ -445,9 +459,11 @@ a:hover { color: var(--t1); }
 .handbook-phase-group { margin-bottom: 2rem; }
 
 .handbook-phase-group > h2 {
-  font-family: 'Instrument Serif', serif;
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: -.01em;
   font-size: 1.5rem;
-  font-weight: 400;
   margin-bottom: .3rem;
 }
 
@@ -490,7 +506,7 @@ a:hover { color: var(--t1); }
   font-family: 'JetBrains Mono', monospace;
   font-size: .7rem;
   font-weight: 600;
-  color: var(--cyan);
+  color: var(--blue);
   letter-spacing: .04em;
   text-transform: uppercase;
   margin-bottom: .4rem;

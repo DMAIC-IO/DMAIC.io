@@ -5,7 +5,7 @@
  * stays stable across runs.
  */
 
-const SITE_ORIGIN = 'https://dmaic.io/app/latest/docs';
+const SITE_ORIGIN = 'https://qprovement.com/app/latest/docs';
 
 export function renderSitemap(paths) {
   const today = new Date().toISOString().slice(0, 10);

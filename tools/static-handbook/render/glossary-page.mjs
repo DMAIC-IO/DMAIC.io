@@ -16,7 +16,7 @@ import { getModuleName } from '../loaders/load-sources.mjs';
 import { renderLatex } from './katex.mjs';
 import { renderInline } from './inline.mjs';
 
-const APP_ORIGIN = 'https://dmaic.io';
+const APP_ORIGIN = 'https://qprovement.com';
 
 // ─── Per-term page ──────────────────────────────────────────────
 
@@ -78,9 +78,9 @@ export async function renderGlossaryTermPage({ term, glossary, modules, lang, i1
     name: title,
     description: shortText || title,
     inLanguage: lang,
-    url: 'https://dmaic.io' + pathFromRoot,
+    url: 'https://qprovement.com' + pathFromRoot,
     termCode: term.id,
-    inDefinedTermSet: 'https://dmaic.io' + `/${lang}/glossar/index.html`,
+    inDefinedTermSet: 'https://qprovement.com' + `/${lang}/glossar/index.html`,
   };
 
   const html = renderPage({
