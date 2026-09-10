@@ -30,7 +30,7 @@
     "projectName": "Project name",
     "phaseNav": "Cycle phases",
     "loading": "Loading application …",
-    "desktopOnly": "DMAIC.io is designed for desktop monitors. Please use a screen at least 1280 px wide.",
+    "desktopOnly": "Qprovement is designed for desktop monitors. Please use a screen at least 1280 px wide.",
     "export": "Export",
     "import": "Import",
     "lastSaved": "Last saved: {time}",

@@ -107,14 +107,22 @@ html.is-nightly body {
   z-index: 100;
 }
 
+/* Markenzeichen im App-Kopf: nur die Q-Marke, ohne Wortmarke — die
+   Kachelreihe braucht bei 1280 px jeden Pixel (siehe shell.spec.js,
+   „the collapsed 8D row fits its container at 1280px"). */
 .app-header__logo {
+  display: flex;
+  align-items: center;
   margin: 0;
-  font-size: var(--font-size-lg);
-  font-weight: var(--font-weight-semibold);
-  color: var(--color-accent);
-  letter-spacing: -0.02em;
-  white-space: nowrap;
+  font-size: 0;
+  line-height: 0;
   user-select: none;
+}
+
+.app-header__logo-mark {
+  display: block;
+  width: 38px;
+  height: 32px;
 }
 
 .app-header__project-switcher {

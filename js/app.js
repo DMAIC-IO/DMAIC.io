@@ -113,8 +113,8 @@ async function init() {
 }
 
 function _updateTitle(stateManager) {
-  const name = stateManager.get('projectMeta.name') ?? 'DMAIC.io';
-  document.title = `${name} — DMAIC.io`;
+  const name = stateManager.get('projectMeta.name') ?? 'Qprovement';
+  document.title = `${name} — Qprovement`;
 }
 
 // ─── Start ─────────────────────────────────────────────────────
