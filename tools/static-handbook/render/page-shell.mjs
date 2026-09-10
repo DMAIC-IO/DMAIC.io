@@ -434,7 +434,9 @@ ${renderFooter(lang)}
       `href="${escapeAttr(relativeTo(pathFromRoot, target))}"`)
     // Site-Wurzel-Links erst nach dem Rewrite auflösen — sie sollen absolut
     // bleiben, weil die Site-Wurzel nicht unter dem Tag-Präfix liegt.
-    .split(SITE_ROOT_TOKEN).join('/');
+    // Bewusst nur im href-Kontext ersetzen: ein literales %SITE_ROOT% im
+    // Fließtext einer Hilfequelle bliebe sonst still verstümmelt.
+    .split(`href="${SITE_ROOT_TOKEN}`).join('href="/');
 }
 
 function renderNav(lang, currentPath, altPath, logoAssetHref) {
@@ -500,8 +502,8 @@ function renderFooter(lang) {
     <nav class="handbook-footer__links" aria-label="${escapeAttr(s.footerDocs)}">
       <a href="${SITE_ROOT_TOKEN}">Qprovement</a>
       <a href="/${lang}/">${escapeHtml(s.footerDocs)}</a>
-      <a href="${SITE_ROOT_TOKEN}#imprint">${escapeHtml(s.footerImprint)}</a>
-      <a href="${SITE_ROOT_TOKEN}#privacy">${escapeHtml(s.footerPrivacy)}</a>
+      <a href="${SITE_ROOT_TOKEN}#impressum">${escapeHtml(s.footerImprint)}</a>
+      <a href="${SITE_ROOT_TOKEN}#datenschutz">${escapeHtml(s.footerPrivacy)}</a>
     </nav>
   </div>
 </footer>`;
