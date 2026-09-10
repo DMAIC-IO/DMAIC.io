@@ -107,15 +107,21 @@ html.is-nightly body {
   z-index: 100;
 }
 
-/* Markenzeichen im App-Kopf: nur die Q-Marke, ohne Wortmarke — die
-   Kachelreihe braucht bei 1280 px jeden Pixel (siehe shell.spec.js,
-   „the collapsed 8D row fits its container at 1280px"). */
+/* Markenzeichen im App-Kopf: Q-Marke als Bild plus Wortmarke „provement",
+   dieselbe Konstruktion wie im Website-Kopf (.logo in css/site.css), nur auf
+   die 48 px hohe Kopfzeile herunterskaliert (Website 48x40 px Marke bei
+   19,2 px Schrift — hier 38x32 px bei 16 px). */
 .app-header__logo {
   display: flex;
   align-items: center;
+  gap: 0;
   margin: 0;
-  font-size: 0;
-  line-height: 0;
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  line-height: 1;
+  letter-spacing: -0.01em;
+  color: var(--color-text-primary);
+  white-space: nowrap;
   user-select: none;
 }
 
@@ -123,6 +129,23 @@ html.is-nightly body {
   display: block;
   width: 38px;
   height: 32px;
+  flex-shrink: 0;
+}
+
+/* Der Bogen des Q läuft rechts flach aus; die Wortmarke rückt darunter, damit
+   „Q" und „provement" als ein Wort lesen (Website: margin-right: -.18rem). */
+.app-header__logo-word {
+  margin-left: -3px;
+}
+
+/* Kollabierte Kachelreihe heißt: die Kopfzeile ist am Anschlag (bei 1280 px im
+   8D-Zyklus ist sie das). Dann weicht die Wortmarke, sonst frisst sie den Namen
+   der aktiven Phase auf — genau die Regression, die shell.spec.js mit
+   „the collapsed 8D row fits its container at 1280px" festnagelt. Die Marke
+   selbst bleibt immer stehen. Kein Media-Query: die Bedingung ist die
+   Dichte der Kopfzeile, nicht die Viewportbreite. */
+.app-header:has(.dmaic-tiles--collapsed) .app-header__logo-word {
+  display: none;
 }
 
 .app-header__project-switcher {
