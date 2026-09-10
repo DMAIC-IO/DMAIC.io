@@ -473,6 +473,19 @@ function renderNav(lang, currentPath, altPath, logoAssetHref) {
   const trainingHref = relativeTo(currentPath, trainingRoot);
   const altLangHref = relativeTo(currentPath, otherLangRoot);
 
+  // Eine Quelle für die drei Navigationslinks — Leiste und Drawer zeigen
+  // dieselben Ziele in derselben Reihenfolge (Opferreihenfolge: Links zuerst).
+  // Ein vierter Eintrag braucht künftig nur einen Eintrag hier, nicht zwei
+  // Stellen im Markup.
+  const navLinks = [
+    { href: homeHref, label: s.navModules },
+    { href: labHref, label: s.navLab },
+    { href: trainingHref, label: s.navTraining },
+  ];
+  const renderLink = (link) => `<a href="${escapeAttr(link.href)}">${escapeHtml(link.label)}</a>`;
+  const barLinksHtml = navLinks.map(renderLink).join('\n      ');
+  const drawerLinksHtml = navLinks.map(renderLink).join('\n    ');
+
   return `<!-- Der Drawer läuft ohne JavaScript: das versteckte Kontrollkästchen
      schaltet über :checked ~ … Scrim und Panel. Kontrollkästchen, Leiste,
      Scrim und Drawer MÜSSEN Geschwister in genau dieser Reihenfolge bleiben —
@@ -486,9 +499,7 @@ function renderNav(lang, currentPath, altPath, logoAssetHref) {
       <span class="handbook-nav__brand">provement</span><span class="handbook-nav__docs">docs</span>
     </a>
     <nav class="handbook-nav__links" aria-label="${escapeAttr(s.navHandbook)}">
-      <a href="${escapeAttr(homeHref)}">${escapeHtml(s.navModules)}</a>
-      <a href="${escapeAttr(labHref)}">${escapeHtml(s.navLab)}</a>
-      <a href="${escapeAttr(trainingHref)}">${escapeHtml(s.navTraining)}</a>
+      ${barLinksHtml}
     </nav>
     <div class="handbook-nav__actions">
       <a href="${escapeAttr(altLangHref)}" class="handbook-nav__lang" rel="alternate" hreflang="${lang === 'de' ? 'en' : 'de'}">${escapeHtml(s.langOther)}</a>
@@ -501,9 +512,7 @@ function renderNav(lang, currentPath, altPath, logoAssetHref) {
 <aside class="nav-drawer" id="navDrawer" aria-label="${escapeAttr(s.navMenu)}">
   <a href="${escapeAttr(appHref)}" class="handbook-nav__cta nav-drawer__cta">${escapeHtml(s.navApp)} →</a>
   <nav class="nav-drawer__links">
-    <a href="${escapeAttr(homeHref)}">${escapeHtml(s.navModules)}</a>
-    <a href="${escapeAttr(labHref)}">${escapeHtml(s.navLab)}</a>
-    <a href="${escapeAttr(trainingHref)}">${escapeHtml(s.navTraining)}</a>
+    ${drawerLinksHtml}
   </nav>
   <a href="${escapeAttr(altLangHref)}" class="handbook-nav__lang nav-drawer__lang" rel="alternate" hreflang="${lang === 'de' ? 'en' : 'de'}">${escapeHtml(s.langOther)}</a>
 </aside>`;
