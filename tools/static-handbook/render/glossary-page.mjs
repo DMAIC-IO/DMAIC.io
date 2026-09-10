@@ -10,13 +10,17 @@
  * and each term page links back to the module handbooks under "Verwendet in".
  */
 
-import { renderPage, getStrings } from './page-shell.mjs';
+import { renderPage, getStrings, CONSTANTS } from './page-shell.mjs';
 import { escapeHtml, escapeAttr, pick, stripTermTokens } from './escape.mjs';
 import { getModuleName } from '../loaders/load-sources.mjs';
 import { renderLatex } from './katex.mjs';
 import { renderInline } from './inline.mjs';
 
-const APP_ORIGIN = 'https://qprovement.com';
+/* Glossarseiten liegen im Handbuch, nicht auf der Site-Wurzel: ihre
+   JSON-LD-`url` muss denselben Absolutpfad tragen wie das `rel=canonical`
+   derselben Seite (`SITE_ORIGIN + pathFromRoot`), sonst widersprechen sich
+   die beiden Angaben. */
+const { SITE_ORIGIN } = CONSTANTS;
 
 // ─── Per-term page ──────────────────────────────────────────────
 
@@ -78,9 +82,9 @@ export async function renderGlossaryTermPage({ term, glossary, modules, lang, i1
     name: title,
     description: shortText || title,
     inLanguage: lang,
-    url: 'https://qprovement.com' + pathFromRoot,
+    url: SITE_ORIGIN + pathFromRoot,
     termCode: term.id,
-    inDefinedTermSet: 'https://qprovement.com' + `/${lang}/glossar/index.html`,
+    inDefinedTermSet: SITE_ORIGIN + `/${lang}/glossar/index.html`,
   };
 
   const html = renderPage({
@@ -165,12 +169,12 @@ export async function renderGlossaryIndex({ glossary, modules: _modules, lang, i
     name: s.glossaryHandbookTitle,
     description: s.glossaryIndexIntro,
     inLanguage: lang,
-    url: APP_ORIGIN + pathFromRoot,
+    url: SITE_ORIGIN + pathFromRoot,
     hasDefinedTerm: glossary.terms.map(t => ({
       '@type': 'DefinedTerm',
       name: pick(t.title, lang) || t.id,
       termCode: t.id,
-      url: APP_ORIGIN + `/${lang}/glossar/${t.id}.html`,
+      url: SITE_ORIGIN + `/${lang}/glossar/${t.id}.html`,
     })),
   };
 

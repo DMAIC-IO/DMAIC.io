@@ -102,7 +102,7 @@ a:hover { color: var(--t1); }
 
 .handbook-nav__logo img { width: 48px; height: 40px; display: block; margin-right: -.18rem; }
 .handbook-nav__brand { color: var(--t1); }
-.handbook-nav__docs { color: var(--t3); font-weight: 500; margin-left: .5rem; }
+.handbook-nav__docs { color: var(--t2); font-weight: 500; margin-left: .5rem; }
 
 .handbook-nav__links {
   display: flex; gap: 1.4rem;
@@ -158,7 +158,7 @@ a:hover { color: var(--t1); }
   list-style: none;
   font-family: 'JetBrains Mono', monospace;
   font-size: .72rem;
-  color: var(--t3);
+  color: var(--t2);
   letter-spacing: .02em;
   margin-bottom: 1.6rem;
 }
@@ -166,7 +166,7 @@ a:hover { color: var(--t1); }
 .handbook-breadcrumbs li + li::before {
   content: '›';
   margin-right: .35rem;
-  color: var(--t3);
+  color: var(--t2);
 }
 .handbook-breadcrumbs a { color: var(--t2); }
 .handbook-breadcrumbs a:hover { color: var(--t1); }
@@ -426,7 +426,7 @@ a:hover { color: var(--t1); }
   font-weight: 600;
   color: var(--t1);
 }
-.handbook-footer__tag { color: var(--t3); font-size: .78rem; }
+.handbook-footer__tag { color: var(--t2); font-size: .78rem; }
 .handbook-footer__links { display: flex; gap: 1.4rem; flex-wrap: wrap; }
 .handbook-footer__links a { color: var(--t2); }
 .handbook-footer__links a:hover { color: var(--t1); }
@@ -475,7 +475,7 @@ a:hover { color: var(--t1); }
   font-weight: 600;
   letter-spacing: .04em;
   text-transform: uppercase;
-  color: var(--t3);
+  color: var(--t2);
   margin-bottom: .4rem;
 }
 
@@ -513,7 +513,7 @@ a:hover { color: var(--t1); }
   font-size: .66rem;
   text-transform: uppercase;
   letter-spacing: .05em;
-  color: var(--t3);
+  color: var(--t2);
 }
 .algo-meta__value { color: var(--t1); font-weight: 500; }
 

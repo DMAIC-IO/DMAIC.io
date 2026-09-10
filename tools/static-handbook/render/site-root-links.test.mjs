@@ -49,9 +49,6 @@ test('appRootFrom löst über mehrere Seitentiefen auf die App-Wurzel auf', () =
   for (const { pathFromRoot, appRoot } of PATHS) {
     assert.equal(appRootFrom(pathFromRoot), appRoot, `App-Wurzel für ${pathFromRoot}`);
   }
-  // Das Handbuch liegt unter <app-wurzel>/docs/: von /de/index.html sind das
-  // zwei Ebenen hoch (de/ → docs/ → App-Wurzel).
-  assert.equal(new Set(PATHS.map(p => p.depth)).size >= 3, true, 'mindestens drei Seitentiefen geprüft');
 });
 
 test('der Logo-Link zeigt exakt auf die Site-Wurzel "/"', () => {

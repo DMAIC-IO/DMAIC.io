@@ -13,8 +13,23 @@
 import { escapeHtml, escapeAttr, stripTermTokens } from './escape.mjs';
 import { LUCIDE_ATTRIBUTION } from './blocks.mjs';
 
-const SITE_ORIGIN = 'https://qprovement.com/app/latest/docs';
-const APP_ORIGIN = 'https://qprovement.com';
+/**
+ * Origins des Auftritts — **eine** Schreibweise für alles, was das Handbuch
+ * ausgibt: `https://www.qprovement.com`, identisch zu den `rel=canonical`,
+ * JSON-LD- und Sitemap-Einträgen der Site. Frühere Mischformen
+ * (`qprovement.com` ohne `www`, `docs.qprovement.com`) sind bewusst
+ * aufgegeben — sie wären eigene Origins und hätten das Handbuch gegenüber
+ * der Site als Duplikat erscheinen lassen.
+ *
+ *   APP_ORIGIN   — Wurzel des Auftritts (Verlag/Publisher, Rücklinks).
+ *   SITE_ORIGIN  — Wurzel des Handbuchs im Tag-Deployment; jede
+ *                  Handbuchseite hängt ihren `pathFromRoot` hier an.
+ *
+ * Einzige Quelle: von sitemap.mjs, glossary-page.mjs und pages.mjs über
+ * `CONSTANTS` importiert, nirgends erneut buchstabiert.
+ */
+const APP_ORIGIN = 'https://www.qprovement.com';
+const SITE_ORIGIN = `${APP_ORIGIN}/app/latest/docs`;
 
 /**
  * Platzhalter für Links, die auf die **Site-Wurzel** zeigen müssen (Logo,

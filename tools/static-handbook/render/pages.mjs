@@ -1161,10 +1161,10 @@ export function renderLangPicker() {
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Qprovement Handbook — Documentation</title>
 <meta name="description" content="Qprovement is a free, open-source Six Sigma toolkit. Handbook available in English and German.">
-<link rel="canonical" href="https://docs.qprovement.com/">
-<link rel="alternate" hreflang="de" href="https://docs.qprovement.com/de/">
-<link rel="alternate" hreflang="en" href="https://docs.qprovement.com/en/">
-<link rel="alternate" hreflang="x-default" href="https://docs.qprovement.com/en/">
+<link rel="canonical" href="${CONSTANTS.SITE_ORIGIN}/">
+<link rel="alternate" hreflang="de" href="${CONSTANTS.SITE_ORIGIN}/de/">
+<link rel="alternate" hreflang="en" href="${CONSTANTS.SITE_ORIGIN}/en/">
+<link rel="alternate" hreflang="x-default" href="${CONSTANTS.SITE_ORIGIN}/en/">
 <link rel="icon" type="image/svg+xml" href="./assets/favicon.svg">
 <link rel="stylesheet" href="./assets/handbook.css">
 <style>
@@ -1213,7 +1213,7 @@ export function renderLangPicker() {
       <a class="picker__btn" href="./en/" hreflang="en">English →</a>
     </div>
     <p style="margin-top:2.5rem;font-size:.8rem;color:var(--t3);">
-      <a href="https://qprovement.com/">← Back to qprovement.com</a>
+      <a href="${CONSTANTS.APP_ORIGIN}/">← Back to qprovement.com</a>
     </p>
   </div>
 </div>
