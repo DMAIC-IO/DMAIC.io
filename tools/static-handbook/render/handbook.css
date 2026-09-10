@@ -346,7 +346,9 @@ a:hover { color: var(--t1); }
   border-left-color: var(--green);
   background: color-mix(in srgb, var(--green) 14%, var(--bg-card));
 }
-.handbook-callout--result .handbook-callout__icon { color: var(--green); }
+/* Icon nicht in --green: kleines Symbol auf hellem Tint erreicht die 3:1 aus
+   WCAG 1.4.11 nicht. Grün bleibt Rand und Fläche, das Symbol trägt --t1. */
+.handbook-callout--result .handbook-callout__icon { color: var(--t1); }
 
 .handbook-callout--decision {
   border-left-color: var(--blue);

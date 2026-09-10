@@ -13,6 +13,19 @@ import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 
 import { renderInline } from './inline.mjs';
+import { normalizeSvg } from '../../build/icons.mjs';
+
+/**
+ * ISC-Attribution für die inline eingebetteten lucide-Icons. `normalizeSvg()`
+ * entfernt den Lizenzkommentar aus dem Asset, deshalb wird der Hinweis hier
+ * einmal pro Seite im <head> ausgegeben (siehe page-shell.mjs) — so reist die
+ * Attribution mit jedem ausgelieferten Artefakt mit. Muster übernommen aus dem
+ * Sprite des Site-Repos.
+ */
+export const LUCIDE_ATTRIBUTION =
+  '@license lucide-static v1.32.0 - ISC — Copyright (c) Lucide Icons and '
+  + 'Contributors — https://github.com/lucide-icons/lucide/blob/main/LICENSE '
+  + '— Quelle: assets/icons/vendor/lucide/';
 
 const CALLOUT_KINDS = new Set(['pitfall', 'scenario', 'result', 'decision']);
 
@@ -47,13 +60,14 @@ async function calloutIconSvg(kind) {
   let svg = '';
   try {
     const raw = await readFile(path.join(ICON_VENDOR_DIR, `${name}.svg`), 'utf8');
-    // Strip the vendor licence comment; mark decorative (the callout text
-    // already carries the meaning) and tag for CSS sizing/colour.
-    svg = raw
-      .replace(/<!--[\s\S]*?-->\s*/, '')
-      .replace('<svg', '<svg class="handbook-callout__icon" aria-hidden="true" focusable="false"')
-      .trim();
-  } catch {
+    // normalizeSvg() (tools/build/icons.mjs) entfernt Lizenzkommentar und das
+    // vom Asset mitgebrachte class-Attribut — sonst stünden nach der Injektion
+    // zwei class-Attribute im selben <svg>. Danach: dekorativ auszeichnen (der
+    // Callout-Text trägt die Bedeutung) und für CSS-Größe/-Farbe taggen.
+    svg = normalizeSvg(raw)
+      .replace('<svg', '<svg class="handbook-callout__icon" aria-hidden="true" focusable="false"');
+  } catch (err) {
+    console.warn(`[static-handbook] Callout-Icon "${name}" nicht lesbar:`, err);
     svg = '';
   }
   iconSvgCache.set(name, svg);

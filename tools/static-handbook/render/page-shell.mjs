@@ -11,6 +11,7 @@
  */
 
 import { escapeHtml, escapeAttr, stripTermTokens } from './escape.mjs';
+import { LUCIDE_ATTRIBUTION } from './blocks.mjs';
 
 const SITE_ORIGIN = 'https://qprovement.com/app/latest/docs';
 const APP_ORIGIN = 'https://qprovement.com';
@@ -366,6 +367,7 @@ export function renderPage(opts) {
 <html lang="${lang}">
 <head>
 <meta charset="UTF-8">
+<!-- ${LUCIDE_ATTRIBUTION} -->
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>${escapeHtml(title)}</title>
 <meta name="description" content="${escapeAttr(description)}">
