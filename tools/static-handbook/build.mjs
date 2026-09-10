@@ -44,14 +44,12 @@ import {
 } from './render/pages.mjs';
 import { renderGlossaryIndex, renderGlossaryTermPage } from './render/glossary-page.mjs';
 import { renderSitemap, renderRobots } from './render/sitemap.mjs';
+import { copyStaticAssets } from './render/static-assets.mjs';
 import { CYCLES } from '../../js/core/cycles/cycles.js';
 
 const REPO = path.resolve(new URL('../..', import.meta.url).pathname);
 const OUT = path.join(REPO, 'docs');
 const FONTS_SRC = path.join(REPO, 'assets/fonts');
-const CSS_SRC = path.join(REPO, 'tools/static-handbook/render/handbook.css');
-const LOGO_SRC = path.join(REPO, 'tools/static-handbook/render/assets/logo.svg');
-const FAVICON_SRC = path.join(REPO, 'tools/static-handbook/render/assets/favicon.svg');
 const KATEX_CSS_SRC = path.join(REPO, 'node_modules/katex/dist/katex.min.css');
 const KATEX_FONTS_SRC = path.join(REPO, 'node_modules/katex/dist/fonts');
 
@@ -89,13 +87,11 @@ async function main() {
   await mkdir(path.join(OUT, 'assets/fonts'), { recursive: true });
 
   // ─── Copy static assets ────────────────────────────────────────
-  await copyFile(CSS_SRC, path.join(OUT, 'assets/handbook.css'));
-  await copyFile(LOGO_SRC, path.join(OUT, 'assets/logo.svg'));
-  await copyFile(FAVICON_SRC, path.join(OUT, 'assets/favicon.svg'));
+  await copyStaticAssets(OUT);
   await copyFonts();
   await copyKatexAssets();
   await copyExampleFiles(sources.examples);
-  log(`${COLORS.green}✓${COLORS.reset} Copied assets (CSS, logo, favicon, fonts, KaTeX, examples)`);
+  log(`${COLORS.green}✓${COLORS.reset} Copied assets (CSS, logo, favicon, nav-drawer.js, fonts, KaTeX, examples)`);
 
   // ─── Generate pages ────────────────────────────────────────────
   const sitemapEntries = [];
