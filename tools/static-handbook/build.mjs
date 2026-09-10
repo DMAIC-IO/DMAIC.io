@@ -51,6 +51,7 @@ const OUT = path.join(REPO, 'docs');
 const FONTS_SRC = path.join(REPO, 'assets/fonts');
 const CSS_SRC = path.join(REPO, 'tools/static-handbook/render/handbook.css');
 const LOGO_SRC = path.join(REPO, 'tools/static-handbook/render/assets/logo.svg');
+const FAVICON_SRC = path.join(REPO, 'tools/static-handbook/render/assets/favicon.svg');
 const KATEX_CSS_SRC = path.join(REPO, 'node_modules/katex/dist/katex.min.css');
 const KATEX_FONTS_SRC = path.join(REPO, 'node_modules/katex/dist/fonts');
 
@@ -90,11 +91,11 @@ async function main() {
   // ─── Copy static assets ────────────────────────────────────────
   await copyFile(CSS_SRC, path.join(OUT, 'assets/handbook.css'));
   await copyFile(LOGO_SRC, path.join(OUT, 'assets/logo.svg'));
+  await copyFile(FAVICON_SRC, path.join(OUT, 'assets/favicon.svg'));
   await copyFonts();
   await copyKatexAssets();
-  await writeFile(path.join(OUT, 'assets/favicon.svg'), FAVICON_SVG, 'utf8');
   await copyExampleFiles(sources.examples);
-  log(`${COLORS.green}✓${COLORS.reset} Copied assets (CSS, logo, fonts, KaTeX, favicon, examples)`);
+  log(`${COLORS.green}✓${COLORS.reset} Copied assets (CSS, logo, favicon, fonts, KaTeX, examples)`);
 
   // ─── Generate pages ────────────────────────────────────────────
   const sitemapEntries = [];
@@ -324,19 +325,6 @@ async function copyKatexAssets() {
     }
   }
 }
-
-// Minimal inline favicon — shared by all pages and the picker. This renders
-// standalone as a browser-tab icon (no CSS custom-property context), so it
-// counts as an asset SVG for the "literal colours only in :root or asset
-// SVGs" rule; the fill mirrors --blue from handbook.css's :root. Letter
-// updated from the old "D." (D.Mike) mark to "Q" (Qprovement) as part of
-// the brand sweep — the logo mark itself is unavailable at this small,
-// single-color size.
-const FAVICON_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
-  <rect width="32" height="32" rx="7" fill="#0B567F"/>
-  <text x="16" y="23" text-anchor="middle" font-family="system-ui,sans-serif" font-weight="700" font-size="19" fill="#fff">Q</text>
-</svg>
-`;
 
 main().catch((err) => {
   console.error(`${COLORS.red}✗ build failed:${COLORS.reset}`, err);

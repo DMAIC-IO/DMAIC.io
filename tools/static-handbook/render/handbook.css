@@ -296,12 +296,17 @@ a:hover { color: var(--t1); }
 .handbook-block__table td { color: var(--t1); }
 
 /* ─── Callouts ────────────────────────────────────────────────── */
-/* Vier Akzentfarben aus drei Tönen im Token-Set: pitfall/decision teilen
-   sich keine Farbe mit scenario — pitfall nutzt teal (kein Amber im
-   Token-Set), decision und scenario beide blue (unterscheiden sich über
-   Tönungsstärke). --green bleibt reine Flächenfarbe (Rand + schwache
-   Tönung), nie Text — Kontrastregel. */
+/* Review fix (Task 10): the palette has only three usable accent hues
+   (blue/green/teal) for four callout kinds, and blocks.mjs renders no text
+   label — colour tint alone made scenario/decision indistinguishable on a
+   skim (both were --blue at different tint strengths). The icon inlined by
+   blocks.mjs (vendored lucide asset per kind) is now the primary signal;
+   colour is a secondary grouping cue and stays token-only. --green remains
+   a pure area colour (border + faint tint), never text — contrast rule. */
 .handbook-callout {
+  display: flex;
+  gap: .65rem;
+  align-items: flex-start;
   border-left: 3px solid var(--border-h);
   background: var(--bg-s);
   padding: .85rem 1.1rem;
@@ -311,30 +316,43 @@ a:hover { color: var(--t1); }
 }
 
 .handbook-callout p {
+  flex: 1 1 auto;
+  min-width: 0;
   margin-bottom: 0;
   color: var(--t1);
   font-size: .95rem;
+}
+
+.handbook-callout__icon {
+  flex: 0 0 auto;
+  width: 18px;
+  height: 18px;
+  margin-top: .15rem;
 }
 
 .handbook-callout--pitfall {
   border-left-color: var(--teal);
   background: color-mix(in srgb, var(--teal) 10%, var(--bg-card));
 }
+.handbook-callout--pitfall .handbook-callout__icon { color: var(--teal); }
 
 .handbook-callout--scenario {
   border-left-color: var(--blue);
   background: color-mix(in srgb, var(--blue) 10%, var(--bg-card));
 }
+.handbook-callout--scenario .handbook-callout__icon { color: var(--blue); }
 
 .handbook-callout--result {
   border-left-color: var(--green);
   background: color-mix(in srgb, var(--green) 14%, var(--bg-card));
 }
+.handbook-callout--result .handbook-callout__icon { color: var(--green); }
 
 .handbook-callout--decision {
   border-left-color: var(--blue);
   background: color-mix(in srgb, var(--blue) 5%, var(--bg-card));
 }
+.handbook-callout--decision .handbook-callout__icon { color: var(--blue); }
 
 /* ─── CTA (app button) ────────────────────────────────────────── */
 .handbook-cta {
