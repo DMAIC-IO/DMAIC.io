@@ -9,7 +9,7 @@
  *   - renderLangPicker   — /index.html (DE/EN language chooser)
  */
 
-import { renderPage, getStrings, CONSTANTS } from './page-shell.mjs';
+import { renderPage, getStrings, CONSTANTS, appRootFrom } from './page-shell.mjs';
 import { renderBlocks, firstParagraphText } from './blocks.mjs';
 import { escapeHtml, escapeAttr, pick, stripTermTokens } from './escape.mjs';
 
@@ -31,8 +31,6 @@ import { getModuleName, getExamplesForModule } from '../loaders/load-sources.mjs
 import { renderLatex } from './katex.mjs';
 import { renderInline } from './inline.mjs';
 import { CYCLES, getPhaseIds } from '../../../js/core/cycles/cycles.js';
-
-const APP_ORIGIN = 'https://qprovement.com';
 
 const SECTION_ORDER = [
   'overview',
@@ -983,7 +981,9 @@ export function renderExamplePage({ example, modules, lang, i18n }) {
     actions.push(`<a class="handbook-cta__button" href="${escapeAttr(downloadHref)}" download>${escapeHtml(downloadLabel)} ↓</a>`);
   }
   if (primaryModuleId) {
-    const deeplink = `${APP_ORIGIN}/?module=${encodeURIComponent(primaryModuleId)}&example=${encodeURIComponent(ex.id)}`;
+    // Deeplink auf die App-Wurzel des Deployments (eine Ebene über docs/),
+    // nicht auf die Site-Wurzel — sonst zeigt er im Tag-Deployment ins Leere.
+    const deeplink = `${appRootFrom(pathFromRoot)}?module=${encodeURIComponent(primaryModuleId)}&example=${encodeURIComponent(ex.id)}`;
     actions.push(`<a class="handbook-cta__button" href="${escapeAttr(deeplink)}">${escapeHtml(s.exampleOpenInApp)} →</a>`);
   }
   const actionsHtml = actions.length

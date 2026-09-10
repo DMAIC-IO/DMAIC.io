@@ -16,6 +16,16 @@ import { LUCIDE_ATTRIBUTION } from './blocks.mjs';
 const SITE_ORIGIN = 'https://qprovement.com/app/latest/docs';
 const APP_ORIGIN = 'https://qprovement.com';
 
+/**
+ * Platzhalter für Links, die auf die **Site-Wurzel** zeigen müssen (Logo,
+ * Fußzeilen-Marke, Impressum, Datenschutz). Die Site-Wurzel ist unabhängig
+ * vom Tag-Präfix, daher ist dort „/" richtig — und genau deshalb darf der
+ * Rewrite am Ende von renderPage() (root-absolut → relativ) diese Links
+ * nicht anfassen. Der Token beginnt bewusst nicht mit „/", damit der Rewrite
+ * ihn nicht matcht; er wird erst danach durch „/" ersetzt.
+ */
+const SITE_ROOT_TOKEN = '%SITE_ROOT%';
+
 const PHASES = ['define', 'measure', 'analyze', 'improve', 'control', 'data'];
 
 const UI_STRINGS = {
@@ -302,6 +312,22 @@ export const CONSTANTS = {
 };
 
 /**
+ * Relativer Pfad von einer Handbuchseite zur **App-Wurzel des Deployments**.
+ *
+ * Das Handbuch liegt immer unter <app-wurzel>/docs/ (live also
+ * /app/latest/docs/, in einem Tag-Deployment /app/v1.2.3/docs/). Die
+ * App-Wurzel ist damit stets genau eine Ebene über der docs-Wurzel — ein
+ * hart kodiertes „/app/latest/" wäre in jedem anderen Tag falsch.
+ *
+ * @param {string} pathFromRoot absoluter Pfad der Seite innerhalb von docs/
+ * @returns {string} z. B. "../../" für "/de/index.html"
+ */
+export function appRootFrom(pathFromRoot) {
+  const docsRoot = relativeTo(pathFromRoot, '/'); // './' | '../' | '../../' …
+  return docsRoot === './' ? '../' : `${docsRoot}../`;
+}
+
+/**
  * Render a complete HTML page.
  *
  * @param {object} opts
@@ -392,7 +418,7 @@ ${renderNav(lang, pathFromRoot, altPathFromRoot, logoHref)}
 <main class="handbook-main">
 ${renderBreadcrumbs(breadcrumbs)}
 ${bodyHtml}
-${showCta ? renderCta(lang) : ''}
+${showCta ? renderCta(lang, pathFromRoot) : ''}
 </main>
 ${renderFooter(lang)}
 </body>
@@ -403,8 +429,12 @@ ${renderFooter(lang)}
   // Content/card/breadcrumb/footer links are built as absolute site paths; nav +
   // assets already use relativeTo(). http(s):// and ./ ../ links start with a
   // different char and are left untouched.
-  return html.replace(/href="(\/[^"]*)"/g, (_m, target) =>
-    `href="${escapeAttr(relativeTo(pathFromRoot, target))}"`);
+  return html
+    .replace(/href="(\/[^"]*)"/g, (_m, target) =>
+      `href="${escapeAttr(relativeTo(pathFromRoot, target))}"`)
+    // Site-Wurzel-Links erst nach dem Rewrite auflösen — sie sollen absolut
+    // bleiben, weil die Site-Wurzel nicht unter dem Tag-Präfix liegt.
+    .split(SITE_ROOT_TOKEN).join('/');
 }
 
 function renderNav(lang, currentPath, altPath, logoAssetHref) {
@@ -415,13 +445,14 @@ function renderNav(lang, currentPath, altPath, logoAssetHref) {
   const otherLangRoot = altPath || `/${lang === 'de' ? 'en' : 'de'}/`;
 
   const homeHref = relativeTo(currentPath, root);
+  const appHref = appRootFrom(currentPath);
   const labHref = relativeTo(currentPath, labRoot);
   const trainingHref = relativeTo(currentPath, trainingRoot);
   const altLangHref = relativeTo(currentPath, otherLangRoot);
 
   return `<header class="handbook-nav">
   <div class="handbook-nav__inner">
-    <a href="${escapeAttr(homeHref)}" class="handbook-nav__logo" aria-label="Qprovement">
+    <a href="${SITE_ROOT_TOKEN}" class="handbook-nav__logo" aria-label="Qprovement">
       <img src="${escapeAttr(logoAssetHref)}" alt="" width="48" height="40">
       <span class="handbook-nav__brand">provement</span><span class="handbook-nav__docs">docs</span>
     </a>
@@ -432,7 +463,7 @@ function renderNav(lang, currentPath, altPath, logoAssetHref) {
     </nav>
     <div class="handbook-nav__actions">
       <a href="${escapeAttr(altLangHref)}" class="handbook-nav__lang" rel="alternate" hreflang="${lang === 'de' ? 'en' : 'de'}">${escapeHtml(s.langOther)}</a>
-      <a href="${APP_ORIGIN}/" class="handbook-nav__cta">${escapeHtml(s.navApp)} →</a>
+      <a href="${escapeAttr(appHref)}" class="handbook-nav__cta">${escapeHtml(s.navApp)} →</a>
     </div>
   </div>
 </header>`;
@@ -449,12 +480,12 @@ function renderBreadcrumbs(items) {
   return `<nav class="handbook-breadcrumbs" aria-label="Breadcrumb"><ol>${parts.join('')}</ol></nav>`;
 }
 
-function renderCta(lang) {
+function renderCta(lang, pathFromRoot) {
   const s = getStrings(lang);
   return `<aside class="handbook-cta">
   <h2 class="handbook-cta__title">${escapeHtml(s.ctaTitle)}</h2>
   <p class="handbook-cta__body">${escapeHtml(s.ctaBody)}</p>
-  <a href="${APP_ORIGIN}/" class="handbook-cta__button">${escapeHtml(s.ctaButton)} →</a>
+  <a href="${escapeAttr(appRootFrom(pathFromRoot))}" class="handbook-cta__button">${escapeHtml(s.ctaButton)} →</a>
 </aside>`;
 }
 
@@ -467,10 +498,10 @@ function renderFooter(lang) {
       <span class="handbook-footer__tag">${escapeHtml(s.footerTagline)}</span>
     </div>
     <nav class="handbook-footer__links" aria-label="${escapeAttr(s.footerDocs)}">
-      <a href="${APP_ORIGIN}/">Qprovement</a>
+      <a href="${SITE_ROOT_TOKEN}">Qprovement</a>
       <a href="/${lang}/">${escapeHtml(s.footerDocs)}</a>
-      <a href="${APP_ORIGIN}/#imprint">${escapeHtml(s.footerImprint)}</a>
-      <a href="${APP_ORIGIN}/#privacy">${escapeHtml(s.footerPrivacy)}</a>
+      <a href="${SITE_ROOT_TOKEN}#imprint">${escapeHtml(s.footerImprint)}</a>
+      <a href="${SITE_ROOT_TOKEN}#privacy">${escapeHtml(s.footerPrivacy)}</a>
     </nav>
   </div>
 </footer>`;
