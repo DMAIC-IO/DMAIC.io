@@ -85,23 +85,7 @@ jobs:
           chmod 700 ~/.ssh
           echo "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/id_deploy
           chmod 600 ~/.ssh/id_deploy
-          # ÜBERGANGSLÖSUNG (Serverwechsel): Das Secret DEPLOY_KNOWN_HOSTS
-          # enthält noch den Host-Key des alten Servers, daher schlug der
-          # Deploy mit "Host key verification failed" fehl. Bis das Secret
-          # neu gesetzt ist, wird der Host-Key bei jedem Lauf frisch vom
-          # Server geholt und ungeprüft akzeptiert.
-          #
-          # ACHTUNG: Das hebt den MITM-Schutz der SSH-Verbindung auf — der
-          # Runner vertraut blind dem, was gerade unter NIGHTLY_HOST
-          # antwortet. Wieder scharf schalten, sobald der neue Fingerprint
-          # in DEPLOY_KNOWN_HOSTS steht (ssh-keyscan -p <port> <host>,
-          # Ausgabe gegen die Hetzner-Konsole prüfen):
-          #
-          #   echo "<Ausdruck: secrets.DEPLOY_KNOWN_HOSTS>" > ~/.ssh/known_hosts
-          #
-          ssh-keyscan -p "$NIGHTLY_PORT" -H "$NIGHTLY_HOST" > ~/.ssh/known_hosts 2>/dev/null
-          test -s ~/.ssh/known_hosts \
-            || { echo "::error::ssh-keyscan lieferte keinen Host-Key für $NIGHTLY_HOST:$NIGHTLY_PORT"; exit 1; }
+          echo "${{ secrets.DEPLOY_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
           chmod 600 ~/.ssh/known_hosts
 
       - name: Rsync to nightly staging dir
