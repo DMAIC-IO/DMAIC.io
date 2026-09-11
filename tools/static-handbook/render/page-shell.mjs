@@ -511,7 +511,7 @@ function renderNav(lang, currentPath, altPath, logoAssetHref) {
 <label for="navToggle" class="nav-scrim"></label>
 <aside class="nav-drawer" id="navDrawer" aria-label="${escapeAttr(s.navMenu)}">
   <a href="${escapeAttr(appHref)}" class="handbook-nav__cta nav-drawer__cta">${escapeHtml(s.navApp)} →</a>
-  <nav class="nav-drawer__links">
+  <nav class="nav-drawer__links" aria-label="${escapeAttr(s.navMenu)}">
     ${drawerLinksHtml}
   </nav>
   <a href="${escapeAttr(altLangHref)}" class="handbook-nav__lang nav-drawer__lang" rel="alternate" hreflang="${lang === 'de' ? 'en' : 'de'}">${escapeHtml(s.langOther)}</a>
