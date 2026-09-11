@@ -45,6 +45,7 @@
   --teal:    #538A8D;
   --shadow:  0 8px 24px rgb(13 64 101 / 10%);
   --shadow-h: 0 12px 32px rgb(13 64 101 / 16%);
+  --black-a38: rgb(0 0 0 / .38); /* Drawer-Scrim, gespiegelt aus site.css --black-a38 */
   --max: 960px;
 }
 
@@ -144,6 +145,125 @@ a:hover { color: var(--t1); }
   transition: transform .2s, box-shadow .2s;
 }
 .handbook-nav__cta:hover { transform: translateY(-1px); box-shadow: var(--shadow-h); color: var(--bg-card); }
+
+/* ─── Off-Canvas-Drawer ───────────────────────────────────────
+   Formgleich mit der Site (css/site.css im privaten Repo). Reines CSS:
+   #navToggle schaltet über den Geschwisterselektor Scrim und Panel.
+   Versteckt wird das Kontrollkästchen per Clip statt display:none — sonst
+   wäre es nicht fokussierbar und die Tastaturbedienung entfiele. */
+.nav-toggle {
+  position: absolute; width: 1px; height: 1px;
+  margin: 0; padding: 0; border: 0;
+  clip-path: inset(50%); overflow: hidden;
+  white-space: nowrap;
+}
+
+.burger {
+  display: none; background: none; border: none; cursor: pointer;
+  width: 26px; height: 18px; position: relative;
+}
+.burger span {
+  display: block; width: 100%; height: 2px; background: var(--t2);
+  position: absolute; left: 0; transition: all .3s;
+}
+.burger span:nth-child(1) { top: 0; }
+.burger span:nth-child(2) { top: 8px; }
+.burger span:nth-child(3) { top: 16px; }
+
+.nav-scrim {
+  position: fixed; inset: 0; z-index: 60;
+  background: var(--black-a38);
+  opacity: 0; visibility: hidden;
+  transition: opacity .24s, visibility .24s;
+  cursor: pointer;
+}
+
+.nav-drawer {
+  position: fixed; top: 0; right: 0; bottom: 0; z-index: 70;
+  width: min(320px, 84vw);
+  display: flex; flex-direction: column; gap: 1.1rem;
+  padding: 1.4rem 1.2rem;
+  overflow-y: auto;
+  background: var(--bg-card);
+  border-left: 1px solid var(--border);
+  /* Geschlossen zusätzlich visibility:hidden: allein aus dem Bild geschoben
+     bliebe das Panel per Tabulator erreichbar. */
+  transform: translateX(100%); visibility: hidden;
+  transition: transform .24s ease, visibility .24s;
+}
+
+.nav-toggle:checked ~ .nav-scrim { opacity: 1; visibility: visible; }
+.nav-toggle:checked ~ .nav-drawer { transform: none; visibility: visible; }
+
+/* Bei geöffnetem Drawer muss die Leiste — insbesondere der Burger —
+   erreichbar bleiben, obwohl der Drawer sie in der Dokumentreihenfolge
+   überlagert (z-index 70 vs. 50); die volle Höhe des Drawers ist bindend
+   vorgegeben, ein Ausweichen nach unten scheidet also aus. Die Leiste rückt
+   deshalb nur solange der Drawer offen ist über ihn (z-index 80). Anders
+   als auf der Site verliert sie dabei zusätzlich ihren blassen Hintergrund
+   und den Weichzeichner: sonst läge ein ganzer, unscharf getönter Streifen
+   über dem Drawer-Kopf und würde dessen eigenen Aufruf und ersten Link
+   optisch zudecken, obwohl an der Stelle nur Nichts von der Leiste sitzt.
+   pointer-events:none nimmt der leeren Fläche zusätzlich die Klickfläche;
+   nur die tatsächlich bedienten Elemente holen sie sich einzeln zurück.
+   Ihr eigener Aufruf wird ausgeblendet, weil der Drawer denselben Aufruf
+   bereits ganz oben führt. */
+.nav-toggle:checked ~ .handbook-nav {
+  z-index: 80;
+  background: none;
+  backdrop-filter: none;
+  border-bottom-color: transparent;
+  pointer-events: none;
+}
+.nav-toggle:checked ~ .handbook-nav .handbook-nav__logo,
+.nav-toggle:checked ~ .handbook-nav .handbook-nav__links a,
+.nav-toggle:checked ~ .handbook-nav .handbook-nav__lang,
+.nav-toggle:checked ~ .handbook-nav .burger {
+  pointer-events: auto;
+}
+.nav-toggle:checked ~ .handbook-nav .handbook-nav__cta {
+  visibility: hidden;
+  pointer-events: none;
+}
+
+/* Der Burger ist ein <label>; den Fokusring des zugehörigen
+   Kontrollkästchens muss er selbst zeigen. */
+.nav-toggle:focus-visible ~ .handbook-nav .burger {
+  outline: 2px solid var(--blue); outline-offset: 4px;
+}
+
+.nav-drawer__cta { display: block; text-align: center; }
+.nav-drawer__links { display: flex; flex-direction: column; gap: .1rem; }
+.nav-drawer__links a {
+  padding: .6rem .2rem;
+  color: var(--t2);
+  font-size: .95rem; font-weight: 500;
+  border-bottom: 1px solid var(--border);
+}
+.nav-drawer__links a:hover { color: var(--t1); }
+.nav-drawer__lang { margin-top: auto; align-self: flex-start; }
+
+@media (prefers-reduced-motion: reduce) {
+  .nav-scrim, .nav-drawer { transition: none; }
+}
+
+/* ─── Umbruchpunkte ───────────────────────────────────────────
+   Opferreihenfolge: erst die Links, dann Wortmarke samt „docs", dann der
+   Sprachlink. Der Aufruf zur Anwendung bleibt bis zur kleinsten Breite. */
+@media (max-width: 759.98px) {
+  .handbook-nav__inner { gap: 1rem; }
+  .handbook-nav__links { display: none; }
+  .burger { display: block; }
+}
+
+@media (max-width: 419.98px) {
+  .handbook-nav__brand, .handbook-nav__docs { display: none; }
+  .handbook-nav__actions { gap: .6rem; }
+}
+
+@media (max-width: 339.98px) {
+  .handbook-nav__inner .handbook-nav__lang { display: none; }
+}
 
 /* ─── Main layout ─────────────────────────────────────────────── */
 .handbook-main {
