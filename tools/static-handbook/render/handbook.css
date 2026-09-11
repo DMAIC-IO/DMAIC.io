@@ -195,6 +195,11 @@ a:hover { color: var(--t1); }
 .nav-toggle:checked ~ .nav-scrim { opacity: 1; visibility: visible; }
 .nav-toggle:checked ~ .nav-drawer { transform: none; visibility: visible; }
 
+/* ═══ Ab hier: selbstverfasste Ergänzung, nicht Teil des Task-7-Briefs ═══
+   Grund: siehe Kommentar direkt darunter. Alles bis zur nächsten "═"-Zeile
+   ist eine Erweiterung des Briefs, kein Zitat daraus — bei künftigen Diffs
+   gegen den Brieftext bitte hier ansetzen. */
+
 /* Bei geöffnetem Drawer muss die Leiste — insbesondere der Burger —
    erreichbar bleiben, obwohl der Drawer sie in der Dokumentreihenfolge
    überlagert (z-index 70 vs. 50); die volle Höhe des Drawers ist bindend
@@ -206,8 +211,11 @@ a:hover { color: var(--t1); }
    optisch zudecken, obwohl an der Stelle nur Nichts von der Leiste sitzt.
    pointer-events:none nimmt der leeren Fläche zusätzlich die Klickfläche;
    nur die tatsächlich bedienten Elemente holen sie sich einzeln zurück.
-   Ihr eigener Aufruf wird ausgeblendet, weil der Drawer denselben Aufruf
-   bereits ganz oben führt. */
+   Ihr eigener Aufruf UND ihr eigener Sprachlink werden ausgeblendet, weil
+   der Drawer beides bereits selbst führt (Aufruf oben, Sprachlink unten) —
+   ungeprüft überlappte der Leisten-Sprachlink bei 700/380px sonst sichtbar
+   den Drawer-Aufruf: er bleibt bis 419.98px in der Leiste sichtbar, der
+   Drawer aber ist ab 759.98px bereits offen und deckt denselben Bereich. */
 .nav-toggle:checked ~ .handbook-nav {
   z-index: 80;
   background: none;
@@ -217,14 +225,15 @@ a:hover { color: var(--t1); }
 }
 .nav-toggle:checked ~ .handbook-nav .handbook-nav__logo,
 .nav-toggle:checked ~ .handbook-nav .handbook-nav__links a,
-.nav-toggle:checked ~ .handbook-nav .handbook-nav__lang,
 .nav-toggle:checked ~ .handbook-nav .burger {
   pointer-events: auto;
 }
-.nav-toggle:checked ~ .handbook-nav .handbook-nav__cta {
+.nav-toggle:checked ~ .handbook-nav .handbook-nav__cta,
+.nav-toggle:checked ~ .handbook-nav .handbook-nav__lang {
   visibility: hidden;
   pointer-events: none;
 }
+/* ═══ Ende der selbstverfassten Ergänzung — ab hier wieder Brieftext ═══ */
 
 /* Der Burger ist ein <label>; den Fokusring des zugehörigen
    Kontrollkästchens muss er selbst zeigen. */
