@@ -1154,70 +1154,29 @@ export function renderExamplesIndex({ examples, modules, lang, i18n }) {
 // ─── Language picker (root index) ────────────────────────────────
 
 export function renderLangPicker() {
-  return `<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Qprovement Handbook — Documentation</title>
-<meta name="description" content="Qprovement is a free, open-source Six Sigma toolkit. Handbook available in English and German.">
-<link rel="canonical" href="${CONSTANTS.SITE_ORIGIN}/">
-<link rel="alternate" hreflang="de" href="${CONSTANTS.SITE_ORIGIN}/de/">
-<link rel="alternate" hreflang="en" href="${CONSTANTS.SITE_ORIGIN}/en/">
-<link rel="alternate" hreflang="x-default" href="${CONSTANTS.SITE_ORIGIN}/en/">
-<link rel="icon" type="image/svg+xml" href="./assets/favicon.svg">
-<link rel="stylesheet" href="./assets/handbook.css">
-<style>
-  .picker {
-    min-height: 100vh;
-    display: flex; align-items: center; justify-content: center;
-    padding: 2rem;
-  }
-  .picker__inner { text-align: center; max-width: 560px; }
-  .picker h1 {
-    font-family: 'DM Sans', sans-serif;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: -.01em;
-    font-size: clamp(2.4rem, 5vw, 3.6rem);
-    line-height: 1.1;
-    margin-bottom: 1rem;
-  }
-  .picker p { color: var(--t2); margin-bottom: 2rem; font-size: 1.05rem; }
-  .picker__btns { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
-  .picker__btn {
-    display: inline-block;
-    padding: .9rem 2.2rem;
-    border: 1px solid var(--border);
-    border-radius: 9px;
-    background: var(--bg-card);
-    color: var(--t1);
-    font-weight: 600;
-  }
-  .picker__btn:hover {
-    border-color: var(--green);
-    background: var(--bg-card);
-    color: var(--t1);
-    transform: translateY(-1px);
-    box-shadow: var(--shadow-h);
-  }
-</style>
-</head>
-<body>
-<div class="picker">
+  // Die Gabelseite trägt dieselbe Hülle wie jede Handbuchseite — Leiste,
+  // Fußzeile, Palette. Vorher war sie ein freistehendes Dokument mit eigenem
+  // <style> und ohne beides; sie wirkte dadurch wie eine fremde Seite.
+  // Sprache der Hülle ist Englisch, die eigentliche Wahl treffen die beiden
+  // Schaltflächen im Inhalt.
+  const s = getStrings('en');
+  return renderPage({
+    lang: 'en',
+    title: 'Qprovement Handbook — Documentation',
+    description: 'Qprovement is a free, open-source Six Sigma toolkit. Handbook available in English and German.',
+    pathFromRoot: '/',
+    altPathFromRoot: null,
+    breadcrumbs: [],
+    showCta: false,
+    bodyHtml: `<div class="picker">
   <div class="picker__inner">
-    <h1>Qprovement <span style="color:var(--t3);font-size:.65em;">docs</span></h1>
-    <p>Handbook for the open-source Six Sigma toolkit.<br>Choose your language · Sprache wählen</p>
+    <h1>Qprovement <span class="picker__docs">docs</span></h1>
+    <p>${escapeHtml(s.footerTagline)}<br>Choose your language · Sprache wählen</p>
     <div class="picker__btns">
-      <a class="picker__btn" href="./de/" hreflang="de">Deutsch →</a>
-      <a class="picker__btn" href="./en/" hreflang="en">English →</a>
+      <a class="picker__btn" href="/de/" hreflang="de">Deutsch →</a>
+      <a class="picker__btn" href="/en/" hreflang="en">English →</a>
     </div>
-    <p style="margin-top:2.5rem;font-size:.8rem;color:var(--t3);">
-      <a href="${CONSTANTS.APP_ORIGIN}/">← Back to qprovement.com</a>
-    </p>
   </div>
-</div>
-</body>
-</html>
-`;
+</div>`,
+  });
 }

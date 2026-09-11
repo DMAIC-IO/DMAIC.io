@@ -22,12 +22,66 @@
   // dieselbe Funktion — box ist ohnehin schon fokussierbar und steht im
   // Markup vor der Leiste.
   var focusBeforeOpen = null;
+  var lockedAt = 0;
+  // Wird gesetzt, wenn der Drawer über einen seiner eigenen Links schließt:
+  // dann zielt die Seite bereits auf die Sprungmarke des Links, und die
+  // gemerkte Rollposition wiederherzustellen hieße, genau dorthin
+  // zurückzuspringen, wo der Nutzer gerade weg wollte.
+  var keepScrollWhereItLands = false;
+
+  // Der Hintergrund wird gesperrt, solange der Drawer offen ist. `overflow:
+  // hidden` auf dem Wurzelelement allein genügt dafür nicht: der
+  // Ansichtsbereich verliert seine Rollfähigkeit, der Browser klemmt die
+  // Rollposition irgendwann auf 0 — die Seite sprang beim Öffnen des Menüs
+  // an den Anfang zurück und blieb nach dem Schließen dort. Wann genau
+  // geklemmt wird, hängt am nächsten Umbruch und ist nicht verlässlich.
+  //
+  // Der Seiteninhalt wird deshalb ausdrücklich aus dem Fluss genommen
+  // (position: fixed) und um die gemerkte Rollposition nach oben versetzt:
+  // damit ist die Rollposition definiert 0, optisch steht aber alles still.
+  // Beim Schließen wird beides zurückgenommen und die gemerkte Position
+  // wiederhergestellt.
+  //
+  // Ein transform statt fixed scheidet aus: es machte den <body> zum
+  // Bezugsrahmen für position:fixed und risse Leiste, Scrim und Panel aus
+  // dem Ansichtsbereich. left/right halten die Breite, die ein
+  // herausgelöster <body> sonst verlöre.
+  function lockBackground(locked) {
+    var html = document.documentElement;
+    var body = document.body;
+    if (locked) {
+      lockedAt = window.scrollY || html.scrollTop || 0;
+      html.style.overflow = 'hidden';
+      body.style.position = 'fixed';
+      body.style.top = '-' + lockedAt + 'px';
+      body.style.left = '0';
+      body.style.right = '0';
+      return;
+    }
+    if (!html.style.overflow) return;
+    html.style.overflow = '';
+    body.style.position = '';
+    body.style.top = '';
+    body.style.left = '';
+    body.style.right = '';
+    // Die Stylesheets setzen scroll-behavior: smooth — die Rückkehr an die
+    // gemerkte Position würde sonst sichtbar animiert, obwohl die Seite gar
+    // nicht bewegt werden soll. Für diesen einen Sprung abschalten.
+    if (!keepScrollWhereItLands) {
+      var behavior = html.style.scrollBehavior;
+      html.style.scrollBehavior = 'auto';
+      window.scrollTo(0, lockedAt);
+      html.style.scrollBehavior = behavior;
+    }
+    keepScrollWhereItLands = false;
+    lockedAt = 0;
+  }
 
   // Ein programmatisch gesetztes .checked löst KEIN change-Ereignis aus —
   // deshalb wird sync() an jeder Stelle ausdrücklich mitgerufen.
   function sync() {
     box.setAttribute('aria-expanded', box.checked ? 'true' : 'false');
-    document.documentElement.style.overflow = box.checked ? 'hidden' : '';
+    lockBackground(box.checked);
   }
 
   function setOpen(open) {
@@ -67,6 +121,8 @@
   });
 
   drawer.addEventListener('click', function (e) {
-    if (e.target.closest('a')) setOpen(false);
+    if (!e.target.closest('a')) return;
+    keepScrollWhereItLands = true;
+    setOpen(false);
   });
 })();

@@ -50,7 +50,12 @@
 }
 
 *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-html { scroll-behavior: smooth; scrollbar-width: thin; scrollbar-color: var(--border) var(--bg); }
+
+/* scrollbar-gutter: stable — beim Öffnen des Menüs wird der Hintergrund
+   gesperrt (siehe assets/nav-drawer.js). Ohne reservierte Rinne verschwände
+   dabei die Rollleiste, die Seite würde breiter und der Text bräche neu um:
+   ein sichtbarer Ruck von einigen Pixeln. */
+html { scroll-behavior: smooth; scrollbar-width: thin; scrollbar-gutter: stable; scrollbar-color: var(--border) var(--bg); }
 
 body {
   font-family: 'DM Sans', system-ui, sans-serif;
@@ -81,11 +86,12 @@ a:hover { color: var(--t1); }
   border-bottom: 1px solid var(--border);
 }
 
+/* Geometrie der Site-Leiste (nav in css/site.css): volle Breite, .9rem 2rem
+   Polsterung, Marke links, alles andere rechts. Kein max-width — die Leiste
+   läuft über die ganze Seite, der Inhalt darunter bleibt bei var(--max). */
 .handbook-nav__inner {
-  max-width: var(--max);
-  margin: 0 auto;
-  padding: .9rem 1.5rem;
-  display: flex; align-items: center; gap: 1.4rem;
+  padding: .9rem 2rem;
+  display: flex; align-items: center; justify-content: space-between;
 }
 
 /* Marke: die Bildmarke ist das Q, das Wort setzt bei "provement" an —
@@ -105,43 +111,55 @@ a:hover { color: var(--t1); }
 .handbook-nav__brand { color: var(--t1); }
 .handbook-nav__docs { color: var(--t2); font-weight: 500; margin-left: .5rem; }
 
+/* Links, Aufruf und Sprachumschalter bilden eine rechtsbündige Gruppe —
+   .nav-right/.nav-links der Site, gleiche Abstände. */
 .handbook-nav__links {
-  display: flex; gap: 1.4rem;
-  margin-left: 1.2rem;
+  display: flex; gap: 1.8rem; align-items: center;
 }
 
 .handbook-nav__links a {
   color: var(--t2);
-  font-size: .87rem;
+  font-size: .84rem;
   font-weight: 500;
+  transition: color .2s;
 }
 .handbook-nav__links a:hover { color: var(--t1); }
 
 .handbook-nav__actions {
-  margin-left: auto;
-  display: flex; align-items: center; gap: .8rem;
+  display: flex; align-items: center; gap: 1.8rem;
 }
 
-.handbook-nav__lang {
-  padding: .4rem .75rem;
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  background: var(--bg-card);
-  color: var(--t2);
+/* Sprachumschalter: zweiteilige EN|DE-Pille, formgleich mit der Site
+   (.lang-switch/.lang-btn in css/site.css im privaten Repo). Die aktive
+   Sprache trägt das gefüllte Segment. */
+.lang-switch {
+  display: flex; align-items: center;
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: 7px; overflow: hidden;
   font-family: 'JetBrains Mono', monospace;
-  font-size: .72rem;
-  font-weight: 600;
-  letter-spacing: .02em;
+  font-size: .7rem; font-weight: 600;
+  letter-spacing: .03em;
 }
-.handbook-nav__lang:hover { border-color: var(--border-h); color: var(--t1); }
+
+.lang-btn {
+  padding: .38rem .6rem;
+  background: none; border: none; color: var(--t2);
+  cursor: pointer; transition: all .2s;
+  font-family: inherit; font-size: inherit; font-weight: inherit;
+  letter-spacing: inherit;
+  text-decoration: none;
+}
+.lang-btn.active { background: var(--border-h); color: var(--t1); }
+
+.lang-btn:hover:not(.active) { color: var(--t1); }
 
 .handbook-nav__cta {
-  padding: .5rem 1rem;
+  padding: .5rem 1.2rem;
   background: var(--green);
   color: var(--bg-card);
   border-radius: 7px;
   font-weight: 600;
-  font-size: .85rem;
+  font-size: .84rem;
   transition: transform .2s, box-shadow .2s;
 }
 .handbook-nav__cta:hover { transform: translateY(-1px); box-shadow: var(--shadow-h); color: var(--bg-card); }
@@ -202,47 +220,42 @@ a:hover { color: var(--t1); }
    ist eine Erweiterung des Briefs, kein Zitat daraus — bei künftigen Diffs
    gegen den Brieftext bitte hier ansetzen. */
 
-/* Bei geöffnetem Drawer muss die Leiste — insbesondere der Burger —
-   erreichbar bleiben, obwohl der Drawer sie in der Dokumentreihenfolge
-   überlagert (z-index 70 vs. 50); die volle Höhe des Drawers ist bindend
-   vorgegeben, ein Ausweichen nach unten scheidet also aus. Die Leiste rückt
-   deshalb nur solange der Drawer offen ist über ihn (z-index 80). Anders
-   als auf der Site verliert sie dabei zusätzlich ihren blassen Hintergrund
-   und den Weichzeichner: sonst läge ein ganzer, unscharf getönter Streifen
-   über dem Drawer-Kopf und würde dessen eigenen Aufruf und ersten Link
-   optisch zudecken, obwohl an der Stelle nur Nichts von der Leiste sitzt.
-   pointer-events:none nimmt der leeren Fläche zusätzlich die Klickfläche;
-   nur die tatsächlich bedienten Elemente holen sie sich einzeln zurück.
-   Ihr eigener Aufruf UND ihr eigener Sprachlink werden ausgeblendet, weil
-   der Drawer beides bereits selbst führt (Aufruf oben, Sprachlink unten) —
-   ungeprüft überlappte der Leisten-Sprachlink bei 700/380px sonst sichtbar
-   den Drawer-Aufruf: er bleibt bis 419.98px in der Leiste sichtbar, der
-   Drawer aber ist ab 759.98px bereits offen und deckt denselben Bereich. */
-.nav-toggle:checked ~ .handbook-nav {
-  z-index: 80;
-  background: none;
-  backdrop-filter: none;
-  border-bottom-color: transparent;
-  pointer-events: none;
-}
-
-.nav-toggle:checked ~ .handbook-nav .handbook-nav__logo,
-.nav-toggle:checked ~ .handbook-nav .handbook-nav__links a,
-.nav-toggle:checked ~ .handbook-nav .burger {
-  pointer-events: auto;
-}
-
-.nav-toggle:checked ~ .handbook-nav .handbook-nav__cta,
-.nav-toggle:checked ~ .handbook-nav .handbook-nav__lang {
-  visibility: hidden;
-  pointer-events: none;
-}
+/* Die Leiste bleibt im offenen Zustand unangetastet: Scrim (60) und Panel
+   (70) liegen über ihr (50), der Drawer ist also eine geschlossene Fläche.
+   Geschlossen wird über den eigenen Schließer des Panels, den Scrim oder
+   Escape — der Burger der Leiste ist derweil verdeckt. Formgleich mit der
+   Site (css/site.css im privaten Repo, dort 130/140/150). */
 
 /* ═══ Ende der selbstverfassten Ergänzung — ab hier wieder Brieftext ═══ */
 
 /* Der Burger ist ein <label>; den Fokusring des zugehörigen
    Kontrollkästchens muss er selbst zeigen. */
 .nav-toggle:focus-visible ~ .handbook-nav .burger {
+  outline: 2px solid var(--blue); outline-offset: 4px;
+}
+
+/* Der eigene Schließer des Panels: ein <label> auf dasselbe
+   Kontrollkästchen wie der Burger, nur innerhalb des Drawers. Zwei
+   gegenläufig gedrehte Linien ergeben das Kreuz. */
+.nav-drawer__close {
+  align-self: flex-end;
+  width: 26px; height: 26px;
+  position: relative;
+  cursor: pointer;
+  flex: none;
+}
+
+.nav-drawer__close span {
+  display: block; position: absolute;
+  top: 50%; left: 0; width: 100%; height: 2px;
+  background: var(--t2);
+  transition: background .2s;
+}
+.nav-drawer__close span:nth-child(1) { transform: rotate(45deg); }
+.nav-drawer__close span:nth-child(2) { transform: rotate(-45deg); }
+.nav-drawer__close:hover span { background: var(--t1); }
+
+.nav-toggle:focus-visible ~ .nav-drawer .nav-drawer__close {
   outline: 2px solid var(--blue); outline-offset: 4px;
 }
 
@@ -263,21 +276,29 @@ a:hover { color: var(--t1); }
 }
 
 /* ─── Umbruchpunkte ───────────────────────────────────────────
-   Opferreihenfolge: erst die Links, dann Wortmarke samt „docs", dann der
-   Sprachlink. Der Aufruf zur Anwendung bleibt bis zur kleinsten Breite. */
+   Opferreihenfolge: erst die Links (760), dann der Sprachumschalter (480),
+   dann Wortmarke samt „docs" (420). Der Aufruf zur Anwendung bleibt bis zur
+   kleinsten Breite. */
 @media (max-width: 759.98px) {
-  .handbook-nav__inner { gap: 1rem; }
+  .handbook-nav__actions { gap: 1rem; }
   .handbook-nav__links { display: none; }
   .burger { display: block; }
 }
 
-@media (max-width: 419.98px) {
-  .handbook-nav__brand, .handbook-nav__docs { display: none; }
-  .handbook-nav__actions { gap: .6rem; }
+/* Dieselbe Bindung wie auf der Site: unterhalb von 480px führt allein der
+   Drawer den Umschalter — die Pille braucht mehr Platz als der frühere
+   einzelne Sprachlink. */
+@media (max-width: 479.98px) {
+  .handbook-nav__inner .lang-switch { display: none; }
 }
 
-@media (max-width: 339.98px) {
-  .handbook-nav__inner .handbook-nav__lang { display: none; }
+@media (max-width: 639.98px) {
+  .handbook-nav__inner { padding: .7rem 1.2rem; }
+}
+
+@media (max-width: 419.98px) {
+  .handbook-nav__brand, .handbook-nav__docs { display: none; }
+  .handbook-nav__actions { gap: .7rem; }
 }
 
 /* ─── Main layout ─────────────────────────────────────────────── */
@@ -539,32 +560,83 @@ a:hover { color: var(--t1); }
   color: var(--bg-card);
 }
 
-/* ─── Footer ──────────────────────────────────────────────────── */
-.handbook-footer {
+/* ─── Fußzeile ────────────────────────────────────────────────
+   Aufbau und Maße der Site-Fußzeile (css/site.css im privaten Repo):
+   Deko-Band, Urheberzeile links, Linkzeile rechts. `overflow: clip` statt
+   `hidden`, damit die Fußzeile kein Scroll-Container wird. */
+footer {
+  position: relative; overflow: clip;
   border-top: 1px solid var(--border);
-  background: var(--bg-s);
+
+  /* Kein eigener Hintergrund — wie auf der Site trägt der Seitenverlauf die
+     Fußzeile. Ein deckender Hintergrund läge sonst über dem Deko-Band
+     (z-index -1) und verschluckte es. */
   margin-top: 4rem;
+  padding: 1.8rem 2rem;
+  font-size: .76rem; color: var(--t2);
+  min-height: 10rem;
+}
+footer a { color: var(--t1); }
+footer a:hover { color: var(--t1); text-decoration: underline; }
+
+.foot {
+  max-width: 1100px; margin: 0 auto;
+  display: flex; justify-content: space-between; align-items: center;
+  flex-wrap: wrap; gap: .8rem;
 }
 
-.handbook-footer__inner {
-  max-width: var(--max);
-  margin: 0 auto;
-  padding: 2rem 1.5rem;
-  display: flex; flex-wrap: wrap; gap: 1rem;
-  align-items: center; justify-content: space-between;
-  font-size: .85rem;
+/* Das Fuß-Band läuft nach unten und rechts über die Fußzeile hinaus; nur die
+   Oberkante bekäme einen harten Schnitt, deshalb blendet die Maske sie aus. */
+.ribbon {
+  position: absolute; z-index: -1;
+  pointer-events: none;
+  background-repeat: no-repeat;
+  background-size: contain;
 }
-.handbook-footer__brand { display: flex; flex-direction: column; gap: .2rem; }
 
-.handbook-footer__logo {
-  font-family: 'JetBrains Mono', monospace;
-  font-weight: 600;
+.ribbon--foot {
+  right: -7rem; top: 0; bottom: -8rem;
+  width: 44rem;
+  background-image: url('ribbon-foot.svg');
+  background-position: right bottom;
+  opacity: .6;
+  mask-image: linear-gradient(to bottom, transparent 0, var(--t1) 5rem);
+}
+
+/* ─── Gabelseite (Sprachwahl unter /docs/) ────────────────────── */
+.picker { display: flex; align-items: center; justify-content: center; padding: 3rem 1rem 4rem; }
+.picker__inner { text-align: center; max-width: 560px; }
+
+.picker h1 {
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: -.01em;
+  font-size: clamp(2.4rem, 5vw, 3.6rem);
+  line-height: 1.1;
+  margin-bottom: 1rem;
+}
+.picker__docs { color: var(--t3); font-size: .65em; }
+.picker p { color: var(--t2); margin-bottom: 2rem; font-size: 1.05rem; }
+.picker__btns { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+
+.picker__btn {
+  display: inline-block;
+  padding: .9rem 2.2rem;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: var(--bg-card);
   color: var(--t1);
+  font-weight: 600;
+  transition: transform .2s, box-shadow .2s, border-color .2s;
 }
-.handbook-footer__tag { color: var(--t2); font-size: .78rem; }
-.handbook-footer__links { display: flex; gap: 1.4rem; flex-wrap: wrap; }
-.handbook-footer__links a { color: var(--t2); }
-.handbook-footer__links a:hover { color: var(--t1); }
+
+.picker__btn:hover {
+  border-color: var(--green);
+  color: var(--t1);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-h);
+}
 
 /* ─── Index pages (card grids) ────────────────────────────────── */
 .handbook-grid {

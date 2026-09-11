@@ -15,6 +15,7 @@ const HERE = path.dirname(new URL(import.meta.url).pathname);
 export const STATIC_ASSETS = [
   { src: path.join(HERE, 'handbook.css'),           dest: 'assets/handbook.css' },
   { src: path.join(HERE, 'assets/logo.svg'),        dest: 'assets/logo.svg' },
+  { src: path.join(HERE, 'assets/ribbon-foot.svg'), dest: 'assets/ribbon-foot.svg' },
   { src: path.join(HERE, 'assets/favicon.svg'),     dest: 'assets/favicon.svg' },
   { src: path.join(HERE, 'assets/nav-drawer.js'),   dest: 'assets/nav-drawer.js' },
 ];

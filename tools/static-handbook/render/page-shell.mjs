@@ -49,7 +49,7 @@ const UI_STRINGS = {
     navModules: 'Module',
     navLab: 'Algorithmus-Lab',
     navTraining: 'Schulungen',
-    navApp: 'App öffnen',
+    navApp: 'Jetzt starten',
     navMenu: 'Menü',
     home: 'Startseite',
     breadcrumbRoot: 'Handbuch',
@@ -75,6 +75,15 @@ const UI_STRINGS = {
     ctaButton: 'App öffnen',
     footerTagline: 'Open-Source Six-Sigma-Werkzeug. Läuft zu 100 % in deinem Browser.',
     footerDocs: 'Handbuch',
+    /* Fußzeile wortgleich mit der Site (site-src/content/common.json im
+       privaten Repo). Einziger Unterschied: wo die Site „Dokumentation"
+       führt, steht hier „Homepage" — das Handbuch verlinkt nicht sich
+       selbst. */
+    footerCopy: '© 2026 Qprovement · 100 % Open Source · 100 % Lokal',
+    footerHome: 'Homepage',
+    footerVersions: 'Versionen',
+    footerLicense: 'AGPL-3.0-Lizenz',
+    footerLicenses: 'Open-Source-Lizenzen',
     footerImprint: 'Impressum',
     footerPrivacy: 'Datenschutz',
     phase: {
@@ -185,7 +194,7 @@ const UI_STRINGS = {
     navModules: 'Modules',
     navLab: 'Algorithm Lab',
     navTraining: 'Training',
-    navApp: 'Open App',
+    navApp: 'Get started',
     navMenu: 'Menu',
     home: 'Home',
     breadcrumbRoot: 'Handbook',
@@ -211,6 +220,11 @@ const UI_STRINGS = {
     ctaButton: 'Open App',
     footerTagline: 'Open-source Six Sigma toolkit. 100 % in-browser, always.',
     footerDocs: 'Handbook',
+    footerCopy: '© 2026 Qprovement · 100 % Open Source · 100 % Local',
+    footerHome: 'Homepage',
+    footerVersions: 'Versions',
+    footerLicense: 'AGPL-3.0 License',
+    footerLicenses: 'Open-Source Licenses',
     footerImprint: 'Imprint',
     footerPrivacy: 'Privacy',
     phase: {
@@ -440,7 +454,7 @@ ${renderBreadcrumbs(breadcrumbs)}
 ${bodyHtml}
 ${showCta ? renderCta(lang, pathFromRoot) : ''}
 </main>
-${renderFooter(lang)}
+${renderFooter(lang, pathFromRoot)}
 <script src="${escapeAttr(navJsHref)}" defer></script>
 </body>
 </html>
@@ -482,6 +496,23 @@ function renderNav(lang, currentPath, altPath, logoAssetHref) {
     { href: labHref, label: s.navLab },
     { href: trainingHref, label: s.navTraining },
   ];
+  // Sprachumschalter: dieselbe zweiteilige EN|DE-Pille wie auf der Site
+  // (langSwitchHtml in tools/site-build/build.mjs des privaten Repos) — die
+  // aktive Sprache ist markiert, die andere verweist auf ihr Gegenstück.
+  // rel="alternate" bleibt am fremdsprachigen Segment: die Site setzt es
+  // nicht, hier stand es bisher und kostet nichts.
+  const selfHref = relativeTo(currentPath, currentPath);
+  const langSwitchHtml = (extraClass) => {
+    const buttons = ['en', 'de'].map((l) => {
+      const active = l === lang;
+      const cls = active ? 'lang-btn active' : 'lang-btn';
+      const href = active ? selfHref : altLangHref;
+      const rel = active ? '' : ' rel="alternate"';
+      return `<a class="${cls}" href="${escapeAttr(href)}"${rel} hreflang="${l}">${l.toUpperCase()}</a>`;
+    }).join('');
+    return `<div class="lang-switch${extraClass ? ' ' + extraClass : ''}">${buttons}</div>`;
+  };
+
   const renderLink = (link) => `<a href="${escapeAttr(link.href)}">${escapeHtml(link.label)}</a>`;
   const barLinksHtml = navLinks.map(renderLink).join('\n      ');
   const drawerLinksHtml = navLinks.map(renderLink).join('\n    ');
@@ -498,23 +529,29 @@ function renderNav(lang, currentPath, altPath, logoAssetHref) {
       <img src="${escapeAttr(logoAssetHref)}" alt="" width="48" height="40">
       <span class="handbook-nav__brand">provement</span><span class="handbook-nav__docs">docs</span>
     </a>
-    <nav class="handbook-nav__links" aria-label="${escapeAttr(s.navHandbook)}">
-      ${barLinksHtml}
-    </nav>
+    <!-- Rechte Gruppe in der Reihenfolge der Site (.nav-right in
+         css/site.css): Links, Aufruf zur Anwendung, Sprachumschalter,
+         Burger. -->
     <div class="handbook-nav__actions">
-      <a href="${escapeAttr(altLangHref)}" class="handbook-nav__lang" rel="alternate" hreflang="${lang === 'de' ? 'en' : 'de'}">${escapeHtml(s.langOther)}</a>
-      <a href="${escapeAttr(appHref)}" class="handbook-nav__cta">${escapeHtml(s.navApp)} →</a>
+      <nav class="handbook-nav__links" aria-label="${escapeAttr(s.navHandbook)}">
+        ${barLinksHtml}
+      </nav>
+      <a href="${escapeAttr(appHref)}" class="handbook-nav__cta">${escapeHtml(s.navApp)}</a>
+      ${langSwitchHtml()}
       <label for="navToggle" class="burger" aria-controls="navDrawer"><span></span><span></span><span></span></label>
     </div>
   </div>
 </header>
 <label for="navToggle" class="nav-scrim"></label>
 <aside class="nav-drawer" id="navDrawer" aria-label="${escapeAttr(s.navMenu)}">
-  <a href="${escapeAttr(appHref)}" class="handbook-nav__cta nav-drawer__cta">${escapeHtml(s.navApp)} →</a>
+  <!-- aria-hidden: das Kreuz ist die Maus-Entsprechung zum Burger, nicht ein
+       zweites Bedienelement — Name und aria-expanded sitzen auf #navToggle. -->
+  <label for="navToggle" class="nav-drawer__close" aria-hidden="true"><span></span><span></span></label>
+  <a href="${escapeAttr(appHref)}" class="handbook-nav__cta nav-drawer__cta">${escapeHtml(s.navApp)}</a>
   <nav class="nav-drawer__links" aria-label="${escapeAttr(s.navMenu)}">
     ${drawerLinksHtml}
   </nav>
-  <a href="${escapeAttr(altLangHref)}" class="handbook-nav__lang nav-drawer__lang" rel="alternate" hreflang="${lang === 'de' ? 'en' : 'de'}">${escapeHtml(s.langOther)}</a>
+  ${langSwitchHtml('nav-drawer__lang')}
 </aside>`;
 }
 
@@ -538,20 +575,38 @@ function renderCta(lang, pathFromRoot) {
 </aside>`;
 }
 
-function renderFooter(lang) {
+/**
+ * Die Fußzeile — Aufbau, Wortlaut und Reihenfolge identisch mit der Site
+ * (site-src/templates/base.html im privaten Repo): Deko-Band, links die
+ * Urheberzeile, rechts die Linkzeile. Einziger Unterschied: der erste
+ * Eintrag heißt hier „Homepage" und führt auf die Site — dort heißt er
+ * „Dokumentation" und führt hierher.
+ *
+ * Impressum und Datenschutz stehen als Aufklapper nur auf der Site; hier
+ * verweisen die Links auf deren Sprungziele. Der Rest zeigt auf dieselben
+ * Ziele wie dort.
+ * @param {string} lang
+ * @param {string} currentPath  Pfad der Seite ab Handbuchwurzel
+ * @returns {string}
+ */
+function renderFooter(lang, currentPath) {
   const s = getStrings(lang);
-  return `<footer class="handbook-footer">
-  <div class="handbook-footer__inner">
-    <div class="handbook-footer__brand">
-      <span class="handbook-footer__logo">Qprovement</span>
-      <span class="handbook-footer__tag">${escapeHtml(s.footerTagline)}</span>
-    </div>
-    <nav class="handbook-footer__links" aria-label="${escapeAttr(s.footerDocs)}">
-      <a href="${SITE_ROOT_TOKEN}">Qprovement</a>
-      <a href="/${lang}/">${escapeHtml(s.footerDocs)}</a>
-      <a href="${SITE_ROOT_TOKEN}#impressum">${escapeHtml(s.footerImprint)}</a>
-      <a href="${SITE_ROOT_TOKEN}#datenschutz">${escapeHtml(s.footerPrivacy)}</a>
-    </nav>
+  const appHref = appRootFrom(currentPath);
+  const siteHome = lang === 'de' ? SITE_ROOT_TOKEN : `${SITE_ROOT_TOKEN}en/`;
+  const versions = lang === 'de' ? `${SITE_ROOT_TOKEN}versions.html` : `${SITE_ROOT_TOKEN}en/versions.html`;
+  return `<footer>
+  <div class="ribbon ribbon--foot" aria-hidden="true"></div>
+  <div class="foot">
+    <span>${escapeHtml(s.footerCopy)}</span>
+    <span>
+      <a href="${escapeAttr(siteHome)}">${escapeHtml(s.footerHome)}</a> ·
+      <a href="${escapeAttr(versions)}">${escapeHtml(s.footerVersions)}</a> ·
+      <a href="https://github.com/DMAIC-IO/DMAIC.io" target="_blank" rel="noopener">GitHub</a> ·
+      <a href="${escapeAttr(appHref)}LICENSE" target="_blank" rel="noopener">${escapeHtml(s.footerLicense)}</a> ·
+      <a href="${escapeAttr(appHref)}THIRD-PARTY-LICENSES.txt" target="_blank" rel="noopener">${escapeHtml(s.footerLicenses)}</a> ·
+      <a href="${escapeAttr(siteHome)}#impressum">${escapeHtml(s.footerImprint)}</a> ·
+      <a href="${escapeAttr(siteHome)}#datenschutz">${escapeHtml(s.footerPrivacy)}</a>
+    </span>
   </div>
 </footer>`;
 }

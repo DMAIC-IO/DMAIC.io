@@ -14,13 +14,15 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { STATIC_ASSETS, copyStaticAssets } from './static-assets.mjs';
 
-test('STATIC_ASSETS führt CSS, Bildmarke, Favicon und das Drawer-Skript', () => {
+test('STATIC_ASSETS führt CSS, Bildmarke, Fuß-Band, Favicon und das Drawer-Skript', () => {
   const dests = STATIC_ASSETS.map(a => a.dest);
   assert.deepEqual(dests.sort(), [
     'assets/favicon.svg',
     'assets/handbook.css',
     'assets/logo.svg',
     'assets/nav-drawer.js',
+    // Das Deko-Band der Fußzeile — ohne die Kopie zeigt handbook.css auf ein 404.
+    'assets/ribbon-foot.svg',
   ]);
 });
 

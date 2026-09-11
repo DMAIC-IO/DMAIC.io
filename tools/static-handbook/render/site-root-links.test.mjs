@@ -21,6 +21,7 @@ import { readdir, readFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { renderPage, appRootFrom } from './page-shell.mjs';
+import { renderLangPicker } from './pages.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const HANDBOOK_ROOT = join(HERE, '..');
@@ -79,13 +80,14 @@ test('keine gerenderte Seite enthält ein rohes %SITE_ROOT%', () => {
 });
 
 test('die Fußzeile verlinkt die real existierenden Rechtsanker der Site', () => {
-  for (const lang of ['de', 'en']) {
+  // Die Rechtstexte stehen auf der Startseite der jeweiligen Sprache: die
+  // deutsche unter "/", die englische unter "/en/". Sie stecken dort in
+  // eingeklappten <details>, die nur beim passenden Fragment aufgehen —
+  // falscher Anker heißt unsichtbarer Rechtstext.
+  for (const [lang, home] of [['de', '/'], ['en', '/en/']]) {
     const html = render('/de/define/sipoc.html', lang);
-    // Die Site (index.html und en/index.html) nutzt id="impressum" bzw.
-    // id="datenschutz"; die Texte stecken in eingeklappten <details>, die nur
-    // beim passenden Fragment aufgehen. Falsche Anker = unsichtbarer Rechtstext.
-    assert.ok(html.includes('href="/#impressum"'), `Impressum-Anker fehlt (${lang})`);
-    assert.ok(html.includes('href="/#datenschutz"'), `Datenschutz-Anker fehlt (${lang})`);
+    assert.ok(html.includes(`href="${home}#impressum"`), `Impressum-Anker fehlt (${lang})`);
+    assert.ok(html.includes(`href="${home}#datenschutz"`), `Datenschutz-Anker fehlt (${lang})`);
     assert.equal(html.includes('#imprint"'), false, `veralteter Anker #imprint (${lang})`);
     assert.equal(html.includes('#privacy"'), false, `veralteter Anker #privacy (${lang})`);
   }
@@ -128,10 +130,15 @@ test('das Kontrollkästchen trägt die übersetzte Beschriftung navMenu', () => 
   assert.ok(render('/en/index.html', 'en').includes('aria-label="Menu"'), 'englische Beschriftung fehlt');
 });
 
-test('der Drawer führt Aufruf, alle drei Links und den Sprachlink in dieser Reihenfolge', () => {
+test('der Drawer führt Schließer, Aufruf, alle drei Links und den Sprachlink in dieser Reihenfolge', () => {
   const html = render('/de/define/sipoc.html', 'de');
   const drawer = html.slice(html.indexOf('id="navDrawer"'));
+  const close = drawer.indexOf('nav-drawer__close');
   const cta = drawer.indexOf('nav-drawer__cta');
+  // Das Panel liegt über der Leiste, deren Burger ist offen also verdeckt —
+  // ohne diesen eigenen Schließer bliebe nur Scrim und Escape.
+  assert.ok(close > -1 && cta > close, 'der Schließer muss ganz oben im Panel stehen');
+  assert.match(drawer, /<label for="navToggle" class="nav-drawer__close"/);
   const links = drawer.indexOf('nav-drawer__links');
   const lang = drawer.indexOf('nav-drawer__lang');
   assert.ok(cta > -1 && links > cta, 'der Aufruf muss über den Links stehen');
@@ -139,6 +146,88 @@ test('der Drawer führt Aufruf, alle drei Links und den Sprachlink in dieser Rei
   for (const label of ['Module', 'Algorithmus-Lab', 'Schulungen']) {
     assert.ok(drawer.includes(`>${label}<`), `Drawer-Eintrag ${label} fehlt`);
   }
+});
+
+/**
+ * Der Sprachumschalter ist formgleich mit dem der Site (.lang-switch mit zwei
+ * .lang-btn, aktives Segment markiert) — vorher stand hier ein einzelner
+ * Link „English"/„Deutsch". Geprüft wird beides: die Pille selbst und dass
+ * sie in Leiste UND Drawer steht, jeweils mit korrekt gesetztem Ziel.
+ */
+test('Leiste und Drawer tragen dieselbe EN|DE-Pille wie die Site', () => {
+  for (const { pathFromRoot } of PATHS) {
+    for (const lang of ['de', 'en']) {
+      const html = render(pathFromRoot, lang);
+      const pills = [...html.matchAll(/<div class="lang-switch[^"]*">(.*?)<\/div>/gs)];
+      assert.equal(pills.length, 2, `zwei Pillen erwartet (${pathFromRoot}, ${lang})`);
+      assert.ok(html.includes('class="lang-switch nav-drawer__lang"'), 'Drawer-Pille fehlt');
+
+      for (const [, inner] of pills) {
+        const btns = [...inner.matchAll(/<a class="(lang-btn[^"]*)"[^>]*hreflang="(\w+)">(\w+)</g)];
+        assert.deepEqual(btns.map(b => b[2]), ['en', 'de'], 'Reihenfolge EN|DE wie auf der Site');
+        assert.deepEqual(btns.map(b => b[3]), ['EN', 'DE'], 'Beschriftungen wie auf der Site');
+        const active = btns.filter(b => b[1].includes('active'));
+        assert.equal(active.length, 1, 'genau ein aktives Segment');
+        assert.equal(active[0][2], lang, 'die aktive Sprache ist die der Seite');
+      }
+    }
+  }
+  // Das fremdsprachige Segment zeigt auf die andere Sprachfassung, das
+  // aktive auf die Seite selbst — beides relativ, nie root-absolut.
+  const html = render('/de/define/sipoc.html', 'de');
+  const other = html.match(/<a class="lang-btn" href="([^"]+)" rel="alternate" hreflang="en">/);
+  assert.ok(other, 'englisches Segment fehlt');
+  assert.equal(other[1], '../../en/');
+  assert.ok(html.includes('<a class="lang-btn active" href="./sipoc.html" hreflang="de">'),
+    'das aktive Segment zeigt nicht auf die Seite selbst');
+});
+
+/**
+ * Kopf- und Fußzeile sind bewusst formgleich mit der Site — gleiche
+ * Reihenfolge, gleicher Wortlaut. Wer hier etwas umstellt, stellt es auch
+ * in site-src/templates/base.html des privaten Repos um.
+ */
+test('die Leiste führt Links, Aufruf und Sprachumschalter in der Reihenfolge der Site', () => {
+  const html = render('/de/define/sipoc.html', 'de');
+  const bar = html.slice(html.indexOf('handbook-nav__actions'), html.indexOf('</header>'));
+  const links = bar.indexOf('handbook-nav__links');
+  const cta = bar.indexOf('handbook-nav__cta');
+  const lang = bar.indexOf('lang-switch');
+  const burger = bar.indexOf('class="burger"');
+  assert.ok(links > -1 && cta > links, 'der Aufruf steht rechts der Links');
+  assert.ok(lang > cta, 'der Sprachumschalter steht rechts des Aufrufs');
+  assert.ok(burger > lang, 'der Burger steht ganz rechts');
+});
+
+test('der Aufruf zur Anwendung trägt den Wortlaut der Site', () => {
+  assert.ok(render('/de/index.html', 'de').includes('>Jetzt starten<'), 'deutscher Wortlaut');
+  assert.ok(render('/en/index.html', 'en').includes('>Get started<'), 'englischer Wortlaut');
+});
+
+test('die Fußzeile führt dieselben Einträge wie die Site, nur „Homepage" statt „Dokumentation"', () => {
+  const html = render('/de/define/sipoc.html', 'de');
+  const foot = html.slice(html.indexOf('<footer'));
+  const order = ['Homepage', 'Versionen', 'GitHub', 'AGPL-3.0-Lizenz', 'Open-Source-Lizenzen', 'Impressum', 'Datenschutz'];
+  let cursor = -1;
+  for (const label of order) {
+    const at = foot.indexOf(`>${label}<`);
+    assert.ok(at > cursor, `Fußzeilen-Eintrag ${label} fehlt oder steht falsch`);
+    cursor = at;
+  }
+  // Das Handbuch verlinkt nicht sich selbst — dafür steht „Homepage".
+  assert.equal(foot.includes('>Dokumentation<'), false);
+  assert.ok(foot.includes('class="ribbon ribbon--foot"'), 'das Deko-Band der Site fehlt');
+});
+
+test('die Gabelseite trägt dieselbe Hülle wie jede Handbuchseite', () => {
+  const html = renderLangPicker();
+  assert.ok(html.includes('class="handbook-nav"'), 'Leiste fehlt');
+  assert.ok(html.includes('<footer'), 'Fußzeile fehlt');
+  assert.ok(html.includes('id="navDrawer"'), 'Drawer fehlt');
+  assert.equal(html.includes('%SITE_ROOT%'), false, 'rohes Token auf der Gabelseite');
+  // Beide Sprachfassungen bleiben von hier aus erreichbar.
+  assert.ok(html.includes('href="./de/"'), 'deutsche Fassung nicht verlinkt');
+  assert.ok(html.includes('href="./en/"'), 'englische Fassung nicht verlinkt');
 });
 
 test('der Skriptpfad ist relativ zur Seitentiefe aufgelöst', () => {
