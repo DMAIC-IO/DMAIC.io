@@ -5,7 +5,9 @@
  * stays stable across runs.
  */
 
-const SITE_ORIGIN = 'https://dmaic.io/app/latest/docs';
+import { CONSTANTS } from './page-shell.mjs';
+
+const { SITE_ORIGIN } = CONSTANTS;
 
 export function renderSitemap(paths) {
   const today = new Date().toISOString().slice(0, 10);

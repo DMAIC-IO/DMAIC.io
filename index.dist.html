@@ -20,7 +20,7 @@
     trusted-types 'none';
   ">
   <meta name="viewport" content="width=1280">
-  <title>DMAIC.io</title>
+  <title>Qprovement</title>
   <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
 
   <!-- I18N_VERSION:START -->
@@ -125,14 +125,17 @@
   <!-- ── Viewport guard (desktop-only) ─────────────────────── -->
   <div id="viewport-guard" role="alert">
     <p data-i18n="app.desktopOnly">
-      D.Mike ist für Desktop-Monitore konzipiert.
+      Qprovement ist für Desktop-Monitore konzipiert.
       Bitte verwenden Sie einen Bildschirm mit mindestens 1280 px Breite.
     </p>
   </div>
 
   <!-- ── Header ────────────────────────────────────────────── -->
   <header class="app-header" role="banner">
-    <h1 class="app-header__logo">DMAIC.io</h1>
+    <!-- Die Bildmarke ist selbst das Q; die Wortmarke beginnt deshalb bei „provement".
+         Genauso baut die Website ihren Kopf auf (.logo in css/site.css).
+         aria-label liefert den vollständigen Markennamen als zugänglichen Namen. -->
+    <h1 class="app-header__logo" aria-label="Qprovement"><img class="app-header__logo-mark" src="assets/logo.svg" alt="" width="38" height="32"><span class="app-header__logo-word">provement</span></h1>
 
     <div class="app-header__project-switcher" id="project-switcher">
       <button class="app-header__project-btn" id="project-switcher-btn"

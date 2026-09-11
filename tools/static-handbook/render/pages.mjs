@@ -9,7 +9,7 @@
  *   - renderLangPicker   — /index.html (DE/EN language chooser)
  */
 
-import { renderPage, getStrings, CONSTANTS } from './page-shell.mjs';
+import { renderPage, getStrings, CONSTANTS, appRootFrom } from './page-shell.mjs';
 import { renderBlocks, firstParagraphText } from './blocks.mjs';
 import { escapeHtml, escapeAttr, pick, stripTermTokens } from './escape.mjs';
 
@@ -31,8 +31,6 @@ import { getModuleName, getExamplesForModule } from '../loaders/load-sources.mjs
 import { renderLatex } from './katex.mjs';
 import { renderInline } from './inline.mjs';
 import { CYCLES, getPhaseIds } from '../../../js/core/cycles/cycles.js';
-
-const APP_ORIGIN = 'https://dmaic.io';
 
 const SECTION_ORDER = [
   'overview',
@@ -183,7 +181,7 @@ export async function renderAlgoPage({ algorithm, lang, categoryById, i18n: _i18
   const altLang = lang === 'de' ? 'en' : 'de';
   const altPathFromRoot = `/${altLang}/lab/${algorithm.category}/${algorithm.id}.html`;
 
-  const title = `${name} — ${categoryName} — ${s.breadcrumbLab} — DMAIC.io`;
+  const title = `${name} — ${categoryName} — ${s.breadcrumbLab} — Qprovement`;
   const description = short || long.slice(0, 160);
 
   // Meta row
@@ -360,7 +358,7 @@ export function renderCycleIndex({ cycleId, modules, lang, i18n }) {
   const body = `
 <article class="handbook-article">
   <span class="handbook-article__tag">${escapeHtml(s.cyclesHeading)}</span>
-  <h1>${escapeHtml(cycleName)}${cycleShort ? ` <span style="font-weight:400;font-size:0.6em;color:var(--text-muted)">${escapeHtml(cycleShort)}</span>` : ''}</h1>
+  <h1>${escapeHtml(cycleName)}${cycleShort ? ` <span style="font-weight:400;font-size:0.6em;color:var(--t3)">${escapeHtml(cycleShort)}</span>` : ''}</h1>
   ${cycleDesc ? `<p class="handbook-article__lead">${escapeHtml(cycleDesc)}</p>` : ''}
   ${groups.join('\n')}
 </article>`;
@@ -438,7 +436,7 @@ export function renderLangIndex({ modules, lang, i18n, examples }) {
     const cycleShort = cycleI18n.short || '';
     const cycleDesc = cycleI18n.description || '';
     const href = `./cycles/${c.id}/`;
-    return `<a class="handbook-card" href="${escapeAttr(href)}"><div class="handbook-card__title">${escapeHtml(cycleName)}${cycleShort ? ` <span style="font-weight:400;color:var(--text-muted)">— ${escapeHtml(cycleShort)}</span>` : ''}</div>${cycleDesc ? `<div class="handbook-card__desc">${escapeHtml(cycleDesc)}</div>` : ''}</a>`;
+    return `<a class="handbook-card" href="${escapeAttr(href)}"><div class="handbook-card__title">${escapeHtml(cycleName)}${cycleShort ? ` <span style="font-weight:400;color:var(--t3)">— ${escapeHtml(cycleShort)}</span>` : ''}</div>${cycleDesc ? `<div class="handbook-card__desc">${escapeHtml(cycleDesc)}</div>` : ''}</a>`;
   }).join('');
   const cyclesCard = `<section class="handbook-phase-group" id="cycles">
     <h2>${escapeHtml(s.cyclesHeading)}</h2>
@@ -983,7 +981,9 @@ export function renderExamplePage({ example, modules, lang, i18n }) {
     actions.push(`<a class="handbook-cta__button" href="${escapeAttr(downloadHref)}" download>${escapeHtml(downloadLabel)} ↓</a>`);
   }
   if (primaryModuleId) {
-    const deeplink = `${APP_ORIGIN}/?module=${encodeURIComponent(primaryModuleId)}&example=${encodeURIComponent(ex.id)}`;
+    // Deeplink auf die App-Wurzel des Deployments (eine Ebene über docs/),
+    // nicht auf die Site-Wurzel — sonst zeigt er im Tag-Deployment ins Leere.
+    const deeplink = `${appRootFrom(pathFromRoot)}?module=${encodeURIComponent(primaryModuleId)}&example=${encodeURIComponent(ex.id)}`;
     actions.push(`<a class="handbook-cta__button" href="${escapeAttr(deeplink)}">${escapeHtml(s.exampleOpenInApp)} →</a>`);
   }
   const actionsHtml = actions.length
@@ -1106,7 +1106,7 @@ export function renderExamplesIndex({ examples, modules, lang, i18n }) {
         return `<a class="handbook-card" href="${escapeAttr(href)}">
           <div class="handbook-card__title">${escapeHtml(stripTermTokens(name))}</div>
           ${desc ? `<div class="handbook-card__desc">${escapeHtml(stripTermTokens(desc))}</div>` : ''}
-          <div class="handbook-card__meta" style="margin-top:.5rem;display:flex;gap:.5rem;flex-wrap:wrap;font-size:.85em;color:var(--text-muted);">
+          <div class="handbook-card__meta" style="margin-top:.5rem;display:flex;gap:.5rem;flex-wrap:wrap;font-size:.85em;color:var(--t3);">
             <span class="handbook-card__badge">${escapeHtml(typeLabel)}</span>
             ${moduleHint ? `<span>${escapeHtml(moduleHint)}</span>` : ''}
           </div>
@@ -1154,68 +1154,29 @@ export function renderExamplesIndex({ examples, modules, lang, i18n }) {
 // ─── Language picker (root index) ────────────────────────────────
 
 export function renderLangPicker() {
-  return `<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>DMAIC.io Handbook — Documentation</title>
-<meta name="description" content="DMAIC.io is a free, open-source Six Sigma toolkit. Handbook available in English and German.">
-<link rel="canonical" href="https://docs.dmaic.io/">
-<link rel="alternate" hreflang="de" href="https://docs.dmaic.io/de/">
-<link rel="alternate" hreflang="en" href="https://docs.dmaic.io/en/">
-<link rel="alternate" hreflang="x-default" href="https://docs.dmaic.io/en/">
-<link rel="icon" type="image/svg+xml" href="./assets/favicon.svg">
-<link rel="stylesheet" href="./assets/handbook.css">
-<style>
-  .picker {
-    min-height: 100vh;
-    display: flex; align-items: center; justify-content: center;
-    padding: 2rem;
-  }
-  .picker__inner { text-align: center; max-width: 560px; }
-  .picker h1 {
-    font-family: 'Instrument Serif', serif;
-    font-size: clamp(2.4rem, 5vw, 3.6rem);
-    font-weight: 400;
-    line-height: 1.1;
-    margin-bottom: 1rem;
-  }
-  .picker p { color: var(--t2); margin-bottom: 2rem; font-size: 1.05rem; }
-  .picker__btns { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
-  .picker__btn {
-    display: inline-block;
-    padding: .9rem 2.2rem;
-    border: 1px solid var(--border);
-    border-radius: 9px;
-    background: var(--bg-t);
-    color: var(--t1);
-    font-weight: 600;
-  }
-  .picker__btn:hover {
-    border-color: var(--green);
-    background: var(--bg-card);
-    color: var(--t1);
-    transform: translateY(-1px);
-    box-shadow: 0 6px 22px var(--green-glow);
-  }
-</style>
-</head>
-<body>
-<div class="picker">
+  // Die Gabelseite trägt dieselbe Hülle wie jede Handbuchseite — Leiste,
+  // Fußzeile, Palette. Vorher war sie ein freistehendes Dokument mit eigenem
+  // <style> und ohne beides; sie wirkte dadurch wie eine fremde Seite.
+  // Sprache der Hülle ist Englisch, die eigentliche Wahl treffen die beiden
+  // Schaltflächen im Inhalt.
+  const s = getStrings('en');
+  return renderPage({
+    lang: 'en',
+    title: 'Qprovement Handbook — Documentation',
+    description: 'Qprovement is a free, open-source Six Sigma toolkit. Handbook available in English and German.',
+    pathFromRoot: '/',
+    altPathFromRoot: null,
+    breadcrumbs: [],
+    showCta: false,
+    bodyHtml: `<div class="picker">
   <div class="picker__inner">
-    <h1>DMAIC.io <span style="color:var(--t3);font-size:.65em;">docs</span></h1>
-    <p>Handbook for the open-source Six Sigma toolkit.<br>Choose your language · Sprache wählen</p>
+    <h1>Qprovement <span class="picker__docs">docs</span></h1>
+    <p>${escapeHtml(s.footerTagline)}<br>Choose your language · Sprache wählen</p>
     <div class="picker__btns">
-      <a class="picker__btn" href="./de/" hreflang="de">Deutsch →</a>
-      <a class="picker__btn" href="./en/" hreflang="en">English →</a>
+      <a class="picker__btn" href="/de/" hreflang="de">Deutsch →</a>
+      <a class="picker__btn" href="/en/" hreflang="en">English →</a>
     </div>
-    <p style="margin-top:2.5rem;font-size:.8rem;color:var(--t3);">
-      <a href="https://dmaic.io/">← Back to dmaic.io</a>
-    </p>
   </div>
-</div>
-</body>
-</html>
-`;
+</div>`,
+  });
 }

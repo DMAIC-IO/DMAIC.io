@@ -18,15 +18,6 @@
 }
 
 @font-face {
-  font-family: 'Instrument Serif';
-  font-style: normal;
-  font-weight: 400;
-  font-display: swap;
-  src: url('fonts/instrumentserif-latin.woff2') format('woff2');
-  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+20AC;
-}
-
-@font-face {
   font-family: 'JetBrains Mono';
   font-style: normal;
   font-weight: 400 700;
@@ -35,28 +26,36 @@
   unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC;
 }
 
+/* Qprovement-Palette — gespiegelt aus css/site.css :root (Site-Repo,
+   Task 4/6). --max ist handbuchspezifisch und bleibt bestehen. */
 :root {
-  --bg: #06080C;
-  --bg-s: #0C0F16;
-  --bg-t: #12161F;
-  --bg-card: #0F1219;
-  --border: #1A1F2E;
-  --border-h: #262D40;
-  --t1: #E6E9F0;
-  --t2: #858DA5;
-  --t3: #4E5672;
-  --green: #22C55E;
-  --green-dim: #22C55E20;
-  --green-glow: #22C55E30;
-  --cyan: #06B6D4;
-  --cyan-dim: #06B6D420;
-  --blue: #3B82F6;
-  --gold: #D4A843;
+  --bg:      #E7F1F7;
+  --bg-c:    #F3F7F9;
+  --bg-e:    #D9E9F3;
+  --bg-s:    #F4F9FB;
+  --bg-card: #FFF;
+  --border:   #CBDCE6;
+  --border-h: #A9C6D6;
+  --t1: #0D4065;
+  --t2: #3A5F7D;
+  --t3: #6E8AA0;
+  --blue:    #0B567F;
+  --green:   #79AE68;
+  --green-h: #6B9D5B;
+  --teal:    #538A8D;
+  --shadow:  0 8px 24px rgb(13 64 101 / 10%);
+  --shadow-h: 0 12px 32px rgb(13 64 101 / 16%);
+  --black-a38: rgb(0 0 0 / 38%); /* Drawer-Scrim, gespiegelt aus site.css --black-a38 */
   --max: 960px;
 }
 
 *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-html { scroll-behavior: smooth; scrollbar-width: thin; scrollbar-color: var(--border) var(--bg); }
+
+/* scrollbar-gutter: stable — beim Öffnen des Menüs wird der Hintergrund
+   gesperrt (siehe assets/nav-drawer.js). Ohne reservierte Rinne verschwände
+   dabei die Rollleiste, die Seite würde breiter und der Text bräche neu um:
+   ein sichtbarer Ruck von einigen Pixeln. */
+html { scroll-behavior: smooth; scrollbar-width: thin; scrollbar-gutter: stable; scrollbar-color: var(--border) var(--bg); }
 
 body {
   font-family: 'DM Sans', system-ui, sans-serif;
@@ -66,81 +65,241 @@ body {
   -webkit-font-smoothing: antialiased;
   font-feature-settings: 'ss01', 'ss02';
 }
-a { color: var(--cyan); text-decoration: none; }
+
+/* Der Flyer-Hintergrund ist ein einzelner Radialverlauf, hell in der Mitte,
+   blau zum Rand. Als fixierte eigene Ebene statt background-attachment:fixed
+   — letzteres springt auf iOS-Safari beim Scrollen. Gespiegelt aus site.css. */
+body::before {
+  content: ""; position: fixed; inset: 0; z-index: -2;
+  background: radial-gradient(ellipse 120% 90% at 50% 40%,
+                              var(--bg-c) 0%, var(--bg-e) 100%);
+}
+
+a { color: var(--blue); text-decoration: none; }
 a:hover { color: var(--t1); }
 
 /* ─── Nav ─────────────────────────────────────────────────────── */
 .handbook-nav {
   position: sticky; top: 0; z-index: 50;
-  background: #06080CEE;
+  background: color-mix(in srgb, var(--bg) 86%, transparent);
   backdrop-filter: blur(18px) saturate(1.2);
   border-bottom: 1px solid var(--border);
 }
 
+/* Geometrie der Site-Leiste (nav in css/site.css): volle Breite, .9rem 2rem
+   Polsterung, Marke links, alles andere rechts. Kein max-width — die Leiste
+   läuft über die ganze Seite, der Inhalt darunter bleibt bei var(--max). */
 .handbook-nav__inner {
-  max-width: var(--max);
-  margin: 0 auto;
-  padding: .9rem 1.5rem;
-  display: flex; align-items: center; gap: 1.4rem;
+  padding: .9rem 2rem;
+  display: flex; align-items: center; justify-content: space-between;
 }
 
+/* Marke: die Bildmarke ist das Q, das Wort setzt bei "provement" an —
+   gespiegelt aus der Site-Navigation (.logo in css/site.css). Der
+   aria-label liefert den vollständigen Firmennamen als zugänglichen
+   Namen, alt="" hält die dekorative Bildmarke aus dem Accessibility-Baum. */
 .handbook-nav__logo {
-  display: inline-flex; align-items: center; gap: .55rem;
-  font-family: 'JetBrains Mono', monospace;
-  font-weight: 600; font-size: 1rem;
+  display: inline-flex; align-items: center; gap: 0;
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 700; font-size: 1rem;
+  letter-spacing: -.01em;
   color: var(--t1);
+  text-decoration: none;
 }
 
-.handbook-nav__mark {
-  width: 28px; height: 28px;
-  background: linear-gradient(135deg, var(--green), var(--cyan));
-  border-radius: 6px;
-  display: grid; place-items: center;
-  color: #fff; font-weight: 700;
-}
+.handbook-nav__logo img { width: 48px; height: 40px; display: block; margin-right: -.18rem; }
 .handbook-nav__brand { color: var(--t1); }
-.handbook-nav__docs { color: var(--t3); font-weight: 500; }
+.handbook-nav__docs { color: var(--t2); font-weight: 500; margin-left: .5rem; }
 
+/* Links, Aufruf und Sprachumschalter bilden eine rechtsbündige Gruppe —
+   .nav-right/.nav-links der Site, gleiche Abstände. */
 .handbook-nav__links {
-  display: flex; gap: 1.4rem;
-  margin-left: 1.2rem;
+  display: flex; gap: 1.8rem; align-items: center;
 }
 
 .handbook-nav__links a {
   color: var(--t2);
-  font-size: .87rem;
+  font-size: .84rem;
   font-weight: 500;
+  transition: color .2s;
 }
 .handbook-nav__links a:hover { color: var(--t1); }
 
 .handbook-nav__actions {
-  margin-left: auto;
-  display: flex; align-items: center; gap: .8rem;
+  display: flex; align-items: center; gap: 1.8rem;
 }
 
-.handbook-nav__lang {
-  padding: .4rem .75rem;
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  background: var(--bg-t);
-  color: var(--t2);
+/* Sprachumschalter: zweiteilige EN|DE-Pille, formgleich mit der Site
+   (.lang-switch/.lang-btn in css/site.css im privaten Repo). Die aktive
+   Sprache trägt das gefüllte Segment. */
+.lang-switch {
+  display: flex; align-items: center;
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: 7px; overflow: hidden;
   font-family: 'JetBrains Mono', monospace;
-  font-size: .72rem;
-  font-weight: 600;
-  letter-spacing: .02em;
+  font-size: .7rem; font-weight: 600;
+  letter-spacing: .03em;
 }
-.handbook-nav__lang:hover { border-color: var(--border-h); color: var(--t1); }
+
+.lang-btn {
+  padding: .38rem .6rem;
+  background: none; border: none; color: var(--t2);
+  cursor: pointer; transition: all .2s;
+  font-family: inherit; font-size: inherit; font-weight: inherit;
+  letter-spacing: inherit;
+  text-decoration: none;
+}
+.lang-btn.active { background: var(--border-h); color: var(--t1); }
+
+.lang-btn:hover:not(.active) { color: var(--t1); }
 
 .handbook-nav__cta {
-  padding: .5rem 1rem;
+  padding: .5rem 1.2rem;
   background: var(--green);
-  color: var(--bg);
+  color: var(--bg-card);
   border-radius: 7px;
   font-weight: 600;
-  font-size: .85rem;
+  font-size: .84rem;
   transition: transform .2s, box-shadow .2s;
 }
-.handbook-nav__cta:hover { transform: translateY(-1px); box-shadow: 0 4px 16px var(--green-glow); color: var(--bg); }
+.handbook-nav__cta:hover { transform: translateY(-1px); box-shadow: var(--shadow-h); color: var(--bg-card); }
+
+/* ─── Off-Canvas-Drawer ───────────────────────────────────────
+   Formgleich mit der Site (css/site.css im privaten Repo). Reines CSS:
+   #navToggle schaltet über den Geschwisterselektor Scrim und Panel.
+   Versteckt wird das Kontrollkästchen per Clip statt display:none — sonst
+   wäre es nicht fokussierbar und die Tastaturbedienung entfiele. */
+.nav-toggle {
+  position: absolute; width: 1px; height: 1px;
+  margin: 0; padding: 0; border: 0;
+  clip-path: inset(50%); overflow: hidden;
+  white-space: nowrap;
+}
+
+.burger {
+  display: none; background: none; border: none; cursor: pointer;
+  width: 26px; height: 18px; position: relative;
+}
+
+.burger span {
+  display: block; width: 100%; height: 2px; background: var(--t2);
+  position: absolute; left: 0; transition: all .3s;
+}
+.burger span:nth-child(1) { top: 0; }
+.burger span:nth-child(2) { top: 8px; }
+.burger span:nth-child(3) { top: 16px; }
+
+.nav-scrim {
+  position: fixed; inset: 0; z-index: 60;
+  background: var(--black-a38);
+  opacity: 0; visibility: hidden;
+  transition: opacity .24s, visibility .24s;
+  cursor: pointer;
+}
+
+.nav-drawer {
+  position: fixed; top: 0; right: 0; bottom: 0; z-index: 70;
+  width: min(320px, 84vw);
+  display: flex; flex-direction: column; gap: 1.1rem;
+  padding: 1.4rem 1.2rem;
+  overflow-y: auto;
+  background: var(--bg-card);
+  border-left: 1px solid var(--border);
+
+  /* Geschlossen zusätzlich visibility:hidden: allein aus dem Bild geschoben
+     bliebe das Panel per Tabulator erreichbar. */
+  transform: translateX(100%); visibility: hidden;
+  transition: transform .24s ease, visibility .24s;
+}
+
+.nav-toggle:checked ~ .nav-scrim { opacity: 1; visibility: visible; }
+.nav-toggle:checked ~ .nav-drawer { transform: none; visibility: visible; }
+
+/* ═══ Ab hier: selbstverfasste Ergänzung, nicht Teil des Task-7-Briefs ═══
+   Grund: siehe Kommentar direkt darunter. Alles bis zur nächsten "═"-Zeile
+   ist eine Erweiterung des Briefs, kein Zitat daraus — bei künftigen Diffs
+   gegen den Brieftext bitte hier ansetzen. */
+
+/* Die Leiste bleibt im offenen Zustand unangetastet: Scrim (60) und Panel
+   (70) liegen über ihr (50), der Drawer ist also eine geschlossene Fläche.
+   Geschlossen wird über den eigenen Schließer des Panels, den Scrim oder
+   Escape — der Burger der Leiste ist derweil verdeckt. Formgleich mit der
+   Site (css/site.css im privaten Repo, dort 130/140/150). */
+
+/* ═══ Ende der selbstverfassten Ergänzung — ab hier wieder Brieftext ═══ */
+
+/* Der Burger ist ein <label>; den Fokusring des zugehörigen
+   Kontrollkästchens muss er selbst zeigen. */
+.nav-toggle:focus-visible ~ .handbook-nav .burger {
+  outline: 2px solid var(--blue); outline-offset: 4px;
+}
+
+/* Der eigene Schließer des Panels: ein <label> auf dasselbe
+   Kontrollkästchen wie der Burger, nur innerhalb des Drawers. Zwei
+   gegenläufig gedrehte Linien ergeben das Kreuz. */
+.nav-drawer__close {
+  align-self: flex-end;
+  width: 26px; height: 26px;
+  position: relative;
+  cursor: pointer;
+  flex: none;
+}
+
+.nav-drawer__close span {
+  display: block; position: absolute;
+  top: 50%; left: 0; width: 100%; height: 2px;
+  background: var(--t2);
+  transition: background .2s;
+}
+.nav-drawer__close span:nth-child(1) { transform: rotate(45deg); }
+.nav-drawer__close span:nth-child(2) { transform: rotate(-45deg); }
+.nav-drawer__close:hover span { background: var(--t1); }
+
+.nav-toggle:focus-visible ~ .nav-drawer .nav-drawer__close {
+  outline: 2px solid var(--blue); outline-offset: 4px;
+}
+
+.nav-drawer__cta { display: block; text-align: center; }
+.nav-drawer__links { display: flex; flex-direction: column; gap: .1rem; }
+
+.nav-drawer__links a {
+  padding: .6rem .2rem;
+  color: var(--t2);
+  font-size: .95rem; font-weight: 500;
+  border-bottom: 1px solid var(--border);
+}
+.nav-drawer__links a:hover { color: var(--t1); }
+.nav-drawer__lang { margin-top: auto; align-self: flex-start; }
+
+@media (prefers-reduced-motion: reduce) {
+  .nav-scrim, .nav-drawer { transition: none; }
+}
+
+/* ─── Umbruchpunkte ───────────────────────────────────────────
+   Opferreihenfolge: erst die Links (760), dann der Sprachumschalter (480),
+   dann Wortmarke samt „docs" (420). Der Aufruf zur Anwendung bleibt bis zur
+   kleinsten Breite. */
+@media (max-width: 759.98px) {
+  .handbook-nav__actions { gap: 1rem; }
+  .handbook-nav__links { display: none; }
+  .burger { display: block; }
+}
+
+/* Dieselbe Bindung wie auf der Site: unterhalb von 480px führt allein der
+   Drawer den Umschalter — die Pille braucht mehr Platz als der frühere
+   einzelne Sprachlink. */
+@media (max-width: 479.98px) {
+  .handbook-nav__inner .lang-switch { display: none; }
+}
+
+@media (max-width: 639.98px) {
+  .handbook-nav__inner { padding: .7rem 1.2rem; }
+}
+
+@media (max-width: 419.98px) {
+  .handbook-nav__brand, .handbook-nav__docs { display: none; }
+  .handbook-nav__actions { gap: .7rem; }
+}
 
 /* ─── Main layout ─────────────────────────────────────────────── */
 .handbook-main {
@@ -155,7 +314,7 @@ a:hover { color: var(--t1); }
   list-style: none;
   font-family: 'JetBrains Mono', monospace;
   font-size: .72rem;
-  color: var(--t3);
+  color: var(--t2);
   letter-spacing: .02em;
   margin-bottom: 1.6rem;
 }
@@ -163,19 +322,23 @@ a:hover { color: var(--t1); }
 .handbook-breadcrumbs li + li::before {
   content: '›';
   margin-right: .35rem;
-  color: var(--t3);
+  color: var(--t2);
 }
 .handbook-breadcrumbs a { color: var(--t2); }
 .handbook-breadcrumbs a:hover { color: var(--t1); }
 .handbook-breadcrumbs [aria-current="page"] { color: var(--t1); }
 
 /* ─── Headline ────────────────────────────────────────────────── */
+
+/* Instrument Serif entfällt (Task 6, Site-Repo) — Display-Typografie ist
+   DM Sans 700 uppercase, gespiegelt aus .title in css/site.css. */
 .handbook-article > h1 {
-  font-family: 'Instrument Serif', serif;
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: -.01em;
   font-size: clamp(2.2rem, 4.5vw, 3.4rem);
-  font-weight: 400;
-  line-height: 1.1;
-  letter-spacing: -0.02em;
+  line-height: 1.15;
   margin-bottom: .6rem;
 }
 
@@ -188,7 +351,7 @@ a:hover { color: var(--t1); }
   text-transform: uppercase;
   padding: .3rem .7rem;
   border-radius: 100px;
-  background: var(--bg-t);
+  background: var(--bg-card);
   border: 1px solid var(--border);
   color: var(--t2);
   margin-bottom: 1rem;
@@ -209,10 +372,11 @@ a:hover { color: var(--t1); }
 }
 
 .handbook-section > h2 {
-  font-family: 'Instrument Serif', serif;
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: -.01em;
   font-size: 1.8rem;
-  font-weight: 400;
-  letter-spacing: -0.01em;
   margin-bottom: 1rem;
   color: var(--t1);
 }
@@ -243,7 +407,7 @@ a:hover { color: var(--t1); }
 }
 
 .handbook-block__definition strong {
-  color: var(--cyan);
+  color: var(--blue);
   font-weight: 600;
 }
 
@@ -278,7 +442,7 @@ a:hover { color: var(--t1); }
 }
 
 .handbook-block__table th {
-  background: var(--bg-t);
+  background: var(--bg-card);
   color: var(--t2);
   font-weight: 600;
   font-size: .78rem;
@@ -289,7 +453,18 @@ a:hover { color: var(--t1); }
 .handbook-block__table td { color: var(--t1); }
 
 /* ─── Callouts ────────────────────────────────────────────────── */
+
+/* Review fix (Task 10): the palette has only three usable accent hues
+   (blue/green/teal) for four callout kinds, and blocks.mjs renders no text
+   label — colour tint alone made scenario/decision indistinguishable on a
+   skim (both were --blue at different tint strengths). The icon inlined by
+   blocks.mjs (vendored lucide asset per kind) is now the primary signal;
+   colour is a secondary grouping cue and stays token-only. --green remains
+   a pure area colour (border + faint tint), never text — contrast rule. */
 .handbook-callout {
+  display: flex;
+  gap: .65rem;
+  align-items: flex-start;
   border-left: 3px solid var(--border-h);
   background: var(--bg-s);
   padding: .85rem 1.1rem;
@@ -299,30 +474,46 @@ a:hover { color: var(--t1); }
 }
 
 .handbook-callout p {
+  flex: 1 1 auto;
+  min-width: 0;
   margin-bottom: 0;
   color: var(--t1);
   font-size: .95rem;
 }
 
-.handbook-callout--pitfall {
-  border-left-color: var(--gold);
-  background: #D4A84310;
+.handbook-callout__icon {
+  flex: 0 0 auto;
+  width: 18px;
+  height: 18px;
+  margin-top: .15rem;
 }
+
+.handbook-callout--pitfall {
+  border-left-color: var(--teal);
+  background: color-mix(in srgb, var(--teal) 10%, var(--bg-card));
+}
+.handbook-callout--pitfall .handbook-callout__icon { color: var(--teal); }
 
 .handbook-callout--scenario {
   border-left-color: var(--blue);
-  background: #3B82F610;
+  background: color-mix(in srgb, var(--blue) 10%, var(--bg-card));
 }
+.handbook-callout--scenario .handbook-callout__icon { color: var(--blue); }
 
 .handbook-callout--result {
   border-left-color: var(--green);
-  background: var(--green-dim);
+  background: color-mix(in srgb, var(--green) 14%, var(--bg-card));
 }
 
+/* Icon nicht in --green: kleines Symbol auf hellem Tint erreicht die 3:1 aus
+   WCAG 1.4.11 nicht. Grün bleibt Rand und Fläche, das Symbol trägt --t1. */
+.handbook-callout--result .handbook-callout__icon { color: var(--t1); }
+
 .handbook-callout--decision {
-  border-left-color: var(--cyan);
-  background: var(--cyan-dim);
+  border-left-color: var(--blue);
+  background: color-mix(in srgb, var(--blue) 5%, var(--bg-card));
 }
+.handbook-callout--decision .handbook-callout__icon { color: var(--blue); }
 
 /* ─── CTA (app button) ────────────────────────────────────────── */
 .handbook-cta {
@@ -331,15 +522,17 @@ a:hover { color: var(--t1); }
   border: 1px solid var(--border);
   border-radius: 14px;
   background:
-    radial-gradient(ellipse at top left, var(--green-glow), transparent 60%),
+    radial-gradient(ellipse at top left, color-mix(in srgb, var(--green) 18%, transparent), transparent 60%),
     var(--bg-s);
   text-align: center;
 }
 
 .handbook-cta__title {
-  font-family: 'Instrument Serif', serif;
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: -.01em;
   font-size: 1.7rem;
-  font-weight: 400;
   margin-bottom: .6rem;
 }
 
@@ -354,7 +547,7 @@ a:hover { color: var(--t1); }
   display: inline-block;
   padding: .85rem 2rem;
   background: var(--green);
-  color: var(--bg);
+  color: var(--bg-card);
   border-radius: 9px;
   font-weight: 600;
   font-size: .95rem;
@@ -363,36 +556,87 @@ a:hover { color: var(--t1); }
 
 .handbook-cta__button:hover {
   transform: translateY(-1px);
-  box-shadow: 0 6px 22px var(--green-glow);
-  color: var(--bg);
+  box-shadow: var(--shadow-h);
+  color: var(--bg-card);
 }
 
-/* ─── Footer ──────────────────────────────────────────────────── */
-.handbook-footer {
+/* ─── Fußzeile ────────────────────────────────────────────────
+   Aufbau und Maße der Site-Fußzeile (css/site.css im privaten Repo):
+   Deko-Band, Urheberzeile links, Linkzeile rechts. `overflow: clip` statt
+   `hidden`, damit die Fußzeile kein Scroll-Container wird. */
+footer {
+  position: relative; overflow: clip;
   border-top: 1px solid var(--border);
-  background: var(--bg-s);
+
+  /* Kein eigener Hintergrund — wie auf der Site trägt der Seitenverlauf die
+     Fußzeile. Ein deckender Hintergrund läge sonst über dem Deko-Band
+     (z-index -1) und verschluckte es. */
   margin-top: 4rem;
+  padding: 1.8rem 2rem;
+  font-size: .76rem; color: var(--t2);
+  min-height: 10rem;
+}
+footer a { color: var(--t1); }
+footer a:hover { color: var(--t1); text-decoration: underline; }
+
+.foot {
+  max-width: 1100px; margin: 0 auto;
+  display: flex; justify-content: space-between; align-items: center;
+  flex-wrap: wrap; gap: .8rem;
 }
 
-.handbook-footer__inner {
-  max-width: var(--max);
-  margin: 0 auto;
-  padding: 2rem 1.5rem;
-  display: flex; flex-wrap: wrap; gap: 1rem;
-  align-items: center; justify-content: space-between;
-  font-size: .85rem;
+/* Das Fuß-Band läuft nach unten und rechts über die Fußzeile hinaus; nur die
+   Oberkante bekäme einen harten Schnitt, deshalb blendet die Maske sie aus. */
+.ribbon {
+  position: absolute; z-index: -1;
+  pointer-events: none;
+  background-repeat: no-repeat;
+  background-size: contain;
 }
-.handbook-footer__brand { display: flex; flex-direction: column; gap: .2rem; }
 
-.handbook-footer__logo {
-  font-family: 'JetBrains Mono', monospace;
-  font-weight: 600;
+.ribbon--foot {
+  right: -7rem; top: 0; bottom: -8rem;
+  width: 44rem;
+  background-image: url('ribbon-foot.svg');
+  background-position: right bottom;
+  opacity: .6;
+  mask-image: linear-gradient(to bottom, transparent 0, var(--t1) 5rem);
+}
+
+/* ─── Gabelseite (Sprachwahl unter /docs/) ────────────────────── */
+.picker { display: flex; align-items: center; justify-content: center; padding: 3rem 1rem 4rem; }
+.picker__inner { text-align: center; max-width: 560px; }
+
+.picker h1 {
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: -.01em;
+  font-size: clamp(2.4rem, 5vw, 3.6rem);
+  line-height: 1.1;
+  margin-bottom: 1rem;
+}
+.picker__docs { color: var(--t3); font-size: .65em; }
+.picker p { color: var(--t2); margin-bottom: 2rem; font-size: 1.05rem; }
+.picker__btns { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+
+.picker__btn {
+  display: inline-block;
+  padding: .9rem 2.2rem;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: var(--bg-card);
   color: var(--t1);
+  font-weight: 600;
+  transition: transform .2s, box-shadow .2s, border-color .2s;
 }
-.handbook-footer__tag { color: var(--t3); font-size: .78rem; }
-.handbook-footer__links { display: flex; gap: 1.4rem; flex-wrap: wrap; }
-.handbook-footer__links a { color: var(--t2); }
-.handbook-footer__links a:hover { color: var(--t1); }
+
+.picker__btn:hover {
+  border-color: var(--green);
+  color: var(--t1);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-h);
+}
 
 /* ─── Index pages (card grids) ────────────────────────────────── */
 .handbook-grid {
@@ -438,16 +682,18 @@ a:hover { color: var(--t1); }
   font-weight: 600;
   letter-spacing: .04em;
   text-transform: uppercase;
-  color: var(--t3);
+  color: var(--t2);
   margin-bottom: .4rem;
 }
 
 .handbook-phase-group { margin-bottom: 2rem; }
 
 .handbook-phase-group > h2 {
-  font-family: 'Instrument Serif', serif;
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: -.01em;
   font-size: 1.5rem;
-  font-weight: 400;
   margin-bottom: .3rem;
 }
 
@@ -474,7 +720,7 @@ a:hover { color: var(--t1); }
   font-size: .66rem;
   text-transform: uppercase;
   letter-spacing: .05em;
-  color: var(--t3);
+  color: var(--t2);
 }
 .algo-meta__value { color: var(--t1); font-weight: 500; }
 
@@ -490,7 +736,7 @@ a:hover { color: var(--t1); }
   font-family: 'JetBrains Mono', monospace;
   font-size: .7rem;
   font-weight: 600;
-  color: var(--cyan);
+  color: var(--blue);
   letter-spacing: .04em;
   text-transform: uppercase;
   margin-bottom: .4rem;
