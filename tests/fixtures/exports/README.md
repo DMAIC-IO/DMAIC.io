@@ -31,6 +31,7 @@ Aktueller Stand:
 | v0.5.0_8d_project.json          | 1        | 19              |
 | v0.9.0_single_project.json      | 1        | 11              |
 | v1.0.0_single_project.json      | 1        | 11              |
+| v1.1.0_single_project.json      | 1        | 11              |
 
 Die v0.3-Fixtures decken zusammen **alle produktiven Module** aus
 `js/modules/manifest.js` mindestens einmal ab. Wenn ein neues Modul hinzukommt,
@@ -46,6 +47,11 @@ stabile Release: zwischen 0.9 und 1.0 hat sich am Export-Format nichts geändert
 (kein Migrationsschritt in `js/core/migrations.js`), die Fixture hält die
 aktuelle MAJOR.MINOR-Linie für den Release-Gate-Test
 `current VERSION fixture exists` fest.
+
+Die v1.1-Fixture zieht dasselbe für die 1.1-Linie nach: 1.1 bringt mit
+`multi-vari` ein neues Modul, aber keine Änderung an der Struktur des
+Export-JSON — bestehende Felder bleiben unverändert, deshalb gibt es auch
+hier keinen Migrationsschritt `1.0→1.1`.
 
 ## Pflicht beim Release
 
