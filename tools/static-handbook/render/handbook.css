@@ -265,18 +265,18 @@ a:hover { color: var(--t1); }
 /* ─── Umbruchpunkte ───────────────────────────────────────────
    Opferreihenfolge: erst die Links, dann Wortmarke samt „docs", dann der
    Sprachlink. Der Aufruf zur Anwendung bleibt bis zur kleinsten Breite. */
-@media (width <= 759.98px) {
+@media (max-width: 759.98px) {
   .handbook-nav__inner { gap: 1rem; }
   .handbook-nav__links { display: none; }
   .burger { display: block; }
 }
 
-@media (width <= 419.98px) {
+@media (max-width: 419.98px) {
   .handbook-nav__brand, .handbook-nav__docs { display: none; }
   .handbook-nav__actions { gap: .6rem; }
 }
 
-@media (width <= 339.98px) {
+@media (max-width: 339.98px) {
   .handbook-nav__inner .handbook-nav__lang { display: none; }
 }
 
