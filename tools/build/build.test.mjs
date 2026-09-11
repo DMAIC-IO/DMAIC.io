@@ -91,9 +91,16 @@ test('bundled CSS includes katex + prism rules and copies katex fonts', async ()
   });
 });
 
-test('built index.html contains the pre-JS loading overlay', () => {
-  const html = readFileSync(join(APP_DIR, 'index.html'), 'utf8');
-  assert.match(html, /id="app-loading"/);
+test('built index.html contains the pre-JS loading overlay', async () => {
+  // index.html ist erzeugt und gitignored: in einem frischen Checkout — also
+  // in CI — gibt es die Datei vor dem ersten Build gar nicht, der Test fiel
+  // dort mit ENOENT aus. Gebaut wird deshalb hier, im Schattenverzeichnis,
+  // wie in den Nachbartests.
+  await withShadowAppDir(async (dir) => {
+    await runBuild(dir, { check: false });
+    const html = readFileSync(join(dir, 'index.html'), 'utf8');
+    assert.match(html, /id="app-loading"/);
+  });
 });
 
 test('runBuild --check passes immediately after a real build', async () => {
