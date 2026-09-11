@@ -40,9 +40,10 @@ export {
   matTranspose, matMul, matTrace, matIdentity, matInverse,
 } from './matrix-utils.js';
 
-import {
-  matTranspose, matMul, matTrace, matIdentity, matInverse,
-} from './matrix-utils.js';
+// Nur matInverse wird in dieser Datei selbst gerufen; die übrigen vier
+// Namen stehen ausschließlich in der Re-Exportzeile darüber und brauchen
+// keine zweite, lokale Bindung.
+import { matInverse } from './matrix-utils.js';
 
 /**
  * Compute the determinant of a square matrix using LU decomposition.

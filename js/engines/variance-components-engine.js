@@ -738,7 +738,9 @@ export function remlComponents({ response, factorValues, terms, start }) {
 
     // One projector per iteration, shared by the AI and the EM branch.
     const projector = remlP(ws, prev);
-    let next = null;
+    // Jeder Zweig darunter schreibt `next`, bevor es gelesen wird — eine
+    // Vorbelegung wäre toter Wert.
+    let next;
 
     if (!projector.ok) {
       next = null;
