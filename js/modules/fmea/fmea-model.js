@@ -1,10 +1,11 @@
 /**
  * D.Mike — FMEA Model (fmea-model.js)
  *
- * Pure business logic + state for Failure Mode and Effects Analysis:
- * RPN = Severity × Occurrence × Detection, projected RPN via per-action
- * S/O/D deltas, risk statistics, RPN-sort, the action burndown series, and
- * the raw CSV row matrix.
+ * Pure business logic + state for Failure Mode and Effects Analysis, rated by
+ * RPN or AIAG-VDA action priority via a rating strategy:
+ * RPN = Severity × Occurrence × Detection, AP = table lookup of S/O/D,
+ * projected values via per-action S/O/D deltas, risk statistics, priority
+ * sort, the action burndown series, and the raw CSV row matrix.
  *
  * No DOM, no i18n, no CSS, no view flags. View transformations (badge classes,
  * scale i18n text, '—' formatting) live in the module's data-fn.
@@ -21,7 +22,7 @@
  *   }
  */
 
-import { actionPriority } from './fmea-ap.js';
+import { actionPriority, AP_RANK, AP_CATEGORY } from './fmea-ap.js';
 
 /** RPN category thresholds (inclusive lower bound). */
 export const RPN_CRITICAL = 200;   // > 200
@@ -32,6 +33,22 @@ export const RPN_MEDIUM = 50;      // 50–124
 export const METHODS = ['ap', 'rpn'];
 /** FMEA types; the first is the default. */
 export const FMEA_TYPES = ['process', 'design'];
+
+/**
+ * RPN → category key.
+ * @param {number} v RPN (0 = unrated)
+ * @returns {'critical'|'high'|'medium'|'low'|'none'}
+ */
+export function rpnCategory(v) {
+  if (!v) return 'none';
+  if (v > RPN_CRITICAL) return 'critical';
+  if (v >= RPN_HIGH) return 'high';
+  if (v >= RPN_MEDIUM) return 'medium';
+  return 'low';
+}
+
+/** @param {'H'|'M'|'L'|null} ap @returns {'high'|'medium'|'low'|'none'} */
+const apCategory = (ap) => AP_CATEGORY[ap] || 'none';
 
 let _seq = 0;
 function generateId() {
@@ -185,6 +202,72 @@ export class Risk {
   }
 }
 
+/** Classic RPN rating (S × O × D with fixed thresholds). */
+export const rpnRating = {
+  /** @param {Risk} risk */
+  category: (risk) => rpnCategory(risk.rpn()),
+  /** @param {Risk} risk */
+  projCategory: (risk) => rpnCategory(risk.projRpn()),
+  /** RPN descending. @param {Risk} a @param {Risk} b */
+  compare: (a, b) => b.rpn() - a.rpn(),
+  /**
+   * @param {Risk[]} risks
+   * @returns {{kind:'rpn', total:number, critical:number, high:number, medium:number,
+   *            low:number, avg:(number|null), max:number}}
+   *          avg is null when no risk is rated; max is 0 when none rated.
+   */
+  stats(risks) {
+    let total = 0, critical = 0, high = 0, medium = 0, low = 0, sum = 0, count = 0, max = 0;
+    for (const r of risks) {
+      total++;
+      const v = r.rpn();
+      if (v > 0) {
+        count++; sum += v;
+        if (v > max) max = v;
+        const cat = rpnCategory(v);
+        if (cat === 'critical') critical++;
+        else if (cat === 'high') high++;
+        else if (cat === 'medium') medium++;
+        else low++;
+      }
+    }
+    return { kind: 'rpn', total, critical, high, medium, low, avg: count ? Math.round(sum / count) : null, max };
+  },
+};
+
+/** AIAG-VDA action priority rating (H / M / L table lookup). */
+export const apRating = {
+  /** @param {Risk} risk */
+  category: (risk) => apCategory(risk.ap()),
+  /** @param {Risk} risk */
+  projCategory: (risk) => apCategory(risk.projAp()),
+  /**
+   * AP level, then S, then O, then D — all descending; unrated risks last.
+   * @param {Risk} a @param {Risk} b
+   */
+  compare(a, b) {
+    return ((AP_RANK[b.ap()] || 0) - (AP_RANK[a.ap()] || 0))
+      || (asInt(b.sev) - asInt(a.sev))
+      || (asInt(b.occ) - asInt(a.occ))
+      || (asInt(b.det) - asInt(a.det));
+  },
+  /**
+   * @param {Risk[]} risks
+   * @returns {{kind:'ap', total:number, rated:number, high:number, medium:number, low:number}}
+   */
+  stats(risks) {
+    const st = { kind: 'ap', total: 0, rated: 0, high: 0, medium: 0, low: 0 };
+    for (const r of risks) {
+      st.total++;
+      const cat = apCategory(r.ap());
+      if (cat === 'none') continue;
+      st.rated++;
+      st[cat]++;
+    }
+    return st;
+  },
+};
+
 export class State {
   /** @type {Risk[]} */
   risks = [];
@@ -229,9 +312,14 @@ export class State {
     if (r) r.actions.splice(idx, 1);
   }
 
-  /** Sort risks by current RPN, descending (stable for equal values). */
-  sortByRPN() {
-    this.risks.sort((a, b) => b.rpn() - a.rpn());
+  /** @returns {typeof rpnRating|typeof apRating} strategy for the active method */
+  rating() {
+    return this.method === 'ap' ? apRating : rpnRating;
+  }
+
+  /** Sort risks most urgent first by the active method (stable for ties). */
+  sortByPriority() {
+    this.risks.sort(this.rating().compare);
   }
 
   /** Drop all custom scale overrides. */
@@ -241,30 +329,9 @@ export class State {
 
   // ── Statistics ────────────────────────────────────────────
 
-  /**
-   * @returns {{total:number, critical:number, high:number, medium:number,
-   *            low:number, avg:(number|null), max:number}}
-   *          avg is null when no risk is rated; max is 0 when none rated.
-   */
+  /** @returns {object} stats of the active rating method (see rpnRating/apRating.stats) */
   stats() {
-    let total = 0, critical = 0, high = 0, medium = 0, low = 0, sum = 0, count = 0, max = 0;
-    for (const r of this.risks) {
-      total++;
-      const v = r.rpn();
-      if (v > 0) {
-        count++; sum += v;
-        if (v > max) max = v;
-        if (v > RPN_CRITICAL) critical++;
-        else if (v >= RPN_HIGH) high++;
-        else if (v >= RPN_MEDIUM) medium++;
-        else low++;
-      }
-    }
-    return {
-      total, critical, high, medium, low,
-      avg: count ? Math.round(sum / count) : null,
-      max,
-    };
+    return this.rating().stats(this.risks);
   }
 
   // ── Burndown series (pure) ────────────────────────────────

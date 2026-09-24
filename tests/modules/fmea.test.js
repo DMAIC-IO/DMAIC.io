@@ -1,5 +1,5 @@
 import { suite, test, assertEqual } from '../test-utils.js';
-import { Action, Risk, State } from '../../js/modules/fmea/fmea-model.js';
+import { Action, Risk, State, rpnRating, apRating, rpnCategory } from '../../js/modules/fmea/fmea-model.js';
 
 suite('FMEA Model — Action', () => {
   test('constructor sets defaults', () => {
@@ -215,11 +215,12 @@ suite('FMEA Model — State', () => {
     assertEqual(r.actions.length, 1);
   });
 
-  test('sortByRPN sorts descending', () => {
+  test('sortByPriority sorts by RPN descending in RPN mode', () => {
     const s = new State();
+    s.method = 'rpn';
     const lo = s.addRisk(); lo.sev = '1'; lo.occ = '1'; lo.det = '1';   // 1
     const hi = s.addRisk(); hi.sev = '10'; hi.occ = '10'; hi.det = '10'; // 1000
-    s.sortByRPN();
+    s.sortByPriority();
     assertEqual(s.risks[0].id, hi.id);
     assertEqual(s.risks[1].id, lo.id);
   });
@@ -233,6 +234,7 @@ suite('FMEA Model — State', () => {
 
   test('stats counts categories, avg and max', () => {
     const s = new State();
+    s.method = 'rpn';
     const mk = (sv, o, d) => { const r = s.addRisk(); r.sev = String(sv); r.occ = String(o); r.det = String(d); };
     mk(2, 3, 4);   // 24  low
     mk(5, 4, 3);   // 60  medium
@@ -255,6 +257,7 @@ suite('FMEA Model — State', () => {
     // below each threshold (120 < 125, 210 > 200) stand in for them.
     const cat = (sv, o, d) => {
       const s = new State();
+      s.method = 'rpn';
       const r = s.addRisk(); r.sev = String(sv); r.occ = String(o); r.det = String(d);
       const st = s.stats();
       if (st.critical) return 'critical';
@@ -273,6 +276,7 @@ suite('FMEA Model — State', () => {
 
   test('stats avg/max are null when nothing is rated', () => {
     const s = new State();
+    s.method = 'rpn';
     s.addRisk();
     const st = s.stats();
     assertEqual(st.total, 1);
@@ -481,5 +485,89 @@ suite('FMEA Model — method and FMEA type', () => {
     assertEqual(back.risks[0].sev, '7');
     assertEqual(back.scales.sevNone, 'Custom RPN');
     assertEqual(back.scales['ap.process.sev.10.meaning'], 'Custom AP');
+  });
+});
+
+suite('FMEA Model — rating strategies', () => {
+  const add = (s, sv, o, d) => { const r = s.addRisk(); r.sev = sv ? String(sv) : ''; r.occ = o ? String(o) : ''; r.det = d ? String(d) : ''; return r; };
+
+  test('rating() follows the method', () => {
+    const s = new State();
+    assertEqual(s.rating(), apRating);
+    s.method = 'rpn';
+    assertEqual(s.rating(), rpnRating);
+  });
+
+  test('rpnCategory thresholds', () => {
+    assertEqual(rpnCategory(0), 'none');
+    assertEqual(rpnCategory(49), 'low');
+    assertEqual(rpnCategory(50), 'medium');
+    assertEqual(rpnCategory(125), 'high');
+    assertEqual(rpnCategory(200), 'high');
+    assertEqual(rpnCategory(201), 'critical');
+  });
+
+  test('apRating.category maps H/M/L/null to high/medium/low/none', () => {
+    const s = new State();
+    assertEqual(apRating.category(add(s, 9, 8, 7)), 'high');
+    assertEqual(apRating.category(add(s, 9, 4, 1)), 'medium');
+    assertEqual(apRating.category(add(s, 2, 2, 2)), 'low');
+    assertEqual(apRating.category(add(s, 9, 0, 0)), 'none');
+  });
+
+  test('apRating.projCategory uses the projected AP', () => {
+    const s = new State();
+    const r = add(s, 8, 6, 6);                 // H
+    const a = new Action(); a.deltaO = '3'; r.actions = [a];
+    assertEqual(apRating.projCategory(r), 'medium');
+  });
+
+  test('rpnRating.category / projCategory use RPN thresholds', () => {
+    const s = new State();
+    const r = add(s, 10, 10, 10);              // 1000 critical
+    const a = new Action(); a.deltaS = '9'; a.deltaO = '9'; r.actions = [a]; // 1*1*10 = 10
+    assertEqual(rpnRating.category(r), 'critical');
+    assertEqual(rpnRating.projCategory(r), 'low');
+  });
+
+  test('AP sort: AP level first, then S, O, D; unrated last', () => {
+    const s = new State();
+    const unrated = add(s, 9, 0, 0);
+    const lowS10 = add(s, 10, 1, 10);          // L despite S 10
+    const hS7 = add(s, 7, 8, 1);               // H
+    const hS9 = add(s, 9, 6, 1);               // H, higher S
+    const m = add(s, 9, 4, 1);                 // M
+    s.sortByPriority();
+    assertEqual(s.risks.map(r => r.id).join(), [hS9, hS7, m, lowS10, unrated].map(r => r.id).join());
+  });
+
+  test('AP sort breaks S ties by O then D', () => {
+    const s = new State();
+    const a = add(s, 9, 8, 7);                 // H
+    const b = add(s, 9, 9, 7);                 // H, higher O
+    const c = add(s, 9, 9, 8);                 // H, same O, higher D
+    s.sortByPriority();
+    assertEqual(s.risks.map(r => r.id).join(), [c, b, a].map(r => r.id).join());
+  });
+
+  test('AP stats count H/M/L and rated; partial ratings only count in total', () => {
+    const s = new State();
+    add(s, 9, 8, 7);   // H
+    add(s, 9, 4, 1);   // M
+    add(s, 2, 2, 2);   // L
+    add(s, 9, 8, 0);   // partial
+    const st = s.stats();
+    assertEqual(st.kind, 'ap');
+    assertEqual(st.total, 4);
+    assertEqual(st.rated, 3);
+    assertEqual(st.high, 1);
+    assertEqual(st.medium, 1);
+    assertEqual(st.low, 1);
+  });
+
+  test('RPN stats carry kind rpn', () => {
+    const s = new State();
+    s.method = 'rpn';
+    assertEqual(s.stats().kind, 'rpn');
   });
 });
