@@ -323,6 +323,7 @@ suite('FMEA Model — State', () => {
 suite('FMEA Model — burndown series', () => {
   test('returns null when no rated risks with dated reductions', () => {
     const s = new State();
+    s.method = 'rpn';
     const r = s.addRisk();  // unrated
     s.addAction(r.id);
     assertEqual(s.burndownSeries(), null);
@@ -330,12 +331,14 @@ suite('FMEA Model — burndown series', () => {
 
   test('plan covers all events, actual only done events', () => {
     const s = new State();
+    s.method = 'rpn';
     const r = s.addRisk();
     r.sev = '5'; r.occ = '4'; r.det = '3'; // RPN 60
     const a1 = new Action(); a1.date = '2025-06-01'; a1.deltaS = '1'; a1.done = true;
     const a2 = new Action(); a2.date = '2025-07-01'; a2.deltaO = '1'; a2.done = false;
     r.actions = [a1, a2];
     const bd = s.burndownSeries();
+    assertEqual(bd.kind, 'rpn');
     assertEqual(bd.totalRPN, 60);
     // start point + 2 plan events
     assertEqual(bd.planX.length, 3);
@@ -351,6 +354,7 @@ suite('FMEA Model — burndown series', () => {
 
   test('plan series starts one day (86400000 ms) before the earliest action', () => {
     const s = new State();
+    s.method = 'rpn';
     const r = s.addRisk();
     r.sev = '5'; r.occ = '4'; r.det = '3';
     const later = new Action(); later.date = '2025-07-01'; later.deltaO = '1'; later.done = true;
@@ -364,6 +368,7 @@ suite('FMEA Model — burndown series', () => {
 
   test('sequential reductions ordered by date', () => {
     const s = new State();
+    s.method = 'rpn';
     const r = s.addRisk();
     r.sev = '6'; r.occ = '6'; r.det = '6';  // 216
     const later = new Action(); later.date = '2025-08-01'; later.deltaD = '2'; later.done = true;
@@ -569,5 +574,61 @@ suite('FMEA Model — rating strategies', () => {
     const s = new State();
     s.method = 'rpn';
     assertEqual(s.stats().kind, 'rpn');
+  });
+});
+
+suite('FMEA Model — AP burndown series', () => {
+  const rated = (s, sv, o, d) => { const r = s.addRisk(); r.sev = String(sv); r.occ = String(o); r.det = String(d); return r; };
+  const act = (date, done, { dS = '0', dO = '0', dD = '0' } = {}) => {
+    const a = new Action(); a.date = date; a.done = done; a.deltaS = dS; a.deltaO = dO; a.deltaD = dD; return a;
+  };
+
+  test('returns null when no action changes an AP level', () => {
+    const s = new State();
+    const r = rated(s, 9, 8, 7);                       // H
+    r.actions = [act('2025-06-01', true, { dD: '1' })]; // D 7 → 6, still H
+    assertEqual(s.burndownSeries(), null);
+  });
+
+  test('counts H and H+M; plan has all level changes, actual only done ones', () => {
+    const s = new State();
+    const r1 = rated(s, 8, 6, 6);                       // H
+    r1.actions = [act('2025-06-01', true, { dO: '3' })]; // → S8 O3 D6 = M
+    const r2 = rated(s, 9, 4, 1);                       // M
+    r2.actions = [act('2025-07-01', false, { dO: '2' })]; // → S9 O2 D1 = L
+    rated(s, 2, 2, 2);                                  // L, no actions
+    const bd = s.burndownSeries();
+    assertEqual(bd.kind, 'ap');
+    const t1 = new Date('2025-06-01').getTime();
+    const t2 = new Date('2025-07-01').getTime();
+    assertEqual(bd.planX.join(), [t1 - 86400000, t1, t2].join());
+    assertEqual(bd.planH.join(), '1,0,0');
+    assertEqual(bd.planHM.join(), '2,2,1');
+    assertEqual(bd.actX.join(), [t1 - 86400000, t1].join());
+    assertEqual(bd.actH.join(), '1,0');
+    assertEqual(bd.actHM.join(), '2,2');
+  });
+
+  test('applies a risk\'s dated actions in date order', () => {
+    const s = new State();
+    const r = rated(s, 8, 8, 7);                        // H
+    r.actions = [
+      act('2025-08-01', true, { dO: '2' }),             // second: O 4 → 2 → M (S7–8,O2–3,D7–10)
+      act('2025-05-01', true, { dO: '4' }),             // first:  O 8 → 4 → H (S7–8,O4–5,D7–10) no change
+    ];
+    const bd = s.burndownSeries();
+    const t = new Date('2025-08-01').getTime();
+    assertEqual(bd.planX.join(), [t - 86400000, t].join());
+    assertEqual(bd.planH.join(), '1,0');
+    assertEqual(bd.planHM.join(), '1,1');
+  });
+
+  test('ignores undated actions and unrated risks', () => {
+    const s = new State();
+    const unrated = s.addRisk(); unrated.sev = '9';
+    unrated.actions = [act('2025-06-01', true, { dS: '5' })];
+    const r = rated(s, 8, 6, 6);
+    r.actions = [act('', true, { dO: '3' })];
+    assertEqual(s.burndownSeries(), null);
   });
 });

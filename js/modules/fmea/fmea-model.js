@@ -202,6 +202,40 @@ export class Risk {
   }
 }
 
+/**
+ * Dated actions of a risk, sorted by date ascending.
+ * @param {Risk} r @returns {Action[]}
+ */
+function datedActions(r) {
+  return r.actions.filter(a => a.date).sort((x, y) => x.date.localeCompare(y.date));
+}
+
+/**
+ * Turn sorted events into plan/actual step series. Each event carries one
+ * decrement per series key; plan applies all events, actual only done ones.
+ * Start point = earliest event − 1 day.
+ * @param {Array<{ts:number, done:boolean, dec:Object<string,number>}>} events non-empty
+ * @param {Object<string,number>} start start value per series key
+ * @returns {{planX:number[], actX:number[], plan:Object<string,number[]>, act:Object<string,number[]>}}
+ */
+function stepSeries(events, start) {
+  events.sort((a, b) => a.ts - b.ts);
+  const keys = Object.keys(start);
+  const startTs = events[0].ts - 86400000;
+  const planX = [startTs], actX = [startTs];
+  const plan = {}, act = {}, planCur = { ...start }, actCur = { ...start };
+  for (const k of keys) { plan[k] = [start[k]]; act[k] = [start[k]]; }
+  for (const ev of events) {
+    planX.push(ev.ts);
+    for (const k of keys) { planCur[k] -= ev.dec[k]; plan[k].push(planCur[k]); }
+    if (ev.done) {
+      actX.push(ev.ts);
+      for (const k of keys) { actCur[k] -= ev.dec[k]; act[k].push(actCur[k]); }
+    }
+  }
+  return { planX, actX, plan, act };
+}
+
 /** Classic RPN rating (S × O × D with fixed thresholds). */
 export const rpnRating = {
   /** @param {Risk} risk */
@@ -232,6 +266,36 @@ export const rpnRating = {
       }
     }
     return { kind: 'rpn', total, critical, high, medium, low, avg: count ? Math.round(sum / count) : null, max };
+  },
+  /**
+   * Risk burndown on the RPN sum. Each dated action's RPN reduction is one event.
+   * @param {Risk[]} risks
+   * @returns {{kind:'rpn', planX:number[], planY:number[], actX:number[], actY:number[], totalRPN:number}|null}
+   */
+  burndownSeries(risks) {
+    const events = [];
+    let totalRPN = 0;
+    for (const r of risks) {
+      const s0 = asInt(r.sev), o0 = asInt(r.occ), d0 = asInt(r.det);
+      if (!s0 || !o0 || !d0) continue;
+      totalRPN += s0 * o0 * d0;
+      let runS = s0, runO = o0, runD = d0;
+      for (const a of datedActions(r)) {
+        const ds = asInt(a.deltaS), doo = asInt(a.deltaO), dd = asInt(a.deltaD);
+        if (!ds && !doo && !dd) continue;
+        const before = runS * runO * runD;
+        runS = Math.max(1, runS - ds);
+        runO = Math.max(1, runO - doo);
+        runD = Math.max(1, runD - dd);
+        const reduction = before - runS * runO * runD;
+        if (reduction > 0) {
+          events.push({ ts: new Date(a.date).getTime(), done: Boolean(a.done), dec: { y: reduction } });
+        }
+      }
+    }
+    if (!events.length || !totalRPN) return null;
+    const { planX, actX, plan, act } = stepSeries(events, { y: totalRPN });
+    return { kind: 'rpn', planX, planY: plan.y, actX, actY: act.y, totalRPN };
   },
 };
 
@@ -265,6 +329,42 @@ export const apRating = {
       st[cat]++;
     }
     return st;
+  },
+  /**
+   * Burndown on the number of H risks and of H+M risks. Each dated action
+   * that changes a risk's AP level is one event.
+   * @param {Risk[]} risks
+   * @returns {{kind:'ap', planX:number[], planH:number[], planHM:number[],
+   *            actX:number[], actH:number[], actHM:number[]}|null}
+   */
+  burndownSeries(risks) {
+    const events = [];
+    const start = { h: 0, hm: 0 };
+    const isH = (ap) => (ap === 'H' ? 1 : 0);
+    const isHM = (ap) => (ap === 'H' || ap === 'M' ? 1 : 0);
+    for (const r of risks) {
+      let cur = r.ap();
+      if (!cur) continue;
+      start.h += isH(cur);
+      start.hm += isHM(cur);
+      let runS = asInt(r.sev), runO = asInt(r.occ), runD = asInt(r.det);
+      for (const a of datedActions(r)) {
+        runS = Math.max(1, runS - asInt(a.deltaS));
+        runO = Math.max(1, runO - asInt(a.deltaO));
+        runD = Math.max(1, runD - asInt(a.deltaD));
+        const next = actionPriority(runS, runO, runD);
+        if (next === cur) continue;
+        events.push({
+          ts: new Date(a.date).getTime(),
+          done: Boolean(a.done),
+          dec: { h: isH(cur) - isH(next), hm: isHM(cur) - isHM(next) },
+        });
+        cur = next;
+      }
+    }
+    if (!events.length) return null;
+    const { planX, actX, plan, act } = stepSeries(events, start);
+    return { kind: 'ap', planX, planH: plan.h, planHM: plan.hm, actX, actH: act.h, actHM: act.hm };
   },
 };
 
@@ -336,65 +436,9 @@ export class State {
 
   // ── Burndown series (pure) ────────────────────────────────
 
-  /**
-   * Compute the risk burndown series. For each rated risk, its dated actions
-   * are sorted by date ascending and applied sequentially; each step's RPN
-   * reduction (before − after) becomes an event. Plan = all events, Actual =
-   * only `done` events. Start point = earliest event − 1 day at totalRPN.
-   *
-   * @returns {{planX:number[], planY:number[], actX:number[], actY:number[], totalRPN:number}|null}
-   *          null when there are no rated risks with dated, reducing actions.
-   */
+  /** @returns {object|null} burndown series of the active rating method */
   burndownSeries() {
-    const events = [];
-    let totalRPN = 0;
-
-    for (const r of this.risks) {
-      const s0 = asInt(r.sev), o0 = asInt(r.occ), d0 = asInt(r.det);
-      if (!s0 || !o0 || !d0) continue;
-      totalRPN += s0 * o0 * d0;
-
-      const dated = r.actions
-        .map((a, i) => ({ a, i }))
-        .filter(({ a }) => a.date)
-        .sort((x, y) => x.a.date.localeCompare(y.a.date));
-
-      let runS = s0, runO = o0, runD = d0;
-      for (const { a } of dated) {
-        const ds = asInt(a.deltaS), doo = asInt(a.deltaO), dd = asInt(a.deltaD);
-        if (!ds && !doo && !dd) continue;
-        const before = runS * runO * runD;
-        runS = Math.max(1, runS - ds);
-        runO = Math.max(1, runO - doo);
-        runD = Math.max(1, runD - dd);
-        const reduction = before - runS * runO * runD;
-        if (reduction > 0) {
-          events.push({ ts: new Date(a.date).getTime(), reduction, done: Boolean(a.done) });
-        }
-      }
-    }
-
-    if (!events.length || !totalRPN) return null;
-
-    events.sort((a, b) => a.ts - b.ts);
-
-    const startTs = events[0].ts - 86400000;
-    const planX = [startTs], planY = [totalRPN];
-    const actX = [startTs], actY = [totalRPN];
-
-    let planRPN = totalRPN, actRPN = totalRPN;
-    for (const ev of events) {
-      planRPN -= ev.reduction;
-      planX.push(ev.ts);
-      planY.push(planRPN);
-      if (ev.done) {
-        actRPN -= ev.reduction;
-        actX.push(ev.ts);
-        actY.push(actRPN);
-      }
-    }
-
-    return { planX, planY, actX, actY, totalRPN };
+    return this.rating().burndownSeries(this.risks);
   }
 
   // ── CSV row matrix (pure) ─────────────────────────────────
