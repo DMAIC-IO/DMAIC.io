@@ -23,6 +23,7 @@
 import {
   normalCDF,
   chi2CDF, chi2Inv, tCDF, tInv, fCDF, fQuantile as fInv,
+  noncentralTCDF,
 } from './math-utils.js';
 
 import { mean, variance, stddev } from './stats-utils.js';
@@ -718,6 +719,25 @@ export function powerFTest(n1, n2, ratioAlt, alpha, direction) {
 }
 
 /**
+ * Exact power of a t-test from the noncentral t distribution.
+ * @param {number} df - Degrees of freedom
+ * @param {number} ncp - Noncentrality parameter δ = delta / se
+ * @param {number} alpha - Significance level
+ * @param {string} direction - 'two-sided' | 'greater' | 'less'
+ * @returns {number} Power (0–1)
+ */
+function powerNoncentralT(df, ncp, alpha, direction) {
+  if (direction === 'two-sided') {
+    const c = tInv(1 - alpha / 2, df);
+    return 1 - noncentralTCDF(c, df, ncp) + noncentralTCDF(-c, df, ncp);
+  }
+  if (direction === 'greater') {
+    return 1 - noncentralTCDF(tInv(1 - alpha, df), df, ncp);
+  }
+  return noncentralTCDF(tInv(alpha, df), df, ncp);
+}
+
+/**
  * Power of a one-sample t-test.
  * @param {number} n - Sample size
  * @param {number} delta - True difference |μ − μ₀|
@@ -730,14 +750,7 @@ export function powerOneSampleT(n, delta, sigma, alpha, direction) {
   const se = sigma / Math.sqrt(n);
   const df = n - 1;
   const ncp = delta / se;
-  if (direction === 'two-sided') {
-    const cU = tInv(1 - alpha / 2, df), cL = -cU;
-    return 1 - tCDF(cU - ncp, df) + tCDF(cL - ncp, df);
-  } if (direction === 'greater') {
-    return 1 - tCDF(tInv(1 - alpha, df) - ncp, df);
-  } 
-    return tCDF(tInv(alpha, df) - ncp, df);
-  
+  return powerNoncentralT(df, ncp, alpha, direction);
 }
 
 /**
@@ -754,14 +767,7 @@ export function powerTwoSampleT(n1, n2, delta, sigma, alpha, direction) {
   const se = sigma * Math.sqrt(1 / n1 + 1 / n2);
   const df = n1 + n2 - 2;
   const ncp = delta / se;
-  if (direction === 'two-sided') {
-    const cU = tInv(1 - alpha / 2, df), cL = -cU;
-    return 1 - tCDF(cU - ncp, df) + tCDF(cL - ncp, df);
-  } if (direction === 'greater') {
-    return 1 - tCDF(tInv(1 - alpha, df) - ncp, df);
-  } 
-    return tCDF(tInv(alpha, df) - ncp, df);
-  
+  return powerNoncentralT(df, ncp, alpha, direction);
 }
 
 /**

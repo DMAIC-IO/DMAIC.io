@@ -19,10 +19,11 @@
 
 import {
   buildModelMatrix,
-  fDistQuantile, fDistCDF,
+  fDistQuantile,
   olsRegression, typeIIISS,
   normalOrderStatistics,
 } from '../../engines/regression-engine.js';
+import { noncentralFCDF } from '../../engines/math-utils.js';
 
 import { GENERATORS } from './doe-planner-designs.js';
 
@@ -146,7 +147,7 @@ export { computeDesignEfficiency };
 
 /**
  * @typedef {object} PowerResult
- * @property {number} power - Statistical power (0–1)
+ * @property {number|null} power - Statistical power (0–1); null when df_error ≤ 0 (saturated model)
  * @property {number} effectSize - Standardized effect size (delta/sigma)
  * @property {number} alpha - Significance level
  * @property {number} n - Number of runs
@@ -157,11 +158,11 @@ export { computeDesignEfficiency };
 /**
  * Compute the statistical power to detect an effect of a given size.
  *
- * Uses the non-central F-distribution approximation:
- *   λ = n × (delta/sigma)^2 / 4   (non-centrality parameter for one main effect)
- *   Power = P(F > F_crit | F ~ F(df1, df2, λ))
- *
- * Approximated via the shifted central F method.
+ * Exact noncentral F (matches Minitab):
+ *   λ = n × (delta/sigma)^2 / 4   (noncentrality parameter for one main effect)
+ *   F_crit = F⁻¹(1 − α; 1, df_error)
+ *   Power = P(F > F_crit | F ~ F(1, df_error, λ))
+ * A saturated model (df_error ≤ 0) has no error term; power is then null.
  *
  * @param {number} n - Number of runs
  * @param {number} k - Number of factors
@@ -183,25 +184,19 @@ export function computePowerAnalysis(n, k, effectSizes = [0.5, 1.0, 1.5, 2.0], a
   );
   const p = termNames.length;
   const dfEffect = 1;
-  const dfError = Math.max(n - p, 1);
+  const dfError = n - p;
 
-  const fCrit = fDistQuantile(alpha, dfEffect, dfError);
+  // Saturated model: no residual df, so no F-test and no power.
+  const fCrit = dfError > 0 ? fDistQuantile(1 - alpha, dfEffect, dfError) : null;
 
   return effectSizes.map(es => {
-    // Non-centrality parameter
     const lambda = n * es * es / 4;
-
-    // Approximate power using the shifted-F method:
-    // P(F_nc > F_crit) ≈ P(F_central > F_crit / (1 + lambda/df1))
-    // More accurate: use the Patnaik two-moment approximation
-    const shiftedCrit = fCrit / (1 + lambda / dfEffect);
-
-    // Power = 1 - P(F ≤ shiftedCrit | F(df1, df2))
-    // But this is the central F, so:
-    const power = 1 - fDistCDF(shiftedCrit, dfEffect, dfError);
+    const power = fCrit === null
+      ? null
+      : 1 - noncentralFCDF(fCrit, dfEffect, dfError, lambda);
 
     return {
-      power: Math.min(Math.max(power, 0), 1),
+      power,
       effectSize: es,
       alpha,
       n,
@@ -209,6 +204,19 @@ export function computePowerAnalysis(n, k, effectSizes = [0.5, 1.0, 1.5, 2.0], a
       dfError,
     };
   });
+}
+
+/**
+ * Display values for one power table row.
+ * @param {number|null} power - Power (0–1), or null for a saturated model
+ * @returns {{ text: string, width: number, rating: string }} Percent label,
+ *   bar width in percent, and row class
+ */
+export function powerDisplay(power) {
+  if (power === null) return { text: '—', width: 0, rating: '' };
+  const pct = Math.round(power * 100);
+  const rating = power >= 0.8 ? 'doe__power-good' : power >= 0.5 ? 'doe__power-ok' : 'doe__power-low';
+  return { text: `${pct}%`, width: pct, rating };
 }
 
 // ─── Full Evaluation Facade ─────────────────────────────────────────

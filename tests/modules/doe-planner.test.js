@@ -5,7 +5,7 @@
  * Gold-standard validation against Minitab / R expected values.
  */
 
-import { suite, test, assertEqual, assertAlmostEqual, assertArrayAlmostEqual, assertInRange, assertThrows } from '../test-utils.js';
+import { suite, test, assertEqual, assertDeepEqual, assertAlmostEqual, assertArrayAlmostEqual, assertInRange, assertThrows } from '../test-utils.js';
 import {
   fullFactorial2k,
   fullFactorialGeneral,
@@ -41,6 +41,8 @@ import {
   computeEVOPEffects,
   recenteredFactors,
   computeDispersionAnalysis,
+  computePowerAnalysis,
+  powerDisplay,
 } from '../../js/modules/doe-planner/doe-planner-analysis.js';
 
 
@@ -847,4 +849,43 @@ suite('DoE Planner — Fixture Validation (exact snapshots)', () => {
       }
     });
   }
+});
+
+// ─── Power (exact noncentral F) ────────────────────────────────
+// Book review Melzer 2019, findings C2-001 / C1-024. Model = main effects +
+// all 2FIs (what evaluateDesign passes). References: Minitab (book Fig. 4.2)
+// and scipy.stats.ncf.
+
+suite('DoE Analysis: Power (exact noncentral F)', () => {
+  const es = 0.01 / 0.007;
+  test('2^2, N=20, Δ/σ = 0.01/0.007 → 0.850326 (Minitab)', () => {
+    const [r] = computePowerAnalysis(20, 2, [es], 0.05);
+    assertEqual(r.dfError, 16);
+    assertAlmostEqual(r.power, 0.850326, 1e-6);
+  });
+  test('2^2, N=24, Δ/σ = 0.01/0.007 → 0.914177 (Minitab)', () => {
+    const [r] = computePowerAnalysis(24, 2, [es], 0.05);
+    assertAlmostEqual(r.power, 0.914177, 1e-6);
+  });
+  test('unreplicated 2^3 (df_error = 1), Δ/σ = 1 → 0.0928', () => {
+    const [r] = computePowerAnalysis(8, 3, [1], 0.05);
+    assertEqual(r.dfError, 1);
+    assertAlmostEqual(r.power, 0.09280916, 1e-6);
+  });
+  test('saturated unreplicated 2^2 (df_error = 0) → power null', () => {
+    const [r] = computePowerAnalysis(4, 2, [1], 0.05);
+    assertEqual(r.dfError, 0);
+    assertEqual(r.power, null);
+  });
+});
+
+suite('DoE Analysis: Power display', () => {
+  test('numeric power → percent, bar width and rating class', () => {
+    assertDeepEqual(powerDisplay(0.850326), { text: '85%', width: 85, rating: 'doe__power-good' });
+    assertDeepEqual(powerDisplay(0.6), { text: '60%', width: 60, rating: 'doe__power-ok' });
+    assertDeepEqual(powerDisplay(0.0928), { text: '9%', width: 9, rating: 'doe__power-low' });
+  });
+  test('null power (saturated model) → dash, empty bar, no rating', () => {
+    assertDeepEqual(powerDisplay(null), { text: '—', width: 0, rating: '' });
+  });
 });

@@ -725,6 +725,7 @@
                       <span class="doe__eval-tooltip" :title="t('tipPower')">?</span>
                     </h4>
                     <p class="doe__eval-note" x-text="powerDescText()"></p>
+                    <p class="doe__eval-note" x-show="powerSaturated()" x-text="t('powerSaturated')"></p>
                     <table class="doe__power-table">
                       <thead><tr><th x-text="t('effectSize')"></th><th x-text="t('power')"></th><th></th></tr></thead>
                       <tbody>

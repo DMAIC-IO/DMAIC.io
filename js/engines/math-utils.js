@@ -426,6 +426,120 @@ export function fQuantile(p, d1, d2) {
   return (lo + hi) / 2;
 }
 
+// ─── Noncentral F and t ─────────────────────────────────────
+
+/**
+ * Noncentral F CDF: P(F ≤ x) for F ~ F(df1, df2, λ).
+ *
+ * Poisson mixture of central beta CDFs:
+ *   Σ_j Pois(j; λ/2) · I_y(df1/2 + j, df2/2),  y = df1·x / (df1·x + df2).
+ * Summed outward from the Poisson mode so large λ does not underflow.
+ *
+ * @param {number} x
+ * @param {number} df1 — Numerator df
+ * @param {number} df2 — Denominator df
+ * @param {number} lambda — Noncentrality parameter λ ≥ 0
+ * @returns {number}
+ */
+export function noncentralFCDF(x, df1, df2, lambda) {
+  if (x <= 0) return 0;
+  if (df1 <= 0 || df2 <= 0 || lambda < 0) return NaN;
+  if (lambda === 0) return fCDF(x, df1, df2);
+  const y = df1 * x / (df1 * x + df2);
+  const mu = lambda / 2;
+  const mode = Math.floor(mu);
+  const weight = j => Math.exp(-mu + j * Math.log(mu) - lnGamma(j + 1));
+  const term = (j, w) => w * betaIncomplete(y, df1 / 2 + j, df2 / 2);
+
+  const wMode = weight(mode);
+  let sum = term(mode, wMode);
+  // Upward: weights and beta CDFs both shrink, so stop once terms vanish.
+  for (let j = mode + 1, w = wMode; j < mode + 10000; j++) {
+    w *= mu / j;
+    const t = term(j, w);
+    sum += t;
+    if (t <= 1e-16 * sum && w < 1e-16) break;
+  }
+  // Downward: finite, stop once the remaining Poisson mass is negligible.
+  for (let j = mode - 1, w = wMode; j >= 0; j--) {
+    w *= (j + 1) / mu;
+    sum += term(j, w);
+    if (w < 1e-17) break;
+  }
+  return Math.min(Math.max(sum, 0), 1);
+}
+
+/**
+ * Upper normal tail Φ(−z) at full double precision, via
+ * erfc(z/√2) = Q(½, z²/2). normalCDF uses A&S 7.1.26 (±1.5e-7), which is
+ * too coarse for the noncentral t series.
+ * @param {number} z
+ * @returns {number}
+ */
+function normalUpperTail(z) {
+  const p = gammainc(0.5, z * z / 2);
+  return z >= 0 ? 0.5 * (1 - p) : 0.5 * (1 + p);
+}
+
+/**
+ * Noncentral t CDF: P(T ≤ t) for T ~ t(df, δ).
+ *
+ * Lenth (1989), algorithm AS 243, with Guenther's twin series over the
+ * incomplete beta. t < 0 goes through the symmetry F(t; δ) = 1 − F(−t; −δ).
+ * For δ beyond ≈ 37.6 the Poisson weights underflow; there the normal
+ * approximation of Abramowitz & Stegun 26.7.10 is used (as R's pnt does).
+ *
+ * @param {number} t
+ * @param {number} df — Degrees of freedom (> 0)
+ * @param {number} delta — Noncentrality parameter δ
+ * @returns {number}
+ */
+export function noncentralTCDF(t, df, delta) {
+  if (!(df > 0)) return NaN;
+  let tt = t, del = delta, negdel = false;
+  if (t < 0) { negdel = true; tt = -t; del = -delta; }
+
+  let tnc;
+  if (del > 37.62) {
+    const s = 1 / (4 * df);
+    tnc = normalCDF((tt * (1 - s) - del) / Math.sqrt(1 + tt * tt * 2 * s));
+    return negdel ? 1 - tnc : tnc;
+  }
+
+  tnc = 0;
+  const x = tt * tt / (tt * tt + df);
+  if (x > 0) {
+    const lambda = del * del;
+    let p = 0.5 * Math.exp(-0.5 * lambda);
+    let q = Math.sqrt(2 / Math.PI) * p * del;
+    let s = 0.5 - p;
+    let a = 0.5;
+    const b = 0.5 * df;
+    const rxb = Math.pow(1 - x, b);
+    const lnBetaAB = 0.5 * Math.log(Math.PI) + lnGamma(b) - lnGamma(a + b);
+    let xodd = betaIncomplete(x, a, b);
+    let godd = 2 * rxb * Math.exp(a * Math.log(x) - lnBetaAB);
+    let xeven = 1 - rxb;
+    let geven = b * x * rxb;
+    tnc = p * xodd + q * xeven;
+    for (let en = 1; en <= 1000; en++) {
+      a += 1;
+      xodd -= godd;
+      xeven -= geven;
+      godd *= x * (a + b - 1) / a;
+      geven *= x * (a + b - 0.5) / (a + 0.5);
+      p *= lambda / (2 * en);
+      q *= lambda / (2 * en + 1);
+      s -= p;
+      tnc += p * xodd + q * xeven;
+      if (2 * s * (xodd - godd) <= 1e-12) break;
+    }
+  }
+  tnc += normalUpperTail(del);
+  if (negdel) tnc = 1 - tnc;
+  return Math.min(Math.max(tnc, 0), 1);
+}
+
 /**
  * Unified dispatcher for Algorithm Lab and fixture replay.
  * Routes {function, ...args} to the corresponding math-utils function

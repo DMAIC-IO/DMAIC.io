@@ -8,6 +8,7 @@ import {
   chiSquareVarianceTest, fTest, leveneTest,
   oneSampleTTest, twoSampleTTest, welchTTest,
   wilcoxonSignedRank, mannWhitneyU,
+  powerOneSampleT, powerTwoSampleT, findRequiredN,
 } from '../../js/engines/hypothesis-test-engine.js';
 
 // ─── Generic helpers ───────────────────────────────────────────
@@ -168,4 +169,30 @@ suite('Hypothesis — Wilcoxon Signed-Rank (fixture validation)', () => {
       });
     }
   }
+});
+
+// ─── Power (noncentral t) ──────────────────────────────────────
+// Exact references: R power.t.test and scipy.stats.nct (computed 2026-09-24).
+// Book review Melzer 2019, finding C2-008: the shifted central t understates
+// power at small n.
+
+suite('Hypothesis — t-test power (exact, noncentral t)', () => {
+  const cases = [
+    { fn: () => powerTwoSampleT(20, 20, 1, 1, 0.05, 'two-sided'), expected: 0.8689530, desc: '2-sample n=20, d=1 (R power.t.test)' },
+    { fn: () => powerOneSampleT(3, 2, 1, 0.05, 'two-sided'),      expected: 0.4707494, desc: '1-sample n=3, d=2' },
+    { fn: () => powerOneSampleT(3, 1, 1, 0.05, 'two-sided'),      expected: 0.1792554, desc: '1-sample n=3, d=1' },
+    { fn: () => powerOneSampleT(5, 1, 1, 0.05, 'two-sided'),      expected: 0.4013899, desc: '1-sample n=5, d=1' },
+    { fn: () => powerOneSampleT(5, 2, 1, 0.05, 'two-sided'),      expected: 0.9088849, desc: '1-sample n=5, d=2' },
+    { fn: () => powerTwoSampleT(3, 3, 2, 1, 0.05, 'two-sided'),   expected: 0.4626408, desc: '2-sample n=3, d=2' },
+    { fn: () => powerTwoSampleT(5, 5, 1, 1, 0.05, 'two-sided'),   expected: 0.2862955, desc: '2-sample n=5, d=1' },
+    { fn: () => powerOneSampleT(10, 0.5, 1, 0.05, 'greater'),     expected: 0.4272898, desc: '1-sample n=10, d=0.5, greater' },
+    { fn: () => powerOneSampleT(10, -0.5, 1, 0.05, 'less'),       expected: 0.4272898, desc: '1-sample n=10, d=−0.5, less' },
+    { fn: () => powerOneSampleT(10, 0.5, 1, 0.05, 'less'),        expected: 0.0009128, desc: '1-sample n=10, d=0.5, less (wrong direction)' },
+  ];
+  for (const c of cases) {
+    test(c.desc, () => assertAlmostEqual(c.fn(), c.expected, 1e-6));
+  }
+  test('required n, 1-sample d=0.5, 90 % power is 44', () => {
+    assertEqual(findRequiredN(0.9, n => powerOneSampleT(n, 0.5, 1, 0.05, 'two-sided')), 44);
+  });
 });

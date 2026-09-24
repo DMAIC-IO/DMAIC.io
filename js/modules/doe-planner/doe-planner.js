@@ -40,7 +40,7 @@ import {
 } from './doe-planner-worksheet.js';
 import {
   evaluateDesign, computeEVOPEffects, recenteredFactors,
-  computeAliasStructure, computeDispersionAnalysis,
+  computeAliasStructure, computeDispersionAnalysis, powerDisplay,
 } from './doe-planner-analysis.js';
 import { provisionWorksheet } from '../../core/examples-registry.js';
 import { uid } from '../../core/uid.js';
@@ -921,9 +921,10 @@ const mod = createModule({
       },
       hasPower() { return this._power().length > 0; },
       powerRows() { return this._power(); },
-      powerRating(p) { return p >= 0.8 ? 'doe__power-good' : p >= 0.5 ? 'doe__power-ok' : 'doe__power-low'; },
-      powerPct(p) { return `${(p * 100).toFixed(0)  }%`; },
-      powerBarWidth(p) { return (p * 100).toFixed(0); },
+      powerRating(p) { return powerDisplay(p).rating; },
+      powerPct(p) { return powerDisplay(p).text; },
+      powerBarWidth(p) { return powerDisplay(p).width; },
+      powerSaturated() { const p = this._power(); return p.length > 0 && p[0].power === null; },
       powerDescText() {
         const p = this._power();
         return _t('powerDesc', {

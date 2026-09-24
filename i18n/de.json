@@ -2999,6 +2999,7 @@
       "powerTitle": "Power-Analyse",
       "tipPower": "Statistische Power: Wahrscheinlichkeit, einen Effekt gegebener Größe zu erkennen. Power >= 80% gilt als ausreichend.",
       "powerDesc": "n={n} Runs, df(Error)={dfError}, α={alpha}. Power für verschiedene Effektgrößen (standardisiert als Δ/σ):",
+      "powerSaturated": "Keine Power berechenbar: Das Modell ist gesättigt (df(Error) = 0). Replikate hinzufügen oder das Modell verkleinern.",
       "effectSize": "Effektgröße",
       "power": "Power",
       "projectMode": "EVOP-Modus",

@@ -9,6 +9,7 @@ import { suite, test, assertAlmostEqual } from '../test-utils.js';
 import {
   erf, normalCDF, normalQuantile,
   lnGamma, chi2CDF, tCDF, fCDF, digamma,
+  noncentralFCDF, noncentralTCDF,
 } from '../../js/engines/math-utils.js';
 
 // ─── Load fixtures ─────────────────────────────────────────────
@@ -151,4 +152,51 @@ suite('Math-Utils — digamma (analytical reference)', () => {
         `digamma(${c.x}) = ${actual}, expected ${c.expected}`);
     });
   }
+});
+
+// ─── Noncentral F and t ────────────────────────────────────────
+// Reference values from scipy.stats.ncf.cdf / scipy.stats.nct.cdf
+// (SciPy 1.x, computed 2026-09-24).
+
+const NONCENTRAL_F_CASES = [
+  { x: 3,  df1: 1, df2: 10, lambda: 5,   expected: 0.30420762256651407,  desc: 'df1 = 1, moderate λ' },
+  { x: 2,  df1: 3, df2: 7,  lambda: 0.5, expected: 0.7490454817095735,   desc: 'df1 = 3, small λ' },
+  { x: 10, df1: 1, df2: 4,  lambda: 40,  expected: 0.014564551439038153, desc: 'large λ, small df2' },
+  { x: 1,  df1: 2, df2: 2,  lambda: 1,   expected: 0.3894003915357024,   desc: 'small df1 and df2' },
+];
+
+suite('Math-Utils — noncentralFCDF (SciPy reference)', () => {
+  for (const c of NONCENTRAL_F_CASES) {
+    test(`noncentralFCDF(${c.x}, ${c.df1}, ${c.df2}, ${c.lambda}): ${c.desc}`, () => {
+      assertAlmostEqual(noncentralFCDF(c.x, c.df1, c.df2, c.lambda), c.expected, 1e-9);
+    });
+  }
+  test('λ = 0 equals the central F CDF', () => {
+    for (const [x, d1, d2] of [[0.5, 1, 5], [2.5, 3, 12], [4.2, 1, 16]]) {
+      assertAlmostEqual(noncentralFCDF(x, d1, d2, 0), fCDF(x, d1, d2), 1e-12);
+    }
+  });
+  test('x ≤ 0 gives 0', () => {
+    assertAlmostEqual(noncentralFCDF(0, 1, 5, 3), 0, 1e-15);
+  });
+});
+
+const NONCENTRAL_T_CASES = [
+  { t: 1.5,  df: 4,  delta: 2,  expected: 0.2980823590794077,   desc: 'positive t, positive δ' },
+  { t: -1.0, df: 10, delta: 1,  expected: 0.026801856769479687, desc: 'negative t (symmetry branch)' },
+  { t: 3,    df: 2,  delta: -1, expected: 0.992371247766417,    desc: 'negative δ, small df' },
+  { t: 20,   df: 30, delta: 15, expected: 0.9634850544981904,   desc: 'large δ' },
+];
+
+suite('Math-Utils — noncentralTCDF (SciPy reference)', () => {
+  for (const c of NONCENTRAL_T_CASES) {
+    test(`noncentralTCDF(${c.t}, ${c.df}, ${c.delta}): ${c.desc}`, () => {
+      assertAlmostEqual(noncentralTCDF(c.t, c.df, c.delta), c.expected, 1e-9);
+    });
+  }
+  test('δ = 0 equals the central t CDF', () => {
+    for (const [t, df] of [[0, 5], [1.3, 3], [-2.1, 12], [0.7, 1]]) {
+      assertAlmostEqual(noncentralTCDF(t, df, 0), tCDF(t, df), 1e-12);
+    }
+  });
 });
