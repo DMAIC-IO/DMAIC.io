@@ -57,7 +57,7 @@ export default {
           {
             type: 'definition',
             term: 'AP (Aufgabenpriorität / Action Priority)',
-            content: 'Nach dem AIAG-VDA-FMEA-Handbuch (2019) ersetzt die AP die RPZ als Priorisierung. Statt B × A × E zu multiplizieren, liest sie die Kombination aus einer Tabelle ab und liefert H (hoch), M (mittel) oder L (niedrig). Die Bedeutung B wiegt dabei am stärksten: B 9–10 mit mittlerem Auftreten ist immer H, auch wenn die RPZ niedrig wäre. H verlangt eine Maßnahme oder eine begründete Entscheidung dagegen, M sollte bearbeitet werden, L kann bearbeitet werden.',
+            content: 'Nach dem AIAG-VDA-FMEA-Handbuch (2019) ersetzt die AP die RPZ als Priorisierung. Statt B × A × E zu multiplizieren, liest sie die Kombination aus einer Tabelle ab und liefert H (hoch), M (mittel) oder L (niedrig). Die Bedeutung B wiegt dabei am stärksten: B 9–10 ist ab A 6 immer H, auch wenn die RPZ niedrig wäre. H verlangt eine Maßnahme oder eine begründete Entscheidung dagegen, M sollte bearbeitet werden, L kann bearbeitet werden.',
           },
           {
             type: 'paragraph',
@@ -119,7 +119,7 @@ export default {
           {
             type: 'definition',
             term: 'AP (Action Priority)',
-            content: 'In the AIAG-VDA FMEA handbook (2019) the AP replaces the RPN for prioritization. Instead of multiplying S × O × D it looks the combination up in a table and yields H (high), M (medium) or L (low). Severity weighs most: S 9–10 with moderate occurrence is always H, even when the RPN would be low. H requires an action or a justified decision against one, M should be worked on, L may be worked on.',
+            content: 'In the AIAG-VDA FMEA handbook (2019) the AP replaces the RPN for prioritization. Instead of multiplying S × O × D it looks the combination up in a table and yields H (high), M (medium) or L (low). Severity weighs most: S 9–10 with O ≥ 6 is always H, even when the RPN would be low. H requires an action or a justified decision against one, M should be worked on, L may be worked on.',
           },
           {
             type: 'paragraph',
