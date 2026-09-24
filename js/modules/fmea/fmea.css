@@ -3,8 +3,9 @@
    BEM: .fmea__ prefix
    ============================================================ */
 
-/* Category colours — single source for cards, badges, stats, legend, AP matrix. */
-.fmea {
+/* Category colours — single source for cards, badges, stats, legend, AP matrix
+   and the dashboard tile (on :root so the tile outside .fmea sees them too). */
+:root {
   --fmea-cat-critical: var(--color-error);
   --fmea-cat-high: #fb923c;
   --fmea-cat-medium: #fbbf24;

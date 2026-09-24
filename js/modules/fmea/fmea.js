@@ -41,14 +41,11 @@ const RATE_DEFAULTS = {
 const RATE_KEYS = new Set(Object.keys(RATE_DEFAULTS));
 
 // ── Dashboard-tile helpers (static; render from persisted state) ──────────
-const CAT_COLOR = {
-  critical: 'var(--color-error)',
-  high:     'var(--color-warning)',
-  medium:   'var(--color-info)',
-  low:      'var(--color-success)',
-  none:     'var(--color-text-tertiary)',
-};
-const catColor = (cat) => CAT_COLOR[cat] || CAT_COLOR.none;
+const CATS = new Set(['critical', 'high', 'medium', 'low']);
+/** Fill colour of a category — the module's palette from fmea.css. */
+const catColor = (cat) => `var(--fmea-cat-${CATS.has(cat) ? cat : 'none'})`;
+/** Readable text colour of a category (contrast ≥ 4.5:1 in both themes). */
+const catTextColor = (cat) => (CATS.has(cat) ? `var(--fmea-cat-${cat}-text)` : 'var(--fmea-cat-none)');
 
 /** Collect all FMEA instances across phases (phase-set is cycle-agnostic). */
 function enumerateFmea(ctx) {
@@ -114,11 +111,11 @@ const mod = createModule({
         const summaryParts = [h('span', {}, `${i18n.t('dashboard.fmeaRisks')}: `, h('strong', {}, String(model.risks.length)))];
         if (isAp) {
           summaryParts.push(h('span', {}, `${catLabels.high}: `,
-            h('strong', { style: `color:${catColor('high')}` }, String(cats.high))));
+            h('strong', { style: `color:${catTextColor('high')}` }, String(cats.high))));
         } else {
           const maxRPN = Math.max(0, ...model.risks.map(r => r.rpn()));
           summaryParts.push(h('span', {}, `${i18n.t('dashboard.fmeaMaxRPN')}: `,
-            h('strong', { style: `color:${catColor(rpnCategory(maxRPN))}` }, maxRPN ? String(maxRPN) : '—')));
+            h('strong', { style: `color:${catTextColor(rpnCategory(maxRPN))}` }, maxRPN ? String(maxRPN) : '—')));
         }
         const summary = h('div', { class: 'dashboard-fmea__summary' }, ...summaryParts);
         const bar = h('div', { class: 'dashboard-fmea__bar' },
@@ -141,7 +138,7 @@ const mod = createModule({
           children.push(h('ol', { class: 'dashboard-fmea__top-list' },
             ...top.map(r => h('li', { class: 'dashboard-fmea__top-item' },
               h('span', { class: 'dashboard-fmea__top-desc' }, r.failureMode || r.step || '—'),
-              h('span', { class: 'dashboard-fmea__top-rpn', style: `color:${catColor(rating.category(r))}` }, badge(r))))));
+              h('span', { class: 'dashboard-fmea__top-rpn', style: `color:${catTextColor(rating.category(r))}` }, badge(r))))));
         }
         host.replaceChildren(...children);
       },
