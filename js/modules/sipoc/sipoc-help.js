@@ -32,7 +32,7 @@ export default {
           {
             type: 'definition',
             term: 'O — Outputs (Ausgaben)',
-            content: 'Alles, was der Prozess LIEFERT: fertige Produkte, Dokumente, Daten, Entscheidungen, Dienstleistungen — auch unerwünschte Outputs wie Ausschuss, Abfall oder Nacharbeit gehören dazu.',
+            content: 'Alles, was der Prozess LIEFERT: fertige Produkte, Dokumente, Daten, Entscheidungen, Dienstleistungen — auch unerwünschte Outputs wie Ausschuss, Abfall oder Nacharbeit gehören dazu. Gemeint ist immer der Output des PROZESSES, nicht des Verbesserungsprojekts: Projektziele und -ergebnisse (z. B. „Ausschuss um 30 % senken“, „neue Arbeitsanweisung“) gehören in den {{term:project-charter|Project Charter}}, nicht ins SIPOC.',
           },
           {
             type: 'definition',
@@ -70,7 +70,7 @@ export default {
           {
             type: 'definition',
             term: 'O — Outputs',
-            content: 'Everything the process DELIVERS: finished products, documents, data, decisions, services — including unwanted outputs such as scrap, waste, or rework.',
+            content: 'Everything the process DELIVERS: finished products, documents, data, decisions, services — including unwanted outputs such as scrap, waste, or rework. This always means the output of the PROCESS, not of the improvement project: project goals and deliverables (e.g. "reduce scrap by 30 %", "new work instruction") belong in the Project Charter, not in the SIPOC.',
           },
           {
             type: 'definition',
@@ -101,7 +101,7 @@ export default {
             type: 'list',
             items: [
               '1. Process zuerst: 5–8 Hauptschritte in der mittleren Spalte. Damit ist der Umfang („Scope") fixiert.',
-              '2. Outputs: Was liefert der Prozess am Ende? Was geht aus dem letzten Schritt heraus?',
+              '2. Outputs: Was liefert der Prozess am Ende? Was geht aus dem letzten Schritt heraus? Nicht: Was soll das Projekt erreichen?',
               '3. Customers: Wer empfängt jeden Output? Pro Output mindestens einen Kunden nennen.',
               '4. Inputs: Was wird in den ersten Schritt hineingegeben, damit er starten kann?',
               '5. Suppliers: Wer oder was liefert jeden Input?',
@@ -153,7 +153,7 @@ export default {
             type: 'list',
             items: [
               '1. Process first: 5–8 main steps in the middle column. This fixes the scope.',
-              '2. Outputs: what does the process deliver at the end? What comes out of the last step?',
+              '2. Outputs: what does the process deliver at the end? What comes out of the last step? Not: what should the project achieve?',
               '3. Customers: who receives each output? At least one customer per output.',
               '4. Inputs: what is fed into the first step so that it can start?',
               '5. Suppliers: who or what provides each input?',
@@ -358,6 +358,11 @@ export default {
           },
           {
             type: 'definition',
+            term: 'Projektergebnisse als Outputs eingetragen',
+            content: 'Das O im SIPOC sind die Outputs des Prozesses, nicht die des Projekts. „Ausschussquote halbiert“, „Schulungskonzept“ oder „neue Prüfanweisung“ sind Projektergebnisse — sie gehören als Ziel bzw. Deliverable in den {{term:project-charter|Project Charter}}. Prüffrage: „Entsteht das bei jedem Prozessdurchlauf und empfängt es der Kunde in der C-Spalte?“ Nur dann ist es ein Output. Soll das Projekt einen Output verbessern, steht im SIPOC der Output selbst (z. B. „Dichtringe“), die angestrebte Verbesserung im Charter.',
+          },
+          {
+            type: 'definition',
             term: 'Interne Kunden vergessen',
             content: 'Customers sind nicht nur externe Endkunden. Auch interne Abteilungen (QS, Lager, Buchhaltung) empfangen Prozessergebnisse. Alle Empfänger auflisten — das macht die spätere Anforderungsanalyse vollständiger.',
           },
@@ -390,6 +395,11 @@ export default {
             type: 'definition',
             term: 'Inputs and outputs confused',
             content: 'Inputs are what flows INTO the process (material, information, resources). Outputs are what the process DELIVERS. Rule of thumb: "Do I need this to start the process?" → input. "Does this result from the process?" → output.',
+          },
+          {
+            type: 'definition',
+            term: 'Project results entered as outputs',
+            content: 'The O in SIPOC is the output of the process, not of the project. "Scrap rate halved", "training concept" or "new inspection instruction" are project results — they belong in the Project Charter as a goal or deliverable. Test question: "Is this produced on every run of the process, and does the customer in the C column receive it?" Only then is it an output. If the project aims to improve an output, the SIPOC lists the output itself (e.g. "sealing rings"); the targeted improvement goes into the charter.',
           },
           {
             type: 'definition',
