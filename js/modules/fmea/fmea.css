@@ -26,6 +26,10 @@
   gap: var(--spacing-xs);
 }
 
+.fmea__settings .btn--segment {
+  white-space: nowrap;
+}
+
 .fmea__settings-label {
   font-size: var(--font-size-xs);
   color: var(--color-text-secondary);

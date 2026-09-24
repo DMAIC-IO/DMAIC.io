@@ -55,6 +55,15 @@ export default {
             content: '{{term:rpz|RPZ}} = B × A × E. Werte zwischen 1 und 1000. Die RPZ ist eine grobe Priorisierung — keine absolute Risikomessung. Hohe Bedeutung (B ≥ 9) wird oft unabhängig vom RPZ-Wert bearbeitet.',
           },
           {
+            type: 'definition',
+            term: 'AP (Aufgabenpriorität / Action Priority)',
+            content: 'Nach dem AIAG-VDA-FMEA-Handbuch (2019) ersetzt die AP die RPZ als Priorisierung. Statt B × A × E zu multiplizieren, liest sie die Kombination aus einer Tabelle ab und liefert H (hoch), M (mittel) oder L (niedrig). Die Bedeutung B wiegt dabei am stärksten: B 9–10 mit mittlerem Auftreten ist immer H, auch wenn die RPZ niedrig wäre. H verlangt eine Maßnahme oder eine begründete Entscheidung dagegen, M sollte bearbeitet werden, L kann bearbeitet werden.',
+          },
+          {
+            type: 'paragraph',
+            content: 'Oben im Modul wählst du die Bewertung: AP (Vorgabe für neue FMEAs) oder RPN (klassisch). Beim Umschalten bleiben alle Eingaben erhalten, nur die Auswertung ändert sich. Im AP-Modus bestimmt der FMEA-Typ (Prozess oder Design), welche Bewertungsskalen die Skalenreferenz zeigt.',
+          },
+          {
             type: 'paragraph',
             content: 'Die FMEA ist ein lebendes Dokument: Sie wird bei jeder relevanten Änderung aktualisiert. Eine einmal abgeheftete FMEA verliert ihren Wert.',
           },
@@ -108,6 +117,15 @@ export default {
             content: '{{term:rpz|RPN}} = S × O × D. Values from 1 to 1000. The RPN is a rough prioritization — not an absolute risk measure. High severity (S ≥ 9) is often addressed regardless of RPN.',
           },
           {
+            type: 'definition',
+            term: 'AP (Action Priority)',
+            content: 'In the AIAG-VDA FMEA handbook (2019) the AP replaces the RPN for prioritization. Instead of multiplying S × O × D it looks the combination up in a table and yields H (high), M (medium) or L (low). Severity weighs most: S 9–10 with moderate occurrence is always H, even when the RPN would be low. H requires an action or a justified decision against one, M should be worked on, L may be worked on.',
+          },
+          {
+            type: 'paragraph',
+            content: 'At the top of the module you choose the rating: AP (default for new FMEAs) or RPN (classic). Switching keeps all inputs; only the evaluation changes. In AP mode the FMEA type (process or design) selects which rating scales the scale reference shows.',
+          },
+          {
             type: 'paragraph',
             content: 'FMEA is a living document: updated on every relevant change. An FMEA filed away once loses its value.',
           },
@@ -127,7 +145,7 @@ export default {
               'Pro Schritt mögliche Fehler brainstormen — im Team, mit Experten und Praktikern.',
               'Pro Fehler die Folgen und Ursachen beschreiben.',
               'B, A, E gemeinsam vergeben — ein einheitlicher Bewertungsrahmen ist Pflicht.',
-              'RPZ berechnen und priorisieren.',
+              'AP (oder RPZ) ermitteln und priorisieren — H zuerst.',
               'Maßnahmen ableiten — Ursache reduzieren (A senken) oder Entdeckung verbessern (E senken). B lässt sich nur durch Designänderung senken.',
               'Nach Umsetzung Bewertung erneuern und prüfen, ob die Maßnahme gewirkt hat.',
             ],
@@ -145,7 +163,7 @@ export default {
               'Brainstorm possible failures per step — with the team, experts, and practitioners.',
               'Describe effects and causes per failure.',
               'Assign S, O, D collectively — a uniform rating frame is mandatory.',
-              'Calculate the RPN and prioritize.',
+              'Determine the AP (or RPN) and prioritize — H first.',
               'Derive actions — reduce occurrence (lower O) or improve detection (lower D). Severity can only be lowered by design change.',
               'After implementation, re-rate and check whether the action worked.',
             ],

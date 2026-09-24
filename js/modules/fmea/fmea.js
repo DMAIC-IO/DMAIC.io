@@ -174,7 +174,6 @@ const mod = createModule({
 
       riskNum: (i) => `R-${  String(i + 1).padStart(3, '0')}`,
       rpnText: (v) => v ? (`RPN ${  v}`) : 'RPN —',
-      addActionLabel: () => `＋ ${  _t('addAction')}`,
       targetText: (v) => v ? (`${_t('target')  } ${  v}`) : (`${_t('target')  } —`),
 
       /** @returns {boolean} true when the FMEA is rated by action priority */

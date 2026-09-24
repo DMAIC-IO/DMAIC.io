@@ -1,5 +1,7 @@
 {
   "_dateNote": "Action dates use [+|-]Nd offsets relative to today; loadExample() resolves them at load time so the example stays evergreen.",
+  "method": "ap",
+  "fmeaType": "process",
   "risks": [
     {
       "id": "r1",

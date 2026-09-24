@@ -314,7 +314,10 @@
                   </template>
                 </tbody>
               </table>
-              <button class="fmea__add-action-btn" data-action="add-action" :data-risk-id="risk.id" @click="addAction(risk)" x-text="addActionLabel()"></button>
+              <button class="fmea__add-action-btn" data-action="add-action" :data-risk-id="risk.id" @click="addAction(risk)">
+                <span class="icon icon--sm icon--text" data-icon="action.add" aria-hidden="true"></span>
+                <span x-text="t('addAction')"></span>
+              </button>
             </div>
             <div class="fmea__projected-bar">
               <span class="fmea__proj-label" x-text="t('projectedLabel')"></span>
