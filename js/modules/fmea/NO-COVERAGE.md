@@ -6,6 +6,16 @@ Lines: 98.7% (149/151) | Functions: 100% (53/53) | Branches: 84.3% (102/121)
 
 `--check` exit 0 (beide Schwellen ≥ 90 %).
 
+> **Stand:** Die Zahlen stammen aus der letzten Messung **vor** der
+> Action-Priority-Erweiterung (2026-09-24) und sind derzeit nicht nachmessbar:
+> Die E2E-Coverage aus dem Bundle fehlt in `lcov.info`, `fmea.js` taucht dort
+> nicht auf (Roadmap: „Test-Infra: E2E-Coverage aus dem Bundle fehlt …").
+> Die AP-Logik selbst liegt in `fmea-model.js` und `fmea-ap.js` und ist durch
+> die Unit-Tests (`tests/modules/fmea.test.js`, `fmea-ap.test.js`) abgedeckt,
+> die neuen Oberflächenteile (Umschalter, AP-Skalen, AP-Matrix, AP-Burndown,
+> AP-Kachel) durch `fmea.spec.js` und `dashboard.spec.js`. Nach Behebung der
+> Coverage-Lücke neu messen und diesen Absatz entfernen.
+
 ### Legende
 
 | Tag  | Bedeutung |
@@ -17,7 +27,7 @@ Lines: 98.7% (149/151) | Functions: 100% (53/53) | Branches: 84.3% (102/121)
 
 | Bereich | Tag | Begründung |
 |---------|-----|------------|
-| `chartManager.destroy(chart)` im Burndown-Teardown (Z.328-329) | V8/IG | Imperatives Chart-Lifecycle im `destroy()`/Popout-Close-Pfad. Der Aufruf läuft im E2E-Destruction-Test, wird von der V8-Closure-Instrumentierung aber nicht als hit markiert (bestehende, von dieser Aufgabe unberührte Zeile). |
+| `chartManager.destroy(chart)` im Burndown-Teardown (Z. 379 und 394) | V8/IG | Imperatives Chart-Lifecycle im `destroy()`/Popout-Close-Pfad. Der Aufruf läuft im E2E-Destruction-Test, wird von der V8-Closure-Instrumentierung aber nicht als hit markiert (bestehende, von dieser Aufgabe unberührte Zeile). |
 
 **Fazit:**
 Roh-Coverage **Lines 98.7 %** und **Functions 100 %** liegen beide über der 90 %-Schwelle (`--check` exit 0). Die `dashboardTile.enumerate`-Funktion `enumerateFmea` wird seit der Einführung des dünnen Dashboard-Hosts (`app/dev/js/pages/dashboard/`, `enumerateTiles`) bei jedem Dashboard-E2E live aufgerufen und ist damit vollständig abgedeckt — die frühere FUT-Notiz entfällt. Die einzige verbleibende unabgedeckte Stelle ist der `chartManager.destroy`-Burndown-Teardown (V8/IG). Effektiv abdeckbare Zeilen: 151 − 2 (V8/IG) = 149 / 149 = **100 %**. Es wurden keine künstlichen Tests geschrieben, um die V8-Zeilen zu jagen.
