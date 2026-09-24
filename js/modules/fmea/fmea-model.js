@@ -446,8 +446,8 @@ export class State {
   /**
    * Raw CSV data matrix (no escaping, no headers). One row per action, or a
    * single row when a risk has no actions. Column order:
-   *   #, step, failureMode, effect, cause, control, S, O, D, RPN,
-   *   action, responsible, dueDate, done, ΔS, ΔO, ΔD, ProjS, ProjO, ProjD, ProjRPN
+   *   #, step, failureMode, effect, cause, control, S, O, D, RPN, AP,
+   *   action, responsible, dueDate, done, ΔS, ΔO, ΔD, ProjS, ProjO, ProjD, ProjRPN, ProjAP
    * `done` is emitted as the language-specific yes/no strings supplied by the caller.
    *
    * @param {{yes?:string, no?:string}} [labels]
@@ -461,20 +461,22 @@ export class State {
     this.risks.forEach((risk, idx) => {
       const s = asInt(risk.sev), o = asInt(risk.occ), d = asInt(risk.det);
       const rpn = risk.rpn();
+      const ap = risk.ap() || '';
       const ps = risk.projS(), po = risk.projO(), pd = risk.projD();
       const prpn = (s && o && d) ? ps * po * pd : '';
+      const pap = risk.projAp() || '';
+      const head = [idx + 1, risk.step, risk.failureMode, risk.effect, risk.cause, risk.control,
+        s || '', o || '', d || '', rpn || '', ap];
+      const blankHead = ['', '', '', '', '', '', '', '', '', '', ''];
 
       if (!risk.actions.length) {
-        rows.push([idx + 1, risk.step, risk.failureMode, risk.effect, risk.cause, risk.control,
-          s || '', o || '', d || '', rpn || '', '', '', '', '', '', '', '', ps, po, pd, prpn]);
+        rows.push([...head, '', '', '', '', '', '', '', ps, po, pd, prpn, pap]);
       } else {
         risk.actions.forEach((a, ai) => {
+          const actionCols = [a.text, a.resp, a.date, a.done ? yes : no, a.deltaS, a.deltaO, a.deltaD];
           rows.push(ai === 0
-            ? [idx + 1, risk.step, risk.failureMode, risk.effect, risk.cause, risk.control,
-              s || '', o || '', d || '', rpn || '', a.text, a.resp, a.date, a.done ? yes : no,
-              a.deltaS, a.deltaO, a.deltaD, ps, po, pd, prpn]
-            : ['', '', '', '', '', '', '', '', '', '', a.text, a.resp, a.date, a.done ? yes : no,
-              a.deltaS, a.deltaO, a.deltaD, '', '', '', '']);
+            ? [...head, ...actionCols, ps, po, pd, prpn, pap]
+            : [...blankHead, ...actionCols, '', '', '', '', '']);
         });
       }
     });

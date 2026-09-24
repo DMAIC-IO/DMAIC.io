@@ -273,9 +273,9 @@ const mod = createModule({
         const yes = lang === 'de' ? 'Ja' : 'Yes';
         const no = lang === 'de' ? 'Nein' : 'No';
         const headers = ['#', _t('step'), _t('failureMode'), _t('effect'), _t('cause'),
-          _t('currentControls'), 'S', 'O', 'D', 'RPN',
+          _t('currentControls'), 'S', 'O', 'D', 'RPN', 'AP',
           _t('action'), _t('responsible'), _t('dueDate'), _t('done'), 'ΔS', 'ΔO', 'ΔD',
-          'Proj.S', 'Proj.O', 'Proj.D', 'Proj.RPN'];
+          'Proj.S', 'Proj.O', 'Proj.D', 'Proj.RPN', 'Proj.AP'];
         const cell = (v) => `"${  String(v == null ? '' : v).replace(/"/g, '""')  }"`;
         let csv = `sep=;\n${  headers.map(cell).join(';')  }\n`;
         for (const row of this.model.csvRows({ yes, no })) {

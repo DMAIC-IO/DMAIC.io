@@ -410,6 +410,37 @@ suite('FMEA Model — CSV rows', () => {
     assertEqual(rows[1][0], '');
     assertEqual(rows[1][1], '');
   });
+
+  test('AP and Proj.AP columns follow RPN and Proj.RPN in both methods', () => {
+    for (const method of ['ap', 'rpn']) {
+      const s = new State();
+      s.method = method;
+      const r = s.addRisk();
+      r.sev = '8'; r.occ = '6'; r.det = '6';                   // AP H, RPN 288
+      const a1 = new Action(); a1.text = 'A1'; a1.deltaO = '3'; // proj AP M
+      const a2 = new Action(); a2.text = 'A2';
+      r.actions = [a1, a2];
+      const rows = s.csvRows();
+      assertEqual(rows[0].length, 23, method);
+      assertEqual(rows[0][9], 288, method);
+      assertEqual(rows[0][10], 'H', method);
+      assertEqual(rows[0][11], 'A1', method);
+      assertEqual(rows[0][21], 8 * 3 * 6, method);
+      assertEqual(rows[0][22], 'M', method);
+      assertEqual(rows[1].length, 23, method);
+      assertEqual(rows[1][10], '', method);
+      assertEqual(rows[1][22], '', method);
+    }
+  });
+
+  test('unrated risk leaves AP columns empty', () => {
+    const s = new State();
+    s.addRisk();
+    const row = s.csvRows()[0];
+    assertEqual(row.length, 23);
+    assertEqual(row[10], '');
+    assertEqual(row[22], '');
+  });
 });
 
 suite('FMEA Model — Risk action priority', () => {
