@@ -3467,6 +3467,7 @@
       "statRated": "Bewertet",
       "apScaleCriterion": "Kriterium",
       "apMatrixTitle": "Action Priority (AIAG-VDA)",
+      "apSourceNote": "Skalentexte: eigene Formulierung in Anlehnung an das AIAG-VDA FMEA-Handbuch (2019). AP-Zuordnung nach der dortigen Tabelle. Alle Texte lassen sich anpassen.",
       "ap": {
         "process": {
           "sev": {

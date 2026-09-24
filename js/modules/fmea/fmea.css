@@ -495,6 +495,12 @@
   text-align: center;
 }
 
+.fmea__ap-source {
+  margin-top: var(--spacing-sm);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+}
+
 .fmea__ap-cell { font-weight: var(--font-weight-semibold); }
 .fmea__ap-cell--high   { background: color-mix(in srgb, var(--fmea-cat-high) 18%, transparent); color: var(--fmea-cat-high-text); }
 .fmea__ap-cell--medium { background: color-mix(in srgb, var(--fmea-cat-medium) 18%, transparent); color: var(--fmea-cat-medium-text); }
