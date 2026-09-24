@@ -41,14 +41,14 @@ const RATE_DEFAULTS = {
 const RATE_KEYS = new Set(Object.keys(RATE_DEFAULTS));
 
 // ── Dashboard-tile helpers (static; render from persisted state) ──────────
-const RPN_CAT_COLOR = {
+const CAT_COLOR = {
   critical: 'var(--color-error)',
   high:     'var(--color-warning)',
   medium:   'var(--color-info)',
   low:      'var(--color-success)',
   none:     'var(--color-text-tertiary)',
 };
-const rpnCatColor = (cat) => RPN_CAT_COLOR[cat] || RPN_CAT_COLOR.none;
+const catColor = (cat) => CAT_COLOR[cat] || CAT_COLOR.none;
 
 /** Collect all FMEA instances across phases (phase-set is cycle-agnostic). */
 function enumerateFmea(ctx) {
@@ -95,54 +95,53 @@ const mod = createModule({
           host.replaceChildren(h('p', { class: 'dashboard-area__empty' }, i18n.t('dashboard.fmeaEmpty')));
           return;
         }
-        const rpns = risks.map(r => {
-          const s = parseInt(r.sev) || 0, o = parseInt(r.occ) || 0, d = parseInt(r.det) || 0;
-          return (s && o && d) ? s * o * d : 0;
-        });
+        const model = State.fromJSON(state);
+        const rating = model.rating();
+        const isAp = model.method === 'ap';
         const cats = { critical: 0, high: 0, medium: 0, low: 0, none: 0 };
-        rpns.forEach(v => cats[rpnCategory(v)]++);
-        const indexed = risks.map((r, i) => ({ risk: r, rpn: rpns[i] }));
-        indexed.sort((a, b) => b.rpn - a.rpn);
-        const top = indexed.slice(0, 5).filter(t => t.rpn > 0);
-        const catLabels = {
-          critical: i18n.t('dashboard.fmeaCritical'),
-          high:     i18n.t('dashboard.fmeaHigh'),
-          medium:   i18n.t('dashboard.fmeaMedium'),
-          low:      i18n.t('dashboard.fmeaLow'),
-          none:     i18n.t('dashboard.fmeaNotRated'),
-        };
-        const totalRated = rpns.filter(v => v > 0).length;
-        const maxRPN = Math.max(...rpns, 0);
-        const summary = h('div', { class: 'dashboard-fmea__summary' },
-          h('span', {}, `${i18n.t('dashboard.fmeaRisks')  }: `, h('strong', {}, String(risks.length))),
-          h('span', {}, `${i18n.t('dashboard.fmeaMaxRPN')  }: `,
-            h('strong', { style: `color:${rpnCatColor(rpnCategory(maxRPN))}` }, maxRPN ? String(maxRPN) : '—')),
-        );
+        model.risks.forEach(r => cats[rating.category(r)]++);
+        const ranked = [...model.risks].sort(rating.compare).filter(r => rating.category(r) !== 'none');
+        const top = ranked.slice(0, 5);
+        const catLabels = isAp
+          ? { high: i18n.t('dashboard.fmeaApHigh'), medium: i18n.t('dashboard.fmeaApMedium'),
+            low: i18n.t('dashboard.fmeaApLow'), none: i18n.t('dashboard.fmeaNotRated') }
+          : { critical: i18n.t('dashboard.fmeaCritical'), high: i18n.t('dashboard.fmeaHigh'),
+            medium: i18n.t('dashboard.fmeaMedium'), low: i18n.t('dashboard.fmeaLow'),
+            none: i18n.t('dashboard.fmeaNotRated') };
+        const barCats = isAp ? ['high', 'medium', 'low'] : ['critical', 'high', 'medium', 'low'];
+        const badge = (r) => (isAp ? `AP ${r.ap()}` : `RPN ${r.rpn()}`);
+
+        const summaryParts = [h('span', {}, `${i18n.t('dashboard.fmeaRisks')}: `, h('strong', {}, String(model.risks.length)))];
+        if (isAp) {
+          summaryParts.push(h('span', {}, `${catLabels.high}: `,
+            h('strong', { style: `color:${catColor('high')}` }, String(cats.high))));
+        } else {
+          const maxRPN = Math.max(0, ...model.risks.map(r => r.rpn()));
+          summaryParts.push(h('span', {}, `${i18n.t('dashboard.fmeaMaxRPN')}: `,
+            h('strong', { style: `color:${catColor(rpnCategory(maxRPN))}` }, maxRPN ? String(maxRPN) : '—')));
+        }
+        const summary = h('div', { class: 'dashboard-fmea__summary' }, ...summaryParts);
         const bar = h('div', { class: 'dashboard-fmea__bar' },
-          ...['critical', 'high', 'medium', 'low'].map(cat => {
-            const pct = totalRated > 0 ? (cats[cat] / risks.length * 100) : 0;
+          ...barCats.map(cat => {
+            const pct = model.risks.length ? (cats[cat] / model.risks.length * 100) : 0;
             if (pct === 0) return null;
             return h('div', { class: 'dashboard-fmea__bar-seg',
-              style: `width:${pct}%;background:${rpnCatColor(cat)}`, title: `${catLabels[cat]}: ${cats[cat]}` });
+              style: `width:${pct}%;background:${catColor(cat)}`, title: `${catLabels[cat]}: ${cats[cat]}` });
           }).filter(Boolean),
         );
         const legend = h('div', { class: 'dashboard-fmea__legend' },
-          ...['critical', 'high', 'medium', 'low', 'none'].filter(c => cats[c] > 0)
+          ...[...barCats, 'none'].filter(c => cats[c] > 0)
             .map(cat => h('span', { class: 'dashboard-fmea__legend-item' },
-              h('span', { class: 'dashboard-fmea__legend-dot', style: `background:${rpnCatColor(cat)}` }),
+              h('span', { class: 'dashboard-fmea__legend-dot', style: `background:${catColor(cat)}` }),
               ` ${catLabels[cat]}: ${cats[cat]}`)),
         );
         const children = [summary, bar, legend];
         if (top.length) {
           children.push(h('div', { class: 'dashboard-fmea__top-label' }, i18n.t('dashboard.fmeaTopRisks')));
           children.push(h('ol', { class: 'dashboard-fmea__top-list' },
-            ...top.map(t => {
-              const cat = rpnCategory(t.rpn);
-              const desc = t.risk.failureMode || t.risk.step || '—';
-              return h('li', { class: 'dashboard-fmea__top-item' },
-                h('span', { class: 'dashboard-fmea__top-desc' }, desc),
-                h('span', { class: 'dashboard-fmea__top-rpn', style: `color:${rpnCatColor(cat)}` }, `RPN ${t.rpn}`));
-            })));
+            ...top.map(r => h('li', { class: 'dashboard-fmea__top-item' },
+              h('span', { class: 'dashboard-fmea__top-desc' }, r.failureMode || r.step || '—'),
+              h('span', { class: 'dashboard-fmea__top-rpn', style: `color:${catColor(rating.category(r))}` }, badge(r))))));
         }
         host.replaceChildren(...children);
       },
@@ -357,23 +356,25 @@ const mod = createModule({
           if (!el) return;
           this._destroyChart();
           const gen = ++this._renderGen;
+          const line = (name, x, y, color, dash) => ({
+            name, x, y, color, symbol: 'circle',
+            connectLine: { show: true, dash, width: dash === 'solid' ? 2.5 : 2, color },
+          });
+          const series = bd.kind === 'ap'
+            ? [
+              line(_t('burndownHPlan'), bd.planX, bd.planH, 'var(--color-warning)', 'dash'),
+              line(_t('burndownHActual'), bd.actX, bd.actH, 'var(--color-warning)', 'solid'),
+              line(_t('burndownHmPlan'), bd.planX, bd.planHM, 'var(--color-info)', 'dash'),
+              line(_t('burndownHmActual'), bd.actX, bd.actHM, 'var(--color-info)', 'solid'),
+            ]
+            : [
+              line(_t('burndownPlan'), bd.planX, bd.planY, 'var(--color-text-tertiary)', 'dash'),
+              line(_t('burndownActual'), bd.actX, bd.actY, 'var(--color-accent)', 'solid'),
+            ];
           const chart = await module._context.chartManager.create(el, 'scatter', {
-            series: [
-              {
-                name: _t('burndownPlan'),
-                x: bd.planX, y: bd.planY,
-                color: 'var(--color-text-tertiary)', symbol: 'circle',
-                connectLine: { show: true, dash: 'dash', width: 2, color: 'var(--color-text-tertiary)' },
-              },
-              {
-                name: _t('burndownActual'),
-                x: bd.actX, y: bd.actY,
-                color: 'var(--color-accent)', symbol: 'circle',
-                connectLine: { show: true, dash: 'solid', width: 2.5, color: 'var(--color-accent)' },
-              },
-            ],
+            series,
             title: _t('burndownTitle'),
-            yLabel: 'RPN',
+            yLabel: bd.kind === 'ap' ? _t('burndownRiskCount') : 'RPN',
             yMin: 0,
             showLegend: true,
             xTickFormat: dateFmt,

@@ -531,6 +531,9 @@
     "fmeaMedium": "Medium (50–124)",
     "fmeaLow": "Low (<50)",
     "fmeaNotRated": "Not rated",
+    "fmeaApHigh": "AP high",
+    "fmeaApMedium": "AP medium",
+    "fmeaApLow": "AP low",
     "ishikawaEmpty": "No hypotheses recorded yet.",
     "ishikawaHypotheses": "Hypotheses",
     "ishikawaExperts": "Experts",
@@ -3804,7 +3807,12 @@
       "burndownTitle": "Risk Burndown",
       "burndownPlan": "Plan",
       "burndownActual": "Actual",
-      "burndownNoData": "No rated risks with dated actions available."
+      "burndownNoData": "No rated risks with dated actions available.",
+      "burndownHPlan": "H planned",
+      "burndownHActual": "H achieved",
+      "burndownHmPlan": "H+M planned",
+      "burndownHmActual": "H+M achieved",
+      "burndownRiskCount": "Number of risks"
     },
     "hypothesis-test": {
       "name": "Hypothesis Test",
