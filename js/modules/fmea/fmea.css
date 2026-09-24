@@ -475,3 +475,13 @@
 .fmea__legend-dot--high     { background: var(--fmea-cat-high); }
 .fmea__legend-dot--medium   { background: var(--fmea-cat-medium); }
 .fmea__legend-dot--low      { background: var(--fmea-cat-low); }
+
+.fmea__ap-matrix td,
+.fmea__ap-matrix th {
+  text-align: center;
+}
+
+.fmea__ap-cell { font-weight: var(--font-weight-semibold); }
+.fmea__ap-cell--high   { background: color-mix(in srgb, var(--fmea-cat-high) 18%, transparent); color: var(--fmea-cat-high); }
+.fmea__ap-cell--medium { background: color-mix(in srgb, var(--fmea-cat-medium) 18%, transparent); color: var(--fmea-cat-medium); }
+.fmea__ap-cell--low    { background: color-mix(in srgb, var(--fmea-cat-low) 18%, transparent); color: var(--fmea-cat-low); }

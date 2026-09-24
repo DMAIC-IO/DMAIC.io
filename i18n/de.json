@@ -3462,6 +3462,266 @@
       "statApMedium": "AP mittel (M)",
       "statApLow": "AP niedrig (L)",
       "statRated": "Bewertet",
+      "apScaleCriterion": "Kriterium",
+      "apMatrixTitle": "Action Priority (AIAG-VDA)",
+      "ap": {
+        "process": {
+          "sev": {
+            "10": {
+              "meaning": "Sicherheit gefährdet",
+              "criterion": "Gefahr für Gesundheit oder Sicherheit von Mitarbeitenden oder Endnutzern."
+            },
+            "9": {
+              "meaning": "Gesetzesverstoß",
+              "criterion": "Gesetzliche oder behördliche Anforderungen werden nicht erfüllt."
+            },
+            "8": {
+              "meaning": "Hauptfunktion verloren",
+              "criterion": "Produkt ohne Hauptfunktion; vollständiger Ausschuss oder Stillstand beim Kunden."
+            },
+            "7": {
+              "meaning": "Hauptfunktion eingeschränkt",
+              "criterion": "Hauptfunktion gemindert; Aussortieren und teilweiser Ausschuss."
+            },
+            "6": {
+              "meaning": "Nebenfunktion verloren",
+              "criterion": "Komfort- oder Nebenfunktion fällt aus; Nacharbeit außerhalb der Linie."
+            },
+            "5": {
+              "meaning": "Nebenfunktion eingeschränkt",
+              "criterion": "Nebenfunktion gemindert; Nacharbeit eines Teils der Menge."
+            },
+            "4": {
+              "meaning": "Deutlich wahrnehmbar",
+              "criterion": "Aussehen oder Geräusch stört die meisten Kunden; Nacharbeit in der Linie."
+            },
+            "3": {
+              "meaning": "Wahrnehmbar",
+              "criterion": "Stört einen Teil der Kunden; geringe Nacharbeit."
+            },
+            "2": {
+              "meaning": "Kaum wahrnehmbar",
+              "criterion": "Nur aufmerksamen Kunden auffällig; geringe Prozessstörung."
+            },
+            "1": {
+              "meaning": "Keine Auswirkung",
+              "criterion": "Keine erkennbare Folge."
+            }
+          },
+          "occ": {
+            "10": {
+              "meaning": "Extrem hoch",
+              "criterion": "Keine Vermeidungsmaßnahme; Fehler tritt praktisch sicher auf."
+            },
+            "9": {
+              "meaning": "Sehr hoch",
+              "criterion": "Vermeidung kaum wirksam; Fehler tritt sehr häufig auf."
+            },
+            "8": {
+              "meaning": "Hoch",
+              "criterion": "Vermeidung wenig wirksam; Fehler tritt häufig auf."
+            },
+            "7": {
+              "meaning": "Hoch",
+              "criterion": "Vermeidung eingeschränkt wirksam; Fehler tritt wiederholt auf."
+            },
+            "6": {
+              "meaning": "Mittel",
+              "criterion": "Vermeidung teilweise wirksam; Fehler tritt gelegentlich auf."
+            },
+            "5": {
+              "meaning": "Mittel",
+              "criterion": "Vermeidung wirksam; Fehler tritt vereinzelt auf."
+            },
+            "4": {
+              "meaning": "Mittel bis gering",
+              "criterion": "Vermeidung wirksam und erprobt; Fehler tritt selten auf."
+            },
+            "3": {
+              "meaning": "Gering",
+              "criterion": "Bewährte Vermeidung; Fehler tritt sehr selten auf."
+            },
+            "2": {
+              "meaning": "Sehr gering",
+              "criterion": "Vermeidung nach bewährtem Standard; nur Einzelfälle."
+            },
+            "1": {
+              "meaning": "Extrem gering",
+              "criterion": "Fehler durch Vermeidung ausgeschlossen, z. B. Poka-Yoke."
+            }
+          },
+          "det": {
+            "10": {
+              "meaning": "Keine Entdeckung",
+              "criterion": "Keine Prüfung vorhanden oder Prüfung ungeeignet."
+            },
+            "9": {
+              "meaning": "Sehr gering",
+              "criterion": "Prüfung kaum geeignet; zufällige Stichproben."
+            },
+            "8": {
+              "meaning": "Gering",
+              "criterion": "Wirksamkeit der Prüfmethode nicht nachgewiesen."
+            },
+            "7": {
+              "meaning": "Gering",
+              "criterion": "Manuelle Sicht- oder Hörprüfung, eingeschränkt zuverlässig."
+            },
+            "6": {
+              "meaning": "Mittel",
+              "criterion": "Manuelle Prüfung mit Hilfsmitteln, z. B. Lehre."
+            },
+            "5": {
+              "meaning": "Mittel",
+              "criterion": "Nachgewiesene manuelle oder maschinelle Prüfung nach dem Prozessschritt."
+            },
+            "4": {
+              "meaning": "Hoch",
+              "criterion": "Automatische Prüfung im Folgeprozess; Fehlerteil wird ausgeschleust."
+            },
+            "3": {
+              "meaning": "Hoch",
+              "criterion": "Automatische Prüfung im Prozessschritt; Fehlerteil wird ausgeschleust."
+            },
+            "2": {
+              "meaning": "Sehr hoch",
+              "criterion": "Ursache wird automatisch erkannt; Fehlerteil entsteht nicht."
+            },
+            "1": {
+              "meaning": "Sicher",
+              "criterion": "Fehler kann nicht entstehen oder wird immer erkannt."
+            }
+          }
+        },
+        "design": {
+          "sev": {
+            "10": {
+              "meaning": "Sicherheit gefährdet",
+              "criterion": "Sicherer Betrieb beeinträchtigt; Gefahr für Personen."
+            },
+            "9": {
+              "meaning": "Gesetzesverstoß",
+              "criterion": "Produkt erfüllt gesetzliche oder behördliche Anforderungen nicht."
+            },
+            "8": {
+              "meaning": "Hauptfunktion verloren",
+              "criterion": "Produkt für den vorgesehenen Einsatz unbrauchbar."
+            },
+            "7": {
+              "meaning": "Hauptfunktion eingeschränkt",
+              "criterion": "Produkt nutzbar, Leistung deutlich gemindert."
+            },
+            "6": {
+              "meaning": "Nebenfunktion verloren",
+              "criterion": "Produkt nutzbar, Komfortfunktion fällt aus."
+            },
+            "5": {
+              "meaning": "Nebenfunktion eingeschränkt",
+              "criterion": "Produkt nutzbar, Komfortfunktion gemindert."
+            },
+            "4": {
+              "meaning": "Sehr störend",
+              "criterion": "Aussehen, Geräusch oder Haptik stören die meisten Kunden."
+            },
+            "3": {
+              "meaning": "Störend",
+              "criterion": "Aussehen, Geräusch oder Haptik stören viele Kunden."
+            },
+            "2": {
+              "meaning": "Leicht störend",
+              "criterion": "Nur wenigen, aufmerksamen Kunden auffällig."
+            },
+            "1": {
+              "meaning": "Keine Auswirkung",
+              "criterion": "Keine wahrnehmbare Folge."
+            }
+          },
+          "occ": {
+            "10": {
+              "meaning": "Extrem hoch",
+              "criterion": "Neue Technologie ohne Erfahrung; keine Vermeidung."
+            },
+            "9": {
+              "meaning": "Sehr hoch",
+              "criterion": "Erster Einsatz einer neuen Konstruktion; Vermeidung nicht auf die Anforderung ausgelegt."
+            },
+            "8": {
+              "meaning": "Hoch",
+              "criterion": "Neue Konstruktion auf Basis ähnlicher Technik; wenig Erfahrung."
+            },
+            "7": {
+              "meaning": "Hoch",
+              "criterion": "Bekannte Konstruktion in neuem Einsatzfall."
+            },
+            "6": {
+              "meaning": "Mittel",
+              "criterion": "Ähnliche Konstruktion mit bekannten Problemen."
+            },
+            "5": {
+              "meaning": "Mittel",
+              "criterion": "Übernahme mit Änderungen; Vermeidung teilweise nachgewiesen."
+            },
+            "4": {
+              "meaning": "Mittel bis gering",
+              "criterion": "Nahezu identische Konstruktion; bewährte Vermeidung."
+            },
+            "3": {
+              "meaning": "Gering",
+              "criterion": "Geringe Änderung einer bewährten Konstruktion; Vermeidung erprobt."
+            },
+            "2": {
+              "meaning": "Sehr gering",
+              "criterion": "Bewährte Konstruktion; Vermeidung nachweislich wirksam."
+            },
+            "1": {
+              "meaning": "Extrem gering",
+              "criterion": "Fehler durch die Konstruktion ausgeschlossen."
+            }
+          },
+          "det": {
+            "10": {
+              "meaning": "Keine Entdeckung",
+              "criterion": "Kein Test- oder Prüfverfahren vorhanden."
+            },
+            "9": {
+              "meaning": "Sehr gering",
+              "criterion": "Prüfverfahren nicht auf diesen Fehler ausgelegt."
+            },
+            "8": {
+              "meaning": "Gering",
+              "criterion": "Neues, unerprobtes Testverfahren."
+            },
+            "7": {
+              "meaning": "Gering",
+              "criterion": "Erprobtes Verfahren; Test erst nach der Serienfreigabe."
+            },
+            "6": {
+              "meaning": "Mittel",
+              "criterion": "Erprobtes Verfahren vor der Serienfreigabe; Gut/Schlecht-Test."
+            },
+            "5": {
+              "meaning": "Mittel",
+              "criterion": "Erprobtes Verfahren vor der Serienfreigabe; Test bis zum Ausfall."
+            },
+            "4": {
+              "meaning": "Hoch",
+              "criterion": "Erprobtes Verfahren vor der Serienfreigabe; Degradationstest."
+            },
+            "3": {
+              "meaning": "Hoch",
+              "criterion": "Erprobtes Verfahren früh in der Entwicklung; Gut/Schlecht-Test."
+            },
+            "2": {
+              "meaning": "Sehr hoch",
+              "criterion": "Erprobtes Verfahren früh in der Entwicklung; Test bis Ausfall oder Degradation."
+            },
+            "1": {
+              "meaning": "Sicher",
+              "criterion": "Fehler ausgeschlossen oder wird durch die Methode immer erkannt."
+            }
+          }
+        }
+      },
       "sortedByRPN": "Nach RPN sortiert (absteigend)",
       "reset": "Reset",
       "resetConfirm": "Alle Risiken löschen?",

@@ -7,6 +7,7 @@
         <button class="btn btn--sm btn--ghost" data-action="reset-scales" type="button" @click="resetScales()" x-text="t('resetScales')"></button>
       </div>
 
+      <div data-ref="rpn-scales" x-show="!isAp()">
       <h3 x-text="t('scaleSeverity')"></h3>
       <table class="dmike-table dmike-table--head-mono">
         <thead><tr>
@@ -61,6 +62,50 @@
         <div class="fmea__legend-item"><div class="fmea__legend-dot fmea__legend-dot--medium"></div> 50–124 <span x-text="t('catMedium')"></span></div>
         <div class="fmea__legend-item"><div class="fmea__legend-dot fmea__legend-dot--high"></div> 125–200 <span x-text="t('catHigh')"></span></div>
         <div class="fmea__legend-item"><div class="fmea__legend-dot fmea__legend-dot--critical"></div> &gt; 200 <span x-text="t('catCritical')"></span></div>
+      </div>
+      </div>
+
+      <div class="fmea__ap-scales" data-ref="ap-scales" x-show="isAp()">
+        <template x-for="dim in apDims" :key="dim">
+          <div>
+            <h3 x-text="t(apDimTitle(dim))"></h3>
+            <table class="dmike-table dmike-table--head-mono" :data-ap-scale="dim">
+              <thead><tr>
+                <th x-text="t('scaleValue')"></th>
+                <th x-text="t('scaleMeaning')"></th>
+                <th x-text="t('apScaleCriterion')"></th>
+              </tr></thead>
+              <tbody>
+                <template x-for="row in apScaleRows(dim)" :key="row.key">
+                  <tr>
+                    <td x-text="row.value"></td>
+                    <td contenteditable="true" class="fmea__scale-editable" :data-scale="row.meaningKey" @blur="scaleEdited(row.meaningKey, $event)" x-text="scaleText(row.meaningKey)"></td>
+                    <td contenteditable="true" class="fmea__scale-editable" :data-scale="row.criterionKey" @blur="scaleEdited(row.criterionKey, $event)" x-text="scaleText(row.criterionKey)"></td>
+                  </tr>
+                </template>
+              </tbody>
+            </table>
+          </div>
+        </template>
+
+        <h3 x-text="t('apMatrixTitle')"></h3>
+        <table class="dmike-table dmike-table--head-mono fmea__ap-matrix" data-ref="ap-matrix">
+          <thead><tr>
+            <th>S</th><th>O</th>
+            <template x-for="d in apDBandLabels()" :key="d"><th x-text="'D ' + d"></th></template>
+          </tr></thead>
+          <tbody>
+            <template x-for="row in apMatrixRows()" :key="row.key">
+              <tr>
+                <td x-text="row.s"></td>
+                <td x-text="row.o"></td>
+                <template x-for="cell in row.cells" :key="cell.key">
+                  <td class="fmea__ap-cell" :class="'fmea__ap-cell--' + cell.cat" x-text="cell.ap"></td>
+                </template>
+              </tr>
+            </template>
+          </tbody>
+        </table>
       </div>
     </div>
 

@@ -3462,6 +3462,266 @@
       "statApMedium": "AP medium (M)",
       "statApLow": "AP low (L)",
       "statRated": "Rated",
+      "apScaleCriterion": "Criterion",
+      "apMatrixTitle": "Action Priority (AIAG-VDA)",
+      "ap": {
+        "process": {
+          "sev": {
+            "10": {
+              "meaning": "Safety at risk",
+              "criterion": "Danger to the health or safety of workers or end users."
+            },
+            "9": {
+              "meaning": "Regulatory breach",
+              "criterion": "Legal or regulatory requirements are not met."
+            },
+            "8": {
+              "meaning": "Primary function lost",
+              "criterion": "Product without its primary function; full scrap or line stop at the customer."
+            },
+            "7": {
+              "meaning": "Primary function degraded",
+              "criterion": "Primary function reduced; sorting and partial scrap."
+            },
+            "6": {
+              "meaning": "Secondary function lost",
+              "criterion": "Comfort or secondary function fails; off-line rework."
+            },
+            "5": {
+              "meaning": "Secondary function degraded",
+              "criterion": "Secondary function reduced; rework of part of the lot."
+            },
+            "4": {
+              "meaning": "Clearly noticeable",
+              "criterion": "Appearance or noise bothers most customers; in-line rework."
+            },
+            "3": {
+              "meaning": "Noticeable",
+              "criterion": "Bothers some customers; minor rework."
+            },
+            "2": {
+              "meaning": "Barely noticeable",
+              "criterion": "Only attentive customers notice; minor process disruption."
+            },
+            "1": {
+              "meaning": "No effect",
+              "criterion": "No discernible consequence."
+            }
+          },
+          "occ": {
+            "10": {
+              "meaning": "Extremely high",
+              "criterion": "No prevention control; the failure is practically certain."
+            },
+            "9": {
+              "meaning": "Very high",
+              "criterion": "Prevention barely effective; the failure occurs very often."
+            },
+            "8": {
+              "meaning": "High",
+              "criterion": "Prevention of little effect; the failure occurs often."
+            },
+            "7": {
+              "meaning": "High",
+              "criterion": "Prevention of limited effect; the failure recurs."
+            },
+            "6": {
+              "meaning": "Moderate",
+              "criterion": "Prevention partly effective; the failure occurs occasionally."
+            },
+            "5": {
+              "meaning": "Moderate",
+              "criterion": "Prevention effective; the failure occurs sporadically."
+            },
+            "4": {
+              "meaning": "Moderate to low",
+              "criterion": "Prevention effective and proven; the failure is rare."
+            },
+            "3": {
+              "meaning": "Low",
+              "criterion": "Proven prevention; the failure is very rare."
+            },
+            "2": {
+              "meaning": "Very low",
+              "criterion": "Prevention per proven standard; isolated cases only."
+            },
+            "1": {
+              "meaning": "Extremely low",
+              "criterion": "Failure prevented by design of the process, e.g. poka-yoke."
+            }
+          },
+          "det": {
+            "10": {
+              "meaning": "No detection",
+              "criterion": "No inspection in place or inspection unsuitable."
+            },
+            "9": {
+              "meaning": "Very low",
+              "criterion": "Inspection barely suitable; random sampling."
+            },
+            "8": {
+              "meaning": "Low",
+              "criterion": "Effectiveness of the inspection method not proven."
+            },
+            "7": {
+              "meaning": "Low",
+              "criterion": "Manual visual or audible inspection, of limited reliability."
+            },
+            "6": {
+              "meaning": "Moderate",
+              "criterion": "Manual inspection with aids, e.g. a gauge."
+            },
+            "5": {
+              "meaning": "Moderate",
+              "criterion": "Proven manual or machine inspection after the process step."
+            },
+            "4": {
+              "meaning": "High",
+              "criterion": "Automatic inspection downstream; the defective part is rejected."
+            },
+            "3": {
+              "meaning": "High",
+              "criterion": "Automatic inspection in the process step; the defective part is rejected."
+            },
+            "2": {
+              "meaning": "Very high",
+              "criterion": "The cause is detected automatically; no defective part is made."
+            },
+            "1": {
+              "meaning": "Certain",
+              "criterion": "The failure cannot occur or is always detected."
+            }
+          }
+        },
+        "design": {
+          "sev": {
+            "10": {
+              "meaning": "Safety at risk",
+              "criterion": "Safe operation impaired; danger to people."
+            },
+            "9": {
+              "meaning": "Regulatory breach",
+              "criterion": "Product does not meet legal or regulatory requirements."
+            },
+            "8": {
+              "meaning": "Primary function lost",
+              "criterion": "Product unusable for its intended purpose."
+            },
+            "7": {
+              "meaning": "Primary function degraded",
+              "criterion": "Product usable, performance clearly reduced."
+            },
+            "6": {
+              "meaning": "Secondary function lost",
+              "criterion": "Product usable, comfort function fails."
+            },
+            "5": {
+              "meaning": "Secondary function degraded",
+              "criterion": "Product usable, comfort function reduced."
+            },
+            "4": {
+              "meaning": "Very annoying",
+              "criterion": "Appearance, noise or feel bothers most customers."
+            },
+            "3": {
+              "meaning": "Annoying",
+              "criterion": "Appearance, noise or feel bothers many customers."
+            },
+            "2": {
+              "meaning": "Slightly annoying",
+              "criterion": "Only a few attentive customers notice."
+            },
+            "1": {
+              "meaning": "No effect",
+              "criterion": "No perceptible consequence."
+            }
+          },
+          "occ": {
+            "10": {
+              "meaning": "Extremely high",
+              "criterion": "New technology without experience; no prevention."
+            },
+            "9": {
+              "meaning": "Very high",
+              "criterion": "First use of a new design; prevention not aimed at the requirement."
+            },
+            "8": {
+              "meaning": "High",
+              "criterion": "New design based on similar technology; little experience."
+            },
+            "7": {
+              "meaning": "High",
+              "criterion": "Known design in a new application."
+            },
+            "6": {
+              "meaning": "Moderate",
+              "criterion": "Similar design with known problems."
+            },
+            "5": {
+              "meaning": "Moderate",
+              "criterion": "Carry-over with changes; prevention partly proven."
+            },
+            "4": {
+              "meaning": "Moderate to low",
+              "criterion": "Nearly identical design; proven prevention."
+            },
+            "3": {
+              "meaning": "Low",
+              "criterion": "Minor change to a proven design; prevention tested."
+            },
+            "2": {
+              "meaning": "Very low",
+              "criterion": "Proven design; prevention demonstrably effective."
+            },
+            "1": {
+              "meaning": "Extremely low",
+              "criterion": "Failure excluded by the design."
+            }
+          },
+          "det": {
+            "10": {
+              "meaning": "No detection",
+              "criterion": "No test or inspection method in place."
+            },
+            "9": {
+              "meaning": "Very low",
+              "criterion": "Test method not designed for this failure."
+            },
+            "8": {
+              "meaning": "Low",
+              "criterion": "New, unproven test method."
+            },
+            "7": {
+              "meaning": "Low",
+              "criterion": "Proven method; test only after production release."
+            },
+            "6": {
+              "meaning": "Moderate",
+              "criterion": "Proven method before production release; pass/fail test."
+            },
+            "5": {
+              "meaning": "Moderate",
+              "criterion": "Proven method before production release; test to failure."
+            },
+            "4": {
+              "meaning": "High",
+              "criterion": "Proven method before production release; degradation test."
+            },
+            "3": {
+              "meaning": "High",
+              "criterion": "Proven method early in development; pass/fail test."
+            },
+            "2": {
+              "meaning": "Very high",
+              "criterion": "Proven method early in development; test to failure or degradation."
+            },
+            "1": {
+              "meaning": "Certain",
+              "criterion": "Failure excluded or always detected by the method."
+            }
+          }
+        }
+      },
       "sortedByRPN": "Sorted by RPN (descending)",
       "reset": "Reset",
       "resetConfirm": "Delete all risks?",

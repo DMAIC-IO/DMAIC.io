@@ -17,6 +17,7 @@ import { h } from '../../core/dom.js';
 import { resolveDateOffset } from '../../core/date-offset.js';
 import { draggablePopout } from '../../ui/draggable-popout.js';
 import { State, METHODS, FMEA_TYPES, rpnCategory } from './fmea-model.js';
+import { S_BANDS, O_BANDS, D_BANDS, AP_TABLE, AP_CATEGORY, bandLabel } from './fmea-ap.js';
 
 /** Map a 1–10 rating to its scale-row index (0–4). */
 function scaleRow(v) {
@@ -223,18 +224,66 @@ const mod = createModule({
         return RATE_KEYS.has(key) ? (RATE_DEFAULTS[key] || '') : _t(key);
       },
 
+      // ── AP scale reference ────────────────────────────────────
+
+      apDims: ['sev', 'occ', 'det'],
+
+      /** @param {'sev'|'occ'|'det'} dim @returns {string} i18n key of the table heading */
+      apDimTitle(dim) {
+        return { sev: 'scaleSeverity', occ: 'scaleOccurrence', det: 'scaleDetection' }[dim];
+      },
+
+      /** Rows 10 → 1 of one AP scale for the active FMEA type. */
+      apScaleRows(dim) {
+        const rows = [];
+        for (let v = 10; v >= 1; v--) {
+          const base = `ap.${this.model.fmeaType}.${dim}.${v}`;
+          rows.push({ key: base, value: v, meaningKey: `${base}.meaning`, criterionKey: `${base}.criterion` });
+        }
+        return rows;
+      },
+
+      /** @returns {string[]} column labels of the AP matrix (D bands) */
+      apDBandLabels() { return D_BANDS.map(bandLabel); },
+
+      /** AP lookup matrix: one row per S band × O band; S 1 collapsed into one row. */
+      apMatrixRows() {
+        const rows = [];
+        S_BANDS.forEach((sb, si) => {
+          if (sb[0] === 1) {
+            rows.push({ key: 's1', s: '1', o: '1–10',
+              cells: D_BANDS.map((_, di) => ({ key: `s1-${di}`, ap: 'L', cat: AP_CATEGORY.L })) });
+            return;
+          }
+          O_BANDS.forEach((ob, oi) => {
+            rows.push({ key: `${si}-${oi}`, s: bandLabel(sb), o: bandLabel(ob),
+              cells: [...AP_TABLE[si][oi]].map((ap, di) => ({ key: `${si}-${oi}-${di}`, ap, cat: AP_CATEGORY[ap] })) });
+          });
+        });
+        return rows;
+      },
+
+      /** Tooltip text for rating v of one dimension in AP mode. */
+      _apTitle(dim, v) {
+        const base = `ap.${this.model.fmeaType}.${dim}.${v}`;
+        return `${this.scaleText(`${base}.meaning`)} – ${this.scaleText(`${base}.criterion`)}`;
+      },
+
       /** Tooltip labels for the S/O/D <option>s (combined meaning + detail). */
       sevTitle(v) {
+        if (this.isAp()) return this._apTitle('sev', v);
         const row = scaleRow(v);
         const k = ['sevNone', 'sevLow', 'sevMod', 'sevHigh', 'sevVHigh'][row];
         return `${this.scaleText(k)  } – ${  this.scaleText(`${k  }Desc`)}`;
       },
       occTitle(v) {
+        if (this.isAp()) return this._apTitle('occ', v);
         const row = scaleRow(v);
         const k = ['occUnlikely', 'occLow', 'occMod', 'occHigh', 'occVHigh'][row];
         return `${this.scaleText(k)  } (${  this.scaleText(`${k  }Rate`)  })`;
       },
       detTitle(v) {
+        if (this.isAp()) return this._apTitle('det', v);
         const row = scaleRow(v);
         const k = ['detCertain', 'detHigh', 'detMod', 'detLow', 'detVLow'][row];
         return `${this.scaleText(k)  } – ${  this.scaleText(`${k  }Desc`)}`;
