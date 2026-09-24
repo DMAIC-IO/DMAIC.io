@@ -3,6 +3,46 @@
    BEM: .fmea__ prefix
    ============================================================ */
 
+/* Category colours — single source for cards, badges, stats, legend, AP matrix. */
+.fmea {
+  --fmea-cat-critical: var(--color-error);
+  --fmea-cat-high: #fb923c;
+  --fmea-cat-medium: #fbbf24;
+  --fmea-cat-low: var(--color-success);
+  --fmea-cat-none: var(--color-text-tertiary);
+}
+
+.fmea__settings {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-md);
+}
+
+.fmea__settings-group {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+.fmea__settings-label {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+}
+
+.fmea__secondary-rpn {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+}
+
+.fmea__stat-icon--total  { background: color-mix(in srgb, var(--color-accent) 12%, transparent); color: var(--color-accent); }
+.fmea__stat-icon--critical { background: color-mix(in srgb, var(--fmea-cat-critical) 12%, transparent); color: var(--fmea-cat-critical); }
+.fmea__stat-icon--high   { background: color-mix(in srgb, var(--fmea-cat-high) 12%, transparent); color: var(--fmea-cat-high); }
+.fmea__stat-icon--medium { background: color-mix(in srgb, var(--fmea-cat-medium) 12%, transparent); color: var(--fmea-cat-medium); }
+.fmea__stat-icon--low    { background: color-mix(in srgb, var(--fmea-cat-low) 12%, transparent); color: var(--fmea-cat-low); }
+.fmea__stat-icon--neutral { background: color-mix(in srgb, var(--color-text-secondary) 8%, transparent); color: var(--color-text-secondary); }
+
 /* ===== Stats Strip ===== */
 .fmea__stats {
   display: flex;
@@ -67,10 +107,10 @@
   border-color: var(--color-border-primary);
 }
 
-.fmea__risk-card--critical { border-left: 3px solid var(--color-error); }
-.fmea__risk-card--high     { border-left: 3px solid var(--color-warning, #FB923C); }
-.fmea__risk-card--medium   { border-left: 3px solid var(--color-warning-text, #FBBF24); }
-.fmea__risk-card--low      { border-left: 3px solid var(--color-success, #34D399); }
+.fmea__risk-card--critical { border-left: 3px solid var(--fmea-cat-critical); }
+.fmea__risk-card--high     { border-left: 3px solid var(--fmea-cat-high); }
+.fmea__risk-card--medium   { border-left: 3px solid var(--fmea-cat-medium); }
+.fmea__risk-card--low      { border-left: 3px solid var(--fmea-cat-low); }
 
 /* ── Risk Header ── */
 .fmea__risk-header {
@@ -160,11 +200,11 @@
   padding: var(--spacing-2xs) var(--spacing-m);
 }
 
-.fmea__rpn-badge--low      { background: rgb(52 211 153 / 10%);  color: var(--color-success, #34D399); }
-.fmea__rpn-badge--medium   { background: rgb(251 191 36 / 10%);  color: #FBBF24; }
-.fmea__rpn-badge--high     { background: rgb(251 146 60 / 10%);  color: #FB923C; }
-.fmea__rpn-badge--critical { background: rgb(239 68 68 / 15%);  color: var(--color-error); }
-.fmea__rpn-badge--none     { background: rgb(255 255 255 / 3%); color: var(--color-text-tertiary); }
+.fmea__rpn-badge--low      { background: color-mix(in srgb, var(--fmea-cat-low) 10%, transparent); color: var(--fmea-cat-low); }
+.fmea__rpn-badge--medium   { background: color-mix(in srgb, var(--fmea-cat-medium) 10%, transparent); color: var(--fmea-cat-medium); }
+.fmea__rpn-badge--high     { background: color-mix(in srgb, var(--fmea-cat-high) 10%, transparent); color: var(--fmea-cat-high); }
+.fmea__rpn-badge--critical { background: color-mix(in srgb, var(--fmea-cat-critical) 15%, transparent); color: var(--fmea-cat-critical); }
+.fmea__rpn-badge--none     { background: color-mix(in srgb, var(--color-text-primary) 3%, transparent); color: var(--fmea-cat-none); }
 
 .fmea__risk-delete {
   background: none;
@@ -430,3 +470,8 @@
   border-radius: 50%;
   flex-shrink: 0;
 }
+
+.fmea__legend-dot--critical { background: var(--fmea-cat-critical); }
+.fmea__legend-dot--high     { background: var(--fmea-cat-high); }
+.fmea__legend-dot--medium   { background: var(--fmea-cat-medium); }
+.fmea__legend-dot--low      { background: var(--fmea-cat-low); }

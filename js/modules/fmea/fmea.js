@@ -16,7 +16,7 @@ import { createModule } from '../../core/template-module.js';
 import { h } from '../../core/dom.js';
 import { resolveDateOffset } from '../../core/date-offset.js';
 import { draggablePopout } from '../../ui/draggable-popout.js';
-import { State, RPN_CRITICAL, RPN_HIGH, RPN_MEDIUM } from './fmea-model.js';
+import { State, METHODS, FMEA_TYPES, rpnCategory } from './fmea-model.js';
 
 /** Map a 1–10 rating to its scale-row index (0–4). */
 function scaleRow(v) {
@@ -39,24 +39,6 @@ const RATE_DEFAULTS = {
 /** Keys that have no i18n entry — only the hardcoded rate defaults above. */
 const RATE_KEYS = new Set(Object.keys(RATE_DEFAULTS));
 
-/** RPN badge CSS class for a value. */
-function rpnBadgeClass(v) {
-  if (!v) return 'fmea__rpn-badge--none';
-  if (v > RPN_CRITICAL) return 'fmea__rpn-badge--critical';
-  if (v >= RPN_HIGH) return 'fmea__rpn-badge--high';
-  if (v >= RPN_MEDIUM) return 'fmea__rpn-badge--medium';
-  return 'fmea__rpn-badge--low';
-}
-
-/** Card-glow CSS class for a value. */
-function cardGlowClass(v) {
-  if (!v) return '';
-  if (v > RPN_CRITICAL) return 'fmea__risk-card--critical';
-  if (v >= RPN_HIGH) return 'fmea__risk-card--high';
-  if (v >= RPN_MEDIUM) return 'fmea__risk-card--medium';
-  return 'fmea__risk-card--low';
-}
-
 // ── Dashboard-tile helpers (static; render from persisted state) ──────────
 const RPN_CAT_COLOR = {
   critical: 'var(--color-error)',
@@ -64,13 +46,6 @@ const RPN_CAT_COLOR = {
   medium:   'var(--color-info)',
   low:      'var(--color-success)',
   none:     'var(--color-text-tertiary)',
-};
-const rpnCategory = (rpn) => {
-  if (!rpn) return 'none';
-  if (rpn > RPN_CRITICAL) return 'critical';
-  if (rpn >= RPN_HIGH) return 'high';
-  if (rpn >= RPN_MEDIUM) return 'medium';
-  return 'low';
 };
 const rpnCatColor = (cat) => RPN_CAT_COLOR[cat] || RPN_CAT_COLOR.none;
 
@@ -98,12 +73,12 @@ const mod = createModule({
     engine: 'alpine',
     phase: 'analyze',
     icon: 'module.fmea',
-    version: '1.1.0',
+    version: '1.2.0',
     meta: import.meta,
     actions: [
       { icon: 'action.glossary', title: 'scales', onClick: (d) => d.toggleScale() },
       { icon: 'chart.run-chart', title: 'burndown', onClick: (d) => d.showBurndown() },
-      { icon: 'nav.expand-down', title: 'sortByRPN', onClick: (d) => d.sortByRPN() },
+      { icon: 'nav.expand-down', title: 'sortByPriority', onClick: (d) => d.sortByPriority() },
       { icon: 'action.download', title: 'export.label', children: [
         { icon: 'format.csv', title: 'export.csv', onClick: (d) => d.exportCSV() },
       ] },
@@ -197,17 +172,37 @@ const mod = createModule({
 
       // ── View transformations (CSS / i18n / formatting) ────────
 
-      rpnBadgeClass,
       riskNum: (i) => `R-${  String(i + 1).padStart(3, '0')}`,
       rpnText: (v) => v ? (`RPN ${  v}`) : 'RPN —',
       addActionLabel: () => `＋ ${  _t('addAction')}`,
       targetText: (v) => v ? (`${_t('target')  } ${  v}`) : (`${_t('target')  } —`),
 
+      /** @returns {boolean} true when the FMEA is rated by action priority */
+      isAp() { return this.model.method === 'ap'; },
+      /** @returns {boolean} true for a design FMEA */
+      isDesign() { return this.model.fmeaType === 'design'; },
+      /** @param {string} m 'ap' | 'rpn' */
+      setMethod(m) { if (METHODS.includes(m)) this.model.method = m; },
+      /** @param {string} type 'process' | 'design' */
+      setFmeaType(type) { if (FMEA_TYPES.includes(type)) this.model.fmeaType = type; },
+
+      badgeClass(risk) { return `fmea__rpn-badge--${this.model.rating().category(risk)}`; },
+      projBadgeClass(risk) { return `fmea__rpn-badge--${this.model.rating().projCategory(risk)}`; },
+      /** Main badge: 'AP H' in AP mode, 'RPN 504' in RPN mode. */
+      badgeText(risk) { return this.isAp() ? `AP ${risk.ap() || '—'}` : this.rpnText(risk.rpn()); },
+      /** Header target badge: 'Target AP M' / 'Target 120'. */
+      projBadgeText(risk) {
+        return this.isAp() ? `${_t('target')} AP ${risk.projAp() || '—'}` : this.targetText(risk.projRpn());
+      },
+      /** Projected-bar badge: 'AP M' / 'RPN 120'. */
+      projValueText(risk) { return this.isAp() ? `AP ${risk.projAp() || '—'}` : this.rpnText(risk.projRpn()); },
+
       /** Combined card class: glow tier + collapsed marker. */
       cardClass(risk) {
-        const glow = cardGlowClass(risk.rpn());
+        const cat = this.model.rating().category(risk);
+        const glow = cat === 'none' ? '' : `fmea__risk-card--${cat}`;
         const collapsed = risk.collapsed ? 'fmea__risk-card--collapsed' : '';
-        return (`${glow  } ${  collapsed}`).trim();
+        return (`${glow} ${collapsed}`).trim();
       },
 
       projSDisp: (risk) => risk.sev ? String(risk.projS()) : '—',
@@ -216,6 +211,7 @@ const mod = createModule({
 
       statAvg() { const a = this.model.stats().avg; return a == null ? '—' : String(a); },
       statMax() { const m = this.model.stats().max; return m ? String(m) : '—'; },
+      statRated() { const st = this.model.stats(); return String(st.rated ?? 0); },
 
       stats() { return this.model.stats(); },
 
@@ -254,9 +250,9 @@ const mod = createModule({
       toggleScale() { this.scaleVisible = !this.scaleVisible; },
       resetScales() { this.model.resetScales(); },
 
-      sortByRPN() {
-        this.model.sortByRPN();
-        module._context.notify?.(_t('sortedByRPN'));
+      sortByPriority() {
+        this.model.sortByPriority();
+        module._context.notify?.(_t(this.isAp() ? 'sortedByAP' : 'sortedByRPN'));
       },
 
       /** Persist an edited contenteditable scale cell back to the model. */

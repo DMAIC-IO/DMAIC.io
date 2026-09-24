@@ -57,41 +57,63 @@
 
       <h3 x-text="t('rpnCategories')"></h3>
       <div class="fmea__legend-grid">
-        <div class="fmea__legend-item"><div class="fmea__legend-dot" style="background:var(--color-success, #34D399)"></div> &lt; 50 <span x-text="t('catLow')"></span></div>
-        <div class="fmea__legend-item"><div class="fmea__legend-dot" style="background:#FBBF24"></div> 50–124 <span x-text="t('catMedium')"></span></div>
-        <div class="fmea__legend-item"><div class="fmea__legend-dot" style="background:#FB923C"></div> 125–200 <span x-text="t('catHigh')"></span></div>
-        <div class="fmea__legend-item"><div class="fmea__legend-dot" style="background:var(--color-error)"></div> &gt; 200 <span x-text="t('catCritical')"></span></div>
+        <div class="fmea__legend-item"><div class="fmea__legend-dot fmea__legend-dot--low"></div> &lt; 50 <span x-text="t('catLow')"></span></div>
+        <div class="fmea__legend-item"><div class="fmea__legend-dot fmea__legend-dot--medium"></div> 50–124 <span x-text="t('catMedium')"></span></div>
+        <div class="fmea__legend-item"><div class="fmea__legend-dot fmea__legend-dot--high"></div> 125–200 <span x-text="t('catHigh')"></span></div>
+        <div class="fmea__legend-item"><div class="fmea__legend-dot fmea__legend-dot--critical"></div> &gt; 200 <span x-text="t('catCritical')"></span></div>
+      </div>
+    </div>
+
+    <!-- ── Settings: rating method + FMEA type ── -->
+    <div class="fmea__settings" data-ref="settings">
+      <div class="fmea__settings-group">
+        <span class="fmea__settings-label" x-text="t('methodLabel')"></span>
+        <div class="btn-group" role="group" :aria-label="t('methodLabel')">
+          <button type="button" class="btn--segment" data-method="ap" :class="isAp() ? 'btn--active' : ''" :aria-pressed="isAp() ? 'true' : 'false'" @click="setMethod('ap')" x-text="t('methodAp')"></button>
+          <button type="button" class="btn--segment" data-method="rpn" :class="isAp() ? '' : 'btn--active'" :aria-pressed="isAp() ? 'false' : 'true'" @click="setMethod('rpn')" x-text="t('methodRpn')"></button>
+        </div>
+      </div>
+      <div class="fmea__settings-group" data-ref="fmea-type-switch" x-show="isAp()">
+        <span class="fmea__settings-label" x-text="t('fmeaTypeLabel')"></span>
+        <div class="btn-group" role="group" :aria-label="t('fmeaTypeLabel')">
+          <button type="button" class="btn--segment" data-fmea-type="process" :class="isDesign() ? '' : 'btn--active'" :aria-pressed="isDesign() ? 'false' : 'true'" @click="setFmeaType('process')" x-text="t('fmeaTypeProcess')"></button>
+          <button type="button" class="btn--segment" data-fmea-type="design" :class="isDesign() ? 'btn--active' : ''" :aria-pressed="isDesign() ? 'true' : 'false'" @click="setFmeaType('design')" x-text="t('fmeaTypeDesign')"></button>
+        </div>
       </div>
     </div>
 
     <!-- ── Stats ── -->
     <div class="fmea__stats">
       <div class="fmea__stat-card">
-        <div class="fmea__stat-icon" style="background:rgba(74,124,255,0.12);color:var(--color-accent)">Σ</div>
+        <div class="fmea__stat-icon fmea__stat-icon--total">Σ</div>
         <div><div class="fmea__stat-value" data-stat="total" x-text="stats().total"></div><div class="fmea__stat-label" x-text="t('statTotal')"></div></div>
       </div>
-      <div class="fmea__stat-card">
-        <div class="fmea__stat-icon" style="background:rgba(239,68,68,0.12);color:var(--color-error)"><span class="icon icon--sm" data-icon="severity.critical" aria-hidden="true"></span></div>
+      <div class="fmea__stat-card" x-show="!isAp()">
+        <div class="fmea__stat-icon fmea__stat-icon--critical"><span class="icon icon--sm" data-icon="severity.critical" aria-hidden="true"></span></div>
         <div><div class="fmea__stat-value" data-stat="critical" x-text="stats().critical"></div><div class="fmea__stat-label" x-text="t('statCritical')"></div></div>
       </div>
       <div class="fmea__stat-card">
-        <div class="fmea__stat-icon" style="background:rgba(251,146,60,0.12);color:#FB923C"><span class="icon icon--sm" data-icon="severity.high" aria-hidden="true"></span></div>
-        <div><div class="fmea__stat-value" data-stat="high" x-text="stats().high"></div><div class="fmea__stat-label" x-text="t('statHigh')"></div></div>
+        <div class="fmea__stat-icon fmea__stat-icon--high"><span class="icon icon--sm" data-icon="severity.high" aria-hidden="true"></span></div>
+        <div><div class="fmea__stat-value" data-stat="high" x-text="stats().high"></div><div class="fmea__stat-label" x-text="t(isAp() ? 'statApHigh' : 'statHigh')"></div></div>
       </div>
       <div class="fmea__stat-card">
-        <div class="fmea__stat-icon" style="background:rgba(251,191,36,0.12);color:#FBBF24"><span class="icon icon--sm" data-icon="severity.medium" aria-hidden="true"></span></div>
-        <div><div class="fmea__stat-value" data-stat="medium" x-text="stats().medium"></div><div class="fmea__stat-label" x-text="t('statMedium')"></div></div>
+        <div class="fmea__stat-icon fmea__stat-icon--medium"><span class="icon icon--sm" data-icon="severity.medium" aria-hidden="true"></span></div>
+        <div><div class="fmea__stat-value" data-stat="medium" x-text="stats().medium"></div><div class="fmea__stat-label" x-text="t(isAp() ? 'statApMedium' : 'statMedium')"></div></div>
       </div>
       <div class="fmea__stat-card">
-        <div class="fmea__stat-icon" style="background:rgba(52,211,153,0.12);color:var(--color-success, #34D399)"><span class="icon icon--sm" data-icon="severity.low" aria-hidden="true"></span></div>
-        <div><div class="fmea__stat-value" data-stat="low" x-text="stats().low"></div><div class="fmea__stat-label" x-text="t('statLow')"></div></div>
+        <div class="fmea__stat-icon fmea__stat-icon--low"><span class="icon icon--sm" data-icon="severity.low" aria-hidden="true"></span></div>
+        <div><div class="fmea__stat-value" data-stat="low" x-text="stats().low"></div><div class="fmea__stat-label" x-text="t(isAp() ? 'statApLow' : 'statLow')"></div></div>
       </div>
-      <div class="fmea__stat-card">
-        <div class="fmea__stat-icon" style="background:rgba(255,255,255,0.04);color:var(--color-text-secondary)">Ø</div>
+      <div class="fmea__stat-card" x-show="isAp()">
+        <div class="fmea__stat-icon fmea__stat-icon--neutral"><span class="icon icon--sm" data-icon="action.confirm" aria-hidden="true"></span></div>
+        <div><div class="fmea__stat-value" data-stat="rated" x-text="statRated()"></div><div class="fmea__stat-label" x-text="t('statRated')"></div></div>
+      </div>
+      <div class="fmea__stat-card" x-show="!isAp()">
+        <div class="fmea__stat-icon fmea__stat-icon--neutral">Ø</div>
         <div><div class="fmea__stat-value" data-stat="avg" x-text="statAvg()"></div><div class="fmea__stat-label" x-text="t('statAvg')"></div></div>
       </div>
-      <div class="fmea__stat-card">
-        <div class="fmea__stat-icon" style="background:rgba(239,68,68,0.12);color:var(--color-error)"><span class="icon icon--sm" data-icon="nav.arrow-up" aria-hidden="true"></span></div>
+      <div class="fmea__stat-card" x-show="!isAp()">
+        <div class="fmea__stat-icon fmea__stat-icon--critical"><span class="icon icon--sm" data-icon="nav.arrow-up" aria-hidden="true"></span></div>
         <div><div class="fmea__stat-value" data-stat="max" x-text="statMax()"></div><div class="fmea__stat-label" x-text="t('statMax')"></div></div>
       </div>
     </div>
@@ -99,16 +121,17 @@
     <!-- ── Risk list ── -->
     <div class="fmea__risk-list" data-ref="risk-list">
       <template x-for="(risk, ri) in model.risks">
-        <div class="fmea__risk-card" :key="risk.id" :class="cardClass(risk)" :data-risk-id="risk.id" :data-rpn="risk.rpn()" :data-proj-rpn="risk.projRpn()">
+        <div class="fmea__risk-card" :key="risk.id" :class="cardClass(risk)" :data-risk-id="risk.id" :data-rpn="risk.rpn()" :data-ap="risk.ap() || ''" :data-proj-rpn="risk.projRpn()">
           <div class="fmea__risk-header">
             <span class="fmea__risk-number" data-action="toggle-collapse" :data-risk-id="risk.id" :title="t('collapseToggle')" @click="toggleCollapse(risk)">
               <span class="fmea__collapse-arrow icon icon--sm" :data-icon="risk.collapsed ? 'nav.expand-right' : 'nav.expand-down'" aria-hidden="true"></span> <span x-text="riskNum(ri)"></span>
             </span>
             <input class="fmea__risk-title" name="step" :placeholder="t('stepPlaceholder')" x-model="risk.step">
             <div class="fmea__rpn-header-group">
-              <span class="fmea__rpn-badge" :class="rpnBadgeClass(risk.rpn())" data-rpn-badge x-text="rpnText(risk.rpn())"></span>
+              <span class="fmea__rpn-badge" :class="badgeClass(risk)" data-rpn-badge x-text="badgeText(risk)"></span>
+              <span class="fmea__secondary-rpn" data-secondary-rpn x-show="isAp()" x-text="rpnText(risk.rpn())"></span>
               <span class="fmea__rpn-arrow-sep icon icon--sm" data-icon="nav.arrow-right" aria-hidden="true"></span>
-              <span class="fmea__rpn-badge fmea__rpn-badge--sm" :class="rpnBadgeClass(risk.projRpn())" data-proj-rpn-badge x-text="targetText(risk.projRpn())"></span>
+              <span class="fmea__rpn-badge fmea__rpn-badge--sm" :class="projBadgeClass(risk)" data-proj-rpn-badge x-text="projBadgeText(risk)"></span>
             </div>
             <button class="fmea__risk-delete" data-action="del-risk" :data-risk-id="risk.id" :title="t('common.delete')" :aria-label="t('common.delete')" @click="deleteRisk(risk.id)"><span class="icon icon--sm" data-icon="action.delete" aria-hidden="true"></span></button>
           </div>
@@ -254,7 +277,7 @@
               <span class="fmea__proj-item">O: <strong data-proj-o x-text="projODisp(risk)"></strong></span>
               <span class="fmea__proj-item">D: <strong data-proj-d x-text="projDDisp(risk)"></strong></span>
               <span class="fmea__proj-arrow icon icon--sm" data-icon="nav.arrow-right" aria-hidden="true"></span>
-              <span class="fmea__rpn-badge" :class="rpnBadgeClass(risk.projRpn())" data-proj-rpn x-text="rpnText(risk.projRpn())"></span>
+              <span class="fmea__rpn-badge" :class="projBadgeClass(risk)" data-proj-rpn x-text="projValueText(risk)"></span>
             </div>
           </div>
         </div>
