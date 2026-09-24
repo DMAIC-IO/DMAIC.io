@@ -12,7 +12,7 @@ export default {
         blocks: [
           {
             type: 'paragraph',
-            content: 'Das Arbeitsblatt ist die zentrale Datendrehscheibe von DMAIC.io. Hier werden alle Messwerte, Merkmale und Zwischenergebnisse abgelegt — vergleichbar mit einem Tabellenblatt in Excel oder Minitab. Alle Analyse-Module greifen lesend auf die Spalten dieses Arbeitsblatts zu.',
+            content: 'Das Arbeitsblatt ist die zentrale Datendrehscheibe von Qprovement. Hier werden alle Messwerte, Merkmale und Zwischenergebnisse abgelegt — vergleichbar mit einem Tabellenblatt in Excel oder Minitab. Alle Analyse-Module greifen lesend auf die Spalten dieses Arbeitsblatts zu.',
           },
           {
             type: 'definition',
@@ -41,7 +41,7 @@ export default {
         blocks: [
           {
             type: 'paragraph',
-            content: 'The worksheet is the central data hub of DMAIC.io. All measurements, attributes, and intermediate results live here — similar to a spreadsheet in Excel or Minitab. Every analysis module reads its columns from this worksheet.',
+            content: 'The worksheet is the central data hub of Qprovement. All measurements, attributes, and intermediate results live here — similar to a spreadsheet in Excel or Minitab. Every analysis module reads its columns from this worksheet.',
           },
           {
             type: 'definition',

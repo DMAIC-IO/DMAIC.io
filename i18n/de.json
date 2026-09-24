@@ -69,11 +69,11 @@
     "badge": "Nightly",
     "banner": "Nightly-Build · Funktionen können sich ändern, Daten gehen nach Updates möglicherweise verloren bzw. sind nicht mehr wieder herstellbar.",
     "modalTitle": "Willkommen in der Nightly-Spielwiese",
-    "modalBody": "Diese Version ist ein laufender Entwicklungsstand (\"Nightly\"). Funktionen können sich jederzeit ändern und nach einem Update können Ihre Daten in dieser Spielwiese nicht mehr lesbar oder wiederherstellbar sein. Für stabile Arbeit verwenden Sie bitte dmaic.io. Exporte regelmäßig sichern."
+    "modalBody": "Diese Version ist ein laufender Entwicklungsstand (\"Nightly\"). Funktionen können sich jederzeit ändern und nach einem Update können Ihre Daten in dieser Spielwiese nicht mehr lesbar oder wiederherstellbar sein. Für stabile Arbeit verwenden Sie bitte die aktuelle Release-Version. Exporte regelmäßig sichern."
   },
   "crossVersion": {
     "title": "Daten aus anderer Version gefunden",
-    "intro": "In diesem Browser liegen Projektdaten aus einer früheren DMAIC.io-Version. Möchten Sie sie in v{current} übernehmen?",
+    "intro": "In diesem Browser liegen Projektdaten aus einer früheren Qprovement-Version. Möchten Sie sie in v{current} übernehmen?",
     "projectsCount": "{count} Projekt(e)",
     "note": "Die Daten werden auf die aktuelle Version migriert. Die Originaldaten in der alten Version bleiben unverändert.",
     "takeover": "Übernehmen",
@@ -365,13 +365,13 @@
       "appBody": "Wenn Sie ein Projekt mit dem Zyklus „8D\" anlegen, zeigt die Kopfleiste elf Kacheln (Daten, D0…D8, Weitere). Project Charter, SIPOC und VOC liegen in D2, Five-Why und Ishikawa in D4, DOE und Regression in D5, Regelkarten in D6, FMEA in D7 und Lessons Learned in D8. Vorbereitung (D0) und Sofortmaßnahmen (D3) sind aktuell noch ohne dediziertes Modul — bis dort eigene Werkzeuge entstehen, können Sie die Todo-Liste in D1/D3 einsetzen, um Eintrittsprüfung und Containment-Maßnahmen zu dokumentieren."
     },
     "minitab": {
-      "intro": "Willkommen bei DMAIC.io! Diese Seite hilft Minitab-Nutzern beim Einstieg. Vieles wird Ihnen vertraut vorkommen — wir zeigen, wo Sie die gewohnten Funktionen wiederfinden und was bei uns anders organisiert ist.",
+      "intro": "Willkommen bei Qprovement! Diese Seite hilft Minitab-Nutzern beim Einstieg. Vieles wird Ihnen vertraut vorkommen — wir zeigen, wo Sie die gewohnten Funktionen wiederfinden und was bei uns anders organisiert ist.",
       "conceptsTitle": "Grundkonzepte im Vergleich",
-      "conceptsIntro": "Minitab arbeitet mit einem Projekt, das mehrere Worksheets enthält. DMAIC.io folgt einem ähnlichen Modell, ordnet die Arbeit aber zusätzlich entlang der DMAIC-Phasen (Define, Measure, Analyze, Improve, Control).",
+      "conceptsIntro": "Minitab arbeitet mit einem Projekt, das mehrere Worksheets enthält. Qprovement folgt einem ähnlichen Modell, ordnet die Arbeit aber zusätzlich entlang der DMAIC-Phasen (Define, Measure, Analyze, Improve, Control).",
       "mappingTitle": "Wo finde ich was?",
-      "mappingIntro": "Die folgende Tabelle zeigt typische Minitab-Menüpunkte und ihre Entsprechung in DMAIC.io.",
+      "mappingIntro": "Die folgende Tabelle zeigt typische Minitab-Menüpunkte und ihre Entsprechung in Qprovement.",
       "col1": "Minitab",
-      "col2": "DMAIC.io",
+      "col2": "Qprovement",
       "col3": "Hinweis",
       "row1a": "File → New Worksheet",
       "row1b": "Modul „Datenblatt\" (Daten-Bereich)",
@@ -398,7 +398,7 @@
       "row8b": "Module „MSA Typ 1\", „Gage R&R\" (Measure-Phase)",
       "row8c": "Typ-1- und Typ-2-Studien als eigenständige Module.",
       "workflowTitle": "Typischer Arbeitsablauf",
-      "workflowIntro": "Während Sie in Minitab meist direkt ein Worksheet öffnen und dann Analysen über das Stat-Menü starten, arbeiten Sie in DMAIC.io projektorientiert:",
+      "workflowIntro": "Während Sie in Minitab meist direkt ein Worksheet öffnen und dann Analysen über das Stat-Menü starten, arbeiten Sie in Qprovement projektorientiert:",
       "workflow1": "Legen Sie oben links ein neues Projekt an (oder öffnen Sie ein bestehendes).",
       "workflow2": "Wählen Sie die DMAIC-Phase, in der Sie arbeiten möchten (D, M, A, I, C).",
       "workflow3": "Fügen Sie über das Hamburger-Menü (☰) der Phasen-Kachel Module hinzu — jedes Modul ist ein Werkzeug (Datenblatt, Diagramm, Test, Charter, …).",
@@ -407,19 +407,19 @@
       "dataTitle": "Daten & Datenblatt",
       "dataBody": "Das Datenblatt-Modul verhält sich wie ein Minitab-Worksheet: Spalten mit Namen, Zellen per Tastatur editierbar, Copy/Paste zwischen Excel und dem Datenblatt. Import/Export von CSV und XLSX ist direkt im Modul verfügbar. Anders als in Minitab wählen Analyse-Module die Datenquelle explizit über einen Spaltenpicker aus — so ist jederzeit nachvollziehbar, welche Daten verwendet wurden.",
       "tipsTitle": "Tipps für den Umstieg",
-      "tip1": "Session-Fenster: In DMAIC.io gibt es kein klassisches Session-Fenster. Stattdessen erscheint jede Analyse im Output-Bereich des jeweiligen Moduls und bleibt dort erhalten, solange das Modul offen ist.",
+      "tip1": "Session-Fenster: In Qprovement gibt es kein klassisches Session-Fenster. Stattdessen erscheint jede Analyse im Output-Bereich des jeweiligen Moduls und bleibt dort erhalten, solange das Modul offen ist.",
       "tip2": "Alles bleibt lokal: Ihre Projekte und Daten werden zunächst nur im Browser gespeichert (localStorage/IndexedDB) — es gibt keinen Server und keine Cloud. Damit bleiben die Daten vertraulich, können aber auch verloren gehen, wenn der Browser-Cache gelöscht wird, das Profil neu aufgesetzt wird oder Sie auf einen anderen Rechner wechseln. Sichern Sie Ihre Projekte deshalb regelmäßig über die Export-Schaltfläche oben in der Kopfleiste als JSON-Datei — dann können Sie sie jederzeit über „Importieren\" wiederherstellen.",
       "tip3": "Modul-Hilfe: Sobald ein Modul aktiv ist, erscheint oben rechts in der Kopfleiste — links neben diesem Schulungs-Symbol — ein Fragezeichen-Symbol. Ein Klick darauf öffnet eine modulspezifische Anleitung mit methodischen Hintergründen, Beispielen und typischen Fehlern. Das Symbol ist nur dann sichtbar, wenn für das aktive Modul eine Hilfe hinterlegt ist.",
       "tip4": "Validierung: Alle statistischen Algorithmen sind gegen Referenzwerte (Minitab, R, NIST) validiert. Im „Developing\"-Bereich finden Sie das Algorithm Lab mit Quellcode, Formeln und Testfällen."
     },
     "jmp": {
-      "intro": "Willkommen bei DMAIC.io! Wenn Sie aus JMP kommen, werden Sie viele Konzepte wiedererkennen — interaktive Diagramme, Spaltenrollen, ein zentrales Datentisch-Modell. Dieser Abschnitt zeigt, wo die gewohnten Analysen bei uns zu finden sind und was bewusst anders läuft.",
+      "intro": "Willkommen bei Qprovement! Wenn Sie aus JMP kommen, werden Sie viele Konzepte wiedererkennen — interaktive Diagramme, Spaltenrollen, ein zentrales Datentisch-Modell. Dieser Abschnitt zeigt, wo die gewohnten Analysen bei uns zu finden sind und was bewusst anders läuft.",
       "conceptsTitle": "Grundkonzepte im Vergleich",
-      "conceptsIntro": "JMP arbeitet mit einem Datentisch (data table) und startet Analysen über die Menüs „Analyze\" und „Graph\". DMAIC.io kennt ebenfalls zentrale Datenblätter, gruppiert die Werkzeuge aber zusätzlich entlang der DMAIC-Phasen (Define, Measure, Analyze, Improve, Control) statt über ein globales Analyse-Menü.",
+      "conceptsIntro": "JMP arbeitet mit einem Datentisch (data table) und startet Analysen über die Menüs „Analyze\" und „Graph\". Qprovement kennt ebenfalls zentrale Datenblätter, gruppiert die Werkzeuge aber zusätzlich entlang der DMAIC-Phasen (Define, Measure, Analyze, Improve, Control) statt über ein globales Analyse-Menü.",
       "mappingTitle": "Wo finde ich was?",
-      "mappingIntro": "Die folgende Tabelle zeigt typische JMP-Menüpunkte und ihre Entsprechung in DMAIC.io.",
+      "mappingIntro": "Die folgende Tabelle zeigt typische JMP-Menüpunkte und ihre Entsprechung in Qprovement.",
       "col1": "JMP",
-      "col2": "DMAIC.io",
+      "col2": "Qprovement",
       "col3": "Hinweis",
       "row1a": "File → New → Data Table",
       "row1b": "Modul „Datenblatt\" (Daten-Bereich)",
@@ -446,7 +446,7 @@
       "row8b": "Diagramme in den jeweiligen Analyse-Modulen",
       "row8c": "Kein freier Graph Builder — Diagramme entstehen im Kontext des Moduls, das sie auswertet.",
       "workflowTitle": "Typischer Arbeitsablauf",
-      "workflowIntro": "In JMP öffnen Sie einen Datentisch und starten dann Analysen aus dem Menü. DMAIC.io ist stärker projekt- und phasenorientiert:",
+      "workflowIntro": "In JMP öffnen Sie einen Datentisch und starten dann Analysen aus dem Menü. Qprovement ist stärker projekt- und phasenorientiert:",
       "workflow1": "Legen Sie oben links ein neues Projekt an (oder öffnen Sie ein bestehendes).",
       "workflow2": "Wählen Sie die DMAIC-Phase, in der Sie arbeiten möchten (D, M, A, I, C).",
       "workflow3": "Fügen Sie über das Hamburger-Menü (☰) der Phasen-Kachel Module hinzu — jedes Modul ist ein Werkzeug (Datenblatt, Diagramm, Test, Charter, …).",
@@ -455,10 +455,10 @@
       "dataTitle": "Daten & Datenblatt",
       "dataBody": "Das Datenblatt-Modul erfüllt die Rolle des JMP-Datentischs: Spalten mit Namen und Typ, Zellen per Tastatur editierbar, Copy/Paste aus Excel. CSV- und XLSX-Import/-Export sind direkt im Modul verfügbar. Spaltenrollen (X, Y, By, …) legen Sie nicht am Datenblatt selbst fest, sondern beim Öffnen eines Analyse-Moduls über den Spaltenpicker — so bleibt dasselbe Datenblatt für mehrere Analysen frei verwendbar.",
       "tipsTitle": "Tipps für den Umstieg",
-      "tip1": "Interaktive Diagramme: Diagramme in DMAIC.io sind zoom-, pan- und tooltip-fähig, aber nicht dynamisch verknüpft wie in JMP („row state\"). Gefilterte Ansichten erzeugt man durch explizite Auswahl im Analyse-Modul.",
+      "tip1": "Interaktive Diagramme: Diagramme in Qprovement sind zoom-, pan- und tooltip-fähig, aber nicht dynamisch verknüpft wie in JMP („row state\"). Gefilterte Ansichten erzeugt man durch explizite Auswahl im Analyse-Modul.",
       "tip2": "Alles bleibt lokal: Ihre Projekte und Daten werden zunächst nur im Browser gespeichert (localStorage/IndexedDB) — es gibt keinen Server und keine Cloud. Damit bleiben die Daten vertraulich, können aber auch verloren gehen, wenn der Browser-Cache gelöscht wird, das Profil neu aufgesetzt wird oder Sie auf einen anderen Rechner wechseln. Sichern Sie Ihre Projekte deshalb regelmäßig über die Export-Schaltfläche oben in der Kopfleiste als JSON-Datei — dann können Sie sie jederzeit über „Importieren\" wiederherstellen.",
       "tip3": "Modul-Hilfe: Sobald ein Modul aktiv ist, erscheint oben rechts in der Kopfleiste — links neben diesem Schulungs-Symbol — ein Fragezeichen-Symbol. Ein Klick darauf öffnet eine modulspezifische Anleitung mit methodischen Hintergründen, Beispielen und typischen Fehlern. Das Symbol ist nur dann sichtbar, wenn für das aktive Modul eine Hilfe hinterlegt ist.",
-      "tip4": "JSL & Skripting: DMAIC.io hat (noch) keine Skriptsprache wie JSL. Reproduzierbarkeit wird über den JSON-Export des gesamten Projekts erreicht — inklusive aller Modul-Zustände und Datenblätter."
+      "tip4": "JSL & Skripting: Qprovement hat (noch) keine Skriptsprache wie JSL. Reproduzierbarkeit wird über den JSON-Export des gesamten Projekts erreicht — inklusive aller Modul-Zustände und Datenblätter."
     },
     "triz": {
       "intro": "TRIZ (Theorie des erfinderischen Problemlösens, russ. „Teorija reschenija isobretatjelskich sadatsch“) ist eine systematische Innovationsmethodik, die der sowjetische Ingenieur Genrich Altschuller ab 1946 aus der Auswertung hunderttausender Patente entwickelt hat. Während DMAIC bestehende Prozesse verbessert, hilft TRIZ dabei, technische Widersprüche aufzulösen — also Situationen, in denen das Verbessern einer Eigenschaft eine andere bisher zwangsläufig verschlechterte.",
@@ -488,7 +488,7 @@
       "pitfall3": "TRIZ als reines Brainstorming-Add-on einsetzen. Ohne saubere Formulierung von Funktion, Idealität und Widerspruch reduziert sich TRIZ auf eine Liste von Stichworten und verliert seinen systematischen Vorteil.",
       "pitfall4": "Das Ideale Endergebnis im realen Entwurf zu verwässern. Die Stärke des IER liegt darin, dass es nicht erreichbar sein muss — es zeigt nur die Richtung. Wer es zu früh „realistisch“ macht, verliert genau diese Orientierung.",
       "appTitle": "TRIZ in dieser App",
-      "appBody": "DMAIC.io enthält zwei TRIZ-Werkzeuge in der Improve-Phase: das Modul „9 Fenster“ für die Systemanalyse über Hierarchie und Zeit sowie das Modul „Widerspruchsmatrix“ mit den 39 Parametern und 40 Prinzipien nach Altschuller. Beide Module speichern ihren Zustand im Projekt und lassen sich wie alle anderen Module per JSON exportieren und importieren. Du erreichst sie über das Hamburger-Menü (☰) der Improve-Kachel, oder per Drag & Drop aus dem „Weitere“-Tile in eine andere Phase, falls du TRIZ schon im Define- oder Analyze-Schritt einsetzen möchtest."
+      "appBody": "Qprovement enthält zwei TRIZ-Werkzeuge in der Improve-Phase: das Modul „9 Fenster“ für die Systemanalyse über Hierarchie und Zeit sowie das Modul „Widerspruchsmatrix“ mit den 39 Parametern und 40 Prinzipien nach Altschuller. Beide Module speichern ihren Zustand im Projekt und lassen sich wie alle anderen Module per JSON exportieren und importieren. Du erreichst sie über das Hamburger-Menü (☰) der Improve-Kachel, oder per Drag & Drop aus dem „Weitere“-Tile in eine andere Phase, falls du TRIZ schon im Define- oder Analyze-Schritt einsetzen möchtest."
     },
     "modules": {
       "intro": "Diese Übersicht zeigt, welche Module in welcher Phase eines Zyklus voreingestellt sind. Module, die im aktiven Zyklus keine Phasenzuordnung haben, landen in der „Weitere“-Kachel (⋯) und können von dort per Drag & Drop in eine beliebige Phase verschoben werden.",

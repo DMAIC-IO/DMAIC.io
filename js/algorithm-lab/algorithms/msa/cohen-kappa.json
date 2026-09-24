@@ -15,8 +15,8 @@
       "en": "{{term:cohen-kappa}} — agreement between two raters for categorical data, corrected for chance."
     },
     "long": {
-      "de": "Cohen κ vergleicht die beobachtete Übereinstimmung p_o mit der aus den Randverteilungen erwarteten Zufallsübereinstimmung p_e. κ = 1 → perfekte Übereinstimmung, κ = 0 → nur Zufall, κ < 0 → schlechter als Zufall. Grundbaustein aller {{term:kappa}}-Kennzahlen in DMAIC.io; wird in MSA Typ 5 paarweise für alle Prüferpaare berechnet und liefert das Fundament für {{term:fleiss-kappa}} und {{term:weighted-kappa}}. Die Standardfehler-Näherung nach Fleiss/Cohen/Everitt (1969) speist ein symmetrisches Wald-Konfidenzintervall.",
-      "en": "Cohen κ compares the observed agreement p_o with the chance agreement p_e derived from the marginal distributions. κ = 1 → perfect agreement, κ = 0 → chance, κ < 0 → worse than chance. Cornerstone of all {{term:kappa}} KPIs in DMAIC.io; MSA Type 5 computes it pairwise for every rater pair and it is the base for {{term:fleiss-kappa}} and {{term:weighted-kappa}}. The Fleiss/Cohen/Everitt (1969) SE approximation feeds a symmetric Wald confidence interval."
+      "de": "Cohen κ vergleicht die beobachtete Übereinstimmung p_o mit der aus den Randverteilungen erwarteten Zufallsübereinstimmung p_e. κ = 1 → perfekte Übereinstimmung, κ = 0 → nur Zufall, κ < 0 → schlechter als Zufall. Grundbaustein aller {{term:kappa}}-Kennzahlen in Qprovement; wird in MSA Typ 5 paarweise für alle Prüferpaare berechnet und liefert das Fundament für {{term:fleiss-kappa}} und {{term:weighted-kappa}}. Die Standardfehler-Näherung nach Fleiss/Cohen/Everitt (1969) speist ein symmetrisches Wald-Konfidenzintervall.",
+      "en": "Cohen κ compares the observed agreement p_o with the chance agreement p_e derived from the marginal distributions. κ = 1 → perfect agreement, κ = 0 → chance, κ < 0 → worse than chance. Cornerstone of all {{term:kappa}} KPIs in Qprovement; MSA Type 5 computes it pairwise for every rater pair and it is the base for {{term:fleiss-kappa}} and {{term:weighted-kappa}}. The Fleiss/Cohen/Everitt (1969) SE approximation feeds a symmetric Wald confidence interval."
     }
   },
 

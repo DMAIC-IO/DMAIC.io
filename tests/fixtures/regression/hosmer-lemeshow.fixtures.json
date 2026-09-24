@@ -30,7 +30,7 @@
       "id": "hl_standard_good_fit",
       "tier": "standard",
       "description": "Logistic model fitted values from dose-response data. Good fit → high p-value.",
-      "reference": "D.Mike glm-engine.js (fitted values from logistic regression)",
+      "reference": "Qprovement glm-engine.js (fitted values from logistic regression)",
       "tolerance_override": "grouping_sensitive",
       "inputs": {
         "yTrue": [
@@ -88,7 +88,7 @@
       "id": "hl_standard_poor_fit",
       "tier": "standard",
       "description": "Constant probability 0.5 for 50/50 split. Model predicts same for everyone → statistic significant.",
-      "reference": "D.Mike glm-engine.js",
+      "reference": "Qprovement glm-engine.js",
       "inputs": {
         "yTrue": [
           0,
@@ -147,7 +147,7 @@
       "id": "hl_standard_g5",
       "tier": "standard",
       "description": "Five groups with well-calibrated probabilities from multivariate logistic fit.",
-      "reference": "D.Mike glm-engine.js",
+      "reference": "Qprovement glm-engine.js",
       "tolerance_override": "grouping_sensitive",
       "inputs": {
         "yTrue": [
@@ -205,7 +205,7 @@
       "id": "hl_edge_small_n",
       "tier": "edge",
       "description": "n=10 with 5 groups. Sparse groups test χ² approximation limit.",
-      "reference": "D.Mike glm-engine.js",
+      "reference": "Qprovement glm-engine.js",
       "inputs": {
         "yTrue": [
           0,
@@ -244,7 +244,7 @@
       "id": "hl_edge_well_calibrated",
       "tier": "edge",
       "description": "Well-separated probabilities matching actual outcomes. Should show good fit.",
-      "reference": "D.Mike glm-engine.js",
+      "reference": "Qprovement glm-engine.js",
       "inputs": {
         "yTrue": [
           0,

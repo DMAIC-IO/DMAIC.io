@@ -69,11 +69,11 @@
     "badge": "Nightly",
     "banner": "Nightly build · Features may change at any time and data may be lost or unrecoverable after updates.",
     "modalTitle": "Welcome to the nightly playground",
-    "modalBody": "This is an in-progress development build (\"nightly\"). Features can change at any time and your data in this playground may become unreadable or unrecoverable after an update. For stable work, please use dmaic.io. Back up your exports regularly."
+    "modalBody": "This is an in-progress development build (\"nightly\"). Features can change at any time and your data in this playground may become unreadable or unrecoverable after an update. For stable work, please use the current release. Back up your exports regularly."
   },
   "crossVersion": {
     "title": "Data from another version found",
-    "intro": "Project data from a previous DMAIC.io version exists in this browser. Take it over into v{current}?",
+    "intro": "Project data from a previous Qprovement version exists in this browser. Take it over into v{current}?",
     "projectsCount": "{count} project(s)",
     "note": "The data is migrated to the current version. The original data in the old version stays untouched.",
     "takeover": "Take over",
@@ -365,13 +365,13 @@
       "appBody": "When you create a project with the \"8D\" cycle, the header shows eleven tiles (Data, D0…D8, More). Project Charter, SIPOC and VOC live in D2, Five-Why and Ishikawa in D4, DOE and Regression in D5, control charts in D6, FMEA in D7 and Lessons Learned in D8. Prepare (D0) and Containment (D3) currently lack dedicated modules — until those exist you can use the Todo list in D1/D3 to document entry checks and containment actions."
     },
     "minitab": {
-      "intro": "Welcome to DMAIC.io! This page helps Minitab users get started. A lot will feel familiar — below we show where to find your usual features and how things are organised differently here.",
+      "intro": "Welcome to Qprovement! This page helps Minitab users get started. A lot will feel familiar — below we show where to find your usual features and how things are organised differently here.",
       "conceptsTitle": "Core concepts compared",
-      "conceptsIntro": "Minitab works with a project that contains multiple worksheets. DMAIC.io follows a similar model but additionally organises work along the DMAIC phases (Define, Measure, Analyze, Improve, Control).",
+      "conceptsIntro": "Minitab works with a project that contains multiple worksheets. Qprovement follows a similar model but additionally organises work along the DMAIC phases (Define, Measure, Analyze, Improve, Control).",
       "mappingTitle": "Where do I find what?",
-      "mappingIntro": "The table below maps typical Minitab menu entries to their DMAIC.io equivalent.",
+      "mappingIntro": "The table below maps typical Minitab menu entries to their Qprovement equivalent.",
       "col1": "Minitab",
-      "col2": "DMAIC.io",
+      "col2": "Qprovement",
       "col3": "Note",
       "row1a": "File → New Worksheet",
       "row1b": "\"Worksheet\" module (Data area)",
@@ -398,7 +398,7 @@
       "row8b": "\"MSA Type 1\", \"Gage R&R\" modules (Measure phase)",
       "row8c": "Type-1 and Type-2 studies as standalone modules.",
       "workflowTitle": "A typical workflow",
-      "workflowIntro": "While in Minitab you usually open a worksheet and launch analyses from the Stat menu, DMAIC.io is project-oriented:",
+      "workflowIntro": "While in Minitab you usually open a worksheet and launch analyses from the Stat menu, Qprovement is project-oriented:",
       "workflow1": "Create a new project at the top left (or open an existing one).",
       "workflow2": "Pick the DMAIC phase you want to work in (D, M, A, I, C).",
       "workflow3": "Add modules to that phase via the hamburger menu (☰) on the phase tile — each module is a tool (worksheet, chart, test, charter, …).",
@@ -407,19 +407,19 @@
       "dataTitle": "Data & worksheet",
       "dataBody": "The worksheet module behaves like a Minitab worksheet: named columns, keyboard cell editing, copy/paste between Excel and the worksheet. CSV and XLSX import/export are available inside the module. Unlike Minitab, analysis modules pick their data source explicitly via a column picker — so you can always tell which data was used.",
       "tipsTitle": "Tips for the transition",
-      "tip1": "Session window: DMAIC.io has no classic session window. Each analysis appears in the output area of its module and stays there while the module is open.",
+      "tip1": "Session window: Qprovement has no classic session window. Each analysis appears in the output area of its module and stays there while the module is open.",
       "tip2": "Everything stays local: your projects and data are stored only in the browser (localStorage/IndexedDB) — there is no server and no cloud. That keeps them private, but it also means they can be lost if the browser cache is cleared, the profile is reset, or you switch to a different machine. Save your projects regularly via the Export button in the top header as a JSON file — you can restore them at any time through \"Import\".",
       "tip3": "Module help: as soon as a module is active, a question-mark icon appears in the top-right header — directly to the left of this training icon. Clicking it opens a module-specific guide with methodology, examples and common pitfalls. The icon is only visible when the active module has help content registered.",
       "tip4": "Validation: every statistical algorithm is validated against reference values (Minitab, R, NIST). The \"Developing\" area contains the Algorithm Lab with source code, formulas and test cases."
     },
     "jmp": {
-      "intro": "Welcome to DMAIC.io! Coming from JMP, a lot will feel familiar — interactive charts, column roles, a central data-table model. This section shows where to find your usual analyses and what is deliberately organised differently here.",
+      "intro": "Welcome to Qprovement! Coming from JMP, a lot will feel familiar — interactive charts, column roles, a central data-table model. This section shows where to find your usual analyses and what is deliberately organised differently here.",
       "conceptsTitle": "Core concepts compared",
-      "conceptsIntro": "JMP is built around a data table and launches analyses from the Analyze and Graph menus. DMAIC.io also has central worksheets, but groups its tools along the DMAIC phases (Define, Measure, Analyze, Improve, Control) rather than through a global analyse menu.",
+      "conceptsIntro": "JMP is built around a data table and launches analyses from the Analyze and Graph menus. Qprovement also has central worksheets, but groups its tools along the DMAIC phases (Define, Measure, Analyze, Improve, Control) rather than through a global analyse menu.",
       "mappingTitle": "Where do I find what?",
-      "mappingIntro": "The table below maps typical JMP menu entries to their DMAIC.io equivalent.",
+      "mappingIntro": "The table below maps typical JMP menu entries to their Qprovement equivalent.",
       "col1": "JMP",
-      "col2": "DMAIC.io",
+      "col2": "Qprovement",
       "col3": "Note",
       "row1a": "File → New → Data Table",
       "row1b": "\"Worksheet\" module (Data area)",
@@ -446,7 +446,7 @@
       "row8b": "Charts live inside the respective analysis modules",
       "row8c": "There is no free-form Graph Builder — charts are produced in the context of the module that analyses them.",
       "workflowTitle": "A typical workflow",
-      "workflowIntro": "In JMP you open a data table and launch analyses from the menu. DMAIC.io is more project- and phase-oriented:",
+      "workflowIntro": "In JMP you open a data table and launch analyses from the menu. Qprovement is more project- and phase-oriented:",
       "workflow1": "Create a new project at the top left (or open an existing one).",
       "workflow2": "Pick the DMAIC phase you want to work in (D, M, A, I, C).",
       "workflow3": "Add modules to that phase via the hamburger menu (☰) on the phase tile — each module is a tool (worksheet, chart, test, charter, …).",
@@ -455,10 +455,10 @@
       "dataTitle": "Data & worksheet",
       "dataBody": "The worksheet module plays the role of the JMP data table: named columns with types, keyboard cell editing, copy/paste from Excel. CSV and XLSX import/export are available inside the module. Column roles (X, Y, By, …) are not set on the worksheet itself but when you open an analysis module, via the column picker — so the same worksheet remains freely reusable across multiple analyses.",
       "tipsTitle": "Tips for the transition",
-      "tip1": "Interactive charts: charts in DMAIC.io support zoom, pan and tooltips, but they are not dynamically linked the way JMP \"row state\" connects views. Filtered views are produced by explicit selection inside the analysis module.",
+      "tip1": "Interactive charts: charts in Qprovement support zoom, pan and tooltips, but they are not dynamically linked the way JMP \"row state\" connects views. Filtered views are produced by explicit selection inside the analysis module.",
       "tip2": "Everything stays local: your projects and data are stored only in the browser (localStorage/IndexedDB) — there is no server and no cloud. That keeps them private, but it also means they can be lost if the browser cache is cleared, the profile is reset, or you switch to a different machine. Save your projects regularly via the Export button in the top header as a JSON file — you can restore them at any time through \"Import\".",
       "tip3": "Module help: as soon as a module is active, a question-mark icon appears in the top-right header — directly to the left of this training icon. Clicking it opens a module-specific guide with methodology, examples and common pitfalls. The icon is only visible when the active module has help content registered.",
-      "tip4": "JSL & scripting: DMAIC.io has no scripting language like JSL (yet). Reproducibility is achieved through the JSON export of the entire project — including every module state and worksheet."
+      "tip4": "JSL & scripting: Qprovement has no scripting language like JSL (yet). Reproducibility is achieved through the JSON export of the entire project — including every module state and worksheet."
     },
     "triz": {
       "intro": "TRIZ (Theory of Inventive Problem Solving, Russian \"Teoriya Resheniya Izobretatelskikh Zadach\") is a systematic innovation methodology that the Soviet engineer Genrich Altshuller developed from 1946 onwards by analysing hundreds of thousands of patents. While DMAIC improves existing processes, TRIZ helps resolve technical contradictions — situations where improving one property has so far inevitably worsened another.",
@@ -488,7 +488,7 @@
       "pitfall3": "Using TRIZ as a brainstorming add-on. Without a clean formulation of function, ideality and contradiction, TRIZ collapses into a list of buzzwords and loses its systematic edge.",
       "pitfall4": "Watering down the Ideal Final Result during the real design. The strength of the IFR is precisely that it does not have to be reachable — it only points the direction. Making it \"realistic\" too early destroys exactly that orientation.",
       "appTitle": "TRIZ in this app",
-      "appBody": "DMAIC.io contains two TRIZ tools in the Improve phase: the \"9 Windows\" module for system analysis across hierarchy and time, and the \"Contradiction Matrix\" module with the 39 parameters and 40 principles after Altshuller. Both modules persist their state inside the project and can be JSON-exported and re-imported like any other module. You reach them via the hamburger menu (☰) on the Improve tile, or by drag-and-dropping them from the \"More\" tile into another phase if you want to use TRIZ already in the Define or Analyze step."
+      "appBody": "Qprovement contains two TRIZ tools in the Improve phase: the \"9 Windows\" module for system analysis across hierarchy and time, and the \"Contradiction Matrix\" module with the 39 parameters and 40 principles after Altshuller. Both modules persist their state inside the project and can be JSON-exported and re-imported like any other module. You reach them via the hamburger menu (☰) on the Improve tile, or by drag-and-dropping them from the \"More\" tile into another phase if you want to use TRIZ already in the Define or Analyze step."
     },
     "modules": {
       "intro": "This overview shows which modules are preconfigured for each phase of a cycle. Modules without a phase mapping in the active cycle land in the \"More\" tile (⋯) and can be drag-and-dropped from there into any phase.",

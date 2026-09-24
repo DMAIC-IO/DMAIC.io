@@ -16,7 +16,7 @@ export default {
           },
           {
             type: 'paragraph',
-            content: 'In Minitab liegt es unter *Statistik → Qualitätswerkzeuge → Multi-Vari-Diagramm*. D.Mike ergänzt darunter die Tabelle der {{term:varianzkomponenten|Varianzkomponenten}} — sie beziffert, was das Bild zeigt.',
+            content: 'In Minitab liegt es unter *Statistik → Qualitätswerkzeuge → Multi-Vari-Diagramm*. Qprovement ergänzt darunter die Tabelle der {{term:varianzkomponenten|Varianzkomponenten}} — sie beziffert, was das Bild zeigt.',
           },
           {
             type: 'definition',
@@ -39,7 +39,7 @@ export default {
           },
           {
             type: 'paragraph',
-            content: 'In Minitab it lives under *Stat → Quality Tools → Multi-Vari Chart*. D.Mike adds the variance-component table underneath — it puts numbers on what the picture shows.',
+            content: 'In Minitab it lives under *Stat → Quality Tools → Multi-Vari Chart*. Qprovement adds the variance-component table underneath — it puts numbers on what the picture shows.',
           },
           {
             type: 'definition',

@@ -12,7 +12,7 @@ export default {
         blocks: [
           {
             type: 'paragraph',
-            content: 'Das REST-API-Modul verbindet DMAIC.io mit externen Datenquellen. Es ruft per HTTP-GET JSON-Daten von einer URL ab, mappt einzelne Felder auf Spalten im Arbeitsblatt und kann den Abruf wiederkehrend ausführen — z. B. um Messwerte aus einem Server, einer Maschinensteuerung oder einem Cloud-Dienst regelmäßig in das Arbeitsblatt zu schreiben.',
+            content: 'Das REST-API-Modul verbindet Qprovement mit externen Datenquellen. Es ruft per HTTP-GET JSON-Daten von einer URL ab, mappt einzelne Felder auf Spalten im Arbeitsblatt und kann den Abruf wiederkehrend ausführen — z. B. um Messwerte aus einem Server, einer Maschinensteuerung oder einem Cloud-Dienst regelmäßig in das Arbeitsblatt zu schreiben.',
           },
           {
             type: 'definition',
@@ -46,7 +46,7 @@ export default {
         blocks: [
           {
             type: 'paragraph',
-            content: 'The REST API module connects DMAIC.io to external data sources. It performs HTTP GET requests against a URL, maps individual fields of the JSON response to columns in the worksheet, and can run on a schedule — e.g. to regularly pull measurements from a server, a machine controller, or a cloud service into the worksheet.',
+            content: 'The REST API module connects Qprovement to external data sources. It performs HTTP GET requests against a URL, maps individual fields of the JSON response to columns in the worksheet, and can run on a schedule — e.g. to regularly pull measurements from a server, a machine controller, or a cloud service into the worksheet.',
           },
           {
             type: 'definition',

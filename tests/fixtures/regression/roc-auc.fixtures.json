@@ -91,7 +91,7 @@
       "id": "roc_standard_moderate",
       "tier": "standard",
       "description": "Moderate classifier with some rank inversions. AUC = 0.8.",
-      "reference": "D.Mike glm-engine.js (trapezoidal)",
+      "reference": "Qprovement glm-engine.js (trapezoidal)",
       "inputs": {
         "yTrue": [
           1,
@@ -197,7 +197,7 @@
       "id": "roc_edge_all_same_prob",
       "tier": "edge",
       "description": "All probabilities equal (0.5). No discrimination possible.",
-      "reference": "D.Mike glm-engine.js",
+      "reference": "Qprovement glm-engine.js",
       "tolerance_override": "tied_probs",
       "inputs": {
         "yTrue": [
@@ -287,7 +287,7 @@
       "id": "roc_edge_ties",
       "tier": "edge",
       "description": "Tied probabilities at 0.6 (mixed positives and negatives). Tests tie-breaking.",
-      "reference": "D.Mike glm-engine.js",
+      "reference": "Qprovement glm-engine.js",
       "tolerance_override": "tied_probs",
       "inputs": {
         "yTrue": [
@@ -329,7 +329,7 @@
       "id": "roc_edge_inverted",
       "tier": "edge",
       "description": "Inverted classifier: high probabilities assigned to negatives. AUC < 0.5.",
-      "reference": "D.Mike glm-engine.js",
+      "reference": "Qprovement glm-engine.js",
       "inputs": {
         "yTrue": [
           1,

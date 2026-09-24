@@ -87,8 +87,8 @@
     ],
     "limitations": [
       {
-        "de": "Relative Genauigkeit der Approximationen liegt bei etwa 1e-10 bis 1e-12 — ausreichend für alle Anwendungen in DMAIC.io, aber nicht auf Bit-Ebene identisch mit SciPy",
-        "en": "Relative accuracy of the approximations is ~1e-10 to 1e-12 — sufficient for every use case in DMAIC.io, but not bit-identical to SciPy"
+        "de": "Relative Genauigkeit der Approximationen liegt bei etwa 1e-10 bis 1e-12 — ausreichend für alle Anwendungen in Qprovement, aber nicht auf Bit-Ebene identisch mit SciPy",
+        "en": "Relative accuracy of the approximations is ~1e-10 to 1e-12 — sufficient for every use case in Qprovement, but not bit-identical to SciPy"
       },
       {
         "de": "fQuantile und chi2Inv/tInv verwenden Bisektion — nicht für extreme Tail-Wahrscheinlichkeiten (p < 1e-10 oder p > 1 − 1e-10)",

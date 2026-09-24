@@ -12,7 +12,7 @@ export default {
         blocks: [
           {
             type: 'paragraph',
-            content: 'Das Datenimport-Modul liest Datensätze aus Fremdformaten ein und überträgt sie als neue Worksheet-Tabelle in DMAIC.io. Damit können Sie Daten aus anderen Statistik-Werkzeugen weiterverwenden, ohne sie manuell abtippen oder umständlich exportieren zu müssen.',
+            content: 'Das Datenimport-Modul liest Datensätze aus Fremdformaten ein und überträgt sie als neue Worksheet-Tabelle in Qprovement. Damit können Sie Daten aus anderen Statistik-Werkzeugen weiterverwenden, ohne sie manuell abtippen oder umständlich exportieren zu müssen.',
           },
           {
             type: 'definition',
@@ -22,7 +22,7 @@ export default {
           {
             type: 'definition',
             term: 'Minitab .mpx',
-            content: 'Eine .mpx-Datei ist ein ZIP-Archiv mit XML-Dateien, das ein Minitab-Projekt einschließlich aller Worksheets enthält. DMAIC.io entpackt das Archiv lokal im Browser, liest die Spaltennamen, Datentypen und Werte aus und stellt sie zur Übernahme bereit.',
+            content: 'Eine .mpx-Datei ist ein ZIP-Archiv mit XML-Dateien, das ein Minitab-Projekt einschließlich aller Worksheets enthält. Qprovement entpackt das Archiv lokal im Browser, liest die Spaltennamen, Datentypen und Werte aus und stellt sie zur Übernahme bereit.',
           },
           {
             type: 'definition',
@@ -37,7 +37,7 @@ export default {
           {
             type: 'definition',
             term: 'JSON / NDJSON',
-            content: 'JSON-Dateien können in drei Strukturen vorkommen und werden alle erkannt: als Records-Array (`[{a:1, b:2}, …]` — das von DMAIC.io selbst exportierte Worksheet-Format), als spaltenorientiertes Objekt (`{a:[1,2,…], b:[3,4,…]}`) sowie als NDJSON / JSONL mit einem JSON-Datensatz pro Zeile. Wrapper-Objekte mit `data`-, `rows`- oder `records`-Feld werden automatisch entpackt.',
+            content: 'JSON-Dateien können in drei Strukturen vorkommen und werden alle erkannt: als Records-Array (`[{a:1, b:2}, …]` — das von Qprovement selbst exportierte Worksheet-Format), als spaltenorientiertes Objekt (`{a:[1,2,…], b:[3,4,…]}`) sowie als NDJSON / JSONL mit einem JSON-Datensatz pro Zeile. Wrapper-Objekte mit `data`-, `rows`- oder `records`-Feld werden automatisch entpackt.',
           },
           {
             type: 'definition',
@@ -56,7 +56,7 @@ export default {
         blocks: [
           {
             type: 'paragraph',
-            content: 'The data-import module reads datasets from third-party formats and transfers them as a new worksheet table into DMAIC.io. It lets you keep working with data produced by other statistics tools without having to retype or roundtrip through CSV.',
+            content: 'The data-import module reads datasets from third-party formats and transfers them as a new worksheet table into Qprovement. It lets you keep working with data produced by other statistics tools without having to retype or roundtrip through CSV.',
           },
           {
             type: 'definition',
@@ -66,7 +66,7 @@ export default {
           {
             type: 'definition',
             term: 'Minitab .mpx',
-            content: 'An .mpx file is a ZIP archive of XML files that holds a complete Minitab project including all worksheets. DMAIC.io unpacks the archive locally in the browser, reads column names, data types, and values, and makes them available for transfer.',
+            content: 'An .mpx file is a ZIP archive of XML files that holds a complete Minitab project including all worksheets. Qprovement unpacks the archive locally in the browser, reads column names, data types, and values, and makes them available for transfer.',
           },
           {
             type: 'definition',
@@ -113,7 +113,7 @@ export default {
           },
           {
             type: 'paragraph',
-            content: 'Typische Einsatzfälle: Bestehende Minitab-Schulungsdatensätze in DMAIC.io weiterverwenden, Beispieldaten aus Lehrbüchern einlesen, Auditberichte aus Drittsystemen reproduzieren.',
+            content: 'Typische Einsatzfälle: Bestehende Minitab-Schulungsdatensätze in Qprovement weiterverwenden, Beispieldaten aus Lehrbüchern einlesen, Auditberichte aus Drittsystemen reproduzieren.',
           },
         ],
       },
@@ -132,7 +132,7 @@ export default {
           },
           {
             type: 'paragraph',
-            content: 'Typical use cases: continue working with existing Minitab training datasets in DMAIC.io, load example data from textbooks, reproduce audit reports from third-party systems.',
+            content: 'Typical use cases: continue working with existing Minitab training datasets in Qprovement, load example data from textbooks, reproduce audit reports from third-party systems.',
           },
         ],
       },

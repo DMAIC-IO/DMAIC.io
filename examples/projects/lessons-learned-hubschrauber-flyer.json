@@ -44,7 +44,7 @@
       "category": "success",
       "phase": "control",
       "impact": "medium",
-      "owner": "D.Mike-Marketing",
+      "owner": "Qprovement-Marketing",
       "description": "Die bewusste Beschränkung auf zwei Faktoren (Rotorlänge, Klammernzahl) statt drei erlaubte ein vollständiges 3²-Design mit 2 Replikaten (18 Läufe) in einer Messestand-Session — ein drittes Faktorlevel hätte die Laufzahl auf 54+ getrieben.",
       "rootCause": "Zeit- und Prototypen-Restriktionen am Messestand erlauben kein größeres Design.",
       "recommendation": "Bei engem Zeitbudget den Faktorraum aktiv auf die zwei wirkungsstärksten Faktoren begrenzen, weitere Faktoren als Folgeprojekt vormerken.",

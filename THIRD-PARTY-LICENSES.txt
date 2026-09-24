@@ -1,7 +1,7 @@
-DMAIC.io — Third-Party Open-Source Licenses
+Qprovement — Third-Party Open-Source Licenses
 ===========================================
 
-The DMAIC.io app bundles the following third-party libraries.
+The Qprovement app bundles the following third-party libraries.
 Each is distributed under its own license, reproduced verbatim below.
 
 ========================================================================

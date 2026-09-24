@@ -74,7 +74,7 @@ glossary/
 - **Definition in einem Satz** zuerst — `short` ist die Tooltip-Zeile
 - **Formeln in KaTeX**, nie als Bild
 - **Sprache:** DE in Sie-Form, EN sachlich neutral
-- **Produktname:** „DMAIC.io" (nie „D.Mike")
+- **Produktname:** „Qprovement" (nie „DMAIC.io" oder „D.Mike")
 - **Verweise auf andere Begriffe** im Fließtext mit `{{term:<id>}}` — Module nicht
   inline benennen, sondern über das `modules`-Feld
 - **Mindestens eine Quelle** (Lehrbuch oder Norm) pro Eintrag

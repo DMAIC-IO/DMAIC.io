@@ -35,7 +35,7 @@
       "id": "negbin_standard_overdispersed",
       "tier": "standard",
       "description": "Overdispersed counts with single predictor. θ ≈ 0.5 indicates substantial extra-Poisson variance.",
-      "reference": "D.Mike glm-engine.js (IRLS + profile likelihood)",
+      "reference": "Qprovement glm-engine.js (IRLS + profile likelihood)",
       "tolerance_override": "theta_sensitive",
       "inputs": {
         "xColumns": [
@@ -114,7 +114,7 @@
       "id": "negbin_standard_multivariate",
       "tier": "standard",
       "description": "Two predictors (batch size, supplier) with n=20 overdispersed complaint counts.",
-      "reference": "D.Mike glm-engine.js (IRLS + profile likelihood)",
+      "reference": "Qprovement glm-engine.js (IRLS + profile likelihood)",
       "tolerance_override": "theta_sensitive",
       "inputs": {
         "xColumns": [
@@ -218,7 +218,7 @@
       "id": "negbin_standard_moderate",
       "tier": "standard",
       "description": "Moderate overdispersion with single predictor. θ ≈ 8 (closer to Poisson than heavy NB).",
-      "reference": "D.Mike glm-engine.js (IRLS + profile likelihood)",
+      "reference": "Qprovement glm-engine.js (IRLS + profile likelihood)",
       "tolerance_override": "theta_sensitive",
       "inputs": {
         "xColumns": [
@@ -281,7 +281,7 @@
       "id": "negbin_edge_many_zeros",
       "tier": "edge",
       "description": "Mostly zeros (12 of 15): zero-inflated-like pattern. Very low θ ≈ 0.14.",
-      "reference": "D.Mike glm-engine.js (IRLS + profile likelihood)",
+      "reference": "Qprovement glm-engine.js (IRLS + profile likelihood)",
       "tolerance_override": "theta_sensitive",
       "inputs": {
         "xColumns": [
@@ -348,7 +348,7 @@
       "id": "negbin_edge_high_overdispersion",
       "tier": "edge",
       "description": "Extreme overdispersion: sparse large counts among many zeros. θ ≈ 0.06.",
-      "reference": "D.Mike glm-engine.js (IRLS + profile likelihood)",
+      "reference": "Qprovement glm-engine.js (IRLS + profile likelihood)",
       "tolerance_override": "high_overdispersion",
       "inputs": {
         "xColumns": [

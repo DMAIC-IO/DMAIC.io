@@ -83,7 +83,7 @@
         "de": "100 normalverteilte Messwerte um μ ≈ 10,00 mm mit σ ≈ 0,05 mm. Lehrbuch-Fall eines fähigen Prozesses.",
         "en": "100 normally distributed measurements around μ ≈ 10.00 mm with σ ≈ 0.05 mm. Textbook capable-process example."
       },
-      "source": "DMAIC.io synthetisch, NumPy default_rng, Seed=42",
+      "source": "Qprovement synthetisch, NumPy default_rng, Seed=42",
       "license": "public-domain",
       "file": "data/capability-bolzendurchmesser.csv",
       "format": "csv",
@@ -123,7 +123,7 @@
         "de": "Mittelwert außerhalb der Spezifikationsmitte (μ ≈ 10,08 mm) → niedriger Cpk trotz geringer Streuung.",
         "en": "Mean off-center (μ ≈ 10.08 mm) → low Cpk despite small dispersion."
       },
-      "source": "DMAIC.io synthetisch, Mulberry32 + Box-Muller, Seed=7",
+      "source": "Qprovement synthetisch, Mulberry32 + Box-Muller, Seed=7",
       "license": "public-domain",
       "generator": {
         "algorithm": "normal",
@@ -167,7 +167,7 @@
         "de": "Mischung zweier Normalverteilungen um 9,93 und 10,07 mm. Die Normalverteilungs-Annahme der Cpk-Berechnung ist verletzt.",
         "en": "Mixture of two normal distributions around 9.93 and 10.07 mm. Violates the normality assumption of Cpk."
       },
-      "source": "DMAIC.io synthetisch, NumPy default_rng, Seed=13",
+      "source": "Qprovement synthetisch, NumPy default_rng, Seed=13",
       "license": "public-domain",
       "file": "data/capability-bimodal.csv",
       "format": "csv",
@@ -207,7 +207,7 @@
         "de": "Response-Surface-Modell mit drei kontinuierlichen Faktoren und vollem quadratischem Polynom in 12 Versuchsläufen. Klassischer Anwendungsfall für D-optimale Designs.",
         "en": "Response-surface model with three continuous factors and a full quadratic polynomial in 12 runs. Classic D-optimal use case."
       },
-      "source": "DMAIC.io Lehrkonfiguration",
+      "source": "Qprovement Lehrkonfiguration",
       "license": "public-domain",
       "file": "projects/doe-optimal-rsm-3f.json",
       "format": "json",
@@ -233,7 +233,7 @@
         "de": "Fünf kontinuierliche Faktoren mit Hauptwirkungen und Zweifach-Wechselwirkungen in 18 Versuchsläufen. Optimaler Ersatz für Plackett-Burman, wenn 2FI mit ins Modell sollen.",
         "en": "Five continuous factors with main effects and two-factor interactions in 18 runs. D-optimal alternative to Plackett-Burman when 2FI must stay in the model."
       },
-      "source": "DMAIC.io Lehrkonfiguration",
+      "source": "Qprovement Lehrkonfiguration",
       "license": "public-domain",
       "file": "projects/doe-optimal-screening-5f.json",
       "format": "json",
@@ -259,7 +259,7 @@
         "de": "Drei kontinuierliche Faktoren und ein kategorischer Faktor mit drei Stufen (Material). Gemischt-stufige Optimal-Designs sind klassische Schemata vorbehalten — ein typischer D-optimaler Anwendungsfall.",
         "en": "Three continuous factors plus one three-level categorical factor (material). Mixed-level optimal designs are a textbook D-optimal use case — classic schemes cannot handle this."
       },
-      "source": "DMAIC.io Lehrkonfiguration",
+      "source": "Qprovement Lehrkonfiguration",
       "license": "public-domain",
       "file": "projects/doe-optimal-mixed-4f.json",
       "format": "json",
@@ -285,7 +285,7 @@
         "de": "30 Pizza-Lieferungen mit Entfernung (km), Verkehrslevel (1–5) und gemessener Lieferzeit (min). Linearer Zusammenhang Lieferzeit ≈ 5 + 2,5·Entfernung + 1,2·Verkehr — Lehrbuch-Datensatz für multiple lineare Regression mit hohem R².",
         "en": "30 pizza deliveries with distance (km), traffic level (1–5) and measured delivery time (min). Linear model Time ≈ 5 + 2.5·distance + 1.2·traffic — textbook dataset for multiple linear regression with high R²."
       },
-      "source": "DMAIC.io synthetisch, NumPy default_rng, Seed=2026",
+      "source": "Qprovement synthetisch, NumPy default_rng, Seed=2026",
       "license": "public-domain",
       "file": "projects/regression-pizza-delivery.json",
       "format": "json",
@@ -306,7 +306,7 @@
         "de": "Sechs Kundenbedürfnisse eines Lieferservice, von drei Kunden nach Kano bewertet — inklusive Wichtigkeitsfrage und einem Gleichstand.",
         "en": "Six customer needs of a delivery service, rated by three customers using Kano — including the importance question and one tie."
       },
-      "source": "DMAIC.io Lehrkonfiguration",
+      "source": "Qprovement Lehrkonfiguration",
       "license": "public-domain",
       "file": "projects/kano-lieferservice.json",
       "format": "json",
@@ -324,7 +324,7 @@
         "de": "30 Motor-Versuche mit Drehzahl und Drehmoment als Prädiktoren, Leistung als Response. Drehmoment ≈ 0,04·Drehzahl — die beiden Prädiktoren sind stark korreliert, der VIF schlägt aus. Lehrcase für Multikollinearität.",
         "en": "30 motor trials with rpm and torque as predictors, power as response. Torque ≈ 0.04·rpm — predictors are highly collinear, VIF spikes. Textbook multicollinearity case."
       },
-      "source": "DMAIC.io synthetisch, NumPy default_rng, Seed=303",
+      "source": "Qprovement synthetisch, NumPy default_rng, Seed=303",
       "license": "public-domain",
       "file": "projects/regression-collinear.json",
       "format": "json",
@@ -348,7 +348,7 @@
         "de": "30 Fahrzeug-Messungen Geschwindigkeit → Verbrauch. Zwei eingebaute Ausreißer (Zeilen 6 und 23) drücken das R² gegenüber der sauberen Linearität. Lehrcase für Residuen-Diagnostik und Outlier-Detection.",
         "en": "30 vehicle measurements speed → fuel consumption. Two deliberate outliers (rows 6 and 23) drop R² compared to the clean linear fit. Textbook case for residual diagnostics and outlier detection."
       },
-      "source": "DMAIC.io synthetisch, NumPy default_rng, Seed=404",
+      "source": "Qprovement synthetisch, NumPy default_rng, Seed=404",
       "license": "public-domain",
       "file": "projects/regression-outliers.json",
       "format": "json",
@@ -372,7 +372,7 @@
         "de": "Selbe 30 Pizza-Lieferungen wie der Regressions-Datensatz — hier als Korrelationsmatrix über Entfernung, Verkehrslevel und Lieferzeit. Zeigt die starken paarweisen Pearson-Korrelationen.",
         "en": "Same 30 pizza deliveries as the regression dataset — here as a correlation matrix over distance, traffic level and delivery time. Highlights the strong pairwise Pearson correlations."
       },
-      "source": "DMAIC.io synthetisch, NumPy default_rng, Seed=2026",
+      "source": "Qprovement synthetisch, NumPy default_rng, Seed=2026",
       "license": "public-domain",
       "file": "projects/correlation-pizza-delivery.json",
       "format": "json",
@@ -396,7 +396,7 @@
         "de": "Acht Temperaturstufen mit je 50 Versuchen. Binomial-Response (Erfolge / Versuche) folgt einer logistischen Kurve mit Wendepunkt um 160 °C. Klassischer Anwendungsfall für binomiale GLM mit Trials-Spalte.",
         "en": "Eight temperature levels with 50 trials each. Binomial response (successes / trials) follows a logistic curve with inflection around 160 °C. Textbook case for binomial GLM with a trials column."
       },
-      "source": "DMAIC.io synthetisch, NumPy default_rng, Seed=101",
+      "source": "Qprovement synthetisch, NumPy default_rng, Seed=101",
       "license": "public-domain",
       "file": "projects/glm-logistic-yield.json",
       "format": "json",
@@ -420,7 +420,7 @@
         "de": "40 Schichten mit Vorschub (mm/s) und Werkzeugverschleiß (h) als Prädiktoren, Defekt-Counts als Response. Poisson-Modell mit log(λ) = -1 + 0,02·Vorschub + 0,03·Verschleiß.",
         "en": "40 shifts with feed rate (mm/s) and tool wear (h) as predictors, defect counts as response. Poisson model with log(λ) = -1 + 0.02·feed + 0.03·wear."
       },
-      "source": "DMAIC.io synthetisch, NumPy default_rng, Seed=202",
+      "source": "Qprovement synthetisch, NumPy default_rng, Seed=202",
       "license": "public-domain",
       "file": "projects/glm-poisson-defects.json",
       "format": "json",
@@ -444,7 +444,7 @@
         "de": "50 Leiterplatten mit Löttemperatur (220–255 °C) und Anpressdruck (2,0–3,5 bar) als Prädiktoren, Defekt (0/1) als Response. Klassischer Anwendungsfall für binäre logistische Regression ohne Trials-Spalte.",
         "en": "50 PCBs with solder temperature (220–255 °C) and pressure (2.0–3.5 bar) as predictors, defect (0/1) as response. Textbook case for binary logistic regression without a trials column."
       },
-      "source": "DMAIC.io Lehrkonfiguration",
+      "source": "Qprovement Lehrkonfiguration",
       "license": "public-domain",
       "file": "projects/glm-soldering.json",
       "format": "json",
@@ -469,7 +469,7 @@
         "de": "30 Fertigungslinien mit Geschwindigkeit (Stück/min) und Anlagenalter (Jahre) als Prädiktoren, gezählte Oberflächendefekte als Response. Poisson-Modell zur Vorhersage der erwarteten Defektrate.",
         "en": "30 production lines with speed (parts/min) and line age (years) as predictors, surface defect counts as response. Poisson model for predicting the expected defect rate."
       },
-      "source": "DMAIC.io Lehrkonfiguration",
+      "source": "Qprovement Lehrkonfiguration",
       "license": "public-domain",
       "file": "projects/glm-line-defects.json",
       "format": "json",
@@ -493,7 +493,7 @@
         "de": "30 Chargen mit Chargengröße und Lieferant als Prädiktoren, Reklamationen als Response. Überdispergierte Zähldaten — die Negativ-Binomial-Regression schätzt zusätzlich den Dispersionsparameter θ.",
         "en": "30 batches with batch size and supplier as predictors, complaints as response. Overdispersed count data — negative binomial regression additionally estimates the dispersion parameter θ."
       },
-      "source": "DMAIC.io Lehrkonfiguration",
+      "source": "Qprovement Lehrkonfiguration",
       "license": "public-domain",
       "file": "projects/glm-batch-complaints.json",
       "format": "json",
@@ -518,7 +518,7 @@
         "de": "Quadratisches Modell für Ausbeute = f(Temperatur, Druck) mit Optimum bei 180 °C und 3 bar. Zeigt eine klassische Höhenlinien-Karte mit ausgeprägtem Maximum.",
         "en": "Quadratic model for yield = f(temperature, pressure) with optimum at 180 °C and 3 bar. Shows a classic contour map with a pronounced maximum."
       },
-      "source": "DMAIC.io Lehrkonfiguration",
+      "source": "Qprovement Lehrkonfiguration",
       "license": "public-domain",
       "file": "projects/contour-rsm-yield.json",
       "format": "json",
@@ -542,7 +542,7 @@
         "de": "25 Untergruppen à 5 Messungen aus einem stabilen Prozess (μ = 10,00 mm, σ = 0,05 mm). X̄-R-Karte zeigt keine Verletzungen der Nelson-Regeln.",
         "en": "25 subgroups of 5 measurements each from a stable process (μ = 10.00 mm, σ = 0.05 mm). X̄-R chart shows no Nelson-rule violations."
       },
-      "source": "DMAIC.io synthetisch, NumPy default_rng, Seed=501",
+      "source": "Qprovement synthetisch, NumPy default_rng, Seed=501",
       "license": "public-domain",
       "file": "projects/control-chart-xbar-r-stable.json",
       "format": "json",
@@ -567,7 +567,7 @@
         "de": "50 Einzelmessungen mit einem Sprung von μ = 10,00 auf μ = 10,18 ab Wert 30. Die Nelson-Regeln (insbesondere Regel 1 und Regel 5) sollten den Shift detektieren.",
         "en": "50 individual measurements with a step shift from μ = 10.00 to μ = 10.18 at observation 30. The Nelson rules (especially rule 1 and rule 5) should flag the shift."
       },
-      "source": "DMAIC.io synthetisch, NumPy default_rng, Seed=502",
+      "source": "Qprovement synthetisch, NumPy default_rng, Seed=502",
       "license": "public-domain",
       "file": "projects/control-chart-imr-shift.json",
       "format": "json",
@@ -593,7 +593,7 @@
         "de": "50 Einzelmessungen mit linearem Aufwärtstrend (+0,6 über die Serie). Nelson-Regel 3 (sechs Punkte in Folge steigend) sollte mehrfach feuern.",
         "en": "50 individual measurements with a linear upward drift (+0.6 across the series). Nelson rule 3 (six points in a row trending up) should fire multiple times."
       },
-      "source": "DMAIC.io synthetisch, NumPy default_rng, Seed=503",
+      "source": "Qprovement synthetisch, NumPy default_rng, Seed=503",
       "license": "public-domain",
       "file": "projects/control-chart-imr-trend.json",
       "format": "json",
@@ -619,7 +619,7 @@
         "de": "Selbe 30 Pizza-Lieferungen wie der Regressions-Datensatz — Streudiagramm Lieferzeit über Entfernung mit Statistik-Panel. Ideal für Erkundung des Zusammenhangs vor der Regression.",
         "en": "Same 30 pizza deliveries as the regression dataset — scatter plot of delivery time over distance with stats panel. Useful for visual exploration before fitting a regression."
       },
-      "source": "DMAIC.io synthetisch, NumPy default_rng, Seed=2026",
+      "source": "Qprovement synthetisch, NumPy default_rng, Seed=2026",
       "license": "public-domain",
       "file": "projects/xy-plot-pizza-delivery.json",
       "format": "json",
@@ -642,7 +642,7 @@
         "de": "Selbe 30 Motor-Versuche wie der Regressions-Datensatz — zwei Streudiagramme Leistung über Drehzahl und Leistung über Drehmoment, mit Statistik-Panel. Visualisiert die starke Korrelation der Prädiktoren vor der Regression.",
         "en": "Same 30 motor trials as the regression dataset — two scatter plots of power over rpm and power over torque, with stats panel. Visualises the strong predictor correlation before fitting a regression."
       },
-      "source": "DMAIC.io synthetisch, NumPy default_rng, Seed=303",
+      "source": "Qprovement synthetisch, NumPy default_rng, Seed=303",
       "license": "public-domain",
       "file": "projects/xy-plot-regression-collinear.json",
       "format": "json",
@@ -666,7 +666,7 @@
         "de": "Selbe 30 Fahrzeug-Messungen wie der Regressions-Datensatz — Streudiagramm Verbrauch über Geschwindigkeit mit Statistik-Panel. Zwei eingebaute Ausreißer (Zeilen 6 und 23) sind im Plot direkt sichtbar.",
         "en": "Same 30 vehicle measurements as the regression dataset — scatter plot of fuel consumption over speed with stats panel. Two deliberate outliers (rows 6 and 23) are directly visible in the plot."
       },
-      "source": "DMAIC.io synthetisch, NumPy default_rng, Seed=404",
+      "source": "Qprovement synthetisch, NumPy default_rng, Seed=404",
       "license": "public-domain",
       "file": "projects/xy-plot-regression-outliers.json",
       "format": "json",
@@ -690,7 +690,7 @@
         "de": "12 Six-Sigma-Projektkandidaten mit Aufwand (Personentage), Jahresnutzen (k€) und Risiko-Score, gruppiert nach Bereich (Produktion vs. Qualität). Das Blasendiagramm priorisiert die Project-Selection und zeigt zugleich, wie sich die beiden Bereiche im Aufwand/Nutzen/Risiko-Raum positionieren: kleine Bubbles oben links sind Quick Wins, große Bubbles unten rechts sollten zurückgestellt werden.",
         "en": "12 Six Sigma project candidates with effort (person-days), annual benefit (k€) and risk score, grouped by area (Production vs. Quality). The bubble chart prioritises project selection while showing how the two areas position themselves in the effort/benefit/risk landscape: small bubbles in the upper left are quick wins; large bubbles in the lower right should be deferred."
       },
-      "source": "DMAIC.io Lehrkonfiguration",
+      "source": "Qprovement Lehrkonfiguration",
       "license": "public-domain",
       "file": "projects/xy-plot-bubble-projektportfolio.json",
       "format": "json",
@@ -716,7 +716,7 @@
         "de": "10 Fertigungslinien mit Defektrate, Reparaturkosten pro Defekt und Defektanzahl pro Monat. Das Blasendiagramm zeigt den klassischen Trade-off Häufigkeit ↔ Stückkosten; die Bubble-Größe verrät, welche Linien das größte absolute Verlustpotenzial haben — der ideale Einstieg in die DMAIC-Projektauswahl.",
         "en": "10 production lines with defect rate, repair cost per defect, and monthly defect count. The bubble chart shows the classic frequency ↔ unit-cost trade-off; bubble size reveals which lines carry the largest absolute loss potential — an ideal entry point for DMAIC project selection."
       },
-      "source": "DMAIC.io Lehrkonfiguration",
+      "source": "Qprovement Lehrkonfiguration",
       "license": "public-domain",
       "file": "projects/xy-plot-bubble-fertigungslinien.json",
       "format": "json",
@@ -742,7 +742,7 @@
         "de": "Drei kontinuierliche Faktoren, quadratisches Modell, 12 Versuchsläufe gesamt — sechs davon bereits gemessen. Das Beispiel legt eine Datensammlung mit den bestehenden Messwerten an und ergänzt sie um sechs weitere D-optimale Versuchsläufe.",
         "en": "Three continuous factors, quadratic model, 12 runs total — six already measured. The example creates a data sheet with the existing measurements and augments it with six additional D-optimal runs."
       },
-      "source": "DMAIC.io Lehrkonfiguration",
+      "source": "Qprovement Lehrkonfiguration",
       "license": "public-domain",
       "file": "projects/doe-optimal-augment-3f.json",
       "format": "json",
@@ -768,7 +768,7 @@
         "de": "15-zeiliges Prüfprotokoll, das alle sieben Spaltentypen der Datensammlung verwendet: Text (Prüf-ID, Schicht), Datum, Uhrzeit, Zahl (Durchmesser in mm), Währung (Stückkosten €), Prozent (Schwund) und Binär (IO 0/1). Enthält bewusst einige Lücken (null), um den Umgang mit fehlenden Werten zu zeigen.",
         "en": "15-row inspection log that exercises all seven worksheet column types: text (inspection ID, shift), date, time, numeric (diameter in mm), currency (unit cost €), percent (scrap rate) and binary (OK 0/1). Includes a few null cells on purpose to show how missing values are handled."
       },
-      "source": "DMAIC.io Lehrkonfiguration",
+      "source": "Qprovement Lehrkonfiguration",
       "license": "public-domain",
       "file": "worksheets/vollbeispiel.json",
       "format": "json",
@@ -792,7 +792,7 @@
         "de": "Drei Tabellenblätter (Q1/Q2/Q3) mit Produktionsdaten je 10 Chargen. Demonstriert die Mehrblatt-Funktion der Datensammlung — Tabs unten zum Wechseln.",
         "en": "Three sheets (Q1/Q2/Q3) with production data of 10 batches each. Demonstrates the multi-sheet feature of the worksheet — switch via tabs at the bottom."
       },
-      "source": "DMAIC.io Lehrkonfiguration",
+      "source": "Qprovement Lehrkonfiguration",
       "license": "public-domain",
       "file": "worksheets/multisheet-quartal.json",
       "format": "json",
@@ -816,7 +816,7 @@
         "de": "10 Bestellzeilen mit Anzahl, Preis (€), berechneter Gesamtsumme (=Anzahl·Preis), Rabatt (%) und Endpreis (=Gesamt·(1-Rabatt)). Demonstriert Zell-Referenz-Formeln und Currency-/Percent-Spalten.",
         "en": "10 order rows with quantity, unit price (€), calculated total (=qty·price), discount (%) and final price (=total·(1-discount)). Demonstrates cell-reference formulas and currency/percent columns."
       },
-      "source": "DMAIC.io Lehrkonfiguration",
+      "source": "Qprovement Lehrkonfiguration",
       "license": "public-domain",
       "file": "worksheets/formula-demo.json",
       "format": "json",
@@ -841,7 +841,7 @@
         "de": "13 Prüfeinheiten × 3 Prüfer × 2 Wiederholungen, binäres Ergebnis (i.O./n.i.O.). Alle Bewertungen stimmen überein — bis auf Prüfer D, der Prüfeinheit 20 beim zweiten Durchgang abweichend bewertet.",
         "en": "13 parts × 3 appraisers × 2 trials, binary result (pass/fail). Every rating agrees — except appraiser D, who rates part 20 differently on the second trial."
       },
-      "source": "DMAIC.io synthetisch",
+      "source": "Qprovement synthetisch",
       "license": "public-domain",
       "file": "projects/msa-gage-run-chart-attributiv.json",
       "format": "json",
@@ -865,7 +865,7 @@
         "de": "25 Wiederholmessungen eines 10,0 mm Referenzteils (LSL 9,9 / USL 10,1, T = 0,2 mm). Sehr geringe Streuung, vernachlässigbarer Bias → Cg ≈ 3,8 und Cgk ≈ 3,8 weit über der 1,33-Schwelle. Lehrbuch-Fall eines fähigen Messmittels.",
         "en": "25 repeated measurements of a 10.0 mm reference part (LSL 9.9 / USL 10.1, T = 0.2 mm). Very small spread, negligible bias → Cg ≈ 3.8 and Cgk ≈ 3.8 well above the 1.33 threshold. Textbook capable-gage case."
       },
-      "source": "DMAIC.io synthetisch, NumPy default_rng, Seed=601",
+      "source": "Qprovement synthetisch, NumPy default_rng, Seed=601",
       "license": "public-domain",
       "file": "projects/msa-typ1-faehig.json",
       "format": "json",
@@ -891,7 +891,7 @@
         "de": "25 Wiederholmessungen mit moderater Streuung und leichtem positiven Bias. Cg ≈ 1,5 liegt knapp über, Cgk ≈ 1,0 knapp unter der 1,33-Schwelle — der Bias zieht die Fähigkeit nach unten. Klassischer Fall für die Bedeutung von Cgk neben Cg.",
         "en": "25 repeated measurements with moderate spread and slight positive bias. Cg ≈ 1.5 just above the 1.33 threshold, Cgk ≈ 1.0 just below — bias pulls capability down. Classic case for the role of Cgk alongside Cg."
       },
-      "source": "DMAIC.io synthetisch, NumPy default_rng, Seed=602",
+      "source": "Qprovement synthetisch, NumPy default_rng, Seed=602",
       "license": "public-domain",
       "file": "projects/msa-typ1-grenzwertig.json",
       "format": "json",
@@ -918,7 +918,7 @@
         "de": "25 Wiederholmessungen mit hoher Streuung und deutlichem Bias. Cg ≈ 0,6 und Cgk ≈ 0,3 — das Messmittel verfehlt die Fähigkeitsgrenze deutlich. Lehrbuch-Fall für ein abzulehnendes Messsystem.",
         "en": "25 repeated measurements with large spread and noticeable bias. Cg ≈ 0.6 and Cgk ≈ 0.3 — gage clearly fails the capability threshold. Textbook case for a measurement system that must be rejected."
       },
-      "source": "DMAIC.io synthetisch, NumPy default_rng, Seed=603",
+      "source": "Qprovement synthetisch, NumPy default_rng, Seed=603",
       "license": "public-domain",
       "file": "projects/msa-typ1-nicht-faehig.json",
       "format": "json",
@@ -945,7 +945,7 @@
         "de": "Gekreuzte ANOVA-Studie: 10 Teile × 3 Operatoren × 3 Wiederholungen (90 Messungen). Geringe Wiederhol- und Vergleichsstreuung, dominante Teilevarianz → %GRR ≈ 6 % bezogen auf die Studienvarianz. Lehrbuch-Fall eines akzeptablen Messsystems.",
         "en": "Crossed ANOVA study: 10 parts × 3 operators × 3 replicates (90 measurements). Small repeatability and reproducibility variation, dominant part variance → %GRR ≈ 6 % of study variation. Textbook acceptable measurement system."
       },
-      "source": "DMAIC.io synthetisch, NumPy default_rng, Seed=611",
+      "source": "Qprovement synthetisch, NumPy default_rng, Seed=611",
       "license": "public-domain",
       "file": "projects/msa-typ2-akzeptabel.json",
       "format": "json",
@@ -970,7 +970,7 @@
         "de": "Gekreuzte ANOVA-Studie mit hoher Wiederhol- und Vergleichsstreuung gegenüber kleiner Teilevarianz. 10 Teile × 3 Operatoren × 3 Wiederholungen → %GRR im Bereich 40–50 %. Lehrbuch-Fall, in dem das Messsystem die Teileunterschiede maskiert.",
         "en": "Crossed ANOVA study with large repeatability and reproducibility variation versus small part variance. 10 parts × 3 operators × 3 replicates → %GRR in the 40–50 % range. Textbook case where the measurement system masks part-to-part variation."
       },
-      "source": "DMAIC.io synthetisch, NumPy default_rng, Seed=612",
+      "source": "Qprovement synthetisch, NumPy default_rng, Seed=612",
       "license": "public-domain",
       "file": "projects/msa-typ2-problematisch.json",
       "format": "json",
@@ -995,7 +995,7 @@
         "de": "One-Way-ANOVA-Studie ohne Prüfereinfluss (25 Teile × 2 Wiederholungen, Bosch-Konvention). Automatisiertes CMM misst Wellendurchmesser, Wiederholstreuung ≈ 1,5 µm gegenüber Teil-zu-Teil-Streuung ≈ 22 µm → %GRR ≈ 8 %, ndc = 16. Lehrbuch-Fall eines akzeptablen automatisierten Messsystems.",
         "en": "One-way random-effects ANOVA study without operator influence (25 parts × 2 replicates, Bosch convention). Automated CMM measures shaft diameter, within-part variation ≈ 1.5 µm vs. part-to-part variation ≈ 22 µm → %GRR ≈ 8 %, ndc = 16. Textbook acceptable automated measurement system."
       },
-      "source": "DMAIC.io synthetisch, Python random, Seed=2603",
+      "source": "Qprovement synthetisch, Python random, Seed=2603",
       "license": "public-domain",
       "file": "projects/msa-typ3-akzeptabel.json",
       "format": "json",
@@ -1021,7 +1021,7 @@
         "de": "30 Inspektionsserien mit variabler Stichprobengröße (80–120) und schwankender Defektrate. Lots 18–20 mit erhöhter Rate (~10 %) — die p-Karte sollte sie als out-of-control markieren.",
         "en": "30 inspection lots with variable sample size (80–120) and varying defect rate. Lots 18–20 at ~10 % — the p-chart should flag them as out-of-control."
       },
-      "source": "DMAIC.io synthetisch, NumPy default_rng, Seed=701",
+      "source": "Qprovement synthetisch, NumPy default_rng, Seed=701",
       "license": "public-domain",
       "file": "projects/spc-attribute-p-chart.json",
       "format": "json",
@@ -1046,7 +1046,7 @@
         "de": "30 Inspektionseinheiten mit konstanter Stichprobengröße. Mittlere Defektrate ≈ 3, Einheiten 22–23 mit Spike (~8) — c-Karte schlägt an.",
         "en": "30 inspection units of constant size. Mean defects ≈ 3, units 22–23 spike to ~8 — c-chart triggers."
       },
-      "source": "DMAIC.io synthetisch, NumPy default_rng, Seed=702",
+      "source": "Qprovement synthetisch, NumPy default_rng, Seed=702",
       "license": "public-domain",
       "file": "projects/spc-attribute-c-chart.json",
       "format": "json",
@@ -1071,7 +1071,7 @@
         "de": "395 Ausschussteile aus einer Fertigungslinie, aufgeteilt auf sechs sich gegenseitig ausschließende Defektarten. Klassischer Anwendungsfall für ein Tortendiagramm: Anteil weniger Kategorien an einem Ganzen. Variante mit vollem Kreis (innerRadius = 0).",
         "en": "395 scrap parts from a production line, split across six mutually exclusive defect types. Textbook pie-chart use case: share of a few categories of a whole. Full-circle variant (innerRadius = 0)."
       },
-      "source": "DMAIC.io synthetisch",
+      "source": "Qprovement synthetisch",
       "license": "public-domain",
       "file": "projects/pie-defekte-ausschuss.json",
       "format": "json",
@@ -1096,7 +1096,7 @@
         "de": "248 Kundenreklamationen aus dem ersten Quartal, aufgeteilt auf sechs Gründe. Donut-Variante (innerRadius = 0,5) mit Gesamtsumme als Mittelpunkt-Beschriftung — eignet sich, wenn die Summe selbst eine wichtige Aussage trägt.",
         "en": "248 customer complaints from Q1, split across six reasons. Donut variant (innerRadius = 0.5) with the total shown as the center label — useful when the total itself carries a key message."
       },
-      "source": "DMAIC.io synthetisch",
+      "source": "Qprovement synthetisch",
       "license": "public-domain",
       "file": "projects/pie-reklamationen-q1.json",
       "format": "json",
@@ -1121,7 +1121,7 @@
         "de": "40 bivariate Beobachtungen mit ρ ≈ 0,85. Beobachtungen 30 und 31 sind multivariate-Outlier (auf den Marginalen plausibel, joint vom Korrelationsellipsoid abweichend).",
         "en": "40 bivariate observations with ρ ≈ 0.85. Observations 30 and 31 are multivariate outliers — plausible on each margin but joint deviates from the correlation ellipse."
       },
-      "source": "DMAIC.io synthetisch, NumPy default_rng, Seed=705",
+      "source": "Qprovement synthetisch, NumPy default_rng, Seed=705",
       "license": "public-domain",
       "file": "projects/spc-multivariate-t2.json",
       "format": "json",
@@ -1146,7 +1146,7 @@
         "de": "25 Intervalle aus Exponential(μ=35 Tage). Bei Beobachtungen 16–18 verdoppelt sich die Rate (μ=12) — t-Karte zeigt einen sichtbaren Wechsel.",
         "en": "25 intervals from Exponential(μ=35 days). At observations 16–18 the rate doubles (μ=12) — t-chart shows a visible shift."
       },
-      "source": "DMAIC.io synthetisch, NumPy default_rng, Seed=704",
+      "source": "Qprovement synthetisch, NumPy default_rng, Seed=704",
       "license": "public-domain",
       "file": "projects/spc-rare-event-t-chart.json",
       "format": "json",
@@ -1171,7 +1171,7 @@
         "de": "I-MR-Datensatz: Beobachtungen 1–29 stabil bei μ=10, ab Beobachtung 30 Sprung auf μ=10,18. Westerm-Electric- / Nelson-Regeln markieren den Shift.",
         "en": "I-MR series: observations 1–29 stable at μ=10, from obs. 30 shift to μ=10.18. Western Electric / Nelson rules flag the shift."
       },
-      "source": "DMAIC.io synthetisch, NumPy default_rng, Seed=502",
+      "source": "Qprovement synthetisch, NumPy default_rng, Seed=502",
       "license": "public-domain",
       "file": "projects/spc-run-chart-shift.json",
       "format": "json",
@@ -1195,7 +1195,7 @@
         "de": "Drei kurze Setups mit unterschiedlichen Mittelwerten (10, 25, 7,5), je 8 Messungen. Nach Nominal-Zentrierung gemeinsam vergleichbar (σ ≈ 0,05).",
         "en": "Three short setups with different means (10, 25, 7.5), 8 measurements each. After nominal centering they form one comparable process (σ ≈ 0.05)."
       },
-      "source": "DMAIC.io synthetisch, NumPy default_rng, Seed=706",
+      "source": "Qprovement synthetisch, NumPy default_rng, Seed=706",
       "license": "public-domain",
       "file": "projects/spc-short-run-zmr.json",
       "format": "json",
@@ -1219,7 +1219,7 @@
         "de": "60 Beobachtungen: Mittelwert 30 Punkte bei μ=10, dann Verschiebung auf μ=10,1 (≈ 1σ). EWMA mit λ=0,2 erkennt den Drift, eine Shewhart-I-Karte nicht.",
         "en": "60 observations: mean stays at μ=10 for the first 30 points, then shifts to μ=10.1 (≈ 1σ). EWMA with λ=0.2 detects the drift; a Shewhart I-chart misses it."
       },
-      "source": "DMAIC.io synthetisch, NumPy default_rng, Seed=703",
+      "source": "Qprovement synthetisch, NumPy default_rng, Seed=703",
       "license": "public-domain",
       "file": "projects/spc-time-weighted-ewma.json",
       "format": "json",
@@ -1244,7 +1244,7 @@
         "de": "50 lognormal-verteilte Standzeiten. Eine plain I-MR-Karte produziert wegen der Rechtsschiefe Fehlalarme. Nach Box-Cox-Transformation (λ ≈ 0) sind die Residuen wieder annähernd normal.",
         "en": "50 lognormally distributed lifetimes. A plain I-MR chart raises false alarms because of the right skew. After Box-Cox transformation (λ ≈ 0) the residuals become approximately normal."
       },
-      "source": "DMAIC.io synthetisch, NumPy default_rng, Seed=707",
+      "source": "Qprovement synthetisch, NumPy default_rng, Seed=707",
       "license": "public-domain",
       "file": "projects/spc-transformed-imr.json",
       "format": "json",
@@ -1270,7 +1270,7 @@
         "de": "Lieferzeit-Messungen (min) für drei Fahrer A/B/C, je 15 Werte. Wahre Mittelwerte 22/25/28 min bei σ ≈ 3 — Cohen's f ≈ 0,82, klare ANOVA-Signifikanz erwartet.",
         "en": "Delivery times (min) for three drivers A/B/C, 15 each. True means 22/25/28 min at σ ≈ 3 — Cohen's f ≈ 0.82, strong ANOVA signal."
       },
-      "source": "DMAIC.io synthetisch, NumPy default_rng, Seed=801",
+      "source": "Qprovement synthetisch, NumPy default_rng, Seed=801",
       "license": "public-domain",
       "file": "projects/hypothesis-pizza-fahrer.json",
       "format": "json",
@@ -1296,7 +1296,7 @@
         "de": "Drei Boxen Lieferzeit-Verteilung für Fahrer A/B/C. Bedient denselben Datensatz wie das ANOVA-Beispiel — Boxen zeigen visuell die ANOVA-Signifikanz.",
         "en": "Three boxes showing delivery-time distributions for drivers A/B/C. Same data as the ANOVA example — the boxplot visualizes the ANOVA effect."
       },
-      "source": "DMAIC.io synthetisch, NumPy default_rng, Seed=801",
+      "source": "Qprovement synthetisch, NumPy default_rng, Seed=801",
       "license": "public-domain",
       "file": "projects/boxplot-pizza-fahrer.json",
       "format": "json",
@@ -1320,7 +1320,7 @@
         "de": "Drei Punktwolken Lieferzeit für Fahrer A/B/C mit verbundenen Mittelwerten — derselbe Datensatz wie ANOVA und Boxplot.",
         "en": "Three point clouds of delivery time for drivers A/B/C with connected means — same data as the ANOVA and boxplot examples."
       },
-      "source": "DMAIC.io synthetisch, NumPy default_rng, Seed=801",
+      "source": "Qprovement synthetisch, NumPy default_rng, Seed=801",
       "license": "public-domain",
       "file": "projects/ivplot-pizza-fahrer.json",
       "format": "json",
@@ -1344,7 +1344,7 @@
         "de": "Reklamationen pro Tag in fünf Filialen A–E, Stichprobengrößen 8/10/12/15/9. Filiale D mit deutlich erhöhtem Mittelwert (6,2 vs. ~5,0) — post-hoc-Vergleiche heben D von den übrigen ab.",
         "en": "Complaints per day across five branches A–E, sample sizes 8/10/12/15/9. Branch D has a clearly elevated mean (6.2 vs. ~5.0) — post-hoc comparisons separate D from the rest."
       },
-      "source": "DMAIC.io synthetisch, NumPy default_rng, Seed=802",
+      "source": "Qprovement synthetisch, NumPy default_rng, Seed=802",
       "license": "public-domain",
       "file": "projects/hypothesis-5-filialen.json",
       "format": "json",
@@ -1369,7 +1369,7 @@
         "de": "30 Bolzendurchmesser aus N(10,000; 0,050) mit zwei eingebauten Ausreißern bei 9,745 und 10,260 (≈ ±5σ). Grubbs (zweiseitig), Generalized ESD und Tukey-IQR sollten beide markieren.",
         "en": "30 bolt diameters from N(10.000, 0.050) with two seeded outliers at 9.745 and 10.260 (≈ ±5σ). Grubbs (two-sided), generalized ESD and Tukey IQR should flag both."
       },
-      "source": "DMAIC.io synthetisch, NumPy default_rng, Seed=803",
+      "source": "Qprovement synthetisch, NumPy default_rng, Seed=803",
       "license": "public-domain",
       "file": "projects/outlier-bolzen-grubbs.json",
       "format": "json",
@@ -1395,7 +1395,7 @@
         "de": "Nach einer Prozessverbesserung soll die Streuung von σ₀ = 1,5 auf σ₁ = 1,0 gesunken sein. Einseitiger Chi-Quadrat-Test, α = 0,05, Power = 80 %. Liefert das erforderliche n, um die Verbesserung statistisch abzusichern.",
         "en": "After a process improvement, scatter should have dropped from σ₀ = 1.5 to σ₁ = 1.0. One-sided chi-square test, α = 0.05, power = 80 %. Returns the n needed to confirm the improvement statistically."
       },
-      "source": "DMAIC.io Lehrkonfiguration",
+      "source": "Qprovement Lehrkonfiguration",
       "license": "public-domain",
       "file": "projects/sample-size-varianz-1stichprobe.json",
       "format": "json",
@@ -1420,7 +1420,7 @@
         "de": "Vergleich der Streuung zweier Lieferanten: Verdacht auf doppelte Varianz (σ²₁/σ²₂ = 2,0). Zweiseitiger F-Test, α = 0,05, Power = 80 %. Liefert die nötige Stichprobengröße je Gruppe.",
         "en": "Compare scatter of two suppliers: suspected doubled variance (σ²₁/σ²₂ = 2.0). Two-sided F-test, α = 0.05, power = 80 %. Returns the sample size per group."
       },
-      "source": "DMAIC.io Lehrkonfiguration",
+      "source": "Qprovement Lehrkonfiguration",
       "license": "public-domain",
       "file": "projects/sample-size-varianz-2stichproben.json",
       "format": "json",
@@ -1445,7 +1445,7 @@
         "de": "Prüfen, ob der Prozessmittelwert um Δ = 0,3 vom Sollwert abweicht (σ ≈ 0,5). Zweiseitiger t-Test, α = 0,05, Power = 80 %. Cohen's d = 0,6 (mittlerer Effekt).",
         "en": "Check whether the process mean drifts by Δ = 0.3 from target (σ ≈ 0.5). Two-sided t-test, α = 0.05, power = 80 %. Cohen's d = 0.6 (medium effect)."
       },
-      "source": "DMAIC.io Lehrkonfiguration",
+      "source": "Qprovement Lehrkonfiguration",
       "license": "public-domain",
       "file": "projects/sample-size-mittelwert-1stichprobe.json",
       "format": "json",
@@ -1470,7 +1470,7 @@
         "de": "Vergleich der Zykluszeit zweier Maschinen: Differenz Δ = 0,5 min bei σ ≈ 0,8 min. Zweiseitiger t-Test, α = 0,05, Power = 80 %. Cohen's d ≈ 0,63 — liefert das nötige n je Gruppe.",
         "en": "Compare cycle time of two machines: difference Δ = 0.5 min at σ ≈ 0.8 min. Two-sided t-test, α = 0.05, power = 80 %. Cohen's d ≈ 0.63 — returns the n per group."
       },
-      "source": "DMAIC.io Lehrkonfiguration",
+      "source": "Qprovement Lehrkonfiguration",
       "license": "public-domain",
       "file": "projects/sample-size-mittelwert-2stichproben.json",
       "format": "json",
@@ -1495,7 +1495,7 @@
         "de": "Vorgefüllte Kriterien für die Projektauswahl im Pizza-Lieferprozess: Lieferzeit, Pizzaqualität, Preis, Mitarbeiterzufriedenheit, Reklamationsquote. Vergleiche werden im Modul selbst durchgeführt.",
         "en": "Pre-filled criteria for project selection in the pizza-delivery process: delivery time, pizza quality, price, employee satisfaction, complaint rate. Pairwise comparisons are run inside the module."
       },
-      "source": "DMAIC.io Lehrkonfiguration",
+      "source": "Qprovement Lehrkonfiguration",
       "license": "public-domain",
       "file": "projects/pairwise-projektauswahl.json",
       "format": "json",
@@ -1519,7 +1519,7 @@
         "de": "80 Werte aus N(μ=10, σ=2) — sauberer Lehrcase einer Normalverteilung. Shapiro-Wilk / Anderson-Darling sollten H₀ nicht ablehnen.",
         "en": "80 values from N(μ=10, σ=2) — clean textbook normal distribution. Shapiro-Wilk / Anderson-Darling should not reject H₀."
       },
-      "source": "DMAIC.io synthetisch, NumPy default_rng, Seed=901",
+      "source": "Qprovement synthetisch, NumPy default_rng, Seed=901",
       "license": "public-domain",
       "file": "projects/distfit-normal.json",
       "format": "json",
@@ -1544,7 +1544,7 @@
         "de": "80 Bauteil-Lebensdauern aus Weibull(k=2,5; λ=100 h). Klassischer Verschleißfall (β > 1); Weibull sollte als beste Anpassung gelistet werden.",
         "en": "80 component lifetimes from Weibull(k=2.5, λ=100 h). Classic wear-out case (β > 1); Weibull should rank as best fit."
       },
-      "source": "DMAIC.io synthetisch, NumPy default_rng, Seed=902",
+      "source": "Qprovement synthetisch, NumPy default_rng, Seed=902",
       "license": "public-domain",
       "file": "projects/distfit-weibull.json",
       "format": "json",
@@ -1570,7 +1570,7 @@
         "de": "80 Zykluszeiten aus Lognormal(μ_log=ln 5; σ_log=0,6) — stark rechtsschief. Distribution-fit sollte Lognormal an die Spitze setzen.",
         "en": "80 cycle times from Lognormal(μ_log=ln 5, σ_log=0.6) — strongly right-skewed. Distribution-fit should rank lognormal first."
       },
-      "source": "DMAIC.io synthetisch, NumPy default_rng, Seed=903",
+      "source": "Qprovement synthetisch, NumPy default_rng, Seed=903",
       "license": "public-domain",
       "file": "projects/distfit-lognormal.json",
       "format": "json",
@@ -1595,7 +1595,7 @@
         "de": "80 Wartezeiten aus Exponential(μ=15 min) — gedächtnislose Verteilung. Exponential und Gamma stehen an der Spitze der Anpassung.",
         "en": "80 waiting times from Exponential(μ=15 min) — memoryless distribution. Exponential and gamma rank highest."
       },
-      "source": "DMAIC.io synthetisch, NumPy default_rng, Seed=904",
+      "source": "Qprovement synthetisch, NumPy default_rng, Seed=904",
       "license": "public-domain",
       "file": "projects/distfit-exponential.json",
       "format": "json",
@@ -1620,7 +1620,7 @@
         "de": "Zwei Schichten à 40 Messwerten — Schicht A ≈ N(μ=9,5, σ=1,5), Schicht B ≈ N(μ=10,8, σ=2,2). Im Wahrscheinlichkeitsnetz zeigen sich zwei Geraden mit unterschiedlicher Lage und Steigung.",
         "en": "Two shifts of 40 measurements each — shift A ≈ N(μ=9.5, σ=1.5), shift B ≈ N(μ=10.8, σ=2.2). The probability plot shows two lines with different location and slope."
       },
-      "source": "DMAIC.io synthetisch, NumPy default_rng, Seed=903",
+      "source": "Qprovement synthetisch, NumPy default_rng, Seed=903",
       "license": "public-domain",
       "file": "projects/probplot-normal.json",
       "format": "json",
@@ -1645,7 +1645,7 @@
         "de": "80 Weibull(k=2,5)-Lebensdauern auf dem Normalverteilungs-Wahrscheinlichkeitsnetz — sichtbare Krümmung in den Schwanzbereichen.",
         "en": "80 Weibull(k=2.5) lifetimes on the normal probability plot — visible curvature in the tails."
       },
-      "source": "DMAIC.io synthetisch, NumPy default_rng, Seed=902",
+      "source": "Qprovement synthetisch, NumPy default_rng, Seed=902",
       "license": "public-domain",
       "file": "projects/probplot-weibull.json",
       "format": "json",
@@ -1669,7 +1669,7 @@
         "de": "80 Bolzendurchmesser, gemessen mit einem zu groben Messmittel (Auflösung 0,1 mm bei Prozess-σ ≈ 0,15 mm). Im Wahrscheinlichkeitsnetz erscheinen die Punkte in deutlich sichtbaren vertikalen Säulen — ein klassischer Hinweis auf unzureichende Messauflösung.",
         "en": "80 bolt diameters measured with a gauge that is too coarse (resolution 0.1 mm versus process σ ≈ 0.15 mm). The probability plot shows clearly visible vertical stripes — a classic indicator of insufficient measurement resolution."
       },
-      "source": "DMAIC.io synthetisch, NumPy default_rng, Seed=904",
+      "source": "Qprovement synthetisch, NumPy default_rng, Seed=904",
       "license": "public-domain",
       "file": "projects/probplot-resolution.json",
       "format": "json",
@@ -1694,7 +1694,7 @@
         "de": "80 stark rechtsschiefe Lognormal-Zykluszeiten. Mit Box-Cox (optimales λ ≈ 0) werden die Werte annähernd normalverteilt.",
         "en": "80 strongly right-skewed lognormal cycle times. Box-Cox (optimal λ ≈ 0) makes the values approximately normal."
       },
-      "source": "DMAIC.io synthetisch, NumPy default_rng, Seed=903",
+      "source": "Qprovement synthetisch, NumPy default_rng, Seed=903",
       "license": "public-domain",
       "file": "projects/transform-lognormal-boxcox.json",
       "format": "json",
@@ -1718,7 +1718,7 @@
         "de": "Lehrcase „Bella Margherita\": Lieferzeiten zu lang, Reklamationen wegen kalter Pizza steigend. Vorbefüllt mit Problemstellung, drei messbaren Zielen und Org-Chart des Projektteams.",
         "en": "Teaching case 'Bella Margherita': delivery times too long, cold-pizza complaints rising. Pre-filled with problem statement, three measurable goals, and the project-team org chart."
       },
-      "source": "DMAIC.io Lehrkonfiguration",
+      "source": "Qprovement Lehrkonfiguration",
       "license": "public-domain",
       "file": "projects/charter-pizza-lieferzeit.json",
       "format": "json",
@@ -1742,7 +1742,7 @@
         "de": "32 Termine über 7 Wochen — vom Kickoff bis zum Projektabschluss, je Phase ein Gate Review. Daten werden beim Laden auf die aktuelle Woche (Montag = Anker) verschoben, sodass der Plan immer um heute zentriert ist.",
         "en": "32 events across 7 weeks — from kickoff to project closure, with a gate review per phase. Dates are remapped to the current week (Monday anchor) on load so the plan always centers on today."
       },
-      "source": "DMAIC.io Lehrkonfiguration",
+      "source": "Qprovement Lehrkonfiguration",
       "license": "public-domain",
       "file": "projects/dmaic-calendar-pizza-projekt.json",
       "format": "json",
@@ -1766,7 +1766,7 @@
         "de": "Suppliers, Inputs, Process, Outputs, Customers für den Bella-Margherita-Lieferprozess — 8 Prozessschritte von Bestellannahme bis Übergabe.",
         "en": "Suppliers, Inputs, Process, Outputs, Customers for the Bella Margherita delivery process — 8 process steps from order intake to handover."
       },
-      "source": "DMAIC.io Lehrkonfiguration",
+      "source": "Qprovement Lehrkonfiguration",
       "license": "public-domain",
       "file": "projects/sipoc-pizza-lieferprozess.json",
       "format": "json",
@@ -1790,7 +1790,7 @@
         "de": "Inputs (Routenplanung, Ofen, Verkehr, …) gegen Outputs (Lieferzeit, Temperatur, Reklamationsquote) — gewichtete 0–9-Bewertung der Zusammenhänge.",
         "en": "Inputs (routing, oven, traffic, …) versus outputs (delivery time, temperature, complaint rate) — weighted 0–9 ratings of the dependencies."
       },
-      "source": "DMAIC.io Lehrkonfiguration",
+      "source": "Qprovement Lehrkonfiguration",
       "license": "public-domain",
       "file": "projects/ce-matrix-pizza-lieferzeit.json",
       "format": "json",
@@ -1814,7 +1814,7 @@
         "de": "4 Risiken entlang des Lieferprozesses (Adress-Erfassung, Ofen-Überlastung, Thermo-Verpackung, Verkehrsstau) mit S/O/D-Bewertung und je 2 datierten Maßnahmen (Sofort-Maßnahme bereits umgesetzt, Folge-Maßnahme geplant) — Burndown zeigt Plan- und Ist-Verlauf.",
         "en": "4 risks along the delivery process (address entry, oven overload, thermal packaging, traffic) with S/O/D ratings and 2 dated actions each (one already completed, one planned) — burndown shows plan and actual lines."
       },
-      "source": "DMAIC.io Lehrkonfiguration",
+      "source": "Qprovement Lehrkonfiguration",
       "license": "public-domain",
       "file": "projects/fmea-pizza-lieferprozess.json",
       "format": "json",
@@ -1838,7 +1838,7 @@
         "de": "Vollständiges 6-M-Beispiel: 6 Hypothesen quer durch Mensch, Methode, Maschine, Material, Milieu, Messung — bewertet von drei Experten — plus 7 belegende Fakten und 6 Versuche (mit Status, Zeitplan, Kosten und Verknüpfung zu den Hypothesen).",
         "en": "Full 6-M example: 6 hypotheses across Man, Method, Machine, Material, Environment, Measurement — rated by three experts — plus 7 supporting facts and 6 experiments (with status, schedule, cost, linked to hypotheses)."
       },
-      "source": "DMAIC.io Lehrkonfiguration",
+      "source": "Qprovement Lehrkonfiguration",
       "license": "public-domain",
       "file": "projects/ishikawa-lieferzeit-zu-lang.json",
       "format": "json",
@@ -1863,7 +1863,7 @@
         "de": "5-Why-Kette vom Symptom „Pizza kommt zu spät\" bis zur Grundursache „Bestellsystem ohne Logistikfunktion\".",
         "en": "5-Why chain from symptom 'pizza arrives late' down to root cause 'order system without logistics function'."
       },
-      "source": "DMAIC.io Lehrkonfiguration",
+      "source": "Qprovement Lehrkonfiguration",
       "license": "public-domain",
       "file": "projects/five-why-lieferzeit.json",
       "format": "json",
@@ -1888,7 +1888,7 @@
         "de": "8 Prozessschritte mit Value-Type-Klassifikation (VA / BNVA) und Input-Typen (Parameter x / Störgröße n). Bestellung → Küche → Backen → Verpacken → Auslieferung → Übergabe.",
         "en": "8 process steps with value-type classification (VA / BNVA) and input types (parameter x / noise n). Order → kitchen → bake → pack → deliver → handover."
       },
-      "source": "DMAIC.io Lehrkonfiguration",
+      "source": "Qprovement Lehrkonfiguration",
       "license": "public-domain",
       "file": "projects/process-map-pizza-lieferung.json",
       "format": "json",
@@ -1913,7 +1913,7 @@
         "de": "RACI-Matrix für 8 Aktivitäten × 6 Rollen — wer ist R(esponsible), A(ccountable), C(onsulted), I(nformed)?",
         "en": "RACI matrix for 8 activities × 6 roles — who is R(esponsible), A(ccountable), C(onsulted), I(nformed)?"
       },
-      "source": "DMAIC.io Lehrkonfiguration",
+      "source": "Qprovement Lehrkonfiguration",
       "license": "public-domain",
       "file": "projects/raci-pizza-lieferprozess.json",
       "format": "json",
@@ -1938,7 +1938,7 @@
         "de": "7 Stakeholder von Geschäftsführerin bis Buchhaltung mit Macht/Interesse-Skalen und Support-Haltung (Supporter / Neutral / Resistor).",
         "en": "7 stakeholders from CEO to accounting with power/interest ratings and support attitude (supporter / neutral / resistor)."
       },
-      "source": "DMAIC.io Lehrkonfiguration",
+      "source": "Qprovement Lehrkonfiguration",
       "license": "public-domain",
       "file": "projects/stakeholders-pizza-lieferung.json",
       "format": "json",
@@ -1962,7 +1962,7 @@
         "de": "3 Voice-of-Customer-Aussagen (kalte Pizza, lange Lieferzeit, Adressprobleme) übersetzt in CTQs mit messbaren Anforderungen.",
         "en": "3 Voice-of-Customer quotes (cold pizza, long delivery, address issues) translated into CTQs with measurable requirements."
       },
-      "source": "DMAIC.io Lehrkonfiguration",
+      "source": "Qprovement Lehrkonfiguration",
       "license": "public-domain",
       "file": "projects/voc-ctx-pizza-lieferung.json",
       "format": "json",
@@ -1987,7 +1987,7 @@
         "de": "4 Lessons aus dem Pilot: Vorab-Routenplanung (Erfolg), Doppelwand-Thermo-Boxen (Erfolg), Wochenstart-Standup (Verbesserung), Bestellannahme als Engpass (Problem).",
         "en": "4 lessons from the pilot: pre-route planning (success), double-wall thermal boxes (success), Monday standup (improvement), order intake bottleneck (problem)."
       },
-      "source": "DMAIC.io Lehrkonfiguration",
+      "source": "Qprovement Lehrkonfiguration",
       "license": "public-domain",
       "file": "projects/lessons-pizza-pilotprojekt.json",
       "format": "json",
@@ -2011,7 +2011,7 @@
         "de": "Klassischer TRIZ-Konflikt aus dem Pizza-Lehrcase: schneller liefern, ohne Produktivität zu opfern. Improving = 9 (Speed), worsening = 39 (Productivity).",
         "en": "Classic TRIZ contradiction from the pizza case: deliver faster without sacrificing productivity. Improving = 9 (Speed), worsening = 39 (Productivity)."
       },
-      "source": "DMAIC.io Lehrkonfiguration",
+      "source": "Qprovement Lehrkonfiguration",
       "license": "public-domain",
       "file": "projects/triz-contradiction-speed-vs-productivity.json",
       "format": "json",
@@ -2036,7 +2036,7 @@
         "de": "3×3 Matrix Subsystem/System/Übersystem × Vergangenheit/Gegenwart/Zukunft — angewandt auf den Pizza-Lieferprozess.",
         "en": "3×3 matrix Sub-/System/Super-system × Past/Present/Future — applied to the pizza delivery process."
       },
-      "source": "DMAIC.io Lehrkonfiguration",
+      "source": "Qprovement Lehrkonfiguration",
       "license": "public-domain",
       "file": "projects/triz-9windows-pizza-lieferung.json",
       "format": "json",
@@ -2061,7 +2061,7 @@
         "de": "Klassisches Lehrbeispiel: Tragflügel soll gleichzeitig lang (Auftrieb) und kurz (Widerstand) sein. Auflösung über Separation in der Zeit — Schwenkflügel.",
         "en": "Classic textbook case: a wing must be both long (lift) and short (drag). Resolved via separation in time — swing wing."
       },
-      "source": "DMAIC.io Lehrkonfiguration",
+      "source": "Qprovement Lehrkonfiguration",
       "license": "public-domain",
       "file": "projects/triz-physical-contradiction-tragfluegel.json",
       "format": "json",
@@ -2086,7 +2086,7 @@
         "de": "Drei IFR-Stufen für einen verklemmenden Bandförderer-Übergabe-Trichter, mit Hindernis-Analyse als Aufgabenliste.",
         "en": "Three IFR levels for a jamming belt-conveyor transfer chute, with an obstacle list as the task backlog."
       },
-      "source": "DMAIC.io Lehrkonfiguration",
+      "source": "Qprovement Lehrkonfiguration",
       "license": "public-domain",
       "file": "projects/triz-ifr-bandfoerderer.json",
       "format": "json",
@@ -2111,7 +2111,7 @@
         "de": "Ressourcen-Inventar über 6 Kategorien × 3 Systemebenen für den Bandförderer-Lehrcase — passend zum IFR-Beispiel.",
         "en": "Resources inventory across 6 categories × 3 system levels for the belt-conveyor case — companion to the IFR example."
       },
-      "source": "DMAIC.io Lehrkonfiguration",
+      "source": "Qprovement Lehrkonfiguration",
       "license": "public-domain",
       "file": "projects/triz-resources-bandfoerderer.json",
       "format": "json",
@@ -2136,7 +2136,7 @@
         "de": "Acht klassische Evolutionslinien angewandt auf den Pkw-Hauptscheinwerfer — vom Bi-Scheinwerfer zur adaptiven LED-Matrix und darüber hinaus.",
         "en": "Eight classical evolution trajectories applied to a passenger-car headlight — from twin-headlight to adaptive LED matrix and beyond."
       },
-      "source": "DMAIC.io Lehrkonfiguration",
+      "source": "Qprovement Lehrkonfiguration",
       "license": "public-domain",
       "file": "projects/triz-evolution-trends-pkw-beleuchtung.json",
       "format": "json",
@@ -2161,7 +2161,7 @@
         "de": "Su-Field-Modell für eine unzureichende mechanische Wirkung (Bohrer auf Beton). Diagnose: Klasse 2 — gepulster Betrieb (Schlagbohren) ausgewählt.",
         "en": "Su-Field model for an insufficient mechanical action (drill on concrete). Diagnosis: class 2 — pulsed mode (hammer drilling) selected."
       },
-      "source": "DMAIC.io Lehrkonfiguration",
+      "source": "Qprovement Lehrkonfiguration",
       "license": "public-domain",
       "file": "projects/triz-sufield-bohrer-beton.json",
       "format": "json",
@@ -2186,7 +2186,7 @@
         "de": "12 Lieferanten mit Preisindex, Liefertreue und Bestellvolumen. Das Blasendiagramm zeigt den klassischen Trade-off Preis ↔ Liefertreue; die Bubble-Größe verrät, welche Lieferanten strategisch das größte Gewicht haben.",
         "en": "12 suppliers with price index, on-time delivery rate and annual order volume. The bubble chart visualises the classic price ↔ reliability trade-off; bubble size reveals which suppliers carry the largest strategic weight."
       },
-      "source": "DMAIC.io Lehrkonfiguration",
+      "source": "Qprovement Lehrkonfiguration",
       "license": "public-domain",
       "file": "projects/chart-suggestion-bubble-lieferanten.json",
       "format": "json",
@@ -2210,7 +2210,7 @@
         "de": "10 Maschinen mit Zykluszeit, Ausschussrate und Tagesausstoß. Das Blasendiagramm priorisiert Six-Sigma-Verbesserungsprojekte: große Bubbles oben rechts (hoher Ausschuss bei hohem Output) sind die teuersten Problemfälle.",
         "en": "10 machines with cycle time, scrap rate and daily output. The bubble chart prioritises Six Sigma improvement projects: large bubbles in the upper right (high scrap at high output) are the most expensive problem cases."
       },
-      "source": "DMAIC.io Lehrkonfiguration",
+      "source": "Qprovement Lehrkonfiguration",
       "license": "public-domain",
       "file": "projects/chart-suggestion-bubble-maschinenpark.json",
       "format": "json",
@@ -2234,7 +2234,7 @@
         "de": "8 Schritte über 5 Rollen (Kunde, Vertrieb, Disposition, Lager, Buchhaltung). Bearbeitung ≈ 53 min, Wartezeit dominiert mit ca. 2 d 13 h 30 min — PCE liegt unter 3 %. Zeigt Standardprobleme der Auftragsabwicklung: Postfach-Liegezeiten, Übergabe-Wartezeiten, kundenseitige Verzögerungen.",
         "en": "8 steps across 5 roles (customer, sales, dispatch, warehouse, accounting). Processing ≈ 53 min, waiting time dominates with ca. 2 d 13 h 30 min — PCE below 3 %. Showcases standard issues: inbox idle time, handover waiting, customer-side delays."
       },
-      "source": "DMAIC.io Lehrkonfiguration",
+      "source": "Qprovement Lehrkonfiguration",
       "license": "public-domain",
       "file": "projects/makigami-auftragsabwicklung.json",
       "format": "json",
@@ -2259,7 +2259,7 @@
         "de": "9 Schritte über 4 Rollen, Papier-Workflow vom Antrag bis zur Buchung. Bearbeitung ≈ 22 min, Lead Time > 4 Arbeitstage — PCE < 1 %. Klassischer Office-Hebel: ein riesiger Wartezeit-Block im Postkorb der Vorgesetzten.",
         "en": "9 steps across 4 roles, paper-based workflow from application to system booking. Processing ≈ 22 min, Lead Time > 4 workdays — PCE < 1 %. Classic office lever: one huge idle block in the manager's inbox."
       },
-      "source": "DMAIC.io Lehrkonfiguration",
+      "source": "Qprovement Lehrkonfiguration",
       "license": "public-domain",
       "file": "projects/makigami-urlaubsantrag.json",
       "format": "json",
@@ -2285,7 +2285,7 @@
         "de": "60 Defektereignisse über drei Schichten (Früh/Spät/Nacht) und vier Defektarten (Kratzer, Maßabweichung, Oberfläche, Sonstige). Das gestapelte Säulendiagramm zeigt auf einen Blick, dass die Frühschicht von Maßabweichungen dominiert wird, während die Nachtschicht vor allem Oberflächendefekte produziert — klassische Anomalie für die Measure-Phase.",
         "en": "60 defect events across three shifts (Early/Late/Night) and four defect types (scratches, dimensional, surface, other). The stacked bar chart shows at a glance that the early shift is dominated by dimensional defects while the night shift produces mostly surface defects — a classic anomaly for the Measure phase."
       },
-      "source": "DMAIC.io Lehrkonfiguration",
+      "source": "Qprovement Lehrkonfiguration",
       "license": "public-domain",
       "file": "projects/bar-defekte-pro-schicht.json",
       "format": "json",
@@ -2310,7 +2310,7 @@
         "de": "50 Reklamationen aus Q2 mit Grund und individueller Kostenposition. Die Pareto-Auswertung summiert die Kosten je Grund und sortiert absteigend — die 80%-Linie zeigt, dass „Maßabweichung“ allein bereits den Großteil der Kosten verursacht, obwohl es nicht die häufigste Reklamation ist. Klassisches Lehrbeispiel: Frequenz ≠ Wichtigkeit.",
         "en": "50 Q2 complaints with reason and individual cost. The Pareto analysis sums cost per reason and sorts descending — the 80 % line shows that 'dimensional deviation' alone accounts for most of the cost, even though it is not the most frequent reason. Textbook example: frequency ≠ importance."
       },
-      "source": "DMAIC.io Lehrkonfiguration",
+      "source": "Qprovement Lehrkonfiguration",
       "license": "public-domain",
       "file": "projects/pareto-reklamationskosten.json",
       "format": "json",
@@ -2335,7 +2335,7 @@
         "de": "60 Freigabe-Entscheidungen über drei Werke und drei Status-Stufen (OK/Bedingt/Abgelehnt). Das Mosaikdiagramm macht zwei Effekte gleichzeitig sichtbar: die unterschiedlichen Volumen (Spaltenbreiten — Werk-A doppelt so viele Entscheidungen wie Werk-B, dreimal so viele wie Werk-C) und die unterschiedliche Qualität (Segmenthöhen — Werk-C deutlich mehr Ablehnungen pro Werk).",
         "en": "60 approval decisions across three plants and three status levels (OK/conditional/rejected). The mosaic plot reveals two effects at once: the volume differences (column widths — plant A has twice as many decisions as plant B, three times more than plant C) and the quality differences (segment heights — plant C has clearly more rejections per plant)."
       },
-      "source": "DMAIC.io Lehrkonfiguration",
+      "source": "Qprovement Lehrkonfiguration",
       "license": "public-domain",
       "file": "projects/mosaic-lieferantenfreigabe.json",
       "format": "json",
@@ -2360,7 +2360,7 @@
         "de": "45 Zykluszeit-Messungen (in Sekunden) über drei Schichten (Früh/Spät/Nacht) und drei Produktionslinien (L1/L2/L3) — 5 Messungen pro Kombination. Die Heatmap zeigt zwei Effekte gleichzeitig: einen Linieneffekt (L3 ≈ 30 s langsamer als L1) und einen Schichteffekt (Nacht ≈ 10 s langsamer als Früh). Die Kombination (Nacht, L3) ist mit 82 s das klare Worst-Case-Feld — perfekter Einstieg für die Analyze-Phase.",
         "en": "45 cycle-time measurements (in seconds) across three shifts (early/late/night) and three production lines (L1/L2/L3) — 5 readings per combination. The heatmap reveals two effects at once: a line effect (L3 ≈ 30 s slower than L1) and a shift effect (night ≈ 10 s slower than early). The (night, L3) cell at 82 s is the clear worst case — a perfect starting point for the Analyze phase."
       },
-      "source": "DMAIC.io Lehrkonfiguration",
+      "source": "Qprovement Lehrkonfiguration",
       "license": "public-domain",
       "file": "projects/heatmap-zykluszeit-schicht-linie.json",
       "format": "json",
@@ -2385,7 +2385,7 @@
         "de": "15 Aufgaben für das Pizza-Lieferzeit-Projekt über den DMAIC-Zyklus hinweg — von Kickoff und SIPOC über Ishikawa und Hypothesentest bis zum Reaktionsplan und Lessons Learned. Status, Owner und Zieldaten realistisch verteilt: drei erledigt, drei in Bearbeitung, acht offen, eine blockiert (wartet auf Sponsor-Entscheidung). Einträge mit aktivem Kalender-Flag wandern automatisch in den DMAIC-Kalender, sobald dieser im Define-Tile vorhanden ist.",
         "en": "15 tasks for the pizza delivery project across the DMAIC cycle — from kickoff and SIPOC through Ishikawa and hypothesis test to the reaction plan and lessons learned. Status, owner and target dates spread realistically: three done, three in progress, eight open, one blocked (waiting on a sponsor decision). Items with the calendar flag enabled appear in the DMAIC calendar as soon as that module is added to the Define tile."
       },
-      "source": "DMAIC.io Lehrkonfiguration",
+      "source": "Qprovement Lehrkonfiguration",
       "license": "public-domain",
       "file": "projects/todo-pizza-lieferzeit.json",
       "format": "json",
@@ -2410,7 +2410,7 @@
         "de": "Fünf Referenzen (2/4/6/8/10) über den Messbereich (LSL 0 / USL 12, T = 12) mit je 10 Wiederholungen. Vernachlässigbarer Bias und keine Steigung — %Linearität ≈ 0,07 %, Q_MS,BI ≈ 0,15 %. Lehrbuch-Fall eines linearen Messmittels über den gesamten Bereich.",
         "en": "Five references (2/4/6/8/10) spanning the measurement range (LSL 0 / USL 12, T = 12) with 10 repeats each. Negligible bias and no slope — %Linearity ≈ 0.07 %, Q_MS,BI ≈ 0.15 %. Textbook linear-gage case across the full range."
       },
-      "source": "DMAIC.io synthetisch, NumPy default_rng, Seed=621",
+      "source": "Qprovement synthetisch, NumPy default_rng, Seed=621",
       "license": "public-domain",
       "file": "projects/msa-typ4-linear.json",
       "format": "json",
@@ -2436,7 +2436,7 @@
         "de": "Fünf Referenzen (2/4/6/8/10) mit je 10 Wiederholungen; Bias steigt von 0 (Ref 2) auf +1,6 (Ref 10). Deutlicher Linearitätsfehler — %Linearität ≈ 13 %, Q_MS,BI ≈ 27 %, Steigung hochsignifikant. AIAG und VDA 5 schlagen beide rot an. Lehrbuch-Fall eines abzulehnenden Messsystems.",
         "en": "Five references (2/4/6/8/10) with 10 repeats each; bias grows from 0 (ref 2) to +1.6 (ref 10). Clear linearity error — %Linearity ≈ 13 %, Q_MS,BI ≈ 27 %, slope highly significant. Both AIAG and VDA 5 turn red. Textbook case for rejecting a measurement system."
       },
-      "source": "DMAIC.io synthetisch, NumPy default_rng, Seed=622",
+      "source": "Qprovement synthetisch, NumPy default_rng, Seed=622",
       "license": "public-domain",
       "file": "projects/msa-typ4-drift.json",
       "format": "json",
@@ -2462,7 +2462,7 @@
         "de": "3 Prüfer × 30 Teile × 3 Wiederholungen (binär i.O./n.i.O.). Fleiss κ ≈ 0,92, Effektivität ≈ 97,8 % je Prüfer. Lehrbuch-Fall eines akzeptablen attributiven Prüfprozesses.",
         "en": "3 appraisers × 30 parts × 3 replicates (binary OK/NOK). Fleiss κ ≈ 0.92, effectiveness ≈ 97.8 % per appraiser. Textbook acceptable attribute gage."
       },
-      "source": "DMAIC.io synthetisch",
+      "source": "Qprovement synthetisch",
       "license": "public-domain",
       "file": "projects/msa-typ5-binary-good.json",
       "format": "json",
@@ -2488,7 +2488,7 @@
         "de": "3 Prüfer × 30 Teile × 3 Wdh (binär i.O./n.i.O.). Fleiss κ ≈ 0,58, Effektivität 83–88 % — Prüfprozess grenzwertig. Fünf Teile mit unausgewogenen Wiederholungen; beim Entfernen der Referenz-Spalte fallen sie in einen ambigen Konsens (Warnung W_AMBIGUOUS_CONSENSUS).",
         "en": "3 appraisers × 30 parts × 3 replicates (binary OK/NOK). Fleiss κ ≈ 0.58, effectiveness 83–88 % — marginal gage. Five parts with unbalanced replicates; removing the reference column triggers ambiguous consensus (W_AMBIGUOUS_CONSENSUS)."
       },
-      "source": "DMAIC.io synthetisch",
+      "source": "Qprovement synthetisch",
       "license": "public-domain",
       "file": "projects/msa-typ5-binary-marginal.json",
       "format": "json",
@@ -2514,7 +2514,7 @@
         "de": "3 Prüfer × 25 Teile × 2 Wdh (nominal A/B/C). Fleiss κ ≈ 0,84, Effektivität 94–96 % je Prüfer. Zeigt Cohen κ paarweise, Fleiss κ und Confusion-Heatmaps für nicht-geordnete Kategorien.",
         "en": "3 appraisers × 25 parts × 2 replicates (nominal A/B/C). Fleiss κ ≈ 0.84, effectiveness 94–96 % per appraiser. Illustrates pairwise Cohen κ, Fleiss κ and confusion heatmaps for unordered categories."
       },
-      "source": "DMAIC.io synthetisch",
+      "source": "Qprovement synthetisch",
       "license": "public-domain",
       "file": "projects/msa-typ5-nominal-3classes.json",
       "format": "json",
@@ -2540,7 +2540,7 @@
         "de": "3 Prüfer × 20 Vorlagen × 2 Wiederholungen (binär i.O./n.i.O.). Die klassische Zählübung aus dem Training: Fleiss κ ≈ 0,79, Effektivität 85–90 %, Verdikt gelb. Enthält alle drei Lehrbilder — ein zu strenger Prüfer, ein mit sich selbst uneiniger Prüfer und eine Vorlage, bei der sich alle einig und alle falsch sind.",
         "en": "3 appraisers × 20 templates × 2 replicates (binary OK/NOK). The classic counting exercise from training: Fleiss κ ≈ 0.79, effectiveness 85–90 %, marginal verdict. Contains all three teaching cases — an over-strict appraiser, an appraiser who contradicts himself, and one template where everyone agrees and everyone is wrong."
       },
-      "source": "DMAIC.io synthetisch",
+      "source": "Qprovement synthetisch",
       "license": "public-domain",
       "file": "projects/msa-typ5-zaehltest.json",
       "format": "json",
@@ -2566,7 +2566,7 @@
         "de": "3 Prüfer × 20 Teile × 2 Wdh (ordinal 1–5). Fleiss κ ≈ 0,77, weighted Cohen κ (quadratisch) ≈ 0,95 pro Paar, Effektivität ≈ 90 % je Prüfer. Gelegentliche Nachbar-Bewertungen (±1) — Modul zeigt weighted κ als tragende Kennzahl.",
         "en": "3 appraisers × 20 parts × 2 replicates (ordinal 1–5). Fleiss κ ≈ 0.77, weighted Cohen κ (quadratic) ≈ 0.95 per pair, effectiveness ≈ 90 % per appraiser. Occasional neighbour ratings (±1) — module reports weighted κ as the leading KPI."
       },
-      "source": "DMAIC.io synthetisch",
+      "source": "Qprovement synthetisch",
       "license": "public-domain",
       "file": "projects/msa-typ5-ordinal-scale5.json",
       "format": "json",
@@ -2593,7 +2593,7 @@
         "de": "50 Einzelmessungen ohne Untergruppen. Regelkarte und Drift-Test unauffällig (p ≈ 0,84) — Lehrbuch-Fall eines stabilen Prozesses ohne Sonderursachen.",
         "en": "50 individual measurements without subgroups. Control chart and drift test unremarkable (p ≈ 0.84) — textbook case of a stable process with no special causes."
       },
-      "source": "DMAIC.io synthetisch",
+      "source": "Qprovement synthetisch",
       "license": "public-domain",
       "file": "projects/msa-typ6-imr-stable.json",
       "format": "json",
@@ -2619,7 +2619,7 @@
         "de": "50 Einzelmessungen mit linearem Trend (+0,02 je Punkt). Der Drift-Test schlägt hochsignifikant an (p ≈ 0,00009) — Prüfmittel oder Prozess driftet über die Zeit.",
         "en": "50 individual measurements with a linear trend (+0.02 per point). The drift test fires highly significant (p ≈ 0.00009) — the gage or process drifts over time."
       },
-      "source": "DMAIC.io synthetisch",
+      "source": "Qprovement synthetisch",
       "license": "public-domain",
       "file": "projects/msa-typ6-imr-drift.json",
       "format": "json",
@@ -2645,7 +2645,7 @@
         "de": "25 Untergruppen à n = 5. x̄-Karte und R-Karte unauffällig, Drift-Test nicht signifikant (p ≈ 0,41) — Lehrbuch-Fall eines stabilen Prozesses mit Untergruppen.",
         "en": "25 subgroups of n = 5. X̄ chart and R chart unremarkable, drift test not significant (p ≈ 0.41) — textbook case of a stable subgrouped process."
       },
-      "source": "DMAIC.io synthetisch",
+      "source": "Qprovement synthetisch",
       "license": "public-domain",
       "file": "projects/msa-typ6-xbar-r-stable.json",
       "format": "json",
@@ -2671,7 +2671,7 @@
         "de": "25 Untergruppen à n = 5, Basisgrenzen nur aus den ersten 15 Untergruppen. Ab Untergruppe 16 verschiebt sich der Mittelwert um +1,2·σ_x̄ — Nelson-Regeln 5/6 schlagen an, Verdikt „instabil“ (Treiber: Nelson). Warnung wegen Basis < 20 Untergruppen.",
         "en": "25 subgroups of n = 5, baseline limits from only the first 15 subgroups. From subgroup 16 onward the mean shifts by +1.2·σ_x̄ — Nelson rules 5/6 fire, verdict “unstable” (driver: Nelson). Warns because the baseline has fewer than 20 subgroups."
       },
-      "source": "DMAIC.io synthetisch",
+      "source": "Qprovement synthetisch",
       "license": "public-domain",
       "file": "projects/msa-typ6-xbar-r-shift.json",
       "format": "json",
@@ -2697,7 +2697,7 @@
         "de": "3² Voll-Faktoriell mit 2 Replikaten (18 Läufe), blockweise nach Rotorlänge (L = 8 → 6 → 4 cm, physikalisch erzwungen). Klammern-Reihenfolge innerhalb Block randomisiert. Ergebnis: wahres Optimum bei (L ≈ 7 cm, C = 1) liegt zwischen den getesteten Längen — perfektes RSM-Beispiel.",
         "en": "3² full factorial with 2 replicates (18 runs), blocked by rotor length (L = 8 → 6 → 4 cm, physically forced). Paperclip order randomized within block. True optimum at (L ≈ 7 cm, C = 1) lies between tested lengths — a textbook RSM case."
       },
-      "source": "D.Mike synthetisch, Physik-Modell, Seed=1305",
+      "source": "Qprovement synthetisch, Physik-Modell, Seed=1305",
       "license": "public-domain",
       "file": "projects/doe-planner-hubschrauber-flyer.json",
       "format": "json",
@@ -2721,7 +2721,7 @@
         "de": "Ziel: Regressions-Modell aus dem DoE-Planner-Beispiel „Papier-Hubschrauber\" (18 Läufe) auf „maximiere Flugzeit\" optimieren. Prognose-Optimum bei (L ≈ 7 cm, C = 1) → t̂ ≈ 2,80 s, Desirability-Untergrenze 2,5 s — liegt zwischen den physisch getesteten Rotorlängen (6 und 8 cm) und zeigt den RSM-Kernvorteil. Dieses Beispiel lädt nur einen leeren Optimizer-State, da response-optimization Modelle projektglobal aus dem Regression-Modul bezieht. Workflow: Öffne doe-planner-Beispiel → Aktion „Transfer zu Regression\" → dort „als Modell speichern\" → dann füllt sich response-optimization mit Daten.",
         "en": "Goal: optimize the regression model from the DoE Planner \"Paper Helicopter\" example (18 runs) for \"maximize flight time\". Predicted optimum at (L ≈ 7 cm, C = 1) → t̂ ≈ 2.80 s, lower desirability bound 2.5 s — lies between the physically tested rotor lengths (6 and 8 cm) and demonstrates the core RSM advantage. This example only loads an empty optimizer state, since response-optimization sources models project-globally from the Regression module. Workflow: open the doe-planner example → action \"Transfer to Regression\" → \"save as model\" there → response-optimization then comes alive with data."
       },
-      "source": "D.Mike synthetisch, Physik-Modell, Seed=1305",
+      "source": "Qprovement synthetisch, Physik-Modell, Seed=1305",
       "license": "public-domain",
       "file": "projects/response-optimization-hubschrauber-flyer.json",
       "format": "json",
@@ -2745,7 +2745,7 @@
         "de": "Charter für „Papier-Hubschrauber vom Messestand — Flugzeit-Maximierung mit einem Prototypen“. IN-Scope: Rotorlänge und Büroklammern. OUT-Scope: Rotorbreite (irreversibel, nur 1 Prototyp), Wurftechnik, Papierart, Fallhöhe. Ziel-Y: mittlere Flugzeit ≥ 3,0 s bei σ ≤ 0,15 s.",
         "en": "Charter for \"Paper Helicopter from the trade-show booth — maximizing flight time with a single prototype\". In scope: rotor length and paperclips. Out of scope: rotor width (irreversible, only 1 prototype), throwing technique, paper type, drop height. Target Y: mean flight time ≥ 3.0 s at σ ≤ 0.15 s."
       },
-      "source": "D.Mike synthetisch, Physik-Modell, Seed=1305",
+      "source": "Qprovement synthetisch, Physik-Modell, Seed=1305",
       "license": "public-domain",
       "file": "projects/project-charter-hubschrauber-flyer.json",
       "format": "json",
@@ -2769,7 +2769,7 @@
         "de": "SIPOC des Hubschrauber-Prozesses: vom Rohflyer über Ausschneiden, Falten, Klammern und Fallenlassen bis zur 18er-Log-Tabelle. Zeigt den physisch erzwungenen Schritt „Rotor kürzen (zwischen Blöcken)“, der die spätere DoE-Blockung motiviert.",
         "en": "SIPOC of the helicopter process: from the raw flyer through cutting, folding, clipping and dropping to the 18-run log table. Highlights the physically forced \"trim rotor (between blocks)\" step that motivates the later DoE blocking."
       },
-      "source": "D.Mike synthetisch, Physik-Modell, Seed=1305",
+      "source": "Qprovement synthetisch, Physik-Modell, Seed=1305",
       "license": "public-domain",
       "file": "projects/sipoc-hubschrauber-flyer.json",
       "format": "json",
@@ -2793,7 +2793,7 @@
         "de": "VoC „soll lange fliegen und sanft trudeln“ übersetzt in drei CTQs: Flugzeit ≥ 3,0 s, Streuung σ ≤ 0,15 s und Autorotation (qualitativ). Bildet die Baum-Grundlage für das verknüpfte Kano-Beispiel.",
         "en": "VoC \"should fly long and glide down gently\" translated into three CTQs: flight time ≥ 3.0 s, spread σ ≤ 0.15 s, and autorotation (qualitative). Forms the tree basis for the linked Kano example."
       },
-      "source": "D.Mike synthetisch, Physik-Modell, Seed=1305",
+      "source": "Qprovement synthetisch, Physik-Modell, Seed=1305",
       "license": "public-domain",
       "file": "projects/voc-ctx-tree-hubschrauber-flyer.json",
       "format": "json",
@@ -2817,7 +2817,7 @@
         "de": "Kano-Klassifizierung dreier Hubschrauber-Merkmale: Basis „fliegt überhaupt“, Leistung „Flugzeit“, Begeisterung „Autorotation (eleganter Trudel, weiche Landung)“. Bringt eine eigene VoC/CTQ-Baum-Instanz mit (identisch zum Beispiel „Papier-Hubschrauber — VoC/CTQ“).",
         "en": "Kano classification of three helicopter characteristics: must-be \"flies at all\", performance \"flight time\", attractive \"autorotation (elegant spin, soft landing)\". Ships its own VoC/CTQ tree instance (identical to the \"Paper Helicopter — VoC/CTQ\" example)."
       },
-      "source": "D.Mike synthetisch, Physik-Modell, Seed=1305",
+      "source": "Qprovement synthetisch, Physik-Modell, Seed=1305",
       "license": "public-domain",
       "file": "projects/kano-hubschrauber-flyer.json",
       "format": "json",
@@ -2838,10 +2838,10 @@
         "en": "Paper Helicopter — Stakeholder Analysis"
       },
       "description": {
-        "de": "Stakeholder-Matrix mit D.Mike-Marketing (Macht hoch, Interesse hoch), Messestand-Besucher (Macht mittel, Interesse hoch), Fluglehrer als SME (Macht niedrig, Interesse mittel) und Papierhersteller (Macht niedrig, Interesse niedrig).",
-        "en": "Stakeholder matrix with D.Mike Marketing (power high, interest high), trade-show visitor (power medium, interest high), flight instructor as SME (power low, interest medium), and paper supplier (power low, interest low)."
+        "de": "Stakeholder-Matrix mit Qprovement-Marketing (Macht hoch, Interesse hoch), Messestand-Besucher (Macht mittel, Interesse hoch), Fluglehrer als SME (Macht niedrig, Interesse mittel) und Papierhersteller (Macht niedrig, Interesse niedrig).",
+        "en": "Stakeholder matrix with Qprovement Marketing (power high, interest high), trade-show visitor (power medium, interest high), flight instructor as SME (power low, interest medium), and paper supplier (power low, interest low)."
       },
-      "source": "D.Mike synthetisch, Physik-Modell, Seed=1305",
+      "source": "Qprovement synthetisch, Physik-Modell, Seed=1305",
       "license": "public-domain",
       "file": "projects/stakeholder-analysis-hubschrauber-flyer.json",
       "format": "json",
@@ -2865,7 +2865,7 @@
         "de": "8 Prozessschritte vom Ausschneiden bis zum Blockwechsel, inklusive exakter Faltmaße (Rotor 80×47 mm, Body 130 mm, Faltlinien x = 30/47/63 mm) und Rework-Loop bei Falzfehler zurück zum Falt-Schritt.",
         "en": "8 process steps from cutting to block change, including exact fold dimensions (rotor 80×47 mm, body 130 mm, fold lines x = 30/47/63 mm) and a rework loop back to the folding step on a fold defect."
       },
-      "source": "D.Mike synthetisch, Physik-Modell, Seed=1305",
+      "source": "Qprovement synthetisch, Physik-Modell, Seed=1305",
       "license": "public-domain",
       "file": "projects/process-map-hubschrauber-flyer.json",
       "format": "json",
@@ -2889,7 +2889,7 @@
         "de": "25 Wiederholmessungen der Stoppuhr gegen eine Metronom-Referenz (60 bpm, Bezugswert 2,000 s) — Cg ≈ 1,35 / Cgk ≈ 1,15: fähig, aber grenzwertig. Didaktische Botschaft: erst die Uhr prüfen, bevor das DoE gefahren wird.",
         "en": "25 repeated stopwatch readings against a metronome reference (60 bpm, target value 2.000 s) — Cg ≈ 1.35 / Cgk ≈ 1.15: capable, but borderline. Teaching point: check the clock before running the DoE."
       },
-      "source": "D.Mike synthetisch, Physik-Modell, Seed=1305",
+      "source": "Qprovement synthetisch, Physik-Modell, Seed=1305",
       "license": "public-domain",
       "file": "projects/msa-typ1-hubschrauber-flyer.json",
       "format": "json",
@@ -2913,7 +2913,7 @@
         "de": "10 Baseline-Läufe bei (L = 8 cm, C = 0 Klammern) als Einzelwert-Diagramm — zeigt Mittelwert und Streuung der Flugzeit vor dem DoE.",
         "en": "10 baseline runs at (L = 8 cm, C = 0 clips) as an individual value plot — shows the mean and spread of flight time before the DoE."
       },
-      "source": "D.Mike synthetisch, Physik-Modell, Seed=1305",
+      "source": "Qprovement synthetisch, Physik-Modell, Seed=1305",
       "license": "public-domain",
       "file": "projects/individual-value-plot-hubschrauber-flyer.json",
       "format": "json",
@@ -2937,7 +2937,7 @@
         "de": "6M-Fischgräten-Diagramm zur Streuung der Flugzeit: Wurftechnik, Klammer-Sitz, Papier, Faltpräzision, Windzüge und Stoppuhr-Reaktionszeit als mögliche Ursachen — Wurftechnik als bestätigte Hauptursache.",
         "en": "6M fishbone diagram for flight-time variation: throwing technique, clip fit, paper, folding precision, drafts and stopwatch reaction time as candidate causes — throwing technique confirmed as the main driver."
       },
-      "source": "D.Mike synthetisch, Physik-Modell, Seed=1305",
+      "source": "Qprovement synthetisch, Physik-Modell, Seed=1305",
       "license": "public-domain",
       "file": "projects/ishikawa-hubschrauber-flyer.json",
       "format": "json",
@@ -2961,7 +2961,7 @@
         "de": "5-Why-Kette von „Zeiten streuen zwischen 1,5 und 2,3 s bei identischer Konfiguration“ bis zur Wurzelursache „Wurftechnik nicht standardisiert“.",
         "en": "5-Why chain from \"times vary between 1.5 and 2.3 s under identical configuration\" down to the root cause \"throwing technique not standardized\"."
       },
-      "source": "D.Mike synthetisch, Physik-Modell, Seed=1305",
+      "source": "Qprovement synthetisch, Physik-Modell, Seed=1305",
       "license": "public-domain",
       "file": "projects/five-why-hubschrauber-flyer.json",
       "format": "json",
@@ -2985,7 +2985,7 @@
         "de": "Streudiagramm der 18 DoE-Läufe (Klammern vs. Flugzeit) — zeigt einen sichtbar nicht-linearen Zusammenhang bei allen drei Rotorlängen und motiviert den quadratischen Klammer-Term im DoE.",
         "en": "Scatter plot of the 18 DoE runs (clips vs. flight time) — shows a visibly non-linear relationship across all three rotor lengths, motivating the quadratic clip term in the DoE."
       },
-      "source": "D.Mike synthetisch, Physik-Modell, Seed=1305",
+      "source": "Qprovement synthetisch, Physik-Modell, Seed=1305",
       "license": "public-domain",
       "file": "projects/xy-plot-hubschrauber-flyer.json",
       "format": "json",
@@ -3009,7 +3009,7 @@
         "de": "I-MR-Karte aus 5 Bestätigungsläufen im Optimum (L = 6 cm, C = 1 Klammer, Mittel ≈ 2,76 s, σ ≈ 0,12 s). Regelgrenzen aus der Baseline-Streuung — der Prozess läuft unter Kontrolle bei Optimum.",
         "en": "I-MR chart from 5 confirmation runs at the optimum (L = 6 cm, C = 1 clip, mean ≈ 2.76 s, σ ≈ 0.12 s). Control limits derived from the baseline spread — the process is in control at the optimum."
       },
-      "source": "D.Mike synthetisch, Physik-Modell, Seed=1305",
+      "source": "Qprovement synthetisch, Physik-Modell, Seed=1305",
       "license": "public-domain",
       "file": "projects/control-chart-hubschrauber-flyer.json",
       "format": "json",
@@ -3033,7 +3033,7 @@
         "de": "5 Lessons aus dem Projekt: sequenzielle Blockung löst die Irreversibilität der Rotorlänge (Erfolg), MSA vor DoE (Erfolg), Fokus auf zwei Faktoren (Erfolg) sowie Rotorbreite als dritter Faktor nicht umsetzbar (Problem) und Wurftechnik als dominierende Reststreuung (Problem).",
         "en": "5 lessons from the project: sequential blocking resolves the irreversibility of the rotor length (success), MSA before DoE (success), focusing on two factors (success), plus wing width not viable as a third factor (problem) and throwing technique dominating the residual variation (problem)."
       },
-      "source": "D.Mike synthetisch, Physik-Modell, Seed=1305",
+      "source": "Qprovement synthetisch, Physik-Modell, Seed=1305",
       "license": "public-domain",
       "file": "projects/lessons-learned-hubschrauber-flyer.json",
       "format": "json",
@@ -3057,7 +3057,7 @@
         "de": "5 Aufgaben nach Projektabschluss: Workflow-Hinweis zur Aktivierung des Optimum-Panels in response-optimization, zweiter Flyer für die Rotorbreiten-Augmentierung, Fallhöhen-Variation für Robustheit, Wurf-SOP dokumentieren und Wurfvorrichtung bauen.",
         "en": "5 follow-up tasks after project close: a workflow note on activating the optimum panel in response-optimization, a second flyer for the wing-width augmentation, drop-height variation for robustness, documenting a throw SOP, and building a throwing fixture."
       },
-      "source": "D.Mike synthetisch, Physik-Modell, Seed=1305",
+      "source": "Qprovement synthetisch, Physik-Modell, Seed=1305",
       "license": "public-domain",
       "file": "projects/todo-hubschrauber-flyer.json",
       "format": "json",
@@ -3081,7 +3081,7 @@
         "de": "5 Schritte von der Bestellung bis zur Warenannahme, verteilt auf die drei Lanes Kunde, Vertrieb und Fertigung \u2014 vier \u00dcbergaben werden als Lane-Wechsel sichtbar.",
         "en": "5 steps from order to goods receipt across three lanes \u2014 customer, sales, and production \u2014 with four hand-offs made visible as lane switches."
       },
-      "source": "DMAIC.io Lehrkonfiguration",
+      "source": "Qprovement Lehrkonfiguration",
       "license": "public-domain",
       "file": "projects/deployment-flowchart-auftragsdurchlauf.json",
       "format": "json",
@@ -3105,7 +3105,7 @@
         "de": "5 Schritte von der Kundenanfrage bis zum versendeten Angebot — 3 wertsch\u00f6pfende Schritte links, 2 Nacharbeits-Schritte rechts (Nachforderung fehlender Angaben, Korrektur der Kalkulation).",
         "en": "5 steps from the customer inquiry to the sent quotation \u2014 3 value-added steps on the left, 2 rework steps on the right (chasing missing details, correcting the calculation)."
       },
-      "source": "DMAIC.io Lehrkonfiguration",
+      "source": "Qprovement Lehrkonfiguration",
       "license": "public-domain",
       "file": "projects/opportunity-flowchart-angebotsprozess.json",
       "format": "json",
@@ -3129,7 +3129,7 @@
         "de": "7 Schritte vom Erfassen der Kundenanfrage bis zur Auftragsbestätigung — 6 Aktivitäten plus eine Freigabe-Entscheidung, deren Nein-Zweig ein eigenes Band mit einem Überarbeitungs-Schritt öffnet, bevor es zurück in die Angebotskalkulation geht.",
         "en": "7 steps from capturing a customer inquiry to the order confirmation — 6 activities plus one approval decision whose no-branch opens its own band with a revision step before looping back into the quote calculation."
       },
-      "source": "DMAIC.io Lehrkonfiguration",
+      "source": "Qprovement Lehrkonfiguration",
       "license": "public-domain",
       "file": "projects/activity-flowchart-anfrage-zu-angebot.json",
       "format": "json",
@@ -3153,7 +3153,7 @@
         "de": "Rohdaten des Messestand-Projekts in drei Blättern: Baseline (L = 8 cm, C = 0), 3² Voll-Faktoriell mit 2 Replikaten (18 Läufe) und Bestätigungsläufe (L = 6 cm, C = 1).",
         "en": "Raw data of the trade-fair project in three sheets: baseline (L = 8 cm, C = 0), 3² full factorial with 2 replicates (18 runs) and confirmation runs (L = 6 cm, C = 1)."
       },
-      "source": "D.Mike synthetisch, Physik-Modell, Seed=1305",
+      "source": "Qprovement synthetisch, Physik-Modell, Seed=1305",
       "license": "public-domain",
       "file": "worksheets/hubschrauber-flyer.json",
       "format": "json",
@@ -3177,7 +3177,7 @@
         "de": "Rohdaten der MSA Typ 1: wiederholte Zeitstopps gegen eine Metronom-Referenz von 2,000 s.",
         "en": "Raw MSA type 1 data: repeated stopwatch readings against a 2.000 s metronome reference."
       },
-      "source": "D.Mike synthetisch, Physik-Modell, Seed=1305",
+      "source": "Qprovement synthetisch, Physik-Modell, Seed=1305",
       "license": "public-domain",
       "file": "worksheets/msa-typ1-hubschrauber-flyer.json",
       "format": "json",
@@ -3199,7 +3199,7 @@
         "de": "Rohdaten der Pizza-Lieferungen: Lieferzeit, Entfernung, Anzahl Pizzen, Fahrer.",
         "en": "Raw pizza delivery data: delivery time, distance, number of pizzas, driver."
       },
-      "source": "DMAIC.io Lehrcase",
+      "source": "Qprovement Lehrcase",
       "license": "public-domain",
       "file": "worksheets/pizza-delivery.json",
       "format": "json",
@@ -3214,7 +3214,7 @@
         "de": "Rohdaten der Lieferzeiten, gruppiert nach Fahrer.",
         "en": "Raw delivery-time data, grouped by driver."
       },
-      "source": "DMAIC.io Lehrcase",
+      "source": "Qprovement Lehrcase",
       "license": "public-domain",
       "file": "worksheets/hypothesis-pizza-fahrer.json",
       "format": "json",
@@ -3229,7 +3229,7 @@
         "de": "Messreihe der Bolzendurchmesser mit eingestreuten Ausreißern.",
         "en": "Bolt diameter measurement series with a few embedded outliers."
       },
-      "source": "DMAIC.io synthetisch",
+      "source": "Qprovement synthetisch",
       "license": "public-domain",
       "file": "worksheets/outlier-bolzen-grubbs.json",
       "format": "json",
@@ -3244,7 +3244,7 @@
         "de": "Rohdaten der Motor-Versuchsreihe mit mehreren kollinearen Einflussgrößen.",
         "en": "Raw engine-trial data with several collinear predictors."
       },
-      "source": "DMAIC.io synthetisch",
+      "source": "Qprovement synthetisch",
       "license": "public-domain",
       "file": "worksheets/regression-collinear.json",
       "format": "json",
@@ -3259,7 +3259,7 @@
         "de": "Rohdaten des Spritverbrauchs mit eingestreuten Ausreißern.",
         "en": "Raw fuel-consumption data with a few embedded outliers."
       },
-      "source": "DMAIC.io synthetisch",
+      "source": "Qprovement synthetisch",
       "license": "public-domain",
       "file": "worksheets/regression-outliers.json",
       "format": "json",
@@ -3277,7 +3277,7 @@
         "de": "2 Schichten × 2 Werkzeugnester × 3 Teile, je 2 Messungen der Wandstärke. Balanciert und geschachtelt: der Löwenanteil der Streuung sitzt zwischen den Werkzeugnestern, nicht zwischen den Schichten.",
         "en": "2 shifts × 2 mould cavities × 3 parts, 2 wall-thickness measurements each. Balanced and nested: most of the variation sits between the cavities, not between the shifts."
       },
-      "source": "DMAIC.io synthetisch",
+      "source": "Qprovement synthetisch",
       "license": "public-domain",
       "file": "projects/multi-vari-spritzguss.json",
       "format": "json",
@@ -3295,7 +3295,7 @@
         "de": "2 Maschinen × 2 Schichten × 2 Chargen, ungleich besetzt und mit einer fehlenden Kombination. Gekreuzt mit REML — zeigt zugleich, wie das Modul einen unbalancierten Plan ausweist.",
         "en": "2 machines × 2 shifts × 2 batches, unequally occupied with one missing combination. Crossed with REML — also shows how the module flags an unbalanced design."
       },
-      "source": "DMAIC.io synthetisch",
+      "source": "Qprovement synthetisch",
       "license": "public-domain",
       "file": "projects/multi-vari-abfuellanlage.json",
       "format": "json",

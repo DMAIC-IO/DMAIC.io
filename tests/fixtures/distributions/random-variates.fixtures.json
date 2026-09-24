@@ -1,7 +1,7 @@
 {
   "algorithm_id": "random-variates",
   "generated_with": {
-    "runtime": "D.Mike Mulberry32 PRNG",
+    "runtime": "Qprovement Mulberry32 PRNG",
     "note": "Values are deterministic — same seed always produces the same sequence. Gold standard is the JS implementation itself."
   },
   "generated_at": "2026-04-07T00:00:00.000Z",

@@ -192,9 +192,9 @@ export function renderLicenseDataModule(entries) {
 
 /** Render THIRD-PARTY-LICENSES.txt (header block + verbatim license per dep). */
 export function renderLicenseText(entries, extraAttributions = EXTRA_TEXT_ATTRIBUTIONS) {
-  const head = 'DMAIC.io — Third-Party Open-Source Licenses\n'
+  const head = 'Qprovement — Third-Party Open-Source Licenses\n'
     + '===========================================\n\n'
-    + 'The DMAIC.io app bundles the following third-party libraries.\n'
+    + 'The Qprovement app bundles the following third-party libraries.\n'
     + 'Each is distributed under its own license, reproduced verbatim below.\n';
   const blocks = entries.map(e =>
     `\n${'='.repeat(72)}\n${e.name} ${e.version} — ${e.license}\n${e.url}\n${'='.repeat(72)}\n\n${e.text}\n`);

@@ -88,7 +88,7 @@
       "id": "logistic_standard_dose_response",
       "tier": "standard",
       "description": "Dose-response: probability increases with dose (10-100). Significant positive slope, strong pseudo-R².",
-      "reference": "D.Mike glm-engine.js (IRLS, verified via demo-verify.mjs)",
+      "reference": "Qprovement glm-engine.js (IRLS, verified via demo-verify.mjs)",
       "inputs": {
         "xColumns": [
           [
@@ -170,7 +170,7 @@
       "id": "logistic_standard_multivariate",
       "tier": "standard",
       "description": "Two correlated predictors (age, weight). No separation, moderate pseudo-R².",
-      "reference": "D.Mike glm-engine.js (IRLS)",
+      "reference": "Qprovement glm-engine.js (IRLS)",
       "inputs": {
         "xColumns": [
           [
@@ -317,7 +317,7 @@
       "id": "logistic_edge_all_zeros",
       "tier": "edge",
       "description": "All Y=0: intercept → -∞, predictor coefficient → 0. Model has no discriminative power.",
-      "reference": "D.Mike glm-engine.js (convergence at boundary)",
+      "reference": "Qprovement glm-engine.js (convergence at boundary)",
       "tolerance_override": "degenerate",
       "inputs": {
         "xColumns": [
@@ -359,7 +359,7 @@
       "id": "logistic_edge_all_ones",
       "tier": "edge",
       "description": "All Y=1: intercept → +∞, predictor coefficient → 0. Mirror of all-zeros case.",
-      "reference": "D.Mike glm-engine.js (convergence at boundary)",
+      "reference": "Qprovement glm-engine.js (convergence at boundary)",
       "tolerance_override": "degenerate",
       "inputs": {
         "xColumns": [
@@ -401,7 +401,7 @@
       "id": "logistic_stress_n60",
       "tier": "stress",
       "description": "n=60 with clear trend: first 20 mostly 0, last 20 mostly 1. Tests IRLS convergence at scale.",
-      "reference": "D.Mike glm-engine.js (IRLS)",
+      "reference": "Qprovement glm-engine.js (IRLS)",
       "inputs": {
         "xColumns": [
           [

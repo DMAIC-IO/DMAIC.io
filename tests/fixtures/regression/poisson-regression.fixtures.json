@@ -69,7 +69,7 @@
       "id": "poisson_standard_single_pred",
       "tier": "standard",
       "description": "Counts increasing with single predictor (1-10). Significant positive slope.",
-      "reference": "D.Mike glm-engine.js (IRLS)",
+      "reference": "Qprovement glm-engine.js (IRLS)",
       "inputs": {
         "xColumns": [
           [
@@ -130,7 +130,7 @@
       "id": "poisson_standard_multivariate",
       "tier": "standard",
       "description": "Two predictors (speed, line age) with n=20. Manufacturing defect scenario.",
-      "reference": "D.Mike glm-engine.js (IRLS)",
+      "reference": "Qprovement glm-engine.js (IRLS)",
       "inputs": {
         "xColumns": [
           [
@@ -237,7 +237,7 @@
       "id": "poisson_edge_all_zeros",
       "tier": "edge",
       "description": "All Y=0: intercept → -∞, all fitted values → 0. Boundary case.",
-      "reference": "D.Mike glm-engine.js (convergence at boundary)",
+      "reference": "Qprovement glm-engine.js (convergence at boundary)",
       "tolerance_override": "degenerate",
       "inputs": {
         "xColumns": [
@@ -329,7 +329,7 @@
       "id": "poisson_edge_large_counts",
       "tier": "edge",
       "description": "Large counts (100-550): tests numerical stability with large μ values.",
-      "reference": "D.Mike glm-engine.js (IRLS)",
+      "reference": "Qprovement glm-engine.js (IRLS)",
       "inputs": {
         "xColumns": [
           [
@@ -386,7 +386,7 @@
       "id": "poisson_stress_n50",
       "tier": "stress",
       "description": "n=50 observations with moderate trend. Tests IRLS convergence at larger scale.",
-      "reference": "D.Mike glm-engine.js (IRLS)",
+      "reference": "Qprovement glm-engine.js (IRLS)",
       "tolerance_override": "stress",
       "inputs": {
         "xColumns": [

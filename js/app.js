@@ -1,5 +1,5 @@
 /**
- * D.Mike — Application Bootstrap (app.js)
+ * Qprovement — Application Bootstrap (app.js)
  * Initializes all core services and wires the UI.
  * Entry point loaded from index.html.
  */
@@ -109,7 +109,7 @@ async function init() {
   // App is interactive — remove the pre-JS loading overlay.
   document.getElementById('app-loading')?.remove();
 
-  console.log(`D.Mike v${VERSION} ready.`);
+  console.log(`Qprovement v${VERSION} ready.`);
 }
 
 function _updateTitle(stateManager) {
@@ -120,7 +120,7 @@ function _updateTitle(stateManager) {
 // ─── Start ─────────────────────────────────────────────────────
 
 init().catch(err => {
-  console.error('D.Mike failed to initialize:', err);
+  console.error('Qprovement failed to initialize:', err);
   // Don't leave the fullscreen loading overlay covering a broken app.
   document.getElementById('app-loading')?.remove();
 });

@@ -63,7 +63,7 @@ function _assertNotFutureMajor(fileVersion) {
     const app = parseVersion(VERSION);
     if (file.major > app.major) {
       throw new Error(
-        `Diese Datei wurde mit v${fileVersion} erstellt und kann nicht in v${VERSION} geöffnet werden. Bitte aktualisieren Sie D.Mike.`
+        `Diese Datei wurde mit v${fileVersion} erstellt und kann nicht in v${VERSION} geöffnet werden. Bitte aktualisieren Sie Qprovement.`
       );
     }
   } catch (err) {

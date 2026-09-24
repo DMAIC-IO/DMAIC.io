@@ -25,7 +25,7 @@
       "id": "od_standard_no_overdispersion",
       "tier": "standard",
       "description": "Pearson residuals from a well-fitting Poisson model. Ratio ≈ 0.26 (no overdispersion).",
-      "reference": "D.Mike glm-engine.js (Poisson fit residuals)",
+      "reference": "Qprovement glm-engine.js (Poisson fit residuals)",
       "inputs": {
         "pearsonResid": [
           0.377,
@@ -54,7 +54,7 @@
       "id": "od_standard_overdispersed",
       "tier": "standard",
       "description": "Residuals from fitting Poisson to overdispersed NegBin data. Ratio ≈ 10.1 (severe).",
-      "reference": "D.Mike glm-engine.js (overdispersed data fitted as Poisson)",
+      "reference": "Qprovement glm-engine.js (overdispersed data fitted as Poisson)",
       "inputs": {
         "pearsonResid": [
           -1.82,
