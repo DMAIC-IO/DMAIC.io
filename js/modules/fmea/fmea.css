@@ -8,12 +8,17 @@
   --fmea-cat-critical: var(--color-error);
   --fmea-cat-high: #fb923c;
   --fmea-cat-medium: #fbbf24;
-
-  /* Yellow text is unreadable on a light ground (1.7:1). Mixing with the text
-     colour darkens it in light mode and keeps it a light yellow in dark mode. */
-  --fmea-cat-medium-text: color-mix(in srgb, var(--fmea-cat-medium) 45%, var(--color-text-primary));
   --fmea-cat-low: var(--color-success);
   --fmea-cat-none: var(--color-text-tertiary);
+
+  /* Text and icons in a category colour. The plain colours reach only
+     1.7–3.6:1 on a light ground; 40 % colour mixed with the text colour keeps
+     the hue and reaches at least 4.5:1 on the tinted grounds in both themes
+     (darker in light mode, lighter in dark mode). */
+  --fmea-cat-critical-text: color-mix(in srgb, var(--fmea-cat-critical) 40%, var(--color-text-primary));
+  --fmea-cat-high-text: color-mix(in srgb, var(--fmea-cat-high) 40%, var(--color-text-primary));
+  --fmea-cat-medium-text: color-mix(in srgb, var(--fmea-cat-medium) 40%, var(--color-text-primary));
+  --fmea-cat-low-text: color-mix(in srgb, var(--fmea-cat-low) 40%, var(--color-text-primary));
 }
 
 .fmea__settings {
@@ -45,10 +50,10 @@
 }
 
 .fmea__stat-icon--total  { background: color-mix(in srgb, var(--color-accent) 12%, transparent); color: var(--color-accent); }
-.fmea__stat-icon--critical { background: color-mix(in srgb, var(--fmea-cat-critical) 12%, transparent); color: var(--fmea-cat-critical); }
-.fmea__stat-icon--high   { background: color-mix(in srgb, var(--fmea-cat-high) 12%, transparent); color: var(--fmea-cat-high); }
+.fmea__stat-icon--critical { background: color-mix(in srgb, var(--fmea-cat-critical) 12%, transparent); color: var(--fmea-cat-critical-text); }
+.fmea__stat-icon--high   { background: color-mix(in srgb, var(--fmea-cat-high) 12%, transparent); color: var(--fmea-cat-high-text); }
 .fmea__stat-icon--medium { background: color-mix(in srgb, var(--fmea-cat-medium) 12%, transparent); color: var(--fmea-cat-medium-text); }
-.fmea__stat-icon--low    { background: color-mix(in srgb, var(--fmea-cat-low) 12%, transparent); color: var(--fmea-cat-low); }
+.fmea__stat-icon--low    { background: color-mix(in srgb, var(--fmea-cat-low) 12%, transparent); color: var(--fmea-cat-low-text); }
 .fmea__stat-icon--neutral { background: color-mix(in srgb, var(--color-text-secondary) 8%, transparent); color: var(--color-text-secondary); }
 
 /* ===== Stats Strip ===== */
@@ -208,10 +213,10 @@
   padding: var(--spacing-2xs) var(--spacing-m);
 }
 
-.fmea__rpn-badge--low      { background: color-mix(in srgb, var(--fmea-cat-low) 10%, transparent); color: var(--fmea-cat-low); }
+.fmea__rpn-badge--low      { background: color-mix(in srgb, var(--fmea-cat-low) 10%, transparent); color: var(--fmea-cat-low-text); }
 .fmea__rpn-badge--medium   { background: color-mix(in srgb, var(--fmea-cat-medium) 10%, transparent); color: var(--fmea-cat-medium-text); }
-.fmea__rpn-badge--high     { background: color-mix(in srgb, var(--fmea-cat-high) 10%, transparent); color: var(--fmea-cat-high); }
-.fmea__rpn-badge--critical { background: color-mix(in srgb, var(--fmea-cat-critical) 15%, transparent); color: var(--fmea-cat-critical); }
+.fmea__rpn-badge--high     { background: color-mix(in srgb, var(--fmea-cat-high) 10%, transparent); color: var(--fmea-cat-high-text); }
+.fmea__rpn-badge--critical { background: color-mix(in srgb, var(--fmea-cat-critical) 15%, transparent); color: var(--fmea-cat-critical-text); }
 .fmea__rpn-badge--none     { background: color-mix(in srgb, var(--color-text-primary) 3%, transparent); color: var(--fmea-cat-none); }
 
 .fmea__risk-delete {
@@ -490,6 +495,6 @@
 }
 
 .fmea__ap-cell { font-weight: var(--font-weight-semibold); }
-.fmea__ap-cell--high   { background: color-mix(in srgb, var(--fmea-cat-high) 18%, transparent); color: var(--fmea-cat-high); }
+.fmea__ap-cell--high   { background: color-mix(in srgb, var(--fmea-cat-high) 18%, transparent); color: var(--fmea-cat-high-text); }
 .fmea__ap-cell--medium { background: color-mix(in srgb, var(--fmea-cat-medium) 18%, transparent); color: var(--fmea-cat-medium-text); }
-.fmea__ap-cell--low    { background: color-mix(in srgb, var(--fmea-cat-low) 18%, transparent); color: var(--fmea-cat-low); }
+.fmea__ap-cell--low    { background: color-mix(in srgb, var(--fmea-cat-low) 18%, transparent); color: var(--fmea-cat-low-text); }
