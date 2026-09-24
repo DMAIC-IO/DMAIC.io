@@ -211,10 +211,55 @@ function datedActions(r) {
 }
 
 /**
- * Turn sorted events into plan/actual step series. Each event carries one
- * decrement per series key; plan applies all events, actual only done ones.
+ * Replay a risk's dated actions twice: the plan applies every action, the
+ * actual only the done ones — so an open action never inflates what was
+ * achieved by a later done one. Yields one event per action that changes
+ * either replay.
+ * @param {Risk} r a rated risk
+ * @param {function(number, number, number): Object<string,number>} measure
+ *        series values for an S/O/D rating
+ * @returns {Array<{ts:number, done:boolean, dec:Object<string,number>, actDec:Object<string,number>}>}
+ */
+function replayActions(r, measure) {
+  const events = [];
+  const plan = { s: asInt(r.sev), o: asInt(r.occ), d: asInt(r.det) };
+  const act = { ...plan };
+  const apply = (run, a) => {
+    run.s = Math.max(1, run.s - asInt(a.deltaS));
+    run.o = Math.max(1, run.o - asInt(a.deltaO));
+    run.d = Math.max(1, run.d - asInt(a.deltaD));
+  };
+  const diff = (before, after) => {
+    const dec = {};
+    for (const k of Object.keys(before)) dec[k] = before[k] - after[k];
+    return dec;
+  };
+  let planVal = measure(plan.s, plan.o, plan.d);
+  let actVal = planVal;
+  for (const a of datedActions(r)) {
+    const done = Boolean(a.done);
+    apply(plan, a);
+    const nextPlan = measure(plan.s, plan.o, plan.d);
+    const dec = diff(planVal, nextPlan);
+    planVal = nextPlan;
+    let actDec = diff(actVal, actVal);
+    if (done) {
+      apply(act, a);
+      const nextAct = measure(act.s, act.o, act.d);
+      actDec = diff(actVal, nextAct);
+      actVal = nextAct;
+    }
+    const changed = Object.values(dec).some(Boolean) || Object.values(actDec).some(Boolean);
+    if (changed) events.push({ ts: new Date(a.date).getTime(), done, dec, actDec });
+  }
+  return events;
+}
+
+/**
+ * Turn sorted events into plan/actual step series. Plan applies each event's
+ * `dec`, actual applies `actDec` of done events only.
  * Start point = earliest event − 1 day.
- * @param {Array<{ts:number, done:boolean, dec:Object<string,number>}>} events non-empty
+ * @param {Array<{ts:number, done:boolean, dec:Object<string,number>, actDec:Object<string,number>}>} events non-empty
  * @param {Object<string,number>} start start value per series key
  * @returns {{planX:number[], actX:number[], plan:Object<string,number[]>, act:Object<string,number[]>}}
  */
@@ -230,7 +275,7 @@ function stepSeries(events, start) {
     for (const k of keys) { planCur[k] -= ev.dec[k]; plan[k].push(planCur[k]); }
     if (ev.done) {
       actX.push(ev.ts);
-      for (const k of keys) { actCur[k] -= ev.dec[k]; act[k].push(actCur[k]); }
+      for (const k of keys) { actCur[k] -= ev.actDec[k]; act[k].push(actCur[k]); }
     }
   }
   return { planX, actX, plan, act };
@@ -279,19 +324,7 @@ export const rpnRating = {
       const s0 = asInt(r.sev), o0 = asInt(r.occ), d0 = asInt(r.det);
       if (!s0 || !o0 || !d0) continue;
       totalRPN += s0 * o0 * d0;
-      let runS = s0, runO = o0, runD = d0;
-      for (const a of datedActions(r)) {
-        const ds = asInt(a.deltaS), doo = asInt(a.deltaO), dd = asInt(a.deltaD);
-        if (!ds && !doo && !dd) continue;
-        const before = runS * runO * runD;
-        runS = Math.max(1, runS - ds);
-        runO = Math.max(1, runO - doo);
-        runD = Math.max(1, runD - dd);
-        const reduction = before - runS * runO * runD;
-        if (reduction > 0) {
-          events.push({ ts: new Date(a.date).getTime(), done: Boolean(a.done), dec: { y: reduction } });
-        }
-      }
+      events.push(...replayActions(r, (sv, o, d) => ({ y: sv * o * d })));
     }
     if (!events.length || !totalRPN) return null;
     const { planX, actX, plan, act } = stepSeries(events, { y: totalRPN });
@@ -340,27 +373,14 @@ export const apRating = {
   burndownSeries(risks) {
     const events = [];
     const start = { h: 0, hm: 0 };
-    const isH = (ap) => (ap === 'H' ? 1 : 0);
-    const isHM = (ap) => (ap === 'H' || ap === 'M' ? 1 : 0);
+    const counts = (ap) => ({ h: ap === 'H' ? 1 : 0, hm: ap === 'H' || ap === 'M' ? 1 : 0 });
     for (const r of risks) {
-      let cur = r.ap();
+      const cur = r.ap();
       if (!cur) continue;
-      start.h += isH(cur);
-      start.hm += isHM(cur);
-      let runS = asInt(r.sev), runO = asInt(r.occ), runD = asInt(r.det);
-      for (const a of datedActions(r)) {
-        runS = Math.max(1, runS - asInt(a.deltaS));
-        runO = Math.max(1, runO - asInt(a.deltaO));
-        runD = Math.max(1, runD - asInt(a.deltaD));
-        const next = actionPriority(runS, runO, runD);
-        if (next === cur) continue;
-        events.push({
-          ts: new Date(a.date).getTime(),
-          done: Boolean(a.done),
-          dec: { h: isH(cur) - isH(next), hm: isHM(cur) - isHM(next) },
-        });
-        cur = next;
-      }
+      const c = counts(cur);
+      start.h += c.h;
+      start.hm += c.hm;
+      events.push(...replayActions(r, (sv, o, d) => counts(actionPriority(sv, o, d))));
     }
     if (!events.length) return null;
     const { planX, actX, plan, act } = stepSeries(events, start);

@@ -380,6 +380,22 @@ suite('FMEA Model — burndown series', () => {
     // then D 6->4 => 4*6*4=96 (reduction 48)
     assertEqual(bd.planY[2], 96);
   });
+
+  test('actual replays only done actions when an earlier one is still open', () => {
+    const s = new State();
+    s.method = 'rpn';
+    const r = s.addRisk();
+    r.sev = '5'; r.occ = '4'; r.det = '3'; // 60
+    const open = new Action(); open.date = '2025-06-01'; open.deltaS = '1'; open.done = false;
+    const done = new Action(); done.date = '2025-07-01'; done.deltaO = '1'; done.done = true;
+    r.actions = [open, done];
+    const bd = s.burndownSeries();
+    // plan: S 5->4 => 48, then O 4->3 => 36
+    assertEqual(bd.planY.join(), '60,48,36');
+    // actual: only O 4->3 applied to the original rating => 5*3*3 = 45
+    assertEqual(bd.actX.length, 2);
+    assertEqual(bd.actY.join(), '60,45');
+  });
 });
 
 suite('FMEA Model — CSV rows', () => {
@@ -652,6 +668,21 @@ suite('FMEA Model — AP burndown series', () => {
     assertEqual(bd.planX.join(), [t - 86400000, t].join());
     assertEqual(bd.planH.join(), '1,0');
     assertEqual(bd.planHM.join(), '1,1');
+  });
+
+  test('actual replays only done actions when an earlier one is still open', () => {
+    const s = new State();
+    const r = rated(s, 7, 8, 7);                        // H
+    r.actions = [
+      act('2025-01-01', false, { dO: '4', dD: '6' }),   // open: S7 O4 D1 = M
+      act('2025-01-02', true, { dO: '2' }),             // done: plan S7 O2 D1 = L
+    ];
+    const bd = s.burndownSeries();
+    assertEqual(bd.planH.join(), '1,0,0');
+    assertEqual(bd.planHM.join(), '1,1,0');
+    // only the done action applies: S7 O6 D7 is still H
+    assertEqual(bd.actH.join(), '1,1');
+    assertEqual(bd.actHM.join(), '1,1');
   });
 
   test('ignores undated actions and unrated risks', () => {
