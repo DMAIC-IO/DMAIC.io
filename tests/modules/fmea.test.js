@@ -402,3 +402,84 @@ suite('FMEA Model — CSV rows', () => {
     assertEqual(rows[1][1], '');
   });
 });
+
+suite('FMEA Model — Risk action priority', () => {
+  const rated = (s, o, d) => { const r = new Risk(); r.sev = String(s); r.occ = String(o); r.det = String(d); return r; };
+
+  test('ap() looks up S/O/D in the AP table', () => {
+    assertEqual(rated(9, 4, 1).ap(), 'M');
+    assertEqual(rated(8, 6, 6).ap(), 'H');
+    assertEqual(rated(2, 2, 2).ap(), 'L');
+  });
+
+  test('ap() is null while S, O or D is unset', () => {
+    const r = new Risk(); r.sev = '9'; r.occ = '4';
+    assertEqual(r.ap(), null);
+  });
+
+  test('projAp() applies the summed action deltas', () => {
+    const r = rated(8, 6, 6);              // H
+    const a = new Action(); a.deltaO = '3'; // O 6 → 3
+    r.actions = [a];
+    assertEqual(r.projAp(), 'M');          // S 7–8, O 2–3, D 5–6
+  });
+
+  test('projAp() clamps each rating at 1 for large deltas', () => {
+    const r = rated(9, 9, 9);
+    const a = new Action(); a.deltaS = '9'; a.deltaO = '9'; a.deltaD = '9';
+    r.actions = [a];
+    assertEqual(r.projAp(), 'L');
+  });
+
+  test('projAp() is null when the base rating is incomplete', () => {
+    const r = new Risk(); r.sev = '9';
+    r.actions = [new Action()];
+    assertEqual(r.projAp(), null);
+  });
+});
+
+suite('FMEA Model — method and FMEA type', () => {
+  test('new State() starts in AP mode for a process FMEA', () => {
+    const s = new State();
+    assertEqual(s.method, 'ap');
+    assertEqual(s.fmeaType, 'process');
+  });
+
+  test('fromJSON without method loads a legacy FMEA as RPN', () => {
+    const s = State.fromJSON({ risks: [] });
+    assertEqual(s.method, 'rpn');
+    assertEqual(s.fmeaType, 'process');
+  });
+
+  test('fromJSON(null) behaves like a new FMEA', () => {
+    assertEqual(State.fromJSON(null).method, 'ap');
+    assertEqual(State.fromJSON(undefined).method, 'ap');
+  });
+
+  test('fromJSON keeps valid values', () => {
+    const s = State.fromJSON({ method: 'ap', fmeaType: 'design' });
+    assertEqual(s.method, 'ap');
+    assertEqual(s.fmeaType, 'design');
+  });
+
+  test('fromJSON falls back on invalid values', () => {
+    const s = State.fromJSON({ method: 'xyz', fmeaType: 7 });
+    assertEqual(s.method, 'rpn');
+    assertEqual(s.fmeaType, 'process');
+  });
+
+  test('toJSON writes method and fmeaType; switching back and forth is lossless', () => {
+    const s = new State();
+    const r = s.addRisk(); r.sev = '7'; r.occ = '4'; r.det = '5';
+    s.scales = { sevNone: 'Custom RPN', 'ap.process.sev.10.meaning': 'Custom AP' };
+    s.method = 'rpn';
+    s.fmeaType = 'design';
+    s.method = 'ap';
+    const back = State.fromJSON(JSON.parse(JSON.stringify(s.toJSON())));
+    assertEqual(back.method, 'ap');
+    assertEqual(back.fmeaType, 'design');
+    assertEqual(back.risks[0].sev, '7');
+    assertEqual(back.scales.sevNone, 'Custom RPN');
+    assertEqual(back.scales['ap.process.sev.10.meaning'], 'Custom AP');
+  });
+});

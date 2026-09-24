@@ -15,13 +15,23 @@
  *                actions: [ { text, resp, date, done,
  *                             deltaS, deltaO, deltaD } ],  // strings '0'..'9'
  *                collapsed } ],
- *     scales: { key: text } | null }
+ *     scales: { key: text } | null,
+ *     method: 'ap' | 'rpn',          // missing in legacy data → 'rpn'
+ *     fmeaType: 'process' | 'design', // selects the AP scale texts
+ *   }
  */
+
+import { actionPriority } from './fmea-ap.js';
 
 /** RPN category thresholds (inclusive lower bound). */
 export const RPN_CRITICAL = 200;   // > 200
 export const RPN_HIGH = 125;       // 125–200
 export const RPN_MEDIUM = 50;      // 50–124
+
+/** Rating methods; the first is the default for a new FMEA. */
+export const METHODS = ['ap', 'rpn'];
+/** FMEA types; the first is the default. */
+export const FMEA_TYPES = ['process', 'design'];
 
 let _seq = 0;
 function generateId() {
@@ -129,6 +139,14 @@ export class Risk {
     return (s && o && d) ? this.projS() * this.projO() * this.projD() : 0;
   }
 
+  /** @returns {'H'|'M'|'L'|null} AIAG-VDA action priority of S/O/D */
+  ap() { return actionPriority(this.sev, this.occ, this.det); }
+
+  /** @returns {'H'|'M'|'L'|null} action priority after all action deltas */
+  projAp() {
+    return this.ap() ? actionPriority(this.projS(), this.projO(), this.projD()) : null;
+  }
+
   // ── Serialization ─────────────────────────────────────────
 
   toJSON() {
@@ -172,6 +190,10 @@ export class State {
   risks = [];
   /** @type {object|null} custom scale-text overrides, null = use i18n defaults */
   scales = null;
+  /** @type {'ap'|'rpn'} rating method; a new FMEA uses AP */
+  method = 'ap';
+  /** @type {'process'|'design'} selects the AP scale texts */
+  fmeaType = 'process';
 
   // ── Content / CRUD ────────────────────────────────────────
 
@@ -353,6 +375,8 @@ export class State {
 
   toJSON() {
     return {
+      method: this.method,
+      fmeaType: this.fmeaType,
       risks: this.risks.map(r => r.toJSON()),
       scales: this.scales ? { ...this.scales } : null,
     };
@@ -362,6 +386,8 @@ export class State {
   static fromJSON(d) {
     const s = new State();
     if (!d || typeof d !== 'object') return s;
+    s.method = METHODS.includes(d.method) ? d.method : 'rpn';
+    s.fmeaType = FMEA_TYPES.includes(d.fmeaType) ? d.fmeaType : 'process';
     s.risks = Array.isArray(d.risks) ? d.risks.map(Risk.fromJSON) : [];
     s.scales = (d.scales && typeof d.scales === 'object') ? { ...d.scales } : null;
     return s;
