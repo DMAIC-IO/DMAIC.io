@@ -8,6 +8,7 @@
   --fmea-cat-critical: var(--color-error);
   --fmea-cat-high: #fb923c;
   --fmea-cat-medium: #fbbf24;
+
   /* Yellow text is unreadable on a light ground (1.7:1). Mixing with the text
      colour darkens it in light mode and keeps it a light yellow in dark mode. */
   --fmea-cat-medium-text: color-mix(in srgb, var(--fmea-cat-medium) 45%, var(--color-text-primary));
