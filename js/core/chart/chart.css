@@ -38,7 +38,16 @@
   cursor: crosshair;
 }
 
+/* Absolut positioniert, nicht im Fluss: `_getSize()` misst die Border-Box des
+   Wraps und schreibt sie als height-Attribut ins SVG. Stünde das SVG im Fluss,
+   liefe das rückwärts, sobald der Wrap keine feste Höhe hat (height:auto) — die
+   Wrap-Höhe folgte der SVG-Höhe plus 2px Rahmen, der ResizeObserver löste den
+   nächsten Render aus, und das Diagramm wüchse bei jedem Durchlauf um 2px
+   weiter. Bei fester Wrap-Höhe ist inset:0 dieselbe Box wie width/height 100%,
+   das Bild ändert sich also nicht. */
 .dmike-chart-svg-wrap svg {
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
   display: block;
