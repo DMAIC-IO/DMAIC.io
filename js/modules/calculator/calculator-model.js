@@ -12,6 +12,7 @@ import {
   mean, std as stdSample, median, skewness,
 } from '../../engines/distribution-fit-engine.js';
 import { evalExpr } from '../../engines/expression-eval.js';
+import { sigmaWithinMovingRange } from '../../engines/process-capability-engine.js';
 import { factorial } from '../../engines/factorial.js';
 export { factorial };
 
@@ -281,25 +282,27 @@ export class State {
       case 'std':
         if (!hasData) return { error: 'needN2' };
         return { value: stdSample(d), symbol: 'σ' };
+      // Cp/Cpk/Sigma: σ within = MR̄/d2 over the dataset in entry order.
+      // Pp/Ppk: overall sample standard deviation (n − 1).
       case 'cp':
         if (!hasData || !hasLimits) return { error: 'needDataAndLimits' };
-        return { value: (usl - lsl) / (6 * stdSample(d)), symbol: 'Cp' };
+        return { value: (usl - lsl) / (6 * sigmaWithinMovingRange(d)), symbol: 'Cp' };
       case 'cpk': {
         if (!hasData || !hasLimits) return { error: 'needDataAndLimits' };
-        const m = mean(d), s = stdSample(d);
+        const m = mean(d), s = sigmaWithinMovingRange(d);
         return { value: Math.min((usl - m) / (3 * s), (m - lsl) / (3 * s)), symbol: 'Cpk' };
       }
       case 'pp':
         if (!hasData || !hasLimits) return { error: 'needDataAndLimits' };
-        return { value: (usl - lsl) / (6 * stdPop(d)), symbol: 'Pp' };
+        return { value: (usl - lsl) / (6 * stdSample(d)), symbol: 'Pp' };
       case 'ppk': {
         if (!hasData || !hasLimits) return { error: 'needDataAndLimits' };
-        const m = mean(d), s = stdPop(d);
+        const m = mean(d), s = stdSample(d);
         return { value: Math.min((usl - m) / (3 * s), (m - lsl) / (3 * s)), symbol: 'Ppk' };
       }
       case 'sigma': {
         if (!hasData || !hasLimits) return { error: 'needDataAndLimits' };
-        const m = mean(d), s = stdSample(d);
+        const m = mean(d), s = sigmaWithinMovingRange(d);
         const cpk = Math.min((usl - m) / (3 * s), (m - lsl) / (3 * s));
         return { value: cpk * 3, symbol: 'Sigma' };
       }

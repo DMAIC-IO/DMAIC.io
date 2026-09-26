@@ -1,0 +1,29 @@
+{
+ "source": "Recomputed with numpy/scipy; the pooled values reproduce the published qcc::process.capability output (StdDev 0.009887547, Cp 1.686, Cpk 1.646).",
+ "mean": 74.00117600000002,
+ "withinPooled": {
+  "sigma": 0.009887547210159326,
+  "cp": 1.6856219558214534,
+  "cpk": 1.6459761274200193
+ },
+ "withinMovingRange": {
+  "sigma": 0.009573038206360499,
+  "cp": 1.741000746825818,
+  "cpk": 1.7000524092599445
+ },
+ "withinRbar": {
+  "sigma": 0.009785038693035297,
+  "cp": 1.7032806092559005,
+  "cpk": 1.6632194493256829
+ },
+ "overall": {
+  "sigma": 0.010069968126291413,
+  "pp": 1.6550863376767957,
+  "ppk": 1.6161587070141332
+ },
+ "published_qcc": {
+  "stddev": 0.009887547,
+  "cp": 1.686,
+  "cpk": 1.646
+ }
+}

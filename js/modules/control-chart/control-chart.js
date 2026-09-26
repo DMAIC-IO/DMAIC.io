@@ -26,7 +26,7 @@ import {
 } from '../../ui/column-picker.js';
 import {
   getChartType, NELSON_RULES,
-  evaluateNelsonRules, computeCapability,
+  evaluateNelsonRules, computeCapability, capabilitySigma,
 } from '../../engines/control-chart-engine.js';
 import {
   csvPayloadToWorksheetState, loadExampleViaWorksheet,
@@ -300,7 +300,8 @@ const mod = createModule({
         );
         const capability = computeCapability(
           primaryData.values.filter(v => v !== null),
-          refCL, refSigma, this.model.usl, this.model.lsl,
+          refCL, capabilitySigma(this.model.chartTypeId, refSigma, n),
+          this.model.usl, this.model.lsl,
         );
 
         this._lastResult = { result, ct, primaryViolations, capability, baselineEnd, n, stages: stagesParsed };

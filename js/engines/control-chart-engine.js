@@ -590,6 +590,22 @@ export function computeCapability(values, cl, sigma, usl, lsl) {
   return result;
 }
 
+/**
+ * σ of individual values for Cp/Cpk, derived from the primary subchart's σ.
+ * X̄ charts carry σ_x̄ = σ/√n (R̄/(d2·√n) or S̄/(c4·√n)) for their limits;
+ * capability compares the spread of individuals with the tolerance, so the
+ * subgroup-mean σ is scaled back by √n. The I chart's σ (MR̄/d2) is used as is.
+ * @param {string} chartTypeId — 'i-mr' | 'xbar-r' | 'xbar-s'
+ * @param {number|number[]} sigma — primary subchart σ (per-point array when staged)
+ * @param {number} n — subgroup size
+ * @returns {number|number[]}
+ */
+export function capabilitySigma(chartTypeId, sigma, n) {
+  if (chartTypeId !== 'xbar-r' && chartTypeId !== 'xbar-s') return sigma;
+  const f = Math.sqrt(n);
+  return Array.isArray(sigma) ? sigma.map(s => s * f) : sigma * f;
+}
+
 // ── Unified Dispatcher for Algorithm Lab / Fixture Replay ──
 
 /**

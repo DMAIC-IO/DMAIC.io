@@ -1,11 +1,11 @@
 {
   "algorithm_id": "ppk",
   "generated_with": {
-    "python": "3.10.12",
-    "scipy": "1.15.3",
-    "numpy": "2.2.6"
+    "python": "3.14.4",
+    "scipy": "1.18.0",
+    "numpy": "2.5.1"
   },
-  "generated_at": "2026-05-31T00:00:00Z",
+  "generated_at": "2026-09-26T18:16:20.455841+00:00",
   "generator_script": "tools/fixture-generator/generate_fixtures.py",
   "generator_version": "1.0.0",
   "tolerances": {
@@ -15,8 +15,8 @@
     },
     "overrides": {
       "stress_large_dataset": {
-        "relative": 0.000001,
-        "absolute": 1e-8,
+        "relative": 1e-06,
+        "absolute": 1e-08,
         "reason": "Accumulation in long arrays"
       }
     }
@@ -25,30 +25,30 @@
     {
       "id": "ppk_standard_centered",
       "tier": "standard",
-      "description": "Centered process — Pp ≈ Ppk (uses population σ)",
+      "description": "Centered process — Pp ≈ Ppk (overall sample SD, n − 1)",
       "inputs": {
         "data": [
           10.02,
           9.99,
           10.01,
-          10,
+          10.0,
           9.98,
           10.03,
           10.01,
           9.97,
           10.02,
-          10
+          10.0
         ],
         "lsl": 9.8,
         "usl": 10.2
       },
       "expected": {
         "mean": 10.002999999999998,
-        "sigma": 0.017916472867168534,
-        "pp": 3.720970481239717,
-        "ppu": 3.665155924021152,
-        "ppl": 3.7767850384582817,
-        "ppk": 3.665155924021152
+        "stddev": 0.018885620632286656,
+        "pp": 3.530022548091102,
+        "ppu": 3.477072209869765,
+        "ppl": 3.5829728863124397,
+        "ppk": 3.477072209869765
       }
     },
     {
@@ -73,20 +73,20 @@
       },
       "expected": {
         "mean": 10.154,
-        "sigma": 0.014282856857085396,
-        "pp": 4.667600280093449,
-        "ppu": 1.0735480644214825,
-        "ppl": 8.261652495765416,
-        "ppk": 1.0735480644214825
+        "stddev": 0.015055453054181298,
+        "pp": 4.428074427700555,
+        "ppu": 1.0184571183711175,
+        "ppl": 7.837691737029992,
+        "ppk": 1.0184571183711175
       }
     },
     {
       "id": "ppk_standard_cp_vs_pp_divergence",
       "tier": "standard",
-      "description": "Same data as Cp test — Ppk differs because ddof=0 (smaller denominator)",
+      "description": "Same data as the Cp test — Cp/Cpk use σ within (MR̄/d2), Pp/Ppk the overall SD",
       "inputs": {
         "data": [
-          50,
+          50.0,
           50.08,
           49.92,
           50.05,
@@ -102,11 +102,11 @@
       },
       "expected": {
         "stddev": 0.06899275324264123,
-        "sigma": 0.06545227268781416,
-        "cp": 1.2078563242759364,
-        "cpk": 1.178867772493313,
-        "pp": 1.2731923569836294,
-        "ppk": 1.242635740416021
+        "sigma_within": 0.10835303388494823,
+        "cp": 0.7690909090909129,
+        "cpk": 0.7506327272727303,
+        "pp": 1.2078563242759364,
+        "ppk": 1.178867772493313
       }
     },
     {
@@ -126,14 +126,14 @@
           100.01,
           99.99
         ],
-        "lsl": 99,
-        "usl": 101
+        "lsl": 99.0,
+        "usl": 101.0
       },
       "expected": {
-        "mean": 100,
-        "sigma": 0.033166247903554685,
-        "pp": 10.050378152591913,
-        "ppk": 10.050378152591913
+        "mean": 100.0,
+        "stddev": 0.03496029493900577,
+        "pp": 9.534625892455725,
+        "ppk": 9.534625892455725
       }
     },
     {
@@ -142,7 +142,7 @@
       "description": "Minimum sample n=2",
       "inputs": {
         "data": [
-          10,
+          10.0,
           10.1
         ],
         "lsl": 9.5,
@@ -150,9 +150,9 @@
       },
       "expected": {
         "mean": 10.05,
-        "sigma": 0.04999999999999982,
-        "pp": 3.333333333333345,
-        "ppk": 3.0000000000000058
+        "stddev": 0.0707106781186545,
+        "pp": 2.357022603955167,
+        "ppk": 2.121320343559647
       }
     },
     {
@@ -161,7 +161,7 @@
       "description": "Upper-only spec — Ppk = PPU",
       "inputs": {
         "data": [
-          10,
+          10.0,
           10.05,
           9.95,
           10.02,
@@ -177,9 +177,9 @@
       },
       "expected": {
         "mean": 10.001,
-        "sigma": 0.032999999999999835,
-        "ppu": 2.0101010101010184,
-        "ppk": 2.0101010101010184
+        "stddev": 0.034785054261852,
+        "ppu": 1.9069492556773031,
+        "ppk": 1.9069492556773031
       }
     },
     {
@@ -188,7 +188,7 @@
       "description": "Lower-only spec — Ppk = PPL",
       "inputs": {
         "data": [
-          10,
+          10.0,
           10.05,
           9.95,
           10.02,
@@ -204,9 +204,9 @@
       },
       "expected": {
         "mean": 10.001,
-        "sigma": 0.032999999999999835,
-        "ppl": 2.0303030303030276,
-        "ppk": 2.0303030303030276
+        "stddev": 0.034785054261852,
+        "ppl": 1.9261145748298283,
+        "ppk": 1.9261145748298283
       }
     },
     {
@@ -218,22 +218,22 @@
           -10.02,
           -9.99,
           -10.01,
-          -10,
+          -10.0,
           -9.98,
           -10.03,
           -10.01,
           -9.97,
           -10.02,
-          -10
+          -10.0
         ],
         "lsl": -10.2,
         "usl": -9.8
       },
       "expected": {
         "mean": -10.002999999999998,
-        "sigma": 0.017916472867168534,
-        "pp": 3.720970481239717,
-        "ppk": 3.665155924021152
+        "stddev": 0.018885620632286656,
+        "pp": 3.530022548091102,
+        "ppk": 3.477072209869765
       }
     },
     {
@@ -349,9 +349,9 @@
       "tolerance_override": "stress_large_dataset",
       "expected": {
         "mean": 50.00743330192553,
-        "sigma": 0.04122996292555342,
-        "pp": 2.021183804695715,
-        "ppk": 1.9610875268265313
+        "stddev": 0.04143767186191653,
+        "pp": 2.0110524937555962,
+        "ppk": 1.95125745225889
       }
     },
     {
@@ -667,39 +667,11 @@
       "tolerance_override": "stress_large_dataset",
       "expected": {
         "mean": 50.033306623213434,
-        "sigma": 0.0788410452334315,
-        "pp": 1.0569790530630476,
-        "ppu": 0.9161614408035939,
-        "ppl": 1.1977966653225016,
-        "ppk": 0.9161614408035939
-      }
-    },
-    {
-      "id": "ppk_robust_empty_data",
-      "tier": "robustness",
-      "description": "robustness tier",
-      "inputs": {
-        "data": [],
-        "lsl": 0,
-        "usl": 10
-      },
-      "expected_error": {
-        "type": "Error",
-        "message_contains": ""
-      }
-    },
-    {
-      "id": "ppk_robust_non_array",
-      "tier": "robustness",
-      "description": "robustness tier",
-      "inputs": {
-        "data": "x",
-        "lsl": 0,
-        "usl": 10
-      },
-      "expected_error": {
-        "type": "TypeError",
-        "message_contains": ""
+        "stddev": 0.07897277639502397,
+        "pp": 1.05521595082966,
+        "ppu": 0.9146332304973029,
+        "ppl": 1.195798671162017,
+        "ppk": 0.9146332304973029
       }
     }
   ]

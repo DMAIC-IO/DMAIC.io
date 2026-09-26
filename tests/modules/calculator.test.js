@@ -296,11 +296,17 @@ suite('Calculator Model — calcSS', () => {
 
   test('mean', () => { assertAlmostEqual(run('mean').value, 10, 1e-9); });
   test('std', () => { assertAlmostEqual(run('std').value, 2, 1e-9); });
-  test('cp', () => { assertAlmostEqual(run('cp').value, 1, 1e-6); });
-  test('cpk', () => { assertAlmostEqual(run('cpk').value, 1, 1e-6); });
-  test('pp', () => { assertAlmostEqual(run('pp').value, 1.2247449, 1e-6); });
-  test('ppk', () => { assertAlmostEqual(run('ppk').value, 1.2247449, 1e-6); });
-  test('sigma', () => { assertAlmostEqual(run('sigma').value, 3, 1e-6); });
+  // Cp/Cpk use σ within = MR̄/d2 (MR̄ = 2 → σ = 2/1.128); Pp/Ppk use s (n−1) = 2.
+  test('cp', () => { assertAlmostEqual(run('cp').value, 1.128, 1e-9); });
+  test('cpk', () => { assertAlmostEqual(run('cpk').value, 1.128, 1e-9); });
+  test('pp', () => { assertAlmostEqual(run('pp').value, 1, 1e-9); });
+  test('ppk', () => { assertAlmostEqual(run('ppk').value, 1, 1e-9); });
+  test('sigma', () => { assertAlmostEqual(run('sigma').value, 3.384, 1e-9); });
+  test('cp depends on the entry order (moving ranges)', () => {
+    // [8, 12, 10] → MR̄ = 3 → σ within = 3/1.128
+    assertAlmostEqual(run('cp', [8, 12, 10]).value, 12 / (6 * 3 / 1.128), 1e-9);
+    assertAlmostEqual(run('pp', [8, 12, 10]).value, 1, 1e-9);
+  });
   test('dpmo', () => { assertAlmostEqual(run('dpmo').value, 2700, 50); });
   test('ucl', () => { assertAlmostEqual(run('ucl').value, 16, 1e-6); });
   test('lcl', () => { assertAlmostEqual(run('lcl').value, 4, 1e-6); });

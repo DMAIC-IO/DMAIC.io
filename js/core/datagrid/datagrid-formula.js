@@ -4,7 +4,7 @@
  */
 
 import { parseNumeric } from './datagrid-utils.js';
-import { mean, stddev } from '../../engines/process-capability-engine.js';
+import { mean, stddev, sigmaWithinMovingRange } from '../../engines/process-capability-engine.js';
 
 // ─── Public API ────────────────────────────────────────────
 
@@ -341,13 +341,14 @@ function _evalExpr(rawExpr, grid) {
     }
 
     // ─── 6 Sigma Capability ─────────────────────────────
+    // σ within = MR̄/d2 over the column in row order (Cp/Cpk for individuals).
     case 'CPKUP': {
       if (argTokens.length !== 2) return { result: null, error: '#ARG' };
       const vals = _resolveArgToValues(argTokens[0], grid);
       const uslRes = _evalExpr(argTokens[1], grid);
       if (uslRes.error) return uslRes;
       if (vals.length < 2) return { result: null, error: '#N/A' };
-      const s = stddev(vals);
+      const s = sigmaWithinMovingRange(vals);
       if (s === 0) return { result: null, error: '#DIV/0' };
       return { result: (uslRes.result - mean(vals)) / (3 * s), error: null };
     }
@@ -357,7 +358,7 @@ function _evalExpr(rawExpr, grid) {
       const lslRes = _evalExpr(argTokens[1], grid);
       if (lslRes.error) return lslRes;
       if (vals.length < 2) return { result: null, error: '#N/A' };
-      const s = stddev(vals);
+      const s = sigmaWithinMovingRange(vals);
       if (s === 0) return { result: null, error: '#DIV/0' };
       return { result: (mean(vals) - lslRes.result) / (3 * s), error: null };
     }
@@ -369,7 +370,7 @@ function _evalExpr(rawExpr, grid) {
       if (lslRes.error) return lslRes;
       if (uslRes.error) return uslRes;
       if (vals.length < 2) return { result: null, error: '#N/A' };
-      const s = stddev(vals);
+      const s = sigmaWithinMovingRange(vals);
       if (s === 0) return { result: null, error: '#DIV/0' };
       return { result: (uslRes.result - lslRes.result) / (6 * s), error: null };
     }
@@ -381,7 +382,7 @@ function _evalExpr(rawExpr, grid) {
       if (lslRes.error) return lslRes;
       if (uslRes.error) return uslRes;
       if (vals.length < 2) return { result: null, error: '#N/A' };
-      const m = mean(vals), s = stddev(vals);
+      const m = mean(vals), s = sigmaWithinMovingRange(vals);
       if (s === 0) return { result: null, error: '#DIV/0' };
       return { result: Math.min((uslRes.result - m) / (3 * s), (m - lslRes.result) / (3 * s)), error: null };
     }

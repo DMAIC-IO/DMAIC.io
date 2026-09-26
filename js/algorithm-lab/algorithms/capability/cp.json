@@ -7,7 +7,7 @@
   "category": "capability",
   "subcategory": null,
   "status": "validated",
-  "version": "1.0.0",
+  "version": "1.1.0",
 
   "description": {
     "short": {
@@ -15,8 +15,8 @@
       "en": "Measures process spread relative to the tolerance width, ignoring centering."
     },
     "long": {
-      "de": "Cp vergleicht die Toleranzbreite (USL − LSL) mit der Prozessstreuung (6s) und beantwortet die Frage: Passt die natürliche Streuung des Prozesses überhaupt in die Toleranz? Cp benutzt die Stichproben-Standardabweichung (ddof = 1) und wird als 'Kurzzeit-Fähigkeit' interpretiert. Cp ≥ 1,33 gilt als fähig, Cp ≥ 1,67 als hoch fähig. Cp sagt nichts über die Lage des Prozesses aus — dafür ist Cpk da. Cp ist nur für zweiseitige Spezifikationen definiert.",
-      "en": "Cp compares the tolerance width (USL − LSL) to process spread (6s) and answers: does the natural process variation even fit within the tolerance? Cp uses the sample standard deviation (ddof = 1) and is interpreted as 'short-term capability'. Cp ≥ 1.33 is considered capable, Cp ≥ 1.67 highly capable. Cp says nothing about process location — that is what Cpk is for. Cp is only defined for two-sided specifications."
+      "de": "Cp vergleicht die Toleranzbreite (USL − LSL) mit der Prozessstreuung (6σ innerhalb) und beantwortet die Frage: Passt die natürliche Streuung des Prozesses überhaupt in die Toleranz? σ innerhalb wird bei Einzelwerten aus der mittleren gleitenden Spannweite geschätzt (MR̄/d2), bei Untergruppen aus der gepoolten Standardabweichung (s_p/c4). Es enthält nur die kurzfristige Streuung — deshalb gilt Cp als 'Kurzzeit-Fähigkeit' und ist bei driftenden Prozessen größer als Pp. Cp ≥ 1,33 gilt als fähig, Cp ≥ 1,67 als hoch fähig. Cp sagt nichts über die Lage des Prozesses aus — dafür ist Cpk da. Cp ist nur für zweiseitige Spezifikationen definiert.",
+      "en": "Cp compares the tolerance width (USL − LSL) to process spread (6σ within) and answers: does the natural process variation even fit within the tolerance? σ within is estimated from the average moving range for individuals (MR̄/d2) and from the pooled standard deviation for subgroups (s_p/c4). It holds only short-term variation — that is why Cp is read as 'short-term capability' and exceeds Pp for a drifting process. Cp ≥ 1.33 is considered capable, Cp ≥ 1.67 highly capable. Cp says nothing about process location — that is what Cpk is for. Cp is only defined for two-sided specifications."
     }
   },
 
@@ -24,15 +24,15 @@
     "formulas": [
       {
         "label": "Cp",
-        "latex": "C_p = \\frac{USL - LSL}{6s}",
+        "latex": "C_p = \\frac{USL - LSL}{6\\hat{\\sigma}_{w}}",
         "description": {
-          "de": "Prozessfähigkeit ohne Berücksichtigung der Zentrierung (s = Stichproben-Standardabweichung, ddof = 1)",
-          "en": "Process capability ignoring centering (s = sample standard deviation, ddof = 1)"
+          "de": "Prozessfähigkeit ohne Berücksichtigung der Zentrierung (σ̂w = σ innerhalb)",
+          "en": "Process capability ignoring centering (σ̂w = σ within)"
         }
       },
       {
         "label": "CPU",
-        "latex": "C_{PU} = \\frac{USL - \\bar{x}}{3s}",
+        "latex": "C_{PU} = \\frac{USL - \\bar{x}}{3\\hat{\\sigma}_{w}}",
         "description": {
           "de": "Oberer Fähigkeitsindex",
           "en": "Upper capability index"
@@ -40,10 +40,26 @@
       },
       {
         "label": "CPL",
-        "latex": "C_{PL} = \\frac{\\bar{x} - LSL}{3s}",
+        "latex": "C_{PL} = \\frac{\\bar{x} - LSL}{3\\hat{\\sigma}_{w}}",
         "description": {
           "de": "Unterer Fähigkeitsindex",
           "en": "Lower capability index"
+        }
+      },
+      {
+        "label": "σ̂ innerhalb / within (n = 1)",
+        "latex": "\\hat{\\sigma}_{w} = \\frac{\\overline{MR}}{d_2}, \\quad d_2 = 1.128",
+        "description": {
+          "de": "Einzelwerte: mittlere gleitende Spannweite aufeinanderfolgender Werte, geteilt durch d2 (Minitab-Standard)",
+          "en": "Individuals: average moving range of consecutive values divided by d2 (Minitab default)"
+        }
+      },
+      {
+        "label": "σ̂ innerhalb / within (n ≥ 2)",
+        "latex": "\\hat{\\sigma}_{w} = \\frac{s_p}{c_4(d+1)}, \\quad s_p = \\sqrt{\\frac{\\sum_i \\sum_j (x_{ij} - \\bar{x}_i)^2}{d}}, \\quad d = \\sum_i (n_i - 1)",
+        "description": {
+          "de": "Untergruppen: gepoolte Standardabweichung aufeinanderfolgender Untergruppen mit Bias-Korrektur c4 (Minitab-Standard)",
+          "en": "Subgroups: pooled standard deviation of consecutive subgroups with bias correction c4 (Minitab default)"
         }
       },
       {
@@ -67,6 +83,10 @@
       {
         "de": "Zweiseitige Spezifikation (LSL und USL erforderlich)",
         "en": "Two-sided specification (both LSL and USL required)"
+      },
+      {
+        "de": "Werte liegen in Produktionsreihenfolge vor (für MR̄ und die Untergruppenbildung)",
+        "en": "Values are in production order (for MR̄ and subgroup formation)"
       }
     ],
     "limitations": [
@@ -135,6 +155,15 @@
             "de": "Konfidenzniveau (Default 0.95)",
             "en": "Confidence level (default 0.95)"
           }
+        },
+        {
+          "name": "subgroup_size",
+          "type": "number",
+          "required": false,
+          "description": {
+            "de": "Untergruppengröße (Default 1 = Einzelwerte, σ innerhalb aus MR̄/d2; ≥ 2 = aufeinanderfolgende Untergruppen, gepoolte s/c4)",
+            "en": "Subgroup size (default 1 = individuals, σ within from MR̄/d2; ≥ 2 = consecutive subgroups, pooled s/c4)"
+          }
         }
       ],
       "returns": {
@@ -142,31 +171,59 @@
         "properties": {
           "cp": {
             "type": "number|null",
-            "description": { "de": "Prozessfähigkeit (zentrierungsunabhängig)", "en": "Process capability (centering-independent)" }
+            "description": {
+              "de": "Prozessfähigkeit (zentrierungsunabhängig)",
+              "en": "Process capability (centering-independent)"
+            }
           },
           "cpu": {
             "type": "number|null",
-            "description": { "de": "Oberer Fähigkeitsindex", "en": "Upper capability index" }
+            "description": {
+              "de": "Oberer Fähigkeitsindex",
+              "en": "Upper capability index"
+            }
           },
           "cpl": {
             "type": "number|null",
-            "description": { "de": "Unterer Fähigkeitsindex", "en": "Lower capability index" }
+            "description": {
+              "de": "Unterer Fähigkeitsindex",
+              "en": "Lower capability index"
+            }
           },
           "CpCI": {
             "type": "[number,number]|null",
-            "description": { "de": "Exaktes χ²-Konfidenzintervall für Cp", "en": "Exact χ² confidence interval for Cp" }
+            "description": {
+              "de": "Exaktes χ²-Konfidenzintervall für Cp",
+              "en": "Exact χ² confidence interval for Cp"
+            }
           },
           "mean": {
             "type": "number",
-            "description": { "de": "Stichprobenmittelwert", "en": "Sample mean" }
+            "description": {
+              "de": "Stichprobenmittelwert",
+              "en": "Sample mean"
+            }
           },
           "stddev": {
             "type": "number",
-            "description": { "de": "Stichproben-Standardabweichung (n−1)", "en": "Sample standard deviation (n−1)" }
+            "description": {
+              "de": "Standardabweichung gesamt (n−1) — Basis für Pp/Ppk",
+              "en": "Overall standard deviation (n−1) — basis for Pp/Ppk"
+            }
           },
           "n": {
             "type": "number",
-            "description": { "de": "Stichprobengröße", "en": "Sample size" }
+            "description": {
+              "de": "Stichprobengröße",
+              "en": "Sample size"
+            }
+          },
+          "sigma_within": {
+            "type": "number",
+            "description": {
+              "de": "σ innerhalb (MR̄/d2 bzw. gepoolte s/c4) — Basis für Cp/Cpk",
+              "en": "σ within (MR̄/d2 or pooled s/c4) — basis for Cp/Cpk"
+            }
           }
         }
       }
@@ -178,71 +235,152 @@
     "input_schema": {
       "fields": [
         {
-          "name": "values",
+          "name": "data",
           "label": {
-            "de": "Messdaten",
-            "en": "Measurement Data"
+            "de": "Messdaten (in Produktionsreihenfolge)",
+            "en": "Measurement data (in production order)"
           },
           "type": "textarea",
           "placeholder": {
-            "de": "Werte eingeben, getrennt durch Komma, Leerzeichen oder Zeilenumbruch\nz.B.: 10.02; 9.99; 10.01; 10.00; 9.98",
+            "de": "Werte eingeben, getrennt durch Semikolon, Leerzeichen oder Zeilenumbruch\nz.B.: 10.02; 9.99; 10.01; 10.00; 9.98",
             "en": "Enter values separated by commas, spaces, or newlines\ne.g.: 10.02, 9.99, 10.01, 10.00, 9.98"
           },
           "parse_as": "number_array",
           "required": true
         },
         {
-          "name": "params.lsl",
+          "name": "lsl",
           "label": {
             "de": "Untere Spezifikationsgrenze (LSL)",
             "en": "Lower Spec Limit (LSL)"
           },
           "type": "number",
-          "placeholder": { "de": "z.B.: 9.80", "en": "e.g.: 9.80" },
+          "placeholder": {
+            "de": "z.B.: 9.80",
+            "en": "e.g.: 9.80"
+          },
           "parse_as": "number",
           "required": true
         },
         {
-          "name": "params.usl",
+          "name": "usl",
           "label": {
             "de": "Obere Spezifikationsgrenze (USL)",
             "en": "Upper Spec Limit (USL)"
           },
           "type": "number",
-          "placeholder": { "de": "z.B.: 10.20", "en": "e.g.: 10.20" },
+          "placeholder": {
+            "de": "z.B.: 10.20",
+            "en": "e.g.: 10.20"
+          },
           "parse_as": "number",
           "required": true
         },
         {
-          "name": "params.confidence",
+          "name": "confidence",
           "label": {
             "de": "Konfidenzniveau",
             "en": "Confidence Level"
           },
           "type": "number",
-          "placeholder": { "de": "Standard: 0.95", "en": "Default: 0.95" },
+          "placeholder": {
+            "de": "Standard: 0.95",
+            "en": "Default: 0.95"
+          },
           "parse_as": "number",
           "required": false,
           "default": 0.95
+        },
+        {
+          "name": "subgroup_size",
+          "label": {
+            "de": "Untergruppengröße",
+            "en": "Subgroup size"
+          },
+          "type": "number",
+          "placeholder": {
+            "de": "Standard: 1 (Einzelwerte)",
+            "en": "Default: 1 (individuals)"
+          },
+          "parse_as": "number",
+          "required": false,
+          "default": 1
         }
       ]
     },
     "output_schema": {
-      "display_fields": ["Cp", "CPU", "CPL", "CpCI", "xbar", "s", "n"],
-      "primary_field": "Cp",
+      "display_fields": [
+        "cp",
+        "cpu",
+        "cpl",
+        "CpCI",
+        "mean",
+        "sigma_within",
+        "stddev",
+        "n"
+      ],
+      "primary_field": "cp",
       "format": {
-        "Cp":  { "decimals": 6, "label": "Cp" },
-        "CPU": { "decimals": 6, "label": "CPU" },
-        "CPL": { "decimals": 6, "label": "CPL" },
-        "CpCI": { "decimals": 4, "label": { "de": "KI Cp", "en": "CI Cp" }, "type": "interval" },
-        "xbar": { "decimals": 6, "label": { "de": "Mittelwert (x̄)", "en": "Mean (x̄)" } },
-        "s":    { "decimals": 6, "label": { "de": "Std.abw. (s, ddof=1)", "en": "Std Dev (s, ddof=1)" } },
-        "n":    { "decimals": 0, "label": "n" }
+        "cp": {
+          "decimals": 6,
+          "label": "Cp"
+        },
+        "cpu": {
+          "decimals": 6,
+          "label": "CPU"
+        },
+        "cpl": {
+          "decimals": 6,
+          "label": "CPL"
+        },
+        "CpCI": {
+          "decimals": 4,
+          "label": {
+            "de": "KI Cp",
+            "en": "CI Cp"
+          },
+          "type": "interval"
+        },
+        "mean": {
+          "decimals": 6,
+          "label": {
+            "de": "Mittelwert (x̄)",
+            "en": "Mean (x̄)"
+          }
+        },
+        "sigma_within": {
+          "decimals": 6,
+          "label": {
+            "de": "σ innerhalb",
+            "en": "σ within"
+          }
+        },
+        "stddev": {
+          "decimals": 6,
+          "label": {
+            "de": "s gesamt (n−1)",
+            "en": "s overall (n−1)"
+          }
+        },
+        "n": {
+          "decimals": 0,
+          "label": "n"
+        }
       }
     }
   },
 
   "changelog": [
+    {
+      "version": "1.1.0",
+      "date": "2026-09-26",
+      "type": "fix",
+      "description": {
+        "de": "Cp, CPU und CPL rechnen mit σ innerhalb (MR̄/d2 für Einzelwerte, gepoolte s/c4 für Untergruppen) statt mit der Gesamt-Standardabweichung; optionaler Parameter subgroup_size. Ausprobieren-Felder an die Signatur angeglichen.",
+        "en": "Cp, CPU and CPL use σ within (MR̄/d2 for individuals, pooled s/c4 for subgroups) instead of the overall standard deviation; optional parameter subgroup_size. Try-it fields aligned with the signature."
+      },
+      "breaking": true
+    },
     {
       "version": "1.0.0",
       "date": "2026-04-11",

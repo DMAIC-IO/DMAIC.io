@@ -7,16 +7,16 @@
   "category": "capability",
   "subcategory": null,
   "status": "validated",
-  "version": "1.0.0",
+  "version": "1.1.0",
 
   "description": {
     "short": {
-      "de": "Langzeit-Prozessfähigkeit auf Basis der Gesamtstreuung (Populations-σ, ddof = 0).",
-      "en": "Overall process capability based on total variation (population σ, ddof = 0)."
+      "de": "Langzeit-Prozessfähigkeit auf Basis der Gesamtstreuung (Stichproben-Standardabweichung, n − 1).",
+      "en": "Overall process capability based on total variation (sample standard deviation, n − 1)."
     },
     "long": {
-      "de": "Pp und Ppk sind die 'Long-Term'-Gegenstücke zu Cp und Cpk. Sie verwenden die Populations-Standardabweichung (ddof = 0), die auch die Variation zwischen Untergruppen enthält — nicht nur die Variation innerhalb. Bei einem Prozess ohne Drift liegen Pp ≈ Cp und Ppk ≈ Cpk dicht beieinander; divergieren sie stark, ist der Prozess zwischen den Untergruppen nicht stabil. Ppk = min(PPU, PPL) und bestraft wie Cpk außermittige Prozesse. Ppk ≥ 1,33 gilt allgemein als fähig.",
-      "en": "Pp and Ppk are the 'long-term' counterparts to Cp and Cpk. They use the population standard deviation (ddof = 0), which captures between-subgroup variation as well — not just within-subgroup variation. For a process without drift, Pp ≈ Cp and Ppk ≈ Cpk; if they diverge significantly, the process is unstable across subgroups. Ppk = min(PPU, PPL) and, like Cpk, penalises off-center processes. Ppk ≥ 1.33 is generally considered capable."
+      "de": "Pp und Ppk sind die 'Long-Term'-Gegenstücke zu Cp und Cpk. Sie verwenden die Gesamt-Standardabweichung aller Werte (n − 1), die auch Drift und Variation zwischen Untergruppen enthält — Cp/Cpk verwenden dagegen nur σ innerhalb (MR̄/d2 bzw. gepoolte s/c4). Bei einem Prozess ohne Drift liegen Pp ≈ Cp und Ppk ≈ Cpk dicht beieinander; liegt Pp deutlich unter Cp, ist der Prozess über die Zeit nicht stabil. Ppk = min(PPU, PPL) und bestraft wie Cpk außermittige Prozesse. Ppk ≥ 1,33 gilt allgemein als fähig.",
+      "en": "Pp and Ppk are the 'long-term' counterparts to Cp and Cpk. They use the overall standard deviation of all values (n − 1), which includes drift and between-subgroup variation — Cp/Cpk use σ within only (MR̄/d2 or pooled s/c4). For a process without drift, Pp ≈ Cp and Ppk ≈ Cpk; if Pp falls clearly below Cp, the process is not stable over time. Ppk = min(PPU, PPL) and, like Cpk, penalises off-center processes. Ppk ≥ 1.33 is generally considered capable."
     }
   },
 
@@ -24,15 +24,15 @@
     "formulas": [
       {
         "label": "Pp",
-        "latex": "P_p = \\frac{USL - LSL}{6\\sigma}",
+        "latex": "P_p = \\frac{USL - LSL}{6s}",
         "description": {
-          "de": "Langzeit-Prozessfähigkeit (σ = Populations-Standardabweichung, ddof = 0)",
-          "en": "Overall process capability (σ = population standard deviation, ddof = 0)"
+          "de": "Langzeit-Prozessfähigkeit (s = Gesamt-Standardabweichung, n − 1)",
+          "en": "Overall process capability (s = overall standard deviation, n − 1)"
         }
       },
       {
         "label": "Ppk",
-        "latex": "P_{pk} = \\min\\!\\left(\\frac{USL - \\bar{x}}{3\\sigma},\\; \\frac{\\bar{x} - LSL}{3\\sigma}\\right)",
+        "latex": "P_{pk} = \\min\\!\\left(\\frac{USL - \\bar{x}}{3s},\\; \\frac{\\bar{x} - LSL}{3s}\\right)",
         "description": {
           "de": "Minimum aus oberem und unterem Langzeit-Fähigkeitsindex",
           "en": "Minimum of upper and lower overall capability indices"
@@ -40,7 +40,7 @@
       },
       {
         "label": "PPU",
-        "latex": "P_{PU} = \\frac{USL - \\bar{x}}{3\\sigma}",
+        "latex": "P_{PU} = \\frac{USL - \\bar{x}}{3s}",
         "description": {
           "de": "Oberer Langzeit-Fähigkeitsindex",
           "en": "Upper overall capability index"
@@ -48,7 +48,7 @@
       },
       {
         "label": "PPL",
-        "latex": "P_{PL} = \\frac{\\bar{x} - LSL}{3\\sigma}",
+        "latex": "P_{PL} = \\frac{\\bar{x} - LSL}{3s}",
         "description": {
           "de": "Unterer Langzeit-Fähigkeitsindex",
           "en": "Lower overall capability index"
@@ -146,6 +146,15 @@
             "de": "Konfidenzniveau (Default 0.95)",
             "en": "Confidence level (default 0.95)"
           }
+        },
+        {
+          "name": "subgroup_size",
+          "type": "number",
+          "required": false,
+          "description": {
+            "de": "Untergruppengröße (Default 1 = Einzelwerte, σ innerhalb aus MR̄/d2; ≥ 2 = aufeinanderfolgende Untergruppen, gepoolte s/c4)",
+            "en": "Subgroup size (default 1 = individuals, σ within from MR̄/d2; ≥ 2 = consecutive subgroups, pooled s/c4)"
+          }
         }
       ],
       "returns": {
@@ -153,43 +162,80 @@
         "properties": {
           "pp": {
             "type": "number|null",
-            "description": { "de": "Langzeit-Prozessfähigkeit", "en": "Overall process capability" }
+            "description": {
+              "de": "Langzeit-Prozessfähigkeit",
+              "en": "Overall process capability"
+            }
           },
           "ppk": {
             "type": "number|null",
-            "description": { "de": "Langzeit-Prozessfähigkeitsindex (min(ppu, ppl))", "en": "Overall process capability index (min(ppu, ppl))" }
+            "description": {
+              "de": "Langzeit-Prozessfähigkeitsindex (min(ppu, ppl))",
+              "en": "Overall process capability index (min(ppu, ppl))"
+            }
           },
           "ppu": {
             "type": "number|null",
-            "description": { "de": "Oberer Langzeit-Fähigkeitsindex", "en": "Upper overall capability index" }
+            "description": {
+              "de": "Oberer Langzeit-Fähigkeitsindex",
+              "en": "Upper overall capability index"
+            }
           },
           "ppl": {
             "type": "number|null",
-            "description": { "de": "Unterer Langzeit-Fähigkeitsindex", "en": "Lower overall capability index" }
+            "description": {
+              "de": "Unterer Langzeit-Fähigkeitsindex",
+              "en": "Lower overall capability index"
+            }
           },
           "PpCI": {
             "type": "[number,number]|null",
-            "description": { "de": "Exaktes χ²-Konfidenzintervall für Pp", "en": "Exact χ² confidence interval for Pp" }
+            "description": {
+              "de": "Exaktes χ²-Konfidenzintervall für Pp",
+              "en": "Exact χ² confidence interval for Pp"
+            }
           },
           "PpkCI": {
             "type": "[number,number]|null",
-            "description": { "de": "Kushler-Hurley-Konfidenzintervall für Ppk", "en": "Kushler-Hurley confidence interval for Ppk" }
+            "description": {
+              "de": "Kushler-Hurley-Konfidenzintervall für Ppk",
+              "en": "Kushler-Hurley confidence interval for Ppk"
+            }
           },
           "mean": {
             "type": "number",
-            "description": { "de": "Stichprobenmittelwert", "en": "Sample mean" }
+            "description": {
+              "de": "Stichprobenmittelwert",
+              "en": "Sample mean"
+            }
           },
           "sigma": {
             "type": "number",
-            "description": { "de": "Populations-Standardabweichung (ddof = 0)", "en": "Population standard deviation (ddof = 0)" }
+            "description": {
+              "de": "Populations-Standardabweichung (ddof = 0)",
+              "en": "Population standard deviation (ddof = 0)"
+            }
           },
           "stddev": {
             "type": "number",
-            "description": { "de": "Stichproben-Standardabweichung (ddof = 1) — zum Vergleich", "en": "Sample standard deviation (ddof = 1) — for comparison" }
+            "description": {
+              "de": "Standardabweichung gesamt (n−1) — Basis für Pp/Ppk",
+              "en": "Overall standard deviation (n−1) — basis for Pp/Ppk"
+            }
           },
           "n": {
             "type": "number",
-            "description": { "de": "Stichprobengröße", "en": "Sample size" }
+            "description": {
+              "de": "Stichprobengröße",
+              "en": "Sample size"
+            }
+          },
+          "sigma_within": {
+            "type": "number",
+            "description": {
+              "de": "σ innerhalb (MR̄/d2 bzw. gepoolte s/c4) — Basis für Cp/Cpk",
+              "en": "σ within (MR̄/d2 or pooled s/c4) — basis for Cp/Cpk"
+            }
           }
         }
       }
@@ -201,74 +247,166 @@
     "input_schema": {
       "fields": [
         {
-          "name": "values",
+          "name": "data",
           "label": {
-            "de": "Messdaten",
-            "en": "Measurement Data"
+            "de": "Messdaten (in Produktionsreihenfolge)",
+            "en": "Measurement data (in production order)"
           },
           "type": "textarea",
           "placeholder": {
-            "de": "Werte eingeben, getrennt durch Komma, Leerzeichen oder Zeilenumbruch\nz.B.: 10.02; 9.99; 10.01; 10.00; 9.98",
+            "de": "Werte eingeben, getrennt durch Semikolon, Leerzeichen oder Zeilenumbruch\nz.B.: 10.02; 9.99; 10.01; 10.00; 9.98",
             "en": "Enter values separated by commas, spaces, or newlines\ne.g.: 10.02, 9.99, 10.01, 10.00, 9.98"
           },
           "parse_as": "number_array",
           "required": true
         },
         {
-          "name": "params.lsl",
+          "name": "lsl",
           "label": {
             "de": "Untere Spezifikationsgrenze (LSL)",
             "en": "Lower Spec Limit (LSL)"
           },
           "type": "number",
-          "placeholder": { "de": "z.B.: 9.80 (oder leer für einseitig)", "en": "e.g.: 9.80 (leave empty for one-sided)" },
+          "placeholder": {
+            "de": "z.B.: 9.80",
+            "en": "e.g.: 9.80"
+          },
           "parse_as": "number",
-          "required": false
+          "required": true
         },
         {
-          "name": "params.usl",
+          "name": "usl",
           "label": {
             "de": "Obere Spezifikationsgrenze (USL)",
             "en": "Upper Spec Limit (USL)"
           },
           "type": "number",
-          "placeholder": { "de": "z.B.: 10.20 (oder leer für einseitig)", "en": "e.g.: 10.20 (leave empty for one-sided)" },
+          "placeholder": {
+            "de": "z.B.: 10.20",
+            "en": "e.g.: 10.20"
+          },
           "parse_as": "number",
-          "required": false
+          "required": true
         },
         {
-          "name": "params.confidence",
+          "name": "confidence",
           "label": {
             "de": "Konfidenzniveau",
             "en": "Confidence Level"
           },
           "type": "number",
-          "placeholder": { "de": "Standard: 0.95", "en": "Default: 0.95" },
+          "placeholder": {
+            "de": "Standard: 0.95",
+            "en": "Default: 0.95"
+          },
           "parse_as": "number",
           "required": false,
           "default": 0.95
+        },
+        {
+          "name": "subgroup_size",
+          "label": {
+            "de": "Untergruppengröße",
+            "en": "Subgroup size"
+          },
+          "type": "number",
+          "placeholder": {
+            "de": "Standard: 1 (Einzelwerte)",
+            "en": "Default: 1 (individuals)"
+          },
+          "parse_as": "number",
+          "required": false,
+          "default": 1
         }
       ]
     },
     "output_schema": {
-      "display_fields": ["Pp", "Ppk", "PPU", "PPL", "PpCI", "PpkCI", "xbar", "sigma", "s", "n"],
-      "primary_field": "Ppk",
+      "display_fields": [
+        "pp",
+        "ppk",
+        "ppu",
+        "ppl",
+        "PpCI",
+        "PpkCI",
+        "mean",
+        "stddev",
+        "sigma_within",
+        "n"
+      ],
+      "primary_field": "ppk",
       "format": {
-        "Pp":  { "decimals": 6, "label": "Pp" },
-        "Ppk": { "decimals": 6, "label": "Ppk" },
-        "PPU": { "decimals": 6, "label": "PPU" },
-        "PPL": { "decimals": 6, "label": "PPL" },
-        "PpCI":  { "decimals": 4, "label": { "de": "KI Pp", "en": "CI Pp" }, "type": "interval" },
-        "PpkCI": { "decimals": 4, "label": { "de": "KI Ppk", "en": "CI Ppk" }, "type": "interval" },
-        "xbar":  { "decimals": 6, "label": { "de": "Mittelwert (x̄)", "en": "Mean (x̄)" } },
-        "sigma": { "decimals": 6, "label": { "de": "σ (Population, ddof=0)", "en": "σ (population, ddof=0)" } },
-        "s":     { "decimals": 6, "label": { "de": "s (Stichprobe, ddof=1)", "en": "s (sample, ddof=1)" } },
-        "n":     { "decimals": 0, "label": "n" }
+        "pp": {
+          "decimals": 6,
+          "label": "Pp"
+        },
+        "ppk": {
+          "decimals": 6,
+          "label": "Ppk"
+        },
+        "ppu": {
+          "decimals": 6,
+          "label": "PPU"
+        },
+        "ppl": {
+          "decimals": 6,
+          "label": "PPL"
+        },
+        "PpCI": {
+          "decimals": 4,
+          "label": {
+            "de": "KI Pp",
+            "en": "CI Pp"
+          },
+          "type": "interval"
+        },
+        "PpkCI": {
+          "decimals": 4,
+          "label": {
+            "de": "KI Ppk",
+            "en": "CI Ppk"
+          },
+          "type": "interval"
+        },
+        "mean": {
+          "decimals": 6,
+          "label": {
+            "de": "Mittelwert (x̄)",
+            "en": "Mean (x̄)"
+          }
+        },
+        "sigma_within": {
+          "decimals": 6,
+          "label": {
+            "de": "σ innerhalb",
+            "en": "σ within"
+          }
+        },
+        "stddev": {
+          "decimals": 6,
+          "label": {
+            "de": "s gesamt (n−1)",
+            "en": "s overall (n−1)"
+          }
+        },
+        "n": {
+          "decimals": 0,
+          "label": "n"
+        }
       }
     }
   },
 
   "changelog": [
+    {
+      "version": "1.1.0",
+      "date": "2026-09-26",
+      "type": "fix",
+      "description": {
+        "de": "Pp/Ppk rechnen mit der Stichproben-Standardabweichung (n − 1) statt der Populations-σ (n); Beschreibung korrigiert. Ausprobieren-Felder an die Signatur angeglichen.",
+        "en": "Pp/Ppk use the sample standard deviation (n − 1) instead of the population σ (n); description corrected. Try-it fields aligned with the signature."
+      },
+      "breaking": true
+    },
     {
       "version": "1.0.0",
       "date": "2026-04-11",

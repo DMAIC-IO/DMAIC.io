@@ -200,3 +200,34 @@ suite('Process Capability Model — clearEmbedded', () => {
     assertEqual(s.embeddedLabel, '');
   });
 });
+
+suite('Process Capability Model — subgroup size', () => {
+  test('defaults to "1" (individuals)', () => {
+    const s = new State();
+    assertEqual(s.params.subgroupSize, '1');
+    assertEqual(s.subgroupSizeValue(), 1);
+  });
+
+  test('round-trips through toJSON/fromJSON', () => {
+    const s = new State();
+    s.params.subgroupSize = '5';
+    const r = State.fromJSON(s.toJSON());
+    assertEqual(r.params.subgroupSize, '5');
+    assertEqual(r.subgroupSizeValue(), 5);
+  });
+
+  test('fromJSON accepts a number and falls back to "1" when missing or invalid', () => {
+    assertEqual(State.fromJSON({ params: { subgroupSize: 4 } }).params.subgroupSize, '4');
+    assertEqual(State.fromJSON({ params: {} }).params.subgroupSize, '1');
+    assertEqual(State.fromJSON({ params: { subgroupSize: 0 } }).params.subgroupSize, '1');
+    assertEqual(State.fromJSON({ params: { subgroupSize: 'abc' } }).params.subgroupSize, '1');
+  });
+
+  test('subgroupSizeValue() treats typed junk as 1 and truncates decimals', () => {
+    const s = new State();
+    for (const [raw, exp] of [['', 1], ['0', 1], ['-3', 1], ['x', 1], ['4.7', 4], [' 3 ', 3]]) {
+      s.params.subgroupSize = raw;
+      assertEqual(s.subgroupSizeValue(), exp, `raw ${JSON.stringify(raw)}`);
+    }
+  });
+});

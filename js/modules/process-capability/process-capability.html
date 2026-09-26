@@ -32,7 +32,7 @@
 
     <div class="pc__hint" x-text="t('specHint')"></div>
 
-    <div class="pc__row">
+    <div class="pc__row-3">
       <div class="field-group">
         <label x-text="t('unit')"></label>
         <input type="text" class="field" data-ref="inp-unit"
@@ -45,7 +45,15 @@
                placeholder="95" inputmode="decimal"
                x-model="model.params.confidence" @input="scheduleAnalysis()" @change="runAnalysis()">
       </div>
+      <div class="field-group">
+        <label x-text="t('subgroupSizeLabel')"></label>
+        <input type="text" class="field field--num" data-ref="inp-subgroup-size"
+               placeholder="1" inputmode="numeric"
+               x-model="model.params.subgroupSize" @input="scheduleAnalysis()" @change="runAnalysis()">
+      </div>
     </div>
+
+    <div class="pc__hint" x-text="t('subgroupHint')"></div>
 
     <div class="dmike-split__section-title" x-text="t('sectionData')"></div>
 
@@ -139,15 +147,16 @@
           <div class="pc__interpretation">
             <template x-if="result.twoSided">
               <div>
-                <p><strong>Cp</strong> = (USL − LSL) / (6 · s) = <span x-text="fmt(result.T)"></span> / (6 · <span x-text="fmt(result.s)"></span>) = <strong x-text="fmt(result.Cp)"></strong></p>
+                <p><strong>Cp</strong> = (USL − LSL) / (6 · <span x-text="t('sigmaWithinSym')"></span>) = <span x-text="fmt(result.T)"></span> / (6 · <span x-text="fmt(result.sigmaWithin)"></span>) = <strong x-text="fmt(result.Cp)"></strong></p>
                 <p><strong>Cpk</strong> = min(CPU, CPL) = min(<span x-text="fmt(result.CPU)"></span>, <span x-text="fmt(result.CPL)"></span>) = <strong x-text="fmt(result.Cpk)"></strong></p>
+                <p><strong>Pp</strong> = (USL − LSL) / (6 · s) = <span x-text="fmt(result.T)"></span> / (6 · <span x-text="fmt(result.s)"></span>) = <strong x-text="fmt(result.Pp)"></strong></p>
               </div>
             </template>
             <template x-if="!result.twoSided && result.hasUsl">
-              <p><strong>CPU</strong> = (USL − x̄) / (3 · s) = (<span x-text="fmt(result.usl)"></span> − <span x-text="fmt(result.xbar)"></span>) / (3 · <span x-text="fmt(result.s)"></span>) = <strong x-text="fmt(result.CPU)"></strong></p>
+              <p><strong>CPU</strong> = (USL − x̄) / (3 · <span x-text="t('sigmaWithinSym')"></span>) = (<span x-text="fmt(result.usl)"></span> − <span x-text="fmt(result.xbar)"></span>) / (3 · <span x-text="fmt(result.sigmaWithin)"></span>) = <strong x-text="fmt(result.CPU)"></strong></p>
             </template>
             <template x-if="!result.twoSided && !result.hasUsl">
-              <p><strong>CPL</strong> = (x̄ − LSL) / (3 · s) = (<span x-text="fmt(result.xbar)"></span> − <span x-text="fmt(result.lsl)"></span>) / (3 · <span x-text="fmt(result.s)"></span>) = <strong x-text="fmt(result.CPL)"></strong></p>
+              <p><strong>CPL</strong> = (x̄ − LSL) / (3 · <span x-text="t('sigmaWithinSym')"></span>) = (<span x-text="fmt(result.xbar)"></span> − <span x-text="fmt(result.lsl)"></span>) / (3 · <span x-text="fmt(result.sigmaWithin)"></span>) = <strong x-text="fmt(result.CPL)"></strong></p>
             </template>
 
             <div style="height:12px"></div>

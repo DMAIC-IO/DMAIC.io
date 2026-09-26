@@ -17,12 +17,6 @@
   margin-top: var(--spacing-xs);
 }
 
-.pc__row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--spacing-m);
-}
-
 .pc__row-3 {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;

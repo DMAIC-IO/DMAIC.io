@@ -12,7 +12,7 @@ import { h, svg, s } from '../../core/dom.js';
 import { DashboardGrid } from '../../ui/dashboard-grid.js';
 import { DEFAULT_DASHBOARD_LAYOUT } from '../../ui/dashboard-tiles.js';
 import { enumerateTiles } from './enumerate-tiles.js';
-import { getChartType, evaluateNelsonRules, computeCapability, DEFAULT_ENABLED_RULES } from '../../engines/control-chart-engine.js';
+import { getChartType, evaluateNelsonRules, computeCapability, capabilitySigma, DEFAULT_ENABLED_RULES } from '../../engines/control-chart-engine.js';
 import { getColumnValues, getColumnName } from '../../ui/column-picker.js';
 import { getPhaseIds } from '../../core/cycles/cycles.js';
 
@@ -592,7 +592,7 @@ const page = createPage({
       );
       const capability = computeCapability(
         primaryData.values.filter(v => v !== null),
-        primaryData.cl, primaryData.sigma,
+        primaryData.cl, capabilitySigma(state.chartTypeId || 'i-mr', primaryData.sigma, n),
         state.usl ?? null, state.lsl ?? null,
       );
 

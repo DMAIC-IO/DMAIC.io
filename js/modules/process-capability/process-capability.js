@@ -109,7 +109,7 @@ const mod = createModule({
             mod: '',
             label: `CPL (${_t('lower')})`,
             value: fmt(r.CPL),
-            sub: '(x̄ − LSL) / 3s',
+            sub: `(x̄ − LSL) / 3 ${_t('sigmaWithinSym')}`,
           });
         }
         if (r.CPU != null) {
@@ -118,7 +118,7 @@ const mod = createModule({
             mod: '',
             label: `CPU (${_t('upper')})`,
             value: fmt(r.CPU),
-            sub: '(USL − x̄) / 3s',
+            sub: `(USL − x̄) / 3 ${_t('sigmaWithinSym')}`,
           });
         }
         return cells;
@@ -160,6 +160,16 @@ const mod = createModule({
         return cells;
       },
 
+      /** Stats label for σ within, naming the estimator (MR̄/d2 or pooled s/c4). */
+      withinLabel() {
+        const r = this.result;
+        if (!r) return '';
+        const method = r.withinMethod === 'pooled'
+          ? `${_t('withinMethodPooled')}, n = ${r.subgroupSize}`
+          : _t('withinMethodMovingRange');
+        return `${_t('statStddevWithin')} (${method})`;
+      },
+
       /** Horizontal stats table columns (label/value pairs). */
       statCols() {
         const r = this.result;
@@ -168,8 +178,8 @@ const mod = createModule({
         return [
           { label: _t('statN'), value: String(r.n) },
           { label: _t('statMean'), value: `${fmt(r.xbar)} ${unit}` },
+          { label: this.withinLabel(), value: `${fmt(r.sigmaWithin)} ${unit}` },
           { label: _t('statStddevS'), value: `${fmt(r.s)} ${unit}` },
-          { label: _t('statStddevSigma'), value: `${fmt(r.sigma)} ${unit}` },
           { label: _t('statMin'), value: `${fmt(r.xmin)} ${unit}` },
           { label: _t('statMax'), value: `${fmt(r.xmax)} ${unit}` },
           r.hasLsl ? { label: 'LSL', value: `${fmt(r.lsl)} ${unit}` } : null,
@@ -225,6 +235,7 @@ const mod = createModule({
           usl: isNaN(usl) ? null : usl,
           target: isNaN(target) ? null : target,
           confidence: this.confidenceFraction(),
+          subgroupSize: this.model.subgroupSizeValue(),
         };
 
         const validation = validate(params, values);

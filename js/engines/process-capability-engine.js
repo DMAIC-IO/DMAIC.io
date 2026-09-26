@@ -5,10 +5,59 @@
  *
  * Computes: Cp, Cpk, CPU, CPL, Pp, Ppk, PPM, sigma level.
  * Supports two-sided (USL + LSL) and one-sided (only USL or only LSL) specs.
+ *
+ * σ follows Minitab / AIAG SPC: Cp/Cpk use σ_within (MR̄/d2 for individuals,
+ * pooled SD/c4(d+1) for subgroups), Pp/Ppk use the overall sample SD (n − 1).
  */
 
 import { mean, stddev, stddevPop } from './stats-utils.js';
+import { lnGamma } from './math-utils.js';
 export { mean, stddev, stddevPop };
+
+/** d2 for moving ranges of span 2 (Minitab table value). */
+export const D2_SPAN2 = 1.128;
+
+/**
+ * Unbiasing constant c4(n) = √(2/(n−1)) · Γ(n/2) / Γ((n−1)/2).
+ * @param {number} n - sample size (> 1)
+ * @returns {number}
+ */
+export function c4(n) {
+  return Math.sqrt(2 / (n - 1)) * Math.exp(lnGamma(n / 2) - lnGamma((n - 1) / 2));
+}
+
+/**
+ * σ_within from the average moving range of span 2: MR̄ / d2.
+ * The values must be in production order.
+ * @param {number[]} values
+ * @returns {number}
+ */
+export function sigmaWithinMovingRange(values) {
+  let sum = 0;
+  for (let i = 1; i < values.length; i++) sum += Math.abs(values[i] - values[i - 1]);
+  return sum / (values.length - 1) / D2_SPAN2;
+}
+
+/**
+ * σ_within from the pooled standard deviation of consecutive subgroups:
+ * S_p / c4(d + 1) with d = Σ(nᵢ − 1). A trailing partial subgroup is kept.
+ * @param {number[]} values - in production order
+ * @param {number} subgroupSize - integer ≥ 2
+ * @returns {number} NaN when no subgroup has two or more values
+ */
+export function sigmaWithinPooled(values, subgroupSize) {
+  let ss = 0;
+  let d = 0;
+  for (let i = 0; i < values.length; i += subgroupSize) {
+    const g = values.slice(i, i + subgroupSize);
+    if (g.length < 2) continue;
+    const m = mean(g);
+    for (const v of g) ss += (v - m) ** 2;
+    d += g.length - 1;
+  }
+  if (d === 0) return NaN;
+  return Math.sqrt(ss / d) / c4(d + 1);
+}
 
 /**
  * Normal CDF approximation (Abramowitz & Stegun, max error ~1.5e-7).
@@ -128,7 +177,9 @@ export function validate(params, values) {
  * @param {number|null} params.usl - Upper spec limit (null = one-sided)
  * @param {number|null} params.target - Target value (optional, defaults to midpoint)
  * @param {number} [params.confidence=0.95] - Confidence level for CIs (0 < c < 1)
- * @param {number[]} values
+ * @param {number} [params.subgroupSize=1] - 1 = individuals (σ_within from MR̄/d2),
+ *   ≥ 2 = consecutive subgroups of that size (σ_within from pooled SD/c4)
+ * @param {number[]} values - in production order
  * @returns {object} Analysis results
  */
 export function analyze(params, values) {
@@ -138,7 +189,10 @@ export function analyze(params, values) {
   if (values.length < 2) {
     throw new Error(`Insufficient data: n < 2 (got ${values.length})`);
   }
-  const { lsl, usl, target, confidence = 0.95 } = params;
+  const { lsl, usl, target, confidence = 0.95, subgroupSize = 1 } = params;
+  if (!Number.isInteger(subgroupSize) || subgroupSize < 1) {
+    throw new Error(`subgroupSize must be a positive integer (got ${subgroupSize})`);
+  }
   const hasLsl = lsl != null && !isNaN(lsl);
   const hasUsl = usl != null && !isNaN(usl);
   if (!hasLsl && !hasUsl) {
@@ -151,8 +205,12 @@ export function analyze(params, values) {
 
   const n = values.length;
   const xbar = mean(values);
-  const s = stddev(values);       // sample stddev (n-1) → for Cp/Cpk (within)
-  const sigma = stddevPop(values); // population stddev (n) → for Pp/Ppk (overall)
+  const withinMethod = subgroupSize > 1 ? 'pooled' : 'movingRange';
+  const sigmaWithin = withinMethod === 'pooled'
+    ? sigmaWithinPooled(values, subgroupSize)
+    : sigmaWithinMovingRange(values);     // → Cp/Cpk
+  const s = stddev(values);               // overall sample SD (n−1) → Pp/Ppk, PPM
+  const sigmaOverall = s;
   const xmin = Math.min(...values);
   const xmax = Math.max(...values);
 
@@ -165,13 +223,13 @@ export function analyze(params, values) {
   let Cp = null, CPU = null, CPL = null, Cpk;
 
   if (twoSided) {
-    Cp = T / (6 * s);
+    Cp = T / (6 * sigmaWithin);
   }
   if (hasUsl) {
-    CPU = (usl - xbar) / (3 * s);
+    CPU = (usl - xbar) / (3 * sigmaWithin);
   }
   if (hasLsl) {
-    CPL = (xbar - lsl) / (3 * s);
+    CPL = (xbar - lsl) / (3 * sigmaWithin);
   }
   if (twoSided) {
     Cpk = Math.min(CPU, CPL);
@@ -185,13 +243,13 @@ export function analyze(params, values) {
   let Pp = null, PPU = null, PPL = null, Ppk;
 
   if (twoSided) {
-    Pp = T / (6 * sigma);
+    Pp = T / (6 * sigmaOverall);
   }
   if (hasUsl) {
-    PPU = (usl - xbar) / (3 * sigma);
+    PPU = (usl - xbar) / (3 * sigmaOverall);
   }
   if (hasLsl) {
-    PPL = (xbar - lsl) / (3 * sigma);
+    PPL = (xbar - lsl) / (3 * sigmaOverall);
   }
   if (twoSided) {
     Ppk = Math.min(PPU, PPL);
@@ -201,7 +259,7 @@ export function analyze(params, values) {
     Ppk = PPL;
   }
 
-  // ─── PPM (parts per million defective) ───────
+  // ─── PPM (parts per million defective, expected overall) ───
   let ppmAboveUsl = null, ppmBelowLsl = null, ppmTotal;
   if (hasUsl) {
     ppmAboveUsl = (1 - normalCdf((usl - xbar) / s)) * 1e6;
@@ -232,7 +290,7 @@ export function analyze(params, values) {
   const alpha = 1 - confidence;
   const df = n - 1;
 
-  // CI for Cp: exact (chi-squared based)
+  // CI for Cp: chi-squared based, df = n − 1 (qcc convention)
   // Cp_lower = Cp * sqrt(χ²(α/2, df) / df)
   // Cp_upper = Cp * sqrt(χ²(1−α/2, df) / df)
   let CpCI = null;
@@ -257,7 +315,7 @@ export function analyze(params, values) {
     ];
   }
 
-  // CI for Pp: exact (chi-squared based, same formula as Cp but using sigma/n)
+  // CI for Pp: chi-squared based, same formula as Cp
   let PpCI = null;
   if (Pp != null && df > 0) {
     const chi2Lo = chiSquaredInv(alpha / 2, df);
@@ -280,7 +338,7 @@ export function analyze(params, values) {
   }
 
   return {
-    n, xbar, s, sigma, xmin, xmax,
+    n, xbar, s, sigmaWithin, sigmaOverall, withinMethod, subgroupSize, xmin, xmax,
     T, mid, targetVal,
     hasLsl, hasUsl, twoSided,
     lsl: hasLsl ? lsl : null,
@@ -298,9 +356,10 @@ export function analyze(params, values) {
 /**
  * Flat-signature adapter for the Algorithm Lab validation fixtures.
  * Wraps {@link analyze} so it can be called as
- * `capabilityAnalyze(data, lsl, usl, confidence?)` and returns fields under
- * lowercase Minitab-style names (`cp`, `cpk`, `cpu`, `cpl`, `pp`, `ppk`,
- * `ppu`, `ppl`, `mean`, `stddev`, `sigma`) used by the capability fixtures.
+ * `capabilityAnalyze(data, lsl, usl, confidence?, subgroupSize?)` and returns
+ * fields under lowercase Minitab-style names (`cp`, `cpk`, `cpu`, `cpl`, `pp`,
+ * `ppk`, `ppu`, `ppl`, `mean`, `stddev`, `sigma_within`) used by the
+ * capability fixtures.
  * The original {@link analyze} API and field names remain unchanged.
  *
  * Unlike {@link analyze}, which handles invalid input gracefully by returning
@@ -311,9 +370,10 @@ export function analyze(params, values) {
  * @param {number|null} lsl
  * @param {number|null} usl
  * @param {number} [confidence=0.95]
+ * @param {number} [subgroupSize=1]
  * @returns {object}
  */
-export function capabilityAnalyze(data, lsl, usl, confidence) {
+export function capabilityAnalyze(data, lsl, usl, confidence, subgroupSize) {
   if (!Array.isArray(data)) throw new TypeError('data must be an array');
   if (data.length < 2) throw new Error('Insufficient data: n < 2');
   if (usl === undefined) throw new Error('USL must be provided (use null for one-sided LSL specs)');
@@ -330,6 +390,7 @@ export function capabilityAnalyze(data, lsl, usl, confidence) {
 
   const params = { lsl, usl };
   if (confidence != null) params.confidence = confidence;
+  if (subgroupSize != null) params.subgroupSize = subgroupSize;
   const r = analyze(params, data);
   return {
     cp: r.Cp,
@@ -342,7 +403,7 @@ export function capabilityAnalyze(data, lsl, usl, confidence) {
     ppl: r.PPL,
     mean: r.xbar,
     stddev: r.s,
-    sigma: r.sigma,
+    sigma_within: r.sigmaWithin,
     n: r.n,
     CpCI: r.CpCI,
     CpkCI: r.CpkCI,

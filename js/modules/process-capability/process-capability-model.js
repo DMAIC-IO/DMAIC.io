@@ -41,6 +41,16 @@ function confStr(v) {
   return String(Number(pct.toFixed(2)));
 }
 
+/**
+ * Parse a subgroup size into a positive integer; anything else means 1.
+ * @param {*} v
+ * @returns {number}
+ */
+function subgroupInt(v) {
+  const n = Math.trunc(typeof v === 'number' ? v : parseFloat(String(v ?? '').trim()));
+  return Number.isFinite(n) && n >= 1 ? n : 1;
+}
+
 /** @param {*} d @returns {{instanceId:string,sheetId:string,columnId:string}|null} */
 function columnRefFromJSON(d) {
   if (!d || typeof d !== 'object') return null;
@@ -67,6 +77,8 @@ export class State {
     target: '',
     unit: 'mm',
     confidence: '95',
+    /** 1 = individuals (σ within from MR̄/d2), ≥ 2 = consecutive subgroups (pooled SD). */
+    subgroupSize: '1',
   };
 
   /** Referenced worksheet column, or null. */
@@ -77,6 +89,11 @@ export class State {
 
   /** Display label for embedded example data. */
   embeddedLabel = '';
+
+  /** @returns {number} subgroup size as a positive integer (invalid input → 1). */
+  subgroupSizeValue() {
+    return subgroupInt(this.params.subgroupSize);
+  }
 
   /** Reset embedded-example mode. */
   clearEmbedded() {
@@ -101,6 +118,7 @@ export class State {
         target: this.params.target,
         unit: this.params.unit,
         confidence: this.params.confidence,
+        subgroupSize: this.params.subgroupSize,
       },
       columnRef: this.columnRef ? { ...this.columnRef } : null,
       embeddedValues: this.embeddedValues ? [...this.embeddedValues] : null,
@@ -126,6 +144,7 @@ export class State {
     s.params.target = numStr(p.target);
     s.params.unit = typeof p.unit === 'string' && p.unit ? p.unit : 'mm';
     s.params.confidence = confStr(p.confidence);
+    s.params.subgroupSize = String(subgroupInt(p.subgroupSize));
 
     s.columnRef = columnRefFromJSON(d.columnRef);
     s.embeddedValues = embeddedFromJSON(d.embeddedValues);

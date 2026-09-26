@@ -10,6 +10,7 @@ import {
   computeXbarS,
   evaluateNelsonRules,
   computeCapability,
+  capabilitySigma,
 } from '../../js/engines/control-chart-engine.js';
 
 async function loadFixture(path) {
@@ -125,4 +126,43 @@ suite('Control Charts — Cp/Cpk (fixture validation)', () => {
       }
     });
   }
+});
+
+// ── Capability σ: individuals, not subgroup means (Melzer review B1-034) ──
+//
+// The X̄ subchart carries σ_x̄ = σ/√n for its limits. Cp/Cpk compare the spread
+// of individual values with the tolerance, so they need σ = R̄/d2 or S̄/c4.
+
+const piston = await loadFixture('../gold-standards/capability/dataset-pistonrings.json');
+const pistonExpected = await loadFixture('../gold-standards/capability/expected-pistonrings.json');
+
+suite('Control Charts — capability σ of individuals', () => {
+  const { values, lsl, usl, subgroupSize: n } = piston;
+
+  test('X̄-R: Cp/Cpk from R̄/d2, not from σ_x̄', () => {
+    const xbar = computeXbarR(values, n).subcharts.xbar;
+    const sigma = capabilitySigma('xbar-r', xbar.sigma, n);
+    const cap = computeCapability(xbar.values, xbar.cl, sigma, usl, lsl);
+    const e = pistonExpected.withinRbar;
+    assertAlmostEqual(sigma, e.sigma, 1e-12, 'R̄/d2');
+    assertAlmostEqual(cap.cp, e.cp, 1e-9, 'Cp');
+    assertAlmostEqual(cap.cpk, e.cpk, 1e-9, 'Cpk');
+  });
+
+  test('X̄-S: Cp from S̄/c4 (table c4, 4 digits)', () => {
+    const xbar = computeXbarS(values, n).subcharts.xbar;
+    const cap = computeCapability(xbar.values, xbar.cl, capabilitySigma('xbar-s', xbar.sigma, n), usl, lsl);
+    // S̄/c4(5) with the exact c4 gives Cp 1.69554; the chart uses c4 = 0.9400.
+    assertAlmostEqual(cap.cp, 1.69554, 5e-4, 'Cp');
+  });
+
+  test('I-MR: the I-chart σ is already the σ of individuals', () => {
+    assertEqual(capabilitySigma('i-mr', 0.25, 1), 0.25);
+  });
+
+  test('staged σ arrays are scaled per stage', () => {
+    const out = capabilitySigma('xbar-r', [0.1, 0.2], 4);
+    assertAlmostEqual(out[0], 0.2, 1e-12);
+    assertAlmostEqual(out[1], 0.4, 1e-12);
+  });
 });
