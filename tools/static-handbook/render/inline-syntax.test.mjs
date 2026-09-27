@@ -16,6 +16,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { renderBlock } from './blocks.mjs';
+import { renderInline, renderInlineSync } from './inline.mjs';
 
 const HREF = { glossaryHref: id => `/de/glossar/${id}.html` };
 
@@ -62,4 +63,28 @@ test('Listen und Definitions-Überschriften nutzen dieselbe Auszeichnung', async
   const def = await renderBlock({ type: 'definition', term: '**Bias**', content: 'Mit $\\sigma$ gerechnet.' }, HREF);
   assert.ok(def.includes('<strong>Bias</strong>'));
   assert.ok(def.includes('katex'));
+});
+
+test('{{ref:…}} wird im statischen Handbuch zu Klartext geglättet, nicht verlinkt (renderInline)', async () => {
+  const withLabel = await renderInline('Akzeptanz üblich Cg ≥ 1,33 {{ref:vda-5|VDA Band 5}}.');
+  assert.ok(withLabel.includes('VDA Band 5'), 'Label fehlt');
+  assert.equal(withLabel.includes('{{'), false, 'literale geschweifte Klammern im Output');
+  assert.equal(withLabel.includes('<a '), false, 'ref darf nicht verlinkt werden');
+
+  const withoutLabel = await renderInline('Siehe {{ref:aiag-msa-4}}.');
+  assert.ok(withoutLabel.includes('aiag-msa-4'), 'bare id fehlt');
+  assert.equal(withoutLabel.includes('{{'), false, 'literale geschweifte Klammern im Output');
+  assert.equal(withoutLabel.includes('<a '), false, 'ref darf nicht verlinkt werden');
+});
+
+test('{{ref:…}} wird im statischen Handbuch zu Klartext geglättet, nicht verlinkt (renderInlineSync)', () => {
+  const withLabel = renderInlineSync('Akzeptanz üblich Cg ≥ 1,33 {{ref:vda-5|VDA Band 5}}.');
+  assert.ok(withLabel.includes('VDA Band 5'), 'Label fehlt');
+  assert.equal(withLabel.includes('{{'), false, 'literale geschweifte Klammern im Output');
+  assert.equal(withLabel.includes('<a '), false, 'ref darf nicht verlinkt werden');
+
+  const withoutLabel = renderInlineSync('Siehe {{ref:aiag-msa-4}}.');
+  assert.ok(withoutLabel.includes('aiag-msa-4'), 'bare id fehlt');
+  assert.equal(withoutLabel.includes('{{'), false, 'literale geschweifte Klammern im Output');
+  assert.equal(withoutLabel.includes('<a '), false, 'ref darf nicht verlinkt werden');
 });

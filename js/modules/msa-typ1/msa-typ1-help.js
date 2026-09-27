@@ -12,7 +12,7 @@ export default {
         blocks: [
           {
             type: 'paragraph',
-            content: 'Die MSA Typ-1-Studie prüft ein Messsystem auf Lage ({{term:bias|Bias}}) und Streuung ({{term:wiederholbarkeit|Wiederholbarkeit}}) — an einem einzigen Normal, mit einem Bediener, in kurzer Zeit. Sie ist der erste Schritt jeder Messsystemanalyse: zeigt sie Schwächen, lohnt sich keine weitergehende Studie (Typ 2 / {{term:gage-rr|Gage R&R}}).',
+            content: 'Die MSA Typ-1-Studie prüft ein Messsystem auf Lage ({{term:bias|Bias}}) und Streuung ({{term:wiederholbarkeit|Wiederholbarkeit}}) — an einem einzigen Normal, mit einem Bediener, in kurzer Zeit. Sie ist der erste Schritt jeder Messsystemanalyse: zeigt sie Schwächen, lohnt sich keine weitergehende Studie (Typ 2 / {{term:gage-rr|Gage R&R}}) {{ref:aiag-msa-4}}.',
           },
           {
             type: 'definition',
@@ -32,12 +32,12 @@ export default {
           {
             type: 'definition',
             term: 'Cg',
-            content: '{{term:cg|Cg}} ist das Maß für die Wiederholbarkeit im Verhältnis zur Toleranz. Typische Formel: Cg = 0,2·T / (6·s), wobei T die {{term:spezifikationsgrenzen|Toleranzbreite}} und s die {{term:standardabweichung|Standardabweichung}} der Wiederholmessungen ist. Akzeptanz üblich Cg ≥ 1,33.',
+            content: '{{term:cg|Cg}} ist das Maß für die Wiederholbarkeit im Verhältnis zur Toleranz. Typische Formel: Cg = 0,2·T / (6·s), wobei T die {{term:spezifikationsgrenzen|Toleranzbreite}} und s die {{term:standardabweichung|Standardabweichung}} der Wiederholmessungen ist. Akzeptanz üblich Cg ≥ 1,33 {{ref:vda-5}}.',
           },
           {
             type: 'definition',
             term: 'Cgk',
-            content: '{{term:cgk|Cgk}} erweitert Cg um den Bias. Cgk ≥ 1,33 gilt als akzeptabel. Cg hoch, Cgk niedrig → das Messsystem ist {{term:praezision|präzise}}, aber verschoben (Kalibrierproblem).',
+            content: '{{term:cgk|Cgk}} erweitert Cg um den Bias. Cgk ≥ 1,33 gilt als akzeptabel {{ref:vda-5}}. Cg hoch, Cgk niedrig → das Messsystem ist {{term:praezision|präzise}}, aber verschoben (Kalibrierproblem).',
           },
           {
             type: 'paragraph',
@@ -50,7 +50,7 @@ export default {
         blocks: [
           {
             type: 'paragraph',
-            content: 'The MSA Type 1 study checks a measurement system for {{term:bias|bias}} (position) and {{term:wiederholbarkeit|repeatability}} (spread) — on one single reference part, with one operator, in a short time frame. It is the first step of any measurement-system analysis: if it fails, no deeper study (Type 2 / {{term:gage-rr|Gage R&R}}) is worthwhile.',
+            content: 'The MSA Type 1 study checks a measurement system for {{term:bias|bias}} (position) and {{term:wiederholbarkeit|repeatability}} (spread) — on one single reference part, with one operator, in a short time frame. It is the first step of any measurement-system analysis: if it fails, no deeper study (Type 2 / {{term:gage-rr|Gage R&R}}) is worthwhile {{ref:aiag-msa-4}}.',
           },
           {
             type: 'definition',
@@ -70,12 +70,12 @@ export default {
           {
             type: 'definition',
             term: 'Cg',
-            content: '{{term:cg|Cg}} measures repeatability relative to tolerance. Typical formula: Cg = 0.2·T / (6·s), where T is the tolerance width and s the {{term:standardabweichung|standard deviation}} of repeats. Accepted when Cg ≥ 1.33.',
+            content: '{{term:cg|Cg}} measures repeatability relative to tolerance. Typical formula: Cg = 0.2·T / (6·s), where T is the tolerance width and s the {{term:standardabweichung|standard deviation}} of repeats. Accepted when Cg ≥ 1.33 {{ref:vda-5}}.',
           },
           {
             type: 'definition',
             term: 'Cgk',
-            content: '{{term:cgk|Cgk}} extends Cg to include bias. Cgk ≥ 1.33 is accepted. High Cg, low Cgk → the system is {{term:praezision|precise}} but shifted (calibration issue).',
+            content: '{{term:cgk|Cgk}} extends Cg to include bias. Cgk ≥ 1.33 is accepted {{ref:vda-5}}. High Cg, low Cgk → the system is {{term:praezision|precise}} but shifted (calibration issue).',
           },
           {
             type: 'paragraph',
