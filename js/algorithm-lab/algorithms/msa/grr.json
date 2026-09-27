@@ -7,7 +7,7 @@
   "category": "msa",
   "subcategory": "typ2",
   "status": "validated",
-  "version": "1.0.0",
+  "version": "1.1.0",
 
   "description": {
     "short": {
@@ -15,8 +15,8 @@
       "en": "Decomposes measurement variation into {{term:wiederholbarkeit|repeatability}} (EV), {{term:reproduzierbarkeit|reproducibility}} (AV), and {{term:teile-variation|part-to-part variation}} using two-factor crossed ANOVA with interaction."
     },
     "long": {
-      "de": "Die {{term:gage-rr|Gage R&R}}-Studie (Typ 2) bewertet ein Messsystem, indem mehrere Prüfer mehrere Teile mit Wiederholungen messen. Die zweifaktorielle ANOVA (Teile × Prüfer) mit Wechselwirkung zerlegt die Gesamtvariation in ihre Komponenten: σ²_Repeatability (Gerätestreuung EV), σ²_Reproducibility (Prüferstreuung AV = σ²_Operator + σ²_Interaction), σ²_Part (Teilevariation) und σ²_GRR = σ²_EV + σ²_AV. Ist die Wechselwirkung nicht signifikant (p ≥ α), wird sie mit der Repeatability gepoolt. Entscheidungskriterien: %GRR < 10 % = fähig, 10–30 % = bedingt fähig, ≥ 30 % = nicht fähig. Zusätzlich wird die Anzahl unterscheidbarer Kategorien ({{term:ndc|ndc}} = ⌊1,41 · σ_Part / σ_GRR⌋) berechnet; ndc ≥ 5 gilt als akzeptabel.",
-      "en": "The {{term:gage-rr|Gage R&R}} study (Type 2) evaluates a measurement system by having multiple operators measure multiple parts with replications. The two-factor crossed ANOVA (Parts × Operators) with interaction decomposes total variation into components: σ²_Repeatability (equipment variation EV), σ²_Reproducibility (appraiser variation AV = σ²_Operator + σ²_Interaction), σ²_Part (part-to-part variation), and σ²_GRR = σ²_EV + σ²_AV. If the interaction is not significant (p ≥ α), it is pooled with repeatability. Decision criteria: %GRR < 10% = acceptable, 10–30% = conditionally acceptable, ≥ 30% = not acceptable. Additionally, the number of distinct categories ({{term:ndc|ndc}} = ⌊1.41 · σ_Part / σ_GRR⌋) is computed; ndc ≥ 5 is considered acceptable."
+      "de": "Die {{term:gage-rr|Gage R&R}}-Studie (Typ 2) bewertet ein Messsystem, indem mehrere Prüfer mehrere Teile mit Wiederholungen messen. Die zweifaktorielle ANOVA (Teile × Prüfer) mit Wechselwirkung zerlegt die Gesamtvariation in ihre Komponenten: σ²_Repeatability (Gerätestreuung EV), σ²_Reproducibility (Prüferstreuung AV = σ²_Operator + σ²_Interaction), σ²_Part (Teilevariation) und σ²_GRR = σ²_EV + σ²_AV. Ist die Wechselwirkung nicht signifikant (p ≥ α), wird sie mit der Repeatability gepoolt. Studienstreuung = k·σ mit k = 6 (Standard, AIAG MSA 4. Aufl., Minitab, Bosch Heft 10) oder 5,15 (AIAG 3. Aufl.). Entscheidungskriterium ist %GRR auf der Urteilsbasis: %Toleranz, wenn LSL und USL angegeben sind (automatisch), sonst %Studienstreuung; < 10 % = fähig, 10–30 % = bedingt fähig, ≥ 30 % = nicht fähig. Ein optionales historisches Prozess-σ ergänzt %Prozess = σ/σ_hist·100 (nur informativ). Zusätzlich wird die Anzahl unterscheidbarer Kategorien ({{term:ndc|ndc}} = ⌊1,41 · σ_Part / σ_GRR⌋) berechnet; ndc ≥ 5 gilt als akzeptabel.",
+      "en": "The {{term:gage-rr|Gage R&R}} study (Type 2) evaluates a measurement system by having multiple operators measure multiple parts with replications. The two-factor crossed ANOVA (Parts × Operators) with interaction decomposes total variation into components: σ²_Repeatability (equipment variation EV), σ²_Reproducibility (appraiser variation AV = σ²_Operator + σ²_Interaction), σ²_Part (part-to-part variation), and σ²_GRR = σ²_EV + σ²_AV. If the interaction is not significant (p ≥ α), it is pooled with repeatability. Study variation = k·σ with k = 6 (default, AIAG MSA 4th ed., Minitab, Bosch booklet 10) or 5.15 (AIAG 3rd ed.). The decision criterion is %GRR on the verdict basis: %Tolerance when LSL and USL are given (automatic), otherwise %Study Var.; < 10% = acceptable, 10–30% = conditionally acceptable, ≥ 30% = not acceptable. An optional historical process σ adds %Process = σ/σ_hist·100 (informational only). Additionally, the number of distinct categories ({{term:ndc|ndc}} = ⌊1.41 · σ_Part / σ_GRR⌋) is computed; ndc ≥ 5 is considered acceptable."
     }
   },
 
@@ -58,8 +58,8 @@
         "label": "%GRR",
         "latex": "\\%\\text{GRR}_{\\text{StudyVar}} = \\frac{\\sigma_{\\text{GRR}}}{\\sigma_{\\text{Total}}} \\times 100",
         "description": {
-          "de": "Anteil der Messsystemvariation an der Gesamtvariation (Entscheidungskriterium)",
-          "en": "Measurement system variation as percentage of total variation (decision criterion)"
+          "de": "Anteil der Messsystemvariation an der Gesamtvariation (Entscheidungskriterium ohne Toleranz oder bei Urteilsbasis Studienstreuung)",
+          "en": "Measurement system variation as percentage of total variation (decision criterion without tolerance or with verdict basis study variation)"
         }
       },
       {
@@ -74,8 +74,24 @@
         "label": "%Tolerance",
         "latex": "\\%\\text{Tol} = \\frac{k \\cdot \\sigma_{\\text{GRR}}}{T} \\times 100 \\quad (T = USL - LSL)",
         "description": {
-          "de": "Messsystemvariation als Prozent der Toleranz (nur wenn LSL/USL angegeben)",
-          "en": "Measurement system variation as percentage of tolerance (only if LSL/USL provided)"
+          "de": "Messsystemvariation als Prozent der Toleranz (nur wenn LSL/USL angegeben); Entscheidungskriterium bei automatischer Urteilsbasis",
+          "en": "Measurement system variation as percentage of tolerance (only if LSL/USL provided); decision criterion with the automatic verdict basis"
+        }
+      },
+      {
+        "label": "%Process",
+        "latex": "\\%\\text{Process} = \\frac{\\sigma}{\\sigma_{\\text{hist}}} \\times 100",
+        "description": {
+          "de": "Anteil am historischen Prozess-σ (nur wenn angegeben; informativ, kann 100 % übersteigen, kein Urteil)",
+          "en": "Share of the historical process σ (only if given; informational, may exceed 100%, no verdict)"
+        }
+      },
+      {
+        "label": "Verdict",
+        "latex": "\\%\\text{GRR}_{\\text{verdict}} = \\begin{cases} \\%\\text{Tol} & \\text{basis} \\neq \\text{studyVar} \\land T \\text{ given} \\\\ \\%\\text{GRR}_{\\text{StudyVar}} & \\text{otherwise} \\end{cases}",
+        "description": {
+          "de": "Urteil auf pctGRRVerdict: < 10 % pass, < 30 % warn, sonst fail",
+          "en": "Verdict on pctGRRVerdict: < 10% pass, < 30% warn, otherwise fail"
         }
       }
     ],
@@ -151,8 +167,8 @@
           "type": "object",
           "required": false,
           "description": {
-            "de": "Optionen: alpha (Standard 0.05), studyVarMultiplier (Standard 5.15), lsl, usl",
-            "en": "Options: alpha (default 0.05), studyVarMultiplier (default 5.15), lsl, usl"
+            "de": "Optionen: alpha (Standard 0.05), studyVarMultiplier (Standard 6; AIAG 3. Aufl.: 5.15), lsl, usl, verdictBasis ('tolerance' | 'studyVar'; weggelassen = automatisch), historicalSigma (> 0, optional)",
+            "en": "Options: alpha (default 0.05), studyVarMultiplier (default 6; AIAG 3rd ed.: 5.15), lsl, usl, verdictBasis ('tolerance' | 'studyVar'; omitted = automatic), historicalSigma (> 0, optional)"
           }
         }
       ],
@@ -161,7 +177,23 @@
         "properties": {
           "varComp.grr.pctStudyVar": {
             "type": "number",
-            "description": { "de": "%GRR (Study Variation) — Entscheidungskriterium", "en": "%GRR (Study Variation) — decision criterion" }
+            "description": { "de": "%GRR (Studienstreuung)", "en": "%GRR (Study Variation)" }
+          },
+          "varComp.grr.pctTolerance": {
+            "type": "number",
+            "description": { "de": "%GRR (Toleranz), null ohne LSL/USL", "en": "%GRR (Tolerance), null without LSL/USL" }
+          },
+          "varComp.grr.pctProcess": {
+            "type": "number",
+            "description": { "de": "%GRR (historisches Prozess-σ), null ohne historicalSigma", "en": "%GRR (historical process σ), null without historicalSigma" }
+          },
+          "verdictBasis": {
+            "type": "string",
+            "description": { "de": "Wirksame Urteilsbasis: 'tolerance' / 'studyVar'", "en": "Effective verdict basis: 'tolerance' / 'studyVar'" }
+          },
+          "pctGRRVerdict": {
+            "type": "number",
+            "description": { "de": "%GRR auf der Urteilsbasis — Entscheidungskriterium", "en": "%GRR on the verdict basis — decision criterion" }
           },
           "varComp.repeatability.pctStudyVar": {
             "type": "number",
@@ -260,18 +292,42 @@
           "name": "options.studyVarMultiplier",
           "label": { "de": "k-Faktor", "en": "k Factor" },
           "type": "number",
-          "placeholder": { "de": "Standard: 5.15", "en": "Default: 5.15" },
+          "placeholder": { "de": "Standard: 6", "en": "Default: 6" },
           "parse_as": "number",
           "required": false,
-          "default": 5.15
+          "default": 6
+        },
+        {
+          "name": "options.verdictBasis",
+          "label": { "de": "Urteilsbasis", "en": "Verdict Basis" },
+          "type": "select",
+          "options": [
+            { "value": "auto", "label": { "de": "Automatisch (Toleranz, falls LSL/USL)", "en": "Automatic (tolerance if LSL/USL)" } },
+            { "value": "tolerance", "label": { "de": "Toleranz", "en": "Tolerance" } },
+            { "value": "studyVar", "label": { "de": "Studienstreuung", "en": "Study Variation" } }
+          ],
+          "parse_as": "string",
+          "required": false,
+          "default": "auto"
+        },
+        {
+          "name": "options.historicalSigma",
+          "label": { "de": "Historisches Prozess-σ", "en": "Historical Process σ" },
+          "type": "number",
+          "placeholder": { "de": "optional", "en": "optional" },
+          "parse_as": "number",
+          "required": false
         }
       ]
     },
     "output_schema": {
-      "display_fields": ["varComp.grr.pctStudyVar", "varComp.repeatability.pctStudyVar", "varComp.reproducibility.pctStudyVar", "varComp.part.pctStudyVar", "ndc", "grrStatus"],
-      "primary_field": "varComp.grr.pctStudyVar",
+      "display_fields": ["pctGRRVerdict", "verdictBasis", "varComp.grr.pctStudyVar", "varComp.grr.pctTolerance", "varComp.repeatability.pctStudyVar", "varComp.reproducibility.pctStudyVar", "varComp.part.pctStudyVar", "ndc", "grrStatus"],
+      "primary_field": "pctGRRVerdict",
       "format": {
-        "varComp.grr.pctStudyVar": { "decimals": 2, "label": "%GRR" },
+        "pctGRRVerdict": { "decimals": 2, "label": "%GRR" },
+        "verdictBasis": { "decimals": 0, "label": "Basis" },
+        "varComp.grr.pctStudyVar": { "decimals": 2, "label": "%GRR (StudyVar)" },
+        "varComp.grr.pctTolerance": { "decimals": 2, "label": "%GRR (Tol)" },
         "varComp.repeatability.pctStudyVar": { "decimals": 2, "label": "%EV" },
         "varComp.reproducibility.pctStudyVar": { "decimals": 2, "label": "%AV" },
         "varComp.part.pctStudyVar": { "decimals": 2, "label": "%PV" },
@@ -289,6 +345,16 @@
       "description": {
         "de": "Erstimplementierung: ANOVA-basierte Gage R&R mit Wechselwirkungs-Pooling, Varianzkomponenten, %GRR, ndc",
         "en": "Initial implementation: ANOVA-based Gage R&R with interaction pooling, variance components, %GRR, ndc"
+      },
+      "breaking": false
+    },
+    {
+      "version": "1.1.0",
+      "date": "2026-09-27",
+      "type": "feature",
+      "description": {
+        "de": "Faktor 6 als Standard (5,15 wählbar), Urteil auf %Toleranz bei gesetzten Grenzen (Urteilsbasis wählbar), historisches Prozess-σ mit %Prozess",
+        "en": "Factor 6 as default (5.15 selectable), verdict on %Tolerance when limits are set (verdict basis selectable), historical process σ with %Process"
       },
       "breaking": false
     }

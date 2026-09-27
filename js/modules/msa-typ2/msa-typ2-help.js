@@ -32,7 +32,7 @@ export default {
           {
             type: 'definition',
             term: 'GR&R in % (von Streuung oder Toleranz)',
-            content: 'Verhältnis der Messsystem-Streuung zur gesamten Streuung oder zur Toleranz. < 10 % gilt als akzeptabel, 10–30 % bedingt akzeptabel, > 30 % nicht akzeptabel.',
+            content: 'Verhältnis der Messsystem-Streuung (k·σ_GRR) zur Studienstreuung (%Studienstreuung) oder zur Toleranz T = OGW − UGW (%Toleranz). Das Urteil stützt sich auf eine dieser beiden Bezugsgrößen, die Urteilsbasis: < 10 % gilt als akzeptabel, 10–30 % bedingt akzeptabel, ab 30 % nicht akzeptabel.',
           },
           {
             type: 'definition',
@@ -70,7 +70,7 @@ export default {
           {
             type: 'definition',
             term: 'GR&R in % (of variation or tolerance)',
-            content: 'Ratio of measurement-system variation to total variation or tolerance. < 10% is accepted, 10–30% conditionally accepted, > 30% not accepted.',
+            content: 'Ratio of measurement-system variation (k·σ_GRR) to the study variation (%Study Var.) or to the tolerance T = USL − LSL (%Tolerance). The verdict rests on one of these two references, the verdict basis: < 10% is accepted, 10–30% conditionally accepted, 30% and above not accepted.',
           },
           {
             type: 'definition',
@@ -160,6 +160,9 @@ export default {
               'Gleiche Messprozedur, gleiches Gerät, gleiche Vorrichtung.',
               'Ergebnisse mit der ANOVA-Methode auswerten (nicht Range-Methode für moderne Studien).',
               'GR&R-Prozent, ndc und Komponentenanteile bewerten.',
+              'Faktor k: 6 (99,73 %) ist der aktuelle Standard (AIAG MSA 4. Aufl. 2010, Minitab, Bosch Heft 10 Verfahren 2). 5,15 (99 %) ist die Konvention der AIAG 3. Aufl. und bleibt wählbar; früher gespeicherte Studien behalten 5,15.',
+              'Urteilsbasis „Automatisch“: %Toleranz, wenn UGW und OGW gesetzt sind (Bosch: Bezugsgröße T, Grenzen 10 %/30 %), sonst %Studienstreuung. Beide Bezugsgrößen lassen sich auch fest wählen.',
+              'Historisches Prozess-σ (optional): ergänzt die Spalte %Prozess = σ/σ_hist·100. Sie ist rein informativ, darf über 100 % liegen und ändert weder Urteil noch ndc.',
               'Bei Scheitern Ursache klären (Gerät, Bediener, Vorrichtung, Messverfahren) und nachbessern.',
             ],
           },
@@ -178,6 +181,9 @@ export default {
               'Same procedure, same instrument, same fixture.',
               'Analyze with the ANOVA method (not the range method for modern studies).',
               'Assess GR&R percent, ndc, and component shares.',
+              'Factor k: 6 (99.73%) is the current standard (AIAG MSA 4th ed. 2010, Minitab, Bosch booklet 10 procedure 2). 5.15 (99%) is the AIAG 3rd ed. convention and remains selectable; studies saved earlier keep 5.15.',
+              'Verdict basis "Automatic": %Tolerance when LSL and USL are set (Bosch: reference quantity T, limits 10%/30%), otherwise %Study Var. Either reference can also be fixed.',
+              'Historical process σ (optional): adds the column %Process = σ/σ_hist·100. It is informational only, may exceed 100%, and changes neither the verdict nor ndc.',
               'On failure, identify the cause (instrument, operator, fixture, procedure) and fix it.',
             ],
           },
@@ -213,6 +219,11 @@ export default {
             type: 'definition',
             term: 'ndc ignoriert',
             content: 'GR&R 20 % kann mit ndc 3 einhergehen — dann sieht das System den Prozess nur in drei Stufen. Beide Kennzahlen gemeinsam lesen.',
+          },
+          {
+            type: 'definition',
+            term: '%Toleranz und %Studienstreuung urteilen verschieden',
+            content: 'Dieselbe Studie kann bezogen auf die Toleranz akzeptabel und bezogen auf die Studienstreuung nicht akzeptabel sein — oder umgekehrt. Die Urteilsbasis nach dem Zweck wählen: Produktabnahme gegen Spezifikation → Toleranz, Prozessverbesserung → Studienstreuung.',
           },
           {
             type: 'definition',
@@ -253,6 +264,11 @@ export default {
             type: 'definition',
             term: 'ndc ignored',
             content: 'GR&R 20% can come with ndc 3 — the system sees only three levels of the process. Read both indices together.',
+          },
+          {
+            type: 'definition',
+            term: '%Tolerance and %Study Var. disagree',
+            content: 'The same study can be acceptable relative to the tolerance and not acceptable relative to the study variation — or the other way round. Choose the verdict basis by purpose: product acceptance against the specification → tolerance, process improvement → study variation.',
           },
           {
             type: 'definition',
