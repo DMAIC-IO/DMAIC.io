@@ -396,3 +396,48 @@ export function termSortKey(id) {
   const idx = t.factors.map(f => String(f).padStart(4, '0')).join('_');
   return `C${  order  }_${  idx}`;
 }
+
+/**
+ * Comparator ordering canonical term ids by `termSortKey`.
+ * @param {string} a
+ * @param {string} b
+ * @returns {number}
+ */
+export function compareTermIds(a, b) {
+  const ka = termSortKey(a);
+  const kb = termSortKey(b);
+  return ka < kb ? -1 : ka > kb ? 1 : 0;
+}
+
+/**
+ * The model a design supports, as canonical term ids sorted by `termSortKey`.
+ *
+ * Optimal designs pass their user-chosen `activeTerms`, which are returned
+ * sorted. Every other design gets all main effects, all 2-way interactions,
+ * and `Q<i>` for each continuous factor whose coded column has at least
+ * three distinct values (CCD, Box-Behnken, 3-level factorials). No rank
+ * check here — see `estimableTerms` in regression-engine.js.
+ *
+ * @param {number[][]} codedMatrix - n×k coded design matrix
+ * @param {{ activeTerms?: string[], categoricalFlags?: boolean[] }} [opts]
+ * @returns {string[]}
+ */
+export function designModelTerms(codedMatrix, opts = {}) {
+  const { activeTerms, categoricalFlags = [] } = opts;
+  if (Array.isArray(activeTerms) && activeTerms.length > 0) {
+    return [...activeTerms].sort(compareTermIds);
+  }
+  const k = codedMatrix[0]?.length ?? 0;
+  const out = defaultActiveTerms(k);
+  for (let i = 0; i < k; i++) {
+    if (categoricalFlags[i]) continue;
+    const levels = [];
+    for (const row of codedMatrix) {
+      const v = row[i];
+      if (!levels.some(l => Math.abs(l - v) <= 1e-9)) levels.push(v);
+      if (levels.length >= 3) break;
+    }
+    if (levels.length >= 3) out.push(quadTermId(i));
+  }
+  return out.sort(compareTermIds);
+}

@@ -958,6 +958,68 @@ export function generatePolynomialTerms(predictors, degree) {
   return terms;
 }
 
+/**
+ * Decide which model blocks are estimable, in the given (hierarchical) order.
+ *
+ * Incremental modified Gram-Schmidt with one re-orthogonalisation pass: a
+ * block is kept when every one of its columns keeps a residual norm above
+ * 1e-8·‖column‖ after projecting out all previously kept directions (and
+ * the block's own earlier columns). For a rejected block, `with` lists the
+ * kept blocks whose directions carry a non-negligible share of its
+ * projection — i.e. the terms it is aliased with.
+ *
+ * @param {Array<{ id: string, columns: number[][] }>} blocks - intercept first
+ * @param {number} n - Row count
+ * @returns {{ kept: string[], aliased: Array<{ id: string, with: string[] }> }}
+ */
+export function estimableTerms(blocks, n) {
+  const TOL = 1e-8;
+  const dot = (a, b) => { let s = 0; for (let i = 0; i < n; i++) s += a[i] * b[i]; return s; };
+  const basis = [];   // orthonormal vectors of kept blocks
+  const owner = [];   // block id per basis vector
+  const kept = [];
+  const aliased = [];
+
+  for (const block of blocks) {
+    const fresh = [];
+    const shareByOwner = new Map();
+    let ok = true;
+    for (const column of block.columns) {
+      const r = column.slice(0, n);
+      const norm0 = Math.sqrt(dot(r, r));
+      for (let pass = 0; pass < 2; pass++) {
+        for (let q = 0; q < basis.length; q++) {
+          const c = dot(r, basis[q]);
+          for (let i = 0; i < n; i++) r[i] -= c * basis[q][i];
+          shareByOwner.set(owner[q], (shareByOwner.get(owner[q]) ?? 0) + Math.abs(c));
+        }
+        for (const f of fresh) {
+          const c = dot(r, f);
+          for (let i = 0; i < n; i++) r[i] -= c * f[i];
+          shareByOwner.set(block.id, (shareByOwner.get(block.id) ?? 0) + Math.abs(c));
+        }
+      }
+      const norm = Math.sqrt(dot(r, r));
+      if (norm0 === 0 || norm <= TOL * norm0) {
+        ok = false;
+        const cut = TOL * Math.max(norm0, 1);
+        const withIds = [];
+        for (const id of kept) {
+          if ((shareByOwner.get(id) ?? 0) > cut) withIds.push(id);
+        }
+        if ((shareByOwner.get(block.id) ?? 0) > cut) withIds.push(block.id);
+        aliased.push({ id: block.id, with: withIds.filter(id => id !== block.id) });
+        break;
+      }
+      fresh.push(r.map(v => v / norm));
+    }
+    if (!ok) continue;
+    for (const f of fresh) { basis.push(f); owner.push(block.id); }
+    kept.push(block.id);
+  }
+  return { kept, aliased };
+}
+
 // ── fitFromSpec: spec → fitted model with full diagnostics ─────────
 
 /**
