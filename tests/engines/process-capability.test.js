@@ -264,6 +264,19 @@ suite('Process Capability — Z.bench and PPM kinds', () => {
     assertEqual(zBench(0), Infinity);
     rel(zBench(0.0013498980), 3, 1e-6, 'zBench(Q(3))');
   });
+
+  test('constant data on a limit: Z.bench is NaN, not ∞', () => {
+    // σ = 0 and x̄ = LSL → z = 0/0; the fraction is undefined, so is Z.bench.
+    const r = analyze({ lsl: 5, usl: 6 }, [5, 5, 5, 5]);
+    assertEqual(Number.isNaN(r.zBenchWithin), true, 'within');
+    assertEqual(Number.isNaN(r.zBenchOverall), true, 'overall');
+    assertEqual(Number.isNaN(zBench(NaN)), true, 'zBench(NaN)');
+  });
+
+  test('mean far outside the spec: Z.bench is −∞', () => {
+    const r = analyze({ lsl: 100, usl: 200 }, [1, 2, 3, 2, 1, 2]);
+    assertEqual(r.zBenchWithin, -Infinity);
+  });
 });
 
 suite('Process Capability — Cp/Pp CI from the exact χ² quantile', () => {

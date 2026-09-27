@@ -1,5 +1,6 @@
 import { suite, test, assertEqual } from '../test-utils.js';
 import { State } from '../../js/modules/process-capability/process-capability-model.js';
+import { fmtZ, fmtFraction } from '../../js/modules/process-capability/process-capability-format.js';
 
 suite('Process Capability Model — State defaults', () => {
   test('constructor sets default params (strings, mm, 95)', () => {
@@ -229,5 +230,20 @@ suite('Process Capability Model — subgroup size', () => {
       s.params.subgroupSize = raw;
       assertEqual(s.subgroupSizeValue(), exp, `raw ${JSON.stringify(raw)}`);
     }
+  });
+});
+
+suite('Process Capability Model — Z and fraction formatting', () => {
+  test('fmtZ: ±∞ as symbols, NaN as dash, finite with d decimals', () => {
+    assertEqual(fmtZ(Infinity), '∞');
+    assertEqual(fmtZ(-Infinity), '−∞');
+    assertEqual(fmtZ(NaN), '–');
+    assertEqual(fmtZ(3.00204, 2), '3.00');
+  });
+
+  test('fmtFraction: small fractions in exponent notation, never 0.000000', () => {
+    assertEqual(fmtFraction(5.0826e-7), '5.083e-7');
+    assertEqual(fmtFraction(0.001341), '0.001341');
+    assertEqual(fmtFraction(0), '0');
   });
 });

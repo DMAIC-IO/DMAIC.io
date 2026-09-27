@@ -142,10 +142,12 @@ export function normalUpperTail(z) {
  * Benchmark Z: the standard normal quantile of the total out-of-spec fraction
  * (both tails), as in Minitab's capability report.
  * @param {number} p - total fraction outside the spec limits
- * @returns {number} −Φ⁻¹(p); Infinity when p is 0
+ * @returns {number} −Φ⁻¹(p); Infinity when p is 0, NaN when p is undefined
+ *   (e.g. σ = 0 with the mean on a limit)
  */
 export function zBench(p) {
-  return p > 0 ? -normalQuantile(p) : Infinity;
+  if (p === 0) return Infinity;
+  return p > 0 ? -normalQuantile(p) : NaN;
 }
 
 /**

@@ -22,20 +22,10 @@ import { createModule } from '../../core/template-module.js';
 import { State } from './process-capability-model.js';
 import { validate, analyze } from '../../engines/process-capability-engine.js';
 import { ColumnPicker, getColumnValues, discoverColumns } from '../../ui/column-picker.js';
+import { fmt, fmtZ, fmtFraction } from './process-capability-format.js';
 
 /** Auto-run debounce (ms) — matches the legacy behaviour. */
 const AUTORUN_DELAY = 600;
-
-/** @param {number} v @param {number} d @returns {string} */
-function fmt(v, d = 4) {
-  if (v == null || isNaN(v)) return '–';
-  return v.toFixed(d);
-}
-
-/** Z value: "∞" for an out-of-spec fraction of 0. @param {number} v @param {number} d @returns {string} */
-function fmtZ(v, d = 4) {
-  return v === Infinity ? '∞' : fmt(v, d);
-}
 
 const mod = createModule({
   config: {
@@ -211,7 +201,7 @@ const mod = createModule({
         const r = this.result;
         if (!r) return '';
         const parts = [r.hasLsl ? 'p(< LSL)' : null, r.hasUsl ? 'p(> USL)' : null].filter(Boolean).join(' + ');
-        return `Z.bench = −Φ⁻¹(${parts}) = −Φ⁻¹(${fmt(r.ppmWithinTotal / 1e6, 6)}) = ${fmtZ(r.zBenchWithin)}`;
+        return `Z.bench = −Φ⁻¹(${parts}) = −Φ⁻¹(${fmtFraction(r.ppmWithinTotal / 1e6)}) = ${fmtZ(r.zBenchWithin)}`;
       },
 
       // ── Analysis (controller — needs context + live worksheet data) ──
