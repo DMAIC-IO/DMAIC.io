@@ -64,7 +64,7 @@ const mod = createModule({
         if (r?.noSpread) return _t('statusNoSpread');
         return _t({ pass: 'statusPass', fail: 'statusFail', warn: 'statusWarn', none: 'statusOneSided' }[r?.overall] || 'statusWarn');
       },
-      badgeLabel: (s) => _t({ pass: 'capable', fail: 'notCapable', warn: 'condCapable' }[s] || 'condCapable'),
+      badgeLabel: (s) => (s == null ? '–' : _t({ pass: 'capable', fail: 'notCapable', warn: 'condCapable' }[s] || 'condCapable')),
       kpiModClass: (s) => ({ pass: 'dmike-kpi--good', warn: 'dmike-kpi--warn', fail: 'dmike-kpi--bad' }[s] || ''),
 
       featureName() { return this.model.params.name || '–'; },
