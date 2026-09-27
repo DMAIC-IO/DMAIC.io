@@ -1,6 +1,7 @@
 import Alpine from '@alpinejs/csp';
 import { cloneTemplate, templateKey } from './dom.js';
 import { getModuleHelp, hasModuleHelp } from './help-registry.js';
+import { getModuleReferences, hasModuleReferences } from './references-registry.js';
 
 /**
  * Pure gate: returns true iff the given route store state belongs to the
@@ -60,6 +61,7 @@ export function createModule(base) {
     imagePaths(json) { return Model.imagePaths?.(json) ?? []; },
     ...config,
     help: hasModuleHelp(config.id) ? () => getModuleHelp(config.id) : undefined,
+    references: hasModuleReferences(config.id) ? () => getModuleReferences(config.id) : undefined,
 
     _container: null,
     _context: null,
