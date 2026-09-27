@@ -393,3 +393,12 @@ suite('MSA Typ 3 — verdict basis and %Process', () => {
     for (const key of ['grr', 'reproducibility', 'part']) assertEqual(n.varComp[key].pctProcess, null, key);
   });
 });
+
+suite('MSA Typ 3 — unbalanced message without operators', () => {
+  test('typ 3 unbalanced design → errUnbalancedTyp3 (no operator wording)', () => {
+    const d = typ3Data();
+    const v = validateTyp2({ ...d, parts: d.parts.slice(0, -1), measurements: d.measurements.slice(0, -1) }, {});
+    assertEqual(v.valid, false);
+    assertEqual(v.errorKey, 'modules.msa-typ2.errUnbalancedTyp3');
+  });
+});

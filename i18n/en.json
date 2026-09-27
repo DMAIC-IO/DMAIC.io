@@ -1622,6 +1622,7 @@
       "errTooFewParts": "At least 2 distinct parts required (currently: {n}).",
       "errTooFewOperators": "At least 2 distinct operators required (currently: {n}).",
       "errUnbalanced": "Unbalanced design — every operator must measure every part the same number of times.",
+      "errUnbalancedTyp3": "Unbalanced design — every part must be measured the same number of times.",
       "errTooFewReplicates": "At least 2 replicates per cell required (currently: {n}).",
       "errUslLeqLsl": "USL must be greater than LSL.",
       "errHistSigmaInvalid": "Historical process σ must be a positive number."

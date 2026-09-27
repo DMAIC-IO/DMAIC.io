@@ -200,7 +200,7 @@ function validateTyp3(data, options = {}) {
   const counts = Object.values(partCounts);
   const r = counts[0];
   if (!counts.every(c => c === r)) {
-    return { valid: false, errorKey: 'modules.msa-typ2.errUnbalanced' };
+    return { valid: false, errorKey: 'modules.msa-typ2.errUnbalancedTyp3' };
   }
   if (r < 2) {
     return { valid: false, errorKey: 'modules.msa-typ2.errTooFewReplicates', errorVars: { n: r } };

@@ -1622,6 +1622,7 @@
       "errTooFewParts": "Mindestens 2 verschiedene Teile benötigt (aktuell: {n}).",
       "errTooFewOperators": "Mindestens 2 verschiedene Bediener benötigt (aktuell: {n}).",
       "errUnbalanced": "Unausgeglichenes Design — jeder Bediener muss jedes Teil gleich oft messen.",
+      "errUnbalancedTyp3": "Unausgeglichenes Design — jedes Teil muss gleich oft gemessen werden.",
       "errTooFewReplicates": "Mindestens 2 Wiederholungen pro Zelle benötigt (aktuell: {n}).",
       "errUslLeqLsl": "OSG muss größer als USG sein.",
       "errHistSigmaInvalid": "Historisches Prozess-σ muss eine positive Zahl sein."
