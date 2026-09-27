@@ -89,3 +89,47 @@ suite('help-renderer: renderModuleHelp()', () => {
     assertEqual(el.querySelector('p').textContent, '<img src=x onerror=alert(1)>', 'literal text');
   });
 });
+
+const REFS = [{
+  id: 'aiag-msa-4',
+  author: [{ family: 'AIAG' }],
+  title: 'Measurement Systems Analysis (MSA)',
+  issued: { 'date-parts': [[2010]] },
+}];
+
+suite('help-renderer: inline references', () => {
+  test('known {{ref:id}} → link labelled with the author-year form', () => {
+    const el = document.createElement('div');
+    el.append(renderModuleHelp({ sections: { s: { en: { blocks: [
+      { type: 'paragraph', content: 'Grenzwert nach {{ref:aiag-msa-4}}.' },
+    ] } } } }, 'en', REFS));
+    const a = el.querySelector('a.help-panel__ref-xref[data-reference-id="aiag-msa-4"]');
+    assertTrue(a != null, 'has ref link');
+    assertEqual(a.textContent, '(AIAG 2010)', 'author-year label');
+  });
+
+  test('explicit label wins', () => {
+    const el = document.createElement('div');
+    el.append(renderModuleHelp({ sections: { s: { en: { blocks: [
+      { type: 'paragraph', content: '{{ref:aiag-msa-4|MSA-Handbuch}}' },
+    ] } } } }, 'en', REFS));
+    assertEqual(el.querySelector('a.help-panel__ref-xref').textContent, 'MSA-Handbuch', 'label');
+  });
+
+  test('unknown id renders as plain text, not a link', () => {
+    const el = document.createElement('div');
+    el.append(renderModuleHelp({ sections: { s: { en: { blocks: [
+      { type: 'paragraph', content: 'siehe {{ref:tippfehler}} hier' },
+    ] } } } }, 'en', REFS));
+    assertEqual(el.querySelectorAll('a.help-panel__ref-xref').length, 0, 'no link');
+    assertEqual(el.querySelector('p').textContent, 'siehe tippfehler hier', 'plain text');
+  });
+
+  test('called without references behaves as before', () => {
+    const el = document.createElement('div');
+    el.append(renderModuleHelp({ sections: { s: { en: { blocks: [
+      { type: 'paragraph', content: 'ohne {{ref:x}}' },
+    ] } } } }, 'en'));
+    assertEqual(el.querySelector('p').textContent, 'ohne x', 'plain text fallback');
+  });
+});
