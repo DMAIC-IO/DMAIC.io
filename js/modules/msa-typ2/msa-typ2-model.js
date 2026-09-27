@@ -2,7 +2,8 @@
  * D.Mike — MSA Typ 2 Model (msa-typ2-model.js)
  *
  * Pure state container for the MSA Type 2 (Gage R&R) module. Holds the
- * user-entered parameters (LSL/USL/α/k as raw strings), the three referenced
+ * user-entered parameters (LSL/USL/α/k, verdict basis and historical process σ
+ * as raw strings), the three referenced
  * worksheet columns (part / operator / measurement) and the id of any worksheet
  * provisioned by an example load. Contains no view logic, no i18n and no
  * analysis — the Gage R&R result is derived (transiently) in the view layer
@@ -11,7 +12,10 @@
  */
 
 /** Allowed study-variation factor options (string form, matching the <select> values). */
-const K_OPTIONS = ['5.15', '6'];
+const K_OPTIONS = ['6', '5.15'];
+
+/** Allowed verdict bases ('auto' = tolerance when both limits exist). */
+const VERDICT_BASES = ['auto', 'tolerance', 'studyVar'];
 
 /**
  * Coerce a persisted numeric/string field into the raw string the input shows.
@@ -28,7 +32,7 @@ function numStr(v) {
 /**
  * Coerce a persisted k factor into one of the allowed string options.
  * Accepts the new `params.k` string and the legacy `params.studyVarMultiplier`
- * number (5.15 / 6). Falls back to '5.15'.
+ * number (5.15 / 6). Falls back to '5.15' (legacy studies predate factor 6).
  * @param {*} k
  * @param {*} legacy
  * @returns {string}
@@ -55,7 +59,9 @@ export class State {
     lsl: '',
     usl: '',
     alpha: '',
-    k: '5.15',
+    k: '6',
+    verdictBasis: 'auto',
+    sigmaHist: '',
   };
 
   /** Referenced worksheet columns, each {instanceId,sheetId,columnId} or null. */
@@ -81,6 +87,8 @@ export class State {
         usl: this.params.usl,
         alpha: this.params.alpha,
         k: this.params.k,
+        verdictBasis: this.params.verdictBasis,
+        sigmaHist: this.params.sigmaHist,
       },
       columnRefs: {
         part: this.columnRefs.part ? { ...this.columnRefs.part } : null,
@@ -94,7 +102,9 @@ export class State {
   /**
    * Deserialize and validate. Always returns a valid State, even for
    * null/undefined/malformed input. Accepts legacy numeric params and the
-   * legacy `studyVarMultiplier` key.
+   * legacy `studyVarMultiplier` key. A persisted object without the new fields
+   * is a legacy study: k falls back to '5.15' and the verdict basis to
+   * 'studyVar', so it keeps its old numbers and verdict.
    * @param {*} d
    * @returns {State}
    */
@@ -107,6 +117,8 @@ export class State {
     s.params.usl = numStr(p.usl);
     s.params.alpha = numStr(p.alpha);
     s.params.k = kStr(p.k, p.studyVarMultiplier);
+    s.params.verdictBasis = VERDICT_BASES.includes(p.verdictBasis) ? p.verdictBasis : 'studyVar';
+    s.params.sigmaHist = numStr(p.sigmaHist);
 
     const refs = d.columnRefs && typeof d.columnRefs === 'object' ? d.columnRefs : {};
     s.columnRefs.part = columnRefFromJSON(refs.part);

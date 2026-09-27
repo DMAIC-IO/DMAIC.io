@@ -1,9 +1,11 @@
 {
   "params": {
-    "lsl": 24.95,
-    "usl": 25.05,
-    "alpha": 0.05,
-    "studyVarMultiplier": 5.15
+    "lsl": "24.94",
+    "usl": "25.06",
+    "alpha": "0.05",
+    "k": "6",
+    "verdictBasis": "auto",
+    "sigmaHist": ""
   },
   "columnRefs": {
     "part": {

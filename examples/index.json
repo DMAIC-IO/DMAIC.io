@@ -942,8 +942,8 @@
         "en": "MSA Type 2: acceptable Gage R&R"
       },
       "description": {
-        "de": "Gekreuzte ANOVA-Studie: 10 Teile × 3 Operatoren × 3 Wiederholungen (90 Messungen). Geringe Wiederhol- und Vergleichsstreuung, dominante Teilevarianz → %GRR ≈ 6 % bezogen auf die Studienvarianz. Lehrbuch-Fall eines akzeptablen Messsystems.",
-        "en": "Crossed ANOVA study: 10 parts × 3 operators × 3 replicates (90 measurements). Small repeatability and reproducibility variation, dominant part variance → %GRR ≈ 6 % of study variation. Textbook acceptable measurement system."
+        "de": "Gekreuzte ANOVA-Studie: 10 Teile × 3 Operatoren × 3 Wiederholungen (90 Messungen). Geringe Wiederhol- und Vergleichsstreuung, dominante Teilevarianz → %GRR ≈ 5 % der Studienstreuung, ≈ 4 % der Toleranz (6–14). Lehrbuch-Fall eines akzeptablen Messsystems.",
+        "en": "Crossed ANOVA study: 10 parts × 3 operators × 3 replicates (90 measurements). Small repeatability and reproducibility variation, dominant part variance → %GRR ≈ 5 % of study variation, ≈ 4 % of tolerance (6–14). Textbook acceptable measurement system."
       },
       "source": "Qprovement synthetisch, NumPy default_rng, Seed=611",
       "license": "public-domain",
@@ -967,8 +967,8 @@
         "en": "MSA Type 2: problematic Gage R&R"
       },
       "description": {
-        "de": "Gekreuzte ANOVA-Studie mit hoher Wiederhol- und Vergleichsstreuung gegenüber kleiner Teilevarianz. 10 Teile × 3 Operatoren × 3 Wiederholungen → %GRR im Bereich 40–50 %. Lehrbuch-Fall, in dem das Messsystem die Teileunterschiede maskiert.",
-        "en": "Crossed ANOVA study with large repeatability and reproducibility variation versus small part variance. 10 parts × 3 operators × 3 replicates → %GRR in the 40–50 % range. Textbook case where the measurement system masks part-to-part variation."
+        "de": "Gekreuzte ANOVA-Studie mit hoher Wiederhol- und Vergleichsstreuung gegenüber kleiner Teilevarianz. 10 Teile × 3 Operatoren × 3 Wiederholungen → %GRR ≈ 79 % der Studienstreuung, ≈ 35 % der Toleranz (7–13). Lehrbuch-Fall, in dem das Messsystem die Teileunterschiede maskiert.",
+        "en": "Crossed ANOVA study with large repeatability and reproducibility variation versus small part variance. 10 parts × 3 operators × 3 replicates → %GRR ≈ 79 % of study variation, ≈ 35 % of tolerance (7–13). Textbook case where the measurement system masks part-to-part variation."
       },
       "source": "Qprovement synthetisch, NumPy default_rng, Seed=612",
       "license": "public-domain",
@@ -992,8 +992,8 @@
         "en": "MSA Type 3: automated measurement system (no operator)"
       },
       "description": {
-        "de": "One-Way-ANOVA-Studie ohne Prüfereinfluss (25 Teile × 2 Wiederholungen, Bosch-Konvention). Automatisiertes CMM misst Wellendurchmesser, Wiederholstreuung ≈ 1,5 µm gegenüber Teil-zu-Teil-Streuung ≈ 22 µm → %GRR ≈ 8 %, ndc = 16. Lehrbuch-Fall eines akzeptablen automatisierten Messsystems.",
-        "en": "One-way random-effects ANOVA study without operator influence (25 parts × 2 replicates, Bosch convention). Automated CMM measures shaft diameter, within-part variation ≈ 1.5 µm vs. part-to-part variation ≈ 22 µm → %GRR ≈ 8 %, ndc = 16. Textbook acceptable automated measurement system."
+        "de": "One-Way-ANOVA-Studie ohne Prüfereinfluss (25 Teile × 2 Wiederholungen, Bosch-Konvention). Automatisiertes CMM misst Wellendurchmesser, Wiederholstreuung ≈ 1,5 µm gegenüber Teil-zu-Teil-Streuung ≈ 22 µm → %GRR ≈ 8 % der Studienstreuung, ≈ 9 % der Toleranz, ndc = 16. Lehrbuch-Fall eines akzeptablen automatisierten Messsystems.",
+        "en": "One-way random-effects ANOVA study without operator influence (25 parts × 2 replicates, Bosch convention). Automated CMM measures shaft diameter, within-part variation ≈ 1.5 µm vs. part-to-part variation ≈ 22 µm → %GRR ≈ 8 % of study variation, ≈ 9 % of tolerance, ndc = 16. Textbook acceptable automated measurement system."
       },
       "source": "Qprovement synthetisch, Python random, Seed=2603",
       "license": "public-domain",

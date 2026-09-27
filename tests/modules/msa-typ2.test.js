@@ -7,7 +7,9 @@ suite('MSA Typ 2 Model — State defaults', () => {
     assertEqual(s.params.lsl, '');
     assertEqual(s.params.usl, '');
     assertEqual(s.params.alpha, '');
-    assertEqual(s.params.k, '5.15');
+    assertEqual(s.params.k, '6');
+    assertEqual(s.params.verdictBasis, 'auto');
+    assertEqual(s.params.sigmaHist, '');
   });
 
   test('constructor sets columnRefs to nulls', () => {
@@ -62,20 +64,20 @@ suite('MSA Typ 2 Model — toJSON', () => {
 suite('MSA Typ 2 Model — fromJSON robustness', () => {
   test('fromJSON(null) returns valid default state', () => {
     const s = State.fromJSON(null);
-    assertEqual(s.params.k, '5.15');
+    assertEqual(s.params.k, '6');
     assertEqual(s.params.lsl, '');
     assertEqual(s.columnRefs.part, null);
   });
 
   test('fromJSON(undefined) returns valid default state', () => {
     const s = State.fromJSON(undefined);
-    assertEqual(s.params.k, '5.15');
+    assertEqual(s.params.k, '6');
     assertEqual(s.columnRefs.measurement, null);
   });
 
   test('fromJSON("string") returns valid default state', () => {
     const s = State.fromJSON('not-an-object');
-    assertEqual(s.params.k, '5.15');
+    assertEqual(s.params.k, '6');
     assertEqual(s.columnRefs.part, null);
   });
 
@@ -151,9 +153,13 @@ suite('MSA Typ 2 Model — round-trip', () => {
     s.columnRefs.part = { instanceId: 'a', sheetId: 'b', columnId: 'c' };
     s.columnRefs.operator = { instanceId: 'a', sheetId: 'b', columnId: 'd' };
     s.columnRefs.measurement = { instanceId: 'a', sheetId: 'b', columnId: 'e' };
+    s.params.verdictBasis = 'tolerance';
+    s.params.sigmaHist = '0.05';
     s.exampleWorksheetId = 'ws-9';
     const s2 = State.fromJSON(s.toJSON());
     assertEqual(JSON.stringify(s2.toJSON()), JSON.stringify(s.toJSON()));
+    assertEqual(s2.params.verdictBasis, 'tolerance');
+    assertEqual(s2.params.sigmaHist, '0.05');
   });
 });
 
@@ -190,5 +196,35 @@ suite('MSA Typ 2 Model — hasContent', () => {
     const s = new State();
     s.params.usl = '25.1';
     assertEqual(s.hasContent(), true);
+  });
+});
+
+suite('MSA Typ 2 Model — verdict basis and historical σ', () => {
+  test('legacy study without new fields keeps 5.15 and studyVar', () => {
+    const s = State.fromJSON({ params: { lsl: '6', usl: '14', alpha: '0.05' } });
+    assertEqual(s.params.k, '5.15');
+    assertEqual(s.params.verdictBasis, 'studyVar');
+    assertEqual(s.params.sigmaHist, '');
+  });
+  test('legacy studyVarMultiplier 5.15 with limits keeps studyVar basis', () => {
+    const s = State.fromJSON({ params: { lsl: 6, usl: 14, alpha: 0.05, studyVarMultiplier: 5.15 } });
+    assertEqual(s.params.k, '5.15');
+    assertEqual(s.params.verdictBasis, 'studyVar');
+  });
+  test('persisted verdictBasis and sigmaHist are kept', () => {
+    for (const b of ['auto', 'tolerance', 'studyVar']) {
+      assertEqual(State.fromJSON({ params: { verdictBasis: b } }).params.verdictBasis, b);
+    }
+    assertEqual(State.fromJSON({ params: { sigmaHist: 0.05 } }).params.sigmaHist, '0.05');
+    assertEqual(State.fromJSON({ params: { sigmaHist: '0,05' } }).params.sigmaHist, '0,05');
+  });
+  test('invalid verdictBasis falls back to studyVar', () => {
+    assertEqual(State.fromJSON({ params: { verdictBasis: 'bogus' } }).params.verdictBasis, 'studyVar');
+  });
+  test('toJSON persists verdictBasis and sigmaHist', () => {
+    const j = new State().toJSON();
+    assertEqual(j.params.verdictBasis, 'auto');
+    assertEqual(j.params.sigmaHist, '');
+    assertEqual(j.params.k, '6');
   });
 });
