@@ -64,9 +64,34 @@ function isTyp3Data(data) {
 }
 
 /**
+ * Effective %GRR verdict. Uses %Tolerance unless 'studyVar' is requested or
+ * no tolerance exists (then %StudyVar). Limits: < 10 pass, < 30 warn, else fail.
+ * @param {{ pctStudyVar: number, pctTolerance: number|null }} grrVC
+ * @param {'tolerance'|'studyVar'} [requested]
+ * @returns {{ verdictBasis: 'tolerance'|'studyVar', pctGRRVerdict: number, grrStatus: 'pass'|'warn'|'fail' }}
+ */
+export function grrVerdict(grrVC, requested) {
+  const verdictBasis = requested !== 'studyVar' && grrVC.pctTolerance != null ? 'tolerance' : 'studyVar';
+  const pctGRRVerdict = verdictBasis === 'tolerance' ? grrVC.pctTolerance : grrVC.pctStudyVar;
+  const grrStatus = pctGRRVerdict < 10 ? 'pass' : pctGRRVerdict < 30 ? 'warn' : 'fail';
+  return { verdictBasis, pctGRRVerdict, grrStatus };
+}
+
+/** @param {*} h @returns {number|null} usable historical σ, or null */
+function histSigmaOf(h) {
+  return Number.isFinite(h) && h > 0 ? h : null;
+}
+
+/** @returns {{ valid: false, errorKey: string }|null} */
+function histSigmaError(options) {
+  if (options.historicalSigma == null || histSigmaOf(options.historicalSigma) != null) return null;
+  return { valid: false, errorKey: 'modules.msa-typ2.errHistSigmaInvalid' };
+}
+
+/**
  * Validate input data for Gage R&R analysis. Routes to Typ 3 if no operators.
  * @param {{ parts: string[], operators?: string[]|null, measurements: number[] }} data
- * @param {{ lsl?: number, usl?: number }} options
+ * @param {{ lsl?: number, usl?: number, historicalSigma?: number }} options
  * @returns {{ valid: boolean, errorKey: string|null, errorVars?: object|null, mode?: string, p?: number, o?: number, r?: number }}
  */
 export function validate(data, options = {}) {
@@ -132,6 +157,9 @@ export function validate(data, options = {}) {
     return { valid: false, errorKey: 'modules.msa-typ2.errUslLeqLsl' };
   }
 
+  const histErr = histSigmaError(options);
+  if (histErr) return histErr;
+
   return { valid: true, errorKey: null, errorVars: null, mode: 'typ2', p, o, r };
 }
 
@@ -182,6 +210,9 @@ function validateTyp3(data, options = {}) {
     return { valid: false, errorKey: 'modules.msa-typ2.errUslLeqLsl' };
   }
 
+  const histErr = histSigmaError(options);
+  if (histErr) return histErr;
+
   return { valid: true, errorKey: null, errorVars: null, mode: 'typ3', p, o: 0, r };
 }
 
@@ -191,16 +222,25 @@ function validateTyp3(data, options = {}) {
 
 /**
  * Run the full ANOVA-based Gage R&R analysis. Routes to Typ 3 if no operators.
+ *
+ * Options: `studyVarMultiplier` k (default 6; 5.15 = AIAG 3rd ed.);
+ * `verdictBasis` 'tolerance' | 'studyVar' (omitted = tolerance when LSL and USL
+ * exist, else study variation); `historicalSigma` σ_hist > 0 adds
+ * `varComp.*.pctProcess = 100·σ/σ_hist` (informational, may exceed 100).
+ * Result adds `verdictBasis` (effective), `pctGRRVerdict` (the %GRR the status
+ * is judged on) and `varComp.*.pctProcess` (null without σ_hist).
  * @param {{ parts: string[], operators?: string[]|null, measurements: number[] }} data
- * @param {{ alpha?: number, studyVarMultiplier?: number, lsl?: number, usl?: number }} options
+ * @param {{ alpha?: number, studyVarMultiplier?: number, lsl?: number, usl?: number,
+ *           verdictBasis?: 'tolerance'|'studyVar', historicalSigma?: number }} options
  * @returns {object}
  */
 export function analyze(data, options = {}) {
   if (isTyp3Data(data)) return analyzeTyp3(data, options);
 
   const alpha = options.alpha ?? 0.05;
-  const k = options.studyVarMultiplier ?? 5.15;
+  const k = options.studyVarMultiplier ?? 6;
   const tolerance = (!isNaN(options.lsl) && !isNaN(options.usl)) ? options.usl - options.lsl : null;
+  const histSigma = histSigmaOf(options.historicalSigma);
 
   const { parts, operators, measurements } = data;
   const n = measurements.length;
@@ -375,7 +415,10 @@ export function analyze(data, options = {}) {
     const pctContribution = sigma2Total > 0 ? (variance / sigma2Total) * 100 : 0;
     const pctStudyVar = sigmaTotal > 0 ? (sigma / sigmaTotal) * 100 : 0;
     const pctTolerance = tolerance ? (studyVar / tolerance) * 100 : null;
-    return { variance, sigma, studyVar, pctContribution, pctStudyVar, pctTolerance };
+    return {
+      variance, sigma, studyVar, pctContribution, pctStudyVar, pctTolerance,
+      pctProcess: histSigma ? (sigma / histSigma) * 100 : null,
+    };
   }
 
   const varComp = {
@@ -392,8 +435,7 @@ export function analyze(data, options = {}) {
   const ndc = sigmaGRR > 0 ? Math.floor(1.41 * sigmaPart / sigmaGRR) : (sigmaPart > 0 ? 999 : 0);
 
   // Status
-  const pctGRR = varComp.grr.pctStudyVar;
-  const grrStatus = pctGRR < 10 ? 'pass' : pctGRR < 30 ? 'warn' : 'fail';
+  const { verdictBasis, pctGRRVerdict, grrStatus } = grrVerdict(varComp.grr, options.verdictBasis);
   const ndcStatus = ndc >= 5 ? 'pass' : 'fail';
 
   // Control chart limits
@@ -421,6 +463,8 @@ export function analyze(data, options = {}) {
     alpha,
     varComp,
     ndc,
+    verdictBasis,
+    pctGRRVerdict,
     grrStatus,
     ndcStatus,
     cellData,
@@ -429,7 +473,10 @@ export function analyze(data, options = {}) {
     partMeans,
     operatorMeans,
     controlChart: { xbarCL, xbarUCL, xbarLCL, rCL, rUCL, rLCL, rBar, A2: cc.A2, D3: cc.D3, D4: cc.D4 },
-    params: { alpha, studyVarMultiplier: k, tolerance, lsl: options.lsl, usl: options.usl },
+    params: {
+      alpha, studyVarMultiplier: k, tolerance, lsl: options.lsl, usl: options.usl,
+      verdictBasis: options.verdictBasis, historicalSigma: histSigma,
+    },
     warnings: [],
   };
 }
@@ -447,8 +494,9 @@ export function analyze(data, options = {}) {
  */
 function analyzeTyp3(data, options = {}) {
   const alpha = options.alpha ?? 0.05;
-  const k = options.studyVarMultiplier ?? 5.15;
+  const k = options.studyVarMultiplier ?? 6;
   const tolerance = (!isNaN(options.lsl) && !isNaN(options.usl)) ? options.usl - options.lsl : null;
+  const histSigma = histSigmaOf(options.historicalSigma);
 
   const { parts, measurements } = data;
   const n = measurements.length;
@@ -522,13 +570,17 @@ function analyzeTyp3(data, options = {}) {
     const pctContribution = sigma2Total > 0 ? (variance / sigma2Total) * 100 : 0;
     const pctStudyVar = sigmaTotal > 0 ? (sigma / sigmaTotal) * 100 : 0;
     const pctTolerance = tolerance ? (studyVar / tolerance) * 100 : null;
-    return { variance, sigma, studyVar, pctContribution, pctStudyVar, pctTolerance };
+    return {
+      variance, sigma, studyVar, pctContribution, pctStudyVar, pctTolerance,
+      pctProcess: histSigma ? (sigma / histSigma) * 100 : null,
+    };
   }
 
   const zeroVC = {
     variance: 0, sigma: 0, studyVar: 0,
     pctContribution: 0, pctStudyVar: 0,
     pctTolerance: tolerance ? 0 : null,
+    pctProcess: histSigma ? 0 : null,
   };
   const varComp = {
     repeatability: buildVC(sigma2Repeat, sigmaRepeat),
@@ -541,8 +593,7 @@ function analyzeTyp3(data, options = {}) {
   };
 
   const ndc = sigmaGRR > 0 ? Math.floor(1.41 * sigmaPart / sigmaGRR) : (sigmaPart > 0 ? 999 : 0);
-  const pctGRR = varComp.grr.pctStudyVar;
-  const grrStatus = pctGRR < 10 ? 'pass' : pctGRR < 30 ? 'warn' : 'fail';
+  const { verdictBasis, pctGRRVerdict, grrStatus } = grrVerdict(varComp.grr, options.verdictBasis);
   const ndcStatus = ndc >= 5 ? 'pass' : 'fail';
 
   // ─── Control chart (subgroups = parts, size r) ────────
@@ -571,6 +622,8 @@ function analyzeTyp3(data, options = {}) {
     alpha,
     varComp,
     ndc,
+    verdictBasis,
+    pctGRRVerdict,
     grrStatus,
     ndcStatus,
     cellData,
@@ -579,7 +632,10 @@ function analyzeTyp3(data, options = {}) {
     partMeans,
     operatorMeans: {},
     controlChart: { xbarCL, xbarUCL, xbarLCL, rCL, rUCL, rLCL, rBar, A2: cc.A2, D3: cc.D3, D4: cc.D4 },
-    params: { alpha, studyVarMultiplier: k, tolerance, lsl: options.lsl, usl: options.usl },
+    params: {
+      alpha, studyVarMultiplier: k, tolerance, lsl: options.lsl, usl: options.usl,
+      verdictBasis: options.verdictBasis, historicalSigma: histSigma,
+    },
     warnings,
   };
 }
@@ -636,7 +692,7 @@ export function generateExampleData() {
       lsl: 24.90,
       usl: 25.10,
       alpha: 0.05,
-      studyVarMultiplier: 5.15,
+      studyVarMultiplier: 6,
     },
   };
 }
