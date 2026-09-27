@@ -6,7 +6,7 @@
     "lsl": 9.9,
     "usl": 10.1,
     "k1": 0.2,
-    "k2": 4
+    "k2": 3
   },
   "columnRef": {
     "instanceId": "__source__",

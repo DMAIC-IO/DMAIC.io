@@ -862,8 +862,8 @@
         "en": "MSA Type 1: capable gage"
       },
       "description": {
-        "de": "25 Wiederholmessungen eines 10,0 mm Referenzteils (LSL 9,9 / USL 10,1, T = 0,2 mm). Sehr geringe Streuung, vernachlässigbarer Bias → Cg ≈ 3,8 und Cgk ≈ 3,8 weit über der 1,33-Schwelle. Lehrbuch-Fall eines fähigen Messmittels.",
-        "en": "25 repeated measurements of a 10.0 mm reference part (LSL 9.9 / USL 10.1, T = 0.2 mm). Very small spread, negligible bias → Cg ≈ 3.8 and Cgk ≈ 3.8 well above the 1.33 threshold. Textbook capable-gage case."
+        "de": "25 Wiederholmessungen eines 10,0 mm Referenzteils (LSL 9,9 / USL 10,1, T = 0,2 mm). Sehr geringe Streuung, vernachlässigbarer Bias → Cg ≈ 2,56 und Cgk ≈ 2,51 weit über der 1,33-Schwelle. Lehrbuch-Fall eines fähigen Messmittels.",
+        "en": "25 repeated measurements of a 10.0 mm reference part (LSL 9.9 / USL 10.1, T = 0.2 mm). Very small spread, negligible bias → Cg ≈ 2.56 and Cgk ≈ 2.51 well above the 1.33 threshold. Textbook capable-gage case."
       },
       "source": "Qprovement synthetisch, NumPy default_rng, Seed=601",
       "license": "public-domain",
@@ -888,8 +888,8 @@
         "en": "MSA Type 1: marginal gage"
       },
       "description": {
-        "de": "25 Wiederholmessungen mit moderater Streuung und leichtem positiven Bias. Cg ≈ 1,5 liegt knapp über, Cgk ≈ 1,0 knapp unter der 1,33-Schwelle — der Bias zieht die Fähigkeit nach unten. Klassischer Fall für die Bedeutung von Cgk neben Cg.",
-        "en": "25 repeated measurements with moderate spread and slight positive bias. Cg ≈ 1.5 just above the 1.33 threshold, Cgk ≈ 1.0 just below — bias pulls capability down. Classic case for the role of Cgk alongside Cg."
+        "de": "25 Wiederholmessungen mit moderater Streuung und leichtem positiven Bias. Cg ≈ 1,01 liegt knapp über der 1,0-Schwelle, Cgk ≈ 0,68 fällt aber deutlich darunter — der Bias zieht die Fähigkeit unter die Nicht-fähig-Grenze (Gesamtverdikt: nicht fähig). Zeigt, warum Cgk neben Cg geprüft werden muss.",
+        "en": "25 repeated measurements with moderate spread and slight positive bias. Cg ≈ 1.01 sits just above the 1.0 threshold, but Cgk ≈ 0.68 falls well below it — bias pulls capability into the not-capable range (overall verdict: not capable). Shows why Cgk must be checked alongside Cg."
       },
       "source": "Qprovement synthetisch, NumPy default_rng, Seed=602",
       "license": "public-domain",
@@ -915,8 +915,8 @@
         "en": "MSA Type 1: incapable gage"
       },
       "description": {
-        "de": "25 Wiederholmessungen mit hoher Streuung und deutlichem Bias. Cg ≈ 0,6 und Cgk ≈ 0,3 — das Messmittel verfehlt die Fähigkeitsgrenze deutlich. Lehrbuch-Fall für ein abzulehnendes Messsystem.",
-        "en": "25 repeated measurements with large spread and noticeable bias. Cg ≈ 0.6 and Cgk ≈ 0.3 — gage clearly fails the capability threshold. Textbook case for a measurement system that must be rejected."
+        "de": "25 Wiederholmessungen mit hoher Streuung und deutlichem Bias. Cg ≈ 0,40 und Cgk ≈ 0,17 — das Messmittel verfehlt die Fähigkeitsgrenze deutlich. Lehrbuch-Fall für ein abzulehnendes Messsystem.",
+        "en": "25 repeated measurements with large spread and noticeable bias. Cg ≈ 0.40 and Cgk ≈ 0.17 — gage clearly fails the capability threshold. Textbook case for a measurement system that must be rejected."
       },
       "source": "Qprovement synthetisch, NumPy default_rng, Seed=603",
       "license": "public-domain",

@@ -40,6 +40,25 @@ export default {
             content: '{{term:cgk|Cgk}} erweitert Cg um den Bias. Cgk ≥ 1,33 gilt als akzeptabel {{ref:vda-5}}. Cg hoch, Cgk niedrig → das Messsystem ist {{term:praezision|präzise}}, aber verschoben (Kalibrierproblem).',
           },
           {
+            type: 'definition',
+            term: 'k₂ (Streubreite)',
+            content: 'Vorgabe 3 = 6·s wie in Bosch Heft 10 und Minitab — der Standardwert dieser Studie. 4 (8·s) und 6 (12·s) sind strengere Alternativen mit größerer Streubreite. Bereits gespeicherte Studien behalten ihre bisherige Einstellung.',
+          },
+          {
+            type: 'definition',
+            term: '%Var',
+            content: '%Var(Wiederholbarkeit) = 100·k₁/Cg und %Var(Wiederholbarkeit u. Bias) = 100·k₁/Cgk zeigen den Cg- bzw. Cgk-Grenzwert 1,33 als Streuungsanteil der Toleranz: Cg = 1,33 entspricht %Var(Wiederholbarkeit) ≈ 15 %.',
+          },
+          {
+            type: 'definition',
+            term: 'Bias-t-Test',
+            content: 't = Bias / (s / √n), Freiheitsgrade FG = n − 1. Bei p < 0,05 ist der Bias statistisch signifikant. Der Test ist informativ — die Bewertung (fähig / nicht fähig) richtet sich allein nach Cg und Cgk.',
+          },
+          {
+            type: 'paragraph',
+            content: 'Einseitige Toleranz: Ist nur eine obere oder untere Spezifikationsgrenze angegeben, lassen sich Cg und Cgk nicht berechnen (wie in Minitab) — Laufdiagramm, Statistiken und Bias-t-Test werden weiterhin angezeigt.',
+          },
+          {
             type: 'paragraph',
             content: 'Typ 1 ersetzt keine Gage R&R, sondern ist ihr Voraustest. Wer bereits bei Typ 1 scheitert, verschwendet Ressourcen, wenn er danach noch eine Gage-R&R-Studie aufsetzt.',
           },
@@ -76,6 +95,25 @@ export default {
             type: 'definition',
             term: 'Cgk',
             content: '{{term:cgk|Cgk}} extends Cg to include bias. Cgk ≥ 1.33 is accepted {{ref:vda-5}}. High Cg, low Cgk → the system is {{term:praezision|precise}} but shifted (calibration issue).',
+          },
+          {
+            type: 'definition',
+            term: 'k₂ (spread width)',
+            content: 'Default 3 = 6·s as in Bosch Heft 10 and Minitab — the standard value for this study. 4 (8·s) and 6 (12·s) are stricter alternatives with a wider spread. Studies already saved keep their previous setting.',
+          },
+          {
+            type: 'definition',
+            term: '%Var',
+            content: '%Var(repeatability) = 100·k₁/Cg and %Var(repeatability and bias) = 100·k₁/Cgk express the Cg/Cgk acceptance limit of 1.33 as a share of tolerance consumed by spread: Cg = 1.33 corresponds to %Var(repeatability) ≈ 15%.',
+          },
+          {
+            type: 'definition',
+            term: 'Bias t-test',
+            content: 't = bias / (s / √n), degrees of freedom df = n − 1. p < 0.05 means the bias is statistically significant. The test is informational — the verdict (capable / not capable) is based on Cg and Cgk alone.',
+          },
+          {
+            type: 'paragraph',
+            content: 'One-sided tolerance: with only an upper or a lower specification limit given, Cg and Cgk cannot be computed (as in Minitab) — the run chart, statistics, and bias t-test are still shown.',
           },
           {
             type: 'paragraph',

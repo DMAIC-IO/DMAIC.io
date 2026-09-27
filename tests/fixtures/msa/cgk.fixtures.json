@@ -1,11 +1,11 @@
 {
   "algorithm_id": "cgk",
   "generated_with": {
-    "python": "3.10.12",
-    "scipy": "1.15.3",
-    "numpy": "2.2.6"
+    "python": "3.14.4",
+    "scipy": "1.18.0",
+    "numpy": "2.5.1"
   },
-  "generated_at": "2026-05-31T00:00:00Z",
+  "generated_at": "2026-09-27T09:15:13.375048+00:00",
   "generator_script": "tools/fixture-generator/generate_fixtures.py",
   "generator_version": "1.0.0",
   "tolerances": {
@@ -15,8 +15,8 @@
     },
     "overrides": {
       "stress_large_dataset": {
-        "relative": 0.000001,
-        "absolute": 1e-8,
+        "relative": 1e-06,
+        "absolute": 1e-08,
         "reason": "Floating-point accumulation in large arrays"
       }
     }
@@ -29,7 +29,7 @@
       "reference": "VDA 5",
       "inputs": {
         "params": {
-          "ref": 50,
+          "ref": 50.0,
           "lsl": 49.95,
           "usl": 50.05,
           "k1": 0.2,
@@ -39,28 +39,28 @@
           50.001,
           50.002,
           49.999,
-          50,
+          50.0,
           50.001,
           49.998,
           50.003,
-          50,
+          50.0,
           50.002,
           49.999,
           50.001,
-          50,
+          50.0,
           49.998,
           50.002,
           50.001,
           49.999,
-          50,
+          50.0,
           50.001,
           50.002,
           49.998,
-          50,
+          50.0,
           50.001,
           49.999,
           50.002,
-          50
+          50.0
         ]
       },
       "expected": {
@@ -81,7 +81,7 @@
       "reference": "VDA 5",
       "inputs": {
         "params": {
-          "ref": 50,
+          "ref": 50.0,
           "lsl": 49.95,
           "usl": 50.05,
           "k1": 0.2,
@@ -124,7 +124,12 @@
         "biasPercent": 4.4800000000153934,
         "tolUsage": 8.36500647539744,
         "n": 25,
-        "T": 0.09999999999999432
+        "T": 0.09999999999999432,
+        "varEv": 8.36500647539744,
+        "varEvBias": 15.153997238081097,
+        "biasTest.t": 21.422577558985278,
+        "biasTest.df": 24,
+        "biasTest.p": 3.7451579412188576e-17
       }
     },
     {
@@ -134,7 +139,7 @@
       "reference": "VDA 5",
       "inputs": {
         "params": {
-          "ref": 50,
+          "ref": 50.0,
           "lsl": 49.95,
           "usl": 50.05,
           "k1": 0.2,
@@ -177,7 +182,12 @@
         "biasPercent": -4.4800000000153934,
         "tolUsage": 8.36500647539744,
         "n": 25,
-        "T": 0.09999999999999432
+        "T": 0.09999999999999432,
+        "varEv": 8.36500647539744,
+        "varEvBias": 15.153997238081097,
+        "biasTest.t": -21.422577558985278,
+        "biasTest.df": 24,
+        "biasTest.p": 3.7451579412188576e-17
       }
     },
     {
@@ -187,7 +197,7 @@
       "reference": "VDA 5 boundary check",
       "inputs": {
         "params": {
-          "ref": 50,
+          "ref": 50.0,
           "lsl": 49.95,
           "usl": 50.05,
           "k1": 0.2,
@@ -235,9 +245,9 @@
       "description": "Small sg + moderate bias — Cg high, Cgk substantially lower",
       "inputs": {
         "params": {
-          "ref": 100,
-          "lsl": 99,
-          "usl": 101,
+          "ref": 100.0,
+          "lsl": 99.0,
+          "usl": 101.0,
           "k1": 0.2,
           "k2": 4
         },
@@ -275,7 +285,7 @@
         "bias": 0.050039999999995644,
         "biasPercent": 2.501999999999782,
         "tolUsage": 0.3158058475280443,
-        "T": 2
+        "T": 2.0
       }
     },
     {
@@ -284,7 +294,7 @@
       "description": "|bias| > k1·T/2 — Cgk turns negative",
       "inputs": {
         "params": {
-          "ref": 50,
+          "ref": 50.0,
           "lsl": 49.95,
           "usl": 50.05,
           "k1": 0.2,
@@ -332,7 +342,7 @@
       "description": "Extreme bias ≫ k1·T/2 — Cgk strongly negative",
       "inputs": {
         "params": {
-          "ref": 50,
+          "ref": 50.0,
           "lsl": 49.95,
           "usl": 50.05,
           "k1": 0.2,
@@ -380,7 +390,7 @@
       "description": "Negative reference value — bias sign handling",
       "inputs": {
         "params": {
-          "ref": -10,
+          "ref": -10.0,
           "lsl": -10.5,
           "usl": -9.5,
           "k1": 0.2,
@@ -390,28 +400,28 @@
           -10.001,
           -10.002,
           -9.999,
-          -10,
+          -10.0,
           -10.001,
           -9.998,
           -10.003,
-          -10,
+          -10.0,
           -10.002,
           -9.999,
           -10.001,
-          -10,
+          -10.0,
           -9.998,
           -10.002,
           -10.001,
           -9.999,
-          -10,
+          -10.0,
           -10.001,
           -10.002,
           -9.998,
-          -10,
+          -10.0,
           -10.001,
           -9.999,
           -10.002,
-          -10
+          -10.0
         ]
       },
       "expected": {
@@ -422,7 +432,7 @@
         "bias": -0.0003600000000005821,
         "biasPercent": -0.03600000000005821,
         "n": 25,
-        "T": 1
+        "T": 1.0
       }
     },
     {
@@ -431,9 +441,9 @@
       "description": "Minimum n=25 with small positive bias",
       "inputs": {
         "params": {
-          "ref": 10,
-          "lsl": 9,
-          "usl": 11,
+          "ref": 10.0,
+          "lsl": 9.0,
+          "usl": 11.0,
           "k1": 0.2,
           "k2": 4
         },
@@ -473,7 +483,7 @@
         "bias": 0.015000000000000568,
         "biasPercent": 0.7500000000000284,
         "n": 25,
-        "T": 2
+        "T": 2.0
       }
     },
     {
@@ -482,9 +492,9 @@
       "description": "|bias| exactly = k1·T/2 — Cgk = 0 analytically",
       "inputs": {
         "params": {
-          "ref": 0,
-          "lsl": -1,
-          "usl": 1,
+          "ref": 0.0,
+          "lsl": -1.0,
+          "usl": 1.0,
           "k1": 0.2,
           "k2": 4
         },
@@ -520,7 +530,7 @@
         "bias": 0.20000000000000004,
         "biasPercent": 10.000000000000002,
         "n": 25,
-        "T": 2
+        "T": 2.0
       }
     },
     {
@@ -529,7 +539,7 @@
       "description": "n=50 seeded normal with bias = 0.001",
       "inputs": {
         "params": {
-          "ref": 25,
+          "ref": 25.0,
           "lsl": 24.9,
           "usl": 25.1,
           "k1": 0.2,
@@ -607,7 +617,7 @@
       "description": "n=100 seeded normal with bias = 0.004 — Cgk visibly penalized",
       "inputs": {
         "params": {
-          "ref": 25,
+          "ref": 25.0,
           "lsl": 24.9,
           "usl": 25.1,
           "k1": 0.2,
@@ -726,7 +736,12 @@
         "biasPercent": 2.089225527090092,
         "tolUsage": 9.240615098076443,
         "n": 100,
-        "T": 0.20000000000000284
+        "T": 0.20000000000000284,
+        "varEv": 9.240615098076443,
+        "varEvBias": 11.681049851339479,
+        "biasTest.t": 18.087328645687162,
+        "biasTest.df": 99,
+        "biasTest.p": 3.798977521578628e-33
       }
     },
     {
@@ -735,7 +750,7 @@
       "description": "n=150 seeded normal with bias = −0.003",
       "inputs": {
         "params": {
-          "ref": 25,
+          "ref": 25.0,
           "lsl": 24.9,
           "usl": 25.1,
           "k1": 0.2,
@@ -913,7 +928,7 @@
       "description": "n=200 seeded normal with bias = 0.012 — Cgk drops to ~1.0",
       "inputs": {
         "params": {
-          "ref": 25,
+          "ref": 25.0,
           "lsl": 24.9,
           "usl": 25.1,
           "k1": 0.2,
