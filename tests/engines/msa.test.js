@@ -104,6 +104,31 @@ suite('MSA Typ 1 — degenerate inputs', () => {
     assertEqual(r.biasTest.p, null);
     assertEqual(r.biasTest.df, 24);
   });
+  test('constant column with float noise (25 × 12.305): Cg/Cgk null, overall none, noSpread flag', () => {
+    const r = analyzeTyp1(melzer, Array(25).fill(12.305));
+    assertEqual(r.Cg, null);
+    assertEqual(r.Cgk, null);
+    assertEqual(r.cgStatus, null);
+    assertEqual(r.cgkStatus, null);
+    assertEqual(r.tolUsage, null);
+    assertEqual(r.varEv, null);
+    assertEqual(r.varEvBias, null);
+    assertEqual(r.overall, 'none');
+    assertEqual(r.noSpread, true);
+  });
+  test('exact-constant column (no float noise, sg exactly 0): same degenerate result', () => {
+    const r = analyzeTyp1(melzer, Array(30).fill(10));
+    assertEqual(r.sg, 0);
+    assertEqual(r.range, 0);
+    assertEqual(r.Cg, null);
+    assertEqual(r.Cgk, null);
+    assertEqual(r.overall, 'none');
+    assertEqual(r.noSpread, true);
+  });
+  test('non-constant values: noSpread is false', () => {
+    const r = analyzeTyp1(melzer, melzerValues);
+    assertEqual(r.noSpread, false);
+  });
   test('Cgk <= 0: varEvBias null, varEv finite', () => {
     const r = analyzeTyp1({ ...melzer, ref: 12.33 }, melzerValues);
     assertTrue(r.Cgk <= 0);

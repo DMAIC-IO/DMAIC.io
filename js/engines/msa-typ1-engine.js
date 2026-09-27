@@ -136,13 +136,17 @@ export function analyze(params, values) {
   }));
 
   const mode = limitMode(lsl, usl);
-  // range === 0 means the values are bit-for-bit identical — an exact
-  // signal (no summation rounding involved), unlike sg/bias which can carry
-  // floating-point noise around 1e-15 even for constant input.
-  const biasTest = range === 0 ? { t: null, df: n - 1, p: null } : biasTTest(bias, sg, n);
+  // range === 0 is the single degenerate check: the values are bit-for-bit
+  // identical — an exact signal (no summation rounding involved), unlike
+  // sg/bias which can carry floating-point noise around 1e-15 even for
+  // constant input (e.g. 25 × 12.305 → sg ≈ 5.4e-15). Without this guard a
+  // constant column yields Cg = Infinity (sg exactly 0) or Cg ≈ 6e11 and a
+  // false 'pass' (sg carrying float noise) instead of a "no spread" signal.
+  const noSpread = range === 0;
+  const biasTest = noSpread ? { t: null, df: n - 1, p: null } : biasTTest(bias, sg, n);
   const common = {
     mode, n, xbar, sg, xmin, xmax, range, bias, biasTest, resolution,
-    upperThreshold, lowerThreshold, details,
+    upperThreshold, lowerThreshold, details, noSpread,
     params: { ref, lsl, usl, k1, k2 },
   };
 
@@ -158,6 +162,20 @@ export function analyze(params, values) {
 
   const T = usl - lsl;
   const biasPercent = (bias / T) * 100;
+  const resPercent = resolution > 0 ? (resolution / T) * 100 : 0;
+
+  // k1*T zone bounds
+  const zoneHi = ref + k1 * T / 2;
+  const zoneLo = ref - k1 * T / 2;
+
+  if (noSpread) {
+    return {
+      ...common,
+      T, biasPercent, Cg: null, Cgk: null, cgStatus: null, cgkStatus: null,
+      overall: 'none', tolUsage: null, varEv: null, varEvBias: null,
+      resPercent, zoneHi, zoneLo,
+    };
+  }
 
   // Capability indices
   const Cg = (k1 * T) / (2 * k2 * sg);
@@ -167,18 +185,12 @@ export function analyze(params, values) {
   const tolUsage = (2 * k2 * sg / T) * 100;
   const varEvBias = Cgk > 0 ? (100 * k1) / Cgk : null;
 
-  const resPercent = resolution > 0 ? (resolution / T) * 100 : 0;
-
   // Status
   const cgStatus = Cg >= 1.33 ? 'pass' : Cg >= 1.0 ? 'warn' : 'fail';
   const cgkStatus = Cgk >= 1.33 ? 'pass' : Cgk >= 1.0 ? 'warn' : 'fail';
   const overall = (cgStatus === 'pass' && cgkStatus === 'pass') ? 'pass'
     : (cgStatus === 'fail' || cgkStatus === 'fail') ? 'fail'
     : 'warn';
-
-  // k1*T zone bounds
-  const zoneHi = ref + k1 * T / 2;
-  const zoneLo = ref - k1 * T / 2;
 
   return {
     ...common,
