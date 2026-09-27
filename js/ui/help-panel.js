@@ -26,7 +26,7 @@ export class HelpPanel {
   constructor(container, i18n) {
     this._container = container;
     this._i18n = i18n;
-    /** @type {'help'|'examples'|'glossary'} */
+    /** @type {'help'|'examples'|'references'|'glossary'} */
     this._activeTab = 'help';
     this._hasHelp = false;
     this._hasExamples = false;

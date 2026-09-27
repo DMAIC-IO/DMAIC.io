@@ -5,7 +5,7 @@
  */
 import { renderFormula, renderCode } from './lab-renderer.js';
 import { buildFunction, prepareInputs, mapArgs, getByPath, compare } from './lab-exec.js';
-import { stripTermTokens } from '../core/markdown-parser.js';
+import { stripTermTokens, stripRefTokens } from '../core/markdown-parser.js';
 import { SOURCES } from './lab-data.generated.js';
 
 const TABS = ['docs', 'source', 'validation', 'tryit', 'history'];
@@ -57,10 +57,10 @@ export function createLabComponent({ registry, i18n, eventBus }) {
     // ── i18n / loc (touch this.lang so bindings re-eval on language change) ──
     t(key) { return this.lang, i18n.t(key); },
     loc(value) { return locValue(value, this.lang); },
-    // Algorithm display name as PLAIN text: glossary `{{term:…}}` tokens flatten
-    // to their label. The interactive link belongs in the docs body, not in a
-    // sidebar button / heading / search key.
-    algoName(algo) { return stripTermTokens(this.loc(algo?.name)); },
+    // Algorithm display name as PLAIN text: glossary `{{term:…}}` and citation
+    // `{{ref:…}}` tokens flatten to their label. The interactive link belongs
+    // in the docs body, not in a sidebar button / heading / search key.
+    algoName(algo) { return stripRefTokens(stripTermTokens(this.loc(algo?.name))); },
 
     async _buildCategories() {
       // Keep ALL categories (including empty ones) so the overview shows a card

@@ -267,7 +267,8 @@
     "referenceVolume": "Vol.",
     "referenceIssue": "No.",
     "referencePage": "p.",
-    "referenceEdition": "ed."
+    "referenceEdition": "ed.",
+    "referenceEtAl": "et al."
   },
   "scenarios": {
     "sectionTitle": "Scenarios",

@@ -16,8 +16,9 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { renderBlock } from './blocks.mjs';
-import { stripTermTokens } from './escape.mjs';
+import { stripTermTokens, stripRefTokens } from './escape.mjs';
 import { renderGlossaryTermPage, renderGlossaryIndex } from './glossary-page.mjs';
+import { renderPage } from './page-shell.mjs';
 
 const HREF = { glossaryHref: id => `/de/glossar/${id}.html` };
 
@@ -27,6 +28,33 @@ test('stripTermTokens reduziert Markup auf das sichtbare Label', () => {
   assert.equal(stripTermTokens('ohne Label: {{term:varianz}}'), 'ohne Label: varianz');
   assert.equal(stripTermTokens('nichts zu tun'), 'nichts zu tun');
   assert.equal(stripTermTokens(null), '');
+});
+
+test('stripRefTokens reduziert Zitat-Markup auf das sichtbare Label', () => {
+  assert.equal(stripRefTokens('Grenzwert nach {{ref:aiag-msa-4|MSA-Handbuch}}.'),
+    'Grenzwert nach MSA-Handbuch.');
+  assert.equal(stripRefTokens('ohne Label: {{ref:wheeler-1992}}'), 'ohne Label: wheeler-1992');
+  assert.equal(stripRefTokens('nichts zu tun'), 'nichts zu tun');
+  assert.equal(stripRefTokens(null), '');
+});
+
+test('renderPage entfernt {{ref:…}} aus <title>, Meta-Description und JSON-LD', () => {
+  const html = renderPage({
+    lang: 'de',
+    title: 'SIPOC — {{ref:aiag-msa-4|MSA-Handbuch}} — Qprovement',
+    description: 'Kurzbeschreibung mit {{ref:aiag-msa-4}} Zitat.',
+    pathFromRoot: '/de/define/sipoc.html',
+    altPathFromRoot: '/en/define/sipoc.html',
+    breadcrumbs: [{ label: 'SIPOC {{ref:aiag-msa-4|MSA}}' }],
+    bodyHtml: '<p>Inhalt</p>',
+  });
+  const headEnd = html.indexOf('</head>');
+  const head = html.slice(0, headEnd);
+  const body = html.slice(headEnd);
+  assert.equal(head.includes('{{ref:'), false, 'Rohmarkup in <title>/<meta>/JSON-LD');
+  assert.ok(head.includes('MSA-Handbuch'), 'das Label muss im <title> erhalten bleiben');
+  assert.equal(body.includes('{{ref:'), false, 'Rohmarkup im Breadcrumb');
+  assert.ok(body.includes('MSA'), 'das Breadcrumb-Label muss erhalten bleiben');
 });
 
 test('die Überschrift eines Definitionsblocks löst Markup auf', async () => {

@@ -16,13 +16,18 @@ function yearOf(entry) {
   return Number.isFinite(year) ? year : null;
 }
 
-/** @param {object} entry @returns {string} surnames joined per citation style. */
-function authorsOf(entry) {
+/**
+ * @param {object} entry
+ * @param {(key: string) => string} [t] - i18n lookup for the "et al." label.
+ *   Optional; falls back to the German default when omitted.
+ * @returns {string} surnames joined per citation style.
+ */
+function authorsOf(entry, t = fallbackT) {
   const list = Array.isArray(entry?.author) ? entry.author.filter(a => a && a.family) : [];
   if (list.length === 0) return '';
   if (list.length === 1) return list[0].family;
   if (list.length === 2) return `${list[0].family} & ${list[1].family}`;
-  return `${list[0].family} u. a.`;
+  return `${list[0].family} ${t('moduleHelp.referenceEtAl')}`;
 }
 
 /**
@@ -30,10 +35,13 @@ function authorsOf(entry) {
  * Falls back to the title when no author is given, and omits the year when
  * none is known.
  * @param {object} entry
+ * @param {(key: string) => string} [t] - i18n lookup for the "et al." label.
+ *   Optional; falls back to the German default when omitted so existing
+ *   callers keep working.
  * @returns {string}
  */
-export function formatAuthorYear(entry) {
-  const who = authorsOf(entry) || entry?.title || entry?.id || '';
+export function formatAuthorYear(entry, t = fallbackT) {
+  const who = authorsOf(entry, t) || entry?.title || entry?.id || '';
   const year = yearOf(entry);
   return year == null ? who : `${who} ${year}`.trim();
 }
@@ -63,6 +71,7 @@ function fallbackT(key) {
     'moduleHelp.referenceIssue': 'Nr.',
     'moduleHelp.referencePage': 'S.',
     'moduleHelp.referenceEdition': 'Aufl.',
+    'moduleHelp.referenceEtAl': 'u. a.',
   };
   return de[key] ?? key;
 }
@@ -129,7 +138,7 @@ export function renderReferences(entries, lang, t) {
   }
 
   list.sort((a, b) => {
-    const byAuthor = (authorsOf(a) || a.title || '').localeCompare(authorsOf(b) || b.title || '', 'de');
+    const byAuthor = (authorsOf(a, t) || a.title || '').localeCompare(authorsOf(b, t) || b.title || '', 'de');
     if (byAuthor !== 0) return byAuthor;
     return (yearOf(a) ?? 0) - (yearOf(b) ?? 0);
   });

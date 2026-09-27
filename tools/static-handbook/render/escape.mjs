@@ -33,6 +33,25 @@ export function stripTermTokens(value) {
 }
 
 /**
+ * Reduce `{{ref:id|label}}` / `{{ref:id}}` to its visible text.
+ *
+ * Same rationale as `stripTermTokens`: for plain-text slots that cannot carry
+ * a link — <title>, meta description, og:description, JSON-LD. Mirrors
+ * `stripRefTokens()` in js/core/markdown-parser.js and the flattening
+ * `renderInline`/`renderInlineSync` already do for prose.
+ *
+ * @param {string} value
+ * @returns {string}
+ */
+export function stripRefTokens(value) {
+  if (value == null) return '';
+  return String(value).replace(
+    /\{\{ref:([a-z0-9-]+)(?:\|([^}]+))?\}\}/gi,
+    (_m, id, label) => label || id,
+  );
+}
+
+/**
  * Pick the localized variant of a { de, en } object, with fallback.
  */
 export function pick(obj, lang) {

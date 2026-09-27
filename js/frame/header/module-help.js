@@ -243,7 +243,7 @@ export function initModuleHelp(
     try {
       const mod = await info.instance.help();
       const helpDef = mod?.default || mod;
-      const node = renderModuleHelp(helpDef, i18n.getLanguage(), references);
+      const node = renderModuleHelp(helpDef, i18n.getLanguage(), references, (k) => i18n.t(k));
       helpPanel.showWithTabs(moduleName, {
         helpNode: node,
         examples: tabExamples,

@@ -11,7 +11,7 @@
  */
 
 import { renderPage, getStrings, CONSTANTS } from './page-shell.mjs';
-import { escapeHtml, escapeAttr, pick, stripTermTokens } from './escape.mjs';
+import { escapeHtml, escapeAttr, pick, stripTermTokens, stripRefTokens } from './escape.mjs';
 import { getModuleName } from '../loaders/load-sources.mjs';
 import { renderLatex } from './katex.mjs';
 import { renderInline } from './inline.mjs';
@@ -73,7 +73,7 @@ export async function renderGlossaryTermPage({ term, glossary, modules, lang, i1
   ${sourcesHtml}
 </article>`;
 
-  const description = stripTermTokens(shortText || title).slice(0, 160);
+  const description = stripRefTokens(stripTermTokens(shortText || title)).slice(0, 160);
 
   // DefinedTerm structured data is the SEO-correct schema for a glossary entry.
   const jsonLdOverride = {

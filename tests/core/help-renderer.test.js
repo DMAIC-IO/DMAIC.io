@@ -97,6 +97,13 @@ const REFS = [{
   issued: { 'date-parts': [[2010]] },
 }];
 
+const THREE_AUTHOR_REFS = [{
+  id: 'montgomery-2011',
+  author: [{ family: 'Montgomery' }, { family: 'Runger' }, { family: 'Hubele' }],
+  title: 'Engineering Statistics',
+  issued: { 'date-parts': [[2011]] },
+}];
+
 suite('help-renderer: inline references', () => {
   test('known {{ref:id}} → link labelled with the author-year form', () => {
     const el = document.createElement('div');
@@ -131,5 +138,22 @@ suite('help-renderer: inline references', () => {
       { type: 'paragraph', content: 'ohne {{ref:x}}' },
     ] } } } }, 'en'));
     assertEqual(el.querySelector('p').textContent, 'ohne x', 'plain text fallback');
+  });
+
+  test('three-or-more-author label uses the German "u. a." without an explicit t', () => {
+    const el = document.createElement('div');
+    el.append(renderModuleHelp({ sections: { s: { en: { blocks: [
+      { type: 'paragraph', content: '{{ref:montgomery-2011}}' },
+    ] } } } }, 'en', THREE_AUTHOR_REFS));
+    assertEqual(el.querySelector('a.help-panel__ref-xref').textContent, '(Montgomery u. a. 2011)', 'German fallback label');
+  });
+
+  test('three-or-more-author label is localized to "et al." with an English t', () => {
+    const tEn = (k) => ({ 'moduleHelp.referenceEtAl': 'et al.' })[k] ?? k;
+    const el = document.createElement('div');
+    el.append(renderModuleHelp({ sections: { s: { en: { blocks: [
+      { type: 'paragraph', content: '{{ref:montgomery-2011}}' },
+    ] } } } }, 'en', THREE_AUTHOR_REFS, tEn));
+    assertEqual(el.querySelector('a.help-panel__ref-xref').textContent, '(Montgomery et al. 2011)', 'English label');
   });
 });

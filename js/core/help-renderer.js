@@ -32,9 +32,11 @@ function handbookTermRef(id, label) {
  * Handbook reference-ref → anchor into the references tab. Unknown ids render
  * as plain text (a typo must not become a dead link).
  * @param {Map<string, object>} byId
+ * @param {(key: string) => string} [t] - i18n lookup for the author-year
+ *   "et al." label. Optional; falls back to the German default when omitted.
  * @returns {(id: string, label: string|null) => Node}
  */
-function handbookRefRef(byId) {
+function handbookRefRef(byId, t) {
   return (id, label) => {
     const entry = byId.get(id);
     if (!entry) return document.createTextNode(label != null ? label : id);
@@ -42,7 +44,7 @@ function handbookRefRef(byId) {
       href: '#',
       class: 'help-panel__ref-xref',
       'data-reference-id': id,
-    }, label != null ? label : `(${formatAuthorYear(entry)})`);
+    }, label != null ? label : `(${formatAuthorYear(entry, t)})`);
   };
 }
 
@@ -50,35 +52,37 @@ function handbookRefRef(byId) {
  * Inline-parse `text` with handbook term-refs and reference-refs.
  * @param {string} text
  * @param {Map<string, object>} byId
+ * @param {(key: string) => string} [t]
  * @returns {Node[]}
  */
-function inline(text, byId) {
-  return parseInline(text || '', { termRef: handbookTermRef, refRef: handbookRefRef(byId) });
+function inline(text, byId, t) {
+  return parseInline(text || '', { termRef: handbookTermRef, refRef: handbookRefRef(byId, t) });
 }
 
 /**
  * Render one handbook block to a DOM node (or null if empty).
  * @param {object} b
  * @param {Map<string, object>} byId
+ * @param {(key: string) => string} [t]
  * @returns {Node|null}
  */
-function renderBlock(b, byId) {
+function renderBlock(b, byId, t) {
   if (!b) return null;
   switch (b.type) {
     case 'paragraph':
-      return h('p', null, ...inline(b.content, byId));
+      return h('p', null, ...inline(b.content, byId, t));
     case 'definition':
       return h('p', null,
-        h('strong', null, ...inline(b.term, byId), ':'),
+        h('strong', null, ...inline(b.term, byId, t), ':'),
         ' ',
-        ...inline(b.content, byId),
+        ...inline(b.content, byId, t),
       );
     case 'heading':
-      return h('h4', null, ...inline(b.content, byId));
+      return h('h4', null, ...inline(b.content, byId, t));
     case 'list':
-      return h('ul', null, ...(b.items || []).map(it => h('li', null, ...inline(it, byId))));
+      return h('ul', null, ...(b.items || []).map(it => h('li', null, ...inline(it, byId, t))));
     default:
-      return b.content ? h('p', null, ...inline(b.content, byId)) : null;
+      return b.content ? h('p', null, ...inline(b.content, byId, t)) : null;
   }
 }
 
@@ -91,9 +95,12 @@ function renderBlock(b, byId) {
  * @param {object} helpDef - Help module's default export
  * @param {string} lang - Current language code
  * @param {object[]} [references] - the module's reference entries (for {{ref:…}})
+ * @param {(key: string) => string} [t] - i18n lookup for the inline citation's
+ *   author-year "et al." label. Optional; falls back to the German default
+ *   when omitted so existing callers keep working.
  * @returns {DocumentFragment}
  */
-export function renderModuleHelp(helpDef, lang, references = []) {
+export function renderModuleHelp(helpDef, lang, references = [], t) {
   const frag = document.createDocumentFragment();
   const byId = new Map((Array.isArray(references) ? references : [])
     .filter(r => r && r.id).map(r => [r.id, r]));
@@ -107,9 +114,9 @@ export function renderModuleHelp(helpDef, lang, references = []) {
   for (const [, section] of Object.entries(helpDef.sections)) {
     const localized = section?.[lang] || section?.en || section?.de;
     if (!localized) continue;
-    if (localized.title) { frag.append(h('h3', null, ...inline(localized.title, byId))); emitted = true; }
+    if (localized.title) { frag.append(h('h3', null, ...inline(localized.title, byId, t))); emitted = true; }
     for (const block of localized.blocks || []) {
-      const node = renderBlock(block, byId);
+      const node = renderBlock(block, byId, t);
       if (node) { frag.append(node); emitted = true; }
     }
   }

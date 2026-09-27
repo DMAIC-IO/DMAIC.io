@@ -267,7 +267,8 @@
     "referenceVolume": "Bd.",
     "referenceIssue": "Nr.",
     "referencePage": "S.",
-    "referenceEdition": "Aufl."
+    "referenceEdition": "Aufl.",
+    "referenceEtAl": "u. a."
   },
   "scenarios": {
     "sectionTitle": "Szenarien",

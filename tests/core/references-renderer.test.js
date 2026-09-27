@@ -47,8 +47,13 @@ suite('references-renderer: formatAuthorYear()', () => {
     assertEqual(formatAuthorYear(ARTICLE), 'Wheeler & Chambers 1992', 'two authors');
   });
 
-  test('three or more authors collapse to "u. a."', () => {
+  test('three or more authors collapse to "u. a." without an explicit t', () => {
     assertEqual(formatAuthorYear(THREE), 'Montgomery u. a. 2011', 'three authors');
+  });
+
+  test('three or more authors collapse to the localized "et al." with an English t', () => {
+    const tEn = (k) => ({ 'moduleHelp.referenceEtAl': 'et al.' })[k] ?? k;
+    assertEqual(formatAuthorYear(THREE, tEn), 'Montgomery et al. 2011', 'three authors, English');
   });
 
   test('no author falls back to the title', () => {
@@ -100,6 +105,7 @@ suite('references-renderer: formatCitation()', () => {
       'moduleHelp.referenceIssue': 'No.',
       'moduleHelp.referencePage': 'p.',
       'moduleHelp.referenceEdition': 'ed.',
+      'moduleHelp.referenceEtAl': 'et al.',
     })[k] ?? k;
     const text = host(formatCitation(ARTICLE, 'en', tEn)).textContent;
     assertTrue(text.includes('Vol. 5'), 'volume prefix');
