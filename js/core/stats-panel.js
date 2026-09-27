@@ -17,8 +17,7 @@
  */
 
 import { descriptiveStats } from '../engines/normality-test-engine.js';
-import { tInv } from '../engines/math-utils.js';
-import { chiSquaredInv } from '../engines/process-capability-engine.js';
+import { tInv, chi2Inv } from '../engines/math-utils.js';
 import { h } from './dom.js';
 
 // ─── Helpers ────────────────────────────────────────────────
@@ -99,8 +98,8 @@ export function computeCI(stats, confLevel) {
   ci.mean = [stats.mean - mE, stats.mean + mE];
 
   // Variance CI: (n-1)s² / χ²_{1-α/2} .. (n-1)s² / χ²_{α/2}
-  const chi2Upper = chiSquaredInv(1 - alpha / 2, df);
-  const chi2Lower = chiSquaredInv(alpha / 2, df);
+  const chi2Upper = chi2Inv(1 - alpha / 2, df);
+  const chi2Lower = chi2Inv(alpha / 2, df);
   const ss = df * stats.variance;
   if (chi2Upper > 0 && isFinite(chi2Upper) && chi2Lower > 0 && isFinite(chi2Lower)) {
     ci.variance = [ss / chi2Upper, ss / chi2Lower];

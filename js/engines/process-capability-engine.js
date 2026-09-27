@@ -3,7 +3,7 @@
  * Pure computation functions for Process Capability Analysis.
  * No DOM access — this module is testable in isolation.
  *
- * Computes: Cp, Cpk, CPU, CPL, Pp, Ppk, PPM, sigma level.
+ * Computes: Cp, Cpk, CPU, CPL, Pp, Ppk, PPM (observed, expected within/overall), Z.bench.
  * Supports two-sided (USL + LSL) and one-sided (only USL or only LSL) specs.
  *
  * σ follows Minitab / AIAG SPC: Cp/Cpk use σ_within (MR̄/d2 for individuals,
@@ -11,7 +11,7 @@
  */
 
 import { mean, stddev, stddevPop } from './stats-utils.js';
-import { lnGamma } from './math-utils.js';
+import { lnGamma, erfc, normalQuantile, chi2Inv } from './math-utils.js';
 export { mean, stddev, stddevPop };
 
 /** d2 for moving ranges of span 2 (Minitab table value). */
@@ -129,20 +129,23 @@ export function normalInv(p) {
 }
 
 /**
- * Chi-squared inverse (quantile) via Wilson-Hilferty approximation.
- * @param {number} p - probability (0 < p < 1)
- * @param {number} df - degrees of freedom (> 0)
- * @returns {number} x such that P(X ≤ x) = p for X ~ χ²(df)
+ * Upper-tail probability Q(z) = P(Z > z) of the standard normal.
+ * Uses erfc so far tails stay finite; 1 − Φ(z) rounds to 0 beyond z ≈ 8.
+ * @param {number} z
+ * @returns {number}
  */
-export function chiSquaredInv(p, df) {
-  if (df <= 0) return NaN;
-  if (p <= 0) return 0;
-  if (p >= 1) return Infinity;
-  const z = normalInv(p);
-  const k = 2 / (9 * df);
-  const t = 1 - k + z * Math.sqrt(k);
-  // Clamp to avoid negative results for very small df or extreme p
-  return df * Math.max(t * t * t, 0);
+export function normalUpperTail(z) {
+  return 0.5 * erfc(z / Math.SQRT2);
+}
+
+/**
+ * Benchmark Z: the standard normal quantile of the total out-of-spec fraction
+ * (both tails), as in Minitab's capability report.
+ * @param {number} p - total fraction outside the spec limits
+ * @returns {number} −Φ⁻¹(p); Infinity when p is 0
+ */
+export function zBench(p) {
+  return p > 0 ? -normalQuantile(p) : Infinity;
 }
 
 /**
@@ -259,27 +262,38 @@ export function analyze(params, values) {
     Ppk = PPL;
   }
 
-  // ─── PPM (parts per million defective, expected overall) ───
-  let ppmAboveUsl = null, ppmBelowLsl = null, ppmTotal;
-  if (hasUsl) {
-    ppmAboveUsl = (1 - normalCdf((usl - xbar) / s)) * 1e6;
-  }
-  if (hasLsl) {
-    ppmBelowLsl = normalCdf((lsl - xbar) / s) * 1e6;
-  }
-  if (hasUsl && hasLsl) {
-    ppmTotal = ppmAboveUsl + ppmBelowLsl;
-  } else if (hasUsl) {
-    ppmTotal = ppmAboveUsl;
-  } else {
-    ppmTotal = ppmBelowLsl;
-  }
+  // ─── Out-of-spec fractions (PPM) ─────────────
+  // Expected fractions come from the normal model as upper tails Q(z), so a
+  // tiny tail stays finite. A missing limit contributes nothing (null per side).
+  // σ = 0 puts z at ±Infinity: Q gives 0 or 1, never NaN.
+  const tails = (sd) => ({
+    below: hasLsl ? normalUpperTail((xbar - lsl) / sd) : null,
+    above: hasUsl ? normalUpperTail((usl - xbar) / sd) : null,
+  });
+  const toPpm = (p) => (p == null ? null : p * 1e6);
+  const sumTails = (t) => (t.below ?? 0) + (t.above ?? 0);
 
-  // ─── Sigma level ─────────────────────────────
-  // Z = Cpk * 3 (short-term sigma); long-term = Z - 1.5 shift
-  const zShortTerm = Cpk * 3;
-  const zLongTerm = zShortTerm - 1.5;
-  const sigmaLevel = zShortTerm;
+  const pOverall = tails(s);             // expected overall (x̄, s)
+  const pWithin = tails(sigmaWithin);    // expected within (x̄, σ within)
+  const ppmBelowLsl = toPpm(pOverall.below);
+  const ppmAboveUsl = toPpm(pOverall.above);
+  const ppmTotal = sumTails(pOverall) * 1e6;
+  const ppmWithinBelowLsl = toPpm(pWithin.below);
+  const ppmWithinAboveUsl = toPpm(pWithin.above);
+  const ppmWithinTotal = sumTails(pWithin) * 1e6;
+
+  // Observed: values strictly outside the limits.
+  const ppmObservedBelowLsl = hasLsl ? values.filter(v => v < lsl).length / n * 1e6 : null;
+  const ppmObservedAboveUsl = hasUsl ? values.filter(v => v > usl).length / n * 1e6 : null;
+  const ppmObservedTotal = (ppmObservedBelowLsl ?? 0) + (ppmObservedAboveUsl ?? 0);
+
+  // ─── Sigma level (benchmark Z) ───────────────
+  // Z.bench counts both tails; 3·Cpk looks at the nearer limit only and
+  // overstates a two-sided process. +1.5 is the Six Sigma shift convention.
+  const zBenchWithin = zBench(sumTails(pWithin));
+  const zBenchOverall = zBench(sumTails(pOverall));
+  const sigmaLevel = zBenchWithin;
+  const sigmaLevelShifted = zBenchOverall + 1.5;
 
   // ─── Status evaluation ───────────────────────
   const cpkStatus = Cpk >= 1.33 ? 'pass' : Cpk >= 1.0 ? 'warn' : 'fail';
@@ -295,8 +309,8 @@ export function analyze(params, values) {
   // Cp_upper = Cp * sqrt(χ²(1−α/2, df) / df)
   let CpCI = null;
   if (Cp != null && df > 0) {
-    const chi2Lo = chiSquaredInv(alpha / 2, df);
-    const chi2Hi = chiSquaredInv(1 - alpha / 2, df);
+    const chi2Lo = chi2Inv(alpha / 2, df);
+    const chi2Hi = chi2Inv(1 - alpha / 2, df);
     CpCI = [
       Cp * Math.sqrt(chi2Lo / df),
       Cp * Math.sqrt(chi2Hi / df),
@@ -318,8 +332,8 @@ export function analyze(params, values) {
   // CI for Pp: chi-squared based, same formula as Cp
   let PpCI = null;
   if (Pp != null && df > 0) {
-    const chi2Lo = chiSquaredInv(alpha / 2, df);
-    const chi2Hi = chiSquaredInv(1 - alpha / 2, df);
+    const chi2Lo = chi2Inv(alpha / 2, df);
+    const chi2Hi = chi2Inv(1 - alpha / 2, df);
     PpCI = [
       Pp * Math.sqrt(chi2Lo / df),
       Pp * Math.sqrt(chi2Hi / df),
@@ -348,7 +362,9 @@ export function analyze(params, values) {
     CpCI, CpkCI, PpCI, PpkCI,
     confidence,
     ppmAboveUsl, ppmBelowLsl, ppmTotal,
-    zShortTerm, zLongTerm, sigmaLevel,
+    ppmWithinBelowLsl, ppmWithinAboveUsl, ppmWithinTotal,
+    ppmObservedBelowLsl, ppmObservedAboveUsl, ppmObservedTotal,
+    zBenchWithin, zBenchOverall, sigmaLevel, sigmaLevelShifted,
     cpkStatus, cpStatus, overall,
   };
 }
