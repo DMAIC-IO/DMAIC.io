@@ -4729,6 +4729,10 @@
       "errSelectBoth": "Please select both X and Y columns.",
       "errMinData": "At least 3 valid data pairs required (currently: {n}).",
       "errInsufficientDf": "Too few data points for the chosen model complexity.",
+      "designNoticeAliased": "{term} is aliased with {with} and was excluded.",
+      "designNoticeSaturated": "The model would be saturated (no degrees of freedom for error). Excluded: {terms}. Add replicates or center points.",
+      "errAliasedTerms": "The model cannot be estimated: {term} is aliased with {with}.",
+      "excludeAliasedTerm": "Exclude term",
       "errGeneric": "An error occurred during calculation.",
       "help": {
         "exampleTempYield": "Temperature → Yield (15 measurements)"

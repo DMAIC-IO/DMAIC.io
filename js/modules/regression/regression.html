@@ -82,6 +82,15 @@
     </div>
 
     <div class="reg__error" data-ref="error-box" :style="errorText() ? 'display:block' : 'display:none'" x-text="errorText()"></div>
+    <div class="reg__aliased" data-ref="aliased-list" :style="aliasedRows().length ? '' : 'display:none'">
+      <template x-for="row in aliasedRows()" :key="row.term">
+        <div class="reg__aliased-row">
+          <span x-text="row.term"></span>
+          <button type="button" class="btn btn--secondary btn--sm" data-action="exclude-aliased" :data-term="row.term"
+            @click="excludeAliased(row.term)" x-text="t('excludeAliasedTerm')"></button>
+        </div>
+      </template>
+    </div>
 
     <div class="dmike-split__section-title reg__predict-title" data-ref="predict-title"
       :style="result ? '' : 'display:none'" x-text="t('prediction')"></div>
@@ -230,6 +239,13 @@
                 </tr>
               </tbody>
             </table>
+          </div>
+
+          <!-- Design-term notice (DOE hand-off) -->
+          <div class="reg__notice" data-ref="design-notice" :style="hasDesignNotice() ? '' : 'display:none'">
+            <template x-for="line in designNoticeLines()" :key="line">
+              <p class="reg__notice-line" x-text="line"></p>
+            </template>
           </div>
 
           <!-- Coefficient table -->

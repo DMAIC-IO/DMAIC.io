@@ -4729,6 +4729,10 @@
       "errSelectBoth": "Bitte X- und Y-Spalte auswählen.",
       "errMinData": "Mindestens 3 gültige Wertepaare benötigt (aktuell: {n}).",
       "errInsufficientDf": "Zu wenige Datenpunkte für die gewählte Modellkomplexität.",
+      "designNoticeAliased": "{term} ist aliasiert mit {with} und wurde ausgeschlossen.",
+      "designNoticeSaturated": "Das Modell wäre gesättigt (kein Freiheitsgrad für den Fehler). Ausgeschlossen: {terms}. Wiederholungen oder Zentralpunkte ergänzen.",
+      "errAliasedTerms": "Das Modell ist nicht schätzbar: {term} ist aliasiert mit {with}.",
+      "excludeAliasedTerm": "Term ausschließen",
       "errGeneric": "Bei der Berechnung ist ein Fehler aufgetreten.",
       "help": {
         "exampleTempYield": "Temperatur → Ausbeute (15 Messpunkte)"
