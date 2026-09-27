@@ -43,6 +43,7 @@ import {
   computeDispersionAnalysis,
   computePowerAnalysis,
   powerDisplay,
+  evaluateDesign,
 } from '../../js/modules/doe-planner/doe-planner-analysis.js';
 
 
@@ -887,5 +888,55 @@ suite('DoE Analysis: Power display', () => {
   });
   test('null power (saturated model) → dash, empty bar, no rating', () => {
     assertDeepEqual(powerDisplay(null), { text: '—', width: 0, rating: '' });
+  });
+});
+
+suite('DoE Analysis: evaluateDesign uses the model terms (C1-028)', () => {
+  const full2x2rep = [];
+  for (let r = 0; r < 3; r++) for (const a of [-1, 1]) for (const b of [-1, 1]) full2x2rep.push([a, b]);
+
+  test('power options form: p = terms + 1', () => {
+    const rows = computePowerAnalysis(12, 2, [1], 0.05, { terms: ['M0', 'M1'] });
+    assertEqual(rows[0].dfError, 9);
+  });
+
+  test('legacy positional excludedInteractions still works', () => {
+    const rows = computePowerAnalysis(20, 2, [1], 0.05);
+    assertEqual(rows[0].dfError, 16);
+  });
+
+  test('removing the interaction raises df_error by 1', () => {
+    const withIx = evaluateDesign(full2x2rep, 2, 0, 'dopt', 0.05, { terms: ['M0', 'M1', 'I0_1'] });
+    const without = evaluateDesign(full2x2rep, 2, 0, 'dopt', 0.05, { terms: ['M0', 'M1'] });
+    assertEqual(without.power[0].dfError, withIx.power[0].dfError + 1);
+  });
+
+  test('CCD: VIF includes quadratic terms', () => {
+    const ccd = [
+      [-1, -1], [1, -1], [-1, 1], [1, 1],
+      [-1.414, 0], [1.414, 0], [0, -1.414], [0, 1.414],
+      [0, 0], [0, 0], [0, 0], [0, 0], [0, 0],
+    ];
+    const ev = evaluateDesign(ccd, 2, 0, 'ccd', 0.05, { terms: ['M0', 'M1', 'Q0', 'Q1', 'I0_1'] });
+    assertEqual(ev.power[0].dfError, 13 - 6);
+    assertEqual(ev.aliasedTerms.length, 0);
+    assertEqual(ev.vif.length, 5);
+    assertEqual(ev.vif.every(r => Number.isFinite(r.vif)), true);
+  });
+
+  test('fractional factorial: aliased 2FI dropped, VIF finite', () => {
+    const m = [];
+    for (const a of [-1, 1]) for (const b of [-1, 1]) for (const c of [-1, 1]) m.push([a, b, c, a * b * c]);
+    const terms = ['M0', 'M1', 'M2', 'M3', 'I0_1', 'I0_2', 'I0_3', 'I1_2', 'I1_3', 'I2_3'];
+    const ev = evaluateDesign(m, 4, 1, 'frac', 0.05, { terms });
+    assertEqual(ev.aliasedTerms.map(a => a.id).join(','), 'I1_2,I1_3,I2_3');
+    assertEqual(ev.vif.length, 7);
+    assertEqual(ev.vif.every(r => Number.isFinite(r.vif)), true);
+    assertEqual(ev.power[0].dfError, 0);
+  });
+
+  test('without terms falls back to mains + 2FI', () => {
+    const ev = evaluateDesign(full2x2rep, 2, 0, 'full', 0.05);
+    assertEqual(ev.power[0].dfError, 12 - 4);
   });
 });

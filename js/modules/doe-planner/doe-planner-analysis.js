@@ -22,8 +22,10 @@ import {
   fDistQuantile,
   olsRegression, typeIIISS,
   normalOrderStatistics,
+  estimableTerms,
 } from '../../engines/regression-engine.js';
 import { noncentralFCDF } from '../../engines/math-utils.js';
+import { defaultActiveTerms, termValue, compareTermIds } from '../../engines/doe-terms.js';
 
 import { GENERATORS } from './doe-planner-designs.js';
 
@@ -168,21 +170,27 @@ export { computeDesignEfficiency };
  * @param {number} k - Number of factors
  * @param {number} effectSizes - Array of effect sizes (delta/sigma) to evaluate
  * @param {number} [alpha=0.05] - Significance level
- * @param {Array<[number, number]>} [excludedInteractions] - 2FI pairs to omit from the model
+ * @param {Array<[number, number]>|{terms: string[]}} [excludedOrOpts] - Legacy: 2FI pairs
+ *   to omit from the mains + 2FI model. Options form: `{ terms }` — canonical
+ *   model terms without the intercept; p = terms.length + 1
  * @returns {PowerResult[]}
  */
-export function computePowerAnalysis(n, k, effectSizes = [0.5, 1.0, 1.5, 2.0], alpha = 0.05, excludedInteractions) {
+export function computePowerAnalysis(n, k, effectSizes = [0.5, 1.0, 1.5, 2.0], alpha = 0.05, excludedOrOpts) {
   // For a main effect in a 2^k design:
   // SS_effect = n × effect^2 / 4
   // df_effect = 1 (for each main effect)
   // df_error = n - p (where p = number of model terms)
   // F = MS_effect / MS_error
 
-  const { termNames } = buildModelMatrix(
-    Array.from({ length: n }, () => new Array(k).fill(0)),
-    { interactions: true, excludedInteractions }
-  );
-  const p = termNames.length;
+  const opts = (excludedOrOpts && !Array.isArray(excludedOrOpts))
+    ? excludedOrOpts
+    : { excludedInteractions: excludedOrOpts };
+  const p = Array.isArray(opts.terms)
+    ? opts.terms.length + 1
+    : buildModelMatrix(
+      Array.from({ length: n }, () => new Array(k).fill(0)),
+      { interactions: true, excludedInteractions: opts.excludedInteractions },
+    ).termNames.length;
   const dfEffect = 1;
   const dfError = n - p;
 
@@ -227,6 +235,7 @@ export function powerDisplay(power) {
  * @property {{ term: string, vif: number }[]} vif
  * @property {DesignEfficiency} efficiency
  * @property {PowerResult[]} power
+ * @property {Array<{ id: string, with: string[] }>} aliasedTerms - Model terms the design cannot estimate
  */
 
 /**
@@ -238,19 +247,27 @@ export function powerDisplay(power) {
  * @param {string} designType - 'full', 'frac', 'pb', 'ccd'
  * @param {number} [alpha=0.05] - Significance level for power analysis
  * @param {object} [opts]
- * @param {Array<[number, number]>} [opts.excludedInteractions] - 2FI pairs to omit
- *   from VIF / efficiency / power evaluation (used for optimal designs where the
- *   user explicitly removed certain interactions from the model)
+ * @param {string[]} [opts.terms] - Canonical model terms (designModelTerms);
+ *   default mains + all 2FI. Only the estimable subset (estimableTerms) enters
+ *   VIF / efficiency / power; the rest is reported as `aliasedTerms`.
  * @returns {DesignEvaluation}
  */
 export function evaluateDesign(codedMatrix, k, p, designType, alpha = 0.05, opts = {}) {
-  const ex = opts.excludedInteractions;
-  const aliasStructure = computeAliasStructure(k, p, designType);
-  const vif = computeVIF(codedMatrix, { excludedInteractions: ex });
-  const efficiency = computeDesignEfficiency(codedMatrix, { excludedInteractions: ex });
-  const power = computePowerAnalysis(codedMatrix.length, k, [0.5, 1.0, 1.5, 2.0, 3.0], alpha, ex);
+  const requested = [...(opts.terms?.length ? opts.terms : defaultActiveTerms(k))].sort(compareTermIds);
+  const n = codedMatrix.length;
+  const blocks = [
+    { id: 'Intercept', columns: [codedMatrix.map(() => 1)] },
+    ...requested.map(id => ({ id, columns: [codedMatrix.map(row => termValue(id, row))] })),
+  ];
+  const { kept, aliased } = estimableTerms(blocks, n);
+  const terms = kept.filter(id => id !== 'Intercept');
 
-  return { aliasStructure, vif, efficiency, power };
+  const aliasStructure = computeAliasStructure(k, p, designType);
+  const vif = computeVIF(codedMatrix, { terms });
+  const efficiency = computeDesignEfficiency(codedMatrix, { terms });
+  const power = computePowerAnalysis(n, k, [0.5, 1.0, 1.5, 2.0, 3.0], alpha, { terms });
+
+  return { aliasStructure, vif, efficiency, power, aliasedTerms: aliased };
 }
 
 // ═══════════════════════════════════════════════════════════════════════

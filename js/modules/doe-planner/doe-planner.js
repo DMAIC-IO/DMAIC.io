@@ -31,7 +31,7 @@ import {
   augmentOptimalDesign, formatValue, codedToActual,
 } from '../../engines/doe-planner-engine.js';
 import {
-  termDisplay, enumerateTerms, activateTerm, deactivateTerm, termSortKey,
+  termDisplay, enumerateTerms, activateTerm, deactivateTerm, termSortKey, designModelTerms,
 } from '../../engines/doe-terms.js';
 import {
   createDesignWorksheet, createExperimentRecord, removeExperimentRecord,
@@ -227,7 +227,7 @@ const mod = createModule({
 
           m.evaluation = evaluateDesign(
             m.design.codedMatrix, m.factors.length, m.design.p, m.design.designType, 0.05,
-            { terms: isOptimal ? m.getActiveTerms() : undefined },
+            { terms: this.modelTerms() },
           );
 
           // Adopt pre-feature worksheetRefs that lack a designSignature.
@@ -1221,7 +1221,7 @@ const mod = createModule({
           m.design.runOrder = [...(m.design.runOrder || []), ...newRunOrders];
           m.design.stdOrder = [...(m.design.stdOrder || []), ...newStdOrders];
           m.design.replicateIds = [...(m.design.replicateIds || []), ...new Array(n).fill(1)];
-          m.evaluation = evaluateDesign(m.design.codedMatrix, k, m.design.p, m.design.designType, 0.05, { terms });
+          m.evaluation = evaluateDesign(m.design.codedMatrix, k, m.design.p, m.design.designType, 0.05, { terms: this.modelTerms() });
           appendDoERowsToWorksheet(ctx(), m.worksheetRef, factors, newRows);
           if (m.worksheetRef.experimentId) {
             createExperimentRecord(ctx(), m.worksheetRef.experimentId, m.design, m.factors, m.responses, m.doeName, m.worksheetRef);
@@ -1239,6 +1239,14 @@ const mod = createModule({
       algoNavigate(algoId, event) {
         if (event) event.stopPropagation();
         if (algoId && ctx().eventBus) ctx().eventBus.emit('lab:navigate', { algoId, tab: 'docs' });
+      },
+      /** Canonical model terms of the current design (see designModelTerms). */
+      modelTerms() {
+        const m = this.model;
+        return designModelTerms(m.design.codedMatrix, {
+          activeTerms: m.isOptimalType() ? m.getActiveTerms() : undefined,
+          categoricalFlags: m.factors.map(f => f.kind === 'categorical'),
+        });
       },
       transferToRegression() {
         const m = this.model;
