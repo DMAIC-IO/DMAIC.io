@@ -1,5 +1,5 @@
 import { suite, test, assertEqual, assertTrue } from '../test-utils.js';
-import { parseInline, appendInline } from '../../js/core/markdown-parser.js';
+import { parseInline, appendInline, stripRefTokens } from '../../js/core/markdown-parser.js';
 import { h } from '../../js/core/dom.js';
 
 /** Append nodes into a fresh host and return it. */
@@ -102,5 +102,64 @@ suite('markdown-parser: appendInline()', () => {
     assertEqual(ret, host, 'returns host');
     assertEqual(host.querySelector('strong').textContent, 'b', 'appended');
     assertEqual(host.textContent, 'a b c', 'text');
+  });
+});
+
+suite('markdown-parser: {{ref:…}}', () => {
+  test('ref token with handler → handler node', () => {
+    const nodes = parseInline('siehe {{ref:aiag-msa-4}} dort', {
+      refRef: (id, label) => {
+        const a = document.createElement('a');
+        a.dataset.referenceId = id;
+        a.textContent = label || id;
+        return a;
+      },
+    });
+    const el = document.createElement('div');
+    nodes.forEach(n => el.append(n));
+    const a = el.querySelector('a[data-reference-id="aiag-msa-4"]');
+    assertTrue(a != null, 'handler node used');
+    assertEqual(el.textContent, 'siehe aiag-msa-4 dort', 'full text');
+  });
+
+  test('explicit label wins over the id', () => {
+    const nodes = parseInline('{{ref:x|AIAG 2010}}', {
+      refRef: (id, label) => document.createTextNode(label || id),
+    });
+    assertEqual(nodes.map(n => n.textContent).join(''), 'AIAG 2010', 'label');
+  });
+
+  test('without a handler the ref degrades to plain text', () => {
+    const nodes = parseInline('a {{ref:x|Label}} b');
+    const el = document.createElement('div');
+    nodes.forEach(n => el.append(n));
+    assertEqual(el.querySelectorAll('a').length, 0, 'no link');
+    assertEqual(el.textContent, 'a Label b', 'plain text');
+  });
+
+  test('ref and term tokens coexist in one string', () => {
+    const nodes = parseInline('{{term:bias|Bias}} nach {{ref:aiag-msa-4|AIAG 2010}}', {
+      termRef: (id, label) => {
+        const s = document.createElement('span');
+        s.dataset.glossaryTerm = id;
+        s.textContent = label || id;
+        return s;
+      },
+      refRef: (id, label) => {
+        const a = document.createElement('a');
+        a.dataset.referenceId = id;
+        a.textContent = label || id;
+        return a;
+      },
+    });
+    const el = document.createElement('div');
+    nodes.forEach(n => el.append(n));
+    assertTrue(el.querySelector('span[data-glossary-term="bias"]') != null, 'term node');
+    assertTrue(el.querySelector('a[data-reference-id="aiag-msa-4"]') != null, 'ref node');
+    assertEqual(el.textContent, 'Bias nach AIAG 2010', 'full text');
+  });
+
+  test('stripRefTokens flattens to label or id', () => {
+    assertEqual(stripRefTokens('a {{ref:x|L}} b {{ref:y}}'), 'a L b y', 'flattened');
   });
 });

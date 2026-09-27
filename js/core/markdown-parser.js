@@ -17,6 +17,9 @@
  *   4. `{{term:id|label}}` / `{{term:id}}` → cross-reference; the output node
  *        is caller-defined via opts.termRef(id, label|null). When termRef is
  *        omitted the term falls back to a plain text node (label || id).
+ *   5. `{{ref:id|label}}` / `{{ref:id}}` → citation reference; the output node
+ *        is caller-defined via opts.refRef(id, label|null). When refRef is
+ *        omitted the ref falls back to a plain text node (label || id).
  *
  * Bold (`**`) is matched before italic (`*`). The inner content of bold/italic
  * is kept as a plain text node (matching legacy behavior — the old renderers
@@ -34,6 +37,7 @@ const MATH = /\$(\S(?:[^$\n]*?\S)?)\$/;
 const BOLD = /\*\*([^*]+)\*\*/;
 const ITALIC = /\*([^*]+)\*/;
 const TERM = /\{\{term:([a-z0-9-]+)(?:\|([^}]+))?\}\}/i;
+const REF = /\{\{ref:([a-z0-9-]+)(?:\|([^}]+))?\}\}/i;
 
 /**
  * Flatten `{{term:id|label}}` / `{{term:id}}` tokens to plain text — the
@@ -49,8 +53,21 @@ export function stripTermTokens(text) {
 }
 
 /**
+ * Flatten `{{ref:id|label}}` / `{{ref:id}}` tokens to plain text — the explicit
+ * label when present, otherwise the bare id. For plain-text contexts (button
+ * labels, search keys, `title` attributes).
+ * @param {string} text
+ * @returns {string}
+ */
+export function stripRefTokens(text) {
+  if (typeof text !== 'string') return text;
+  return text.replace(/\{\{ref:([a-z0-9-]+)(?:\|([^}]+))?\}\}/gi, (_m, id, label) => label || id);
+}
+
+/**
  * Find the earliest-matching token in `text`.
  * @param {string} text
+ * @param {{ termRef?: (id:string, label:string|null) => Node, refRef?: (id:string, label:string|null) => Node }} opts
  * @returns {{ index:number, length:number, build:() => Node } | null}
  */
 function nextToken(text, opts) {
@@ -81,6 +98,15 @@ function nextToken(text, opts) {
     }
     return document.createTextNode(label != null ? label : id);
   });
+  consider(REF, (m) => {
+    const id = m[1];
+    const label = m[2] != null ? m[2] : null;
+    if (typeof opts.refRef === 'function') {
+      const node = opts.refRef(id, label);
+      if (node instanceof Node) return node;
+    }
+    return document.createTextNode(label != null ? label : id);
+  });
 
   return best;
 }
@@ -88,8 +114,8 @@ function nextToken(text, opts) {
 /**
  * Parse one line/run of inline markdown into DOM nodes.
  * @param {string} text  raw (UNescaped) source text
- * @param {{ termRef?: (id:string, label:string|null) => Node }} [opts]
- * @returns {Node[]}  text nodes + <strong>/<em>/<span data-katex-inline>/term-ref nodes
+ * @param {{ termRef?: (id:string, label:string|null) => Node, refRef?: (id:string, label:string|null) => Node }} [opts]
+ * @returns {Node[]}  text nodes + <strong>/<em>/<span data-katex-inline>/term-ref/ref-ref nodes
  */
 export function parseInline(text, opts = {}) {
   const out = [];
@@ -115,7 +141,7 @@ export function parseInline(text, opts = {}) {
  * Convenience: parse `text` and append the resulting nodes into `host`.
  * @param {Node} host
  * @param {string} text
- * @param {{ termRef?: (id:string, label:string|null) => Node }} [opts]
+ * @param {{ termRef?: (id:string, label:string|null) => Node, refRef?: (id:string, label:string|null) => Node }} [opts]
  * @returns {Node} the host
  */
 export function appendInline(host, text, opts = {}) {
