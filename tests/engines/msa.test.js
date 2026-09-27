@@ -126,8 +126,9 @@ for (const fixtureName of ['cg', 'cgk']) {
 
           for (const [key, val] of Object.entries(tc.expected)) {
             if (typeof val === 'number') {
-              assertAlmostEqual(result[key], val, tol,
-                `${tc.id}: ${key} = ${result[key]}, expected ${val}`);
+              const actual = getNestedValue(result, key);
+              assertAlmostEqual(actual, val, tol,
+                `${tc.id}: ${key} = ${actual}, expected ${val}`);
             }
           }
         });
