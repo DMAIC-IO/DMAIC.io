@@ -516,18 +516,18 @@ const mod = createModule({
         }
       },
       onYChange(event) {
-        this.model.clearDesignNotice();
+        this.model.clearDesignPreset();
         this.model.yKey = event.target.value || null;
         this.refreshDegree();
         this.autoRun();
       },
       onRegTypeChange() {
-        this.model.clearDesignNotice();
+        this.model.clearDesignPreset();
         // model.regType already updated via x-model.
         this.autoRun();
       },
       onDegreeChange() {
-        this.model.clearDesignNotice();
+        this.model.clearDesignPreset();
         // model.polyDegree already updated via x-model.number.
         this.autoRun();
       },
@@ -547,7 +547,7 @@ const mod = createModule({
       togglePI() { this.model.showPI = !this.model.showPI; this.autoRun(); },
       toggleSort() { this.model.coefSortByP = !this.model.coefSortByP; },
       toggleTerm(term, event) {
-        this.model.clearDesignNotice();
+        this.model.clearDesignPreset();
         if (event.target.checked) {
           this.model.excludedTerms = this.model.excludedTerms.filter(t => t !== term);
         } else {
@@ -570,7 +570,7 @@ const mod = createModule({
       /** Exclude an aliased term named by the fit error and re-run. */
       excludeAliased(term) {
         if (!this.model.excludedTerms.includes(term)) this.model.excludedTerms = [...this.model.excludedTerms, term];
-        this.model.clearDesignNotice();
+        this.model.clearDesignPreset();
         this.runAnalysis();
       },
 
@@ -697,7 +697,7 @@ const mod = createModule({
           types: ['numeric', 'currency', 'percent', 'date', 'time'],
           minCount: 1,
           onChange: (refs) => {
-            this.model.clearDesignNotice();
+            this.model.clearDesignPreset();
             this.model.colRefs = refs.map(r => ({ ...r }));
             if (this.model.yKey && refs.some(r => refToKey(r) === this.model.yKey)) this.model.yKey = null;
             this.refreshDegree();

@@ -374,6 +374,12 @@ export class State {
   /** Drop the design-preset notice (user changed the model). */
   clearDesignNotice() { this.designNotice = null; }
 
+  /** The user took over the model: drop a pending design preset and its notice. */
+  clearDesignPreset() {
+    this.designTerms = null;
+    this.designNotice = null;
+  }
+
   /** Clear all derived results. */
   clearResults() {
     this.result = null;

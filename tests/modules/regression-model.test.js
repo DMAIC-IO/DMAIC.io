@@ -440,6 +440,17 @@ suite('Regression Model — design terms from the DOE planner', () => {
     assertEqual(res.errorKey, 'errInsufficientDf');
   });
 
+  test('clearDesignPreset drops a not-yet-applied preset and its notice', () => {
+    // An import before Y is filled leaves designTerms pending; once the user
+    // edits X/Y/degree/terms, the preset must not override their model later.
+    const s = new State();
+    s.designTerms = ['M0', 'M1', 'I0_1'];
+    s.designNotice = { aliased: [], saturated: ['A·B'] };
+    s.clearDesignPreset();
+    assertEqual(s.designTerms, null);
+    assertEqual(s.designNotice, null);
+  });
+
   test('designTerms / designNotice persist; applied preset is not re-applied', () => {
     const s = new State();
     s.designTerms = ['M0'];
