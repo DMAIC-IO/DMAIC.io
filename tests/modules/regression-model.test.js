@@ -425,6 +425,21 @@ suite('Regression Model — design terms from the DOE planner', () => {
     assertDeepEqual(res.aliased, [{ term: 'A²', with: ['Intercept'] }]);
   });
 
+  test('user re-adds a trimmed term to a saturated model → errInsufficientDf, no fit', () => {
+    const { s, sm } = designState(
+      [numCol('a', 'A', [-1, 1, -1, 1]), numCol('b', 'B', [-1, -1, 1, 1])],
+      numCol('y', 'Y', [10, 14, 11, 21]),
+      ['M0', 'M1', 'I0_1'],
+    );
+    assertEqual(s.runAnalysis(sm).ok, true);
+    assertDeepEqual(s.designNotice.saturated, ['A·B']);
+    s.excludedTerms = s.excludedTerms.filter(t => t !== 'A·B');
+    // 4 rows, 4 columns → df_error 0: not fitted (saturated fits are C1-022).
+    const res = s.runAnalysis(sm);
+    assertEqual(res.ok, false);
+    assertEqual(res.errorKey, 'errInsufficientDf');
+  });
+
   test('designTerms / designNotice persist; applied preset is not re-applied', () => {
     const s = new State();
     s.designTerms = ['M0'];

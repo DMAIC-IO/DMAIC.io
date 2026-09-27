@@ -503,6 +503,12 @@ export class State {
     const activeTerms = allTerms.filter(term => !excludedSet.has(term.id));
     const spec = { predictors, terms: activeTerms };
 
+    // n ≤ columns leaves no error df; the engine would clamp df_error to 1
+    // and report a fake fit (saturated fits are roadmap C1-022).
+    let columnCount = activeTerms.length + 1;
+    try { columnCount = compileModelSpec(spec, data).X[0]?.length ?? columnCount; } catch { /* fit reports it */ }
+    if (yFiltered.length <= columnCount) return { ok: false, errorKey: 'errInsufficientDf' };
+
     let fit;
     try {
       fit = fitFromSpec(spec, data, { confLevel: this.confLevel });
