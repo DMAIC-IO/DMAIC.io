@@ -51,7 +51,7 @@ export class State {
     lsl: '',
     usl: '',
     k1: '0.2',
-    k2: '4',
+    k2: '3',
   };
 
   /** Referenced worksheet column, or null. */
@@ -99,7 +99,7 @@ export class State {
     s.params.lsl = numStr(p.lsl);
     s.params.usl = numStr(p.usl);
     s.params.k1 = oneOf(p.k1, K1_OPTIONS, '0.2');
-    s.params.k2 = oneOf(p.k2, K2_OPTIONS, '4');
+    s.params.k2 = oneOf(p.k2, K2_OPTIONS, '3');
 
     s.columnRef = columnRefFromJSON(d.columnRef);
     s.exampleWorksheetId = typeof d.exampleWorksheetId === 'string' ? d.exampleWorksheetId : null;

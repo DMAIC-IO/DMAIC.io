@@ -10,7 +10,7 @@ suite('MSA Typ 1 Model — State defaults', () => {
     assertEqual(s.params.lsl, '');
     assertEqual(s.params.usl, '');
     assertEqual(s.params.k1, '0.2');
-    assertEqual(s.params.k2, '4');
+    assertEqual(s.params.k2, '3');
   });
 
   test('constructor sets columnRef and exampleWorksheetId to null', () => {
@@ -36,7 +36,7 @@ suite('MSA Typ 1 Model — toJSON', () => {
     assertEqual(j.params.usl, '50.05');
     assertEqual(j.params.unit, 'mm');
     assertEqual(j.params.k1, '0.2');
-    assertEqual(j.params.k2, '4');
+    assertEqual(j.params.k2, '3');
     assertEqual(j.columnRef.instanceId, 'i1');
     assertEqual(j.columnRef.columnId, 'c1');
     assertEqual(j.exampleWorksheetId, 'ws-1');
@@ -54,7 +54,7 @@ suite('MSA Typ 1 Model — fromJSON robustness', () => {
     const s = State.fromJSON(null);
     assertEqual(s.params.unit, 'mm');
     assertEqual(s.params.k1, '0.2');
-    assertEqual(s.params.k2, '4');
+    assertEqual(s.params.k2, '3');
     assertEqual(s.columnRef, null);
   });
 
@@ -84,7 +84,7 @@ suite('MSA Typ 1 Model — fromJSON robustness', () => {
   test('fromJSON sanitises invalid k1/k2 to defaults', () => {
     const s = State.fromJSON({ params: { k1: '0.99', k2: '7' } });
     assertEqual(s.params.k1, '0.2');
-    assertEqual(s.params.k2, '4');
+    assertEqual(s.params.k2, '3');
   });
 
   test('fromJSON keeps valid alternate k1/k2 options', () => {
@@ -118,6 +118,18 @@ suite('MSA Typ 1 Model — fromJSON robustness', () => {
     const s = State.fromJSON({ lastResult: { Cg: 1.5 }, params: { ref: '5' } });
     assertEqual(s.params.ref, '5');
     assertEqual(s.result, undefined);
+  });
+});
+
+suite('MSA Typ 1 Model — k2 default 6·s, stored values kept', () => {
+  test('stored k2 "4" (legacy default) is kept', () => {
+    assertEqual(State.fromJSON({ params: { k2: '4' } }).params.k2, '4');
+  });
+  test('stored numeric k2 4 is kept', () => {
+    assertEqual(State.fromJSON({ params: { k2: 4 } }).params.k2, '4');
+  });
+  test('missing k2 falls back to "3"', () => {
+    assertEqual(State.fromJSON({ params: { ref: '1' } }).params.k2, '3');
   });
 });
 
