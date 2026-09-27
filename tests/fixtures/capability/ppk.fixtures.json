@@ -5,7 +5,7 @@
     "scipy": "1.18.0",
     "numpy": "2.5.1"
   },
-  "generated_at": "2026-09-26T18:16:20.455841+00:00",
+  "generated_at": "2026-09-27T08:05:20.782516+00:00",
   "generator_script": "tools/fixture-generator/generate_fixtures.py",
   "generator_version": "1.0.0",
   "tolerances": {
@@ -18,6 +18,11 @@
         "relative": 1e-06,
         "absolute": 1e-08,
         "reason": "Accumulation in long arrays"
+      },
+      "normal_tail": {
+        "relative": 1e-06,
+        "absolute": 1e-12,
+        "reason": "Engine tails use the erfc Chebyshev fit (fractional error < 1.2e-7)"
       }
     }
   },
@@ -672,6 +677,202 @@
         "ppu": 0.9146332304973029,
         "ppl": 1.195798671162017,
         "ppk": 0.9146332304973029
+      }
+    },
+    {
+      "id": "ppk_zbench_two_tails",
+      "tier": "standard",
+      "description": "Z.bench counts both tails (3·Cpk would overstate it)",
+      "inputs": {
+        "data": [
+          55,
+          62,
+          69,
+          76,
+          83,
+          59,
+          66,
+          73,
+          80,
+          56,
+          63,
+          70,
+          77,
+          84,
+          60,
+          67,
+          74,
+          81,
+          57,
+          64,
+          71,
+          78,
+          85,
+          61,
+          68,
+          75,
+          82,
+          58,
+          65,
+          72,
+          79
+        ],
+        "lsl": 40,
+        "usl": 100
+      },
+      "tolerance_override": "normal_tail",
+      "expected": {
+        "ppm_total": 968.3649428875086,
+        "ppm_within_total": 1138.53920611911,
+        "z_bench_overall": 3.099766912554942,
+        "z_bench_within": 3.051491044299924,
+        "ppm_observed_total": 0.0
+      }
+    },
+    {
+      "id": "ppk_zbench_observed_outside",
+      "tier": "standard",
+      "description": "Two values below LSL — observed PPM 64516",
+      "inputs": {
+        "data": [
+          55,
+          62,
+          69,
+          76,
+          83,
+          59,
+          66,
+          73,
+          80,
+          56,
+          63,
+          70,
+          77,
+          84,
+          60,
+          67,
+          74,
+          81,
+          57,
+          64,
+          71,
+          78,
+          85,
+          61,
+          68,
+          75,
+          82,
+          58,
+          65,
+          72,
+          79
+        ],
+        "lsl": 57,
+        "usl": 100
+      },
+      "tolerance_override": "normal_tail",
+      "expected": {
+        "ppm_total": 76870.05180018302,
+        "ppm_within_total": 79839.11105645195,
+        "z_bench_overall": 1.4264444056183485,
+        "z_bench_within": 1.4061545999908314,
+        "ppm_observed_total": 64516.12903225806
+      }
+    },
+    {
+      "id": "ppk_zbench_far_tail",
+      "tier": "edge",
+      "description": "Within tail ≈ 5e-251 stays finite (Z.bench ≈ 33.8)",
+      "inputs": {
+        "data": [
+          55,
+          56,
+          57,
+          58,
+          59,
+          60,
+          61,
+          62,
+          63,
+          64,
+          65,
+          66,
+          67,
+          68,
+          69,
+          70,
+          71,
+          72,
+          73,
+          74,
+          75,
+          76,
+          77,
+          78,
+          79,
+          80,
+          81,
+          82,
+          83,
+          84,
+          85
+        ],
+        "lsl": 40,
+        "usl": 100
+      },
+      "tolerance_override": "normal_tail",
+      "expected": {
+        "ppm_within_total": 5.0924146089659424e-245,
+        "z_bench_within": 33.81952858621182
+      }
+    },
+    {
+      "id": "ppk_zbench_one_sided_lsl",
+      "tier": "edge",
+      "description": "LSL only — Z.bench from one tail",
+      "inputs": {
+        "data": [
+          55,
+          62,
+          69,
+          76,
+          83,
+          59,
+          66,
+          73,
+          80,
+          56,
+          63,
+          70,
+          77,
+          84,
+          60,
+          67,
+          74,
+          81,
+          57,
+          64,
+          71,
+          78,
+          85,
+          61,
+          68,
+          75,
+          82,
+          58,
+          65,
+          72,
+          79
+        ],
+        "lsl": 40,
+        "usl": null
+      },
+      "tolerance_override": "normal_tail",
+      "expected": {
+        "ppm_total": 484.1824714437543,
+        "ppm_within_total": 569.269603059555,
+        "z_bench_overall": 3.29956008798045,
+        "z_bench_within": 3.253846153846154
       }
     }
   ]

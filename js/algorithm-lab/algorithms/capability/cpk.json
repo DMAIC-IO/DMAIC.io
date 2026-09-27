@@ -260,15 +260,43 @@
           "ppmTotal": {
             "type": "number",
             "description": {
-              "de": "Erwartete fehlerhafte Teile pro Million",
-              "en": "Expected defective parts per million"
+              "de": "Erwartete fehlerhafte Teile pro Million (gesamt, x̄ und s)",
+              "en": "Expected defective parts per million (overall, x̄ and s)"
+            }
+          },
+          "ppmWithinTotal": {
+            "type": "number",
+            "description": {
+              "de": "Erwartete PPM innerhalb (σ innerhalb)",
+              "en": "Expected PPM within (σ within)"
+            }
+          },
+          "ppmObservedTotal": {
+            "type": "number",
+            "description": {
+              "de": "Beobachtete PPM (Werte außerhalb der Grenzen)",
+              "en": "Observed PPM (values outside the limits)"
             }
           },
           "sigmaLevel": {
             "type": "number",
             "description": {
-              "de": "Sigma-Level (Z = 3·Cpk)",
-              "en": "Sigma level (Z = 3·Cpk)"
+              "de": "Z.bench (innerhalb): −Φ⁻¹ des erwarteten Anteils außerhalb beider Grenzen mit σ innerhalb",
+              "en": "Z.bench (within): −Φ⁻¹ of the expected fraction outside both limits with σ within"
+            }
+          },
+          "zBenchOverall": {
+            "type": "number",
+            "description": {
+              "de": "Z.bench gesamt (s)",
+              "en": "Z.bench overall (s)"
+            }
+          },
+          "sigmaLevelShifted": {
+            "type": "number",
+            "description": {
+              "de": "Six-Sigma-Konvention: Z.bench gesamt + 1,5",
+              "en": "Six Sigma convention: Z.bench overall + 1.5"
             }
           },
           "mean": {

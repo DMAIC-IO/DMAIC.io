@@ -20,6 +20,11 @@ const FIELD_MAP = {
   mean: 'xbar',
   stddev: 's',
   sigma_within: 'sigmaWithin',
+  ppm_total: 'ppmTotal',
+  ppm_within_total: 'ppmWithinTotal',
+  ppm_observed_total: 'ppmObservedTotal',
+  z_bench_within: 'zBenchWithin',
+  z_bench_overall: 'zBenchOverall',
 };
 
 async function loadFixture(path) {
@@ -115,6 +120,25 @@ suite('Process Capability — σ within vs. overall (piston rings)', () => {
       near(r.sigmaOverall, e.sigma, `sigmaOverall (n=${subgroupSize})`);
       near(r.Pp, e.pp, `Pp (n=${subgroupSize})`);
       near(r.Ppk, e.ppk, `Ppk (n=${subgroupSize})`);
+    }
+  });
+
+  test('Z.bench and PPM kinds (pooled within, subgroups of 5)', () => {
+    const r = analyze({ lsl, usl, subgroupSize }, values);
+    const e = pistonExpected.zBench;
+    const close = (a, x, label) => assertAlmostEqual(a, x, { relative: 1e-6 }, label);
+    close(r.ppmWithinTotal, e.ppmWithinTotal, 'ppm within');
+    close(r.ppmTotal, e.ppmOverallTotal, 'ppm overall');
+    close(r.zBenchWithin, e.zBenchWithin, 'Z.bench within');
+    close(r.zBenchOverall, e.zBenchOverall, 'Z.bench overall');
+    assertEqual(r.ppmObservedTotal, e.ppmObservedTotal, 'ppm observed');
+  });
+
+  test('capabilityAnalyze passes the new fields through', () => {
+    const r = capabilityAnalyze(values, lsl, usl, 0.95, subgroupSize);
+    const a = analyze({ lsl, usl, subgroupSize }, values);
+    for (const k of ['ppmWithinTotal', 'ppmObservedTotal', 'zBenchWithin', 'zBenchOverall', 'sigmaLevelShifted']) {
+      assertEqual(r[k], a[k], k);
     }
   });
 });

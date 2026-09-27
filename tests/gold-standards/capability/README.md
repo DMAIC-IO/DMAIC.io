@@ -13,6 +13,7 @@ data ship with the R package `qcc` as `pistonrings`. The file keeps the first
 | `withinMovingRange` | MR̄ / 1.128, all 125 values in order | Cp/Cpk for individuals (Minitab default for n = 1) |
 | `withinRbar` | R̄ / d2(5) = R̄ / 2.326 | Cp/Cpk of the X̄-R control chart |
 | `overall` | sample SD, n − 1 | Pp/Ppk |
+| `zBench` | pooled within and overall (above) | Z.bench = norm.isf(p below + p above), expected and observed PPM |
 
 The pooled values match the published `qcc::process.capability` output for this
 dataset (StdDev 0.009887547, Cp 1.686, Cpk 1.646), which is kept under

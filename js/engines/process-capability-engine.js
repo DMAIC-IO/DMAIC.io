@@ -426,7 +426,12 @@ export function capabilityAnalyze(data, lsl, usl, confidence, subgroupSize) {
     PpCI: r.PpCI,
     PpkCI: r.PpkCI,
     ppmTotal: r.ppmTotal,
+    ppmWithinTotal: r.ppmWithinTotal,
+    ppmObservedTotal: r.ppmObservedTotal,
+    zBenchWithin: r.zBenchWithin,
+    zBenchOverall: r.zBenchOverall,
     sigmaLevel: r.sigmaLevel,
+    sigmaLevelShifted: r.sigmaLevelShifted,
   };
 }
 

@@ -21,6 +21,13 @@
   "pp": 1.6550863376767957,
   "ppk": 1.6161587070141332
  },
+ "zBench": {
+  "ppmWithinTotal": 0.5082503227331058,
+  "ppmOverallTotal": 0.8087670215113539,
+  "zBenchWithin": 4.888416947329366,
+  "zBenchOverall": 4.796138572028405,
+  "ppmObservedTotal": 0.0
+ },
  "published_qcc": {
   "stddev": 0.009887547,
   "cp": 1.686,
