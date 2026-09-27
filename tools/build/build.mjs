@@ -17,6 +17,7 @@ import { createHash } from 'node:crypto';
 import { renderIndexHtml } from '../build-templates/build.mjs';
 import { collectLabData, renderLabDataModule } from './lab-data.mjs';
 import { collectHelpIds, renderHelpRegistryModule } from './help-data.mjs';
+import { collectReferenceIds, renderReferencesRegistryModule } from './references-data.mjs';
 import { collectGlossaryData, renderGlossaryDataModule } from './glossary-data.mjs';
 import { collectLicenseData, renderLicenseDataModule, renderLicenseText } from '../license-report/license-report.mjs';
 
@@ -230,6 +231,10 @@ export async function runBuild(appDir = APP_DIR, { check = false } = {}) {
   // 1b. help registry (eager static imports of every module handbook)
   const helpRegistry = renderHelpRegistryModule(collectHelpIds(appDir));
   emit(join(appDir, 'js', 'core', 'help-registry.generated.js'), helpRegistry, check, changed);
+
+  // 1b2. references registry (eager static imports of every module's references)
+  const referencesRegistry = renderReferencesRegistryModule(collectReferenceIds(appDir));
+  emit(join(appDir, 'js', 'core', 'references-registry.generated.js'), referencesRegistry, check, changed);
 
   // 1c. glossary data (catalog + all terms inlined; no runtime fetch)
   const glossaryData = renderGlossaryDataModule(collectGlossaryData(appDir));
