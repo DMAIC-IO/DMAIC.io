@@ -88,6 +88,17 @@
 }
 
 /* ─── Interpretation ─────────────────────────────────────── */
+
+/* The formulas heading + block share one x-if wrapper (.msa-typ1__formulas,
+   hidden one-sided) so the heading no longer sits as a direct sibling of the
+   preceding output sections in the DOM. That wrapper is always preceded by
+   another section (stats/run chart/histogram), so it always needs the
+   margin the global `.dmike-split__output-section:not(:first-child)` rule
+   (css/modules.css) would otherwise have supplied to the heading itself. */
+.msa-typ1__formulas {
+  margin-top: var(--spacing-lg);
+}
+
 .msa-typ1__interpretation {
   margin-bottom: var(--spacing-lg);
 }
