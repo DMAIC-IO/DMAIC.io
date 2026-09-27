@@ -7,7 +7,7 @@
   "category": "msa",
   "subcategory": "typ1",
   "status": "validated",
-  "version": "1.0.0",
+  "version": "1.1.0",
 
   "description": {
     "short": {
@@ -105,7 +105,7 @@
     ],
     "references": [
       {
-        "source": "VDA Band 5 — Prüfprozesseignung: Eignung von Messsystemen, Mess- und Prüfprozessen, Erweiterte Messunsicherheit, 3. Auflage"
+        "source": "Robert Bosch GmbH — Heft 10: Fähigkeit von Messsystemen, 11. Auflage (2019), Verfahren 1"
       },
       {
         "source": "AIAG — Measurement Systems Analysis Reference Manual, 4th Edition (MSA-4)"
@@ -239,10 +239,10 @@
           "name": "params.k2",
           "label": { "de": "Streuungsfaktor k₂", "en": "Spread Factor k₂" },
           "type": "number",
-          "placeholder": { "de": "Standard: 4", "en": "Default: 4" },
+          "placeholder": { "de": "Standard: 3", "en": "Default: 3" },
           "parse_as": "number",
           "required": false,
-          "default": 4
+          "default": 3
         }
       ]
     },
@@ -263,12 +263,22 @@
 
   "changelog": [
     {
+      "version": "1.1.0",
+      "date": "2026-09-27",
+      "type": "fix",
+      "description": {
+        "de": "Standard k₂ = 3 (6·s) statt 4 (8·s), wie Bosch Heft 10 und Minitab — gespeicherte Studien behalten ihre bisherige Einstellung",
+        "en": "Default k₂ = 3 (6·s) instead of 4 (8·s), matching Bosch Heft 10 and Minitab — studies already saved keep their previous setting"
+      },
+      "breaking": false
+    },
+    {
       "version": "1.0.0",
       "date": "2026-03-28",
       "type": "initial",
       "description": {
-        "de": "Erstimplementierung: Cgk nach VDA 5 mit Bias-Berechnung und konfigurierbaren k₁/k₂-Faktoren",
-        "en": "Initial implementation: Cgk per VDA 5 with bias calculation and configurable k₁/k₂ factors"
+        "de": "Erstimplementierung: Cgk mit Bias-Berechnung und konfigurierbaren k₁/k₂-Faktoren",
+        "en": "Initial implementation: Cgk with bias calculation and configurable k₁/k₂ factors"
       },
       "breaking": false
     }

@@ -7,7 +7,7 @@
   "category": "msa",
   "subcategory": "typ1",
   "status": "validated",
-  "version": "1.0.0",
+  "version": "1.1.0",
 
   "description": {
     "short": {
@@ -15,8 +15,8 @@
       "en": "Evaluates the {{term:wiederholbarkeit|repeatability}} of a measurement instrument: How large is the spread of repeated measurements relative to the tolerance?"
     },
     "long": {
-      "de": "Der Wiederholbarkeitsindex {{term:cg|Cg}} vergleicht die Streuung eines Messmittels mit einem definierten Anteil der Toleranz. Er wird aus mindestens 25 Wiederholmessungen an einem kalibrierten {{term:referenzteil|Referenzteil}} (Master) berechnet. Der Faktor k₁ legt fest, welcher Anteil der Toleranz dem Messmittel zugestanden wird (Standard: 20 % nach VDA 5), der Faktor k₂ bestimmt die Streuungsabdeckung (Standard: 4 für 99,99 %). Ein Cg ≥ 1,33 gilt als fähig. Im Gegensatz zu {{term:cgk|Cgk}} berücksichtigt Cg keine systematische Abweichung ({{term:bias|Bias}}).",
-      "en": "The repeatability index {{term:cg|Cg}} compares the spread of a measurement instrument against a defined fraction of the tolerance. It is calculated from at least 25 repeated measurements on a calibrated {{term:referenzteil|reference part}} (master). Factor k₁ defines the tolerance fraction allocated to the measurement system (default: 20% per VDA 5), factor k₂ defines the spread coverage (default: 4 for 99.99%). A Cg ≥ 1.33 is considered capable. Unlike {{term:cgk|Cgk}}, Cg does not account for systematic deviation ({{term:bias|bias}})."
+      "de": "Der Wiederholbarkeitsindex {{term:cg|Cg}} vergleicht die Streuung eines Messmittels mit einem definierten Anteil der Toleranz. Er wird aus mindestens 25 Wiederholmessungen an einem kalibrierten {{term:referenzteil|Referenzteil}} (Master) berechnet. Der Faktor k₁ legt fest, welcher Anteil der Toleranz dem Messmittel zugestanden wird, der Faktor k₂ bestimmt die Streuungsabdeckung (k₁ Standard 0,20, k₂ Standard 3 = 6·s nach Bosch Heft 10 und Minitab). Ein Cg ≥ 1,33 gilt als fähig. Im Gegensatz zu {{term:cgk|Cgk}} berücksichtigt Cg keine systematische Abweichung ({{term:bias|Bias}}).",
+      "en": "The repeatability index {{term:cg|Cg}} compares the spread of a measurement instrument against a defined fraction of the tolerance. It is calculated from at least 25 repeated measurements on a calibrated {{term:referenzteil|reference part}} (master). Factor k₁ defines the tolerance fraction allocated to the measurement system, factor k₂ defines the spread coverage (k₁ default 0.20, k₂ default 3 = 6·s per Bosch Heft 10 and Minitab). A Cg ≥ 1.33 is considered capable. Unlike {{term:cgk|Cgk}}, Cg does not account for systematic deviation ({{term:bias|bias}})."
     }
   },
 
@@ -89,7 +89,7 @@
     ],
     "references": [
       {
-        "source": "VDA Band 5 — Prüfprozesseignung: Eignung von Messsystemen, Mess- und Prüfprozessen, Erweiterte Messunsicherheit, 3. Auflage"
+        "source": "Robert Bosch GmbH — Heft 10: Fähigkeit von Messsystemen, 11. Auflage (2019), Verfahren 1"
       },
       {
         "source": "AIAG — Measurement Systems Analysis Reference Manual, 4th Edition (MSA-4)"
@@ -223,10 +223,10 @@
           "name": "params.k2",
           "label": { "de": "Streuungsfaktor k₂", "en": "Spread Factor k₂" },
           "type": "number",
-          "placeholder": { "de": "Standard: 4", "en": "Default: 4" },
+          "placeholder": { "de": "Standard: 3", "en": "Default: 3" },
           "parse_as": "number",
           "required": false,
-          "default": 4
+          "default": 3
         }
       ]
     },
@@ -244,12 +244,22 @@
 
   "changelog": [
     {
+      "version": "1.1.0",
+      "date": "2026-09-27",
+      "type": "fix",
+      "description": {
+        "de": "Standard k₂ = 3 (6·s) statt 4 (8·s), wie Bosch Heft 10 und Minitab — gespeicherte Studien behalten ihre bisherige Einstellung",
+        "en": "Default k₂ = 3 (6·s) instead of 4 (8·s), matching Bosch Heft 10 and Minitab — studies already saved keep their previous setting"
+      },
+      "breaking": false
+    },
+    {
       "version": "1.0.0",
       "date": "2026-03-28",
       "type": "initial",
       "description": {
-        "de": "Erstimplementierung: Cg nach VDA 5 mit konfigurierbaren k₁/k₂-Faktoren",
-        "en": "Initial implementation: Cg per VDA 5 with configurable k₁/k₂ factors"
+        "de": "Erstimplementierung: Cg mit konfigurierbaren k₁/k₂-Faktoren",
+        "en": "Initial implementation: Cg with configurable k₁/k₂ factors"
       },
       "breaking": false
     }
