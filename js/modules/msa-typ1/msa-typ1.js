@@ -60,7 +60,10 @@ const mod = createModule({
       fmtP,
       abs: (v) => Math.abs(v),
 
-      statusLabel: (s) => _t({ pass: 'statusPass', fail: 'statusFail', warn: 'statusWarn', none: 'statusOneSided' }[s] || 'statusWarn'),
+      statusLabel(r) {
+        if (r?.noSpread) return _t('statusNoSpread');
+        return _t({ pass: 'statusPass', fail: 'statusFail', warn: 'statusWarn', none: 'statusOneSided' }[r?.overall] || 'statusWarn');
+      },
       badgeLabel: (s) => _t({ pass: 'capable', fail: 'notCapable', warn: 'condCapable' }[s] || 'condCapable'),
       kpiModClass: (s) => ({ pass: 'dmike-kpi--good', warn: 'dmike-kpi--warn', fail: 'dmike-kpi--bad' }[s] || ''),
 
@@ -74,7 +77,8 @@ const mod = createModule({
         const bt = this.result?.biasTest;
         if (!bt || bt.t == null) return '–';
         const sig = bt.p < 0.05 ? _t('biasSignificant') : _t('biasNotSignificant');
-        return `t = ${bt.t.toFixed(2)} · df ${bt.df} · p ${fmtP(bt.p)} · ${sig}`;
+        const line = _t('biasTestLine', { t: bt.t.toFixed(2), df: bt.df, p: fmtP(bt.p) });
+        return `${line} · ${sig}`;
       },
 
       /** Horizontal stats table columns (label/value pairs). */

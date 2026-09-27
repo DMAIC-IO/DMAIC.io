@@ -74,7 +74,7 @@
         <div>
           <!-- Status bar (generisches dmike-infobox aus css/components.css). -->
           <div class="dmike-infobox" :class="kpiModClass(result.overall)">
-            <span class="dmike-infobox__label" x-text="statusLabel(result.overall)"></span>
+            <span class="dmike-infobox__label" x-text="statusLabel(result)"></span>
             <span class="dmike-infobox__detail">— <span x-text="featureName()"></span> — n = <span x-text="result.n"></span></span>
           </div>
 
