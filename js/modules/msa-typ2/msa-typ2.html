@@ -44,9 +44,25 @@
       <div class="field-group">
         <label x-text="t('kLabel')"></label>
         <select class="field" data-ref="inp-k" x-model="model.params.k" @change="runAnalysis()">
-          <option value="5.15">5.15 (99 %)</option>
-          <option value="6">6.00 (99.73 %)</option>
+          <option value="6" x-text="t('kOption6')"></option>
+          <option value="5.15" x-text="t('kOption515')"></option>
         </select>
+      </div>
+    </div>
+
+    <div class="msa-typ2__row">
+      <div class="field-group">
+        <label x-text="t('verdictBasisLabel')"></label>
+        <select class="field" data-ref="inp-verdict-basis" x-model="model.params.verdictBasis" @change="runAnalysis()">
+          <option value="auto" x-text="t('verdictBasisAuto')"></option>
+          <option value="tolerance" x-text="t('verdictBasisTolerance')"></option>
+          <option value="studyVar" x-text="t('verdictBasisStudyVar')"></option>
+        </select>
+      </div>
+      <div class="field-group">
+        <label x-text="t('sigmaHistLabel')"></label>
+        <input type="text" class="field field--num" data-ref="inp-sigma-hist" inputmode="decimal"
+               x-model="model.params.sigmaHist" @input="scheduleAnalysis()" @change="runAnalysis()">
       </div>
     </div>
 
@@ -73,13 +89,20 @@
 
           <!-- KPI strip -->
           <div class="dmike-kpi-strip">
-            <div class="dmike-kpi" :class="kpiModClass(result.grrStatus)">
+            <div class="dmike-kpi" :class="grrKpiClass('studyVar')">
               <div class="dmike-kpi-label">%GRR (<span x-text="t('studyVar')"></span>)
                 <button class="msa-typ2__algo-link" data-algo-id="grr" title="Algorithm Lab" @click="algoNavigate('grr', $event)"><span class="icon icon--sm icon--text" data-icon="nav.algorithm-lab" aria-hidden="true"></span></button>
               </div>
               <div class="dmike-kpi-value"><span x-text="fmt(result.varComp.grr.pctStudyVar)"></span> %</div>
-              <div class="dmike-kpi-sub"><span x-text="t('threshold')"></span>: &lt; 10 % · <span x-text="badgeLabel(result.grrStatus)"></span></div>
+              <div class="dmike-kpi-sub" x-text="grrKpiSub('studyVar')"></div>
             </div>
+            <template x-if="result.varComp.grr.pctTolerance != null">
+              <div class="dmike-kpi" :class="grrKpiClass('tolerance')">
+                <div class="dmike-kpi-label">%GRR (<span x-text="t('tolerance')"></span>)</div>
+                <div class="dmike-kpi-value"><span x-text="fmt(result.varComp.grr.pctTolerance)"></span> %</div>
+                <div class="dmike-kpi-sub" x-text="grrKpiSub('tolerance')"></div>
+              </div>
+            </template>
             <div class="dmike-kpi" :class="kpiModClass(result.ndcStatus)">
               <div class="dmike-kpi-label">ndc</div>
               <div class="dmike-kpi-value" x-text="result.ndc"></div>
@@ -135,6 +158,9 @@
                 <template x-if="varCompHasTol()">
                   <th>%<span x-text="t('tolerance')"></span></th>
                 </template>
+                <template x-if="hasProcess()">
+                  <th>%<span x-text="t('process')"></span></th>
+                </template>
               </tr></thead>
               <tbody>
                 <template x-for="row in varCompRows()">
@@ -147,6 +173,9 @@
                     <td x-text="row.pctStudyVar"></td>
                     <template x-if="varCompHasTol()">
                       <td x-text="row.pctTolerance"></td>
+                    </template>
+                    <template x-if="hasProcess()">
+                      <td x-text="row.pctProcess"></td>
                     </template>
                   </tr>
                 </template>

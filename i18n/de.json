@@ -1560,6 +1560,14 @@
       "usl": "Obere Toleranz (OSG)",
       "alphaLabel": "Signifikanzniveau α",
       "kLabel": "Studienvariations-Faktor k",
+      "kOption6": "6 (99,73 %)",
+      "kOption515": "5,15 (99 %, AIAG 3. Aufl.)",
+      "verdictBasisLabel": "Urteilsbasis",
+      "verdictBasisAuto": "Automatisch (Toleranz, falls UGW/OGW)",
+      "verdictBasisTolerance": "Toleranz",
+      "verdictBasisStudyVar": "Studienstreuung",
+      "basisPrefix": "Bezug",
+      "sigmaHistLabel": "Historisches Prozess-σ (optional)",
       "statusPass": "MESSSYSTEM AKZEPTABEL",
       "statusFail": "MESSSYSTEM NICHT AKZEPTABEL",
       "statusWarn": "BEDINGT AKZEPTABEL",
@@ -1577,6 +1585,8 @@
       "ofStudyVar": "der Studienvariation",
       "contribution": "Beitrag",
       "tolerance": "Toleranz",
+      "ofTolerance": "der Toleranz",
+      "process": "Prozess",
       "gageRR": "Gage R&R",
       "partToPartVar": "Teil-zu-Teil",
       "partLabel": "Teil",
@@ -1613,7 +1623,8 @@
       "errTooFewOperators": "Mindestens 2 verschiedene Bediener benötigt (aktuell: {n}).",
       "errUnbalanced": "Unausgeglichenes Design — jeder Bediener muss jedes Teil gleich oft messen.",
       "errTooFewReplicates": "Mindestens 2 Wiederholungen pro Zelle benötigt (aktuell: {n}).",
-      "errUslLeqLsl": "OSG muss größer als USG sein."
+      "errUslLeqLsl": "OSG muss größer als USG sein.",
+      "errHistSigmaInvalid": "Historisches Prozess-σ muss eine positive Zahl sein."
     },
     "msa-typ4": {
       "name": "MSA Typ 4 (Linearität)",

@@ -59,9 +59,30 @@ const mod = createModule({
       typeLabel: (mode) => _t(mode === 'typ3' ? 'typeLabelTyp3' : 'typeLabelTyp2'),
 
       statusDetail(r) {
+        const basis = ` — ${_t('basisPrefix')}: ${_t(r.verdictBasis === 'tolerance' ? 'verdictBasisTolerance' : 'verdictBasisStudyVar')}`;
         return r.mode === 'typ3'
-          ? `— ${r.p} ${_t('parts')}, ${r.r} ${_t('replicates')} — n = ${r.n}`
-          : `— ${r.p} ${_t('parts')}, ${r.o} ${_t('operators')}, ${r.r} ${_t('replicates')} — n = ${r.n}`;
+          ? `— ${r.p} ${_t('parts')}, ${r.r} ${_t('replicates')} — n = ${r.n}${basis}`
+          : `— ${r.p} ${_t('parts')}, ${r.o} ${_t('operators')}, ${r.r} ${_t('replicates')} — n = ${r.n}${basis}`;
+      },
+
+      /** True if the %GRR tile of `basis` carries the verdict. */
+      isVerdictBasis(basis) {
+        return Boolean(this.result && this.result.verdictBasis === basis);
+      },
+
+      /** Status class for a %GRR tile: coloured only on the effective basis. */
+      grrKpiClass(basis) {
+        return this.isVerdictBasis(basis) ? this.kpiModClass(this.result.grrStatus) : '';
+      },
+
+      /** Sub line of a %GRR tile: threshold and badge on the verdict tile, reference otherwise. */
+      grrKpiSub(basis) {
+        if (this.isVerdictBasis(basis)) return `${_t('threshold')}: < 10 % · ${this.badgeLabel(this.result.grrStatus)}`;
+        return _t(basis === 'tolerance' ? 'ofTolerance' : 'ofStudyVar');
+      },
+
+      hasProcess() {
+        return Boolean(this.result && this.result.varComp.grr.pctProcess != null);
       },
 
       fmtP(p) {
@@ -129,6 +150,7 @@ const mod = createModule({
             pctContribution: fmt(v.pctContribution),
             pctStudyVar: fmt(v.pctStudyVar),
             pctTolerance: v.pctTolerance != null ? fmt(v.pctTolerance) : '–',
+            pctProcess: v.pctProcess != null ? fmt(v.pctProcess) : '–',
             totalClass: key === 'total' ? 'msa-typ2__anova-total' : '',
           };
         });
@@ -180,8 +202,9 @@ const mod = createModule({
       },
 
       /**
-       * Run analysis if all inputs are valid; otherwise silently clear results
-       * (no error shown — matches the legacy auto-analysis behaviour).
+       * Run analysis if all inputs are valid. Missing columns or no usable data
+       * clear the results silently; invalid inputs (validation failure) clear
+       * them and show the validation message.
        */
       runAnalysis() {
         const refs = this.model.columnRefs;
@@ -197,11 +220,14 @@ const mod = createModule({
           lsl: this.parseNum(p.lsl),
           usl: this.parseNum(p.usl),
         };
+        if (p.verdictBasis === 'tolerance' || p.verdictBasis === 'studyVar') opts.verdictBasis = p.verdictBasis;
+        if (String(p.sigmaHist ?? '').trim() !== '') opts.historicalSigma = this.parseNum(p.sigmaHist);
 
         const v = validate(data, opts);
-        if (!v.valid) return this.clearResults();
+        if (!v.valid) return this.clearResults(_t(v.errorKey, v.errorVars || undefined));
 
         const r = analyze(data, opts);
+        this.errorMsg = '';
         this.result = r;
         const gen = ++this._renderGen;
         this.$nextTick(() => this._renderCharts(r, gen));
@@ -212,7 +238,9 @@ const mod = createModule({
         this._debTimer = setTimeout(() => this.runAnalysis(), 600);
       },
 
-      clearResults() {
+      /** @param {string} [msg] validation message to show ('' clears it) */
+      clearResults(msg = '') {
+        this.errorMsg = msg;
         this.result = null;
         this._destroyCharts();
       },

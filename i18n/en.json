@@ -1560,6 +1560,14 @@
       "usl": "Upper spec limit (USL)",
       "alphaLabel": "Significance level α",
       "kLabel": "Study variation factor k",
+      "kOption6": "6 (99.73 %)",
+      "kOption515": "5.15 (99 %, AIAG 3rd ed.)",
+      "verdictBasisLabel": "Verdict basis",
+      "verdictBasisAuto": "Automatic (tolerance if LSL/USL)",
+      "verdictBasisTolerance": "Tolerance",
+      "verdictBasisStudyVar": "Study variation",
+      "basisPrefix": "Basis",
+      "sigmaHistLabel": "Historical process σ (optional)",
       "statusPass": "MEASUREMENT SYSTEM ACCEPTABLE",
       "statusFail": "MEASUREMENT SYSTEM NOT ACCEPTABLE",
       "statusWarn": "CONDITIONALLY ACCEPTABLE",
@@ -1577,6 +1585,8 @@
       "ofStudyVar": "of study variation",
       "contribution": "Contribution",
       "tolerance": "Tolerance",
+      "ofTolerance": "of tolerance",
+      "process": "Process",
       "gageRR": "Gage R&R",
       "partToPartVar": "Part-to-Part",
       "partLabel": "Part",
@@ -1613,7 +1623,8 @@
       "errTooFewOperators": "At least 2 distinct operators required (currently: {n}).",
       "errUnbalanced": "Unbalanced design — every operator must measure every part the same number of times.",
       "errTooFewReplicates": "At least 2 replicates per cell required (currently: {n}).",
-      "errUslLeqLsl": "USL must be greater than LSL."
+      "errUslLeqLsl": "USL must be greater than LSL.",
+      "errHistSigmaInvalid": "Historical process σ must be a positive number."
     },
     "msa-typ4": {
       "name": "MSA Type 4 (linearity)",
