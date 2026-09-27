@@ -22,6 +22,15 @@ import { loadExampleViaWorksheet } from '../../core/examples-registry.js';
 /** @param {number} v @param {number} d @returns {string} */
 function fmt(v, d = 4) { return v.toFixed(d); }
 
+/** @param {number|null} v @param {number} d @returns {string} */
+function fmtOpt(v, d = 4) { return Number.isFinite(v) ? v.toFixed(d) : '–'; }
+
+/** @param {number|null} p @returns {string} */
+function fmtP(p) {
+  if (!Number.isFinite(p)) return '–';
+  return p < 0.001 ? '< 0.001' : `= ${p.toFixed(3)}`;
+}
+
 const mod = createModule({
   config: {
     id: 'msa-typ1',
@@ -47,13 +56,26 @@ const mod = createModule({
       // ── View transformations ──────────────────────────────────
 
       fmt,
+      fmtOpt,
+      fmtP,
       abs: (v) => Math.abs(v),
 
-      statusLabel: (s) => _t({ pass: 'statusPass', fail: 'statusFail', warn: 'statusWarn' }[s] || 'statusWarn'),
+      statusLabel: (s) => _t({ pass: 'statusPass', fail: 'statusFail', warn: 'statusWarn', none: 'statusOneSided' }[s] || 'statusWarn'),
       badgeLabel: (s) => _t({ pass: 'capable', fail: 'notCapable', warn: 'condCapable' }[s] || 'condCapable'),
       kpiModClass: (s) => ({ pass: 'dmike-kpi--good', warn: 'dmike-kpi--warn', fail: 'dmike-kpi--bad' }[s] || ''),
 
       featureName() { return this.model.params.name || '–'; },
+
+      /** @returns {boolean} true when the analysis ran in two-sided tolerance mode. */
+      isTwoSided() { return this.result?.mode === 'two-sided'; },
+
+      /** @returns {string} formatted bias one-sample t-test line (always available, both modes). */
+      biasTestText() {
+        const bt = this.result?.biasTest;
+        if (!bt || bt.t == null) return '–';
+        const sig = bt.p < 0.05 ? _t('biasSignificant') : _t('biasNotSignificant');
+        return `t = ${bt.t.toFixed(2)} · df ${bt.df} · p ${fmtP(bt.p)} · ${sig}`;
+      },
 
       /** Horizontal stats table columns (label/value pairs). */
       statCols() {
@@ -68,8 +90,8 @@ const mod = createModule({
           { label: _t('statMax'), value: `${fmt(r.xmax)} ${u}` },
           { label: _t('statRange'), value: `${fmt(r.range)} ${u}` },
           { label: _t('statRef'), value: `${fmt(r.params.ref)} ${u}` },
-          { label: _t('statTol'), value: `${fmt(r.T)} ${u}` },
-          { label: _t('statResolution'), value: r.resolution > 0 ? `${fmt(r.resolution)} ${u} (${fmt(r.resPercent)} % T)` : '–' },
+          { label: _t('statTol'), value: `${fmtOpt(r.T)} ${u}` },
+          { label: _t('statResolution'), value: r.resolution > 0 ? (r.resPercent == null ? `${fmt(r.resolution)} ${u}` : `${fmt(r.resolution)} ${u} (${fmt(r.resPercent)} % T)`) : '–' },
           { label: 'k₁ / k₂', value: `${r.params.k1} / ${r.params.k2}` },
         ];
       },
@@ -141,6 +163,17 @@ const mod = createModule({
         const outIdx = [], outVal = [];
         r.details.forEach(d => { if (d.isOutlier) { outIdx.push(d.index); outVal.push(d.value); } });
 
+        const refLines = [
+          { dir: 'h', value: r.params.ref, label: 'Ref', dash: 'dash', width: 1.5, color: 'var(--color-success)' },
+          { dir: 'h', value: r.xbar, label: 'x̄', dash: 'dot', width: 1, color: 'var(--color-info)' },
+        ];
+        if (Number.isFinite(r.params.usl)) refLines.push({ dir: 'h', value: r.params.usl, label: 'USL', dash: 'dash', width: 1, color: 'var(--color-error)' });
+        if (Number.isFinite(r.params.lsl)) refLines.push({ dir: 'h', value: r.params.lsl, label: 'LSL', dash: 'dash', width: 1, color: 'var(--color-error)' });
+
+        const refAreas = r.zoneLo != null
+          ? [{ dir: 'y', min: r.zoneLo, max: r.zoneHi, label: 'k₁·T', color: 'rgba(52,199,89,0.06)' }]
+          : [];
+
         const chart = await module._context.chartManager.create(el, 'scatter', {
           xLabel: _t('chartIndex'),
           showLegend: true,
@@ -155,15 +188,8 @@ const mod = createModule({
               x: outIdx, y: outVal, symbol: 'circle',
             }] : []),
           ],
-          refLines: [
-            { dir: 'h', value: r.params.ref, label: 'Ref', dash: 'dash', width: 1.5, color: 'var(--color-success)' },
-            { dir: 'h', value: r.xbar, label: 'x̄', dash: 'dot', width: 1, color: 'var(--color-info)' },
-            { dir: 'h', value: r.params.usl, label: 'USL', dash: 'dash', width: 1, color: 'var(--color-error)' },
-            { dir: 'h', value: r.params.lsl, label: 'LSL', dash: 'dash', width: 1, color: 'var(--color-error)' },
-          ],
-          refAreas: [
-            { dir: 'y', min: r.zoneLo, max: r.zoneHi, label: 'k₁·T', color: 'rgba(52,199,89,0.06)' },
-          ],
+          refLines,
+          refAreas,
         });
         if (gen !== this._renderGen) { module._context.chartManager.destroy(chart); return; }
         this._charts.push(chart);
@@ -172,9 +198,9 @@ const mod = createModule({
       async _renderHistogram(el, r, values, gen) {
         el.replaceChildren();
         const refLines = [];
-        if (r.params.lsl != null) refLines.push({ dir: 'v', value: r.params.lsl, label: 'LSL', color: 'var(--color-error)', dash: 'dash', width: 1.5, showLabel: true });
-        if (r.params.usl != null) refLines.push({ dir: 'v', value: r.params.usl, label: 'USL', color: 'var(--color-error)', dash: 'dash', width: 1.5, showLabel: true });
-        if (r.params.ref != null) refLines.push({ dir: 'v', value: r.params.ref, label: 'Target', color: 'var(--color-success)', dash: 'dash', width: 1.5, showLabel: true });
+        if (Number.isFinite(r.params.lsl)) refLines.push({ dir: 'v', value: r.params.lsl, label: 'LSL', color: 'var(--color-error)', dash: 'dash', width: 1.5, showLabel: true });
+        if (Number.isFinite(r.params.usl)) refLines.push({ dir: 'v', value: r.params.usl, label: 'USL', color: 'var(--color-error)', dash: 'dash', width: 1.5, showLabel: true });
+        if (Number.isFinite(r.params.ref)) refLines.push({ dir: 'v', value: r.params.ref, label: 'Target', color: 'var(--color-success)', dash: 'dash', width: 1.5, showLabel: true });
 
         const chart = await module._context.chartManager.create(el, 'histogram', {
           data: values,
