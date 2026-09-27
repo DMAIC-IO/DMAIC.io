@@ -85,6 +85,28 @@ suite('references-renderer: formatCitation()', () => {
     assertTrue(host(formatCitation(BOOK, 'de')).textContent.includes('Cg/Cgk-Grenzen'), 'de note');
     assertTrue(host(formatCitation(BOOK, 'en')).textContent.includes('Cg/Cgk limits'), 'en note');
   });
+
+  test('connective labels: German prefixes/suffix without an explicit t', () => {
+    const text = host(formatCitation(ARTICLE, 'de')).textContent;
+    assertTrue(text.includes('Bd. 5'), 'volume prefix');
+    assertTrue(text.includes('S. 1-20'), 'page prefix');
+    const editionText = host(formatCitation(BOOK, 'de')).textContent;
+    assertTrue(editionText.includes('4th Aufl.'), 'edition suffix');
+  });
+
+  test('connective labels: English prefixes/suffix with an English t', () => {
+    const tEn = (k) => ({
+      'moduleHelp.referenceVolume': 'Vol.',
+      'moduleHelp.referenceIssue': 'No.',
+      'moduleHelp.referencePage': 'p.',
+      'moduleHelp.referenceEdition': 'ed.',
+    })[k] ?? k;
+    const text = host(formatCitation(ARTICLE, 'en', tEn)).textContent;
+    assertTrue(text.includes('Vol. 5'), 'volume prefix');
+    assertTrue(text.includes('p. 1-20'), 'page prefix');
+    const editionText = host(formatCitation(BOOK, 'en', tEn)).textContent;
+    assertTrue(editionText.includes('4th ed.'), 'edition suffix');
+  });
 });
 
 suite('references-renderer: renderReferences()', () => {

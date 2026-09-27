@@ -54,13 +54,29 @@ function linkNode(entry) {
   }, label);
 }
 
+/** Fallback i18n lookup used when `formatCitation` is called without a `t`
+ *  function (kept for backwards compatibility with existing callers). Mirrors
+ *  the German defaults from `i18n/de.json`'s `moduleHelp` block. */
+function fallbackT(key) {
+  const de = {
+    'moduleHelp.referenceVolume': 'Bd.',
+    'moduleHelp.referenceIssue': 'Nr.',
+    'moduleHelp.referencePage': 'S.',
+    'moduleHelp.referenceEdition': 'Aufl.',
+  };
+  return de[key] ?? key;
+}
+
 /**
  * Render one reference entry as a citation fragment.
  * @param {object} entry - CSL-JSON subset entry
  * @param {string} lang - active language code ('de' | 'en')
+ * @param {(key: string) => string} [t] - i18n lookup for the connective
+ *   labels (volume/issue/page/edition). Optional; falls back to the German
+ *   defaults when omitted so existing callers keep working.
  * @returns {DocumentFragment}
  */
-export function formatCitation(entry, lang) {
+export function formatCitation(entry, lang, t = fallbackT) {
   const frag = document.createDocumentFragment();
 
   const authors = (Array.isArray(entry.author) ? entry.author.filter(a => a && a.family) : [])
@@ -74,10 +90,10 @@ export function formatCitation(entry, lang) {
 
   const tailParts = [
     entry['container-title'],
-    entry.volume ? `Bd. ${entry.volume}` : null,
-    entry.issue ? `Nr. ${entry.issue}` : null,
-    entry.page ? `S. ${entry.page}` : null,
-    entry.edition ? `${entry.edition} Aufl.` : null,
+    entry.volume ? `${t('moduleHelp.referenceVolume')} ${entry.volume}` : null,
+    entry.issue ? `${t('moduleHelp.referenceIssue')} ${entry.issue}` : null,
+    entry.page ? `${t('moduleHelp.referencePage')} ${entry.page}` : null,
+    entry.edition ? `${entry.edition} ${t('moduleHelp.referenceEdition')}` : null,
     entry.publisher,
     entry['publisher-place'],
     entry.ISBN ? `ISBN ${entry.ISBN}` : null,
@@ -122,7 +138,7 @@ export function renderReferences(entries, lang, t) {
     ...list.map(entry => h('div', {
       class: 'help-panel__reference',
       'data-reference-id': entry.id || '',
-    }, formatCitation(entry, lang))),
+    }, formatCitation(entry, lang, t))),
   ));
   return frag;
 }

@@ -243,6 +243,7 @@
     "loadError": "Failed to load help",
     "tabHelp": "Help",
     "tabExamples": "Examples",
+    "tabReferences": "References",
     "tabGlossary": "Glossary",
     "loadButton": "Load",
     "source": "Source",
@@ -261,7 +262,12 @@
     "glossarySources": "Sources",
     "glossaryLoadError": "Failed to load term.",
     "glossaryOpenAria": "Open glossary: {term}",
-    "glossaryHeaderTitle": "Glossary"
+    "glossaryHeaderTitle": "Glossary",
+    "referencesEmpty": "No references available.",
+    "referenceVolume": "Vol.",
+    "referenceIssue": "No.",
+    "referencePage": "p.",
+    "referenceEdition": "ed."
   },
   "scenarios": {
     "sectionTitle": "Scenarios",

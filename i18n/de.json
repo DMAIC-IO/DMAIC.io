@@ -243,6 +243,7 @@
     "loadError": "Hilfe konnte nicht geladen werden",
     "tabHelp": "Hilfe",
     "tabExamples": "Beispieldaten",
+    "tabReferences": "Referenzen",
     "tabGlossary": "Glossar",
     "loadButton": "Laden",
     "source": "Quelle",
@@ -261,7 +262,12 @@
     "glossarySources": "Quellen",
     "glossaryLoadError": "Begriff konnte nicht geladen werden.",
     "glossaryOpenAria": "Glossar: {term} öffnen",
-    "glossaryHeaderTitle": "Glossar"
+    "glossaryHeaderTitle": "Glossar",
+    "referencesEmpty": "Keine Referenzen hinterlegt.",
+    "referenceVolume": "Bd.",
+    "referenceIssue": "Nr.",
+    "referencePage": "S.",
+    "referenceEdition": "Aufl."
   },
   "scenarios": {
     "sectionTitle": "Szenarien",

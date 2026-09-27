@@ -2585,6 +2585,64 @@ body.training-area-open .dmaic-tiles {
   color: var(--color-accent);
 }
 
+.help-panel__references {
+  padding: var(--spacing-sm);
+  overflow-y: auto;
+}
+
+.help-panel__references-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.help-panel__reference {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-xs);
+  border-left: 2px solid transparent;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-primary);
+}
+
+.help-panel__reference.is-highlighted {
+  border-left-color: var(--color-accent);
+  background: var(--color-bg-secondary);
+}
+
+.help-panel__reference-head {
+  font-weight: var(--font-weight-semibold);
+}
+
+.help-panel__reference-title {
+  font-style: italic;
+}
+
+.help-panel__reference-tail,
+.help-panel__reference-note {
+  color: var(--color-text-secondary);
+}
+
+.help-panel__reference-link {
+  color: var(--color-accent);
+  word-break: break-all;
+}
+
+.help-panel__references-empty {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.help-panel__ref-xref {
+  color: var(--color-accent);
+  text-decoration: none;
+}
+
+.help-panel__ref-xref:hover {
+  text-decoration: underline;
+}
+
 .help-panel__example {
   border: var(--border-width) solid var(--color-border-primary);
   border-radius: var(--border-radius);

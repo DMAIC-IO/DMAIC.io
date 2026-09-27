@@ -2,14 +2,16 @@ import { renderBlockMath, renderInlineMath } from '../core/katex-loader.js';
 import { h } from '../core/dom.js';
 import { parseInline } from '../core/markdown-parser.js';
 import { icon } from '../core/icon.js';
+import { renderReferences } from '../core/references-renderer.js';
 
 /**
  * DMAIC.io — Help Panel (help-panel.js)
  * Right-side panel for module handbooks, example data, and glossary terms.
  *
- * Three tabs:
+ * Four tabs:
  *   - "Hilfe"        — lazy-loaded module help (existing behaviour)
  *   - "Beispieldaten" — list of catalog examples matching the active module
+ *   - "Referenzen"   — CSL-JSON references declared by the active module
  *   - "Glossar"      — terms whose `modules` field matches the active module
  *
  * Backwards-compat: the original `show(title, html)` API still works
@@ -29,6 +31,9 @@ export class HelpPanel {
     this._hasHelp = false;
     this._hasExamples = false;
     this._hasGlossary = false;
+    this._hasReferences = false;
+    /** @type {object[]} */
+    this._references = [];
     /** @type {?(exampleId: string) => void} */
     this._onLoadExample = null;
     /** @type {?(scenarioId: string) => void} */
@@ -76,18 +81,24 @@ export class HelpPanel {
         }, t('moduleHelp.tabExamples')),
         h('button', {
           class: 'help-panel__tab',
+          'data-tab': 'references', role: 'tab', 'aria-selected': 'false',
+        }, t('moduleHelp.tabReferences')),
+        h('button', {
+          class: 'help-panel__tab',
           'data-tab': 'glossary', role: 'tab', 'aria-selected': 'false',
         }, t('moduleHelp.tabGlossary')),
       ),
       h('div', { class: 'help-panel__body' },
         h('div', { class: 'help-panel__content', 'data-pane': 'help', role: 'tabpanel' }),
         h('div', { class: 'help-panel__examples', 'data-pane': 'examples', role: 'tabpanel', hidden: true }),
+        h('div', { class: 'help-panel__references', 'data-pane': 'references', role: 'tabpanel', hidden: true }),
         h('div', { class: 'help-panel__glossary', 'data-pane': 'glossary', role: 'tabpanel', hidden: true }),
       ),
     );
 
     this._content       = this._container.querySelector('[data-pane="help"]');
     this._examplesPane  = this._container.querySelector('[data-pane="examples"]');
+    this._referencesPane = this._container.querySelector('[data-pane="references"]');
     this._glossaryPane  = this._container.querySelector('[data-pane="glossary"]');
     this._titleEl       = this._container.querySelector('.help-panel__title');
 
@@ -135,6 +146,7 @@ export class HelpPanel {
     this._hasHelp = true;
     this._hasExamples = false;
     this._hasGlossary = false;
+    this._hasReferences = false;
     this._updateTabVisibility();
     this._setActiveTab('help');
     this._container.classList.remove('help-panel--hidden');
@@ -155,10 +167,11 @@ export class HelpPanel {
    * @param {(scenarioId: string) => void=} opts.onLoadScenario
    * @param {object[]=} opts.glossary    Lightweight term entries for the Glossary tab
    * @param {(termId: string) => Promise<object|null>=} opts.glossaryGet  Lazy loader for full term
-   * @param {'help'|'examples'|'glossary'=} opts.preferredTab
+   * @param {object[]=} opts.references  CSL-JSON reference entries for the References tab
+   * @param {'help'|'examples'|'references'|'glossary'=} opts.preferredTab
    */
   showWithTabs(title, {
-    helpNode, examples, onLoadExample, scenarios, onLoadScenario, glossary, glossaryGet, preferredTab,
+    helpNode, examples, onLoadExample, scenarios, onLoadScenario, glossary, glossaryGet, references, preferredTab,
   } = {}) {
     this._titleEl.textContent = title;
 
@@ -178,6 +191,16 @@ export class HelpPanel {
       this._examplesPane.replaceChildren();
     }
 
+    this._references = Array.isArray(references) ? references : [];
+    this._hasReferences = this._references.length > 0;
+    if (this._hasReferences) {
+      this._referencesPane.replaceChildren(
+        renderReferences(this._references, this._i18n.getLanguage(), (k) => this._i18n.t(k)),
+      );
+    } else {
+      this._referencesPane.replaceChildren();
+    }
+
     this._glossaryItems = Array.isArray(glossary) ? glossary : [];
     this._glossaryGet = glossaryGet || null;
     // Glossary is always available when wired (glossaryGet given): the tab
@@ -195,7 +218,7 @@ export class HelpPanel {
     // Tab selection priority:
     //   1. Panel currently visible AND current tab still has content → keep it
     //   2. preferredTab if it has content
-    //   3. First tab that has content (help → examples → glossary)
+    //   3. First tab that has content (help → examples → references → glossary)
     let target;
     if (this.isVisible() && this._tabHasContent(this._activeTab)) {
       target = this._activeTab;
@@ -205,6 +228,8 @@ export class HelpPanel {
       target = 'help';
     } else if (this._hasExamples) {
       target = 'examples';
+    } else if (this._hasReferences) {
+      target = 'references';
     } else {
       target = 'glossary';
     }
@@ -221,7 +246,7 @@ export class HelpPanel {
     return !this._container.classList.contains('help-panel--hidden');
   }
 
-  /** Currently active tab. @returns {'help'|'examples'|'glossary'} */
+  /** Currently active tab. @returns {'help'|'examples'|'references'|'glossary'} */
   getActiveTab() {
     return this._activeTab;
   }
@@ -262,8 +287,10 @@ export class HelpPanel {
     // Header invocation is glossary-only — hide the other tabs for clarity.
     this._hasHelp = false;
     this._hasExamples = false;
+    this._hasReferences = false;
     this._content.replaceChildren();
     this._examplesPane.replaceChildren();
+    this._referencesPane.replaceChildren();
     this._glossaryOpenId = null;
     this._glossaryQuery = '';
     this._updateTabVisibility();
@@ -285,6 +312,24 @@ export class HelpPanel {
     this._setActiveTab('glossary');
     this._renderGlossaryDetail();
     this._container.classList.remove('help-panel--hidden');
+  }
+
+  /**
+   * Switch to the references tab and highlight one entry. Called by inline
+   * `{{ref:id}}` clicks in the handbook. An unknown id still switches the tab
+   * — the user asked to see the references.
+   * @param {string} refId
+   */
+  openReference(refId) {
+    if (!this._hasReferences) return;
+    this._setActiveTab('references');
+    for (const el of this._referencesPane.querySelectorAll('.is-highlighted')) {
+      el.classList.remove('is-highlighted');
+    }
+    const entry = this._referencesPane.querySelector(`[data-reference-id="${CSS.escape(refId)}"]`);
+    if (!entry) return;
+    entry.classList.add('is-highlighted');
+    entry.scrollIntoView({ block: 'nearest' });
   }
 
   /**
@@ -318,7 +363,7 @@ export class HelpPanel {
   // ─── Internal ─────────────────────────────────────────────
 
   _setActiveTab(tab) {
-    if (tab !== 'help' && tab !== 'examples' && tab !== 'glossary') return;
+    if (tab !== 'help' && tab !== 'examples' && tab !== 'references' && tab !== 'glossary') return;
     if (!this._tabHasContent(tab)) return;
     this._activeTab = tab;
 
@@ -328,9 +373,10 @@ export class HelpPanel {
       b.setAttribute('aria-selected', active ? 'true' : 'false');
     });
 
-    this._content.hidden       = tab !== 'help';
-    this._examplesPane.hidden  = tab !== 'examples';
-    this._glossaryPane.hidden  = tab !== 'glossary';
+    this._content.hidden        = tab !== 'help';
+    this._examplesPane.hidden   = tab !== 'examples';
+    this._referencesPane.hidden = tab !== 'references';
+    this._glossaryPane.hidden   = tab !== 'glossary';
 
     // Mirror the active tab on the container so external observers (header
     // icon-menu mutual exclusivity) can sync without listening to every
@@ -339,15 +385,17 @@ export class HelpPanel {
   }
 
   _tabHasContent(tab) {
-    if (tab === 'help')     return this._hasHelp;
-    if (tab === 'examples') return this._hasExamples;
-    if (tab === 'glossary') return this._hasGlossary;
+    if (tab === 'help')       return this._hasHelp;
+    if (tab === 'examples')   return this._hasExamples;
+    if (tab === 'references') return this._hasReferences;
+    if (tab === 'glossary')   return this._hasGlossary;
     return false;
   }
 
   _updateTabVisibility() {
     const tabs = this._container.querySelector('.help-panel__tabs');
-    const visibleCount = [this._hasHelp, this._hasExamples, this._hasGlossary].filter(Boolean).length;
+    const visibleCount = [this._hasHelp, this._hasExamples, this._hasReferences, this._hasGlossary]
+      .filter(Boolean).length;
     // Tab bar only makes sense when at least two tabs are visible.
     tabs.style.display = visibleCount >= 2 ? '' : 'none';
 
@@ -356,9 +404,10 @@ export class HelpPanel {
       const btn = tabs.querySelector(`.help-panel__tab[data-tab="${name}"]`);
       if (btn) btn.style.display = on ? '' : 'none';
     };
-    setTab('help',     this._hasHelp);
-    setTab('examples', this._hasExamples);
-    setTab('glossary', this._hasGlossary);
+    setTab('help',       this._hasHelp);
+    setTab('examples',   this._hasExamples);
+    setTab('references', this._hasReferences);
+    setTab('glossary',   this._hasGlossary);
   }
 
   _renderExamplesList(examples) {
