@@ -301,7 +301,14 @@ suite('Calculator Model — calcSS', () => {
   test('cpk', () => { assertAlmostEqual(run('cpk').value, 1.128, 1e-9); });
   test('pp', () => { assertAlmostEqual(run('pp').value, 1, 1e-9); });
   test('ppk', () => { assertAlmostEqual(run('ppk').value, 1, 1e-9); });
-  test('sigma', () => { assertAlmostEqual(run('sigma').value, 3.384, 1e-9); });
+  // Sigma = Z.bench within: both tails under N(x̄, MR̄/d2) → −Φ⁻¹(p).
+  // [8, 10, 12], LSL 4, USL 16: z = 6 / (2/1.128) = 3.384 per side,
+  // p = 2 · Q(3.384) = 7.1438e-4 → Z.bench 3.1888 (3·Cpk would say 3.384).
+  test('sigma', () => { assertAlmostEqual(run('sigma').value, 3.188777, 1e-5); });
+  test('sigma, one tail negligible: equals 3·Cpk', () => {
+    // x̄ = 10, σ within = 2/1.128; USL far away → only the LSL tail counts.
+    assertAlmostEqual(run('sigma', [8, 10, 12], '4', '1000').value, 6 / (2 / 1.128), 1e-5);
+  });
   test('cp depends on the entry order (moving ranges)', () => {
     // [8, 12, 10] → MR̄ = 3 → σ within = 3/1.128
     assertAlmostEqual(run('cp', [8, 12, 10]).value, 12 / (6 * 3 / 1.128), 1e-9);

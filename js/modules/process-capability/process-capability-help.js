@@ -31,6 +31,11 @@ export default {
           },
           {
             type: 'definition',
+            term: 'Sigma-Level (Z.bench) und PPM',
+            content: 'Der Sigma-Level ist der Z.bench: der Quantilwert der Standardnormalverteilung zum gesamten erwarteten Anteil außerhalb beider Grenzen, berechnet mit σ innerhalb. Er entspricht 3 · Cpk nur, wenn der Anteil jenseits der ferneren Grenze vernachlässigbar ist. Z.bench gesamt nutzt s; die Six-Sigma-Konvention addiert 1,5σ darauf — eine Vereinbarung, kein Messergebnis. Die Tabelle „Ausschuss (PPM)“ zeigt beobachtete Teile außerhalb der Grenzen sowie die erwarteten Anteile innerhalb und gesamt je Million.',
+          },
+          {
+            type: 'definition',
             term: 'Spezifikationsgrenzen (USL, LSL)',
             content: '{{term:spezifikationsgrenzen|Spezifikationsgrenzen (USL, LSL)}} — die vom Kunden oder Konstrukteur vorgegebenen Toleranzgrenzen. Die Prozessfähigkeit ist ein Verhältnis zwischen Prozessverhalten und diesen Grenzen — ohne Spezifikation keine Fähigkeit.',
           },
@@ -66,6 +71,11 @@ export default {
             type: 'definition',
             term: 'Pp and Ppk',
             content: '{{term:pp|Pp}} and {{term:ppk|Ppk}} — long-term versions of Cp and Cpk using overall sample variation instead of within-subgroup variation. Pp/Ppk is usually worse because it includes drift and special causes.',
+          },
+          {
+            type: 'definition',
+            term: 'Sigma level (Z.bench) and PPM',
+            content: 'The sigma level is Z.bench: the standard normal quantile of the total expected fraction outside both limits, computed with σ within. It equals 3 · Cpk only when the fraction beyond the far limit is negligible. Z.bench overall uses s; the Six Sigma convention adds 1.5σ to it — an agreement, not a measurement. The "Nonconforming (PPM)" table shows observed parts outside the limits and the expected fractions within and overall, per million.',
           },
           {
             type: 'definition',

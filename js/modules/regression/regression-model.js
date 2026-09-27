@@ -19,7 +19,9 @@
 
 import {
   runRegression, computeVIF, generatePolynomialTerms, fitFromSpec, lackOfFitTest,
+  compileModelSpec, estimableTerms,
 } from '../../engines/regression-engine.js';
+import { defaultActiveTerms, quadTermId, parseTermId, compareTermIds } from '../../engines/doe-terms.js';
 import { tInv } from '../../engines/math-utils.js';
 import { refToKey, keyToRef } from '../../ui/column-picker.js';
 
@@ -77,6 +79,10 @@ export class State {
   /** @type {string} */
   activeTab = 'scatter';
   excludedTerms = [];
+  /** Canonical DoE term ids to preset once on the next polynomial run (null = none). */
+  designTerms = null;
+  /** Notice from the last design-term preset: {aliased:[{term,with}], saturated:[term]}. */
+  designNotice = null;
   coefSortByP = false;
   /** Tracks the experiment-import preset that produced the current X/Y selection. */
   activeImportSource = null;
@@ -126,6 +132,8 @@ export class State {
       activeXKey: this.activeXKey,
       activeTab: this.activeTab,
       excludedTerms: [...this.excludedTerms],
+      designTerms: this.designTerms ? [...this.designTerms] : null,
+      designNotice: this.designNotice ? JSON.parse(JSON.stringify(this.designNotice)) : null,
       coefSortByP: this.coefSortByP,
       activeImportSource: this.activeImportSource,
       savedModelId: this.savedModelId,
@@ -150,6 +158,10 @@ export class State {
     s.activeXKey = typeof d.activeXKey === 'string' ? d.activeXKey : null;
     s.activeTab = TABS.includes(d.activeTab) ? d.activeTab : 'scatter';
     s.excludedTerms = Array.isArray(d.excludedTerms) ? d.excludedTerms.filter(t => typeof t === 'string') : [];
+    s.designTerms = Array.isArray(d.designTerms) ? d.designTerms.filter(t => typeof t === 'string') : null;
+    s.designNotice = (d.designNotice && typeof d.designNotice === 'object'
+      && Array.isArray(d.designNotice.aliased) && Array.isArray(d.designNotice.saturated))
+      ? { aliased: d.designNotice.aliased, saturated: d.designNotice.saturated } : null;
     s.coefSortByP = typeof d.coefSortByP === 'boolean' ? d.coefSortByP : false;
     s.activeImportSource = (d.activeImportSource && typeof d.activeImportSource === 'object') ? d.activeImportSource : null;
     s.savedModelId = typeof d.savedModelId === 'string' ? d.savedModelId : null;
@@ -259,27 +271,32 @@ export class State {
       const tags = exp?.runMatrix?.columnTags;
       if (!wsRef || !tags) continue;
       const factorRefs = tags.factors.map(cid => ({ instanceId: wsRef.instanceId, sheetId: wsRef.sheetId, columnId: cid }));
-      const polyDegree = exp.plannedTerms?.quadratic ? 2 : 1;
+      const k = tags.factors.length;
+      const designTerms = Array.isArray(exp.plannedTerms?.terms)
+        ? [...exp.plannedTerms.terms]
+        : [...defaultActiveTerms(k),
+          ...Array.from({ length: k }, (_, i) => (exp.factors?.[i]?.kind === 'categorical' ? null : quadTermId(i))).filter(Boolean)]
+          .sort(compareTermIds);
       const expLabel = exp.name || `DoE ${expId.slice(0, 6)}`;
       (exp.responseColumns || []).forEach((resp, i) => {
         const yRefRaw = { instanceId: wsRef.instanceId, sheetId: wsRef.sheetId, columnId: resp.columnId };
         out.push({
           key: `${expId}|raw|${i}`, label: `${expLabel} — ${resp.name}`,
-          factorRefs, yRef: yRefRaw, polyDegree,
+          factorRefs, yRef: yRefRaw, designTerms,
           experimentId: expId, sourceColumn: resp.columnId, transform: 'identity',
         });
         if (resp.meanColumnId) {
           out.push({
             key: `${expId}|mean|${i}`, label: `${expLabel} — ${resp.name} (Mean)`,
             factorRefs, yRef: { instanceId: wsRef.instanceId, sheetId: wsRef.sheetId, columnId: resp.meanColumnId },
-            polyDegree, experimentId: expId, sourceColumn: resp.meanColumnId, transform: 'mean',
+            designTerms, experimentId: expId, sourceColumn: resp.meanColumnId, transform: 'mean',
           });
         }
         if (resp.lnVarColumnId) {
           out.push({
             key: `${expId}|lnvar|${i}`, label: `${expLabel} — ${resp.name} (lnVar)`,
             factorRefs, yRef: { instanceId: wsRef.instanceId, sheetId: wsRef.sheetId, columnId: resp.lnVarColumnId },
-            polyDegree, experimentId: expId, sourceColumn: resp.lnVarColumnId, transform: 'lnvar',
+            designTerms, experimentId: expId, sourceColumn: resp.lnVarColumnId, transform: 'lnvar',
           });
         }
       });
@@ -294,7 +311,8 @@ export class State {
     this.colRefs = opt.factorRefs.map(r => ({ ...r }));
     this.yKey = refToKey(opt.yRef);
     this.regType = 'polynomial';
-    this.polyDegree = opt.polyDegree;
+    this.designTerms = [...opt.designTerms];
+    this.designNotice = null;
     this.excludedTerms = [];
     this.activeImportSource = {
       experimentId: opt.experimentId,
@@ -326,8 +344,10 @@ export class State {
         if (ok) n++;
       }
     }
+    const excludedCount = (this.excludedTerms || []).length;
     const options = [1, 2, 3].map(deg => {
-      const terms = polyTermCount(k || 1, deg);
+      const all = polyTermCount(k || 1, deg);
+      const terms = deg === this.polyDegree ? all - excludedCount : all;
       return { deg, terms, disabled: n > 0 && n <= terms };
     });
     return { n, options };
@@ -351,11 +371,95 @@ export class State {
     return this.isPolynomial ? this.runPolynomial(sm, yRef) : this.runSingleXModels(sm, yRef);
   }
 
+  /** Drop the design-preset notice (user changed the model). */
+  clearDesignNotice() { this.designNotice = null; }
+
+  /** The user took over the model: drop a pending design preset and its notice. */
+  clearDesignPreset() {
+    this.designTerms = null;
+    this.designNotice = null;
+  }
+
   /** Clear all derived results. */
   clearResults() {
     this.result = null;
     this.perXResults = null;
     this.activeXKey = null;
+  }
+
+  /**
+   * Turn the planner's canonical design terms into this model's polynomial
+   * preset, once: degree = highest term order; excluded = generated terms not
+   * in the design, terms the data cannot estimate (aliased), and — if the
+   * model would leave no error df — the last terms in hierarchical order.
+   *
+   * @param {Array<{id:string, kind:string}>} predictors - in colRefs order
+   * @param {{ columns: Object<string, Array>, y: number[] }} data - filtered rows
+   */
+  applyDesignTerms(predictors, data) {
+    const names = predictors.map(p => p.id);
+    const wanted = [];
+    for (const canon of [...this.designTerms].sort(compareTermIds)) {
+      const t = parseTermId(canon);
+      if (!t || t.factors.some(f => f >= names.length)) continue;
+      if (t.kind === 'main') wanted.push(names[t.factors[0]]);
+      else if (t.kind === 'quad') {
+        if (predictors[t.factors[0]].kind === 'categorical') continue;
+        wanted.push(`${names[t.factors[0]]}²`);
+      } else wanted.push(t.factors.map(f => names[f]).join('·'));
+    }
+    // X → 1, X² or X·Y → 2, X·Y·Z → 3 (canonical ids never yield X³ or X²·Y).
+    const order = (id) => {
+      const parts = id.split('·').length;
+      if (parts >= 3) return 3;
+      return (parts === 2 || id.endsWith('²')) ? 2 : 1;
+    };
+    const degree = Math.min(3, Math.max(1, ...wanted.map(order)));
+    const generated = generatePolynomialTerms(predictors, degree);
+    const byId = new Map(generated.map(term => [term.id, term]));
+    const wantedTerms = wanted.filter(id => byId.has(id)).map(id => byId.get(id));
+
+    const compiled = compileModelSpec({ predictors, terms: wantedTerms }, data);
+    const n = data.y.length;
+    const blocks = compiled.blockMap.map(b => ({
+      id: b.id, columns: b.columnIndices.map(ci => compiled.X.map(row => row[ci])),
+    }));
+    const { kept, aliased } = estimableTerms(blocks, n);
+
+    const width = new Map(compiled.blockMap.map(b => [b.id, b.columnIndices.length]));
+    let used = kept.reduce((sum, id) => sum + width.get(id), 0);
+    const keptTerms = kept.filter(id => id !== 'Intercept');
+    const saturated = [];
+    while (n - used < 1 && keptTerms.length > 0) {
+      const dropped = keptTerms.pop();
+      used -= width.get(dropped);
+      saturated.unshift(dropped);
+    }
+
+    const keepSet = new Set(keptTerms);
+    this.polyDegree = degree;
+    this.excludedTerms = generated.map(term => term.id).filter(id => !keepSet.has(id));
+    this.designTerms = null;
+    this.designNotice = {
+      aliased: aliased.map(a => ({ term: a.id, with: a.with })),
+      saturated,
+    };
+  }
+
+  /** Build the errAliasedTerms result for a rank-deficient polynomial spec. */
+  aliasedTermsError(spec, data) {
+    const compiled = compileModelSpec(spec, data);
+    const blocks = compiled.blockMap.map(b => ({
+      id: b.id, columns: b.columnIndices.map(ci => compiled.X.map(row => row[ci])),
+    }));
+    const { aliased } = estimableTerms(blocks, data.y.length);
+    if (aliased.length === 0) return { ok: false, errorKey: 'errInsufficientDf' };
+    const list = aliased.map(a => ({ term: a.id, with: a.with }));
+    return {
+      ok: false, errorKey: 'errAliasedTerms',
+      errorParams: { term: list[0].term, with: list[0].with.join(', ') },
+      aliased: list,
+    };
   }
 
   runPolynomial(sm, yRefArg) {
@@ -391,15 +495,25 @@ export class State {
       ? { id: d.name, kind: 'categorical', levels: d.levels, reference: d.reference }
       : { id: d.name, kind: 'continuous' });
 
+    const data = {
+      columns: Object.fromEntries(predictors.map((p, j) => [p.id, xFilteredRaw[j]])),
+      y: yFiltered,
+    };
+
+    if (Array.isArray(this.designTerms) && this.designTerms.length > 0) {
+      this.applyDesignTerms(predictors, data);
+    }
+
     const allTerms = generatePolynomialTerms(predictors, this.polyDegree);
     const excludedSet = new Set(this.excludedTerms || []);
     const activeTerms = allTerms.filter(term => !excludedSet.has(term.id));
     const spec = { predictors, terms: activeTerms };
 
-    const data = {
-      columns: Object.fromEntries(predictors.map((p, j) => [p.id, xFilteredRaw[j]])),
-      y: yFiltered,
-    };
+    // n ≤ columns leaves no error df; the engine would clamp df_error to 1
+    // and report a fake fit (saturated fits are roadmap C1-022).
+    let columnCount = activeTerms.length + 1;
+    try { columnCount = compileModelSpec(spec, data).X[0]?.length ?? columnCount; } catch { /* fit reports it */ }
+    if (yFiltered.length <= columnCount) return { ok: false, errorKey: 'errInsufficientDf' };
 
     let fit;
     try {
@@ -407,7 +521,7 @@ export class State {
     } catch (e) {
       const msg = String(e?.message || e);
       if (yFiltered.length <= activeTerms.length + 1) return { ok: false, errorKey: 'errInsufficientDf' };
-      if (/singular|rank-deficient/i.test(msg)) return { ok: false, errorKey: 'errInsufficientDf' };
+      if (/singular|rank-deficient/i.test(msg)) return this.aliasedTermsError(spec, data);
       return { ok: false, errorKey: 'errGeneric' };
     }
 

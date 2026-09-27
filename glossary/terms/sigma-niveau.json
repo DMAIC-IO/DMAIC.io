@@ -6,54 +6,64 @@
     "en": "Sigma Level"
   },
   "short": {
-    "de": "Alternative Kennzahl der {{term:prozessfaehigkeit|Prozessfähigkeit}} — misst den Abstand von {{term:mittelwert|Mittelwert}} zur nächsten Spezifikationsgrenze in Vielfachen von σ.",
-    "en": "Alternative {{term:prozessfaehigkeit|process capability}} metric — measures the distance from the {{term:mittelwert|mean}} to the nearest specification limit in multiples of σ."
+    "de": "Kennzahl der {{term:prozessfaehigkeit|Prozessfähigkeit}} — der Z-Wert der Standardnormalverteilung zum gesamten Anteil außerhalb der Spezifikationsgrenzen (Z.bench).",
+    "en": "{{term:prozessfaehigkeit|Process capability}} metric — the standard normal Z value of the total fraction outside the specification limits (Z.bench)."
   },
   "definition": {
     "de": [
       {
         "type": "paragraph",
-        "text": "Das **Sigma-Niveau** (Sigma-Level, Z-Wert) drückt die Prozessfähigkeit als Vielfaches der Standardabweichung aus, die zwischen Mittelwert und Spezifikationsgrenze passt. Es ist die namensgebende Kennzahl von Six Sigma."
+        "text": "Das **Sigma-Niveau** (Sigma-Level, Z.bench) drückt die Prozessfähigkeit als Z-Wert der Standardnormalverteilung aus: Es ist der Wert, jenseits dessen genau der Anteil liegt, den der Prozess insgesamt außerhalb beider Spezifikationsgrenzen erzeugt. Es ist die namensgebende Kennzahl von Six Sigma."
       },
       {
         "type": "formula",
-        "latex": "Z_{\\text{ST}} = 3 \\cdot C_{pk}"
+        "latex": "Z_{\\text{bench}} = -\\Phi^{-1}\\left(p_{<\\text{USG}} + p_{>\\text{OSG}}\\right)"
+      },
+      {
+        "type": "paragraph",
+        "text": "Die Kurzformel Z = 3 · Cpk gilt nur, wenn der Anteil jenseits der ferneren Grenze vernachlässigbar ist; bei zweiseitiger Toleranz überschätzt sie sonst das Niveau."
       },
       {
         "type": "list",
         "items": [
-          "**Z = 3σ** — Cpk = 1,00 — ca. 66 800 ppm defekt (kurzfristig)",
-          "**Z = 4σ** — Cpk = 1,33 — ca. 6 210 ppm",
-          "**Z = 6σ** — Cpk = 2,00 — ca. 3,4 ppm (mit dem üblichen 1,5σ-Shift für Langzeit)",
+          "**Z = 3σ** — Cpk = 1,00 — ca. 1 350 ppm kurzfristig, 66 807 ppm langfristig",
+          "**Z = 4σ** — Cpk = 1,33 — ca. 31,7 ppm kurzfristig, 6 210 ppm langfristig",
+          "**Z = 6σ** — Cpk = 2,00 — ca. 0,001 ppm kurzfristig, 3,4 ppm langfristig",
+          "Werte für eine Grenze; langfristig = mit dem 1,5σ-Shift",
           "**ppm** = parts per million, defekte Teile pro Million"
         ]
       },
       {
         "type": "note",
-        "text": "**Der 1,5σ-Shift-Konvention:** Die berühmten „3,4 ppm bei 6σ“ beziehen sich auf ein Langzeit-Sigma-Niveau, das einen mittleren Drift von 1,5σ annimmt. Ohne diesen Shift würde 6σ auf 2 ppb (parts per billion) hinauslaufen. Die Konvention ist umstritten, aber Standard in Six-Sigma-Ausbildung und -Berichten."
+        "text": "**Die 1,5σ-Shift-Konvention:** Die berühmten „3,4 ppm bei 6σ“ beziehen sich auf ein Langzeit-Sigma-Niveau, das einen mittleren Drift von 1,5σ annimmt. Ohne diesen Shift würde 6σ auf rund 1 ppb (parts per billion) je Grenze hinauslaufen. Die Konvention ist umstritten, aber Standard in Six-Sigma-Ausbildung und -Berichten."
       }
     ],
     "en": [
       {
         "type": "paragraph",
-        "text": "The **sigma level** (Z-value) expresses process capability as the number of standard deviations that fit between the mean and the nearest specification limit. It is the metric that gives Six Sigma its name."
+        "text": "The **sigma level** (Z.bench) expresses process capability as a standard normal Z value: the point beyond which lies exactly the fraction the process produces outside both specification limits. It is the metric that gives Six Sigma its name."
       },
       {
         "type": "formula",
-        "latex": "Z_{\\text{ST}} = 3 \\cdot C_{pk}"
+        "latex": "Z_{\\text{bench}} = -\\Phi^{-1}\\left(p_{<\\text{LSL}} + p_{>\\text{USL}}\\right)"
+      },
+      {
+        "type": "paragraph",
+        "text": "The shortcut Z = 3 · Cpk holds only when the fraction beyond the far limit is negligible; for a two-sided tolerance it otherwise overstates the level."
       },
       {
         "type": "list",
         "items": [
-          "**Z = 3σ** — Cpk = 1.00 — approx. 66,800 ppm defective (short-term)",
-          "**Z = 4σ** — Cpk = 1.33 — approx. 6,210 ppm",
-          "**Z = 6σ** — Cpk = 2.00 — approx. 3.4 ppm (with the usual 1.5σ shift for long-term)",
+          "**Z = 3σ** — Cpk = 1.00 — approx. 1,350 ppm short-term, 66,807 ppm long-term",
+          "**Z = 4σ** — Cpk = 1.33 — approx. 31.7 ppm short-term, 6,210 ppm long-term",
+          "**Z = 6σ** — Cpk = 2.00 — approx. 0.001 ppm short-term, 3.4 ppm long-term",
+          "Values for one limit; long-term = with the 1.5σ shift",
           "**ppm** = parts per million defective"
         ]
       },
       {
         "type": "note",
-        "text": "**The 1.5σ shift convention:** the famous \"3.4 ppm at 6σ\" refers to a long-term sigma level that assumes a 1.5σ average drift. Without the shift, 6σ would give 2 ppb (parts per billion). The convention is contested but standard in Six Sigma training and reporting."
+        "text": "**The 1.5σ shift convention:** the famous \"3.4 ppm at 6σ\" refers to a long-term sigma level that assumes a 1.5σ average drift. Without the shift, 6σ would give about 1 ppb (parts per billion) per limit. The convention is contested but standard in Six Sigma training and reporting."
       }
     ]
   },
@@ -62,12 +72,14 @@
       "Sigma-Level",
       "Z-Wert",
       "DPMO",
-      "ppm-Niveau"
+      "ppm-Niveau",
+      "Z.bench"
     ],
     "en": [
       "sigma level",
       "Z-score capability",
-      "DPMO"
+      "DPMO",
+      "Z.bench"
     ]
   },
   "seeAlso": [

@@ -66,6 +66,8 @@ const mod = createModule({
       result: null,
       /** Error message text (plain, may be multi-line). */
       _errorText: '',
+      /** Aliased terms from the last failed fit ({ term }), for the exclude buttons. */
+      _aliased: [],
       /** Predict inputs view-model (stable objects for x-model). */
       _predictForm: [],
       /** Predict output. */
@@ -514,15 +516,18 @@ const mod = createModule({
         }
       },
       onYChange(event) {
+        this.model.clearDesignPreset();
         this.model.yKey = event.target.value || null;
         this.refreshDegree();
         this.autoRun();
       },
       onRegTypeChange() {
+        this.model.clearDesignPreset();
         // model.regType already updated via x-model.
         this.autoRun();
       },
       onDegreeChange() {
+        this.model.clearDesignPreset();
         // model.polyDegree already updated via x-model.number.
         this.autoRun();
       },
@@ -542,11 +547,30 @@ const mod = createModule({
       togglePI() { this.model.showPI = !this.model.showPI; this.autoRun(); },
       toggleSort() { this.model.coefSortByP = !this.model.coefSortByP; },
       toggleTerm(term, event) {
+        this.model.clearDesignPreset();
         if (event.target.checked) {
           this.model.excludedTerms = this.model.excludedTerms.filter(t => t !== term);
         } else {
           this.model.excludedTerms = [...this.model.excludedTerms, term];
         }
+        this.runAnalysis();
+      },
+
+      /** Localised lines of the design-term preset notice (CSP-safe). */
+      designNoticeLines() {
+        const n = this.model.designNotice;
+        if (!n) return [];
+        const lines = n.aliased.map(a => _t('designNoticeAliased', { term: a.term, with: a.with.join(', ') }));
+        if (n.saturated.length > 0) lines.push(_t('designNoticeSaturated', { terms: n.saturated.join(', ') }));
+        return lines;
+      },
+      hasDesignNotice() { return this.designNoticeLines().length > 0; },
+      /** Aliased terms from the last failed fit, for the exclude buttons. */
+      aliasedRows() { return this._aliased; },
+      /** Exclude an aliased term named by the fit error and re-run. */
+      excludeAliased(term) {
+        if (!this.model.excludedTerms.includes(term)) this.model.excludedTerms = [...this.model.excludedTerms, term];
+        this.model.clearDesignPreset();
         this.runAnalysis();
       },
 
@@ -571,6 +595,7 @@ const mod = createModule({
         this._renderGen++;
         this.destroyCharts();
         this._errorText = '';
+        this._aliased = [];
 
         const res = this.model.runAnalysis(sm);
         if (!res.ok) {
@@ -578,6 +603,7 @@ const mod = createModule({
             this._errorText = res.errors.map(e => this.formatPerXError(e)).join('\n');
           } else if (res.errorKey) {
             this._errorText = _t(res.errorKey, res.errorParams || undefined);
+            this._aliased = Array.isArray(res.aliased) ? res.aliased.map(a => ({ term: a.term })) : [];
           }
           this.result = null;
           return;
@@ -671,6 +697,7 @@ const mod = createModule({
           types: ['numeric', 'currency', 'percent', 'date', 'time'],
           minCount: 1,
           onChange: (refs) => {
+            this.model.clearDesignPreset();
             this.model.colRefs = refs.map(r => ({ ...r }));
             if (this.model.yKey && refs.some(r => refToKey(r) === this.model.yKey)) this.model.yKey = null;
             this.refreshDegree();
@@ -1053,6 +1080,9 @@ const mod = createModule({
           if (this.model.activeResult) {
             this.rebuildResult();
             this.$nextTick(() => this.renderActiveChart());
+          } else {
+            // Fresh hand-off (DOE transfer, example) arrives without a result.
+            this.autoRun();
           }
         });
 

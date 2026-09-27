@@ -22,15 +22,10 @@ import { createModule } from '../../core/template-module.js';
 import { State } from './process-capability-model.js';
 import { validate, analyze } from '../../engines/process-capability-engine.js';
 import { ColumnPicker, getColumnValues, discoverColumns } from '../../ui/column-picker.js';
+import { fmt, fmtZ, fmtFraction } from './process-capability-format.js';
 
 /** Auto-run debounce (ms) — matches the legacy behaviour. */
 const AUTORUN_DELAY = 600;
-
-/** @param {number} v @param {number} d @returns {string} */
-function fmt(v, d = 4) {
-  if (v == null || isNaN(v)) return '–';
-  return v.toFixed(d);
-}
 
 const mod = createModule({
   config: {
@@ -149,13 +144,13 @@ const mod = createModule({
           key: 'ppm',
           label: `PPM (${_t('defective')})`,
           value: fmt(r.ppmTotal),
-          sub: _t('perMillion'),
+          sub: `${_t('perMillion')} · ${_t('ppmObservedShort')} ${fmt(r.ppmObservedTotal, 0)} · ${_t('ppmWithinShort')} ${fmt(r.ppmWithinTotal, 0)}`,
         });
         cells.push({
           key: 'sigma',
           label: _t('sigmaLevel'),
-          value: `${fmt(r.sigmaLevel)}σ`,
-          sub: 'Z = 3 · Cpk',
+          value: `${fmtZ(r.sigmaLevel)}σ`,
+          sub: `${_t('zBenchOverall')} ${fmtZ(r.zBenchOverall, 2)} · ${_t('sixSigmaConvention')} ${fmtZ(r.sigmaLevelShifted, 2)}`,
         });
         return cells;
       },
@@ -186,9 +181,27 @@ const mod = createModule({
           r.hasUsl ? { label: 'USL', value: `${fmt(r.usl)} ${unit}` } : null,
           r.T != null ? { label: _t('statTol'), value: `${fmt(r.T)} ${unit}` } : null,
           r.targetVal != null ? { label: _t('statTarget'), value: `${fmt(r.targetVal)} ${unit}` } : null,
-          r.ppmBelowLsl != null ? { label: 'PPM < LSL', value: fmt(r.ppmBelowLsl) } : null,
-          r.ppmAboveUsl != null ? { label: 'PPM > USL', value: fmt(r.ppmAboveUsl) } : null,
         ].filter(Boolean);
+      },
+
+      /** PPM table rows (observed / expected within / expected overall); "—" for a missing limit. */
+      ppmRows() {
+        const r = this.result;
+        if (!r) return [];
+        const cell = (v) => (v == null ? '—' : fmt(v, 2));
+        return [
+          { key: 'observed', label: _t('ppmRowObserved'), below: cell(r.ppmObservedBelowLsl), above: cell(r.ppmObservedAboveUsl), total: cell(r.ppmObservedTotal) },
+          { key: 'within', label: _t('ppmRowWithin'), below: cell(r.ppmWithinBelowLsl), above: cell(r.ppmWithinAboveUsl), total: cell(r.ppmWithinTotal) },
+          { key: 'overall', label: _t('ppmRowOverall'), below: cell(r.ppmBelowLsl), above: cell(r.ppmAboveUsl), total: cell(r.ppmTotal) },
+        ];
+      },
+
+      /** Formula line: Z.bench within = −Φ⁻¹(p < LSL + p > USL) = value. */
+      zBenchLine() {
+        const r = this.result;
+        if (!r) return '';
+        const parts = [r.hasLsl ? 'p(< LSL)' : null, r.hasUsl ? 'p(> USL)' : null].filter(Boolean).join(' + ');
+        return `Z.bench = −Φ⁻¹(${parts}) = −Φ⁻¹(${fmtFraction(r.ppmWithinTotal / 1e6)}) = ${fmtZ(r.zBenchWithin)}`;
       },
 
       // ── Analysis (controller — needs context + live worksheet data) ──

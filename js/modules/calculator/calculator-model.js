@@ -12,7 +12,7 @@ import {
   mean, std as stdSample, median, skewness,
 } from '../../engines/distribution-fit-engine.js';
 import { evalExpr } from '../../engines/expression-eval.js';
-import { sigmaWithinMovingRange } from '../../engines/process-capability-engine.js';
+import { sigmaWithinMovingRange, normalUpperTail, zBench } from '../../engines/process-capability-engine.js';
 import { factorial } from '../../engines/factorial.js';
 export { factorial };
 
@@ -282,7 +282,7 @@ export class State {
       case 'std':
         if (!hasData) return { error: 'needN2' };
         return { value: stdSample(d), symbol: 'σ' };
-      // Cp/Cpk/Sigma: σ within = MR̄/d2 over the dataset in entry order.
+      // Cp/Cpk/Sigma (Z.bench): σ within = MR̄/d2 over the dataset in entry order.
       // Pp/Ppk: overall sample standard deviation (n − 1).
       case 'cp':
         if (!hasData || !hasLimits) return { error: 'needDataAndLimits' };
@@ -301,10 +301,11 @@ export class State {
         return { value: Math.min((usl - m) / (3 * s), (m - lsl) / (3 * s)), symbol: 'Ppk' };
       }
       case 'sigma': {
+        // Z.bench within: out-of-spec fraction of both tails under N(x̄, MR̄/d2).
         if (!hasData || !hasLimits) return { error: 'needDataAndLimits' };
         const m = mean(d), s = sigmaWithinMovingRange(d);
-        const cpk = Math.min((usl - m) / (3 * s), (m - lsl) / (3 * s));
-        return { value: cpk * 3, symbol: 'Sigma' };
+        const p = normalUpperTail((m - lsl) / s) + normalUpperTail((usl - m) / s);
+        return { value: zBench(p), symbol: 'Sigma' };
       }
       case 'dpmo': {
         if (!hasData || !hasLimits) return { error: 'needDataAndLimits' };

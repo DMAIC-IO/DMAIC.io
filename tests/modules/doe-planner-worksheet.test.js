@@ -191,6 +191,16 @@ suite('DoE Worksheet — replicate-aggregate helpers', () => {
 // ─── createExperimentRecord ────────────────────────────────────────
 
 suite('DoE Worksheet — experiment record', () => {
+  test('stores the design model terms in plannedTerms.terms', () => {
+    const { ctx, state } = makeContext();
+    const ref = createDesignWorksheet(ctx, designReplicated, factors, responses, 'My DoE', 'improve', 'exp-43');
+    createExperimentRecord(ctx, 'exp-43', designReplicated, factors, responses, 'My DoE', ref, ['M0', 'M1', 'I0_1']);
+    const pt = state.experiments['exp-43'].plannedTerms;
+    assertEqual(JSON.stringify(pt.terms), JSON.stringify(['M0', 'M1', 'I0_1']));
+    assertEqual('twoFactor' in pt, false);
+    assertEqual('quadratic' in pt, false);
+  });
+
   test('persists record under state.experiments[id] with V0.4 schema', () => {
     const { ctx, state } = makeContext();
     const ref = createDesignWorksheet(ctx, designReplicated, factors, responses, 'My DoE', 'improve', 'exp-42');

@@ -117,7 +117,7 @@
           <!-- Long-term (Pp/Ppk) + PPM + Sigma strip -->
           <div class="dmike-kpi-strip">
             <template x-for="kpi in perfKpis()">
-              <div class="dmike-kpi" :key="kpi.key">
+              <div class="dmike-kpi" :key="kpi.key" :data-kpi="kpi.key">
                 <div class="dmike-kpi-label" x-text="kpi.label"></div>
                 <div class="dmike-kpi-value" x-text="kpi.value"></div>
                 <div class="dmike-kpi-sub" x-text="kpi.sub"></div>
@@ -135,6 +135,23 @@
               <tbody><tr>
                 <template x-for="col in statCols()"><td :key="col.label" x-text="col.value"></td></template>
               </tr></tbody>
+            </table>
+          </div>
+
+          <!-- Nonconforming parts (PPM), Minitab-style -->
+          <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('ppmTitle')"></span></div>
+          <div class="pc__stats-panel">
+            <table class="dmike-table pc__ppm-table">
+              <thead><tr>
+                <th x-text="t('ppmColKind')"></th><th>&lt; LSL</th><th>&gt; USL</th><th x-text="t('ppmColTotal')"></th>
+              </tr></thead>
+              <tbody>
+                <template x-for="row in ppmRows()">
+                  <tr :key="row.key" :data-row="row.key">
+                    <td x-text="row.label"></td><td x-text="row.below"></td><td x-text="row.above"></td><td x-text="row.total"></td>
+                  </tr>
+                </template>
+              </tbody>
             </table>
           </div>
 
@@ -159,6 +176,8 @@
               <p><strong>CPL</strong> = (x̄ − LSL) / (3 · <span x-text="t('sigmaWithinSym')"></span>) = (<span x-text="fmt(result.xbar)"></span> − <span x-text="fmt(result.lsl)"></span>) / (3 · <span x-text="fmt(result.sigmaWithin)"></span>) = <strong x-text="fmt(result.CPL)"></strong></p>
             </template>
 
+            <p><strong x-text="zBenchLine()"></strong></p>
+            <p x-text="t('zBenchNote')"></p>
             <div style="height:12px"></div>
             <p><span class="pc__tag pc__tag--pass">Cpk ≥ 1.33</span> <span x-text="t('interpPass')"></span></p>
             <p><span class="pc__tag pc__tag--warn">1.00 ≤ Cpk &lt; 1.33</span> <span x-text="t('interpWarn')"></span></p>
