@@ -435,7 +435,7 @@
     {
       "id": "cg_edge_constant_values",
       "tier": "edge",
-      "description": "All values identical — sg = 0 (Cg/Cgk degenerate to Infinity, not checked)",
+      "description": "All values identical — sg = 0 (Cg/Cgk are null, overall 'none'; see the noSpread guard in analyze(), not checked here)",
       "inputs": {
         "params": {
           "ref": 50.0,
