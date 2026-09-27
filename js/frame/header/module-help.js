@@ -202,6 +202,7 @@ export function initModuleHelp(
   // module switch; on first open it defaults to the help tab.
   async function populatePanel(preferredTab) {
     const { info, hasHelp, examples, canLoadExample, glossary, scenarios } = _activeContext();
+    const references = info?.instance?.references ? await info.instance.references() : [];
     const tabPref = preferredTab ? { preferredTab } : {};
 
     if (!info) {
@@ -233,6 +234,7 @@ export function initModuleHelp(
       onLoadScenario: loadScenarioAndApply,
       glossary,
       glossaryGet,
+      references,
       ...tabPref,
     });
 
@@ -241,7 +243,7 @@ export function initModuleHelp(
     try {
       const mod = await info.instance.help();
       const helpDef = mod?.default || mod;
-      const node = renderModuleHelp(helpDef, i18n.getLanguage());
+      const node = renderModuleHelp(helpDef, i18n.getLanguage(), references);
       helpPanel.showWithTabs(moduleName, {
         helpNode: node,
         examples: tabExamples,
@@ -250,6 +252,7 @@ export function initModuleHelp(
         onLoadScenario: loadScenarioAndApply,
         glossary,
         glossaryGet,
+        references,
         preferredTab: preferredTab || 'help',
       });
     } catch (err) {
@@ -262,17 +265,28 @@ export function initModuleHelp(
         onLoadScenario: loadScenarioAndApply,
         glossary,
         glossaryGet,
+        references,
         ...tabPref,
       });
     }
   }
+
+  // Inline `{{ref:id}}` citations inside the handbook jump into the
+  // references tab. Delegated on the panel so it survives every re-render.
+  const helpPanelEl = document.getElementById('help-panel');
+  helpPanelEl?.addEventListener('click', (e) => {
+    const link = e.target.closest('[data-reference-id]');
+    if (!link || link.tagName !== 'A') return;
+    e.preventDefault();
+    helpPanel.openReference?.(link.dataset.referenceId);
+  });
 
   btn.addEventListener('click', async () => {
     // Toggle closed only when this panel is already open on one of its own
     // tabs (help / examples / glossary). The standalone glossary button has
     // been removed — all three tabs belong to this single sidebar button.
     const tab = helpPanel.getActiveTab?.();
-    const ownsPanel = helpPanel.isVisible() && (tab === 'help' || tab === 'examples' || tab === 'glossary');
+    const ownsPanel = helpPanel.isVisible() && (tab === 'help' || tab === 'examples' || tab === 'references' || tab === 'glossary');
     if (ownsPanel) {
       helpPanel.hide();
       btn.classList.remove('btn--active');
@@ -291,7 +305,7 @@ export function initModuleHelp(
   // so help / examples / glossary always reflect the active module.
   eventBus.on('module:activated', () => {
     const tab = helpPanel.getActiveTab?.();
-    const ownsPanel = helpPanel.isVisible() && (tab === 'help' || tab === 'examples' || tab === 'glossary');
+    const ownsPanel = helpPanel.isVisible() && (tab === 'help' || tab === 'examples' || tab === 'references' || tab === 'glossary');
     if (ownsPanel) populatePanel(tab);
   });
 
@@ -302,7 +316,7 @@ export function initModuleHelp(
   // closes and the button gives up its active state with it.
   eventBus.on('module:deactivated', () => {
     const tab = helpPanel.getActiveTab?.();
-    const ownsPanel = helpPanel.isVisible() && (tab === 'help' || tab === 'examples' || tab === 'glossary');
+    const ownsPanel = helpPanel.isVisible() && (tab === 'help' || tab === 'examples' || tab === 'references' || tab === 'glossary');
     if (!ownsPanel) return;
     helpPanel.hide();
     btn.classList.remove('btn--active');
@@ -315,7 +329,7 @@ export function initModuleHelp(
   if (helpEl) {
     const observer = new MutationObserver(() => {
       const tab = helpPanel.getActiveTab?.();
-      const ownsPanel = helpPanel.isVisible() && (tab === 'help' || tab === 'examples' || tab === 'glossary');
+      const ownsPanel = helpPanel.isVisible() && (tab === 'help' || tab === 'examples' || tab === 'references' || tab === 'glossary');
       btn.classList.toggle('btn--active', ownsPanel);
     });
     observer.observe(helpEl, { attributes: true, attributeFilter: ['class', 'data-active-tab'] });
