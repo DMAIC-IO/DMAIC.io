@@ -26,6 +26,32 @@ export function parseValues(raw) {
 import { mean, stddev } from './stats-utils.js';
 export { mean, stddev };
 
+import { tPValue } from './math-utils.js';
+
+/**
+ * Tolerance mode: one-sided when exactly one of LSL/USL is a finite number.
+ * @param {number} lsl
+ * @param {number} usl
+ * @returns {'one-sided'|'two-sided'}
+ */
+export function limitMode(lsl, usl) {
+  return Number.isFinite(lsl) !== Number.isFinite(usl) ? 'one-sided' : 'two-sided';
+}
+
+/**
+ * One-sample t-test of the bias against 0 (Minitab type 1 "Test Bias = 0").
+ * @param {number} bias - x̄ − reference
+ * @param {number} sg - sample standard deviation
+ * @param {number} n - number of values
+ * @returns {{ t: number|null, df: number, p: number|null }}
+ */
+export function biasTTest(bias, sg, n) {
+  const df = n - 1;
+  if (!(sg > 0) || n < 2 || !Number.isFinite(bias)) return { t: null, df, p: null };
+  const t = bias / (sg / Math.sqrt(n));
+  return { t, df, p: tPValue(t, df) };
+}
+
 /**
  * Detect measurement resolution from data.
  * Returns the smallest non-zero absolute difference between sorted values.
@@ -50,22 +76,24 @@ export function detectResolution(values) {
  * @param {number} params.lsl - Lower spec limit
  * @param {number} params.usl - Upper spec limit
  * @param {number[]} values - Measurement values
- * @returns {{ valid: boolean, errorKey: string|null, errorVars: object|null }}
+ * @returns {{ valid: boolean, errorKey: string|null, errorVars: object|null, mode?: 'one-sided'|'two-sided' }}
  */
 export function validate(params, values) {
   if (isNaN(params.ref)) {
     return { valid: false, errorKey: 'modules.msa-typ1.errRefMissing', errorVars: null };
   }
-  if (isNaN(params.lsl) || isNaN(params.usl)) {
+  const hasLsl = Number.isFinite(params.lsl);
+  const hasUsl = Number.isFinite(params.usl);
+  if (!hasLsl && !hasUsl) {
     return { valid: false, errorKey: 'modules.msa-typ1.errLimitsMissing', errorVars: null };
   }
-  if (params.usl <= params.lsl) {
+  if (hasLsl && hasUsl && params.usl <= params.lsl) {
     return { valid: false, errorKey: 'modules.msa-typ1.errUslLeqLsl', errorVars: null };
   }
   if (values.length < 25) {
     return { valid: false, errorKey: 'modules.msa-typ1.errTooFewValues', errorVars: { n: values.length } };
   }
-  return { valid: true, errorKey: null, errorVars: null };
+  return { valid: true, errorKey: null, errorVars: null, mode: hasLsl && hasUsl ? 'two-sided' : 'one-sided' };
 }
 
 /**
@@ -75,14 +103,13 @@ export function validate(params, values) {
  * @param {number} params.lsl - Lower specification limit
  * @param {number} params.usl - Upper specification limit
  * @param {number} params.k1 - Tolerance fraction factor (e.g. 0.20)
- * @param {number} params.k2 - Spread coverage factor (e.g. 4)
+ * @param {number} params.k2 - Spread coverage factor (e.g. 3 = 6·s)
  * @param {number[]} values - Measurement values (≥ 25)
  * @returns {object} Analysis results
  */
 export function analyze(params, values) {
   const { ref, lsl, usl, k1, k2 } = params;
   const n = values.length;
-  const T = usl - lsl;
   const xbar = mean(values);
   const sg = stddev(values);
   const xmin = Math.min(...values);
@@ -91,29 +118,9 @@ export function analyze(params, values) {
 
   // Bias
   const bias = xbar - ref;
-  const biasPercent = (bias / T) * 100;
-
-  // Capability indices
-  const Cg = (k1 * T) / (2 * k2 * sg);
-  const Cgk = ((k1 * T / 2) - Math.abs(bias)) / (k2 * sg);
-
-  // Tolerance usage
-  const tolUsage = (2 * k2 * sg / T) * 100;
 
   // Resolution
   const resolution = detectResolution(values);
-  const resPercent = resolution > 0 ? (resolution / T) * 100 : 0;
-
-  // Status
-  const cgStatus = Cg >= 1.33 ? 'pass' : Cg >= 1.0 ? 'warn' : 'fail';
-  const cgkStatus = Cgk >= 1.33 ? 'pass' : Cgk >= 1.0 ? 'warn' : 'fail';
-  const overall = (cgStatus === 'pass' && cgkStatus === 'pass') ? 'pass'
-    : (cgStatus === 'fail' || cgkStatus === 'fail') ? 'fail'
-    : 'warn';
-
-  // k1*T zone bounds
-  const zoneHi = ref + k1 * T / 2;
-  const zoneLo = ref - k1 * T / 2;
 
   // Outlier threshold (3σ from mean)
   const upperThreshold = xbar + 3 * sg;
@@ -128,15 +135,55 @@ export function analyze(params, values) {
     isOutlier: v > upperThreshold || v < lowerThreshold,
   }));
 
-  return {
-    n, T, xbar, sg, xmin, xmax, range,
-    bias, biasPercent,
-    Cg, Cgk, cgStatus, cgkStatus, overall,
-    tolUsage, resolution, resPercent,
-    zoneHi, zoneLo,
-    upperThreshold, lowerThreshold,
-    details,
+  const mode = limitMode(lsl, usl);
+  // range === 0 means the values are bit-for-bit identical — an exact
+  // signal (no summation rounding involved), unlike sg/bias which can carry
+  // floating-point noise around 1e-15 even for constant input.
+  const biasTest = range === 0 ? { t: null, df: n - 1, p: null } : biasTTest(bias, sg, n);
+  const common = {
+    mode, n, xbar, sg, xmin, xmax, range, bias, biasTest, resolution,
+    upperThreshold, lowerThreshold, details,
     params: { ref, lsl, usl, k1, k2 },
+  };
+
+  if (mode === 'one-sided') {
+    return {
+      ...common,
+      T: null, biasPercent: null, Cg: null, Cgk: null,
+      cgStatus: null, cgkStatus: null, overall: 'none',
+      tolUsage: null, varEv: null, varEvBias: null,
+      resPercent: null, zoneHi: null, zoneLo: null,
+    };
+  }
+
+  const T = usl - lsl;
+  const biasPercent = (bias / T) * 100;
+
+  // Capability indices
+  const Cg = (k1 * T) / (2 * k2 * sg);
+  const Cgk = ((k1 * T / 2) - Math.abs(bias)) / (k2 * sg);
+
+  // Tolerance usage / %Var(EV) = 100·k1/Cg, algebraically 2·k2·sg/T
+  const tolUsage = (2 * k2 * sg / T) * 100;
+  const varEvBias = Cgk > 0 ? (100 * k1) / Cgk : null;
+
+  const resPercent = resolution > 0 ? (resolution / T) * 100 : 0;
+
+  // Status
+  const cgStatus = Cg >= 1.33 ? 'pass' : Cg >= 1.0 ? 'warn' : 'fail';
+  const cgkStatus = Cgk >= 1.33 ? 'pass' : Cgk >= 1.0 ? 'warn' : 'fail';
+  const overall = (cgStatus === 'pass' && cgkStatus === 'pass') ? 'pass'
+    : (cgStatus === 'fail' || cgkStatus === 'fail') ? 'fail'
+    : 'warn';
+
+  // k1*T zone bounds
+  const zoneHi = ref + k1 * T / 2;
+  const zoneLo = ref - k1 * T / 2;
+
+  return {
+    ...common,
+    T, biasPercent, Cg, Cgk, cgStatus, cgkStatus, overall,
+    tolUsage, varEv: tolUsage, varEvBias, resPercent, zoneHi, zoneLo,
   };
 }
 
@@ -163,7 +210,7 @@ export function generateExampleData() {
       lsl: 49.95,
       usl: 50.05,
       k1: 0.2,
-      k2: 4,
+      k2: 3,
     },
     values,
   };
