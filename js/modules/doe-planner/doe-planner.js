@@ -63,19 +63,6 @@ const ALGO_ID_DEFF = 'd-efficiency';
 const OPTIMAL = ['dopt', 'aopt', 'gopt'];
 const AUTO_GEN_DELAY = 600; // ms debounce for auto-generation
 
-/** Polynomial term count for k factors at a given degree (intercept incl.). */
-function polyTermCount(k, degree) {
-  let p = 1 + k;
-  if (degree >= 2) { p += k; p += k * (k - 1) / 2; }
-  if (degree >= 3) { p += k; p += k * (k - 1); p += k * (k - 1) * (k - 2) / 6; }
-  return p;
-}
-
-function maxFeasiblePolyDegree(n, k) {
-  for (let d = 3; d >= 2; d--) { if (n > polyTermCount(k, d)) return d; }
-  return 1;
-}
-
 const letter = (i) => String.fromCharCode(65 + i);
 
 const mod = createModule({
@@ -1173,7 +1160,7 @@ const mod = createModule({
 
         const expId = uid();
         const ref = createDesignWorksheet(ctx(), m.design, m.factors, m.responses, m.doeName, 'improve', expId);
-        createExperimentRecord(ctx(), expId, m.design, m.factors, m.responses, m.doeName, ref);
+        createExperimentRecord(ctx(), expId, m.design, m.factors, m.responses, m.doeName, ref, this.modelTerms());
         ref.designSignature = m.designSignature();
         m.worksheetRef = ref;
         m.previewEdits = null;
@@ -1224,7 +1211,7 @@ const mod = createModule({
           m.evaluation = evaluateDesign(m.design.codedMatrix, k, m.design.p, m.design.designType, 0.05, { terms: this.modelTerms() });
           appendDoERowsToWorksheet(ctx(), m.worksheetRef, factors, newRows);
           if (m.worksheetRef.experimentId) {
-            createExperimentRecord(ctx(), m.worksheetRef.experimentId, m.design, m.factors, m.responses, m.doeName, m.worksheetRef);
+            createExperimentRecord(ctx(), m.worksheetRef.experimentId, m.design, m.factors, m.responses, m.doeName, m.worksheetRef, this.modelTerms());
           }
           m.worksheetRef.designSignature = m.designSignature();
           this.save();
@@ -1257,10 +1244,6 @@ const mod = createModule({
         const colRefs = ref.factorColumnIds.map(colId => ({ instanceId: ref.instanceId, sheetId: ref.sheetId, columnId: colId }));
         const respColId = ref.responseColumnIds[m.analysisResponseIdx] || ref.responseColumnIds[0];
         const yKey = `${ref.instanceId}|${ref.sheetId}|${respColId}`;
-        const resp = readResponsesFromWorksheet(ctx(), ref);
-        const nRuns = resp.totalCount / Math.max(ref.responseColumnIds.length, 1);
-        const k = ref.factorColumnIds.length;
-        const polyDegree = maxFeasiblePolyDegree(nRuns, k);
         let phase = 'improve';
         for (const p of Object.keys(sm.get('phases') || {})) {
           const items = sm.get(`phases.${p}`) ?? [];
@@ -1270,7 +1253,8 @@ const mod = createModule({
         const existing = sm.get(`phases.${phase}`) ?? [];
         sm.set(`phases.${phase}`, [...existing, { instanceId: regInstanceId, moduleId: 'regression', order: existing.length, state: {} }]);
         sm.setModuleState(regInstanceId, {
-          colRefs, yKey, regType: 'polynomial', polyDegree,
+          colRefs, yKey, regType: 'polynomial', polyDegree: 1,
+          designTerms: this.modelTerms(),
           confLevel: (sm.get('settings.confidenceLevel') ?? 95) / 100,
           alpha: Number(((100 - (sm.get('settings.confidenceLevel') ?? 95)) / 100).toFixed(4)),
           showCI: true, result: null, perXResults: null, activeXKey: null,

@@ -338,8 +338,9 @@ export function createDesignWorksheet(context, design, factors, responses, doeNa
  * @param {object[]} responses
  * @param {string} doeName
  * @param {WorksheetRef} worksheetRef
+ * @param {string[]} [terms] - Canonical model terms of the design (designModelTerms)
  */
-export function createExperimentRecord(context, experimentId, design, factors, responses, doeName, worksheetRef) {
+export function createExperimentRecord(context, experimentId, design, factors, responses, doeName, worksheetRef, terms = []) {
   const { stateManager: sm } = context;
 
   // Replicate groups: indices (0-based) of all rows that share the same coded
@@ -393,8 +394,7 @@ export function createExperimentRecord(context, experimentId, design, factors, r
     }),
     plannedTerms: {
       linear:    true,
-      twoFactor: Boolean(design.twoFactor),
-      quadratic: Boolean(design.quadratic),
+      terms:     [...terms],
       blockColumn: false,
     },
     aliasing: design.aliases ?? null,
