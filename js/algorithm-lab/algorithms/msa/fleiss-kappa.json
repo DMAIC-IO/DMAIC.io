@@ -7,7 +7,7 @@
   "category": "msa",
   "subcategory": "typ5",
   "status": "validated",
-  "version": "1.0.0",
+  "version": "2.0.0",
 
   "description": {
     "short": {
@@ -15,8 +15,8 @@
       "en": "{{term:fleiss-kappa}} — overall agreement of two or more raters for categorical data."
     },
     "long": {
-      "de": "Fleiss κ verallgemeinert Cohens Idee auf mehr als zwei Prüfer und beliebige Kategorien. Grundlage ist die pro Teil beobachtete Paar-Übereinstimmung P_i, die über alle Teile gemittelt und ins Verhältnis zur erwarteten Zufallsübereinstimmung P_e (aus den Klassen-Randanteilen) gesetzt wird. Die klassische Formel setzt gleich viele Bewertungen pro Teil voraus (`fleiss-1971`); bei ungleichen Prüfer-Zahlen pro Teil wechselt Qprovement auf die {{term:kappa}}-Variante nach Randolph (free-marginal), für die es keinen geschlossenen SE-Ausdruck gibt — Standardfehler und Konfidenzintervall sind dann NaN.",
-      "en": "Fleiss κ extends Cohen's idea to more than two raters and any number of categories. It averages the per-subject pairwise agreement P_i and normalises it against the chance agreement P_e derived from the class marginals. The classical formula (`fleiss-1971`) requires an equal number of ratings per subject; when rater counts differ across subjects Qprovement switches to the {{term:kappa}} variant per Randolph (free-marginal), for which no closed-form SE exists — SE and CI are then NaN."
+      "de": "Fleiss κ verallgemeinert Cohens Idee auf mehr als zwei Prüfer und beliebige Kategorien. Grundlage ist die pro Teil beobachtete Paar-Übereinstimmung P_i, die über alle Teile gemittelt und ins Verhältnis zur erwarteten Zufallsübereinstimmung P_e (aus den Klassen-Randanteilen) gesetzt wird. Die klassische Formel setzt gleich viele Bewertungen pro Teil voraus (`fleiss-1971`); bei ungleichen Prüfer-Zahlen pro Teil wechselt Qprovement auf die {{term:kappa}}-Variante nach Randolph (free-marginal), für die es keinen geschlossenen SE-Ausdruck gibt — SE₀, z und p sind dann NaN. Der geschlossene Standardfehler nach Fleiss (1971) gilt nur unter H₀ κ = 0; er speist deshalb den einseitigen z-Test und kein Konfidenzintervall (Minitab weist ebenfalls keines aus).",
+      "en": "Fleiss κ extends Cohen's idea to more than two raters and any number of categories. It averages the per-subject pairwise agreement P_i and normalises it against the chance agreement P_e derived from the class marginals. The classical formula (`fleiss-1971`) requires an equal number of ratings per subject; when rater counts differ across subjects Qprovement switches to the {{term:kappa}} variant per Randolph (free-marginal), for which no closed-form SE exists — SE₀, z and p are then NaN. The closed-form Fleiss (1971) standard error holds under H₀ κ = 0 only; it therefore feeds the one-sided z-test and no confidence interval (Minitab reports none either)."
     }
   },
 
@@ -61,6 +61,22 @@
           "de": "Free-marginal-Variante bei ungleichen n_i·; K = Anzahl Klassen",
           "en": "Free-marginal variant for unequal n_i·; K = number of classes"
         }
+      },
+      {
+        "label": "SE₀(κ)",
+        "latex": "\\mathrm{SE}_0^2 = \\frac{2}{N n (n-1)} \\cdot \\frac{P_e - (2n-3) P_e^2 + 2(n-2) \\sum_j \\bar p_j^{\\,3}}{(1 - P_e)^2}",
+        "description": {
+          "de": "Standardfehler unter H₀ κ = 0 nach Fleiss (1971), n = Bewertungen je Teil; nur für den Test",
+          "en": "Standard error under H₀ κ = 0 per Fleiss (1971), n = ratings per subject; used for the test only"
+        }
+      },
+      {
+        "label": "z, p",
+        "latex": "z = \\frac{\\kappa}{\\mathrm{SE}_0}, \\quad p = 1 - \\Phi(z)",
+        "description": {
+          "de": "Einseitiger Test H₀ κ = 0 gegen κ > 0 (wie Minitab)",
+          "en": "One-sided test of H₀ κ = 0 against κ > 0 (as in Minitab)"
+        }
       }
     ],
     "assumptions": [
@@ -79,8 +95,8 @@
     ],
     "limitations": [
       {
-        "de": "Bei stark ungleichen n_i· (Randolph-Fallback) sind SE und KI nicht definiert — nur der Punktschätzer κ ist verfügbar",
-        "en": "For strongly unequal n_i· (Randolph fallback) SE and CI are undefined — only the point estimate κ is available"
+        "de": "Bei ungleichen n_i· (Randolph-Fallback) ist kein Test definiert — nur der Punktschätzer κ ist verfügbar",
+        "en": "For unequal n_i· (Randolph fallback) no test is defined — only the point estimate κ is available"
       },
       {
         "de": "Fleiss κ ist definitionsgemäß unweighted — bei ordinalen Skalen kaschiert es kleine Fehlklassifikationen",
@@ -111,8 +127,8 @@
           "type": "object",
           "required": true,
           "description": {
-            "de": "Objekt mit ratings (Array-of-Arrays, ein Eintrag pro Teil × Prüfer) und alpha",
-            "en": "Object with ratings (array-of-arrays, one row per subject × rater) and alpha"
+            "de": "Objekt mit ratings (Array-of-Arrays, ein Eintrag pro Teil × Prüfer)",
+            "en": "Object with ratings (array-of-arrays, one row per subject × rater)"
           }
         }
       ],
@@ -120,8 +136,9 @@
         "type": "object",
         "properties": {
           "kappa":  { "type": "number", "description": { "de": "Fleiss-Kappa-Koeffizient", "en": "Fleiss kappa coefficient" } },
-          "se":     { "type": "number", "description": { "de": "Standardfehler (NaN bei Randolph)", "en": "Standard error (NaN for Randolph)" } },
-          "ci95":   { "type": "array",  "description": { "de": "95 %-KI (NaN bei Randolph)", "en": "95 % CI (NaN for Randolph)" } },
+          "se0":    { "type": "number", "description": { "de": "Standardfehler unter H₀ κ = 0 (NaN bei Randolph)", "en": "Standard error under H₀ κ = 0 (NaN for Randolph)" } },
+          "z":      { "type": "number", "description": { "de": "Teststatistik κ / SE₀ (NaN bei Randolph)", "en": "Test statistic κ / SE₀ (NaN for Randolph)" } },
+          "p":      { "type": "number", "description": { "de": "Einseitiger p-Wert für H₀ κ = 0 (NaN bei Randolph)", "en": "One-sided p value for H₀ κ = 0 (NaN for Randolph)" } },
           "method": { "type": "string", "description": { "de": "\"fleiss-1971\" oder \"randolph\"", "en": "\"fleiss-1971\" or \"randolph\"" } }
         }
       }
@@ -142,25 +159,17 @@
           },
           "parse_as": "json",
           "required": true
-        },
-        {
-          "name": "alpha",
-          "label": { "de": "Signifikanzniveau α", "en": "Significance level α" },
-          "type": "number",
-          "placeholder": { "de": "Standard: 0.05", "en": "Default: 0.05" },
-          "parse_as": "number",
-          "required": false,
-          "default": 0.05
         }
       ]
     },
     "output_schema": {
-      "display_fields": ["kappa", "se", "ci95", "method"],
+      "display_fields": ["kappa", "se0", "z", "p", "method"],
       "primary_field": "kappa",
       "format": {
         "kappa":  { "decimals": 6, "label": "κ" },
-        "se":     { "decimals": 6, "label": "SE(κ)" },
-        "ci95":   { "decimals": 6, "label": { "de": "95 %-KI", "en": "95 % CI" } },
+        "se0":    { "decimals": 6, "label": "SE₀(κ)" },
+        "z":      { "decimals": 4, "label": "z" },
+        "p":      { "decimals": 8, "label": "p" },
         "method": { "label": { "de": "Methode", "en": "Method" } }
       }
     }
@@ -168,7 +177,17 @@
 
   "changelog": [
     {
-      "version": "1.0.0",
+      "version": "2.0.0",
+      "date": "2026-09-28",
+      "type": "fix",
+      "description": {
+        "de": "Konfidenzintervall entfernt: der Fleiss-Standardfehler gilt nur unter H₀ κ = 0. Stattdessen SE₀, z und einseitiger p-Wert",
+        "en": "Removed the confidence interval: the Fleiss standard error holds under H₀ κ = 0 only. Reports SE₀, z and a one-sided p value instead"
+      },
+      "breaking": true
+    },
+    {
+      "version": "2.0.0",
       "date": "2026-07-16",
       "type": "initial",
       "description": {

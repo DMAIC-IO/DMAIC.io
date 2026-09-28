@@ -187,12 +187,13 @@ suite('msa-typ5-engine — fleissKappa', () => {
     const c = fx.test_cases.find(x => x.id === '3rater-balanced');
     const byPart = new Map();
     c.inputs.ratings.forEach((row, i) => byPart.set(i + 1, row));
-    const r = fleissKappa(byPart, { levels: ['ok', 'nok'], alpha: 0.05 });
+    const r = fleissKappa(byPart, { levels: ['ok', 'nok'] });
     assertClose(r.kappa, c.expected.kappa, 1e-9);
     assert(r.method === 'fleiss-1971');
-    assertClose(r.se, c.expected.se, 1e-9);
-    assertClose(r.ci95[0], c.expected.ci95[0], 1e-9);
-    assertClose(r.ci95[1], c.expected.ci95[1], 1e-9);
+    assertClose(r.se0, c.expected.se0, 1e-9);
+    assertClose(r.z, c.expected.z, 1e-8);
+    assertClose(r.p, c.expected.p, Math.max(1e-12, c.expected.p * 1e-6));
+    assert(!('ci95' in r) && !('se' in r), 'no CI from the H0 SE any more');
   });
 
   test('3rater-unbalanced → Randolph, method vermerkt, SE = NaN', async () => {
@@ -200,13 +201,64 @@ suite('msa-typ5-engine — fleissKappa', () => {
     const c = fx.test_cases.find(x => x.id === '3rater-unbalanced-randolph');
     const byPart = new Map();
     c.inputs.ratings.forEach((row, i) => byPart.set(i + 1, row));
-    const r = fleissKappa(byPart, { levels: ['ok', 'nok'], alpha: 0.05 });
+    const r = fleissKappa(byPart, { levels: ['ok', 'nok'] });
     assertClose(r.kappa, c.expected.kappa, 1e-9);
     assert(r.method === 'randolph');
-    // Fixture serialisiert NaN als String "NaN" — assertClose kann das.
-    assertClose(r.se, c.expected.se, 1e-9);
-    assertClose(r.ci95[0], c.expected.ci95[0], 1e-9);
-    assertClose(r.ci95[1], c.expected.ci95[1], 1e-9);
+    assert(Number.isNaN(r.se0) && Number.isNaN(r.z) && Number.isNaN(r.p));
+  });
+
+  test('within-appraiser-3trials (trials as raters) matches the reference', async () => {
+    const fx = await loadFixture('fleiss-kappa');
+    const c = fx.test_cases.find(x => x.id === 'within-appraiser-3trials');
+    const byPart = new Map();
+    c.inputs.ratings.forEach((row, i) => byPart.set(i + 1, row));
+    const r = fleissKappa(byPart, { levels: ['ok', 'nok'] });
+    assertClose(r.kappa, c.expected.kappa, 1e-9);
+    assertClose(r.se0, c.expected.se0, 1e-9);
+    assertClose(r.p, c.expected.p, Math.max(1e-12, c.expected.p * 1e-6));
+  });
+});
+
+// ─── analyze: κ within appraiser, z/p on every κ ─────────────
+
+suite('msa-typ5-engine — analyze (withinKappa, z/p)', () => {
+  const mk = (rows) => rows.map(([part, appraiser, rep, value]) => ({ part, appraiser, rep, value }));
+  const data = mk([
+    [1, 'A', 1, 'ok'],  [1, 'A', 2, 'ok'],  [1, 'B', 1, 'ok'],  [1, 'B', 2, 'nok'],
+    [2, 'A', 1, 'nok'], [2, 'A', 2, 'nok'], [2, 'B', 1, 'nok'], [2, 'B', 2, 'nok'],
+    [3, 'A', 1, 'ok'],  [3, 'A', 2, 'nok'], [3, 'B', 1, 'ok'],  [3, 'B', 2, 'ok'],
+    [4, 'A', 1, 'nok'], [4, 'A', 2, 'nok'], [4, 'B', 1, 'nok'], [4, 'B', 2, 'ok'],
+  ]);
+  const levels = ['ok', 'nok'];
+
+  test('balanced trials → fleiss-1971 on the appraiser\'s own trials, with z/p', () => {
+    const r = analyze({ type: 'binary', levels, ratings: data, references: null });
+    const w = r.perAppraiser.A.withinKappa;
+    const byPart = new Map([[1, ['ok', 'ok']], [2, ['nok', 'nok']], [3, ['ok', 'nok']], [4, ['nok', 'nok']]]);
+    const ref = fleissKappa(byPart, { levels });
+    assertClose(w.kappa, ref.kappa, 1e-12);
+    assert(w.method === 'fleiss-1971' && Number.isFinite(w.z) && Number.isFinite(w.p));
+  });
+
+  test('unequal trial counts → randolph, z/p NaN', () => {
+    const r = analyze({ type: 'binary', levels,
+      ratings: [...data, { part: 1, appraiser: 'A', rep: 3, value: 'nok' }], references: null });
+    assert(r.perAppraiser.A.withinKappa.method === 'randolph');
+    assert(Number.isNaN(r.perAppraiser.A.withinKappa.z));
+  });
+
+  test('single trial per part → withinKappa absent', () => {
+    const r = analyze({ type: 'binary', levels, ratings: data.filter(x => x.rep === 1), references: null });
+    assert(!('withinKappa' in r.perAppraiser.A));
+  });
+
+  test('pairwise, vs-reference and Fleiss κ carry se0/z/p', () => {
+    const refs = { 1: 'ok', 2: 'nok', 3: 'ok', 4: 'nok' };
+    const r = analyze({ type: 'binary', levels, ratings: data, references: refs });
+    const pw = r.betweenAppraisers.pairwiseCohenKappa['A|B'];
+    assert(['se0', 'z', 'p'].every(k => k in pw));
+    assert(['se0', 'z', 'p'].every(k => k in r.perAppraiser.A.vsReference.kappa));
+    assert(['se0', 'z', 'p'].every(k => k in r.betweenAppraisers.fleissKappa));
   });
 });
 

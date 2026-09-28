@@ -194,19 +194,21 @@ function zQuantile(p) {
  *   P_i = (Σ_j n_ij² − n_i·) / (n_i· (n_i· − 1))
  *   P̄ = mean(P_i);  p̄_j = Σ_i n_ij / (N · n̄);  P_e = Σ_j p̄_j²
  *   κ = (P̄ − P_e) / (1 − P_e)   — Fleiss 1971 SE geschlossen.
+ *   The closed-form SE holds under H0 κ = 0 only, so it feeds the one-sided
+ *   z-test (se0/z/p) and no confidence interval (Minitab reports none either).
  *
  * Unbalanced:
  *   Randolph free-marginal: P_e = 1/k → κ = (K·P̄ − 1) / (K − 1),
  *   angewandt via allgemeiner Form (P̄ − 1/k) / (1 − 1/k). Kein
- *   geschlossener SE-Ausdruck → se/ci95 = NaN. Matches the same
+ *   geschlossener SE-Ausdruck → se0/z/p = NaN. Matches the same
  *   convention the fixture generator uses (`randolph` method).
  *
  * @param {Map<any, Array>} byPart Bewertungen je Teil (Rater-Dimension flach).
- * @param {object} opts {levels, alpha}
- * @returns {{kappa: number, se: number, ci95: [number, number], method: string}}
+ * @param {object} opts {levels}
+ * @returns {{kappa: number, se0: number, z: number, p: number, method: string}}
  */
 export function fleissKappa(byPart, opts) {
-  const { levels, alpha } = opts;
+  const { levels } = opts;
   const k = levels.length;
   const idx = new Map(levels.map((v, i) => [v, i]));
   const parts = [...byPart.keys()];
@@ -220,7 +222,7 @@ export function fleissKappa(byPart, opts) {
   const balanced = rowSums.every(s => s === rowSums[0]);
   const method = balanced ? 'fleiss-1971' : 'randolph';
 
-  let kappa, se = NaN, ci95 = [NaN, NaN];
+  let kappa, se0 = NaN;
   if (balanced) {
     const n = rowSums[0];
     const P_i = table.map(row => {
@@ -241,9 +243,7 @@ export function fleissKappa(byPart, opts) {
     const varK = (2 / (N * n * (n - 1))) *
                  (sq2 - (2 * n - 3) * sq2 * sq2 + 2 * (n - 2) * sq3) /
                  ((1 - sq2) ** 2);
-    se = Math.sqrt(varK);
-    const z = zQuantile(1 - alpha / 2);
-    ci95 = [kappa - z * se, kappa + z * se];
+    se0 = varK > 0 ? Math.sqrt(varK) : NaN;
   } else {
     // Randolph: uniform marginal → P_e = 1/k
     const P_i = table.map((row, i) => {
@@ -256,7 +256,8 @@ export function fleissKappa(byPart, opts) {
     const P_e = 1 / k;
     kappa = (P_bar - P_e) / (1 - P_e);
   }
-  return { kappa, se, ci95, method };
+  const { z, p } = kappaTest(kappa, se0);
+  return { kappa, se0, z, p, method };
 }
 
 /**
@@ -493,6 +494,18 @@ export function analyze(input) {
     perAppr[a] = { ...rep };
   }
 
+  // ─── κ within appraiser: the trials act as raters (Minitab "Within Appraisers") ───
+  for (const a of appraisers) {
+    const byPartA = new Map();
+    for (const r of ratings) {
+      if (r.appraiser !== a) continue;
+      if (!byPartA.has(r.part)) byPartA.set(r.part, []);
+      byPartA.get(r.part).push(r.value);
+    }
+    for (const [p, vals] of byPartA) if (vals.length < 2) byPartA.delete(p);
+    if (byPartA.size > 0) perAppr[a].withinKappa = fleissKappa(byPartA, { levels });
+  }
+
   // ─── Effektivität, Miss/FA, κ vs. Referenz ───
   if (hasReference) {
     const eff = effectiveness(ratings, references, { alpha, ambiguousParts });
@@ -523,6 +536,9 @@ export function analyze(input) {
         perAppr[a].vsReference.kappa = {
           kappa: kappaObj.kappa,
           se: kappaObj.se,
+          se0: kappaObj.se0,
+          z: kappaObj.z,
+          p: kappaObj.p,
           ci95: kappaObj.ci95,
           method: kappaObj.method,
         };
@@ -549,6 +565,9 @@ export function analyze(input) {
       pairwise[`${A}|${B}`] = {
         kappa: kappaObj.kappa,
         se: kappaObj.se,
+        se0: kappaObj.se0,
+        z: kappaObj.z,
+        p: kappaObj.p,
         ci95: kappaObj.ci95,
         method: kappaObj.method,
         confusion: { rows: levels.slice(), cols: levels.slice(), counts: kappaObj.confusion },
@@ -559,7 +578,7 @@ export function analyze(input) {
   // Fleiss κ (alle Prüfer × Wiederholungen)
   const byPart = new Map();
   for (const p of parts) byPart.set(p, ratings.filter(r => r.part === p).map(r => r.value));
-  const fleiss = fleissKappa(byPart, { levels, alpha });
+  const fleiss = fleissKappa(byPart, { levels });
 
   // Signal Detection (nur binär mit Referenz)
   let sd = null;

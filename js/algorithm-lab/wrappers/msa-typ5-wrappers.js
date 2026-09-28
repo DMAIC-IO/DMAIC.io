@@ -124,16 +124,16 @@ export function weightedKappaLab(inputs) {
  * (eine Zeile pro Teil, eine Spalte pro Prüfer) in die Map-Struktur,
  * die die Engine erwartet. Automatisches Randolph-Fallback für
  * unausgeglichene Rater-Zahlen erfolgt in der Engine selbst.
- * Fixture-Input: `{variant:'fleiss', ratings: [[...], ...], alpha}`.
+ * Fixture-Input: `{variant:'fleiss', ratings: [[...], ...]}` (alpha is ignored — Fleiss κ has no CI).
  * @param {object} inputs
- * @returns {{kappa, se, ci95, method}}
+ * @returns {{kappa, se0, z, p, method}}
  */
 export function fleissKappaLab(inputs) {
-  const { ratings, alpha = 0.05 } = inputs;
+  const { ratings } = inputs;
   const levels = _sortedLevels(...ratings);
   const byPart = new Map();
   ratings.forEach((row, i) => byPart.set(i, row));
-  return fleissKappa(byPart, { levels, alpha });
+  return fleissKappa(byPart, { levels });
 }
 
 /**
