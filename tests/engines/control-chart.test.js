@@ -3,7 +3,7 @@
  * Validates I-MR, X̄-R, X̄-S control limits, Nelson Rules, and Cp/Cpk.
  */
 
-import { suite, test, assertAlmostEqual, assertEqual } from '../test-utils.js';
+import { suite, test, assertAlmostEqual, assertEqual, assertDeepEqual } from '../test-utils.js';
 import {
   computeIMR,
   computeXbarR,
@@ -164,5 +164,61 @@ suite('Control Charts — capability σ of individuals', () => {
     const out = capabilitySigma('xbar-r', [0.1, 0.2], 4);
     assertAlmostEqual(out[0], 0.2, 1e-12);
     assertAlmostEqual(out[1], 0.4, 1e-12);
+  });
+});
+
+/** Alternating series around 0: +1, -1, +1, … (length n). */
+function alternating(n) {
+  return Array.from({ length: n }, (_, i) => (i % 2 === 0 ? 1 : -1));
+}
+
+/** Sorted, de-duplicated indices flagged for one rule. */
+function flagged(values, ruleId) {
+  return [...new Set(
+    evaluateNelsonRules(values, 0, 1, [ruleId])
+      .filter(v => v.ruleId === ruleId)
+      .map(v => v.index),
+  )].sort((a, b) => a - b);
+}
+
+const range = (a, b) => Array.from({ length: b - a + 1 }, (_, i) => a + i);
+
+suite('Control Charts — Nelson tests 4, 7, 8 (hand cases, Nelson 1984 / Minitab)', () => {
+  test('rule 4: 13 alternating points → no signal', () => {
+    assertDeepEqual(flagged(alternating(13), 4), []);
+  });
+  test('rule 4: 14 alternating points → all 14 flagged', () => {
+    assertDeepEqual(flagged(alternating(14), 4), range(0, 13));
+  });
+  test('rule 4: 15 alternating points → all 15 flagged', () => {
+    assertDeepEqual(flagged(alternating(15), 4), range(0, 14));
+  });
+  test('rule 4: a tie in the middle breaks the run', () => {
+    // 7 alternating, then a repeat of the previous value, then 7 alternating
+    const v = [...alternating(7), 1, ...alternating(7).map(x => -x)];
+    assertDeepEqual(flagged(v, 4), []);
+  });
+  test('rule 4: null breaks the run', () => {
+    const v = [...alternating(7), null, ...alternating(7)];
+    assertDeepEqual(flagged(v, 4), []);
+  });
+  test('rule 7: 14 points within 1σ → no signal', () => {
+    assertDeepEqual(flagged(Array(14).fill(0.5), 7), []);
+  });
+  test('rule 7: 15 points within 1σ → all 15 flagged', () => {
+    assertDeepEqual(flagged(Array(15).fill(0.5), 7), range(0, 14));
+  });
+  test('rule 7: a point exactly at 1σ counts as inside', () => {
+    const v = [...Array(7).fill(0.5), 1, ...Array(7).fill(-0.5)];
+    assertDeepEqual(flagged(v, 7), range(0, 14));
+  });
+  test('rule 8: 7 points beyond 1σ (both sides) → no signal', () => {
+    assertDeepEqual(flagged([1.5, -1.5, 1.5, -1.5, 1.5, -1.5, 1.5], 8), []);
+  });
+  test('rule 8: 8 points beyond 1σ (both sides) → all 8 flagged', () => {
+    assertDeepEqual(flagged([1.5, -1.5, 1.5, -1.5, 1.5, -1.5, 1.5, -1.5], 8), range(0, 7));
+  });
+  test('rule 8: a point exactly at 1σ is not beyond', () => {
+    assertDeepEqual(flagged([1.5, -1.5, 1.5, -1.5, 1, 1.5, -1.5, 1.5, -1.5], 8), []);
   });
 });

@@ -481,6 +481,7 @@ export function evaluateNelsonRules(values, cl, sigma, enabledRules) {
   }
 
   // Rule 4: 14 alternating up/down
+  // `alt` counts direction changes, i.e. points − 1: 14 points → alt = 13.
   if (enabled.has(4)) {
     let alt = 1;
     for (let i = 2; i < n; i++) {
@@ -489,7 +490,7 @@ export function evaluateNelsonRules(values, cl, sigma, enabledRules) {
       const d2v = values[i] - values[i - 1];
       if ((d1 > 0 && d2v < 0) || (d1 < 0 && d2v > 0)) alt++;
       else alt = 1;
-      if (alt >= 14) { for (let j = i - 13; j <= i; j++) violations.push({ index: j, ruleId: 4 }); }
+      if (alt >= 13) { for (let j = i - 13; j <= i; j++) violations.push({ index: j, ruleId: 4 }); }
     }
   }
 
