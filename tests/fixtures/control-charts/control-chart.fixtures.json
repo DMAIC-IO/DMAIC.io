@@ -691,6 +691,197 @@
       }
     },
     {
+      "id": "cc_nelson_rule4_13_alternating_none",
+      "tier": "edge",
+      "description": "Nelson Rule 4 — 13 alternating points do not signal (boundary, Minitab: 14 points)",
+      "inputs": {
+        "mode": "nelson",
+        "cl": 10,
+        "sigma": 1,
+        "enabledRules": [
+          4
+        ],
+        "values": [
+          10.5,
+          9.5,
+          10.5,
+          9.5,
+          10.5,
+          9.5,
+          10.5,
+          9.5,
+          10.5,
+          9.5,
+          10.5,
+          9.5,
+          10.5
+        ]
+      },
+      "expected": {
+        "violationCount": 0,
+        "rulesTriggered": []
+      }
+    },
+    {
+      "id": "cc_nelson_rule4_14_alternating",
+      "tier": "standard",
+      "description": "Nelson Rule 4 — 14 alternating points signal, all 14 flagged",
+      "inputs": {
+        "mode": "nelson",
+        "cl": 10,
+        "sigma": 1,
+        "enabledRules": [
+          4
+        ],
+        "values": [
+          10.5,
+          9.5,
+          10.5,
+          9.5,
+          10.5,
+          9.5,
+          10.5,
+          9.5,
+          10.5,
+          9.5,
+          10.5,
+          9.5,
+          10.5,
+          9.5
+        ]
+      },
+      "expected": {
+        "violationCount": 14,
+        "rulesTriggered": [
+          4
+        ]
+      }
+    },
+    {
+      "id": "cc_nelson_rule7_14_zone_c_none",
+      "tier": "edge",
+      "description": "Nelson Rule 7 — 14 points within 1σ do not signal (boundary, 15 points)",
+      "inputs": {
+        "mode": "nelson",
+        "cl": 10,
+        "sigma": 1,
+        "enabledRules": [
+          7
+        ],
+        "values": [
+          10.5,
+          9.6,
+          10.2,
+          9.8,
+          10.4,
+          9.7,
+          10.1,
+          9.9,
+          10.3,
+          9.5,
+          10.6,
+          9.4,
+          10.2,
+          9.8
+        ]
+      },
+      "expected": {
+        "violationCount": 0,
+        "rulesTriggered": []
+      }
+    },
+    {
+      "id": "cc_nelson_rule7_15_zone_c",
+      "tier": "standard",
+      "description": "Nelson Rule 7 — 15 points within 1σ signal, all 15 flagged",
+      "inputs": {
+        "mode": "nelson",
+        "cl": 10,
+        "sigma": 1,
+        "enabledRules": [
+          7
+        ],
+        "values": [
+          10.5,
+          9.6,
+          10.2,
+          9.8,
+          10.4,
+          9.7,
+          10.1,
+          9.9,
+          10.3,
+          9.5,
+          10.6,
+          9.4,
+          10.2,
+          9.8,
+          10.1
+        ]
+      },
+      "expected": {
+        "violationCount": 15,
+        "rulesTriggered": [
+          7
+        ]
+      }
+    },
+    {
+      "id": "cc_nelson_rule8_7_outside_c_none",
+      "tier": "edge",
+      "description": "Nelson Rule 8 — 7 points beyond 1σ on both sides do not signal (boundary, 8 points)",
+      "inputs": {
+        "mode": "nelson",
+        "cl": 10,
+        "sigma": 1,
+        "enabledRules": [
+          8
+        ],
+        "values": [
+          11.5,
+          8.5,
+          11.4,
+          8.6,
+          11.6,
+          8.4,
+          11.5
+        ]
+      },
+      "expected": {
+        "violationCount": 0,
+        "rulesTriggered": []
+      }
+    },
+    {
+      "id": "cc_nelson_rule8_8_outside_c",
+      "tier": "standard",
+      "description": "Nelson Rule 8 — 8 points beyond 1σ on both sides signal, all 8 flagged",
+      "inputs": {
+        "mode": "nelson",
+        "cl": 10,
+        "sigma": 1,
+        "enabledRules": [
+          8
+        ],
+        "values": [
+          11.5,
+          8.5,
+          11.4,
+          8.6,
+          11.6,
+          8.4,
+          11.5,
+          8.5
+        ]
+      },
+      "expected": {
+        "violationCount": 8,
+        "rulesTriggered": [
+          8
+        ]
+      }
+    },
+    {
       "id": "cc_nelson_no_violations",
       "tier": "edge",
       "description": "Well-behaved data — zero violations with all rules enabled",
