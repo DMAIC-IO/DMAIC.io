@@ -7,6 +7,8 @@
  * Spec: docs/superpowers/specs/2026-07-15-msa-typ5-design.md
  */
 
+import { erfc } from './math-utils.js';
+
 export const ERR = {
   NO_RATINGS:               'E_NO_RATINGS',
   TOO_FEW_PARTS:            'E_TOO_FEW_PARTS',
@@ -90,7 +92,8 @@ export function validate(input) {
  * @param {Array} a First rater's ratings, length N.
  * @param {Array} b Second rater's ratings, length N (same order as a).
  * @param {object} opts {levels: Array, weights: null|'linear'|'quadratic', alpha: number}
- * @returns {{kappa: number, se: number, ci95: [number, number], method: string, confusion: number[][], levels: Array}}
+ * @returns {{kappa: number, se: number, se0: number, z: number, p: number, ci95: [number, number], method: string, confusion: number[][], levels: Array}}
+ *   se0/z/p: one-sided test of H0 κ = 0 (see kappaTest); NaN when p_e = 1.
  */
 export function cohenKappa(a, b, opts) {
   const levels = opts.levels;
@@ -120,15 +123,42 @@ export function cohenKappa(a, b, opts) {
   // Fleiss/Cohen/Everitt (1969) — Standard-SE für (un)gewichtete κ auf Basis
   // der beobachteten Übereinstimmung; deckt sich mit sklearns z-KI-Formel.
   const se = pe < 1 ? Math.sqrt(po * (1 - po) / (N * (1 - pe) ** 2)) : 0;
-  const z = zQuantile(1 - opts.alpha / 2);
+  const zq = zQuantile(1 - opts.alpha / 2);
+  // SE under H0 (κ = 0), Fleiss, Cohen & Everitt (1969) — used for the z-test only:
+  // Var0 = [Σ p_i· p_·j (w_ij − (w̄_i· + w̄_·j))² − p_e²] / (N (1 − p_e)²)
+  let se0 = NaN;
+  if (pe < 1) {
+    const wRow = row.map((_, i) => col.reduce((s, cj, j) => s + cj * w[i][j], 0));
+    const wCol = col.map((_, j) => row.reduce((s, ri, i) => s + ri * w[i][j], 0));
+    let acc = 0;
+    for (let i = 0; i < k; i++) for (let j = 0; j < k; j++) {
+      acc += row[i] * col[j] * (w[i][j] - (wRow[i] + wCol[j])) ** 2;
+    }
+    const v0 = (acc - pe * pe) / (N * (1 - pe) ** 2);
+    se0 = v0 > 0 ? Math.sqrt(v0) : NaN;
+  }
+  const { z, p } = kappaTest(kappa, se0);
   const method = opts.weights ? `weighted-${opts.weights}` : 'cohen';
   return {
-    kappa, se,
-    ci95: [kappa - z * se, kappa + z * se],
+    kappa, se, se0, z, p,
+    ci95: [kappa - zq * se, kappa + zq * se],
     method,
     confusion: cm,
     levels: levels.slice(),
   };
+}
+
+/**
+ * One-sided test of H0: κ = 0 against κ > 0.
+ * z = κ / SE₀, p = 1 − Φ(z) = ½·erfc(z/√2) (accurate in the upper tail).
+ * @param {number} kappa
+ * @param {number} se0 Standard error of κ under H0.
+ * @returns {{z: number, p: number}} Both NaN when κ is not finite or se0 is not finite / ≤ 0.
+ */
+export function kappaTest(kappa, se0) {
+  if (!Number.isFinite(kappa) || !Number.isFinite(se0) || se0 <= 0) return { z: NaN, p: NaN };
+  const z = kappa / se0;
+  return { z, p: 0.5 * erfc(z / Math.SQRT2) };
 }
 
 /**

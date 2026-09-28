@@ -5,7 +5,7 @@
  */
 
 import { suite, test, assert, assertClose } from '../test-utils.js';
-import { validate, ERR, WARN, cohenKappa, fleissKappa, wilsonCI, effectiveness, missAndFA, signalDetection, deriveConsensus, analyze } from '../../js/engines/msa-typ5-engine.js';
+import { validate, ERR, WARN, kappaTest, cohenKappa, fleissKappa, wilsonCI, effectiveness, missAndFA, signalDetection, deriveConsensus, analyze } from '../../js/engines/msa-typ5-engine.js';
 
 // Fixture-Loader — löst relativ zur eigenen JS-URL auf, damit
 // runner.html-Pfad (../fixtures/...) das richtige Verzeichnis erreicht.
@@ -108,6 +108,52 @@ suite('msa-typ5-engine — cohenKappa (unweighted)', () => {
     assertClose(r.kappa, c.expected.kappa, 1e-9);
     assertClose(r.se,    c.expected.se,    1e-9);
     assert(r.method === 'cohen');
+  });
+});
+
+// ─── kappaTest / H0 test ─────────────────────────────────────
+
+suite('msa-typ5-engine — kappaTest', () => {
+  test('z = κ/se0, p is the one-sided upper tail', () => {
+    const r = kappaTest(0.5, 0.25);
+    assertClose(r.z, 2, 1e-12);
+    assertClose(r.p, 0.022750131948179195, 1e-8);
+  });
+
+  test('se0 0 / NaN or κ NaN → z and p NaN', () => {
+    for (const [k, s] of [[0.5, 0], [0.5, NaN], [NaN, 0.1], [0.5, -1]]) {
+      const r = kappaTest(k, s);
+      assert(Number.isNaN(r.z) && Number.isNaN(r.p), `kappaTest(${k}, ${s})`);
+    }
+  });
+
+  test('huge z keeps a positive, tiny p', () => {
+    const r = kappaTest(0.9, 0.05); // z = 18
+    assert(r.p > 0 && r.p < 1e-70, `p = ${r.p}`);
+  });
+});
+
+suite('msa-typ5-engine — cohenKappa H0 test', () => {
+  const cases = [
+    ['cohen-kappa', 'binary-2rater-test', ['nok', 'ok'], null],
+    ['cohen-kappa', 'nominal-3class-2rater-test', ['A', 'B', 'C'], null],
+    ['weighted-kappa', 'ordinal-linear-test', [1, 2, 3, 4, 5], 'linear'],
+    ['weighted-kappa', 'ordinal-quadratic-test', [1, 2, 3, 4, 5], 'quadratic'],
+  ];
+  for (const [fixture, id, levels, weights] of cases) {
+    test(`${id}: se0/z/p match statsmodels`, async () => {
+      const fx = await loadFixture(fixture);
+      const c = fx.test_cases.find(x => x.id === id);
+      const r = cohenKappa(c.inputs.raterA, c.inputs.raterB, { levels, weights, alpha: 0.05 });
+      assertClose(r.se0, c.expected.se0, 1e-9);
+      assertClose(r.z, c.expected.z, 1e-8);
+      assertClose(r.p, c.expected.p, Math.max(1e-12, c.expected.p * 1e-6));
+    });
+  }
+
+  test('pe = 1 (both raters constant) → se0/z/p NaN', () => {
+    const r = cohenKappa(['ok', 'ok', 'ok'], ['ok', 'ok', 'ok'], { levels: ['ok', 'nok'], weights: null, alpha: 0.05 });
+    assert(Number.isNaN(r.se0) && Number.isNaN(r.z) && Number.isNaN(r.p));
   });
 });
 

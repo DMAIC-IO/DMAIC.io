@@ -1,17 +1,24 @@
 {
   "algorithm_id": "weighted-kappa",
   "generated_with": {
-    "python": "3.10.12",
-    "scipy": "1.15.3",
-    "numpy": "2.2.6"
+    "python": "3.14.4",
+    "scipy": "1.18.0",
+    "numpy": "2.5.1"
   },
-  "generated_at": "2026-07-16T04:59:28.321014+00:00",
+  "generated_at": "2026-09-28T03:55:24.557900+00:00",
   "generator_script": "tools/fixture-generator/generate_fixtures.py",
   "generator_version": "1.0.0",
   "tolerances": {
     "default": {
       "relative": 1e-09,
       "absolute": 1e-11
+    },
+    "overrides": {
+      "pvalue": {
+        "relative": 1e-06,
+        "absolute": 1e-12,
+        "reason": "One-sided p via erfc (~1.2e-7 relative)"
+      }
     }
   },
   "test_cases": [
@@ -149,6 +156,148 @@
       "expected": {
         "kappa": 0.9484536082474226,
         "method": "weighted-quadratic"
+      }
+    },
+    {
+      "id": "ordinal-linear-test",
+      "tier": "standard",
+      "description": "Weighted kappa, ordinal 1-5 scale, linear weights — H0 test (SE0, z, one-sided p)",
+      "inputs": {
+        "variant": "weighted",
+        "raterA": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          1,
+          2,
+          3,
+          4,
+          5,
+          2,
+          3,
+          4,
+          5,
+          1,
+          3,
+          4,
+          5,
+          1,
+          2,
+          4,
+          5,
+          1,
+          2,
+          3
+        ],
+        "raterB": [
+          1,
+          2,
+          3,
+          4,
+          4,
+          1,
+          2,
+          3,
+          5,
+          5,
+          2,
+          2,
+          4,
+          5,
+          1,
+          3,
+          4,
+          5,
+          2,
+          2,
+          4,
+          5,
+          1,
+          3,
+          3
+        ],
+        "weights": "linear",
+        "alpha": 0.05
+      },
+      "tolerance_override": "pvalue",
+      "expected": {
+        "kappa": 0.8730964467005076,
+        "se0": 0.13690158644497527,
+        "z": 6.377548057497715,
+        "p": 8.997279735384083e-11
+      }
+    },
+    {
+      "id": "ordinal-quadratic-test",
+      "tier": "standard",
+      "description": "Weighted kappa, ordinal 1-5 scale, quadratic weights — H0 test (SE0, z, one-sided p)",
+      "inputs": {
+        "variant": "weighted",
+        "raterA": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          1,
+          2,
+          3,
+          4,
+          5,
+          2,
+          3,
+          4,
+          5,
+          1,
+          3,
+          4,
+          5,
+          1,
+          2,
+          4,
+          5,
+          1,
+          2,
+          3
+        ],
+        "raterB": [
+          1,
+          2,
+          3,
+          4,
+          4,
+          1,
+          2,
+          3,
+          5,
+          5,
+          2,
+          2,
+          4,
+          5,
+          1,
+          3,
+          4,
+          5,
+          2,
+          2,
+          4,
+          5,
+          1,
+          3,
+          3
+        ],
+        "weights": "quadratic",
+        "alpha": 0.05
+      },
+      "tolerance_override": "pvalue",
+      "expected": {
+        "kappa": 0.9484536082474226,
+        "se0": 0.19981924024058917,
+        "z": 4.746557974624727,
+        "p": 1.0345371938987387e-06
       }
     }
   ]

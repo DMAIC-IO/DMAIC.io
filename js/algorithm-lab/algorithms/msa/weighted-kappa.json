@@ -7,7 +7,7 @@
   "category": "msa",
   "subcategory": "typ5",
   "status": "validated",
-  "version": "1.0.0",
+  "version": "1.1.0",
 
   "description": {
     "short": {
@@ -60,6 +60,22 @@
         "description": {
           "de": "Weighted-Kappa-Koeffizient",
           "en": "Weighted kappa coefficient"
+        }
+      },
+      {
+        "label": "SE₀(κ)",
+        "latex": "\\mathrm{SE}_0^2 = \\frac{\\sum_{i,j} p_{i\\cdot} p_{\\cdot j} \\left[w_{ij} - (\\bar w_{i\\cdot} + \\bar w_{\\cdot j})\\right]^2 - p_e^2}{N \\, (1 - p_e)^2}",
+        "description": {
+          "de": "Standardfehler unter H₀ κ = 0 nach Fleiss/Cohen/Everitt (1969); w̄_i· = Σ_j p_·j w_ij, w̄_·j = Σ_i p_i· w_ij, ungewichtet w = Einheitsmatrix. Nur für den Test, nicht für das KI",
+          "en": "Standard error under H₀ κ = 0 per Fleiss/Cohen/Everitt (1969); w̄_i· = Σ_j p_·j w_ij, w̄_·j = Σ_i p_i· w_ij, unweighted w = identity. Used for the test only, not for the CI"
+        }
+      },
+      {
+        "label": "z, p",
+        "latex": "z = \\frac{\\kappa}{\\mathrm{SE}_0}, \\quad p = 1 - \\Phi(z)",
+        "description": {
+          "de": "Einseitiger Test H₀ κ = 0 gegen κ > 0 (wie Minitab)",
+          "en": "One-sided test of H₀ κ = 0 against κ > 0 (as in Minitab)"
         }
       }
     ],
@@ -122,7 +138,10 @@
           "kappa":  { "type": "number", "description": { "de": "Weighted-Kappa-Koeffizient", "en": "Weighted kappa coefficient" } },
           "method": { "type": "string", "description": { "de": "\"weighted-linear\" oder \"weighted-quadratic\"", "en": "\"weighted-linear\" or \"weighted-quadratic\"" } },
           "se":     { "type": "number", "description": { "de": "Standardfehler von κ_w", "en": "Standard error of κ_w" } },
-          "ci95":   { "type": "array",  "description": { "de": "95 %-Konfidenzintervall", "en": "95 % confidence interval" } }
+          "ci95":   { "type": "array",  "description": { "de": "95 %-Konfidenzintervall", "en": "95 % confidence interval" } },
+          "se0":    { "type": "number", "description": { "de": "Standardfehler unter H₀ κ = 0", "en": "Standard error under H₀ κ = 0" } },
+          "z":      { "type": "number", "description": { "de": "Teststatistik κ / SE₀", "en": "Test statistic κ / SE₀" } },
+          "p":      { "type": "number", "description": { "de": "Einseitiger p-Wert für H₀ κ = 0", "en": "One-sided p value for H₀ κ = 0" } }
         }
       }
     },
@@ -170,16 +189,28 @@
       ]
     },
     "output_schema": {
-      "display_fields": ["kappa", "method"],
+      "display_fields": ["kappa", "z", "p", "method"],
       "primary_field": "kappa",
       "format": {
         "kappa":  { "decimals": 6, "label": "κ_w" },
+        "z":      { "decimals": 4, "label": "z" },
+        "p":      { "decimals": 8, "label": "p" },
         "method": { "label": { "de": "Methode", "en": "Method" } }
       }
     }
   },
 
   "changelog": [
+    {
+      "version": "1.1.0",
+      "date": "2026-09-28",
+      "type": "feature",
+      "description": {
+        "de": "Standardfehler unter H₀, z und einseitiger p-Wert ergänzt",
+        "en": "Added standard error under H₀, z and one-sided p value"
+      },
+      "breaking": false
+    },
     {
       "version": "1.0.0",
       "date": "2026-07-16",
