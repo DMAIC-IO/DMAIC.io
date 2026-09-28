@@ -16,6 +16,8 @@
 const TYPE_OPTIONS = ['binary', 'nominal', 'ordinal'];
 /** Allowed ordinal-weight options. */
 const WEIGHTS_OPTIONS = ['linear', 'quadratic'];
+/** Allowed verdict rule sets: AIAG MSA 4th ed. ch. III-C or Bosch Heft 10. */
+export const RULESET_OPTIONS = ['aiag', 'bosch'];
 /** Allowed α options (string form, matching the <select> values). */
 const ALPHA_OPTIONS = ['0.01', '0.05', '0.10'];
 
@@ -29,6 +31,20 @@ function alphaStr(a) {
   if (a == null) return '0.05';
   const s = typeof a === 'number' ? a.toFixed(2) : String(a);
   return ALPHA_OPTIONS.includes(s) ? s : '0.05';
+}
+
+/**
+ * Format a p value: '< 0,001' / '< 0.001' below 0.001, else three decimals;
+ * non-finite → '—'.
+ * @param {number} p
+ * @param {'de'|'en'} lang
+ * @returns {string}
+ */
+export function formatP(p, lang) {
+  if (!Number.isFinite(p)) return '—';
+  const sep = lang === 'de' ? ',' : '.';
+  if (p < 0.001) return `< 0${sep}001`;
+  return p.toFixed(3).replace('.', sep);
 }
 
 /** @param {*} v @param {string[]} allowed @param {string} fallback */
@@ -55,6 +71,7 @@ export class State {
     weights: 'quadratic',
     alpha: '0.05',
     ordinalOrder: null,
+    ruleSet: 'aiag',
   };
 
   /** Referenced worksheet columns, each {instanceId,sheetId,columnId} or null. */
@@ -87,6 +104,7 @@ export class State {
         ordinalOrder: Array.isArray(this.params.ordinalOrder)
           ? this.params.ordinalOrder.slice()
           : null,
+        ruleSet: this.params.ruleSet,
       },
       columns: {
         part:      this.columns.part      ? { ...this.columns.part }      : null,
@@ -119,6 +137,7 @@ export class State {
     s.params.ordinalOrder  = Array.isArray(p.ordinalOrder)
       ? p.ordinalOrder.filter((v) => typeof v === 'string')
       : null;
+    s.params.ruleSet       = pickEnum(p.ruleSet, RULESET_OPTIONS, 'aiag');
 
     const refs = d.columns && typeof d.columns === 'object' ? d.columns : {};
     s.columns.part      = columnRefFromJSON(refs.part);
