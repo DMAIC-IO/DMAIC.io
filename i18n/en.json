@@ -1727,7 +1727,10 @@
         "referenceSource": "Reference source",
         "referenceSourceGiven": "Column",
         "referenceSourceConsensus": "Consensus",
-        "referenceSourceNone": "none"
+        "referenceSourceNone": "none",
+        "ruleSet": "Verdict rule",
+        "ruleSetAiag": "AIAG MSA (4th ed.)",
+        "ruleSetBosch": "Bosch Heft 10"
       },
       "kpi": {
         "fleissKappa": "Fleiss κ",
@@ -1761,7 +1764,10 @@
         "count": "Count",
         "parts": "Parts",
         "mixedKind": "mixed",
-        "noDisagreement": "No misclassification and no inconsistent repeat."
+        "noDisagreement": "No misclassification and no inconsistent repeat.",
+        "withinKappa": "κ within",
+        "z": "z",
+        "p": "p"
       },
       "charts": {
         "kappaBar": "Cohen κ per appraiser pair",
@@ -1789,7 +1795,28 @@
       "ordinalHint": "Order follows sorted values; drag reordering will follow in a later version.",
       "interp_good": "Fleiss κ = {kappa}, effectiveness ≥ {minEff} %. Inspection process reproducible and consistent with the reference.",
       "interp_marginal": "Fleiss κ = {kappa}, minimum effectiveness {minEff} %. Marginal — train appraisers or sharpen rating criteria.",
-      "interp_unacceptable": "Fleiss κ = {kappa}, minimum effectiveness {minEff} %. Not acceptable — the inspection process must be reworked."
+      "interp_unacceptable": "Fleiss κ = {kappa}, minimum effectiveness {minEff} %. Not acceptable — the inspection process must be reworked.",
+      "criteria": {
+        "title": "Verdict criteria",
+        "criterion": "Criterion",
+        "value": "Value",
+        "appraiser": "Appraiser",
+        "limitGood": "good",
+        "limitMarginal": "marginal",
+        "status": "Status",
+        "fleissKappa": "Fleiss κ",
+        "effectiveness": "Effectiveness (lowest)",
+        "missRate": "Miss rate (highest)",
+        "falseAlarmRate": "False-alarm rate (highest)",
+        "minKappa": "smallest κ",
+        "source_fleiss": "Fleiss κ overall",
+        "source_within": "κ within appraiser",
+        "source_vsReference": "κ vs. reference"
+      },
+      "verdictNote": {
+        "missFaNotRated": "Miss and false-alarm rate not rated — the reference is the appraisers' consensus."
+      },
+      "verdictDriver": "Decisive: {criterion}{appraiser} {value}"
     },
     "msa-typ6": {
       "name": "MSA Type 6 (stability)",

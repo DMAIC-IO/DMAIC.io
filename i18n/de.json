@@ -1727,7 +1727,10 @@
         "referenceSource": "Referenz-Quelle",
         "referenceSourceGiven": "Spalte",
         "referenceSourceConsensus": "Konsens",
-        "referenceSourceNone": "keine"
+        "referenceSourceNone": "keine",
+        "ruleSet": "Bewertungsregel",
+        "ruleSetAiag": "AIAG MSA (4. Aufl.)",
+        "ruleSetBosch": "Bosch Heft 10"
       },
       "kpi": {
         "fleissKappa": "Fleiss κ",
@@ -1761,7 +1764,10 @@
         "count": "Anzahl",
         "parts": "Teile",
         "mixedKind": "gemischt",
-        "noDisagreement": "Keine Verwechslung und keine uneinheitliche Wiederholung."
+        "noDisagreement": "Keine Verwechslung und keine uneinheitliche Wiederholung.",
+        "withinKappa": "κ innerhalb",
+        "z": "z",
+        "p": "p"
       },
       "charts": {
         "kappaBar": "Cohen κ je Prüferpaar",
@@ -1789,7 +1795,28 @@
       "ordinalHint": "Reihenfolge folgt der Sortierung; Drag-Neuordnung folgt in einer späteren Version.",
       "interp_good": "Fleiss κ = {kappa}, Effektivität ≥ {minEff} %. Prüfprozess reproduzierbar und mit der Referenz konsistent.",
       "interp_marginal": "Fleiss κ = {kappa}, minimale Effektivität {minEff} %. Grenzwertig — Prüfer schulen oder Bewertungskriterien schärfen.",
-      "interp_unacceptable": "Fleiss κ = {kappa}, minimale Effektivität {minEff} %. Nicht akzeptabel — Prüfprozess muss überarbeitet werden."
+      "interp_unacceptable": "Fleiss κ = {kappa}, minimale Effektivität {minEff} %. Nicht akzeptabel — Prüfprozess muss überarbeitet werden.",
+      "criteria": {
+        "title": "Urteilskriterien",
+        "criterion": "Kriterium",
+        "value": "Wert",
+        "appraiser": "Prüfer",
+        "limitGood": "gut",
+        "limitMarginal": "bedingt",
+        "status": "Status",
+        "fleissKappa": "Fleiss κ",
+        "effectiveness": "Effektivität (kleinste)",
+        "missRate": "Miss-Rate (größte)",
+        "falseAlarmRate": "Fehlalarm-Rate (größte)",
+        "minKappa": "kleinstes κ",
+        "source_fleiss": "Fleiss κ gesamt",
+        "source_within": "κ innerhalb Prüfer",
+        "source_vsReference": "κ vs. Referenz"
+      },
+      "verdictNote": {
+        "missFaNotRated": "Miss- und Fehlalarm-Rate nicht bewertet – die Referenz stammt aus dem Konsens der Prüfer."
+      },
+      "verdictDriver": "Ausschlaggebend: {criterion}{appraiser} {value}"
     },
     "msa-typ6": {
       "name": "MSA Typ 6 (Stabilität)",

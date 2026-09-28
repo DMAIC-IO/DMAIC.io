@@ -52,7 +52,7 @@
 .msa-typ5__level {
   padding: var(--spacing-2xs) var(--spacing-sm);
   border-radius: 4px;
-  background: var(--color-background-secondary);
+  background: var(--color-bg-secondary);
   font-size: 0.9em;
   color: var(--color-text-primary);
 }
@@ -81,7 +81,7 @@
 
 .msa-typ5__ref-source {
   padding: var(--spacing-xs) var(--spacing-sm);
-  background: var(--color-background-secondary);
+  background: var(--color-bg-secondary);
   border-radius: 4px;
   font-size: 0.9em;
 }
@@ -108,15 +108,19 @@
   line-height: 1.5;
 }
 
-/* Tables */
-.msa-typ5__table {
+/* Tables. The criteria table shares the look but not the class, so
+   index-based lookups of the result tables stay stable. */
+.msa-typ5__table,
+.msa-typ5__criteria {
   width: 100%;
   border-collapse: collapse;
   margin-bottom: var(--spacing-md);
 }
 
 .msa-typ5__table th,
-.msa-typ5__table td {
+.msa-typ5__table td,
+.msa-typ5__criteria th,
+.msa-typ5__criteria td {
   padding: var(--spacing-s) var(--spacing-m);
   text-align: left;
   border-bottom: 1px solid var(--color-border);
@@ -229,4 +233,10 @@
 
 .msa-typ5__row--mixed td {
   background: var(--color-warning-bg, rgb(210 153 34 / 8%));
+}
+
+/* Criteria table: the row that decided the verdict. */
+.msa-typ5__row--driver td {
+  font-weight: 600;
+  background: var(--color-bg-secondary);
 }

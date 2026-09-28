@@ -87,6 +87,15 @@
     <div class="dmike-split__section-title" x-text="t('sections.evaluation')"></div>
 
     <div class="field-group">
+      <label x-text="t('labels.ruleSet')"></label>
+      <select class="field" data-ref="sel-ruleset"
+              x-model="model.params.ruleSet" @change="runAnalysis()">
+        <option value="aiag" x-text="t('labels.ruleSetAiag')"></option>
+        <option value="bosch" x-text="t('labels.ruleSetBosch')"></option>
+      </select>
+    </div>
+
+    <div class="field-group">
       <label x-text="t('labels.alpha')"></label>
       <select class="field" data-ref="sel-alpha"
               x-model="model.params.alpha" @change="runAnalysis()">
@@ -127,7 +136,7 @@
 
         <!-- KPI-Strip -->
         <div class="dmike-kpi-strip">
-          <div class="dmike-kpi" :class="verdictClass(result.verdict.level)">
+          <div class="dmike-kpi" :class="fleissKappaClass()">
             <div class="dmike-kpi-label" x-text="t('kpi.fleissKappa')"></div>
             <div class="dmike-kpi-value" x-text="fmt(fleissKappa(), 3)"></div>
             <div class="dmike-kpi-sub" x-text="fleissMethod()"></div>
@@ -158,6 +167,35 @@
           </template>
         </div>
 
+        <!-- Urteilskriterien: eine Zeile je Kriterium der gewählten Regel;
+             die ausschlaggebende Zeile ist hervorgehoben. -->
+        <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('criteria.title')"></span></div>
+        <table class="dmike-table msa-typ5__criteria" data-ref="verdict-criteria">
+          <thead><tr>
+            <th x-text="t('criteria.criterion')"></th>
+            <th x-text="t('criteria.value')"></th>
+            <th x-text="t('criteria.appraiser')"></th>
+            <th x-text="t('criteria.limitGood')"></th>
+            <th x-text="t('criteria.limitMarginal')"></th>
+            <th x-text="t('criteria.status')"></th>
+          </tr></thead>
+          <tbody>
+            <template x-for="row in criteriaRows()">
+              <tr :key="row.key" :class="row.rowClass">
+                <td x-text="row.label"></td>
+                <td x-text="row.value"></td>
+                <td x-text="row.appraiser"></td>
+                <td x-text="row.good"></td>
+                <td x-text="row.marginal"></td>
+                <td><span class="msa-typ5__ampel" :class="row.ampelClass"></span> <span x-text="row.status"></span></td>
+              </tr>
+            </template>
+          </tbody>
+        </table>
+        <template x-if="hasReferenceNote()">
+          <div class="msa-typ5__hint" data-ref="verdict-note" x-text="referenceNoteText()"></div>
+        </template>
+
         <!-- Prüfer-Tabelle -->
         <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('table.appraiser')"></span></div>
         <table class="dmike-table msa-typ5__table">
@@ -168,6 +206,8 @@
             <th x-text="t('table.missRate')"></th>
             <th x-text="t('table.falseAlarmRate')"></th>
             <th x-text="t('table.biasRate')"></th>
+            <th x-text="t('table.withinKappa')"></th>
+            <th x-text="t('table.p')"></th>
           </tr></thead>
           <tbody>
             <template x-for="row in perAppraiserRows()">
@@ -178,6 +218,8 @@
                 <td x-text="row.missRate"></td>
                 <td x-text="row.falseAlarmRate"></td>
                 <td x-text="row.biasRate"></td>
+                <td x-text="row.within"></td>
+                <td data-col="p" x-text="row.withinP"></td>
               </tr>
             </template>
           </tbody>
@@ -190,6 +232,8 @@
             <th x-text="t('table.pair')"></th>
             <th x-text="t('table.cohenKappa')"></th>
             <th x-text="t('table.ci95')"></th>
+            <th x-text="t('table.z')"></th>
+            <th x-text="t('table.p')"></th>
             <th x-text="t('table.verdict')"></th>
           </tr></thead>
           <tbody>
@@ -198,6 +242,8 @@
                 <td x-text="row.pairLabel"></td>
                 <td x-text="row.kappa"></td>
                 <td x-text="row.ci95"></td>
+                <td data-col="z" x-text="row.z"></td>
+                <td data-col="p" x-text="row.p"></td>
                 <td><span class="msa-typ5__ampel" :class="row.ampelClass"></span></td>
               </tr>
             </template>
@@ -213,6 +259,8 @@
                 <th x-text="t('table.appraiser')"></th>
                 <th>κ</th>
                 <th x-text="t('table.ci95')"></th>
+                <th x-text="t('table.z')"></th>
+                <th x-text="t('table.p')"></th>
                 <th x-text="t('table.verdict')"></th>
               </tr></thead>
               <tbody>
@@ -221,6 +269,8 @@
                     <td x-text="row.id"></td>
                     <td x-text="row.kappa"></td>
                     <td x-text="row.ci95"></td>
+                    <td data-col="z" x-text="row.z"></td>
+                    <td data-col="p" x-text="row.p"></td>
                     <td><span class="msa-typ5__ampel" :class="row.ampelClass"></span></td>
                   </tr>
                 </template>

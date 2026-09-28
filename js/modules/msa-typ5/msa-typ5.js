@@ -15,7 +15,7 @@
  */
 
 import { createModule } from '../../core/template-module.js';
-import { State } from './msa-typ5-model.js';
+import { State, formatP } from './msa-typ5-model.js';
 import { analyze } from '../../engines/msa-typ5-engine.js';
 import { ColumnPicker, getColumnValues } from '../../ui/column-picker.js';
 import { loadExampleViaWorksheet } from '../../core/examples-registry.js';
@@ -38,6 +38,28 @@ function verdictClass(level) {
   if (level === 'good') return 'dmike-kpi--good';
   if (level === 'marginal') return 'dmike-kpi--warn';
   return 'dmike-kpi--bad';
+}
+
+/** Verdict level → traffic-light class for the table dots. */
+function levelClass(level) {
+  if (level === 'good') return 'dmike-kpi--good';
+  if (level === 'marginal') return 'dmike-kpi--warn';
+  if (level === 'unacceptable') return 'dmike-kpi--bad';
+  return '';
+}
+
+/** z statistic with two decimals; non-finite → '—'. */
+function fmtZ(z) { return Number.isFinite(z) ? z.toFixed(2) : '—'; }
+
+/**
+ * Criterion value for the criteria table: κ with three decimals, rates as
+ * percent.
+ * @param {string} id criterion id
+ * @param {number} v
+ * @returns {string}
+ */
+function fmtCriterion(id, v) {
+  return (id === 'fleissKappa' || id === 'minKappa') ? fmt(v, 3) : fmtPct(v);
 }
 
 /** κ-Wert → Ampel-Klasse (AIAG-Schwellen 0.75 / 0.40). */
@@ -180,21 +202,93 @@ const mod = createModule({
         return _t(`${prefix}${camel}`, params ?? {});
       },
 
+      /** Active UI language for number formats that differ by locale (p values). */
+      _lang() {
+        return module._context?.i18n?.getLanguage?.() || module._context?.language || 'de';
+      },
+
       verdictSubline() {
         const r = this.result;
         if (!r) return '';
         const fk = r.betweenAppraisers?.fleissKappa || {};
         const src = r.meta?.referenceSource || 'none';
         const srcLabel = _t(`labels.referenceSource${src.charAt(0).toUpperCase() + src.slice(1)}`);
-        const ci = (fk.ci95 && Number.isFinite(fk.ci95[0]) && Number.isFinite(fk.ci95[1]))
-          ? ` (KI [${fmt(fk.ci95[0], 3)}, ${fmt(fk.ci95[1], 3)}])`
+        // SE0 only holds under H0, so Fleiss κ gets a z test, not a CI.
+        const test = Number.isFinite(fk.z)
+          ? ` (z ${fmt(fk.z, 1)}; p ${formatP(fk.p, this._lang())})`
           : '';
-        return `Fleiss κ = ${fmt(fk.kappa, 3)}${ci} · ${_t('labels.referenceSource')}: ${srcLabel}`;
+        let line = `Fleiss κ = ${fmt(fk.kappa, 3)}${test} · ${_t('labels.referenceSource')}: ${srcLabel}`;
+        const driver = this._driverCriterion();
+        if (driver) {
+          line += ` · ${_t('verdictDriver', {
+            criterion: this._criterionLabel(driver),
+            appraiser: driver.appraiser ? ` (${driver.appraiser})` : '',
+            value: fmtCriterion(driver.id, driver.value),
+          })}`;
+        }
+        return line;
+      },
+
+      /** The criterion that decided the verdict, or null. */
+      _driverCriterion() {
+        const v = this.result?.verdict;
+        if (!v?.driver) return null;
+        return (v.criteria || []).find((c) => c.id === v.driver) || null;
+      },
+
+      /** Criterion label; the Bosch minimum names which κ it came from. */
+      _criterionLabel(c) {
+        const label = _t(`criteria.${c.id}`);
+        return c.source ? `${label} (${_t(`criteria.source_${c.source}`)})` : label;
+      },
+
+      /**
+       * Rows of the verdict-criteria table. Limits carry ≥ / ≤ by
+       * direction; the row that decided the verdict is highlighted.
+       */
+      criteriaRows() {
+        const v = this.result?.verdict;
+        if (!v) return [];
+        return (v.criteria || []).map((c) => {
+          const op = c.direction === 'max' ? '≤' : '≥';
+          return {
+            key: c.id,
+            label: this._criterionLabel(c),
+            value: fmtCriterion(c.id, c.value),
+            appraiser: c.appraiser ?? '—',
+            good: `${op} ${fmtCriterion(c.id, c.limits.good)}`,
+            marginal: `${op} ${fmtCriterion(c.id, c.limits.marginal)}`,
+            status: this.verdictLabel(c.level),
+            ampelClass: levelClass(c.level),
+            rowClass: c.id === v.driver ? 'msa-typ5__row--driver' : '',
+          };
+        });
+      },
+
+      hasReferenceNote() {
+        return !!this.result?.verdict?.referenceNote;
+      },
+
+      referenceNoteText() {
+        const note = this.result?.verdict?.referenceNote;
+        return note ? _t(`verdictNote.${note}`) : '';
       },
 
       // ── KPI-Aggregate ────────────────────────────────────────
 
       fleissKappa()  { return this.result?.betweenAppraisers?.fleissKappa?.kappa ?? null; },
+
+      /**
+       * Colour of the Fleiss κ tile: the level Fleiss κ earns under the
+       * active rule set — not the overall verdict, which a miss rate can
+       * drive while κ itself is fine. No colour when the rule set does not
+       * rate Fleiss κ on its own.
+       */
+      fleissKappaClass() {
+        const c = (this.result?.verdict?.criteria || []).find((x) =>
+          x.id === 'fleissKappa' || (x.id === 'minKappa' && x.source === 'fleiss'));
+        return c ? verdictClass(c.level) : '';
+      },
       fleissMethod() { return this.result?.betweenAppraisers?.fleissKappa?.method || ''; },
 
       _repRates()   { return Object.values(this.result?.perAppraiser || {}).map((x) => x.repeatability?.rate).filter(Number.isFinite); },
@@ -218,6 +312,7 @@ const mod = createModule({
       perAppraiserRows() {
         const per = this.result?.perAppraiser;
         if (!per) return [];
+        const lang = this._lang();
         return Object.entries(per).map(([id, v]) => {
           const rep  = v.repeatability;
           const eff  = v.vsReference?.effectiveness;
@@ -231,6 +326,8 @@ const mod = createModule({
             missRate:        miss ? fmtPct(miss.rate)  : '—',
             falseAlarmRate:  fa   ? fmtPct(fa.rate)    : '—',
             biasRate:        bias ? fmt(bias.value, 3) : '—',
+            within:          v.withinKappa ? fmt(v.withinKappa.kappa, 3) : '—',
+            withinP:         v.withinKappa ? formatP(v.withinKappa.p, lang) : '—',
           };
         });
       },
@@ -242,6 +339,7 @@ const mod = createModule({
       pairRows() {
         const p = this.result?.betweenAppraisers?.pairwiseCohenKappa;
         if (!p) return [];
+        const lang = this._lang();
         return Object.entries(p).map(([pair, k]) => {
           const ci = (k.ci95 && Number.isFinite(k.ci95[0]) && Number.isFinite(k.ci95[1]))
             ? `[${fmt(k.ci95[0], 3)}, ${fmt(k.ci95[1], 3)}]`
@@ -251,6 +349,8 @@ const mod = createModule({
             pairLabel: pair.replace('|', ' | '),
             kappa: fmt(k.kappa, 3),
             ci95: ci,
+            z: fmtZ(k.z),
+            p: formatP(k.p, lang),
             ampelClass: kappaClass(k.kappa),
           };
         });
@@ -259,6 +359,7 @@ const mod = createModule({
       vsRefRows() {
         const per = this.result?.perAppraiser;
         if (!per) return [];
+        const lang = this._lang();
         return Object.entries(per)
           .filter(([, v]) => v.vsReference?.kappa)
           .map(([id, v]) => {
@@ -270,6 +371,8 @@ const mod = createModule({
               id,
               kappa: fmt(k.kappa, 3),
               ci95: ci,
+              z: fmtZ(k.z),
+              p: formatP(k.p, lang),
               ampelClass: kappaClass(k.kappa),
             };
           });
@@ -515,6 +618,7 @@ const mod = createModule({
             params: {
               alpha: parseFloat(p.alpha) || 0.05,
               weights: p.weights,
+              ruleSet: p.ruleSet,
             },
           });
         } catch (err) {
