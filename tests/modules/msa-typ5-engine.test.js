@@ -5,7 +5,7 @@
  */
 
 import { suite, test, assert, assertClose } from '../test-utils.js';
-import { validate, ERR, WARN, kappaTest, cohenKappa, fleissKappa, wilsonCI, effectiveness, missAndFA, signalDetection, deriveConsensus, analyze, buildVerdict } from '../../js/engines/msa-typ5-engine.js';
+import { validate, ERR, WARN, kappaTest, kappaLevel, ratedShare, cohenKappa, fleissKappa, wilsonCI, effectiveness, missAndFA, signalDetection, deriveConsensus, analyze, buildVerdict } from '../../js/engines/msa-typ5-engine.js';
 
 // Fixture-Loader — löst relativ zur eigenen JS-URL auf, damit
 // runner.html-Pfad (../fixtures/...) das richtige Verzeichnis erreicht.
@@ -216,6 +216,62 @@ suite('msa-typ5-engine — fleissKappa', () => {
     assertClose(r.kappa, c.expected.kappa, 1e-9);
     assertClose(r.se0, c.expected.se0, 1e-9);
     assertClose(r.p, c.expected.p, Math.max(1e-12, c.expected.p * 1e-6));
+  });
+
+  // Hand cases for the H0 variance of Fleiss, Nee & Landis (1979), independent
+  // of the fixture generator (which implements the same formula).
+  test('binary hand case: SE0 = √(2/(N·n·(n−1))) regardless of skewed marginals', () => {
+    // N = 10 parts, n = 3 raters, 24 of 30 ratings ok (p = 0.8, not 0.5).
+    const rows = [
+      ['ok', 'ok', 'ok'], ['ok', 'ok', 'ok'], ['ok', 'ok', 'ok'], ['ok', 'ok', 'ok'],
+      ['ok', 'ok', 'ok'], ['ok', 'ok', 'ok'], ['ok', 'ok', 'nok'], ['ok', 'nok', 'nok'],
+      ['nok', 'nok', 'ok'], ['ok', 'nok', 'ok'],
+    ];
+    const byPart = new Map(rows.map((row, i) => [i + 1, row]));
+    const r = fleissKappa(byPart, { levels: ['ok', 'nok'] });
+    assertClose(r.se0, Math.sqrt(2 / (10 * 3 * 2)), 1e-12);
+    assertClose(r.z, r.kappa / r.se0, 1e-12);
+  });
+
+  test('binary SE0 matches Minitab (Bosch Heft 10, 2019, p. 72 f.)', () => {
+    // Minitab prints SE Kappa 0.0816497 within appraisers (50 parts, 3 trials)
+    // and 0.0235702 between appraisers (50 parts, 9 ratings), whatever κ is.
+    const build = (n) => new Map(Array.from({ length: 50 }, (_, i) =>
+      [i + 1, Array.from({ length: n }, (_, j) => ((i < 12 || (i + j) % 17 === 0) ? 'nok' : 'ok'))]));
+    assertClose(fleissKappa(build(3), { levels: ['ok', 'nok'] }).se0, 0.0816497, 5e-8);
+    assertClose(fleissKappa(build(9), { levels: ['ok', 'nok'] }).se0, 0.0235702, 5e-8);
+  });
+
+  test('three-level hand case: SE0 = 13/34', () => {
+    // Marginals p = (5/8, 2/8, 1/8): Σpq = 34/64, Σpq(q−p) = 7.5/64,
+    // Var0 = 2/(4·2·1) · [(34/64)² − 7.5/64] / (34/64)² = (26/68)².
+    const byPart = new Map([[1, ['a', 'a']], [2, ['a', 'b']], [3, ['b', 'c']], [4, ['a', 'a']]]);
+    const r = fleissKappa(byPart, { levels: ['a', 'b', 'c'] });
+    assertClose(r.se0, 13 / 34, 1e-12);
+  });
+});
+
+// ─── kappaLevel, rates without denominator ───────────────────
+
+suite('msa-typ5-engine — kappaLevel and empty rate denominators', () => {
+  test('kappaLevel uses the limits of the rule set', () => {
+    assert(kappaLevel(0.80, 'aiag') === 'good' && kappaLevel(0.50, 'aiag') === 'marginal');
+    assert(kappaLevel(0.30, 'aiag') === 'unacceptable');
+    assert(kappaLevel(0.80, 'bosch') === 'marginal' && kappaLevel(0.95, 'bosch') === 'good');
+    assert(kappaLevel(0.60, 'bosch') === 'unacceptable');
+    assert(kappaLevel(0.80, 'vda') === 'good', 'unknown rule set falls back to aiag');
+    assert(kappaLevel(NaN, 'aiag') === null);
+  });
+
+  test('no bad reference part → miss rate and bias not rated, false-alarm rate is', () => {
+    const ratings = [
+      { part: 1, appraiser: 'A', rep: 1, value: 'ok' }, { part: 1, appraiser: 'A', rep: 2, value: 'nok' },
+      { part: 2, appraiser: 'A', rep: 1, value: 'ok' }, { part: 2, appraiser: 'A', rep: 2, value: 'ok' },
+    ];
+    const r = missAndFA(ratings, { 1: 'ok', 2: 'ok' }, { positive: 'ok', alpha: 0.05 }).perAppraiser.A;
+    assert(r.missRate.n === 0 && Number.isNaN(ratedShare(r.missRate)));
+    assertClose(ratedShare(r.falseAlarmRate), 0.25, 1e-12);
+    assert(Number.isNaN(r.biasRate.value), 'bias needs both denominators');
   });
 });
 

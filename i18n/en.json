@@ -1796,6 +1796,8 @@
       "interp_good": "Fleiss κ = {kappa}, effectiveness ≥ {minEff} %. Inspection process reproducible and consistent with the reference.",
       "interp_marginal": "Fleiss κ = {kappa}, minimum effectiveness {minEff} %. Marginal — train appraisers or sharpen rating criteria.",
       "interp_unacceptable": "Fleiss κ = {kappa}, minimum effectiveness {minEff} %. Not acceptable — the inspection process must be reworked.",
+      "interp_marginal_driver": "{decisive}. Marginal — train appraisers or sharpen rating criteria.",
+      "interp_unacceptable_driver": "{decisive}. Not acceptable — the inspection process must be reworked.",
       "criteria": {
         "title": "Verdict criteria",
         "criterion": "Criterion",

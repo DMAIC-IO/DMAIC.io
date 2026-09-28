@@ -16,7 +16,7 @@
 
 import { createModule } from '../../core/template-module.js';
 import { State, formatP } from './msa-typ5-model.js';
-import { analyze } from '../../engines/msa-typ5-engine.js';
+import { analyze, kappaLevel, ratedShare } from '../../engines/msa-typ5-engine.js';
 import { ColumnPicker, getColumnValues } from '../../ui/column-picker.js';
 import { loadExampleViaWorksheet } from '../../core/examples-registry.js';
 import { computeGageRunChart } from '../../engines/gage-run-chart-engine.js';
@@ -62,12 +62,14 @@ function fmtCriterion(id, v) {
   return (id === 'fleissKappa' || id === 'minKappa') ? fmt(v, 3) : fmtPct(v);
 }
 
-/** κ-Wert → Ampel-Klasse (AIAG-Schwellen 0.75 / 0.40). */
-function kappaClass(k) {
-  if (!Number.isFinite(k)) return '';
-  if (k >= 0.75) return 'dmike-kpi--good';
-  if (k >= 0.40) return 'dmike-kpi--warn';
-  return 'dmike-kpi--bad';
+/**
+ * κ → traffic-light class under the limits of the active rule set.
+ * @param {number} k
+ * @param {'aiag'|'bosch'} ruleSet
+ * @returns {string}
+ */
+function kappaClass(k, ruleSet) {
+  return levelClass(kappaLevel(k, ruleSet));
 }
 
 const mod = createModule({
@@ -219,14 +221,17 @@ const mod = createModule({
           : '';
         let line = `Fleiss κ = ${fmt(fk.kappa, 3)}${test} · ${_t('labels.referenceSource')}: ${srcLabel}`;
         const driver = this._driverCriterion();
-        if (driver) {
-          line += ` · ${_t('verdictDriver', {
-            criterion: this._criterionLabel(driver),
-            appraiser: driver.appraiser ? ` (${driver.appraiser})` : '',
-            value: fmtCriterion(driver.id, driver.value),
-          })}`;
-        }
+        if (driver) line += ` · ${this._driverText(driver)}`;
         return line;
+      },
+
+      /** "Decisive: <criterion> (<appraiser>) <value>" for a criterion. */
+      _driverText(c) {
+        return _t('verdictDriver', {
+          criterion: this._criterionLabel(c),
+          appraiser: c.appraiser ? ` (${c.appraiser})` : '',
+          value: fmtCriterion(c.id, c.value),
+        });
       },
 
       /** The criterion that decided the verdict, or null. */
@@ -304,6 +309,12 @@ const mod = createModule({
         if (!ip) return '';
         // engine liefert vollen Key inkl. Prefix `modules.msa-typ5.interp_*`;
         // hier direkt an i18n weiterreichen (kein Prefix-Trim).
+        // A non-good verdict names its deciding criterion: κ and effectiveness
+        // alone would not explain a red verdict driven by the miss rate.
+        const driver = this._driverCriterion();
+        if (driver && this.result.verdict.level !== 'good') {
+          return module._context.i18n.t(`${ip.textKey}_driver`, { decisive: this._driverText(driver) });
+        }
         return module._context.i18n.t(ip.textKey, ip.params || {});
       },
 
@@ -323,8 +334,9 @@ const mod = createModule({
             id,
             repeatability:   rep  ? fmtPct(rep.rate)   : '—',
             effectiveness:   eff  ? fmtPct(eff.rate)   : '—',
-            missRate:        miss ? fmtPct(miss.rate)  : '—',
-            falseAlarmRate:  fa   ? fmtPct(fa.rate)    : '—',
+            // 0/0 (no part of that reference class) is not a rate of 0 %.
+            missRate:        fmtPct(ratedShare(miss)),
+            falseAlarmRate:  fmtPct(ratedShare(fa)),
             biasRate:        bias ? fmt(bias.value, 3) : '—',
             within:          v.withinKappa ? fmt(v.withinKappa.kappa, 3) : '—',
             withinP:         v.withinKappa ? formatP(v.withinKappa.p, lang) : '—',
@@ -340,6 +352,7 @@ const mod = createModule({
         const p = this.result?.betweenAppraisers?.pairwiseCohenKappa;
         if (!p) return [];
         const lang = this._lang();
+        const ruleSet = this.result.verdict?.ruleSet;
         return Object.entries(p).map(([pair, k]) => {
           const ci = (k.ci95 && Number.isFinite(k.ci95[0]) && Number.isFinite(k.ci95[1]))
             ? `[${fmt(k.ci95[0], 3)}, ${fmt(k.ci95[1], 3)}]`
@@ -351,7 +364,7 @@ const mod = createModule({
             ci95: ci,
             z: fmtZ(k.z),
             p: formatP(k.p, lang),
-            ampelClass: kappaClass(k.kappa),
+            ampelClass: kappaClass(k.kappa, ruleSet),
           };
         });
       },
@@ -360,6 +373,7 @@ const mod = createModule({
         const per = this.result?.perAppraiser;
         if (!per) return [];
         const lang = this._lang();
+        const ruleSet = this.result.verdict?.ruleSet;
         return Object.entries(per)
           .filter(([, v]) => v.vsReference?.kappa)
           .map(([id, v]) => {
@@ -373,7 +387,7 @@ const mod = createModule({
               ci95: ci,
               z: fmtZ(k.z),
               p: formatP(k.p, lang),
-              ampelClass: kappaClass(k.kappa),
+              ampelClass: kappaClass(k.kappa, ruleSet),
             };
           });
       },

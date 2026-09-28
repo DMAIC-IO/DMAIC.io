@@ -193,9 +193,10 @@ function zQuantile(p) {
  * Balanced (constant n_i·):
  *   P_i = (Σ_j n_ij² − n_i·) / (n_i· (n_i· − 1))
  *   P̄ = mean(P_i);  p̄_j = Σ_i n_ij / (N · n̄);  P_e = Σ_j p̄_j²
- *   κ = (P̄ − P_e) / (1 − P_e)   — Fleiss 1971 SE geschlossen.
- *   The closed-form SE holds under H0 κ = 0 only, so it feeds the one-sided
- *   z-test (se0/z/p) and no confidence interval (Minitab reports none either).
+ *   κ = (P̄ − P_e) / (1 − P_e)   (Fleiss 1971).
+ *   The closed-form SE (Fleiss, Nee & Landis 1979) holds under H0 κ = 0
+ *   only, so it feeds the one-sided z-test (se0/z/p) and no confidence
+ *   interval (Minitab reports none either).
  *
  * Unbalanced:
  *   Randolph free-marginal: P_e = 1/k → κ = (K·P̄ − 1) / (K − 1),
@@ -235,14 +236,16 @@ export function fleissKappa(byPart, opts) {
     const P_e = p_j.reduce((s, v) => s + v * v, 0);
     kappa = P_e < 1 ? (P_bar - P_e) / (1 - P_e) : 1;
 
-    // Fleiss 1971 SE (approximate, unter H0 κ=0).
-    // Referenz: Fleiss, Levin & Paik (2003) "Statistical Methods for Rates
-    // and Proportions", 3rd ed., §18.2 — Formel (18.8).
-    const sq2 = p_j.reduce((s, v) => s + v * v, 0);
-    const sq3 = p_j.reduce((s, v) => s + v * v * v, 0);
-    const varK = (2 / (N * n * (n - 1))) *
-                 (sq2 - (2 * n - 3) * sq2 * sq2 + 2 * (n - 2) * sq3) /
-                 ((1 - sq2) ** 2);
+    // SE under H0 κ = 0 after Fleiss, Nee & Landis (1979), as in Fleiss,
+    // Levin & Paik (2003) ch. 18 and Minitab; replaces the Fleiss (1971)
+    // variance, which is wrong unless the marginals are uniform.
+    //   Var0 = 2/(N n (n−1)) · [(Σ p_j q_j)² − Σ p_j q_j (q_j − p_j)] / (Σ p_j q_j)²
+    // Binary data reduce it to 2/(N n (n−1)).
+    const spq = p_j.reduce((s, v) => s + v * (1 - v), 0);
+    const spqqp = p_j.reduce((s, v) => s + v * (1 - v) * (1 - 2 * v), 0);
+    const varK = spq > 0
+      ? (2 / (N * n * (n - 1))) * (spq * spq - spqqp) / (spq * spq)
+      : NaN;
     se0 = varK > 0 ? Math.sqrt(varK) : NaN;
   } else {
     // Randolph: uniform marginal → P_e = 1/k
@@ -314,7 +317,8 @@ export function effectiveness(ratings, references, opts) {
  * @param {Object} references
  * @param {object} opts {positive, alpha, ambiguousParts?}
  * @returns {{perAppraiser: Object<string, {missRate, falseAlarmRate, biasRate}>}}
- *   missRate/falseAlarmRate: {rate, ci95, n} — n is the denominator; rate is 0 when n = 0.
+ *   missRate/falseAlarmRate: {rate, ci95, n} — n is the denominator; rate is 0 when n = 0
+ *   (read it through ratedShare). biasRate.value is NaN unless both denominators are > 0.
  */
 export function missAndFA(ratings, references, opts) {
   const { positive, alpha } = opts;
@@ -336,7 +340,7 @@ export function missAndFA(ratings, references, opts) {
     out[a] = {
       missRate:       { rate: miss.rate, ci95: miss.ci95, n: v.missDen },
       falseAlarmRate: { rate: fa.rate,   ci95: fa.ci95,   n: v.faDen   },
-      biasRate:       { value: miss.rate - fa.rate },
+      biasRate:       { value: v.missDen > 0 && v.faDen > 0 ? miss.rate - fa.rate : NaN },
     };
   }
   return { perAppraiser: out };
@@ -383,8 +387,24 @@ function _extreme(perAppraiser, pick, direction) {
   return best;
 }
 
-/** Rate of a miss/false-alarm entry, or NaN when its denominator is 0. */
-const _ratedShare = (x) => (x && x.n > 0 ? x.rate : NaN);
+/**
+ * Rate of a miss/false-alarm entry, or NaN when its denominator is 0.
+ * @param {?{rate: number, n: number}} x
+ * @returns {number}
+ */
+export const ratedShare = (x) => (x && x.n > 0 ? x.rate : NaN);
+
+/**
+ * Traffic-light level of a κ under the limits of a rule set: AIAG III-C
+ * 0.75 / 0.40, Bosch Heft 10 0.9 / 0.7.
+ * @param {number} kappa
+ * @param {'aiag'|'bosch'} ruleSet Unknown values fall back to 'aiag'.
+ * @returns {?('good'|'marginal'|'unacceptable')} null when κ is not finite.
+ */
+export function kappaLevel(kappa, ruleSet) {
+  if (!Number.isFinite(kappa)) return null;
+  return _rateLevel(kappa, ruleSet === 'bosch' ? BOSCH_LIMITS : AIAG_LIMITS.fleissKappa);
+}
 
 /**
  * Verdict of an attribute agreement study.
@@ -421,9 +441,9 @@ export function buildVerdict({ ruleSet, type, referenceSource, fleiss, perApprai
     const eff = _extreme(perAppraiser, v => v.vsReference?.effectiveness?.rate, 'min');
     if (eff) criteria.push(_criterion('effectiveness', eff.value, eff.appraiser, AIAG_LIMITS.effectiveness));
     if (type === 'binary' && referenceSource === 'given') {
-      const miss = _extreme(perAppraiser, v => _ratedShare(v.vsReference?.missRate), 'max');
+      const miss = _extreme(perAppraiser, v => ratedShare(v.vsReference?.missRate), 'max');
       if (miss) criteria.push(_criterion('missRate', miss.value, miss.appraiser, AIAG_LIMITS.missRate));
-      const fa = _extreme(perAppraiser, v => _ratedShare(v.vsReference?.falseAlarmRate), 'max');
+      const fa = _extreme(perAppraiser, v => ratedShare(v.vsReference?.falseAlarmRate), 'max');
       if (fa) criteria.push(_criterion('falseAlarmRate', fa.value, fa.appraiser, AIAG_LIMITS.falseAlarmRate));
     } else if (type === 'binary' && referenceSource === 'consensus') {
       referenceNote = 'missFaNotRated';

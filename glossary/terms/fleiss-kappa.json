@@ -21,7 +21,7 @@
       },
       {
         "type": "paragraph",
-        "text": "$P_i$ ist die paarweise Übereinstimmung innerhalb eines Teils, $\\bar P$ deren Mittelwert. $\\bar p_j$ sind die Randanteile der Klassen. Bei ungleichen Rater-Zahlen wechselt die Engine auf die Randolph-Variante. Getestet wird $H_0: \\kappa = 0$ mit dem Standardfehler unter $H_0$ (Fleiss/Levin/Paik 2003): $z = \\kappa / \\text{SE}_0$, einseitiges $p$. Ein Konfidenzintervall für Fleiss κ gibt D.Mike nicht aus, Minitab ebenfalls nicht."
+        "text": "$P_i$ ist die paarweise Übereinstimmung innerhalb eines Teils, $\\bar P$ deren Mittelwert. $\\bar p_j$ sind die Randanteile der Klassen. Bei ungleichen Rater-Zahlen wechselt die Engine auf die Randolph-Variante. Getestet wird $H_0: \\kappa = 0$ mit dem Standardfehler unter $H_0$ nach Fleiss/Nee/Landis 1979 (Fleiss/Levin/Paik 2003, wie Minitab): $z = \\kappa / \\text{SE}_0$, einseitiges $p$. Ein Konfidenzintervall für Fleiss κ gibt D.Mike nicht aus, Minitab ebenfalls nicht."
       },
       {
         "type": "note",
@@ -39,7 +39,7 @@
       },
       {
         "type": "paragraph",
-        "text": "$P_i$ is the pairwise agreement within a part, $\\bar P$ its mean. $\\bar p_j$ are the class marginals. Under unbalanced rater counts the engine switches to the Randolph variant. $H_0: \\kappa = 0$ is tested with the standard error under $H_0$ (Fleiss/Levin/Paik 2003): $z = \\kappa / \\text{SE}_0$, one-sided $p$. D.Mike reports no confidence interval for Fleiss κ, and neither does Minitab."
+        "text": "$P_i$ is the pairwise agreement within a part, $\\bar P$ its mean. $\\bar p_j$ are the class marginals. Under unbalanced rater counts the engine switches to the Randolph variant. $H_0: \\kappa = 0$ is tested with the standard error under $H_0$ after Fleiss/Nee/Landis 1979 (Fleiss/Levin/Paik 2003, as in Minitab): $z = \\kappa / \\text{SE}_0$, one-sided $p$. D.Mike reports no confidence interval for Fleiss κ, and neither does Minitab."
       },
       {
         "type": "note",
@@ -56,6 +56,7 @@
   "algoLab": ["msa/fleiss-kappa"],
   "sources": [
     { "label": "Fleiss, J.L. (1971). Measuring nominal scale agreement among many raters. Psychological Bulletin, 76(5), 378–382.", "url": null },
+    { "label": "Fleiss, J.L., Nee, J.C.M., & Landis, J.R. (1979). Large sample variance of kappa in the case of different sets of raters. Psychological Bulletin, 86(5), 974–977.", "url": null },
     { "label": "Randolph, J.J. (2005). Free-marginal multirater kappa: An alternative to Fleiss' fixed-marginal multirater kappa. Joensuu Learning and Instruction Symposium.", "url": null },
     { "label": "Fleiss, J.L., Levin, B., & Paik, M.C. (2003). Statistical Methods for Rates and Proportions, 3rd ed. Wiley — Kap. 18.", "url": null }
   ]

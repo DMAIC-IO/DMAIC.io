@@ -15,8 +15,8 @@
       "en": "{{term:fleiss-kappa}} — overall agreement of two or more raters for categorical data."
     },
     "long": {
-      "de": "Fleiss κ verallgemeinert Cohens Idee auf mehr als zwei Prüfer und beliebige Kategorien. Grundlage ist die pro Teil beobachtete Paar-Übereinstimmung P_i, die über alle Teile gemittelt und ins Verhältnis zur erwarteten Zufallsübereinstimmung P_e (aus den Klassen-Randanteilen) gesetzt wird. Die klassische Formel setzt gleich viele Bewertungen pro Teil voraus (`fleiss-1971`); bei ungleichen Prüfer-Zahlen pro Teil wechselt Qprovement auf die {{term:kappa}}-Variante nach Randolph (free-marginal), für die es keinen geschlossenen SE-Ausdruck gibt — SE₀, z und p sind dann NaN. Der geschlossene Standardfehler nach Fleiss (1971) gilt nur unter H₀ κ = 0; er speist deshalb den einseitigen z-Test und kein Konfidenzintervall (Minitab weist ebenfalls keines aus).",
-      "en": "Fleiss κ extends Cohen's idea to more than two raters and any number of categories. It averages the per-subject pairwise agreement P_i and normalises it against the chance agreement P_e derived from the class marginals. The classical formula (`fleiss-1971`) requires an equal number of ratings per subject; when rater counts differ across subjects Qprovement switches to the {{term:kappa}} variant per Randolph (free-marginal), for which no closed-form SE exists — SE₀, z and p are then NaN. The closed-form Fleiss (1971) standard error holds under H₀ κ = 0 only; it therefore feeds the one-sided z-test and no confidence interval (Minitab reports none either)."
+      "de": "Fleiss κ verallgemeinert Cohens Idee auf mehr als zwei Prüfer und beliebige Kategorien. Grundlage ist die pro Teil beobachtete Paar-Übereinstimmung P_i, die über alle Teile gemittelt und ins Verhältnis zur erwarteten Zufallsübereinstimmung P_e (aus den Klassen-Randanteilen) gesetzt wird. Die klassische Formel setzt gleich viele Bewertungen pro Teil voraus (`fleiss-1971`); bei ungleichen Prüfer-Zahlen pro Teil wechselt Qprovement auf die {{term:kappa}}-Variante nach Randolph (free-marginal), für die es keinen geschlossenen SE-Ausdruck gibt — SE₀, z und p sind dann NaN. Der geschlossene Standardfehler nach Fleiss, Nee & Landis (1979) gilt nur unter H₀ κ = 0; er speist deshalb den einseitigen z-Test und kein Konfidenzintervall (Minitab weist ebenfalls keines aus).",
+      "en": "Fleiss κ extends Cohen's idea to more than two raters and any number of categories. It averages the per-subject pairwise agreement P_i and normalises it against the chance agreement P_e derived from the class marginals. The classical formula (`fleiss-1971`) requires an equal number of ratings per subject; when rater counts differ across subjects Qprovement switches to the {{term:kappa}} variant per Randolph (free-marginal), for which no closed-form SE exists — SE₀, z and p are then NaN. The closed-form standard error of Fleiss, Nee & Landis (1979) holds under H₀ κ = 0 only; it therefore feeds the one-sided z-test and no confidence interval (Minitab reports none either)."
     }
   },
 
@@ -64,10 +64,10 @@
       },
       {
         "label": "SE₀(κ)",
-        "latex": "\\mathrm{SE}_0^2 = \\frac{2}{N n (n-1)} \\cdot \\frac{P_e - (2n-3) P_e^2 + 2(n-2) \\sum_j \\bar p_j^{\\,3}}{(1 - P_e)^2}",
+        "latex": "\\mathrm{SE}_0^2 = \\frac{2}{N n (n-1)} \\cdot \\frac{\\left(\\sum_j \\bar p_j \\bar q_j\\right)^2 - \\sum_j \\bar p_j \\bar q_j (\\bar q_j - \\bar p_j)}{\\left(\\sum_j \\bar p_j \\bar q_j\\right)^2}, \\quad \\bar q_j = 1 - \\bar p_j",
         "description": {
-          "de": "Standardfehler unter H₀ κ = 0 nach Fleiss (1971), n = Bewertungen je Teil; nur für den Test",
-          "en": "Standard error under H₀ κ = 0 per Fleiss (1971), n = ratings per subject; used for the test only"
+          "de": "Standardfehler unter H₀ κ = 0 nach Fleiss, Nee & Landis (1979), n = Bewertungen je Teil; binär vereinfacht zu 2/(N n (n−1)); nur für den Test",
+          "en": "Standard error under H₀ κ = 0 per Fleiss, Nee & Landis (1979), n = ratings per subject; reduces to 2/(N n (n−1)) for binary data; used for the test only"
         }
       },
       {
@@ -89,8 +89,8 @@
         "en": "Categorical ratings (binary or nominal); pairwise {{term:weighted-kappa}} is more informative for ordinal scales"
       },
       {
-        "de": "Für die klassische SE nach Fleiss (1971): gleiche Bewertungszahl pro Teil",
-        "en": "For the classical Fleiss (1971) SE: equal rater count per subject"
+        "de": "Für den Standardfehler unter H₀: gleiche Bewertungszahl pro Teil",
+        "en": "For the standard error under H₀: equal rater count per subject"
       }
     ],
     "limitations": [
@@ -109,6 +109,9 @@
       },
       {
         "source": "Randolph, J. J. (2005) — Free-marginal multirater kappa, Joensuu Learning and Instruction Symposium"
+      },
+      {
+        "source": "Fleiss, J. L., Nee, J. C. M., & Landis, J. R. (1979) — Large sample variance of kappa in the case of different sets of raters, Psychological Bulletin 86(5), 974–977"
       },
       {
         "source": "Fleiss, J. L., Levin, B. & Paik, M. C. (2003) — Statistical Methods for Rates and Proportions, 3rd Edition, Wiley (§18)"
@@ -181,8 +184,8 @@
       "date": "2026-09-28",
       "type": "fix",
       "description": {
-        "de": "Konfidenzintervall entfernt: der Fleiss-Standardfehler gilt nur unter H₀ κ = 0. Stattdessen SE₀, z und einseitiger p-Wert",
-        "en": "Removed the confidence interval: the Fleiss standard error holds under H₀ κ = 0 only. Reports SE₀, z and a one-sided p value instead"
+        "de": "Konfidenzintervall entfernt: der Fleiss-Standardfehler gilt nur unter H₀ κ = 0. Stattdessen SE₀, z und einseitiger p-Wert; SE₀ nach Fleiss, Nee & Landis (1979) statt der Fleiss-(1971)-Varianz, die nur bei gleichverteilten Klassen stimmt",
+        "en": "Removed the confidence interval: the Fleiss standard error holds under H₀ κ = 0 only. Reports SE₀, z and a one-sided p value instead; SE₀ follows Fleiss, Nee & Landis (1979) instead of the Fleiss (1971) variance, which holds only for uniform class marginals"
       },
       "breaking": true
     },

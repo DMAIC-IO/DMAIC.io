@@ -455,7 +455,7 @@ export default {
           },
           {
             type: 'paragraph',
-            content: 'Bewertet wird das **kleinste verfügbare κ** aus Fleiss κ gesamt, κ innerhalb jedes Prüfers und κ jedes Prüfers gegen die Referenz: ≥ 0,9 fähig, ≥ 0,7 bedingt fähig, darunter nicht fähig. Welche κ-Werte Heft 10 genau heranzieht, ließ sich am Originaltext nicht prüfen; das kleinste κ ist die vorsichtige Auslegung.',
+            content: 'Bewertet wird das **kleinste verfügbare κ** aus Fleiss κ gesamt, κ innerhalb jedes Prüfers und κ jedes Prüfers gegen die Referenz: ≥ 0,9 fähig, ≥ 0,7 bedingt fähig, darunter nicht fähig. Heft 10 (2019, Verfahren 7) nimmt ebenfalls das Minimum aller ermittelten κ, rechnet κ gegen die Referenz aber als Fleiss κ und bewertet zusätzlich alle Prüfer gemeinsam gegen die Referenz; D.Mike nutzt hier Cohens κ je Prüfer. Die κ-Ampeln in den Ergebnistabellen folgen den Grenzen der gewählten Regel.',
           },
           {
             type: 'definition',
@@ -499,7 +499,7 @@ export default {
           },
           {
             type: 'paragraph',
-            content: 'The **smallest available κ** is rated, taken from Fleiss κ overall, each appraiser\'s within-appraiser κ and each appraiser\'s κ vs. reference: ≥ 0.9 capable, ≥ 0.7 conditionally capable, below that not capable. Which κ values Heft 10 applies the limits to could not be checked against the original text; the smallest κ is the cautious reading.',
+            content: 'The **smallest available κ** is rated, taken from Fleiss κ overall, each appraiser\'s within-appraiser κ and each appraiser\'s κ vs. reference: ≥ 0.9 capable, ≥ 0.7 conditionally capable, below that not capable. Heft 10 (2019, Verfahren 7) also takes the minimum of all κ values, but computes κ vs. reference as Fleiss κ and additionally rates all appraisers together against the reference; D.Mike uses Cohen\'s κ per appraiser here. The κ dots in the result tables follow the limits of the selected rule.',
           },
           {
             type: 'definition',

@@ -1796,6 +1796,8 @@
       "interp_good": "Fleiss κ = {kappa}, Effektivität ≥ {minEff} %. Prüfprozess reproduzierbar und mit der Referenz konsistent.",
       "interp_marginal": "Fleiss κ = {kappa}, minimale Effektivität {minEff} %. Grenzwertig — Prüfer schulen oder Bewertungskriterien schärfen.",
       "interp_unacceptable": "Fleiss κ = {kappa}, minimale Effektivität {minEff} %. Nicht akzeptabel — Prüfprozess muss überarbeitet werden.",
+      "interp_marginal_driver": "{decisive}. Grenzwertig — Prüfer schulen oder Bewertungskriterien schärfen.",
+      "interp_unacceptable_driver": "{decisive}. Nicht akzeptabel — Prüfprozess muss überarbeitet werden.",
       "criteria": {
         "title": "Urteilskriterien",
         "criterion": "Kriterium",
