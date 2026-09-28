@@ -237,6 +237,10 @@ export default {
           },
           {
             type: 'paragraph',
+            content: 'Auf der MR-, R- und S-Karte gelten nur die Regeln 1–4 (wie in Minitab). Die Streuungsgröße ist schief verteilt; Zonen aus (OEG − Mittellinie)/3 hätten dort keine definierte Fehlalarm-Rate.',
+          },
+          {
+            type: 'paragraph',
             content: 'Die Regeln sind Hinweise, nicht Urteile. Jede Verletzung sollte zur Ursachenrecherche führen, nicht automatisch zum Alarm. Zu viele aktivierte Regeln erzeugen Fehlalarme.',
           },
         ],
@@ -254,6 +258,10 @@ export default {
               '2 of 3 points in zone A (>2σ) — near-limit excursion more often than expected.',
               '4 of 5 points in zone B or beyond (>1σ) — process spreading wider than normal.',
             ],
+          },
+          {
+            type: 'paragraph',
+            content: 'On the MR, R and S chart only rules 1–4 apply (as in Minitab). The dispersion statistic is skewed, so zones built from (UCL − center line)/3 would have no defined false-alarm rate there.',
           },
           {
             type: 'paragraph',

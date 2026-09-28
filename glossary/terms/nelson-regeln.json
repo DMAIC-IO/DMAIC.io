@@ -29,6 +29,10 @@
         ]
       },
       {
+        "type": "paragraph",
+        "text": "Auf der MR-, R- und S-Karte werden nur die Regeln 1–4 geprüft (wie in Minitab); die Zonenregeln 5–8 gelten nur für die Einzelwert- bzw. X̄-Karte."
+      },
+      {
         "type": "note",
         "text": "**Nicht alle Regeln gleichzeitig aktivieren.** Jede zusätzliche Regel erhöht die Fehlalarm-Rate — bei allen 8 aktiven Regeln steigt das Risiko eines Falschalarms auf ca. 5 % pro Punkt. Praxisempfehlung: Regel 1 immer, Regeln 2, 5, 6 oft; Regeln 7 und 8 nur bei begründetem Verdacht."
       }
@@ -50,6 +54,10 @@
           "**Rule 7** — 15 points in a row within zone C (variance too small → mixing / wrong limits)",
           "**Rule 8** — 8 points in a row outside zone C (no point near the centre line)"
         ]
+      },
+      {
+        "type": "paragraph",
+        "text": "On the MR, R and S chart only rules 1–4 are checked (as in Minitab); the zone rules 5–8 apply to the individuals or X̄ chart only."
       },
       {
         "type": "note",
