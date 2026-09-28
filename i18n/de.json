@@ -4425,6 +4425,7 @@
       "usl": "OSG (USL)",
       "lsl": "USG (LSL)",
       "specHint": "Für Cp/Cpk-Berechnung. Werden als Linien in der Karte angezeigt.",
+      "secondaryRulesHint": "Auf der MR-, R- und S-Karte gelten nur die Tests 1–4; die Tests 5–8 prüfen nur die Einzelwert- bzw. X̄-Karte.",
       "sectionNelson": "Nelson Rules",
       "subchart_i": "I-Chart — {col}",
       "subchart_mr": "MR-Chart — {col}",

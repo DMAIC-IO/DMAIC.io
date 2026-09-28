@@ -26,7 +26,7 @@ import {
 } from '../../ui/column-picker.js';
 import {
   getChartType, NELSON_RULES,
-  evaluateNelsonRules, computeCapability, capabilitySigma,
+  evaluateNelsonRules, secondaryChartRules, computeCapability, capabilitySigma,
 } from '../../engines/control-chart-engine.js';
 import {
   csvPayloadToWorksheetState, loadExampleViaWorksheet,
@@ -408,7 +408,8 @@ const mod = createModule({
           const scData = result.subcharts[sc.id];
           const scViolations = sc.id === primaryId
             ? primaryViolations
-            : evaluateNelsonRules(scData.values, scData.cl, scData.sigma, this.model.enabledRules);
+            : evaluateNelsonRules(scData.values, scData.cl, scData.sigma,
+              secondaryChartRules(this.model.enabledRules));
           const isStable = scViolations.length === 0;
           const violationIndices = new Set(scViolations.map(v => v.index));
           const chartName = _t(`subchart_${  sc.id}`, { col: colName });

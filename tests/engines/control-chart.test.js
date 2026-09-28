@@ -11,6 +11,8 @@ import {
   evaluateNelsonRules,
   computeCapability,
   capabilitySigma,
+  secondaryChartRules,
+  SECONDARY_CHART_RULES,
 } from '../../js/engines/control-chart-engine.js';
 
 async function loadFixture(path) {
@@ -220,5 +222,25 @@ suite('Control Charts — Nelson tests 4, 7, 8 (hand cases, Nelson 1984 / Minita
   });
   test('rule 8: a point exactly at 1σ is not beyond', () => {
     assertDeepEqual(flagged([1.5, -1.5, 1.5, -1.5, 1, 1.5, -1.5, 1.5, -1.5], 8), []);
+  });
+});
+
+suite('Control Charts — rules on the MR/R/S chart (Melzer E-023)', () => {
+  test('SECONDARY_CHART_RULES is tests 1–4', () => {
+    assertDeepEqual(SECONDARY_CHART_RULES, [1, 2, 3, 4]);
+  });
+  test('all eight enabled → 1–4', () => {
+    assertDeepEqual(secondaryChartRules([1, 2, 3, 4, 5, 6, 7, 8]), [1, 2, 3, 4]);
+  });
+  test('only zone tests enabled → none', () => {
+    assertDeepEqual(secondaryChartRules([5, 6]), []);
+  });
+  test('order is kept and the input is not mutated', () => {
+    const input = [4, 2, 6];
+    assertDeepEqual(secondaryChartRules(input), [4, 2]);
+    assertDeepEqual(input, [4, 2, 6]);
+  });
+  test('an empty rule list yields no violations', () => {
+    assertDeepEqual(evaluateNelsonRules([0, 5, 0, 5], 0, 1, secondaryChartRules([5, 6])), []);
   });
 });

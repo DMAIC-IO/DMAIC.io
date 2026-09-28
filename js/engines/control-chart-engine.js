@@ -36,6 +36,22 @@ export const NELSON_RULES = [
 /** Default enabled rules (1–6 on, 7–8 off) */
 export const DEFAULT_ENABLED_RULES = [1, 2, 3, 4, 5, 6];
 
+/**
+ * Tests allowed on the dispersion chart (MR, R, S). As in Minitab, the zone
+ * tests 5–8 are skipped there: the statistic is skewed, so zones built from
+ * (UCL − CL)/3 have no defined false-alarm rate.
+ */
+export const SECONDARY_CHART_RULES = [1, 2, 3, 4];
+
+/**
+ * Restrict enabled rule ids to those allowed on the MR/R/S chart.
+ * @param {number[]} enabledRules
+ * @returns {number[]} enabled ids within SECONDARY_CHART_RULES, order kept
+ */
+export function secondaryChartRules(enabledRules) {
+  return enabledRules.filter(id => SECONDARY_CHART_RULES.includes(id));
+}
+
 // ── Chart Type Definitions ──
 
 /**

@@ -4425,6 +4425,7 @@
       "usl": "USL",
       "lsl": "LSL",
       "specHint": "For Cp/Cpk calculation. Shown as lines on the chart.",
+      "secondaryRulesHint": "On the MR, R and S chart only tests 1–4 apply; tests 5–8 check the individuals or X̄ chart only.",
       "sectionNelson": "Nelson Rules",
       "subchart_i": "I-Chart — {col}",
       "subchart_mr": "MR-Chart — {col}",
