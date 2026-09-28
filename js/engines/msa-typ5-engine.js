@@ -314,6 +314,7 @@ export function effectiveness(ratings, references, opts) {
  * @param {Object} references
  * @param {object} opts {positive, alpha, ambiguousParts?}
  * @returns {{perAppraiser: Object<string, {missRate, falseAlarmRate, biasRate}>}}
+ *   missRate/falseAlarmRate: {rate, ci95, n} — n is the denominator; rate is 0 when n = 0.
  */
 export function missAndFA(ratings, references, opts) {
   const { positive, alpha } = opts;
@@ -333,12 +334,126 @@ export function missAndFA(ratings, references, opts) {
     const miss = wilsonCI(v.missNum, v.missDen, alpha);
     const fa   = wilsonCI(v.faNum,   v.faDen,   alpha);
     out[a] = {
-      missRate:       { rate: miss.rate, ci95: miss.ci95 },
-      falseAlarmRate: { rate: fa.rate,   ci95: fa.ci95   },
+      missRate:       { rate: miss.rate, ci95: miss.ci95, n: v.missDen },
+      falseAlarmRate: { rate: fa.rate,   ci95: fa.ci95,   n: v.faDen   },
       biasRate:       { value: miss.rate - fa.rate },
     };
   }
   return { perAppraiser: out };
+}
+
+const VERDICT_LEVELS = ['good', 'marginal', 'unacceptable'];
+
+/** AIAG MSA 4th ed., ch. III-C limits; direction 'min' = higher is better. */
+const AIAG_LIMITS = {
+  fleissKappa:    { good: 0.75, marginal: 0.40, direction: 'min' },
+  effectiveness:  { good: 0.90, marginal: 0.80, direction: 'min' },
+  missRate:       { good: 0.02, marginal: 0.05, direction: 'max' },
+  falseAlarmRate: { good: 0.05, marginal: 0.10, direction: 'max' },
+};
+
+/** Bosch Heft 10 limits, applied to the smallest available κ. */
+const BOSCH_LIMITS = { good: 0.9, marginal: 0.7, direction: 'min' };
+
+// Rates such as 1/50 must land exactly on a limit like 0.02 despite binary floating point.
+const LIMIT_EPS = 1e-12;
+
+function _rateLevel(value, { good, marginal, direction }) {
+  if (direction === 'min') {
+    if (value >= good - LIMIT_EPS) return 'good';
+    return value >= marginal - LIMIT_EPS ? 'marginal' : 'unacceptable';
+  }
+  if (value <= good + LIMIT_EPS) return 'good';
+  return value <= marginal + LIMIT_EPS ? 'marginal' : 'unacceptable';
+}
+
+function _criterion(id, value, appraiser, limits, extra = {}) {
+  const { good, marginal, direction } = limits;
+  return { id, value, level: _rateLevel(value, limits), appraiser, limits: { good, marginal }, direction, ...extra };
+}
+
+/** Extreme value over the appraisers; ties go to the first appraiser in sorted order. */
+function _extreme(perAppraiser, pick, direction) {
+  let best = null;
+  for (const a of Object.keys(perAppraiser).sort()) {
+    const v = pick(perAppraiser[a]);
+    if (!Number.isFinite(v)) continue;
+    if (!best || (direction === 'min' ? v < best.value : v > best.value)) best = { value: v, appraiser: a };
+  }
+  return best;
+}
+
+/** Rate of a miss/false-alarm entry, or NaN when its denominator is 0. */
+const _ratedShare = (x) => (x && x.n > 0 ? x.rate : NaN);
+
+/**
+ * Verdict of an attribute agreement study.
+ *
+ * AIAG MSA 4th ed., ch. III-C: the worst of Fleiss κ, the lowest
+ * effectiveness, the highest miss rate and the highest false-alarm rate.
+ * Miss and false alarm count only for binary data with a given reference —
+ * against the appraisers' consensus a miss they all share is invisible, so
+ * `referenceNote` is set instead.
+ * Bosch Heft 10: the smallest available κ (Fleiss, within appraiser, vs.
+ * reference) with limits 0.9 / 0.7.
+ *
+ * Level = worst criterion; driver = first criterion in table order at that
+ * level. Nothing evaluable → 'marginal' with driver null.
+ *
+ * @param {object} o
+ * @param {'aiag'|'bosch'} [o.ruleSet] Unknown values fall back to 'aiag'.
+ * @param {string} o.type 'binary' | 'nominal' | 'ordinal'
+ * @param {'given'|'consensus'|'none'} o.referenceSource
+ * @param {{kappa: number}} o.fleiss
+ * @param {Object<string, object>} o.perAppraiser analyze().perAppraiser
+ * @returns {{ruleSet: string, level: string, driver: ?string, driverAppraiser: ?string,
+ *   referenceNote: ?string, criteria: Array<{id: string, value: number, level: string,
+ *   appraiser: ?string, source?: string, limits: {good: number, marginal: number}, direction: 'min'|'max'}>}}
+ */
+export function buildVerdict({ ruleSet, type, referenceSource, fleiss, perAppraiser }) {
+  const rs = ruleSet === 'bosch' ? 'bosch' : 'aiag';
+  const criteria = [];
+  let referenceNote = null;
+  if (rs === 'aiag') {
+    if (Number.isFinite(fleiss.kappa)) {
+      criteria.push(_criterion('fleissKappa', fleiss.kappa, null, AIAG_LIMITS.fleissKappa));
+    }
+    const eff = _extreme(perAppraiser, v => v.vsReference?.effectiveness?.rate, 'min');
+    if (eff) criteria.push(_criterion('effectiveness', eff.value, eff.appraiser, AIAG_LIMITS.effectiveness));
+    if (type === 'binary' && referenceSource === 'given') {
+      const miss = _extreme(perAppraiser, v => _ratedShare(v.vsReference?.missRate), 'max');
+      if (miss) criteria.push(_criterion('missRate', miss.value, miss.appraiser, AIAG_LIMITS.missRate));
+      const fa = _extreme(perAppraiser, v => _ratedShare(v.vsReference?.falseAlarmRate), 'max');
+      if (fa) criteria.push(_criterion('falseAlarmRate', fa.value, fa.appraiser, AIAG_LIMITS.falseAlarmRate));
+    } else if (type === 'binary' && referenceSource === 'consensus') {
+      referenceNote = 'missFaNotRated';
+    }
+  } else {
+    const candidates = [];
+    if (Number.isFinite(fleiss.kappa)) candidates.push({ value: fleiss.kappa, appraiser: null, source: 'fleiss' });
+    for (const a of Object.keys(perAppraiser).sort()) {
+      const v = perAppraiser[a];
+      if (Number.isFinite(v.withinKappa?.kappa)) {
+        candidates.push({ value: v.withinKappa.kappa, appraiser: a, source: 'within' });
+      }
+      if (Number.isFinite(v.vsReference?.kappa?.kappa)) {
+        candidates.push({ value: v.vsReference.kappa.kappa, appraiser: a, source: 'vsReference' });
+      }
+    }
+    if (candidates.length) {
+      const m = candidates.reduce((x, y) => (y.value < x.value ? y : x));
+      criteria.push(_criterion('minKappa', m.value, m.appraiser, BOSCH_LIMITS, { source: m.source }));
+    }
+  }
+  if (!criteria.length) {
+    return { ruleSet: rs, level: 'marginal', driver: null, driverAppraiser: null, referenceNote, criteria };
+  }
+  const worst = Math.max(...criteria.map(c => VERDICT_LEVELS.indexOf(c.level)));
+  const d = criteria.find(c => VERDICT_LEVELS.indexOf(c.level) === worst);
+  return {
+    ruleSet: rs, level: VERDICT_LEVELS[worst], driver: d.id, driverAppraiser: d.appraiser,
+    referenceNote, criteria,
+  };
 }
 
 /**
@@ -586,24 +701,15 @@ export function analyze(input) {
     sd = signalDetection(ratings, references, { positive: levels[0] });
   }
 
-  // ─── Verdikt-Ampel (AIAG MSA 4th Ed., Kap. III-B) ───
+  // ─── Verdict (AIAG MSA 4th ed., ch. III-C, or Bosch Heft 10) ───
+  const verdict = buildVerdict({
+    ruleSet: params.ruleSet, type, referenceSource, fleiss, perAppraiser: perAppr,
+  });
   const effRates = Object.values(perAppr)
     .map(x => x.vsReference?.effectiveness?.rate)
     .filter(Number.isFinite);
   const minEff = effRates.length ? Math.min(...effRates) : null;
   const kappaVal = Number.isFinite(fleiss.kappa) ? fleiss.kappa : null;
-
-  let level, driver;
-  if (kappaVal !== null && kappaVal >= 0.75 && (minEff === null || minEff >= 0.90)) {
-    level = 'good';
-    driver = 'fleissKappa';
-  } else if ((kappaVal !== null && kappaVal < 0.40) || (minEff !== null && minEff < 0.80)) {
-    level = 'unacceptable';
-    driver = (kappaVal !== null && kappaVal < 0.40) ? 'fleissKappa' : 'effectiveness';
-  } else {
-    level = 'marginal';
-    driver = (minEff !== null && minEff < 0.90) ? 'effectiveness' : 'fleissKappa';
-  }
 
   // ─── reps: höchste (part×appraiser)-Wiederholungszahl im Datensatz ───
   const repMap = new Map();
@@ -643,16 +749,14 @@ export function analyze(input) {
     perPart,
     disagreement,
     overall,
-    verdict: {
-      level,
-      driver,
-      thresholds: { kappaGood: 0.75, kappaMarginal: 0.40, effectivenessGood: 0.90, effectivenessMarginal: 0.80 },
-    },
+    verdict,
     interpretation: {
-      textKey: `modules.msa-typ5.interp_${level}`,
+      textKey: `modules.msa-typ5.interp_${verdict.level}`,
       params: {
         kappa: kappaVal !== null ? kappaVal.toFixed(3) : '—',
         minEff: minEff !== null ? (minEff * 100).toFixed(1) : '—',
+        driver: verdict.driver ?? '',
+        ruleSet: verdict.ruleSet,
       },
     },
   };
@@ -832,7 +936,7 @@ export function disagreementByAppraiser(ratings, references, opts) {
 
 /**
  * Die zwei Gesamtauswertungen über alle Prüfer hinweg (AIAG MSA 4th Ed.,
- * Kap. III-B, „Between Appraisers" und „All Appraisers vs Standard"):
+ * Kap. III-C, „Between Appraisers" und „All Appraisers vs Standard"):
  *
  * - `betweenAppraisers` — Anteil der Teile, an denen ALLE Prüfer über ALLE
  *   Wiederholungen dasselbe bewertet haben. Braucht keine Referenz.

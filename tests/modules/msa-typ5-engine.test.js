@@ -5,7 +5,7 @@
  */
 
 import { suite, test, assert, assertClose } from '../test-utils.js';
-import { validate, ERR, WARN, kappaTest, cohenKappa, fleissKappa, wilsonCI, effectiveness, missAndFA, signalDetection, deriveConsensus, analyze } from '../../js/engines/msa-typ5-engine.js';
+import { validate, ERR, WARN, kappaTest, cohenKappa, fleissKappa, wilsonCI, effectiveness, missAndFA, signalDetection, deriveConsensus, analyze, buildVerdict } from '../../js/engines/msa-typ5-engine.js';
 
 // Fixture-Loader — löst relativ zur eigenen JS-URL auf, damit
 // runner.html-Pfad (../fixtures/...) das richtige Verzeichnis erreicht.
@@ -499,7 +499,7 @@ suite('msa-typ5-engine — analyze (Return-Shape)', () => {
     assert(r.verdict.level === 'unacceptable',
       `got ${r.verdict.level}, kappa=${r.betweenAppraisers.fleissKappa.kappa}, ` +
       `minEff=${Math.min(...Object.values(r.perAppraiser).map(x => x.vsReference?.effectiveness?.rate).filter(Number.isFinite))}`);
-    assert(['fleissKappa', 'effectiveness'].includes(r.verdict.driver));
+    assert(['fleissKappa', 'effectiveness', 'missRate', 'falseAlarmRate'].includes(r.verdict.driver));
   });
 
   test('Konsens-Fallback aktiviert wenn references === null', () => {
@@ -713,5 +713,155 @@ suite('msa-typ5-engine — analyze (disagreement, gemischte Teile)', () => {
     const d = analyze(s).disagreement;
     assert(d.B.mixedParts.length === 1);
     assert(d.B.confusionPairs.length === 0, 'ohne Referenz keine Verwechslungsarten');
+  });
+});
+
+// ─── Verdict: AIAG MSA 4th ed. ch. III-C and Bosch Heft 10 ─────
+
+/**
+ * Binary study with appraisers A, B, C and two trials: parts 1…parts/2 are
+ * "ok" by reference, the rest "nok". `wrong[a]` lists [part, trial] pairs
+ * that appraiser a rates opposite to the reference. Positive = "ok", so a
+ * wrong "nok" part is a miss and a wrong "ok" part a false alarm.
+ */
+function studyFrom({ parts = 50, wrong = {}, withRef = true, params } = {}) {
+  const references = {};
+  for (let p = 1; p <= parts; p++) references[p] = p <= parts / 2 ? 'ok' : 'nok';
+  const ratings = [];
+  for (const a of ['A', 'B', 'C']) for (let p = 1; p <= parts; p++) for (const rep of [1, 2]) {
+    const flip = (wrong[a] || []).some(([wp, wr]) => wp === p && wr === rep);
+    const ref = references[p];
+    ratings.push({ part: p, appraiser: a, rep, value: flip ? (ref === 'ok' ? 'nok' : 'ok') : ref });
+  }
+  return { type: 'binary', levels: ['ok', 'nok'], ratings,
+           references: withRef ? references : null, ...(params ? { params } : {}) };
+}
+const crit = (r, id) => r.verdict.criteria.find(c => c.id === id);
+const LEVEL_ORDER = ['good', 'marginal', 'unacceptable'];
+
+suite('msa-typ5-engine — verdict AIAG', () => {
+  test('B2-009: all appraisers pass the same bad part → κ = 1, miss 1/3 → unacceptable', () => {
+    const both = [[4, 1], [4, 2]];
+    const r = analyze(studyFrom({ parts: 6, wrong: { A: both, B: both, C: both } }));
+    assertClose(r.betweenAppraisers.fleissKappa.kappa, 1, 1e-12);
+    assertClose(crit(r, 'missRate').value, 1 / 3, 1e-12);
+    assert(r.verdict.level === 'unacceptable');
+    assert(r.verdict.driver === 'missRate', `driver ${r.verdict.driver}`);
+    assert(r.verdict.driverAppraiser === 'A', 'ties go to the first appraiser in sorted order');
+  });
+
+  test('criteria come in table order with limits and direction', () => {
+    const r = analyze(studyFrom({}));
+    assert(r.verdict.ruleSet === 'aiag');
+    assert(r.verdict.criteria.map(c => c.id).join() === 'fleissKappa,effectiveness,missRate,falseAlarmRate');
+    const m = crit(r, 'missRate');
+    assert(m.limits.good === 0.02 && m.limits.marginal === 0.05 && m.direction === 'max');
+    const k = crit(r, 'fleissKappa');
+    assert(k.limits.good === 0.75 && k.limits.marginal === 0.40 && k.direction === 'min' && k.appraiser === null);
+    assert(r.verdict.level === 'good' && r.verdict.referenceNote === null);
+    assert(!('thresholds' in r.verdict));
+  });
+
+  test('miss rate exactly 2 % is good, 4 % marginal', () => {
+    const ok = analyze(studyFrom({ wrong: { B: [[40, 1]] } }));
+    assertClose(crit(ok, 'missRate').value, 0.02, 1e-15);
+    assert(crit(ok, 'missRate').level === 'good');
+    const bad = analyze(studyFrom({ wrong: { B: [[40, 1], [41, 1]] } }));
+    assert(crit(bad, 'missRate').level === 'marginal');
+    assert(bad.verdict.driver === 'missRate' && bad.verdict.driverAppraiser === 'B');
+  });
+
+  test('false-alarm rate 4 % good, exactly 10 % marginal, 12 % unacceptable', () => {
+    const fa = (n) => analyze(studyFrom({ wrong: { C: Array.from({ length: n }, (_, i) => [1 + (i % 25), 1 + Math.floor(i / 25)]) } }));
+    assert(crit(fa(2), 'falseAlarmRate').level === 'good');
+    assertClose(crit(fa(5), 'falseAlarmRate').value, 0.10, 1e-15);
+    assert(crit(fa(5), 'falseAlarmRate').level === 'marginal');
+    assert(crit(fa(6), 'falseAlarmRate').level === 'unacceptable');
+    assert(fa(6).verdict.driverAppraiser === 'C');
+  });
+
+  test('effectiveness exactly 90 % is good', () => {
+    const w = [];
+    for (let i = 0; i < 5; i++) { w.push([1 + i, 1]); w.push([26 + i, 1]); }
+    const r = analyze(studyFrom({ wrong: { A: w } }));
+    assertClose(crit(r, 'effectiveness').value, 0.9, 1e-15);
+    assert(crit(r, 'effectiveness').level === 'good');
+    assert(crit(r, 'effectiveness').appraiser === 'A');
+  });
+
+  test('worst level wins; ties go to the earlier criterion', () => {
+    // A: miss 2/50 = 4 % (marginal), false alarm 3/50 = 6 % (marginal), effectiveness 95 %.
+    const r = analyze(studyFrom({ wrong: { A: [[30, 1], [31, 1], [1, 1], [2, 1], [3, 1]] } }));
+    assert(crit(r, 'missRate').level === 'marginal' && crit(r, 'falseAlarmRate').level === 'marginal');
+    const worst = Math.max(...r.verdict.criteria.map(c => LEVEL_ORDER.indexOf(c.level)));
+    assert(r.verdict.level === LEVEL_ORDER[worst] && r.verdict.level === 'marginal');
+    assert(r.verdict.driver === 'missRate', `driver ${r.verdict.driver}`);
+  });
+
+  test('binary with consensus reference → miss/FA not rated, note set', () => {
+    const r = analyze(studyFrom({ wrong: { A: [[40, 1], [41, 1], [42, 1]] }, withRef: false }));
+    assert(r.meta.referenceSource === 'consensus');
+    assert(!crit(r, 'missRate') && !crit(r, 'falseAlarmRate'));
+    assert(crit(r, 'effectiveness'), 'effectiveness against consensus stays');
+    assert(r.verdict.referenceNote === 'missFaNotRated');
+  });
+
+  test('nominal with reference → no miss/FA criteria, no note', () => {
+    const r = analyze({ ...studyFrom({}), type: 'nominal' });
+    assert(!crit(r, 'missRate') && r.verdict.referenceNote === null);
+  });
+
+  test('appraiser with 0/0 miss rate is skipped, not rated as 0 %', () => {
+    const v = buildVerdict({
+      ruleSet: 'aiag', type: 'binary', referenceSource: 'given',
+      fleiss: { kappa: 0.9 },
+      perAppraiser: {
+        A: { vsReference: { effectiveness: { rate: 1 }, missRate: { rate: 0, n: 0 }, falseAlarmRate: { rate: 0, n: 0 } } },
+      },
+    });
+    assert(!v.criteria.some(c => c.id === 'missRate' || c.id === 'falseAlarmRate'));
+    assert(v.level === 'good');
+  });
+
+  test('nothing evaluable → marginal, driver null', () => {
+    const v = buildVerdict({ ruleSet: 'aiag', type: 'nominal', referenceSource: 'none', fleiss: { kappa: NaN }, perAppraiser: {} });
+    assert(v.level === 'marginal' && v.driver === null && v.criteria.length === 0);
+  });
+
+  test('unknown ruleSet → aiag; interpretation carries driver and ruleSet', () => {
+    const r = analyze(studyFrom({ params: { ruleSet: 'xyz' } }));
+    assert(r.verdict.ruleSet === 'aiag');
+    assert(r.interpretation.params.ruleSet === 'aiag');
+    assert(r.interpretation.params.driver === r.verdict.driver);
+  });
+});
+
+suite('msa-typ5-engine — verdict Bosch', () => {
+  test('smallest κ over Fleiss, within and vs-reference drives', () => {
+    const r = analyze(studyFrom({ wrong: { B: [[1, 1], [2, 1], [30, 1]] }, params: { ruleSet: 'bosch' } }));
+    const c = crit(r, 'minKappa');
+    const all = [r.betweenAppraisers.fleissKappa.kappa,
+      ...Object.values(r.perAppraiser).flatMap(v => [v.withinKappa?.kappa, v.vsReference?.kappa?.kappa])]
+      .filter(Number.isFinite);
+    assertClose(c.value, Math.min(...all), 1e-15);
+    assert(c.appraiser === 'B' && ['within', 'vsReference'].includes(c.source));
+    assert(r.verdict.criteria.length === 1 && r.verdict.ruleSet === 'bosch');
+    assert(r.verdict.driver === 'minKappa' && r.verdict.driverAppraiser === 'B');
+  });
+
+  test('limits 0.9 / 0.7 applied to the smallest κ', () => {
+    const r = analyze(studyFrom({ wrong: { A: [[1, 1], [2, 1], [3, 1], [30, 1]] }, params: { ruleSet: 'bosch' } }));
+    const c = crit(r, 'minKappa');
+    const expected = c.value >= 0.9 ? 'good' : c.value >= 0.7 ? 'marginal' : 'unacceptable';
+    assert(c.level === expected && r.verdict.level === expected);
+    assert(c.limits.good === 0.9 && c.limits.marginal === 0.7 && c.direction === 'min');
+  });
+
+  test('Bosch ignores miss/FA: shared miss with κ = 1 stays good', () => {
+    const both = [[4, 1], [4, 2]];
+    const r = analyze(studyFrom({ parts: 6, wrong: { A: both, B: both, C: both }, params: { ruleSet: 'bosch' } }));
+    // Every appraiser disagrees with the reference on part 4, so κ vs. reference < 1.
+    assert(crit(r, 'minKappa').source === 'vsReference');
+    assert(r.verdict.referenceNote === null);
   });
 });
