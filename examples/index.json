@@ -2481,12 +2481,12 @@
       "id": "msa-typ5-binary-marginal",
       "type": "project",
       "title": {
-        "de": "MSA Typ 5: binär, grenzwertig (gelb)",
-        "en": "MSA Type 5: binary, marginal (yellow)"
+        "de": "MSA Typ 5: binär, κ grenzwertig, Miss-Rate zu hoch (rot)",
+        "en": "MSA Type 5: binary, marginal κ, miss rate too high (red)"
       },
       "description": {
-        "de": "3 Prüfer × 30 Teile × 3 Wdh (binär i.O./n.i.O.). Fleiss κ ≈ 0,58, Effektivität 83–88 % — Prüfprozess grenzwertig. Fünf Teile mit unausgewogenen Wiederholungen; beim Entfernen der Referenz-Spalte fallen sie in einen ambigen Konsens (Warnung W_AMBIGUOUS_CONSENSUS).",
-        "en": "3 appraisers × 30 parts × 3 replicates (binary OK/NOK). Fleiss κ ≈ 0.58, effectiveness 83–88 % — marginal gage. Five parts with unbalanced replicates; removing the reference column triggers ambiguous consensus (W_AMBIGUOUS_CONSENSUS)."
+        "de": "3 Prüfer × 30 Teile × 3 Wdh (binär i.O./n.i.O.). Fleiss κ ≈ 0,58 und Effektivität 83–88 % allein wären grenzwertig; nach AIAG entscheiden aber Miss-Rate (bis 24 %) und Fehlalarm-Rate (bis 23 %) — Prüfprozess nicht akzeptabel. Fünf Teile mit unausgewogenen Wiederholungen; beim Entfernen der Referenz-Spalte fallen sie in einen ambigen Konsens (Warnung W_AMBIGUOUS_CONSENSUS).",
+        "en": "3 appraisers × 30 parts × 3 replicates (binary OK/NOK). Fleiss κ ≈ 0.58 and effectiveness 83–88 % alone would be marginal; under AIAG the miss rate (up to 24 %) and false-alarm rate (up to 23 %) decide — the gage is not acceptable. Five parts with unbalanced replicates; removing the reference column triggers ambiguous consensus (W_AMBIGUOUS_CONSENSUS)."
       },
       "source": "Qprovement synthetisch",
       "license": "public-domain",
@@ -2537,8 +2537,8 @@
         "en": "MSA Type 5: counting test (training)"
       },
       "description": {
-        "de": "3 Prüfer × 20 Vorlagen × 2 Wiederholungen (binär i.O./n.i.O.). Die klassische Zählübung aus dem Training: Fleiss κ ≈ 0,79, Effektivität 85–90 %, Verdikt gelb. Enthält alle drei Lehrbilder — ein zu strenger Prüfer, ein mit sich selbst uneiniger Prüfer und eine Vorlage, bei der sich alle einig und alle falsch sind.",
-        "en": "3 appraisers × 20 templates × 2 replicates (binary OK/NOK). The classic counting exercise from training: Fleiss κ ≈ 0.79, effectiveness 85–90 %, marginal verdict. Contains all three teaching cases — an over-strict appraiser, an appraiser who contradicts himself, and one template where everyone agrees and everyone is wrong."
+        "de": "3 Prüfer × 20 Vorlagen × 2 Wiederholungen (binär i.O./n.i.O.). Die klassische Zählübung aus dem Training: Fleiss κ ≈ 0,79, Effektivität 85–90 %; Verdikt nach AIAG rot, weil Miss-Rate (25 %) und Fehlalarm-Rate (17 %) zu hoch sind. Enthält alle drei Lehrbilder — ein zu strenger Prüfer, ein mit sich selbst uneiniger Prüfer und eine Vorlage, bei der sich alle einig und alle falsch sind.",
+        "en": "3 appraisers × 20 templates × 2 replicates (binary OK/NOK). The classic counting exercise from training: Fleiss κ ≈ 0.79, effectiveness 85–90 %; the AIAG verdict is red because the miss rate (25 %) and false-alarm rate (17 %) are too high. Contains all three teaching cases — an over-strict appraiser, an appraiser who contradicts himself, and one template where everyone agrees and everyone is wrong."
       },
       "source": "Qprovement synthetisch",
       "license": "public-domain",
