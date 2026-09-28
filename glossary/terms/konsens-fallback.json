@@ -25,7 +25,7 @@
       },
       {
         "type": "note",
-        "text": "Die Engine meldet in diesem Fall zusätzlich die Warnung $\\texttt{W\\_AMBIGUOUS\\_CONSENSUS}$ mit der Liste der betroffenen Teile."
+        "text": "Die Engine meldet in diesem Fall zusätzlich die Warnung $\\texttt{W\\_AMBIGUOUS\\_CONSENSUS}$ mit der Liste der betroffenen Teile. Miss- und Fehlalarm-Rate gehen gegen den Konsens nicht in das AIAG-Urteil ein: Der Konsens stammt aus denselben Prüfern, deren Fehler er messen soll."
       }
     ],
     "en": [
@@ -43,7 +43,7 @@
       },
       {
         "type": "note",
-        "text": "The engine additionally emits the warning $\\texttt{W\\_AMBIGUOUS\\_CONSENSUS}$ with the list of affected parts."
+        "text": "The engine additionally emits the warning $\\texttt{W\\_AMBIGUOUS\\_CONSENSUS}$ with the list of affected parts. Against the consensus, miss and false-alarm rates do not enter the AIAG verdict: the consensus comes from the same appraisers whose errors it is meant to measure."
       }
     ]
   },
@@ -55,6 +55,6 @@
   "modules": ["msa-typ5"],
   "algoLab": [],
   "sources": [
-    { "label": "AIAG: Measurement Systems Analysis Reference Manual, 4th ed., 2010 — Kap. III-B", "url": null }
+    { "label": "AIAG: Measurement Systems Analysis Reference Manual, 4th ed., 2010 — Kap. III-C", "url": null }
   ]
 }

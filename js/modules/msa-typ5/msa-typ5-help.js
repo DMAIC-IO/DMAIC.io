@@ -6,7 +6,7 @@
  *   - goal:     Was macht dieses Modul?
  *   - data:     Datenanforderungen
  *   - formulas: Formeln (Cohen κ, Fleiss κ, Weighted κ, Effektivität + Wilson, SDT)
- *   - verdict:  Bewertung & Ampeln (AIAG MSA 4th Ed. Kap. III-B)
+ *   - verdict:  Bewertung & Ampeln (AIAG MSA 4th Ed. ch. III-C, Bosch Heft 10)
  *
  * Glossar-Marker {{term:slug|Anzeige}} werden zentral von
  * core/glossary-inline.js zu Hover-Chips promoted.
@@ -92,7 +92,7 @@ export default {
           {
             type: 'definition',
             term: 'Long/tidy statt wide',
-            content: 'Nicht eine Spalte je Prüfer/Wiederholung anlegen, sondern vier lange Spalten (Teil, Prüfer, Bewertung, ggf. Wiederholung). Dieses Format ist das einzige, das die Engine verarbeitet, und entspricht dem Vorgehen von Minitab und JMP.',
+            content: 'Nicht eine Spalte je Prüfer/Wiederholung anlegen, sondern vier lange Spalten (Teil, Prüfer, Bewertung, ggf. Wiederholung). Minitab akzeptiert auch ein breites Format (eine Spalte je Prüfer und Durchgang); D.Mike verarbeitet derzeit nur das lange Format.',
           },
           {
             type: 'definition',
@@ -123,7 +123,7 @@ export default {
           {
             type: 'definition',
             term: 'Long/tidy layout instead of wide',
-            content: 'Do not create one column per appraiser/replicate. Instead use four long columns (part, appraiser, rating, optionally replicate). This is the only layout the engine accepts and matches how Minitab and JMP handle Type 5 data.',
+            content: 'Do not create one column per appraiser/replicate. Instead use four long columns (part, appraiser, rating, optionally replicate). Minitab also accepts a wide layout (one column per appraiser and trial); D.Mike currently processes only the long layout.',
           },
           {
             type: 'definition',
@@ -164,7 +164,7 @@ export default {
           {
             type: 'definition',
             term: '{{term:cohen-kappa|Cohen κ}}',
-            content: '$κ = (p_o − p_e) / (1 − p_e)$. SE(κ) nach Fleiss/Cohen/Everitt (1969); 95 %-KI $= κ ± z_{1−α/2} \\cdot SE(κ)$.',
+            content: '$κ = (p_o − p_e) / (1 − p_e)$. SE(κ) nach Fleiss/Cohen/Everitt (1969); 95 %-KI $= κ ± z_{1−α/2} · SE(κ)$. Für den Test gegen Zufall dient die unter $H_0$: κ = 0 berechnete $SE_0$ (Fleiss/Cohen/Everitt 1969).',
           },
           {
             type: 'heading',
@@ -174,6 +174,16 @@ export default {
             type: 'definition',
             term: '{{term:fleiss-kappa|Fleiss κ}}',
             content: '$P_i = (Σ_j n_{ij}^2 − n_{i·}) / (n_{i·}(n_{i·} − 1))$ je Teil $i$, $P̄$ = {{term:mittelwert|Mittelwert}}. $p̄_j$ = Klassen-Randanteil. $κ = (P̄ − P_e) / (1 − P_e)$ mit $P_e = Σ_j p̄_j^2$. Bei ungleichen Rater-Zahlen wechselt die Engine auf die Randolph-Variante und vermerkt dies im Feld method.',
+          },
+          {
+            type: 'definition',
+            term: 'z und p je κ',
+            content: '$z = κ / SE_0$, einseitiger p-Wert $p = 1 − Φ(z)$ für $H_0$: κ = 0. Ein kleines p sagt nur, dass die Übereinstimmung besser als Zufall ist — nicht, dass sie gut genug ist. Für Fleiss κ gibt es **kein Konfidenzintervall**: die geschlossene Varianzformel gilt nur unter $H_0$ und taugt für den Test, nicht für ein Intervall (Fleiss, Levin & Paik 2003). Minitab weist ebenfalls keines aus. p unter 0,001 erscheint als „< 0,001".',
+          },
+          {
+            type: 'definition',
+            term: 'κ innerhalb Prüfer',
+            content: 'Fleiss κ je Prüfer über seine eigenen Durchgänge: die Wiederholungen spielen die Rolle der Rater. Misst, wie gut ein Prüfer mit sich selbst übereinstimmt — zufallskorrigiert, anders als die Wiederholbarkeit. Nur Teile mit mindestens zwei Durchgängen zählen; bei ungleichen Durchgangszahlen gilt die Randolph-Variante.',
           },
           {
             type: 'heading',
@@ -197,6 +207,10 @@ export default {
             type: 'definition',
             term: '{{term:wilson-konfidenzintervall|Wilson-Score-KI}}',
             content: 'Für einen Anteil p̂ = x/n gilt (p̂ + z²/(2n) ± z·√(p̂(1−p̂)/n + z²/(4n²))) / (1 + z²/n). Bessere Abdeckung bei kleinen n und Anteilen nahe 0 oder 1 als das Wald-KI.',
+          },
+          {
+            type: 'paragraph',
+            content: 'Das Signifikanzniveau α wirkt auf die Cohen-κ-Konfidenzintervalle und die Wilson-Intervalle. Die p-Werte der κ-Tests werden unabhängig von α ausgewiesen.',
           },
           {
             type: 'heading',
@@ -261,7 +275,7 @@ export default {
           {
             type: 'definition',
             term: '{{term:cohen-kappa|Cohen κ}}',
-            content: '$κ = (p_o − p_e) / (1 − p_e)$. SE(κ) after Fleiss/Cohen/Everitt (1969); 95 % CI $= κ ± z_{1−α/2} \\cdot SE(κ)$.',
+            content: '$κ = (p_o − p_e) / (1 − p_e)$. SE(κ) after Fleiss/Cohen/Everitt (1969); 95 % CI $= κ ± z_{1−α/2} · SE(κ)$. The test against chance uses $SE_0$, computed under $H_0$: κ = 0 (Fleiss/Cohen/Everitt 1969).',
           },
           {
             type: 'heading',
@@ -271,6 +285,16 @@ export default {
             type: 'definition',
             term: '{{term:fleiss-kappa|Fleiss κ}}',
             content: '$P_i = (Σ_j n_{ij}^2 − n_{i·}) / (n_{i·}(n_{i·} − 1))$ per part $i$, $P̄$ = mean. $p̄_j$ = class marginal. $κ = (P̄ − P_e) / (1 − P_e)$ with $P_e = Σ_j p̄_j^2$. Under unbalanced rater counts the engine switches to the Randolph variant and records this in the method field.',
+          },
+          {
+            type: 'definition',
+            term: 'z and p per κ',
+            content: '$z = κ / SE_0$, one-sided p value $p = 1 − Φ(z)$ for $H_0$: κ = 0. A small p only says the agreement is better than chance — not that it is good enough. Fleiss κ has **no confidence interval**: the closed-form variance holds only under $H_0$ and serves the test, not an interval (Fleiss, Levin & Paik 2003). Minitab reports none either. p below 0.001 shows as "< 0.001".',
+          },
+          {
+            type: 'definition',
+            term: 'κ within appraiser',
+            content: 'Fleiss κ per appraiser across his or her own trials: the trials act as raters. Measures how well an appraiser agrees with themselves — chance-corrected, unlike repeatability. Only parts with at least two trials count; unequal trial counts use the Randolph variant.',
           },
           {
             type: 'heading',
@@ -294,6 +318,10 @@ export default {
             type: 'definition',
             term: '{{term:wilson-konfidenzintervall|Wilson score CI}}',
             content: 'For a proportion p̂ = x/n: (p̂ + z²/(2n) ± z·√(p̂(1−p̂)/n + z²/(4n²))) / (1 + z²/n). Better coverage than the Wald interval for small n and proportions near 0 or 1.',
+          },
+          {
+            type: 'paragraph',
+            content: 'The significance level α affects the Cohen κ confidence intervals and the Wilson intervals. The p values of the κ tests are reported independently of α.',
           },
           {
             type: 'heading',
@@ -402,22 +430,32 @@ export default {
         blocks: [
           {
             type: 'paragraph',
-            content: 'Die Gesamt-Ampel folgt AIAG MSA 4th Ed. Kap. III-B. Sie kombiniert die {{term:fleiss-kappa|Fleiss-κ}}-Bedingung (Prüfer-untereinander) mit der {{term:effektivitaet|Effektivitäts}}-Bedingung (jeder Prüfer vs. Referenz). Ohne Referenz greift nur die κ-Bedingung.',
+            content: 'Das Urteil folgt der gewählten **Bewertungsregel**: voreingestellt AIAG MSA 4th Ed. Kap. III-C (attributive Studie), wahlweise Bosch Heft 10. Die Tabelle **Urteilskriterien** zeigt jedes bewertete Kriterium mit Wert, Prüfer, Grenzen und Status. Die ausschlaggebende Zeile ist hervorgehoben und steht auch neben dem Urteil.',
           },
           {
-            type: 'definition',
-            term: 'Grün — freigegeben',
-            content: 'Fleiss κ ≥ 0,75 und** alle Effektivitäten ≥ 0,90. Das Prüfsystem misst reproduzierbar und trifft die Referenz zuverlässig.',
+            type: 'heading',
+            content: 'AIAG MSA (4. Aufl.), Kap. III-C',
           },
           {
-            type: 'definition',
-            term: 'Gelb — bedingt tauglich',
-            content: 'Weder grüne noch rote Bedingung erfüllt. Das Prüfsystem ist einsetzbar, aber die Ursache (welcher Prüfer, welche Klassen?) sollte vor einer Serien-Freigabe geklärt werden.',
+            type: 'list',
+            items: [
+              '**Fleiss κ:** gut ≥ 0,75 · bedingt ≥ 0,40 · darunter nicht akzeptabel',
+              '**Effektivität (kleinste):** gut ≥ 90 % · bedingt ≥ 80 % · darunter nicht akzeptabel',
+              '**Miss-Rate (größte):** gut ≤ 2 % · bedingt ≤ 5 % · darüber nicht akzeptabel',
+              '**Fehlalarm-Rate (größte):** gut ≤ 5 % · bedingt ≤ 10 % · darüber nicht akzeptabel',
+            ],
           },
           {
-            type: 'definition',
-            term: 'Rot — nicht tauglich',
-            content: 'Fleiss κ &lt; 0,40 **oder** mindestens eine Effektivität &lt; 0,80. Das Prüfsystem ist nicht freigebbar — Schulung, Prüfanweisung überarbeiten oder Grenzmuster ergänzen.',
+            type: 'paragraph',
+            content: 'Das schlechteste Kriterium entscheidet. {{term:miss-rate|Miss-Rate}} und {{term:false-alarm-rate|Fehlalarm-Rate}} zählen nur bei binären Daten **mit Referenz-Spalte**. Stammt die Referenz aus dem {{term:konsens-fallback|Konsens}} der Prüfer, bleibt ein Fehler, den die Mehrheit teilt, unsichtbar. Die beiden Raten stehen dann nur zur Information in der Prüfer-Tabelle, und ein Hinweis unter den Urteilskriterien sagt das. Ein Prüfer ohne n.i.O.-Referenzteile hat keine Miss-Rate, einer ohne i.O.-Teile keine Fehlalarm-Rate; er wird für dieses Kriterium übersprungen.',
+          },
+          {
+            type: 'heading',
+            content: 'Bosch Heft 10',
+          },
+          {
+            type: 'paragraph',
+            content: 'Bewertet wird das **kleinste verfügbare κ** aus Fleiss κ gesamt, κ innerhalb jedes Prüfers und κ jedes Prüfers gegen die Referenz: ≥ 0,9 fähig, ≥ 0,7 bedingt fähig, darunter nicht fähig. Welche κ-Werte Heft 10 genau heranzieht, ließ sich am Originaltext nicht prüfen; das kleinste κ ist die vorsichtige Auslegung.',
           },
           {
             type: 'definition',
@@ -427,7 +465,7 @@ export default {
           {
             type: 'definition',
             term: 'Interpretation-Textbaustein',
-            content: 'Der Interpretations-Absatz benennt zusätzlich den Ampelfarben-*Treiber* (Fleiss κ, Effektivität, Miss-Rate oder False-Alarm-Rate) sowie ggf. die Warnungen **W_UNBALANCED_REPS**, **W_AMBIGUOUS_CONSENSUS** und **W_LOW_REP_COUNT**.',
+            content: 'Neben dem Urteil stehen Fleiss κ mit z und p sowie das ausschlaggebende Kriterium; der Interpretations-Absatz nennt ggf. die Warnungen **W_UNBALANCED_REPS**, **W_AMBIGUOUS_CONSENSUS** und **W_LOW_REP_COUNT**.',
           },
         ],
       },
@@ -436,22 +474,32 @@ export default {
         blocks: [
           {
             type: 'paragraph',
-            content: 'The overall verdict follows AIAG MSA 4th Ed. Ch. III-B. It combines the {{term:fleiss-kappa|Fleiss κ}} condition (between-appraiser) with the {{term:effektivitaet|effectiveness}} condition (each appraiser vs. reference). Without a reference only the κ condition applies.',
+            content: 'The verdict follows the selected **verdict rule**: AIAG MSA 4th Ed. ch. III-C (attribute study) by default, Bosch Heft 10 as an option. The **verdict criteria** table shows every rated criterion with value, appraiser, limits and status. The decisive row is highlighted and is also named next to the verdict.',
           },
           {
-            type: 'definition',
-            term: 'Green — release',
-            content: 'Fleiss κ ≥ 0.75 **and** all effectiveness ≥ 0.90. The inspection system is reproducible and reliably hits the reference.',
+            type: 'heading',
+            content: 'AIAG MSA (4th ed.), ch. III-C',
           },
           {
-            type: 'definition',
-            term: 'Yellow — conditionally usable',
-            content: 'Neither the green nor the red condition met. The system may be used, but the {{term:ursachenanalyse|root cause}} (which appraiser, which classes?) should be understood before a series release.',
+            type: 'list',
+            items: [
+              '**Fleiss κ:** good ≥ 0.75 · marginal ≥ 0.40 · below unacceptable',
+              '**Effectiveness (lowest):** good ≥ 90 % · marginal ≥ 80 % · below unacceptable',
+              '**Miss rate (highest):** good ≤ 2 % · marginal ≤ 5 % · above unacceptable',
+              '**False-alarm rate (highest):** good ≤ 5 % · marginal ≤ 10 % · above unacceptable',
+            ],
           },
           {
-            type: 'definition',
-            term: 'Red — not usable',
-            content: 'Fleiss κ &lt; 0.40 **or** at least one effectiveness &lt; 0.80. Do not release — retrain appraisers, update the inspection instruction or add borderline reference samples.',
+            type: 'paragraph',
+            content: 'The worst criterion decides. {{term:miss-rate|Miss rate}} and {{term:false-alarm-rate|false-alarm rate}} count only for binary data **with a reference column**. When the reference is the appraisers\' {{term:konsens-fallback|consensus}}, an error shared by the majority stays invisible. Both rates are then shown in the appraiser table for information only, and a note below the verdict criteria says so. An appraiser without NOK reference parts has no miss rate, one without OK parts no false-alarm rate; that appraiser is skipped for the criterion.',
+          },
+          {
+            type: 'heading',
+            content: 'Bosch Heft 10',
+          },
+          {
+            type: 'paragraph',
+            content: 'The **smallest available κ** is rated, taken from Fleiss κ overall, each appraiser\'s within-appraiser κ and each appraiser\'s κ vs. reference: ≥ 0.9 capable, ≥ 0.7 conditionally capable, below that not capable. Which κ values Heft 10 applies the limits to could not be checked against the original text; the smallest κ is the cautious reading.',
           },
           {
             type: 'definition',
@@ -461,7 +509,7 @@ export default {
           {
             type: 'definition',
             term: 'Interpretation text',
-            content: 'The interpretation paragraph additionally names the traffic-light *driver* (Fleiss κ, effectiveness, miss rate or false-alarm rate) and, where applicable, the warnings **W_UNBALANCED_REPS**, **W_AMBIGUOUS_CONSENSUS** and **W_LOW_REP_COUNT**.',
+            content: 'Next to the verdict stand Fleiss κ with z and p and the decisive criterion; the interpretation paragraph names, where applicable, the warnings **W_UNBALANCED_REPS**, **W_AMBIGUOUS_CONSENSUS** and **W_LOW_REP_COUNT**.',
           },
         ],
       },

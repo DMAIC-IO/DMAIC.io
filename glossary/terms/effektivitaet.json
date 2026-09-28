@@ -21,7 +21,7 @@
       },
       {
         "type": "paragraph",
-        "text": "Sie wird mit einem 95 %-{{term:wilson-konfidenzintervall|Wilson-Score-KI}} versehen. Die AIAG-Ampel für MSA Typ 5 fordert Effektivität $\\geq 0{,}90$ für Grün und meldet Rot bei Effektivität $< 0{,}80$."
+        "text": "Sie wird mit einem 95 %-{{term:wilson-konfidenzintervall|Wilson-Score-KI}} versehen. Das AIAG-Urteil für MSA Typ 5 (Kap. III-C) fordert Effektivität $\\geq 0{,}90$ für Grün und meldet Rot bei Effektivität $< 0{,}80$. Bewertet wird zusammen mit κ, Miss- und Fehlalarm-Rate; das schlechteste Kriterium entscheidet."
       },
       {
         "type": "note",
@@ -39,7 +39,7 @@
       },
       {
         "type": "paragraph",
-        "text": "It is reported with a 95 % {{term:wilson-konfidenzintervall|Wilson score CI}}. The AIAG traffic light for MSA Type 5 requires effectiveness $\\geq 0.90$ for green and flags red at effectiveness $< 0.80$."
+        "text": "It is reported with a 95 % {{term:wilson-konfidenzintervall|Wilson score CI}}. The AIAG verdict for MSA Type 5 (ch. III-C) requires effectiveness $\\geq 0.90$ for green and flags red at effectiveness $< 0.80$. It is rated together with κ, miss rate and false-alarm rate; the worst criterion decides."
       },
       {
         "type": "note",
@@ -55,6 +55,6 @@
   "modules": ["msa-typ5"],
   "algoLab": ["msa/effectiveness-wilson"],
   "sources": [
-    { "label": "AIAG: Measurement Systems Analysis Reference Manual, 4th ed., 2010 — Kap. III-B", "url": null }
+    { "label": "AIAG: Measurement Systems Analysis Reference Manual, 4th ed., 2010 — Kap. III-C", "url": null }
   ]
 }

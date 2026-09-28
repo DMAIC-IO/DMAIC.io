@@ -21,7 +21,7 @@
       },
       {
         "type": "paragraph",
-        "text": "$n_{ii}$ ist die Diagonale (beide Prüfer gaben Klasse $i$), $n_{i\\cdot}$ und $n_{\\cdot i}$ sind die Randsummen. Näherungs-Standardfehler nach Fleiss/Cohen/Everitt (1969); 95 %-KI = $\\kappa \\pm z_{1-\\alpha/2} \\cdot \\text{SE}(\\kappa)$."
+        "text": "$n_{ii}$ ist die Diagonale (beide Prüfer gaben Klasse $i$), $n_{i\\cdot}$ und $n_{\\cdot i}$ sind die Randsummen. Näherungs-Standardfehler nach Fleiss/Cohen/Everitt (1969); 95 %-KI = $\\kappa \\pm z_{1-\\alpha/2} \\cdot \\text{SE}(\\kappa)$. Für den Test gegen $H_0: \\kappa = 0$ dient der Standardfehler unter $H_0$: $z = \\kappa / \\text{SE}_0$, einseitiges $p$. Ein kleines $p$ sagt nur, dass die Übereinstimmung besser als Zufall ist, nicht dass sie ausreicht."
       },
       {
         "type": "note",
@@ -39,7 +39,7 @@
       },
       {
         "type": "paragraph",
-        "text": "$n_{ii}$ is the diagonal (both raters gave class $i$), $n_{i\\cdot}$ and $n_{\\cdot i}$ are the marginals. Approximate SE after Fleiss/Cohen/Everitt (1969); 95 % CI = $\\kappa \\pm z_{1-\\alpha/2} \\cdot \\text{SE}(\\kappa)$."
+        "text": "$n_{ii}$ is the diagonal (both raters gave class $i$), $n_{i\\cdot}$ and $n_{\\cdot i}$ are the marginals. Approximate SE after Fleiss/Cohen/Everitt (1969); 95 % CI = $\\kappa \\pm z_{1-\\alpha/2} \\cdot \\text{SE}(\\kappa)$. The test against $H_0: \\kappa = 0$ uses the standard error under $H_0$: $z = \\kappa / \\text{SE}_0$, one-sided $p$. A small $p$ only says the agreement beats chance, not that it is good enough."
       },
       {
         "type": "note",

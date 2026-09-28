@@ -55,6 +55,6 @@
   "modules": ["msa-typ5"],
   "algoLab": ["msa/signal-detection"],
   "sources": [
-    { "label": "AIAG: Measurement Systems Analysis Reference Manual, 4th ed., 2010 — Kap. III-B", "url": null }
+    { "label": "AIAG: Measurement Systems Analysis Reference Manual, 4th ed., 2010 — Kap. III-C", "url": null }
   ]
 }
