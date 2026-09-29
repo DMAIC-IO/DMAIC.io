@@ -20,11 +20,6 @@ const FIELD_MAP = {
   mean: 'xbar',
   stddev: 's',
   sigma_within: 'sigmaWithin',
-  ppm_total: 'ppmTotal',
-  ppm_within_total: 'ppmWithinTotal',
-  ppm_observed_total: 'ppmObservedTotal',
-  z_bench_within: 'zBenchWithin',
-  z_bench_overall: 'zBenchOverall',
 };
 
 async function loadFixture(path) {

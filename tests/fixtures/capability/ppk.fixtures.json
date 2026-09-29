@@ -5,7 +5,7 @@
     "scipy": "1.18.0",
     "numpy": "2.5.1"
   },
-  "generated_at": "2026-09-27T08:05:20.782516+00:00",
+  "generated_at": "2026-09-29T14:57:46.731870+00:00",
   "generator_script": "tools/fixture-generator/generate_fixtures.py",
   "generator_version": "1.0.0",
   "tolerances": {
@@ -722,11 +722,11 @@
       },
       "tolerance_override": "normal_tail",
       "expected": {
-        "ppm_total": 968.3649428875086,
-        "ppm_within_total": 1138.53920611911,
-        "z_bench_overall": 3.099766912554942,
-        "z_bench_within": 3.051491044299924,
-        "ppm_observed_total": 0.0
+        "ppmTotal": 968.3649428875086,
+        "ppmWithinTotal": 1138.53920611911,
+        "zBenchOverall": 3.099766912554942,
+        "zBenchWithin": 3.051491044299924,
+        "ppmObservedTotal": 0.0
       }
     },
     {
@@ -772,11 +772,11 @@
       },
       "tolerance_override": "normal_tail",
       "expected": {
-        "ppm_total": 76870.05180018302,
-        "ppm_within_total": 79839.11105645195,
-        "z_bench_overall": 1.4264444056183485,
-        "z_bench_within": 1.4061545999908314,
-        "ppm_observed_total": 64516.12903225806
+        "ppmTotal": 76870.05180018302,
+        "ppmWithinTotal": 79839.11105645195,
+        "zBenchOverall": 1.4264444056183485,
+        "zBenchWithin": 1.4061545999908314,
+        "ppmObservedTotal": 64516.12903225806
       }
     },
     {
@@ -822,8 +822,8 @@
       },
       "tolerance_override": "normal_tail",
       "expected": {
-        "ppm_within_total": 5.0924146089659424e-245,
-        "z_bench_within": 33.81952858621182
+        "ppmWithinTotal": 5.0924146089659424e-245,
+        "zBenchWithin": 33.81952858621182
       }
     },
     {
@@ -869,10 +869,10 @@
       },
       "tolerance_override": "normal_tail",
       "expected": {
-        "ppm_total": 484.1824714437543,
-        "ppm_within_total": 569.269603059555,
-        "z_bench_overall": 3.29956008798045,
-        "z_bench_within": 3.253846153846154
+        "ppmTotal": 484.1824714437543,
+        "ppmWithinTotal": 569.269603059555,
+        "zBenchOverall": 3.29956008798045,
+        "zBenchWithin": 3.253846153846154
       }
     }
   ]
