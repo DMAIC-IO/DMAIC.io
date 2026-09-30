@@ -363,7 +363,7 @@ test('isWatchedSource picks up templates, stylesheets and JSON that esbuild does
 });
 
 test('isWatchedSource ignores build outputs, JS and tool directories', () => {
-  for (const p of ['index.html', 'index.html.1234.tmp', 'css/app.min.css', 'js/app.min.js',
+  for (const p of ['index.html', 'index.html.1234.tmp', 'css/app.min.css', 'css/_bundle_entry.css', 'js/app.min.js',
     'js/core/glossary-data.generated.js', 'js/app.js', 'THIRD-PARTY-LICENSES.txt', 'package.json',
     'node_modules/x/y.json', 'tests/fixtures/a.json', 'tools/build/x.html', '.git/index', null]) {
     assert.equal(isWatchedSource(p), false, String(p));

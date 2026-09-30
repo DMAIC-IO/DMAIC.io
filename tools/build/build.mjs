@@ -311,7 +311,7 @@ export async function runBuild(appDir = APP_DIR, { check = false } = {}) {
 }
 
 /** Outputs of runBuild — changes to them must never retrigger the watcher. */
-const WATCH_OUTPUTS = new Set(['index.html', 'package.json', 'package-lock.json', 'THIRD-PARTY-LICENSES.txt', join('css', 'app.min.css')]);
+const WATCH_OUTPUTS = new Set(['index.html', 'package.json', 'package-lock.json', 'THIRD-PARTY-LICENSES.txt', join('css', 'app.min.css'), join('css', '_bundle_entry.css')]);
 const WATCH_SKIP_DIRS = ['node_modules', '.git', 'tests', 'tools', 'docs', 'vendor'];
 
 /**
