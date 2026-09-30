@@ -23,7 +23,7 @@
  *                                     the router calls it unguarded, so a modal
  *                                     without render() fails the whole action.
  *   modal.done: null                  the dialog auto-closes when run() resolves.
- *   modal.done(detail, args)          → { title, subtitle?, body?, confirmLabel? }:
+ *   modal.done(detail, args)          → { title, subtitle?, note?, confirmLabel? }:
  *                                     the dialog stays open in this state until
  *                                     the user confirms, THEN the router
  *                                     navigates.
@@ -162,7 +162,7 @@ export function createActionVerbs(ctx) {
        * the default "Jetzt starten" label.
        * @param {{loaded: string[], failed: object[]}|null} detail  run()'s detail
        * @param {string[]} args `[scenarioId]`
-       * @returns {{title: string, subtitle: string, body?: Node, confirmLabel: string}}
+       * @returns {{title: string, subtitle: string, note: string|null, confirmLabel: string}}
        */
       done(detail, [scenarioId]) {
         const scenario = examplesRegistry.get(scenarioId);

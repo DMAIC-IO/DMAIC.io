@@ -188,7 +188,7 @@ suite('action verbs', () => {
         { exampleId: 'ex-b', moduleId: 'sipoc', error: 'module failed to mount' },
       ],
     }, ['scn-a']);
-    const text = `${state.subtitle ?? ''} ${state.body?.textContent ?? ''}`;
+    const text = `${state.subtitle ?? ''} ${state.note ?? ''}`;
     assertTrue(text.includes('ex-a') && text.includes('ex-b'), `failed ids named, got: ${text}`);
     assertTrue(text.includes('actions.scenarioItemsFailed'), 'reuses the existing i18n key');
     assertTrue(!text.includes('no module for example') && !text.includes('module failed to mount'),

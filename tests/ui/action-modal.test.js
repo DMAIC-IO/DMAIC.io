@@ -67,6 +67,21 @@ suite('createActionModal', () => {
     assertEqual(document.querySelector('.action-modal'), null, 'hold closes on confirm');
   });
 
+  test('hold renders a note as the failure paragraph', async () => {
+    const am = make();
+    am.open({ title: 'T' });
+    const p = am.hold({ title: 'Teilweise', note: 'ex-b fehlgeschlagen' });
+    await Promise.resolve();
+    try {
+      const failed = document.querySelector('.action-modal__body .action-modal__failed');
+      assertEqual(failed?.textContent, 'ex-b fehlgeschlagen');
+    } finally {
+      // A dialog left holding would swallow the next test's confirm click.
+      am.close();
+      await p;
+    }
+  });
+
   test('confirm resolves true, a forced close resolves false', async () => {
     // The caller must be able to tell "the user pressed the button" from
     // "something else closed the dialog" — only the first means "go ahead".
@@ -252,7 +267,7 @@ suite('scenarioDoneState', () => {
     const s = scenarioDoneState({ i18n: i18n2, result: { loaded: ['a', 'b'], failed: [] }, total: 2 });
     assertEqual(s.title, 'actions.scenarioReady');
     assertTrue(s.subtitle.startsWith('actions.scenarioLoaded'));
-    assertEqual(s.body, null, 'nothing extra to say');
+    assertEqual(s.note, null, 'nothing extra to say');
     assertEqual(s.confirmLabel, 'actions.startNow', 'default label');
   });
 
@@ -263,10 +278,10 @@ suite('scenarioDoneState', () => {
       total: 2,
     });
     assertEqual(s.title, 'actions.scenarioPartial');
-    assertTrue(s.body instanceof Node, 'a body node names the failures');
-    assertTrue(s.body.textContent.includes('ex-b'), 'the failing id is named');
+    assertEqual(typeof s.note, 'string', 'a text note names the failures');
+    assertTrue(s.note.includes('ex-b'), 'the failing id is named');
     assertTrue(
-      !s.body.textContent.includes('module failed to mount'),
+      !s.note.includes('module failed to mount'),
       'never the raw developer error',
     );
   });

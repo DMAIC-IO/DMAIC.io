@@ -41,18 +41,19 @@ const STATUS_ICON = { ok: 'status.ok', failed: 'status.error' };
  * @param {number} args.total                 items the scenario declared
  * @param {string} [args.confirmLabel]        i18n key for the button; defaults
  *                                            to `actions.startNow`
- * @returns {{title: string, subtitle: string, body: Node|null, confirmLabel: string}}
+ * @returns {{title: string, subtitle: string, note: string|null, confirmLabel: string}}
+ *   `note` is plain text, not a node: the state is pure data so the action
+ *   verbs that return it stay testable without a DOM; fill() renders it.
  */
 export function scenarioDoneState({ i18n, result, total, confirmLabel }) {
   const failed = result?.failed ?? [];
   return {
     title: i18n.t(failed.length ? 'actions.scenarioPartial' : 'actions.scenarioReady'),
     subtitle: i18n.t('actions.scenarioLoaded', { loaded: result?.loaded?.length ?? 0, total }),
-    // No logging here — this is a pure render function and the raw errors are
+    // No logging here — this is a pure state function and the raw errors are
     // already in the console via the caller's own reporting.
-    body: failed.length
-      ? h('p', { class: 'action-modal__failed' },
-        i18n.t('actions.scenarioItemsFailed', { items: failed.map(f => f.exampleId).join(', ') }))
+    note: failed.length
+      ? i18n.t('actions.scenarioItemsFailed', { items: failed.map(f => f.exampleId).join(', ') })
       : null,
     confirmLabel: i18n.t(confirmLabel || 'actions.startNow'),
   };
@@ -65,7 +66,7 @@ export function scenarioDoneState({ i18n, result, total, confirmLabel }) {
  *             addItem: (o: {id: string|number, label: string}) => void,
  *             markItem: (id: string|number, ok: boolean) => void,
  *             hold: (o: {title: string, subtitle?: string, body?: Node,
- *                        confirmLabel?: string}) => Promise<boolean>,
+ *                        note?: string, confirmLabel?: string}) => Promise<boolean>,
  *             close: () => void, isOpen: () => boolean }}
  */
 export function createActionModal({ i18n, modal }) {
@@ -109,10 +110,11 @@ export function createActionModal({ i18n, modal }) {
     handle?.modal?.querySelector('.modal__title')?.replaceChildren(document.createTextNode(title));
   }
 
-  function fill({ title, subtitle = '', body = null }) {
+  function fill({ title, subtitle = '', body = null, note = null }) {
     setTitle(title);
     subtitleEl.textContent = subtitle;
     bodyEl.replaceChildren();
+    if (note) bodyEl.append(h('p', { class: 'action-modal__failed' }, note));
     if (body) bodyEl.append(body);
   }
 
@@ -190,10 +192,10 @@ export function createActionModal({ i18n, modal }) {
       }
     },
 
-    async hold({ title, subtitle = '', body = null, confirmLabel }) {
+    async hold({ title, subtitle = '', body = null, note = null, confirmLabel }) {
       if (!handle) return false;
       spinnerEl.remove();
-      fill({ title, subtitle, body });
+      fill({ title, subtitle, body, note });
       progressEl.textContent = '';
       const confirmed = await new Promise((resolve) => {
         releaseHold = resolve;

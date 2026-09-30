@@ -42,11 +42,24 @@ globalThis.fetch = async (input, init) => {
   return realFetch(input, init);
 };
 
+// Web Storage is not DOM: an in-memory stand-in lets suites whose subject
+// only reads/writes localStorage or sessionStorage run here.
+class MemoryStorage {
+  #items = new Map();
+  get length() { return this.#items.size; }
+  key(i) { return [...this.#items.keys()][i] ?? null; }
+  getItem(k) { return this.#items.has(String(k)) ? this.#items.get(String(k)) : null; }
+  setItem(k, v) { this.#items.set(String(k), String(v)); }
+  removeItem(k) { this.#items.delete(String(k)); }
+  clear() { this.#items.clear(); }
+}
+globalThis.localStorage ??= new MemoryStorage();
+globalThis.sessionStorage ??= new MemoryStorage();
+
 // DOM-dependent suites — run in the browser bridge, not here. Paths relative to
 // this directory. Keep sorted; add a file here if it starts needing the DOM.
 const SKIP = new Set([
   'algorithm-lab/lab-renderer.test.js',
-  'core/action-verbs.test.js',
   'core/chart/cumulative-cost.test.js',
   'core/chart/gantt.test.js',
   'core/chart/multi-vari.test.js',
@@ -87,7 +100,6 @@ const SKIP = new Set([
   'pages/training.test.js',
   'startup/cross-version-prompt.test.js',
   'startup/example-deeplink.test.js',
-  'startup/migration-notice.test.js',
   'ui/action-modal.test.js',
   'ui/dmaic-tiles-rebuild.test.js',
   'ui/help-panel-references.test.js',
