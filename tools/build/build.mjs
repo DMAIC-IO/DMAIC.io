@@ -9,7 +9,7 @@
  *   node tools/build/build.mjs --watch   # rebuild on change (dev daemon)
  */
 import { build as esbuild } from 'esbuild';
-import { readFileSync, writeFileSync, unlinkSync, existsSync, mkdirSync, renameSync } from 'node:fs';
+import { readFileSync, writeFileSync, unlinkSync, existsSync, mkdirSync, renameSync, watch } from 'node:fs';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { join, dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -310,6 +310,26 @@ export async function runBuild(appDir = APP_DIR, { check = false } = {}) {
   return { changed };
 }
 
+/** Outputs of runBuild — changes to them must never retrigger the watcher. */
+const WATCH_OUTPUTS = new Set(['index.html', 'package.json', 'package-lock.json', 'THIRD-PARTY-LICENSES.txt', join('css', 'app.min.css')]);
+const WATCH_SKIP_DIRS = ['node_modules', '.git', 'tests', 'tools', 'docs', 'vendor'];
+
+/**
+ * Whether a changed file needs a rebuild that esbuild's watcher cannot see.
+ * esbuild only follows the JS import graph; templates (inlined into the shell),
+ * stylesheets, i18n and glossary JSON are read by runBuild itself.
+ *
+ * @param {string} relPath  path relative to the app root
+ * @returns {boolean}
+ */
+export function isWatchedSource(relPath) {
+  if (!relPath || WATCH_OUTPUTS.has(relPath)) return false;
+  const parts = relPath.split(/[\\/]/);
+  if (parts.some((p) => WATCH_SKIP_DIRS.includes(p) || p.startsWith('.'))) return false;
+  if (/\.(generated|min)\./.test(relPath) || relPath.endsWith('.tmp')) return false;
+  return /\.(html|css|json)$/.test(relPath);
+}
+
 async function main() {
   const args = process.argv.slice(2);
 
@@ -341,6 +361,14 @@ async function main() {
       }],
     });
     await ctx.watch();
+    // Templates, CSS and JSON are outside the JS import graph: watch them
+    // separately and route them through the same onEnd full rebuild.
+    let timer = null;
+    watch(APP_DIR, { recursive: true }, (_event, file) => {
+      if (!isWatchedSource(file)) return;
+      clearTimeout(timer);
+      timer = setTimeout(() => ctx.rebuild().catch((e) => console.error(e.message)), 150);
+    });
     console.log('build: watching…');
     return;
   }

@@ -4,7 +4,7 @@ import { existsSync, readFileSync, rmSync, mkdirSync, mkdtempSync, readdirSync, 
 import { tmpdir } from 'node:os';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { bundleJs, assertEvalFree, readCssLinks, bundleCss, hash8, rewriteBlock, buildStylesBlock, buildScriptsBlock, runBuild } from './build.mjs';
+import { bundleJs, assertEvalFree, readCssLinks, bundleCss, hash8, rewriteBlock, buildStylesBlock, buildScriptsBlock, runBuild, isWatchedSource } from './build.mjs';
 import { renderIndexHtml } from '../build-templates/build.mjs';
 
 const APP_DIR = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
@@ -353,4 +353,19 @@ test('runBuild lässt keine .tmp-Datei zurück, wenn das Umbenennen scheitert', 
     const leftovers = readdirSync(dir).filter(n => n.endsWith('.tmp'));
     assert.deepEqual(leftovers, [], 'keine Temp-Datei nach dem Fehlerfall');
   });
+});
+
+test('isWatchedSource picks up templates, stylesheets and JSON that esbuild does not track', () => {
+  for (const p of ['js/modules/kano/kano.html', 'index.dist.html', 'css/layout.css',
+    'js/modules/kano/kano.css', 'i18n/de.json', 'glossary/terms/kano.json']) {
+    assert.equal(isWatchedSource(p), true, p);
+  }
+});
+
+test('isWatchedSource ignores build outputs, JS and tool directories', () => {
+  for (const p of ['index.html', 'index.html.1234.tmp', 'css/app.min.css', 'js/app.min.js',
+    'js/core/glossary-data.generated.js', 'js/app.js', 'THIRD-PARTY-LICENSES.txt', 'package.json',
+    'node_modules/x/y.json', 'tests/fixtures/a.json', 'tools/build/x.html', '.git/index', null]) {
+    assert.equal(isWatchedSource(p), false, String(p));
+  }
 });
