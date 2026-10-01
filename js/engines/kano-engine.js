@@ -89,7 +89,8 @@ export function aggregate(itemAnswers, options) {
 
   const denom = counts.A + counts.O + counts.M + counts.I;
   const cs = denom > 0 ? (counts.A + counts.O) / denom : null;
-  const ds = denom > 0 ? -(counts.O + counts.M) / denom : null;
+  // `0 - x` instead of `-x`: without O and M answers, -(0) would be -0 (shown as "-0,00").
+  const ds = denom > 0 ? (0 - (counts.O + counts.M)) / denom : null;
 
   return {
     counts, n, unanswered, category, tie, cs, ds,

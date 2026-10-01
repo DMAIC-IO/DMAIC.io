@@ -4,7 +4,7 @@
  * Spec: docs/superpowers/specs/2026-07-25-kano-modul-design.md
  */
 
-import { suite, test, assertEqual, assertAlmostEqual, assertDeepEqual } from '../test-utils.js';
+import { suite, test, assert, assertEqual, assertAlmostEqual, assertDeepEqual } from '../test-utils.js';
 import { classify, aggregate, evaluate } from '../../js/engines/kano-engine.js';
 import fixtures from '../fixtures/kano/classification.json' with { type: 'json' };
 import aggFixtures from '../fixtures/kano/aggregation.json' with { type: 'json' };
@@ -48,6 +48,12 @@ suite('kano-engine — aggregate', () => {
       else assertAlmostEqual(r.ds, c.expected.ds, 1e-12, 'ds');
     });
   }
+
+  test('ds ohne O- und M-Antworten ist +0, nicht -0', () => {
+    // -(0)/n ergibt -0, das toLocaleString als „-0,00" ausgibt.
+    const r = aggregate([{ f: 1, d: 3, w: null }, { f: 3, d: 3, w: null }], OPTS); // A, I
+    assert(Object.is(r.ds, 0), `ds ist ${Object.is(r.ds, -0) ? '-0' : r.ds}`);
+  });
 
   test('Häufigkeiten zählen alle sechs Kategorien', () => {
     const r = aggregate([
