@@ -306,3 +306,27 @@ export class State extends FlowchartState {
     return s;
   }
 }
+
+/**
+ * Rail cell modifiers for one loop band — one entry per step column. The view
+ * turns each entry into a `pmap__loop-rail-cell--<modifier>` class; CSS draws
+ * the return path from them (spec 2026-10-01-process-map-horizontal-loops).
+ * A target that is unset, missing or not before the source leaves the rail
+ * open at the source.
+ * @param {number} stepCount number of step columns
+ * @param {number} sourceIdx index of the step that owns the loop
+ * @param {number} targetIdx index of the target step, -1 when unset
+ * @returns {Array<''|'target'|'span'|'source'|'source-open'>}
+ */
+export function loopRailCells(stepCount, sourceIdx, targetIdx) {
+  const cells = new Array(stepCount).fill('');
+  if (sourceIdx < 0 || sourceIdx >= stepCount) return cells;
+  if (targetIdx < 0 || targetIdx >= sourceIdx) {
+    cells[sourceIdx] = 'source-open';
+    return cells;
+  }
+  cells[targetIdx] = 'target';
+  for (let i = targetIdx + 1; i < sourceIdx; i++) cells[i] = 'span';
+  cells[sourceIdx] = 'source';
+  return cells;
+}

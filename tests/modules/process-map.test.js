@@ -3,8 +3,8 @@
  * Specifies the State class (steps + IO + substeps + loops) before implementation.
  */
 
-import { suite, test, assertEqual } from '../test-utils.js';
-import { State } from '../../js/modules/process-map/process-map-model.js';
+import { suite, test, assertEqual, assertDeepEqual } from '../test-utils.js';
+import { State, loopRailCells } from '../../js/modules/process-map/process-map-model.js';
 
 suite('Process Map Model — construction & serialization', () => {
   test('constructor sets empty steps', () => {
@@ -298,5 +298,32 @@ suite('Process Map Model — helpers & export', () => {
     assertEqual(out.steps[0].outputs[0], 'Out');
     assertEqual(out.steps[1].loop.targetStep, 1);
     assertEqual(out.steps[1].loop.condition, 'Rework');
+  });
+});
+
+suite('Process Map Model — loopRailCells()', () => {
+  test('target, span and source across the columns between them', () => {
+    assertDeepEqual(loopRailCells(6, 5, 1), ['', 'target', 'span', 'span', 'span', 'source']);
+  });
+
+  test('adjacent target has no span cells', () => {
+    assertDeepEqual(loopRailCells(3, 1, 0), ['target', 'source', '']);
+  });
+
+  test('no target leaves the rail open at the source', () => {
+    assertDeepEqual(loopRailCells(3, 1, -1), ['', 'source-open', '']);
+  });
+
+  test('a target at or behind the source counts as no target', () => {
+    assertDeepEqual(loopRailCells(4, 1, 1), ['', 'source-open', '', '']);
+    assertDeepEqual(loopRailCells(4, 1, 3), ['', 'source-open', '', '']);
+  });
+
+  test('loop on the first step', () => {
+    assertDeepEqual(loopRailCells(1, 0, -1), ['source-open']);
+  });
+
+  test('a source outside the table yields empty cells', () => {
+    assertDeepEqual(loopRailCells(2, 5, 0), ['', '']);
   });
 });
