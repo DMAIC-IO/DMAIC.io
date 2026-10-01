@@ -7,7 +7,6 @@ import { suite, test, assertEqual, assertDeepEqual, assertTrue } from '../test-u
 import { EventBus } from '../../js/core/event-bus.js';
 import { StateManager } from '../../js/core/state-manager.js';
 import { StorageAdapter } from '../../js/core/storage/storage-adapter.js';
-import { LocalAdapter } from '../../js/core/storage/local-adapter.js';
 import { ModuleRegistry } from '../../js/core/module-registry.js';
 import { VERSION } from '../../js/core/version.js';
 import { stripPatch } from '../../js/core/version-utils.js';

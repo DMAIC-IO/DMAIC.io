@@ -3,7 +3,7 @@
  * (with its localStorage stand-in). Tests that read or write module states
  * through IndexedDB are in local-adapter-idb.test.js.
  */
-import { suite, test, assertEqual, assertDeepEqual } from '../../test-utils.js';
+import { suite, test, assertEqual } from '../../test-utils.js';
 import { LocalAdapter } from '../../../js/core/storage/local-adapter.js';
 import { VERSION } from '../../../js/core/version.js';
 import { stripPatch } from '../../../js/core/version-utils.js';
