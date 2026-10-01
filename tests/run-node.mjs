@@ -43,15 +43,17 @@ globalThis.fetch = async (input, init) => {
 };
 
 // Web Storage is not DOM: an in-memory stand-in lets suites whose subject
-// only reads/writes localStorage or sessionStorage run here.
+// only reads/writes localStorage or sessionStorage run here. Like the real
+// Storage, items are own enumerable properties and the methods live on the
+// prototype, so `Object.keys(localStorage)` lists the stored keys — the app
+// sweeps keys that way (legacy migration, project deletion).
 class MemoryStorage {
-  #items = new Map();
-  get length() { return this.#items.size; }
-  key(i) { return [...this.#items.keys()][i] ?? null; }
-  getItem(k) { return this.#items.has(String(k)) ? this.#items.get(String(k)) : null; }
-  setItem(k, v) { this.#items.set(String(k), String(v)); }
-  removeItem(k) { this.#items.delete(String(k)); }
-  clear() { this.#items.clear(); }
+  get length() { return Object.keys(this).length; }
+  key(i) { return Object.keys(this)[i] ?? null; }
+  getItem(k) { return Object.hasOwn(this, String(k)) ? this[String(k)] : null; }
+  setItem(k, v) { this[String(k)] = String(v); }
+  removeItem(k) { delete this[String(k)]; }
+  clear() { for (const k of Object.keys(this)) delete this[k]; }
 }
 globalThis.localStorage ??= new MemoryStorage();
 globalThis.sessionStorage ??= new MemoryStorage();
@@ -68,17 +70,17 @@ const SKIP = new Set([
   'core/create-page.test.js',
   'core/datagrid-header-xss.test.js',
   'core/datagrid-locked-columns.test.js',
-  'core/datagrid-roles.test.js',
+  'core/datagrid-roles-grid.test.js',
   'core/dom.test.js',
   'core/flowchart-view-autosize.test.js',
   'core/help-renderer.test.js',
   'core/html-utils.test.js',
   'core/icon.test.js',
   'core/markdown-parser.test.js',
-  'core/references-renderer.test.js',
+  'core/references-renderer-dom.test.js',
   'core/spacing-tokens.test.js',
-  'core/state-manager.test.js',
-  'core/storage/local-adapter.test.js',
+  'core/state-manager-idb.test.js',
+  'core/storage/local-adapter-idb.test.js',
   'core/template-module-imagepaths.test.js',
   'core/template-module-route.test.js',
   'core/template-module.test.js',

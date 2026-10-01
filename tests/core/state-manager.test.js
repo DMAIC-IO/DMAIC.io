@@ -1,5 +1,7 @@
 /**
- * Tests for js/core/state-manager.js
+ * Tests for js/core/state-manager.js. DOM-free — runs in the node lane (with
+ * its localStorage stand-in). Tests that need real IndexedDB are in
+ * state-manager-idb.test.js.
  */
 import { suite, test, assertEqual, assertDeepEqual, assertTrue } from '../test-utils.js';
 import { EventBus } from '../../js/core/event-bus.js';
@@ -461,21 +463,5 @@ suite('StateManager remote sync', () => {
     await Promise.resolve(); await Promise.resolve();
 
     assertEqual(event.metaChanged, true);
-  });
-
-  // ─── Bug 012: module data survives immediate reload ───────────
-
-  test('module state survives an unload flush before the async debounce (Bug 012)', async () => {
-    localStorage.removeItem(`${LS_PREFIX}projects`);
-    const adapter = new LocalAdapter();
-    const sm = new StateManager(new EventBus(), adapter);
-    await sm.load();                              // opens IDB, activates a project
-    sm.setModuleState('inst-x', { hello: 'world' }); // queued; 500ms debounce NOT fired
-    // Model the page unload: the synchronous flush the unload handlers now use.
-    adapter.flushSync();
-    // Model the reload/restart: a fresh manager reading the same storage.
-    const sm2 = new StateManager(new EventBus(), new LocalAdapter());
-    await sm2.load();
-    assertDeepEqual(sm2.getModuleState('inst-x'), { hello: 'world' });
   });
 });
