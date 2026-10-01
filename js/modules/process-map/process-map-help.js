@@ -56,7 +56,7 @@ export default {
           {
             type: 'definition',
             term: 'Loops (Rücksprünge)',
-            content: 'Über das Loop-Symbol in der Kopfzeile eines Schritts kann ein Rücksprung zu einem früheren Schritt definiert werden. Die Bedingung beschreibt, wann der Loop ausgelöst wird (z. B. „Wenn Messung außerhalb Toleranz"). Zusätzliche Loop-Schritte beschreiben Aktionen, die nur im Rücksprungpfad ausgeführt werden. Eine visuelle Klammer am rechten Rand zeigt die {{term:spannweite|Spannweite}} des Loops.',
+            content: 'Über das Loop-Symbol in der Kopfzeile eines Schritts kann ein Rücksprung zu einem früheren Schritt definiert werden. Die Bedingung beschreibt, wann der Loop ausgelöst wird (z. B. „Wenn Messung außerhalb Toleranz"). Zusätzliche Loop-Schritte beschreiben Aktionen, die nur im Rücksprungpfad ausgeführt werden. Ein Band unter den Outputs führt vom Schritt zurück zum Ziel und zeigt die {{term:spannweite|Spannweite}} des Loops; die Loop-Schritte laufen darin von rechts nach links.',
           },
         ],
       },
@@ -109,7 +109,7 @@ export default {
           {
             type: 'definition',
             term: 'Loops (feedback loops)',
-            content: 'Use the loop icon in a step\'s header to define a feedback loop back to an earlier step. The condition describes when the loop triggers (e.g. "If measurement out of tolerance"). Additional loop steps describe actions that only execute on the feedback path. A visual bracket on the right edge shows the loop span.',
+            content: 'Use the loop icon in a step\'s header to define a feedback loop back to an earlier step. The condition describes when the loop triggers (e.g. "If measurement out of tolerance"). Additional loop steps describe actions that only execute on the feedback path. A band below the outputs runs from the step back to its target and shows the loop span; the loop steps run through it from right to left.',
           },
         ],
       },

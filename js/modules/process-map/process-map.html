@@ -1,6 +1,6 @@
 <div class="module-container pmap" x-data="processMap" data-ref="root">
   <div class="module-container__body">
-    <div class="pmap__canvas" :class="hasLoops() ? 'pmap__canvas--has-loops' : ''">
+    <div class="pmap__canvas">
       <div class="pmap__flow" data-ref="flow">
 
         <!-- Empty state has no in-canvas add button; the toolbar "Add Step"
@@ -172,71 +172,79 @@
               </tr>
 
             </tbody>
-          </table>
-        </template>
 
-        <!-- Loop brackets (temporarily disabled: LOOPS_ENABLED = false in process-map.js) -->
-        <template x-for="(b, bi) in loopBrackets" :key="b.stepId">
-          <div class="pmap__loop-bracket" :style="bracketStyle(b)">
-            <span class="pmap__loop-bracket-arrow"></span>
-          </div>
-        </template>
-
-        <!-- Loop panels (temporarily disabled: LOOPS_ENABLED = false in process-map.js) -->
-        <template x-for="(p, pi) in loopPanels" :key="p.stepId">
-          <div class="pmap__loop-panel" :data-step-id="p.stepId" :style="panelStyle(p)">
-            <div class="pmap__loop-header">
-              <span class="pmap__loop-icon">
-                <span class="icon icon--sm" data-icon="action.loop" aria-hidden="true"></span>
-              </span>
-              <span class="pmap__loop-title" x-text="t('loopLabel')"></span>
-              <button class="pmap__loop-remove" data-action="remove-loop" :data-step-id="p.stepId"
-                :title="t('removeLoop')" :aria-label="t('removeLoop')"
-                @click.stop="removeLoopPanel(p.stepId)">
-                <span class="icon fc-remove-icon" data-icon="action.delete" aria-hidden="true"></span>
-              </button>
-            </div>
-            <div class="pmap__loop-body">
-              <div class="pmap__loop-field">
-                <label class="pmap__loop-field-label"><span class="icon icon--sm" data-icon="flow.decision" aria-hidden="true"></span> <span x-text="t('loopCondition')"></span></label>
-                <input class="field field--sm pmap__loop-condition" type="text" :value="loopConditionOf(p.stepId)"
-                  :placeholder="t('loopConditionPlaceholder')"
-                  :data-step-id="p.stepId" @input="loopConditionInput(p.stepId, $event)">
-              </div>
-              <div class="pmap__loop-field">
-                <label class="pmap__loop-field-label" x-text="t('loopTarget')"></label>
-                <select class="field field--sm pmap__loop-target-select" :data-step-id="p.stepId"
-                  @change="loopTargetChange(p.stepId, $event)">
-                  <option value="" x-text="t('loopSelectTarget')"></option>
-                  <template x-for="(opt, oi) in p.targetOptions" :key="opt.id">
-                    <option :value="opt.id" :selected="loopTargetSelected(p.stepId, opt.id)" x-text="opt.label"></option>
+            <!-- ─── Loop bands — one <tbody> per loop, ordered by source step.
+                 Rail row: per-column modifiers draw the return path in CSS.
+                 Body row: controls at the source column, rework chips running
+                 right → left (row-reverse). ─── -->
+            <template x-for="row in loopRows()" :key="'loop-' + row.stepId">
+              <tbody class="pmap__loop" :data-step-id="row.stepId">
+                <tr class="pmap__loop-rail">
+                  <template x-for="(cell, ci) in row.railCells" :key="ci">
+                    <td class="pmap__loop-rail-cell" :class="railCellClass(cell)"></td>
                   </template>
-                </select>
-              </div>
-              <div class="pmap__loop-steps-list">
-                <template x-for="(ls, li) in loopStepsOf(p.stepId)" :key="ls.id">
-                  <div class="pmap__loop-step-item" :data-loop-step-id="ls.id" :data-parent-id="p.stepId">
-                    <span class="pmap__loop-step-number"><span class="icon icon--sm" data-icon="flow.decision" aria-hidden="true"></span></span>
-                    <input class="pmap__loop-step-title" type="text" :value="ls.title"
-                      :placeholder="t('loopStepPlaceholder')"
-                      :data-loop-step-id="ls.id" :data-parent-id="p.stepId"
-                      @input="loopStepTitleInput(p.stepId, ls.id, $event)">
-                    <button class="pmap__loop-step-remove" data-action="remove-loop-step"
-                      :data-parent-id="p.stepId" :data-loop-step-id="ls.id"
-                      :title="t('common.delete')" :aria-label="t('common.delete')"
-                      @click.stop="removeLoopStep(p.stepId, ls.id)">
-                      <span class="icon fc-remove-icon" data-icon="action.delete" aria-hidden="true"></span>
-                    </button>
-                  </div>
-                </template>
-              </div>
-              <button class="pmap__loop-step-add" data-action="add-loop-step" :data-step-id="p.stepId"
-                @click.stop="addLoopStep(p.stepId)">
-                <span class="icon icon--sm" data-icon="action.add" aria-hidden="true"></span>
-                <span x-text="t('addLoopStep')"></span>
-              </button>
-            </div>
-          </div>
+                </tr>
+                <tr class="pmap__loop-body">
+                  <td class="pmap__loop-band" :colspan="row.leadSpan">
+                    <div class="pmap__loop-band-inner">
+                      <div class="pmap__loop-controls">
+                        <div class="pmap__loop-header">
+                          <span class="pmap__loop-icon">
+                            <span class="icon icon--sm" data-icon="action.loop" aria-hidden="true"></span>
+                          </span>
+                          <span class="pmap__loop-title" x-text="t('loopLabel')"></span>
+                          <button class="pmap__loop-remove" data-action="remove-loop" :data-step-id="row.stepId"
+                            :title="t('removeLoop')" :aria-label="t('removeLoop')"
+                            @click.stop="removeLoop(row.stepId)">
+                            <span class="icon fc-remove-icon" data-icon="action.delete" aria-hidden="true"></span>
+                          </button>
+                        </div>
+                        <div class="pmap__loop-field">
+                          <label class="pmap__loop-field-label"><span class="icon icon--sm" data-icon="flow.decision" aria-hidden="true"></span> <span x-text="t('loopCondition')"></span></label>
+                          <input class="field field--sm pmap__loop-condition" type="text" :value="loopConditionOf(row.stepId)"
+                            :placeholder="t('loopConditionPlaceholder')"
+                            :data-step-id="row.stepId" @input="loopConditionInput(row.stepId, $event)">
+                        </div>
+                        <div class="pmap__loop-field">
+                          <label class="pmap__loop-field-label" x-text="t('loopTarget')"></label>
+                          <select class="field field--sm pmap__loop-target-select" :data-step-id="row.stepId"
+                            @change="loopTargetChange(row.stepId, $event)">
+                            <option value="" x-text="t('loopSelectTarget')"></option>
+                            <template x-for="opt in row.targetOptions" :key="opt.id">
+                              <option :value="opt.id" :selected="loopTargetSelected(row.stepId, opt.id)" x-text="opt.label"></option>
+                            </template>
+                          </select>
+                        </div>
+                      </div>
+                      <template x-for="ls in loopStepsOf(row.stepId)" :key="ls.id">
+                        <div class="pmap__loop-step-item" :data-loop-step-id="ls.id" :data-parent-id="row.stepId">
+                          <span class="pmap__loop-step-number"><span class="icon icon--sm" data-icon="flow.decision" aria-hidden="true"></span></span>
+                          <input class="pmap__loop-step-title" type="text" :value="ls.title"
+                            :placeholder="t('loopStepPlaceholder')"
+                            :data-loop-step-id="ls.id" :data-parent-id="row.stepId"
+                            @input="loopStepTitleInput(row.stepId, ls.id, $event)">
+                          <button class="pmap__loop-step-remove" data-action="remove-loop-step"
+                            :data-parent-id="row.stepId" :data-loop-step-id="ls.id"
+                            :title="t('common.delete')" :aria-label="t('common.delete')"
+                            @click.stop="removeLoopStep(row.stepId, ls.id)">
+                            <span class="icon fc-remove-icon" data-icon="action.delete" aria-hidden="true"></span>
+                          </button>
+                        </div>
+                      </template>
+                      <button class="pmap__loop-step-add" data-action="add-loop-step" :data-step-id="row.stepId"
+                        @click.stop="addLoopStep(row.stepId)">
+                        <span class="icon icon--sm" data-icon="action.add" aria-hidden="true"></span>
+                        <span x-text="t('addLoopStep')"></span>
+                      </button>
+                    </div>
+                  </td>
+                  <template x-if="row.hasTrail">
+                    <td class="pmap__loop-trail" :colspan="row.trailSpan"></td>
+                  </template>
+                </tr>
+              </tbody>
+            </template>
+          </table>
         </template>
       </div>
     </div>

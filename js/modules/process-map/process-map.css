@@ -432,36 +432,87 @@
   background: var(--color-pmap-loop-bg);
 }
 
-/* ===== Loop Panel =====
-   Brackets/panels are visually suppressed while the map is horizontal
-   (LOOPS_ENABLED = false in process-map.js). The loop-toggle in the
-   step header still persists state; the visual layer returns in a
-   follow-up redesigned for horizontal rows. */
-.pmap__loop-bracket,
-.pmap__loop-panel {
-  display: none;
+/* ===== Loop band =====
+   One <tbody class="pmap__loop"> per loop below the outputs row (spec
+   2026-10-01-process-map-horizontal-loops-design.md). The rail row draws
+   the return path from per-column modifiers; horizontal segments reach
+   left across the column gap (border-spacing = --fc-chain-gap). The body
+   row holds the controls at the source column and the rework chips, which
+   run right → left and only wrap when no column is left to grow into. */
+.pmap__loop-rail-cell {
+  position: relative;
+  height: var(--spacing-lg);
+  padding: 0;
 }
 
-.pmap__canvas--has-loops {
-  padding-right: var(--spacing-lg);
+/* Vertical stub up from the rail at the column centre. */
+.pmap__loop-rail-cell--target,
+.pmap__loop-rail-cell--source,
+.pmap__loop-rail-cell--source-open {
+  background: linear-gradient(var(--color-pmap-loop), var(--color-pmap-loop))
+    center top / 2px 50% no-repeat;
 }
 
-.pmap__loop-panel {
-  width: 240px;
+/* Arrowhead into the target column. */
+.pmap__loop-rail-cell--target::before {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: calc(50% - 5px);
+  border-right: 5px solid transparent;
+  border-bottom: 8px solid var(--color-pmap-loop);
+  border-left: 5px solid transparent;
+}
+
+.pmap__loop-rail-cell--target::after,
+.pmap__loop-rail-cell--span::after,
+.pmap__loop-rail-cell--source::after,
+.pmap__loop-rail-cell--source-open::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  border-top: 2px solid var(--color-pmap-loop);
+}
+
+.pmap__loop-rail-cell--target::after { left: 50%; right: 0; }
+.pmap__loop-rail-cell--span::after   { left: calc(-1 * var(--fc-chain-gap)); right: 0; }
+.pmap__loop-rail-cell--source::after { left: calc(-1 * var(--fc-chain-gap)); right: 50%; }
+
+.pmap__loop-rail-cell--source-open::after {
+  left: 25%;
+  right: 50%;
+  border-top-style: dashed;
+}
+
+.pmap__loop-band {
+  padding: var(--spacing-xs) 0 var(--spacing-md);
+  vertical-align: top;
+}
+
+.pmap__loop-band-inner {
+  display: flex;
+  flex-flow: row-reverse wrap;
+  align-items: flex-start;
+  gap: var(--spacing-sm);
+}
+
+.pmap__loop-controls {
+  flex: 0 0 224px; /* one step column (.pmap__cell width) */
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm);
   border: var(--border-width) solid var(--color-pmap-loop-border);
-  border-left: 3px solid var(--color-pmap-loop);
+  border-right: 3px solid var(--color-pmap-loop);
   border-radius: var(--border-radius);
   background: var(--color-pmap-loop-bg);
   animation: pmap-fade-in 0.2s ease;
-  z-index: 1;
 }
 
 .pmap__loop-header {
   display: flex;
   align-items: center;
   gap: var(--spacing-xs);
-  padding: var(--spacing-xs) var(--spacing-sm);
-  border-bottom: var(--border-width) solid var(--color-pmap-loop-border);
 }
 
 .pmap__loop-icon {
@@ -494,13 +545,6 @@
   background: rgb(255 59 48 / 10%);
 }
 
-.pmap__loop-body {
-  padding: var(--spacing-sm);
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-sm);
-}
-
 .pmap__loop-field {
   display: flex;
   flex-direction: column;
@@ -516,25 +560,23 @@
   gap: var(--spacing-xs);
 }
 
-.pmap__loop-field-label svg {
+.pmap__loop-field-label .icon {
   color: var(--color-pmap-loop);
 }
 
 /* .field .field--sm base; the loop accent on focus is what makes these
-   visually part of the loop panel. */
+   visually part of the loop band. */
 .pmap__loop-condition:focus,
 .pmap__loop-target-select:focus {
   border-color: var(--color-pmap-loop);
 }
 
-/* ===== Loop Steps List ===== */
-.pmap__loop-steps-list {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-2xs);
-}
-
+/* ===== Rework chips ===== */
 .pmap__loop-step-item {
+  position: relative;
+  flex: 0 0 auto;
+  width: 160px;
+  margin-right: var(--spacing-md); /* room for the « to the controls/next chip */
   display: flex;
   align-items: center;
   gap: var(--spacing-xs);
@@ -542,6 +584,14 @@
   border-radius: var(--border-radius-sm);
   background: var(--color-bg-secondary);
   transition: background var(--transition-speed);
+}
+
+/* « between a chip and its right-hand neighbour — rework flows leftwards. */
+.pmap__loop-step-item::after {
+  content: '«';
+  position: absolute;
+  right: calc(-1 * var(--spacing-md) - var(--spacing-xs));
+  color: var(--color-pmap-loop);
 }
 
 .pmap__loop-step-item:hover {
@@ -593,8 +643,8 @@
 }
 
 .pmap__loop-step-add {
-  width: 100%;
-  padding: var(--spacing-xs) 0;
+  width: auto;
+  padding: var(--spacing-xs) var(--spacing-sm);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -612,27 +662,6 @@
 .pmap__loop-step-add:hover {
   color: var(--color-pmap-loop);
   background: var(--color-pmap-loop-bg);
-}
-
-/* ===== Loop Bracket (visual connector line) ===== */
-.pmap__loop-bracket {
-  position: absolute;
-  width: 20px;
-  border: 2px solid var(--color-pmap-loop);
-  border-left: none;
-  border-radius: 0 8px 8px 0;
-  pointer-events: none;
-}
-
-.pmap__loop-bracket-arrow {
-  position: absolute;
-  top: -5px;
-  left: -8px;
-  width: 0;
-  height: 0;
-  border-top: 5px solid transparent;
-  border-bottom: 5px solid transparent;
-  border-right: 8px solid var(--color-pmap-loop);
 }
 
 /* ===== Animation ===== */

@@ -6,13 +6,11 @@
  * persisted state (steps[] with IO / substeps / loops) plus all CRUD and reorder
  * logic. This data-fn owns the view transforms (value/input-type badge labels,
  * titles and CSS classes), the three nested drag contexts (step / IO / substep),
- * the textarea auto-grow + focus render side-effects, the export dropdown + CSV /
- * XLSX / JSON exporters, and the imperative loop panels + loop brackets.
+ * the textarea auto-grow + focus render side-effects and the export dropdown +
+ * CSV / XLSX / JSON exporters. Loops render declaratively as one
+ * `<tbody class="pmap__loop">` band per loop (see loopRows()).
  *
  * Imperative exceptions (documented):
- *   - loop panels + loop brackets — appended to .pmap__flow and pixel-positioned from
- *     the live DOM (the POM asserts this exact placement); re-rendered after each
- *     structural change via a bounded rAF-poll (alpine.md #6 / correlation _whenAnchor).
  *   - PNG / SVG image export — pure helpers in process-map-export.js.
  *
  * Self-contained: no event bus (stateManager / i18n / notify only).
@@ -23,15 +21,9 @@ import {
   downloadFile, ensureXLSX, XLSX,
 } from '../../core/export-utils.js';
 import { exportPmapPNG, exportPmapSVG } from './process-map-export.js';
-import { State } from './process-map-model.js';
+import { State, loopRailCells } from './process-map-model.js';
 import { listSipocInstances, appendSipocProcess } from './process-map-sipoc-import.js';
 import { chainViewMixin } from '../../core/flowchart/flowchart-view.js';
-
-// Loop rendering is temporarily disabled while the map switches to a
-// horizontal (L→R) layout. The loop toggle in the step header still
-// persists state; only the imperative brackets/panels are suppressed
-// until they are redesigned for horizontal rows.
-const LOOPS_ENABLED = false;
 
 export default createModule({
   config: {
@@ -89,19 +81,6 @@ export default createModule({
       _draggedSubId: null,
       /** @type {string|null} */
       _draggedParentId: null,
-      /** @type {number} bumped each loop-bracket render to abort stale rAF-polls */
-      _renderGen: 0,
-
-      // ── Loop layer (declarative — pixel-positioned from live DOM rects) ──
-      // The panels/brackets are absolutely positioned next to measured step rows,
-      // so positions are computed imperatively from getBoundingClientRect() — but
-      // the MARKUP is declarative: reactive arrays feed <template x-for> blocks in
-      // the template, with :style carrying the measured top/left/height.
-      /** @type {Array<{stepId:string, top:number, height:number, left:number}>} */
-      loopBrackets: [],
-      /** @type {Array<{stepId:string, idx:number, top:number, left:number, targetOptions:Array<{id:string,label:string}>}>} */
-      loopPanels: [],
-
       // ── Value-type badge (data-Fn view transforms) ────────────
       valueBadgeLabel(step) {
         return step.valueType ? _t(step.valueType) : '–';
@@ -145,10 +124,6 @@ export default createModule({
       loopToggleClass(step) {
         return step.loop ? 'pmap__step-loop-toggle--active' : '';
       },
-      hasLoops() {
-        if (!LOOPS_ENABLED) return false;
-        return this.model.steps.some((s) => s.loop);
-      },
       // IO panel labels as single text runs (mirror legacy "{label} »" / "» {label}").
       ioLabelIn() {
         return `${_t('inputs')  } »`;
@@ -184,9 +159,9 @@ export default createModule({
       },
       _focusLastLoopStep(stepId) {
         this.$nextTick(() => setTimeout(() => {
-          const panel = this.$el.querySelector(`.pmap__loop-panel[data-step-id="${stepId}"]`);
-          if (!panel) return;
-          const inputs = panel.querySelectorAll('.pmap__loop-step-title');
+          const band = this.$el.querySelector(`.pmap__loop[data-step-id="${stepId}"]`);
+          if (!band) return;
+          const inputs = band.querySelectorAll('.pmap__loop-step-title');
           if (inputs.length) inputs[inputs.length - 1].focus();
         }, 50));
       },
@@ -194,23 +169,19 @@ export default createModule({
       // ── Step handlers ─────────────────────────────────────────
       addStep(atIndex) {
         this.model.addStep(atIndex);
-        this._scheduleBrackets();
         this._focusStepTitle(atIndex);
       },
       removeStep(id) {
         this.model.removeStep(id);
-        this._scheduleBrackets();
       },
 
       // ── IO handlers ───────────────────────────────────────────
       addIO(stepId, type) {
         this.model.addIO(stepId, type);
-        this._scheduleBrackets();
         this._focusLastIO(stepId, type);
       },
       removeIO(stepId, type, ioId) {
         this.model.removeIO(stepId, type, ioId);
-        this._scheduleBrackets();
       },
       cycleInputType(stepId, ioId) {
         this.model.cycleInputType(stepId, ioId);
@@ -222,25 +193,21 @@ export default createModule({
       },
 
       // ── Substep handlers ──────────────────────────────────────
-      // The mixin already mutates the model; PM only adds its bracket redraw
-      // (and the focus jump on add) on top — hence the explicit _core calls.
+      // The mixin already mutates the model; PM only adds the focus jump on add
+      // and the drag-marker cleanup on top — hence the explicit _core calls.
       toggleSubsteps(stepId) {
         _core.toggleSubsteps.call(this, stepId);
-        this._scheduleBrackets();
       },
       addSubstep(stepId) {
         _core.addSubstep.call(this, stepId);
-        this._scheduleBrackets();
         this._focusLastSubstep(stepId);
       },
       removeSubstep(parentId, substepId) {
         _core.removeSubstep.call(this, parentId, substepId);
-        this._scheduleBrackets();
       },
       subDrop(parentId, subId, event) {
         _core.subDrop.call(this, parentId, subId, event);
         this._clearDragMarkers();
-        this._scheduleBrackets();
       },
       subDragEnd(event) {
         _core.subDragEnd.call(this, event);
@@ -250,7 +217,6 @@ export default createModule({
       // ── Loop handlers ─────────────────────────────────────────
       toggleLoop(stepId) {
         this.model.toggleLoop(stepId);
-        this._scheduleBrackets();
       },
 
       // ── Drag markers ──────────────────────────────────────────
@@ -331,97 +297,8 @@ export default createModule({
         this._draggedIOStepId = null;
         this._draggedIOType = null;
         this._clearDragMarkers();
-        this._scheduleBrackets();
       },
 
-
-      // ── Imperative loop panels + brackets ─────────────────────
-      _scheduleBrackets() {
-        const gen = ++this._renderGen;
-        const tick = (left) => {
-          if (gen !== this._renderGen) return;
-          const flow = this.$el.querySelector('[data-ref="flow"]');
-          // Wait until the step rows for this render exist in the DOM.
-          const ready = flow && (this.model.steps.length === 0
-            || flow.querySelector('.pmap__step-row'));
-          if (ready) { this._renderLoopBrackets(flow); return; }
-          if (left <= 0) return;
-          requestAnimationFrame(() => tick(left - 1));
-        };
-        this.$nextTick(() => requestAnimationFrame(() => tick(30)));
-      },
-
-      _renderLoopBrackets(flow) {
-        if (!flow) return;
-        if (!LOOPS_ENABLED) {
-          this.loopBrackets = [];
-          this.loopPanels = [];
-          return;
-        }
-
-        const steps = this.model.steps;
-        const loops = [];
-        steps.forEach((step, idx) => {
-          if (!step.loop) return;
-          const targetIdx = step.loop.targetStepId
-            ? this.model.stepIndexById(step.loop.targetStepId)
-            : -1;
-          loops.push({ step, idx, targetIdx, span: targetIdx >= 0 ? idx - targetIdx : 0 });
-        });
-        if (!loops.length) { this.loopBrackets = []; this.loopPanels = []; return; }
-
-        loops.sort((a, b) => b.span - a.span);
-        const flowRect = flow.getBoundingClientRect();
-        const table = flow.querySelector('.pmap__table');
-        const tableRight = table
-          ? table.getBoundingClientRect().right - flowRect.left
-          : flowRect.width;
-        const bracketBaseX = tableRight + 24;
-        const panelX = bracketBaseX + 28;
-
-        const brackets = [];
-        const panels = [];
-
-        loops.forEach((lp, lane) => {
-          const sourceRow = flow.querySelector(`.pmap__step-row[data-step-id="${lp.step.id}"]`);
-          const bracketX = bracketBaseX + lane * 28;
-
-          if (lp.targetIdx >= 0 && lp.targetIdx < lp.idx) {
-            const targetRow = flow.querySelector(`.pmap__step-row[data-step-id="${lp.step.loop.targetStepId}"]`);
-            if (sourceRow && targetRow) {
-              const sourceRect = sourceRow.getBoundingClientRect();
-              const targetRect = targetRow.getBoundingClientRect();
-              const bTop = targetRect.top - flowRect.top + targetRect.height * 0.3;
-              const bBottom = sourceRect.bottom - flowRect.top - sourceRect.height * 0.3;
-              const bHeight = bBottom - bTop;
-              if (bHeight >= 10) {
-                brackets.push({ stepId: lp.step.id, top: bTop, height: bHeight, left: bracketX });
-              }
-            }
-          }
-
-          panels.push({
-            stepId: lp.step.id,
-            idx: lp.idx,
-            // Initial top before measuring the rendered panel height; refined in
-            // _positionPanels() after Alpine materialises the panel.
-            top: 0,
-            left: panelX + lane * 28,
-            targetIdx: lp.targetIdx,
-            targetStepId: lp.step.loop.targetStepId || null,
-            targetOptions: this._loopTargetOptions(lp.idx),
-          });
-        });
-
-        this.loopBrackets = brackets;
-        this.loopPanels = panels;
-
-        // Second pass: the panels' vertical center depends on their own height,
-        // which is only known once Alpine has rendered them.
-        this.$nextTick(() => requestAnimationFrame(() => this._positionPanels(flow, flowRect)));
-
-        this._autoSizeAll();
-      },
 
       /** Build the loop-target <select> options for the step at stepIdx. */
       _loopTargetOptions(stepIdx) {
@@ -435,40 +312,42 @@ export default createModule({
           });
       },
 
-      /** Refine each panel's top from its measured height (post-render pass). */
-      _positionPanels(flow, flowRect) {
-        const fRect = flowRect || flow.getBoundingClientRect();
-        this.loopPanels.forEach((p) => {
-          const sourceRow = flow.querySelector(`.pmap__step-row[data-step-id="${p.stepId}"]`);
-          const panelEl = flow.querySelector(`.pmap__loop-panel[data-step-id="${p.stepId}"]`);
-          if (!sourceRow || !panelEl) return;
-          const sourceRect = sourceRow.getBoundingClientRect();
-          const panelH = panelEl.offsetHeight;
-          if (p.targetIdx >= 0 && p.targetIdx < p.idx) {
-            const targetRow = flow.querySelector(`.pmap__step-row[data-step-id="${p.targetStepId}"]`);
-            if (targetRow) {
-              const targetRect = targetRow.getBoundingClientRect();
-              const bTop = targetRect.top - fRect.top + targetRect.height * 0.3;
-              const bBottom = sourceRect.bottom - fRect.top - sourceRect.height * 0.3;
-              const midY = (bTop + bBottom) / 2;
-              p.top = midY - panelH / 2;
-              return;
-            }
-          }
-          const rowMidY = sourceRect.top - fRect.top + sourceRect.height / 2;
-          p.top = rowMidY - panelH / 2;
+      /**
+       * One entry per loop, ordered by source step index — feeds the loop
+       * band <tbody> blocks below the outputs row. Pure function of the
+       * model, so Alpine re-renders the bands on any change; no measuring.
+       * @returns {Array<{stepId:string, sourceIdx:number, targetIdx:number,
+       *   railCells:string[], leadSpan:number, hasTrail:boolean,
+       *   trailSpan:number, targetOptions:Array<{id:string,label:string}>}>}
+       */
+      loopRows() {
+        const steps = this.model.steps;
+        const rows = [];
+        steps.forEach((step, idx) => {
+          if (!step.loop) return;
+          const targetIdx = step.loop.targetStepId
+            ? this.model.stepIndexById(step.loop.targetStepId)
+            : -1;
+          const trailSpan = steps.length - idx - 1;
+          rows.push({
+            stepId: step.id,
+            sourceIdx: idx,
+            targetIdx,
+            railCells: loopRailCells(steps.length, idx, targetIdx),
+            leadSpan: idx + 1,
+            hasTrail: trailSpan > 0,
+            trailSpan,
+            targetOptions: this._loopTargetOptions(idx),
+          });
         });
+        return rows;
+      },
+      /** CSS modifier class for one rail cell ('' → no modifier). */
+      railCellClass(cell) {
+        return cell ? `pmap__loop-rail-cell--${cell}` : '';
       },
 
-      // ── Loop-panel style helpers (declarative :style) ─────────
-      bracketStyle(b) {
-        return `top:${b.top}px;height:${b.height}px;left:${b.left}px`;
-      },
-      panelStyle(p) {
-        return `position:absolute;left:${p.left}px;top:${p.top}px`;
-      },
-
-      // ── Loop-panel field handlers (declarative @input/@change/@click) ──
+      // ── Loop band field handlers (declarative @input/@change/@click) ──
       loopConditionOf(stepId) {
         const step = this.model.steps.find((s) => s.id === stepId);
         return (step && step.loop && step.loop.condition) ? step.loop.condition : '';
@@ -481,25 +360,21 @@ export default createModule({
         const step = this.model.steps.find((s) => s.id === stepId);
         if (step && step.loop) {
           step.loop.targetStepId = event.target.value || null;
-          this._scheduleBrackets();
         }
       },
       loopTargetSelected(stepId, optId) {
         const step = this.model.steps.find((s) => s.id === stepId);
         return Boolean(step && step.loop && step.loop.targetStepId === optId);
       },
-      removeLoopPanel(stepId) {
+      removeLoop(stepId) {
         this.model.removeLoop(stepId);
-        this._scheduleBrackets();
       },
       addLoopStep(stepId) {
         this.model.addLoopStep(stepId);
-        this._scheduleBrackets();
         this._focusLastLoopStep(stepId);
       },
       removeLoopStep(stepId, loopStepId) {
         this.model.removeLoopStep(stepId, loopStepId);
-        this._scheduleBrackets();
       },
       loopStepTitleInput(stepId, loopStepId, event) {
         const step = this.model.steps.find((s) => s.id === stepId);
@@ -507,7 +382,7 @@ export default createModule({
         const ls = step.loop.steps.find((s) => s.id === loopStepId);
         if (ls) ls.title = event.target.value;
       },
-      /** Loop steps for the panel of the given step (for the nested x-for). */
+      /** Loop steps for the band of the given step (for the nested x-for). */
       loopStepsOf(stepId) {
         const step = this.model.steps.find((s) => s.id === stepId);
         return (step && step.loop && step.loop.steps) ? step.loop.steps : [];
@@ -713,7 +588,6 @@ export default createModule({
       init() {
         this.$nextTick(() => {
           this._autoSizeAll();
-          this._scheduleBrackets();
         });
 
         // Auto-open the SIPOC picker on the very first init of a fresh Process
@@ -758,23 +632,6 @@ export default createModule({
           this.$el.querySelectorAll('[draggable="true"]').forEach((el) => el.removeAttribute('draggable'));
         };
         document.addEventListener('mouseup', this._onMouseUp);
-
-        // Re-render the imperative loop panels/brackets on any structural change.
-        // A compact signature (ids + loop fields + expansion) keeps this cheap —
-        // it is NOT a second persist deep-clone of model.toJSON().
-        this.$watch(() => this._loopSignature(), () => this._scheduleBrackets());
-      },
-
-      /** Compact change signal for the imperative loop layer (cheap string). */
-      _loopSignature() {
-        return this.model.steps.map((s) => {
-          const l = s.loop
-            ? `${s.loop.targetStepId  }|${  s.loop.steps ? s.loop.steps.length : 0}`
-            : '';
-          return `${s.id  }:${  s.expanded ? '1' : '0'  }:${
-             s.substeps.length  }:${  s.inputs.length  }:${  s.outputs.length
-             }:${  s.valueType || ''  }:${  l}`;
-        }).join(';');
       },
 
       destroy() {
@@ -782,7 +639,6 @@ export default createModule({
           document.removeEventListener('mouseup', this._onMouseUp);
           this._onMouseUp = null;
         }
-        this._renderGen++; // abort any in-flight rAF-poll
       },
     };
   },
