@@ -4,9 +4,9 @@
  * Guards the generic matrix helpers extracted from `regression-engine.js`.
  */
 
-import { suite, test, assertDeepEqual, assertAlmostEqual } from '../test-utils.js';
+import { suite, test, assertEqual, assertDeepEqual, assertAlmostEqual } from '../test-utils.js';
 import {
-  matTranspose, matMul, matTrace, matIdentity, matInverse,
+  matTranspose, matMul, matTrace, matIdentity, matInverse, matCholesky, matInverseSPD,
 } from '../../js/engines/matrix-utils.js';
 
 suite('Matrix utilities', () => {
@@ -33,5 +33,29 @@ suite('Matrix utilities', () => {
     assertAlmostEqual(prod[0][1], 0, 1e-12);
     assertAlmostEqual(prod[1][0], 0, 1e-12);
     assertAlmostEqual(prod[1][1], 1, 1e-12);
+  });
+});
+
+suite('Matrix utilities — symmetric positive definite', () => {
+  test('Cholesky factor of a 2x2 SPD matrix', () => {
+    const L = matCholesky([[4, 2], [2, 3]]);
+    assertAlmostEqual(L[0][0], 2, 1e-15);
+    assertAlmostEqual(L[0][1], 0, 1e-15);
+    assertAlmostEqual(L[1][0], 1, 1e-15);
+    assertAlmostEqual(L[1][1], Math.SQRT2, 1e-15);
+  });
+
+  test('a matrix that is not positive definite has no Cholesky factor', () => {
+    assertEqual(matCholesky([[1, 2], [2, 1]]), null);
+    assertEqual(matInverseSPD([[1, 2], [2, 1]]), null);
+  });
+
+  test('SPD inverse matches the Gauss-Jordan inverse', () => {
+    const A = [[4, 1, 0.5], [1, 3, 0.2], [0.5, 0.2, 2]];
+    const a = matInverseSPD(A);
+    const b = matInverse(A);
+    for (let i = 0; i < 3; i++) {
+      for (let j = 0; j < 3; j++) assertAlmostEqual(a[i][j], b[i][j], 1e-12);
+    }
   });
 });

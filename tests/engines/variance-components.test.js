@@ -308,6 +308,53 @@ suite('Variance components — REML building blocks', () => {
     assertDeepEqual(ws.q, [2, 4]);
   });
 
+  test('P is the REML projector (P V P = P) on the Woodbury and on the dense path', () => {
+    // Unbalanced crossed design: few levels, so V^-1 goes through Woodbury.
+    // Nested design whose lower factor is unique per row: as many columns as
+    // rows, so V^-1 falls back to the dense Cholesky inverse.
+    const designs = [
+      {
+        response: [3.1, 2.4, 5.0, 4.2, 6.3, 5.5, 7.1, 2.2, 4.8],
+        factorValues: [
+          ['a', 'a', 'a', 'b', 'b', 'c', 'c', 'c', 'c'],
+          ['x', 'y', 'x', 'y', 'x', 'y', 'x', 'y', 'y'],
+        ],
+        terms: buildTerms('crossed', ['A', 'B']),
+        theta: [1.3, 0.4, 0.2, 0.7],
+      },
+      {
+        response: [1.2, 2.5, 2.1, 4.4, 3.9, 5.2],
+        factorValues: [
+          ['a', 'a', 'a', 'b', 'b', 'b'],
+          ['1', '2', '3', '4', '5', '6'],
+        ],
+        terms: buildTerms('nested', ['A', 'B']),
+        theta: [2, 0.5, 0.3],
+      },
+    ];
+    for (const { theta, ...input } of designs) {
+      const ws = remlWorkspace(input);
+      const { n, Z } = ws;
+      const V = Array.from({ length: n }, (_, i) => Array.from({ length: n }, (_, j) => (i === j ? theta[Z.length] : 0)));
+      Z.forEach((block, t) => block.forEach(z => {
+        for (let a = 0; a < n; a++) for (let b = 0; b < n; b++) V[a][b] += theta[t] * z[a] * z[b];
+      }));
+      const { P, ok } = remlP(ws, theta);
+      assertEqual(ok, true);
+      for (let i = 0; i < n; i++) {
+        for (let j = 0; j < n; j++) {
+          let pvp = 0;
+          for (let k = 0; k < n; k++) {
+            let vp = 0;
+            for (let l = 0; l < n; l++) vp += V[k][l] * P[l][j];
+            pvp += P[i][k] * vp;
+          }
+          assertAlmostEqual(pvp, P[i][j], 1e-10);
+        }
+      }
+    }
+  });
+
   test('P annihilates the intercept', () => {
     const terms = buildTerms('nested', ['A', 'B']);
     const ws = remlWorkspace({ ...NESTED_BALANCED, terms });
@@ -652,6 +699,20 @@ suite('Variance components — degenerate input and failure reporting', () => {
     const ok = emStep(ws, [1, 1, 1]);
     assertEqual(Array.isArray(ok), true);
     assertEqual(ok.length, 3);
+  });
+
+  test('remlP reports a V that is not positive definite as ok: false', () => {
+    // A negative component makes V indefinite; it is invertible all the same,
+    // so only a positive-definiteness check catches it.
+    const response = [1, 2, 3, 4, 5, 6];
+    const factorValues = [
+      ['a', 'a', 'a', 'b', 'b', 'b'],
+      ['1', '1', '2', '1', '2', '2'],
+    ];
+    const terms = buildTerms('nested', ['A', 'B']);
+    const ws = remlWorkspace({ response, factorValues, terms });
+    assertEqual(remlP(ws, [-5, 0, 1]).ok, false);
+    assertEqual(remlP(ws, [1, 1, 1]).ok, true);
   });
 
   test('a constant response yields all-zero components rather than an invented one', () => {

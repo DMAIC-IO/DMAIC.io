@@ -18,7 +18,7 @@
  * No DOM, no state — all functions are stateless and testable.
  */
 
-import { matInverse } from './matrix-utils.js';
+import { matInverse, matInverseSPD } from './matrix-utils.js';
 
 /** Model bounds, mirrored from the multi-vari engine. */
 export const MIN_FACTORS = 2;
@@ -348,12 +348,114 @@ export function anovaComponents(table) {
  *
  * @param {{response: number[], factorValues: string[][],
  *          terms: Array<{factorIndices: number[]}>}} input
- * @returns {{y: Float64Array, Z: Float64Array[][], q: number[], n: number}}
+ * `rows` lists, per term and column, the rows where the indicator is set —
+ * the n x n loops over V and P only ever touch those pairs.
+ *
+ * @returns {{y: Float64Array, Z: Float64Array[][], rows: Int32Array[][], q: number[], n: number}}
  */
 export function remlWorkspace({ response, factorValues, terms }) {
   const n = response.length;
   const Z = terms.map(t => termCells(t.factorIndices, factorValues).columns);
-  return { y: Float64Array.from(response), Z, q: Z.map(b => b.length), n };
+  const rows = Z.map(block => block.map(z => {
+    const idx = [];
+    for (let i = 0; i < n; i++) if (z[i] !== 0) idx.push(i);
+    return Int32Array.from(idx);
+  }));
+  return { y: Float64Array.from(response), Z, rows, q: Z.map(b => b.length), n };
+}
+
+/**
+ * V = sigma_e I + sum_j theta_j Z_j Z_j', built densely and inverted by Cholesky.
+ * V is a covariance matrix — symmetric, and positive definite for any valid
+ * theta — so Cholesky is cheaper than Gauss-Jordan and rejects an indefinite V
+ * (a negative component) that would still be invertible.
+ *
+ * @param {ReturnType<typeof remlWorkspace>} ws
+ * @param {number[]} theta
+ * @returns {Float64Array[]|null} null when V is not positive definite
+ */
+function denseVInverse(ws, theta) {
+  const { rows, n } = ws;
+  const V = Array.from({ length: n }, () => new Float64Array(n));
+  const sigmaE = theta[theta.length - 1];
+  for (let i = 0; i < n; i++) V[i][i] = sigmaE;
+  for (let j = 0; j < rows.length; j++) {
+    const s = theta[j];
+    if (s === 0) continue;
+    for (const idx of rows[j]) {
+      for (const a of idx) {
+        const Va = V[a];
+        for (const b of idx) Va[b] += s;
+      }
+    }
+  }
+  return matInverseSPD(V);
+}
+
+/**
+ * V^-1 for V = sigma_e I + Z D Z', D = diag(theta_j per column of Z_j).
+ *
+ * With every component non-negative and sigma_e > 0, V is positive definite
+ * and the Woodbury identity applies:
+ *
+ *   V^-1 = (I - Z C^-1 Z') / sigma_e,   C = sigma_e D^-1 + Z'Z
+ *
+ * over the columns of the non-zero components only. C has one row per factor
+ * level or cell (tens) instead of one per observation (hundreds), so the cubic
+ * work shrinks from n^3 to Q^3. When Q is not smaller than n, or theta leaves
+ * the non-negative orthant, the dense Cholesky path decides instead.
+ *
+ * @param {ReturnType<typeof remlWorkspace>} ws
+ * @param {number[]} theta
+ * @returns {Float64Array[]|null} null when V is singular or not positive definite
+ */
+function vInverse(ws, theta) {
+  const { rows, n } = ws;
+  const T = rows.length;
+  const sigmaE = theta[T];
+  if (!(sigmaE > 0) || theta.slice(0, T).some(v => v < 0)) return denseVInverse(ws, theta);
+
+  // Active columns: their row lists and component variances.
+  const cols = [];
+  const colVar = [];
+  for (let j = 0; j < T; j++) {
+    if (theta[j] === 0) continue;
+    for (const idx of rows[j]) { cols.push(idx); colVar.push(theta[j]); }
+  }
+  const Q = cols.length;
+  if (Q >= n) return denseVInverse(ws, theta);
+
+  // Columns covering each row, so Z'Z and Z C^-1 Z' stay sparse.
+  const rowCols = Array.from({ length: n }, () => []);
+  for (let c = 0; c < Q; c++) for (const a of cols[c]) rowCols[a].push(c);
+
+  const C = Array.from({ length: Q }, () => new Float64Array(Q));
+  for (let c = 0; c < Q; c++) C[c][c] = sigmaE / colVar[c];
+  for (let a = 0; a < n; a++) {
+    const rc = rowCols[a];
+    for (const c of rc) for (const d of rc) C[c][d] += 1;
+  }
+  const Cinv = matInverseSPD(C);
+  if (!Cinv) return denseVInverse(ws, theta);
+
+  // M = Z C^-1 (n x Q), then V^-1[a][b] = (delta_ab - sum_{d in cols(b)} M[a][d]) / sigma_e.
+  const Vinv = [];
+  const m = new Float64Array(Q);
+  for (let a = 0; a < n; a++) {
+    m.fill(0);
+    for (const c of rowCols[a]) {
+      const Cc = Cinv[c];
+      for (let d = 0; d < Q; d++) m[d] += Cc[d];
+    }
+    const row = new Float64Array(n);
+    for (let b = 0; b < n; b++) {
+      let s = 0;
+      for (const d of rowCols[b]) s += m[d];
+      row[b] = ((a === b ? 1 : 0) - s) / sigmaE;
+    }
+    Vinv.push(row);
+  }
+  return Vinv;
 }
 
 /**
@@ -361,33 +463,12 @@ export function remlWorkspace({ response, factorValues, terms }) {
  *
  * @param {ReturnType<typeof remlWorkspace>} ws
  * @param {number[]} theta — components, last entry the error variance
- * @returns {{P: number[][], Py: Float64Array, ok: boolean}} ok=false when V is singular
+ * @returns {{P: number[][], Py: Float64Array, ok: boolean}} ok=false when V is
+ *          singular or not positive definite
  */
 export function remlP(ws, theta) {
-  const { Z, n } = ws;
-  const sigmaE = theta[theta.length - 1];
-
-  const V = [];
-  for (let i = 0; i < n; i++) V.push(new Array(n).fill(0));
-  for (let i = 0; i < n; i++) V[i][i] = sigmaE;
-  for (let j = 0; j < Z.length; j++) {
-    const s = theta[j];
-    if (s === 0) continue;
-    for (const z of Z[j]) {
-      for (let a = 0; a < n; a++) {
-        if (z[a] === 0) continue;
-        for (let b = 0; b < n; b++) if (z[b] !== 0) V[a][b] += s;
-      }
-    }
-  }
-
-  let Vinv;
-  try {
-    Vinv = matInverse(V);
-  } catch {
-    return { P: null, Py: null, ok: false };
-  }
-  // matInverse reports a singular matrix by returning null rather than throwing.
+  const { n } = ws;
+  const Vinv = vInverse(ws, theta);
   if (!Vinv) return { P: null, Py: null, ok: false };
 
   // X = 1, so X' Vinv X is the scalar sum of all entries of Vinv.
@@ -403,15 +484,18 @@ export function remlP(ws, theta) {
 
   const P = [];
   for (let i = 0; i < n; i++) {
-    const row = new Array(n);
-    for (let j = 0; j < n; j++) row[j] = Vinv[i][j] - (rowSums[i] * rowSums[j]) / total;
+    const row = new Float64Array(n);
+    const Vi = Vinv[i];
+    const ri = rowSums[i] / total;
+    for (let j = 0; j < n; j++) row[j] = Vi[j] - ri * rowSums[j];
     P.push(row);
   }
 
   const Py = new Float64Array(n);
   for (let i = 0; i < n; i++) {
+    const Pi = P[i];
     let s = 0;
-    for (let j = 0; j < n; j++) s += P[i][j] * ws.y[j];
+    for (let j = 0; j < n; j++) s += Pi[j] * ws.y[j];
     Py[i] = s;
   }
 
@@ -445,14 +529,16 @@ export function emStep(ws, theta, projector) {
   for (let j = 0; j < Z.length; j++) {
     let quad = 0;
     let trace = 0;
-    for (const z of Z[j]) {
+    for (let c = 0; c < Z[j].length; c++) {
+      const z = Z[j][c];
+      const idx = ws.rows[j][c];
       let zPy = 0;
       for (let i = 0; i < n; i++) zPy += z[i] * Py[i];
       quad += zPy * zPy;
 
-      for (let a = 0; a < n; a++) {
-        if (z[a] === 0) continue;
-        for (let b = 0; b < n; b++) if (z[b] !== 0) trace += P[a][b];
+      for (const a of idx) {
+        const Pa = P[a];
+        for (const b of idx) trace += Pa[b];
       }
     }
     const s = theta[j];
@@ -525,13 +611,15 @@ function aiSystem(ws, projector) {
   for (let j = 0; j < T; j++) {
     let quad = 0;
     let trace = 0;
-    for (const z of Z[j]) {
+    for (let c = 0; c < Z[j].length; c++) {
+      const z = Z[j][c];
+      const idx = ws.rows[j][c];
       let zPy = 0;
       for (let i = 0; i < n; i++) zPy += z[i] * Py[i];
       quad += zPy * zPy;
-      for (let a = 0; a < n; a++) {
-        if (z[a] === 0) continue;
-        for (let b = 0; b < n; b++) if (z[b] !== 0) trace += P[a][b];
+      for (const a of idx) {
+        const Pa = P[a];
+        for (const b of idx) trace += Pa[b];
       }
     }
     score[j] = -0.5 * (trace - quad);

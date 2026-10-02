@@ -132,3 +132,69 @@ export function matInverse(A) {
   );
   return inv;
 }
+
+/**
+ * Cholesky factorisation A = L L' of a symmetric positive definite matrix.
+ * Only the lower triangle of A is read.
+ * @param {number[][]} A - n×n symmetric matrix
+ * @returns {Float64Array[]|null} Lower-triangular L (rows), or null when A is
+ *          not positive definite (a pivot at or below a relative 1e-13 floor)
+ */
+export function matCholesky(A) {
+  const n = A.length;
+  const L = Array.from({ length: n }, () => new Float64Array(n));
+  for (let j = 0; j < n; j++) {
+    const Lj = L[j];
+    let d = A[j][j];
+    for (let k = 0; k < j; k++) d -= Lj[k] * Lj[k];
+    if (!(d > 1e-13 * Math.abs(A[j][j]))) return null;
+    const ljj = Math.sqrt(d);
+    Lj[j] = ljj;
+    for (let i = j + 1; i < n; i++) {
+      const Li = L[i];
+      let s = A[i][j];
+      for (let k = 0; k < j; k++) s -= Li[k] * Lj[k];
+      Li[j] = s / ljj;
+    }
+  }
+  return L;
+}
+
+/**
+ * Invert a symmetric positive definite matrix via its Cholesky factor:
+ * A⁻¹ = L⁻ᵀ L⁻¹. About a third of the work of Gauss-Jordan and exact symmetry
+ * of the result.
+ * @param {number[][]} A - n×n symmetric positive definite matrix
+ * @returns {Float64Array[]|null} The inverse (rows), or null when A is not
+ *          positive definite
+ */
+export function matInverseSPD(A) {
+  const L = matCholesky(A);
+  if (!L) return null;
+  const n = L.length;
+
+  // W = L⁻¹ (lower triangular), row by row via forward substitution.
+  const W = Array.from({ length: n }, () => new Float64Array(n));
+  for (let i = 0; i < n; i++) {
+    const Li = L[i];
+    const Wi = W[i];
+    Wi[i] = 1 / Li[i];
+    for (let j = 0; j < i; j++) {
+      let s = 0;
+      for (let k = j; k < i; k++) s -= Li[k] * W[k][j];
+      Wi[j] = s / Li[i];
+    }
+  }
+
+  // A⁻¹[i][j] = sum_k W[k][i] W[k][j], k >= max(i, j); fill both triangles.
+  const inv = Array.from({ length: n }, () => new Float64Array(n));
+  for (let i = 0; i < n; i++) {
+    for (let j = 0; j <= i; j++) {
+      let s = 0;
+      for (let k = i; k < n; k++) s += W[k][i] * W[k][j];
+      inv[i][j] = s;
+      inv[j][i] = s;
+    }
+  }
+  return inv;
+}
