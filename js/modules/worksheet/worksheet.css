@@ -93,6 +93,11 @@
 
 .worksheet-toolbar .toolbar__chevron {
   margin-left: calc(-1 * var(--spacing-2xs));
+  transition: transform var(--transition-speed);
+}
+
+.worksheet-toolbar [aria-expanded="true"] > .toolbar__chevron {
+  transform: rotate(180deg);
 }
 
 .worksheet-toolbar .toolbar__dropdown-menu {

@@ -23,7 +23,7 @@
       Import
     </button>
     <div class="toolbar__dropdown" data-action="export-dropdown">
-      <button class="toolbar__btn" :title="t('export')" @click="toggleExport($event)">
+      <button class="toolbar__btn" :title="t('export')" :aria-expanded="exportOpen ? 'true' : 'false'" @click="toggleExport($event)">
         <span class="icon icon--sm" data-icon="action.download" aria-hidden="true"></span>
         <span x-text="t('export')"></span>
         <span class="icon icon--sm toolbar__chevron" data-icon="nav.expand-down" aria-hidden="true"></span>
