@@ -131,6 +131,12 @@ suite('worksheet-columns: coerceNumeric', () => {
     assertEqual(coerceNumeric(undefined), null);
   });
 
+  test('whitespace-only strings → null, not 0', () => {
+    assertEqual(coerceNumeric(' '), null);
+    assertEqual(coerceNumeric('\t'), null);
+    assertEqual(coerceNumeric(' \n '), null);
+  });
+
   test('non-numeric strings → null', () => {
     assertEqual(coerceNumeric('abc'), null);
     assertEqual(coerceNumeric('1,5'), null); // comma decimals NOT parsed

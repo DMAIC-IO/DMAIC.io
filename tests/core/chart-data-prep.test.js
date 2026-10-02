@@ -19,6 +19,7 @@ suite('chart-data-prep — toNum', () => {
 
   test('empty is NaN, numbers pass through', () => {
     assertTrue(Number.isNaN(toNum('')), "'' → NaN");
+    assertTrue(Number.isNaN(toNum(' ')), "' ' → NaN");
     assertTrue(Number.isNaN(toNum(null)), 'null → NaN');
     assertEqual(toNum(7), 7);
   });

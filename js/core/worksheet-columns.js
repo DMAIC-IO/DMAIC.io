@@ -52,13 +52,15 @@ export function getColumnRawValues(stateManager, ref) {
 
 /**
  * Plain, type-agnostic cell→number coercion.
- * empty / null / non-finite → null; numeric strings are parsed.
+ * empty / whitespace-only / null / non-finite → null; numeric strings are parsed.
  * @param {*} val
  * @returns {number|null}
  */
 export function coerceNumeric(val) {
   if (val == null || val === '') return null;
   if (typeof val === 'number' && !isNaN(val)) return val;
+  // Number(' ') is 0 — a blanked cell must not become a measurement.
+  if (typeof val === 'string' && val.trim() === '') return null;
   const n = Number(val);
   return isFinite(n) ? n : null;
 }
