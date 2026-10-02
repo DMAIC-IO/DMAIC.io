@@ -233,8 +233,8 @@
                 <template x-if="vr.depth === 0">
                   <td>
                     <select class="field field--sm ishikawa__cat-select" :data-row-cat="vr.row.id" :style="'border-left:3px solid ' + vr.borderColor" x-model="vr.row.category">
-                      <option value="" x-text="vr.defOpt"></option>
-                      <template x-for="c in cats" :key="c.key"><option :value="c.key" x-text="catLabel(c.key)"></option></template>
+                      <option value="" x-text="vr.defOpt" :selected="!vr.row.category"></option>
+                      <template x-for="c in cats" :key="c.key"><option :value="c.key" x-text="catLabel(c.key)" :selected="c.key === vr.row.category"></option></template>
                     </select>
                   </td>
                 </template>
