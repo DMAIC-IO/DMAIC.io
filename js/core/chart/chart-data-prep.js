@@ -10,12 +10,14 @@
  *   - PALETTE        — the 12-color series palette (mirrors the legacy palette 1:1)
  *   - refFromJSON    — clone-or-null for a worksheet column reference
  *   - cleanCat       — category coercion (null/'' → '' else String)
- *   - toNum          — numeric coercion (parseFloat, NaN for empty/invalid)
+ *   - toNum          — strict numeric coercion (NaN for empty/invalid)
  *   - crossTabMatrix — the legacy three-pass cross-tab Pass-1 (level discovery)
  *                      + Pass-2 (matrix[x][g] = { sum, count } fill)
  *   - columnRefFromJSON — strict {instanceId,sheetId,columnId} validator shared
  *                      by the scatter-style plot models (Probability-Plot, XY-Plot)
  */
+
+import { coerceNumeric } from '../worksheet-columns.js';
 
 /** Bar / stack colors — mirrors the legacy PALETTE 1:1. */
 export const PALETTE = [
@@ -35,11 +37,15 @@ export function cleanCat(v) {
   return v == null || v === '' ? '' : String(v);
 }
 
-/** Mirror legacy `toNum`: parseFloat, NaN for empty/invalid. */
+/**
+ * Strict cell-value coercion (via `coerceNumeric`): NaN for empty or invalid
+ * input — a typo'd cell such as "20abc" is invalid, not 20.
+ * @param {*} v
+ * @returns {number}
+ */
 export function toNum(v) {
-  if (v == null || v === '') return NaN;
-  const n = parseFloat(v);
-  return Number.isFinite(n) ? n : NaN;
+  const n = coerceNumeric(v);
+  return n === null ? NaN : n;
 }
 
 /**

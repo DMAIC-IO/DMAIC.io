@@ -58,6 +58,13 @@ suite('Multi-Vari engine — row cleaning', () => {
     assertEqual(droppedRows, 2);
     assertDeepEqual(rows.map(r => r.y), [10, 30]);
   });
+
+  test('drops a measurement with trailing text instead of reading its number prefix', () => {
+    const { rows, droppedRows } = cleanRows(['1', '20abc', 3], [{ name: 'A', values: ['a', 'a', 'b'] }]);
+    assertEqual(rows.length, 2);
+    assertEqual(droppedRows, 1);
+    assertDeepEqual(rows.map(r => r.y), [1, 3]);
+  });
 });
 
 suite('Multi-Vari engine — two factors', () => {

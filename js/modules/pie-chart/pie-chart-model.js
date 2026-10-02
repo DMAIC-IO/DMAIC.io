@@ -16,7 +16,7 @@
  *
  * Two input modes (driven by which column slots are filled), mirroring legacy:
  *   - value only   → frequency count per distinct value (first-seen order)
- *   - value+label  → sum of value per label (parseFloat; NaN/negative dropped)
+ *   - value+label  → sum of value per label (strict toNum; NaN/negative dropped)
  *
  * The chart-editor the user interacts with lives INSIDE the pie chart type
  * (`core/chart/types/pie.js`); the legacy module only imported `esc` from
@@ -30,6 +30,8 @@
  * round-tripped here (matching the bar sibling, which never persisted its
  * computed categories/groups).
  */
+
+import { toNum } from '../../core/chart/chart-data-prep.js';
 
 /** Slice colors — mirrors the legacy PALETTE 1:1. */
 export const PALETTE = [
@@ -87,7 +89,7 @@ export class State {
    * Build the pie slices from the selected columns. Mirrors the legacy
    * `_buildSlicesFromWorksheet` 1:1.
    *
-   *   - value+label → sum of value per label (parseFloat; NaN or negative
+   *   - value+label → sum of value per label (strict toNum; NaN or negative
    *     dropped; name = label cell or 1-based row index if missing).
    *   - value only  → frequency count per distinct value key (String(raw);
    *     null/'' skipped).
@@ -104,7 +106,7 @@ export class State {
       const labels = getValues(this.labelRef);
       const sums = new Map();
       for (let i = 0; i < values.length; i++) {
-        const v = parseFloat(values[i]);
+        const v = toNum(values[i]);
         if (isNaN(v) || v < 0) continue;
         const name = labels && labels[i] != null ? String(labels[i]) : `${i + 1}`;
         sums.set(name, (sums.get(name) || 0) + v);

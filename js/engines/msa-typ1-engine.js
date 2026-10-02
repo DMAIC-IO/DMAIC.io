@@ -19,10 +19,11 @@ export function parseValues(raw) {
     .split(/[\n;,\t]+/)
     .map(s => s.trim())
     .filter(s => s.length > 0)
-    .map(s => parseFloat(s.replace(',', '.')))
+    .map(s => toNum(s.replace(',', '.')))
     .filter(v => !isNaN(v));
 }
 
+import { toNum } from '../core/chart/chart-data-prep.js';
 import { mean, stddev } from './stats-utils.js';
 export { mean, stddev };
 

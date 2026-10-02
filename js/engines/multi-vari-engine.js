@@ -13,6 +13,7 @@
  */
 
 import { MIN_FACTORS, MAX_FACTORS, KEY_SEP, expectedCellCount } from './variance-components-engine.js';
+import { toNum } from '../core/chart/chart-data-prep.js';
 
 export { MIN_FACTORS, MAX_FACTORS, KEY_SEP };
 
@@ -75,7 +76,7 @@ export function cleanRows(measurements, factors) {
 
   for (let i = 0; i < n; i++) {
     const raw = measurements[i];
-    const y = typeof raw === 'number' ? raw : parseFloat(raw);
+    const y = toNum(raw);
     const keys = factors.map(f => levelKey(f.values[i]));
     const complete = Number.isFinite(y) && keys.every(k => k !== '');
     if (complete) rows.push({ y, keys });

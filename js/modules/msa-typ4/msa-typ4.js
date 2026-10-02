@@ -15,6 +15,7 @@
  * Spec: docs/modules/MSA-TYP4.md
  */
 
+import { toNum } from '../../core/chart/chart-data-prep.js';
 import { createModule } from '../../core/template-module.js';
 import { State } from './msa-typ4-model.js';
 import { analyze } from '../../engines/msa-typ4-engine.js';
@@ -168,9 +169,9 @@ const mod = createModule({
         const len = Math.min(rawRef.length, rawMeas.length);
         for (let i = 0; i < len; i++) {
           const r = typeof rawRef[i] === 'number' ? rawRef[i]
-                    : parseFloat(String(rawRef[i] ?? '').replace(',', '.'));
+                    : toNum(String(rawRef[i] ?? '').replace(',', '.'));
           const m = typeof rawMeas[i] === 'number' ? rawMeas[i]
-                    : parseFloat(String(rawMeas[i] ?? '').replace(',', '.'));
+                    : toNum(String(rawMeas[i] ?? '').replace(',', '.'));
           if (!Number.isFinite(r) || !Number.isFinite(m)) continue;
           reference.push(r);
           measured.push(m);

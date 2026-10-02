@@ -17,6 +17,8 @@
  * (sibling-parity, defaults to null) used by loadExample for worksheet cleanup.
  */
 
+import { toNum } from '../../core/chart/chart-data-prep.js';
+
 /** Default chart-config block — identical to the legacy `_chartConfig`. */
 const CONFIG_DEFAULTS = {
   title: '',
@@ -39,12 +41,6 @@ function cleanCat(v) {
   return v == null || v === '' ? '' : String(v);
 }
 
-/** Mirror legacy `toNum`: parseFloat, NaN for empty/invalid. */
-function toNum(v) {
-  if (v == null || v === '') return NaN;
-  const n = parseFloat(v);
-  return Number.isFinite(n) ? n : NaN;
-}
 
 export class State {
   /** Column column ref (X axis → columns). */

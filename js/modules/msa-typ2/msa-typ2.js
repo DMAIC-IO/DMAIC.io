@@ -15,6 +15,7 @@
  * Spec: docs/modules/MSA-TYP2.md
  */
 
+import { toNum } from '../../core/chart/chart-data-prep.js';
 import { createModule } from '../../core/template-module.js';
 import { State } from './msa-typ2-model.js';
 import { validate, analyze } from '../../engines/msa-typ2-engine.js';
@@ -182,7 +183,7 @@ const mod = createModule({
         for (let i = 0; i < len; i++) {
           if (rawParts[i] == null || rawMeas[i] == null) continue;
           if (hasOperator && rawOps[i] == null) continue;
-          const m = typeof rawMeas[i] === 'number' ? rawMeas[i] : parseFloat(String(rawMeas[i]).replace(',', '.'));
+          const m = typeof rawMeas[i] === 'number' ? rawMeas[i] : toNum(String(rawMeas[i]).replace(',', '.'));
           if (isNaN(m)) continue;
           parts.push(String(rawParts[i]));
           if (hasOperator) operators.push(String(rawOps[i]));

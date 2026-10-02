@@ -16,6 +16,7 @@
  * columns into the Worksheet module — preserved byte-identically below.
  */
 
+import { toNum } from '../../core/chart/chart-data-prep.js';
 import { createModule } from '../../core/template-module.js';
 import {
   State, TRANSFORMS, applyTransform, optimizeBoxCox, optimizeYeoJohnson,
@@ -149,7 +150,7 @@ const mod = createModule({
 
         const values = getColumnValues(module._context.stateManager, ref);
         this.rawData = values
-          .map(v => (typeof v === 'number') ? v : parseFloat(v))
+          .map(toNum)
           .filter(v => isFinite(v));
 
         if (this.rawData.length < 3) { this._clearOutput(); return; }

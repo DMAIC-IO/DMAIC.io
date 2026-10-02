@@ -7,6 +7,7 @@
  * Follows the same pattern as MSA modules (msa-typ1.js, msa-typ2.js).
  */
 
+import { coerceNumeric } from '../../core/worksheet-columns.js';
 import { ROLE } from '../../core/datagrid/datagrid-roles.js';
 import { uid } from '../../core/uid.js';
 
@@ -722,7 +723,7 @@ export function readSourceData(context, sourceRef, factors, responses) {
       const rc = responseMap[ri];
       if (rc.col) {
         const v = rc.col.values[i];
-        const num = (v == null || v === '') ? null : parseFloat(v);
+        const num = coerceNumeric(v);
         responseValues[ri].push(Number.isFinite(num) ? num : null);
       } else {
         responseValues[ri].push(null);
