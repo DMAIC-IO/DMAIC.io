@@ -92,7 +92,8 @@ const mod = createModule({
       _resizeObserver: null,
       _resizeDebounced: null,
       _lastRenderSize: null,
-      _interactionsReady: false,
+      _listenerAbort: null,
+      _errorTimer: null,
       _activeColorPicker: null,
       _exampleWorksheetId: null,
       // Rendering state kept across renders (tooltip / zoom-pan)
@@ -187,7 +188,6 @@ const mod = createModule({
             this._editorOpen = open;
             if (editorPanel) editorPanel.classList.toggle('histogram__editor--open', open);
             if (open) this._buildEditor();
-            setTimeout(() => this._renderChart(), 340);
           },
         });
         chartWrap.appendChild(this._modebar.el);
@@ -315,7 +315,8 @@ const mod = createModule({
         if (errBox) {
           errBox.textContent = msg;
           errBox.style.display = 'block';
-          setTimeout(() => { errBox.style.display = 'none'; }, 4000);
+          clearTimeout(this._errorTimer);
+          this._errorTimer = setTimeout(() => { errBox.style.display = 'none'; }, 4000);
         }
       },
 
@@ -415,10 +416,7 @@ const mod = createModule({
 
           requestAnimationFrame(() => {
             this._renderChart();
-            if (!this._interactionsReady) {
-              this._setupChartInteractions();
-              this._interactionsReady = true;
-            }
+            this._setupChartInteractions();
             if (this._editorOpen) this._buildEditor();
           });
 
@@ -815,6 +813,11 @@ const mod = createModule({
         const bpPanel = module._container?.querySelector('[data-ref="boxplot-panel"]');
         const bpTooltip = module._container?.querySelector('[data-ref="boxplot-tooltip"]');
         if (!wrap || !tooltip) return;
+        // Bind once per mount. The signal releases the listeners in destroy(),
+        // also when Alpine remounts onto the same DOM.
+        if (this._listenerAbort) return;
+        this._listenerAbort = new AbortController();
+        const { signal } = this._listenerAbort;
 
         wrap.addEventListener('mousemove', (e) => {
           const rect = wrap.getBoundingClientRect();
@@ -868,8 +871,8 @@ const mod = createModule({
           } else {
             this.tip = { ...this.tip, visible: false };
           }
-        });
-        wrap.addEventListener('mouseleave', () => { this.tip = { ...this.tip, visible: false }; });
+        }, { signal });
+        wrap.addEventListener('mouseleave', () => { this.tip = { ...this.tip, visible: false }; }, { signal });
 
         const chartMain = module._container?.querySelector('.histogram__chart-main');
         if (bpPanel && bpTooltip && chartMain) {
@@ -902,8 +905,8 @@ const mod = createModule({
             } else {
               this.bpTip = { ...this.bpTip, visible: false };
             }
-          });
-          bpPanel.addEventListener('mouseleave', () => { this.bpTip = { ...this.bpTip, visible: false }; });
+          }, { signal });
+          bpPanel.addEventListener('mouseleave', () => { this.bpTip = { ...this.bpTip, visible: false }; }, { signal });
         }
       },
 
@@ -1032,9 +1035,7 @@ const mod = createModule({
         // re-fires onChange, so the module must re-read values itself.
         const onData = () => this._autoPlot();
         eb.on('worksheet:dataChanged', onData);
-        eb.on('state:saved', onData);
         this._unsubs.push(() => eb.off('worksheet:dataChanged', onData));
-        this._unsubs.push(() => eb.off('state:saved', onData));
 
         // Auto-plot saved datasets.
         if (this.model.datasets.some(d => d.valueRef)) {
@@ -1062,6 +1063,9 @@ const mod = createModule({
         if (this._modebar) { this._modebar.destroy(); this._modebar = null; }
         if (this._globalMoveHandler) window.removeEventListener('mousemove', this._globalMoveHandler);
         if (this._globalUpHandler) window.removeEventListener('mouseup', this._globalUpHandler);
+        if (this._listenerAbort) { this._listenerAbort.abort(); this._listenerAbort = null; }
+        clearTimeout(this._errorTimer);
+        this._errorTimer = null;
       },
     };
   },
