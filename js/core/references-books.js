@@ -30,7 +30,7 @@ export const AIAG_MSA_4 = {
   ISBN: '978-1-60534-211-5',
 };
 
-/** Edition year not recorded here; cited as "Bosch Heft 10" throughout the app. */
+/** Edition 11.2019; cited as "Bosch Heft 10" throughout the app. */
 export const BOSCH_HEFT_10 = {
   id: 'bosch-heft-10',
   type: 'book',
@@ -38,4 +38,5 @@ export const BOSCH_HEFT_10 = {
   title: 'Qualitätsmanagement in der Bosch-Gruppe, Technische Statistik, Heft 10: Fähigkeit von Mess- und Prüfprozessen',
   publisher: 'Robert Bosch GmbH',
   'publisher-place': 'Stuttgart',
+  issued: { 'date-parts': [[2019, 11]] },
 };
