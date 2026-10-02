@@ -21,7 +21,7 @@
       },
       {
         "type": "paragraph",
-        "text": "$P_i$ ist die paarweise Übereinstimmung innerhalb eines Teils, $\\bar P$ deren Mittelwert. $\\bar p_j$ sind die Randanteile der Klassen. Bei ungleichen Rater-Zahlen wechselt die Engine auf die Randolph-Variante. Getestet wird $H_0: \\kappa = 0$ mit dem Standardfehler unter $H_0$ nach Fleiss/Nee/Landis 1979 (Fleiss/Levin/Paik 2003, wie Minitab): $z = \\kappa / \\text{SE}_0$, einseitiges $p$. Ein Konfidenzintervall für Fleiss κ gibt D.Mike nicht aus, Minitab ebenfalls nicht."
+        "text": "$P_i$ ist die paarweise Übereinstimmung innerhalb eines Teils, $\\bar P$ deren Mittelwert. $\\bar p_j$ sind die Randanteile der Klassen. Bei ungleichen Rater-Zahlen wechselt die Engine auf die Randolph-Variante. Getestet wird $H_0: \\kappa = 0$ mit dem Standardfehler unter $H_0$ nach Fleiss/Nee/Landis 1979 (Fleiss/Levin/Paik 2003, wie Minitab): $z = \\kappa / \\text{SE}_0$, einseitiges $p$. Ein Konfidenzintervall für Fleiss κ gibt Qprovement nicht aus, Minitab ebenfalls nicht."
       },
       {
         "type": "note",
@@ -39,7 +39,7 @@
       },
       {
         "type": "paragraph",
-        "text": "$P_i$ is the pairwise agreement within a part, $\\bar P$ its mean. $\\bar p_j$ are the class marginals. Under unbalanced rater counts the engine switches to the Randolph variant. $H_0: \\kappa = 0$ is tested with the standard error under $H_0$ after Fleiss/Nee/Landis 1979 (Fleiss/Levin/Paik 2003, as in Minitab): $z = \\kappa / \\text{SE}_0$, one-sided $p$. D.Mike reports no confidence interval for Fleiss κ, and neither does Minitab."
+        "text": "$P_i$ is the pairwise agreement within a part, $\\bar P$ its mean. $\\bar p_j$ are the class marginals. Under unbalanced rater counts the engine switches to the Randolph variant. $H_0: \\kappa = 0$ is tested with the standard error under $H_0$ after Fleiss/Nee/Landis 1979 (Fleiss/Levin/Paik 2003, as in Minitab): $z = \\kappa / \\text{SE}_0$, one-sided $p$. Qprovement reports no confidence interval for Fleiss κ, and neither does Minitab."
       },
       {
         "type": "note",

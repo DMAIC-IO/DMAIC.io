@@ -92,7 +92,7 @@ export default {
           {
             type: 'definition',
             term: 'Long/tidy statt wide',
-            content: 'Nicht eine Spalte je Prüfer/Wiederholung anlegen, sondern vier lange Spalten (Teil, Prüfer, Bewertung, ggf. Wiederholung). Minitab akzeptiert auch ein breites Format (eine Spalte je Prüfer und Durchgang); D.Mike verarbeitet derzeit nur das lange Format.',
+            content: 'Nicht eine Spalte je Prüfer/Wiederholung anlegen, sondern vier lange Spalten (Teil, Prüfer, Bewertung, ggf. Wiederholung). Minitab akzeptiert auch ein breites Format (eine Spalte je Prüfer und Durchgang); Qprovement verarbeitet derzeit nur das lange Format.',
           },
           {
             type: 'definition',
@@ -123,7 +123,7 @@ export default {
           {
             type: 'definition',
             term: 'Long/tidy layout instead of wide',
-            content: 'Do not create one column per appraiser/replicate. Instead use four long columns (part, appraiser, rating, optionally replicate). Minitab also accepts a wide layout (one column per appraiser and trial); D.Mike currently processes only the long layout.',
+            content: 'Do not create one column per appraiser/replicate. Instead use four long columns (part, appraiser, rating, optionally replicate). Minitab also accepts a wide layout (one column per appraiser and trial); Qprovement currently processes only the long layout.',
           },
           {
             type: 'definition',
@@ -455,7 +455,7 @@ export default {
           },
           {
             type: 'paragraph',
-            content: 'Bewertet wird das **kleinste verfügbare κ** aus Fleiss κ gesamt, κ innerhalb jedes Prüfers und κ jedes Prüfers gegen die Referenz: ≥ 0,9 fähig, ≥ 0,7 bedingt fähig, darunter nicht fähig. Heft 10 (2019, Verfahren 7) nimmt ebenfalls das Minimum aller ermittelten κ, rechnet κ gegen die Referenz aber als Fleiss κ und bewertet zusätzlich alle Prüfer gemeinsam gegen die Referenz; D.Mike nutzt hier Cohens κ je Prüfer. Die κ-Ampeln in den Ergebnistabellen folgen den Grenzen der gewählten Regel.',
+            content: 'Bewertet wird das **kleinste verfügbare κ** aus Fleiss κ gesamt, κ innerhalb jedes Prüfers und κ jedes Prüfers gegen die Referenz: ≥ 0,9 fähig, ≥ 0,7 bedingt fähig, darunter nicht fähig. Heft 10 (2019, Verfahren 7) nimmt ebenfalls das Minimum aller ermittelten κ, rechnet κ gegen die Referenz aber als Fleiss κ und bewertet zusätzlich alle Prüfer gemeinsam gegen die Referenz; Qprovement nutzt hier Cohens κ je Prüfer. Die κ-Ampeln in den Ergebnistabellen folgen den Grenzen der gewählten Regel.',
           },
           {
             type: 'definition',
@@ -499,7 +499,7 @@ export default {
           },
           {
             type: 'paragraph',
-            content: 'The **smallest available κ** is rated, taken from Fleiss κ overall, each appraiser\'s within-appraiser κ and each appraiser\'s κ vs. reference: ≥ 0.9 capable, ≥ 0.7 conditionally capable, below that not capable. Heft 10 (2019, Verfahren 7) also takes the minimum of all κ values, but computes κ vs. reference as Fleiss κ and additionally rates all appraisers together against the reference; D.Mike uses Cohen\'s κ per appraiser here. The κ dots in the result tables follow the limits of the selected rule.',
+            content: 'The **smallest available κ** is rated, taken from Fleiss κ overall, each appraiser\'s within-appraiser κ and each appraiser\'s κ vs. reference: ≥ 0.9 capable, ≥ 0.7 conditionally capable, below that not capable. Heft 10 (2019, Verfahren 7) also takes the minimum of all κ values, but computes κ vs. reference as Fleiss κ and additionally rates all appraisers together against the reference; Qprovement uses Cohen\'s κ per appraiser here. The κ dots in the result tables follow the limits of the selected rule.',
           },
           {
             type: 'definition',
