@@ -670,6 +670,7 @@
     }
   },
   "chart": {
+    "renderError": "The chart could not be drawn.",
     "editor": {
       "title": "Title",
       "showTitle": "Show title",

@@ -62,6 +62,7 @@ globalThis.sessionStorage ??= new MemoryStorage();
 // this directory. Keep sorted; add a file here if it starts needing the DOM.
 const SKIP = new Set([
   'algorithm-lab/lab-renderer.test.js',
+  'core/chart/chart-manager-errors.test.js',
   'core/chart/cumulative-cost.test.js',
   'core/chart/gantt.test.js',
   'core/chart/multi-vari.test.js',

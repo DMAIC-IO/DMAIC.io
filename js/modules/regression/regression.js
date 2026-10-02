@@ -749,9 +749,8 @@ const mod = createModule({
       },
 
       async _create(el, type, config, gen) {
-        let chart;
-        try { chart = await module._context.chartManager.create(el, type, config); }
-        catch { return null; }
+        const chart = await module._context.chartManager.create(el, type, config);
+        if (!chart) return null;
         if (gen !== this._renderGen) { try { chart.destroy(); } catch { /* ignore */ } return null; }
         this._charts.push(chart);
         return chart;

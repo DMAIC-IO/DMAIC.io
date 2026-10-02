@@ -142,14 +142,9 @@ const mod = createModule({
        * error placeholder into `cell`. Mirrors correlation's `_mkScatter`.
        */
       async _mkChart(cell, gen, type, config) {
-        let chart;
-        try {
-          chart = await module._context.chartManager.create(cell, type, config);
-        } catch (err) {
-          if (gen !== this._renderGen) return null;
-          cell.replaceChildren(h('div', { class: 'chart-suggestion__placeholder chart-suggestion__placeholder--error' }, err.message || String(err)));
-          return null;
-        }
+        // A failed chart resolves null; chartManager already left its placeholder in `cell`.
+        const chart = await module._context.chartManager.create(cell, type, config);
+        if (!chart) return null;
         if (gen !== this._renderGen) {
           try { module._context.chartManager.destroy(chart); } catch { /* ignore */ }
           return null;

@@ -63,36 +63,52 @@ export default class ChartManager {
    * @param {HTMLElement} container - DOM element to render into
    * @param {string} type - Chart type: 'scatter' | 'histogram' | 'boxplot' | ...
    * @param {Object} config - Chart configuration (shared + type-specific)
-   * @returns {Promise<import('./chart-base.js').default>} The chart instance
+   * A type that fails to load or to construct does not throw: the error is
+   * logged, the container shows an i18n'd placeholder (`.chart-render-error`)
+   * and the promise resolves with null.
+   * @returns {Promise<import('./chart-base.js').default|null>} The chart instance, or null on failure
    */
   async create(container, type, config) {
-    const Ctor = await this._loadType(type);
-    const context = {
-      i18n: this._i18n,
-      language: this._i18n.language || 'de',
-      theme: document.documentElement.getAttribute('data-theme') || 'light',
-    };
-    // Apply global font-size defaults from settings (user config overrides)
-    const merged = Object.assign({}, this._getFontDefaults(), config);
-    const chart = new Ctor(container, merged, context);
-    this._charts.add(chart);
-    return chart;
+    try {
+      const Ctor = await this._loadType(type);
+      const context = {
+        i18n: this._i18n,
+        language: this._i18n.language || 'de',
+        theme: document.documentElement.getAttribute('data-theme') || 'light',
+      };
+      // Apply global font-size defaults from settings (user config overrides)
+      const merged = Object.assign({}, this._getFontDefaults(), config);
+      container.querySelector(':scope > .chart-render-error')?.remove();
+      const chart = new Ctor(container, merged, context);
+      this._charts.add(chart);
+      return chart;
+    } catch (err) {
+      console.error(`chartManager.create(${type}) failed`, err);
+      container.replaceChildren();
+      const msg = document.createElement('p');
+      msg.className = 'chart-render-error';
+      msg.textContent = this._i18n.t('chart.renderError');
+      container.append(msg);
+      return null;
+    }
   }
 
   /**
    * Update an existing chart with new/changed config values.
-   * @param {import('./chart-base.js').default} chart
+   * @param {import('./chart-base.js').default|null} chart - null (failed create) is ignored
    * @param {Object} configPatch - Partial config to merge
    */
   update(chart, configPatch) {
+    if (!chart) return;
     chart.update(configPatch);
   }
 
   /**
    * Destroy a chart and free all resources.
-   * @param {import('./chart-base.js').default} chart
+   * @param {import('./chart-base.js').default|null} chart - null (failed create) is ignored
    */
   destroy(chart) {
+    if (!chart) return;
     chart.destroy();
     this._charts.delete(chart);
   }

@@ -924,3 +924,11 @@
 }
 
 .dmike-chart-ed__color-preview div { flex: 1; }
+
+/* Placeholder ChartManager.create() leaves when a chart fails to draw */
+.chart-render-error {
+  margin: 0;
+  padding: var(--spacing-m);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}

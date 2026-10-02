@@ -671,13 +671,9 @@ const mod = createModule({
         if (!el) return;
         el.replaceChildren();
         this.chartErrors[key] = '';
-        let chart;
-        try { chart = await module._context.chartManager.create(el, 'scatter', config); }
-        catch (err) {
-          // Declarative error — rendered via x-if/x-text in a sibling div.
-          this.chartErrors[key] = `${_t('chartError')  }: ${  String(err.message || err)}`;
-          return;
-        }
+        const chart = await module._context.chartManager.create(el, 'scatter', config);
+        // A failed chart resolves null; chartManager already left its placeholder in `el`.
+        if (!chart) return;
         if (gen !== this._renderGen) { try { chart.destroy(); } catch { /* ignore */ } return; }
         this._charts.push(chart);
       },

@@ -670,6 +670,7 @@
     }
   },
   "chart": {
+    "renderError": "Diagramm konnte nicht gezeichnet werden.",
     "editor": {
       "title": "Überschrift",
       "showTitle": "Überschrift anzeigen",
