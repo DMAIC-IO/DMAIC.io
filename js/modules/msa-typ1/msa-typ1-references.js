@@ -4,20 +4,28 @@
  * @see docs/superpowers/specs/2026-09-27-module-references-tab-design.md
  */
 
+import { AIAG_MSA_4, BOSCH_HEFT_10, MELZER_2019 } from '../../core/references-books.js';
+
 export default [
   {
-    id: 'aiag-msa-4',
-    type: 'book',
-    author: [{ family: 'AIAG' }],
-    title: 'Measurement Systems Analysis (MSA) Reference Manual',
-    edition: '4th',
-    publisher: 'Automotive Industry Action Group',
-    'publisher-place': 'Southfield, MI',
-    issued: { 'date-parts': [[2010]] },
-    ISBN: '978-1-60534-211-5',
+    ...AIAG_MSA_4,
     note: {
       de: 'Grundlage für Bias, Wiederholbarkeit und die Akzeptanzpraxis der Fähigkeitskennzahlen.',
       en: 'Basis for bias, repeatability and the acceptance practice for capability indices.',
+    },
+  },
+  {
+    ...BOSCH_HEFT_10,
+    note: {
+      de: 'Vorgabe k₂ = 3 (6·s) für Cg und Cgk, wie auch in Minitab.',
+      en: 'Default k₂ = 3 (6·s) for Cg and Cgk, as in Minitab.',
+    },
+  },
+  {
+    ...MELZER_2019,
+    note: {
+      de: 'Abgleich der Typ-1-Studie: Vorgabe 6·s, Bias-t-Test, %Var(Wiederholbarkeit) und einseitige Toleranz.',
+      en: 'Cross-check of the type 1 study: 6·s default, bias t-test, %Var(repeatability) and one-sided tolerance.',
     },
   },
   {
