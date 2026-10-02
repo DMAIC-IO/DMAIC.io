@@ -64,6 +64,26 @@ export default class ChartBase {
     /** @type {HTMLElement} */
     this.container = container;
 
+    // A render that throws (unexpected data) must not break the module: every
+    // render path — deferred first render, resize, update(), editor — goes
+    // through this wrapper, which leaves a placeholder in the chart area until
+    // a later render succeeds. Wrapping the instance also covers subclasses
+    // that override render().
+    /** @private */
+    this._renderErrorEl = null;
+    const renderImpl = this.render;
+    this.render = (...args) => {
+      try {
+        const result = renderImpl.apply(this, args);
+        this._renderErrorEl?.remove();
+        this._renderErrorEl = null;
+        return result;
+      } catch (err) {
+        this._showRenderError(err);
+        return undefined;
+      }
+    };
+
     // Zoom / pan state
     /** @private */
     this._viewState = null;
@@ -1501,6 +1521,22 @@ export default class ChartBase {
   }
 
   // ── Update / Destroy ─────────────────────────────────────────────
+
+  /**
+   * Replace the half-drawn SVG with the i18n'd render-error placeholder.
+   * @private
+   * @param {Error} err
+   */
+  _showRenderError(err) {
+    console.error(`${this.constructor.name}.render() failed`, err);
+    this._svg?.replaceChildren();
+    if (!this._renderErrorEl) {
+      this._renderErrorEl = document.createElement('p');
+      this._renderErrorEl.className = 'chart-render-error';
+      this._renderErrorEl.textContent = this.context.i18n?.t('chart.renderError') ?? 'chart.renderError';
+    }
+    this._svgWrap?.append(this._renderErrorEl);
+  }
 
   /**
    * Merge new config values and re-render.
