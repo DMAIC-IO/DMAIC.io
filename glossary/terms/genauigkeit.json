@@ -6,7 +6,7 @@
     "en": "Accuracy"
   },
   "short": {
-    "de": "Übergriff aus {{term:richtigkeit|Richtigkeit}} und {{term:praezision|Präzision}} — wie nah eine Messung dem wahren Wert insgesamt kommt.",
+    "de": "Oberbegriff aus {{term:richtigkeit|Richtigkeit}} und {{term:praezision|Präzision}} — wie nah eine Messung dem wahren Wert insgesamt kommt.",
     "en": "Umbrella concept of {{term:richtigkeit|trueness}} and {{term:praezision|precision}} — how close a measurement gets to the true value overall."
   },
   "definition": {

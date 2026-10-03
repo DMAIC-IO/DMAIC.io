@@ -6,8 +6,8 @@
     "en": "p-Value"
   },
   "short": {
-    "de": "Wahrscheinlichkeit, die beobachteten (oder extremeren) Daten zu sehen, *wenn* die {{term:nullhypothese|Nullhypothese}} wahr wäre. Klein = H₀ unwahrscheinlich.",
-    "en": "Probability of seeing data at least as extreme as observed, *if* the {{term:nullhypothese|null hypothesis}} were true. Small = H₀ unlikely."
+    "de": "Wahrscheinlichkeit, die beobachteten (oder extremeren) Daten zu sehen, *wenn* die {{term:nullhypothese|Nullhypothese}} wahr wäre. Klein = Daten unter H₀ schwer erklärbar; nicht die Wahrscheinlichkeit, dass H₀ wahr ist.",
+    "en": "Probability of seeing data at least as extreme as observed, *if* the {{term:nullhypothese|null hypothesis}} were true. Small = data hard to explain under H₀; not the probability that H₀ is true."
   },
   "definition": {
     "de": [
