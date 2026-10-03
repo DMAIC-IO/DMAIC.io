@@ -27,7 +27,7 @@ export default {
           {
             type: 'definition',
             term: 'Unabhängigkeit erkennen',
-            content: 'Das Mosaikdiagramm ist ein visueller Test auf statistische Unabhängigkeit — rechnerisch prüft das der {{term:chi-quadrat-test|Chi-Quadrat-Test}}, den D.Mike noch nicht anbietet. Sind die Segment-Anteile (Höhen) über alle X-Spalten konstant, gilt P(G | X) = P(G) für alle X — die beiden Merkmale sind unabhängig. Weicht ein Segment in einer Spalte deutlich vom Gesamtanteil ab, liegt ein Zusammenhang vor.',
+            content: 'Das Mosaikdiagramm ist ein visueller Test auf statistische Unabhängigkeit — rechnerisch prüft das der {{term:chi-quadrat-test|Chi-Quadrat-Test}}, den Qprovement noch nicht anbietet. Sind die Segment-Anteile (Höhen) über alle X-Spalten konstant, gilt P(G | X) = P(G) für alle X — die beiden Merkmale sind unabhängig. Weicht ein Segment in einer Spalte deutlich vom Gesamtanteil ab, liegt ein Zusammenhang vor.',
           },
           {
             type: 'paragraph',
@@ -55,7 +55,7 @@ export default {
           {
             type: 'definition',
             term: 'Spotting independence',
-            content: 'The mosaic plot is a visual test for statistical independence — the numerical counterpart is the {{term:chi-quadrat-test|chi-square test}}, which D.Mike does not offer yet. If the segment shares (heights) stay constant across all X-columns, then P(G | X) = P(G) for every X — the two variables are independent. A segment that deviates strongly in one column reveals a relationship.',
+            content: 'The mosaic plot is a visual test for statistical independence — the numerical counterpart is the {{term:chi-quadrat-test|chi-square test}}, which Qprovement does not offer yet. If the segment shares (heights) stay constant across all X-columns, then P(G | X) = P(G) for every X — the two variables are independent. A segment that deviates strongly in one column reveals a relationship.',
           },
           {
             type: 'paragraph',

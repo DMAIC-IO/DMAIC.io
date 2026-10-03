@@ -46,7 +46,7 @@ export default {
           },
           {
             type: 'paragraph',
-            content: 'Die Wahl des richtigen Tests hängt von der Fragestellung (ein Mittelwert, Vergleich zweier Gruppen, mehr als zwei Gruppen?), der Skala (stetig, kategorial) und den Verteilungsannahmen ab. Häufige Tests: 1-Stichproben-t, 2-Stichproben-{{term:t-test|t}}, gepaarter t, {{term:anova|ANOVA}}, Mann-Whitney (nichtparametrisch). Tests für Anteile und kategoriale Daten (Chi-Quadrat, Fisher) bietet D.Mike noch nicht an.',
+            content: 'Die Wahl des richtigen Tests hängt von der Fragestellung (ein Mittelwert, Vergleich zweier Gruppen, mehr als zwei Gruppen?), der Skala (stetig, kategorial) und den Verteilungsannahmen ab. Häufige Tests: 1-Stichproben-t, 2-Stichproben-{{term:t-test|t}}, gepaarter t, {{term:anova|ANOVA}}, Mann-Whitney (nichtparametrisch). Tests für Anteile und kategoriale Daten (Chi-Quadrat, Fisher) bietet Qprovement noch nicht an.',
           },
           {
             type: 'definition',
@@ -104,7 +104,7 @@ export default {
           },
           {
             type: 'paragraph',
-            content: 'The right test depends on the question (one mean, two groups, more than two?), the scale (continuous, categorical), and distributional assumptions. Common tests: 1-sample t, 2-sample {{term:t-test|t}}, paired t, {{term:anova|ANOVA}}, Mann-Whitney (nonparametric). D.Mike does not yet offer tests for proportions and categorical data (chi-square, Fisher).',
+            content: 'The right test depends on the question (one mean, two groups, more than two?), the scale (continuous, categorical), and distributional assumptions. Common tests: 1-sample t, 2-sample {{term:t-test|t}}, paired t, {{term:anova|ANOVA}}, Mann-Whitney (nonparametric). Qprovement does not yet offer tests for proportions and categorical data (chi-square, Fisher).',
           },
           {
             type: 'definition',
