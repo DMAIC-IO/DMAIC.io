@@ -97,16 +97,32 @@ export function kendallPValue(tau, n) {
 
 // ─── Confidence intervals ───────────────────────────────────
 
-/** Fisher z-transform CI for Pearson/Spearman */
-export function fisherCI(r, n, alpha) {
+/** Back-transformed CI around atanh(r) with the given standard error. */
+function zScaleCI(r, se, alpha) {
   const z = 0.5 * Math.log((1 + r) / (1 - r));
-  const se = 1 / Math.sqrt(n - 3);
   const zc = normInv(1 - alpha / 2);
   const lo = z - zc * se, hi = z + zc * se;
   return [
     (Math.exp(2 * lo) - 1) / (Math.exp(2 * lo) + 1),
     (Math.exp(2 * hi) - 1) / (Math.exp(2 * hi) + 1),
   ];
+}
+
+/** Fisher z-transform CI for Pearson: se = 1/√(n−3). */
+export function fisherCI(r, n, alpha) {
+  return zScaleCI(r, 1 / Math.sqrt(n - 3), alpha);
+}
+
+/**
+ * Fisher z-transform CI for Spearman with the Bonett–Wright (2000) standard
+ * error se = √((1 + r²/2)/(n−3)), as in Minitab's correlation output.
+ * @param {number} r — Spearman rank correlation
+ * @param {number} n — sample size
+ * @param {number} alpha — 1 − confidence level
+ * @returns {[number, number]}
+ */
+export function spearmanCI(r, n, alpha) {
+  return zScaleCI(r, Math.sqrt((1 + r * r / 2) / (n - 3)), alpha);
 }
 
 /** Normal approximation CI for Kendall */
@@ -204,7 +220,7 @@ export function runCorrelationAnalysis(x, y, confidenceLevel = 0.95) {
   const sPerfect = Math.abs(sR) >= 1;
   const sT = sPerfect ? (sR >= 0 ? Infinity : -Infinity) : sR * Math.sqrt(df / (1 - sR * sR));
   const sP = sPerfect ? 0 : pFromT(sT, df);
-  const sCI = sPerfect ? [sR, sR] : fisherCI(sR, n, alpha);
+  const sCI = sPerfect ? [sR, sR] : spearmanCI(sR, n, alpha);
 
   // Kendall
   const kRes = kendallTau(x, y);

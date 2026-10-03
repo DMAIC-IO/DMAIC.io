@@ -127,10 +127,11 @@ export default {
           {
             type: 'list',
             items: [
-              '|r| < 0,3: schwacher Zusammenhang',
-              '0,3 ≤ |r| < 0,5: moderater Zusammenhang',
-              '0,5 ≤ |r| < 0,7: starker Zusammenhang',
-              '|r| ≥ 0,7: sehr starker Zusammenhang',
+              '|r| < 0,3: sehr schwacher Zusammenhang',
+              '0,3 ≤ |r| < 0,5: schwacher Zusammenhang',
+              '0,5 ≤ |r| < 0,7: mittlerer Zusammenhang',
+              '0,7 ≤ |r| < 0,9: starker Zusammenhang',
+              '|r| ≥ 0,9: sehr starker Zusammenhang',
             ],
           },
           {
@@ -145,10 +146,11 @@ export default {
           {
             type: 'list',
             items: [
-              '|r| < 0.3: weak relation',
-              '0.3 ≤ |r| < 0.5: moderate relation',
-              '0.5 ≤ |r| < 0.7: strong relation',
-              '|r| ≥ 0.7: very strong relation',
+              '|r| < 0.3: very weak relation',
+              '0.3 ≤ |r| < 0.5: weak relation',
+              '0.5 ≤ |r| < 0.7: moderate relation',
+              '0.7 ≤ |r| < 0.9: strong relation',
+              '|r| ≥ 0.9: very strong relation',
             ],
           },
           {

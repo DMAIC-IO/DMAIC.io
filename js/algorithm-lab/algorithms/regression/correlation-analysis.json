@@ -7,7 +7,7 @@
   "category": "regression",
   "subcategory": "correlation",
   "status": "validated",
-  "version": "1.0.0",
+  "version": "1.1.0",
 
   "description": {
     "short": {
@@ -106,6 +106,7 @@
           "pearson.p": { "type": "number", "description": { "de": "Zweiseitiger p-Wert (= 0 bei perfekter Korrelation)", "en": "Two-sided p-value (= 0 for perfect correlation)" } },
           "pearson.r2": { "type": "number", "description": { "de": "Bestimmtheitsmaß r²", "en": "Coefficient of determination r²" } },
           "pearson.ci": { "type": "number[]", "description": { "de": "Fisher-z-Konfidenzintervall [low, high]", "en": "Fisher-z confidence interval [low, high]" } },
+          "spearman.ci": { "type": "number[]", "description": { "de": "Fisher-z-Konfidenzintervall mit Standardfehler nach Bonett–Wright √((1 + ρ²/2)/(n − 3)) [low, high]", "en": "Fisher-z confidence interval with the Bonett–Wright standard error √((1 + ρ²/2)/(n − 3)) [low, high]" } },
           "spearman.r": { "type": "number", "description": { "de": "Spearman ρ", "en": "Spearman ρ" } },
           "spearman.p": { "type": "number", "description": { "de": "Zweiseitiger p-Wert für ρ", "en": "Two-sided p-value for ρ" } },
           "kendall.tau": { "type": "number", "description": { "de": "Kendall τ_b", "en": "Kendall τ_b" } },
@@ -163,6 +164,16 @@
   },
 
   "changelog": [
+    {
+      "version": "1.1.0",
+      "date": "2026-10-03",
+      "type": "fix",
+      "description": {
+        "de": "Das Spearman-Konfidenzintervall nutzt den Standardfehler nach Bonett–Wright (2000) wie Minitab statt des Pearson-Standardfehlers 1/√(n − 3), der es zu schmal machte. Befund C2-010.",
+        "en": "The Spearman confidence interval uses the Bonett–Wright (2000) standard error as in Minitab instead of the Pearson standard error 1/√(n − 3), which made it too narrow. Finding C2-010."
+      },
+      "breaking": true
+    },
     {
       "version": "1.0.0",
       "date": "2026-04-11",

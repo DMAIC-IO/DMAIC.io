@@ -13,7 +13,7 @@
 
 import {
   runCorrelationAnalysis, pearsonR, spearmanR, kendallTau,
-  fisherCI, kendallCI, pFromT, kendallPValue,
+  fisherCI, spearmanCI, kendallCI, pFromT, kendallPValue,
 } from '../../engines/correlation-engine.js';
 import { getColumnName } from '../../ui/column-picker.js';
 import { resolveColumnRef } from '../../core/worksheet-columns.js';
@@ -343,7 +343,7 @@ export class State {
           const pPerfect = Math.abs(pR) >= 1;
           const sPerfect = Math.abs(sR) >= 1;
           ciMatrix.pearson[i][j] = pPerfect ? [pR, pR] : fisherCI(pR, n, alpha);
-          ciMatrix.spearman[i][j] = sPerfect ? [sR, sR] : fisherCI(sR, n, alpha);
+          ciMatrix.spearman[i][j] = sPerfect ? [sR, sR] : spearmanCI(sR, n, alpha);
           ciMatrix.kendall[i][j] = kendallCI(kRes.tau, n, alpha);
           const pT = pPerfect ? Infinity : pR * Math.sqrt(df) / Math.sqrt(1 - pR * pR);
           const sT = sPerfect ? Infinity : sR * Math.sqrt(df) / Math.sqrt(1 - sR * sR);
