@@ -29,7 +29,7 @@
       },
       {
         "type": "note",
-        "text": "**Voraussetzungen:** unabhängige Beobachtungen, annähernd normalverteilte Residuen, homogene {{term:varianzhomogenitaet|Varianzen}}. Bei Varianzheterogenität → Welch-ANOVA; bei Nicht-Normalität → **Kruskal-Wallis-Test** als nichtparametrisches Pendant. Diese Auswahl macht das Modul automatisch anhand vorgeschalteter Normalitäts- und Varianzhomogenitäts-Tests."
+        "text": "**Voraussetzungen:** unabhängige Beobachtungen, annähernd normalverteilte Residuen, homogene {{term:varianzhomogenitaet|Varianzen}}. Bei Varianzheterogenität → Welch-ANOVA; bei Nicht-Normalität → **Kruskal-Wallis-Test** als nichtparametrisches Pendant. Das Hypothesentest-Modul wechselt bei nicht normalverteilten Daten und weniger als 20 Werten in einer Gruppe auf Kruskal-Wallis; ab n ≥ 20 je Gruppe bleibt die ANOVA, Kruskal-Wallis erscheint als Zweitergebnis. Eine Welch-ANOVA bietet das Modul nicht an; den Levene-Test zeigt es nur als Befund."
       }
     ],
     "en": [
@@ -51,7 +51,7 @@
       },
       {
         "type": "note",
-        "text": "**Assumptions:** independent observations, approximately normal residuals, homogeneous {{term:varianzhomogenitaet|variances}}. Under heterogeneous variances use Welch ANOVA; under non-normality use the **Kruskal-Wallis test** as the nonparametric counterpart. The module picks automatically based on preceding normality and variance-homogeneity checks."
+        "text": "**Assumptions:** independent observations, approximately normal residuals, homogeneous {{term:varianzhomogenitaet|variances}}. Under heterogeneous variances use Welch ANOVA; under non-normality use the **Kruskal-Wallis test** as the nonparametric counterpart. The hypothesis-test module switches to Kruskal-Wallis for non-normal data with fewer than 20 values in a group; with n ≥ 20 per group the ANOVA is kept and Kruskal-Wallis is shown as a secondary result. The module does not offer a Welch ANOVA; it shows the Levene test as a finding only."
       }
     ]
   },

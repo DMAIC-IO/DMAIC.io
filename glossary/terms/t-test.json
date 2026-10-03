@@ -20,7 +20,7 @@
         "items": [
           "**Ein-Stichproben-t-Test** — H₀: μ = μ₀; prüft, ob ein einzelner Mittelwert von einem Sollwert abweicht",
           "**Zwei-Stichproben-t-Test** — H₀: μ₁ = μ₂; setzt gleiche {{term:varianzhomogenitaet|Varianzen}} voraus",
-          "**Welch-t-Test** — Zwei-Stichproben ohne Varianzgleichheit; robuster, in der Praxis oft die Standardwahl",
+          "**Welch-t-Test** — Zwei-Stichproben ohne Varianzgleichheit; robuster und Standardwahl im Hypothesentest-Modul",
           "**Gepaarter t-Test** — Vorher/Nachher-Messungen am selben Objekt; prüft die Differenzen"
         ]
       },
@@ -43,7 +43,7 @@
         "items": [
           "**One-sample t-test** — H₀: μ = μ₀; tests whether a single mean deviates from a target",
           "**Two-sample t-test** — H₀: μ₁ = μ₂; assumes equal {{term:varianzhomogenitaet|variances}}",
-          "**Welch t-test** — two-sample without variance equality; more robust, often the default in practice",
+          "**Welch t-test** — two-sample without variance equality; more robust and the default in the hypothesis-test module",
           "**Paired t-test** — before/after measurements on the same objects; tests the differences"
         ]
       },

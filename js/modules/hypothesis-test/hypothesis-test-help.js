@@ -27,7 +27,7 @@ export default {
           {
             type: 'definition',
             term: 'p-Wert',
-            content: 'Der {{term:p-wert|p-Wert}} ist die Wahrscheinlichkeit, die beobachteten (oder extremere) Daten zu sehen, wenn H₀ wahr wäre. Klein = H₀ unwahrscheinlich. Übliche Schwelle: p < 0,05 → H₀ verwerfen.',
+            content: 'Der {{term:p-wert|p-Wert}} ist die Wahrscheinlichkeit, die beobachteten (oder extremere) Daten zu sehen, wenn H₀ wahr wäre. Ein kleiner p-Wert heißt: Die Daten lassen sich unter H₀ schwer erklären. Er ist nicht die Wahrscheinlichkeit, dass H₀ wahr ist, und nicht die Wahrscheinlichkeit, dass der Unterschied „nur Zufall“ ist. Übliche Schwelle: p < 0,05 → H₀ verwerfen.',
           },
           {
             type: 'definition',
@@ -46,12 +46,17 @@ export default {
           },
           {
             type: 'paragraph',
-            content: 'Die Wahl des richtigen Tests hängt von der Fragestellung (ein Mittelwert, Vergleich zweier Gruppen, mehr als zwei Gruppen?), der Skala (stetig, kategorial) und den Verteilungsannahmen ab. Häufige Tests: 1-Stichproben-t, 2-Stichproben-{{term:t-test|t}}, gepaarter t, {{term:anova|ANOVA}}, Chi-Quadrat, Mann-Whitney (nichtparametrisch).',
+            content: 'Die Wahl des richtigen Tests hängt von der Fragestellung (ein Mittelwert, Vergleich zweier Gruppen, mehr als zwei Gruppen?), der Skala (stetig, kategorial) und den Verteilungsannahmen ab. Häufige Tests: 1-Stichproben-t, 2-Stichproben-{{term:t-test|t}}, gepaarter t, {{term:anova|ANOVA}}, Mann-Whitney (nichtparametrisch). Tests für Anteile und kategoriale Daten (Chi-Quadrat, Fisher) bietet D.Mike noch nicht an.',
+          },
+          {
+            type: 'definition',
+            term: '2-Stichproben-Vergleich (Mittelwerte)',
+            content: 'Für zwei Mittelwerte rechnet das Modul standardmäßig den Welch-t-Test. Er setzt keine gleichen {{term:varianz|Varianzen}} voraus und verliert bei tatsächlich gleichen Varianzen kaum Trennschärfe. Ein vorgeschalteter Varianztest, der zwischen gepooltem t-Test und Welch umschaltet, verfälscht das α-Risiko und entfällt deshalb. Den gepoolten t-Test gibt es nur über die Option „Gleiche Varianzen annehmen“, wenn gleiche Streuung aus der Sache heraus begründet ist (z. B. gleicher Prozess, gleiches Messsystem). Bei nicht normalverteilten Daten (Anderson-Darling) und weniger als 20 Werten in einer Gruppe rechnet das Modul Mann-Whitney; ab n ≥ 20 je Gruppe bleibt der t-Test, und Mann-Whitney erscheint als Zweitergebnis.',
           },
           {
             type: 'definition',
             term: 'k-Stichproben-Vergleich (Mittelwerte)',
-            content: 'Bei mehr als zwei Gruppen ist die einfaktorielle {{term:anova|Varianzanalyse (One-Way ANOVA)}} das passende Verfahren — sie zerlegt die Gesamtvariation in Anteile zwischen und innerhalb der Gruppen und vergleicht diese über eine F-Statistik. Bei nicht normalverteilten Daten wird automatisch auf den Kruskal-Wallis-Test (rangbasiert; nichtparametrisches Pendant zur {{term:anova|ANOVA}}) gewechselt. Beide Tests sind Omnibus-Tests: sie zeigen, dass mindestens ein Mittelwert abweicht, ohne zu sagen welcher — dafür sind anschließende Post-Hoc-Vergleiche (z. B. Tukey HSD) nötig.',
+            content: 'Bei mehr als zwei Gruppen ist die einfaktorielle {{term:anova|Varianzanalyse (One-Way ANOVA)}} das passende Verfahren — sie zerlegt die Gesamtvariation in Anteile zwischen und innerhalb der Gruppen und vergleicht diese über eine F-Statistik. Ob Daten als normalverteilt gelten, entscheidet der Anderson-Darling-Test; Shapiro-Wilk wird nur zur Information angezeigt. Sind Daten nicht normalverteilt und hat mindestens eine Gruppe weniger als 20 Werte, wechselt das Modul auf den Kruskal-Wallis-Test (rangbasiert; nichtparametrisches Pendant zur {{term:anova|ANOVA}}). Ab n ≥ 20 je Gruppe ist die ANOVA robust und bleibt das Hauptergebnis; Kruskal-Wallis erscheint dann als Zweitergebnis zum Abgleich, denn er prüft eine andere Hypothese (Verschiebung der Verteilung statt Mittelwerte). Beide Tests sind Omnibus-Tests: sie zeigen, dass mindestens ein Mittelwert abweicht, ohne zu sagen welcher — dafür sind anschließende Post-Hoc-Vergleiche (z. B. Tukey HSD) nötig.',
           },
           {
             type: 'definition',
@@ -80,7 +85,7 @@ export default {
           {
             type: 'definition',
             term: 'p-value',
-            content: 'The {{term:p-wert|p-value}} is the probability of seeing data this extreme (or more) if H₀ were true. Small = H₀ unlikely. Usual threshold: p < 0.05 → reject H₀.',
+            content: 'The {{term:p-wert|p-value}} is the probability of seeing data this extreme (or more) if H₀ were true. A small p-value means the data are hard to explain under H₀. It is not the probability that H₀ is true, nor the probability that the difference is "just chance". Usual threshold: p < 0.05 → reject H₀.',
           },
           {
             type: 'definition',
@@ -99,12 +104,17 @@ export default {
           },
           {
             type: 'paragraph',
-            content: 'The right test depends on the question (one mean, two groups, more than two?), the scale (continuous, categorical), and distributional assumptions. Common tests: 1-sample t, 2-sample {{term:t-test|t}}, paired t, {{term:anova|ANOVA}}, chi-square, Mann-Whitney (nonparametric).',
+            content: 'The right test depends on the question (one mean, two groups, more than two?), the scale (continuous, categorical), and distributional assumptions. Common tests: 1-sample t, 2-sample {{term:t-test|t}}, paired t, {{term:anova|ANOVA}}, Mann-Whitney (nonparametric). D.Mike does not yet offer tests for proportions and categorical data (chi-square, Fisher).',
+          },
+          {
+            type: 'definition',
+            term: 'Two-sample comparison (means)',
+            content: 'For two means the module runs the Welch t-test by default. It does not assume equal {{term:varianz|variances}} and loses hardly any power when the variances are in fact equal. A variance pretest that switches between the pooled t-test and Welch distorts the α risk, so the module does not use one. The pooled t-test is available only via the option “Assume equal variances”, when equal spread is justified by the subject matter (e.g. same process, same measurement system). For non-normal data (Anderson-Darling) with fewer than 20 values in a group the module runs Mann-Whitney; with n ≥ 20 per group the t-test is kept and Mann-Whitney is shown as a secondary result.',
           },
           {
             type: 'definition',
             term: 'k-sample comparison (means)',
-            content: 'For more than two groups, one-way {{term:anova|analysis of variance (One-Way ANOVA)}} is the appropriate procedure — it decomposes the total variation into between- and within-group components and compares them via an F-statistic. For non-normal data the module automatically switches to the rank-based Kruskal-Wallis test (nonparametric counterpart of {{term:anova|ANOVA}}). Both are omnibus tests: they show that at least one mean differs without identifying which one — that requires follow-up post-hoc comparisons (e.g. Tukey HSD).',
+            content: 'For more than two groups, one-way {{term:anova|analysis of variance (One-Way ANOVA)}} is the appropriate procedure — it decomposes the total variation into between- and within-group components and compares them via an F-statistic. Whether data count as normal is decided by the Anderson-Darling test; Shapiro-Wilk is shown for information only. If data are non-normal and at least one group has fewer than 20 values, the module switches to the rank-based Kruskal-Wallis test (nonparametric counterpart of {{term:anova|ANOVA}}). With n ≥ 20 per group the ANOVA is robust and remains the main result; Kruskal-Wallis is then shown as a secondary result for cross-checking, because it tests a different hypothesis (a shift of the distribution rather than the means). Both are omnibus tests: they show that at least one mean differs without identifying which one — that requires follow-up post-hoc comparisons (e.g. Tukey HSD).',
           },
           {
             type: 'definition',

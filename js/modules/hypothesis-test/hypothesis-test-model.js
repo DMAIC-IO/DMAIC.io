@@ -6,9 +6,9 @@
  * math-utils) and is invoked transiently from the view (data-Fn) — the Model
  * never reaches for the DOM, i18n, or CSS classes.
  *
- * Persistence shape is byte-compatible with the legacy `getState()`:
+ * Persistence shape is the legacy `getState()` plus `equalVariances`:
  *   { category, testType, direction, alpha, powerGoal, targetValue, targetType,
- *     colRef1, colRef2, colRefsK, exampleWorksheetId }
+ *     colRef1, colRef2, colRefsK, exampleWorksheetId, equalVariances }
  */
 
 /** @typedef {{ instanceId: string, sheetId?: string, columnId: string }} ColumnRef */
@@ -49,6 +49,12 @@ export class State {
   colRefsK = [];
   /** @type {string|null} worksheet provisioned by loadExample (tracked to clean up). */
   exampleWorksheetId = null;
+  /**
+   * Two-sample means: assume equal variances and run the pooled t-test.
+   * Off by default — Welch is the default, without a variance pretest (C1-006).
+   * @type {boolean}
+   */
+  equalVariances = false;
 
   /**
    * Resolve the one-sample target into an engine-ready value.
@@ -96,6 +102,7 @@ export class State {
       colRef2: this.colRef2 ? { ...this.colRef2 } : null,
       colRefsK: Array.isArray(this.colRefsK) ? this.colRefsK.map(r => ({ ...r })) : [],
       exampleWorksheetId: this.exampleWorksheetId,
+      equalVariances: this.equalVariances,
     };
   }
 
@@ -118,6 +125,7 @@ export class State {
     s.colRef2 = refOrNull(d.colRef2);
     s.colRefsK = Array.isArray(d.colRefsK) ? d.colRefsK.map(refOrNull).filter(Boolean) : [];
     s.exampleWorksheetId = d.exampleWorksheetId != null ? d.exampleWorksheetId : null;
+    if (typeof d.equalVariances === 'boolean') s.equalVariances = d.equalVariances;
     return s;
   }
 }

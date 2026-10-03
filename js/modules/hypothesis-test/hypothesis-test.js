@@ -33,6 +33,8 @@ import { ColumnPicker, getColumnValues, getColumnName } from '../../ui/column-pi
 import { loadExampleViaWorksheet } from '../../core/examples-registry.js';
 
 /** Mapping: test name → Algorithm Lab ID. */
+import { isNormalByAD, meanRoute } from './hypothesis-test-routing.js';
+
 const ALGO_LAB_IDS = {
   'Shapiro-Wilk': 'shapiro-wilk',
   'Anderson-Darling': 'anderson-darling',
@@ -310,7 +312,20 @@ const mod = createModule({
         };
       },
 
-      // ── Variance-equality card (two-sample mean / k-sample mean) ──
+      // ── Rank test shown next to a large-n parametric result ──
+
+      _secondaryResult(r, alpha) {
+        const pCls = r.pValue < alpha ? 'hyptest__metric-value--danger' : 'hyptest__metric-value--success';
+        return {
+          metrics: [
+            { label: _t('testMethod'), value: r.testName, algoId: ALGO_LAB_IDS[r.testName] || '', valueClass: 'hyptest__metric-value--sm', title: this._tip(_t('testMethod')) },
+            { label: _t('statistic'), value: fmt(r.statistic), valueClass: '', title: this._tip(_t('statistic')) },
+            { label: 'p', value: fmt(r.pValue), valueClass: pCls, title: this._tip('p') },
+          ],
+        };
+      },
+
+      // ── Variance-equality card (k-sample mean) ──
 
       _varEqualityCard(veResult, varsEqual, alpha, withDf) {
         const pCls = veResult.pValue < alpha ? 'hyptest__metric-value--danger' : 'hyptest__metric-value--success';
@@ -415,37 +430,45 @@ const mod = createModule({
 
         // Normality
         const sw1 = shapiroWilk(d1), ad1 = andersonDarling(d1);
-        const n1Normal = sw1.pValue >= alpha && ad1.pValue >= alpha;
+        const n1Normal = isNormalByAD(ad1, alpha);
         let sw2 = null, ad2 = null, n2Normal = true;
         if (d2) {
           sw2 = shapiroWilk(d2); ad2 = andersonDarling(d2);
-          n2Normal = sw2.pValue >= alpha && ad2.pValue >= alpha;
+          n2Normal = isNormalByAD(ad2, alpha);
         }
         const allNormal = n1Normal && n2Normal;
 
         // Route
         let algo;
+        let meanFamily = null;
         if (this.model.category === 'variance') {
           algo = this.model.testType === 'one'
             ? { id: 'chi2', name: 'Chi-Square Variance Test' }
             : (allNormal ? { id: 'ftest', name: 'F-Test' } : { id: 'levene', name: 'Levene Test (Brown-Forsythe)' });
         } else if (this.model.testType === 'one') {
-          algo = n1Normal
-            ? { id: 'ttest1', name: 'One-Sample t-Test' }
-            : { id: 'wilcoxon', name: 'Wilcoxon Signed-Rank Test' };
+          meanFamily = meanRoute(n1Normal, [d1.length]);
+          algo = meanFamily === 'rank'
+            ? { id: 'wilcoxon', name: 'Wilcoxon Signed-Rank Test' }
+            : { id: 'ttest1', name: 'One-Sample t-Test' };
         } else {
           algo = { id: 'pending', name: '' };
         }
 
-        // Two-sample mean: variance-equality check first
+        // Two-sample mean: Welch by default; the pooled t-test only when the
+        // user assumes equal variances. No variance pretest decides the route
+        // (C1-006: sequential pretesting distorts the type I error).
         let varEquality = null;
         if (this.model.category === 'mean' && this.model.testType === 'two') {
-          const veResult = allNormal ? fTest(d1, d2, 'two-sided', alpha) : leveneTest(d1, d2, alpha);
-          const varsEqual = !veResult.reject;
-          varEquality = { ...this._varEqualityCard(veResult, varsEqual, alpha, false), varsEqual };
-          if (allNormal && varsEqual) algo = { id: 'ttest2p', name: 'Two-Sample t-Test (pooled)' };
-          else if (allNormal && !varsEqual) algo = { id: 'welch', name: 'Welch t-Test' };
-          else algo = { id: 'mannwhitney', name: 'Mann-Whitney U Test' };
+          meanFamily = meanRoute(allNormal, [d1.length, d2.length]);
+          if (meanFamily !== 'rank') {
+            const varsEqual = this.model.equalVariances === true;
+            varEquality = { varsEqual, metrics: null, trailLabelKey: 'varEqualLabel', trailYes: varsEqual };
+            algo = varsEqual
+              ? { id: 'ttest2p', name: 'Two-Sample t-Test (pooled)' }
+              : { id: 'welch', name: 'Welch t-Test' };
+          } else {
+            algo = { id: 'mannwhitney', name: 'Mann-Whitney U Test' };
+          }
         }
 
         // Run main test
@@ -460,6 +483,14 @@ const mod = createModule({
         else if (algo.id === 'welch') r = welchTTest(d1, d2, dir, alpha);
         else if (algo.id === 'mannwhitney') r = mannWhitneyU(d1, d2, dir, alpha);
 
+        // Large-n parametric route: the rank test is shown alongside (C1-017)
+        let secondary = null;
+        if (meanFamily === 'parametric-large-n') {
+          secondary = this._secondaryResult(d2
+            ? mannWhitneyU(d1, d2, dir, alpha)
+            : wilcoxonSignedRank(d1, target, dir, alpha), alpha);
+        }
+
         const normCards = [this._normCard('S1', d1, sw1, ad1, n1Normal, alpha)];
         if (d2) normCards.push(this._normCard('S2', d2, sw2, ad2, n2Normal, alpha));
 
@@ -470,6 +501,7 @@ const mod = createModule({
           route: { name: algo.name, algoId: ALGO_LAB_IDS[algo.name] || '' },
           varEquality,
           main: this._mainResult(r, alpha, target),
+          secondary,
           power: this._powerInfo(d1, d2, target, alpha),
           pairwise: null,
         };
@@ -485,23 +517,30 @@ const mod = createModule({
 
         const sws = groups.map(g => shapiroWilk(g));
         const ads = groups.map(g => andersonDarling(g));
-        const groupNormal = groups.map((_, i) => sws[i].pValue >= alpha && ads[i].pValue >= alpha);
+        const groupNormal = ads.map(ad => isNormalByAD(ad, alpha));
         const allNormal = groupNormal.every(Boolean);
 
-        let algo, r, varEquality = null;
+        let algo, r, varEquality = null, secondary = null, parametric = allNormal;
         if (isVariance) {
           if (allNormal) { algo = { name: "Bartlett's Test" }; r = bartlettTest(groups, alpha); }
           else { algo = { name: 'Levene Test (Brown-Forsythe)' }; r = leveneTestK(groups, alpha); }
         } else {
           const lev = leveneTestK(groups, alpha);
           const varsEqual = !lev.reject;
-          varEquality = { ...this._varEqualityCard(lev, varsEqual, alpha, true), varsEqual };
-          if (allNormal) { algo = { name: 'One-Way ANOVA' }; r = oneWayANOVA(groups, alpha); }
+          // The trail reports the Levene finding, not an assumption
+          varEquality = {
+            ...this._varEqualityCard(lev, varsEqual, alpha, true),
+            varsEqual, trailLabelKey: 'varDiffLabel', trailYes: !varsEqual,
+          };
+          const family = meanRoute(allNormal, groups.map(g => g.length));
+          parametric = family !== 'rank';
+          if (parametric) { algo = { name: 'One-Way ANOVA' }; r = oneWayANOVA(groups, alpha); }
           else { algo = { name: 'Kruskal-Wallis Test' }; r = kruskalWallis(groups, alpha); }
+          if (family === 'parametric-large-n') secondary = this._secondaryResult(kruskalWallis(groups, alpha), alpha);
         }
 
         const pairwise = groups.length >= 3
-          ? this._computePairwise(groups, alpha, isVariance, allNormal, varEquality)
+          ? this._computePairwise(groups, alpha, isVariance, parametric, varEquality)
           : null;
 
         const normCards = groups.map((g, i) =>
@@ -514,6 +553,7 @@ const mod = createModule({
           route: { name: algo.name, algoId: ALGO_LAB_IDS[algo.name] || '' },
           varEquality,
           main: this._kMainResult(r, refs, groups, alpha, pairwise),
+          secondary,
           power: null,
           pairwise: pairwise ? this._pairwiseSection(pairwise, refs, groups, alpha) : null,
         };

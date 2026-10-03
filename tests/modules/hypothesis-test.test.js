@@ -17,6 +17,8 @@ suite('Hypothesis Test Model — State defaults', () => {
     // alpha / powerGoal default to null until seeded from global settings
     assertEqual(s.alpha, null);
     assertEqual(s.powerGoal, null);
+    // C1-006: Welch is the default; the pooled t-test is an explicit opt-in
+    assertEqual(s.equalVariances, false);
   });
 });
 
@@ -49,7 +51,7 @@ suite('Hypothesis Test Model — toJSON / fromJSON', () => {
     // exact key set (legacy getState parity)
     assertEqual(
       Object.keys(j).sort().join(','),
-      ['alpha', 'category', 'colRef1', 'colRef2', 'colRefsK', 'direction', 'exampleWorksheetId', 'powerGoal', 'targetType', 'targetValue', 'testType'].sort().join(',')
+      ['alpha', 'category', 'colRef1', 'colRef2', 'colRefsK', 'direction', 'equalVariances', 'exampleWorksheetId', 'powerGoal', 'targetType', 'targetValue', 'testType'].sort().join(',')
     );
   });
 
@@ -82,6 +84,7 @@ suite('Hypothesis Test Model — toJSON / fromJSON', () => {
       colRef2: null,
       colRefsK: [{ instanceId: 'a', sheetId: 'b', columnId: 'd' }],
       exampleWorksheetId: 'a',
+      equalVariances: true,
     };
     const s = State.fromJSON(data);
     assertEqual(s.category, 'mean');
@@ -96,6 +99,7 @@ suite('Hypothesis Test Model — toJSON / fromJSON', () => {
     assertEqual(s.colRefsK.length, 1);
     assertEqual(s.colRefsK[0].columnId, 'd');
     assertEqual(s.exampleWorksheetId, 'a');
+    assertEqual(s.equalVariances, true);
   });
 
   test('toJSON → fromJSON round-trip is lossless', () => {
@@ -111,6 +115,7 @@ suite('Hypothesis Test Model — toJSON / fromJSON', () => {
     a.colRef2 = { instanceId: 'w', sheetId: 's', columnId: 'c2' };
     a.colRefsK = [{ instanceId: 'w', sheetId: 's', columnId: 'c3' }];
     a.exampleWorksheetId = 'w';
+    a.equalVariances = true;
     const b = State.fromJSON(a.toJSON());
     assertEqual(JSON.stringify(b.toJSON()), JSON.stringify(a.toJSON()));
   });
@@ -119,6 +124,11 @@ suite('Hypothesis Test Model — toJSON / fromJSON', () => {
     const s = State.fromJSON({ colRefsK: 'oops' });
     assertEqual(Array.isArray(s.colRefsK), true);
     assertEqual(s.colRefsK.length, 0);
+  });
+
+  test('fromJSON ignores a non-boolean equalVariances (stays false)', () => {
+    const s = State.fromJSON({ equalVariances: 'yes' });
+    assertEqual(s.equalVariances, false);
   });
 
   test('fromJSON keeps colRef1/colRef2 null when absent', () => {

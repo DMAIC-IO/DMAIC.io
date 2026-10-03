@@ -26,7 +26,7 @@
       },
       {
         "type": "note",
-        "text": "**Faustregel:** bei normalverteilten Daten Bartlett, bei schiefer oder unbekannter Verteilung Levene. Das Hypothesentest-Modul wählt automatisch anhand vorgeschalteter {{term:normalitaetstest|Normalitätsprüfung}}. Bei Verletzung der Varianzhomogenität: Welch-t-Test / Welch-ANOVA verwenden — diese sind explizit für ungleiche Varianzen ausgelegt."
+        "text": "**Faustregel:** bei normalverteilten Daten Bartlett, bei schiefer oder unbekannter Verteilung Levene. Das Hypothesentest-Modul wählt automatisch anhand vorgeschalteter {{term:normalitaetstest|Normalitätsprüfung}}. Für zwei Mittelwerte rechnet das Modul ohne Vortest den Welch-t-Test, der keine gleichen Varianzen voraussetzt; ein Varianztest als Weiche zwischen gepooltem t und Welch verfälscht das α-Risiko. Den gepoolten t-Test gibt es nur, wenn gleiche Varianzen ausdrücklich angenommen werden."
       }
     ],
     "en": [
@@ -45,7 +45,7 @@
       },
       {
         "type": "note",
-        "text": "**Rule of thumb:** for normal data use Bartlett, for skewed or unknown distributions use Levene. The hypothesis-test module picks automatically based on a preceding {{term:normalitaetstest|normality check}}. On violated variance homogeneity, use the Welch t-test / Welch ANOVA — these are explicitly designed for unequal variances."
+        "text": "**Rule of thumb:** for normal data use Bartlett, for skewed or unknown distributions use Levene. The hypothesis-test module picks automatically based on a preceding {{term:normalitaetstest|normality check}}. For two means the module runs the Welch t-test without a pretest; it does not assume equal variances, and using a variance test to switch between the pooled t and Welch distorts the α risk. The pooled t-test runs only when equal variances are explicitly assumed."
       }
     ]
   },
