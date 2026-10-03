@@ -17,3 +17,20 @@ export function resolveCollapsed({ overflows, menuMode = 'auto' }) {
   if (menuMode === 'full') return false;
   return overflows;
 }
+
+/**
+ * Smallest width (px) the active tile's name may shrink to in the collapsed
+ * row before the second tier kicks in.
+ */
+export const MIN_ACTIVE_NAME_PX = 40;
+
+/**
+ * Decide the second, tighter tier: collapsing alone was not enough and the
+ * active name is squeezed below its readable minimum. A name shorter than the
+ * minimum only counts when it is actually cut.
+ * @param {{collapsed:boolean, nameRendered:number, nameFull:number}} args
+ * @returns {boolean}
+ */
+export function resolveTight({ collapsed, nameRendered, nameFull }) {
+  return collapsed && nameRendered < Math.min(nameFull, MIN_ACTIVE_NAME_PX);
+}

@@ -1,11 +1,12 @@
 /**
- * Tests for DmaicTiles.rebuild(): cycle-aware rebuild without double listeners.
+ * Tests for DmaicTiles.rebuild(): cycle-aware rebuild without double listeners,
+ * and for the updaters that must reach both copies of a tile (in flow + flyout).
  */
 import { suite, test, assertEqual, assertDeepEqual } from '../test-utils.js';
 import { DmaicTiles } from '../../js/ui/dmaic-tiles.js';
-import { getAllPhaseIds } from '../../js/core/cycles/cycles.js';
+import { getAllPhaseIds, getPhaseDef } from '../../js/core/cycles/cycles.js';
 
-function makeTiles(cycleId = 'dmaic') {
+function makeTiles(cycleId = 'dmaic', translate = (k) => k) {
   const container = document.createElement('div');
   const handlers = { count: 0 };
   const eventBus = {
@@ -19,7 +20,7 @@ function makeTiles(cycleId = 'dmaic') {
     get: (key) => (key === 'projectMeta.cycle' ? cycleId : (key === 'phases' ? {} : null)),
     getProjectCycle: () => cycleId,
   };
-  const i18n = { t: (k) => k, getLanguage: () => 'de' };
+  const i18n = { t: (k) => translate(k), getLanguage: () => 'de' };
   const moduleRegistry = { getAll: () => [], setActiveCycle: () => {}, get: () => null };
   const tiles = new DmaicTiles(container, { eventBus, stateManager, i18n, moduleRegistry });
   return { tiles, container, handlers, setCycle: (c) => { cycleId = c; } };
@@ -68,5 +69,51 @@ suite('DmaicTiles.rebuild', () => {
     const dmadvPhases = getAllPhaseIds('dmadv');
     assertEqual(ctx.tiles.getActivePhase(), dmadvPhases[1], 'active phase reset to the new cycle\'s second tile');
     assertEqual(phases.includes(ctx.tiles.getActivePhase()), true, 'active phase exists in new cycle');
+  });
+});
+
+suite('DmaicTiles updaters reach the flyout copy', () => {
+  /** @returns {{ flow: HTMLElement, flyout: HTMLElement }} both renderings of a tile */
+  function copies(container, phase) {
+    const tile = container.querySelector(`.dmaic-tile[data-phase="${phase}"]`);
+    return {
+      flow: tile.querySelector(':scope > .dmaic-tile__inner'),
+      flyout: tile.querySelector(':scope > .dmaic-tile__flyout'),
+    };
+  }
+
+  test('updateProgress writes the percentage and bar into both copies', () => {
+    const { tiles, container } = makeTiles('dmaic');
+    tiles.render();
+    tiles.updateProgress('measure', 37);
+    const { flow, flyout } = copies(container, 'measure');
+    assertEqual(flyout !== null, true, 'sanity: the tile has a flyout');
+    for (const [where, el] of [['flow', flow], ['flyout', flyout]]) {
+      assertEqual(el.querySelector('.dmaic-tile__zeg').textContent, '37%', `percentage in ${where}`);
+      assertEqual(el.querySelector('.dmaic-tile__progress-fill').style.width, '37%', `bar in ${where}`);
+    }
+  });
+
+  test('_refreshLabels renames the phase in both copies', () => {
+    let lang = 'de';
+    const { tiles, container } = makeTiles('dmaic', (k) => `${lang}:${k}`);
+    tiles.render();
+    lang = 'en';
+    tiles._refreshLabels();
+    const { flow, flyout } = copies(container, 'measure');
+    for (const [where, el] of [['flow', flow], ['flyout', flyout]]) {
+      assertEqual(el.querySelector('.dmaic-tile__name').textContent, 'en:phases.measure', `name in ${where}`);
+    }
+  });
+});
+
+suite('DmaicTiles virtual frame tiles', () => {
+  test('exactly the virtual frame tiles carry dmaic-tile--virtual', () => {
+    const { tiles, container } = makeTiles('eightd');
+    tiles.render();
+    for (const tile of container.querySelectorAll('.dmaic-tile')) {
+      const virtual = getPhaseDef('eightd', tile.dataset.phase)?.virtual === true;
+      assertEqual(tile.classList.contains('dmaic-tile--virtual'), virtual, `modifier on ${tile.dataset.phase}`);
+    }
   });
 });

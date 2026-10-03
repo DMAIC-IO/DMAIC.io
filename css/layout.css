@@ -765,7 +765,7 @@ html.is-nightly body {
 
 /* Virtual tiles (data / extras) have no pencil+% segment, so the name would sit
    right against the divider — give it breathing room on the right. */
-.dmaic-tile__left:not(:has(.dmaic-tile__edit)) .dmaic-tile__body {
+.dmaic-tile--virtual .dmaic-tile__body {
   padding-right: 10px;
 }
 
@@ -2851,7 +2851,7 @@ body.training-area-open .dmaic-tiles {
    ist weiterhin ein Flex-Container mit Buchstabe UND Name als Kinder — das
    `gap` zwischen ihnen bliebe sonst als tote Fläche stehen. Linkes Polster
    ganz entfernt (nicht nur verkleinert): ohne Name braucht der Buchstabe
-   keinen Abstand zum Kachelrand mehr. `:has(.dmaic-tile__edit)` grenzt auf
+   keinen Abstand zum Kachelrand mehr. `:not(.dmaic-tile--virtual)` grenzt auf
    echte Phasen-Kacheln ein — die beiden virtuellen Rahmenkacheln (`data` /
    `extras`) haben kein %-Segment und bleiben hier unberührt, damit sie nicht
    als Nebenwirkung mitschrumpfen.
@@ -2860,7 +2860,7 @@ body.training-area-open .dmaic-tiles {
    die 8D-Reihe. Dieses `padding-left: 0` (vorher `--spacing-2xs`, 2px) ist
    einer der Innenabstände, die das dafür zurückgeben, statt den Chevron zu
    schrumpfen oder die aktive Kachel weiter auf ihre Ellipse zu drücken. */
-.dmaic-tiles--collapsed .dmaic-tile:not(.dmaic-tile--active) > .dmaic-tile__inner .dmaic-tile__left:has(.dmaic-tile__edit) .dmaic-tile__body {
+.dmaic-tiles--collapsed .dmaic-tile:not(.dmaic-tile--active):not(.dmaic-tile--virtual) > .dmaic-tile__inner .dmaic-tile__left .dmaic-tile__body {
   gap: 0;
   padding-left: 0;
   padding-right: 0;
@@ -2876,14 +2876,14 @@ body.training-area-open .dmaic-tiles {
 
 /* Die beiden Rahmenkacheln (`data` / `extras`) verlieren ihren Namen
    kollabiert genauso wie die Phasen-Kacheln (siehe Regel oben, sie ist nicht
-   auf `:has(.dmaic-tile__edit)` eingegrenzt) — tragen aber noch das rechte
+   auf echte Phasen-Kacheln eingegrenzt) — tragen aber noch das rechte
    10px-Namenspolster aus Zeile ~726 (für den sichtbaren Namen gedacht) und
    das `gap` zur toten Namensfläche. Eigene Regel statt Nebenwirkung: nur
    Rahmenkacheln, nur kollabiert.
    Beide Polster ganz entfernt (vorher je `--spacing-2xs`, 2px): derselbe
    44px-Chevron-Rückgewinn wie an der Phasen-Kachel-Regel oben — hier ohne
    %-Segment ist links UND rechts kein Namenspolster mehr nötig. */
-.dmaic-tiles--collapsed .dmaic-tile:not(.dmaic-tile--active) > .dmaic-tile__inner .dmaic-tile__left:not(:has(.dmaic-tile__edit)) .dmaic-tile__body {
+.dmaic-tiles--collapsed .dmaic-tile--virtual:not(.dmaic-tile--active) > .dmaic-tile__inner .dmaic-tile__left .dmaic-tile__body {
   gap: 0;
   padding-left: 0;
   padding-right: 0;
@@ -2901,13 +2901,6 @@ body.training-area-open .dmaic-tiles {
 .dmaic-tiles--collapsed .dmaic-tile--active > .dmaic-tile__inner .dmaic-tile__body {
   padding-left: var(--spacing-xs);
   padding-right: 0;
-}
-
-/* Gleiche Messgrundlage wie bei den inaktiven Kacheln (25,6px für "100%"),
-   minimal großzügiger, weil hier zusätzlich der Stift-Overlay im selben
-   Slot liegt. */
-.dmaic-tiles--collapsed .dmaic-tile--active > .dmaic-tile__inner .dmaic-tile__edit-slot {
-  min-width: 26px;
 }
 
 /* Kollabiert behält nur die aktive Kachel ihren vollen Namen (siehe oben) —
@@ -2939,10 +2932,20 @@ body.training-area-open .dmaic-tiles {
 }
 
 /* "100%" braucht rund 25,6px im 10px-halbfetten ZEG-Font (gemessen) — 26px
-   lässt gerade noch Luft, ohne wie die volle 30px-Basis (bemessen für die
-   editierbare aktive Kachel samt Stift-Overlay) zu verschwenden. */
-.dmaic-tiles--collapsed .dmaic-tile:not(.dmaic-tile--active) > .dmaic-tile__inner .dmaic-tile__edit-slot {
+   lässt gerade noch Luft, ohne die volle 30px-Basis zu verschwenden. Gilt für
+   alle Kacheln der kollabierten Reihe, aktive wie inaktive: der Stift-Overlay
+   der aktiven Kachel liegt übereinander mit der Zahl und braucht keine
+   zusätzliche Breite. Nur die Kachel im Fluss — das Flyout behält die Basis. */
+.dmaic-tiles--collapsed .dmaic-tile > .dmaic-tile__inner .dmaic-tile__edit-slot {
   min-width: 26px;
+}
+
+/* Zweite Stufe (`--tight`, gesetzt in `_recomputeCollapse()`): reicht das
+   Kollabieren allein nicht und würde der Name der aktiven Kachel unter seine
+   Mindestbreite gedrückt, fallen die %-Segmente der inaktiven Kacheln weg.
+   Der Wert bleibt im Flyout sichtbar. */
+.dmaic-tiles--tight .dmaic-tile:not(.dmaic-tile--active) > .dmaic-tile__inner .dmaic-tile__edit {
+  display: none;
 }
 
 /* Flyout: zweite, vollständige Darstellung — mittig unter der Kachel, mit
@@ -2955,7 +2958,9 @@ body.training-area-open .dmaic-tiles {
   position: absolute;
   top: 100%;
   left: 50%;
-  transform: translateX(-50%);
+  /* `--flyout-shift` setzt `_clampFlyout()`, damit das Flyout am Fensterrand
+     nicht aus dem Fenster ragt. */
+  transform: translateX(calc(-50% + var(--flyout-shift, 0px)));
   z-index: 20;
   padding-top: var(--spacing-xs);
   width: max-content;

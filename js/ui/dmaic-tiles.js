@@ -23,8 +23,11 @@ import {
 } from '../core/cycles/cycles.js';
 import { h } from '../core/dom.js';
 import { icon } from '../core/icon.js';
-import { resolveCollapsed } from './dmaic-tiles-layout.js';
+import { resolveCollapsed, resolveTight } from './dmaic-tiles-layout.js';
 import { uid } from '../core/uid.js';
+
+/** Minimum gap (px) between a flyout and the viewport edge. */
+const FLYOUT_MARGIN_PX = 8;
 
 export class DmaicTiles {
   /**
@@ -66,8 +69,28 @@ export class DmaicTiles {
     this._buildTiles();
     if (!this._subscribed) {
       this._subscribeEvents();
+      this._observeResize();
       this._subscribed = true;
     }
+  }
+
+  /**
+   * Recompute the collapse whenever the row's own width changes: a window
+   * resize, and on a cold boot `buildFrame()` widening the project switcher
+   * after the first render. Only a real width change triggers it — content
+   * changes (language, active phase) already recompute synchronously, and a
+   * second, deferred pass would split the flicker-free single batch.
+   * @private
+   */
+  _observeResize() {
+    if (typeof ResizeObserver === 'undefined') return;
+    let lastWidth = null;
+    new ResizeObserver(([entry]) => {
+      const width = entry.contentRect.width;
+      if (width === lastWidth) return;
+      lastWidth = width;
+      this._recomputeCollapse();
+    }).observe(this._container);
   }
 
   /**
@@ -162,7 +185,7 @@ export class DmaicTiles {
     const letter = phaseDef?.letter ?? '?';
 
     const tile = document.createElement('div');
-    tile.className = 'dmaic-tile';
+    tile.className = isVirtual ? 'dmaic-tile dmaic-tile--virtual' : 'dmaic-tile';
     tile.dataset.phase = phase;
 
     const pct = isVirtual ? 0 : (this._stateManager.get(`phaseAchievement.${phase}`) ?? 0);
@@ -174,6 +197,10 @@ export class DmaicTiles {
       { editable: true });
     tile.append(inner,
       this._buildFlyout(phase, tile, letter, nameText, isVirtual, pct));
+
+    // Keep the flyout inside the viewport: it is wider than the collapsed
+    // tile and centred under it, so at the window edge it would stick out.
+    tile.addEventListener('mouseenter', () => this._clampFlyout(tile));
 
     // ── Drop target for tab drag & drop ──
     tile.addEventListener('dragover', (e) => {
@@ -195,6 +222,26 @@ export class DmaicTiles {
     });
 
     return tile;
+  }
+
+  /**
+   * Shift a collapsed tile's flyout horizontally (`--flyout-shift`) so it stays
+   * at least FLYOUT_MARGIN_PX inside the viewport.
+   * @param {HTMLElement} tile
+   * @private
+   */
+  _clampFlyout(tile) {
+    const flyout = tile.querySelector(':scope > .dmaic-tile__flyout');
+    if (!flyout) return;
+    flyout.style.removeProperty('--flyout-shift');
+    if (!this._collapsed || tile.classList.contains('dmaic-tile--active')) return;
+    const rect = flyout.getBoundingClientRect();
+    if (rect.width === 0) return; // not shown
+    const viewport = document.documentElement.clientWidth;
+    let shift = 0;
+    if (rect.left < FLYOUT_MARGIN_PX) shift = FLYOUT_MARGIN_PX - rect.left;
+    else if (rect.right > viewport - FLYOUT_MARGIN_PX) shift = viewport - FLYOUT_MARGIN_PX - rect.right;
+    if (shift !== 0) flyout.style.setProperty('--flyout-shift', `${shift}px`);
   }
 
   // ─── Module Dropdown Menu ──────────────────────────────────
@@ -456,11 +503,14 @@ export class DmaicTiles {
     if (!isVirtual) {
       editSeg = editable
         ? this._buildEditSegment(phase, tile, pct)
+        // Same fixed-width slot as in flow, so the flyout keeps its width
+        // when the percentage gains a digit.
         : h('span', { class: 'dmaic-tile__edit dmaic-tile__edit--static' },
-            h('span', {
-              class: 'dmaic-tile__zeg',
-              title: this._i18n.t('phases.achievementTooltip'),
-            }, `${pct}%`));
+            h('span', { class: 'dmaic-tile__edit-slot' },
+              h('span', {
+                class: 'dmaic-tile__zeg',
+                title: this._i18n.t('phases.achievementTooltip'),
+              }, `${pct}%`)));
     }
 
     const menuLabel = this._i18n.t('phases.moduleMenu');
@@ -660,8 +710,9 @@ export class DmaicTiles {
 
   /**
    * Recompute whether inactive tiles must collapse and toggle the container
-   * class. Content-driven (no ResizeObserver): called at render, cycle switch,
-   * and language change. See
+   * class. Called at render, cycle switch, active-phase and language change,
+   * and by the ResizeObserver from `_observeResize()` when the row's width
+   * changes. See
    * docs/superpowers/specs/2026-09-06-kachelreihe-messen-statt-schaetzen-design.md.
    *
    * Measures the REAL width instead of estimating it: drop
@@ -671,8 +722,8 @@ export class DmaicTiles {
    *
    * FLICKER-FREE ONLY IF SYNCHRONOUS END TO END: a browser paints after the
    * running JS task ends, not after a forced layout read. This method and
-   * ALL THREE of its callers (`_buildTiles`, `_highlightActive`,
-   * `_refreshLabels`) must stay synchronous — no `await`, no
+   * ALL of its callers (`_buildTiles`, `_highlightActive`, `_refreshLabels`,
+   * the ResizeObserver callback) must stay synchronous — no `await`, no
    * `requestAnimationFrame` between removing the collapsed class and setting
    * it back. Introduce either one anywhere on that path and the uncollapsed
    * row becomes visible for a frame.
@@ -684,10 +735,21 @@ export class DmaicTiles {
     const container = this._container;
 
     container.classList.add('dmaic-tiles--measuring');
-    container.classList.remove('dmaic-tiles--collapsed');
+    container.classList.remove('dmaic-tiles--collapsed', 'dmaic-tiles--tight');
     const overflows = container.scrollWidth > container.clientWidth;
     this._collapsed = resolveCollapsed({ overflows, menuMode });
     container.classList.toggle('dmaic-tiles--collapsed', this._collapsed);
+    // Second tier: collapsing was not enough if the active name is squeezed
+    // below its readable minimum. Measured in the collapsed state, still
+    // inside the same synchronous pass.
+    const name = container.querySelector(
+      '.dmaic-tile--active > .dmaic-tile__inner .dmaic-tile__name');
+    const tight = !!name && resolveTight({
+      collapsed: this._collapsed,
+      nameRendered: name.getBoundingClientRect().width,
+      nameFull: name.scrollWidth,
+    });
+    container.classList.toggle('dmaic-tiles--tight', tight);
     container.classList.remove('dmaic-tiles--measuring');
   }
 
