@@ -1622,6 +1622,24 @@ function buildEquation(type, coeffs) {
 // ── Prediction helpers ──────────────────────────────────────────────
 
 /**
+ * Model-matrix row x0 for new X values, aligned with `result.invXtX`.
+ * Spec-based results compile the row from their (reduced) model spec;
+ * legacy results build the full polynomial row and keep `keepIndices`.
+ * @param {Object} result — runMultiRegression or spec-based result
+ * @param {number[]} xVals — one value per X variable
+ * @returns {number[]}
+ */
+function modelRow(result, xVals) {
+  if (result.spec) {
+    const columns = {};
+    result.spec.predictors.forEach((p, i) => { columns[p.id] = [xVals[i]]; });
+    return compileModelSpec(result.spec, { columns }).X[0];
+  }
+  const fullX0 = buildFullRow(xVals, result.xCount, result.degree);
+  return result.keepIndices ? result.keepIndices.map(i => fullX0[i]) : fullX0;
+}
+
+/**
  * Predict Y for given X values (multi-X polynomial), with prediction interval.
  * @param {Object} result — runMultiRegression result
  * @param {number[]} xVals — one value per X variable
@@ -1631,9 +1649,7 @@ export function predictMulti(result, xVals) {
   const yVal = result.reg.predict(xVals);
   if (!result.invXtX) return { yHat: yVal, piLow: null, piHigh: null };
 
-  // Build full x0 row, then filter to kept terms
-  const fullX0 = buildFullRow(xVals, result.xCount, result.degree);
-  const x0 = result.keepIndices ? result.keepIndices.map(i => fullX0[i]) : fullX0;
+  const x0 = modelRow(result, xVals);
 
   // hii = x0' (X'X)^-1 x0
   const inv = result.invXtX;
@@ -1685,10 +1701,7 @@ export function predictionBand(result, xVal) {
 function _polyBand(result, xVal, isPrediction) {
   if (!result.multiX || result.xCount !== 1 || !result.invXtX) return null;
 
-  const fullX0 = [1, xVal];
-  if (result.degree >= 2) fullX0.push(xVal ** 2);
-  if (result.degree >= 3) fullX0.push(xVal ** 3);
-  const x0 = result.keepIndices ? result.keepIndices.map(i => fullX0[i]) : fullX0;
+  const x0 = modelRow(result, [xVal]);
 
   const inv = result.invXtX;
   let hii = 0;

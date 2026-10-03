@@ -10,7 +10,9 @@
 
 import { suite, test, assertEqual, assertAlmostEqual, assertDeepEqual } from '../test-utils.js';
 import { State, polyTermCount, stripFunctions } from '../../js/modules/regression/regression-model.js';
-import { runMultiRegression } from '../../js/engines/regression-engine.js';
+import {
+  runMultiRegression, confidenceBand, predictionBand, predictMulti,
+} from '../../js/engines/regression-engine.js';
 
 // ── Stub stateManager with a synthetic worksheet ───────────────────
 
@@ -257,6 +259,71 @@ suite('Regression Model — runPolynomial parity with runMultiRegression', () =>
     const r = empty.runAnalysis(sm);
     assertEqual(r.ok, false);
     assertEqual(r.errorKey, 'errSelectBoth');
+  });
+});
+
+// ── Bands and predictMulti follow the reduced model (C2-006) ───────
+
+suite('Regression Model — bands and predictMulti after a term is excluded', () => {
+  const xs = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+  const ys = [2.1, 3.9, 6.2, 7.8, 10.1, 12.2, 13.8, 16.1, 18.0, 19.9];
+
+  const { sm, wsInstanceId, sheetId } = makeSM({
+    columns: [
+      { id: 'cx', name: 'X', type: 'numeric', values: [...xs] },
+      { id: 'cy', name: 'Y', type: 'numeric', values: [...ys] },
+    ],
+  });
+
+  for (const excluded of ['X²', 'X']) {
+    test(`single-X quadratic without ${excluded}: CI/PI bands match the legacy engine`, () => {
+      const s = new State();
+      s.colRefs = [colRef(wsInstanceId, sheetId, 'cx')];
+      s.yKey = `${wsInstanceId}|${sheetId}|cy`;
+      s.polyDegree = 2;
+      s.confLevel = 0.95;
+      s.excludedTerms = [excluded];
+      assertEqual(s.runAnalysis(sm).ok, true);
+      const ref = runMultiRegression([xs], ys, 2, 0.95, ['X'], [excluded]);
+      for (const x of [1, 5.5, 10]) {
+        const ci = confidenceBand(s.result, x);
+        const pi = predictionBand(s.result, x);
+        const ciRef = confidenceBand(ref, x);
+        const piRef = predictionBand(ref, x);
+        assertAlmostEqual(ci.upper, ciRef.upper, 1e-9);
+        assertAlmostEqual(ci.lower, ciRef.lower, 1e-9);
+        assertAlmostEqual(pi.upper, piRef.upper, 1e-9);
+        assertAlmostEqual(pi.lower, piRef.lower, 1e-9);
+      }
+    });
+  }
+
+  test('two-X quadratic without X1·X2: predictMulti matches the legacy engine', () => {
+    const xs1 = [-1, -1, -1,  0,  0,  0,  1,  1,  1, -1,  0,  1];
+    const xs2 = [-1,  0,  1, -1,  0,  1, -1,  0,  1,  0,  0,  0];
+    const y2 = xs1.map((x1, i) => 50 + 4 * x1 - 2 * x1 * x1 + 3 * xs2[i] + 0.05 * ((i % 5) - 2));
+    const multi = makeSM({
+      columns: [
+        { id: 'cx1', name: 'X1', type: 'numeric', values: [...xs1] },
+        { id: 'cx2', name: 'X2', type: 'numeric', values: [...xs2] },
+        { id: 'cy',  name: 'Y',  type: 'numeric', values: [...y2] },
+      ],
+    });
+    const s = new State();
+    s.colRefs = [colRef(multi.wsInstanceId, multi.sheetId, 'cx1'), colRef(multi.wsInstanceId, multi.sheetId, 'cx2')];
+    s.yKey = `${multi.wsInstanceId}|${multi.sheetId}|cy`;
+    s.polyDegree = 2;
+    s.confLevel = 0.95;
+    s.excludedTerms = ['X1·X2'];
+    assertEqual(s.runAnalysis(multi.sm).ok, true);
+    const ref = runMultiRegression([xs1, xs2], y2, 2, 0.95, ['X1', 'X2'], ['X1·X2']);
+    for (const xVals of [[0, 0], [0.5, -0.5], [1, 1]]) {
+      const p = predictMulti(s.result, xVals);
+      const pRef = predictMulti(ref, xVals);
+      assertAlmostEqual(p.yHat, pRef.yHat, 1e-9);
+      assertAlmostEqual(p.piLow, pRef.piLow, 1e-9);
+      assertAlmostEqual(p.piHigh, pRef.piHigh, 1e-9);
+    }
   });
 });
 
