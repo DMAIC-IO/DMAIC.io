@@ -68,6 +68,7 @@ const mod = createModule({
       chartViews: [],
       // No-violations empty state (declarative — x-if/x-text).
       noViolations: false,
+      stagesWarning: '',
       // Populated violations panel (declarative — structured reactive rows).
       /** @type {Array<{index:number, ruleId:(string|number), desc:string, hasAnn:boolean, annText:string, annExcluded:boolean}>} */
       violationRows: [],
@@ -250,6 +251,7 @@ const mod = createModule({
           this.chartViews = [];
           this.kpiCells = [];
           this.noViolations = false;
+          this.stagesWarning = '';
           this.violationRows = [];
           this.violationsTitle = '';
           this._lastResult = null;
@@ -268,6 +270,10 @@ const mod = createModule({
         const stagesParsed = State.parseStages(this.model.stagesText)
           .filter(b => b > 0 && b < values.length);
         const usingStages = stagesParsed.length > 0;
+        const misaligned = ct.id === 'i-mr' ? [] : State.misalignedStages(stagesParsed, n);
+        this.stagesWarning = misaligned.length
+          ? _t('stagesSplitSubgroup', { stages: misaligned.join(', '), n })
+          : '';
         const baselineEnd = usingStages ? values.length : (this.model.baselineCount || values.length);
         const excluded = this.model.excludedIndices();
         const fl = this.model.frozenLimits;
@@ -290,15 +296,19 @@ const mod = createModule({
 
         const primaryId = ct.subcharts[0].id;
         const primaryData = result.subcharts[primaryId];
-        const refCL    = Array.isArray(primaryData.cl)    ? primaryData.cl[0]    : primaryData.cl;
-        const refSigma = Array.isArray(primaryData.sigma) ? primaryData.sigma[0] : primaryData.sigma;
 
+        // Staged charts: every stage is judged by its own limits; capability
+        // describes the current process, i.e. the last stage.
         const primaryViolations = evaluateNelsonRules(
-          primaryData.values, refCL, refSigma, this.model.enabledRules,
+          primaryData.values, primaryData.cl, primaryData.sigma,
+          this.model.enabledRules, result.segments,
         );
+        const lastSeg = result.segments ? result.segments[result.segments.length - 1] : null;
+        const capValues = lastSeg ? primaryData.values.slice(lastSeg.start, lastSeg.end) : primaryData.values;
+        const last = (v) => (Array.isArray(v) ? v[v.length - 1] : v);
         const capability = computeCapability(
-          primaryData.values.filter(v => v !== null),
-          refCL, capabilitySigma(this.model.chartTypeId, refSigma, n),
+          capValues.filter(v => v !== null),
+          last(primaryData.cl), capabilitySigma(this.model.chartTypeId, last(primaryData.sigma), n),
           this.model.usl, this.model.lsl,
         );
 
@@ -320,22 +330,23 @@ const mod = createModule({
         const vCount = new Set(violations.map(v => v.index)).size;
         const total = data.values.filter(v => v !== null).length;
         const fmt = (v) => v.toFixed(4);
-        const first = (v) => Array.isArray(v) ? v[0] : v;
-        const isStaged = Array.isArray(data.cl);
+        // Staged: show the last stage — the process as it runs now.
+        const last = (v) => Array.isArray(v) ? v[v.length - 1] : v;
+        const stageCount = this._lastResult?.result?.segments?.length || 0;
 
         const cells = [
           {
-            value: fmt(first(data.cl)),
+            value: fmt(last(data.cl)),
             label: _t('statCL'),
-            labelHint: isStaged ? _t('stage1') : '',
-            sub: `σ̂ = ${fmt(first(data.sigma))}`,
+            labelHint: stageCount > 1 ? _t('stageN', { n: stageCount }) : '',
+            sub: `σ̂ = ${fmt(last(data.sigma))}`,
             mod: '',
           },
           {
-            value: first(data.ucl).toFixed(3),
+            value: last(data.ucl).toFixed(3),
             label: 'UCL / LCL',
             labelHint: '',
-            sub: first(data.lcl).toFixed(3),
+            sub: last(data.lcl).toFixed(3),
             mod: '',
           },
           {
@@ -407,7 +418,7 @@ const mod = createModule({
           const scViolations = sc.id === primaryId
             ? primaryViolations
             : evaluateNelsonRules(scData.values, scData.cl, scData.sigma,
-              secondaryChartRules(this.model.enabledRules));
+              secondaryChartRules(this.model.enabledRules), result.segments);
           const isStable = scViolations.length === 0;
           const violationIndices = new Set(scViolations.map(v => v.index));
           const chartName = _t(`subchart_${  sc.id}`, { col: colName });

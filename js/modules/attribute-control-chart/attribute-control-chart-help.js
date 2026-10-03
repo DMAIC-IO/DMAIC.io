@@ -133,6 +133,10 @@ export default {
             type: 'paragraph',
             content: 'Regel 4 (14 alternierend) wird für attributive Karten nicht empfohlen, weil Zählwerte häufig Gleichstände produzieren. Bei variabler Untergruppengröße sind die zonenbasierten Regeln 5–8 nicht definiert.',
           },
+          {
+            type: 'paragraph',
+            content: 'Voreingestellt ist wie in Minitab nur Regel 1. Jede weitere Regel erhöht die Fehlalarm-Rate; Regeln 2 und 3 bei Bedarf zuschalten.',
+          },
         ],
       },
       en: {
@@ -154,6 +158,10 @@ export default {
           {
             type: 'paragraph',
             content: 'Rule 4 (14 alternating) is not recommended for attribute charts because count data frequently produces ties. With variable subgroup size, zone-based rules 5–8 are not defined.',
+          },
+          {
+            type: 'paragraph',
+            content: 'As in Minitab, only rule 1 is on by default. Every further rule raises the false-alarm rate; switch rules 2 and 3 on when needed.',
           },
         ],
       },

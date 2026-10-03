@@ -243,8 +243,8 @@ export const ATTRIBUTE_NELSON_RULES = [
   { id: 6, short: { de: '4/5 > 1σ',  en: '4/5 > 1σ' }, desc: { de: '4 von 5 aufeinanderfolgenden Punkten jenseits 1σ (gleiche Seite, nur konstantes σ)', en: '4 of 5 consecutive points beyond 1σ (same side, constant σ only)' } },
 ];
 
-/** Default enabled rules for attribute charts. */
-export const ATTR_DEFAULT_ENABLED_RULES = [1, 2, 3];
+/** Default enabled rules for attribute charts: test 1 only, as in Minitab (E-005). */
+export const ATTR_DEFAULT_ENABLED_RULES = [1];
 
 /**
  * Evaluate attribute-chart Nelson rules. Supports per-point limits.

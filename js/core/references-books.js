@@ -40,3 +40,16 @@ export const BOSCH_HEFT_10 = {
   'publisher-place': 'Stuttgart',
   issued: { 'date-parts': [[2019, 11]] },
 };
+
+/** Montgomery SQC — sensitizing rules (§5.3.6) and process capability. */
+export const MONTGOMERY_SQC_6 = {
+  id: 'montgomery-sqc-6',
+  type: 'book',
+  author: [{ family: 'Montgomery', given: 'Douglas C.' }],
+  title: 'Introduction to Statistical Quality Control',
+  edition: '6th',
+  publisher: 'John Wiley & Sons',
+  'publisher-place': 'Hoboken, NJ',
+  issued: { 'date-parts': [[2009]] },
+  ISBN: '978-0-470-16992-6',
+};

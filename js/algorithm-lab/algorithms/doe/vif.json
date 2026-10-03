@@ -7,7 +7,7 @@
   "category": "doe",
   "subcategory": null,
   "status": "validated",
-  "version": "1.0.0",
+  "version": "1.1.0",
 
   "description": {
     "short": {
@@ -24,33 +24,33 @@
     "formulas": [
       {
         "label": "VIF_j",
-        "latex": "\\text{VIF}_j = \\left[(\\mathbf{X}^\\top\\mathbf{X})^{-1}\\right]_{jj} \\cdot n",
+        "latex": "\\text{VIF}_j = \\frac{1}{1 - R_j^2} = \\left[(\\mathbf{X}_c^\\top\\mathbf{X}_c)^{-1}\\right]_{jj} \\cdot \\sum_i (x_{ij} - \\bar{x}_j)^2",
         "description": {
-          "de": "j-tes Diagonalelement der Inversen der Informationsmatrix, skaliert mit der Runanzahl n. Intercept (j=0) wird übersprungen.",
-          "en": "j-th diagonal element of the inverse information matrix, scaled by the number of runs n. Intercept (j=0) is skipped."
+          "de": "R²_j aus der Regression von Term j auf Achsenabschnitt und alle übrigen Terme (Definition wie Minitab). X_c: zentrierte Spalten ohne Achsenabschnitt. Ohne Zentrierung würden Zentral- und Sternpunkte sowie quadratische Terme den VIF fälschlich aufblähen.",
+          "en": "R²_j from regressing term j on the intercept and all other terms (Minitab's definition). X_c: centred columns without the intercept. Without centring, centre and axial points and squared terms would inflate the VIF spuriously."
         }
       },
       {
-        "label": "X'X",
-        "latex": "\\mathbf{X}^\\top\\mathbf{X} = n\\mathbf{I} \\quad \\text{(orthogonal)}",
+        "label": "X_c'X_c",
+        "latex": "\\mathbf{X}_c^\\top\\mathbf{X}_c \\text{ diagonal} \\Rightarrow \\text{VIF}_j = 1",
         "description": {
-          "de": "Für orthogonale Pläne ist X'X = nI, daher (X'X)⁻¹ = (1/n)I und VIF_j = 1 für alle Terme.",
-          "en": "For orthogonal designs, X'X = nI, so (X'X)⁻¹ = (1/n)I and VIF_j = 1 for all terms."
+          "de": "Sind die zentrierten Spalten paarweise unkorreliert (z. B. 2^k mit oder ohne Zentralpunkte), ist jeder VIF genau 1.",
+          "en": "If the centred columns are pairwise uncorrelated (e.g. 2^k with or without centre points), every VIF is exactly 1."
         }
       }
     ],
     "assumptions": [
       {
-        "de": "Codierte Designmatrix mit Werten in {−1, 0, +1}",
-        "en": "Coded design matrix with values in {−1, 0, +1}"
+        "de": "Codierte Designmatrix (z. B. −1, 0, +1, ±α)",
+        "en": "Coded design matrix (e.g. −1, 0, +1, ±α)"
       },
       {
-        "de": "Lineares Modell mit Haupteffekten und 2-Faktor-Wechselwirkungen",
-        "en": "Linear model with main effects and 2-factor interactions"
+        "de": "Lineares Modell mit Haupteffekten und 2-Faktor-Wechselwirkungen oder den Termen des Plans (inkl. quadratischer Terme)",
+        "en": "Linear model with main effects and 2-factor interactions, or the design's terms (including squared terms)"
       },
       {
-        "de": "X'X muss invertierbar sein (kein singulärer Plan)",
-        "en": "X'X must be invertible (non-singular design)"
+        "de": "X_c'X_c muss invertierbar sein (kein singulärer Plan)",
+        "en": "X_c'X_c must be invertible (non-singular design)"
       }
     ],
     "limitations": [
@@ -59,8 +59,8 @@
         "en": "VIF only indicates the strength of multicollinearity, not its cause"
       },
       {
-        "de": "Bei singulärer X'X (z.B. mehr Terme als Runs) werden alle VIFs auf ∞ gesetzt",
-        "en": "For singular X'X (e.g. more terms than runs), all VIFs are set to ∞"
+        "de": "Bei singulärer X_c'X_c (z. B. mehr Terme als Runs) oder einer Spalte ohne Streuung werden alle VIFs auf ∞ gesetzt",
+        "en": "For singular X_c'X_c (e.g. more terms than runs) or a column without spread, all VIFs are set to ∞"
       }
     ],
     "references": [
@@ -86,8 +86,17 @@
           "type": "number[][]",
           "required": true,
           "description": {
-            "de": "n×k codierte Designmatrix (Werte: −1, 0, +1)",
-            "en": "n×k coded design matrix (values: −1, 0, +1)"
+            "de": "n×k codierte Designmatrix (z. B. −1, 0, +1, ±α)",
+            "en": "n×k coded design matrix (e.g. −1, 0, +1, ±α)"
+          }
+        },
+        {
+          "name": "opts.terms",
+          "type": "string[]",
+          "required": false,
+          "description": {
+            "de": "Modellterme des Plans (Haupteffekte, Quadrate, Wechselwirkungen); ohne Angabe Haupteffekte und alle 2-Faktor-Wechselwirkungen",
+            "en": "The design's model terms (main effects, squares, interactions); default main effects and all 2-factor interactions"
           }
         }
       ],
@@ -132,6 +141,16 @@
   },
 
   "changelog": [
+    {
+      "version": "1.1.0",
+      "date": "2026-10-03",
+      "type": "fix",
+      "description": {
+        "de": "VIF wie Minitab auf zentrierten Spalten (1/(1 − R²)). Vorher (X'X)⁻¹·n, falsch sobald eine Spalte nicht im Mittel 0 ist: 2² mit 3 Zentralpunkten 1,75 statt 1, CCD A² 1,869 statt 1,017, A×B 3,25 statt 1. Referenzwerte jetzt unabhängig aus statsmodels.",
+        "en": "VIF on centred columns like Minitab (1/(1 − R²)). Previously (X'X)⁻¹·n, wrong as soon as a column does not average to 0: 2² with 3 centre points 1.75 instead of 1, CCD A² 1.869 instead of 1.017, A×B 3.25 instead of 1. Reference values now independent from statsmodels."
+      },
+      "breaking": true
+    },
     {
       "version": "1.0.0",
       "date": "2026-03-28",

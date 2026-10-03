@@ -13,6 +13,10 @@
   margin-top: var(--spacing-2xs);
 }
 
+.control-chart__hint--warn {
+  color: var(--color-warning);
+}
+
 .control-chart__spec-row {
   display: grid;
   grid-template-columns: 1fr 1fr;

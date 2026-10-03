@@ -49,7 +49,8 @@ suite('DOE — VIF (fixture validation)', () => {
   for (const tc of vifData.test_cases) {
     if (tc.expected && Array.isArray(tc.expected)) {
       test(`${tc.id}: ${tc.description}`, () => {
-        const result = computeVIF(tc.inputs.codedMatrix);
+        const result = computeVIF(tc.inputs.codedMatrix,
+          tc.inputs.terms ? { terms: tc.inputs.terms } : {});
         const tol = getTol(tc, vifData.tolerances);
 
         for (let i = 0; i < tc.expected.length; i++) {

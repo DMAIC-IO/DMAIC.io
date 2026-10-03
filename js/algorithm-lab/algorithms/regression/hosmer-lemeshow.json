@@ -7,7 +7,7 @@
   "category": "regression",
   "subcategory": "goodness-of-fit",
   "status": "validated",
-  "version": "1.0.0",
+  "version": "1.1.0",
 
   "description": {
     "short": {
@@ -97,6 +97,12 @@
           "type": "number",
           "required": false,
           "description": { "de": "Anzahl Gruppen (Standard: 10)", "en": "Number of groups (default: 10)" }
+        },
+        {
+          "name": "weights",
+          "type": "number[]",
+          "required": false,
+          "description": { "de": "Versuche je Zeile bei gruppierten Binomialdaten (yTrue dann Anteile); jede Zeile zählt mit ihren Ereignissen und Nicht-Ereignissen", "en": "Trials per row for grouped binomial data (yTrue then holds proportions); each row counts with its events and non-events" }
         }
       ],
       "returns": {
@@ -154,6 +160,16 @@
   },
 
   "changelog": [
+    {
+      "version": "1.1.0",
+      "date": "2026-10-03",
+      "type": "fix",
+      "description": {
+        "de": "Optionaler Parameter weights: Bei gruppierten Binomialdaten bildet der Test Gruppen und Häufigkeiten über die Versuche statt über die Zeilen (vorher p = 1,000 bzw. übersprungen bei wenigen Zeilen).",
+        "en": "Optional parameter weights: for grouped binomial data the test forms groups and counts over the trials instead of the rows (previously p = 1.000, or skipped with few rows)."
+      },
+      "breaking": false
+    },
     {
       "version": "1.0.0",
       "date": "2026-04-27",

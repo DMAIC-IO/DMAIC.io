@@ -11,10 +11,16 @@
  */
 
 import {
-  SPC_CONSTANTS, computeIMR, computeXbarR, evaluateNelsonRules,
-  DEFAULT_ENABLED_RULES, NELSON_RULES,
+  SPC_CONSTANTS, computeIMR, computeXbarR, evaluateNelsonRules, NELSON_RULES,
 } from './control-chart-engine.js';
 import { tPValue, tInv } from './math-utils.js';
+
+/**
+ * Default tests of the stability study: 1–6. Deliberately its own constant —
+ * the control chart switched to Minitab's test 1 only (E-005), the MSA
+ * Typ 6 judgement was specified with tests 1–6.
+ */
+export const DEFAULT_ENABLED_RULES = [1, 2, 3, 4, 5, 6];
 
 const VALID_ALPHAS = new Set([0.01, 0.05, 0.10]);
 const VALID_CHART_TYPES = new Set(['i-mr', 'xbar-r']);
@@ -396,4 +402,4 @@ export function analyze(inputs) {
   };
 }
 
-export { NELSON_RULES, DEFAULT_ENABLED_RULES };
+export { NELSON_RULES };

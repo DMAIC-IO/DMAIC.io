@@ -26,8 +26,10 @@ suite('references-registry', () => {
  * primary sources their specs relied on.
  */
 const BOOK_REVIEW_REFS = {
-  'control-chart': ['melzer-2019'],
-  'doe-planner': ['melzer-2019'],
+  'attribute-control-chart': ['montgomery-sqc-6'],
+  'control-chart': ['melzer-2019', 'montgomery-sqc-6'],
+  'doe-planner': ['melzer-2019', 'montgomery-doe-10'],
+  'glm-regression': ['melzer-2019', 'hosmer-lemeshow-2013'],
   'hypothesis-test': ['melzer-2019'],
   'sample-size': ['melzer-2019'],
   'msa-typ1': ['melzer-2019', 'bosch-heft-10'],

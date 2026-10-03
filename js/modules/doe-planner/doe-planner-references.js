@@ -14,4 +14,19 @@ export default [
       en: 'Cross-check of design evaluation and power: VIF, efficiency and power follow the active model terms, power uses the noncentral F distribution.',
     },
   },
+  {
+    id: 'montgomery-doe-10',
+    type: 'book',
+    author: [{ family: 'Montgomery', given: 'Douglas C.' }],
+    title: 'Design and Analysis of Experiments',
+    edition: '10th',
+    publisher: 'John Wiley & Sons',
+    'publisher-place': 'Hoboken, NJ',
+    issued: { 'date-parts': [[2019]] },
+    ISBN: '978-1-119-49244-3',
+    note: {
+      de: 'Kap. 10: VIF als 1/(1 − R²) der Regression eines Terms auf alle übrigen; orthogonale Pläne, auch mit Zentralpunkten, haben VIF = 1.',
+      en: 'Ch. 10: VIF as 1/(1 − R²) of regressing one term on all others; orthogonal designs, centre points included, have VIF = 1.',
+    },
+  },
 ];

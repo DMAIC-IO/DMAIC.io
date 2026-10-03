@@ -165,7 +165,7 @@ const mod = createModule({
         if (!r || r.family.name !== 'binomial') {
           return { tp: '', fn: '', fp: '', tn: '', metrics: [] };
         }
-        const ct = this._classCache || classificationTable(r.y, r.fittedValues, this._classCutoff);
+        const ct = this._classCache || classificationTable(r.y, r.fittedValues, this._classCutoff, r.priorWeights ?? undefined);
         return {
           tp: ct.tp, fn: ct.fn, fp: ct.fp, tn: ct.tn,
           metrics: [
@@ -233,7 +233,7 @@ const mod = createModule({
         this.model.cutoff = this._classCutoff;
         const r = this._fit;
         if (r) {
-          this._classCache = classificationTable(r.y, r.fittedValues, this._classCutoff);
+          this._classCache = classificationTable(r.y, r.fittedValues, this._classCutoff, r.priorWeights ?? undefined);
           r._classTable = this._classCache;
         }
       },
@@ -355,9 +355,9 @@ const mod = createModule({
         if (X[0].length > 2) result._vifs = computeGLMVIF(X, result.irlsWeights);
 
         if (familyName === 'binomial') {
-          result._roc = computeROC(y, result.fittedValues);
-          result._classTable = classificationTable(y, result.fittedValues, this.model.cutoff);
-          result._hl = hosmerLemeshow(y, result.fittedValues);
+          result._roc = computeROC(y, result.fittedValues, weights ?? undefined);
+          result._classTable = classificationTable(y, result.fittedValues, this.model.cutoff, weights ?? undefined);
+          result._hl = hosmerLemeshow(y, result.fittedValues, 10, weights ?? undefined);
         }
         if (familyName === 'poisson') {
           result._overdispersion = overdispersionCheck(result.pearsonResiduals, n, p);
@@ -726,7 +726,7 @@ const mod = createModule({
 
       async renderROCChart(r, gen) {
         if (r.family.name !== 'binomial') return;
-        const roc = computeROC(r.y, r.fittedValues);
+        const roc = computeROC(r.y, r.fittedValues, r.priorWeights ?? undefined);
         await this._mkScatter('[data-ref="chart-roc"]', gen, {
           title: `${_t('rocCurve')} (AUC = ${roc.auc.toFixed(4)})`,
           xLabel: _t('falsePositiveRate'),

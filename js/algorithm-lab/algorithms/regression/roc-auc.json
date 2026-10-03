@@ -7,7 +7,7 @@
   "category": "regression",
   "subcategory": "classification",
   "status": "validated",
-  "version": "1.0.0",
+  "version": "1.1.0",
 
   "description": {
     "short": {
@@ -99,6 +99,12 @@
           "type": "number[]",
           "required": true,
           "description": { "de": "Vorhergesagte Wahrscheinlichkeiten", "en": "Predicted probabilities" }
+        },
+        {
+          "name": "weights",
+          "type": "number[]",
+          "required": false,
+          "description": { "de": "Versuche je Zeile bei gruppierten Binomialdaten (yTrue dann Anteile); jede Zeile zählt mit ihren Ereignissen und Nicht-Ereignissen", "en": "Trials per row for grouped binomial data (yTrue then holds proportions); each row counts with its events and non-events" }
         }
       ],
       "returns": {
@@ -145,6 +151,16 @@
   },
 
   "changelog": [
+    {
+      "version": "1.1.0",
+      "date": "2026-10-03",
+      "type": "fix",
+      "description": {
+        "de": "Optionaler Parameter weights: Bei gruppierten Binomialdaten zählt die ROC-Kurve Versuche statt Zeilen (vorher AUC 0).",
+        "en": "Optional parameter weights: for grouped binomial data the ROC curve counts trials instead of rows (previously AUC 0)."
+      },
+      "breaking": false
+    },
     {
       "version": "1.0.0",
       "date": "2026-04-27",

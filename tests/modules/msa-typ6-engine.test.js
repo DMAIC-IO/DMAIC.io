@@ -205,3 +205,13 @@ suite('msa-typ6-engine — analyze (Ampel-Verdikt + Warnungen)', () => {
     }
   });
 });
+
+suite('msa-typ6-engine — default tests', () => {
+  test('without enabledRules the stability study keeps tests 1–6 (not the control chart default)', () => {
+    const { enabledRules: _enabledRules, ...noRules } = OK;
+    const explicit = analyze(OK);
+    const fallback = analyze(noRules);
+    assertDeepEqual(fallback.primary.violations, explicit.primary.violations);
+    assert(fallback.primary.violations.some(v => v.ruleId === 3), 'the trend must trip test 3');
+  });
+});

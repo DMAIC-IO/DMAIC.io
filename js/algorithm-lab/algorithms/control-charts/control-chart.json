@@ -7,7 +7,7 @@
   "category": "control-charts",
   "subcategory": null,
   "status": "validated",
-  "version": "1.0.0",
+  "version": "1.2.0",
 
   "description": {
     "short": {
@@ -15,8 +15,8 @@
       "en": "Control chart core values (CL, UCL, LCL, σ̂) for I-MR, X̄-R and X̄-S plus Nelson Rule evaluation and capability from σ̂."
     },
     "long": {
-      "de": "Die SPC-Engine deckt die drei klassischen Shewhart-Regelkarten ab: I-MR (Einzelwerte + gleitende Spannweite), X̄-R (Untergruppen-Mittelwert + Spannweite, 2 ≤ n ≤ 10) und X̄-S (Untergruppen-Mittelwert + Standardabweichung, 2 ≤ n ≤ 25). Die Kontrollgrenzen werden aus den klassischen AIAG/Montgomery-SPC-Konstanten (d2, A2, A3, D3, D4, B3, B4, c4) berechnet. σ̂ wird aus der Baseline-Subgruppe abgeleitet; über baselineEnd lässt sich eine Phase-1/Phase-2-Analyse realisieren. Der Dispatcher analyze(inputs) akzeptiert zusätzlich den Modus 'nelson' zum Prüfen der acht Nelson-Regeln (Standardmäßig 1–6 aktiv) und 'capability' zur Berechnung von Cp/Cpk aus einem vorgegebenen CL und σ̂. Das flache Ausgabeformat (z.B. i.cl, xbar.ucl) matched 1:1 die Fixture-Referenzwerte.",
-      "en": "The SPC engine covers the three classic Shewhart {{term:regelkarte|control chart}}s: I-MR (individuals + moving range), X̄-R (subgroup mean + range, 2 ≤ n ≤ 10), and X̄-S (subgroup mean + std-dev, 2 ≤ n ≤ 25). Control limits are computed from the classic AIAG/Montgomery SPC constants (d2, A2, A3, D3, D4, B3, B4, c4). σ̂ is derived from the baseline subgroup; `baselineEnd` enables a Phase-1/Phase-2 analysis. The analyze(inputs) dispatcher additionally supports mode 'nelson' for the eight Nelson rules (1–6 enabled by default) and 'capability' for Cp/Cpk from a supplied CL and σ̂. The flat output shape (e.g. i.cl, xbar.ucl) matches the fixture reference values 1:1."
+      "de": "Die SPC-Engine deckt die drei klassischen Shewhart-Regelkarten ab: I-MR (Einzelwerte + gleitende Spannweite), X̄-R (Untergruppen-Mittelwert + Spannweite, 2 ≤ n ≤ 10) und X̄-S (Untergruppen-Mittelwert + Standardabweichung, 2 ≤ n ≤ 25). Die Kontrollgrenzen werden aus den klassischen AIAG/Montgomery-SPC-Konstanten (d2, A2, A3, D3, D4, B3, B4, c4) berechnet. σ̂ wird aus der Baseline-Subgruppe abgeleitet; über baselineEnd lässt sich eine Phase-1/Phase-2-Analyse realisieren. Der Dispatcher analyze(inputs) akzeptiert zusätzlich den Modus 'nelson' zum Prüfen der acht Nelson-Regeln (standardmäßig wie in Minitab nur Regel 1 aktiv) und 'capability' zur Berechnung von Cp/Cpk aus einem vorgegebenen CL und σ̂. Das flache Ausgabeformat (z.B. i.cl, xbar.ucl) matched 1:1 die Fixture-Referenzwerte.",
+      "en": "The SPC engine covers the three classic Shewhart {{term:regelkarte|control chart}}s: I-MR (individuals + moving range), X̄-R (subgroup mean + range, 2 ≤ n ≤ 10), and X̄-S (subgroup mean + std-dev, 2 ≤ n ≤ 25). Control limits are computed from the classic AIAG/Montgomery SPC constants (d2, A2, A3, D3, D4, B3, B4, c4). σ̂ is derived from the baseline subgroup; `baselineEnd` enables a Phase-1/Phase-2 analysis. The analyze(inputs) dispatcher additionally supports mode 'nelson' for the eight Nelson rules (only rule 1 enabled by default, as in Minitab) and 'capability' for Cp/Cpk from a supplied CL and σ̂. The flat output shape (e.g. i.cl, xbar.ucl) matches the fixture reference values 1:1."
     }
   },
 
@@ -77,8 +77,8 @@
         "en": "Autocorrelation or non-normality distorts the control limits; I-MR is especially sensitive"
       },
       {
-        "de": "Nelson-Regeln 7 & 8 sind standardmäßig deaktiviert — Aktivierung erhöht die False-Alarm-Rate",
-        "en": "Nelson rules 7 and 8 are disabled by default — enabling them raises the false-alarm rate"
+        "de": "Standardmäßig ist nur Regel 1 aktiv — jede weitere Regel erhöht die Fehlalarm-Rate (25 Punkte: Regel 1 ≈ 6,7 %, Regeln 1–6 ≈ 23,7 %)",
+        "en": "Only rule 1 is enabled by default — every further rule raises the false-alarm rate (25 points: rule 1 ≈ 6.7 %, rules 1–6 ≈ 23.7 %)"
       }
     ],
     "references": [
@@ -272,6 +272,26 @@
   },
 
   "changelog": [
+    {
+      "version": "1.2.0",
+      "date": "2026-10-03",
+      "type": "fix",
+      "description": {
+        "de": "Stages: Jede Stage wird an ihren eigenen Grenzen gemessen. evaluateNelsonRules nimmt Mittellinie und σ je Punkt (plus Stage-Segmente), Läufe beginnen an jeder Stage-Grenze neu; die gleitende Spannweite über eine Stage-Grenze ist null (Melzer 2019, D-001, E-001, E-002).",
+        "en": "Stages: every stage is judged by its own limits. evaluateNelsonRules takes per-point centre line and σ (plus stage segments), runs restart at each stage boundary; the moving range across a stage boundary is null (Melzer 2019, D-001, E-001, E-002)."
+      },
+      "breaking": false
+    },
+    {
+      "version": "1.1.0",
+      "date": "2026-10-03",
+      "type": "breaking",
+      "description": {
+        "de": "Standard-Testsatz wie in Minitab: nur Regel 1 statt 1–6. Bei 25 stabilen Punkten sinkt die Fehlalarm-Wahrscheinlichkeit von 23,7 % auf 6,7 % (Melzer 2019, E-005).",
+        "en": "Default test set as in Minitab: rule 1 only instead of 1–6. On 25 in-control points the false-alarm probability drops from 23.7 % to 6.7 % (Melzer 2019, E-005)."
+      },
+      "breaking": true
+    },
     {
       "version": "1.0.0",
       "date": "2026-04-11",

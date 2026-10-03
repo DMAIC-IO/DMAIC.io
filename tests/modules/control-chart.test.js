@@ -18,12 +18,14 @@ suite('Control Chart Model — defaults', () => {
     assertEqual(s.exampleWorksheetId, null);
   });
 
-  test('constructor sets default enabled rules (1..6)', () => {
+  test('constructor sets the default enabled rules (test 1 only, as in Minitab)', () => {
     const s = new State();
     assertEqual(JSON.stringify(s.enabledRules), JSON.stringify(DEFAULT_ENABLED_RULES));
     // copy, not shared reference
     s.enabledRules.push(99);
-    assertEqual(JSON.stringify(DEFAULT_ENABLED_RULES), JSON.stringify([1, 2, 3, 4, 5, 6]));
+    // E-005: every extra test raises the false-alarm rate (25 in-control
+    // points: 6.7 % with test 1, 23.7 % with tests 1–6).
+    assertEqual(JSON.stringify(DEFAULT_ENABLED_RULES), JSON.stringify([1]));
   });
 
   test('constructor sets annotations to empty object', () => {
@@ -361,5 +363,19 @@ suite('Control Chart Model — frozen limits follow the column', () => {
     const s = new State();
     assertEqual(s.setColumn({ ...colB }), false);
     assertEqual(s.columnRef.columnId, 'b');
+  });
+});
+
+// ── misalignedStages (Melzer D-024) ──────────────────────────
+
+suite('Control Chart Model — misalignedStages', () => {
+  test('boundaries that split a subgroup are reported', () => {
+    assertEqual(JSON.stringify(State.misalignedStages([10, 12, 23], 5)), '[12,23]');
+  });
+  test('multiples of n are fine', () => {
+    assertEqual(JSON.stringify(State.misalignedStages([10, 20], 5)), '[]');
+  });
+  test('individuals (n = 1) never split a subgroup', () => {
+    assertEqual(JSON.stringify(State.misalignedStages([7, 13], 1)), '[]');
   });
 });

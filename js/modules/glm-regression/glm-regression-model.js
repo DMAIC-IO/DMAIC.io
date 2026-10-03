@@ -132,6 +132,7 @@ export class State {
     delete slim.invXtWX;
     delete slim.XtWX;
     delete slim.irlsWeights;
+    delete slim.priorWeights;
     delete slim.fittedValues;
     delete slim.linearPredictor;
     delete slim.devianceResiduals;

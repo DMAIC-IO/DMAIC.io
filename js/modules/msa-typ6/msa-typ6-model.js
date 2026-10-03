@@ -20,7 +20,7 @@ const LIMITS_MODES = ['from-study', 'given'];
 const ALPHA_OPTIONS = ['0.01', '0.05', '0.10'];
 /** Nelson rule ids the engine understands (1..8). */
 const RULE_IDS = [1, 2, 3, 4, 5, 6, 7, 8];
-/** Default enabled Nelson rules (matches control-chart-engine.js's DEFAULT_ENABLED_RULES). */
+/** Default enabled Nelson rules (matches msa-typ6-engine.js's DEFAULT_ENABLED_RULES). */
 const DEFAULT_ENABLED_RULES = [1, 2, 3, 4, 5, 6];
 
 /** @param {*} v @param {string[]} allowed @param {string} fallback */

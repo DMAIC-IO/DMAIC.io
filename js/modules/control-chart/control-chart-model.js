@@ -62,6 +62,18 @@ export class State {
     return [...new Set(out)].sort((a, b) => a - b);
   }
 
+  /**
+   * Stage boundaries that fall inside a subgroup (not a multiple of n).
+   * The engine assigns such a mixed subgroup to the earlier stage.
+   * @param {number[]} stages — 1-based last points of each stage
+   * @param {number} n — subgroup size
+   * @returns {number[]}
+   */
+  static misalignedStages(stages, n) {
+    if (!(n > 1)) return [];
+    return stages.filter(b => b % n !== 0);
+  }
+
   /** Indices flagged `excluded` in the annotations map. */
   excludedIndices() {
     return Object.keys(this.annotations)

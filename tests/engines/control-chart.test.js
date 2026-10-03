@@ -244,3 +244,105 @@ suite('Control Charts — rules on the MR/R/S chart (Melzer E-023)', () => {
     assertDeepEqual(evaluateNelsonRules([0, 5, 0, 5], 0, 1, secondaryChartRules([5, 6])), []);
   });
 });
+
+// ── Staged charts: every stage judged by its own limits ──
+// (Melzer D-001, E-001, E-002; Fig. 5.4. Montgomery SQC §6.)
+
+const fig54s1 = [92.6, 93.1, 93.6, 93.1, 92.95, 91.4, 91.95, 92.6, 91.75, 92.2, 93.6, 92.6, 91.55, 93.0];
+const fig54s2 = [93.65, 94.5, 93.35, 95.1, 93.2, 94.75, 93.45, 95.75, 95.3, 93.5, 95.1, 93.65, 93.7, 95.5];
+const fig54 = [...fig54s1, ...fig54s2];
+const ALL_RULES = [1, 2, 3, 4, 5, 6, 7, 8];
+
+suite('Control Charts — staged I-MR (Melzer Fig. 5.4)', () => {
+  const res = computeIMR(fig54, 1, undefined, [14]);
+  const i = res.subcharts.i;
+
+  test('each stage has its own limits', () => {
+    assertAlmostEqual(i.cl[0], 92.571, 1e-3, 'stage 1 CL');
+    assertAlmostEqual(i.ucl[0], 94.740, 1e-3, 'stage 1 UCL');
+    assertAlmostEqual(i.lcl[0], 90.403, 1e-3, 'stage 1 LCL');
+    assertAlmostEqual(i.cl[14], 94.321, 1e-3, 'stage 2 CL');
+    assertAlmostEqual(i.ucl[14], 97.994, 1e-3, 'stage 2 UCL');
+    assertAlmostEqual(i.lcl[14], 90.649, 1e-3, 'stage 2 LCL');
+  });
+
+  test('the result names its stage segments', () => {
+    assertDeepEqual(res.segments, [{ start: 0, end: 14 }, { start: 14, end: 28 }]);
+  });
+
+  test('all eight rules, per stage → no signal', () => {
+    assertDeepEqual(evaluateNelsonRules(i.values, i.cl, i.sigma, ALL_RULES, res.segments), []);
+  });
+
+  test('judged by stage-1 limits the same data would signal (the old bug)', () => {
+    const wrong = evaluateNelsonRules(i.values, i.cl[0], i.sigma[0], ALL_RULES);
+    assertEqual(wrong.some(v => v.index >= 14), true);
+  });
+});
+
+suite('Control Charts — Nelson rules on staged limits', () => {
+  const cl = [0, 0, 0, 0, 10, 10, 10, 10];
+  const sigma = [1, 1, 1, 1, 1, 1, 1, 1];
+
+  test('a point beyond its own stage limits is flagged', () => {
+    const v = [0, 0.5, -0.5, 0, 10.5, 10, 9.5, 13.5];
+    assertDeepEqual(evaluateNelsonRules(v, cl, sigma, [1]), [{ index: 7, ruleId: 1 }]);
+  });
+
+  test('segments are derived from the per-point limits when not given', () => {
+    const v = [0, 0.5, -0.5, 0, 10.5, 10, 9.5, 10];
+    assertDeepEqual(evaluateNelsonRules(v, cl, sigma, ALL_RULES), []);
+  });
+
+  test('a run does not continue across a stage boundary', () => {
+    // 5 above CL in stage 1, 4 above CL in stage 2 — never 9 in one stage
+    const flat = Array(9).fill(0);
+    const v = [1, 1, 1, 1, 1, 1, 1, 1, 1];
+    const segs = [{ start: 0, end: 5 }, { start: 5, end: 9 }];
+    assertDeepEqual(evaluateNelsonRules(v, flat, Array(9).fill(2), [2], segs), []);
+    assertEqual(evaluateNelsonRules(v, 0, 2, [2]).length, 9);
+  });
+
+  test('indices of later stages keep their position in the series', () => {
+    const v = [0, 0, 5, 5, 5, 9];
+    const segs = [{ start: 0, end: 2 }, { start: 2, end: 6 }];
+    const out = evaluateNelsonRules(v, [0, 0, 5, 5, 5, 5], [1, 1, 1, 1, 1, 1], [1], segs);
+    assertDeepEqual(out, [{ index: 5, ruleId: 1 }]);
+  });
+});
+
+suite('Control Charts — staged MR at the stage boundary', () => {
+  const a = [10, 11, 10, 12, 11, 10, 11, 12, 10, 11, 10, 11];
+  const b = [20, 21, 20, 22, 21, 20, 21, 22, 20, 21, 20, 23.5];
+  const res = computeIMR([...a, ...b], 1, undefined, [12]);
+  const mr = res.subcharts.mr;
+
+  test('the moving range across the boundary is not plotted', () => {
+    assertEqual(mr.values[12], null);
+    assertEqual(mr.values[0], null);
+    assertEqual(mr.values[13], 1);
+  });
+
+  test('the MR chart has no signal at the boundary', () => {
+    const out = evaluateNelsonRules(mr.values, mr.cl, mr.sigma, [1, 2, 3, 4], res.segments);
+    assertEqual(out.some(v => v.index === 12), false);
+  });
+});
+
+suite('Control Charts — staged X̄-R / X̄-S segments', () => {
+  const v = Array.from({ length: 24 }, (_, k) => (k < 12 ? 10 : 20) + (k % 3) * 0.5);
+
+  test('X̄-R segments are in subgroup space', () => {
+    assertDeepEqual(computeXbarR(v, 3, undefined, [12]).segments,
+      [{ start: 0, end: 4 }, { start: 4, end: 8 }]);
+  });
+
+  test('X̄-S segments are in subgroup space', () => {
+    assertDeepEqual(computeXbarS(v, 3, undefined, [12]).segments,
+      [{ start: 0, end: 4 }, { start: 4, end: 8 }]);
+  });
+
+  test('single-stage results carry no segments', () => {
+    assertEqual(computeIMR(v).segments, undefined);
+  });
+});

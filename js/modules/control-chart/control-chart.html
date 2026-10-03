@@ -39,6 +39,8 @@
         :value="model.stagesText" :placeholder="t('stagesPlaceholder')"
         @change="stagesChanged($event)">
       <span class="control-chart__hint" x-text="t('stagesHint')"></span>
+      <span class="control-chart__hint control-chart__hint--warn" data-ref="stages-warning"
+        x-show="stagesWarning" x-text="stagesWarning"></span>
     </div>
 
     <div class="dmike-split__section-title" x-text="t('sectionPhase2')"></div>

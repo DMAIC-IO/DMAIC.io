@@ -33,8 +33,13 @@ export const NELSON_RULES = [
   { id: 8, short: { de: '8 außerhalb C', en: '8 outside C' }, desc: { de: '8 aufeinanderfolgende Punkte jenseits 1σ auf beiden Seiten', en: '8 consecutive points beyond 1σ on both sides' } },
 ];
 
-/** Default enabled rules (1–6 on, 7–8 off) */
-export const DEFAULT_ENABLED_RULES = [1, 2, 3, 4, 5, 6];
+/**
+ * Default enabled rules: test 1 only, as in Minitab. Every extra test raises
+ * the false-alarm rate — 25 in-control points trip at least one test in
+ * 6.7 % of runs with test 1 and in 23.7 % with tests 1–6 (Melzer 2019
+ * review, E-005). The other tests stay one click away.
+ */
+export const DEFAULT_ENABLED_RULES = [1];
 
 /**
  * Tests allowed on the dispersion chart (MR, R, S). As in Minitab, the zone
@@ -219,13 +224,16 @@ export function computeIMR(values, _n, baselineEnd, stages, excludedIndices) {
   const D4 = SPC_CONSTANTS.D4[2];
   const D3 = SPC_CONSTANTS.D3[2];
 
+  // A moving range across a stage boundary mixes two processes — not plotted.
+  for (const seg of segments) if (seg.start > 0) mrAll[seg.start] = null;
+
   const xBarsPerStage  = [];
   const mrBarsPerStage = [];
   const sigmaIPerStage = [];
   for (const seg of segments) {
     const slice = values.slice(seg.start, seg.end);
     const xBar = slice.reduce((a, b) => a + b, 0) / slice.length;
-    // Moving ranges *within* the stage (skip the first cross-stage MR)
+    // Moving ranges *within* the stage (the cross-stage MR is already null)
     const mrSlice = mrAll.slice(seg.start + 1, seg.end).filter(v => v !== null);
     const mrBar = mrSlice.length ? mrSlice.reduce((a, b) => a + b, 0) / mrSlice.length : 0;
     xBarsPerStage.push(xBar);
@@ -249,6 +257,7 @@ export function computeIMR(values, _n, baselineEnd, stages, excludedIndices) {
       mr: { values: mrAll, cl: mr_cl, ucl: mr_ucl, lcl: mr_lcl, sigma: mr_sigma },
     },
     labels: values.map((_, i) => i + 1),
+    segments,
   };
 }
 
@@ -341,6 +350,7 @@ export function computeXbarR(values, n, baselineEnd, stages, excludedIndices) {
       r:    { values: ranges, cl: r_cl,    ucl: r_ucl,    lcl: r_lcl,    sigma: r_sigma },
     },
     labels: subgroups.map((_, i) => i + 1),
+    segments,
   };
 }
 
@@ -432,6 +442,7 @@ export function computeXbarS(values, n, baselineEnd, stages, excludedIndices) {
       s:    { values: stddevs, cl: s_cl,    ucl: s_ucl,    lcl: s_lcl,    sigma: s_sigma },
     },
     labels: subgroups.map((_, i) => i + 1),
+    segments,
   };
 }
 
@@ -445,13 +456,51 @@ export function computeXbarS(values, n, baselineEnd, stages, excludedIndices) {
 
 /**
  * Evaluate Nelson Rules against a series of values.
+ *
+ * Staged charts pass per-point `cl`/`sigma` arrays: every stage is then judged
+ * by its own scalar limits, run counters restart at each stage boundary, and
+ * the returned indices keep their position in the whole series. The stage
+ * segments come from `segments` (as returned by the compute functions) or,
+ * when omitted, from the points where `cl` or `sigma` changes.
+ *
  * @param {(number|null)[]} values
- * @param {number} cl — center line
- * @param {number} sigma — estimated sigma
+ * @param {number|number[]} cl — center line (scalar, or one per point)
+ * @param {number|number[]} sigma — estimated sigma (scalar, or one per point)
  * @param {number[]} enabledRules — array of rule ids to check
+ * @param {{start:number,end:number}[]} [segments] — stage segments of a staged chart
  * @returns {Violation[]}
  */
-export function evaluateNelsonRules(values, cl, sigma, enabledRules) {
+export function evaluateNelsonRules(values, cl, sigma, enabledRules, segments) {
+  if (!Array.isArray(cl) && !Array.isArray(sigma)) {
+    return _evaluateNelsonRulesScalar(values, cl, sigma, enabledRules);
+  }
+  const at = (v, i) => (Array.isArray(v) ? v[i] : v);
+  const segs = segments || _segmentsFromLimits(values.length, cl, sigma);
+  const out = [];
+  for (const seg of segs) {
+    const part = _evaluateNelsonRulesScalar(
+      values.slice(seg.start, seg.end), at(cl, seg.start), at(sigma, seg.start), enabledRules,
+    );
+    for (const v of part) out.push({ index: v.index + seg.start, ruleId: v.ruleId });
+  }
+  return out;
+}
+
+/** Split [0, N) wherever the per-point cl or sigma changes. */
+function _segmentsFromLimits(N, cl, sigma) {
+  const at = (v, i) => (Array.isArray(v) ? v[i] : v);
+  const segs = [];
+  let start = 0;
+  for (let i = 1; i <= N; i++) {
+    if (i === N || at(cl, i) !== at(cl, start) || at(sigma, i) !== at(sigma, start)) {
+      segs.push({ start, end: i });
+      start = i;
+    }
+  }
+  return segs;
+}
+
+function _evaluateNelsonRulesScalar(values, cl, sigma, enabledRules) {
   const violations = [];
   const n = values.length;
   if (sigma === 0) return violations;

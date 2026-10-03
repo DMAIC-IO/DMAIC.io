@@ -614,6 +614,7 @@ export function fitGLM(X, y, opts = {}) {
     invXtWX: inv,
     XtWX: fit.XtWX,
     irlsWeights: fit.weights,
+    priorWeights,
     separationDetected,
     separationStrong,
     thetaEstimated,
@@ -759,6 +760,32 @@ function solveWeightedOLSCols(X, y, weights) {
 // ── ROC Curve & AUC ───────────────────────────────────────────────
 
 /**
+ * Split each row into event and non-event counts. Without weights every row is
+ * one Bernoulli outcome; with weights (trials of grouped binomial data, `yTrue`
+ * holding proportions) a row stands for `y·n` events and `n − y·n` non-events.
+ * Counts within 1e-9 of an integer are snapped to it to drop float noise.
+ *
+ * @param {number[]} yTrue
+ * @param {number[]} [weights]
+ * @returns {{ events: number[], nonEvents: number[] }}
+ */
+function outcomeCounts(yTrue, weights) {
+  const snap = v => (Math.abs(v - Math.round(v)) < 1e-9 ? Math.round(v) : v);
+  const events = new Array(yTrue.length);
+  const nonEvents = new Array(yTrue.length);
+  for (let i = 0; i < yTrue.length; i++) {
+    if (weights) {
+      events[i] = snap(yTrue[i] * weights[i]);
+      nonEvents[i] = snap(weights[i] - events[i]);
+    } else {
+      events[i] = yTrue[i] === 1 ? 1 : 0;
+      nonEvents[i] = 1 - events[i];
+    }
+  }
+  return { events, nonEvents };
+}
+
+/**
  * Compute ROC curve data and AUC.
  *
  * Tied probabilities are collapsed into a single curve step (sklearn /
@@ -766,19 +793,24 @@ function solveWeightedOLSCols(X, y, weights) {
  * many observations share the same predicted probability — common with
  * discrete predictors.
  *
- * @param {number[]} yTrue - Binary 0/1 values
+ * Grouped binomial data (`yTrue` = proportions) needs the trials as `weights`;
+ * every row then counts as its events and non-events (C2-003).
+ *
+ * @param {number[]} yTrue - Binary 0/1 values, or proportions with `weights`
  * @param {number[]} probs - Predicted probabilities
+ * @param {number[]} [weights] - Trials per row (grouped binomial)
  * @returns {{ fpr: number[], tpr: number[], thresholds: number[], auc: number }}
  */
-export function computeROC(yTrue, probs) {
+export function computeROC(yTrue, probs, weights) {
   const n = yTrue.length;
+  const { events, nonEvents } = outcomeCounts(yTrue, weights);
   // Stable descending sort with secondary key on index, so ties remain
   // adjacent regardless of host sort behaviour.
   const indices = Array.from({ length: n }, (_, i) => i)
     .sort((a, b) => probs[b] - probs[a] || a - b);
 
-  const P = sum(yTrue);
-  const N = n - P;
+  const P = sum(events);
+  const N = sum(nonEvents);
   if (P === 0 || N === 0) return { fpr: [0, 1], tpr: [0, 1], thresholds: [1, 0], auc: 0.5 };
 
   const fpr = [0];
@@ -794,8 +826,8 @@ export function computeROC(yTrue, probs) {
     const pCurr = probs[indices[i]];
     let j = i;
     while (j < n && probs[indices[j]] === pCurr) {
-      if (yTrue[indices[j]] === 1) tp++;
-      else fp++;
+      tp += events[indices[j]];
+      fp += nonEvents[indices[j]];
       j++;
     }
     fpr.push(fp / N);
@@ -815,20 +847,25 @@ export function computeROC(yTrue, probs) {
 // ── Classification Table ──────────────────────────────────────────
 
 /**
- * @param {number[]} yTrue
+ * @param {number[]} yTrue - Binary 0/1 values, or proportions with `weights`
  * @param {number[]} probs
  * @param {number} [cutoff=0.5]
+ * @param {number[]} [weights] - Trials per row (grouped binomial): the counts
+ *   are trials, not rows (C2-003)
  */
-export function classificationTable(yTrue, probs, cutoff = 0.5) {
+export function classificationTable(yTrue, probs, cutoff = 0.5, weights) {
+  const { events, nonEvents } = outcomeCounts(yTrue, weights);
   let tp = 0, fp = 0, tn = 0, fn = 0;
   for (let i = 0; i < yTrue.length; i++) {
-    const pred = probs[i] >= cutoff ? 1 : 0;
-    if (pred === 1 && yTrue[i] === 1) tp++;
-    else if (pred === 1 && yTrue[i] === 0) fp++;
-    else if (pred === 0 && yTrue[i] === 0) tn++;
-    else fn++;
+    if (probs[i] >= cutoff) {
+      tp += events[i];
+      fp += nonEvents[i];
+    } else {
+      fn += events[i];
+      tn += nonEvents[i];
+    }
   }
-  const n = yTrue.length;
+  const n = tp + fp + tn + fn;
   return {
     tp, fp, tn, fn,
     sensitivity: tp + fn > 0 ? tp / (tp + fn) : 0,
@@ -847,16 +884,26 @@ export function classificationTable(yTrue, probs, cutoff = 0.5) {
  * never bisects a tie cluster. With many ties the realized number of groups
  * may fall below the requested g; we report it via `result.groups`.
  *
+ * Grouped binomial data (`yTrue` = proportions, `weights` = trials) is tested
+ * on its trials: a row is a tie cluster of n_i outcomes, and group sizes,
+ * observed and expected counts are summed in trials. The result equals the
+ * test on the data expanded to individual 0/1 outcomes (C2-003).
+ *
  * Skipped when n is too small for the test to be meaningful (n < 4·g and
  * adaptive g < 4).
  *
- * @param {number[]} yTrue
+ * @param {number[]} yTrue - Binary 0/1 values, or proportions with `weights`
  * @param {number[]} probs
  * @param {number} [g=10] requested group count; auto-reduced for small n
+ * @param {number[]} [weights] - Trials per row (grouped binomial)
  * @returns {{ statistic, df, pValue, groups, skipped?: boolean, reason?: string }}
  */
-export function hosmerLemeshow(yTrue, probs, g = 10) {
-  const n = yTrue.length;
+export function hosmerLemeshow(yTrue, probs, g = 10, weights) {
+  const rows = yTrue.length;
+  const { events, nonEvents } = outcomeCounts(yTrue, weights);
+  const size = i => events[i] + nonEvents[i];
+  let n = 0;
+  for (let i = 0; i < rows; i++) n += size(i);
 
   // Auto-reduce groups when n is too small (Hosmer & Lemeshow recommend ≥5
   // expected per cell). Skip entirely if even g = 4 would leave < 5 obs/group.
@@ -868,31 +915,37 @@ export function hosmerLemeshow(yTrue, probs, g = 10) {
 
   // Stable ascending sort with secondary key on index — pair tied probs by
   // original order for reproducibility across runtimes.
-  const indices = Array.from({ length: n }, (_, i) => i)
+  const indices = Array.from({ length: rows }, (_, i) => i)
     .sort((a, b) => probs[a] - probs[b] || a - b);
   const targetSize = n / gEff;
 
-  // Build groups, never splitting a tie cluster across the boundary.
+  // Build groups in sorted row positions, never splitting a tie cluster across
+  // the boundary. A row is atomic; its size counts toward the target.
   const groups = [];
-  let i = 0;
-  while (i < n && groups.length < gEff - 1) {
+  let i = 0, cum = 0;
+  while (i < rows && groups.length < gEff - 1) {
     const targetEnd = Math.round((groups.length + 1) * targetSize);
-    let end = Math.max(targetEnd, i + 1);
+    let end = i;
+    do { cum += size(indices[end]); end++; } while (end < rows && cum < targetEnd);
     // Advance end past any tie that crosses the boundary.
-    while (end < n && probs[indices[end - 1]] === probs[indices[end]]) end++;
+    while (end < rows && probs[indices[end - 1]] === probs[indices[end]]) {
+      cum += size(indices[end]);
+      end++;
+    }
     groups.push([i, end]);
     i = end;
   }
-  if (i < n) groups.push([i, n]);
+  if (i < rows) groups.push([i, rows]);
 
   const groupsActual = groups.length;
   let stat = 0;
   for (const [start, end] of groups) {
-    const nj = end - start;
-    let obs = 0, exp = 0;
+    let nj = 0, obs = 0, exp = 0;
     for (let k = start; k < end; k++) {
-      obs += yTrue[indices[k]];
-      exp += probs[indices[k]];
+      const r = indices[k];
+      nj += size(r);
+      obs += events[r];
+      exp += size(r) * probs[r];
     }
     const expNeg = nj - exp;
     if (exp > EPSILON && expNeg > EPSILON) {

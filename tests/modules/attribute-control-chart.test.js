@@ -28,7 +28,7 @@ suite('Attribute CC Model — defaults', () => {
     assertEqual(s.sizeRef, null);
     assertEqual(s.constantN, 50);
     assertEqual(s.baselineCount, null);
-    assertEqual(JSON.stringify(s.enabledRules), JSON.stringify([1, 2, 3]));
+    assertEqual(JSON.stringify(s.enabledRules), JSON.stringify(ATTR_DEFAULT_ENABLED_RULES));
     assertEqual(s.exampleWorksheetId, null);
   });
 });
@@ -76,7 +76,7 @@ suite('Attribute CC Model — fromJSON robustness', () => {
     assertEqual(s.chartTypeId, 'p');
     assertEqual(s.constantN, 50);
     assertEqual(s.defectsRef, null);
-    assertEqual(JSON.stringify(s.enabledRules), JSON.stringify([1, 2, 3]));
+    assertEqual(JSON.stringify(s.enabledRules), JSON.stringify(ATTR_DEFAULT_ENABLED_RULES));
   });
 
   test('fromJSON(undefined) returns valid default state', () => {
@@ -132,11 +132,11 @@ suite('Attribute CC Model — fromJSON robustness', () => {
   test('fromJSON enabledRules invalid falls back to default', () => {
     assertEqual(
       JSON.stringify(State.fromJSON({ enabledRules: 'x' }).enabledRules),
-      JSON.stringify([1, 2, 3]),
+      JSON.stringify(ATTR_DEFAULT_ENABLED_RULES),
     );
     assertEqual(
       JSON.stringify(State.fromJSON({ enabledRules: null }).enabledRules),
-      JSON.stringify([1, 2, 3]),
+      JSON.stringify(ATTR_DEFAULT_ENABLED_RULES),
     );
   });
 
@@ -329,8 +329,8 @@ suite('Attribute CC SPC — violation detection', () => {
     assertEqual(v[0].index, 1);
   });
 
-  test('default enabled rules are 1,2,3', () => {
-    assertEqual(JSON.stringify(ATTR_DEFAULT_ENABLED_RULES), JSON.stringify([1, 2, 3]));
+  test('default enabled rules: test 1 only, as in Minitab (E-005)', () => {
+    assertEqual(JSON.stringify(ATTR_DEFAULT_ENABLED_RULES), JSON.stringify([1]));
   });
 });
 

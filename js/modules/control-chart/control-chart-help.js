@@ -96,12 +96,12 @@ export default {
           {
             type: 'definition',
             term: 'Eingabe',
-            content: 'Im Feld „Stage-Grenzen" Indizes mit Komma trennen, an denen jeweils ein neuer Abschnitt beginnt. Beispiel: „12, 25" bei 30 Punkten ergibt drei Stages: 1–12, 13–25, 26–30.',
+            content: 'Im Feld „Stage-Grenzen" die Nummer des letzten Punkts jeder Stage eintragen, mit Komma getrennt. Beispiel: „12, 25" bei 30 Punkten ergibt drei Stages: 1–12, 13–25, 26–30. Bei X̄-R und X̄-S zählen die Einzelwerte; die Grenze sollte ein Vielfaches der Untergruppengröße sein, sonst zählt die geteilte Untergruppe zur vorigen Stage (die Karte weist darauf hin).',
           },
           {
             type: 'definition',
             term: 'Wirkung',
-            content: 'Die Karte zeigt treppenförmige Mittellinie und Grenzen, mit gestrichelten vertikalen Trennlinien an jedem Stage-Wechsel. Nelson-Regeln werden gegen die Grenzen der ersten Stage geprüft (im Multi-Stage-Modus konzentriert die Karte sich auf das Bild „Out-of-Limit").',
+            content: 'Die Karte zeigt treppenförmige Mittellinie und Grenzen, mit gestrichelten vertikalen Trennlinien an jedem Stage-Wechsel. Jede Stage wird an ihren eigenen Grenzen gemessen: Die Nelson-Tests laufen je Stage, Läufe (z. B. Test 2) beginnen an jeder Stage-Grenze neu, auf beiden Karten. Die gleitende Spannweite über eine Stage-Grenze hinweg wird nicht gezeichnet. Kennzahlen und Cp/Cpk beziehen sich auf die letzte Stage, also den Prozess, wie er jetzt läuft.',
           },
           {
             type: 'paragraph',
@@ -119,12 +119,12 @@ export default {
           {
             type: 'definition',
             term: 'Input',
-            content: 'In the "Stage boundaries" field, list indices separated by commas where a new stage starts. Example: "12, 25" with 30 points yields three stages: 1–12, 13–25, 26–30.',
+            content: 'In the "Stage boundaries" field, enter the number of the last point of each stage, separated by commas. Example: "12, 25" with 30 points yields three stages: 1–12, 13–25, 26–30. For X̄-R and X̄-S the numbers count individual values; a boundary should be a multiple of the subgroup size, otherwise the split subgroup is counted in the earlier stage (the chart warns about this).',
           },
           {
             type: 'definition',
             term: 'Effect',
-            content: 'The chart shows stepped center line and limits with dashed vertical separators at each stage break. Nelson rules are evaluated against the first stage\'s limits (in multi-stage mode the chart focuses on the "out-of-limit" view).',
+            content: 'The chart shows stepped center line and limits with dashed vertical separators at each stage break. Each stage is judged by its own limits: the Nelson tests run per stage and runs (e.g. test 2) restart at every stage boundary, on both charts. The moving range across a stage boundary is not plotted. The KPIs and Cp/Cpk describe the last stage, i.e. the process as it runs now.',
           },
           {
             type: 'paragraph',
@@ -243,6 +243,10 @@ export default {
             type: 'paragraph',
             content: 'Die Regeln sind Hinweise, nicht Urteile. Jede Verletzung sollte zur Ursachenrecherche führen, nicht automatisch zum Alarm. Zu viele aktivierte Regeln erzeugen Fehlalarme.',
           },
+          {
+            type: 'paragraph',
+            content: 'Voreingestellt ist wie in Minitab nur Regel 1. Bei 25 Punkten eines stabilen Prozesses meldet sie in etwa 7 % der Fälle fälschlich eine Sonderursache, die Regeln 1–6 zusammen in etwa 24 %. Weitere Regeln gezielt zuschalten — beim Festlegen der Grenzen empfiehlt Minitab die Regeln 1, 2 und 7.',
+          },
         ],
       },
       en: {
@@ -266,6 +270,10 @@ export default {
           {
             type: 'paragraph',
             content: 'The rules are hints, not verdicts. Every violation should trigger a cause search, not an automatic alarm. Too many active rules create false alarms.',
+          },
+          {
+            type: 'paragraph',
+            content: 'As in Minitab, only rule 1 is on by default. On 25 points of a stable process it falsely signals a special cause in about 7 % of cases, rules 1–6 together in about 24 %. Switch further rules on deliberately — while establishing limits, Minitab recommends rules 1, 2 and 7.',
           },
         ],
       },
