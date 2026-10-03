@@ -26,6 +26,7 @@ const KNOWN_FIXTURES = [
   { file: 'v0.9.0_single_project.json', kind: 'single' },
   { file: 'v1.0.0_single_project.json', kind: 'single' },
   { file: 'v1.1.0_single_project.json', kind: 'single' },
+  { file: 'v1.2.0_single_project.json', kind: 'single' },
 ];
 
 async function loadFixture(file) {

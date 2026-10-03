@@ -32,6 +32,7 @@ Aktueller Stand:
 | v0.9.0_single_project.json      | 1        | 11              |
 | v1.0.0_single_project.json      | 1        | 11              |
 | v1.1.0_single_project.json      | 1        | 11              |
+| v1.2.0_single_project.json      | 1        | 11              |
 
 Die v0.3-Fixtures decken zusammen **alle produktiven Module** aus
 `js/modules/manifest.js` mindestens einmal ab. Wenn ein neues Modul hinzukommt,
@@ -52,6 +53,14 @@ Die v1.1-Fixture zieht dasselbe für die 1.1-Linie nach: 1.1 bringt mit
 `multi-vari` ein neues Modul, aber keine Änderung an der Struktur des
 Export-JSON — bestehende Felder bleiben unverändert, deshalb gibt es auch
 hier keinen Migrationsschritt `1.0→1.1`.
+
+Die v1.2-Fixture zieht die 1.2-Linie nach. 1.2 ergänzt den Modulzustand
+additiv (u. a. `equalVariances` im Hypothesentest, `scale` in der
+C&E-Matrix, `method`/`fmeaType` in der FMEA, Regelwerk in MSA Typ 5);
+fehlende Felder in älteren Dateien bekommen beim Laden ihren Standardwert
+(FMEA ohne `method` → RPZ). Deshalb gibt es keinen Migrationsschritt
+`1.1→1.2`. Die Fixture setzt `equalVariances: true` im Hypothesentest, damit
+das neue Feld in künftigen Migrationen mitläuft.
 
 ## Pflicht beim Release
 
