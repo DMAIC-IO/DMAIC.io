@@ -17,7 +17,7 @@ export default {
           {
             type: 'definition',
             term: 'Medianlinie',
-            content: 'Der {{term:median|Median}} der Werte. Bei zufällig schwankenden Daten liegt etwa die Hälfte der Punkte oberhalb, die andere Hälfte unterhalb. Punkte genau auf dem Median werden in den Tests nicht mitgezählt.',
+            content: 'Der {{term:median|Median}} der Werte. Bei zufällig schwankenden Daten liegt etwa die Hälfte der Punkte oberhalb, die andere Hälfte unterhalb. Punkte genau auf dem Median zählen in den Tests als unterhalb (wie bei Minitab).',
           },
           {
             type: 'definition',
@@ -45,7 +45,7 @@ export default {
           {
             type: 'definition',
             term: 'Median line',
-            content: 'The median of the values. With random variation about half the points fall above, half below. Points exactly on the median are excluded from the tests.',
+            content: 'The median of the values. With random variation about half the points fall above, half below. Points exactly on the median count as below in the tests (as in Minitab).',
           },
           {
             type: 'definition',

@@ -140,6 +140,34 @@
       }
     },
     {
+      "id": "rc_median_ties",
+      "tier": "standard",
+      "description": "Points on the median count as below (Minitab run chart rule) — 4 of 9 values tie with the median",
+      "reference": "Hand-verified (Minitab Run Chart methods: a point on the center line belongs to the run below; Φ via SciPy norm.cdf)",
+      "inputs": {
+        "mode": "run-chart",
+        "values": [
+          1,
+          5,
+          5,
+          9,
+          5,
+          2,
+          8,
+          5,
+          7
+        ]
+      },
+      "tolerance_override": "phi_approx",
+      "expected": {
+        "median": 5,
+        "runsAboutMedian": 6,
+        "runsUpDown": 5,
+        "pClustering": 0.7928919108787373,
+        "pMixtures": 0.2071080891212626
+      }
+    },
+    {
       "id": "rc_edge_min_n",
       "tier": "edge",
       "description": "edge tier",

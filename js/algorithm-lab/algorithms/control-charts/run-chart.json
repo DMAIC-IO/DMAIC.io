@@ -7,7 +7,7 @@
   "category": "control-charts",
   "subcategory": null,
   "status": "validated",
-  "version": "1.0.0",
+  "version": "1.1.0",
 
   "description": {
     "short": {
@@ -15,8 +15,8 @@
       "en": "Median plus four runs tests (clustering, mixtures, trends, oscillation) with p-values from a normal approximation."
     },
     "long": {
-      "de": "Run-Chart-Engine zur Vorab-Beurteilung einer Datenreihe vor dem Aufbau einer Regelkarte. Die Engine berechnet den Median, die Anzahl Runs um den Median (Punkte gleich der Mittellinie werden ausgeschlossen) und die Anzahl Runs aufwärts/abwärts. Aus dem Wald-Wolfowitz-Erwartungswert und der Standardabweichung werden vier z-Statistiken und p-Werte gebildet: Clustering (zu wenige Median-Runs → Niveauverschiebung), Mischungen (zu viele → überlagerte Quellen), Trends (zu wenige Auf-/Ab-Runs → Drift) und Oszillation (zu viele → Zickzack/Übersteuerung).",
-      "en": "Run-chart engine for pre-assessment of a data series before setting up a control chart. Computes the median, the count of runs about the median (points equal to the median are excluded) and the count of runs up/down. From the Wald-Wolfowitz expectation and standard deviation it produces four z-statistics and p-values: clustering (too few median runs → level shift), mixtures (too many → mixed sources), trends (too few up/down runs → drift) and oscillation (too many → zigzag/overshoot)."
+      "de": "Run-Chart-Engine zur Vorab-Beurteilung einer Datenreihe vor dem Aufbau einer Regelkarte. Die Engine berechnet den Median, die Anzahl Runs um den Median (Punkte auf dem Median zählen als unterhalb, wie bei Minitab) und die Anzahl Runs aufwärts/abwärts. Aus dem Wald-Wolfowitz-Erwartungswert und der Standardabweichung werden vier z-Statistiken und p-Werte gebildet: Clustering (zu wenige Median-Runs → Niveauverschiebung), Mischungen (zu viele → überlagerte Quellen), Trends (zu wenige Auf-/Ab-Runs → Drift) und Oszillation (zu viele → Zickzack/Übersteuerung).",
+      "en": "Run-chart engine for pre-assessment of a data series before setting up a control chart. Computes the median, the count of runs about the median (points on the median count as below, as in Minitab) and the count of runs up/down. From the Wald-Wolfowitz expectation and standard deviation it produces four z-statistics and p-values: clustering (too few median runs → level shift), mixtures (too many → mixed sources), trends (too few up/down runs → drift) and oscillation (too many → zigzag/overshoot)."
     }
   },
 
@@ -25,7 +25,7 @@
       {
         "label": "Runs about median",
         "latex": "E[R] = \\frac{2 m_1 m_2}{N} + 1,\\quad \\mathrm{Var}[R] = \\frac{2 m_1 m_2 (2 m_1 m_2 - N)}{N^2 (N-1)},\\quad z = \\frac{R_{obs} - E[R]}{\\sqrt{\\mathrm{Var}[R]}}",
-        "description": { "de": "m₁/m₂ = Punkte über/unter Median; N = m₁+m₂", "en": "m₁/m₂ = points above/below median; N = m₁+m₂" }
+        "description": { "de": "m₁ = Punkte über dem Median, m₂ = Punkte auf oder unter dem Median; N = m₁+m₂ (alle Punkte)", "en": "m₁ = points above the median, m₂ = points on or below it; N = m₁+m₂ (all points)" }
       },
       {
         "label": "Runs up or down",
@@ -40,7 +40,7 @@
     ],
     "assumptions": [
       { "de": "Datenreihenfolge entspricht der Erfassungsreihenfolge — sortierte Daten verfälschen die Tests", "en": "Data order matches collection order — sorted data invalidates the tests" },
-      { "de": "Werte gleich dem Median werden in den Tests ausgeschlossen (Minitab-Konvention)", "en": "Values equal to the median are excluded from the tests (Minitab convention)" },
+      { "de": "Werte gleich dem Median zählen in den Median-Tests als unterhalb (Minitab-Regel)", "en": "Values equal to the median count as below in the median tests (Minitab rule)" },
       { "de": "Normalapproximation greift erst ab ~10 Punkten zuverlässig", "en": "Normal approximation needs ~10 points or more for reliable p-values" }
     ],
     "limitations": [
@@ -83,5 +83,28 @@
         }
       }
     }
-  }
+  },
+
+  "changelog": [
+    {
+      "version": "1.1.0",
+      "date": "2026-10-03",
+      "type": "fix",
+      "description": {
+        "de": "Punkte auf dem Median zählen in den Tests auf Clustering und Mischungen als unterhalb, statt verworfen zu werden (Minitab-Regel). Befund B1-027.",
+        "en": "Points on the median count as below in the clustering and mixtures tests instead of being dropped (Minitab rule). Finding B1-027."
+      },
+      "breaking": true
+    },
+    {
+      "version": "1.0.0",
+      "date": "2026-05-10",
+      "type": "initial",
+      "description": {
+        "de": "Erstimplementierung: Median und vier Lauftests",
+        "en": "Initial implementation: median and four runs tests"
+      },
+      "breaking": false
+    }
+  ]
 }

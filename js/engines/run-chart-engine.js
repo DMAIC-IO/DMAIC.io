@@ -41,8 +41,8 @@ function phi(z) {
  * Compute number of runs about the median plus expected value, variance and
  * z-statistics (clustering & mixtures).
  *
- * Points equal to the median are excluded from the runs count (Minitab
- * convention) — they are neither above nor below.
+ * Points equal to the median count as below (Minitab run chart rule: "a
+ * point that falls on the center line belongs to the run below the median").
  *
  * @param {number[]} values
  * @param {number} med — sample median
@@ -50,16 +50,11 @@ function phi(z) {
  *             z: number, pClustering: number, pMixtures: number }}
  */
 export function runsAboutMedian(values, med) {
-  // Build sign sequence, dropping points equal to the median
-  const signs = [];
-  for (const v of values) {
-    if (v > med) signs.push(1);
-    else if (v < med) signs.push(-1);
-    // ties to median are dropped
-  }
+  // Build sign sequence; ties to the median belong to the run below
+  const signs = values.map(v => (v > med ? 1 : -1));
   const N = signs.length;
   const m1 = signs.filter(s => s === 1).length;  // above
-  const m2 = signs.filter(s => s === -1).length; // below
+  const m2 = signs.filter(s => s === -1).length; // on or below
 
   // Count runs (groups of consecutive equal signs)
   let runs = 0;

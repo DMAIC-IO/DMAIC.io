@@ -166,13 +166,13 @@ suite('Run Chart — median & runs counts', () => {
     assertEqual(ra.m2, 2);
   });
 
-  test('runs about median: ties to median are dropped', () => {
-    // median = 5; the two 5s are excluded from the sign sequence
+  test('runs about median: ties to median count as below (Minitab)', () => {
+    // median = 5; the two 5s join the run below
     const ra = runsAboutMedian([1, 5, 9, 5, 2], 5);
-    // remaining signs for [1,9,2] → -,+,- → 3 runs, m1=1 (the 9), m2=2 (1 and 2)
+    // signs -,-,+,-,- → 3 runs, m1=1 (the 9), m2=4 (1, 5, 5, 2)
     assertEqual(ra.runs, 3);
     assertEqual(ra.m1, 1);
-    assertEqual(ra.m2, 2);
+    assertEqual(ra.m2, 4);
   });
 
   test('runs up/down: strictly increasing series → 1 run', () => {
