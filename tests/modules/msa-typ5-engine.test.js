@@ -5,7 +5,7 @@
  */
 
 import { suite, test, assert, assertClose } from '../test-utils.js';
-import { validate, ERR, WARN, kappaTest, kappaLevel, ratedShare, cohenKappa, fleissKappa, wilsonCI, effectiveness, missAndFA, signalDetection, deriveConsensus, analyze, buildVerdict } from '../../js/engines/msa-typ5-engine.js';
+import { validate, ERR, WARN, kappaTest, kappaLevel, ratedShare, cohenKappa, fleissKappa, wilsonCI, effectiveness, missAndFA, signalDetection, deriveConsensus, analyze, buildVerdict, stackWide } from '../../js/engines/msa-typ5-engine.js';
 
 // Fixture-Loader — löst relativ zur eigenen JS-URL auf, damit
 // runner.html-Pfad (../fixtures/...) das richtige Verzeichnis erreicht.
@@ -913,11 +913,132 @@ suite('msa-typ5-engine — verdict Bosch', () => {
     assert(c.limits.good === 0.9 && c.limits.marginal === 0.7 && c.direction === 'min');
   });
 
+  // Hand-computed: parts 1, 2 "ok", 3, 4 "nok" by reference; A rates part 1
+  // "nok" in both trials, B is always right. Heft 10 (2019, procedure 7,
+  // p. 29) treats the reference as one more rater beside the trials.
+  const heft10Study = () => {
+    const references = { 1: 'ok', 2: 'ok', 3: 'nok', 4: 'nok' };
+    const ratings = [];
+    for (const a of ['A', 'B']) for (let p = 1; p <= 4; p++) for (const rep of [1, 2]) {
+      ratings.push({ part: p, appraiser: a, rep, value: a === 'A' && p === 1 ? 'nok' : references[p] });
+    }
+    return { type: 'binary', levels: ['ok', 'nok'], ratings, references, params: { ruleSet: 'bosch' } };
+  };
+
+  test('Heft 10: κ vs. reference is Fleiss κ over the trials plus the reference', () => {
+    const r = analyze(heft10Study());
+    assertClose(r.perAppraiser.A.vsReference.fleissKappa.kappa, 5 / 8, 1e-12);
+    assertClose(r.perAppraiser.B.vsReference.fleissKappa.kappa, 1, 1e-12);
+    // AIAG keeps Cohen κ (0.5 here) under vsReference.kappa.
+    assertClose(r.perAppraiser.A.vsReference.kappa.kappa, 0.5, 1e-12);
+  });
+
+  test('Heft 10: all appraisers vs. reference is Fleiss κ over all ratings plus the reference', () => {
+    const r = analyze(heft10Study());
+    assertClose(r.allVsReference.kappa, 0.33 / 0.48, 1e-12);
+    assertClose(r.betweenAppraisers.fleissKappa.kappa, 29 / 45, 1e-12);
+  });
+
+  test('Heft 10: the minimum uses the Fleiss κ vs. reference, not Cohen κ', () => {
+    const c = crit(analyze(heft10Study()), 'minKappa');
+    assertClose(c.value, 5 / 8, 1e-12);
+    assert(c.source === 'vsReference' && c.appraiser === 'A');
+  });
+
+  test('Heft 10: all appraisers vs. reference enters the minimum', () => {
+    const v = buildVerdict({
+      ruleSet: 'bosch', type: 'binary', referenceSource: 'given',
+      fleiss: { kappa: 0.95 }, allVsReference: { kappa: 0.8 },
+      perAppraiser: { A: { withinKappa: { kappa: 0.93 }, vsReference: { fleissKappa: { kappa: 0.91 }, kappa: { kappa: 0.5 } } } },
+    });
+    const c = v.criteria.find(x => x.id === 'minKappa');
+    assert(c.value === 0.8 && c.source === 'allVsReference' && c.appraiser === null);
+    assert(v.level === 'marginal');
+  });
+
+  test('AIAG ignores the Fleiss κ vs. reference', () => {
+    const r = analyze({ ...heft10Study(), params: { ruleSet: 'aiag' } });
+    assert(!crit(r, 'minKappa') && r.verdict.criteria.every(c => c.id !== 'allVsReference'));
+  });
+
   test('Bosch ignores miss/FA: shared miss with κ = 1 stays good', () => {
     const both = [[4, 1], [4, 2]];
     const r = analyze(studyFrom({ parts: 6, wrong: { A: both, B: both, C: both }, params: { ruleSet: 'bosch' } }));
     // Every appraiser disagrees with the reference on part 4, so κ vs. reference < 1.
     assert(crit(r, 'minKappa').source === 'vsReference');
     assert(r.verdict.referenceNote === null);
+  });
+});
+
+const loadI18n = async (lang) => (await fetch(new URL(`../../i18n/${lang}.json`, import.meta.url))).json();
+const i18nCriteria = {
+  de: (await loadI18n('de')).modules['msa-typ5'].criteria,
+  en: (await loadI18n('en')).modules['msa-typ5'].criteria,
+};
+
+suite('msa-typ5 — labels of the Bosch κ sources', () => {
+  test('every source of the Bosch minimum has a de and en label', () => {
+    for (const source of ['fleiss', 'within', 'vsReference', 'allVsReference']) {
+      for (const lang of ['de', 'en']) {
+        assert(typeof i18nCriteria[lang][`source_${source}`] === 'string', `${lang}: source_${source}`);
+      }
+    }
+  });
+});
+
+// ─── stackWide() — wide layout (one column per appraiser × trial) ──────
+suite('msa-typ5 — stackWide', () => {
+  const parts = ['T1', 'T2'];
+  const col = (name, values) => ({ name, values });
+
+  test('groups consecutive columns by appraiser, trials numbered within the group', () => {
+    const { rows, error } = stackWide({
+      parts,
+      trials: 2,
+      columns: [col('A-1', ['ok', 'nok']), col('A-2', ['ok', 'ok']), col('B-1', ['nok', 'nok']), col('B-2', ['ok', 'nok'])],
+    });
+    assert(error === null, String(error));
+    assert(rows.length === 8, `rows ${rows.length}`);
+    const find = (part, appraiser, rep) => rows.find(r => r.part === part && r.appraiser === appraiser && r.rep === rep)?.value;
+    assert(find('T1', 'A', 1) === 'ok' && find('T2', 'A', 1) === 'nok');
+    assert(find('T2', 'A', 2) === 'ok');
+    assert(find('T1', 'B', 1) === 'nok' && find('T2', 'B', 2) === 'nok');
+  });
+
+  test('appraiser label is the common name prefix without trailing separators', () => {
+    const { rows } = stackWide({
+      parts: ['T1'],
+      trials: 2,
+      columns: [col('Prüfer Anna 1', ['ok']), col('Prüfer Anna 2', ['ok']), col('Prüfer Bert_1', ['ok']), col('Prüfer Bert_2', ['ok'])],
+    });
+    assert(JSON.stringify([...new Set(rows.map(r => r.appraiser))]) === '["Prüfer Anna","Prüfer Bert"]');
+  });
+
+  test('one trial: each column is its own appraiser', () => {
+    const { rows } = stackWide({ parts: ['T1'], trials: 1, columns: [col('Prüfer 1', ['ok']), col('Prüfer 2', ['nok'])] });
+    assert(JSON.stringify(rows.map(r => [r.appraiser, r.rep])) === '[["Prüfer 1",1],["Prüfer 2",1]]');
+  });
+
+  test('empty or duplicate prefixes fall back to numbered appraisers', () => {
+    const { rows } = stackWide({ parts: ['T1'], trials: 2, columns: [col('1', ['a']), col('2', ['a']), col('3', ['b']), col('4', ['b'])] });
+    assert(JSON.stringify([...new Set(rows.map(r => r.appraiser))]) === '["1","2"]');
+    const dup = stackWide({ parts: ['T1'], trials: 2, columns: [col('A1', ['a']), col('A2', ['a']), col('A3', ['b']), col('A4', ['b'])] });
+    assert(JSON.stringify([...new Set(dup.rows.map(r => r.appraiser))]) === '["1","2"]');
+  });
+
+  test('blank parts and blank ratings are skipped, values become strings', () => {
+    const { rows } = stackWide({ parts: ['T1', '', 'T3'], trials: 1, columns: [col('A', [1, 0, null])] });
+    assert(JSON.stringify(rows) === '[{"part":"T1","appraiser":"A","rep":1,"value":"1"}]');
+  });
+
+  test('a column count that is not a multiple of the trials is an error', () => {
+    const r = stackWide({ parts, trials: 2, columns: [col('A-1', ['ok', 'ok']), col('A-2', ['ok', 'ok']), col('B-1', ['ok', 'ok'])] });
+    assert(r.error === 'columnsNotDivisible' && r.rows.length === 0);
+  });
+
+  test('trials below 1 or not an integer are an error', () => {
+    for (const trials of [0, 1.5, NaN]) {
+      assert(stackWide({ parts, trials, columns: [col('A', ['ok', 'ok'])] }).error === 'invalidTrials', String(trials));
+    }
   });
 });

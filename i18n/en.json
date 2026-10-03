@@ -1613,7 +1613,7 @@
       "chartXbarTitle": "X-bar Chart by Operator",
       "chartRTitle": "R Chart by Operator",
       "interpretTitle": "Interpretation",
-      "interpPass": "Measurement system acceptable — measurement variation is small enough relative to part variation.",
+      "interpPass": "Measurement system acceptable — measurement variation is small enough relative to the verdict basis (tolerance or study variation).",
       "interpWarn": "Conditionally acceptable — action recommended. Only acceptable for non-critical characteristics.",
       "interpFail": "Not acceptable — measurement system must not be used for inspection.",
       "interpNdcPass": "Adequate resolution — measurement system can distinguish enough categories.",
@@ -1722,6 +1722,11 @@
         "weightsQuadratic": "Quadratic",
         "partColumn": "Part ID column",
         "appraiserColumn": "Appraiser ID column",
+        "ratingColumns": "Rating columns",
+        "layout": "Data layout",
+        "layoutLong": "Long (one rating column)",
+        "layoutWide": "Wide (column per appraiser × trial)",
+        "trials": "Trials per appraiser",
         "ratingColumn": "Rating column",
         "referenceColumn": "Reference column (optional)",
         "replicateColumn": "Replicate column (optional)",
@@ -1796,6 +1801,11 @@
       "verdictGood": "Agreement acceptable",
       "verdictMarginal": "Marginal — investigate",
       "verdictUnacceptable": "Not acceptable",
+      "wideHint": "Columns in worksheet order: all trials of appraiser 1 first, then appraiser 2 … The appraiser name is the common start of the column names (A-1, A-2 → A).",
+      "emptyStateWide": "Choose the part column and the rating columns to start the analysis.",
+      "errWideInvalidTrials": "Trials per appraiser: please enter a whole number of at least 1.",
+      "errWideColumnsNotDivisible": "The {columns} rating columns cannot be split into groups of {trials} trials.",
+      "positiveHint": "Default: the most frequent rating counts as OK. If that is wrong, use \"Swap positive\" — otherwise miss and false-alarm rate are swapped.",
       "ordinalHint": "Order follows sorted values; drag reordering will follow in a later version.",
       "interp_good": "Fleiss κ = {kappa}, effectiveness ≥ {minEff} %. Inspection process reproducible and consistent with the reference.",
       "interp_marginal": "Fleiss κ = {kappa}, minimum effectiveness {minEff} %. Marginal — train appraisers or sharpen rating criteria.",
@@ -1817,7 +1827,8 @@
         "minKappa": "smallest κ",
         "source_fleiss": "Fleiss κ overall",
         "source_within": "κ within appraiser",
-        "source_vsReference": "κ vs. reference"
+        "source_vsReference": "κ vs. reference",
+        "source_allVsReference": "all appraisers vs. reference"
       },
       "verdictNote": {
         "missFaNotRated": "Miss and false-alarm rate not rated — the reference is the appraisers' consensus."

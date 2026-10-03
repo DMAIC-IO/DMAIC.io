@@ -21,6 +21,11 @@
   gap: var(--spacing-sm);
 }
 
+/* Long option texts (verdict basis) need the full row instead of half */
+.msa-typ2__field--wide {
+  grid-column: 1 / -1;
+}
+
 /* ═══ ERROR BOX ═══ */
 
 .msa-typ2__error {

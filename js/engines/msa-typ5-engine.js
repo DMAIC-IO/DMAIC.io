@@ -87,7 +87,8 @@ export function validate(input) {
 /**
  * Two-rater Cohen kappa with optional linear/quadratic weights.
  * Uses observed marginals for expected agreement (Cohen 1960);
- * weighted variant per Cohen (1968) with Fleiss/Cohen/Everitt (1969) SE.
+ * weighted variant per Cohen (1968). The CI uses Cohen's (1960) SE from the
+ * observed agreement; the H0 test uses the Fleiss/Cohen/Everitt (1969) SE₀.
  *
  * @param {Array} a First rater's ratings, length N.
  * @param {Array} b Second rater's ratings, length N (same order as a).
@@ -120,8 +121,9 @@ export function cohenKappa(a, b, opts) {
     pe += w[i][j] * row[i] * col[j];
   }
   const kappa = pe < 1 ? (po - pe) / (1 - pe) : 1;
-  // Fleiss/Cohen/Everitt (1969) — Standard-SE für (un)gewichtete κ auf Basis
-  // der beobachteten Übereinstimmung; deckt sich mit sklearns z-KI-Formel.
+  // Large-sample SE from the observed agreement, Cohen's (1960) approximation
+  // SE = √(p_o (1 − p_o) / (N (1 − p_e)²)) — not the Fleiss/Cohen/Everitt
+  // (1969) variance, which only se0 below uses. Feeds the confidence interval.
   const se = pe < 1 ? Math.sqrt(po * (1 - po) / (N * (1 - pe) ** 2)) : 0;
   const zq = zQuantile(1 - opts.alpha / 2);
   // SE under H0 (κ = 0), Fleiss, Cohen & Everitt (1969) — used for the z-test only:
@@ -414,8 +416,10 @@ export function kappaLevel(kappa, ruleSet) {
  * Miss and false alarm count only for binary data with a given reference —
  * against the appraisers' consensus a miss they all share is invisible, so
  * `referenceNote` is set instead.
- * Bosch Heft 10: the smallest available κ (Fleiss, within appraiser, vs.
- * reference) with limits 0.9 / 0.7.
+ * Bosch Heft 10 (2019, procedure 7, p. 29): the smallest available Fleiss κ
+ * — between appraisers, within each appraiser, each appraiser vs. reference
+ * and all appraisers vs. reference, the reference counting as one more
+ * rater — with limits 0.9 / 0.7.
  *
  * Level = worst criterion; driver = first criterion in table order at that
  * level. Nothing evaluable → 'marginal' with driver null.
@@ -425,12 +429,13 @@ export function kappaLevel(kappa, ruleSet) {
  * @param {string} o.type 'binary' | 'nominal' | 'ordinal'
  * @param {'given'|'consensus'|'none'} o.referenceSource
  * @param {{kappa: number}} o.fleiss
+ * @param {?{kappa: number}} [o.allVsReference] Fleiss κ of all ratings plus the reference
  * @param {Object<string, object>} o.perAppraiser analyze().perAppraiser
  * @returns {{ruleSet: string, level: string, driver: ?string, driverAppraiser: ?string,
  *   referenceNote: ?string, criteria: Array<{id: string, value: number, level: string,
  *   appraiser: ?string, source?: string, limits: {good: number, marginal: number}, direction: 'min'|'max'}>}}
  */
-export function buildVerdict({ ruleSet, type, referenceSource, fleiss, perAppraiser }) {
+export function buildVerdict({ ruleSet, type, referenceSource, fleiss, allVsReference, perAppraiser }) {
   const rs = ruleSet === 'bosch' ? 'bosch' : 'aiag';
   const criteria = [];
   let referenceNote = null;
@@ -456,9 +461,12 @@ export function buildVerdict({ ruleSet, type, referenceSource, fleiss, perApprai
       if (Number.isFinite(v.withinKappa?.kappa)) {
         candidates.push({ value: v.withinKappa.kappa, appraiser: a, source: 'within' });
       }
-      if (Number.isFinite(v.vsReference?.kappa?.kappa)) {
-        candidates.push({ value: v.vsReference.kappa.kappa, appraiser: a, source: 'vsReference' });
+      if (Number.isFinite(v.vsReference?.fleissKappa?.kappa)) {
+        candidates.push({ value: v.vsReference.fleissKappa.kappa, appraiser: a, source: 'vsReference' });
       }
+    }
+    if (Number.isFinite(allVsReference?.kappa)) {
+      candidates.push({ value: allVsReference.kappa, appraiser: null, source: 'allVsReference' });
     }
     if (candidates.length) {
       const m = candidates.reduce((x, y) => (y.value < x.value ? y : x));
@@ -683,6 +691,10 @@ export function analyze(input) {
           counts: kappaObj.confusion,
         };
       }
+      // Bosch Heft 10 (2019, procedure 7, p. 29): the reference is one more
+      // rater beside the appraiser's trials.
+      const byPartRef = _byPartWithReference(ratings, references, ambiguousParts, a);
+      if (byPartRef.size > 0) perAppr[a].vsReference.fleissKappa = fleissKappa(byPartRef, { levels });
     }
   }
 
@@ -715,6 +727,13 @@ export function analyze(input) {
   for (const p of parts) byPart.set(p, ratings.filter(r => r.part === p).map(r => r.value));
   const fleiss = fleissKappa(byPart, { levels });
 
+  // Heft 10: all appraisers vs. reference — all ratings plus the reference per part.
+  let allVsReference = null;
+  if (hasReference) {
+    const byPartRef = _byPartWithReference(ratings, references, ambiguousParts, null);
+    if (byPartRef.size > 0) allVsReference = fleissKappa(byPartRef, { levels });
+  }
+
   // Signal Detection (nur binär mit Referenz)
   let sd = null;
   if (type === 'binary' && hasReference) {
@@ -723,7 +742,7 @@ export function analyze(input) {
 
   // ─── Verdict (AIAG MSA 4th ed., ch. III-C, or Bosch Heft 10) ───
   const verdict = buildVerdict({
-    ruleSet: params.ruleSet, type, referenceSource, fleiss, perAppraiser: perAppr,
+    ruleSet: params.ruleSet, type, referenceSource, fleiss, allVsReference, perAppraiser: perAppr,
   });
   const effRates = Object.values(perAppr)
     .map(x => x.vsReference?.effectiveness?.rate)
@@ -765,6 +784,7 @@ export function analyze(input) {
       pairwiseCohenKappa: pairwise,
       fleissKappa: fleiss,
     },
+    allVsReference,
     signalDetection: sd,
     perPart,
     disagreement,
@@ -780,6 +800,29 @@ export function analyze(input) {
       },
     },
   };
+}
+
+/**
+ * Ratings per part plus the part's reference as one extra rating — the rater
+ * set of a Fleiss κ against the reference (Bosch Heft 10). Parts without a
+ * reference or with an ambiguous consensus are left out.
+ * @param {Array} ratings
+ * @param {Object} references {[part]: value}
+ * @param {Array} ambiguousParts
+ * @param {?string} appraiser one appraiser's trials, or null for all ratings
+ * @returns {Map<any, Array>}
+ * @internal
+ */
+function _byPartWithReference(ratings, references, ambiguousParts, appraiser) {
+  const byPart = new Map();
+  for (const r of ratings) {
+    if (appraiser !== null && r.appraiser !== appraiser) continue;
+    if (ambiguousParts.includes(r.part) || references[r.part] === undefined) continue;
+    if (!byPart.has(r.part)) byPart.set(r.part, []);
+    byPart.get(r.part).push(r.value);
+  }
+  for (const [p, vals] of byPart) vals.push(references[p]);
+  return byPart;
 }
 
 /**
@@ -994,4 +1037,60 @@ export function overallAgreement(ratings, references, opts = {}) {
     betweenAppraisers,
     allVsReference: { agree: correct, n: refTotal, rate: wr.rate, ci95: wr.ci95 },
   };
+}
+
+/** Longest common prefix of a list of strings. */
+function _commonPrefix(names) {
+  let prefix = names[0] ?? '';
+  for (const n of names.slice(1)) {
+    let i = 0;
+    while (i < prefix.length && i < n.length && prefix[i] === n[i]) i++;
+    prefix = prefix.slice(0, i);
+  }
+  return prefix;
+}
+
+/**
+ * Turn the wide layout (one column per appraiser × trial, as in Minitab's
+ * "multiple columns" entry) into the long rows `analyze` expects.
+ *
+ * Columns are taken in the given order and grouped consecutively: the first
+ * `trials` columns are appraiser 1 (trial 1…t), the next `trials` columns
+ * appraiser 2, and so on. The appraiser label is the common prefix of the
+ * group's column names without trailing separators/digits ("A-1", "A-2" → "A";
+ * with one trial the full column name). Empty or duplicate labels fall back to
+ * "1", "2", … for all appraisers. Rows with a blank part or rating are skipped.
+ *
+ * @param {object} input
+ * @param {Array<*>} input.parts — part id per worksheet row
+ * @param {Array<{name: string, values: Array<*>}>} input.columns — rating columns in layout order
+ * @param {number} input.trials — trials per appraiser (integer ≥ 1)
+ * @returns {{ rows: Array<{part: string, appraiser: string, rep: number, value: string}>,
+ *             error: null|'invalidTrials'|'columnsNotDivisible' }}
+ */
+export function stackWide({ parts, columns, trials }) {
+  if (!Number.isInteger(trials) || trials < 1) return { rows: [], error: 'invalidTrials' };
+  if (columns.length % trials !== 0) return { rows: [], error: 'columnsNotDivisible' };
+
+  const groups = [];
+  for (let g = 0; g < columns.length; g += trials) groups.push(columns.slice(g, g + trials));
+  let labels = groups.map((group) => (trials === 1
+    ? String(group[0].name ?? '').trim()
+    : _commonPrefix(group.map((c) => String(c.name ?? ''))).replace(/[\s_\-.:/#]*\d*$/, '').trim()));
+  if (labels.some((l) => !l) || new Set(labels).size !== labels.length) {
+    labels = groups.map((_, k) => String(k + 1));
+  }
+
+  const blank = (v) => v === null || v === undefined || v === '';
+  const rows = [];
+  groups.forEach((group, k) => {
+    group.forEach((col, t) => {
+      for (let i = 0; i < parts.length; i++) {
+        const v = col.values?.[i];
+        if (blank(parts[i]) || blank(v)) continue;
+        rows.push({ part: String(parts[i]), appraiser: labels[k], rep: t + 1, value: String(v) });
+      }
+    });
+  });
+  return { rows, error: null };
 }

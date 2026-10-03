@@ -38,22 +38,40 @@
     <div class="dmike-split__section-title" x-text="t('sections.dataSource')"></div>
 
     <div class="field-group">
+      <label x-text="t('labels.layout')"></label>
+      <select class="field" data-ref="sel-layout"
+              x-model="model.params.layout" @change="runAnalysis()">
+        <option value="long" x-text="t('labels.layoutLong')"></option>
+        <option value="wide" x-text="t('labels.layoutWide')"></option>
+      </select>
+    </div>
+    <div class="field-group">
       <label x-text="t('labels.partColumn')"></label>
       <div data-ref="col-part-wrap"></div>
     </div>
-    <div class="field-group">
+    <div class="field-group" x-show="model.params.layout !== 'wide'">
       <label x-text="t('labels.appraiserColumn')"></label>
       <div data-ref="col-appraiser-wrap"></div>
     </div>
-    <div class="field-group">
+    <div class="field-group" x-show="model.params.layout !== 'wide'">
       <label x-text="t('labels.ratingColumn')"></label>
       <div data-ref="col-rating-wrap"></div>
+    </div>
+    <div class="field-group" x-show="model.params.layout === 'wide'">
+      <label x-text="t('labels.ratingColumns')"></label>
+      <div data-ref="col-ratings-wrap"></div>
+      <div class="msa-typ5__levels-hint" x-text="t('wideHint')"></div>
+    </div>
+    <div class="field-group" x-show="model.params.layout === 'wide'">
+      <label for="msa5-trials" x-text="t('labels.trials')"></label>
+      <input id="msa5-trials" class="field" type="number" min="1" step="1" data-ref="inp-trials"
+             x-model="model.params.trials" @change="runAnalysis()">
     </div>
     <div class="field-group">
       <label x-text="t('labels.referenceColumn')"></label>
       <div data-ref="col-reference-wrap"></div>
     </div>
-    <div class="field-group">
+    <div class="field-group" x-show="model.params.layout !== 'wide'">
       <label x-text="t('labels.replicateColumn')"></label>
       <div data-ref="col-replicate-wrap"></div>
     </div>
@@ -78,6 +96,9 @@
         <template x-for="lvl in detectedLevels()">
           <span class="msa-typ5__level" :key="lvl" x-text="lvl"></span>
         </template>
+      </template>
+      <template x-if="model.params.type === 'binary' && detectedLevels().length">
+        <div class="msa-typ5__levels-hint" data-ref="positive-hint" x-text="t('positiveHint')"></div>
       </template>
       <template x-if="model.params.type === 'ordinal' && detectedLevels().length">
         <div class="msa-typ5__levels-hint" x-text="t('ordinalHint')"></div>

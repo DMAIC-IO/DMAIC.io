@@ -1613,7 +1613,7 @@
       "chartXbarTitle": "x̄-Karte nach Bediener",
       "chartRTitle": "R-Karte nach Bediener",
       "interpretTitle": "Interpretation",
-      "interpPass": "Messsystem akzeptabel — Messvariation ist klein genug im Vergleich zur Teilevariation.",
+      "interpPass": "Messsystem akzeptabel — die Messstreuung ist klein genug im Verhältnis zur Urteilsbasis (Toleranz oder Studienstreuung).",
       "interpWarn": "Bedingt akzeptabel — Maßnahmen empfohlen. Nur bei unkritischen Merkmalen akzeptabel.",
       "interpFail": "Nicht akzeptabel — Messsystem darf nicht für die Prüfung eingesetzt werden.",
       "interpNdcPass": "Ausreichende Auflösung — Messsystem kann genügend Kategorien unterscheiden.",
@@ -1722,6 +1722,11 @@
         "weightsQuadratic": "Quadratisch",
         "partColumn": "Teil-ID-Spalte",
         "appraiserColumn": "Prüfer-ID-Spalte",
+        "ratingColumns": "Bewertungs-Spalten",
+        "layout": "Datenlayout",
+        "layoutLong": "Lang (eine Bewertungs-Spalte)",
+        "layoutWide": "Breit (Spalte je Prüfer × Durchgang)",
+        "trials": "Durchgänge je Prüfer",
         "ratingColumn": "Bewertungs-Spalte",
         "referenceColumn": "Referenz-Spalte (optional)",
         "replicateColumn": "Wiederholungs-Spalte (optional)",
@@ -1796,6 +1801,11 @@
       "verdictGood": "Übereinstimmung akzeptabel",
       "verdictMarginal": "Grenzwertig — überprüfen",
       "verdictUnacceptable": "Nicht akzeptabel",
+      "wideHint": "Spalten in Tabellenreihenfolge: erst alle Durchgänge von Prüfer 1, dann Prüfer 2 … Der Prüfername ist der gemeinsame Spaltenanfang (A-1, A-2 → A).",
+      "emptyStateWide": "Teil-Spalte und die Bewertungs-Spalten wählen, um die Analyse zu starten.",
+      "errWideInvalidTrials": "Durchgänge je Prüfer: bitte eine ganze Zahl ab 1 eingeben.",
+      "errWideColumnsNotDivisible": "Die {columns} Bewertungs-Spalten lassen sich nicht in Gruppen zu je {trials} Durchgängen teilen.",
+      "positiveHint": "Voreinstellung: die häufigste Bewertung gilt als i.O. Stimmt das nicht, „Positiv tauschen“ — sonst sind Miss- und Fehlalarm-Rate vertauscht.",
       "ordinalHint": "Reihenfolge folgt der Sortierung; Drag-Neuordnung folgt in einer späteren Version.",
       "interp_good": "Fleiss κ = {kappa}, Effektivität ≥ {minEff} %. Prüfprozess reproduzierbar und mit der Referenz konsistent.",
       "interp_marginal": "Fleiss κ = {kappa}, minimale Effektivität {minEff} %. Grenzwertig — Prüfer schulen oder Bewertungskriterien schärfen.",
@@ -1817,7 +1827,8 @@
         "minKappa": "kleinstes κ",
         "source_fleiss": "Fleiss κ gesamt",
         "source_within": "κ innerhalb Prüfer",
-        "source_vsReference": "κ vs. Referenz"
+        "source_vsReference": "κ vs. Referenz",
+        "source_allVsReference": "alle Prüfer vs. Referenz"
       },
       "verdictNote": {
         "missFaNotRated": "Miss- und Fehlalarm-Rate nicht bewertet – die Referenz stammt aus dem Konsens der Prüfer."

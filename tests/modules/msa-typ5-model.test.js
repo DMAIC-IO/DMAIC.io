@@ -1,5 +1,5 @@
 import { suite, test, assertEqual } from '../test-utils.js';
-import { State, RULESET_OPTIONS, formatP } from '../../js/modules/msa-typ5/msa-typ5-model.js';
+import { State, RULESET_OPTIONS, formatP, formatNum, formatPct } from '../../js/modules/msa-typ5/msa-typ5-model.js';
 
 suite('MSA Typ 5 Model — ruleSet', () => {
   test('new State defaults to aiag', () => {
@@ -39,5 +39,68 @@ suite('MSA Typ 5 Model — formatP', () => {
   test('non-finite → dash', () => {
     assertEqual(formatP(NaN, 'de'), '—');
     assertEqual(formatP(undefined, 'en'), '—');
+  });
+});
+
+suite('MSA Typ 5 Model — wide layout', () => {
+  const ref = (columnId) => ({ instanceId: 'ws', sheetId: 's1', columnId });
+
+  test('new State is long layout, 2 trials, no rating columns', () => {
+    const s = new State();
+    assertEqual(s.params.layout, 'long');
+    assertEqual(s.params.trials, '2');
+    assertEqual(JSON.stringify(s.columns.ratings), '[]');
+  });
+
+  test('saved study without layout loads as long', () => {
+    const s = State.fromJSON({ params: { type: 'binary' }, columns: {} });
+    assertEqual(s.params.layout, 'long');
+    assertEqual(s.params.trials, '2');
+    assertEqual(JSON.stringify(s.columns.ratings), '[]');
+  });
+
+  test('wide layout, trials and rating columns survive a JSON round trip', () => {
+    const s = new State();
+    s.params.layout = 'wide';
+    s.params.trials = '3';
+    s.columns.ratings = [ref('c1'), ref('c2')];
+    const back = State.fromJSON(JSON.parse(JSON.stringify(s.toJSON())));
+    assertEqual(back.params.layout, 'wide');
+    assertEqual(back.params.trials, '3');
+    assertEqual(JSON.stringify(back.columns.ratings), JSON.stringify([ref('c1'), ref('c2')]));
+  });
+
+  test('unknown layout falls back to long; malformed refs are dropped', () => {
+    const s = State.fromJSON({ params: { layout: 'pivot', trials: 4 }, columns: { ratings: [ref('c1'), null, { columnId: 'x' }] } });
+    assertEqual(s.params.layout, 'long');
+    assertEqual(s.params.trials, '4');
+    assertEqual(s.columns.ratings.length, 1);
+  });
+
+  test('selected rating columns count as content', () => {
+    const s = new State();
+    s.columns.ratings = [ref('c1')];
+    assertEqual(s.hasContent(), true);
+  });
+});
+
+suite('MSA Typ 5 Model — formatNum / formatPct', () => {
+  test('κ uses the language decimal separator, like p', () => {
+    assertEqual(formatNum(0.9224, 3, 'de'), '0,922');
+    assertEqual(formatNum(0.9224, 3, 'en'), '0.922');
+    assertEqual(formatNum(-0.0444, 3, 'de'), '-0,044');
+    assertEqual(formatNum(30.27, 1, 'de'), '30,3');
+  });
+
+  test('rates as percent with one decimal and the language separator', () => {
+    assertEqual(formatPct(0.9778, 'de'), '97,8 %');
+    assertEqual(formatPct(0.9778, 'en'), '97.8 %');
+    assertEqual(formatPct(0, 'de'), '0,0 %');
+  });
+
+  test('non-finite → dash', () => {
+    assertEqual(formatNum(NaN, 3, 'de'), '—');
+    assertEqual(formatNum(null, 3, 'en'), '—');
+    assertEqual(formatPct(undefined, 'de'), '—');
   });
 });

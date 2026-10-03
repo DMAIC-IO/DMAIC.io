@@ -81,7 +81,7 @@ export default {
           {
             type: 'list',
             items: [
-              'Long/tidy-Format mit drei Pflicht-Spalten: **Teil-ID**, **Prüfer-ID**, **Bewertung**. Jede Zeile ist eine Einzel-Bewertung.',
+              'Langes Format (Voreinstellung) mit drei Pflicht-Spalten: **Teil-ID**, **Prüfer-ID**, **Bewertung**. Jede Zeile ist eine Einzel-Bewertung.',
               'Optionale **Referenz-Spalte** mit dem wahren Kategoriewert je Teil. Fehlt sie, greift der {{term:konsens-fallback|Konsens-Fallback}}.',
               'Optionale **Wiederholungs-Spalte**. Fehlt sie, nummeriert die Engine je (Teil × Prüfer) automatisch von 1 an.',
               'Mindestens 2 unterschiedliche Teile, 2 unterschiedliche Prüfer und 2 vorkommende Bewertungs-Klassen.',
@@ -91,13 +91,13 @@ export default {
           },
           {
             type: 'definition',
-            term: 'Long/tidy statt wide',
-            content: 'Nicht eine Spalte je Prüfer/Wiederholung anlegen, sondern vier lange Spalten (Teil, Prüfer, Bewertung, ggf. Wiederholung). Minitab akzeptiert auch ein breites Format (eine Spalte je Prüfer und Durchgang); Qprovement verarbeitet derzeit nur das lange Format.',
+            term: 'Langes oder breites Datenlayout',
+            content: 'Langes Format: je Zeile eine Bewertung (Teil, Prüfer, Bewertung, ggf. Wiederholung). Breites Format wie in Minitab „mehrere Spalten“: unter **Datenlayout** „Breit“ wählen, die Teil-Spalte und alle Bewertungs-Spalten markieren und die **Durchgänge je Prüfer** angeben. Die Spalten zählen in Tabellenreihenfolge — erst alle Durchgänge von Prüfer 1, dann Prüfer 2 —, der Prüfername ist der gemeinsame Spaltenanfang (A-1, A-2 → A). Beispiel: „binär, breites Datenlayout“.',
           },
           {
             type: 'definition',
             term: 'Merkmalstyp',
-            content: 'Binär (2 Klassen, positiv zuerst) → Cohen κ + Miss-/False-Alarm-Rate + Signal Detection. Nominal (≥ 3 Klassen, ungeordnet) → Cohen κ + Fleiss κ. Ordinal (geordnete Stufen) → zusätzlich {{term:weighted-kappa|Weighted κ}} (linear oder quadratisch), das kleine Fehlklassifikationen milder gewichtet als große.',
+            content: 'Binär (2 Klassen, positiv zuerst) → Cohen κ + Miss-/False-Alarm-Rate + Signal Detection. Nominal (≥ 3 Klassen, ungeordnet) → Cohen κ + Fleiss κ. Ordinal (geordnete Stufen) → zusätzlich {{term:weighted-kappa|Weighted κ}} (linear oder quadratisch), das kleine Fehlklassifikationen milder gewichtet als große. Bei binären Daten gilt die häufigste Bewertung als i.O. (positiv); trifft das nicht zu, mit „Positiv tauschen“ umstellen — sonst sind Miss- und Fehlalarm-Rate vertauscht.',
           },
           {
             type: 'definition',
@@ -112,7 +112,7 @@ export default {
           {
             type: 'list',
             items: [
-              'Long/tidy layout with three required columns: **Part ID**, **Appraiser ID**, **Rating**. Each row is one individual rating.',
+              'Long layout (default) with three required columns: **Part ID**, **Appraiser ID**, **Rating**. Each row is one individual rating.',
               'Optional **reference column** with the true category for each part. If missing, the {{term:konsens-fallback|consensus fallback}} kicks in.',
               'Optional **replicate column**. If missing, the engine auto-numbers replicates per (part × appraiser) starting at 1.',
               'At least 2 distinct parts, 2 distinct appraisers and 2 distinct rating classes present in the data.',
@@ -122,13 +122,13 @@ export default {
           },
           {
             type: 'definition',
-            term: 'Long/tidy layout instead of wide',
-            content: 'Do not create one column per appraiser/replicate. Instead use four long columns (part, appraiser, rating, optionally replicate). Minitab also accepts a wide layout (one column per appraiser and trial); Qprovement currently processes only the long layout.',
+            term: 'Long or wide data layout',
+            content: 'Long layout: one rating per row (part, appraiser, rating, optionally replicate). Wide layout as in Minitab\'s "multiple columns": choose "Wide" under **Data layout**, tick the part column and all rating columns and enter the **trials per appraiser**. Columns count in worksheet order — all trials of appraiser 1 first, then appraiser 2 —, the appraiser name is the common start of the column names (A-1, A-2 → A). Example: "binary, wide data layout".',
           },
           {
             type: 'definition',
             term: 'Characteristic type',
-            content: 'Binary (2 classes, positive first) → Cohen κ + miss/false-alarm rate + signal detection. Nominal (≥ 3 classes, unordered) → Cohen κ + Fleiss κ. Ordinal (ordered grades) → additionally {{term:weighted-kappa|weighted κ}} (linear or quadratic) so that small misclassifications weigh less than large ones.',
+            content: 'Binary (2 classes, positive first) → Cohen κ + miss/false-alarm rate + signal detection. Nominal (≥ 3 classes, unordered) → Cohen κ + Fleiss κ. Ordinal (ordered grades) → additionally {{term:weighted-kappa|weighted κ}} (linear or quadratic) so that small misclassifications weigh less than large ones. For binary data the most frequent rating counts as OK (positive); if that is wrong, use "Swap positive" — otherwise miss and false-alarm rate are swapped.',
           },
           {
             type: 'definition',
@@ -455,7 +455,7 @@ export default {
           },
           {
             type: 'paragraph',
-            content: 'Bewertet wird das **kleinste verfügbare κ** aus Fleiss κ gesamt, κ innerhalb jedes Prüfers und κ jedes Prüfers gegen die Referenz: ≥ 0,9 fähig, ≥ 0,7 bedingt fähig, darunter nicht fähig. Heft 10 (2019, Verfahren 7) nimmt ebenfalls das Minimum aller ermittelten κ, rechnet κ gegen die Referenz aber als Fleiss κ und bewertet zusätzlich alle Prüfer gemeinsam gegen die Referenz; Qprovement nutzt hier Cohens κ je Prüfer. Die κ-Ampeln in den Ergebnistabellen folgen den Grenzen der gewählten Regel.',
+            content: 'Bewertet wird wie in Heft 10 (2019, Verfahren 7, S. 29) das **kleinste** von vier Fleiss κ: zwischen den Prüfern, innerhalb jedes Prüfers, jeder Prüfer gegen die Referenz und alle Prüfer gemeinsam gegen die Referenz. Gegen die Referenz zählt die Referenz als ein weiterer Bewerter neben den Durchgängen. Grenzen: ≥ 0,9 fähig, ≥ 0,7 bedingt fähig, darunter nicht fähig. Die Tabelle „κ vs. Referenz“ zeigt weiterhin Cohens κ nach AIAG; der Wert im Urteil kann davon abweichen. Die κ-Ampeln in den Ergebnistabellen folgen den Grenzen der gewählten Regel.',
           },
           {
             type: 'definition',
@@ -499,7 +499,7 @@ export default {
           },
           {
             type: 'paragraph',
-            content: 'The **smallest available κ** is rated, taken from Fleiss κ overall, each appraiser\'s within-appraiser κ and each appraiser\'s κ vs. reference: ≥ 0.9 capable, ≥ 0.7 conditionally capable, below that not capable. Heft 10 (2019, Verfahren 7) also takes the minimum of all κ values, but computes κ vs. reference as Fleiss κ and additionally rates all appraisers together against the reference; Qprovement uses Cohen\'s κ per appraiser here. The κ dots in the result tables follow the limits of the selected rule.',
+            content: 'As in Heft 10 (2019, Verfahren 7, p. 29), the **smallest** of four Fleiss κ is rated: between appraisers, within each appraiser, each appraiser vs. reference and all appraisers together vs. reference. Against the reference, the reference counts as one more rater beside the trials. Limits: ≥ 0.9 capable, ≥ 0.7 conditionally capable, below that not capable. The "κ vs. reference" table still shows Cohen\'s κ per AIAG; the value in the verdict may differ from it. The κ dots in the result tables follow the limits of the selected rule.',
           },
           {
             type: 'definition',

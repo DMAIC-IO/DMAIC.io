@@ -64,6 +64,19 @@ function isTyp3Data(data) {
 }
 
 /**
+ * Share of the tolerance taken by a component's study variation:
+ * 100 · k · σ / T. Melzer Fig. 8.33: σ_GRR 0.82074, T 30 → 16.41 % (k 6),
+ * 14.09 % (k 5.15).
+ * @param {number} sigma component standard deviation
+ * @param {number} k study-variation multiplier (6 or 5.15)
+ * @param {number|null} tolerance USL − LSL, or null when not both are given
+ * @returns {number|null} percent, or null without a tolerance
+ */
+export function pctOfTolerance(sigma, k, tolerance) {
+  return tolerance ? (k * sigma / tolerance) * 100 : null;
+}
+
+/**
  * Effective %GRR verdict. Uses %Tolerance unless 'studyVar' is requested or
  * no tolerance exists (then %StudyVar). Limits: < 10 pass, < 30 warn, else fail.
  * @param {{ pctStudyVar: number, pctTolerance: number|null }} grrVC
@@ -414,7 +427,7 @@ export function analyze(data, options = {}) {
     const studyVar = k * sigma;
     const pctContribution = sigma2Total > 0 ? (variance / sigma2Total) * 100 : 0;
     const pctStudyVar = sigmaTotal > 0 ? (sigma / sigmaTotal) * 100 : 0;
-    const pctTolerance = tolerance ? (studyVar / tolerance) * 100 : null;
+    const pctTolerance = pctOfTolerance(sigma, k, tolerance);
     return {
       variance, sigma, studyVar, pctContribution, pctStudyVar, pctTolerance,
       pctProcess: histSigma ? (sigma / histSigma) * 100 : null,
@@ -569,7 +582,7 @@ function analyzeTyp3(data, options = {}) {
     const studyVar = k * sigma;
     const pctContribution = sigma2Total > 0 ? (variance / sigma2Total) * 100 : 0;
     const pctStudyVar = sigmaTotal > 0 ? (sigma / sigmaTotal) * 100 : 0;
-    const pctTolerance = tolerance ? (studyVar / tolerance) * 100 : null;
+    const pctTolerance = pctOfTolerance(sigma, k, tolerance);
     return {
       variance, sigma, studyVar, pctContribution, pctStudyVar, pctTolerance,
       pctProcess: histSigma ? (sigma / histSigma) * 100 : null,

@@ -5,7 +5,7 @@
 
 import { suite, test, assertAlmostEqual, assertEqual, assertTrue } from '../test-utils.js';
 import { analyze as analyzeTyp1, validate as validateTyp1, limitMode } from '../../js/engines/msa-typ1-engine.js';
-import { analyze as analyzeTyp2, validate as validateTyp2, grrVerdict } from '../../js/engines/msa-typ2-engine.js';
+import { analyze as analyzeTyp2, validate as validateTyp2, grrVerdict, pctOfTolerance } from '../../js/engines/msa-typ2-engine.js';
 
 async function loadFixture(path) {
   const resp = await fetch(new URL(path, import.meta.url));
@@ -263,6 +263,11 @@ suite('MSA Typ 2 — factor 6 vs 5.15 (Melzer Fig. 8.33)', () => {
     assertAlmostEqual(r6.varComp.grr.pctTolerance, 100 * 6 * s / 0.2, 1e-9);
     assertAlmostEqual(r6.varComp.grr.pctTolerance, 24.552240223653936, 1e-6);
     assertAlmostEqual(r515.varComp.grr.pctTolerance, 100 * 5.15 * s / 0.2, 1e-9);
+  });
+  test('book values: SD(GRR) 0.82074, T 30 → 16.41 % (k 6) and 14.09 % (k 5.15)', () => {
+    assertAlmostEqual(pctOfTolerance(0.82074, 6, 30), 16.41, 0.005);
+    assertAlmostEqual(pctOfTolerance(0.82074, 5.15, 30), 14.09, 0.005);
+    assertEqual(pctOfTolerance(0.82074, 6, null), null);
   });
   test('ratio of the two is 6/5.15 (book: 16.41 / 14.09)', () => {
     assertAlmostEqual(r6.varComp.grr.pctTolerance / r515.varComp.grr.pctTolerance, 6 / 5.15, 1e-12);

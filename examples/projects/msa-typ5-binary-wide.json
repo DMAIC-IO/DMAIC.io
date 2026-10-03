@@ -1,0 +1,74 @@
+{
+  "params": {
+    "type": "binary",
+    "positiveLevel": "ok",
+    "weights": "quadratic",
+    "alpha": 0.05,
+    "ordinalOrder": null,
+    "layout": "wide",
+    "trials": "3"
+  },
+  "columns": {
+    "part": {
+      "instanceId": "__source__",
+      "sheetId": "sheet-msa-typ5-binary-wide",
+      "columnId": "c-part"
+    },
+    "appraiser": null,
+    "rating": null,
+    "reference": {
+      "instanceId": "__source__",
+      "sheetId": "sheet-msa-typ5-binary-wide",
+      "columnId": "c-ref"
+    },
+    "replicate": null,
+    "ratings": [
+      {
+        "instanceId": "__source__",
+        "sheetId": "sheet-msa-typ5-binary-wide",
+        "columnId": "c-a1"
+      },
+      {
+        "instanceId": "__source__",
+        "sheetId": "sheet-msa-typ5-binary-wide",
+        "columnId": "c-a2"
+      },
+      {
+        "instanceId": "__source__",
+        "sheetId": "sheet-msa-typ5-binary-wide",
+        "columnId": "c-a3"
+      },
+      {
+        "instanceId": "__source__",
+        "sheetId": "sheet-msa-typ5-binary-wide",
+        "columnId": "c-b1"
+      },
+      {
+        "instanceId": "__source__",
+        "sheetId": "sheet-msa-typ5-binary-wide",
+        "columnId": "c-b2"
+      },
+      {
+        "instanceId": "__source__",
+        "sheetId": "sheet-msa-typ5-binary-wide",
+        "columnId": "c-b3"
+      },
+      {
+        "instanceId": "__source__",
+        "sheetId": "sheet-msa-typ5-binary-wide",
+        "columnId": "c-c1"
+      },
+      {
+        "instanceId": "__source__",
+        "sheetId": "sheet-msa-typ5-binary-wide",
+        "columnId": "c-c2"
+      },
+      {
+        "instanceId": "__source__",
+        "sheetId": "sheet-msa-typ5-binary-wide",
+        "columnId": "c-c3"
+      }
+    ]
+  },
+  "sourceWorksheetFile": "worksheets/msa-typ5-binary-wide.json"
+}

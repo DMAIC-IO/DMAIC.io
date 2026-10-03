@@ -2110,7 +2110,7 @@
       "id": "grr_melzer_k6_tolerance_basis",
       "tier": "standard",
       "description": "10×3×2 study, factor 6, verdict on %Tolerance (LSL and USL given)",
-      "reference": "Melzer 2019 Fig. 8.33 / Minitab (6·SD, %Process)",
+      "reference": "Synthetic data (not the book example); conventions per Melzer 2019 Fig. 8.33 / Minitab: 6·SD, %Process — expected values from the SciPy generator",
       "inputs": {
         "data": {
           "parts": [
@@ -2321,7 +2321,7 @@
       "id": "grr_melzer_studyvar_basis",
       "tier": "standard",
       "description": "10×3×2 study, factor 6, verdict basis forced to %StudyVar",
-      "reference": "Melzer 2019 Fig. 8.33 / Minitab (6·SD, %Process)",
+      "reference": "Synthetic data (not the book example); conventions per Melzer 2019 Fig. 8.33 / Minitab: 6·SD, %Process — expected values from the SciPy generator",
       "inputs": {
         "data": {
           "parts": [
@@ -2530,7 +2530,7 @@
       "id": "grr_melzer_historical_sigma",
       "tier": "standard",
       "description": "10×3×2 study, factor 6, historical process σ 0.05 → %Process",
-      "reference": "Melzer 2019 Fig. 8.33 / Minitab (6·SD, %Process)",
+      "reference": "Synthetic data (not the book example); conventions per Melzer 2019 Fig. 8.33 / Minitab: 6·SD, %Process — expected values from the SciPy generator",
       "inputs": {
         "data": {
           "parts": [

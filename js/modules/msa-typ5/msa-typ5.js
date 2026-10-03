@@ -15,17 +15,20 @@
  */
 
 import { createModule } from '../../core/template-module.js';
-import { State, formatP } from './msa-typ5-model.js';
-import { analyze, kappaLevel, ratedShare } from '../../engines/msa-typ5-engine.js';
-import { ColumnPicker, getColumnValues } from '../../ui/column-picker.js';
+import { State, formatP, formatNum, formatPct } from './msa-typ5-model.js';
+import { analyze, kappaLevel, ratedShare, stackWide } from '../../engines/msa-typ5-engine.js';
+import { ColumnPicker, getColumnValues, getColumnName } from '../../ui/column-picker.js';
 import { loadExampleViaWorksheet } from '../../core/examples-registry.js';
 import { computeGageRunChart } from '../../engines/gage-run-chart-engine.js';
 import { renderGageRunStrips } from '../../core/chart/gage-run-strips.js';
 
-/** @param {number} v @param {number} d @returns {string} */
-function fmt(v, d = 3) { return Number.isFinite(v) ? v.toFixed(d) : '—'; }
-/** @param {number} rate @returns {string} */
-function fmtPct(rate) { return Number.isFinite(rate) ? `${(rate * 100).toFixed(1)} %` : '—'; }
+/**
+ * Confidence interval '[lo, hi]'; German uses '; ' because ',' is the decimal sign.
+ * @param {number[]} ci @param {'de'|'en'} lang @returns {string}
+ */
+function fmtCI(ci, lang) {
+  return `[${formatNum(ci[0], 3, lang)}${lang === 'de' ? ';' : ','} ${formatNum(ci[1], 3, lang)}]`;
+}
 
 /** Mittelwert einer Zahlenliste unter Ignorieren von NaN/Infinity. */
 function mean(arr) {
@@ -49,17 +52,18 @@ function levelClass(level) {
 }
 
 /** z statistic with two decimals; non-finite → '—'. */
-function fmtZ(z) { return Number.isFinite(z) ? z.toFixed(2) : '—'; }
+function fmtZ(z, lang) { return formatNum(z, 2, lang); }
 
 /**
  * Criterion value for the criteria table: κ with three decimals, rates as
  * percent.
  * @param {string} id criterion id
  * @param {number} v
+ * @param {'de'|'en'} lang
  * @returns {string}
  */
-function fmtCriterion(id, v) {
-  return (id === 'fleissKappa' || id === 'minKappa') ? fmt(v, 3) : fmtPct(v);
+function fmtCriterion(id, v, lang) {
+  return (id === 'fleissKappa' || id === 'minKappa') ? formatNum(v, 3, lang) : formatPct(v, lang);
 }
 
 /**
@@ -87,7 +91,9 @@ const mod = createModule({
     return {
       // ── Transient view state (not persisted) ──────────────────
       result: null,
-      _pickers: { part: null, appraiser: null, rating: null, reference: null, replicate: null },
+      // i18n text of a wide-layout problem (trials vs. column count), else null.
+      layoutError: null,
+      _pickers: { part: null, appraiser: null, rating: null, reference: null, replicate: null, ratings: null },
       _charts: [],
       _unsubs: [],
       _renderGen: 0,
@@ -96,17 +102,34 @@ const mod = createModule({
       onlyDisputed: false,
 
       // Passthroughs für Template-Ausdrücke
-      fmt,
-      fmtPct,
       verdictClass,
+
+      /** κ and other numbers with the language decimal separator. */
+      fmt(v, d = 3) { return formatNum(v, d, this._lang()); },
+      /** Rate (0…1) as percent with the language decimal separator. */
+      fmtPct(rate) { return formatPct(rate, this._lang()); },
 
       // ── Levels-Panel (View-Getter) ────────────────────────────
 
+      /**
+       * Raw rating cells: the rating column (long layout) or all rating
+       * columns of the wide layout; null when none is chosen.
+       * @returns {Array<*>|null}
+       */
+      _ratingValues() {
+        const sm = module._context.stateManager;
+        if (this.model.params.layout === 'wide') {
+          const refs = this.model.columns.ratings;
+          return refs.length ? refs.flatMap((r) => getColumnValues(sm, r) || []) : null;
+        }
+        const ref = this.model.columns.rating;
+        return ref ? (getColumnValues(sm, ref) || []) : null;
+      },
+
       /** Rohwerte aus der Bewertungs-Spalte (dedupliziert + sortiert). */
       detectedLevels() {
-        const ref = this.model.columns.rating;
-        if (!ref) return [];
-        const vals = getColumnValues(module._context.stateManager, ref) || [];
+        const vals = this._ratingValues();
+        if (!vals) return [];
         const cleaned = vals.filter((v) => v !== null && v !== undefined && v !== '');
         const unique = [...new Set(cleaned.map((v) => String(v)))];
         if (unique.length > 0 && unique.every((v) => Number.isFinite(Number(v)))) {
@@ -117,10 +140,9 @@ const mod = createModule({
 
       /** Zwei häufigste Bewertungs-Werte für den Binär-Fall. */
       _twoMostFrequent() {
-        const ref = this.model.columns.rating;
         const levels = this.detectedLevels();
-        if (!ref) return [levels[0], levels[1]];
-        const vals = getColumnValues(module._context.stateManager, ref) || [];
+        const vals = this._ratingValues();
+        if (!vals) return [levels[0], levels[1]];
         const counts = new Map();
         for (const v of vals) {
           if (v === null || v === undefined || v === '') continue;
@@ -183,6 +205,8 @@ const mod = createModule({
       },
 
       emptyStateText() {
+        if (this.layoutError) return this.layoutError;
+        if (this.model.params.layout === 'wide' && !this.result) return _t('emptyStateWide');
         const err = this.result?.meta?.errors?.[0];
         if (err) return this._translateCode(err, 'err');
         return _t('emptyState');
@@ -217,9 +241,9 @@ const mod = createModule({
         const srcLabel = _t(`labels.referenceSource${src.charAt(0).toUpperCase() + src.slice(1)}`);
         // SE0 only holds under H0, so Fleiss κ gets a z test, not a CI.
         const test = Number.isFinite(fk.z)
-          ? ` (z ${fmt(fk.z, 1)}; p ${formatP(fk.p, this._lang())})`
+          ? ` (z ${this.fmt(fk.z, 1)}; p ${formatP(fk.p, this._lang())})`
           : '';
-        let line = `Fleiss κ = ${fmt(fk.kappa, 3)}${test} · ${_t('labels.referenceSource')}: ${srcLabel}`;
+        let line = `Fleiss κ = ${this.fmt(fk.kappa, 3)}${test} · ${_t('labels.referenceSource')}: ${srcLabel}`;
         const driver = this._driverCriterion();
         if (driver) line += ` · ${this._driverText(driver)}`;
         return line;
@@ -230,7 +254,7 @@ const mod = createModule({
         return _t('verdictDriver', {
           criterion: this._criterionLabel(c),
           appraiser: c.appraiser ? ` (${c.appraiser})` : '',
-          value: fmtCriterion(c.id, c.value),
+          value: fmtCriterion(c.id, c.value, this._lang()),
         });
       },
 
@@ -254,15 +278,16 @@ const mod = createModule({
       criteriaRows() {
         const v = this.result?.verdict;
         if (!v) return [];
+        const lang = this._lang();
         return (v.criteria || []).map((c) => {
           const op = c.direction === 'max' ? '≤' : '≥';
           return {
             key: c.id,
             label: this._criterionLabel(c),
-            value: fmtCriterion(c.id, c.value),
+            value: fmtCriterion(c.id, c.value, lang),
             appraiser: c.appraiser ?? '—',
-            good: `${op} ${fmtCriterion(c.id, c.limits.good)}`,
-            marginal: `${op} ${fmtCriterion(c.id, c.limits.marginal)}`,
+            good: `${op} ${fmtCriterion(c.id, c.limits.good, lang)}`,
+            marginal: `${op} ${fmtCriterion(c.id, c.limits.marginal, lang)}`,
             status: this.verdictLabel(c.level),
             ampelClass: levelClass(c.level),
             rowClass: c.id === v.driver ? 'msa-typ5__row--driver' : '',
@@ -315,7 +340,15 @@ const mod = createModule({
         if (driver && this.result.verdict.level !== 'good') {
           return module._context.i18n.t(`${ip.textKey}_driver`, { decisive: this._driverText(driver) });
         }
-        return module._context.i18n.t(ip.textKey, ip.params || {});
+        // The engine formats its numbers language-neutral ('0.922');
+        // localize the decimal sign here.
+        const params = { ...(ip.params || {}) };
+        if (this._lang() === 'de') {
+          for (const [k, v] of Object.entries(params)) {
+            if (typeof v === 'string' && /^-?\d+\.\d+$/.test(v)) params[k] = v.replace('.', ',');
+          }
+        }
+        return module._context.i18n.t(ip.textKey, params);
       },
 
       // ── Tabellen (View-Rows) ─────────────────────────────────
@@ -332,13 +365,13 @@ const mod = createModule({
           const bias = v.vsReference?.biasRate;
           return {
             id,
-            repeatability:   rep  ? fmtPct(rep.rate)   : '—',
-            effectiveness:   eff  ? fmtPct(eff.rate)   : '—',
+            repeatability:   rep  ? formatPct(rep.rate, lang) : '—',
+            effectiveness:   eff  ? formatPct(eff.rate, lang) : '—',
             // 0/0 (no part of that reference class) is not a rate of 0 %.
-            missRate:        fmtPct(ratedShare(miss)),
-            falseAlarmRate:  fmtPct(ratedShare(fa)),
-            biasRate:        bias ? fmt(bias.value, 3) : '—',
-            within:          v.withinKappa ? fmt(v.withinKappa.kappa, 3) : '—',
+            missRate:        formatPct(ratedShare(miss), lang),
+            falseAlarmRate:  formatPct(ratedShare(fa), lang),
+            biasRate:        bias ? formatNum(bias.value, 3, lang) : '—',
+            within:          v.withinKappa ? formatNum(v.withinKappa.kappa, 3, lang) : '—',
             withinP:         v.withinKappa ? formatP(v.withinKappa.p, lang) : '—',
           };
         });
@@ -355,14 +388,14 @@ const mod = createModule({
         const ruleSet = this.result.verdict?.ruleSet;
         return Object.entries(p).map(([pair, k]) => {
           const ci = (k.ci95 && Number.isFinite(k.ci95[0]) && Number.isFinite(k.ci95[1]))
-            ? `[${fmt(k.ci95[0], 3)}, ${fmt(k.ci95[1], 3)}]`
+            ? fmtCI(k.ci95, lang)
             : '—';
           return {
             pair,
             pairLabel: pair.replace('|', ' | '),
-            kappa: fmt(k.kappa, 3),
+            kappa: formatNum(k.kappa, 3, lang),
             ci95: ci,
-            z: fmtZ(k.z),
+            z: fmtZ(k.z, lang),
             p: formatP(k.p, lang),
             ampelClass: kappaClass(k.kappa, ruleSet),
           };
@@ -379,13 +412,13 @@ const mod = createModule({
           .map(([id, v]) => {
             const k = v.vsReference.kappa;
             const ci = (k.ci95 && Number.isFinite(k.ci95[0]) && Number.isFinite(k.ci95[1]))
-              ? `[${fmt(k.ci95[0], 3)}, ${fmt(k.ci95[1], 3)}]`
+              ? fmtCI(k.ci95, lang)
               : '—';
             return {
               id,
-              kappa: fmt(k.kappa, 3),
+              kappa: formatNum(k.kappa, 3, lang),
               ci95: ci,
-              z: fmtZ(k.z),
+              z: fmtZ(k.z, lang),
               p: formatP(k.p, lang),
               ampelClass: kappaClass(k.kappa, ruleSet),
             };
@@ -481,7 +514,7 @@ const mod = createModule({
       // Template kann: je Kachel eine Methode für Wert und Unterzeile.
 
       overallBetweenRate() {
-        return fmtPct(this.result?.overall?.betweenAppraisers?.rate);
+        return this.fmtPct(this.result?.overall?.betweenAppraisers?.rate);
       },
 
       overallBetweenSub() {
@@ -494,7 +527,7 @@ const mod = createModule({
       },
 
       overallVsRefRate() {
-        return fmtPct(this.result?.overall?.allVsReference?.rate);
+        return this.fmtPct(this.result?.overall?.allVsReference?.rate);
       },
 
       overallVsRefSub() {
@@ -555,48 +588,16 @@ const mod = createModule({
       // ── Analyse ──────────────────────────────────────────────
 
       /**
-       * Baut das Long-Format-Ratings-Array aus den fünf Spalten und ruft die
-       * Engine. Aktualisiert `this.result` und triggert das Chart-Rendering.
+       * Baut das Long-Format-Ratings-Array (aus dem langen oder breiten
+       * Datenlayout) und ruft die Engine. Aktualisiert `this.result` und triggert das Chart-Rendering.
        */
       runAnalysis() {
-        const cols = this.model.columns;
-        if (!cols.part || !cols.appraiser || !cols.rating) {
-          return this._clearResult();
-        }
-
-        const sm = module._context.stateManager;
-        const parts   = getColumnValues(sm, cols.part)      || [];
-        const apprs   = getColumnValues(sm, cols.appraiser) || [];
-        const ratings = getColumnValues(sm, cols.rating)    || [];
-        const refs    = cols.reference ? (getColumnValues(sm, cols.reference) || []) : null;
-        const reps    = cols.replicate ? (getColumnValues(sm, cols.replicate) || []) : null;
-
-        const N = Math.min(parts.length, apprs.length, ratings.length);
-        if (N === 0) return this._clearResult();
-
-        const rows = [];
-        const referenceMap = {};
-        for (let i = 0; i < N; i++) {
-          if (parts[i] === null || parts[i] === undefined || parts[i] === '') continue;
-          if (apprs[i] === null || apprs[i] === undefined || apprs[i] === '') continue;
-          if (ratings[i] === null || ratings[i] === undefined || ratings[i] === '') continue;
-          const row = {
-            part: String(parts[i]),
-            appraiser: String(apprs[i]),
-            value: String(ratings[i]),
-          };
-          if (reps && reps[i] !== null && reps[i] !== undefined && reps[i] !== '') {
-            const r = Number(reps[i]);
-            row.rep = Number.isFinite(r) ? r : (i + 1);
-          } else {
-            row.rep = null;
-          }
-          rows.push(row);
-          if (refs && refs[i] !== null && refs[i] !== undefined && refs[i] !== '') {
-            referenceMap[String(parts[i])] = String(refs[i]);
-          }
-        }
+        this.layoutError = null;
+        const built = this.model.params.layout === 'wide' ? this._wideRows() : this._longRows();
+        if (!built) return this._clearResult();
+        const { rows, referenceMap } = built;
         if (rows.length === 0) return this._clearResult();
+        const cols = this.model.columns;
 
         // Klassen aus den vorkommenden Bewertungs-Werten ableiten.
         const values = [...new Set(rows.map((r) => r.value))];
@@ -647,6 +648,100 @@ const mod = createModule({
         this._ratingRows = rows;
         const gen = ++this._renderGen;
         this.$nextTick(() => this._renderCharts(result, gen));
+      },
+
+      /**
+       * Long layout: one row per rating from the part / appraiser / rating
+       * (/ reference / replicate) columns. Null when a required column is missing.
+       * @returns {{rows: object[], referenceMap: object}|null}
+       */
+      _longRows() {
+        const cols = this.model.columns;
+        if (!cols.part || !cols.appraiser || !cols.rating) return null;
+
+        const sm = module._context.stateManager;
+        const parts   = getColumnValues(sm, cols.part)      || [];
+        const apprs   = getColumnValues(sm, cols.appraiser) || [];
+        const ratings = getColumnValues(sm, cols.rating)    || [];
+        const refs    = cols.reference ? (getColumnValues(sm, cols.reference) || []) : null;
+        const reps    = cols.replicate ? (getColumnValues(sm, cols.replicate) || []) : null;
+
+        const N = Math.min(parts.length, apprs.length, ratings.length);
+        const rows = [];
+        const referenceMap = {};
+        for (let i = 0; i < N; i++) {
+          if (parts[i] === null || parts[i] === undefined || parts[i] === '') continue;
+          if (apprs[i] === null || apprs[i] === undefined || apprs[i] === '') continue;
+          if (ratings[i] === null || ratings[i] === undefined || ratings[i] === '') continue;
+          const row = {
+            part: String(parts[i]),
+            appraiser: String(apprs[i]),
+            value: String(ratings[i]),
+          };
+          if (reps && reps[i] !== null && reps[i] !== undefined && reps[i] !== '') {
+            const r = Number(reps[i]);
+            row.rep = Number.isFinite(r) ? r : (i + 1);
+          } else {
+            row.rep = null;
+          }
+          rows.push(row);
+          if (refs && refs[i] !== null && refs[i] !== undefined && refs[i] !== '') {
+            referenceMap[String(parts[i])] = String(refs[i]);
+          }
+        }
+        return { rows, referenceMap };
+      },
+
+      /**
+       * Wide layout: one column per appraiser × trial, grouped in worksheet
+       * order by the trials per appraiser (see `stackWide`). Sets `layoutError`
+       * when the trials do not fit the column count.
+       * @returns {{rows: object[], referenceMap: object}|null}
+       */
+      _wideRows() {
+        const cols = this.model.columns;
+        if (!cols.part || cols.ratings.length === 0) return null;
+
+        const sm = module._context.stateManager;
+        const parts = getColumnValues(sm, cols.part) || [];
+        const columns = this._inSheetOrder(cols.ratings).map((ref) => ({
+          name: getColumnName(sm, ref),
+          values: getColumnValues(sm, ref) || [],
+        }));
+        const trialsRaw = String(this.model.params.trials ?? '').trim();
+        const { rows, error } = stackWide({ parts, columns, trials: trialsRaw === '' ? NaN : Number(trialsRaw) });
+        if (error) {
+          const key = error === 'invalidTrials' ? 'errWideInvalidTrials' : 'errWideColumnsNotDivisible';
+          this.layoutError = _t(key, { columns: columns.length, trials: trialsRaw });
+          return null;
+        }
+
+        const refs = cols.reference ? (getColumnValues(sm, cols.reference) || []) : null;
+        const referenceMap = {};
+        if (refs) {
+          for (let i = 0; i < parts.length; i++) {
+            const part = parts[i];
+            const ref = refs[i];
+            if (part === null || part === undefined || part === '') continue;
+            if (ref === null || ref === undefined || ref === '') continue;
+            referenceMap[String(part)] = String(ref);
+          }
+        }
+        return { rows, referenceMap };
+      },
+
+      /**
+       * Column refs sorted by their position in the worksheet (the multi
+       * picker returns them in click order).
+       * @param {Array<{instanceId:string,sheetId:string,columnId:string}>} refs
+       */
+      _inSheetOrder(refs) {
+        const sm = module._context.stateManager;
+        const pos = (ref) => {
+          const sheet = sm.getModuleState(ref.instanceId)?.sheets?.find((sh) => sh.id === ref.sheetId);
+          return (sheet?.state?.columns || []).findIndex((c) => c.id === ref.columnId);
+        };
+        return [...refs].sort((a, b) => pos(a) - pos(b));
       },
 
       _clearResult() {
@@ -723,12 +818,12 @@ const mod = createModule({
         const yMinus = entries.map(([, k]) => (Number.isFinite(k.ci95?.[0]) ? Math.max(0, k.kappa - k.ci95[0]) : 0));
 
         const refLines = [
-          { dir: 'h', value: 0.75, label: 'κ = 0.75', dash: 'dash', width: 1, color: 'var(--color-success, #2ea043)' },
-          { dir: 'h', value: 0.40, label: 'κ = 0.40', dash: 'dash', width: 1, color: 'var(--color-warning, #d29922)' },
+          { dir: 'h', value: 0.75, label: `κ = ${this.fmt(0.75, 2)}`, dash: 'dash', width: 1, color: 'var(--color-success, #2ea043)' },
+          { dir: 'h', value: 0.40, label: `κ = ${this.fmt(0.40, 2)}`, dash: 'dash', width: 1, color: 'var(--color-warning, #d29922)' },
         ];
         const fleiss = res.betweenAppraisers?.fleissKappa?.kappa;
         if (Number.isFinite(fleiss)) {
-          refLines.push({ dir: 'h', value: fleiss, label: `Fleiss κ = ${fleiss.toFixed(3)}`, dash: 'solid', width: 1, color: 'var(--color-info, #58a6ff)' });
+          refLines.push({ dir: 'h', value: fleiss, label: `Fleiss κ = ${this.fmt(fleiss, 3)}`, dash: 'solid', width: 1, color: 'var(--color-info, #58a6ff)' });
         }
 
         const chart = await module._context.chartManager.create(host, 'scatter', {
@@ -926,6 +1021,19 @@ const mod = createModule({
             this._pickers[role].value = this.model.columns[role];
           }
         }
+
+        const wideEl = module._container.querySelector('[data-ref="col-ratings-wrap"]');
+        if (wideEl) {
+          this._pickers.ratings?.destroy();
+          this._pickers.ratings = new ColumnPicker(wideEl, module._context, {
+            mode: 'multi',
+            onChange: (refs) => {
+              this.model.columns.ratings = refs;
+              this.runAnalysis();
+            },
+          });
+          this._pickers.ratings.value = this.model.columns.ratings;
+        }
       },
 
       // ── Lifecycle (per Alpine component) ──────────────────────
@@ -934,7 +1042,7 @@ const mod = createModule({
         // Fresh per-instance collections (das data()-Objekt wird per Alpine.data geteilt).
         this._charts = [];
         this._unsubs = [];
-        this._pickers = { part: null, appraiser: null, rating: null, reference: null, replicate: null };
+        this._pickers = { part: null, appraiser: null, rating: null, reference: null, replicate: null, ratings: null };
 
         this._mountPickers();
 
@@ -949,20 +1057,34 @@ const mod = createModule({
           let touched = false;
           for (const role of Object.keys(this.model.columns)) {
             const r = this.model.columns[role];
+            if (Array.isArray(r)) continue;
             if (r && r.instanceId === instanceId && r.columnId === columnId) {
               this.model.columns[role] = null;
               touched = true;
             }
+          }
+          const ratings = this.model.columns.ratings;
+          const kept = ratings.filter((r) => !(r.instanceId === instanceId && r.columnId === columnId));
+          if (kept.length !== ratings.length) {
+            this.model.columns.ratings = kept;
+            touched = true;
           }
           if (touched) this.runAnalysis();
         };
         const nullOnWorksheetRemoved = ({ instanceId } = {}) => {
           let touched = false;
           for (const role of Object.keys(this.model.columns)) {
+            if (Array.isArray(this.model.columns[role])) continue;
             if (this.model.columns[role]?.instanceId === instanceId) {
               this.model.columns[role] = null;
               touched = true;
             }
+          }
+          const ratings = this.model.columns.ratings;
+          const kept = ratings.filter((r) => r.instanceId !== instanceId);
+          if (kept.length !== ratings.length) {
+            this.model.columns.ratings = kept;
+            touched = true;
           }
           if (touched) this.runAnalysis();
         };
@@ -990,7 +1112,7 @@ const mod = createModule({
         for (const unsub of this._unsubs) unsub();
         this._unsubs = [];
         for (const p of Object.values(this._pickers)) p?.destroy?.();
-        this._pickers = { part: null, appraiser: null, rating: null, reference: null, replicate: null };
+        this._pickers = { part: null, appraiser: null, rating: null, reference: null, replicate: null, ratings: null };
         this._destroyCharts();
       },
     };
@@ -1017,6 +1139,9 @@ mod.loadExample = function loadExample(payload) {
         if (r && r.instanceId === '__source__') {
           next[role] = { ...r, instanceId };
         }
+      }
+      if (Array.isArray(next.ratings)) {
+        next.ratings = next.ratings.map((r) => (r && r.instanceId === '__source__' ? { ...r, instanceId } : r));
       }
       return { ...data, columns: next };
     },

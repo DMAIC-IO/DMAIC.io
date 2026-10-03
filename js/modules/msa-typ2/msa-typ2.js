@@ -205,9 +205,14 @@ const mod = createModule({
       /**
        * Run analysis if all inputs are valid. Missing columns or no usable data
        * clear the results silently; invalid inputs (validation failure) clear
-       * them and show the validation message.
+       * them and show the validation message — unless `showErrors` is false
+       * (debounced typing), so the message only appears once the field is
+       * committed.
+       * @param {{ showErrors?: boolean }} [options]
        */
-      runAnalysis() {
+      runAnalysis({ showErrors = true } = {}) {
+        // A commit supersedes a pending debounced run, which would clear its message.
+        clearTimeout(this._debTimer);
         const refs = this.model.columnRefs;
         if (!refs.part || !refs.measurement) return this.clearResults();
 
@@ -225,7 +230,7 @@ const mod = createModule({
         if (String(p.sigmaHist ?? '').trim() !== '') opts.historicalSigma = this.parseNum(p.sigmaHist);
 
         const v = validate(data, opts);
-        if (!v.valid) return this.clearResults(_t(v.errorKey, v.errorVars || undefined));
+        if (!v.valid) return this.clearResults(showErrors ? _t(v.errorKey, v.errorVars || undefined) : '');
 
         const r = analyze(data, opts);
         this.errorMsg = '';
@@ -236,7 +241,7 @@ const mod = createModule({
 
       scheduleAnalysis() {
         clearTimeout(this._debTimer);
-        this._debTimer = setTimeout(() => this.runAnalysis(), 600);
+        this._debTimer = setTimeout(() => this.runAnalysis({ showErrors: false }), 600);
       },
 
       /** @param {string} [msg] validation message to show ('' clears it) */

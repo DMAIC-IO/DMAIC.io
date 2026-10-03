@@ -2478,6 +2478,32 @@
       ]
     },
     {
+      "id": "msa-typ5-binary-wide",
+      "type": "project",
+      "title": {
+        "de": "MSA Typ 5: binär, breites Datenlayout (Prüfer × Durchgang als Spalten)",
+        "en": "MSA Type 5: binary, wide data layout (appraiser × trial as columns)"
+      },
+      "description": {
+        "de": "Dieselben Daten wie „binär, guter Prüfprozess“, aber eine Spalte je Prüfer und Durchgang (A-1 … C-3), wie in Minitab „mehrere Spalten“. 3 Prüfer × 30 Teile × 3 Durchgänge — gleiche Kennzahlen wie im Langformat.",
+        "en": "The same data as “binary, good gage”, but one column per appraiser and trial (A-1 … C-3), as in Minitab’s “multiple columns”. 3 appraisers × 30 parts × 3 trials — same figures as in the long layout."
+      },
+      "source": "Qprovement synthetisch",
+      "license": "public-domain",
+      "file": "projects/msa-typ5-binary-wide.json",
+      "format": "json",
+      "modules": [
+        "msa-typ5"
+      ],
+      "tags": [
+        "msa",
+        "attribute",
+        "kappa",
+        "binary",
+        "wide-layout"
+      ]
+    },
+    {
       "id": "msa-typ5-binary-marginal",
       "type": "project",
       "title": {
