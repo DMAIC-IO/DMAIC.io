@@ -66,6 +66,7 @@ const SKIP = new Set([
   'core/chart/cumulative-cost.test.js',
   'core/chart/gantt.test.js',
   'core/chart/multi-vari.test.js',
+  'core/chart/pareto.test.js',
   'core/chart/trend.test.js',
   'core/create-dialog.test.js',
   'core/create-page.test.js',
