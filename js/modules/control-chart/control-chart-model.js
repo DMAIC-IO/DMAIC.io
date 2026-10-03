@@ -92,6 +92,44 @@ export class State {
   }
 
   /**
+   * Select the data column. Frozen limits belong to the column they were
+   * computed from, so switching to another column drops them (finding E-009).
+   * @param {object|null} ref column reference
+   * @returns {boolean} true when frozen limits were dropped
+   */
+  setColumn(ref) {
+    const fl = this.frozenLimits;
+    const dropped = !!fl && !!fl.columnRef && !State.sameColumn(fl.columnRef, ref);
+    this.columnRef = ref;
+    if (dropped) this.frozenLimits = null;
+    return dropped;
+  }
+
+  /**
+   * Whether the stored frozen limits apply to the current configuration:
+   * same chart type, subgroup size and column, and no stages. Limits frozen
+   * before the column was recorded carry no columnRef and still apply.
+   * @param {boolean} usingStages stage mode is active
+   * @returns {boolean}
+   */
+  frozenLimitsApply(usingStages) {
+    const fl = this.frozenLimits;
+    if (!fl || usingStages) return false;
+    if (fl.chartTypeId !== this.chartTypeId || fl.subgroupSize !== this.subgroupSize) return false;
+    return !fl.columnRef || State.sameColumn(fl.columnRef, this.columnRef);
+  }
+
+  /**
+   * @param {object|null} a column reference
+   * @param {object|null} b column reference
+   * @returns {boolean} both point at the same worksheet column
+   */
+  static sameColumn(a, b) {
+    if (!a || !b) return false;
+    return a.instanceId === b.instanceId && a.sheetId === b.sheetId && a.columnId === b.columnId;
+  }
+
+  /**
    * Build the frozen-limits payload for Phase-II monitoring from a completed
    * analysis result. Pure given `lastResult`. The caller is responsible for
    * guarding against missing data / active stages.

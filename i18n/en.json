@@ -4414,6 +4414,7 @@
       "phase2Hint": "Phase II locks the current limits and checks new data against them. Only available without stages.",
       "phase2_needsData": "Load data first, then freeze the limits.",
       "phase2_noStages": "Not available in stage mode — clear stages or thaw first.",
+      "phase2_columnChanged": "Different column selected — frozen limits discarded, Phase I recomputes.",
       "annotationTitle": "Annotation for point #{idx}",
       "annotationComment": "Comment / cause",
       "annotationPlaceholder": "e.g. \"tool break on shift 3\"",

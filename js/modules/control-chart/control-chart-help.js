@@ -150,7 +150,7 @@ export default {
           {
             type: 'definition',
             term: 'Phase II — Grenzen einfrieren',
-            content: 'Mit „Grenzen einfrieren" werden die aktuellen Limits gespeichert. Anschließend hinzukommende Daten werden gegen diese fixen Limits geprüft, ohne dass UCL/LCL sich verändern. Über „Auftauen" lässt sich der Live-Modus wieder einschalten.',
+            content: 'Mit „Grenzen einfrieren" werden die aktuellen Limits gespeichert. Anschließend hinzukommende Daten werden gegen diese fixen Limits geprüft, ohne dass UCL/LCL sich verändern. Über „Auftauen" lässt sich der Live-Modus wieder einschalten. Die Grenzen gehören zur Spalte, aus der sie berechnet wurden — wählen Sie eine andere Spalte, werden sie verworfen.',
           },
           {
             type: 'paragraph',
@@ -173,7 +173,7 @@ export default {
           {
             type: 'definition',
             term: 'Phase II — Freeze limits',
-            content: '"Freeze limits" stores the current limits. Subsequent data points are checked against these fixed limits without UCL/LCL changing. "Thaw" returns to the live recompute mode.',
+            content: '"Freeze limits" stores the current limits. Subsequent data points are checked against these fixed limits without UCL/LCL changing. "Thaw" returns to the live recompute mode. The limits belong to the column they were computed from — selecting a different column discards them.',
           },
           {
             type: 'paragraph',

@@ -273,9 +273,7 @@ const mod = createModule({
         const fl = this.model.frozenLimits;
 
         let result;
-        if (fl && !usingStages
-            && fl.chartTypeId === this.model.chartTypeId
-            && fl.subgroupSize === this.model.subgroupSize) {
+        if (this.model.frozenLimitsApply(usingStages)) {
           const fresh = ct.compute(values, n, baselineEnd, undefined, excluded);
           const primaryId = ct.subcharts[0].id;
           const secondaryId = ct.subcharts[1].id;
@@ -539,7 +537,9 @@ const mod = createModule({
           types: ['numeric'],
           minCount: 2,
           onChange: (ref) => {
-            this.model.columnRef = ref;
+            if (this.model.setColumn(ref)) {
+              module._context.notify?.(_t('phase2_columnChanged'), 'info');
+            }
             this.scheduleAnalysis();
           },
         });

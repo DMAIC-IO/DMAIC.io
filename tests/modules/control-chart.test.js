@@ -302,3 +302,64 @@ suite('Control Chart Model — buildFrozenLimits', () => {
     assertEqual(JSON.stringify(fl.excludedIndices), '[4]');
   });
 });
+
+// ── Frozen limits bound to their column (finding E-009) ─────
+
+suite('Control Chart Model — frozen limits follow the column', () => {
+  const colA = { instanceId: 'i', sheetId: 's', columnId: 'a' };
+  const colB = { instanceId: 'i', sheetId: 's', columnId: 'b' };
+  const frozenOn = (ref) => {
+    const s = new State();
+    s.chartTypeId = 'i-mr';
+    s.subgroupSize = 1;
+    s.columnRef = { ...ref };
+    s.frozenLimits = {
+      chartTypeId: 'i-mr', subgroupSize: 1, columnRef: { ...ref },
+      primary: { cl: 10, ucl: 13, lcl: 7, sigma: 1 },
+      secondary: { cl: 1.1, ucl: 3.6, lcl: 0, sigma: 0.4 },
+    };
+    return s;
+  };
+
+  test('frozen limits apply to the column they were frozen on', () => {
+    assertEqual(frozenOn(colA).frozenLimitsApply(false), true);
+  });
+
+  test('frozen limits do not apply once columnRef points elsewhere', () => {
+    const s = frozenOn(colA);
+    s.columnRef = { ...colB };
+    assertEqual(s.frozenLimitsApply(false), false);
+  });
+
+  test('frozen limits do not apply in stage mode or after a type change', () => {
+    assertEqual(frozenOn(colA).frozenLimitsApply(true), false);
+    const s = frozenOn(colA);
+    s.setChartType('xbar-r');
+    assertEqual(s.frozenLimitsApply(false), false);
+  });
+
+  test('legacy frozen limits without columnRef still apply', () => {
+    const s = frozenOn(colA);
+    delete s.frozenLimits.columnRef;
+    assertEqual(s.frozenLimitsApply(false), true);
+  });
+
+  test('setColumn to another column drops the frozen limits', () => {
+    const s = frozenOn(colA);
+    assertEqual(s.setColumn({ ...colB }), true);
+    assertEqual(s.columnRef.columnId, 'b');
+    assertEqual(s.frozenLimits, null);
+  });
+
+  test('setColumn to the same column keeps the frozen limits', () => {
+    const s = frozenOn(colA);
+    assertEqual(s.setColumn({ ...colA }), false);
+    assertEqual(s.frozenLimits === null, false);
+  });
+
+  test('setColumn without frozen limits reports nothing dropped', () => {
+    const s = new State();
+    assertEqual(s.setColumn({ ...colB }), false);
+    assertEqual(s.columnRef.columnId, 'b');
+  });
+});

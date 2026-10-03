@@ -4414,6 +4414,7 @@
       "phase2Hint": "Phase II hält die aktuellen Grenzen fest und prüft neue Datenpunkte gegen sie. Funktioniert nur ohne Stages.",
       "phase2_needsData": "Erst Daten laden, dann Grenzen einfrieren.",
       "phase2_noStages": "Im Stage-Modus nicht möglich — Stages-Eingabe leeren oder erst auftauen.",
+      "phase2_columnChanged": "Andere Spalte gewählt — eingefrorene Grenzen verworfen, Phase I rechnet neu.",
       "annotationTitle": "Annotation für Punkt #{idx}",
       "annotationComment": "Kommentar / Ursache",
       "annotationPlaceholder": "z. B. „Werkzeugbruch in Schicht 3“",
