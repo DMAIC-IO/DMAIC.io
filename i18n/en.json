@@ -2361,7 +2361,14 @@
       "weight": "Customer Importance",
       "legendInfo": "Σ = weighted sum of row / column",
       "paretoTitle": "Input Prioritization",
-      "paretoYLabel": "Σ Row"
+      "paretoYLabel": "Σ Row",
+      "scaleLabel": "Rating scale",
+      "scale_0-10": "0–10",
+      "scale_0-1-3-9": "0 / 1 / 3 / 9",
+      "scale_0-3-7-10": "0 / 3 / 7 / 10",
+      "scoreRejected": "“{value}” is not on the scale — allowed: {allowed}.",
+      "scoreAllowed": "Allowed: {allowed}",
+      "offScale": "{count} rating(s) are not on the new scale and are marked."
     },
     "activity-flowchart": {
       "name": "Activity Flowchart",

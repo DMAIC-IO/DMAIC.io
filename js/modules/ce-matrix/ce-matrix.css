@@ -240,6 +240,18 @@
   background: var(--color-accent-light);
 }
 
+.ce-matrix__score-input--invalid {
+  color: var(--color-error);
+  box-shadow: inset 0 0 0 2px var(--color-error);
+}
+
+.ce-matrix__scale {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  margin-right: var(--spacing-md);
+}
+
 /* ===== Result cells ===== */
 .ce-matrix__result-cell {
   font-family: var(--font-family-mono);

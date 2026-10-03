@@ -4,9 +4,24 @@
  * Pure state + business logic for the Cause & Effect (X-Y) Matrix.
  * No DOM, no i18n, no CSS classes, no view getters — those live in the data-fn.
  *
- * Persisted shape (toJSON / fromJSON), unchanged from the legacy module:
- *   { inputs: string[], outputs: string[], scores: Record<"r-c", 0..9>, weights: number[] }
+ * Persisted shape (toJSON / fromJSON):
+ *   { inputs: string[], outputs: string[], scores: Record<"r-c", number>,
+ *     weights: number[], scale: string }
+ * Data saved before `scale` existed loads with the default 0–10 scale.
  */
+
+/**
+ * Rating scale presets: id → allowed ratings (finding B1-015). The book
+ * rates on 0–10 or on the discrete steps 0/1/3/9 and 0/3/7/10.
+ */
+export const RATING_SCALES = {
+  '0-10': [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+  '0-1-3-9': [0, 1, 3, 9],
+  '0-3-7-10': [0, 3, 7, 10],
+};
+
+/** Default rating scale id. */
+export const DEFAULT_SCALE = '0-10';
 
 /** Clamp a raw weight to the valid 1..10 range, defaulting invalid input to 1. */
 function clampWeight(w) {
@@ -20,8 +35,10 @@ export class State {
   inputs = ['Input 1', 'Input 2', 'Input 3'];
   /** @type {string[]} output (Y) column labels */
   outputs = ['Output 1', 'Output 2', 'Output 3'];
-  /** @type {Record<string, number>} sparse score map keyed "r-c" → 0..9 */
+  /** @type {Record<string, number>} sparse score map keyed "r-c" → rating */
   scores = {};
+  /** @type {string} rating scale id, key of RATING_SCALES */
+  scale = DEFAULT_SCALE;
   /** @type {number[]} customer-importance weight per output (1..10) */
   weights = [1, 1, 1];
 
@@ -37,19 +54,51 @@ export class State {
   }
 
   /**
-   * Set / clear a cell score. Empty / null / NaN clears the cell;
-   * numeric values are clamped to 0..9.
+   * Set / clear a cell score. Empty / null / NaN clears the cell. A rating
+   * outside the active scale is rejected and the cell keeps its value —
+   * never silently clamped (finding B1-015).
+   * @returns {boolean} false when the rating was rejected
    */
   setScore(r, c, val) {
     const k = this.key(r, c);
     if (val === '' || val === null || val === undefined) {
       delete this.scores[k];
-      return;
+      return true;
     }
-    let v = parseInt(val, 10);
-    if (isNaN(v)) { delete this.scores[k]; return; }
-    v = Math.max(0, Math.min(9, v));
+    const v = Number(val);
+    if (Number.isNaN(v)) { delete this.scores[k]; return true; }
+    if (!this.allowedScores().includes(v)) return false;
     this.scores[k] = v;
+    return true;
+  }
+
+  /** @returns {number[]} ratings allowed by the active scale */
+  allowedScores() {
+    return RATING_SCALES[this.scale] || RATING_SCALES[DEFAULT_SCALE];
+  }
+
+  /**
+   * Switch the rating scale. Existing ratings are kept; ratings the new
+   * scale does not allow are reported via `offScaleCount()` / `isOnScale()`.
+   * @param {string} id key of RATING_SCALES
+   * @returns {boolean} false for an unknown id
+   */
+  setScale(id) {
+    if (!Object.hasOwn(RATING_SCALES, id)) return false;
+    this.scale = id;
+    return true;
+  }
+
+  /** @returns {boolean} the stored rating at (r,c) is allowed (unset counts as allowed) */
+  isOnScale(r, c) {
+    const v = this.scores[this.key(r, c)];
+    return v === undefined || this.allowedScores().includes(v);
+  }
+
+  /** @returns {number} stored ratings that the active scale does not allow */
+  offScaleCount() {
+    const allowed = this.allowedScores();
+    return Object.values(this.scores).filter(v => !allowed.includes(v)).length;
   }
 
   /** @returns {number} weight for output c, defaulting to 1 */
@@ -144,6 +193,7 @@ export class State {
       outputs: [...this.outputs],
       scores: { ...this.scores },
       weights: [...this.weights],
+      scale: this.scale,
     };
   }
 
@@ -170,6 +220,8 @@ export class State {
     } else {
       s.weights = [];
     }
+    if (typeof d.scale === 'string') s.setScale(d.scale);
+
     // Pad weights to match the output count (legacy seeded defaults to 1).
     while (s.weights.length < s.outputs.length) s.weights.push(1);
 

@@ -2361,7 +2361,14 @@
       "weight": "Wichtigkeit für Kunden",
       "legendInfo": "Σ = gewichtete Summe der Zeile / Spalte",
       "paretoTitle": "Priorisierung der Inputs",
-      "paretoYLabel": "Σ Zeile"
+      "paretoYLabel": "Σ Zeile",
+      "scaleLabel": "Bewertungsskala",
+      "scale_0-10": "0–10",
+      "scale_0-1-3-9": "0 / 1 / 3 / 9",
+      "scale_0-3-7-10": "0 / 3 / 7 / 10",
+      "scoreRejected": "„{value}“ liegt nicht auf der Skala — erlaubt: {allowed}.",
+      "scoreAllowed": "Erlaubt: {allowed}",
+      "offScale": "{count} Bewertung(en) liegen nicht auf der neuen Skala und sind markiert."
     },
     "activity-flowchart": {
       "name": "Activity Flowchart",

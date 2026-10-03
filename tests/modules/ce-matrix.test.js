@@ -128,12 +128,20 @@ suite('C&E Matrix Model — score handling', () => {
     assertEqual(s.scores['1-2'], 7);
   });
 
-  test('setScore clamps to 0..9', () => {
+  test('setScore accepts 10 on the default 0–10 scale (B1-015)', () => {
     const s = new State();
-    s.setScore(0, 0, 15);
-    assertEqual(s.getScore(0, 0), 9);
-    s.setScore(0, 0, -5);
-    assertEqual(s.getScore(0, 0), 0);
+    assertEqual(s.scale, '0-10');
+    assertEqual(s.setScore(0, 0, 10), true);
+    assertEqual(s.getScore(0, 0), 10);
+  });
+
+  test('setScore rejects off-scale values instead of clamping', () => {
+    const s = new State();
+    s.setScore(0, 0, 4);
+    assertEqual(s.setScore(0, 0, 15), false);
+    assertEqual(s.getScore(0, 0), 4);
+    assertEqual(s.setScore(0, 0, -5), false);
+    assertEqual(s.getScore(0, 0), 4);
   });
 
   test('setScore with empty string deletes the cell', () => {
@@ -275,5 +283,62 @@ suite('C&E Matrix Model — hasContent', () => {
     s.inputs = ['A'];
     s.outputs = [];
     assertEqual(s.hasContent(), true);
+  });
+});
+
+// ── Rating scale (finding B1-015) ───────────────────────────
+
+suite('C&E Matrix Model — rating scale', () => {
+  test('presets list their allowed ratings', () => {
+    const s = new State();
+    assertEqual(JSON.stringify(s.allowedScores()), '[0,1,2,3,4,5,6,7,8,9,10]');
+    s.setScale('0-1-3-9');
+    assertEqual(JSON.stringify(s.allowedScores()), '[0,1,3,9]');
+    s.setScale('0-3-7-10');
+    assertEqual(JSON.stringify(s.allowedScores()), '[0,3,7,10]');
+  });
+
+  test('a discrete scale rejects ratings between its steps', () => {
+    const s = new State();
+    s.setScale('0-1-3-9');
+    assertEqual(s.setScore(0, 0, 5), false);
+    assertEqual(s.scores['0-0'], undefined);
+    assertEqual(s.setScore(0, 0, 9), true);
+    assertEqual(s.getScore(0, 0), 9);
+  });
+
+  test('unknown scale ids are ignored', () => {
+    const s = new State();
+    assertEqual(s.setScale('0-5'), false);
+    assertEqual(s.scale, '0-10');
+  });
+
+  test('switching scale keeps existing ratings and counts the off-scale ones', () => {
+    const s = new State();
+    s.setScore(0, 0, 10); s.setScore(0, 1, 7); s.setScore(1, 0, 5);
+    s.setScale('0-3-7-10');
+    assertEqual(s.getScore(1, 0), 5);
+    assertEqual(s.offScaleCount(), 1);
+    assertEqual(s.isOnScale(1, 0), false);
+    assertEqual(s.isOnScale(0, 0), true);
+  });
+
+  test('book example (Melzer Fig 3.2): a 10 keeps Größe Halter ahead', () => {
+    const s = new State();
+    s.outputs = ['Y1', 'Y2', 'Y3', 'Y4'];
+    s.weights = [7, 10, 5, 3];
+    s.inputs = ['Größe Halter', 'Form der Substrate'];
+    [10, 7, 10, 3].forEach((v, c) => s.setScore(0, c, v));
+    [10, 7, 7, 7].forEach((v, c) => s.setScore(1, c, v));
+    assertEqual(s.rowSum(0), 199);
+    assertEqual(s.rowSum(1), 196);
+  });
+
+  test('scale round-trips; legacy data without scale loads as 0–10', () => {
+    const s = new State();
+    s.setScale('0-1-3-9');
+    assertEqual(State.fromJSON(s.toJSON()).scale, '0-1-3-9');
+    assertEqual(State.fromJSON({ inputs: ['a'], outputs: ['b'] }).scale, '0-10');
+    assertEqual(State.fromJSON({ scale: 'bogus' }).scale, '0-10');
   });
 });

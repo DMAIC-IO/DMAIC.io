@@ -17,7 +17,7 @@ import {
   downloadFile, ensureXLSX, XLSX,
   exportTableAsPNG, exportTableAsSVG,
 } from '../../core/export-utils.js';
-import { State } from './ce-matrix-model.js';
+import { State, RATING_SCALES } from './ce-matrix-model.js';
 
 // ─── Color scale (green → yellow → red) — view only ───────────
 
@@ -85,6 +85,9 @@ export default createModule({
     return {
       // ── Static view data ──────────────────────────────────────
       weightOptions: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+      scaleIds: Object.keys(RATING_SCALES),
+      /** @type {Record<string, true>} cells whose last typed rating was rejected */
+      rejectedCells: {},
 
       /** @type {any} live Pareto chart of Row Sums (right of the matrix). */
       _paretoChart: null,
@@ -115,7 +118,36 @@ export default createModule({
 
       // ── Event handlers ────────────────────────────────────────
       scoreInput(r, c, event) {
-        this.model.setScore(r, c, event.target.value);
+        const k = this.model.key(r, c);
+        if (this.model.setScore(r, c, event.target.value)) {
+          delete this.rejectedCells[k];
+          return;
+        }
+        this.rejectedCells[k] = true;
+        module._context.notify?.(_t('scoreRejected', {
+          value: event.target.value, allowed: this.model.allowedScores().join(', '),
+        }), 'warning');
+      },
+      scaleChanged(event) {
+        if (!this.model.setScale(event.target.value)) return;
+        this.rejectedCells = {};
+        const off = this.model.offScaleCount();
+        if (off > 0) module._context.notify?.(_t('offScale', { count: off }), 'warning');
+      },
+      scoreMax() {
+        const allowed = this.model.allowedScores();
+        return allowed[allowed.length - 1];
+      },
+      _scoreFlagged(r, c) {
+        return !!this.rejectedCells[this.model.key(r, c)] || !this.model.isOnScale(r, c);
+      },
+      scoreClass(r, c) {
+        return this._scoreFlagged(r, c) ? 'ce-matrix__score-input--invalid' : '';
+      },
+      scoreTitle(r, c) {
+        return this._scoreFlagged(r, c)
+          ? _t('scoreAllowed', { allowed: this.model.allowedScores().join(', ') })
+          : '';
       },
       inputNameChanged(r, event) {
         this.model.inputs[r] = event.target.value;
@@ -252,6 +284,7 @@ export default createModule({
           title: this.t('paretoTitle'),
           yLabel: this.t('paretoYLabel'),
           items: this._paretoItems(),
+          otherBucket: true,
           showLegend: false,
         });
       },

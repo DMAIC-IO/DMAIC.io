@@ -57,8 +57,10 @@
               </td>
               <template x-for="(out, c) in model.outputs">
                 <td class="ce-matrix__score-cell" :key="'s-' + r + '-' + c">
-                  <input type="number" min="0" max="9"
+                  <input type="number" min="0" :max="scoreMax()"
                          class="ce-matrix__score-input"
+                         :class="scoreClass(r, c)"
+                         :title="scoreTitle(r, c)"
                          :value="scoreDisplay(r, c)"
                          :data-r="r" :data-c="c"
                          @input="scoreInput(r, c, $event)"
@@ -89,6 +91,14 @@
     <div class="ce-matrix__pareto" data-ref="pareto-host"></div>
 
     <div class="ce-matrix__legend">
+      <label class="ce-matrix__scale">
+        <span x-text="t('scaleLabel')"></span>
+        <select class="field field--xs ce-matrix__scale-select" @change="scaleChanged($event)">
+          <template x-for="id in scaleIds">
+            <option :key="id" :value="id" :selected="id === model.scale" x-text="t('scale_' + id)"></option>
+          </template>
+        </select>
+      </label>
       <span class="ce-matrix__legend-label" x-text="t('legendLow')"></span>
       <div class="ce-matrix__legend-bar"></div>
       <span class="ce-matrix__legend-label" x-text="t('legendHigh')"></span>
