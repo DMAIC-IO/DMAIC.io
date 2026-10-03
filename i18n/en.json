@@ -671,6 +671,9 @@
   },
   "chart": {
     "renderError": "The chart could not be drawn.",
+    "pareto": {
+      "other": "Other"
+    },
     "editor": {
       "title": "Title",
       "showTitle": "Show title",

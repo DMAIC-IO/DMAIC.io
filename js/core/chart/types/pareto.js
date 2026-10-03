@@ -68,9 +68,11 @@ export default class ParetoChart extends ChartBase {
       // When true and the data has more than `maxItems` categories, keep
       // the top `maxItems - 1` and aggregate the tail into one "Sonstige"
       // bucket appended at the end (so the bar count stays ≤ maxItems).
-      // Default off for backward compatibility — existing callers truncate.
+      // Default off for backward compatibility — existing callers truncate;
+      // the cumulative line still refers to the grand total of all items.
       otherBucket: false,
-      otherLabel: 'Sonstige',
+      // null → i18n `chart.pareto.other`
+      otherLabel: null,
       otherColor: 'var(--color-text-tertiary)',
       yMin: 0,
       barOpacity: 0.75,
@@ -170,12 +172,17 @@ export default class ParetoChart extends ChartBase {
    * @private
    */
   _applyTopNBucket(items, max, bucket) {
-    if (!bucket || items.length <= max) return items.slice(0, max);
+    const grandTotal = items.reduce((s, d) => s + (d.value || 0), 0);
+    if (!bucket || items.length <= max) {
+      const kept = items.slice(0, max);
+      kept.grandTotal = grandTotal;
+      return kept;
+    }
     const head = items.slice(0, max - 1);
     const tail = items.slice(max - 1);
     const tailValue = tail.reduce((s, d) => s + (d.value || 0), 0);
     const otherItem = {
-      name: this.config.otherLabel || 'Sonstige',
+      name: this.config.otherLabel || this._otherLabel(),
       value: tailValue,
       color: this.config.otherColor,
       _bucketSize: tail.length,
@@ -189,7 +196,33 @@ export default class ParetoChart extends ChartBase {
         color: this.config.otherColor,
       }];
     }
-    return [...head, otherItem];
+    const bucketed = [...head, otherItem];
+    bucketed.grandTotal = grandTotal;
+    return bucketed;
+  }
+
+  /**
+   * Translated default label of the "other" bucket.
+   * @private
+   */
+  _otherLabel() {
+    return this.context?.i18n?.t('chart.pareto.other') ?? 'chart.pareto.other';
+  }
+
+  /**
+   * Cumulative share of each displayed bar in percent of the grand total of
+   * all categories — including those cut off by `maxItems` (findings A-010,
+   * B1-016). With nothing cut off the last bar closes at 100 %.
+   * @param {Array<{value:number}>} items output of `_getItems()`
+   * @returns {number[]}
+   */
+  _cumulativePercents(items) {
+    const total = items.grandTotal ?? items.reduce((s, d) => s + d.value, 0);
+    let cumSum = 0;
+    return items.map(d => {
+      cumSum += d.value;
+      return total > 0 ? (cumSum / total) * 100 : 0;
+    });
   }
 
   // ── Abstract Implementation: Data Extent ──────────────────────
@@ -218,7 +251,7 @@ export default class ParetoChart extends ChartBase {
     this._items = items;
 
     const cfg = this.config;
-    const totalValue = items.reduce((s, d) => s + d.value, 0);
+    const totalValue = items.grandTotal ?? items.reduce((s, d) => s + d.value, 0);
     const barWidth = Math.min(40, (plotArea.w / items.length) * 0.65);
     const cumColor = resolveColor(cfg.cumulativeColor || CUM_COLOR);
 
@@ -296,13 +329,8 @@ export default class ParetoChart extends ChartBase {
       // Scale goes to 105% so the 100% point is not clipped at the top edge
       const cumScale = (pct) => plotArea.y + plotArea.h - (pct / 105) * plotArea.h;
 
-      let cumSum = 0;
-      const pts = [];
-      items.forEach((d, i) => {
-        cumSum += d.value;
-        const pct = (cumSum / totalValue) * 100;
-        pts.push({ x: xScale(i), y: cumScale(pct), pct });
-      });
+      const pcts = this._cumulativePercents(items);
+      const pts = items.map((d, i) => ({ x: xScale(i), y: cumScale(pcts[i]), pct: pcts[i] }));
 
       // Cumulative line
       const polyPoints = pts.map(p => `${p.x},${p.y}`).join(' ');
@@ -510,10 +538,7 @@ export default class ParetoChart extends ChartBase {
     const d = items[idx];
     if (dataY < 0 || dataY > d.value * 1.15) return [];
 
-    const totalValue = items.reduce((s, it) => s + it.value, 0);
-    let cumSum = 0;
-    for (let i = 0; i <= idx; i++) cumSum += items[i].value;
-    const cumPct = totalValue > 0 ? ((cumSum / totalValue) * 100).toFixed(1) : '0';
+    const cumPct = this._cumulativePercents(items)[idx].toFixed(1);
 
     // Stacked: which segment is the cursor's data-y inside?
     let hitSegment = null;

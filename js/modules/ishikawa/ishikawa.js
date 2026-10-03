@@ -1164,7 +1164,7 @@ const mod = createModule({
           return;
         }
         this.paretoEmptyMsg = '';
-        const items = data.slice(0, 20).map(d => {
+        const items = data.map(d => {
           const catObj = CATS.find(c => c.key === d.cat);
           return { name: d.name, value: d.avg, color: catObj ? catObj.color : undefined };
         });
@@ -1172,6 +1172,7 @@ const mod = createModule({
         const gen = ++this._renderGen;
         const chart = await module._context.chartManager.create(container, 'pareto', {
           items,
+          otherBucket: true,
           title: _t('paretoTitle'),
           yLabel: _t('paretoYAxisLabel'),
           rightYLabel: _t('paretoCumLabel'),

@@ -671,6 +671,9 @@
   },
   "chart": {
     "renderError": "Diagramm konnte nicht gezeichnet werden.",
+    "pareto": {
+      "other": "Sonstige"
+    },
     "editor": {
       "title": "Überschrift",
       "showTitle": "Überschrift anzeigen",
