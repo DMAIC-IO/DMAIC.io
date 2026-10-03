@@ -2860,7 +2860,7 @@ body.training-area-open .dmaic-tiles {
    die 8D-Reihe. Dieses `padding-left: 0` (vorher `--spacing-2xs`, 2px) ist
    einer der Innenabstände, die das dafür zurückgeben, statt den Chevron zu
    schrumpfen oder die aktive Kachel weiter auf ihre Ellipse zu drücken. */
-.dmaic-tiles--collapsed .dmaic-tile:not(.dmaic-tile--active):not(.dmaic-tile--virtual) > .dmaic-tile__inner .dmaic-tile__left .dmaic-tile__body {
+.dmaic-tiles--collapsed .dmaic-tile:not(.dmaic-tile--active, .dmaic-tile--virtual) > .dmaic-tile__inner .dmaic-tile__left .dmaic-tile__body {
   gap: 0;
   padding-left: 0;
   padding-right: 0;
@@ -2958,6 +2958,7 @@ body.training-area-open .dmaic-tiles {
   position: absolute;
   top: 100%;
   left: 50%;
+
   /* `--flyout-shift` setzt `_clampFlyout()`, damit das Flyout am Fensterrand
      nicht aus dem Fenster ragt. */
   transform: translateX(calc(-50% + var(--flyout-shift, 0px)));
