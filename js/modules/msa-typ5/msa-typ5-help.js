@@ -455,7 +455,7 @@ export default {
           },
           {
             type: 'paragraph',
-            content: 'Bewertet wird wie in Heft 10 (2019, Verfahren 7, S. 29) das **kleinste** von vier Fleiss κ: zwischen den Prüfern, innerhalb jedes Prüfers, jeder Prüfer gegen die Referenz und alle Prüfer gemeinsam gegen die Referenz. Gegen die Referenz zählt die Referenz als ein weiterer Bewerter neben den Durchgängen. Grenzen: ≥ 0,9 fähig, ≥ 0,7 bedingt fähig, darunter nicht fähig. Die Tabelle „κ vs. Referenz“ zeigt weiterhin Cohens κ nach AIAG; der Wert im Urteil kann davon abweichen. Die κ-Ampeln in den Ergebnistabellen folgen den Grenzen der gewählten Regel.',
+            content: 'Bewertet wird wie in Heft 10 (2019, Verfahren 7, S. 29) das **kleinste** von vier Fleiss κ: zwischen den Prüfern, innerhalb jedes Prüfers, jeder Prüfer gegen die Referenz und alle Prüfer gemeinsam gegen die Referenz. Gegen die Referenz zählt die Referenz als ein weiterer Bewerter neben den Durchgängen. Grenzen: ≥ 0,9 fähig, ≥ 0,7 bedingt fähig, darunter nicht fähig. Die Tabelle „κ vs. Referenz“ und die Kachel „Ø κ vs. Referenz“ zeigen unter Bosch dieses Fleiss κ je Prüfer, unter AIAG Cohens κ. Für Fleiss κ gibt es nur einen z-Test, kein Konfidenzintervall. Die κ-Ampeln in den Ergebnistabellen folgen den Grenzen der gewählten Regel.',
           },
           {
             type: 'definition',
@@ -499,7 +499,7 @@ export default {
           },
           {
             type: 'paragraph',
-            content: 'As in Heft 10 (2019, Verfahren 7, p. 29), the **smallest** of four Fleiss κ is rated: between appraisers, within each appraiser, each appraiser vs. reference and all appraisers together vs. reference. Against the reference, the reference counts as one more rater beside the trials. Limits: ≥ 0.9 capable, ≥ 0.7 conditionally capable, below that not capable. The "κ vs. reference" table still shows Cohen\'s κ per AIAG; the value in the verdict may differ from it. The κ dots in the result tables follow the limits of the selected rule.',
+            content: 'As in Heft 10 (2019, Verfahren 7, p. 29), the **smallest** of four Fleiss κ is rated: between appraisers, within each appraiser, each appraiser vs. reference and all appraisers together vs. reference. Against the reference, the reference counts as one more rater beside the trials. Limits: ≥ 0.9 capable, ≥ 0.7 conditionally capable, below that not capable. Under Bosch, the "κ vs. reference" table and the "Avg. κ vs. reference" tile show this Fleiss κ per appraiser, under AIAG Cohen\'s κ. Fleiss κ comes with a z test only, not a confidence interval. The κ dots in the result tables follow the limits of the selected rule.',
           },
           {
             type: 'definition',

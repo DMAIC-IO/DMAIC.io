@@ -323,7 +323,16 @@ const mod = createModule({
 
       _repRates()   { return Object.values(this.result?.perAppraiser || {}).map((x) => x.repeatability?.rate).filter(Number.isFinite); },
       _effRates()   { return Object.values(this.result?.perAppraiser || {}).map((x) => x.vsReference?.effectiveness?.rate).filter(Number.isFinite); },
-      _kappaVsRefs(){ return Object.values(this.result?.perAppraiser || {}).map((x) => x.vsReference?.kappa?.kappa).filter(Number.isFinite); },
+      _kappaVsRefs(){ return Object.values(this.result?.perAppraiser || {}).map((x) => this._kappaVsRef(x)?.kappa).filter(Number.isFinite); },
+
+      /**
+       * κ of one appraiser vs. the reference under the active rule set:
+       * Bosch rates Fleiss κ with the reference as one more rater, AIAG
+       * reports Cohen κ.
+       */
+      _kappaVsRef(v) {
+        return this.result?.verdict?.ruleSet === 'bosch' ? v.vsReference?.fleissKappa : v.vsReference?.kappa;
+      },
 
       meanRepeatability() { return mean(this._repRates()); },
       meanEffectiveness() { return mean(this._effRates()); },
@@ -402,15 +411,20 @@ const mod = createModule({
         });
       },
 
+      /** Header of the κ column in the vs-reference table. */
+      vsRefKappaHeader() {
+        return _t(this.result?.verdict?.ruleSet === 'bosch' ? 'table.fleissKappa' : 'table.cohenKappa');
+      },
+
       vsRefRows() {
         const per = this.result?.perAppraiser;
         if (!per) return [];
         const lang = this._lang();
         const ruleSet = this.result.verdict?.ruleSet;
         return Object.entries(per)
-          .filter(([, v]) => v.vsReference?.kappa)
+          .filter(([, v]) => this._kappaVsRef(v))
           .map(([id, v]) => {
-            const k = v.vsReference.kappa;
+            const k = this._kappaVsRef(v);
             const ci = (k.ci95 && Number.isFinite(k.ci95[0]) && Number.isFinite(k.ci95[1]))
               ? fmtCI(k.ci95, lang)
               : '—';

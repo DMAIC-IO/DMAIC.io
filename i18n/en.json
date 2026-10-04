@@ -1758,6 +1758,7 @@
         "biasRate": "Bias",
         "pair": "Pair",
         "cohenKappa": "Cohen κ",
+        "fleissKappa": "Fleiss κ",
         "ci95": "95 % CI",
         "verdict": "Verdict",
         "vsReference": "κ vs. reference",
