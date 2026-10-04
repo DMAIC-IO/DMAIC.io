@@ -7,7 +7,7 @@
   "category": "capability",
   "subcategory": null,
   "status": "validated",
-  "version": "1.1.0",
+  "version": "1.1.1",
 
   "description": {
     "short": {
@@ -398,6 +398,16 @@
 
   "changelog": [
     {
+      "version": "1.1.1",
+      "date": "2026-10-04",
+      "type": "fix",
+      "description": {
+        "de": "Die Ppk-Näherung wird korrekt Bissell (1990) zugeschrieben statt Kushler-Hurley; Formel mit N und N − 1 Freiheitsgraden geschrieben. Rechnung unverändert.",
+        "en": "The Ppk approximation is now correctly attributed to Bissell (1990) instead of Kushler-Hurley; formula written with N and N − 1 degrees of freedom. Computation unchanged."
+      },
+      "breaking": false
+    },
+    {
       "version": "1.1.0",
       "date": "2026-09-26",
       "type": "fix",
@@ -412,8 +422,8 @@
       "date": "2026-04-11",
       "type": "initial",
       "description": {
-        "de": "Erstimplementierung mit Pp, Ppk, PPU, PPL und Konfidenzintervallen (χ² für Pp, Bissell 1990 für Ppk)",
-        "en": "Initial implementation with Pp, Ppk, PPU, PPL and confidence intervals (χ² for Pp, Bissell 1990 for Ppk)"
+        "de": "Erstimplementierung mit Pp, Ppk, PPU, PPL und Konfidenzintervallen (χ² für Pp, Kushler-Hurley für Ppk)",
+        "en": "Initial implementation with Pp, Ppk, PPU, PPL and confidence intervals (χ² for Pp, Kushler-Hurley for Ppk)"
       },
       "breaking": false
     }

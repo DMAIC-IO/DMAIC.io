@@ -7,7 +7,7 @@
   "category": "capability",
   "subcategory": null,
   "status": "validated",
-  "version": "1.2.0",
+  "version": "1.3.0",
 
   "description": {
     "short": {
@@ -488,6 +488,16 @@
 
   "changelog": [
     {
+      "version": "1.3.0",
+      "date": "2026-10-04",
+      "type": "feature",
+      "description": {
+        "de": "Optionaler Parameter options (withinMethod, unbiased, mrSpan) wählt den Schätzer für σ innerhalb (gepoolt, R̄/d2, S̄/c4; MR̄, Median MR, √MSSD für Einzelwerte); ohne Angabe gilt wie bisher gepoolt bzw. MR̄/d2. Die Konfidenzintervalle für Cp und Cpk rechnen mit den Freiheitsgraden ν des Schätzers statt mit n − 1. Die Cpk-Näherung wird korrekt Bissell (1990) zugeschrieben statt Kushler-Hurley.",
+        "en": "Optional parameter options (withinMethod, unbiased, mrSpan) selects the σ within estimator (pooled, R̄/d2, S̄/c4; MR̄, median MR, √MSSD for individuals); without it, pooled or MR̄/d2 as before. The Cp and Cpk confidence intervals use the estimator's degrees of freedom ν instead of n − 1. The Cpk approximation is now correctly attributed to Bissell (1990) instead of Kushler-Hurley."
+      },
+      "breaking": false
+    },
+    {
       "version": "1.2.0",
       "date": "2026-09-26",
       "type": "fix",
@@ -502,8 +512,8 @@
       "date": "2026-03-22",
       "type": "feature",
       "description": {
-        "de": "Konfidenzintervalle für Cp (exakt, χ²) und Cpk (Bissell 1990) ergänzt",
-        "en": "Added confidence intervals for Cp (exact, χ²) and Cpk (Bissell 1990)"
+        "de": "Konfidenzintervalle für Cp (exakt, χ²) und Cpk (Kushler-Hurley) ergänzt",
+        "en": "Added confidence intervals for Cp (exact, χ²) and Cpk (Kushler-Hurley)"
       },
       "breaking": false
     },
