@@ -136,11 +136,12 @@ export class State {
     return this.embeddedValues ? 'size' : this.params.subgroupMode;
   }
 
-  /** @returns {boolean} value and ID column are set and on the same sheet. */
+  /** @returns {boolean} value and ID column are set, on the same sheet and distinct. */
   subgroupColumnMatches() {
     const a = this.columnRef;
     const b = this.subgroupColumnRef;
-    return Boolean(a && b && a.instanceId === b.instanceId && a.sheetId === b.sheetId);
+    return Boolean(a && b && a.instanceId === b.instanceId && a.sheetId === b.sheetId
+      && a.columnId !== b.columnId);
   }
 
   /** Reset embedded-example mode. */

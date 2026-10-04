@@ -2074,8 +2074,8 @@
         "sqrtMSSD": "Square root of MSSD"
       },
       "mrSpanLabel": "Moving range span w",
-      "unbiasedLabel": "Use unbiasing constant (c4)",
-      "methodFallbackHint": "„{method}“ needs {kind}; these data use „{fallback}“.",
+      "unbiasedLabel": "Use unbiasing constant (c4 or c4′)",
+      "methodFallbackHint": "“{method}” needs {kind}; these data use “{fallback}”.",
       "kindSubgroups": "subgroups with at least two values",
       "kindIndividuals": "individual values",
       "errWithinSubgroupTooLarge": "R̄/d2 is tabulated for subgroups of up to 100 values.",

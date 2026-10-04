@@ -72,18 +72,18 @@
       },
       {
         "label": "CI(Cp)",
-        "latex": "CI(C_p) = \\left[\\; C_p \\sqrt{\\frac{\\chi^2_{\\alpha/2,\\,n-1}}{n-1}} \\;,\\; C_p \\sqrt{\\frac{\\chi^2_{1-\\alpha/2,\\,n-1}}{n-1}} \\;\\right]",
+        "latex": "CI(C_p) = \\left[\\; C_p \\sqrt{\\frac{\\chi^2_{\\alpha/2,\\,\\nu}}{\\nu}} \\;,\\; C_p \\sqrt{\\frac{\\chi^2_{1-\\alpha/2,\\,\\nu}}{\\nu}} \\;\\right], \\quad \\nu = \\sum_i (n_i - 1) \\;\\text{(subgroups)}, \\;\\; \\nu = N - 1 \\;\\text{(individuals)}",
         "description": {
-          "de": "Exaktes Konfidenzintervall für Cp basierend auf der Chi-Quadrat-Verteilung (α = 1 − Konfidenzniveau)",
-          "en": "Exact confidence interval for Cp based on the chi-squared distribution (α = 1 − confidence level)"
+          "de": "Exaktes Konfidenzintervall für Cp basierend auf der Chi-Quadrat-Verteilung mit den Freiheitsgraden ν des σ-innerhalb-Schätzers: ν = Σ(nᵢ−1) bei Untergruppen, ν = N−1 bei Einzelwerten (α = 1 − Konfidenzniveau)",
+          "en": "Exact confidence interval for Cp based on the chi-squared distribution with the degrees of freedom ν of the σ within estimator: ν = Σ(nᵢ−1) with subgroups, ν = N−1 for individuals (α = 1 − confidence level)"
         }
       },
       {
         "label": "CI(Cpk)",
-        "latex": "CI(C_{pk}) = C_{pk} \\pm z_{1-\\alpha/2} \\cdot \\sqrt{\\frac{1}{9n} + \\frac{C_{pk}^2}{2(n-1)}}",
+        "latex": "CI(C_{pk}) = C_{pk} \\pm z_{1-\\alpha/2} \\cdot \\sqrt{\\frac{1}{9N} + \\frac{C_{pk}^2}{2\\nu}}, \\quad \\nu = \\sum_i (n_i - 1) \\;\\text{(subgroups)}, \\;\\; \\nu = N - 1 \\;\\text{(individuals)}",
         "description": {
-          "de": "Approximatives Konfidenzintervall für Cpk nach Kushler & Hurley (Normalapproximation)",
-          "en": "Approximate confidence interval for Cpk per Kushler & Hurley (normal approximation)"
+          "de": "Approximatives Konfidenzintervall für Cpk nach Bissell (1990) (Normalapproximation) mit den Freiheitsgraden ν des σ-innerhalb-Schätzers",
+          "en": "Approximate confidence interval for Cpk per Bissell (1990) (normal approximation) with the degrees of freedom ν of the σ within estimator"
         }
       },
       {
@@ -133,7 +133,7 @@
         "chapter": "Chapter 7"
       },
       {
-        "source": "Kushler, R. & Hurley, P. (1992), Confidence Bounds for Capability Indices, Journal of Quality Technology, 24(4), 188–195"
+        "source": "Bissell, A. F. (1990), How Reliable Is Your Capability Index?, Journal of the Royal Statistical Society, Series C (Applied Statistics), 39(3), 331–340"
       },
       {
         "source": "Wilson, E.B. & Hilferty, M.M. (1931), The Distribution of Chi-Square, PNAS, 17(12), 684–688"
@@ -239,8 +239,8 @@
           "CpkCI": {
             "type": "[number,number]|null",
             "description": {
-              "de": "Konfidenzintervall für Cpk (Kushler-Hurley-Approximation)",
-              "en": "Confidence interval for Cpk (Kushler-Hurley approximation)"
+              "de": "Konfidenzintervall für Cpk (Bissell-Approximation, 1990)",
+              "en": "Confidence interval for Cpk (Bissell approximation, 1990)"
             }
           },
           "PpCI": {
@@ -502,8 +502,8 @@
       "date": "2026-03-22",
       "type": "feature",
       "description": {
-        "de": "Konfidenzintervalle für Cp (exakt, χ²) und Cpk (Kushler-Hurley) ergänzt",
-        "en": "Added confidence intervals for Cp (exact, χ²) and Cpk (Kushler-Hurley)"
+        "de": "Konfidenzintervalle für Cp (exakt, χ²) und Cpk (Bissell 1990) ergänzt",
+        "en": "Added confidence intervals for Cp (exact, χ²) and Cpk (Bissell 1990)"
       },
       "breaking": false
     },

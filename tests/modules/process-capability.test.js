@@ -320,4 +320,11 @@ suite('Process Capability Model — σ within estimator and subgroup column', ()
     s.columnRef = { instanceId: 'i1', sheetId: 's2', columnId: 'c1' };
     assertEqual(s.subgroupColumnMatches(), false);
   });
+
+  test('the ID column must differ from the value column', () => {
+    const s = new State();
+    s.columnRef = { instanceId: 'i1', sheetId: 's1', columnId: 'c1' };
+    s.subgroupColumnRef = { instanceId: 'i1', sheetId: 's1', columnId: 'c1' };
+    assertEqual(s.subgroupColumnMatches(), false);
+  });
 });

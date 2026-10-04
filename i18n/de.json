@@ -2074,7 +2074,7 @@
         "sqrtMSSD": "Wurzel aus MSSD"
       },
       "mrSpanLabel": "MR-Spannweite w",
-      "unbiasedLabel": "Biaskorrektur (c4) verwenden",
+      "unbiasedLabel": "Biaskorrektur (c4 bzw. c4′) verwenden",
       "methodFallbackHint": "„{method}“ braucht {kind}; für diese Daten gilt „{fallback}“.",
       "kindSubgroups": "Untergruppen mit mindestens zwei Werten",
       "kindIndividuals": "Einzelwerte",

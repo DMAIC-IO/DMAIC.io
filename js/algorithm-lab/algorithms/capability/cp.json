@@ -64,10 +64,10 @@
       },
       {
         "label": "CI(Cp)",
-        "latex": "CI(C_p) = \\left[\\; C_p \\sqrt{\\frac{\\chi^2_{\\alpha/2,\\,n-1}}{n-1}} \\;,\\; C_p \\sqrt{\\frac{\\chi^2_{1-\\alpha/2,\\,n-1}}{n-1}} \\;\\right]",
+        "latex": "CI(C_p) = \\left[\\; C_p \\sqrt{\\frac{\\chi^2_{\\alpha/2,\\,\\nu}}{\\nu}} \\;,\\; C_p \\sqrt{\\frac{\\chi^2_{1-\\alpha/2,\\,\\nu}}{\\nu}} \\;\\right], \\quad \\nu = \\sum_i (n_i - 1) \\;\\text{(subgroups)}, \\;\\; \\nu = N - 1 \\;\\text{(individuals)}",
         "description": {
-          "de": "Exaktes Konfidenzintervall für Cp basierend auf der Chi-Quadrat-Verteilung (α = 1 − Konfidenzniveau)",
-          "en": "Exact confidence interval for Cp based on the chi-squared distribution (α = 1 − confidence level)"
+          "de": "Exaktes Konfidenzintervall für Cp basierend auf der Chi-Quadrat-Verteilung mit den Freiheitsgraden ν des σ-innerhalb-Schätzers: ν = Σ(nᵢ−1) bei Untergruppen, ν = N−1 bei Einzelwerten (α = 1 − Konfidenzniveau)",
+          "en": "Exact confidence interval for Cp based on the chi-squared distribution with the degrees of freedom ν of the σ within estimator: ν = Σ(nᵢ−1) with subgroups, ν = N−1 for individuals (α = 1 − confidence level)"
         }
       }
     ],

@@ -311,6 +311,11 @@ const mod = createModule({
        */
       runAnalysis() {
         this.withinHint = '';
+        // Without data the method list follows the settings alone (ID column →
+        // subgroups, fixed size n → subgroups for n ≥ 2), so a fresh or emptied
+        // module never shows an empty or stale estimator select.
+        this._applyMethods([new Array(
+          this.model.effectiveSubgroupMode() === 'column' ? 2 : this.model.subgroupSizeValue()).fill(0)]);
         if (!this.model.columnRef && !this.model.embeddedValues) return this.clearResults();
         const { values, ids, missingIds } = this.analysisInput();
         if (missingIds) this.withinHint = _t('subgroupColumnMissing');
@@ -319,11 +324,7 @@ const mod = createModule({
         const groups = ids
           ? splitSubgroups(values, { ids })
           : splitSubgroups(values, { size: this.model.subgroupSizeValue() });
-        const valid = validMethods(groups);
-        const stored = this.model.params.withinMethod;
-        const method = valid.includes(stored) ? stored : defaultMethod(groups);
-        this.methodKeys = valid;
-        this.activeMethod = method;
+        const { stored, method } = this._applyMethods(groups);
         if (stored && stored !== method) {
           this.withinHint = _t('methodFallbackHint', {
             method: this.methodName(stored),
@@ -363,6 +364,20 @@ const mod = createModule({
         this._values = values;
         const gen = ++this._renderGen;
         this.$nextTick(() => this._renderHistogram(this.result, gen));
+      },
+
+      /**
+       * Derive the offered estimators and the active one for these groups.
+       * @param {number[][]} groups
+       * @returns {{ stored: string, method: string }}
+       */
+      _applyMethods(groups) {
+        const valid = validMethods(groups);
+        const stored = this.model.params.withinMethod;
+        const method = valid.includes(stored) ? stored : defaultMethod(groups);
+        this.methodKeys = valid;
+        this.activeMethod = method;
+        return { stored, method };
       },
 
       scheduleAnalysis() {
@@ -501,7 +516,12 @@ const mod = createModule({
             this.runAnalysis();
           },
         });
-        if (this.model.subgroupColumnRef) this._subgroupPicker.value = this.model.subgroupColumnRef;
+        if (this.model.subgroupColumnRef) {
+          this._subgroupPicker.value = this.model.subgroupColumnRef;
+          // Drop a stored ref the filter no longer offers (e.g. it became the
+          // measurement column meanwhile); refresh() reports it via onChange.
+          this._subgroupPicker.refresh();
+        }
       },
 
       /**

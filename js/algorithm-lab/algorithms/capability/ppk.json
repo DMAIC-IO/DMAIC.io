@@ -56,10 +56,10 @@
       },
       {
         "label": "CI(Ppk)",
-        "latex": "CI(P_{pk}) = P_{pk} \\pm z_{1-\\alpha/2} \\cdot \\sqrt{\\frac{1}{9n} + \\frac{P_{pk}^2}{2(n-1)}}",
+        "latex": "CI(P_{pk}) = P_{pk} \\pm z_{1-\\alpha/2} \\cdot \\sqrt{\\frac{1}{9N} + \\frac{P_{pk}^2}{2(N-1)}}",
         "description": {
-          "de": "Approximatives Konfidenzintervall für Ppk (Kushler-Hurley-Normalapproximation)",
-          "en": "Approximate confidence interval for Ppk (Kushler-Hurley normal approximation)"
+          "de": "Approximatives Konfidenzintervall für Ppk nach Bissell (1990) (Normalapproximation, N−1 Freiheitsgrade)",
+          "en": "Approximate confidence interval for Ppk per Bissell (1990) (normal approximation, N−1 degrees of freedom)"
         }
       }
     ],
@@ -100,7 +100,7 @@
         "source": "AIAG — Statistical Process Control (SPC) Reference Manual, 2nd Edition"
       },
       {
-        "source": "Kushler, R. & Hurley, P. (1992), Confidence Bounds for Capability Indices, Journal of Quality Technology, 24(4), 188–195"
+        "source": "Bissell, A. F. (1990), How Reliable Is Your Capability Index?, Journal of the Royal Statistical Society, Series C (Applied Statistics), 39(3), 331–340"
       }
     ],
     "minitab_equivalent": "Stat > Quality Tools > Capability Analysis > Normal (Overall)"
@@ -198,8 +198,8 @@
           "PpkCI": {
             "type": "[number,number]|null",
             "description": {
-              "de": "Kushler-Hurley-Konfidenzintervall für Ppk",
-              "en": "Kushler-Hurley confidence interval for Ppk"
+              "de": "Bissell-Konfidenzintervall für Ppk (1990)",
+              "en": "Bissell confidence interval for Ppk (1990)"
             }
           },
           "mean": {
@@ -412,8 +412,8 @@
       "date": "2026-04-11",
       "type": "initial",
       "description": {
-        "de": "Erstimplementierung mit Pp, Ppk, PPU, PPL und Konfidenzintervallen (χ² für Pp, Kushler-Hurley für Ppk)",
-        "en": "Initial implementation with Pp, Ppk, PPU, PPL and confidence intervals (χ² for Pp, Kushler-Hurley for Ppk)"
+        "de": "Erstimplementierung mit Pp, Ppk, PPU, PPL und Konfidenzintervallen (χ² für Pp, Bissell 1990 für Ppk)",
+        "en": "Initial implementation with Pp, Ppk, PPU, PPL and confidence intervals (χ² for Pp, Bissell 1990 for Ppk)"
       },
       "breaking": false
     }
