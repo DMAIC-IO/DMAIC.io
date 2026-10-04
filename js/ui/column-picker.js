@@ -40,6 +40,8 @@
  *     minCount: 5,
  *     onChange: (refs) => { ... },
  *   });
+ *
+ *   // Limit to one sheet: filter: (c) => c.sheetId === ref.sheetId
  */
 
 /**
@@ -228,12 +230,15 @@ export class ColumnPicker {
    * @param {boolean} [options.allowCreateWorksheet=false] — Show "New worksheet…" option in single mode
    * @param {function} [options.optionFormat] — ('select' mode only) Custom option-label
    *        builder: (ColumnInfo) => string. Omit for the default format.
+   * @param {function} [options.filter] — Extra predicate (ColumnInfo) => boolean,
+   *        evaluated on every discovery (so it may read live state). Omit for all.
    */
   constructor(container, context, options) {
     this._container = container;
     this._ctx = context;
     this._mode = options.mode || 'single';
     this._optionFormat = typeof options.optionFormat === 'function' ? options.optionFormat : null;
+    this._filter = typeof options.filter === 'function' ? options.filter : null;
     this._types = options.types
       ? (options.types instanceof Set ? options.types : new Set(options.types))
       : null;
@@ -344,11 +349,12 @@ export class ColumnPicker {
   // ── Private ────────────────────────────────────────────────────
 
   _discover() {
-    return discoverColumns(this._ctx.stateManager, {
+    const cols = discoverColumns(this._ctx.stateManager, {
       types: this._types,
       minCount: this._minCount,
       maxCount: this._maxCount,
     });
+    return this._filter ? cols.filter(this._filter) : cols;
   }
 
   _t(key, vars) {
