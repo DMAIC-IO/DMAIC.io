@@ -61,6 +61,25 @@ function sigStars(p) {
   return '';
 }
 
+/**
+ * Events per predictor for a binomial fit (Peduzzi et al. 1996): the rarer
+ * of events and non-events over the coefficients without the intercept.
+ * Grouped data count trials, not rows.
+ * @param {number[]} y - 0/1 outcomes, or proportions when `weights` are given
+ * @param {?number[]} weights - trials per row (grouped data)
+ * @param {number} p - number of coefficients including the intercept
+ * @returns {number} Infinity for an intercept-only model
+ */
+function eventsPerPredictor(y, weights, p) {
+  let events = 0, total = 0;
+  for (let i = 0; i < y.length; i++) {
+    const w = weights ? weights[i] : 1;
+    events += y[i] * w;
+    total += w;
+  }
+  return Math.min(events, total - events) / (p - 1);
+}
+
 const mod = createModule({
   config: {
     id: 'glm-regression',
@@ -362,6 +381,7 @@ const mod = createModule({
         if (familyName === 'poisson') {
           result._overdispersion = overdispersionCheck(result.pearsonResiduals, n, p);
         }
+        if (familyName === 'binomial') result._epv = eventsPerPredictor(y, weights, p);
 
         this._errorKey = null;
         this._fit = result;
@@ -384,7 +404,11 @@ const mod = createModule({
         const warnings = [];
         if (r.separationStrong) warnings.push(_t('warnSeparationStrong'));
         else if (r.separationDetected) warnings.push(_t('warnSeparation'));
-        if (r.n / r.p < 10) warnings.push(_t('warnSmallN'));
+        if (isBinomial) {
+          if (r._epv < 10) warnings.push(_t('warnFewEvents', { epv: fmt(r._epv, 1) }));
+        } else if (r.n / r.p < 10) {
+          warnings.push(_t('warnSmallN'));
+        }
         if (r.iterations >= 40) warnings.push(_t('warnSlowConverge'));
         if (r._overdispersion?.overdispersed) warnings.push(_t('warnOverdispersion'));
         if (r._quasiActivated) warnings.push(_t('warnQuasiActivated', { phi: r.dispersion.toFixed(2) }));

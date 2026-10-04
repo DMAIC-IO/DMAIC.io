@@ -4958,6 +4958,7 @@
       "errorInvalidInput": "Bitte gültige Zahlen für alle Prädiktoren eingeben.",
       "warnSeparation": "Mögliche Separation erkannt — Koeffizienten könnten unzuverlässig sein. Prüfen Sie, ob ein Prädiktor Y perfekt trennt.",
       "warnSmallN": "Kleine Stichprobe relativ zur Parameteranzahl (n/p < 10). Ergebnisse können unzuverlässig sein.",
+      "warnFewEvents": "Wenige Ereignisse je Prädiktor (EPV = {epv} < 10). Koeffizienten und p-Werte können verzerrt sein.",
       "warnSlowConverge": "Modell benötigte viele Iterationen zur Konvergenz — möglicherweise schlecht konditioniert.",
       "warnOverdispersion": "Überdispersion im Poisson-Modell erkannt. Erwägen Sie den Wechsel zur Negativ-Binomial-Regression.",
       "warnQuasiActivated": "Quasi-Poisson aktiv (φ = {phi}). Standardfehler und Konfidenzintervalle wurden um √φ skaliert.",

@@ -4958,6 +4958,7 @@
       "errorInvalidInput": "Please enter valid numbers for all predictors.",
       "warnSeparation": "Possible separation detected — coefficients may be unreliable. Check data for predictors that perfectly separate Y.",
       "warnSmallN": "Small sample relative to number of parameters (n/p < 10). Results may be unreliable.",
+      "warnFewEvents": "Few events per predictor (EPV = {epv} < 10). Coefficients and p-values may be biased.",
       "warnSlowConverge": "Model required many iterations to converge — may indicate poor conditioning.",
       "warnOverdispersion": "Overdispersion detected in Poisson model. Consider switching to negative binomial.",
       "warnQuasiActivated": "Quasi-Poisson active (φ = {phi}). Standard errors and confidence intervals were scaled by √φ.",
