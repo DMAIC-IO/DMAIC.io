@@ -7,7 +7,7 @@
   "category": "doe",
   "subcategory": null,
   "status": "validated",
-  "version": "1.1.0",
+  "version": "1.1.1",
 
   "description": {
     "short": {
@@ -91,12 +91,12 @@
           }
         },
         {
-          "name": "opts.terms",
-          "type": "string[]",
+          "name": "opts",
+          "type": "{ terms?: string[] }",
           "required": false,
           "description": {
-            "de": "Modellterme des Plans (Haupteffekte, Quadrate, Wechselwirkungen); ohne Angabe Haupteffekte und alle 2-Faktor-Wechselwirkungen",
-            "en": "The design's model terms (main effects, squares, interactions); default main effects and all 2-factor interactions"
+            "de": "Optionen. opts.terms: Modellterme des Plans (Haupteffekte, Quadrate, Wechselwirkungen); ohne Angabe Haupteffekte und alle 2-Faktor-Wechselwirkungen",
+            "en": "Options. opts.terms: the design's model terms (main effects, squares, interactions); default main effects and all 2-factor interactions"
           }
         }
       ],
@@ -141,6 +141,16 @@
   },
 
   "changelog": [
+    {
+      "version": "1.1.1",
+      "date": "2026-10-04",
+      "type": "fix",
+      "description": {
+        "de": "Validierung: Parameter heißt jetzt opts (mit opts.terms) statt opts.terms, und die Fixtures tragen die Terme unter inputs.opts. Vorher reichte das Lab opts nicht an computeVIF weiter, der CCD-Fall lief mit Haupteffekten + Wechselwirkungen statt A, B, A², B², A×B und schlug fehl (17/18). Berechnung und Referenzwerte unverändert.",
+        "en": "Validation: the parameter is now opts (holding opts.terms) instead of opts.terms, and the fixtures carry the terms under inputs.opts. Previously the Lab never passed opts to computeVIF, so the CCD case ran with main effects + interactions instead of A, B, A², B², A×B and failed (17/18). Computation and reference values unchanged."
+      },
+      "breaking": false
+    },
     {
       "version": "1.1.0",
       "date": "2026-10-03",

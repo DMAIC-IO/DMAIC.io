@@ -5,7 +5,7 @@
     "scipy": "1.18.0",
     "numpy": "2.5.1"
   },
-  "generated_at": "2026-10-03T18:25:48.145077+00:00",
+  "generated_at": "2026-10-04T16:26:53.076961+00:00",
   "generator_script": "tools/fixture-generator/generate_fixtures.py",
   "generator_version": "1.0.0",
   "tolerances": {
@@ -1637,13 +1637,15 @@
             0
           ]
         ],
-        "terms": [
-          "M0",
-          "M1",
-          "Q0",
-          "Q1",
-          "I0_1"
-        ]
+        "opts": {
+          "terms": [
+            "M0",
+            "M1",
+            "Q0",
+            "Q1",
+            "I0_1"
+          ]
+        }
       },
       "expected": [
         {
@@ -1704,10 +1706,12 @@
             0
           ]
         ],
-        "terms": [
-          "M0",
-          "M1"
-        ]
+        "opts": {
+          "terms": [
+            "M0",
+            "M1"
+          ]
+        }
       },
       "expected": [
         {
