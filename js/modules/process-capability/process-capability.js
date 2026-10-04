@@ -21,11 +21,20 @@
 import { createModule } from '../../core/template-module.js';
 import { State } from './process-capability-model.js';
 import { validate, analyze } from '../../engines/process-capability-engine.js';
+import {
+  splitSubgroups, alignValuesAndIds, validMethods, defaultMethod, SigmaWithinError,
+  SUBGROUP_METHODS,
+} from '../../engines/sigma-within-engine.js';
 import { ColumnPicker, getColumnValues, discoverColumns } from '../../ui/column-picker.js';
 import { fmt, fmtZ, fmtFraction } from './process-capability-format.js';
 
 /** Auto-run debounce (ms) — matches the legacy behaviour. */
 const AUTORUN_DELAY = 600;
+
+/** n̄ with at most two decimals. */
+function fmtNBar(v) {
+  return Number.isInteger(v) ? String(v) : v.toFixed(2);
+}
 
 const mod = createModule({
   config: {
@@ -33,7 +42,7 @@ const mod = createModule({
     engine: 'alpine',
     phase: 'measure',
     icon: 'module.process-capability',
-    version: '1.1.0',
+    version: '1.2.0',
     meta: import.meta,
   },
   Model: State,
@@ -47,8 +56,17 @@ const mod = createModule({
       _debTimer: null,
       _renderGen: 0,
       _picker: null,
+      _subgroupPicker: null,
+      /** Estimator keys that fit the current data (drives the select). */
+      methodKeys: [],
+      /** Estimator actually used (stored choice or engine default). */
+      activeMethod: '',
+      /** Hint under the estimator controls ('' = none). */
+      withinHint: '',
       /** Empty-state decision for the column area: 'ok' | 'noWorksheet' | 'noNumericColumns'. */
       _colState: 'ok',
+      /** Values actually analyzed (aligned to subgroup IDs in column mode). */
+      _values: null,
 
       fmt,
 
@@ -58,7 +76,10 @@ const mod = createModule({
       /** Drop embedded example data, re-show the column picker, re-run. */
       clearEmbedded() {
         this.model.clearEmbedded();
-        this.$nextTick(() => this._mountPicker());
+        this.$nextTick(() => {
+          this._mountPicker();
+          this._mountSubgroupPicker();
+        });
         this.runAnalysis();
       },
 
@@ -155,14 +176,50 @@ const mod = createModule({
         return cells;
       },
 
-      /** Stats label for σ within, naming the estimator (MR̄/d2 or pooled s/c4). */
+      /** Localized estimator name for the select and the formula block. */
+      methodName(key) { return key ? _t(`withinMethodNames.${key}`) : ''; },
+
+      /** ν with at most two decimals (R̄ and S̄ give fractional ν). */
+      fmtDf(v) { return Number.isInteger(v) ? String(v) : v.toFixed(2); },
+
+      /** Short estimator symbol, e.g. "R̄/d2", "S̄", "√MSSD/c4′". */
+      _methodSymbol(r) {
+        const c = r.unbiased;
+        return {
+          pooled: c ? 's_p/c4' : 's_p',
+          rbar: 'R̄/d2',
+          sbar: c ? 'S̄/c4' : 'S̄',
+          averageMR: 'MR̄/d2',
+          medianMR: 'MR̃/d4',
+          sqrtMSSD: c ? '√MSSD/c4′' : '√MSSD',
+        }[r.withinMethod];
+      },
+
+      /** Stats label for σ within: estimator and basis, e.g. "(R̄/d2, k = 25, n̄ = 5, ν = 90)". */
       withinLabel() {
         const r = this.result;
         if (!r) return '';
-        const method = r.withinMethod === 'pooled'
-          ? `${_t('withinMethodPooled')}, n = ${r.subgroupSize}`
-          : _t('withinMethodMovingRange');
-        return `${_t('statStddevWithin')} (${method})`;
+        const parts = [this._methodSymbol(r)];
+        if (SUBGROUP_METHODS.includes(r.withinMethod)) {
+          parts.push(`k = ${r.subgroupCount}`, `n̄ = ${fmtNBar(r.nBar)}`);
+        } else if (r.withinMethod !== 'sqrtMSSD') {
+          parts.push(`w = ${r.mrSpan}`);
+        }
+        parts.push(`ν = ${this.fmtDf(r.withinDf)}`);
+        return `${_t('statStddevWithin')} (${parts.join(', ')})`;
+      },
+
+      showMrSpan() { return this.activeMethod === 'averageMR' || this.activeMethod === 'medianMR'; },
+      showUnbiased() { return ['pooled', 'sbar', 'sqrtMSSD'].includes(this.activeMethod); },
+
+      setWithinMethod(event) {
+        this.model.params.withinMethod = event.target.value;
+        this.runAnalysis();
+      },
+
+      onSubgroupModeChange() {
+        this.$nextTick(() => this._mountSubgroupPicker());
+        this.runAnalysis();
       },
 
       /** Horizontal stats table columns (label/value pairs). */
@@ -231,13 +288,49 @@ const mod = createModule({
       },
 
       /**
+       * Values and, in ID-column mode, their aligned subgroup IDs.
+       * @returns {{ values: number[], ids: string[]|null, missingIds: boolean }}
+       */
+      analysisInput() {
+        if (this.model.effectiveSubgroupMode() !== 'column') {
+          return { values: this.columnValues(), ids: null, missingIds: false };
+        }
+        if (!this.model.columnRef) return { values: [], ids: null, missingIds: false };
+        if (!this.model.subgroupColumnMatches()) return { values: [], ids: null, missingIds: true };
+        const sm = module._context.stateManager;
+        const { values, ids } = alignValuesAndIds(
+          getColumnValues(sm, this.model.columnRef),
+          getColumnValues(sm, this.model.subgroupColumnRef));
+        return { values, ids, missingIds: false };
+      },
+
+      /**
        * Run analysis if all inputs are valid; otherwise silently clear results
-       * (no error shown — matches the legacy auto-analysis behaviour).
+       * (no error shown — matches the legacy auto-analysis behaviour). Estimator
+       * problems (wrong method for the data, table limits) show a hint instead.
        */
       runAnalysis() {
+        this.withinHint = '';
         if (!this.model.columnRef && !this.model.embeddedValues) return this.clearResults();
-        const values = this.columnValues();
+        const { values, ids, missingIds } = this.analysisInput();
+        if (missingIds) this.withinHint = _t('subgroupColumnMissing');
         if (values.length === 0) return this.clearResults();
+
+        const groups = ids
+          ? splitSubgroups(values, { ids })
+          : splitSubgroups(values, { size: this.model.subgroupSizeValue() });
+        const valid = validMethods(groups);
+        const stored = this.model.params.withinMethod;
+        const method = valid.includes(stored) ? stored : defaultMethod(groups);
+        this.methodKeys = valid;
+        this.activeMethod = method;
+        if (stored && stored !== method) {
+          this.withinHint = _t('methodFallbackHint', {
+            method: this.methodName(stored),
+            kind: _t(SUBGROUP_METHODS.includes(stored) ? 'kindSubgroups' : 'kindIndividuals'),
+            fallback: this.methodName(method),
+          });
+        }
 
         const p = this.model.params;
         const lsl = this.parseNum(p.lsl);
@@ -248,13 +341,26 @@ const mod = createModule({
           usl: isNaN(usl) ? null : usl,
           target: isNaN(target) ? null : target,
           confidence: this.confidenceFraction(),
-          subgroupSize: this.model.subgroupSizeValue(),
+          withinMethod: method,
+          unbiased: p.unbiased !== false,
+          mrSpan: this.model.mrSpanValue(),
         };
+        if (ids) params.subgroupIds = ids;
+        else params.subgroupSize = this.model.subgroupSizeValue();
 
         const validation = validate(params, values);
         if (!validation.valid) return this.clearResults();
 
-        this.result = analyze(params, values);
+        try {
+          this.result = analyze(params, values);
+        } catch (e) {
+          if (!(e instanceof SigmaWithinError)) throw e;
+          const key = { subgroupTooLarge: 'errWithinSubgroupTooLarge', spanTooLarge: 'errWithinSpanTooLarge' }[e.code]
+            || 'errWithinMethodInvalid';
+          this.withinHint = _t(key);
+          return this.clearResults();
+        }
+        this._values = values;
         const gen = ++this._renderGen;
         this.$nextTick(() => this._renderHistogram(this.result, gen));
       },
@@ -266,6 +372,7 @@ const mod = createModule({
 
       clearResults() {
         this.result = null;
+        this._values = null;
         this._destroyCharts();
       },
 
@@ -275,7 +382,7 @@ const mod = createModule({
         this._destroyCharts();
         const el = module._container.querySelector('[data-ref="chart-hist"]');
         if (!el) return;
-        const values = this.columnValues();
+        const values = this._values || [];
         if (values.length === 0) return;
 
         const refLines = [];
@@ -365,10 +472,36 @@ const mod = createModule({
           onChange: (ref) => {
             this.model.columnRef = ref || null;
             if (ref) this.model.clearEmbedded();
+            this._subgroupPicker?.refresh();
             this.runAnalysis();
           },
         });
         if (this.model.columnRef) this._picker.value = this.model.columnRef;
+      },
+
+      /**
+       * (Re)mount the ID-column picker in column mode. Offers every column of
+       * the measurement column's sheet except the measurement column itself.
+       */
+      _mountSubgroupPicker() {
+        if (this._subgroupPicker) { this._subgroupPicker.destroy(); this._subgroupPicker = null; }
+        if (this.model.effectiveSubgroupMode() !== 'column') return;
+        const wrap = module._container.querySelector('[data-ref="subgroup-col-wrap"]');
+        if (!wrap) return;
+        this._subgroupPicker = new ColumnPicker(wrap, module._context, {
+          mode: 'select',
+          filter: (c) => {
+            const v = this.model.columnRef;
+            return Boolean(v) && c.instanceId === v.instanceId && c.sheetId === v.sheetId
+              && c.columnId !== v.columnId;
+          },
+          optionFormat: (c) => this._optionLabel(c),
+          onChange: (ref) => {
+            this.model.subgroupColumnRef = ref || null;
+            this.runAnalysis();
+          },
+        });
+        if (this.model.subgroupColumnRef) this._subgroupPicker.value = this.model.subgroupColumnRef;
       },
 
       /**
@@ -402,6 +535,7 @@ const mod = createModule({
         this._unsubs = [];
 
         this._mountPicker();
+        this._mountSubgroupPicker();
 
         const eb = module._context.eventBus;
 
@@ -434,6 +568,7 @@ const mod = createModule({
         for (const unsub of this._unsubs) unsub();
         this._unsubs = [];
         if (this._picker) { this._picker.destroy(); this._picker = null; }
+        if (this._subgroupPicker) { this._subgroupPicker.destroy(); this._subgroupPicker = null; }
         clearTimeout(this._debTimer);
         this._destroyCharts();
       },

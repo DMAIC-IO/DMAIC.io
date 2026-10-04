@@ -17,7 +17,7 @@ export default {
           {
             type: 'definition',
             term: 'Cp',
-            content: '{{term:cp|Cp}} — potenzielle Fähigkeit — vergleicht die Breite der Spezifikation (USL − LSL) mit der natürlichen Streuung (6σ). Cp ignoriert die Lage des {{term:mittelwert|Mittelwerts}}; er sagt nur, ob der Prozess theoretisch schmal genug ist. σ ist hier die Streuung innerhalb: bei Einzelwerten MR̄/d2 aus den gleitenden Spannweiten, bei Untergruppen die gepoolte Standardabweichung / c4. Deshalb kommt es auf die Reihenfolge der Werte an.',
+            content: '{{term:cp|Cp}} — potenzielle Fähigkeit — vergleicht die Breite der Spezifikation (USL − LSL) mit der natürlichen Streuung (6σ). Cp ignoriert die Lage des {{term:mittelwert|Mittelwerts}}; er sagt nur, ob der Prozess theoretisch schmal genug ist. σ ist hier die Streuung innerhalb. Wie Minitab stehen sechs Schätzer zur Wahl: bei Untergruppen die gepoolte Standardabweichung (Standard), R̄/d2 und S̄/c4, bei Einzelwerten die mittlere gleitende Spannweite (Standard), ihr Median und die Wurzel aus MSSD. Die Biaskorrektur (c4 bzw. c4′) lässt sich für gepoolte s, S̄ und √MSSD abschalten. Das Konfidenzintervall von Cp und Cpk nutzt die Freiheitsgrade ν des gewählten Schätzers. Deshalb kommt es auf die Reihenfolge der Werte an.',
           },
           {
             type: 'definition',
@@ -60,7 +60,7 @@ export default {
           {
             type: 'definition',
             term: 'Cp',
-            content: '{{term:cp|Cp}} — potential capability — compares the specification width (USL − LSL) with natural variation (6σ). Cp ignores the {{term:mittelwert|mean}}\'s location; it only says whether the process is theoretically narrow enough. σ here is the within variation: MR̄/d2 from the moving ranges for individuals, the pooled standard deviation / c4 for subgroups. That is why the order of the values matters.',
+            content: '{{term:cp|Cp}} — potential capability — compares the specification width (USL − LSL) with natural variation (6σ). Cp ignores the {{term:mittelwert|mean}}\'s location; it only says whether the process is theoretically narrow enough. σ here is the within variation. As in Minitab there are six estimators: for subgroups the pooled standard deviation (default), R̄/d2 and S̄/c4; for individuals the average moving range (default), its median and the square root of MSSD. The unbiasing constant (c4 or c4′) can be switched off for pooled s, S̄ and √MSSD. The confidence interval of Cp and Cpk uses the degrees of freedom ν of the chosen estimator. That is why the order of the values matters.',
           },
           {
             type: 'definition',
@@ -106,7 +106,7 @@ export default {
               'Daten sammeln — stabil, repräsentativ, mindestens 30 Werte, idealerweise 100+.',
               'Stabilität prüfen (Regelkarte) — nur ein stabiler Prozess liefert sinnvolle Kennzahlen.',
               'Normalität prüfen ({{term:histogramm|Histogramm}}, {{term:wahrscheinlichkeitsnetz|Probability Plot}}, Shapiro-Wilk). Bei Abweichung Transformation oder nicht-parametrische Methode.',
-              'Untergruppengröße angeben: 1 für Einzelwerte, sonst die Größe der aufeinanderfolgenden Untergruppen. Die Werte müssen in Produktionsreihenfolge vorliegen.',
+              'Untergruppen festlegen: feste Größe (1 = Einzelwerte) oder eine Spalte mit Untergruppen-IDs — eine neue Untergruppe beginnt, sobald die ID wechselt. Dann den Schätzer für σ innerhalb wählen. Die Werte müssen in Produktionsreihenfolge vorliegen.',
               'Kennzahlen berechnen (Cp, Cpk, Pp, Ppk) und mit Konfidenzintervall angeben.',
               'Ergebnis grafisch darstellen — Histogramm mit Spezifikationsgrenzen und angepasster Normalkurve.',
               'Interpretation: fähig / nicht fähig / Verschiebung vs. Streuung dominieren.',
@@ -124,7 +124,7 @@ export default {
               'Collect data — stable, representative, at least 30 values, ideally 100+.',
               'Check stability ({{term:regelkarte|control chart}}) — only a stable process gives meaningful indices.',
               'Check normality (histogram, probability plot, Shapiro-Wilk). If off, transform or use nonparametric method.',
-              'Set the subgroup size: 1 for individuals, otherwise the size of the consecutive subgroups. Values must be in production order.',
+              'Define the subgroups: a fixed size (1 = individuals) or a column of subgroup IDs — a new subgroup starts whenever the ID changes. Then choose the estimator for σ within. Values must be in production order.',
               'Compute indices (Cp, Cpk, Pp, Ppk) and report with confidence intervals.',
               'Visualize — histogram with spec limits and fitted normal curve.',
               'Interpret: capable / not capable / shift vs. spread dominating.',

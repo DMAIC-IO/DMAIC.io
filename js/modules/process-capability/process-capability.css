@@ -199,3 +199,24 @@
   border-color: var(--color-accent);
 }
 
+/* ─── Subgroup mode / σ within estimator ─────────────────── */
+.pc__mode {
+  display: flex;
+  gap: var(--spacing-md);
+}
+
+.pc__mode-option,
+.pc__check {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+.pc__span-2 {
+  grid-column: span 2;
+}
+
+.pc__hint--warn {
+  color: var(--color-warning);
+}
+
