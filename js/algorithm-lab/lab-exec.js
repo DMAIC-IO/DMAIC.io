@@ -106,6 +106,69 @@ export function compare(actual, expected, tol) {
   return absDiff <= tol.absolute || relDiff <= tol.relative;
 }
 
+/**
+ * Collect mismatches between `actual` and `expected` with their paths.
+ * Arrays must match in length (recursively); object keys are a subset check —
+ * only the keys listed in `expected` are compared, extra keys in `actual` are
+ * ignored. Leaves are compared with {@link compare}.
+ * @returns {string[]} One "path: actual ≠ expected" line per mismatch.
+ */
+function collectMismatches(actual, expected, tol, path, out) {
+  const at = path ? `${path}: ` : '';
+  if (Array.isArray(expected)) {
+    if (!Array.isArray(actual)) {
+      out.push(`${at}${JSON.stringify(actual)} ≠ array of length ${expected.length}`);
+      return out;
+    }
+    if (actual.length !== expected.length) {
+      out.push(`${at}length ${actual.length} ≠ ${expected.length}`);
+      return out;
+    }
+    expected.forEach((exp, i) => collectMismatches(actual[i], exp, tol, path ? `${path}.${i}` : `${i}`, out));
+    return out;
+  }
+  if (expected != null && typeof expected === 'object') {
+    if (actual == null || typeof actual !== 'object') {
+      out.push(`${at}${JSON.stringify(actual)} ≠ object`);
+      return out;
+    }
+    for (const [k, v] of Object.entries(expected)) {
+      collectMismatches(actual[k], v, tol, path ? `${path}.${k}` : k, out);
+    }
+    return out;
+  }
+  if (!compare(actual, expected, tol)) out.push(`${at}${JSON.stringify(actual)} ≠ ${JSON.stringify(expected)}`);
+  return out;
+}
+
+/**
+ * Check a fixture's `expected` block against an algorithm result, as the
+ * Validation tab does.
+ *
+ * - Object `expected`: each key is a (dot-)path into the result
+ *   ({@link getByPath}); only the listed keys are checked.
+ * - Array `expected`: the result must be an array of the same length.
+ * - Every array inside an expected value must match the actual array's length
+ *   exactly — an extra or missing entry fails ("path: length 3 ≠ 2").
+ *
+ * @param {*} result - Return value of the algorithm.
+ * @param {Object|Array} expected - The fixture case's `expected` block.
+ * @param {{absolute:number, relative:number}} tol - Tolerance in effect.
+ * @returns {{pass: boolean, details: string}} `details` lists every mismatch.
+ */
+export function checkExpected(result, expected, tol) {
+  const mismatches = [];
+  if (Array.isArray(expected)) {
+    collectMismatches(result, expected, tol, '', mismatches);
+  } else {
+    for (const [key, exp] of Object.entries(expected)) {
+      collectMismatches(getByPath(result, key), exp, tol, key, mismatches);
+    }
+  }
+  const pass = mismatches.length === 0;
+  return { pass, details: pass ? 'All values match' : mismatches.join('; ') };
+}
+
 /** Parse "1, 2; 3\n4" → [1,2,3,4]; throws on a non-numeric token. */
 export function parseNumberArray(raw) {
   if (!raw) return [];

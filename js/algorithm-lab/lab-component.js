@@ -4,7 +4,7 @@
  * Try-It is a nested `labTryIt` component (see lab-tryit-component.js).
  */
 import { renderFormula, renderCode } from './lab-renderer.js';
-import { buildFunction, prepareInputs, mapArgs, getByPath, compare } from './lab-exec.js';
+import { buildFunction, prepareInputs, mapArgs, checkExpected } from './lab-exec.js';
 import { stripTermTokens, stripRefTokens } from '../core/markdown-parser.js';
 import { SOURCES } from './lab-data.generated.js';
 
@@ -224,25 +224,7 @@ export function createLabComponent({ registry, i18n, eventBus }) {
         details = pass ? `${error.type}: ${error.message}`
           : error ? `Got ${error.type}: ${error.message}` : 'No error thrown';
       } else if (tc.expected && !error) {
-        const checks = [];
-        if (Array.isArray(tc.expected)) {
-          const arr = Array.isArray(result) ? result : [];
-          tc.expected.forEach((expItem, i) => {
-            for (const [field, expVal] of Object.entries(expItem)) {
-              const ok = compare(arr[i] != null ? arr[i][field] : undefined, expVal, tol);
-              checks.push(ok);
-              if (!ok) details += `${i}.${field}: ${JSON.stringify(arr[i]?.[field])} ≠ ${JSON.stringify(expVal)} `;
-            }
-          });
-        } else {
-          for (const [key, expected] of Object.entries(tc.expected)) {
-            const ok = compare(getByPath(result, key), expected, tol);
-            checks.push(ok);
-            if (!ok) details += `${key}: ${getByPath(result, key)} ≠ ${expected} `;
-          }
-        }
-        pass = checks.every(Boolean);
-        if (pass) details = 'All values match';
+        ({ pass, details } = checkExpected(result, tc.expected, tol));
       } else if (error) {
         details = `Unexpected error: ${error.message}`;
       }

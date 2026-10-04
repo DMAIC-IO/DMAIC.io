@@ -10,9 +10,10 @@
  * unit test called `computeVIF` directly and stayed green.
  *
  * This suite runs every VIF fixture case exactly like the Validation tab and
- * additionally pins the number of returned terms — the Lab compares only the
- * expected prefix, so a dropped term list on a main-effects-only case would
- * otherwise still pass.
+ * additionally pins the number of returned terms. (At the time, the Lab
+ * compared only the expected prefix, so a dropped term list on a
+ * main-effects-only case still passed; `checkExpected` now requires equal
+ * array lengths, see lab-check-expected.test.js.)
  */
 import { suite, test, assertTrue, assertEqual } from '../test-utils.js';
 import { ALGOS, FIXTURES } from '../../js/algorithm-lab/lab-data.generated.js';
