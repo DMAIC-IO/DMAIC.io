@@ -247,3 +247,77 @@ suite('Process Capability Model — Z and fraction formatting', () => {
     assertEqual(fmtFraction(0), '0');
   });
 });
+
+suite('Process Capability Model — σ within estimator and subgroup column', () => {
+  test('defaults', () => {
+    const s = new State();
+    assertEqual(s.params.subgroupMode, 'size');
+    assertEqual(s.params.withinMethod, '');
+    assertEqual(s.params.unbiased, true);
+    assertEqual(s.params.mrSpan, '2');
+    assertEqual(s.subgroupColumnRef, null);
+  });
+
+  test('legacy JSON (only subgroupSize) loads with the defaults', () => {
+    const s = State.fromJSON({ params: { lsl: 1, usl: 2, subgroupSize: 5 } });
+    assertEqual(s.params.subgroupSize, '5');
+    assertEqual(s.params.subgroupMode, 'size');
+    assertEqual(s.params.withinMethod, '');
+    assertEqual(s.params.unbiased, true);
+    assertEqual(s.params.mrSpan, '2');
+    assertEqual(s.subgroupColumnRef, null);
+  });
+
+  test('round trip keeps every new field, including unbiased = false', () => {
+    const s = new State();
+    s.params.subgroupMode = 'column';
+    s.params.withinMethod = 'rbar';
+    s.params.unbiased = false;
+    s.params.mrSpan = '3';
+    s.subgroupColumnRef = { instanceId: 'i1', sheetId: 's1', columnId: 'c2' };
+    const t = State.fromJSON(JSON.parse(JSON.stringify(s.toJSON())));
+    assertEqual(t.params.subgroupMode, 'column');
+    assertEqual(t.params.withinMethod, 'rbar');
+    assertEqual(t.params.unbiased, false);
+    assertEqual(t.params.mrSpan, '3');
+    assertEqual(JSON.stringify(t.subgroupColumnRef), JSON.stringify(s.subgroupColumnRef));
+  });
+
+  test('invalid values fall back to the defaults', () => {
+    const s = State.fromJSON({
+      params: { subgroupMode: 'rows', withinMethod: 'movingRange', unbiased: 'no', mrSpan: '101' },
+      subgroupColumnRef: { instanceId: 'i1' },
+    });
+    assertEqual(s.params.subgroupMode, 'size');
+    assertEqual(s.params.withinMethod, '');
+    assertEqual(s.params.unbiased, true);
+    assertEqual(s.params.mrSpan, '2');
+    assertEqual(s.subgroupColumnRef, null);
+  });
+
+  test('mrSpanValue: 2 … 100, anything else 2', () => {
+    const s = new State();
+    for (const [raw, want] of [['2', 2], ['7', 7], ['100', 100], ['1', 2], ['101', 2], ['3.5', 2], ['', 2], ['x', 2]]) {
+      s.params.mrSpan = raw;
+      assertEqual(s.mrSpanValue(), want, `mrSpan ${raw}`);
+    }
+  });
+
+  test('embedded example data force the fixed size', () => {
+    const s = new State();
+    s.params.subgroupMode = 'column';
+    assertEqual(s.effectiveSubgroupMode(), 'column');
+    s.embeddedValues = [1, 2, 3];
+    assertEqual(s.effectiveSubgroupMode(), 'size');
+  });
+
+  test('the ID column must sit on the value column\'s sheet', () => {
+    const s = new State();
+    assertEqual(s.subgroupColumnMatches(), false);
+    s.columnRef = { instanceId: 'i1', sheetId: 's1', columnId: 'c1' };
+    s.subgroupColumnRef = { instanceId: 'i1', sheetId: 's1', columnId: 'c2' };
+    assertEqual(s.subgroupColumnMatches(), true);
+    s.columnRef = { instanceId: 'i1', sheetId: 's2', columnId: 'c1' };
+    assertEqual(s.subgroupColumnMatches(), false);
+  });
+});

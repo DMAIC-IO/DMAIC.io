@@ -2,16 +2,19 @@
  * D.Mike — Process Capability Model (process-capability-model.js)
  *
  * Pure state container for the Process Capability module. Holds the
- * user-entered specification parameters, the referenced worksheet column and
- * any values embedded directly from a catalog example. Contains no view logic,
- * no i18n and no statistics — the analysis result is derived (transiently) in
- * the view layer from these inputs plus the live worksheet data via
- * `engines/process-capability-engine.js`, so it is intentionally NOT persisted.
+ * user-entered specification parameters, the σ within estimator choice, the
+ * referenced value and subgroup-ID columns and any values embedded directly
+ * from a catalog example. Contains no view logic, no i18n and no statistics —
+ * the analysis result is derived (transiently) in the view layer from these
+ * inputs plus the live worksheet data via `engines/process-capability-engine.js`,
+ * so it is intentionally NOT persisted.
  *
  * Params are stored as the raw strings the inputs show (Alpine `x-model`).
  * `fromJSON` accepts the legacy numeric persistence shape (NaN = empty) and the
  * legacy fractional `confidence` (0.95 → "95").
  */
+
+import { WITHIN_METHODS } from '../../engines/sigma-within-engine.js';
 
 /**
  * Coerce a persisted numeric/string spec field into the raw string the input
@@ -51,6 +54,23 @@ function subgroupInt(v) {
   return Number.isFinite(n) && n >= 1 ? n : 1;
 }
 
+/**
+ * Parse a moving-range span: an integer 2 … 100; anything else means 2.
+ * @param {*} v
+ * @returns {number}
+ */
+function spanInt(v) {
+  const s = String(v ?? '').trim();
+  if (!/^\d+$/.test(s)) return 2;
+  const n = Number(s);
+  return n >= 2 && n <= 100 ? n : 2;
+}
+
+/** @param {*} v @returns {string} a known estimator key or '' (engine default) */
+function methodStr(v) {
+  return WITHIN_METHODS.includes(v) ? v : '';
+}
+
 /** @param {*} d @returns {{instanceId:string,sheetId:string,columnId:string}|null} */
 function columnRefFromJSON(d) {
   if (!d || typeof d !== 'object') return null;
@@ -79,10 +99,21 @@ export class State {
     confidence: '95',
     /** 1 = individuals (σ within from MR̄/d2), ≥ 2 = consecutive subgroups (pooled SD). */
     subgroupSize: '1',
+    /** 'size' = fixed subgroup size, 'column' = subgroups from an ID column. */
+    subgroupMode: 'size',
+    /** σ within estimator key (sigma-within-engine WITHIN_METHODS); '' = engine default. */
+    withinMethod: '',
+    /** Use c4 / c4′ for pooled SD, S̄ and √MSSD. */
+    unbiased: true,
+    /** Moving-range span w (average/median moving range). */
+    mrSpan: '2',
   };
 
   /** Referenced worksheet column, or null. */
   columnRef = null;
+
+  /** Worksheet column holding the subgroup IDs (mode 'column'), or null. */
+  subgroupColumnRef = null;
 
   /** Values embedded directly from an example (bypasses the worksheet), or null. */
   embeddedValues = null;
@@ -95,6 +126,23 @@ export class State {
     return subgroupInt(this.params.subgroupSize);
   }
 
+  /** @returns {number} moving-range span 2 … 100 (invalid input → 2). */
+  mrSpanValue() {
+    return spanInt(this.params.mrSpan);
+  }
+
+  /** @returns {'size'|'column'} embedded example data always use the fixed size. */
+  effectiveSubgroupMode() {
+    return this.embeddedValues ? 'size' : this.params.subgroupMode;
+  }
+
+  /** @returns {boolean} value and ID column are set and on the same sheet. */
+  subgroupColumnMatches() {
+    const a = this.columnRef;
+    const b = this.subgroupColumnRef;
+    return Boolean(a && b && a.instanceId === b.instanceId && a.sheetId === b.sheetId);
+  }
+
   /** Reset embedded-example mode. */
   clearEmbedded() {
     this.embeddedValues = null;
@@ -104,7 +152,7 @@ export class State {
   /** @returns {boolean} true if any meaningful field is set (drives confirmPopout). */
   hasContent() {
     const p = this.params;
-    return Boolean(this.columnRef)
+    return Boolean(this.columnRef) || Boolean(this.subgroupColumnRef)
       || (Array.isArray(this.embeddedValues) && this.embeddedValues.length > 0)
       || Boolean(p.name) || Boolean(p.lsl) || Boolean(p.usl) || Boolean(p.target);
   }
@@ -119,8 +167,13 @@ export class State {
         unit: this.params.unit,
         confidence: this.params.confidence,
         subgroupSize: this.params.subgroupSize,
+        subgroupMode: this.params.subgroupMode,
+        withinMethod: this.params.withinMethod,
+        unbiased: this.params.unbiased,
+        mrSpan: this.params.mrSpan,
       },
       columnRef: this.columnRef ? { ...this.columnRef } : null,
+      subgroupColumnRef: this.subgroupColumnRef ? { ...this.subgroupColumnRef } : null,
       embeddedValues: this.embeddedValues ? [...this.embeddedValues] : null,
       embeddedLabel: this.embeddedLabel || '',
     };
@@ -145,8 +198,13 @@ export class State {
     s.params.unit = typeof p.unit === 'string' && p.unit ? p.unit : 'mm';
     s.params.confidence = confStr(p.confidence);
     s.params.subgroupSize = String(subgroupInt(p.subgroupSize));
+    s.params.subgroupMode = p.subgroupMode === 'column' ? 'column' : 'size';
+    s.params.withinMethod = methodStr(p.withinMethod);
+    s.params.unbiased = typeof p.unbiased === 'boolean' ? p.unbiased : true;
+    s.params.mrSpan = String(spanInt(p.mrSpan));
 
     s.columnRef = columnRefFromJSON(d.columnRef);
+    s.subgroupColumnRef = columnRefFromJSON(d.subgroupColumnRef);
     s.embeddedValues = embeddedFromJSON(d.embeddedValues);
     s.embeddedLabel = typeof d.embeddedLabel === 'string' ? d.embeddedLabel : '';
 
