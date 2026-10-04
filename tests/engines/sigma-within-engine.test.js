@@ -132,7 +132,7 @@ suite('σ within — gold standard (piston rings)', () => {
       assertEqual(r.method, c.method);
       assertAlmostEqual(r.sigma, c.expected.sigma, { relative: 1e-9 }, 'sigma');
       assertAlmostEqual(r.df, c.expected.df, { relative: 1e-12 }, 'df');
-      if (c.expected.k != null && c.method !== 'pooled') {
+      if (c.expected.k != null) {
         assertEqual(r.k, c.expected.k, 'k');
         assertAlmostEqual(r.nBar, c.expected.nBar, { relative: 1e-12 }, 'nBar');
       }
@@ -195,6 +195,8 @@ suite('σ within — limits and constants', () => {
     assertEqual(fN(2), 0.88);
     assertEqual(fN(4.4), 0.94);
     assertEqual(fN(4.6), 0.95);
+    assertEqual(fN(4.5), 0.95, 'halves round up, not to even');
+    assertEqual(fN(2.5), 0.92, 'halves round up, not to even');
     assertEqual(fN(7), 0.96);
     assertEqual(fN(17), 0.98);
     assertEqual(fN(64), 0.99);

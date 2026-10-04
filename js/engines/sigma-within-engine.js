@@ -59,12 +59,14 @@ export function c4Prime(N) {
 const F_N = [[2, 0.88], [3, 0.92], [4, 0.94], [5, 0.95], [7, 0.96], [9, 0.97], [17, 0.98], [64, 0.99]];
 
 /**
- * f_n for ν(S̄) = f_n · k · (n̄ − 1), with n̄ rounded to the nearest integer.
+ * f_n for ν(S̄) = f_n · k · (n̄ − 1), with n̄ rounded to the nearest integer,
+ * halves up (4.5 → 5). Pinned as floor(n̄ + 0.5) so it matches the gold
+ * generator, whose Python round() would round halves to even.
  * @param {number} nBar
  * @returns {number}
  */
 export function fN(nBar) {
-  const n = Math.round(nBar);
+  const n = Math.floor(nBar + 0.5);
   for (const [hi, f] of F_N) if (n <= hi) return f;
   return 1;
 }

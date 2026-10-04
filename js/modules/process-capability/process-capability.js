@@ -54,6 +54,8 @@ const mod = createModule({
       _charts: [],
       _unsubs: [],
       _debTimer: null,
+      /** True while a debounced auto-run is pending (reflected as aria-busy). */
+      analysisPending: false,
       _renderGen: 0,
       _picker: null,
       _subgroupPicker: null,
@@ -382,7 +384,11 @@ const mod = createModule({
 
       scheduleAnalysis() {
         clearTimeout(this._debTimer);
-        this._debTimer = setTimeout(() => this.runAnalysis(), AUTORUN_DELAY);
+        this.analysisPending = true;
+        this._debTimer = setTimeout(() => {
+          this.runAnalysis();
+          this.analysisPending = false;
+        }, AUTORUN_DELAY);
       },
 
       clearResults() {
