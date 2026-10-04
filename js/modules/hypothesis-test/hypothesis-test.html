@@ -253,7 +253,7 @@
                 <span class="hyptest__h-formula" x-text="result.main.h1"></span>
               </div>
             </div>
-            <div class="hyptest__metrics">
+            <div class="hyptest__metrics" data-ref="main-metrics">
               <template x-for="m in result.main.metrics">
                 <div class="hyptest__metric" :title="m.title" :key="m.label">
                   <div class="hyptest__metric-label" x-text="m.label"></div>
@@ -267,6 +267,9 @@
                 </div>
               </template>
             </div>
+            <template x-if="result.main.ciNote">
+              <div class="hyptest__decision hyptest__decision--warn" data-ref="ci-note" x-text="result.main.ciNote"></div>
+            </template>
 
             <!-- ANOVA table (k-sample mean, ANOVA route) -->
             <template x-if="result.main.anovaRows">
@@ -385,7 +388,12 @@
                       <tr :key="row.head">
                         <th x-text="row.head"></th>
                         <template x-for="cell in row.cells">
-                          <td :class="cell.cls" :title="cell.title" x-text="cell.text" :key="cell.key"></td>
+                          <td :class="cell.cls" :title="cell.title" :key="cell.key">
+                            <span class="hyptest__pairwise-p" x-text="cell.text"></span>
+                            <template x-if="cell.ci">
+                              <span class="hyptest__pairwise-ci" x-text="cell.ci"></span>
+                            </template>
+                          </td>
                         </template>
                       </tr>
                     </template>

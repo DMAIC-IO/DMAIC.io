@@ -278,8 +278,10 @@ const mod = createModule({
         if (r.df != null) {
           metrics.push({ label: 'df', value: (typeof r.df === 'number' && r.df % 1) ? fmt(r.df, 1) : String(r.df), valueClass: '', title: this._tip('df') });
         }
+        const level = Math.round((1 - alpha) * 100);
+        const isMeanDiff = !isVariance && isTwo && r.ci != null;
         if (r.ci) {
-          metrics.push({ label: `${Math.round((1 - alpha) * 100)}% KI`, value: `[${fmt(r.ci[0])}, ${fmt(r.ci[1])}]`, valueClass: 'hyptest__metric-value--sm', title: this._tip('KI') });
+          metrics.push({ label: isMeanDiff ? _t('ciDiffLabel', { level }) : `${level}% KI`, value: `[${fmt(r.ci[0])}, ${fmt(r.ci[1])}]`, valueClass: 'hyptest__metric-value--sm', title: this._tip('KI') });
         }
         if (r.mean != null) {
           metrics.push({ label: 'x̄', value: fmt(r.mean), valueClass: '', title: this._tip('x̄') });
@@ -303,8 +305,12 @@ const mod = createModule({
           ? `${_t('significant')}: ${_t('h0Rejected')}`
           : `${_t('notSignificant')}: ${_t('h0NotRejected')}`;
 
+        const ciNote = isMeanDiff && !r.reject
+          ? _t('ciDiffNote', { lo: fmt(r.ci[0]), hi: fmt(r.ci[1]) })
+          : '';
+
         return {
-          h0, h1,
+          h0, h1, ciNote,
           h0Class: r.reject ? 'hyptest__h-box--rejected' : 'hyptest__h-box--accepted',
           h1Class: r.reject ? 'hyptest__h-box--accepted' : 'hyptest__h-box--rejected',
           h0Tip, h1Tip,
@@ -630,7 +636,11 @@ const mod = createModule({
             }
             const p = r.pValue;
             const pAdj = Math.min(1, p * m);
-            comparisons.push({ i, j, p, pAdj, equal: pAdj >= alpha });
+            // Bonferroni CI of mu_i - mu_j: contains 0 exactly when pAdj >= alpha
+            const ci = (!isVariance && isNormal)
+              ? (useWelch ? welchTTest : twoSampleTTest)(groups[i], groups[j], 'two-sided', alpha / m).ci
+              : null;
+            comparisons.push({ i, j, p, pAdj, ci, equal: pAdj >= alpha });
           }
         }
         const letters = this._compactLetterDisplay(k, comparisons);
@@ -684,12 +694,13 @@ const mod = createModule({
           const cells = [];
           for (let j = 0; j < k; j++) {
             if (j <= i) {
-              cells.push({ cls: 'hyptest__pairwise-empty', title: '', text: '—', key: `${i}-${j}` });
+              cells.push({ cls: 'hyptest__pairwise-empty', title: '', text: '—', ci: '', key: `${i}-${j}` });
             } else {
               const c = find(i, j);
               const cls = c.equal ? 'hyptest__pairwise-equal' : 'hyptest__pairwise-diff';
               const tip = `p=${fmt(c.p)}  ·  p_adj=${fmt(c.pAdj)}  ·  ${c.equal ? _t('pairwiseEqual') : _t('pairwiseDifferent')}`;
-              cells.push({ cls, title: tip, text: fmt(c.pAdj), key: `${i}-${j}` });
+              const ci = c.ci ? `[${fmt(c.ci[0])}, ${fmt(c.ci[1])}]` : '';
+              cells.push({ cls, title: tip, text: fmt(c.pAdj), ci, key: `${i}-${j}` });
             }
           }
           rows.push({ head: this._refName(refs[i]), cells });
@@ -697,7 +708,9 @@ const mod = createModule({
         return {
           methodName,
           methodAlgoId: ALGO_LAB_IDS[methodName] || '',
-          hint: _t('pairwiseHint', { m }),
+          hint: comparisons.some(c => c.ci)
+            ? `${_t('pairwiseHint', { m })}; ${_t('pairwiseCiHint')}`
+            : _t('pairwiseHint', { m }),
           headers,
           rows,
           lettersJoined: letters.join(', '),

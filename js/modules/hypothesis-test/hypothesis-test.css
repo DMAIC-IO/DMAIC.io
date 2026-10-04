@@ -148,6 +148,12 @@
   font-weight: 600;
 }
 
+.hyptest__pairwise-ci {
+  display: block;
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+}
+
 .hyptest__pairwise-empty {
   color: var(--color-text-tertiary);
   background: transparent !important;
