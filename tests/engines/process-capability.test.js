@@ -5,7 +5,7 @@
  */
 
 import { suite, test, assert, assertEqual, assertAlmostEqual } from '../test-utils.js';
-import { analyze, capabilityAnalyze, normalUpperTail, zBench } from '../../js/engines/process-capability-engine.js';
+import { analyze, capabilityAnalyze, normalUpperTail, zBench, sigmaWithinMovingRange, sigmaWithinPooled } from '../../js/engines/process-capability-engine.js';
 
 // Map fixture field name → engine result field name
 const FIELD_MAP = {
@@ -161,7 +161,7 @@ suite('Process Capability — σ within edge cases', () => {
 
   test('individuals report the moving-range method', () => {
     const r = analyze({ lsl: 0, usl: 10 }, [4, 5, 6, 5]);
-    assertEqual(r.withinMethod, 'movingRange');
+    assertEqual(r.withinMethod, 'averageMR');
     // MR = 1,1,1 → MR̄/1.128
     assertAlmostEqual(r.sigmaWithin, 1 / 1.128, 1e-12);
   });
@@ -285,5 +285,89 @@ suite('Process Capability — Cp/Pp CI from the exact χ² quantile', () => {
   test('df = 29: lower bound uses χ²(0.025; 29) = 16.047', () => {
     const r = analyze({ lsl: 40, usl: 100 }, ZIGZAG.slice(0, 30));
     assertAlmostEqual(r.CpCI[0], r.Cp * Math.sqrt(16.047071 / 29), { relative: 1e-5 }, 'Cp lower');
+  });
+});
+
+// ── Selectable σ within estimators and ν in the Cp/Cpk CI (spec 2026-10-04) ──
+
+suite('Process Capability — estimator choice and ν (gold standard)', () => {
+  const { lsl, usl, values } = pistonData;
+  const est = pistonExpected.estimators;
+  const paramsFor = (c) => {
+    const p = { lsl, usl, confidence: est.confidence, withinMethod: c.method, unbiased: c.unbiased, mrSpan: c.mrSpan };
+    if (c.data === 'subgroups') p.subgroupSize = 5;
+    if (c.data === 'unequal') p.subgroupIds = est.unequal.ids;
+    return p;
+  };
+  const dataFor = (c) => (c.data === 'unequal' ? est.unequal.values : values);
+
+  for (const c of est.cases) {
+    test(`${c.id}: σ, ν, Cp, Cpk and their CIs`, () => {
+      const r = analyze(paramsFor(c), dataFor(c));
+      const e = c.expected;
+      const close = (a, x, label) => assertAlmostEqual(a, x, { relative: 1e-6 }, label);
+      assertEqual(r.withinMethod, c.method);
+      close(r.sigmaWithin, e.sigma, 'sigmaWithin');
+      close(r.withinDf, e.df, 'withinDf');
+      close(r.Cp, e.cp, 'Cp');
+      close(r.Cpk, e.cpk, 'Cpk');
+      close(r.CpCI[0], e.cpCI[0], 'Cp lower');
+      close(r.CpCI[1], e.cpCI[1], 'Cp upper');
+      close(r.CpkCI[0], e.cpkCI[0], 'Cpk lower');
+      close(r.CpkCI[1], e.cpkCI[1], 'Cpk upper');
+    });
+  }
+
+  test('Pp/Ppk CIs stay on N − 1 whatever the estimator', () => {
+    const a = analyze({ lsl, usl, subgroupSize: 5, withinMethod: 'rbar' }, values);
+    const b = analyze({ lsl, usl }, values);
+    assertEqual(a.PpCI[0], b.PpCI[0]);
+    assertEqual(a.PpkCI[1], b.PpkCI[1]);
+  });
+
+  test('subgroupIds take precedence over subgroupSize', () => {
+    const ids = values.map((_, i) => Math.floor(i / 5));
+    const a = analyze({ lsl, usl, subgroupSize: 1, subgroupIds: ids }, values);
+    const b = analyze({ lsl, usl, subgroupSize: 5 }, values);
+    assertEqual(a.sigmaWithin, b.sigmaWithin);
+    assertEqual(a.subgroupCount, 25);
+    assertEqual(a.nBar, 5);
+  });
+
+  test('a stored method that does not fit the data throws methodInvalid', () => {
+    let code = null;
+    try { analyze({ lsl, usl, withinMethod: 'rbar' }, values); } catch (e) { code = e.code; }
+    assertEqual(code, 'methodInvalid');
+  });
+});
+
+suite('Process Capability — calls without the new parameters', () => {
+  const { lsl, usl, values } = pistonData;
+
+  test('individuals: σ, Cp and the CIs are unchanged (ν = N − 1)', () => {
+    const r = analyze({ lsl, usl }, values);
+    assertEqual(r.withinDf, values.length - 1);
+    assertEqual(r.sigmaWithin, sigmaWithinMovingRange(values));
+    assertAlmostEqual(r.sigmaWithin, pistonExpected.withinMovingRange.sigma, { relative: 1e-12 });
+  });
+
+  test('subgroups of 5: σ is unchanged, ν = Σ(nᵢ − 1) = 100', () => {
+    const r = analyze({ lsl, usl, subgroupSize: 5 }, values);
+    assertEqual(r.withinMethod, 'pooled');
+    assertEqual(r.withinDf, 100);
+    assertEqual(r.sigmaWithin, sigmaWithinPooled(values, 5));
+  });
+
+  test('the wrappers keep their old contract', () => {
+    assert(Number.isNaN(sigmaWithinMovingRange([5])), 'one value → NaN');
+    assert(Number.isNaN(sigmaWithinPooled([1, 2, 3], 1)), 'no subgroup ≥ 2 → NaN');
+    assertAlmostEqual(sigmaWithinMovingRange([4, 5, 6, 5]), 1 / 1.128, 1e-12);
+  });
+
+  test('capabilityAnalyze passes options through', () => {
+    const r = capabilityAnalyze(values, lsl, usl, 0.95, 5, { withinMethod: 'rbar' });
+    assertAlmostEqual(r.sigma_within, pistonExpected.withinRbar.sigma, { relative: 1e-9 });
+    const plain = capabilityAnalyze(values, lsl, usl, 0.95, 5);
+    assertAlmostEqual(plain.sigma_within, pistonExpected.withinPooled.sigma, { relative: 1e-9 });
   });
 });

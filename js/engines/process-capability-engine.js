@@ -6,36 +6,28 @@
  * Computes: Cp, Cpk, CPU, CPL, Pp, Ppk, PPM (observed, expected within/overall), Z.bench.
  * Supports two-sided (USL + LSL) and one-sided (only USL or only LSL) specs.
  *
- * σ follows Minitab / AIAG SPC: Cp/Cpk use σ_within (MR̄/d2 for individuals,
- * pooled SD/c4(d+1) for subgroups), Pp/Ppk use the overall sample SD (n − 1).
+ * σ follows Minitab / AIAG SPC: Cp/Cpk use σ_within from the chosen
+ * estimator (sigma-within-engine.js; default MR̄/d2 for individuals, pooled
+ * SD/c4(d+1) for subgroups), Pp/Ppk use the overall sample SD (n − 1).
  */
 
 import { mean, stddev, stddevPop } from './stats-utils.js';
-import { lnGamma, erfc, normalQuantile, chi2Inv } from './math-utils.js';
-export { mean, stddev, stddevPop };
+import { erfc, normalQuantile, chi2Inv } from './math-utils.js';
+import { splitSubgroups, estimateSigmaWithin, isIndividuals, c4 } from './sigma-within-engine.js';
+export { mean, stddev, stddevPop, c4 };
 
 /** d2 for moving ranges of span 2 (Minitab table value). */
 export const D2_SPAN2 = 1.128;
 
 /**
- * Unbiasing constant c4(n) = √(2/(n−1)) · Γ(n/2) / Γ((n−1)/2).
- * @param {number} n - sample size (> 1)
- * @returns {number}
- */
-export function c4(n) {
-  return Math.sqrt(2 / (n - 1)) * Math.exp(lnGamma(n / 2) - lnGamma((n - 1) / 2));
-}
-
-/**
  * σ_within from the average moving range of span 2: MR̄ / d2.
  * The values must be in production order.
  * @param {number[]} values
- * @returns {number}
+ * @returns {number} NaN for fewer than two values
  */
 export function sigmaWithinMovingRange(values) {
-  let sum = 0;
-  for (let i = 1; i < values.length; i++) sum += Math.abs(values[i] - values[i - 1]);
-  return sum / (values.length - 1) / D2_SPAN2;
+  if (values.length < 2) return NaN;
+  return estimateSigmaWithin(splitSubgroups(values, { size: 1 }), { method: 'averageMR' }).sigma;
 }
 
 /**
@@ -46,17 +38,9 @@ export function sigmaWithinMovingRange(values) {
  * @returns {number} NaN when no subgroup has two or more values
  */
 export function sigmaWithinPooled(values, subgroupSize) {
-  let ss = 0;
-  let d = 0;
-  for (let i = 0; i < values.length; i += subgroupSize) {
-    const g = values.slice(i, i + subgroupSize);
-    if (g.length < 2) continue;
-    const m = mean(g);
-    for (const v of g) ss += (v - m) ** 2;
-    d += g.length - 1;
-  }
-  if (d === 0) return NaN;
-  return Math.sqrt(ss / d) / c4(d + 1);
+  const groups = splitSubgroups(values, { size: subgroupSize });
+  if (isIndividuals(groups)) return NaN;
+  return estimateSigmaWithin(groups, { method: 'pooled' }).sigma;
 }
 
 /**
@@ -184,8 +168,16 @@ export function validate(params, values) {
  * @param {number} [params.confidence=0.95] - Confidence level for CIs (0 < c < 1)
  * @param {number} [params.subgroupSize=1] - 1 = individuals (σ_within from MR̄/d2),
  *   ≥ 2 = consecutive subgroups of that size (σ_within from pooled SD/c4)
+ * @param {any[]} [params.subgroupIds] - one ID per value; a new subgroup starts
+ *   whenever the ID changes. Takes precedence over subgroupSize.
+ * @param {string} [params.withinMethod] - σ within estimator (sigma-within-engine
+ *   WITHIN_METHODS); default pooled for subgroups, averageMR for individuals
+ * @param {boolean} [params.unbiased=true] - c4 / c4′ for pooled, S̄, √MSSD
+ * @param {number} [params.mrSpan=2] - moving-range span w
  * @param {number[]} values - in production order
  * @returns {object} Analysis results
+ * @throws {SigmaWithinError} when the estimator does not fit the data or a
+ *   table limit is exceeded
  */
 export function analyze(params, values) {
   if (!Array.isArray(values)) {
@@ -194,8 +186,11 @@ export function analyze(params, values) {
   if (values.length < 2) {
     throw new Error(`Insufficient data: n < 2 (got ${values.length})`);
   }
-  const { lsl, usl, target, confidence = 0.95, subgroupSize = 1 } = params;
-  if (!Number.isInteger(subgroupSize) || subgroupSize < 1) {
+  const {
+    lsl, usl, target, confidence = 0.95, subgroupSize = 1, subgroupIds = null,
+    withinMethod: requestedMethod = null, unbiased = true, mrSpan = 2,
+  } = params;
+  if (!subgroupIds && (!Number.isInteger(subgroupSize) || subgroupSize < 1)) {
     throw new Error(`subgroupSize must be a positive integer (got ${subgroupSize})`);
   }
   const hasLsl = lsl != null && !isNaN(lsl);
@@ -210,10 +205,13 @@ export function analyze(params, values) {
 
   const n = values.length;
   const xbar = mean(values);
-  const withinMethod = subgroupSize > 1 ? 'pooled' : 'movingRange';
-  const sigmaWithin = withinMethod === 'pooled'
-    ? sigmaWithinPooled(values, subgroupSize)
-    : sigmaWithinMovingRange(values);     // → Cp/Cpk
+  const groups = subgroupIds
+    ? splitSubgroups(values, { ids: subgroupIds })
+    : splitSubgroups(values, { size: subgroupSize });
+  const within = estimateSigmaWithin(groups, { method: requestedMethod || undefined, unbiased, mrSpan });
+  const sigmaWithin = within.sigma;       // → Cp/Cpk
+  const withinMethod = within.method;
+  const withinDf = within.df;             // ν → Cp/Cpk CIs
   const s = stddev(values);               // overall sample SD (n−1) → Pp/Ppk, PPM
   const sigmaOverall = s;
   const xmin = Math.min(...values);
@@ -304,34 +302,34 @@ export function analyze(params, values) {
 
   // ─── Confidence intervals ────────────────────
   const alpha = 1 - confidence;
-  const df = n - 1;
+  const df = n - 1;           // overall SD → Pp/Ppk
+  const nu = withinDf;        // σ within estimator → Cp/Cpk CIs
 
-  // CI for Cp: chi-squared based, df = n − 1 (qcc convention)
-  // Cp_lower = Cp * sqrt(χ²(α/2, df) / df)
-  // Cp_upper = Cp * sqrt(χ²(1−α/2, df) / df)
+  // CI for Cp: χ² with ν degrees of freedom
+  // Cp_lower = Cp · √(χ²(α/2, ν) / ν), Cp_upper = Cp · √(χ²(1−α/2, ν) / ν)
   let CpCI = null;
-  if (Cp != null && df > 0) {
-    const chi2Lo = chi2Inv(alpha / 2, df);
-    const chi2Hi = chi2Inv(1 - alpha / 2, df);
+  if (Cp != null && nu > 0) {
+    const chi2Lo = chi2Inv(alpha / 2, nu);
+    const chi2Hi = chi2Inv(1 - alpha / 2, nu);
     CpCI = [
-      Cp * Math.sqrt(chi2Lo / df),
-      Cp * Math.sqrt(chi2Hi / df),
+      Cp * Math.sqrt(chi2Lo / nu),
+      Cp * Math.sqrt(chi2Hi / nu),
     ];
   }
 
-  // CI for Cpk: normal approximation (Kushler-Hurley)
-  // SE(Cpk) = sqrt(1/(9n) + Cpk²/(2(n−1)))
+  // CI for Cpk: normal approximation, Bissell (1990)
+  // SE(Cpk) = √(1/(9n) + Cpk²/(2ν))
   let CpkCI = null;
-  if (Cpk != null && n > 1) {
+  if (Cpk != null && nu > 0) {
     const zCI = normalInv(1 - alpha / 2);
-    const se = Math.sqrt(1 / (9 * n) + (Cpk * Cpk) / (2 * df));
+    const se = Math.sqrt(1 / (9 * n) + (Cpk * Cpk) / (2 * nu));
     CpkCI = [
       Cpk - zCI * se,
       Cpk + zCI * se,
     ];
   }
 
-  // CI for Pp: chi-squared based, same formula as Cp
+  // CI for Pp: χ² with n − 1 degrees of freedom
   let PpCI = null;
   if (Pp != null && df > 0) {
     const chi2Lo = chi2Inv(alpha / 2, df);
@@ -342,9 +340,9 @@ export function analyze(params, values) {
     ];
   }
 
-  // CI for Ppk: same approximation as Cpk
+  // CI for Ppk: Bissell (1990) with n − 1 degrees of freedom
   let PpkCI = null;
-  if (Ppk != null && n > 1) {
+  if (Ppk != null && df > 0) {
     const zCI = normalInv(1 - alpha / 2);
     const se = Math.sqrt(1 / (9 * n) + (Ppk * Ppk) / (2 * df));
     PpkCI = [
@@ -354,7 +352,8 @@ export function analyze(params, values) {
   }
 
   return {
-    n, xbar, s, sigmaWithin, sigmaOverall, withinMethod, subgroupSize, xmin, xmax,
+    n, xbar, s, sigmaWithin, sigmaOverall, withinMethod, withinDf, subgroupSize, xmin, xmax,
+    subgroupCount: within.k, nBar: within.nBar, unbiased: within.unbiased, mrSpan: within.mrSpan,
     T, mid, targetVal,
     hasLsl, hasUsl, twoSided,
     lsl: hasLsl ? lsl : null,
@@ -389,9 +388,10 @@ export function analyze(params, values) {
  * @param {number|null} usl
  * @param {number} [confidence=0.95]
  * @param {number} [subgroupSize=1]
+ * @param {{withinMethod?: string, unbiased?: boolean, mrSpan?: number}} [options]
  * @returns {object}
  */
-export function capabilityAnalyze(data, lsl, usl, confidence, subgroupSize) {
+export function capabilityAnalyze(data, lsl, usl, confidence, subgroupSize, options) {
   if (!Array.isArray(data)) throw new TypeError('data must be an array');
   if (data.length < 2) throw new Error('Insufficient data: n < 2');
   if (usl === undefined) throw new Error('USL must be provided (use null for one-sided LSL specs)');
@@ -409,6 +409,9 @@ export function capabilityAnalyze(data, lsl, usl, confidence, subgroupSize) {
   const params = { lsl, usl };
   if (confidence != null) params.confidence = confidence;
   if (subgroupSize != null) params.subgroupSize = subgroupSize;
+  if (options?.withinMethod) params.withinMethod = options.withinMethod;
+  if (options?.unbiased != null) params.unbiased = options.unbiased;
+  if (options?.mrSpan != null) params.mrSpan = options.mrSpan;
   const r = analyze(params, data);
   return {
     cp: r.Cp,
