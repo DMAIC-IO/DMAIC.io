@@ -21,7 +21,7 @@
  */
 
 import {
-  normalCDF,
+  normalCDF, normalQuantile,
   chi2CDF, chi2Inv, tCDF, tInv, fCDF, fQuantile as fInv,
   noncentralTCDF,
 } from './math-utils.js';
@@ -409,18 +409,96 @@ export function wilcoxonSignedRank(data, mu0, direction = 'two-sided', alpha = 0
   };
 }
 
+// ─── Rank-sum helpers (Mann-Whitney U, Hodges-Lehmann) ─────
+
+/** Exact computation is used up to this sample size (exclusive), as in R. */
+const MW_EXACT_MAX_N = 50;
+
+/**
+ * Exact null distribution of the Mann-Whitney U statistic (no ties).
+ * Recursion on probabilities (no overflow):
+ * P_{m,n}(u) = m/(m+n)·P_{m-1,n}(u-n) + n/(m+n)·P_{m,n-1}(u).
+ *
+ * @param {number} n1
+ * @param {number} n2
+ * @returns {Float64Array} cdf with cdf[u] = P(U ≤ u), u = 0 … n1·n2
+ */
+function _uDistribution(n1, n2) {
+  // prev[n] = pmf of U for (m-1, n); built up m = 0 … n1
+  let prev = [];
+  for (let n = 0; n <= n2; n++) prev.push(Float64Array.of(1)); // m = 0: U ≡ 0
+  for (let m = 1; m <= n1; m++) {
+    const cur = [Float64Array.of(1)]; // n = 0: U ≡ 0
+    for (let n = 1; n <= n2; n++) {
+      const pmf = new Float64Array(m * n + 1);
+      const a = prev[n], b = cur[n - 1];
+      const wa = m / (m + n), wb = n / (m + n);
+      for (let u = 0; u < a.length; u++) pmf[u + n] += wa * a[u];
+      for (let u = 0; u < b.length; u++) pmf[u] += wb * b[u];
+      cur.push(pmf);
+    }
+    prev = cur;
+  }
+  const pmf = prev[n2];
+  const cdf = new Float64Array(pmf.length);
+  let acc = 0;
+  for (let u = 0; u < pmf.length; u++) { acc += pmf[u]; cdf[u] = Math.min(1, acc); }
+  return cdf;
+}
+
+/**
+ * Tie information of the combined sample.
+ * @param {number[]} values
+ * @returns {{hasTies: boolean, tieSum: number}} tieSum = Σ(t³ − t) over tie groups
+ */
+function _tieInfo(values) {
+  const s = [...values].sort((a, b) => a - b);
+  let tieSum = 0;
+  for (let i = 0; i < s.length;) {
+    let j = i;
+    while (j < s.length && s[j] === s[i]) j++;
+    const t = j - i;
+    tieSum += t * t * t - t;
+    i = j;
+  }
+  return { hasTies: tieSum > 0, tieSum };
+}
+
+/** Tie-corrected standard deviation of U. */
+function _mwSigma(n1, n2, tieSum) {
+  const N = n1 + n2;
+  const tieTerm = N > 1 ? tieSum / (N * (N - 1)) : 0;
+  return Math.sqrt(n1 * n2 / 12 * ((N + 1) - tieTerm));
+}
+
+/** Exact rule shared by test and CI (as R wilcox.test). */
+function _isExact(n1, n2, hasTies) {
+  return !hasTies && n1 < MW_EXACT_MAX_N && n2 < MW_EXACT_MAX_N;
+}
+
+/** Throws unless both samples are non-empty arrays. */
+function _assertTwoSamples(data1, data2) {
+  if (!Array.isArray(data1) || !Array.isArray(data2)) throw new TypeError('Both samples must be arrays');
+  if (data1.length < 1 || data2.length < 1) throw new Error('At least 1 data point per sample required');
+}
+
 /**
  * Mann-Whitney U Test (nonparametric two-sample location test).
+ *
+ * Computes the exact permutation distribution of U when the combined
+ * sample has no ties and both n1 and n2 are below `MW_EXACT_MAX_N` (as
+ * R's `wilcox.test`); otherwise falls back to a tie- and continuity-
+ * corrected normal approximation (matches `scipy.stats.mannwhitneyu`).
  *
  * @param {number[]} data1 - First sample
  * @param {number[]} data2 - Second sample
  * @param {string} [direction='two-sided'] - 'two-sided' | 'greater' | 'less'
  * @param {number} [alpha=0.05] - Significance level
- * @returns {object} Test results
+ * @returns {object} Test results; `method` is `'exact'` or `'normal'`
  */
 export function mannWhitneyU(data1, data2, direction = 'two-sided', alpha = 0.05) {
+  _assertTwoSamples(data1, data2);
   const n1 = data1.length, n2 = data2.length;
-  if (n1 < 1 || n2 < 1) throw new Error('At least 1 data point per sample required');
 
   const all = data1.map(v => ({ v, g: 1 })).concat(data2.map(v => ({ v, g: 2 })))
     .sort((a, b) => a.v - b.v);
@@ -440,18 +518,33 @@ export function mannWhitneyU(data1, data2, direction = 'two-sided', alpha = 0.05
   const U2 = R2 - n2 * (n2 + 1) / 2;
   const U = Math.min(U1, U2);
   const muU = n1 * n2 / 2;
-  const sigU = Math.sqrt(n1 * n2 * (n1 + n2 + 1) / 12);
+  const { hasTies, tieSum } = _tieInfo(data1.concat(data2));
+  const sigU = _mwSigma(n1, n2, tieSum);
+  const exact = _isExact(n1, n2, hasTies);
 
   let z, pValue;
-  if (direction === 'two-sided') {
-    z = (U - muU) / sigU;
-    pValue = 2 * normalCDF(z);
-  } else if (direction === 'greater') {
-    z = (U1 - muU) / sigU;
-    pValue = 1 - normalCDF(z);
+  if (sigU === 0) {
+    z = 0; pValue = 1;
   } else {
-    z = (U1 - muU) / sigU;
-    pValue = normalCDF(z);
+    if (direction === 'two-sided') z = (U1 - muU - 0.5 * Math.sign(U1 - muU)) / sigU;
+    else if (direction === 'greater') z = (U1 - muU - 0.5) / sigU;
+    else z = (U1 - muU + 0.5) / sigU;
+
+    if (exact) {
+      const cdf = _uDistribution(n1, n2);
+      // U1 is an integer without ties; tails of U1 under H0
+      const lower = cdf[U1];                         // P(U ≤ U1)
+      const upper = U1 > 0 ? 1 - cdf[U1 - 1] : 1;    // P(U ≥ U1)
+      if (direction === 'two-sided') pValue = 2 * Math.min(lower, upper);
+      else if (direction === 'greater') pValue = upper;
+      else pValue = lower;
+    } else if (direction === 'two-sided') {
+      pValue = 2 * (1 - normalCDF(Math.abs(z)));
+    } else if (direction === 'greater') {
+      pValue = 1 - normalCDF(z);
+    } else {
+      pValue = normalCDF(z);
+    }
   }
 
   return {
@@ -468,6 +561,7 @@ export function mannWhitneyU(data1, data2, direction = 'two-sided', alpha = 0.05
     reject: Math.min(1, Math.max(0, pValue)) < alpha,
     alpha,
     direction,
+    method: exact ? 'exact' : 'normal',
   };
 }
 

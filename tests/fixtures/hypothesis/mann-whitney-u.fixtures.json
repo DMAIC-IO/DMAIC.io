@@ -1,11 +1,11 @@
 {
   "algorithm_id": "mann-whitney-u",
   "generated_with": {
-    "python": "3.10.12",
-    "scipy": "1.15.3",
-    "numpy": "2.2.6"
+    "python": "3.14.4",
+    "scipy": "1.18.0",
+    "numpy": "2.5.1"
   },
-  "generated_at": "2026-04-11T18:31:20.521842+00:00",
+  "generated_at": "2026-10-05T17:15:13.360677+00:00",
   "generator_script": "tools/fixture-generator/generate_fixtures.py",
   "generator_version": "1.0.0",
   "tolerances": {
@@ -26,7 +26,7 @@
       "id": "mwu_standard_equal_distributions",
       "tier": "standard",
       "description": "Two samples from the same distribution — should not reject",
-      "reference": "JS formula (no continuity, no tie correction)",
+      "reference": "scipy.stats.mannwhitneyu (exact if no ties and n < 50, else tie- and continuity-corrected normal; matches R wilcox.test)",
       "inputs": {
         "data1": [
           10.1,
@@ -59,20 +59,21 @@
         "statistic": 49.5,
         "U1": 49.5,
         "U2": 50.5,
-        "z": -0.03779644730092272,
-        "pValue": 0.9698499769931556,
+        "z": 0.0,
+        "pValue": 1.0,
         "R1": 104.5,
         "R2": 105.5,
         "n1": 10,
         "n2": 10,
-        "reject": false
+        "reject": false,
+        "method": "normal"
       }
     },
     {
       "id": "mwu_standard_shift_reject",
       "tier": "standard",
       "description": "Two samples with clear location shift — should reject",
-      "reference": "JS formula (no continuity, no tie correction)",
+      "reference": "scipy.stats.mannwhitneyu (exact if no ties and n < 50, else tie- and continuity-corrected normal; matches R wilcox.test)",
       "inputs": {
         "data1": [
           10.1,
@@ -105,20 +106,21 @@
         "statistic": 0.0,
         "U1": 0.0,
         "U2": 100.0,
-        "z": -3.779644730092272,
-        "pValue": 0.00015705228423075119,
+        "z": -3.7474878463273287,
+        "pValue": 0.00017861448837368162,
         "R1": 55.0,
         "R2": 155.0,
         "n1": 10,
         "n2": 10,
-        "reject": true
+        "reject": true,
+        "method": "normal"
       }
     },
     {
       "id": "mwu_standard_greater_reject",
       "tier": "standard",
       "description": "One-sided 'greater' — data1 stochastically larger",
-      "reference": "JS formula (no continuity, no tie correction)",
+      "reference": "scipy.stats.mannwhitneyu (exact if no ties and n < 50, else tie- and continuity-corrected normal; matches R wilcox.test)",
       "inputs": {
         "data1": [
           15.0,
@@ -151,20 +153,21 @@
         "statistic": 0.0,
         "U1": 100.0,
         "U2": 0.0,
-        "z": 3.779644730092272,
-        "pValue": 7.85261421153427e-05,
+        "z": 3.7474878463273287,
+        "pValue": 8.930724418684081e-05,
         "R1": 155.0,
         "R2": 55.0,
         "n1": 10,
         "n2": 10,
-        "reject": true
+        "reject": true,
+        "method": "normal"
       }
     },
     {
       "id": "mwu_standard_less_reject",
       "tier": "standard",
       "description": "One-sided 'less' — data1 stochastically smaller",
-      "reference": "JS formula (no continuity, no tie correction)",
+      "reference": "scipy.stats.mannwhitneyu (exact if no ties and n < 50, else tie- and continuity-corrected normal; matches R wilcox.test)",
       "inputs": {
         "data1": [
           10.1,
@@ -197,20 +200,21 @@
         "statistic": 0.0,
         "U1": 0.0,
         "U2": 100.0,
-        "z": -3.779644730092272,
-        "pValue": 7.852614211537559e-05,
+        "z": -3.7474878463273287,
+        "pValue": 8.930724418684081e-05,
         "R1": 55.0,
         "R2": 155.0,
         "n1": 10,
         "n2": 10,
-        "reject": true
+        "reject": true,
+        "method": "normal"
       }
     },
     {
       "id": "mwu_standard_asymmetric_n",
       "tier": "standard",
       "description": "Asymmetric n1=8, n2=20",
-      "reference": "JS formula (no continuity, no tie correction)",
+      "reference": "scipy.stats.mannwhitneyu (exact if no ties and n < 50, else tie- and continuity-corrected normal; matches R wilcox.test)",
       "inputs": {
         "data1": [
           5.0,
@@ -251,20 +255,21 @@
         "statistic": 0.0,
         "U1": 0.0,
         "U2": 160.0,
-        "z": -4.068381021724862,
-        "pValue": 4.734092357235181e-05,
+        "z": -4.068644721833739,
+        "pValue": 4.728738630573295e-05,
         "R1": 36.0,
         "R2": 370.0,
         "n1": 8,
         "n2": 20,
-        "reject": true
+        "reject": true,
+        "method": "normal"
       }
     },
     {
       "id": "mwu_standard_with_ties",
       "tier": "standard",
       "description": "Samples with many ties across groups",
-      "reference": "JS formula (no continuity, no tie correction)",
+      "reference": "scipy.stats.mannwhitneyu (exact if no ties and n < 50, else tie- and continuity-corrected normal; matches R wilcox.test)",
       "inputs": {
         "data1": [
           5,
@@ -303,14 +308,15 @@
         "R2": 105.0,
         "n1": 10,
         "n2": 10,
-        "reject": false
+        "reject": false,
+        "method": "normal"
       }
     },
     {
       "id": "mwu_standard_alpha_001",
       "tier": "standard",
       "description": "Borderline shift at stricter α=0.01",
-      "reference": "JS formula (no continuity, no tie correction)",
+      "reference": "scipy.stats.mannwhitneyu (exact if no ties and n < 50, else tie- and continuity-corrected normal; matches R wilcox.test)",
       "inputs": {
         "data1": [
           10.0,
@@ -347,20 +353,21 @@
         "statistic": 1.0,
         "U1": 1.0,
         "U2": 143.0,
-        "z": -4.099186911246343,
-        "pValue": 4.146041132679973e-05,
+        "z": -4.091723503638591,
+        "pValue": 4.281789934881688e-05,
         "R1": 79.0,
         "R2": 221.0,
         "n1": 12,
         "n2": 12,
-        "reject": true
+        "reject": true,
+        "method": "normal"
       }
     },
     {
       "id": "mwu_standard_alpha_010",
       "tier": "standard",
       "description": "Same case at looser α=0.10",
-      "reference": "JS formula (no continuity, no tie correction)",
+      "reference": "scipy.stats.mannwhitneyu (exact if no ties and n < 50, else tie- and continuity-corrected normal; matches R wilcox.test)",
       "inputs": {
         "data1": [
           10.0,
@@ -397,20 +404,21 @@
         "statistic": 1.0,
         "U1": 1.0,
         "U2": 143.0,
-        "z": -4.099186911246343,
-        "pValue": 4.146041132679973e-05,
+        "z": -4.091723503638591,
+        "pValue": 4.281789934881688e-05,
         "R1": 79.0,
         "R2": 221.0,
         "n1": 12,
         "n2": 12,
-        "reject": true
+        "reject": true,
+        "method": "normal"
       }
     },
     {
       "id": "mwu_edge_min_samples",
       "tier": "edge",
       "description": "Minimum valid sample size (n1=n2=1)",
-      "reference": "JS formula (no continuity, no tie correction)",
+      "reference": "scipy.stats.mannwhitneyu (exact if no ties and n < 50, else tie- and continuity-corrected normal; matches R wilcox.test)",
       "inputs": {
         "data1": [
           5.0
@@ -425,20 +433,21 @@
         "statistic": 0.0,
         "U1": 0.0,
         "U2": 1.0,
-        "z": -1.0,
-        "pValue": 0.31731050786291415,
+        "z": 0.0,
+        "pValue": 1.0,
         "R1": 1.0,
         "R2": 2.0,
         "n1": 1,
         "n2": 1,
-        "reject": false
+        "reject": false,
+        "method": "exact"
       }
     },
     {
       "id": "mwu_edge_tiny_values",
       "tier": "edge",
       "description": "Very small magnitudes (~1e-10)",
-      "reference": "JS formula (no continuity, no tie correction)",
+      "reference": "scipy.stats.mannwhitneyu (exact if no ties and n < 50, else tie- and continuity-corrected normal; matches R wilcox.test)",
       "inputs": {
         "data1": [
           1e-10,
@@ -467,20 +476,21 @@
         "statistic": 0.0,
         "U1": 0.0,
         "U2": 64.0,
-        "z": -3.3606722016672235,
-        "pValue": 0.0007775304469403846,
+        "z": -3.308161698516173,
+        "pValue": 0.0001554001554001554,
         "R1": 36.0,
         "R2": 100.0,
         "n1": 8,
         "n2": 8,
-        "reject": true
+        "reject": true,
+        "method": "exact"
       }
     },
     {
       "id": "mwu_edge_large_values",
       "tier": "edge",
       "description": "Very large magnitudes (~1e12)",
-      "reference": "JS formula (no continuity, no tie correction)",
+      "reference": "scipy.stats.mannwhitneyu (exact if no ties and n < 50, else tie- and continuity-corrected normal; matches R wilcox.test)",
       "inputs": {
         "data1": [
           1000000000000.0,
@@ -509,13 +519,338 @@
         "statistic": 0.0,
         "U1": 0.0,
         "U2": 64.0,
-        "z": -3.3606722016672235,
-        "pValue": 0.0007775304469403846,
+        "z": -3.308161698516173,
+        "pValue": 0.0001554001554001554,
         "R1": 36.0,
         "R2": 100.0,
         "n1": 8,
         "n2": 8,
-        "reject": true
+        "reject": true,
+        "method": "exact"
+      }
+    },
+    {
+      "id": "mwu_exact_greater",
+      "tier": "standard",
+      "description": "Exact one-sided greater, tie-free n1=8, n2=7",
+      "reference": "scipy.stats.mannwhitneyu exact",
+      "inputs": {
+        "data1": [
+          12.4,
+          13.1,
+          11.8,
+          14.2,
+          13.7,
+          12.9,
+          15.0,
+          13.3
+        ],
+        "data2": [
+          11.2,
+          12.0,
+          10.7,
+          12.6,
+          11.5,
+          13.0,
+          10.9
+        ],
+        "direction": "greater",
+        "alpha": 0.05
+      },
+      "expected": {
+        "statistic": 6.0,
+        "U1": 50.0,
+        "U2": 6.0,
+        "z": 2.4881415181387316,
+        "pValue": 0.004662004662004662,
+        "n1": 8,
+        "n2": 7,
+        "reject": true,
+        "method": "exact"
+      }
+    },
+    {
+      "id": "mwu_exact_less",
+      "tier": "standard",
+      "description": "Exact one-sided less, same data swapped",
+      "reference": "scipy.stats.mannwhitneyu exact",
+      "inputs": {
+        "data1": [
+          11.2,
+          12.0,
+          10.7,
+          12.6,
+          11.5,
+          13.0,
+          10.9
+        ],
+        "data2": [
+          12.4,
+          13.1,
+          11.8,
+          14.2,
+          13.7,
+          12.9,
+          15.0,
+          13.3
+        ],
+        "direction": "less",
+        "alpha": 0.05
+      },
+      "expected": {
+        "statistic": 6.0,
+        "U1": 6.0,
+        "U2": 50.0,
+        "z": -2.4881415181387316,
+        "pValue": 0.004662004662004662,
+        "n1": 7,
+        "n2": 8,
+        "reject": true,
+        "method": "exact"
+      }
+    },
+    {
+      "id": "mwu_c1_018_regression",
+      "tier": "standard",
+      "description": "C1-018: tie-free 10 vs 10 near alpha; old uncorrected asymptotic normal p ≈ 0.00407, new exact p ≈ 0.00288 (old is larger, not smaller, than the exact value)",
+      "reference": "scipy.stats.mannwhitneyu exact",
+      "inputs": {
+        "data1": [
+          3.1,
+          4.6,
+          5.2,
+          5.9,
+          6.4,
+          6.8,
+          7.3,
+          7.7,
+          8.5,
+          9.6
+        ],
+        "data2": [
+          1.2,
+          2.0,
+          2.4,
+          2.9,
+          3.5,
+          3.8,
+          4.1,
+          4.9,
+          5.5,
+          6.1
+        ],
+        "direction": "two-sided",
+        "alpha": 0.05
+      },
+      "expected": {
+        "statistic": 12.0,
+        "U1": 88.0,
+        "U2": 12.0,
+        "z": 2.834733547569204,
+        "pValue": 0.002879473467708762,
+        "n1": 10,
+        "n2": 10,
+        "reject": true,
+        "method": "exact"
+      }
+    },
+    {
+      "id": "mwu_boundary_n49_exact",
+      "tier": "edge",
+      "description": "n1 = 49, n2 = 10 tie-free: still exact",
+      "reference": "scipy.stats.mannwhitneyu exact",
+      "inputs": {
+        "direction": "two-sided",
+        "alpha": 0.05,
+        "data1": [
+          10.679783901701809,
+          9.804408120693843,
+          9.611211106779347,
+          10.105336632283157,
+          10.852950791521554,
+          11.688981017132098,
+          13.466939124946014,
+          7.90137309235717,
+          9.141193039105165,
+          8.453535762392036,
+          10.336928679848173,
+          8.708647141201858,
+          11.360413475957927,
+          6.4303107030660005,
+          12.218568917961985,
+          7.629920966723642,
+          7.817937368959917,
+          10.36666172893356,
+          12.198327124056181,
+          10.191338608467476,
+          11.074519505404703,
+          12.377262211684457,
+          11.340996473125005,
+          8.35474698516364,
+          12.675617626607751,
+          12.79081271476324,
+          6.556091840278304,
+          8.331787327784994,
+          11.21267739302288,
+          9.49475523058993,
+          7.998903547583611,
+          9.243732082801937,
+          9.310702933476993,
+          10.836198263560368,
+          11.235452146003922,
+          8.752620427687898,
+          11.584729079856483,
+          10.98456297612496,
+          9.374187851525388,
+          13.810435251961461,
+          9.106802827770629,
+          10.658201040257719,
+          10.387110944476241,
+          10.076880647492905,
+          8.408361576876615,
+          10.235717608658009,
+          9.507984963603299,
+          11.388294919544943,
+          7.758818840065974
+        ],
+        "data2": [
+          8.187120704821927,
+          14.339605808004446,
+          11.269937691953205,
+          11.326274880614651,
+          12.290736702143935,
+          14.352895855745595,
+          11.9041689409175,
+          13.295215247710995,
+          9.237670093995273,
+          11.180187442512205
+        ]
+      },
+      "expected": {
+        "statistic": 128.0,
+        "U1": 128.0,
+        "U2": 362.0,
+        "z": -2.353655428806651,
+        "pValue": 0.016912662792603356,
+        "n1": 49,
+        "n2": 10,
+        "reject": true,
+        "method": "exact"
+      }
+    },
+    {
+      "id": "mwu_boundary_n50_normal",
+      "tier": "edge",
+      "description": "n1 = 50, n2 = 10 tie-free: normal approximation",
+      "reference": "scipy.stats.mannwhitneyu asymptotic, continuity-corrected",
+      "inputs": {
+        "direction": "two-sided",
+        "alpha": 0.05,
+        "data1": [
+          13.567619084602981,
+          9.442005472319524,
+          8.65589662635688,
+          10.949074843231745,
+          10.48859947687352,
+          5.941109728841695,
+          10.625881369121897,
+          10.892582951931487,
+          4.838309439243712,
+          11.81040247504172,
+          11.272178271869297,
+          7.552319436480765,
+          13.325560947338733,
+          10.166826840882365,
+          10.63562098109481,
+          11.63515654019841,
+          6.922601005574352,
+          9.891278789793365,
+          7.189493115332025,
+          11.160697055202386,
+          10.108690091974823,
+          10.31247686947136,
+          13.585611482171252,
+          10.564567970477555,
+          12.533570247016202,
+          8.415073501568829,
+          10.563645235302973,
+          12.769875427178796,
+          11.173958553232522,
+          10.934677397023266,
+          5.595957611634436,
+          10.335886166454479,
+          9.638724408193866,
+          8.379163803367325,
+          10.570914173940483,
+          11.393350857857305,
+          10.040531214085286,
+          9.945585254333531,
+          12.005478111846209,
+          9.643385022757986,
+          7.266490052260599,
+          10.031953165154116,
+          8.627501128890524,
+          8.500968640553255,
+          5.847986808782938,
+          7.6042150096590575,
+          8.508911435682275,
+          9.951298574426264,
+          11.024559188690572,
+          15.671793019425706
+        ],
+        "data2": [
+          8.02688625505424,
+          10.200816975929195,
+          11.36996913869765,
+          9.920978264467402,
+          13.911644160186961,
+          11.86106611267106,
+          9.00393049945608,
+          12.917837459114123,
+          9.900906276639093,
+          12.51728327245416
+        ]
+      },
+      "expected": {
+        "statistic": 191.0,
+        "U1": 191.0,
+        "U2": 309.0,
+        "z": -1.1603702066122874,
+        "pValue": 0.24589811151752627,
+        "n1": 50,
+        "n2": 10,
+        "reject": false,
+        "method": "normal"
+      }
+    },
+    {
+      "id": "mwu_edge_all_tied",
+      "tier": "edge",
+      "description": "All values identical: sigma = 0, p = 1, z = 0",
+      "reference": "definition",
+      "inputs": {
+        "data1": [
+          5,
+          5,
+          5
+        ],
+        "data2": [
+          5,
+          5
+        ],
+        "direction": "two-sided",
+        "alpha": 0.05
+      },
+      "expected": {
+        "statistic": 3.0,
+        "U1": 3.0,
+        "U2": 3.0,
+        "z": 0.0,
+        "pValue": 1.0,
+        "n1": 3,
+        "n2": 2,
+        "reject": false,
+        "method": "normal"
       }
     },
     {
@@ -579,7 +914,7 @@
       "id": "mwu_stress_n200_equal",
       "tier": "stress",
       "description": "n1=n2=200, same distribution",
-      "reference": "JS formula (no continuity, no tie correction)",
+      "reference": "scipy.stats.mannwhitneyu (exact if no ties and n < 50, else tie- and continuity-corrected normal; matches R wilcox.test)",
       "inputs": {
         "direction": "two-sided",
         "alpha": 0.05,
@@ -993,20 +1328,21 @@
         "statistic": 18530.0,
         "U1": 21470.0,
         "U2": 18530.0,
-        "z": -1.2714689994092867,
-        "pValue": 0.20356184927824406,
+        "z": 1.2710365269605082,
+        "pValue": 0.2037156542650176,
         "R1": 41570.0,
         "R2": 38630.0,
         "n1": 200,
         "n2": 200,
-        "reject": false
+        "reject": false,
+        "method": "normal"
       }
     },
     {
       "id": "mwu_stress_n500_shifted",
       "tier": "stress",
       "description": "n1=n2=500, location shift — should reject",
-      "reference": "JS formula (no continuity, no tie correction)",
+      "reference": "scipy.stats.mannwhitneyu (exact if no ties and n < 50, else tie- and continuity-corrected normal; matches R wilcox.test)",
       "inputs": {
         "direction": "two-sided",
         "alpha": 0.05,
@@ -2020,13 +2356,14 @@
         "statistic": 106568.0,
         "U1": 106568.0,
         "U2": 143432.0,
-        "z": -4.036231260620579,
-        "pValue": 5.431667766460306e-05,
+        "z": -4.036121770840289,
+        "pValue": 5.4342018945324844e-05,
         "R1": 231818.0,
         "R2": 268682.0,
         "n1": 500,
         "n2": 500,
-        "reject": true
+        "reject": true,
+        "method": "normal"
       }
     }
   ]

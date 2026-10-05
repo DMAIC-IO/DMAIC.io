@@ -29,7 +29,7 @@ function assertFields(result, expected, tol, id) {
   for (const [key, val] of Object.entries(expected)) {
     if (typeof val === 'number') {
       assertAlmostEqual(result[key], val, tol, `${id}: ${key} = ${result[key]}, expected ${val}`);
-    } else if (typeof val === 'boolean') {
+    } else if (typeof val === 'boolean' || typeof val === 'string') {
       assertEqual(result[key], val, `${id}: ${key} = ${result[key]}, expected ${val}`);
     }
   }
@@ -153,6 +153,20 @@ suite('Hypothesis — Mann-Whitney U (fixture validation)', () => {
       });
     }
   }
+});
+
+suite('Hypothesis — Mann-Whitney U (targeted)', () => {
+  test('all values tied: p = 1, z = 0, normal method', () => {
+    const r = mannWhitneyU([5, 5, 5], [5, 5]);
+    assertEqual(r.pValue, 1, 'p');
+    assertEqual(r.z, 0, 'z');
+    assertEqual(r.method, 'normal', 'method');
+  });
+  test('swapping the groups keeps the two-sided p', () => {
+    const a = [12.4, 13.1, 11.8, 14.2, 13.7, 12.9, 15.0, 13.3];
+    const b = [11.2, 12.0, 10.7, 12.6, 11.5, 13.0, 10.9];
+    assertAlmostEqual(mannWhitneyU(a, b).pValue, mannWhitneyU(b, a).pValue, { relative: 1e-12, absolute: 1e-15 }, 'p');
+  });
 });
 
 // ─── Wilcoxon Signed-Rank ──────────────────────────────────────
