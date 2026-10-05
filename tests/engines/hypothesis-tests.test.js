@@ -7,7 +7,7 @@ import { suite, test, assertAlmostEqual, assertEqual } from '../test-utils.js';
 import {
   chiSquareVarianceTest, fTest, leveneTest,
   oneSampleTTest, twoSampleTTest, welchTTest,
-  wilcoxonSignedRank, mannWhitneyU,
+  wilcoxonSignedRank, mannWhitneyU, hodgesLehmann,
   powerOneSampleT, powerTwoSampleT, findRequiredN,
 } from '../../js/engines/hypothesis-test-engine.js';
 
@@ -166,6 +166,83 @@ suite('Hypothesis — Mann-Whitney U (targeted)', () => {
     const a = [12.4, 13.1, 11.8, 14.2, 13.7, 12.9, 15.0, 13.3];
     const b = [11.2, 12.0, 10.7, 12.6, 11.5, 13.0, 10.9];
     assertAlmostEqual(mannWhitneyU(a, b).pValue, mannWhitneyU(b, a).pValue, { relative: 1e-12, absolute: 1e-15 }, 'p');
+  });
+});
+
+// ─── Hodges-Lehmann ────────────────────────────────────────────
+
+const hlData = await loadFixture('../fixtures/hypothesis/hodges-lehmann.fixtures.json');
+
+suite('Hypothesis — Hodges-Lehmann (fixture validation)', () => {
+  for (const tc of hlData.test_cases) {
+    if (tc.expected && Object.keys(tc.expected).length > 0) {
+      test(`${tc.id}: ${tc.description}`, () => {
+        const { data1, data2, alpha } = tc.inputs;
+        const result = hodgesLehmann(data1, data2, alpha);
+        assertFields(result, tc.expected, getTol(tc, hlData.tolerances), tc.id);
+      });
+    }
+    if (tc.expected_error) {
+      test(`${tc.id}: should throw — ${tc.description}`, () => {
+        let msg = null;
+        try { hodgesLehmann(tc.inputs.data1, tc.inputs.data2, tc.inputs.alpha); }
+        catch (e) { msg = e.message; }
+        if (msg == null) throw new Error(`${tc.id}: expected error`);
+        if (!msg.includes(tc.expected_error.message_contains)) throw new Error(`${tc.id}: message "${msg}"`);
+      });
+    }
+  }
+});
+
+/** Deterministic LCG in [0, 1). */
+function lcg(seed) {
+  let s = seed >>> 0;
+  return () => { s = (1664525 * s + 1013904223) >>> 0; return s / 4294967296; };
+}
+
+suite('Hypothesis — Hodges-Lehmann (targeted)', () => {
+  test('exact, tie-free: 0 ∈ CI ⇔ p > α on 20 datasets', () => {
+    for (let k = 0; k < 20; k++) {
+      const rnd = lcg(1000 + k);
+      const n1 = 4 + (k % 9), n2 = 5 + ((k * 7) % 11);
+      const shift = (k % 5) * 0.4;
+      // continuous values: ties have probability ~0
+      const x = Array.from({ length: n1 }, () => rnd() * 3 + shift);
+      const y = Array.from({ length: n2 }, () => rnd() * 3);
+      const hl = hodgesLehmann(x, y, 0.05);
+      const mw = mannWhitneyU(x, y, 'two-sided', 0.05);
+      assertEqual(hl.method, 'exact', `case ${k}: method`);
+      const contains0 = hl.lower <= 0 && hl.upper >= 0;
+      assertEqual(contains0, mw.pValue > 0.05, `case ${k}: CI [${hl.lower}, ${hl.upper}] vs p ${mw.pValue}`);
+    }
+  });
+
+  test('boundary: n = 49 exact, n = 50 normal, one tie → normal', () => {
+    const seq = n => Array.from({ length: n }, (_, i) => i * 1.01 + 0.3);
+    assertEqual(hodgesLehmann(seq(49), [100.5, 101.5], 0.05).method, 'exact', 'n=49');
+    assertEqual(hodgesLehmann(seq(50), [100.5, 101.5], 0.05).method, 'normal', 'n=50');
+    assertEqual(hodgesLehmann([1, 2, 3], [3, 4, 5], 0.05).method, 'normal', 'tie');
+  });
+
+  test('swapping the groups negates estimate and CI', () => {
+    const a = [12.4, 13.1, 11.8, 14.2, 13.7, 12.9, 15.0, 13.3];
+    const b = [11.2, 12.0, 10.7, 12.6, 11.5, 13.0, 10.9];
+    const ab = hodgesLehmann(a, b), ba = hodgesLehmann(b, a);
+    const tol = { relative: 1e-12, absolute: 1e-12 };
+    assertAlmostEqual(ba.estimate, -ab.estimate, tol, 'estimate');
+    assertAlmostEqual(ba.lower, -ab.upper, tol, 'lower');
+    assertAlmostEqual(ba.upper, -ab.lower, tol, 'upper');
+  });
+
+  test('n1 = n2 = 500 runs in under 200 ms', () => {
+    const rnd = lcg(7);
+    const x = Array.from({ length: 500 }, () => rnd());
+    const y = Array.from({ length: 500 }, () => rnd());
+    const t0 = performance.now();
+    const r = hodgesLehmann(x, y, 0.05);
+    const ms = performance.now() - t0;
+    assertEqual(r.method, 'normal', 'method');
+    if (ms > 200) throw new Error(`took ${ms.toFixed(0)} ms`);
   });
 });
 

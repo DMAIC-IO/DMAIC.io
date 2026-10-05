@@ -12,6 +12,7 @@
  *   - Welch t-Test               — μ₁ vs μ₂ with unequal variances
  *   - Wilcoxon Signed-Rank Test  — nonparametric one-sample location
  *   - Mann-Whitney U Test        — nonparametric two-sample location
+ *   - Hodges-Lehmann estimate     — shift η₁−η₂ with CI (order statistics)
  *
  * Power analysis:
  *   - powerChiSquare, powerFTest, powerOneSampleT, powerTwoSampleT
@@ -562,6 +563,67 @@ export function mannWhitneyU(data1, data2, direction = 'two-sided', alpha = 0.05
     alpha,
     direction,
     method: exact ? 'exact' : 'normal',
+  };
+}
+
+/**
+ * Hodges-Lehmann estimate of the location shift η₁ − η₂ with a two-sided CI
+ * (Hodges & Lehmann 1963; Lehmann 1975). The estimate is the median of all
+ * n₁·n₂ differences xᵢ − yⱼ; the CI bounds are order statistics of those
+ * differences: (d₍K₎, d₍n₁n₂+1−K₎).
+ *
+ * K: exact U distribution when there are no ties and n₁, n₂ < 50 (largest K
+ * with P(U ≤ K−1) ≤ α/2), else the tie-corrected normal approximation
+ * K = ⌊n₁n₂/2 − z₁₋α/₂·σ + ½⌋. K < 1 is clamped to 1, so the achieved
+ * confidence can fall below 1 − α; it is always reported.
+ *
+ * With ties, "0 ∈ CI ⇔ p ≥ α" holds only approximately.
+ *
+ * @param {number[]} data1 - First sample (x)
+ * @param {number[]} data2 - Second sample (y)
+ * @param {number} [alpha=0.05] - 1 − target confidence
+ * @returns {{estimate: number, lower: number, upper: number, K: number,
+ *   achievedConfidence: number, method: 'exact'|'normal', n1: number, n2: number}}
+ */
+export function hodgesLehmann(data1, data2, alpha = 0.05) {
+  _assertTwoSamples(data1, data2);
+  const n1 = data1.length, n2 = data2.length;
+  const M = n1 * n2;
+  const d = new Float64Array(M);
+  let idx = 0;
+  for (const x of data1) for (const y of data2) d[idx++] = x - y;
+  d.sort();
+  const estimate = M % 2 ? d[(M - 1) / 2] : (d[M / 2 - 1] + d[M / 2]) / 2;
+
+  const { hasTies, tieSum } = _tieInfo(data1.concat(data2));
+  const exact = _isExact(n1, n2, hasTies);
+  let K, achievedConfidence;
+  if (exact) {
+    const cdf = _uDistribution(n1, n2);
+    const eps = 1e-12;
+    K = 0;
+    while (K < cdf.length && cdf[K] <= alpha / 2 + eps) K++;
+    K = Math.max(1, K);
+    achievedConfidence = 1 - 2 * cdf[K - 1];
+  } else {
+    const sigma = _mwSigma(n1, n2, tieSum);
+    if (sigma === 0) {
+      K = 1; achievedConfidence = 0;
+    } else {
+      K = Math.max(1, Math.floor(M / 2 - normalQuantile(1 - alpha / 2) * sigma + 0.5));
+      achievedConfidence = 1 - 2 * normalCDF((K - 0.5 - M / 2) / sigma);
+    }
+  }
+
+  return {
+    estimate,
+    lower: d[K - 1],
+    upper: d[M - K],
+    K,
+    achievedConfidence,
+    method: exact ? 'exact' : 'normal',
+    n1,
+    n2,
   };
 }
 
