@@ -287,7 +287,7 @@ const mod = createModule({
         if (r.hl) {
           const achieved = fmt(r.hl.achievedConfidence * 100, 1);
           const methodText = r.hl.method === 'exact' ? _t('pMethodExact') : _t('pMethodNormal');
-          metrics.push({ label: _t('hlEstimateLabel'), value: fmt(r.hl.estimate), valueClass: '', title: _t('hlEstimateLabel'), algoId: 'hodges-lehmann' });
+          metrics.push({ label: _t('hlEstimateLabel'), value: fmt(r.hl.estimate), valueClass: '', title: _t('hlEstimateLabel'), algoId: ALGO_LAB_IDS['Hodges-Lehmann'] });
           metrics.push({
             label: _t('ciShiftLabel', { level: achieved }),
             value: `[${fmt(r.hl.lower)}, ${fmt(r.hl.upper)}]`,
@@ -323,7 +323,7 @@ const mod = createModule({
         } else if (r.hl) {
           const parts = [];
           if (!r.reject) parts.push(_t('ciShiftNote', { lo: fmt(r.hl.lower), hi: fmt(r.hl.upper) }));
-          if (r.hl.K === 1 && r.hl.achievedConfidence < 1 - alpha) {
+          if (r.hl.K === 1 && r.hl.achievedConfidence > 0 && r.hl.achievedConfidence < 1 - alpha - 1e-9) {
             parts.push(_t('ciShiftTooSmall', { level, achieved: fmt(r.hl.achievedConfidence * 100, 1) }));
           }
           ciNote = parts.join(' ');

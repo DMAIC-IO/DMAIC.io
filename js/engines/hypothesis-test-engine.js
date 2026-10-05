@@ -572,12 +572,15 @@ export function mannWhitneyU(data1, data2, direction = 'two-sided', alpha = 0.05
  * n₁·n₂ differences xᵢ − yⱼ; the CI bounds are order statistics of those
  * differences: (d₍K₎, d₍n₁n₂+1−K₎).
  *
- * K: exact U distribution when there are no ties and n₁, n₂ < 50 (largest K
- * with P(U ≤ K−1) ≤ α/2), else the tie-corrected normal approximation
- * K = ⌊n₁n₂/2 − z₁₋α/₂·σ + ½⌋. K < 1 is clamped to 1, so the achieved
- * confidence can fall below 1 − α; it is always reported.
+ * K: exact U distribution when there are no ties and n₁, n₂ < 50 — K =
+ * smallest u with P(U ≤ u) ≥ α/2 (R qwilcox), so P(U ≤ K−1) < α/2 — else the
+ * tie-corrected normal approximation K = ⌊n₁n₂/2 − z₁₋α/₂·σ + ½⌋. K < 1 is
+ * clamped to 1, so the achieved confidence can fall below 1 − α; it is
+ * always reported.
  *
- * With ties, "0 ∈ CI ⇔ p ≥ α" holds only approximately.
+ * 0 ∈ CI ⇔ p ≥ α (exact, tie-free). Residual edge: when K is clamped to 1
+ * and P(U ≤ 0) = α/2 exactly, p = α while the CI [min d, max d] can exclude
+ * 0 (same as R). With ties the relation holds only approximately.
  *
  * @param {number[]} data1 - First sample (x)
  * @param {number[]} data2 - Second sample (y)
@@ -601,8 +604,10 @@ export function hodgesLehmann(data1, data2, alpha = 0.05) {
   if (exact) {
     const cdf = _uDistribution(n1, n2);
     const eps = 1e-12;
+    // K = smallest u with P(U ≤ u) ≥ α/2 (R qwilcox), so P(U ≤ K−1) < α/2.
+    // Equality F(u) = α/2 is not counted.
     K = 0;
-    while (K < cdf.length && cdf[K] <= alpha / 2 + eps) K++;
+    while (K < cdf.length && cdf[K] < alpha / 2 - eps) K++;
     K = Math.max(1, K);
     achievedConfidence = 1 - 2 * cdf[K - 1];
   } else {

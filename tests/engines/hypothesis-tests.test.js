@@ -152,6 +152,16 @@ suite('Hypothesis — Mann-Whitney U (fixture validation)', () => {
         assertFields(result, tc.expected, getTol(tc, mwData.tolerances), tc.id);
       });
     }
+    if (tc.expected_error) {
+      test(`${tc.id}: should throw — ${tc.description}`, () => {
+        let err = null;
+        try { mannWhitneyU(tc.inputs.data1, tc.inputs.data2, tc.inputs.direction, tc.inputs.alpha); }
+        catch (e) { err = e; }
+        if (err == null) throw new Error(`${tc.id}: expected error`);
+        assertEqual(err.constructor.name, tc.expected_error.type, `${tc.id}: error type`);
+        if (!err.message.includes(tc.expected_error.message_contains)) throw new Error(`${tc.id}: message "${err.message}"`);
+      });
+    }
   }
 });
 
@@ -184,11 +194,12 @@ suite('Hypothesis — Hodges-Lehmann (fixture validation)', () => {
     }
     if (tc.expected_error) {
       test(`${tc.id}: should throw — ${tc.description}`, () => {
-        let msg = null;
+        let err = null;
         try { hodgesLehmann(tc.inputs.data1, tc.inputs.data2, tc.inputs.alpha); }
-        catch (e) { msg = e.message; }
-        if (msg == null) throw new Error(`${tc.id}: expected error`);
-        if (!msg.includes(tc.expected_error.message_contains)) throw new Error(`${tc.id}: message "${msg}"`);
+        catch (e) { err = e; }
+        if (err == null) throw new Error(`${tc.id}: expected error`);
+        assertEqual(err.constructor.name, tc.expected_error.type, `${tc.id}: error type`);
+        if (!err.message.includes(tc.expected_error.message_contains)) throw new Error(`${tc.id}: message "${err.message}"`);
       });
     }
   }
@@ -201,7 +212,7 @@ function lcg(seed) {
 }
 
 suite('Hypothesis — Hodges-Lehmann (targeted)', () => {
-  test('exact, tie-free: 0 ∈ CI ⇔ p > α on 20 datasets', () => {
+  test('exact, tie-free: 0 ∈ CI ⇔ p ≥ α on 20 datasets', () => {
     for (let k = 0; k < 20; k++) {
       const rnd = lcg(1000 + k);
       const n1 = 4 + (k % 9), n2 = 5 + ((k * 7) % 11);
@@ -213,8 +224,24 @@ suite('Hypothesis — Hodges-Lehmann (targeted)', () => {
       const mw = mannWhitneyU(x, y, 'two-sided', 0.05);
       assertEqual(hl.method, 'exact', `case ${k}: method`);
       const contains0 = hl.lower <= 0 && hl.upper >= 0;
-      assertEqual(contains0, mw.pValue > 0.05, `case ${k}: CI [${hl.lower}, ${hl.upper}] vs p ${mw.pValue}`);
+      assertEqual(contains0, mw.pValue >= 0.05, `case ${k}: CI [${hl.lower}, ${hl.upper}] vs p ${mw.pValue}`);
     }
+  });
+
+  test('equality boundary 3 vs 9, α = 0.10: K = 4 as R qwilcox, 0 ∈ CI and p = α', () => {
+    // P(U ≤ 4) = 11/220 = 0.05 = α/2 exactly; R: qwilcox(0.05, 3, 9) = 4.
+    // U1 = 4, so the exact two-sided p is 2 · 11/220 = 0.10 = α.
+    const x = [0.5, 1.5, 3.5];
+    const y = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+    const hl = hodgesLehmann(x, y, 0.10);
+    const mw = mannWhitneyU(x, y, 'two-sided', 0.10);
+    assertEqual(hl.method, 'exact', 'method');
+    assertEqual(hl.K, 4, 'K');
+    assertAlmostEqual(hl.achievedConfidence, 1 - 2 * 7 / 220, { relative: 1e-12, absolute: 1e-12 }, 'achieved');
+    assertEqual(hl.lower <= 0 && hl.upper >= 0, true, `0 ∈ CI [${hl.lower}, ${hl.upper}]`);
+    // p equals α in exact arithmetic; the float recursion (like scipy) lands
+    // 1 ulp below 0.10, so compare with a 1e-12 tolerance.
+    assertAlmostEqual(mw.pValue, 0.10, { relative: 0, absolute: 1e-12 }, 'p = α');
   });
 
   test('boundary: n = 49 exact, n = 50 normal, one tie → normal', () => {

@@ -5,7 +5,7 @@
     "scipy": "1.18.0",
     "numpy": "2.5.1"
   },
-  "generated_at": "2026-10-05T17:15:14.154842+00:00",
+  "generated_at": "2026-10-05T20:14:16.075905+00:00",
   "generator_script": "tools/fixture-generator/generate_fixtures.py",
   "generator_version": "1.0.0",
   "tolerances": {
@@ -205,6 +205,41 @@
         "method": "exact",
         "n1": 2,
         "n2": 2
+      }
+    },
+    {
+      "id": "hl_edge_equality_boundary_3v9",
+      "tier": "edge",
+      "description": "3 vs 9 tie-free, fully separated, alpha 0.10: P(U <= 4) = 11/220 = alpha/2 exactly; R qwilcox(0.05, 3, 9) = 4, so K = 4 (equality not counted), achieved 1 - 2 * 7/220",
+      "reference": "numpy median + scipy exact U distribution; K rule as R wilcox.test (qwilcox)",
+      "inputs": {
+        "data1": [
+          1,
+          2,
+          3
+        ],
+        "data2": [
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12
+        ],
+        "alpha": 0.1
+      },
+      "expected": {
+        "estimate": -6.0,
+        "lower": -9.0,
+        "upper": -3.0,
+        "K": 4,
+        "achievedConfidence": 0.9363636363636364,
+        "method": "exact",
+        "n1": 3,
+        "n2": 9
       }
     },
     {
@@ -678,6 +713,24 @@
       }
     },
     {
+      "id": "hl_robustness_empty_data2",
+      "tier": "robustness",
+      "description": "Empty data2 — should error",
+      "inputs": {
+        "data1": [
+          5.0,
+          6.0,
+          7.0
+        ],
+        "data2": [],
+        "alpha": 0.05
+      },
+      "expected_error": {
+        "type": "Error",
+        "message_contains": "At least 1 data point"
+      }
+    },
+    {
       "id": "hl_robustness_not_array",
       "tier": "robustness",
       "description": "data2 not an array — should error (same TypeError shape as mwu_robustness_not_array)",
@@ -692,7 +745,7 @@
       },
       "expected_error": {
         "type": "TypeError",
-        "message_contains": ""
+        "message_contains": "arrays"
       }
     }
   ]

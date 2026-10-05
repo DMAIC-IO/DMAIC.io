@@ -15,8 +15,8 @@
       "en": "Estimate and confidence interval of the location shift η₁−η₂ of two independent samples, matching the Mann-Whitney U test."
     },
     "long": {
-      "de": "Der Hodges-Lehmann-Schätzer ist der Median aller n₁·n₂ paarweisen Differenzen xᵢ − yⱼ. Das Konfidenzintervall besteht aus zwei Ordnungsstatistiken dieser Differenzen; der Index K kommt exakt aus der U-Verteilung (n₁, n₂ < 50, keine Bindungen) oder aus der Normalapproximation mit Bindungskorrektur. Weil K ganzzahlig ist, wird die erreichte Konfidenz ausgewiesen. Der Schätzer beschreibt die Verschiebung, nicht die Differenz der Mediane; beide stimmen nur überein, wenn die Verteilungen dieselbe Form haben. Mit Bindungen gilt ‚0 im KI genau dann, wenn p ≥ α‘ nur näherungsweise.",
-      "en": "The Hodges-Lehmann estimator is the median of all n₁·n₂ pairwise differences xᵢ − yⱼ. The confidence interval consists of two order statistics of these differences; the index K comes exactly from the U distribution (n₁, n₂ < 50, no ties) or from the normal approximation with tie correction. Because K is an integer, the achieved confidence is reported. The estimator describes the shift, not the difference of medians; the two coincide only when the distributions have the same shape. With ties, '0 in the CI iff p ≥ α' holds only approximately."
+      "de": "Der Hodges-Lehmann-Schätzer ist der Median aller n₁·n₂ paarweisen Differenzen xᵢ − yⱼ. Das Konfidenzintervall besteht aus zwei Ordnungsstatistiken dieser Differenzen; der Index K kommt exakt aus der U-Verteilung (n₁, n₂ < 50, keine Bindungen) oder aus der Normalapproximation mit Bindungskorrektur. Weil K ganzzahlig ist, wird die erreichte Konfidenz ausgewiesen. Der Schätzer beschreibt die Verschiebung, nicht die Differenz der Mediane; beide stimmen nur überein, wenn die Verteilungen dieselbe Form haben. Ohne Bindungen (exakt) gilt ‚0 im KI genau dann, wenn p ≥ α‘. Einzige Ausnahme: Wird K auf 1 begrenzt und ist P(U ≤ 0) genau α/2, dann ist p = α, das KI [min d, max d] kann 0 aber trotzdem ausschließen (wie in R). Mit Bindungen gilt die Beziehung nur näherungsweise.",
+      "en": "The Hodges-Lehmann estimator is the median of all n₁·n₂ pairwise differences xᵢ − yⱼ. The confidence interval consists of two order statistics of these differences; the index K comes exactly from the U distribution (n₁, n₂ < 50, no ties) or from the normal approximation with tie correction. Because K is an integer, the achieved confidence is reported. The estimator describes the shift, not the difference of medians; the two coincide only when the distributions have the same shape. Without ties (exact), '0 in the CI iff p ≥ α' holds. The only exception: when K is clamped to 1 and P(U ≤ 0) is exactly α/2, p = α, yet the CI [min d, max d] can still exclude 0 (same as R). With ties the relation holds only approximately."
     }
   },
 
@@ -40,10 +40,10 @@
       },
       {
         "label": "K (exakt)",
-        "latex": "K = \\max\\{k : P(U \\le k-1) \\le \\alpha/2\\}",
+        "latex": "K = \\max\\bigl(1,\\ \\#\\{u : P(U \\le u) < \\alpha/2\\}\\bigr) = \\max\\bigl(1,\\ \\min\\{u : P(U \\le u) \\ge \\alpha/2\\}\\bigr)",
         "description": {
-          "de": "Index K aus der exakten U-Verteilung (n₁, n₂ < 50, keine Bindungen)",
-          "en": "Index K from the exact U distribution (n₁, n₂ < 50, no ties)"
+          "de": "Index K aus der exakten U-Verteilung (n₁, n₂ < 50, keine Bindungen), wie R qwilcox: kleinstes u mit P(U ≤ u) ≥ α/2, also P(U ≤ K−1) < α/2; Gleichheit P(U ≤ u) = α/2 zählt nicht mit. K < 1 wird auf 1 begrenzt",
+          "en": "Index K from the exact U distribution (n₁, n₂ < 50, no ties), as R qwilcox: smallest u with P(U ≤ u) ≥ α/2, so P(U ≤ K−1) < α/2; equality P(U ≤ u) = α/2 is not counted. K < 1 is clamped to 1"
         }
       },
       {
@@ -62,7 +62,8 @@
     ],
     "limitations": [
       { "de": "Erreichte Konfidenz weicht wegen der Ganzzahligkeit von K vom Ziel ab; bei sehr kleinen Stichproben (z. B. 2 gegen 2) liegt sie deutlich darunter", "en": "Achieved confidence deviates from the target because K is an integer; for very small samples (e.g. 2 vs. 2) it falls noticeably below it" },
-      { "de": "Mit Bindungen ist das Intervall nur näherungsweise mit dem p-Wert des Mann-Whitney-Tests konsistent", "en": "With ties, the interval is only approximately consistent with the p-value of the Mann-Whitney test" }
+      { "de": "Mit Bindungen ist das Intervall nur näherungsweise mit dem p-Wert des Mann-Whitney-Tests konsistent", "en": "With ties, the interval is only approximately consistent with the p-value of the Mann-Whitney test" },
+      { "de": "Randfall: Ist K auf 1 begrenzt und P(U ≤ 0) genau α/2, dann ist p = α, das KI [min d, max d] kann 0 aber ausschließen (wie in R)", "en": "Edge case: when K is clamped to 1 and P(U ≤ 0) is exactly α/2, p = α, yet the CI [min d, max d] can exclude 0 (same as R)" }
     ],
     "references": [
       { "source": "Hodges, J. L. & Lehmann, E. L. (1963), Estimates of location based on rank tests, Annals of Mathematical Statistics 34(2), 598–611" },
@@ -103,7 +104,10 @@
           "lower": { "type": "number", "description": { "de": "Untere Grenze des Konfidenzintervalls", "en": "Lower bound of the confidence interval" } },
           "upper": { "type": "number", "description": { "de": "Obere Grenze des Konfidenzintervalls", "en": "Upper bound of the confidence interval" } },
           "achievedConfidence": { "type": "number", "description": { "de": "Tatsächlich erreichte Konfidenz (wegen Ganzzahligkeit von K)", "en": "Actually achieved confidence (because K is an integer)" } },
-          "method": { "type": "string", "description": { "de": "'exact' oder 'normal'", "en": "'exact' or 'normal'" } }
+          "K": { "type": "number", "description": { "de": "Index der Ordnungsstatistik der unteren KI-Grenze (1-basiert)", "en": "Order-statistic index of the lower CI bound (1-based)" } },
+          "method": { "type": "string", "description": { "de": "'exact' oder 'normal'", "en": "'exact' or 'normal'" } },
+          "n1": { "type": "number", "description": { "de": "Umfang der ersten Stichprobe", "en": "Size of the first sample" } },
+          "n2": { "type": "number", "description": { "de": "Umfang der zweiten Stichprobe", "en": "Size of the second sample" } }
         }
       }
     },

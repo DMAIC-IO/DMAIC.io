@@ -5,7 +5,7 @@
     "scipy": "1.18.0",
     "numpy": "2.5.1"
   },
-  "generated_at": "2026-10-05T17:15:13.360677+00:00",
+  "generated_at": "2026-10-05T20:14:16.907389+00:00",
   "generator_script": "tools/fixture-generator/generate_fixtures.py",
   "generator_version": "1.0.0",
   "tolerances": {
@@ -610,6 +610,46 @@
       }
     },
     {
+      "id": "mwu_anchor_r_uva",
+      "tier": "standard",
+      "description": "External anchor: R wilcox.test output published by UVA Library (W = 13, p = 0.04988), same data as hl_anchor_r_uva; exact, two-sided",
+      "reference": "R wilcox.test, https://library.virginia.edu/data/articles/the-wilcoxon-rank-sum-test",
+      "inputs": {
+        "data1": [
+          117.1,
+          121.3,
+          127.8,
+          121.9,
+          117.4,
+          124.5,
+          119.5,
+          115.1
+        ],
+        "data2": [
+          123.5,
+          125.3,
+          126.5,
+          127.9,
+          122.1,
+          125.6,
+          129.8,
+          117.2
+        ],
+        "direction": "two-sided",
+        "alpha": 0.05
+      },
+      "expected": {
+        "statistic": 13,
+        "U1": 13,
+        "U2": 51,
+        "pValue": 0.049883,
+        "reject": true,
+        "method": "exact",
+        "n1": 8,
+        "n2": 8
+      }
+    },
+    {
       "id": "mwu_c1_018_regression",
       "tier": "standard",
       "description": "C1-018: tie-free 10 vs 10 near alpha; old uncorrected asymptotic normal p ≈ 0.00407, new exact p ≈ 0.00288 (old is larger, not smaller, than the exact value)",
@@ -907,7 +947,7 @@
       },
       "expected_error": {
         "type": "TypeError",
-        "message_contains": ""
+        "message_contains": "arrays"
       }
     },
     {
