@@ -7,7 +7,7 @@
   "category": "hypothesis",
   "subcategory": "mean",
   "status": "validated",
-  "version": "1.0.0",
+  "version": "1.1.0",
 
   "description": {
     "short": {
@@ -15,8 +15,8 @@
       "en": "Nonparametric alternative to the two-sample t-test for independent samples."
     },
     "long": {
-      "de": "Der Mann-Whitney-U-Test (auch Wilcoxon-Rangsummentest) ist ein nichtparametrischer Test, der prüft, ob zwei unabhängige Stichproben aus der gleichen Verteilung stammen. Er basiert auf den kombinierten Rängen beider Stichproben und wird verwendet, wenn die Normalverteilungsannahme des t-Tests nicht erfüllt ist. Bei großen Stichproben wird eine Normalapproximation für den p-Wert verwendet.",
-      "en": "The Mann-Whitney U test (also Wilcoxon rank-sum test) is a nonparametric test that evaluates whether two independent samples come from the same distribution. It is based on the combined ranks of both samples and is used when the normality assumption of the t-test is not met. For large samples, a normal approximation is used for the p-value."
+      "de": "Der Mann-Whitney-U-Test (auch Wilcoxon-Rangsummentest) ist ein nichtparametrischer Test, der prüft, ob zwei unabhängige Stichproben aus der gleichen Verteilung stammen. Er basiert auf den kombinierten Rängen beider Stichproben und wird verwendet, wenn die Normalverteilungsannahme des t-Tests nicht erfüllt ist. Für n₁, n₂ < 50 ohne Bindungen wird der p-Wert exakt aus der U-Verteilung berechnet, sonst über die Normalapproximation mit Bindungs- und Stetigkeitskorrektur.",
+      "en": "The Mann-Whitney U test (also Wilcoxon rank-sum test) is a nonparametric test that evaluates whether two independent samples come from the same distribution. It is based on the combined ranks of both samples and is used when the normality assumption of the t-test is not met. For n₁, n₂ < 50 without ties the p-value is exact from the U distribution; otherwise a normal approximation with tie and continuity correction is used."
     }
   },
 
@@ -32,10 +32,10 @@
       },
       {
         "label": "z",
-        "latex": "z = \\frac{U - \\mu_U}{\\sigma_U}, \\quad \\mu_U = \\frac{n_1 n_2}{2}, \\quad \\sigma_U = \\sqrt{\\frac{n_1 n_2(n_1+n_2+1)}{12}}",
+        "latex": "z = \\frac{U_1 - \\mu_U \\mp \\tfrac12}{\\sigma_U}, \\quad \\mu_U = \\frac{n_1 n_2}{2}, \\quad \\sigma_U^2 = \\frac{n_1 n_2}{12}\\left[(N+1) - \\frac{\\sum (t^3 - t)}{N(N-1)}\\right]",
         "description": {
-          "de": "z-Approximation für große Stichproben",
-          "en": "z approximation for large samples"
+          "de": "Normalapproximation mit Stetigkeitskorrektur (½ in Richtung μ_U bzw. der Alternative) und Bindungskorrektur (t = Größe einer Bindungsgruppe); exakt aus der U-Verteilung bei n₁, n₂ < 50 ohne Bindungen",
+          "en": "Normal approximation with continuity correction (½ towards μ_U or the alternative) and tie correction (t = size of a tie group); exact from the U distribution for n₁, n₂ < 50 without ties"
         }
       },
       {
@@ -58,7 +58,8 @@
     ],
     "references": [
       { "source": "Mann, H. B. & Whitney, D. R. (1947), On a test of whether one of two random variables is stochastically larger than the other, Annals of Mathematical Statistics, 18(1), 50–60" },
-      { "source": "Hollander, M. & Wolfe, D. A. (2013), Nonparametric Statistical Methods, 3rd Ed." }
+      { "source": "Hollander, M. & Wolfe, D. A. (2013), Nonparametric Statistical Methods, 3rd Ed." },
+      { "source": "Lehmann, E. L. (1975), Nonparametrics: Statistical Methods Based on Ranks, Holden-Day" }
     ],
     "minitab_equivalent": "Stat > Nonparametrics > Mann-Whitney"
   },
@@ -99,7 +100,8 @@
           "statistic": { "type": "number", "description": { "de": "U-Statistik (min(U₁, U₂))", "en": "U statistic (min(U₁, U₂))" } },
           "z": { "type": "number", "description": { "de": "z-Wert (Normalapproximation)", "en": "z-value (normal approximation)" } },
           "pValue": { "type": "number", "description": { "de": "p-Wert", "en": "p-value" } },
-          "reject": { "type": "boolean", "description": { "de": "H₀ abgelehnt?", "en": "Reject H₀?" } }
+          "reject": { "type": "boolean", "description": { "de": "H₀ abgelehnt?", "en": "Reject H₀?" } },
+          "method": { "type": "string", "description": { "de": "'exact' oder 'normal'", "en": "'exact' or 'normal'" } }
         }
       }
     },
@@ -148,7 +150,7 @@
       ]
     },
     "output_schema": {
-      "display_fields": ["statistic", "U1", "U2", "z", "pValue", "R1", "R2", "n1", "n2", "reject"],
+      "display_fields": ["statistic", "U1", "U2", "z", "pValue", "R1", "R2", "n1", "n2", "reject", "method"],
       "primary_field": "statistic",
       "format": {
         "statistic": { "decimals": 1, "label": "U" },
@@ -160,7 +162,8 @@
         "R2": { "decimals": 1, "label": "R₂" },
         "n1": { "decimals": 0, "label": "n₁" },
         "n2": { "decimals": 0, "label": "n₂" },
-        "reject": { "decimals": 0, "label": { "de": "H₀ abgelehnt", "en": "Reject H₀" } }
+        "reject": { "decimals": 0, "label": { "de": "H₀ abgelehnt", "en": "Reject H₀" } },
+        "method": { "decimals": 0, "label": { "de": "Methode", "en": "Method" } }
       }
     }
   },
@@ -173,6 +176,16 @@
       "description": {
         "de": "Erstimplementierung mit U-Statistik, Rangsummen, z-Approximation und p-Wert",
         "en": "Initial implementation with U statistic, rank sums, z approximation and p-value"
+      },
+      "breaking": false
+    },
+    {
+      "version": "1.1.0",
+      "date": "2026-10-05",
+      "type": "fix",
+      "description": {
+        "de": "p-Wert exakt aus der U-Verteilung für n₁, n₂ < 50 ohne Bindungen, sonst Normalapproximation mit Bindungs- und Stetigkeitskorrektur (bisher ohne beide). Neues Feld method. z ist jetzt korrigiert und auf U₁ bezogen.",
+        "en": "p-value exact from the U distribution for n₁, n₂ < 50 without ties, otherwise normal approximation with tie and continuity correction (previously neither). New field method. z is now corrected and based on U₁."
       },
       "breaking": false
     }

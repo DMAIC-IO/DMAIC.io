@@ -1,0 +1,170 @@
+{
+  "id": "hodges-lehmann",
+  "name": {
+    "de": "Hodges-Lehmann-Schätzer (Lageverschiebung)",
+    "en": "Hodges-Lehmann Estimator (Location Shift)"
+  },
+  "category": "hypothesis",
+  "subcategory": "mean",
+  "status": "validated",
+  "version": "1.0.0",
+
+  "description": {
+    "short": {
+      "de": "Schätzer und Konfidenzintervall der Lageverschiebung η₁−η₂ zweier unabhängiger Stichproben, passend zum Mann-Whitney-U-Test.",
+      "en": "Estimate and confidence interval of the location shift η₁−η₂ of two independent samples, matching the Mann-Whitney U test."
+    },
+    "long": {
+      "de": "Der Hodges-Lehmann-Schätzer ist der Median aller n₁·n₂ paarweisen Differenzen xᵢ − yⱼ. Das Konfidenzintervall besteht aus zwei Ordnungsstatistiken dieser Differenzen; der Index K kommt exakt aus der U-Verteilung (n₁, n₂ < 50, keine Bindungen) oder aus der Normalapproximation mit Bindungskorrektur. Weil K ganzzahlig ist, wird die erreichte Konfidenz ausgewiesen. Der Schätzer beschreibt die Verschiebung, nicht die Differenz der Mediane; beide stimmen nur überein, wenn die Verteilungen dieselbe Form haben. Mit Bindungen gilt ‚0 im KI genau dann, wenn p ≥ α‘ nur näherungsweise.",
+      "en": "The Hodges-Lehmann estimator is the median of all n₁·n₂ pairwise differences xᵢ − yⱼ. The confidence interval consists of two order statistics of these differences; the index K comes exactly from the U distribution (n₁, n₂ < 50, no ties) or from the normal approximation with tie correction. Because K is an integer, the achieved confidence is reported. The estimator describes the shift, not the difference of medians; the two coincide only when the distributions have the same shape. With ties, '0 in the CI iff p ≥ α' holds only approximately."
+    }
+  },
+
+  "documentation": {
+    "formulas": [
+      {
+        "label": "Δ̂",
+        "latex": "\\hat\\Delta = \\operatorname{median}_{i,j}(x_i - y_j)",
+        "description": {
+          "de": "Hodges-Lehmann-Schätzer: Median aller n₁·n₂ paarweisen Differenzen",
+          "en": "Hodges-Lehmann estimator: median of all n₁·n₂ pairwise differences"
+        }
+      },
+      {
+        "label": "KI",
+        "latex": "[d_{(K)},\\, d_{(n_1 n_2 + 1 - K)}]",
+        "description": {
+          "de": "Konfidenzintervall als Ordnungsstatistiken der sortierten Differenzen d",
+          "en": "Confidence interval as order statistics of the sorted differences d"
+        }
+      },
+      {
+        "label": "K (exakt)",
+        "latex": "K = \\max\\{k : P(U \\le k-1) \\le \\alpha/2\\}",
+        "description": {
+          "de": "Index K aus der exakten U-Verteilung (n₁, n₂ < 50, keine Bindungen)",
+          "en": "Index K from the exact U distribution (n₁, n₂ < 50, no ties)"
+        }
+      },
+      {
+        "label": "K (Normalapproximation)",
+        "latex": "K = \\lfloor n_1 n_2/2 - z_{1-\\alpha/2}\\,\\sigma_U + \\tfrac12 \\rfloor",
+        "description": {
+          "de": "Index K aus der Normalapproximation mit Bindungskorrektur (σ_U wie beim Mann-Whitney-U-Test)",
+          "en": "Index K from the normal approximation with tie correction (σ_U as in the Mann-Whitney U test)"
+        }
+      }
+    ],
+    "assumptions": [
+      { "de": "Stichproben sind unabhängig", "en": "Samples are independent" },
+      { "de": "Beobachtungen sind stetig (mindestens ordinal)", "en": "Observations are continuous (at least ordinal)" },
+      { "de": "Beide Verteilungen haben die gleiche Form (Shift-Modell)", "en": "Both distributions have the same shape (shift model)" }
+    ],
+    "limitations": [
+      { "de": "Erreichte Konfidenz weicht wegen der Ganzzahligkeit von K vom Ziel ab; bei sehr kleinen Stichproben (z. B. 2 gegen 2) liegt sie deutlich darunter", "en": "Achieved confidence deviates from the target because K is an integer; for very small samples (e.g. 2 vs. 2) it falls noticeably below it" },
+      { "de": "Mit Bindungen ist das Intervall nur näherungsweise mit dem p-Wert des Mann-Whitney-Tests konsistent", "en": "With ties, the interval is only approximately consistent with the p-value of the Mann-Whitney test" }
+    ],
+    "references": [
+      { "source": "Hodges, J. L. & Lehmann, E. L. (1963), Estimates of location based on rank tests, Annals of Mathematical Statistics 34(2), 598–611" },
+      { "source": "Lehmann, E. L. (1975), Nonparametrics: Statistical Methods Based on Ranks, Holden-Day" },
+      { "source": "Hollander, M. & Wolfe, D. A. (2013), Nonparametric Statistical Methods, 3rd Ed." }
+    ],
+    "minitab_equivalent": "Stat > Nonparametrics > Mann-Whitney (point estimate and CI for η1 − η2)"
+  },
+
+  "source": {
+    "function_name": "hodgesLehmann",
+    "file_path": "js/engines/hypothesis-test-engine.js",
+    "signature": {
+      "parameters": [
+        {
+          "name": "data1",
+          "type": "number[]",
+          "required": true,
+          "description": { "de": "Erste Stichprobe", "en": "First sample" }
+        },
+        {
+          "name": "data2",
+          "type": "number[]",
+          "required": true,
+          "description": { "de": "Zweite Stichprobe", "en": "Second sample" }
+        },
+        {
+          "name": "alpha",
+          "type": "number",
+          "required": false,
+          "description": { "de": "Signifikanzniveau (Standard: 0.05)", "en": "Significance level (default: 0.05)" }
+        }
+      ],
+      "returns": {
+        "type": "object",
+        "properties": {
+          "estimate": { "type": "number", "description": { "de": "Schätzer der Lageverschiebung (Median der paarweisen Differenzen)", "en": "Estimate of the location shift (median of pairwise differences)" } },
+          "lower": { "type": "number", "description": { "de": "Untere Grenze des Konfidenzintervalls", "en": "Lower bound of the confidence interval" } },
+          "upper": { "type": "number", "description": { "de": "Obere Grenze des Konfidenzintervalls", "en": "Upper bound of the confidence interval" } },
+          "achievedConfidence": { "type": "number", "description": { "de": "Tatsächlich erreichte Konfidenz (wegen Ganzzahligkeit von K)", "en": "Actually achieved confidence (because K is an integer)" } },
+          "method": { "type": "string", "description": { "de": "'exact' oder 'normal'", "en": "'exact' or 'normal'" } }
+        }
+      }
+    },
+    "code_snippet": null
+  },
+
+  "try_it": {
+    "input_schema": {
+      "fields": [
+        {
+          "name": "data1",
+          "label": { "de": "Stichprobe 1", "en": "Sample 1" },
+          "type": "textarea",
+          "placeholder": { "de": "Werte der ersten Stichprobe", "en": "Values of first sample" },
+          "parse_as": "number_array",
+          "required": true
+        },
+        {
+          "name": "data2",
+          "label": { "de": "Stichprobe 2", "en": "Sample 2" },
+          "type": "textarea",
+          "placeholder": { "de": "Werte der zweiten Stichprobe", "en": "Values of second sample" },
+          "parse_as": "number_array",
+          "required": true
+        },
+        {
+          "name": "alpha",
+          "label": { "de": "Signifikanzniveau α", "en": "Significance Level α" },
+          "type": "number",
+          "placeholder": { "de": "0.05", "en": "0.05" },
+          "parse_as": "number",
+          "required": false
+        }
+      ]
+    },
+    "output_schema": {
+      "display_fields": ["estimate", "lower", "upper", "achievedConfidence", "K", "method", "n1", "n2"],
+      "primary_field": "estimate",
+      "format": {
+        "estimate": { "decimals": 4, "label": "η̂₁−η₂" },
+        "lower": { "decimals": 4, "label": { "de": "KI unten", "en": "CI lower" } },
+        "upper": { "decimals": 4, "label": { "de": "KI oben", "en": "CI upper" } },
+        "achievedConfidence": { "decimals": 4, "label": { "de": "Erreichte Konfidenz", "en": "Achieved confidence" } },
+        "K": { "decimals": 0, "label": "K" },
+        "n1": { "decimals": 0, "label": "n₁" },
+        "n2": { "decimals": 0, "label": "n₂" },
+        "method": { "decimals": 0, "label": { "de": "Methode", "en": "Method" } }
+      }
+    }
+  },
+
+  "changelog": [
+    {
+      "version": "1.0.0",
+      "date": "2026-10-05",
+      "type": "initial",
+      "description": {
+        "de": "Erstimplementierung: Median der paarweisen Differenzen, KI aus Ordnungsstatistiken (exakt oder Normalapproximation), erreichte Konfidenz",
+        "en": "Initial implementation: median of pairwise differences, CI from order statistics (exact or normal approximation), achieved confidence"
+      },
+      "breaking": false
+    }
+  ]
+}

@@ -31,6 +31,7 @@
     { "id": "welch-t-test", "path": "js/algorithm-lab/algorithms/hypothesis/welch-t-test.json" },
     { "id": "wilcoxon-signed-rank", "path": "js/algorithm-lab/algorithms/hypothesis/wilcoxon-signed-rank.json" },
     { "id": "mann-whitney-u", "path": "js/algorithm-lab/algorithms/hypothesis/mann-whitney-u.json" },
+    { "id": "hodges-lehmann", "path": "js/algorithm-lab/algorithms/hypothesis/hodges-lehmann.json" },
     { "id": "one-way-anova", "path": "js/algorithm-lab/algorithms/hypothesis/one-way-anova.json" },
     { "id": "kruskal-wallis", "path": "js/algorithm-lab/algorithms/hypothesis/kruskal-wallis.json" },
     { "id": "bartlett-test", "path": "js/algorithm-lab/algorithms/hypothesis/bartlett-test.json" },
