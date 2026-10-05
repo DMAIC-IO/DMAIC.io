@@ -228,7 +228,7 @@ suite('Hypothesis — Hodges-Lehmann (targeted)', () => {
     }
   });
 
-  test('equality boundary 3 vs 9, α = 0.10: K = 4 as R qwilcox, 0 ∈ CI and p = α', () => {
+  test('equality boundary 3 vs 9, α = 0.10: K = 4 as R qwilcox, 0 ∈ CI, p = α not rejected', () => {
     // P(U ≤ 4) = 11/220 = 0.05 = α/2 exactly; R: qwilcox(0.05, 3, 9) = 4.
     // U1 = 4, so the exact two-sided p is 2 · 11/220 = 0.10 = α.
     const x = [0.5, 1.5, 3.5];
@@ -239,9 +239,10 @@ suite('Hypothesis — Hodges-Lehmann (targeted)', () => {
     assertEqual(hl.K, 4, 'K');
     assertAlmostEqual(hl.achievedConfidence, 1 - 2 * 7 / 220, { relative: 1e-12, absolute: 1e-12 }, 'achieved');
     assertEqual(hl.lower <= 0 && hl.upper >= 0, true, `0 ∈ CI [${hl.lower}, ${hl.upper}]`);
-    // p equals α in exact arithmetic; the float recursion (like scipy) lands
-    // 1 ulp below 0.10, so compare with a 1e-12 tolerance.
-    assertAlmostEqual(mw.pValue, 0.10, { relative: 0, absolute: 1e-12 }, 'p = α');
+    // The float recursion lands 1 ulp below 0.10; the engine snaps it to α,
+    // so the test is not rejected — consistent with 0 ∈ CI, as in R.
+    assertEqual(mw.pValue, 0.10, 'p = α');
+    assertEqual(mw.reject, false, 'not rejected at p = α');
   });
 
   test('boundary: n = 49 exact, n = 50 normal, one tie → normal', () => {

@@ -539,6 +539,8 @@ export function mannWhitneyU(data1, data2, direction = 'two-sided', alpha = 0.05
       if (direction === 'two-sided') pValue = 2 * Math.min(lower, upper);
       else if (direction === 'greater') pValue = upper;
       else pValue = lower;
+      // Snap float noise so rational boundaries (p = α exactly) stay at α, as in R
+      pValue = Number(pValue.toPrecision(12));
     } else if (direction === 'two-sided') {
       pValue = 2 * (1 - normalCDF(Math.abs(z)));
     } else if (direction === 'greater') {
