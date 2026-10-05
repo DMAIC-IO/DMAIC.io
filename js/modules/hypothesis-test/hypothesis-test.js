@@ -22,7 +22,7 @@ import { State } from './hypothesis-test-model.js';
 import {
   chiSquareVarianceTest, fTest, leveneTest,
   oneSampleTTest, twoSampleTTest, welchTTest,
-  wilcoxonSignedRank, mannWhitneyU,
+  wilcoxonSignedRank, mannWhitneyU, hodgesLehmann,
   oneWayANOVA, leveneTestK, kruskalWallis, bartlettTest,
   powerChiSquare, powerFTest, powerOneSampleT, powerTwoSampleT,
   findRequiredN,
@@ -49,6 +49,7 @@ const ALGO_LAB_IDS = {
   'One-Way ANOVA': 'one-way-anova',
   'Kruskal-Wallis Test': 'kruskal-wallis',
   "Bartlett's Test": 'bartlett-test',
+  'Hodges-Lehmann': 'hodges-lehmann',
 };
 
 /** @param {number} v @param {number} [d] @returns {string} */
@@ -273,7 +274,7 @@ const mod = createModule({
         const metrics = [
           { label: _t('testMethod'), value: r.testName, algoId: ALGO_LAB_IDS[r.testName] || '', valueClass: 'hyptest__metric-value--sm', title: this._tip(_t('testMethod')) },
           { label: _t('statistic'), value: fmt(r.statistic), valueClass: '', title: this._tip(_t('statistic')) },
-          { label: 'p', value: fmt(r.pValue), valueClass: pCls, title: this._tip('p') },
+          { label: 'p', value: fmt(r.pValue), valueClass: pCls, title: r.method ? `${this._tip('p')} (${r.method === 'exact' ? _t('pMethodExact') : _t('pMethodNormal')})` : this._tip('p') },
         ];
         if (r.df != null) {
           metrics.push({ label: 'df', value: (typeof r.df === 'number' && r.df % 1) ? fmt(r.df, 1) : String(r.df), valueClass: '', title: this._tip('df') });
@@ -282,6 +283,17 @@ const mod = createModule({
         const isMeanDiff = !isVariance && isTwo && r.ci != null;
         if (r.ci) {
           metrics.push({ label: isMeanDiff ? _t('ciDiffLabel', { level }) : `${level}% KI`, value: `[${fmt(r.ci[0])}, ${fmt(r.ci[1])}]`, valueClass: 'hyptest__metric-value--sm', title: this._tip('KI') });
+        }
+        if (r.hl) {
+          const achieved = fmt(r.hl.achievedConfidence * 100, 1);
+          const methodText = r.hl.method === 'exact' ? _t('pMethodExact') : _t('pMethodNormal');
+          metrics.push({ label: _t('hlEstimateLabel'), value: fmt(r.hl.estimate), valueClass: '', title: _t('hlEstimateLabel'), algoId: 'hodges-lehmann' });
+          metrics.push({
+            label: _t('ciShiftLabel', { level: achieved }),
+            value: `[${fmt(r.hl.lower)}, ${fmt(r.hl.upper)}]`,
+            valueClass: 'hyptest__metric-value--sm',
+            title: _t('ciShiftTip', { level, achieved, method: methodText }),
+          });
         }
         if (r.mean != null) {
           metrics.push({ label: 'x̄', value: fmt(r.mean), valueClass: '', title: this._tip('x̄') });
@@ -305,9 +317,17 @@ const mod = createModule({
           ? `${_t('significant')}: ${_t('h0Rejected')}`
           : `${_t('notSignificant')}: ${_t('h0NotRejected')}`;
 
-        const ciNote = isMeanDiff && !r.reject
-          ? _t('ciDiffNote', { lo: fmt(r.ci[0]), hi: fmt(r.ci[1]) })
-          : '';
+        let ciNote = '';
+        if (isMeanDiff && !r.reject) {
+          ciNote = _t('ciDiffNote', { lo: fmt(r.ci[0]), hi: fmt(r.ci[1]) });
+        } else if (r.hl) {
+          const parts = [];
+          if (!r.reject) parts.push(_t('ciShiftNote', { lo: fmt(r.hl.lower), hi: fmt(r.hl.upper) }));
+          if (r.hl.K === 1 && r.hl.achievedConfidence < 1 - alpha) {
+            parts.push(_t('ciShiftTooSmall', { level, achieved: fmt(r.hl.achievedConfidence * 100, 1) }));
+          }
+          ciNote = parts.join(' ');
+        }
 
         return {
           h0, h1, ciNote,
@@ -488,6 +508,8 @@ const mod = createModule({
         else if (algo.id === 'ttest2p') r = twoSampleTTest(d1, d2, dir, alpha);
         else if (algo.id === 'welch') r = welchTTest(d1, d2, dir, alpha);
         else if (algo.id === 'mannwhitney') r = mannWhitneyU(d1, d2, dir, alpha);
+        // Shift estimate and CI for the rank test (two-sided, like the t CIs)
+        if (algo.id === 'mannwhitney') r = { ...r, hl: hodgesLehmann(d1, d2, alpha) };
 
         // Large-n parametric route: the rank test is shown alongside (C1-017)
         let secondary = null;
@@ -636,15 +658,20 @@ const mod = createModule({
             }
             const p = r.pValue;
             const pAdj = Math.min(1, p * m);
-            // Bonferroni CI of mu_i - mu_j: contains 0 exactly when pAdj >= alpha
-            const ci = (!isVariance && isNormal)
-              ? (useWelch ? welchTTest : twoSampleTTest)(groups[i], groups[j], 'two-sided', alpha / m).ci
-              : null;
+            // Bonferroni CI at alpha/m: t CI of mu_i - mu_j (normal path) or
+            // Hodges-Lehmann CI of the shift (rank path)
+            let ci = null;
+            if (!isVariance && isNormal) {
+              ci = (useWelch ? welchTTest : twoSampleTTest)(groups[i], groups[j], 'two-sided', alpha / m).ci;
+            } else if (!isVariance) {
+              const hl = hodgesLehmann(groups[i], groups[j], alpha / m);
+              ci = [hl.lower, hl.upper];
+            }
             comparisons.push({ i, j, p, pAdj, ci, equal: pAdj >= alpha });
           }
         }
         const letters = this._compactLetterDisplay(k, comparisons);
-        return { comparisons, letters, m, methodName };
+        return { comparisons, letters, m, methodName, isRank: !isVariance && !isNormal };
       },
 
       _compactLetterDisplay(k, comparisons) {
@@ -685,7 +712,7 @@ const mod = createModule({
       },
 
       _pairwiseSection(pairwise, refs, groups, _alpha) {
-        const { comparisons, m, methodName, letters } = pairwise;
+        const { comparisons, m, methodName, letters, isRank } = pairwise;
         const k = groups.length;
         const find = (i, j) => comparisons.find(c => (c.i === i && c.j === j) || (c.i === j && c.j === i));
         const headers = refs.map(ref => this._refName(ref));
@@ -709,7 +736,7 @@ const mod = createModule({
           methodName,
           methodAlgoId: ALGO_LAB_IDS[methodName] || '',
           hint: comparisons.some(c => c.ci)
-            ? `${_t('pairwiseHint', { m })}; ${_t('pairwiseCiHint')}`
+            ? `${_t('pairwiseHint', { m })}; ${_t(isRank ? 'pairwiseShiftCiHint' : 'pairwiseCiHint')}`
             : _t('pairwiseHint', { m }),
           headers,
           rows,
