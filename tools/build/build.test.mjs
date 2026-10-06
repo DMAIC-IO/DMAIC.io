@@ -1,10 +1,10 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { existsSync, readFileSync, rmSync, mkdirSync, mkdtempSync, readdirSync, symlinkSync, statSync } from 'node:fs';
+import { existsSync, readFileSync, rmSync, mkdirSync, mkdtempSync, readdirSync, symlinkSync, statSync, writeFileSync, appendFileSync, renameSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { bundleJs, assertEvalFree, readCssLinks, bundleCss, hash8, rewriteBlock, buildStylesBlock, buildScriptsBlock, runBuild, isWatchedSource } from './build.mjs';
+import { bundleJs, assertEvalFree, readCssLinks, bundleCss, hash8, rewriteBlock, buildStylesBlock, buildScriptsBlock, runBuild, isWatchedSource, watchSourceTree } from './build.mjs';
 import { renderIndexHtml } from '../build-templates/build.mjs';
 
 const APP_DIR = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
@@ -367,5 +367,67 @@ test('isWatchedSource ignores build outputs, JS and tool directories', () => {
     'js/core/glossary-data.generated.js', 'js/app.js', 'THIRD-PARTY-LICENSES.txt', 'package.json',
     'node_modules/x/y.json', 'tests/fixtures/a.json', 'tools/build/x.html', '.git/index', null]) {
     assert.equal(isWatchedSource(p), false, String(p));
+  }
+});
+
+/** Resolve once `predicate` holds for one of the reported paths, or fail after `ms`. */
+function waitForChange(seen, predicate, ms = 2000) {
+  return new Promise((resolve, reject) => {
+    const started = Date.now();
+    const poll = setInterval(() => {
+      if (seen.some(predicate)) { clearInterval(poll); resolve(); }
+      else if (Date.now() - started > ms) { clearInterval(poll); reject(new Error(`no change reported, saw: ${seen.join(', ')}`)); }
+    }, 20);
+  });
+}
+
+test('watchSourceTree keeps reporting a file after an editor replaced it by rename', async () => {
+  const root = mkdtempSync(join(tmpdir(), 'watch-'));
+  mkdirSync(join(root, 'mod'));
+  const file = join(root, 'mod', 'a.html');
+  writeFileSync(file, '<p>1</p>');
+  const seen = [];
+  const close = watchSourceTree(root, (rel) => seen.push(rel));
+  try {
+    // Atomic save: write a sibling, rename it over the original (new inode).
+    writeFileSync(`${file}.swp`, '<p>2</p>');
+    renameSync(`${file}.swp`, file);
+    await waitForChange(seen, (p) => p === join('mod', 'a.html'));
+    seen.length = 0;
+    appendFileSync(file, '<p>3</p>');
+    await waitForChange(seen, (p) => p === join('mod', 'a.html'));
+  } finally {
+    close();
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test('watchSourceTree picks up files in directories created after it started', async () => {
+  const root = mkdtempSync(join(tmpdir(), 'watch-'));
+  const seen = [];
+  const close = watchSourceTree(root, (rel) => seen.push(rel));
+  try {
+    mkdirSync(join(root, 'new'));
+    // Give the watcher a moment to arm the new directory.
+    await new Promise((r) => setTimeout(r, 100));
+    writeFileSync(join(root, 'new', 'b.css'), 'a{}');
+    await waitForChange(seen, (p) => p === join('new', 'b.css'));
+  } finally {
+    close();
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test('watchSourceTree does not descend into skipped directories', () => {
+  const root = mkdtempSync(join(tmpdir(), 'watch-'));
+  mkdirSync(join(root, 'node_modules', 'x'), { recursive: true });
+  mkdirSync(join(root, '.git'));
+  mkdirSync(join(root, 'js'));
+  const close = watchSourceTree(root, () => {});
+  try {
+    assert.deepEqual(close.dirs().sort(), ['', 'js']);
+  } finally {
+    close();
+    rmSync(root, { recursive: true, force: true });
   }
 });

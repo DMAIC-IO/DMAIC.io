@@ -9,7 +9,7 @@
  *   node tools/build/build.mjs --watch   # rebuild on change (dev daemon)
  */
 import { build as esbuild } from 'esbuild';
-import { readFileSync, writeFileSync, unlinkSync, existsSync, mkdirSync, renameSync, watch } from 'node:fs';
+import { readFileSync, writeFileSync, unlinkSync, existsSync, mkdirSync, renameSync, readdirSync, statSync, watch } from 'node:fs';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { join, dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -330,6 +330,52 @@ export function isWatchedSource(relPath) {
   return /\.(html|css|json)$/.test(relPath);
 }
 
+/**
+ * Watch every directory under `root` non-recursively and report changed paths.
+ *
+ * Node's `{ recursive: true }` watcher on Linux arms each file by inode, so a
+ * file replaced by rename — an editor's atomic save, `git checkout` — falls
+ * silent for good. A directory watch reports its entries by name and survives
+ * that. Directories created later are armed when they appear.
+ *
+ * @param {string} root
+ * @param {(relPath: string) => void} onChange  path relative to `root`
+ * @returns {(() => void) & { dirs: () => string[] }}  closes all watchers;
+ *   `dirs()` lists the watched directories relative to `root`
+ */
+export function watchSourceTree(root, onChange) {
+  const watchers = new Map();
+  const skipped = (name) => WATCH_SKIP_DIRS.includes(name) || name.startsWith('.');
+
+  const arm = (rel) => {
+    if (watchers.has(rel)) return;
+    const abs = join(root, rel);
+    let w;
+    try {
+      w = watch(abs, (_event, name) => {
+        if (!name) return;
+        const child = rel ? join(rel, name) : String(name);
+        if (!skipped(String(name))) {
+          try { if (statSync(join(root, child)).isDirectory()) arm(child); } catch { /* gone again */ }
+        }
+        onChange(child);
+      });
+    } catch { return; }
+    w.on('error', () => { w.close(); watchers.delete(rel); });
+    watchers.set(rel, w);
+    let entries = [];
+    try { entries = readdirSync(abs, { withFileTypes: true }); } catch { /* removed meanwhile */ }
+    for (const e of entries) {
+      if (e.isDirectory() && !skipped(e.name)) arm(rel ? join(rel, e.name) : e.name);
+    }
+  };
+
+  arm('');
+  const close = () => { for (const w of watchers.values()) w.close(); watchers.clear(); };
+  close.dirs = () => [...watchers.keys()];
+  return close;
+}
+
 async function main() {
   const args = process.argv.slice(2);
 
@@ -364,7 +410,7 @@ async function main() {
     // Templates, CSS and JSON are outside the JS import graph: watch them
     // separately and route them through the same onEnd full rebuild.
     let timer = null;
-    watch(APP_DIR, { recursive: true }, (_event, file) => {
+    watchSourceTree(APP_DIR, (file) => {
       if (!isWatchedSource(file)) return;
       clearTimeout(timer);
       timer = setTimeout(() => ctx.rebuild().catch((e) => console.error(e.message)), 150);
