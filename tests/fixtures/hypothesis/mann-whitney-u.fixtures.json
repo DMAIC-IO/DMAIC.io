@@ -5,7 +5,7 @@
     "scipy": "1.18.0",
     "numpy": "2.5.1"
   },
-  "generated_at": "2026-10-05T20:33:24.405983+00:00",
+  "generated_at": "2026-10-06T03:31:03.133125+00:00",
   "generator_script": "tools/fixture-generator/generate_fixtures.py",
   "generator_version": "1.0.0",
   "tolerances": {
@@ -891,6 +891,37 @@
         "n2": 2,
         "reject": false,
         "method": "normal"
+      }
+    },
+    {
+      "id": "mwu_edge_p_equals_alpha",
+      "tier": "edge",
+      "description": "3 vs 3 tie-free, fully separated, alpha 0.10: exact two-sided p = 2/20 = alpha, so H0 is not rejected (p < alpha is strict)",
+      "reference": "scipy.stats.mannwhitneyu exact, p snapped to 12 significant digits",
+      "inputs": {
+        "data1": [
+          1,
+          2,
+          3
+        ],
+        "data2": [
+          4,
+          5,
+          6
+        ],
+        "direction": "two-sided",
+        "alpha": 0.1
+      },
+      "expected": {
+        "statistic": 0.0,
+        "U1": 0.0,
+        "U2": 9.0,
+        "z": -1.7457431218879391,
+        "pValue": 0.1,
+        "n1": 3,
+        "n2": 3,
+        "reject": false,
+        "method": "exact"
       }
     },
     {

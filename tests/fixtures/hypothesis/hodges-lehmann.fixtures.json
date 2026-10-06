@@ -5,7 +5,7 @@
     "scipy": "1.18.0",
     "numpy": "2.5.1"
   },
-  "generated_at": "2026-10-05T20:33:25.530216+00:00",
+  "generated_at": "2026-10-06T03:31:02.271772+00:00",
   "generator_script": "tools/fixture-generator/generate_fixtures.py",
   "generator_version": "1.0.0",
   "tolerances": {
@@ -240,6 +240,35 @@
         "method": "exact",
         "n1": 3,
         "n2": 9
+      }
+    },
+    {
+      "id": "hl_edge_k1_p_equals_alpha",
+      "tier": "edge",
+      "description": "3 vs 3 tie-free, fully separated, alpha 0.10: P(U = 0) = 1/20 = alpha/2 exactly, so K = 0 is clamped to 1 and achieved is exactly 1 - alpha (no 'samples too small' note); exact p = alpha",
+      "reference": "numpy median + scipy exact U distribution; K rule as R wilcox.test (qwilcox)",
+      "inputs": {
+        "data1": [
+          1,
+          2,
+          3
+        ],
+        "data2": [
+          4,
+          5,
+          6
+        ],
+        "alpha": 0.1
+      },
+      "expected": {
+        "estimate": -3.0,
+        "lower": -5.0,
+        "upper": -1.0,
+        "K": 1,
+        "achievedConfidence": 0.9,
+        "method": "exact",
+        "n1": 3,
+        "n2": 3
       }
     },
     {
