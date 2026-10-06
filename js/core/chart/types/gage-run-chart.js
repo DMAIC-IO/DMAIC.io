@@ -271,7 +271,7 @@ export default class GageRunChartType extends ChartBase {
     const pa = this._plotArea;
     if (!panels.length || !pa || !this._xScale || !this._yScale) return [];
 
-    // Panel layout is in pixels, so compare in pixels and convert back at the end.
+    // Panel layout is in pixels, so compare and report in pixels.
     const px = this._xScale(dataX);
     const py = this._yScale(dataY);
     const panelW = pa.w / panels.length;
@@ -291,8 +291,8 @@ export default class GageRunChartType extends ChartBase {
         );
         results.push({
           node,
-          px: this._xScaleInv(slot.x),
-          py: slot.value,
+          px: slot.x,
+          py: sy,
           color: this._operatorColor(slot.opIndex),
           dist,
         });
