@@ -4,7 +4,7 @@
  */
 
 import { suite, test, assertEqual, assertDeepEqual } from '../test-utils.js';
-import { State, loopRailCells } from '../../js/modules/process-map/process-map-model.js';
+import { State, loopRailCells, loopPassColumns, loopArrowColumns } from '../../js/modules/process-map/process-map-model.js';
 
 suite('Process Map Model — construction & serialization', () => {
   test('constructor sets empty steps', () => {
@@ -325,5 +325,46 @@ suite('Process Map Model — loopRailCells()', () => {
 
   test('a source outside the table yields empty cells', () => {
     assertDeepEqual(loopRailCells(2, 5, 0), ['', '']);
+  });
+});
+
+suite('Process Map Model — loopPassColumns()', () => {
+  test('a single band has nothing to let through', () => {
+    assertDeepEqual(loopPassColumns(4, [{ sourceIdx: 3, targetIdx: 0 }]), [[]]);
+  });
+
+  test('upper band lets the lower band\'s target and source through', () => {
+    const lanes = [{ sourceIdx: 2, targetIdx: 0 }, { sourceIdx: 4, targetIdx: 1 }];
+    assertDeepEqual(loopPassColumns(5, lanes), [[1, 4], []]);
+  });
+
+  test('top band collects the verticals of every band below, deduplicated', () => {
+    const lanes = [
+      { sourceIdx: 1, targetIdx: 0 },
+      { sourceIdx: 3, targetIdx: 0 },
+      { sourceIdx: 4, targetIdx: -1 },
+    ];
+    assertDeepEqual(loopPassColumns(5, lanes), [[0, 3, 4], [4], []]);
+  });
+
+  test('an open rail rises only at its source', () => {
+    const lanes = [{ sourceIdx: 1, targetIdx: 0 }, { sourceIdx: 2, targetIdx: 2 }];
+    assertDeepEqual(loopPassColumns(3, lanes), [[2], []]);
+  });
+});
+
+suite('Process Map Model — loopArrowColumns()', () => {
+  test('one arrowhead per distinct valid target', () => {
+    const lanes = [
+      { sourceIdx: 1, targetIdx: 0 },
+      { sourceIdx: 3, targetIdx: 0 },
+      { sourceIdx: 4, targetIdx: 2 },
+      { sourceIdx: 5, targetIdx: -1 },
+    ];
+    assertDeepEqual(loopArrowColumns(6, lanes), [0, 2]);
+  });
+
+  test('no loops, no arrowheads', () => {
+    assertDeepEqual(loopArrowColumns(3, []), []);
   });
 });

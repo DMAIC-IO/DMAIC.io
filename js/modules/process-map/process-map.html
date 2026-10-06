@@ -176,15 +176,20 @@
             <!-- ─── Loop bands — one <tbody> per loop, ordered by source step.
                  Rail row: per-column modifiers draw the return path in CSS.
                  Body row: controls at the source column, rework chips running
-                 right → left (row-reverse). ─── -->
+                 right → left (row-reverse). Columns a lower band's rail passes
+                 through get a cell of their own, so the line stays at the
+                 column centre. ─── -->
             <template x-for="row in loopRows()" :key="'loop-' + row.stepId">
               <tbody class="pmap__loop" :data-step-id="row.stepId">
                 <tr class="pmap__loop-rail">
                   <template x-for="(cell, ci) in row.railCells" :key="ci">
-                    <td class="pmap__loop-rail-cell" :class="railCellClass(cell)"></td>
+                    <td class="pmap__loop-rail-cell" :class="railCellClass(row, ci)"></td>
                   </template>
                 </tr>
                 <tr class="pmap__loop-body">
+                  <template x-for="pc in row.preCols" :key="'pre-' + pc.col">
+                    <td class="pmap__loop-col" :class="pc.pass ? 'pmap__loop-col--pass' : ''"></td>
+                  </template>
                   <td class="pmap__loop-band" :colspan="row.leadSpan">
                     <div class="pmap__loop-band-inner">
                       <div class="pmap__loop-controls">
@@ -220,6 +225,7 @@
                         <div class="pmap__loop-step-item" :data-loop-step-id="ls.id" :data-parent-id="row.stepId">
                           <span class="pmap__loop-step-number"><span class="icon icon--sm" data-icon="flow.decision" aria-hidden="true"></span></span>
                           <input class="pmap__loop-step-title" type="text" :value="ls.title"
+                            :size="loopStepTitleSize(ls)"
                             :placeholder="t('loopStepPlaceholder')"
                             :data-loop-step-id="ls.id" :data-parent-id="row.stepId"
                             @input="loopStepTitleInput(row.stepId, ls.id, $event)">
@@ -238,8 +244,8 @@
                       </button>
                     </div>
                   </td>
-                  <template x-if="row.hasTrail">
-                    <td class="pmap__loop-trail" :colspan="row.trailSpan"></td>
+                  <template x-for="tc in row.trailCols" :key="'trail-' + tc.col">
+                    <td class="pmap__loop-col" :class="tc.pass ? 'pmap__loop-col--pass' : ''"></td>
                   </template>
                 </tr>
               </tbody>

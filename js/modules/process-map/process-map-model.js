@@ -330,3 +330,38 @@ export function loopRailCells(stepCount, sourceIdx, targetIdx) {
   cells[sourceIdx] = 'source';
   return cells;
 }
+
+/** Columns where a loop's rail rises to the cards: its valid target and its source. */
+function loopVerticals(stepCount, { sourceIdx, targetIdx }) {
+  if (sourceIdx < 0 || sourceIdx >= stepCount) return [];
+  return targetIdx >= 0 && targetIdx < sourceIdx ? [targetIdx, sourceIdx] : [sourceIdx];
+}
+
+/**
+ * Columns each loop band must let a lower band's rail pass through. Bands
+ * stack below the outputs row in the given order, so the rail of band k
+ * rises through every band above it; band j gets the verticals of all bands
+ * k > j. The view draws them as full-height lines in rail and body rows.
+ * @param {number} stepCount number of step columns
+ * @param {Array<{sourceIdx:number, targetIdx:number}>} lanes bands, top to bottom
+ * @returns {number[][]} per band, the sorted pass-through columns
+ */
+export function loopPassColumns(stepCount, lanes) {
+  const verticals = lanes.map((lane) => loopVerticals(stepCount, lane));
+  return lanes.map((_, j) => [...new Set(verticals.slice(j + 1).flat())].sort((a, b) => a - b));
+}
+
+/**
+ * Columns that get an arrowhead into the card above. Every rail ends at the
+ * outputs row, so all arrowheads sit in the topmost band — one per distinct
+ * valid loop target.
+ * @param {number} stepCount number of step columns
+ * @param {Array<{sourceIdx:number, targetIdx:number}>} lanes bands, top to bottom
+ * @returns {number[]} sorted target columns
+ */
+export function loopArrowColumns(stepCount, lanes) {
+  const targets = lanes
+    .filter(({ sourceIdx, targetIdx }) => sourceIdx < stepCount && targetIdx >= 0 && targetIdx < sourceIdx)
+    .map(({ targetIdx }) => targetIdx);
+  return [...new Set(targets)].sort((a, b) => a - b);
+}

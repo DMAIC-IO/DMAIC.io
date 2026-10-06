@@ -21,7 +21,7 @@ import {
   downloadFile, ensureXLSX, XLSX,
 } from '../../core/export-utils.js';
 import { exportPmapPNG, exportPmapSVG } from './process-map-export.js';
-import { State, loopRailCells } from './process-map-model.js';
+import { State, loopRailCells, loopPassColumns, loopArrowColumns } from './process-map-model.js';
 import { listSipocInstances, appendSipocProcess } from './process-map-sipoc-import.js';
 import { chainViewMixin } from '../../core/flowchart/flowchart-view.js';
 
@@ -317,8 +317,10 @@ export default createModule({
        * band <tbody> blocks below the outputs row. Pure function of the
        * model, so Alpine re-renders the bands on any change; no measuring.
        * @returns {Array<{stepId:string, sourceIdx:number, targetIdx:number,
-       *   railCells:string[], leadSpan:number, hasTrail:boolean,
-       *   trailSpan:number, targetOptions:Array<{id:string,label:string}>}>}
+       *   railCells:string[], passCols:number[], arrowCols:number[],
+       *   preCols:Array<{col:number, pass:boolean}>, leadSpan:number,
+       *   trailCols:Array<{col:number, pass:boolean}>,
+       *   targetOptions:Array<{id:string,label:string}>}>}
        */
       loopRows() {
         const steps = this.model.steps;
@@ -328,23 +330,43 @@ export default createModule({
           const targetIdx = step.loop.targetStepId
             ? this.model.stepIndexById(step.loop.targetStepId)
             : -1;
-          const trailSpan = steps.length - idx - 1;
           rows.push({
             stepId: step.id,
             sourceIdx: idx,
             targetIdx,
             railCells: loopRailCells(steps.length, idx, targetIdx),
-            leadSpan: idx + 1,
-            hasTrail: trailSpan > 0,
-            trailSpan,
             targetOptions: this._loopTargetOptions(idx),
           });
         });
+        // Lower bands' rails rise through the bands above them; all
+        // arrowheads sit in the top band, right under the outputs row.
+        const pass = loopPassColumns(steps.length, rows);
+        const arrows = loopArrowColumns(steps.length, rows);
+        // Columns a line passes get a cell of their own in the body row, so
+        // the line sits at the column centre without measuring; the chip
+        // cell spans from right of the last such column to the source.
+        rows.forEach((row, lane) => {
+          const passCols = pass[lane];
+          const before = passCols.filter((c) => c < row.sourceIdx);
+          const leadStart = before.length ? before[before.length - 1] + 1 : 0;
+          const col = (c) => ({ col: c, pass: passCols.includes(c) });
+          row.passCols = passCols;
+          row.arrowCols = lane === 0 ? arrows : [];
+          row.preCols = Array.from({ length: leadStart }, (_, c) => col(c));
+          row.leadSpan = row.sourceIdx - leadStart + 1;
+          row.trailCols = Array.from({ length: steps.length - row.sourceIdx - 1 },
+            (_, k) => col(row.sourceIdx + 1 + k));
+        });
         return rows;
       },
-      /** CSS modifier class for one rail cell ('' → no modifier). */
-      railCellClass(cell) {
-        return cell ? `pmap__loop-rail-cell--${cell}` : '';
+      /** CSS classes for rail cell ci of a band: its own modifier plus pass/arrow marks. */
+      railCellClass(row, ci) {
+        const cell = row.railCells[ci];
+        return [
+          cell ? `pmap__loop-rail-cell--${cell}` : '',
+          row.passCols.includes(ci) ? 'pmap__loop-rail-cell--pass' : '',
+          row.arrowCols.includes(ci) ? 'pmap__loop-rail-cell--arrow' : '',
+        ].filter(Boolean).join(' ');
       },
 
       // ── Loop band field handlers (declarative @input/@change/@click) ──
@@ -381,6 +403,16 @@ export default createModule({
         if (!step || !step.loop) return;
         const ls = step.loop.steps.find((s) => s.id === loopStepId);
         if (ls) ls.title = event.target.value;
+      },
+      /**
+       * Width of a loop step title input in characters, so the chip grows
+       * with its title (capped; the chip itself never exceeds its band).
+       * @param {{title:string}} ls
+       * @returns {number}
+       */
+      loopStepTitleSize(ls) {
+        const len = Math.max((ls.title || '').length, _t('loopStepPlaceholder').length);
+        return Math.min(len + 1, 48);
       },
       /** Loop steps for the band of the given step (for the nested x-for). */
       loopStepsOf(stepId) {

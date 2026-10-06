@@ -453,8 +453,17 @@
     center top / 2px 50% no-repeat;
 }
 
-/* Arrowhead into the target column. */
-.pmap__loop-rail-cell--target::before {
+/* A lower band's rail rising through this band: full-height line at the
+   column centre, in the rail row and in the band's own column cells. */
+.pmap__loop-rail-cell--pass,
+.pmap__loop-col--pass {
+  background: linear-gradient(var(--color-pmap-loop), var(--color-pmap-loop))
+    center / 2px 100% no-repeat;
+}
+
+/* Arrowhead into a target card — only the top band carries them, the
+   rails of lower bands reach it through the pass-through lines. */
+.pmap__loop-rail-cell--arrow::before {
   content: '';
   position: absolute;
   top: -2px;
@@ -484,20 +493,31 @@
   border-top-style: dashed;
 }
 
+.pmap__loop-col {
+  padding: 0;
+}
+
 .pmap__loop-band {
   padding: var(--spacing-xs) 0 var(--spacing-md);
   vertical-align: top;
+  overflow: clip; /* hides the « of a wrapped line's first chip, see below */
 }
 
+/* The flex row reaches one chip margin past the cell's right edge. The
+   controls take that margin back, so they stay flush with the column; a
+   chip that starts a wrapped line ends exactly at the edge, and its «
+   (which has no right-hand neighbour there) falls into the clipped strip. */
 .pmap__loop-band-inner {
   display: flex;
   flex-flow: row-reverse wrap;
   align-items: flex-start;
   gap: var(--spacing-sm);
+  margin-right: calc(-1 * var(--spacing-md));
 }
 
 .pmap__loop-controls {
   flex: 0 0 224px; /* one step column (.pmap__cell width) */
+  margin-right: var(--spacing-md); /* back to the cell edge, see band-inner */
   display: flex;
   flex-direction: column;
   gap: var(--spacing-sm);
@@ -575,7 +595,8 @@
 .pmap__loop-step-item {
   position: relative;
   flex: 0 0 auto;
-  width: 160px;
+  min-width: 160px;
+  max-width: calc(100% - var(--spacing-md)); /* never wider than the band */
   margin-right: var(--spacing-md); /* room for the « to the controls/next chip */
   display: flex;
   align-items: center;
@@ -644,6 +665,7 @@
 
 .pmap__loop-step-add {
   width: auto;
+  margin-right: var(--spacing-md); /* may start a wrapped line, see band-inner */
   padding: var(--spacing-xs) var(--spacing-sm);
   display: flex;
   align-items: center;
