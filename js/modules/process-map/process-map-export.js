@@ -1,14 +1,34 @@
 /**
- * D.Mike — Process Map image export helpers (process-map-export.js)
+ * D.Mike — Process Map image export (process-map-export.js)
  *
- * Pure rendering of a process-map steps array into a high-DPI PNG (Canvas-2D)
- * or a standalone SVG string. Lifted verbatim from the legacy module
- * (_exportImage / _drawPmapCanvas / _drawPmapSVGOut) so the exported pixels stay
- * byte-identical. No module/DOM dependencies beyond an offscreen <canvas> and
- * the CSS custom properties read from :root.
+ * One pure scene builder, two thin renderers (spec
+ * 2026-10-06-process-map-export-horizontal-design). `buildPmapScene` lays the
+ * steps out like the screen — one column per step, rows for inputs, cards and
+ * outputs, one loop band per loop below — and returns a flat list of drawing
+ * primitives. `renderSceneToCanvas` / `renderSceneToSVG` only paint them.
  */
 
 import { downloadBlob } from '../../core/export-utils.js';
+import { loopRailCells, loopPassColumns, loopArrowColumns } from './process-map-model.js';
+
+const FONT = 'DM Sans, system-ui, sans-serif';
+const PAD = 20;
+const COL_W = 224;
+const GAP = 32;        // column gap, holds the » connector
+const ROW_GAP = 10;
+const LABEL_H = 20;
+const IO_H = 26;
+const IO_GAP = 6;
+const HDR_H = 36;
+const DESC_H = 26;
+const SUB_BAR_H = 24;
+const SUB_H = 26;
+const RAIL_H = 20;
+const CTRL_H = 76;     // loop controls box: title, condition, target
+const CHIP_H = 26;
+const CHIP_MIN = 120;
+const CHIP_GAP = 16;   // room for the « between chips
+const LINE_GAP = 8;
 
 /** Read the themed colour palette from the document root. */
 function readColors() {
@@ -19,7 +39,6 @@ function readColors() {
     bgSecondary:  cv('--color-bg-secondary', '#f8f9fa'),
     bgTertiary:   cv('--color-bg-tertiary', '#e9ecef'),
     border:       cv('--color-border-secondary', '#dee2e6'),
-    borderStrong: cv('--color-border-primary', '#cacad0'),
     textPrimary:  cv('--color-text-primary', '#212529'),
     textSecondary: cv('--color-text-secondary', '#6c757d'),
     textTertiary: cv('--color-text-tertiary', '#adb5bd'),
@@ -40,465 +59,305 @@ function readColors() {
     paramBg:      cv('--color-pmap-param-bg', 'rgba(0,122,255,0.12)'),
     noise:        cv('--color-pmap-noise', '#af52de'),
     noiseBg:      cv('--color-pmap-noise-bg', 'rgba(175,82,222,0.12)'),
-  };
-}
-
-function truncate(str, max) {
-  if (!str) return '';
-  return str.length > max ? `${str.slice(0, max - 1)  }…` : str;
-}
-
-function roundRect(ctx, x, y, w, h, r) {
-  ctx.beginPath();
-  ctx.moveTo(x + r, y);
-  ctx.lineTo(x + w - r, y);
-  ctx.arcTo(x + w, y, x + w, y + r, r);
-  ctx.lineTo(x + w, y + h - r);
-  ctx.arcTo(x + w, y + h, x + w - r, y + h, r);
-  ctx.lineTo(x + r, y + h);
-  ctx.arcTo(x, y + h, x, y + h - r, r);
-  ctx.lineTo(x, y + r);
-  ctx.arcTo(x, y, x + r, y, r);
-  ctx.closePath();
-}
-
-function roundRectBottom(ctx, x, y, w, h, r) {
-  ctx.beginPath();
-  ctx.moveTo(x, y);
-  ctx.lineTo(x + w, y);
-  ctx.lineTo(x + w, y + h - r);
-  ctx.arcTo(x + w, y + h, x + w - r, y + h, r);
-  ctx.lineTo(x + r, y + h);
-  ctx.arcTo(x, y + h, x, y + h - r, r);
-  ctx.closePath();
-}
-
-/** Compute the per-step layout geometry shared by PNG + SVG renderers. */
-function computeLayout(steps) {
-  const PAD = 20;
-  const CARD_W = 280;
-  const IO_PANEL_W = 160;
-  const IO_GAP_X = 12;
-  const IO_ITEM_H = 28;
-  const IO_ITEM_GAP = 6;
-  const IO_LABEL_H = 18;
-  const HEADER_H = 36;
-  const DESC_LINE_H = 18;
-  const SUBSTEP_H = 26;
-  const SUBSTEPS_BAR_H = 24;
-  const CONNECTOR_H = 28;
-
-  const stepLayouts = steps.map((s) => {
-    const descH = s.description ? DESC_LINE_H + 8 : 0;
-    const subCount = (s.substeps || []).length;
-    const subH = subCount > 0 ? SUBSTEPS_BAR_H + subCount * SUBSTEP_H + 8 : SUBSTEPS_BAR_H;
-    const cardH = HEADER_H + descH + subH;
-    const inCount = s.inputs.filter((io) => io.name).length;
-    const outCount = s.outputs.filter((io) => io.name).length;
-    const ioH = IO_LABEL_H + 6 + Math.max(inCount, outCount, 0) * (IO_ITEM_H + IO_ITEM_GAP);
-    return { cardH, ioH, inCount, outCount, rowH: Math.max(cardH, ioH) };
-  });
-
-  const totalH = stepLayouts.reduce((a, l) => a + l.rowH, 0)
-    + Math.max(0, steps.length - 1) * CONNECTOR_H;
-  const W = PAD * 2 + IO_PANEL_W + IO_GAP_X + CARD_W + IO_GAP_X + IO_PANEL_W;
-  const H = PAD * 2 + totalH;
-  const cardX = PAD + IO_PANEL_W + IO_GAP_X;
-
-  return {
-    PAD, CARD_W, IO_PANEL_W, IO_GAP_X, IO_ITEM_H, IO_ITEM_GAP, IO_LABEL_H,
-    HEADER_H, DESC_LINE_H, SUBSTEP_H, SUBSTEPS_BAR_H, CONNECTOR_H,
-    stepLayouts, W, H, cardX,
+    loop:         cv('--color-pmap-loop', '#e67e22'),
+    loopBg:       cv('--color-pmap-loop-bg', 'rgba(230,126,34,0.08)'),
+    loopBorder:   cv('--color-pmap-loop-border', 'rgba(230,126,34,0.30)'),
   };
 }
 
 /**
- * Render the process map to a PNG and trigger a download.
+ * Lay out the process map as a flat list of drawing primitives in paint
+ * order. Pure: no DOM access; text widths come from the injected `measure`.
+ * Items: `rect {x,y,w,h,r?,fill?,stroke?,dash?}`, `line {x1,y1,x2,y2,stroke,width?,dash?}`,
+ * `polygon {points:[[x,y],…],fill}`, `text {x,y,text,size,weight?,fill,align?}`
+ * (y is the vertical text centre). Some items carry a `role` tag
+ * (card, rail, pass, arrow) that the renderers ignore.
+ * @param {Array<object>} steps process-map steps (model shape)
+ * @param {{t:(key:string)=>string, colors:object, measure:(text:string, size:number, weight?:number)=>number}} opts
+ * @returns {{width:number, height:number, items:Array<object>}}
+ */
+export function buildPmapScene(steps, { t, colors: c, measure }) {
+  const items = [];
+  const add = (kind, props) => items.push({ kind, ...props });
+  const text = (x, y, str, size, fill, extra = {}) => add('text', { x, y, text: str, size, fill, ...extra });
+  const fit = (str, size, maxW, weight = 400) => {
+    let s = String(str ?? '');
+    if (measure(s, size, weight) <= maxW) return s;
+    while (s && measure(`${s}…`, size, weight) > maxW) s = s.slice(0, -1);
+    return `${s}…`;
+  };
+  const badge = (x, y, h, str, size, fg, bg) => {
+    const w = measure(str, size, 600) + 10;
+    add('rect', { x, y, w, h, r: 4, fill: bg });
+    text(x + w / 2, y + h / 2, str, size, fg, { weight: 600, align: 'center' });
+    return w;
+  };
+
+  const n = steps.length;
+  const colX = (i) => PAD + i * (COL_W + GAP);
+  const cx = (i) => colX(i) + COL_W / 2;
+  const named = (list) => (list || []).filter((io) => io.name);
+  const ioH = (list) => LABEL_H + named(list).length * (IO_H + IO_GAP);
+  const subCount = (s) => (s.substeps || []).length;
+  const cardH = (s) => HDR_H + (s.description ? DESC_H : 0) + SUB_BAR_H + (subCount(s) ? subCount(s) * SUB_H + 8 : 0);
+  const maxOf = (fn) => Math.max(0, ...steps.map(fn));
+
+  const inRowH = maxOf((s) => ioH(s.inputs));
+  const cardRowH = maxOf(cardH);
+  const outRowH = maxOf((s) => ioH(s.outputs));
+  const cardTop = PAD + inRowH + ROW_GAP;
+  const outTop = cardTop + cardRowH + ROW_GAP;
+  const width = PAD * 2 + Math.max(n, 1) * COL_W + Math.max(n - 1, 0) * GAP;
+  const bg = { x: 0, y: 0, w: width, h: 0, fill: c.bgPrimary };
+  add('rect', bg);
+
+  steps.forEach((step, i) => {
+    const x = colX(i);
+    // Inputs, bottom-aligned above the card.
+    let y = PAD + inRowH - ioH(step.inputs);
+    text(x, y + LABEL_H / 2, `● ${t('inputs')} »`, 10, c.inputColor, { weight: 600 });
+    named(step.inputs).forEach((io, k) => {
+      const iy = y + LABEL_H + k * (IO_H + IO_GAP);
+      add('rect', { x, y: iy, w: COL_W, h: IO_H, r: 4, fill: c.inputBg });
+      add('rect', { x: x + 6, y: iy + IO_H / 2 - 3.5, w: 7, h: 7, r: 3.5, fill: c.inputColor });
+      let nameX = x + 20;
+      if (io.inputType) {
+        const param = io.inputType === 'param';
+        nameX += badge(nameX, iy + 4, IO_H - 8, t(param ? 'inputTypeParam' : 'inputTypeNoise'), 10,
+          param ? c.param : c.noise, param ? c.paramBg : c.noiseBg) + 4;
+      }
+      text(nameX, iy + IO_H / 2, fit(io.name, 11, x + COL_W - 6 - nameX), 11, c.textPrimary);
+    });
+
+    // Card.
+    add('rect', { x, y: cardTop, w: COL_W, h: cardRowH, r: 8, fill: c.bgSecondary, stroke: c.border, role: 'card' });
+    add('line', { x1: x, y1: cardTop + HDR_H, x2: x + COL_W, y2: cardTop + HDR_H, stroke: c.border });
+    let tx = x + 10;
+    tx += badge(tx, cardTop + 8, 20, String(i + 1).padStart(2, '0'), 11, c.accent, c.accentBg) + 6;
+    if (step.valueType) {
+      tx += badge(tx, cardTop + 8, 20, t(step.valueType), 10, c[step.valueType], c[`${step.valueType}Bg`]) + 6;
+    }
+    text(tx, cardTop + 18, fit(step.title || t('stepNamePlaceholder'), 13, x + COL_W - 10 - tx, 600), 13,
+      step.title ? c.textPrimary : c.textTertiary, { weight: 600 });
+    y = cardTop + HDR_H;
+    if (step.description) {
+      text(x + 12, y + DESC_H / 2, fit(step.description, 11, COL_W - 24), 11, c.textSecondary);
+      y += DESC_H;
+    }
+    const subs = step.substeps || [];
+    add('line', { x1: x, y1: y, x2: x + COL_W, y2: y, stroke: c.border });
+    const barColor = subs.length ? c.accent : c.textTertiary;
+    text(x + 10, y + SUB_BAR_H / 2, `${subs.length ? '▾' : '▸'} ${t('substepsLabel')}${subs.length ? ` (${subs.length})` : ''}`,
+      10, barColor, { weight: 600 });
+    subs.forEach((ss, k) => {
+      const sy = y + SUB_BAR_H + 4 + k * SUB_H;
+      add('rect', { x: x + 8, y: sy, w: COL_W - 16, h: SUB_H - 2, r: 4, fill: c.bgTertiary });
+      text(x + 14, sy + (SUB_H - 2) / 2, `${i + 1}.${k + 1}`, 11, c.accent);
+      text(x + 46, sy + (SUB_H - 2) / 2, fit(ss.title, 11, COL_W - 60), 11, c.textPrimary);
+    });
+    if (i < n - 1) {
+      text(x + COL_W + GAP / 2, cardTop + cardRowH / 2, '»', 18, c.connector, { align: 'center' });
+    }
+
+    // Outputs, top-aligned below the card.
+    text(x, outTop + LABEL_H / 2, `» ${t('outputs')} ●`, 10, c.outputColor, { weight: 600 });
+    named(step.outputs).forEach((io, k) => {
+      const oy = outTop + LABEL_H + k * (IO_H + IO_GAP);
+      add('rect', { x, y: oy, w: COL_W, h: IO_H, r: 4, fill: c.outputBg });
+      add('rect', { x: x + COL_W - 13, y: oy + IO_H / 2 - 3.5, w: 7, h: 7, r: 3.5, fill: c.outputColor });
+      text(x + 8, oy + IO_H / 2, fit(io.name, 11, COL_W - 28), 11, c.textPrimary);
+    });
+  });
+
+  // Loop bands, in source-step order, with the view's rail rules.
+  const lanes = [];
+  steps.forEach((step, i) => {
+    if (!step.loop) return;
+    const targetIdx = step.loop.targetStepId ? steps.findIndex((s) => s.id === step.loop.targetStepId) : -1;
+    lanes.push({ step, sourceIdx: i, targetIdx });
+  });
+  const pass = loopPassColumns(n, lanes);
+  const arrows = loopArrowColumns(n, lanes);
+  let y = outTop + outRowH;
+  lanes.forEach(({ step, sourceIdx: src, targetIdx }, lane) => {
+    const rail = (x1, x2, y1, y2, dash) => add('line', { x1, y1, x2, y2, stroke: c.loop, width: 2, dash, role: 'rail' });
+    const railY = y + RAIL_H / 2;
+    const bodyTop = y + RAIL_H + 4;
+    const before = pass[lane].filter((col) => col < src);
+    const left = before.length ? colX(before[before.length - 1] + 1) : colX(0);
+    const right = colX(src) + COL_W;
+
+    // Rework chips right → left; a wrapped line starts at the band's right edge.
+    const chips = [];
+    let line = 0;
+    let cursor = colX(src) - CHIP_GAP;
+    (step.loop.steps || []).forEach((ls) => {
+      const title = ls.title || t('loopStepPlaceholder');
+      const w = Math.min(Math.max(measure(title, 11) + 20, CHIP_MIN), right - left - CHIP_GAP);
+      let first = false;
+      if (cursor - w < left) { line += 1; cursor = right; first = true; }
+      const cy = line === 0 ? bodyTop : bodyTop + CTRL_H + LINE_GAP + (line - 1) * (CHIP_H + LINE_GAP);
+      chips.push({ x: cursor - w, y: cy, w, title, empty: !ls.title, arrow: !first });
+      cursor -= w + CHIP_GAP;
+    });
+    const bodyH = Math.max(CTRL_H, ...chips.map((ch) => ch.y + CHIP_H - bodyTop));
+    const bandH = RAIL_H + 4 + bodyH + 12;
+
+    pass[lane].forEach((col) => add('line', { x1: cx(col), y1: y, x2: cx(col), y2: y + bandH, stroke: c.loop, width: 2, role: 'pass' }));
+    loopRailCells(n, src, targetIdx).forEach((cell, col) => {
+      if (!cell) return;
+      if (cell !== 'span') rail(cx(col), cx(col), y, railY);
+      if (cell === 'target') rail(cx(col), colX(col) + COL_W, railY, railY);
+      if (cell === 'span') rail(colX(col) - GAP, colX(col) + COL_W, railY, railY);
+      if (cell === 'source') rail(colX(col) - GAP, cx(col), railY, railY);
+      if (cell === 'source-open') rail(colX(col) + COL_W / 4, cx(col), railY, railY, true);
+    });
+    if (lane === 0) {
+      arrows.forEach((col) => add('polygon', {
+        points: [[cx(col) - 5, y + 8], [cx(col) + 5, y + 8], [cx(col), y - 2]], fill: c.loop, role: 'arrow',
+      }));
+    }
+
+    // Controls box at the source column.
+    const bx = colX(src);
+    add('rect', { x: bx, y: bodyTop, w: COL_W, h: CTRL_H, r: 6, fill: c.loopBg, stroke: c.loopBorder });
+    add('line', { x1: bx + COL_W - 1.5, y1: bodyTop + 3, x2: bx + COL_W - 1.5, y2: bodyTop + CTRL_H - 3, stroke: c.loop, width: 3 });
+    const target = steps[targetIdx];
+    const targetLabel = target ? `${String(targetIdx + 1).padStart(2, '0')}${target.title ? ` — ${target.title}` : ''}` : '—';
+    text(bx + 10, bodyTop + 14, t('loopLabel'), 11, c.loop, { weight: 600 });
+    text(bx + 10, bodyTop + 36, fit(`${t('loopCondition')}: ${step.loop.condition || '—'}`, 11, COL_W - 24), 11, c.textPrimary);
+    text(bx + 10, bodyTop + 58, fit(`${t('loopTarget')}: ${targetLabel}`, 11, COL_W - 24), 11, c.textSecondary);
+
+    chips.forEach((ch) => {
+      add('rect', { x: ch.x, y: ch.y, w: ch.w, h: CHIP_H, r: 4, fill: c.bgSecondary, stroke: c.loopBorder });
+      text(ch.x + 10, ch.y + CHIP_H / 2, fit(ch.title, 11, ch.w - 20), 11, ch.empty ? c.textTertiary : c.textPrimary);
+      if (ch.arrow) text(ch.x + ch.w + CHIP_GAP / 2, ch.y + CHIP_H / 2, '«', 13, c.loop, { align: 'center' });
+    });
+    y += bandH;
+  });
+
+  bg.h = y + PAD;
+  return { width, height: bg.h, items };
+}
+
+/** Canvas/SVG font shorthand for a text item. */
+const fontOf = (it) => `${it.weight || 400} ${it.size}px ${FONT}`;
+
+/**
+ * Paint a scene onto a Canvas 2D context (already scaled by the caller).
+ * @param {{items:Array<object>}} scene
+ * @param {CanvasRenderingContext2D} ctx
+ */
+export function renderSceneToCanvas(scene, ctx) {
+  scene.items.forEach((it) => {
+    ctx.setLineDash(it.dash ? [4, 3] : []);
+    ctx.beginPath();
+    switch (it.kind) {
+      case 'rect':
+        ctx.roundRect(it.x, it.y, it.w, it.h, it.r || 0);
+        if (it.fill) { ctx.fillStyle = it.fill; ctx.fill(); }
+        if (it.stroke) { ctx.strokeStyle = it.stroke; ctx.lineWidth = 1; ctx.stroke(); }
+        break;
+      case 'line':
+        ctx.moveTo(it.x1, it.y1);
+        ctx.lineTo(it.x2, it.y2);
+        ctx.strokeStyle = it.stroke;
+        ctx.lineWidth = it.width || 1;
+        ctx.stroke();
+        break;
+      case 'polygon':
+        it.points.forEach(([x, y], k) => (k ? ctx.lineTo(x, y) : ctx.moveTo(x, y)));
+        ctx.closePath();
+        ctx.fillStyle = it.fill;
+        ctx.fill();
+        break;
+      case 'text':
+        ctx.font = fontOf(it);
+        ctx.fillStyle = it.fill;
+        ctx.textAlign = it.align || 'left';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(it.text, it.x, it.y);
+        break;
+      default:
+    }
+  });
+}
+
+const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+
+/** SVG paint attribute; rgb()/rgba() become hex plus an opacity attribute for wider viewer support. */
+function paint(attr, color) {
+  if (!color) return `${attr}="none"`;
+  const m = color.match(/^rgba?\(\s*(\d+)[\s,]+(\d+)[\s,]+(\d+)\s*(?:[,/]\s*([\d.]+)(%?))?\s*\)$/);
+  if (!m) return `${attr}="${esc(color)}"`;
+  const hex = `#${[m[1], m[2], m[3]].map((v) => Number(v).toString(16).padStart(2, '0')).join('')}`;
+  const alpha = m[4] === undefined ? 1 : Number(m[4]) / (m[5] ? 100 : 1);
+  return alpha < 1 ? `${attr}="${hex}" ${attr}-opacity="${alpha}"` : `${attr}="${hex}"`;
+}
+
+const ANCHOR = { left: 'start', center: 'middle', right: 'end' };
+
+/**
+ * Serialize a scene to a standalone SVG document string.
+ * @param {{width:number, height:number, items:Array<object>}} scene
+ * @returns {string}
+ */
+export function renderSceneToSVG({ width, height, items }) {
+  const body = items.map((it) => {
+    const dash = it.dash ? ' stroke-dasharray="4 3"' : '';
+    switch (it.kind) {
+      case 'rect':
+        return `<rect x="${it.x}" y="${it.y}" width="${it.w}" height="${it.h}"${it.r ? ` rx="${it.r}"` : ''} ${paint('fill', it.fill)}${it.stroke ? ` ${paint('stroke', it.stroke)}` : ''}${dash}/>`;
+      case 'line':
+        return `<line x1="${it.x1}" y1="${it.y1}" x2="${it.x2}" y2="${it.y2}" ${paint('stroke', it.stroke)} stroke-width="${it.width || 1}"${dash}/>`;
+      case 'polygon':
+        return `<polygon points="${it.points.map((p) => p.join(',')).join(' ')}" ${paint('fill', it.fill)}/>`;
+      case 'text':
+        return `<text x="${it.x}" y="${it.y}" ${paint('fill', it.fill)} font-size="${it.size}" font-weight="${it.weight || 400}" font-family="${FONT}" text-anchor="${ANCHOR[it.align || 'left']}" dominant-baseline="central">${esc(it.text)}</text>`;
+      default:
+        return '';
+    }
+  });
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">${body.join('')}</svg>`;
+}
+
+/** Build the scene with the live theme colours and canvas text metrics. */
+function sceneFor(steps, t) {
+  const mctx = document.createElement('canvas').getContext('2d');
+  const measure = (str, size, weight) => {
+    mctx.font = fontOf({ size, weight });
+    return mctx.measureText(str).width;
+  };
+  return buildPmapScene(steps, { t, colors: readColors(), measure });
+}
+
+/**
+ * Render the process map to a 2× PNG and trigger a download.
  * @param {Array<object>} steps
  * @param {(key:string)=>string} t i18n translator (bare keys)
  * @param {function} [notify]
  */
 export function exportPmapPNG(steps, t, notify) {
-  const c = readColors();
-  const L = computeLayout(steps);
-  const {
-    PAD, CARD_W, IO_GAP_X: IO_GX, IO_ITEM_H: IO_IH, IO_ITEM_GAP: IO_IG, IO_LABEL_H: IO_LH,
-    HEADER_H: HDR_H, DESC_LINE_H: DESC_LH, SUBSTEP_H: SUB_H, SUBSTEPS_BAR_H: SUB_BAR_H,
-    CONNECTOR_H: CONN_H, stepLayouts: layouts, W, H, cardX,
-  } = L;
-  const IO_PW = L.IO_PANEL_W;
-
+  const scene = sceneFor(steps, t);
   const scale = 2;
   const canvas = document.createElement('canvas');
-  canvas.width = W * scale;
-  canvas.height = H * scale;
+  canvas.width = scene.width * scale;
+  canvas.height = scene.height * scale;
   const ctx = canvas.getContext('2d');
   ctx.scale(scale, scale);
-
-  const FONT_SM = '11px "DM Sans", system-ui, sans-serif';
-  const FONT_MONO_XS = '11px "JetBrains Mono", monospace';
-  const FONT_TITLE = '600 13px "DM Sans", system-ui, sans-serif';
-  const FONT_LABEL = '600 10px "DM Sans", system-ui, sans-serif';
-
-  ctx.fillStyle = c.bgPrimary;
-  ctx.fillRect(0, 0, W, H);
-
-  let y = PAD;
-
-  steps.forEach((step, idx) => {
-    const layout = layouts[idx];
-    const rowH = layout.rowH;
-
-    ctx.fillStyle = c.bgSecondary;
-    ctx.strokeStyle = c.border;
-    ctx.lineWidth = 1;
-    roundRect(ctx, cardX, y, CARD_W, layout.cardH, 8);
-    ctx.fill();
-    ctx.stroke();
-
-    ctx.strokeStyle = c.border;
-    ctx.beginPath();
-    ctx.moveTo(cardX, y + HDR_H);
-    ctx.lineTo(cardX + CARD_W, y + HDR_H);
-    ctx.stroke();
-
-    const numText = String(idx + 1).padStart(2, '0');
-    ctx.font = FONT_MONO_XS;
-    const numW = ctx.measureText(numText).width + 12;
-    const pillX = cardX + 10;
-    const pillY = y + 8;
-    const pillH = 20;
-    roundRect(ctx, pillX, pillY, numW, pillH, 4);
-    ctx.fillStyle = c.accentBg;
-    ctx.fill();
-    ctx.fillStyle = c.accent;
-    ctx.font = FONT_MONO_XS;
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText(numText, pillX + numW / 2, pillY + pillH / 2);
-
-    let titleOffsetX = pillX + numW + 8;
-    if (step.valueType) {
-      const vtText = t(step.valueType);
-      ctx.font = FONT_LABEL;
-      const vtW = ctx.measureText(vtText).width + 10;
-      const vtX = pillX + numW + 4;
-      const vtColors = { va: [c.va, c.vaBg], bnva: [c.bnva, c.bnvaBg], nva: [c.nva, c.nvaBg] };
-      const [vtFg, vtBgColor] = vtColors[step.valueType];
-      roundRect(ctx, vtX, pillY, vtW, pillH, 4);
-      ctx.fillStyle = vtBgColor;
-      ctx.fill();
-      ctx.fillStyle = vtFg;
-      ctx.font = FONT_LABEL;
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillText(vtText, vtX + vtW / 2, pillY + pillH / 2);
-      titleOffsetX = vtX + vtW + 6;
-    }
-
-    ctx.fillStyle = c.textPrimary;
-    ctx.font = FONT_TITLE;
-    ctx.textAlign = 'left';
-    ctx.textBaseline = 'middle';
-    const title = step.title || t('stepNamePlaceholder');
-    ctx.fillText(truncate(title, 28), titleOffsetX, pillY + pillH / 2);
-
-    let contentY = y + HDR_H;
-    if (step.description) {
-      contentY += 8;
-      ctx.fillStyle = c.textSecondary;
-      ctx.font = FONT_SM;
-      ctx.textAlign = 'left';
-      ctx.fillText(truncate(step.description, 42), cardX + 12, contentY + DESC_LH / 2);
-    }
-
-    const barY = y + layout.cardH - SUB_BAR_H - ((step.substeps || []).length > 0 ? (step.substeps.length * SUB_H + 8) : 0);
-    ctx.strokeStyle = c.border;
-    ctx.beginPath();
-    ctx.moveTo(cardX, barY);
-    ctx.lineTo(cardX + CARD_W, barY);
-    ctx.stroke();
-
-    const hasSubsteps = (step.substeps || []).length > 0;
-    ctx.fillStyle = hasSubsteps ? c.accent : c.textTertiary;
-    ctx.font = FONT_LABEL;
-    ctx.textAlign = 'left';
-    ctx.textBaseline = 'middle';
-    const barLabel = t('substepsLabel') + (hasSubsteps ? ` (${step.substeps.length})` : '');
-    ctx.fillText(barLabel, cardX + 24, barY + SUB_BAR_H / 2);
-    ctx.fillText(hasSubsteps ? '▾' : '▸', cardX + 10, barY + SUB_BAR_H / 2);
-
-    if (hasSubsteps) {
-      const subAreaY = barY + SUB_BAR_H;
-      ctx.fillStyle = c.bgTertiary;
-      roundRectBottom(ctx, cardX, subAreaY, CARD_W, step.substeps.length * SUB_H + 8, 8);
-      ctx.fill();
-
-      step.substeps.forEach((ss, si) => {
-        const sy = subAreaY + 4 + si * SUB_H;
-        ctx.fillStyle = c.bgSecondary;
-        roundRect(ctx, cardX + 8, sy, CARD_W - 16, SUB_H - 2, 4);
-        ctx.fill();
-
-        const subNum = `${idx + 1}.${si + 1}`;
-        ctx.font = FONT_MONO_XS;
-        ctx.fillStyle = c.accent;
-        ctx.textAlign = 'left';
-        ctx.textBaseline = 'middle';
-        ctx.fillText(subNum, cardX + 14, sy + (SUB_H - 2) / 2);
-
-        ctx.fillStyle = c.textPrimary;
-        ctx.font = FONT_SM;
-        ctx.fillText(truncate(ss.title, 30), cardX + 48, sy + (SUB_H - 2) / 2);
-      });
-    }
-
-    const ioBaseY = y + 4;
-
-    const inX = PAD;
-    if (step.inputs.length > 0) {
-      ctx.fillStyle = c.inputColor;
-      ctx.font = FONT_LABEL;
-      ctx.textAlign = 'left';
-      ctx.textBaseline = 'middle';
-      ctx.fillText(`● ${  t('inputs').toUpperCase()  } »`, inX, ioBaseY + IO_LH / 2);
-
-      step.inputs.forEach((io, i) => {
-        if (!io.name) return;
-        const iy = ioBaseY + IO_LH + 6 + i * (IO_IH + IO_IG);
-        ctx.fillStyle = c.inputBg;
-        roundRect(ctx, inX, iy, IO_PW, IO_IH, 4);
-        ctx.fill();
-
-        ctx.fillStyle = c.inputColor;
-        ctx.beginPath();
-        ctx.arc(inX + 10, iy + IO_IH / 2, 3.5, 0, Math.PI * 2);
-        ctx.fill();
-
-        let nameX = inX + 20;
-        if (io.inputType) {
-          const itLabel = io.inputType === 'param' ? t('inputTypeParam') : t('inputTypeNoise');
-          const itFg = io.inputType === 'param' ? c.param : c.noise;
-          const itBg = io.inputType === 'param' ? c.paramBg : c.noiseBg;
-          ctx.font = FONT_LABEL;
-          const itW = ctx.measureText(itLabel).width + 6;
-          roundRect(ctx, inX + 18, iy + 4, itW, IO_IH - 8, 3);
-          ctx.fillStyle = itBg;
-          ctx.fill();
-          ctx.fillStyle = itFg;
-          ctx.textAlign = 'center';
-          ctx.textBaseline = 'middle';
-          ctx.fillText(itLabel, inX + 18 + itW / 2, iy + IO_IH / 2);
-          nameX = inX + 18 + itW + 4;
-        }
-
-        ctx.fillStyle = c.textPrimary;
-        ctx.font = FONT_SM;
-        ctx.textAlign = 'left';
-        ctx.textBaseline = 'middle';
-        ctx.fillText(truncate(io.name, io.inputType ? 16 : 20), nameX, iy + IO_IH / 2);
-      });
-    }
-
-    const outX = cardX + CARD_W + IO_GX;
-    if (step.outputs.length > 0) {
-      ctx.fillStyle = c.outputColor;
-      ctx.font = FONT_LABEL;
-      ctx.textAlign = 'left';
-      ctx.textBaseline = 'middle';
-      ctx.fillText(`» ${  t('outputs').toUpperCase()  } ●`, outX, ioBaseY + IO_LH / 2);
-
-      step.outputs.forEach((io, i) => {
-        if (!io.name) return;
-        const iy = ioBaseY + IO_LH + 6 + i * (IO_IH + IO_IG);
-        ctx.fillStyle = c.outputBg;
-        roundRect(ctx, outX, iy, IO_PW, IO_IH, 4);
-        ctx.fill();
-
-        ctx.fillStyle = c.outputColor;
-        ctx.beginPath();
-        ctx.arc(outX + IO_PW - 10, iy + IO_IH / 2, 3.5, 0, Math.PI * 2);
-        ctx.fill();
-
-        ctx.fillStyle = c.textPrimary;
-        ctx.font = FONT_SM;
-        ctx.textAlign = 'left';
-        ctx.textBaseline = 'middle';
-        ctx.fillText(truncate(io.name, 20), outX + 6, iy + IO_IH / 2);
-      });
-    }
-
-    y += rowH;
-
-    if (idx < steps.length - 1) {
-      const ax = cardX + CARD_W / 2;
-      const ay1 = y + 2;
-      const ay2 = y + CONN_H - 2;
-      ctx.strokeStyle = c.connector;
-      ctx.lineWidth = 1.5;
-      ctx.beginPath();
-      ctx.moveTo(ax, ay1);
-      ctx.lineTo(ax, ay2);
-      ctx.stroke();
-      ctx.fillStyle = c.connector;
-      ctx.beginPath();
-      ctx.moveTo(ax - 4, ay2 - 5);
-      ctx.lineTo(ax + 4, ay2 - 5);
-      ctx.lineTo(ax, ay2);
-      ctx.closePath();
-      ctx.fill();
-      y += CONN_H;
-    }
-  });
-
+  renderSceneToCanvas(scene, ctx);
   canvas.toBlob((blob) => downloadBlob(blob, 'process-map.png'), 'image/png');
   notify?.('PNG ✓', 'success');
 }
 
 /**
- * Render the process map to a standalone SVG string and trigger a download.
+ * Render the process map to a standalone SVG and trigger a download.
  * @param {Array<object>} steps
  * @param {(key:string)=>string} t i18n translator (bare keys)
  * @param {function} [notify]
  */
 export function exportPmapSVG(steps, t, notify) {
-  const c = readColors();
-  const L = computeLayout(steps);
-  const {
-    PAD, CARD_W, IO_GAP_X: IO_GX, IO_ITEM_H: IO_IH, IO_ITEM_GAP: IO_IG, IO_LABEL_H: IO_LH,
-    HEADER_H: HDR_H, DESC_LINE_H: DESC_LH, SUBSTEP_H: SUB_H, SUBSTEPS_BAR_H: SUB_BAR_H,
-    CONNECTOR_H: CONN_H, stepLayouts: layouts, W, H, cardX,
-  } = L;
-  const IO_PW = L.IO_PANEL_W;
-
-  const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-
-  const svgFill = (color) => {
-    if (!color) return 'fill="none"';
-    const m = color.match(/^rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*(?:,\s*([\d.]+))?\s*\)$/);
-    if (m) {
-      const hex = `#${Number(m[1]).toString(16).padStart(2, '0')}${Number(m[2]).toString(16).padStart(2, '0')}${Number(m[3]).toString(16).padStart(2, '0')}`;
-      const a = m[4] !== undefined ? Number(m[4]) : 1;
-      return a < 1 ? `fill="${hex}" fill-opacity="${a}"` : `fill="${hex}"`;
-    }
-    return `fill="${color}"`;
-  };
-
-  let svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">`;
-  svg += `<rect width="${W}" height="${H}" ${svgFill(c.bgPrimary)}/>`;
-
-  let y = PAD;
-
-  steps.forEach((step, idx) => {
-    const layout = layouts[idx];
-    const rowH = layout.rowH;
-    const hasSubsteps = (step.substeps || []).length > 0;
-
-    svg += `<rect x="${cardX}" y="${y}" width="${CARD_W}" height="${layout.cardH}" rx="8" ${svgFill(c.bgSecondary)} stroke="${c.border}"/>`;
-    svg += `<line x1="${cardX}" y1="${y + HDR_H}" x2="${cardX + CARD_W}" y2="${y + HDR_H}" stroke="${c.border}"/>`;
-
-    const numText = String(idx + 1).padStart(2, '0');
-    const numW = numText.length * 7 + 12;
-    const pillX = cardX + 10;
-    const pillY = y + 8;
-    const pillH = 20;
-    svg += `<rect x="${pillX}" y="${pillY}" width="${numW}" height="${pillH}" rx="4" ${svgFill(c.accentBg)}/>`;
-    svg += `<text x="${pillX + numW / 2}" y="${pillY + pillH / 2}" fill="${c.accent}" font-size="11" font-family="JetBrains Mono, monospace" text-anchor="middle" dominant-baseline="central">${numText}</text>`;
-
-    let titleSvgX = pillX + numW + 8;
-    if (step.valueType) {
-      const vtText = t(step.valueType);
-      const vtW = vtText.length * 7 + 10;
-      const vtX = pillX + numW + 4;
-      const vtColors = { va: [c.va, c.vaBg], bnva: [c.bnva, c.bnvaBg], nva: [c.nva, c.nvaBg] };
-      const [vtFg, vtBgColor] = vtColors[step.valueType];
-      svg += `<rect x="${vtX}" y="${pillY}" width="${vtW}" height="${pillH}" rx="4" ${svgFill(vtBgColor)}/>`;
-      svg += `<text x="${vtX + vtW / 2}" y="${pillY + pillH / 2}" fill="${vtFg}" font-size="10" font-weight="600" font-family="DM Sans, system-ui, sans-serif" text-anchor="middle" dominant-baseline="central">${esc(vtText)}</text>`;
-      titleSvgX = vtX + vtW + 6;
-    }
-    const title = step.title || t('stepNamePlaceholder');
-    svg += `<text x="${titleSvgX}" y="${pillY + pillH / 2}" fill="${c.textPrimary}" font-size="13" font-weight="600" font-family="DM Sans, system-ui, sans-serif" dominant-baseline="central">${esc(truncate(title, 28))}</text>`;
-
-    if (step.description) {
-      svg += `<text x="${cardX + 12}" y="${y + HDR_H + 8 + DESC_LH / 2}" fill="${c.textSecondary}" font-size="11" font-family="DM Sans, system-ui, sans-serif" dominant-baseline="central">${esc(truncate(step.description, 42))}</text>`;
-    }
-
-    const barY = y + layout.cardH - SUB_BAR_H - (hasSubsteps ? (step.substeps.length * SUB_H + 8) : 0);
-    svg += `<line x1="${cardX}" y1="${barY}" x2="${cardX + CARD_W}" y2="${barY}" stroke="${c.border}"/>`;
-    const barColor = hasSubsteps ? c.accent : c.textTertiary;
-    const chevron = hasSubsteps ? '▾' : '▸';
-    const barLabel = t('substepsLabel') + (hasSubsteps ? ` (${step.substeps.length})` : '');
-    svg += `<text x="${cardX + 10}" y="${barY + SUB_BAR_H / 2}" fill="${barColor}" font-size="10" font-weight="600" font-family="DM Sans, system-ui, sans-serif" dominant-baseline="central">${chevron}</text>`;
-    svg += `<text x="${cardX + 24}" y="${barY + SUB_BAR_H / 2}" fill="${barColor}" font-size="10" font-weight="600" font-family="DM Sans, system-ui, sans-serif" dominant-baseline="central">${esc(barLabel)}</text>`;
-
-    if (hasSubsteps) {
-      const subAreaY = barY + SUB_BAR_H;
-      const subAreaH = step.substeps.length * SUB_H + 8;
-      svg += `<path d="M${cardX},${subAreaY} L${cardX + CARD_W},${subAreaY} L${cardX + CARD_W},${subAreaY + subAreaH - 8} Q${cardX + CARD_W},${subAreaY + subAreaH} ${cardX + CARD_W - 8},${subAreaY + subAreaH} L${cardX + 8},${subAreaY + subAreaH} Q${cardX},${subAreaY + subAreaH} ${cardX},${subAreaY + subAreaH - 8} Z" ${svgFill(c.bgTertiary)}/>`;
-
-      step.substeps.forEach((ss, si) => {
-        const sy = subAreaY + 4 + si * SUB_H;
-        svg += `<rect x="${cardX + 8}" y="${sy}" width="${CARD_W - 16}" height="${SUB_H - 2}" rx="4" ${svgFill(c.bgSecondary)}/>`;
-        const subNum = `${idx + 1}.${si + 1}`;
-        svg += `<text x="${cardX + 14}" y="${sy + (SUB_H - 2) / 2}" fill="${c.accent}" font-size="11" font-family="JetBrains Mono, monospace" dominant-baseline="central">${subNum}</text>`;
-        svg += `<text x="${cardX + 48}" y="${sy + (SUB_H - 2) / 2}" fill="${c.textPrimary}" font-size="11" font-family="DM Sans, system-ui, sans-serif" dominant-baseline="central">${esc(truncate(ss.title, 30))}</text>`;
-      });
-    }
-
-    const ioBaseY = y + 4;
-
-    const inX = PAD;
-    if (step.inputs.length > 0) {
-      svg += `<text x="${inX}" y="${ioBaseY + IO_LH / 2}" fill="${c.inputColor}" font-size="10" font-weight="600" font-family="DM Sans, system-ui, sans-serif" dominant-baseline="central">${esc(`● ${  t('inputs').toUpperCase()  } »`)}</text>`;
-
-      step.inputs.forEach((io, i) => {
-        if (!io.name) return;
-        const iy = ioBaseY + IO_LH + 6 + i * (IO_IH + IO_IG);
-        svg += `<rect x="${inX}" y="${iy}" width="${IO_PW}" height="${IO_IH}" rx="4" ${svgFill(c.inputBg)}/>`;
-        svg += `<circle cx="${inX + 10}" cy="${iy + IO_IH / 2}" r="3.5" fill="${c.inputColor}"/>`;
-
-        let nameXSvg = inX + 20;
-        let nameMaxLen = 20;
-        if (io.inputType) {
-          const itLabel = io.inputType === 'param' ? t('inputTypeParam') : t('inputTypeNoise');
-          const itFg = io.inputType === 'param' ? c.param : c.noise;
-          const itBgColor = io.inputType === 'param' ? c.paramBg : c.noiseBg;
-          const itW = itLabel.length * 7 + 6;
-          svg += `<rect x="${inX + 18}" y="${iy + 4}" width="${itW}" height="${IO_IH - 8}" rx="3" ${svgFill(itBgColor)}/>`;
-          svg += `<text x="${inX + 18 + itW / 2}" y="${iy + IO_IH / 2}" fill="${itFg}" font-size="10" font-weight="600" font-family="DM Sans, system-ui, sans-serif" text-anchor="middle" dominant-baseline="central">${esc(itLabel)}</text>`;
-          nameXSvg = inX + 18 + itW + 4;
-          nameMaxLen = 16;
-        }
-        svg += `<text x="${nameXSvg}" y="${iy + IO_IH / 2}" fill="${c.textPrimary}" font-size="11" font-family="DM Sans, system-ui, sans-serif" dominant-baseline="central">${esc(truncate(io.name, nameMaxLen))}</text>`;
-      });
-    }
-
-    const outX = cardX + CARD_W + IO_GX;
-    if (step.outputs.length > 0) {
-      svg += `<text x="${outX}" y="${ioBaseY + IO_LH / 2}" fill="${c.outputColor}" font-size="10" font-weight="600" font-family="DM Sans, system-ui, sans-serif" dominant-baseline="central">${esc(`» ${  t('outputs').toUpperCase()  } ●`)}</text>`;
-
-      step.outputs.forEach((io, i) => {
-        if (!io.name) return;
-        const iy = ioBaseY + IO_LH + 6 + i * (IO_IH + IO_IG);
-        svg += `<rect x="${outX}" y="${iy}" width="${IO_PW}" height="${IO_IH}" rx="4" ${svgFill(c.outputBg)}/>`;
-        svg += `<circle cx="${outX + IO_PW - 10}" cy="${iy + IO_IH / 2}" r="3.5" fill="${c.outputColor}"/>`;
-        svg += `<text x="${outX + 6}" y="${iy + IO_IH / 2}" fill="${c.textPrimary}" font-size="11" font-family="DM Sans, system-ui, sans-serif" dominant-baseline="central">${esc(truncate(io.name, 20))}</text>`;
-      });
-    }
-
-    y += rowH;
-
-    if (idx < steps.length - 1) {
-      const ax = cardX + CARD_W / 2;
-      const ay1 = y + 2;
-      const ay2 = y + CONN_H - 2;
-      svg += `<line x1="${ax}" y1="${ay1}" x2="${ax}" y2="${ay2}" stroke="${c.connector}" stroke-width="1.5"/>`;
-      svg += `<polygon points="${ax - 4},${ay2 - 5} ${ax + 4},${ay2 - 5} ${ax},${ay2}" fill="${c.connector}"/>`;
-      y += CONN_H;
-    }
-  });
-
-  svg += '</svg>';
+  const svg = renderSceneToSVG(sceneFor(steps, t));
   downloadBlob(new Blob([svg], { type: 'image/svg+xml' }), 'process-map.svg');
   notify?.('SVG ✓', 'success');
 }
