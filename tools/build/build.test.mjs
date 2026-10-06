@@ -4,7 +4,7 @@ import { existsSync, readFileSync, rmSync, mkdirSync, mkdtempSync, readdirSync, 
 import { tmpdir } from 'node:os';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { bundleJs, assertEvalFree, readCssLinks, bundleCss, hash8, rewriteBlock, buildStylesBlock, buildScriptsBlock, runBuild, isWatchedSource, watchSourceTree } from './build.mjs';
+import { bundleJs, assertEvalFree, readCssLinks, bundleCss, hash8, rewriteBlock, buildStylesBlock, buildScriptsBlock, buildChunkManifestBlock, staticClosure, runBuild, isWatchedSource, watchSourceTree } from './build.mjs';
 import { renderIndexHtml } from '../build-templates/build.mjs';
 
 const APP_DIR = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
@@ -146,7 +146,7 @@ test('renderIndexHtml liefert die fertige Shell, ohne zu schreiben', () => {
 const GENERATED_FILE_RE = /(^_bundle_entry\.css$|\.generated\.js$|^app\.min\.(js|css)$|^app\.min\.js\.(map|LEGAL\.txt)$)/;
 
 /** Verzeichnisse unterhalb von js/ bzw. css/, die reine Build-Ausgaben sind. */
-const GENERATED_DIRS = new Set(['css/fonts']);
+const GENERATED_DIRS = new Set(['css/fonts', 'js/chunks']);
 
 /**
  * Spiegelt `srcDir` nach `dstDir`: Verzeichnisse werden als echte Verzeichnisse
@@ -445,4 +445,69 @@ test('watchSourceTree does not descend into skipped directories', () => {
     close();
     rmSync(root, { recursive: true, force: true });
   }
+});
+
+const listChunks = (dir) => {
+  const d = join(dir, 'js', 'chunks');
+  return existsSync(d) ? readdirSync(d).filter((n) => n.endsWith('.min.js')).sort() : [];
+};
+
+test('split build: entry stays at js/app.min.js, chunks land in js/chunks/, manifest lists them', async () => {
+  await withShadowAppDir(async (dir) => {
+    await runBuild(dir, { check: false });
+    assert.ok(existsSync(join(dir, 'js', 'app.min.js')));
+    const onDisk = listChunks(dir).map((n) => `js/chunks/${n}`);
+    assert.ok(onDisk.length > 10, `expected many chunks, got ${onDisk.length}`);
+    const html = readFileSync(join(dir, 'index.html'), 'utf8');
+    const m = /<script type="application\/json" id="chunk-manifest">(.*)<\/script>/.exec(html);
+    assert.ok(m, 'manifest present');
+    assert.deepEqual(JSON.parse(m[1]), onDisk);
+    for (const f of [join(dir, 'js', 'app.min.js'), ...onDisk.map((p) => join(dir, p))]) {
+      assert.doesNotThrow(() => assertEvalFree(readFileSync(f, 'utf8')), f);
+    }
+  });
+});
+
+test('split build removes stale chunks only after the new ones are written', async () => {
+  await withShadowAppDir(async (dir) => {
+    await runBuild(dir, { check: false });
+    const stale = join(dir, 'js', 'chunks', 'stale-AAAAAAAA.min.js');
+    writeFileSync(stale, 'export {};');
+    const before = listChunks(dir).filter((n) => !n.startsWith('stale-'));
+    await runBuild(dir, { check: false });
+    assert.equal(existsSync(stale), false, 'stale chunk removed');
+    assert.deepEqual(listChunks(dir), before, 'current chunks unchanged');
+  });
+});
+
+test('runBuild --check reports a changed, a missing and an extra chunk', async () => {
+  await withShadowAppDir(async (dir) => {
+    await runBuild(dir, { check: false });
+    const [first, second] = listChunks(dir);
+    appendFileSync(join(dir, 'js', 'chunks', first), '\n// edited');
+    rmSync(join(dir, 'js', 'chunks', second));
+    writeFileSync(join(dir, 'js', 'chunks', 'extra-BBBBBBBB.min.js'), 'export {};');
+    const { changed } = await runBuild(dir, { check: true });
+    const rel = changed.map((p) => p.slice(dir.length + 1));
+    assert.ok(rel.includes(`js/chunks/${first}`), 'changed chunk reported');
+    assert.ok(rel.includes(`js/chunks/${second}`), 'missing chunk reported');
+    assert.ok(rel.includes('js/chunks/extra-BBBBBBBB.min.js'), 'extra chunk reported');
+  });
+});
+
+test('buildChunkManifestBlock emits a data-only JSON script', () => {
+  assert.equal(buildChunkManifestBlock(['js/chunks/a.min.js']),
+    '  <script type="application/json" id="chunk-manifest">["js/chunks/a.min.js"]</script>');
+});
+
+/** Inputs that must never be in the entry's static import closure. */
+const HEAVY_INPUTS = [];
+
+test('entry static closure: modules split off, no heavy dependency', async () => {
+  const { metafile } = await bundleJs(APP_DIR, { write: false });
+  const { inputs } = staticClosure(metafile);
+  const has = (frag) => [...inputs].some((i) => i.includes(frag));
+  assert.ok(has('js/app.js'), 'closure contains the entry source');
+  assert.equal(has('js/modules/sipoc/sipoc.js'), false, 'modules are split off');
+  for (const frag of HEAVY_INPUTS) assert.equal(has(frag), false, `${frag} in entry closure`);
 });

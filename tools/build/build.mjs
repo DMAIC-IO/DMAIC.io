@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 /**
  * build — production bundle for app/dev.
- * Bundles js/app.js -> js/app.min.js (eval-free, CSP-safe), minified.
+ * Bundles js/app.js -> js/app.min.js + js/chunks/*.min.js (eval-free,
+ * CSP-safe, minified); the chunk list goes into index.html as a manifest.
  *
  * CLI:
  *   node tools/build/build.mjs           # full build
@@ -125,59 +126,85 @@ export function buildScriptsBlock(jsHref) {
   ].join('\n');
 }
 
-/**
- * Bundle a single entry point to an output file (write mode only).
- * Runs assertEvalFree on every bundle for CSP safety.
- * @param {string} entry  absolute path to entry JS file
- * @param {string} outfile  absolute path for the emitted bundle
- */
-async function bundleOne(entry, outfile) {
-  const result = await esbuild({
-    entryPoints: [entry],
+/** esbuild options for the app bundle — shared by build, check and tests. */
+export function jsBuildOptions(appDir = APP_DIR) {
+  return {
+    absWorkingDir: appDir,
+    entryPoints: [join(appDir, 'js', 'app.js')],
     bundle: true,
+    splitting: true,
     minify: true,
     format: 'esm',
     target: 'es2022',
     sourcemap: true,
     legalComments: 'external',
-    outfile,
+    outdir: join(appDir, 'js'),
+    entryNames: 'app.min',
+    chunkNames: 'chunks/[name]-[hash].min',
+    metafile: true,
     write: false,
-  });
-  const code = result.outputFiles.find((f) => f.path.endsWith('.js'))?.text ?? '';
-  assertEvalFree(code);
-  await mkdir(dirname(outfile), { recursive: true });
-  for (const f of result.outputFiles) await writeFile(f.path, f.contents);
+  };
 }
 
 /**
- * Bundle the app module tree into js/app.min.js.
- * Returns {outfile, code} for the primary web bundle.
+ * Outputs reachable from the entry through static imports, and their inputs.
+ * Dynamic imports (`import()`) end the walk — that is what splits.
+ * @param {object} metafile  esbuild metafile (paths relative to absWorkingDir)
+ * @param {string} [entryOut]
+ * @returns {{ outputs: Set<string>, inputs: Set<string> }}
+ */
+export function staticClosure(metafile, entryOut = 'js/app.min.js') {
+  const outputs = new Set();
+  const inputs = new Set();
+  const visit = (out) => {
+    if (outputs.has(out) || !metafile.outputs[out]) return;
+    outputs.add(out);
+    for (const input of Object.keys(metafile.outputs[out].inputs)) inputs.add(input);
+    for (const imp of metafile.outputs[out].imports) {
+      if (imp.kind === 'import-statement' && !imp.external) visit(imp.path);
+    }
+  };
+  visit(entryOut);
+  return { outputs, inputs };
+}
+
+/**
+ * Bundle js/app.js into js/app.min.js plus js/chunks/*.min.js.
+ * Every JS output is checked eval-free. With write:true new files are written
+ * first and stale chunks removed afterwards, so the chunk set on disk is never
+ * incomplete (a watcher-triggered rebuild during a test run).
  * @param {string} appDir
  * @param {{ write?: boolean }} opts  write:false → in-memory only, no file written
+ * @returns {Promise<{ outfile: string, code: string, chunks: string[], metafile: object, outputFiles: object[] }>}
  */
 export async function bundleJs(appDir = APP_DIR, { write = true } = {}) {
   const outfile = join(appDir, 'js', 'app.min.js');
-  let code;
-  if (write) {
-    await bundleOne(join(appDir, 'js', 'app.js'), outfile);
-    code = readFileSync(outfile, 'utf8');
-  } else {
-    // In check/dry-run mode: build without sourcemap so the output is comparable
-    // to the on-disk bundle (minus its external sourceMappingURL comment).
-    const result = await esbuild({
-      entryPoints: [join(appDir, 'js', 'app.js')],
-      bundle: true,
-      minify: true,
-      format: 'esm',
-      target: 'es2022',
-      sourcemap: false,
-      legalComments: 'none',
-      write: false,
-    });
-    code = result.outputFiles[0].text;
-    assertEvalFree(code);
+  const result = await esbuild(jsBuildOptions(appDir));
+  const chunkDir = join(appDir, 'js', 'chunks');
+  const chunks = [];
+  let code = '';
+  for (const f of result.outputFiles) {
+    if (!f.path.endsWith('.js')) continue;
+    try { assertEvalFree(f.text); } catch (e) { throw new Error(`${f.path}: ${e.message}`); }
+    if (f.path === outfile) code = f.text;
+    else if (dirname(f.path) === chunkDir) chunks.push(`js/chunks/${f.path.slice(chunkDir.length + 1)}`);
   }
-  return { outfile, code };
+  chunks.sort();
+  if (write) {
+    await mkdir(chunkDir, { recursive: true });
+    for (const f of result.outputFiles) await writeFile(f.path, f.contents);
+    const keep = new Set(result.outputFiles.map((f) => f.path));
+    for (const name of readdirSync(chunkDir)) {
+      const p = join(chunkDir, name);
+      if (!keep.has(p)) unlinkSync(p);
+    }
+  }
+  return { outfile, code, chunks, metafile: result.metafile, outputFiles: result.outputFiles };
+}
+
+/** Data-only manifest of every chunk (CSP-safe: not executable). */
+export function buildChunkManifestBlock(chunks) {
+  return `  <script type="application/json" id="chunk-manifest">${JSON.stringify(chunks)}</script>`;
 }
 
 /**
@@ -201,13 +228,13 @@ function emit(path, text, check, changed) {
  *   0. build-templates: Shell aus index.dist.html + inlined *.html-Templates
  *      rendern — nur in den Speicher, index.html wird hier nicht angefasst
  *   1. lab-data.generated.js
- *   2. JS bundle (esbuild)
+ *   2. JS bundle (esbuild, split: entry + js/chunks/)
  *   3. CSS bundle (esbuild)
- *   4. index.html rewrite with content-hashed <script>/<link>
+ *   4. index.html rewrite with content-hashed <script>/<link> and the chunk manifest
  *
  * In check mode (check:true): regenerates the git-ignored index.html, and compares
- * the committed artifacts (app.min.js/.map, app.min.css, lab-data.generated.js) without
- * writing them; returns the list of stale committed artifacts.
+ * the build artifacts (app.min.js, js/chunks/*.min.js, app.min.css, generated modules)
+ * without writing them; returns the list of stale committed artifacts.
  * Returns { changed: string[] } — empty array means everything is up to date.
  *
  * @param {string} [appDir]
@@ -246,8 +273,23 @@ export async function runBuild(appDir = APP_DIR, { check = false } = {}) {
   emit(join(appDir, 'js', 'pages', 'licenses', 'licenses-data.generated.js'), renderLicenseDataModule(licenseEntries), check, changed);
   emit(join(appDir, 'THIRD-PARTY-LICENSES.txt'), renderLicenseText(licenseEntries), check, changed);
 
-  // 2. JS bundle (in check mode: in-memory only — do NOT mutate app.min.js)
-  const { code: jsCode } = await bundleJs(appDir, { write: !check });
+  // 2. JS bundle (in check mode: in-memory only — compare, do not write)
+  const { code: jsCode, chunks, outputFiles } = await bundleJs(appDir, { write: !check });
+  if (check) {
+    for (const f of outputFiles) {
+      if (!f.path.endsWith('.js')) continue;
+      const cur = existsSync(f.path) ? readFileSync(f.path, 'utf8') : null;
+      if (cur !== f.text) changed.push(f.path);
+    }
+    const chunkDir = join(appDir, 'js', 'chunks');
+    const expected = new Set(chunks.map((c) => join(appDir, c)));
+    if (existsSync(chunkDir)) {
+      for (const name of readdirSync(chunkDir)) {
+        const p = join(chunkDir, name);
+        if (name.endsWith('.min.js') && !expected.has(p)) changed.push(p);
+      }
+    }
+  }
 
   // 3. CSS-Hrefs aus der in Schritt 0 gerenderten Shell lesen — nicht von der
   //    Platte. index.dist.html trägt immer die vollständige STYLES-Liste, also
@@ -259,38 +301,18 @@ export async function runBuild(appDir = APP_DIR, { check = false } = {}) {
   let cssCode;
   ({ code: cssCode } = await bundleCss(appDir, hrefs, { write: !check }));
 
-  // Determine the content to hash for generating the versioned URLs.
-  // In check mode: use the on-disk bundles (if they exist) so the hash matches
-  // what was written by the last real build — allowing correct index.html comparison.
-  // In build mode: jsCode/cssCode are the freshly written bundles.
-  let jsCodeForHash = jsCode;
-  let cssCodeForHash = cssCode;
-
-  if (check) {
-    const jsOnDiskPath = join(appDir, 'js', 'app.min.js');
-    // Compare in-memory (no sourcemap) vs on-disk (has sourcemap comment).
-    // Strip the trailing sourceMappingURL line from the on-disk version to compare JS body.
-    if (existsSync(jsOnDiskPath)) {
-      const jsOnDisk = readFileSync(jsOnDiskPath, 'utf8');
-      jsCodeForHash = jsOnDisk; // use on-disk content for the hash
-      const jsOnDiskStripped = jsOnDisk.replace(/\/\/# sourceMappingURL=\S+\s*$/, '').trimEnd() + '\n';
-      const jsNorm = jsCode.trimEnd() + '\n';
-      if (jsOnDiskStripped !== jsNorm) changed.push(jsOnDiskPath);
-    } else {
-      changed.push(jsOnDiskPath);
-    }
-    emit(minCssPath, cssCode, true, changed);
-  }
+  if (check) emit(minCssPath, cssCode, true, changed);
 
   // 4. index rewrite with content hashes — always write (index.html is git-ignored).
   //    index.html is NOT a committed artifact; it is never added to changed[].
-  const jsHref  = `js/app.min.js?v=${hash8(jsCodeForHash)}`;
-  const cssHref = `css/app.min.css?v=${hash8(cssCodeForHash)}`;
+  const jsHref  = `js/app.min.js?v=${hash8(jsCode)}`;
+  const cssHref = `css/app.min.css?v=${hash8(cssCode)}`;
   const deJson  = readFileSync(join(appDir, 'i18n', 'de.json'), 'utf8');
   const enJson  = readFileSync(join(appDir, 'i18n', 'en.json'), 'utf8');
   const i18nHash = hash8(deJson + enJson);
   html = rewriteBlock(html, 'STYLES',  buildStylesBlock(cssHref));
   html = rewriteBlock(html, 'SCRIPTS', buildScriptsBlock(jsHref));
+  html = rewriteBlock(html, 'CHUNKS',  buildChunkManifestBlock(chunks));
   html = rewriteBlock(html, 'I18N_VERSION',
     `  <meta name="i18n-version" content="${i18nHash}">`);
   // Atomar schreiben: ein parallel laufender Testlauf sieht entweder die alte
@@ -405,7 +427,7 @@ async function main() {
   if (args.includes('--watch')) {
     const { context } = await import('esbuild');
     // Use write:false so the context does not write app.min.js directly;
-    // the full runBuild() (which calls bundleJs + bundleOne) owns all writes.
+    // the full runBuild() (which calls bundleJs) owns all writes.
     const ctx = await context({
       entryPoints: [join(APP_DIR, 'js', 'app.js')],
       bundle: true,

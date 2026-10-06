@@ -27,6 +27,7 @@ node_modules/
 /js/app.min.js
 /js/app.min.js.map
 /js/app.min.js.LEGAL.txt
+/js/chunks/
 /css/app.min.css
 /css/app.min.css.LEGAL.txt
 
