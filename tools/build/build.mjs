@@ -11,7 +11,7 @@
 import { build as esbuild } from 'esbuild';
 import { readFileSync, writeFileSync, unlinkSync, existsSync, mkdirSync, renameSync, readdirSync, statSync, watch } from 'node:fs';
 import { mkdir, writeFile } from 'node:fs/promises';
-import { join, dirname, resolve } from 'node:path';
+import { join, dirname, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createHash } from 'node:crypto';
 import { renderIndexHtml } from '../build-templates/build.mjs';
@@ -313,17 +313,40 @@ export async function runBuild(appDir = APP_DIR, { check = false } = {}) {
 /** Outputs of runBuild — changes to them must never retrigger the watcher. */
 const WATCH_OUTPUTS = new Set(['index.html', 'package.json', 'package-lock.json', 'THIRD-PARTY-LICENSES.txt', join('css', 'app.min.css'), join('css', '_bundle_entry.css')]);
 const WATCH_SKIP_DIRS = ['node_modules', '.git', 'tests', 'tools', 'docs', 'vendor'];
+/** Subtree of a skipped directory that runBuild still reads: the lab fixtures. */
+const WATCH_FIXTURE_DIR = join('tests', 'fixtures');
+
+/** Whether `relPath` lies inside the lab fixture tree. */
+function inFixtureDir(relPath) {
+  return relPath === WATCH_FIXTURE_DIR || relPath.startsWith(WATCH_FIXTURE_DIR + sep);
+}
+
+/**
+ * Whether the watcher must not descend into the directory `relPath`. The
+ * fixture tree and its ancestors stay armed; everything else below a skipped
+ * name does not.
+ *
+ * @param {string} relPath  directory path relative to the app root
+ * @returns {boolean}
+ */
+function isSkippedDir(relPath) {
+  if (inFixtureDir(relPath) || WATCH_FIXTURE_DIR.startsWith(relPath + sep)) return false;
+  return relPath.split(/[\\/]/).some((p) => WATCH_SKIP_DIRS.includes(p) || p.startsWith('.'));
+}
 
 /**
  * Whether a changed file needs a rebuild that esbuild's watcher cannot see.
  * esbuild only follows the JS import graph; templates (inlined into the shell),
- * stylesheets, i18n and glossary JSON are read by runBuild itself.
+ * stylesheets, i18n, glossary JSON and the lab fixtures under tests/fixtures/
+ * are read by runBuild itself.
  *
  * @param {string} relPath  path relative to the app root
  * @returns {boolean}
  */
 export function isWatchedSource(relPath) {
   if (!relPath || WATCH_OUTPUTS.has(relPath)) return false;
+  // Lab fixtures are inlined into lab-data.generated.js.
+  if (inFixtureDir(relPath)) return relPath.endsWith('.json');
   const parts = relPath.split(/[\\/]/);
   if (parts.some((p) => WATCH_SKIP_DIRS.includes(p) || p.startsWith('.'))) return false;
   if (/\.(generated|min)\./.test(relPath) || relPath.endsWith('.tmp')) return false;
@@ -345,7 +368,6 @@ export function isWatchedSource(relPath) {
  */
 export function watchSourceTree(root, onChange) {
   const watchers = new Map();
-  const skipped = (name) => WATCH_SKIP_DIRS.includes(name) || name.startsWith('.');
 
   const arm = (rel) => {
     if (watchers.has(rel)) return;
@@ -355,7 +377,7 @@ export function watchSourceTree(root, onChange) {
       w = watch(abs, (_event, name) => {
         if (!name) return;
         const child = rel ? join(rel, name) : String(name);
-        if (!skipped(String(name))) {
+        if (!isSkippedDir(child)) {
           try { if (statSync(join(root, child)).isDirectory()) arm(child); } catch { /* gone again */ }
         }
         onChange(child);
@@ -366,7 +388,8 @@ export function watchSourceTree(root, onChange) {
     let entries = [];
     try { entries = readdirSync(abs, { withFileTypes: true }); } catch { /* removed meanwhile */ }
     for (const e of entries) {
-      if (e.isDirectory() && !skipped(e.name)) arm(rel ? join(rel, e.name) : e.name);
+      const child = rel ? join(rel, e.name) : e.name;
+      if (e.isDirectory() && !isSkippedDir(child)) arm(child);
     }
   };
 

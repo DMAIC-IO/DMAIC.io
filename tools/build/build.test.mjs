@@ -357,7 +357,8 @@ test('runBuild lässt keine .tmp-Datei zurück, wenn das Umbenennen scheitert', 
 
 test('isWatchedSource picks up templates, stylesheets and JSON that esbuild does not track', () => {
   for (const p of ['js/modules/kano/kano.html', 'index.dist.html', 'css/layout.css',
-    'js/modules/kano/kano.css', 'i18n/de.json', 'glossary/terms/kano.json']) {
+    'js/modules/kano/kano.css', 'i18n/de.json', 'glossary/terms/kano.json',
+    'tests/fixtures/capability/cpk.fixtures.json']) {
     assert.equal(isWatchedSource(p), true, p);
   }
 });
@@ -365,7 +366,8 @@ test('isWatchedSource picks up templates, stylesheets and JSON that esbuild does
 test('isWatchedSource ignores build outputs, JS and tool directories', () => {
   for (const p of ['index.html', 'index.html.1234.tmp', 'css/app.min.css', 'css/_bundle_entry.css', 'js/app.min.js',
     'js/core/glossary-data.generated.js', 'js/app.js', 'THIRD-PARTY-LICENSES.txt', 'package.json',
-    'node_modules/x/y.json', 'tests/fixtures/a.json', 'tools/build/x.html', '.git/index', null]) {
+    'node_modules/x/y.json', 'tests/a.json', 'tests/modules/a.json', 'tests/fixtures/a.js',
+    'tools/build/x.html', '.git/index', null]) {
     assert.equal(isWatchedSource(p), false, String(p));
   }
 });
@@ -412,6 +414,19 @@ test('watchSourceTree picks up files in directories created after it started', a
     await new Promise((r) => setTimeout(r, 100));
     writeFileSync(join(root, 'new', 'b.css'), 'a{}');
     await waitForChange(seen, (p) => p === join('new', 'b.css'));
+  } finally {
+    close();
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test('watchSourceTree descends into tests/fixtures but nowhere else under tests', () => {
+  const root = mkdtempSync(join(tmpdir(), 'watch-'));
+  mkdirSync(join(root, 'tests', 'fixtures', 'doe'), { recursive: true });
+  mkdirSync(join(root, 'tests', 'modules'), { recursive: true });
+  const close = watchSourceTree(root, () => {});
+  try {
+    assert.deepEqual(close.dirs().sort(), ['', 'tests', join('tests', 'fixtures'), join('tests', 'fixtures', 'doe')]);
   } finally {
     close();
     rmSync(root, { recursive: true, force: true });

@@ -4,10 +4,11 @@
  * <template data-tpl="<relpath>"> blocks, so the engine can clone() them
  * (sink-free) instead of fetch()+DOMParser. Zero dependencies.
  *
- *   node tools/build-templates/build.mjs           # rewrite index.html in place
- *   node tools/build-templates/build.mjs --check   # exit 1 if index.html stale
+ * Library only: tools/build/build.mjs calls renderIndexHtml(). Run
+ * `npm run build` / `npm run build:check` — running this file directly just
+ * points there.
  */
-import { readFileSync, writeFileSync, existsSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import { readdirSync, statSync } from 'node:fs';
 import { join, relative, dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -130,12 +131,6 @@ function splice(name, html, block) {
   return html.slice(0, s) + block + html.slice(e + END.length);
 }
 
-// The web entry (index.dist.html) is the only committed .dist source; index.html
-// is generated from it and gitignored (rebuilt here).
-const TARGETS = [
-  { dist: 'index.dist.html', out: 'index.html' },
-];
-
 /**
  * Die fertige index.html als String — Template-Block in index.dist.html
  * gespliced, ohne irgendetwas zu schreiben.
@@ -154,30 +149,12 @@ export function renderIndexHtml(dir = APP_DIR) {
   return splice('index.dist.html', readFileSync(distPath, 'utf8'), block);
 }
 
+// Former CLI: it wrote index.html with the dev entry (script tag on the
+// unbundled js/app.js — a dead app shell) and its --check compared against
+// that state, so it reported STALE after every real build. Refuse instead.
 function main() {
-  const check = process.argv.includes('--check');
-  const block = buildTemplateBlock(collect());
-  let stale = false;
-  for (const { dist, out } of TARGETS) {
-    const distPath = join(APP_DIR, dist);
-    if (!existsSync(distPath)) continue;          // shell absent → skip
-    const outPath = join(APP_DIR, out);
-    const next = splice(dist, readFileSync(distPath, 'utf8'), block);
-    if (check) {
-      const current = existsSync(outPath) ? readFileSync(outPath, 'utf8') : null;
-      if (current !== next) {
-        console.error(`${out} is STALE — run: node tools/build-templates/build.mjs`);
-        stale = true;
-      }
-    } else {
-      writeFileSync(outPath, next);
-      console.log(`build-templates: ${out} written from ${dist}`);
-    }
-  }
-  if (check) {
-    if (stale) process.exit(1);
-    console.log('build-templates: all targets up to date');
-  }
+  console.error('build-templates is no longer a CLI — run `npm run build` (or `npm run build:check`) in app/dev/.');
+  process.exit(1);
 }
 
 // Nur als CLI ausführen — nicht, wenn eine andere build.mjs dieses Modul
