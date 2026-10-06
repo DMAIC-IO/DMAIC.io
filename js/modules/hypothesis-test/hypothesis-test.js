@@ -282,12 +282,12 @@ const mod = createModule({
         const level = Math.round((1 - alpha) * 100);
         const isMeanDiff = !isVariance && isTwo && r.ci != null;
         if (r.ci) {
-          metrics.push({ label: isMeanDiff ? _t('ciDiffLabel', { level }) : `${level}% KI`, value: `[${fmt(r.ci[0])}, ${fmt(r.ci[1])}]`, valueClass: 'hyptest__metric-value--sm', title: this._tip('KI') });
+          metrics.push({ label: isMeanDiff ? _t('ciDiffLabel', { level }) : _t('ciLabel', { level }), value: `[${fmt(r.ci[0])}, ${fmt(r.ci[1])}]`, valueClass: 'hyptest__metric-value--sm', title: this._tip('KI') });
         }
         if (r.hl) {
           const achieved = fmt(r.hl.achievedConfidence * 100, 1);
           const methodText = r.hl.method === 'exact' ? _t('pMethodExact') : _t('pMethodNormal');
-          metrics.push({ label: _t('hlEstimateLabel'), value: fmt(r.hl.estimate), valueClass: '', title: _t('hlEstimateLabel'), algoId: ALGO_LAB_IDS['Hodges-Lehmann'] });
+          metrics.push({ label: _t('hlEstimateLabel'), value: fmt(r.hl.estimate), valueClass: '', title: _t('tipHlEstimate'), algoId: ALGO_LAB_IDS['Hodges-Lehmann'] });
           metrics.push({
             label: _t('ciShiftLabel', { level: achieved }),
             value: `[${fmt(r.hl.lower)}, ${fmt(r.hl.upper)}]`,
