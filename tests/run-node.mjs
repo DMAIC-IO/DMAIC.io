@@ -68,6 +68,7 @@ const SKIP = new Set([
   'core/chart/multi-vari.test.js',
   'core/chart/pareto.test.js',
   'core/chart/trend.test.js',
+  'core/chunks.test.js',
   'core/create-dialog.test.js',
   'core/create-page.test.js',
   'core/datagrid-header-xss.test.js',

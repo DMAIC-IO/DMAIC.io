@@ -24,6 +24,7 @@
   },
   "app": {
     "defaultProjectName": "New Project",
+    "chunkLoadFailed": "This part could not be loaded — please reload with a network connection.",
     "dashboard": "Dashboard",
     "fullscreen": "Fullscreen",
     "projectSwitcher": "Switch project",

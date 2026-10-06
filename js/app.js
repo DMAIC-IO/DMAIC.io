@@ -13,6 +13,7 @@ import { VERSION }        from './core/version.js';
 import { initNightlyMode }   from './core/nightly-mode.js';
 import { ExportReminder }    from './core/export-reminder.js';
 import { notify }            from './core/notify.js';
+import { setChunkErrorHandler, prefetchChunks } from './core/chunks.js';
 import Alpine from '@alpinejs/csp';
 import { buildFrame } from './frame/index.js';
 import { setProjectSwitcherRouter, setProjectSwitcherUi } from './frame/header/project-switcher.js';
@@ -30,6 +31,8 @@ async function init() {
     eventBus, stateManager, i18n, moduleRegistry,
     chartManager, examplesRegistry, glossaryRegistry,
   } = kernel;
+  // Chunk imports (lazy libraries, the Lab) report failures as one toast.
+  setChunkErrorHandler(() => notify(i18n.t('app.chunkLoadFailed'), 'error'));
 
   // ─── Alpine.js Bootstrap ─────────────────────────────────
   const routeDirectives = initRouteDirectives(Alpine);
@@ -108,6 +111,8 @@ async function init() {
 
   // App is interactive — remove the pre-JS loading overlay.
   document.getElementById('app-loading')?.remove();
+  // Warm every chunk on idle: from here on the app works offline.
+  prefetchChunks();
 
   console.log(`Qprovement v${VERSION} ready.`);
 }
