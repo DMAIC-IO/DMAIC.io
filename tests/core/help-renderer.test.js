@@ -157,3 +157,30 @@ suite('help-renderer: inline references', () => {
     assertEqual(el.querySelector('a.help-panel__ref-xref').textContent, '(Montgomery et al. 2011)', 'English label');
   });
 });
+
+suite('help-renderer: table blocks', () => {
+  test('table → wrapped .dmike-table with inline-parsed header and body cells', () => {
+    const el = render({ sections: { s: { en: { blocks: [
+      { type: 'table', headers: ['Model', '**Use**'], rows: [
+        ['Quadratic', 'see {{term:rsm|RSM}}'],
+        ['Linear', 'factorial'],
+      ] },
+    ] } } } });
+    const table = el.querySelector('.dmike-table-wrap > table.dmike-table');
+    assertTrue(table != null, 'has wrapped dmike-table');
+    const ths = [...table.querySelectorAll('thead th')];
+    assertEqual(ths.map(th => th.textContent).join('|'), 'Model|Use', 'header cells');
+    assertTrue(ths[1].querySelector('strong') != null, 'header is inline-parsed');
+    const rows = table.querySelectorAll('tbody tr');
+    assertEqual(rows.length, 2, 'body rows');
+    assertEqual(rows[0].querySelectorAll('td').length, 2, 'cells per row');
+    assertTrue(rows[0].querySelector('span.glossary-term[data-glossary-term="rsm"]') != null, 'term-ref in cell');
+  });
+
+  test('table without rows renders nothing', () => {
+    const el = render({ sections: { s: { en: { blocks: [
+      { type: 'table', headers: ['A'], rows: [] },
+    ] } } } });
+    assertTrue(el.querySelector('table') == null, 'no table');
+  });
+});

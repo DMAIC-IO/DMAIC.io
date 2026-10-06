@@ -81,6 +81,18 @@ function renderBlock(b, byId, t) {
       return h('h4', null, ...inline(b.content, byId, t));
     case 'list':
       return h('ul', null, ...(b.items || []).map(it => h('li', null, ...inline(it, byId, t))));
+    case 'table': {
+      const rows = b.rows || [];
+      if (!rows.length) return null;
+      return h('div', { class: 'dmike-table-wrap' },
+        h('table', { class: 'dmike-table' },
+          h('thead', null, h('tr', null,
+            ...(b.headers || []).map(c => h('th', null, ...inline(c, byId, t))))),
+          h('tbody', null, ...rows.map(row => h('tr', null,
+            ...(row || []).map(c => h('td', null, ...inline(c, byId, t)))))),
+        ),
+      );
+    }
     default:
       return b.content ? h('p', null, ...inline(b.content, byId, t)) : null;
   }
