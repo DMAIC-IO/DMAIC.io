@@ -13,7 +13,8 @@ import { DashboardGrid } from '../../ui/dashboard-grid.js';
 import { DEFAULT_DASHBOARD_LAYOUT } from '../../ui/dashboard-tiles.js';
 import { enumerateTiles, loadTileModules } from './enumerate-tiles.js';
 import { renderTileSafely } from './tile-render.js';
-import { schemaOf, resolveSettings } from './tile-settings.js';
+import { schemaOf, resolveSettings, toStored, withTileSettings, pruneTileSettings } from './tile-settings.js';
+import { buildSettingsForm } from './tile-settings-form.js';
 import { getChartType, evaluateNelsonRules, computeCapability, capabilitySigma, DEFAULT_ENABLED_RULES } from '../../engines/control-chart-engine.js';
 import { getColumnValues, getColumnName } from '../../ui/column-picker.js';
 import { getPhaseIds } from '../../core/cycles/cycles.js';
@@ -36,7 +37,7 @@ const page = createPage({
   },
 
   mount(containerEl, ctx) {
-    const { eventBus, stateManager, i18n, chartManager, themeManager, moduleRegistry } = ctx;
+    const { eventBus, stateManager, i18n, chartManager, themeManager, moduleRegistry, modal } = ctx;
     const gridAnchor = containerEl.querySelector('[data-ref="grid"]');
 
     const handle = { grid: null, chart: null, addMenuEl: null, _onDocClick: null, _unsubs: [], render: null, _renderGen: 0, _toolbarWired: false, _charterTile: null, _allTilesLoaded: false };
@@ -721,6 +722,31 @@ const page = createPage({
       else if (tileId.startsWith('spc:')) renderSpc(tileId);
     };
 
+    // ── Tile settings dialog ─────────────────────────────────────────────
+    const openTileSettings = async (tileId) => {
+      const d = descriptorFor(tileId);
+      if (!d?.tile || !modal) return;
+      const schema = schemaOf(d.tile);
+      if (Object.keys(schema).length === 0) return;
+      const stored = (stateManager.get('dashboard.tileSettings') || {})[tileId];
+      const form = buildSettingsForm(schema, resolveSettings(schema, stored), i18n);
+      const tileTitle = (stateManager.get('dashboard.titles') || {})[tileId] || d.title;
+      const confirmed = await modal.form(i18n.t('dashboard.tileSettings.title', { title: tileTitle }), form.el);
+      if (confirmed !== true) return;
+      const latest = stateManager.get('dashboard.tileSettings') || {};
+      stateManager.set('dashboard.tileSettings',
+        withTileSettings(latest, tileId, toStored(schema, form.read(), latest[tileId])));
+      const body = handle.grid?.getTileBody(tileId);
+      if (body) {
+        try {
+          d.tile.dispose?.(body, { tileId });
+        } catch (err) {
+          console.error(`[dashboard] tile "${tileId}" failed to dispose`, err);
+        }
+      }
+      await renderTile(tileId);
+    };
+
     // ── Tile-def assembly + de-dup ───────────────────────────────────────
     const buildTileDefs = () => {
       // De-dup: a module may own a tile id that also appears as a static
@@ -739,6 +765,8 @@ const page = createPage({
         removeLabel: i18n.t('dashboard.removeTile'),
         moveTitle: i18n.t('dashboard.moveTile'),
         resizeTitle: i18n.t('dashboard.resizeTile'),
+        hasSettings: !!d.tile && Object.keys(schemaOf(d.tile)).length > 0,
+        settingsLabel: i18n.t('dashboard.tileSettings.open'),
       }));
     };
 
@@ -747,7 +775,19 @@ const page = createPage({
       const saved = stateManager.get('dashboard.layout');
       return (Array.isArray(saved) ? saved : DEFAULT_DASHBOARD_LAYOUT).map(x => ({ ...x }));
     };
-    const saveLayout = () => { if (handle.grid) stateManager.set('dashboard.layout', handle.grid.getLayout()); };
+    // Stored tile settings whose tile no longer enumerates (instance deleted)
+    // are pruned here — but only when every tile file loaded in this render,
+    // so a transient chunk error never deletes settings.
+    const saveLayout = () => {
+      if (!handle.grid) return;
+      stateManager.set('dashboard.layout', handle.grid.getLayout());
+      if (!handle._allTilesLoaded) return;
+      const all = stateManager.get('dashboard.tileSettings') || {};
+      const pruned = pruneTileSettings(all, descriptors.map(d => d.id));
+      if (Object.keys(pruned).length !== Object.keys(all).length) {
+        stateManager.set('dashboard.tileSettings', pruned);
+      }
+    };
 
     // ── Add-menu popover ─────────────────────────────────────────────────
     const closeAddMenu = () => {
@@ -863,7 +903,12 @@ const page = createPage({
             console.error(`[dashboard] tile "${tileId}" failed to dispose`, err);
           }
         }
+        const allSettings = stateManager.get('dashboard.tileSettings') || {};
+        if (Object.hasOwn(allSettings, tileId)) {
+          stateManager.set('dashboard.tileSettings', withTileSettings(allSettings, tileId, {}));
+        }
       };
+      handle.grid.onSettingsRequested = (tileId) => { openTileSettings(tileId); };
       handle.grid.onTitleChanged = (tileId, newTitle) => {
         const titles = stateManager.get('dashboard.titles') || {};
         titles[tileId] = newTitle;

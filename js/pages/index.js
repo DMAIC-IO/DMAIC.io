@@ -17,7 +17,7 @@ import licensesPage     from './licenses/licenses.js';
  *
  * @param {object} kernel - bootKernel() services container.
  * @param {object} deps
- * @param {object} deps.modal - Shared modal dialog host (needed by cyclePage).
+ * @param {object} deps.modal - Shared modal dialog host (needed by cyclePage and dashboardPage).
  * @param {Map<string, object>} deps.actionVerbs - Verb registry (needed by
  *   the settings page's action-URL list, task 12).
  * @param {function} deps.notify - Toast helper (settings' copy-URL feedback).
@@ -32,7 +32,7 @@ export async function initPages(kernel, { modal, actionVerbs, notify }) {
   });
   await trainingPage.init(kernel);
   await cyclePage.init({ ...kernel, modal });
-  await dashboardPage.init(kernel);
+  await dashboardPage.init({ ...kernel, modal });
 
   return new Map([
     ['settings', settingsPage],
