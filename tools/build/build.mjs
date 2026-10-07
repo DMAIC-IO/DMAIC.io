@@ -48,7 +48,8 @@ export function readCssLinks(indexHtml) {
  * Bundle all stylesheets (in cascade order) into css/app.min.css. Returns {outfile, code}.
  * @param {string} appDir
  * @param {string[]} hrefs
- * @param {{ write?: boolean }} opts  write:false → in-memory only, no file written
+ * @param {{ write?: boolean, writeOutput?: (path: string, contents: Uint8Array) => Promise<void> }} opts
+ *   write:false → in-memory only, no file written; writeOutput → per-file writer (tests)
  */
 /** Third-party CSS folded into the bundle from node_modules (single include). */
 const VENDOR_CSS = [
@@ -177,7 +178,7 @@ export function staticClosure(metafile, entryOut = 'js/app.min.js') {
  * @param {{ write?: boolean }} opts  write:false → in-memory only, no file written
  * @returns {Promise<{ outfile: string, code: string, chunks: string[], metafile: object, outputFiles: object[] }>}
  */
-export async function bundleJs(appDir = APP_DIR, { write = true } = {}) {
+export async function bundleJs(appDir = APP_DIR, { write = true, writeOutput = writeOutputAtomic } = {}) {
   const outfile = join(appDir, 'js', 'app.min.js');
   const result = await esbuild(jsBuildOptions(appDir));
   const chunkDir = join(appDir, 'js', 'chunks');
@@ -192,7 +193,11 @@ export async function bundleJs(appDir = APP_DIR, { write = true } = {}) {
   chunks.sort();
   if (write) {
     await mkdir(chunkDir, { recursive: true });
-    for (const f of result.outputFiles) await writeFile(f.path, f.contents);
+    // Chunks first, the entry (and its map) last: a page loading the new
+    // entry mid-rebuild finds every chunk it imports already on disk.
+    const isEntry = (p) => p === outfile || p === `${outfile}.map`;
+    const ordered = [...result.outputFiles].sort((a, b) => isEntry(a.path) - isEntry(b.path));
+    for (const f of ordered) await writeOutput(f.path, f.contents);
     const keep = new Set(result.outputFiles.map((f) => f.path));
     for (const name of readdirSync(chunkDir)) {
       const p = join(chunkDir, name);
@@ -200,6 +205,19 @@ export async function bundleJs(appDir = APP_DIR, { write = true } = {}) {
     }
   }
   return { outfile, code, chunks, metafile: result.metafile, outputFiles: result.outputFiles };
+}
+
+/**
+ * Write a build output via a temp file in the same directory plus rename, so
+ * a reader never sees a half-written file. The watcher ignores `*.tmp`.
+ * @param {string} path
+ * @param {Uint8Array} contents
+ * @returns {Promise<void>}
+ */
+export async function writeOutputAtomic(path, contents) {
+  const tmpPath = `${path}.${process.pid}.tmp`;
+  await writeFile(tmpPath, contents);
+  renameSync(tmpPath, path);
 }
 
 /** Data-only manifest of every chunk (CSP-safe: not executable). */

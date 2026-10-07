@@ -4,7 +4,7 @@ import { existsSync, readFileSync, rmSync, mkdirSync, mkdtempSync, readdirSync, 
 import { tmpdir } from 'node:os';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { bundleJs, assertEvalFree, readCssLinks, bundleCss, hash8, rewriteBlock, buildStylesBlock, buildScriptsBlock, buildChunkManifestBlock, staticClosure, runBuild, isWatchedSource, watchSourceTree } from './build.mjs';
+import { bundleJs, assertEvalFree, readCssLinks, bundleCss, hash8, rewriteBlock, buildStylesBlock, buildScriptsBlock, buildChunkManifestBlock, staticClosure, writeOutputAtomic, runBuild, isWatchedSource, watchSourceTree } from './build.mjs';
 import { renderIndexHtml } from '../build-templates/build.mjs';
 
 const APP_DIR = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
@@ -477,6 +477,31 @@ test('split build removes stale chunks only after the new ones are written', asy
     await runBuild(dir, { check: false });
     assert.equal(existsSync(stale), false, 'stale chunk removed');
     assert.deepEqual(listChunks(dir), before, 'current chunks unchanged');
+  });
+});
+
+test('split build writes every chunk before the entry and removes stale chunks last', async () => {
+  await withShadowAppDir(async (dir) => {
+    await runBuild(dir, { check: false });
+    const stale = join(dir, 'js', 'chunks', 'stale-CCCCCCCC.min.js');
+    writeFileSync(stale, 'export {};');
+    const order = [];
+    let staleAtEntry = null;
+    await bundleJs(dir, {
+      writeOutput: (path, contents) => {
+        const rel = path.slice(dir.length + 1);
+        if (rel === 'js/app.min.js') staleAtEntry = existsSync(stale);
+        order.push(rel);
+        return writeOutputAtomic(path, contents);
+      },
+    });
+    const entryAt = order.indexOf('js/app.min.js');
+    const lastChunkAt = Math.max(...order.map((p, i) => (p.startsWith('js/chunks/') ? i : -1)));
+    assert.ok(entryAt > lastChunkAt, `entry written at ${entryAt}, last chunk at ${lastChunkAt}`);
+    assert.equal(staleAtEntry, true, 'stale chunks still present while the entry is written');
+    assert.equal(existsSync(stale), false, 'stale chunk removed afterwards');
+    assert.deepEqual(readdirSync(join(dir, 'js', 'chunks')).filter((n) => n.endsWith('.tmp')), [],
+      'no temp files left behind');
   });
 });
 
