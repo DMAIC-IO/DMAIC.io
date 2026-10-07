@@ -5,7 +5,9 @@ import {
   DEFAULT_XLSX_OPTIONS,
   DEFAULT_AQDEF_OPTIONS,
   clampSkipRows,
+  parseErrorMessage,
 } from '../../js/modules/data-import/data-import-model.js';
+import { ChunkLoadError } from '../../js/core/chunks.js';
 
 // ─── State defaults ──────────────────────────────────────────────
 suite('Data Import Model — State defaults', () => {
@@ -143,5 +145,19 @@ suite('Data Import Model — clampSkipRows', () => {
 
   test('passes through valid positive integer', () => {
     assertEqual(clampSkipRows(5), 5);
+  });
+});
+
+suite('Data Import Model — parseErrorMessage', () => {
+  const t = (k, p) => `${k}:${p?.message ?? ''}`;
+  const tApp = (k) => `APP:${k}`;
+
+  test('a chunk load failure shows the translated app message, not the English error text', () => {
+    assertEqual(parseErrorMessage(new ChunkLoadError(new Error('x')), t, tApp), 'APP:app.chunkLoadFailed');
+  });
+
+  test('a coded error uses its key, any other error the detail message', () => {
+    assertEqual(parseErrorMessage({ code: 'bad' }, t, tApp), 'bad:');
+    assertEqual(parseErrorMessage(new Error('boom'), t, tApp), 'parseErrorDetail:boom');
   });
 });

@@ -28,7 +28,7 @@
 import { createModule } from '../../core/template-module.js';
 import { uniqueSheetName, buildInitialWorksheetState } from '../../ui/column-picker.js';
 import {
-  State, clampSkipRows,
+  State, clampSkipRows, parseErrorMessage,
 } from './data-import-model.js';
 import { parseMpx } from './mpx-parser.js';
 import { parseCsv } from './csv-parser.js';
@@ -357,10 +357,7 @@ export default createModule({
       },
 
       _errMessage(err) {
-        const code = err && err.code;
-        if (code) return _t(code);
-        const msg = (err && err.message) || String(err);
-        return _t('parseErrorDetail', { message: msg });
+        return parseErrorMessage(err, _t, (k) => module._context.i18n.t(k));
       },
 
       // ── Send to worksheet ─────────────────────────────────────
