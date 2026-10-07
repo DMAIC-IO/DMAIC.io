@@ -21,7 +21,7 @@ import { h } from '../dom.js';
 import { icon } from '../icon.js';
 
 export { isFormula, evaluateFormula } from './datagrid-formula.js';
-import { ensureXLSX as _ensureXLSX, XLSX } from '../export-utils.js';
+import { ensureXLSX as _ensureXLSX } from '../export-utils.js';
 export { COLUMN_TYPES, isNumericType, formatCellValue, uid } from './datagrid-utils.js';
 export { ROLE, ALL_ROLES } from './datagrid-roles.js';
 
@@ -3486,10 +3486,11 @@ export class DataGrid {
   }
 
   async downloadXLSX() {
+    // A failed load already toasted (core/chunks.js).
+    let XLSX;
     try {
-      await _ensureXLSX();
+      XLSX = await _ensureXLSX();
     } catch {
-      this._toast('XLSX library not loaded', 'error');
       return;
     }
     const wb = XLSX.utils.book_new();

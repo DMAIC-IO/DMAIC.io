@@ -19,7 +19,7 @@
 
 import { createModule } from '../../core/template-module.js';
 import {
-  downloadFile, downloadBlob, ensureXLSX, XLSX, svgStringToPngBlob,
+  downloadFile, downloadBlob, ensureXLSX, svgStringToPngBlob,
 } from '../../core/export-utils.js';
 import { escAttr } from '../../core/html-utils.js';
 import { parseDuration, formatDuration, canonicalize } from './makigami-duration.js';
@@ -294,8 +294,9 @@ export default createModule({
       },
 
       async _exportXLSX() {
-        try { await ensureXLSX(); }
-        catch (err) { module._context.notify?.(`XLSX: ${  err.message}`, 'error'); return; }
+        // A failed load already toasted (core/chunks.js).
+        let XLSX;
+        try { XLSX = await ensureXLSX(); } catch { return; }
 
         const wb = XLSX.utils.book_new();
 

@@ -15,7 +15,7 @@
 
 import { createModule } from '../../core/template-module.js';
 import {
-  downloadFile, ensureXLSX, XLSX,
+  downloadFile, ensureXLSX,
   exportColumnsAsPNG, exportColumnsAsSVG,
 } from '../../core/export-utils.js';
 import { draggableList } from '../../ui/draggable-list.js';
@@ -146,7 +146,9 @@ export default createModule({
 
       async _exportXLSX() {
         const m = this.model;
-        try { await ensureXLSX(); } catch { module._context.notify?.('XLSX library not loaded'); return; }
+        // A failed load already toasted (core/chunks.js).
+        let XLSX;
+        try { XLSX = await ensureXLSX(); } catch { return; }
         const maxLen = Math.max(...COLUMNS.map(c => m.columns[c.key].length), 1);
         const rows = [];
         rows.push(COLUMNS.map(c => this.t(`col.${  c.key}`)));

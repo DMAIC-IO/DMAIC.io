@@ -18,7 +18,7 @@ import { createModule } from '../../core/template-module.js';
 import { State } from './kano-model.js';
 import { listTrees, flatten, diff, applyDiff } from './kano-link.js';
 import { evaluate } from '../../engines/kano-engine.js';
-import { ensureXLSX, XLSX, downloadBlob } from '../../core/export-utils.js';
+import { ensureXLSX, downloadBlob } from '../../core/export-utils.js';
 import { exportSvgAsPNG, exportSvgAsFile } from '../../core/chart/modebar.js';
 import { provisionInstance } from '../../core/examples-registry.js';
 import manifest from '../manifest.js';
@@ -541,7 +541,7 @@ export default createModule({
       async exportXLSX() {
         const rows = this._exportRowsXLSX();
         if (rows.length === 0) return;
-        await ensureXLSX();
+        const XLSX = await ensureXLSX();
         const ws = XLSX.utils.aoa_to_sheet([this.exportHeaders(), ...rows]);
         const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, 'Kano');

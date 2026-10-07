@@ -14,7 +14,7 @@
 
 import { createModule } from '../../core/template-module.js';
 import {
-  downloadFile, ensureXLSX, XLSX,
+  downloadFile, ensureXLSX,
   exportTableAsPNG, exportTableAsSVG,
 } from '../../core/export-utils.js';
 import { State, RATING_SCALES } from './ce-matrix-model.js';
@@ -192,7 +192,9 @@ export default createModule({
 
       async _exportXLSX() {
         const m = this.model;
-        try { await ensureXLSX(); } catch { module._context.notify?.('XLSX library not loaded'); return; }
+        // A failed load already toasted (core/chunks.js).
+        let XLSX;
+        try { XLSX = await ensureXLSX(); } catch { return; }
         const rows = [];
         rows.push([this.t('weight'), ...m.weights, '']);
         rows.push(['', ...m.outputs, this.t('rowSum')]);

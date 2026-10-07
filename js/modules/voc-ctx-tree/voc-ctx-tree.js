@@ -23,7 +23,7 @@ import { exportSvgAsPNG, exportSvgAsFile } from '../../core/chart/modebar.js';
 import {
   edSection, edColorPair, edRangeRow, openColorPicker, parseRGBA, rgbaStr,
 } from '../../core/chart/chart-editor.js';
-import { ensureXLSX, XLSX, downloadBlob } from '../../core/export-utils.js';
+import { ensureXLSX, downloadBlob } from '../../core/export-utils.js';
 import { shortcutRegistry } from '../../core/shortcut-registry.js';
 import { draggablePopout } from '../../ui/draggable-popout.js';
 import { State } from './voc-ctx-tree-model.js';
@@ -344,7 +344,9 @@ export default createModule({
       async exportXLSX() {
         const rows = this.model.getExportRows();
         if (rows.length === 0) return;
-        try { await ensureXLSX(); } catch { module._context.notify?.('XLSX library not loaded'); return; }
+        // A failed load already toasted (core/chunks.js).
+        let XLSX;
+        try { XLSX = await ensureXLSX(); } catch { return; }
         const wb = XLSX.utils.book_new();
         const ws = XLSX.utils.aoa_to_sheet([this._exportHeaders(), ...rows]);
         XLSX.utils.book_append_sheet(wb, ws, 'VoC-CTx');

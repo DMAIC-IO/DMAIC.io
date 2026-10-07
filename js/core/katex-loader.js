@@ -1,10 +1,9 @@
 /**
  * DMAIC.io — KaTeX Loader (katex-loader.js)
  *
- * KaTeX is bundled from node_modules into app.min.js (CSS into app.min.css),
- * so no runtime loading is needed. `ensureKaTeX()` is retained as a resolved
- * async no-op for existing call sites (algorithm-lab, glossary details,
- * module-help formulas). Also provides helpers to render block and inline
+ * KaTeX is loaded on first use as its own chunk (`ensureKaTeX()`); its CSS
+ * stays in app.min.css. Call sites: algorithm-lab, glossary details,
+ * module-help formulas. Also provides helpers to render block and inline
  * math from the DMAIC.io conventions:
  *
  *   - **Block formulas:** `<element data-katex="\\sigma^2 = …">` — typically
@@ -15,17 +14,14 @@
  * Failures are non-fatal — the raw LaTeX text remains visible.
  */
 
-import katex from 'katex';
+import { lazyChunk } from './chunks.js';
 
 /**
- * KaTeX is statically bundled from node_modules; its CSS ships inside
- * app.min.css. Kept async so existing `await ensureKaTeX()` call sites are
- * unchanged. Resolves immediately — the library is always present.
- * @returns {Promise<void>}
+ * Load KaTeX on first use (own chunk). Cached; a failed load reports through
+ * core/chunks.js and is retried on the next call.
+ * @returns {Promise<typeof import('katex').default>}
  */
-export function ensureKaTeX() {
-  return Promise.resolve();
-}
+export const ensureKaTeX = lazyChunk(() => import('katex').then((m) => m.default));
 
 /**
  * Render block-mode KaTeX into every `[data-katex]` descendant of `root`.
@@ -37,12 +33,12 @@ export async function renderBlockMath(root) {
   if (!root || typeof root.querySelectorAll !== 'function') return;
   const els = root.querySelectorAll('[data-katex]:not([data-katex-rendered="1"])');
   if (!els.length) return;
+  let katex;
   try {
-    await ensureKaTeX();
+    katex = await ensureKaTeX();
   } catch {
     return;
   }
-  if (!katex) return;
   for (const el of els) {
     const latex = el.getAttribute('data-katex') || '';
     try {
@@ -63,12 +59,12 @@ export async function renderInlineMath(root) {
   if (!root || typeof root.querySelectorAll !== 'function') return;
   const els = root.querySelectorAll('[data-katex-inline]:not([data-katex-rendered="1"])');
   if (!els.length) return;
+  let katex;
   try {
-    await ensureKaTeX();
+    katex = await ensureKaTeX();
   } catch {
     return;
   }
-  if (!katex) return;
   for (const el of els) {
     const latex = el.getAttribute('data-katex-inline') || '';
     try {

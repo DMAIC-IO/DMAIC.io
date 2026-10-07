@@ -1322,7 +1322,7 @@ export default class ChartBase {
    * Export chart data as XLSX file download. Lazy-loads SheetJS on first call.
    */
   async exportXLSX() {
-    await _ensureXLSX();
+    const XLSX = await _ensureXLSX();
 
     const { headers, rows } = this._getExportData();
     if (headers.length === 0) return;

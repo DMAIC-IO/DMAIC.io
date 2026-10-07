@@ -14,10 +14,7 @@
 import { escAttr } from './html-utils.js';
 import { h } from './dom.js';
 import { icon } from './icon.js';
-import { XLSX } from './vendor/xlsx.js';
-import { opentype } from './vendor/opentype.js';
-
-export { XLSX };
+import { lazyChunk } from './chunks.js';
 
 // ─── Download helpers ────────────────────────────────────────
 
@@ -99,14 +96,11 @@ export function svgStringToPngBlob(svgString, { width, height, scale = 2, backgr
 // ─── XLSX lazy loader ────────────────────────────────────────
 
 /**
- * SheetJS (XLSX) is statically bundled from node_modules (see ./vendor/xlsx.js),
- * so it is always present. Kept async for callers that `await ensureXLSX()`
- * before touching `XLSX`. Signature/Promise contract is unchanged.
- * @returns {Promise<void>}
+ * Load SheetJS on first use (own chunk, see tools/build). Cached; a failed
+ * load reports through core/chunks.js and is retried on the next call.
+ * @returns {Promise<typeof import('xlsx')>}
  */
-export function ensureXLSX() {
-  return Promise.resolve();
-}
+export const ensureXLSX = lazyChunk(() => import('./vendor/xlsx.js').then((m) => m.XLSX));
 
 // ─── Export dropdown ─────────────────────────────────────────
 
@@ -437,18 +431,15 @@ export function exportTableAsPNG(td, filename = 'table.png') {
 // ─── opentype.js lazy loader ────────────────────────────────
 
 /**
- * opentype.js is statically bundled from node_modules (see ./vendor/opentype.js),
- * so it is always present. Kept async for callers. Signature unchanged.
- * @returns {Promise<void>}
+ * Load opentype.js on first use (own chunk). Cached like ensureXLSX.
+ * @returns {Promise<object>}
  */
-function _ensureOpentype() {
-  return Promise.resolve();
-}
+const _ensureOpentype = lazyChunk(() => import('./vendor/opentype.js').then((m) => m.opentype));
 
 /** @type {Map<string, opentype.Font>} */
 const _fontCache = new Map();
 
-async function _loadFont(url) {
+async function _loadFont(url, opentype) {
   if (_fontCache.has(url)) return _fontCache.get(url);
   const buf = await fetch(url).then(r => r.arrayBuffer());
   const font = opentype.parse(buf);
@@ -461,10 +452,10 @@ let _svgFonts = null;
 
 async function _ensureSVGFonts() {
   if (_svgFonts) return _svgFonts;
-  await _ensureOpentype();
+  const opentype = await _ensureOpentype();
   const [sans, mono] = await Promise.all([
-    _loadFont('assets/fonts/dmsans-latin.ttf'),
-    _loadFont('assets/fonts/jetbrainsmono-full.ttf'),
+    _loadFont('assets/fonts/dmsans-latin.ttf', opentype),
+    _loadFont('assets/fonts/jetbrainsmono-full.ttf', opentype),
   ]);
   _svgFonts = { sans, mono };
   return _svgFonts;

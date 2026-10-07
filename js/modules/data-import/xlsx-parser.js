@@ -9,7 +9,7 @@
  * Output schema matches mpx-parser.js / csv-parser.js — see data-import.js.
  */
 
-import { ensureXLSX, XLSX } from '../../core/export-utils.js';
+import { ensureXLSX } from '../../core/export-utils.js';
 
 /** ≥80% non-empty cells with finite numeric value → numeric column. */
 function detectColumnType(values) {
@@ -70,7 +70,7 @@ function toText(values) {
  * @returns {Promise<{format:string, sheets:Array<object>}>}
  */
 export async function parseXlsx(buffer, opts = {}) {
-  await ensureXLSX();
+  const XLSX = await ensureXLSX();
   const hasHeader = opts.hasHeader !== false;
 
   let workbook;

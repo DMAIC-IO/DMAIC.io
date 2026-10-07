@@ -18,7 +18,7 @@
 
 import { createModule } from '../../core/template-module.js';
 import {
-  downloadFile, ensureXLSX, XLSX,
+  downloadFile, ensureXLSX,
 } from '../../core/export-utils.js';
 import { exportPmapPNG, exportPmapSVG } from './process-map-export.js';
 import { State, loopRailCells, loopPassColumns, loopArrowColumns } from './process-map-model.js';
@@ -492,7 +492,9 @@ export default createModule({
       },
 
       async _exportXLSX() {
-        try { await ensureXLSX(); } catch { module._context.notify?.('XLSX library not loaded'); return; }
+        // A failed load already toasted (core/chunks.js).
+        let XLSX;
+        try { XLSX = await ensureXLSX(); } catch { return; }
         const { vtLabel, fmtInput, fmtLoop } = this._csvRows();
 
         const rows = [];

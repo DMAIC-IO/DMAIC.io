@@ -3,7 +3,7 @@
  * KaTeX formula rendering, Prism.js code highlighting.
  */
 
-import katex from 'katex';
+import { ensureKaTeX } from '../core/katex-loader.js';
 import { Prism } from '../core/vendor/prism.js';
 import { tokensToNodes } from './lab-renderer-tokens.js';
 
@@ -12,12 +12,10 @@ import { tokensToNodes } from './lab-renderer-tokens.js';
 export { tokensToNodes };
 
 /**
- * KaTeX + Prism are bundled from node_modules (their CSS ships in app.min.css),
- * so these "ensure" helpers are resolved no-ops kept for their existing
- * `await ensureKaTeX()` / `await ensurePrism()` call sites.
+ * Prism is bundled from node_modules (its CSS ships in app.min.css), so this
+ * "ensure" helper is a resolved no-op kept for its `await ensurePrism()` call
+ * sites. KaTeX loads lazily through core/katex-loader.js.
  */
-async function ensureKaTeX() {}
-
 async function ensurePrism() {}
 
 /**
@@ -28,7 +26,8 @@ async function ensurePrism() {}
  *                               x-effect re-renders the localized description)
  */
 export async function renderFormula(el, f, lang) {
-  await ensureKaTeX();
+  // A failed load leaves katex null: the raw LaTeX is shown (catch below).
+  const katex = await ensureKaTeX().catch(() => null);
   el.replaceChildren();
   el.className = 'lab__formula';
 
