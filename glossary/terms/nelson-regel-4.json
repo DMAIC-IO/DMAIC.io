@@ -1,0 +1,109 @@
+{
+  "id": "nelson-regel-4",
+  "category": "spc",
+  "title": {
+    "de": "Nelson-Regel 4: 14 Punkte alternierend",
+    "en": "Nelson Rule 4: 14 points alternating"
+  },
+  "short": {
+    "de": "14 Punkte in Folge springen abwechselnd auf und ab — Hinweis auf ein systematisches Zickzack.",
+    "en": "14 points in a row alternate up and down — a sign of a systematic zig-zag."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "**Muster:** 14 aufeinanderfolgende Punkte, bei denen jeder Punkt abwechselnd über und unter seinem Vorgänger liegt."
+      },
+      {
+        "type": "paragraph",
+        "text": "**Bedeutung:** Die Daten stammen abwechselnd aus zwei Quellen, oder jemand greift nach jedem Wert korrigierend ein."
+      },
+      {
+        "type": "paragraph",
+        "text": "**Typische Ursachen:**"
+      },
+      {
+        "type": "list",
+        "items": [
+          "Überregelung: Nachstellen nach jedem Messwert",
+          "Abwechselnde Probenahme aus zwei Maschinen, Spindeln oder Nestern",
+          "Im Messsystem: zwei Prüfer oder zwei Messmittel im Wechsel"
+        ]
+      },
+      {
+        "type": "paragraph",
+        "text": "In MSA Typ 6 ({{term:stabilitaets-studie|Stabilitätsstudie}}) wird immer dasselbe Referenzteil gemessen. Ein Signal weist dort auf das **Messsystem** hin, nicht auf den Fertigungsprozess."
+      },
+      {
+        "type": "note",
+        "text": "Auf attributiven Karten wird Regel 4 nicht geprüft — ganzzahlige Zählwerte erzeugen zu viele gleiche Werte. Jede zusätzlich aktivierte Regel erhöht die Fehlalarm-Rate ({{term:fehler-erster-art|Fehler 1. Art}})."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "**Pattern:** 14 consecutive points where each point alternately lies above and below the one before."
+      },
+      {
+        "type": "paragraph",
+        "text": "**Meaning:** The data come alternately from two sources, or someone makes a correction after every value."
+      },
+      {
+        "type": "paragraph",
+        "text": "**Typical causes:**"
+      },
+      {
+        "type": "list",
+        "items": [
+          "Over-adjustment: re-adjusting after every reading",
+          "Alternating sampling from two machines, spindles or cavities",
+          "In the measurement system: two appraisers or two gauges taking turns"
+        ]
+      },
+      {
+        "type": "paragraph",
+        "text": "In MSA Type 6 ({{term:stabilitaets-studie|stability study}}) the same reference part is measured every time. A signal there points to the **measurement system**, not to the production process."
+      },
+      {
+        "type": "note",
+        "text": "Rule 4 is not checked on attribute charts — integer counts produce too many equal values. Every additionally enabled rule raises the false-alarm rate ({{term:fehler-erster-art|type I error}})."
+      }
+    ]
+  },
+  "aliases": {
+    "de": [
+      "Nelson-Regel 4",
+      "Nelson-Test 4",
+      "Regel 4"
+    ],
+    "en": [
+      "Nelson rule 4",
+      "Nelson test 4",
+      "Test 4"
+    ]
+  },
+  "seeAlso": [
+    "nelson-regeln",
+    "regelkarte",
+    "sonderursache",
+    "fehler-erster-art"
+  ],
+  "modules": [
+    "control-chart",
+    "msa-typ6"
+  ],
+  "algoLab": [
+    "control-charts/control-chart"
+  ],
+  "sources": [
+    {
+      "label": "Nelson, L. S. — Technical Aids: The Shewhart Control Chart — Tests for Special Causes, Journal of Quality Technology, 16(4), 1984",
+      "url": null
+    },
+    {
+      "label": "Montgomery, D. C. — Introduction to Statistical Quality Control, 8th Edition, Chapter 5",
+      "url": null
+    }
+  ]
+}

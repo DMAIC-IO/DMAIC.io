@@ -1,0 +1,118 @@
+{
+  "id": "nelson-regel-7",
+  "category": "spc",
+  "title": {
+    "de": "Nelson-Regel 7: 15 Punkte in Zone C",
+    "en": "Nelson Rule 7: 15 points in zone C"
+  },
+  "short": {
+    "de": "15 Punkte in Folge liegen innerhalb von 1σ um die Mittellinie (Zone C) — die Streuung ist kleiner als erwartet.",
+    "en": "15 points in a row lie within 1σ of the centre line (zone C) — the variation is smaller than expected."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "**Muster:** 15 aufeinanderfolgende Punkte, beide Seiten erlaubt, alle näher als 1σ an der Mittellinie."
+      },
+      {
+        "type": "paragraph",
+        "text": "**Bedeutung:** Das ist kein „zu guter\" Prozess, sondern meist ein Fehler in der Datenbildung: Die Regelgrenzen passen nicht zu den Daten."
+      },
+      {
+        "type": "paragraph",
+        "text": "Zonen: C = bis 1σ, B = 1σ bis 2σ, A = 2σ bis 3σ Abstand von der {{term:mittellinie|Mittellinie}} (siehe {{term:sigma-zonen|σ-Zonen}})."
+      },
+      {
+        "type": "paragraph",
+        "text": "**Typische Ursachen:**"
+      },
+      {
+        "type": "list",
+        "items": [
+          "Untergruppen mischen mehrere Quellen (Schichtung), dadurch ist σ zu groß geschätzt",
+          "Regelgrenzen aus anderen, stärker streuenden Daten übernommen",
+          "Geschönte oder gerundete Daten; im Messsystem: zu grobe Auflösung"
+        ]
+      },
+      {
+        "type": "paragraph",
+        "text": "In MSA Typ 6 ({{term:stabilitaets-studie|Stabilitätsstudie}}) wird immer dasselbe Referenzteil gemessen. Ein Signal weist dort auf das **Messsystem** hin, nicht auf den Fertigungsprozess."
+      },
+      {
+        "type": "note",
+        "text": "Zonenregel: setzt ein konstantes σ voraus. Regeln 7 und 8 nur bei begründetem Verdacht aktivieren. Jede zusätzlich aktivierte Regel erhöht die Fehlalarm-Rate ({{term:fehler-erster-art|Fehler 1. Art}})."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "**Pattern:** 15 consecutive points, either side, all closer than 1σ to the centre line."
+      },
+      {
+        "type": "paragraph",
+        "text": "**Meaning:** This is not a process that is \"too good\" but usually a flaw in how the data were formed: the control limits do not fit the data."
+      },
+      {
+        "type": "paragraph",
+        "text": "Zones: C = up to 1σ, B = 1σ to 2σ, A = 2σ to 3σ from the {{term:mittellinie|centre line}} (see {{term:sigma-zonen|sigma zones}})."
+      },
+      {
+        "type": "paragraph",
+        "text": "**Typical causes:**"
+      },
+      {
+        "type": "list",
+        "items": [
+          "Subgroups mix several sources (stratification), so σ is overestimated",
+          "Control limits taken over from other, more variable data",
+          "Doctored or rounded data; in the measurement system: resolution too coarse"
+        ]
+      },
+      {
+        "type": "paragraph",
+        "text": "In MSA Type 6 ({{term:stabilitaets-studie|stability study}}) the same reference part is measured every time. A signal there points to the **measurement system**, not to the production process."
+      },
+      {
+        "type": "note",
+        "text": "Zone rule: assumes a constant σ. Enable rules 7 and 8 only on specific suspicion. Every additionally enabled rule raises the false-alarm rate ({{term:fehler-erster-art|type I error}})."
+      }
+    ]
+  },
+  "aliases": {
+    "de": [
+      "Nelson-Regel 7",
+      "Nelson-Test 7",
+      "Regel 7"
+    ],
+    "en": [
+      "Nelson rule 7",
+      "Nelson test 7",
+      "Test 7"
+    ]
+  },
+  "seeAlso": [
+    "nelson-regeln",
+    "regelkarte",
+    "sonderursache",
+    "sigma-zonen",
+    "fehler-erster-art"
+  ],
+  "modules": [
+    "control-chart",
+    "msa-typ6"
+  ],
+  "algoLab": [
+    "control-charts/control-chart"
+  ],
+  "sources": [
+    {
+      "label": "Nelson, L. S. — Technical Aids: The Shewhart Control Chart — Tests for Special Causes, Journal of Quality Technology, 16(4), 1984",
+      "url": null
+    },
+    {
+      "label": "Montgomery, D. C. — Introduction to Statistical Quality Control, 8th Edition, Chapter 5",
+      "url": null
+    }
+  ]
+}

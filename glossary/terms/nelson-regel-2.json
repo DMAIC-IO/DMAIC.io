@@ -1,0 +1,110 @@
+{
+  "id": "nelson-regel-2",
+  "category": "spc",
+  "title": {
+    "de": "Nelson-Regel 2: 9 Punkte auf einer Seite",
+    "en": "Nelson Rule 2: 9 points on one side"
+  },
+  "short": {
+    "de": "9 Punkte in Folge liegen auf derselben Seite der {{term:mittellinie|Mittellinie}} — Hinweis auf eine Verschiebung des Niveaus.",
+    "en": "9 points in a row lie on the same side of the {{term:mittellinie|centre line}} — a sign that the level has shifted."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "**Muster:** 9 aufeinanderfolgende Punkte alle oberhalb oder alle unterhalb der Mittellinie."
+      },
+      {
+        "type": "paragraph",
+        "text": "**Bedeutung:** Der Mittelwert hat sich verschoben, auch wenn kein Punkt die Regelgrenzen verlässt. Zufällig tritt das Muster an einer bestimmten Stelle nur mit etwa 2 · 0,5⁹ ≈ 0,4 % auf."
+      },
+      {
+        "type": "paragraph",
+        "text": "**Typische Ursachen:**"
+      },
+      {
+        "type": "list",
+        "items": [
+          "Neue Materialcharge, neuer Lieferant",
+          "Wechsel von Werker, Schicht, Werkzeug oder Maschine",
+          "Im Messsystem: Nachkalibrierung, Nullpunktverschiebung, Wechsel des Messmittels"
+        ]
+      },
+      {
+        "type": "paragraph",
+        "text": "In MSA Typ 6 ({{term:stabilitaets-studie|Stabilitätsstudie}}) wird immer dasselbe Referenzteil gemessen. Ein Signal weist dort auf das **Messsystem** hin, nicht auf den Fertigungsprozess."
+      },
+      {
+        "type": "note",
+        "text": "Regel 2 erkennt kleine, dauerhafte Verschiebungen früher als Regel 1. Liegen die Grenzen nicht aus stabilen Daten fest, löst sie leicht schon bei der ersten Phase aus. Jede zusätzlich aktivierte Regel erhöht die Fehlalarm-Rate ({{term:fehler-erster-art|Fehler 1. Art}})."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "**Pattern:** 9 consecutive points all above or all below the centre line."
+      },
+      {
+        "type": "paragraph",
+        "text": "**Meaning:** The mean has shifted, even though no point leaves the control limits. By chance the pattern occurs at a given position only with about 2 · 0.5⁹ ≈ 0.4 %."
+      },
+      {
+        "type": "paragraph",
+        "text": "**Typical causes:**"
+      },
+      {
+        "type": "list",
+        "items": [
+          "New material batch, new supplier",
+          "Change of operator, shift, tool or machine",
+          "In the measurement system: recalibration, zero-point offset, change of gauge"
+        ]
+      },
+      {
+        "type": "paragraph",
+        "text": "In MSA Type 6 ({{term:stabilitaets-studie|stability study}}) the same reference part is measured every time. A signal there points to the **measurement system**, not to the production process."
+      },
+      {
+        "type": "note",
+        "text": "Rule 2 detects small, lasting shifts earlier than rule 1. If the limits were not set from stable data, it easily fires during the first phase already. Every additionally enabled rule raises the false-alarm rate ({{term:fehler-erster-art|type I error}})."
+      }
+    ]
+  },
+  "aliases": {
+    "de": [
+      "Nelson-Regel 2",
+      "Nelson-Test 2",
+      "Regel 2"
+    ],
+    "en": [
+      "Nelson rule 2",
+      "Nelson test 2",
+      "Test 2"
+    ]
+  },
+  "seeAlso": [
+    "nelson-regeln",
+    "regelkarte",
+    "sonderursache",
+    "fehler-erster-art"
+  ],
+  "modules": [
+    "control-chart",
+    "msa-typ6",
+    "attribute-control-chart"
+  ],
+  "algoLab": [
+    "control-charts/control-chart"
+  ],
+  "sources": [
+    {
+      "label": "Nelson, L. S. — Technical Aids: The Shewhart Control Chart — Tests for Special Causes, Journal of Quality Technology, 16(4), 1984",
+      "url": null
+    },
+    {
+      "label": "Montgomery, D. C. — Introduction to Statistical Quality Control, 8th Edition, Chapter 5",
+      "url": null
+    }
+  ]
+}

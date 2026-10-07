@@ -1,0 +1,114 @@
+{
+  "id": "nelson-regel-1",
+  "category": "spc",
+  "title": {
+    "de": "Nelson-Regel 1: Punkt außerhalb 3σ",
+    "en": "Nelson Rule 1: Point beyond 3σ"
+  },
+  "short": {
+    "de": "Ein einzelner Punkt liegt außerhalb der {{term:regelgrenze|Regelgrenzen}} (mehr als 3σ von der Mittellinie) — der klassische Shewhart-Test.",
+    "en": "A single point lies outside the {{term:regelgrenze|control limits}} (more than 3σ from the centre line) — the classic Shewhart test."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "**Muster:** 1 Punkt oberhalb der oberen oder unterhalb der unteren Regelgrenze."
+      },
+      {
+        "type": "paragraph",
+        "text": "**Bedeutung:** Ein plötzlicher, großer Ausreißer. Bei einem stabilen, normalverteilten Prozess passiert das nur bei etwa 0,27 % der Punkte (rund 1 von 370)."
+      },
+      {
+        "type": "paragraph",
+        "text": "**Typische Ursachen:**"
+      },
+      {
+        "type": "list",
+        "items": [
+          "Mess- oder Ablesefehler, Tippfehler bei der Dateneingabe",
+          "Falsches Einrichten, Werkzeugbruch, fehlerhaftes Material",
+          "Im Messsystem: verschmutzte Antastung, falsch eingelegtes Referenzteil"
+        ]
+      },
+      {
+        "type": "paragraph",
+        "text": "In MSA Typ 6 ({{term:stabilitaets-studie|Stabilitätsstudie}}) wird immer dasselbe Referenzteil gemessen. Ein Signal weist dort auf das **Messsystem** hin, nicht auf den Fertigungsprozess."
+      },
+      {
+        "type": "note",
+        "text": "Regel 1 sollte immer aktiv sein. Sie reagiert schnell auf große Sprünge, übersieht aber kleine Verschiebungen — dafür gibt es die Regeln 2, 5 und 6. Jede zusätzlich aktivierte Regel erhöht die Fehlalarm-Rate ({{term:fehler-erster-art|Fehler 1. Art}})."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "**Pattern:** 1 point above the upper or below the lower control limit."
+      },
+      {
+        "type": "paragraph",
+        "text": "**Meaning:** A sudden, large outlier. In a stable, normally distributed process this happens to only about 0.27 % of points (about 1 in 370)."
+      },
+      {
+        "type": "paragraph",
+        "text": "**Typical causes:**"
+      },
+      {
+        "type": "list",
+        "items": [
+          "Measurement or reading error, typo during data entry",
+          "Wrong set-up, broken tool, defective material",
+          "In the measurement system: dirty probe, reference part seated incorrectly"
+        ]
+      },
+      {
+        "type": "paragraph",
+        "text": "In MSA Type 6 ({{term:stabilitaets-studie|stability study}}) the same reference part is measured every time. A signal there points to the **measurement system**, not to the production process."
+      },
+      {
+        "type": "note",
+        "text": "Rule 1 should always be on. It reacts quickly to large jumps but misses small shifts — rules 2, 5 and 6 cover those. Every additionally enabled rule raises the false-alarm rate ({{term:fehler-erster-art|type I error}})."
+      }
+    ]
+  },
+  "aliases": {
+    "de": [
+      "Nelson-Regel 1",
+      "Nelson-Test 1",
+      "Regel 1"
+    ],
+    "en": [
+      "Nelson rule 1",
+      "Nelson test 1",
+      "Test 1"
+    ]
+  },
+  "seeAlso": [
+    "nelson-regeln",
+    "regelkarte",
+    "sonderursache",
+    "fehler-erster-art"
+  ],
+  "modules": [
+    "control-chart",
+    "msa-typ6",
+    "attribute-control-chart"
+  ],
+  "algoLab": [
+    "control-charts/control-chart"
+  ],
+  "sources": [
+    {
+      "label": "Nelson, L. S. — Technical Aids: The Shewhart Control Chart — Tests for Special Causes, Journal of Quality Technology, 16(4), 1984",
+      "url": null
+    },
+    {
+      "label": "Montgomery, D. C. — Introduction to Statistical Quality Control, 8th Edition, Chapter 5",
+      "url": null
+    },
+    {
+      "label": "Western Electric Company — Statistical Quality Control Handbook, 1956",
+      "url": null
+    }
+  ]
+}

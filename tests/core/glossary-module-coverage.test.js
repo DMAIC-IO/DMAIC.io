@@ -232,3 +232,35 @@ suite('Glossar: Katalog-Integrität', () => {
     assertEqual(bad.length, 0, `Unvollständige Begriffe: ${JSON.stringify(bad)}`);
   });
 });
+
+// Kundenwunsch 2026-10-07: Die Nelson-Regeln standen nur als Einzeiler im
+// Sammelbegriff. Jede Regel bekommt einen eigenen Eintrag, auf den die
+// Checkboxen in MSA Typ 6 und der Regelkarte verlinken.
+suite('Glossar: Nelson-Regeln je Regel', () => {
+  const RULE_IDS = [1, 2, 3, 4, 5, 6, 7, 8].map(n => `nelson-regel-${n}`);
+
+  test('jede der acht Regeln hat einen eigenen Begriff', () => {
+    const missing = RULE_IDS.filter(id => !TERM_IDS.has(id));
+    assertEqual(missing.length, 0, `Fehlende Regel-Begriffe: ${JSON.stringify(missing)}`);
+  });
+
+  test('jeder Regel-Begriff ist msa-typ6 und control-chart zugeordnet', () => {
+    const bad = RULE_IDS.filter(id => {
+      const mods = GLOSSARY_TERMS[id]?.modules || [];
+      return !mods.includes('msa-typ6') || !mods.includes('control-chart');
+    });
+    assertEqual(bad.length, 0, `Ohne msa-typ6/control-chart: ${JSON.stringify(bad)}`);
+  });
+
+  test('jeder Regel-Begriff verweist zurück auf den Sammelbegriff', () => {
+    const bad = RULE_IDS.filter(id => !(GLOSSARY_TERMS[id]?.seeAlso || []).includes('nelson-regeln'));
+    assertEqual(bad.length, 0, `Ohne Rückverweis: ${JSON.stringify(bad)}`);
+  });
+
+  test('der Sammelbegriff verweist auf alle acht Regeln und gehört zu msa-typ6', () => {
+    const overview = GLOSSARY_TERMS['nelson-regeln'];
+    const missing = RULE_IDS.filter(id => !(overview?.seeAlso || []).includes(id));
+    assertEqual(missing.length, 0, `seeAlso fehlt: ${JSON.stringify(missing)}`);
+    assertTrue((overview?.modules || []).includes('msa-typ6'), 'nelson-regeln ohne msa-typ6');
+  });
+});

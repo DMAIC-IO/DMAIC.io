@@ -1,0 +1,111 @@
+{
+  "id": "nelson-regel-3",
+  "category": "spc",
+  "title": {
+    "de": "Nelson-Regel 3: 6 Punkte steigend oder fallend",
+    "en": "Nelson Rule 3: 6 points rising or falling"
+  },
+  "short": {
+    "de": "6 Punkte in Folge steigen stetig an oder fallen stetig ab — Hinweis auf einen Trend bzw. eine {{term:drift-test|Drift}}.",
+    "en": "6 points in a row steadily increase or steadily decrease — a sign of a trend or {{term:drift-test|drift}}."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "**Muster:** Jeder der 6 aufeinanderfolgenden Punkte ist größer (bzw. kleiner) als sein Vorgänger."
+      },
+      {
+        "type": "paragraph",
+        "text": "**Bedeutung:** Der Prozess wandert schleichend in eine Richtung, statt um einen festen Wert zu streuen."
+      },
+      {
+        "type": "paragraph",
+        "text": "**Typische Ursachen:**"
+      },
+      {
+        "type": "list",
+        "items": [
+          "Werkzeugverschleiß, nachlassende Schärfe",
+          "Aufwärmen von Maschine oder Umgebung, Temperaturgang",
+          "Im Messsystem: Drift der Elektronik, Abnutzung der Antastung, Temperaturdrift des Referenzteils"
+        ]
+      },
+      {
+        "type": "paragraph",
+        "text": "In MSA Typ 6 ({{term:stabilitaets-studie|Stabilitätsstudie}}) wird immer dasselbe Referenzteil gemessen. Ein Signal weist dort auf das **Messsystem** hin, nicht auf den Fertigungsprozess."
+      },
+      {
+        "type": "note",
+        "text": "Gleiche Messwerte unterbrechen eine Folge. Bei grob aufgelösten Daten mit vielen Bindungen löst Regel 3 daher seltener aus. Jede zusätzlich aktivierte Regel erhöht die Fehlalarm-Rate ({{term:fehler-erster-art|Fehler 1. Art}})."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "**Pattern:** Each of 6 consecutive points is larger (or smaller) than the one before."
+      },
+      {
+        "type": "paragraph",
+        "text": "**Meaning:** The process creeps in one direction instead of varying around a fixed value."
+      },
+      {
+        "type": "paragraph",
+        "text": "**Typical causes:**"
+      },
+      {
+        "type": "list",
+        "items": [
+          "Tool wear, dulling",
+          "Machine or environment warming up, temperature change",
+          "In the measurement system: electronics drift, probe wear, temperature drift of the reference part"
+        ]
+      },
+      {
+        "type": "paragraph",
+        "text": "In MSA Type 6 ({{term:stabilitaets-studie|stability study}}) the same reference part is measured every time. A signal there points to the **measurement system**, not to the production process."
+      },
+      {
+        "type": "note",
+        "text": "Equal values break a run. With coarse data containing many ties, rule 3 therefore fires less often. Every additionally enabled rule raises the false-alarm rate ({{term:fehler-erster-art|type I error}})."
+      }
+    ]
+  },
+  "aliases": {
+    "de": [
+      "Nelson-Regel 3",
+      "Nelson-Test 3",
+      "Regel 3"
+    ],
+    "en": [
+      "Nelson rule 3",
+      "Nelson test 3",
+      "Test 3"
+    ]
+  },
+  "seeAlso": [
+    "nelson-regeln",
+    "regelkarte",
+    "sonderursache",
+    "drift-test",
+    "fehler-erster-art"
+  ],
+  "modules": [
+    "control-chart",
+    "msa-typ6",
+    "attribute-control-chart"
+  ],
+  "algoLab": [
+    "control-charts/control-chart"
+  ],
+  "sources": [
+    {
+      "label": "Nelson, L. S. — Technical Aids: The Shewhart Control Chart — Tests for Special Causes, Journal of Quality Technology, 16(4), 1984",
+      "url": null
+    },
+    {
+      "label": "Montgomery, D. C. — Introduction to Statistical Quality Control, 8th Edition, Chapter 5",
+      "url": null
+    }
+  ]
+}

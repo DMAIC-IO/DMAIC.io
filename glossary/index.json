@@ -561,6 +561,46 @@
       "file": "terms/nelson-regeln.json"
     },
     {
+      "id": "nelson-regel-1",
+      "category": "spc",
+      "file": "terms/nelson-regel-1.json"
+    },
+    {
+      "id": "nelson-regel-2",
+      "category": "spc",
+      "file": "terms/nelson-regel-2.json"
+    },
+    {
+      "id": "nelson-regel-3",
+      "category": "spc",
+      "file": "terms/nelson-regel-3.json"
+    },
+    {
+      "id": "nelson-regel-4",
+      "category": "spc",
+      "file": "terms/nelson-regel-4.json"
+    },
+    {
+      "id": "nelson-regel-5",
+      "category": "spc",
+      "file": "terms/nelson-regel-5.json"
+    },
+    {
+      "id": "nelson-regel-6",
+      "category": "spc",
+      "file": "terms/nelson-regel-6.json"
+    },
+    {
+      "id": "nelson-regel-7",
+      "category": "spc",
+      "file": "terms/nelson-regel-7.json"
+    },
+    {
+      "id": "nelson-regel-8",
+      "category": "spc",
+      "file": "terms/nelson-regel-8.json"
+    },
+    {
       "id": "subgruppe",
       "category": "spc",
       "file": "terms/subgruppe.json"

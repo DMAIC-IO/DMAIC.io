@@ -18,14 +18,14 @@
       {
         "type": "list",
         "items": [
-          "**Regel 1** — 1 Punkt außerhalb ±3σ (out-of-limit)",
-          "**Regel 2** — 9 Punkte in Folge auf derselben Seite der Mittellinie (Niveauverschiebung)",
-          "**Regel 3** — 6 Punkte in Folge steigend oder fallend (Trend)",
-          "**Regel 4** — 14 Punkte alternierend (systematisches Zickzack)",
-          "**Regel 5** — 2 von 3 Punkten in Zone A (>2σ, gleiche Seite)",
-          "**Regel 6** — 4 von 5 Punkten in Zone B oder A (>1σ, gleiche Seite)",
-          "**Regel 7** — 15 Punkte in Folge in Zone C (Streuung zu klein → Mischung / falsche Grenzen)",
-          "**Regel 8** — 8 Punkte in Folge außerhalb Zone C (kein Punkt nah an der Mittellinie)"
+          "**{{term:nelson-regel-1|Regel 1}}** — 1 Punkt außerhalb ±3σ (out-of-limit)",
+          "**{{term:nelson-regel-2|Regel 2}}** — 9 Punkte in Folge auf derselben Seite der Mittellinie (Niveauverschiebung)",
+          "**{{term:nelson-regel-3|Regel 3}}** — 6 Punkte in Folge steigend oder fallend (Trend)",
+          "**{{term:nelson-regel-4|Regel 4}}** — 14 Punkte alternierend (systematisches Zickzack)",
+          "**{{term:nelson-regel-5|Regel 5}}** — 2 von 3 Punkten in Zone A (>2σ, gleiche Seite)",
+          "**{{term:nelson-regel-6|Regel 6}}** — 4 von 5 Punkten in Zone B oder A (>1σ, gleiche Seite)",
+          "**{{term:nelson-regel-7|Regel 7}}** — 15 Punkte in Folge in Zone C (Streuung zu klein → Mischung / falsche Grenzen)",
+          "**{{term:nelson-regel-8|Regel 8}}** — 8 Punkte in Folge außerhalb Zone C (kein Punkt nah an der Mittellinie)"
         ]
       },
       {
@@ -45,14 +45,14 @@
       {
         "type": "list",
         "items": [
-          "**Rule 1** — 1 point outside ±3σ (out-of-limit)",
-          "**Rule 2** — 9 points in a row on the same side of the centre line (level shift)",
-          "**Rule 3** — 6 points in a row rising or falling (trend)",
-          "**Rule 4** — 14 points alternating (systematic zig-zag)",
-          "**Rule 5** — 2 of 3 points in zone A (>2σ, same side)",
-          "**Rule 6** — 4 of 5 points in zone B or beyond (>1σ, same side)",
-          "**Rule 7** — 15 points in a row within zone C (variance too small → mixing / wrong limits)",
-          "**Rule 8** — 8 points in a row outside zone C (no point near the centre line)"
+          "**{{term:nelson-regel-1|Rule 1}}** — 1 point outside ±3σ (out-of-limit)",
+          "**{{term:nelson-regel-2|Rule 2}}** — 9 points in a row on the same side of the centre line (level shift)",
+          "**{{term:nelson-regel-3|Rule 3}}** — 6 points in a row rising or falling (trend)",
+          "**{{term:nelson-regel-4|Rule 4}}** — 14 points alternating (systematic zig-zag)",
+          "**{{term:nelson-regel-5|Rule 5}}** — 2 of 3 points in zone A (>2σ, same side)",
+          "**{{term:nelson-regel-6|Rule 6}}** — 4 of 5 points in zone B or beyond (>1σ, same side)",
+          "**{{term:nelson-regel-7|Rule 7}}** — 15 points in a row within zone C (variance too small → mixing / wrong limits)",
+          "**{{term:nelson-regel-8|Rule 8}}** — 8 points in a row outside zone C (no point near the centre line)"
         ]
       },
       {
@@ -84,11 +84,20 @@
     "regelkarte",
     "regelgrenze",
     "sonderursache",
-    "mittellinie"
+    "mittellinie",
+    "nelson-regel-1",
+    "nelson-regel-2",
+    "nelson-regel-3",
+    "nelson-regel-4",
+    "nelson-regel-5",
+    "nelson-regel-6",
+    "nelson-regel-7",
+    "nelson-regel-8"
   ],
   "modules": [
     "control-chart",
-    "attribute-control-chart"
+    "attribute-control-chart",
+    "msa-typ6"
   ],
   "algoLab": [
     "control-charts/control-chart"

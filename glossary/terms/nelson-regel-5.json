@@ -1,0 +1,123 @@
+{
+  "id": "nelson-regel-5",
+  "category": "spc",
+  "title": {
+    "de": "Nelson-Regel 5: 2 von 3 Punkten jenseits 2σ",
+    "en": "Nelson Rule 5: 2 of 3 points beyond 2σ"
+  },
+  "short": {
+    "de": "2 von 3 Punkten in Folge liegen mehr als 2σ von der Mittellinie entfernt, auf derselben Seite (Zone A oder darüber hinaus).",
+    "en": "2 of 3 points in a row lie more than 2σ from the centre line, on the same side (zone A or beyond)."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "**Muster:** Unter 3 aufeinanderfolgenden Punkten liegen mindestens 2 auf derselben Seite jenseits von 2σ."
+      },
+      {
+        "type": "paragraph",
+        "text": "**Bedeutung:** Eine mittelgroße Verschiebung des Mittelwerts — eine Frühwarnung, bevor Punkte die Regelgrenze überschreiten."
+      },
+      {
+        "type": "paragraph",
+        "text": "Zonen: C = bis 1σ, B = 1σ bis 2σ, A = 2σ bis 3σ Abstand von der {{term:mittellinie|Mittellinie}} (siehe {{term:sigma-zonen|σ-Zonen}})."
+      },
+      {
+        "type": "paragraph",
+        "text": "**Typische Ursachen:**"
+      },
+      {
+        "type": "list",
+        "items": [
+          "Beginnende Niveauverschiebung, z. B. nach Material- oder Einstellwechsel",
+          "Zunehmende Streuung",
+          "Im Messsystem: beginnende Dejustage"
+        ]
+      },
+      {
+        "type": "paragraph",
+        "text": "In MSA Typ 6 ({{term:stabilitaets-studie|Stabilitätsstudie}}) wird immer dasselbe Referenzteil gemessen. Ein Signal weist dort auf das **Messsystem** hin, nicht auf den Fertigungsprozess."
+      },
+      {
+        "type": "note",
+        "text": "Zonenregel: setzt ein konstantes σ voraus. Auf MR-, R- und S-Karten wird sie nicht geprüft. Jede zusätzlich aktivierte Regel erhöht die Fehlalarm-Rate ({{term:fehler-erster-art|Fehler 1. Art}})."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "**Pattern:** Among 3 consecutive points, at least 2 lie on the same side beyond 2σ."
+      },
+      {
+        "type": "paragraph",
+        "text": "**Meaning:** A medium-sized shift of the mean — an early warning before points cross the control limit."
+      },
+      {
+        "type": "paragraph",
+        "text": "Zones: C = up to 1σ, B = 1σ to 2σ, A = 2σ to 3σ from the {{term:mittellinie|centre line}} (see {{term:sigma-zonen|sigma zones}})."
+      },
+      {
+        "type": "paragraph",
+        "text": "**Typical causes:**"
+      },
+      {
+        "type": "list",
+        "items": [
+          "A level shift starting, e.g. after a material or set-up change",
+          "Growing variation",
+          "In the measurement system: beginning misalignment"
+        ]
+      },
+      {
+        "type": "paragraph",
+        "text": "In MSA Type 6 ({{term:stabilitaets-studie|stability study}}) the same reference part is measured every time. A signal there points to the **measurement system**, not to the production process."
+      },
+      {
+        "type": "note",
+        "text": "Zone rule: assumes a constant σ. It is not checked on MR, R and S charts. Every additionally enabled rule raises the false-alarm rate ({{term:fehler-erster-art|type I error}})."
+      }
+    ]
+  },
+  "aliases": {
+    "de": [
+      "Nelson-Regel 5",
+      "Nelson-Test 5",
+      "Regel 5"
+    ],
+    "en": [
+      "Nelson rule 5",
+      "Nelson test 5",
+      "Test 5"
+    ]
+  },
+  "seeAlso": [
+    "nelson-regeln",
+    "regelkarte",
+    "sonderursache",
+    "sigma-zonen",
+    "fehler-erster-art"
+  ],
+  "modules": [
+    "control-chart",
+    "msa-typ6",
+    "attribute-control-chart"
+  ],
+  "algoLab": [
+    "control-charts/control-chart"
+  ],
+  "sources": [
+    {
+      "label": "Nelson, L. S. — Technical Aids: The Shewhart Control Chart — Tests for Special Causes, Journal of Quality Technology, 16(4), 1984",
+      "url": null
+    },
+    {
+      "label": "Montgomery, D. C. — Introduction to Statistical Quality Control, 8th Edition, Chapter 5",
+      "url": null
+    },
+    {
+      "label": "Western Electric Company — Statistical Quality Control Handbook, 1956",
+      "url": null
+    }
+  ]
+}

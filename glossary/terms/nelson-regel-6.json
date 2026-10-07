@@ -1,0 +1,123 @@
+{
+  "id": "nelson-regel-6",
+  "category": "spc",
+  "title": {
+    "de": "Nelson-Regel 6: 4 von 5 Punkten jenseits 1σ",
+    "en": "Nelson Rule 6: 4 of 5 points beyond 1σ"
+  },
+  "short": {
+    "de": "4 von 5 Punkten in Folge liegen mehr als 1σ von der Mittellinie entfernt, auf derselben Seite (Zone B oder darüber hinaus).",
+    "en": "4 of 5 points in a row lie more than 1σ from the centre line, on the same side (zone B or beyond)."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "**Muster:** Unter 5 aufeinanderfolgenden Punkten liegen mindestens 4 auf derselben Seite jenseits von 1σ."
+      },
+      {
+        "type": "paragraph",
+        "text": "**Bedeutung:** Eine kleine, aber anhaltende Verschiebung des Mittelwerts."
+      },
+      {
+        "type": "paragraph",
+        "text": "Zonen: C = bis 1σ, B = 1σ bis 2σ, A = 2σ bis 3σ Abstand von der {{term:mittellinie|Mittellinie}} (siehe {{term:sigma-zonen|σ-Zonen}})."
+      },
+      {
+        "type": "paragraph",
+        "text": "**Typische Ursachen:**"
+      },
+      {
+        "type": "list",
+        "items": [
+          "Kleine Einstellungsänderung, neues Werkzeug",
+          "Schleichender Wechsel von Umgebungsbedingungen",
+          "Im Messsystem: leichte Verschiebung nach Wartung oder Umbau"
+        ]
+      },
+      {
+        "type": "paragraph",
+        "text": "In MSA Typ 6 ({{term:stabilitaets-studie|Stabilitätsstudie}}) wird immer dasselbe Referenzteil gemessen. Ein Signal weist dort auf das **Messsystem** hin, nicht auf den Fertigungsprozess."
+      },
+      {
+        "type": "note",
+        "text": "Zonenregel: setzt ein konstantes σ voraus. Auf MR-, R- und S-Karten wird sie nicht geprüft. Jede zusätzlich aktivierte Regel erhöht die Fehlalarm-Rate ({{term:fehler-erster-art|Fehler 1. Art}})."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "**Pattern:** Among 5 consecutive points, at least 4 lie on the same side beyond 1σ."
+      },
+      {
+        "type": "paragraph",
+        "text": "**Meaning:** A small but persistent shift of the mean."
+      },
+      {
+        "type": "paragraph",
+        "text": "Zones: C = up to 1σ, B = 1σ to 2σ, A = 2σ to 3σ from the {{term:mittellinie|centre line}} (see {{term:sigma-zonen|sigma zones}})."
+      },
+      {
+        "type": "paragraph",
+        "text": "**Typical causes:**"
+      },
+      {
+        "type": "list",
+        "items": [
+          "Small set-up change, new tool",
+          "Gradual change of ambient conditions",
+          "In the measurement system: slight offset after maintenance or rebuild"
+        ]
+      },
+      {
+        "type": "paragraph",
+        "text": "In MSA Type 6 ({{term:stabilitaets-studie|stability study}}) the same reference part is measured every time. A signal there points to the **measurement system**, not to the production process."
+      },
+      {
+        "type": "note",
+        "text": "Zone rule: assumes a constant σ. It is not checked on MR, R and S charts. Every additionally enabled rule raises the false-alarm rate ({{term:fehler-erster-art|type I error}})."
+      }
+    ]
+  },
+  "aliases": {
+    "de": [
+      "Nelson-Regel 6",
+      "Nelson-Test 6",
+      "Regel 6"
+    ],
+    "en": [
+      "Nelson rule 6",
+      "Nelson test 6",
+      "Test 6"
+    ]
+  },
+  "seeAlso": [
+    "nelson-regeln",
+    "regelkarte",
+    "sonderursache",
+    "sigma-zonen",
+    "fehler-erster-art"
+  ],
+  "modules": [
+    "control-chart",
+    "msa-typ6",
+    "attribute-control-chart"
+  ],
+  "algoLab": [
+    "control-charts/control-chart"
+  ],
+  "sources": [
+    {
+      "label": "Nelson, L. S. — Technical Aids: The Shewhart Control Chart — Tests for Special Causes, Journal of Quality Technology, 16(4), 1984",
+      "url": null
+    },
+    {
+      "label": "Montgomery, D. C. — Introduction to Statistical Quality Control, 8th Edition, Chapter 5",
+      "url": null
+    },
+    {
+      "label": "Western Electric Company — Statistical Quality Control Handbook, 1956",
+      "url": null
+    }
+  ]
+}
