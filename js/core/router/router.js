@@ -159,7 +159,18 @@ export class Router {
           for (const [id, p] of this._pages) {
             if (id !== route.pageId) p.hide?.();
           }
-          if (page) await page.show?.();
+          if (page) {
+            // A page whose code is its own chunk can take seconds to load:
+            // release the guard so navigation during the load is applied.
+            const shown = page.show?.();
+            this._applying = false;
+            await shown;
+            if (this._currentRoute !== route) {
+              page.hide?.();                       // the user left while it loaded
+            } else if (page.isOpen && !page.isOpen()) {
+              await this.navigateBackFromPage(route.pageId); // load failed: do not sit on its URL
+            }
+          }
           break;
         }
         case 'phase': {

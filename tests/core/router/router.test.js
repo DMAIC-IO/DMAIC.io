@@ -96,6 +96,38 @@ suite('router/Router', () => {
     assertEqual(h.fakeWin.location.hash, '#/project/ab12/page/settings');
   });
 
+  test('navigate(page): a navigation while the page still loads is applied, the late page hidden', async () => {
+    const h = harness();
+    let release;
+    const lab = {
+      open: false,
+      show() { return new Promise((r) => { release = () => { this.open = true; r(); }; }); },
+      hide() { this.open = false; },
+      isOpen() { return this.open; },
+    };
+    h.deps.pages.set('algorithm-lab', lab);
+    h.deps.stateManager.getActiveProjectId = () => 'ab12'; // same project: no switch before the page
+    const r = new Router(h.deps);
+    const pending = r.navigate({ kind: 'page', projectId: 'ab12', pageId: 'algorithm-lab' });
+    await r.navigate({ kind: 'phase', projectId: 'ab12', phaseId: 'measure' });
+    assertEqual(h.getActivePhase(), 'measure', 'phase applied during the load');
+    assertEqual(h.fakeWin.location.hash, '#/project/ab12/phase/measure');
+    release();
+    await pending;
+    assertEqual(lab.open, false, 'page that finished loading after the user left is hidden');
+  });
+
+  test('navigate(page): a page that stays closed after show() reverts to the last route', async () => {
+    const h = harness();
+    h.deps.pages.set('algorithm-lab', { async show() {}, hide() {}, isOpen: () => false });
+    h.deps.stateManager.getActiveProjectId = () => 'ab12';
+    const r = new Router(h.deps);
+    await r.navigate({ kind: 'phase', projectId: 'ab12', phaseId: 'measure' });
+    await r.navigate({ kind: 'page', projectId: 'ab12', pageId: 'algorithm-lab' });
+    assertEqual(h.fakeWin.location.hash, '#/project/ab12/phase/measure');
+    assertEqual(h.fakeWin._last, 'replace');
+  });
+
   test('navigate replace=true uses replaceState', async () => {
     const h = harness();
     const r = new Router(h.deps);
