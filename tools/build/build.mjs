@@ -186,7 +186,7 @@ export async function bundleJs(appDir = APP_DIR, { write = true, writeOutput = w
   let code = '';
   for (const f of result.outputFiles) {
     if (!f.path.endsWith('.js')) continue;
-    try { assertEvalFree(f.text); } catch (e) { throw new Error(`${f.path}: ${e.message}`); }
+    try { assertEvalFree(f.text); } catch (e) { throw new Error(`${f.path}: ${e.message}`, { cause: e }); }
     if (f.path === outfile) code = f.text;
     else if (dirname(f.path) === chunkDir) chunks.push(`js/chunks/${f.path.slice(chunkDir.length + 1)}`);
   }
