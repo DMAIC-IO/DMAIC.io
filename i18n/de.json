@@ -569,7 +569,15 @@
     "spcNoData": "Zu wenig Daten für eine Regelkarte.",
     "spcViolations": "Verletzungen",
     "spcOutOfSpec": "Außerh. Spez.",
-    "spcOf": "von {total} Punkten"
+    "spcOf": "von {total} Punkten",
+    "tileSettings": {
+      "title": "Einstellungen: {title}",
+      "open": "Kachel-Einstellungen",
+      "restoreDefaults": "Standard wiederherstellen",
+      "renderError": "Diese Kachel konnte nicht dargestellt werden.",
+      "topN": "Anzahl der Top-Einträge",
+      "showLegend": "Legende anzeigen"
+    }
   },
   "lab": {
     "title": "Algorithm Lab",

@@ -569,7 +569,15 @@
     "spcNoData": "Too few data points for a control chart.",
     "spcViolations": "Violations",
     "spcOutOfSpec": "Out of Spec",
-    "spcOf": "of {total} points"
+    "spcOf": "of {total} points",
+    "tileSettings": {
+      "title": "Settings: {title}",
+      "open": "Tile settings",
+      "restoreDefaults": "Restore defaults",
+      "renderError": "This tile could not be displayed.",
+      "topN": "Number of top entries",
+      "showLegend": "Show legend"
+    }
   },
   "lab": {
     "title": "Algorithm Lab",

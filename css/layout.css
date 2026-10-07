@@ -1349,6 +1349,22 @@ body.dev-area-open .dmaic-tiles {
   background: var(--color-bg-tertiary, transparent);
 }
 
+/* Tile settings dialog body (built by tile-settings-form.js) */
+.tile-settings {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3, 12px);
+  min-width: 320px;
+}
+.tile-settings__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3, 12px);
+}
+.tile-settings__input[type="number"] { width: 6em; }
+.tile-settings__reset { align-self: flex-start; }
+
 .dashboard-grid__tile-body {
   flex: 1;
   min-height: 0;
