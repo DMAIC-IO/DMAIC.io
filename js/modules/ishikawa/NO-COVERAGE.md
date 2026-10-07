@@ -44,3 +44,5 @@ verifiziert. Effektive Coverage des Refactoring-Diffs: **100 %** (alle neu hinzu
 sind `hit`). Es wurden keine künstlichen Tests geschrieben, um die PRE-/V8-/NOUI-Zeilen zu jagen.
 
 Abgedeckte Szenarien (`tests/modules/ishikawa.spec.js` + `tests/global/dashboard.spec.js`): Kategorien/Ursachen anlegen/editieren/löschen, Drag-Reorder, Scope-In/Out-Galerie, Pareto-Chart-Rendering, Sprachwechsel, Theme-Wechsel, Modulhilfe, State-Restore, Visual-Baselines, Destruction, Dashboard-Ishikawa-Kachel + Visual-Baseline.
+
+> Nachtrag 2026-10-07: Der Kachel-Code liegt seit dem Kachel-Datei-Vertrag in `ishikawa.tile.js` (kein `dashboardTile`-Descriptor mehr); Zahlen und Funktionsnamen oben beziehen sich auf den Stand davor.

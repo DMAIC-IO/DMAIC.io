@@ -22,19 +22,6 @@ suite('createModule: getActions', () => {
   });
 });
 
-suite('createModule — dashboardTile pass-through', () => {
-  test('forwards a dashboardTile descriptor onto the default export', () => {
-    class M { static fromJSON() { return new M(); } toJSON() { return {}; } hasContent() { return false; } }
-    const tile = { defaultW: 3, enumerate: () => [], render: () => {} };
-    const mod = createModule({
-      config: { id: 'x-mod', engine: 'alpine', phase: 'analyze', meta: import.meta, dashboardTile: tile },
-      Model: M, data: () => ({}),
-    });
-    assertEqual(mod.dashboardTile, tile);
-    assertEqual(mod.dashboardTile.defaultW, 3);
-  });
-});
-
 suite('createModule applyRemoteState', () => {
   // Shared Alpine start (idempotent — safe to call again if already started).
   if (!Alpine.version) Alpine.start();

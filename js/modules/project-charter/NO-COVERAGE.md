@@ -44,3 +44,5 @@ rein additive Refactoring nicht berührt. Es wurden keine künstlichen Tests ges
 PRE-/V8-/IG-Zeilen zu jagen.
 
 Abgedeckte Szenarien (`tests/modules/project-charter.spec.js` + `tests/global/dashboard.spec.js`): Goals/Charter-Felder, Org-Chart-Editor/Modebar/Zoom/Pan, Knoten anlegen/löschen/auswählen/ein-ausklappen, Layout, Undo, PNG-/SVG-Export, Sprachwechsel, Theme-Wechsel, Modulhilfe, State-Restore nach Reload, Visual-Baselines (Empty-State, example-charter-pizza-lieferzeit), Destruction, Dashboard-Charter-Kachel (Problem-Statement/No-Problem/Empty + Org-Chart-SVG + Visual-Baseline).
+
+> Nachtrag 2026-10-07: Der Kachel-Code liegt seit dem Kachel-Datei-Vertrag in `project-charter.tile.js` (kein `dashboardTile`-Descriptor mehr); Zahlen und Funktionsnamen oben beziehen sich auf den Stand davor.

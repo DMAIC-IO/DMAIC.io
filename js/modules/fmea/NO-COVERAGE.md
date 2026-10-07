@@ -31,3 +31,5 @@ Lines: 98.7% (149/151) | Functions: 100% (53/53) | Branches: 84.3% (102/121)
 
 **Fazit:**
 Roh-Coverage **Lines 98.7 %** und **Functions 100 %** liegen beide über der 90 %-Schwelle (`--check` exit 0). Die `dashboardTile.enumerate`-Funktion `enumerateFmea` wird seit der Einführung des dünnen Dashboard-Hosts (`app/dev/js/pages/dashboard/`, `enumerateTiles`) bei jedem Dashboard-E2E live aufgerufen und ist damit vollständig abgedeckt — die frühere FUT-Notiz entfällt. Die einzige verbleibende unabgedeckte Stelle ist der `chartManager.destroy`-Burndown-Teardown (V8/IG). Effektiv abdeckbare Zeilen: 151 − 2 (V8/IG) = 149 / 149 = **100 %**. Es wurden keine künstlichen Tests geschrieben, um die V8-Zeilen zu jagen.
+
+> Nachtrag 2026-10-07: Der Kachel-Code liegt seit dem Kachel-Datei-Vertrag in `fmea.tile.js` (kein `dashboardTile`-Descriptor mehr); Zahlen und Funktionsnamen oben beziehen sich auf den Stand davor.
