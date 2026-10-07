@@ -114,39 +114,39 @@
     </div>
 
     <!-- Nelson-Regeln -->
-    <div class="dmike-split__section-title" x-text="t('input.nelsonRules')"></div>
+    <div class="dmike-split__section-title"><span class="glossary-term" data-glossary-term="nelson-regeln"><span x-text="t('input.nelsonRules')"></span></span></div>
     <div class="module-msa-typ6__nelson-list" data-ref="nelson-list">
       <label class="module-msa-typ6__nelson-rule">
         <input type="checkbox" value="1" x-model="model.params.enabledRules" @change="_analyzeNow()">
-        <span><strong x-text="_ruleShort(1)"></strong><br><span class="module-msa-typ6__nelson-desc" x-text="_ruleDesc(1)"></span></span>
+        <span><span class="glossary-term" data-glossary-term="nelson-regel-1"><strong x-text="_ruleShort(1)"></strong></span><br><span class="module-msa-typ6__nelson-desc" x-text="_ruleDesc(1)"></span></span>
       </label>
       <label class="module-msa-typ6__nelson-rule">
         <input type="checkbox" value="2" x-model="model.params.enabledRules" @change="_analyzeNow()">
-        <span><strong x-text="_ruleShort(2)"></strong><br><span class="module-msa-typ6__nelson-desc" x-text="_ruleDesc(2)"></span></span>
+        <span><span class="glossary-term" data-glossary-term="nelson-regel-2"><strong x-text="_ruleShort(2)"></strong></span><br><span class="module-msa-typ6__nelson-desc" x-text="_ruleDesc(2)"></span></span>
       </label>
       <label class="module-msa-typ6__nelson-rule">
         <input type="checkbox" value="3" x-model="model.params.enabledRules" @change="_analyzeNow()">
-        <span><strong x-text="_ruleShort(3)"></strong><br><span class="module-msa-typ6__nelson-desc" x-text="_ruleDesc(3)"></span></span>
+        <span><span class="glossary-term" data-glossary-term="nelson-regel-3"><strong x-text="_ruleShort(3)"></strong></span><br><span class="module-msa-typ6__nelson-desc" x-text="_ruleDesc(3)"></span></span>
       </label>
       <label class="module-msa-typ6__nelson-rule">
         <input type="checkbox" value="4" x-model="model.params.enabledRules" @change="_analyzeNow()">
-        <span><strong x-text="_ruleShort(4)"></strong><br><span class="module-msa-typ6__nelson-desc" x-text="_ruleDesc(4)"></span></span>
+        <span><span class="glossary-term" data-glossary-term="nelson-regel-4"><strong x-text="_ruleShort(4)"></strong></span><br><span class="module-msa-typ6__nelson-desc" x-text="_ruleDesc(4)"></span></span>
       </label>
       <label class="module-msa-typ6__nelson-rule">
         <input type="checkbox" value="5" x-model="model.params.enabledRules" @change="_analyzeNow()">
-        <span><strong x-text="_ruleShort(5)"></strong><br><span class="module-msa-typ6__nelson-desc" x-text="_ruleDesc(5)"></span></span>
+        <span><span class="glossary-term" data-glossary-term="nelson-regel-5"><strong x-text="_ruleShort(5)"></strong></span><br><span class="module-msa-typ6__nelson-desc" x-text="_ruleDesc(5)"></span></span>
       </label>
       <label class="module-msa-typ6__nelson-rule">
         <input type="checkbox" value="6" x-model="model.params.enabledRules" @change="_analyzeNow()">
-        <span><strong x-text="_ruleShort(6)"></strong><br><span class="module-msa-typ6__nelson-desc" x-text="_ruleDesc(6)"></span></span>
+        <span><span class="glossary-term" data-glossary-term="nelson-regel-6"><strong x-text="_ruleShort(6)"></strong></span><br><span class="module-msa-typ6__nelson-desc" x-text="_ruleDesc(6)"></span></span>
       </label>
       <label class="module-msa-typ6__nelson-rule">
         <input type="checkbox" value="7" x-model="model.params.enabledRules" @change="_analyzeNow()">
-        <span><strong x-text="_ruleShort(7)"></strong><br><span class="module-msa-typ6__nelson-desc" x-text="_ruleDesc(7)"></span></span>
+        <span><span class="glossary-term" data-glossary-term="nelson-regel-7"><strong x-text="_ruleShort(7)"></strong></span><br><span class="module-msa-typ6__nelson-desc" x-text="_ruleDesc(7)"></span></span>
       </label>
       <label class="module-msa-typ6__nelson-rule">
         <input type="checkbox" value="8" x-model="model.params.enabledRules" @change="_analyzeNow()">
-        <span><strong x-text="_ruleShort(8)"></strong><br><span class="module-msa-typ6__nelson-desc" x-text="_ruleDesc(8)"></span></span>
+        <span><span class="glossary-term" data-glossary-term="nelson-regel-8"><strong x-text="_ruleShort(8)"></strong></span><br><span class="module-msa-typ6__nelson-desc" x-text="_ruleDesc(8)"></span></span>
       </label>
     </div>
 
@@ -232,6 +232,7 @@
              Primär-Regelkarte und hebt die Zeile kurzzeitig hervor
              (_highlight()). Siehe msa-typ6.js für die Begründung, warum das
              v1.0 kein Klick-zu-Chart-Punkt-Highlight einschließt. -->
+        <div class="dmike-split__output-section module-msa-typ6__violations-section" x-show="_lastResult.ruleViolations.length > 0"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('violations.title')"></span></div>
         <table class="module-msa-typ6__violations" x-show="_lastResult.ruleViolations.length > 0">
           <thead>
             <tr>
@@ -249,7 +250,7 @@
                 <td x-text="v.time"></td>
                 <td x-text="_fmt(v.value, 3)"></td>
                 <td x-text="v.ruleIds.join(', ')"></td>
-                <td x-text="v.ruleIds.map(id => _ruleShort(id)).join('; ')"></td>
+                <td x-text="_ruleShortList(v.ruleIds)"></td>
               </tr>
             </template>
           </tbody>

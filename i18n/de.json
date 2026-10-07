@@ -1886,6 +1886,7 @@
         "both": "Nelson-Verletzungen und Drift"
       },
       "violations": {
+        "title": "Regelverletzungen",
         "time": "Zeitpunkt",
         "value": "Messwert",
         "rules": "Regel(n)",

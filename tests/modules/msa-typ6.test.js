@@ -118,6 +118,26 @@ suite('msa-typ6 module — Input-Panel Controls (Task 8)', () => {
     assertEqual(doc.querySelectorAll('input[type="checkbox"][x-model="model.params.enabledRules"]').length, 8);
   });
 
+  test('every Nelson-rule label carries a glossary chip for its own rule', async () => {
+    const doc = await loadTemplateDoc();
+    for (let id = 1; id <= 8; id++) {
+      const label = doc.querySelector(`input[type="checkbox"][value="${id}"]`)?.closest('label');
+      assertTrue(label != null, `rule ${id} checkbox must sit in a <label>`);
+      const chip = label.querySelector('.glossary-term[data-glossary-term]');
+      assertTrue(chip !== null, `rule ${id} label has no glossary chip`);
+      assertEqual(chip.getAttribute('data-glossary-term'), `nelson-regel-${id}`);
+      // x-text on the chip itself would wipe the button the augmenter appends.
+      assertEqual(chip.hasAttribute('x-text'), false, `rule ${id} chip must keep x-text on an inner element`);
+    }
+  });
+
+  test('the Nelson section title links the overview glossary entry', async () => {
+    const doc = await loadTemplateDoc();
+    const chip = doc.querySelector('.dmike-split__section-title .glossary-term[data-glossary-term="nelson-regeln"]');
+    assertTrue(chip !== null, 'Nelson section title has no nelson-regeln chip');
+    assertEqual(chip.hasAttribute('x-text'), false, 'chip must keep x-text on an inner element');
+  });
+
   test('template has limitsMode-dependent blocks (baselineK vs mu0/sigma0)', async () => {
     const doc = await loadTemplateDoc();
     const fromStudyBlock = [...doc.querySelectorAll('[x-show]')]
@@ -594,5 +614,21 @@ suite('msa-typ6 module — Events + Typ-1-Cross-Modul-Anbindung (Task 14)', () =
       'module must subscribe to theme:changed (was missing before Task 14, unlike msa-typ1/msa-typ4)');
     assertTrue(src.includes("eb.off('theme:changed'"),
       'theme:changed subscription must be torn down via _unsubs');
+  });
+});
+
+suite('msa-typ6 model — empty Nelson rule selection', () => {
+  test('fromJSON keeps an empty enabledRules list instead of restoring the defaults', () => {
+    assertEqual(JSON.stringify(State.fromJSON({ params: { enabledRules: [] } }).params.enabledRules), '[]');
+  });
+
+  test('toJSON keeps an empty enabledRules list', () => {
+    const s = new State();
+    s.params.enabledRules = [];
+    assertEqual(JSON.stringify(s.toJSON().params.enabledRules), '[]');
+  });
+
+  test('a missing enabledRules list still falls back to tests 1–6', () => {
+    assertEqual(JSON.stringify(State.fromJSON({ params: {} }).params.enabledRules), '[1,2,3,4,5,6]');
   });
 });

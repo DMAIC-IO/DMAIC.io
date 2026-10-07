@@ -123,6 +123,16 @@ const mod = createModule({
         return rule ? (rule.short[lang] || rule.short.de) : `#${id}`;
       },
 
+      /**
+       * Kurztexte mehrerer Regeln, mit „; " verbunden. Eigene Methode, weil
+       * der Alpine-CSP-Build keine Arrow-Funktionen im Template auswertet.
+       * @param {number[]} ids
+       * @returns {string}
+       */
+      _ruleShortList(ids) {
+        return ids.map((id) => this._ruleShort(id)).join('; ');
+      },
+
       /** @param {number} id 1..8 @returns {string} sprachabhängige Kurzbeschreibung. */
       _ruleDesc(id) {
         const lang = module._context.language || 'de';

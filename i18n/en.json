@@ -1886,6 +1886,7 @@
         "both": "Nelson violations and drift"
       },
       "violations": {
+        "title": "Rule violations",
         "time": "Time",
         "value": "Value",
         "rules": "Rule(s)",
