@@ -501,7 +501,8 @@ test('buildChunkManifestBlock emits a data-only JSON script', () => {
 });
 
 /** Inputs that must never be in the entry's static import closure. */
-const HEAVY_INPUTS = ['node_modules/xlsx/', 'node_modules/katex/', 'node_modules/opentype.js/'];
+const HEAVY_INPUTS = ['node_modules/xlsx/', 'node_modules/katex/', 'node_modules/opentype.js/',
+  'js/algorithm-lab/lab-data.generated.js'];
 
 test('entry static closure: modules split off, no heavy dependency', async () => {
   const { metafile } = await bundleJs(APP_DIR, { write: false });

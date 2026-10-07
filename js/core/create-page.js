@@ -7,6 +7,7 @@
 
 import Alpine from '@alpinejs/csp';
 import { cloneTemplate, templateKey } from './dom.js';
+import { loadChunk, ChunkLoadError } from './chunks.js';
 
 /** Module-level router reference injected from app.js after initRouter(). */
 let _router = null;
@@ -36,6 +37,7 @@ export function setCreatePageRouter(router) {
  * @param {(containerEl:HTMLElement, ctx:object)=>void} [config.onHide]  called at end of hide()
  * @param {(ctx:object, t:Function, page:object)=>object} [config.data]  Alpine data factory (optional for imperative-only pages)
  * @param {Object<string,(ctx:object)=>object>} [config.components]  extra Alpine.data components (name → factory(ctx)) registered before mount
+ * @param {() => Promise<{components?: Object<string,(ctx:object)=>object>, mount?: Function, unmount?: Function}>} [config.load]  lazy page code (own chunk): components are registered and mount/unmount used before the template is hydrated
  * @param {boolean} [config.ownsLangReactivity]  if true, skip createPage's destroy+init re-render on language:changed (the page's own Alpine components handle i18n reactivity in place, preserving their reactive state)
  */
 export function createPage(config) {
@@ -43,6 +45,8 @@ export function createPage(config) {
 
   let _mounted = false;
   let _mountHandle = null;
+  let _mountPromise = null;
+  let _loaded = null;
   let _open = false;
   let containerEl = null;
   let buttonEl = null;
@@ -127,23 +131,38 @@ export function createPage(config) {
 
     async _ensureMounted() {
       if (_mounted) return;
-      if (config.templateUrl) {
-        containerEl.replaceChildren(...cloneTemplate(templateKey(config.templateUrl)));
-        Alpine.initTree(containerEl);
-      } else if (config.template != null) {
-        // Inline-string templates are not supported under zero-sink CSP — move
-        // the markup into a .html file and pass templateUrl instead.
-        throw new Error('create-page: inline config.template unsupported; use templateUrl');
-      }
-      if (config.mount) {
-        _mountHandle = await config.mount(containerEl, ctx);
-      }
-      _mounted = true;
+      _mountPromise ??= (async () => {
+        if (config.load) {
+          const mod = await loadChunk(config.load);
+          for (const [name, factory] of Object.entries(mod.components || {})) {
+            Alpine.data(name, () => factory(ctx));
+          }
+          _loaded = { mount: mod.mount, unmount: mod.unmount };
+        }
+        if (config.templateUrl) {
+          containerEl.replaceChildren(...cloneTemplate(templateKey(config.templateUrl)));
+          Alpine.initTree(containerEl);
+        } else if (config.template != null) {
+          // Inline-string templates are not supported under zero-sink CSP — move
+          // the markup into a .html file and pass templateUrl instead.
+          throw new Error('create-page: inline config.template unsupported; use templateUrl');
+        }
+        const mount = _loaded?.mount ?? config.mount;
+        if (mount) _mountHandle = await mount(containerEl, ctx);
+        _mounted = true;
+      })().catch((err) => { _mountPromise = null; throw err; });
+      return _mountPromise;
     },
 
     async show() {
       if (_open) return;
-      await page._ensureMounted();
+      try {
+        await page._ensureMounted();
+      } catch (err) {
+        // Already reported by core/chunks.js; stay closed, retry on next show().
+        if (err instanceof ChunkLoadError) return;
+        throw err;
+      }
       _open = true;
       containerEl.style.display = '';
       if (config.bodyClass) document.body.classList.add(config.bodyClass);
@@ -169,7 +188,8 @@ export function createPage(config) {
       if (onOverlay && ctx) ctx.eventBus.off('overlay:opened', onOverlay);
       if (onLang && ctx) ctx.eventBus.off('language:changed', onLang);
       if (_mounted) {
-        if (config.unmount) config.unmount(containerEl, ctx, _mountHandle);
+        const unmount = _loaded?.unmount ?? config.unmount;
+        if (unmount) unmount(containerEl, ctx, _mountHandle);
         if (containerEl) {
           Alpine.destroyTree(containerEl);
           containerEl.replaceChildren();
@@ -177,6 +197,7 @@ export function createPage(config) {
         _mounted = false;
       }
       _mountHandle = null;
+      _mountPromise = null;
       _open = false;
     },
   };

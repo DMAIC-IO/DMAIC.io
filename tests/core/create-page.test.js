@@ -1,5 +1,6 @@
 import { suite, test, assertEqual, beforeEach, afterEach } from '../test-utils.js';
 import { createPage } from '../../js/core/create-page.js';
+import { setChunkErrorHandler } from '../../js/core/chunks.js';
 
 function makeBus() {
   const map = new Map();
@@ -160,5 +161,72 @@ suite('createPage — imperative mount hooks', () => {
     await bare.show();
     assertEqual(container.childElementCount, 0);
     bare.destroy();
+  });
+});
+
+suite('createPage — load hook', () => {
+  let container, tplEl, bus;
+
+  beforeEach(() => {
+    container = document.createElement('div');
+    container.id = 'cp-load-area';
+    container.style.display = 'none';
+    document.body.append(container);
+    tplEl = document.createElement('template');
+    tplEl.setAttribute('data-tpl', 'js/pages/cp-load/cp-load.html');
+    tplEl.innerHTML = '<section x-data="cpLoadComp"><span class="v" x-text="value"></span></section>';
+    document.body.append(tplEl);
+    bus = makeBus();
+  });
+
+  afterEach(() => { container.remove(); tplEl.remove(); });
+
+  const makePage = (load) => createPage({
+    id: 'cp-load', templateUrl: 'js/pages/cp-load/cp-load.html', container: '#cp-load-area', load,
+  });
+
+  test('registers loaded components before initTree and runs the loaded mount', async () => {
+    const order = [];
+    const page = makePage(async () => ({
+      components: { cpLoadComp: () => ({ value: 'loaded' }) },
+      mount(el) { order.push(el.querySelector('.v')?.textContent); return { h: 1 }; },
+    }));
+    await page.init({ i18n: fakeI18n, eventBus: bus });
+    await page.show();
+    assertEqual(page.isOpen(), true);
+    assertEqual(order[0], 'loaded', 'mount sees hydrated component');
+    assertEqual(page.mountHandle().h, 1);
+    page.destroy();
+  });
+
+  test('concurrent show() calls load and mount once', async () => {
+    let loads = 0, mounts = 0;
+    const page = makePage(async () => {
+      loads++;
+      await new Promise((r) => setTimeout(r, 10));
+      return { components: { cpLoadComp: () => ({ value: 'x' }) }, mount() { mounts++; } };
+    });
+    await page.init({ i18n: fakeI18n, eventBus: bus });
+    await Promise.all([page.show(), page.show(), page._ensureMounted()]);
+    assertEqual(loads, 1);
+    assertEqual(mounts, 1);
+    page.destroy();
+  });
+
+  test('a failing load leaves the page closed, the next show() retries', async () => {
+    setChunkErrorHandler(() => {});
+    let n = 0;
+    const page = makePage(() => (++n === 1
+      ? Promise.reject(new TypeError('Failed to fetch'))
+      : Promise.resolve({ components: { cpLoadComp: () => ({ value: 'ok' }) } })));
+    await page.init({ i18n: fakeI18n, eventBus: bus });
+    await page.show();
+    assertEqual(page.isOpen(), false);
+    assertEqual(container.style.display, 'none');
+    assertEqual(container.childElementCount, 0, 'template not cloned');
+    await page.show();
+    assertEqual(page.isOpen(), true);
+    setChunkErrorHandler(null);
+    page.destroy();
   });
 });
