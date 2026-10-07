@@ -163,3 +163,19 @@ export function pruneTileSettings(all, liveIds) {
   }
   return out;
 }
+
+/**
+ * Decide what the layout-save path does with stored tile settings: prune
+ * entries of tiles that no longer enumerate, but only when every tile file
+ * loaded (a transient chunk error must never delete settings).
+ * @param {object|undefined} all  stored dashboard.tileSettings
+ * @param {Iterable<string>} liveIds  ids of all current tile descriptors
+ * @param {boolean} allLoaded  whether every tile file loaded in this render
+ * @returns {object|null} the pruned object to store, or null when nothing changes
+ */
+export function settingsToStoreOnLayoutSave(all, liveIds, allLoaded) {
+  if (!allLoaded) return null;
+  const current = all || {};
+  const pruned = pruneTileSettings(current, liveIds);
+  return Object.keys(pruned).length !== Object.keys(current).length ? pruned : null;
+}

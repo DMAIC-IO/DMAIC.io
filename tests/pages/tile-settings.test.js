@@ -1,7 +1,7 @@
 import { suite, test, assertEqual, assertDeepEqual, assertTrue } from '../test-utils.js';
 import {
   validateSchema, schemaOf, coerceValue, resolveSettings, toStored,
-  withTileSettings, pruneTileSettings,
+  withTileSettings, pruneTileSettings, settingsToStoreOnLayoutSave,
 } from '../../js/pages/dashboard/tile-settings.js';
 
 const TOP_N = { type: 'number', min: 1, max: 10, step: 1, default: 5, label: 'l.topN' };
@@ -141,5 +141,22 @@ suite('tile-settings: pruneTileSettings', () => {
 
   test('a missing map prunes to an empty map', () => {
     assertDeepEqual(pruneTileSettings(undefined, ['a']), {});
+  });
+});
+
+suite('tile-settings: settingsToStoreOnLayoutSave', () => {
+  const STORED = { 'fmea:live': { topN: 2 }, 'fmea:gone': { topN: 3 } };
+
+  test('prunes entries of unknown tiles once all tile files loaded', () => {
+    assertDeepEqual(settingsToStoreOnLayoutSave(STORED, ['fmea:live'], true), { 'fmea:live': { topN: 2 } });
+  });
+
+  test('does not prune while a tile file failed to load', () => {
+    assertEqual(settingsToStoreOnLayoutSave(STORED, ['fmea:live'], false), null);
+  });
+
+  test('returns null when nothing would change', () => {
+    assertEqual(settingsToStoreOnLayoutSave({ 'fmea:live': { topN: 2 } }, ['fmea:live'], true), null);
+    assertEqual(settingsToStoreOnLayoutSave(undefined, ['fmea:live'], true), null);
   });
 });

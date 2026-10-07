@@ -13,7 +13,7 @@ import { DashboardGrid } from '../../ui/dashboard-grid.js';
 import { DEFAULT_DASHBOARD_LAYOUT } from '../../ui/dashboard-tiles.js';
 import { enumerateTiles, loadTileModules } from './enumerate-tiles.js';
 import { renderTileSafely } from './tile-render.js';
-import { schemaOf, resolveSettings, toStored, withTileSettings, pruneTileSettings } from './tile-settings.js';
+import { schemaOf, resolveSettings, toStored, withTileSettings, settingsToStoreOnLayoutSave } from './tile-settings.js';
 import { buildSettingsForm } from './tile-settings-form.js';
 import { getChartType, evaluateNelsonRules, computeCapability, capabilitySigma, DEFAULT_ENABLED_RULES } from '../../engines/control-chart-engine.js';
 import { getColumnValues, getColumnName } from '../../ui/column-picker.js';
@@ -781,12 +781,9 @@ const page = createPage({
     const saveLayout = () => {
       if (!handle.grid) return;
       stateManager.set('dashboard.layout', handle.grid.getLayout());
-      if (!handle._allTilesLoaded) return;
-      const all = stateManager.get('dashboard.tileSettings') || {};
-      const pruned = pruneTileSettings(all, descriptors.map(d => d.id));
-      if (Object.keys(pruned).length !== Object.keys(all).length) {
-        stateManager.set('dashboard.tileSettings', pruned);
-      }
+      const pruned = settingsToStoreOnLayoutSave(
+        stateManager.get('dashboard.tileSettings'), descriptors.map(d => d.id), handle._allTilesLoaded);
+      if (pruned) stateManager.set('dashboard.tileSettings', pruned);
     };
 
     // ── Add-menu popover ─────────────────────────────────────────────────
