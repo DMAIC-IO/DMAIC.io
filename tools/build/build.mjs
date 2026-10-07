@@ -199,9 +199,12 @@ export async function bundleJs(appDir = APP_DIR, { write = true, writeOutput = w
     const ordered = [...result.outputFiles].sort((a, b) => isEntry(a.path) - isEntry(b.path));
     for (const f of ordered) await writeOutput(f.path, f.contents);
     const keep = new Set(result.outputFiles.map((f) => f.path));
+    // A concurrent build (watcher plus a manual run) may own *.tmp files here
+    // or already have removed the same stale chunk.
     for (const name of readdirSync(chunkDir)) {
       const p = join(chunkDir, name);
-      if (!keep.has(p)) unlinkSync(p);
+      if (keep.has(p) || name.endsWith('.tmp')) continue;
+      try { unlinkSync(p); } catch (e) { if (e.code !== 'ENOENT') throw e; }
     }
   }
   return { outfile, code, chunks, metafile: result.metafile, outputFiles: result.outputFiles };

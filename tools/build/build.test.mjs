@@ -505,6 +505,17 @@ test('split build writes every chunk before the entry and removes stale chunks l
   });
 });
 
+test('stale-chunk cleanup leaves the temp files of a concurrent build alone', async () => {
+  await withShadowAppDir(async (dir) => {
+    await runBuild(dir, { check: false });
+    const foreignTmp = join(dir, 'js', 'chunks', 'x-DDDDDDDD.min.js.99999.tmp');
+    writeFileSync(foreignTmp, 'export {};');
+    await bundleJs(dir);
+    assert.equal(existsSync(foreignTmp), true, 'in-flight temp file of another build kept');
+    rmSync(foreignTmp);
+  });
+});
+
 test('runBuild --check reports a changed, a missing and an extra chunk', async () => {
   await withShadowAppDir(async (dir) => {
     await runBuild(dir, { check: false });
