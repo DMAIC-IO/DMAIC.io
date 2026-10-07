@@ -531,6 +531,21 @@ test('runBuild --check reports a changed, a missing and an extra chunk', async (
   });
 });
 
+test('no caller shows its own toast for a failed XLSX chunk (the chunk handler already does)', () => {
+  const offenders = [];
+  const walk = (rel) => {
+    for (const name of readdirSync(join(APP_DIR, rel))) {
+      const r = `${rel}/${name}`;
+      if (r === 'js/chunks' || r === 'js/core/vendor') continue;
+      if (statSync(join(APP_DIR, r)).isDirectory()) walk(r);
+      else if (r.endsWith('.js') && !r.endsWith('.min.js')
+        && readFileSync(join(APP_DIR, r), 'utf8').includes('XLSX library not loaded')) offenders.push(r);
+    }
+  };
+  walk('js');
+  assert.deepEqual(offenders, []);
+});
+
 test('buildChunkManifestBlock emits a data-only JSON script', () => {
   assert.equal(buildChunkManifestBlock(['js/chunks/a.min.js']),
     '  <script type="application/json" id="chunk-manifest">["js/chunks/a.min.js"]</script>');
