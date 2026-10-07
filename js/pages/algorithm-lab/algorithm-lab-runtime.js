@@ -15,6 +15,10 @@ import { createTryItComponent } from '../../algorithm-lab/lab-tryit-component.js
 // Shared registry for both components; the Lab is mounted once per session.
 const registry = new LabRegistry();
 
+/**
+ * Alpine component factories registered by createPage under these names.
+ * @type {Record<string, (ctx: {i18n: object, eventBus: object}) => object>}
+ */
 export const components = {
   algorithmLab: (ctx) =>
     createLabComponent({ registry, i18n: ctx.i18n, eventBus: ctx.eventBus }),
