@@ -215,3 +215,11 @@ suite('msa-typ6-engine — default tests', () => {
     assert(fallback.primary.violations.some(v => v.ruleId === 3), 'the trend must trip test 3');
   });
 });
+
+suite('msa-typ6-engine — no tests selected', () => {
+  test('an empty enabledRules list checks no Nelson rule at all', () => {
+    const r = analyze({ ...OK, enabledRules: [] });
+    assertDeepEqual(r.primary.violations, []);
+    assertDeepEqual(r.ruleViolations, []);
+  });
+});

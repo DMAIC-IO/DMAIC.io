@@ -351,7 +351,9 @@ export function analyze(inputs) {
   if (!v.ok) { const e = new Error(v.code); e.code = v.code; e.params = v.params; throw e; }
   const limits = _computeLimits(inputs);
 
-  const enabled = Array.isArray(inputs.enabledRules) && inputs.enabledRules.length
+  // Only a missing list means "use the defaults" — an empty one is the user
+  // deliberately switching every test off and must check nothing.
+  const enabled = Array.isArray(inputs.enabledRules)
     ? inputs.enabledRules : DEFAULT_ENABLED_RULES;
   const primaryViolations = evaluateNelsonRules(
     limits.primary.series, limits.primary.cl, limits.primary.sigma, enabled,

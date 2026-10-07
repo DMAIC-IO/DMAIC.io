@@ -65,8 +65,9 @@ function baselineKOf(v) {
 /**
  * Normalize a persisted enabledRules array to a sorted, de-duplicated array
  * of the valid rule ids it contains (Alpine checkbox bindings hand back
- * strings, so entries are coerced with Number() first). Falls back to the
- * default rule set (1–6) if nothing valid remains.
+ * strings, so entries are coerced with Number() first). Only a missing
+ * (non-array) value falls back to the default rule set (1–6) — an empty
+ * selection stays empty, so "no test ticked" means no test is checked.
  * @param {*} v
  * @returns {number[]}
  */
@@ -74,7 +75,7 @@ function enabledRulesOf(v) {
   if (!Array.isArray(v)) return DEFAULT_ENABLED_RULES.slice();
   const ids = [...new Set(v.map((r) => Number(r)).filter((r) => RULE_IDS.includes(r)))];
   ids.sort((a, b) => a - b);
-  return ids.length ? ids : DEFAULT_ENABLED_RULES.slice();
+  return ids;
 }
 
 /** @param {*} d @returns {{instanceId:string,sheetId:string,columnId:string}|null} */
