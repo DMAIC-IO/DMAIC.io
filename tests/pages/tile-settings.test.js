@@ -1,7 +1,7 @@
 import { suite, test, assertEqual, assertDeepEqual, assertTrue } from '../test-utils.js';
 import {
   validateSchema, schemaOf, coerceValue, resolveSettings, toStored,
-  withTileSettings, pruneTileSettings, settingsToStoreOnLayoutSave,
+  withTileSettings, pruneTileSettings, settingsToStoreOnLayoutSave, layoutToStoreOnSave,
 } from '../../js/pages/dashboard/tile-settings.js';
 
 const TOP_N = { type: 'number', min: 1, max: 10, step: 1, default: 5, label: 'l.topN' };
@@ -158,5 +158,27 @@ suite('tile-settings: settingsToStoreOnLayoutSave', () => {
   test('returns null when nothing would change', () => {
     assertEqual(settingsToStoreOnLayoutSave({ 'fmea:live': { topN: 2 } }, ['fmea:live'], true), null);
     assertEqual(settingsToStoreOnLayoutSave(undefined, ['fmea:live'], true), null);
+  });
+});
+
+suite('tile-settings: layoutToStoreOnSave', () => {
+  const CURRENT = [{ tileId: 'a:1', x: 0, y: 0 }];
+  const STORED = [{ tileId: 'a:1', x: 5, y: 5 }, { tileId: 'fmea:1', x: 3, y: 0 }];
+
+  test('drops entries of unknown tiles once all tile files loaded', () => {
+    assertDeepEqual(layoutToStoreOnSave(CURRENT, STORED, ['a:1'], true), CURRENT);
+  });
+
+  test('keeps stored entries of unknown tiles while a tile file failed to load', () => {
+    assertDeepEqual(layoutToStoreOnSave(CURRENT, STORED, ['a:1'], false),
+      [{ tileId: 'a:1', x: 0, y: 0 }, { tileId: 'fmea:1', x: 3, y: 0 }]);
+  });
+
+  test('does not duplicate or resurrect live tiles removed from the grid', () => {
+    assertDeepEqual(layoutToStoreOnSave([], STORED, ['a:1'], false), [{ tileId: 'fmea:1', x: 3, y: 0 }]);
+  });
+
+  test('tolerates a missing stored layout', () => {
+    assertDeepEqual(layoutToStoreOnSave(CURRENT, undefined, ['a:1'], false), CURRENT);
   });
 });

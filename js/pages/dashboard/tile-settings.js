@@ -179,3 +179,23 @@ export function settingsToStoreOnLayoutSave(all, liveIds, allLoaded) {
   const pruned = pruneTileSettings(current, liveIds);
   return Object.keys(pruned).length !== Object.keys(current).length ? pruned : null;
 }
+
+/**
+ * Decide which layout the layout-save path persists. Normally that is the
+ * grid's current layout. While a tile file failed to load, the grid does not
+ * know that module's tiles, so their previously stored entries are kept
+ * (appended verbatim) — a transient chunk error must not drop tiles from the
+ * saved arrangement.
+ * @param {Array<{tileId: string}>} current  layout of the live grid
+ * @param {Array<{tileId: string}>|undefined} stored  persisted dashboard.layout
+ * @param {Iterable<string>} liveIds  ids of all current tile descriptors
+ * @param {boolean} allLoaded  whether every tile file loaded in this render
+ * @returns {Array<object>} the layout to store
+ */
+export function layoutToStoreOnSave(current, stored, liveIds, allLoaded) {
+  if (allLoaded || !Array.isArray(stored)) return current;
+  const live = new Set(liveIds);
+  const inGrid = new Set(current.map(l => l.tileId));
+  const kept = stored.filter(l => l && !live.has(l.tileId) && !inGrid.has(l.tileId));
+  return [...current, ...kept.map(l => ({ ...l }))];
+}

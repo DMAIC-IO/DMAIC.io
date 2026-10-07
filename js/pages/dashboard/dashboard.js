@@ -13,7 +13,7 @@ import { DashboardGrid } from '../../ui/dashboard-grid.js';
 import { DEFAULT_DASHBOARD_LAYOUT } from '../../ui/dashboard-tiles.js';
 import { enumerateTiles, loadTileModules } from './enumerate-tiles.js';
 import { renderTileSafely } from './tile-render.js';
-import { schemaOf, resolveSettings, toStored, withTileSettings, settingsToStoreOnLayoutSave } from './tile-settings.js';
+import { schemaOf, resolveSettings, toStored, withTileSettings, settingsToStoreOnLayoutSave, layoutToStoreOnSave } from './tile-settings.js';
 import { buildSettingsForm } from './tile-settings-form.js';
 import { getChartType, evaluateNelsonRules, computeCapability, capabilitySigma, DEFAULT_ENABLED_RULES } from '../../engines/control-chart-engine.js';
 import { getColumnValues, getColumnName } from '../../ui/column-picker.js';
@@ -777,12 +777,15 @@ const page = createPage({
     };
     // Stored tile settings whose tile no longer enumerates (instance deleted)
     // are pruned here — but only when every tile file loaded in this render,
-    // so a transient chunk error never deletes settings.
+    // so a transient chunk error never deletes settings. Likewise the layout
+    // entries of tiles that are unknown due to a load error are kept.
     const saveLayout = () => {
       if (!handle.grid) return;
-      stateManager.set('dashboard.layout', handle.grid.getLayout());
+      const ids = descriptors.map(d => d.id);
+      stateManager.set('dashboard.layout', layoutToStoreOnSave(
+        handle.grid.getLayout(), stateManager.get('dashboard.layout'), ids, handle._allTilesLoaded));
       const pruned = settingsToStoreOnLayoutSave(
-        stateManager.get('dashboard.tileSettings'), descriptors.map(d => d.id), handle._allTilesLoaded);
+        stateManager.get('dashboard.tileSettings'), ids, handle._allTilesLoaded);
       if (pruned) stateManager.set('dashboard.tileSettings', pruned);
     };
 
