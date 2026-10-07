@@ -1,6 +1,7 @@
 import { suite, test, assertEqual } from '../test-utils.js';
 import { State } from '../../js/modules/project-charter/project-charter-model.js';
-import { prepareFragment, renderDashboardTile } from '../../js/modules/project-charter/project-charter.js';
+import { prepareFragment } from '../../js/modules/project-charter/project-charter.js';
+import { renderDashboardTile } from '../../js/modules/project-charter/project-charter.tile.js';
 
 suite('Project Charter Model — defaults', () => {
   test('constructor sets empty defaults', () => {

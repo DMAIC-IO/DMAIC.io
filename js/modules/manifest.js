@@ -161,6 +161,7 @@ export default [
     singleton: true,
     allowedPhases: ['define'],
     load: () => import('./project-charter/project-charter.js'),
+    loadTile: () => import('./project-charter/project-charter.tile.js'),
     cycles: {
       dmaic:  { phase: 'define',  allowedPhases: ['define']  },
       dmadv:  { phase: 'define',  allowedPhases: ['define']  },
@@ -371,6 +372,7 @@ export default [
     group: 'causes',
     allowedPhases: ['measure', 'analyze', 'improve'],
     load: () => import('./ishikawa/ishikawa.js'),
+    loadTile: () => import('./ishikawa/ishikawa.tile.js'),
     cycles: {
       dmaic:  { phase: 'analyze',   allowedPhases: ['measure', 'analyze', 'improve'] },
       dmadv:  { phase: 'analyze',   allowedPhases: ['measure', 'analyze', 'design']  },
@@ -448,6 +450,7 @@ export default [
     phase: 'analyze',
     group: 'causes',
     load: () => import('./fmea/fmea.js'),
+    loadTile: () => import('./fmea/fmea.tile.js'),
     cycles: {
       dmaic:  { phase: 'analyze' },
       dmadv:  { phase: 'analyze', allowedPhases: ['analyze', 'design']  },
