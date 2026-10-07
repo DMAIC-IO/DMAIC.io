@@ -21,17 +21,37 @@ export class ChunkLoadError extends Error {
 const defaultHandler = (err) => console.error(err);
 let errorHandler = defaultHandler;
 
+/** Failures within this window after a report are not reported again. */
+const REPORT_COOLDOWN_MS = 5000;
+let clock = () => Date.now();
+let lastReportAt = -Infinity;
+
 /**
  * Configure the reaction to a failed chunk import (app.js: a toast).
+ * Resets the report cooldown.
  * @param {((err: ChunkLoadError) => void)|null} fn  null restores the default
+ * @param {{ now?: () => number }} [opts]  now: clock for the cooldown (tests)
  */
-export function setChunkErrorHandler(fn) {
+export function setChunkErrorHandler(fn, { now = () => Date.now() } = {}) {
   errorHandler = fn || defaultHandler;
+  clock = now;
+  lastReportAt = -Infinity;
 }
 
 /**
- * Await `importer()`; on failure report through the configured handler and
- * rethrow as ChunkLoadError.
+ * Mark rejections of already reported chunk imports as handled, so a caller
+ * that does not catch them adds no "Uncaught (in promise)" after the toast.
+ * @param {EventTarget} target  window in the app
+ */
+export function guardChunkRejections(target) {
+  target.addEventListener('unhandledrejection', (ev) => {
+    if (ev.reason instanceof ChunkLoadError) ev.preventDefault();
+  });
+}
+
+/**
+ * Await `importer()`; on failure report through the configured handler (at
+ * most once per REPORT_COOLDOWN_MS) and rethrow as ChunkLoadError.
  * @template T
  * @param {() => Promise<T>} importer
  * @returns {Promise<T>}
@@ -41,7 +61,13 @@ export async function loadChunk(importer) {
     return await importer();
   } catch (cause) {
     const err = new ChunkLoadError(cause);
-    errorHandler(err);
+    // One toast per burst: every render after a failed KaTeX load, say,
+    // would otherwise stack another one.
+    const now = clock();
+    if (now - lastReportAt >= REPORT_COOLDOWN_MS) {
+      lastReportAt = now;
+      errorHandler(err);
+    }
     throw err;
   }
 }

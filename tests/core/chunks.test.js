@@ -1,7 +1,7 @@
 import { suite, test, assert, assertEqual, assertDeepEqual, afterEach } from '../test-utils.js';
 import {
   ChunkLoadError, setChunkErrorHandler, loadChunk, lazyChunk,
-  readChunkManifest, prefetchChunks,
+  readChunkManifest, prefetchChunks, guardChunkRejections,
 } from '../../js/core/chunks.js';
 
 /** Detached document carrying an optional manifest script. */
@@ -44,6 +44,33 @@ suite('chunks — loadChunk / lazyChunk', () => {
       await loadChunk(() => Promise.reject(new Error('x'))).catch(() => {});
     } finally { console.error = orig; }
     assertEqual(calls.length, 1);
+  });
+
+  test('repeated failures within the cooldown are reported once', async () => {
+    let t = 1000;
+    const seen = [];
+    setChunkErrorHandler((err) => seen.push(err), { now: () => t });
+    const fail = () => loadChunk(() => Promise.reject(new Error('offline'))).catch(() => {});
+    await fail();
+    t += 1000;
+    await fail();
+    assertEqual(seen.length, 1, 'second failure within the cooldown is not reported');
+    t += 5000;
+    await fail();
+    assertEqual(seen.length, 2, 'reported again after the cooldown');
+  });
+
+  test('guardChunkRejections marks only reported chunk rejections as handled', () => {
+    const target = new EventTarget();
+    guardChunkRejections(target);
+    const rejection = (reason) => {
+      const ev = new Event('unhandledrejection', { cancelable: true });
+      Object.defineProperty(ev, 'reason', { value: reason });
+      target.dispatchEvent(ev);
+      return ev.defaultPrevented;
+    };
+    assertEqual(rejection(new ChunkLoadError(new Error('x'))), true);
+    assertEqual(rejection(new Error('other')), false);
   });
 
   test('lazyChunk imports once and returns the same promise', async () => {
