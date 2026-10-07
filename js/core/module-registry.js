@@ -13,6 +13,7 @@
 import { DEFAULT_CYCLE } from './cycles/cycles.js';
 import { h } from './dom.js';
 import { icon } from './icon.js';
+import { loadChunk } from './chunks.js';
 
 export class ModuleRegistry {
   constructor() {
@@ -37,7 +38,7 @@ export class ModuleRegistry {
       console.warn(`[ModuleRegistry] Duplicate module id: "${definition.id}"`);
       return;
     }
-    const normalized = { ...definition, _loaded: null };
+    const normalized = { ...definition, _loaded: null, _tile: null };
     if (definition.phase !== 'data' && !definition.cycles) {
       normalized.cycles = {
         [DEFAULT_CYCLE]: {
@@ -56,6 +57,33 @@ export class ModuleRegistry {
    */
   get(moduleId) {
     return this._registry.get(moduleId);
+  }
+
+  /**
+   * Whether a module declares a dashboard tile (`loadTile` in the manifest).
+   * Does not load anything.
+   * @param {string} moduleId
+   * @returns {boolean}
+   */
+  hasTile(moduleId) {
+    return typeof this._registry.get(moduleId)?.loadTile === 'function';
+  }
+
+  /**
+   * Lazily load a module's dashboard tile file and return its default export.
+   * Goes through loadChunk, so a failed import shows the shared chunk-error
+   * toast and rejects with ChunkLoadError; failures are not cached.
+   * @param {string} moduleId
+   * @returns {Promise<object|undefined>} undefined when the module has no tile
+   */
+  async loadTile(moduleId) {
+    const definition = this._registry.get(moduleId);
+    if (!definition || typeof definition.loadTile !== 'function') return undefined;
+    if (!definition._tile) {
+      const mod = await loadChunk(definition.loadTile);
+      definition._tile = mod.default;
+    }
+    return definition._tile;
   }
 
   /**
