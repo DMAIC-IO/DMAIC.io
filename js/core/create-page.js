@@ -47,6 +47,7 @@ export function createPage(config) {
   let _mountHandle = null;
   let _mountPromise = null;
   let _loaded = null;
+  let _generation = 0; // bumped by destroy(): an in-flight load from before must not mount
   let _open = false;
   let containerEl = null;
   let buttonEl = null;
@@ -131,9 +132,11 @@ export function createPage(config) {
 
     async _ensureMounted() {
       if (_mounted) return;
+      const gen = _generation;
       _mountPromise ??= (async () => {
         if (config.load) {
           const mod = await loadChunk(config.load);
+          if (gen !== _generation) return;
           for (const [name, factory] of Object.entries(mod.components || {})) {
             Alpine.data(name, () => factory(ctx));
           }
@@ -148,7 +151,15 @@ export function createPage(config) {
           throw new Error('create-page: inline config.template unsupported; use templateUrl');
         }
         const mount = _loaded?.mount ?? config.mount;
-        if (mount) _mountHandle = await mount(containerEl, ctx);
+        const handle = mount ? await mount(containerEl, ctx) : null;
+        if (gen !== _generation) {
+          // destroy() ran during mount: undo what this stale load set up.
+          (_loaded?.unmount ?? config.unmount)?.(containerEl, ctx, handle);
+          Alpine.destroyTree(containerEl);
+          containerEl.replaceChildren();
+          return;
+        }
+        _mountHandle = handle;
         _mounted = true;
       })().catch((err) => { _mountPromise = null; throw err; });
       return _mountPromise;
@@ -163,6 +174,9 @@ export function createPage(config) {
         if (err instanceof ChunkLoadError) return;
         throw err;
       }
+      // Concurrent show() calls all wait for the same load; open once, and
+      // not at all when destroy() ran meanwhile.
+      if (_open || !_mounted) return;
       _open = true;
       containerEl.style.display = '';
       if (config.bodyClass) document.body.classList.add(config.bodyClass);
@@ -198,6 +212,7 @@ export function createPage(config) {
       }
       _mountHandle = null;
       _mountPromise = null;
+      _generation++;
       _open = false;
     },
   };

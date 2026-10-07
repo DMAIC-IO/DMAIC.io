@@ -213,6 +213,42 @@ suite('createPage — load hook', () => {
     page.destroy();
   });
 
+  test('concurrent show() calls open once (one overlay:opened, one onShow)', async () => {
+    let onShows = 0;
+    const page = createPage({
+      id: 'cp-load', templateUrl: 'js/pages/cp-load/cp-load.html', container: '#cp-load-area',
+      overlay: 'cp-load', onShow: () => { onShows++; },
+      load: async () => {
+        await new Promise((r) => setTimeout(r, 10));
+        return { components: { cpLoadComp: () => ({ value: 'x' }) } };
+      },
+    });
+    let overlays = 0;
+    bus.on('overlay:opened', () => { overlays++; });
+    await page.init({ i18n: fakeI18n, eventBus: bus });
+    await Promise.all([page.show(), page.show()]);
+    assertEqual(onShows, 1, 'onShow once');
+    assertEqual(overlays, 1, 'overlay:opened once');
+    page.destroy();
+  });
+
+  test('destroy() during an in-flight load: nothing mounts afterwards', async () => {
+    let mounts = 0;
+    let release;
+    const page = makePage(() => new Promise((r) => {
+      release = () => r({ components: { cpLoadComp: () => ({ value: 'x' }) }, mount() { mounts++; } });
+    }));
+    await page.init({ i18n: fakeI18n, eventBus: bus });
+    const shown = page.show();
+    await Promise.resolve();
+    page.destroy();
+    release();
+    await shown;
+    assertEqual(mounts, 0, 'stale load does not mount');
+    assertEqual(container.childElementCount, 0, 'template not cloned');
+    assertEqual(page.isOpen(), false);
+  });
+
   test('a failing load leaves the page closed, the next show() retries', async () => {
     setChunkErrorHandler(() => {});
     let n = 0;
