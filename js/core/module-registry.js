@@ -87,23 +87,6 @@ export class ModuleRegistry {
   }
 
   /**
-   * Lazily load and return a module's default export (the live module object,
-   * incl. static descriptors like `dashboardTile`). Loads once, then caches on
-   * the registry entry. Returns `undefined` for unknown ids.
-   * @param {string} moduleId
-   * @returns {Promise<object|undefined>}
-   */
-  async loadExport(moduleId) {
-    const definition = this._registry.get(moduleId);
-    if (!definition) return undefined;
-    if (!definition._loaded) {
-      const module = await definition.load();
-      definition._loaded = module.default;
-    }
-    return definition._loaded;
-  }
-
-  /**
    * Set the active cycle. Drives which cycle's mapping `getByPhase` and the
    * `extras` bucket use. Called from app bootstrap and on `switchProject`.
    * @param {string} cycleId

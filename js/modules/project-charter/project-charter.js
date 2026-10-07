@@ -42,48 +42,6 @@ function prepareFragment(raw) {
 
 export { prepareFragment };
 
-/**
- * Render the charter problem-statement dashboard tile. Distinguishes "no
- * instance" (charterEmpty) from "instance, no problem statement"
- * (charterNoProblem). The problem statement is stored as the RTE Markdown
- * subset and rendered sink-free via markdownToFragment (NOT as a raw string —
- * h() would otherwise show literal `**bold**`).
- * @param {HTMLElement} host
- * @param {{state: object, i18n: object}} args
- */
-export function renderDashboardTile(host, { state, i18n }) {
-  if (!state) {
-    host.replaceChildren(h('p', { class: 'dashboard-area__empty' }, i18n.t('dashboard.charterEmpty')));
-    return;
-  }
-  if (!state.problemStatement) {
-    host.replaceChildren(h('p', { class: 'dashboard-area__empty' }, i18n.t('dashboard.charterNoProblem')));
-    return;
-  }
-  host.replaceChildren(
-    h('div', { class: 'dashboard-charter__problem-label' }, i18n.t('dashboard.charterProblem')),
-    h('div', { class: 'dashboard-charter__problem' }, markdownToFragment(state.problemStatement)),
-  );
-}
-
-/**
- * Locate the single project-charter instance across all phases and read its
- * persisted module state. The charter is a singleton — returns the first match.
- * @param {{stateManager: object}} ctx
- * @returns {{instanceId: string, state: object}|null}
- */
-function findCharter(ctx) {
-  const phases = ctx.stateManager.get('phases') || {};
-  for (const list of Object.values(phases)) {
-    for (const inst of (list || [])) {
-      if (inst.moduleId === 'project-charter') {
-        return { instanceId: inst.instanceId, state: ctx.stateManager.getModuleState(inst.instanceId) };
-      }
-    }
-  }
-  return null;
-}
-
 export default createModule({
   config: {
     id: 'project-charter',
@@ -92,25 +50,6 @@ export default createModule({
     icon: 'module.project-charter',
     version: '0.2.0',
     meta: import.meta,
-    dashboardTile: {
-      defaultW: 3, defaultH: 10, minW: 2, minH: 6,
-      /**
-       * Enumerate the (at most one) charter dashboard tile. Emits an entry only
-       * when a charter instance exists.
-       * @param {{stateManager: object, i18n: object}} ctx
-       * @returns {Array<{tileId: string, instanceId: string, title: string}>}
-       */
-      enumerate(ctx) {
-        const found = findCharter(ctx);
-        if (!found) return [];
-        return [{
-          tileId: 'project-charter',
-          instanceId: found.instanceId,
-          title: ctx.i18n.t('dashboard.charterTitle'),
-        }];
-      },
-      render: renderDashboardTile,
-    },
   },
   Model: State,
 

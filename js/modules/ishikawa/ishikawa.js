@@ -373,28 +373,6 @@ export function computeTrendConfig(trendStates, opts) {
   };
 }
 
-// ── Dashboard tile descriptor (6M categories, status + top-scored) ──
-// 6M category palette — keys/colors/order mirror the persisted state model.
-const ISHIKAWA_CATS = CATS;
-
-/** Collect all Ishikawa instances across phases (phase-set is cycle-agnostic). */
-function enumerateIshikawa(ctx) {
-  const phases = ctx.stateManager.get('phases') || {};
-  const out = [];
-  for (const list of Object.values(phases)) {
-    for (const inst of (list || [])) {
-      if (inst.moduleId !== 'ishikawa') continue;
-      const label = inst.customName || ctx.i18n.t('modules.ishikawa.name');
-      out.push({
-        tileId: `ishikawa:${inst.instanceId}`,
-        instanceId: inst.instanceId,
-        title: `Ishikawa — ${label}`,
-      });
-    }
-  }
-  return out;
-}
-
 const mod = createModule({
   config: {
     id: 'ishikawa',
@@ -408,110 +386,6 @@ const mod = createModule({
         { icon: 'format.csv', title: 'export.csv', onClick: (d) => d.exportCSV() },
       ] },
     ],
-    dashboardTile: {
-      defaultW: 3, defaultH: 10, minW: 2, minH: 6,
-      enumerate: enumerateIshikawa,
-      /** @param {HTMLElement} host  @param {{tileId,instanceId,state,i18n,theme,chartManager}} args */
-      render(host, { state, i18n }) {
-        const rows    = (state && Array.isArray(state.rows)) ? state.rows : [];
-        const experts = (state && Array.isArray(state.experts)) ? state.experts : [];
-        const problem = (state && state.problem) || '';
-        const catLabels = (state && state.catLabels) || {};
-        const catLabel = (key) => {
-          const c = catLabels[key];
-          return (c && c.trim()) ? c.trim() : i18n.t(`modules.ishikawa.cat.${key}`);
-        };
-
-        if (rows.length === 0) {
-          host.replaceChildren(h('p', { class: 'dashboard-area__empty' }, i18n.t('dashboard.ishikawaEmpty')));
-          return;
-        }
-
-        const effCat = (r) => {
-          if (r.category) return r.category;
-          if (r.parentId !== null) {
-            const p = rows.find(x => x.id === r.parentId);
-            if (p) return effCat(p);
-          }
-          return '';
-        };
-
-        const catCounts = {};
-        ISHIKAWA_CATS.forEach(c => catCounts[c.key] = 0);
-        rows.forEach(r => { const ec = effCat(r); if (ec && Object.hasOwn(catCounts, ec)) catCounts[ec]++; });
-        const totalCategorized = Object.values(catCounts).reduce((a, b) => a + b, 0);
-
-        const statusCounts = { open: 0, testing: 0, confirmed: 0, rejected: 0 };
-        rows.forEach(r => { const s = r.status || 'open'; if (Object.hasOwn(statusCounts, s)) statusCounts[s]++; });
-
-        const children = [];
-        if (problem) {
-          children.push(h('div', {
-            class: 'dashboard-charter__problem',
-            style: 'margin-bottom:8px;font-size:var(--font-size-sm);opacity:0.8',
-          }, problem));
-        }
-
-        children.push(h('div', { class: 'dashboard-fmea__summary' },
-          h('span', {}, `${i18n.t('dashboard.ishikawaHypotheses')  }: `, h('strong', {}, String(rows.length))),
-          h('span', {}, `${i18n.t('dashboard.ishikawaExperts')  }: `, h('strong', {}, String(experts.length))),
-        ));
-
-        if (totalCategorized > 0) {
-          children.push(h('div', { class: 'dashboard-fmea__bar' },
-            ...ISHIKAWA_CATS.map(c => {
-              const pct = catCounts[c.key] / totalCategorized * 100;
-              if (pct === 0) return null;
-              return h('div', {
-                class: 'dashboard-fmea__bar-seg',
-                style: `width:${pct}%;background:${c.color}`,
-                title: `${catLabel(c.key)}: ${catCounts[c.key]}`,
-              });
-            }).filter(Boolean)));
-        }
-
-        children.push(h('div', { class: 'dashboard-fmea__legend' },
-          ...ISHIKAWA_CATS.filter(c => catCounts[c.key] > 0).map(c =>
-            h('span', { class: 'dashboard-fmea__legend-item' },
-              h('span', { class: 'dashboard-fmea__legend-dot', style: `background:${c.color}` }),
-              ` ${catLabel(c.key)}: ${catCounts[c.key]}`))));
-
-        const statusColors = {
-          open: 'var(--color-text-tertiary)', testing: 'var(--color-info)',
-          confirmed: 'var(--color-success)', rejected: 'var(--color-error)',
-        };
-        const statusItems = ['open', 'testing', 'confirmed', 'rejected'].filter(s => statusCounts[s] > 0);
-        if (statusItems.length) {
-          children.push(h('div', { class: 'dashboard-fmea__legend', style: 'margin-top:4px' },
-            ...statusItems.map(s => h('span', { class: 'dashboard-fmea__legend-item' },
-              h('span', { class: 'dashboard-fmea__legend-dot', style: `background:${statusColors[s]}` }),
-              ` ${i18n.t(`modules.ishikawa.status.${s}`)}: ${statusCounts[s]}`))));
-        }
-
-        const scored = rows
-          .filter(r => experts.length && experts.map(e => r.ratings?.[e.id]).filter(x => x != null && x !== '').length > 0)
-          .map(r => {
-            const vals = experts.map(e => r.ratings?.[e.id]).filter(x => x != null && x !== '');
-            return { name: r.name, score: vals.reduce((a, b) => a + b, 0) / vals.length, cat: effCat(r) };
-          })
-          .sort((a, b) => b.score - a.score)
-          .slice(0, 5);
-
-        if (scored.length) {
-          children.push(h('div', { class: 'dashboard-fmea__top-label' }, i18n.t('dashboard.ishikawaTopScored')));
-          children.push(h('ol', { class: 'dashboard-fmea__top-list' },
-            ...scored.map(t => {
-              const catObj = ISHIKAWA_CATS.find(c => c.key === t.cat);
-              const color = catObj ? catObj.color : 'var(--color-text-secondary)';
-              return h('li', { class: 'dashboard-fmea__top-item' },
-                h('span', { class: 'dashboard-fmea__top-desc' }, t.name || '—'),
-                h('span', { class: 'dashboard-fmea__top-rpn', style: `color:${color}` }, t.score.toFixed(1)));
-            })));
-        }
-
-        host.replaceChildren(...children);
-      },
-    },
   },
   Model: State,
 

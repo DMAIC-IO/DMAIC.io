@@ -2,21 +2,21 @@
  * D.Mike — Dashboard page (dashboard.js)
  * Thin host: owns the DashboardGrid, the add-tile menu, layout/title
  * persistence, PNG/SVG export, and the BUILT-IN tiles (goals, ZEG timeline,
- * org chart, VoC/CTx, RACI, SPC). Module-owned tiles (fmea/ishikawa/
- * project-charter) are rendered by each module's dashboardTile.render,
- * dispatched here via enumerateTiles.
+ * org chart, VoC/CTx, RACI, SPC). Module-owned tiles come from each
+ * module's tile file (manifest `loadTile`), loaded and enumerated via
+ * enumerate-tiles.js. Contract: docs/DASHBOARD.md.
  */
 
 import { createPage } from '../../core/create-page.js';
 import { h, svg, s } from '../../core/dom.js';
 import { DashboardGrid } from '../../ui/dashboard-grid.js';
 import { DEFAULT_DASHBOARD_LAYOUT } from '../../ui/dashboard-tiles.js';
-import { enumerateTiles } from './enumerate-tiles.js';
+import { enumerateTiles, loadTileModules } from './enumerate-tiles.js';
+import { renderTileSafely } from './tile-render.js';
+import { schemaOf, resolveSettings } from './tile-settings.js';
 import { getChartType, evaluateNelsonRules, computeCapability, capabilitySigma, DEFAULT_ENABLED_RULES } from '../../engines/control-chart-engine.js';
 import { getColumnValues, getColumnName } from '../../ui/column-picker.js';
 import { getPhaseIds } from '../../core/cycles/cycles.js';
-
-const TILE_MODULE_IDS = ['fmea', 'ishikawa', 'project-charter'];
 
 const page = createPage({
   id: 'dashboard',
@@ -39,7 +39,7 @@ const page = createPage({
     const { eventBus, stateManager, i18n, chartManager, themeManager, moduleRegistry } = ctx;
     const gridAnchor = containerEl.querySelector('[data-ref="grid"]');
 
-    const handle = { grid: null, chart: null, addMenuEl: null, _onDocClick: null, _unsubs: [], render: null, _renderGen: 0, _toolbarWired: false };
+    const handle = { grid: null, chart: null, addMenuEl: null, _onDocClick: null, _unsubs: [], render: null, _renderGen: 0, _toolbarWired: false, _charterTile: null, _allTilesLoaded: false };
 
     const allPhaseKeys = () => Object.keys(stateManager.get('phases') || {});
     const methodPhaseKeys = () => getPhaseIds(stateManager.getProjectCycle());
@@ -104,7 +104,7 @@ const page = createPage({
           id, instanceId: inst.instanceId, i18nTitle: '',
           title: customTitles[id] || `RACI — ${inst.label}`,
           defaultW: 3, defaultH: 10, minW: 2, minH: 6,
-          builtin: true, module: null,
+          builtin: true, moduleId: null, tile: null,
         };
       });
     };
@@ -117,7 +117,7 @@ const page = createPage({
           id, instanceId: inst.instanceId, i18nTitle: '',
           title: customTitles[id] || `SPC — ${inst.label}`,
           defaultW: 3, defaultH: 10, minW: 2, minH: 6,
-          builtin: true, module: null,
+          builtin: true, moduleId: null, tile: null,
         };
       });
     };
@@ -680,32 +680,39 @@ const page = createPage({
     };
 
     // ── Module-owned tile dispatch ───────────────────────────────────────
-    const renderModuleTile = (descriptor) => {
+    /** Resolved settings of a tile: stored overrides over schema defaults. */
+    const settingsFor = (tileId, tile) =>
+      resolveSettings(schemaOf(tile), (stateManager.get('dashboard.tileSettings') || {})[tileId]);
+
+    const renderModuleTile = async (descriptor) => {
       const body = handle.grid?.getTileBody(descriptor.id);
-      if (!body || !descriptor.module?.dashboardTile) return;
+      if (!body || !descriptor.tile) return;
       const state = descriptor.instanceId ? stateManager.getModuleState(descriptor.instanceId) : null;
-      descriptor.module.dashboardTile.render(body, {
-        tileId: descriptor.id, instanceId: descriptor.instanceId,
-        state, i18n, theme: theme(), chartManager,
-      });
+      await renderTileSafely(descriptor.tile, body, {
+        tileId: descriptor.id, instanceId: descriptor.instanceId, state,
+        settings: settingsFor(descriptor.id, descriptor.tile),
+        i18n, theme: theme(), chartManager,
+      }, i18n);
     };
 
-    // The project-charter tile is module-owned (renders via the charter
-    // module's dashboardTile), but it ALSO exists as a static built-in in
-    // DASHBOARD_TILES — so when no charter instance exists the descriptor is
-    // builtin/module-less. Always dispatch its render to the loaded charter
-    // module export so the empty state (charterEmpty) still renders.
-    const renderCharter = () => {
+    // The charter tile file is always loaded (ALWAYS_LOADED_TILES), but the
+    // tile also exists as a static built-in in DASHBOARD_TILES — without a
+    // charter instance its descriptor is the built-in twin. Always render
+    // through the charter tile file so the empty state (charterEmpty) shows.
+    const renderCharter = async () => {
       const body = handle.grid?.getTileBody('project-charter');
-      const dt = handle._charterModule?.dashboardTile;
-      if (!body || !dt) return;
-      dt.render(body, { tileId: 'project-charter', state: _findCharterState(), i18n, theme: theme(), chartManager });
+      const tile = handle._charterTile;
+      if (!body || !tile) return;
+      await renderTileSafely(tile, body, {
+        tileId: 'project-charter', instanceId: null, state: _findCharterState(),
+        settings: settingsFor('project-charter', tile), i18n, theme: theme(), chartManager,
+      }, i18n);
     };
 
     const renderTile = async (tileId) => {
-      if (tileId === 'project-charter') { renderCharter(); return; }
+      if (tileId === 'project-charter') { await renderCharter(); return; }
       const d = descriptorFor(tileId);
-      if (d && !d.builtin) { renderModuleTile(d); return; }
+      if (d && !d.builtin) { await renderModuleTile(d); return; }
       if (tileId === 'zeg-timeline') await renderChart();
       else if (tileId === 'project-goals') renderGoals();
       else if (tileId === 'org-chart') renderOrgChart();
@@ -826,18 +833,13 @@ const page = createPage({
       if (handle.grid) { handle.grid.destroy(); handle.grid = null; }
       closeAddMenu();
 
-      // Preload module-owned tile modules, enumerate via adapter registry.
-      const loadedExports = (await Promise.all(
-        TILE_MODULE_IDS.map(id => moduleRegistry.loadExport(id)),
-      )).filter(Boolean);
+      // Load the tile files of the modules used in this project.
+      const { tileModules, allLoaded } = await loadTileModules(moduleRegistry, stateManager.get('phases'));
       if (handle._renderGen !== gen) return;
-      const tileRegistry = {
-        getAll: () => loadedExports,
-        get: (id) => loadedExports.find(m => m && m.id === id) || null,
-      };
-      handle._charterModule = tileRegistry.get('project-charter');
+      handle._allTilesLoaded = allLoaded;
+      handle._charterTile = tileModules.find(m => m.moduleId === 'project-charter')?.tile ?? null;
       descriptors = [
-        ...enumerateTiles(tileRegistry, ctx),
+        ...enumerateTiles(tileModules, ctx),
         ..._buildRaciTileDefs(),
         ..._buildSpcTileDefs(),
       ];
@@ -854,7 +856,13 @@ const page = createPage({
           chartManager.destroy(handle.chart); handle.chart = null;
         }
         const d = descriptorFor(tileId);
-        if (d && !d.builtin) d.module?.dashboardTile?.dispose?.(handle.grid?.getTileBody(tileId) ?? gridAnchor, { tileId });
+        if (d && !d.builtin) {
+          try {
+            d.tile?.dispose?.(handle.grid?.getTileBody(tileId) ?? gridAnchor, { tileId });
+          } catch (err) {
+            console.error(`[dashboard] tile "${tileId}" failed to dispose`, err);
+          }
+        }
       };
       handle.grid.onTitleChanged = (tileId, newTitle) => {
         const titles = stateManager.get('dashboard.titles') || {};
