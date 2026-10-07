@@ -29,6 +29,8 @@ export class Workspace {
     this._context = rest; // remainder of context passed to modules
     this._activePhase = 'define';
     this._activeInstanceId = null;
+    /** @type {Map<string, string>} phase → last active instanceId there */
+    this._lastActiveByPhase = new Map();
     /** @type {Map<string, object>} instanceId → module instance */
     this._instances = new Map();
     /** @type {Map<string, HTMLElement>} instanceId → container element */
@@ -104,6 +106,7 @@ export class Workspace {
     // though the tab DOM was just wiped below — leaving the module area
     // empty despite the instance being active in state.
     this._activePhase = null;
+    this._lastActiveByPhase.clear();
     this._tabsEl?.replaceChildren();
     this._actionsEl?.replaceChildren();
     this._moduleArea?.replaceChildren();
@@ -158,9 +161,13 @@ export class Workspace {
     });
 
     // Keep the previously active tab if it still belongs to this phase,
-    // otherwise fall back to the first tab.
+    // otherwise reopen the module last used in this phase, otherwise the
+    // first tab.
     const ids = instances.map(i => i.instanceId);
-    const keepId = ids.includes(this._activeInstanceId) ? this._activeInstanceId : ids[0];
+    const remembered = this._lastActiveByPhase.get(phase);
+    const keepId = ids.includes(this._activeInstanceId) ? this._activeInstanceId
+      : ids.includes(remembered) ? remembered
+      : ids[0];
     this._activateTab(keepId);
   }
 
@@ -424,6 +431,7 @@ export class Workspace {
     });
 
     this._activeInstanceId = instanceId;
+    this._lastActiveByPhase.set(this._activePhase, instanceId);
 
     // Instantiate module if not yet done. Guard on _containers (set
     // synchronously in _instantiateModule) rather than _instances (set only
