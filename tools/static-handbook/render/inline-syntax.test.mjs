@@ -65,7 +65,7 @@ test('Listen und Definitions-Überschriften nutzen dieselbe Auszeichnung', async
   assert.ok(def.includes('katex'));
 });
 
-test('{{ref:…}} wird im statischen Handbuch zu Klartext geglättet, nicht verlinkt (renderInline)', async () => {
+test('{{ref:…}} without opts.refLink is flattened to plain text, not linked (renderInline)', async () => {
   const withLabel = await renderInline('Akzeptanz üblich Cg ≥ 1,33 {{ref:vda-5|VDA Band 5}}.');
   assert.ok(withLabel.includes('VDA Band 5'), 'Label fehlt');
   assert.equal(withLabel.includes('{{'), false, 'literale geschweifte Klammern im Output');
@@ -77,7 +77,7 @@ test('{{ref:…}} wird im statischen Handbuch zu Klartext geglättet, nicht verl
   assert.equal(withoutLabel.includes('<a '), false, 'ref darf nicht verlinkt werden');
 });
 
-test('{{ref:…}} wird im statischen Handbuch zu Klartext geglättet, nicht verlinkt (renderInlineSync)', () => {
+test('{{ref:…}} without opts.refLink is flattened to plain text, not linked (renderInlineSync)', () => {
   const withLabel = renderInlineSync('Akzeptanz üblich Cg ≥ 1,33 {{ref:vda-5|VDA Band 5}}.');
   assert.ok(withLabel.includes('VDA Band 5'), 'Label fehlt');
   assert.equal(withLabel.includes('{{'), false, 'literale geschweifte Klammern im Output');

@@ -25,7 +25,7 @@ export default {
         blocks: [
           {
             type: 'paragraph',
-            content: 'MSA Verfahren 6 prüft die *Stabilität eines Messsystems über die Zeit*. Anders als Typ 1 (ein Zeitpunkt, viele Wiederholungen) misst eine {{term:stabilitaets-studie|Stabilitäts-Studie}} regelmäßig — täglich, wöchentlich, monatlich — dasselbe {{term:referenzteil|Referenzteil}} und zieht die Werte über Wochen oder Monate zu einer {{term:regelkarte|Regelkarte}} zusammen. Die Frage lautet nicht „Wie präzise misst das System heute?", sondern „Verändert sich das System schleichend oder sprunghaft?"',
+            content: 'MSA Verfahren 6 prüft die *Stabilität eines Messsystems über die Zeit* {{ref:aiag-msa-4}}. Anders als Typ 1 (ein Zeitpunkt, viele Wiederholungen) misst eine {{term:stabilitaets-studie|Stabilitäts-Studie}} regelmäßig — täglich, wöchentlich, monatlich — dasselbe {{term:referenzteil|Referenzteil}} und zieht die Werte über Wochen oder Monate zu einer {{term:regelkarte|Regelkarte}} zusammen. Die Frage lautet nicht „Wie präzise misst das System heute?", sondern „Verändert sich das System schleichend oder sprunghaft?"',
           },
           {
             type: 'definition',
@@ -34,7 +34,7 @@ export default {
           },
           {
             type: 'paragraph',
-            content: 'Das Modul zieht je nach Datenlage eine {{term:i-mr-chart|I-MR-Karte}} (ein Wert je Zeitpunkt) oder eine {{term:xbar-r-chart|x̄-R-Karte}} (mehrere Wiederholungen je Zeitpunkt, zu Untergruppen zusammengefasst) und wertet zwei unabhängige Signale aus: {{term:nelson-regeln|Nelson-Regeln}} 1–8 auf Muster-Verletzungen innerhalb der Karte, und einen linearen {{term:drift-test|Drift-Test}} auf einen systematischen Trend über die gesamte Studiendauer.',
+            content: 'Das Modul zieht je nach Datenlage eine {{term:i-mr-chart|I-MR-Karte}} (ein Wert je Zeitpunkt) oder eine {{term:xbar-r-chart|x̄-R-Karte}} (mehrere Wiederholungen je Zeitpunkt, zu Untergruppen zusammengefasst) und wertet zwei unabhängige Signale aus: {{term:nelson-regeln|Nelson-Regeln}} 1–8 {{ref:nelson-1984}} auf Muster-Verletzungen innerhalb der Karte, und einen linearen {{term:drift-test|Drift-Test}} auf einen systematischen Trend über die gesamte Studiendauer.',
           },
           {
             type: 'paragraph',
@@ -47,7 +47,7 @@ export default {
         blocks: [
           {
             type: 'paragraph',
-            content: 'MSA Type 6 assesses the *stability of a measurement system over time*. Unlike Type 1 (one point in time, many replicates), a {{term:stabilitaets-studie|stability study}} measures the same {{term:referenzteil|reference part}} at regular intervals — daily, weekly, monthly — and combines the readings across weeks or months into a {{term:regelkarte|control chart}}. The question is not "how precise is the system today?" but "is the system drifting gradually or shifting abruptly?"',
+            content: 'MSA Type 6 assesses the *stability of a measurement system over time* {{ref:aiag-msa-4}}. Unlike Type 1 (one point in time, many replicates), a {{term:stabilitaets-studie|stability study}} measures the same {{term:referenzteil|reference part}} at regular intervals — daily, weekly, monthly — and combines the readings across weeks or months into a {{term:regelkarte|control chart}}. The question is not "how precise is the system today?" but "is the system drifting gradually or shifting abruptly?"',
           },
           {
             type: 'definition',
@@ -56,7 +56,7 @@ export default {
           },
           {
             type: 'paragraph',
-            content: 'Depending on the data layout, the module draws an {{term:i-mr-chart|I-MR chart}} (one reading per time point) or an {{term:xbar-r-chart|x̄-R chart}} (several replicates per time point, combined into subgroups) and evaluates two independent signals: {{term:nelson-regeln|Nelson rules}} 1–8 for pattern violations within the chart, and a linear {{term:drift-test|drift test}} for a systematic trend across the whole study duration.',
+            content: 'Depending on the data layout, the module draws an {{term:i-mr-chart|I-MR chart}} (one reading per time point) or an {{term:xbar-r-chart|x̄-R chart}} (several replicates per time point, combined into subgroups) and evaluates two independent signals: {{term:nelson-regeln|Nelson rules}} 1–8 {{ref:nelson-1984}} for pattern violations within the chart, and a linear {{term:drift-test|drift test}} for a systematic trend across the whole study duration.',
           },
           {
             type: 'paragraph',
@@ -128,7 +128,7 @@ export default {
           {
             type: 'definition',
             term: '{{term:nelson-regeln|Nelson-Regeln}} 1–8',
-            content: 'Acht Muster-Tests auf der {{term:regelkarte|Regelkarte}} (Punkt außerhalb ±3σ, sieben Punkte in Folge auf einer Seite der {{term:mittellinie|Mittellinie}}, Trend über sechs Punkte, Punkte in den {{term:sigma-zonen|Sigma-Zonen}} B/C usw.). Default aktiviert sind Regel 1–6; Regel 7 und 8 (Stratifikation) sind optional zuschaltbar. Jede Verletzung zählt in die Ampel-Bewertung.',
+            content: 'Acht Muster-Tests auf der {{term:regelkarte|Regelkarte}} (Punkt außerhalb ±3σ, neun Punkte in Folge auf einer Seite der {{term:mittellinie|Mittellinie}}, Trend über sechs Punkte, Punkte in den {{term:sigma-zonen|Sigma-Zonen}} B/C usw.) {{ref:nelson-1984}}. Default aktiviert sind Regel 1–6; Regel 7 und 8 (Stratifikation) sind optional zuschaltbar. Jede Verletzung zählt in die Ampel-Bewertung.',
           },
           {
             type: 'definition',
@@ -158,7 +158,7 @@ export default {
           {
             type: 'definition',
             term: '{{term:nelson-regeln|Nelson rules}} 1–8',
-            content: 'Eight pattern tests on the {{term:regelkarte|control chart}} (point outside ±3σ, seven points in a row on one side of the centerline, six-point trend, points in {{term:sigma-zonen|sigma zones}} B/C etc.). Rules 1–6 are enabled by default; rules 7 and 8 (stratification) are optional. Every violation counts toward the traffic-light verdict.',
+            content: 'Eight pattern tests on the {{term:regelkarte|control chart}} (point outside ±3σ, nine points in a row on one side of the centerline, six-point trend, points in {{term:sigma-zonen|sigma zones}} B/C etc.) {{ref:nelson-1984}}. Rules 1–6 are enabled by default; rules 7 and 8 (stratification) are optional. Every violation counts toward the traffic-light verdict.',
           },
           {
             type: 'definition',

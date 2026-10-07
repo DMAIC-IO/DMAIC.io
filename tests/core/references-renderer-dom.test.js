@@ -22,7 +22,7 @@ suite('references-renderer: formatCitation()', () => {
     const el = host(formatCitation(BOOK, 'de'));
     const text = el.textContent;
     assertTrue(text.includes('Measurement Systems Analysis (MSA)'), 'title');
-    assertTrue(text.includes('4th'), 'edition');
+    assertTrue(text.includes('4. Aufl.'), 'edition');
     assertTrue(text.includes('AIAG'), 'publisher');
     assertTrue(text.includes('978-1605341118'), 'isbn');
   });
@@ -47,7 +47,7 @@ suite('references-renderer: formatCitation()', () => {
     assertTrue(text.includes('Bd. 5'), 'volume prefix');
     assertTrue(text.includes('S. 1-20'), 'page prefix');
     const editionText = host(formatCitation(BOOK, 'de')).textContent;
-    assertTrue(editionText.includes('4th Aufl.'), 'edition suffix');
+    assertTrue(editionText.includes('4. Aufl.'), 'edition suffix');
   });
 
   test('connective labels: English prefixes/suffix with an English t', () => {

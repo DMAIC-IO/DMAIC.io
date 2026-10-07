@@ -9,6 +9,7 @@
  */
 
 import { readFile } from 'node:fs/promises';
+import { existsSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
 import path from 'node:path';
 
@@ -30,10 +31,17 @@ export async function loadAllSources(repoRoot) {
 
 // ─── Modules ────────────────────────────────────────────────────────
 
-async function loadModules(repoRoot) {
-  const manifestPath = path.join(repoRoot, 'js/modules/manifest.js');
-  const manifestUrl = pathToFileURL(manifestPath).href;
-  const { default: manifest } = await import(manifestUrl);
+/**
+ * Load every module's handbook and references.
+ * @param {string} repoRoot
+ * @param {Array<{id: string, phase: string, cycles?: object}>} [manifestOverride] - for tests
+ */
+export async function loadModules(repoRoot, manifestOverride) {
+  let manifest = manifestOverride;
+  if (!manifest) {
+    const manifestPath = path.join(repoRoot, 'js/modules/manifest.js');
+    ({ default: manifest } = await import(pathToFileURL(manifestPath).href));
+  }
 
   const results = [];
   for (const entry of manifest) {
@@ -56,9 +64,26 @@ async function loadModules(repoRoot) {
       phase: entry.phase,
       cycles: entry.cycles || null,
       help: normalizeHelp(help),
+      references: await loadReferences(path.join(dir, `${entry.id}-references.js`)),
     });
   }
   return results;
+}
+
+/**
+ * A module's `<id>-references.js`, or [] when absent or broken.
+ * @param {string} file
+ * @returns {Promise<object[]>}
+ */
+async function loadReferences(file) {
+  if (!existsSync(file)) return [];
+  try {
+    const mod = await import(pathToFileURL(file).href);
+    return Array.isArray(mod.default) ? mod.default : [];
+  } catch (err) {
+    console.warn(`[handbook] Failed to load ${file}: ${err.message}`);
+    return [];
+  }
 }
 
 /**

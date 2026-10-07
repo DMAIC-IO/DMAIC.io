@@ -7,8 +7,9 @@ import r4 from '../modules/hypothesis-test/hypothesis-test-references.js';
 import r5 from '../modules/msa-typ1/msa-typ1-references.js';
 import r6 from '../modules/msa-typ2/msa-typ2-references.js';
 import r7 from '../modules/msa-typ5/msa-typ5-references.js';
-import r8 from '../modules/process-capability/process-capability-references.js';
-import r9 from '../modules/sample-size/sample-size-references.js';
+import r8 from '../modules/msa-typ6/msa-typ6-references.js';
+import r9 from '../modules/process-capability/process-capability-references.js';
+import r10 from '../modules/sample-size/sample-size-references.js';
 
 export const REFS = {
   "attribute-control-chart": r0,
@@ -19,6 +20,7 @@ export const REFS = {
   "msa-typ1": r5,
   "msa-typ2": r6,
   "msa-typ5": r7,
-  "process-capability": r8,
-  "sample-size": r9,
+  "msa-typ6": r8,
+  "process-capability": r9,
+  "sample-size": r10,
 };

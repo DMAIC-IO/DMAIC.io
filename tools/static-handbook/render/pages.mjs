@@ -11,6 +11,7 @@
 
 import { renderPage, getStrings, CONSTANTS, appRootFrom } from './page-shell.mjs';
 import { renderBlocks, firstParagraphText } from './blocks.mjs';
+import { renderReferencesSection, i18nT, makeRefLink } from './references.mjs';
 import { escapeHtml, escapeAttr, pick, stripTermTokens, stripRefTokens } from './escape.mjs';
 
 /**
@@ -58,9 +59,11 @@ export async function renderModulePage({ module, lang, i18n, examples, glossary 
   // Inline `{{term:id|label}}` markers in module help text get linked to the
   // corresponding glossary page when the term exists in the catalog.
   const knownIds = glossary?.termById instanceof Map ? glossary.termById : new Map();
+  const refT = i18nT(i18n, lang);
   const blockOpts = {
     glossaryHref: (termId) =>
       knownIds.has(termId) ? `/${lang}/glossar/${termId}.html` : '',
+    refLink: makeRefLink(module.references || [], refT),
   };
 
   // Render in canonical SECTION_ORDER first, then any extra section keys
@@ -133,12 +136,18 @@ export async function renderModulePage({ module, lang, i18n, examples, glossary 
     }
   }
 
+  // ─── References (CSL-JSON from <id>-references.js) ────────
+  const referencesSectionHtml = renderReferencesSection(
+    module.references || [], lang, refT, s.moduleReferences,
+  );
+
   const body = `
 <article class="handbook-article">
   <span class="handbook-article__tag">${escapeHtml(phaseLabel)}</span>
   <h1>${escapeHtml(stripRefTokens(stripTermTokens(name)))}</h1>
   ${leadText ? `<p class="handbook-article__lead">${escapeHtml(stripRefTokens(stripTermTokens(leadText)))}</p>` : ''}
   ${sectionHtmlParts.join('\n')}
+  ${referencesSectionHtml}
   ${examplesSectionHtml}
   ${cyclesSectionHtml}
 </article>`;

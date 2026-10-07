@@ -35,6 +35,7 @@ const BOOK_REVIEW_REFS = {
   'msa-typ1': ['melzer-2019', 'bosch-heft-10'],
   'msa-typ2': ['melzer-2019', 'aiag-msa-4'],
   'msa-typ5': ['melzer-2019', 'aiag-msa-4', 'bosch-heft-10', 'fleiss-nee-landis-1979'],
+  'msa-typ6': ['aiag-msa-4', 'montgomery-sqc-6', 'nelson-1984'],
   'process-capability': ['melzer-2019', 'montgomery-sqc-6'],
 };
 

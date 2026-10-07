@@ -6,16 +6,17 @@
  * `{{term:id|label}}` and `{{ref:id|label}}`. Raw HTML is NOT a supported
  * marker — it stays escaped, in both renderers.
  *
- * `{{ref:id|label}}` is flattened to plain text (the label when present,
- * otherwise the bare id) — linking the static handbook to references is
- * deferred to later work, so this marker never becomes a link here, unlike
- * `{{term:…}}`.
+ * `{{ref:id|label}}` becomes a link to the page's own references section
+ * when the caller passes `opts.refLink` and the id is known (module pages).
+ * Otherwise — unknown id, or glossary/algorithm pages without `refLink` —
+ * it is flattened to plain text: the label when present, else the bare id.
  *
  * Order matters and mirrors the app's token-first parse:
  *   1. lift `$…$` bodies out of the RAW text into placeholders — KaTeX has to
  *      see `<`, `>` and `'` as themselves, not as HTML entities
  *   2. HTML-escape the remaining prose
- *   3. resolve `{{term:…}}` into glossary links and flatten `{{ref:…}}` to text
+ *   3. resolve `{{term:…}}` into glossary links and `{{ref:…}}` into
+ *      reference links (or plain text)
  *   4. markdown-lite: **bold**, *italic*
  *   5. substitute the rendered KaTeX last, so no later pass touches its markup
  */
@@ -26,10 +27,25 @@ import { renderLatex } from './katex.mjs';
 const MATH_MARKER = /@@math(\d+)@@/g;
 
 /**
+ * Resolve `{{ref:id|label}}` markers in already-escaped prose. With a
+ * `refLink` that knows the id, the marker becomes its anchor; otherwise it
+ * is flattened to the label, or the bare id — a typo never becomes a dead
+ * link.
+ * @param {string} s - HTML-escaped text
+ * @param {{ refLink?: (id: string, escapedLabel?: string) => string|null }} [opts]
+ * @returns {string}
+ */
+function resolveRefs(s, opts) {
+  return s.replace(/\{\{ref:([a-z0-9-]+)(?:\|([^}]+))?\}\}/gi, (_m, id, label) =>
+    opts?.refLink?.(id, label) || label || id);
+}
+
+/**
  * Render one run of inline handbook markup to HTML.
  *
  * @param {string} text
- * @param {{ glossaryHref?: (id: string) => string }} [opts]
+ * @param {{ glossaryHref?: (id: string) => string,
+ *           refLink?: (id: string, escapedLabel?: string) => string|null }} [opts]
  * @returns {Promise<string>}
  */
 export async function renderInline(text, opts) {
@@ -48,7 +64,7 @@ export async function renderInline(text, opts) {
     return `<a class="handbook-glossary-link" href="${escapeAttr(href)}">${visible}</a>`;
   });
 
-  s = s.replace(/\{\{ref:([a-z0-9-]+)(?:\|([^}]+))?\}\}/gi, (_m, id, label) => label || id);
+  s = resolveRefs(s, opts);
 
   s = s.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
   s = s.replace(/\*([^*]+)\*/g, '<em>$1</em>');
@@ -68,7 +84,8 @@ export async function renderInline(text, opts) {
  * page. Use `renderInline` wherever awaiting is possible.
  *
  * @param {string} text
- * @param {{ glossaryHref?: (id: string) => string }} [opts]
+ * @param {{ glossaryHref?: (id: string) => string,
+ *           refLink?: (id: string, escapedLabel?: string) => string|null }} [opts]
  * @returns {string}
  */
 export function renderInlineSync(text, opts) {
@@ -79,7 +96,7 @@ export function renderInlineSync(text, opts) {
     if (!href) return visible;
     return `<a class="handbook-glossary-link" href="${escapeAttr(href)}">${visible}</a>`;
   });
-  s = s.replace(/\{\{ref:([a-z0-9-]+)(?:\|([^}]+))?\}\}/gi, (_m, id, label) => label || id);
+  s = resolveRefs(s, opts);
   s = s.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
   s = s.replace(/\*([^*]+)\*/g, '<em>$1</em>');
   return s;

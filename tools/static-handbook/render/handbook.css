@@ -773,3 +773,15 @@ footer a:hover { color: var(--t1); text-decoration: underline; }
   font-size: .9rem;
 }
 .algo-references li { margin-bottom: .3rem; }
+
+.handbook-references__list {
+  padding-left: 1.3rem;
+  color: var(--t2);
+  font-size: .9rem;
+}
+.handbook-reference { margin-bottom: .5rem; }
+.handbook-reference > * + * { margin-left: .35em; }
+.handbook-reference__head { color: var(--t1); font-weight: 600; }
+.handbook-reference__title { font-style: italic; }
+.handbook-reference__note { display: block; color: var(--t3); }
+.handbook-reference:target { outline: 2px solid var(--blue); outline-offset: 2px; }
