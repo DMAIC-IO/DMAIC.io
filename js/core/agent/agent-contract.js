@@ -15,7 +15,14 @@
 /** Version der Fläche. Bump nur bei Bruch der Hülle. Siehe Plan §Constraints. */
 export const CONTRACT_VERSION = 1;
 
-/** Alle Fehlercodes der Fläche. Werte sind Teil des Vertrags. */
+/**
+ * Alle Fehlercodes der Fläche. Werte sind Teil des Vertrags.
+ *
+ * Ein NEUER Code ist kein Bruch der Hülle und löst daher KEINEN
+ * `CONTRACT_VERSION`-Bump aus — genauso wie ein neues `op`. Gebumpt wird nur,
+ * wenn sich Aktionsform, Referenzsyntax, Fehler*form* oder Ergebnis-Hülle
+ * ändern. Invariante (ein Test prüft sie): `ERRORS[k] === k.toLowerCase()`.
+ */
 export const ERRORS = Object.freeze({
   CONSENT_DENIED:         'consent_denied',
   NOT_CONNECTED:          'not_connected',
@@ -35,9 +42,12 @@ export const ERRORS = Object.freeze({
   FORWARD_REF:            'forward_ref',
   UNRESOLVED_REF:         'unresolved_ref',
   MODULE_NOT_AGENT_READY: 'module_not_agent_ready',
+  MODULE_SINGLETON:       'module_singleton',
+  PROJECT_COMPLETED:      'project_completed',
   VALIDATION_FAILED:      'validation_failed',
   CALL_FAILED:            'call_failed',
   OP_FAILED:              'op_failed',
+  SURFACE_FAILED:         'surface_failed',
 });
 
 /** Ein Katalogeintrag des Modulkatalogs (catalog.read, project.read). */

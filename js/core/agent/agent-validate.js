@@ -102,7 +102,8 @@ export function validateBatch(input, world) {
         continue;
       }
       // Eine Referenz steht für ihren späteren Wert — ihr Typ ist erst zur
-      // Laufzeit bekannt und wird dort geprüft.
+      // Laufzeit bekannt. Dort holt `checkResolvedParamTypes` (unten) diese
+      // Prüfung nach, direkt nach `resolveRefs` und vor der Op.
       if (isRef(value)) continue;
       if (!typeMatches(pspec.type, value)) {
         return fail(i, axiError(ERRORS.WRONG_TYPE,
@@ -173,6 +174,20 @@ export function validateBatch(input, world) {
       }
     }
 
+    // Ein `singleton`-Modul darf nur EINE Instanz haben. Die Regel steht in
+    // der UI (`ui/dmaic-tiles.js:_canAdd`) und darf nicht nur dort stehen,
+    // sonst kann der Agent etwas, was die UI verbietet (Spec §2). Hier im
+    // Prüfer, weil dabei kein Seiteneffekt entsteht; `agent-ops.js` hat
+    // dieselbe Prüfung nochmals als Verteidigung (zwei `module.add` im
+    // SELBEN Stapel sieht diese Momentaufnahme nicht).
+    if (a.op === 'module.add' && typeof a.module === 'string' && world.modules.get(a.module)?.singleton) {
+      const existing = [...world.instances.entries()].find(([, i]) => i.module === a.module);
+      if (existing) {
+        return fail(i, axiError(ERRORS.MODULE_SINGLETON,
+          world.t('agent.errors.moduleSingleton', { module: a.module, instance: existing[0] })));
+      }
+    }
+
     if (typeof a.instance === 'string' && !world.instances.has(a.instance)) {
       return fail(i, axiError(ERRORS.UNKNOWN_INSTANCE,
         world.t('agent.errors.unknownInstance', { instance: a.instance }),
@@ -200,6 +215,39 @@ export function validateBatch(input, world) {
   }
 
   return { ok: true, actions };
+}
+
+/**
+ * Stufe 3 für AUFGELÖSTE Referenzen — die Nachprüfung, die den Kommentar in
+ * Stufe 3 („ihr Typ wird zur Laufzeit geprüft") wahr macht.
+ *
+ * Stufe 3 überspringt den Typ-Check eines Parameters, der eine Referenz ist:
+ * sein Wert entsteht erst im Vollzug. Ohne diese Funktion gäbe es die dort
+ * versprochene Laufzeitprüfung NICHT, und ein referenzierter Wert käme
+ * ungeprüft bei der Op an (Review-Befund C1 — ein beliebiger Anzeigename
+ * landete als Phasen-Id im Projektzustand).
+ *
+ * Die Laufzeit ruft das nach `resolveRefs` für JEDE Aktion auf: Literale sind
+ * bereits geprüft, eine zweite Prüfung kostet nichts und braucht keine
+ * Buchführung darüber, welches Feld vorher eine Referenz war.
+ *
+ * @param {string} op  der Aktionsname (Schlüssel in OPS)
+ * @param {object} value  das Aktionsobjekt NACH der Referenzauflösung
+ * @param {(key: string, params?: object) => string} t
+ * @returns {{ ok: false, error: string, message: string }|null} null, wenn alles passt
+ */
+export function checkResolvedParamTypes(op, value, t) {
+  const spec = OPS[op];
+  if (!spec) return null;
+  for (const [param, pspec] of Object.entries(spec.params)) {
+    const actual = value?.[param];
+    if (actual === undefined) continue;
+    if (!typeMatches(pspec.type, actual)) {
+      return axiError(ERRORS.WRONG_TYPE,
+        t('agent.errors.wrongType', { op, param, expected: pspec.type, actual: typeNameOf(actual) }));
+    }
+  }
+  return null;
 }
 
 /**

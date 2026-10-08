@@ -40,6 +40,23 @@ export function allowedPhasesFor(def, activeCycle) {
 }
 
 /**
+ * Darf dieses Modul nur EINMAL im Projekt vorkommen?
+ *
+ * Die EINE Stelle, an der die Agentenschicht `def.singleton` liest — der
+ * Prüfer (über `buildWorld`) und die Verteidigung in `agent-ops.js` benutzen
+ * beide dieses Ergebnis, damit die Regel nicht ein zweites Mal buchstabiert
+ * wird. Die UI-Fassung derselben Regel steht heute noch separat in
+ * `ui/dmaic-tiles.js:_canAdd`; sie zusammenzuziehen ist ein eigener Durchgang
+ * (Roadmap: „Ein Ort für Modul-Vorbedingungen").
+ *
+ * @param {object|null|undefined} def  normalisierte Moduldefinition
+ * @returns {boolean}
+ */
+export function isSingleton(def) {
+  return def?.singleton === true;
+}
+
+/**
  * `whenToUse` eines Moduls: der eigene Schlüssel, sonst die vorhandene
  * Beschreibung (Spec §8 — 72 Module, zweisprachig, existiert schon).
  * @param {object} i18n
@@ -120,6 +137,7 @@ export function buildWorld({ moduleRegistry, stateManager, i18n, registry }) {
       // module_not_agent_ready statt mit einer leeren Methodenliste.
       methods: available ? Object.keys(entry.actions) : null,
       allowedPhases: allowedPhasesFor(def, cycle),
+      singleton: isSingleton(def),
     });
   }
 

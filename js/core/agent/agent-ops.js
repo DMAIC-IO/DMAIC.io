@@ -17,7 +17,8 @@
  */
 import { CONTRACT_VERSION, ERRORS } from './agent-contract.js';
 import { axiError } from './agent-errors.js';
-import { buildCatalog, buildInstanceList, describeModule } from './agent-catalog.js';
+import { buildCatalog, buildInstanceList, describeModule, allowedPhasesFor, isSingleton } from './agent-catalog.js';
+import { getAllPhaseIds } from '../cycles/cycles.js';
 
 /**
  * @param {object} deps  { stateManager, moduleRegistry, i18n, registry, getHelp, host, appVersion }
@@ -48,16 +49,70 @@ export function createOps(deps) {
       // Stufe 5 des Prüfers fängt ein unbekanntes Modul schon vorher ab —
       // dieser Zweig bleibt als Verteidigung, weil die Laufzeit prinzipiell
       // auch ohne Prüfer aufrufbar ist (Ruling R7a).
-      if (!moduleRegistry.get(action.module)) {
+      const def = moduleRegistry.get(action.module);
+      if (!def) {
         return axiError(ERRORS.UNKNOWN_MODULE,
           t('agent.errors.unknownModule', { module: action.module }),
           { available: moduleRegistry.getAll().map(d => d.id) });
       }
-      return host.addInstance(action.module, action.phase);
+
+      // Dieselbe Verteidigung für die PHASE. Sie fehlte (Review-Befund C1),
+      // und ein referenzierter Wert kam damit bis in `createInstance` →
+      // `stateManager.set('phases.<Anzeigename>')`: ein persistierter
+      // Phasen-Eimer, den kein Tile und kein Zyklus kennt.
+      if (action.phase !== undefined) {
+        const cycle = moduleRegistry.getActiveCycle();
+        const cyclePhases = getAllPhaseIds(cycle);
+        if (!cyclePhases.includes(action.phase)) {
+          return axiError(ERRORS.UNKNOWN_PHASE,
+            t('agent.errors.unknownPhaseInCycle', { phase: action.phase }), { available: cyclePhases });
+        }
+        const allowed = allowedPhasesFor(def, cycle);
+        if (!allowed.includes(action.phase)) {
+          return axiError(ERRORS.UNKNOWN_PHASE,
+            t('agent.errors.unknownPhase', { phase: action.phase, module: action.module }),
+            { available: allowed });
+        }
+      }
+
+      // Die Singleton-Regel der UI (Review-Befund I1). Der Prüfer hat sie
+      // gegen seine Momentaufnahme schon geprüft; zwei `module.add` im
+      // SELBEN Stapel sieht nur diese Stelle.
+      if (isSingleton(def)) {
+        const existing = buildInstanceList({ stateManager, i18n }).find(it => it.module === action.module);
+        if (existing) {
+          return axiError(ERRORS.MODULE_SINGLETON,
+            t('agent.errors.moduleSingleton', { module: action.module, instance: existing.id }));
+        }
+      }
+
+      // Im abgeschlossenen Projekt verwirft `stateManager.set` jeden
+      // Nicht-`settings.`-Schreibzugriff STILL. Ohne diesen Zweig meldete
+      // `module.add` Erfolg und lieferte eine Phantom-Instanz-Id
+      // (Review-Befund I2).
+      if (host.isCompleted()) {
+        return axiError(ERRORS.PROJECT_COMPLETED, t('agent.errors.projectCompleted'));
+      }
+
+      const added = await host.addInstance(action.module, action.phase);
+      if (!added) {
+        // Kein Rückfall auf eine erfundene Id: findet der Host die Instanz
+        // nicht wieder, hat nichts stattgefunden.
+        return axiError(ERRORS.OP_FAILED,
+          t('agent.errors.addNotPersisted', { module: action.module }));
+      }
+      return added;
     },
 
     'module.remove': async (action) => {
       const instances = buildInstanceList({ stateManager, i18n });
+      // Erst der ehrliche Grund: im abgeschlossenen Projekt gibt der
+      // Workspace `false` zurück, und das als „Instanz unbekannt" MIT dieser
+      // Id in `available` zu melden war in sich widersprüchlich
+      // (Review-Befunde I2 / I3c).
+      if (host.isCompleted()) {
+        return axiError(ERRORS.PROJECT_COMPLETED, t('agent.errors.projectCompleted'));
+      }
       const removed = await host.removeInstance(action.instance);
       if (!removed) {
         return unknownInstanceError(t, instances, action.instance);

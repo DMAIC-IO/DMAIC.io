@@ -4,7 +4,7 @@
  */
 import { suite, test, assertEqual, assertTrue, assertDeepEqual } from '../../test-utils.js';
 import {
-  buildCatalog, buildInstanceList, buildWorld, allowedPhasesFor, describeModule,
+  buildCatalog, buildInstanceList, buildWorld, allowedPhasesFor, describeModule, isSingleton,
 } from '../../../js/core/agent/agent-catalog.js';
 import { buildUsage } from '../../../js/core/agent/agent-usage.js';
 import { getAllPhaseIds } from '../../../js/core/cycles/cycles.js';
@@ -155,6 +155,15 @@ suite('agent catalog — validator world', () => {
     assertDeepEqual(world.modules.get('worksheet').methods.sort(), ['importCsv', 'read']);
   });
 
+  // Review-Befund I1: die Singleton-Regel wird aus `def.singleton` an GENAU
+  // dieser einen Stelle gelesen (`isSingleton`) und von Prüfer und
+  // Ops-Verteidigung gemeinsam benutzt — nicht ein zweites Mal buchstabiert.
+  test('the world carries the singleton flag of each module', () => {
+    const world = buildWorld({ moduleRegistry: makeRegistry(), stateManager: makeStateManager(PHASES), i18n: I18N, registry: REGISTRY });
+    assertEqual(world.modules.get('five-why').singleton, false);
+    assertEqual(world.modules.get('worksheet').singleton, false);
+  });
+
   // Ruling K6 (Koordinator): world.phases muss die Phasen-IDs des AKTIVEN
   // ZYKLUS tragen, nicht die bislang im Projektzustand befüllten Schlüssel —
   // sonst lehnt validateBatch jede Aktion mit `phase` fälschlich ab, sobald
@@ -233,5 +242,18 @@ suite('agent usage contract', () => {
     for (const key of ['intro', 'call', 'actionForm', 'refForm', 'batchForm', 'errorForm', 'availability', 'limits']) {
       assertTrue(typeof usage[key] === 'string' && usage[key].length > 0, `usage.${key} missing`);
     }
+  });
+});
+
+suite('agent catalog — isSingleton', () => {
+  test('true only for an explicit singleton flag', () => {
+    assertEqual(isSingleton({ id: 'project-charter', singleton: true }), true);
+    assertEqual(isSingleton({ id: 'five-why' }), false);
+    assertEqual(isSingleton({ id: 'five-why', singleton: false }), false);
+  });
+
+  test('a missing definition is not a singleton', () => {
+    assertEqual(isSingleton(null), false);
+    assertEqual(isSingleton(undefined), false);
   });
 });

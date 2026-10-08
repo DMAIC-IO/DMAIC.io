@@ -70,14 +70,22 @@ function walk(value, out) {
  * gesehen, und ein Fehlerbericht soll die Originalform zeigen).
  * @param {any} value
  * @param {Map<string, any>} results  Aktions-`id` → Ergebniswert vorheriger Aktionen
+ * `available` hat ZWEI Bedeutungen, und `reason` sagt welche (Review-Befund
+ * M2): bei `unknown_id` sind es die Aktions-IDs, die bereits ein Ergebnis
+ * haben; bei `bad_path` die Schlüssel der Ebene, an der der Pfad abbricht.
+ * Ohne diese Unterscheidung wäre aus dem Feld allein nicht zu lesen, worauf
+ * sich die Liste bezieht — und die Meldung könnte es nicht sagen.
+ *
  * @returns {{ ok: true, value: any }
- *          |{ ok: false, from: string, path: string, segment: string, available: string[] }}
+ *          |{ ok: false, reason: 'unknown_id'|'bad_path', from: string,
+ *             path: string, segment: string, available: string[] }}
  */
 export function resolveRefs(value, results) {
   if (isRef(value)) {
     if (!results.has(value.$from)) {
       return {
         ok: false,
+        reason: 'unknown_id',
         from: value.$from,
         path: value.path,
         segment: '',
@@ -88,6 +96,7 @@ export function resolveRefs(value, results) {
     if (!read.ok) {
       return {
         ok: false,
+        reason: 'bad_path',
         from: value.$from,
         path: value.path,
         segment: read.segment,

@@ -269,3 +269,42 @@ suite('agent validate — Stufe 5: literale Bezeichner', () => {
     assertEqual(r.actions.length, 4);
   });
 });
+
+// ── Review-Befund I1 ───────────────────────────────────────────────
+// Die Singleton-Regel lebte nur in `ui/dmaic-tiles.js:_canAdd`. Hier im
+// Prüfer kostet sie keinen Seiteneffekt; `def.singleton` wird dabei an
+// genau EINER Stelle gelesen (`isSingleton` in agent-catalog.js, über
+// `buildWorld`).
+suite('agent validate — Stufe 5: die Singleton-Regel', () => {
+  /** A world with one singleton module, optionally already instantiated. */
+  function singletonWorld({ instantiated = true } = {}) {
+    const world = makeWorld();
+    world.modules.set('project-charter',
+      { available: false, methods: null, allowedPhases: ['define'], singleton: true });
+    if (instantiated) world.instances.set('pc-1', { module: 'project-charter', phase: 'define' });
+    return world;
+  }
+
+  test('a second instance of a singleton module is rejected and names the existing one', () => {
+    const r = validateBatch([{ op: 'module.add', module: 'project-charter' }], singletonWorld());
+    assertEqual(r.ok, false);
+    assertEqual(r.cause.error, 'module_singleton');
+    assertEqual(r.cause.message, 'agent.errors.moduleSingleton|module=project-charter,instance=pc-1');
+  });
+
+  test('the first instance of a singleton module passes', () => {
+    const r = validateBatch([{ op: 'module.add', module: 'project-charter' }],
+      singletonWorld({ instantiated: false }));
+    assertTrue(r.ok, JSON.stringify(r));
+  });
+
+  test('a non-singleton module may be added even though an instance exists', () => {
+    const r = validateBatch([{ op: 'module.add', module: 'five-why', phase: 'define' }], singletonWorld());
+    assertTrue(r.ok, JSON.stringify(r));
+  });
+
+  test('the rule applies to module.add only — describing a singleton stays allowed', () => {
+    const r = validateBatch([{ op: 'module.describe', module: 'project-charter' }], singletonWorld());
+    assertTrue(r.ok, JSON.stringify(r));
+  });
+});

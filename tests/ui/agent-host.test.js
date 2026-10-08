@@ -11,7 +11,7 @@ const DEFS = {
   'worksheet': { id: 'worksheet', phase: 'data' },
 };
 
-function makeHost({ phases, activeInstance = null } = {}) {
+function makeHost({ phases, activeInstance = null, completed = false } = {}) {
   const state = structuredClone(phases ?? {
     data: [],
     define: [{ instanceId: 'fw-1', moduleId: 'five-why', order: 0 }],
@@ -20,9 +20,11 @@ function makeHost({ phases, activeInstance = null } = {}) {
   const calls = [];
   const stateManager = {
     getActiveProjectId: () => 'p-1',
-    isCompleted: () => false,
+    isCompleted: () => completed,
     get: (path) => (path === 'phases' ? state : path.startsWith('phases.') ? state[path.slice(7)] : undefined),
-    set: (path, value) => { state[path.slice(7)] = value; },
+    // Wie der echte stateManager: im abgeschlossenen Projekt verschwindet
+    // jeder Nicht-`settings.`-Schreibzugriff STILL (core/state-manager.js).
+    set: (path, value) => { if (!completed) state[path.slice(7)] = value; },
     removeModuleState: () => {},
   };
   const moduleRegistry = { get: (id) => DEFS[id], getActiveCycle: () => 'dmaic' };
@@ -31,7 +33,7 @@ function makeHost({ phases, activeInstance = null } = {}) {
   const workspace = {
     getActiveModuleInfo: () => activeInstance,
     getInstance: (id) => mounted.get(id) ?? null,
-    removeInstance: async (id) => { calls.push(['removeInstance', id]); return true; },
+    removeInstance: async (id) => { calls.push(['removeInstance', id]); return !completed; },
   };
   const router = {
     navigate: async (route) => { calls.push(['navigate', route]); },
@@ -112,5 +114,35 @@ suite('agent host — open and viewmodel', () => {
     const { host, calls } = makeHost();
     assertEqual(await host.removeInstance('fw-1'), true);
     assertDeepEqual(calls, [['removeInstance', 'fw-1']]);
+  });
+});
+
+// ── Review-Befund I2 ───────────────────────────────────────────────
+// Der Rückfall `locate(instanceId) ?? { instanceId, module, phase: … }` hat
+// im abgeschlossenen Projekt eine Instanz-Id erfunden, die es nicht gibt:
+// `stateManager.set` verwirft den Schreibzugriff still, `locate()` findet
+// nichts — und der Agent bekam `ok: true` mit dieser Id.
+suite('agent host — der abgeschlossene Projektzustand', () => {
+  test('isCompleted spiegelt den stateManager', () => {
+    assertEqual(makeHost().host.isCompleted(), false);
+    assertEqual(makeHost({ completed: true }).host.isCompleted(), true);
+  });
+
+  test('addInstance liefert null statt einer erfundenen Id', async () => {
+    const { host, state } = makeHost({ completed: true });
+    assertEqual(await host.addInstance('five-why'), null);
+    assertEqual(state.define.length, 1, 'nichts wurde geschrieben');
+  });
+
+  test('addInstance fasst den Workspace im abgeschlossenen Projekt gar nicht an', async () => {
+    const { host, calls } = makeHost({ completed: true });
+    await host.addInstance('five-why');
+    assertDeepEqual(calls, [], 'kein module:added für eine Instanz, die es nicht gibt');
+  });
+
+  test('removeInstance liefert false und ruft den Workspace nicht', async () => {
+    const { host, calls } = makeHost({ completed: true });
+    assertEqual(await host.removeInstance('fw-1'), false);
+    assertDeepEqual(calls, []);
   });
 });
