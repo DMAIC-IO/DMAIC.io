@@ -34,6 +34,8 @@ import { computeIMR } from '../../engines/control-chart-engine.js';
 import { computeEWMA, computeCUSUM, estimateSigma } from '../../engines/time-weighted-chart-engine.js';
 import { groupedMeans, cellMeans } from '../../engines/grouped-aggregations.js';
 import { loadExampleViaWorksheet } from '../../core/examples-registry.js';
+import { resolveColumnRef } from '../../core/worksheet-columns.js';
+import { uid } from '../../core/uid.js';
 
 const mod = createModule({
   config: {
@@ -89,9 +91,7 @@ const mod = createModule({
         const sm = module._context.stateManager;
         const phase = this._findOwnPhase();
         const instances = sm.get(`phases.${phase}`) || [];
-        const instanceId = (typeof crypto !== 'undefined' && crypto.randomUUID)
-          ? crypto.randomUUID()
-          : `${prefill.target}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+        const instanceId = uid();
         const updated = instances.slice();
         updated.push({ instanceId, moduleId: prefill.target, order: updated.length, state: {} });
         sm.set(`phases.${phase}`, updated);
@@ -542,7 +542,7 @@ const mod = createModule({
           grid.appendChild(cell);
           await this._mkChart(cell, gen, 'control-chart', {
             title: p.label, titleSize: 12, labelSize: 11, tickSize: 10,
-            xLabel: '', yLabel: '', showLegend: false,
+            xLabel: prep.xLabel || t('axis.observation'), yLabel: t('axis.cumulativeSum'), showLegend: false,
             values: p.values, cl: 0, ucl: r.h, lcl: 0, sigma: 0, showZones: false,
             violationIndices: new Set(p.signals),
           });
@@ -567,12 +567,25 @@ const mod = createModule({
         eb.on('chart-suggestion:load', onLoad);
         this._unsubs.push(() => eb.off('chart-suggestion:load', onLoad));
 
+        // Follow edits in the source worksheet: the selection is a snapshot,
+        // so re-read it from the live columns and re-render on change.
+        const onData = ({ instanceId } = {}) => {
+          if (instanceId !== this.model.selection?.sourceInstanceId) return;
+          const sm = module._context.stateManager;
+          if (!this.model.refreshFromSource(ref => resolveColumnRef(sm, ref))) return;
+          requestAnimationFrame(() => this._afterRender());
+        };
+        eb.on('worksheet:dataChanged', onData);
+        this._unsubs.push(() => eb.off('worksheet:dataChanged', onData));
+
         // Re-render preview on theme change so chart colors refresh (legacy parity).
         const onTheme = () => { if (this._charts.length) this._renderPreview(); };
         eb.on('theme:changed', onTheme);
         this._unsubs.push(() => eb.off('theme:changed', onTheme));
 
-        // Initial render of thumbs + preview from the restored state.
+        // Initial render of thumbs + preview from the restored state, caught up
+        // with worksheet edits made while this module was not mounted.
+        this.model.refreshFromSource(ref => resolveColumnRef(module._context.stateManager, ref));
         requestAnimationFrame(() => this._afterRender());
       },
 
@@ -642,12 +655,12 @@ function buildChartConfig(chartType, columns, t) {
     case 'boxplot': {
       const groups = boxplotGroups(cont, cat);
       if (!groups) return null;
-      return { title: '', xLabel: '', yLabel: '', showLegend: groups.length > 1, showMean: true, showOutliers: true, groups };
+      return { title: '', ...groupedAxisLabels(cont, cat, t), showLegend: groups.length > 1, showMean: true, showOutliers: true, groups };
     }
     case 'individual-value-plot': {
       const groups = boxplotGroups(cont, cat);
       if (!groups) return null;
-      return { title: '', xLabel: '', yLabel: '', showLegend: groups.length > 1, groups };
+      return { title: '', ...groupedAxisLabels(cont, cat, t), showLegend: groups.length > 1, groups };
     }
     case 'run-chart': {
       if (cont.length === 0) return null;
@@ -710,7 +723,7 @@ function buildChartConfig(chartType, columns, t) {
       const colA = cat[0], colB = cat[1];
       const { categories, groups } = crossTabCategorical(colA, colB);
       if (categories.length === 0) return null;
-      return { title: '', xLabel: colA.name || '', yLabel: '', categories, groups, showLegend: true, legendTitle: colB.name || '' };
+      return { title: '', xLabel: colA.name || '', yLabel: t('axis.proportion'), categories, groups, showLegend: true, legendTitle: colB.name || '' };
     }
     case 'heatmap': {
       if (cont.length >= 1 && cat.length >= 2) {
@@ -859,6 +872,20 @@ function buildDateLineConfig({ groups, xLabel, yLabel, legendTitle }) {
   };
   if (legendTitle) config.legendTitle = legendTitle;
   return config;
+}
+
+/**
+ * Axis titles for the grouped value charts (boxplot, individual value plot),
+ * matching the group layout of boxplotGroups(): one response by factor, one
+ * response alone, or several responses side by side.
+ * @param {object[]} cont continuous columns
+ * @param {object[]} cat categorical / ordinal columns
+ * @param {(key: string) => string} t module-scoped translator
+ * @returns {{xLabel: string, yLabel: string}}
+ */
+function groupedAxisLabels(cont, cat, t) {
+  if (cont.length > 1 && cat.length === 0) return { xLabel: t('axis.variable'), yLabel: t('axis.value') };
+  return { xLabel: cat.length >= 1 ? (cat[0].name || '') : '', yLabel: cont[0]?.name || '' };
 }
 
 function boxplotGroups(cont, cat) {

@@ -5,7 +5,7 @@
  * selection state, pick-preservation, prefill adapters and persistence. The
  * pure rule-engine itself is covered separately in tests/core/chart-suggestions.test.js.
  */
-import { suite, test, assertEqual } from '../test-utils.js';
+import { suite, test, assertEqual, assertDeepEqual } from '../test-utils.js';
 import { State } from '../../js/modules/chart-suggestion/chart-suggestion-model.js';
 
 function sel(columns, extra = {}) {
@@ -318,5 +318,59 @@ suite('chart-suggestion Model — buildPrefill', () => {
     const p = s.buildPrefill();
     assertEqual(p.target, 'probability-plot');
     assertEqual(p.state.columnRef.columnId, 'a');
+  });
+});
+
+suite('chart-suggestion Model — refreshFromSource', () => {
+  /** Resolver stub over a map of live columns keyed by `instanceId/sheetId/columnId`. */
+  function resolverFor(live) {
+    return (ref) => live[`${ref.instanceId}/${ref.sheetId}/${ref.columnId}`] || null;
+  }
+
+  test('pulls current values, name and role from the source worksheet', () => {
+    const s = new State();
+    s.selection = sel([col('a', 'continuous', [1, 2, 3], 'Old')]);
+    const changed = s.refreshFromSource(resolverFor({
+      'ws-1/sheet-1/a': { id: 'a', name: 'New', role: 'continuous', type: 'numeric', values: [7, 8, 9, 10] },
+    }));
+    assertEqual(changed, true);
+    assertDeepEqual(s.selection.columns[0].values, [7, 8, 9, 10]);
+    assertEqual(s.selection.columns[0].name, 'New');
+  });
+
+  test('returns false when the source data is unchanged', () => {
+    const s = new State();
+    s.selection = sel([col('a', 'continuous', [1, 2, 3])]);
+    const changed = s.refreshFromSource(resolverFor({
+      'ws-1/sheet-1/a': { id: 'a', name: 'a', role: 'continuous', type: 'numeric', values: [1, 2, 3] },
+    }));
+    assertEqual(changed, false);
+  });
+
+  test('keeps the snapshot of a column the source no longer has', () => {
+    const s = new State();
+    s.selection = sel([col('a', 'continuous', [1, 2, 3])]);
+    const changed = s.refreshFromSource(resolverFor({}));
+    assertEqual(changed, false);
+    assertDeepEqual(s.selection.columns[0].values, [1, 2, 3]);
+  });
+
+  test('does not alias the live worksheet values array', () => {
+    const s = new State();
+    s.selection = sel([col('a', 'continuous', [1])]);
+    const live = { id: 'a', name: 'a', role: 'continuous', type: 'numeric', values: [5, 6] };
+    s.refreshFromSource(resolverFor({ 'ws-1/sheet-1/a': live }));
+    live.values.push(99);
+    assertDeepEqual(s.selection.columns[0].values, [5, 6]);
+  });
+
+  test('recomputes suggestions when a role change alters the column mix', () => {
+    const s = new State();
+    s.selection = sel([col('a', 'continuous', [1, 2, 3, 4, 5])]);
+    s.recomputeSuggestions();
+    s.refreshFromSource(resolverFor({
+      'ws-1/sheet-1/a': { id: 'a', name: 'a', role: 'categorical', type: 'text', values: ['x', 'y', 'x', 'y', 'x'] },
+    }));
+    assertEqual(s.suggestions.some(x => x.type === 'histogram'), false);
   });
 });

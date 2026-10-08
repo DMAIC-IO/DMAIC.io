@@ -240,6 +240,39 @@ export class State {
     return fn(sel.columns || [], sel.sourceInstanceId, sel.sourceSheetId);
   }
 
+  /**
+   * Re-read the selected columns from their source worksheet so the snapshot
+   * follows later edits (values, rename, role change). Columns the resolver
+   * cannot find keep their snapshot. Recomputes the suggestions on change.
+   * @param {(ref: {instanceId: string, sheetId: string, columnId: string}) => object|null} resolveColumn
+   *   live column lookup, e.g. `ref => resolveColumnRef(stateManager, ref)`
+   * @returns {boolean} true when any column changed
+   */
+  refreshFromSource(resolveColumn) {
+    const sel = this.selection;
+    if (!sel || !Array.isArray(sel.columns) || !sel.sourceInstanceId || !sel.sourceSheetId) return false;
+    let changed = false;
+    sel.columns = sel.columns.map((c) => {
+      const live = resolveColumn(_ref(sel.sourceInstanceId, sel.sourceSheetId, c));
+      if (!live) return c;
+      const next = cloneColumn({
+        id: c.id,
+        name: live.name || live.shortName || c.name,
+        role: live.role || c.role,
+        type: live.type || c.type,
+        values: live.values,
+      });
+      const same = next.name === c.name && next.role === c.role && next.type === c.type
+        && next.values.length === c.values.length
+        && next.values.every((v, i) => v === c.values[i]);
+      if (same) return c;
+      changed = true;
+      return next;
+    });
+    if (changed) this.recomputeSuggestions();
+    return changed;
+  }
+
   /** True when the selection carries at least one column (drives loadExample confirm). */
   hasContent() {
     return Boolean(this.selection && Array.isArray(this.selection.columns) && this.selection.columns.length > 0);

@@ -2734,7 +2734,11 @@
         "observation": "Beobachtung",
         "other": "Sonstige",
         "otherCategories": "{n} weitere Kategorien",
-        "percentile": "Wahrscheinlichkeit"
+        "percentile": "Wahrscheinlichkeit",
+        "variable": "Variable",
+        "value": "Wert",
+        "proportion": "Anteil",
+        "cumulativeSum": "Kumulierte Summe"
       },
       "charts": {
         "histogram": "Histogramm",
