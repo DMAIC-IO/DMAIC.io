@@ -1356,6 +1356,7 @@ body.dev-area-open .dmaic-tiles {
   gap: var(--spacing-m);
   min-width: 320px;
 }
+
 .tile-settings__row {
   display: flex;
   align-items: center;
