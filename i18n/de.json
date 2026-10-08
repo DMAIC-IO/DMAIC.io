@@ -5909,5 +5909,32 @@
         }
       }
     }
+  },
+  "agent": {
+    "errors": {
+      "notAnAction": "Eintrag {index} ist kein Aktionsobjekt.",
+      "missingOp": "Eintrag {index} hat kein Feld \"op\".",
+      "duplicateId": "Die id \"{id}\" kommt mehrfach vor.",
+      "unknownOp": "Unbekannte Aktion \"{op}\".",
+      "missingParam": "Aktion \"{op}\" braucht das Feld \"{param}\".",
+      "unknownParam": "Aktion \"{op}\" kennt das Feld \"{param}\" nicht.",
+      "wrongType": "Feld \"{param}\" von \"{op}\" muss {expected} sein, ist aber {actual}.",
+      "forwardRef": "Referenz auf \"{id}\" zeigt nicht zurück.",
+      "unresolvedRef": "Referenz auf \"{id}\" ist nicht auflösbar.",
+      "badShape": "Pfad \"{path}\" existiert nicht in der Ergebnisform von \"{id}\"; Segment \"{segment}\".",
+      "unknownModule": "Unbekanntes Modul \"{module}\".",
+      "unknownPhase": "Unbekannte Phase \"{phase}\" für Modul \"{module}\".",
+      "unknownPhaseInCycle": "Unbekannte Phase \"{phase}\" im aktiven Zyklus.",
+      "unknownInstance": "Unbekannte Instanz \"{instance}\".",
+      "unknownMethod": "Modul \"{module}\" hat keine Methode \"{method}\".",
+      "unknownField": "Pfad-Segment \"{segment}\" existiert nicht.",
+      "unknownSection": "Modul \"{module}\" hat keinen Handbuchabschnitt \"{section}\".",
+      "moduleNotAgentReady": "Modul \"{module}\" ist nicht für Agenten freigegeben.",
+      "consentDenied": "Der Nutzer hat den Zugriff abgelehnt.",
+      "notConnected": "Keine Einwilligung erteilt.",
+      "validationFailed": "Eintrag {index} ({id}) ist ungültig.",
+      "validationFailedNoId": "Eintrag {index} ist ungültig.",
+      "callFailed": "Aufruf von \"{method}\" ist fehlgeschlagen: {detail}"
+    }
   }
 }

@@ -5909,5 +5909,32 @@
         }
       }
     }
+  },
+  "agent": {
+    "errors": {
+      "notAnAction": "Entry {index} is not an action object.",
+      "missingOp": "Entry {index} has no \"op\" field.",
+      "duplicateId": "The id \"{id}\" appears more than once.",
+      "unknownOp": "Unknown action \"{op}\".",
+      "missingParam": "Action \"{op}\" requires the field \"{param}\".",
+      "unknownParam": "Action \"{op}\" does not know the field \"{param}\".",
+      "wrongType": "Field \"{param}\" of \"{op}\" must be {expected}, but is {actual}.",
+      "forwardRef": "Reference to \"{id}\" does not point backwards.",
+      "unresolvedRef": "Reference to \"{id}\" cannot be resolved.",
+      "badShape": "Path \"{path}\" does not exist in the result shape of \"{id}\"; segment \"{segment}\".",
+      "unknownModule": "Unknown module \"{module}\".",
+      "unknownPhase": "Unknown phase \"{phase}\" for module \"{module}\".",
+      "unknownPhaseInCycle": "Unknown phase \"{phase}\" in the active cycle.",
+      "unknownInstance": "Unknown instance \"{instance}\".",
+      "unknownMethod": "Module \"{module}\" has no method \"{method}\".",
+      "unknownField": "Path segment \"{segment}\" does not exist.",
+      "unknownSection": "Module \"{module}\" has no handbook section \"{section}\".",
+      "moduleNotAgentReady": "Module \"{module}\" is not released for agents.",
+      "consentDenied": "The user denied access.",
+      "notConnected": "No consent granted.",
+      "validationFailed": "Entry {index} ({id}) is invalid.",
+      "validationFailedNoId": "Entry {index} is invalid.",
+      "callFailed": "Call to \"{method}\" failed: {detail}"
+    }
   }
 }
