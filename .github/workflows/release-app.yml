@@ -155,7 +155,7 @@ jobs:
             ./ \
             "$DEPLOY_USER@$DEPLOY_HOST:$DEPLOY_ROOT/app/.staging/$TAG/"
 
-      - name: Atomic swap, update symlinks, regenerate versions.json
+      - name: Atomic swap, update symlinks
         env:
           TAG: ${{ steps.meta.outputs.tag }}
           MAJOR_MINOR: ${{ steps.meta.outputs.major_minor }}
@@ -164,6 +164,15 @@ jobs:
           ssh -i ~/.ssh/id_deploy -p "$DEPLOY_PORT" "$DEPLOY_USER@$DEPLOY_HOST" \
             "DEPLOY_ROOT='$DEPLOY_ROOT' TAG='$TAG' MAJOR_MINOR='$MAJOR_MINOR' bash -s" \
             < .github/scripts/remote-deploy.sh
+
+      # Eigener Aufruf, nicht Teil von remote-deploy.sh: so läuft derselbe
+      # Code auch von Hand über die eigene SSH-Verbindung, ohne Staging-Dir.
+      - name: Regenerate versions.json
+        run: |
+          set -euo pipefail
+          ssh -i ~/.ssh/id_deploy -p "$DEPLOY_PORT" "$DEPLOY_USER@$DEPLOY_HOST" \
+            "DEPLOY_ROOT='$DEPLOY_ROOT' bash -s" \
+            < .github/scripts/gen-versions-json.sh
 
       - name: Create GitHub Release with auto-generated notes
         env:

@@ -11,7 +11,10 @@
 #   - moves $DEPLOY_ROOT/app/.staging/$TAG into $DEPLOY_ROOT/app/$TAG (atomic)
 #   - updates $DEPLOY_ROOT/app/$MAJOR_MINOR symlink → highest patch in that minor
 #   - updates $DEPLOY_ROOT/app/latest symlink     → highest stable tag overall
-#   - regenerates $DEPLOY_ROOT/versions.json from each tag's release.json
+#
+# versions.json gehört NICHT hierher: das erledigt das eigenständige
+# gen-versions-json.sh, das der Workflow direkt danach aufruft. Getrennt,
+# damit es ohne Staging-Verzeichnis und ohne Release erneut laufen kann.
 
 set -euo pipefail
 
@@ -51,57 +54,11 @@ if [ -n "$LATEST" ]; then
   mv -Tf "$APP_DIR/.latest.new" "$APP_DIR/latest"
 fi
 
-# 4) Regenerate /versions.json by aggregating each tag's release.json.
-#    Output schema:
-#      {
-#        "current": "0.4.0",
-#        "releases": [
-#          {"version": "...", "date": "...", "title": "...", "url": "/app/v0.4.0/"},
-#          ...
-#        ]
-#      }
-CURRENT="${LATEST#v}"
-TMP=$(mktemp)
-
-if command -v jq >/dev/null 2>&1; then
-  # Collect each release.json into a JSON array, with url field injected.
-  RELEASES_ARRAY=$(
-    for d in $(ls -1d "$APP_DIR"/v*.*.* 2>/dev/null \
-                | grep -E '/v[0-9]+\.[0-9]+\.[0-9]+$' | sort -V); do
-      bn=$(basename "$d")
-      [ -f "$d/release.json" ] || continue
-      jq --arg url "/app/$bn/" '. + {url: $url}' "$d/release.json"
-    done | jq -s .
-  )
-  jq -n \
-    --arg current "$CURRENT" \
-    --argjson releases "$RELEASES_ARRAY" \
-    '{current: $current, releases: $releases}' \
-    > "$TMP"
-else
-  # Fallback without jq (rough; assumes well-formatted release.json files).
-  {
-    printf '{\n  "current": "%s",\n  "releases": [\n' "$CURRENT"
-    first=1
-    for d in $(ls -1d "$APP_DIR"/v*.*.* 2>/dev/null \
-                | grep -E '/v[0-9]+\.[0-9]+\.[0-9]+$' | sort -V); do
-      bn=$(basename "$d")
-      [ -f "$d/release.json" ] || continue
-      [ $first -eq 0 ] && printf ',\n'
-      first=0
-      # Inject "url" before closing brace.
-      sed -e 's/^/    /' \
-          -e "s|}\$|, \"url\": \"/app/$bn/\"}|" \
-          "$d/release.json"
-    done
-    printf '\n  ]\n}\n'
-  } > "$TMP"
-fi
-
-mv -f "$TMP" "$DEPLOY_ROOT/versions.json"
-
 echo "Deploy complete:"
 echo "  /app/$TAG/        ← rsynced"
 [ -n "$HIGHEST_PATCH" ] && echo "  /app/$MAJOR_MINOR  → $HIGHEST_PATCH"
 [ -n "$LATEST" ]        && echo "  /app/latest       → $LATEST"
-echo "  /versions.json    ← regenerated (current=$CURRENT)"
+
+# Die beiden && -Tests oben sind die letzten Kommandos: ohne LATEST bzw.
+# HIGHEST_PATCH wäre der Exit-Code 1, obwohl der Deploy gelaufen ist.
+exit 0
