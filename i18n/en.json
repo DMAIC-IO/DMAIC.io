@@ -5935,6 +5935,32 @@
       "validationFailed": "Entry {index} ({id}) is invalid.",
       "validationFailedNoId": "Entry {index} is invalid.",
       "callFailed": "Call to \"{method}\" failed: {detail}"
+    },
+    "usage": {
+      "intro": "Qprovement is a browser-based Six Sigma toolkit. This surface reads the project state, adds tools and calls their actions — through the same calls the user interface uses.",
+      "call": "window.qprovement.interact() returns this description. window.qprovement.interact(action) or interact([action, …]) executes and returns a Promise.",
+      "actionForm": "An action is { op, … } with the fields from the action catalog. Unknown fields are an error. Giving an action its own id makes it referenceable.",
+      "refForm": "A reference to an earlier result is the object { $from: '<id>', path: '<dot-path>' }. The path knows keys and numeric indices only — no arithmetic, no filters. If you need to compute, read and send a second batch.",
+      "batchForm": "The whole batch is validated before anything runs. On the first runtime error execution stops; partial results already obtained are returned.",
+      "errorForm": "Each entry returns { ok: true, result } or { ok: false, error, message, available? }. available names the valid alternatives.",
+      "availability": "Modules without a release appear in the catalog with available: false. They are described but not operable — tell the user which tool would be right now and let them drive it.",
+      "limits": "You get numbers, not pictures: you cannot see a chart. There is no undo — the user was prompted to export when granting access."
+    },
+    "consent": {
+      "title": "Allow AI agent access?",
+      "body": "An external tool wants to read and modify this project. It can add and remove modules and run their actions.",
+      "exportHint": "There is no undo for agent actions. Granting access downloads a project export — that is your backup.",
+      "grant": "Allow",
+      "deny": "Deny"
+    },
+    "settings": {
+      "title": "AI agents",
+      "hint": "Consent applies to this browser profile.",
+      "statusGranted": "Access granted",
+      "statusDenied": "No access granted",
+      "revoke": "Revoke access",
+      "revoked": "Access revoked",
+      "coverage": "{available} of {total} modules agent-capable"
     }
   }
 }
