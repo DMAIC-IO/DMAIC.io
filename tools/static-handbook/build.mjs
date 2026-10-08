@@ -125,6 +125,7 @@ async function main() {
         i18n: sources.i18n,
         examples: sources.examples,
         glossary: sources.glossary,
+        videos: sources.videos,
       });
       const dest = path.join(OUT, rel(page.pathFromRoot));
       await writeOut(dest, page.html);
@@ -151,6 +152,7 @@ async function main() {
           modules: sources.modules,
           lang,
           i18n: sources.i18n,
+          videos: sources.videos,
         });
         await writeOut(path.join(OUT, rel(page.pathFromRoot)), page.html);
         sitemapEntries.push({ path: page.pathFromRoot, priority: '0.6', changefreq: 'monthly' });
@@ -178,6 +180,7 @@ async function main() {
         modules: sources.modules,
         lang,
         i18n: sources.i18n,
+        videos: sources.videos,
       });
       const dest = path.join(OUT, rel(page.pathFromRoot));
       await writeOut(dest, page.html);

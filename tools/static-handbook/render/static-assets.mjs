@@ -18,6 +18,7 @@ export const STATIC_ASSETS = [
   { src: path.join(HERE, 'assets/ribbon-foot.svg'), dest: 'assets/ribbon-foot.svg' },
   { src: path.join(HERE, 'assets/favicon.svg'),     dest: 'assets/favicon.svg' },
   { src: path.join(HERE, 'assets/nav-drawer.js'),   dest: 'assets/nav-drawer.js' },
+  { src: path.join(HERE, 'assets/video-chapters.js'), dest: 'assets/video-chapters.js' },
 ];
 
 /**

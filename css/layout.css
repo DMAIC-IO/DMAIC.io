@@ -2391,6 +2391,7 @@ body.training-area-open .dmaic-tiles {
 
 .help-panel__content,
 .help-panel__examples,
+.help-panel__videos,
 .help-panel__glossary {
   flex: 1;
   overflow-y: auto;
@@ -2733,6 +2734,56 @@ body.training-area-open .dmaic-tiles {
 .help-panel__scenario-load {
   width: 100%;
   margin-top: var(--spacing-xs);
+}
+
+/* ─── Videos tab ──────────────────────────────────────────── */
+
+/* Eine schlichte Liste, keine Karten: Rahmen und Füllfarbe je Eintrag
+   zerlegen die schmale Seitenleiste optisch in Kacheln. Getrennt wird mit
+   einer Haarlinie zwischen den Einträgen — nicht nach dem letzten, sonst
+   steht eine Linie ohne etwas darunter. */
+.help-panel__videos-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.help-panel__video {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--spacing-2xs) var(--spacing-xs);
+  padding: var(--spacing-sm) 0;
+  color: inherit;
+  text-decoration: none;
+}
+
+.help-panel__video + .help-panel__video {
+  border-top: var(--border-width) solid var(--color-border-secondary);
+}
+
+.help-panel__video:hover .help-panel__video-title,
+.help-panel__video:focus-visible .help-panel__video-title {
+  color: var(--color-accent);
+}
+
+.help-panel__video:focus-visible {
+  outline: var(--border-width) solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+.help-panel__video-title {
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+}
+
+.help-panel__video-note,
+.help-panel__video-time {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+}
+
+.help-panel__video-time {
+  font-variant-numeric: tabular-nums;
 }
 
 .help-panel__content h3 {

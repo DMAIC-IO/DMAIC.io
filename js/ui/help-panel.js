@@ -3,20 +3,36 @@ import { h } from '../core/dom.js';
 import { parseInline } from '../core/markdown-parser.js';
 import { icon } from '../core/icon.js';
 import { renderReferences } from '../core/references-renderer.js';
+import { chapterForModule } from '../core/videos-registry.js';
 
 /**
  * DMAIC.io — Help Panel (help-panel.js)
  * Right-side panel for module handbooks, example data, and glossary terms.
  *
- * Four tabs:
+ * Five tabs:
  *   - "Hilfe"        — lazy-loaded module help (existing behaviour)
  *   - "Beispieldaten" — list of catalog examples matching the active module
  *   - "Referenzen"   — CSL-JSON references declared by the active module
  *   - "Glossar"      — terms whose `modules` field matches the active module
+ *   - "Videos"       — Tutorials zum aktiven Modul; Links, die in einem NEUEN
+ *                      TAB öffnen. Abgespielt wird hier nichts: das Panel ist
+ *                      360 px breit, ein Player darin ist unbrauchbar.
  *
  * Backwards-compat: the original `show(title, html)` API still works
  * (it shows the Help tab, hides the other tabs).
  */
+
+/**
+ * Die Videos, die in `lang` tatsächlich eine Datei haben. Ein Video, das nur
+ * auf Deutsch gerendert ist, hat für die englische UI keine Datei — dieselbe
+ * Prüfung, die `_renderVideosList()` trifft, hier herausgezogen, damit die
+ * Sichtbarkeit des Tabs (`_hasVideos`) nie am unfiltierten Spiegel hängt.
+ * Spiegelt `video-section.mjs`s Filter im Handbuch.
+ * @param {object[]} videos @param {string} lang @returns {object[]}
+ */
+function videosForLanguage(videos, lang) {
+  return videos.filter(v => v.video?.[lang]);
+}
 
 export class HelpPanel {
   /**
@@ -26,12 +42,17 @@ export class HelpPanel {
   constructor(container, i18n) {
     this._container = container;
     this._i18n = i18n;
-    /** @type {'help'|'examples'|'references'|'glossary'} */
+    /** @type {'help'|'examples'|'references'|'glossary'|'videos'} */
     this._activeTab = 'help';
     this._hasHelp = false;
     this._hasExamples = false;
     this._hasGlossary = false;
     this._hasReferences = false;
+    this._hasVideos = false;
+    /** @type {object[]} Spiegeleinträge des aktiven Moduls. */
+    this._videos = [];
+    /** @type {?string} Modul, für das `_videos` gilt — siehe `chapterForModule`. */
+    this._videosModuleId = null;
     /** @type {object[]} */
     this._references = [];
     /** @type {?(exampleId: string) => void} */
@@ -87,12 +108,17 @@ export class HelpPanel {
           class: 'help-panel__tab',
           'data-tab': 'glossary', role: 'tab', 'aria-selected': 'false',
         }, t('moduleHelp.tabGlossary')),
+        h('button', {
+          class: 'help-panel__tab',
+          'data-tab': 'videos', role: 'tab', 'aria-selected': 'false',
+        }, t('moduleHelp.tabVideos')),
       ),
       h('div', { class: 'help-panel__body' },
         h('div', { class: 'help-panel__content', 'data-pane': 'help', role: 'tabpanel' }),
         h('div', { class: 'help-panel__examples', 'data-pane': 'examples', role: 'tabpanel', hidden: true }),
         h('div', { class: 'help-panel__references', 'data-pane': 'references', role: 'tabpanel', hidden: true }),
         h('div', { class: 'help-panel__glossary', 'data-pane': 'glossary', role: 'tabpanel', hidden: true }),
+        h('div', { class: 'help-panel__videos', 'data-pane': 'videos', role: 'tabpanel', hidden: true }),
       ),
     );
 
@@ -100,6 +126,7 @@ export class HelpPanel {
     this._examplesPane  = this._container.querySelector('[data-pane="examples"]');
     this._referencesPane = this._container.querySelector('[data-pane="references"]');
     this._glossaryPane  = this._container.querySelector('[data-pane="glossary"]');
+    this._videosPane    = this._container.querySelector('[data-pane="videos"]');
     this._titleEl       = this._container.querySelector('.help-panel__title');
 
     this._container.querySelector('#help-close-btn').addEventListener('click', () => this.hide());
@@ -168,10 +195,15 @@ export class HelpPanel {
    * @param {object[]=} opts.glossary    Lightweight term entries for the Glossary tab
    * @param {(termId: string) => Promise<object|null>=} opts.glossaryGet  Lazy loader for full term
    * @param {object[]=} opts.references  CSL-JSON reference entries for the References tab
-   * @param {'help'|'examples'|'references'|'glossary'=} opts.preferredTab
+   * @param {object[]=} opts.videos      Video mirror entries (`videos/index.json`) for the Videos tab
+   * @param {string=} opts.videosModuleId  Das Modul, für das die Liste gilt — entscheidet,
+   *                                     ob ein Video über ein Kapitel hereinkommt und der
+   *                                     Link dorthin springen muss
+   * @param {'help'|'examples'|'references'|'glossary'|'videos'=} opts.preferredTab
    */
   showWithTabs(title, {
-    helpNode, examples, onLoadExample, scenarios, onLoadScenario, glossary, glossaryGet, references, preferredTab,
+    helpNode, examples, onLoadExample, scenarios, onLoadScenario, glossary, glossaryGet, references, videos,
+    videosModuleId, preferredTab,
   } = {}) {
     this._titleEl.textContent = title;
 
@@ -213,12 +245,22 @@ export class HelpPanel {
     if (this._hasGlossary) this._renderGlossary();
     else this._glossaryPane.replaceChildren();
 
+    this._videos = Array.isArray(videos) ? videos : [];
+    this._videosModuleId = videosModuleId || null;
+    // Muss am SPRACHGEFILTERTEN Bestand hängen, nicht am rohen Spiegel: ein
+    // Video, das nur auf Deutsch gerendert ist, zeigt der englischen UI
+    // keine Datei — dieselbe Prüfung wie `videosForLanguage()` unten und wie
+    // `video-section.mjs`s Filter im Handbuch.
+    this._hasVideos = videosForLanguage(this._videos, this._i18n.getLanguage()).length > 0;
+    if (this._hasVideos) this._renderVideosList();
+    else this._videosPane.replaceChildren();
+
     this._updateTabVisibility();
 
     // Tab selection priority:
     //   1. Panel currently visible AND current tab still has content → keep it
     //   2. preferredTab if it has content
-    //   3. First tab that has content (help → examples → references → glossary)
+    //   3. First tab that has content (help → examples → references → videos → glossary)
     let target;
     if (this.isVisible() && this._tabHasContent(this._activeTab)) {
       target = this._activeTab;
@@ -230,6 +272,8 @@ export class HelpPanel {
       target = 'examples';
     } else if (this._hasReferences) {
       target = 'references';
+    } else if (this._hasVideos) {
+      target = 'videos';
     } else {
       target = 'glossary';
     }
@@ -246,7 +290,7 @@ export class HelpPanel {
     return !this._container.classList.contains('help-panel--hidden');
   }
 
-  /** Currently active tab. @returns {'help'|'examples'|'references'|'glossary'} */
+  /** Currently active tab. @returns {'help'|'examples'|'references'|'glossary'|'videos'} */
   getActiveTab() {
     return this._activeTab;
   }
@@ -288,9 +332,11 @@ export class HelpPanel {
     this._hasHelp = false;
     this._hasExamples = false;
     this._hasReferences = false;
+    this._hasVideos = false;
     this._content.replaceChildren();
     this._examplesPane.replaceChildren();
     this._referencesPane.replaceChildren();
+    this._videosPane.replaceChildren();
     this._glossaryOpenId = null;
     this._glossaryQuery = '';
     this._updateTabVisibility();
@@ -363,7 +409,7 @@ export class HelpPanel {
   // ─── Internal ─────────────────────────────────────────────
 
   _setActiveTab(tab) {
-    if (tab !== 'help' && tab !== 'examples' && tab !== 'references' && tab !== 'glossary') return;
+    if (!['help', 'examples', 'references', 'glossary', 'videos'].includes(tab)) return;
     if (!this._tabHasContent(tab)) return;
     this._activeTab = tab;
 
@@ -377,6 +423,7 @@ export class HelpPanel {
     this._examplesPane.hidden   = tab !== 'examples';
     this._referencesPane.hidden = tab !== 'references';
     this._glossaryPane.hidden   = tab !== 'glossary';
+    this._videosPane.hidden     = tab !== 'videos';
 
     // Mirror the active tab on the container so external observers (header
     // icon-menu mutual exclusivity) can sync without listening to every
@@ -389,12 +436,13 @@ export class HelpPanel {
     if (tab === 'examples')   return this._hasExamples;
     if (tab === 'references') return this._hasReferences;
     if (tab === 'glossary')   return this._hasGlossary;
+    if (tab === 'videos')     return this._hasVideos;
     return false;
   }
 
   _updateTabVisibility() {
     const tabs = this._container.querySelector('.help-panel__tabs');
-    const visibleCount = [this._hasHelp, this._hasExamples, this._hasReferences, this._hasGlossary]
+    const visibleCount = [this._hasHelp, this._hasExamples, this._hasReferences, this._hasGlossary, this._hasVideos]
       .filter(Boolean).length;
     // Tab bar only makes sense when at least two tabs are visible.
     tabs.style.display = visibleCount >= 2 ? '' : 'none';
@@ -408,6 +456,7 @@ export class HelpPanel {
     setTab('examples',   this._hasExamples);
     setTab('references', this._hasReferences);
     setTab('glossary',   this._hasGlossary);
+    setTab('videos',     this._hasVideos);
   }
 
   _renderExamplesList(examples) {
@@ -452,6 +501,50 @@ export class HelpPanel {
     return h('div', { class: 'help-panel__scenarios' },
       h('div', { class: 'help-panel__scenarios-title' }, this._i18n.t('scenarios.sectionTitle')),
       ...rows);
+  }
+
+  /**
+   * Die Videoliste: eine Zeile je Video — Titel als Link, Laufzeit dahinter.
+   *
+   * Kein Player und keine Kapitelliste. Das Panel ist 360 px breit
+   * (`docs/HELP-SYSTEM.md`): ein Video darin wäre zu klein, um etwas zu
+   * erkennen, und eine Kapitelliste erschlägt im selben Platz die übrigen
+   * Einträge der Seitenleiste. Der Link öffnet einen neuen Tab, was am Link
+   * selbst steht (`title`), statt in einem erklärenden Absatz darüber.
+   *
+   * Kommt ein Video nur über eines seiner Kapitel auf dieses Modul, zeigt der
+   * Link per `#t=<sec>` direkt dorthin und sagt das auch — sonst beginnt der
+   * neue Tab bei einem Video über ein fremdes Modul, und der Nutzer sucht die
+   * Stelle selbst. `#t=` ist ein Media Fragment: der Browser springt dorthin,
+   * ohne dass die App einen Player stellen muss.
+   */
+  _renderVideosList() {
+    const lang = this._i18n.getLanguage();
+    const t = (k) => this._i18n.t(k);
+
+    const time = (sec) => {
+      const whole = Math.floor(sec);
+      return `${Math.floor(whole / 60)}:${String(whole % 60).padStart(2, '0')}`;
+    };
+
+    const items = videosForLanguage(this._videos, lang).map((v) => {
+      const chapter = chapterForModule(v, this._videosModuleId);
+      const at = chapter?.sec?.[lang];
+      const href = at === undefined ? v.video[lang] : `${v.video[lang]}#t=${at}`;
+
+      return h('a', {
+        class: 'help-panel__video', href, target: '_blank', rel: 'noopener',
+        title: t('videos.openInNewTab'),
+      },
+      h('span', { class: 'help-panel__video-title' }, v.title?.[lang] || v.title?.en || v.id),
+      chapter ? h('span', { class: 'help-panel__video-note' }, `(${t('videos.toChapter')})`) : null,
+      v.sec?.[lang] !== undefined
+        ? h('span', { class: 'help-panel__video-time' }, `(${time(v.sec[lang])})`)
+        : null,
+      );
+    });
+
+    this._videosPane.replaceChildren(h('div', { class: 'help-panel__videos-list' }, ...items));
   }
 
   // ─── Glossary tab rendering ──────────────────────────────

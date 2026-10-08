@@ -65,18 +65,23 @@ export default class RunChartType extends ChartBase {
     if (!values.length) return;
 
     // ── Median reference line ──
+    // `data-part` benennt die gezeichneten Teile eindeutig, damit sie sich von
+    // außen adressieren und annotieren lassen — dasselbe Muster wie in
+    // `boxplot.js`. Kein Verhalten hängt daran.
     const yMed = yScale(median);
     if (yMed >= plotArea.y && yMed <= plotArea.y + plotArea.h) {
       plotGroup.appendChild(svgEl('line', {
         x1: plotArea.x, y1: yMed, x2: plotArea.x + plotArea.w, y2: yMed,
         stroke: resolveColor(this.config.medianColor), 'stroke-width': 1.5,
         'stroke-dasharray': '6,4',
+        'data-part': 'median',
       }));
       if (this.config.showMedianLabel) {
         const txt = svgEl('text', {
           x: plotArea.x - 4, y: yMed + 4,
           fill: resolveColor(this.config.medianColor),
           'font-size': 10, 'font-weight': 500, 'text-anchor': 'end',
+          'data-part': 'median-label',
         });
         txt.textContent = `M ${formatNum(median, null, this.locale)}`;
         plotGroup.appendChild(txt);
@@ -96,6 +101,7 @@ export default class RunChartType extends ChartBase {
       plotGroup.appendChild(svgEl('path', {
         d: pathD, fill: 'none',
         stroke: resolveColor(this.config.lineColor), 'stroke-width': 1.8,
+        'data-part': 'line',
       }));
     }
 
@@ -120,7 +126,10 @@ export default class RunChartType extends ChartBase {
       const r = sizePx / 2;
       const stroke = this.config.pointStroke != null ? resolveColor(this.config.pointStroke) : 'none';
       const sw = this.config.pointStrokeWidth ?? 0;
-      drawMarker(plotGroup, sym, x, y, r, resolveColor(color), stroke, sw);
+      // Die ZEICHENREIHENFOLGE ist die Adresse eines Punktes — es gibt keine
+      // andere. Sie ist nicht die Beobachtungsnummer: ein übersprungener Wert
+      // (null, NaN) zeichnet keinen Punkt und verschiebt alles dahinter.
+      drawMarker(plotGroup, sym, x, y, r, resolveColor(color), stroke, sw, { 'data-part': 'point' });
     }
   }
 

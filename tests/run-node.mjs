@@ -112,6 +112,7 @@ const SKIP = new Set([
   'ui/column-picker-filter.test.js',
   'ui/dmaic-tiles-rebuild.test.js',
   'ui/help-panel-references.test.js',
+  'ui/help-panel-videos.test.js',
   'ui/layout-primitives.test.js',
   'ui/modal-dialog-api.test.js',
   'ui/split-layout.test.js',

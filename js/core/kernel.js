@@ -12,6 +12,7 @@ import { I18n }           from './i18n.js';
 import { ThemeManager }   from './theme-manager.js';
 import { ModuleRegistry } from './module-registry.js';
 import { ExamplesRegistry } from './examples-registry.js';
+import { VideosRegistry } from './videos-registry.js';
 import { GlossaryRegistry } from './glossary-registry.js';
 import { configureStatsPanel } from './stats-panel.js';
 import { setGlossaryInlineConfig } from './glossary-inline.js';
@@ -63,6 +64,9 @@ export async function bootKernel(adapter = new LocalAdapter()) {
   const examplesRegistry = new ExamplesRegistry();
   await examplesRegistry.init();
 
+  const videosRegistry = new VideosRegistry();
+  await videosRegistry.init();
+
   const glossaryRegistry = new GlossaryRegistry();
   await glossaryRegistry.init();
   // Warm the full term cache so `getForModule()` is synchronous from here
@@ -94,6 +98,6 @@ export async function bootKernel(adapter = new LocalAdapter()) {
 
   return {
     eventBus, stateManager, i18n, themeManager, moduleRegistry,
-    chartManager, examplesRegistry, glossaryRegistry, tipEngine, shortcutRegistry,
+    chartManager, examplesRegistry, videosRegistry, glossaryRegistry, tipEngine, shortcutRegistry,
   };
 }

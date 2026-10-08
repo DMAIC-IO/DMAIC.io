@@ -13,6 +13,7 @@ import { renderPage, getStrings, CONSTANTS, appRootFrom } from './page-shell.mjs
 import { renderBlocks, firstParagraphText } from './blocks.mjs';
 import { renderReferencesSection, i18nT, makeRefLink } from './references.mjs';
 import { escapeHtml, escapeAttr, pick, stripTermTokens, stripRefTokens } from './escape.mjs';
+import { renderVideoSection, videosForModule, videosForExample } from './video-section.mjs';
 
 /**
  * Abschnittsüberschriften dürfen `{{term:…}}` tragen (z. B. „Regeln für
@@ -47,7 +48,7 @@ const SECTION_ORDER = [
 
 // ─── Module page ─────────────────────────────────────────────────
 
-export async function renderModulePage({ module, lang, i18n, examples, glossary }) {
+export async function renderModulePage({ module, lang, i18n, examples, glossary, videos }) {
   const s = getStrings(lang);
   const { id, phase, help, cycles: moduleCycles } = module;
 
@@ -115,6 +116,13 @@ export async function renderModulePage({ module, lang, i18n, examples, glossary 
     examplesSectionHtml = `<section class="handbook-section" id="examples"><h2>${escapeHtml(s.examplesHeading)}</h2><p>${escapeHtml(s.examplesIntro)}</p><div class="handbook-grid">${cards}</div></section>`;
   }
 
+  // ─── Videos ───────────────────────────────────────────────
+  const videosSectionHtml = renderVideoSection({
+    videos: videosForModule(videos, id),
+    lang,
+    strings: s,
+  });
+
   // ─── Per-cycle assignments (DMAIC, DMADV, …) ──────────────
   // Show every cycle this module is part of so cross-cycle users see where
   // it lands. Data modules are cycle-independent — skip the section.
@@ -149,6 +157,7 @@ export async function renderModulePage({ module, lang, i18n, examples, glossary 
   ${sectionHtmlParts.join('\n')}
   ${referencesSectionHtml}
   ${examplesSectionHtml}
+  ${videosSectionHtml}
   ${cyclesSectionHtml}
 </article>`;
 
@@ -893,7 +902,7 @@ export { TRAINING_TOPICS };
  * @param {'de'|'en'} opts.lang
  * @param {object} opts.i18n
  */
-export function renderExamplePage({ example, modules, lang, i18n }) {
+export function renderExamplePage({ example, modules, lang, i18n, videos }) {
   const s = getStrings(lang);
   const ex = example;
 
@@ -1015,6 +1024,13 @@ export function renderExamplePage({ example, modules, lang, i18n }) {
     }
   }
 
+  // ─── Videos ───────────────────────────────────────────────
+  const videosSectionHtml = renderVideoSection({
+    videos: videosForExample(videos, ex.id),
+    lang,
+    strings: s,
+  });
+
   const body = `
 <article class="handbook-article">
   <span class="handbook-article__tag">${escapeHtml(s.examplesHeading)}</span>
@@ -1026,6 +1042,7 @@ export function renderExamplePage({ example, modules, lang, i18n }) {
   ${generatorHtml}
   ${previewHtml}
   ${alsoInHtml}
+  ${videosSectionHtml}
   ${actionsHtml}
 </article>`;
 

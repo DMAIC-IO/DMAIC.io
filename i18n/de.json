@@ -246,10 +246,12 @@
     "tabExamples": "Beispieldaten",
     "tabReferences": "Referenzen",
     "tabGlossary": "Glossar",
+    "tabVideos": "Videos",
     "loadButton": "Laden",
     "source": "Quelle",
     "exampleLoaded": "Beispiel geladen: {title}",
     "exampleLoadError": "Beispiel konnte nicht geladen werden",
+    "scenarioNotFound": "Unbekanntes Szenario — der Link verweist auf ein Szenario, das es nicht (mehr) gibt.",
     "confirmOverwriteTitle": "Bestehende Daten überschreiben?",
     "confirmOverwrite": "Das Modul enthält bereits Daten. Soll das Beispiel diese ersetzen?",
     "glossarySearchPlaceholder": "Begriff suchen …",
@@ -270,6 +272,14 @@
     "referencePage": "S.",
     "referenceEdition": "Aufl.",
     "referenceEtAl": "u. a."
+  },
+  "videos": {
+    "openInNewTab": "In neuem Tab öffnen",
+    "toChapter": "zum Kapitel",
+    "chapters": "Kapitel",
+    "openModule": "Modul öffnen",
+    "seeInModule": "Im Modul ansehen",
+    "loadExample": "Beispiel laden"
   },
   "scenarios": {
     "sectionTitle": "Szenarien",

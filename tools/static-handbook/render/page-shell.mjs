@@ -186,6 +186,16 @@ const UI_STRINGS = {
     glossaryUsedIn: 'Verwendet in',
     glossaryAlgoLab: 'Im Algorithm-Lab',
     glossarySources: 'Quellen',
+    videos: {
+      heading: 'Videos',
+      intro: 'Kurze Tutorials zu diesem Thema. Die Kapitelliste springt im Player an die passende Stelle.',
+      chaptersHeading: 'Kapitel',
+      openModule: 'Modul öffnen',
+      seeInModule: 'Im Modul ansehen',
+      loadExample: 'Beispiel laden',
+      captionsLabel: 'Deutsch',
+      noPlayer: 'Dein Browser kann dieses Video nicht abspielen.',
+    },
     moduleReferences: 'Referenzen',
     langOther: 'English',
     langOtherPath: '/en/',
@@ -328,6 +338,16 @@ const UI_STRINGS = {
     glossaryUsedIn: 'Used in',
     glossaryAlgoLab: 'In the Algorithm Lab',
     glossarySources: 'Sources',
+    videos: {
+      heading: 'Videos',
+      intro: 'Short tutorials on this topic. The chapter list jumps the player to the matching spot.',
+      chaptersHeading: 'Chapters',
+      openModule: 'Open the module',
+      seeInModule: 'See it in the module',
+      loadExample: 'Load the example',
+      captionsLabel: 'English',
+      noPlayer: 'Your browser cannot play this video.',
+    },
     moduleReferences: 'References',
     langOther: 'Deutsch',
     langOtherPath: '/de/',
@@ -407,6 +427,7 @@ export function renderPage(opts) {
   // Der Rewrite am Ende dieser Funktion fasst nur href="…" an, nicht src="…" —
   // der Skriptpfad wird deshalb hier selbst relativ aufgelöst.
   const navJsHref = relativeTo(pathFromRoot, '/assets/nav-drawer.js');
+  const videoJsHref = relativeTo(pathFromRoot, '/assets/video-chapters.js');
 
   const jsonLd = (jsonLdOverride && {
     ...jsonLdOverride,
@@ -459,6 +480,7 @@ ${showCta ? renderCta(lang, pathFromRoot) : ''}
 </main>
 ${renderFooter(lang, pathFromRoot)}
 <script src="${escapeAttr(navJsHref)}" defer></script>
+<script src="${escapeAttr(videoJsHref)}" defer></script>
 </body>
 </html>
 `;

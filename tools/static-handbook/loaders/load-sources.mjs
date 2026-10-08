@@ -14,19 +14,21 @@ import { pathToFileURL } from 'node:url';
 import path from 'node:path';
 
 import { loadGlossary } from './load-glossary.mjs';
+import { loadVideos } from './load-videos.mjs';
 
 /**
  * @param {string} repoRoot
  */
 export async function loadAllSources(repoRoot) {
-  const [modules, algorithms, i18n, examples, glossary] = await Promise.all([
+  const [modules, algorithms, i18n, examples, glossary, videos] = await Promise.all([
     loadModules(repoRoot),
     loadAlgorithms(repoRoot),
     loadI18n(repoRoot),
     loadExamples(repoRoot),
     loadGlossary(repoRoot),
+    loadVideos(repoRoot),
   ]);
-  return { modules, algorithms, i18n, examples, glossary };
+  return { modules, algorithms, i18n, examples, glossary, videos };
 }
 
 // ─── Modules ────────────────────────────────────────────────────────

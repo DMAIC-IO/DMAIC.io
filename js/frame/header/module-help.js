@@ -22,12 +22,12 @@ import { scenarioDoneState } from '../../ui/action-modal.js';
  * The button is visible whenever the active module exposes at least one
  * of these (help loader OR matching catalog examples + loadExample method).
  *
- * @param {object} kernel - { i18n, eventBus, examplesRegistry, glossaryRegistry,
+ * @param {object} kernel - { i18n, eventBus, examplesRegistry, videosRegistry, glossaryRegistry,
  *   moduleRegistry, stateManager }
  * @param {object} ui     - { workspace, helpPanel, modal, notify, actionModal }
  */
 export function initModuleHelp(
-  { i18n, eventBus, examplesRegistry, glossaryRegistry, moduleRegistry, stateManager },
+  { i18n, eventBus, examplesRegistry, videosRegistry, glossaryRegistry, moduleRegistry, stateManager },
   { workspace, helpPanel, modal, notify, actionModal },
 ) {
   const btn = document.getElementById('module-help-btn');
@@ -40,13 +40,14 @@ export function initModuleHelp(
     const info = workspace.getActiveModuleInfo();
     if (!info) {
       return {
-        info: null, hasHelp: false, examples: [], canLoadExample: false, glossary: [], scenarios: [],
+        info: null, hasHelp: false, examples: [], canLoadExample: false, glossary: [], scenarios: [], videos: [],
       };
     }
     const hasHelp = typeof info.instance?.help === 'function';
     const examples = examplesRegistry ? examplesRegistry.getForModule(info.moduleId) : [];
     const canLoadExample = typeof info.instance?.loadExample === 'function';
     const glossary = glossaryRegistry ? glossaryRegistry.getForModule(info.moduleId) : [];
+    const videos = videosRegistry ? videosRegistry.getForModule(info.moduleId) : [];
 
     const scenarioMap = new Map();
     if (examplesRegistry) {
@@ -60,7 +61,7 @@ export function initModuleHelp(
       description: s.description?.[i18n.getLanguage()] || s.description?.en || '',
     }));
 
-    return { info, hasHelp, examples, canLoadExample, glossary, scenarios };
+    return { info, hasHelp, examples, canLoadExample, glossary, scenarios, videos };
   };
 
   // The button is ALWAYS visible: glossary (full catalog) is always available
@@ -201,7 +202,7 @@ export function initModuleHelp(
   // `preferredTab` (optional) keeps the user on their current tab across a
   // module switch; on first open it defaults to the help tab.
   async function populatePanel(preferredTab) {
-    const { info, hasHelp, examples, canLoadExample, glossary, scenarios } = _activeContext();
+    const { info, hasHelp, examples, canLoadExample, glossary, scenarios, videos } = _activeContext();
     const references = info?.instance?.references ? await info.instance.references() : [];
     const tabPref = preferredTab ? { preferredTab } : {};
 
@@ -212,6 +213,7 @@ export function initModuleHelp(
         helpNode: h('p', { style: 'color:var(--color-text-secondary)' }, i18n.t('moduleHelp.noActiveModule')),
         glossary: [],
         glossaryGet,
+        videos: [],
         ...tabPref,
       });
       return;
@@ -235,6 +237,8 @@ export function initModuleHelp(
       glossary,
       glossaryGet,
       references,
+      videos,
+      videosModuleId: info.moduleId,
       ...tabPref,
     });
 
@@ -253,6 +257,8 @@ export function initModuleHelp(
         glossary,
         glossaryGet,
         references,
+        videos,
+      videosModuleId: info.moduleId,
         preferredTab: preferredTab || 'help',
       });
     } catch (err) {
@@ -266,6 +272,8 @@ export function initModuleHelp(
         glossary,
         glossaryGet,
         references,
+        videos,
+      videosModuleId: info.moduleId,
         ...tabPref,
       });
     }
@@ -286,7 +294,7 @@ export function initModuleHelp(
     // tabs (help / examples / glossary). The standalone glossary button has
     // been removed — all three tabs belong to this single sidebar button.
     const tab = helpPanel.getActiveTab?.();
-    const ownsPanel = helpPanel.isVisible() && (tab === 'help' || tab === 'examples' || tab === 'references' || tab === 'glossary');
+    const ownsPanel = helpPanel.isVisible() && (tab === 'help' || tab === 'examples' || tab === 'references' || tab === 'glossary' || tab === 'videos');
     if (ownsPanel) {
       helpPanel.hide();
       btn.classList.remove('btn--active');
@@ -305,7 +313,7 @@ export function initModuleHelp(
   // so help / examples / glossary always reflect the active module.
   eventBus.on('module:activated', () => {
     const tab = helpPanel.getActiveTab?.();
-    const ownsPanel = helpPanel.isVisible() && (tab === 'help' || tab === 'examples' || tab === 'references' || tab === 'glossary');
+    const ownsPanel = helpPanel.isVisible() && (tab === 'help' || tab === 'examples' || tab === 'references' || tab === 'glossary' || tab === 'videos');
     if (ownsPanel) populatePanel(tab);
   });
 
@@ -316,7 +324,7 @@ export function initModuleHelp(
   // closes and the button gives up its active state with it.
   eventBus.on('module:deactivated', () => {
     const tab = helpPanel.getActiveTab?.();
-    const ownsPanel = helpPanel.isVisible() && (tab === 'help' || tab === 'examples' || tab === 'references' || tab === 'glossary');
+    const ownsPanel = helpPanel.isVisible() && (tab === 'help' || tab === 'examples' || tab === 'references' || tab === 'glossary' || tab === 'videos');
     if (!ownsPanel) return;
     helpPanel.hide();
     btn.classList.remove('btn--active');
@@ -329,7 +337,7 @@ export function initModuleHelp(
   if (helpEl) {
     const observer = new MutationObserver(() => {
       const tab = helpPanel.getActiveTab?.();
-      const ownsPanel = helpPanel.isVisible() && (tab === 'help' || tab === 'examples' || tab === 'references' || tab === 'glossary');
+      const ownsPanel = helpPanel.isVisible() && (tab === 'help' || tab === 'examples' || tab === 'references' || tab === 'glossary' || tab === 'videos');
       btn.classList.toggle('btn--active', ownsPanel);
     });
     observer.observe(helpEl, { attributes: true, attributeFilter: ['class', 'data-active-tab'] });

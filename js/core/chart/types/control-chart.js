@@ -159,27 +159,27 @@ export default class ControlChartType extends ChartBase {
 
     // ── Control lines (UCL, CL, LCL) ──
     if (Array.isArray(ucl)) {
-      this._drawSteppedLine(plotGroup, xScale, yScale, ucl, this.config.uclColor, 'UCL', true);
+      this._drawSteppedLine(plotGroup, xScale, yScale, ucl, this.config.uclColor, 'UCL', true, 'UCL');
     } else {
-      this._drawControlLine(plotGroup, plotArea, yScale, ucl, this.config.uclColor, 'UCL', true);
+      this._drawControlLine(plotGroup, plotArea, yScale, ucl, this.config.uclColor, 'UCL', true, 'UCL');
     }
     if (Array.isArray(cl)) {
-      this._drawSteppedLine(plotGroup, xScale, yScale, cl, this.config.clColor, 'CL', false);
+      this._drawSteppedLine(plotGroup, xScale, yScale, cl, this.config.clColor, 'CL', false, 'CL');
     } else {
-      this._drawControlLine(plotGroup, plotArea, yScale, cl, this.config.clColor, 'CL', false);
+      this._drawControlLine(plotGroup, plotArea, yScale, cl, this.config.clColor, 'CL', false, 'CL');
     }
     if (Array.isArray(lcl)) {
-      this._drawSteppedLine(plotGroup, xScale, yScale, lcl, this.config.lclColor, 'LCL', true);
+      this._drawSteppedLine(plotGroup, xScale, yScale, lcl, this.config.lclColor, 'LCL', true, 'LCL');
     } else {
-      this._drawControlLine(plotGroup, plotArea, yScale, lcl, this.config.lclColor, 'LCL', true);
+      this._drawControlLine(plotGroup, plotArea, yScale, lcl, this.config.lclColor, 'LCL', true, 'LCL');
     }
 
     // ── Specification limits (USL, LSL) ──
     if (this.config.usl != null) {
-      this._drawControlLine(plotGroup, plotArea, yScale, this.config.usl, this.config.uslColor, 'USL', false);
+      this._drawControlLine(plotGroup, plotArea, yScale, this.config.usl, this.config.uslColor, 'USL', false, 'USL');
     }
     if (this.config.lsl != null) {
-      this._drawControlLine(plotGroup, plotArea, yScale, this.config.lsl, this.config.lslColor, 'LSL', false);
+      this._drawControlLine(plotGroup, plotArea, yScale, this.config.lsl, this.config.lslColor, 'LSL', false, 'LSL');
     }
 
     // ── Stage dividers (multiple) ──
@@ -385,9 +385,14 @@ export default class ControlChartType extends ChartBase {
 
   /**
    * Draw a horizontal control line with label.
+   *
+   * `ref` ist die Rolle der Linie ('CL', 'UCL', …) und kommt vom Aufrufer, der
+   * sie ohnehin kennt — nicht aus dem angezeigten `label`, das übersetzt oder
+   * umformatiert werden kann. Die Linie trägt damit dieselbe Konvention wie die
+   * Referenzlinien in `chart-base.js` und ist flach adressierbar.
    * @private
    */
-  _drawControlLine(plotGroup, plotArea, yScale, value, color, label, dashed) {
+  _drawControlLine(plotGroup, plotArea, yScale, value, color, label, dashed, ref) {
     const y = yScale(value);
     if (y < plotArea.y - 10 || y > plotArea.y + plotArea.h + 10) return;
 
@@ -395,6 +400,11 @@ export default class ControlChartType extends ChartBase {
       x1: plotArea.x, y1: y, x2: plotArea.x + plotArea.w, y2: y,
       stroke: resolveColor(color), 'stroke-width': 1.5,
       'stroke-dasharray': dashed ? '6,4' : 'none',
+      ...(ref ? {
+        'data-ref': 'line',
+        'data-ref-label': ref,
+        'data-ref-value': formatNum(value, null, this.locale),
+      } : {}),
     }));
 
     const txt = svgEl('text', {
@@ -412,7 +422,7 @@ export default class ControlChartType extends ChartBase {
    * The label shows the mean of the limit values (typical convention).
    * @private
    */
-  _drawSteppedLine(plotGroup, xScale, yScale, valuesArr, color, label, dashed) {
+  _drawSteppedLine(plotGroup, xScale, yScale, valuesArr, color, label, dashed, ref) {
     if (!valuesArr || !valuesArr.length) return;
     let pathD = '';
     for (let i = 0; i < valuesArr.length; i++) {
@@ -424,17 +434,26 @@ export default class ControlChartType extends ChartBase {
       pathD += (pathD === '' ? `M${x1},${y}` : ` L${x1},${y}`);
       pathD += ` L${x2},${y}`;
     }
+    // Mittelwert der Grenzwerte vorab: er beschriftet die Linie und ist
+    // zugleich der Wert, den der Referenz-Tooltip von `chart-base.js` zeigt.
+    const finite = valuesArr.filter(v => v != null && Number.isFinite(v));
+    const mean = finite.length
+      ? finite.reduce((a, b) => a + b, 0) / finite.length
+      : null;
     if (pathD) {
       plotGroup.appendChild(svgEl('path', {
         d: pathD, fill: 'none',
         stroke: resolveColor(color), 'stroke-width': 1.5,
         'stroke-dasharray': dashed ? '6,4' : 'none',
+        ...(ref ? {
+          'data-ref': 'line',
+          'data-ref-label': ref,
+          ...(mean != null ? { 'data-ref-value': formatNum(mean, null, this.locale) } : {}),
+        } : {}),
       }));
     }
     // Label using the mean of the limit array (left edge)
-    const finite = valuesArr.filter(v => v != null && Number.isFinite(v));
     if (finite.length) {
-      const mean = finite.reduce((a, b) => a + b, 0) / finite.length;
       const yMean = yScale(mean);
       const txt = svgEl('text', {
         x: xScale(0.5) - 4, y: yMean + 4,

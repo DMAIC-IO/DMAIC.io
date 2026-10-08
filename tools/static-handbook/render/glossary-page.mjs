@@ -15,6 +15,7 @@ import { escapeHtml, escapeAttr, pick, stripTermTokens, stripRefTokens } from '.
 import { getModuleName } from '../loaders/load-sources.mjs';
 import { renderLatex } from './katex.mjs';
 import { renderInline } from './inline.mjs';
+import { renderVideoSection, videosForTerm } from './video-section.mjs';
 
 /* Glossarseiten liegen im Handbuch, nicht auf der Site-Wurzel: ihre
    JSON-LD-`url` muss denselben Absolutpfad tragen wie das `rel=canonical`
@@ -24,7 +25,7 @@ const { SITE_ORIGIN } = CONSTANTS;
 
 // ─── Per-term page ──────────────────────────────────────────────
 
-export async function renderGlossaryTermPage({ term, glossary, modules, lang, i18n }) {
+export async function renderGlossaryTermPage({ term, glossary, modules, lang, i18n, videos }) {
   const s = getStrings(lang);
   const title = pick(term.title, lang) || term.id;
   const shortText = pick(term.short, lang) || '';
@@ -61,6 +62,13 @@ export async function renderGlossaryTermPage({ term, glossary, modules, lang, i1
   // Sources.
   const sourcesHtml = renderSources(term.sources, s);
 
+  // Videos.
+  const videosSectionHtml = renderVideoSection({
+    videos: videosForTerm(videos, term.id),
+    lang,
+    strings: s,
+  });
+
   const article = `
 <article class="handbook-article handbook-glossary">
   <h1>${escapeHtml(title)}</h1>
@@ -70,6 +78,7 @@ export async function renderGlossaryTermPage({ term, glossary, modules, lang, i1
   ${seeAlsoHtml}
   ${usedInHtml}
   ${algoHtml}
+  ${videosSectionHtml}
   ${sourcesHtml}
 </article>`;
 

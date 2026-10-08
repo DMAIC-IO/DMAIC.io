@@ -237,7 +237,11 @@ export function renderStatsTable(container, seriesStats, options = {}) {
       cols.forEach(c => {
         const val = s.stats[c.key];
         const valStr = c.key === 'n' ? String(val) : (val != null ? val.toFixed(4) : '–');
-        const cell = h('td', null, valStr);
+        // `data-stat` benennt die Wertzelle eindeutig, damit sie sich von
+        // außen adressieren und annotieren lässt, ohne an `:nth-of-type` zu
+        // hängen — sonst verschiebt jede neue Spalte das Ziel. Der
+        // Spaltenkopf behält sein `data-glossary-term`.
+        const cell = h('td', { 'data-stat': c.key }, valStr);
         if (c.ci) {
           const bounds = s.ci[c.key];
           if (bounds && isFinite(bounds[0]) && isFinite(bounds[1])) {
@@ -252,7 +256,7 @@ export function renderStatsTable(container, seriesStats, options = {}) {
         row.append(cell);
       });
     } else {
-      cols.forEach(() => row.append(h('td', null, '–')));
+      cols.forEach(c => row.append(h('td', { 'data-stat': c.key }, '–')));
     }
     body.append(row);
   });

@@ -153,9 +153,9 @@
           </div>
 
           <!-- KPI strip — main indices -->
-          <div class="dmike-kpi-strip">
+          <div class="dmike-kpi-strip" data-ref="kpi-main">
             <template x-for="kpi in mainKpis()">
-              <div class="dmike-kpi" :key="kpi.key" :class="kpi.mod">
+              <div class="dmike-kpi" :key="kpi.key" :data-kpi="kpi.key" :class="kpi.mod">
                 <div class="dmike-kpi-label" x-text="kpi.label"></div>
                 <div class="dmike-kpi-value" x-text="kpi.value"></div>
                 <div class="dmike-kpi-sub" x-text="kpi.sub"></div>
@@ -164,7 +164,7 @@
           </div>
 
           <!-- Long-term (Pp/Ppk) + PPM + Sigma strip -->
-          <div class="dmike-kpi-strip">
+          <div class="dmike-kpi-strip" data-ref="kpi-perf">
             <template x-for="kpi in perfKpis()">
               <div class="dmike-kpi" :key="kpi.key" :data-kpi="kpi.key">
                 <div class="dmike-kpi-label" x-text="kpi.label"></div>

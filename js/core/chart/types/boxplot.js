@@ -199,25 +199,32 @@ export default class BoxplotChart extends ChartBase {
       const dWLo = dataScale(stats.whiskerLo);
       const dWHi = dataScale(stats.whiskerHi);
 
+      // `data-part` benennt die gezeichneten Teile eindeutig, damit sie sich
+      // von außen adressieren und annotieren lassen. Beide Orientierungen
+      // tragen dieselben Werte; kein Verhalten hängt daran.
       if (isVertical) {
         // ── Vertical: data on Y, groups on X ──
         // Whisker spines (vertical lines from cap to box)
         svgEl('line', {
           x1: groupCentre, y1: dWLo, x2: groupCentre, y2: dQ1,
           stroke: boxStroke, 'stroke-width': boxSW,
+          'data-part': 'whisker',
         }, plotGroup);
         svgEl('line', {
           x1: groupCentre, y1: dQ3, x2: groupCentre, y2: dWHi,
           stroke: boxStroke, 'stroke-width': boxSW,
+          'data-part': 'whisker',
         }, plotGroup);
         // Whisker caps (horizontal lines)
         svgEl('line', {
           x1: groupCentre - capSpan, y1: dWLo, x2: groupCentre + capSpan, y2: dWLo,
           stroke: boxStroke, 'stroke-width': boxSW,
+          'data-part': 'whisker-cap',
         }, plotGroup);
         svgEl('line', {
           x1: groupCentre - capSpan, y1: dWHi, x2: groupCentre + capSpan, y2: dWHi,
           stroke: boxStroke, 'stroke-width': boxSW,
+          'data-part': 'whisker-cap',
         }, plotGroup);
         // Box (IQR) — note Y axis points down, so q3 has smaller pixel-y than q1.
         svgEl('rect', {
@@ -226,11 +233,13 @@ export default class BoxplotChart extends ChartBase {
           fill: color, 'fill-opacity': 0.35,
           stroke: boxStroke, 'stroke-width': boxSW,
           rx: 2,
+          'data-part': 'box',
         }, plotGroup);
         // Median (horizontal line across box)
         svgEl('line', {
           x1: groupCentre - halfSpan, y1: dMed, x2: groupCentre + halfSpan, y2: dMed,
           stroke: color, 'stroke-width': 2.5,
+          'data-part': 'median',
         }, plotGroup);
         // Mean diamond
         if (cfg.showMean) {
@@ -239,6 +248,7 @@ export default class BoxplotChart extends ChartBase {
           svgEl('polygon', {
             points: `${groupCentre},${dM - dSize} ${groupCentre + dSize},${dM} ${groupCentre},${dM + dSize} ${groupCentre - dSize},${dM}`,
             fill: color, stroke: resolveColor('var(--color-bg-primary)'), 'stroke-width': 0.8,
+            'data-part': 'mean',
           }, plotGroup);
         }
         // Outliers
@@ -249,7 +259,7 @@ export default class BoxplotChart extends ChartBase {
           const oStroke = cfg.outlierStroke != null ? resolveColor(cfg.outlierStroke) : color;
           const oSW = cfg.outlierStrokeWidth ?? 1.5;
           for (const ov of stats.outliers) {
-            drawMarker(plotGroup, oSym, groupCentre, dataScale(ov), oR, oFill, oStroke, oSW);
+            drawMarker(plotGroup, oSym, groupCentre, dataScale(ov), oR, oFill, oStroke, oSW, { 'data-part': 'outlier' });
           }
         }
         // Category label below the plot area
@@ -268,19 +278,23 @@ export default class BoxplotChart extends ChartBase {
         svgEl('line', {
           x1: dWLo, y1: yCentre, x2: dQ1, y2: yCentre,
           stroke: boxStroke, 'stroke-width': boxSW,
+          'data-part': 'whisker',
         }, plotGroup);
         svgEl('line', {
           x1: dQ3, y1: yCentre, x2: dWHi, y2: yCentre,
           stroke: boxStroke, 'stroke-width': boxSW,
+          'data-part': 'whisker',
         }, plotGroup);
         // Whisker caps (vertical)
         svgEl('line', {
           x1: dWLo, y1: yCentre - capSpan, x2: dWLo, y2: yCentre + capSpan,
           stroke: boxStroke, 'stroke-width': boxSW,
+          'data-part': 'whisker-cap',
         }, plotGroup);
         svgEl('line', {
           x1: dWHi, y1: yCentre - capSpan, x2: dWHi, y2: yCentre + capSpan,
           stroke: boxStroke, 'stroke-width': boxSW,
+          'data-part': 'whisker-cap',
         }, plotGroup);
         // Box (IQR)
         svgEl('rect', {
@@ -289,11 +303,13 @@ export default class BoxplotChart extends ChartBase {
           fill: color, 'fill-opacity': 0.35,
           stroke: boxStroke, 'stroke-width': boxSW,
           rx: 2,
+          'data-part': 'box',
         }, plotGroup);
         // Median line
         svgEl('line', {
           x1: dMed, y1: yCentre - halfSpan, x2: dMed, y2: yCentre + halfSpan,
           stroke: color, 'stroke-width': 2.5,
+          'data-part': 'median',
         }, plotGroup);
         // Mean diamond
         if (cfg.showMean) {
@@ -302,6 +318,7 @@ export default class BoxplotChart extends ChartBase {
           svgEl('polygon', {
             points: `${dM},${yCentre - dSize} ${dM + dSize},${yCentre} ${dM},${yCentre + dSize} ${dM - dSize},${yCentre}`,
             fill: color, stroke: resolveColor('var(--color-bg-primary)'), 'stroke-width': 0.8,
+            'data-part': 'mean',
           }, plotGroup);
         }
         // Outliers
@@ -312,7 +329,7 @@ export default class BoxplotChart extends ChartBase {
           const oStroke = cfg.outlierStroke != null ? resolveColor(cfg.outlierStroke) : color;
           const oSW = cfg.outlierStrokeWidth ?? 1.5;
           for (const ov of stats.outliers) {
-            drawMarker(plotGroup, oSym, dataScale(ov), yCentre, oR, oFill, oStroke, oSW);
+            drawMarker(plotGroup, oSym, dataScale(ov), yCentre, oR, oFill, oStroke, oSW, { 'data-part': 'outlier' });
           }
         }
         // Category label to the left of the plot area

@@ -1,33 +1,74 @@
 /**
  * D.Mike — Example deeplink startup concern.
- * Honors deeplinks like `?module=process-capability&example=capability-bolzendurchmesser`.
- * Activates the requested module (creating an instance in its default phase if
- * none exists), then asks the module to load the requested example.
+ * Honors three deeplink shapes:
+ *   ?module=<id>                       activate the module (creating an instance if needed)
+ *   ?module=<id>&example=<exampleId>   … and load that example into it
+ *   ?scenario=<scenarioId>             load a whole scenario (every item gets a fresh instance)
+ * `example` alone does nothing — without a module there is nothing to load it
+ * into. `scenario` stands on its own and takes precedence over `module`.
  * Query parameters are stripped from the URL afterwards so a reload doesn't
  * repeat the action.
  */
 import { createStartup } from '../core/create-startup.js';
 import { findExistingInstance, createInstance } from '../core/router/instance-ops.js';
+import { loadScenario } from '../core/scenario-loader.js';
 
 export default createStartup({
   id: 'example-deeplink',
 
   shouldRun() {
     const params = new URLSearchParams(location.search);
-    return Boolean(params.get('module') || params.get('example'));
+    return Boolean(params.get('module') || params.get('example') || params.get('scenario'));
   },
 
-  run({ stateManager, eventBus, moduleRegistry, examplesRegistry, workspace, notify, i18n }) {
+  run({
+    stateManager, eventBus, moduleRegistry, examplesRegistry, workspace, notify, i18n,
+    __loadScenario = loadScenario,
+  }) {
     const params = new URLSearchParams(location.search);
     const moduleId = params.get('module');
     const exampleId = params.get('example');
+    const scenarioId = params.get('scenario');
 
     // Strip these params immediately so reload/back doesn't re-trigger.
     const next = new URLSearchParams(location.search);
     next.delete('module');
     next.delete('example');
+    next.delete('scenario');
     const cleaned = next.toString();
     history.replaceState(null, '', location.pathname + (cleaned ? `?${cleaned}` : '') + location.hash);
+
+    // A scenario loads as a whole and takes precedence: it brings its own
+    // module instances, so activating a single module first would only add a
+    // sixth, empty one next to them.
+    if (scenarioId) {
+      const scenario = examplesRegistry?.get(scenarioId);
+      if (!scenario) {
+        console.warn(`[Deeplink] Unknown scenario: ${scenarioId}`);
+        notify?.(i18n.t('moduleHelp.scenarioNotFound'), 'error');
+        return;
+      }
+      (async () => {
+        try {
+          const result = await __loadScenario({
+            scenario, examplesRegistry, moduleRegistry, stateManager, eventBus, workspace,
+          });
+          if (result.failed.length) {
+            console.warn('[Deeplink] scenario items failed:', result.failed);
+            notify?.(
+              i18n.t('actions.scenarioItemsFailed', {
+                items: result.failed.map(f => f.exampleId).join(', '),
+              }),
+              'warning',
+            );
+          }
+        } catch (err) {
+          console.error('[Deeplink] Failed to load scenario', scenarioId, err);
+          notify?.(i18n.t('moduleHelp.exampleLoadError'), 'error');
+        }
+      })();
+      return;
+    }
 
     if (!moduleId) return;
     const def = moduleRegistry.get(moduleId);
