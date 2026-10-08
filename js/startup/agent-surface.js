@@ -11,6 +11,13 @@
  * Zugriff über den Kernel. Der Namensraum trägt den Produktnamen; `dmike`
  * ist intern und erscheint hier nicht.
  *
+ * EINMALIG UND NICHT REENTRANT: `buildAgentConsentDialog` hängt über
+ * `core/create-dialog.js` einen `language:changed`-Listener an den eventBus.
+ * Ein zweiter Lauf dieser Concern im selben Dokument hinterließe daher einen
+ * zweiten Dialog samt zweitem Listener und überschriebe `window.qprovement`.
+ * `startupTasks` läuft genau einmal pro Boot — darauf verlässt sich die
+ * Datei bewusst, statt eine Wiedereintrittssperre zu bauen.
+ *
  * Stufe 2 (App als eigener Harness) ersetzt diese Datei durch einen
  * HTTP-Client am DEMSELBEN Runtime — Aktionskatalog, Prüfer,
  * Referenzauflösung, Fehlerformen und Registry werden unverändert geerbt
