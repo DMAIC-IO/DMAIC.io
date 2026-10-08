@@ -464,3 +464,91 @@ suite('StateManager remote sync', () => {
     assertEqual(event.metaChanged, true);
   });
 });
+
+suite('StateManager chartEdits', () => {
+  test('default state has empty chartEdits', () => {
+    const sm = new StateManager(new EventBus());
+    assertDeepEqual(sm.get('chartEdits'), {});
+  });
+
+  test('setChartEdit stores and getChartEdits reads per instance and key', () => {
+    const sm = new StateManager(new EventBus());
+    sm.setChartEdit('i1', 'scatter', 'xLabel', 'Temp');
+    sm.setChartEdit('i1', 'scatter', 'showTitle', false);
+    assertDeepEqual(sm.getChartEdits('i1', 'scatter'), { xLabel: 'Temp', showTitle: false });
+    assertEqual(sm.getChartEdits('i1', 'bar'), null);
+    assertEqual(sm.getChartEdits('i2', 'scatter'), null);
+  });
+
+  test('empty value removes the key and prunes empty entries', () => {
+    const sm = new StateManager(new EventBus());
+    sm.setChartEdit('i1', 'scatter', 'xLabel', 'Temp');
+    sm.setChartEdit('i1', 'scatter', 'xLabel', '');
+    assertEqual(sm.getChartEdits('i1', 'scatter'), null);
+    assertDeepEqual(sm.get('chartEdits'), {});
+  });
+
+  test('false is stored, not treated as empty', () => {
+    const sm = new StateManager(new EventBus());
+    sm.setChartEdit('i1', 'scatter', 'showXLabel', false);
+    assertDeepEqual(sm.getChartEdits('i1', 'scatter'), { showXLabel: false });
+  });
+
+  test('setChartEdit does not mutate a previously read object', () => {
+    const sm = new StateManager(new EventBus());
+    sm.setChartEdit('i1', 'scatter', 'title', 'A');
+    const before = sm.getChartEdits('i1', 'scatter');
+    sm.setChartEdit('i1', 'scatter', 'title', 'B');
+    assertEqual(before.title, 'A');
+  });
+
+  test('removeModuleState deletes the instance edits only', () => {
+    const sm = new StateManager(new EventBus(), makeFakeAdapter(baseDoc()));
+    sm.setChartEdit('i1', 'scatter', 'title', 'A');
+    sm.setChartEdit('i2', 'scatter', 'title', 'B');
+    sm.removeModuleState('i1');
+    assertEqual(sm.getChartEdits('i1', 'scatter'), null);
+    assertDeepEqual(sm.getChartEdits('i2', 'scatter'), { title: 'B' });
+  });
+
+  test('completed project ignores edits', () => {
+    const sm = new StateManager(new EventBus());
+    sm.isCompleted = () => true;
+    sm.setChartEdit('i1', 'scatter', 'title', 'A');
+    assertEqual(sm.getChartEdits('i1', 'scatter'), null);
+  });
+
+  test('save passes chartEdits to the adapter and load restores them', async () => {
+    let saved = null;
+    const adapter = makeFakeAdapter({ ...baseDoc(), chartEdits: { i1: { scatter: { title: 'Loaded' } } } });
+    adapter.saveProjectMeta = (_id, d) => { saved = d; };
+    const sm = new StateManager(new EventBus(), adapter);
+    await sm.load();
+    assertDeepEqual(sm.getChartEdits('i1', 'scatter'), { title: 'Loaded' });
+    sm.setChartEdit('i1', 'scatter', 'xLabel', 'X');
+    sm.save();
+    assertDeepEqual(saved.chartEdits, { i1: { scatter: { title: 'Loaded', xLabel: 'X' } } });
+  });
+
+  test('importJSON restores chartEdits and defaults to {} for old exports', async () => {
+    const sm = new StateManager(new EventBus(), makeFakeAdapter(baseDoc()));
+    await sm.load();
+    const exp = JSON.parse(sm.exportJSON());
+    exp.chartEdits = { i1: { scatter: { yLabel: 'Y' } } };
+    await sm.importJSON(JSON.stringify(exp));
+    assertDeepEqual(sm.getChartEdits('i1', 'scatter'), { yLabel: 'Y' });
+    delete exp.chartEdits;
+    await sm.importJSON(JSON.stringify(exp));
+    assertDeepEqual(sm.get('chartEdits'), {});
+  });
+
+  test('remote apply takes over chartEdits', async () => {
+    const adapter = makeFakeAdapter(baseDoc());
+    const sm = new StateManager(new EventBus(), adapter);
+    await sm.load();
+    adapter._setDoc({ ...baseDoc(), chartEdits: { i1: { scatter: { title: 'Remote' } } } });
+    adapter._fireRemote();
+    await Promise.resolve(); await Promise.resolve();
+    assertDeepEqual(sm.getChartEdits('i1', 'scatter'), { title: 'Remote' });
+  });
+});

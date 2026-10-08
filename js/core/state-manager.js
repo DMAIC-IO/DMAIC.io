@@ -137,6 +137,7 @@ export class StateManager {
       phaseAchievementHistory: {},
       models: {},
       optimizations: {},
+      chartEdits: {},
       projectMeta: {
         name: 'Neues Projekt',
         cycle: cycle.id,
@@ -178,6 +179,35 @@ export class StateManager {
     this._state.projectMeta.modified = new Date().toISOString();
     this._scheduleSave();
     if (!path.startsWith('settings.')) this._eventBus.emit('data:changed', path);
+  }
+
+  /**
+   * Stored chart-editor label edits for one chart of a module instance.
+   * @param {string} instanceId
+   * @param {string} chartKey - see ChartManager.forInstance
+   * @returns {object|null} e.g. { title, xLabel, showYLabel }
+   */
+  getChartEdits(instanceId, chartKey) {
+    return this._state.chartEdits?.[instanceId]?.[chartKey] ?? null;
+  }
+
+  /**
+   * Store one label edit. An empty value ('' / null / undefined) removes the
+   * key; empty chart and instance entries are pruned.
+   * @param {string} instanceId
+   * @param {string} chartKey
+   * @param {string} key - title | showTitle | xLabel | yLabel | showXLabel | showYLabel
+   * @param {any} value
+   */
+  setChartEdit(instanceId, chartKey, key, value) {
+    const all = { ...(this._state.chartEdits || {}) };
+    const inst = { ...(all[instanceId] || {}) };
+    const entry = { ...(inst[chartKey] || {}) };
+    if (value === '' || value == null) delete entry[key];
+    else entry[key] = value;
+    if (Object.keys(entry).length) inst[chartKey] = entry; else delete inst[chartKey];
+    if (Object.keys(inst).length) all[instanceId] = inst; else delete all[instanceId];
+    this.set('chartEdits', all);
   }
 
   /**
@@ -255,6 +285,11 @@ export class StateManager {
   removeModuleState(instanceId) {
     if (this._applyingRemote) return;   // do not echo a remote apply back to the adapter
     if (this.isCompleted()) return;
+    if (this._state.chartEdits?.[instanceId]) {
+      const all = { ...this._state.chartEdits };
+      delete all[instanceId];
+      this.set('chartEdits', all);
+    }
     this._moduleCache.delete(instanceId);
     this._adapter.removeModule(this._projectId, instanceId);
     this._scheduleFlush();
@@ -288,6 +323,7 @@ export class StateManager {
         phaseAchievementHistory: this._state.phaseAchievementHistory || {},
         models: this._state.models || {},
         optimizations: this._state.optimizations || {},
+        chartEdits: this._state.chartEdits || {},
         dashboard: this._state.dashboard,
         version: this._state.version,
       });
@@ -330,6 +366,7 @@ export class StateManager {
         if (doc.phaseAchievementHistory) this._state.phaseAchievementHistory = doc.phaseAchievementHistory;
         if (doc.models) this._state.models = doc.models;
         if (doc.optimizations) this._state.optimizations = doc.optimizations;
+        if (doc.chartEdits) this._state.chartEdits = doc.chartEdits;
         if (doc.dashboard) this._state.dashboard = doc.dashboard;
         if (doc.version) this._state.version = doc.version;
 
@@ -371,6 +408,7 @@ export class StateManager {
         this._state.phaseAchievementHistory = doc.phaseAchievementHistory;
         this._state.models = doc.models;
         this._state.optimizations = doc.optimizations;
+        this._state.chartEdits = doc.chartEdits || {};
         this._state.dashboard = doc.dashboard;
         this._state.version = doc.version;
       }
@@ -398,7 +436,7 @@ export class StateManager {
     for (const id of this._moduleCache.keys()) if (!(id in next)) changed.add(id);
 
     const metaFields = ['projectMeta', 'phases', 'phaseAchievement', 'phaseAchievementHistory',
-      'models', 'optimizations', 'dashboard', 'version'];
+      'models', 'optimizations', 'chartEdits', 'dashboard', 'version'];
     let metaChanged = false;
     for (const f of metaFields) {
       if (JSON.stringify(this._state[f]) !== JSON.stringify(doc[f])) { metaChanged = true; break; }
@@ -629,6 +667,7 @@ export class StateManager {
         phaseAchievementHistory: doc.phaseAchievementHistory || {},
         models: doc.models || {},
         optimizations: doc.optimizations || {},
+        chartEdits: doc.chartEdits || {},
         dashboard: doc.dashboard ?? null,
         version: doc.version || VERSION,
         moduleStates: doc.moduleStates || {},
@@ -671,6 +710,7 @@ export class StateManager {
         phaseAchievementHistory: proj.phaseAchievementHistory || {},
         models: proj.models || {},
         optimizations: proj.optimizations || {},
+        chartEdits: proj.chartEdits || {},
         dashboard: proj.dashboard ?? null,
         version: proj.version || VERSION,
         moduleStates: proj.moduleStates || {},
@@ -765,6 +805,7 @@ export class StateManager {
     this._state.phaseAchievement         = data.phaseAchievement          ?? this._defaultState().phaseAchievement;
     this._state.phaseAchievementHistory  = data.phaseAchievementHistory   ?? this._defaultState().phaseAchievementHistory;
     this._state.dashboard                = data.dashboard                 ?? this._defaultState().dashboard;
+    this._state.chartEdits               = data.chartEdits                ?? {};
     this._state.version                  = VERSION;
 
     // Replace module-state cache with imported states, queueing each write

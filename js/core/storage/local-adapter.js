@@ -96,6 +96,7 @@ export class LocalAdapter extends StorageAdapter {
       phaseAchievementHistory: j('phaseAchievementHistory') || {},
       models: j('models') || {},
       optimizations: j('optimizations') || {},
+      chartEdits: j('chartEdits') || {},
       dashboard: j('dashboard'),
       version: localStorage.getItem(`${p}version`) || VERSION,
       moduleStates,
@@ -111,6 +112,7 @@ export class LocalAdapter extends StorageAdapter {
     set('phaseAchievementHistory', doc.phaseAchievementHistory || {});
     set('models', doc.models || {});
     set('optimizations', doc.optimizations || {});
+    set('chartEdits', doc.chartEdits || {});
     set('dashboard', doc.dashboard ?? null);
     localStorage.setItem(`${p}version`, doc.version || VERSION);
   }

@@ -1,6 +1,6 @@
 /**
  * @typedef {{ id: string, name: string, cycle?: string, created: string, modified: string, status: string }} ProjectEntry
- * @typedef {{ projectMeta: object, phases: object, phaseAchievement: object, phaseAchievementHistory: object, models: object, optimizations: object, dashboard: object|null, version: string, moduleStates: Object<string,object> }} ProjectDoc
+ * @typedef {{ projectMeta: object, phases: object, phaseAchievement: object, phaseAchievementHistory: object, models: object, optimizations: object, chartEdits: object, dashboard: object|null, version: string, moduleStates: Object<string,object> }} ProjectDoc
  */
 
 const NI = (name) => { throw new Error(`StorageAdapter.${name}() not implemented`); };
