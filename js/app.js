@@ -101,8 +101,8 @@ async function init() {
   setProjectSwitcherUi({ dmaicTiles, workspace, moduleRegistry });
   setCreatePageRouter(router);
 
-  // ─── Startup concerns (deeplink, prompts, viewport, auto-save, e2e) ───
-  const startupCtx = { ...kernel, modal, notify, workspace, exportReminder };
+  // ─── Startup concerns (deeplink, prompts, viewport, auto-save, e2e, agent) ───
+  const startupCtx = { ...kernel, modal, notify, workspace, exportReminder, router };
   for (const task of startupTasks) await task.init(startupCtx);
 
   // ─── Update title ────────────────────────────────────────
