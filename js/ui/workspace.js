@@ -8,6 +8,7 @@ import { confirmPopout } from './popout.js';
 import { h } from '../core/dom.js';
 import { icon } from '../core/icon.js';
 import { resolveActions } from './resolve-actions.js';
+import { findInstancePhase } from '../core/router/instance-ops.js';
 
 export class Workspace {
   /**
@@ -226,7 +227,7 @@ export class Workspace {
 
     const remove = this._buildTabActionButton(
       'tab-remove', 'action.delete', this._i18n.t('workspace.tabs.remove'), () => {
-        this._removeModule(instanceId, moduleId, phase);
+        this._removeModule(instanceId, moduleId);
       });
 
     this._actionsEl.append(rename, remove);
@@ -541,6 +542,52 @@ export class Workspace {
     };
   }
 
+  /**
+   * Die lebende Modulinstanz zu einer instanceId, oder null wenn sie nicht
+   * gemountet ist. Öffentlich, weil die Agentenfläche über denselben Weg an
+   * das Viewmodel kommt wie die Aktionsleiste (`getActionData()`).
+   * @param {string} instanceId
+   * @returns {object|null}
+   */
+  getInstance(instanceId) {
+    return this._instances.get(instanceId) || null;
+  }
+
+  /**
+   * Eine Instanz entfernen — OHNE Rückfrage.
+   *
+   * Herausgezogen aus `_removeModule`, das jetzt nur noch bestätigt und
+   * hierher delegiert. Der Agent hat seine Einwilligung schon gegeben; ein
+   * zweiter Bestätigungsdialog pro Aktion wäre unbedienbar. Ein Pfad, zwei
+   * Aufrufer — es gibt keine zweite Entfernungslogik.
+   *
+   * @param {string} instanceId
+   * @returns {Promise<boolean>} false, wenn es nichts zu entfernen gab oder
+   *   das Projekt abgeschlossen ist
+   */
+  async removeInstance(instanceId) {
+    if (this._stateManager.isCompleted()) return false;
+    const phase = findInstancePhase(this._stateManager, instanceId);
+    if (!phase) return false;
+    const items = this._stateManager.get(`phases.${phase}`) ?? [];
+    const record = items.find(i => i.instanceId === instanceId);
+    if (!record) return false;
+
+    const instance = this._instances.get(instanceId);
+    try { await instance?.destroy?.(); } catch { /* ignore destroy errors */ }
+
+    this._instances.delete(instanceId);
+    this._containers.get(instanceId)?.remove();
+    this._containers.delete(instanceId);
+
+    this._stateManager.set(`phases.${phase}`, items.filter(i => i.instanceId !== instanceId));
+    this._stateManager.removeModuleState(instanceId);
+
+    this._eventBus.emit('module:removed', { moduleId: record.moduleId, phase, instanceId });
+    this._showPhase(phase);
+    return true;
+  }
+
   _buildContext(instanceId) {
     return {
       instanceId,
@@ -609,7 +656,15 @@ export class Workspace {
     try { await instance?.destroy?.(); } catch { /* ignore */ }
   }
 
-  async _removeModule(instanceId, moduleId, phase) {
+  /**
+   * Bestätigt die Entfernung mit dem Nutzer und delegiert dann an
+   * `removeInstance`, das den bestätigungsfreien Pfad hält (auch für den
+   * Agenten, der seine Einwilligung bereits an anderer Stelle gegeben hat).
+   * @param {string} instanceId
+   * @param {string} moduleId
+   * @returns {Promise<void>}
+   */
+  async _removeModule(instanceId, moduleId) {
     if (this._stateManager.isCompleted()) return;
     const name = this._i18n.t(`modules.${moduleId}.name`);
     const confirmed = await confirmPopout(
@@ -617,25 +672,7 @@ export class Workspace {
       { i18n: this._i18n, danger: true }
     );
     if (!confirmed) return;
-
-    // Destroy module instance
-    const instance = this._instances.get(instanceId);
-    try { await instance?.destroy?.(); } catch { /* ignore destroy errors */ }
-
-    this._instances.delete(instanceId);
-    this._containers.get(instanceId)?.remove();
-    this._containers.delete(instanceId);
-
-    // Remove from state
-    const phases = this._stateManager.get(`phases.${phase}`) ?? [];
-    this._stateManager.set(
-      `phases.${phase}`,
-      phases.filter(i => i.instanceId !== instanceId)
-    );
-    this._stateManager.removeModuleState(instanceId);
-
-    this._eventBus.emit('module:removed', { moduleId, phase, instanceId });
-    this._showPhase(phase);
+    await this.removeInstance(instanceId);
   }
 
   /**

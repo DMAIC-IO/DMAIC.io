@@ -48,13 +48,17 @@ export function findExistingInstance(stateManager, moduleId) {
  *   `silent: true` so the workspace refreshes tabs WITHOUT eagerly mounting or
  *   activating a live instance (used by headless Dev-Tools seeding, so the
  *   persisted example is only read when the user later opens the tab).
+ * @param {string} [options.phase]  Zielphase, die die Ableitung überschreibt.
+ *   Genutzt von der Agentenfläche: dort hat der Prüfer die Phase bereits
+ *   gegen `allowedPhases` geprüft, bevor irgendein Seiteneffekt passiert.
  * @returns {string}
  */
-export function createInstance(stateManager, moduleRegistry, eventBus, moduleId, def, { silent = false } = {}) {
+export function createInstance(stateManager, moduleRegistry, eventBus, moduleId, def, { silent = false, phase } = {}) {
   const activeCycle = moduleRegistry.getActiveCycle();
-  const targetPhase = def.phase === 'data'
+  const derived = def.phase === 'data'
     ? 'data'
     : (def.cycles?.[activeCycle]?.phase || def.phase || 'extras');
+  const targetPhase = phase || derived;
 
   const instanceId = uid();
   const phases = stateManager.get(`phases.${targetPhase}`) ?? [];
