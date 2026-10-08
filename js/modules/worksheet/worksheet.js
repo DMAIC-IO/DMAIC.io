@@ -1229,6 +1229,14 @@ mod.setState = function setState(data) {
   }
 };
 
+// A mounted worksheet keeps its data in the live DataGrid, so the generic
+// applyRemoteState (which only patches the Alpine model) never reaches the grid,
+// and the next autosave writes the stale grid back over the external change.
+// Route remote/external state through setState, which drives the grid.
+mod.applyRemoteState = function applyRemoteState(state) {
+  if (state) this.setState(state);
+};
+
 mod.loadExample = async function loadExample(payload) {
   if (!payload || !payload.data) return;
   const current = this.getState();

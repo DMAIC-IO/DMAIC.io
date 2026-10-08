@@ -578,6 +578,10 @@ export function appendDoERowsToWorksheet(context, ref, factors, newActualRows) {
   sheet.state.rowCount = oldN + addRuns;
 
   sm.setModuleState(ref.instanceId, ws);
+  // setModuleState only writes the persisted snapshot; an already-mounted
+  // worksheet would keep showing (and later re-save) its old rows. Take the
+  // same path as cross-tab sync so workspace.js calls applyRemoteState on it.
+  eventBus?.emit('state:remote-changed', { instanceIds: [ref.instanceId], metaChanged: false });
   eventBus?.emit('worksheet:dataChanged', { instanceId: ref.instanceId });
 
   return { added: addRuns, totalRuns: oldN + addRuns };
