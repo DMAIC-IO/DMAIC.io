@@ -2,24 +2,16 @@
  * D.Mike — Frame · Header action buttons (action-buttons.js)
  * Fullscreen toggle (#fullscreen-btn + icon swap) and Export/Import
  * (#export-btn / #import-btn / #import-file-input, single vs multi-project,
- * migration sessionStorage flag, Ctrl+S export). _downloadJSON is private here.
+ * migration sessionStorage flag, Ctrl+S export). `downloadJSON` and
+ * `exportAllProjects` now live in `core/export-all.js` (a second consumer —
+ * the agent consent gate — needed them too).
  * Moved verbatim from app.js (no behavior change).
  */
 import { stripPatch }      from '../../core/version-utils.js';
 import { VERSION }         from '../../core/version.js';
 import { shortcutRegistry } from '../../core/shortcut-registry.js';
 import { buildExportScopeDialog } from '../../dialogs/export-scope/export-scope.js';
-
-/** Temporary <a> download helper. */
-function downloadJSON(json, filename) {
-  const blob = new Blob([json], { type: 'application/json' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = filename;
-  a.click();
-  URL.revokeObjectURL(url);
-}
+import { downloadJSON, exportAllProjects } from '../../core/export-all.js';
 
 /** @param {object} kernel - { stateManager, eventBus, i18n }  @param {object} ui - { modal, notify } */
 export function initActionButtons({ stateManager, eventBus, i18n }, { modal, notify }) {
@@ -127,11 +119,7 @@ function initExportImport({ stateManager, eventBus, i18n }, { modal, notify }) {
   document.addEventListener('keydown', async (e) => {
     if (shortcutRegistry.matches(e, 'global.exportProject')) {
       e.preventDefault();
-      const date = new Date().toISOString().split('T')[0];
-      const json = await stateManager.exportAllJSON();
-      downloadJSON(json, `dmike_alle_projekte_${date}.json`);
-      eventBus.emit('project:exported');
-      notify(i18n.t('app.export'), 'success', 'status.ok');
+      await exportAllProjects({ stateManager, eventBus, i18n, notify });
     }
   });
 }
