@@ -4,6 +4,8 @@
  * Lazy-loads chart type modules on first use.
  */
 
+import { createInstanceChartManager } from './instance-chart-manager.js';
+
 /** @type {Object<string, function(): Promise>} */
 const TYPE_MAP = {
   scatter:            () => import('./types/scatter.js'),
@@ -91,6 +93,18 @@ export default class ChartManager {
       container.append(msg);
       return null;
     }
+  }
+
+  /**
+   * Chart manager bound to one module instance: persists title/axis-title
+   * edits per chart (see instance-chart-manager.js). Without a stateManager
+   * the shared manager itself is returned.
+   * @param {string} instanceId
+   * @returns {ChartManager}
+   */
+  forInstance(instanceId) {
+    if (!this._stateManager || !instanceId) return this;
+    return createInstanceChartManager(this, this._stateManager, instanceId);
   }
 
   /**
