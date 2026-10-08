@@ -546,6 +546,22 @@ html.is-nightly body {
   font-size: 13px;
 }
 
+/* Agent consent (dialogs/agent-consent) */
+.agent-consent {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-m);
+  font-size: var(--font-size-sm);
+}
+
+.agent-consent__project {
+  font-weight: var(--font-weight-semibold);
+}
+
+.agent-consent__hint {
+  color: var(--color-text-muted, var(--color-text-secondary));
+}
+
 .scenario-confirm__overwrite {
   color: var(--color-warning, var(--color-text-primary));
   font-weight: var(--font-weight-semibold);

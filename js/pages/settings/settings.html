@@ -80,6 +80,15 @@
             </div>
             <p class="settings-hint" x-text="t('exportReminderHint')"></p>
           </div>
+          <div class="settings-section" id="settings-agent">
+            <label class="settings-section__label" x-text="agentTitle"></label>
+            <p class="settings-hint" x-text="agentStatusText()"></p>
+            <p class="settings-hint" x-text="agentCoverage"></p>
+            <button type="button" class="btn btn--sm btn--ghost" id="settings-agent-revoke"
+                    x-show="agentGranted" @click="revokeAgentConsent()"
+                    x-text="agentRevokeLabel"></button>
+            <p class="settings-hint" x-text="agentHint"></p>
+          </div>
         </div>
 
         <!-- Tab: Charts -->

@@ -15,6 +15,7 @@ import {
   shortcutRegistry, normalizeCombo, formatCombo,
 } from '../../core/shortcut-registry.js';
 import { CYCLES } from '../../core/cycles/cycles.js';
+import { agentSettingsData } from './settings-agent.js';
 
 /** Default 10-color chart series palette (identical to legacy DEFAULT_COLORS). */
 export const DEFAULT_CHART_COLORS = [
@@ -233,6 +234,12 @@ export default createPage({
         stateManager.set('settings.exportReminderMinutes', v);
       },
 
+      // ── KI-Agenten (Spec §3.2: Einwilligung sichtbar und widerrufbar) ──
+      ...agentSettingsData({
+        stateManager, i18n, eventBus,
+        notify: (msg, kind) => context.notify?.(msg, kind),
+      }),
+
       // ── glossary inline links ─────────────────────────────
       glossaryInline: stateManager.get('settings.glossary.inlineLinksEnabled') !== false,
       onGlossaryToggle() {
@@ -443,6 +450,7 @@ export default createPage({
 
       // ── lifecycle ─────────────────────────────────────────
       init() {
+        this.agentInit();
         this.alpha = linkedAlpha(this.confidence);
         this.beta = linkedBeta(this.power);
         if (!this.showAlgoLinks) document.body.classList.add('hide-algo-lab-links');
@@ -481,6 +489,7 @@ export default createPage({
       },
 
       destroy() {
+        this.agentDestroy();
         eventBus.off('shortcuts:changed', this._unsubShortcuts);
       },
     };
