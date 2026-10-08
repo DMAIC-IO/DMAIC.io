@@ -778,9 +778,11 @@ footer a:hover { color: var(--t1); text-decoration: underline; }
 .handbook-video {
   margin-block: 1.75rem;
 }
+
 .handbook-video__title {
   margin-block-end: .5rem;
 }
+
 .handbook-video__player {
   width: 100%;
   max-width: 44rem;
@@ -788,33 +790,40 @@ footer a:hover { color: var(--t1); text-decoration: underline; }
   border-radius: .5rem;
   background: var(--bg-card);
 }
+
 /* Einziges Element unter dem Player: eingeklappt eine Zeile, ausgeklappt die
    vollständige Sprungliste. Laufzeit und Modul-Link sind hier bewusst weg —
    die eine zeigt der Player selbst, den anderen führt die Seite schon. */
 .handbook-video__chapters-toggle {
   margin-block: .5rem 0;
 }
+
 .handbook-video__chapters-toggle > summary {
   cursor: pointer;
   color: var(--t3);
 }
+
 .handbook-video__chapters-toggle[open] > summary {
   margin-block-end: .35rem;
 }
+
 .handbook-video__chapters {
   margin: 0;
   padding: 0;
   list-style: none;
 }
+
 .handbook-video__chapters li + li {
   margin-block-start: .15rem;
 }
+
 .handbook-video__time {
   display: inline-block;
   min-width: 3.25rem;
   color: var(--t3);
   font-variant-numeric: tabular-nums;
 }
+
 .handbook-references__list {
   padding-left: 1.3rem;
   color: var(--t2);
