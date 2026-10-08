@@ -586,7 +586,9 @@
       "restoreDefaults": "Restore defaults",
       "renderError": "This tile could not be displayed.",
       "topN": "Number of top entries",
-      "showLegend": "Show legend"
+      "showLegend": "Show legend",
+      "topStatements": "Number of statements",
+      "topWarnings": "Number of warnings"
     }
   },
   "lab": {

@@ -586,7 +586,9 @@
       "restoreDefaults": "Standard wiederherstellen",
       "renderError": "Diese Kachel konnte nicht dargestellt werden.",
       "topN": "Anzahl der Top-Einträge",
-      "showLegend": "Legende anzeigen"
+      "showLegend": "Legende anzeigen",
+      "topStatements": "Anzahl der Aussagen",
+      "topWarnings": "Anzahl der Warnungen"
     }
   },
   "lab": {

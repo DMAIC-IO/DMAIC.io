@@ -212,6 +212,7 @@ export default [
     singleton: true,
     allowedPhases: ['define'],
     load: () => import('./voc-ctx-tree/voc-ctx-tree.js'),
+    loadTile: () => import('./voc-ctx-tree/voc-ctx-tree.tile.js'),
     cycles: {
       dmaic:  { phase: 'define',  allowedPhases: ['define']  },
       dmadv:  { phase: 'define',  allowedPhases: ['define']  },
@@ -235,6 +236,7 @@ export default [
     group: 'team',
     allowedPhases: ['define'],
     load: () => import('./raci-matrix/raci-matrix.js'),
+    loadTile: () => import('./raci-matrix/raci-matrix.tile.js'),
     cycles: {
       dmaic:  { phase: 'define', allowedPhases: ['define'] },
       dmadv:  { phase: 'define', allowedPhases: ['define'] },
@@ -578,6 +580,7 @@ export default [
     group: 'charts',
     allowedPhases: ['control'],
     load: () => import('./control-chart/control-chart.js'),
+    loadTile: () => import('./control-chart/control-chart.tile.js'),
     cycles: {
       dmaic:  { phase: 'control',        allowedPhases: ['control'] },
       dmadv:  { phase: 'verify',         allowedPhases: ['verify']  },

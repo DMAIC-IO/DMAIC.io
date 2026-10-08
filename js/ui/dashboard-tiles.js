@@ -34,11 +34,6 @@ export const DASHBOARD_TILES = [
     defaultW: 3, defaultH: 10, minW: 2, minH: 6,
   },
   {
-    id: 'voc-ctx-tree',
-    i18nTitle: 'dashboard.vocTitle',
-    defaultW: 3, defaultH: 10, minW: 2, minH: 6,
-  },
-  {
     id: 'org-chart',
     i18nTitle: 'dashboard.orgChartTitle',
     defaultW: 6, defaultH: 10, minW: 3, minH: 6,

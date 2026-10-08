@@ -2,7 +2,7 @@
  * D.Mike — Dashboard page (dashboard.js)
  * Thin host: owns the DashboardGrid, the add-tile menu, layout/title
  * persistence, PNG/SVG export, and the BUILT-IN tiles (goals, ZEG timeline,
- * org chart, VoC/CTx, RACI, SPC). Module-owned tiles come from each
+ * org chart). Module-owned tiles (incl. VoC/CTx, RACI, SPC) come from each
  * module's tile file (manifest `loadTile`), loaded and enumerated via
  * enumerate-tiles.js. Contract: docs/DASHBOARD.md.
  */
@@ -15,8 +15,6 @@ import { enumerateTiles, loadTileModules, refreshEventsOf } from './enumerate-ti
 import { renderTileSafely } from './tile-render.js';
 import { schemaOf, resolveSettings, toStored, withTileSettings, settingsToStoreOnLayoutSave, layoutToStoreOnSave } from './tile-settings.js';
 import { buildSettingsForm } from './tile-settings-form.js';
-import { getChartType, evaluateNelsonRules, computeCapability, capabilitySigma, DEFAULT_ENABLED_RULES } from '../../engines/control-chart-engine.js';
-import { getColumnValues, getColumnName } from '../../ui/column-picker.js';
 import { getPhaseIds } from '../../core/cycles/cycles.js';
 
 const page = createPage({
@@ -49,18 +47,7 @@ const page = createPage({
     let descriptors = [];
     const descriptorFor = (tileId) => descriptors.find(d => d.id === tileId);
 
-    // ── Scanners for host-owned dynamic built-in tiles (RACI, SPC) ──────────
-    // (fmea/ishikawa/charter are module-owned and enumerated by enumerateTiles.)
-    const _findVocState = () => {
-      const phases = stateManager.get('phases') || {};
-      for (const phase of allPhaseKeys()) {
-        for (const inst of (phases[phase] || [])) {
-          if (inst.moduleId === 'voc-ctx-tree') return stateManager.getModuleState(inst.instanceId);
-        }
-      }
-      return null;
-    };
-
+    // ── Charter state scanner (the charter tile also renders without an instance) ──
     const _findCharterState = () => {
       const phases = stateManager.get('phases') || {};
       for (const phase of allPhaseKeys()) {
@@ -69,58 +56,6 @@ const page = createPage({
         }
       }
       return null;
-    };
-
-    const _findAllRaciInstances = () => {
-      const phases = stateManager.get('phases') || {};
-      const result = [];
-      for (const phase of allPhaseKeys()) {
-        for (const inst of (phases[phase] || [])) {
-          if (inst.moduleId === 'raci-matrix') {
-            result.push({ instanceId: inst.instanceId, phase, label: inst.customName || i18n.t('modules.raci-matrix.name') });
-          }
-        }
-      }
-      return result;
-    };
-
-    const _findAllSpcInstances = () => {
-      const phases = stateManager.get('phases') || {};
-      const result = [];
-      for (const phase of allPhaseKeys()) {
-        for (const inst of (phases[phase] || [])) {
-          if (inst.moduleId === 'control-chart') {
-            result.push({ instanceId: inst.instanceId, phase, label: inst.customName || i18n.t('modules.control-chart.name') });
-          }
-        }
-      }
-      return result;
-    };
-
-    const _buildRaciTileDefs = () => {
-      const customTitles = stateManager.get('dashboard.titles') || {};
-      return _findAllRaciInstances().map(inst => {
-        const id = `raci:${inst.instanceId}`;
-        return {
-          id, instanceId: inst.instanceId, i18nTitle: '',
-          title: customTitles[id] || `RACI — ${inst.label}`,
-          defaultW: 3, defaultH: 10, minW: 2, minH: 6,
-          builtin: true, moduleId: null, tile: null,
-        };
-      });
-    };
-
-    const _buildSpcTileDefs = () => {
-      const customTitles = stateManager.get('dashboard.titles') || {};
-      return _findAllSpcInstances().map(inst => {
-        const id = `spc:${inst.instanceId}`;
-        return {
-          id, instanceId: inst.instanceId, i18nTitle: '',
-          title: customTitles[id] || `SPC — ${inst.label}`,
-          defaultW: 3, defaultH: 10, minW: 2, minH: 6,
-          builtin: true, moduleId: null, tile: null,
-        };
-      });
     };
 
     // ── BUILT-IN tile renderers (ported 1:1, innerHTML → h()/svg()) ────
@@ -344,342 +279,6 @@ const page = createPage({
       body.replaceChildren(h('div', { class: 'dashboard-area__org' }, orgSvg));
     };
 
-    // ── VoC → CTx tree ───────────────────────────────────────────────────
-    const renderVoc = () => {
-      const body = handle.grid?.getTileBody('voc-ctx-tree');
-      if (!body) return;
-      const state = _findVocState();
-      const vocs = (state && Array.isArray(state.vocs)) ? state.vocs : [];
-
-      if (vocs.length === 0) {
-        body.replaceChildren(h('p', { class: 'dashboard-area__empty' }, i18n.t('dashboard.vocEmpty')));
-        return;
-      }
-
-      let needs = 0, ctq = 0, ctd = 0, ctc = 0, reqs = 0;
-      for (const voc of vocs) {
-        for (const need of (voc.needs || [])) {
-          needs++;
-          for (const drv of (need.drivers || [])) {
-            if (drv.type === 'ctq') ctq++;
-            else if (drv.type === 'ctd') ctd++;
-            else if (drv.type === 'ctc') ctc++;
-            reqs += (drv.requirements || []).length;
-          }
-        }
-      }
-      const drivers = ctq + ctd + ctc;
-
-      const summary = h('div', { class: 'dashboard-voc__summary' },
-        h('span', { class: 'dashboard-voc__stat' }, h('strong', null, String(vocs.length)), ' VoC'),
-        h('span', { class: 'dashboard-voc__stat' }, h('strong', null, String(needs)), ` ${  i18n.t('dashboard.vocNeeds')}`),
-        h('span', { class: 'dashboard-voc__stat' }, h('strong', null, String(drivers)), ` ${  i18n.t('dashboard.vocDrivers')}`),
-        h('span', { class: 'dashboard-voc__stat' }, h('strong', null, String(reqs)), ` ${  i18n.t('dashboard.vocReqs')}`),
-      );
-
-      const children = [summary];
-
-      if (drivers > 0) {
-        const bar = h('div', { class: 'dashboard-voc__driver-bar' });
-        if (ctq > 0) bar.append(h('div', { class: 'dashboard-voc__bar-seg', style: `flex:${ctq};background:var(--color-voc-ctq, rgba(39,174,96,1))`, title: `CTQ: ${ctq}` }));
-        if (ctd > 0) bar.append(h('div', { class: 'dashboard-voc__bar-seg', style: `flex:${ctd};background:var(--color-voc-ctd, rgba(41,128,185,1))`, title: `CTD: ${ctd}` }));
-        if (ctc > 0) bar.append(h('div', { class: 'dashboard-voc__bar-seg', style: `flex:${ctc};background:var(--color-voc-ctc, rgba(231,76,139,1))`, title: `CTC: ${ctc}` }));
-        children.push(bar);
-
-        const legend = h('div', { class: 'dashboard-voc__driver-legend' });
-        if (ctq > 0) legend.append(h('span', { class: 'dashboard-voc__legend-item' }, h('span', { class: 'dashboard-fmea__legend-dot', style: 'background:var(--color-voc-ctq, rgba(39,174,96,1))' }), `CTQ: ${ctq}`));
-        if (ctd > 0) legend.append(h('span', { class: 'dashboard-voc__legend-item' }, h('span', { class: 'dashboard-fmea__legend-dot', style: 'background:var(--color-voc-ctd, rgba(41,128,185,1))' }), `CTD: ${ctd}`));
-        if (ctc > 0) legend.append(h('span', { class: 'dashboard-voc__legend-item' }, h('span', { class: 'dashboard-fmea__legend-dot', style: 'background:var(--color-voc-ctc, rgba(231,76,139,1))' }), `CTC: ${ctc}`));
-        children.push(legend);
-      }
-
-      children.push(h('div', { class: 'dashboard-voc__list-label' }, i18n.t('dashboard.vocStatements')));
-
-      const list = h('ul', { class: 'dashboard-voc__list' });
-      vocs.slice(0, 6).forEach(v => {
-        const li = h('li', { class: 'dashboard-voc__item' }, `„${v.text || '—'}“`);
-        if (v.source) {
-          li.append(' ', h('span', { class: 'dashboard-area__muted' }, `(${v.source})`));
-        }
-        list.append(li);
-      });
-      if (vocs.length > 6) {
-        list.append(h('li', { class: 'dashboard-voc__item dashboard-area__muted' }, `… +${vocs.length - 6}`));
-      }
-      children.push(list);
-
-      body.replaceChildren(...children);
-    };
-
-    // ── RACI tile ────────────────────────────────────────────────────────
-    const renderRaci = (tileId) => {
-      const body = handle.grid?.getTileBody(tileId);
-      if (!body) return;
-      const instanceId = tileId.replace('raci:', '');
-      const state = stateManager.getModuleState(instanceId);
-      const activities = (state && Array.isArray(state.activities)) ? state.activities : [];
-      const stakeholders = (state && Array.isArray(state.stakeholders)) ? state.stakeholders : [];
-      const assignments = (state && state.assignments) || {};
-
-      if (activities.length === 0 && stakeholders.length === 0) {
-        body.replaceChildren(h('p', { class: 'dashboard-area__empty' }, i18n.t('dashboard.raciEmpty')));
-        return;
-      }
-
-      const counts = { R: 0, A: 0, C: 0, I: 0 };
-      const totalCells = activities.length * stakeholders.length;
-      let filled = 0;
-      for (const val of Object.values(assignments)) {
-        if (val && Object.hasOwn(counts, val)) { counts[val]++; filled++; }
-      }
-      const coverage = totalCells > 0 ? Math.round(filled / totalCells * 100) : 0;
-
-      const roleColors = {
-        R: 'var(--color-error)',
-        A: 'var(--color-warning)',
-        C: 'var(--color-accent)',
-        I: 'var(--color-success)',
-      };
-
-      const children = [];
-      children.push(
-        h('div', { class: 'dashboard-raci__summary' },
-          h('span', null, `${i18n.t('dashboard.raciActivities')  }: `, h('strong', null, String(activities.length))),
-          h('span', null, `${i18n.t('dashboard.raciStakeholders')  }: `, h('strong', null, String(stakeholders.length))),
-          h('span', null, `${i18n.t('dashboard.raciCoverage')  }: `, h('strong', null, `${coverage}%`)),
-        ),
-      );
-
-      if (filled > 0) {
-        const bar = h('div', { class: 'dashboard-raci__bar' });
-        ['R', 'A', 'C', 'I'].forEach(role => {
-          const pct = counts[role] / filled * 100;
-          if (pct === 0) return;
-          bar.append(h('div', { class: 'dashboard-raci__bar-seg', style: `width:${pct}%;background:${roleColors[role]}`, title: `${role}: ${counts[role]}` }));
-        });
-        children.push(bar);
-      }
-
-      const legend = h('div', { class: 'dashboard-raci__legend' });
-      ['R', 'A', 'C', 'I'].filter(r => counts[r] > 0).forEach(role => {
-        legend.append(h('span', { class: 'dashboard-raci__legend-item' },
-          h('span', { class: 'dashboard-fmea__legend-dot', style: `background:${roleColors[role]}` }),
-          `${role}: ${counts[role]}`,
-        ));
-      });
-      children.push(legend);
-
-      const warnings = [];
-      activities.forEach((act, aIdx) => {
-        let hasR = false, hasA = false;
-        stakeholders.forEach((_, sIdx) => {
-          const v = assignments[`${aIdx}:${sIdx}`];
-          if (v === 'R') hasR = true;
-          if (v === 'A') hasA = true;
-        });
-        if (!hasR) warnings.push({ act, missing: 'R' });
-        if (!hasA) warnings.push({ act, missing: 'A' });
-      });
-
-      if (warnings.length > 0) {
-        children.push(h('div', { class: 'dashboard-raci__warn-label' }, i18n.t('dashboard.raciWarnings')));
-        const ul = h('ul', { class: 'dashboard-raci__warn-list' });
-        warnings.slice(0, 5).forEach(w => {
-          ul.append(h('li', { class: 'dashboard-raci__warn-item' },
-            h('span', { class: 'dashboard-raci__warn-role', style: `color:${roleColors[w.missing]}` }, w.missing),
-            ` ${  i18n.t('dashboard.raciMissing')  }: ${  w.act}`,
-          ));
-        });
-        if (warnings.length > 5) {
-          ul.append(h('li', { class: 'dashboard-area__muted' }, `… +${warnings.length - 5}`));
-        }
-        children.push(ul);
-      }
-
-      body.replaceChildren(...children);
-    };
-
-    // ── SPC tile ─────────────────────────────────────────────────────────
-    const buildSpcSparkline = (scData, violationSet, usl, lsl, width) => {
-      const W = width || 320, H = 160, PAD_X = 2, PAD_Y = 6;
-      const pts = scData.values.filter(v => v !== null);
-      if (pts.length < 2) return null;
-
-      const extents = [scData.lcl, scData.ucl, ...pts];
-      if (usl != null) extents.push(usl);
-      if (lsl != null) extents.push(lsl);
-      const yMin = Math.min(...extents) - scData.sigma * 0.3;
-      const yMax = Math.max(...extents) + scData.sigma * 0.3;
-      const yRange = yMax - yMin || 1;
-
-      const sx = (i) => PAD_X + (i / (scData.values.length - 1)) * (W - 2 * PAD_X);
-      const sy = (v) => PAD_Y + (1 - (v - yMin) / yRange) * (H - 2 * PAD_Y);
-
-      const uclY = sy(scData.ucl), lclY = sy(scData.lcl), clY = sy(scData.cl);
-      const kids = [
-        svg('rect', { x: PAD_X, y: uclY, width: W - 2 * PAD_X, height: lclY - uclY,
-          fill: 'var(--color-success)', opacity: 0.06, rx: 2 }),
-        svg('line', { x1: PAD_X, y1: uclY, x2: W - PAD_X, y2: uclY,
-          stroke: 'var(--color-error)', 'stroke-width': 0.8, 'stroke-dasharray': '4,3', opacity: 0.6 }),
-        svg('line', { x1: PAD_X, y1: lclY, x2: W - PAD_X, y2: lclY,
-          stroke: 'var(--color-error)', 'stroke-width': 0.8, 'stroke-dasharray': '4,3', opacity: 0.6 }),
-        svg('line', { x1: PAD_X, y1: clY, x2: W - PAD_X, y2: clY,
-          stroke: 'var(--color-accent)', 'stroke-width': 0.8, opacity: 0.5 }),
-      ];
-
-      if (usl != null) {
-        const uslY = sy(usl);
-        kids.push(svg('line', { x1: PAD_X, y1: uslY, x2: W - PAD_X, y2: uslY,
-          stroke: 'var(--color-warning)', 'stroke-width': 1, opacity: 0.7 }));
-      }
-      if (lsl != null) {
-        const lslY = sy(lsl);
-        kids.push(svg('line', { x1: PAD_X, y1: lslY, x2: W - PAD_X, y2: lslY,
-          stroke: 'var(--color-warning)', 'stroke-width': 1, opacity: 0.7 }));
-      }
-
-      const polyPts = [];
-      for (let i = 0; i < scData.values.length; i++) {
-        if (scData.values[i] === null) continue;
-        polyPts.push(`${sx(i).toFixed(1)},${sy(scData.values[i]).toFixed(1)}`);
-      }
-      kids.push(svg('polyline', { points: polyPts.join(' '), fill: 'none',
-        stroke: 'var(--color-text-secondary)', 'stroke-width': 1.2, 'stroke-linejoin': 'round' }));
-
-      for (let i = 0; i < scData.values.length; i++) {
-        if (scData.values[i] === null) continue;
-        const v = scData.values[i];
-        const isNelson = violationSet.has(i);
-        const isOos = (usl != null && v > usl) || (lsl != null && v < lsl);
-        if (!isNelson && !isOos) continue;
-        const color = isNelson ? 'var(--color-error)' : 'var(--color-warning)';
-        kids.push(svg('circle', { cx: sx(i).toFixed(1), cy: sy(v).toFixed(1), r: 2.5, fill: color }));
-      }
-
-      return svg('svg', { class: 'dashboard-spc__sparkline', viewBox: `0 0 ${W} ${H}`, width: W, height: H }, kids);
-    };
-
-    const renderSpc = (tileId) => {
-      const body = handle.grid?.getTileBody(tileId);
-      if (!body) return;
-      const instanceId = tileId.replace('spc:', '');
-      const state = stateManager.getModuleState(instanceId);
-
-      if (!state || !state.columnRef) {
-        body.replaceChildren(h('p', { class: 'dashboard-area__empty' }, i18n.t('dashboard.spcEmpty')));
-        return;
-      }
-
-      const ct = getChartType(state.chartTypeId || 'i-mr');
-      if (!ct) return;
-
-      const rawValues = getColumnValues(stateManager, state.columnRef);
-      const values = rawValues.filter(v => v != null && typeof v === 'number' && !isNaN(v));
-
-      if (values.length < 2) {
-        body.replaceChildren(h('p', { class: 'dashboard-area__empty' }, i18n.t('dashboard.spcNoData')));
-        return;
-      }
-
-      const n = state.subgroupSize || 1;
-      const baselineEnd = state.baselineCount || values.length;
-      const result = ct.compute(values, n, baselineEnd);
-
-      const primaryId = ct.subcharts[0].id;
-      const primaryData = result.subcharts[primaryId];
-      const enabledRules = state.enabledRules || [...DEFAULT_ENABLED_RULES];
-      const violations = evaluateNelsonRules(
-        primaryData.values, primaryData.cl, primaryData.sigma, enabledRules,
-      );
-      const capability = computeCapability(
-        primaryData.values.filter(v => v !== null),
-        primaryData.cl, capabilitySigma(state.chartTypeId || 'i-mr', primaryData.sigma, n),
-        state.usl ?? null, state.lsl ?? null,
-      );
-
-      const vCount = new Set(violations.map(v => v.index)).size;
-      const totalPts = primaryData.values.filter(v => v !== null).length;
-      const isStable = vCount === 0;
-      const colName = getColumnName(stateManager, state.columnRef) || '?';
-      const fmt = (v) => v != null ? v.toFixed(4) : '—';
-
-      const usl = state.usl ?? null;
-      const lsl = state.lsl ?? null;
-      const hasSpec = usl != null || lsl != null;
-
-      let oosCount = 0;
-      if (hasSpec) {
-        for (const v of primaryData.values) {
-          if (v === null) continue;
-          if ((usl != null && v > usl) || (lsl != null && v < lsl)) oosCount++;
-        }
-      }
-
-      const chartTypeLabel = {
-        'i-mr': 'I-MR', 'xbar-r': 'X̄-R', 'xbar-s': 'X̄-S',
-      }[ct.id] || ct.id;
-
-      const sparkWidth = body.clientWidth - 16;
-      const violationSet = new Set(violations.map(v => v.index));
-      const sparkSvg = buildSpcSparkline(primaryData, violationSet, usl, lsl, sparkWidth);
-
-      const stat = (label, value) => h('div', { class: 'dashboard-spc__stat' },
-        h('span', { class: 'dashboard-spc__stat-label' }, label),
-        h('span', { class: 'dashboard-spc__stat-value' }, value),
-      );
-
-      const metrics = h('div', { class: 'dashboard-spc__metrics' });
-      metrics.append(
-        h('div', { class: `dashboard-spc__metric ${isStable ? 'dashboard-spc__metric--ok' : 'dashboard-spc__metric--bad'}` },
-          h('span', { class: 'dashboard-spc__metric-value' }, String(vCount)),
-          h('span', { class: 'dashboard-spc__metric-label' }, i18n.t('dashboard.spcViolations')),
-          h('span', { class: 'dashboard-spc__metric-sub' }, i18n.t('dashboard.spcOf', { total: totalPts })),
-        ),
-      );
-
-      if (hasSpec) {
-        const oosCls = oosCount === 0 ? '--ok' : '--warn';
-        metrics.append(
-          h('div', { class: `dashboard-spc__metric dashboard-spc__metric${oosCls}` },
-            h('span', { class: 'dashboard-spc__metric-value' }, String(oosCount)),
-            h('span', { class: 'dashboard-spc__metric-label' }, i18n.t('dashboard.spcOutOfSpec')),
-            h('span', { class: 'dashboard-spc__metric-sub' }, i18n.t('dashboard.spcOf', { total: totalPts })),
-          ),
-        );
-      }
-
-      if (capability) {
-        const cpkCls = capability.cpk >= 1.33 ? '--ok' : capability.cpk >= 1.0 ? '--warn' : '--bad';
-        metrics.append(
-          h('div', { class: `dashboard-spc__metric dashboard-spc__metric${cpkCls}` },
-            h('span', { class: 'dashboard-spc__metric-value' }, capability.cpk.toFixed(3)),
-            h('span', { class: 'dashboard-spc__metric-label' }, 'Cpk'),
-            capability.cp ? h('span', { class: 'dashboard-spc__metric-sub' }, `Cp = ${capability.cp.toFixed(3)}`) : null,
-          ),
-        );
-      }
-
-      const spark = h('div', { class: 'dashboard-spc__spark' });
-      if (sparkSvg) spark.append(sparkSvg);
-
-      body.replaceChildren(
-        h('div', { class: 'dashboard-spc' },
-          h('div', { class: 'dashboard-spc__header' },
-            h('span', { class: 'dashboard-spc__type' }, chartTypeLabel),
-            h('span', { class: 'dashboard-spc__col' }, colName),
-          ),
-          spark,
-          h('div', { class: 'dashboard-spc__stats' },
-            stat('CL', fmt(primaryData.cl)),
-            stat('UCL', fmt(primaryData.ucl)),
-            stat('LCL', fmt(primaryData.lcl)),
-            stat('σ̂', fmt(primaryData.sigma)),
-          ),
-          metrics,
-        ),
-      );
-    };
-
     // ── Module-owned tile dispatch ───────────────────────────────────────
     /** Resolved settings of a tile: stored overrides over schema defaults. */
     const settingsFor = (tileId, tile) =>
@@ -717,9 +316,6 @@ const page = createPage({
       if (tileId === 'zeg-timeline') await renderChart();
       else if (tileId === 'project-goals') renderGoals();
       else if (tileId === 'org-chart') renderOrgChart();
-      else if (tileId === 'voc-ctx-tree') renderVoc();
-      else if (tileId.startsWith('raci:')) renderRaci(tileId);
-      else if (tileId.startsWith('spc:')) renderSpc(tileId);
     };
 
     // ── Tile settings dialog ─────────────────────────────────────────────
@@ -880,8 +476,6 @@ const page = createPage({
       handle._charterTile = tileModules.find(m => m.moduleId === 'project-charter')?.tile ?? null;
       descriptors = [
         ...enumerateTiles(tileModules, ctx),
-        ..._buildRaciTileDefs(),
-        ..._buildSpcTileDefs(),
       ];
 
       // Refresh subscriptions (contract field `refreshOn`), rebuilt on every
@@ -915,10 +509,10 @@ const page = createPage({
         handle._lastLayout = layout.map(x => ({ ...x }));
         for (const item of layout) {
           const before = prev.get(item.tileId);
-          const resized = !before || before.w !== item.w || before.h !== item.h;
+          // A tile without a previous entry was just added (addTile renders it): not a resize.
+          const resized = !!before && (before.w !== item.w || before.h !== item.h);
           const d = descriptorFor(item.tileId);
           if (d?.tile && resized && refreshEventsOf(d.tile).includes('resize')) renderTile(item.tileId);
-          else if (item.tileId.startsWith('spc:')) renderSpc(item.tileId);
         }
       };
       handle.grid.onTileRemoved = (tileId) => {
@@ -1012,6 +606,9 @@ const page = createPage({
 
   unmount(containerEl, ctx, handle) {
     if (!handle) return;
+    // Invalidate a render still awaiting loadTileModules so it cannot
+    // subscribe refresh handlers or rebuild the grid after unmount.
+    handle._renderGen++;
     if (handle.chart) { ctx.chartManager.destroy(handle.chart); handle.chart = null; }
     if (handle.grid) { handle.grid.destroy(); handle.grid = null; }
     if (handle.addMenuEl) { handle.addMenuEl.remove(); handle.addMenuEl = null; }
