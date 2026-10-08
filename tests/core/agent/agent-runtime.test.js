@@ -217,6 +217,44 @@ suite('agent runtime — the seven ops', () => {
     assertDeepEqual(out.results[0].result, { instanceId: 'fw-1', module: 'five-why', phase: 'define' });
   });
 
+  // Review-Befund (Important): nur `instance.call` hatte einen eigenen
+  // `try/catch` um den Host-Aufruf. Ein Wurf aus `host.openInstance` (z. B.
+  // eine `router.navigate`-Rejection) darf trotzdem nicht unbehandelt aus
+  // `interact()` fallen — die Laufzeit muss ihn in einen AXI-Fehler
+  // übersetzen, egal welche Op betroffen ist.
+  test('a throwing host method becomes op_failed, not an unhandled rejection', async () => {
+    // `fw-1` must be a KNOWN instance so the validator (stage 5) lets the
+    // action through — the throw has to happen inside the op, at runtime,
+    // not be pre-empted by validation.
+    const phases = { data: [], define: [{ instanceId: 'fw-1', moduleId: 'five-why', order: 0 }], extras: [] };
+    const stateManager = {
+      getActiveProjectId: () => 'p-1',
+      get: (path) => (path === 'phases' ? phases : path.startsWith('phases.') ? phases[path.slice(7)] : undefined),
+      set: () => {},
+    };
+    const runtime = createAgentRuntime({
+      stateManager,
+      moduleRegistry: { getAll: () => DEFS, get: (id) => DEFS.find(d => d.id === id), getActiveCycle: () => 'dmaic' },
+      i18n: I18N,
+      registry: REGISTRY,
+      getHelp: async () => null,
+      appVersion: '1.2.3',
+      consent: { ensure: async () => ({ ok: true }) },
+      host: {
+        getCurrentView: () => null,
+        openInstance: async () => { throw new Error('router rejected'); },
+        getViewmodel: async () => null,
+        addInstance: async () => ({ instanceId: 'x', module: 'x', phase: 'define' }),
+        removeInstance: async () => true,
+      },
+    });
+    const out = await runtime.interact({ op: 'instance.open', instance: 'fw-1' });
+    assertEqual(out.ok, false);
+    assertEqual(out.results.length, 1);
+    assertEqual(out.results[0].ok, false);
+    assertEqual(out.results[0].error, 'op_failed');
+  });
+
   // Ruling K1: with a LITERAL `instance`, the target module is statically
   // known, so stage 5 of the validator rejects the whole batch before any
   // op runs. The return shape is the validator's, not the ops' — there is

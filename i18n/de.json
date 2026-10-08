@@ -5935,7 +5935,8 @@
       "notConnected": "Keine Einwilligung erteilt.",
       "validationFailed": "Eintrag {index} ({id}) ist ungültig.",
       "validationFailedNoId": "Eintrag {index} ist ungültig.",
-      "callFailed": "Aufruf von \"{method}\" ist fehlgeschlagen: {detail}"
+      "callFailed": "Aufruf von \"{method}\" ist fehlgeschlagen: {detail}",
+      "opFailed": "Aktion \"{op}\" ist unerwartet fehlgeschlagen: {detail}"
     },
     "usage": {
       "intro": "Qprovement ist ein Six-Sigma-Werkzeugkasten im Browser. Diese Fläche liest den Projektzustand, legt Werkzeuge an und ruft deren Aktionen auf — über dieselben Aufrufe, die die Bedienoberfläche nutzt.",

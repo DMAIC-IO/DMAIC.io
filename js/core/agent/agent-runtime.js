@@ -15,6 +15,7 @@
  * HTTP-Client.
  */
 import { CONTRACT_VERSION, ERRORS } from './agent-contract.js';
+import { axiError } from './agent-errors.js';
 import { validateBatch } from './agent-validate.js';
 import { resolveRefs } from './agent-refs.js';
 import { buildWorld, buildCatalog, buildInstanceList } from './agent-catalog.js';
@@ -82,7 +83,18 @@ export function createAgentRuntime(deps) {
           break;
         }
 
-        const outcome = await ops[action.op](resolved.value);
+        // Eine Op wirft im Regelfall nicht (siehe agent-ops.js), aber ein
+        // Host-Port (`router.navigate`, IndexedDB, …) kann es trotzdem tun.
+        // Dieser EINE Fang-Punkt übersetzt jeden solchen Wurf in einen
+        // AXI-Fehler, statt ihn unbehandelt aus `interact()` fallen zu
+        // lassen — eine Stelle statt sieben Einzelfälle je Op.
+        let outcome;
+        try {
+          outcome = await ops[action.op](resolved.value);
+        } catch (err) {
+          outcome = axiError(ERRORS.OP_FAILED,
+            i18n.t('agent.errors.opFailed', { op: action.op, detail: err?.message ?? String(err) }));
+        }
         if (outcome && outcome.ok === false) {
           results.push({ ...outcome, id: action.id ?? null });
           allOk = false;

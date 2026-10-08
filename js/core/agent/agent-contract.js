@@ -37,6 +37,7 @@ export const ERRORS = Object.freeze({
   MODULE_NOT_AGENT_READY: 'module_not_agent_ready',
   VALIDATION_FAILED:      'validation_failed',
   CALL_FAILED:            'call_failed',
+  OP_FAILED:              'op_failed',
 });
 
 /** Ein Katalogeintrag des Modulkatalogs (catalog.read, project.read). */

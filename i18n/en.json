@@ -5935,7 +5935,8 @@
       "notConnected": "No consent granted.",
       "validationFailed": "Entry {index} ({id}) is invalid.",
       "validationFailedNoId": "Entry {index} is invalid.",
-      "callFailed": "Call to \"{method}\" failed: {detail}"
+      "callFailed": "Call to \"{method}\" failed: {detail}",
+      "opFailed": "Action \"{op}\" failed unexpectedly: {detail}"
     },
     "usage": {
       "intro": "Qprovement is a browser-based Six Sigma toolkit. This surface reads the project state, adds tools and calls their actions — through the same calls the user interface uses.",

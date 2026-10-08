@@ -60,9 +60,7 @@ export function createOps(deps) {
       const instances = buildInstanceList({ stateManager, i18n });
       const removed = await host.removeInstance(action.instance);
       if (!removed) {
-        return axiError(ERRORS.UNKNOWN_INSTANCE,
-          t('agent.errors.unknownInstance', { instance: action.instance }),
-          { available: instances.map(i => i.id) });
+        return unknownInstanceError(t, instances, action.instance);
       }
       return { instanceId: action.instance, removed: true };
     },
@@ -71,9 +69,7 @@ export function createOps(deps) {
       const instances = buildInstanceList({ stateManager, i18n });
       const opened = await host.openInstance(action.instance);
       if (!opened) {
-        return axiError(ERRORS.UNKNOWN_INSTANCE,
-          t('agent.errors.unknownInstance', { instance: action.instance }),
-          { available: instances.map(i => i.id) });
+        return unknownInstanceError(t, instances, action.instance);
       }
       return opened;
     },
@@ -82,9 +78,7 @@ export function createOps(deps) {
       const instances = buildInstanceList({ stateManager, i18n });
       const found = instances.find(i => i.id === action.instance);
       if (!found) {
-        return axiError(ERRORS.UNKNOWN_INSTANCE,
-          t('agent.errors.unknownInstance', { instance: action.instance }),
-          { available: instances.map(i => i.id) });
+        return unknownInstanceError(t, instances, action.instance);
       }
       // Die Freigabe wird hier ERNEUT geprüft: der Prüfer kommt an sie nur
       // heran, wenn die Modulidentität statisch bekannt war (Spec §5).
@@ -122,6 +116,21 @@ export function createOps(deps) {
       }
     },
   };
+}
+
+/**
+ * Der wiederkehrende „Instanz nicht gefunden"-Fehler von `module.remove`,
+ * `instance.open` und `instance.call` — nur die auslösende Host-Methode
+ * unterscheidet sich, die Fehlerform ist überall dieselbe.
+ * @param {(key: string, params?: object) => string} t
+ * @param {Array<{ id: string }>} instances  die aktuelle flache Instanzliste
+ * @param {string} instance  der nicht gefundene Bezeichner
+ * @returns {{ ok: false, error: string, message: string, available: string[] }}
+ */
+function unknownInstanceError(t, instances, instance) {
+  return axiError(ERRORS.UNKNOWN_INSTANCE,
+    t('agent.errors.unknownInstance', { instance }),
+    { available: instances.map(i => i.id) });
 }
 
 /**
