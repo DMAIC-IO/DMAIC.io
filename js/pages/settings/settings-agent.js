@@ -11,12 +11,18 @@
  * würde eine spätere Erteilung also nie sehen. Deshalb hört der Abschnitt auf
  * `agent:consent-changed`, das `grantConsent`/`revokeConsent` feuern.
  *
- * Importiert bewusst direkt aus den zwei Quellmodulen statt aus
- * `core/agent/index.js`: der Barrel zöge Laufzeit, Ops und Katalog in den
- * Settings-Chunk.
+ * Importiert über den Barrel `core/agent/index.js` — die dokumentierte Regel
+ * „einziger erlaubter Einstieg von außerhalb `core/agent/`". Der frühere
+ * Direktimport aus `agent-consent.js` und `agent-registry.generated.js` sollte
+ * Laufzeit, Ops und Katalog aus einem Settings-Chunk heraushalten; es gibt
+ * aber keinen: `js/app.js` importiert `startup/index.js` statisch, das über
+ * `startup/agent-surface.js` den Barrel ohnehin in den Eager-Graph der Entry
+ * zieht, und `js/pages/index.js` zieht `settings.js` ebenfalls statisch. Der
+ * Direktimport sparte also null Byte (Review-Befund I5). Die echte
+ * Bundle-Frage — Agentenfläche dynamisch nachladen, `AGENT_COVERAGE` in eine
+ * eigene kleine generierte Datei — steht in der Roadmap.
  */
-import { readConsent, revokeConsent } from '../../core/agent/agent-consent.js';
-import { AGENT_COVERAGE } from '../../core/agent/agent-registry.generated.js';
+import { readConsent, revokeConsent, AGENT_COVERAGE } from '../../core/agent/index.js';
 
 /** Das Ereignis, über das sich der Einwilligungsstand ändert. */
 export const CONSENT_CHANGED = 'agent:consent-changed';
