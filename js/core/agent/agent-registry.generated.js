@@ -7,7 +7,9 @@ export const AGENT_REGISTRY = {
     "tagged": false,
     "available": false,
     "violations": [],
-    "reported": [],
+    "reported": [
+      "unresolvable_data_literal"
+    ],
     "actions": {},
     "fields": {}
   },
@@ -87,6 +89,7 @@ export const AGENT_REGISTRY = {
     "available": false,
     "violations": [],
     "reported": [
+      "unresolved_spread:chartModuleLifecycle(module, { mountPicker() { const wrap = module._container.querySelector('[data-ref=\"picker-wrap\"]'); if (!wrap) return; this._picker?.destroy(); const ctx = module._context; const i18n = ctx.i18n; this._picker = new DatasetPicker(wrap, ctx, { slots: [ { key: 'x', label: 'X', title: i18n.t('modules.bar.slotX'), minCount: 1, required: true }, { key: 'y', label: 'Y', title: i18n.t('modules.bar.slotY'), types: ['numeric', 'currency', 'percent'], minCount: 1 }, { key: 'g', label: 'G', title: i18n.t('modules.bar.slotG'), group: true }, ], onChange: (datasets) => { const ds = datasets[0] || {}; this.model.xRef = ds.x || null; this.model.yRef = ds.y || null; this.model.gRef = ds.g || null; this._plot(); }, }); if (this.model.xRef || this.model.yRef || this.model.gRef) { this._picker.value = [{ x: this.model.xRef, y: this.model.yRef, g: this.model.gRef }]; } }, themeMode: 'render', autorun: false, initialRender() { if (this.model.xRef) { requestAnimationFrame(() => this._plot()); } }, })",
       "unmarked_method:aggregationChanged",
       "unmarked_method:stackedChanged"
     ],
@@ -329,6 +332,8 @@ export const AGENT_REGISTRY = {
     "available": false,
     "violations": [],
     "reported": [
+      "unresolved_spread:renderMethods",
+      "unresolved_spread:editorMethods",
       "unmarked_method:betaLabel",
       "unmarked_method:revalidateFormula",
       "unmarked_method:onFormulaInput",
@@ -749,6 +754,7 @@ export const AGENT_REGISTRY = {
     "available": false,
     "violations": [],
     "reported": [
+      "unresolved_spread:chainViewMixin(module, _t, { autoSizeSelector: 'textarea.df__step-title, textarea.df__step-description', dragRowSelector: '.df__col', })",
       "unmarked_method:init",
       "unmarked_method:stepsForLane",
       "unmarked_method:laneLabel",
@@ -1270,6 +1276,7 @@ export const AGENT_REGISTRY = {
     "available": false,
     "violations": [],
     "reported": [
+      "unresolved_spread:draggablePopout({ size: 'width:680px;height:auto;max-height:85vh;' })",
       "unmarked_method:riskNum",
       "unmarked_method:rpnText",
       "unmarked_method:targetText",
@@ -1609,6 +1616,7 @@ export const AGENT_REGISTRY = {
     "available": false,
     "violations": [],
     "reported": [
+      "unresolved_spread:chartModuleLifecycle(module, { mountPicker() { const wrap = module._container.querySelector('[data-ref=\"picker-wrap\"]'); if (!wrap) return; this._picker?.destroy(); const ctx = module._context; const i18n = ctx.i18n; this._picker = new DatasetPicker(wrap, ctx, { slots: [ { key: 'x', label: 'X', title: i18n.t('modules.heatmap.slotX'), minCount: 1, required: true }, { key: 'g', label: 'G', title: i18n.t('modules.heatmap.slotG'), minCount: 1, required: true }, { key: 'v', label: 'V', title: i18n.t('modules.heatmap.slotV'), types: ['numeric', 'currency', 'percent'], minCount: 1 }, ], onChange: (datasets) => { const ds = datasets[0] || {}; this.model.xRef = ds.x || null; this.model.gRef = ds.g || null; this.model.vRef = ds.v || null; this._syncOptions(); this._plot(); }, }); if (this.model.xRef || this.model.gRef || this.model.vRef) { this._picker.value = [{ x: this.model.xRef, g: this.model.gRef, v: this.model.vRef }]; } // Preserve the original init() ordering: _mountPicker() was followed // immediately by _syncOptions() to seed the aggregation-options x-if. this._syncOptions(); }, themeMode: 'render', autorun: false, initialRender() { if (this.model.xRef && this.model.gRef) { requestAnimationFrame(() => this._plot()); } }, })",
       "unmarked_method:onAggregationChange"
     ],
     "actions": {},
@@ -1896,6 +1904,7 @@ export const AGENT_REGISTRY = {
     "available": false,
     "violations": [],
     "reported": [
+      "unresolved_spread:draggableRows({ onMove({ group, sourceId, targetId }) { if (group === 'causes') this.model.moveRowBefore(sourceId, targetId); else if (group === 'experiments') this.model.moveExperimentBefore(sourceId, targetId); else if (group === 'facts') this.model.moveFactBefore(sourceId, targetId); }, rowIds(group, id) { if (group === 'experiments') return this.model.experiments.map(x => x.id); if (group === 'facts') return this.model.facts.map(f => f.id); const row = this.model.rows.find(r => r.id === id); if (!row) return []; return this.model.ordered() .filter(r => r.parentId === row.parentId) .map(r => r.id); }, t: (key, params) => i18n().t(key, params), })",
       "unmarked_method:init",
       "unmarked_method:destroy",
       "unmarked_method:tabClass",
@@ -2397,7 +2406,9 @@ export const AGENT_REGISTRY = {
     "tagged": false,
     "available": false,
     "violations": [],
-    "reported": [],
+    "reported": [
+      "unresolved_spread:chartModuleLifecycle(module, { mountPicker() { const wrap = module._container.querySelector('[data-ref=\"picker-wrap\"]'); if (!wrap) return; this._picker?.destroy(); const ctx = module._context; const i18n = ctx.i18n; this._picker = new DatasetPicker(wrap, ctx, { slots: [ { key: 'x', label: 'X', title: i18n.t('modules.mosaic.slotX'), minCount: 1, required: true }, { key: 'g', label: 'G', title: i18n.t('modules.mosaic.slotG'), minCount: 1, required: true }, ], onChange: (datasets) => { const ds = datasets[0] || {}; this.model.xRef = ds.x || null; this.model.gRef = ds.g || null; this._plot(); }, }); if (this.model.xRef || this.model.gRef) { this._picker.value = [{ x: this.model.xRef, g: this.model.gRef }]; } }, themeMode: 'render', autorun: false, initialRender() { if (this.model.xRef && this.model.gRef) { requestAnimationFrame(() => this._plot()); } }, })"
+    ],
     "actions": {},
     "fields": {
       "xRef": {
@@ -2655,6 +2666,7 @@ export const AGENT_REGISTRY = {
     "available": false,
     "violations": [],
     "reported": [
+      "unresolved_spread:draggableRows({ onMove({ group, sourceId, targetId }) { if (group !== 'factors') return; this.model.moveFactorBefore(sourceId, targetId); // Die Reihenfolge ist die Eingabe — nach dem Verschieben neu rechnen. this._syncFactorPickers(); this._scheduleRerun(); }, rowIds(group) { return group === 'factors' ? this.model.factors.map(f => f.id) : []; }, t: (key, params) => module._context.i18n.t(key, params), })",
       "unmarked_method:fmt",
       "unmarked_method:pct",
       "unmarked_method:factorRole",
@@ -2737,6 +2749,7 @@ export const AGENT_REGISTRY = {
     "available": false,
     "violations": [],
     "reported": [
+      "unresolved_spread:chartModuleLifecycle(module, { mountPicker() { const wrap = module._container.querySelector('[data-ref=\"col-picker-wrap\"]'); if (!wrap) return; this._picker = new ColumnPicker(wrap, module._context, { mode: 'multi', types: ['numeric'], minCount: 3, onChange: (refs) => { this.model.columnRefs = Array.isArray(refs) ? refs : []; this._scheduleAutoRun(); }, }); if (this.model.columnRefs.length) this._picker.value = this.model.columnRefs; }, themeMode: 'rerun', autorun: true, })",
       "unmarked_method:baselineCountValue",
       "unmarked_method:baselineCountChanged",
       "unmarked_method:alphaChanged"
@@ -2770,6 +2783,7 @@ export const AGENT_REGISTRY = {
     "available": false,
     "violations": [],
     "reported": [
+      "unresolved_spread:chainViewMixin(module, _t, { autoSizeSelector: 'textarea.of__step-title, textarea.of__step-description', dragRowSelector: '.of__col', canvasSelector: '.of__canvas', })",
       "unmarked_method:appendStep",
       "unmarked_method:init",
       "unmarked_method:sides",
@@ -2941,6 +2955,7 @@ export const AGENT_REGISTRY = {
     "available": false,
     "violations": [],
     "reported": [
+      "unresolved_spread:chartModuleLifecycle(module, { mountPicker() { const wrap = module._container.querySelector('[data-ref=\"picker-wrap\"]'); if (!wrap) return; this._picker?.destroy(); const ctx = module._context; const i18n = ctx.i18n; this._picker = new DatasetPicker(wrap, ctx, { slots: [ { key: 'x', label: 'X', title: i18n.t('modules.pareto.slotX'), minCount: 1, required: true }, { key: 'y', label: 'Y', title: i18n.t('modules.pareto.slotY'), types: ['numeric', 'currency', 'percent'], minCount: 1 }, { key: 'g', label: 'G', title: i18n.t('modules.pareto.slotG'), group: true }, ], onChange: (datasets) => { const ds = datasets[0] || {}; this.model.xRef = ds.x || null; this.model.yRef = ds.y || null; this.model.gRef = ds.g || null; this._syncOptions(); this._plot(); }, }); if (this.model.xRef || this.model.yRef || this.model.gRef) { this._picker.value = [{ x: this.model.xRef, y: this.model.yRef, g: this.model.gRef }]; } // Preserve the original init() ordering: _mountPicker() was followed // immediately by _syncOptions() to seed the aggregation-options x-if. this._syncOptions(); }, themeMode: 'render', autorun: false, initialRender() { if (this.model.xRef) { requestAnimationFrame(() => this._plot()); } }, })",
       "unmarked_method:onAggregationChange"
     ],
     "actions": {},
@@ -2976,7 +2991,9 @@ export const AGENT_REGISTRY = {
     "tagged": false,
     "available": false,
     "violations": [],
-    "reported": [],
+    "reported": [
+      "unresolved_spread:chartModuleLifecycle(module, { mountPicker() { const wrap = module._container.querySelector('[data-ref=\"picker-wrap\"]'); if (!wrap) return; this._picker?.destroy(); const ctx = module._context; const i18n = ctx.i18n; this._picker = new DatasetPicker(wrap, ctx, { slots: [ { key: 'value', label: 'V', title: i18n.t('ui.datasetPicker.slotV'), minCount: 1, required: true }, { key: 'label', label: 'G', title: i18n.t('ui.datasetPicker.slotG'), minCount: 1, group: true }, ], onChange: (datasets) => { const ds = datasets[0] || {}; this.model.valueRef = ds.value || null; this.model.labelRef = ds.label || null; this._plot(); }, }); if (this.model.labelRef || this.model.valueRef) { this._picker.value = [{ label: this.model.labelRef, value: this.model.valueRef }]; } }, themeMode: 'render', autorun: false, initialRender() { if (this.model.valueRef) { requestAnimationFrame(() => this._plot()); } }, })"
+    ],
     "actions": {},
     "fields": {
       "valueRef": {
@@ -3121,6 +3138,7 @@ export const AGENT_REGISTRY = {
     "available": false,
     "violations": [],
     "reported": [
+      "unresolved_spread:_core",
       "unmarked_method:stepDragEnd",
       "unmarked_method:valueBadgeLabel",
       "unmarked_method:valueBadgeTitle",
@@ -3360,6 +3378,7 @@ export const AGENT_REGISTRY = {
     "available": false,
     "violations": [],
     "reported": [
+      "unresolved_spread:chartModuleLifecycle(module, { mountPicker() { this._mountPicker(); }, themeMode: 'rerun', autorun: true, onTheme() { if (this.result) { this.$nextTick(() => this._renderChart(this.result, ++this._renderGen)); } }, })",
       "unmarked_method:fmt",
       "unmarked_method:signalsClass",
       "unmarked_method:chartTitle",
@@ -3670,6 +3689,7 @@ export const AGENT_REGISTRY = {
     "available": false,
     "violations": [],
     "reported": [
+      "unresolved_spread:chartModuleLifecycle(module, { mountPicker() { const wrap = module._container.querySelector('[data-ref=\"col-picker-wrap\"]'); if (!wrap) return; this._picker?.destroy(); this._picker = new ColumnPicker(wrap, module._context, { mode: 'single', types: ['numeric'], minCount: 2, onChange: (ref) => { this.model.columnRef = ref; this._scheduleAutoRun(); }, }); if (this.model.columnRef) this._picker.value = this.model.columnRef; }, themeMode: 'rerun', autorun: true, onTheme() { if (this.result) { const r = this.result; this.$nextTick(() => this._renderChart( { values: r.values, median: r.median }, ++this._renderGen, )); } }, })",
       "unmarked_method:fmt",
       "unmarked_method:fmtP",
       "unmarked_method:flaggedKpiClass",
@@ -3814,6 +3834,7 @@ export const AGENT_REGISTRY = {
     "available": false,
     "violations": [],
     "reported": [
+      "unresolved_spread:draggableList({ itemSelector: '.sipoc__item', draggingClass: 'sipoc__item--dragging', // Regular function: draggableList invokes it with `this` = Alpine component. onReorder({ sourceGroup, sourceIdx, targetGroup, targetIdx }) { this.model.moveItem(sourceGroup, sourceIdx, targetGroup, targetIdx); }, })",
       "unmarked_method:dragOverClass",
       "unmarked_method:addOnEnter",
       "unmarked_method:addOnClick",
@@ -3844,6 +3865,7 @@ export const AGENT_REGISTRY = {
     "available": false,
     "violations": [],
     "reported": [
+      "unresolved_spread:draggablePopout()",
       "unmarked_method:avatarColor",
       "unmarked_method:initials",
       "unmarked_method:quadLabel",
@@ -3938,6 +3960,7 @@ export const AGENT_REGISTRY = {
     "available": false,
     "violations": [],
     "reported": [
+      "unresolved_spread:chartModuleLifecycle(module, { mountPicker() { const wrap = module._container.querySelector('[data-ref=\"col-picker-wrap\"]'); if (!wrap) return; this._picker = new ColumnPicker(wrap, module._context, { mode: 'single', types: ['numeric'], minCount: 3, onChange: (ref) => { this.model.columnRef = ref; this._scheduleAutoRun(); }, }); if (this.model.columnRef) this._picker.value = this.model.columnRef; }, themeMode: 'rerun', autorun: true, })",
       "unmarked_method:typeHint",
       "unmarked_method:sectionParamsLabel",
       "unmarked_method:baselineCountValue",
@@ -4114,6 +4137,7 @@ export const AGENT_REGISTRY = {
     "available": false,
     "violations": [],
     "reported": [
+      "unresolved_spread:chartModuleLifecycle(module, { mountPicker() { const wrap = module._container.querySelector('[data-ref=\"col-picker\"]'); if (!wrap) return; this._picker = new ColumnPicker(wrap, module._context, { mode: 'single', types: ['numeric'], minCount: 5, onChange: (ref) => { this.model.columnRef = ref; this._scheduleAutoRun(); }, }); if (this.model.columnRef) this._picker.value = this.model.columnRef; }, themeMode: 'rerun', autorun: true, })",
       "unmarked_method:onLambdaModeChange",
       "unmarked_method:onLambdaManualChange"
     ],
@@ -4656,6 +4680,7 @@ export const AGENT_REGISTRY = {
     "available": false,
     "violations": [],
     "reported": [
+      "unresolved_spread:draggablePopout({ size: 'width:480px;height:auto;min-height:240px;max-height:80vh;', initialPosition: 'left:calc(50% - 240px);top:calc(50% - 180px)', })",
       "unmarked_method:cardClass",
       "unmarked_method:cardCountText",
       "unmarked_method:quoted",

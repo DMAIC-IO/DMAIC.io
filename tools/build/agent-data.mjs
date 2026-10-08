@@ -19,6 +19,14 @@
  * Nicht-Funktions-Properties (`maxLevel: 5`) und `_`-präfigierte Mitglieder
  * sind keine Methoden und brauchen keine Marke.
  *
+ * Was der Generator NICHT auflösen kann, meldet er als Verstoß statt zu
+ * schweigen: ein Spread im `data()`-Literal (`unresolved_spread:<ausdruck>`,
+ * Mixin-Methoden) und ein fehlendes Return-Literal
+ * (`unresolvable_data_literal`). Beide bleiben BERICHTEND — wie die
+ * DOM-Umweg-Prüfung zählen sie erst, wenn das Modul das Modul-Tag trägt
+ * (Spec §8: „Lücken blockieren nicht"). So kann aber kein Modul freigegeben
+ * werden, bevor jemand hingesehen hat.
+ *
  * Extraktion über die TypeScript-Compiler-API: sie liest JSDoc aus reinem
  * JavaScript. Eine Dev-Abhängigkeit, kein TypeScript-Umstieg — und besser
  * als ein selbstgebauter Parser oder eine zweite Deklarationsdatei.
@@ -143,9 +151,21 @@ function readViewmodel(sf) {
   const actions = {};
   const violations = [];
   const literal = findDataReturnLiteral(sf);
-  if (!literal) return { actions, violations };
+  // Was der Generator NICHT sehen kann, muss er melden — sonst ginge ein
+  // solches Modul mit gesetztem Modul-Tag und NULL Verstößen durch den Build
+  // und würde `available: true`, obwohl keine einzige seiner Methoden
+  // begutachtet wurde (Review-Befund I6/P1). Die Zusage aus Spec §9 („das
+  // Modul-Tag ist maschinell nachgeprüft") wäre sonst eine leere Operation.
+  if (!literal) return { actions, violations: ['unresolvable_data_literal'] };
 
   for (const member of literal.properties) {
+    // Ein Spread (`...chartModuleLifecycle(module)`, `...renderMethods`) holt
+    // Methoden aus einem Mixin, dessen Quelle hier nicht aufgelöst wird. Der
+    // Eintrag fiel bisher LAUTLOS durch `memberName() === null`.
+    if (ts.isSpreadAssignment(member)) {
+      violations.push(`unresolved_spread:${compact(member.expression.getText())}`);
+      continue;
+    }
     const name = memberName(member);
     if (name === null || name.startsWith('_')) continue;
     if (!isFunctionMember(member)) continue;         // Daten, keine Methode
@@ -249,6 +269,15 @@ function readModelFields(sf) {
   };
   walk(sf);
   return fields;
+}
+
+/**
+ * Ein mehrzeiliger Ausdruck als eine Zeile — Verstoßcodes sind einzeilig.
+ * @param {string} text
+ * @returns {string}
+ */
+function compact(text) {
+  return text.replace(/\s*\n\s*/g, ' ').trim();
 }
 
 /** @returns {string|null} der Name eines Objektliteral-Mitglieds. */

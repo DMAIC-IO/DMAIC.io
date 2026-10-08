@@ -224,3 +224,63 @@ test('renderAgentRegistryModule is deterministic (sorted keys)', () => {
   assert.ok(text.indexOf('"alpha"') < text.indexOf('"zeta"'));
   assert.equal(text, renderAgentRegistryModule(data));
 });
+
+// ── Review-Befund I6/P1: der Generator war für 21 von 72 Modulen blind ──
+// Ein Spread im `data()`-Literal und ein fehlendes Return-Literal fielen
+// LAUTLOS durch. Ein solches Modul hätte das Modul-Tag bekommen, mit null
+// Verstößen durch den Build gehen und `available: true` werden können,
+// während zwanzig echte Viewmodel-Methoden nie begutachtet wurden.
+
+test('collectAgentData: a spread in the data() literal is a violation (mixin methods are invisible)', () => {
+  const vm = TAGGED_VM.replace('      maxLevel: 5,', `      ...chartModuleLifecycle(module),
+      maxLevel: 5,`);
+  const root = fixture({ foo: { 'foo.js': vm, 'foo-model.js': MODEL } });
+  const { modules } = collectAgentData(root);
+  assert.deepEqual(modules.foo.violations, ['unresolved_spread:chartModuleLifecycle(module)']);
+  assert.equal(modules.foo.available, false);
+});
+
+test('collectAgentData: a multi-line spread expression is reported on one line', () => {
+  const vm = TAGGED_VM.replace('      maxLevel: 5,', `      ...draggablePopout(
+        module,
+      ),
+      maxLevel: 5,`);
+  const root = fixture({ foo: { 'foo.js': vm, 'foo-model.js': MODEL } });
+  const { modules } = collectAgentData(root);
+  assert.deepEqual(modules.foo.violations, ['unresolved_spread:draggablePopout( module, )']);
+});
+
+test('collectAgentData: a spread on an UNTAGGED module is reported but not a violation', () => {
+  const vm = 'export default createModule({ config: { id: "bar" }, data(module) { return { ...renderMethods }; } });';
+  const root = fixture({ bar: { 'bar.js': vm } });
+  const { modules } = collectAgentData(root);
+  assert.deepEqual(modules.bar.violations, []);
+  assert.deepEqual(modules.bar.reported, ['unresolved_spread:renderMethods']);
+});
+
+test('collectAgentData: a data() without a return literal is a violation, not silence', () => {
+  const vm = `/**
+ * Foo module.
+ * @agent
+ */
+export default createModule({
+  config: { id: 'foo' },
+  data(module, _t) {
+    return buildViewmodel(module);
+  },
+});`;
+  const root = fixture({ foo: { 'foo.js': vm } });
+  const { modules } = collectAgentData(root);
+  assert.deepEqual(modules.foo.violations, ['unresolvable_data_literal']);
+  assert.equal(modules.foo.available, false);
+  assert.deepEqual(modules.foo.actions, {});
+});
+
+test('collectAgentData: a missing data() literal on an UNTAGGED module does not block the build', () => {
+  const vm = 'export default createModule({ config: { id: "bar" }, data(module) { return build(module); } });';
+  const root = fixture({ bar: { 'bar.js': vm } });
+  const { modules, coverage } = collectAgentData(root);
+  assert.deepEqual(modules.bar.violations, []);
+  assert.deepEqual(modules.bar.reported, ['unresolvable_data_literal']);
+  assert.deepEqual(coverage, { total: 1, available: 0 });
+});
