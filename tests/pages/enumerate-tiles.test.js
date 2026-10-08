@@ -1,6 +1,6 @@
 import { suite, test, assertEqual, assertDeepEqual, assertTrue } from '../test-utils.js';
 import {
-  enumerateTiles, projectModuleIds, loadTileModules, ALWAYS_LOADED_TILES,
+  enumerateTiles, projectModuleIds, loadTileModules,
   findInstances, tileObjects, refreshEventsOf,
 } from '../../js/pages/dashboard/enumerate-tiles.js';
 
@@ -28,7 +28,7 @@ const PHASES = {
 suite('enumerateTiles', () => {
   test('keeps the built-in static tiles', () => {
     const ids = enumerateTiles([], makeCtx({})).map(t => t.id);
-    for (const id of ['zeg-timeline', 'project-charter', 'org-chart']) assertTrue(ids.includes(id), id);
+    assertDeepEqual(ids, ['zeg-timeline']);
   });
 
   test('default enumeration: one tile per instance with prefixed title and size', () => {
@@ -63,7 +63,7 @@ suite('enumerateTiles', () => {
   });
 
   test('built-ins carry null moduleId and tile', () => {
-    const builtin = enumerateTiles([], makeCtx({})).find(t => t.id === 'org-chart');
+    const builtin = enumerateTiles([], makeCtx({})).find(t => t.id === 'zeg-timeline');
     assertEqual(builtin.moduleId, null);
     assertEqual(builtin.tile, null);
   });
@@ -79,13 +79,13 @@ suite('projectModuleIds', () => {
 suite('loadTileModules', () => {
   const tile = { render() {} };
 
-  test('loads tiles of used modules plus the always-loaded charter', async () => {
+  test('loads tiles of used modules only', async () => {
     const registry = {
-      hasTile: (id) => id !== 'sipoc',
+      hasTile: (id) => id === 'project-charter' || id === 'fmea',
       loadTile: async () => tile,
     };
-    const { tileModules, allLoaded } = await loadTileModules(registry, PHASES);
-    assertDeepEqual(tileModules.map(m => m.moduleId), [...ALWAYS_LOADED_TILES, 'fmea']);
+    const { tileModules, allLoaded } = await loadTileModules(registry, PHASES, []);
+    assertDeepEqual(tileModules.map(m => m.moduleId), ['fmea']);
     assertTrue(allLoaded);
   });
 
@@ -98,7 +98,7 @@ suite('loadTileModules', () => {
         loadTile: async (id) => { if (id === 'fmea') throw new Error('net'); return tile; },
       };
       const { tileModules, allLoaded } = await loadTileModules(registry, PHASES);
-      assertDeepEqual(tileModules.map(m => m.moduleId), ['project-charter', 'sipoc']);
+      assertDeepEqual(tileModules.map(m => m.moduleId), ['sipoc']);
       assertEqual(allLoaded, false);
     } finally {
       console.error = original;

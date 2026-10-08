@@ -23,21 +23,6 @@ export const DASHBOARD_TILES = [
     i18nTitle: 'dashboard.zegTimeline',
     defaultW: 3, defaultH: 10, minW: 3, minH: 6,
   },
-  {
-    id: 'project-charter',
-    i18nTitle: 'dashboard.charterTitle',
-    defaultW: 3, defaultH: 10, minW: 2, minH: 6,
-  },
-  {
-    id: 'project-goals',
-    i18nTitle: 'dashboard.goalsTitle',
-    defaultW: 3, defaultH: 10, minW: 2, minH: 6,
-  },
-  {
-    id: 'org-chart',
-    i18nTitle: 'dashboard.orgChartTitle',
-    defaultW: 6, defaultH: 10, minW: 3, minH: 6,
-  },
 ];
 
 /**

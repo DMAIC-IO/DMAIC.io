@@ -2,7 +2,7 @@ import { suite, test, assertEqual, assertDeepEqual, assertTrue } from '../test-u
 import manifest from '../../js/modules/manifest.js';
 import fmeaTile from '../../js/modules/fmea/fmea.tile.js';
 import ishikawaTile from '../../js/modules/ishikawa/ishikawa.tile.js';
-import charterTile from '../../js/modules/project-charter/project-charter.tile.js';
+import charterTiles, { charterTile, goalsTile, orgTile } from '../../js/modules/project-charter/project-charter.tile.js';
 import vocTile from '../../js/modules/voc-ctx-tree/voc-ctx-tree.tile.js';
 import raciTile from '../../js/modules/raci-matrix/raci-matrix.tile.js';
 import spcTile from '../../js/modules/control-chart/control-chart.tile.js';
@@ -137,20 +137,46 @@ suite('dashboard tiles: ishikawa', () => {
   });
 });
 
-suite('dashboard tiles: project-charter', () => {
-  const ctx = (phases) => ({ i18n, stateManager: { get: (k) => (k === 'phases' ? phases : null) } });
+suite('dashboard tiles: project-charter array', () => {
+  const ctxWith = (ids) => ({ i18n, findInstances: () => ids.map(instanceId => ({ instanceId, customName: '' })) });
+
+  test('exports charter, goals and org chart in that order', () => {
+    assertDeepEqual(charterTiles, [charterTile, goalsTile, orgTile]);
+  });
 
   test('has no settings', () => {
     assertEqual(charterTile.settings, undefined);
   });
 
-  test('enumerate returns the fixed id when an instance exists', () => {
-    assertDeepEqual(charterTile.enumerate(ctx({ define: [{ moduleId: 'project-charter', instanceId: 'c1' }] })),
-      [{ tileId: 'project-charter', instanceId: 'c1', title: 'dashboard.charterTitle' }]);
+  test('each tile enumerates its fixed id for the first charter instance', () => {
+    assertDeepEqual(charterTile.enumerate(ctxWith(['c'])), [{ tileId: 'project-charter', instanceId: 'c', title: 'dashboard.charterTitle' }]);
+    assertDeepEqual(goalsTile.enumerate(ctxWith(['c'])), [{ tileId: 'project-goals', instanceId: 'c', title: 'dashboard.goalsTitle' }]);
+    assertDeepEqual(orgTile.enumerate(ctxWith(['c'])), [{ tileId: 'org-chart', instanceId: 'c', title: 'dashboard.orgChartTitle' }]);
   });
 
-  test('enumerate returns nothing without an instance', () => {
-    assertDeepEqual(charterTile.enumerate(ctx({ define: [] })), []);
+  test('no charter instance gives no tiles', () => {
+    for (const t of charterTiles) assertDeepEqual(t.enumerate(ctxWith([])), []);
+  });
+
+  test('org chart is wide by default', () => {
+    assertDeepEqual(orgTile.size, { defaultW: 6, defaultH: 10, minW: 3, minH: 6 });
+  });
+
+  test('goals render one row per goal with clamped ZEG', () => {
+    const host = render(goalsTile, { goals: [{ description: 'A', achievementLevel: 150 }, { achievementLevel: 30 }] });
+    const rows = host.querySelectorAll('.dashboard-charter__goal');
+    assertEqual(rows.length, 2);
+    assertTrue(rows[0].textContent.includes('100%'));
+  });
+
+  test('goals and org chart show empty states', () => {
+    assertTrue(render(goalsTile, { goals: [] }).querySelector('.dashboard-area__empty') !== null);
+    assertTrue(render(orgTile, { orgChart: [] }).querySelector('.dashboard-area__empty') !== null);
+  });
+
+  test('org chart draws one node per entry', () => {
+    const host = render(orgTile, { orgChart: [{ id: 'a', pid: null, title: 'A' }, { id: 'b', pid: 'a', title: 'B' }] });
+    assertEqual(host.querySelectorAll('.dashboard-org__node').length, 2);
   });
 });
 

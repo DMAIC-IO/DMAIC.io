@@ -13,12 +13,6 @@ import { DASHBOARD_TILES } from '../../ui/dashboard-tiles.js';
 import { HOST_TILES } from './tiles/index.js';
 
 /**
- * Tiles loaded even without an instance. The charter keeps its empty state on
- * a fresh project (temporary, until its built-in twin is removed).
- */
-export const ALWAYS_LOADED_TILES = ['project-charter'];
-
-/**
  * Distinct module ids of all instances in the project.
  * @param {object|undefined} phases  stateManager.get('phases')
  * @returns {string[]}
@@ -74,8 +68,8 @@ export function refreshEventsOf(tile) {
 }
 
 /**
- * Load the tile files of every module used in the project (plus
- * ALWAYS_LOADED_TILES) and all host tile files. One entry per tile object —
+ * Load the tile files of every module used in the project and all host
+ * tile files. One entry per tile object —
  * array exports are flattened; host tiles carry `moduleId: null`. A failing
  * tile file is skipped; `allLoaded` tells the caller whether pruning stored
  * settings is safe.
@@ -85,8 +79,7 @@ export function refreshEventsOf(tile) {
  * @returns {Promise<{tileModules: Array<{moduleId: string|null, tile: object}>, allLoaded: boolean}>}
  */
 export async function loadTileModules(registry, phases, hostTiles = HOST_TILES) {
-  const ids = [...new Set([...ALWAYS_LOADED_TILES, ...projectModuleIds(phases)])]
-    .filter(id => registry.hasTile(id));
+  const ids = projectModuleIds(phases).filter(id => registry.hasTile(id));
   const jobs = [
     ...ids.map(id => ({ moduleId: id, label: id, run: () => registry.loadTile(id) })),
     ...hostTiles.map(h => ({ moduleId: null, label: h.id, run: async () => (await h.load()).default })),
