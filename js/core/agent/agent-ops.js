@@ -1,0 +1,140 @@
+/**
+ * D.Mike — Die sieben Kernaktionen (agent-ops.js)
+ *
+ * Spec §7: Alles Fachliche ist eine Modulaktion; die Kernschicht kennt nur
+ * Projekt, Katalog und Instanzen. Darum sind es sieben und nicht fünfzehn —
+ * kein `help.read`, kein `instance.read`, kein `worksheet.import`, kein
+ * `connect`. Die Begründung steht in der Spec, die Konsequenz hier: diese
+ * Datei wächst nicht, wenn Module dazukommen.
+ *
+ * Jede Funktion WIRFT NICHT. Sie liefert entweder ihr Ergebnis oder ein
+ * AXI-Fehlerobjekt (`{ ok: false, error, message, available? }`); die
+ * Laufzeit erkennt den Fehlschlag am `ok === false` und bricht den Stapel ab.
+ *
+ * Ergebnisse bleiben schlank (Spec §4.4): keine mitgelieferte
+ * Entdeckungsinformation. Ein Agent, der ein Modul anlegt, hat dessen
+ * Beschreibung vorher gelesen.
+ */
+import { CONTRACT_VERSION, ERRORS } from './agent-contract.js';
+import { axiError } from './agent-errors.js';
+import { buildCatalog, buildInstanceList, describeModule } from './agent-catalog.js';
+
+/**
+ * @param {object} deps  { stateManager, moduleRegistry, i18n, registry, getHelp, host, appVersion }
+ * @returns {Record<string, (action: object) => Promise<any>>}
+ */
+export function createOps(deps) {
+  const { stateManager, moduleRegistry, i18n, registry, getHelp, host, appVersion } = deps;
+  const t = (key, params) => i18n.t(key, params);
+
+  return {
+    'project.read': async () => ({
+      contract: CONTRACT_VERSION,
+      appVersion,
+      language: i18n.getLanguage(),
+      view: host.getCurrentView(),
+      instances: buildInstanceList({ stateManager, i18n }),
+    }),
+
+    'catalog.read': async () => ({
+      contract: CONTRACT_VERSION,
+      modules: buildCatalog({ moduleRegistry, i18n, registry }),
+    }),
+
+    'module.describe': async (action) =>
+      describeModule({ moduleRegistry, i18n, registry, getHelp }, action.module, action.sections),
+
+    'module.add': async (action) => {
+      // Stufe 5 des Prüfers fängt ein unbekanntes Modul schon vorher ab —
+      // dieser Zweig bleibt als Verteidigung, weil die Laufzeit prinzipiell
+      // auch ohne Prüfer aufrufbar ist (Ruling R7a).
+      if (!moduleRegistry.get(action.module)) {
+        return axiError(ERRORS.UNKNOWN_MODULE,
+          t('agent.errors.unknownModule', { module: action.module }),
+          { available: moduleRegistry.getAll().map(d => d.id) });
+      }
+      return host.addInstance(action.module, action.phase);
+    },
+
+    'module.remove': async (action) => {
+      const instances = buildInstanceList({ stateManager, i18n });
+      const removed = await host.removeInstance(action.instance);
+      if (!removed) {
+        return axiError(ERRORS.UNKNOWN_INSTANCE,
+          t('agent.errors.unknownInstance', { instance: action.instance }),
+          { available: instances.map(i => i.id) });
+      }
+      return { instanceId: action.instance, removed: true };
+    },
+
+    'instance.open': async (action) => {
+      const instances = buildInstanceList({ stateManager, i18n });
+      const opened = await host.openInstance(action.instance);
+      if (!opened) {
+        return axiError(ERRORS.UNKNOWN_INSTANCE,
+          t('agent.errors.unknownInstance', { instance: action.instance }),
+          { available: instances.map(i => i.id) });
+      }
+      return opened;
+    },
+
+    'instance.call': async (action) => {
+      const instances = buildInstanceList({ stateManager, i18n });
+      const found = instances.find(i => i.id === action.instance);
+      if (!found) {
+        return axiError(ERRORS.UNKNOWN_INSTANCE,
+          t('agent.errors.unknownInstance', { instance: action.instance }),
+          { available: instances.map(i => i.id) });
+      }
+      // Die Freigabe wird hier ERNEUT geprüft: der Prüfer kommt an sie nur
+      // heran, wenn die Modulidentität statisch bekannt war (Spec §5).
+      const entry = registry[found.module];
+      if (entry?.available !== true) {
+        return axiError(ERRORS.MODULE_NOT_AGENT_READY,
+          t('agent.errors.moduleNotAgentReady', { module: found.module }));
+      }
+      const viewmodel = await host.getViewmodel(action.instance);
+      if (!viewmodel) {
+        // Derselbe Vertragscode wie „Instanz unbekannt" (ERRORS.UNKNOWN_INSTANCE,
+        // Ruling R7b) — die echte Ursache ist hier eine andere: die Instanz
+        // EXISTIERT, ihr Viewmodel ist nur nicht lebendig (nicht gemountet,
+        // Ansicht nicht aktiv). Ein eigener Fehlercode wäre eine
+        // Vertragsänderung (CONTRACT_VERSION-Bump) — daher bleibt der Code,
+        // aber die Meldung benennt die echte Ursache. Follow-up: eigener
+        // Code in einer späteren Vertragsstufe.
+        return axiError(ERRORS.UNKNOWN_INSTANCE,
+          t('agent.errors.viewmodelNotAlive', { instance: action.instance }), { available: [] });
+      }
+      if (typeof viewmodel[action.method] !== 'function') {
+        // Die Methodenliste der LEBENDEN Komponente, nicht die der Registry:
+        // weicht sie ab, ist die generierte Registry stale, und genau das
+        // soll der Agent sehen.
+        return axiError(ERRORS.UNKNOWN_METHOD,
+          t('agent.errors.unknownMethod', { module: found.module, method: action.method }),
+          { available: publicMethodsOf(viewmodel) });
+      }
+      try {
+        const value = await viewmodel[action.method](...(action.args ?? []));
+        return { instanceId: action.instance, method: action.method, value: value ?? null };
+      } catch (err) {
+        return axiError(ERRORS.CALL_FAILED,
+          t('agent.errors.callFailed', { method: action.method, detail: err?.message ?? String(err) }));
+      }
+    },
+  };
+}
+
+/**
+ * Die aufrufbaren, nicht-privaten Methoden eines lebenden Viewmodels.
+ * Alpine-Interna (`$el`, `$watch`, …) und `_`-Präfixe bleiben draußen.
+ * @param {object} viewmodel
+ * @returns {string[]}
+ */
+function publicMethodsOf(viewmodel) {
+  const out = [];
+  for (const key of Object.keys(viewmodel)) {
+    if (key.startsWith('_') || key.startsWith('$')) continue;
+    if (typeof viewmodel[key] === 'function') out.push(key);
+  }
+  return out.sort();
+}

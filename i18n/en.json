@@ -5926,6 +5926,7 @@
       "unknownPhase": "Unknown phase \"{phase}\" for module \"{module}\".",
       "unknownPhaseInCycle": "Unknown phase \"{phase}\" in the active cycle.",
       "unknownInstance": "Unknown instance \"{instance}\".",
+      "viewmodelNotAlive": "Instance \"{instance}\" is not active (view not open).",
       "unknownMethod": "Module \"{module}\" has no method \"{method}\".",
       "unknownField": "Path segment \"{segment}\" does not exist.",
       "unknownSection": "Module \"{module}\" has no handbook section \"{section}\".",
