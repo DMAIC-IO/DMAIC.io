@@ -3,7 +3,8 @@ import assert from 'node:assert/strict';
 import { mkdtempSync, mkdirSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { collectAgentData, renderAgentRegistryModule } from './agent-data.mjs';
+import { collectAgentData, renderAgentRegistryModule, collectDomDetours } from './agent-data.mjs';
+import ts from 'typescript';
 
 /** Build a throwaway app dir: { '<id>': { '<file>': '<body>' } }. */
 function fixture(modules) {
@@ -143,6 +144,62 @@ test('collectAgentData: directories without <id>.js are skipped', () => {
   const root = fixture({ foo: { 'foo.js': TAGGED_VM }, notamodule: { 'readme.md': '' } });
   const { modules } = collectAgentData(root);
   assert.deepEqual(Object.keys(modules), ['foo']);
+});
+
+/** Parse a JS snippet the way collectAgentData does. */
+function sourceOf(code) {
+  return ts.createSourceFile('x.js', code, ts.ScriptTarget.Latest, true, ts.ScriptKind.JS);
+}
+
+test('collectDomDetours: innerHTML write is a detour', () => {
+  const hits = collectDomDetours(sourceOf('function f(el) { el.innerHTML = "<b>x</b>"; }'));
+  assert.equal(hits.length, 1);
+  assert.match(hits[0], /^dom_detour:innerHTML@1$/);
+});
+
+test('collectDomDetours: outerHTML write is a detour', () => {
+  assert.equal(collectDomDetours(sourceOf('function f(el) { el.outerHTML = ""; }')).length, 1);
+});
+
+test('collectDomDetours: dataset write is a detour and names the key', () => {
+  const hits = collectDomDetours(sourceOf('function f(el) { el.dataset.orgId = "7"; }'));
+  assert.equal(hits.length, 1);
+  assert.match(hits[0], /^dom_detour:dataset\.orgId@1$/);
+});
+
+test('collectDomDetours: a dataset READ is not a detour', () => {
+  assert.deepEqual(collectDomDetours(sourceOf('function f(el) { return el.dataset.orgId; }')), []);
+});
+
+test('collectDomDetours: uncontrolled-input buffers are NOT detours', () => {
+  // The prevailing idiom in this codebase: commit to the model, then
+  // normalise the input display. 52/72 modules do this legitimately.
+  const code = 'function f(el) { el.value = ""; el.textContent = "3.14"; el.checked = true; }';
+  assert.deepEqual(collectDomDetours(sourceOf(code)), []);
+});
+
+test('collectDomDetours: presentation writes are NOT detours', () => {
+  const code = 'function f(el) { el.style.height = "0px"; el.classList.add("x"); el.scrollTop = 0; }';
+  assert.deepEqual(collectDomDetours(sourceOf(code)), []);
+});
+
+test('collectAgentData: a DOM detour counts as a violation on a TAGGED module', () => {
+  const vm = TAGGED_VM.replace('      maxLevel: 5,', `      /** @noagent */
+      paint(el) { el.innerHTML = ""; },
+      maxLevel: 5,`);
+  const root = fixture({ foo: { 'foo.js': vm, 'foo-model.js': MODEL } });
+  const { modules } = collectAgentData(root);
+  assert.equal(modules.foo.available, false);
+  assert.ok(modules.foo.violations.some(v => v.startsWith('dom_detour:innerHTML')),
+    `expected a dom_detour violation, got ${JSON.stringify(modules.foo.violations)}`);
+});
+
+test('collectAgentData: a DOM detour on an UNTAGGED module is reported but not a violation', () => {
+  const vm = 'export default createModule({ config: { id: "bar" }, data() { return { paint(el) { el.innerHTML = ""; } }; } });';
+  const root = fixture({ bar: { 'bar.js': vm } });
+  const { modules } = collectAgentData(root);
+  assert.deepEqual(modules.bar.violations, []);
+  assert.ok(modules.bar.reported.some(v => v.startsWith('dom_detour:innerHTML')));
 });
 
 test('renderAgentRegistryModule emits a data-only module', () => {

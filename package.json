@@ -17,7 +17,8 @@
     "licenses:check": "node tools/license-report/generate.mjs --check",
     "icons:vendor": "node tools/vendor-icons.mjs",
     "icons": "node tools/build-icons.mjs",
-    "icons:check": "node tools/build-icons.mjs --check"
+    "icons:check": "node tools/build-icons.mjs --check",
+    "agent:report": "node tools/build/agent-report.mjs"
   },
   "dependencies": {
     "@alpinejs/csp": "^3.14.0",

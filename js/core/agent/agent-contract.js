@@ -128,7 +128,8 @@ export const OPS = deepFreeze({
  * @typedef {object} AgentModuleEntry
  * @property {boolean} tagged         Modul-Tag `@agent` am Modulkopf vorhanden
  * @property {boolean} available      tagged && keine Verstöße
- * @property {string[]} violations    Verstoßcodes (leer, wenn available)
+ * @property {string[]} violations    harte Verstöße (leer, wenn available)
+ * @property {string[]} reported      alle Befunde, auch die ohne Modul-Tag
  * @property {Record<string, { params: Array<{name:string,type:string,optional:boolean,help:string}>,
  *                             returns: string, help: string }>} actions
  * @property {Record<string, { type: string, help: string, bulk: boolean }>} fields

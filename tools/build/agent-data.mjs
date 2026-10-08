@@ -64,15 +64,59 @@ function buildEntry(viewmodelFile, modelFile) {
   const tagged = hasModuleTag(sf);
   const { actions, violations } = readViewmodel(sf);
   const fields = modelFile ? readModelFields(parse(modelFile)) : {};
+  const reported = [...violations, ...collectDomDetours(sf)];
   // Verstöße zählen nur, wenn das Modul etwas behauptet (Spec §9).
-  const effective = tagged ? violations : [];
+  const effective = tagged ? reported : [];
   return {
     tagged,
     available: tagged && effective.length === 0,
     violations: effective,
+    reported,
     actions,
     fields,
   };
+}
+
+/**
+ * Eigenschaften, deren Beschreiben Zustand ins DOM legt (Spec §10.2).
+ *
+ * Absichtlich SEHR eng. Die naheliegende, weite Regel (`value`,
+ * `textContent`, `checked`) trifft 52 von 72 Modulen und ist dabei fast
+ * immer falsch: der verbreitete Idiom ist ein unkontrolliertes Eingabefeld,
+ * das bei `commit` ins Model geschrieben und danach zur Anzeige normalisiert
+ * wird. Das ist kein Zustand im DOM, sondern ein Puffer.
+ *
+ * Was hier bleibt, hält dagegen stand: `innerHTML`/`outerHTML` sind unter
+ * der strikten CSP ohnehin verboten, und ein `dataset.*`-Schreibzugriff ist
+ * der klassische Fall „Zustand am Viewmodel vorbei im DOM gehalten".
+ */
+const DOM_STATE_PROPS = new Set(['innerHTML', 'outerHTML']);
+
+/**
+ * Finde zustandsändernde DOM-Zugriffe. Berichtend, nicht beweisend — der
+ * eigentliche Beweis ist die dynamische Paritätsprüfung (Spec §10.4).
+ * @param {ts.SourceFile} sf
+ * @returns {string[]} Codes der Form `dom_detour:<prop>@<zeile>`
+ */
+export function collectDomDetours(sf) {
+  const hits = [];
+  const walk = (node) => {
+    if (ts.isBinaryExpression(node)
+        && node.operatorToken.kind === ts.SyntaxKind.EqualsToken
+        && ts.isPropertyAccessExpression(node.left)) {
+      const prop = node.left.name.text;
+      const base = node.left.expression;
+      const line = sf.getLineAndCharacterOfPosition(node.left.getStart(sf)).line + 1;
+      if (DOM_STATE_PROPS.has(prop)) {
+        hits.push(`dom_detour:${prop}@${line}`);
+      } else if (ts.isPropertyAccessExpression(base) && base.name.text === 'dataset') {
+        hits.push(`dom_detour:dataset.${prop}@${line}`);
+      }
+    }
+    ts.forEachChild(node, walk);
+  };
+  walk(sf);
+  return hits;
 }
 
 /** @returns {ts.SourceFile} */
