@@ -1,6 +1,7 @@
 import { suite, test, assertEqual, assertDeepEqual, assertTrue } from '../test-utils.js';
 import {
   enumerateTiles, projectModuleIds, loadTileModules, ALWAYS_LOADED_TILES,
+  findInstances, tileObjects, refreshEventsOf,
 } from '../../js/pages/dashboard/enumerate-tiles.js';
 
 const i18nEcho = { t: (k) => `I:${k}` };
@@ -102,5 +103,83 @@ suite('loadTileModules', () => {
     } finally {
       console.error = original;
     }
+  });
+});
+
+suite('findInstances', () => {
+  test('lists instances of one module across phases, tolerant of null lists', () => {
+    assertDeepEqual(findInstances(PHASES, 'fmea'), [
+      { instanceId: 'i1', customName: 'Line A', phase: 'analyze' },
+      { instanceId: 'i2', customName: '', phase: 'analyze' },
+    ]);
+    assertDeepEqual(findInstances(undefined, 'fmea'), []);
+  });
+});
+
+suite('tileObjects', () => {
+  test('wraps a single tile', () => {
+    const t = { size: SIZE, render() {} };
+    assertDeepEqual(tileObjects(t), [t]);
+  });
+
+  test('keeps array elements with enumerate, drops others with a warning', () => {
+    const a = { size: SIZE, render() {}, enumerate: () => [] };
+    const b = { size: SIZE, render() {} };
+    const warn = console.warn; const seen = [];
+    console.warn = (m) => seen.push(m);
+    try { assertDeepEqual(tileObjects([a, b]), [a]); } finally { console.warn = warn; }
+    assertEqual(seen.length, 1);
+  });
+
+  test('null export yields no tiles', () => {
+    assertDeepEqual(tileObjects(null), []);
+  });
+});
+
+suite('refreshEventsOf', () => {
+  test('defaults to state:saved', () => {
+    assertDeepEqual(refreshEventsOf({}), ['state:saved']);
+    assertDeepEqual(refreshEventsOf({ refreshOn: [] }), ['state:saved']);
+  });
+
+  test('uses an explicit list', () => {
+    assertDeepEqual(refreshEventsOf({ refreshOn: ['resize', 'phase:achievement-changed'] }),
+      ['resize', 'phase:achievement-changed']);
+  });
+});
+
+suite('loadTileModules with arrays and host tiles', () => {
+  const t1 = { size: SIZE, render() {}, enumerate: () => [] };
+  const t2 = { size: SIZE, render() {}, enumerate: () => [] };
+  const zeg = { size: SIZE, render() {}, enumerate: () => [] };
+  const registry = {
+    hasTile: (id) => id === 'fmea',
+    loadTile: async () => [t1, t2],
+  };
+
+  test('flattens array exports and always loads host tiles', async () => {
+    const host = [{ id: 'zeg-timeline', load: async () => ({ default: zeg }) }];
+    const { tileModules, allLoaded } = await loadTileModules(registry, PHASES, host);
+    assertTrue(allLoaded);
+    assertDeepEqual(tileModules.map(m => [m.moduleId, m.tile]), [['fmea', t1], ['fmea', t2], [null, zeg]]);
+  });
+
+  test('a failing host tile is skipped and clears allLoaded', async () => {
+    const host = [{ id: 'zeg-timeline', load: async () => { throw new Error('chunk'); } }];
+    const err = console.error; console.error = () => {};
+    try {
+      const { tileModules, allLoaded } = await loadTileModules(registry, PHASES, host);
+      assertEqual(allLoaded, false);
+      assertEqual(tileModules.length, 2);
+    } finally { console.error = err; }
+  });
+});
+
+suite('enumerate context', () => {
+  test('enumerate receives findInstances bound to the project phases', () => {
+    let got = null;
+    const tile = { size: SIZE, render() {}, enumerate: (ctx) => { got = ctx.findInstances('fmea'); return []; } };
+    enumerateTiles([{ moduleId: 'fmea', tile }], makeCtx(PHASES));
+    assertDeepEqual(got.map(i => i.instanceId), ['i1', 'i2']);
   });
 });

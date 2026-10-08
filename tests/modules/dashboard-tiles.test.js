@@ -4,6 +4,7 @@ import fmeaTile from '../../js/modules/fmea/fmea.tile.js';
 import ishikawaTile from '../../js/modules/ishikawa/ishikawa.tile.js';
 import charterTile from '../../js/modules/project-charter/project-charter.tile.js';
 import { validateSchema, resolveSettings } from '../../js/pages/dashboard/tile-settings.js';
+import { HOST_TILES } from '../../js/pages/dashboard/tiles/index.js';
 
 const i18n = { t: (k) => k };
 
@@ -32,7 +33,7 @@ const ISHIKAWA_STATE = {
 function render(tile, state, overrides = {}) {
   const host = document.createElement('div');
   const settings = resolveSettings(validateSchema(tile.settings), overrides);
-  tile.render(host, { tileId: 't', instanceId: 'i', state, settings, i18n, theme: 'light', chartManager: null });
+  tile.render(host, { tileId: 't', instanceId: 'i', state, settings, i18n, theme: 'light', chartManager: null, stateManager: null });
   return host;
 }
 
@@ -44,25 +45,37 @@ suite('dashboard tiles: manifest', () => {
     for (const id of ['fmea', 'ishikawa', 'project-charter']) assertTrue(ids.includes(id), id);
   });
 
-  test('every tile file loads, renders and has a valid size and schema', async () => {
-    for (const entry of withTile) {
-      const tile = (await entry.loadTile()).default;
-      assertEqual(typeof tile.render, 'function', `${entry.id}: render`);
-      for (const k of ['defaultW', 'defaultH', 'minW', 'minH']) {
-        assertTrue(Number.isInteger(tile.size?.[k]), `${entry.id}: size.${k}`);
-      }
-      const warnings = [];
-      validateSchema(tile.settings, (m) => warnings.push(m));
-      assertDeepEqual(warnings, [], `${entry.id}: schema`);
+  test('every tile object loads, renders and has a valid size and schema', async () => {
+    const sources = [
+      ...withTile.map(e => ({ name: e.id, load: async () => (await e.loadTile()).default })),
+      ...HOST_TILES.map(h => ({ name: h.id, load: async () => (await h.load()).default })),
+    ];
+    for (const src of sources) {
+      const exported = await src.load();
+      const tiles = Array.isArray(exported) ? exported : [exported];
+      tiles.forEach((tile, i) => {
+        const name = `${src.name}#${i}`;
+        assertEqual(typeof tile.render, 'function', `${name}: render`);
+        if (Array.isArray(exported)) assertEqual(typeof tile.enumerate, 'function', `${name}: enumerate`);
+        for (const k of ['defaultW', 'defaultH', 'minW', 'minH']) {
+          assertTrue(Number.isInteger(tile.size?.[k]), `${name}: size.${k}`);
+        }
+        const warnings = [];
+        validateSchema(tile.settings, (m) => warnings.push(m));
+        assertDeepEqual(warnings, [], `${name}: schema`);
+      });
     }
   });
 
   test('tile files do not import the module shell directly', async () => {
     const shell = /from\s+['"][^'"]*(template-module|alpine)[^'"]*['"]/i;
-    for (const entry of withTile) {
-      const url = new URL(`../../js/modules/${entry.id}/${entry.id}.tile.js`, import.meta.url);
-      const src = await (await fetch(url)).text();
-      assertTrue(!shell.test(src), `${entry.id}.tile.js imports the module shell`);
+    const files = [
+      ...withTile.map(e => ({ name: e.id, url: new URL(`../../js/modules/${e.id}/${e.id}.tile.js`, import.meta.url) })),
+      ...HOST_TILES.map(h => ({ name: h.id, url: new URL(`../../js/pages/dashboard/tiles/${h.id}.tile.js`, import.meta.url) })),
+    ];
+    for (const file of files) {
+      const src = await (await fetch(file.url)).text();
+      assertTrue(!shell.test(src), `${file.name}.tile.js imports the module shell`);
     }
   });
 });

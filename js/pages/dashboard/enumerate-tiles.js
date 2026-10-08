@@ -10,6 +10,7 @@
  */
 
 import { DASHBOARD_TILES } from '../../ui/dashboard-tiles.js';
+import { HOST_TILES } from './tiles/index.js';
 
 /**
  * Tiles loaded even without an instance. The charter keeps its empty state on
@@ -31,25 +32,76 @@ export function projectModuleIds(phases) {
 }
 
 /**
+ * Instances of one module across all phases.
+ * @param {object|undefined} phases  stateManager.get('phases')
+ * @param {string} moduleId
+ * @returns {Array<{instanceId: string, customName: string, phase: string}>}
+ */
+export function findInstances(phases, moduleId) {
+  const out = [];
+  for (const [phase, list] of Object.entries(phases || {})) {
+    for (const inst of (list || [])) {
+      if (inst?.moduleId === moduleId) out.push({ instanceId: inst.instanceId, customName: inst.customName || '', phase });
+    }
+  }
+  return out;
+}
+
+/**
+ * Normalise a tile file's default export to a list of tile objects. Array
+ * elements must define enumerate() (default enumeration would collide).
+ * @param {object|object[]|null|undefined} exported
+ * @returns {object[]}
+ */
+export function tileObjects(exported) {
+  if (!exported) return [];
+  if (!Array.isArray(exported)) return [exported];
+  return exported.filter((t, i) => {
+    if (typeof t?.enumerate === 'function') return true;
+    console.warn(`[dashboard] tile #${i} of an array export has no enumerate() and is skipped`);
+    return false;
+  });
+}
+
+/**
+ * Events after which a tile re-renders (contract field `refreshOn`).
+ * @param {object} tile
+ * @returns {string[]}
+ */
+export function refreshEventsOf(tile) {
+  const r = tile?.refreshOn;
+  return Array.isArray(r) && r.length && r.every(e => typeof e === 'string') ? r : ['state:saved'];
+}
+
+/**
  * Load the tile files of every module used in the project (plus
- * ALWAYS_LOADED_TILES). A failing tile file is skipped; `allLoaded` tells the
- * caller whether pruning stored settings is safe.
+ * ALWAYS_LOADED_TILES) and all host tile files. One entry per tile object —
+ * array exports are flattened; host tiles carry `moduleId: null`. A failing
+ * tile file is skipped; `allLoaded` tells the caller whether pruning stored
+ * settings is safe.
  * @param {{hasTile: function, loadTile: function}} registry
  * @param {object|undefined} phases
- * @returns {Promise<{tileModules: Array<{moduleId: string, tile: object}>, allLoaded: boolean}>}
+ * @param {Array<{id: string, load: function}>} [hostTiles]
+ * @returns {Promise<{tileModules: Array<{moduleId: string|null, tile: object}>, allLoaded: boolean}>}
  */
-export async function loadTileModules(registry, phases) {
+export async function loadTileModules(registry, phases, hostTiles = HOST_TILES) {
   const ids = [...new Set([...ALWAYS_LOADED_TILES, ...projectModuleIds(phases)])]
     .filter(id => registry.hasTile(id));
-  const results = await Promise.allSettled(ids.map(id => registry.loadTile(id)));
+  const jobs = [
+    ...ids.map(id => ({ moduleId: id, label: id, run: () => registry.loadTile(id) })),
+    ...hostTiles.map(h => ({ moduleId: null, label: h.id, run: async () => (await h.load()).default })),
+  ];
+  const results = await Promise.allSettled(jobs.map(j => j.run()));
   const tileModules = [];
   let allLoaded = true;
   results.forEach((result, i) => {
-    if (result.status === 'fulfilled' && result.value) {
-      tileModules.push({ moduleId: ids[i], tile: result.value });
+    const job = jobs[i];
+    const tiles = result.status === 'fulfilled' ? tileObjects(result.value) : [];
+    if (tiles.length) {
+      tiles.forEach(tile => tileModules.push({ moduleId: job.moduleId, tile }));
     } else {
       allLoaded = false;
-      console.error(`[dashboard] tile file of "${ids[i]}" failed to load`, result.reason);
+      console.error(`[dashboard] tile file of "${job.label}" failed to load`, result.reason);
     }
   });
   return { tileModules, allLoaded };
@@ -63,24 +115,18 @@ export async function loadTileModules(registry, phases) {
  * @returns {Array<{tileId: string, instanceId: string, title: string}>}
  */
 function defaultEntries(moduleId, tile, ctx) {
-  const phases = ctx.stateManager.get('phases') || {};
-  const out = [];
-  for (const list of Object.values(phases)) {
-    for (const inst of (list || [])) {
-      if (inst.moduleId !== moduleId) continue;
-      const label = inst.customName || ctx.i18n.t(`modules.${moduleId}.name`);
-      out.push({
-        tileId: `${moduleId}:${inst.instanceId}`,
-        instanceId: inst.instanceId,
-        title: tile.titlePrefix ? `${tile.titlePrefix} — ${label}` : label,
-      });
-    }
-  }
-  return out;
+  return findInstances(ctx.stateManager.get('phases'), moduleId).map(inst => {
+    const label = inst.customName || ctx.i18n.t(`modules.${moduleId}.name`);
+    return {
+      tileId: `${moduleId}:${inst.instanceId}`,
+      instanceId: inst.instanceId,
+      title: tile.titlePrefix ? `${tile.titlePrefix} — ${label}` : label,
+    };
+  });
 }
 
 /**
- * @param {Array<{moduleId: string, tile: object}>} tileModules  from loadTileModules
+ * @param {Array<{moduleId: string|null, tile: object}>} tileModules  from loadTileModules
  * @param {object} ctx  kernel services container (i18n, stateManager, …)
  * @returns {Array<object>} tile descriptors
  */
@@ -98,10 +144,11 @@ export function enumerateTiles(tileModules, ctx) {
     tile: null,
   }));
 
+  const enumCtx = { ...ctx, findInstances: (id) => findInstances(ctx.stateManager.get('phases'), id) };
   const moduleTiles = [];
   for (const { moduleId, tile } of tileModules) {
     const entries = typeof tile.enumerate === 'function'
-      ? (tile.enumerate(ctx) || [])
+      ? (tile.enumerate(enumCtx) || [])
       : defaultEntries(moduleId, tile, ctx);
     for (const e of entries) {
       moduleTiles.push({

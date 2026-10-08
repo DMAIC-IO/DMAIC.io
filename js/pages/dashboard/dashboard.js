@@ -11,7 +11,7 @@ import { createPage } from '../../core/create-page.js';
 import { h, svg, s } from '../../core/dom.js';
 import { DashboardGrid } from '../../ui/dashboard-grid.js';
 import { DEFAULT_DASHBOARD_LAYOUT } from '../../ui/dashboard-tiles.js';
-import { enumerateTiles, loadTileModules } from './enumerate-tiles.js';
+import { enumerateTiles, loadTileModules, refreshEventsOf } from './enumerate-tiles.js';
 import { renderTileSafely } from './tile-render.js';
 import { schemaOf, resolveSettings, toStored, withTileSettings, settingsToStoreOnLayoutSave, layoutToStoreOnSave } from './tile-settings.js';
 import { buildSettingsForm } from './tile-settings-form.js';
@@ -40,7 +40,7 @@ const page = createPage({
     const { eventBus, stateManager, i18n, chartManager, themeManager, moduleRegistry, modal } = ctx;
     const gridAnchor = containerEl.querySelector('[data-ref="grid"]');
 
-    const handle = { grid: null, chart: null, addMenuEl: null, _onDocClick: null, _unsubs: [], render: null, _renderGen: 0, _toolbarWired: false, _charterTile: null, _allTilesLoaded: false };
+    const handle = { grid: null, chart: null, addMenuEl: null, _onDocClick: null, _unsubs: [], render: null, _renderGen: 0, _toolbarWired: false, _charterTile: null, _allTilesLoaded: false, _refreshUnsubs: [], _lastLayout: [] };
 
     const allPhaseKeys = () => Object.keys(stateManager.get('phases') || {});
     const methodPhaseKeys = () => getPhaseIds(stateManager.getProjectCycle());
@@ -692,7 +692,7 @@ const page = createPage({
       await renderTileSafely(descriptor.tile, body, {
         tileId: descriptor.id, instanceId: descriptor.instanceId, state,
         settings: settingsFor(descriptor.id, descriptor.tile),
-        i18n, theme: theme(), chartManager,
+        i18n, theme: theme(), chartManager, stateManager,
       }, i18n);
     };
 
@@ -706,7 +706,7 @@ const page = createPage({
       if (!body || !tile) return;
       await renderTileSafely(tile, body, {
         tileId: 'project-charter', instanceId: null, state: _findCharterState(),
-        settings: settingsFor('project-charter', tile), i18n, theme: theme(), chartManager,
+        settings: settingsFor('project-charter', tile), i18n, theme: theme(), chartManager, stateManager,
       }, i18n);
     };
 
@@ -884,11 +884,41 @@ const page = createPage({
         ..._buildSpcTileDefs(),
       ];
 
+      // Refresh subscriptions (contract field `refreshOn`), rebuilt on every
+      // full render so language/theme re-renders never stack handlers.
+      // state:saved and resize are handled by the shared handlers below.
+      handle._refreshUnsubs.forEach(off => off());
+      handle._refreshUnsubs = [];
+      const byEvent = new Map();
+      for (const d of descriptors) {
+        if (!d.tile) continue;
+        for (const ev of refreshEventsOf(d.tile)) {
+          if (ev === 'state:saved' || ev === 'resize') continue;
+          if (!byEvent.has(ev)) byEvent.set(ev, []);
+          byEvent.get(ev).push(d.id);
+        }
+      }
+      for (const [ev, ids] of byEvent) {
+        const cb = () => {
+          if (!page.isOpen() || !handle.grid) return;
+          const placed = new Set(handle.grid.getPlacedTileIds());
+          ids.filter(id => placed.has(id)).forEach(id => renderTile(id));
+        };
+        eventBus.on(ev, cb);
+        handle._refreshUnsubs.push(() => eventBus.off(ev, cb));
+      }
+
       handle.grid = new DashboardGrid(gridAnchor, { cols: 12, rowHeight: 40, gap: 12 });
-      handle.grid.onLayoutChange = () => {
+      handle.grid.onLayoutChange = (layout) => {
         saveLayout();
-        for (const item of handle.grid.getLayout()) {
-          if (item.tileId.startsWith('spc:')) renderSpc(item.tileId);
+        const prev = new Map((handle._lastLayout || []).map(l => [l.tileId, l]));
+        handle._lastLayout = layout.map(x => ({ ...x }));
+        for (const item of layout) {
+          const before = prev.get(item.tileId);
+          const resized = !before || before.w !== item.w || before.h !== item.h;
+          const d = descriptorFor(item.tileId);
+          if (d?.tile && resized && refreshEventsOf(d.tile).includes('resize')) renderTile(item.tileId);
+          else if (item.tileId.startsWith('spc:')) renderSpc(item.tileId);
         }
       };
       handle.grid.onTileRemoved = (tileId) => {
@@ -918,6 +948,7 @@ const page = createPage({
       const tileDefs = buildTileDefs();
       const layout = loadLayout().filter(l => tileDefs.some(d => d.id === l.tileId));
       handle.grid.setTiles(tileDefs, layout);
+      handle._lastLayout = handle.grid.getLayout().map(x => ({ ...x }));
 
       for (const item of handle.grid.getLayout()) {
         await renderTile(item.tileId);
@@ -937,8 +968,11 @@ const page = createPage({
       if (!page.isOpen() || !handle.grid) return;
       // Mirror the legacy state:saved handler: re-render data tiles but leave
       // the ZEG timeline to phase:achievement-changed (avoids chart churn).
+      // Module/host tiles re-render only if they opt into state:saved.
       for (const item of handle.grid.getLayout()) {
         if (item.tileId === 'zeg-timeline') continue;
+        const d = descriptorFor(item.tileId);
+        if (d?.tile && !refreshEventsOf(d.tile).includes('state:saved')) continue;
         renderTile(item.tileId);
       }
     });
@@ -984,6 +1018,8 @@ const page = createPage({
     if (handle._onDocClick) { document.removeEventListener('click', handle._onDocClick, true); handle._onDocClick = null; }
     handle._unsubs.forEach(off => off());
     handle._unsubs = [];
+    handle._refreshUnsubs.forEach(off => off());
+    handle._refreshUnsubs = [];
   },
 });
 
