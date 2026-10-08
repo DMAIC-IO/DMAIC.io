@@ -708,6 +708,8 @@
       "axisLabels": "Axis Labels",
       "showXLabel": "X axis label",
       "showYLabel": "Y axis label",
+      "xLabelText": "X axis title",
+      "yLabelText": "Y axis title",
       "axisTicks": "Axis Ticks",
       "showXTicks": "X axis ticks",
       "showYTicks": "Y axis ticks",

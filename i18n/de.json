@@ -708,6 +708,8 @@
       "axisLabels": "Achsenbeschriftung",
       "showXLabel": "X-Achse beschriften",
       "showYLabel": "Y-Achse beschriften",
+      "xLabelText": "X-Achsentitel",
+      "yLabelText": "Y-Achsentitel",
       "axisTicks": "Achsenskala",
       "showXTicks": "X-Achse Skala",
       "showYTicks": "Y-Achse Skala",

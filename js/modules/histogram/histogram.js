@@ -37,7 +37,7 @@ import {
 import {
   parseRGBA, rgbaStr,
   edSection, edCheckboxRow, edSelectRow,
-  edColorPair, edColorSwatch, edVisToggle, edExpandBtn,
+  edColorPair, edColorSwatch, edVisToggle,
   edTitleSection, edFontSizeSection, edAxisLabelSection, edAxisTickSection,
   edRefLinesSection, edRefAreasSection, edBgColorSection,
   openColorPicker,
@@ -976,7 +976,7 @@ const mod = createModule({
         item.appendChild(header);
 
         const detail = document.createElement('div');
-        detail.className = 'dmike-chart-ed-series-detail';
+        detail.className = 'dmike-chart-ed-series-detail open';
 
         detail.appendChild(edCheckboxRow(i18n.t('modules.histogram.edNormalCurve'), ser.showNormalCurve !== false, (v) => {
           ser.showNormalCurve = v; this._renderChart(); this._syncOverrides();
@@ -1004,7 +1004,6 @@ const mod = createModule({
         detail.appendChild(bcRow);
 
         item.appendChild(detail);
-        item.appendChild(edExpandBtn('Details', detail));
         return item;
       },
 

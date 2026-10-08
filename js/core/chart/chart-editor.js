@@ -311,9 +311,32 @@ export function edFontSizeSection(config, onUpdate, t) {
 }
 
 /**
- * Build axis label visibility toggles.
+ * Build a text input row bound to one axis label key.
+ * @param {string} label
+ * @param {object} config - Mutated in-place
+ * @param {'xLabel'|'yLabel'} key
+ * @param {function} onUpdate
+ * @returns {HTMLElement}
+ */
+function edAxisLabelTextRow(label, config, key, onUpdate) {
+  const row = document.createElement('div');
+  row.className = 'dmike-chart-ed-inline-row';
+  const lbl = document.createElement('label');
+  lbl.textContent = label;
+  const inp = document.createElement('input');
+  inp.type = 'text';
+  inp.value = config[key] || '';
+  inp.dataset.key = key;
+  inp.addEventListener('change', () => { config[key] = inp.value; onUpdate(); });
+  row.appendChild(lbl);
+  row.appendChild(inp);
+  return row;
+}
+
+/**
+ * Build the axis label section: per axis a visibility toggle + label text.
  * Mutates config in-place, calls onUpdate() after each change.
- * @param {{ showXLabel: boolean, showYLabel: boolean }} config - Mutated in-place
+ * @param {{ showXLabel: boolean, showYLabel: boolean, xLabel: string, yLabel: string }} config - Mutated in-place
  * @param {function} onUpdate - Called after config is mutated
  * @param {function} t
  * @returns {HTMLElement}
@@ -321,7 +344,9 @@ export function edFontSizeSection(config, onUpdate, t) {
 export function edAxisLabelSection(config, onUpdate, t) {
   const sec = edSection(t('axisLabels'));
   sec.appendChild(edCheckboxRow(t('showXLabel'), config.showXLabel !== false, (v) => { config.showXLabel = v; onUpdate(); }));
+  sec.appendChild(edAxisLabelTextRow(t('xLabelText'), config, 'xLabel', onUpdate));
   sec.appendChild(edCheckboxRow(t('showYLabel'), config.showYLabel !== false, (v) => { config.showYLabel = v; onUpdate(); }));
+  sec.appendChild(edAxisLabelTextRow(t('yLabelText'), config, 'yLabel', onUpdate));
   return sec;
 }
 
