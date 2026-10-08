@@ -2,7 +2,7 @@
  * Tests for core/agent/agent-read.js — the read() projection from Spec §7
  * ("der Agent bekommt Umfang statt Masse, bis er gezielt nachfragt").
  */
-import { suite, test, assertEqual, assertTrue, assertDeepEqual } from '../../test-utils.js';
+import { suite, test, assertEqual, assertDeepEqual } from '../../test-utils.js';
 import { projectReadState } from '../../../js/core/agent/agent-read.js';
 
 const SCHEMA = {

@@ -30,7 +30,7 @@ const I18N = {
 };
 
 /** A runtime with every port faked; `log` records the side effects in order. */
-function makeRuntime({ granted = true, denied = false, viewmodel = null } = {}) {
+function makeRuntime({ denied = false, viewmodel = null } = {}) {
   const log = [];
   const phases = { data: [], define: [{ instanceId: 'fw-1', moduleId: 'five-why', order: 0 }], extras: [] };
   const stateManager = {
