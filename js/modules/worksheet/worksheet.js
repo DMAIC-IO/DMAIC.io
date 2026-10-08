@@ -777,9 +777,7 @@ const mod = createModule({
         const instances = stateManager.get(`phases.${phase}`) || [];
         const existing = instances.find(i => i.moduleId === 'chart-suggestion');
         if (existing) return { instanceId: existing.instanceId, created: false };
-        const instanceId = (typeof crypto !== 'undefined' && crypto.randomUUID)
-          ? crypto.randomUUID()
-          : `cs-${  Date.now().toString(36)  }-${  Math.random().toString(36).slice(2, 8)}`;
+        const instanceId = uid();
         const updated = instances.slice();
         updated.push({ instanceId, moduleId: 'chart-suggestion', order: updated.length, state: {} });
         stateManager.set(`phases.${phase}`, updated);

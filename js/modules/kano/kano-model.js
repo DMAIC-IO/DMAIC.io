@@ -15,17 +15,10 @@
  */
 
 import { LEVELS } from './kano-link.js';
+import { uid } from '../../core/uid.js';
 
 /** Leeres Antwortobjekt — bewusst als Funktion, damit nie eine Referenz geteilt wird. */
 const emptyAnswer = () => ({ f: null, d: null, w: null });
-
-/** @returns {string} stabile, eindeutige ID */
-function uid() {
-  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
-    return crypto.randomUUID();
-  }
-  return `id-${Math.random().toString(36).slice(2)}${Date.now().toString(36)}`;
-}
 
 export class State {
   /** @type {{ instanceId: string|null, level: 'need'|'driver'|'req' }} */

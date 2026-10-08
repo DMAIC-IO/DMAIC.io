@@ -4,6 +4,8 @@
  * View logic (i18n, CSS, styles) lives in the data-fn, not here.
  */
 
+import { uid } from '../../core/uid.js';
+
 export const SUPPORT_VALUES = ['supporter', 'neutral', 'critic'];
 export const CATEGORY_VALUES = ['intern', 'extern', 'kunde', 'lieferant', 'behoerde'];
 
@@ -15,13 +17,6 @@ function clampLevel(v) {
   const n = parseInt(v, 10);
   if (!Number.isFinite(n)) return 3;
   return Math.min(5, Math.max(1, n));
-}
-
-function genId() {
-  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
-    return crypto.randomUUID();
-  }
-  return `sh-${  Math.abs(Date.now() ^ (Math.random() * 1e9 | 0)).toString(36)}`;
 }
 
 export class Stakeholder {
@@ -63,7 +58,7 @@ export class Stakeholder {
   static fromJSON(d) {
     const s = new Stakeholder();
     if (!d || typeof d !== 'object') return s;
-    s.id = typeof d.id === 'string' && d.id ? d.id : genId();
+    s.id = typeof d.id === 'string' && d.id ? d.id : uid();
     s.name = typeof d.name === 'string' ? d.name : '';
     s.role = typeof d.role === 'string' ? d.role : '';
     s.power = clampLevel(d.power);

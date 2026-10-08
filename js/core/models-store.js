@@ -29,6 +29,8 @@
  * always see the current state.
  */
 
+import { uid } from './uid.js';
+
 // ─── Hashing ──────────────────────────────────────────────────────
 
 /**
@@ -64,7 +66,7 @@ export function computeDataHash(X, y) {
  */
 export function saveModel(stateManager, record) {
   const all = stateManager.get('models') ?? {};
-  const id = record.id ?? (typeof crypto !== 'undefined' ? crypto.randomUUID() : `model_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`);
+  const id = record.id ?? uid();
   const now = new Date().toISOString();
   const isNew = !(id in all);
   const next = {

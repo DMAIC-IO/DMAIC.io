@@ -16,6 +16,8 @@
  * The tree is depth-bounded at 4 levels (VoC → Need → Driver → Requirement).
  */
 
+import { uid } from '../../core/uid.js';
+
 /** Default node colours (rgba), mirrors the legacy DEFAULT_COLORS. */
 export const DEFAULT_COLORS = {
   voc:  'rgba(230,126,34,1)',
@@ -29,14 +31,6 @@ export const DEFAULT_COLORS = {
 /** Build a fresh default styles object. */
 function defaultStyles() {
   return { borderWidth: 1, colors: { ...DEFAULT_COLORS } };
-}
-
-/** Generate a stable unique id (crypto.randomUUID where available). */
-function uid() {
-  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
-    return crypto.randomUUID();
-  }
-  return `id-${  Math.random().toString(36).slice(2)  }${Date.now().toString(36)}`;
 }
 
 const VALID_TYPES = ['ctq', 'ctd', 'ctc'];
