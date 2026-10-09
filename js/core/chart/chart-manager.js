@@ -100,11 +100,12 @@ export default class ChartManager {
    * edits per chart (see instance-chart-manager.js). Without a stateManager
    * the shared manager itself is returned.
    * @param {string} instanceId
+   * @param {Node} [moduleRoot] - the instance's container (see createInstanceChartManager)
    * @returns {ChartManager}
    */
-  forInstance(instanceId) {
+  forInstance(instanceId, moduleRoot) {
     if (!this._stateManager || !instanceId) return this;
-    return createInstanceChartManager(this, this._stateManager, instanceId);
+    return createInstanceChartManager(this, this._stateManager, instanceId, moduleRoot);
   }
 
   /**

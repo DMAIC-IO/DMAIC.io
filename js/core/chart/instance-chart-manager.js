@@ -22,32 +22,41 @@ function isAttached(node) {
   return !!node && (!('isConnected' in node) || node.isConnected);
 }
 
-/** A chart is live until destroyed or until its root left the DOM. */
-function isLive(chart) {
-  const root = chart._card || chart._wrap;
-  return !!(chart._svg && root && root.parentNode && isAttached(root));
-}
-
 /**
  * @param {import('./chart-manager.js').default} manager - shared manager
  * @param {{ getChartEdits: Function, setChartEdit: Function }} stateManager
  * @param {string} instanceId
+ * @param {Node} [moduleRoot] - the instance's container. Charts count as live
+ *   while inside it, so a module whose container the workspace detached (a
+ *   hidden phase) keeps distinct keys. Without it, "inside the document" is used.
  * @returns {import('./chart-manager.js').default} facade with the manager's API
  */
-export function createInstanceChartManager(manager, stateManager, instanceId) {
+export function createInstanceChartManager(manager, stateManager, instanceId, moduleRoot) {
   /** @type {Map<object, string>} live chart → chart key */
   const keyOf = new Map();
   /** creates still awaiting their chart: { key, container } */
   const reserved = new Set();
   const facade = Object.create(manager);
 
+  /** Is a node still part of this instance's view? */
+  function isInside(node) {
+    if (!node) return false;
+    return moduleRoot && typeof moduleRoot.contains === 'function' ? moduleRoot.contains(node) : isAttached(node);
+  }
+
+  /** A chart is live until destroyed or until its root left the instance's view. */
+  function isLive(chart) {
+    const root = chart._card || chart._wrap;
+    return !!(chart._svg && root && root.parentNode && isInside(root));
+  }
+
   function allocateKey(base, container) {
     for (const [chart] of keyOf) if (!isLive(chart)) keyOf.delete(chart);
     // A pending create is superseded by this one when it targets the same
-    // container or one that has left the document (the module re-rendered
-    // before it resolved), so its key is free to take.
+    // container or one that has left the instance's view (the module
+    // re-rendered before it resolved), so its key is free to take.
     const pending = [...reserved]
-      .filter(r => r.container !== container && isAttached(r.container))
+      .filter(r => r.container !== container && isInside(r.container))
       .map(r => r.key);
     const used = new Set([...keyOf.values(), ...pending]);
     let key = base;

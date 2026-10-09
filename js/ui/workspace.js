@@ -486,7 +486,7 @@ export class Workspace {
     this._moduleArea.append(moduleContainer);
     this._containers.set(instanceId, moduleContainer);
 
-    const context = this._buildContext(instanceId);
+    const context = this._buildContext(instanceId, moduleContainer);
 
     try {
       const instance = await this._moduleRegistry.instantiate(record.moduleId, moduleContainer, context);
@@ -541,7 +541,7 @@ export class Workspace {
     };
   }
 
-  _buildContext(instanceId) {
+  _buildContext(instanceId, container) {
     return {
       instanceId,
       eventBus: this._eventBus,
@@ -550,7 +550,7 @@ export class Workspace {
       showModal: this._modal,
       confirmPopout: (message, options = {}) => confirmPopout(message, { ...options, i18n: this._i18n }),
       notify: this._context.notify,
-      chartManager: this._context.chartManager?.forInstance?.(instanceId) ?? this._context.chartManager,
+      chartManager: this._context.chartManager?.forInstance?.(instanceId, container) ?? this._context.chartManager,
       examples: this._context.examples,
       theme: document.documentElement.dataset.theme || 'light',
       language: this._i18n.getLanguage(),
@@ -584,7 +584,7 @@ export class Workspace {
     //    two hooks above: its modal would survive the seed and block the page.
     //    Such modules check this flag and stay silent.
     const context = {
-      ...this._buildContext(instanceId),
+      ...this._buildContext(instanceId, container),
       notify: () => {},
       confirmPopout: async () => true,
       detached: true,

@@ -24,7 +24,10 @@ function fakeManager() {
     async create(_container, type, config) {
       await Promise.resolve();
       if (type === 'broken') return null;
-      const c = fakeChart(config); this.created.push(c); return c;
+      const c = fakeChart(config);
+      c._card.parentNode = _container || {};
+      if (_container && 'isConnected' in _container) c._card.isConnected = _container.isConnected;
+      this.created.push(c); return c;
     },
     update(chart, patch) { if (chart) chart.update(patch); },
   };
@@ -111,6 +114,39 @@ suite('InstanceChartManager', () => {
     // the old one was still pending; the chart in the new element is the real one.
     const stalePromise = f.create(oldEl, 'scatter', {});
     oldEl.isConnected = false;
+    const fresh = await f.create(newEl, 'scatter', {});
+    (await stalePromise).destroy();
+    assertEqual(fresh.config.title, 'A');
+  });
+
+  test('charts of a module in a hidden phase keep distinct keys', async () => {
+    // The workspace detaches the module containers of hidden phases; their
+    // modules keep re-rendering there (theme switch, worksheet edits).
+    const store = fakeStore({ i1: { 'control-chart': { title: 'I' }, 'control-chart#2': { title: 'MR' } } });
+    const moduleRoot = { isConnected: false, contains(n) { for (let x = n; x; x = x.parentNode) if (x === this) return true; return false; } };
+    const elI = { parentNode: moduleRoot, isConnected: false };
+    const elMR = { parentNode: moduleRoot, isConnected: false };
+    const f = createInstanceChartManager(fakeManager(), store, 'i1', moduleRoot);
+    const i = await f.create(elI, 'control-chart', {});
+    const mr = await f.create(elMR, 'control-chart', {});
+    assertEqual(i.config.title, 'I');
+    assertEqual(mr.config.title, 'MR');
+    store.data.i1.scatter = { title: 'A' };
+    store.data.i1['scatter#2'] = { title: 'B' };
+    const [c, d] = await Promise.all([f.create({ parentNode: moduleRoot, isConnected: false }, 'scatter', {}),
+      f.create({ parentNode: moduleRoot, isConnected: false }, 'scatter', {})]);
+    assertEqual(c.config.title, 'A');
+    assertEqual(d.config.title, 'B');
+  });
+
+  test('a container replaced inside the module root frees its pending key', async () => {
+    const store = fakeStore({ i1: { scatter: { title: 'A' } } });
+    const moduleRoot = { contains(n) { for (let x = n; x; x = x.parentNode) if (x === this) return true; return false; } };
+    const oldEl = { parentNode: moduleRoot };
+    const newEl = { parentNode: moduleRoot };
+    const f = createInstanceChartManager(fakeManager(), store, 'i1', moduleRoot);
+    const stalePromise = f.create(oldEl, 'scatter', {});
+    oldEl.parentNode = null;   // template swapped the plot element
     const fresh = await f.create(newEl, 'scatter', {});
     (await stalePromise).destroy();
     assertEqual(fresh.config.title, 'A');
