@@ -42,8 +42,11 @@ import { dirname, resolve as resolvePath } from 'node:path';
  * Obergrenze der Spread-Verschachtelung. Ein Mixin, das ein Mixin spreizt,
  * das ein Mixin spreizt, ist real (chart-module-base → chart-editor); zwölf
  * Ebenen sind weit jenseits des Bestands und halten einen pathologischen Fall
- * trotzdem an. Der `seen`-Schutz fängt echte Zyklen, die Tiefe fängt Ketten,
+ * trotzdem an. Der Pfadschutz fängt echte Zyklen, die Tiefe fängt Ketten,
  * die zwar nicht kreisen, aber unbegrenzt wachsen.
+ *
+ * Ein Treffer der Grenze ist ein BEFUND, kein stilles Verwerfen: er wird als
+ * `unresolved_spread:<ausdruck>` gemeldet wie jede andere Blindstelle.
  */
 const MAX_SPREAD_DEPTH = 12;
 
@@ -51,7 +54,9 @@ const MAX_SPREAD_DEPTH = 12;
  * Ein Auflöser mit Parse-Zwischenspeicher für genau einen Lauf.
  *
  * Der Zwischenspeicher ist nicht Kosmetik: `chart-module-base.js` hängt an elf
- * Modulen und würde sonst elfmal geparst.
+ * Modulen und würde sonst elfmal geparst. Er muss dafür LAUFWEIT sein — ein
+ * Auflöser je Modul hätte denselben Effekt nicht. `collectAgentData` legt
+ * deshalb genau einen an.
  *
  * @param {string} appDir  Wurzel von app/dev — Bezugspunkt der Herkunftsangaben
  * @returns {{
@@ -179,20 +184,27 @@ export function createResolver(appDir) {
   function collectMembers(literal, sf) {
     const members = new Map();
     const unresolved = [];
-    const seen = new Set();
+    // Der Zyklusschutz ist ein PFAD-Set, kein Besuchs-Set: betreten beim
+    // Abstieg, freigegeben beim Zurückkehren. Ein Besuchs-Set hätte das
+    // zweite Vorkommen desselben Literals übersprungen — und damit genau das
+    // laufzeitlich GEWINNENDE (`{ ...A, x() {}, ...A }` ⇒ `A.x` gewinnt).
+    // Das wäre ein Widerspruch zur Semantikzusage unten.
+    const path = new Set();
+
+    const key = (lit, file) => `${file.fileName}:${lit.pos}`;
 
     const walk = (lit, file, depth) => {
-      const key = `${file.fileName}:${lit.pos}`;
-      // Zyklus- und Tiefenschutz. Ein Mixin, das sich selbst spreizt
-      // (`export const loopMix = { ...loopMix }`), terminiert hier STILL: ein
-      // bereits betretenes Literal ist aufgelöst, nicht unauflösbar.
-      if (seen.has(key) || depth > MAX_SPREAD_DEPTH) return;
-      seen.add(key);
-
+      path.add(key(lit, file));
       for (const member of lit.properties) {
         if (ts.isSpreadAssignment(member)) {
           const target = resolveSpread(member.expression, file);
           if (!target) { unresolved.push(member.expression.getText()); continue; }
+          // Ein Mixin, das sich selbst spreizt
+          // (`export const loopMix = { ...loopMix }`), terminiert hier STILL:
+          // ein Literal auf dem eigenen Pfad ist aufgelöst, nicht unauflösbar.
+          if (path.has(key(target.literal, target.sf))) continue;
+          // Die Tiefengrenze dagegen ist eine Blindstelle und wird gemeldet.
+          if (depth + 1 > MAX_SPREAD_DEPTH) { unresolved.push(member.expression.getText()); continue; }
           walk(target.literal, target.sf, depth + 1);
           continue;
         }
@@ -200,6 +212,7 @@ export function createResolver(appDir) {
         if (name === null) continue;
         members.set(name, { member, sf: file });
       }
+      path.delete(key(lit, file));
     };
 
     walk(literal, sf, 0);

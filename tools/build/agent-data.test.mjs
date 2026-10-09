@@ -321,6 +321,13 @@ export function mixFactory(module, cfg) {
 }
 
 export const mixConst = {
+  /**
+   * Rename a step.
+   * @agent
+   * @param {string} name - the new step name
+   * @returns {boolean} whether it was renamed
+   */
+  renameStep(name) { return true; },
   /** @noagent */
   paint() {},
 };
@@ -378,6 +385,14 @@ test('collectAgentData: a spread of an imported object constant resolves its met
   const { modules } = collectAgentData(root);
   assert.deepEqual(modules.foo.violations, []);
   assert.equal('paint' in modules.foo.actions, false);
+  // Positiv belegt, nicht nur „kein Verstoß": die @agent-Methode der Konstante
+  // muss als Aktion mit Parametern und Ergebnisform auftauchen.
+  assert.deepEqual(Object.keys(modules.foo.actions).sort(), ['read', 'renameStep', 'setProblem']);
+  assert.deepEqual(modules.foo.actions.renameStep.params, [
+    { name: 'name', type: 'string', optional: false, help: 'the new step name' },
+  ]);
+  assert.equal(modules.foo.actions.renameStep.returns, 'boolean');
+  assert.equal(modules.foo.actions.renameStep.help, 'Rename a step.');
 });
 
 test('collectAgentData: a spread of a local constant holding a factory call resolves', () => {

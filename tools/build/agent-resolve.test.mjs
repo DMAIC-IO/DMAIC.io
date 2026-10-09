@@ -130,3 +130,62 @@ test('createResolver: later members win, in source order', () => {
   const { members } = createResolver(root).collectMembers(literal, sf);
   assert.equal(members.get('a').sf, sf);
 });
+
+test('createResolver: the same mixin spread twice — the SECOND occurrence wins', () => {
+  // Befund 1 der Fix-Runde: ein Besuchs-Set hätte das zweite Vorkommen
+  // übersprungen und damit das laufzeitlich GEWINNENDE. Der Pfadschutz gibt
+  // ein Literal beim Zurückkehren wieder frei, also läuft es erneut durch.
+  const root = tree({ 'm.js': 'export const base = { a() { return 1; } };' });
+  const sf = sourceOf(
+    "import { base } from './m.js';\nconst vm = { ...base, a() { return 2; }, ...base };",
+    join(root, 'v.js'),
+  );
+  const literal = findLocalDeclaration('vm', sf).initializer;
+  const { members, unresolved } = createResolver(root).collectMembers(literal, sf);
+  assert.deepEqual(unresolved, []);
+  // `a` kommt aus dem ZWEITEN Spread, nicht aus dem eigenen Mitglied.
+  assert.notEqual(members.get('a').sf, sf);
+  assert.equal(members.get('a').sf.fileName, join(root, 'm.js'));
+});
+
+test('createResolver: a self-referential mixin terminates silently', () => {
+  const root = tree({ 'm.js': 'export const loop = { ...loop, a() {} };' });
+  const sf = sourceOf("import { loop } from './m.js';\nconst vm = { ...loop };", join(root, 'v.js'));
+  const literal = findLocalDeclaration('vm', sf).initializer;
+  const { members, unresolved } = createResolver(root).collectMembers(literal, sf);
+  assert.deepEqual([...members.keys()], ['a']);
+  assert.deepEqual(unresolved, []);        // ein Zyklus ist aufgelöst, nicht blind
+});
+
+test('createResolver: hitting the depth limit is reported, not silently dropped', () => {
+  // Eine Kette aus 13 Mixins, die einander spreizen. Der Dateikopf sagt
+  // „Stillschweigen ist hier die einzige verbotene Antwort" — der Treffer der
+  // Tiefengrenze muss also ein `unresolved`-Eintrag werden.
+  const files = { 'v.js': '' };
+  for (let i = 0; i < 12; i += 1) {
+    files[`m${i}.js`] = `import { mix${i + 1} } from './m${i + 1}.js';\n`
+      + `export const mix${i} = { ...mix${i + 1} };\n`;
+  }
+  files['m12.js'] = 'export const mix12 = { deep() {} };\n';
+  const root = tree(files);
+  const sf = sourceOf("import { mix0 } from './m0.js';\nconst vm = { ...mix0 };", join(root, 'v.js'));
+  const literal = findLocalDeclaration('vm', sf).initializer;
+  const { members, unresolved } = createResolver(root).collectMembers(literal, sf);
+  assert.equal(members.has('deep'), false, 'die Kette darf nicht bis unten durchlaufen');
+  assert.deepEqual(unresolved, ['mix12']);
+});
+
+test('createResolver: a chain just within the depth limit still resolves', () => {
+  const files = {};
+  for (let i = 0; i < 11; i += 1) {
+    files[`m${i}.js`] = `import { mix${i + 1} } from './m${i + 1}.js';\n`
+      + `export const mix${i} = { ...mix${i + 1} };\n`;
+  }
+  files['m11.js'] = 'export const mix11 = { deep() {} };\n';
+  const root = tree(files);
+  const sf = sourceOf("import { mix0 } from './m0.js';\nconst vm = { ...mix0 };", join(root, 'v.js'));
+  const literal = findLocalDeclaration('vm', sf).initializer;
+  const { members, unresolved } = createResolver(root).collectMembers(literal, sf);
+  assert.deepEqual([...members.keys()], ['deep']);
+  assert.deepEqual(unresolved, []);
+});

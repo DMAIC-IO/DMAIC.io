@@ -58,6 +58,9 @@ const MARK_BULK = 'agentBulk';
  */
 export function collectAgentData(appDir) {
   const root = join(appDir, MODULES_DIR);
+  // EIN Auflöser für den ganzen Lauf: nur so trägt sein Parse-Zwischenspeicher
+  // über Modulgrenzen (`chart-module-base.js` hängt an elf Modulen).
+  const resolver = createResolver(appDir);
   const modules = {};
   for (const id of readdirSync(root).sort()) {
     const dir = join(root, id);
@@ -65,7 +68,7 @@ export function collectAgentData(appDir) {
     const viewmodelFile = join(dir, `${id}.js`);
     if (!existsSync(viewmodelFile)) continue;
     const modelFile = join(dir, `${id}-model.js`);
-    modules[id] = buildEntry(appDir, viewmodelFile, existsSync(modelFile) ? modelFile : null);
+    modules[id] = buildEntry(resolver, appDir, viewmodelFile, existsSync(modelFile) ? modelFile : null);
   }
   const total = Object.keys(modules).length;
   const available = Object.values(modules).filter(m => m.available).length;
@@ -73,10 +76,7 @@ export function collectAgentData(appDir) {
 }
 
 /** Ein Registry-Eintrag für genau ein Modul. */
-function buildEntry(appDir, viewmodelFile, modelFile) {
-  // Ein Auflöser PRO MODUL: sein Parse-Zwischenspeicher deckt die Mixin-Kette
-  // dieses Moduls ab, ohne über Module hinweg Zustand zu halten.
-  const resolver = createResolver(appDir);
+function buildEntry(resolver, appDir, viewmodelFile, modelFile) {
   const sf = resolver.parse(viewmodelFile);
   const tagged = hasModuleTag(sf);
   const { actions, violations } = readViewmodel(sf, resolver, appDir);
