@@ -157,6 +157,7 @@ export function chartModuleLifecycle(module, cfg) {
      * @param {number} gen
      * @param {number} [maxFrames]
      * @returns {Promise<Element|null>}
+     * @noagent
      */
     whenAnchor(selector, gen, maxFrames = 30) {
       return whenAnchor(module, this, selector, gen, maxFrames);
@@ -164,6 +165,7 @@ export function chartModuleLifecycle(module, cfg) {
 
     // ── Alpine component lifecycle ────────────────────────────
 
+    /** @noagent */
     init() {
       // Fresh per-instance transient collections.
       this._unsubs = [];
@@ -207,6 +209,7 @@ export function chartModuleLifecycle(module, cfg) {
       }
     },
 
+    /** @noagent */
     destroy() {
       for (const unsub of this._unsubs) unsub();
       this._unsubs = [];

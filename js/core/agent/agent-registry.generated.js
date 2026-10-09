@@ -8,35 +8,6 @@ export const AGENT_REGISTRY = {
     "available": false,
     "violations": [],
     "reported": [
-      "unmarked_method:revealStep@js/core/flowchart/flowchart-view.js:73",
-      "unmarked_method:stepDragStart@js/core/flowchart/flowchart-view.js:95",
-      "unmarked_method:stepDragEnd@js/core/flowchart/flowchart-view.js:104",
-      "unmarked_method:isDragging@js/core/flowchart/flowchart-view.js:121",
-      "unmarked_method:showStartRail@js/core/flowchart/flowchart-view.js:131",
-      "unmarked_method:showEndRail@js/core/flowchart/flowchart-view.js:140",
-      "unmarked_method:isGapActive@js/core/flowchart/flowchart-view.js:148",
-      "unmarked_method:gapClass@js/core/flowchart/flowchart-view.js:160",
-      "unmarked_method:gapDragOver@js/core/flowchart/flowchart-view.js:165",
-      "unmarked_method:gapDragLeave@js/core/flowchart/flowchart-view.js:174",
-      "unmarked_method:gapDrop@js/core/flowchart/flowchart-view.js:180",
-      "unmarked_method:gapDragOverAfter@js/core/flowchart/flowchart-view.js:194",
-      "unmarked_method:gapDragLeaveAfter@js/core/flowchart/flowchart-view.js:195",
-      "unmarked_method:gapDropAfter@js/core/flowchart/flowchart-view.js:196",
-      "unmarked_method:gapClassAfter@js/core/flowchart/flowchart-view.js:197",
-      "unmarked_method:stepNum@js/core/flowchart/flowchart-view.js:206",
-      "unmarked_method:armStepDrag@js/core/flowchart/flowchart-view.js:218",
-      "unmarked_method:substepNum@js/core/flowchart/flowchart-view.js:233",
-      "unmarked_method:substepsBarLabel@js/core/flowchart/flowchart-view.js:242",
-      "unmarked_method:toggleSubsteps@js/core/flowchart/flowchart-view.js:247",
-      "unmarked_method:addSubstep@js/core/flowchart/flowchart-view.js:248",
-      "unmarked_method:removeSubstep@js/core/flowchart/flowchart-view.js:249",
-      "unmarked_method:armSubDrag@js/core/flowchart/flowchart-view.js:251",
-      "unmarked_method:subDragStart@js/core/flowchart/flowchart-view.js:256",
-      "unmarked_method:subDragOver@js/core/flowchart/flowchart-view.js:267",
-      "unmarked_method:subDragLeave@js/core/flowchart/flowchart-view.js:277",
-      "unmarked_method:subDrop@js/core/flowchart/flowchart-view.js:284",
-      "unmarked_method:subDragEnd@js/core/flowchart/flowchart-view.js:296",
-      "unmarked_method:autoSize@js/core/flowchart/flowchart-view.js:304",
       "unmarked_method:init",
       "unmarked_method:isDecision",
       "unmarked_method:branchWord",
@@ -79,7 +50,50 @@ export const AGENT_REGISTRY = {
       "unmarked_method:reworkLoops",
       "unmarked_method:onExport"
     ],
-    "actions": {},
+    "actions": {
+      "toggleSubsteps": {
+        "params": [
+          {
+            "name": "stepId",
+            "type": "string",
+            "optional": false,
+            "help": "id of the step whose substeps are toggled"
+          }
+        ],
+        "returns": "void",
+        "help": "Show or hide the substep list of a step. The disclosure state is part of the step, so it survives a reload."
+      },
+      "addSubstep": {
+        "params": [
+          {
+            "name": "stepId",
+            "type": "string",
+            "optional": false,
+            "help": "id of the step that gets the new substep"
+          }
+        ],
+        "returns": "void",
+        "help": "Append an empty substep to a step, ready to be filled in."
+      },
+      "removeSubstep": {
+        "params": [
+          {
+            "name": "parentId",
+            "type": "string",
+            "optional": false,
+            "help": "id of the step holding the substep"
+          },
+          {
+            "name": "substepId",
+            "type": "string",
+            "optional": false,
+            "help": "id of the substep to remove"
+          }
+        ],
+        "returns": "void",
+        "help": "Remove one substep from its parent step."
+      }
+    },
     "fields": {
       "steps": {
         "type": "Array<object>",
@@ -164,9 +178,6 @@ export const AGENT_REGISTRY = {
     "available": false,
     "violations": [],
     "reported": [
-      "unmarked_method:whenAnchor@js/core/chart/chart-module-base.js:161",
-      "unmarked_method:init@js/core/chart/chart-module-base.js:167",
-      "unmarked_method:destroy@js/core/chart/chart-module-base.js:210",
       "unmarked_method:aggregationChanged",
       "unmarked_method:stackedChanged"
     ],
@@ -854,35 +865,6 @@ export const AGENT_REGISTRY = {
     "available": false,
     "violations": [],
     "reported": [
-      "unmarked_method:revealStep@js/core/flowchart/flowchart-view.js:73",
-      "unmarked_method:stepDragStart@js/core/flowchart/flowchart-view.js:95",
-      "unmarked_method:stepDragEnd@js/core/flowchart/flowchart-view.js:104",
-      "unmarked_method:isDragging@js/core/flowchart/flowchart-view.js:121",
-      "unmarked_method:showStartRail@js/core/flowchart/flowchart-view.js:131",
-      "unmarked_method:showEndRail@js/core/flowchart/flowchart-view.js:140",
-      "unmarked_method:isGapActive@js/core/flowchart/flowchart-view.js:148",
-      "unmarked_method:gapClass@js/core/flowchart/flowchart-view.js:160",
-      "unmarked_method:gapDragOver@js/core/flowchart/flowchart-view.js:165",
-      "unmarked_method:gapDragLeave@js/core/flowchart/flowchart-view.js:174",
-      "unmarked_method:gapDrop@js/core/flowchart/flowchart-view.js:180",
-      "unmarked_method:gapDragOverAfter@js/core/flowchart/flowchart-view.js:194",
-      "unmarked_method:gapDragLeaveAfter@js/core/flowchart/flowchart-view.js:195",
-      "unmarked_method:gapDropAfter@js/core/flowchart/flowchart-view.js:196",
-      "unmarked_method:gapClassAfter@js/core/flowchart/flowchart-view.js:197",
-      "unmarked_method:stepNum@js/core/flowchart/flowchart-view.js:206",
-      "unmarked_method:armStepDrag@js/core/flowchart/flowchart-view.js:218",
-      "unmarked_method:substepNum@js/core/flowchart/flowchart-view.js:233",
-      "unmarked_method:substepsBarLabel@js/core/flowchart/flowchart-view.js:242",
-      "unmarked_method:toggleSubsteps@js/core/flowchart/flowchart-view.js:247",
-      "unmarked_method:addSubstep@js/core/flowchart/flowchart-view.js:248",
-      "unmarked_method:removeSubstep@js/core/flowchart/flowchart-view.js:249",
-      "unmarked_method:armSubDrag@js/core/flowchart/flowchart-view.js:251",
-      "unmarked_method:subDragStart@js/core/flowchart/flowchart-view.js:256",
-      "unmarked_method:subDragOver@js/core/flowchart/flowchart-view.js:267",
-      "unmarked_method:subDragLeave@js/core/flowchart/flowchart-view.js:277",
-      "unmarked_method:subDrop@js/core/flowchart/flowchart-view.js:284",
-      "unmarked_method:subDragEnd@js/core/flowchart/flowchart-view.js:296",
-      "unmarked_method:autoSize@js/core/flowchart/flowchart-view.js:304",
       "unmarked_method:init",
       "unmarked_method:stepsForLane",
       "unmarked_method:laneLabel",
@@ -896,7 +878,50 @@ export const AGENT_REGISTRY = {
       "unmarked_method:dropOnLane",
       "unmarked_method:onExport"
     ],
-    "actions": {},
+    "actions": {
+      "toggleSubsteps": {
+        "params": [
+          {
+            "name": "stepId",
+            "type": "string",
+            "optional": false,
+            "help": "id of the step whose substeps are toggled"
+          }
+        ],
+        "returns": "void",
+        "help": "Show or hide the substep list of a step. The disclosure state is part of the step, so it survives a reload."
+      },
+      "addSubstep": {
+        "params": [
+          {
+            "name": "stepId",
+            "type": "string",
+            "optional": false,
+            "help": "id of the step that gets the new substep"
+          }
+        ],
+        "returns": "void",
+        "help": "Append an empty substep to a step, ready to be filled in."
+      },
+      "removeSubstep": {
+        "params": [
+          {
+            "name": "parentId",
+            "type": "string",
+            "optional": false,
+            "help": "id of the step holding the substep"
+          },
+          {
+            "name": "substepId",
+            "type": "string",
+            "optional": false,
+            "help": "id of the substep to remove"
+          }
+        ],
+        "returns": "void",
+        "help": "Remove one substep from its parent step."
+      }
+    },
     "fields": {
       "steps": {
         "type": "Array<object>",
@@ -1415,11 +1440,6 @@ export const AGENT_REGISTRY = {
     "available": false,
     "violations": [],
     "reported": [
-      "unmarked_method:popoutStyle@js/ui/draggable-popout.js:48",
-      "unmarked_method:popoutResetPosition@js/ui/draggable-popout.js:56",
-      "unmarked_method:popoutDragStart@js/ui/draggable-popout.js:63",
-      "unmarked_method:popoutDragMove@js/ui/draggable-popout.js:75",
-      "unmarked_method:popoutDragEnd@js/ui/draggable-popout.js:81",
       "unmarked_method:riskNum",
       "unmarked_method:rpnText",
       "unmarked_method:targetText",
@@ -1669,9 +1689,6 @@ export const AGENT_REGISTRY = {
     "available": false,
     "violations": [],
     "reported": [
-      "unmarked_method:whenAnchor@js/core/chart/chart-module-base.js:161",
-      "unmarked_method:init@js/core/chart/chart-module-base.js:167",
-      "unmarked_method:destroy@js/core/chart/chart-module-base.js:210",
       "unmarked_method:onAggregationChange"
     ],
     "actions": {},
@@ -1959,14 +1976,6 @@ export const AGENT_REGISTRY = {
     "available": false,
     "violations": [],
     "reported": [
-      "unmarked_method:dragRowsInit@js/ui/draggable-list.js:234",
-      "unmarked_method:dragRowsDestroy@js/ui/draggable-list.js:239",
-      "unmarked_method:dragArm@js/ui/draggable-list.js:247",
-      "unmarked_method:dragStart@js/ui/draggable-list.js:257",
-      "unmarked_method:dragEnd@js/ui/draggable-list.js:265",
-      "unmarked_method:dragOver@js/ui/draggable-list.js:277",
-      "unmarked_method:dragDrop@js/ui/draggable-list.js:293",
-      "unmarked_method:dragKey@js/ui/draggable-list.js:310",
       "unmarked_method:init",
       "unmarked_method:destroy",
       "unmarked_method:tabClass",
@@ -2373,11 +2382,7 @@ export const AGENT_REGISTRY = {
     "tagged": false,
     "available": false,
     "violations": [],
-    "reported": [
-      "unmarked_method:whenAnchor@js/core/chart/chart-module-base.js:161",
-      "unmarked_method:init@js/core/chart/chart-module-base.js:167",
-      "unmarked_method:destroy@js/core/chart/chart-module-base.js:210"
-    ],
+    "reported": [],
     "actions": {},
     "fields": {
       "xRef": {
@@ -2635,14 +2640,6 @@ export const AGENT_REGISTRY = {
     "available": false,
     "violations": [],
     "reported": [
-      "unmarked_method:dragRowsInit@js/ui/draggable-list.js:234",
-      "unmarked_method:dragRowsDestroy@js/ui/draggable-list.js:239",
-      "unmarked_method:dragArm@js/ui/draggable-list.js:247",
-      "unmarked_method:dragStart@js/ui/draggable-list.js:257",
-      "unmarked_method:dragEnd@js/ui/draggable-list.js:265",
-      "unmarked_method:dragOver@js/ui/draggable-list.js:277",
-      "unmarked_method:dragDrop@js/ui/draggable-list.js:293",
-      "unmarked_method:dragKey@js/ui/draggable-list.js:310",
       "unmarked_method:fmt",
       "unmarked_method:pct",
       "unmarked_method:factorRole",
@@ -2725,9 +2722,6 @@ export const AGENT_REGISTRY = {
     "available": false,
     "violations": [],
     "reported": [
-      "unmarked_method:whenAnchor@js/core/chart/chart-module-base.js:161",
-      "unmarked_method:init@js/core/chart/chart-module-base.js:167",
-      "unmarked_method:destroy@js/core/chart/chart-module-base.js:210",
       "unmarked_method:baselineCountValue",
       "unmarked_method:baselineCountChanged",
       "unmarked_method:alphaChanged"
@@ -2761,35 +2755,6 @@ export const AGENT_REGISTRY = {
     "available": false,
     "violations": [],
     "reported": [
-      "unmarked_method:revealStep@js/core/flowchart/flowchart-view.js:73",
-      "unmarked_method:stepDragStart@js/core/flowchart/flowchart-view.js:95",
-      "unmarked_method:stepDragEnd@js/core/flowchart/flowchart-view.js:104",
-      "unmarked_method:isDragging@js/core/flowchart/flowchart-view.js:121",
-      "unmarked_method:showStartRail@js/core/flowchart/flowchart-view.js:131",
-      "unmarked_method:showEndRail@js/core/flowchart/flowchart-view.js:140",
-      "unmarked_method:isGapActive@js/core/flowchart/flowchart-view.js:148",
-      "unmarked_method:gapClass@js/core/flowchart/flowchart-view.js:160",
-      "unmarked_method:gapDragOver@js/core/flowchart/flowchart-view.js:165",
-      "unmarked_method:gapDragLeave@js/core/flowchart/flowchart-view.js:174",
-      "unmarked_method:gapDrop@js/core/flowchart/flowchart-view.js:180",
-      "unmarked_method:gapDragOverAfter@js/core/flowchart/flowchart-view.js:194",
-      "unmarked_method:gapDragLeaveAfter@js/core/flowchart/flowchart-view.js:195",
-      "unmarked_method:gapDropAfter@js/core/flowchart/flowchart-view.js:196",
-      "unmarked_method:gapClassAfter@js/core/flowchart/flowchart-view.js:197",
-      "unmarked_method:stepNum@js/core/flowchart/flowchart-view.js:206",
-      "unmarked_method:armStepDrag@js/core/flowchart/flowchart-view.js:218",
-      "unmarked_method:substepNum@js/core/flowchart/flowchart-view.js:233",
-      "unmarked_method:substepsBarLabel@js/core/flowchart/flowchart-view.js:242",
-      "unmarked_method:toggleSubsteps@js/core/flowchart/flowchart-view.js:247",
-      "unmarked_method:addSubstep@js/core/flowchart/flowchart-view.js:248",
-      "unmarked_method:removeSubstep@js/core/flowchart/flowchart-view.js:249",
-      "unmarked_method:armSubDrag@js/core/flowchart/flowchart-view.js:251",
-      "unmarked_method:subDragStart@js/core/flowchart/flowchart-view.js:256",
-      "unmarked_method:subDragOver@js/core/flowchart/flowchart-view.js:267",
-      "unmarked_method:subDragLeave@js/core/flowchart/flowchart-view.js:277",
-      "unmarked_method:subDrop@js/core/flowchart/flowchart-view.js:284",
-      "unmarked_method:subDragEnd@js/core/flowchart/flowchart-view.js:296",
-      "unmarked_method:autoSize@js/core/flowchart/flowchart-view.js:304",
       "unmarked_method:appendStep",
       "unmarked_method:init",
       "unmarked_method:sides",
@@ -2803,7 +2768,50 @@ export const AGENT_REGISTRY = {
       "unmarked_method:railEnd",
       "unmarked_method:onExport"
     ],
-    "actions": {},
+    "actions": {
+      "toggleSubsteps": {
+        "params": [
+          {
+            "name": "stepId",
+            "type": "string",
+            "optional": false,
+            "help": "id of the step whose substeps are toggled"
+          }
+        ],
+        "returns": "void",
+        "help": "Show or hide the substep list of a step. The disclosure state is part of the step, so it survives a reload."
+      },
+      "addSubstep": {
+        "params": [
+          {
+            "name": "stepId",
+            "type": "string",
+            "optional": false,
+            "help": "id of the step that gets the new substep"
+          }
+        ],
+        "returns": "void",
+        "help": "Append an empty substep to a step, ready to be filled in."
+      },
+      "removeSubstep": {
+        "params": [
+          {
+            "name": "parentId",
+            "type": "string",
+            "optional": false,
+            "help": "id of the step holding the substep"
+          },
+          {
+            "name": "substepId",
+            "type": "string",
+            "optional": false,
+            "help": "id of the substep to remove"
+          }
+        ],
+        "returns": "void",
+        "help": "Remove one substep from its parent step."
+      }
+    },
     "fields": {
       "steps": {
         "type": "Array<object>",
@@ -2967,9 +2975,6 @@ export const AGENT_REGISTRY = {
     "available": false,
     "violations": [],
     "reported": [
-      "unmarked_method:whenAnchor@js/core/chart/chart-module-base.js:161",
-      "unmarked_method:init@js/core/chart/chart-module-base.js:167",
-      "unmarked_method:destroy@js/core/chart/chart-module-base.js:210",
       "unmarked_method:onAggregationChange"
     ],
     "actions": {},
@@ -3005,11 +3010,7 @@ export const AGENT_REGISTRY = {
     "tagged": false,
     "available": false,
     "violations": [],
-    "reported": [
-      "unmarked_method:whenAnchor@js/core/chart/chart-module-base.js:161",
-      "unmarked_method:init@js/core/chart/chart-module-base.js:167",
-      "unmarked_method:destroy@js/core/chart/chart-module-base.js:210"
-    ],
+    "reported": [],
     "actions": {},
     "fields": {
       "valueRef": {
@@ -3154,35 +3155,12 @@ export const AGENT_REGISTRY = {
     "available": false,
     "violations": [],
     "reported": [
-      "unmarked_method:revealStep@js/core/flowchart/flowchart-view.js:73",
-      "unmarked_method:stepDragStart@js/core/flowchart/flowchart-view.js:95",
       "unmarked_method:stepDragEnd",
-      "unmarked_method:isDragging@js/core/flowchart/flowchart-view.js:121",
-      "unmarked_method:showStartRail@js/core/flowchart/flowchart-view.js:131",
-      "unmarked_method:showEndRail@js/core/flowchart/flowchart-view.js:140",
-      "unmarked_method:isGapActive@js/core/flowchart/flowchart-view.js:148",
-      "unmarked_method:gapClass@js/core/flowchart/flowchart-view.js:160",
-      "unmarked_method:gapDragOver@js/core/flowchart/flowchart-view.js:165",
-      "unmarked_method:gapDragLeave@js/core/flowchart/flowchart-view.js:174",
-      "unmarked_method:gapDrop@js/core/flowchart/flowchart-view.js:180",
-      "unmarked_method:gapDragOverAfter@js/core/flowchart/flowchart-view.js:194",
-      "unmarked_method:gapDragLeaveAfter@js/core/flowchart/flowchart-view.js:195",
-      "unmarked_method:gapDropAfter@js/core/flowchart/flowchart-view.js:196",
-      "unmarked_method:gapClassAfter@js/core/flowchart/flowchart-view.js:197",
-      "unmarked_method:stepNum@js/core/flowchart/flowchart-view.js:206",
-      "unmarked_method:armStepDrag@js/core/flowchart/flowchart-view.js:218",
-      "unmarked_method:substepNum@js/core/flowchart/flowchart-view.js:233",
-      "unmarked_method:substepsBarLabel@js/core/flowchart/flowchart-view.js:242",
       "unmarked_method:toggleSubsteps",
       "unmarked_method:addSubstep",
       "unmarked_method:removeSubstep",
-      "unmarked_method:armSubDrag@js/core/flowchart/flowchart-view.js:251",
-      "unmarked_method:subDragStart@js/core/flowchart/flowchart-view.js:256",
-      "unmarked_method:subDragOver@js/core/flowchart/flowchart-view.js:267",
-      "unmarked_method:subDragLeave@js/core/flowchart/flowchart-view.js:277",
       "unmarked_method:subDrop",
       "unmarked_method:subDragEnd",
-      "unmarked_method:autoSize@js/core/flowchart/flowchart-view.js:304",
       "unmarked_method:valueBadgeLabel",
       "unmarked_method:valueBadgeTitle",
       "unmarked_method:valueBadgeClass",
@@ -3422,9 +3400,6 @@ export const AGENT_REGISTRY = {
     "available": false,
     "violations": [],
     "reported": [
-      "unmarked_method:whenAnchor@js/core/chart/chart-module-base.js:161",
-      "unmarked_method:init@js/core/chart/chart-module-base.js:167",
-      "unmarked_method:destroy@js/core/chart/chart-module-base.js:210",
       "unmarked_method:fmt",
       "unmarked_method:signalsClass",
       "unmarked_method:chartTitle",
@@ -3715,9 +3690,6 @@ export const AGENT_REGISTRY = {
     "available": false,
     "violations": [],
     "reported": [
-      "unmarked_method:whenAnchor@js/core/chart/chart-module-base.js:161",
-      "unmarked_method:init@js/core/chart/chart-module-base.js:167",
-      "unmarked_method:destroy@js/core/chart/chart-module-base.js:210",
       "unmarked_method:fmt",
       "unmarked_method:fmtP",
       "unmarked_method:flaggedKpiClass",
@@ -3862,12 +3834,6 @@ export const AGENT_REGISTRY = {
     "available": false,
     "violations": [],
     "reported": [
-      "unmarked_method:isDragOver@js/ui/draggable-list.js:63",
-      "unmarked_method:dragStart@js/ui/draggable-list.js:72",
-      "unmarked_method:dragEnd@js/ui/draggable-list.js:80",
-      "unmarked_method:dragOver@js/ui/draggable-list.js:90",
-      "unmarked_method:dragLeave@js/ui/draggable-list.js:102",
-      "unmarked_method:drop@js/ui/draggable-list.js:112",
       "unmarked_method:dragOverClass",
       "unmarked_method:addOnEnter",
       "unmarked_method:addOnClick",
@@ -3898,11 +3864,6 @@ export const AGENT_REGISTRY = {
     "available": false,
     "violations": [],
     "reported": [
-      "unmarked_method:popoutStyle@js/ui/draggable-popout.js:48",
-      "unmarked_method:popoutResetPosition@js/ui/draggable-popout.js:56",
-      "unmarked_method:popoutDragStart@js/ui/draggable-popout.js:63",
-      "unmarked_method:popoutDragMove@js/ui/draggable-popout.js:75",
-      "unmarked_method:popoutDragEnd@js/ui/draggable-popout.js:81",
       "unmarked_method:avatarColor",
       "unmarked_method:initials",
       "unmarked_method:quadLabel",
@@ -3957,9 +3918,6 @@ export const AGENT_REGISTRY = {
     "available": false,
     "violations": [],
     "reported": [
-      "unmarked_method:whenAnchor@js/core/chart/chart-module-base.js:161",
-      "unmarked_method:init@js/core/chart/chart-module-base.js:167",
-      "unmarked_method:destroy@js/core/chart/chart-module-base.js:210",
       "unmarked_method:typeHint",
       "unmarked_method:sectionParamsLabel",
       "unmarked_method:baselineCountValue",
@@ -4106,9 +4064,6 @@ export const AGENT_REGISTRY = {
     "available": false,
     "violations": [],
     "reported": [
-      "unmarked_method:whenAnchor@js/core/chart/chart-module-base.js:161",
-      "unmarked_method:init@js/core/chart/chart-module-base.js:167",
-      "unmarked_method:destroy@js/core/chart/chart-module-base.js:210",
       "unmarked_method:onLambdaModeChange",
       "unmarked_method:onLambdaManualChange"
     ],
@@ -4616,11 +4571,6 @@ export const AGENT_REGISTRY = {
     "available": false,
     "violations": [],
     "reported": [
-      "unmarked_method:popoutStyle@js/ui/draggable-popout.js:48",
-      "unmarked_method:popoutResetPosition@js/ui/draggable-popout.js:56",
-      "unmarked_method:popoutDragStart@js/ui/draggable-popout.js:63",
-      "unmarked_method:popoutDragMove@js/ui/draggable-popout.js:75",
-      "unmarked_method:popoutDragEnd@js/ui/draggable-popout.js:81",
       "unmarked_method:cardClass",
       "unmarked_method:cardCountText",
       "unmarked_method:quoted",

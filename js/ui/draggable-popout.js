@@ -44,7 +44,10 @@ export function draggablePopout(options = {}) {
     _popOffX: 0,
     _popOffY: 0,
 
-    /** Inline style for the popout window — centred until the user drags it. */
+    /**
+     * Inline style for the popout window — centred until the user drags it.
+     * @noagent
+     */
     popoutStyle() {
       if (this._popLeft == null || this._popTop == null) {
         return size + initialPosition;
@@ -52,14 +55,20 @@ export function draggablePopout(options = {}) {
       return `${size  }left:${  this._popLeft  }px;top:${  this._popTop  }px`;
     },
 
-    /** Restore the centred default position (call on open). */
+    /**
+     * Restore the centred default position (call on open).
+     * @noagent
+     */
     popoutResetPosition() {
       this._popLeft = null;
       this._popTop = null;
       this._popDragging = false;
     },
 
-    /** @param {MouseEvent} $event mousedown on the title bar */
+    /**
+     * @param {MouseEvent} $event mousedown on the title bar
+     * @noagent
+     */
     popoutDragStart($event) {
       if (closeSelector && $event.target.closest(closeSelector)) return;
       const win = $event.currentTarget.closest(windowSelector);
@@ -71,13 +80,17 @@ export function draggablePopout(options = {}) {
       this._popDragging = true;
     },
 
-    /** @param {MouseEvent} $event window mousemove */
+    /**
+     * @param {MouseEvent} $event window mousemove
+     * @noagent
+     */
     popoutDragMove($event) {
       if (!this._popDragging) return;
       this._popLeft = $event.clientX - this._popOffX;
       this._popTop = $event.clientY - this._popOffY;
     },
 
+    /** @noagent */
     popoutDragEnd() {
       this._popDragging = false;
     },

@@ -69,6 +69,7 @@ export function chainViewMixin(module, _t, opts = {}) {
      *
      * @param {{id: string}|string|null} step the new step, or its id
      * @returns {void}
+     * @noagent
      */
     revealStep(step) {
       if (!canvasSelector) return;
@@ -92,6 +93,7 @@ export function chainViewMixin(module, _t, opts = {}) {
     /** @type {number|null} gap under the cursor while a card is in flight */
     _activeGap: null,
 
+    /** @noagent */
     stepDragStart(stepId, event) {
       this._draggedStepId = stepId;
       if (event?.dataTransfer) {
@@ -101,6 +103,7 @@ export function chainViewMixin(module, _t, opts = {}) {
       event?.target?.classList?.add('is-dragging');
     },
 
+    /** @noagent */
     stepDragEnd(event) {
       this._draggedStepId = null;
       // An aborted drag must not leave an insert bar behind.
@@ -117,7 +120,10 @@ export function chainViewMixin(module, _t, opts = {}) {
     // so a drop says "the card goes here" and nothing else — in the swimlane
     // charts the area around a card already belongs to the band change.
 
-    /** True while a card is in flight — gates the rails and their hit areas. */
+    /**
+     * True while a card is in flight — gates the rails and their hit areas.
+     * @noagent
+     */
     isDragging() {
       return this._draggedStepId !== null;
     },
@@ -127,6 +133,7 @@ export function chainViewMixin(module, _t, opts = {}) {
      * otherwise every chain would start with an arrow pointing at nothing.
      * @param {number} idx 0-based index of the step the rail belongs to
      * @returns {boolean}
+     * @noagent
      */
     showStartRail(idx) {
       return idx === 0 && this._draggedStepId !== null;
@@ -136,6 +143,7 @@ export function chainViewMixin(module, _t, opts = {}) {
      * Gap n hangs off the last card. Same drag-only rule as showStartRail.
      * @param {number} idx 0-based index of the step the rail belongs to
      * @returns {boolean}
+     * @noagent
      */
     showEndRail(idx) {
       return idx === (this.model?.steps?.length || 0) - 1 && this._draggedStepId !== null;
@@ -144,6 +152,7 @@ export function chainViewMixin(module, _t, opts = {}) {
     /**
      * @param {number} g gap index
      * @returns {boolean} true when the cursor currently sits over gap g
+     * @noagent
      */
     isGapActive(g) {
       return this._activeGap === g;
@@ -156,12 +165,14 @@ export function chainViewMixin(module, _t, opts = {}) {
      * one plain method call per binding (.claude/alpine.md).
      * @param {number} g gap index
      * @returns {string}
+     * @noagent
      */
     gapClass(g) {
       if (this._draggedStepId === null) return '';
       return this.isGapActive(g) ? 'fc-connector--drop is-drop-target' : 'fc-connector--drop';
     },
 
+    /** @noagent */
     gapDragOver(g, event) {
       // Without a card in flight the connector stays a plain insert button —
       // preventDefault() here would make it a drop target for anything.
@@ -171,12 +182,14 @@ export function chainViewMixin(module, _t, opts = {}) {
       this._activeGap = g;
     },
 
+    /** @noagent */
     gapDragLeave(g, _event) {
       // Only clear OUR gap: dragover on the next connector may already have
       // claimed _activeGap before this leave fires.
       if (this._activeGap === g) this._activeGap = null;
     },
 
+    /** @noagent */
     gapDrop(g, event) {
       event?.preventDefault();
       const from = this._draggedStepId;
@@ -191,9 +204,13 @@ export function chainViewMixin(module, _t, opts = {}) {
     // expressions are plain method calls, and arithmetic in an argument is
     // not worth the risk (.claude/alpine.md, "Event-Expression: Nur
     // Methodenaufrufe"). Used by every trailing arrow and every end rail.
+    /** @noagent */
     gapDragOverAfter(idx, event) { this.gapDragOver(idx + 1, event); },
+    /** @noagent */
     gapDragLeaveAfter(idx, event) { this.gapDragLeave(idx + 1, event); },
+    /** @noagent */
     gapDropAfter(idx, event) { this.gapDrop(idx + 1, event); },
+    /** @noagent */
     gapClassAfter(idx) { return this.gapClass(idx + 1); },
 
     /**
@@ -202,6 +219,7 @@ export function chainViewMixin(module, _t, opts = {}) {
      * flowchart modules — Process Map set the format, the others follow it.
      * @param {number} idx 0-based index in the chain
      * @returns {string}
+     * @noagent
      */
     stepNum(idx) {
       return String(idx + 1).padStart(2, '0');
@@ -214,6 +232,7 @@ export function chainViewMixin(module, _t, opts = {}) {
      * @param {string} _stepId  unused — kept so templates read symmetrically
      * @param {Event} event
      * @returns {void}
+     * @noagent
      */
     armStepDrag(_stepId, event) {
       const row = event?.target?.closest?.(dragRowSelector);
@@ -229,6 +248,7 @@ export function chainViewMixin(module, _t, opts = {}) {
      * @param {number} parentIdx 0-based index of the parent step
      * @param {number} subIdx 0-based index of the substep
      * @returns {string}
+     * @noagent
      */
     substepNum(parentIdx, subIdx) {
       return `${parentIdx + 1}.${subIdx + 1}`;
@@ -238,21 +258,44 @@ export function chainViewMixin(module, _t, opts = {}) {
      * Label for the substeps disclosure bar, with the count when non-empty.
      * @param {object} step
      * @returns {string}
+     * @noagent
      */
     substepsBarLabel(step) {
       const n = step?.substeps?.length || 0;
       return _t('substepsLabel') + (n > 0 ? ` (${n})` : '');
     },
 
+    /**
+     * Show or hide the substep list of a step. The disclosure state is part of
+     * the step, so it survives a reload.
+     * @agent
+     * @param {string} stepId  id of the step whose substeps are toggled
+     * @returns {void}
+     */
     toggleSubsteps(stepId) { this.model?.toggleSubsteps?.(stepId); },
+    /**
+     * Append an empty substep to a step, ready to be filled in.
+     * @agent
+     * @param {string} stepId  id of the step that gets the new substep
+     * @returns {void}
+     */
     addSubstep(stepId) { this.model?.addSubstep?.(stepId); },
+    /**
+     * Remove one substep from its parent step.
+     * @agent
+     * @param {string} parentId   id of the step holding the substep
+     * @param {string} substepId  id of the substep to remove
+     * @returns {void}
+     */
     removeSubstep(parentId, substepId) { this.model?.removeSubstep?.(parentId, substepId); },
 
+    /** @noagent */
     armSubDrag(event) {
       const item = event?.target?.closest?.(substepItemSelector);
       if (item) item.setAttribute('draggable', 'true');
     },
 
+    /** @noagent */
     subDragStart(parentId, subId, event) {
       event?.stopPropagation();
       this._draggedSubId = subId;
@@ -264,6 +307,7 @@ export function chainViewMixin(module, _t, opts = {}) {
       setTimeout(() => item?.classList.add('is-dragging'), 0);
     },
 
+    /** @noagent */
     subDragOver(parentId, subId, event) {
       event?.preventDefault();
       event?.stopPropagation();
@@ -274,6 +318,7 @@ export function chainViewMixin(module, _t, opts = {}) {
       }
     },
 
+    /** @noagent */
     subDragLeave(_subId, event) {
       const item = event?.currentTarget;
       if (item && !item.contains(event.relatedTarget)) {
@@ -281,6 +326,7 @@ export function chainViewMixin(module, _t, opts = {}) {
       }
     },
 
+    /** @noagent */
     subDrop(parentId, subId, event) {
       event?.preventDefault();
       event?.stopPropagation();
@@ -293,6 +339,7 @@ export function chainViewMixin(module, _t, opts = {}) {
       this.model?.moveSubstep?.(parentId, from, subId);
     },
 
+    /** @noagent */
     subDragEnd(event) {
       const item = event?.target?.closest?.(substepItemSelector);
       item?.removeAttribute('draggable');
@@ -301,6 +348,7 @@ export function chainViewMixin(module, _t, opts = {}) {
       this._draggedParentId = null;
     },
 
+    /** @noagent */
     autoSize(event) {
       fitToContent(event?.target);
     },

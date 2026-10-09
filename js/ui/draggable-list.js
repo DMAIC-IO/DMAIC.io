@@ -59,6 +59,7 @@ export function draggableList(options = {}) {
     /**
      * @param {string} group
      * @returns {boolean} true while this group is the active drop target
+     * @noagent
      */
     isDragOver(group) {
       return this._dragOverGroup === group;
@@ -68,6 +69,7 @@ export function draggableList(options = {}) {
      * @param {string} group source list key
      * @param {number} idx source item index
      * @param {DragEvent} $event dragstart on the item element
+     * @noagent
      */
     dragStart(group, idx, $event) {
       this._dragSource.group = group;
@@ -76,7 +78,10 @@ export function draggableList(options = {}) {
       if ($event.dataTransfer) $event.dataTransfer.effectAllowed = 'move';
     },
 
-    /** @param {DragEvent} $event dragend on the item element */
+    /**
+     * @param {DragEvent} $event dragend on the item element
+     * @noagent
+     */
     dragEnd($event) {
       $event.target.classList.remove(draggingClass);
       this._dragOverGroup = null;
@@ -86,6 +91,7 @@ export function draggableList(options = {}) {
     /**
      * @param {string} group list key under the pointer
      * @param {DragEvent} $event dragover on the list container
+     * @noagent
      */
     dragOver(group, $event) {
       $event.preventDefault();
@@ -98,6 +104,7 @@ export function draggableList(options = {}) {
      * list (not when it merely crosses into a child element).
      * @param {string} group list key
      * @param {DragEvent} $event dragleave on the list container
+     * @noagent
      */
     dragLeave(group, $event) {
       if (!$event.currentTarget.contains($event.relatedTarget)) {
@@ -108,6 +115,7 @@ export function draggableList(options = {}) {
     /**
      * @param {string} targetGroup list key the item is dropped into
      * @param {DragEvent} $event drop on the list container
+     * @noagent
      */
     drop(targetGroup, $event) {
       $event.preventDefault();
@@ -230,12 +238,18 @@ export function draggableRows(options = {}) {
     /** @type {{ group: string|null, id: * }} identity of the dragged row */
     _dragRow: { group: null, id: null },
 
-    /** Register the shared disarm listener. Call from the component's init(). */
+    /**
+     * Register the shared disarm listener. Call from the component's init().
+     * @noagent
+     */
     dragRowsInit() {
       if (doc) acquireDisarm(doc);
     },
 
-    /** Drop the shared disarm reference. Call from the component's destroy(). */
+    /**
+     * Drop the shared disarm reference. Call from the component's destroy().
+     * @noagent
+     */
     dragRowsDestroy() {
       if (doc) releaseDisarm(doc);
     },
@@ -243,6 +257,7 @@ export function draggableRows(options = {}) {
     /**
      * `mousedown` on the grip — arm the owning row for dragging.
      * @param {MouseEvent} $event
+     * @noagent
      */
     dragArm($event) {
       const tr = $event.target.closest('tr');
@@ -253,6 +268,7 @@ export function draggableRows(options = {}) {
      * @param {string} group table key
      * @param {*} id row id
      * @param {DragEvent} $event dragstart on the row
+     * @noagent
      */
     dragStart(group, id, $event) {
       this._dragRow = { group, id };
@@ -261,7 +277,10 @@ export function draggableRows(options = {}) {
       if ($event.dataTransfer) $event.dataTransfer.effectAllowed = 'move';
     },
 
-    /** @param {DragEvent} $event dragend on the row */
+    /**
+     * @param {DragEvent} $event dragend on the row
+     * @noagent
+     */
     dragEnd($event) {
       this._dragRow = { group: null, id: null };
       const tr = $event.target.closest?.('tr') ?? $event.target;
@@ -273,6 +292,7 @@ export function draggableRows(options = {}) {
      * @param {string} group table key of the row under the pointer
      * @param {*} id row id under the pointer
      * @param {DragEvent} $event dragover on the row
+     * @noagent
      */
     dragOver(group, id, $event) {
       if (group !== this._dragRow.group) return;   // never across tables
@@ -289,6 +309,7 @@ export function draggableRows(options = {}) {
      * @param {string} group table key the row was released over
      * @param {*} targetId row id the pointer was released over
      * @param {DragEvent} $event drop on the row
+     * @noagent
      */
     dragDrop(group, targetId, $event) {
       $event.preventDefault();
@@ -306,6 +327,7 @@ export function draggableRows(options = {}) {
      * @param {string} group table key
      * @param {*} id row id owning the grip
      * @param {KeyboardEvent} $event
+     * @noagent
      */
     dragKey(group, id, $event) {
       if (!$event.altKey) return;
