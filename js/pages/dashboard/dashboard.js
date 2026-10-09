@@ -288,6 +288,9 @@ const page = createPage({
       }
 
       wireToolbar();
+      // Completion marker: the static grid anchor is visible before the
+      // awaited tile files are placed, so observers wait for this instead.
+      gridAnchor.dataset.renderedGen = String(gen);
     };
 
     handle.render = render;
