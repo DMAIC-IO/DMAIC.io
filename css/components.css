@@ -1779,7 +1779,9 @@ body.dmike-glossary-inline-off .glossary-term:focus-within {
   line-height: 0;
   background: none;
   color: var(--context-help-btn-color);
-  cursor: help;
+  /* `pointer`, nicht `help`: der Knopf trägt role="button" und reagiert auf
+     Klick — `help` kündigt einen Tooltip an, den es nicht gibt. */
+  cursor: pointer;
   visibility: hidden;
   pointer-events: none;
 }

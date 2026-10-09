@@ -5956,6 +5956,16 @@
     }
   },
   "agent": {
+    "shared": {
+      "actions": {
+        "read": {
+          "help": "Liefert den vollständigen Lesezustand dieser Instanz. Ohne Parameter bleiben Massendaten draußen und erscheinen als Umfangs-Deskriptor, damit gezielt nachgefragt werden kann statt tausende Zeilen zu übertragen.",
+          "params": {
+            "options": "Optionale Auswahl: \"fields\" nennt die Massenfelder, die vollständig geliefert werden sollen; \"rows\" schneidet jedes davon auf den Bereich von \"from\" bis \"to\" zu."
+          }
+        }
+      }
+    },
     "errors": {
       "notAnAction": "Eintrag {index} ist kein Aktionsobjekt.",
       "missingOp": "Eintrag {index} hat kein Feld \"op\".",

@@ -232,13 +232,13 @@ function wireGlobalHandlers() {
   window.addEventListener('blur', disarm);
   document.addEventListener('visibilitychange', disarm);
 
+  // Nur der Hintergrundklick: ein Zweig für den Knopf selbst wäre hier
+  // unerreichbar. Jeder Knopf bekommt bei seiner Erzeugung seinen eigenen
+  // Griff (`augmentOne`), der `stopPropagation()` ruft — und geklont wird
+  // keiner: `querySelectorAll` steigt nicht in `<template>`-Inhalte, und
+  // Alpines `x-for` vervielfältigt nur noch nicht ergänzten Inhalt.
   document.addEventListener('click', (event) => {
-    if (event.target.closest?.('.context-help__backdrop')) { closeContextHelp(); return; }
-    const button = event.target.closest?.('.context-help__btn');
-    if (!button) return;
-    event.preventDefault();
-    event.stopPropagation();
-    openContextHelp(button);
+    if (event.target.closest?.('.context-help__backdrop')) closeContextHelp();
   });
 }
 

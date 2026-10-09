@@ -113,7 +113,13 @@ function buildEntry(resolver, appDir, viewmodelFile) {
   // Meldung desselben Befunds unter neuem Namen, nicht ein zweiter Befund.
   const surface = [];
   if (violations.length === 0) {
-    if (Object.keys(actions).length === 0) surface.push('module_tag_without_actions');
+    // `read` zählt hier NICHT mit: seit es das geteilte `read()`-Mixin gibt,
+    // kostet eine Aktion eine Zeile (`...agentReadMixin(module)`) — ein
+    // befundfreies Modul wie `mosaic` wäre mit Tag plus Spread freigegeben,
+    // ohne einen einzigen Schreibweg. Genau der Fall, den diese Hürde
+    // ausschließen soll. Zählte `read` mit, wäre `no_read_action` unten die
+    // stärkere Bedingung und diese Hürde ganz überflüssig.
+    if (Object.keys(actions).filter(n => n !== 'read').length === 0) surface.push('module_tag_without_actions');
     if (!Object.prototype.hasOwnProperty.call(actions, 'read')) surface.push('no_read_action');
   }
 

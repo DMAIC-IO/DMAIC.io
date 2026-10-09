@@ -388,9 +388,9 @@
   --glossary-term-bg-hover: rgb(255 255 255 / 5%);
   --glossary-term-bg-focus: rgb(255 255 255 / 8%);
 
-  /* Kontexthilfe am Label — dunkle Varianten */
-  --context-help-btn-color:       var(--color-text-secondary);
-  --context-help-btn-color-hover: var(--color-accent);
-  --context-help-panel-bg:        var(--color-bg-elevated);
-  --context-help-panel-border:    var(--color-border-primary);
+  /* Kontexthilfe am Label: KEINE dunklen Varianten nötig — die vier Tokens
+     zeigen auf --color-text-secondary / --color-accent / --color-bg-elevated /
+     --color-border-primary, und die schalten selbst pro Thema. Eine Kopie der
+     hellen Werte hier wäre ein No-op, der nur vorgibt, etwas zu überschreiben
+     (vgl. den Glossar-Block oben: dort steht nur, was wirklich abweicht). */
 }

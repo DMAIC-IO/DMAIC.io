@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtempSync, mkdirSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, readdirSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { collectAgentData, renderAgentRegistryModule, collectDomDetours,
@@ -447,12 +447,19 @@ export function fooData(module, _t) {
      * @returns {object} the state
      */
     read() { return {}; },
+    /**
+     * Set the observed problem statement.
+     * @agent
+     * @param {string} text - the problem statement
+     * @returns {void}
+     */
+    setProblem(text) {},
   };
 }`;
   const root = fixture({ foo: { 'foo.js': vm, 'foo-model.js': MODEL } });
   const { modules } = collectAgentData(root);
   assert.deepEqual(modules.foo.violations, []);
-  assert.deepEqual(Object.keys(modules.foo.actions), ['read']);
+  assert.deepEqual(Object.keys(modules.foo.actions), ['read', 'setProblem']);
 });
 
 test('collectAgentData: a nested spread inside a mixin resolves too', () => {
@@ -524,6 +531,13 @@ export default createModule({
        * @returns {object} the state
        */
       read() { return {}; },
+      /**
+       * Set the observed problem statement.
+       * @agent
+       * @param {string} text - the problem statement
+       * @returns {void}
+       */
+      setProblem(text) {},
     };
   },
 });`;
@@ -917,6 +931,14 @@ export default createModule({
        * @returns {AgentRead} the agent-facing read surface
        */
       read(options) { return {}; },
+      /**
+       * Ein Schreibweg — ohne ihn greift module_tag_without_actions, und die
+       * Fälle unten prüften die Lesefläche an einem gar nicht freigebbaren Modul.
+       * @agent
+       * @param {string} id - id of the sheet to activate
+       * @returns {void}
+       */
+      activateSheet(id) {},
     };
   },
 });`;
@@ -1025,6 +1047,28 @@ test('collectAgentData: a module tag with zero @agent actions is a violation', (
   assert.equal(modules.empty.available, false);
 });
 
+/* Dasselbe Modul, aber mit dem geteilten `read()` — das ist der billige Weg zu
+   einer grünen Freigabe: Tag plus eine Zeile Spread. Ohne einen einzigen
+   Schreibweg darf das nicht durchgehen. */
+const TAGGED_ONLY_READ = TAGGED_NO_ACTIONS.replace('      /** @noagent */', `      /**
+       * Read the full state.
+       * @agent
+       * @returns {object} the state
+       */
+      read() { return {}; },
+      /** @noagent */`);
+
+test('collectAgentData: a module whose ONLY action is read() is still a violation', () => {
+  const root = fixture({ empty: { 'empty.js': TAGGED_ONLY_READ, 'empty-model.js': BAR_MODEL } });
+  const { modules } = collectAgentData(root);
+  assert.deepEqual(Object.keys(modules.empty.actions), ['read']);
+  // `no_read_action` ist erfüllt — die erste Hürde muss trotzdem greifen,
+  // sonst sind die beiden Codes redundant statt orthogonal.
+  assert.ok(!modules.empty.violations.includes('no_read_action'));
+  assert.ok(modules.empty.violations.includes('module_tag_without_actions'));
+  assert.equal(modules.empty.available, false);
+});
+
 test('collectAgentData: a released module without a read() action is a violation', () => {
   const noRead = TAGGED_VM.replace(/\/\*\*\n\s+\* Read the full state\.\n\s+\* @agent\n\s+\* @returns \{object\} the state\n\s+\*\/\n\s+read\(\) \{ return \{\}; \},\n/, '');
   const root = fixture({ foo: { 'foo.js': noRead, 'foo-model.js': MODEL } });
@@ -1054,4 +1098,118 @@ test('collectAgentData: the released pilot modules are available in the real tre
     assert.ok('read' in modules[id].actions, `${id} hat kein read()`);
   }
   assert.ok(coverage.available >= 1);
+});
+
+/* ─── Das i18n-Tor der freigegebenen Module ───────────────────────────────
+   Jeder Aktions- und Feldname steht in vier Quellen: der generierten
+   Registry (abgeleitet), `i18n/de.json`, `i18n/en.json` und — für Anker —
+   als `data-help-key`-Literal in der Vorlage. Nur die erste wächst mit dem
+   Code mit. Ohne dieses Tor würde ein Umbenennen beide Sprachbäume still
+   veralten lassen (`contextHelp()` fällt auf die JSDoc-Prosa zurück, ein
+   deutscher Agent bekäme Englisch) und ein Tippfehler im `data-help-key`
+   würde das Fragezeichen einfach nicht erscheinen lassen — ohne einen
+   einzigen roten Test. */
+
+/** Dotted-Path-Auflösung auf einem i18n-Baum. @returns {string|undefined} */
+function lookup(tree, key) {
+  let node = tree;
+  for (const segment of key.split('.')) {
+    if (node === null || typeof node !== 'object') return undefined;
+    node = node[segment];
+  }
+  return typeof node === 'string' ? node : undefined;
+}
+
+/**
+ * Wie die beiden Verbraucher auflösen:
+ *   • `agent-catalog.js:contextHelp` — Modulschlüssel, dann geteilter
+ *     Schlüssel (`agent.shared.<suffix>`).
+ *   • `context-help.js` — nur das Literal aus `data-help-key`.
+ */
+function helpExists(tree, moduleId, suffix) {
+  return lookup(tree, `modules.${moduleId}.agent.${suffix}`) !== undefined
+    || lookup(tree, `agent.shared.${suffix}`) !== undefined;
+}
+
+/** Alle `data-help-key`-Werte aus den Vorlagen eines Moduls. */
+function helpKeysInTemplates(appDir, moduleId) {
+  const dir = join(appDir, 'js', 'modules', moduleId);
+  const keys = [];
+  for (const file of readdirSync(dir)) {
+    if (!file.endsWith('.html')) continue;
+    const html = readFileSync(join(dir, file), 'utf8');
+    for (const m of html.matchAll(/data-help-key="([^"]+)"/g)) keys.push([file, m[1]]);
+  }
+  return keys;
+}
+
+test('i18n-Tor: jede Aktion, jeder Parameter und jedes Feld eines freigegebenen Moduls hat einen Schlüssel in BEIDEN Sprachdateien', () => {
+  const appDir = join(import.meta.dirname, '..', '..');
+  const { modules } = collectAgentData(appDir);
+  const trees = {
+    de: JSON.parse(readFileSync(join(appDir, 'i18n', 'de.json'), 'utf8')),
+    en: JSON.parse(readFileSync(join(appDir, 'i18n', 'en.json'), 'utf8')),
+  };
+  const released = Object.entries(modules).filter(([, m]) => m.available === true);
+  assert.ok(released.length >= 1, 'kein freigegebenes Modul — das Tor prüfte nichts');
+
+  const missing = [];
+  for (const [id, entry] of released) {
+    for (const [action, def] of Object.entries(entry.actions)) {
+      for (const [lang, tree] of Object.entries(trees)) {
+        if (!helpExists(tree, id, `actions.${action}.help`)) {
+          missing.push(`${lang}: modules.${id}.agent.actions.${action}.help`);
+        }
+        for (const param of def.params ?? []) {
+          if (!helpExists(tree, id, `actions.${action}.params.${param.name}`)) {
+            missing.push(`${lang}: modules.${id}.agent.actions.${action}.params.${param.name}`);
+          }
+        }
+      }
+    }
+    for (const field of Object.keys(entry.fields)) {
+      for (const [lang, tree] of Object.entries(trees)) {
+        if (!helpExists(tree, id, `fields.${field}`)) {
+          missing.push(`${lang}: modules.${id}.agent.fields.${field}`);
+        }
+      }
+    }
+  }
+  assert.deepEqual(missing, [], `fehlende i18n-Schlüssel:\n${missing.join('\n')}`);
+});
+
+test('i18n-Tor: jeder data-help-key einer freigegebenen Vorlage löst in BEIDEN Sprachdateien auf', () => {
+  const appDir = join(import.meta.dirname, '..', '..');
+  const { modules } = collectAgentData(appDir);
+  const trees = {
+    de: JSON.parse(readFileSync(join(appDir, 'i18n', 'de.json'), 'utf8')),
+    en: JSON.parse(readFileSync(join(appDir, 'i18n', 'en.json'), 'utf8')),
+  };
+  const broken = [];
+  let checked = 0;
+  for (const [id, entry] of Object.entries(modules)) {
+    if (entry.available !== true) continue;
+    for (const [file, key] of helpKeysInTemplates(appDir, id)) {
+      checked += 1;
+      // `context-help.js` fragt NUR dieses Literal (`i18n.exists(key)`) und
+      // kennt keinen geteilten Rückfall — ein Tippfehler heißt: kein Knopf.
+      for (const [lang, tree] of Object.entries(trees)) {
+        if (lookup(tree, key) === undefined) broken.push(`${lang}: ${file} → ${key}`);
+      }
+    }
+  }
+  assert.ok(checked >= 2, `zu wenige Anker geprüft (${checked})`);
+  assert.deepEqual(broken, [], `nicht auflösbare data-help-key:\n${broken.join('\n')}`);
+});
+
+test('i18n-Tor: das deutsche read-Hilfetext von five-why bleibt der modulspezifische', () => {
+  // Der geteilte Rückfall (`agent.shared.actions.read.help`) ist additiv: der
+  // Modulschlüssel gewinnt weiterhin. Dieser Fall hält fest, dass die
+  // Freigabe von five-why ihren eigenen Text behält.
+  const appDir = join(import.meta.dirname, '..', '..');
+  const de = JSON.parse(readFileSync(join(appDir, 'i18n', 'de.json'), 'utf8'));
+  assert.equal(lookup(de, 'modules.five-why.agent.actions.read.help'),
+    'Liefert Problemtext und Fragebaum als Lesezustand.');
+  assert.ok(lookup(de, 'agent.shared.actions.read.help'));
+  assert.ok(lookup(de, 'agent.shared.actions.read.params.options'));
 });

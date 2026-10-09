@@ -5952,6 +5952,16 @@
     }
   },
   "agent": {
+    "shared": {
+      "actions": {
+        "read": {
+          "help": "Returns the full read state of this instance. Without parameters bulk data stays out and appears as a scope descriptor, so it can be requested deliberately instead of transferring thousands of rows.",
+          "params": {
+            "options": "Optional selection: \"fields\" names the bulk fields to be delivered in full; \"rows\" trims each of them to the range from \"from\" to \"to\"."
+          }
+        }
+      }
+    },
     "errors": {
       "notAnAction": "Entry {index} is not an action object.",
       "missingOp": "Entry {index} has no \"op\" field.",

@@ -231,12 +231,23 @@ export async function describeModule({ moduleRegistry, i18n, registry, getHelp }
 /**
  * Kontexthilfe: derselbe i18n-Schlüssel speist die Agentenbeschreibung und
  * die Detailhilfe in der UI (Spec §8, „Single Source of Truth in beide
- * Richtungen"). Fehlt der Schlüssel, greift die JSDoc-Prosa als Rückfall —
- * fehlende Kontexthilfe ist erlaubt und blockiert nicht (Spec §8 Regel 1).
+ * Richtungen").
+ *
+ * Reihenfolge: Modulschlüssel → geteilter Schlüssel → JSDoc-Prosa.
+ *
+ * Der geteilte Schlüssel (`agent.shared.<suffix>`) gehört zum geteilten
+ * `read()` aus `agent-read-mixin.js`: das Mixin zentralisiert den Code, nicht
+ * den Text — ohne diesen Rückfall müsste jedes der 72 Module denselben
+ * `actions.read.help` und `actions.read.params.options` in beide
+ * Sprachdateien kopieren. Modulspezifische Schlüssel gewinnen weiterhin, wo
+ * es sie gibt; fehlt beides, greift die JSDoc-Prosa — fehlende Kontexthilfe
+ * ist erlaubt und blockiert nicht (Spec §8 Regel 1).
  * @returns {string}
  */
 function contextHelp(i18n, moduleId, suffix, fallback) {
   const key = `modules.${moduleId}.agent.${suffix}`;
   if (i18n.exists?.(key)) return i18n.t(key);
+  const shared = `agent.shared.${suffix}`;
+  if (i18n.exists?.(shared)) return i18n.t(shared);
   return fallback ?? '';
 }

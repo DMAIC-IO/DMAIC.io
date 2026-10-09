@@ -41,6 +41,11 @@ const I18N_TABLE = {
   'modules.worksheet.agent.actions.importCsv.help': 'Ersetzt den Inhalt des aktiven Blatts durch die übergebenen CSV-Daten.',
   'modules.worksheet.agent.actions.importCsv.params.csv': 'Der vollständige CSV-Text, inklusive Kopfzeile, falls vorhanden.',
   'modules.worksheet.agent.fields.rows': 'Die Datenzeilen des aktiven Blatts, in Spaltenreihenfolge.',
+  // Die geteilten Schlüssel des `read()`-Mixins: der Code ist zentral, der
+  // Text war es nicht — ohne diesen Rückfall müsste jedes Modul dieselben
+  // zwei Strings in beide Sprachdateien kopieren.
+  'agent.shared.actions.read.help': 'Liefert den vollständigen Lesezustand dieser Instanz.',
+  'agent.shared.actions.read.params.options': 'Optionale Auswahl der Massenfelder und Zeilenbereiche.',
 };
 
 const I18N = {
@@ -49,6 +54,8 @@ const I18N = {
   // Schlüsselformen würde die neuen `…agent.…`-Schlüssel nie erfassen und die
   // Fälle unten lautlos nichts prüfen lassen.
   exists: (key) => key === 'modules.five-why.whenToUse'
+    || (key.startsWith('agent.shared.')
+      && Object.prototype.hasOwnProperty.call(I18N_TABLE, key))
     || /^modules\.(worksheet|five-why|regression|kano)\.(name|description)$/.test(key)
     || (/^modules\.[a-z0-9-]+\.agent\./.test(key)
       && Object.prototype.hasOwnProperty.call(I18N_TABLE, key)),
@@ -61,7 +68,7 @@ const I18N = {
 };
 
 const REGISTRY = {
-  'worksheet':  { tagged: true, available: true, violations: [], actions: { read: { params: [], returns: 'object', help: 'Liest alles' }, importCsv: { params: [{ name: 'csv', type: 'string', optional: false, help: 'CSV-Text' }], returns: 'boolean', help: '' } }, fields: { rows: { type: 'any[][]', help: 'Zeilen', bulk: true } } },
+  'worksheet':  { tagged: true, available: true, violations: [], actions: { read: { params: [{ name: 'options', type: 'object', optional: true, help: 'JSDoc-Prosa zu options' }], returns: 'object', help: 'Liest alles' }, importCsv: { params: [{ name: 'csv', type: 'string', optional: false, help: 'CSV-Text' }], returns: 'boolean', help: '' } }, fields: { rows: { type: 'any[][]', help: 'Zeilen', bulk: true } } },
   'five-why':   { tagged: false, available: false, violations: [], actions: {}, fields: { problem: { type: 'string', help: 'Problemstellung', bulk: false } } },
   'regression': { tagged: false, available: false, violations: [], actions: {}, fields: {} },
   'kano':       { tagged: false, available: false, violations: [], actions: {}, fields: {} },
@@ -231,6 +238,37 @@ suite('agent catalog — module.describe', () => {
     const out = await describeModule(deps, 'worksheet');
     assertEqual(out.fields.find(f => f.name === 'rows').help,
       'Die Datenzeilen des aktiven Blatts, in Spaltenreihenfolge.');
+  });
+
+  test('the shared read key covers a module that carries no read key of its own', async () => {
+    // `worksheet` hat keinen eigenen `actions.read.*`-Schlüssel. Ohne diesen
+    // Rückfall bekäme der Agent die englische JSDoc-Prosa („Liest alles") —
+    // und jedes der 72 Module müsste denselben Text kopieren.
+    const out = await describeModule(deps, 'worksheet');
+    const read = out.actions.find(a => a.name === 'read');
+    assertEqual(read.help, 'Liefert den vollständigen Lesezustand dieser Instanz.');
+    assertEqual(read.params[0].help, 'Optionale Auswahl der Massenfelder und Zeilenbereiche.');
+  });
+
+  test('a module-specific read key still wins over the shared one', async () => {
+    const own = 'modules.worksheet.agent.actions.read.help';
+    const i18n = {
+      ...I18N,
+      exists: (key) => key === own || I18N.exists(key),
+      t: (key, params) => (key === own ? 'Liest Blätter, Zeilen und die aktive Auswahl.' : I18N.t(key, params)),
+    };
+    const out = await describeModule({ ...deps, i18n }, 'worksheet');
+    assertEqual(out.actions.find(a => a.name === 'read').help,
+      'Liest Blätter, Zeilen und die aktive Auswahl.');
+  });
+
+  test('without any key the JSDoc prose is still the last resort', async () => {
+    const i18n = {
+      ...I18N,
+      exists: (key) => (key.startsWith('agent.shared.') ? false : I18N.exists(key)),
+    };
+    const out = await describeModule({ ...deps, i18n }, 'worksheet');
+    assertEqual(out.actions.find(a => a.name === 'read').help, 'Liest alles');
   });
 
   test('a module without a handbook describes with an empty section list', async () => {
