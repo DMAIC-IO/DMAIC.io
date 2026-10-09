@@ -73,10 +73,22 @@ export default {
     showLegend: { type: 'boolean', default: true, label: 'dashboard.tileSettings.showLegend' },
   },
 
+  /**
+   * The timeline is a singleton project-level tile.
+   * @param {{i18n: {t: function}}} ctx
+   * @returns {Array<{tileId: string, instanceId: null, title: string}>}
+   */
   enumerate(ctx) {
     return [{ tileId: 'zeg-timeline', instanceId: null, title: ctx.i18n.t('dashboard.zegTimeline') }];
   },
 
+  /**
+   * Render the per-phase achievement timeline into the host. A newer render
+   * (or dispose) invalidates a chart that is still being created.
+   * @param {HTMLElement} host
+   * @param {{settings: {showLegend: boolean}, i18n: object, chartManager: object, stateManager: object}} args
+   * @returns {Promise<void>}
+   */
   async render(host, { settings, i18n, chartManager, stateManager }) {
     release(host);
     const token = {};
@@ -108,6 +120,10 @@ export default {
     entry.chart = chart;
   },
 
+  /**
+   * Release the chart of the host (tile removed or host abandoned).
+   * @param {HTMLElement} host
+   */
   dispose(host) {
     release(host);
   },

@@ -43,6 +43,20 @@ const page = createPage({
     let descriptors = [];
     const descriptorFor = (tileId) => descriptors.find(d => d.id === tileId);
 
+    // A full render or unmount builds/drops the whole grid without firing
+    // onTileRemoved, so release every placed tile (charts, listeners) first.
+    const disposePlacedTiles = () => {
+      if (!handle.grid) return;
+      for (const id of handle.grid.getPlacedTileIds()) {
+        try {
+          descriptorFor(id)?.tile?.dispose?.(handle.grid.getTileBody(id), { tileId: id });
+        } catch (err) {
+          console.error(`[dashboard] tile "${id}" failed to dispose`, err);
+        }
+      }
+    };
+    handle.disposePlacedTiles = disposePlacedTiles;
+
     // ── Module-owned tile dispatch ───────────────────────────────────────
     /** Resolved settings of a tile: stored overrides over schema defaults. */
     const settingsFor = (tileId, tile) =>
@@ -197,6 +211,7 @@ const page = createPage({
       // point if a newer render has superseded this one.
       const gen = ++handle._renderGen;
 
+      disposePlacedTiles();
       if (handle.grid) { handle.grid.destroy(); handle.grid = null; }
       closeAddMenu();
 
@@ -328,6 +343,7 @@ const page = createPage({
     // Invalidate a render still awaiting loadTileModules so it cannot
     // subscribe refresh handlers or rebuild the grid after unmount.
     handle._renderGen++;
+    handle.disposePlacedTiles?.();
     if (handle.grid) { handle.grid.destroy(); handle.grid = null; }
     if (handle.addMenuEl) { handle.addMenuEl.remove(); handle.addMenuEl = null; }
     if (handle._onDocClick) { document.removeEventListener('click', handle._onDocClick, true); handle._onDocClick = null; }
