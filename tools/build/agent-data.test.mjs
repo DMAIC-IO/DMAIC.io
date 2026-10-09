@@ -1211,15 +1211,17 @@ test('i18n-Tor: jeder data-help-key einer freigegebenen Vorlage löst in BEIDEN 
   assert.deepEqual(broken, [], `nicht auflösbare data-help-key:\n${broken.join('\n')}`);
 });
 
-/* Das Tor oben erlaubt für `actions.read.help` und `actions.read.params.options`
-   den geteilten Rückfall (`agent.shared.<suffix>`) — genau dort maskiert es
-   also einen fehlenden Modulschlüssel. Für `read.help` ist das keine
-   Lappalie: der geteilte Satz beschreibt den Mechanismus, nicht WAS dieses
-   Modul liefert. Darum verlangt dieser Fall den modulspezifischen Schlüssel
-   von JEDEM freigegebenen Modul — damit das nächste Pilotmodul ohne
-   Handarbeit mit abgedeckt ist. `params.options` bleibt beim Rückfall: dort
-   ist der geteilte Text wortgleich richtig (Spec §8). */
-test('i18n-Tor: jedes freigegebene Modul hat einen EIGENEN read-Hilfetext in beiden Sprachen', () => {
+/* Controller-Entscheid zu Review-Befund 2: das Tor darf NICHT den
+   modulspezifischen `actions.read.help` verlangen. Der geteilte Rückfall
+   (`agent.shared.<suffix>`) ist genau dafür da, dass nicht 72 Module
+   denselben Satz in beide Sprachbäume kopieren, und Spec §8 Regel 1
+   (docs/AGENT-INTERFACE.md) sagt ausdrücklich, dass fehlende Kontexthilfe
+   nicht blockiert. Geprüft wird deshalb die dokumentierte KETTE:
+   Modulschlüssel, sonst geteilter Schlüssel. Das Tor fängt weiterhin jede
+   Veralterung, für die es gebaut ist — eine umbenannte Aktion, ein
+   umbenannter Parameter, ein umbenanntes Feld hat keinen geteilten
+   Rückfall und wird rot. */
+test('i18n-Tor: der read-Hilfetext jedes freigegebenen Moduls löst über die dokumentierte Kette auf', () => {
   const appDir = join(import.meta.dirname, '..', '..');
   const { modules } = collectAgentData(appDir);
   const trees = {
@@ -1232,15 +1234,12 @@ test('i18n-Tor: jedes freigegebene Modul hat einen EIGENEN read-Hilfetext in bei
   const missing = [];
   for (const [id] of released) {
     for (const [lang, tree] of Object.entries(trees)) {
-      const key = `modules.${id}.agent.actions.read.help`;
-      const text = lookup(tree, key);
-      if (text === undefined || text.trim() === '') missing.push(`${lang}: ${key}`);
-      else if (text === lookup(tree, 'agent.shared.actions.read.help')) {
-        missing.push(`${lang}: ${key} ist wortgleich der geteilte Rückfall`);
+      if (!helpExists(tree, id, 'actions.read.help')) {
+        missing.push(`${lang}: modules.${id}.agent.actions.read.help (auch kein geteilter Rückfall)`);
       }
     }
   }
-  assert.deepEqual(missing, [], `maskierte read-Hilfetexte:\n${missing.join('\n')}`);
+  assert.deepEqual(missing, [], `unauflösbare read-Hilfetexte:\n${missing.join('\n')}`);
 });
 
 test('i18n-Tor: das deutsche read-Hilfetext von five-why bleibt der modulspezifische', () => {

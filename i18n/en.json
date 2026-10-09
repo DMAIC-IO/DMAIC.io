@@ -932,15 +932,15 @@
             "params": { "options": "Optional: fields: ['rows'] returns the rows, rows: { from, to } trims them." }
           },
           "importCsv": {
-            "help": "Replaces the active sheet's content with the given CSV data. Delimiter and header row are detected; the step can be reverted with undo.",
+            "help": "Replaces the active sheet's content with CSV data. Delimiter and header row are detected; the step can be reverted with undo.",
             "params": { "csvText": "The full CSV or TSV text, header row included if present." }
           },
           "setCells": {
-            "help": "Writes a block of values into one column, downwards from a row. Type detection, locks and undo as with cell entry.",
+            "help": "Writes a block of values into one column, downwards from a row. Type detection, locks and undo as with cell entry. Values only: a formula such as =C1*2 is written as text, not evaluated — formulas stay with the formula editor in the UI.",
             "params": {
               "columnId": "The id of the target column, as read().columns[].id names it.",
               "startRow": "Zero-based index of the first row.",
-              "values": "The values, one per row."
+              "values": "The values, one per row; formula text is not evaluated."
             }
           },
           "addColumn": { "help": "Appends an empty column to the active sheet." },

@@ -685,8 +685,18 @@ const mod = createModule({
        * @agent
        * @param {string} id id of the sheet to show
        * @returns {void}
+       * @throws {Error} if no sheet has this id
        */
       switchSheet(id) {
+        // Vor jeder Wirkung prüfen: `State.setActive` ignoriert eine
+        // unbekannte id still, der Ablauf liefe aber weiter bis
+        // `_applyActiveSheetToGrid()` — und das lädt den unveränderten
+        // Zustand neu und LÖSCHT dabei die Rückgängig-Historie des Grids,
+        // während der Aufruf Erfolg meldet.
+        if (!this.model.sheets.some(s => s.id === id)) {
+          throw new Error(`unknown sheet id "${id}"; available: `
+            + `${this.model.sheets.map(s => s.id).join(', ')}`);
+        }
         if (id === this.model.activeSheetId) return;
         this._syncActiveSheet();
         this.model.setActive(id);
@@ -723,8 +733,16 @@ const mod = createModule({
        * @param {string} id id of the sheet to rename
        * @param {string} name the new name; empty or whitespace keeps the old one
        * @returns {void}
+       * @throws {Error} if no sheet has this id
        */
       renameSheet(id, name) {
+        // `State.renameSheet` kehrt bei unbekannter id still zurück; ohne
+        // diese Prüfung meldete der Aufruf Erfolg und feuerte dataChanged,
+        // ohne irgendetwas umbenannt zu haben.
+        if (!this.model.sheets.some(s => s.id === id)) {
+          throw new Error(`unknown sheet id "${id}"; available: `
+            + `${this.model.sheets.map(s => s.id).join(', ')}`);
+        }
         this.model.renameSheet(id, name);
         this._flushAndNotify();
       },
@@ -737,6 +755,10 @@ const mod = createModule({
         const id = this.renamingId;
         const name = this.renameValue;
         this.renamingId = null;
+        // Das Blatt kann zwischen Umbenennen-Start und @blur verschwunden
+        // sein (Kontextmenü „Blatt löschen"). Für die UI ist das kein
+        // Fehler, nur nichts zu tun — `renameSheet()` würde werfen.
+        if (!this.model.sheets.some(s => s.id === id)) return;
         this.renameSheet(id, name);
       },
       /** @noagent DOM event handler (rename keyboard) */
@@ -863,21 +885,51 @@ const mod = createModule({
        * Goes through the same `setCellValue` path as the cell editor and the
        * paste handler — type detection, locks and undo included.
        *
+       * Values only, no formulas: the cell editor's commit path branches on
+       * `isFormula()` BEFORE it reaches `setCellValue`; this path does not,
+       * so `"=C1*2"` lands here as plain text. Formulas stay with the
+       * formula editor in the UI.
+       *
        * @agent
        * @param {string} columnId id of the target column (see read().columns[].id)
        * @param {number} startRow zero-based row index of the first value
-       * @param {any[]} values the values to write, one per row
-       * @returns {number} how many cells were written
+       * @param {any[]} values the values to write, one per row; formulas are
+       *   written as plain text, not evaluated
+       * @returns {number} how many cells were actually written
+       * @throws {Error} if no column has this id, or if the column is locked
        */
       setCells(columnId, startRow, values) {
+        // `setCellValue` kehrt bei unbekannter Spalte und bei gesperrter
+        // Spalte STILL zurück. Ohne diese Prüfung bekäme ein Agent, der sich
+        // in der columnId vertippt, die Zahl seiner Eingabewerte als Erfolg
+        // gemeldet — und baute seinen nächsten Schritt auf Daten, die es
+        // nicht gibt.
+        const col = this._grid?.getColumn(columnId);
+        if (!col) {
+          throw new Error(`unknown columnId "${columnId}"; available: `
+            + `${(this._grid?.columns ?? []).map(c => c.id).join(', ')}`);
+        }
+        if (col.meta?.lock) {
+          throw new Error(`column "${columnId}" is locked (${col.meta.lock})`);
+        }
         const list = Array.isArray(values) ? values : [];
         const from = Number.isFinite(Number(startRow)) ? Math.max(0, Math.trunc(Number(startRow))) : 0;
-        for (let i = 0; i < list.length; i++) {
-          this._grid.setCellValue(columnId, from + i, list[i]);
+        // Gezählt wird, was das Grid tatsächlich geschrieben hat, nicht, was
+        // hineingereicht wurde: `cell:changed` feuert genau am Ende eines
+        // erfolgreichen `setCellValue`.
+        let written = 0;
+        const count = () => { written += 1; };
+        this._grid.on('cell:changed', count);
+        try {
+          for (let i = 0; i < list.length; i++) {
+            this._grid.setCellValue(columnId, from + i, list[i]);
+          }
+        } finally {
+          this._grid.off('cell:changed', count);
         }
         this._grid.render();
         this._flushAndNotify();
-        return list.length;
+        return written;
       },
 
       // ── Toast ────────────────────────────────────────────────

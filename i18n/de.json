@@ -932,15 +932,15 @@
             "params": { "options": "Optional: fields: ['rows'] liefert die Zeilen, rows: { from, to } schneidet sie zu." }
           },
           "importCsv": {
-            "help": "Ersetzt den Inhalt des aktiven Blatts durch die übergebenen CSV-Daten. Trennzeichen und Kopfzeile werden erkannt; der Schritt ist über Rückgängig umkehrbar.",
+            "help": "Ersetzt den Inhalt des aktiven Blatts durch CSV-Daten. Trennzeichen und Kopfzeile werden erkannt; der Schritt ist über Rückgängig umkehrbar.",
             "params": { "csvText": "Der vollständige CSV- oder TSV-Text, Kopfzeile eingeschlossen, falls vorhanden." }
           },
           "setCells": {
-            "help": "Schreibt einen Block von Werten in eine Spalte, von einer Zeile an abwärts. Typerkennung, Sperren und Rückgängig wie bei der Zelleingabe.",
+            "help": "Schreibt einen Block von Werten in eine Spalte, von einer Zeile an abwärts. Typerkennung, Sperren und Rückgängig wie bei der Zelleingabe. Nur Werte: eine Formel wie =C1*2 wird als Text geschrieben, nicht berechnet — Formeln bleiben dem Formeleditor der Oberfläche vorbehalten.",
             "params": {
               "columnId": "Die id der Zielspalte, wie read().columns[].id sie nennt.",
               "startRow": "Nullbasierter Index der ersten Zeile.",
-              "values": "Die Werte, einer je Zeile."
+              "values": "Die Werte, einer je Zeile; Formeltext wird nicht ausgewertet."
             }
           },
           "addColumn": { "help": "Hängt dem aktiven Blatt eine leere Spalte an." },

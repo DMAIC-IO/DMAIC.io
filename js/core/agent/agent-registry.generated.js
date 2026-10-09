@@ -4694,11 +4694,11 @@ export const AGENT_REGISTRY = {
             "name": "values",
             "type": "any[]",
             "optional": false,
-            "help": "the values to write, one per row"
+            "help": "the values to write, one per row; formulas are written as plain text, not evaluated"
           }
         ],
         "returns": "number",
-        "help": "Write a block of values into one column, starting at a row index. Goes through the same `setCellValue` path as the cell editor and the paste handler — type detection, locks and undo included."
+        "help": "Write a block of values into one column, starting at a row index. Goes through the same `setCellValue` path as the cell editor and the paste handler — type detection, locks and undo included. Values only, no formulas: the cell editor's commit path branches on `isFormula()` BEFORE it reaches `setCellValue`; this path does not, so `\"=C1*2\"` lands here as plain text. Formulas stay with the formula editor in the UI."
       }
     },
     "fields": {

@@ -1782,26 +1782,33 @@ body.dmike-glossary-inline-off .glossary-term:focus-within {
   /* `pointer`, nicht `help`: der Knopf trägt role="button" und reagiert auf
      Klick — `help` kündigt einen Tooltip an, den es nicht gibt. */
   cursor: pointer;
-  /* Der Kreis liegt AUSSERHALB der rechten Ankerkante. Stehen zwei Anker
-     dicht nebeneinander — die Knöpfe der Werkzeugleiste der Datensammlung —
-     dann ragt er in den Kasten des nächsten Ankers hinein, und der fängt den
-     Klick ab (`.context-help-anchor` ist `position: relative`; ohne z-index
-     entscheidet die Dokumentreihenfolge, und der Nachbar kommt später).
-     Nachgewiesen vom E2E-Fall „kein Fragezeichen der Werkzeugleiste wird
-     abgeschnitten": ohne diese Zeile klickt Playwright auf den Nachbarn. */
+  /* Der Kreis liegt an der rechten Ankerkante und ragt über sie hinaus.
+     Stehen zwei Anker dicht nebeneinander, überlappt er den Kasten des
+     nächsten — und ohne z-index gewinnt der, weil `.context-help-anchor`
+     `position: relative` ist und bei gleichem z-index die
+     Dokumentreihenfolge entscheidet. Der Klick landete dann auf dem
+     Nachbarn. */
   z-index: 1;
   visibility: hidden;
   pointer-events: none;
 }
 
-/* Knopf-Anker in der Datensammlung: `top: 0` zentriert den Kreis auf der
-   OBERKANTE des Ankers. An einem Textlabel ist das richtig; an einem
-   Werkzeugleisten-Knopf ragt der Kreis damit über den Knopf hinaus — und die
-   Werkzeugleiste wie die Reiterzeile der Datensammlung clippen (`overflow:
-   hidden`), der Kreis wäre oben angeschnitten. An einem Knopf ist der ganze
-   Kasten der Anker, also gehört der Kreis auf dessen Mitte. */
-.worksheet-module .context-help-anchor > .context-help__btn {
+/* KNOPF-Anker, modulübergreifend. Zwei Unterschiede zum Textlabel:
+
+   1. `top: 0` zentriert den Kreis auf der OBERKANTE des Ankers. An einem
+      Label ist das richtig; an einem Knopf ragt er damit über den Knopf
+      hinaus und wird von einer clippenden Leiste (`overflow: hidden`, etwa
+      der Werkzeugleiste und der Reiterzeile der Datensammlung) oben
+      angeschnitten. An einem Knopf ist der ganze Kasten der Anker, also
+      gehört der Kreis auf dessen Mitte.
+   2. Ein Label steht frei, ein Knopf steht in einer Reihe von Knöpfen. Ein
+      Kreis ganz NEBEN dem Knopf klebt dort optisch am nächsten Knopf — wer
+      Alt hält und das Fragezeichen vor „Import" anklickt, fragt sonst nach
+      Hilfe zu „Zeilen". Der negative Versatz zieht ihn über die eigene
+      rechte Ankerkante, sodass er sichtbar zu SEINEM Knopf gehört. */
+button.context-help-anchor > .context-help__btn {
   top: 50%;
+  margin-left: -0.4em;
 }
 
 body.dmike-context-help-armed .context-help__btn {
